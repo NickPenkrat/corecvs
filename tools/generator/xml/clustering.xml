@@ -1,0 +1,38 @@
+<poco version="5.0">
+
+  <!-- For parameters inside vimouse -->
+  <include name="zoneSettings.xml"/>
+  
+  <class name="Clustering Parameters" description="Clustering parameters">
+  
+    <!-- Clustering -->
+    <field type="int"    name="tileSize"       defaultValue="20"    min="1"    max="2048" step="1"/>
+    <field type="int"    name="tileGroupHW"    defaultValue="2"     min="1"    max="99"   step="1"/>
+    <field type="int"    name="tileThreshold"  defaultValue="10"    min="1"    max="400"  step="1"/>
+    <field type="int"    name="tileNumber"     defaultValue="10"    min="0"    max="99"   step="1"/>
+    
+    <!-- Zone settings -->
+    <embed type="Zone Parameters" name="zone"/>    
+        
+    <!-- Z Stabilizer -->
+    <field type="int"    name="stabLevel"             defaultValue="20"      min="0"      max="1000"    step="1"/>
+    <field type="int"    name="stabRib"               defaultValue="8"       min="0"      max="1000"    step="1"/>
+    <field type="int"    name="stabMinWeight"         defaultValue="20"      min="0"      max="1000"    step="1"/>
+    
+    <!-- Desync Stabilizer -->
+    <field type="bool"   name="Desync Stabilizer"     defaultValue="false"/>
+    <field type="bool"   name="Desync Force Swap"     defaultValue="false"/>
+    <field type="int"    name="Desync Max Ms"         defaultValue="100" min="0" max="4000"/>
+
+
+    <!-- Y Stabilizer -->
+    <field type="bool"   name="usePlaneStabilizer"    defaultValue="false" />
+    <field type="int"    name="ystabLevel"            defaultValue="20"      min="0"      max="1000"    step="1"/>
+    <field type="int"    name="ystabRib"              defaultValue="8"       min="0"      max="1000"    step="1"/>
+    <field type="int"    name="ystabMinWeight"        defaultValue="20"      min="0"      max="1000"    step="1"/>
+    
+  
+  
+  </class>
+    
+</poco>

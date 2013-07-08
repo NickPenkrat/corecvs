@@ -1,0 +1,31 @@
+<poco version="5.0">
+
+  <include name="base.xml"/>
+  <include name="../../../../core/res-src/xml/providers.xml"/>
+  <include name="../../../../core/res-src/xml/featuring.xml"/>
+  <include name="../../../../core/res-src/xml/filtering.xml"/>
+  <include name="../../../../core/res-src/xml/matching.xml"/>
+  <include name="../../../../core/res-src/xml/blockmatch.xml"/>
+  <include name="../../../../core/res-src/xml/improvement.xml"/>
+  <include name="../../../../core/res-src/xml/precise.xml"/>
+  
+  <include name="opencvsgm.xml"/>
+  <include name="dummyprovider.xml"/>
+
+  <class name="Proc6D Parameters" description="proc6D parameters">
+    <field type="Base Parameters"           name="Base Parameters"/>
+       
+    <field type="Featuring Parameters"      name="Featuring  Parameters"/>
+    <field type="Filtering Parameters"      name="FlowFiltering"/>
+    <field type="Filtering Parameters"      name="StereoFiltering"/>
+    <field type="Matching Parameters"       name="Matching  Parameters"/>
+    <field type="Improvement Parameters"    name="Improvement Parameters"/>
+    <field type="Make Precise Parameters"   name="Make Precise Parameters"/>
+    <field type="Provider Parameters"       name="Provider Parameters"/>
+    <field type="Blockmatch Parameters"     name="Blockmatch Parameters"/>
+    <field type="OpenCV SGM Parameters"     name="OpenCV SGM Parameters"/>
+    <field type="OpenCV BM Parameters"      name="OpenCV BM Parameters"/>
+    <field type="Dummy Provider Parameters" name="Dummy Provider Parameters"/>
+    
+  </class>
+</poco>  

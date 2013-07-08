@@ -1,0 +1,10 @@
+<poco version="5.0">
+
+  <class name="Dummy Provider Parameters">
+    <field type="string" name="Path"          defaultValue="data/pair/image%04d_c0.pgm"/>
+    <field type="int"    name="Unknown Value" defaultValue="0"     min="0" max="3000000" step="1" adv="true" >
+    <field type="int"    name="Plane Zero"    defaultValue="0"     min="0" max="3000000" step="1" adv="true"/>
+    <field type="int"    name="Plane Max"     defaultValue="65536"  min="0" max="3000000" step="1" adv="true"/>
+  </class>
+  
+</poco>

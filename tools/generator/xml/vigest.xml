@@ -1,0 +1,81 @@
+<poco version="5.0">
+  
+  <include name="proc6D.xml"/>
+  
+  <enum name="PresentationType">
+    <item name="No Output"    id="0" comment="No Output"/>
+    <item name="Show Flow"    id="1" comment="Show Flow"/>
+    <item name="Show Stereo"  id="2" comment="Show Stereo"/>
+    <item name="Show 5D"      id="3" comment="Show 5D"/>
+    <item name="Show real 6D" id="4" comment="Show real 6D"/>
+  </enum>
+
+  <enum name="MousePointerType">
+    <item name="Single display"  id="0" comment="Single display"/>
+    <item name="Dual display"    id="1" comment="Dual display"/>
+  </enum>
+  
+  <class name="ViGest Parameters" description="ViGest parameters">
+    <!-- Presentation -->
+    <field type="bool"      name="calculationOn"                  defaultValue="false"/>
+    <field type="bool"      name="produce3D"                      defaultValue="false"/>
+    <field type="PresentationType" name="PresentationType"/>
+    <field type="int"       name="minDisp"                        defaultValue="0"       min="-1000"    max="1000"      step="1"/>
+    <field type="int"       name="maxDisp"                        defaultValue="30"      min="-1000"    max="1000"      step="1"/>
+    <field type="double"    name="maxFlowFilter"                  defaultValue="200.0"   min="0.0"      max="999.99"    step="1.0"/>
+    <field type="double"    name="marker1X"                       defaultValue="0.0"     min="-9999.0"  max="9999.99"   step="10.0"/>
+    <field type="double"    name="marker1Y"                       defaultValue="0.0"     min="-9999.0"  max="9999.99"   step="10.0"/>
+    <field type="double"    name="marker1Z"                       defaultValue="1000.0"  min="-9999.0"  max="9999.99"   step="10.0"/>
+    <!-- ViGest -->
+    <field type="double"    name="corner1X"                       defaultValue="-750.0"  min="-9999.0"  max="9999.99"   step="10.0"/>
+    <field type="double"    name="corner1Y"                       defaultValue="-750.0"  min="-9999.0"  max="9999.99"   step="10.0"/>
+    <field type="double"    name="corner1Z"                       defaultValue="0.0"     min="-9999.0"  max="9999.99"   step="10.0"/>
+    <field type="double"    name="corner2X"                       defaultValue="750.0"   min="-9999.0"  max="9999.99"   step="10.0"/>
+    <field type="double"    name="corner2Y"                       defaultValue="750.0"   min="-9999.0"  max="9999.99"   step="10.0"/>
+    <field type="double"    name="corner2Z"                       defaultValue="1800.0"  min="-9999.0"  max="9999.99"   step="10.0"/>
+    <field type="double"    name="inlineThreshold"                defaultValue="10.0"    min="0.0"      max="90.99"     step="1.0"/>
+    <field type="double"    name="speedThreshold"                 defaultValue="10.0"    min="0.0"      max="9999.99"   step="1.0"/>
+    <field type="int"       name="channel"                        defaultValue="0"       min="0"        max="99"        step="1"/>
+    <field type="double"    name="squareStopSpeed"                defaultValue="3.0"     min="0.0"      max="99.99"     step="1.0"/>
+    <field type="double"    name="squareDCPSpeed"                 defaultValue="5.0"     min="0.0"      max="99.99"     step="1.0"/>
+    <field type="double"    name="voxelH"                         defaultValue="50.0"    min="0.0"      max="999.99"    step="1.0"/>
+    <field type="double"    name="voxelW"                         defaultValue="50.0"    min="0.0"      max="999.99"    step="1.0"/>
+    <field type="double"    name="voxelL"                         defaultValue="50.0"    min="0.0"      max="999.99"    step="1.0"/>
+    <field type="double"    name="maximumHorizontalAngleOffset"   defaultValue="10.0"    min="0.0"      max="99.99"     step="1.0"/>
+    <field type="double"    name="maximumVerticalAngleOffset"     defaultValue="10.0"    min="0.0"      max="99.99"     step="1.0"/>
+    <field type="int"       name="voxelNeighborhood"              defaultValue="0"       min="0"        max="99"        step="1"/>
+    <field type="int"       name="supporterNeighborhood"          defaultValue="0"       min="0"        max="99"        step="1"/>
+    <field type="double"    name="activationNeighborhood"         defaultValue="0.0"     min="0.0"      max="99.99"     step="1.0"/>
+    <field type="int"       name="activationBufferSize"           defaultValue="0"       min="0"        max="99"        step="1"/>
+    <field type="int"       name="minimumNumberEvents"            defaultValue="0"       min="0"        max="99"        step="1"/>
+    <field type="double"    name="wipeSquareSpeed"                defaultValue="0.0"     min="0.0"      max="99.99"     step="1.0"/>
+    <field type="double"    name="mouseSlowSquareSpeed"           defaultValue="0.0"     min="0.0"      max="99.99"     step="1.0"/>
+    <field type="double"    name="mouseActionSquareSpeed"         defaultValue="0.0"     min="0.0"      max="99.99"     step="1.0"/>
+    <field type="int"       name="mouseActionSpeedRatio"          defaultValue="0"       min="0"        max="99"        step="1"/>
+    <field type="int"       name="initialGestureDelay"            defaultValue="0"       min="0"        max="99"        step="1"/>
+    <field type="int"       name="initialDeactivationDelay"       defaultValue="0"       min="0"        max="99"        step="1"/>
+    <field type="int"       name="longtermDeactivationDelay"      defaultValue="0"       min="0"        max="99"        step="1"/>
+    <field type="int"       name="wipeOutDelay"                   defaultValue="0"       min="0"        max="99"        step="1"/>
+    <field type="int"       name="mouseClickDelay"                defaultValue="0"       min="0"        max="99"        step="1"/>
+    <field type="int"       name="viBoxLostDelay"                 defaultValue="0"       min="0"        max="99"        step="1"/>
+    <field type="int"       name="framesPerSecond"                defaultValue="0"       min="0"        max="99"        step="1"/>
+    <field type="int"       name="lowerLimitActivationDuration"   defaultValue="0"       min="0"        max="99"        step="1"/>
+    <field type="int"       name="upperLimitActivationDuration"   defaultValue="0"       min="0"        max="99"        step="1"/>
+    <field type="int"       name="featureMainDirection"           defaultValue="0"       min="0"        max="99"        step="1"/>
+    <field type="double"    name="elongationLength"               defaultValue="0.0"     min="0.0"      max="99.99"     step="1.0"/>    
+    <field type="int"       name="stayViBoxOccupiedDelay"         defaultValue="0"       min="0"        max="99"        step="1"/>
+    <field type="int"       name="minimumNumberViBoxOccupationFeatures" defaultValue="0" min="0"        max="99"        step="1"/>
+    <field type="int"       name="numberWipeDirectionAreas"       defaultValue="0"       min="0"        max="99"        step="1"/>
+    <!-- DCP -->
+    <field type="double"    name="dcp1X"                          defaultValue="-100.0"  min="-9999.0"  max="9999.99"   step="10.0"/>
+    <field type="double"    name="dcp1Y"                          defaultValue="-100.0"  min="-9999.0"  max="9999.99"   step="10.0"/>
+    <field type="double"    name="dcp1Z"                          defaultValue="100.0"   min="-9999.0"  max="9999.99"   step="10.0"/>
+  </class> 
+  
+  
+  <parametersMapper name="ViGest">
+    <field type="Proc6D Parameters" name="Proc6D Parameters"/>
+    <field type="ViGest Parameters" name="ViGest Parameters"/>
+  </parametersMapper>
+</poco>
+

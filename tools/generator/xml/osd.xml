@@ -1,0 +1,57 @@
+<poco version="5.0">
+
+  <include name="../../../../core/src/xml/parameters.xml"/>
+
+  <enum name="osd Style">
+    <item name="OSD Off"          id="0"  comment="OSD Off"/>
+    <item name="Old Style"        id="1"  comment="Old Style"/>
+    <item name="Old Style light"  id="2"  comment="Old Style light"/>
+    <item name="Fancy"            id="3"  comment="Fancy"/>
+    <item name="Fancy Dense"      id="4"  comment="Fancy Dense"/>
+    <item name="BigMouse"         id="5"  comment="BigMouse"/>
+    <item name="Flash OSD"        id="6"  comment="Flash OSD"/>
+    <item name="TechEd"           id="7"  comment="TechEd"/>
+    <item name="Test"             id="8"  comment="Test"/>
+    <item name="Swipe Book"       id="9"  comment="Swipe Book"/>
+    <item name="Face Activation"  id="10" comment="Face Activation"/>
+    <item name="Hand"             id="11" comment="Hand"/>
+  </enum>
+  
+  <class name="osd Parameters" description="osd parameters">
+    <!-- OSD -->
+    <field type="rgb Color Parameters" name="Main Color"/>
+    
+    <field type="osd Style" name="osdStyle"/>
+    <field type="double"   name="osdCursorScale"        defaultValue="1.0"     min="0.0"    max="99.0"    step="0.1"/>
+    <field type="bool"     name="osdAdapt"              defaultValue="false"/>
+    <field type="int"      name="osdGeometryW"          defaultValue="1600"    min="1"      max="9999"    step="1"/>
+    <field type="int"      name="osdGeometryH"          defaultValue="1200"    min="1"      max="9999"    step="1"/>
+    <field type="int"      name="osdGeometryX"          defaultValue="0"       min="-1000"  max="1000"    step="1"/>
+    <field type="int"      name="osdGeometryY"          defaultValue="0"       min="-9000"  max="9000"    step="1"/>
+
+    <!-- OSD Internals -->
+    <field type="bool"   name="osdInternals"          defaultValue="false"/>
+    <field type="int"    name="osdInternalsAlpha"     defaultValue="50"     min="0"      max="100"    step="1"/>
+    <field type="double" name="osdInternalsScale"     defaultValue="1.0"    min="0.0"    max="1.0"    step="0.1"/>
+    <field type="bool"   name="osdButtons"            defaultValue="false"/>
+
+    <!-- Swipe Book Internals -->
+    <field type="int"    name="osd Book Header"     defaultValue="50"     min="0"      max="100"    step="1"/>
+    <field type="int"    name="osd Book Margin"     defaultValue="50"     min="0"      max="100"    step="1"/>
+	<field type="bool"   name="drawSwipe"           defaultValue="false" >
+	
+    <!-- Adaptive Image Internals -->
+    <field type="int"    name="Face Fade Animation"   defaultValue="30"     min="0"      max="1000"    step="1"/>
+    <field type="int"    name="Post Select Animation" defaultValue="30"     min="0"      max="1000"    step="1"/>
+    <field type="int"    name="Post Mouse Animation"  defaultValue="30"     min="0"      max="1000"    step="1"/>
+
+    <!-- Tooltips -->
+    <field type="int"   name="tooltipFadeDelay"      defaultValue="64"  min="0"      max="1000"    step="1"/>
+    <field type="int"   name="tooltipSet"            defaultValue="0"  min="0"      max="1"    step="1"/>
+
+	
+	<!-- Flash OSD additional parameters -->
+	<field type="bool"   name="osdFlashProximity"   defaultValue="false"/>
+    
+  </class>
+</poco>

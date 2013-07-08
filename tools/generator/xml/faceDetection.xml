@@ -1,0 +1,92 @@
+<poco version="5.0">
+
+  <include name="../../../../core/src/xml/parameters.xml"/>
+  <include name="clustering1.xml"/>
+   
+   <enum name="Face Detection Algorithm Type">
+      <item name="OFF"                          id="0" comment="OFF"                   />
+      <item name="Dummy"                        id="1" comment="Dummy"                 />
+      <item name="Dummy User"                   id="2" comment="Dummy User"            />
+      <item name="OpenCV ViolaJones"            id="3" comment="OpenCV Viola-Jones"    />
+      <item name="Clustering recursive finder"  id="4" comment="Find head by recursive clustering" />
+      <item name="Clustering finder"            id="5" comment="Find head by nonrecursive clustering" />
+   </enum>
+    
+  
+   <enum name="Face Detection Cascade Type">
+     <item name="profileface"          id="0" />
+     <item name="frontalface_alt"      id="1" />
+     <item name="frontalface_alt2"     id="2" />
+     <item name="frontalface_default"  id="3" />
+     <item name="frontalface_alt_tree" id="4" />
+   </enum>
+   
+   
+   <class name="Showcase State Machine Parameters">
+     <field type="double" name="Movement treshold"         defaultValue="2.0"     min="0"    max="100"     step="0.1" comment="Mean movement in gaper zone to trigger gaper effect"/>
+     <field type="int"    name="Object presence treshold"  defaultValue="400"     min="0"    max="10000"   step="10"  comment="Number of points in control zone to consider it occupied"/>
+     <field type="int"    name="Object position treshold"  defaultValue="200"     min="0"    max="10000"   step="10"/>
+     <field type="int"    name="Area Activation Threshold" defaultValue="200"     min="0"    max="10000"   step="10"/>
+     
+     <field type="int"    name="Lose Control Short Delay"  defaultValue="100"     min="0"    max="10000"   step="10"/>
+     <field type="int"    name="Lose Control Long Delay"   defaultValue="650"     min="0"    max="10000"   step="10"/>
+   </class>
+   
+   
+   <class name="Person Geometry Parameters">
+     <field type="double" name="Head Size"          defaultValue="300" min="0.01" max="99999"   step="0.1"/>   
+   
+     <field type="double" name="Neck Length"        defaultValue="0.3" min="0.01" max="10"   step="0.1"/>
+     <field type="double" name="Shoulder Distance"  defaultValue="2.1" min="0.01" max="10"   step="0.1"/>
+
+     <field type="double" name="Zone R Left"        defaultValue="1.4" min="0.01" max="10"   step="0.1"/>
+     <field type="double" name="Zone R Right"       defaultValue="0.6" min="0.01" max="10"   step="0.1"/>
+     <field type="double" name="Zone R Top"         defaultValue="1.0" min="0.01" max="10"   step="0.1"/>
+     <field type="double" name="Zone R Bottom"      defaultValue="1.3" min="0.01" max="10"   step="0.1"/>
+     
+     <field type="double" name="Depth Close"  defaultValue="1.3"  min="0.01" max="10" step="0.1"/>
+     <field type="double" name="Depth Far"    defaultValue="1.4"  min="0.01" max="10" step="0.1"/>
+     <field type="double" name="Depth Middle" defaultValue="1.32" min="0.01" max="10" step="0.1"/>
+     
+     <field type="int"    name="Disparity Shift 1"  defaultValue="4"  min="0" max="200" step="1"/>
+     <field type="int"    name="Disparity Shift 2"  defaultValue="4"  min="0" max="200" step="1"/>
+     
+   </class>
+   
+   <class name="Face Detection Parameters">
+     <field type="double" name="Gaper Downsample" defaultValue="1.0" min="0.5" max="10"   step="0.1"/>     
+   
+     <field type="Face Detection Algorithm Type" name="Algorithm"/>
+     
+     <field type="Face Detection Cascade Type"   name="Cascade"/>
+
+     <field type="double" name="Downsample"    defaultValue="1"   min="0.01" max="10"   step="0.1"/>
+         
+     <field type="int"    name="Min Size"      defaultValue="30"  min="0"    max="1000" step="1"/>
+     <field type="int"    name="Max Size"      defaultValue="80"  min="0"    max="1000" step="1"/>
+     <field type="double" name="Size Step"     defaultValue="1.1" min="1.01" max="10"   step="0.1"/>
+     <field type="int"    name="Min Neighbors" defaultValue="3"   min="1"    max="100"  step="1"/>
+
+     <field type="bool"   name="Draw Face Always"   defaultValue="true"/>
+     <field type="bool"   name="Draw Decoration"    defaultValue="false"/>
+     
+     <field type="Person Geometry Parameters" name="person"/>
+
+     <field type="bool"   name="Autoset Zones"    defaultValue="false"/>
+     
+     <embed type="Showcase State Machine Parameters" name="stateMachine"/>
+     <field type="Head Search Parameters"            name="Head Search Parameters"/>
+
+     <field type="Axis Aligned Box Parameters" name="Gaper Zone"       />
+     <field type="Axis Aligned Box Parameters" name="Head search Zone" />
+     <field type="Axis Aligned Box Parameters" name="Control Zone"     />
+
+     <field type="bool"   name="Collect statistics" defaultValue="true"/>
+     <field type="int"    name="Stat timer"         defaultValue="0"  min="0"    max="1000" step="1" comment="in ms"/>
+     <field type="int"    name="Gaper timer"        defaultValue="0"  min="0"    max="1000" step="1" comment="in ms"/>
+     <field type="int"    name="Control timer"      defaultValue="0"  min="0"    max="1000" step="1" comment="in ms"/>
+
+       
+   </class>
+    
+</poco>

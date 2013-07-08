@@ -1,0 +1,93 @@
+<poco version="5.0">
+
+  <include name="../../../../core/src/xml/parameters.xml"/>
+
+  
+  <class name="LibElas Parameters" description="LibElas Parameters. Supported only in internal builds, due to LIBELAS GPL license">
+
+    <field type="int"    name="Disp Min"           min="0"  max="2550"   defaultValue="0"    comment="min disparity"/>
+    <field type="int"    name="Disp Max"           min="0"  max="2550"   defaultValue="255"  comment="max disparity"/>
+
+    <field type="double" name="Support Threshold"  min="0"  max="1"      defaultValue="0.85" comment="maximum uniqueness ratio best vs second best support match" step="0.05" />
+    <field type="int"    name="Support Texture"    min="0"  max="255"    defaultValue="10"   comment="min texture for support points"/>
+
+    <field type="int"    name="Candidate Stepsize" min="0"  max="255"    defaultValue="5"   comment="step size of regular grid on which support points are matched"/>
+
+    <field type="int"    name="Incon Window Size" min="0"  max="255"     defaultValue="5"   comment="window size of inconsistent support point check"/>
+    <field type="int"    name="Incon Threshold"   min="0"  max="255"     defaultValue="5"   comment="disparity similarity threshold for support point to be considered consistent"/>
+    <field type="int"    name="Incon Min Support" min="0"  max="255"     defaultValue="5"   comment="minimum number of consistent support points"/>
+    
+    <field type="bool"  name="Add Corners"                               defaultValue="false" comment="add support points at image corners with nearest neighbor disparities" /> 
+    <field type="int"   name="Grid Size"           min="0"  max="255"    defaultValue="20"   comment="size of neighborhood for additional support point extrapolation"/>
+
+    <field type="double" name="beta"     min="0"   max="1"  step="0.05"  defaultValue="0.02" comment="image likelihood parameter"/>
+    <field type="double" name="gamma"    min="0"   max="10" step="1"     defaultValue="3"    comment="prior constant"/>
+    <field type="double" name="sigma"    min="0"   max="10" step="1"     defaultValue="1"    comment="prior sigma"/>
+    <field type="double" name="S Radius" min="0"   max="10" step="1"     defaultValue="2"    comment="prior sigma radius"/>
+
+    <field type="int"    name="Match Texture"  min="0"  max="255"        defaultValue="1"   comment="min texture for dense matching"/>
+    <field type="int"    name="L R Threshold"   min="0"  max="255"        defaultValue="2"   comment="disparity threshold for left right consistency check"/>
+
+    <field type="double" name="Speckle Sim Threshold" min="0"   max="10" step="1"     defaultValue="1" comment="similarity threshold for speckle segmentation"/>
+
+    <field type="int"    name="Speckle Size"   min="0"  max="255"        defaultValue="200" comment="maximal size of a speckle. Small speckles get removed"/>
+    <field type="int"    name="Ipol Gap Width" min="0"  max="255"        defaultValue="3"   comment="interpolate small gaps"/>
+
+    <field type="bool"  name="Filter Median"                             defaultValue="false" comment="optional median filter approximated" /> 
+    <field type="bool"  name="Filter Adaptive Mean"                      defaultValue="true"  comment="optional adaptive mean filter approximated" /> 
+
+
+<--
+    int32_t disp_min;               // min disparity
+    int32_t disp_max;               // max disparity
+    float   support_threshold;      // max. uniqueness ratio (best vs. second best support match)
+    int32_t support_texture;        // min texture for support points
+    int32_t candidate_stepsize;     // step size of regular grid on which support points are matched
+    int32_t incon_window_size;      // window size of inconsistent support point check
+    int32_t incon_threshold;        // disparity similarity threshold for support point to be considered consistent
+    int32_t incon_min_support;      // minimum number of consistent support points
+    bool    add_corners;            // add support points at image corners with nearest neighbor disparities
+    int32_t grid_size;              // size of neighborhood for additional support point extrapolation
+    float   beta;                   // image likelihood parameter
+    float   gamma;                  // prior constant
+    float   sigma;                  // prior sigma
+    float   sradius;                // prior sigma radius
+    int32_t match_texture;          // min texture for dense matching
+    int32_t lr_threshold;           // disparity threshold for left/right consistency check
+    float   speckle_sim_threshold;  // similarity threshold for speckle segmentation
+    int32_t speckle_size;           // maximal size of a speckle (small speckles get removed)
+    int32_t ipol_gap_width;         // interpolate small gaps (left - right, top - bottom)
+    bool    filter_median;          // optional median filter (approximated)
+    bool    filter_adaptive_mean;   // optional adaptive mean filter (approximated)
+    bool    postprocess_only_left;  // saves time by not postprocessing the right image
+    bool    subsampling;            // saves time by only computing disparities for each 2nd pixel
+-->
+
+<--
+    disp_min              = 0;
+    disp_max              = 255;
+    support_threshold     = 0.85;
+    support_texture       = 10;
+    candidate_stepsize    = 5;
+    incon_window_size     = 5;
+    incon_threshold       = 5;
+    incon_min_support     = 5;
+    add_corners           = 0;
+    grid_size             = 20;
+    beta                  = 0.02;
+    gamma                 = 3;
+    sigma                 = 1;
+    sradius               = 2;
+    match_texture         = 1;
+    lr_threshold          = 2;
+    speckle_sim_threshold = 1;
+    speckle_size          = 200;
+    ipol_gap_width        = 3;
+    filter_median         = 0;
+    filter_adaptive_mean  = 1;
+    postprocess_only_left = 1;
+    subsampling           = 0;
+-->
+
+  </class>
+</poco>

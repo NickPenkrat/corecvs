@@ -1,0 +1,25 @@
+<poco version="5.0">
+
+   <class name="OpenNI Transport Parameters">
+   
+     <field type="bool" name="Transport On"    defaultValue="false"/>
+     <field type="bool" name="Transport Image" defaultValue="true"/>
+
+     <!-- <field type="int" name="Transport H" defaultValue="640" min="1" max="640" />
+     <field type="int" name="Transport W" defaultValue="480" min="1" max="480" /> -->
+     <field type="int" name="Transport FPS" defaultValue="30" min="5" max="30" />
+
+     <field type="int"  name="UnknownValue" defaultValue="0" min="0" max="3000000" />
+     <field type="int"  name="MaxDepth" defaultValue="256" min="0" max="3000000" />
+     <field type="int"  name="MinDepth" defaultValue="0" min="0" max="3000000" />
+     
+     <field type="bool" name="Cutoff"    defaultValue="false"/>
+
+     <!-- <field type="double"  name="Fov H" defaultValue="1.022600" min="0" max="100" step="0.01" />
+     <field type="double"  name="Fov V" defaultValue="0.796616" min="0" max="100" step="0.01" /> -->
+
+    
+    
+   </class>
+    
+</poco>

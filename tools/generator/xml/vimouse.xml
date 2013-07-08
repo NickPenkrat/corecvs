@@ -1,0 +1,68 @@
+<poco version="5.0">
+
+  <include name="proc6D.xml"/>
+  <include name="osd.xml"/>
+  <include name="faceDetection.xml"/>
+
+
+  <!-- For parameters inside vimouse -->
+  <include name="clustering.xml"/>
+  <include name="clustering1.xml"/>
+  <include name="mouseHandler.xml"/>
+
+  <enum name="MousePointerType">
+    <item name="Single display"   id="0" comment="Single display"/>
+    <item name="Dual display"     id="1" comment="Dual display"/>
+    <item name="Adaptive display" id="2" comment="Adaptive display"/>
+  </enum>
+
+  <class name="ViMouse Parameters" description="ViMouse parameters">
+
+    <!-- General settings -->
+    <field type="bool"   name="info"           defaultValue="true"/>
+    <field type="bool"   name="calculationOn"  defaultValue="true"/>
+    <field type="bool"   name="mouseOn"        defaultValue="false"/>
+    <field type="bool"   name="touchOn"        defaultValue="false"/>
+    <field type="bool"   name="flashOn"        defaultValue="false"/>
+
+    <!-- Clustering -->
+    <embed type="Clustering Parameters" name="cluster"/>    
+    <field type="New Clustering Parameters" name="cluster1"/>    
+    
+    <!-- Margins -->
+    <field type="int"    name="leftMargin"            defaultValue="57"      min="0"      max="1024"    step="1"/>
+    <field type="int"    name="rightMargin"           defaultValue="111"     min="0"      max="1024"    step="1"/>
+    <field type="int"    name="topMargin"             defaultValue="30"      min="0"      max="1024"    step="1"/>
+    <field type="int"    name="bottomMargin"          defaultValue="30"      min="0"      max="1024"    step="1"/>
+
+    <embed type="Mouse Handler Parameters" name="Mouse Handler"/>
+
+
+    <!-- Presentation -->
+    <field type="double" name="planePitch"            defaultValue="0.0"     min="-99.0"  max="99.99"   step="0.001"/>
+    <field type="double" name="planeYaw"              defaultValue="0.0"     min="-99.0"  max="99.99"   step="0.001"/>
+    <field type="MousePointerType" name="mousePointer"/>
+    <!-- Delay click -->
+    <field type="int"    name="showClockStart"        defaultValue="20"      min="0"      max="99"      step="1"/>
+    <!-- Wise filtering -->
+    <field type="int"    name="largeCluster"          defaultValue="20"      min="0"      max="110"     step="1"/>
+    <field type="int"    name="moveCloserWarning"     defaultValue="20"      min="0"      max="9999"    step="1"/>
+    <field type="int"    name="osdFade"               defaultValue="5"       min="1"      max="99"      step="1"/>
+    <!-- Reconstruct 3D -->
+    <field type="bool"   name="enforceRectify"        defaultValue="false"/>
+  </class>
+
+
+  <parametersMapper name="ViMouse">
+    <field type="Proc6D Parameters"           name="Proc6D Parameters"/>
+    <field type="ViMouse Parameters"          name="ViMouse Parameters"/>
+    <field type="osd Parameters"              name="osd Parameters"/>
+    <field type="Presentation Parameters"     name="Presentation Parameters"/>
+    <field type="Face Detection Parameters"   name="Face Detection Parameters"/>
+    <field type="OpenNI Transport Parameters" name="OpenNI Transport Parameters"/>
+
+  </parametersMapper>
+
+</poco>
+
+

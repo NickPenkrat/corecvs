@@ -1,0 +1,9 @@
+ <poco version="5.0">
+  <class name="Zone Parameters">
+    <comment>3D Depth Zone settings parameters</comment>
+    <field type="int"    name="preDisp"               defaultValue="50"      min="-1024"  max="1024"    step="1"/>
+    <field type="int"    name="clickDisp"             defaultValue="190"     min="-1024"  max="1024"    step="1"/>
+    <field type="int"    name="minDisp"               defaultValue="60"      min="-1024"  max="1024"    step="1"/>
+    <field type="int"    name="maxDisp"               defaultValue="72"      min="-1024"  max="1024"    step="1"/>
+ </class> 
+</poco>
