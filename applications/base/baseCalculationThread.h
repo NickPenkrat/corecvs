@@ -29,7 +29,7 @@
 
 #ifdef WITH_HARDWARE
 #include <vector>
-#include "../../hardware/blocks/corrector/fpgaCamCorrector.h"
+#include "../../../restricted/wrappers/hardware/blocks/corrector/fpgaCamCorrector.h"
 #endif
 
 

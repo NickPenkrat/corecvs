@@ -63,7 +63,7 @@ INCLUDEPATH += $$CORE_INCLUDEPATH
 
 COREBINDIR = $$COREDIR/../../../bin
 
-contains(TARGET, core-3vi): !contains(TARGET, core-3vi-restricted) {
+contains(TARGET, cvs_core): !contains(TARGET, cvs_core_restricted) {
     win32-msvc* {
         DEPENDPATH += $$COREDIR/xml             # helps to able including sources by generated.pri from their dirs
     }
@@ -75,7 +75,7 @@ contains(TARGET, core-3vi): !contains(TARGET, core-3vi-restricted) {
 } else {
     !win32-msvc*: DEPENDPATH += $$CORE_INCLUDEPATH  # msvc sets this automatically by deps from includes for other projects! :(
 
-    CORE_TARGET_NAME = core-3vi
+    CORE_TARGET_NAME = cvs_core
     CORE_TARGET_NAME = $$join(CORE_TARGET_NAME,,,$$BUILD_CFG_SFX)
 
     LIBS = \

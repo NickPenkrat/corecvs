@@ -19,7 +19,7 @@ echo "UI    name: ${uiName}"
 cat >${fileName} <<EOF
 #pragma once
 #include <QtGui/QWidget>
-#include "../../core/res-src/xml/generated/${paramsFileName}"
+#include "generated/${paramsFileName}"
 #include "${uiName}"
 #include "parametersControlWidgetBase.h"
 

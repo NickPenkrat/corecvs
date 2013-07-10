@@ -1,6 +1,6 @@
-include(../../../config.pri)
+include(../../../../config.pri)
 
-TARGET   = baseApplicationStub
+TARGET   = cvs_application_stub
 TEMPLATE = app
 
 HOSTBASE_DIR=.

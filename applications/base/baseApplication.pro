@@ -1,7 +1,7 @@
 include(../../../../config.pri)
 
 CONFIG  += staticlib
-TARGET   = qt4-hostBase
+TARGET   = cvs_application_base
 TEMPLATE = lib
 
 HOSTBASE_DIR=.

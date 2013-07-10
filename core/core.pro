@@ -1,7 +1,7 @@
 include(../../../config.pri)
 
 CONFIG  += staticlib
-TARGET   = core-3vi
+TARGET   = cvs_core
 TEMPLATE = lib
 
 COREDIR = .

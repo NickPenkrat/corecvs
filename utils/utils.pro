@@ -1,7 +1,7 @@
 include(../../../config.pri)
 
 CONFIG  += staticlib
-TARGET   = qt4-utils
+TARGET   = cvs_utils
 TEMPLATE = lib
 
 # Utils lib uses core, core-res. These includes must be before adding utils lib for mingw linker!
@@ -10,7 +10,7 @@ TEMPLATE = lib
 #
 #COREDIR = ../../core
 #include(../../core/core.pri)                       # it uses COREDIR, TARGET and detects     COREBINDIR!
-#include(../../core/core-restricted.pri)            # it uses COREDIR, TARGET and detects RES_COREBINDIR!
+#include(../../core/core_restricted.pri)            # it uses COREDIR, TARGET and detects RES_COREBINDIR!
 
 UTILSDIR = .
 include($$UTILSDIR/utils.pri)                      # it uses UTILSDIR, TARGET and detects UTILS_BINDIR, OBJECTS_DIR,...!

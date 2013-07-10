@@ -1,4 +1,4 @@
-#TARGET = core-3vi
+#TARGET = cvs_core
 #
 #TEMPLATE = lib
 #

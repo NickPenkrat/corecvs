@@ -17,7 +17,7 @@
 
 #include "utils.h"
 #include "recorderDialog.h"
-#include "../host-base/mainWindow.h"
+#include "mainWindow.h"
 
 
 using namespace std;
