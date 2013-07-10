@@ -1,4 +1,4 @@
 HEADERS += \
-    src/tbbwrapper/tbbWrapper.h \
+    tbbwrapper/tbbWrapper.h \
 
 SOURCES += \

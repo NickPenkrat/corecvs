@@ -1,6 +1,7 @@
 #pragma once
 #include <QtGui/QWidget>
-#include "../../core/src/xml/generated/headSearchParameters.h"
+
+#include "generated/headSearchParameters.h"
 #include "ui_headSearchParametersControlWidget.h"
 #include "parametersControlWidgetBase.h"
 

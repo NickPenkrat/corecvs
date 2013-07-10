@@ -1,11 +1,11 @@
-include(../../../config.pri)
+include(../../../../config.pri)
 
 CONFIG  += staticlib
 TARGET   = qt4-hostBase
 TEMPLATE = lib
 
 HOSTBASE_DIR=.
-include ($$HOSTBASE_DIR/hostBase.pri)                   # it uses HOSTBASE_DIR, detects HOSTBASE_BINDIR, OBJECTS_DIR, ...
+include ($$HOSTBASE_DIR/baseApplication.pri)                   # it uses HOSTBASE_DIR, detects HOSTBASE_BINDIR, OBJECTS_DIR, ...
 
 HEADERS += \
     generatedParameters/baseParameters.h \

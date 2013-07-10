@@ -1,13 +1,13 @@
 HEADERS += \
-    src/boosting/adaBoost.h \
-    src/boosting/cascadeClassifier.h \
-    src/boosting/vjPattern.h \
-    src/boosting/detectedObject.h \
+    boosting/adaBoost.h \
+    boosting/cascadeClassifier.h \
+    boosting/vjPattern.h \
+    boosting/detectedObject.h \
     
 
 SOURCES += \
-    src/boosting/adaBoost.cpp \
-    src/boosting/cascadeClassifier.cpp \
-    src/boosting/vjPattern.cpp \
-    src/boosting/detectedObject.cpp \
+    boosting/adaBoost.cpp \
+    boosting/cascadeClassifier.cpp \
+    boosting/vjPattern.cpp \
+    boosting/detectedObject.cpp \
 

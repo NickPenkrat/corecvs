@@ -1,4 +1,4 @@
-include(../../config.pri)
+include(../../../config.pri)
 
 CONFIG  += staticlib
 TARGET   = core-3vi
@@ -7,7 +7,7 @@ TEMPLATE = lib
 COREDIR = .
 include(core.pri)               # it uses COREDIR, TARGET and detects COREBINDIR!
 
-CORE_INTDIR = ../../.obj/core
+CORE_INTDIR = ../../../.obj/core
 win32 {
     OBJECTS_DIR = $$CORE_INTDIR/$$BUILD_CFG_NAME
 } else {
@@ -32,25 +32,25 @@ win32 {
 #
 # include sources and headers for each subdir
 #
-include(src/alignment/alignment.pri)
-include(src/assignment/assignment.pri)
-include(src/automotive/automotive.pri)
-include(src/boosting/boosting.pri)
-include(src/buffers/buffers.pri)
-include(src/cammodel/cammodel.pri)
-include(src/fileformats/fileformats.pri)
-include(src/filters/filters.pri)
-include(src/function/function.pri)
-include(src/geometry/geometry.pri)
-include(src/kalman/kalman.pri)
-include(src/kltflow/kltflow.pri)
-include(src/math/math.pri)
-include(src/meanshift/meanshift.pri)
-include(src/rectification/rectification.pri)
-include(src/reflection/reflection.pri)
-include(src/segmentation/segmentation.pri)
-include(src/stats/stats.pri)
-include(src/tbbwrapper/tbbwrapper.pri)
-include(src/utils/utils.pri)
-include(src/xml/generated/generated.pri)
-include(src/clustering3d/clustering3d.pri)
+include(alignment/alignment.pri)
+include(assignment/assignment.pri)
+include(automotive/automotive.pri)
+include(boosting/boosting.pri)
+include(buffers/buffers.pri)
+include(cammodel/cammodel.pri)
+include(fileformats/fileformats.pri)
+include(filters/filters.pri)
+include(function/function.pri)
+include(geometry/geometry.pri)
+include(kalman/kalman.pri)
+include(kltflow/kltflow.pri)
+include(math/math.pri)
+include(meanshift/meanshift.pri)
+include(rectification/rectification.pri)
+include(reflection/reflection.pri)
+include(segmentation/segmentation.pri)
+include(stats/stats.pri)
+include(tbbwrapper/tbbwrapper.pri)
+include(utils/utils.pri)
+include(xml/generated/generated.pri)
+include(clustering3d/clustering3d.pri)

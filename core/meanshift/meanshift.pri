@@ -1,10 +1,10 @@
 HEADERS += \
-    src/meanshift/meanShiftCalculator.h \
-    src/meanshift/meanShiftWindow.h \
-    src/meanshift/abstractMeanShiftKernel.h \
+    meanshift/meanShiftCalculator.h \
+    meanshift/meanShiftWindow.h \
+    meanshift/abstractMeanShiftKernel.h \
 
 
 SOURCES += \
-    src/meanshift/meanShiftCalculator.cpp \
-    src/meanshift/meanShiftWindow.cpp \
+    meanshift/meanShiftCalculator.cpp \
+    meanshift/meanShiftWindow.cpp \
 

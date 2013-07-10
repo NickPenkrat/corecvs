@@ -14,7 +14,7 @@
 #include "anglePointsFunction.h"
 #include "distortionWidget.h"
 #include "ui_distortionWidget.h"
-#include "../../../core/src/alignment/distPointsFunction.h"
+#include "distPointsFunction.h"
 
 using core3vi::DistPointsFunction;
 

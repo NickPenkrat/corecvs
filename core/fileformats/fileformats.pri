@@ -1,15 +1,15 @@
 HEADERS += \
-    src/fileformats/bufferLoader.h \
-    src/fileformats/bmpLoader.h \
-    src/fileformats/ppmLoader.h \
-    src/fileformats/rawLoader.h \
-    src/fileformats/plyLoader.h \
+    fileformats/bufferLoader.h \
+    fileformats/bmpLoader.h \
+    fileformats/ppmLoader.h \
+    fileformats/rawLoader.h \
+    fileformats/plyLoader.h \
 
 SOURCES += \
-    src/fileformats/bufferLoader.cpp \
-    src/fileformats/bmpLoader.cpp \
-    src/fileformats/ppmLoader.cpp \
-    src/fileformats/rawLoader.cpp \
-    src/fileformats/plyLoader.cpp \
+    fileformats/bufferLoader.cpp \
+    fileformats/bmpLoader.cpp \
+    fileformats/ppmLoader.cpp \
+    fileformats/rawLoader.cpp \
+    fileformats/plyLoader.cpp \
     
 

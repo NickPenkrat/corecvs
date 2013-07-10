@@ -1,7 +1,7 @@
 QT += core xml
 QT -= gui
 
-TARGET  = generatorConcept
+TARGET  = generator
 CONFIG += console
 CONFIG -= app_bundle
 CONFIG += debug

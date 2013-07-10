@@ -1,5 +1,5 @@
 HEADERS += \
-        src/kltflow/kltGenerator.h \
+        kltflow/kltGenerator.h \
 
 SOURCES += \
-        src/kltflow/kltGenerator.cpp \
+        kltflow/kltGenerator.cpp \

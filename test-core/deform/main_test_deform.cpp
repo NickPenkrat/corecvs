@@ -16,8 +16,8 @@
 #include "projectiveTransform.h"
 #include "g12Buffer.h"
 #include "bufferFactory.h"
-#include "../../core/src/fileformats/bmpLoader.h"
-#include "../../core/src/buffers/rgb24/rgb24Buffer.h"
+#include "bmpLoader.h"
+#include "rgb24Buffer.h"
 
 
 

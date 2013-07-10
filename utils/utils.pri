@@ -8,12 +8,8 @@
 # Utils lib uses core, core-res. These includes must be before adding utils lib for mingw linker!
 # But they create unneccessary dependence core->utils, although they are not linked together, but should!
 #
-COREDIR = $$UTILSDIR/../../core
+COREDIR = $$UTILSDIR/../core
 include($$COREDIR/core.pri)                         # it uses COREDIR, TARGET and detects     COREBINDIR!
-
-# Restricted is switched off
-#include($$COREDIR/core-restricted.pri)              # it uses COREDIR, TARGET and detects RES_COREBINDIR!
-
 
 UTILS_INCLUDEPATH = \
     $$UTILSDIR \
@@ -150,11 +146,6 @@ with_opencl {
 with_libelas {
     LIBELAS_WRAPPER_DIR = $$UTILSDIR/../../libelas
     include($$LIBELAS_WRAPPER_DIR/libelasLibs.pri)
-}
-
-with_httpserver {
-    QHTTPSERVER_WRAPPER_DIR = $$UTILSDIR/../../http	
-    include($$QHTTPSERVER_WRAPPER_DIR/httpServerLibs.pri)
 }
 
 with_directshow {

@@ -11,7 +11,7 @@
 #include "qSettingsSetter.h"
 
 // TODO: Clean design here
-#include "../../host-soft/faceDetection/faceMesh.h"
+#include "../../../restricted/applications/host-soft/faceDetection/faceMesh.h"
 
 
 using namespace std;

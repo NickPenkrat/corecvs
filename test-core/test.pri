@@ -3,7 +3,7 @@
 # input1 parameter: $$OBJ_TESTS_DIR        - name of common intermediate dir for all UnitTests of the current project
 # input2 parameter: $$USE_CORE_PRI_FILE    - required core|core-res project file to include
 #
-include(../../config.pri)
+include(../../../config.pri)
 
 CONFIG += console
 
@@ -12,7 +12,7 @@ win32-msvc* {
     #CONFIG -= embed_manifest_exe
 }
 
-DESTDIR = ../../../bin
+DESTDIR = ../../../../bin
 
 macx {
     INCLUDEDIR = ../core
@@ -26,7 +26,8 @@ win32-msvc* {
 } else {
     COREDIR = $$INCLUDEDIR
 }
-include($$INCLUDEDIR/$$USE_CORE_PRI_FILE)           # it uses COREDIR, TARGET and detects COREBINDIR|RES_COREBINDIR!
+#include($$INCLUDEDIR/$$USE_CORE_PRI_FILE)           # it uses COREDIR, TARGET and detects COREBINDIR|RES_COREBINDIR!
+include($$USE_CORE_PRI_FILE)
 
 !contains(OBJ_TESTS_DIR, tests-res) {               # first include file is "testsCommon.pri", second - "testsRestricted.pri"
     TARGET_ORIG = $$TARGET                          # store original target name for proper detection of the obj.dir

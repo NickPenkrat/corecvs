@@ -1,4 +1,4 @@
-include(../../config.pri)
+include(../../../config.pri)
 
 TEMPLATE = subdirs
 
@@ -17,8 +17,6 @@ SUBDIRS += \
     midmap_pyramid \
     rectificator \
     rectificator1 \
-#   sig_epsilon \
-#   signature_compare \
     train_vj \
     matrix \
     buffer \
@@ -27,13 +25,11 @@ SUBDIRS += \
     ssewrappers \
     fastkernel \
     assignment \
-#   cppunit_test \
     cornerdetector \
     cholesky \
     kalman \
     automotive \
     sphericdist \
-#   snooker \
     color \
     geometry \
     moments \
@@ -54,9 +50,7 @@ SUBDIRS += \
     polynomDistortion \
     fastkernel_profile \
     logger \
-#    filter_blocks \
     cameramodel \
-#    stateMachineTest \
     triangulator \
 	cloud \
 	distortion \

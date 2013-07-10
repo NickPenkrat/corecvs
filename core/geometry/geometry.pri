@@ -1,16 +1,16 @@
 HEADERS += \
-    src/geometry/ellipticalApproximation.h \
-    src/geometry/rectangle.h \
-    src/geometry/line.h \
-    src/geometry/triangulation.h \
-    src/geometry/polygons.h \
-    src/geometry/mesh3d.h \
+    geometry/ellipticalApproximation.h \
+    geometry/rectangle.h \
+    geometry/line.h \
+    geometry/triangulation.h \
+    geometry/polygons.h \
+    geometry/mesh3d.h \
 
 
 SOURCES += \ 
-    src/geometry/ellipticalApproximation.cpp \
-    src/geometry/rectangle.cpp \
-    src/geometry/triangulation.cpp \
-    src/geometry/polygons.cpp \
-    src/geometry/mesh3d.cpp \
+    geometry/ellipticalApproximation.cpp \
+    geometry/rectangle.cpp \
+    geometry/triangulation.cpp \
+    geometry/polygons.cpp \
+    geometry/mesh3d.cpp \
     

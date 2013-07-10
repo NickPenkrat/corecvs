@@ -1,6 +1,6 @@
 HEADERS += \
-    src/assignment/assignmentOptimal.h 
+    assignment/assignmentOptimal.h 
    
 SOURCES += \
-    src/assignment/assignmentOptimal.cpp 
+    assignment/assignmentOptimal.cpp 
 

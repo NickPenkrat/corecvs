@@ -2,69 +2,70 @@
 #
 # input1 parameter: $$COREDIR    - path to core project files
 # input2 parameter: $$TARGET     - the current project output name
+
 # output parameter: $$COREBINDIR - path to the output|used core library
 #
 
 CORE_INCLUDEPATH = \
-    $$COREDIR/src/alignment \
-#   $$COREDIR/src/alignment/camerasCalibration \    # used via path
-    $$COREDIR/src/assignment \
-    $$COREDIR/src/automotive \
-#   $$COREDIR/src/automotive/simulation \           # not used, obsolete
-    $$COREDIR/src/boosting \
-    $$COREDIR/src/buffers \
-#   $$COREDIR/src/buffers/converters \              # not used
-    $$COREDIR/src/buffers/fixeddisp \
-    $$COREDIR/src/buffers/flow \
-    $$COREDIR/src/buffers/histogram \
-    $$COREDIR/src/buffers/kernels \
-#   $$COREDIR/src/buffers/kernels/fastconverter \   # not used ?
-    $$COREDIR/src/buffers/kernels/fastkernel \
-    $$COREDIR/src/buffers/memory \
-    $$COREDIR/src/buffers/morphological \
-    $$COREDIR/src/buffers/rgb24 \
-#   $$COREDIR/src/buffers/voxels \                  # not used
-    $$COREDIR/src/cammodel \
-#   $$COREDIR/src/clegacy \                         # not used ?
-#   $$COREDIR/src/clegacy/math \                    # not used
-    $$COREDIR/src/fileformats \
-    $$COREDIR/src/filters \
-    $$COREDIR/src/filters/blocks \
-    $$COREDIR/src/function \
-    $$COREDIR/src/geometry \
-    $$COREDIR/src/kalman \
-    $$COREDIR/src/kltflow \
-    $$COREDIR/src/math \
-#   $$COREDIR/src/math/avx \                        # not used
-#   $$COREDIR/src/math/fixed \                      # not used
-    $$COREDIR/src/math/generic \
-    $$COREDIR/src/math/matrix \
-#   $$COREDIR/src/math/neon \
-    $$COREDIR/src/math/sse \
-    $$COREDIR/src/math/vector \
-    $$COREDIR/src/meanshift \
-    $$COREDIR/src/rectification \
-    $$COREDIR/src/reflection \
-    $$COREDIR/src/segmentation \
-#    $$COREDIR/src/serializer \                      # not used
-    $$COREDIR/src/stats \
-    $$COREDIR/src/tbbwrapper \
-    $$COREDIR/src/tinyxml \
-    $$COREDIR/src/utils \
-    $$COREDIR/src/utils/visitors \
-    $$COREDIR/src/clustering3d \
-    $$COREDIR/src/xml \
-    $$COREDIR/src/xml/generated \                   # to allow including of generated headers without directory name prefix
+    $$COREDIR/alignment \
+#   $$COREDIR/alignment/camerasCalibration \    # used via path
+    $$COREDIR/assignment \
+    $$COREDIR/automotive \
+#   $$COREDIR/automotive/simulation \           # not used, obsolete
+    $$COREDIR/boosting \
+    $$COREDIR/buffers \
+#   $$COREDIR/buffers/converters \              # not used
+    $$COREDIR/buffers/fixeddisp \
+    $$COREDIR/buffers/flow \
+    $$COREDIR/buffers/histogram \
+    $$COREDIR/buffers/kernels \
+#   $$COREDIR/buffers/kernels/fastconverter \   # not used ?
+    $$COREDIR/buffers/kernels/fastkernel \
+    $$COREDIR/buffers/memory \
+    $$COREDIR/buffers/morphological \
+    $$COREDIR/buffers/rgb24 \
+#   $$COREDIR/buffers/voxels \                  # not used
+    $$COREDIR/cammodel \
+#   $$COREDIR/clegacy \                         # not used ?
+#   $$COREDIR/clegacy/math \                    # not used
+    $$COREDIR/fileformats \
+    $$COREDIR/filters \
+    $$COREDIR/filters/blocks \
+    $$COREDIR/function \
+    $$COREDIR/geometry \
+    $$COREDIR/kalman \
+    $$COREDIR/kltflow \
+    $$COREDIR/math \
+#   $$COREDIR/math/avx \                        # not used
+#   $$COREDIR/math/fixed \                      # not used
+    $$COREDIR/math/generic \
+    $$COREDIR/math/matrix \
+#   $$COREDIR/math/neon \
+    $$COREDIR/math/sse \
+    $$COREDIR/math/vector \
+    $$COREDIR/meanshift \
+    $$COREDIR/rectification \
+    $$COREDIR/reflection \
+    $$COREDIR/segmentation \
+#   $$COREDIR/serializer \                      # not used
+    $$COREDIR/stats \
+    $$COREDIR/tbbwrapper \
+    $$COREDIR/tinyxml \
+    $$COREDIR/utils \
+    $$COREDIR/utils/visitors \
+    $$COREDIR/clustering3d \
+    $$COREDIR/xml \
+    $$COREDIR/xml/generated \                   # to allow including of generated headers without directory name prefix
 
 
 
 INCLUDEPATH += $$CORE_INCLUDEPATH
 
-COREBINDIR = $$COREDIR/../../bin
+COREBINDIR = $$COREDIR/../../../bin
 
 contains(TARGET, core-3vi): !contains(TARGET, core-3vi-restricted) {
     win32-msvc* {
-        DEPENDPATH += $$COREDIR/src/xml             # helps to able including sources by generated.pri from their dirs
+        DEPENDPATH += $$COREDIR/xml             # helps to able including sources by generated.pri from their dirs
     }
     else {
         DEPENDPATH += \

@@ -1,23 +1,23 @@
 HEADERS += \
-    src/alignment/radialCorrection.h \
-    src/alignment/distortionCorrectTransform.h \
-    src/alignment/camerasCalibration/camerasCalibrationFunc.h \
-    src/alignment/radialFunc.h \
-    src/alignment/straightFunc.h \
-    src/alignment/curvatureFunc.h \
-    src/alignment/angleFunction.h \
-    src/alignment/anglePointsFunction.h \
-    src/alignment/distPointsFunction.h \
+    alignment/radialCorrection.h \
+    alignment/distortionCorrectTransform.h \
+    alignment/camerasCalibration/camerasCalibrationFunc.h \
+    alignment/radialFunc.h \
+    alignment/straightFunc.h \
+    alignment/curvatureFunc.h \
+    alignment/angleFunction.h \
+    alignment/anglePointsFunction.h \
+    alignment/distPointsFunction.h \
 
 
 SOURCES += \
-    src/alignment/radialCorrection.cpp \
-    src/alignment/camerasCalibration/camerasCalibrationFunc.cpp \
-    src/alignment/radialFunc.cpp \
-    src/alignment/straightFunc.cpp \
-    src/alignment/curvatureFunc.cpp \
-    src/alignment/angleFunction.cpp \
-    src/alignment/anglePointsFunction.cpp \
-    src/alignment/distPointsFunction.cpp \
+    alignment/radialCorrection.cpp \
+    alignment/camerasCalibration/camerasCalibrationFunc.cpp \
+    alignment/radialFunc.cpp \
+    alignment/straightFunc.cpp \
+    alignment/curvatureFunc.cpp \
+    alignment/angleFunction.cpp \
+    alignment/anglePointsFunction.cpp \
+    alignment/distPointsFunction.cpp \
 
 

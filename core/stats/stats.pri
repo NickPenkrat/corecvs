@@ -1,8 +1,8 @@
 HEADERS += \
-    src/stats/calculationStats.h \
+    stats/calculationStats.h \
     
 
 
 SOURCES += \
-    src/stats/calculationStats.cpp \
+    stats/calculationStats.cpp \
 

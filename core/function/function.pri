@@ -1,4 +1,4 @@
 SOURCES += \
 
 HEADERS += \
-    src/function/function.h
+    function/function.h

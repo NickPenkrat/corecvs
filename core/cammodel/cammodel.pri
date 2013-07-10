@@ -1,13 +1,13 @@
 HEADERS += \
-    src/cammodel/energyBuffer.h \
-    src/cammodel/imagerControl.h \
-    src/cammodel/cameraParameters.h \
-    src/cammodel/sphericalCorrectionLUT.h \
+    cammodel/energyBuffer.h \
+    cammodel/imagerControl.h \
+    cammodel/cameraParameters.h \
+    cammodel/sphericalCorrectionLUT.h \
     
 
 SOURCES += \
-    src/cammodel/energyBuffer.cpp \
-    src/cammodel/imagerControl.cpp \
-    src/cammodel/cameraParameters.cpp \
-    src/cammodel/sphericalCorrectionLUT.cpp \
+    cammodel/energyBuffer.cpp \
+    cammodel/imagerControl.cpp \
+    cammodel/cameraParameters.cpp \
+    cammodel/sphericalCorrectionLUT.cpp \
 

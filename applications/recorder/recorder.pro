@@ -1,10 +1,10 @@
-include(../../../config.pri)
+include(../../../../config.pri)
 
 TARGET   = virecorder
 TEMPLATE = app
 
-HOSTBASE_DIR=../host-base
-include ($$HOSTBASE_DIR/hostBase.pri)                   # it uses HOSTBASE_DIR, detects HOSTBASE_BINDIR, OBJECTS_DIR, ...
+HOSTBASE_DIR=../base
+include ($$HOSTBASE_DIR/baseApplication.pri)                   # it uses HOSTBASE_DIR, detects HOSTBASE_BINDIR, OBJECTS_DIR, ...
 
 INCLUDEPATH += .
 

@@ -18,7 +18,7 @@
 #include "kltGenerator.h"
 
 // Fix this include moving makePreciseParameters to core
-#include "../../../res-src/xml/generated/makePreciseParameters.h"
+#include "../../../../restricted/core/xml/generated/makePreciseParameters.h"
 
 
 namespace core3vi {
