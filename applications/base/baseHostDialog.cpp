@@ -641,13 +641,7 @@ void BaseHostDialog::mouseChild(QMouseEvent *event)
 
 void BaseHostDialog::camerasParamsChanged()
 {
-    Quaternion quaternion = Quaternion::FromMatrix(mRectifierData.decomposition.rotation);
-    CameraAngles angles   = CameraAngles::FromQuaternion(quaternion);
-    Vector3dd   directon  = mRectifierData.decomposition.direction;
-
-    // TESTCOMMENT
-    //mRectifyGUI->setManualTab(angles, directon);
-
+    qDebug("BaseHostDialog::camerasParamsChanged(): called");
     QSharedPointer<CamerasConfigParameters> parametersShPtr = QSharedPointer<CamerasConfigParameters>(getAdditionalParams());
 
     emit camerasParametersChanged(parametersShPtr);

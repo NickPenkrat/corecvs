@@ -1,7 +1,8 @@
 <poco version="5.0">
 
   <!-- For parameters inside vimouse -->
-  <include name="../../../../core/src/xml/parameters.xml"/>
+  <!-- <include name="../../../../core/src/xml/parameters.xml"/>  -->
+  <include name="parameters.xml"/>  
   
   <enum name="ClusteringDirectionType">
     <item name="X"    id="0" comment="Sort by X axis"/>

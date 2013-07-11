@@ -32,7 +32,9 @@ generate_and_copy () {
     
     xmls=`ls ${XML_DIR}/*.xml`
     
-    mkdir ${GEN_DIR}
+    if [ ! -d  ${GEN_DIR} ]; then 
+        mkdir ${GEN_DIR}
+    fi;    
     
     for xml in $xmls; do 
         echo ========== Generating for $xml ============= 
