@@ -31,10 +31,10 @@ class AbstractContiniousBuffer : public AbstractBuffer<ElementType, IndexType>
 public:
     typedef AbstractBuffer<ElementType, IndexType> BaseClass;
 
-    AbstractContiniousBuffer(IndexType h, IndexType w, bool shouldInit = true, IndexType stride = AbstractBuffer<ElementType, IndexType>::STRIDE_AUTO)
+    AbstractContiniousBuffer(IndexType h, IndexType w, bool shouldInit = true, IndexType stride = BaseClass::STRIDE_AUTO)
         : BaseClass(h, w, shouldInit, stride)
     {}
-    AbstractContiniousBuffer(Vector2d<IndexType> size, bool shouldInit = true, IndexType stride = AbstractBuffer<ElementType, IndexType>::STRIDE_AUTO)
+    AbstractContiniousBuffer(Vector2d<IndexType> size, bool shouldInit = true, IndexType stride = BaseClass::STRIDE_AUTO)
         : BaseClass(size, shouldInit, stride)
     {}
 
@@ -55,9 +55,9 @@ public:
     /**
      *  Constructors that fill the resulted array with data element
      **/
-    AbstractContiniousBuffer(IndexType h, IndexType w, const ElementType &data, IndexType stride = AbstractBuffer<ElementType, IndexType>::STRIDE_AUTO) :
+    AbstractContiniousBuffer(IndexType h, IndexType w, const ElementType &data, IndexType stride = BaseClass::STRIDE_AUTO) :
         BaseClass(h, w, data, stride) {}
-    AbstractContiniousBuffer(Vector2d<IndexType> size, const ElementType &data, IndexType stride = AbstractBuffer<ElementType, IndexType>::STRIDE_AUTO) :
+    AbstractContiniousBuffer(Vector2d<IndexType> size, const ElementType &data, IndexType stride = BaseClass::STRIDE_AUTO) :
         BaseClass(size, data, stride) {}
 
     AbstractContiniousBuffer() {}

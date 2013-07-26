@@ -10,8 +10,8 @@
 #include "rgb24Buffer.h"
 #include "qSettingsSetter.h"
 
-// TODO: Clean design here
-#include "../../../restricted/applications/host-soft/faceDetection/faceMesh.h"
+// FIXIT: GOOPEN
+#include "../../../restricted/applications/vimouse/faceDetection/faceMesh.h"
 
 
 using namespace std;

@@ -15,7 +15,8 @@
 #include "generated/draw3dParameters.h"
 #include "draw3dParametersControlWidget.h"
 #include "draw3dCameraParametersControlWidget.h"
-#include "../../restricted/applications/host-soft/generatedParameters/zoneParameters.h"
+// FIXIT: GOOPEN
+#include "../../restricted/applications/vimouse/generatedParameters/zoneParameters.h"
 
 class Mesh3DScene : public Mesh3D, public Scene3D {
 
