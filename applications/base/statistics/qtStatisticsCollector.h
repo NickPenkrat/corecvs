@@ -33,7 +33,7 @@ class QtStatisticsCollector : public BaseTimeStatisticsCollector
 public:
     QtStatisticsCollector() : BaseTimeStatisticsCollector()
     {
-        // TESTOPENSOURCE
+        // FIXME: GOOPEN
 #if 0
         mOrderFilters.push_back(new StringFilter(ViFlowStatisticsDescriptor::TOTAL_TIME));
         mOrderFilters.push_back(new StringFilter(ViFlowStatisticsDescriptor::FRAME_HEIGHT));

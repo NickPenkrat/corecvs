@@ -919,3 +919,8 @@ QWidget *BaseHostDialog::dockWidget()
 {
     return mDockWidget;
 }
+
+QtStatisticsCollector *BaseHostDialog::statisticsCollector()
+{
+    return &mStatsDialog.statsAccum;
+}

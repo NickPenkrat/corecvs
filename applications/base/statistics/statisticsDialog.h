@@ -27,9 +27,10 @@ public:
     void redrawStats();
 
     QString printMs(uint64_t ms);
+
+    QtStatisticsCollector statsAccum;
 private:
     Ui_StatisticsDialogClass ui;
-    QtStatisticsCollector statsAccum;
     CaptureStatistics captureAccum;
     CaptureStatistics captureCurrent;
 

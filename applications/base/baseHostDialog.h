@@ -225,6 +225,8 @@ protected:
 
     virtual QWidget *dockWidget();
 
+    QtStatisticsCollector *statisticsCollector();
+
     enum WindowType {
         ownerControlledWindow,
         imageWindow,
