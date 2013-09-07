@@ -31,7 +31,7 @@ DESTDIR = ../../../../bin
 #include($$INCLUDEDIR/$$USE_CORE_PRI_FILE)           # it uses COREDIR, TARGET and detects COREBINDIR|RES_COREBINDIR!
 include($$USE_CORE_PRI_FILE)
 
-message(Using core $$USE_CORE_PRI_FILE  with $$COREDIR and $$CORERESDIR)
+#message(Using core $$USE_CORE_PRI_FILE  with $$COREDIR and $$CORERESDIR)
 
 !contains(OBJ_TESTS_DIR, tests-res) {               # first include file is "testsCommon.pri", second - "testsRestricted.pri"
     TARGET_ORIG = $$TARGET                          # store original target name for proper detection of the obj.dir
