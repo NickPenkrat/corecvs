@@ -7,7 +7,7 @@
  */
 
 #include "serializable.h"
-namespace core3vi {
+namespace corecvs {
 
 template<>
 int PropertyListSerializer::visit<int>(int &value, std::string name, const int defaultValue)
@@ -21,5 +21,5 @@ int PropertyListSerializer::visit<double>(double &value, std::string name, const
     return true;
 }
 
-} //namespace core3vi
+} //namespace corecvs
 

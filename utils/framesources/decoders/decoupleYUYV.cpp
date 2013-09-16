@@ -7,7 +7,7 @@
 
 #include "decoupleYUYV.h"
 
-namespace core3vi
+namespace corecvs
 {
 
 void DecoupleYUYV::decouple(unsigned formatH, unsigned formatW, uint8_t *ptr, ImageCouplingType coupling, ImageCaptureInterface::FramePair &result)
@@ -193,4 +193,4 @@ void DecoupleYUYV::decouple(unsigned formatH, unsigned formatW, uint8_t *ptr, Im
 
 }
 
-} /* namespace core3vi */
+} /* namespace corecvs */

@@ -20,7 +20,7 @@
 #include <limits>
 
 #include "global.h"
-namespace core3vi {
+namespace corecvs {
 
 
 using namespace std;
@@ -161,6 +161,6 @@ public:
 
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* PROPERTY_LIST_H_ */
 

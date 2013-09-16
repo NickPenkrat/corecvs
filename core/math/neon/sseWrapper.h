@@ -20,7 +20,7 @@
 #include "float32x4.h"
 
 #include "ssemath.h"
-namespace core3vi {
+namespace corecvs {
 
 
 
@@ -28,6 +28,6 @@ namespace core3vi {
 
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* SEEWRAPPER_H_ */
 

@@ -33,7 +33,7 @@
 
   To transform Camera related to Image related systems you may use matrix K formed by function
 
-  \ref core3vi::CameraIntrinsics::getKMatrix()
+  \ref corecvs::CameraIntrinsics::getKMatrix()
 
   \section Coordinate transformation
   \subsection Notations
@@ -43,7 +43,7 @@
 
   Related classes:
   <ul>
-     <li>\ref core3vi::EssentialEstimator "EssentialEstimator class"</li>
+     <li>\ref corecvs::EssentialEstimator "EssentialEstimator class"</li>
   </ul>
 
 
@@ -51,7 +51,7 @@
 
   Related classes:
   <ul>
-     <li>\ref core3vi::StereoAligner "StereoAligner class"</li>
+     <li>\ref corecvs::StereoAligner "StereoAligner class"</li>
   </ul>
 
 
@@ -59,9 +59,9 @@
 
   Related classes:
   <ul>
-     <li>\ref core3vi::EssentialMatrix "EssentialMatrix" - matrix in shift and rotation form</li>
-     <li>\ref core3vi::EssentialDecomposition "EssentialDecomposition" - matrix in shift and rotation form</li>
-     <li>\ref core3vi::Triangulator "Triangulator" - reconstruction of buffers </li>
+     <li>\ref corecvs::EssentialMatrix "EssentialMatrix" - matrix in shift and rotation form</li>
+     <li>\ref corecvs::EssentialDecomposition "EssentialDecomposition" - matrix in shift and rotation form</li>
+     <li>\ref corecvs::Triangulator "Triangulator" - reconstruction of buffers </li>
   </ul>
 
 

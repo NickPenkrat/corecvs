@@ -17,7 +17,7 @@
 
 
 #include <stdint.h>
-namespace core3vi {
+namespace corecvs {
 
 typedef struct vector2Ds16_tag {
     int16_t x;
@@ -95,6 +95,6 @@ int triangleIteratorNext(TriangleIterator *iterator, vector2Ds32 *pos);
     } //     extern "C"
 
 #endif
-} //namespace core3vi
+} //namespace corecvs
 #endif /* _GEOMETRY_H_ */
 

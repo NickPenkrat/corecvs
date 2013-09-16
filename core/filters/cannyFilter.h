@@ -13,7 +13,7 @@
 #include "filtersCollection.h"
 #include "g12Buffer.h"
 
-namespace core3vi
+namespace corecvs
 {
 using namespace tinyxml2;
 
@@ -69,5 +69,5 @@ private:
     static int instanceCounter;
 };
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 #endif /* CANNY_FILTER_H_ */

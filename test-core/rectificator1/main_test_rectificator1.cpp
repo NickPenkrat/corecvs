@@ -28,7 +28,7 @@
 #include "stereoAligner.h"
 
 using namespace std;
-using namespace core3vi;
+using namespace corecvs;
 
 
 #define GRID_STEP (10)

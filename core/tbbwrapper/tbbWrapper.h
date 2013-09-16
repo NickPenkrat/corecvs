@@ -21,7 +21,7 @@
 using namespace tbb;
 #endif
 
-namespace core3vi {
+namespace corecvs {
 
 template <typename IndexType>
 class BlockedRange {
@@ -169,6 +169,6 @@ void parallelable_reduce(IndexType begin, IndexType end, Function &f)
 }
 #endif
 
-} //namespace core3vi
+} //namespace corecvs
 #endif // TBBWRAPPER_H
 

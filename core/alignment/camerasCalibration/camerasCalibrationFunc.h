@@ -1,7 +1,7 @@
 #pragma once
 #include "function.h"
 
-namespace core3vi {
+namespace corecvs {
 
 class CamerasCalibrationFunc : public FunctionArgs
 {

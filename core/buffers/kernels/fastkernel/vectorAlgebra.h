@@ -18,7 +18,7 @@
 #include "sseWrapper.h"
 #endif
 
-namespace core3vi {
+namespace corecvs {
 
 #ifdef WITH_SSE
 
@@ -142,6 +142,6 @@ template<int y, int x>
 
 #endif // WITH_SSE
 
-} //namespace core3vi
+} //namespace corecvs
 #endif  //VECTOR_ALGEBRA_H_
 

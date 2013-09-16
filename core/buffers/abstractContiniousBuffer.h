@@ -16,7 +16,7 @@
 #include "abstractBuffer.h"
 #include "matrix.h"
 
-namespace core3vi {
+namespace corecvs {
 
 /**
  * This template class describes a buffer for which it is possible to
@@ -395,4 +395,4 @@ public:
 
 };
 
-} //namespace core3vi
+} //namespace corecvs

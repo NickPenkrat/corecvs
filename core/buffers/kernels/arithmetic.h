@@ -10,7 +10,7 @@
  */
 
 #include "global.h"
-namespace core3vi {
+namespace corecvs {
 
 /**
  *  A FastKernels class that has common code for binary operations.
@@ -114,6 +114,6 @@ template <typename OtherAlgebra>
 
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif  //ARITHMETIC_H_
 

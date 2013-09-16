@@ -9,8 +9,8 @@
 #include "global.h"
 #include "basePathVisitor.h"
 
-namespace core3vi {
+namespace corecvs {
 
 string BasePathVisitor::SEPARATOR_DEFAULT=".";
 
-} // namespace core3vi
+} // namespace corecvs

@@ -8,7 +8,7 @@
  */
 
 #include "rectangle.h"
-namespace core3vi {
+namespace corecvs {
 
 
 /**
@@ -90,5 +90,5 @@ int Rectangle<int>::clipCohenSutherland ( Vector2d32 &lineStart, Vector2d32 &lin
     return CLIP_HAD_INTERSECTIONS;
 }
 
-} //namespace core3vi
+} //namespace corecvs
 

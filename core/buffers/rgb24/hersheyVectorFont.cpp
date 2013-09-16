@@ -6,7 +6,7 @@
 
 #include "hersheyVectorFont.h"
 
-namespace core3vi
+namespace corecvs
 {
 
 HersheyVectorFont::Glyph HersheyVectorFont::data[] = {
@@ -582,4 +582,4 @@ HersheyVectorFont::Glyph HersheyVectorFont::data[] = {
    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1} }
 };
 
-} /* namespace core3vi */
+} /* namespace corecvs */

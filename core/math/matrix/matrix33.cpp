@@ -11,7 +11,7 @@
 
 #include "matrix33.h"
 #include "matrix.h"
-namespace core3vi {
+namespace corecvs {
 
 //#define ACCURATE
 
@@ -646,5 +646,5 @@ Matrix33 Matrix33::ProjectiveByPoints(int pointNumber, Vector2dd points[], Vecto
 }
 
 
-} //namespace core3vi
+} //namespace corecvs
 

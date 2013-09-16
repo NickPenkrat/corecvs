@@ -36,7 +36,7 @@ using namespace tbb;
 
 using std::vector;
 
-namespace core3vi {
+namespace corecvs {
 
 /**
  *  The data that is needed for fast classification
@@ -715,6 +715,6 @@ public:
     }
 };
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* VJPATTERN_H_ */
 

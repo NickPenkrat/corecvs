@@ -16,7 +16,7 @@
 #include "morphological.h"
 
 using namespace std;
-using namespace core3vi;
+using namespace corecvs;
 
 
 uint16_t inputData[10*10] =

@@ -5,7 +5,7 @@
 #include <QtCore/QString>
 #include "reflectionGenerator.h"
 
-using namespace core3vi;
+using namespace corecvs;
 
 class BaseGenerator
 {

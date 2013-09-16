@@ -1,7 +1,7 @@
 #include "deserializerVisitor.h"
 #include <algorithm>
 
-namespace core3vi {
+namespace corecvs {
 
 string DeserializerVisitor::NoSpaces(const char* str)
 {
@@ -71,4 +71,4 @@ void DeserializerVisitor::visit<int,    EnumField>(int &field, const EnumField *
     field = param->IntAttribute("value");
 }
 
-} //namespace core3vi
+} //namespace corecvs

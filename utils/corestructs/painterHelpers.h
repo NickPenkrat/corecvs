@@ -21,7 +21,7 @@
 
 
 
-using namespace core3vi;
+using namespace corecvs;
 
 class Core2Qt {
 public:

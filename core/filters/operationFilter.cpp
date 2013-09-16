@@ -8,7 +8,7 @@
 #include "serializerVisitor.h"
 #include "deserializerVisitor.h"
 
-namespace core3vi
+namespace corecvs
 {
 
 int OperationFilter::instanceCounter = 0;
@@ -38,4 +38,4 @@ OperationFilter::~OperationFilter()
     // TODO Auto-generated destructor stub
 }
 
-} /* namespace core3vi */
+} /* namespace corecvs */

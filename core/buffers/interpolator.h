@@ -12,7 +12,7 @@
 
 #include "g12Buffer.h"
 
-namespace core3vi {
+namespace corecvs {
 
 using std::max;
 using std::min;
@@ -178,6 +178,6 @@ public:
     }
 };
 
-} //namespace core3vi
+} //namespace corecvs
 
 #endif //#ifndef INTERPOLATOR_H_

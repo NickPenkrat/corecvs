@@ -7,7 +7,7 @@
 #include "cameraCalculatorWidget.h"
 #include <QtCore/QDebug>
 
-using core3vi::radToDeg;
+using corecvs::radToDeg;
 
 
 SensorPreset CameraCalculatorWidget::sensorPresets[] =
@@ -214,11 +214,11 @@ void CameraCalculatorWidget::lensFocalChanged()
 
 	double sensorHor = preset->imagerW;
 	double angle = 2.0 * atan2(sensorHor / 2.0, focal);
-    setNewValue(ui.lensAOVSpinBox, core3vi::radToDeg(angle));
+    setNewValue(ui.lensAOVSpinBox, corecvs::radToDeg(angle));
 
     sensorHor = ui.horizontalSizeSpinBox->value();
     angle = 2.0 * atan2(sensorHor / 2.0, focal);
-    setNewValue(ui.sensorAOVSpinBox, core3vi::radToDeg(angle));
+    setNewValue(ui.sensorAOVSpinBox, corecvs::radToDeg(angle));
 
 }
 
@@ -228,7 +228,7 @@ void CameraCalculatorWidget::lensNominalAngleChanged()
 	SensorPreset *preset = &(sensorPresets[sensId]);
 	double sensorHor = preset->imagerW;
 
-	double tana2 = tan(core3vi::degToRad((double)(ui.lensAOVSpinBox->value()) / 2.0));
+	double tana2 = tan(corecvs::degToRad((double)(ui.lensAOVSpinBox->value()) / 2.0));
 	double focal = (sensorHor / 2.0) / tana2;
     setNewValue(ui.lensFocalLengthSpinBox, focal);
 }
@@ -236,7 +236,7 @@ void CameraCalculatorWidget::lensNominalAngleChanged()
 void CameraCalculatorWidget::lensRealAngleChanged()
 {
     double sensorHor = ui.horizontalSizeSpinBox->value();
-    double tana2 = tan(core3vi::degToRad((double)(ui.lensAOVSpinBox->value()) / 2.0));
+    double tana2 = tan(corecvs::degToRad((double)(ui.lensAOVSpinBox->value()) / 2.0));
     double focal = (sensorHor / 2.0) / tana2;
     setNewValue(ui.lensFocalLengthSpinBox, focal);
     setDisparity();

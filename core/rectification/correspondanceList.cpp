@@ -10,7 +10,7 @@
 #include "mathUtils.h"
 #include "correspondanceList.h"
 #include "kltGenerator.h"
-namespace core3vi {
+namespace corecvs {
 
 CorrespondanceList::CorrespondanceList()
 {
@@ -208,5 +208,5 @@ void CorrespondanceList::makePrecise(G12Buffer *first, G12Buffer *second)
 }
 
 
-} //namespace core3vi
+} //namespace corecvs
 

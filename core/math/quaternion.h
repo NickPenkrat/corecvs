@@ -12,7 +12,7 @@
 
 #include "matrix33.h"
 #include "fixedVector.h"
-namespace core3vi {
+namespace corecvs {
 
 const int QUATERNION_DIMENTION = 4;
 
@@ -329,6 +329,6 @@ public:
 typedef GenericQuaternion<double> Quaternion;
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* QUATERNION_H_ */
 

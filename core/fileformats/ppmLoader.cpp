@@ -14,7 +14,7 @@
 
 #include "ppmLoader.h"
 
-namespace core3vi {
+namespace corecvs {
 
 string PPMLoader::prefix1(".pgm");
 
@@ -335,5 +335,5 @@ done:
 }
 
 
-} //namespace core3vi
+} //namespace corecvs
 

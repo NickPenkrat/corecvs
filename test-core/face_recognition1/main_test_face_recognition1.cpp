@@ -20,7 +20,7 @@
 #include "bufferFactory.h"
 
 using namespace std;
-using namespace core3vi;
+using namespace corecvs;
 
 
 void processPoint(VJAdaBoostedClassifier * /*classifier*/, G12IntegralBuffer * /*integral*/, int /*x*/, int /*y*/)

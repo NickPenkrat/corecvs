@@ -3,9 +3,9 @@
 #include "mathUtils.h"
 #include "vector3d.h"
 
-using core3vi::Matrix33;
-using core3vi::degToRad;
-using core3vi::Vector3dd;
+using corecvs::Matrix33;
+using corecvs::degToRad;
+using corecvs::Vector3dd;
 
 Transform3DSelector::Transform3DSelector(QWidget *parent)
     : QWidget(parent)

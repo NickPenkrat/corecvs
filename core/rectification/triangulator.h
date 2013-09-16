@@ -21,7 +21,7 @@
 #include "cloud.h"
 #include "tbbWrapper.h"
 
-namespace core3vi {
+namespace corecvs {
 using std::vector;
 
 /**
@@ -158,6 +158,6 @@ private:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* TRIANGULATOR_H_ */
 

@@ -12,7 +12,7 @@
 #include "matrix.h"
 #include "classicKalman.h"
 
-using namespace core3vi;
+using namespace corecvs;
 
 /**
  *  an example form here

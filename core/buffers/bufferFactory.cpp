@@ -11,7 +11,7 @@
 #include "rawLoader.h"
 #include "bmpLoader.h"
 
-namespace core3vi {
+namespace corecvs {
 
 CountedPtr<BufferFactory> BufferFactory::sThis;
 
@@ -113,4 +113,4 @@ BufferFactory::~BufferFactory()
     //printf("BufferFactory has been destroyed.\n");
 }
 
-} //namespace core3vi
+} //namespace corecvs

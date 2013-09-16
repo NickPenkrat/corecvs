@@ -10,7 +10,7 @@
 
 #include "floatFlowBuffer.h"
 
-namespace core3vi {
+namespace corecvs {
 
 FloatFlowBuffer::FloatFlowBuffer(FlowBuffer *that) :
         FloatFlowBufferBase(that->h, that->w, true)
@@ -29,5 +29,5 @@ FloatFlowBuffer::FloatFlowBuffer(FlowBuffer *that) :
     }
 }
 
-} //namespace core3vi
+} //namespace corecvs
 

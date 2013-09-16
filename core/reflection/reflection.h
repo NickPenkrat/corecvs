@@ -39,7 +39,7 @@ using std::vector;
 #endif
 
 
-namespace core3vi {
+namespace corecvs {
 
 /**
  *  We have several styles of nameing
@@ -208,8 +208,8 @@ template<> inline BaseField::FieldType BaseField::getType<double>()      { retur
 template<> inline BaseField::FieldType BaseField::getType<float>()       { return TYPE_FLOAT;     }
 template<> inline BaseField::FieldType BaseField::getType<bool>()        { return TYPE_BOOL;      }
 template<> inline BaseField::FieldType BaseField::getType<std::string>() { return TYPE_STRING;    }
-//template<> inline BaseField::FieldType BaseField::getType<core3vi::Vector2dd>() { return TYPE_VECTOR2DD; }
-//template<> inline BaseField::FieldType BaseField::getType<core3vi::Vector3dd>() { return TYPE_VECTOR3DD; }
+//template<> inline BaseField::FieldType BaseField::getType<corecvs::Vector2dd>() { return TYPE_VECTOR2DD; }
+//template<> inline BaseField::FieldType BaseField::getType<corecvs::Vector3dd>() { return TYPE_VECTOR3DD; }
 
 
 /**
@@ -492,8 +492,8 @@ public:
 };
 
 /*TODO: This is bad - redo this*/
-//typedef SimpleScalarField<core3vi::Vector3dd> Vector3ddField;
-//typedef SimpleScalarField<core3vi::Vector2dd> Vector2ddField;
+//typedef SimpleScalarField<corecvs::Vector3dd> Vector3ddField;
+//typedef SimpleScalarField<corecvs::Vector2dd> Vector2ddField;
 
 class EnumOption
 {
@@ -682,6 +682,6 @@ public:
     }
 };
 
-} //namespace core3vi
+} //namespace corecvs
 
 #endif  //REFLECTION_H_

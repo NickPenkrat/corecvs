@@ -14,7 +14,7 @@
 #include "scalarAlgebra.h"
 #include "gaussian.h"
 #include "vectorTraits.h"
-namespace core3vi {
+namespace corecvs {
 
 
 
@@ -90,5 +90,5 @@ G12Buffer* SpatialGradient::findCornerPoints(double scaler)
     return toReturn;
 }
 
-} //namespace core3vi
+} //namespace corecvs
 

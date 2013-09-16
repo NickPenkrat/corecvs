@@ -19,7 +19,7 @@
 #include "visitors/qSettingsGetter.h"
 #include "visitors/xmlGetter.h"
 
-using core3vi::BaseReflectionStatic;
+using corecvs::BaseReflectionStatic;
 
 /*Rework this. Inability to use virtual template calls complicate the design*/
 class WidgetSaver {

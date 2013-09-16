@@ -18,7 +18,7 @@
 #include "int32x4.h"
 #include "int32x8.h"
 
-namespace core3vi {
+namespace corecvs {
 
 /**
  *  This class is a wrapper around data type that stores 8 16bit integers in 128 register
@@ -272,6 +272,6 @@ template<int idx>
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 
 #endif // INTBASE16X8_H

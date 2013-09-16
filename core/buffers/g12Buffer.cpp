@@ -18,7 +18,7 @@
 #include "vectorTraits.h"
 //#include "rgb24/hardcodeFont.h"
 
-namespace core3vi {
+namespace corecvs {
 
 G12Buffer::~G12Buffer()
 {
@@ -187,4 +187,4 @@ void G12Buffer::fillWithYUYV (uint16_t *yuyv)
 }
 
 
-} //namespace core3vi
+} //namespace corecvs

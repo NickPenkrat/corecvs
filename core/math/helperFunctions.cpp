@@ -7,7 +7,7 @@
  */
 
 #include "helperFunctions.h"
-namespace core3vi {
+namespace corecvs {
 
-} //namespace core3vi
+} //namespace corecvs
 

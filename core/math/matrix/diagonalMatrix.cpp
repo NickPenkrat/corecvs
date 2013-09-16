@@ -7,7 +7,7 @@
  */
 
 #include "diagonalMatrix.h"
-namespace core3vi {
+namespace corecvs {
 
 double DiagonalMatrix::det() const
 {
@@ -27,5 +27,5 @@ void DiagonalMatrix::invert()
 
 
 
-} //namespace core3vi
+} //namespace corecvs
 

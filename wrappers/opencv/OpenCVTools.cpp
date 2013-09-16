@@ -10,7 +10,7 @@
 
 #include "OpenCVTools.h"
 
-using namespace core3vi;
+using namespace corecvs;
 
 IplImage *OpenCVTools::getCVImageFromRGB24Buffer(RGB24Buffer *input)
 {

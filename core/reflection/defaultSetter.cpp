@@ -1,6 +1,6 @@
 #include "defaultSetter.h"
 
-namespace core3vi {
+namespace corecvs {
 
 template <>
 void DefaultSetter::visit<int, IntField>(
@@ -58,4 +58,4 @@ void DefaultSetter::visit<std::string, StringField>(
     field = fieldDescriptor->defaultValue;
 }
 
-} //namespace core3vi
+} //namespace corecvs

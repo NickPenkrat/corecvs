@@ -8,7 +8,7 @@
 
 #include "fixedPoint24p8.h"
 
-namespace core3vi
+namespace corecvs
 {
 
 FixedPoint24p8::FixedPoint24p8()
@@ -19,4 +19,4 @@ FixedPoint24p8::~FixedPoint24p8()
 {
 }
 
-} /* namespace core3vi */
+} /* namespace corecvs */

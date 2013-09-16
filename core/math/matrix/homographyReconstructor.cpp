@@ -14,7 +14,7 @@
 #include "../vector/vector.h"
 #include "../../kalman/classicKalman.h"
 #include "../levenmarq.h"
-namespace core3vi {
+namespace corecvs {
 
 HomographyReconstructor::HomographyReconstructor()
 {
@@ -608,5 +608,5 @@ Matrix33 HomographyReconstructor::getBestHomographyLM(Matrix33 /*guess*/)
        );
 }
 
-} //namespace core3vi
+} //namespace corecvs
 

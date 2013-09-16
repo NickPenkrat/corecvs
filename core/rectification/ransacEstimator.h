@@ -12,7 +12,7 @@
 
 #include "matrix33.h"
 #include "correspondanceList.h"
-namespace core3vi {
+namespace corecvs {
 
 
 
@@ -44,7 +44,7 @@ public:
 
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif  //RANSACESTIMATOR_H_
 
 

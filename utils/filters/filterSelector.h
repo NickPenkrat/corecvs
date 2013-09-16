@@ -10,8 +10,8 @@
 #include "reflection.h"
 #include "filterParametersControlWidgetBase.h"
 
-using core3vi::BaseReflectionStatic;
-using core3vi::AbstractFilter;
+using corecvs::BaseReflectionStatic;
+using corecvs::AbstractFilter;
 
 class FilterListIdWidgetItem : public QListWidgetItem
 {

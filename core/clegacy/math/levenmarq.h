@@ -2,7 +2,7 @@
 #include "vector2d.h"
 #include "matrix.h"
 #include <vector>
-namespace core3vi {
+namespace corecvs {
 
 
 class LevenMarq
@@ -28,4 +28,4 @@ private:
     static vector<Vector2dd> inverseCurve(vector<Vector2dd> const & curve);
 };
 
-} //namespace core3vi
+} //namespace corecvs

@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include "abstractContiniousBuffer.h"
 
-namespace core3vi {
+namespace corecvs {
 
 #ifndef INT16_MAX
 #define INT16_MAX (0x7FFF)
@@ -42,4 +42,4 @@ public:
         DisparityBufferBase(h, w, data) {}
 };
 
-} //namespace core3vi
+} //namespace corecvs

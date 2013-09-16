@@ -2,7 +2,7 @@
 #define LINE_H_
 #include "vector2d.h"
 #include "vector3d.h"
-namespace core3vi {
+namespace corecvs {
 /**
  * \file line.h
  * \brief a header for line.c
@@ -706,7 +706,7 @@ public:
     }
 };
 
-} //namespace core3vi
+} //namespace corecvs
 #endif  //LINE_H_
 
 

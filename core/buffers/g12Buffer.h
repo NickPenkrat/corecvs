@@ -16,7 +16,7 @@
 #include "abstractContiniousBuffer.h"
 #include "fixedPointDisplace.h"
 
-namespace core3vi {
+namespace corecvs {
 
 typedef AbstractContiniousBuffer<uint16_t, int32_t> G12BufferBase;
 
@@ -208,4 +208,4 @@ template<typename DeformMapType>
 
 
 
-} //namespace core3vi
+} //namespace corecvs

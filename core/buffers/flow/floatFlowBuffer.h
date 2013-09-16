@@ -17,11 +17,10 @@
 #include "abstractContiniousBuffer.h"
 #include "kltGenerator.h"
 
-// Fix this include moving makePreciseParameters to core
-#include "../../../../restricted/core/xml/generated/makePreciseParameters.h"
+#include "preciseInterpolationType.h"
+#include "makePreciseParameters.h"
 
-
-namespace core3vi {
+namespace corecvs {
 
 
 class FloatFlow
@@ -143,6 +142,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 
 /* EOF */

@@ -22,7 +22,7 @@
 #include "preciseTimer.h"
 #include "calculationStats.h"
 
-namespace core3vi {
+namespace corecvs {
 
 using std::map;
 using std::string;
@@ -397,6 +397,6 @@ template <class StreamType>
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* CORECALCULATIONSTATS_H_ */
 

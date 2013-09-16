@@ -1,6 +1,6 @@
 #include "camerasCalibrationFunc.h"
 
-namespace core3vi {
+namespace corecvs {
 
 //TODO:fix degrees in polynom
 CamerasCalibrationFunc::CamerasCalibrationFunc(const vector<Vector3dd> *sample, const Vector2d32 &center) :

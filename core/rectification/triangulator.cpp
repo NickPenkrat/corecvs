@@ -8,7 +8,7 @@
 
 #include "triangulator.h"
 
-namespace core3vi {
+namespace corecvs {
 
 Triangulator::Triangulator(const RectificationResult &_rectifierData) :
     rectifierData(_rectifierData)
@@ -356,5 +356,5 @@ DepthBuffer *Triangulator::triangulateToDB (DisparityBuffer *input, bool enforce
 }
 
 
-} //namespace core3vi
+} //namespace corecvs
 

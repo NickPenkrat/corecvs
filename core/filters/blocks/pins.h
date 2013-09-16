@@ -11,7 +11,7 @@
 #include "g12Buffer.h"
 #include "tinyxml2.h"
 
-namespace core3vi {
+namespace corecvs {
 
 using namespace tinyxml2;
 
@@ -345,5 +345,5 @@ private:
    static int instanceCounter;
 }; // ExtraTxtPin
 
-} //namespace core3vi
+} //namespace corecvs
 #endif // PINS_H

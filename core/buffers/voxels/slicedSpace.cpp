@@ -7,7 +7,7 @@
  */
 
 #include "SlicedSpace.h"
-namespace core3vi {
+namespace corecvs {
 
 SlicedSpace::SlicedSpace()
 {
@@ -18,5 +18,5 @@ SlicedSpace::~SlicedSpace()
 }
 
 
-} //namespace core3vi
+} //namespace corecvs
 

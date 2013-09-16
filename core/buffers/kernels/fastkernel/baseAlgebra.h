@@ -10,7 +10,7 @@
  */
 
 #include "global.h"
-namespace core3vi {
+namespace corecvs {
 
 /**
  * This class does nothing. And luckily this could be used to create
@@ -153,5 +153,5 @@ template<typename OtherAlgebra>
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif  //BASEALGEBRA_H_

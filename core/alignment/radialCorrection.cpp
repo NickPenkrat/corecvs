@@ -10,7 +10,7 @@
 #include "global.h"
 #include "radialCorrection.h"
 
-namespace core3vi {
+namespace corecvs {
 
 
 RadialCorrection::RadialCorrection(const LensCorrectionParametres &params) :
@@ -57,4 +57,4 @@ G12Buffer *RadialCorrection::doCorrectionTransform(G12Buffer *inputBuffer)
     return inputBuffer->doReverseDeformationBl<G12Buffer, RadialCorrection>
                          (this, inputBuffer->h, inputBuffer->w);
 }
-} //namespace core3vi
+} //namespace corecvs

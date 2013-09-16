@@ -15,7 +15,7 @@
 #include "baseKernel.h"
 #include "scalarAlgebra.h"
 #include "tbbWrapper.h"
-namespace core3vi {
+namespace corecvs {
 
 
 class DummyReader
@@ -252,6 +252,6 @@ ALIGN_STACK_SSE  void processSaveAligned(
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* FASTKERNEL_H_ */
 

@@ -15,7 +15,7 @@
 #include "filtersCollection.h"
 #include "operationParameters.h"
 
-namespace core3vi
+namespace corecvs
 {
 using namespace tinyxml2;
 
@@ -136,5 +136,5 @@ private:
     static int instanceCounter;
 };
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 /* EOF */

@@ -25,7 +25,7 @@
 
 #include "preciseTimer.h"
 
-namespace core3vi {
+namespace corecvs {
 
 #ifdef WINDOWS_CLOCK
 int64_t PreciseTimer::mFreq = 0L;
@@ -54,4 +54,4 @@ PreciseTimer PreciseTimer::currentTime()
     return T;
 }
 
-} //namespace core3vi
+} //namespace corecvs

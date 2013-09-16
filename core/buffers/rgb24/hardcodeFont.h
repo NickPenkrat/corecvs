@@ -12,7 +12,7 @@
 #include <stdint.h>
 
 #include "global.h"
-namespace core3vi {
+namespace corecvs {
 
 
 class HardcodeFont
@@ -30,6 +30,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* HARDCODEFONT_H_ */
 

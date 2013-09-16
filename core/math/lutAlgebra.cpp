@@ -11,7 +11,7 @@
 #include "vector3d.h"
 #include <iostream>
 #include <stdlib.h>
-namespace core3vi {
+namespace corecvs {
 
 using std::hex;
 
@@ -149,5 +149,5 @@ int test1Main ( void )
     return 0;
 }
 
-} //namespace core3vi
+} //namespace corecvs
 

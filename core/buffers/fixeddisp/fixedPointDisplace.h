@@ -17,7 +17,7 @@
 #include "abstractContiniousBuffer.h"
 #include "matrix33.h"
 
-namespace core3vi {
+namespace corecvs {
 
 /**
  *   This function holds the data for fast bilinear transform computation
@@ -78,6 +78,6 @@ public:
 
 };
 
-} // namespace core3vi
+} // namespace corecvs
 
 #endif  /* #ifndef FIXEDPOINTDISPLACE_H_ */ 

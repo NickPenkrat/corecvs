@@ -13,11 +13,11 @@
 #include "quaternion.h"
 #include "vector2d.h"
 
-using core3vi::Vector3dd;
-using core3vi::Quaternion;
-using core3vi::Vector2dd;
+using corecvs::Vector3dd;
+using corecvs::Quaternion;
+using corecvs::Vector2dd;
 
-namespace core3vi
+namespace corecvs
 {
 
 class DetectedObject
@@ -74,5 +74,5 @@ public:
     virtual ~DetectedObject();
 };
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 #endif /* DETECTEDOBJECT_H_ */

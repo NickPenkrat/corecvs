@@ -19,7 +19,7 @@
 #include "fixedArray.h"
 
 using namespace std;
-using namespace core3vi;
+using namespace corecvs;
 
 template<int length>
 class TestVector : public VectorOperationsBase< TestVector<length>, int>

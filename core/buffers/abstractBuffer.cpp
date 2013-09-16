@@ -8,7 +8,7 @@
  */
 #include "abstractBuffer.h"
 
-namespace core3vi {
+namespace corecvs {
 
 static cchar* sFormatStr = "#dims:%d (%d) x %d x %u";
 
@@ -119,4 +119,4 @@ bool_t AbstractBufferParams::read(istream& s, char* str, size_t size, bool_t bin
     return !s.bad();
 }
 
-} //namespace core3vi
+} //namespace corecvs

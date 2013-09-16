@@ -6,7 +6,7 @@
 #include "ui_matrixwidget.h"
 #include "projectiveTransform.h"
 
-using namespace core3vi;
+using namespace corecvs;
 
 class MatrixWidget : public QWidget
 {

@@ -8,7 +8,7 @@
  */
 
 #include "displacementBuffer.h"
-namespace core3vi {
+namespace corecvs {
 
 
 DisplacementBuffer *DisplacementBuffer::CacheInverse(
@@ -68,5 +68,5 @@ DisplacementBuffer *DisplacementBuffer::CacheInverse(
     return toReturn;
 }
 
-} //namespace core3vi
+} //namespace corecvs
 

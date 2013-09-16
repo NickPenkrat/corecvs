@@ -12,7 +12,7 @@
 #include "../xml/generated/bitSelectorParameters.h"
 #include "filtersCollection.h"
 
-namespace core3vi
+namespace corecvs
 {
 using namespace tinyxml2;
 
@@ -64,5 +64,5 @@ private:
     static int instanceCounter;
 };
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 #endif /* BIT_SELECTOR_FILTER_H_ */

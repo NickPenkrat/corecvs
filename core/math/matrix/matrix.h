@@ -18,7 +18,7 @@
 #include "diagonalMatrix.h"
 #include "vector.h"
 
-namespace core3vi {
+namespace corecvs {
 
 using std::vector;
 using std::binder2nd;
@@ -272,5 +272,5 @@ public:
     static void svd (int h, int w, double *A, double *W, double *V);*/
 };
 
-} //namespace core3vi
+} //namespace corecvs
 

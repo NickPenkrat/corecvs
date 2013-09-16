@@ -7,7 +7,7 @@
  */
 
 #include "cholesky.h"
-namespace core3vi {
+namespace corecvs {
 
 Cholesky::Cholesky()
 {
@@ -171,5 +171,5 @@ void Cholesky::udutDecompose(Matrix *A, UpperUnitaryMatrix **Uresult, DiagonalMa
         *Dresult = d;
 }
 
-} //namespace core3vi
+} //namespace corecvs
 

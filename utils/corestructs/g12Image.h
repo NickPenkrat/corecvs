@@ -15,7 +15,7 @@
 
 #include "viAreaWidget.h"
 
-using namespace core3vi;
+using namespace corecvs;
 
 
 class G12Image : public QImage {

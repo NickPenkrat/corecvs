@@ -13,7 +13,7 @@
 //#include <cstring>
 #include <stdio.h>
 
-namespace core3vi {
+namespace corecvs {
 
 string  BMPLoader::prefix1(".bmp");
 uint8_t BMPHeader::HEADER_FEATURE_VECTOR[2] = {'B','M'};
@@ -290,4 +290,4 @@ bool BMPLoader::save(string name, RGB24Buffer *buffer)
     return true;
 }
 
-} //namespace core3vi
+} //namespace corecvs

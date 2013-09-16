@@ -1,6 +1,6 @@
 #include "matrix.h"
 
-using namespace core3vi;
+using namespace corecvs;
 
 bool isCorrectSolution()
 {

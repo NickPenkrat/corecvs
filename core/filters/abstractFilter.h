@@ -11,7 +11,7 @@
 
 #include "g12Buffer.h"
 
-namespace core3vi
+namespace corecvs
 {
 
 class AbstractFilter
@@ -39,5 +39,5 @@ public:
     virtual ~AbstractFilter();
 };
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 #endif /* ABSTRACT_FILTER_H_ */

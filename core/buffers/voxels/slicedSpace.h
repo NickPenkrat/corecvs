@@ -10,7 +10,7 @@
 #define SLICEDSPACE_H_
 
 #include "global.h"
-namespace core3vi {
+namespace corecvs {
 
 class SlicedSpace
 {
@@ -20,6 +20,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* SLICEDSPACE_H_ */
 

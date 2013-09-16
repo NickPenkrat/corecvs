@@ -6,7 +6,7 @@
 
 #include "levenmarq.h"
 #include "stdlib.h"
-namespace core3vi {
+namespace corecvs {
 
 const int iterations = 100;
 const double lambda_factor = 1.5;
@@ -134,5 +134,5 @@ vector<Vector2dd> LevenMarq::inverseCurve(const vector<Vector2dd> &curve)
     return inversedCurve;
 }
 
-} //namespace core3vi
+} //namespace corecvs
 

@@ -17,7 +17,7 @@
 
 #include "g12Buffer.h"
 #include "commonMappers.h"
-namespace core3vi {
+namespace corecvs {
 
 using std::vector;
 /**
@@ -251,6 +251,6 @@ private:
 
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* HISTORGAM_H_ */
 

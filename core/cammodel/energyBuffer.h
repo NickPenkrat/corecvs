@@ -11,7 +11,7 @@
 #define CENERGYBUFFER_H_
 
 #include "abstractContiniousBuffer.h"
-namespace core3vi {
+namespace corecvs {
 
 class EnergyBuffer : public AbstractContiniousBuffer<double, int>
 {
@@ -32,6 +32,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* CENERGYBUFFER_H_ */
 

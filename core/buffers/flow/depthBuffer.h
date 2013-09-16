@@ -11,7 +11,7 @@
 #include "abstractContiniousBuffer.h"
 #include "punchedBufferOperations.h"
 
-namespace core3vi
+namespace corecvs
 {
 
 typedef AbstractContiniousBuffer<double, int32_t> DepthBufferBase;
@@ -58,6 +58,6 @@ public:
    ~DepthBuffer();
 };
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 
 /* EOF */

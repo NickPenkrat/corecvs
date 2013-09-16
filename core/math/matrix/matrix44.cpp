@@ -8,7 +8,7 @@
  */
 
 #include "matrix44.h"
-namespace core3vi {
+namespace corecvs {
 
 Matrix44::Matrix44()
 {
@@ -252,5 +252,5 @@ Matrix44::~Matrix44()
 {
 }
 
-} //namespace core3vi
+} //namespace corecvs
 

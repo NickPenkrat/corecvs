@@ -5,7 +5,7 @@
 #include "../xml/generated/inputFilterParameters.h"
 #include "filtersCollection.h"
 
-namespace core3vi
+namespace corecvs
 {
 
 class InputFilter : public FilterBlock
@@ -70,5 +70,5 @@ private:
 //    G12Buffer* buffer;
 };
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 #endif // INPUTFILTERBLOCK_H

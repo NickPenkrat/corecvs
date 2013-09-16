@@ -9,7 +9,7 @@
  */
 
 #include "flowBuffer.h"
-namespace core3vi {
+namespace corecvs {
 
 
 /**
@@ -79,6 +79,6 @@ public:
 
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* ELEMENT6D_H_ */
 

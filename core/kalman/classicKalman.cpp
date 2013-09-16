@@ -7,7 +7,7 @@
  */
 
 #include "classicKalman.h"
-namespace core3vi {
+namespace corecvs {
 
 ClassicKalman::~ClassicKalman()
 {
@@ -77,5 +77,5 @@ void ClassicKalman::update(void)
 
 
 
-} //namespace core3vi
+} //namespace corecvs
 

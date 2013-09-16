@@ -13,7 +13,7 @@
 
 
 #include "matrix.h"
-namespace core3vi {
+namespace corecvs {
 
 /**
  *   This class holds the upper part of the triangular unitary matrix.
@@ -189,6 +189,6 @@ private:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* UPPERUNITARYMATRIX_H_ */
 

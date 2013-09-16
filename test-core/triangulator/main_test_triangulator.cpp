@@ -19,7 +19,7 @@
 
 
 using namespace std;
-using core3vi::EssentialDecomposition;
+using corecvs::EssentialDecomposition;
 
 void testDepthAndDisparity()
 {

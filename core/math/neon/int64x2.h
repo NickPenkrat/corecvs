@@ -14,7 +14,7 @@
 
 #include "global.h"
 #include "fixedVector.h"
-namespace core3vi {
+namespace corecvs {
 
 class ALIGN_DATA(16) Int64x2
 {
@@ -115,6 +115,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif  //INT64X2_H_
 

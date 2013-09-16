@@ -4,7 +4,7 @@
 #include <iostream>
 #include "reflection.h"
 
-namespace core3vi {
+namespace corecvs {
 
 using std::string;
 using std::ostream;
@@ -72,5 +72,5 @@ template <>
 void PrinterVisitor::visit<bool>(bool &boolField, bool defaultValue, const char *fieldName);
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif // PRINTER_VISITOR_OLD_H_

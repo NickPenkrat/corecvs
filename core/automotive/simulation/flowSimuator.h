@@ -20,7 +20,7 @@
 #include "cameraParameters.h"
 #include "eulerAngles.h"
 
-namespace core3vi {
+namespace corecvs {
 
 
 class FlowSimuator
@@ -46,6 +46,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* FLOWSIMUATOR_H_ */
 

@@ -9,7 +9,7 @@
  */
 
 #include "essentialEstimator.h"
-namespace core3vi {
+namespace corecvs {
 
 class IterativeEstimator
 {
@@ -37,6 +37,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* ITERATIVEESTIMATOR_H_ */
 

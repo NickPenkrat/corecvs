@@ -17,7 +17,7 @@
 #include "vector2d.h"
 #include "matrix.h"
 #include "function.h"
-namespace core3vi {
+namespace corecvs {
 
 
 class LevenbergMarquardt
@@ -42,6 +42,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif
 

@@ -9,7 +9,7 @@
 #include "swarmPoint.h"
 #include "mesh3d.h"
 
-namespace core3vi {
+namespace corecvs {
 
 typedef std::vector<SwarmPoint> CloudBase;
 
@@ -21,7 +21,7 @@ public:
     Cloud* filterByAABB(const AxisAlignedBox3d &box);
 };
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 
 
 /* EOF */

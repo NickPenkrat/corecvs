@@ -11,7 +11,7 @@
 #include "global.h"
 
 #include "fastKernel.h"
-namespace core3vi {
+namespace corecvs {
 
 template <typename Algebra>
 class GenericFastKernel
@@ -54,6 +54,6 @@ public:
 
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif  //GENERICFASTKERNEL_H_
 

@@ -4,7 +4,7 @@
 #include <QtGui/QMouseEvent>
 #include "histogram.h"
 
-using namespace core3vi;
+using namespace corecvs;
 
 namespace Ui {
 class HistogramWidgetClass;

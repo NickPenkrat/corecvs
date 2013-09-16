@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "kalman.h"
-namespace core3vi {
+namespace corecvs {
 
 
 /* remove comments to use save(r) malloc/free */
@@ -610,5 +610,5 @@ void KalmanWorkspace::modelStateTransition(
     }
 }
 
-} //namespace core3vi
+} //namespace corecvs
 

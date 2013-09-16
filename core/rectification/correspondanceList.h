@@ -16,7 +16,7 @@
 #include "floatFlowBuffer.h"
 #include "projectiveTransform.h"
 
-namespace core3vi {
+namespace corecvs {
 
 using std::vector;
 
@@ -178,6 +178,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* CCORRESPONDANCELIST_H_ */
 

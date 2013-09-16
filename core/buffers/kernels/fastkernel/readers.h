@@ -16,7 +16,7 @@
 #include "fixedVector.h"
 
 
-namespace core3vi {
+namespace corecvs {
 
 using std::endl;
 
@@ -228,7 +228,7 @@ public:
 
 };
 
-} //namespace core3vi
+} //namespace corecvs
 #endif
 
 

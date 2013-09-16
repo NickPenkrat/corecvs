@@ -11,7 +11,7 @@
 #include "matrix.h"
 #include "diagonalMatrix.h"
 #include "upperUnitaryMatrix.h"
-namespace core3vi {
+namespace corecvs {
 
 /**
  *  Class that implements Cholesky decomposition.
@@ -33,6 +33,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* CHOLESKY_H_ */
 

@@ -15,7 +15,7 @@
 #include "essentialEstimator.h"
 #include "ransac.h"
 #include "correspondanceList.h"
-namespace core3vi {
+namespace corecvs {
 
 
 
@@ -140,5 +140,5 @@ Matrix33 RansacEstimator::getEssentialRansac(vector<Correspondance *> *data)
 }
 
 
-} //namespace core3vi
+} //namespace corecvs
 

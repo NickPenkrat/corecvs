@@ -8,7 +8,7 @@
  */
 
 #include "tileGrid.h"
-namespace core3vi {
+namespace corecvs {
 
 
 /**
@@ -40,5 +40,5 @@ void TileGrid::selectWithThreshold (int threshold, int h, int w)
 }
 
 
-} //namespace core3vi
+} //namespace corecvs
 

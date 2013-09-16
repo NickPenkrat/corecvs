@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "kalman.h"
-namespace core3vi {
+namespace corecvs {
 
 
 DyVector::DyVector(int ymax)
@@ -538,5 +538,5 @@ void KalmanWorkspace::modelStateTransition(
    // delete workVector;
 }
 
-} //namespace core3vi
+} //namespace corecvs
 

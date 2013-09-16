@@ -13,7 +13,7 @@
 #include "essentialMatrix.h"
 #include "function.h"
 #include "quaternion.h"
-namespace core3vi {
+namespace corecvs {
 
 class EssentialEstimator
 {
@@ -138,6 +138,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* ESSENTIALESTIMATOR_H_ */
 

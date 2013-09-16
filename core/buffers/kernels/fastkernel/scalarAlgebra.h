@@ -20,7 +20,7 @@
 #define DOTRACE_ALG(X)
 #endif
 
-namespace core3vi {
+namespace corecvs {
 
 /**
  *  \brief  ScalarAlgebraMulti is a crucial part of fastKernels
@@ -120,5 +120,5 @@ template<int y, int x>
 
 };
 
-} //namespace core3vi
+} //namespace corecvs
 #endif  //SCALARALGEBRA_H_

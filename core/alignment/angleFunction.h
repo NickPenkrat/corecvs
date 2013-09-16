@@ -7,7 +7,7 @@
  *
  **/
 
-namespace core3vi
+namespace corecvs
 {
 
 /**

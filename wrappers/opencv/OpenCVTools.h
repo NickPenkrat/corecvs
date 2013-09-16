@@ -19,9 +19,9 @@
 #include "g12Buffer.h"
 #include "rgb24Buffer.h"
 
-using core3vi::G12Buffer;
-using core3vi::G8Buffer;
-using core3vi::RGB24Buffer;
+using corecvs::G12Buffer;
+using corecvs::G8Buffer;
+using corecvs::RGB24Buffer;
 
 class OpenCVTools
 {

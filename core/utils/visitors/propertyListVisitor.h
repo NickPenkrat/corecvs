@@ -19,7 +19,7 @@
 #include "basePathVisitor.h"
 #include "reflection.h"
 
-namespace core3vi {
+namespace corecvs {
 
 /**
  *  Visitor that serializes the type hierarchy into the PropertyList -
@@ -141,6 +141,6 @@ template <>
 
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* PROPERTYLISTVISITOR_H_ */
 

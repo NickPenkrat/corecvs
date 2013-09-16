@@ -14,7 +14,7 @@
 
 #include <vector>
 #include "matrix.h"
-namespace core3vi {
+namespace corecvs {
 /**
  *
  * COOSparseMatrix is efficient matrix made in Matlab style - http://en.wikipedia.org/wiki/Sparse_matrix#Coordinate_list_.28COO.29
@@ -110,6 +110,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* _COO_SPARSE_MATRIX_H_ */
 

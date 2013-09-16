@@ -14,7 +14,7 @@
 
 #include "memoryBlock.h"
 #include "vectorOperations.h"
-namespace core3vi {
+namespace corecvs {
 
 template<typename RealType, typename ElementType>
 class FixedArrayBase : public VectorOperationsBase<RealType, ElementType>
@@ -119,7 +119,7 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif  //FIXEDARRAY_H_
 
 

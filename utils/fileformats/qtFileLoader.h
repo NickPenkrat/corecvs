@@ -16,7 +16,7 @@
 #include "bufferFactory.h"
 
 using namespace std;
-using namespace core3vi;
+using namespace corecvs;
 
 class QTFileLoader: public BufferLoader<G12Buffer>
 {

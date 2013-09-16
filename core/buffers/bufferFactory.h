@@ -16,7 +16,7 @@
 #include "bufferLoader.h"
 #include "countedPtr.h"
 
-namespace core3vi {
+namespace corecvs {
 
 using std::string;
 
@@ -60,4 +60,4 @@ private:
     vector<BufferLoader<G12Buffer> *> mLoaders;
 };
 
-} //namespace core3vi
+} //namespace corecvs

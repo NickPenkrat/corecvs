@@ -1,6 +1,6 @@
 #include "printerVisitor.h"
 
-namespace core3vi {
+namespace corecvs {
 
 using std::string;
 using std::endl;
@@ -76,4 +76,4 @@ void PrinterVisitor::visit<bool>(bool &boolField, bool /*defaultValue*/, const c
 
 
 
-} //namespace core3vi
+} //namespace corecvs

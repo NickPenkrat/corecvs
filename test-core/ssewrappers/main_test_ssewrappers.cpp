@@ -21,7 +21,7 @@
 #include "genericMath.h"
 
 using namespace std;
-using namespace core3vi;
+using namespace corecvs;
 
 #ifdef WITH_SSE
 

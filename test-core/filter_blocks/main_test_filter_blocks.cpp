@@ -23,10 +23,10 @@
 #include "filterGraph.h"
 
 using namespace std;
-using core3vi::FilterGraph;
-using core3vi::FilterBlock;
-using core3vi::SobelFilter;
-using core3vi::GeneratedFilterBlock;
+using corecvs::FilterGraph;
+using corecvs::FilterBlock;
+using corecvs::SobelFilter;
+using corecvs::GeneratedFilterBlock;
 
 /**
  *  Creating test graph

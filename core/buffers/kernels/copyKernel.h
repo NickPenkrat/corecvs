@@ -14,7 +14,7 @@
 #include "global.h"
 
 #include "abstractKernel.h"
-namespace core3vi {
+namespace corecvs {
 
 
 template <typename Algebra>
@@ -44,6 +44,6 @@ template<typename OtherAlgebra>
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif
 

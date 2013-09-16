@@ -6,7 +6,7 @@
 #include <opencv/highgui.h>
 #include "g12Buffer.h"
 
-using core3vi::G12Buffer;
+using corecvs::G12Buffer;
 
 class OpenCvHelper
 {

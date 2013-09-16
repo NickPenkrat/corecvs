@@ -1,7 +1,7 @@
 #include "serializerVisitor.h"
 #include <algorithm>
 
-namespace core3vi {
+namespace corecvs {
 
 string SerializerVisitor::NoSpaces(const char* str)
 {
@@ -59,4 +59,4 @@ string SerializerVisitor::NoSpaces(const char* str)
 //    node->InsertEndChild(param);
 //}
 
-} //namespace core3vi
+} //namespace corecvs

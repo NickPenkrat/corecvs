@@ -15,7 +15,7 @@
 #include "global.h"
 #include "fixedVector.h"
 #include "int64x2.h"
-namespace core3vi {
+namespace corecvs {
 
 class ALIGN_DATA(16) Int32x4
 {
@@ -354,6 +354,6 @@ FORCE_INLINE inline Int64x2 unpackHigher2 (const Int32x4 &left, const Int32x4 &r
 }
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif  //INT32X4_H_
 

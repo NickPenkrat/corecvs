@@ -12,7 +12,7 @@
 
 using namespace cv;
 
-using namespace core3vi;
+using namespace corecvs;
 
 
 class BMOpenCV

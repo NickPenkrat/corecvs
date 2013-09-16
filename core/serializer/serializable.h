@@ -10,7 +10,7 @@
 
 #include <string>
 #include <vector>
-namespace core3vi {
+namespace corecvs {
 
 using std::string;
 
@@ -43,6 +43,6 @@ template<>
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* SERIALIZABLE_H_ */
 

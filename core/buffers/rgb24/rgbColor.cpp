@@ -9,7 +9,7 @@
 #include "global.h"
 #include "rgbColor.h"
 
-namespace core3vi {
+namespace corecvs {
 
 
 #ifdef REFLECTION_IN_CORE
@@ -41,5 +41,5 @@ RGBColor RGBColor::rainbow(double x)
     }
 }
 
-} //namespace core3vi
+} //namespace corecvs
 

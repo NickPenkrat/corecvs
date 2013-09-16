@@ -13,7 +13,7 @@
 
 #include "vector2d.h"
 
-namespace core3vi {
+namespace corecvs {
 
 class FloatFlowVector
 {
@@ -33,6 +33,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif  //FLOWVECTOR_H_
 

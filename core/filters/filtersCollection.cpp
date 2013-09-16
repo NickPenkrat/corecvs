@@ -14,7 +14,7 @@
 #include "maskFilterBlock.h"
 #include "compoundFilter.h"
 
-namespace core3vi
+namespace corecvs
 {
 
 const char* FiltersCollection::typenames[] =
@@ -213,4 +213,4 @@ bool FiltersCollection::dependsOnMe(int me, int filter)
 }
 
 
-} /* namespace core3vi */
+} /* namespace corecvs */

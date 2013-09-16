@@ -16,7 +16,7 @@
 #include "global.h"
 
 #include "assignmentOptimal.h"
-namespace core3vi {
+namespace corecvs {
 
 /**
  *
@@ -242,5 +242,5 @@ void assignOptimal(AbstractBuffer<float, int> *input, AbstractBuffer<int, int> *
 
 
 
-} //namespace core3vi
+} //namespace corecvs
 

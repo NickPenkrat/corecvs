@@ -22,13 +22,13 @@
 
 
 using namespace std;
-using core3vi::Matrix33;
-using core3vi::ProjectiveTransform;
-using core3vi::G12Buffer;
-using core3vi::BufferFactory;
-using core3vi::FixedPointDisplace;
-using core3vi::BMPLoader;
-using core3vi::RGB24Buffer;
+using corecvs::Matrix33;
+using corecvs::ProjectiveTransform;
+using corecvs::G12Buffer;
+using corecvs::BufferFactory;
+using corecvs::FixedPointDisplace;
+using corecvs::BMPLoader;
+using corecvs::RGB24Buffer;
 
 void testFastDeform ()
 {

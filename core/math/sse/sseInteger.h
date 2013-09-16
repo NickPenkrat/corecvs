@@ -15,7 +15,7 @@
 #include "global.h"
 #include "fixedVector.h"
 
-namespace core3vi {
+namespace corecvs {
 
 /**
  *   This template class holds the base class for integer sse types.
@@ -147,6 +147,6 @@ static uint64_t   streamedWrites;
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 
 #endif //_SSEBINARY_H_

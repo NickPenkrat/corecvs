@@ -26,7 +26,7 @@
 #include "flowVector.h"
 #include "matrix33.h"
 
-namespace core3vi {
+namespace corecvs {
 
 #ifndef INT16_MAX
 #define INT16_MAX (0x7FFF)
@@ -143,7 +143,7 @@ public:
 
 typedef FlowBuffer DisparityBuffer;
 
-} //namespace core3vi
+} //namespace corecvs
 
 #endif /* CFLOWBUFFER_H_ */
 

@@ -11,7 +11,7 @@
 #include "qSettingsSetter.h"
 
 // FIXIT: GOOPEN
-#include "../../../restricted/applications/vimouse/faceDetection/faceMesh.h"
+//#include "../../../restricted/applications/vimouse/faceDetection/faceMesh.h"
 
 
 using namespace std;
@@ -230,6 +230,7 @@ void CloudViewDialog::resetCameraPos()
             break;
         case FACE_CAMERA:
         {
+#if GOOPEN
             mCamera = Matrix44(Matrix33(1.0), Vector3dd(0.0,0.0,0.0));
             FaceMesh *faceMesh = static_cast<FaceMesh *>(mScenes[DETECTED_PERSON].data());
             if (faceMesh == NULL) {
@@ -243,6 +244,7 @@ void CloudViewDialog::resetCameraPos()
 
             Matrix44 projector = shiftCamToZero;
             mCamera = Matrix44(Matrix33(1.0), -cameraPos);
+#endif
         }
             break;
 
@@ -301,6 +303,7 @@ void CloudViewDialog::resetCamera()
         }
         case FACE_CAMERA:
         {
+#if GOOPEN
             glLoadIdentity();
             FaceMesh *faceMesh = static_cast<FaceMesh *>(mScenes[DETECTED_PERSON].data());
             if (faceMesh == NULL)
@@ -378,6 +381,7 @@ void CloudViewDialog::resetCamera()
             glViewport(0, 0, width, height);
 
             break;
+#endif
         }
 
     }

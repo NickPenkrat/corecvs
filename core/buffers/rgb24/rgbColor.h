@@ -6,7 +6,7 @@
 #include "fixedVector.h"
 #include <vector3d.h>
 #include "../../math/mathUtils.h"
-namespace core3vi {
+namespace corecvs {
 /**
  * \file rgbColor.h
  * \brief a header for rgbColor.c
@@ -359,6 +359,6 @@ template<class VisitorType>
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif  //RGBCOLOR_H_
 

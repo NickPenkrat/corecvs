@@ -21,7 +21,7 @@
 
 #include "fixedVector.h"
 
-namespace core3vi {
+namespace corecvs {
 
 
 template<typename ElementType>
@@ -203,6 +203,6 @@ typedef Vector2d<int32_t> Vector2d32;
 typedef Vector2d<int16_t> Vector2d16;
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif
 

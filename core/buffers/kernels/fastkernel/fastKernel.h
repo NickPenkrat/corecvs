@@ -13,7 +13,7 @@
 #include "scalarAlgebra.h"
 #include "tbbWrapper.h"
 
-namespace core3vi {
+namespace corecvs {
 
 /**
  *  This is a main template that provides fast processing of buffers
@@ -172,4 +172,4 @@ ALIGN_STACK_SSE  void processSaveAligned(
 };
 
 
-} //namespace core3vi
+} //namespace corecvs

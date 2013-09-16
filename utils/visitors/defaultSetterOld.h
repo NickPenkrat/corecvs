@@ -2,7 +2,7 @@
 #include "basePathVisitor.h"
 #include "reflection.h"
 
-using namespace core3vi;
+using namespace corecvs;
 
 class DefaultSetterOld : public BasePathVisitor
 {

@@ -25,20 +25,20 @@
 
 
 using namespace std;
-using core3vi::G12Buffer;
-using core3vi::PPMLoader;
-using core3vi::PPMLoader;
-using core3vi::lerp;
-using core3vi::Vector3dd;
-using core3vi::Matrix44;
-using core3vi::Vector2dd;
-using core3vi::CameraIntrinsics;
-using core3vi::Matrix33;
-using core3vi::BufferFactory;
-using core3vi::BMPLoader;
-using core3vi::fround;
-using core3vi::AbstractPainter;
-//using core3vi::degToRad(double d);
+using corecvs::G12Buffer;
+using corecvs::PPMLoader;
+using corecvs::PPMLoader;
+using corecvs::lerp;
+using corecvs::Vector3dd;
+using corecvs::Matrix44;
+using corecvs::Vector2dd;
+using corecvs::CameraIntrinsics;
+using corecvs::Matrix33;
+using corecvs::BufferFactory;
+using corecvs::BMPLoader;
+using corecvs::fround;
+using corecvs::AbstractPainter;
+//using corecvs::degToRad(double d);
 
 
 
@@ -63,7 +63,7 @@ void generateReality (void)
 
 	Matrix44  iden4 = Matrix44(1.0);
 
-	Matrix33 rot  = Matrix33::RotationY(core3vi::degToRad(22)) * Matrix33::RotationX(core3vi::degToRad(0));
+	Matrix33 rot  = Matrix33::RotationY(corecvs::degToRad(22)) * Matrix33::RotationX(corecvs::degToRad(0));
 	Matrix44 rot4 = Matrix44(rot, Vector3dd(0.0));
 
 	Matrix44  leftCameraMatrix = Matrix44::Shift( leftCameraPosition) * rot4;

@@ -15,7 +15,7 @@
 
 #include "atomicOps.h"
 
-namespace core3vi {
+namespace corecvs {
 
 
 /**
@@ -250,4 +250,4 @@ public:
     }
 };
 
-} //namespace core3vi
+} //namespace corecvs

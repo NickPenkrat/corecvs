@@ -16,7 +16,7 @@
 #include "g12Buffer.h"
 #include "rgb24Buffer.h"
 
-namespace core3vi {
+namespace corecvs {
 
 using std::string;
 
@@ -60,4 +60,4 @@ private:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs

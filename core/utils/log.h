@@ -20,7 +20,7 @@
 
 #include "memoryBlock.h"
 
-using core3vi::ObjectRef;
+using corecvs::ObjectRef;
 
 
 #define L_ERROR            Log().error  (__FILE__, __LINE__, __FUNCTION__)

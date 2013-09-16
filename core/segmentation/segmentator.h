@@ -19,7 +19,7 @@
 #include "abstractBuffer.h"
 #include "g12Buffer.h"
 
-namespace core3vi {
+namespace corecvs {
 
 using std::vector;
 using std::bind2nd;
@@ -324,7 +324,7 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 
 #endif /* SEGMENTATOR_H_ */
 

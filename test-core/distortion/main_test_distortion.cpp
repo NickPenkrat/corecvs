@@ -22,12 +22,12 @@
 
 
 using namespace std;
-using core3vi::AnglePointsFunction;
-using core3vi::FunctionArgs;
-using core3vi::Vector2dd;
-using core3vi::Matrix;
-using core3vi::RadialCorrection;
-using core3vi::RadialFunc;
+using corecvs::AnglePointsFunction;
+using corecvs::FunctionArgs;
+using corecvs::Vector2dd;
+using corecvs::Matrix;
+using corecvs::RadialCorrection;
+using corecvs::RadialFunc;
 
 #if 0
 void testRadialModel(void)

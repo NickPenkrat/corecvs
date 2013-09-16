@@ -24,7 +24,7 @@
 
 #include "vector3d.h"
 #include "fixedVector.h"
-namespace core3vi {
+namespace corecvs {
 
 using std::numeric_limits;
 using std::streamsize;
@@ -467,7 +467,7 @@ inline Vector2dd operator * (const Vector2dd &V,const Matrix33 &matrix)
     return (Vector2dd) matrix.mulBy2dLeft(V);
 }
 
-} //namespace core3vi
+} //namespace corecvs
 #endif
 
 

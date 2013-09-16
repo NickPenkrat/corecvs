@@ -9,7 +9,7 @@
 #include "serializerVisitor.h"
 #include "deserializerVisitor.h"
 
-namespace core3vi
+namespace corecvs
 {
 int ThickeningBlock::instanceCounter = 0;
 
@@ -64,4 +64,4 @@ ThickeningBlock::~ThickeningBlock()
     // TODO Auto-generated destructor stub
 }
 
-} /* namespace core3vi */
+} /* namespace corecvs */

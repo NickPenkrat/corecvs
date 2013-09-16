@@ -25,7 +25,7 @@
 #endif
 
 using namespace cv;
-using namespace core3vi;
+using namespace corecvs;
 
 template <class DetectorType> /* Detector type may be SIFT or SURF */
 class FeatureDetectorCV

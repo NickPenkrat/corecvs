@@ -20,13 +20,13 @@
  */
 #include "rgbColorParameters.h"
 
-using namespace core3vi;
+using namespace corecvs;
 
 /*
  *  Additional includes for Pointer Types.
  */
 
-namespace core3vi {
+namespace corecvs {
 }
 /*
  *  Additional includes for enum section.

@@ -10,7 +10,7 @@
 #include "fastKernel.h"
 #include "vectorAlgebra.h"
 #include "vectorTraits.h"
-namespace core3vi {
+namespace corecvs {
 
 /**
  *   This function is a copy of the one in G12Buffer.cpp. But this is for a reason
@@ -49,5 +49,5 @@ G12Buffer *Morphological::dilate(G12Buffer *input, G12Buffer *element, int cente
 }
 
 
-} //namespace core3vi
+} //namespace corecvs
 

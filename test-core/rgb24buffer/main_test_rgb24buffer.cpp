@@ -14,7 +14,7 @@
 
 
 using namespace std;
-using namespace core3vi;
+using namespace corecvs;
 
 void testDrawLine( void )
 {

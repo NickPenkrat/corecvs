@@ -12,7 +12,7 @@
 #include "cameraParameters.h"
 #include "eulerAngles.h"
 #include "floatFlowBuffer.h"
-namespace core3vi {
+namespace corecvs {
 
 class FCostFunction
 {
@@ -111,6 +111,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* FCOSTFUNCTION_H_ */
 

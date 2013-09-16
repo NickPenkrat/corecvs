@@ -8,7 +8,7 @@
 
 #include "treeSceneController.h"
 
-using core3vi::BaseReflectionStatic;
+using corecvs::BaseReflectionStatic;
 
 
 

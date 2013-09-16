@@ -15,8 +15,6 @@
 #include "generated/draw3dParameters.h"
 #include "draw3dParametersControlWidget.h"
 #include "draw3dCameraParametersControlWidget.h"
-// FIXIT: GOOPEN
-#include "../../restricted/applications/vimouse/generatedParameters/zoneParameters.h"
 
 class Mesh3DScene : public Mesh3D, public Scene3D {
 
@@ -130,27 +128,6 @@ public:
 
 };
 
-
-/**
- * Should not actually inherit  MeshScene3D, better to use Scene3D
- **/
-class ViMouseZone3DScene : public Mesh3DScene {
-    Triangulator   mTriangulator;
-    ZoneParameters mZone;
-    QRect          mRectangle;
-
-public:
-    ViMouseZone3DScene(
-        const Triangulator   &triangulator,
-        const ZoneParameters &zone,
-        const QRect          &rectangle);
-
-    void interpolateLine(Vector2dd start, Vector2dd end, double disparity);
-
-    virtual void drawMyself(CloudViewDialog *dialog);
-
-    virtual ~ViMouseZone3DScene();
-};
 
 
 /* EOF */

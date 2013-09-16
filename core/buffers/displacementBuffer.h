@@ -24,7 +24,7 @@
 #include "distortionCorrectTransform.h"
 #include "../math/levenmarq.h"
 
-namespace core3vi {
+namespace corecvs {
 
 typedef AbstractContiniousBuffer<Vector2dd, int32_t> DisplacementBufferBase;
 
@@ -216,6 +216,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 
 #endif /* CDISPLACEMENTBUFFER_H_ */

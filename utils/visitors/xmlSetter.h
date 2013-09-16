@@ -4,15 +4,15 @@
 #include "basePathVisitor.h"
 #include "reflection.h"
 
-using core3vi::IntField;
-using core3vi::DoubleField;
-using core3vi::FloatField;
-using core3vi::BoolField;
-using core3vi::StringField;
-using core3vi::PointerField;
-using core3vi::EnumField;
+using corecvs::IntField;
+using corecvs::DoubleField;
+using corecvs::FloatField;
+using corecvs::BoolField;
+using corecvs::StringField;
+using corecvs::PointerField;
+using corecvs::EnumField;
 
-using namespace core3vi;
+using namespace corecvs;
 
 class XmlSetter : public BasePathVisitor
 {

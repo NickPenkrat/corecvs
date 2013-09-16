@@ -1,6 +1,6 @@
 #include "straightFunc.h"
 
-namespace core3vi {
+namespace corecvs {
 
 StraightFunc::StraightFunc(const vector<vector<Vector2dd> > &sample, const Vector2d32 &center) :
     FunctionArgs((int)sample.size() * 2 + 4, (int)sample.size()),

@@ -9,7 +9,7 @@
 #include "generated/axisAlignedBoxParameters.h"
 #include "vector3d.h"
 
-namespace core3vi
+namespace corecvs
 {
 
 class AxisAlignedBox3d
@@ -126,5 +126,5 @@ public:
 
 
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 /* EOF */

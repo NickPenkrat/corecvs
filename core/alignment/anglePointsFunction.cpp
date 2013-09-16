@@ -1,6 +1,6 @@
 #include "anglePointsFunction.h"
 
-namespace core3vi {
+namespace corecvs {
 
 AnglePointsFunction::AnglePointsFunction(
         const vector<vector<Vector2dd> > &sample,
@@ -149,5 +149,5 @@ int AnglePointsFunction::getOutputs(const vector<vector<Vector2dd> > &sample)
 
 }
 
-} // namespace core3vi
+} // namespace corecvs
 

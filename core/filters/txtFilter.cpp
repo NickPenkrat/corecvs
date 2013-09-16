@@ -1,6 +1,6 @@
 #include "txtFilter.h"
 
-namespace core3vi
+namespace corecvs
 {
 
 int TxtFilter::instanceCounter = 0;
@@ -15,4 +15,4 @@ TxtFilter::~TxtFilter()
     // TODO Auto-generated destructor stub
 }
 
-} /* namespace core3vi */
+} /* namespace corecvs */

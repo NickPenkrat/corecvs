@@ -17,7 +17,7 @@
 #include "vector2d.h"
 #include "abstractBuffer.h"
 #include "g12Buffer.h"
-namespace core3vi {
+namespace corecvs {
 
 
 typedef AbstractBuffer<Vector2d<int16_t> > DerivativeBufferBase;
@@ -44,6 +44,6 @@ public:
 
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* DERIVATIVEBUFFER_H_ */
 

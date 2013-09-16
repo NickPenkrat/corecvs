@@ -12,7 +12,7 @@
 #include <limits>
 #include "global.h"
 #include "function.h"
-namespace core3vi {
+namespace corecvs {
 
 
 class GradientDescent
@@ -87,6 +87,6 @@ public:
 */
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* GRADIENTDESCENT_H_ */
 

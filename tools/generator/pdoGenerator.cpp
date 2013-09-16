@@ -205,7 +205,7 @@ void PDOGenerator::generatePDOH()
 
     result +=
     "\n"
-    "using namespace core3vi;\n"
+    "using namespace corecvs;\n"
     "\n";
 
     /* Probably we don't need actual includes here.
@@ -215,7 +215,7 @@ void PDOGenerator::generatePDOH()
     " *  Additional includes for Pointer Types.\n"
     " */\n"
     "\n"
-    "namespace core3vi {\n";
+    "namespace corecvs {\n";
 
     /* We don't bother vector is fast enough */
     vector<QString> pointedTypes;
@@ -518,12 +518,12 @@ void PDOGenerator::generatePDOCpp()
     " *  Also it's not clear why removing \"= Reflection()\" breaks the code;\n"
     " **/\n"
     "\n"
-    "namespace core3vi {\n"
+    "namespace corecvs {\n"
     "template<>\n"
     "Reflection BaseReflection<"+className+">::reflection = Reflection();\n"
     "template<>\n"
     "int BaseReflection<"+className+">::dummy = "+className+"::staticInit();\n"
-    "} // namespace core3vi \n"
+    "} // namespace corecvs \n"
     "\n"
     "SUPPRESS_OFFSET_WARNING_BEGIN\n"
     "\n"

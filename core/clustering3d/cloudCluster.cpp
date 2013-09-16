@@ -1,6 +1,6 @@
 #include "cloudCluster.h"
 
-namespace core3vi {
+namespace corecvs {
 
 void CloudCluster::getMean()
 {
@@ -43,4 +43,4 @@ void CloudCluster::getStat()
     mEllipse.getEllipseParameters();
 }
 
-} //namespace core3vi
+} //namespace corecvs

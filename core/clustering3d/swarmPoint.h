@@ -9,7 +9,7 @@
 #include "vector3d.h"
 #include "rgbColor.h"
 
-namespace core3vi {
+namespace corecvs {
 
 class SwarmPoint
 {
@@ -92,6 +92,6 @@ struct SortSwarmPointTexX
     }
 };
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 
 /* EOF */

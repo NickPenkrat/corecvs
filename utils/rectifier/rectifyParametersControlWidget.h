@@ -10,7 +10,7 @@
 #include "parametersControlWidgetBase.h"
 #include "qtHelper.h"
 
-using namespace core3vi;
+using namespace corecvs;
 
 class RectifyParametersControlWidget : public ParametersControlWidgetBase
 {

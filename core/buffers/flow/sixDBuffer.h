@@ -21,7 +21,7 @@
 #include "punchedBufferOperations.h"
 #include "floatFlowBuffer.h"
 
-namespace core3vi {
+namespace corecvs {
 
 
 typedef AbstractContiniousBuffer< Element6D , int32_t> SixDBufferBase;
@@ -71,7 +71,7 @@ public:
 };
 
 
-} // namespace core3vi
+} // namespace corecvs
 
 #endif  /* #ifndef SIXDBUFFER_H_ */
 

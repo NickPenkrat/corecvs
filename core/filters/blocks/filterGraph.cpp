@@ -1,7 +1,7 @@
 #include "filterGraph.h"
 #include "compoundFilter.h"
 
-namespace core3vi
+namespace corecvs
 {
 using namespace tinyxml2;
 
@@ -277,4 +277,4 @@ void FilterGraph::renewCompoundFilters(int _typeid, FilterBlock* blockToIgnore)
     }
 }
 
-} /* namespace core3vi */
+} /* namespace corecvs */

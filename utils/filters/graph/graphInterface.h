@@ -4,7 +4,7 @@
 #include <vector>
 #include "filterBlock.h"
 
-using namespace core3vi;
+using namespace corecvs;
 
 class GraphInterface
 {

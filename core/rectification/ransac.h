@@ -12,7 +12,7 @@
 #include <algorithm>
 
 #include "global.h"
-namespace core3vi {
+namespace corecvs {
 
 using std::vector;
 using std::find;
@@ -107,7 +107,7 @@ public:
 
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif  //RANSAC_H_
 
 

@@ -22,7 +22,7 @@
 #include "utils.h"
 
 
-namespace core3vi {
+namespace corecvs {
 
 #if defined( DSP_TARGET ) || defined( WIN32 ) || defined( WIN64 )
 // It is possible but quite hard and usually not needed to print stack trace on Win32.
@@ -55,6 +55,6 @@ void setStdTerminateHandler()
 
 #endif // DSP_TARGET
 
-} //namespace core3vi
+} //namespace corecvs
 
 

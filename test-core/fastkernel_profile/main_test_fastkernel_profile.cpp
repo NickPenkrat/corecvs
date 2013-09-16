@@ -38,31 +38,31 @@
 using namespace std;
 
 #ifdef WITH_SSE
-using core3vi::Int32x4;
-using core3vi::G12BufferAlgebraStreaming;
+using corecvs::Int32x4;
+using corecvs::G12BufferAlgebraStreaming;
 #endif
 
-using core3vi::G12Buffer;
-using core3vi::PreciseTimer;
-using core3vi::Blur5Horisontal;
-using core3vi::SobelHorizontalKernel;
-using core3vi::SumBuffers;
-using core3vi::Blur5Vertical;
-using core3vi::DummyAlgebra;
-using core3vi::BufferProcessor;
-using core3vi::ScalarAlgebraUInt16_t;
-using core3vi::DilateKernel;
-using core3vi::ErodeKernel;
-using core3vi::G12BufferAlgebra;
-using core3vi::CopyKernel;
-using core3vi::EdgeMagnitude;
-using core3vi::SobelVerticalKernel;
-using core3vi::Gaussian3x3Kernel;
-using core3vi::SubtractBuffers;
-using core3vi::MixBuffers;
-using core3vi::DifferenceBuffers;
-using core3vi::ThresholdBinariseKernel;
-using core3vi::G12BufferAlgebraScalar;
+using corecvs::G12Buffer;
+using corecvs::PreciseTimer;
+using corecvs::Blur5Horisontal;
+using corecvs::SobelHorizontalKernel;
+using corecvs::SumBuffers;
+using corecvs::Blur5Vertical;
+using corecvs::DummyAlgebra;
+using corecvs::BufferProcessor;
+using corecvs::ScalarAlgebraUInt16_t;
+using corecvs::DilateKernel;
+using corecvs::ErodeKernel;
+using corecvs::G12BufferAlgebra;
+using corecvs::CopyKernel;
+using corecvs::EdgeMagnitude;
+using corecvs::SobelVerticalKernel;
+using corecvs::Gaussian3x3Kernel;
+using corecvs::SubtractBuffers;
+using corecvs::MixBuffers;
+using corecvs::DifferenceBuffers;
+using corecvs::ThresholdBinariseKernel;
+using corecvs::G12BufferAlgebraScalar;
 
 const static unsigned POLUTING_INPUTS = 50;
 const static unsigned LIMIT = 300;

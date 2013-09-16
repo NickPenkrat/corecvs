@@ -15,8 +15,8 @@
 #include "g12Buffer.h"
 #include "flowVector.h"
 
-using core3vi::FloatFlowVector;
-using core3vi::G12Buffer;
+using corecvs::FloatFlowVector;
+using corecvs::G12Buffer;
 using std::vector;
 
 class KLTFlow

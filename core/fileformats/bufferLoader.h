@@ -9,7 +9,7 @@
  */
 #include <string>
 
-namespace core3vi {
+namespace corecvs {
 
 using std::string;
 
@@ -32,4 +32,4 @@ public:
 
 };
 
-} //namespace core3vi
+} //namespace corecvs

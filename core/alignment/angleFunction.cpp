@@ -1,7 +1,7 @@
 #include "angleFunction.h"
 #include "radialFunc.h"
 
-namespace core3vi
+namespace corecvs
 {
 AngleFunction::AngleFunction(const vector<vector<Vector2dd> > &sample, const Vector2d32 &center, int polynomDegree, double scaleFactor) :
     FunctionArgs(polynomDegree, (int)sample.size()),

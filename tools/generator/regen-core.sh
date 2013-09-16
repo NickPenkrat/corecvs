@@ -143,7 +143,13 @@ WIDGETS_DIR="${UTILS_DIR}/filters/ui"
 WIDGETS_REL_DIR="\$\${UTILSDIR}/filters/ui"
 WPRIFILE="${WIDGETS_DIR}/filterWidgets.pri"
 
-enums="sobelMixingType openCVBinaryFilterType operation interpolationType inputType outputType"
+enums="sobelMixingType 
+       openCVBinaryFilterType 
+       operation 
+       interpolationType 
+       inputType 
+       outputType         
+       "
 classes=""
 ui_classes=""         
 full_ui_classes="
@@ -157,8 +163,7 @@ full_ui_classes="
         thickeningParameters
         maskingParameters
         outputFilterParameters
-        inputFilterParameters
-
+        inputFilterParameters       
         operationParameters
         "
 
@@ -188,16 +193,23 @@ WIDGETS_DIR="${UTILS_DIR}/corestructs/coreWidgets"
 WIDGETS_REL_DIR="\$\${UTILSDIR}/corestructs/coreWidgets"
 WPRIFILE="${WIDGETS_DIR}/coreWidgets.pri"
 
-enums="sobelMixingType openCVBinaryFilterType operation interpolationType"
+enums="sobelMixingType
+       openCVBinaryFilterType 
+       operation 
+       interpolationType         
+       makePreciseAlgorithm
+       preciseInterpolationType"
 classes=""
 ui_classes="
         rgbColorParameters
-        "
+    
+       "
                  
 full_ui_classes="   
         axisAlignedBoxParameters
         headSearchParameters
-        "
+        makePreciseParameters
+       "
 
 PRIFILE="${DST_DIR}/generated.pri"
 

@@ -1,5 +1,5 @@
 #include "g12Buffer3d.h"
-namespace core3vi {
+namespace corecvs {
 
 SwarmPoint* G12Buffer3d::p0 = NULL;
 
@@ -10,4 +10,4 @@ G12Buffer3d::~G12Buffer3d()
 }
 
 
-} //namespace core3vi
+} //namespace corecvs

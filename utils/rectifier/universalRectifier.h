@@ -20,7 +20,7 @@
 #include "triangulator.h"
 
 
-using namespace core3vi;
+using namespace corecvs;
 
 class UniversalRectifier
 {

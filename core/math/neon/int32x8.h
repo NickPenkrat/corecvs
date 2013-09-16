@@ -10,7 +10,7 @@
  */
 #include "global.h"
 #include "vector2d.h"
-namespace core3vi {
+namespace corecvs {
 
 class Int32x8 : public Vector2d<Int32x4>
 {
@@ -53,6 +53,6 @@ FORCE_INLINE inline Int32x8 operator >>=(Int32x8 &left, uint32_t count) {
 
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif  //INT32X8_H_
 

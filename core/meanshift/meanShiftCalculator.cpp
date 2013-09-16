@@ -10,7 +10,7 @@
 
 #include "meanShiftCalculator.h"
 
-namespace core3vi {
+namespace corecvs {
 
 using std::map;
 
@@ -90,5 +90,5 @@ std::vector<MeanShiftWindow*> MeanShiftCalculator::windows() const
     return result;
 }
 
-} //namespace core3vi
+} //namespace corecvs
 

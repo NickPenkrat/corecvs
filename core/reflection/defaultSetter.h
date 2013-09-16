@@ -7,7 +7,7 @@
 
 #include "reflection.h"
 
-namespace core3vi {
+namespace corecvs {
 
 class DefaultSetter
 {
@@ -59,6 +59,6 @@ void DefaultSetter::visit<std::string, StringField>(
         const StringField *fieldDescriptor);
 
 
-} //namespace core3vi
+} //namespace corecvs
 
 #endif // DEFAULT_SETTER_H_

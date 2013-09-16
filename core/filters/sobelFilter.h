@@ -13,7 +13,7 @@
 #include "../xml/generated/sobelParameters.h"
 #include "filtersCollection.h"
 
-namespace core3vi
+namespace corecvs
 {
 using namespace tinyxml2;
 
@@ -60,5 +60,5 @@ private:
     static int instanceCounter;
 };
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 #endif /* SOBEL_FILTER_H_ */

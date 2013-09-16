@@ -7,7 +7,7 @@
  */
 
 #include "flowVectorInformation.h"
-namespace core3vi {
+namespace corecvs {
 
 const char *FlowVectorInformation::REASON_NAMES[] =
 {
@@ -21,5 +21,5 @@ const char *FlowVectorInformation::REASON_NAMES[] =
    "OBJECT_UNDERGROUND"
 };
 
-} //namespace core3vi
+} //namespace corecvs
 

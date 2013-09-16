@@ -1,7 +1,7 @@
 #ifndef EULERANGLES_H_
 #define EULERANGLES_H_
 #include "quaternion.h"
-namespace core3vi {
+namespace corecvs {
 /**
  * \file eulerAngles.h
  * \brief a header for eulerAngles.c
@@ -179,6 +179,6 @@ public:
 
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif  //EULERANGLES_H_
 

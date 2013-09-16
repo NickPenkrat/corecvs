@@ -11,7 +11,7 @@
 
 #include "blurProcessor.h"
 #include "tbbWrapper.h"
-namespace core3vi {
+namespace corecvs {
 
 /*TODO: Hide this*/
 const int BlurProcessor::xshift[4] = {0,1,0,1};
@@ -275,5 +275,5 @@ ALIGN_STACK_SSE void BlurProcessor::prepareBlurBuffersSSE(G12IntegralBuffer *int
 
 #endif // WITH_SSE
 
-} //namespace core3vi
+} //namespace corecvs
 

@@ -6,7 +6,7 @@
 
 #include "cloud.h"
 
-namespace core3vi {
+namespace corecvs {
 
 Cloud* Cloud::filterByAABB(const AxisAlignedBox3d &box)
 {
@@ -21,4 +21,4 @@ Cloud* Cloud::filterByAABB(const AxisAlignedBox3d &box)
     return result;
 }
 
-} //namespace core3vi
+} //namespace corecvs

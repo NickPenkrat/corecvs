@@ -2,8 +2,8 @@
 #include "qtHelper.h"
 #include "mathUtils.h"
 
-using core3vi::radToDeg;
-using core3vi::degToRad;
+using corecvs::radToDeg;
+using corecvs::degToRad;
 
 
 AngleEditBox::AngleEditBox(QWidget *parent)

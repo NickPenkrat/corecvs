@@ -10,7 +10,7 @@
 #include "g8Buffer.h"
 #include "g12Buffer.h"
 
-namespace core3vi {
+namespace corecvs {
 
 G8Buffer* G8Buffer::FromG12Buffer(G12Buffer *input)
 {
@@ -25,5 +25,5 @@ G8Buffer* G8Buffer::FromG12Buffer(G12Buffer *input)
     return result;
 }
 
-} //namespace core3vi
+} //namespace corecvs
 

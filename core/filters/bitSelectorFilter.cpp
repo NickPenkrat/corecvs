@@ -11,7 +11,7 @@
 #include "serializerVisitor.h"
 #include "deserializerVisitor.h"
 
-namespace core3vi
+namespace corecvs
 {
 
 int BitSelectorFilter::instanceCounter = 0;
@@ -78,4 +78,4 @@ void BitSelectorFilter::deserialize(XMLNode* node, bool force)
     mBitSelectorParameters.accept(visitor);
 }
 
-} /* namespace core3vi */
+} /* namespace corecvs */

@@ -1,6 +1,6 @@
 #include "qSettingsSetter.h"
 
-using namespace core3vi;
+using namespace corecvs;
 
 SettingsSetter::SettingsSetter(QString const & fileName, QString _root) :
     mRoot(_root)

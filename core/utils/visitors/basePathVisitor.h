@@ -10,7 +10,7 @@
 #include <deque>
 #include <string>
 
-namespace core3vi {
+namespace corecvs {
 
 using std::string;
 using std::deque;
@@ -60,7 +60,7 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif // BASEPATHVISITOR
 
 

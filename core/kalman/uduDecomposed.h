@@ -15,7 +15,7 @@
 #include "diagonalMatrix.h"
 #include "cholesky.h"
 
-namespace core3vi {
+namespace corecvs {
 
 class UDUTDecomposed
 {
@@ -42,7 +42,7 @@ public:
 
 };
 
-} //namespace core3vi
+} //namespace corecvs
 #endif  //UDUDECOMPOSED_H_
 
 

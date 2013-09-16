@@ -2,7 +2,7 @@
 #include "serializerVisitor.h"
 #include "deserializerVisitor.h"
 
-namespace core3vi
+namespace corecvs
 {
 
 int InputFilter::instanceCounter = 0;
@@ -39,4 +39,4 @@ InputFilter::~InputFilter()
 
 }
 
-} // namespace core3vi
+} // namespace corecvs

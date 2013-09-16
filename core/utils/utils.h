@@ -13,7 +13,7 @@
 
 #include "global.h"
 
-namespace core3vi {
+namespace corecvs {
 
 //@{
 /**
@@ -50,5 +50,5 @@ class binary<0>
 void setStdTerminateHandler();
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* UTILS_H_ */

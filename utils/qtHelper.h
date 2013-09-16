@@ -12,8 +12,8 @@
 #include "vector2d.h"
 #include "vector3d.h"
 
-QDebug & operator<< (QDebug & stream, const core3vi::Vector2dd & vector);
-QDebug & operator<< (QDebug & stream, const core3vi::Vector3dd & vector);
+QDebug & operator<< (QDebug & stream, const corecvs::Vector2dd & vector);
+QDebug & operator<< (QDebug & stream, const corecvs::Vector3dd & vector);
 
 void setValueBlocking(QDoubleSpinBox *box, double value);
 

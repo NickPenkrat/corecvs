@@ -12,10 +12,10 @@
 
 #include "commonMappers.h"
 #include "g12Buffer.h"
-namespace core3vi {
+namespace corecvs {
 
 
 #endif  //COMMONMAPPERS_CPP_
 
-} //namespace core3vi
+} //namespace corecvs
 

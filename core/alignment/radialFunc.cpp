@@ -1,7 +1,7 @@
 #include "radialFunc.h"
 #include "radialCorrection.h"
 
-namespace core3vi {
+namespace corecvs {
 
 RadialCorrection getRadial(const double in[]);
 void getModel(const RadialCorrection &correction, double in[]);

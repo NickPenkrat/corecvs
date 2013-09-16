@@ -16,7 +16,7 @@
 #include "tbbWrapper.h"
 #include "floatFlowBuffer.h"
 
-namespace core3vi {
+namespace corecvs {
 
 using std::ifstream;
 using std::ofstream;
@@ -160,4 +160,4 @@ bool FlowBuffer::dump(const string& path) const
     return !file.bad();
 }
 
-} //namespace core3vi
+} //namespace corecvs

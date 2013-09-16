@@ -16,7 +16,7 @@
 
 #include "vector2d.h"
 #include "tbbWrapper.h"
-namespace core3vi {
+namespace corecvs {
 
 template<typename ThisTypeName, typename ElementType>
 class PunchedBufferOperations
@@ -113,6 +113,6 @@ public:
 
 };
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* PUNCHEDBUFFEROPERATIONS_H_ */
 

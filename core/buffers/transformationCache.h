@@ -2,7 +2,7 @@
 #include "displacementBuffer.h"
 #include "generated/interpolationType.h"
 
-namespace core3vi {
+namespace corecvs {
 
 /**
  *  This class is caching the transformation of the buffer.

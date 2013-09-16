@@ -11,7 +11,7 @@
 #include "filterBlock.h"
 #include "filtersCollection.h"
 
-namespace core3vi
+namespace corecvs
 {
 
 class TxtFilter : public FilterBlock
@@ -49,5 +49,5 @@ private:
     static int instanceCounter;
 };
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 #endif // TXTFILTER_H

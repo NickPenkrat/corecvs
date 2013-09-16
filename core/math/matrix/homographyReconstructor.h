@@ -17,7 +17,7 @@
 #include "matrix.h"
 #include "function.h"
 #include "line.h"
-namespace core3vi {
+namespace corecvs {
 
 using std::vector;
 
@@ -105,6 +105,6 @@ private:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* HOMOGRAPHYRECONSTRUCTOR_H_ */
 

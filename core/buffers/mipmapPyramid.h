@@ -17,7 +17,7 @@
 #include "abstractBuffer.h"
 #include "gaussian.h"
 
-namespace core3vi {
+namespace corecvs {
 
 using std::vector;
 
@@ -92,6 +92,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif  //MIPMAPPYRAMID_H_
 

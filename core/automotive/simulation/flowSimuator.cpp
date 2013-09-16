@@ -9,7 +9,7 @@
 
 #include "flowSimuator.h"
 #include "FCostFunction.h"
-namespace core3vi {
+namespace corecvs {
 
 FlowSimuator::FlowSimuator()
 {
@@ -158,5 +158,5 @@ std::vector<FloatFlowVector> *FlowSimuator::simulateFlow(
 }
 
 
-} //namespace core3vi
+} //namespace corecvs
 

@@ -14,7 +14,7 @@
 #include "fixedVector.h"
 #include "sseWrapper.h"
 
-namespace core3vi
+namespace corecvs
 {
 
 class DecoupleYUYV
@@ -31,5 +31,5 @@ public:
     static void decouple(unsigned formatH, unsigned formatW, uint8_t *ptr, ImageCouplingType coupling, ImageCaptureInterface::FramePair &result);
 };
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 #endif /* DECOUPLE_YUYV_H_ */

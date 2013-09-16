@@ -13,7 +13,7 @@
 
 #include "global.h"
 #include "memoryBlock.h"
-namespace core3vi {
+namespace corecvs {
 
 /**
  *
@@ -210,6 +210,6 @@ private:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* VOXELBUFFER_H_ */
 

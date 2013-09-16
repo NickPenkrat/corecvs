@@ -9,7 +9,7 @@
 #include "filterBlock.h"
 #include "../xml/generated/binarizeParameters.h"
 
-namespace core3vi
+namespace corecvs
 {
 using namespace tinyxml2;
 
@@ -56,7 +56,7 @@ private:
     static int instanceCounter;
 };
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 
 /* EOF */
 

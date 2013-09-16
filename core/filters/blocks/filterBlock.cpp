@@ -8,7 +8,7 @@
 //#include "filterGraph.h"
 #include "serializerVisitor.h"
 
-namespace core3vi
+namespace corecvs
 {
 using namespace tinyxml2;
 
@@ -112,4 +112,4 @@ void FilterBlock::clear()
         outputPins[i]->clear();
 }
 
-} /* namespace core3vi */
+} /* namespace corecvs */

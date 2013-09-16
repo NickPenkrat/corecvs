@@ -15,7 +15,7 @@
 #include "mathUtils.h"
 #include "OpenCVTools.h"
 
-using namespace core3vi;
+using namespace corecvs;
 
 KLTFlow::KLTFlow()
 {

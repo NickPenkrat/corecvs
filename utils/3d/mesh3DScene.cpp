@@ -15,7 +15,7 @@
 #include "painterHelpers.h"
 #include "mathUtils.h"
 
-using core3vi::lerp;
+using corecvs::lerp;
 
 void Mesh3DScene::drawMyself(CloudViewDialog *dialog)
 {
@@ -334,59 +334,3 @@ void StereoCameraScene::drawMyself(CloudViewDialog *dialog)
 }
 
 
-ViMouseZone3DScene::ViMouseZone3DScene(
-    const Triangulator   &triangulator,
-    const ZoneParameters &zone,
-    const QRect          &rectangle) :
-    	mTriangulator(triangulator),
-    	mZone(zone),
-    	mRectangle(rectangle)
-{
-
-}
-
-void ViMouseZone3DScene::interpolateLine(Vector2dd start, Vector2dd end, double disparity)
-{
-    const int STEPS = 10;
-    glBegin(GL_LINE_STRIP);
-        for (int i = 0; i < STEPS + 1; i++)
-        {
-            Vector2dd point = lerp(start, end, (double)i, 0.0, (double)STEPS);
-            Vector3dd point3d = mTriangulator.triangulate(point, disparity);
-            OpenGLTools::glVertexVector3dd(point3d);
-        }
-    glEnd();
-}
-
-
-void ViMouseZone3DScene::drawMyself(CloudViewDialog * /*dialog*/)
-{
-	Vector2dd points[4];
-	points[0] = Qt2Core::Vector2ddFromQPoint(mRectangle.topLeft());
-	points[1] = Qt2Core::Vector2ddFromQPoint(mRectangle.topRight());
-	points[2] = Qt2Core::Vector2ddFromQPoint(mRectangle.bottomRight());
-	points[3] = Qt2Core::Vector2ddFromQPoint(mRectangle.bottomLeft());
-
-    glColor3ub(mParameters.color().r(), mParameters.color().g(), mParameters.color().b());
-	for (int i = 0; i < 4; i++) {
-		interpolateLine( points[i], points[(i+1) % 4],mZone.mPreDisp);
-	}
-	for (int i = 0; i < 4; i++) {
-		interpolateLine( points[i], points[(i+1) % 4],mZone.mMinDisp);
-	}
-
-    glColor3ub(mParameters.secondaryColor().r(), mParameters.secondaryColor().g(), mParameters.secondaryColor().b());
-	for (int i = 0; i < 4; i++) {
-		interpolateLine( points[i], points[(i+1) % 4],mZone.mMaxDisp);
-	}
-	for (int i = 0; i < 4; i++) {
-		interpolateLine( points[i], points[(i+1) % 4],mZone.mClickDisp);
-	}
-
-
-}
-
-ViMouseZone3DScene::~ViMouseZone3DScene()
-{
-
-}

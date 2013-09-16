@@ -7,7 +7,7 @@
 #include "triangulator.h"
 #include "abstractContiniousBuffer.h"
 
-namespace core3vi {
+namespace corecvs {
 
 typedef AbstractContiniousBuffer<SwarmPoint*, int32_t> G12Buffer3dBase;
 
@@ -87,6 +87,6 @@ private:
     vector<SwarmPoint> *mSP;
 }; // G12Buffer3d
 
-} //namespace core3vi
+} //namespace corecvs
 
 #endif // G12BUFFER3D_H

@@ -10,7 +10,7 @@
 #include "filtersCollection.h"
 #include "calculationStats.h"
 
-namespace core3vi
+namespace corecvs
 {
 using std::vector;
 //using namespace tinyxml2;
@@ -84,6 +84,6 @@ public:
     void loadFromFile(const char* filename);
 }; // FilterGraph
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 
 #endif // FILTERGRAPH_H

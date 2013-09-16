@@ -8,7 +8,7 @@
 
 #include <stdint.h>
 
-namespace core3vi
+namespace corecvs
 {
 
 /**
@@ -31,5 +31,5 @@ public:
     ~HersheyVectorFont();
 };
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 /* EOF */

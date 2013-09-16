@@ -1,6 +1,6 @@
 #include "buffer3d.h"
 
-namespace core3vi {
+namespace corecvs {
 
 SwarmPoint* Buffer3d::p0 = NULL;
 
@@ -39,4 +39,4 @@ double Buffer3d::getLength(Vector2d32 p1, Vector2d32 p2) const
 }
 
 
-} //namespace core3vi
+} //namespace corecvs

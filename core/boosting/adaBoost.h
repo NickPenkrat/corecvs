@@ -23,7 +23,7 @@
 
 #include "math.h"
 
-namespace core3vi {
+namespace corecvs {
 
 using std::string;
 using std::vector;
@@ -283,6 +283,6 @@ class AdaBoost
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* ADABOOST_H_ */
 

@@ -1,6 +1,6 @@
 #include "compoundFilter.h"
 
-namespace core3vi
+namespace corecvs
 {
 
 int CompoundFilter::instanceCounter = 0;
@@ -82,4 +82,4 @@ CompoundFilter::~CompoundFilter()
     outputPins.clear();
 }
 
-} /* namespace core3vi */
+} /* namespace corecvs */

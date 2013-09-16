@@ -8,7 +8,7 @@
 
 #include "filterExecuter.h"
 
-namespace core3vi
+namespace corecvs
 {
 
 FilterExecuter::FilterExecuter(const FilterSelectorParameters &params)
@@ -72,4 +72,4 @@ FilterExecuter::~FilterExecuter()
     clear();
 }
 
-} /* namespace core3vi */
+} /* namespace corecvs */

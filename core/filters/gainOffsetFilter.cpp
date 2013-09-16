@@ -12,7 +12,7 @@
 #include "serializerVisitor.h"
 #include "deserializerVisitor.h"
 
-namespace core3vi
+namespace corecvs
 {
 
 int GainOffsetFilter::instanceCounter = 0;
@@ -57,4 +57,4 @@ void GainOffsetFilter::deserialize(XMLNode* node, bool force)
     mGainOffsetParameters.accept(visitor);
 }
 
-} /* namespace core3vi */
+} /* namespace corecvs */

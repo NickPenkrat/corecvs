@@ -10,7 +10,7 @@
 #include "segmentator.h"
 #include "ellipticalApproximation.h"
 
-namespace core3vi {
+namespace corecvs {
 
 class CloudCluster : public CloudBase, public BaseSegment<CloudCluster>
 {
@@ -38,6 +38,6 @@ struct CloudClusterSort
     }
 };
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 
 /* EOF */

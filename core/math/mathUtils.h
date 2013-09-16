@@ -15,7 +15,7 @@
 
 #include <stdlib.h>       // RAND_MAX
 
-namespace core3vi {
+namespace corecvs {
 
 #ifndef M_PI
 #define M_PI 3.141592653589793238462643
@@ -180,4 +180,4 @@ inline double lerpLimit(double outStart, double outEnd, double value, double int
     return lerp<double>(outStart, outEnd, value, intervalStart, intervalEnd);
 }
 
-} //namespace core3vi
+} //namespace corecvs

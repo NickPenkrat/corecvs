@@ -9,7 +9,7 @@
  */
 #include "meanShiftWindow.h"
 
-namespace core3vi {
+namespace corecvs {
 
 using std::pair;
 using std::make_pair;
@@ -132,5 +132,5 @@ int MeanShiftWindow::maxY() const
 }
 
 
-} //namespace core3vi
+} //namespace corecvs
 

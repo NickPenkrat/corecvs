@@ -10,7 +10,7 @@
 
 #include "calculationStats.h"
 
-namespace core3vi {
+namespace corecvs {
 
 /*
 void ViMouseStatistics::printStats()
@@ -29,5 +29,5 @@ void ViMouseStatistics::printStats()
 }
 */
 
-} //namespace core3vi
+} //namespace corecvs
 

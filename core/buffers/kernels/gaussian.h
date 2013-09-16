@@ -14,7 +14,7 @@
 #include "global.h"
 
 #include "abstractKernel.h"
-namespace core3vi {
+namespace corecvs {
 
 class Gaussian3x3 : public AbstractKernel<double, int32_t>
 {
@@ -158,6 +158,6 @@ template <typename OtherAlgebra>
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* GAUSSIAN3X3_H_ */
 

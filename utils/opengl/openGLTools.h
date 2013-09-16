@@ -15,7 +15,7 @@
 #include "matrix33.h"
 #include "abstractPainter.h"
 
-using namespace core3vi;
+using namespace corecvs;
 
 class OpenGLTools
 {

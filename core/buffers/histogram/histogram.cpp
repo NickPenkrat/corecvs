@@ -10,7 +10,7 @@
 #include "global.h"
 
 #include "histogram.h"
-namespace core3vi {
+namespace corecvs {
 
 Histogram::~Histogram()
 {
@@ -133,5 +133,5 @@ int Histogram::getOtsuThreshold()
     return result + min;
 }
 
-} //namespace core3vi
+} //namespace corecvs
 

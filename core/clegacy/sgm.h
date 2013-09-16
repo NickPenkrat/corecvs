@@ -17,7 +17,7 @@
 
 #ifdef DEPRICATED
 #include "disparity.h"
-namespace core3vi {
+namespace corecvs {
 
 #endif
 
@@ -61,6 +61,6 @@ DisparityBuffer *countDisparity( G12Buffer* I, G12Buffer* J, int dMax, int close
 #ifdef __cplusplus
     } //     extern "C"
 #endif
-} //namespace core3vi
+} //namespace corecvs
 #endif
 

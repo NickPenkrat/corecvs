@@ -8,7 +8,7 @@
  */
 
 #include "polygons.h"
-namespace core3vi {
+namespace corecvs {
 
 /**
  *
@@ -34,5 +34,5 @@ int Poligon::isInside(const Vector2dd &a)
 }
 
 
-} //namespace core3vi
+} //namespace corecvs
 

@@ -2,7 +2,7 @@
 #include "filterBlock.h"
 #include "filterGraph.h"
 
-namespace core3vi {
+namespace corecvs {
 
 int G12Pin::instanceCounter = 0;
 int TxtPin::instanceCounter = 0;
@@ -58,4 +58,4 @@ void TxtPin::deserialize(XMLNode* node)
     Pin::deserialize(node);
 }
 
-} //namespace core3vi
+} //namespace corecvs

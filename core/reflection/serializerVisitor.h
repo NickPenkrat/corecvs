@@ -4,7 +4,7 @@
 #include "reflection.h"
 #include "tinyxml2.h"
 
-namespace core3vi {
+namespace corecvs {
 
 using namespace tinyxml2;
 
@@ -90,6 +90,6 @@ template <class Type>
 //void myXMLvisitor::visit<bool>(bool &boolField, bool defaultValue, const char *fieldName);
 
 
-} //namespace core3vi
+} //namespace corecvs
 
 #endif // MYXMLVISITOR_H

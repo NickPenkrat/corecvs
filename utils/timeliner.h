@@ -17,7 +17,7 @@
 
 #include "fixedVector.h"
 
-using namespace core3vi;
+using namespace corecvs;
 
 #if 0
 

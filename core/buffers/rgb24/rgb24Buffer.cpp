@@ -14,7 +14,7 @@
 
 #undef rad2     // it's defined at win hdrs
 
-namespace core3vi {
+namespace corecvs {
 
 
 void RGB24Buffer::drawG12Buffer(G12Buffer *src, int32_t y, int32_t x)
@@ -657,5 +657,5 @@ void RGB24Buffer::drawIsolines(
 }
 
 
-} //namespace core3vi
+} //namespace corecvs
 

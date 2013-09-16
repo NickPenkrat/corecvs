@@ -6,7 +6,7 @@
 #include "mathUtils.h"      // M_PI
 #include "mesh3d.h"
 
-namespace core3vi {
+namespace corecvs {
 
 void Mesh3D::addAOB(Vector3dd c1, Vector3dd c2)
 {
@@ -114,4 +114,4 @@ void Mesh3D::addTruncatedCone(double r1, double r2, double length, int steps)
 }
 #endif
 
-} /* namespace core3vi */
+} /* namespace corecvs */

@@ -14,7 +14,7 @@
 #include "integralBuffer.h"
 #include "g12Buffer.h"
 
-namespace core3vi {
+namespace corecvs {
 
 class BlurProcessor
 {
@@ -39,7 +39,7 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 
 #endif /* BLURPROCESSOR_H_ */
 

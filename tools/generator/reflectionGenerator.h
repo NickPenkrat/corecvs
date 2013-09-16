@@ -13,17 +13,17 @@
 
 #include "reflection.h"
 
-using core3vi::BaseField;
-using core3vi::SimpleScalarField;
-using core3vi::BoolField;
-using core3vi::DoubleField;
-using core3vi::StringField;
-using core3vi::CompositeField;
-using core3vi::EnumField;
-using core3vi::PointerField;
-using core3vi::ReflectionNaming;
-using core3vi::Reflection;
-using core3vi::EnumReflection;
+using corecvs::BaseField;
+using corecvs::SimpleScalarField;
+using corecvs::BoolField;
+using corecvs::DoubleField;
+using corecvs::StringField;
+using corecvs::CompositeField;
+using corecvs::EnumField;
+using corecvs::PointerField;
+using corecvs::ReflectionNaming;
+using corecvs::Reflection;
+using corecvs::EnumReflection;
 
 
 class ReflectionGen : public Reflection

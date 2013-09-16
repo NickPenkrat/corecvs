@@ -1,7 +1,7 @@
 #include "curvatureFunc.h"
 #include "radialFunc.h"
 
-namespace core3vi
+namespace corecvs
 {
 
 CurvatureFunc::CurvatureFunc(const vector<vector<Vector2dd> > &sample, const Vector2d32 &center, int polynomDegree, double scaleFactor) :
@@ -128,4 +128,4 @@ Matrix CurvatureFunc::getJacobian(const double in[], double delta)
     return result;
 }
 
-} // namespace core3vi
+} // namespace corecvs

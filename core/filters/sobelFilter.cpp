@@ -16,7 +16,7 @@
 #include "serializerVisitor.h"
 #include "deserializerVisitor.h"
 
-namespace core3vi
+namespace corecvs
 {
 
 int SobelFilter::instanceCounter = 0;
@@ -132,4 +132,4 @@ SobelFilter::~SobelFilter()
     // TODO Auto-generated destructor stub
 }
 
-} /* namespace core3vi */
+} /* namespace corecvs */

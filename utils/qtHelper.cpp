@@ -7,8 +7,8 @@
 
 #include "qtHelper.h"
 
-using core3vi::Vector2dd;
-using core3vi::Vector3dd;
+using corecvs::Vector2dd;
+using corecvs::Vector3dd;
 
 QDebug & operator<< (QDebug & stream, const Vector2dd & vector)
 {

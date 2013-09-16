@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include "mathUtils.h"
 
-namespace core3vi {
+namespace corecvs {
 
 class PreciseTimer
 {
@@ -59,4 +59,4 @@ private:
     uint64_t *mpAccTime;
 };
 
-} //namespace core3vi
+} //namespace corecvs

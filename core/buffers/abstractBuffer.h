@@ -27,7 +27,7 @@
 #include "tbbWrapper.h"
 #include "mathUtils.h"                  // randRanged
 
-namespace core3vi {
+namespace corecvs {
 
 using std::string;
 using std::cout;
@@ -1101,4 +1101,4 @@ private:
 template<typename ElementType, typename IndexType>
 int AbstractBuffer<ElementType, IndexType>::bufferCount = 0;
 
-} //namespace core3vi
+} //namespace corecvs

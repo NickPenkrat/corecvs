@@ -25,8 +25,8 @@
 #endif //WITH_SSE
 
 
-namespace core3vi {
-} //namespace core3vi
+namespace corecvs {
+} //namespace corecvs
 
 #endif /* SEEWRAPPER_H_ */
 

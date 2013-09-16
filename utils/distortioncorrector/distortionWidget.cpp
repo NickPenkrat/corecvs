@@ -16,7 +16,7 @@
 #include "ui_distortionWidget.h"
 #include "distPointsFunction.h"
 
-using core3vi::DistPointsFunction;
+using corecvs::DistPointsFunction;
 
 
 typedef QPair<Vector3dd, Vector2dd> Points;

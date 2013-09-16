@@ -11,7 +11,7 @@
 #include "vector2d.h"
 #include "matrix44.h"
 
-namespace core3vi {
+namespace corecvs {
 
 
 /**
@@ -78,6 +78,6 @@ template<class VisitorType>
 
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif  //CAMERAPARAMETERS_H_
 

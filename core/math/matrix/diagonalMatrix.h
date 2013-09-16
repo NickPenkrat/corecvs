@@ -11,7 +11,7 @@
 
 #include <stdlib.h>
 #include "fixedArray.h"
-namespace core3vi {
+namespace corecvs {
 
 class Matrix;
 
@@ -79,6 +79,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* DIAGONALMATRIX_H_ */
 

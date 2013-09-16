@@ -14,7 +14,7 @@
 
 #include "g12Buffer.h"
 #include "mipmapPyramid.h"
-namespace core3vi {
+namespace corecvs {
 
 class CascadeClassifier
 {
@@ -26,6 +26,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* CASCADECLASSIFIER_H_ */
 

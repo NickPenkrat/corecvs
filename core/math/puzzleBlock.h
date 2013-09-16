@@ -1,7 +1,7 @@
 #ifndef PUZZLEBLOCK_H
 #define PUZZLEBLOCK_H
 
-namespace core3vi {
+namespace corecvs {
 
 class PuzzleBlock
 {

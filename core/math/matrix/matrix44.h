@@ -11,7 +11,7 @@
 
 #include "fixedVector.h"
 #include "matrix33.h"
-namespace core3vi {
+namespace corecvs {
 
 
 
@@ -216,6 +216,6 @@ inline const double &Matrix44::a(int i,int j) const
 }
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* MATRIX44_H_ */
 

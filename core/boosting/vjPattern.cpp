@@ -12,7 +12,7 @@
 #include "vjPattern.h"
 #include "tbbWrapper.h"
 
-namespace core3vi {
+namespace corecvs {
 
 VJPattern::VJPattern()
 {
@@ -163,5 +163,5 @@ VJSimpleClassifier *VJSimpleClassifierGenerator::getBestClassifier(const AdaBoos
     return new VJSimpleClassifier(bestPattern, bestZ, 0, 0, h, w);
 }
 
-} //namespace core3vi
+} //namespace corecvs
 

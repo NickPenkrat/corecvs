@@ -15,7 +15,7 @@
 #include "vector3d.h"
 #include "generated/axisAlignedBoxParameters.h"
 
-namespace core3vi {
+namespace corecvs {
 
 using std::vector;
 
@@ -57,6 +57,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* POLYGONS_H_ */
 

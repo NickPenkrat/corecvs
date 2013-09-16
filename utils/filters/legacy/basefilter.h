@@ -5,7 +5,7 @@
 #include "ui_basefilter.h"
 #include "g12Buffer.h"
 
-using namespace core3vi;
+using namespace corecvs;
 
 class BaseFilter : public QWidget
 {

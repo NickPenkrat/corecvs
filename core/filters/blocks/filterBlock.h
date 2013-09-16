@@ -15,7 +15,7 @@
 #include "pins.h"
 #include <typeinfo>
 
-namespace core3vi
+namespace corecvs
 {
 
 class FilterGraph;
@@ -259,5 +259,5 @@ protected:
 //    virtual ~FilterConnection();
 //};
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 /* EOF */

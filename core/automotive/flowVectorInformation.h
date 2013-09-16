@@ -11,7 +11,7 @@
 #include "floatFlowBuffer.h"
 #include "FCostFunction.h"
 #include "vector3d.h"
-namespace core3vi {
+namespace corecvs {
 
 class FlowVectorInformation
 {
@@ -56,6 +56,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* FLOWVECTORINFORMATION_H_ */
 

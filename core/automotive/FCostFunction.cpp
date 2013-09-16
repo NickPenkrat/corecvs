@@ -221,7 +221,7 @@
 #include "FCostFunction.h"
 #include "matrix44.h"
 #include "eulerAngles.h"
-namespace core3vi {
+namespace corecvs {
 
 FCostFunction::FCostFunction()
 {
@@ -592,5 +592,5 @@ FCostFunction::~FCostFunction()
     // TODO Auto-generated destructor stub
 }
 
-} //namespace core3vi
+} //namespace corecvs
 

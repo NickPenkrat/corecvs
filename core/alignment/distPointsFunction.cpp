@@ -7,7 +7,7 @@
 #include "distPointsFunction.h"
 #include "../geometry/ellipticalApproximation.h"
 
-namespace core3vi
+namespace corecvs
 {
 
 DistPointsFunction::DistPointsFunction(
@@ -156,4 +156,4 @@ int DistPointsFunction::getOutputs(const vector<vector<Vector2dd> > &sample)
 }
 
 
-} /* namespace core3vi */
+} /* namespace corecvs */

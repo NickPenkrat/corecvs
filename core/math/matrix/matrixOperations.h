@@ -10,7 +10,7 @@
  */
 
 #include "global.h"
-namespace core3vi {
+namespace corecvs {
 
 template<typename RealType, typename ElementType>
 class MatrixOperationsBase
@@ -57,7 +57,7 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif  //MATRIXOPERATIONS_H_
 
 

@@ -5,7 +5,7 @@
 #include "ui_scalefilter.h"
 #include "basefilter.h"
 
-using namespace core3vi;
+using namespace corecvs;
 
 class ScaleFilter : public BaseFilter
 {

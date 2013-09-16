@@ -12,7 +12,7 @@
     extern "C" {
 #endif
 #include "g12buffer.h"
-namespace core3vi {
+namespace corecvs {
 
 G12Buffer* findCornerPoints(G12Buffer *input);
 
@@ -21,6 +21,6 @@ G12Buffer* findCornerPoints(G12Buffer *input);
     } //     extern "C"
 
 #endif
-} //namespace core3vi
+} //namespace corecvs
 #endif /* CORNERMARKER_H_ */
 

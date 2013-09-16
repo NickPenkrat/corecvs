@@ -14,7 +14,7 @@
 #include "abstractBuffer.h"
 #include "vector2d.h"
 
-namespace core3vi {
+namespace corecvs {
 
 using std::vector;
 
@@ -105,6 +105,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* SPHERICALCORRECTIONLUT_H_ */
 

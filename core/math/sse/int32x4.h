@@ -16,7 +16,7 @@
 #include "fixedVector.h"
 #include "int64x2.h"
 
-namespace core3vi {
+namespace corecvs {
 
 class ALIGN_DATA(16) Int32x4 : public SSEInteger<Int32x4>
 {
@@ -282,6 +282,6 @@ FORCE_INLINE Int32x4 operator == (const Int32x4 &left, const Int32x4 &right) {
 }
 
 
-} //namespace core3vi
+} //namespace corecvs
 
 #endif  //INT32X4_H_

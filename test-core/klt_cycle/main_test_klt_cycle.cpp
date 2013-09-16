@@ -12,7 +12,7 @@
 #include "bufferFactory.h"
 #include "bmpLoader.h"
 
-using namespace core3vi;
+using namespace corecvs;
 
 
 int testKLT ( void )

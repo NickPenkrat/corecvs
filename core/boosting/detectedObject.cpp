@@ -8,7 +8,7 @@
 
 #include "detectedObject.h"
 
-namespace core3vi
+namespace corecvs
 {
 
 DetectedObject::DetectedObject(
@@ -35,4 +35,4 @@ DetectedObject::~DetectedObject()
     // TODO Auto-generated destructor stub
 }
 
-} /* namespace core3vi */
+} /* namespace corecvs */

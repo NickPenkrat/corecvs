@@ -5,7 +5,7 @@
 #include "tinyxml2.h"       // for XMLDocument here
 #include <set>
 
-namespace core3vi
+namespace corecvs
 {
 using std::set;
 using tinyxml2::XMLDocument;       // for XMLDocument here
@@ -77,6 +77,6 @@ public:
     vector<CompoundFilterType> compoundFilters;
 };
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 
 #endif // FILTERSCOLLECTION_H

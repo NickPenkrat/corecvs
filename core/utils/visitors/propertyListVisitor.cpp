@@ -8,7 +8,7 @@
 
 #include "propertyListVisitor.h"
 
-namespace core3vi {
+namespace corecvs {
 
 using std::string;
 using std::endl;
@@ -108,5 +108,5 @@ template<>
  * @}
  */
 
-} //namespace core3vi
+} //namespace corecvs
 

@@ -12,7 +12,7 @@
 #include <stdint.h>
 
 
-namespace core3vi
+namespace corecvs
 {
 
 class FixedPoint24p8
@@ -68,5 +68,5 @@ public:
 
 };
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 #endif /* FIXED_POINT24P8_H_ */

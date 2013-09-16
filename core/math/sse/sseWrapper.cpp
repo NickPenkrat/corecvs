@@ -8,7 +8,7 @@
  */
 
 #include "sseWrapper.h"
-namespace core3vi {
+namespace corecvs {
 
 #ifdef PROFILE_ACCESS_ALIGNMENT
 uint64_t Int16x8::alignedUWrites   = 0;
@@ -68,5 +68,5 @@ ostream & operator <<(ostream &out, const Int8x16 &vector)
 
 #endif // WITH_SSE
 
-} //namespace core3vi
+} //namespace corecvs
 

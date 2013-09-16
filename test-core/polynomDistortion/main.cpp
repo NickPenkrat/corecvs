@@ -4,7 +4,7 @@
 #include "radialFunc.h"
 #include "QDebug"
 
-using namespace core3vi;
+using namespace corecvs;
 
 //p1 = p2 = 0;
 void testAproximation()

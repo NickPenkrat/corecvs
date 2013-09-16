@@ -8,7 +8,7 @@
  * \author alexander
  */
 #include "function.h"
-namespace core3vi {
+namespace corecvs {
 
 /**
  *   http://en.wikipedia.org/wiki/Rosenbrock_function
@@ -39,6 +39,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* HELPERFUNCTIONS_H_ */
 

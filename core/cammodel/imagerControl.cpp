@@ -8,7 +8,7 @@
  */
 
 #include "imagerControl.h"
-namespace core3vi {
+namespace corecvs {
 
 #define TRACE_CONTROL_DETAILS
 
@@ -123,5 +123,5 @@ ImagerState ImagerControl::reaction()
 }
 
 
-} //namespace core3vi
+} //namespace corecvs
 

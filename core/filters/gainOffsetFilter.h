@@ -13,7 +13,7 @@
  * \author alexander
  */
 
-namespace core3vi
+namespace corecvs
 {
 using namespace tinyxml2;
 
@@ -64,5 +64,5 @@ private:
     static int instanceCounter;
 };
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 #endif /* GAIN_OFFSET_FILTER_H_ */

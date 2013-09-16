@@ -9,7 +9,7 @@
  *     http://glorfindel.mavrinac.com/~aaron/school/pdf/prescott97_linelens.pdf
  **/
 
-namespace core3vi {
+namespace corecvs {
 
 class StraightFunc : public FunctionArgs
 {
@@ -22,6 +22,6 @@ private:
     vector<vector<Vector2dd> > mSample;
     Vector2d32 mCenter;
 };
-} // namespace core3vi
+} // namespace corecvs
 
 /*EOF*/

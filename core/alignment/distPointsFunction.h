@@ -9,7 +9,7 @@
 #include "radialFunc.h"
 #include "vector2d.h"
 
-namespace core3vi
+namespace corecvs
 {
 
 /**
@@ -38,5 +38,5 @@ private:
     const ModelToRadialCorrection& mModelFactory;
 };
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 /* EOF */

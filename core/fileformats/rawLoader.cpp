@@ -10,7 +10,7 @@
 
 #include "rawLoader.h"
 
-namespace core3vi {
+namespace corecvs {
 
 string RAWLoader::prefix1(".raw");
 
@@ -154,5 +154,5 @@ cleanup:
     return toReturn;
 }
 
-} //namespace core3vi
+} //namespace corecvs
 

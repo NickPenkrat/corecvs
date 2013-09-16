@@ -5,7 +5,7 @@
 #include "ui_gainoffset.h"
 #include "basefilter.h"
 
-using namespace core3vi;
+using namespace corecvs;
 
 class GainOffset : public BaseFilter
 {

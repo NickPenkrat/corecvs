@@ -18,7 +18,7 @@
 #include "matrix.h"
 #include "vector.h"
 
-namespace core3vi {
+namespace corecvs {
 using std::vector;
 
 /**
@@ -322,6 +322,6 @@ public:
 };
 #endif
 
-} //namespace core3vi
+} //namespace corecvs
 #endif // _FUNCTION_H_
 

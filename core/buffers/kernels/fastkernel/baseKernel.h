@@ -11,7 +11,7 @@
 
 #include "global.h"
 
-namespace core3vi {
+namespace corecvs {
 
 /**
  *  \brief A base class for FastKernel kernels.
@@ -57,5 +57,5 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif  //BASEKERNEL_H_

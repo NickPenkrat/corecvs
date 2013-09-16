@@ -12,7 +12,7 @@
 
 #include "sobel.h"
 
-namespace core3vi {
+namespace corecvs {
 
 /**
  * Obsolete! It belongs to the old style filters management.
@@ -30,4 +30,4 @@ int32_t SobelVertInt::data[9] = {
 SobelVertInt *SobelVertInt::instance = new SobelVertInt();
 SobelHorInt  *SobelHorInt::instance  = new SobelHorInt();
 
-} //namespace core3vi
+} //namespace corecvs

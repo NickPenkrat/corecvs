@@ -15,7 +15,7 @@
 
 #include "abstractBuffer.h"
 
-namespace core3vi {
+namespace corecvs {
 
 /**
  *  \brief Template class that holds the convolution kernel. Most probably depreciated
@@ -85,5 +85,5 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* ABSTRACTKERNEL_H_ */

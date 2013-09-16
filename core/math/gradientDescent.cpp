@@ -7,7 +7,7 @@
  */
 
 #include "gradientDescent.h"
-namespace core3vi {
+namespace corecvs {
 
 using std::endl;
 using std::flush;
@@ -176,5 +176,5 @@ vector<double> GradientDescentRnToRm::fit(const vector<double> &input, const vec
     return result;
 }
 
-} //namespace core3vi
+} //namespace corecvs
 

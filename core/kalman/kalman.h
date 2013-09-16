@@ -19,7 +19,7 @@
 #include "upperUnitaryMatrix.h"
 #include "uduDecomposed.h"
 
-namespace core3vi {
+namespace corecvs {
 
 class DyVector
 {
@@ -96,7 +96,7 @@ public:
 private:
 };
 
-} //namespace core3vi
+} //namespace corecvs
 
 #endif /*_KALMAN_FILTER_H_*/
 

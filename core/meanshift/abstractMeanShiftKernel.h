@@ -12,7 +12,7 @@
  */
 
 #include "global.h"
-namespace core3vi {
+namespace corecvs {
 
 class AbstractMeanShiftKernel
 {
@@ -31,6 +31,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif //ABSTRACTMEANSHIFTKERNEL_H_
 

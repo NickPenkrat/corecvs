@@ -1,7 +1,7 @@
 #pragma once
 #include "function.h"
 
-namespace core3vi {
+namespace corecvs {
 
 /**
  * \ingroup distcorrect
@@ -20,6 +20,6 @@ private:
     int mPolynomDegree;
     double mScaleFactor;
 };
-} // namespace core3vi
+} // namespace corecvs
 
 /*EOF*/

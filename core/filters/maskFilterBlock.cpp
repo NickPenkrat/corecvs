@@ -9,7 +9,7 @@
 #include "serializerVisitor.h"
 #include "deserializerVisitor.h"
 
-namespace core3vi
+namespace corecvs
 {
 int MaskFilterBlock::instanceCounter = 0;
 
@@ -59,4 +59,4 @@ MaskFilterBlock::~MaskFilterBlock()
     // TODO Auto-generated destructor stub
 }
 
-} /* namespace core3vi */
+} /* namespace corecvs */

@@ -11,7 +11,7 @@
 #include "hardcodeFont.h"
 #include "hersheyVectorFont.h"
 
-namespace core3vi {
+namespace corecvs {
 
 template<class TargetBuffer>
 class AbstractPainter
@@ -174,6 +174,6 @@ void AbstractPainter<TargetBuffer>::drawFormatVector(int16_t x, int16_t y, Abstr
 */
 
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 
 /* EOF */

@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "kalman.h"
-namespace core3vi {
+namespace corecvs {
 
 
 DyVector::DyVector(int ymax)
@@ -563,5 +563,5 @@ void KalmanFilter::step (Matrix *R, DyVector *y, Matrix *C)
     calculateInnovation(R, P, C, y, predictedState, currentState);
 }
 
-} //namespace core3vi
+} //namespace corecvs
 

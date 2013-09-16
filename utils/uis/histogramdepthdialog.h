@@ -10,7 +10,7 @@ namespace Ui {
     class HistogramDepthDialog;
 }
 
-using namespace core3vi;
+using namespace corecvs;
 
 class HistogramDepthDialog : public QDialog
 {

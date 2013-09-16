@@ -10,7 +10,7 @@
 #include "vector2d.h"
 #include "matrix.h"
 
-namespace core3vi {
+namespace corecvs {
 
 /**
  *   This class searches the ellipse that looks like a given blob
@@ -312,5 +312,5 @@ public:
     int                      mCount;
 };
 
-} //namespace core3vi
+} //namespace corecvs
 

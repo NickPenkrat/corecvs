@@ -15,7 +15,7 @@
 #include "bufferLoader.h"
 #include "g12Buffer.h"
 
-namespace core3vi {
+namespace corecvs {
 
 using std::string;
 
@@ -40,4 +40,4 @@ public:
 
 };
 
-} //namespace core3vi
+} //namespace corecvs

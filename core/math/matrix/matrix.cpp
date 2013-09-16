@@ -12,7 +12,7 @@
 #include "matrix.h"
 #include "matrix33.h"
 
-namespace core3vi {
+namespace corecvs {
 
 /* The constructor is not in single cycle due to possible stride of the matrix */
 Matrix::Matrix(Matrix33 &in) : MatrixBase(3, 3, false)
@@ -839,5 +839,5 @@ void Matrix::svd (Matrix *A, Matrix *W, Matrix *V)
 
 
 
-} //namespace core3vi
+} //namespace corecvs
 

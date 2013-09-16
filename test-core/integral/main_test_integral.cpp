@@ -19,7 +19,7 @@
 #include "integralBuffer.h"
 #include "bufferFactory.h"
 
-using namespace core3vi;
+using namespace corecvs;
 
 void testIntergralBufferGeneration ()
 {

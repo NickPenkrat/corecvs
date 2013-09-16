@@ -10,7 +10,7 @@
 #include "flow/punchedBufferOperations.h"
 #include "cloud.h"
 
-namespace core3vi {
+namespace corecvs {
 
 typedef AbstractContiniousBuffer<SwarmPoint*, int32_t> Buffer3dBase;
 
@@ -152,6 +152,6 @@ public:
 
 }; // Buffer3d
 
-} //namespace core3vi
+} //namespace corecvs
 
 #endif // BUFFER3D_H

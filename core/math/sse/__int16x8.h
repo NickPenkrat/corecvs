@@ -17,7 +17,7 @@
 #include "global.h"
 #include "fixedVector.h"
 
-namespace core3vi {
+namespace corecvs {
 
 
 class ALIGN_DATA(16) Int16x8 : public SSEInteger<Int16x8>
@@ -379,7 +379,7 @@ FORCE_INLINE Int16x8 operator *= (Int16x8 &left, int16_t right) {
 
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif //#ifndef INT16X8_H_
 
 #endif

@@ -9,10 +9,10 @@
 
 #include "fixedArray.h"
 
-namespace core3vi {
+namespace corecvs {
 
 typedef FixedArray<double> Vector;
 
-} //namespace core3vi
+} //namespace corecvs
 
 /* EOF */

@@ -11,7 +11,7 @@
 #include "levenmarq.h"
 #include "stdlib.h"
 #include "vector.h"
-namespace core3vi {
+namespace corecvs {
 
 using std::flush;
 /**
@@ -170,5 +170,5 @@ vector<double> LevenbergMarquardt::fit(const vector<double> &input, const vector
     return result;
 }
 
-} //namespace core3vi
+} //namespace corecvs
 

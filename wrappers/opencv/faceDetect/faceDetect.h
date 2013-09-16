@@ -6,8 +6,8 @@
 #include "g12Buffer.h"
 #include "detectedObject.h"
 
-using core3vi::G12Buffer;
-using core3vi::DetectedObject;
+using corecvs::G12Buffer;
+using corecvs::DetectedObject;
 using std::vector;
 
 

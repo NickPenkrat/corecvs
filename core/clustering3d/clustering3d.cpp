@@ -1,6 +1,6 @@
 #include "clustering3d.h"
 
-namespace core3vi {
+namespace corecvs {
 
 void Clustering3D::findAndMarkUpNewNeigborsDummy(int index)
 {
@@ -499,4 +499,4 @@ void Clustering3D::_clustering(int sizeW, int sizeH)
 }
 
 
-} //namespace core3vi
+} //namespace corecvs

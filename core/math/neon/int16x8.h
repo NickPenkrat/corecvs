@@ -14,7 +14,7 @@
 
 #include "global.h"
 #include "fixedVector.h"
-namespace core3vi {
+namespace corecvs {
 
 
 class ALIGN_DATA(16) Int16x8
@@ -458,6 +458,6 @@ FORCE_INLINE inline  Int16x8 operator *= (Int16x8 &left, int16_t right) {
     return left;
 }
 
-} //namespace core3vi
+} //namespace corecvs
 #endif //#ifndef INT16X8_H_
 

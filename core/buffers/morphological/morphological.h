@@ -11,7 +11,7 @@
 #ifndef MORPHOLOGICAL_H_
 #define MORPHOLOGICAL_H_
 #include "g12Buffer.h"
-namespace core3vi {
+namespace corecvs {
 
 
 /**
@@ -159,6 +159,6 @@ template <typename OtherAlgebra>
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* MORPHOLOGICAL_H_ */
 

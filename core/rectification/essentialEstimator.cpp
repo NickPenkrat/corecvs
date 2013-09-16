@@ -12,7 +12,7 @@
 #include "gradientDescent.h"
 #include "classicKalman.h"
 #include "kalman.h"
-namespace core3vi {
+namespace corecvs {
 
 using std::flush;
 
@@ -582,5 +582,5 @@ EssentialEstimator::~EssentialEstimator()
 }
 
 
-} //namespace core3vi
+} //namespace corecvs
 

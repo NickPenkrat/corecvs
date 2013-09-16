@@ -9,7 +9,7 @@
 #include "global.h"
 #include "sixDBuffer.h"
 
-namespace core3vi {
+namespace corecvs {
 
 
 SixDBuffer::SixDBuffer(const FloatFlowBuffer &flow, const FloatFlowBuffer &prevStereo,
@@ -85,4 +85,4 @@ SixDBuffer::SixDBuffer(const FlowBuffer &flow, const FlowBuffer &prevStereo,
 }
 
 
-} // namespace core3vi
+} // namespace corecvs

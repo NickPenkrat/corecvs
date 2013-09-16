@@ -46,7 +46,7 @@
 
 class Arrow;
 
-using namespace core3vi;
+using namespace corecvs;
 
 //! [0]
 class DiagramItem : public QGraphicsPolygonItem

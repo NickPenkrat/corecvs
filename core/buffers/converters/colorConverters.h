@@ -9,7 +9,7 @@
  */
 
 
-namespace core3vi
+namespace corecvs
 {
 
 template<typename InputType, typename OutputType>
@@ -39,5 +39,5 @@ public:
     virtual ~ColorConverters();
 };
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 #endif /* COLORCONVERTERS_H_ */

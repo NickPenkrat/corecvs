@@ -13,7 +13,7 @@
 
 #include "calculationStats.h"
 
-namespace core3vi {
+namespace corecvs {
 using std::vector;
 
 class Clustering3D
@@ -96,6 +96,6 @@ private:
     unsigned  mHeadNumber;
 };
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 
 /* EOF */

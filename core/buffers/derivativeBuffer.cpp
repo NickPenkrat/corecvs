@@ -8,7 +8,7 @@
  */
 
 #include "derivativeBuffer.h"
-namespace core3vi {
+namespace corecvs {
 
 DerivativeBuffer::DerivativeBuffer(G12Buffer *input) : DerivativeBufferBase(input->h, input->w)
 {
@@ -114,5 +114,5 @@ G12Buffer *DerivativeBuffer::gradientMagnitudeBuffer()
 }
 
 
-} //namespace core3vi
+} //namespace corecvs
 

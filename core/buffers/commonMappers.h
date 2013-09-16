@@ -14,7 +14,7 @@
 #include "abstractBuffer.h"
 #include "g12Buffer.h"
 
-namespace core3vi {
+namespace corecvs {
 
 using std::unary_function;
 
@@ -91,4 +91,4 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs

@@ -16,7 +16,7 @@
 #include "stdio.h"
 #include "g12Buffer.h"
 
-namespace core3vi {
+namespace corecvs {
 
 typedef AbstractContiniousBuffer<uint8_t, int32_t> G8BufferBase;
 
@@ -34,11 +34,11 @@ public:
     G8Buffer(G8Buffer *src, int32_t x1, int32_t y1, int32_t x2, int32_t y2) :
         G8BufferBase(src, x1, y1, x2, y2) {};
 
-    static G8Buffer* FromG12Buffer(core3vi::G12Buffer *input);
+    static G8Buffer* FromG12Buffer(corecvs::G12Buffer *input);
     //G8Buffer(int32_t h, int32_t w, uint16_t *data) : G8BufferBase(h, w, data) {};
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* G8BUFFER_H_ */
 

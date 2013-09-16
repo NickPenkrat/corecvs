@@ -44,7 +44,7 @@ using std::istream;
 using std::ostream;
 using std::cout;
 
-namespace core3vi {
+namespace corecvs {
 
 template<typename RealType, typename ElementType>
 class VectorOperationsBase
@@ -589,4 +589,4 @@ template<class VisitorType>
 
 };
 
-} //namespace core3vi
+} //namespace corecvs

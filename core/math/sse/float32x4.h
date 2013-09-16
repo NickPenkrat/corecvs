@@ -11,7 +11,7 @@
 
 #include "global.h"
 
-namespace core3vi {
+namespace corecvs {
 
 class ALIGN_DATA(16) Float32x4
 {
@@ -153,6 +153,6 @@ FORCE_INLINE Int32x4 operator /=    (Int32x4 &left, int divisor) {
 }
 
 
-} //namespace core3vi
+} //namespace corecvs
 
 #endif  //FLOAT32X4_H_

@@ -12,7 +12,7 @@
  */
 
 
-namespace core3vi
+namespace corecvs
 {
 
 /**
@@ -84,5 +84,5 @@ int16_t inline GenericMath<int16_t>::branchlessMask(const int16_t &val)
     return -(val);
 }
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 #endif /* GENERICMATH_H_ */

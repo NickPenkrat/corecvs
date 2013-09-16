@@ -19,7 +19,7 @@
 #include "gaussian.h"
 #include "mipmapPyramid.h"
 
-using namespace core3vi;
+using namespace corecvs;
 
 int main ( int /*argC*/, char * /*argV*/[])
 {

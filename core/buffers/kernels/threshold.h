@@ -11,7 +11,7 @@
 #define THRESHOLD_H_
 
 #include <stdint.h>
-namespace core3vi {
+namespace corecvs {
 
 template <typename Algebra>
 class ThresholdBinariseKernel
@@ -49,6 +49,6 @@ template<typename OtherAlgebra>
 
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* THRESHOLD_H_ */
 

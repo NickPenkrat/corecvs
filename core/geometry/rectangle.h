@@ -12,7 +12,7 @@
 
 #include <iostream>
 #include "vector2d.h"
-namespace core3vi {
+namespace corecvs {
 
 template<typename ElementType>
 class Rectangle
@@ -81,6 +81,6 @@ private:
 
 typedef Rectangle<int32_t> Rectangle32;
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* RECTANGLE_H_ */
 

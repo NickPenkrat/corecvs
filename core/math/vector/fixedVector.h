@@ -15,7 +15,7 @@
 #include "vectorOperations.h"
 
 
-namespace core3vi {
+namespace corecvs {
 /**
  * This class is a template for a vector of the fixed length.
  *
@@ -165,6 +165,6 @@ public:
 
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* FIXEDVECTOR_H_ */
 

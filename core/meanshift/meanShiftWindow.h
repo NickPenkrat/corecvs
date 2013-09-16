@@ -14,7 +14,7 @@
 #include "tileGrid.h"
 #include "abstractMeanShiftKernel.h"
 #include <vector>
-namespace core3vi {
+namespace corecvs {
 
 typedef std::vector<std::pair<unsigned, unsigned> > WindowPath;
 
@@ -58,7 +58,7 @@ private:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif // MEANSHIFTWINDOW
 
 

@@ -11,7 +11,7 @@
 
 #include <math.h>
 #include "histogram.h"
-namespace core3vi {
+namespace corecvs {
 
 class ImagerState
 {
@@ -56,6 +56,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* IMAGERSTATE_H_ */
 

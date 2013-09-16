@@ -14,12 +14,12 @@
 #endif
 
 #include "matrix.h"
-namespace core3vi {
+namespace corecvs {
 
 #ifdef __cplusplus
     } //     extern "C"
 
 #endif
-} //namespace core3vi
+} //namespace corecvs
 #endif /* LINLSE_H_ */
 

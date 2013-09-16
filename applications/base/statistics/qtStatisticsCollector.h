@@ -26,7 +26,7 @@
 using std::string;
 using std::vector;
 
-using namespace core3vi;
+using namespace corecvs;
 
 class QtStatisticsCollector : public BaseTimeStatisticsCollector
 {

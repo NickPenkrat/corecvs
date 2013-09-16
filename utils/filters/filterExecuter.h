@@ -10,7 +10,7 @@
 #include <vector>
 #include "filterSelector.h"
 
-namespace core3vi {
+namespace corecvs {
 
 using std::vector;
 
@@ -30,6 +30,6 @@ public:
     virtual ~FilterExecuter();
 };
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 
 #endif /* FILTER_EXECUTER_H_ */

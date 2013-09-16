@@ -1,6 +1,6 @@
 #include "transformationCache.h"
 
-namespace core3vi
+namespace corecvs
 {
 
 TransformationCache::TransformationCache(Matrix33 matrix, int w, int h, Vector2d<int> inputSize)
@@ -45,4 +45,4 @@ TransformationCache::~TransformationCache()
     delete_safe(mF8Displace);
 }
 
-} // namespace core3vi
+} // namespace corecvs

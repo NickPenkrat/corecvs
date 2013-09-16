@@ -5,7 +5,7 @@
 #include "../xml/generated/outputFilterParameters.h"
 #include "filtersCollection.h"
 
-namespace core3vi
+namespace corecvs
 {
 
 class OutputFilter : public FilterBlock
@@ -70,5 +70,5 @@ private:
     static int instanceCounter;
 };
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 #endif // OUTPUTFILTERBLOCK_H

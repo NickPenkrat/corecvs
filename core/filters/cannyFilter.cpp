@@ -15,7 +15,7 @@
 #include "serializerVisitor.h"
 #include "deserializerVisitor.h"
 
-namespace core3vi
+namespace corecvs
 {
 
 /*#define white G12Buffer::G12BUFFER_MAX_VALUE
@@ -158,5 +158,5 @@ CannyFilter::~CannyFilter()
     // TODO Auto-generated destructor stub
 }
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 

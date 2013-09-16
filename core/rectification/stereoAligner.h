@@ -14,7 +14,7 @@
 #include "projectiveTransform.h"
 #include "correspondanceList.h"
 #include "matrix33.h"
-namespace core3vi {
+namespace corecvs {
 
 class StereoTransformation
 {
@@ -70,6 +70,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* STEREO_ALIGNER_H_ */
 

@@ -10,8 +10,8 @@
 
 #include "global.h"
 #include "mipmapPyramid.h"
-namespace core3vi {
+namespace corecvs {
 
 
-} //namespace core3vi
+} //namespace corecvs
 

@@ -8,7 +8,7 @@
 
 #include "cameraParameters.h"
 
-namespace core3vi {
+namespace corecvs {
 
 /**
  *  We will denote it by matrix \f$K\f$.
@@ -98,5 +98,5 @@ Matrix44 CameraIntrinsics::getFrustumMatrix(double zNear, double zFar)  const
     );
 }*/
 
-} //namespace core3vi
+} //namespace corecvs
 

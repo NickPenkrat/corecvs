@@ -21,7 +21,7 @@
 #include "bufferFactory.h"
 
 using namespace std;
-using namespace core3vi;
+using namespace corecvs;
 
 int main (int /*argC*/, char *argV[])
 {

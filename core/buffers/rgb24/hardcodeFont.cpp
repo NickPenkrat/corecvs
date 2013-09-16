@@ -10,7 +10,7 @@
 #include "global.h"
 
 #include "hardcodeFont.h"
-namespace core3vi {
+namespace corecvs {
 
 
 uint8_t HardcodeFont::num_glyphs[] = {
@@ -604,5 +604,5 @@ HardcodeFont::~HardcodeFont()
 {
 }
 
-} //namespace core3vi
+} //namespace corecvs
 

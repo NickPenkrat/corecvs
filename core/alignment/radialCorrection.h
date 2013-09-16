@@ -16,7 +16,7 @@
 #include "g12Buffer.h"
 #include "function.h"
 
-namespace core3vi {
+namespace corecvs {
 
 /**
  * \ingroup distcorrect
@@ -187,6 +187,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* RADIALCORRECTION_H_ */
 

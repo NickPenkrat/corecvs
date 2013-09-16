@@ -1,7 +1,7 @@
 #ifndef ALGEBRA_H_
 #define ALGEBRA_H_
 #include <stdint.h>
-namespace core3vi {
+namespace corecvs {
 /**
  * \file algebra.h
  * \brief Header for algebra.c
@@ -29,6 +29,6 @@ double getLengthStable (double a, double b);
 #ifdef __cplusplus
     } //     extern "C"
 #endif
-} //namespace core3vi
+} //namespace corecvs
 #endif /* ALGEBRA_H_ */
 

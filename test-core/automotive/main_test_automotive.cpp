@@ -20,7 +20,7 @@
 #include "mathUtils.h"
 
 using namespace std;
-using namespace core3vi;
+using namespace corecvs;
 
 void drawSituation(
         ShiftRotateTransformation realCameraExtr,

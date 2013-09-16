@@ -17,12 +17,12 @@
  *  Also it's not clear why removing "= Reflection()" breaks the code;
  **/
 
-namespace core3vi {
+namespace corecvs {
 template<>
 Reflection BaseReflection<OperationParameters>::reflection = Reflection();
 template<>
 int BaseReflection<OperationParameters>::dummy = OperationParameters::staticInit();
-} // namespace core3vi 
+} // namespace corecvs 
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 

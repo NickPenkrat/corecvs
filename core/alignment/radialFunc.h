@@ -2,7 +2,7 @@
 #include "function.h"
 #include "radialCorrection.h"
 
-namespace core3vi {
+namespace corecvs {
 
 
 class ModelToRadialCorrection {

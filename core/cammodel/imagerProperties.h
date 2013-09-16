@@ -8,7 +8,7 @@
 #ifndef IMAGERPROPERTIES_H_
 #define IMAGERPROPERTIES_H_
 
-namespace core3vi {
+namespace corecvs {
 
 class ImagerProperties {
 public:
@@ -16,5 +16,5 @@ public:
 	virtual ~ImagerProperties();
 };
 
-} /* namespace core3vi */
+} /* namespace corecvs */
 #endif /* IMAGERPROPERTIES_H_ */

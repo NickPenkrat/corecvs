@@ -15,7 +15,7 @@
 #endif
 
 
-namespace core3vi {
+namespace corecvs {
 
 
 /**
@@ -285,7 +285,7 @@ ALIGN_STACK_SSE inline __m128i sse_div_u32_by_25_fp(__m128i n) {
 
 #endif
 
-} //namespace core3vi
+} //namespace corecvs
 
 /* EOF */
 

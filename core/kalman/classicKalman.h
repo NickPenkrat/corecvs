@@ -18,7 +18,7 @@
 #include <vector>
 #include "matrix.h"
 #include "function.h"
-namespace core3vi {
+namespace corecvs {
 
 using std::vector;
 /**
@@ -86,6 +86,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* CLASSICKALMAN_H_ */
 

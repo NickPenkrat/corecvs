@@ -12,7 +12,7 @@
 
 #include "math.h"
 #include "vector2d.h"
-namespace core3vi {
+namespace corecvs {
 
 /*
 template<typename ElementType>
@@ -188,6 +188,6 @@ typedef Vector3d<int32_t> Vector3d32;
 typedef Vector3d<int16_t> Vector3d16;
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif
 

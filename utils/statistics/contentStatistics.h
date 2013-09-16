@@ -12,9 +12,9 @@
 #include "preciseTimer.h"
 #include "calculationStats.h"
 
-using core3vi::PreciseTimer;
-using core3vi::SingleStat;
-using core3vi::BaseTimeStatisticsCollector;
+using corecvs::PreciseTimer;
+using corecvs::SingleStat;
+using corecvs::BaseTimeStatisticsCollector;
 
 class ContentStatistics : public QObject, public BaseTimeStatisticsCollector
 {

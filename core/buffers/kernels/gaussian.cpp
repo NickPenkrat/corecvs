@@ -11,7 +11,7 @@
 #include "global.h"
 
 #include "gaussian.h"
-namespace core3vi {
+namespace corecvs {
 
 double Gaussian3x3::data[9] = {
         1 , 2 , 1,
@@ -27,5 +27,5 @@ Gaussian3x3 *Gaussian3x3::instance = new Gaussian3x3();
 
 Gaussian3x3int *Gaussian3x3int::instance = new Gaussian3x3int();
 
-} //namespace core3vi
+} //namespace corecvs
 

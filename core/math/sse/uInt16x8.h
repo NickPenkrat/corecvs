@@ -18,7 +18,7 @@
 #include "fixedVector.h"
 #include "intBase16x8.h"
 
-namespace core3vi {
+namespace corecvs {
 
 
 class ALIGN_DATA(16) UInt16x8 : public IntBase16x8<UInt16x8>
@@ -147,6 +147,6 @@ FORCE_INLINE UInt16x8 productHigherPart (const UInt16x8 &left, const UInt16x8 &r
 }
 
 
-} //namespace core3vi
+} //namespace corecvs
 
 #endif // UINT16X8_H

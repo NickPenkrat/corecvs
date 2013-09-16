@@ -5,7 +5,7 @@
 
 #include "vector2d.h"
 
-using namespace core3vi;
+using namespace corecvs;
 
 enum DrawColoring {
     drawHeatColoring,

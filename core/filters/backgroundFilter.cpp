@@ -9,7 +9,7 @@
 #include "serializerVisitor.h"
 #include "deserializerVisitor.h"
 
-namespace core3vi
+namespace corecvs
 {
 int BackgroundFilter::instanceCounter = 0;
 
@@ -61,4 +61,4 @@ BackgroundFilter::~BackgroundFilter()
     delete_safe(mPreviousInput);
 }
 
-} /* namespace core3vi */
+} /* namespace corecvs */

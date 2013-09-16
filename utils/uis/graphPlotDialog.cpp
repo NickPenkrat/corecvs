@@ -8,7 +8,7 @@
 #include "mathUtils.h"
 
 
-using namespace core3vi;
+using namespace corecvs;
 using std::fstream;
 
 GraphPlotDialog::GraphPlotDialog(QWidget *parent)

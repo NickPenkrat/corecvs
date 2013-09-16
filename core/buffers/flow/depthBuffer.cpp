@@ -5,7 +5,7 @@
  **/
 #include "depthBuffer.h"
 
-namespace core3vi
+namespace corecvs
 {
 
 //static
@@ -19,4 +19,4 @@ DepthBuffer::~DepthBuffer()
 {
 }
 
-} /* namespace core3vi */
+} /* namespace corecvs */

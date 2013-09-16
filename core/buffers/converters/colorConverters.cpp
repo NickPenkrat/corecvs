@@ -7,7 +7,7 @@
 
 #include "colorConverters.h"
 
-namespace core3vi
+namespace corecvs
 {
 
 ColorConverters::ColorConverters()
@@ -18,4 +18,4 @@ ColorConverters::~ColorConverters()
 {
 }
 
-} /* namespace core3vi */
+} /* namespace corecvs */

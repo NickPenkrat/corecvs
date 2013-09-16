@@ -293,7 +293,7 @@ void BaseCalculationThread::camerasParametersChanged(QSharedPointer<CamerasConfi
  *  We first apply the rectification matrix, and then the scaling and shift.
  *  With inverses it is vice versa
  *
- *  We have a description of the math here - core3vi::StereoAligner::getAlignmentTransformation()
+ *  We have a description of the math here - corecvs::StereoAligner::getAlignmentTransformation()
  *
  *
  *
@@ -314,7 +314,7 @@ void BaseCalculationThread::camerasParametersChanged(QSharedPointer<CamerasConfi
  *  T1       transforms from camera image to rectification input image
  *  T1^(-1)  transforms from rectification input image to camera image
  *
- *  following the operation from core3vi::StereoAligner we have a rectification transformation for
+ *  following the operation from corecvs::StereoAligner we have a rectification transformation for
  *  camera images - H_left and H_right.
  *
  *  H_left       - from camera input to rectified image

@@ -57,7 +57,7 @@
  *
  */
 
-namespace core3vi {
-} //namespace core3vi
+namespace corecvs {
+} //namespace corecvs
 #endif  //FASTKERNELDOC_H_
 

@@ -1,7 +1,7 @@
 #pragma once
 #include "abstractBuffer.h"
 
-namespace core3vi {
+namespace corecvs {
 
 class DistortionCorrectTransform : public DeformMap<int32_t, double>
 {

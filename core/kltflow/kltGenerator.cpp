@@ -18,7 +18,7 @@
 #include "kltGenerator.h"
 #include "vector2d.h"
 
-namespace core3vi {
+namespace corecvs {
 
 
 /**
@@ -46,5 +46,5 @@ namespace core3vi {
  *
  * */
 
-} //namespace core3vi
+} //namespace corecvs
 

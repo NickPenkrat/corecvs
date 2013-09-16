@@ -10,8 +10,8 @@
 #include "global.h"
 
 #include "adaBoost.h"
-namespace core3vi {
+namespace corecvs {
 
 
-} //namespace core3vi
+} //namespace corecvs
 

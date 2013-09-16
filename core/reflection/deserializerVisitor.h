@@ -4,7 +4,7 @@
 #include "reflection.h"
 #include "tinyxml2.h"
 
-namespace core3vi {
+namespace corecvs {
 
 using namespace tinyxml2;
 using std::string;
@@ -59,6 +59,6 @@ void DeserializerVisitor::visit<void*,  PointerField>(void* &field, const Pointe
 template <>
 void DeserializerVisitor::visit<int,    EnumField>(int &field, const EnumField *fieldDescriptor);
 
-} //namespace core3vi
+} //namespace corecvs
 
 #endif // DESERIALIZERVISITOR_H

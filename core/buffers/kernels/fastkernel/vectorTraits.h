@@ -8,7 +8,7 @@
 #include "sseWrapper.h"
 #include "vectorAlgebra.h"
 
-namespace core3vi {
+namespace corecvs {
 
 template<class _Type>
 class TraitGeneric
@@ -116,6 +116,6 @@ public:
 
 
 
-} //namespace core3vi
+} //namespace corecvs
 
 #endif

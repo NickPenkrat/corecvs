@@ -24,7 +24,7 @@
 # pragma warning(disable: 4101)  // 'interpolator' : unreferenced local variable
 #endif
 
-namespace core3vi {
+namespace corecvs {
 
 class KLTCalculationContext
 {
@@ -429,7 +429,7 @@ public:
     virtual ~KLTGenerator(){};
 };
 
-} //namespace core3vi
+} //namespace corecvs
 
 #ifdef _MSC_VER
 # pragma warning(default: 4101)  // 'interpolator' : unreferenced local variable

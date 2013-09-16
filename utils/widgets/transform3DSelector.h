@@ -7,7 +7,7 @@
 #include "ui_transform3DSelector.h"
 #include <QtGui/QWidget>
 
-using core3vi::Matrix44;
+using corecvs::Matrix44;
 
 class Transform3DSelector : public QWidget
 {

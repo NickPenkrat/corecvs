@@ -10,7 +10,7 @@
 #include "global.h"
 
 #include "cascadeClassifier.h"
-namespace core3vi {
+namespace corecvs {
 
 CascadeClassifier::CascadeClassifier()
 {
@@ -20,5 +20,5 @@ CascadeClassifier::~CascadeClassifier()
 {
 }
 
-} //namespace core3vi
+} //namespace corecvs
 

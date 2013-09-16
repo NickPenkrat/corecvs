@@ -21,7 +21,7 @@
 #include "ransac.h"
 #include "line.h"
 #include "essentialMatrix.h"
-namespace core3vi {
+namespace corecvs {
 
 #if 0
 /**
@@ -510,5 +510,5 @@ double StereoAligner::getDistortion(Vector3dd projective, const Vector2dd &rect)
 }
 
 
-} //namespace core3vi
+} //namespace corecvs
 

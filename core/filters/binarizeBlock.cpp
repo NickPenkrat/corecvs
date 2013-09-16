@@ -9,7 +9,7 @@
 #include "serializerVisitor.h"
 #include "deserializerVisitor.h"
 
-namespace core3vi
+namespace corecvs
 {
 int BinarizeBlock::instanceCounter = 0;
 
@@ -58,4 +58,4 @@ BinarizeBlock::~BinarizeBlock()
     // TODO Auto-generated destructor stub
 }
 
-} /* namespace core3vi */
+} /* namespace corecvs */

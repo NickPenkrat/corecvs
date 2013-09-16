@@ -27,7 +27,7 @@
 
 #include "tbbWrapper.h"
 
-namespace core3vi {
+namespace corecvs {
 
 
  /**
@@ -385,6 +385,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif  //INTERGALBUFFER_H_
 

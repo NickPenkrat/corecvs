@@ -15,7 +15,7 @@
 
 #include "abstractKernel.h"
 
-namespace core3vi {
+namespace corecvs {
 
 /**
  *   Old style (AbstractKernel style) Kernel for Vertical Sobel operator for integer buffers
@@ -194,5 +194,5 @@ template <typename OtherAlgebra>
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* SOBEL_H_ */

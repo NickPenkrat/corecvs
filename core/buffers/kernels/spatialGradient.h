@@ -16,7 +16,7 @@
 #include "abstractBuffer.h"
 #include "vector3d.h"
 #include "integralBuffer.h"
-namespace core3vi {
+namespace corecvs {
 
 /**
  * This class holds the spatial gradient matrix square elements
@@ -43,6 +43,6 @@ public:
 typedef IntegralBuffer<Vector3dd, Vector3dd, uint32_t>  SpatialGradientIntegralBuffer;
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* SPATIALGRADIENT_H_ */
 

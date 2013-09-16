@@ -22,7 +22,7 @@
 #include "treeSceneController.h"
 
 
-using namespace core3vi;
+using namespace corecvs;
 using std::vector;
 
 class CloudViewDialog : public ViAreaWidget

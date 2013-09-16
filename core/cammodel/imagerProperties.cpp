@@ -7,7 +7,7 @@
 
 #include "imagerProperties.h"
 
-namespace core3vi {
+namespace corecvs {
 
 ImagerProperties::ImagerProperties()
 {
@@ -17,4 +17,4 @@ ImagerProperties::~ImagerProperties()
 {
 }
 
-} /* namespace core3vi */
+} /* namespace corecvs */

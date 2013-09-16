@@ -18,7 +18,7 @@
 #include "stdio.h"
 #include "math.h"
 
-namespace core3vi {
+namespace corecvs {
 
 using std::string;
 using std::vector;
@@ -85,6 +85,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* LUTALGEBRA_H_ */
 

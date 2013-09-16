@@ -10,7 +10,7 @@
 #include "log.h"
 
 #include "iterativeEstimator.h"
-namespace core3vi {
+namespace corecvs {
 
 
 EssentialMatrix IterativeEstimator::getEssential (const vector<Correspondance *> &samples)
@@ -99,5 +99,5 @@ IterativeEstimator::~IterativeEstimator()
 }
 
 
-} //namespace core3vi
+} //namespace corecvs
 

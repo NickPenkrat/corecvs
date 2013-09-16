@@ -13,7 +13,7 @@
 #include "abstractBuffer.h"
 #include "matrix33.h"
 #include "vector2d.h"
-namespace core3vi {
+namespace corecvs {
 
 /**
  * Projective transform is a wrapper around Matrix33 class
@@ -58,6 +58,6 @@ public:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* PROJECTIVETRANSFORM_H_ */
 

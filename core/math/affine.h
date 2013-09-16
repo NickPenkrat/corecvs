@@ -11,7 +11,7 @@
 #include "vector3d.h"
 #include "quaternion.h"
 #include "matrix33.h"
-namespace core3vi {
+namespace corecvs {
 
 
 /**
@@ -81,6 +81,6 @@ typedef Affine3D<Matrix33>   Affine3DM;
 /*Affine 2d*/
 
 
-} // namespace core3vi
+} // namespace corecvs
 #endif /* AFFINE_H_ */
 

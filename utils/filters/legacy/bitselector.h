@@ -6,7 +6,7 @@
 #include <QtCore/qstring.h>
 #include "basefilter.h"
 
-using namespace core3vi;
+using namespace corecvs;
 
 class BitSelector : public BaseFilter
 {

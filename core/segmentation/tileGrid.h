@@ -19,7 +19,7 @@
 #include "../math/mathUtils.h"
 
 
-namespace core3vi {
+namespace corecvs {
 
 class ClusteringTile
 {
@@ -218,6 +218,6 @@ public:
 
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* TILE_GRID_H_ */
 

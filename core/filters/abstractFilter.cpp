@@ -8,7 +8,7 @@
 
 #include "abstractFilter.h"
 
-namespace core3vi
+namespace corecvs
 {
 
 AbstractFilter::AbstractFilter()
@@ -22,4 +22,4 @@ AbstractFilter::~AbstractFilter()
     // TODO Auto-generated destructor stub
 }
 
-} /* namespace core3vi */
+} /* namespace corecvs */

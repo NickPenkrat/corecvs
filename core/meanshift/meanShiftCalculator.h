@@ -14,7 +14,7 @@
 #include "abstractMeanShiftKernel.h"
 
 #include <map>
-namespace core3vi {
+namespace corecvs {
 
 class MeanShiftCalculator {
 public:
@@ -43,6 +43,6 @@ private:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif //#ifndef MEANSHIFTCALCULATOR_H_
 

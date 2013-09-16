@@ -22,7 +22,7 @@
 #include "rgbColor.h"
 #include "function.h"
 #include "correspondanceList.h"
-namespace core3vi {
+namespace corecvs {
 
 
 #define FLAGS_INCLUDE_MARGIN 0x1
@@ -158,6 +158,6 @@ private:
 };
 
 
-} //namespace core3vi
+} //namespace corecvs
 #endif /* CRGB24BUFFER_H_ */
 
