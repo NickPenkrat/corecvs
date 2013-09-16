@@ -21,7 +21,7 @@ FoldableWidget::FoldableWidget(
 
     setMainWidget(centralWidget);
 
-    QSettings settings("3vi.conf", QSettings::IniFormat);
+    QSettings settings("cvs.conf", QSettings::IniFormat);
     settings.beginGroup("foldedWidgets");
     startFolded = settings.value(name, true).toBool();
     settings.endGroup();
@@ -39,7 +39,7 @@ FoldableWidget::FoldableWidget(
 
 FoldableWidget::~FoldableWidget()
 {
-    QSettings settings("3vi.conf", QSettings::IniFormat);
+    QSettings settings("cvs.conf", QSettings::IniFormat);
     settings.beginGroup("foldedWidgets");
     settings.setValue(mName, mIsFolded);
     settings.endGroup();

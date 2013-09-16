@@ -3,7 +3,14 @@
 # input1 parameter: $$OBJ_TESTS_DIR        - name of common intermediate dir for all UnitTests of the current project
 # input2 parameter: $$USE_CORE_PRI_FILE    - required core|core-res project file to include
 #
-include(../../../config.pri)
+# try use global config 
+exists(../../../config.pri) {
+    #message(Using global config)
+    include(../../../config.pri)
+} else { 
+    message(Using local config)
+    include(../../config.pri)
+}
 
 CONFIG += console
 

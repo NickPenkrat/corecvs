@@ -20,7 +20,7 @@ using core3vi::DistPointsFunction;
 
 
 typedef QPair<Vector3dd, Vector2dd> Points;
-const QString fileName = "3vi.conf";
+const QString fileName = "cvs.conf";
 const double EPSILON = 0.0005;
 
 DistortionWidget::DistortionWidget(QWidget *parent) :

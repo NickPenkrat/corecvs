@@ -73,6 +73,6 @@ void Frames::fetchNewFrames(ImageCaptureInterface *input)
 void Frames::swapFrameSources(bool shouldSwap)
 {
     mSwapped = shouldSwap;
-    QSettings settings("3vi.conf", QSettings::IniFormat);
+    QSettings settings("cvs.conf", QSettings::IniFormat);
     settings.setValue("swapCameras", mSwapped);
 }

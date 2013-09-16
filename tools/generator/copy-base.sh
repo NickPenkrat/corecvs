@@ -2,7 +2,7 @@
 
 source ./helper-regen.sh
 
-base="../../host-base/"
+base="../../applications/base/"
 utils="../../utils/"
 
 copy_if_different Generated/baseParametersControlWidget.cpp  $base/

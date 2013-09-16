@@ -1,4 +1,11 @@
-include(../../../config.pri)
+# try use global config 
+exists(../../../config.pri) {
+    #message(Using global config)
+    include(../../../config.pri)
+} else { 
+    message(Using local config)
+    include(../config.pri)
+}
 
 CONFIG  += staticlib
 TARGET   = cvs_utils

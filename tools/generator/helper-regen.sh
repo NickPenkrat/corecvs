@@ -1,5 +1,7 @@
 #!/bin/sh
 
+GENERATOR_BIN="./generator"
+
 greenText="\x1b[32m"
 redText="\x1b[31m"
 yellowText="\x1b[33m"

@@ -1,6 +1,6 @@
 <poco version="5.0">
 
-  <include name="../../../../core/src/xml/parameters.xml"/>
+  <include name="../../../core/xml/parameters.xml"/>
   <include name="presentation.xml"/>
   
   <enum name="Rotation Presets">

@@ -673,7 +673,7 @@ void PDOGenerator::generateControlWidgetCpp()
    /* result+=
     "    if (autoInit)\n"
     "    {\n"
-    "          loadFromQSettings(\"3vi.conf\", rootPath);\n"
+    "          loadFromQSettings(\"cvs.conf\", rootPath);\n"
     "    }\n"
     "\n";*/
 
@@ -693,7 +693,7 @@ void PDOGenerator::generateControlWidgetCpp()
     "{\n"
    /* "    if (autoInit)\n"
     "    {\n"
-    "          saveToQSettings(\"3vi.conf\", rootPath);\n"
+    "          saveToQSettings(\"cvs.conf\", rootPath);\n"
     "    }\n"*/
     "\n"
     "    delete mUi;\n"

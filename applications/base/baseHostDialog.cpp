@@ -80,7 +80,7 @@ void BaseHostDialog::init(QWidget *parameterHolderWidget, QTextEdit * /*loggerWi
 
     initCommon();
     initParameterWidgets();
-    loadParams("3vi.conf", "");
+    loadParams("cvs.conf", "");
 
     initMemoryUsageCalculator();
     initCalculator();
@@ -111,7 +111,7 @@ void BaseHostDialog::initGraphPresentation()
 void BaseHostDialog::deinit()
 {
     /* Stop all possible events sources */
-    saveParams("3vi.conf", "");
+    saveParams("cvs.conf", "");
     terminateCalculator();
 
     /* Cleanup the queue */
@@ -136,7 +136,7 @@ BaseHostDialog::~BaseHostDialog()
     delete_safe (mDistortionWidget);
     delete_safe (mFilterGraphPresentation);
 
-    SettingsSetter visitor("3vi.conf", UI_NAME_BASE_DIALOG);
+    SettingsSetter visitor("cvs.conf", UI_NAME_BASE_DIALOG);
     mRectifierData.accept<SettingsSetter>(visitor);
 }
 
@@ -346,7 +346,7 @@ void BaseHostDialog::initCapture(QString const &init)
     /* Now we need to connect the camera to widgets */
     mCapSettings = new CapSettingsDialog(NULL, mCamera);
     mSaveableWidgets.push_back(mCapSettings);
-    mCapSettings->loadFromQSettings("3vi.conf", "");
+    mCapSettings->loadFromQSettings("cvs.conf", "");
 
     qRegisterMetaType<CaptureStatistics>("CaptureStatistics");
     connect(mCamera, SIGNAL(newStatisticsReady(CaptureStatistics)),

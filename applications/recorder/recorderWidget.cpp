@@ -18,7 +18,7 @@ RecorderWidget::RecorderWidget(QWidget *parent)
     mUi->setupUi(this);
 
     Recorder *params = createParameters();
-    SettingsGetter visitor("3vi.conf");
+    SettingsGetter visitor("cvs.conf");
     params->accept<SettingsGetter>(visitor);
     setParameters(*params);
     delete params;
@@ -30,7 +30,7 @@ RecorderWidget::RecorderWidget(QWidget *parent)
 RecorderWidget::~RecorderWidget()
 {
     Recorder *params = createParameters();
-    SettingsSetter visitor("3vi.conf");
+    SettingsSetter visitor("cvs.conf");
     params->accept<SettingsSetter>(visitor);
     setParameters(*params);
     delete params;
