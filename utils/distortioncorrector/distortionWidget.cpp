@@ -372,7 +372,7 @@ void DistortionWidget::updateScore()
 
     int count = 0;
     PaintImageWidget *canvas = mUi->widget;
-    for (unsigned i = 0; i < canvas->mPaths.size(); i++)
+    for (unsigned i = 0; i < (unsigned)canvas->mPaths.size(); i++)
     {
         PaintImageWidget::VertexPath &path = canvas->mPaths[i];
         if (path.vertexes.size() < 3) {
@@ -433,8 +433,8 @@ void DistortionWidget::showBufferChanged()
             image = new G12Image(buffer);
             QPainter painter(image);
             vector<vector<Vector2dd> > straights = mUi->widget->getPaths();
-            for (int i = 0; i < straights.size(); i++) {
-                for (int j = 0; j < straights[i].size(); j++) {
+            for (unsigned i = 0; i < straights.size(); i++) {
+                for (unsigned j = 0; j < straights[i].size(); j++) {
                     Vector2dd point = straights[i][j];
                     Vector2dd moved = mLinesRadialCoorection.map(point.y(), point.x());
                     painter.setPen(Qt::yellow);

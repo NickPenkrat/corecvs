@@ -9,7 +9,7 @@ qmake && make
 echo "done"
 
 echo -n "Running generator on xml/recorder.xml..."
-$GENERATOR_BIN xml/recorder.xml 
+${GENERATOR_BIN} xml/recorder.xml 
 echo "done"
 
 

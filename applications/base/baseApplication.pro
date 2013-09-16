@@ -78,4 +78,3 @@ win32 {
    SOURCES += memoryUsageCalculator/linuxMemoryUsageCalculator.cpp
 }
 
-#RESOURCES += ../../../resources/main.qrc       # mingw isn't able to compile resources into lib and then use it on app building. :(

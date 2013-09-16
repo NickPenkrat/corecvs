@@ -75,10 +75,10 @@ contains(TARGET_ORIG, cvs_application_base) {
     #
     # resources for each of our building app. Unfortunately it doesn't work by been added into a lib :(
     #
-    RESOURCES += $$HOSTBASE_DIR/../../../../resources/main.qrc
+    RESOURCES += $$HOSTBASE_DIR/../../resources/main.qrc
 
     contains(DEFINES, WITH_OPENCL) {
-        OPENCL_QRC_DIR = $$HOSTBASE_DIR/../../../../resources/opencl
+        OPENCL_QRC_DIR = $$HOSTBASE_DIR/../../resources/opencl
 
         RESOURCES += $$OPENCL_QRC_DIR/opencl.qrc
 

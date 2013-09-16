@@ -170,7 +170,7 @@ void PaintImageWidget::childMousePressed(QMouseEvent *event)
 {
     AdvancedImageWidget::childMousePressed(event);
 
-    if (mCurrentToolClass == SELECT_TOOL)
+    if ((PaintImageWidget::PaintToolClass)mCurrentToolClass == SELECT_TOOL)
     {
         Vector2dd releasePoint = Vector2dd(event->x(), event->y());
         bool shiftPressed = event->modifiers().testFlag(Qt::ShiftModifier);

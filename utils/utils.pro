@@ -38,12 +38,8 @@ HEADERS += \
     \
     corestructs/libWidgets/openCVBMParameters.h \
     corestructs/libWidgets/openCVSGMParameters.h \
-    corestructs/libWidgets/libElasParameters.h \   
-    corestructs/libWidgets/dummyProviderParameters.h \
     corestructs/libWidgets/openCVBMParametersControlWidget.h \
     corestructs/libWidgets/openCVSGMParametersControlWidget.h \
-    corestructs/libWidgets/libElasParametersControlWidget.h \
-    corestructs/libWidgets/dummyProviderParametersControlWidget.h \
     \
     viAreaWidget.h \
     viGLAreaWidget.h \
@@ -168,12 +164,8 @@ SOURCES += \
     \
     corestructs/libWidgets/openCVBMParameters.cpp \
     corestructs/libWidgets/openCVSGMParameters.cpp \
-    corestructs/libWidgets/libElasParameters.cpp \
-    corestructs/libWidgets/dummyProviderParameters.cpp \
     corestructs/libWidgets/openCVBMParametersControlWidget.cpp \
     corestructs/libWidgets/openCVSGMParametersControlWidget.cpp \  
-    corestructs/libWidgets/libElasParametersControlWidget.cpp \
-    corestructs/libWidgets/dummyProviderParametersControlWidget.cpp \
     \
     viAreaWidget.cpp \
     viGLAreaWidget.cpp \
@@ -301,8 +293,6 @@ FORMS += \
     \
     corestructs/libWidgets/openCVBMParametersControlWidget.ui \
     corestructs/libWidgets/openCVSGMParametersControlWidget.ui \
-    corestructs/libWidgets/libElasParametersControlWidget.ui \
-    corestructs/libWidgets/dummyProviderParametersControlWidget.ui \
     \
     filters/filterSelector.ui \
     \

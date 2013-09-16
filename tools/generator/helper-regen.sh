@@ -25,7 +25,7 @@ copy_if_different () {
         echo "$1" "$2/$name"
         cp $1 $2/$name 
         if [[ "$?" != "0" ]]; then
-        	echo -e "${redText} failed ${redText}"
+        	echo -e "${redText} failed ${normalText}"
         else 
         	echo -e "${yellowText} done ${normalText}"
         fi;
