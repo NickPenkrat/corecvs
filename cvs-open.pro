@@ -14,8 +14,8 @@ win32 {
 }
 
 win32 {
-    SUBDIRS += preprocSrc
-    SUBDIRS += opencl
+#    SUBDIRS += preprocSrc
+#    SUBDIRS += opencl
 } else {
     #SUBDIRS += preprocSrc
     #SUBDIRS += opencl                      # it waits a time for an accurate integration... :(
@@ -25,7 +25,7 @@ generator.depends        += core
 unitTests.depends        += core
 unitTestsRes.depends     += core
 utils.depends            += core
-utils.depends            += preprocSrc       # preprocSrc tool is needed to convert OpenCL sources into one binary archive
+#utils.depends            += preprocSrc       # preprocSrc tool is needed to convert OpenCL sources into one binary archive
 utils_restricted.depends += core
 utils_restricted.depends += utils 
 baseApplication.depends  += core             # utils:    as libs building could be done in parallel except apps!

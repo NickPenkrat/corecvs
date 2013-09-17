@@ -59,5 +59,5 @@ SUBDIRS += \
     logger \
     cameramodel \
     triangulator \
-	cloud \
-	distortion \
+    cloud \
+    distortion \

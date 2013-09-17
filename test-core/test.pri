@@ -50,8 +50,8 @@ include($$USE_CORE_PRI_FILE)
 }
 
 win32 {
-    OBJECTS_DIR = ../../../.obj/$$OBJ_TESTS_DIR/$$TARGET_ORIG/$$BUILD_CFG_NAME
+    OBJECTS_DIR = ../../../../.obj/$$OBJ_TESTS_DIR/$$TARGET_ORIG/$$BUILD_CFG_NAME
 } else {
-    OBJECTS_DIR = ../../../.obj/$$OBJ_TESTS_DIR/$$TARGET_ORIG
+    OBJECTS_DIR = ../../../../.obj/$$OBJ_TESTS_DIR/$$TARGET_ORIG
 }
 MOC_DIR = $$OBJECTS_DIR                             # we have to set it to omit creating dummy dirs: debug,release

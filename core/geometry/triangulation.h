@@ -332,7 +332,7 @@ std::vector<Edge> triangulate4(const vector<Point> &points, list<Point> &centers
 std::vector<Edge> vertexHull(const vector<Point> &points);
 
 #ifdef FAST_TRIANGULATION
-#include "../../../gts/gtswrapper.h"
+#include "../../wrappers/gts/gtswrapper.h"
 #define TRIANGULATE triangulateGts
 #else
 #define TRIANGULATE triangulate
