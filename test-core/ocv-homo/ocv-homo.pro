@@ -4,18 +4,18 @@
 #
 ##################################################################
 include(../testsCommon.pri)
-include(../testsRestricted.pri)
+#include(../testsRestricted.pri)
 
-OPENCV_WRAPPER_DIR = ../../opencv
+OPENCV_WRAPPER_DIR = ../../wrappers/opencv
 include($$OPENCV_WRAPPER_DIR/opencv.pri)
 
-INCLUDEPATH += ../../qt4/utils/corestructs/libWidgets
+INCLUDEPATH += ../../utils/corestructs/libWidgets
 
-HEADERS += ../../qt4/utils/corestructs/libWidgets/openCVSGMParameters.h
-HEADERS += ../../qt4/utils/corestructs/libWidgets/openCVBMParameters.h
+HEADERS += ../../utils/corestructs/libWidgets/openCVSGMParameters.h
+HEADERS += ../../utils/corestructs/libWidgets/openCVBMParameters.h
 
-SOURCES += ../../qt4/utils/corestructs/libWidgets/openCVSGMParameters.cpp
-SOURCES += ../../qt4/utils/corestructs/libWidgets/openCVBMParameters.cpp
+SOURCES += ../../utils/corestructs/libWidgets/openCVSGMParameters.cpp
+SOURCES += ../../utils/corestructs/libWidgets/openCVBMParameters.cpp
 
 SOURCES += main_test_ocv-homo.cpp
 

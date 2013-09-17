@@ -129,7 +129,7 @@ with_ueye {
 }
 
 with_opencv {                                   # all this stuff was extracted from opencv.pri to speedup including
-    OPENCV_WRAPPER_DIR = $$UTILSDIR/../../opencv
+    OPENCV_WRAPPER_DIR = $$UTILSDIR/../wrappers/opencv
     include($$OPENCV_WRAPPER_DIR/opencvLibs.pri)
 
     contains(DEFINES, WITH_OPENCV) {
@@ -138,20 +138,11 @@ with_opencv {                                   # all this stuff was extracted f
     }    
 }
 
-with_opencl {
-    OPENCL_WRAPPER_DIR = $$UTILSDIR/../../opencl
-    include($$OPENCL_WRAPPER_DIR/openclLibs.pri)
-}
-
-with_libelas {
-    LIBELAS_WRAPPER_DIR = $$UTILSDIR/../../libelas
-    include($$LIBELAS_WRAPPER_DIR/libelasLibs.pri)
-}
-
 with_directshow {
-    DIRECT_SHOW_WRAPPER_DIR = $$UTILSDIR/../../directShow
+    DIRECT_SHOW_WRAPPER_DIR = $$UTILSDIR/../wrappers/directShow
     include($$DIRECT_SHOW_WRAPPER_DIR/directShowLibs.pri)
 }
+
 
 ##############################################
 # Useful common part for all 3vi project apps

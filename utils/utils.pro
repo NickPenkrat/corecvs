@@ -364,7 +364,7 @@ with_ueye {
 }
 
 with_opencv {
-    OPENCV_WRAPPER_DIR = $$UTILSDIR/../../opencv
+    OPENCV_WRAPPER_DIR = $$UTILSDIR/../wrappers/opencv
     include($$OPENCV_WRAPPER_DIR/opencv.pri)            # it uses OPENCV_WRAPPER_DIR inside
 
     contains(DEFINES, WITH_OPENCV) {  # Move this to OpenCV
@@ -381,15 +381,6 @@ with_opencv {
     }
 }
 
-with_opencl {
-    OPENCL_WRAPPER_DIR = $$UTILSDIR/../../opencl
-    include($$OPENCL_WRAPPER_DIR/opencl.pri)
-}
-
-with_libelas {
-    LIBELAS_WRAPPER_DIR = $$UTILSDIR/../../libelas
-    include($$LIBELAS_WRAPPER_DIR/libelas.pri)
-} 
 
 with_directshow {
     HEADERS += \
