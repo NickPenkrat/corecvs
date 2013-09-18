@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>457</width>
-    <height>229</height>
+    <height>254</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -127,17 +127,29 @@
          <bool>true</bool>
         </property>
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>20</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="baseSize">
+         <size>
+          <width>20</width>
+          <height>20</height>
+         </size>
         </property>
         <property name="toolTip">
          <string>Show left frame
 (when looking form behind the camera)</string>
         </property>
         <property name="text">
-         <string>/</string>
+         <string/>
         </property>
         <property name="checked">
          <bool>false</bool>
@@ -145,9 +157,34 @@
        </widget>
       </item>
       <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>/  </string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QRadioButton" name="rightFrameButton">
         <property name="enabled">
          <bool>true</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>20</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="baseSize">
+         <size>
+          <width>11</width>
+          <height>20</height>
+         </size>
         </property>
         <property name="toolTip">
          <string>Show right frame 
