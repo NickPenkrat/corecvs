@@ -36,6 +36,18 @@ public:
     static const int step = 1;
 };
 
+class TraitG8Buffer {
+public:
+    typedef TraitG8Buffer FallbackTraits;
+
+    typedef uint8_t Type;
+    typedef int8_t SignedType;
+    typedef uint16_t ExtendedType;
+
+    typedef Type InternalType;
+    static const int step = 1;
+};
+
 #ifdef WITH_SSE
 class TraitG12BufferVector {
 public:
@@ -48,7 +60,23 @@ public:
     typedef Int16x8 SignedType;
     typedef Int32x8 ExtendedType;
 };
+
+/*
+class TraitG8BufferVector {
+public:
+    typedef TraitG8Buffer FallbackTraits;
+
+    typedef FallbackTraits::Type InternalType;
+    static const int step = 8;
+
+    typedef UInt8x16 Type;
+    typedef Int8x16 SignedType;
+    typedef Int16x8 ExtendedType;
+};
+*/
 #endif
+
+
 
 
 template<int inputNumber=1, int ouputNumber=1>
@@ -78,6 +106,12 @@ public:
 };
 #endif
 
+/* Algebra for G8 buffer */
+template<int inputNumber, int ouputNumber>
+class G8BufferAlgebra {
+public:
+    typedef ScalarAlgebraMulti<TraitG8Buffer, TraitG8Buffer,inputNumber, ouputNumber> Type;
+};
 
 
 

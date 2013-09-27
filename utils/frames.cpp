@@ -30,7 +30,7 @@ Frames::Frames() :
 
 
     /* Remove this. BaseParametersWidget should store the state*/
-    /*QSettings settings("Lanit-Tercom", "3vi");
+    /*QSettings settings("Lanit-Tercom", "CVS");
     mSwapped = settings.value("swapCameras", false).toBool();*/
 }
 

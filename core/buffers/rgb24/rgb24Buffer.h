@@ -33,7 +33,7 @@ typedef AbstractContiniousBuffer<RGBColor, int32_t> CRGB24BufferBase;
 class RGB24Buffer : public CRGB24BufferBase
 {
 public:
-    RGB24Buffer(int32_t h, int32_t w) : CRGB24BufferBase(h, w) {};
+//    RGB24Buffer(int32_t h, int32_t w) : CRGB24BufferBase(h, w) {};
     RGB24Buffer(RGB24Buffer &that) : CRGB24BufferBase (that) {};
     RGB24Buffer(RGB24Buffer *that) : CRGB24BufferBase (that) {};
 
@@ -44,6 +44,7 @@ public:
     RGB24Buffer(int32_t h, int32_t w, const RGBColor &data) : CRGB24BufferBase(h, w, data) {};
 
 
+    RGB24Buffer(int32_t h, int32_t w, bool shouldInit = true) : CRGB24BufferBase (h, w, shouldInit) {};
     RGB24Buffer(Vector2d<int32_t> size, bool shouldInit = true) : CRGB24BufferBase (size, shouldInit) {};
 
     /*Helper Constructors form the relative types*/

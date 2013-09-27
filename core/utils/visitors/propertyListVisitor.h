@@ -23,7 +23,7 @@ namespace corecvs {
 
 /**
  *  Visitor that serializes the type hierarchy into the PropertyList -
- *  the internal human readable format for 3Vi core
+ *  the internal human readable format for CVS core
  **/
 class PropertyListWriterVisitor : public BasePathVisitor
 {
@@ -81,7 +81,7 @@ template <>
 
 /**
  *  Visitor that de-serializes the type hierarchy from the PropertyList -
- *  the internal human readable format for 3Vi core
+ *  the internal human readable format for CVS core
  **/
 class PropertyListReaderVisitor : public BasePathVisitor
 {

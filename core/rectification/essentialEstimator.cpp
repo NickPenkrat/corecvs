@@ -11,7 +11,8 @@
 #include "levenmarq.h"
 #include "gradientDescent.h"
 #include "classicKalman.h"
-#include "kalman.h"
+//#include "kalman.h"
+
 namespace corecvs {
 
 using std::flush;
@@ -261,6 +262,7 @@ EssentialMatrix EssentialEstimator::getEssentialSimpleKalman (const vector<Corre
     return CostFunctionBase::getEssential(&kalmanFilter.x[0]);
 }
 
+#if 0
 EssentialMatrix EssentialEstimator::getEssentialKalman(const vector<Correspondance *> &samples)
 {
     /* Setting up P, Q, R */
@@ -370,7 +372,7 @@ EssentialMatrix EssentialEstimator::getEssentialMultiKalman(const vector<Corresp
 
     return CostFunctionBase::getEssential(&input[0]);
 }
-
+#endif
 
 EssentialMatrix EssentialEstimator::getEssential             (
         const vector<Correspondance *> &samples,
@@ -387,9 +389,9 @@ EssentialMatrix EssentialEstimator::getEssential             (
         case METHOD_CLASSIC_KALMAN:
             return getEssentialSimpleKalman(samples);
         case METHOD_ITERATIVE_KALMAN:
-            return getEssentialKalman(samples);
+//            return getEssentialKalman(samples);
         case METHOD_GRAD_DESC_RM:
-            return getEssentialGradToRm(samples);
+//            return getEssentialGradToRm(samples);
 
         default:
             return getEssentialLM(samples);

@@ -14,6 +14,7 @@
 #include "bufferLoader.h"
 #include "g12Buffer.h"
 #include "bufferFactory.h"
+#include "rgb24Buffer.h"
 
 using namespace std;
 using namespace corecvs;
@@ -33,8 +34,8 @@ public:
         return 0;
     }
 
-/*  static G12Buffer   *G12BufferFromQImage(QImage *image);
-    static RGB24Buffer *G12BufferFromQImage(QImage *image);*/
+/*  static G12Buffer   *G12BufferFromQImage(QImage *image);*/
+    static RGB24Buffer *RGB24BufferFromQImage(QImage *image);
 
     virtual bool acceptsFile(string name);
 

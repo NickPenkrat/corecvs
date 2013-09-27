@@ -513,22 +513,6 @@ void RGB24Buffer::drawHistogram1024x512(Histogram *hist, int x, int y, uint16_t 
     }
 }
 
-void RGB24Buffer::drawCircle(int x, int y, int rad, RGBColor color )
-{
-    int rad2 = rad * rad;
-    for (int dy = -rad; dy <= 0; dy++)
-    {
-        int dx = (int)sqrt((float)(rad2 - (dy - 0.5) * (dy - 0.5)));
-        for (int j= x - dx; j <= x + dx; j++)
-        {
-            if (this->isValidCoord(y - dy, j))
-                this->element(y - dy, j) = color;
-            if (this->isValidCoord(y + dy, j))
-                this->element(y + dy, j) = color;
-        }
-    }
-}
-
 // TODO: make this more pretty
 void RGB24Buffer::drawArc(int x, int y, int rad, RGBColor color)
 {

@@ -145,7 +145,7 @@ with_directshow {
 
 
 ##############################################
-# Useful common part for all 3vi project apps
+# Useful common part for all cvs project apps
 ##############################################
 
 PROJ_INTDIR = $$UTILSDIR/../../../.obj/$$TARGET

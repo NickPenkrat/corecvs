@@ -532,7 +532,7 @@ void CloudViewDialog::initializeGLSlot()
     {
         for (int j = 1; j < 8; j++)
         {
-            textureBuffer.drawCircle(i * 16, j * 16, 5, RGBColor::Yellow());
+            AbstractPainter<RGB24Buffer>(&textureBuffer).drawCircle(i * 16, j * 16, 5, RGBColor::Yellow());
         }
     }
 

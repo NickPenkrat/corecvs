@@ -1,11 +1,12 @@
 # try use global config 
 exists(../../../config.pri) {
     #message(Using global config)
-    include(../../../config.pri)
+    TOPLEVEL=../../../
 } else { 
     message(Using local config)
-    include(../config.pri)
+    TOPLEVEL=../    
 }
+ include($$TOPLEVEL/config.pri)
     
 
 CONFIG  += staticlib
@@ -15,7 +16,7 @@ TEMPLATE = lib
 COREDIR = .
 include(core.pri)               # it uses COREDIR, TARGET and detects COREBINDIR!
 
-CORE_INTDIR = ../../../.obj/core
+CORE_INTDIR = $$TOPLEVEL/.obj/core
 win32 {
     OBJECTS_DIR = $$CORE_INTDIR/$$BUILD_CFG_NAME
 } else {

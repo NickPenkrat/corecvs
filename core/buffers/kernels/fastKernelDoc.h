@@ -10,7 +10,7 @@
  * <h1>FastKernels introduction</h1>
  *
  * This file describes the nature of fastKernels initiative and the
- * ways it should apply to 3Vi core.
+ * ways it should apply to CVS core.
  *
  * FastKernels is the attempt to abstract the semantics of computation in image processing form the
  * the actual implementation.

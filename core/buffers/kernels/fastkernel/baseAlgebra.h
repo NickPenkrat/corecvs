@@ -131,6 +131,7 @@ template<typename OtherAlgebra>
     }
 
     inline InternalInputType * getInputPos(int input, int y, int x) const {
+        //printf(" %p %p\n", this->ptrI[0], this->ptrI[1]);
         return this->ptrI[input] + y * this->strideI[input]  + x;
     }
 

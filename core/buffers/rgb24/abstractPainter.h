@@ -6,10 +6,13 @@
  **/
 
 #include <stdint.h>
+#include <math.h>
+#include <vector>
 
 #include "global.h"
 #include "hardcodeFont.h"
 #include "hersheyVectorFont.h"
+#include "rgbColor.h"
 
 namespace corecvs {
 
@@ -151,6 +154,154 @@ public:
         va_end(marker);
     }
 
+    void drawCircle(int x, int y, int rad, ElementType color )
+    {
+        int rad2 = rad * rad;
+        for (int dy = -rad; dy <= 0; dy++)
+        {
+            int dx = (int)sqrt((float)(rad2 - (dy - 0.5) * (dy - 0.5)));
+            for (int j= x - dx; j <= x + dx; j++)
+            {
+                if (mTarget->isValidCoord(y - dy, j))
+                    mTarget->element(y - dy, j) = color;
+                if (mTarget->isValidCoord(y + dy, j))
+                    mTarget->element(y + dy, j) = color;
+            }
+        }
+    }
+
+    class EqualPredicate
+    {
+    private:
+        ElementType mValue;
+        ElementType mReplace;
+
+    public:
+        /*int countPred;
+        int countMark;
+        int doubleMark;*/
+
+        EqualPredicate(const ElementType &value, const ElementType &replace) :
+            mValue(value)
+        ,   mReplace(replace)
+        /*,   countPred(0)
+        ,   countMark(0)
+        ,   doubleMark(0)*/
+        {};
+
+        bool operator()(TargetBuffer *buffer, int x, int y) {
+            //countPred++;
+            return buffer->element(y,x) == mValue;
+        }
+
+        void mark(TargetBuffer *buffer, int x, int y) {
+            /*countMark++;
+            if (buffer->element(y,x) == mReplace) {
+                doubleMark++;
+                buffer->element(y,x) = RGBColor::Yellow();
+            } else {*/
+                buffer->element(y,x) = mReplace;
+            /*}*/
+        }
+
+    };
+
+    struct Segment {
+        int x1;
+        int x2;
+        int y;
+
+        Segment() {};
+        Segment(int _x1, int _x2, int _y) :
+            x1(_x1), x2(_x2), y(_y) {};
+    };
+
+    template<class Predicate>
+    void floodFill(int startX, int startY, Predicate &predicate)
+    {
+
+        std::vector<Segment> queue;
+
+        /* Put the first segment*/
+        if (!predicate(mTarget, startX, startY)) {
+            return;
+        }
+
+//        printf("Pushing top %d [%d -> %d]\n", startY, startX, startX);
+        queue.push_back(Segment(startX, startX, startY));
+
+        while (!queue.empty()) {
+            Segment state = queue.back();
+            queue.pop_back();
+
+            int x1 = state.x1;
+            int x2 = state.x2;
+            int y  = state.y;
+            if (y < 0 || y > mTarget->h - 1) {
+                continue;
+            }
+
+            while((x1 > 0) && predicate(mTarget, x1 - 1, y))
+            {
+                x1--;
+            }
+
+            while((x2 < mTarget->w - 1) && predicate(mTarget, x2 + 1, y) )
+            {
+                x2++;
+            }
+
+            //printf("Filling %d to %d\n", x1, x2);
+
+            bool topAdd = false;    /* we store the fact that top scanline is already added */
+            Segment top;
+            top.y = y - 1;
+            bool bottomAdd = false;    /* we store the fact that top scanline is already added */
+            Segment bottom;
+            bottom.y = y + 1;
+
+            /* Fill line */
+            for (int run = x1; run <= x2; run ++)
+            {
+                bool topFill    = false;
+                bool bottomFill = false;
+
+                if (y > 0) {
+                    topFill = predicate(mTarget, run, y - 1);
+                    if (!topAdd && topFill) {
+                        topAdd = true;
+                        top.x1 = run;
+                    }
+                    if (topAdd && (!topFill || run == x2)) {
+                        topAdd = false;
+                        top.x2 = run - 1;
+//                        printf("Pushing top %d [%d -> %d]\n", top.y, top.x1, top.x2);
+                        queue.push_back(top);
+                    }
+                }
+
+                if (y < mTarget->h - 1 )
+                {
+                    bottomFill = predicate(mTarget, run, y + 1);
+                    if (!bottomAdd && bottomFill) {
+                        bottomAdd = true;
+                        bottom.x1 = run;
+                    }
+                    if (bottomAdd && (!bottomFill || run == x2)) {
+                        bottomAdd = false;
+                        bottom.x2 = run - 1;
+//                        printf("Pushing bottom %d [%d -> %d]\n", bottom.y, bottom.x1, bottom.x2);
+                        queue.push_back(bottom);
+                    }
+                }
+
+                predicate.mark(mTarget, run, y);
+
+            }
+        }
+
+    }
+
 	virtual ~AbstractPainter() {}
 };
 
@@ -172,6 +323,7 @@ void AbstractPainter<TargetBuffer>::drawFormatVector(int16_t x, int16_t y, Abstr
     va_end(marker);
 }
 */
+
 
 
 } /* namespace corecvs */

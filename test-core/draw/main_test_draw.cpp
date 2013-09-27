@@ -14,6 +14,7 @@
 
 #include "rgb24Buffer.h"
 #include "bmpLoader.h"
+#include "abstractPainter.h"
 
 
 using namespace std;
@@ -33,7 +34,7 @@ void testCircles(void)
 
     for (int i = 11; i >=1; i-= 1)
     {
-        buffer->drawCircle(10,10, i, colors[i % CORE_COUNT_OF(colors)] );
+        AbstractPainter<RGB24Buffer>(buffer).drawCircle(10,10, i, colors[i % CORE_COUNT_OF(colors)] );
     }
 
     for (int i = 11; i >=1; i-= 2)
@@ -45,9 +46,35 @@ void testCircles(void)
     delete_safe(buffer);
 }
 
+void testFloodFill(void)
+{
+    int h = 20;
+    int w = 20;
+
+    RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
+    AbstractPainter<RGB24Buffer> painter(buffer);
+    painter.drawCircle(    w / 4,     h / 4, w / 5, RGBColor::Red() );
+    painter.drawCircle(    w / 4, 3 * h / 4, w / 5, RGBColor::Red() );
+    painter.drawCircle(3 * w / 4,     h / 4, w / 5, RGBColor::Red() );
+    painter.drawCircle(3 * w / 4, 3 * h / 4, w / 5, RGBColor::Red() );
+
+    BMPLoader().save("flood_before.bmp", buffer);
+
+    AbstractPainter<RGB24Buffer>::EqualPredicate predicate(RGBColor::Black(), RGBColor::Blue());
+    painter.floodFill(w / 2, h / 2, predicate);
+
+    BMPLoader().save("flood_after.bmp", buffer);
+    //printf("Predicate  : %d\n", predicate.countPred);
+    //printf("Mark       : %d\n", predicate.countMark);
+    //printf("Double Mark: %d\n", predicate.doubleMark);
+
+    delete_safe(buffer);
+}
+
 int main (int /*argC*/, char ** /*argV*/)
 {
+    testFloodFill();
     testCircles();
-        cout << "PASSED" << endl;
-        return 0;
+    cout << "PASSED" << endl;
+    return 0;
 }

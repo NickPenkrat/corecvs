@@ -42,6 +42,7 @@ G12Buffer* QTFileLoader::load(string name)
      *
      */
     for (int i = 0; i < image.height(); i++)
+    {
         for (int j = 0; j < image.width(); j++)
         {
             QRgb pixel = image.pixel(j,i);
@@ -49,6 +50,7 @@ G12Buffer* QTFileLoader::load(string name)
             uint16_t gray = (11 * qRed(pixel) + 16 * qGreen(pixel) + 5 * qBlue(pixel)) >> 1;
             result->element(i,j) = gray;
         }
+    }
 
     return result;
 }
@@ -56,4 +58,29 @@ G12Buffer* QTFileLoader::load(string name)
 bool QTFileLoader::acceptsFile(string /*name*/)
 {
     return true;
+}
+
+
+RGB24Buffer *QTFileLoader::RGB24BufferFromQImage(QImage *image)
+{
+    if (image == NULL)
+        return NULL;
+
+    RGB24Buffer *result = new RGB24Buffer(image->height(), image->width(), false);
+
+    /**
+     * TODO: Make this faster using .bits() method.
+     * So far don't want to mess with possible image formats
+     *
+     */
+    for (int i = 0; i < image->height(); i++)
+    {
+        for (int j = 0; j < image->width(); j++)
+        {
+            QRgb pixel = image->pixel(j,i);
+            result->element(i,j) = RGBColor(qRed(pixel), qGreen(pixel), qBlue(pixel));
+        }
+    }
+
+    return result;
 }

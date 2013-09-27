@@ -61,7 +61,20 @@ CORE_INCLUDEPATH = \
 
 INCLUDEPATH += $$CORE_INCLUDEPATH
 
-COREBINDIR = $$COREDIR/../../../bin
+#exists($$COREDIR/../../../config.pri) {
+#    COREBINDIR = $$COREDIR/../../../bin
+#} else {
+#    message(Using local core. config should be $$COREDIR/../../../config.pri)
+#    COREBINDIR = $$COREDIR/../bin
+#}
+
+exists(../../../config.pri) {
+    COREBINDIR = $$COREDIR/../../../bin
+} else {
+    message(Using local core. config should be $$COREDIR/../../../config.pri)
+    COREBINDIR = $$COREDIR/../bin
+}
+
 
 contains(TARGET, cvs_core): !contains(TARGET, cvs_core_restricted) {
     win32-msvc* {

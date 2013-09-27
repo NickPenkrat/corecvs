@@ -3,7 +3,7 @@ HEADERS += \
     kalman/cholesky.h \
     kalman/upperUnitaryMatrix.h \
     kalman/uduDecomposed.h \
-    kalman/kalman.h \ 
+#    kalman/kalman.h \ 
     kalman/classicKalman.h \ 
 
 
@@ -12,6 +12,6 @@ SOURCES += \
     kalman/cholesky.cpp \
     kalman/upperUnitaryMatrix.cpp \
     kalman/uduDecomposed.cpp \
-    kalman/kalman.cpp \
+#    kalman/kalman.cpp \
     kalman/classicKalman.cpp \ 
 

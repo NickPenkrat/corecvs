@@ -24,6 +24,7 @@ HEADERS += \
     buffers/kernels/threshold.h \
     buffers/kernels/arithmetic.h \
     buffers/kernels/copyKernel.h \
+    buffers/kernels/logicKernels.h \    
     buffers/kernels/fastkernel/fastKernel.h \
     buffers/kernels/fastkernel/readers.h \
     buffers/kernels/fastkernel/baseKernel.h \
@@ -67,6 +68,7 @@ SOURCES += \
     buffers/kernels/threshold.cpp \
     buffers/kernels/blurProcessor.cpp \
     buffers/kernels/spatialGradient.cpp \
+    buffers/kernels/logicKernels.cpp \    
     buffers/morphological/morphological.cpp \
     buffers/rgb24/rgb24Buffer.cpp \
     buffers/rgb24/rgbColor.cpp \

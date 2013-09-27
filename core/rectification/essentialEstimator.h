@@ -129,8 +129,10 @@ public:
     EssentialMatrix getEssentialGrad         (const vector<Correspondance *> &samples);
     EssentialMatrix getEssentialGradToRm     (const vector<Correspondance *> &samples);
     EssentialMatrix getEssentialSimpleKalman (const vector<Correspondance *> &samples);
+#if 0
     EssentialMatrix getEssentialKalman       (const vector<Correspondance *> &samples);
     EssentialMatrix getEssentialMultiKalman  (const vector<Correspondance *> &samples);
+#endif
 
 
     EssentialEstimator();

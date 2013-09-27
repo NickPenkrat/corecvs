@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "kalman.h"
 #include "matrix.h"
 #include "classicKalman.h"
 
@@ -49,76 +48,6 @@ using namespace corecvs;
  * */
 
 #define GNUPLOT_TRACE
-int testConsequtiveKalman(void)
-{
-    static const int STATE_DIMENTION = 2;
-    static const int MEASURE_DIMENTION = 1;
-    static const double TIME_QUANT = 1;
-
-
-    KalmanFilter kalmanFilter(STATE_DIMENTION);
-
-    Matrix *stateTransitionMatrix = new Matrix(STATE_DIMENTION, STATE_DIMENTION, false);
-    stateTransitionMatrix->fillWithArgs(
-            1.0, TIME_QUANT,
-            0.0, 1.0
-    );
-    std::cout << "F matrix:\n";
-    stateTransitionMatrix->print();
-    COOSparseMatrix* stateTransition = new COOSparseMatrix(stateTransitionMatrix);
-    delete kalmanFilter.F;
-    kalmanFilter.F = stateTransition;
-
-
-    Matrix *measurementMatrix = new Matrix(MEASURE_DIMENTION, STATE_DIMENTION, false);
-    measurementMatrix->fillWithArgs(1.0, 0.0);
-    std::cout << "H matrix:\n";
-    measurementMatrix->print();
-
-    Matrix measurementNoise(1, MEASURE_DIMENTION);
-    measurementNoise.fillWithArgs(10.0);
-
-    kalmanFilter.Q->fillWithArgs(0.2,0.4);
-
-#ifdef GNUPLOT_TRACE
-    FILE *fp = fopen("gnuplot.dat", "wt");
-    fprintf(fp,"#Step; Measurement; Old Position; Old Speed; Predicted Position; Predicted Speed; Innovated Position; Innovated Speed\n");
-#endif
-
-    int step;
-    for (step = 0; step < 25; step++)
-    {
-        double measurement = (step + 1) * 0.2 + (0.1 * ((rand() % 1000) / 1000.0)) - 0.05;
-        DyVector measurementVector(1);
-        measurementVector.dy[0] = measurement - kalmanFilter.currentState->a(0,0);
-        measurementVector.index[0] = 0;
-        measurementVector.number = 1;
-
-
-        kalmanFilter.step(&measurementNoise,  &measurementVector, measurementMatrix);
-#ifdef GNUPLOT_TRACE
-        fprintf(fp,"%d; %lg;     %lg; %lg;        %lg; %lg       %lg; %lg\n",
-                step,
-                measurement,
-                kalmanFilter.oldState->a(0,0),       kalmanFilter.oldState->a(0,1),
-                kalmanFilter.predictedState->a(0,0), kalmanFilter.predictedState->a(0,1),
-                kalmanFilter.currentState->a(0,0),   kalmanFilter.currentState->a(0,1));
-
-#else
-        printf("Measurement     : x=%lg\n", measurement);
-        printf("Old        State: x=%lg v=%lg\n", kalmanFilter.oldState->a(0), kalmanFilter.oldState->a(1));
-        printf("Predicted  State: x=%lg v=%lg\n", kalmanFilter.predictedState->a(0), kalmanFilter.predictedState->a(1));
-        printf("Current    State: x=%lg v=%lg\n", kalmanFilter.currentState->a(0), kalmanFilter.currentState->a(1));
-#endif
-    }
-#ifdef GNUPLOT_TRACE
-    fclose(fp);
-    int gnuplotResult = system("gnuplot data/gnuplot.pg > out.png;");
-    printf("GNUPLOT result is %d\n", gnuplotResult);
-#endif
-
-    return 0;
-}
 
 
 class TestF : public FunctionArgs
@@ -234,6 +163,5 @@ void testClassicKalman (void)
 
 int main (int /*argC*/, char ** /*argV[]*/)
 {
-    testConsequtiveKalman();
     testClassicKalman ();
 }
