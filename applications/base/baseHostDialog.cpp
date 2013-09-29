@@ -136,7 +136,7 @@ BaseHostDialog::~BaseHostDialog()
     delete_safe (mDistortionWidget);
     delete_safe (mFilterGraphPresentation);
 
-    SettingsSetter visitor("cvs.conf", UI_NAME_BASE_DIALOG);
+    SettingsSetter visitor("cvs-camera.conf", UI_NAME_BASE_DIALOG);
     mRectifierData.accept<SettingsSetter>(visitor);
 }
 
@@ -345,8 +345,8 @@ void BaseHostDialog::initCapture(QString const &init)
 
     /* Now we need to connect the camera to widgets */
     mCapSettings = new CapSettingsDialog(NULL, mCamera);
-    mSaveableWidgets.push_back(mCapSettings);
-    mCapSettings->loadFromQSettings("cvs.conf", "");
+    mSaveableCameraWidgets.push_back(mCapSettings);
+    mCapSettings->loadFromQSettings("cvs-camera.conf", "");
 
     qRegisterMetaType<CaptureStatistics>("CaptureStatistics");
     connect(mCamera, SIGNAL(newStatisticsReady(CaptureStatistics)),
@@ -783,46 +783,70 @@ void BaseHostDialog::doSaveParams()
 void BaseHostDialog::loadParams(const QString &fileName, QString root)
 {
     QSettings settings(fileName, QSettings::IniFormat);
+
+    QString cameraConfig = fileName.section(".", 0, 0) + "-camera.conf";
+    QSettings cameraSettings(cameraConfig, QSettings::IniFormat);
+
     if (!root.isEmpty())
     {
         settings.beginGroup(root);
     }
+
     if (mInputString.isEmpty())
     {
-        mInputString = settings.value(initialCameraString, "").toString();
+        mInputString = cameraSettings.value(initialCameraString, "").toString();
     }
+
     if (settings.value("DockWidgetHide", false).toBool())
     {
         mDockWidget->hide();
     }
+
     if (!root.isEmpty())
     {
         settings.endGroup();
     }
+
     for (unsigned i = 0; i < mSaveableWidgets.size(); i++)
     {
         mSaveableWidgets[i]->loadFromQSettings(fileName, root);
+    }
+
+    for (unsigned i = 0; i < mSaveableCameraWidgets.size(); i++)
+    {
+        mSaveableWidgets[i]->loadFromQSettings(cameraConfig, root);
     }
 }
 
 void BaseHostDialog::saveParams(const QString &fileName, QString root)
 {
     QSettings settings(fileName, QSettings::IniFormat);
+
+    QString cameraConfig = fileName.section(".", 0, 0) + "-camera.conf";
+    QSettings cameraSettings(cameraConfig, QSettings::IniFormat);
+
     if (!root.isEmpty())
     {
-        settings.beginGroup(root);
+        cameraSettings.beginGroup(root);
     }
-    settings.setValue(initialCameraString, mInputString);
+
+    cameraSettings.setValue(initialCameraString, mInputString);
+
     if (!root.isEmpty())
     {
-        settings.endGroup();
+        cameraSettings.endGroup();
     }
+
     for (unsigned i = 0; i < mSaveableWidgets.size(); i++)
     {
-//        qDebug() << "BaseHostDialog::saveParams() to " << fileName << ":" << root;
         mSaveableWidgets[i]->saveToQSettings(fileName, root);
     }
-//    mFilterGraphPresentation->filterGraph->saveToFile("graph.conf");
+
+    for (unsigned i = 0; i < mSaveableCameraWidgets.size(); i++)
+    {
+        mSaveableWidgets[i]->loadFromQSettings(cameraConfig, root);
+    }
+
 }
 
 

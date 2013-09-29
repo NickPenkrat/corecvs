@@ -278,8 +278,10 @@ protected:
     QHash<QString, ViAreaWidget *> mWidgets;
     QMenu *mAdditionalTools;
 
-    /* Widgets that delegates BaseHostDialog right to save and load them*/
+    /** Widgets that delegates BaseHostDialog right to save and load them*/
     vector<SaveableWidget *> mSaveableWidgets;
+    /** Camera-dependent widgets that delegate BaseHostDialog right to save and load them */
+    vector<SaveableWidget *> mSaveableCameraWidgets;
 
     /**
      *  Timer that will fire when it's time to check the memory consumption
