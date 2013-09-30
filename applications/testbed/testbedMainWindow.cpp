@@ -40,6 +40,8 @@ void TestbedMainWindow::connectActions()
 
     connect(mUi->actionShowMask,  SIGNAL(toggled(bool)), this, SLOT(toggleMask()));
     connect(mUi->actionResetMask, SIGNAL(triggered(bool)), this, SLOT(resetMask()));
+    connect(mUi->actionUndoMask,  SIGNAL(triggered(bool)), this, SLOT(undoMask()));
+
 }
 
 
@@ -82,11 +84,29 @@ void TestbedMainWindow::toggleMask(void)
 
 void TestbedMainWindow::resetMask(void)
 {
-    delete_safe(mMask);
+    mUndoList.push_back(mMask);
+    if (mUndoList.size() > 20) {
+        delete_safe(mUndoList.front());
+        mUndoList.pop_front();
+    }
+
     mMask = new G8Buffer(mImage->getSize());
     updateViewImage();
 }
 
+void TestbedMainWindow::undoMask(void)
+{
+    if (mUndoList.empty()) {
+        return;
+    }
+    delete_safe(mMask);
+    mMask = mUndoList.back();
+    mUndoList.pop_back();
+    updateViewImage();
+}
+
+
+vector<G8Buffer *> mUndoList;
 
 void TestbedMainWindow::updateViewImage(void)
 {
@@ -215,6 +235,11 @@ void TestbedMainWindow::maskTolerance1(QPoint point)
 void TestbedMainWindow::pointSelected(int toolID, QPoint point)
 {
     qDebug() << "Point Selected" << point;
+    mUndoList.push_back(new G8Buffer(mMask));
+    if (mUndoList.size() > 20) {
+        delete_safe(mUndoList.front());
+        mUndoList.pop_front();
+    }
 
     switch (mUi->maskComboBox->currentIndex())
     {

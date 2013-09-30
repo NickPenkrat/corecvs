@@ -8,6 +8,7 @@ HEADERS += \
     buffers/displacementBuffer.h \
     buffers/g8Buffer.h \
     buffers/g12Buffer.h \
+    buffers/booleanBuffer.h \
     buffers/commonMappers.h \
     buffers/integralBuffer.h \
     buffers/derivativeBuffer.h \
@@ -55,6 +56,7 @@ SOURCES += \
     buffers/displacementBuffer.cpp \
     buffers/g8Buffer.cpp \
     buffers/g12Buffer.cpp \
+    buffers/booleanBuffer.cpp \
     buffers/commonMappers.cpp \
     buffers/mipmapPyramid.cpp \
     buffers/derivativeBuffer.cpp \

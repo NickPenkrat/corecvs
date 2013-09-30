@@ -42,6 +42,8 @@
 #include "memoryBlock.h"
 #include "rgbColor.h"
 #include "abstractPainter.h"
+#include "g8Buffer.h"
+#include "booleanBuffer.h"
 
 using namespace std;
 using namespace corecvs;
@@ -361,9 +363,42 @@ void _testReduceChessboard1 ( void )
     delete buffer;
 }
 
+void testBoolean (void) {
+    int h = 45;
+    int w = 45;
+    G8Buffer *buffer = new G8Buffer(h, w, 0);
+
+    AbstractPainter<G8Buffer> painter(buffer);
+    painter.drawCircle(    w / 4,     h / 4, w / 4, 255 );
+    painter.drawCircle(    w / 4, 3 * h / 4, w / 4, 255 );
+    painter.drawCircle(3 * w / 4,     h / 4, w / 4, 255 );
+    painter.drawCircle(3 * w / 4, 3 * h / 4, w / 4, 255 );
+
+    RGB24Buffer *sourceImage = new RGB24Buffer(h, w);
+    sourceImage->drawG8Buffer(buffer);
+    (BMPLoader()).save("source.bmp", sourceImage);
+
+    BooleanBuffer packedBuffer(buffer);
+    G8Buffer *unpackBuffer = packedBuffer.unpack(0, 255);
+    RGB24Buffer *image = new RGB24Buffer(unpackBuffer->h, unpackBuffer->w);
+    image->drawG8Buffer(unpackBuffer);
+
+
+    (BMPLoader()).save("unpacked.bmp", image);
+
+    packedBuffer.printBuffer();
+
+    delete_safe(image);
+    delete_safe(sourceImage);
+    delete_safe(unpackBuffer);
+    delete_safe(buffer);
+}
+
 
 int main (int /*argC*/, char ** /*argV*/)
 {
+    testBoolean();
+    return 0;
     testFont ();
 	//_testReduceChessboard1();
     return 0;

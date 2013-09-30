@@ -9,11 +9,10 @@
  * \author alexander
  */
 
-
+#include <stdio.h>
 
 #include "abstractBuffer.h"
 #include "abstractContiniousBuffer.h"
-#include "stdio.h"
 #include "g12Buffer.h"
 
 namespace corecvs {

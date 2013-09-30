@@ -14,7 +14,7 @@
 #include "utils.h"
 
 #include "testbedMainWindow.h"
-#include "../../utils/fileformats/qtFileLoader.h"
+#include "qtFileLoader.h"
 
 
 
@@ -35,6 +35,7 @@ int main(int argc, char *argv[])
     app.exec();
 
     printf("Exiting testbed\n");
+    return 0;
 
 }
 
