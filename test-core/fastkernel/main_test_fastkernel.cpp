@@ -34,6 +34,8 @@
 #include "integralBuffer.h"
 #include "morphological.h"
 #include "vectorTraits.h"
+#include "../../core/buffers/kernels/logicKernels.h"
+#include "../../core/buffers/rgb24/abstractPainter.h"
 
 using namespace std;
 using namespace corecvs;
@@ -285,9 +287,74 @@ void testSSEMath (void)
 
 #endif
 
+void testBooleanOperations (void)
+{
+    G8Buffer *mask1 = new G8Buffer(100, 100);
+    G8Buffer *mask2 = new G8Buffer(100, 100);
+
+    AbstractPainter<G8Buffer> painter1(mask1);
+    AbstractPainter<G8Buffer> painter2(mask2);
+
+    painter1.drawCircle(33,33, 50, 255);
+    painter2.drawCircle(66,66, 50, 255);
+
+    /* So */
+    RGB24Buffer *in1 = new RGB24Buffer(mask1->getSize());
+    RGB24Buffer *in2 = new RGB24Buffer(mask2->getSize());
+    in1->drawG8Buffer(mask1);
+    in2->drawG8Buffer(mask2);
+    BMPLoader().save("in1.bmp", in1);
+    BMPLoader().save("in2.bmp", in2);
+
+    RGB24Buffer *out = new RGB24Buffer(mask1->getSize());
+    G8Buffer *inarr[2] = {mask1, mask2};
+
+    G8Buffer *andmask = new G8Buffer(mask1->getSize());
+    const LogicAnd<DummyAlgebra> andkernel = LogicAnd<DummyAlgebra>();
+    BufferProcessor<G8Buffer, G8Buffer, LogicAnd, G8BufferAlgebra > processorAnd;
+    processorAnd.process(inarr, &andmask, andkernel);
+    out->drawG8Buffer(andmask);
+    BMPLoader().save("and.bmp", out);
+
+    G8Buffer *ormask = new G8Buffer(mask1->getSize());
+    const LogicOr<DummyAlgebra> orkernel = LogicOr<DummyAlgebra>();
+    BufferProcessor<G8Buffer, G8Buffer, LogicOr, G8BufferAlgebra > processorOr;
+    processorOr.process(inarr, &ormask, orkernel);
+    out->drawG8Buffer(ormask);
+    BMPLoader().save("or.bmp", out);
+
+    G8Buffer *xormask = new G8Buffer(mask1->getSize());
+    const LogicXor<DummyAlgebra> xorkernel = LogicXor<DummyAlgebra>();
+    BufferProcessor<G8Buffer, G8Buffer, LogicXor, G8BufferAlgebra > processorXor;
+    processorXor.process(inarr, &xormask, xorkernel);
+    out->drawG8Buffer(xormask);
+    BMPLoader().save("xor.bmp", out);
+
+    G8Buffer *subtmask = new G8Buffer(mask1->getSize());
+    const LogicSubt<DummyAlgebra> subtkernel = LogicSubt<DummyAlgebra>();
+    BufferProcessor<G8Buffer, G8Buffer, LogicSubt, G8BufferAlgebra > processorSubt;
+    processorSubt.process(inarr, &subtmask, subtkernel);
+    out->drawG8Buffer(subtmask);
+    BMPLoader().save("subt.bmp", out);
+
+
+
+    delete out;
+    delete in2;
+    delete in1;
+    delete subtmask;
+    delete xormask;
+    delete ormask;
+    delete andmask;
+    delete mask2;
+    delete mask1;
+}
+
 
 int main (int /*argC*/, char ** /*argV*/)
 {
+    testBooleanOperations ();
+    return 0;
 
 #ifdef WITH_SSE
 	_testFastKernel();

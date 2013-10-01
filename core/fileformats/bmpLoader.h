@@ -54,6 +54,7 @@ public:
 
     virtual bool save(string name, RGB24Buffer *buffer);
     virtual bool save(string name, G12Buffer   *buffer);
+    virtual bool save(string name, G8Buffer   *buffer);
 
 private:
     int parseBMP (string& name, BMPHeader *header, uint8_t **dataPtr);

@@ -98,6 +98,35 @@ template <typename OtherAlgebra>
     }
 };
 
+template <typename Algebra>
+class LogicSubt
+{
+public:
+    static const int inputNumber = 2;
+    static const int outputNumber = 1;
+
+    inline static int getCenterX(){ return 0; };
+    inline static int getCenterY(){ return 0; };
+    inline static int getSizeX(){ return 1; };
+    inline static int getSizeY(){ return 1; };
+
+    typedef typename Algebra::InputType Type;
+
+template <typename OtherAlgebra>
+    LogicSubt(const LogicSubt<OtherAlgebra> &){}
+
+    LogicSubt(){};
+
+    void process(Algebra &algebra) const
+    {
+        Type a = algebra.getInput(0,0,0);
+        Type b = algebra.getInput(1,0,0);
+        Type result = Algebra::andNot(a,b);
+        algebra.putOutput(0,0,result);
+    }
+};
+
+
 #if 0
 template <typename Algebra>
 class LogicNot

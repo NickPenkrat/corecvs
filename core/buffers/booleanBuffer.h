@@ -80,7 +80,7 @@ public:
                 }
             }
             if (subcount != 0x7) {
-                acc <<= 7 - subcount;
+                acc <<= 8 - subcount;
                 *resultLine = acc;
             }
 

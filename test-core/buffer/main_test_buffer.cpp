@@ -366,7 +366,7 @@ void _testReduceChessboard1 ( void )
 void testBoolean (void) {
     int h = 45;
     int w = 45;
-    G8Buffer *buffer = new G8Buffer(h, w, 0);
+    G8Buffer *buffer = new G8Buffer(h, w);
 
     AbstractPainter<G8Buffer> painter(buffer);
     painter.drawCircle(    w / 4,     h / 4, w / 4, 255 );

@@ -68,8 +68,10 @@ public:
     explicit inline IntBase16x8(const FixedVector<int16_t,8> input) :
             SSEBase((__m128i *)&input.element[0]) {}
 
+#if DEPRECATED_CONTR
     explicit inline IntBase16x8(const Int32x4 &value) :
             SSEBase(value.data) {}
+#endif
 
 
     explicit inline IntBase16x8(const Int32x8 &value) :

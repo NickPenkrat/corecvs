@@ -174,9 +174,10 @@ void testBasicArithmetics ( void )
 #endif
 }
 
-void testSignUnsign ( void )
+void testSignUnsign16 ( void )
 {
 #ifdef WITH_SSE
+    cout << "RUNNING:testSignUnsign";
     //2763 3070 3377 3684 3991
     //0xFFF
 
@@ -373,11 +374,10 @@ void testExtendingReader(void)
 
 int main (int /*argC*/, char ** /*argV*/)
 {
-    //testSignUnsign ( );
-    testAdditionalFunctions();
-    return 0;
 
 #ifdef WITH_SSE
+    testSignUnsign16 ( );
+    testAdditionalFunctions();
     testRGBReader();
     testExtendingRGBReader();
     testExtendingReader();

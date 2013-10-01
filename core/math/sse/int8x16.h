@@ -14,58 +14,64 @@
 
 #include "global.h"
 #include "fixedVector.h"
+#include "intBase8x16.h"
 
 namespace corecvs {
 
 
-class ALIGN_DATA(16) Int8x16 : public SSEInteger<Int8x16>
+class ALIGN_DATA(16) Int8x16 : public IntBase8x16<Int8x16>
 {
 public:
-    typedef SSEInteger<Int8x16> SSEBase;
+    typedef IntBase8x16<Int8x16> BaseClass;
 
-
+    /**
+     * Constructors
+     **/
     Int8x16() {}
 
     /**
      *  Copy constructor
      **/
-    Int8x16(const Int8x16 &other) : SSEBase(other) {}
+    Int8x16(const Int8x16 &other) : BaseClass(other) {}
 
-    explicit Int8x16(const SSEBase &other) : SSEBase(other) {}
+    template<class Sibling>
+    explicit Int8x16(const IntBase8x16<Sibling> &other)  : BaseClass(other) {}
+
+    template<class Sibling>
+    explicit Int8x16(IntBase8x16<Sibling> &other) : BaseClass(other) {}
+
+    explicit Int8x16(const SSEBase &other) : BaseClass(other) {}
 
     /**
      *  Create SSE integer vector from integer constant
      **/
 
     Int8x16(const __m128i &_data) :
-            SSEBase(_data) {}
+        BaseClass(_data) {}
 
     explicit Int8x16(int8_t constant) :
-            SSEBase(_mm_set1_epi8(constant)){}
+        BaseClass(constant){}
 
     explicit Int8x16(uint8_t constant) :
-            SSEBase(_mm_set1_epi8(constant)) {}
+        BaseClass(constant) {}
 
     explicit Int8x16( int8_t  c0, int8_t  c1, int8_t  c2, int8_t  c3,
                       int8_t  c4, int8_t  c5, int8_t  c6, int8_t  c7,
                       int8_t  c8, int8_t  c9, int8_t c10, int8_t c11,
                       int8_t c12, int8_t c13, int8_t c14, int8_t c15 ) :
-             SSEBase ( _mm_set_epi8(
-                c15, c14, c13, c12, c11, c10, c9, c8,
-                c7,  c6,  c5,  c4,  c3,  c2,  c1, c0 )) {}
+        BaseClass (c0, c1,  c2,  c3,  c4,  c5,  c6,  c7,
+                   c8, c9, c10, c11, c12, c13, c14, c15) {};
 
-    explicit Int8x16(const int8_t data[16]) {
-        this->data = _mm_loadu_si128((__m128i *)&data[0]);
-    }
+    explicit Int8x16(const int8_t data[16]) :
+        BaseClass(data) {}
 
-    explicit Int8x16(const uint8_t data[16]) {
-        this->data = _mm_loadu_si128((__m128i *)&data[0]);
-    }
+    explicit Int8x16(const uint8_t data[16]) :
+        BaseClass(data) {}
 
-    explicit inline Int8x16(const FixedVector<int8_t,16> input)  {
-        this->data = _mm_loadu_si128((__m128i *)&input.element[0]);
-    }
+    explicit inline Int8x16(const FixedVector<int8_t,16> input) :
+        BaseClass(input) {}
 
+/* Could we use template constructor here? */
     explicit inline Int8x16(const Int32x4 &value)
     {
         this->data = value.data;
@@ -299,24 +305,7 @@ template<int idx>
 
 };
 
-FORCE_INLINE Int8x16 operator + (const Int8x16 &left, const Int8x16 &right) {
-    return Int8x16(_mm_add_epi8(left.data, right.data));
-}
-
-FORCE_INLINE Int8x16 operator - (const Int8x16 &left, const Int8x16 &right) {
-    return Int8x16(_mm_sub_epi8(left.data, right.data));
-}
-
-FORCE_INLINE Int8x16 operator += (Int8x16 &left, const Int8x16 &right) {
-    left.data = _mm_add_epi8(left.data, right.data);
-    return left;
-}
-
-FORCE_INLINE Int8x16 operator -= (Int8x16 &left, const Int8x16 &right) {
-    left.data = _mm_sub_epi8(left.data, right.data);
-    return left;
-}
-
+#ifdef UNSUPPORTED
 FORCE_INLINE Int8x16 operator << (const Int8x16 &left, uint32_t count) {
     return Int8x16(_mm_slli_epi16(left.data, count));  // _mm_slli_epi8 is absent!
 }
@@ -360,17 +349,14 @@ FORCE_INLINE Int8x16 operator >>= (Int8x16 &left, const Int8x16 &right) {
     left.data = _mm_sra_epi16(left.data, right.data);  // _mm_srl_epi8 is absent!
     return left;
 }
+#endif
 
 FORCE_INLINE Int8x16 operator < (const Int8x16 &left, const Int8x16 &right) {
-    return Int8x16(_mm_cmplt_epi16(left.data, right.data));
+    return Int8x16(_mm_cmplt_epi8(left.data, right.data));
 }
 
 FORCE_INLINE Int8x16 operator > (const Int8x16 &left, const Int8x16 &right) {
-    return Int8x16(_mm_cmpgt_epi16(left.data, right.data));
-}
-
-FORCE_INLINE Int8x16 operator == (const Int8x16 &left, const Int8x16 &right) {
-    return Int8x16(_mm_cmpeq_epi16(left.data, right.data));
+    return Int8x16(_mm_cmpgt_epi8(left.data, right.data));
 }
 
 FORCE_INLINE Int8x16 productLowerPart (const Int8x16 &left, const Int8x16 &right) {

@@ -1,16 +1,19 @@
+#ifndef MORPHOLOGICAL_H_
+#define MORPHOLOGICAL_H_
 /**
  * \file morphological.h
  * \brief Add Comment Here
  *
- * This file holds the dirty and
+ * This file holds the dirty and not finished morphological operations
  *
  * \date Aug 11, 2011
  * \author alexander
  */
 
-#ifndef MORPHOLOGICAL_H_
-#define MORPHOLOGICAL_H_
+
 #include "g12Buffer.h"
+#include "g8Buffer.h"
+
 namespace corecvs {
 
 
@@ -52,8 +55,12 @@ namespace corecvs {
 class Morphological
 {
 public:
-    static G12Buffer *erode(G12Buffer *input, G12Buffer *element, int centerX, int centerY);
+    static G12Buffer *erode (G12Buffer *input, G12Buffer *element, int centerX, int centerY);
     static G12Buffer *dilate(G12Buffer *input, G12Buffer *element, int centerX, int centerY);
+
+    static G8Buffer *erode (G8Buffer *input, G12Buffer *element, int centerX, int centerY);
+    static G8Buffer *dilate(G8Buffer *input, G12Buffer *element, int centerX, int centerY);
+
 };
 
 

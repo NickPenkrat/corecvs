@@ -22,9 +22,11 @@ namespace corecvs {
 class ALIGN_DATA(16) Int16x8 : public IntBase16x8<Int16x8>
 {
 public:
-    /* Constructors */
     typedef IntBase16x8<Int16x8> BaseClass;
 
+    /**
+     * Constructors
+     **/
     Int16x8() {}
 
     /**
@@ -38,7 +40,9 @@ public:
     template<class Sibling>
     explicit Int16x8(IntBase16x8<Sibling> &other) : BaseClass(other) {}
 
-
+    /**
+     *  Assignment operator
+     **/
 
     Int16x8 operator=(const BaseClass &other) {
         return Int16x8(other);
@@ -60,6 +64,7 @@ public:
                      int16_t c4, int16_t c5, int16_t c6, int16_t c7) :
             BaseClass(c0, c1, c2, c3, c4, c5, c6, c7) {}
 
+    /* could it be data_ptr[8] ? */
     explicit Int16x8(const int16_t  * const data_ptr) :
             BaseClass(data_ptr) {}
 

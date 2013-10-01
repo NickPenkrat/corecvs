@@ -33,6 +33,8 @@ public:
     G8Buffer(G8Buffer *src, int32_t x1, int32_t y1, int32_t x2, int32_t y2) :
         G8BufferBase(src, x1, y1, x2, y2) {};
 
+    G8Buffer(int32_t h, int32_t w, uint8_t *data) : G8BufferBase(h, w, data) {}
+
     static G8Buffer* FromG12Buffer(corecvs::G12Buffer *input);
     //G8Buffer(int32_t h, int32_t w, uint16_t *data) : G8BufferBase(h, w, data) {};
 };

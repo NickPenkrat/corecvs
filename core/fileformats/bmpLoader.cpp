@@ -218,6 +218,14 @@ bool BMPLoader::save(string name, G12Buffer *buffer)
     return result;
 }
 
+bool BMPLoader::save(string name, G8Buffer *buffer)
+{
+    RGB24Buffer *toSave = new RGB24Buffer(buffer->getSize());
+    toSave->drawG8Buffer(buffer);
+    bool result = save(name, toSave);
+    delete toSave;
+    return result;
+}
 
 /**
  * TODO: Add error handling

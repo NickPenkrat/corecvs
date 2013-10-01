@@ -70,6 +70,11 @@ template <int multiplier>
     inline static InputType abs (const InputType &value) {
     	return max(value, InputType(-value));
     }
+
+    /* Some logical functions that SSE does in one instruction */
+    inline static Type andNot(const Type &left, const Type &right) {
+        return (left & (~right));
+    }
 };
 
 template<>
