@@ -3,6 +3,7 @@
 #include "generated/rgbColorParameters.h"
 #include "ui_rgbColorParametersControlWidget.h"
 #include "parametersControlWidgetBase.h"
+#include "rgbColor.h"
 
 
 namespace Ui {
@@ -23,9 +24,16 @@ public:
     void setParameters(const RgbColorParameters &input);
     virtual void setParametersVirtual(void *input);
 
-
     virtual void loadParamWidget(WidgetLoader &loader);
     virtual void saveParamWidget(WidgetSaver  &saver);
+
+    RGBColor getColor()
+    {
+        return RGBColor(
+          mUi->rSpinBox->value()
+        , mUi->gSpinBox->value()
+        , mUi->bSpinBox->value());
+    }
 
 public slots:
     void changeParameters()
