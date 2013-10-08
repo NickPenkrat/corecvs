@@ -150,6 +150,7 @@ HEADERS += \
     filters/graph/g12PinPresentation.h \
     filters/graph/txtPinPresentation.h \
     filters/graph/compoundBlockPresentation.h \
+    configManager.h
   
 
 SOURCES += \
@@ -268,6 +269,7 @@ SOURCES += \
     filters/graph/g12PinPresentation.cpp \
     filters/graph/txtPinPresentation.cpp \
     filters/graph/compoundBlockPresentation.cpp \
+    configManager.cpp
  
 
 FORMS += \
