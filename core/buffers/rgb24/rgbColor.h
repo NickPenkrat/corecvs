@@ -248,6 +248,32 @@ public:
         return RGBColor(gray >> 4, gray >> 4, gray >> 4);
     }
 
+    static RGBColor FromYUV(uint8_t y, uint8_t u, uint8_t v)
+    {
+#if 0
+        C = Y' - 16
+        D = U - 128
+        E = V - 128
+        Using the previous coefficients and noting that clamp() denotes clamping a value to the range of 0 to 255, the following formulae provide the conversion from Y'UV to RGB (NTSC version):
+        R = \mathrm{clamp}(( 298 \times C                + 409 \times E + 128) >> 8)
+        G = \mathrm{clamp}(( 298 \times C - 100 \times D - 208 \times E + 128) >> 8)
+        B = \mathrm{clamp}(( 298 \times C + 516 \times D                + 128) >> 8)
+#endif
+        int c = y - 16;
+        int d = u - 128;
+        int e = v - 128;
+
+        int r =  ((298 * c           + 409 * e + 128) >> 8);
+        int g =  ((298 * c - 100 * d - 208 * e + 128) >> 8);
+        int b =  ((298 * c + 516 * d           + 128) >> 8);
+
+
+        /*int r = y               + 1.13983 * v;
+        int g = y - 0.39465 * u - 0.58060 * v;
+        int b = y + 2.03211 * u              ;*/
+        return RGBColor(r,g,b);
+    }
+
     static RGBColor Black()
     {
         return RGBColor(0, 0, 0);

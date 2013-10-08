@@ -17,6 +17,7 @@
 #include "global.h"
 
 #include "V4L2.h"
+#include "rgb24Buffer.h"
 #include "cameraControlParameters.h"
 #include "imageCaptureInterface.h"
 #include "preciseTimer.h"
@@ -35,6 +36,7 @@ public:
     virtual int setConfigurationString(string _devname);
 
     virtual FramePair getFrame();
+    RGB24Buffer *getFrameRGB24();
 
     virtual CapErrorCode setCaptureProperty(int id, int value);
     virtual CapErrorCode getCaptureProperty(int id, int *value);
@@ -99,6 +101,7 @@ private:
 
     uint16_t *decodeMjpeg(unsigned char *buffer);
     void decodeData(V4L2CameraDescriptor *camera, V4L2BufferDescriptor *buffer, G12Buffer **output);
+    void decodeDataRGB24(V4L2CameraDescriptor *camera, V4L2BufferDescriptor *buffer, RGB24Buffer **output);
 
 
 
