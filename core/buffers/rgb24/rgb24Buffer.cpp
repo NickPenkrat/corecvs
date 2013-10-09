@@ -699,23 +699,32 @@ void RGB24Buffer::fillWithYUYV (uint8_t *yuyv)
             result[B2] = (dy2 + db) >> 7;
             result[ZERO2] = Int16x8((int16_t)0);
 
+#if USE_NONUNROLLED_LOOP
             /* TODO: Use saturated arithmetics instead probably*/
-            for (int k = 0; k < 8; k++)
+            for (int k = B1; k < ZERO1; k++)
             {
 
                 result[k] = SSEMath::selector(result[k] > con255, con255   , result[k]);
                 result[k] = SSEMath::selector(result[k] > con0  , result[k], con0     );
-
-                /*
-                int16_t data[8];
-                result[k].save(data);
-                for (int l = 0; l < 8; l++)
-                {
-                    if (data[l] > 255) data[l] = 255;
-                    if (data[l] < 0  ) data[l] = 0;
-                }
-                result[k] = Int16x8::load(data);*/
+                int k1 = k + B2;
+                result[k1] = SSEMath::selector(result[k1] > con255, con255   , result[k1]);
+                result[k1] = SSEMath::selector(result[k1] > con0  , result[k1], con0     );
             }
+#else
+            result[R1] = SSEMath::selector(result[R1] > con255, con255   , result[R1]);
+            result[R1] = SSEMath::selector(result[R1] > con0  , result[R1], con0     );
+            result[G1] = SSEMath::selector(result[G1] > con255, con255   , result[G1]);
+            result[G1] = SSEMath::selector(result[G1] > con0  , result[G1], con0     );
+            result[B1] = SSEMath::selector(result[B1] > con255, con255   , result[B1]);
+            result[B1] = SSEMath::selector(result[B1] > con0  , result[B1], con0     );
+
+            result[R2] = SSEMath::selector(result[R2] > con255, con255   , result[R2]);
+            result[R2] = SSEMath::selector(result[R2] > con0  , result[R2], con0     );
+            result[G2] = SSEMath::selector(result[G2] > con255, con255   , result[G2]);
+            result[G2] = SSEMath::selector(result[G2] > con0  , result[G2], con0     );
+            result[B2] = SSEMath::selector(result[B2] > con255, con255   , result[B2]);
+            result[B2] = SSEMath::selector(result[B2] > con0  , result[B2], con0     );
+#endif
 
             SSEReader8BBBBBBBB_DDDDDDDD::write(result, (uint32_t *)&element(i,j));
             yuyv += SSEReader8BBBB_DDDD::BYTE_STEP;

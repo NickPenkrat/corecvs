@@ -20,7 +20,7 @@ int main (int argc, char **argv)
 
 	RGB24Buffer *result = NULL;
 
-	for(int i = 0; i < 20; i++) {
+	for(int i = 0; i < 40; i++) {
 	    delete_safe(result);
 	    result = input->getFrameRGB24();
 	}
