@@ -11,6 +11,8 @@
 #include "rectangle.h"
 #include "rgb24Buffer.h"
 #include "hardcodeFont.h"
+#include "readers.h"
+#include "../../math/vector/fixedVector.h"
 
 #undef rad2     // it's defined at win hdrs
 
@@ -640,6 +642,120 @@ void RGB24Buffer::drawIsolines(
    delete_safe(values);
 }
 
+
+void RGB24Buffer::fillWithYUYV (uint8_t *yuyv)
+{
+    for (int i = 0; i < h; i++)
+    {
+        int j = 0;
+#ifdef WITH_SSE
+        for (; j < w; j += SSEReader8BBBBBBBB_DDDDDDDD::BYTE_STEP / sizeof(RGBColor))
+        {
+            FixedVector<Int16x8,4> r = SSEReader8BBBB_DDDD::read((uint32_t *)yuyv);
+
+            Int16x8 cy1 = r[0] - Int16x8((uint16_t) 16);
+            Int16x8 cu  = r[1] - Int16x8((uint16_t)128);
+            Int16x8 cy2 = r[2] - Int16x8((uint16_t) 16);
+            Int16x8 cv  = r[3] - Int16x8((uint16_t)128);
+
+            Int16x8 con0  ((int16_t)0);
+            Int16x8 con255((int16_t)0xFF);
+
+            /* coefficients */
+
+            Int16x8 con100((uint16_t)(100 / 2));
+            Int16x8 con128((uint16_t)(128 / 2));
+            Int16x8 con208((uint16_t)(208 / 2));
+            Int16x8 con298((uint16_t)(298 / 2));
+            Int16x8 con516((uint16_t)(516 / 2));
+            Int16x8 con409((uint16_t)(409 / 2));
+
+            FixedVector<Int16x8, 8> result;
+            enum {
+                B1,
+                G1,
+                R1,
+                ZERO1,
+                B2,
+                G2,
+                R2,
+                ZERO2,
+            };
+
+            Int16x8 dr = con128               + con409 * cv;
+            Int16x8 dg = con128 - con100 * cu - con208 * cv;
+            Int16x8 db = con128 + con516 * cu              ;
+
+            Int16x8 dy1 = con298 * cy1;
+            Int16x8 dy2 = con298 * cy2;
+
+            result[R1] = (dy1 + dr) >> 7;
+            result[G1] = (dy1 + dg) >> 7;
+            result[B1] = (dy1 + db) >> 7;
+            result[ZERO1] = Int16x8((int16_t)0);
+
+            result[R2] = (dy2 + dr) >> 7;
+            result[G2] = (dy2 + dg) >> 7;
+            result[B2] = (dy2 + db) >> 7;
+            result[ZERO2] = Int16x8((int16_t)0);
+
+            /* TODO: Use saturated arithmetics instead probably*/
+            for (int k = 0; k < 8; k++)
+            {
+
+                result[k] = SSEMath::selector(result[k] > con255, con255   , result[k]);
+                result[k] = SSEMath::selector(result[k] > con0  , result[k], con0     );
+
+                /*
+                int16_t data[8];
+                result[k].save(data);
+                for (int l = 0; l < 8; l++)
+                {
+                    if (data[l] > 255) data[l] = 255;
+                    if (data[l] < 0  ) data[l] = 0;
+                }
+                result[k] = Int16x8::load(data);*/
+            }
+
+            SSEReader8BBBBBBBB_DDDDDDDD::write(result, (uint32_t *)&element(i,j));
+            yuyv += SSEReader8BBBB_DDDD::BYTE_STEP;
+        }
+#endif
+
+        for (; j < w; j+=2)
+        {
+            int y1 = yuyv[0];
+            int u  = yuyv[1];
+            int y2 = yuyv[2];
+            int v  = yuyv[3];
+
+            int cy1 = y1 -  16;
+            int cu  = u  - 128;
+            int cy2 = y2 -  16;
+            int cv  = v  - 128;
+
+            int r1 = ((298 * cy1            + 409 * cv + 128) >> 8);
+            int g1 = ((298 * cy1 - 100 * cu - 208 * cv + 128) >> 8);
+            int b1 = ((298 * cy1 + 516 * cu            + 128) >> 8);
+
+            if (r1 > 255) r1 = 255;  if (r1 < 0) r1 = 0;
+            if (g1 > 255) g1 = 255;  if (g1 < 0) g1 = 0;
+            if (b1 > 255) b1 = 255;  if (b1 < 0) b1 = 0;
+
+            int r2 = ((298 * cy2            + 409 * cv + 128) >> 8);
+            int g2 = ((298 * cy2 - 100 * cu - 208 * cv + 128) >> 8);
+            int b2 = ((298 * cy2 + 516 * cu            + 128) >> 8);
+
+            if (r2 > 255) r2 = 255;  if (r2 < 0) r2 = 0;
+            if (g2 > 255) g2 = 255;  if (g2 < 0) g2 = 0;
+            if (b2 > 255) b2 = 255;  if (b2 < 0) b2 = 0;
+
+            element(i,j) = RGBColor(r1,g1,b1);
+            element(i,j + 1) = RGBColor(r2,g2,b2);
+            yuyv += 4;
+        }
+    }
+}
 
 } //namespace corecvs
 

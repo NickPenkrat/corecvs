@@ -7,15 +7,14 @@ exists(../../../../config.pri) {
     include(../../config.pri)
 }
 
-
+TEMPLATE=app
 TARGET=test_grab24
 
 TEST_DIR = $$PWD
 #TEST_DIR = .
-message (Original PWD $$PWD  $$TEST_DIR)
+#message (Original PWD $$PWD  $$TEST_DIR)
 UTILSDIR = $$TEST_DIR/../../utils
 include($$UTILSDIR/utils.pri)
-
 
 
 SOURCES += main_grab24.cpp

@@ -18,9 +18,14 @@ int main (int argc, char **argv)
 
 	sleep(2);
 
-	RGB24Buffer *result = input->getFrameRGB24();
+	RGB24Buffer *result = NULL;
+
+	for(int i = 0; i < 20; i++) {
+	    delete_safe(result);
+	    result = input->getFrameRGB24();
+	}
+
 	BMPLoader().save("snapshot.bmp", result);
-
-
+	delete_safe(result);
 	return 0;
 }

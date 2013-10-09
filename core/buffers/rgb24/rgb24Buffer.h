@@ -147,8 +147,12 @@ public:
             FunctionArgs &f);
 
 
+    void fillWithYUYV (uint8_t *yuyv);
+
 
     virtual ~RGB24Buffer(){};
+
+
 
 private:
     /* TODO: Special helper class should be used to store sprites after that this function could be made public */

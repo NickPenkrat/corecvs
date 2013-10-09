@@ -8,7 +8,7 @@
 # Utils lib uses core, core-res. These includes must be before adding utils lib for mingw linker!
 # But they create unneccessary dependence core->utils, although they are not linked together, but should!
 #
-COREDIR = $$UTILSDIR/../core
+COREDIR = $$PWD/../core
 include($$COREDIR/core.pri)                         # it uses COREDIR, TARGET and detects     COREBINDIR!
 
 !exists($$COREDIR/core.pri) {
