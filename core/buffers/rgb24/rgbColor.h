@@ -4,8 +4,8 @@
 #include <stdint.h>
 
 #include "fixedVector.h"
-#include <vector3d.h>
-#include "../../math/mathUtils.h"
+#include "vector3d.h"
+#include "mathUtils.h"
 namespace corecvs {
 /**
  * \file rgbColor.h

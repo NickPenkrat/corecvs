@@ -649,7 +649,9 @@ void RGB24Buffer::fillWithYUYV (uint8_t *yuyv)
     {
         int j = 0;
 #ifdef WITH_SSE
-        for (; j < w; j += SSEReader8BBBBBBBB_DDDDDDDD::BYTE_STEP / sizeof(RGBColor))
+        const int span = SSEReader8BBBBBBBB_DDDDDDDD::BYTE_STEP / sizeof(RGBColor);
+        /* Checking that we have a full span to read */
+        for (; j + span <= w ; j += span)
         {
             FixedVector<Int16x8,4> r = SSEReader8BBBB_DDDD::read((uint32_t *)yuyv);
 
@@ -731,7 +733,7 @@ void RGB24Buffer::fillWithYUYV (uint8_t *yuyv)
         }
 #endif
 
-        for (; j < w; j+=2)
+        for (; j + 2 <= w; j+=2)
         {
             int y1 = yuyv[0];
             int u  = yuyv[1];
@@ -772,7 +774,30 @@ G12Buffer *RGB24Buffer::toG12Buffer()
     G12Buffer *toReturn = new G12Buffer(h,w, false);
     for (int i = 0; i < h; i++)
     {
-        for (int j = 0; j < w; j++)
+        RGBColor *in  = &this->element(i,0);
+        uint16_t *out = &toReturn->element(i,0);
+        int j = 0;
+#ifdef WITH_SSE
+        const int inspan  = SSEReader8BBBB_DDDD::BYTE_STEP / sizeof(RGBColor);
+        const int outspan = 8;
+
+        Int16x8 conR(11);
+        Int16x8 conG(16);
+        Int16x8 conB( 5);
+
+        for (; j + inspan <= w; j += inspan)
+        {
+            FixedVector<Int16x8,4> r = SSEReader8BBBB_DDDD::read((uint32_t*)in);
+            enum {B1, G1, R1};
+
+            Int16x8 result = (conR * r[R1] + conG * r[G1] + conB * r[B1]) >> 1;
+            result.save(out);
+            in  += inspan;
+            out += outspan;
+        }
+
+#endif
+        for (; j < w; j++)
         {
             toReturn->element(i, j) = element(i,j).luma12();
         }
