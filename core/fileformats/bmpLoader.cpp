@@ -165,8 +165,9 @@ G12Buffer * BMPLoader::load(string name)
         }
     }
 fail:
-    if (data)
+    if (data) {
         delete[] data;
+    }
     return toReturn;
 }
 
