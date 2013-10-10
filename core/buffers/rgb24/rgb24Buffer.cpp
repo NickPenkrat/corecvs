@@ -766,5 +766,20 @@ void RGB24Buffer::fillWithYUYV (uint8_t *yuyv)
     }
 }
 
+
+G12Buffer *RGB24Buffer::toG12Buffer()
+{
+    G12Buffer *toReturn = new G12Buffer(h,w, false);
+    for (int i = 0; i < h; i++)
+    {
+        for (int j = 0; j < w; j++)
+        {
+            toReturn->element(i, j) = element(i,j).luma12();
+        }
+    }
+    return toReturn;
+}
+
+
 } //namespace corecvs
 

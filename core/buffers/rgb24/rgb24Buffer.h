@@ -148,6 +148,7 @@ public:
 
 
     void fillWithYUYV (uint8_t *yuyv);
+    G12Buffer *toG12Buffer();
 
 
     virtual ~RGB24Buffer(){};
