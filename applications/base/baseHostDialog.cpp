@@ -301,7 +301,7 @@ void BaseHostDialog::deinitCamera()
 /* ******************************************************************************
  *  Calculation thread
  */
-void BaseHostDialog::initCapture(QString const &init)
+void BaseHostDialog::initCapture(QString const &init, bool isRgb)
 {
     //TODO:: if mInputString is empty, but app params not empty wizard is shown. Maybe it's bad
     if (!init.isEmpty())
@@ -317,7 +317,7 @@ void BaseHostDialog::initCapture(QString const &init)
 
     mInputSelectorDialog.setInputString(mInputString);
 
-    mCamera = ImageCaptureInterface::fabric(mInputString.toStdString());
+    mCamera = ImageCaptureInterface::fabric(mInputString.toStdString(), isRgb);
 
     if (mCamera == NULL)
     {

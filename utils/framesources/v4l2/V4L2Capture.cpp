@@ -39,8 +39,8 @@ const char* V4L2CaptureInterface::CODEC_NAMES[] =
 
 STATIC_ASSERT(CORE_COUNT_OF(V4L2CaptureInterface::CODEC_NAMES) == V4L2CaptureInterface::CODEC_NUMBER, wrong_codec_names_number);
 
-V4L2CaptureInterface::V4L2CaptureInterface(string _devname)
-    : spin(this)
+V4L2CaptureInterface::V4L2CaptureInterface(string _devname, bool isRgb)
+    : spin(this), mIsRgb(isRgb)
 {
     setConfigurationString(_devname);
 }
@@ -130,6 +130,8 @@ V4L2CaptureInterface::FramePair V4L2CaptureInterface::getFrame()
             &result.bufferLeft
     };
 
+    result.rgbBufferRight = NULL;
+    result.rgbBufferLeft = NULL;
 
     for (int i=0; i < Frames::MAX_INPUTS_NUMBER; i++)
     {
@@ -167,22 +169,32 @@ V4L2CaptureInterface::FramePair V4L2CaptureInterface::getFrame()
     return result;
 }
 
-RGB24Buffer *V4L2CaptureInterface::getFrameRGB24()
+V4L2CaptureInterface::FramePair V4L2CaptureInterface::getFrameRGB24()
 {
-    CaptureStatistics  stats;
+//    CaptureStatistics  stats;
 
-    PreciseTimer start = PreciseTimer::currentTime();
+//    PreciseTimer start = PreciseTimer::currentTime();
 
     protectFrame.lock();
 
-    RGB24Buffer *result = NULL;
-    decodeDataRGB24(&camera[0],  &currentFrame[0],  &result);
+    FramePair result;
 
-    if (result == NULL) {
-        printf("V4L2CaptureInterface::getFrameRGB24(): Precrash condition\n");
+    RGB24Buffer **results[Frames::MAX_INPUTS_NUMBER] = {
+            &result.rgbBufferRight,
+            &result.rgbBufferLeft
+    };
+
+    for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
+    {
+        decodeDataRGB24(&camera[i],  &currentFrame[i],  results[i]);
+
+        if ((*results[i]) == NULL) {
+            printf("V4L2CaptureInterface::getFrameRGB24(): Precrash condition\n");
+        }
     }
 
-
+    result.bufferLeft = result.rgbBufferLeft->toG12Buffer(); // FIXME
+    result.bufferRight = result.rgbBufferRight->toG12Buffer();
 
 #if 0
     if (currentFrame[Frames::LEFT_FRAME].isFilled)

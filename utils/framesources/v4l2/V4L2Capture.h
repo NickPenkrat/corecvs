@@ -30,13 +30,13 @@ using namespace std;
 class V4L2CaptureInterface : public ImageCaptureInterface
 {
 public:
-    V4L2CaptureInterface(string _devname);
+    V4L2CaptureInterface(string _devname, bool isRgb = false);
     virtual ~V4L2CaptureInterface();
 
     virtual int setConfigurationString(string _devname);
 
     virtual FramePair getFrame();
-    RGB24Buffer *getFrameRGB24();
+    virtual FramePair getFrameRGB24();
 
     virtual CapErrorCode setCaptureProperty(int id, int value);
     virtual CapErrorCode getCaptureProperty(int id, int *value);
@@ -130,5 +130,7 @@ private:
     uint64_t skippedCount;
 
     uint64_t maxDesync; /**< Maximum de-synchronization that we will not attempt to correct */
+
+    bool mIsRgb;
 
 };
