@@ -193,7 +193,7 @@ V4L2CaptureInterface::FramePair V4L2CaptureInterface::getFrameRGB24()
         }
     }
 
-    result.bufferLeft = result.rgbBufferLeft->toG12Buffer(); // FIXME
+    result.bufferLeft  = result.rgbBufferLeft ->toG12Buffer(); // FIXME
     result.bufferRight = result.rgbBufferRight->toG12Buffer();
 
 #if 0

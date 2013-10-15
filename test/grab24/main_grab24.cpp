@@ -22,7 +22,7 @@ int main (int argc, char **argv)
 
 	for(int i = 0; i < 40; i++) {
 	    delete_safe(result);
-	    result = input->getFrameRGB24();
+	    /*result = input->getFrameRGB24();*/
 	}
 
 	BMPLoader().save("snapshot.bmp", result);
