@@ -273,6 +273,11 @@ public:
         return RGBColor(0, 255, 0);
     }
 
+    static RGBColor Cyan()
+    {
+        return RGBColor(0, 255, 255);
+    }
+
     static RGBColor Blue()
     {
         return RGBColor(0, 0, 255);

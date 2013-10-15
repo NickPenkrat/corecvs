@@ -74,10 +74,12 @@ RGB24Image::RGB24Image(RGB24Buffer *buffer) : QImage (buffer->w, buffer->h, QIma
     uint8_t *data = bits();
     int bpl = bytesPerLine();
     for (i = 0; i < buffer->h; i++ )
+    {
         for (j = 0; j < buffer->w; j++ )
         {
-            ((uint32_t *)(data + i * bpl))[j] = buffer->element(i, j).color();
+            ((uint32_t *)(data + i * bpl))[j] = (buffer->element(i, j).color()) | 0xFF000000;
         }
+    }
 }
 
 RGB24Image::~RGB24Image() {

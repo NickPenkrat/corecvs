@@ -24,7 +24,7 @@ using std::string;
 class BMPHeader {
 public:
     static const unsigned HEADER_SIZE = 0x36;
-    static uint8_t HEADER_FEATURE_VECTOR[2];
+    static uint8_t HEADER_SIGNATURE[2];
 
     uint32_t bmpSize;
     uint32_t headerSize;

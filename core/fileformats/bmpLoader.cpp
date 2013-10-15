@@ -16,7 +16,7 @@
 namespace corecvs {
 
 string  BMPLoader::prefix1(".bmp");
-uint8_t BMPHeader::HEADER_FEATURE_VECTOR[2] = {'B','M'};
+uint8_t BMPHeader::HEADER_SIGNATURE[2] = {'B','M'};
 
 BMPLoader::BMPLoader()
 {
@@ -43,8 +43,8 @@ int BMPHeader::parseHeader(FILE *fp)
         goto fail;
     }
 
-    if (header[0] != BMPHeader::HEADER_FEATURE_VECTOR[0] ||
-        header[1] != BMPHeader::HEADER_FEATURE_VECTOR[1])
+    if (header[0] != BMPHeader::HEADER_SIGNATURE[0] ||
+        header[1] != BMPHeader::HEADER_SIGNATURE[1])
         goto fail;
 
     bmpSize = *((uint32_t *)(header + 0x2));
@@ -165,9 +165,8 @@ G12Buffer * BMPLoader::load(string name)
         }
     }
 fail:
-    if (data) {
+    if (data)
         delete[] data;
-    }
     return toReturn;
 }
 
@@ -256,8 +255,8 @@ bool BMPLoader::save(string name, RGB24Buffer *buffer)
 
     memset(data, 0, BMPHeader::HEADER_SIZE /*fileSize*/);
 
-    data[0x0] = BMPHeader::HEADER_FEATURE_VECTOR[0];
-    data[0x1] = BMPHeader::HEADER_FEATURE_VECTOR[1];
+    data[0x0] = BMPHeader::HEADER_SIGNATURE[0];
+    data[0x1] = BMPHeader::HEADER_SIGNATURE[1];
     *((uint32_t *)(data + 0x2)) =  h * lineLength + BMPHeader::HEADER_SIZE;
     data[0x6] = 0;
     data[0x7] = 0;
