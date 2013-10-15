@@ -1,11 +1,11 @@
-# try use global config 
+# try use global config
 exists(../../../../config.pri) {
-    #message(Using global config)
-    include(../../../../config.pri)
+    ROOT_DIR=../../../..
 } else { 
     message(Using local config)
-    include(../../config.pri)
+    ROOT_DIR=../..
 }
+include($$ROOT_DIR/config.pri)
 
 
 TARGET   = virecorder

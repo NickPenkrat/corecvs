@@ -25,9 +25,11 @@ Frames::Frames() :
 {
     DOTRACE(("Frames::Frames() called\n"));
     for (int id = 0; id < MAX_INPUTS_NUMBER; id++)
+    {
         currentFrames[id] = NULL;
+        currentRgbFrames[id] = NULL;
+    }
     frameCount = 0;
-
 
     /* Remove this. BaseParametersWidget should store the state*/
     /*QSettings settings("Lanit-Tercom", "CVS");
@@ -43,6 +45,8 @@ Frames::~Frames()
     {
         delete  currentFrames[id];
         currentFrames[id] = NULL;
+        delete currentRgbFrames[id];
+        currentRgbFrames[id] = NULL;
     }
 }
 
@@ -50,7 +54,7 @@ void Frames::fetchNewFrames(ImageCaptureInterface *input)
 {
  //   DOTRACE(("New frames arrived: left=0x8%X right=0x8%X\n", left, right));
 
-    ImageCaptureInterface::FramePair pair = input->getFrame();
+    ImageCaptureInterface::FramePair pair = input->isRgb ? input->getFrameRGB24() : input->getFrame();
     if (pair.bufferLeft == NULL || pair.bufferRight == NULL)
     {
         printf("Alert: We have received one or zero frames\n");
@@ -59,11 +63,26 @@ void Frames::fetchNewFrames(ImageCaptureInterface *input)
 
     for (int id = 0; id <  MAX_INPUTS_NUMBER; id++ )
     {
-        delete  currentFrames[id];
+        delete currentFrames[id];
+        delete currentRgbFrames[id];
     }
 
     currentFrames[LEFT_FRAME]  = mSwapped ? pair.bufferRight : pair.bufferLeft;
     currentFrames[RIGHT_FRAME] = mSwapped ? pair.bufferLeft : pair.bufferRight;
+
+    if (input->isRgb)
+    {
+        printf("rgb\n");
+        currentRgbFrames[LEFT_FRAME]  = mSwapped ? pair.rgbBufferRight : pair.rgbBufferLeft;
+        currentRgbFrames[RIGHT_FRAME]  = mSwapped ? pair.rgbBufferLeft: pair.rgbBufferRight;
+    }
+    else
+    {
+        printf("no rgb\n");
+        currentRgbFrames[LEFT_FRAME]  = NULL;
+        currentRgbFrames[RIGHT_FRAME]  = NULL;
+    }
+
     mTimestamp  = (pair.leftTimeStamp / 2) + (pair.rightTimeStamp / 2);
 
     mDesyncTime = !mSwapped ? pair.leftTimeStamp - pair.rightTimeStamp : pair.rightTimeStamp - pair.leftTimeStamp;

@@ -8,8 +8,13 @@
 # Utils lib uses core, core-res. These includes must be before adding utils lib for mingw linker!
 # But they create unneccessary dependence core->utils, although they are not linked together, but should!
 #
-COREDIR = $$UTILSDIR/../core
+COREDIR = $$PWD/../core
 include($$COREDIR/core.pri)                         # it uses COREDIR, TARGET and detects     COREBINDIR!
+
+!exists($$COREDIR/core.pri) {
+    message(Utils from <$$UTILSDIR> rely on the core which is expected here <$$COREDIR/core.pri>. PWD: $$PWD)
+}
+
 
 UTILS_INCLUDEPATH = \
     $$UTILSDIR \
@@ -26,15 +31,15 @@ UTILS_INCLUDEPATH = \
     $$UTILSDIR/filters/ui \                         # include isn't used, but need for DEPENDPATH!
 #   $$UTILSDIR/flowcolorers \
     $$UTILSDIR/framesources \
-    $$UTILSDIR/framesources/directShow \    
-    $$UTILSDIR/framesources/decoders \    
+    $$UTILSDIR/framesources/directShow \
+    $$UTILSDIR/framesources/decoders \
     $$UTILSDIR/framesources/v4l2 \
     $$UTILSDIR/processor \
     $$UTILSDIR/rectifier \
 #   $$UTILSDIR/serializer \     # obsolete?
     $$UTILSDIR/statistics \     # obsolete?
     $$UTILSDIR/uis \
-    $$UTILSDIR/uis/cloudview \    
+    $$UTILSDIR/uis/cloudview \
     $$UTILSDIR/visitors \
     $$UTILSDIR/widgets \
 
@@ -93,10 +98,10 @@ with_opengl {
     }
 
     INCLUDEPATH += $$UTILSDIR/opengl
-    
+
     with_openglext {
         DEFINES += WITH_OPENGLEXT
-    } 
+    }
 }
 
 with_ueye {
@@ -135,7 +140,7 @@ with_opencv {                                   # all this stuff was extracted f
     contains(DEFINES, WITH_OPENCV) {
         INCLUDEPATH += $$OPENCV_WRAPPER_DIR
         INCLUDEPATH += $$OPENCV_WRAPPER_DIR/faceDetect
-    }    
+    }
 }
 
 with_directshow {
@@ -162,7 +167,7 @@ win32 {
 MOC_DIR = $$OBJECTS_DIR                             # not PROJ_INTDIR as the compiler regenerates them if config has been changed
 UI_DIR  = $$OBJECTS_DIR
 RCC_DIR = $$OBJECTS_DIR
-    
+
 # Note: debug and release libs will be overwritten on !win32 only
 #
 TARGET_ORIG = $$TARGET
