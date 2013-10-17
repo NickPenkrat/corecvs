@@ -1,11 +1,14 @@
 # try use global config
 exists(../../../../config.pri) {
+    ROOT_DIR=../../../..
     #message(Using global config)
-    include(../../../../config.pri)
-} else {
+} else { 
     message(Using local config)
-    include(../../config.pri)
+    ROOT_DIR=../..
 }
+ROOT_DIR=$$PWD/$$ROOT_DIR
+#message(Tests root dir is $$ROOT_DIR)
+include($$ROOT_DIR/config.pri)
 
 TEMPLATE=app
 TARGET=test_grab24

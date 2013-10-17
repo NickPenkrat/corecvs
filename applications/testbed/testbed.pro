@@ -5,9 +5,10 @@ exists(../../../../config.pri) {
     message(Using local config)
     ROOT_DIR=../..
 }
+ROOT_DIR=$$PWD/$$ROOT_DIR
 include($$ROOT_DIR/config.pri)
 
-
+QT += xml
 TARGET   = testbed
 TEMPLATE = app
 
@@ -23,11 +24,16 @@ win32 {
     MOC_DIR = ../../../../.obj/$$TARGET_ORIG/$$BUILD_CFG_NAME  # resolve moc path for mocs to help qmake to unify those paths.
 }
 
-HEADERS = testbedMainWindow.h \
+HEADERS = \
+    testbedMainWindow.h \
+#    pointScene.h \
+
+          
 
 SOURCES = \
     testbedMainWindow.cpp \
-    main_testbed.cpp
+    main_testbed.cpp \
+#    pointScene.cpp \
 
 FORMS = ui/testbedMainWindow.ui \
 

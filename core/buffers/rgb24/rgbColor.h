@@ -126,7 +126,8 @@ public:
     // Y = 0.2126 R + 0.7152 G + 0.0722 B
     inline uint16_t luma12() const
     {
-        return (11 * r() + 16 * g() + 5 * b()) >> 1;
+        return (5 * (int)r() + 8 * (int)g() + 2 * (int)b());
+        //return (11 * r() + 16 * g() + 5 * b()) >> 1;
     }
 
 

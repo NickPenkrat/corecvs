@@ -59,6 +59,11 @@ public:
         drawG8Buffer(buffer);
     }
 
+    /**
+     * This function is used as a hack to interface the C-style g12Buffer
+     *
+     **/
+    RGB24Buffer() {}
 
     void drawG12Buffer(G12Buffer *src, int32_t y = 0, int32_t x = 0);
     void drawG8Buffer(G8Buffer *src, int32_t y = 0, int32_t x = 0);

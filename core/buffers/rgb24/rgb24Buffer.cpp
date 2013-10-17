@@ -665,12 +665,13 @@ void RGB24Buffer::fillWithYUYV (uint8_t *yuyv)
 
             /* coefficients */
 
-            Int16x8 con100((uint16_t)(100 / 2));
-            Int16x8 con128((uint16_t)(128 / 2));
-            Int16x8 con208((uint16_t)(208 / 2));
-            Int16x8 con298((uint16_t)(298 / 2));
-            Int16x8 con516((uint16_t)(516 / 2));
-            Int16x8 con409((uint16_t)(409 / 2));
+            /* This is a hack to fit into 16bit register */
+            Int16x8 con100((uint16_t)(100 / 4));
+            Int16x8 con128((uint16_t)(128 / 4));
+            Int16x8 con208((uint16_t)(208 / 4));
+            Int16x8 con298((uint16_t)(298 / 4));
+            Int16x8 con516((uint16_t)(516 / 4));
+            Int16x8 con409((uint16_t)(409 / 4));
 
             FixedVector<Int16x8, 8> result;
             enum {
@@ -681,7 +682,7 @@ void RGB24Buffer::fillWithYUYV (uint8_t *yuyv)
                 B2,
                 G2,
                 R2,
-                ZERO2,
+                ZERO2
             };
 
             Int16x8 dr = con128               + con409 * cv;
@@ -691,17 +692,17 @@ void RGB24Buffer::fillWithYUYV (uint8_t *yuyv)
             Int16x8 dy1 = con298 * cy1;
             Int16x8 dy2 = con298 * cy2;
 
-            result[R1] = (dy1 + dr) >> 7;
-            result[G1] = (dy1 + dg) >> 7;
-            result[B1] = (dy1 + db) >> 7;
+            result[R1] = (dy1 + dr) >> 6;
+            result[G1] = (dy1 + dg) >> 6;
+            result[B1] = (dy1 + db) >> 6;
             result[ZERO1] = Int16x8((int16_t)0);
 
-            result[R2] = (dy2 + dr) >> 7;
-            result[G2] = (dy2 + dg) >> 7;
-            result[B2] = (dy2 + db) >> 7;
+            result[R2] = (dy2 + dr) >> 6;
+            result[G2] = (dy2 + dg) >> 6;
+            result[B2] = (dy2 + db) >> 6;
             result[ZERO2] = Int16x8((int16_t)0);
 
-#if USE_NONUNROLLED_LOOP
+#ifdef USE_NONUNROLLED_LOOP
             /* TODO: Use saturated arithmetics instead probably*/
             for (int k = B1; k < ZERO1; k++)
             {
@@ -777,7 +778,7 @@ G12Buffer *RGB24Buffer::toG12Buffer()
         RGBColor *in  = &this->element(i,0);
         uint16_t *out = &toReturn->element(i,0);
         int j = 0;
-#ifdef WITH_SSE
+#ifdef WITH_SSE_
         const int inspan  = SSEReader8BBBB_DDDD::BYTE_STEP / sizeof(RGBColor);
         const int outspan = 8;
 
@@ -799,7 +800,9 @@ G12Buffer *RGB24Buffer::toG12Buffer()
 #endif
         for (; j < w; j++)
         {
-            toReturn->element(i, j) = element(i,j).luma12();
+            uint16_t result = element(i,j).luma12();
+            if (result > G12Buffer::BUFFER_MAX_VALUE - 1) result = G12Buffer::BUFFER_MAX_VALUE - 1;
+            toReturn->element(i, j) = result;
         }
     }
     return toReturn;

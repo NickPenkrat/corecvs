@@ -26,7 +26,7 @@ Frames::Frames() :
     DOTRACE(("Frames::Frames() called\n"));
     for (int id = 0; id < MAX_INPUTS_NUMBER; id++)
     {
-        currentFrames[id] = NULL;
+        currentFrames[id]    = NULL;
         currentRgbFrames[id] = NULL;
     }
     frameCount = 0;
