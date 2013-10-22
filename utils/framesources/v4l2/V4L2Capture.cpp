@@ -381,7 +381,7 @@ void V4L2CaptureInterface::decodeDataRGB24(V4L2CameraDescriptor *camera, V4L2Buf
     {
         case UNCOMPRESSED:
             *output = new RGB24Buffer(formatH, formatW);
-            printf("Decoding image...");
+//            printf("Decoding image...");
             timer = PreciseTimer::currentTime();
 #if 0
             for(int i = 0; i < formatH; i++)
@@ -402,7 +402,7 @@ void V4L2CaptureInterface::decodeDataRGB24(V4L2CameraDescriptor *camera, V4L2Buf
             }
 #endif
             (*output)->fillWithYUYV(ptrL);
-            printf("Delay: %i\n", timer.usecsToNow());
+//            printf("Delay: %i\n", timer.usecsToNow());
             break;
         case COMPRESSED_JPEG:
         {

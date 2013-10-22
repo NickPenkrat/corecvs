@@ -28,6 +28,15 @@ public:
     virtual ~G12Image();
 };
 
+class G8Image : public QImage {
+public:
+    G8Image(G8Buffer *buffer);
+    /*G8Image(G12Buffer *buffer, int newH, int newW);
+    G8Image(G12Buffer *buffer, bool mirror);*/
+
+    virtual ~G8Image();
+};
+
 class RGB24Image : public QImage{
 public:
     RGB24Image(RGB24Buffer *buffer, bool mirror = false);
