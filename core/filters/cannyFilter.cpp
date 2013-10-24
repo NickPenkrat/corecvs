@@ -80,14 +80,11 @@ void CannyFilter::recursiveEdgeProver(G12Buffer *buffer, int h, int w)
     return;
 }
 
-int CannyFilter::operator ()()
+G12Buffer *CannyFilter::doFilter(G12Buffer *input, const CannyParameters &mCannyParameters)
 {
-
-    G12Buffer* &input  = static_cast<G12Pin*>(inputPins [0])->getData();
-    G12Buffer* &result = static_cast<G12Pin*>(outputPins[0])->getData();
-
-    if (input == NULL)
-        return 0;
+    if (input == NULL) {
+        return NULL;
+    }
 
     // non-maximum suppression
     DerivativeBuffer derBuf(input);
@@ -106,10 +103,10 @@ int CannyFilter::operator ()()
              }
              if (pixel > mCannyParameters.maximumThreshold())
              {
-                 suppressedBuffer->element(i,j) = white;
+                 suppressedBuffer->element(i,j) = CannyFilter::white;
                  continue;
              }
-             suppressedBuffer->element(i,j) = gray;
+             suppressedBuffer->element(i,j) = CannyFilter::gray;
         }
     }
 
@@ -120,16 +117,31 @@ int CannyFilter::operator ()()
         {
             for (int j = 0; j < suppressedBuffer->w; j++ )
             {
-                if (suppressedBuffer->element(i,j) == white)
-                    recursiveEdgeProver(suppressedBuffer, i, j);
+                if (suppressedBuffer->element(i,j) == CannyFilter::white)
+                    CannyFilter::recursiveEdgeProver(suppressedBuffer, i, j);
             }
         }
         for (int i = 0; i < suppressedBuffer->h; i++)
+        {
             for (int j = 0; j < suppressedBuffer->w; j++ )
-                if (suppressedBuffer->element(i,j) == gray) suppressedBuffer->element(i,j) = 0;
+            {
+                if (suppressedBuffer->element(i,j) == CannyFilter::gray)
+                    suppressedBuffer->element(i,j) = 0;
+            }
+        }
     }
 
-    result = suppressedBuffer;
+    return suppressedBuffer;
+}
+
+
+int CannyFilter::operator ()()
+{
+
+    G12Buffer* &input  = static_cast<G12Pin*>(inputPins [0])->getData();
+    G12Buffer* &result = static_cast<G12Pin*>(outputPins[0])->getData();
+
+    result = doFilter(input, mCannyParameters);
     return 0;
 }
 

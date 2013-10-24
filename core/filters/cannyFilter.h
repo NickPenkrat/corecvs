@@ -63,9 +63,11 @@ private:
     G12Buffer *input;
     G12Buffer *result;
 
+public:
     static void recursiveEdgeProver(G12Buffer *buffer, int h, int w);
+    static G12Buffer *doFilter(G12Buffer *buffer, const CannyParameters &mCannyParameters);
 
-
+private:
     static int instanceCounter;
 };
 
