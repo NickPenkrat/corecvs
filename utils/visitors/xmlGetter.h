@@ -16,10 +16,18 @@ using corecvs::EnumField;
 
 using namespace corecvs;
 
-class XmlGetter : public BasePathVisitor
+class XmlGetter
 {
 public:
     XmlGetter(QString const & fileName);
+
+    XmlGetter(QDomElement &documentElement) :
+        mDocumentElement(documentElement)
+    {
+        mElementPath.push_back(mDocumentElement);
+    }
+
+
     template <class Type>
         void visit(Type &field, Type defaultValue, const char *fieldName)
     {
@@ -27,6 +35,14 @@ public:
             field.accept(*this);
         popChild();
     }
+
+    template <class Type>
+        void visit(Type &field, const char *fieldName)
+        {
+            pushChild(fieldName);
+                field.accept(*this);
+            popChild();
+        }
 
     template <typename inputType, typename reflectionType>
         void visit(inputType &field, const reflectionType * fieldDescriptor)
@@ -37,6 +53,21 @@ public:
     }
 
 private:
+
+    QDomElement getChildByTag(const char *name);
+
+    void pushChild(const char *childName)
+    {
+        mElementPath.push_back(getChildByTag(childName));
+    }
+
+    void popChild()
+    {
+        mElementPath.pop_back();
+    }
+
+    std::vector<QDomElement> mElementPath;
+
     QString mFileName;
     QDomElement mDocumentElement;
 };
