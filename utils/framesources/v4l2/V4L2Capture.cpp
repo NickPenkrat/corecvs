@@ -171,9 +171,9 @@ V4L2CaptureInterface::FramePair V4L2CaptureInterface::getFrame()
 
 V4L2CaptureInterface::FramePair V4L2CaptureInterface::getFrameRGB24()
 {
-//    CaptureStatistics  stats;
+    CaptureStatistics  stats;
 
-//    PreciseTimer start = PreciseTimer::currentTime();
+    PreciseTimer start = PreciseTimer::currentTime();
 
     protectFrame.lock();
 
@@ -196,7 +196,6 @@ V4L2CaptureInterface::FramePair V4L2CaptureInterface::getFrameRGB24()
     result.bufferLeft  = result.rgbBufferLeft ->toG12Buffer(); // FIXME
     result.bufferRight = result.rgbBufferRight->toG12Buffer();
 
-#if 0
     if (currentFrame[Frames::LEFT_FRAME].isFilled)
         result.leftTimeStamp  = currentFrame[Frames::LEFT_FRAME].usecsTimeStamp();
 
@@ -210,9 +209,7 @@ V4L2CaptureInterface::FramePair V4L2CaptureInterface::getFrameRGB24()
 
     stats.framesSkipped = skippedCount > 0 ? skippedCount - 1 : 0;
     skippedCount = 0;
-#endif
     protectFrame.unlock();
-#if 0
     stats.values[CaptureStatistics::DECODING_TIME] = start.usecsToNow();
     stats.values[CaptureStatistics::INTERFRAME_DELAY] = frameDelay;
 
@@ -220,7 +217,6 @@ V4L2CaptureInterface::FramePair V4L2CaptureInterface::getFrameRGB24()
     stats.values[CaptureStatistics::DESYNC_TIME] = desync > 0 ? desync : -desync;
     stats.values[CaptureStatistics::DATA_SIZE] = currentFrame[Frames::LEFT_FRAME].bytesused;
     emit newStatisticsReady(stats);
-#endif
 
     return result;
 }
