@@ -9,5 +9,6 @@ exists(../../../config.pri) {
  
 TEMPLATE = subdirs
 
-SUBDIRS += \
-    grab24 \
+SUBDIRS +=       \
+    grab24       \
+    xmlserialize \

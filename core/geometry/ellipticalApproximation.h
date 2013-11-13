@@ -244,18 +244,19 @@ class EllipticalApproximationUnified
 {
 public:
     EllipticalApproximationUnified() :
-         mSum(ElementType(0))
+         mInfMatrix(NULL)
+       , mSum(ElementType(0))
        , mCount(0)
-       , mInfMatrix(NULL)
+
     {
         ElementType forSize;
         mInfMatrix = new Matrix(forSize.size(), forSize.size());
     }
 
     EllipticalApproximationUnified(const EllipticalApproximationUnified &other) :
-        mSum(other.mSum)
+        mInfMatrix(NULL)
+      , mSum(other.mSum)
       , mCount(other.mCount)
-      , mInfMatrix(NULL)
     {
         this->mInfMatrix = new Matrix(other.mInfMatrix);
         //printf("EllipticalApproximationUnified(const EllipticalApproximationUnified &other) called\n");

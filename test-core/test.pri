@@ -13,7 +13,7 @@ exists(../../../config.pri) {
     ROOT_DIR=..
 }
 ROOT_DIR=$$PWD/$$ROOT_DIR
-message(Tests root dir is $$ROOT_DIR)
+!build_pass:message(Tests root dir is $$ROOT_DIR)
 include($$ROOT_DIR/config.pri)
 
 CONFIG += console

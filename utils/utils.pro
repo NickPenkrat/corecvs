@@ -105,10 +105,11 @@ HEADERS += \
     qtHelper.h \
     timeliner.h \
     \
+    visitors/baseXMLVisitor.h \
+    visitors/xmlGetter.h \
     visitors/xmlSetter.h \
     visitors/qSettingsSetter.h \
     visitors/qSettingsGetter.h \
-    visitors/xmlGetter.h \
     \
     serializer/serializer.h \
     serializer/serializedWidget.h \
@@ -231,10 +232,11 @@ SOURCES += \
     qtHelper.cpp \
     \
 ### visitors/defaultSetter.cpp \        # this file is obsolete version of the same name at "core/reflection"
+    visitors/baseXMLVisitor.cpp \
     visitors/xmlSetter.cpp \
+    visitors/xmlGetter.cpp \
     visitors/qSettingsSetter.cpp \
     visitors/qSettingsGetter.cpp \
-    visitors/xmlGetter.cpp \
 #   visitors/printerVisitor.cpp \
     \
     serializer/serializer.cpp \

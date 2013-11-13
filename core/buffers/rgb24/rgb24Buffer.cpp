@@ -800,9 +800,11 @@ G12Buffer *RGB24Buffer::toG12Buffer()
 #endif
         for (; j < w; j++)
         {
-            uint16_t result = element(i,j).luma12();
+            uint16_t result = in->luma12();
             if (result > G12Buffer::BUFFER_MAX_VALUE - 1) result = G12Buffer::BUFFER_MAX_VALUE - 1;
-            toReturn->element(i, j) = result;
+            *out = result;
+            in++;
+            out++;
         }
     }
     return toReturn;

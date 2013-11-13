@@ -8,28 +8,17 @@ XmlGetter::XmlGetter(const QString &fileName)
 {
     mFileName = fileName;
     QFile file(mFileName);
-    if (!file.open(QFile::ReadWrite))
+    if (!file.open(QFile::ReadWrite)) {
+        qDebug() << "Can't open file <" << mFileName << ">";
         return;
+    }
     QDomDocument doc("document");
     doc.setContent(&file);
-    mDocumentElement = doc.documentElement();
+    //mDocumentElement = doc.documentElement();
+    qDebug() << doc.toString();
     file.close();
 
-    mElementPath.push_back(mDocumentElement);
-}
-
-QDomElement XmlGetter::getChildByTag(const char *name)
-{
-    QDomElement mainElement = mElementPath.back();
-    if (!mainElement.isNull())
-    {
-        QDomNodeList nodesWithTag = mainElement.elementsByTagName(name);
-        if (nodesWithTag.length() != 0)
-        {
-            return nodesWithTag.at(0).toElement();
-        }
-    }
-    return QDomElement();
+    mNodePath.push_back(doc);
 }
 
 template <>

@@ -43,7 +43,7 @@ UTILS_INCLUDEPATH = \
 INCLUDEPATH += $$UTILS_INCLUDEPATH
 
 UTILS_BINDIR = $$ROOT_DIR/bin
-message(Utils.pri ROOT_DIR is <$$ROOT_DIR>. Bindir is <$$UTILS_BINDIR>. PWD is <$$PWD>)
+#message(Utils.pri ROOT_DIR is <$$ROOT_DIR>. Bindir is <$$UTILS_BINDIR>. PWD is <$$PWD>)
 
 contains(TARGET, cvs_utils) {
     !win32-msvc*: DEPENDPATH += $$UTILS_INCLUDEPATH # it should set automatically by dependencies from includes!

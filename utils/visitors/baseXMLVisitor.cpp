@@ -10,7 +10,7 @@
 QDomElement BaseXMLVisitor::getChildByTag(const char *name)
 {
 
-    qDebug("BaseXMLVisitor::getChildByTag(%s): called", name );
+    //qDebug("BaseXMLVisitor::getChildByTag(%s): called", name );
     QDomNode mainNode = mNodePath.back();
     if (mainNode.isNull()) {
         qDebug("  BaseXMLVisitor::getChildByTag(): path is null");
@@ -19,13 +19,13 @@ QDomElement BaseXMLVisitor::getChildByTag(const char *name)
 
     if (mainNode.isElement())
     {
-        qDebug("  BaseXMLVisitor::getChildByTag(): path ends with element");
+//        qDebug("  BaseXMLVisitor::getChildByTag(): path ends with element");
 
         QDomElement mainElement = mainNode.toElement();
         QDomNodeList nodesWithTag = mainElement.elementsByTagName(name);
         if (nodesWithTag.length() != 0)
         {
-            qDebug("  BaseXMLVisitor::getChildByTag(): found sub element");
+//            qDebug("  BaseXMLVisitor::getChildByTag(): found sub element");
             return nodesWithTag.at(0).toElement();
         }
         return QDomElement();
@@ -33,12 +33,12 @@ QDomElement BaseXMLVisitor::getChildByTag(const char *name)
 
     if (mainNode.isDocument())
     {
-        qDebug("  BaseXMLVisitor::getChildByTag(): path ends with document");
+//        qDebug("  BaseXMLVisitor::getChildByTag(): path ends with document");
         QDomDocument mainDocument = mainNode.toDocument();
         QDomNodeList nodesWithTag = mainDocument.elementsByTagName(name);
         if (nodesWithTag.length() != 0)
         {
-            qDebug("  BaseXMLVisitor::getChildByTag(): found sub element");
+//            qDebug("  BaseXMLVisitor::getChildByTag(): found sub element");
             return nodesWithTag.at(0).toElement();
         }
         return QDomElement();
