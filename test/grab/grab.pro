@@ -11,7 +11,7 @@ ROOT_DIR=$$PWD/$$ROOT_DIR
 include($$ROOT_DIR/config.pri)
 
 TEMPLATE=app
-TARGET=test_grab24
+TARGET=test_grab
 
 TEST_DIR = $$PWD
 #TEST_DIR = .
@@ -20,6 +20,10 @@ UTILSDIR = $$TEST_DIR/../../utils
 include($$UTILSDIR/utils.pri)
 
 
-SOURCES += main_grab24.cpp
+SOURCES += main_grab.cpp
 
-HEADERS += main_grab24.h
+HEADERS += main_grab.h
+
+core.file                = src/open/core/core.pro
+unitTests.file           = src/open/test-core/unitTests.pro
+utils.file               = src/open/utils/utils.pro

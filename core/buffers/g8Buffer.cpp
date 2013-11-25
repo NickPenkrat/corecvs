@@ -25,6 +25,7 @@ G8Buffer* G8Buffer::FromG12Buffer(G12Buffer *input)
     return result;
 }
 
+
 G12Buffer* G8Buffer::toG12Buffer(corecvs::G8Buffer *input)
 {
     G12Buffer* result = new G12Buffer(input->getSize(), false);

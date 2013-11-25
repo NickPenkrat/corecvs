@@ -80,17 +80,18 @@ void CannyFilter::recursiveEdgeProver(G12Buffer *buffer, int h, int w)
     return;
 }
 
-G12Buffer *CannyFilter::doFilter(G12Buffer *input, const CannyParameters &mCannyParameters)
+G12Buffer *CannyFilter::doFilter(G12Buffer *input, const CannyParameters &mCannyParameters, DerivativeBuffer **derivativePtr, DerivativeBuffer **suppressedPtr )
 {
     if (input == NULL) {
         return NULL;
     }
 
     // non-maximum suppression
-    DerivativeBuffer derBuf(input);
-    G12Buffer *suppressedBuffer = derBuf.nonMaximalSuppression();
+    DerivativeBuffer *derivativeBuffer = new DerivativeBuffer(input);
+    G12Buffer *suppressedBuffer = derivativeBuffer->nonMaximalSuppression();
 
     // double thresholding
+#if 0
     for (int i = 0; i < suppressedBuffer->h; i++)
     {
         for (int j = 0; j < suppressedBuffer->w; j++ )
@@ -109,6 +110,7 @@ G12Buffer *CannyFilter::doFilter(G12Buffer *input, const CannyParameters &mCanny
              suppressedBuffer->element(i,j) = CannyFilter::gray;
         }
     }
+#endif
 
     // edge tracking
     if (mCannyParameters.shouldEdgeDetect())
@@ -129,6 +131,13 @@ G12Buffer *CannyFilter::doFilter(G12Buffer *input, const CannyParameters &mCanny
                     suppressedBuffer->element(i,j) = 0;
             }
         }
+    }
+
+    if (derivativePtr == NULL)
+    {
+        delete_safe(derivativeBuffer);
+    } else {
+        *derivativePtr = derivativeBuffer;
     }
 
     return suppressedBuffer;

@@ -155,6 +155,14 @@ public:
     void fillWithYUYV (uint8_t *yuyv);
     G12Buffer *toG12Buffer();
 
+    enum ChannelID {
+        CHANNEL_R,
+        CHANNEL_G,
+        CHANNEL_B,
+        CHANNEL_GRAY
+    };
+    G8Buffer* getChannel(ChannelID channel);
+
 
     virtual ~RGB24Buffer(){};
 

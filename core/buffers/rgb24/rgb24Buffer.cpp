@@ -811,5 +811,39 @@ G12Buffer *RGB24Buffer::toG12Buffer()
 }
 
 
+G8Buffer* RGB24Buffer::getChannel(ChannelID channel)
+{
+    G8Buffer *result = new G8Buffer(getSize(), false);
+
+    for (int i = 0; i < result->h; i++)
+    {
+        for (int j = 0; j < result->w; j++)
+        {
+            uint8_t pixel;
+            switch (channel)
+            {
+                case CHANNEL_R:
+                    pixel = element(i,j).r();
+                    break;
+                case CHANNEL_G:
+                    pixel = element(i,j).g();
+                    break;
+                case CHANNEL_B:
+                    pixel = element(i,j).b();
+                    break;
+                case CHANNEL_GRAY:
+                    pixel = element(i,j).brightness();
+                    break;
+            }
+            result->element(i,j) = pixel;
+        }
+    }
+
+
+
+    return result;
+}
+
+
 } //namespace corecvs
 

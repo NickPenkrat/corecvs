@@ -10,5 +10,13 @@ exists(../../../config.pri) {
 TEMPLATE = subdirs
 
 SUBDIRS +=       \
-    grab24       \
+    grab         \
     xmlserialize \
+    adoptcolor   
+    
+    
+
+grab.file          = grab/grab.pro
+xmlserialize.file  = xmlserialize/xmlserialize.pro
+adoptcolor.file    = adoptcolor/adoptcolor.pro
+    

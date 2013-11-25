@@ -21,9 +21,9 @@ class RGBColor : public FixedVectorBase<RGBColor, uint8_t,4> {
 public:
 
     enum FieldId {
-        FIELD_R = 0,
+        FIELD_R = 2,
         FIELD_G = 1,
-        FIELD_B = 2,
+        FIELD_B = 0,
         FIELD_A = 3
     };
     /**
@@ -60,22 +60,22 @@ public:
 
     inline uint8_t &r()
     {
-        return (*this)[2];
+        return (*this)[FIELD_R];
     }
 
     inline uint8_t &g()
     {
-        return (*this)[1];
+        return (*this)[FIELD_G];
     }
 
     inline uint8_t &b()
     {
-        return (*this)[0];
+        return (*this)[FIELD_B];
     }
 
     inline uint8_t &a()
     {
-        return (*this)[3];
+        return (*this)[FIELD_A];
     }
 
     inline uint32_t &color()
@@ -383,6 +383,11 @@ template<class VisitorType>
         visitor.visit(g(), static_cast<const IntField *>(reflect.fields[FIELD_G]));
         visitor.visit(b(), static_cast<const IntField *>(reflect.fields[FIELD_B]));
         visitor.visit(a(), static_cast<const IntField *>(reflect.fields[FIELD_A]));
+    }
+
+    Vector3dd toDouble()
+    {
+        return Vector3dd(r(), g(), b());
     }
 };
 
