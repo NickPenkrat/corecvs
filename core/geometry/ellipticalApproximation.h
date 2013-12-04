@@ -7,6 +7,9 @@
  * \author alexander
  */
 #include <math.h>
+
+#include "global.h"
+
 #include "vector2d.h"
 #include "matrix.h"
 
@@ -287,21 +290,21 @@ public:
         return mCount;
     }
 
-    void getEllipseParameters()
+    bool getEllipseParameters()
     {
         if (mCount == 0) {
-            printf("Can't approximate 0 points");
-            return;
+            SYNC_PRINT(("Can't approximate 0 points"));
+            return false;
         }
 
         if (mInfMatrix == NULL) {
-            printf("Can't approximate non existant matrix");
-            return;
+            SYNC_PRINT(("Can't approximate non existant matrix"));
+            return false;
         }
 
         if (mInfMatrix->h == 0 || mInfMatrix->w == 0) {
-            printf("Can't approximate non existant matrix");
-            return;
+            SYNC_PRINT(("Can't approximate non existant matrix"));
+            return false;
         }
 
         Matrix A(*mInfMatrix /= double(mCount));
@@ -322,6 +325,8 @@ public:
             mAxes.push_back(forPush);
             mValues.push_back(W.a(0,i));
         }
+
+        return true;
     }
 
 //private:

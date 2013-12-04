@@ -389,6 +389,13 @@ template<class VisitorType>
     {
         return Vector3dd(r(), g(), b());
     }
+
+    static RGBColor fromDouble(Vector3dd input)
+    {
+        input.mapToHypercube(Vector3dd(0.0,0.0,0.0), Vector3dd(255.0,255.0,255.0));
+        return RGBColor(input.x(), input.y(), input.z());
+    }
+
 };
 
 
