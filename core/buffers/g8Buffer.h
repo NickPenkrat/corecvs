@@ -40,6 +40,22 @@ public:
     static G8Buffer*  FromG12Buffer(corecvs::G12Buffer *input);
     static G12Buffer* toG12Buffer(corecvs::G8Buffer *input);
 
+    int countValues(uint8_t value, int x1 = -1, int y1 = -1, int x2 = -1, int y2 = - 1)
+    {
+        if (x1 == -1) x1 = 0;
+        if (y1 == -1) y1 = 0;
+
+        if (x2 == -1) x2 = this->w - 1;
+        if (y2 == -1) y2 = this->h - 1;
+
+
+        int count = 0;
+        for (int i = y1; i <= y2; i++)
+            for (int j = x1; j <= x2; j++)
+                if (element(i,j) == value)
+                    count++;
+        return count;
+    }
     //G8Buffer(int32_t h, int32_t w, uint16_t *data) : G8BufferBase(h, w, data) {};
 };
 
