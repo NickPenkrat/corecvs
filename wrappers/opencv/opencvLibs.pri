@@ -125,6 +125,38 @@ with_opencv {
                     -lopencv_nonfree242 \
                     -lopencv_imgproc242 \
                     -lopencv_objdetect242
+            } else:exists($$OPENCV_PATH/build/x64/vc10/bin/opencv_core246.dll): win32-msvc* {
+                !build_pass:message(Using <$$OPENCV_PATH/build/x64/vc10/bin>)
+                INCLUDEPATH += \
+                    $$OPENCV_PATH/build/include
+                LIBS += \
+                    -L$$OPENCV_PATH/build/x64/vc10/lib/ \
+                    -lopencv_calib3d246 \
+                    -lopencv_video246 \
+                    -lopencv_core246 \
+                    -lopencv_highgui246 \
+                    -lopencv_features2d246 \
+                    -lopencv_flann246 \
+                    -lopencv_legacy246 \
+                    -lopencv_nonfree246 \
+                    -lopencv_imgproc246 \
+                    -lopencv_objdetect246
+            } else:exists($$OPENCV_PATH/build/x64/vc10/bin/opencv_core247.dll): win32-msvc* {
+                !build_pass:message(Using <$$OPENCV_PATH/build/x64/vc10/bin>)
+                INCLUDEPATH += \
+                    $$OPENCV_PATH/build/include
+                LIBS += \
+                    -L$$OPENCV_PATH/build/x64/vc10/lib/ \
+                    -lopencv_calib3d247 \
+                    -lopencv_video247 \
+                    -lopencv_core247 \
+                    -lopencv_highgui247 \
+                    -lopencv_features2d247 \
+                    -lopencv_flann247 \
+                    -lopencv_legacy247 \
+                    -lopencv_nonfree247 \
+                    -lopencv_imgproc247 \
+                    -lopencv_objdetect247
             } else {
                 message(Unsupported OpenCV version)
             }

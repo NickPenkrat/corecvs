@@ -25,26 +25,28 @@ extern "C" {
 #define WRONG_DEVICE 1000
 
 
-enum CAPTURE_FORMAT_TYPE {
+enum CAPTURE_FORMAT_TYPE
+{
     CAP_MJPEG,
     CAP_YUV,
     CAP_RGB,
     CAP_I420,
-    CAP_UNKOWN
+    CAP_UNKNOWN
 };
 
-
-struct CameraParameter {
+struct CameraParameter
+{
     long minValue;
     long maxValue;
     long value;
     long defaultValue;
     long step;
     bool isAuto;
+    bool isManual;
 };
 
-enum CAPDLLControlProperty {
-
+enum CAPDLLControlProperty
+{
     CAPDLL_Control_First,
     CAPDLL_Control_Pan = CAPDLL_Control_First,
     CAPDLL_Control_Tilt,
@@ -69,18 +71,20 @@ enum CAPDLLControlProperty {
 };
 
 
-struct CaptureTypeFormat {
+struct CaptureTypeFormat
+{
     int type;
     int height;
     int width;
     int fps;
 };
 
-struct FrameData {
+struct FrameData
+{
     CaptureTypeFormat format;    
-    long long timestamp;
-    long size;
-    void *data;
+    long long         timestamp;
+    long              size;
+    void             *data;
 };
 
 typedef int  DSCapDeviceId;
@@ -94,21 +98,21 @@ CAPDLL_API void             DirectShowCapDll_printSimpleFormat(CaptureTypeFormat
 
 CAPDLL_API DSCapDeviceId    DirectShowCapDll_initCapture     (int deviceId);
 
-CAPDLL_API int              DirectShowCapDll_deviceName(DSCapDeviceId device, char **name);
+CAPDLL_API int              DirectShowCapDll_deviceName       (DSCapDeviceId device, char **name);
 
-CAPDLL_API int              DirectShowCapDll_getFormatNumber (DSCapDeviceId device, int *num);
-CAPDLL_API int              DirectShowCapDll_getFormats      (DSCapDeviceId device, int num, CaptureTypeFormat *formats);
-CAPDLL_API int              DirectShowCapDll_setFormat       (DSCapDeviceId device, CaptureTypeFormat *format);
+CAPDLL_API int              DirectShowCapDll_getFormatNumber  (DSCapDeviceId device, int *num);
+CAPDLL_API int              DirectShowCapDll_getFormats       (DSCapDeviceId device, int num, CaptureTypeFormat *formats);
+CAPDLL_API int              DirectShowCapDll_setFormat        (DSCapDeviceId device, CaptureTypeFormat *format);
 
-CAPDLL_API int              DirectShowCapDll_getCameraProp   (DSCapDeviceId device, CAPDLLControlProperty prop, CameraParameter *param);
-CAPDLL_API int              DirectShowCapDll_setCameraProp   (DSCapDeviceId device, CAPDLLControlProperty prop, CameraParameter *param);
+CAPDLL_API int              DirectShowCapDll_getCameraProp    (DSCapDeviceId device, CAPDLLControlProperty prop, CameraParameter *param);
+CAPDLL_API int              DirectShowCapDll_setCameraProp    (DSCapDeviceId device, CAPDLLControlProperty prop, CameraParameter *param);
+CAPDLL_API int              DirectShowCapDll_getCameraPropName(int prop, const char **name);
 
-
-CAPDLL_API int              DirectShowCapDll_setFrameCallback(DSCapDeviceId device, void *ptr, FrameCallbackFunctor *callback);
-CAPDLL_API int              DirectShowCapDll_start           (DSCapDeviceId device);
-CAPDLL_API int              DirectShowCapDll_pause           (DSCapDeviceId device);
-CAPDLL_API int              DirectShowCapDll_stop            (DSCapDeviceId device);
-CAPDLL_API int              DirectShowCapDll_deinit          (DSCapDeviceId device);
+CAPDLL_API int              DirectShowCapDll_setFrameCallback (DSCapDeviceId device, void *ptr, FrameCallbackFunctor *callback);
+CAPDLL_API int              DirectShowCapDll_start            (DSCapDeviceId device);
+CAPDLL_API int              DirectShowCapDll_pause            (DSCapDeviceId device);
+CAPDLL_API int              DirectShowCapDll_stop             (DSCapDeviceId device);
+CAPDLL_API int              DirectShowCapDll_deinit           (DSCapDeviceId device);
 
 
 } // extren "C"
