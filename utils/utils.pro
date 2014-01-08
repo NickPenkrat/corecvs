@@ -311,7 +311,7 @@ FORMS += \
     camcalc/cameraCalculatorWidget.ui \
     \
     uis/advancedImageWidget.ui \
-    paintImageWidget.ui \    
+    uis/paintImageWidget.ui \    
     uis/histogramdepthdialog.ui \
     uis/capSettingsDialog.ui \
     uis/graphPlotDialog.ui \

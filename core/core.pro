@@ -61,5 +61,6 @@ include(segmentation/segmentation.pri)
 include(stats/stats.pri)
 include(tbbwrapper/tbbwrapper.pri)
 include(utils/utils.pri)
-include(xml/generated/generated.pri)
 include(clustering3d/clustering3d.pri)
+
+include(xml/generated/generated.pri)
