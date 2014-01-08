@@ -221,7 +221,7 @@ void AdvancedImageWidget::freezeImage()
     mUi->freezeButton->setIcon( mIsFreezed ? mContinueIcon : mFreezeIcon);
 }
 
-void AdvancedImageWidget::toolButtonReleased(QWidget */*button*/)
+void AdvancedImageWidget::toolButtonReleased(QWidget * /*button*/)
 {
     if (mUi->panButton->isChecked())
     {
