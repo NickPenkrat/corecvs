@@ -16,16 +16,6 @@ CONFIG  += staticlib
 TARGET   = cvs_utils
 TEMPLATE = lib
 
-# Utils lib uses core, core-res. These includes must be before adding utils lib for mingw linker!
-#
-# But they create unneccessary dependence core->utils, although they are not linked together, but should!
-#
-#COREDIR = ../../core
-#include(../../core/core.pri)                       # it uses COREDIR, TARGET and detects     COREBINDIR!
-#include(../../core/core_restricted.pri)            # it uses COREDIR, TARGET and detects RES_COREBINDIR!
-
-COREDIR = ../core
-
 UTILSDIR = $$PWD
 include($$UTILSDIR/utils.pri)                      # it uses UTILSDIR, TARGET and detects UTILS_BINDIR, OBJECTS_DIR,...!
 
@@ -376,9 +366,9 @@ with_ueye {
 
 with_opencv {
     OPENCV_WRAPPER_DIR = $$UTILSDIR/../wrappers/opencv
-    include($$OPENCV_WRAPPER_DIR/opencv.pri)            # it uses OPENCV_WRAPPER_DIR inside
+    include($$OPENCV_WRAPPER_DIR/opencv.pri)                # it uses OPENCV_WRAPPER_DIR inside
 
-    contains(DEFINES, WITH_OPENCV) {  # Move this to OpenCV
+    contains(DEFINES, WITH_OPENCV) {                        # TODO: move this to OpenCV
         HEADERS += \
             framesources/openCVCapture.h \
             framesources/openCvFileCapture.h \

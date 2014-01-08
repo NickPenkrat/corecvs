@@ -2,7 +2,7 @@
 #
 # input1 parameter: $$COREDIR    - path to core project files
 # input2 parameter: $$TARGET     - the current project output name
-
+#
 # output parameter: $$COREBINDIR - path to the output|used core library
 #
 
@@ -71,7 +71,7 @@ exists(../../../config.pri) {
 
 contains(TARGET, cvs_core): !contains(TARGET, cvs_core_restricted) {
     win32-msvc* {
-        DEPENDPATH += $$COREDIR/xml             # helps to able including sources by generated.pri from their dirs
+        DEPENDPATH += $$COREDIR/xml                 # helps to able including sources by generated.pri from their dirs
     }
     else {
         DEPENDPATH += \

@@ -16,7 +16,7 @@ TEMPLATE = lib
 COREDIR = .
 include(core.pri)               # it uses COREDIR, TARGET and detects COREBINDIR!
 
-CORE_INTDIR = $$TOPLEVEL/.obj/core
+CORE_INTDIR = $$TOPLEVEL/.obj/cvs_core
 win32 {
     OBJECTS_DIR = $$CORE_INTDIR/$$BUILD_CFG_NAME
 } else {
