@@ -6,7 +6,9 @@ exists(../../../config.pri) {
     message(Using local config)
     ROOT_DIR=..
 }
-ROOT_DIR=$$PWD/$$ROOT_DIR
+!win32 {                                        # it dues to the "mocinclude.tmp" bug on win32!
+    ROOT_DIR=$$PWD/$$ROOT_DIR
+}
 include($$ROOT_DIR/config.pri)
 
 
@@ -22,9 +24,9 @@ TEMPLATE = lib
 #include(../../core/core.pri)                       # it uses COREDIR, TARGET and detects     COREBINDIR!
 #include(../../core/core_restricted.pri)            # it uses COREDIR, TARGET and detects RES_COREBINDIR!
 
-COREDIR=../core
+COREDIR = ../core
 
-UTILSDIR=$$PWD
+UTILSDIR = $$PWD
 include($$UTILSDIR/utils.pri)                      # it uses UTILSDIR, TARGET and detects UTILS_BINDIR, OBJECTS_DIR,...!
 
 include($$UTILSDIR/corestructs/coreWidgets/coreWidgets.pri)

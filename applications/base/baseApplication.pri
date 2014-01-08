@@ -21,16 +21,6 @@ include($$UTILSDIR/utils.pri)
 #message(Core dir $$COREDIR)
 #message(Core bin dir $$COREBINDIR)
 
-# qmake's bug found on mingw-win config:
-# hostBase.pri is included here from current dir and it includes utils.pri from its dir.
-# So the path to mocinclude.tmp for derived projects (host-*) is created as:
-# "./../utils/../../../.obj/$$TARGET_ORIG" that is the same as "./../../../.obj/$$TARGET_ORIG".
-# But they're unequal from the generated makefile view point.
-#
-win32 {
-    MOC_DIR = $$ROOT_DIR/.obj/$$TARGET_ORIG/$$BUILD_CFG_NAME  # resolve moc path for mocs to help qmake to unify those paths.
-}
-
 HOSTBASE_INCLUDEPATH = \
     $$HOSTBASE_DIR \
     $$HOSTBASE_DIR/generatedParameters \

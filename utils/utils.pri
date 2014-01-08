@@ -165,7 +165,7 @@ win32 {
 MOC_DIR = $$OBJECTS_DIR                             # not PROJ_INTDIR as the compiler regenerates them if config has been changed
 UI_DIR  = $$OBJECTS_DIR
 RCC_DIR = $$OBJECTS_DIR
-    
+
 # Note: debug and release libs will be overwritten on !win32 only
 #
 TARGET_ORIG = $$TARGET
@@ -179,3 +179,20 @@ win32 {
 } else {
     QMAKE_CLEAN += "$(DESTDIR)$(TARGET)"            # for win such cmd exists with inserted space :(
 }
+
+# QMake's bug found on mingw-win config:
+# 1. hostBase.pri is included here from current dir and it includes utils.pri from its dir.
+#    So the path to mocinclude.tmp for derived projects (host-*) is created as:
+#    "../utils/../../../.obj/$$TARGET_ORIG" that is the same as "../../../.obj/$$TARGET_ORIG".
+# 2. It generates dependency to this file without PWD (from curDir) for all mocs,
+#    but the rule for mocinclude.tmp uses PWD for it.
+# So they're unequal from the generated makefile view point!
+# Indeed it's fixed by using ROOT_DIR for any project.
+#
+# Nevertheless to use one proper folder for debug/release configurations we're to reset mocdir as below.
+#
+win32 {
+    MOC_DIR = $$ROOT_DIR/.obj/$$TARGET_ORIG/$$BUILD_CFG_NAME  # resolve moc path for mocs to help qmake to unify those paths.
+}
+
+QMAKE_CLEAN += "$$MOC_DIR/mocinclude.tmp"           # it doesn't killed somewhy...
