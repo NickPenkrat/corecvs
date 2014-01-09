@@ -1,7 +1,7 @@
 # This file is used internally for each UnitTest
 #
 # input1 parameter: $$OBJ_TESTS_DIR        - name of common intermediate dir for all UnitTests of the current project
-# input2 parameter: $$USE_CORE_PRI_FILE    - required core|core-res project file to include
+# input2 parameter: $$USE_CORE_PRI_FILE    - required core|rescore project file to include
 #
 
 # try use global config 
@@ -42,9 +42,9 @@ DESTDIR = $$ROOT_DIR/bin
 #include($$INCLUDEDIR/$$USE_CORE_PRI_FILE)           # it uses COREDIR, TARGET and detects COREBINDIR|RES_COREBINDIR!
 include($$USE_CORE_PRI_FILE)
 
-#message(Using core $$USE_CORE_PRI_FILE  with $$COREDIR and $$CORERESDIR)
+#message(Using core $$USE_CORE_PRI_FILE  with $$COREDIR and $$RES_COREDIR)
 
-!contains(OBJ_TESTS_DIR, tests-res) {               # first include file is "testsCommon.pri", second - "testsRestricted.pri"
+!contains(OBJ_TESTS_DIR, tests_restricted) {        # first include file is "testsCommon.pri", second - "testsRestricted.pri"
     TARGET_ORIG = $$TARGET                          # store original target name for proper detection of the obj.dir
     TARGET = $$join(TARGET,,test_,)                 # use target name common format for all tests as  "test_<name of the test>"
 

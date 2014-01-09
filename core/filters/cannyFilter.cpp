@@ -82,6 +82,7 @@ void CannyFilter::recursiveEdgeProver(G12Buffer *buffer, int h, int w)
 
 G12Buffer *CannyFilter::doFilter(G12Buffer *input, const CannyParameters &mCannyParameters, DerivativeBuffer **derivativePtr, DerivativeBuffer **suppressedPtr )
 {
+    CORE_UNUSED(suppressedPtr);
     if (input == NULL) {
         return NULL;
     }

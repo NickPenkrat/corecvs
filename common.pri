@@ -262,20 +262,20 @@ build_pass :                          # must clean only for the concrete configu
     contains(TARGET, directShow) {
         QMAKE_DISTCLEAN += Makefile.directShow*
     }
-    contains(TARGET, core) {
+    contains(TARGET, cvs_core) {
         QMAKE_DISTCLEAN += Makefile.core*
     }
-    contains(TARGET, utils) {
+    contains(TARGET, cvs_utils) {
         QMAKE_DISTCLEAN += Makefile.utils*
     }
     contains(TARGET, recorder) {
         QMAKE_DISTCLEAN += Makefile.recorder*
     }
-    contains(TARGET, opencl) {
+    contains(TARGET, test_opencl) {
         QMAKE_DISTCLEAN += Makefile.opencl*
     }
     contains(OBJ_TESTS_DIR, tests) {        # TARGET doesn't work as it has a name of each test!
-       #QMAKE_DISTCLEAN += Makefile*        # doesn't work as it tries to delete Makefile.unitTests.Debug/Release that're really used on distclean cmd!
+       #QMAKE_DISTCLEAN += Makefile*        # doesn't work as it tries to delete Makefile.unitTests.Debug/Release that are really used on distclean cmd!
         QMAKE_DISTCLEAN += Makefile Makefile.Debug Makefile.Release     # these files are generated indeed!
     }
 }
@@ -359,9 +359,9 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
             }
             INCLUDEPATH += $(TBB_PATH)/include
             LIBS        += -L"$$TBB_LIBDIR" -ltbb
-            contains(TARGET, core): !build_pass: message(Using <$$TBB_LIBDIR>)
+            !build_pass: contains(TARGET, cvs_core): message(Using <$$TBB_LIBDIR>)
         } else {
-           !build_pass:message(TBB not found. Please set TBB_PATH system variable to a root folder of TBB)
+           !build_pass: message(TBB not found. Please set TBB_PATH system variable to a root folder of TBB)
         }
     } else:macx {
         #message (Using TBB at $$TBB_PATH)
