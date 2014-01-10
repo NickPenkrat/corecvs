@@ -33,7 +33,7 @@ DESTDIR = $$COREBINDIR
 
 # to delete also target lib by 'clean' make command (distclean does this)
 win32 {
-    QMAKE_CLEAN += "$(DESTDIR_TARGET)"          # for linux qmake doesn't generate DESTDIR_TARGET :(
+    QMAKE_CLEAN += "$(DESTDIR_TARGET)"          # for Linux qmake doesn't generate DESTDIR_TARGET :(
 } else {
     QMAKE_CLEAN += "$(DESTDIR)$(TARGET)"        # for win such cmd exists with inserted space :(
 }

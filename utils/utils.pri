@@ -2,11 +2,10 @@
 #
 # Input1 parameter  - $$UTILSDIR
 # Input2 parameter  - $$TARGET
+# Input3 parameter  - $$ROOT_DIR
 # Output parameters - $$UTILS_BINDIR
 #
-# Utils lib uses core, rescore. These includes must be before adding utils lib for mingw linker!
-# But they create unnecessary dependence core->utils, although they are not linked together, but should!
-#
+
 COREDIR=../core
 include($$COREDIR/core.pri)                         # it uses COREDIR, TARGET and detects     COREBINDIR!
 
@@ -63,18 +62,14 @@ contains(TARGET, cvs_utils) {
     UTILS_TARGET_NAME = cvs_utils
     UTILS_TARGET_NAME = $$join(UTILS_TARGET_NAME,,,$$BUILD_CFG_SFX)
 
-    LIBS = \
-        -L$$UTILS_BINDIR\
-        -l$$UTILS_TARGET_NAME \
-        $$LIBS
+    LIBS = -L$$UTILS_BINDIR -l$$UTILS_TARGET_NAME $$LIBS
 
     win32-msvc* {
         UTILS_TARGET_NAME = $$join(UTILS_TARGET_NAME,,,.lib)
-        PRE_TARGETDEPS   += $$UTILS_BINDIR/$$UTILS_TARGET_NAME
     } else {
         UTILS_TARGET_NAME = $$join(UTILS_TARGET_NAME,,lib,.a)
-        PRE_TARGETDEPS   += $$UTILS_BINDIR/$$UTILS_TARGET_NAME
     }
+    PRE_TARGETDEPS += $$UTILS_BINDIR/$$UTILS_TARGET_NAME
 }
 
 # Note: debug and release libs will be overwritten on !win32 config!
@@ -82,14 +77,14 @@ contains(TARGET, cvs_utils) {
 DESTDIR = $$UTILS_BINDIR
 
 
-CONFIG += with_opengl                           # always include here OpenGL dependent modules as utils's and related projects need this!
+CONFIG += with_opengl                           # always include here OpenGL dependent modules as utils's and related projects need it
 with_opengl {
     QT += opengl                                # this must be defined for utils's and all related sources
 
-   #unix:LIBS += -lGL -lQtOpenGL  # Qt must add this
+   #unix:LIBS += -lGL -lQtOpenGL                # Qt must add this
 
     win32 {
-        LIBS += -lglu32 -lopengl32              # these libs must be exactly here: before openCV but after our libs!!! It's a magic of mingw, for msvc it's easier.:)
+        LIBS += -lglu32 -lopengl32              # these libs must be exactly here: before openCV but after our libs! It's a magic of mingw, for msvc it's easier.:)
     } else {
         LIBS += -lXtst -lX11 -lXext -lGLU       # these libs must be exactly here: they're required by OpenGL and some other stuff...
     }
@@ -103,34 +98,28 @@ with_opengl {
 
 with_ueye {
     UEYE_PATH = $$(UEYE_PATH)
-
     win32 {
         isEmpty(UEYE_PATH): UEYE_PATH = "C:/Program Files/IDS/uEye"
 
         # Try to use provided install path
         exists($$UEYE_PATH/Develop/lib/uEye_api_64.lib) {
-            DEFINES += WITH_UEYE
-
-            INCLUDEPATH += $$UEYE_PATH/Develop/include
-
-            LIBS += \
-                -L$$UEYE_PATH/Develop/lib \
-                -luEye_api_64 \
+            DEFINES     += WITH_UEYE
+            INCLUDEPATH +=   $$UEYE_PATH/Develop/include
+            LIBS        += -L$$UEYE_PATH/Develop/lib -luEye_api_64
 
             !build_pass:message(Using uEye <$$UEYE_PATH>)
         } else {
             !build_pass:message(Unable to find uEye at <$$UEYE_PATH>)
         }
     } else:exists("/usr/lib/libueye_api.so") {
-        LIBS += -lueye_api \
-
         DEFINES += WITH_UEYE
+        LIBS    += -lueye_api
     } else {
         !build_pass:message(Unable to find uEye at "/usr/lib/libueye_api.so")
     }
 }
 
-with_opencv {                                   # all this stuff was extracted from opencv.pri to speedup including
+with_opencv {                                       # all this stuff was extracted from opencv.pri to speedup including
     OPENCV_WRAPPER_DIR = $$UTILSDIR/../wrappers/opencv
     include($$OPENCV_WRAPPER_DIR/opencvLibs.pri)
 
@@ -146,18 +135,15 @@ with_directshow {
 }
 
 
-##############################################
-# Useful common part for all cvs project apps
-##############################################
+###############################################
+#   Useful common part for all cvs projects   #
+###############################################
 
-# Note: debug and release libs will be overwritten on !win32 only.
-#       But we should be careful of multiple including of this file.
-#
-isEmpty(TARGET_ORIG) {
+isEmpty(TARGET_ORIG) {                              # be careful of multiple including of this file
     TARGET_ORIG = $$TARGET
     TARGET      = $$join(TARGET,,,$$BUILD_CFG_SFX)  # add 'd' at the end for debug win32 version
 } else {
-    #message(TARGET_ORIG is $$TARGET_ORIG is not modified)
+   #message(TARGET_ORIG=$$TARGET_ORIG is not modified)
 }
 
 PROJ_INTDIR = $$ROOT_DIR/.obj/$$TARGET_ORIG
@@ -169,7 +155,7 @@ win32 {
         OBJECTS_DIR = $$PROJ_INTDIR/$$BUILD_CFG_NAME
     }
 } else {
-    OBJECTS_DIR = $$PROJ_INTDIR
+        OBJECTS_DIR = $$PROJ_INTDIR                 # debug and release objs will be overwritten on !win32 config!
 }
 MOC_DIR = $$OBJECTS_DIR                             # not PROJ_INTDIR as the compiler regenerates them if config has been changed
 UI_DIR  = $$OBJECTS_DIR
@@ -179,7 +165,7 @@ DESTDIR = $$UTILS_BINDIR
 
 # to delete also target lib by 'clean' make command (distclean does this)
 win32 {
-    QMAKE_CLEAN += "$(DESTDIR_TARGET)"              # for linux qmake doesn't generate DESTDIR_TARGET :(
+    QMAKE_CLEAN += "$(DESTDIR_TARGET)"              # for Linux qmake doesn't generate DESTDIR_TARGET :(
 } else {
     QMAKE_CLEAN += "$(DESTDIR)$(TARGET)"            # for win such cmd exists with inserted space :(
 }

@@ -1,3 +1,4 @@
+
 QT += core xml
 QT -= gui
 
@@ -8,12 +9,13 @@ CONFIG += debug
 
 TEMPLATE = app
 
-include(../../../../config.pri)
+ROOT_DIR=../../../..
+include($$ROOT_DIR/config.pri)
 
 win32 {
-    OBJECTS_DIR = ../../../../.obj/generator/$$BUILD_CFG_NAME
+    OBJECTS_DIR = $$ROOT_DIR/.obj/generator/$$BUILD_CFG_NAME
 } else {
-    OBJECTS_DIR = ../../../../.obj/generator
+    OBJECTS_DIR = $$ROOT_DIR/.obj/generator
 }
 MOC_DIR  = $$OBJECTS_DIR
 #UI_DIR  = $$OBJECTS_DIR

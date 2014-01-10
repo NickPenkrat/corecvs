@@ -68,12 +68,10 @@ exists(../../../config.pri) {
     COREBINDIR = $$COREDIR/../bin
 }
 
-
 contains(TARGET, cvs_core): !contains(TARGET, cvs_core_restricted) {
     win32-msvc* {
         DEPENDPATH += $$COREDIR/xml                 # helps to able including sources by generated.pri from their dirs
-    }
-    else {
+    } else {
         DEPENDPATH += \
 #           $$COREDIR \
             $$CORE_INCLUDEPATH                      # msvc sets this automatically by deps from includes for this project
@@ -84,16 +82,12 @@ contains(TARGET, cvs_core): !contains(TARGET, cvs_core_restricted) {
     CORE_TARGET_NAME = cvs_core
     CORE_TARGET_NAME = $$join(CORE_TARGET_NAME,,,$$BUILD_CFG_SFX)
 
-    LIBS = \
-        -L$$COREBINDIR \
-        -l$$CORE_TARGET_NAME \
-        $$LIBS
+    LIBS = -L$$COREBINDIR -l$$CORE_TARGET_NAME $$LIBS
 
     win32-msvc* {
         CORE_TARGET_NAME = $$join(CORE_TARGET_NAME,,,.lib)
-        PRE_TARGETDEPS  += $$COREBINDIR/$$CORE_TARGET_NAME
     } else {
         CORE_TARGET_NAME = $$join(CORE_TARGET_NAME,,lib,.a)
-        PRE_TARGETDEPS  += $$COREBINDIR/$$CORE_TARGET_NAME
     }
+    PRE_TARGETDEPS += $$COREBINDIR/$$CORE_TARGET_NAME
 }
