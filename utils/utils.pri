@@ -49,13 +49,10 @@ contains(TARGET, cvs_utils) {
 } else {
     !win32-msvc*: DEPENDPATH += $$UTILS_INCLUDEPATH # msvc sets this automatically by deps from includes for other projects! :(
 
-    # The "UTILS_INTDIR" path should be known for other projects that use "cvs_utils"!
-    # For the "cvs_utils" itself it's set automatically.
-    win32 {
-        UTILS_INTDIR = $$ROOT_DIR/.obj/cvs_utils/$$BUILD_CFG_NAME
-    } else {
-        UTILS_INTDIR = $$ROOT_DIR/.obj/cvs_utils
-    }
+    # The "UTILS_INTDIR" path should be known for other projects that use "cvs_utils"
+    #
+    UTILS_INTDIR = $$ROOT_DIR/.obj/cvs_utils$$BUILD_CFG_NAME
+
     # this is needed as some new sources of cvs_utils use ui-sources from this project!
     INCLUDEPATH += $$UTILS_INTDIR                       # add auto-generated ui* headers of cvs_utils into include path for the current project
 
@@ -72,8 +69,6 @@ contains(TARGET, cvs_utils) {
     PRE_TARGETDEPS += $$UTILS_BINDIR/$$UTILS_TARGET_NAME
 }
 
-# Note: debug and release libs will be overwritten on !win32 config!
-#
 DESTDIR = $$UTILS_BINDIR
 
 
@@ -141,23 +136,14 @@ with_directshow {
 
 isEmpty(TARGET_ORIG) {                              # be careful of multiple including of this file
     TARGET_ORIG = $$TARGET
-    TARGET      = $$join(TARGET,,,$$BUILD_CFG_SFX)  # add 'd' at the end for debug win32 version
+    TARGET      = $$join(TARGET,,,$$BUILD_CFG_SFX)  # add 'd' at the end for debug versions
 } else {
    #message(TARGET_ORIG=$$TARGET_ORIG is not modified)
 }
 
-PROJ_INTDIR = $$ROOT_DIR/.obj/$$TARGET_ORIG
+OBJECTS_DIR = $$ROOT_DIR/.obj/$$TARGET_ORIG$$BUILD_CFG_NAME
 
-win32 {
-    win32-msvc* {
-        OBJECTS_DIR = $$PROJ_INTDIR/$$BUILD_CFG_NAME
-    } else {
-        OBJECTS_DIR = $$PROJ_INTDIR/$$BUILD_CFG_NAME
-    }
-} else {
-        OBJECTS_DIR = $$PROJ_INTDIR                 # debug and release objs will be overwritten on !win32 config!
-}
-MOC_DIR = $$OBJECTS_DIR                             # not PROJ_INTDIR as the compiler regenerates them if config has been changed
+MOC_DIR = $$OBJECTS_DIR                             # not "$$ROOT_DIR/.obj/$$TARGET_ORIG" as the compiler regenerates them if config has been changed
 UI_DIR  = $$OBJECTS_DIR
 RCC_DIR = $$OBJECTS_DIR
 
@@ -177,13 +163,12 @@ win32 {
 # 2. It generates dependency to this file without PWD (from curDir) for all mocs,
 #    but the rule for mocinclude.tmp uses PWD for it.
 # So they're unequal from the generated makefile view point!
-# Indeed it's fixed by using ROOT_DIR for any project.
 #
-# Nevertheless to use one proper folder for debug/release configurations we're to reset mocdir as below.
+# But indeed it's fixed by using ROOT_DIR for all projects!
 #
 win32 {
-    #MOC_DIR = $$ROOT_DIR/.obj/$$TARGET_ORIG/$$BUILD_CFG_NAME  # resolve moc path for mocs to help qmake to unify those paths.
-    #message(TARGET_ORIG=$$TARGET_ORIG  MOC_DIR=$$MOC_DIR)
+    # MOC_DIR = $$ROOT_DIR/.obj/$$TARGET_ORIG$$BUILD_CFG_NAME  # resolve moc path for mocs to help qmake to unify those paths.
+    # message(TARGET_ORIG=$$TARGET_ORIG  MOC_DIR=$$MOC_DIR)
 
-    QMAKE_CLEAN += "$$MOC_DIR/mocinclude.tmp"           # it doesn't killed some-why...
+    QMAKE_CLEAN += "$$MOC_DIR/mocinclude.tmp"       # it doesn't killed some-why...
 }

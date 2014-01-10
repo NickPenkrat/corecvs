@@ -16,17 +16,11 @@ CONFIG += console
 
 TARGET  = test_directshow
 
-DSHOW_INTDIR = $$ROOT_DIR/.obj/tests/directshow
-win32 {
-    OBJECTS_DIR = $$DSHOW_INTDIR/$$BUILD_CFG_NAME
-} else {
-    OBJECTS_DIR = $$DSHOW_INTDIR
-}
+OBJECTS_DIR = $$ROOT_DIR/.obj/tests/directshow$$BUILD_CFG_NAME
+
 MOC_DIR = $$OBJECTS_DIR			                    # we have to set this to omit creating dummy dirs: debug,release
 
-# Note: debug and release libs will be overwritten on !win32 only
-#
-TARGET  = $$join(TARGET,,,$$BUILD_CFG_SFX)          # add 'd' at the end for debug win32 version
+TARGET  = $$join(TARGET,,,$$BUILD_CFG_SFX)          # add 'd' at the end for debug versions
 
 DESTDIR = $$ROOT_DIR/bin
 
