@@ -1,11 +1,10 @@
 isEmpty(OPENCV_WRAPPER_DIR) {
     message(Incorrect usage of opencv.pri with empty OPENCV_WRAPPER_DIR. OpenCV is switched off!)
-}
-else {
+} else {
     include(opencvLibs.pri)
 }
 
-contains(DEFINES, WITH_OPENCV) {            # if it's installed properly with found path for lib
+contains(DEFINES, WITH_OPENCV) {                    # if it's installed properly with found path for lib
 
     INCLUDEPATH += $$OPENCV_WRAPPER_DIR
 

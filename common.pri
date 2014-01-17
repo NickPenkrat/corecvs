@@ -8,17 +8,27 @@
 
 # ------------------------------------------
 
-BUILD_CFG_SFX = ""
+BUILD_CFG_SFX = ""                                  # debug and release libs/exes will be overwritten on !win32-msvc* config as we use one output folder
 build_pass:CONFIG(debug, debug|release) {
-                DEFINES +=  DEBUG
-    win32-msvc*:DEFINES += _DEBUG                   # for msvc such a define is commonly used
-    BUILD_CFG_NAME = debug
-
-   #win32:       BUILD_CFG_SFX = "d"                # append suffix to the target only for win32 config for a while...
+                 DEFINES +=  DEBUG
+    win32-msvc*: DEFINES += _DEBUG                  # for msvc such a define is commonly used
     win32-msvc*: BUILD_CFG_SFX = "d"                # only for msvc as QtCreator doesn't understand the app with suffix
+    win32-msvc* {
+        BUILD_CFG_NAME = /debug
+    } else:win32 {
+        BUILD_CFG_NAME = /debug-mg
+    } else {
+        BUILD_CFG_NAME = ""                         # debug and release objs will be overwritten on !win32 config!
+    }
 }
 build_pass:CONFIG(release, debug|release) {
-    BUILD_CFG_NAME = release
+    win32-msvc* {
+        BUILD_CFG_NAME = /release
+    } else:win32 {
+        BUILD_CFG_NAME = /release-mg
+    } else {
+        BUILD_CFG_NAME = ""                         # debug and release objs will be overwritten on !win32 config!
+    }
 }
 
 trace {

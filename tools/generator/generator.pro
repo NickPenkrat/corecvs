@@ -1,20 +1,15 @@
-QT += core xml
-QT -= gui
-
-TARGET  = generator
-CONFIG += console
-CONFIG -= app_bundle
-CONFIG += debug
-
 TEMPLATE = app
+TARGET   = generator
+QT      += core xml
+QT      -= gui
+CONFIG  += console
+CONFIG  -= app_bundle
+CONFIG  += debug
 
-include(../../../../config.pri)
+ROOT_DIR=../../../..
+include($$ROOT_DIR/config.pri)
 
-win32 {
-    OBJECTS_DIR = ../../../../.obj/generator/$$BUILD_CFG_NAME
-} else {
-    OBJECTS_DIR = ../../../../.obj/generator
-}
+OBJECTS_DIR = $$ROOT_DIR/.obj/generator$$BUILD_CFG_NAME
 MOC_DIR  = $$OBJECTS_DIR
 #UI_DIR  = $$OBJECTS_DIR
 #RCC_DIR = $$OBJECTS_DIR

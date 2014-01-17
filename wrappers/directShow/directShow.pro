@@ -1,23 +1,28 @@
-include(../../config.pri)
+# try use global config 
+exists(../../../../config.pri) {
+    ROOT_DIR=../../../..
+    #message(Using global config)
+} else { 
+    message(Using local config)
+    ROOT_DIR=../../
+}
+!win32 {                                            # it dues to the "mocinclude.tmp" bug on win32!
+    ROOT_DIR=$$PWD/$$ROOT_DIR
+}
+include($$ROOT_DIR/config.pri)
 
 QT     -= gui
 CONFIG += console
 
 TARGET  = test_directshow
 
-DSHOW_INTDIR = ../../../../.obj/tests/directshow
-win32 {
-    OBJECTS_DIR = $$DSHOW_INTDIR/$$BUILD_CFG_NAME
-} else {
-    OBJECTS_DIR = $$DSHOW_INTDIR
-}
-MOC_DIR = $$OBJECTS_DIR			            # we have to set this to omit creating dummy dirs: debug,release
+OBJECTS_DIR = $$ROOT_DIR/.obj/tests/directshow$$BUILD_CFG_NAME
 
-# Note: debug and release libs will be overwritten on !win32 only
-#
-TARGET  = $$join(TARGET,,,$$BUILD_CFG_SFX)          # add 'd' at the end for debug win32 version
+MOC_DIR = $$OBJECTS_DIR			                    # we have to set this to omit creating dummy dirs: debug,release
 
-DESTDIR = ../../../../bin
+TARGET  = $$join(TARGET,,,$$BUILD_CFG_SFX)          # add 'd' at the end for debug versions
+
+DESTDIR = $$ROOT_DIR/bin
 
 # We should copy proper version of capdll.dll module from LIB dir of this project into the output common BIN dir
 #
