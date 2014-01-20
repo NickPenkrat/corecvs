@@ -313,15 +313,12 @@ ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::getCaptureName(Q
 {
     if (!isCorrectDeviceHandle(0))
         return ImageCaptureInterface::FAILURE;
+
     char *name = NULL;
-    DirectShowCapDll_deviceName(cameras[0].deviceHandle, &name);
-    value = "";
-    int k = 0;
-    while (name[k] != '\0')
-    {
-        value += name[k];
-        k += 2;
-    }
+    if (DirectShowCapDll_deviceName(cameras[0].deviceHandle, &name))
+        return ImageCaptureInterface::FAILURE;
+
+    value = name;
     return ImageCaptureInterface::SUCCESS;
 }
 

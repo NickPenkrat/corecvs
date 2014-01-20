@@ -51,7 +51,7 @@ int main (int argc, char * argv[])
     printf ("Found %d devices that support DirectShow interface.\n", numCams);
 
     if (camId >= numCams) {
-        printf ("Invalid camId=%d, there're found %d devices only that support DirectShow interface.\n", camId, numCams);
+        printf ("Invalid camId=%d, there're found %d device(s) that support DirectShow interface.\n", camId, numCams);
         camId = 0;
     }
 

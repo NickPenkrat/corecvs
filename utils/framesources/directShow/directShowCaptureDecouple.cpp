@@ -245,15 +245,10 @@ int DirectShowCaptureDecoupleInterface::devicesNumber()
 ImageCaptureInterface::CapErrorCode DirectShowCaptureDecoupleInterface::getCaptureName(QString &value)
 {
     char *name = NULL;
-    DirectShowCapDll_deviceName(cameras[0].deviceHandle, &name);
-    string str;
-    int k = 0;
-    while (name[k] != '\0')
-    {
-        str += name[k];
-        k += 2;
-    }
-    value = strdup(str.c_str());
+    if (DirectShowCapDll_deviceName(cameras[0].deviceHandle, &name))
+        return ImageCaptureInterface::FAILURE;
+
+    value = name;
     return ImageCaptureInterface::SUCCESS;
 }
 
