@@ -4,6 +4,7 @@
  *  Created on: Aug 3, 2012
  *      Author: alexander
  */
+#include "global.h"
 
 #include "decoupleYUYV.h"
 
@@ -69,7 +70,7 @@ void DecoupleYUYV::decouple(unsigned formatH, unsigned formatW, uint8_t *ptr, Im
                     green[k] = SSEMath::selector(green[k] > con0, green[k], con0);
                 }
 
-                SSEReader8DD_DD::write(red, (uint32_t *)&result.bufferLeft ->element(i,j));
+                SSEReader8DD_DD::write(red,   (uint32_t *)&result.bufferLeft ->element(i,j));
                 SSEReader8DD_DD::write(green, (uint32_t *)&result.bufferRight->element(i,j));
                 ptr += SSEReader8BBBB_DDDD::BYTE_STEP;
             }
@@ -112,7 +113,9 @@ void DecoupleYUYV::decouple(unsigned formatH, unsigned formatW, uint8_t *ptr, Im
                 ptr += 4;
             }
         }
-    } else if (coupling == SIDEBYSIDE_STEREO){
+    }
+    else if (coupling == SIDEBYSIDE_STEREO)
+    {
         result.bufferLeft  = new G12Buffer(formatH, formatW / 2, false);
         result.bufferRight = new G12Buffer(formatH, formatW / 2, false);
 
@@ -130,7 +133,9 @@ void DecoupleYUYV::decouple(unsigned formatH, unsigned formatW, uint8_t *ptr, Im
                 ptr += 2;
             }
         }
-    } else {
+    }
+    else
+    {
         result.bufferLeft  = new G12Buffer(formatH / 2, formatW / 2, true);
         result.bufferRight = new G12Buffer(formatH / 2, formatW / 2, true);
 
@@ -189,8 +194,6 @@ void DecoupleYUYV::decouple(unsigned formatH, unsigned formatW, uint8_t *ptr, Im
             }
         }
     }
-
-
 }
 
 } /* namespace corecvs */

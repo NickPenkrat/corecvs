@@ -62,9 +62,6 @@ AbstractFileCapture::AbstractFileCapture(QString const &params)
 
     if (deviceStringPattern.cap(shouldSkipGroup) == QString(",skip"))
         mShouldSkipUnclaimed = true;
-
-    mCurrent.bufferLeft  = NULL;
-    mCurrent.bufferRight = NULL;
 }
 
 AbstractFileCapture::~AbstractFileCapture()
