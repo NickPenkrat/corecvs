@@ -47,15 +47,15 @@ public:
 
     CaptureStatistics &operator +=(const CaptureStatistics &toAdd)
     {
-        values += toAdd.values;
+        values         += toAdd.values;
         framesSkipped  += toAdd.framesSkipped;
         triggerSkipped += toAdd.triggerSkipped;
-        temperature[0] = toAdd.temperature[0];
-        temperature[1] = toAdd.temperature[1];
+        temperature[0]  = toAdd.temperature[0];
+        temperature[1]  = toAdd.temperature[1];
         return *this;
     }
 
-    CaptureStatistics &operator /= ( int frames )
+    CaptureStatistics &operator /=(int frames)
     {
         values /= frames;
         return *this;
@@ -73,7 +73,7 @@ public:
     {
         SUCCESS       = 0,
         SUCCESS_1CAM  = 1,
-        FAILURE      = 2
+        FAILURE       = 2
     };
 
     enum CapCameraId
@@ -119,12 +119,12 @@ public:
     class FramePair
     {
     public:
-        G12Buffer* bufferLeft;      /**< Pointer to left  gray scale buffer*/
-        G12Buffer* bufferRight;     /**< Pointer to right gray scale buffer*/
+        G12Buffer   *   bufferLeft;      /**< Pointer to left  gray scale buffer*/
+        G12Buffer   *   bufferRight;     /**< Pointer to right gray scale buffer*/
         RGB24Buffer *rgbBufferLeft;
         RGB24Buffer *rgbBufferRight;
-        uint64_t   leftTimeStamp;
-        uint64_t   rightTimeStamp;
+        uint64_t     leftTimeStamp;
+        uint64_t     rightTimeStamp;
 
         FramePair(G12Buffer* _bufferLeft = NULL, G12Buffer* _bufferRight = NULL)
             : bufferLeft (_bufferLeft )
@@ -207,6 +207,5 @@ protected:
      *  Internal function to trigger frame notify signal
      **/
     virtual void notifyAboutNewFrame(frame_data_t frameData);
-
 
 };

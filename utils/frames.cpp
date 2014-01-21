@@ -17,8 +17,8 @@
 
 #include "frames.h"
 
-Frames::Frames() :
-    mSwapped(false)
+Frames::Frames()
+  : mSwapped(false)
   , mTimestamp(0)
   , mDesyncTime(0)
   , mStartProcessTimestamp(0)
@@ -40,8 +40,7 @@ Frames::Frames() :
  **/
 Frames::~Frames()
 {
-
-    for (int id = 0; id <  MAX_INPUTS_NUMBER; id++ )
+    for (int id = 0; id < MAX_INPUTS_NUMBER; id++)
     {
         delete_safe(currentFrames[id]);
         delete_safe(currentRgbFrames[id]);
@@ -59,7 +58,7 @@ void Frames::fetchNewFrames(ImageCaptureInterface *input)
         fflush(stdout);
     }
 
-    for (int id = 0; id <  MAX_INPUTS_NUMBER; id++ )
+    for (int id = 0; id < MAX_INPUTS_NUMBER; id++)
     {
         delete_safe(currentFrames[id]);
         delete_safe(currentRgbFrames[id]);
@@ -78,7 +77,7 @@ void Frames::fetchNewFrames(ImageCaptureInterface *input)
     {
 //        printf("Frames::fetchNewFrames() : no rgb\n");
         currentRgbFrames[LEFT_FRAME]  = NULL;
-        currentRgbFrames[RIGHT_FRAME]  = NULL;
+        currentRgbFrames[RIGHT_FRAME] = NULL;
     }
 
     mTimestamp  = (pair.leftTimeStamp / 2) + (pair.rightTimeStamp / 2);

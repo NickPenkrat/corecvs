@@ -25,7 +25,7 @@ public:
         MAX_INPUTS_NUMBER
     };
 
-    G12Buffer *currentFrames[MAX_INPUTS_NUMBER];
+    G12Buffer   *currentFrames   [MAX_INPUTS_NUMBER];
     RGB24Buffer *currentRgbFrames[MAX_INPUTS_NUMBER];
     int frameCount;
 
