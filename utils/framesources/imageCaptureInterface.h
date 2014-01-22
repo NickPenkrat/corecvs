@@ -104,7 +104,6 @@ public:
      * Used to pass capture parameters in set/get requests
      *
      **/
-
     enum CapPropertyAccessType
     {
         ACCESS_NONE         = 0x00,
@@ -123,17 +122,38 @@ public:
         G12Buffer   *   bufferRight;     /**< Pointer to right gray scale buffer*/
         RGB24Buffer *rgbBufferLeft;
         RGB24Buffer *rgbBufferRight;
-        uint64_t     leftTimeStamp;
-        uint64_t     rightTimeStamp;
+        uint64_t     timeStampLeft;
+        uint64_t     timeStampRight;
 
-        FramePair(G12Buffer* _bufferLeft = NULL, G12Buffer* _bufferRight = NULL)
-            : bufferLeft (_bufferLeft )
-            , bufferRight(_bufferRight)
-            , leftTimeStamp (0)
-            , rightTimeStamp(0)
+        FramePair(G12Buffer* bufferLeft = NULL, G12Buffer* bufferRight = NULL)
+            : bufferLeft (bufferLeft )
+            , bufferRight(bufferRight)
+            , rgbBufferLeft(NULL)
+            , rgbBufferRight(NULL)
+            , timeStampLeft(0)
+            , timeStampRight(0)
         {}
 
-        bool hasBoth() const    { return bufferLeft && bufferRight; }
+        bool allocateBuffers(uint height, uint width, bool shouldInit = false)
+        {
+            if (bufferLeft  != NULL) delete bufferLeft;
+            if (bufferRight != NULL) delete bufferRight;
+            bufferLeft  = new G12Buffer(height, width, shouldInit);
+            bufferRight = new G12Buffer(height, width, shouldInit);
+            return hasBoth() && bufferLeft->isAllocated() && bufferRight->isAllocated();
+        }
+
+        FramePair clone() const
+        {
+            FramePair result(new G12Buffer(bufferLeft), new G12Buffer(bufferRight));
+            result.timeStampLeft  = timeStampLeft;
+            result.timeStampRight = timeStampRight;
+            return result;
+        }
+
+        bool        hasBoth() const         { return bufferLeft != NULL && bufferRight != NULL; }
+        uint64_t    timeStamp() const       { return timeStampLeft / 2 + timeStampRight / 2;    }
+        int64_t     diffTimeStamps() const  { return timeStampLeft     - timeStampRight;        }
     };
 
     static bool isRgb;

@@ -25,11 +25,7 @@ OpenCvFileCapture::OpenCvFileCapture(QString const &params)
 ImageCaptureInterface::FramePair OpenCvFileCapture::getFrame()
 {
     mProtectFrame.lock();
-        FramePair result(NULL, NULL);
-        result.bufferLeft     = new G12Buffer(mCurrent.bufferLeft);
-        result.bufferRight    = new G12Buffer(mCurrent.bufferRight);
-        result.leftTimeStamp  = mCurrent.leftTimeStamp;
-        result.rightTimeStamp = mCurrent.rightTimeStamp;
+        FramePair result = mCurrent.clone();
     mProtectFrame.unlock();
     return result;
 }
@@ -66,8 +62,8 @@ bool OpenCvFileCapture::SpinThread::grabFramePair()
     mFramePair.bufferRight = NULL;
 
     // OpenCV does not set timestamps for the frames
-    mFramePair.leftTimeStamp  = 0;
-    mFramePair.rightTimeStamp = 0;
+    mFramePair.timeStampLeft  = 0;
+    mFramePair.timeStampRight = 0;
 
     if (OpenCvHelper::captureImageCopyToBuffer(mCapture, mFramePair.bufferLeft))
     {
@@ -80,8 +76,7 @@ bool OpenCvFileCapture::SpinThread::grabFramePair()
     pause();
     mCapture.release();
     mCapture.open(mPath);
-    ++mTry;
-    if (mTry < maxNumberOfTries)
+    if (++mTry < maxNumberOfTries)
         return grabFramePair();
 
     return false;

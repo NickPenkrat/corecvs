@@ -219,17 +219,17 @@ exit:
 ImageCaptureInterface::FramePair DirectShowCaptureInterface::getFrame()
 {
     protectFrame.lock();
-    FramePair result(NULL, NULL);
-    if (cameras[0].buffer != NULL)
-    {
-        result.bufferLeft = new G12Buffer(cameras[0].buffer);
-    }
-    if (cameras[1].buffer != NULL)
-    {
-        result.bufferRight = new G12Buffer(cameras[1].buffer);
-    }
-    result.leftTimeStamp = cameras[0].timestamp;
-    result.rightTimeStamp = cameras[1].timestamp;
+        FramePair result;
+        if (cameras[0].buffer != NULL)
+        {
+            result.bufferLeft = new G12Buffer(cameras[0].buffer);
+        }
+        if (cameras[1].buffer != NULL)
+        {
+            result.bufferRight = new G12Buffer(cameras[1].buffer);
+        }
+        result.timeStampLeft  = cameras[0].timestamp;
+        result.timeStampRight = cameras[1].timestamp;
     protectFrame.unlock();
     return result;
 }

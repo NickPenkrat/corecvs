@@ -55,8 +55,8 @@ OpenCVCaptureInterface::OpenCVCaptureInterface(string _devname,  unsigned int mo
     int left_index  = devStringPattern.cap(DEVICE_1_GROUP).toInt(&err);
     int right_index = devStringPattern.cap(DEVICE_2_GROUP).toInt(&err);
 
-    captureLeft  = 0;
-    captureRight = 0;
+    captureLeft  = NULL;
+    captureRight = NULL;
 
     int id1 = left_index  + domain;
     int id2 = right_index + domain;
@@ -66,8 +66,7 @@ OpenCVCaptureInterface::OpenCVCaptureInterface(string _devname,  unsigned int mo
     SYNC_PRINT(("Calling second cvCaptureFromCAM(%d)\n", id1));
     captureRight = cvCaptureFromCAM(id2);
 
-
-    if (!captureLeft && !captureRight)
+    if (captureLeft == NULL && captureRight == NULL)
     {
         printf("Both cameras failed to initialize");
         fflush(stdout);
@@ -75,18 +74,17 @@ OpenCVCaptureInterface::OpenCVCaptureInterface(string _devname,  unsigned int mo
     }
 
     // We assume that if there is only one camera active, it is the left camera
-    if (!captureLeft && captureRight)
+    if (captureLeft == NULL && captureRight != NULL)
     {
         captureLeft  = captureRight;
-        captureRight = 0;
+        captureRight = NULL;
     }
 
     delay = devStringPattern.cap(DELAY_GROUP).toInt(&err);
     if (!err)
         delay = CAP_DEFAULT_DELAY;
 
-    current.bufferLeft  = new G12Buffer(800, 600, false);
-    current.bufferRight = new G12Buffer(800, 600, false);
+    current.allocateBuffers(800, 600);
 }
 
 void OpenCVCaptureInterface::SpinThread::run()
@@ -102,28 +100,24 @@ void OpenCVCaptureInterface::SpinThread::run()
         OpenCVCaptureInterface::FramePair *pair = &(mInterface->current);
 
         mInterface->protectFrame.lock();
-            delete pair->bufferLeft;
-            delete pair->bufferRight;
-            pair->bufferLeft  = new G12Buffer(height, width, false);
-            pair->bufferRight = new G12Buffer(height, width, false);
+            pair->allocateBuffers(height, width);
 
             // OpenCV does not set timestamps for the frames
-            pair->leftTimeStamp  = 0;
-            pair->rightTimeStamp = 0;
+            pair->timeStampLeft  = 0;
+            pair->timeStampRight = 0;
 
-            if (mInterface->captureLeft)
+            if (mInterface->captureLeft != NULL)
             {
                 OpenCvHelper::captureImageCopyToBuffer(mInterface->captureLeft, pair->bufferLeft);
             }
-
-            if (mInterface->captureRight)
+            if (mInterface->captureRight != NULL)
             {
                 OpenCvHelper::captureImageCopyToBuffer(mInterface->captureRight, pair->bufferRight);
             }
         mInterface->protectFrame.unlock();
 
         frame_data_t frameData;
-        frameData.timestamp = (pair->leftTimeStamp / 2) + (pair->rightTimeStamp / 2);
+        frameData.timestamp = pair->timeStamp();
         mInterface->notifyAboutNewFrame(frameData);
 
         /*
@@ -143,11 +137,7 @@ void OpenCVCaptureInterface::SpinThread::stop()
 OpenCVCaptureInterface::FramePair OpenCVCaptureInterface::getFrame()
 {
     protectFrame.lock();
-        FramePair result;
-        result.bufferLeft     = new G12Buffer(current.bufferLeft);
-        result.bufferRight    = new G12Buffer(current.bufferRight);
-        result.leftTimeStamp  = current.leftTimeStamp;
-        result.rightTimeStamp = current.rightTimeStamp;
+        FramePair result = current.clone();
     protectFrame.unlock();
     return result;
 }
@@ -199,14 +189,14 @@ ImageCaptureInterface::CapErrorCode OpenCVCaptureInterface::startCapture()
 
     if (captureLeft)
     {
-        retL = !cvSetCaptureProperty(captureLeft, CV_CAP_PROP_FRAME_WIDTH, 800);
-        // retL |= cvSetCaptureProperty(captureLeft, CV_CAP_PROP_FRAME_HEIGHT, 600);
+        retL = !cvSetCaptureProperty(captureLeft, CV_CAP_PROP_FRAME_WIDTH,  800);
+      //retL |= cvSetCaptureProperty(captureLeft, CV_CAP_PROP_FRAME_HEIGHT, 600);
     }
 
     if (captureRight)
     {
-        retR = !cvSetCaptureProperty(captureRight, CV_CAP_PROP_FRAME_WIDTH, 800);
-        //retR |= cvSetCaptureProperty(captureRight, CV_CAP_PROP_FRAME_HEIGHT, 600);
+        retR = !cvSetCaptureProperty(captureRight, CV_CAP_PROP_FRAME_WIDTH,  800);
+      //retR |= cvSetCaptureProperty(captureRight, CV_CAP_PROP_FRAME_HEIGHT, 600);
     }
 
     qDebug("Setting 800x600: retL == %d, retR == %d\n", retL, retR);
@@ -221,6 +211,6 @@ OpenCVCaptureInterface::~OpenCVCaptureInterface()
     spin.stop();
     spin.wait();
     cvReleaseCapture(&captureLeft);
-    if (captureRight)
+    if (captureRight != NULL)
         cvReleaseCapture(&captureRight);
 }

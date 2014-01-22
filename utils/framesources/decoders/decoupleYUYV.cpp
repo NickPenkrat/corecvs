@@ -15,8 +15,7 @@ void DecoupleYUYV::decouple(unsigned formatH, unsigned formatW, uint8_t *ptr, Im
 {
     if (coupling == ANAGLYPH_RC || coupling == ANAGLYPH_RC_FAST)
     {
-        result.bufferLeft  = new G12Buffer(formatH, formatW, false);
-        result.bufferRight = new G12Buffer(formatH, formatW, false);
+        result.allocateBuffers(formatH, formatW);
 
         for (unsigned i = 0; i < formatH; i++)
         {
@@ -76,7 +75,7 @@ void DecoupleYUYV::decouple(unsigned formatH, unsigned formatW, uint8_t *ptr, Im
             }
 #endif
 
-            for (; j < formatW; j+=2)
+            for (; j < formatW; j += 2)
             {
                 int y1 = ptr[0];
                 int u  = ptr[1];
@@ -116,8 +115,7 @@ void DecoupleYUYV::decouple(unsigned formatH, unsigned formatW, uint8_t *ptr, Im
     }
     else if (coupling == SIDEBYSIDE_STEREO)
     {
-        result.bufferLeft  = new G12Buffer(formatH, formatW / 2, false);
-        result.bufferRight = new G12Buffer(formatH, formatW / 2, false);
+        result.allocateBuffers(formatH, formatW / 2);
 
         for (unsigned i = 0; i < formatH; i++)
         {
@@ -136,8 +134,7 @@ void DecoupleYUYV::decouple(unsigned formatH, unsigned formatW, uint8_t *ptr, Im
     }
     else
     {
-        result.bufferLeft  = new G12Buffer(formatH / 2, formatW / 2, true);
-        result.bufferRight = new G12Buffer(formatH / 2, formatW / 2, true);
+        result.allocateBuffers(formatH / 2, formatW / 2, true); // shouldInit
 
         for (unsigned i = 0; i < formatH / 2; i++)
         {

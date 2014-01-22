@@ -52,7 +52,7 @@ void Frames::fetchNewFrames(ImageCaptureInterface *input)
  //   DOTRACE(("New frames arrived: left=0x8%X right=0x8%X\n", left, right));
 
     ImageCaptureInterface::FramePair pair = input->isRgb ? input->getFrameRGB24() : input->getFrame();
-    if (pair.bufferLeft == NULL || pair.bufferRight == NULL)
+    if (!pair.hasBoth())
     {
         printf("Alert: We have received one or zero frames\n");
         fflush(stdout);
@@ -80,9 +80,9 @@ void Frames::fetchNewFrames(ImageCaptureInterface *input)
         currentRgbFrames[RIGHT_FRAME] = NULL;
     }
 
-    mTimestamp  = (pair.leftTimeStamp / 2) + (pair.rightTimeStamp / 2);
+    mTimestamp  = pair.timeStamp();
 
-    mDesyncTime = !mSwapped ? (pair.leftTimeStamp - pair.rightTimeStamp) : (pair.rightTimeStamp - pair.leftTimeStamp);
+    mDesyncTime = !mSwapped ? pair.diffTimeStamps() : -pair.diffTimeStamps();
     frameCount++;
 }
 
