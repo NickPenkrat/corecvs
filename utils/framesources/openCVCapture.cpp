@@ -102,9 +102,7 @@ void OpenCVCaptureInterface::SpinThread::run()
         mInterface->protectFrame.lock();
             pair->allocateBuffers(height, width);
 
-            // OpenCV does not set timestamps for the frames
-            pair->timeStampLeft  = 0;
-            pair->timeStampRight = 0;
+            pair->timeStampLeft = pair->timeStampRight = 0; // OpenCV does not set timestamps for the frames
 
             if (mInterface->captureLeft != NULL)
             {
@@ -142,7 +140,7 @@ OpenCVCaptureInterface::FramePair OpenCVCaptureInterface::getFrame()
     return result;
 }
 
-ImageCaptureInterface::CapErrorCode OpenCVCaptureInterface::setCaptureProperty(int id, int value )
+ImageCaptureInterface::CapErrorCode OpenCVCaptureInterface::setCaptureProperty(int id, int value)
 {
     CORE_UNUSED(id);
     CORE_UNUSED(value);
@@ -211,6 +209,7 @@ OpenCVCaptureInterface::~OpenCVCaptureInterface()
     spin.stop();
     spin.wait();
     cvReleaseCapture(&captureLeft);
-    if (captureRight != NULL)
+    if (captureRight != NULL) {
         cvReleaseCapture(&captureRight);
+    }
 }

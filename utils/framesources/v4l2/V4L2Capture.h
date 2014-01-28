@@ -1,3 +1,4 @@
+#pragma once
 /**
  * \file V4L2Capture.h
  * \brief Add Comment Here
@@ -5,9 +6,6 @@
  * \date Apr 9, 2010
  * \author alexander
  */
-
-#pragma once
-
 #include <QtCore/QThread>
 #include <QtCore/QMutex>
 #include <string>
@@ -24,7 +22,6 @@
 #include "../../frames.h"
 
 using namespace std;
-
 
 
 class V4L2CaptureInterface : public ImageCaptureInterface
@@ -74,10 +71,10 @@ private:
     class SpinThread : public QThread
     {
     public:
-        V4L2CaptureInterface *interface;
+        V4L2CaptureInterface *mInterface;
 
-        SpinThread(V4L2CaptureInterface *_interface) :
-            interface(_interface)
+        SpinThread(V4L2CaptureInterface *interface) :
+            mInterface(interface)
         {}
 
         virtual void run (void);
