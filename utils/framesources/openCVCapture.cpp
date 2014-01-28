@@ -84,7 +84,7 @@ OpenCVCaptureInterface::OpenCVCaptureInterface(string _devname,  unsigned int mo
     if (!err)
         delay = CAP_DEFAULT_DELAY;
 
-    current.allocateBuffers(800, 600);
+    current.allocBuffers(800, 600);
 }
 
 void OpenCVCaptureInterface::SpinThread::run()
@@ -100,7 +100,7 @@ void OpenCVCaptureInterface::SpinThread::run()
         OpenCVCaptureInterface::FramePair *pair = &(mInterface->current);
 
         mInterface->protectFrame.lock();
-            pair->allocateBuffers(height, width);
+            pair->allocBuffers(height, width);
 
             pair->timeStampLeft = pair->timeStampRight = 0; // OpenCV does not set timestamps for the frames
 

@@ -55,11 +55,8 @@ bool OpenCvFileCapture::SpinThread::grabFramePair()
     uint width  = mCapture.get(CV_CAP_PROP_FRAME_WIDTH);
     uint height = mCapture.get(CV_CAP_PROP_FRAME_HEIGHT);
 
-    delete mFramePair.bufferLeft;
-    delete mFramePair.bufferRight;
-
+    mFramePair.freeBuffers();
     mFramePair.bufferLeft = new G12Buffer(height, width, false);
-    mFramePair.bufferRight = NULL;
 
     // OpenCV does not set timestamps for the frames
     mFramePair.timeStampLeft  = 0;

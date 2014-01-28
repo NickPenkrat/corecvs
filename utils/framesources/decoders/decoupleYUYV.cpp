@@ -15,7 +15,7 @@ void DecoupleYUYV::decouple(unsigned formatH, unsigned formatW, uint8_t *ptr, Im
 {
     if (coupling == ANAGLYPH_RC || coupling == ANAGLYPH_RC_FAST)
     {
-        result.allocateBuffers(formatH, formatW);
+        result.allocBuffers(formatH, formatW);
 
         for (unsigned i = 0; i < formatH; i++)
         {
@@ -115,7 +115,7 @@ void DecoupleYUYV::decouple(unsigned formatH, unsigned formatW, uint8_t *ptr, Im
     }
     else if (coupling == SIDEBYSIDE_STEREO)
     {
-        result.allocateBuffers(formatH, formatW / 2);
+        result.allocBuffers(formatH, formatW / 2);
 
         for (unsigned i = 0; i < formatH; i++)
         {
@@ -134,7 +134,7 @@ void DecoupleYUYV::decouple(unsigned formatH, unsigned formatW, uint8_t *ptr, Im
     }
     else
     {
-        result.allocateBuffers(formatH / 2, formatW / 2, true); // shouldInit
+        result.allocBuffers(formatH / 2, formatW / 2, true); // shouldInit
 
         for (unsigned i = 0; i < formatH / 2; i++)
         {

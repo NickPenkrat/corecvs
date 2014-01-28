@@ -48,8 +48,7 @@ FileCaptureInterface::FramePair FileCaptureInterface::getFrame()
 
     if (!result.hasBoth())
     {
-        delete result.bufferLeft;
-        delete result.bufferRight;
+        result.freeBuffers();
 
         if (mVerbose) {
             printf("File not found, resetting to first image in the sequence.\n");

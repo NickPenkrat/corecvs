@@ -53,13 +53,13 @@ using namespace std;
     SpinThread spin;
     FramePair  current;
     QMutex     protectFrame;
+    CvCapture *captureLeft, *captureRight;
 
     /**
      * Delay to sleep before querying OpenCV for a new frame in milliseconds
      */
     unsigned int delay;
 
-    CvCapture *captureLeft, *captureRight;
 
     OpenCVCaptureInterface(string _devname, unsigned int mode);
 

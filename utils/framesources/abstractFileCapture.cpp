@@ -80,7 +80,6 @@ ImageCaptureInterface::CapErrorCode AbstractFileCapture::setCaptureProperty(int 
     return ImageCaptureInterface::FAILURE;
 }
 
-
 ImageCaptureInterface::CapErrorCode AbstractFileCapture::initCapture()
 {
     return ImageCaptureInterface::SUCCESS;

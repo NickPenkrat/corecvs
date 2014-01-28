@@ -134,13 +134,18 @@ public:
             , timeStampRight(0)
         {}
 
-        bool allocateBuffers(uint height, uint width, bool shouldInit = false)
+        bool allocBuffers(uint height, uint width, bool shouldInit = false)
         {
-            if (bufferLeft  != NULL) delete bufferLeft;
-            if (bufferRight != NULL) delete bufferRight;
+            freeBuffers();
             bufferLeft  = new G12Buffer(height, width, shouldInit);
             bufferRight = new G12Buffer(height, width, shouldInit);
             return hasBoth() && bufferLeft->isAllocated() && bufferRight->isAllocated();
+        }
+
+        void freeBuffers()
+        {
+            if (bufferLeft  != NULL) delete_safe(bufferLeft);
+            if (bufferRight != NULL) delete_safe(bufferRight);
         }
 
         FramePair clone() const
