@@ -157,11 +157,12 @@ gcc48_toolchain {
      QMAKE_CXXFLAGS_RELEASE += -flto
      QMAKE_LFLAGS += -flto
   }
-  gcc_checker {
+}
+
+gcc_checker {
      QMAKE_CFLAGS += -fsanitize=address -fno-omit-frame-pointer
      QMAKE_CXXFLAGS += -fsanitize=address -fno-omit-frame-pointer
      QMAKE_LFLAGS += -fsanitize=address -fno-omit-frame-pointer
-  }
 }
 
 

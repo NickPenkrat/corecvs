@@ -819,7 +819,7 @@ G8Buffer* RGB24Buffer::getChannel(ChannelID channel)
     {
         for (int j = 0; j < result->w; j++)
         {
-            uint8_t pixel;
+            uint8_t pixel = 0;
             switch (channel)
             {
                 case CHANNEL_R:
