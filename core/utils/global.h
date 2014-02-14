@@ -55,10 +55,11 @@ typedef int                bool_t;                          // fast Boolean type
 #endif
 
 #ifdef WIN32
-#   define strdup     _strdup
-#   define strcasecmp _stricmp
+#   define strdup       _strdup
+#   define strcasecmp   _stricmp
 #   ifdef _MSC_VER
-#    define snprintf sprintf_s
+#    define snprintf    sprintf_s
+#    define putenv      _putenv
 #   endif
 #endif
 
@@ -204,6 +205,14 @@ void setSegVHandler();
     } //     extern "C"
 #endif
 
+/** Useful macros for best compatibility with using development environments
+ */
+#if defined(WIN32) && _MSC_VER > 1200  // VS > 6.0
+# define USE_SAFE_RUNTIME_FUNCS                     // comment this to use old RT-funcs for VS > 6.0
+#else
+# undef  USE_SAFE_RUNTIME_FUNCS                     // non Windows platforms or old VS compiler
+#endif
+
 #ifdef is__cplusplus
 
 /** Useful safe functions for string formatting */
@@ -215,11 +224,21 @@ inline int snprintf2buf(char (&d)[size], cchar* fmt, ...)
 {
     va_list  varList;
     va_start(varList, fmt);
+#ifdef USE_SAFE_RUNTIME_FUNCS
+    int iLen = vsnprintf_s((char*)d, size, size - 1, fmt, varList);
+#else
     int iLen = vsnprintf((char*)d, size, fmt, varList);
+#endif
     va_end(varList);
     ASSERT_TRUE_S(iLen < (int)size);
     return iLen;
 }
+
+#ifdef USE_SAFE_RUNTIME_FUNCS
+# define CORE_FOPEN(pFile, sName, sMode)    (fopen_s(&(pFile), (sName), (sMode)) ? ((pFile) = NULL, 0) : (1))
+#else
+# define CORE_FOPEN(pFile, sName, sMode)    (((pFile) = fopen((sName), (sMode))) != NULL ? (1) : (0))
+#endif
 
 /** Function for safe deleting objects and arrays */
 #include <stdlib.h>
@@ -228,22 +247,27 @@ template<typename Type>
 inline void delete_safe (Type * &ptr)
 {
     delete ptr;
-    ptr = NULL;
+    ptr = (Type *)(uintptr_t(NULL) - 1);		/* We are not hiding our mistakes by zeroing the pointer */
+  //ptr = NULL;
 }
 
 template<typename Type>
 inline void deletearr_safe (Type * &ptr)
 {
     delete[] ptr;
-    ptr = NULL;
+    ptr = (Type *)(uintptr_t(NULL) - 1);		/* We are not hiding our mistakes by zeroing the pointer */
+  //ptr = NULL;
 }
 
 /** Compatibility with old STL library versions without data() method of the vector object */
 #if defined(_MSC_VER) && _MSC_VER <= 1500
-# define GET_VEC_DATA_PTR(vec)  &(vec[0])
+# define VEC_DATA_PTR(vec)      &(vec[0])
 #else
-# define GET_VEC_DATA_PTR(vec)  vec.data()
+# define VEC_DATA_PTR(vec)      vec.data()
 #endif
+
+#  define QSTR_DATA_PTR(qstring) (qstring).toLatin1().data()
+//#define QSTR_DATA_PTR(qstring) (qstring).toStdString().c_str()
 
 #endif // is__cplusplus
 
