@@ -125,11 +125,14 @@ public:
         uint64_t     timeStampLeft;
         uint64_t     timeStampRight;
 
-        FramePair(G12Buffer* bufferLeft = NULL, G12Buffer* bufferRight = NULL)
-            : bufferLeft (bufferLeft )
-            , bufferRight(bufferRight)
-            , rgbBufferLeft(NULL)
-            , rgbBufferRight(NULL)
+        FramePair(G12Buffer   *_bufferLeft     = NULL
+                , G12Buffer   *_bufferRight    = NULL
+                , RGB24Buffer *_rgbBufferLeft  = NULL
+                , RGB24Buffer *_rgbBufferRight = NULL)
+            : bufferLeft (_bufferLeft )
+            , bufferRight(_bufferRight)
+            , rgbBufferLeft(_rgbBufferLeft)
+            , rgbBufferRight(_rgbBufferRight)
             , timeStampLeft(0)
             , timeStampRight(0)
         {}
