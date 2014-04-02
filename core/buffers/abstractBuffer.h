@@ -78,9 +78,8 @@ class DeformMap
 {
 public:
 
-    typedef Vector2d<InputIndexType> InputPoint;
+    typedef Vector2d<InputIndexType>   InputPoint;
     typedef Vector2d<OutputIndexType> OutputPoint;
-
 
     inline OutputPoint map(const InputIndexType & /*y*/, const InputIndexType & /*x*/) {}
 

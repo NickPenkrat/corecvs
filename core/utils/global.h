@@ -247,16 +247,16 @@ template<typename Type>
 inline void delete_safe (Type * &ptr)
 {
     delete ptr;
-    ptr = (Type *)(uintptr_t(NULL) - 1);		/* We are not hiding our mistakes by zeroing the pointer */
-  //ptr = NULL;
+  //ptr = (Type *)(uintptr_t(NULL) - 1);		/* We are not hiding our mistakes by zeroing the pointer */
+    ptr = NULL;
 }
 
 template<typename Type>
 inline void deletearr_safe (Type * &ptr)
 {
     delete[] ptr;
-    ptr = (Type *)(uintptr_t(NULL) - 1);		/* We are not hiding our mistakes by zeroing the pointer */
-  //ptr = NULL;
+  //ptr = (Type *)(uintptr_t(NULL) - 1);		/* We are not hiding our mistakes by zeroing the pointer */
+    ptr = NULL;
 }
 
 /** Compatibility with old STL library versions without data() method of the vector object */
@@ -266,8 +266,12 @@ inline void deletearr_safe (Type * &ptr)
 # define VEC_DATA_PTR(vec)      vec.data()
 #endif
 
-#  define QSTR_DATA_PTR(qstring) (qstring).toLatin1().data()
-//#define QSTR_DATA_PTR(qstring) (qstring).toStdString().c_str()
+//#define QSTR_DATA_PTR(qstring)        (qstring).toLatin1().data()
+#define   QSTR_DATA_PTR(qstring)        (qstring).toStdString().c_str()  // after using textCodecs we should use this
+
+#define   QSTR_HAS_LAST_SLASH(qstring)  (qstring.length() > 1 && \
+                                          (qstring[qstring.length() - 1] == '/' || \
+                                           qstring[qstring.length() - 1] == '\\'))
 
 #endif // is__cplusplus
 
