@@ -87,7 +87,9 @@ void BaseHostDialog::init(QWidget *parameterHolderWidget, QTextEdit * /*loggerWi
 
     initGraphPresentation();
 
-    loadTransformFromFile(savePath);
+    SettingsGetter visitor(ConfigManager::camConfigName(), UI_NAME_BASE_DIALOG);
+    mRectifierData.accept<SettingsGetter>(visitor);
+//    loadTransformFromFile(savePath);
 }
 
 void BaseHostDialog::initGraphPresentation()
