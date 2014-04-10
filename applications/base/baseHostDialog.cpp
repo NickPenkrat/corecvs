@@ -844,7 +844,7 @@ void BaseHostDialog::saveParams(const QString &fileName, QString root)
 
     for (unsigned i = 0; i < mSaveableCameraWidgets.size(); i++)
     {
-        mSaveableWidgets[i]->loadFromQSettings(ConfigManager::camConfigName(), root);
+        mSaveableWidgets[i]->saveToQSettings(ConfigManager::camConfigName(), root);
     }
 
 }
