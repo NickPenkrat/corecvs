@@ -85,4 +85,64 @@ template<class BufferType>
 };
 
 
+template<class BufferType>
+ImageResultLayer::ImageResultLayer(
+        OutputStyle::OutputStyle style,
+        BufferType* images[Frames::MAX_INPUTS_NUMBER],
+        bool showLeftFrame
+)
+: ResultLayerBase(ResultLayerBase::LAYER_IMAGE)
+, mStyle(style)
+, mShowLeftFrame(showLeftFrame)
+{
+    for (int id = 0; id < Frames::MAX_INPUTS_NUMBER; id++ )
+    {
+        mImages[id] = NULL;
+    }
+
+    int selectedFrameId = showLeftFrame ? Frames::LEFT_FRAME : Frames::RIGHT_FRAME;
+
+    switch (mStyle)
+    {
+        case OutputStyle::OUTPUT_STYLE_LAST:
+        case OutputStyle::NONE:
+            break;
+
+        case OutputStyle::ANAGLYPH_RC:
+        case OutputStyle::ANAGLYPH_RG:
+        case OutputStyle::SIDEBYSIDE_STEREO:
+        case OutputStyle::BLEND:
+            for (int id = 0; id < Frames::MAX_INPUTS_NUMBER; id++ )
+            {
+                if (images[id] == NULL) {
+                    continue;
+                }
+                mImages[id] = toQImage(images[id]);
+            }
+            break;
+
+        case OutputStyle::STANDART_OUTPUT:
+            if (images[selectedFrameId] != NULL)
+            {
+                mImages[selectedFrameId] = toQImage(images[selectedFrameId]);
+            }
+            break;
+    }
+}
+
+#if 0
+/* Instaniate two specifications of the template*/
+template
+ImageResultLayer::ImageResultLayer<corecvs::G12Buffer>(
+        OutputStyle::OutputStyle style,
+        corecvs::G12Buffer* images[Frames::MAX_INPUTS_NUMBER],
+        bool showLeftFrame);
+
+template
+ImageResultLayer::ImageResultLayer<corecvs::RGB24Buffer>(
+        OutputStyle::OutputStyle style,
+        corecvs::RGB24Buffer* images[Frames::MAX_INPUTS_NUMBER],
+        bool showLeftFrame);
+#endif
+
 /* EOF */
