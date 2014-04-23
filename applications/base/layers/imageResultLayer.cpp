@@ -7,9 +7,10 @@
 
 #include "imageResultLayer.h"
 
+template<class BufferType>
 ImageResultLayer::ImageResultLayer(
         OutputStyle::OutputStyle style,
-        G12Buffer* images[Frames::MAX_INPUTS_NUMBER],
+        BufferType* images[Frames::MAX_INPUTS_NUMBER],
         bool showLeftFrame
 )
 : ResultLayerBase(ResultLayerBase::LAYER_IMAGE)
@@ -38,18 +39,32 @@ ImageResultLayer::ImageResultLayer(
                 if (images[id] == NULL) {
                     continue;
                 }
-                mImages[id] = new G12Image(images[id]);
+                mImages[id] = toQImage(images[id]);
             }
             break;
 
         case OutputStyle::STANDART_OUTPUT:
             if (images[selectedFrameId] != NULL)
             {
-                mImages[selectedFrameId] = new G12Image(images[selectedFrameId]);
+                mImages[selectedFrameId] = toQImage(images[selectedFrameId]);
             }
             break;
     }
 }
+
+/* Instaniate two specifications of the template*/
+template
+ImageResultLayer::ImageResultLayer<corecvs::G12Buffer>(
+        OutputStyle::OutputStyle style,
+        corecvs::G12Buffer* images[Frames::MAX_INPUTS_NUMBER],
+        bool showLeftFrame);
+
+template
+ImageResultLayer::ImageResultLayer<corecvs::RGB24Buffer>(
+        OutputStyle::OutputStyle style,
+        corecvs::RGB24Buffer* images[Frames::MAX_INPUTS_NUMBER],
+        bool showLeftFrame);
+
 
 ImageResultLayer::ImageResultLayer(
     G12Buffer* image

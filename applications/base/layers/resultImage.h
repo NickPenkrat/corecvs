@@ -33,6 +33,7 @@ public:
     }
 
     virtual void drawImage    (QImage * /*image*/) {}
+    virtual void print() const  { printf("No info\n"); }
     virtual int  modifyWidth  (int width)  { return width;  }
     virtual int  modifyHeight (int height) { return height; }
 
@@ -151,12 +152,13 @@ public:
 
     void setWidth(int width)   { mWidth = width;   }
 
-    void print ()
+    void print () const
     {
     	printf("Result Image: %d layers", layerNum());
     	for (unsigned i = 0; i < layerNum(); i++)
     	{
         	printf("  %s\n", ResultLayerBase::LAYER_TYPE_NAMES[layer(i)->getType()]);
+        	layer(i)->print();
     	}
     }
 

@@ -115,6 +115,19 @@ RGB24Image::~RGB24Image() {
     // \todo TODO Auto-generated destructor stub
 }
 
+QImage *toQImage(G12Buffer *buffer) {
+    return new G12Image(buffer);
+}
+
+QImage *toQImage(G8Buffer *buffer) {
+    return new G8Image(buffer);
+}
+
+QImage *toQImage(RGB24Buffer *buffer) {
+    return new RGB24Image(buffer);
+}
+
+
 RGB24InterfaceImage::RGB24InterfaceImage(RGB24Buffer *buffer) : QImage((uchar *)buffer->data, buffer->w, buffer->h, QImage::Format_RGB32)
 {
 

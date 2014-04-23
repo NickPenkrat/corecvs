@@ -73,14 +73,17 @@ int V4L2CaptureInterface::setConfigurationString(string _devname)
         "  | - Device 2=%s\n"
         "  | - FPS %s/%s\n"
         "  | - Size [%sx%s]\n"
-        "  \\ - Compressing: %s\n",
+        "  \\ - Compressing: %s\n"
+        "RGB decoding is %s",
         deviceStringPattern.cap(Device1Group) .toAscii().constData(),
         deviceStringPattern.cap(Device2Group) .toAscii().constData(),
         deviceStringPattern.cap(FpsNumGroup)  .toAscii().constData(),
         deviceStringPattern.cap(FpsDenumGroup).toAscii().constData(),
         deviceStringPattern.cap(WidthGroup)   .toAscii().constData(),
         deviceStringPattern.cap(HeightGroup)  .toAscii().constData(),
-        deviceStringPattern.cap(CompressionGroup).toAscii().constData());
+        deviceStringPattern.cap(CompressionGroup).toAscii().constData(),
+        isRgb ? "on" : "off"
+    );
 
     deviceName[Frames::RIGHT_FRAME] = deviceStringPattern.cap(Device1Group).toAscii().constData();
     deviceName[Frames::LEFT_FRAME ] = deviceStringPattern.cap(Device2Group).toAscii().constData();

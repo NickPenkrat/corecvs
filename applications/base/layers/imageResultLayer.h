@@ -25,11 +25,19 @@ class ImageResultLayer : public ResultLayerBase
     bool mShowLeftFrame;
 
 public:
+
+template<class BufferType>
     ImageResultLayer(
         OutputStyle::OutputStyle style,
-        G12Buffer* images[Frames::MAX_INPUTS_NUMBER],
+        BufferType* images[Frames::MAX_INPUTS_NUMBER],
         bool showLeftFrame = false
     );
+
+/*    ImageResultLayer(
+        OutputStyle::OutputStyle style,
+        RGB24Buffer* images[Frames::MAX_INPUTS_NUMBER],
+        bool showLeftFrame = false
+    );*/
 
     ImageResultLayer(
         G12Buffer* image
@@ -61,6 +69,18 @@ public:
 
     QImage* getImage(const int id) const {
         return mImages[id];
+    }
+
+    virtual void print() const {
+        for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
+        {
+            printf("Image %d: ", i);
+            if (mImages[i] == NULL) {
+                printf(" NULL\n");
+                continue;
+            }
+            printf("[%dx%d]\n", mImages[i]->height(), mImages[i]->width());
+        }
     }
 };
 
