@@ -42,5 +42,7 @@ RGBColor RGBColor::rainbow(double x)
 }
 
 
+
+
 } //namespace corecvs
 

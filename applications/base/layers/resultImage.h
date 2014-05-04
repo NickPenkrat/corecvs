@@ -49,19 +49,19 @@ private:
 };
 
 
-
+#if 0
 class ResultLayerStereo : public ResultLayerBase {
-    ResultLayerStereo() : ResultLayerBase(ResultLayerBase::LAYER_STEREO) {}
+    static const ResultLayerType LAYER_CLASS_ID = ResultLayerBase::LAYER_STEREO;
+    ResultLayerStereo() : ResultLayerBase(LAYER_CLASS_ID) {}
 
 
 };
 
 class ResultLayerFlow : public ResultLayerBase {
-    ResultLayerFlow() : ResultLayerBase(ResultLayerBase::LAYER_FLOW) {}
-
-
+    static const ResultLayerType LAYER_CLASS_ID = ResultLayerBase::LAYER_FLOW;
+    ResultLayerFlow() : ResultLayerBase(LAYER_CLASS_ID) {}
 };
-
+#endif
 
 
 class ResultImage
@@ -87,8 +87,11 @@ public:
 
     void drawImage (QImage *image)
     {
-        if (image == NULL)
+//        qDebug("ResultImage::drawImage (QImage *): called");
+
+        if (image == NULL) {
             return;
+        }
 
         for (unsigned i = 0; i < mLayers.size(); i++)
         {
@@ -111,6 +114,27 @@ public:
     {
     	return mLayers[number];
     }
+
+    template<class LayerClass>
+    const LayerClass *layerByType(unsigned number = 0) const
+    {
+        for (unsigned i = 0; i < layerNum(); i++)
+        {
+            const ResultLayerBase *layer = mLayers[i];
+            if (layer == NULL || layer->getType() != LayerClass::LAYER_CLASS_ID)
+            {
+                continue;
+            }
+
+            if (number == 0) {
+                return static_cast<const LayerClass *>(layer);
+            } else {
+                number --;
+            }
+        }
+        return NULL;
+    }
+
 
     void addLayer(ResultLayerBase *layer)
     {

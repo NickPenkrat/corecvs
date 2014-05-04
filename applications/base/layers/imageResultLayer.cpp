@@ -10,7 +10,7 @@
 
 ImageResultLayer::ImageResultLayer(
     G12Buffer* image
-) : ResultLayerBase(ResultLayerBase::LAYER_IMAGE)
+) : ResultLayerBase(LAYER_CLASS_ID)
 , mStyle(OutputStyle::STANDART_OUTPUT)
 , mShowLeftFrame(false)
 {
@@ -19,18 +19,28 @@ ImageResultLayer::ImageResultLayer(
         mImages[id] = NULL;
     }
 
+    if (image == NULL) {
+        qDebug("ImageResultLayer::ImageResultLayer( G12Buffer* NULL) : Called with null input");
+        return;
+    }
+
     mImages[Frames::RIGHT_FRAME] = new G12Image(image);
 }
 
 ImageResultLayer::ImageResultLayer(
     RGB24Buffer* image
-) : ResultLayerBase(ResultLayerBase::LAYER_IMAGE)
+) : ResultLayerBase(LAYER_CLASS_ID)
 , mStyle(OutputStyle::STANDART_OUTPUT)
 , mShowLeftFrame(false)
 {
     for (int id = 0; id < Frames::MAX_INPUTS_NUMBER; id++ )
     {
         mImages[id] = NULL;
+    }
+
+    if (image == NULL) {
+        qDebug("ImageResultLayer::ImageResultLayer( RGB24Buffer* NULL) : Called with null input");
+        return;
     }
 
     mImages[Frames::RIGHT_FRAME] = new RGB24Image(image);
@@ -47,11 +57,15 @@ ImageResultLayer::~ImageResultLayer()
 
 void ImageResultLayer::drawImage (QImage *image)
 {
-    if (image == NULL)
+//    qDebug("ImageResultLayer::drawImage (QImage *): called");
+
+    if (image == NULL) {
         return;
+    }
 
     QPainter painter(image);
 
+//    qDebug("ImageResultLayer::drawImage (): style: %s", OutputStyle::getName(mStyle));
     switch (mStyle)
     {
         case OutputStyle::OUTPUT_STYLE_LAST:
@@ -92,8 +106,11 @@ void ImageResultLayer::drawImage (QImage *image)
 
         case OutputStyle::STANDART_OUTPUT:
             int selectedFrameId = mShowLeftFrame ? Frames::LEFT_FRAME : Frames::RIGHT_FRAME;
-            if (mImages[selectedFrameId] != NULL)
+            if (mImages[selectedFrameId] != NULL) {
                 painter.drawImage(QPoint(0,0), *(mImages[selectedFrameId]));
+            } else {
+                qDebug("ImageResultLayer::drawImage (): %d image is NULL", selectedFrameId);
+            }
             break;
     }
 

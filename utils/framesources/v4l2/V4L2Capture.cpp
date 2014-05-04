@@ -20,7 +20,7 @@
 
 #include <QtCore/QRegExp>
 #include <QtCore/QString>
-#include <QtCore/QtCore>
+#include <QtCore/QtCore>lk
 
 #include "global.h"
 
@@ -122,6 +122,8 @@ int V4L2CaptureInterface::setConfigurationString(string _devname)
 
 V4L2CaptureInterface::FramePair V4L2CaptureInterface::getFrame()
 {
+
+    SYNC_PRINT(("V4L2CaptureInterface::getFrame(): called\n"));
     CaptureStatistics  stats;
 
     PreciseTimer start = PreciseTimer::currentTime();
@@ -136,12 +138,12 @@ V4L2CaptureInterface::FramePair V4L2CaptureInterface::getFrame()
     result.rgbBufferRight = NULL;
     result.rgbBufferLeft = NULL;
 
-    for (int i=0; i < Frames::MAX_INPUTS_NUMBER; i++)
+    for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
     {
         decodeData(&camera[i],  &currentFrame[i],  results[i]);
 
         if ((*results[i]) == NULL) {
-            printf("V4L2CaptureInterface::getFrame(): Precrash condition\n");
+            SYNC_PRINT(("V4L2CaptureInterface::getFrame(): Precrash condition\n"));
         }
     }
 
@@ -245,6 +247,8 @@ void V4L2CaptureInterface::SpinThread::run()
         /* If we have only one camera, we assume this is the left camera */
         if (right->deviceHandle != V4L2CameraDescriptor::INVALID_HANDLE) {
             right->dequeue(newBufferRight);
+        } else {
+           // SYNC_PRINT(("V4L2CaptureInterface::SpinThread::run(): No right cam, not waiting or the new frame\n"));
         }
 
         uint64_t leftStamp = newBufferLeft.usecsTimeStamp();
@@ -334,9 +338,12 @@ void V4L2CaptureInterface::decodeData(V4L2CameraDescriptor *camera, V4L2BufferDe
 {
     if (!buffer->isFilled)
     {
+        SYNC_PRINT(("V4L2CaptureInterface::decodeData(): Buffer is not filled. Returning empty\n"));
         *output = new G12Buffer(formatH, formatW);
         return;
     }
+
+    SYNC_PRINT(("V4L2CaptureInterface::decodeData(): Decoding buffer\n"));
 
     uint8_t *ptrL = (uint8_t*)(camera->buffers[buffer->index].start);
     switch(decoder)
@@ -454,14 +461,17 @@ ImageCaptureInterface::CapErrorCode V4L2CaptureInterface::initCapture()
     frameDelay = 0;
     shouldStopSpinThread = false;
 
-    int result[Frames::MAX_INPUTS_NUMBER];
+    bool initOk[Frames::MAX_INPUTS_NUMBER];
 
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++) {
-        result[i] = 0;
-        if (!deviceName[i].empty()) {
-            result[i] |= !!(camera[i].initCamera(deviceName[i], cameraMode));
-            result[i] |= !!(camera[i].initBuffers());
-        }
+        initOk[i] = false;
+        do {
+            if (deviceName[i].empty()) break;
+            if (camera[i].initCamera(deviceName[i], cameraMode)) break;
+            if (camera[i].initBuffers()) break;
+            initOk[i] = true;
+        } while (0);
+
 
         if (formatH == 0) {
             formatH = camera[i].formatH;
@@ -475,7 +485,7 @@ ImageCaptureInterface::CapErrorCode V4L2CaptureInterface::initCapture()
     }
 
     /* If only one camera started, we assume it is the left camera */
-    if ((result[Frames::LEFT_FRAME] == 0) && (result[Frames::RIGHT_FRAME] != 0))
+    if ((!initOk[Frames::LEFT_FRAME]) && (initOk[Frames::RIGHT_FRAME]))
     {
         V4L2CameraDescriptor tmp;
         tmp = camera[Frames::LEFT_FRAME];
@@ -483,7 +493,7 @@ ImageCaptureInterface::CapErrorCode V4L2CaptureInterface::initCapture()
         camera[Frames::RIGHT_FRAME] = tmp;
     }
 
-    return (CapErrorCode) ((bool) result[Frames::LEFT_FRAME] + (bool) result[Frames::RIGHT_FRAME]);
+    return (CapErrorCode) (initOk[Frames::LEFT_FRAME] + initOk[Frames::RIGHT_FRAME]);
 }
 
 ImageCaptureInterface::CapErrorCode V4L2CaptureInterface::startCapture()

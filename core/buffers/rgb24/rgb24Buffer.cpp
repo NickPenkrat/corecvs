@@ -845,5 +845,6 @@ G8Buffer* RGB24Buffer::getChannel(ChannelID channel)
 }
 
 
+
 } //namespace corecvs
 

@@ -711,7 +711,7 @@ void AdvancedImageWidget::setInfoValueLabel(QString &infoString)
     mUi->infoValueLabel->setText(infoString);
 }
 
-void AdvancedImageWidget::loadFromQSettings(const QString &fileName, QString _root)
+void AdvancedImageWidget::loadFromQSettings(const QString &fileName, const QString &_root)
 {
     QSettings loader(fileName, QSettings::IniFormat);
     loader.beginGroup(_root + mRootPath);
@@ -723,7 +723,7 @@ void AdvancedImageWidget::loadFromQSettings(const QString &fileName, QString _ro
     mUi->expSpinBox         ->setValue  (loader.value("zoom", 1.0).toDouble());
 }
 
-void AdvancedImageWidget::saveToQSettings  (const QString &fileName, QString _root)
+void AdvancedImageWidget::saveToQSettings  (const QString &fileName, const QString &_root)
 {
     QSettings saver(fileName, QSettings::IniFormat);
     saver.beginGroup(_root + mRootPath);

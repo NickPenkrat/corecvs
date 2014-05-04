@@ -25,6 +25,8 @@ class ImageResultLayer : public ResultLayerBase
     bool mShowLeftFrame;
 
 public:
+    static const ResultLayerType LAYER_CLASS_ID = ResultLayerBase::LAYER_IMAGE;
+
 
 template<class BufferType>
     ImageResultLayer(
@@ -91,7 +93,7 @@ ImageResultLayer::ImageResultLayer(
         BufferType* images[Frames::MAX_INPUTS_NUMBER],
         bool showLeftFrame
 )
-: ResultLayerBase(ResultLayerBase::LAYER_IMAGE)
+: ResultLayerBase(LAYER_CLASS_ID)
 , mStyle(style)
 , mShowLeftFrame(showLeftFrame)
 {
