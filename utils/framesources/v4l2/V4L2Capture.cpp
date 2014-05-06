@@ -20,7 +20,7 @@
 
 #include <QtCore/QRegExp>
 #include <QtCore/QString>
-#include <QtCore/QtCore>lk
+#include <QtCore/QtCore>
 
 #include "global.h"
 
@@ -466,9 +466,20 @@ ImageCaptureInterface::CapErrorCode V4L2CaptureInterface::initCapture()
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++) {
         initOk[i] = false;
         do {
-            if (deviceName[i].empty()) break;
-            if (camera[i].initCamera(deviceName[i], cameraMode)) break;
-            if (camera[i].initBuffers()) break;
+            if (deviceName[i].empty()) {
+                SYNC_PRINT(("Device %d name is empty\n", i));
+                break;
+            }
+            if (camera[i].initCamera(deviceName[i], cameraMode))
+            {
+                SYNC_PRINT(("Initing device %s failed\n", deviceName[i].c_str()));
+                break;
+            }
+            if (camera[i].initBuffers()) {
+                SYNC_PRINT(("Initing buffers for device %s failed\n", deviceName[i].c_str()));
+                break;
+            }
+            SYNC_PRINT(("Device %d init sequence done\n", i));
             initOk[i] = true;
         } while (0);
 
@@ -487,13 +498,23 @@ ImageCaptureInterface::CapErrorCode V4L2CaptureInterface::initCapture()
     /* If only one camera started, we assume it is the left camera */
     if ((!initOk[Frames::LEFT_FRAME]) && (initOk[Frames::RIGHT_FRAME]))
     {
+        SYNC_PRINT(("Inited one camera, making it the first one\n"));
         V4L2CameraDescriptor tmp;
         tmp = camera[Frames::LEFT_FRAME];
         camera[Frames::LEFT_FRAME] = camera[Frames::RIGHT_FRAME];
         camera[Frames::RIGHT_FRAME] = tmp;
     }
 
-    return (CapErrorCode) (initOk[Frames::LEFT_FRAME] + initOk[Frames::RIGHT_FRAME]);
+    SYNC_PRINT(("Resume:\n"));
+    for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++) {
+        SYNC_PRINT(("Device %d (%s) init %s\n", i, deviceName[i].c_str(), initOk[i] ? "Ok" : "Fail"));
+    }
+
+    if (initOk[Frames::LEFT_FRAME] && initOk[Frames::RIGHT_FRAME])
+        return SUCCESS;
+    if (initOk[Frames::LEFT_FRAME] || initOk[Frames::RIGHT_FRAME])
+        return SUCCESS_1CAM;
+    return FAILURE;
 }
 
 ImageCaptureInterface::CapErrorCode V4L2CaptureInterface::startCapture()
