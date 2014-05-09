@@ -43,6 +43,9 @@ public:
     virtual ~RGB24Image();
 };
 
+QImage *toQImage(G12Buffer *buffer);
+QImage *toQImage(G8Buffer *buffer);
+QImage *toQImage(RGB24Buffer *buffer);
 
 class ImageWidget : public ViAreaWidget {
 public:
@@ -55,6 +58,7 @@ public:
 
     ~ImageWidget(){};
 };
+
 
 
 class RGB24InterfaceImage : public QImage{

@@ -140,9 +140,6 @@ int main (int argc, char **argv)
     scalers.y() = sqrt(maskPrincipal.mValues[1]) / sqrt(facePrincipal.mValues[1]);
     scalers.z() = sqrt(maskPrincipal.mValues[2]) / sqrt(facePrincipal.mValues[2]);
 
-
-
-
     /* Making correction for face */
     RGB24Buffer *faceCorr = new RGB24Buffer(face->getSize(), false);
     for (int i = 0; i < faceCorr->h; i++)
@@ -178,6 +175,40 @@ int main (int argc, char **argv)
            faceCorr->element(i,j) = newrgb;
        }
     }
+
+    /* With Matrix*/
+    Matrix33 scalerM    = Matrix33::Scale3(scalers);
+    Matrix33 toUnityM   = Matrix33::FromRows(facePrincipal.mAxes[0], facePrincipal.mAxes[1], facePrincipal.mAxes[2]);
+    Matrix33 fromUnityM = Matrix33::FromColumns(maskPrincipal.mAxes[0], maskPrincipal.mAxes[1], maskPrincipal.mAxes[2]);
+
+    Matrix33 transform = fromUnityM * scalerM * toUnityM;
+
+    RGB24Buffer *faceCorr2 = new RGB24Buffer(face->getSize(), false);
+    for (int i = 0; i < faceCorr2->h; i++)
+    {
+       for (int j = 0; j < faceCorr2->w; j++)
+       {
+           Vector3dd newColor = transform * (face->element(i,j).toDouble() - meanFace) + meanMask;
+           RGBColor newrgb;
+           double c;
+           c = newColor.x();
+           if (c <   0) c =   0;
+           if (c > 255) c = 255;
+           newrgb.r() = c;
+           c = newColor.y();
+           if (c <   0) c =   0;
+           if (c > 255) c = 255;
+           newrgb.g() = c;
+           c = newColor.z();
+           if (c <   0) c =   0;
+           if (c > 255) c = 255;
+           newrgb.b() = c;
+
+           faceCorr2->element(i,j) = newrgb;
+       }
+    }
+
+
     /* Without roots */
     scalers.x() = maskPrincipal.mValues[0] / facePrincipal.mValues[0];
     scalers.y() = maskPrincipal.mValues[1] / facePrincipal.mValues[1];
@@ -231,16 +262,24 @@ int main (int argc, char **argv)
 
 	RGB24Buffer *result1 = alphaBlend(mask, faceCorr, alpha);
 	BMPLoader().save("output2.bmp", result1);
-    RGB24Buffer *result2 = alphaBlend(mask, faceCorr1, alpha);
+
+	RGB24Buffer *result2 = alphaBlend(mask, faceCorr1, alpha);
     BMPLoader().save("output3.bmp", result2);
+
+    RGB24Buffer *result3 = alphaBlend(mask, faceCorr2, alpha);
+    BMPLoader().save("matrix-out.bmp", result3);
+
 
 	delete_safe(alpha);
     delete_safe(mask);
     delete_safe(face);
     delete_safe(faceCorr);
     delete_safe(faceCorr1);
+    delete_safe(faceCorr2);
+
     delete_safe(result);
     delete_safe(result1);
     delete_safe(result2);
-	return 0;
+    delete_safe(result3);
+    return 0;
 }
