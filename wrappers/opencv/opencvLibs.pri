@@ -60,7 +60,9 @@ with_opencv {
                     -llibopencv_core249 \
                     -llibopencv_highgui249 \
                     -llibopencv_features2d249 \
+                    -llibopencv_flann249 \
                     -llibopencv_legacy249 \
+                    -llibopencv_nonfree249 \
                     -llibopencv_imgproc249 \
                     -llibopencv_objdetect249
             } else {
