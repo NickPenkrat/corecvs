@@ -180,7 +180,7 @@ public:
 
     virtual void operator()(const double in[], double out[])
     {
-#ifdef WIN32
+#ifdef _MSC_VER
         double* tmpOut = new double[F->outputs];
 #else
         double tmpOut[F->outputs];
@@ -191,7 +191,7 @@ public:
             out[0] += tmpOut[i] * tmpOut[i];
         }
         out[0] = sqrt(out[0]);
-#ifdef WIN32
+#ifdef _MSC_VER
         delete[] tmpOut;
 #endif
     }
