@@ -42,8 +42,8 @@
   <widget class="QDockWidget" name="parametersWidget">
    <property name="minimumSize">
     <size>
-     <width>200</width>
-     <height>209</height>
+     <width>275</width>
+     <height>408</height>
     </size>
    </property>
    <property name="features">
@@ -57,7 +57,7 @@
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_2">
     <layout class="QGridLayout" name="gridLayout">
-     <item row="5" column="2">
+     <item row="7" column="2">
       <spacer name="verticalSpacer">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
@@ -70,8 +70,11 @@
        </property>
       </spacer>
      </item>
-     <item row="0" column="0" colspan="4">
+     <item row="1" column="0" colspan="4">
       <widget class="QComboBox" name="maskComboBox">
+       <property name="currentIndex">
+        <number>2</number>
+       </property>
        <item>
         <property name="text">
          <string>Hue Mask</string>
@@ -89,49 +92,49 @@
        </item>
       </widget>
      </item>
-     <item row="1" column="2">
+     <item row="2" column="2">
       <widget class="QSpinBox" name="hue1SpinBox">
        <property name="maximum">
         <number>360</number>
        </property>
       </widget>
      </item>
-     <item row="2" column="2">
+     <item row="3" column="2">
       <widget class="QSpinBox" name="hue2SpinBox">
        <property name="maximum">
         <number>360</number>
        </property>
       </widget>
      </item>
-     <item row="1" column="0" colspan="2">
+     <item row="2" column="0" colspan="2">
       <widget class="QLabel" name="label">
        <property name="text">
         <string>Hue 1</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="0" colspan="2">
+     <item row="3" column="0" colspan="2">
       <widget class="QLabel" name="label_2">
        <property name="text">
         <string>Hue 2</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="0" colspan="4">
+     <item row="4" column="0" colspan="4">
       <widget class="Line" name="line">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
       </widget>
      </item>
-     <item row="4" column="0">
+     <item row="5" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
         <string>Tollerance</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="2">
+     <item row="5" column="2">
       <widget class="QSpinBox" name="toleranceSpinBox">
        <property name="maximum">
         <number>900</number>
@@ -139,6 +142,113 @@
        <property name="value">
         <number>30</number>
        </property>
+      </widget>
+     </item>
+     <item row="0" column="0" colspan="4">
+      <widget class="QGroupBox" name="groupBox">
+       <property name="title">
+        <string>Presentation</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_2">
+        <property name="margin">
+         <number>3</number>
+        </property>
+        <item row="0" column="1">
+         <widget class="RgbColorParametersControlWidget" name="maskColorWidget" native="true"/>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>Mask Color</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QCheckBox" name="showEdgeCheckBox">
+          <property name="text">
+           <string>Show Edge</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_8">
+          <property name="text">
+           <string>Alpha</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QSpinBox" name="maskAlphaSpinBox">
+          <property name="suffix">
+           <string>%</string>
+          </property>
+          <property name="maximum">
+           <number>100</number>
+          </property>
+          <property name="value">
+           <number>50</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item row="6" column="0" colspan="4">
+      <widget class="QGroupBox" name="groupBox_2">
+       <property name="title">
+        <string>Postprocess</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_3">
+        <property name="margin">
+         <number>3</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>Gap Fill</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QComboBox" name="postFillComboBox">
+          <item>
+           <property name="text">
+            <string>No</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Fill with morphology</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Fill small gaps</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_6">
+          <property name="text">
+           <string>Close Size</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QSpinBox" name="fillCloseSizeSpinBox"/>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_7">
+          <property name="text">
+           <string>Gap Size</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QSpinBox" name="fillGapSizeSpinBox"/>
+        </item>
+       </layout>
       </widget>
      </item>
     </layout>
@@ -181,7 +291,7 @@
   </widget>
   <action name="actionOpen">
    <property name="icon">
-    <iconset resource="../../../resources/main.qrc">
+    <iconset>
      <normaloff>:/new/prefix1/remove.png</normaloff>:/new/prefix1/remove.png</iconset>
    </property>
    <property name="text">
@@ -195,7 +305,7 @@
   </action>
   <action name="actionResetMask">
    <property name="icon">
-    <iconset resource="../../../resources/main.qrc">
+    <iconset>
      <normaloff>:/new/prefix1/bullet_blue.png</normaloff>:/new/prefix1/bullet_blue.png</iconset>
    </property>
    <property name="text">
@@ -207,7 +317,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../../../resources/main.qrc">
+    <iconset>
      <normaloff>:/new/prefix1/select.png</normaloff>:/new/prefix1/select.png</iconset>
    </property>
    <property name="text">
@@ -216,7 +326,7 @@
   </action>
   <action name="actionUndoMask">
    <property name="icon">
-    <iconset resource="../../../resources/main.qrc">
+    <iconset>
      <normaloff>:/new/prefix1/back_alt.png</normaloff>:/new/prefix1/back_alt.png</iconset>
    </property>
    <property name="text">
@@ -224,6 +334,13 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>RgbColorParametersControlWidget</class>
+   <extends>QWidget</extends>
+   <header>rgbColorParametersControlWidget.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../../../resources/main.qrc"/>
  </resources>

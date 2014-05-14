@@ -21,7 +21,7 @@ void quickTest()
     qDebug() << document.toString();
 }
 
-int main (int argc, char **argv)
+int main (int /*argc*/, char **/*argv*/)
 {
     printf("Quick test\n");
 

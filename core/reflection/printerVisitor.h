@@ -2,6 +2,7 @@
 #define PRINTER_VISITOR_OLD_H_
 
 #include <iostream>
+
 #include "reflection.h"
 
 namespace corecvs {
@@ -13,12 +14,15 @@ using std::cout;
 class PrinterVisitor
 {
 public:
-    std::ostream &stream;
+    std::ostream *stream;
 
-    explicit  PrinterVisitor(ostream &_stream = cout) :
+    explicit  PrinterVisitor(ostream *_stream) :
         stream(_stream)
     {}
 
+    explicit  PrinterVisitor(ostream &_stream = cout) :
+        stream(&_stream)
+    {}
 
 template <typename inputType, typename reflectionType>
     void visit(inputType &field, const reflectionType * /*fieldDescriptor*/)
