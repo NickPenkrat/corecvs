@@ -92,7 +92,7 @@ public:
 };
 
 /**
- * These are useful methods to serialize integer types not depending of the current endianess
+ * These are useful methods to serialize integer types not depending on the current endianess
  */
 template <typename IntegerType>
 ostream& write_integer_bin(ostream& os, IntegerType value)
