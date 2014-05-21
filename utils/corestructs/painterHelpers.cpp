@@ -93,3 +93,27 @@ void disableComboBoxItem(QComboBox *box, int item) {
     QVariant v1(0);
     box->model()->setData( index1, v1, Qt::UserRole -1);
 }
+
+
+QRect fixedAspectRescaleRect (QRect source, QRect target)
+{
+    source = source.normalized();
+    target = target.normalized();
+    if (source.isEmpty() || target.isEmpty())
+        return QRect();
+
+    double aspectClient = (double)target.width() / target.height();
+    double aspectMask   = (double)source.width() / source.height();
+
+    if (aspectMask > aspectClient) {
+        /* Mask is narrower in horizontal direction. Margins on top and bottom*/
+        double maskScaledHeight = (double)source.height() / source.width() * target.width();
+        double margin = (target.height() - maskScaledHeight) / 2.0;
+        return QRect(target.x() + 0, target.y() + margin, target.width(), maskScaledHeight);
+    } else {
+        /* Mask is narrower in vertical direction. Margins on right and left */
+        double maskScaledWidth = (double)source.width() / source.height() * target.height();
+        double margin = (target.width() - maskScaledWidth) / 2.0;
+        return QRect(target.x() + margin, target.y() + 0, maskScaledWidth, target.height());
+    }
+}
