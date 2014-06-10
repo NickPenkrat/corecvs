@@ -14,6 +14,7 @@
 #include "generated/draw3dParameters.h"
 #include "painterHelpers.h"
 #include "mathUtils.h"
+#include "qtHelper.h"
 
 using corecvs::lerp;
 
@@ -22,6 +23,78 @@ void Mesh3DScene::drawMyself(CloudViewDialog *dialog)
     bool withTexture = false;
     withTexture |= (mParameters.style() == Draw3dStyle::TEXTURED) && (dialog->mFancyTexture != GLuint(-1));
     bool withTexCoords = withTexture && !textureCoords.empty();
+
+    /*Caption drawing*/
+    if (mParameters.showCaption())
+    {
+        if (hasCentral)
+        {
+            OpenGLTools::GLWrapper wrapper;
+            GLPainter painter(&wrapper);
+
+            QString text = QString("[%1, %2, %3]")
+                    .arg(centralPoint.x()).arg(centralPoint.y()).arg(centralPoint.z());
+
+            /*glPushMatrix();
+               glTranslated(centralPoint.x(),centralPoint.y(), centralPoint.z());
+               glScaled(0.5,0.5,0.5);
+               painter.drawFormatVector(0, 0, RGBColor(255,20,20), 1, text.toAscii().constData());
+            glPopMatrix();*/
+
+            //Vector3dd projected =
+
+            Matrix44 modelview  = OpenGLTools::glGetModelViewMatrix();
+            Matrix44 projection = OpenGLTools::glGetProjectionMatrix();
+            Matrix44 glMatrix = projection * modelview;
+
+            /* Setting new matrices */
+
+            int width  = dialog->mUi.widget->width();
+            int height = dialog->mUi.widget->height();
+            /*double aspect = (double)width / (double)height;
+            */
+            /*int width  = 200;
+            int height = 200;*/
+
+            /* SetMatrices to draw on 2D canvas */
+            glMatrixMode(GL_PROJECTION);
+            glPushMatrix();
+            glLoadIdentity();
+            glOrtho(- width / 2.0 , width / 2.0, -height / 2.0, height / 2.0, 10, -10);
+
+            glMatrixMode(GL_MODELVIEW);
+            glPushMatrix();
+            glLoadIdentity();
+
+            glBegin(GL_LINE_LOOP);
+            glVertex3i(0,0,0);
+            glVertex3i(100,0,0);
+            glVertex3i(100,100,0);
+            glVertex3i(0,100,0);
+
+            glEnd();
+
+            /* Draw */
+            FixedVector<double, 4> cent4((const FixedVector<double, 3> &)centralPoint, 1.0);
+            FixedVector<double, 4> labelPos = glMatrix * cent4;
+
+            //qDebug() << "Projected Pos" << labelPos.xy();
+
+            glTranslated(labelPos[0] / labelPos[3] * width / 2, labelPos[1] / labelPos[3] * height / 2, 0.0);
+
+            double size = mParameters.fontSize() / 25.0;
+            glScaled(size, -size, size);
+            painter.drawFormatVector(0, 0, RGBColor(255,20,20), 1, text.toAscii().constData());
+
+            /*Restore old matrices */
+            glMatrixMode(GL_PROJECTION);
+            glPopMatrix();
+            glMatrixMode(GL_MODELVIEW);
+            glPopMatrix();
+
+
+        }
+    }
 
     if (!withTexture) {
         glDisable(GL_TEXTURE_2D);
