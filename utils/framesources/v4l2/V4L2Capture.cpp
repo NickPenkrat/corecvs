@@ -155,7 +155,7 @@ V4L2CaptureInterface::FramePair V4L2CaptureInterface::getFrame()
 
     if (skippedCount == 0)
     {
-        SYNC_PRINT(("Warning: Requested same frames twice. Is this by design?\n"));
+        //SYNC_PRINT(("Warning: Requested same frames twice. Is this by design?\n"));
     }
 
     stats.framesSkipped = skippedCount > 0 ? skippedCount - 1 : 0;
@@ -209,7 +209,7 @@ V4L2CaptureInterface::FramePair V4L2CaptureInterface::getFrameRGB24()
 
     if (skippedCount == 0)
     {
-        SYNC_PRINT(("Warning: Requested same frames twice. Is this by design?\n"));
+   //     SYNC_PRINT(("Warning: Requested same frames twice. Is this by design?\n"));
     }
 
     stats.framesSkipped = skippedCount > 0 ? skippedCount - 1 : 0;
