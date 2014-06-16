@@ -140,6 +140,29 @@ int Draw3dCameraParameters::staticInit()
         )
     );
     fields().push_back(
+        new IntField
+        (
+          Draw3dCameraParameters::FONT_WIDTH_ID,
+          offsetof(Draw3dCameraParameters, mFontWidth),
+          1,
+          "Font Width",
+          "Font Width",
+          "Font Width"
+        )
+    );
+    fields().push_back(
+        new CompositeField
+        (
+          Draw3dCameraParameters::FONT_COLOR_ID,
+          offsetof(Draw3dCameraParameters, mFontColor),
+          "Font Color",
+          "RgbColorParameters",
+          "Font Color",
+          "Font Color",
+           NULL
+        )
+    );
+    fields().push_back(
         new EnumField
         (
           Draw3dCameraParameters::TEXTURE_CORRODINATES_ID,

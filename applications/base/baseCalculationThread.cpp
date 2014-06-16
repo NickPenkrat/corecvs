@@ -83,8 +83,7 @@ void BaseCalculationThread::initData(BaseOutputData *calculationOutputData, Stat
     calculationOutputData->mMainImage.addLayer(
             new ImageResultLayer(
                     mPresentationParams->output(),
-                    mTransformedBuffers,
-                    mPresentationParams->leftFrame()
+                    mTransformedBuffers
             )
     );
 

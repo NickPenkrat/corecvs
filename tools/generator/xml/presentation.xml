@@ -19,20 +19,19 @@
   </enum>
 
   <enum name="Output Style">
-    <item name="standart output"     id="0" comment="Standart output"/>
-    <item name="sidebyside stereo"   id="1" comment="Side-by-side stereo"/>
-    <item name="anaglyph RG"         id="2" comment="Red-Green Anaglyph"/>
-    <item name="anaglyph RC"         id="3" comment="Red-Cyan Anaglyph"/>
-    <item name="blend"               id="4" comment="Blend"/>
-    <item name="none"                id="5" comment="None"/>
+    <item name="right Frame"         id="0" comment="Right Frame"/>    
+    <item name="left Frame"          id="1" comment="Left Frame"/>
+    <item name="sidebyside stereo"   id="2" comment="Side-by-side stereo"/>
+    <item name="anaglyph RG"         id="3" comment="Red-Green Anaglyph"/>
+    <item name="anaglyph RC"         id="4" comment="Red-Cyan Anaglyph"/>
+    <item name="blend"               id="5" comment="Blend"/>
+    <item name="none"                id="6" comment="None"/>
   </enum>
 
   <class name="Presentation Parameters" description="Presentation parameters">
-    <field type="bool"         name="leftFrame"    defaultValue="false" widget="RadioButton"/>
-    <field type="bool"         name="rightFrame"   defaultValue="true"  widget="RadioButton"/>
+    <field type="Output Style" name="Output"/>
     <field type="Stereo Style" name="Stereo"/>
     <field type="Flow Style"   name="Flow"/>
-    <field type="Output Style" name="Output"/>
     <field type="bool"         name="showClusters"          defaultValue="true"/>
     <field type="bool"         name="showHistogram"         defaultValue="true"/>
     <field type="bool"         name="Auto Update Histogram" defaultValue="false"/>

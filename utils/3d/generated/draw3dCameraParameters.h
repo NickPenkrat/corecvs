@@ -52,6 +52,8 @@ public:
         SECONDARY_COLOR_ID,
         SHOW_CAPTION_ID,
         FONT_SIZE_ID,
+        FONT_WIDTH_ID,
+        FONT_COLOR_ID,
         TEXTURE_CORRODINATES_ID,
         TEXTURE_ALPHA_ID,
         TEXTURE_SCALE_ID,
@@ -118,6 +120,18 @@ public:
      * Font Size 
      */
     int mFontSize;
+
+    /** 
+     * \brief Font Width 
+     * Font Width 
+     */
+    int mFontWidth;
+
+    /** 
+     * \brief Font Color 
+     * Font Color 
+     */
+    RgbColorParameters mFontColor;
 
     /** 
      * \brief Texture Corrodinates 
@@ -220,6 +234,16 @@ public:
         return mFontSize;
     }
 
+    int fontWidth() const
+    {
+        return mFontWidth;
+    }
+
+    RgbColorParameters fontColor() const
+    {
+        return mFontColor;
+    }
+
     Draw3dTextureGen::Draw3dTextureGen textureCorrodinates() const
     {
         return static_cast<Draw3dTextureGen::Draw3dTextureGen>(mTextureCorrodinates);
@@ -306,6 +330,16 @@ public:
         mFontSize = fontSize;
     }
 
+    void setFontWidth(int fontWidth)
+    {
+        mFontWidth = fontWidth;
+    }
+
+    void setFontColor(RgbColorParameters const &fontColor)
+    {
+        mFontColor = fontColor;
+    }
+
     void setTextureCorrodinates(Draw3dTextureGen::Draw3dTextureGen textureCorrodinates)
     {
         mTextureCorrodinates = textureCorrodinates;
@@ -359,6 +393,8 @@ public:
            , secondaryColor()
            , showCaption()
            , fontSize()
+           , fontWidth()
+           , fontColor()
            , textureCorrodinates()
            , textureAlpha()
            , textureScale()
@@ -377,6 +413,8 @@ public:
         mSecondaryColor = baseParameters.secondaryColor();
         mShowCaption   = baseParameters.showCaption();
         mFontSize      = baseParameters.fontSize();
+        mFontWidth     = baseParameters.fontWidth();
+        mFontColor     = baseParameters.fontColor();
         mTextureCorrodinates = baseParameters.textureCorrodinates();
         mTextureAlpha  = baseParameters.textureAlpha();
         mTextureScale  = baseParameters.textureScale();
@@ -400,6 +438,8 @@ template<class VisitorType>
         visitor.visit(mSecondaryColor,            static_cast<const CompositeField *>(fields()[SECONDARY_COLOR_ID]));
         visitor.visit(mShowCaption,               static_cast<const BoolField *>    (fields()[SHOW_CAPTION_ID]));
         visitor.visit(mFontSize,                  static_cast<const IntField *>     (fields()[FONT_SIZE_ID]));
+        visitor.visit(mFontWidth,                 static_cast<const IntField *>     (fields()[FONT_WIDTH_ID]));
+        visitor.visit(mFontColor,                 static_cast<const CompositeField *>(fields()[FONT_COLOR_ID]));
         visitor.visit((int &)mTextureCorrodinates, static_cast<const EnumField *>    (fields()[TEXTURE_CORRODINATES_ID]));
         visitor.visit(mTextureAlpha,              static_cast<const IntField *>     (fields()[TEXTURE_ALPHA_ID]));
         visitor.visit(mTextureScale,              static_cast<const DoubleField *>  (fields()[TEXTURE_SCALE_ID]));
@@ -426,6 +466,8 @@ template<class VisitorType>
         , RgbColorParameters secondaryColor
         , bool showCaption
         , int fontSize
+        , int fontWidth
+        , RgbColorParameters fontColor
         , Draw3dTextureGen::Draw3dTextureGen textureCorrodinates
         , int textureAlpha
         , double textureScale
@@ -445,6 +487,8 @@ template<class VisitorType>
         mSecondaryColor = secondaryColor;
         mShowCaption = showCaption;
         mFontSize = fontSize;
+        mFontWidth = fontWidth;
+        mFontColor = fontColor;
         mTextureCorrodinates = textureCorrodinates;
         mTextureAlpha = textureAlpha;
         mTextureScale = textureScale;

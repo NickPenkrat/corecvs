@@ -66,25 +66,40 @@ void Mesh3DScene::drawMyself(CloudViewDialog *dialog)
             glPushMatrix();
             glLoadIdentity();
 
-            glBegin(GL_LINE_LOOP);
-            glVertex3i(0,0,0);
-            glVertex3i(100,0,0);
-            glVertex3i(100,100,0);
-            glVertex3i(0,100,0);
-
-            glEnd();
+/*          glBegin(GL_LINE_LOOP);
+              glVertex3i(0,0,0);
+              glVertex3i(100,0,0);
+              glVertex3i(100,100,0);
+              glVertex3i(0,100,0);
+            glEnd();*/
 
             /* Draw */
-            FixedVector<double, 4> cent4((const FixedVector<double, 3> &)centralPoint, 1.0);
+/*            FixedVector<double, 4> cent4((const FixedVector<double, 3> &)centralPoint, 1.0);
             FixedVector<double, 4> labelPos = glMatrix * cent4;
-
-            //qDebug() << "Projected Pos" << labelPos.xy();
-
             glTranslated(labelPos[0] / labelPos[3] * width / 2, labelPos[1] / labelPos[3] * height / 2, 0.0);
+*/
+            Vector3dd labelPos = glMatrix * centralPoint;
+            glTranslated(labelPos[0] * width / 2.0, labelPos[1] * height / 2.0, 0.0);
+
+
+
 
             double size = mParameters.fontSize() / 25.0;
             glScaled(size, -size, size);
-            painter.drawFormatVector(0, 0, RGBColor(255,20,20), 1, text.toAscii().constData());
+
+            bool depthTest =  glIsEnabled(GL_DEPTH_TEST);
+            glDisable(GL_DEPTH_TEST);
+            GLint lineWidth;
+            glGetIntegerv(GL_LINE_WIDTH, &lineWidth);
+            glLineWidth(mParameters.fontWidth());
+
+            //glColor3ub(mParameters.fontColor().r(), mParameters.fontColor().g(), mParameters.fontColor().b());
+
+            painter.drawFormatVector(0, 0, mParameters.fontColor(), 1, text.toAscii().constData());
+            if (depthTest) {
+                glEnable(GL_DEPTH_TEST);
+            }
+            glLineWidth(lineWidth);
 
             /*Restore old matrices */
             glMatrixMode(GL_PROJECTION);
