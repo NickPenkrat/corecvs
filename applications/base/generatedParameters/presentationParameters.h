@@ -30,9 +30,9 @@ namespace corecvs {
 /*
  *  Additional includes for enum section.
  */
+#include "outputStyle.h"
 #include "stereoStyle.h"
 #include "flowStyle.h"
-#include "outputStyle.h"
 
 /**
  * \brief Presentation parameters 
@@ -42,11 +42,9 @@ class PresentationParameters : public BaseReflection<PresentationParameters>
 {
 public:
     enum FieldId {
-        LEFTFRAME_ID,
-        RIGHTFRAME_ID,
+        OUTPUT_ID,
         STEREO_ID,
         FLOW_ID,
-        OUTPUT_ID,
         SHOWCLUSTERS_ID,
         SHOWHISTOGRAM_ID,
         AUTO_UPDATE_HISTOGRAM_ID,
@@ -60,16 +58,10 @@ public:
     /** Section with variables */
 
     /** 
-     * \brief leftFrame 
-     * leftFrame 
+     * \brief Output 
+     * Output 
      */
-    bool mLeftFrame;
-
-    /** 
-     * \brief rightFrame 
-     * rightFrame 
-     */
-    bool mRightFrame;
+    int mOutput;
 
     /** 
      * \brief Stereo 
@@ -82,12 +74,6 @@ public:
      * Flow 
      */
     int mFlow;
-
-    /** 
-     * \brief Output 
-     * Output 
-     */
-    int mOutput;
 
     /** 
      * \brief showClusters 
@@ -139,14 +125,9 @@ public:
     {
         return (const unsigned char *)(this) + fields()[fieldId]->offset;
     }
-    bool leftFrame() const
+    OutputStyle::OutputStyle output() const
     {
-        return mLeftFrame;
-    }
-
-    bool rightFrame() const
-    {
-        return mRightFrame;
+        return static_cast<OutputStyle::OutputStyle>(mOutput);
     }
 
     StereoStyle::StereoStyle stereo() const
@@ -157,11 +138,6 @@ public:
     FlowStyle::FlowStyle flow() const
     {
         return static_cast<FlowStyle::FlowStyle>(mFlow);
-    }
-
-    OutputStyle::OutputStyle output() const
-    {
-        return static_cast<OutputStyle::OutputStyle>(mOutput);
     }
 
     bool showClusters() const
@@ -200,14 +176,9 @@ public:
     }
 
     /* Section with setters */
-    void setLeftFrame(bool leftFrame)
+    void setOutput(OutputStyle::OutputStyle output)
     {
-        mLeftFrame = leftFrame;
-    }
-
-    void setRightFrame(bool rightFrame)
-    {
-        mRightFrame = rightFrame;
+        mOutput = output;
     }
 
     void setStereo(StereoStyle::StereoStyle stereo)
@@ -218,11 +189,6 @@ public:
     void setFlow(FlowStyle::FlowStyle flow)
     {
         mFlow = flow;
-    }
-
-    void setOutput(OutputStyle::OutputStyle output)
-    {
-        mOutput = output;
     }
 
     void setShowClusters(bool showClusters)
@@ -265,11 +231,9 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(mLeftFrame,                 static_cast<const BoolField *>    (fields()[LEFTFRAME_ID]));
-        visitor.visit(mRightFrame,                static_cast<const BoolField *>    (fields()[RIGHTFRAME_ID]));
+        visitor.visit((int &)mOutput,             static_cast<const EnumField *>    (fields()[OUTPUT_ID]));
         visitor.visit((int &)mStereo,             static_cast<const EnumField *>    (fields()[STEREO_ID]));
         visitor.visit((int &)mFlow,               static_cast<const EnumField *>    (fields()[FLOW_ID]));
-        visitor.visit((int &)mOutput,             static_cast<const EnumField *>    (fields()[OUTPUT_ID]));
         visitor.visit(mShowClusters,              static_cast<const BoolField *>    (fields()[SHOWCLUSTERS_ID]));
         visitor.visit(mShowHistogram,             static_cast<const BoolField *>    (fields()[SHOWHISTOGRAM_ID]));
         visitor.visit(mAutoUpdateHistogram,       static_cast<const BoolField *>    (fields()[AUTO_UPDATE_HISTOGRAM_ID]));
@@ -286,11 +250,9 @@ template<class VisitorType>
     }
 
     PresentationParameters(
-          bool leftFrame
-        , bool rightFrame
+          OutputStyle::OutputStyle output
         , StereoStyle::StereoStyle stereo
         , FlowStyle::FlowStyle flow
-        , OutputStyle::OutputStyle output
         , bool showClusters
         , bool showHistogram
         , bool autoUpdateHistogram
@@ -300,11 +262,9 @@ template<class VisitorType>
         , bool dump3D
     )
     {
-        mLeftFrame = leftFrame;
-        mRightFrame = rightFrame;
+        mOutput = output;
         mStereo = stereo;
         mFlow = flow;
-        mOutput = output;
         mShowClusters = showClusters;
         mShowHistogram = showHistogram;
         mAutoUpdateHistogram = autoUpdateHistogram;

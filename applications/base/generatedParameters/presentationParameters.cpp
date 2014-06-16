@@ -38,25 +38,15 @@ int PresentationParameters::staticInit()
      
 
     fields().push_back(
-        new BoolField
+        new EnumField
         (
-          PresentationParameters::LEFTFRAME_ID,
-          offsetof(PresentationParameters, mLeftFrame),
-          false,
-          "leftFrame",
-          "leftFrame",
-          "leftFrame"
-        )
-    );
-    fields().push_back(
-        new BoolField
-        (
-          PresentationParameters::RIGHTFRAME_ID,
-          offsetof(PresentationParameters, mRightFrame),
-          true,
-          "rightFrame",
-          "rightFrame",
-          "rightFrame"
+          PresentationParameters::OUTPUT_ID,
+          offsetof(PresentationParameters, mOutput),
+          0,
+          "Output",
+          "Output",
+          "Output",
+           NULL
         )
     );
     fields().push_back(
@@ -80,18 +70,6 @@ int PresentationParameters::staticInit()
           "Flow",
           "Flow",
           "Flow",
-           NULL
-        )
-    );
-    fields().push_back(
-        new EnumField
-        (
-          PresentationParameters::OUTPUT_ID,
-          offsetof(PresentationParameters, mOutput),
-          0,
-          "Output",
-          "Output",
-          "Output",
            NULL
         )
     );

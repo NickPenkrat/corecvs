@@ -319,7 +319,8 @@ FORMS += \
     3d/generated/draw3dViMouseParametersControlWidget.ui \
     filters/graph/filterGraphPresentation.ui \
 
-    
+RESOURCES += \
+   ../resources/main.qrc
 
 unix:!macx {
     HEADERS += \
