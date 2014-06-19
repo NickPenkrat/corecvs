@@ -18,6 +18,7 @@
 #include "utils.h"
 #include "recorderDialog.h"
 #include "mainWindow.h"
+#include "configManager.h"
 
 
 using namespace std;
@@ -44,6 +45,10 @@ int main(int argc, char *argv[])
     }
 
     printf("Starting recorder...\n");
+
+    ConfigManager::setConfigName("cvs.conf");
+    ConfigManager::setCamConfigName("cvs-camera.conf");
+
 
     QApplication app(argc, argv);
     MainWindowParameters params;

@@ -123,7 +123,7 @@ int V4L2CaptureInterface::setConfigurationString(string _devname)
 V4L2CaptureInterface::FramePair V4L2CaptureInterface::getFrame()
 {
 
-    SYNC_PRINT(("V4L2CaptureInterface::getFrame(): called\n"));
+//    SYNC_PRINT(("V4L2CaptureInterface::getFrame(): called\n"));
     CaptureStatistics  stats;
 
     PreciseTimer start = PreciseTimer::currentTime();
@@ -338,12 +338,12 @@ void V4L2CaptureInterface::decodeData(V4L2CameraDescriptor *camera, V4L2BufferDe
 {
     if (!buffer->isFilled)
     {
-        SYNC_PRINT(("V4L2CaptureInterface::decodeData(): Buffer is not filled. Returning empty\n"));
+    //    SYNC_PRINT(("V4L2CaptureInterface::decodeData(): Buffer is not filled. Returning empty\n"));
         *output = new G12Buffer(formatH, formatW);
         return;
     }
 
-    SYNC_PRINT(("V4L2CaptureInterface::decodeData(): Decoding buffer\n"));
+    //SYNC_PRINT(("V4L2CaptureInterface::decodeData(): Decoding buffer\n"));
 
     uint8_t *ptrL = (uint8_t*)(camera->buffers[buffer->index].start);
     switch(decoder)
@@ -366,7 +366,7 @@ void V4L2CaptureInterface::decodeData(V4L2CameraDescriptor *camera, V4L2BufferDe
             MjpegDecoderLazy lazyDecoder;
             *output = lazyDecoder.decode(ptrL);
             if (*output == NULL) {
-                SYNC_PRINT(("V4L2CaptureInterface::decodeData(): Decoded to buffer that is NULL\n"));
+//                SYNC_PRINT(("V4L2CaptureInterface::decodeData(): Decoded to buffer that is NULL\n"));
             }
         }
         break;

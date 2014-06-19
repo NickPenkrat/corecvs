@@ -33,7 +33,7 @@ void Mesh3DScene::drawMyself(CloudViewDialog *dialog)
             GLPainter painter(&wrapper);
 
             QString text = QString("[%1, %2, %3]")
-                    .arg(centralPoint.x()).arg(centralPoint.y()).arg(centralPoint.z());
+                    .arg(centralPoint.x(), 0, 'f', 2).arg(centralPoint.y(), 0, 'f', 2).arg(centralPoint.z(), 0, 'f', 2);
 
             /*glPushMatrix();
                glTranslated(centralPoint.x(),centralPoint.y(), centralPoint.z());
