@@ -74,7 +74,7 @@ int V4L2CaptureInterface::setConfigurationString(string _devname)
         "  | - FPS %s/%s\n"
         "  | - Size [%sx%s]\n"
         "  \\ - Compressing: %s\n"
-        "RGB decoding is %s",
+        "RGB decoding is %s\n",
         deviceStringPattern.cap(Device1Group) .toAscii().constData(),
         deviceStringPattern.cap(Device2Group) .toAscii().constData(),
         deviceStringPattern.cap(FpsNumGroup)  .toAscii().constData(),
