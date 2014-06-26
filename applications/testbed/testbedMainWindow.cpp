@@ -35,12 +35,16 @@ void TestbedMainWindow::closeEvent(QCloseEvent *event)
 void TestbedMainWindow::connectActions()
 {
     connect(mUi->actionOpen, SIGNAL(triggered()), this, SLOT(loadImage()));
-
     connect(mImageWidget,    SIGNAL(newPointSelected(int, QPoint)), this, SLOT(pointSelected(int, QPoint)));
 
     connect(mUi->actionShowMask,  SIGNAL(toggled(bool)), this, SLOT(toggleMask()));
     connect(mUi->actionResetMask, SIGNAL(triggered(bool)), this, SLOT(resetMask()));
     connect(mUi->actionUndoMask,  SIGNAL(triggered(bool)), this, SLOT(undoMask()));
+
+    connect(mUi->maskAlphaSpinBox, SIGNAL(valueChanged (int)), this, SLOT(updateViewImage()));
+    connect(mUi->maskColorWidget,  SIGNAL(valueChanged()), this, SLOT(updateViewImage()));
+    connect(mUi->showEdgeCheckBox, SIGNAL(toggled(bool)), this, SLOT(updateViewImage()));
+
 
 }
 
@@ -110,15 +114,42 @@ vector<G8Buffer *> mUndoList;
 
 void TestbedMainWindow::updateViewImage(void)
 {
-    RGB24Buffer *toDraw= new RGB24Buffer(mImage);
+    RGB24Buffer *toDraw = new RGB24Buffer(mImage);
+    RGBColor maskColor = mUi->maskColorWidget->getColor();
+    double alpha = (mUi->maskAlphaSpinBox->value()) / 100.0;
     if (mUi->actionShowMask->isChecked())
     {
         for (int i = 0; i < toDraw->h; i++)
         {
             for (int j = 0; j < toDraw->w; j++)
             {
+                bool hasmask = false;
+                bool hasnomask = false;
+                /* so far no optimization here */
+                if (mUi->showEdgeCheckBox->isChecked()) {
+                    for (int dx = -1; dx <= 1; dx++)
+                    {
+                        for (int dy = -1; dy <= 1; dy++)
+                        {
+                            if (!mMask->isValidCoord(i + dy, j + dx))
+                                continue;
+                            if (mMask->element(i + dy, j + dx)) {
+                                hasmask = true;
+                            } else {
+                                hasnomask = true;
+                            }
+                        }
+                    }
+                }
+
                 if (mMask->element(i,j)) {
-                    toDraw->element(i,j) += (RGBColor::gray(255) - toDraw->element(i,j)) / 2;
+                    if (hasmask && hasnomask) {
+                        toDraw->element(i,j) = maskColor;
+                    } else {
+                        toDraw->element(i,j).r() += (maskColor.r() - toDraw->element(i,j).r()) * alpha;
+                        toDraw->element(i,j).g() += (maskColor.g() - toDraw->element(i,j).g()) * alpha;
+                        toDraw->element(i,j).b() += (maskColor.b() - toDraw->element(i,j).b()) * alpha;
+                    }
                 }
             }
         }
@@ -177,7 +208,7 @@ public:
         return true;
      }
 
-     void mark(RGB24Buffer *buffer, int x, int y) {
+     void mark(RGB24Buffer */*buffer*/, int x, int y) {
          mMask->element(y,x) = 255;
      }
 

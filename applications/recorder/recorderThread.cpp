@@ -129,8 +129,7 @@ AbstractOutputData* RecorderThread::processNewData()
     outputData->mMainImage.addLayer(
             new ImageResultLayer(
                     mPresentationParams->output(),
-                    result,
-                    mPresentationParams->leftFrame()
+                    result
             )
     );
 

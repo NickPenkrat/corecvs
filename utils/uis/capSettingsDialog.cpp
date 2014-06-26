@@ -123,8 +123,11 @@ void CapSettingsDialog::loadFromQSettings (const QString &fileName, const QStrin
     }
 
     qDebug() << "CapSettingsDialog::loadFromQSettings(): Interface name: " << interfaceName;
-    QSettings *mSettings = new QSettings(fileName, QSettings::IniFormat);
-    mSettings->beginGroup(_root + ":" + mRootPath + ":" + interfaceName + ":");
+    QSettings *settings = new QSettings(fileName, QSettings::IniFormat);
+    settings->beginGroup(_root);
+    settings->beginGroup(mRootPath);
+    settings->beginGroup(interfaceName);
+
 
 
     QMapIterator<int, ParameterEditorWidget *> i(sliders);
@@ -135,13 +138,16 @@ void CapSettingsDialog::loadFromQSettings (const QString &fileName, const QStrin
         const char *name = CameraParameters::names[id];
         ParameterEditorWidget *widget = i.value();
         double value = widget->value();
-        double newValue = mSettings->value(name, value).toDouble();
+        double newValue = settings->value(name, value).toDouble();
         qDebug() << "   " << QString(name).leftJustified(16, ' ') << ": " << value << " -> " << newValue;
         widget->setValue(newValue);
     }
 
-    mSettings->endGroup();
-    delete mSettings;
+    settings->endGroup();
+    settings->endGroup();
+    settings->endGroup();
+
+    delete_safe(settings);
 
 }
 
@@ -160,9 +166,10 @@ void CapSettingsDialog::saveToQSettings   (const QString &fileName, const QStrin
     }
 
     qDebug() << "CapSettingsDialog::saveToQSettings(): Interface name: " << interfaceName;
-    QSettings *mSettings = new QSettings(fileName, QSettings::IniFormat);
-    mSettings->beginGroup(_root + ":" + mRootPath + ":" + interfaceName + ":");
-
+    QSettings *settings = new QSettings(fileName, QSettings::IniFormat);
+    settings->beginGroup(_root);
+    settings->beginGroup(mRootPath);
+    settings->beginGroup(interfaceName);
 
     QMapIterator<int, ParameterEditorWidget *> i(sliders);
     while (i.hasNext())
@@ -172,12 +179,14 @@ void CapSettingsDialog::saveToQSettings   (const QString &fileName, const QStrin
         const char *name = CameraParameters::names[id];
         ParameterEditorWidget *widget = i.value();
         double value = widget->value();
-        mSettings->setValue(name, value);
+        settings->setValue(name, value);
         qDebug() << "   " << QString(name).leftJustified(16, ' ') << ": " << value;
     }
 
-    mSettings->endGroup();
-    delete mSettings;
+    settings->endGroup();
+    settings->endGroup();
+    settings->endGroup();
+    delete_safe(settings);
 }
 
 

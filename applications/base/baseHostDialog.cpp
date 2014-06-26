@@ -339,7 +339,7 @@ void BaseHostDialog::initCapture(QString const &init, bool isRgb)
     {
         cout << "Will be using only one capture device.\n" << endl;
         mUseOneCaptureDevice = true;
-        mPresentationControlWidget->ui()->rightFrameButton->setEnabled(false);
+        mPresentationControlWidget->ui()->outputComboBox->setCurrentIndex(0);
     }
     else
     {
@@ -347,7 +347,7 @@ void BaseHostDialog::initCapture(QString const &init, bool isRgb)
     }
 
     /* Now we need to connect the camera to widgets */
-    mCapSettings = new CapSettingsDialog(NULL, mCamera);
+    mCapSettings = new CapSettingsDialog(NULL, mCamera, "MainSource");
     mSaveableCameraWidgets.push_back(mCapSettings);
     mCapSettings->loadFromQSettings(ConfigManager::camConfigName(), "");
 

@@ -20,35 +20,40 @@ namespace OutputStyle {
  */
 enum OutputStyle {
     /** 
-     * \brief standart output 
-     * Standart output 
+     * \brief right Frame 
+     * Right Frame 
      */
-    STANDART_OUTPUT = 0,
+    RIGHT_FRAME = 0,
+    /** 
+     * \brief left Frame 
+     * Left Frame 
+     */
+    LEFT_FRAME = 1,
     /** 
      * \brief sidebyside stereo 
      * Side-by-side stereo 
      */
-    SIDEBYSIDE_STEREO = 1,
+    SIDEBYSIDE_STEREO = 2,
     /** 
      * \brief anaglyph RG 
      * Red-Green Anaglyph 
      */
-    ANAGLYPH_RG = 2,
+    ANAGLYPH_RG = 3,
     /** 
      * \brief anaglyph RC 
      * Red-Cyan Anaglyph 
      */
-    ANAGLYPH_RC = 3,
+    ANAGLYPH_RC = 4,
     /** 
      * \brief blend 
      * Blend 
      */
-    BLEND = 4,
+    BLEND = 5,
     /** 
      * \brief none 
      * None 
      */
-    NONE = 5,
+    NONE = 6,
     /** 
      * \brief Last virtual option to run cycles to
      */
@@ -60,7 +65,8 @@ static inline const char *getName(const OutputStyle &value)
 {
     switch (value) 
     {
-     case STANDART_OUTPUT : return "STANDART_OUTPUT"; break ;
+     case RIGHT_FRAME : return "RIGHT_FRAME"; break ;
+     case LEFT_FRAME : return "LEFT_FRAME"; break ;
      case SIDEBYSIDE_STEREO : return "SIDEBYSIDE_STEREO"; break ;
      case ANAGLYPH_RG : return "ANAGLYPH_RG"; break ;
      case ANAGLYPH_RC : return "ANAGLYPH_RC"; break ;

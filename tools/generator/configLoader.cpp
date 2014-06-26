@@ -111,6 +111,8 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
         QString uibase = classElement.attribute("uibase");
         result->uiBaseClass = toCString(uibase);
 
+        qDebug() << "Class" << result->name.name << " (" << i << "/" << classes.length() << ")";
+
         QDomNodeList fields = classElement.elementsByTagName("field");
         for (unsigned j = 0; j < fields.length(); j++)
         {
@@ -120,7 +122,7 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
             QDomAttr typeAttribute = fieldElement.attributeNode("type");
             QString type = typeAttribute.value();
 
-//            qDebug() << "Field" << fieldNameing.name << " type " << type;
+            qDebug() << "  Field" << fieldNameing.name << " type " << type;
 
             QString defaultValue = fieldElement.attribute("defaultValue");
             QString minValue     = fieldElement.attribute("min");

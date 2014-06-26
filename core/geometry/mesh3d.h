@@ -109,9 +109,25 @@ public:
 
 class Mesh3D {
 public:
+
+    Mesh3D() :
+        hasCentral(false)
+    {}
+
+
+    Vector3dd  centralPoint;
+    bool hasCentral;
+
     vector<Vector3dd>  vertexes;
     vector<Vector3d32> faces;
     vector<Vector2dd>  textureCoords;
+
+    void setCentral(Vector3dd _central)
+    {
+        centralPoint = _central;
+        hasCentral = true;
+    }
+
 
     void addAOB(Vector3dd corner1, Vector3dd corner2);
     void addAOB(const AxisAlignedBoxParameters &box);

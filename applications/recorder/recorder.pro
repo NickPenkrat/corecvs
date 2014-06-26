@@ -39,3 +39,4 @@ SOURCES += \
 FORMS += \
     ui/recorderControlWidget.ui \
 
+#RESOURCES += ../../resources/main.qrc

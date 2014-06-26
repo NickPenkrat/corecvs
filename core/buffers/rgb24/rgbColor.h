@@ -6,6 +6,9 @@
 #include "fixedVector.h"
 #include "vector3d.h"
 #include "mathUtils.h"
+
+#include "generated/rgbColorParameters.h"
+
 namespace corecvs {
 /**
  * \file rgbColor.h
@@ -53,6 +56,15 @@ public:
         this->b() = _b;
         this->a() = 0;
     }
+
+    RGBColor(const RgbColorParameters &color)
+    {
+        this->r() = color.r();
+        this->g() = color.g();
+        this->b() = color.b();
+        this->a() = 0;
+    }
+
 
     RGBColor()
     {

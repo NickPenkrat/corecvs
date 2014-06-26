@@ -32,4 +32,4 @@ SOURCES = \
 
 FORMS = ui/testbedMainWindow.ui \
 
-RESOURCES += ../../resources/main.qrc
+#RESOURCES += ../../resources/main.qrc
