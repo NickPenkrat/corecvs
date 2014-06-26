@@ -17,6 +17,7 @@
 #include "cameraControlParameters.h"
 
 #include "fileCapture.h"
+#include "syncCamerasCaptureInterface.h"
 #ifdef Q_OS_LINUX
 # include "V4L2Capture.h"
 # include "V4L2CaptureDecouple.h"
@@ -66,6 +67,15 @@ ImageCaptureInterface* ImageCaptureInterface::fabric(string input, bool isRGB)
     {
         string tmp = input.substr(prec.size());
         return new FilePreciseCapture(QString(tmp.c_str()), false);
+    }
+
+    string sync("sync:");
+    if (input.substr(0, sync.size()).compare(sync) == 0)
+    {
+        //TODO: что это такое?
+        //isRgb = false;
+        string tmp = input.substr(sync.size());
+        return new SyncCamerasCaptureInterface(tmp);
     }
 
 #ifdef Q_OS_LINUX

@@ -77,6 +77,7 @@ HEADERS += \
     framesources/decoders/mjpegDecoder.h \
     framesources/decoders/mjpegDecoderLazy.h \
     framesources/decoders/decoupleYUYV.h \
+    framesources/syncCam/syncCamerasCaptureInterface.h \
     \
     fileformats/qtFileLoader.h \
     uis/advancedImageWidget.h \
@@ -203,6 +204,7 @@ SOURCES += \
     framesources/decoders/mjpegDecoder.cpp \
     framesources/decoders/mjpegDecoderLazy.cpp \
     framesources/decoders/decoupleYUYV.cpp \
+    framesources/syncCam/syncCamerasCaptureInterface.cpp \
     \
     fileformats/qtFileLoader.cpp \
     uis/advancedImageWidget.cpp \
