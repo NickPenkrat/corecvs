@@ -6,6 +6,7 @@
  * \date Dec 13, 2012
  **/
 
+#include <algorithm>
 #include "generated/axisAlignedBoxParameters.h"
 #include "vector3d.h"
 

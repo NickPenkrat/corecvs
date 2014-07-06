@@ -13,6 +13,7 @@
  *
  * \todo TODO: Check int type usage, no need to use int32_t where it is not crucial
  */
+#include <algorithm>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdarg.h>
