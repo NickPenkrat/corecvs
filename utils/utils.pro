@@ -397,3 +397,14 @@ with_directshow {
 
     DEFINES += WITH_DIRECTSHOW
 }
+
+with_synccam {
+    HEADERS += \
+        framesources/syncCam/syncCamerasCaptureInterface.h \
+
+
+    SOURCES += \
+        framesources/syncCam/syncCamerasCaptureInterface.cpp \
+            
+    DEFINES += WITH_SYNCCAM
+}
