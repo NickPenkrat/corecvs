@@ -105,7 +105,7 @@ public:
     }
 
 
-    /** Stream aligned. Not safe to use untill you exactly know what you are doing */
+    /** Stream aligned. Not safe to use until you exactly know what you are doing */
     void streamAligned(int64_t data[4])
     {
         _mm_stream_si128((__m128i *)&data[0], this->data);
