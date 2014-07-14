@@ -8,20 +8,28 @@
 #include "parameterSelector.h"
 
 
-CapSettingsDialog::CapSettingsDialog(QWidget *parent, ImageCaptureInterface *pInterface, QString rootPath) :
+CapSettingsDialog::CapSettingsDialog(QWidget *parent, QString rootPath) :
         QWidget(parent),
         mRootPath(rootPath),
         mUi(new Ui::CapSettingsDialog),
-        mCaptureInterface(pInterface),
+        mCaptureInterface(NULL),
         signalMapper(NULL),
         resetSignalMapper(NULL)
 {
     mUi->setupUi(this);
+    setWindowTitle(rootPath);
 
     setWindowFlags(windowFlags() ^ Qt::WindowMinimizeButtonHint);
 
     refreshDialog();
 }
+
+void CapSettingsDialog::setCaptureInterface(ImageCaptureInterface *pInterface)
+{
+    mCaptureInterface = pInterface;
+    refreshDialog();
+}
+
 
 void CapSettingsDialog::clearDialog()
 {

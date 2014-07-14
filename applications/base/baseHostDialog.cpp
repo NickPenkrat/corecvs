@@ -55,7 +55,7 @@ BaseHostDialog::BaseHostDialog(QWidget *parent)
     , mDistortionWidget(NULL)
     , mCameraStarted(false)
     , mCamera(NULL)
-    , mCapSettings(NULL)
+    , mCapSettings(NULL, "MainSource")
     , mFrames(NULL)
     , mBaseControlWidget(NULL)
     , mPresentationControlWidget(NULL)
@@ -80,6 +80,8 @@ void BaseHostDialog::init(QWidget *parameterHolderWidget, QTextEdit * /*loggerWi
 
     initCommon();
     initParameterWidgets();
+
+    mSaveableCameraWidgets.push_back(&mCapSettings);
     loadParams(ConfigManager::configName(), "");
 
     initMemoryUsageCalculator();
@@ -128,7 +130,6 @@ BaseHostDialog::~BaseHostDialog()
         delete_safe(widget);
     }
 
-    delete_safe(mCapSettings);
     delete_safe(mCamera);
 
     delete_safe (mMemoryCalculator);
@@ -267,8 +268,8 @@ void BaseHostDialog::showStatistics()
 
 void BaseHostDialog::showCaptureSettings()
 {
-    mCapSettings->show();
-    mCapSettings->raise();
+    mCapSettings.show();
+    mCapSettings.raise();
 }
 
 void BaseHostDialog::showAboutDialog()
@@ -296,6 +297,7 @@ void BaseHostDialog::distortionEstimationFinished()
 
 void BaseHostDialog::deinitCamera()
 {
+    mCapSettings.setCaptureInterface(NULL);
     delete_safe(mCamera);
     mCameraStarted = false;
     emit captureStatusUpdated(false);
@@ -347,9 +349,8 @@ void BaseHostDialog::initCapture(QString const &init, bool isRgb)
     }
 
     /* Now we need to connect the camera to widgets */
-    mCapSettings = new CapSettingsDialog(NULL, mCamera, "MainSource");
-    mSaveableCameraWidgets.push_back(mCapSettings);
-    mCapSettings->loadFromQSettings(ConfigManager::camConfigName(), "");
+    mCapSettings.setCaptureInterface(mCamera);
+    mCapSettings.loadFromQSettings(ConfigManager::camConfigName(), "");
 
     qRegisterMetaType<CaptureStatistics>("CaptureStatistics");
     connect(mCamera, SIGNAL(newStatisticsReady(CaptureStatistics)),
