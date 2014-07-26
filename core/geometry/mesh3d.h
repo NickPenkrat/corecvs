@@ -6,7 +6,6 @@
  * \date Dec 13, 2012
  **/
 
-#include <algorithm>
 #include "generated/axisAlignedBoxParameters.h"
 #include "vector3d.h"
 
@@ -40,14 +39,14 @@ public:
     void _initByLowHigh(const Vector3dd &low, const Vector3dd &high)
     {
         /* TODO: Move this to vector opetions and use cycle */
-        mLow .x() = std::min(low.x(), high.x());
-        mHigh.x() = std::max(low.x(), high.x());
+        mLow .x() = CORE_MIN(low.x(), high.x());
+        mHigh.x() = CORE_MAX(low.x(), high.x());
 
-        mLow .y() = std::min(low.y(), high.y());
-        mHigh.y() = std::max(low.y(), high.y());
+        mLow .y() = CORE_MIN(low.y(), high.y());
+        mHigh.y() = CORE_MAX(low.y(), high.y());
 
-        mLow .z() = std::min(low.z(), high.z());
-        mHigh.z() = std::max(low.z(), high.z());
+        mLow .z() = CORE_MIN(low.z(), high.z());
+        mHigh.z() = CORE_MAX(low.z(), high.z());
     }
 
     void _initByCenter(const Vector3dd &center, const Vector3dd &measure)
