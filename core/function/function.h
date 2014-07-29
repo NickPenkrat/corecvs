@@ -103,7 +103,7 @@ public:
 class IdentityFunction : public FunctionArgs
 {
 public:
-    IdentityFunction(int dimention) : FunctionArgs(dimention, dimention) {};
+    IdentityFunction(int dimension) : FunctionArgs(dimension, dimension) {}
 
     virtual void operator()(const double in[], double out[])
     {
@@ -135,7 +135,7 @@ public:
     {
         cout << inputs << " " << outputs << endl;
         cout << F->inputs << " " << F->outputs << endl;
-    };
+    }
 
     virtual void operator()(const double in[], double out[])
     {
@@ -176,7 +176,7 @@ public:
     {
         cout << inputs << " " << outputs << endl;
         cout << F->inputs << " " << F->outputs << endl;
-    };
+    }
 
     virtual void operator()(const double in[], double out[])
     {
