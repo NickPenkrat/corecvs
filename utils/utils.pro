@@ -108,6 +108,7 @@ HEADERS += \
     serializer/widgetQtIterator.h \
     \
     statistics/contentStatistics.h \
+    statistics/userPoll.h \
     \
     rectifier/estimationMethodType.h \
     rectifier/optimizationMethodType.h \
@@ -236,6 +237,7 @@ SOURCES += \
     serializer/widgetQtIterator.cpp \
     \
     statistics/contentStatistics.cpp \
+    statistics/userPoll.cpp \
     \
     rectifier/universalRectifier.cpp \
     rectifier/rectifyParametersControlWidget.cpp \
