@@ -45,7 +45,7 @@ int PresentationParameters::staticInit()
           0,
           "Output",
           "Output",
-          "Output",
+          "View - views are more or less self-explenatory",
            NULL
         )
     );
@@ -57,7 +57,7 @@ int PresentationParameters::staticInit()
           0,
           "Stereo",
           "Stereo",
-          "Stereo",
+          "Way to draw overlay with disparity information",
            NULL
         )
     );
@@ -69,7 +69,7 @@ int PresentationParameters::staticInit()
           0,
           "Flow",
           "Flow",
-          "Flow",
+          "Way to draw overlay with optical flow information",
            NULL
         )
     );

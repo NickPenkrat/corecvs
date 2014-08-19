@@ -22,6 +22,7 @@ SOURCES += \
 #    example.cpp \
     pdoGenerator.cpp \
     widgetUIGenerator.cpp \
+    documentationGenerator.cpp \
     baseGenerator.cpp \
 #    qSettingsVisitors.cpp \
     parametersMapperGenerator.cpp \
@@ -32,6 +33,7 @@ HEADERS += \
 #    example.h \
     pdoGenerator.h \
     widgetUIGenerator.h \
+    documentationGenerator.h \
     baseGenerator.h \
 #    qSettingsVisitors.h \
     parametersMapperGenerator.h \

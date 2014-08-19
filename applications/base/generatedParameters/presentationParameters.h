@@ -36,7 +36,7 @@ namespace corecvs {
 
 /**
  * \brief Presentation parameters 
- * Presentation parameters 
+ * These parameters control the view of the output (and some of them also affect processing so be sure to backup if you plan to change them) 
  **/
 class PresentationParameters : public BaseReflection<PresentationParameters>
 {
@@ -59,19 +59,19 @@ public:
 
     /** 
      * \brief Output 
-     * Output 
+     * View - views are more or less self-explenatory 
      */
     int mOutput;
 
     /** 
      * \brief Stereo 
-     * Stereo 
+     * Way to draw overlay with disparity information 
      */
     int mStereo;
 
     /** 
      * \brief Flow 
-     * Flow 
+     * Way to draw overlay with optical flow information 
      */
     int mFlow;
 
