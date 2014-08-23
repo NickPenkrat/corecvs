@@ -1,7 +1,9 @@
 #ifndef LINE_H_
 #define LINE_H_
+
 #include "vector2d.h"
 #include "vector3d.h"
+
 namespace corecvs {
 /**
  * \file line.h
@@ -17,7 +19,8 @@ namespace corecvs {
  *
  */
 template<class VectorType>
-class Segment {
+class Segment
+{
 public:
     VectorType a;
     VectorType b;
@@ -31,7 +34,6 @@ public:
     {
         return (a + b) / 2.0;
     }
-
 };
 
 
@@ -44,7 +46,7 @@ typedef Segment<Vector3dd> Segment3d;
 
 
 /**
- * Ray2d is a template of the class that holds the description of the ray in the \f$ R^{dimention} \f$ space.
+ * Ray2d is a template of the class that holds the description of the ray in the \f$ R^{dimension} \f$ space.
  *
  * \f[ \overrightarrow {P(t)} = \overrightarrow {a} *t  + \overrightarrow {p} \f]
  *
@@ -53,7 +55,8 @@ typedef Segment<Vector3dd> Segment3d;
  *
  **/
 template<class RealType, class VectorType>
-class BaseRay {
+class BaseRay
+{
 public:
     VectorType a;
     VectorType p;
@@ -61,8 +64,7 @@ public:
     BaseRay(const VectorType &_a, const VectorType & _p) :
         a(_a),
         p(_p)
-    {};
-
+    {}
 
     VectorType getPoint(double t) const
     {
@@ -74,14 +76,15 @@ public:
      *
      *
      **/
-    void normalise( void )
+    void normalise(void)
     {
         double l = a.l2metric();
-        if (l == 0.0) return;
+        if (l == 0.0)
+            return;
         a /= l;
     }
 
-    RealType normalised( void )
+    RealType normalised(void)
     {
         RealType toReturn(*this);
         toReturn.normalise();
@@ -93,7 +96,6 @@ public:
         out << ray.p << "->" << ray.a;
         return out;
     }
-
 };
 
 /**
@@ -104,7 +106,7 @@ class Ray2d : public BaseRay<Ray2d, Vector2dd>
 public:
     Ray2d(const Vector2dd &_a, const Vector2dd & _p) :
         BaseRay<Ray2d, Vector2dd>(_a, _p)
-    {};
+    {}
 };
 
 /**
@@ -115,8 +117,7 @@ class Ray3d : public BaseRay<Ray3d, Vector3dd>
 public:
     Ray3d(const Vector3dd &_a, const Vector3dd & _p) :
         BaseRay<Ray3d, Vector3dd>(_a, _p)
-    {};
-
+    {}
 
     double distanceTo(const Ray3d &other ) const
     {
@@ -131,12 +132,11 @@ public:
 
         return fabs(dp & denum) / l;
     }
-
 };
 
 #if 0
 /**
- *  This class template represents the hyperplane of the \f$ R^n \f$ dimention
+ *  This class template represents the hyperplane of the \f$ R^n \f$ dimension
  *  in \f$ R^{n+1} \f$ space
  *
  * The most obvious presentation of the hyperplane:
@@ -155,7 +155,7 @@ public:
  * In 2D case that is
  * \f[A x + B y + C = 0\f]
  *
- * Which allows to think of the \f$ R^{dimention} \f$ hyperplane, as an element in a f$ \mathbb(R)^{dimention + 1} f$ projective space.
+ * Which allows to think of the \f$ R^{dimension} \f$ hyperplane, as an element in a f$ \mathbb(R)^{dimension + 1} f$ projective space.
  * That is how we would think of the line form time to time.
  *
  * \f[ \sum_{i=0}^n ({a_i x_i}) + C = \sum_{i=0}^n ({a_i x_i}) + 1 \cdot x_{n+1} = 0 \f]
@@ -163,16 +163,17 @@ public:
  * \f$\vec {x}\f$ - is a  vector. In 3D \f$\overrightarrow {(A,B,C)} \overrightarrow{X} = 0\f$
  *  denotes a plane that pass throw the 0 point.
  *
- *  The only difference form FixedVector<double, dimention + 1> is that this class has other notion of
+ *  The only difference form FixedVector<double, dimension + 1> is that this class has other notion of
  *  normalisation
  *
  **/
 
-template<int dimention>
-class Hyperplane : public FixedVector<double, dimention + 1> {
+template<int dimension>
+class Hyperplane : public FixedVector<double, dimension + 1>
+{
 public:
 
-    Hyperplane() {};
+    Hyperplane() {}
 
     Hyperplane(const Vector2dd &_n, const double &_c = 1.0) :
         Vector3dd(_n, _c)
@@ -267,12 +268,12 @@ public:
     static Line2d FormNormal(const Vector2dd &normal)
     {
         return Line2d(normal);
-    };
+    }
 
     static Line2d FormNormalAndPoint(const Vector2dd &normal, const Vector2dd &point)
     {
         return Line2d(normal, -(normal & point));
-    };
+    }
 
 private:
 
@@ -319,10 +320,10 @@ private:
  *
  **/
 
-class Line2d : public Vector3dd {
+class Line2d : public Vector3dd
+{
 public:
-
-    Line2d() {};
+    Line2d() {}
 
     Line2d(const double &_a, const double &_b, const double &_c)
     {
@@ -331,7 +332,7 @@ public:
         (*this)[2] = _c;
     }
 
-    Line2d(const Vector3dd &_line) : Vector3dd(_line) {};
+    Line2d(const Vector3dd &_line) : Vector3dd(_line) {}
 
     Line2d(const Vector2dd &_n, const double &_c = 0.0) :
         Vector3dd(_n, _c)
@@ -343,7 +344,7 @@ public:
     Line2d(const Segment2d &segment)
     {
        (*this) = fromSegment(segment);
-    };
+    }
 
     /**
      *  Construct the Line form 2 points
@@ -351,7 +352,7 @@ public:
     Line2d(const Ray2d &ray)
     {
        (*this) = fromRay(ray);
-    };
+    }
 
     static Line2d fromRay(const Ray2d &ray)
     {
@@ -366,12 +367,12 @@ public:
         return fromRay(Ray2d(segment.a, segment.b - segment.a));
     }
 
-    Vector2dd normal ( void ) const
+    Vector2dd normal(void) const
     {
         return Vector2dd(element[0], element[1]);
     }
 
-    double last ( void ) const
+    double last(void) const
     {
         return element[2];
     }
@@ -381,14 +382,14 @@ public:
      *
      *   With such a line it is easier to compute distance to the line
      **/
-    void normalise( void )
+    void normalise(void)
     {
         double l = normal().l2Metric();
         if (l == 0.0) return;
         operator /=(l);
     }
 
-    Line2d normalised( void ) const
+    Line2d normalised(void) const
     {
         Line2d result = *this;
         result.normalise();
@@ -454,7 +455,6 @@ public:
         return (d / l);
     }
 
-
     double sqDistanceTo (const Vector2dd &point) const
     {
         double d = pointWeight(point);
@@ -464,16 +464,15 @@ public:
     }
 
 
-
     static Line2d FormNormal(const Vector2dd &normal)
     {
         return Line2d(normal);
-    };
+    }
 
     static Line2d FormNormalAndPoint(const Vector2dd &normal, const Vector2dd &point)
     {
         return Line2d(normal, -(normal & point));
-    };
+    }
 
 private:
 
@@ -488,12 +487,12 @@ private:
 
 
 
-class Plane3d : public FixedVector<double, 4> {
+class Plane3d : public FixedVector<double, 4>
+{
 public:
-
     typedef FixedVector<double, 4> Vector4dd;
 
-    Plane3d() {};
+    Plane3d() {}
 
     Plane3d(const double &_a, const double &_b, const double &_c, const double &_d)
     {
@@ -512,29 +511,30 @@ public:
      *
      *   With such a line it is easier to compute distance to the plane
      **/
-    void normalise( void )
+    void normalise(void)
     {
         double sum(0);
         for (int i = 0; i < size() - 1; i++)
             sum += at(i) * at(i);
         double l = sqrt(sum);
-        if (l == 0.0) return;
-        operator /=(l);
+        if (l == 0.0)
+            return;
+        operator /= (l);
     }
 
-    Plane3d normalised( void ) const
+    Plane3d normalised(void) const
     {
         Plane3d result = *this;
         result.normalise();
         return result;
     }
 
-    Vector3dd normal ( void ) const
+    Vector3dd normal(void) const
     {
         return Vector3dd(element[0], element[1], element[2]);
     }
 
-    double last ( void ) const
+    double last(void) const
     {
         return element[3];
     }
@@ -667,7 +667,7 @@ public:
     static Plane3d FormNormal(const Vector3dd &normal)
     {
         return Plane3d(normal);
-    };
+    }
 
     /**
      *  Construct the Plane from normal and a point
@@ -682,7 +682,7 @@ public:
     static Plane3d FormNormalAndPoint(const Vector3dd &normal, const Vector3dd &point)
     {
         return Plane3d(normal, -(normal & point));
-    };
+    }
 
     /**
      *  Construct the Plane from 3 points
@@ -704,10 +704,9 @@ public:
     {
         return FormNormalAndPoint( v1 ^ v2, p);
     }
+
 };
 
 } //namespace corecvs
+
 #endif  //LINE_H_
-
-
-

@@ -121,7 +121,6 @@ void DecoupleYUYV::decouple(unsigned formatH, unsigned formatW, uint8_t *ptr, Im
         {
             for (unsigned j = 0; j < formatW / 2; j++)
             {
-
                 result.bufferLeft ->element(i,j) = (ptr[0] << 4);
                 ptr += 2;
             }
