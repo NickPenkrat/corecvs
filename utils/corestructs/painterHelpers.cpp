@@ -298,10 +298,10 @@ void drawMetaballs1(QPainter &painter, const Vector2dd &center1, int r1, const V
         Vector2dd centerr = center1 + dir * toMiddle + side * elevated;
         Vector2dd centerl = center1 + dir * toMiddle - side * elevated;
 
-        painter.setPen(Qt::cyan);
+     /*   painter.setPen(Qt::cyan);
         painter.drawEllipse(circle1);
         painter.drawEllipse(circle2);
-        painter.setPen(Qt::black);
+        painter.setPen(Qt::black);*/
 
         /* Calculating the angle of touch line to the first circle */
         Vector2dd diam1 = centerr - center1;
@@ -346,8 +346,8 @@ void drawMetaballs1(QPainter &painter, const Vector2dd &center1, int r1, const V
         ppath.cubicTo(centerl.x(), centerl.y(), centerl.x(), centerl.y(), end.x(), end.y());
         ppath.closeSubpath();
 
-        painter.drawEllipse(centerr.x() - 2, centerr.y() - 2, 5, 5);
-        painter.drawEllipse(centerl.x() - 2, centerl.y() - 2, 5, 5);
+//        painter.drawEllipse(centerr.x() - 2, centerr.y() - 2, 5, 5);
+//        painter.drawEllipse(centerl.x() - 2, centerl.y() - 2, 5, 5);
 
         painter.drawPath(ppath);
     }
