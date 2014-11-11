@@ -98,7 +98,7 @@ int BaseParameters::staticInit()
         (
           BaseParameters::DOWNSAMPLE_ID,
           offsetof(BaseParameters, mDownsample),
-          1.5,
+          1,
           "downsample",
           "downsample",
           "Prescale coefficient for input image"
@@ -175,7 +175,7 @@ int BaseParameters::staticInit()
         (
           BaseParameters::INTERPOLATIONTYPE_ID,
           offsetof(BaseParameters, mInterpolationType),
-          0,
+          3,
           "InterpolationType",
           "InterpolationType",
           "InterpolationType",

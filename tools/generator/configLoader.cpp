@@ -187,7 +187,14 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
 
                 if (reflection) // is it a field with the type of some other class?
                 {
-                    field = new CompositeFieldGen(fieldNameing, toCString(type), reflection);
+                    QDomAttr typeAttribute = fieldElement.attributeNode("size");
+                    int size = typeAttribute.value().toInt();
+
+                    if (size <= 0) {
+                        field = new CompositeFieldGen(fieldNameing, toCString(type), reflection);
+                    } else {
+                        field = new CompositeArrayFieldGen(fieldNameing, toCString(type), size, reflection);
+                    }
                 }
                 else if (enumRef) // then it should be a enum
                 {

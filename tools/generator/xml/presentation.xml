@@ -34,11 +34,11 @@
     <field type="Stereo Style" name="Stereo" comment="Way to draw overlay with disparity information" />
     <field type="Flow Style"   name="Flow"   comment="Way to draw overlay with optical flow information" />
     
-    <field type="bool"         name="showClusters"          defaultValue="true"/>
+    <field type="bool"         name="showClusters"          defaultValue="false"/>
     <field type="bool"         name="showHistogram"         defaultValue="true"/>
     <field type="bool"         name="Auto Update Histogram" defaultValue="false"/>
     <field type="bool"         name="showAreaOfInterest"    defaultValue="true"/>
-    <field type="bool"         name="produce3D"             defaultValue="false"/>
+    <field type="bool"         name="produce3D"             defaultValue="true"/>
     <field type="bool"         name="produce6D"             defaultValue="false" advanced="true" />
     <field type="bool"         name="dump3D"                defaultValue="false" advanced="true" />
   </class>

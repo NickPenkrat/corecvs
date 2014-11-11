@@ -78,7 +78,7 @@ int PresentationParameters::staticInit()
         (
           PresentationParameters::SHOWCLUSTERS_ID,
           offsetof(PresentationParameters, mShowClusters),
-          true,
+          false,
           "showClusters",
           "showClusters",
           "showClusters"
@@ -122,7 +122,7 @@ int PresentationParameters::staticInit()
         (
           PresentationParameters::PRODUCE3D_ID,
           offsetof(PresentationParameters, mProduce3D),
-          false,
+          true,
           "produce3D",
           "produce3D",
           "produce3D"
