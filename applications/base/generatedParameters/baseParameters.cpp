@@ -175,7 +175,7 @@ int BaseParameters::staticInit()
         (
           BaseParameters::INTERPOLATIONTYPE_ID,
           offsetof(BaseParameters, mInterpolationType),
-          3,
+          2,
           "InterpolationType",
           "InterpolationType",
           "InterpolationType",

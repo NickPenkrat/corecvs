@@ -24,7 +24,7 @@
     <field type="bool"   name="autoW"        defaultValue="true" comment="Select crop width so that full image will fit"/>
     <field type="int"    name="x"            defaultValue="0"    min="0"   max="1024"   step="1" comment="Scaled image horizonal shift before crop"/>
     <field type="int"    name="y"            defaultValue="0"    min="0"   max="2048"   step="1" comment="Scaled image vertical shift before crop"/>
-    <field type="InterpolationType" name="InterpolationType" defaultValue="3"/>
+    <field type="InterpolationType" name="InterpolationType" defaultValue="2"/>
   </class>
 
 </poco>
