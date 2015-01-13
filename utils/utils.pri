@@ -30,6 +30,9 @@ UTILS_INCLUDEPATH = \
     $$UTILSDIR/framesources/decoders \    
     $$UTILSDIR/framesources/v4l2 \
     $$UTILSDIR/framesources/syncCam \
+    $$UTILSDIR/framesources/file \
+    $$UTILSDIR/framesources/avcodec \
+    $$UTILSDIR/framesources/opencv \
     $$UTILSDIR/processor \
     $$UTILSDIR/rectifier \
 #   $$UTILSDIR/serializer \     # obsolete?
@@ -130,6 +133,14 @@ with_directshow {
     include($$DIRECT_SHOW_WRAPPER_DIR/directShowLibs.pri)
 }
 
+
+
+with_avcodec {
+    !build_pass: message(Switching on avcodec support)
+
+    DEFINES += WITH_AVCODEC
+    LIBS    += -lavutil -lavformat -lavcodec -lz -lavutil -lm
+}
 
 with_synccam {
     win32: LIBS += -L$$PWD/../../../../SyncCamera/library/lib/x86/ -lCyAPI

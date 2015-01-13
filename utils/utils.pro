@@ -69,14 +69,16 @@ HEADERS += \
     \
     frames.h \
     framesources/imageCaptureInterface.h \
-    framesources/imageFileCaptureInterface.h \
-    framesources/fileCapture.h \
-    framesources/abstractFileCapture.h \
-    framesources/abstractFileCaptureSpinThread.h \
     framesources/cameraControlParameters.h \
     framesources/decoders/mjpegDecoder.h \
     framesources/decoders/mjpegDecoderLazy.h \
     framesources/decoders/decoupleYUYV.h \
+    \
+    framesources/file/imageFileCaptureInterface.h \
+    framesources/file/fileCapture.h \
+    framesources/file/precCapture.h \
+    framesources/file/abstractFileCapture.h \
+    framesources/file/abstractFileCaptureSpinThread.h \
     \
     fileformats/qtFileLoader.h \
     uis/advancedImageWidget.h \
@@ -196,14 +198,16 @@ SOURCES += \
     \
     frames.cpp \
     framesources/imageCaptureInterface.cpp \        # it uses WITH_DIRECTSHOW, WITH_UEYE, WITH_OPENCV
-    framesources/imageFileCaptureInterface.cpp \
-    framesources/abstractFileCapture.cpp \
-    framesources/abstractFileCaptureSpinThread.cpp \
     framesources/cameraControlParameters.cpp \
-    framesources/fileCapture.cpp \
     framesources/decoders/mjpegDecoder.cpp \
     framesources/decoders/mjpegDecoderLazy.cpp \
     framesources/decoders/decoupleYUYV.cpp \
+    \
+    framesources/file/imageFileCaptureInterface.cpp \
+    framesources/file/fileCapture.cpp \
+    framesources/file/precCapture.cpp \
+    framesources/file/abstractFileCapture.cpp \
+    framesources/file/abstractFileCaptureSpinThread.cpp \
     \
     fileformats/qtFileLoader.cpp \
     uis/advancedImageWidget.cpp \
@@ -373,14 +377,14 @@ with_opencv {
 
     contains(DEFINES, WITH_OPENCV) {                        # TODO: move this to OpenCV
         HEADERS += \
-            framesources/openCVCapture.h \
-            framesources/openCvFileCapture.h \
-            framesources/openCvHelper.h \
+            framesources/opencv/openCVCapture.h \
+            framesources/opencv/openCVFileCapture.h \
+            framesources/opencv/openCVHelper.h \
 
         SOURCES += \
-            framesources/openCVCapture.cpp \
-            framesources/openCvFileCapture.cpp \
-            framesources/openCvHelper.cpp \
+            framesources/opencv/openCVCapture.cpp \
+            framesources/opencv/openCVFileCapture.cpp \
+            framesources/opencv/openCVHelper.cpp \
 
     }
 }
@@ -398,6 +402,16 @@ with_directshow {
         framesources/directShow/directShow.cpp \
 
     DEFINES += WITH_DIRECTSHOW
+}
+
+
+with_avcodec {
+    HEADERS += \
+        framesources/avcodec/aviCapture.h \
+
+    SOURCES += \
+        framesources/avcodec/aviCapture.cpp \
+
 }
 
 with_synccam {

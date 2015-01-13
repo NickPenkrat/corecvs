@@ -326,20 +326,20 @@ void BaseHostDialog::initCapture(QString const &init, bool isRgb)
 
     if (mCamera == NULL)
     {
-        cout << "Error initializing capture device." << endl;
+        cout << "BaseHostDialog::initCapture(): Error initializing capture device." << endl;
         return;
     }
     ImageCaptureInterface::CapErrorCode res = mCamera->initCapture();
 
     if (ImageCaptureInterface::FAILURE == res)
     {
-        cout << "Error: none of the capture devices started.\n" << endl;
+        cout << "BaseHostDialog::initCapture(): Error: none of the capture devices started.\n" << endl;
         QMessageBox::warning(this, "Error: none of the capture devices started.","Error: none of the capture devices started.");
         return;
     }
     else if (ImageCaptureInterface::SUCCESS_1CAM == res)
     {
-        cout << "Will be using only one capture device.\n" << endl;
+        cout << "BaseHostDialog::initCapture(): Will be using only one capture device.\n" << endl;
         mUseOneCaptureDevice = true;
         mPresentationControlWidget->ui()->outputComboBox->setCurrentIndex(0);
     }
