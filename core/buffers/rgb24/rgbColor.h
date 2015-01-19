@@ -1,5 +1,12 @@
 #ifndef RGBCOLOR_H_
 #define RGBCOLOR_H_
+/**
+ * \file rgbColor.h
+ * \brief a header for rgbColor.c
+ *
+ * \date Apr 19, 2011
+ * \author alexander
+ */
 
 #include <stdint.h>
 
@@ -98,17 +105,22 @@ public:
     /* Constant versions for read-only form const colors */
     inline const uint8_t &r() const
     {
-        return (*this)[2];
+        return (*this)[FIELD_R];
     }
 
     inline const uint8_t &g() const
     {
-        return (*this)[1];
+        return (*this)[FIELD_G];
     }
 
     inline const uint8_t &b() const
     {
-        return (*this)[0];
+        return (*this)[FIELD_B];
+    }
+
+    inline const uint8_t &a() const
+    {
+        return (*this)[FIELD_A];
     }
 
     inline uint32_t &color() const
@@ -409,14 +421,15 @@ template<class VisitorType>
         visitor.visit(a(), static_cast<const IntField *>(reflect.fields[FIELD_A]));
     }
 
-    Vector3dd toDouble()
+    Vector3dd toDouble() const
     {
         return Vector3dd(r(), g(), b());
     }
 
-    static RGBColor fromDouble(Vector3dd input)
+    static RGBColor FromDouble(const Vector3dd &input)
     {
-        input.mapToHypercube(Vector3dd(0.0,0.0,0.0), Vector3dd(255.0,255.0,255.0));
+        Vector3dd input1 = input;
+        input1.mapToHypercube(Vector3dd(0.0,0.0,0.0), Vector3dd(255.0,255.0,255.0));
         return RGBColor(input.x(), input.y(), input.z());
     }
 
