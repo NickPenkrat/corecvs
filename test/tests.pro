@@ -1,26 +1,26 @@
-# try use global config 
+# try use global config
 exists(../../../config.pri) {
     #message(Using global config)
     include(../../../config.pri)
-} else { 
+} else {
     message(Using local config)
     include(../config.pri)
 }
- 
+
 TEMPLATE = subdirs
 
 SUBDIRS +=       \
     grab         \
     xmlserialize \
     adoptcolor  \
-    avigrab     \
+#    avigrab     \
     topcon      \
-    
-    
+
+
 
 grab.file          = grab/grab.pro
 xmlserialize.file  = xmlserialize/xmlserialize.pro
 adoptcolor.file    = adoptcolor/adoptcolor.pro
 avigrab.file       = avigrab/avigrab.pro
 topcon.file        = topcon/topcon.pro
-    
+

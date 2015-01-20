@@ -5,83 +5,150 @@
 
 #include "multicameraScene.h"
 
+#include "vector2d.h"
+#include "vector3d.h"
+#include "quaternion.h"
+#include "matrix33.h"
+
 using std::ifstream;
 using std::ios;
 using std::string;
+using std::endl;
+
+using corecvs::Vector2dd;
+using corecvs::Vector3dd;
+using corecvs::Quaternion;
+using corecvs::Matrix33;
 
 MulticameraScene::MulticameraScene()
 {
 }
 
-int MulticameraScene::loadBindlerFile(std::string fileName)
+void skipComments(ifstream &s)
+{
+    while (!s.eof())
+    {
+        int symbol = s.peek();
+        if (isspace(symbol))
+        {
+            s.get();
+            continue;
+        }
+        if (symbol == '#')
+        {
+            string comment;
+            std::getline(s, comment);
+            cout << "Comment" << comment << endl;
+            continue;
+        }
+
+        break;
+    }
+}
+
+int MulticameraScene::loadBundlerFile(std::string fileName)
 {
     ifstream input;
     input.open (fileName.c_str(), ios::in);
-    SYNC_PRINT(("MulticameraScene::loadBindlerFile(): Opening: %s\n", fileName.c_str()));
+    SYNC_PRINT(("MulticameraScene::loadBundlerFile(): Opening: %s\n", fileName.c_str()));
     if (input.fail())
     {
-        SYNC_PRINT(("MulticameraScene::loadBindlerFile(): Can't open file\n"));
+        SYNC_PRINT(("MulticameraScene::loadBundlerFile(): Can't open file\n"));
         return 1;
     }
 
-    string line;
 
     int cameraNum = -1;
     /*Ok.. loading*/
-    while (!input.eof())
+
+    skipComments(input);
+    input >> cameraNum;
+    SYNC_PRINT(("MulticameraScene::loadBundlerFile(): file has %d cams\n", cameraNum));
+
+    for (int i=0; i < cameraNum; i++)
     {
-        input >> line;
-
-        size_t startpos = line.find_first_not_of(" \t");
-        if( string::npos != startpos )
-        {
-            line = line.substr( startpos );
+        BundlerCamera cam;
+        cam.readBundlerCamera(input);
+        if (input.bad()) {
+            break;
         }
-        if(line[0] == '#' || line.length() == 0)
-        {
-            SYNC_PRINT(("Comment:%s", line.c_str()));
-        }
+        skipComments(input);
 
-        if (cameraNum == -1)
-        {
-            line >> cameraNum;
-        }
-
-
-
+        SYNC_PRINT(("MulticameraScene::loadBundlerFile(): cam %d\n", i));
+        cam.print();
+        cameraList.push_back(cam);
     }
 
-
-
-
-
+    for (int i=0; i < cameraList.size(); i++)
+    {
+        if (!cameraList[i].checkAsserts())
+        {
+             SYNC_PRINT(("MulticameraScene::loadBundlerFile(): cam %d failed assert check\n", i));
+        }
+    }
     input.close();
     return 0;
 }
 
 int BundlerCamera::readBundlerCamera(std::istream &stream)
 {
+   // getline(stream, filename);
+   // getline(stream, filepath);
     stream >> filename;
+    stream >> filepath;
+    stream >> focal;
     stream >> optCenter;
     stream >> translation;
     stream >> position;
     stream >> axisAngles;
-    stream >> quaternion;
+    double t,x,y,z;
+    stream >> t >> x >> y >> z;
+
+    quaternion = Quaternion(x,y,z,t);
     stream >> rotation;
     stream >> distortion;
     stream >> geometric;
 
 }
 
+bool BundlerCamera::checkAsserts()
+{
+//    SYNC_PRINT(("BundlerCamera::checkAsserts(): called\n"));
+    corecvs::Quaternion fromMatrix = corecvs::Quaternion::FromMatrix(rotation);
+    if ( (!(quaternion - fromMatrix))  > 0.00001 )
+    {
+        SYNC_PRINT(("BundlerCamera::checkAsserts(): assert failed\n"));
+        cout << "quaternion orig :" << quaternion << endl;
+        cout << "quaternion mat  :" << fromMatrix << endl;
+        return false;
+    }
+
+    Vector3dd t  = translation;
+    Vector3dd t1 = -(rotation * position);
+
+    if ( (!(t1 - t))  > 0.00001 )
+    {
+        SYNC_PRINT(("BundlerCamera::checkAsserts(): assert failed\n"));
+        cout << "translation orig:" << t << endl;
+        cout << "translation mat :" << t1 << endl;
+        return false;
+    }
+
+//    SYNC_PRINT(("BundlerCamera::checkAsserts(): exited\n"));
+    return true;
+}
+
 void BundlerCamera::print()
 {
-    cout << filename << endl;
-    cout << optCenter << endl;
-    cout << translation << endl;
-    cout << position << endl;
-    cout << axisAngles << endl;
-    cout << quaternion << endl;
-    cout << rotation << endl;
-    cout << distortion << endl;
-    cout << geometric << endl;
+    cout << "Name:       " << filename << endl;
+    cout << "Full name:  " << filepath << endl;
+    cout << "Focal len:  " << focal << endl;
+    cout << "Opt center: " << optCenter << endl;
+    cout << "Trans:      " << translation << endl;
+    cout << "Pos:        " << position << endl;
+    cout << "Axis angles:" << axisAngles << endl;
+    cout << "Q Rotation: " << quaternion << endl;
+    cout << "Rotation:   " << endl << rotation << endl;
+    cout << "Distortion: " << distortion << endl;
+    cout << "Coor:       " << geometric << endl;
 }

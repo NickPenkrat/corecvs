@@ -5,7 +5,7 @@
 #include <sstream>
 #include <streambuf>
 
-
+#if 0
 class CommentFilter : public std::streambuf
 {
 public:
@@ -23,5 +23,7 @@ class CommentFilterStream : public std::istream
     CommentFilter buf;
 
 };
+
+#endif
 
 #endif // COMMENTFILTER_H

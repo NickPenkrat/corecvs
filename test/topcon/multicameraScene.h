@@ -24,6 +24,8 @@ using corecvs::Matrix33;
 struct BundlerCamera
 {
    std::string filename;
+   std::string filepath;
+   double focal;
    Vector2dd  optCenter;
    Vector3dd translation;
    Vector3dd position;
@@ -52,7 +54,7 @@ public:
 
     MulticameraScene();
 
-    int loadBindlerFile(std::string fileName);
+    int loadBundlerFile(std::string fileName);
 };
 
 #endif // MULTICAMERASCENE_H
