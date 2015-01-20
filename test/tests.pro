@@ -14,6 +14,7 @@ SUBDIRS +=       \
     xmlserialize \
     adoptcolor  \
     avigrab     \
+    topcon      \
     
     
 
@@ -21,4 +22,5 @@ grab.file          = grab/grab.pro
 xmlserialize.file  = xmlserialize/xmlserialize.pro
 adoptcolor.file    = adoptcolor/adoptcolor.pro
 avigrab.file       = avigrab/avigrab.pro
+topcon.file        = topcon/topcon.pro
     
