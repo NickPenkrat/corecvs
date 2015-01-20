@@ -5,6 +5,7 @@
 #include <string>
 #include <istream>
 
+
 #include "cameraParameters.h"
 #include "vector2d.h"
 #include "vector3d.h"
@@ -38,6 +39,7 @@ struct BundlerCamera
    int readBundlerCamera(std::istream &stream);
 
    bool checkAsserts(void);
+   void finalizeLoad();
 
    void print(void);
 

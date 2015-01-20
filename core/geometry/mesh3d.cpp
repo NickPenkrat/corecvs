@@ -85,6 +85,28 @@ void Mesh3D::addSphere(Vector3dd center, double radius, int step)
     }
 }
 
+void Mesh3D::addCamera(const CameraIntrinsics &cam, double len)
+{
+    //double aspect = cam.
+
+    double farPlane  = len;
+    double alphaH = cam.getHFov();
+    double alphaV = cam.getVFov();
+
+    double x, y;
+    x = farPlane  * tan (alphaH);
+    y = farPlane  * tan (alphaV);
+
+    int vectorIndex = (int)vertexes.size();
+    Vector3d32 startId(vectorIndex, vectorIndex, vectorIndex);
+    vertexes.push_back(Vector3dd(0,0,0));
+    vertexes.push_back(Vector3dd( x, y, farPlane));
+    vertexes.push_back(Vector3dd( x,-y, farPlane));
+    vertexes.push_back(Vector3dd(-x,-y, farPlane));
+    vertexes.push_back(Vector3dd(-x, y, farPlane));
+
+}
+
 #if 0
 void Mesh3D::addTruncatedCone(double r1, double r2, double length, int steps)
 {
@@ -113,5 +135,76 @@ void Mesh3D::addTruncatedCone(double r1, double r2, double length, int steps)
     }*/
 }
 #endif
+
+void Mesh3D::dumpPLY(ostream &out)
+{
+    out << "ply" << std::endl;
+    out << "format ascii 1.0" << std::endl;
+    out << "comment made by ViMouse software" << std::endl;
+    out << "comment This file is a saved stereo-reconstruction" << std::endl;
+    out << "element vertex " << vertexes.size() << std::endl;
+    out << "property float x" << std::endl;
+    out << "property float y" << std::endl;
+    out << "property float z" << std::endl;
+    out << "property uchar red" << std::endl;
+    out << "property uchar green" << std::endl;
+    out << "property uchar blue" << std::endl;
+    out << "element face " << faces.size() << std::endl;
+    out << "property list uchar int vertex_index" << std::endl;
+    out << "end_header" << std::endl;
+
+    for (unsigned i = 0; i < vertexes.size(); i++)
+    {
+        out << vertexes[i].x() << " "
+            << vertexes[i].y() << " "
+            << vertexes[i].z() << " "
+            << (unsigned)(128) << " "
+            << (unsigned)(128) << " "
+            << (unsigned)(128) << std::endl;
+    }
+
+    for (unsigned i = 0; i < faces.size(); i++)
+    {
+        out << "3 "
+            << faces[i].x() << " "
+            << faces[i].y() << " "
+            << faces[i].z() << " " << std::endl;
+    }
+}
+
+void Mesh3D::transform(const Matrix44 &matrix)
+{
+    for (unsigned i = 0; i < vertexes.size(); i++)
+    {
+        vertexes[i] = matrix * vertexes[i];
+    }
+}
+
+Mesh3D Mesh3D::transformed(const Matrix44 &matrix)
+{
+    Mesh3D toReturn;
+    toReturn = *this;
+    toReturn.transform(matrix);
+    return toReturn;
+}
+
+void Mesh3D::add(const Mesh3D &other)
+{
+    int newZero = vertexes.size();
+    vertexes.reserve(vertexes.size() + other.vertexes.size());
+    faces.reserve(faces.size() + other.faces.size());
+    for (int i = 0; i < other.vertexes.size(); i++)
+    {
+        vertexes.push_back(other.vertexes[i]);
+    }
+
+
+    for (int i = 0; i < other.faces.size(); i++)
+    {
+        faces.push_back(other.faces[i] + Vector3d32(newZero, newZero, newZero));
+    }
+}
+
+
 
 } /* namespace corecvs */

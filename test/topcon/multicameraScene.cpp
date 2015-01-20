@@ -138,6 +138,11 @@ bool BundlerCamera::checkAsserts()
     return true;
 }
 
+void BundlerCamera::finalizeLoad()
+{
+    cameraIntrinsics = CameraIntrinsics(Vector2dd(5397,3598), optCenter, focal, 1.0);
+}
+
 void BundlerCamera::print()
 {
     cout << "Name:       " << filename << endl;

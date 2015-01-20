@@ -8,6 +8,9 @@
 
 #include "generated/axisAlignedBoxParameters.h"
 #include "vector3d.h"
+#include "matrix33.h"
+#include "matrix44.h"
+#include "cameraParameters.h"
 
 namespace corecvs
 {
@@ -145,9 +148,18 @@ public:
 
     void addSphere(Vector3dd center, double radius, int step);
 
+    void addCamera(const CameraIntrinsics &cam, double len);
+
 #if 0
     void addTruncatedCone(double r1, double r2, double length, int steps = 16);
 #endif
+
+    void dumpPLY(ostream &out);
+    void transform (const Matrix44 &matrix);
+    Mesh3D transformed(const Matrix44 &matrix);
+
+    void add(const Mesh3D &other);
+
 };
 
 
