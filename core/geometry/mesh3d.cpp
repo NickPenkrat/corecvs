@@ -62,6 +62,24 @@ void Mesh3D::addAOB(const AxisAlignedBox3d &box)
     addAOB(box.low(), box.high());
 }
 
+int Mesh3D::addPoint(Vector3dd point)
+{
+     vertexes.push_back(point);
+     return vertexes.size() - 1;
+}
+
+void Mesh3D::addLine(Vector3dd point1, Vector3dd point2)
+{
+    int vectorIndex = (int)vertexes.size();
+    Vector2d32 startId(vectorIndex, vectorIndex);
+
+    vertexes.push_back(point1);
+    vertexes.push_back(point2);
+
+    edges.push_back(startId + Vector2d32(0, 1));
+
+}
+
 void Mesh3D::addSphere(Vector3dd center, double radius, int step)
 {
     int vectorIndex = (int)vertexes.size();
@@ -98,12 +116,29 @@ void Mesh3D::addCamera(const CameraIntrinsics &cam, double len)
     y = farPlane  * tan (alphaV);
 
     int vectorIndex = (int)vertexes.size();
-    Vector3d32 startId(vectorIndex, vectorIndex, vectorIndex);
+    Vector2d32 startId(vectorIndex, vectorIndex);
+
     vertexes.push_back(Vector3dd(0,0,0));
     vertexes.push_back(Vector3dd( x, y, farPlane));
     vertexes.push_back(Vector3dd( x,-y, farPlane));
     vertexes.push_back(Vector3dd(-x,-y, farPlane));
     vertexes.push_back(Vector3dd(-x, y, farPlane));
+
+    edges.push_back(Vector2d32(0,1) + startId);
+    edges.push_back(Vector2d32(0,2) + startId);
+    edges.push_back(Vector2d32(0,3) + startId);
+    edges.push_back(Vector2d32(0,4) + startId);
+
+    edges.push_back(Vector2d32(1,2) + startId);
+    edges.push_back(Vector2d32(2,3) + startId);
+    edges.push_back(Vector2d32(3,4) + startId);
+    edges.push_back(Vector2d32(4,1) + startId);
+
+    //SYNC_PRINT(("This 0x%X. Edges %d", this, edges.size()));
+    for (int i = 0; i < edges.size(); i++)
+    {
+        SYNC_PRINT(("Edges %d - [%d - %d]\n", i, edges[i].x(), edges[i].y()));
+    }
 
 }
 
@@ -151,6 +186,9 @@ void Mesh3D::dumpPLY(ostream &out)
     out << "property uchar blue" << std::endl;
     out << "element face " << faces.size() << std::endl;
     out << "property list uchar int vertex_index" << std::endl;
+    out << "element edge " << edges.size() << std::endl;
+    out << "property int vertex1" << std::endl;
+    out << "property int vertex2" << std::endl;
     out << "end_header" << std::endl;
 
     for (unsigned i = 0; i < vertexes.size(); i++)
@@ -170,6 +208,15 @@ void Mesh3D::dumpPLY(ostream &out)
             << faces[i].y() << " "
             << faces[i].z() << " " << std::endl;
     }
+
+    for (unsigned i = 0; i < edges.size(); i++)
+    {
+        out << edges[i].x() << " "
+            << edges[i].y() << " "  << std::endl;
+    }
+
+//    SYNC_PRINT(("This 0x%X. Edges %d", this, edges.size()));
+
 }
 
 void Mesh3D::transform(const Matrix44 &matrix)
@@ -193,15 +240,21 @@ void Mesh3D::add(const Mesh3D &other)
     int newZero = vertexes.size();
     vertexes.reserve(vertexes.size() + other.vertexes.size());
     faces.reserve(faces.size() + other.faces.size());
-    for (int i = 0; i < other.vertexes.size(); i++)
+    edges.reserve(edges.size() + other.edges.size());
+
+    for (unsigned i = 0; i < other.vertexes.size(); i++)
     {
         vertexes.push_back(other.vertexes[i]);
     }
 
-
-    for (int i = 0; i < other.faces.size(); i++)
+    for (unsigned i = 0; i < other.faces.size(); i++)
     {
         faces.push_back(other.faces[i] + Vector3d32(newZero, newZero, newZero));
+    }
+
+    for (unsigned i = 0; i < other.edges.size(); i++)
+    {
+        edges.push_back(other.edges[i] + Vector2d32(newZero, newZero));
     }
 }
 

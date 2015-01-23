@@ -5,6 +5,7 @@
 
 #include "multicameraScene.h"
 
+#include "log.h"
 #include "vector2d.h"
 #include "vector3d.h"
 #include "quaternion.h"
@@ -46,7 +47,7 @@ void skipComments(ifstream &s)
     }
 }
 
-int MulticameraScene::loadBundlerFile(std::string fileName)
+int MulticameraScene::loadBundlerFile(const std::string &fileName)
 {
     ifstream input;
     input.open (fileName.c_str(), ios::in);
@@ -65,7 +66,7 @@ int MulticameraScene::loadBundlerFile(std::string fileName)
     input >> cameraNum;
     SYNC_PRINT(("MulticameraScene::loadBundlerFile(): file has %d cams\n", cameraNum));
 
-    for (int i=0; i < cameraNum; i++)
+    for (int i = 0; i < cameraNum; i++)
     {
         BundlerCamera cam;
         cam.readBundlerCamera(input);
@@ -79,21 +80,129 @@ int MulticameraScene::loadBundlerFile(std::string fileName)
         cameraList.push_back(cam);
     }
 
-    for (int i=0; i < cameraList.size(); i++)
+    for (unsigned i = 0; i < cameraList.size(); i++)
     {
         if (!cameraList[i].checkAsserts())
         {
              SYNC_PRINT(("MulticameraScene::loadBundlerFile(): cam %d failed assert check\n", i));
         }
+        cameraList[i].finalizeLoad();
     }
     input.close();
     return 0;
 }
 
+
+int MulticameraScene::loadNVMFile(const std::string &fileName)
+{
+    ifstream input;
+    input.open (fileName.c_str(), ios::in);
+    L_INFO_P("Opening: %s", fileName.c_str());
+    if (input.fail())
+    {
+        L_ERROR_P("MulticameraScene::loadNVMFile(): Can't open file");
+        return 1;
+    }
+
+    string nvmMagicString;
+    getline(input, nvmMagicString);
+
+    L_INFO_P("Magic String is %s",nvmMagicString.c_str());
+
+    int cameraNum = -1;
+    input >> cameraNum;
+    L_INFO_P("File has %d cams", cameraNum);
+
+    for (int i = 0; i < cameraNum; i++)
+    {
+        BundlerCamera cam;
+        cam.readNVMCamera(input);
+        if (input.bad()) {
+            break;
+        }
+        L_INFO_P("cam %d\n", i);
+        cam.print();
+        cameraList.push_back(cam);
+    }
+
+    for (unsigned i = 0; i < cameraList.size(); i++)
+    {
+        cameraList[i].finalizeLoad();
+    }
+
+    /* Reading points */
+    int pointNum = -1;
+    input >> pointNum;
+    L_INFO_P("File has %d points", pointNum);
+    for (int i = 0; i < pointNum; i++)
+    {
+        FeaturePoint point;
+        point.readFromNVM(input);
+        if (input.bad()) {
+            break;
+        }
+        // L_INFO << point.position;
+        points.push_back(point);
+    }
+
+    L_INFO_P("Points loaded: %d points", points.size());
+
+    input.close();
+    return 0;
+}
+
+int MulticameraScene::loadInput(const std::string &fileName)
+{
+    ifstream infile;
+    infile.open (fileName.c_str(), ios::in);
+    L_INFO_P("Opening: %s", fileName.c_str());
+    if (infile.fail())
+    {
+        L_ERROR_P("Can't open file");
+        return 1;
+    }
+
+    string nvmMagicString;
+    getline(infile, nvmMagicString);
+
+    L_INFO_P("Magic String is %s",nvmMagicString.c_str());
+    /* Reading points */
+    int pointNum = -1;
+    infile >> pointNum;
+    L_INFO_P("File has %d points", pointNum);
+    for (int i = 0; i < pointNum; i++)
+    {
+        FeaturePoint point;
+        point.readFromInput(infile);
+        if (infile.bad()) {
+            break;
+        }
+        L_INFO << point.position;
+        this->input.push_back(point);
+    }
+
+    L_INFO_P("Points loaded: %d points", input.size());
+
+    infile.close();
+    return 0;
+}
+
+BundlerCamera::BundlerCamera() :
+    focal(0.0),
+    optCenter(0.0),
+    translation(0.0),
+    position(0.0),
+    axisAngles(0.0),
+    quaternion(0.0, 0.0, 0.0, 1.0),
+    rotation(1.0),
+    distortion(0.0),
+    geographic(0.0)
+{
+
+}
+
 int BundlerCamera::readBundlerCamera(std::istream &stream)
 {
-   // getline(stream, filename);
-   // getline(stream, filepath);
     stream >> filename;
     stream >> filepath;
     stream >> focal;
@@ -101,14 +210,37 @@ int BundlerCamera::readBundlerCamera(std::istream &stream)
     stream >> translation;
     stream >> position;
     stream >> axisAngles;
+
     double t,x,y,z;
     stream >> t >> x >> y >> z;
-
     quaternion = Quaternion(x,y,z,t);
+
     stream >> rotation;
     stream >> distortion;
-    stream >> geometric;
+    stream >> geographic;
 
+    return stream.bad();
+}
+
+int BundlerCamera::readNVMCamera(std::istream &stream)
+{
+    stream >> filepath;
+    filename = filepath;
+    stream >> focal;
+
+    double t,x,y,z;
+    stream >> t >> x >> y >> z;
+    quaternion = Quaternion(x,y,z,t);
+
+    stream >> translation;
+    stream >> distortion;
+
+    double dummy;
+    stream >> dummy;
+
+    rotation = quaternion.toMatrix();
+
+    return stream.bad();
 }
 
 bool BundlerCamera::checkAsserts()
@@ -155,5 +287,79 @@ void BundlerCamera::print()
     cout << "Q Rotation: " << quaternion << endl;
     cout << "Rotation:   " << endl << rotation << endl;
     cout << "Distortion: " << distortion << endl;
-    cout << "Coor:       " << geometric << endl;
+    cout << "Coor:       " << geographic << endl;
+}
+
+Ray3d BundlerCamera::rayFromPixel(const Vector2dd &point)
+{
+ //   Matrix44 Kinv = cameraIntrinsics.getInvKMatrix();
+ //  Vector3dd direction = Kinv * Vector3dd(point.x(), point.y(), 1.0);
+
+    //Vector2dd pos((point.x() - optCenter.x()) / focal, (point.y() - optCenter.y()) / focal);
+    Vector3dd direction((point.x() - optCenter.x()) / focal, (point.y() - optCenter.y()) / focal, 1.0);
+
+
+
+
+    Ray3d ray(rotation.inv() * direction/* Vector3dd(0,0,1)*/ , translation);
+    return ray;
+}
+
+
+int FeaturePoint::readFromNVM(std::istream &stream)
+{
+    stream >> position;
+
+    int r, g, b;
+    stream >> r >> g >> b;
+    color = RGBColor(r,g,b);
+
+    int measureCount = 0;
+    stream >> measureCount;
+
+    for (int i = 0; i < measureCount; i++ )
+    {
+        SfmMeasurement measure;
+        measure.readFromNVM(stream);
+        measurements.push_back(measure);
+    }
+}
+
+int FeaturePoint::readFromInput(std::istream &stream)
+{
+    string featureName;
+
+    while (featureName.empty()) {
+        getline(stream, featureName);
+    }
+    L_INFO << "[" << featureName << "]";
+    name = featureName;
+
+    int measureCount = 0;
+    stream >> measureCount;
+    for (int i = 0; i < measureCount; i++ )
+    {
+        SfmMeasurement measure;
+        measure.readFromInput(stream);
+        measurements.push_back(measure);
+    }
+    position = Vector3dd(0);
+}
+
+
+int SfmMeasurement::readFromNVM(std::istream &stream)
+{
+    stream >> image;
+    stream >> feature;
+    stream >> coord;
+
+}
+
+int SfmMeasurement::readFromInput(std::istream &stream)
+{
+    string name;
+    stream >> name;
+    stream >> image;
+    feature = 0;
+    stream >> coord;
 }

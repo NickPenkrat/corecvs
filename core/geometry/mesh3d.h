@@ -131,8 +131,10 @@ public:
     Vector3dd  centralPoint;
     bool hasCentral;
 
+    /** Vertexes that from the mesh (faces or edges or noconnected) */
     vector<Vector3dd>  vertexes;
     vector<Vector3d32> faces;
+    vector<Vector2d32> edges;
     vector<Vector2dd>  textureCoords;
 
     void setCentral(Vector3dd _central)
@@ -145,6 +147,10 @@ public:
     void addAOB(Vector3dd corner1, Vector3dd corner2);
     void addAOB(const AxisAlignedBoxParameters &box);
     void addAOB(const AxisAlignedBox3d &box);
+
+    int addPoint(Vector3dd point);
+
+    void addLine(Vector3dd point1, Vector3dd point2);
 
     void addSphere(Vector3dd center, double radius, int step);
 

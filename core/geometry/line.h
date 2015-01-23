@@ -1,7 +1,11 @@
 #ifndef LINE_H_
 #define LINE_H_
+
 #include "vector2d.h"
 #include "vector3d.h"
+#include "matrix44.h"
+
+
 namespace corecvs {
 /**
  * \file line.h
@@ -130,6 +134,47 @@ public:
         }
 
         return fabs(dp & denum) / l;
+    }
+
+    /**
+     *    This is a helpful method to estimate properties of skew lines
+     **/
+    Vector3dd intersectCoef(Ray3d &other)
+    {
+        Vector3dd normal = a ^ other.a;
+        Matrix33 m = Matrix33::FromColumns(a, -other.a, normal);
+        return m.inv() * (other.p - p);
+    }
+
+    /**
+     * not optimal so far
+     **/
+    Vector3dd closestPoint(Ray3d &other)
+    {
+        return getPoint(intersectCoef(other).x());
+    }
+
+    Vector3dd intersect(Ray3d &other)
+    {
+        Vector3dd coef = intersectCoef(other);
+        return (getPoint(coef.x()) + other.getPoint(coef.y())) / 2.0;
+    }
+
+    void transform(const Matrix44 &M)
+    {
+        a = M * a;
+        p = M * p;
+    }
+
+    Ray3d transformed(const Matrix44 &M)
+    {
+        return Ray3d((M * (p + a)) - (M * p), M * p);
+    }
+
+
+    static Vector3dd bestFit(Ray3d *rays, unsigned number)
+    {
+
     }
 
 };
