@@ -33,7 +33,7 @@ public:
     }
 
     virtual void drawImage    (QImage * /*image*/) {}
-    virtual void print() const  { printf("No info\n"); }
+    virtual void print() const  { printf("    No info\n"); }
     virtual int  modifyWidth  (int width)  { return width;  }
     virtual int  modifyHeight (int height) { return height; }
 

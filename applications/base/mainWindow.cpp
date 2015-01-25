@@ -54,6 +54,7 @@ void MainWindow::connectActions()
     connect(mUi->actionHistogram,          SIGNAL(triggered()), mMainDialog, SLOT(showHistogram()));
     connect(mUi->action3DHistogram,        SIGNAL(triggered()), mMainDialog, SLOT(show3DHistogram()));
     connect(mUi->actionCameraSettings,     SIGNAL(triggered()), mMainDialog, SLOT(showCaptureSettings()));
+    connect(mUi->actionColorHistogram,     SIGNAL(triggered()), mMainDialog, SLOT(showColorHistogram()));
     connect(mUi->actionRectify,            SIGNAL(triggered()), mMainDialog, SLOT(showRectificationDialog()));
     connect(mUi->actionAbout,              SIGNAL(triggered()), mMainDialog, SLOT(showAboutDialog()));
     connect(mUi->actionDO,                 SIGNAL(triggered()), mMainDialog, SLOT(doRectify()));

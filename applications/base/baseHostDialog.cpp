@@ -272,6 +272,13 @@ void BaseHostDialog::showCaptureSettings()
     mCapSettings.raise();
 }
 
+void BaseHostDialog::showColorHistogram()
+{
+    mColorHistogram.show();
+    mColorHistogram.raise();
+}
+
+
 void BaseHostDialog::showAboutDialog()
 {
     mAboutDialog.show();

@@ -172,9 +172,12 @@ public:
     }
 
 
-    static Vector3dd bestFit(Ray3d *rays, unsigned number)
+    /**
+     *   NYI
+     **/
+    static Vector3dd bestFit(Ray3d */*rays*/, unsigned /*number*/)
     {
-
+        return Vector3dd(0.0);
     }
 
 };

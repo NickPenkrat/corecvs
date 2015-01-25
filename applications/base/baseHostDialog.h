@@ -42,6 +42,7 @@
 #include "camerasConfigParameters.h"
 #include "g12Image.h"
 #include "advancedImageWidget.h"
+#include "histogramdialog.h"
 
 #include "memoryUsageCalculator.h"
 #include "inputSelectorWidget.h"
@@ -137,6 +138,7 @@ public slots:
     void presentationControlParametersChanged(QSharedPointer<PresentationParameters> params);
     void showStatistics();
     void showCaptureSettings();
+    void showColorHistogram();
     void showAboutDialog();
     void showInputSelectorDialog();
     void showDistortionCorrectorDialog();
@@ -265,6 +267,8 @@ protected:
 
     /*TODO: Rename this */
     CapSettingsDialog mCapSettings;
+    HistogramDialog mColorHistogram;
+
     Frames *mFrames;
     StatisticsDialog mStatsDialog;
 

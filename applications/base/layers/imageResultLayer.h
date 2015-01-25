@@ -79,7 +79,7 @@ template<class BufferType>
                 printf(" NULL\n");
                 continue;
             }
-            printf("[%dx%d]\n", mImages[i]->height(), mImages[i]->width());
+            printf(" [%dx%d]\n", mImages[i]->height(), mImages[i]->width());
         }
     }
 };

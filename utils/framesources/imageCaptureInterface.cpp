@@ -174,7 +174,7 @@ ImageCaptureInterface* ImageCaptureInterface::fabric(string input, bool isRGB)
 
 void ImageCaptureInterface::notifyAboutNewFrame(frame_data_t frameData)
 {
-    SYNC_PRINT(("ImageCaptureInterface::notifyAboutNewFrame()\n"));
+//    SYNC_PRINT(("ImageCaptureInterface::notifyAboutNewFrame()\n"));
     emit newFrameReady(frameData);
     emit newImageReady();
 }
