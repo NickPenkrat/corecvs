@@ -101,6 +101,8 @@ private:
     /* Draw line to monitor values */
     void drawGridFixLine(QPainter &painter);
 
+    void addNewGraphToUI(QString name, unsigned graphId);
+
     QSignalMapper *mUpDownMapper;
 //    ParametersMapperGraphPlot *mParamMapper;
 

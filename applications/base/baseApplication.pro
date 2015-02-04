@@ -27,6 +27,7 @@ HEADERS += \
     generatedParameters/outputStyle.h \    
     layers/resultImage.h \
     layers/imageResultLayer.h \
+    layers/geometryResultLayer.h \
     memoryUsageCalculator/memoryUsageCalculator.h \
     parametersMapper/parametersMapperBase.h \
     statistics/statisticsDialog.h \
@@ -39,6 +40,7 @@ HEADERS += \
     baseParametersControlWidget.h \
     presentationParametersControlWidget.h \
     camerasConfigParameters.h \
+
     
 
 SOURCES += \
@@ -46,6 +48,7 @@ SOURCES += \
     generatedParameters/presentationParameters.cpp \
     layers/resultImage.cpp \
     layers/imageResultLayer.cpp \
+    layers/geometryResultLayer.cpp \
     memoryUsageCalculator/memoryUsageCalculator.cpp \
     parametersMapper/parametersMapperBase.cpp \
     statistics/statisticsDialog.cpp \

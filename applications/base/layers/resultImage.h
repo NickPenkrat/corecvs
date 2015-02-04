@@ -22,8 +22,10 @@ public:
         LAYER_STEREO,
         LAYER_TILES,
         LAYER_CLUSTERS,
-        LAYER_OBJECT,
-        LAYER_PARAMS
+        LAYER_OBJECT,        
+        LAYER_PARAMS,
+        LAYER_GEOMETRY,
+        LAYER_LAST
     };
 
     static const char* LAYER_TYPE_NAMES[];
