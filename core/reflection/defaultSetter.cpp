@@ -78,6 +78,13 @@ void DefaultSetter::visit<bool>(bool &boolField, bool defaultValue, const char *
     boolField = defaultValue;
 }
 
+template <>
+void DefaultSetter::visit<std::string>(std::string &stringField, std::string defaultValue, const char * /*fieldName*/)
+{
+    stringField = defaultValue;
+}
+
+
 template<class Type>
 void DefaultSetter::visit(Type &field, Type /*defaultValue*/, const char *fieldName)
 {

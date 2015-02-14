@@ -78,6 +78,8 @@ void DefaultSetter::visit<double>(double &doubleField, double defaultValue, cons
 template <>
 void DefaultSetter::visit<bool>(bool &boolField, bool defaultValue, const char * /*fieldName*/);
 
+template <>
+void DefaultSetter::visit<std::string>(std::string &stringField, std::string defaultValue, const char * /*fieldName*/);
 
 
 } //namespace corecvs

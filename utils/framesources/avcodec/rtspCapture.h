@@ -1,15 +1,5 @@
-#pragma once
-/**
- * \file aviCapture.h
- * \brief Add Comment Here
- *
- * \date Jan 9, 2015
- * \author alexander
- */
-
-
-//#define __STDC_CONSTANT_MACROS
-//#include </usr/include/stdint.h>
+#ifndef RTSPCAPTURE_H
+#define RTSPCAPTURE_H
 
 extern "C" {
 
@@ -32,26 +22,19 @@ extern "C" {
 #include "imageCaptureInterface.h"
 #include "preciseTimer.h"
 
-class AviCapture : public ImageCaptureInterface
+class RTSPCapture : public ImageCaptureInterface
 {
-    static bool avCodecInited;
-
 public:
-    AviCapture(QString const &params);
-    ~AviCapture();
+    RTSPCapture(const QString &params);
+    ~RTSPCapture();
 
     virtual ImageCaptureInterface::CapErrorCode initCapture();
     virtual ImageCaptureInterface::CapErrorCode startCapture();
     virtual CapErrorCode pauseCapture();
     virtual CapErrorCode nextFrame();
-
-    /**
-     * Check if particular image capturer support pausing.
-     * This function can be called before starting or even initing the capture
-     **/
     virtual bool         supportPause();
+    virtual FramePair    getFrame();
 
-    virtual FramePair getFrame();
 
     std::string mName;
     AVFormatContext* mFormatContext;
@@ -70,3 +53,5 @@ public:
 
     PreciseTimer mLastFrameTime;
 };
+
+#endif // RTSPCAPTURE_H

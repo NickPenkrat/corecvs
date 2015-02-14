@@ -55,7 +55,7 @@ void Frames::fetchNewFrames(ImageCaptureInterface *input)
     ImageCaptureInterface::FramePair pair = input->isRgb ? input->getFrameRGB24() : input->getFrame();
     if (pair.bufferLeft == NULL || pair.bufferRight == NULL)
     {
-        printf("Alert: We have received one or zero frames\n");
+        printf("Frames::fetchNewFrames(): Alert: We have received one or zero frames\n");
         fflush(stdout);
     }
 

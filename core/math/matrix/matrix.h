@@ -144,6 +144,9 @@ public:
      **/
     Matrix *mul(const Matrix& V);
 
+    friend Matrix operator *(const double &a, const Matrix &B);
+    friend Matrix operator *(const Matrix &B, const double &a);
+
     friend Matrix operator *(const Matrix &A, const Matrix &B);
     friend Matrix operator +(const Matrix &A, const Matrix &B);
     friend Matrix operator -(const Matrix &A, const Matrix &B);
@@ -177,6 +180,8 @@ public:
     static void svd (Matrix  *A, Matrix *W, Matrix *V);
     static void svd (Matrix33 *A, Vector3dd *W, Matrix33 *V);
     static void svdDesc (Matrix33 *A, Vector3dd *W, Matrix33 *V);
+
+    static int jacobi(Matrix *a, DiagonalMatrix *d, Matrix *v, int *nrotpt);
 
     static bool matrixSolveGaussian(Matrix *A, Matrix *B);
 
@@ -252,6 +257,7 @@ public:
     }
 
     friend ostream & operator <<(ostream &out, const Matrix &matrix);
+    void print(ostream &out);
 
     inline bool notTooFar(const Matrix *V, double epsilon = 0.0) const
     {

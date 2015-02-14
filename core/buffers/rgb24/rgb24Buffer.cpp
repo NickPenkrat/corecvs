@@ -769,6 +769,28 @@ void RGB24Buffer::fillWithYUYV (uint8_t *yuyv)
     }
 }
 
+void RGB24Buffer::dropValueAndSatuation()
+{
+    for (int i = 0; i < h; i++)
+    {
+        for (int j = 0; j < w; j++)
+        {
+            element(i,j) = RGBColor::FromHSV(element(i,j).hue(), 255, 255);
+        }
+    }
+}
+
+void RGB24Buffer::dropValue()
+{
+    for (int i = 0; i < h; i++)
+    {
+        for (int j = 0; j < w; j++)
+        {
+            element(i,j) = RGBColor::FromHSV(element(i,j).hue(), element(i,j).saturation(), 255);
+        }
+    }
+}
+
 
 G12Buffer *RGB24Buffer::toG12Buffer()
 {
@@ -811,6 +833,7 @@ G12Buffer *RGB24Buffer::toG12Buffer()
 }
 
 
+/* We need to optimize this */
 G8Buffer* RGB24Buffer::getChannel(ChannelID channel)
 {
     G8Buffer *result = new G8Buffer(getSize(), false);
@@ -831,9 +854,21 @@ G8Buffer* RGB24Buffer::getChannel(ChannelID channel)
                 case CHANNEL_B:
                     pixel = element(i,j).b();
                     break;
+                default:
                 case CHANNEL_GRAY:
                     pixel = element(i,j).brightness();
                     break;
+
+                case CHANNEL_HUE:
+                    pixel = ((int)element(i,j).hue()) * 255 / 360;
+                    break;
+                case CHANNEL_SATURATION:
+                    pixel = element(i,j).saturation();
+                    break;
+                case CHANNEL_VALUE:
+                    pixel = element(i,j).value();
+                    break;
+
             }
             result->element(i,j) = pixel;
         }

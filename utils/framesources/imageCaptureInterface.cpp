@@ -39,6 +39,7 @@
 
 #ifdef WITH_AVCODEC
 #include "aviCapture.h"
+#include "rtspCapture.h"
 #endif
 
 #ifdef WITH_OPENCV
@@ -136,6 +137,12 @@ ImageCaptureInterface* ImageCaptureInterface::fabric(string input, bool isRGB)
         SYNC_PRINT(("ImageCaptureInterface::fabric(): Creating avcodec input"));
         string tmp = input.substr(avcodec.size());
         return new AviCapture(QString(tmp.c_str()));
+    }
+    string rtsp("rtsp:");
+    if (input.substr(0, rtsp.size()).compare(rtsp) == 0)
+    {
+        SYNC_PRINT(("ImageCaptureInterface::fabric(): Creating avcodec input"));
+        return new RTSPCapture(QString(input.c_str()));
     }
 #endif
 

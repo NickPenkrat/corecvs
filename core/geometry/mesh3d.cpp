@@ -135,10 +135,10 @@ void Mesh3D::addCamera(const CameraIntrinsics &cam, double len)
     edges.push_back(Vector2d32(4,1) + startId);
 
     //SYNC_PRINT(("This 0x%X. Edges %d", this, edges.size()));
-    for (int i = 0; i < edges.size(); i++)
-    {
-        SYNC_PRINT(("Edges %d - [%d - %d]\n", i, edges[i].x(), edges[i].y()));
-    }
+    //for (unsigned i = 0; i < edges.size(); i++)
+    //{
+    //    SYNC_PRINT(("Edges %d - [%d - %d]\n", i, edges[i].x(), edges[i].y()));
+    //}
 
 }
 

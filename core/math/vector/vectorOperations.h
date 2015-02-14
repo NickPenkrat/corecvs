@@ -487,6 +487,21 @@ public:
     }
 
     /**
+     * Per-elementSqrt
+     *
+     * \f[W_i = sqrt(V_i) \f]
+     *
+     **/
+    RealType inline perElementSqrt() const
+    {
+        RealType result = _createVector(_size());
+        for (int i = 0; i < _size(); i++)
+            result.at(i) = (ElementType)sqrt((double)_at(i));
+        return result;
+    }
+
+
+    /**
      *   Check if current vector is inside the n dimensional cube
      *   \f[
      *      low_{i} \le this_{i} \le high_{i}

@@ -74,6 +74,9 @@ public:
     double &a(int i,int j);
     const double &a(int i,int j) const;
 
+    double &operator ()(int i,int j);
+    const double &operator ()(int i,int j) const;
+
     void transpose();
     Matrix44 transposed() const;
 
@@ -207,12 +210,22 @@ inline Matrix44::Matrix44(const Matrix33 &_matrix, const Vector3dd &_shift)
 
 inline double &Matrix44::a(int i,int j)
 {
-   return (*this)[i * W + j];
+    return (*this)[i * W + j];
 }
 
 inline const double &Matrix44::a(int i,int j) const
 {
-   return (*this)[i * W + j];
+    return (*this)[i * W + j];
+}
+
+inline double &Matrix44::operator ()(int i,int j)
+{
+    return (*this)[i * W + j];
+}
+
+inline const double &Matrix44::operator ()(int i,int j) const
+{
+    return (*this)[i * W + j];
 }
 
 

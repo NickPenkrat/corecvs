@@ -8,6 +8,24 @@
 #include "imageResultLayer.h"
 
 
+
+ImageResultLayer::ImageResultLayer(G8Buffer* image) :
+    ResultLayerBase(LAYER_CLASS_ID)
+  , mStyle(OutputStyle::RIGHT_FRAME)
+{
+    for (int id = 0; id < Frames::MAX_INPUTS_NUMBER; id++ )
+    {
+        mImages[id] = NULL;
+    }
+
+    if (image == NULL) {
+        qDebug("ImageResultLayer::ImageResultLayer( G12Buffer* NULL) : Called with null input");
+        return;
+    }
+
+    mImages[Frames::RIGHT_FRAME] = new G8Image(image);
+}
+
 ImageResultLayer::ImageResultLayer(
     G12Buffer* image
 ) : ResultLayerBase(LAYER_CLASS_ID)

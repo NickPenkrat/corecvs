@@ -77,6 +77,8 @@ public:
     double det();
     inline double &a(int i, int j);
     inline const double &a(int i, int j) const;
+    double &operator ()(int i,int j);
+    const double &operator ()(int i,int j) const;
 
     void transpose();
     void swapRows(int r1, int r2);
@@ -252,6 +254,18 @@ inline const double &Matrix33::a(int i,int j) const
 {
    return (*this)[i * W + j];
 }
+
+inline double &Matrix33::operator ()(int i,int j)
+{
+    return (*this)[i * W + j];
+}
+
+inline const double &Matrix33::operator ()(int i,int j) const
+{
+    return (*this)[i * W + j];
+}
+
+
 
 
 /**

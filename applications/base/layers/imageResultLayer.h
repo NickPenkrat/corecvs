@@ -39,13 +39,11 @@ template<class BufferType>
         bool showLeftFrame = false
     );*/
 
-    ImageResultLayer(
-        G12Buffer* image
-    );
+    ImageResultLayer(G8Buffer* image);
 
-    ImageResultLayer(
-        RGB24Buffer* image
-    );
+    ImageResultLayer(G12Buffer* image);
+
+    ImageResultLayer(RGB24Buffer* image);
 
 
     /** Polymorphic type so virtual destructor needed */

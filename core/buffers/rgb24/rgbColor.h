@@ -64,6 +64,14 @@ public:
         this->a() = 0;
     }
 
+    RGBColor(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t _a)
+    {
+        this->r() = _r;
+        this->g() = _g;
+        this->b() = _b;
+        this->a() = _a;
+    }
+
     RGBColor(const RgbColorParameters &color)
     {
         this->r() = color.r();
@@ -421,6 +429,14 @@ template<class VisitorType>
         visitor.visit(a(), static_cast<const IntField *>(reflect.fields[FIELD_A]));
     }
 
+    friend ostream & operator <<(ostream &out, const RGBColor &color)
+    {
+        out << "[";
+            out << (int)color.r() << ", " << (int)color.g() << ", " << (int)color.b() << " (" << (int)color.a() << ")";
+        out << "]";
+        return out;
+    }
+
     Vector3dd toDouble() const
     {
         return Vector3dd(r(), g(), b());
@@ -431,6 +447,38 @@ template<class VisitorType>
         Vector3dd input1 = input;
         input1.mapToHypercube(Vector3dd(0.0,0.0,0.0), Vector3dd(255.0,255.0,255.0));
         return RGBColor(input.x(), input.y(), input.z());
+    }
+
+    static RGBColor FromHSV(uint16_t h, uint8_t s, uint8_t v)
+    {
+        int c = ((int)(s * v)) / 255;
+        int m = v - c;
+        int r,g,b;
+
+        int swh = h / 60;
+        int dh = h - swh * 60.0;
+
+        int x1 = c * dh / 60;
+        int x2 = c - x1;
+
+
+        switch (swh) {
+        case 0:
+            r =  c; g = x1; b = 0; break;
+        case 1:
+            r = x2; g =  c; b = 0; break;
+        case 2:
+            r =  0; g =  c; b = x1; break;
+        case 3:
+            r =  0; g = x2; b = c; break;
+        case 4:
+            r =  x1; g =  0; b = c; break;
+        case 5:
+        default:
+            r =  c; g =  0; b = x2; break;
+        }
+
+        return RGBColor(r + m, g + m, b + m);
     }
 
 };

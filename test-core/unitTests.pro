@@ -65,3 +65,5 @@ SUBDIRS += \
     triangulator \
     cloud \
     distortion \
+    similarity \
+	eigen \

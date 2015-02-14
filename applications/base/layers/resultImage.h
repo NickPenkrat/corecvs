@@ -79,6 +79,11 @@ public:
     ,   mWidth (0)
     {}
 
+    ResultImage(int height, int width) :
+        mHeight(height)
+    ,   mWidth (width)
+    {}
+
     virtual ~ResultImage()
     {
         for (unsigned i = 0; i < mLayers.size(); i++)
@@ -89,6 +94,7 @@ public:
 
     void drawImage (QImage *image)
     {
+        bool filled = false;
 //        qDebug("ResultImage::drawImage (QImage *): called");
 
         if (image == NULL) {
@@ -100,11 +106,17 @@ public:
             if (mLayers[i] != NULL)
             {
 //            	qDebug("Applying layer %d of type %d", i, mLayers[i]->getType());
+                filled = true;
                 mLayers[i]->drawImage(image);
             } else {
 //            	qDebug("Layer %d is NULL", i);
             }
         }
+        if (!filled)
+        {
+            image->fill(Qt::green);
+        }
+
     }
 
     unsigned layerNum() const
@@ -186,6 +198,7 @@ public:
         	printf("  %s\n", ResultLayerBase::LAYER_TYPE_NAMES[layer(i)->getType()]);
         	layer(i)->print();
     	}
+        printf("Final size: [%d x %d]\n", width(), height());
     }
 
 };
