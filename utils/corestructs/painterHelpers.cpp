@@ -204,10 +204,10 @@ void drawMetaballs(QPainter &painter, const Vector2dd &center1, int size1, const
     double dist = dir.l2Metric();
     dir = dir / dist;
     double angle = dir.argument();
-    Vector2dd side = dir.leftNormal().normalised();
+//    Vector2dd side = dir.leftNormal().normalised();
 
     Vector2dd centerr = center1 + dir * ((dist - size1 - size2) / 2.0 + size1) ;
-    Vector2dd centerl = center1 + dir * ((dist - size1 - size2) / 2.0 + size1) ;
+//    Vector2dd centerl = center1 + dir * ((dist - size1 - size2) / 2.0 + size1) ;
 
 
     QRectF circle1(center1.x() - size1, center1.y() - size1, 2.0 * size1, 2.0 * size1);

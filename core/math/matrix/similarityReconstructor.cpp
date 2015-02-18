@@ -41,6 +41,23 @@ void Similarity::fillFunctionInput(double in[])
     in[ROTATION_T] = rotation.t();
 }
 
+Similarity Similarity::getInterpolated(double t)
+{
+    Similarity toReturn;
+
+    using corecvs::lerp;
+
+    toReturn.scaleL = lerp(1.0, scaleL, t);
+    toReturn.scaleR = lerp(1.0, scaleR, t);
+
+    toReturn.shiftL = lerp(Vector3dd(0.0), shiftL, t);
+    toReturn.shiftR = lerp(Vector3dd(0.0), shiftR, t);
+
+    toReturn.rotation = Quaternion::slerp(Quaternion::RotationIdentity(), rotation, t);
+
+    return toReturn;
+}
+
 /**
  *  Move similar code from  SimilarityReconstructor and HomographyReconstructor
  *
@@ -58,8 +75,11 @@ Similarity SimilarityReconstructor::getBestSimilarity()
     int lcount = 0;
     int rcount = 0;
 
+    cout << "Starting optimization with " << p2p.size() << " constraints" << endl;
+
     for (unsigned  i = 0; i < p2p.size(); i++)
     {
+        cout << p2p[i].start << " ==> " << p2p[i].end << endl;
         lmean += p2p[i].start;
         lmeansq += (p2p[i].start) * (p2p[i].start);
 
@@ -127,17 +147,15 @@ Similarity SimilarityReconstructor::getBestSimilarity()
             maxi = i;
         }
     }
-    maxi = 0;
 
     /* make an eigenvalue cheak */
-    int row = 0;
     FixedVector<double, 4> eigen;
-    eigen[0] = VT.a(0, row);
-    eigen[1] = VT.a(1, row);
-    eigen[2] = VT.a(2, row);
-    eigen[3] = VT.a(3, row);
+    eigen[0] = VT.a(0, maxi);
+    eigen[1] = VT.a(1, maxi);
+    eigen[2] = VT.a(2, maxi);
+    eigen[3] = VT.a(3, maxi);
 
-    cout << eigen << " " << eigen * D.a(0,row) << "  "  << (N * eigen) << endl;
+    cout << eigen << " " << eigen * D.a(0,maxi) << "  "  << (N * eigen) << endl;
 
     Quaternion rotation(eigen[1], eigen[2], eigen[3], eigen[0]);
 
@@ -219,7 +237,8 @@ ostream &operator << (ostream &out, const Similarity &reconstructor)
     out << "Scale Right by: "  << reconstructor.scaleR << endl;
 
     out << "Quaternion:" << reconstructor.rotation << endl;
-    out << "Rotate by: " << reconstructor.rotation.getAngle() << " around " << reconstructor.rotation.getAxis() << endl;
+    double angle = reconstructor.rotation.getAngle();
+    out << "Rotate by: " << angle << " (" << radToDeg(angle) << "deg) around " << reconstructor.rotation.getAxis() << endl;
     Quaternion rot = reconstructor.rotation;
     rot = -rot;
     out << "Rotate by: " << rot.getAngle() << " around " << rot.getAxis() << endl;

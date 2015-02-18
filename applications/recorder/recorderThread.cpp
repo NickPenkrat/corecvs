@@ -80,7 +80,7 @@ AbstractOutputData* RecorderThread::processNewData()
 #endif
 
     PreciseTimer start = PreciseTimer::currentTime();
-    PreciseTimer startEl = PreciseTimer::currentTime();
+//    PreciseTimer startEl = PreciseTimer::currentTime();
 
     bool have_params = !(mRecorderParameters.isNull());
     bool two_frames = have_params && (CamerasConfigParameters::TwoCapDev == mActiveInputsNumber); // FIXME: additional params needed here
@@ -141,8 +141,8 @@ AbstractOutputData* RecorderThread::processNewData()
     outputData->mMainImage.setHeight(mBaseParams->h());
     outputData->mMainImage.setWidth (mBaseParams->w());
 
-#if 0
-    stats.setTime(ViFlowStatisticsDescriptor::TOTAL_TIME, start.usecsToNow());
+#if 1
+    stats.setTime("Total time", start.usecsToNow());
 #endif
     mIdleTimer = PreciseTimer::currentTime();
 

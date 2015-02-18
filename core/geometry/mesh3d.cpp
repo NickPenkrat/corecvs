@@ -13,29 +13,29 @@ void Mesh3D::addAOB(Vector3dd c1, Vector3dd c2)
     int vectorIndex = (int)vertexes.size();
     Vector3d32 startId(vectorIndex, vectorIndex, vectorIndex);
 
-    vertexes.push_back(Vector3dd(c1.x(), c1.y(), c1.z()));
-    vertexes.push_back(Vector3dd(c2.x(), c1.y(), c1.z()));
-    vertexes.push_back(Vector3dd(c2.x(), c2.y(), c1.z()));
-    vertexes.push_back(Vector3dd(c1.x(), c2.y(), c1.z()));
+    addVertex(Vector3dd(c1.x(), c1.y(), c1.z()));
+    addVertex(Vector3dd(c2.x(), c1.y(), c1.z()));
+    addVertex(Vector3dd(c2.x(), c2.y(), c1.z()));
+    addVertex(Vector3dd(c1.x(), c2.y(), c1.z()));
 
-    vertexes.push_back(Vector3dd(c1.x(), c1.y(), c2.z()));
-    vertexes.push_back(Vector3dd(c2.x(), c1.y(), c2.z()));
-    vertexes.push_back(Vector3dd(c2.x(), c2.y(), c2.z()));
-    vertexes.push_back(Vector3dd(c1.x(), c2.y(), c2.z()));
+    addVertex(Vector3dd(c1.x(), c1.y(), c2.z()));
+    addVertex(Vector3dd(c2.x(), c1.y(), c2.z()));
+    addVertex(Vector3dd(c2.x(), c2.y(), c2.z()));
+    addVertex(Vector3dd(c1.x(), c2.y(), c2.z()));
 
-    faces.push_back(startId + Vector3d32(0, 1, 2));
-    faces.push_back(startId + Vector3d32(0, 1, 2));
-    faces.push_back(startId + Vector3d32(2, 3, 0));
-    faces.push_back(startId + Vector3d32(7, 6, 5));
-    faces.push_back(startId + Vector3d32(5, 4, 7));
-    faces.push_back(startId + Vector3d32(0, 4, 5));
-    faces.push_back(startId + Vector3d32(5, 1, 0));
-    faces.push_back(startId + Vector3d32(1, 5, 6));
-    faces.push_back(startId + Vector3d32(6, 2, 1));
-    faces.push_back(startId + Vector3d32(2, 6, 7));
-    faces.push_back(startId + Vector3d32(7, 3, 2));
-    faces.push_back(startId + Vector3d32(3, 7, 4));
-    faces.push_back(startId + Vector3d32(4, 0, 3));
+    addFace(startId + Vector3d32(0, 1, 2));
+    addFace(startId + Vector3d32(0, 1, 2));
+    addFace(startId + Vector3d32(2, 3, 0));
+    addFace(startId + Vector3d32(7, 6, 5));
+    addFace(startId + Vector3d32(5, 4, 7));
+    addFace(startId + Vector3d32(0, 4, 5));
+    addFace(startId + Vector3d32(5, 1, 0));
+    addFace(startId + Vector3d32(1, 5, 6));
+    addFace(startId + Vector3d32(6, 2, 1));
+    addFace(startId + Vector3d32(2, 6, 7));
+    addFace(startId + Vector3d32(7, 3, 2));
+    addFace(startId + Vector3d32(3, 7, 4));
+    addFace(startId + Vector3d32(4, 0, 3));
 
     textureCoords.push_back(Vector2dd(0.0,0.0));
     textureCoords.push_back(Vector2dd(1.0,0.0));
@@ -64,7 +64,7 @@ void Mesh3D::addAOB(const AxisAlignedBox3d &box)
 
 int Mesh3D::addPoint(Vector3dd point)
 {
-     vertexes.push_back(point);
+     addVertex(point);
      return vertexes.size() - 1;
 }
 
@@ -73,10 +73,10 @@ void Mesh3D::addLine(Vector3dd point1, Vector3dd point2)
     int vectorIndex = (int)vertexes.size();
     Vector2d32 startId(vectorIndex, vectorIndex);
 
-    vertexes.push_back(point1);
-    vertexes.push_back(point2);
+    addVertex(point1);
+    addVertex(point2);
 
-    edges.push_back(startId + Vector2d32(0, 1));
+    addEdge(startId + Vector2d32(0, 1));
 
 }
 
@@ -98,7 +98,7 @@ void Mesh3D::addSphere(Vector3dd center, double radius, int step)
             double x = radius * sin(phi) * sin(psi);
             double y = radius * sin(phi) * cos(psi);
             double z = radius * cos(phi);
-            vertexes.push_back(center + Vector3dd(x,y,z));
+            addVertex(center + Vector3dd(x,y,z));
         }
     }
 }
@@ -118,21 +118,21 @@ void Mesh3D::addCamera(const CameraIntrinsics &cam, double len)
     int vectorIndex = (int)vertexes.size();
     Vector2d32 startId(vectorIndex, vectorIndex);
 
-    vertexes.push_back(Vector3dd(0,0,0));
-    vertexes.push_back(Vector3dd( x, y, farPlane));
-    vertexes.push_back(Vector3dd( x,-y, farPlane));
-    vertexes.push_back(Vector3dd(-x,-y, farPlane));
-    vertexes.push_back(Vector3dd(-x, y, farPlane));
+    addVertex(Vector3dd(0,0,0));
+    addVertex(Vector3dd( x, y, farPlane));
+    addVertex(Vector3dd( x,-y, farPlane));
+    addVertex(Vector3dd(-x,-y, farPlane));
+    addVertex(Vector3dd(-x, y, farPlane));
 
-    edges.push_back(Vector2d32(0,1) + startId);
-    edges.push_back(Vector2d32(0,2) + startId);
-    edges.push_back(Vector2d32(0,3) + startId);
-    edges.push_back(Vector2d32(0,4) + startId);
+    addEdge(Vector2d32(0,1) + startId);
+    addEdge(Vector2d32(0,2) + startId);
+    addEdge(Vector2d32(0,3) + startId);
+    addEdge(Vector2d32(0,4) + startId);
 
-    edges.push_back(Vector2d32(1,2) + startId);
-    edges.push_back(Vector2d32(2,3) + startId);
-    edges.push_back(Vector2d32(3,4) + startId);
-    edges.push_back(Vector2d32(4,1) + startId);
+    addEdge(Vector2d32(1,2) + startId);
+    addEdge(Vector2d32(2,3) + startId);
+    addEdge(Vector2d32(3,4) + startId);
+    addEdge(Vector2d32(4,1) + startId);
 
     //SYNC_PRINT(("This 0x%X. Edges %d", this, edges.size()));
     //for (unsigned i = 0; i < edges.size(); i++)
@@ -140,6 +140,11 @@ void Mesh3D::addCamera(const CameraIntrinsics &cam, double len)
     //    SYNC_PRINT(("Edges %d - [%d - %d]\n", i, edges[i].x(), edges[i].y()));
     //}
 
+}
+
+void Mesh3D::drawLine(double x1, double y1, double x2, double y2, int color)
+{
+    addLine(Vector3dd(x1, y1, 0.0), Vector3dd(x2, y2, 0.0));
 }
 
 #if 0
@@ -195,10 +200,16 @@ void Mesh3D::dumpPLY(ostream &out)
     {
         out << vertexes[i].x() << " "
             << vertexes[i].y() << " "
-            << vertexes[i].z() << " "
-            << (unsigned)(128) << " "
-            << (unsigned)(128) << " "
-            << (unsigned)(128) << std::endl;
+            << vertexes[i].z() << " ";
+        if (hasColor) {
+            out << (unsigned)(vertexesColor[i].r()) << " "
+                << (unsigned)(vertexesColor[i].g()) << " "
+                << (unsigned)(vertexesColor[i].b()) << std::endl;
+        } else {
+            out << (unsigned)(128) << " "
+                << (unsigned)(128) << " "
+                << (unsigned)(128) << std::endl;
+        }
     }
 
     for (unsigned i = 0; i < faces.size(); i++)
@@ -244,17 +255,43 @@ void Mesh3D::add(const Mesh3D &other)
 
     for (unsigned i = 0; i < other.vertexes.size(); i++)
     {
-        vertexes.push_back(other.vertexes[i]);
+        addVertex(other.vertexes[i]);
     }
 
     for (unsigned i = 0; i < other.faces.size(); i++)
     {
-        faces.push_back(other.faces[i] + Vector3d32(newZero, newZero, newZero));
+        addFace(other.faces[i] + Vector3d32(newZero, newZero, newZero));
     }
 
     for (unsigned i = 0; i < other.edges.size(); i++)
     {
-        edges.push_back(other.edges[i] + Vector2d32(newZero, newZero));
+        addEdge(other.edges[i] + Vector2d32(newZero, newZero));
+    }
+}
+
+
+
+void Mesh3D::addEdge(const Vector2d32 &edge)
+{
+    edges.push_back(edge);
+    if (hasColor) {
+        edgesColor.push_back(currentColor);
+    }
+}
+
+void Mesh3D::addVertex(const Vector3dd &vector)
+{
+    vertexes.push_back(currentTransform * vector);
+    if (hasColor) {
+        vertexesColor.push_back(currentColor);
+    }
+}
+
+void Mesh3D::addFace(const Vector3d32 &faceId)
+{
+    faces.push_back(faceId);
+    if (hasColor) {
+        facesColor.push_back(currentColor);
     }
 }
 

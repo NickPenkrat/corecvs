@@ -843,13 +843,13 @@ void BaseHostDialog::saveParams(const QString &fileName, QString root)
         cameraSettings.endGroup();
     }
 
-    qDebug("BaseHostDialog::saveParam(): We will be saving %d widgets", mSaveableWidgets.size());
+    qDebug("BaseHostDialog::saveParam(): We will be saving %lu widgets", mSaveableWidgets.size());
     for (unsigned i = 0; i < mSaveableWidgets.size(); i++)
     {
         mSaveableWidgets[i]->saveToQSettings(fileName, root);
     }
 
-    qDebug("BaseHostDialog::saveParam(): We will be saving %d camera widgets", mSaveableCameraWidgets.size());
+    qDebug("BaseHostDialog::saveParam(): We will be saving %lu camera widgets", mSaveableCameraWidgets.size());
     for (unsigned i = 0; i < mSaveableCameraWidgets.size(); i++)
     {
         mSaveableCameraWidgets[i]->saveToQSettings(ConfigManager::camConfigName(), root);

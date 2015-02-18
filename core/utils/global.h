@@ -130,9 +130,20 @@ typedef int                bool_t;                          // fast Boolean type
 #define STATIC_ASSERT(CONDITION, VALUE) static_assert((CONDITION), (#VALUE))
 #elif defined( __clang__ )
 #define STATIC_ASSERT(CONDITION, VALUE) static_assert((CONDITION), (#VALUE))
-#else*/
-#define STATIC_ASSERT(CONDITION, VALUE) typedef int foo_##VALUE[(CONDITION) ? 1 : -1]
+#else
+#define STATIC_ASSERT(CONDITION, VALUE) typedef int foo_##VALUE[(CONDITION) ? 1 : -1] */
 /*#endif*/
+
+#if defined(__GNUC__)
+   #define STATIC_ASSERT(CONDITION, VALUE)                         \
+     _Pragma("GCC diagnostic push")                                \
+     _Pragma("GCC diagnostic ignored \"-Wunused-local-typedefs\"") \
+     typedef int foo_##VALUE[(CONDITION) ? 1 : -1];                \
+     _Pragma("GCC diagnostic pop")
+
+#else
+   #define STATIC_ASSERT(CONDITION, VALUE) typedef int foo_##VALUE[(CONDITION) ? 1 : -1]
+#endif
 
 #define SYNC_PRINT(X) \
 do {                  \

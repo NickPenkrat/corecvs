@@ -354,7 +354,7 @@ void testDoubleExtendingRGBReader(void)
 
     for (unsigned i = 0; i < 8; i++)
     {
-        int st = i * 10;
+//        int st = i * 10;
         cout << r[i] << endl;
 //        r[i] = Int16x8(st, st + 1, st + 2, st + 3, st + 4, st + 5, st + 6, st + 7);
     }

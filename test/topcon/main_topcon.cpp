@@ -179,9 +179,9 @@ int main (int argc, char **argv)
 
      L_INFO << "Center" << Vector2dd(params.camCenterX, params.camCenterY);
     /* So far a small hack*/
-    for (int i = 0; i < scene.input.size(); i++)
+    for (unsigned i = 0; i < scene.input.size(); i++)
     {
-        for (int m = 0; m < scene.input[i].measurements.size(); m++)
+        for (unsigned m = 0; m < scene.input[i].measurements.size(); m++)
         {
             scene.input[i].measurements[m].coord -= Vector2dd(params.camCenterX, params.camCenterY);
 
@@ -197,14 +197,14 @@ int main (int argc, char **argv)
     /* Trinagulating*/
 
 
-    for (int i = 0; i < scene.input.size(); i++)
+    for (unsigned i = 0; i < scene.input.size(); i++)
     {
         FeaturePoint &input = scene.input[i];
         int count = 0;
         Vector3dd sumPos(0.0);
-        for (int m1 = 0; m1 < input.measurements.size(); m1++)
+        for (unsigned m1 = 0; m1 < input.measurements.size(); m1++)
         {
-            for (int m2 = m1 + 1; m2 < input.measurements.size(); m2++)
+            for (unsigned m2 = m1 + 1; m2 < input.measurements.size(); m2++)
             {
                 SfmMeasurement &measure1 = input.measurements[m1];
                 SfmMeasurement &measure2 = input.measurements[m2];
@@ -238,7 +238,7 @@ int main (int argc, char **argv)
     /* Distances log */
     vector<NamedPoint> pointsToReport;
 
-    for (int i = 0; i < scene.cameraList.size(); i++)
+    for (unsigned i = 0; i < scene.cameraList.size(); i++)
     {
         NamedPoint np;
         std::ostringstream stringStream;
@@ -248,18 +248,18 @@ int main (int argc, char **argv)
         pointsToReport.push_back(np);
     }
 
-    for (int i = 0; i < scene.input.size(); i++)
+    for (unsigned i = 0; i < scene.input.size(); i++)
     {
         FeaturePoint &input = scene.input[i];
         NamedPoint np;
-        np.name = scene.input[i].name;
-        np.point = scene.input[i].position;
+        np.name = input.name;
+        np.point = input.position;
         pointsToReport.push_back(np);
     }
 
-    for (int p1 = 0; p1 < pointsToReport.size(); p1++)
+    for (unsigned p1 = 0; p1 < pointsToReport.size(); p1++)
     {
-        for (int p2 = p1 + 1; p2 < pointsToReport.size(); p2++)
+        for (unsigned p2 = p1 + 1; p2 < pointsToReport.size(); p2++)
         {
             printf("%s to %s - %lf\n",
                    pointsToReport[p1].name.c_str(),

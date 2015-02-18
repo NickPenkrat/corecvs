@@ -320,6 +320,11 @@ public:
         return RGBColor(0, 0, 0);
     }
 
+    static RGBColor White()
+    {
+        return RGBColor(255, 255, 255);
+    }
+
     static RGBColor Red()
     {
         return RGBColor(255, 0, 0);

@@ -323,6 +323,7 @@ int FeaturePoint::readFromNVM(std::istream &stream)
         measure.readFromNVM(stream);
         measurements.push_back(measure);
     }
+    return stream.bad();
 }
 
 int FeaturePoint::readFromInput(std::istream &stream)
@@ -344,6 +345,7 @@ int FeaturePoint::readFromInput(std::istream &stream)
         measurements.push_back(measure);
     }
     position = Vector3dd(0);
+    return stream.bad();
 }
 
 
@@ -352,7 +354,7 @@ int SfmMeasurement::readFromNVM(std::istream &stream)
     stream >> image;
     stream >> feature;
     stream >> coord;
-
+    return stream.bad();
 }
 
 int SfmMeasurement::readFromInput(std::istream &stream)
@@ -362,4 +364,5 @@ int SfmMeasurement::readFromInput(std::istream &stream)
     stream >> image;
     feature = 0;
     stream >> coord;
+    return stream.bad();
 }

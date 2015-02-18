@@ -50,7 +50,6 @@ public:
      *    To matrix transformation
      **/
     Matrix44 toMatrix() const;
-    void fillFunctionInput(double in[]);
 
     friend ostream & operator << (ostream &out, const Similarity &reconstructor);
 
@@ -66,6 +65,8 @@ public:
         PARAM_NUMBER
     };
 
+    void fillFunctionInput(double in[]);
+
     Similarity(const double in[]) :
         shiftL(in[SHIFT_X], in[SHIFT_Y], in[SHIFT_Z]),
         shiftR(0.0),
@@ -73,6 +74,8 @@ public:
         scaleR(1.0),
         rotation(in[ROTATION_X], in[ROTATION_Y], in[ROTATION_Z], in[ROTATION_T])
     {}
+
+    Similarity getInterpolated(double t);
 
 
 };

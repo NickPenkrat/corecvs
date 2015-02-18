@@ -491,7 +491,7 @@ GraphPlotDialog::~GraphPlotDialog()
 
 void GraphPlotDialog::addNewGraphToUI(QString name, unsigned graphId)
 {
-    QTableWidgetItem* graphItem = new QTableWidgetItem(mData[graphId].name);
+    QTableWidgetItem* graphItem = new QTableWidgetItem(name);
     graphItem->setData(Qt::UserRole, QVariant(graphId));
     setItemColor(graphItem);
     int rowCount = mUi.visibleGraph->rowCount();

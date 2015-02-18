@@ -27,6 +27,7 @@
 
 namespace corecvs {
 
+
 #define FLAGS_INCLUDE_MARGIN 0x1
 
 

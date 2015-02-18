@@ -142,6 +142,7 @@ public:
     Vector3dd intersectCoef(Ray3d &other)
     {
         Vector3dd normal = a ^ other.a;
+        normal.normalise();
         Matrix33 m = Matrix33::FromColumns(a, -other.a, normal);
         return m.inv() * (other.p - p);
     }
