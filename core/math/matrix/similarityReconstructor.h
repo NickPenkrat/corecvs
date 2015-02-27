@@ -87,6 +87,7 @@ class SimilarityReconstructor
 {
 public:
     vector<Correspondance3D> p2p;
+    bool trace;
 
     SimilarityReconstructor();
     void addPoint2PointConstraint(const Vector3dd &from, const Vector3dd &to);

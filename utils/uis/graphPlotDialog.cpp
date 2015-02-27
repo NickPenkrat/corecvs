@@ -483,15 +483,12 @@ void GraphPlotDialog::resetSettings()
 
 GraphPlotDialog::~GraphPlotDialog()
 {
-    //    saveSettings(QString("graphConfig.xml"));
-
     delete_safe(mUpDownMapper);
-    //delete mParamMapper;
 }
 
 void GraphPlotDialog::addNewGraphToUI(QString name, unsigned graphId)
 {
-    QTableWidgetItem* graphItem = new QTableWidgetItem(name);
+    QTableWidgetItem* graphItem = new QTableWidgetItem(mData[graphId].name);
     graphItem->setData(Qt::UserRole, QVariant(graphId));
     setItemColor(graphItem);
     int rowCount = mUi.visibleGraph->rowCount();

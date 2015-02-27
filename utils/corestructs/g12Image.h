@@ -20,9 +20,8 @@ using namespace corecvs;
 
 class G12Image : public QImage {
 public:
-    G12Image(G12Buffer *buffer);
     G12Image(G12Buffer *buffer, int newH, int newW);
-    G12Image(G12Buffer *buffer, bool mirror);
+    G12Image(G12Buffer *buffer, bool mirror = false);
 
 
     virtual ~G12Image();

@@ -251,6 +251,9 @@ public:
     Matrix invSVD() const;
     double detSVD() const;
 
+    Vector2d32 getMinCoord() const;
+    Vector2d32 getMaxCoord() const;
+
     void print()
     {
         cout << *this;

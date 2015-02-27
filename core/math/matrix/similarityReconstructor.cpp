@@ -3,7 +3,8 @@
 
 namespace corecvs {
 
-SimilarityReconstructor::SimilarityReconstructor()
+SimilarityReconstructor::SimilarityReconstructor() :
+    trace(false)
 {
 }
 
@@ -72,34 +73,31 @@ Similarity SimilarityReconstructor::getBestSimilarity()
     Vector3dd rmean(0.0);
     Vector3dd rmeansq(0.0);
 
-    int lcount = 0;
-    int rcount = 0;
-
-    cout << "Starting optimization with " << p2p.size() << " constraints" << endl;
+    if (trace)
+        cout << "Starting optimization with " << p2p.size() << " constraints" << endl;
 
     for (unsigned  i = 0; i < p2p.size(); i++)
     {
-        cout << p2p[i].start << " ==> " << p2p[i].end << endl;
+        if (trace)
+            cout << p2p[i].start << " ==> " << p2p[i].end << endl;
+
         lmean += p2p[i].start;
         lmeansq += (p2p[i].start) * (p2p[i].start);
 
         rmean += p2p[i].end;
         rmeansq += (p2p[i].end) * (p2p[i].end);
-
-        lcount++;
-        rcount++;
     }
 
-    lmean /= lcount;
-    lmeansq  /= lcount;
-    rmean  /= rcount;
-    rmeansq  /= rcount;
+    lmean    /= p2p.size();
+    lmeansq  /= p2p.size();
+    rmean    /= p2p.size();
+    rmeansq  /= p2p.size();
 
     Vector3dd lsqmean = lmean * lmean;
     Vector3dd rsqmean = rmean * rmean;
 
-    double lscaler = sqrt (lmeansq.x() - lsqmean.x()  + lmeansq.y() - lsqmean.y());
-    double rscaler = sqrt (rmeansq.x() - rsqmean.x()  + rmeansq.y() - rsqmean.y());
+    double lscaler = sqrt((lmeansq - lsqmean).sumAllElements());
+    double rscaler = sqrt((rmeansq - rsqmean).sumAllElements());
 
     /**
      *  so we need to shift first set to 0
@@ -126,26 +124,29 @@ Similarity SimilarityReconstructor::getBestSimilarity()
             S(X,Y) - S(Y,X)          ,        S(Z,X) + S(X,Z)       ,         S(Z,Y) + S(Y,Z)        , - S(X, X) - S(Y, Y) + S(Z, Z)
     );
 
-    cout << "Cross Correlation:\n" << S;
-    cout << "N Matrix         :\n" << N;
-
     Matrix NA(N);
     DiagonalMatrix D(4);
     Matrix VT(4, 4);
     Matrix::jacobi(&NA, &D, &VT, NULL);
 
-    cout << "Decomposition:\n" << NA << endl;
-    cout << D << endl;
-    cout << VT << endl;
-
-    int max = 0;
+    double max = 0;
     int maxi = 0;
     for (int i = 0; i < 4; i++)
     {
-        if (D.a(0, i) > max) {
-            max = D.a(0, i);
+        if (D.a(i) > max) {
+            max = D.a(i);
             maxi = i;
         }
+    }
+
+    if (trace)
+    {
+        cout << "Cross Correlation:\n" << S;
+        cout << "N Matrix         :\n" << N;
+        cout << "Decomposition:\n" << NA << endl;
+        cout << D << endl;
+        cout << VT << endl;
+        cout << "Maximum eigenvalue:" << max << " at row/column " << maxi << endl;
     }
 
     /* make an eigenvalue cheak */
@@ -155,11 +156,13 @@ Similarity SimilarityReconstructor::getBestSimilarity()
     eigen[2] = VT.a(2, maxi);
     eigen[3] = VT.a(3, maxi);
 
-    cout << eigen << " " << eigen * D.a(0,maxi) << "  "  << (N * eigen) << endl;
-
     Quaternion rotation(eigen[1], eigen[2], eigen[3], eigen[0]);
 
-    cout << "Quaternion:" << rotation << endl;
+    if (trace)
+    {
+        cout << "Checking eigenvector:" <<  eigen << " " << eigen * D.a(0,maxi) << "  "  << (N * eigen) << endl;
+        cout << "Quaternion:" << rotation << endl;
+    }
 
     result.rotation = rotation;
     return result;
@@ -176,7 +179,7 @@ Similarity SimilarityReconstructor::getBestSimilarityLM(Similarity &firstGuess)
 
     LMfit.f = &F;
     LMfit.normalisation = &N;
-    LMfit.maxIterations = 1000;
+    LMfit.maxIterations = 10000;
 
     vector<double> output(1);
     output[0] = 0.0;
@@ -231,10 +234,10 @@ SimilarityReconstructor::~SimilarityReconstructor()
 ostream &operator << (ostream &out, const Similarity &reconstructor)
 {
     out << "Shift Left  by: "  << reconstructor.shiftL << endl;
-    out << "Scale Left  by: "  << reconstructor.scaleL << endl;
+    out << "Scale Left  by: "  << reconstructor.scaleL << " (" << (1 / reconstructor.scaleL) << ")"<< endl;
 
     out << "Shift Right by: "  << reconstructor.shiftR << endl;
-    out << "Scale Right by: "  << reconstructor.scaleR << endl;
+    out << "Scale Right by: "  << reconstructor.scaleR << " (" << (1 / reconstructor.scaleR) << ")" << endl;
 
     out << "Quaternion:" << reconstructor.rotation << endl;
     double angle = reconstructor.rotation.getAngle();

@@ -588,6 +588,44 @@ double Matrix::detSVD() const
     return det;
 }
 
+Vector2d32 Matrix::getMinCoord() const
+{
+    Vector2d32 result(0, 0);
+    double value = numeric_limits<double>::max();
+
+    for (int row = 0; row < h ; row++)
+    {
+        for (int column = 0; column < w ; column++)
+        {
+            if (this->a(row, column) < value)
+            {
+                value = this->a(row, column);
+                result = Vector2d32(row, column);
+            }
+        }
+    }
+    return result;
+}
+
+Vector2d32 Matrix::getMaxCoord() const
+{
+    Vector2d32 result(0, 0);
+    double value = -numeric_limits<double>::max();
+
+    for (int row = 0; row < h ; row++)
+    {
+        for (int column = 0; column < w ; column++)
+        {
+            if (this->a(row, column) > value)
+            {
+                value = this->a(row, column);
+                result = Vector2d32(row, column);
+            }
+        }
+    }
+    return result;
+}
+
 
 /**
  *
