@@ -149,6 +149,11 @@ public:
         return ((uint16_t)r() + (uint16_t)g() + (uint16_t)b()) / 3;
     }
 
+    inline uint16_t sum() const
+    {
+        return ((uint16_t)r() + (uint16_t)g() + (uint16_t)b());
+    }
+
     // Y = 0.2126 R + 0.7152 G + 0.0722 B
     inline uint8_t luma() const
     {
@@ -373,6 +378,14 @@ public:
         return RGBColor(r, g, b);
     }
 
+    static RGBColor diff(const RGBColor &first, const RGBColor &second)
+    {
+        int16_t r = (int16_t)first.r() - (int16_t)second.r();
+        int16_t g = (int16_t)first.g() - (int16_t)second.g();
+        int16_t b = (int16_t)first.b() - (int16_t)second.b();
+
+        return RGBColor(r > 0 ? r : -r , g > 0 ? g : -g, b > 0 ? b : -b);
+    }
 
     /**
      *  Helper method that allows to represent the double value in interval 0..1

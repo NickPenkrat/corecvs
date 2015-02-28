@@ -55,7 +55,7 @@ G12Image::G12Image(G12Buffer *buffer, bool mirror) : QImage (buffer->w, buffer->
             j = 0;
 #ifdef WITH_SSE
             Int32x4 topbyte(0xFF << 24);
-            for (; j < buffer->w; j+= 8)
+            for (; j < buffer->w - 8; j+= 8)
             {
                 Int16x8 input(lineIn);
                 input.shiftLogical(4);
@@ -109,7 +109,7 @@ G8Image::G8Image(G8Buffer *buffer) : QImage (buffer->w, buffer->h, QImage::Forma
         j = 0;
 #ifdef WITH_SSE
             Int32x4 topbyte(0xFF << 24);
-            for (; j < buffer->w; j+= 16)
+            for (; j < buffer->w - 16; j+= 16)
             {
                 Int8x16 input(lineIn);
                 Int16x8 in1 = Int8x16::unpackLower (input,input);
@@ -162,7 +162,7 @@ RGB24Image::RGB24Image(RGB24Buffer *buffer, bool mirror) : QImage (buffer->w, bu
             j = 0;
 #ifdef WITH_SSE
             Int32x4 mask(0xFF000000);
-            for (j = 0; j < buffer->w; j+= 4 )
+            for (j = 0; j < buffer->w - 4; j+= 4 )
             {
                 Int32x4 data(lineIn);
                 data |= mask;

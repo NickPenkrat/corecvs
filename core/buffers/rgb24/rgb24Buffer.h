@@ -130,6 +130,9 @@ public:
     void drawLineSimple (int x1, int y1, int x2, int y2, RGBColor color );
     void drawLine(int x1, int y1, int x2, int y2, RGBColor color );
 
+    void drawHLine(int x1, int y1, int x2, RGBColor color );
+    void drawVLine(int x1, int y1, int y2, RGBColor color );
+
 
     void drawCircle(int x, int y, int rad, RGBColor color );
     void drawArc (int x, int y, int rad, RGBColor color );
