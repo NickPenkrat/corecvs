@@ -276,8 +276,8 @@ void drawMetaballs1(QPainter &painter, const Vector2dd &center1, int r1, const V
 
     /* Lets check how the circles are positioned */
 
-
-    if (dist < fabs(r1 - r2))
+    double diff = r1 - r2;
+    if (dist < fabs(diff))
     {
         if (r1 >  r2)
         {

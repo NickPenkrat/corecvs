@@ -17,8 +17,8 @@
 #include "vector2d.h"
 #include "matrix.h"
 #include "function.h"
-namespace corecvs {
 
+namespace corecvs {
 
 class LevenbergMarquardt
 {

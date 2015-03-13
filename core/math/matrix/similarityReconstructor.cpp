@@ -24,13 +24,35 @@ Matrix44 Similarity::toMatrix() const
     return Matrix44::Shift(shiftR) * Matrix44::Scale(scaleR) * rotation.toMatrix() * Matrix44::Scale(1.0 / scaleL) * Matrix44::Shift(-shiftL);
 }
 
-void Similarity::fillFunctionInput(double in[])
+double Similarity::getScale()
 {
-    double scale    = scaleL / scaleR;
+    return scaleL / scaleR;
+}
+
+double Similarity::getInvScale()
+{
+    return scaleR / scaleL;
+}
+
+Vector3dd Similarity::getShift()
+{
     Vector3dd shift = (shiftR / scaleR);
     shift = rotation.conjugated() * shift;
     shift = shift * scaleL;
     shift -= shiftL;
+
+    return shift;
+}
+
+Matrix33 Similarity::getRotation()
+{
+    return rotation.toMatrix();
+}
+
+void Similarity::fillFunctionInput(double in[])
+{
+    double scale    = getScale();
+    Vector3dd shift = getShift();
 
     in[SHIFT_X] = -shift.x();
     in[SHIFT_Y] = -shift.y();
@@ -41,6 +63,7 @@ void Similarity::fillFunctionInput(double in[])
     in[ROTATION_Z] = rotation.z();
     in[ROTATION_T] = rotation.t();
 }
+
 
 Similarity Similarity::getInterpolated(double t)
 {
@@ -58,6 +81,8 @@ Similarity Similarity::getInterpolated(double t)
 
     return toReturn;
 }
+
+
 
 /**
  *  Move similar code from  SimilarityReconstructor and HomographyReconstructor
@@ -179,7 +204,7 @@ Similarity SimilarityReconstructor::getBestSimilarityLM(Similarity &firstGuess)
 
     LMfit.f = &F;
     LMfit.normalisation = &N;
-    LMfit.maxIterations = 10000;
+    LMfit.maxIterations = 100;
 
     vector<double> output(1);
     output[0] = 0.0;

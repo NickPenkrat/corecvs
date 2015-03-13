@@ -25,23 +25,36 @@ namespace corecvs {
 using std::vector;
 
 /**
- *  This class contains all the output information about
+ *  This class contains all the output information about the results of the
  *  rectification process
  *
  **/
 class RectificationResult
 {
 public:
+    /** Intrinsic parameters of the cameras*/
     CameraIntrinsics rightCamera;
     CameraIntrinsics leftCamera;
 
+    /**
+     * Essential matrix
+     **/
     Matrix33  F;
+    /**
+     * Decomposed version of the matrix above
+     *
+     * Address this  class for ray based triangulation.
+     **/
     EssentialDecomposition decomposition;
 
-    /* Transformations that should be applied to right input image to get rectified image*/
+    /**
+     * Transformations that should be applied to right input image to get rectified image
+     **/
     Matrix33 rightTransform;
 
-    /* Transformations that should be applied to left input image to get rectified image*/
+    /**
+     * Transformations that should be applied to left input image to get rectified image
+     **/
     Matrix33 leftTransform;
 
     /** Distance between cameras in units (generally millimeters) */
@@ -54,6 +67,11 @@ public:
         baseline(1.0)
     {}
 
+    /**
+     *   This method makes current RectificationResult that was created for a perticular input image corresponded
+     *  to the transformed image. Say if you have rectified the full resolution, full frame image, and now want to
+     *  tringulate a scaled subregion.
+     **/
     RectificationResult addPretransform(const Matrix33 &transform) const
     {
         RectificationResult toReturn = *this;
@@ -78,10 +96,12 @@ public:
         return (Vector2dd)(leftTransform * leftCamera.getKMatrix33() * pointInLeftFrame);
     }
 
+    /* Gets a camera shift as a vector */
     Vector3dd getCameraShift() const
     {
         return baseline * decomposition.direction;
     }
+
 
 template<class VisitorType>
     void accept(VisitorType &visitor)
@@ -137,18 +157,20 @@ public:
      *  Input is right to left
      *
      **/
-    /*
-    vector<SwarmPoint> *triangulate (DisparityBuffer *input, int density, bool enforceRectify = false) const;
-    vector<SwarmPoint> *triangulate (FloatFlowBuffer *input, int density, bool enforceRectify = false) const;
-
-    vector<SwarmPoint> *triangulate (SixDBuffer *input, int density) const;
-    */
     Cloud *triangulate (DisparityBuffer *input, int density, bool enforceRectify = false) const;
     Cloud *triangulate (FloatFlowBuffer *input, int density, bool enforceRectify = false) const;
 
     Cloud *triangulate (SixDBuffer *input, int density) const;
 
     DepthBuffer *triangulateToDB (DisparityBuffer *input, bool enforceRectify = false) const;
+
+
+    /*
+    vector<SwarmPoint> *triangulate (DisparityBuffer *input, int density, bool enforceRectify = false) const;
+    vector<SwarmPoint> *triangulate (FloatFlowBuffer *input, int density, bool enforceRectify = false) const;
+    vector<SwarmPoint> *triangulate (SixDBuffer *input, int density) const;
+    */
+
 private:
     template<class InputType>
     Cloud *triangulateHelper (InputType *input,  int density, bool enforceRectify) const;

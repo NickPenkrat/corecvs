@@ -69,7 +69,8 @@ public:
 
 
     Matrix44(const Matrix33 &_m, const Vector3dd &_shift = Vector3dd(0,0,0));
-
+    Matrix33 topLeft33() const;
+    Vector3dd translationPart() const;
 
     double &a(int i,int j);
     const double &a(int i,int j) const;
@@ -151,7 +152,6 @@ public:
            return in;
        }
 
-
 };
 
 inline Matrix44::Matrix44(
@@ -201,6 +201,33 @@ inline Matrix44::Matrix44(const Matrix33 &_matrix, const Vector3dd &_shift)
     a(3,1)  = 0;
     a(3,2)  = 0;
     a(3,3)  = 1;
+}
+
+inline Matrix33 Matrix44::topLeft33() const
+{
+    Matrix33 b;
+    b(0,0) = a(0,0);
+    b(0,1) = a(0,1);
+    b(0,2) = a(0,2);
+
+    b(1,0) = a(1,0);
+    b(1,1) = a(1,1);
+    b(1,2) = a(1,2);
+
+    b(2,0) = a(2,0);
+    b(2,1) = a(2,1);
+    b(2,2) = a(2,2);
+    return b;
+}
+
+inline Vector3dd Matrix44::translationPart() const
+{
+    Matrix33 b;
+    b(0,1) = a(0,1);
+    b(0,0) = a(0,0);
+    b(0,2) = a(0,2);
+
+    return Vector3dd(a(0,3), a(1,3), a(2,3));
 }
 
 

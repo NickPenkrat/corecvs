@@ -60,7 +60,8 @@ public:
 
 
 
-class RGB24InterfaceImage : public QImage{
+class RGB24InterfaceImage : public QImage
+{
 public:
     RGB24InterfaceImage(RGB24Buffer *buffer);
     virtual ~RGB24InterfaceImage();

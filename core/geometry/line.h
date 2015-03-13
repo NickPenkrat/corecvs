@@ -176,7 +176,7 @@ public:
     /**
      *   NYI
      **/
-    static Vector3dd bestFit(Ray3d */*rays*/, unsigned /*number*/)
+    static Vector3dd bestFit(Ray3d * /*rays*/, unsigned /*number*/)
     {
         return Vector3dd(0.0);
     }

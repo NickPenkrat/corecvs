@@ -13,6 +13,7 @@
 #include "cameraParameters.h"
 #include "axisAlignedBox.h"
 #include "rgbColor.h"
+#include "ellipticalApproximation.h"
 
 namespace corecvs
 {
@@ -104,9 +105,11 @@ public:
 
     void addCamera(const CameraIntrinsics &cam, double len);
 
+    void add2AxisEllipse (const EllipticalApproximation3d &approx);
+
     /* For abstract painter */
     typedef int InternalElementType;
-    void drawLine(double x1, double y1, double x2, double y2, int color);
+    void drawLine(double x1, double y1, double x2, double y2, int);
 
 
 #if 0

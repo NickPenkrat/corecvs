@@ -256,6 +256,11 @@ inline void deletearr_safe (Type * &ptr)
 # define GET_VEC_DATA_PTR(vec)  vec.data()
 #endif
 
+
+#if defined(_MSC_VER)
+
+#endif
+
 #endif // is__cplusplus
 
 /* EOF */

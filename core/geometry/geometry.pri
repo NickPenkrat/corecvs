@@ -1,5 +1,6 @@
 HEADERS += \
     geometry/ellipticalApproximation.h \
+    geometry/axisAlignedBox.h \
     geometry/rectangle.h \
     geometry/line.h \
     geometry/triangulation.h \
@@ -9,6 +10,7 @@ HEADERS += \
 
 SOURCES += \ 
     geometry/ellipticalApproximation.cpp \
+    geometry/axisAlignedBox.cpp \
     geometry/rectangle.cpp \
     geometry/triangulation.cpp \
     geometry/polygons.cpp \

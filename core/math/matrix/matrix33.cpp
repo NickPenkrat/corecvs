@@ -37,7 +37,7 @@ void Matrix33::invert()
  *
  * \return The \f$I^{-1}\f$
  */
-Matrix33 Matrix33::inv()
+Matrix33 Matrix33::inv() const
 {
     Matrix33 toReturn;
     /* Will hold the minors determinant with the changing sign*/
@@ -68,7 +68,7 @@ Matrix33 Matrix33::inv()
  *   Computing determinant of the matrix.
  **/
 
-double Matrix33::det()
+double Matrix33::det() const
 {
  return    a(0,0) * (a(1,1) * a(2,2) - a(1,2) * a(2,1))
          - a(0,1) * (a(1,0) * a(2,2) - a(1,2) * a(2,0))

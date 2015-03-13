@@ -800,6 +800,11 @@ void RGB24Buffer::fillWithYUYV (uint8_t *yuyv)
     }
 }
 
+/*void RGB24Buffer::fillWith420P(uint8_t *y, uint8_t *u, uint8_t *v, int ly, int lu, int lv)
+{
+
+}*/
+
 void RGB24Buffer::dropValueAndSatuation()
 {
     for (int i = 0; i < h; i++)

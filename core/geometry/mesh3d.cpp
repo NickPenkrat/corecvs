@@ -142,7 +142,35 @@ void Mesh3D::addCamera(const CameraIntrinsics &cam, double len)
 
 }
 
-void Mesh3D::drawLine(double x1, double y1, double x2, double y2, int color)
+void Mesh3D::add2AxisEllipse(const EllipticalApproximation3d &approx)
+{
+    if (approx.isEmpty() || approx.mAxes.empty()) {
+        return;
+    }
+
+    int step = 20;
+    double dpsi = 2 * M_PI / (step);
+
+    Vector3dd center = approx.getCenter();
+
+    Vector3dd prev;
+    for (int i = 0; i <= step; i++)
+    {
+        double y = sin(dpsi * i);
+        double x = cos(dpsi * i);
+        Vector3dd curr = center +
+               approx.mAxes[0] * sqrt(approx.mValues[0]) * x +
+               approx.mAxes[1] * sqrt(approx.mValues[1]) * y;
+        if (i != 0) {
+            addLine(prev, curr);
+        }
+        prev = curr;
+    }
+
+
+}
+
+void Mesh3D::drawLine(double x1, double y1, double x2, double y2, int /*color*/)
 {
     addLine(Vector3dd(x1, y1, 0.0), Vector3dd(x2, y2, 0.0));
 }

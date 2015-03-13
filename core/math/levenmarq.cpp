@@ -3,15 +3,18 @@
 #include <math.h>
 #include <limits>
 
-#define TRACE_PROGRESS
-//#define TRACE
-
 #include "global.h"
 
 #include "levenmarq.h"
 #include "stdlib.h"
 #include "vector.h"
 namespace corecvs {
+
+#define TRACE_PROGRESS
+//#define TRACE_CRUCIAL
+//#define TRACE
+//#define TRACE_MATRIX
+
 
 using std::flush;
 /**
@@ -43,8 +46,9 @@ vector<double> LevenbergMarquardt::fit(const vector<double> &input, const vector
     bool converged = false;
 
     double lambda = startLambda;
+    double maxlambda = std::numeric_limits<double>::max();
 
-    for (int g = 0; g < maxIterations && lambda < std::numeric_limits<double>::max() && !converged; g++)
+    for (int g = 0; (g < maxIterations) && (lambda < maxlambda) && !converged; g++)
     {
 #ifdef TRACE_PROGRESS
         if ((g % ((maxIterations / 100) + 1) == 0))
@@ -53,7 +57,7 @@ vector<double> LevenbergMarquardt::fit(const vector<double> &input, const vector
         }
 #endif
         Matrix J = f->getJacobian(&(beta[0]));
-#ifdef TRACE
+#ifdef TRACE_MATRIX
         cout << "New Jacobian:" << endl << J << endl;
 #endif
         Matrix JT = J.t();
@@ -72,7 +76,7 @@ vector<double> LevenbergMarquardt::fit(const vector<double> &input, const vector
 
             if (norm == 0.0)
             {
-#ifdef TRACE_PROGRESS
+#ifdef TRACE_CRUCIAL
                 cout << "Algorithm fully converged" << endl;
 #endif
                 converged = true;
@@ -81,12 +85,12 @@ vector<double> LevenbergMarquardt::fit(const vector<double> &input, const vector
 
             if (!(lambda < std::numeric_limits<double>::max()))
             {
-#ifdef TRACE_PROGRESS
+#ifdef TRACE_CRUCIAL
                 cout << "Algorithm seem to be trapped at point: " << endl;
                 cout << "After: " << g << " iterations" << endl;
                 cout << beta << endl;
 #endif
-#ifdef TRACE
+#ifdef TRACE_MATRIX
                 cout << "Current Jacobian:" << endl << J << endl;
                 cout << "Current JTJ:" << endl << JTJ << endl;
                 cout << "previous delta was:" << endl << delta << endl;
@@ -161,6 +165,8 @@ vector<double> LevenbergMarquardt::fit(const vector<double> &input, const vector
 
 #ifdef TRACE_PROGRESS
     cout << "]" << endl;
+
+
 #endif
 
     vector<double> result;

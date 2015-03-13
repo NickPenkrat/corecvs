@@ -2,8 +2,8 @@
 
 #include <QtGui/QDialog>
 
-#include <g12Buffer.h>
-#include <histogram.h>
+#include "g12Buffer.h"
+#include "histogram.h"
 
 #include "ui_histogramdialog.h"
 

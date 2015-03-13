@@ -71,10 +71,10 @@ public:
 
     void invert();
     // TODO: Rename to inverted
-    Matrix33 inv();
+    Matrix33 inv() const;
 
     double trace() const;
-    double det();
+    double det() const;
     inline double &a(int i, int j);
     inline const double &a(int i, int j) const;
     double &operator ()(int i,int j);

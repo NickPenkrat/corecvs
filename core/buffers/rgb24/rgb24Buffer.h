@@ -27,7 +27,6 @@
 
 namespace corecvs {
 
-
 #define FLAGS_INCLUDE_MARGIN 0x1
 
 
@@ -159,6 +158,8 @@ public:
 
 
     void fillWithYUYV (uint8_t *yuyv);
+    //void fillWith420P (uint8_t *y, uint8_t *u, uint8_t *v, int ly, int lu, int lv);
+
     void dropValueAndSatuation(void);
     void dropValue();
 
@@ -223,7 +224,7 @@ public:
     class RGBEx : public FixedVectorBase<RGBEx, uint16_t, 4>
     {
     public:
-        RGBEx() {};
+        RGBEx() {}
         RGBEx(const RGBColor &color)
         {
             at(0) = color.r();

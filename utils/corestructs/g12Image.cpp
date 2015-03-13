@@ -8,7 +8,7 @@
 
 #include "preciseTimer.h"
 #include "g12Image.h"
-#include <QtGui/QPainter>
+#include <QPainter>
 
 #ifdef WITH_SSE
 #include "sseWrapper.h"
@@ -22,6 +22,7 @@ G12Image::G12Image(G12Buffer *buffer, int newH, int newW) : QImage (newW, newH, 
     int bpl = bytesPerLine();
     //int depth = image.depth;
     for (i = 0; i < newH; i++ )
+    {
         for (j = 0; j < newW; j++ )
         {
             uint32_t value;
@@ -36,6 +37,7 @@ G12Image::G12Image(G12Buffer *buffer, int newH, int newW) : QImage (newW, newH, 
 
             ((uint32_t *)(data + i * bpl))[j] = value;
         }
+    }
 }
 
 
@@ -204,7 +206,13 @@ QImage *toQImage(RGB24Buffer *buffer) {
 }
 
 
-RGB24InterfaceImage::RGB24InterfaceImage(RGB24Buffer *buffer) : QImage((uchar *)buffer->data, buffer->w, buffer->h, QImage::Format_RGB32)
+RGB24InterfaceImage::RGB24InterfaceImage(RGB24Buffer *buffer) :
+    QImage(
+        (uchar *)buffer->data,
+        buffer->w,
+        buffer->h,
+        buffer->stride * sizeof(RGB24Buffer::InternalElementType),
+        QImage::Format_RGB32)
 {
 
 }

@@ -78,6 +78,12 @@ public:
     Similarity getInterpolated(double t);
 
 
+    /* Get simple params*/
+    double getScale();
+    double getInvScale();
+
+    Vector3dd getShift();
+    Matrix33 getRotation();
 };
 
 typedef PrimitiveCorrespondance<Vector3dd, Vector3dd> Correspondance3D;
@@ -131,7 +137,7 @@ public:
     public:
         SimilarityReconstructor *reconstructor;
         CostFunctionToN(SimilarityReconstructor * _reconstructor) :
-            FunctionArgs(Similarity::PARAM_NUMBER, _reconstructor->p2p.size())
+            FunctionArgs(Similarity::PARAM_NUMBER, (int)_reconstructor->p2p.size())
           , reconstructor(_reconstructor)
         {}
 
@@ -142,7 +148,7 @@ public:
     {
     public:
         NormalizeFunction() :
-            FunctionArgs(Similarity::PARAM_NUMBER,1) {}
+            FunctionArgs(Similarity::PARAM_NUMBER,Similarity::PARAM_NUMBER) {}
 
         virtual void operator()(const double in[], double out[]);
         //using FunctionArgs::operator();
