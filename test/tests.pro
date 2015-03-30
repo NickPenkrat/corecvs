@@ -15,6 +15,7 @@ SUBDIRS +=       \
     adoptcolor  \
 #    avigrab     \
     topcon      \
+    decodebayer \
 
 
 
@@ -23,4 +24,5 @@ xmlserialize.file  = xmlserialize/xmlserialize.pro
 adoptcolor.file    = adoptcolor/adoptcolor.pro
 avigrab.file       = avigrab/avigrab.pro
 topcon.file        = topcon/topcon.pro
+decodebayer.file   = decodebayer/decodebayer.pro
 

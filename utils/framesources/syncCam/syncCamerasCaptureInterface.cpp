@@ -78,8 +78,8 @@ static RGB24Buffer* decodeBayerRGB(uint16_t * data, int h, int w )
         for (int j = 0; j < w; j += 2)
         {
             uint32_t g1  = ((uint32_t)data[ (i    ) * w + (j + 1)]) >> 8;
-            uint32_t r = ((uint32_t)data[ (i    ) * w + (j    )]) >> 8;
-            uint32_t b = ((uint32_t)data[ (i + 1) * w + (j + 1)]) >> 8;
+            uint32_t r   = ((uint32_t)data[ (i    ) * w + (j    )]) >> 8;
+            uint32_t b   = ((uint32_t)data[ (i + 1) * w + (j + 1)]) >> 8;
             uint32_t g2  = ((uint32_t)data[ (i + 1) * w + (j    )]) >> 8;
 
             if (r > 255 || g1 > 255 || g2 > 255 || b > 255) {
@@ -118,7 +118,7 @@ ImageCaptureInterface::FramePair SyncCamerasCaptureInterface::getFrame()
     result.bufferLeft  = currentPair.rgbBufferLeft->toG12Buffer();
     result.bufferRight = currentPair.rgbBufferRight->toG12Buffer();
 //#endif
-    result.leftTimeStamp = currentPair.leftTimeStamp;
+    result.leftTimeStamp  = currentPair. leftTimeStamp;
     result.rightTimeStamp = currentPair.rightTimeStamp;
 
 //    printf("getFrame:unlock, ts1: %d, ts2: %d\n", result.leftTimeStamp, result.rightTimeStamp);
@@ -146,7 +146,7 @@ ImageCaptureInterface::FramePair SyncCamerasCaptureInterface::getFrameRGB24()
 
 
     protectFrame.lock();
-    result.bufferLeft  = currentPair.rgbBufferLeft->toG12Buffer();
+    result.bufferLeft  = currentPair.rgbBufferLeft ->toG12Buffer();
     result.bufferRight = currentPair.rgbBufferRight->toG12Buffer();
 
     result.rgbBufferLeft  = new RGB24Buffer(currentPair.rgbBufferLeft);

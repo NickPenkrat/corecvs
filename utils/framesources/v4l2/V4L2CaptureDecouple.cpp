@@ -16,7 +16,7 @@ V4L2CaptureDecoupleInterface::V4L2CaptureDecoupleInterface(string _devname)
     this->devname = _devname;
 
     //     Group Number                   1       2 3      4       56        7       8         9 10     11     1213    14
-    QRegExp deviceStringPattern(QString("^([^,:]*)(:(\\d*)/(\\d*))?((:mjpeg)|(:yuyv)|(:fjpeg))?(:(\\d*)x(\\d*))?((:rc)|(:rc2)|(:sbs)|(:rcf))?$"));
+    QRegExp deviceStringPattern(QString("^([^,:]*)(:(\\d*)/(\\d*))?((:mjpeg)|(:yuyv)|(:fjpeg))?(:(\\d*)x(\\d*))?((:rc)|(:rc2)|(:sbs)|(:rcf)|(:sc1))?$"));
     static const int DeviceGroup     = 1;
     static const int FpsNumGroup      = 3;
     static const int FpsDenumGroup    = 4;
@@ -86,12 +86,13 @@ V4L2CaptureDecoupleInterface::V4L2CaptureDecoupleInterface(string _devname)
     if (!deviceStringPattern.cap(CouplingGroup).compare(QString(":rcf"))) {
         coupling = DecoupleYUYV::ANAGLYPH_RC_FAST;
     }
+    if (!deviceStringPattern.cap(CouplingGroup).compare(QString(":sc1"))) {
+        coupling = DecoupleYUYV::SIDEBYSIDE_SYNCCAM_1;
+    }
 
     printf("Capture device: V4L2 %s\n", deviceName.c_str());
     printf("MJPEG compression is: %s\n", V4L2CaptureInterface::CODEC_NAMES[decoder]);
     printf("Coupling is: %d\n", coupling);
-
-
 }
 
 
