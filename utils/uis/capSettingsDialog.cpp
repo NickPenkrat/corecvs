@@ -1,4 +1,4 @@
-#include <QtGui/QMessageBox>
+#include <QMessageBox>
 #include <QtCore/QSettings>
 #include <QtCore/QDebug>
 

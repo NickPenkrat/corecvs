@@ -29,13 +29,23 @@ public:
     double lambdaFactor;
     int maxIterations;
 
+    bool traceProgress;
+    bool traceCrucial;
+    bool trace;
+    bool traceMatrix;
+
     LevenbergMarquardt(int _maxIterations = 25, double _startLambda = 10, double _lambdaFactor = 2.0) :
         f(NULL),
         normalisation(NULL),
         startLambda(_startLambda),
         lambdaFactor(_lambdaFactor),
-        maxIterations(_maxIterations)
-        {};
+        maxIterations(_maxIterations),
+
+        traceProgress(true),
+        traceCrucial(false),
+        trace(false),
+        traceMatrix(false)
+        {}
 
     vector<double> fit(const vector<double> &input, const vector<double> &output);
 

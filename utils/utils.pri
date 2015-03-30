@@ -24,7 +24,6 @@ UTILS_INCLUDEPATH = \
     $$UTILSDIR/filters \
     $$UTILSDIR/filters/graph \
     $$UTILSDIR/filters/ui \                         # include isn't used, but need for DEPENDPATH!
-#   $$UTILSDIR/flowcolorers \
     $$UTILSDIR/framesources \
     $$UTILSDIR/framesources/directShow \    
     $$UTILSDIR/framesources/decoders \    
@@ -35,7 +34,6 @@ UTILS_INCLUDEPATH = \
     $$UTILSDIR/framesources/opencv \
     $$UTILSDIR/processor \
     $$UTILSDIR/rectifier \
-#   $$UTILSDIR/serializer \     # obsolete?
     $$UTILSDIR/statistics \     # obsolete?
     $$UTILSDIR/uis \
     $$UTILSDIR/uis/cloudview \    
@@ -43,6 +41,8 @@ UTILS_INCLUDEPATH = \
     $$UTILSDIR/widgets \
 
 INCLUDEPATH += $$UTILS_INCLUDEPATH
+
+QT += xml
 
 UTILS_BINDIR = $$ROOT_DIR/bin
 #message(Utils.pri ROOT_DIR is <$$ROOT_DIR>. Bindir is <$$UTILS_BINDIR>. PWD is <$$PWD>)

@@ -45,14 +45,14 @@ public:
      * \param w
      *         The width of the matrix
      */
-    Matrix(int32_t h, int32_t w) : MatrixBase (h, w) {};
+    Matrix(int32_t h, int32_t w) : MatrixBase (h, w) {}
 
-    Matrix(const Matrix &that) : MatrixBase (that) {};
-    explicit Matrix(const Matrix *that) : MatrixBase (that) {};
+    Matrix(const Matrix &that) : MatrixBase (that) {}
+    explicit Matrix(const Matrix *that) : MatrixBase (that) {}
     explicit Matrix(const DiagonalMatrix &that);
 
     Matrix(Matrix *src, int32_t x1, int32_t y1, int32_t x2, int32_t y2) :
-        MatrixBase(src, x1, y1, x2, y2) {};
+        MatrixBase(src, x1, y1, x2, y2) {}
 
     /**
      * This function creates a matrix filling it with values form the given array
@@ -65,7 +65,7 @@ public:
      * \param data
      *         The line by line raw values of the matrix
      */
-    Matrix(int32_t h, int32_t w, double *data) : MatrixBase(h, w, data) {};
+    Matrix(int32_t h, int32_t w, double *data) : MatrixBase(h, w, data) {}
 
 #if 0
     /**
@@ -97,7 +97,7 @@ public:
      **/
     Matrix(int32_t h, int32_t w, double value);
 
-    Matrix(int32_t h, int32_t w, bool shouldInit) : MatrixBase(h, w, shouldInit) {};
+    Matrix(int32_t h, int32_t w, bool shouldInit) : MatrixBase(h, w, shouldInit) {}
 
     explicit Matrix(Matrix33 &in);
     explicit Matrix(Matrix44 &in);
@@ -132,12 +132,12 @@ public:
     inline double &a(int32_t y, int32_t x)
     {
         return MatrixBase::element(y,x);
-    };
+    }
 
     const inline double &a(int32_t y, int32_t x) const
     {
         return MatrixBase::element(y,x);
-    };
+    }
 
     /**
      *  Matrix multiplication.
@@ -178,6 +178,8 @@ public:
     double frobeniusNorm() const;
 
     static void svd (Matrix  *A, Matrix *W, Matrix *V);
+    static void svd (Matrix  *A, DiagonalMatrix *W, Matrix *V);
+
     static void svd (Matrix33 *A, Vector3dd *W, Matrix33 *V);
     static void svdDesc (Matrix33 *A, Vector3dd *W, Matrix33 *V);
 
@@ -253,6 +255,9 @@ public:
 
     Vector2d32 getMinCoord() const;
     Vector2d32 getMaxCoord() const;
+
+    Matrix column(int column);
+    Matrix row   (int row);
 
     void print()
     {

@@ -7,12 +7,15 @@
 #include "bmpLoader.h"
 
 int main (int argc, char **argv)
-{
+{    
     const char *fileName = "data/x.raw";
+    if (argc >= 2)
+        fileName = argv[1];
+
     FILE *In = fopen(fileName, "rb");
     if (In == NULL)
     {
-         printf("Can't open the file: <%s>", fileName);
+         printf("Can't open the file: <%s>\n", fileName);
          return 1;
     }
 
@@ -21,7 +24,11 @@ int main (int argc, char **argv)
     const int dataSize = formatH * formatW;
 
     uint8_t *ptr = new uint8_t[dataSize];
-    fread(ptr, sizeof(uint8_t), dataSize, In);
+    if (fread(ptr, sizeof(uint8_t), dataSize, In) != dataSize)
+    {
+        printf("File to small: <%s>\n", fileName);
+        return 1;
+    }
 
     ImageCaptureInterface::FramePair result;
 

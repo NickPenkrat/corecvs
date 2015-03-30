@@ -41,16 +41,16 @@ V4L2CaptureDecoupleInterface::V4L2CaptureDecoupleInterface(string _devname)
         "  | - Size [%sx%s]\n"
         "  | - Compressing: %s\n"
         "  \\ - Coupling: <%s>\n",
-        deviceStringPattern.cap(DeviceGroup).toAscii().constData(),
-        deviceStringPattern.cap(FpsNumGroup).toAscii().constData(),
-        deviceStringPattern.cap(FpsDenumGroup).toAscii().constData(),
-        deviceStringPattern.cap(WidthGroup).toAscii().constData(),
-        deviceStringPattern.cap(HeightGroup).toAscii().constData(),
-        deviceStringPattern.cap(CompressionGroup).toAscii().constData(),
-        deviceStringPattern.cap(CouplingGroup).toAscii().constData()
+        deviceStringPattern.cap(DeviceGroup).toLatin1().constData(),
+        deviceStringPattern.cap(FpsNumGroup).toLatin1().constData(),
+        deviceStringPattern.cap(FpsDenumGroup).toLatin1().constData(),
+        deviceStringPattern.cap(WidthGroup).toLatin1().constData(),
+        deviceStringPattern.cap(HeightGroup).toLatin1().constData(),
+        deviceStringPattern.cap(CompressionGroup).toLatin1().constData(),
+        deviceStringPattern.cap(CouplingGroup).toLatin1().constData()
     );
 
-    deviceName =  deviceStringPattern.cap(DeviceGroup).toAscii().constData();
+    deviceName =  deviceStringPattern.cap(DeviceGroup).toLatin1().constData();
 
     bool err;
     cameraMode.fpsnum = deviceStringPattern.cap(FpsNumGroup).toInt(&err);

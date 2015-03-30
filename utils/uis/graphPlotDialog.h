@@ -2,8 +2,8 @@
 #define GRAPHPLOTDIALOG_H
 
 #include <deque>
-#include <QtGui/QWidget>
-#include <QtGui/QtGui>
+#include <QWidget>
+#include <QtGui>
 #include <QtXml/QDomDocument>
 
 #include "ui_graphPlotDialog.h"

@@ -485,13 +485,37 @@ void testMatrixOperations (void)
 
 }
 
+void testVectorMatrixConversions()
+{
+    Matrix44 input(Matrix33::RotationY(0.1), Vector3dd(6,7,8));
+    Vector3dd pos(45.0,45.0,45.0);
+    Vector2dd shift(4.0,5.0);
+
+ //   Vector2dd out0 = input * pos - shift;
+ //   Vector2dd out1 = ((Vector2dd)(input * pos)) - shift;
+
+    Vector3dd product = Vector3dd(1.0,2.0,3.0);
+    Vector2dd out2 = (product.project() - shift);
+    Vector2dd out3 = product.project() - shift;
+
+    Vector2dd t1   = product.project();
+    Vector2dd out4 = t1 - shift;
+
+//    cout << out0  << endl;
+//    cout << out1 << endl;
+    cout << out2 << endl;
+    cout << out3 << endl;
+    cout << out4 << endl;
+
+}
+
 int main (int /*argC*/, char ** /*argV*/)
 {
     cout << "Testing " << endl;
+#if 1
     //testMatrixVectorMult();
     //testMatrixOperations();
-    testMatrix44VectorProduct();
-    return 0;
+    testMatrix44VectorProduct();   
     //return 0;
     testMatrix44();
     testDouble();
@@ -502,7 +526,8 @@ int main (int /*argC*/, char ** /*argV*/)
     testMatrixSVD ();
     testVector3d ();
     testVector2d ();
-
+#endif
+    testVectorMatrixConversions();
     cout << "PASSED" << endl;
     return 0;
 }

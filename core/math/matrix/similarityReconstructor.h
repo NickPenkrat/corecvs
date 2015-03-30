@@ -111,7 +111,7 @@ public:
     Similarity getBestSimilarityLM (Similarity &firstGuess);
 
     /**
-     * Makes the guess more precise with Marquardt-Levenberg iterations  using
+     * Makes the guess more precise with Marquardt-Levenberg iterations using
      * alternative cost function
      **/
     Similarity getBestSimilarityLMN(Similarity &firstGuess);

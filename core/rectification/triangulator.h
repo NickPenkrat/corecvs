@@ -82,7 +82,7 @@ public:
 
     Vector2dd getRectifiedProjectionRight(const Vector3dd &point) const
     {
-        return (Vector2dd)(rightTransform * rightCamera.getKMatrix33() * point);
+        return (rightTransform * rightCamera.getKMatrix33() * point).project();
     }
 
     Vector2dd getRectifiedProjectionLeft(const Vector3dd &point) const
@@ -93,7 +93,7 @@ public:
 
         Vector3dd pointInLeftFrame = toLeftFrame.inverted() * point;
 
-        return (Vector2dd)(leftTransform * leftCamera.getKMatrix33() * pointInLeftFrame);
+        return (leftTransform * leftCamera.getKMatrix33() * pointInLeftFrame).project();
     }
 
     /* Gets a camera shift as a vector */

@@ -6,6 +6,8 @@ HEADERS += \
     geometry/triangulation.h \
     geometry/polygons.h \
     geometry/mesh3d.h \
+    geometry/convexPolyhedron.h \
+    geometry/simpleRenderer.h
 
 
 SOURCES += \ 
@@ -15,4 +17,6 @@ SOURCES += \
     geometry/triangulation.cpp \
     geometry/polygons.cpp \
     geometry/mesh3d.cpp \
+    geometry/convexPolyhedron.cpp \
+    geometry/simpleRenderer.cpp
     

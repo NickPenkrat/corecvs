@@ -5,7 +5,7 @@
  * \date Jun 24, 2010
  * \author alexander
  */
-#include <QtGui/QImage>
+#include <QImage>
 #include <QImageWriter>
 
 #include "qtFileLoader.h"
@@ -111,5 +111,6 @@ void QTFileLoader::save(string name, RGB24Buffer *input)
     QString fileName = QString::fromStdString(name);
     QImageWriter imageWriter(fileName);
     RGB24InterfaceImage imageToSave(input);
+    imageWriter.setQuality(95);
     imageWriter.write(imageToSave);
 }

@@ -22,6 +22,7 @@ include($$UTILSDIR/utils.pri)                      # it uses UTILSDIR, TARGET an
 include($$UTILSDIR/corestructs/coreWidgets/coreWidgets.pri)
 include($$UTILSDIR/filters/ui/filterWidgets.pri)
 
+CONFIG += with_graphs
 
 HEADERS += \
     3d/scene3D.h \
@@ -53,17 +54,6 @@ HEADERS += \
     widgets/transform3DSelector.h \ 
     widgets/angleEditBox.h \
     widgets/shift3DWidget.h \
-    \
-    filters/filterSelector.h \
-    filters/filterExecuter.h \
-    filters/filterParametersControlWidgetBase.h \
-    filters/openCVFilter.h \
-    \
-    filters/graph/filterBlockPresentation.h \
-    filters/graph/diagramitem.h \
-    filters/graph/diagramscene.h \
-    filters/graph/arrow.h \
-    filters/graph/diagramtextitem.h \
     \
     camcalc/cameraCalculatorWidget.h \
     \
@@ -184,16 +174,6 @@ SOURCES += \
     widgets/angleEditBox.cpp \
     widgets/shift3DWidget.cpp \
     \
-    filters/filterSelector.cpp \
-    filters/filterExecuter.cpp \
-    filters/openCVFilter.cpp \
-    \
-    filters/graph/filterBlockPresentation.cpp \
-    filters/graph/diagramitem.cpp \
-    filters/graph/arrow.cpp \
-    filters/graph/diagramtextitem.cpp \
-    filters/graph/diagramscene.cpp \
-    \
     camcalc/cameraCalculatorWidget.cpp \
     \
     frames.cpp \
@@ -301,8 +281,6 @@ FORMS += \
     corestructs/libWidgets/openCVBMParametersControlWidget.ui \
     corestructs/libWidgets/openCVSGMParametersControlWidget.ui \
     \
-    filters/filterSelector.ui \
-    \
     \
     camcalc/cameraCalculatorWidget.ui \
     \
@@ -329,6 +307,9 @@ RESOURCES += \
    ../resources/main.qrc
 
 unix:!macx {
+    message (Switching on V4L2 support)
+  
+
     HEADERS += \
         framesources/v4l2/V4L2.h \
         framesources/v4l2/V4L2Capture.h \
@@ -338,6 +319,36 @@ unix:!macx {
         framesources/v4l2/V4L2.cpp \
         framesources/v4l2/V4L2Capture.cpp \
         framesources/v4l2/V4L2CaptureDecouple.cpp \
+
+}
+
+with_graphs {
+
+HEADERS += \
+    filters/filterSelector.h \
+    filters/filterExecuter.h \
+    filters/filterParametersControlWidgetBase.h \
+    filters/openCVFilter.h \
+    \
+    filters/graph/filterBlockPresentation.h \
+    filters/graph/diagramitem.h \
+    filters/graph/diagramscene.h \
+    filters/graph/arrow.h \
+    filters/graph/diagramtextitem.h \
+
+SOURCES += \
+    filters/filterSelector.cpp \
+    filters/filterExecuter.cpp \
+    filters/openCVFilter.cpp \
+    \
+    filters/graph/filterBlockPresentation.cpp \
+    filters/graph/diagramitem.cpp \
+    filters/graph/arrow.cpp \
+    filters/graph/diagramtextitem.cpp \
+    filters/graph/diagramscene.cpp \
+
+FORMS += \
+    filters/filterSelector.ui \
 
 }
 
@@ -424,3 +435,5 @@ with_synccam {
             
     DEFINES += WITH_SYNCCAM
 }
+
+OTHER_FILES += ../tools/generator/xml/draw3d.xml

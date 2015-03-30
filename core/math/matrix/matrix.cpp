@@ -626,6 +626,26 @@ Vector2d32 Matrix::getMaxCoord() const
     return result;
 }
 
+Matrix Matrix::column(int column)
+{
+    Matrix toReturn(h, 1);
+    for (int row = 0; row < h ; row++)
+    {
+        toReturn.a(row, 0) = this->a(row, column);
+    }
+    return toReturn;
+}
+
+Matrix Matrix::row(int row)
+{
+    Matrix toReturn(1, w);
+    for (int column = 0; column < w ; column++)
+    {
+        toReturn.a(0, column) = toReturn.a(row, column);
+    }
+    return toReturn;
+}
+
 
 /**
  *
@@ -907,7 +927,18 @@ void Matrix::svd (Matrix *A, Matrix *W, Matrix *V)
                 W->a(0, k) = x;
             }
         }
-     delete[] rv1;
+        delete[] rv1;
+}
+
+void Matrix::svd(Matrix *A, DiagonalMatrix *W, Matrix *V)
+{
+    ASSERT_TRUE((W->size() == A->w), "Matrix W has wrong size\n" );
+    Matrix WVec(1, W->size());
+    svd(A, &WVec, V);
+    for (int i = 0; i < W->size(); i++)
+    {
+        W->a(i) = WVec.a(0, i);
+    }
 }
 
  /**
@@ -926,7 +957,7 @@ void Matrix::svd (Matrix *A, Matrix *W, Matrix *V)
 int Matrix::jacobi(Matrix *a, DiagonalMatrix *d, Matrix *v, int *nrotpt)
 {
 
-    ASSERT_TRUE((a != NULL && W != NULL && V != NULL), "NULL input Matrix\n");
+    ASSERT_TRUE((a != NULL && d != NULL && v != NULL), "NULL input Matrix\n");
     ASSERT_TRUE((a->h == a->w), "Matrix A is not square\n" );
     ASSERT_TRUE((v->h == a->h && v->w == a->w), "Matrix V has wrong size\n" );
     ASSERT_TRUE((a->w == d->size()),"Matrix D has wrong size\n");

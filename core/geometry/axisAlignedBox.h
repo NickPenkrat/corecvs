@@ -1,4 +1,7 @@
-#pragma once
+#ifndef AXIS_ALIGNED_BOX_H
+#define AXIS_ALIGNED_BOX_H
+
+#include "axisAlignedBoxParameters.h"
 
 /**
  * \file mesh3d.h
@@ -113,4 +116,6 @@ public:
 };
 
 
-};
+} // namespace corecvs
+
+#endif // AXIS_ALIGNED_BOX_H

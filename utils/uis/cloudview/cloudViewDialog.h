@@ -2,9 +2,9 @@
 
 #include <vector>
 #include <QtCore/QObject>
-#include <QtGui/QDialog>
-#include <QtGui/QFileDialog>
-#include <QtGui/QImage>
+#include <QDialog>
+#include <QFileDialog>
+#include <QImage>
 
 #include "global.h"
 

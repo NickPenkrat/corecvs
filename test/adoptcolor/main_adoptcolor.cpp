@@ -2,7 +2,7 @@
 #include <QtCore/QCoreApplication>
 #include <unistd.h>
 
-#include <QtGui/QImage>
+#include <QImage>
 
 #include "qtFileLoader.h"
 

@@ -1,4 +1,4 @@
-#include <QtGui/QTableWidgetItem>
+#include <QTableWidgetItem>
 
 #include "log.h"
 #include "rgb24Buffer.h"

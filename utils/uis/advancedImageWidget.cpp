@@ -8,9 +8,9 @@
 
 
 #include <QtCore/QDebug>
-#include <QtGui/QPainter>
-#include <QtGui/QFileDialog>
-#include <QtGui/QMouseEvent>
+#include <QPainter>
+#include <QFileDialog>
+#include <QMouseEvent>
 
 #include "global.h"
 

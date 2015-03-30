@@ -1,7 +1,7 @@
 #pragma once
 /**
  * \file global.h
- * \brief This file holds the global includes, mostly for debuging, tracing and profiling
+ * \brief This file holds the global includes, mostly for debuging, tracing, profiling and portability
  *
  *
  * \ingroup cppcorefiles

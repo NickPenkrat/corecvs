@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include <QDir>
 #include <QtCore/QDebug>
 
 #include "pdoGenerator.h"
@@ -87,7 +88,7 @@ void PDOGenerator::generatePDOEnumSubH(const EnumReflection *eref)
     QString guardDefine = enumCapitalName + "_H_";
 
     out.close();
-    out.open(QString("Generated/" + fileName).toAscii(), ios::out);
+    out.open(QString(getGenerateDir() + QDir::separator() + fileName).toLatin1(), ios::out);
 
     result+=
     "#ifndef "+guardDefine+"\n"
@@ -164,7 +165,7 @@ void PDOGenerator::generatePDOEnumSubH(const EnumReflection *eref)
     "\n"
     "#endif  //"+guardDefine+"\n";
 
-    out << result.toAscii().constData();;
+    out << result.toLatin1().constData();;
 }
 
 
@@ -182,7 +183,7 @@ void PDOGenerator::generatePDOH()
     QString classDescr   = clazz->name.decription;
 
     out.close();
-    out.open(QString("Generated/" + fileName).toAscii(), ios::out);
+    out.open(QString(getGenerateDir() + QDir::separator() + fileName).toLatin1(), ios::out);
 
     result +=
     "#ifndef "+guardDefine+"\n"
@@ -427,7 +428,7 @@ void PDOGenerator::generatePDOH()
         {
             const BaseField *field = embedReflection->fields.at(k);
             QString originalName = field->name.name;
-            QString embeddedName = embed->getEmbeddedName(originalName.toAscii().constData());
+            QString embeddedName = embed->getEmbeddedName(originalName.toLatin1().constData());
 
             QString fieldGetterName = toCamelCase(embeddedName, false);
 
@@ -445,7 +446,7 @@ void PDOGenerator::generatePDOH()
         {
             const BaseField *field = embedReflection->fields.at(k);
             QString originalName = field->name.name;
-            QString embeddedName = embed->getEmbeddedName(originalName.toAscii().constData());
+            QString embeddedName = embed->getEmbeddedName(originalName.toLatin1().constData());
             QString fieldGetterName = toCamelCase(originalName, false);
             QString fieldCppName = QString("m") + toCamelCase(embeddedName, true);
     result+=
@@ -529,7 +530,7 @@ void PDOGenerator::generatePDOH()
     "};\n"
     "#endif  //"+guardDefine+"\n";
 
-    out << result.toAscii().constData();
+    out << result.toLatin1().constData();
 }
 
 void PDOGenerator::generatePDOCpp()
@@ -546,7 +547,7 @@ void PDOGenerator::generatePDOCpp()
     QString classDescr   = clazz->name.decription;
 
     out.close();
-    out.open(QString("Generated/" + fileName).toAscii(), ios::out);
+    out.open(QString(getGenerateDir() + QDir::separator() + fileName).toLatin1(), ios::out);
 
     result +=
     "/**\n"
@@ -653,7 +654,7 @@ void PDOGenerator::generatePDOCpp()
     "\n";
 
 
-    out << result.toAscii().constData();
+    out << result.toLatin1().constData();
 }
 
 
@@ -674,7 +675,7 @@ void PDOGenerator::generateControlWidgetCpp()
         baseWidget = "ParametersControlWidgetBase";
 
     out.close();
-    out.open(QString("Generated/" + fileName).toAscii(), ios::out);
+    out.open(QString(getGenerateDir() + QDir::separator() + fileName).toLatin1(), ios::out);
 
     result +=
     "/**\n"
@@ -892,7 +893,7 @@ void PDOGenerator::generateControlWidgetCpp()
 
 
 
-    out << result.toAscii().constData();
+    out << result.toLatin1().constData();
 
 }
 

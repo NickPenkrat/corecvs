@@ -2,7 +2,7 @@
 
 #include "baseHostDialog.h"
 
-#include <QtGui/QMainWindow>
+#include <QMainWindow>
 
 namespace Ui {
 class MainWindow;

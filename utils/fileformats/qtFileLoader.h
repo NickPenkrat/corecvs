@@ -9,6 +9,8 @@
  */
 #include <string.h>
 
+#include <QImage>
+
 #include "global.h"
 
 #include "bufferLoader.h"

@@ -120,6 +120,7 @@ public:
         return tangentCross / (thisLength * otherLength);
     }
 
+#if 0
     double cosineTo(const Vector2d &other) const
     {
         double thisLength  = !(*this);
@@ -129,6 +130,7 @@ public:
           return 0;
         return ((*this) & other) / (thisLength * otherLength);
     }
+#endif
 
     /**
      * The oriented area of the parallelogram built on the

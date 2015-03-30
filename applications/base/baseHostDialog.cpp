@@ -13,9 +13,9 @@
 #include <QtCore/QSettings>
 #include <QtCore/QDebug>
 #include <QtGui/QPainter>
-#include <QtGui/QFileDialog>
-#include <QtGui/QMenu>
-#include <QtGui/QAction>
+#include <QFileDialog>
+#include <QMenu>
+#include <QAction>
 
 #include "log.h"
 

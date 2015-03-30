@@ -4,7 +4,7 @@
 
 #include <QtCore/QSignalMapper>
 #include <QtCore/QMap>
-#include <QtGui/QWidget>
+#include <QWidget>
 
 #include "cameraControlParameters.h"
 #include "imageCaptureInterface.h"

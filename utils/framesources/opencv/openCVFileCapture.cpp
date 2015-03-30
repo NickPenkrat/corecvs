@@ -14,7 +14,7 @@ OpenCvFileCapture::OpenCvFileCapture(QString const &params)
        mName(params.toStdString())
      , count(1)
 {
-    SYNC_PRINT(("OpenCvFileCapture::OpenCvFileCapture(%s): called\n", params.toAscii().constData()));
+    SYNC_PRINT(("OpenCvFileCapture::OpenCvFileCapture(%s): called\n", params.toLatin1().constData()));
 
     SYNC_PRINT(("OpenCvFileCapture::OpenCvFileCapture(): exited\n"));
 }

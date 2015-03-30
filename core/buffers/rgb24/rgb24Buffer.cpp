@@ -138,6 +138,17 @@ void RGB24Buffer::drawLine(int x1, int y1, int x2, int y2, RGBColor color )
     drawLineSimple(lineStart.x(), lineStart.y(),lineEnd.x(), lineEnd.y(), color);
 }
 
+void RGB24Buffer::drawLine(double x1, double y1, double x2, double y2, RGBColor color )
+{
+    drawLine(fround(x1), fround(y1), fround(x2), fround(y2), color);
+}
+
+void RGB24Buffer::drawLine(const Vector2dd &v1, const Vector2dd &v2, RGBColor color )
+{
+    drawLine(v1.x(), v1.y(), v2.x(), v2.y(), color);
+}
+
+
 void RGB24Buffer::drawHLine(int x1, int y1, int x2, RGBColor color )
 {
     if (x1 > x2)  {int tmp = x1; x1 = x2; x2 = tmp;}

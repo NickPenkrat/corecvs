@@ -75,18 +75,18 @@ int V4L2CaptureInterface::setConfigurationString(string _devname)
         "  | - Size [%sx%s]\n"
         "  \\ - Compressing: %s\n"
         "RGB decoding is %s\n",
-        deviceStringPattern.cap(Device1Group) .toAscii().constData(),
-        deviceStringPattern.cap(Device2Group) .toAscii().constData(),
-        deviceStringPattern.cap(FpsNumGroup)  .toAscii().constData(),
-        deviceStringPattern.cap(FpsDenumGroup).toAscii().constData(),
-        deviceStringPattern.cap(WidthGroup)   .toAscii().constData(),
-        deviceStringPattern.cap(HeightGroup)  .toAscii().constData(),
-        deviceStringPattern.cap(CompressionGroup).toAscii().constData(),
+        deviceStringPattern.cap(Device1Group) .toLatin1().constData(),
+        deviceStringPattern.cap(Device2Group) .toLatin1().constData(),
+        deviceStringPattern.cap(FpsNumGroup)  .toLatin1().constData(),
+        deviceStringPattern.cap(FpsDenumGroup).toLatin1().constData(),
+        deviceStringPattern.cap(WidthGroup)   .toLatin1().constData(),
+        deviceStringPattern.cap(HeightGroup)  .toLatin1().constData(),
+        deviceStringPattern.cap(CompressionGroup).toLatin1().constData(),
         isRgb ? "on" : "off"
     );
 
-    deviceName[Frames::RIGHT_FRAME] = deviceStringPattern.cap(Device1Group).toAscii().constData();
-    deviceName[Frames::LEFT_FRAME ] = deviceStringPattern.cap(Device2Group).toAscii().constData();
+    deviceName[Frames::RIGHT_FRAME] = deviceStringPattern.cap(Device1Group).toLatin1().constData();
+    deviceName[Frames::LEFT_FRAME ] = deviceStringPattern.cap(Device2Group).toLatin1().constData();
 
     bool isOk;
     cameraMode.fpsnum = deviceStringPattern.cap(FpsNumGroup).toInt(&isOk);

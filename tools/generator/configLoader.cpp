@@ -27,7 +27,7 @@ const char *ConfigLoader::toCString(QString const &str)
     if (str.isEmpty())
         return "";
     else
-        return strdup(str.toAscii());
+        return strdup(str.toLatin1());
 }
 
 /**
@@ -79,14 +79,14 @@ void ConfigLoader::loadEnums(QDomDocument const &config)
     result->name = ReflectionNaming("enums", NULL, NULL);
 
     QDomNodeList enums = config.elementsByTagName("enum");
-    for (unsigned i = 0; i < enums.length(); i++)
+    for (int i = 0; i < enums.length(); i++)
     {
         QDomElement enumElement = enums.at(i).toElement();
         EnumReflection *enumReflection = new EnumReflection();
         enumReflection->name = getNamingFromXML(enumElement);
 
         QDomNodeList items = enumElement.elementsByTagName("item");
-        for (unsigned j = 0; j < items.length(); j++)
+        for (int j = 0; j < items.length(); j++)
         {
             QDomElement itemElement = items.at(j).toElement();
             int id = itemElement.attribute("id").toInt();
@@ -103,7 +103,7 @@ void ConfigLoader::loadEnums(QDomDocument const &config)
 void ConfigLoader::loadClasses(QDomDocument const &config)
 {
     QDomNodeList classes = config.elementsByTagName("class");
-    for (unsigned i = 0; i < classes.length(); i++)
+    for (int i = 0; i < classes.length(); i++)
     {
         QDomElement classElement = classes.at(i).toElement();
         ReflectionGen *result = new ReflectionGen();
@@ -114,7 +114,7 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
         qDebug() << "Class" << result->name.name << " (" << i << "/" << classes.length() << ")";
 
         QDomNodeList fields = classElement.elementsByTagName("field");
-        for (unsigned j = 0; j < fields.length(); j++)
+        for (int j = 0; j < fields.length(); j++)
         {
             QDomElement fieldElement = fields.at(j).toElement();
             ReflectionNaming fieldNameing = getNamingFromXML(fieldElement);
@@ -208,7 +208,7 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
                             result->name.name,
                             fieldElement.lineNumber(),
                             fieldElement.columnNumber(),
-                            type.toAscii().constData()
+                            type.toLatin1().constData()
                     );
                 }
             }
@@ -222,7 +222,7 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
         }
 
         QDomNodeList embeds = classElement.elementsByTagName("embed");
-        for (unsigned j = 0; j < embeds.length(); j++)
+        for (int j = 0; j < embeds.length(); j++)
         {
             // qDebug() << "processing tag embed N" << j << " of (" << embeds.length() << ")";
             QDomElement embeddedElement = embeds.at(j).toElement();
@@ -236,7 +236,7 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
                         result->name.name,
                         embeddedElement.lineNumber(),
                         embeddedElement.columnNumber(),
-                        type.toAscii().constData()
+                        type.toLatin1().constData()
                 );
                 continue;
             }
@@ -250,12 +250,12 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
             {
                 // TODO: Partial renames
                 QDomNodeList renames = embeddedElement.elementsByTagName("rename");
-                for (unsigned j = 0; j < renames.length(); j++)
+                for (int j = 0; j < renames.length(); j++)
                 {
                     QDomElement renaming = renames.at(j).toElement();
                     QString from = renaming.attribute("from");
                     QString to   = renaming.attribute("to");
-//                    printf("  rename: %s -> %s\n", from.toAscii().constData(), to.toAscii().constData());
+//                    printf("  rename: %s -> %s\n", from.toLatin1().constData(), to.toLatin1().constData());
                     EmbedSubclass::EmbedMap map;
                     map.embeddedName = toCString(to);
                     map.originalName = toCString(from);
@@ -270,7 +270,7 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
                     const BaseField *orignalField = (*it);
                     QString from = orignalField->getSimpleName();
                     QString to   = prefixString + from;
-//                    printf("  rename: %s -> %s\n", from.toAscii().constData(), to.toAscii().constData());
+//                    printf("  rename: %s -> %s\n", from.toLatin1().constData(), to.toLatin1().constData());
                     EmbedSubclass::EmbedMap map;
                     map.embeddedName = toCString(to);
                     map.originalName = toCString(from);
@@ -301,13 +301,13 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
 void ConfigLoader::loadParamsMapper(QDomDocument const &config)
 {
     QDomNodeList paramsMappers = config.elementsByTagName("parametersMapper");
-    for (unsigned i = 0; i < paramsMappers.length(); i++)
+    for (int i = 0; i < paramsMappers.length(); i++)
     {
         QDomElement classElement = paramsMappers.at(i).toElement();
         QDomNodeList fields = classElement.elementsByTagName("field");
         mMapperPostfix = classElement.attribute("name");
 
-        for (unsigned j = 0; j < fields.length(); j++)
+        for (int j = 0; j < fields.length(); j++)
         {
             QDomElement fieldElement = fields.at(j).toElement();
             QString fieldName = fieldElement.attribute("name");
@@ -321,7 +321,7 @@ void ConfigLoader::loadParamsMapper(QDomDocument const &config)
 void ConfigLoader::loadIncludes(QDomDocument const &config, QFileInfo const &currentFile)
 {
     QDomNodeList includes = config.elementsByTagName("include");
-    for (unsigned i = 0; i < includes.length(); i++) {
+    for (int i = 0; i < includes.length(); i++) {
         QDomElement includeElement = includes.at(i).toElement();
         QString includeName = includeElement.attribute("name");
         QFileInfo included = QFileInfo(currentFile.dir(), includeName);
@@ -329,10 +329,10 @@ void ConfigLoader::loadIncludes(QDomDocument const &config, QFileInfo const &cur
             load(included.canonicalFilePath());
         } else {
             fprintf(stderr, "Error 13 (%s:%d,%d) : Include '%s' is unknown.\n",
-                    currentFile.fileName().toAscii().constData(),
+                    currentFile.fileName().toLatin1().constData(),
                     includeElement.lineNumber(),
                     includeElement.columnNumber(),
-                    includeName.toAscii().constData()
+                    includeName.toLatin1().constData()
             );
         }
 

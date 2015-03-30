@@ -137,6 +137,9 @@ public:
     void drawArc (int x, int y, int rad, RGBColor color );
     void drawArc1(int x, int y, int rad, RGBColor color );
 
+    /* Some alternatives */
+    void drawLine(double x1, double y1, double x2, double y2, RGBColor color );
+    void drawLine(const Vector2dd &v1, const Vector2dd &v2, RGBColor color );
 
     //void drawLineSimple (int x1, int y1, int x2, int y2, int color );
     //void drawLineSafe (int x1, int y1, int x2, int y2, int color );

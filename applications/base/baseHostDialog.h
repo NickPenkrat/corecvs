@@ -14,9 +14,9 @@
 #include <QtCore/QSharedPointer>
 #include <QtCore/QSignalMapper>
 #include <QtCore/QTimer>
-#include <QtGui/QDialog>
-#include <QtGui/QAction>
-#include <QtGui/QKeyEvent>
+#include <QDialog>
+#include <QAction>
+#include <QKeyEvent>
 
 #include "ui_hostDialogStub.h"
 

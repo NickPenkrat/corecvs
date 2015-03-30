@@ -7,6 +7,8 @@ HEADERS += \
     rectification/stereoAligner.h \ 
     rectification/triangulator.h \
     rectification/ransac.h \
+    rectification/multicameraEstimator.h \
+    rectification/multicameraTriangulator.h \
 
 
 SOURCES += \
@@ -17,4 +19,6 @@ SOURCES += \
     rectification/correspondanceList.cpp \
     rectification/stereoAligner.cpp \
     rectification/triangulator.cpp \
+    rectification/multicameraEstimator.cpp \
+    rectification/multicameraTriangulator.cpp \
 

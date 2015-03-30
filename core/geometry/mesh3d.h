@@ -18,16 +18,12 @@
 namespace corecvs
 {
 
-class Mesh3DProxy {
-
-};
-
-
 /**
  *  This class is overcompliced. Break it into several ones
  **/
 class Mesh3D {
 public:
+    friend class PLYLoader;
 
     Mesh3D() :
         centralPoint(0.0),
@@ -93,9 +89,9 @@ public:
     }
 
 
-    void addAOB(Vector3dd corner1, Vector3dd corner2);
-    void addAOB(const AxisAlignedBoxParameters &box);
-    void addAOB(const AxisAlignedBox3d &box);
+    void addAOB(Vector3dd corner1, Vector3dd corner2, bool addFaces = true);
+    void addAOB(const AxisAlignedBoxParameters &box , bool addFaces = true);
+    void addAOB(const AxisAlignedBox3d &box         , bool addFaces = true);
 
     int addPoint(Vector3dd point);
 

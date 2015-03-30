@@ -27,9 +27,11 @@ namespace corecvs {
  *
  *
  * **/
+//class Matrix44 : public FixedVectorBase<Matrix44, double, 16>
 class Matrix44 : public FixedVectorBase<Matrix44, double, 16>
 {
 public:
+    // typedef FixedVectorBase<Matrix44, double, 16> BaseClass;
     typedef FixedVectorBase<Matrix44, double, 16> BaseClass;
 
     static const int H = 4;

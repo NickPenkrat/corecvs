@@ -1,7 +1,7 @@
 #ifndef rectifyWidget_H
 #define rectifyWidget_H
 
-#include <QtGui/QDialog>
+#include <QDialog>
 #include "ui_rectifyParametersControlWidget.h"
 #include "eulerAngles.h"
 #include "vector3d.h"

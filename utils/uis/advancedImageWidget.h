@@ -10,8 +10,8 @@
 
 
 #include <vector>
-#include <QtGui/QWidget>
-#include <QtGui/QtGui>
+#include <QWidget>
+#include <QtGui>
 
 #include "viAreaWidget.h"
 #include "saveFlowSettings.h"

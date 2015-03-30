@@ -1,6 +1,8 @@
-#include <QtGui/QtGui>
-#include <QtGui/QPainter>
-#include <QtGui/QFont>
+#include <QApplication>
+#include <QDesktopWidget>
+#include <QtGui>
+#include <QPainter>
+#include <QFont>
 
 #include "global.h"
 

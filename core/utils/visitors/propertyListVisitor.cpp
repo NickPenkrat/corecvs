@@ -41,7 +41,6 @@ template<>
         output->setStringProperty(getChildPath(fieldName), stringField);
     }
 
-
 /* New style fields*/
 
 template<>
@@ -94,7 +93,6 @@ template<>
     {
         stringField = input->getStringProperty(getChildPath(fieldName), stringValue);
     }
-
 
 
 /* New style fields*/

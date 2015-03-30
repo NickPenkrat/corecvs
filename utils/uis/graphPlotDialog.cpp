@@ -1,6 +1,8 @@
+#include <QPainter>
+#include <QFileDialog>
+#include <QtXml/QDomElement>
+
 #include <fstream>
-#include <QtGui/QPainter>
-#include "QtXml/QDomElement"
 
 #include "global.h"
 

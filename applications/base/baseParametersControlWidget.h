@@ -1,5 +1,5 @@
 #pragma once
-#include <QtGui/QWidget>
+#include <QWidget>
 #include <QtCore/QDebug>
 
 #include "generatedParameters/baseParameters.h"

@@ -5,6 +5,11 @@ BaseGenerator::BaseGenerator(const Reflection *_clazz)
 {
 }
 
+QString BaseGenerator::getGenerateDir()
+{
+    return "Generated";
+}
+
 QString BaseGenerator::toEnumName(QString  input)
 {
     return input.toUpper().replace(' ','_');

@@ -27,8 +27,11 @@ namespace corecvs {
 /**
  *   I use inheritance because no new data members will be added
  **/
-class RGBColor : public FixedVectorBase<RGBColor, uint8_t,4> {
+//class RGBColor : public FixedVectorBase<RGBColor, uint8_t,4> {
+class RGBColor : public FixedVector<uint8_t, 4> {
 public:
+
+    typedef FixedVector<uint8_t, 4> RGBColorBase;
 
     enum FieldId {
         FIELD_R = 2,
@@ -80,6 +83,7 @@ public:
         this->a() = 0;
     }
 
+    RGBColor(const RGBColorBase& base) : RGBColorBase(base) {}
 
     RGBColor()
     {
@@ -453,6 +457,18 @@ template<class VisitorType>
             out << (int)color.r() << ", " << (int)color.g() << ", " << (int)color.b() << " (" << (int)color.a() << ")";
         out << "]";
         return out;
+    }
+
+    friend istream & operator >>(istream &out, RGBColor &color)
+    {
+       int v;
+       out >> v;
+       color.r() = v;
+       out >> v;
+       color.g() = v;
+       out >> v;
+       color.b() = v;
+       return out;
     }
 
     Vector3dd toDouble() const
