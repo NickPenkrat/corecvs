@@ -25,7 +25,7 @@ public:
         MAX_INPUTS_NUMBER
     };
 
-    G12Buffer *currentFrames[MAX_INPUTS_NUMBER];
+    G12Buffer   *currentFrames   [MAX_INPUTS_NUMBER];
     RGB24Buffer *currentRgbFrames[MAX_INPUTS_NUMBER];
     int frameCount;
 
@@ -51,10 +51,9 @@ public:
     {
         switch (value)
         {
-         case LEFT_FRAME : return "LEFT_FRAME"; break ;
-         case RIGHT_FRAME : return "RIGHT_FRAME"; break ;
-         default : return "Not in range"; break ;
-
+            case LEFT_FRAME  : return "LEFT_FRAME" ; break ;
+            case RIGHT_FRAME : return "RIGHT_FRAME"; break ;
+            default : return "Not in range"; break ;
         }
         return "Not in range";
     }

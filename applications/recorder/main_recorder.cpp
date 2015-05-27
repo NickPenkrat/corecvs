@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    MainWindow mainWindow(new RecorderDialog(), source, params);
+    MainWindow mainWindow(new RecorderDialog(), source, params, true);
 
     app.exec();
 

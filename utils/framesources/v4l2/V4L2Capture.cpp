@@ -131,15 +131,19 @@ V4L2CaptureInterface::FramePair V4L2CaptureInterface::getFrame()
 
     protectFrame.lock();
     G12Buffer **results[Frames::MAX_INPUTS_NUMBER] = {
-            &result.bufferRight,
-            &result.bufferLeft
+            &result.bufferLeft,
+            &result.bufferRight
     };
 
     result.rgbBufferRight = NULL;
     result.rgbBufferLeft = NULL;
 
+    SYNC_PRINT(("LF:%s RF:%s\n",
+               currentFrame[Frames::LEFT_FRAME ].isFilled ? "filled" : "empty" ,
+               currentFrame[Frames::RIGHT_FRAME].isFilled ? "filled" : "empty"));
+
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
-    {
+    {        
         decodeData(&camera[i],  &currentFrame[i],  results[i]);
 
         if ((*results[i]) == NULL) {
@@ -185,8 +189,8 @@ V4L2CaptureInterface::FramePair V4L2CaptureInterface::getFrameRGB24()
     FramePair result;
 
     RGB24Buffer **results[Frames::MAX_INPUTS_NUMBER] = {
-            &result.rgbBufferRight,
-            &result.rgbBufferLeft
+        &result.rgbBufferLeft,
+        &result.rgbBufferRight
     };
 
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
@@ -343,7 +347,7 @@ void V4L2CaptureInterface::decodeData(V4L2CameraDescriptor *camera, V4L2BufferDe
     if (!buffer->isFilled)
     {
     //    SYNC_PRINT(("V4L2CaptureInterface::decodeData(): Buffer is not filled. Returning empty\n"));
-        *output = new G12Buffer(formatH, formatW);
+        *output = new G12Buffer(formatH, formatW, false);
         return;
     }
 

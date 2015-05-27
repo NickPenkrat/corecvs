@@ -80,6 +80,12 @@ void ImageResultLayer::drawImage (QImage *image)
     }
 
     QPainter painter(image);
+    if (mImages[Frames::LEFT_FRAME] == NULL && mImages[Frames::RIGHT_FRAME] == NULL)
+    {
+        image->fill(Qt::black);
+        painter.setPen(Qt::white);
+        painter.drawText(image->rect(), "No image to draw");
+    }
 
 //    qDebug("ImageResultLayer::drawImage (): style: %s", OutputStyle::getName(mStyle));
     switch (mStyle)

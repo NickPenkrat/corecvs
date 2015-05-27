@@ -191,6 +191,7 @@ void BaseHostDialog::initParameterWidgets()
 
 void BaseHostDialog::baseControlParametersChanged(QSharedPointer<BaseParameters> params)
 {
+     SYNC_PRINT(("BaseHostDialog::baseControlParametersChanged"));
     // check if we should swap frames
     if (params.isNull()) {
         return;
@@ -200,7 +201,7 @@ void BaseHostDialog::baseControlParametersChanged(QSharedPointer<BaseParameters>
     )
     {
         if (mFrames == NULL)
-        {
+        {           
             mScheduledSwap = true; // should schedule swap if we can't perform it now
         }
         swapCameras(params->swapCameras());

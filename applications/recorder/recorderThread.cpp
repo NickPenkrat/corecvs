@@ -99,7 +99,12 @@ AbstractOutputData* RecorderThread::processNewData()
     /*TODO: Logic here should be changed according to the host base change*/
     for (int id = 0; id < mActiveInputsNumber; id++)
     {
-        G12Buffer *buf = mFrames.getCurrentFrame((Frames::FrameSourceId)id);
+        G12Buffer   *buf    = mFrames.getCurrentFrame   ((Frames::FrameSourceId)id);
+        RGB24Buffer *bufrgb = mFrames.getCurrentRgbFrame((Frames::FrameSourceId)id);
+        if (bufrgb != NULL) {
+            buf = bufrgb->toG12Buffer();
+        }
+
 
         //result[id] = mTransformationCache[id] ? mTransformationCache[id]->doDeformation(mBaseParams->interpolationType(), buf) : buf;
         result[id] = buf;
