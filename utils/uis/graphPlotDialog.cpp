@@ -372,10 +372,10 @@ void GraphPlotDialog::addGraphPoint(unsigned graphId, double value, bool isValid
     }
 
 /*
-    qDebug("GraphPlotDialog::addGraphPoint(): adding point to graph %d(%d) : %s ", graphId, mData.size(), mData[graphId].name.toAscii().constData());
+    qDebug("GraphPlotDialog::addGraphPoint(): adding point to graph %d(%d) : %s ", graphId, mData.size(), mData[graphId].name.toLatin1().constData());
     for (int i = 0; i < mData.size(); i++)
     {
-        qDebug("GraphPlotDialog::addGraphPoint(): %d %s", i, mData[i].name.toAscii().constData());
+        qDebug("GraphPlotDialog::addGraphPoint(): %d %s", i, mData[i].name.toLatin1().constData());
     }
 */
 
@@ -410,7 +410,7 @@ void GraphPlotDialog::addGraphPoint(unsigned graphId, double value, bool isValid
 }
 void GraphPlotDialog::addGraphPoint(QString graphName, double value, bool isValid)
 {
-//    qDebug("GraphPlotDialog::addGraphPoint(%s, %lf, %s): called", graphName.toAscii().constData(), value, isValid ? "valid" : "invalid");
+//    qDebug("GraphPlotDialog::addGraphPoint(%s, %lf, %s): called", graphName.toLatin1().constData(), value, isValid ? "valid" : "invalid");
 
     if (mUi.pauseButton->isChecked())
         return;
@@ -508,7 +508,7 @@ void GraphPlotDialog::addNewGraphToUI(QString name, unsigned graphId)
 unsigned GraphPlotDialog::getGraphId(QString name)
 {
     unsigned graphId = 0;
-//    qDebug("GraphPlotDialog::getGraphId(%s): called", name.toAscii().constData());
+//    qDebug("GraphPlotDialog::getGraphId(%s): called", name.toLatin1().constData());
 
     while (graphId < mData.size()) {
         if (mData[graphId].name == name) {

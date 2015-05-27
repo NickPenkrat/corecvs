@@ -13,6 +13,7 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QString>
+#include <QMessageBox>
 #include "parametersMapper/parametersMapperRecorder.h"
 
 RecorderDialog::RecorderDialog()

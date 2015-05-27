@@ -12,22 +12,26 @@
 
 #include <QtCore/QSettings>
 #include <QtCore/QDebug>
-#include <QtGui/QPainter>
+#include <QPainter>
 #include <QFileDialog>
 #include <QMenu>
 #include <QAction>
+#include <QMessageBox>
 
 #include "log.h"
 
 #include "baseHostDialog.h"
 
 #include "g12Image.h"
-#include "cloudViewDialog.h"
 #include "graphPlotDialog.h"
 #include "textLabelWidget.h"
 #include "propertyListVisitor.h"
 #include "foldableWidget.h"
 #include "parametersMapper/parametersMapperBase.h"
+
+#ifdef WITH_OPENGL
+#include "cloudViewDialog.h"
+#endif
 
 #ifdef Q_OS_WIN
 #include "windowsMemoryUsageCalculator.h"
@@ -742,7 +746,9 @@ ViAreaWidget * BaseHostDialog::createAdditionalWindow(QString const &name, Windo
             area = new TextLabelWidget();
             break;
         case oglWindow:
+#ifdef WITH_OPENGL
             area = new CloudViewDialog();
+#endif
             break;
         case graphWindow:
         default:
@@ -826,7 +832,7 @@ void BaseHostDialog::loadParams(const QString &fileName, QString root)
 
 void BaseHostDialog::saveParams(const QString &fileName, QString root)
 {
-    qDebug("BaseHostDialog::saveParam(\"%s\", \"%s\"): called",fileName.toAscii().constData(), root.toAscii().constData());
+    qDebug("BaseHostDialog::saveParam(\"%s\", \"%s\"): called",fileName.toLatin1().constData(), root.toLatin1().constData());
     QSettings settings(fileName, QSettings::IniFormat);
 
     QSettings cameraSettings(ConfigManager::camConfigName(), QSettings::IniFormat);
@@ -865,7 +871,7 @@ void BaseHostDialog::saveParams(const QString &fileName, QString root)
 void BaseHostDialog::loadTransformFromFile(QString const &filename)
 {
     fstream f;
-    f.open((char *)filename.toAscii().constData(), fstream::in);
+    f.open((char *)filename.toLatin1().constData(), fstream::in);
     mRectifierData = RectificationResult();
     if (f.is_open())
     {
@@ -883,7 +889,7 @@ void BaseHostDialog::saveTransformToFile(QString const &filename)
 {
     qDebug() << "saving to" << filename;
     fstream f;
-    f.open((char *)filename.toAscii().constData(), fstream::out);
+    f.open((char *)filename.toLatin1().constData(), fstream::out);
     PropertyList list;
     PropertyListWriterVisitor writerVisitor(&list);
     RectificationResult defaultResult;

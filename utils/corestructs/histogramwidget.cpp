@@ -1,4 +1,4 @@
-#include <QtGui/QPainter>
+#include <QPainter>
 #include <limits>
 
 #include "global.h"
@@ -283,14 +283,14 @@ void HistogramWidget::mouseMoveEvent(QMouseEvent *event)
             {
             if (mPrevMousePos != QPointF())
             {
-                double const delta = (event->posF().x() - mPrevMousePos.x()) / mZoomFactor;
+                double const delta = (event->localPos().x() - mPrevMousePos.x()) / mZoomFactor;
                 if (!(mFrameLeftBorder < mHistogram->min && delta > 0)
                     && !(mFrameLeftBorder + toAbsolute(width()) > mHistogram->max && delta < 0))
                     {
                     mFrameLeftBorder -= delta;
                 }
             }
-            mPrevMousePos = event->posF();
+            mPrevMousePos = event->localPos();
         }
 
         update();

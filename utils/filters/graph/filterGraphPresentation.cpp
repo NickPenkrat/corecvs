@@ -1,3 +1,7 @@
+
+#include <QFileDialog>
+#include <QInputDialog>
+
 #include <stdio.h>
 #include "filterGraphPresentation.h"
 

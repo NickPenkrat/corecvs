@@ -11,8 +11,8 @@
 
 #include <stdint.h>
 #include <QtCore/QRect>
-#include <QtGui/QPainter>
-#include <QtGui/QComboBox>
+#include <QPainter>
+#include <QComboBox>
 
 #include "global.h"
 

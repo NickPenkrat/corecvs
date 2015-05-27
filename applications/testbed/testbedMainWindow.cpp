@@ -1,4 +1,5 @@
 #include <QtGui/QWheelEvent>
+#include <QFileDialog>
 
 #include "testbedMainWindow.h"
 #include "advancedImageWidget.h"

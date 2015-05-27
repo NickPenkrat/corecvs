@@ -9,7 +9,6 @@
 #include "recorderThread.h"
 
 #include <stdio.h>
-#include <QtGui/QMessageBox>
 #include <QMetaType>
 #include <QMessageBox>
 

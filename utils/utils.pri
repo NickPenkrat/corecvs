@@ -42,7 +42,11 @@ UTILS_INCLUDEPATH = \
 
 INCLUDEPATH += $$UTILS_INCLUDEPATH
 
-QT += xml
+QT += xml gui widgets
+
+unix {
+    QT += x11extras
+}
 
 UTILS_BINDIR = $$ROOT_DIR/bin
 #message(Utils.pri ROOT_DIR is <$$ROOT_DIR>. Bindir is <$$UTILS_BINDIR>. PWD is <$$PWD>)
@@ -76,7 +80,7 @@ contains(TARGET, cvs_utils) {
 DESTDIR = $$UTILS_BINDIR
 
 
-CONFIG += with_opengl                           # always include here OpenGL dependent modules as utils's and related projects need it
+#CONFIG += with_opengl                           # always include here OpenGL dependent modules as utils's and related projects need it
 with_opengl {
     QT += opengl                                # this must be defined for utils's and all related sources
 
@@ -138,9 +142,27 @@ with_directshow {
 with_avcodec {
     !build_pass: message(Switching on avcodec support)
 
-    DEFINES += WITH_AVCODEC
-    LIBS    += -lavutil -lavformat -lavcodec -lz -lavutil -lm
+    win32 {
+        isEmpty(AVCODEC_PATH): AVCODEC_PATH = "c:/ffmpeg"
+        !build_pass: message(AvCodec $$AVCODEC_PATH)   
+       
+
+        DEFINES += WITH_AVCODEC
+        INCLUDEPATH += $$AVCODEC_PATH/include
+        LIBS        += -L$$AVCODEC_PATH/lib -lavutil -lavformat -lavcodec -lavutil -lm
+    } else {
+        DEFINES += WITH_AVCODEC
+        LIBS    += -lavutil -lavformat -lavcodec -lz -lavutil -lm
+    }
 }
+
+with_avcodec {
+    !build_pass: message(Switching on swscale support)
+
+    DEFINES += WITH_SWSCALE
+    LIBS    += -lswscale
+}
+
 
 with_synccam {
     win32: LIBS += -L$$PWD/../../../../SyncCamera/library/lib/x86/ -lCyAPI

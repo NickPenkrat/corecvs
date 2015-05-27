@@ -8,7 +8,7 @@
 #ifndef G12IMAGE_H_
 #define G12IMAGE_H_
 
-#include <QtGui/QWidget>
+#include <QWidget>
 
 #include "g12Buffer.h"
 #include "rgb24Buffer.h"

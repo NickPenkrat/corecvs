@@ -5,7 +5,7 @@
  * \date Oct 17, 2012
  **/
 #include <QtGui/QImage>
-#include <QtGui/QPainter>
+#include <QPainter>
 
 #include "global.h"
 

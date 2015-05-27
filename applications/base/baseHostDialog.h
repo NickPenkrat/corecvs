@@ -15,8 +15,10 @@
 #include <QtCore/QSignalMapper>
 #include <QtCore/QTimer>
 #include <QDialog>
+#include <QTextEdit>
 #include <QAction>
 #include <QKeyEvent>
+#include <QTableView>
 
 #include "ui_hostDialogStub.h"
 

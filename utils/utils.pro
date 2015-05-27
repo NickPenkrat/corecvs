@@ -25,8 +25,6 @@ include($$UTILSDIR/filters/ui/filterWidgets.pri)
 CONFIG += with_graphs
 
 HEADERS += \
-    3d/scene3D.h \
-    \
     corestructs/parametersControlWidgetBase.h \
     corestructs/g12Image.h \
     corestructs/painterHelpers.h \
@@ -119,20 +117,6 @@ HEADERS += \
     widgets/generated/graphPlotParameters.h \
     widgets/generated/graphStyle.h \
     \
-    3d/draw3dParametersControlWidget.h \
-    3d/draw3dCameraParametersControlWidget.h \
-    3d/draw3dViMouseParametersControlWidget.h \
-    \
-    3d/generated/draw3dParameters.h \
-    3d/generated/draw3dStyle.h \
-    3d/generated/draw3dCameraParameters.h \
-    3d/generated/viMouse3DStereoStyle.h \
-    3d/generated/viMouse3DFlowStyle.h \
-    3d/generated/viMouse3DStereoStyle.h \
-    3d/generated/viMouse3DFlowStyle.h \
-    3d/generated/draw3dViMouseParameters.h \ 
-    3d/mesh3DScene.h \
-    3d/coordinateFrame.h \    
     filters/graph/filterPinPresentation.h \
     filters/graph/filterGraphPresentation.h \
     filters/graph/filterPresentationsCollection.h \
@@ -145,8 +129,6 @@ HEADERS += \
   
 
 SOURCES += \
-    3d/scene3D.cpp \
-    \
     corestructs/parametersControlWidgetBase.cpp \    
     corestructs/histogramdialog.cpp \
     corestructs/histogramwidget.cpp \
@@ -237,15 +219,6 @@ SOURCES += \
     widgets/generated/graphPlotParameters.cpp \
     widgets/generated/graphPlotParametersControlWidget.cpp \
     \
-    3d/generated/draw3dParameters.cpp \
-    3d/generated/draw3dParametersControlWidget.cpp \
-    3d/generated/draw3dCameraParametersControlWidget.cpp \
-    3d/generated/draw3dCameraParameters.cpp \
-    3d/generated/draw3dViMouseParametersControlWidget.cpp \
-    3d/generated/draw3dViMouseParameters.cpp \
-    \
-    3d/mesh3DScene.cpp \
-    3d/coordinateFrame.cpp \
     filters/graph/filterPinPresentation.cpp \
     filters/graph/filterGraphPresentation.cpp \
     filters/graph/filterPresentationsCollection.cpp \
@@ -362,10 +335,37 @@ with_opengl {
     SOURCES     += opengl/openGLTools.cpp
 
     HEADERS     += uis/cloudview/cloudViewDialog.h \ 
-    			   uis/cloudview/treeSceneController.h \
-    			   
-    SOURCES     += uis/cloudview/cloudViewDialog.cpp \ 
+                   uis/cloudview/treeSceneController.h \
+                   3d/scene3D.h \
+                   \
+                   3d/draw3dParametersControlWidget.h \
+                   3d/draw3dCameraParametersControlWidget.h \
+                   3d/draw3dViMouseParametersControlWidget.h \
+                   \
+                   3d/generated/draw3dParameters.h \
+                   3d/generated/draw3dStyle.h \
+                   3d/generated/draw3dCameraParameters.h \
+                   3d/generated/viMouse3DStereoStyle.h \
+                   3d/generated/viMouse3DFlowStyle.h \
+                   3d/generated/viMouse3DStereoStyle.h \
+                   3d/generated/viMouse3DFlowStyle.h \
+                   3d/generated/draw3dViMouseParameters.h \
+                   3d/mesh3DScene.h \
+                   3d/coordinateFrame.h \
+
+    SOURCES     += 3d/scene3D.cpp \
+                   \
+                   uis/cloudview/cloudViewDialog.cpp \
                    uis/cloudview/treeSceneController.cpp \
+                   3d/generated/draw3dParameters.cpp \
+                   3d/generated/draw3dParametersControlWidget.cpp \
+                   3d/generated/draw3dCameraParametersControlWidget.cpp \
+                   3d/generated/draw3dCameraParameters.cpp \
+                   3d/generated/draw3dViMouseParametersControlWidget.cpp \
+                   3d/generated/draw3dViMouseParameters.cpp \
+                   \
+                   3d/mesh3DScene.cpp \
+                   3d/coordinateFrame.cpp \
                        
     FORMS       += uis/cloudview/cloudViewDialog.ui
 }

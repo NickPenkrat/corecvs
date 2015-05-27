@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QtGui/QWidget>
+#include <QWidget>
 #include <QtGui/QMouseEvent>
 #include "histogram.h"
 
