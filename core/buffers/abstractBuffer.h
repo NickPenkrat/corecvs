@@ -32,9 +32,6 @@ namespace corecvs {
 using std::string;
 using std::cout;
 using std::endl;
-using std::min;
-using std::max;
-
 /**
  * This class holds the mapping function that is applied to the buffer element
  * to get another buffer element.
@@ -846,8 +843,8 @@ template<typename ResultType>
 template<typename operation>
     void binaryOperationInPlace(const AbstractBuffer &that, const operation &oper = operation())
     {
-        IndexType h = min(this->h, that.h);
-        IndexType w = min(this->w, that.w);
+        IndexType h = CORE_MIN(this->h, that.h);
+        IndexType w = CORE_MIN(this->w, that.w);
         for (IndexType i = 0; i < h; i++)
         {
             ElementType *thisElemRunner = &(this->element(i,0));

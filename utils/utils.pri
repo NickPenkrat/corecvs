@@ -27,7 +27,6 @@ UTILS_INCLUDEPATH = \
     $$UTILSDIR/framesources \
     $$UTILSDIR/framesources/directShow \    
     $$UTILSDIR/framesources/decoders \    
-    $$UTILSDIR/framesources/v4l2 \
     $$UTILSDIR/framesources/syncCam \
     $$UTILSDIR/framesources/file \
     $$UTILSDIR/framesources/avcodec \
@@ -39,6 +38,13 @@ UTILS_INCLUDEPATH = \
     $$UTILSDIR/uis/cloudview \    
     $$UTILSDIR/visitors \
     $$UTILSDIR/widgets \
+
+
+!win32 {
+UTILS_INCLUDEPATH += \
+    $$UTILSDIR/framesources/v4l2 \
+}
+
 
 INCLUDEPATH += $$UTILS_INCLUDEPATH
 

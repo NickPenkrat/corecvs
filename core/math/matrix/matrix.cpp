@@ -42,7 +42,7 @@ Matrix::Matrix(Matrix44 &in) : MatrixBase(4, 4, false)
 
 Matrix::Matrix(int32_t h, int32_t w, double value) : MatrixBase(h, w, (double)(0.0))
 {
-    int32_t minDim = min(h,w);
+    int32_t minDim = CORE_MIN(h,w);
     for (int32_t i = 0; i < minDim; i++)
         MatrixBase::element(i,i) = value;
 }
@@ -169,8 +169,8 @@ Vector operator *(const Vector &V, const Matrix &M)
 
 Matrix operator *=(Matrix &M, const DiagonalMatrix &D)
 {
-    int32_t minDim = min(M.h,M.w);
-    minDim = min(minDim, D.size());
+    int32_t minDim = CORE_MIN(M.h,M.w);
+    minDim = CORE_MIN(minDim, D.size());
     for (int i = 0; i < minDim ; i++)
     {
          for (int j = 0; j < minDim ; j++)
@@ -183,8 +183,8 @@ Matrix operator *=(Matrix &M, const DiagonalMatrix &D)
 
 Matrix operator *(const Matrix &M, const DiagonalMatrix &D)
 {
-    int32_t minDim = min(M.h,M.w);
-    minDim = min(minDim, D.size());
+    int32_t minDim = CORE_MIN(M.h,M.w);
+    minDim = CORE_MIN(minDim, D.size());
     Matrix result(minDim, minDim, false);
     for (int i = 0; i < minDim ; i++)
     {
@@ -198,8 +198,8 @@ Matrix operator *(const Matrix &M, const DiagonalMatrix &D)
 
 Matrix operator *(DiagonalMatrix &D, const Matrix &M)
 {
-    int32_t minDim = min(M.h,M.w);
-    minDim = min(minDim, D.size());
+    int32_t minDim = CORE_MIN(M.h,M.w);
+    minDim = CORE_MIN(minDim, D.size());
     Matrix result(minDim, minDim, false);
     for (int i = 0; i < minDim ; i++)
     {
