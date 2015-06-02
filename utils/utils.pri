@@ -141,6 +141,7 @@ with_opencv {                                       # all this stuff was extract
 with_directshow {
     DIRECT_SHOW_WRAPPER_DIR = $$UTILSDIR/../wrappers/directShow
     include($$DIRECT_SHOW_WRAPPER_DIR/directShowLibs.pri)
+    DEFINES += WITH_DIRECTSHOW
 }
 
 

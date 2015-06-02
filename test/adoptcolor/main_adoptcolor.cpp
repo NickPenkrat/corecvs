@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include <QtCore/QCoreApplication>
-#include <unistd.h>
+//#include <unistd.h>
 
 #include <QImage>
 
 #include "qtFileLoader.h"
 
 #include "imageCaptureInterface.h"
-#include "V4L2Capture.h"
+//#include "V4L2Capture.h"
 #include "bmpLoader.h"
 #include "ellipticalApproximation.h"
 #include "rgb24Buffer.h"
