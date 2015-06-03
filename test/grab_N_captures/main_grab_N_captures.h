@@ -21,7 +21,10 @@ class Waiter : public QObject
 {
     Q_OBJECT
 public:
-    Waiter() {}
+    Waiter(){}//:QObject(NULL)
+//    {
+//        input = NULL;
+//    }
     ImageCaptureInterface *input;
 
 public slots:
@@ -30,19 +33,26 @@ public slots:
         SYNC_PRINT(("Hello"));
         G12Buffer *result = NULL;
         RGB24Buffer *resultRGB = NULL;
+//        QString name;
 
-        printf("isRGB %i\n", input->isRgb);
+        printf("isRGB %i ____$$$$$$$$$$$$$$$_____\n", input->isRgb);
 
         ImageCaptureInterface::FramePair pair = input->isRgb ? input->getFrameRGB24() : input->getFrame();
+
+//        input->getCaptureName(name);
 
         if (pair.bufferLeft != NULL)
         {
             result = pair.bufferLeft;
             if(result != NULL)
             {
-                BMPLoader().save("snapshotL1.bmp", result);
-                resultRGB = new RGB24Buffer(result);
-                QTFileLoader().save("1.jpg", resultRGB);
+            BMPLoader().save("snapshotL1.bmp", result);
+//                QString filename = "snapshot";
+////                filename += name;
+//                filename += "l1.bmp";
+//                BMPLoader().save(filename.toStdString(), result);
+//                resultRGB = new RGB24Buffer(result);
+//                QTFileLoader().save("1.jpg", resultRGB);
                 result = NULL;
             }
         }
@@ -53,6 +63,16 @@ public slots:
             if(result != NULL)
             {
                 BMPLoader().save("snapshotR1.bmp", result);
+
+//                resultRGB = new RGB24Buffer(result);
+
+//                QString filename = "snapshot";
+//                filename += name;
+//                filename += "l1.jpg";
+
+//                QTFileLoader().save(filename.toStdString(), resultRGB);
+
+//                resultRGB = NULL;
                 result = NULL;
             }
         }
@@ -83,6 +103,7 @@ public slots:
         delete_safe(pair.rgbBufferLeft);
 
         delete_safe(result);
-        QCoreApplication::exit();
+
+        QCoreApplication::quit();
     }
 };
