@@ -2,12 +2,10 @@
 
 int main (int argc, char **argv)
 {
-  printf("Attempting a grab 1 ____________________________________________\n");
-  QCoreApplication app(argc, argv);
+    printf("Attempting a grab 1 ____________________________________________\n");
+    QCoreApplication app(argc, argv);
 
     vector<ImageCaptureInterface*> captures;
-    vector<Waiter*> waiters;
-    vector<QMutex*> mutexs;
 
     for(int i = 1; i < argc; i++)
     {
@@ -34,9 +32,7 @@ int main (int argc, char **argv)
         QObject::connect(input, SIGNAL(newFrameReady(frame_data_t)), waiter, SLOT(onFrameReady()));
         input->startCapture();
 
-        waiters.push_back(waiter);
         captures.push_back(input);
-        mutexs.push_back(mutex);
     }
 
     QTimer::singleShot(2000, &app, SLOT(quit()));
