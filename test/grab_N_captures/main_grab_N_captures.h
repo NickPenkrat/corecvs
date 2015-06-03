@@ -3,6 +3,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QThread>
+#include "QTimer"
 #ifdef WIN32
 # include <windows.h>
 # define tSleep  Sleep
@@ -12,7 +13,6 @@
 # define tSleep _sleep
 #endif
 #include "imageCaptureInterface.h"
-//#include "V4L2Capture.h"
 #include "bmpLoader.h"
 #include "QTFileLoader.h"
 
@@ -21,59 +21,53 @@ class Waiter : public QObject
 {
     Q_OBJECT
 public:
-    Waiter(){}//:QObject(NULL)
-//    {
-//        input = NULL;
-//    }
+    Waiter(){}
     ImageCaptureInterface *input;
 
 public slots:
     void onFrameReady()
     {
-        SYNC_PRINT(("Hello"));
-        G12Buffer *result = NULL;
+        SYNC_PRINT(("Hello \n"));
         RGB24Buffer *resultRGB = NULL;
-//        QString name;
-
-        printf("isRGB %i ____$$$$$$$$$$$$$$$_____\n", input->isRgb);
+        QString captureName;
+        QString leftDeviceName;
+        QString rightDeviceName;
 
         ImageCaptureInterface::FramePair pair = input->isRgb ? input->getFrameRGB24() : input->getFrame();
 
-//        input->getCaptureName(name);
+        input->getCaptureName(captureName);
+        input->getDeviceName(0,leftDeviceName);
+        input->getDeviceName(1,rightDeviceName);
 
         if (pair.bufferLeft != NULL)
         {
-            result = pair.bufferLeft;
-            if(result != NULL)
+            resultRGB = new RGB24Buffer(pair.bufferLeft);
+            if(resultRGB != NULL)
             {
-            BMPLoader().save("snapshotL1.bmp", result);
-//                QString filename = "snapshot";
-////                filename += name;
-//                filename += "l1.bmp";
-//                BMPLoader().save(filename.toStdString(), result);
-//                resultRGB = new RGB24Buffer(result);
-//                QTFileLoader().save("1.jpg", resultRGB);
-                result = NULL;
+                QString filename = "snapshot_";
+                filename += captureName;
+                filename += "_";
+                filename += leftDeviceName;
+                filename += ".jpg";
+                QTFileLoader().save(filename.toStdString(), resultRGB);
+                printf("%s saved!\n", filename.toStdString().c_str());
+                resultRGB = NULL;
             }
         }
 
         if (pair.bufferRight != NULL)
         {
-            result = pair.bufferRight;
-            if(result != NULL)
+            resultRGB = new RGB24Buffer(pair.bufferRight);
+            if(resultRGB != NULL)
             {
-                BMPLoader().save("snapshotR1.bmp", result);
-
-//                resultRGB = new RGB24Buffer(result);
-
-//                QString filename = "snapshot";
-//                filename += name;
-//                filename += "l1.jpg";
-
-//                QTFileLoader().save(filename.toStdString(), resultRGB);
-
-//                resultRGB = NULL;
-                result = NULL;
+                QString filename = "snapshot_";
+                filename += captureName;
+                filename += "_";
+                filename += rightDeviceName;
+                filename += ".jpg";
+                QTFileLoader().save(filename.toStdString(), resultRGB);
+                printf("%s saved!\n", filename.toStdString().c_str());
+                resultRGB = NULL;
             }
         }
 
@@ -82,7 +76,13 @@ public slots:
             resultRGB = pair.rgbBufferLeft;
             if(resultRGB != NULL)
             {
-                BMPLoader().save("snapshotRL1.bmp", resultRGB);
+                QString filename = "snapshot_";
+                filename += captureName;
+                filename += "_";
+                filename += leftDeviceName;
+                filename += "_RGB.jpg";
+                QTFileLoader().save(filename.toStdString(), resultRGB);
+                printf("%s saved!\n", filename.toStdString().c_str());
                 resultRGB = NULL;
             }
         }
@@ -92,7 +92,13 @@ public slots:
             resultRGB = pair.rgbBufferRight;
             if(resultRGB != NULL)
             {
-                BMPLoader().save("snapshotRR1.bmp", resultRGB);
+                QString filename = "snapshot_";
+                filename += captureName;
+                filename += "_";
+                filename += rightDeviceName;
+                filename += "_RGB.jpg";
+                QTFileLoader().save(filename.toStdString(), resultRGB);
+                printf("%s saved!\n", filename.toStdString().c_str());
                 resultRGB = NULL;
             }
         }
@@ -102,8 +108,6 @@ public slots:
         delete_safe(pair.rgbBufferRight);
         delete_safe(pair.rgbBufferLeft);
 
-        delete_safe(result);
-
-        QCoreApplication::quit();
+//        QCoreApplication::quit();
     }
 };
