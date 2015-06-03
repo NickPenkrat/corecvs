@@ -7,10 +7,13 @@ int main (int argc, char **argv)
 
     vector<ImageCaptureInterface*> captures;
     vector<Waiter*> waiters;
+    vector<QMutex*> mutexs;
 
     for(int i = 1; i < argc; i++)
     {
         char * captureString = argv[i];
+
+        QMutex *mutex = new QMutex();
         ImageCaptureInterface *input = ImageCaptureInterface::fabric(captureString, 1);
         ImageCaptureInterface::CapErrorCode res = input->initCapture();
 
@@ -27,11 +30,13 @@ int main (int argc, char **argv)
         }
         Waiter *waiter = new Waiter;
         waiter->input = input;
+        waiter->mutex = mutex;
         QObject::connect(input, SIGNAL(newFrameReady(frame_data_t)), waiter, SLOT(onFrameReady()));
         input->startCapture();
 
         waiters.push_back(waiter);
         captures.push_back(input);
+        mutexs.push_back(mutex);
     }
 
     QTimer::singleShot(2000, &app, SLOT(quit()));

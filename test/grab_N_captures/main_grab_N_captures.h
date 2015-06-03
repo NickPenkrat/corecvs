@@ -23,10 +23,16 @@ class Waiter : public QObject
 public:
     Waiter(){}
     ImageCaptureInterface *input;
+    QMutex *mutex;
 
 public slots:
     void onFrameReady()
     {
+        if(!mutex->tryLock())
+        {
+            return;
+        }
+
         SYNC_PRINT(("Hello \n"));
         RGB24Buffer *resultRGB = NULL;
         QString captureName;
