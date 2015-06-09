@@ -279,7 +279,7 @@ FORMS += \
 RESOURCES += \
    ../resources/main.qrc
 
-unix:!macx {
+unix:!macx:!win32 {
     message (Switching on V4L2 support)
   
 
