@@ -46,7 +46,15 @@ int PresentationParameters::staticInit()
           "Output",
           "Output",
           "View - views are more or less self-explenatory",
-           NULL
+          new EnumReflection(7
+          , new EnumOption(0,"right Frame")
+          , new EnumOption(1,"left Frame")
+          , new EnumOption(2,"sidebyside stereo")
+          , new EnumOption(3,"anaglyph RG")
+          , new EnumOption(4,"anaglyph RC")
+          , new EnumOption(5,"blend")
+          , new EnumOption(6,"none")
+          )
         )
     );
     fields().push_back(
@@ -58,7 +66,14 @@ int PresentationParameters::staticInit()
           "Stereo",
           "Stereo",
           "Way to draw overlay with disparity information",
-           NULL
+          new EnumReflection(6
+          , new EnumOption(0,"dont show stereo")
+          , new EnumOption(1,"fast large dots")
+          , new EnumOption(2,"fast dots")
+          , new EnumOption(3,"show lines stereo")
+          , new EnumOption(4,"show all stereo")
+          , new EnumOption(5,"show dots stereo")
+          )
         )
     );
     fields().push_back(
@@ -70,7 +85,14 @@ int PresentationParameters::staticInit()
           "Flow",
           "Flow",
           "Way to draw overlay with optical flow information",
-           NULL
+          new EnumReflection(6
+          , new EnumOption(0,"dont show flow")
+          , new EnumOption(1,"fast colored dots")
+          , new EnumOption(2,"show lines only")
+          , new EnumOption(3,"show colored dots")
+          , new EnumOption(4,"show colored lines")
+          , new EnumOption(5,"show heat coloring")
+          )
         )
     );
     fields().push_back(

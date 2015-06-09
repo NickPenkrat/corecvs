@@ -366,14 +366,36 @@ public:
         mAxes.clear();
         mValues.clear();
 
-        for (int i = 0; i < mInfMatrix->h; i++)
+        for (int i = 0; i < mInfMatrix->w; i++)
         {
-
             ElementType forPush;
-            for (int k = 0; k < mInfMatrix->h; k ++) forPush.element[k] = V.a(k,i);
+            for (int k = 0; k < mInfMatrix->h; k ++) {
+                forPush.element[k] = V.a(k,i);
+            }
 
             mAxes.push_back(forPush);
             mValues.push_back(W.a(0,i));
+        }
+
+        for (unsigned i = 0; i < mValues.size(); i++)
+        {
+            int maxid = i;
+            double max = mValues[i];
+            for (unsigned j = i + 1; j < mValues.size(); j++)
+            {
+                if (fabs(mValues[j]) > max) {
+                    max = fabs(mValues[j]);
+                    maxid = 0;
+                }
+            }
+
+            double tmpSwap = mValues[maxid];
+            mValues[maxid] = mValues[i];
+            mValues[i] = tmpSwap;
+
+            ElementType forPush = mAxes[maxid];
+            mAxes[maxid] = mAxes[i];
+            mAxes[maxid] = forPush;
         }
 
         return true;

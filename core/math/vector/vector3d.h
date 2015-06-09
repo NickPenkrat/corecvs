@@ -142,6 +142,7 @@ public:
      *  Not a fastest but stable way to compute an angle
      *
      *  \f[ alpha = atan2(sin(\widehat{V1 V2}) \|V1\|\|V2\|, cos(\widehat{V1 V2}) \|V1\| \|V2\| ) \f]
+     *
      **/
     double angleTo(const Vector3d &other) const
     {

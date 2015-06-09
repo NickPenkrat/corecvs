@@ -476,6 +476,15 @@ template<class VisitorType>
         return Vector3dd(r(), g(), b());
     }
 
+    uint32_t toRGBInt() const
+    {
+        return ((uint32_t)r() << 16) | ((uint32_t)g() << 8) | ((uint32_t)b());
+    }
+    uint32_t toBRGInt() const
+    {
+        return ((uint32_t)b() << 16) | ((uint32_t)g() << 8) | ((uint32_t)r());
+    }
+
     static RGBColor FromDouble(const Vector3dd &input)
     {
         Vector3dd input1 = input;

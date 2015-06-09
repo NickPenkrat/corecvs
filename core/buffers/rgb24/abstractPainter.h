@@ -10,10 +10,11 @@
 #include <vector>
 
 #include "global.h"
+
+#include "polygons.h"
 #include "hardcodeFont.h"
 #include "hersheyVectorFont.h"
 #include "rgbColor.h"
-#include "polygons.h"
 
 namespace corecvs {
 

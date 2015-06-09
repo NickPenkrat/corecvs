@@ -432,6 +432,18 @@ public:
         return fields[fieldId]->name.comment;
     }
 
+    int idByName(const char *name)
+    {
+        for (int i = 0; i < fieldNumber(); i++)
+        {
+            if (strcmp(fields[i]->name.name, name) == 0)
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
 /*    ~Reflection()
     {
 #ifndef REFLECTION_STATIC_ALLOCATION
@@ -559,8 +571,8 @@ public:
     EnumOption(
         int _id,
         const char *_name,
-        const char *_decription,
-        const char *_comment
+        const char *_decription = NULL,
+        const char *_comment = NULL
     ) :
         id(_id),
         name(_name, _decription, _comment)
@@ -583,6 +595,20 @@ public:
     int optionsNumber() const
     {
         return (int)options.size();
+    }
+
+    EnumReflection() {}
+
+    EnumReflection(int number, ...)
+    {
+        va_list marker;
+        va_start( marker, number );
+        for (int i = 0; i < number; i++)
+        {
+            const EnumOption *ref = va_arg( marker, const EnumOption *);
+            options.push_back(ref);
+        }
+        va_end( marker );
     }
 
 };
@@ -739,6 +765,36 @@ public:
     {
         return fields()[fieldId]->name.comment;
     }
+};
+
+
+class DynamicObject {
+public:
+    Reflection *reflection;
+    void *rawObject;
+
+    DynamicObject() :
+        reflection(NULL),
+        rawObject(NULL)
+    {}
+
+    template<typename Object>
+    DynamicObject(Object *object):
+        reflection(BaseReflection<Object>::getReflection()),
+        rawObject((void *) object)
+    {}
+
+    template<typename Type>
+    Type *getField(int fieldId)
+    {
+        return (Type *)&(((uint8_t*)rawObject)[reflection->fields[fieldId]->offset]);
+    }
+
+    const BaseField* getFieldReflection(int fieldId)
+    {
+        return reflection->fields[fieldId];
+    }
+
 };
 
 } //namespace corecvs
