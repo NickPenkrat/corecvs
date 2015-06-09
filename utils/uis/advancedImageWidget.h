@@ -36,6 +36,7 @@ public:
 
     ~AdvancedImageWidget();
 
+    void setCollapseTitle(bool collapse);
 
 public slots:
     virtual void childRepaint(QPaintEvent *event, QWidget *who);
@@ -62,6 +63,7 @@ public slots:
     void zoomChanged();
 
     void fitToggled();
+    void setFitWindow(bool flag = true);
 
     void setInfoString(QString info) { mUi->infoValueLabel->setText(info); }
 

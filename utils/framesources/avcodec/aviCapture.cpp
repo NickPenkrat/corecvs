@@ -97,14 +97,14 @@ ImageCaptureInterface::FramePair AviCapture::getFrame()
             {
                 int frame_finished;
                 avcodec_decode_video2(mCodecContext, mFrame, &frame_finished, &mPacket);
-
+                av_free_packet(&mPacket);
                 if (frame_finished) {
 //                    SYNC_PRINT(("AviCapture::getFrame(): Frame ready\n"));
                     break;
                 }
+            } else {
+                av_free_packet(&mPacket);
             }
-            // Free the packet that was allocated by av_read_frame
-            av_free_packet(&mPacket);
         }
 
         if (res >= 0)

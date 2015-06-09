@@ -10,6 +10,9 @@
 #include "rgb24Buffer.h"
 #include "qSettingsSetter.h"
 
+#include "plyLoader.h"
+#include "stlLoader.h"
+
 // FIXIT: GOOPEN
 //#include "../../../restricted/applications/vimouse/faceDetection/faceMesh.h"
 
@@ -738,7 +741,7 @@ void CloudViewDialog::loadMesh()
       this,
       tr("Load 3D Model"),
       ".",
-      tr("3D Model (*.ply)"));
+      tr("3D Model (*.ply *.stl)"));
 
     Mesh3DScene *mesh = new Mesh3DScene();
     ifstream file;
@@ -748,12 +751,27 @@ void CloudViewDialog::loadMesh()
         qDebug() << "Can't open mesh file" << endl;
         return;
     }
-    PLYLoader loader;
-    if (loader.loadPLY(file, *mesh) != 0)
+
+    if (fileName.endsWith(".ply"))
     {
-       qDebug() << "CloudViewDialog::Unable to load mesh";
-       file.close();
-       return;
+        PLYLoader loader;
+        if (loader.loadPLY(file, *mesh) != 0)
+        {
+           qDebug() << "CloudViewDialog::Unable to load mesh";
+           file.close();
+           return;
+        }
+    }
+
+    if (fileName.endsWith(".stl"))
+    {
+        STLLoader loader;
+        if (loader.loadBinarySTL(file, *mesh) != 0)
+        {
+           qDebug() << "CloudViewDialog::Unable to load mesh";
+           file.close();
+           return;
+        }
     }
 
     QFileInfo fileInfo(fileName);

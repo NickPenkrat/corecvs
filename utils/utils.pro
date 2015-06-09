@@ -1,8 +1,8 @@
-# try use global config 
+# try use global config
 exists(../../../config.pri) {
     ROOT_DIR=../../..
     #message(Using global config)
-} else { 
+} else {
     message(Using local config)
     ROOT_DIR=..
 }
@@ -19,42 +19,11 @@ TEMPLATE = lib
 UTILSDIR = $$PWD
 include($$UTILSDIR/utils.pri)                      # it uses UTILSDIR, TARGET and detects UTILS_BINDIR, OBJECTS_DIR,...!
 
-include($$UTILSDIR/corestructs/coreWidgets/coreWidgets.pri)
-include($$UTILSDIR/filters/ui/filterWidgets.pri)
+QT += gui
 
-CONFIG += with_graphs
+CONFIG +=  with_filters with_widgets
 
-HEADERS += \
-    corestructs/parametersControlWidgetBase.h \
-    corestructs/g12Image.h \
-    corestructs/painterHelpers.h \
-    corestructs/histogramdialog.h \
-    corestructs/histogramwidget.h \
-    corestructs/saveFlowSettings.h \
-    \
-    corestructs/libWidgets/openCVBMParameters.h \
-    corestructs/libWidgets/openCVSGMParameters.h \
-    corestructs/libWidgets/openCVBMParametersControlWidget.h \
-    corestructs/libWidgets/openCVSGMParametersControlWidget.h \
-    \
-    viAreaWidget.h \
-    viGLAreaWidget.h \
-    matrixwidget.h \
-    \
-    widgets/foldableWidget.h \
-    widgets/exponentialSlider.h \
-    widgets/parameterEditorWidget.h \
-    widgets/parameterSlider.h \    
-    widgets/parameterSelector.h \
-    widgets/inputSelectorWidget.h \
-    widgets/loggerWidget.h \
-    widgets/graphPlotParametersControlWidget.h \
-    widgets/transform3DSelector.h \ 
-    widgets/angleEditBox.h \
-    widgets/shift3DWidget.h \
-    \
-    camcalc/cameraCalculatorWidget.h \
-    \
+HEADERS += \    
     frames.h \
     framesources/imageCaptureInterface.h \
     framesources/cameraControlParameters.h \
@@ -69,15 +38,6 @@ HEADERS += \
     framesources/file/abstractFileCaptureSpinThread.h \
     \
     fileformats/qtFileLoader.h \
-    uis/advancedImageWidget.h \
-    uis/paintImageWidget.h \    
-    uis/histogramdepthdialog.h \
-    uis/capSettingsDialog.h \
-    uis/osdBaseWidget.h \
-    uis/graphPlotDialog.h \
-    uis/aboutDialog.h \
-    uis/textLabelWidget.h \
-    uis/pointsRectificationWidget.h \
     \
     flowDrawer.h \
     flowcolorers/abstractFlowColorer.h \
@@ -103,12 +63,10 @@ HEADERS += \
     rectifier/estimationMethodType.h \
     rectifier/optimizationMethodType.h \
     rectifier/universalRectifier.h \
-    rectifier/rectifyParametersControlWidget.h \
     rectifier/rectifyParameters.h \
     \
 ##  opengl/openGLTools.h \
     \
-    distortioncorrector/distortionWidget.h \
     distortioncorrector/distortionParameters.h \
     camcalc/colorTimer.h \
     \
@@ -117,47 +75,12 @@ HEADERS += \
     widgets/generated/graphPlotParameters.h \
     widgets/generated/graphStyle.h \
     \
-    filters/graph/filterPinPresentation.h \
-    filters/graph/filterGraphPresentation.h \
-    filters/graph/filterPresentationsCollection.h \
-    filters/graph/inputBlockPresentation.h \
-    filters/graph/outputBlockPresentation.h \
-    filters/graph/g12PinPresentation.h \
-    filters/graph/txtPinPresentation.h \
-    filters/graph/compoundBlockPresentation.h \
-    configManager.h
-  
+    configManager.h \
+    corestructs/lockableObject.h \
+    statistics/graphData.h \
+    corestructs/g12Image.h \
 
 SOURCES += \
-    corestructs/parametersControlWidgetBase.cpp \    
-    corestructs/histogramdialog.cpp \
-    corestructs/histogramwidget.cpp \
-    corestructs/g12Image.cpp \
-    corestructs/painterHelpers.cpp \
-    corestructs/saveFlowSettings.cpp \
-    \
-    corestructs/libWidgets/openCVBMParameters.cpp \
-    corestructs/libWidgets/openCVSGMParameters.cpp \
-    corestructs/libWidgets/openCVBMParametersControlWidget.cpp \
-    corestructs/libWidgets/openCVSGMParametersControlWidget.cpp \  
-    \
-    viAreaWidget.cpp \
-    viGLAreaWidget.cpp \
-    matrixwidget.cpp \
-    \
-    widgets/foldableWidget.cpp \
-    widgets/exponentialSlider.cpp \
-    widgets/parameterEditorWidget.cpp \
-    widgets/parameterSlider.cpp \
-    widgets/parameterSelector.cpp \
-    widgets/inputSelectorWidget.cpp \
-    widgets/loggerWidget.cpp \
-    widgets/transform3DSelector.cpp \ 
-    widgets/angleEditBox.cpp \
-    widgets/shift3DWidget.cpp \
-    \
-    camcalc/cameraCalculatorWidget.cpp \
-    \
     frames.cpp \
     framesources/imageCaptureInterface.cpp \        # it uses WITH_DIRECTSHOW, WITH_UEYE, WITH_OPENCV
     framesources/cameraControlParameters.cpp \
@@ -172,15 +95,6 @@ SOURCES += \
     framesources/file/abstractFileCaptureSpinThread.cpp \
     \
     fileformats/qtFileLoader.cpp \
-    uis/advancedImageWidget.cpp \
-    uis/paintImageWidget.cpp \    
-    uis/histogramdepthdialog.cpp \
-    uis/capSettingsDialog.cpp \
-    uis/osdBaseWidget.cpp \   
-    uis/graphPlotDialog.cpp \
-    uis/aboutDialog.cpp \
-    uis/textLabelWidget.cpp \
-    uis/pointsRectificationWidget.cpp \
     \
     flowDrawer.cpp \
     flowcolorers/abstractFlowColorer.cpp \
@@ -206,19 +120,39 @@ SOURCES += \
     statistics/userPoll.cpp \
     \
     rectifier/universalRectifier.cpp \
-    rectifier/rectifyParametersControlWidget.cpp \
     rectifier/rectifyParameters.cpp \
     \
 ##  opengl/openGLTools.cpp \
     \
-    distortioncorrector/distortionWidget.cpp \
     camcalc/colorTimer.cpp \
     \
 #    Generated \
     \
     widgets/generated/graphPlotParameters.cpp \
-    widgets/generated/graphPlotParametersControlWidget.cpp \
     \
+    configManager.cpp \
+    corestructs/lockableObject.cpp \
+    statistics/graphData.cpp \
+    corestructs/g12Image.cpp \
+
+
+
+# =============================================================
+
+with_filters {
+
+HEADERS += \
+    filters/graph/filterPinPresentation.h \
+    filters/graph/filterGraphPresentation.h \
+    filters/graph/filterPresentationsCollection.h \
+    filters/graph/inputBlockPresentation.h \
+    filters/graph/outputBlockPresentation.h \
+    filters/graph/g12PinPresentation.h \
+    filters/graph/txtPinPresentation.h \
+    filters/graph/compoundBlockPresentation.h \
+
+
+SOURCES += \
     filters/graph/filterPinPresentation.cpp \
     filters/graph/filterGraphPresentation.cpp \
     filters/graph/filterPresentationsCollection.cpp \
@@ -227,8 +161,124 @@ SOURCES += \
     filters/graph/g12PinPresentation.cpp \
     filters/graph/txtPinPresentation.cpp \
     filters/graph/compoundBlockPresentation.cpp \
-    configManager.cpp
- 
+
+}
+
+with_widgets {
+
+include($$UTILSDIR/filters/ui/filterWidgets.pri)
+include($$UTILSDIR/corestructs/coreWidgets/coreWidgets.pri)
+
+
+HEADERS += \
+    camcalc/cameraCalculatorWidget.h \
+    \
+    corestructs/parametersControlWidgetBase.h \
+    corestructs/painterHelpers.h \
+    corestructs/histogramwidget.h \
+    corestructs/saveFlowSettings.h \
+    \
+    viAreaWidget.h \
+    viGLAreaWidget.h \
+    matrixwidget.h \
+    distortioncorrector/distortionWidget.h \
+    \
+    filters/filterSelector.h \
+    filters/filterExecuter.h \
+    filters/filterParametersControlWidgetBase.h \
+    filters/openCVFilter.h \
+    \
+    filters/graph/filterBlockPresentation.h \
+    filters/graph/diagramitem.h \
+    filters/graph/diagramscene.h \
+    filters/graph/arrow.h \
+    filters/graph/diagramtextitem.h \
+    \
+    corestructs/libWidgets/openCVBMParameters.h \
+    corestructs/libWidgets/openCVSGMParameters.h \
+    corestructs/libWidgets/openCVBMParametersControlWidget.h \
+    corestructs/libWidgets/openCVSGMParametersControlWidget.h \
+    \
+    corestructs/histogramdialog.h \
+    \
+    rectifier/rectifyParametersControlWidget.h \
+    \
+    widgets/foldableWidget.h \
+    widgets/exponentialSlider.h \
+    widgets/parameterEditorWidget.h \
+    widgets/parameterSlider.h \
+    widgets/parameterSelector.h \
+    widgets/inputSelectorWidget.h \
+    widgets/loggerWidget.h \
+    widgets/graphPlotParametersControlWidget.h \
+    widgets/transform3DSelector.h \
+    widgets/angleEditBox.h \
+    widgets/shift3DWidget.h \
+    \
+    uis/advancedImageWidget.h \
+    uis/paintImageWidget.h \
+    uis/histogramdepthdialog.h \
+    uis/capSettingsDialog.h \
+    uis/osdBaseWidget.h \
+    uis/graphPlotDialog.h \
+    uis/aboutDialog.h \
+    uis/textLabelWidget.h \
+    uis/pointsRectificationWidget.h \
+    \
+
+SOURCES += \
+    widgets/generated/graphPlotParametersControlWidget.cpp \
+    camcalc/cameraCalculatorWidget.cpp \
+    \
+    corestructs/histogramwidget.cpp \
+    \
+    corestructs/parametersControlWidgetBase.cpp \
+    corestructs/histogramdialog.cpp \
+    corestructs/painterHelpers.cpp \
+    corestructs/saveFlowSettings.cpp \
+    \
+    viAreaWidget.cpp \
+    viGLAreaWidget.cpp \
+    matrixwidget.cpp \
+    distortioncorrector/distortionWidget.cpp \
+    \
+    filters/filterSelector.cpp \
+    filters/filterExecuter.cpp \
+    filters/openCVFilter.cpp \
+    \
+    filters/graph/filterBlockPresentation.cpp \
+    filters/graph/diagramitem.cpp \
+    filters/graph/arrow.cpp \
+    filters/graph/diagramtextitem.cpp \
+    filters/graph/diagramscene.cpp \
+    \
+    corestructs/libWidgets/openCVBMParameters.cpp \
+    corestructs/libWidgets/openCVSGMParameters.cpp \
+    corestructs/libWidgets/openCVBMParametersControlWidget.cpp \
+    corestructs/libWidgets/openCVSGMParametersControlWidget.cpp \
+    \
+    rectifier/rectifyParametersControlWidget.cpp \
+    \
+    widgets/foldableWidget.cpp \
+    widgets/exponentialSlider.cpp \
+    widgets/parameterEditorWidget.cpp \
+    widgets/parameterSlider.cpp \
+    widgets/parameterSelector.cpp \
+    widgets/inputSelectorWidget.cpp \
+    widgets/loggerWidget.cpp \
+    widgets/transform3DSelector.cpp \
+    widgets/angleEditBox.cpp \
+    widgets/shift3DWidget.cpp \
+    \
+    uis/advancedImageWidget.cpp \
+    uis/paintImageWidget.cpp \
+    uis/histogramdepthdialog.cpp \
+    uis/capSettingsDialog.cpp \
+    uis/osdBaseWidget.cpp \
+    uis/graphPlotDialog.cpp \
+    uis/aboutDialog.cpp \
+    uis/textLabelWidget.cpp \
+    uis/pointsRectificationWidget.cpp \
 
 FORMS += \
     \
@@ -254,11 +304,13 @@ FORMS += \
     corestructs/libWidgets/openCVBMParametersControlWidget.ui \
     corestructs/libWidgets/openCVSGMParametersControlWidget.ui \
     \
+    filters/filterSelector.ui \
+    \
     \
     camcalc/cameraCalculatorWidget.ui \
     \
     uis/advancedImageWidget.ui \
-    uis/paintImageWidget.ui \    
+    uis/paintImageWidget.ui \
     uis/histogramdepthdialog.ui \
     uis/capSettingsDialog.ui \
     uis/graphPlotDialog.ui \
@@ -267,14 +319,10 @@ FORMS += \
     uis/pointsRectificationWidget.ui \
     \
     rectifier/rectifyParametersControlWidget.ui \
-    distortioncorrector/distortionWidget.ui \    
+    distortioncorrector/distortionWidget.ui \
     \
-#   Generated    \
-    \
-    3d/generated/draw3dParametersControlWidget.ui \
-    3d/generated/draw3dCameraParametersControlWidget.ui \
-    3d/generated/draw3dViMouseParametersControlWidget.ui \
-    filters/graph/filterGraphPresentation.ui \
+
+}
 
 RESOURCES += \
    ../resources/main.qrc
@@ -322,52 +370,62 @@ SOURCES += \
 
 FORMS += \
     filters/filterSelector.ui \
+    filters/graph/filterGraphPresentation.ui \
 
 }
 
 with_opengl {
-    DEPENDPATH  += opengl 
+    DEPENDPATH  += opengl
     DEPENDPATH  += uis/cloudview
     INCLUDEPATH += uis/cloudview
-    
+
 
     HEADERS     += opengl/openGLTools.h
     SOURCES     += opengl/openGLTools.cpp
 
-    HEADERS     += uis/cloudview/cloudViewDialog.h \ 
-                   uis/cloudview/treeSceneController.h \
-                   3d/scene3D.h \
-                   \
-                   3d/draw3dParametersControlWidget.h \
-                   3d/draw3dCameraParametersControlWidget.h \
-                   3d/draw3dViMouseParametersControlWidget.h \
-                   \
-                   3d/generated/draw3dParameters.h \
-                   3d/generated/draw3dStyle.h \
-                   3d/generated/draw3dCameraParameters.h \
-                   3d/generated/viMouse3DStereoStyle.h \
-                   3d/generated/viMouse3DFlowStyle.h \
-                   3d/generated/viMouse3DStereoStyle.h \
-                   3d/generated/viMouse3DFlowStyle.h \
-                   3d/generated/draw3dViMouseParameters.h \
-                   3d/mesh3DScene.h \
-                   3d/coordinateFrame.h \
+    HEADERS     += \
+         uis/cloudview/cloudViewDialog.h \
+         uis/cloudview/treeSceneController.h \
+         3d/scene3D.h \
+         \
+         3d/draw3dParametersControlWidget.h \
+         3d/draw3dCameraParametersControlWidget.h \
+         3d/draw3dViMouseParametersControlWidget.h \
+         \
+         3d/generated/draw3dParameters.h \
+         3d/generated/draw3dStyle.h \
+         3d/generated/draw3dCameraParameters.h \
+         3d/generated/viMouse3DStereoStyle.h \
+         3d/generated/viMouse3DFlowStyle.h \
+         3d/generated/viMouse3DStereoStyle.h \
+         3d/generated/viMouse3DFlowStyle.h \
+         3d/generated/draw3dViMouseParameters.h \
+         3d/mesh3DScene.h \
+         3d/coordinateFrame.h \
 
-    SOURCES     += 3d/scene3D.cpp \
-                   \
-                   uis/cloudview/cloudViewDialog.cpp \
-                   uis/cloudview/treeSceneController.cpp \
-                   3d/generated/draw3dParameters.cpp \
-                   3d/generated/draw3dParametersControlWidget.cpp \
-                   3d/generated/draw3dCameraParametersControlWidget.cpp \
-                   3d/generated/draw3dCameraParameters.cpp \
-                   3d/generated/draw3dViMouseParametersControlWidget.cpp \
-                   3d/generated/draw3dViMouseParameters.cpp \
-                   \
-                   3d/mesh3DScene.cpp \
-                   3d/coordinateFrame.cpp \
+    SOURCES     += \
+        3d/scene3D.cpp \
+        \
+        uis/cloudview/cloudViewDialog.cpp \
+        uis/cloudview/treeSceneController.cpp \
+        3d/generated/draw3dParameters.cpp \
+        3d/generated/draw3dParametersControlWidget.cpp \
+        3d/generated/draw3dCameraParametersControlWidget.cpp \
+        3d/generated/draw3dCameraParameters.cpp \
+        3d/generated/draw3dViMouseParametersControlWidget.cpp \
+        3d/generated/draw3dViMouseParameters.cpp \
+        \
+        3d/mesh3DScene.cpp \
+        3d/coordinateFrame.cpp \
                        
-    FORMS       += uis/cloudview/cloudViewDialog.ui
+    FORMS       += \
+        uis/cloudview/cloudViewDialog.ui \
+        #   Generated    \
+        \
+        3d/generated/draw3dParametersControlWidget.ui \
+        3d/generated/draw3dCameraParametersControlWidget.ui \
+        3d/generated/draw3dViMouseParametersControlWidget.ui \
+
 }
 
 with_ueye {
@@ -419,9 +477,11 @@ with_directshow {
 with_avcodec {
     HEADERS += \
         framesources/avcodec/aviCapture.h \
+        framesources/avcodec/rtspCapture.h \
 
     SOURCES += \
         framesources/avcodec/aviCapture.cpp \
+        framesources/avcodec/rtspCapture.cpp \
 
 }
 
@@ -432,7 +492,7 @@ with_synccam {
 
     SOURCES += \
         framesources/syncCam/syncCamerasCaptureInterface.cpp \
-            
+
     DEFINES += WITH_SYNCCAM
 }
 
