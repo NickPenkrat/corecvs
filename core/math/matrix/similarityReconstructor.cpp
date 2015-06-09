@@ -205,6 +205,7 @@ Similarity SimilarityReconstructor::getBestSimilarityLM(Similarity &firstGuess)
     LMfit.f = &F;
     LMfit.normalisation = &N;
     LMfit.maxIterations = 100;
+    LMfit.traceProgress = false;
 
     vector<double> output(1);
     output[0] = 0.0;

@@ -88,7 +88,12 @@ public:
 
     void neg();
     Vector3dd aV(int i) const;
+    Vector3dd row(int i) const;
+
     Vector3dd aW(int i) const;
+    Vector3dd column(int i) const;
+
+
     Vector3dd diagonal() const;
 
     double frobeniusNorm() const;
@@ -128,6 +133,7 @@ public:
 
     /* Constructing 3D scale matrix */
     static Matrix33 Scale3(const Vector3dd& v);
+    static Matrix33 Scale3(double s1, double s2, double s3);
     static Matrix33 Scale3(double v);
 
 
