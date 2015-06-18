@@ -610,7 +610,7 @@ void PDOGenerator::generatePDOCpp()
 
         if (type == BaseField::TYPE_INT) {
             const IntField *ifield = static_cast<const IntField *>(field);
-            if (ifield->max != 0 || ifield->min != 0)
+            if (ifield->hasAdditionalValues)
             {
     result+=
     ",\n"
@@ -622,7 +622,7 @@ void PDOGenerator::generatePDOCpp()
         }
         if (type == BaseField::TYPE_DOUBLE) {
             const DoubleField *dfield = static_cast<const DoubleField *>(field);
-            if (dfield->max != 0 || dfield->min != 0)
+            if (dfield->hasAdditionalValues)
             {
     result+=
     ",\n"

@@ -18,11 +18,15 @@
 namespace corecvs {
 
 #ifndef M_PI
-#define M_PI 3.141592653589793238462643
+#define M_PI  3.141592653589793238462643
 #endif
 
 #ifndef M_E
-#define M_E 2.7182818284590452353602874
+#define M_E   2.7182818284590452353602874
+#endif
+
+#ifndef M_PHI
+#define M_PHI 1.6180339887498948482045868
 #endif
 
 /** Useful round* stuff
