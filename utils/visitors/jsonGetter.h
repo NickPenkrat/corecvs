@@ -3,6 +3,7 @@
 
 #include <QtCore/QString>
 #include <QJsonDocument>
+#include <QJsonObject>
 #include "reflection.h"
 
 using corecvs::IntField;
@@ -12,9 +13,6 @@ using corecvs::BoolField;
 using corecvs::StringField;
 using corecvs::PointerField;
 using corecvs::EnumField;
-
-#include "basePathVisitor.h"
-#include "baseXMLVisitor.h"
 
 using namespace corecvs;
 
@@ -30,10 +28,10 @@ public:
     /**
      *  Create a getter object that will use data from a given XML
      **/
-    JSONGetter(QJsonDocument &document) :
-        mDocumentElement(document)
+    JSONGetter(QJsonObject &document) :
+        mDocument(document)
     {
-        mNodePath.push_back(mDocumentElement);
+        mNodePath.push_back(mDocument);
     }
 
     /**
@@ -65,9 +63,12 @@ public:
         popChild();
     }
 
+
     void pushChild(const char *childName)
     {
-        mNodePath.push_back(getChildByTag(childName));
+        QJsonObject mainNode = mNodePath.back();
+        QJsonObject value    = mainNode.value(childName).toObject();
+        mNodePath.push_back(value);
     }
 
     void popChild()
@@ -76,9 +77,9 @@ public:
     }
 
 private:
-
-    QString       mFileName;
-    QJsonDocument mDocument;
+    std::vector<QJsonObject> mNodePath;
+    QString     mFileName;
+    QJsonObject mDocument;
 };
 
 template <>

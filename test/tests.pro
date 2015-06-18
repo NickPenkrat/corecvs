@@ -11,18 +11,16 @@ TEMPLATE = subdirs
 
 SUBDIRS +=       \
     grab         \
-    xmlserialize \
-    adoptcolor  \
+    serialize1   \
+    adoptcolor   \
 #    avigrab     \
-    topcon      \
     decodebayer \
 
 
 
 grab.file          = grab/grab.pro
-xmlserialize.file  = xmlserialize/xmlserialize.pro
+serialize1.file    = serialize1/serialize1.pro
 adoptcolor.file    = adoptcolor/adoptcolor.pro
 avigrab.file       = avigrab/avigrab.pro
-topcon.file        = topcon/topcon.pro
 decodebayer.file   = decodebayer/decodebayer.pro
 

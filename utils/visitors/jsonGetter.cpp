@@ -14,76 +14,77 @@ JSONGetter::JSONGetter(const QString &fileName)
         qDebug() << "Can't open file <" << mFileName << ">";
         return;
     }
-    QDomDocument doc("document");
-    doc.setContent(&file);
+    QByteArray array = file.readAll();
 
-    qDebug() << doc.toString();
+    QJsonDocument document = QJsonDocument::fromJson(array);
+    if (document.isNull())
+    {
+         SYNC_PRINT(("Fail parsing the data"));
+    }
+    QJsonObject  object = document.object();
     file.close();
 
-    mNodePath.push_back(doc);
+    mNodePath.push_back(object);
 }
 
 template <>
 void JSONGetter::visit<bool>(bool &boolField, bool defaultValue, const char *fieldName)
 {
+    QJsonValue value = mNodePath.back().value(fieldName);
 
-    QDomElement childElement = getChildByTag(fieldName);
-    if (childElement.isNull())
-    {
+    if (value.isBool()) {
+        boolField = value.toBool();
+    } else {
         boolField = defaultValue;
-        return;
     }
-    boolField = childElement.attribute("value", defaultValue ? "true" : "false") == "true";
 }
 
 template <>
 void JSONGetter::visit<double>(double &doubleField, double defaultValue, const char *fieldName)
 {
-    QDomElement childElement = getChildByTag(fieldName);
-    if (childElement.isNull())
-    {
+    QJsonValue value = mNodePath.back().value(fieldName);
+
+    if (value.isDouble()) {
+        doubleField = value.toDouble();
+    } else {
         doubleField = defaultValue;
-        return;
     }
-    doubleField = childElement.attribute("value", QString::number(defaultValue)).toDouble();
 }
 
 template <>
 void JSONGetter::visit<float>(float &floatField, float defaultValue, const char *fieldName)
 {
-    QDomElement childElement = getChildByTag(fieldName);
-    if (childElement.isNull())
-    {
+    QJsonValue value = mNodePath.back().value(fieldName);
+
+    if (value.isDouble()) {
+        floatField = value.toDouble();
+    } else {
         floatField = defaultValue;
-        return;
     }
-    floatField = childElement.attribute("value", QString::number(defaultValue)).toFloat();
 }
 
 template <>
 void JSONGetter::visit<int>(int &intField, int defaultValue, const char *fieldName)
 {
-    QDomElement childElement = getChildByTag(fieldName);
-    if (childElement.isNull())
-    {
-        intField = defaultValue;
-        return;
-    }
+    QJsonValue value = mNodePath.back().value(fieldName);
 
-    intField = childElement.attribute("value", QString::number(defaultValue)).toInt();
+    if (value.isDouble()) {
+        intField = value.toDouble();
+    } else {
+        intField = defaultValue;
+    }
 }
 
 template <>
 void JSONGetter::visit<std::string>(std::string &stringField, std::string defaultValue, const char *fieldName)
 {
-    QDomElement childElement = getChildByTag(fieldName);
-    if (childElement.isNull())
-    {
-        stringField = defaultValue;
-        return;
-    }
+    QJsonValue value = mNodePath.back().value(fieldName);
 
-    stringField = childElement.attribute("value", QString::fromStdString(defaultValue)).toUtf8().constData();
+    if (value.isString()) {
+        stringField = value.toString().toStdString();
+    } else {
+        stringField = defaultValue;
+    }
 }
 
 /* And new style visitor method */
