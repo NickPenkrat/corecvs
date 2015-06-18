@@ -31,7 +31,7 @@ public:
      **/
     JSONSetter(QJsonObject &document)
     {
-        mNodePath.push_back(mDocument);
+        mNodePath.push_back(document);
     }
 
     virtual ~JSONSetter();

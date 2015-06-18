@@ -9,7 +9,7 @@
 JSONSetter::JSONSetter(const QString &fileName)
 {
     mFileName = fileName;
-    mNodePath.push_back(QJsonObject);
+    mNodePath.push_back(QJsonObject());
 }
 
 JSONSetter::~JSONSetter()
