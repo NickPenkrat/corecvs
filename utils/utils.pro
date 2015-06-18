@@ -79,6 +79,7 @@ HEADERS += \
     corestructs/lockableObject.h \
     statistics/graphData.h \
     corestructs/g12Image.h \
+#    visitors/jsonGetter.h
 
 SOURCES += \
     frames.cpp \
@@ -134,6 +135,7 @@ SOURCES += \
     corestructs/lockableObject.cpp \
     statistics/graphData.cpp \
     corestructs/g12Image.cpp \
+#    visitors/jsonGetter.cpp
 
 
 
