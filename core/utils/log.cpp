@@ -7,26 +7,24 @@
 
 const char *Log::level_names[] =
 {
-   "Det. Debug",  // LEVEL_DETAILED_DEBUG, /**< Detailed log */
-   "Debug",       // LEVEL_DEBUG,          /**< Debugging information is outputed */
-   "Info",        // LEVEL_INFO,           /**< Normal information messages are outputed */
-   "Warning",     // LEVEL_WARNING,        /**< Only warnings are reported */
-   "Error"        // LEVEL_ERROR,          /**< Only errors are reported */
-                  // LEVEL_LAST            /**< Last enum value for iterating*/
+     "Det.Debug"   // LEVEL_DETAILED_DEBUG, /**< Detailed log */
+   , "Debug"       // LEVEL_DEBUG,          /**< Debugging information is outputed */
+   , "Info"        // LEVEL_INFO,           /**< Normal information messages are outputed */
+   , "Warning"     // LEVEL_WARNING,        /**< Only warnings are reported */
+   , "Error"       // LEVEL_ERROR,          /**< Only errors are reported */
+                   // LEVEL_LAST            /**< Last enum value for iterating*/
 };
 
-STATIC_ASSERT(CORE_COUNT_OF(Log::level_names) == Log::LEVEL_LAST, wrong_number_of_text_constants);
+STATIC_ASSERT(CORE_COUNT_OF(Log::level_names) == Log::LEVEL_LAST, wrong_number_of_log_levels);
 
 /**
  * It is impossible to tell when this function will be executed, so you should not log from
  * static initializers
  **/
-
 Log::LogLevel           Log::mMinLogLevel = LEVEL_FIRST;
 std::vector<LogDrain *> Log::mLogDrains;
 
 int Log::mDummy = Log::staticInit();
-
 
 int Log::staticInit()
 {
@@ -38,19 +36,17 @@ int Log::staticInit()
 
 void Log::message(Message &message)
 {
-	for(unsigned int i = 0; i < mLogDrains.size(); i++)
+	for (unsigned int i = 0; i < mLogDrains.size(); i++)
 	{
 		mLogDrains[i]->drain(message);
 	}
 }
 
 Log::Log(const LogLevel /*maxLocalLevel*/)
-{
-}
+{}
 
 Log::~Log()
-{
-}
+{}
 
 std::string Log::msgBufToString(const char* msg)
 {
@@ -61,6 +57,12 @@ std::string Log::msgBufToString(const char* msg)
     }
 
 	return message;
+}
+
+//static
+const char* Log::levelName(LogLevel logLevel)
+{
+    return (unsigned)logLevel < LEVEL_LAST ? level_names[logLevel] : "unknown";
 }
 
 //static
@@ -111,11 +113,11 @@ void StdStreamLogDrain::drain(Log::Message &message)
     //static const std::string sLevels[] = { "    ", "    ", "    ", "WRN ", "ERR " };
     std::ostringstream prefix;
 
-    prefix << time2str(message.get()->rawtime)   << ":"
-           << Log::level_names[message.get()->mLevel]
-           << message.get()->mOriginFileName     << ":"
-           << message.get()->mOriginLineNumber   << " "
-           << message.get()->mOriginFunctionName << "() ";
+    prefix << time2str(message.get()->rawtime)      << ":"
+           << Log::levelName(message.get()->mLevel)
+           << message.get()->mOriginFileName        << ":"
+           << message.get()->mOriginLineNumber      << " "
+           << message.get()->mOriginFunctionName    << "() ";
 
     size_t len = prefix.str().size();
     mOutputStream << prefix.str();

@@ -23,17 +23,17 @@
 using corecvs::ObjectRef;
 
 
-#define L_ERROR            Log().error  (__FILE__, __LINE__, __FUNCTION__)
-#define L_WARNING          Log().warning(__FILE__, __LINE__, __FUNCTION__)
-#define L_INFO             Log().info   (__FILE__, __LINE__, __FUNCTION__)
-#define L_DEBUG            Log().debug  (__FILE__, __LINE__, __FUNCTION__)
-#define L_DDEBUG           Log().ddebug (__FILE__, __LINE__, __FUNCTION__)
+#define L_ERROR            ::Log().error  (__FILE__, __LINE__, __FUNCTION__)
+#define L_WARNING          ::Log().warning(__FILE__, __LINE__, __FUNCTION__)
+#define L_INFO             ::Log().info   (__FILE__, __LINE__, __FUNCTION__)
+#define L_DEBUG            ::Log().debug  (__FILE__, __LINE__, __FUNCTION__)
+#define L_DDEBUG           ::Log().ddebug (__FILE__, __LINE__, __FUNCTION__)
 
-#define L_ERROR_P(  ...)   Log().error  (__FILE__, __LINE__, __FUNCTION__) << Log::formatted(__VA_ARGS__)
-#define L_WARNING_P(...)   Log().warning(__FILE__, __LINE__, __FUNCTION__) << Log::formatted(__VA_ARGS__)
-#define L_INFO_P(   ...)   Log().info   (__FILE__, __LINE__, __FUNCTION__) << Log::formatted(__VA_ARGS__)
-#define L_DEBUG_P(  ...)   Log().debug  (__FILE__, __LINE__, __FUNCTION__) << Log::formatted(__VA_ARGS__)
-#define L_DDEBUG_P( ...)   Log().ddebug (__FILE__, __LINE__, __FUNCTION__) << Log::formatted(__VA_ARGS__)
+#define L_ERROR_P(  ...)   ::Log().error  (__FILE__, __LINE__, __FUNCTION__) << ::Log::formatted(__VA_ARGS__)
+#define L_WARNING_P(...)   ::Log().warning(__FILE__, __LINE__, __FUNCTION__) << ::Log::formatted(__VA_ARGS__)
+#define L_INFO_P(   ...)   ::Log().info   (__FILE__, __LINE__, __FUNCTION__) << ::Log::formatted(__VA_ARGS__)
+#define L_DEBUG_P(  ...)   ::Log().debug  (__FILE__, __LINE__, __FUNCTION__) << ::Log::formatted(__VA_ARGS__)
+#define L_DDEBUG_P( ...)   ::Log().ddebug (__FILE__, __LINE__, __FUNCTION__) << ::Log::formatted(__VA_ARGS__)
 
 
 class LogDrain;
@@ -104,9 +104,8 @@ public:
 	};
 
 	/**
-	 * Message is a smart pointer to  MessageInternal. MessageInternal is usually accessed only through this structure
+	 * Message is a smart pointer to MessageInternal. MessageInternal is usually accessed only through this structure
 	 **/
-
 	typedef ObjectRef<MessageInternal> Message;
 
 	/**
@@ -156,32 +155,32 @@ public:
     }
 
     /**
-    * Create warning
-    **/
+     * Create warning
+     **/
     MessageScoped warning(const char *fileName = NULL, int lineNumber = -1, const char *functionName = NULL)
     {
         return MessageScoped(this, LEVEL_WARNING, fileName, lineNumber, functionName);
     }
 
     /**
-    * Create info
-    **/
+     * Create info
+     **/
     MessageScoped info(const char *fileName = NULL, int lineNumber = -1, const char *functionName = NULL)
     {
         return MessageScoped(this,  LEVEL_INFO, fileName, lineNumber, functionName);
     }
 
     /**
-    * Create debug trace
-    **/
+     * Create debug trace
+     **/
     MessageScoped debug(const char *fileName = NULL, int lineNumber = -1, const char *functionName = NULL)
     {
         return MessageScoped(this,  LEVEL_DEBUG, fileName, lineNumber, functionName);
     }
 
     /**
-    * Create detailed debug trace
-    **/
+     * Create detailed debug trace
+     **/
     MessageScoped ddebug(const char *fileName = NULL, int lineNumber = -1, const char *functionName = NULL)
     {
         return MessageScoped(this,  LEVEL_DETAILED_DEBUG, fileName, lineNumber, functionName);
@@ -190,24 +189,23 @@ public:
 	/**
 	 * Log a message
 	 **/
-    void message(Message &message);
+    void                message(Message &message);
 
-    static std::string formatted(const char *format, ... );
+    static std::string  formatted(const char *format, ... );
 
-    static std::string msgBufToString(const char* message);
+    static std::string  msgBufToString(const char* message);
 
-    static bool shouldWrite(LogLevel messageLevel) {
-        return messageLevel >= mMinLogLevel;
-    }
+    static const char*  levelName(LogLevel logLevel);
 
-    static LogLevel mMinLogLevel;
-    static std::vector<LogDrain *> mLogDrains;
-    static int mDummy;
+    static bool         shouldWrite(LogLevel messageLevel) { return messageLevel >= mMinLogLevel; }
+
+    static LogLevel                 mMinLogLevel;
+    static std::vector<LogDrain *>  mLogDrains;
+    static int                      mDummy;
 
 public:
     /** This is a static init function */
     static int staticInit();
-
 };
 
 template<typename T>
