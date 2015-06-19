@@ -1,4 +1,4 @@
-#include <QtGui/QPainter>
+#include <QPainter>
 #include <limits>
 
 #include "global.h"
@@ -13,6 +13,7 @@ int const gridDensity = 20;
 
 HistogramWidget::HistogramWidget(QWidget *parent)
     : QWidget(parent)
+    , mSelectedH(0)
     , mUi(new Ui::HistogramWidgetClass)
     , mUseMargin(false)
     , mHistogram(NULL)
@@ -45,8 +46,9 @@ void HistogramWidget::paintEvent(QPaintEvent * /*event */ )
         return;
     }
 
-    if (h == 0)
+    if (h == 0) {
         h = 1;
+    }
 
     uint32_t globalMax = 0;
 
@@ -189,7 +191,7 @@ void HistogramWidget::drawGrid(QPainter &painter, int scaleX, int scaleY)
 
 void HistogramWidget::notifyHistogramChange(Histogram *histogram, bool useMargin)
 {
-    mSelectedH = 0;
+//    mSelectedH = 0;
     bool needRecalculateFrame = (mHistogram == NULL);
     mHistogram = histogram;
     mUseMargin = useMargin;
@@ -276,19 +278,19 @@ void HistogramWidget::mouseMoveEvent(QMouseEvent *event)
 #if QT_VERSION >= 0x040700
         if (event->buttons() & (Qt::MiddleButton | Qt::RightButton))
 #else
-            if (event->buttons() & (Qt::MidButton | Qt::RightButton))
+        if (event->buttons() & (Qt::MidButton | Qt::RightButton))
 #endif
             {
             if (mPrevMousePos != QPointF())
             {
-                double const delta = (event->posF().x() - mPrevMousePos.x()) / mZoomFactor;
+                double const delta = (event->localPos().x() - mPrevMousePos.x()) / mZoomFactor;
                 if (!(mFrameLeftBorder < mHistogram->min && delta > 0)
                     && !(mFrameLeftBorder + toAbsolute(width()) > mHistogram->max && delta < 0))
                     {
                     mFrameLeftBorder -= delta;
                 }
             }
-            mPrevMousePos = event->posF();
+            mPrevMousePos = event->localPos();
         }
 
         update();

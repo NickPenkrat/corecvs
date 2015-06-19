@@ -17,8 +17,8 @@
 !gen_vsproj {
     CONFIG +=   \
                 \
-#        debug \
-        release \
+        debug \
+#        release \
 
 }
 
@@ -30,7 +30,7 @@ CONFIG +=       \
    with_sse     \
    with_sse3    \
    with_sse4    \
-   with_tbb     \
+#   with_tbb     \
 
 
 !win32:!macx {
@@ -58,7 +58,9 @@ CONFIG +=       \
 
 CONFIG +=                   \
         with_ueye           \
-        with_httpserver     \
+#        with_httpserver     \
+        with_avcodec        \
+
 
 win32 {
     CONFIG +=               \
@@ -84,10 +86,10 @@ win32 {
 }
 
 win32-msvc* {
-    CONFIG += with_opencl       # delivered OpenCL.lib is compatible with msvc build tools
+ #   CONFIG += with_opencl       # delivered OpenCL.lib is compatible with msvc build tools
 } else:win32 {
                                 # it's not supported as delivered OpenCL.lib isn't compatible with the win32-mingw linker tool
-    CONFIG += with_opencl       # opened as it's managed more carefully by the opencl project
+#    CONFIG += with_opencl       # opened as it's managed more carefully by the opencl project
 } else {
 #    CONFIG += with_opencl       # linux: opened for analysis on different GPUs (only nVidia) and CPUs
 }

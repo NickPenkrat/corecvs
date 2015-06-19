@@ -49,7 +49,7 @@ Frames::~Frames()
 
 void Frames::fetchNewFrames(ImageCaptureInterface *input)
 {
- //   DOTRACE(("New frames arrived: left=0x8%X right=0x8%X\n", left, right));
+    SYNC_PRINT(("Frames::fetchNewFrames():Swapped is %d\n", mSwapped));
 
     ImageCaptureInterface::FramePair pair = input->isRgb ? input->getFrameRGB24() : input->getFrame();
     if (!pair.hasBoth())

@@ -62,7 +62,7 @@ with_sse3 {
     !win32-msvc* {
         QMAKE_CFLAGS   += -msse3
         QMAKE_CXXFLAGS += -msse3
-    } else !win32-msvc2008 {
+    } else:!win32-msvc2008 {
         QMAKE_CFLAGS   += /arch:SSE3
         QMAKE_CXXFLAGS += /arch:SSE3
     } else {
@@ -75,7 +75,7 @@ with_sse4 {
     !win32-msvc* {
         QMAKE_CFLAGS   += -msse4.1
         QMAKE_CXXFLAGS += -msse4.1
-    } else !win32-msvc2008 {
+    } else:!win32-msvc2008 {
         QMAKE_CFLAGS   += /arch:SSE4.1
         QMAKE_CXXFLAGS += /arch:SSE4.1
     } else {
@@ -119,8 +119,8 @@ gcc45_toolchain {
 
 clang_toolchain {
   QMAKE_CC = clang
-  QMAKE_CXX = clang
-  QMAKE_LINK =  clang
+  QMAKE_CXX = clang++
+  QMAKE_LINK =  clang++
   QMAKE_LINK_SHLIB =  clang
   QMAKE_LINK_C = clang
   QMAKE_LINK_C_SHLIB = clang
@@ -160,9 +160,13 @@ gcc48_toolchain {
 }
 
 gcc_checker {
-     QMAKE_CFLAGS += -fsanitize=address -fno-omit-frame-pointer
+     QMAKE_CFLAGS   += -fsanitize=address -fno-omit-frame-pointer
      QMAKE_CXXFLAGS += -fsanitize=address -fno-omit-frame-pointer
-     QMAKE_LFLAGS += -fsanitize=address -fno-omit-frame-pointer
+     QMAKE_LFLAGS   += -fsanitize=address -fno-omit-frame-pointer
+
+# QMAKE_CFLAGS   += -fsanitize=undefined
+# QMAKE_CXXFLAGS += -fsanitize=undefined
+# QMAKE_LFLAGS   += -fsanitize=undefined
 }
 
 
@@ -218,6 +222,13 @@ isEmpty(CCACHE_TOOLCHAIN_ON) {
 
     QMAKE_CFLAGS_RELEASE   += -O3 -g3 -mtune=native
     QMAKE_CXXFLAGS_RELEASE += -O3 -g3 -mtune=native
+
+    # Workaround for -fPIC bug
+    QMAKE_CFLAGS_STATIC_LIB=
+    QMAKE_CXXFLAGS_STATIC_LIB=
+
+    QMAKE_CFLAGS +=-fPIC
+    QMAKE_CXXFLAGS +=-fPIC
 } else {
    #QMAKE_CXXFLAGS_DEBUG   += /showIncludes
 
@@ -232,6 +243,7 @@ isEmpty(CCACHE_TOOLCHAIN_ON) {
     QMAKE_CFLAGS   += /wd4800 /wd4244
     QMAKE_CXXFLAGS += /wd4800 /wd4244
     QMAKE_LFLAGS   += /ignore:4221
+    QMAKE_LIBFLAGS += /ignore:4221
 
     # Support parallel compiling
     #
@@ -285,7 +297,7 @@ build_pass :                          # must clean only for the concrete configu
     contains(TARGET, test_opencl) {
         QMAKE_DISTCLEAN += Makefile.opencl*
     }
-    contains(OBJ_TESTS_DIR, tests) {        # TARGET doesn't work as it has a name of each test!
+    contains(OBJ_TESTS_DIRNAME, tests) {    # TARGET doesn't work as it has a name of each test!
        #QMAKE_DISTCLEAN += Makefile*        # doesn't work as it tries to delete Makefile.unitTests.Debug/Release that are really used on distclean cmd!
         QMAKE_DISTCLEAN += Makefile Makefile.Debug Makefile.Release     # these files are generated indeed!
     }
@@ -389,6 +401,7 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
    }
 }
 
+
 # More static analysis warnings
 # QMAKE_CXXFLAGS += -Wextra
 # QMAKE_CXXFLAGS += -Woverloaded-virtual
@@ -399,6 +412,3 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
 # QMAKE_CXXFLAGS += -Winit-self
 # QMAKE_CXXFLAGS += -Wunreachable-code
 
-# Workaround for -fPIC bug
-QMAKE_CFLAGS_STATIC_LIB=
-QMAKE_CXXFLAGS_STATIC_LIB=

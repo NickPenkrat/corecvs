@@ -42,6 +42,8 @@ HEADERS += \
     buffers/rgb24/abstractPainter.h \
     buffers/voxels/voxelBuffer.h \
     buffers/fixeddisp/fixedPointDisplace.h \
+    buffers/fixeddisp/bilinearMapPoint.h \
+    buffers/fixeddisp/fixedPointBlMapper.h \
     buffers/interpolator.h \
     buffers/g12Buffer3d.h \
     buffers/buffer3d.h \

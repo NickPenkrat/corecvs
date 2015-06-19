@@ -8,6 +8,24 @@
 #include "imageResultLayer.h"
 
 
+
+ImageResultLayer::ImageResultLayer(G8Buffer* image) :
+    ResultLayerBase(LAYER_CLASS_ID)
+  , mStyle(OutputStyle::RIGHT_FRAME)
+{
+    for (int id = 0; id < Frames::MAX_INPUTS_NUMBER; id++ )
+    {
+        mImages[id] = NULL;
+    }
+
+    if (image == NULL) {
+        qDebug("ImageResultLayer::ImageResultLayer( G12Buffer* NULL) : Called with null input");
+        return;
+    }
+
+    mImages[Frames::RIGHT_FRAME] = new G8Image(image);
+}
+
 ImageResultLayer::ImageResultLayer(
     G12Buffer* image
 ) : ResultLayerBase(LAYER_CLASS_ID)
@@ -62,6 +80,12 @@ void ImageResultLayer::drawImage (QImage *image)
     }
 
     QPainter painter(image);
+    if (mImages[Frames::LEFT_FRAME] == NULL && mImages[Frames::RIGHT_FRAME] == NULL)
+    {
+        image->fill(Qt::black);
+        painter.setPen(Qt::white);
+        painter.drawText(image->rect(), "No image to draw");
+    }
 
 //    qDebug("ImageResultLayer::drawImage (): style: %s", OutputStyle::getName(mStyle));
     switch (mStyle)

@@ -1,5 +1,9 @@
 #pragma once
-#include <QtGui/QWidget>
+
+#include <QWidget>
+#include <QColorDialog>
+#include <QPainter>
+
 #include "generated/rgbColorParameters.h"
 #include "ui_rgbColorParametersControlWidget.h"
 #include "parametersControlWidgetBase.h"

@@ -83,12 +83,6 @@ public:
         CAMERA_BOTH   = 0x11
     };
 
-    typedef struct
-    {
-        uint16_t width;
-        uint16_t height;
-    } frame_dims_t;
-
     /**
      *  This structure will hold the rational number
      *  for the FPS
@@ -118,8 +112,8 @@ public:
     class FramePair
     {
     public:
-        G12Buffer   *   bufferLeft;      /**< Pointer to left  gray scale buffer*/
-        G12Buffer   *   bufferRight;     /**< Pointer to right gray scale buffer*/
+        G12Buffer   *bufferLeft;      /**< Pointer to left  gray scale buffer*/
+        G12Buffer   *bufferRight;     /**< Pointer to right gray scale buffer*/
         RGB24Buffer *rgbBufferLeft;
         RGB24Buffer *rgbBufferRight;
         uint64_t     timeStampLeft;

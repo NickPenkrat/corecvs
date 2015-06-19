@@ -75,18 +75,18 @@ int V4L2CaptureInterface::setConfigurationString(string _devname)
         "  | - Size [%sx%s]\n"
         "  \\ - Compressing: %s\n"
         "RGB decoding is %s\n",
-        deviceStringPattern.cap(Device1Group) .toAscii().constData(),
-        deviceStringPattern.cap(Device2Group) .toAscii().constData(),
-        deviceStringPattern.cap(FpsNumGroup)  .toAscii().constData(),
-        deviceStringPattern.cap(FpsDenumGroup).toAscii().constData(),
-        deviceStringPattern.cap(WidthGroup)   .toAscii().constData(),
-        deviceStringPattern.cap(HeightGroup)  .toAscii().constData(),
-        deviceStringPattern.cap(CompressionGroup).toAscii().constData(),
+        deviceStringPattern.cap(Device1Group) .toLatin1().constData(),
+        deviceStringPattern.cap(Device2Group) .toLatin1().constData(),
+        deviceStringPattern.cap(FpsNumGroup)  .toLatin1().constData(),
+        deviceStringPattern.cap(FpsDenumGroup).toLatin1().constData(),
+        deviceStringPattern.cap(WidthGroup)   .toLatin1().constData(),
+        deviceStringPattern.cap(HeightGroup)  .toLatin1().constData(),
+        deviceStringPattern.cap(CompressionGroup).toLatin1().constData(),
         isRgb ? "on" : "off"
     );
 
-    deviceName[Frames::RIGHT_FRAME] = deviceStringPattern.cap(Device1Group).toAscii().constData();
-    deviceName[Frames::LEFT_FRAME ] = deviceStringPattern.cap(Device2Group).toAscii().constData();
+    deviceName[Frames::RIGHT_FRAME] = deviceStringPattern.cap(Device1Group).toLatin1().constData();
+    deviceName[Frames::LEFT_FRAME ] = deviceStringPattern.cap(Device2Group).toLatin1().constData();
 
     bool isOk;
     cameraMode.fpsnum = deviceStringPattern.cap(FpsNumGroup).toInt(&isOk);
@@ -131,15 +131,19 @@ V4L2CaptureInterface::FramePair V4L2CaptureInterface::getFrame()
 
     protectFrame.lock();
     G12Buffer **results[Frames::MAX_INPUTS_NUMBER] = {
-            &result.bufferRight,
-            &result.bufferLeft
+            &result.bufferLeft,
+            &result.bufferRight
     };
 
     result.rgbBufferRight = NULL;
     result.rgbBufferLeft = NULL;
 
+    SYNC_PRINT(("LF:%s RF:%s\n",
+               currentFrame[Frames::LEFT_FRAME ].isFilled ? "filled" : "empty" ,
+               currentFrame[Frames::RIGHT_FRAME].isFilled ? "filled" : "empty"));
+
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
-    {
+    {        
         decodeData(&camera[i],  &currentFrame[i],  results[i]);
 
         if ((*results[i]) == NULL) {
@@ -185,8 +189,8 @@ V4L2CaptureInterface::FramePair V4L2CaptureInterface::getFrameRGB24()
     FramePair result;
 
     RGB24Buffer **results[Frames::MAX_INPUTS_NUMBER] = {
-            &result.rgbBufferRight,
-            &result.rgbBufferLeft
+        &result.rgbBufferLeft,
+        &result.rgbBufferRight
     };
 
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
@@ -198,8 +202,12 @@ V4L2CaptureInterface::FramePair V4L2CaptureInterface::getFrameRGB24()
         }
     }
 
-    result.bufferLeft  = result.rgbBufferLeft ->toG12Buffer(); // FIXME
-    result.bufferRight = result.rgbBufferRight->toG12Buffer();
+    if (result.rgbBufferLeft != NULL) {
+        result.bufferLeft  = result.rgbBufferLeft ->toG12Buffer(); // FIXME
+    }
+    if (result.rgbBufferRight != NULL) {
+        result.bufferRight = result.rgbBufferRight->toG12Buffer();
+    }
 
     if (currentFrame[Frames::LEFT_FRAME].isFilled)
         result.timeStampLeft  = currentFrame[Frames::LEFT_FRAME].usecsTimeStamp();
@@ -341,7 +349,7 @@ void V4L2CaptureInterface::decodeData(V4L2CameraDescriptor *camera, V4L2BufferDe
     if (!buffer->isFilled)
     {
     //    SYNC_PRINT(("V4L2CaptureInterface::decodeData(): Buffer is not filled. Returning empty\n"));
-        *output = new G12Buffer(formatH, formatW);
+        *output = new G12Buffer(formatH, formatW, false);
         return;
     }
 

@@ -1,8 +1,9 @@
 #ifndef LINE_H_
 #define LINE_H_
-
 #include "vector2d.h"
 #include "vector3d.h"
+#include "matrix44.h"
+
 
 namespace corecvs {
 /**
@@ -46,7 +47,7 @@ typedef Segment<Vector3dd> Segment3d;
 
 
 /**
- * Ray2d is a template of the class that holds the description of the ray in the \f$ R^{dimension} \f$ space.
+ * Ray2d is a template of the class that holds the description of the ray in the \f$ R^{dimention} \f$ space.
  *
  * \f[ \overrightarrow {P(t)} = \overrightarrow {a} *t  + \overrightarrow {p} \f]
  *
@@ -72,7 +73,7 @@ public:
     }
 
     /**
-     *   Normalizes the normal vector without changing the ray itself
+     *   Normalizes the direction vector without changing the ray itself
      *
      *
      **/
@@ -89,6 +90,75 @@ public:
         RealType toReturn(*this);
         toReturn.normalise();
         return toReturn;
+    }
+
+    /**
+     *
+     * This method implements Cyrus-Beck algorithm
+     * http://en.wikipedia.org/wiki/Cyrus%E2%80%93Beck_algorithm
+     *
+     * This method expects normals to be internal
+     *
+     * Intersection with each line is computed and classified as an enter, or exit to the polygon halfspace.
+     * An internal normal is computed - n. On a ray there is a parametrised point.
+     *
+     * Criteria for intersection is
+     * \f[
+     *    \overrightarrow {P(t)} = \overrightarrow {p} + \overrightarrow {a} t
+     * \f]
+     * \f[
+     *    ( \overrightarrow {P(t)} - \overrightarrow {r} ) \overrightarrow {n} = 0
+     * \f]
+     * \f[
+     *    ( \overrightarrow {p} + \overrightarrow {a} t - \overrightarrow {r} ) \overrightarrow {n} = 0
+     * \f]
+     * \f[
+     *    ( \overrightarrow {p} - \overrightarrow {r} ) \overrightarrow {n} + \overrightarrow {a} \overrightarrow {n} t = 0
+     * \f]
+     * \f[
+     *    t = - {( \overrightarrow {p} - \overrightarrow {r} ) \overrightarrow {n} \over \overrightarrow {a} \overrightarrow {n} }
+     * \f]
+     * \f[
+     *    t = {( \overrightarrow {r} - \overrightarrow {p} ) \overrightarrow {n} \over \overrightarrow {a} \overrightarrow {n} }
+     * \f]
+     *
+     *
+     * If the point is an entry one the sign of \f$\overrightarrow {a} \overrightarrow {n}\f$ will denote if it is an entry or exit
+     * What interests us is a maximum entry point and minimum exit point
+     *
+     *
+     *
+     * */
+    template<typename ConvexType>
+    bool clip(const ConvexType &convex, double &t1, double &t2)
+    {
+        t1 = -numeric_limits<double>::max();
+        t2 =  numeric_limits<double>::max();
+
+        for (unsigned i = 0; i < convex.size();  i++) {
+            VectorType r = convex.getPoint(i);
+            VectorType n = convex.getNormal(i);
+
+            VectorType diff = r - p;
+
+            double numen = diff & n;
+            double denum = a & n;
+            if (denum == 0.0) {
+                continue;
+            }
+            double t = numen / denum;
+
+            if ((denum > 0) && (t > t1)) {
+                t1 = t;
+            }
+            if ((denum < 0) && (t < t2)) {
+                t2 = t;
+            }
+
+            cout << "Intersection " << t << " at " << getPoint(t) << " is " << (numen > 0 ? "enter" : "exit") << std::endl;
+
+        }
+        return t2 > t1;
     }
 
     friend ostream & operator <<(ostream &out, const BaseRay &ray)
@@ -132,11 +202,57 @@ public:
 
         return fabs(dp & denum) / l;
     }
+
+    /**
+     *    This is a helpful method to estimate properties of skew lines
+     **/
+    Vector3dd intersectCoef(Ray3d &other)
+    {
+        Vector3dd normal = a ^ other.a;
+        normal.normalise();
+        Matrix33 m = Matrix33::FromColumns(a, -other.a, normal);
+        return m.inv() * (other.p - p);
+    }
+
+    /**
+     * not optimal so far
+     **/
+    Vector3dd closestPoint(Ray3d &other)
+    {
+        return getPoint(intersectCoef(other).x());
+    }
+
+    Vector3dd intersect(Ray3d &other)
+    {
+        Vector3dd coef = intersectCoef(other);
+        return (getPoint(coef.x()) + other.getPoint(coef.y())) / 2.0;
+    }
+
+    void transform(const Matrix44 &M)
+    {
+        a = M * a;
+        p = M * p;
+    }
+
+    Ray3d transformed(const Matrix44 &M)
+    {
+        return Ray3d((M * (p + a)) - (M * p), M * p);
+    }
+
+
+    /**
+     *   NYI
+     **/
+    static Vector3dd bestFit(Ray3d * /*rays*/, unsigned /*number*/)
+    {
+        return Vector3dd(0.0);
+    }
+
 };
 
 #if 0
 /**
- *  This class template represents the hyperplane of the \f$ R^n \f$ dimension
+ *  This class template represents the hyperplane of the \f$ R^n \f$ dimention
  *  in \f$ R^{n+1} \f$ space
  *
  * The most obvious presentation of the hyperplane:
@@ -155,7 +271,7 @@ public:
  * In 2D case that is
  * \f[A x + B y + C = 0\f]
  *
- * Which allows to think of the \f$ R^{dimension} \f$ hyperplane, as an element in a f$ \mathbb(R)^{dimension + 1} f$ projective space.
+ * Which allows to think of the \f$ R^{dimention} \f$ hyperplane, as an element in a f$ \mathbb(R)^{dimention + 1} f$ projective space.
  * That is how we would think of the line form time to time.
  *
  * \f[ \sum_{i=0}^n ({a_i x_i}) + C = \sum_{i=0}^n ({a_i x_i}) + 1 \cdot x_{n+1} = 0 \f]
@@ -163,13 +279,13 @@ public:
  * \f$\vec {x}\f$ - is a  vector. In 3D \f$\overrightarrow {(A,B,C)} \overrightarrow{X} = 0\f$
  *  denotes a plane that pass throw the 0 point.
  *
- *  The only difference form FixedVector<double, dimension + 1> is that this class has other notion of
+ *  The only difference form FixedVector<double, dimention + 1> is that this class has other notion of
  *  normalisation
  *
  **/
 
-template<int dimension>
-class Hyperplane : public FixedVector<double, dimension + 1>
+template<int dimention>
+class Hyperplane : public FixedVector<double, dimention + 1>
 {
 public:
 
@@ -660,6 +776,15 @@ public:
          return point - t * normal();
      }
 
+     /**
+      *   projecting zero to the current plane
+      **/
+     Vector3dd projectZeroTo() const
+     {
+         double l2 = normal().sumAllElementsSq();
+         double t = (last() / l2);
+         return - t * normal();
+     }
 
     /**
      *  Construct a plane from normal

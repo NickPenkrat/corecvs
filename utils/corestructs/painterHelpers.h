@@ -11,8 +11,8 @@
 
 #include <stdint.h>
 #include <QtCore/QRect>
-#include <QtGui/QPainter>
-#include <QtGui/QComboBox>
+#include <QPainter>
+#include <QComboBox>
 
 #include "global.h"
 
@@ -75,6 +75,22 @@ void drawLine(QPainter& painter, const Vector2dd &start, const Vector2dd &end);
 void drawCircle(QPainter& painter, const Vector2dd &center, double radius);
 void drawSquare(QPainter& painter, const Vector2dd &center, int size);
 
+void draw2Circle (QPainter& painter,
+                   const Vector2dd &center1, int size1,
+                   const Vector2dd &center2, int size2
+                   );
+
+
+void drawMetaballs1(QPainter& painter,
+                   const Vector2dd &center1, int size1,
+                   const Vector2dd &center2, int size2
+                   );
+
+
+void drawMetaballs(QPainter& painter,
+                   const Vector2dd &center1, int size1,
+                   const Vector2dd &center2, int size2
+                   );
 
 void drawArc(QPainter& painter, const Vector2dd &center, double radius, int start, int len);
 

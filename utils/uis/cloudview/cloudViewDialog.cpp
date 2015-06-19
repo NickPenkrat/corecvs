@@ -742,10 +742,10 @@ void CloudViewDialog::loadMesh()
 
     Mesh3DScene *mesh = new Mesh3DScene();
     ifstream file;
-    file.open(fileName.toAscii().data(), ios::in);
+    file.open(fileName.toLatin1().data(), ios::in);
     if (file.fail())
     {
-        qDebug() << "Can't open property list file" << endl;
+        qDebug() << "Can't open mesh file" << endl;
         return;
     }
     PLYLoader loader;

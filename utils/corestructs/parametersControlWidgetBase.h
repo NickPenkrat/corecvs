@@ -9,7 +9,7 @@
  * \author alexander
  */
 
-#include <QtGui/QtGui>
+#include <QWidget>
 
 #include "global.h"
 
@@ -103,7 +103,7 @@ public:
 
     virtual void loadFromQSettings  (const QString &fileName, const QString &_root)
     {
-//        qDebug("SaveableWidget::loadFromQSettings(\"%s\", \"%s\"): called",fileName.toAscii().constData(), _root.toAscii().constData());
+//        qDebug("SaveableWidget::loadFromQSettings(\"%s\", \"%s\"): called",fileName.toLatin1().constData(), _root.toLatin1().constData());
 
         SettingsGetter visitor(fileName, _root);
         WidgetLoader loader(&visitor);
@@ -112,7 +112,7 @@ public:
 
     virtual void saveToQSettings (const QString &fileName, const QString &_root)
     {
-//        qDebug("SaveableWidget::saveToQSettings(\"%s\", \"%s\"): called",fileName.toAscii().constData(), _root.toAscii().constData());
+//        qDebug("SaveableWidget::saveToQSettings(\"%s\", \"%s\"): called",fileName.toLatin1().constData(), _root.toLatin1().constData());
 
         SettingsSetter visitor(fileName, _root);
         WidgetSaver saver(&visitor);

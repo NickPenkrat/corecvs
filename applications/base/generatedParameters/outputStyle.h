@@ -21,37 +21,37 @@ namespace OutputStyle {
 enum OutputStyle {
     /** 
      * \brief right Frame 
-     * Right Frame 
+     * !right-cam.png! Frame from the right camera 
      */
     RIGHT_FRAME = 0,
     /** 
      * \brief left Frame 
-     * Left Frame 
+     * !left-cam.png! Frame from the  left camera 
      */
     LEFT_FRAME = 1,
     /** 
      * \brief sidebyside stereo 
-     * Side-by-side stereo 
+     * !2cam-active.png! Side-by-side images from right and left cameras 
      */
     SIDEBYSIDE_STEREO = 2,
     /** 
      * \brief anaglyph RG 
-     * Red-Green Anaglyph 
+     * !3d_glasses_rg.png! Red-Green Anaglyph view 
      */
     ANAGLYPH_RG = 3,
     /** 
      * \brief anaglyph RC 
-     * Red-Cyan Anaglyph 
+     * !3d_glasses_rc.png! Red-Cyan Anaglyph view 
      */
     ANAGLYPH_RC = 4,
     /** 
      * \brief blend 
-     * Blend 
+     * !2cam-blend.png! Blend two images 
      */
     BLEND = 5,
     /** 
      * \brief none 
-     * None 
+     * None. Show black output 
      */
     NONE = 6,
     /** 

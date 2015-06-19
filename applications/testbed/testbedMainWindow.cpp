@@ -1,4 +1,5 @@
 #include <QtGui/QWheelEvent>
+#include <QFileDialog>
 
 #include "testbedMainWindow.h"
 #include "advancedImageWidget.h"
@@ -263,7 +264,7 @@ void TestbedMainWindow::maskTolerance1(QPoint point)
     painter.floodFill(x,y, predicate);
 }
 
-void TestbedMainWindow::pointSelected(int toolID, QPoint point)
+void TestbedMainWindow::pointSelected(int /*toolID*/, QPoint point)
 {
     qDebug() << "Point Selected" << point;
     mUndoList.push_back(new G8Buffer(mMask));

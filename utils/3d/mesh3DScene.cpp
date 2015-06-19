@@ -38,7 +38,7 @@ void Mesh3DScene::drawMyself(CloudViewDialog *dialog)
             /*glPushMatrix();
                glTranslated(centralPoint.x(),centralPoint.y(), centralPoint.z());
                glScaled(0.5,0.5,0.5);
-               painter.drawFormatVector(0, 0, RGBColor(255,20,20), 1, text.toAscii().constData());
+               painter.drawFormatVector(0, 0, RGBColor(255,20,20), 1, text.toLatin1().constData());
             glPopMatrix();*/
 
             //Vector3dd projected =
@@ -95,7 +95,7 @@ void Mesh3DScene::drawMyself(CloudViewDialog *dialog)
 
             //glColor3ub(mParameters.fontColor().r(), mParameters.fontColor().g(), mParameters.fontColor().b());
 
-            painter.drawFormatVector(0, 0, mParameters.fontColor(), 1, text.toAscii().constData());
+            painter.drawFormatVector(0, 0, mParameters.fontColor(), 1, text.toLatin1().constData());
             if (depthTest) {
                 glEnable(GL_DEPTH_TEST);
             }

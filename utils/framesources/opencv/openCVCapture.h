@@ -46,7 +46,7 @@ using namespace std;
         void stop();
     private:
         OpenCVCaptureInterface *mInterface;
-        bool                    mStopping;
+        bool mStopping;
     };
 
  public:

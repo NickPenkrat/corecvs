@@ -33,7 +33,7 @@ SUBDIRS += \
     buffer \
     fileformats \
     arithmetics \
-    ssewrappers \
+#    ssewrappers \
     fastkernel \
     assignment \
     cornerdetector \
@@ -42,7 +42,7 @@ SUBDIRS += \
     automotive \
     sphericdist \
     color \
-    geometry \
+#    geometry \
     moments \
     draw \
     affine \
@@ -65,3 +65,5 @@ SUBDIRS += \
     triangulator \
     cloud \
     distortion \
+    similarity \
+	eigen \

@@ -17,6 +17,9 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/legacy/legacy.hpp>
+/*tmp fix*/
+//#include <opencv2/features2d/features2d.hpp> /* for old openCV */
+
 #if ((CV_MAJOR_VERSION * 10 + CV_MINOR_VERSION) * 10 + CV_SUBMINOR_VERSION) > 220
 # include <opencv2/nonfree/features2d.hpp>    /* for new openCV */
 #else

@@ -13,6 +13,9 @@ public:
     BaseGenerator(const Reflection *_clazz);
 
 protected:
+    QString getGenerateDir();
+
+
     enum CaseModifier {
         toUpper,
         toLower,

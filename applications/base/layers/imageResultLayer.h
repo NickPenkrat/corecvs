@@ -5,7 +5,8 @@
  * \date Oct 17, 2012
  **/
 #include <QtGui/QImage>
-#include <QtGui/QPainter>
+#include <QPainter>
+#include <QDebug>
 
 #include "global.h"
 
@@ -39,13 +40,11 @@ template<class BufferType>
         bool showLeftFrame = false
     );*/
 
-    ImageResultLayer(
-        G12Buffer* image
-    );
+    ImageResultLayer(G8Buffer* image);
 
-    ImageResultLayer(
-        RGB24Buffer* image
-    );
+    ImageResultLayer(G12Buffer* image);
+
+    ImageResultLayer(RGB24Buffer* image);
 
 
     /** Polymorphic type so virtual destructor needed */
@@ -79,7 +78,7 @@ template<class BufferType>
                 printf(" NULL\n");
                 continue;
             }
-            printf("[%dx%d]\n", mImages[i]->height(), mImages[i]->width());
+            printf(" [%dx%d]\n", mImages[i]->height(), mImages[i]->width());
         }
     }
 };
@@ -93,8 +92,11 @@ ImageResultLayer::ImageResultLayer(
     : ResultLayerBase(LAYER_CLASS_ID)
     , mStyle(style)
 {
+    qDebug() << "ImageResultLayer::ImageResultLayer()"
+    << (images[0] ? "non null" : "null")   << ", " << (images[1] ? "non null" : "null");
+
     for (int id = 0; id < Frames::MAX_INPUTS_NUMBER; id++ )
-    {
+    {        
         mImages[id] = NULL;
     }
 

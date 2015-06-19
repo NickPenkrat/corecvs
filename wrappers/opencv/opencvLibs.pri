@@ -86,6 +86,7 @@ with_opencv {
             !build_pass:message(Compiling with system OpenCV)
 #           LIBS += -lcv -lhighgui -lcxcore
             LIBS += -lopencv_highgui -lopencv_video -lopencv_core -lopencv_flann -lopencv_imgproc -lopencv_calib3d -lopencv_features2d -lopencv_objdetect # for opencv 2.3+
+            LIBS += -lopencv_nonfree
         } else {
             !build_pass:message(Compiling with OpenCV from $$OPENCV_PATH)
             LIBS += -L$$OPENCV_PATH/lib/

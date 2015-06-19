@@ -28,18 +28,18 @@ int Log::mDummy = Log::staticInit();
 
 int Log::staticInit()
 {
-	LogDrain *defaultDrain = new StdStreamLogDrain(std::cout);
-	mLogDrains.push_back(defaultDrain);
+    LogDrain *defaultDrain = new StdStreamLogDrain(std::cout);
+    mLogDrains.push_back(defaultDrain);
 //	logStream.reset(new std::ofstream(fileName.c_str(), std::ios::out | std::ios::app));
-	return 0;
+    return 0;
 }
 
 void Log::message(Message &message)
 {
-	for (unsigned int i = 0; i < mLogDrains.size(); i++)
-	{
-		mLogDrains[i]->drain(message);
-	}
+    for (unsigned int i = 0; i < mLogDrains.size(); i++)
+    {
+        mLogDrains[i]->drain(message);
+    }
 }
 
 Log::Log(const LogLevel /*maxLocalLevel*/)
@@ -50,13 +50,13 @@ Log::~Log()
 
 std::string Log::msgBufToString(const char* msg)
 {
-	std::string message(msg);
+    std::string message(msg);
 
-	if (message.size() != 0 && message[message.size() - 1] == '\n') {
-		message.resize(message.size() - 1);
+    if (message.size() != 0 && message[message.size() - 1] == '\n') {
+        message.resize(message.size() - 1);
     }
 
-	return message;
+    return message;
 }
 
 //static

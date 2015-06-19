@@ -22,10 +22,9 @@ include($$UTILSDIR/utils.pri)                      # it uses UTILSDIR, TARGET an
 include($$UTILSDIR/corestructs/coreWidgets/coreWidgets.pri)
 include($$UTILSDIR/filters/ui/filterWidgets.pri)
 
+CONFIG += with_graphs
 
 HEADERS += \
-    3d/scene3D.h \
-    \
     corestructs/parametersControlWidgetBase.h \
     corestructs/g12Image.h \
     corestructs/painterHelpers.h \
@@ -54,29 +53,20 @@ HEADERS += \
     widgets/angleEditBox.h \
     widgets/shift3DWidget.h \
     \
-    filters/filterSelector.h \
-    filters/filterExecuter.h \
-    filters/filterParametersControlWidgetBase.h \
-    filters/openCVFilter.h \
-    \
-    filters/graph/filterBlockPresentation.h \
-    filters/graph/diagramitem.h \
-    filters/graph/diagramscene.h \
-    filters/graph/arrow.h \
-    filters/graph/diagramtextitem.h \
-    \
     camcalc/cameraCalculatorWidget.h \
     \
     frames.h \
     framesources/imageCaptureInterface.h \
-    framesources/imageFileCaptureInterface.h \
-    framesources/fileCapture.h \
-    framesources/abstractFileCapture.h \
-    framesources/abstractFileCaptureSpinThread.h \
     framesources/cameraControlParameters.h \
     framesources/decoders/mjpegDecoder.h \
     framesources/decoders/mjpegDecoderLazy.h \
     framesources/decoders/decoupleYUYV.h \
+    \
+    framesources/file/imageFileCaptureInterface.h \
+    framesources/file/fileCapture.h \
+    framesources/file/precCapture.h \
+    framesources/file/abstractFileCapture.h \
+    framesources/file/abstractFileCaptureSpinThread.h \
     \
     fileformats/qtFileLoader.h \
     uis/advancedImageWidget.h \
@@ -108,6 +98,7 @@ HEADERS += \
     serializer/widgetQtIterator.h \
     \
     statistics/contentStatistics.h \
+    statistics/userPoll.h \
     \
     rectifier/estimationMethodType.h \
     rectifier/optimizationMethodType.h \
@@ -126,20 +117,6 @@ HEADERS += \
     widgets/generated/graphPlotParameters.h \
     widgets/generated/graphStyle.h \
     \
-    3d/draw3dParametersControlWidget.h \
-    3d/draw3dCameraParametersControlWidget.h \
-    3d/draw3dViMouseParametersControlWidget.h \
-    \
-    3d/generated/draw3dParameters.h \
-    3d/generated/draw3dStyle.h \
-    3d/generated/draw3dCameraParameters.h \
-    3d/generated/viMouse3DStereoStyle.h \
-    3d/generated/viMouse3DFlowStyle.h \
-    3d/generated/viMouse3DStereoStyle.h \
-    3d/generated/viMouse3DFlowStyle.h \
-    3d/generated/draw3dViMouseParameters.h \ 
-    3d/mesh3DScene.h \
-    3d/coordinateFrame.h \    
     filters/graph/filterPinPresentation.h \
     filters/graph/filterGraphPresentation.h \
     filters/graph/filterPresentationsCollection.h \
@@ -152,8 +129,6 @@ HEADERS += \
   
 
 SOURCES += \
-    3d/scene3D.cpp \
-    \
     corestructs/parametersControlWidgetBase.cpp \    
     corestructs/histogramdialog.cpp \
     corestructs/histogramwidget.cpp \
@@ -181,28 +156,20 @@ SOURCES += \
     widgets/angleEditBox.cpp \
     widgets/shift3DWidget.cpp \
     \
-    filters/filterSelector.cpp \
-    filters/filterExecuter.cpp \
-    filters/openCVFilter.cpp \
-    \
-    filters/graph/filterBlockPresentation.cpp \
-    filters/graph/diagramitem.cpp \
-    filters/graph/arrow.cpp \
-    filters/graph/diagramtextitem.cpp \
-    filters/graph/diagramscene.cpp \
-    \
     camcalc/cameraCalculatorWidget.cpp \
     \
     frames.cpp \
     framesources/imageCaptureInterface.cpp \        # it uses WITH_DIRECTSHOW, WITH_UEYE, WITH_OPENCV
-    framesources/imageFileCaptureInterface.cpp \
-    framesources/abstractFileCapture.cpp \
-    framesources/abstractFileCaptureSpinThread.cpp \
     framesources/cameraControlParameters.cpp \
-    framesources/fileCapture.cpp \
     framesources/decoders/mjpegDecoder.cpp \
     framesources/decoders/mjpegDecoderLazy.cpp \
     framesources/decoders/decoupleYUYV.cpp \
+    \
+    framesources/file/imageFileCaptureInterface.cpp \
+    framesources/file/fileCapture.cpp \
+    framesources/file/precCapture.cpp \
+    framesources/file/abstractFileCapture.cpp \
+    framesources/file/abstractFileCaptureSpinThread.cpp \
     \
     fileformats/qtFileLoader.cpp \
     uis/advancedImageWidget.cpp \
@@ -236,6 +203,7 @@ SOURCES += \
     serializer/widgetQtIterator.cpp \
     \
     statistics/contentStatistics.cpp \
+    statistics/userPoll.cpp \
     \
     rectifier/universalRectifier.cpp \
     rectifier/rectifyParametersControlWidget.cpp \
@@ -251,15 +219,6 @@ SOURCES += \
     widgets/generated/graphPlotParameters.cpp \
     widgets/generated/graphPlotParametersControlWidget.cpp \
     \
-    3d/generated/draw3dParameters.cpp \
-    3d/generated/draw3dParametersControlWidget.cpp \
-    3d/generated/draw3dCameraParametersControlWidget.cpp \
-    3d/generated/draw3dCameraParameters.cpp \
-    3d/generated/draw3dViMouseParametersControlWidget.cpp \
-    3d/generated/draw3dViMouseParameters.cpp \
-    \
-    3d/mesh3DScene.cpp \
-    3d/coordinateFrame.cpp \
     filters/graph/filterPinPresentation.cpp \
     filters/graph/filterGraphPresentation.cpp \
     filters/graph/filterPresentationsCollection.cpp \
@@ -295,8 +254,6 @@ FORMS += \
     corestructs/libWidgets/openCVBMParametersControlWidget.ui \
     corestructs/libWidgets/openCVSGMParametersControlWidget.ui \
     \
-    filters/filterSelector.ui \
-    \
     \
     camcalc/cameraCalculatorWidget.ui \
     \
@@ -322,7 +279,10 @@ FORMS += \
 RESOURCES += \
    ../resources/main.qrc
 
-unix:!macx {
+unix:!macx:!win32 {
+    message (Switching on V4L2 support)
+  
+
     HEADERS += \
         framesources/v4l2/V4L2.h \
         framesources/v4l2/V4L2Capture.h \
@@ -332,6 +292,36 @@ unix:!macx {
         framesources/v4l2/V4L2.cpp \
         framesources/v4l2/V4L2Capture.cpp \
         framesources/v4l2/V4L2CaptureDecouple.cpp \
+
+}
+
+with_graphs {
+
+HEADERS += \
+    filters/filterSelector.h \
+    filters/filterExecuter.h \
+    filters/filterParametersControlWidgetBase.h \
+    filters/openCVFilter.h \
+    \
+    filters/graph/filterBlockPresentation.h \
+    filters/graph/diagramitem.h \
+    filters/graph/diagramscene.h \
+    filters/graph/arrow.h \
+    filters/graph/diagramtextitem.h \
+
+SOURCES += \
+    filters/filterSelector.cpp \
+    filters/filterExecuter.cpp \
+    filters/openCVFilter.cpp \
+    \
+    filters/graph/filterBlockPresentation.cpp \
+    filters/graph/diagramitem.cpp \
+    filters/graph/arrow.cpp \
+    filters/graph/diagramtextitem.cpp \
+    filters/graph/diagramscene.cpp \
+
+FORMS += \
+    filters/filterSelector.ui \
 
 }
 
@@ -345,10 +335,37 @@ with_opengl {
     SOURCES     += opengl/openGLTools.cpp
 
     HEADERS     += uis/cloudview/cloudViewDialog.h \ 
-    			   uis/cloudview/treeSceneController.h \
-    			   
-    SOURCES     += uis/cloudview/cloudViewDialog.cpp \ 
+                   uis/cloudview/treeSceneController.h \
+                   3d/scene3D.h \
+                   \
+                   3d/draw3dParametersControlWidget.h \
+                   3d/draw3dCameraParametersControlWidget.h \
+                   3d/draw3dViMouseParametersControlWidget.h \
+                   \
+                   3d/generated/draw3dParameters.h \
+                   3d/generated/draw3dStyle.h \
+                   3d/generated/draw3dCameraParameters.h \
+                   3d/generated/viMouse3DStereoStyle.h \
+                   3d/generated/viMouse3DFlowStyle.h \
+                   3d/generated/viMouse3DStereoStyle.h \
+                   3d/generated/viMouse3DFlowStyle.h \
+                   3d/generated/draw3dViMouseParameters.h \
+                   3d/mesh3DScene.h \
+                   3d/coordinateFrame.h \
+
+    SOURCES     += 3d/scene3D.cpp \
+                   \
+                   uis/cloudview/cloudViewDialog.cpp \
                    uis/cloudview/treeSceneController.cpp \
+                   3d/generated/draw3dParameters.cpp \
+                   3d/generated/draw3dParametersControlWidget.cpp \
+                   3d/generated/draw3dCameraParametersControlWidget.cpp \
+                   3d/generated/draw3dCameraParameters.cpp \
+                   3d/generated/draw3dViMouseParametersControlWidget.cpp \
+                   3d/generated/draw3dViMouseParameters.cpp \
+                   \
+                   3d/mesh3DScene.cpp \
+                   3d/coordinateFrame.cpp \
                        
     FORMS       += uis/cloudview/cloudViewDialog.ui
 }
@@ -371,14 +388,14 @@ with_opencv {
 
     contains(DEFINES, WITH_OPENCV) {                        # TODO: move this to OpenCV
         HEADERS += \
-            framesources/openCVCapture.h \
-            framesources/openCvFileCapture.h \
-            framesources/openCvHelper.h \
+            framesources/opencv/openCVCapture.h \
+            framesources/opencv/openCVFileCapture.h \
+            framesources/opencv/openCVHelper.h \
 
         SOURCES += \
-            framesources/openCVCapture.cpp \
-            framesources/openCvFileCapture.cpp \
-            framesources/openCvHelper.cpp \
+            framesources/opencv/openCVCapture.cpp \
+            framesources/opencv/openCVFileCapture.cpp \
+            framesources/opencv/openCVHelper.cpp \
 
     }
 }
@@ -397,3 +414,26 @@ with_directshow {
 
     DEFINES += WITH_DIRECTSHOW
 }
+
+
+with_avcodec {
+    HEADERS += \
+        framesources/avcodec/aviCapture.h \
+
+    SOURCES += \
+        framesources/avcodec/aviCapture.cpp \
+
+}
+
+with_synccam {
+    HEADERS += \
+        framesources/syncCam/syncCamerasCaptureInterface.h \
+
+
+    SOURCES += \
+        framesources/syncCam/syncCamerasCaptureInterface.cpp \
+            
+    DEFINES += WITH_SYNCCAM
+}
+
+OTHER_FILES += ../tools/generator/xml/draw3d.xml
