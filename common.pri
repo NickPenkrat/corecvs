@@ -384,7 +384,7 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
             LIBS        += -L"$$TBB_LIBDIR" -ltbb
             !build_pass: contains(TARGET, cvs_core): message(Using <$$TBB_LIBDIR>)
         } else {
-           !build_pass: message(TBB not found. Please set TBB_PATH system variable to a root folder of TBB)
+           !build_pass: message(TBB not found. Please set TBB_PATH system variable to a root folder of TBB to use it)
         }
     } else:macx {
         #message (Using TBB at $$TBB_PATH)
