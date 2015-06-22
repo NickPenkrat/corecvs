@@ -85,6 +85,18 @@ AdvancedImageWidget::~AdvancedImageWidget()
     delete_safe(mResizeCache);
 }
 
+void AdvancedImageWidget::setCollapseTitle(bool collapse)
+{
+    QList<int> sizes;
+    if (collapse) {
+        sizes << 0 << 1;
+    } else {
+        sizes << 1 << 1;
+    }
+
+    mUi->splitter->setSizes(sizes);
+}
+
 void AdvancedImageWidget::setImage(QSharedPointer<QImage> newImage)
 {
     if (mIsFreezed)
@@ -557,6 +569,11 @@ void AdvancedImageWidget::fitToggled()
 {
     recomputeRects();
     mUi->widget->update();
+}
+
+void AdvancedImageWidget::setFitWindow(bool flag)
+{
+    mUi->fitToWindowCheckBox->setChecked(flag);
 }
 
 void AdvancedImageWidget::childResized (QResizeEvent * /*event*/)

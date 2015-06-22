@@ -349,7 +349,7 @@ void GraphPlotDialog::saveGraphName(QTableWidgetItem*item)
     QTableWidget *graphList = (QTableWidget*)sender();
     if (item != NULL && graphList->column(item) == 0) {
         unsigned graphId = item->data(Qt::UserRole).toUInt();
-        mData[graphId].name = item->text();
+        mData[graphId].name = item->text().toStdString();
         graphList->closePersistentEditor(item);
     }
 }
@@ -366,9 +366,9 @@ void GraphPlotDialog::addGraphPoint(unsigned graphId, double value, bool isValid
 
         mData.resize(graphId + 1);
         mData[graphId].isSelected = false;
-        mData[graphId].name = QString("Graph %2").arg(graphId);
+        mData[graphId].name = QString("Graph %2").arg(graphId).toStdString();
 
-        addNewGraphToUI(mData[graphId].name, graphId);
+        addNewGraphToUI(graphId);
     }
 
 /*
@@ -488,9 +488,9 @@ GraphPlotDialog::~GraphPlotDialog()
     delete_safe(mUpDownMapper);
 }
 
-void GraphPlotDialog::addNewGraphToUI(QString name, unsigned graphId)
+void GraphPlotDialog::addNewGraphToUI(unsigned graphId)
 {
-    QTableWidgetItem* graphItem = new QTableWidgetItem(mData[graphId].name);
+    QTableWidgetItem* graphItem = new QTableWidgetItem(QString::fromStdString(mData[graphId].name));
     graphItem->setData(Qt::UserRole, QVariant(graphId));
     setItemColor(graphItem);
     int rowCount = mUi.visibleGraph->rowCount();
@@ -511,7 +511,7 @@ unsigned GraphPlotDialog::getGraphId(QString name)
 //    qDebug("GraphPlotDialog::getGraphId(%s): called", name.toLatin1().constData());
 
     while (graphId < mData.size()) {
-        if (mData[graphId].name == name) {
+        if (mData[graphId].name == name.toStdString()) {
             return graphId;
         }
         graphId++;
@@ -521,9 +521,9 @@ unsigned GraphPlotDialog::getGraphId(QString name)
 
     mData.resize(graphId + 1);
     mData[graphId].isSelected = false;
-    mData[graphId].name = name;
+    mData[graphId].name = name.toStdString();
 
-    addNewGraphToUI(name, graphId);
+    addNewGraphToUI(graphId);
     return graphId;
 }
 
@@ -538,7 +538,7 @@ QString GraphPlotDialog::getGraphName(unsigned id)
     if (id >= mData.size())
         return "";
 
-    return mData[id].name;
+    return QString::fromStdString(mData[id].name);
 }
 
 void GraphPlotDialog::setItemColor(QTableWidgetItem *item)

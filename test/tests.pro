@@ -9,22 +9,20 @@ exists(../../../config.pri) {
 
 TEMPLATE = subdirs
 
-SUBDIRS +=          \
-    grab            \
+SUBDIRS +=       \
+    grab         \
     grab_N_captures \
-    xmlserialize    \
-    adoptcolor      \
-#    avigrab         \
-    topcon          \
-    decodebayer     \
+    serialize1   \
+    adoptcolor   \
+#    avigrab     \
+    decodebayer \
 
 
 
-grab.file            = grab/grab.pro
+grab.file          = grab/grab.pro
 grab_N_captures.file = grab_N_captures/grab_N_captures.pro
-xmlserialize.file    = xmlserialize/xmlserialize.pro
-adoptcolor.file      = adoptcolor/adoptcolor.pro
-avigrab.file         = avigrab/avigrab.pro
-topcon.file          = topcon/topcon.pro
-decodebayer.file     = decodebayer/decodebayer.pro
+serialize1.file    = serialize1/serialize1.pro
+adoptcolor.file    = adoptcolor/adoptcolor.pro
+avigrab.file       = avigrab/avigrab.pro
+decodebayer.file   = decodebayer/decodebayer.pro
 

@@ -45,7 +45,10 @@ int Draw3dCameraParameters::staticInit()
           90,
           "fovH",
           "fovH",
-          "fovH"
+          "fovH",
+          true,
+         0,
+         180
         )
     );
     fields().push_back(
@@ -56,7 +59,10 @@ int Draw3dCameraParameters::staticInit()
           60,
           "fovV",
           "fovV",
-          "fovV"
+          "fovV",
+          true,
+         0,
+         180
         )
     );
     fields().push_back(
@@ -67,7 +73,10 @@ int Draw3dCameraParameters::staticInit()
           10,
           "nearPlane",
           "nearPlane",
-          "nearPlane"
+          "nearPlane",
+          true,
+         0,
+         20000
         )
     );
     fields().push_back(
@@ -78,7 +87,10 @@ int Draw3dCameraParameters::staticInit()
           100,
           "farPlane",
           "farPlane",
-          "farPlane"
+          "farPlane",
+          true,
+         0,
+         20000
         )
     );
     fields().push_back(
@@ -90,7 +102,13 @@ int Draw3dCameraParameters::staticInit()
           "style",
           "style",
           "style",
-           NULL
+          new EnumReflection(5
+          , new EnumOption(0,"Points")
+          , new EnumOption(1,"Wireframe")
+          , new EnumOption(2,"Color")
+          , new EnumOption(3,"Color 2")
+          , new EnumOption(4,"Textured")
+          )
         )
     );
     fields().push_back(
@@ -136,7 +154,10 @@ int Draw3dCameraParameters::staticInit()
           8,
           "Font Size",
           "Font Size",
-          "Font Size"
+          "Font Size",
+          true,
+         0,
+         255
         )
     );
     fields().push_back(
@@ -147,7 +168,10 @@ int Draw3dCameraParameters::staticInit()
           1,
           "Font Width",
           "Font Width",
-          "Font Width"
+          "Font Width",
+          true,
+         0,
+         255
         )
     );
     fields().push_back(
@@ -171,7 +195,11 @@ int Draw3dCameraParameters::staticInit()
           "Texture Corrodinates",
           "Texture Corrodinates",
           "Texture Corrodinates",
-           NULL
+          new EnumReflection(3
+          , new EnumOption(0,"No Texture")
+          , new EnumOption(1,"Auto Decide")
+          , new EnumOption(2,"Force Texture")
+          )
         )
     );
     fields().push_back(
@@ -182,7 +210,10 @@ int Draw3dCameraParameters::staticInit()
           255,
           "Texture Alpha",
           "Texture Alpha",
-          "Texture Alpha"
+          "Texture Alpha",
+          true,
+         0,
+         255
         )
     );
     fields().push_back(
@@ -193,7 +224,10 @@ int Draw3dCameraParameters::staticInit()
           1,
           "Texture Scale",
           "Texture Scale",
-          "Texture Scale"
+          "Texture Scale",
+          true,
+         0,
+         2000
         )
     );
     fields().push_back(
@@ -204,7 +238,10 @@ int Draw3dCameraParameters::staticInit()
           11,
           "Decal Matrix Type",
           "Decal Matrix Type",
-          "Decal Matrix Type"
+          "Decal Matrix Type",
+          true,
+         0,
+         19
         )
     );
     fields().push_back(
@@ -226,7 +263,10 @@ int Draw3dCameraParameters::staticInit()
           255,
           "Decal Left Alpha",
           "Decal Left Alpha",
-          "Decal Left Alpha"
+          "Decal Left Alpha",
+          true,
+         0,
+         255
         )
     );
     fields().push_back(
@@ -248,7 +288,10 @@ int Draw3dCameraParameters::staticInit()
           255,
           "Decal Right Alpha",
           "Decal Right Alpha",
-          "Decal Right Alpha"
+          "Decal Right Alpha",
+          true,
+         0,
+         255
         )
     );
    return 0;

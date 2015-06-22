@@ -221,21 +221,3 @@ RGB24InterfaceImage::~RGB24InterfaceImage() {
 
 }
 
-
-void ImageWidget::setImage(QImage *newImage)
-{
-    QImage *oldImage = image;
-    image = newImage;
-    delete oldImage;
-    this->resize(image->size());
-    this->update();
-
-}
-
-void ImageWidget::paintEvent(QPaintEvent * event)
-{
-    QPainter p(this);
-    if (image != NULL)
-        p.drawImage(QPoint(0,0), *image);
-    ViAreaWidget::paintEvent(event);
-}

@@ -57,6 +57,8 @@ void RecorderDialog::createCalculator()
     connect(mapper, SIGNAL(recorderParamsChanged(QSharedPointer<Recorder>))
             , this, SLOT(recorderControlParametersChanged(QSharedPointer<Recorder>)));
 
+
+
   /*  connect(mapper, SIGNAL(baseParametersParamsChanged(QSharedPointer<BaseParameters>))
             , this, SLOT(baseControlParametersChanged(QSharedPointer<Base>)));*/
 

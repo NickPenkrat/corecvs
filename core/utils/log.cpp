@@ -137,3 +137,29 @@ void StdStreamLogDrain::drain(Log::Message &message)
         pos = posBr + 1;
     } while (true);
 }
+
+
+FileLogDrain::FileLogDrain(const std::string &path, bool bAppend)
+    : mFile(path.c_str(), bAppend ? std::ios_base::app : std::ios_base::trunc)
+{}
+
+FileLogDrain::~FileLogDrain()
+{
+    mFile.flush();
+    mFile.close();
+}
+
+void FileLogDrain::drain(Log::Message &message)
+{
+    if (mFile.is_open())
+    {
+        mFile << message.get()->s.str() << std::endl;
+        mFile.flush();
+    }
+}
+
+
+void LiteStdStreamLogDrain::drain(Log::Message &message) {
+    mOutputStream << message.get()->s.str() << std::endl;
+    mOutputStream.flush();
+}

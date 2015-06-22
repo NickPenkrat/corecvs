@@ -138,12 +138,12 @@ V4L2CaptureInterface::FramePair V4L2CaptureInterface::getFrame()
     result.rgbBufferRight = NULL;
     result.rgbBufferLeft = NULL;
 
-    SYNC_PRINT(("LF:%s RF:%s\n",
-               currentFrame[Frames::LEFT_FRAME ].isFilled ? "filled" : "empty" ,
-               currentFrame[Frames::RIGHT_FRAME].isFilled ? "filled" : "empty"));
+    //SYNC_PRINT(("LF:%s RF:%s\n",
+    //           currentFrame[Frames::LEFT_FRAME ].isFilled ? "filled" : "empty" ,
+    //           currentFrame[Frames::RIGHT_FRAME].isFilled ? "filled" : "empty"));
 
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
-    {        
+    {
         decodeData(&camera[i],  &currentFrame[i],  results[i]);
 
         if ((*results[i]) == NULL) {

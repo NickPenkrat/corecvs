@@ -202,6 +202,11 @@ Vector3dd Matrix33::aV(int i) const
     return Vector3dd (a(i,0), a(i,1), a(i,2));
 }
 
+Vector3dd Matrix33::row(int i) const
+{
+    return aV(i);
+}
+
 /**
  *  Get the i-th column vector
  **/
@@ -209,6 +214,11 @@ Vector3dd Matrix33::aV(int i) const
 Vector3dd Matrix33::aW(int i) const
 {
     return Vector3dd (a(0,i), a(1,i), a(2,i));
+}
+
+Vector3dd Matrix33::column(int i) const
+{
+    return aW(i);
 }
 
 /**
@@ -415,6 +425,12 @@ Matrix33 Matrix33::Scale3 (const Vector3dd& v)
             0,     0, v.z()
     );
 }
+
+Matrix33 Matrix33::Scale3(double s1, double s2, double s3)
+{
+    return Matrix33::Scale3(Vector3dd(s1, s2, s3));
+}
+
 
 /**
  * \brief This function returns a matrix with only 2 scale components

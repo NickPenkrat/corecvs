@@ -133,9 +133,8 @@ public:
 class BaseTimeStatisticsCollector
 {
 public:
+    /** Types **/
     typedef map<string, UnitedStat> StatsMap;
-
-    StatsMap sumValues;
 
     /* Class for filtering */
     class OrderFilter
@@ -145,7 +144,7 @@ public:
         {
             return false;
         }
-        virtual ~OrderFilter() {};
+        virtual ~OrderFilter() {}
     };
 
     class StringFilter : public OrderFilter {
@@ -164,13 +163,12 @@ public:
 
     };
 
+
+    StatsMap sumValues;
     // TODO: it's unsafe to copy this
     vector<OrderFilter *> mOrderFilters;
 
-    BaseTimeStatisticsCollector()
-    {
-
-    }
+    BaseTimeStatisticsCollector() {}
 
     virtual void reset()
     {

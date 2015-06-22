@@ -24,6 +24,7 @@ namespace corecvs
 class Mesh3D {
 public:
     friend class PLYLoader;
+    friend class STLLoader;
 
     Mesh3D() :
         centralPoint(0.0),
@@ -96,12 +97,14 @@ public:
     int addPoint(Vector3dd point);
 
     void addLine(Vector3dd point1, Vector3dd point2);
+    void addTriangle(Vector3dd point1, Vector3dd point2, Vector3dd point3);
 
     void addSphere(Vector3dd center, double radius, int step);
 
     void addCamera(const CameraIntrinsics &cam, double len);
 
-    void add2AxisEllipse (const EllipticalApproximation3d &approx);
+    void add2AxisEllipse  (const EllipticalApproximation3d &approx);
+    void addMatrixSurface (double *data, int h, int w);
 
     /* For abstract painter */
     typedef int InternalElementType;

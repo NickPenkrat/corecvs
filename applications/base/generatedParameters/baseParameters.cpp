@@ -46,7 +46,12 @@ int BaseParameters::staticInit()
           "rotation",
           "rotation",
           "rotation",
-           NULL
+          new EnumReflection(4
+          , new EnumOption(0,"No rotation")
+          , new EnumOption(1,"Clockwise 90deg")
+          , new EnumOption(2,"Clockwise 180deg")
+          , new EnumOption(3,"Clockwise 270deg")
+          )
         )
     );
     fields().push_back(
@@ -101,7 +106,10 @@ int BaseParameters::staticInit()
           1,
           "downsample",
           "downsample",
-          "Prescale coefficient for input image"
+          "Prescale coefficient for input image",
+          true,
+         0.5,
+         16
         )
     );
     fields().push_back(
@@ -112,7 +120,10 @@ int BaseParameters::staticInit()
           640,
           "h",
           "h",
-          "Input crop height"
+          "Input crop height",
+          true,
+         0,
+         2024
         )
     );
     fields().push_back(
@@ -123,7 +134,10 @@ int BaseParameters::staticInit()
           480,
           "w",
           "w",
-          "Input crop width"
+          "Input crop width",
+          true,
+         0,
+         4096
         )
     );
     fields().push_back(
@@ -156,7 +170,10 @@ int BaseParameters::staticInit()
           0,
           "x",
           "x",
-          "Scaled image horizonal shift before crop"
+          "Scaled image horizonal shift before crop",
+          true,
+         0,
+         1024
         )
     );
     fields().push_back(
@@ -167,7 +184,10 @@ int BaseParameters::staticInit()
           0,
           "y",
           "y",
-          "Scaled image vertical shift before crop"
+          "Scaled image vertical shift before crop",
+          true,
+         0,
+         2048
         )
     );
     fields().push_back(
@@ -179,7 +199,12 @@ int BaseParameters::staticInit()
           "InterpolationType",
           "InterpolationType",
           "InterpolationType",
-           NULL
+          new EnumReflection(4
+          , new EnumOption(0,"Nearest")
+          , new EnumOption(1,"Bilinear")
+          , new EnumOption(2,"Bilinear Fixed8")
+          , new EnumOption(3,"Hardware")
+          )
         )
     );
    return 0;

@@ -6,27 +6,10 @@
 #include <QtGui>
 #include <QtXml/QDomDocument>
 
+#include "graphData.h"
 #include "ui_graphPlotDialog.h"
 
 using namespace std;
-
-class GraphValue
-{
-public:
-    double value;
-    bool isValid;
-
-    explicit GraphValue(double _value, bool _isValid = true) :
-        value(_value), isValid(_isValid)
-    {}
-};
-
-class GraphHistory : public deque<GraphValue>
-{
-public:
-    bool isSelected;
-    QString name;
-};
 
 
 class GraphPlotDialog : public ViAreaWidget, public SaveableWidget
@@ -101,7 +84,7 @@ private:
     /* Draw line to monitor values */
     void drawGridFixLine(QPainter &painter);
 
-    void addNewGraphToUI(QString name, unsigned graphId);
+    void addNewGraphToUI(unsigned graphId);
 
     QSignalMapper *mUpDownMapper;
 //    ParametersMapperGraphPlot *mParamMapper;
