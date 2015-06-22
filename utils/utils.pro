@@ -6,9 +6,9 @@ exists(../../../config.pri) {
     message(Using local config)
     ROOT_DIR=..
 }
-!win32 {                                        # it dues to the "mocinclude.tmp" bug on win32!
+#!win32 {                                        # it dues to the "mocinclude.tmp" bug on win32!
     ROOT_DIR=$$PWD/$$ROOT_DIR
-}
+#}
 include($$ROOT_DIR/config.pri)
 
 
@@ -21,7 +21,7 @@ include($$UTILSDIR/utils.pri)                      # it uses UTILSDIR, TARGET an
 
 QT += gui
 
-CONFIG +=  with_filters with_widgets
+CONFIG +=  with_filters with_widgets with_graphs
 
 HEADERS += \    
     frames.h \
@@ -165,6 +165,9 @@ SOURCES += \
     filters/graph/g12PinPresentation.cpp \
     filters/graph/txtPinPresentation.cpp \
     filters/graph/compoundBlockPresentation.cpp \
+
+FORMS += \
+    filters/graph/filterGraphPresentation.ui \
 
 }
 
@@ -360,6 +363,8 @@ HEADERS += \
     filters/graph/diagramscene.h \
     filters/graph/arrow.h \
     filters/graph/diagramtextitem.h \
+    \
+    filters/graph/filterGraphPresentation.h \
 
 SOURCES += \
     filters/filterSelector.cpp \
@@ -371,9 +376,12 @@ SOURCES += \
     filters/graph/arrow.cpp \
     filters/graph/diagramtextitem.cpp \
     filters/graph/diagramscene.cpp \
+    \
+    filters/graph/filterGraphPresentation.cpp \
 
 FORMS += \
     filters/filterSelector.ui \
+    \
     filters/graph/filterGraphPresentation.ui \
 
 }
