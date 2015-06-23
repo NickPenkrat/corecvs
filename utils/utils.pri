@@ -50,7 +50,7 @@ INCLUDEPATH += $$UTILS_INCLUDEPATH
 
 QT += xml gui widgets
 
-unix {
+unix:!macx {
     QT += x11extras
 }
 
