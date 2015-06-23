@@ -46,17 +46,18 @@ FilePreciseCapture::FramePair FilePreciseCapture::getFrame()
             printf("prec: grabbing left  :%s\n", leftFileName.c_str());
 
         result.bufferLeft    = BufferFactory::getInstance()->loadG12Bitmap(leftFileName.c_str());
-        result.leftTimeStamp = mTimeStamp;
+        result.timeStampLeft = mTimeStamp;
 
         string rightFileName = getImageFileName(mCurrentCount, 1);
         if (mVerbose)
             printf("prec: grabbing right :%s, %d\n", rightFileName.c_str(), mShouldSkipUnclaimed != false);
 
         result.bufferRight    = BufferFactory::getInstance()->loadG12Bitmap(rightFileName.c_str());
-        result.rightTimeStamp = mTimeStamp;
+        result.timeStampRight = mTimeStamp;
 
-        if (!mShouldSkipUnclaimed)
+        if (!mShouldSkipUnclaimed) {
             increaseImageFileCounter();
+        }
     mProtectFrame.unlock();
 
     return result;

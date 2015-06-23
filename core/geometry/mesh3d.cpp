@@ -83,7 +83,7 @@ void Mesh3D::addAOB(const AxisAlignedBox3d &box, bool addFaces)
 int Mesh3D::addPoint(Vector3dd point)
 {
      addVertex(point);
-     return vertexes.size() - 1;
+     return (int)vertexes.size() - 1;
 }
 
 void Mesh3D::addLine(Vector3dd point1, Vector3dd point2)
@@ -358,7 +358,7 @@ Mesh3D Mesh3D::transformed(const Matrix44 &matrix)
 
 void Mesh3D::add(const Mesh3D &other)
 {
-    int newZero = vertexes.size();
+    int newZero = (int)vertexes.size();
     vertexes.reserve(vertexes.size() + other.vertexes.size());
     faces.reserve(faces.size() + other.faces.size());
     edges.reserve(edges.size() + other.edges.size());

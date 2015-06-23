@@ -874,7 +874,6 @@ G12Buffer *MjpegDecoderLazy::decode(unsigned char *buf)
                  idct(decdata->dcts + 192, decdata->out + 320, decdata->dquant[2], IFIX(0.5)  , max[5]);
 */
                  yuv422ptoG12(decdata->out, toReturn, my * 8, mx * 16);
-
              }
          }
 
@@ -915,6 +914,4 @@ error:
     delete[] scans;
     delete decdata;
     return toReturn;
-
-
 }

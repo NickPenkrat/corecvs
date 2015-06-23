@@ -122,9 +122,9 @@ public:
     public:
         MulticameraTriangulator *mTriangulator;
 
-        CostFunction(MulticameraTriangulator *triang) :
-            FunctionArgs(Vector3dd::LENGTH, triang->P.size() * 2),
-            mTriangulator(triang)
+        CostFunction(MulticameraTriangulator *triang)
+            : FunctionArgs(Vector3dd::LENGTH, (int)triang->P.size() * 2)
+            , mTriangulator(triang)
         {}
 
         virtual void operator()(const double in[], double out[]);

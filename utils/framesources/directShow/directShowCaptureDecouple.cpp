@@ -174,13 +174,13 @@ ALIGN_STACK_SSE void DirectShowCaptureDecoupleInterface::memberCallback(DSCapDev
 ImageCaptureInterface::FramePair DirectShowCaptureDecoupleInterface::getFrame()
 {
     protectFrame.lock();
-    FramePair result(NULL, NULL);
-    uint8_t *ptr = cameras[0].rawBuffer;
+        FramePair result;
 
-    DecoupleYUYV::decouple(height, width, ptr, coupling, result);
+        uint8_t *ptr = cameras[0].rawBuffer;
+        DecoupleYUYV::decouple(height, width, ptr, coupling, result);
 
-    result.leftTimeStamp = cameras[0].timestamp;
-    result.rightTimeStamp = cameras[0].timestamp;
+        result.timeStampLeft  =
+        result.timeStampRight = cameras[0].timestamp;
     protectFrame.unlock();
     return result;
 }
@@ -245,15 +245,10 @@ int DirectShowCaptureDecoupleInterface::devicesNumber()
 ImageCaptureInterface::CapErrorCode DirectShowCaptureDecoupleInterface::getCaptureName(QString &value)
 {
     char *name = NULL;
-    DirectShowCapDll_deviceName(cameras[0].deviceHandle, &name);
-    string str;
-    int k = 0;
-    while (name[k] != '\0')
-    {
-        str += name[k];
-        k += 2;
-    }
-    value = strdup(str.c_str());
+    if (DirectShowCapDll_deviceName(cameras[0].deviceHandle, &name))
+        return ImageCaptureInterface::FAILURE;
+
+    value = name;
     return ImageCaptureInterface::SUCCESS;
 }
 

@@ -47,15 +47,15 @@ public:
 
     CaptureStatistics &operator +=(const CaptureStatistics &toAdd)
     {
-        values += toAdd.values;
+        values         += toAdd.values;
         framesSkipped  += toAdd.framesSkipped;
         triggerSkipped += toAdd.triggerSkipped;
-        temperature[0] = toAdd.temperature[0];
-        temperature[1] = toAdd.temperature[1];
+        temperature[0]  = toAdd.temperature[0];
+        temperature[1]  = toAdd.temperature[1];
         return *this;
     }
 
-    CaptureStatistics &operator /= ( int frames )
+    CaptureStatistics &operator /=(int frames)
     {
         values /= frames;
         return *this;
@@ -73,7 +73,7 @@ public:
     {
         SUCCESS       = 0,
         SUCCESS_1CAM  = 1,
-        FAILURE      = 2
+        FAILURE       = 2
     };
 
     enum CapCameraId
@@ -98,7 +98,6 @@ public:
      * Used to pass capture parameters in set/get requests
      *
      **/
-
     enum CapPropertyAccessType
     {
         ACCESS_NONE         = 0x00,
@@ -113,28 +112,50 @@ public:
     class FramePair
     {
     public:
-        G12Buffer* bufferRight;       /**< Pointer to right gray scale buffer*/
-        G12Buffer* bufferLeft;        /**< Pointer to left  gray scale buffer*/
+        G12Buffer   *bufferLeft;      /**< Pointer to left  gray scale buffer*/
+        G12Buffer   *bufferRight;     /**< Pointer to right gray scale buffer*/
         RGB24Buffer *rgbBufferLeft;
         RGB24Buffer *rgbBufferRight;
-        uint64_t   leftTimeStamp;    /**< Timestamp for left image */
-        uint64_t   rightTimeStamp;   /**< Timestamp for right image */
+        uint64_t     timeStampLeft;
+        uint64_t     timeStampRight;
 
-        FramePair(
-            G12Buffer* _bufferLeft = NULL,
-            G12Buffer* _bufferRight = NULL,
-            RGB24Buffer *_rgbBufferLeft = NULL,
-            RGB24Buffer *_rgbBufferRight = NULL
-        ) :
-              bufferRight(_bufferRight)
-            , bufferLeft (_bufferLeft )
+        FramePair(G12Buffer   *_bufferLeft     = NULL
+                , G12Buffer   *_bufferRight    = NULL
+                , RGB24Buffer *_rgbBufferLeft  = NULL
+                , RGB24Buffer *_rgbBufferRight = NULL)
+            : bufferLeft (_bufferLeft )
+            , bufferRight(_bufferRight)
             , rgbBufferLeft(_rgbBufferLeft)
             , rgbBufferRight(_rgbBufferRight)
-            , leftTimeStamp (0)
-            , rightTimeStamp(0)
+            , timeStampLeft(0)
+            , timeStampRight(0)
         {}
 
-        bool hasBoth() const    { return bufferLeft && bufferRight; }
+        bool allocBuffers(uint height, uint width, bool shouldInit = false)
+        {
+            freeBuffers();
+            bufferLeft  = new G12Buffer(height, width, shouldInit);
+            bufferRight = new G12Buffer(height, width, shouldInit);
+            return hasBoth() && bufferLeft->isAllocated() && bufferRight->isAllocated();
+        }
+
+        void freeBuffers()
+        {
+            if (bufferLeft  != NULL) delete_safe(bufferLeft);
+            if (bufferRight != NULL) delete_safe(bufferRight);
+        }
+
+        FramePair clone() const
+        {
+            FramePair result(new G12Buffer(bufferLeft), new G12Buffer(bufferRight));
+            result.timeStampLeft  = timeStampLeft;
+            result.timeStampRight = timeStampRight;
+            return result;
+        }
+
+        bool        hasBoth() const         { return bufferLeft != NULL && bufferRight != NULL; }
+        uint64_t    timeStamp() const       { return timeStampLeft / 2 + timeStampRight / 2;    }
+        int64_t     diffTimeStamps() const  { return timeStampLeft     - timeStampRight;        }
     };
 
     static bool isRgb;
@@ -149,7 +170,6 @@ public:
 signals:
     void    newFrameReady(frame_data_t frameData);
     void    newImageReady();
-
     void    newStatisticsReady(CaptureStatistics stats);
     void    streamPaused();
 
@@ -209,6 +229,5 @@ protected:
      *  Internal function to trigger frame notify signal
      **/
     virtual void notifyAboutNewFrame(frame_data_t frameData);
-
 
 };

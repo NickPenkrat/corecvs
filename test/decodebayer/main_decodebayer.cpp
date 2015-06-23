@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QThread>
-#include <unistd.h>
+//#include <unistd.h>
 
 #include "decoupleYUYV.h"
 #include "bmpLoader.h"

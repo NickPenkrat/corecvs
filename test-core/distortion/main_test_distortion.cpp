@@ -106,7 +106,7 @@ void testRadialJacobian(void)
 
 }
 
-int main (int /*argC*/, char **/*argV*/)
+int main (int /*argC*/, char ** /*argV*/)
 {
 //    cout << "testRadialModel" << endl;
 //    testRadialModel();
