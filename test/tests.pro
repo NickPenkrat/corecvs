@@ -12,7 +12,7 @@ TEMPLATE = subdirs
 SUBDIRS +=       \
     grab         \
     grab_N_captures \
-#   serialize1   \
+    serialize1   \
     adoptcolor   \
 #    avigrab     \
     decodebayer \
