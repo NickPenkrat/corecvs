@@ -12,16 +12,18 @@ TEMPLATE = subdirs
 SUBDIRS +=          \
     grab            \
     grab_N_captures \
+    opencvLineDetector \
     xmlserialize    \
-    adoptcolor      \
+#    adoptcolor      \
 #    avigrab         \
     topcon          \
-    decodebayer     \
+#    decodebayer     \
 
 
 
 grab.file            = grab/grab.pro
 grab_N_captures.file = grab_N_captures/grab_N_captures.pro
+opencvLineDetector.file = opencvLineDetector/opencvLineDetector.pro
 xmlserialize.file    = xmlserialize/xmlserialize.pro
 adoptcolor.file      = adoptcolor/adoptcolor.pro
 avigrab.file         = avigrab/avigrab.pro

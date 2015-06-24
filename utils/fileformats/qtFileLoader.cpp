@@ -106,11 +106,15 @@ RGB24Buffer *QTFileLoader::RGB24BufferFromQImage(QImage *image)
     return result;
 }
 
-void QTFileLoader::save(string name, RGB24Buffer *input)
+void QTFileLoader::save(const std::string& name, RGB24Buffer *input)
 {
-    QString fileName = QString::fromStdString(name);
-    QImageWriter imageWriter(fileName);
+    save(name, input, 95);
+}
+
+void QTFileLoader::save(const std::string& name, RGB24Buffer *input, int quality)
+{
+    QImageWriter imageWriter(QString(name.c_str()));
     RGB24InterfaceImage imageToSave(input);
-    imageWriter.setQuality(95);
+    imageWriter.setQuality(quality);
     imageWriter.write(imageToSave);
 }

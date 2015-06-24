@@ -167,6 +167,6 @@ int main(int argc, char **argv)
         frameToSkipList.push_back(&frameToSkip);
     }
 
-    QTimer::singleShot(4000, &app, SLOT(quit()));
+    QTimer::singleShot(10000, &app, SLOT(quit()));
     return app.exec();
 }

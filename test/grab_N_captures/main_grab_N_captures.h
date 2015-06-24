@@ -67,7 +67,7 @@ private:
     {
         ASSERT_TRUE(resultRGB != NULL, "Null buffer could not be saved");
         QString filename = "snapshot_" + suffix + ".jpg";
-        QTFileLoader().save(filename.toStdString(), resultRGB);
+        QTFileLoader().save(filename.toStdString(), resultRGB, 100);
         printf("File <%s> saved!\n", filename.toStdString().c_str());
     }
 };
