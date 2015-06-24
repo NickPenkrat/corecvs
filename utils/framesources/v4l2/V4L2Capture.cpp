@@ -45,6 +45,36 @@ V4L2CaptureInterface::V4L2CaptureInterface(string _devname, bool isRgb)
     setConfigurationString(_devname);
 }
 
+V4L2CaptureInterface::V4L2CaptureInterface(string _devname, int h, int w, int fps, bool isRgb)
+    : spin(this),  mIsRgb(isRgb)
+{
+    interfaceName = QString("%1:1/%2:yuyv:%3x%4").arg(_devname.c_str()).arg(fps).arg(w).arg(h).toStdString();
+    deviceName[Frames::LEFT_FRAME] =  _devname;
+    cameraMode.fpsnum   = 1;
+    cameraMode.fpsdenum = fps;
+    cameraMode.width = w;
+    cameraMode.height = h;
+    cameraMode.compressed = false;
+}
+
+V4L2CaptureInterface::V4L2CaptureInterface(string _devname, ImageCaptureInterface::CameraFormat format, bool isRgb)
+    : spin(this),  mIsRgb(isRgb)
+{
+    interfaceName = QString("%1:1/%2:yuyv:%3x%4").arg(_devname.c_str()).arg(format.fps).arg(format.width).arg(format.height).toStdString();
+    deviceName[Frames::LEFT_FRAME] =  _devname;
+    cameraMode.fpsnum   = 1;
+    cameraMode.fpsdenum = format.fps;
+    cameraMode.width = format.width;
+    cameraMode.height = format.height;
+    cameraMode.compressed = false;
+}
+
+/**
+ * Sets
+ *   interfaceName
+ *   deviceName
+ *
+ **/
 int V4L2CaptureInterface::setConfigurationString(string _devname)
 {
     this->interfaceName = _devname;
@@ -513,9 +543,9 @@ ImageCaptureInterface::CapErrorCode V4L2CaptureInterface::initCapture()
         camera[Frames::RIGHT_FRAME] = tmp;
     }
 
-    SYNC_PRINT(("Resume:\n"));
+    SYNC_PRINT(("Resumee:\n"));
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++) {
-        SYNC_PRINT(("Device %d (%s) init %s\n", i, deviceName[i].c_str(), initOk[i] ? "Ok" : "Fail"));
+        SYNC_PRINT(("  Device %d (%s) init %s\n", i, deviceName[i].c_str(), initOk[i] ? "Ok" : "Fail"));
     }
 
     if (initOk[Frames::LEFT_FRAME] && initOk[Frames::RIGHT_FRAME])
@@ -601,29 +631,37 @@ void V4L2CaptureInterface::getAllCameras(int *num, int *&cameras)
 
 
 
-void V4L2CaptureInterface::getAllCameras(int *num, string *&cameras)
+void V4L2CaptureInterface::getAllCameras(vector<std::string> &cameras, int maxDeviceId)
 {
-   /* vector<int> allCameras;
-    const int maxUsbPortNum = 2;
-    for (int i = 0; i < maxUsbPortNum; i ++)
+
+    for (int i = 0; i < maxDeviceId; i ++)
     {
+        /* Stupid C++99 */
         std::stringstream ss;
         ss << i;
         string dev = "/dev/video" + ss.str();
-        V4L2CameraDescriptor cameraDescriptor;
-        if (cameraDescriptor.initCamera(dev, 480, 640, 1, 30, false) == 0 ||
-            cameraDescriptor.initCamera(dev, 480, 640, 1, 30, true) == 0)
+
+        /* It is discussable if we should check initailization process */
+        bool isActive = false;
         {
-            allCameras.push_back(i);
+            V4L2CameraDescriptor cameraDescriptor;
+            if (cameraDescriptor.initCamera(dev, 480, 640, 1, 30, false) == 0) {
+                isActive = true;
+            }
         }
-    }
-    *num = allCameras.size();
-    cameras = new int[allCameras.size()];
-    for (unsigned i = 0; i < allCameras.size(); i ++)
-    {
-        cameras[i] = allCameras[i];
-    }*/
+        {
+            V4L2CameraDescriptor cameraDescriptor;
+            if (cameraDescriptor.initCamera(dev, 480, 640, 1, 30, true) == 0) {
+                isActive = true;
+            }
+        }
+
+        if (isActive) {
+            cameras.push_back(dev);
+        }
+    }   
 }
+
 
 
 void V4L2CaptureInterface::setCaptureDeviceParameters(const int handle, const int prop,

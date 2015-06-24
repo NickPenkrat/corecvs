@@ -15,6 +15,9 @@
 QDebug & operator<< (QDebug & stream, const corecvs::Vector2dd & vector);
 QDebug & operator<< (QDebug & stream, const corecvs::Vector3dd & vector);
 
+QDebug & operator<< (QDebug & stream, const corecvs::Vector2d<int> & vector);
+
+
 void setValueBlocking(QDoubleSpinBox *box, double value);
 
 /* EOF */
