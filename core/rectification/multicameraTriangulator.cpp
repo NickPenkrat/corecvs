@@ -198,7 +198,7 @@ void MulticameraTriangulator::CostFunction::operator()(const double in[], double
 
 
 
-Vector3dd MulticameraTriangulator::triangulateLM(Vector3dd initialGuess, bool */*ok*/)
+Vector3dd MulticameraTriangulator::triangulateLM(Vector3dd initialGuess, bool * /*ok*/)
 {
     LevenbergMarquardt LMfit;
     CostFunction F(this);

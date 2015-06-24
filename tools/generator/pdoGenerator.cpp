@@ -608,6 +608,31 @@ void PDOGenerator::generatePDOCpp()
     "          \""+descr+"\",\n"
     "          \""+comment+"\"";
 
+        if (type == BaseField::TYPE_INT) {
+            const IntField *ifield = static_cast<const IntField *>(field);
+            if (ifield->hasAdditionalValues)
+            {
+    result+=
+    ",\n"
+    "          true,\n"
+    "         " + QString::number(ifield->min) + ",\n"
+    "         " + QString::number(ifield->max);
+
+            }
+        }
+        if (type == BaseField::TYPE_DOUBLE) {
+            const DoubleField *dfield = static_cast<const DoubleField *>(field);
+            if (dfield->hasAdditionalValues)
+            {
+    result+=
+    ",\n"
+    "          true,\n"
+    "         " + QString::number(dfield->min) + ",\n"
+    "         " + QString::number(dfield->max);
+
+            }
+        }
+
 
     } else if (type == BaseField::TYPE_COMPOSITE) {
         const CompositeField *cfield = static_cast<const CompositeField *>(field);
@@ -628,8 +653,23 @@ void PDOGenerator::generatePDOCpp()
     "          \""+comment+"\"";
     }
 
-    if (type == BaseField::TYPE_ENUM || type == BaseField::TYPE_COMPOSITE) {
-    result+=
+    if (type == BaseField::TYPE_ENUM) {
+        const EnumField *efield = static_cast<const EnumField *>(field);
+        const EnumReflection *enumOptions = efield->enumReflection;
+        result+=
+                     ",\n";
+        result+=
+    "          new EnumReflection("+QString::number(enumOptions->options.size())+"\n" ;
+        for(int enumCount = 0; enumCount < enumOptions->options.size(); enumCount++)
+        {
+            const EnumOption *option = enumOptions->options[enumCount];
+            result+=
+    "          , new EnumOption("+QString::number(option->id)+",\""+option->name.name+"\")\n";
+        }
+        result+=
+    "          )\n";
+    } else if (type == BaseField::TYPE_COMPOSITE) {
+        result+=
                      ",\n"
     "           NULL\n";
     } else if (type == BaseField::TYPE_POINTER) {

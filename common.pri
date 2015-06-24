@@ -62,13 +62,11 @@ with_sse3 {
     !win32-msvc* {
         QMAKE_CFLAGS   += -msse3
         QMAKE_CXXFLAGS += -msse3
+    } else:!win32-msvc2008 {
+        QMAKE_CFLAGS   += /arch:SSE3
+        QMAKE_CXXFLAGS += /arch:SSE3
     } else {
-        !win32-msvc2008 {
-            QMAKE_CFLAGS   += /arch:SSE3
-            QMAKE_CXXFLAGS += /arch:SSE3
-        } else {
-            DEFINES -= WITH_SSE3
-        }
+        DEFINES -= WITH_SSE3
     }
 }
 with_sse4 {
@@ -77,13 +75,11 @@ with_sse4 {
     !win32-msvc* {
         QMAKE_CFLAGS   += -msse4.1
         QMAKE_CXXFLAGS += -msse4.1
+    } else:!win32-msvc2008 {
+        QMAKE_CFLAGS   += /arch:SSE4.1
+        QMAKE_CXXFLAGS += /arch:SSE4.1
     } else {
-        !win32-msvc2008 {
-            QMAKE_CFLAGS   += /arch:SSE4.1
-            QMAKE_CXXFLAGS += /arch:SSE4.1
-        } else {
-            DEFINES -= WITH_SSE4
-        }
+        DEFINES -= WITH_SSE4
     }
 }
 
@@ -301,7 +297,7 @@ build_pass :                          # must clean only for the concrete configu
     contains(TARGET, test_opencl) {
         QMAKE_DISTCLEAN += Makefile.opencl*
     }
-    contains(OBJ_TESTS_DIR, tests) {        # TARGET doesn't work as it has a name of each test!
+    contains(OBJ_TESTS_DIRNAME, tests) {    # TARGET doesn't work as it has a name of each test!
        #QMAKE_DISTCLEAN += Makefile*        # doesn't work as it tries to delete Makefile.unitTests.Debug/Release that are really used on distclean cmd!
         QMAKE_DISTCLEAN += Makefile Makefile.Debug Makefile.Release     # these files are generated indeed!
     }
@@ -388,7 +384,7 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
             LIBS        += -L"$$TBB_LIBDIR" -ltbb
             !build_pass: contains(TARGET, cvs_core): message(Using <$$TBB_LIBDIR>)
         } else {
-           !build_pass: message(TBB not found. Please set TBB_PATH system variable to a root folder of TBB)
+           !build_pass: message(TBB not found. Please set TBB_PATH system variable to a root folder of TBB to use it)
         }
     } else:macx {
         #message (Using TBB at $$TBB_PATH)

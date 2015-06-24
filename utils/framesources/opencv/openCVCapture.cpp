@@ -72,8 +72,7 @@ OpenCVCaptureInterface::OpenCVCaptureInterface(string _devname,  unsigned int mo
     captureRight = cvCaptureFromCAM(id2);
     SYNC_PRINT(("OpenCVCaptureInterface(): result is 0x%x\n", captureRight));
 
-
-    if ((captureLeft == NULL) && (captureRight == NULL))
+    if (captureLeft == NULL && captureRight == NULL)
     {
         printf("OpenCVCaptureInterface(): Both cameras failed to initialize");
         fflush(stdout);
@@ -81,10 +80,10 @@ OpenCVCaptureInterface::OpenCVCaptureInterface(string _devname,  unsigned int mo
     }
 
     // We assume that if there is only one camera active, it is the left camera
-    if (!captureLeft && captureRight)
+    if (captureLeft == NULL && captureRight != NULL)
     {
         captureLeft  = captureRight;
-        captureRight = 0;
+        captureRight = NULL;
     }
 
     delay = devStringPattern.cap(DELAY_GROUP).toInt(&err);
@@ -92,8 +91,7 @@ OpenCVCaptureInterface::OpenCVCaptureInterface(string _devname,  unsigned int mo
         delay = CAP_DEFAULT_DELAY;
     }
 
-    current.bufferLeft  = new G12Buffer(800, 600, false);
-    current.bufferRight = new G12Buffer(800, 600, false);
+    current.allocBuffers(800, 600);
 }
 
 void OpenCVCaptureInterface::SpinThread::run()
@@ -112,29 +110,24 @@ void OpenCVCaptureInterface::SpinThread::run()
         OpenCVCaptureInterface::FramePair *pair = &(mInterface->current);
 
         mInterface->protectFrame.lock();
-            delete_safe (pair->bufferLeft);
-            delete_safe (pair->bufferRight);
-            pair->bufferLeft  = new G12Buffer(height, width, false);
-            pair->bufferRight = new G12Buffer(height, width, false);
+            pair->allocBuffers(height, width);
 
             // OpenCV does not set timestamps for the frames
-            pair->leftTimeStamp  = count * 10;
-            pair->rightTimeStamp = count * 10;
+            pair->timeStampLeft = pair->timeStampRight = count * 10;
             count++;
 
-            if (mInterface->captureLeft)
+            if (mInterface->captureLeft != NULL)
             {
                 OpenCvHelper::captureImageCopyToBuffer(mInterface->captureLeft, pair->bufferLeft);
             }
-
-            if (mInterface->captureRight)
+            if (mInterface->captureRight != NULL)
             {
                 OpenCvHelper::captureImageCopyToBuffer(mInterface->captureRight, pair->bufferRight);
             }
         mInterface->protectFrame.unlock();
 
         frame_data_t frameData;
-        frameData.timestamp = (pair->leftTimeStamp / 2) + (pair->rightTimeStamp / 2);
+        frameData.timestamp = pair->timeStamp();
 
         //SYNC_PRINT(("OpenCVCaptureInterface::SpinThread::run(): notifyAboutNewFrame()\n"));
         mInterface->notifyAboutNewFrame(frameData);
@@ -158,16 +151,12 @@ OpenCVCaptureInterface::FramePair OpenCVCaptureInterface::getFrame()
 {
     SYNC_PRINT(("OpenCVCaptureInterface::SpinThread::getFrame(): called"));
     protectFrame.lock();
-        FramePair result;
-        result.bufferLeft     = new G12Buffer(current.bufferLeft);
-        result.bufferRight    = new G12Buffer(current.bufferRight);
-        result.leftTimeStamp  = current.leftTimeStamp;
-        result.rightTimeStamp = current.rightTimeStamp;
+        FramePair result = current.clone();
     protectFrame.unlock();
     return result;
 }
 
-ImageCaptureInterface::CapErrorCode OpenCVCaptureInterface::setCaptureProperty(int id, int value )
+ImageCaptureInterface::CapErrorCode OpenCVCaptureInterface::setCaptureProperty(int id, int value)
 {
     CORE_UNUSED(id);
     CORE_UNUSED(value);

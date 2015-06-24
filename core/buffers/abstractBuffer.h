@@ -32,6 +32,7 @@ namespace corecvs {
 using std::string;
 using std::cout;
 using std::endl;
+
 /**
  * This class holds the mapping function that is applied to the buffer element
  * to get another buffer element.
@@ -75,9 +76,8 @@ class DeformMap
 {
 public:
 
-    typedef Vector2d<InputIndexType> InputPoint;
+    typedef Vector2d<InputIndexType>   InputPoint;
     typedef Vector2d<OutputIndexType> OutputPoint;
-
 
     inline OutputPoint map(const InputIndexType & /*y*/, const InputIndexType & /*x*/) {}
 
@@ -90,7 +90,7 @@ public:
 };
 
 /**
- * These are useful methods to serialize integer types not depending of the current endianess
+ * These are useful methods to serialize integer types not depending on the current endianess
  */
 template <typename IntegerType>
 ostream& write_integer_bin(ostream& os, IntegerType value)

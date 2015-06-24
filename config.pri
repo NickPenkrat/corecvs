@@ -91,7 +91,7 @@ win32-msvc* {
                                 # it's not supported as delivered OpenCL.lib isn't compatible with the win32-mingw linker tool
 #    CONFIG += with_opencl       # opened as it's managed more carefully by the opencl project
 } else {
-#    CONFIG += with_opencl       # linux: opened for analysis on different GPUs (only nVidia) and CPUs
+#    CONFIG += with_opencl       # Linux: opened for analysis on different GPUs (only nVidia) and CPUs
 }
 
 # include standard part for any project that tunes some specific parameters that depend of the config been set above

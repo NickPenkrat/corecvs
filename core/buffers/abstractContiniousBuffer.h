@@ -327,7 +327,7 @@ public:
                 for (j = 0; j < newW - 1; j++)
                 {
                     Vector2dd p = map->map(i,j);
-                    if (buf->isValidCoordBl(p)) {
+                    if (buf->isValidCoordBl(p) && buf->isValidCoord(p.y() + 1, p.x() + 1)) {
                         toReturn->element(i,j) = buf->elementBl(p);
                     } else {
                         toReturn->element(i,j) = ElementType(0x0);
@@ -350,11 +350,11 @@ public:
      *         Output Buffer Width
      **/
     template<class ReturnType, class DeformMapType>
-    ReturnType *doReverseDeformationBl(const DeformMapType *map, IndexType newH, IndexType newW )
+    ReturnType *doReverseDeformationBl(const DeformMapType *map, IndexType newH, IndexType newW)
     {
         ReturnType *toReturn = new ReturnType(newH, newW);
         DOTRACE(("Starting transform to %d %d...\n", newW - 1, newH - 1));
-        parallelable_for((IndexType)0,(IndexType)(newH-1), ParallelDoReverseDeformationBl<ReturnType, DeformMapType>(toReturn, map, this));
+        parallelable_for((IndexType)0, (IndexType)(newH-1), ParallelDoReverseDeformationBl<ReturnType, DeformMapType>(toReturn, map, this));
         return toReturn;
     }
 
@@ -391,7 +391,7 @@ public:
                 for (j = 0; j < newW - 1; j++)
                 {
                     Vector2dd p = map.map(i,j);
-                    if (buf->isValidCoord(p.y(), p.x()) && buf->isValidCoord(p.y() + 1, p.x() + 1) )
+                    if (buf->isValidCoord(p.y(), p.x()))
                         toReturn->element(i,j) = buf->element(p.y(), p.x());
                     else
                         toReturn->element(i,j) = typename ReturnType::InternalElementType(0x0);

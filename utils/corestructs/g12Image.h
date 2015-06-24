@@ -13,7 +13,7 @@
 #include "g12Buffer.h"
 #include "rgb24Buffer.h"
 
-#include "viAreaWidget.h"
+//#include "viAreaWidget.h"
 
 using namespace corecvs;
 
@@ -45,19 +45,6 @@ public:
 QImage *toQImage(G12Buffer *buffer);
 QImage *toQImage(G8Buffer *buffer);
 QImage *toQImage(RGB24Buffer *buffer);
-
-class ImageWidget : public ViAreaWidget {
-public:
-    QImage *image;
-
-    ImageWidget() : image(NULL) {};
-    void setImage(QImage *_image);
-
-    virtual void paintEvent(QPaintEvent * );
-
-    ~ImageWidget(){};
-};
-
 
 
 class RGB24InterfaceImage : public QImage

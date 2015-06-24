@@ -76,7 +76,7 @@ public:
      *
      **/
 #ifdef WITH_TBB
-    BlockedRange(BlockedRange& r, split) :
+    BlockedRange(BlockedRange& r, tbb::split) :
         myGrainsize(r.myGrainsize)
     {
         myEnd = r.myEnd;

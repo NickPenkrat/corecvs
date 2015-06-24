@@ -46,7 +46,7 @@ vector<double> LevenbergMarquardt::fit(const vector<double> &input, const vector
     bool converged = false;
 
     double lambda = startLambda;
-    double maxlambda = std::numeric_limits<double>::max();
+    double maxlambda = maxLambda;
 
     for (int g = 0; (g < maxIterations) && (lambda < maxlambda) && !converged; g++)
     {
@@ -152,6 +152,10 @@ vector<double> LevenbergMarquardt::fit(const vector<double> &input, const vector
                     cout << "Accepted" << endl;
                 }
 
+                if (traceMatrix) {
+                    cout << "Old soluton:" << endl << beta << endl;
+                }
+
                 lambda /= lambdaFactor;
                 norm = normNew;
                 beta += delta;
@@ -161,13 +165,21 @@ vector<double> LevenbergMarquardt::fit(const vector<double> &input, const vector
                     normalisation->operator()(beta, normBeta);
                     beta = normBeta;
                 }
+
+                if (traceMatrix) {
+                    cout << "New soluton:" << endl << beta << endl;
+                }
                 break;
             }
             else
             {
                 if (trace) {
-                    cout << "Rejected lambda up" << endl;
+                    cout << "Rejected lambda old: "<< lambda << " lambda new:" << lambda * lambdaFactor << endl;
                 }
+                if (traceMatrix) {
+                    cout << "Keep soluton:" << endl << beta << endl;
+                }
+
                 lambda *= lambdaFactor;// Current solution is worse. Try new lambda
             }
         }

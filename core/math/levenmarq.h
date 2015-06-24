@@ -26,6 +26,7 @@ public:
     FunctionArgs *f;
     FunctionArgs *normalisation;
     double startLambda;
+    double maxLambda;
     double lambdaFactor;
     int maxIterations;
 
@@ -38,6 +39,7 @@ public:
         f(NULL),
         normalisation(NULL),
         startLambda(_startLambda),
+        maxLambda(std::numeric_limits<double>::max()),
         lambdaFactor(_lambdaFactor),
         maxIterations(_maxIterations),
 

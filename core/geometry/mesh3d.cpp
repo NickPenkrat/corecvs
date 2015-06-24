@@ -83,7 +83,7 @@ void Mesh3D::addAOB(const AxisAlignedBox3d &box, bool addFaces)
 int Mesh3D::addPoint(Vector3dd point)
 {
      addVertex(point);
-     return vertexes.size() - 1;
+     return (int)vertexes.size() - 1;
 }
 
 void Mesh3D::addLine(Vector3dd point1, Vector3dd point2)
@@ -96,6 +96,18 @@ void Mesh3D::addLine(Vector3dd point1, Vector3dd point2)
 
     addEdge(startId + Vector2d32(0, 1));
 
+}
+
+void Mesh3D::addTriangle(Vector3dd point1, Vector3dd point2, Vector3dd point3)
+{
+    int vectorIndex = (int)vertexes.size();
+    Vector3d32 startId(vectorIndex, vectorIndex, vectorIndex);
+
+    addVertex(point1);
+    addVertex(point2);
+    addVertex(point3);
+
+    addFace(startId + Vector3d32(0, 1, 2));
 }
 
 void Mesh3D::addSphere(Vector3dd center, double radius, int step)
@@ -186,6 +198,35 @@ void Mesh3D::add2AxisEllipse(const EllipticalApproximation3d &approx)
     }
 
 
+}
+
+void Mesh3D::addMatrixSurface(double *data, int h, int w)
+{
+    int vectorIndex = (int)vertexes.size();
+    Vector2d32 startId(vectorIndex, vectorIndex);
+
+
+    for(int i = 0; i < h; i++)
+    {
+        for(int j = 0; j < w; j++)
+        {
+            addVertex(Vector3dd(j, i, data[i * w + j]));
+        }
+    }
+
+    for(int i = 0; i < h; i++)
+    {
+        for(int j = 0; j < w; j++)
+        {
+            if (i > 0) {
+                addEdge(Vector2d32(i * w + j, (i - 1) * w + j    ) + startId);
+            }
+            if (j > 0) {
+                addEdge(Vector2d32(i * w + j,       i * w + j - 1) + startId);
+            }
+
+        }
+    }
 }
 
 void Mesh3D::drawLine(double x1, double y1, double x2, double y2, int /*color*/)
@@ -317,7 +358,7 @@ Mesh3D Mesh3D::transformed(const Matrix44 &matrix)
 
 void Mesh3D::add(const Mesh3D &other)
 {
-    int newZero = vertexes.size();
+    int newZero = (int)vertexes.size();
     vertexes.reserve(vertexes.size() + other.vertexes.size());
     faces.reserve(faces.size() + other.faces.size());
     edges.reserve(edges.size() + other.edges.size());

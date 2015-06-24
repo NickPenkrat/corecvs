@@ -11,7 +11,8 @@ ROOT_DIR=$$PWD/$$ROOT_DIR
 include($$ROOT_DIR/config.pri)
 
 TEMPLATE=app
-TARGET=test_topcon
+TARGET=test_serialize1
+QT += xml
 
 TEST_DIR = $$PWD
 #TEST_DIR = .
@@ -19,10 +20,7 @@ TEST_DIR = $$PWD
 UTILSDIR = $$TEST_DIR/../../utils
 include($$UTILSDIR/utils.pri)
 
-SOURCES += main_topcon.cpp \
-    multicameraScene.cpp \
-    commentFilter.cpp
 
-HEADERS += main_topcon.h \
-    multicameraScene.h \
-    commentFilter.h
+SOURCES += main_serialize1.cpp
+
+HEADERS += main_serialize1.h
