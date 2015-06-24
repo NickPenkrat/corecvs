@@ -600,6 +600,32 @@ void V4L2CaptureInterface::getAllCameras(int *num, int *&cameras)
 }
 
 
+
+void V4L2CaptureInterface::getAllCameras(int *num, string *&cameras)
+{
+   /* vector<int> allCameras;
+    const int maxUsbPortNum = 2;
+    for (int i = 0; i < maxUsbPortNum; i ++)
+    {
+        std::stringstream ss;
+        ss << i;
+        string dev = "/dev/video" + ss.str();
+        V4L2CameraDescriptor cameraDescriptor;
+        if (cameraDescriptor.initCamera(dev, 480, 640, 1, 30, false) == 0 ||
+            cameraDescriptor.initCamera(dev, 480, 640, 1, 30, true) == 0)
+        {
+            allCameras.push_back(i);
+        }
+    }
+    *num = allCameras.size();
+    cameras = new int[allCameras.size()];
+    for (unsigned i = 0; i < allCameras.size(); i ++)
+    {
+        cameras[i] = allCameras[i];
+    }*/
+}
+
+
 void V4L2CaptureInterface::setCaptureDeviceParameters(const int handle, const int prop,
                                                       const int32_t val, int &res, const char* text) const
 {
