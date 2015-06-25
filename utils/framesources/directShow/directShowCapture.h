@@ -17,6 +17,7 @@
 #include "directShow.h"
 #include "imageCaptureInterface.h"
 #include "preciseTimer.h"
+#include "../../frames.h"
 
 #include "cameraControlParameters.h"
 
@@ -33,7 +34,9 @@ using namespace std;
     /* Main fields */
     QMutex protectFrame;
     string devname;  /**< Stores the device name*/
-    DirectShowCameraDescriptor cameras[2];
+    DirectShowCameraDescriptor cameras[Frames::MAX_INPUTS_NUMBER];
+    CaptureTypeFormat format[Frames::MAX_INPUTS_NUMBER];
+    int deviceID[Frames::MAX_INPUTS_NUMBER];
 
     /* Statistics fields */
     PreciseTimer lastFrameTime;
@@ -47,6 +50,10 @@ using namespace std;
     /* Maximum allowed desync */
     unsigned int delay;
     DirectShowCaptureInterface(string _devname);
+    DirectShowCaptureInterface(string _devname, int h, int w, int fps, bool isRgb);
+    DirectShowCaptureInterface(string _devname, ImageCaptureInterface::CameraFormat format, bool isRgb);
+
+
     virtual FramePair getFrame();
 
     virtual CapErrorCode initCapture();
@@ -58,6 +65,8 @@ using namespace std;
     virtual CapErrorCode getCaptureName(QString &value);
     virtual CapErrorCode getFormats(int *num, CameraFormat *&format);
     virtual CapErrorCode getDeviceName(int num, QString &name);
+
+    static void getAllCameras(vector<std::string> &cameras);
 
     virtual ~DirectShowCaptureInterface();
 

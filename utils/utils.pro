@@ -21,7 +21,8 @@ include($$UTILSDIR/utils.pri)                      # it uses UTILSDIR, TARGET an
 
 QT += gui
 
-CONFIG +=  with_filters with_widgets with_graphs
+CONFIG += with_filters
+CONFIG += with_widgets
 
 #
 # In global scope we have non UI classes
