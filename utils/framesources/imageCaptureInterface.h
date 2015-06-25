@@ -128,13 +128,15 @@ public:
             freeBuffers();
             bufferLeft  = new G12Buffer(height, width, shouldInit);
             bufferRight = new G12Buffer(height, width, shouldInit);
-            return hasBoth() && bufferLeft->isAllocated() && bufferRight->isAllocated();
+            return hasBoth();
         }
 
         void freeBuffers()
         {
             if (bufferLeft  != NULL) delete_safe(bufferLeft);
             if (bufferRight != NULL) delete_safe(bufferRight);
+            if (rgbBufferLeft  != NULL) delete_safe(rgbBufferLeft);
+            if (rgbBufferRight != NULL) delete_safe(rgbBufferRight);
         }
 
         FramePair clone() const
