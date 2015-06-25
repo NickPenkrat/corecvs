@@ -69,6 +69,9 @@ class ImageCaptureInterface : public QObject
     Q_OBJECT
 
 public:
+    /**
+     *   Error code for init functions
+     **/
     enum CapErrorCode
     {
         SUCCESS       = 0,
@@ -82,17 +85,6 @@ public:
         CAMERA_RIGHT  = 0x10,
         CAMERA_BOTH   = 0x11
     };
-
-    /**
-     *  This structure will hold the rational number
-     *  for the FPS
-     *
-     **/
-    typedef struct
-    {
-        uint16_t num;    /**< the numerator*/
-        uint16_t denom;  /**< the denominator*/
-    } fps_t;
 
     /**
      * Used to pass capture parameters in set/get requests
@@ -196,6 +188,9 @@ public:
 
     virtual CapErrorCode getCaptureName(QString &value);
 
+    /**
+     *  Enumrates camera formats
+     **/
     virtual CapErrorCode getFormats(int *num, CameraFormat *&);
 
     /**

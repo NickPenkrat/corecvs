@@ -28,6 +28,9 @@ class V4L2CaptureInterface : public ImageCaptureInterface
 {
 public:
     V4L2CaptureInterface(string _devname, bool isRgb = false);
+    V4L2CaptureInterface(string _devname, int h, int w, int fps, bool isRgb = false);
+    V4L2CaptureInterface(string _devname, CameraFormat format, bool isRgb = false);
+
     virtual ~V4L2CaptureInterface();
 
     virtual int setConfigurationString(string _devname);
@@ -51,6 +54,10 @@ public:
     virtual CapErrorCode getDeviceName(int num, QString &name);
 
     static void getAllCameras(int *num, int *&cameras);
+
+    static const int MAX_SCAN_DEVICE_ID = 20;
+    static void getAllCameras(vector<std::string> &cameras, int maxDeviceId = MAX_SCAN_DEVICE_ID);
+
 
     enum DecoderType{
         UNCOMPRESSED,
