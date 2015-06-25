@@ -14,7 +14,7 @@
 
 #include "V4L2.h"
 
-#define PROFILE_DEQUEUE
+//#define PROFILE_DEQUEUE
 #ifdef PROFILE_DEQUEUE
 #define TRACE_DEQUEUE(X) printf X
 #else
@@ -587,7 +587,9 @@ int V4L2CameraDescriptor::getCaptureName(string &name)
 
 int V4L2CameraDescriptor::getCaptureFormats(int *num, ImageCaptureInterface::CameraFormat *&formats)
 {
+    SYNC_PRINT(("V4L2CameraDescriptor::getCaptureFormats()"));
     if (deviceHandle == INVALID_HANDLE) {
+        SYNC_PRINT(("V4L2CameraDescriptor::getCaptureFormats(): deviceHandle == INVALID_HANDLE"));
         return -1;
     }
     vector<ImageCaptureInterface::CameraFormat> cameraFormats;
