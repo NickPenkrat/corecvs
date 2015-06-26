@@ -187,7 +187,7 @@ void DirectShowCaptureInterface::callback (void *thiz, DSCapDeviceId dev, FrameD
 
 ALIGN_STACK_SSE void DirectShowCaptureInterface::memberCallback(DSCapDeviceId dev, FrameData data)
 {
-    //SYNC_PRINT(("Received new frame in a member %d\n", dev));
+    SYNC_PRINT(("Received new frame in a member %d\n", dev));
     protectFrame.lock();
 
     DirectShowCameraDescriptor *camera = NULL;
@@ -307,24 +307,30 @@ ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::startCapture()
 
 DirectShowCaptureInterface::~DirectShowCaptureInterface()
 {
-    if (!isRunning)
-        return;
+    if (isRunning)
+    {
         /*
             Callback is set safe and synchroniously,
             so after the call of the callback reset, we will never again
-            recive a frame. So it will be safe to destroy the object
+            receive a frame. So it will be safe to destroy the object
         */
-    if (isCorrectDeviceHandle(0))
-    {
-        DirectShowCapDll_setFrameCallback(cameras[0].deviceHandle, NULL, NULL);
-        DirectShowCapDll_stop(cameras[0].deviceHandle);
+        for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
+        {
+            if (isCorrectDeviceHandle(i))
+                DirectShowCapDll_stop(cameras[i].deviceHandle);
+        }
+        isRunning = false;
     }
-    if (isCorrectDeviceHandle(1))
+
+    for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
     {
-        DirectShowCapDll_setFrameCallback(cameras[1].deviceHandle, NULL, NULL);
-        DirectShowCapDll_stop(cameras[1].deviceHandle);
+        if (isCorrectDeviceHandle(i))
+        {
+            DirectShowCapDll_setFrameCallback(cameras[i].deviceHandle, NULL, NULL);
+            DirectShowCapDll_deinit(cameras[i].deviceHandle);
+            cameras[i].deviceHandle = -1;
+        }
     }
-    isRunning = false;
 }
 
 
