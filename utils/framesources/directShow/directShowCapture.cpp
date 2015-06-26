@@ -26,7 +26,7 @@ const char* DirectShowCaptureInterface::codec_names[] =
     "mjpeg fast decoder"
 };
 
-void DirectShowCaptureInterface::init(const string &_devname, int h, int w, int fps, bool isRgb, int compressed)
+void DirectShowCaptureInterface::init(const string &_devname, int h, int w, int fps, bool _isRgb, int compressed)
 {
     this->devname = QString("%1:1/%2:yuyv:%3x%4").arg(_devname.c_str()).arg(fps).arg(w).arg(h).toStdString();
 
@@ -34,6 +34,7 @@ void DirectShowCaptureInterface::init(const string &_devname, int h, int w, int 
     deviceID[Frames::RIGHT_FRAME] = -1;
 
     this->compressed = compressed;
+    this->isRgb = _isRgb;
 
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
     {
@@ -60,6 +61,7 @@ DirectShowCaptureInterface::DirectShowCaptureInterface(string _devname, ImageCap
 }
 
 DirectShowCaptureInterface::DirectShowCaptureInterface(string _devname)
+    : isRgb(false)
 {
     this->devname = _devname;
 
@@ -178,14 +180,14 @@ ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::initCapture()
     return ImageCaptureInterface::FAILURE;
 }
 
-void DirectShowCaptureInterface::callback (void *thiz, DSCapDeviceId dev, FrameData data)
+void DirectShowCaptureInterface::callback(void *thiz, DSCapDeviceId dev, FrameData data)
 {
-    //printf("Received new frame in a callback\n");
+    SYNC_PRINT(("Received new frame in a callback\n"));
     DirectShowCaptureInterface *pInterface = static_cast<DirectShowCaptureInterface *>(thiz);
     pInterface->memberCallback(dev, data);
 }
 
-ALIGN_STACK_SSE void DirectShowCaptureInterface::memberCallback(DSCapDeviceId dev, FrameData data)
+/*ALIGN_STACK_SSE*/ void DirectShowCaptureInterface::memberCallback(DSCapDeviceId dev, FrameData data)
 {
     SYNC_PRINT(("Received new frame in a member %d\n", dev));
     protectFrame.lock();
@@ -202,17 +204,24 @@ ALIGN_STACK_SSE void DirectShowCaptureInterface::memberCallback(DSCapDeviceId de
         PreciseTimer timer = PreciseTimer::currentTime();
         camera->gotBuffer = true;
         camera->timestamp = (data.timestamp + 5) / 10;
-        delete camera->buffer;
+        delete_safe (camera->buffer);
+        delete_safe (camera->buffer24);
 
         if (data.format.type == CAP_YUV)
         {
+
             camera->buffer = new G12Buffer(data.format.height, data.format.width, false);
             camera->buffer->fillWithYUYV((uint16_t *)data.data);
+            if (isRgb)
+            {
+                camera->buffer24 = new RGB24Buffer(camera->buffer);
+            }
         }
         else if (data.format.type == CAP_MJPEG)
         {
-            MjpegDecoderLazy lazyDecoder;
-            camera->buffer = lazyDecoder.decode((unsigned char *)data.data);
+            MjpegDecoderLazy *lazyDecoder = new MjpegDecoderLazy;
+            camera->buffer = lazyDecoder->decode((unsigned char *)data.data);
+            delete lazyDecoder;
         }
         else if (data.format.type == CAP_RGB)
         {
@@ -263,7 +272,10 @@ ALIGN_STACK_SSE void DirectShowCaptureInterface::memberCallback(DSCapDeviceId de
             newStatisticsReady(stats);
         }
         else {
-            emit newImageReady();
+            frame_data_t frameData;
+            frameData.timestamp = cameras[0].timestamp;
+            newFrameReady(frameData);
+            //newStatisticsReady(stats);
             skippedCount++;
         }
     }
@@ -289,6 +301,35 @@ ImageCaptureInterface::FramePair DirectShowCaptureInterface::getFrame()
     protectFrame.unlock();
     return result;
 }
+
+
+ImageCaptureInterface::FramePair DirectShowCaptureInterface::getFrame24()
+{
+    protectFrame.lock();
+        FramePair result;
+        if (cameras[0].buffer != NULL)
+        {
+            result.bufferLeft = new G12Buffer(cameras[0].buffer);
+        }
+        if (cameras[1].buffer != NULL)
+        {
+            result.bufferRight = new G12Buffer(cameras[1].buffer);
+        }
+        if (cameras[0].buffer24 != NULL)
+        {
+            result.rgbBufferLeft = new G12Buffer(cameras[0].buffer24);
+        }
+        if (cameras[1].buffer24 != NULL)
+        {
+            result.rgbBufferRight = new G12Buffer(cameras[1].buffer24);
+        }
+
+        result.timeStampLeft  = cameras[0].timestamp;
+        result.timeStampRight = cameras[1].timestamp;
+    protectFrame.unlock();
+    return result;
+}
+
 
 ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::startCapture()
 {

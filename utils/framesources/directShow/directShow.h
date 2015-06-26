@@ -22,6 +22,7 @@ public:
     uint64_t timestamp;
     bool gotBuffer;
     G12Buffer *buffer;
+    RGB24Buffer *buffer24;
     uint8_t *rawBuffer;
     int height;
     int width;
@@ -42,6 +43,7 @@ public:
         timestamp(0),
         gotBuffer(false),
         buffer(NULL),
+        buffer24(NULL),
         rawBuffer(NULL),
         height(0),
         width(0)

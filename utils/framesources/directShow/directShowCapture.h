@@ -51,6 +51,7 @@ using namespace std;
     DirectShowCaptureInterface(string _devname, ImageCaptureInterface::CameraFormat format, bool isRgb);
 
     virtual FramePair    getFrame();
+    virtual FramePair    getFrame24();
 
     virtual CapErrorCode initCapture();
     virtual CapErrorCode startCapture();

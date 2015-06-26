@@ -152,7 +152,7 @@ public:
         int64_t     diffTimeStamps() const  { return timeStampLeft     - timeStampRight;        }
     };
 
-    static bool isRgb;
+    bool isRgb;
 
     struct CameraFormat
     {
