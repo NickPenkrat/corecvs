@@ -20,19 +20,20 @@
 
 const char* DirectShowCaptureInterface::codec_names[] =
 {
-        "yuv",
-        "rgb",
-        "mjpeg",
-        "mjpeg fast decoder"
+    "yuv",
+    "rgb",
+    "mjpeg",
+    "mjpeg fast decoder"
 };
 
-DirectShowCaptureInterface::DirectShowCaptureInterface(string _devname, int h, int w, int fps, bool isRgb)
+void DirectShowCaptureInterface::init(const string &_devname, int h, int w, int fps, bool isRgb, int compressed)
 {
     this->devname = QString("%1:1/%2:yuyv:%3x%4").arg(_devname.c_str()).arg(fps).arg(w).arg(h).toStdString();
-    deviceID[Frames::LEFT_FRAME] = atoi(_devname.c_str());
+
+    deviceID[Frames::LEFT_FRAME]  = atoi(_devname.c_str());
     deviceID[Frames::RIGHT_FRAME] = -1;
 
-    compressed = DirectShowCameraDescriptor::UNCOMPRESSED_YUV;
+    this->compressed = compressed;
 
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
     {
@@ -41,24 +42,21 @@ DirectShowCaptureInterface::DirectShowCaptureInterface(string _devname, int h, i
         format[i].width  = w;
         format[i].fps    = fps;
     }
+
+    skippedCount = 0;
+    isRunning = false;
+}
+
+DirectShowCaptureInterface::DirectShowCaptureInterface(string _devname, int h, int w, int fps, bool isRgb)
+{
+    init(_devname, h, w, fps, isRgb
+        , DirectShowCameraDescriptor::UNCOMPRESSED_YUV);
 }
 
 DirectShowCaptureInterface::DirectShowCaptureInterface(string _devname, ImageCaptureInterface::CameraFormat inFormat, bool isRgb)
 {
-    this->devname = QString("%1:1/%2:yuyv:%3x%4").arg(_devname.c_str()).arg(inFormat.fps).arg(inFormat.width).arg(inFormat.height).toStdString();
-    deviceID[Frames::LEFT_FRAME] = atoi(_devname.c_str());
-    deviceID[Frames::RIGHT_FRAME] = -1;
-
-    compressed = DirectShowCameraDescriptor::UNCOMPRESSED_YUV;
-
-    for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
-    {
-        format[i].type   = CAP_YUV;
-        format[i].height = inFormat.height;
-        format[i].width  = inFormat.width;
-        format[i].fps    = inFormat.fps;
-    }
-
+    init(_devname, inFormat.height, inFormat.width, inFormat.fps, isRgb
+        , DirectShowCameraDescriptor::UNCOMPRESSED_YUV);
 }
 
 DirectShowCaptureInterface::DirectShowCaptureInterface(string _devname)
@@ -137,7 +135,6 @@ DirectShowCaptureInterface::DirectShowCaptureInterface(string _devname)
     printf("Format is: %s\n", codec_names[compressed]);
 
     /* TODO: Make cycle here */
-
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
     {
         format[i].type   = formatId;
@@ -145,7 +142,6 @@ DirectShowCaptureInterface::DirectShowCaptureInterface(string _devname)
         format[i].width  = width;
         format[i].fps    = (int)((double)fpsdenum / fpsnum);
     }
-
 
     skippedCount = 0;
     isRunning = false;
@@ -155,7 +151,7 @@ ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::initCapture()
 {
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
     {
-        cameras[Frames::LEFT_FRAME ].deviceHandle =  deviceID[i] >= 0 ? DirectShowCapDll_initCapture(deviceID[i])  : -1;
+        cameras[i].deviceHandle = deviceID[i] >= 0 ? DirectShowCapDll_initCapture(deviceID[i]) : -1;
     }
 
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
@@ -171,10 +167,15 @@ ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::initCapture()
     printf("Real Formats:\n");
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
     {
-        DirectShowCapDll_printSimpleFormat(&format[i]); printf("\n");
+        DirectShowCapDll_printSimpleFormat(&format[i]);
+        printf("\n");
     }
 
-    return ImageCaptureInterface::SUCCESS;
+    if (isCorrectDeviceHandle(0) && isCorrectDeviceHandle(1))
+        return ImageCaptureInterface::SUCCESS;
+    if (isCorrectDeviceHandle(0) || isCorrectDeviceHandle(1))
+        return ImageCaptureInterface::SUCCESS_1CAM;
+    return ImageCaptureInterface::FAILURE;
 }
 
 void DirectShowCaptureInterface::callback (void *thiz, DSCapDeviceId dev, FrameData data)
@@ -229,11 +230,12 @@ ALIGN_STACK_SSE void DirectShowCaptureInterface::memberCallback(DSCapDeviceId de
                     uint16_t g = rgbData[1];
                     uint16_t b = rgbData[2];
                     *greyData = (11 * r + 16 * g + 5 * b) >> 1;
-                    rgbData +=3;
-                    greyData+=1;
+                    rgbData  += 3;
+                    greyData += 1;
                 }
             }
-        } else {
+        }
+        else {
             camera->buffer = new G12Buffer(data.format.height, data.format.width, false);
         }
 
@@ -244,7 +246,6 @@ ALIGN_STACK_SSE void DirectShowCaptureInterface::memberCallback(DSCapDeviceId de
         {
             cameras[0].gotBuffer = false;
             cameras[1].gotBuffer = false;
-
 
             CaptureStatistics stats;
             int64_t desync =  cameras[0].timestamp - cameras[1].timestamp;
@@ -260,7 +261,8 @@ ALIGN_STACK_SSE void DirectShowCaptureInterface::memberCallback(DSCapDeviceId de
             frameData.timestamp = cameras[0].timestamp / 2 + cameras[1].timestamp / 2;
             newFrameReady(frameData);
             newStatisticsReady(stats);
-        } else {
+        }
+        else {
             emit newImageReady();
             skippedCount++;
         }
@@ -324,7 +326,6 @@ DirectShowCaptureInterface::~DirectShowCaptureInterface()
     }
     isRunning = false;
 }
-
 
 
 ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::queryCameraParameters(CameraParameters &parameters)
@@ -433,7 +434,6 @@ void DirectShowCaptureInterface::getAllCameras(vector<string> &cameras)
         s << i;
         cameras.push_back(s.str());
     }
-
 }
 
 bool DirectShowCaptureInterface::isCorrectDeviceHandle(int cameraNum)

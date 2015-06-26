@@ -28,33 +28,29 @@ using namespace std;
  public:
     typedef ImageCaptureInterface::CapErrorCode CapErrorCode;
 
-    static const char* codec_names[];
-    int compressed;
+    static const char*          codec_names[];
+    int                         compressed;
 
     /* Main fields */
-    QMutex protectFrame;
-    string devname;  /**< Stores the device name*/
-    DirectShowCameraDescriptor cameras[Frames::MAX_INPUTS_NUMBER];
-    CaptureTypeFormat format[Frames::MAX_INPUTS_NUMBER];
-    int deviceID[Frames::MAX_INPUTS_NUMBER];
+    QMutex                      protectFrame;
+    string                      devname;  /**< Stores the device name*/
+    DirectShowCameraDescriptor  cameras [Frames::MAX_INPUTS_NUMBER];
+    CaptureTypeFormat           format  [Frames::MAX_INPUTS_NUMBER];
+    int                         deviceID[Frames::MAX_INPUTS_NUMBER];
 
     /* Statistics fields */
-    PreciseTimer lastFrameTime;
-    int skippedCount;
-    int isRunning;
-
-    /* Callback function */
-    static void callback (void *thiz, DSCapDeviceId dev, FrameData data);
-    void memberCallback(DSCapDeviceId dev, FrameData data);
+    PreciseTimer                lastFrameTime;
+    int                         skippedCount;
+    int                         isRunning;
 
     /* Maximum allowed desync */
-    unsigned int delay;
+    //unsigned int                delay;
+
     DirectShowCaptureInterface(string _devname);
     DirectShowCaptureInterface(string _devname, int h, int w, int fps, bool isRgb);
     DirectShowCaptureInterface(string _devname, ImageCaptureInterface::CameraFormat format, bool isRgb);
 
-
-    virtual FramePair getFrame();
+    virtual FramePair    getFrame();
 
     virtual CapErrorCode initCapture();
     virtual CapErrorCode startCapture();
@@ -66,11 +62,17 @@ using namespace std;
     virtual CapErrorCode getFormats(int *num, CameraFormat *&format);
     virtual CapErrorCode getDeviceName(int num, QString &name);
 
+    /* Callback function */
+    static void callback (void *thiz, DSCapDeviceId dev, FrameData data);
+    void memberCallback(DSCapDeviceId dev, FrameData data);
+
     static void getAllCameras(vector<std::string> &cameras);
 
     virtual ~DirectShowCaptureInterface();
 
  private:
+    void init(const string &_devname, int h, int w, int fps, bool isRgb, int compressed);
+
     bool isCorrectDeviceHandle(int cameraNum);
  };
 
