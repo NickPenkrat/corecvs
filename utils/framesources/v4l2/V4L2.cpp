@@ -14,6 +14,7 @@
 
 #include "V4L2.h"
 
+//#define PROFILE_DEQUEUE
 #ifdef PROFILE_DEQUEUE
 #define TRACE_DEQUEUE(X) printf X
 #else
@@ -332,7 +333,7 @@ int V4L2CameraDescriptor::dequeue( V4L2BufferDescriptor &bufferDescr)
     }
 
     queued--;
-    TRACE_DEQUEUE(("Dequeued %d (%x) [%d]\n", bufferDescr.index, cam->deviceHandle, cam->queued));
+    TRACE_DEQUEUE(("Dequeued %d (%x) [%d]\n", bufferDescr.index, deviceHandle, queued));
 
     bufferDescr.isFilled = true;
     return 0;
@@ -346,18 +347,18 @@ int V4L2CameraDescriptor::enqueue(V4L2BufferDescriptor buffer)
 
     if (!buffer.isFilled)
     {
-        printf("Empty Buffer. Will not enqueue\n");
+        printf("V4L2CameraDescriptor::enqueue():Empty Buffer. Will not enqueue\n");
         return 0;
     }
 
     if (ioctl (deviceHandle, VIDIOC_QBUF, &buffer) == -1)
     {
-        printf ("Unable to requeue buffer (%d).\n", errno);
+        printf ("V4L2CameraDescriptor::enqueue():Unable to requeue buffer (%d).\n", errno);
         return 1;
     }
 
     queued++;
-    TRACE_DEQUEUE(("Enqueued %d (%x) [%d]\n", buffer.index, cam->deviceHandle,  cam->queued));
+    TRACE_DEQUEUE(("Enqueued %d (%x) [%d]\n", buffer.index, deviceHandle,  queued));
     return 0;
 }
 
@@ -586,7 +587,9 @@ int V4L2CameraDescriptor::getCaptureName(string &name)
 
 int V4L2CameraDescriptor::getCaptureFormats(int *num, ImageCaptureInterface::CameraFormat *&formats)
 {
+    SYNC_PRINT(("V4L2CameraDescriptor::getCaptureFormats()"));
     if (deviceHandle == INVALID_HANDLE) {
+        SYNC_PRINT(("V4L2CameraDescriptor::getCaptureFormats(): deviceHandle == INVALID_HANDLE"));
         return -1;
     }
     vector<ImageCaptureInterface::CameraFormat> cameraFormats;

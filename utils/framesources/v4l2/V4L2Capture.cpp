@@ -50,6 +50,9 @@ V4L2CaptureInterface::V4L2CaptureInterface(string _devname, int h, int w, int fp
 {
     interfaceName = QString("%1:1/%2:yuyv:%3x%4").arg(_devname.c_str()).arg(fps).arg(w).arg(h).toStdString();
     deviceName[Frames::LEFT_FRAME] =  _devname;
+
+    decoder = UNCOMPRESSED;
+
     cameraMode.fpsnum   = 1;
     cameraMode.fpsdenum = fps;
     cameraMode.width = w;
@@ -62,6 +65,9 @@ V4L2CaptureInterface::V4L2CaptureInterface(string _devname, ImageCaptureInterfac
 {
     interfaceName = QString("%1:1/%2:yuyv:%3x%4").arg(_devname.c_str()).arg(format.fps).arg(format.width).arg(format.height).toStdString();
     deviceName[Frames::LEFT_FRAME] =  _devname;
+
+    decoder = UNCOMPRESSED;
+
     cameraMode.fpsnum   = 1;
     cameraMode.fpsdenum = format.fps;
     cameraMode.width = format.width;
@@ -228,7 +234,7 @@ V4L2CaptureInterface::FramePair V4L2CaptureInterface::getFrameRGB24()
         decodeDataRGB24(&camera[i],  &currentFrame[i],  results[i]);
 
         if ((*results[i]) == NULL) {
-            printf("V4L2CaptureInterface::getFrameRGB24(): Precrash condition\n");
+            printf("V4L2CaptureInterface::getFrameRGB24(): Precrash condition at %d (%s)\n", i, Frames::getEnumName((Frames::FrameSourceId)i));
         }
     }
 
@@ -456,11 +462,20 @@ void V4L2CaptureInterface::decodeDataRGB24(V4L2CameraDescriptor *camera, V4L2Buf
             *output = new G12Buffer(formatH, formatW, false);
             (*output)->fillWithYUYV(ptrDecoded);
             free(ptrDecoded);*/
+            SYNC_PRINT(("V4L2CaptureInterface::decodeDataRGB24(): COMPRESSED_JPEG not supported"));
+
         }
         break;
         case CODEC_NUMBER:
+            SYNC_PRINT(("V4L2CaptureInterface::decodeDataRGB24(): CODEC_NUMBER not supported"));
+            break;
         case COMPRESSED_FAST_JPEG:
-        break;
+            SYNC_PRINT(("V4L2CaptureInterface::decodeDataRGB24(): COMPRESSED_JPEG not supported"));
+            break;
+        default:
+            SYNC_PRINT(("V4L2CaptureInterface::decodeDataRGB24(): %d decoder not supported", decoder));
+            break;
+
     }
 }
 

@@ -47,7 +47,6 @@ public:
         width(0)
     {}
 
-
 private:
     static void setFromCameraParam(CaptureParameter &param,CameraParameter &camParam);
 
@@ -55,9 +54,6 @@ public:
     int queryCameraParameters(CameraParameters &parameters);
     int setCaptureProperty(int id, int value);
     int getCaptureProperty(int id, int *value);
-
-
 };
 
 /* EOF */
-
