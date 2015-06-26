@@ -1,6 +1,7 @@
 #include <stdio.h>
+#ifndef WIN32
 #include <unistd.h>
-
+#endif
 #include <QtXml/QDomDocument>
 
 #include "vector3d.h"
@@ -105,7 +106,7 @@ void testJSON1()
 
 
 
-int main (int /*argc*/, char **/*argv*/)
+int main (int /*argc*/, char ** /*argv*/)
 {
     printf("Quick test\n");
 
