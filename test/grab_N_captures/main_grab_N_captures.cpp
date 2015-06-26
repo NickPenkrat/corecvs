@@ -14,6 +14,17 @@
 #include "main_grab_N_captures.h"
 #include "cameraControlParameters.h"
 
+/* Temporary solution. This need to be hidden inside image capture interface */
+#ifdef Q_OS_WIN
+#ifdef WITH_DIRECTSHOW
+#include "directShowCapture.h"
+#define CAPTURE_INTERFACE DirectShowCaptureInterface
+#endif
+#else
+#include "V4L2Capture.h"
+#define CAPTURE_INTERFACE V4L2CaptureInterface
+#endif
+
 
 static bool getIntCmdOption(const std::string & value, const std::string & option, int *param)
 {
@@ -35,6 +46,8 @@ static bool cmdIfHelp(char** begin, char** end, const std::string& option)
 int main(int argc, char **argv)
 {
     bool info = false;
+    bool getParam = false;
+
     QCoreApplication app(argc, argv);
 
     if (cmdIfHelp(argv, argv + argc, "--help"))
@@ -74,14 +87,17 @@ int main(int argc, char **argv)
 
         if (getIntCmdOption(argv[i], "--exposure:", &exposure))
         {
+            getParam = true;
             printf("EXPOSURE %i \n", exposure);
         }
         else if (getIntCmdOption(argv[i], "--whiteBalance:", &whiteBalance))
         {
+            getParam = true;
             printf("WHITE_BALANCE %i \n", whiteBalance);
         }
         else if (getIntCmdOption(argv[i], "--gain:", &gain))
         {
+            getParam = true;
             printf("GAIN %i \n", gain);
         }
         else
@@ -91,33 +107,40 @@ int main(int argc, char **argv)
         }
     }
 
+    Waiter *waiter = new Waiter;
+
     for (int i = 0; i < deviceNames.size(); i++)
     {
         char * captureString = deviceNames[i];
         printf("Attempting a grab 1 __________    %s    _________\n", captureString);
 
-        int frameToSkip = 8;
-        ImageCaptureInterface *input = ImageCaptureInterface::fabric(captureString, 1);
-        ImageCaptureInterface::CapErrorCode res = input->initCapture();
+        Waiter::CameraDescriptor camDesc;
+        camDesc.camId = i;
 
-        if (ImageCaptureInterface::FAILURE == res)
+        camDesc.input = new CAPTURE_INTERFACE(
+                        captureString,
+                        1944,
+                        2592,
+                        8, true);
+        camDesc.result = NULL;
+        camDesc.toSkip = 10;
+
+        ImageCaptureInterface::CapErrorCode result = camDesc.input->initCapture();
+        if (result != ImageCaptureInterface::SUCCESS_1CAM)
         {
-            printf("BaseHostDialog::initCapture(): Error: none of the capture devices started.\n");
+            printf("I can`t open the camera %s", captureString);
             return 0;
+        }else{
+            printf("Camera %s init success", captureString);
         }
-        if (ImageCaptureInterface::SUCCESS_1CAM == res)
-        {
-            printf("BaseHostDialog::initCapture(): Will be using only one capture device.\n");
-        }
-
-        Waiter *waiter = new Waiter;
-        waiter->input = input;
-        waiter->frameToSkip = &frameToSkip;
-
-        QObject::connect(input, SIGNAL(newFrameReady(frame_data_t)), waiter, SLOT(onFrameReady()));
+        waiter->mCaptureInterfaces.append(camDesc);
+        QObject::connect(camDesc.input, SIGNAL(newFrameReady(frame_data_t)), waiter->mCaptureMapper, SLOT(map()));
+        waiter->mCaptureMapper->setMapping(camDesc.input, waiter->mCaptureInterfaces.count() - 1);
 
         CameraParameters mCameraParameters;
-        input->queryCameraParameters(mCameraParameters);
+        if(getParam){
+            camDesc.input->queryCameraParameters(mCameraParameters);
+        }
 
         if (info)
         {
@@ -144,29 +167,36 @@ int main(int argc, char **argv)
 
         if (exposure > -1)
         {
-            input->setCaptureProperty(mCameraParameters.EXPOSURE_AUTO, 0);
-            input->setCaptureProperty(mCameraParameters.EXPOSURE, exposure);
+            camDesc.input->setCaptureProperty(mCameraParameters.EXPOSURE_AUTO, 0);
+            camDesc.input->setCaptureProperty(mCameraParameters.EXPOSURE, exposure);
             printf("EXPOSURE %i set.\n", exposure);
         }
         if (gain > -1)
         {
-            input->setCaptureProperty(mCameraParameters.GAIN_AUTO, 0);
-            input->setCaptureProperty(mCameraParameters.GAIN, gain);
+            camDesc.input->setCaptureProperty(mCameraParameters.GAIN_AUTO, 0);
+            camDesc.input->setCaptureProperty(mCameraParameters.GAIN, gain);
             printf("GAIN %i set.\n", gain);
         }
         if (whiteBalance > -1)
         {
-            input->setCaptureProperty(mCameraParameters.AUTO_WHITE_BALANCE, 0);
-            input->setCaptureProperty(mCameraParameters.WHITE_BALANCE, whiteBalance);
+            camDesc.input->setCaptureProperty(mCameraParameters.AUTO_WHITE_BALANCE, 0);
+            camDesc.input->setCaptureProperty(mCameraParameters.WHITE_BALANCE, whiteBalance);
             printf("WB %i set.\n", whiteBalance);
         }
 
-        input->startCapture();
 
-        captures.push_back(input);
-        frameToSkipList.push_back(&frameToSkip);
     }
 
-    QTimer::singleShot(4000, &app, SLOT(quit()));
+    if (!waiter->mCaptureInterfaces.empty())
+    {
+
+        qDebug() << "Starting first camera";
+        waiter->mCurrentCam = 0;
+        waiter->mCaptureInterfaces[0].input->startCapture();
+    } else {
+        waiter->finilizeCapture();
+    }
+
+    QTimer::singleShot(20000, &app, SLOT(quit()));
     return app.exec();
 }
