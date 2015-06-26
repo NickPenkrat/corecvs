@@ -75,6 +75,8 @@ using namespace std;
     void init(const string &_devname, int h, int w, int fps, bool isRgb, int compressed);
 
     bool isCorrectDeviceHandle(int cameraNum);
+
+    bool mIsRgb;
  };
 
 #endif /* _DIRECT_SHOW_CVCAPTURE_H_ */

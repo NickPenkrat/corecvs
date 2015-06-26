@@ -61,7 +61,7 @@ DirectShowCaptureInterface::DirectShowCaptureInterface(string _devname, ImageCap
 }
 
 DirectShowCaptureInterface::DirectShowCaptureInterface(string _devname)
-    : isRgb(false)
+    : mIsRgb(false)
 {
     this->devname = _devname;
 
@@ -317,11 +317,11 @@ ImageCaptureInterface::FramePair DirectShowCaptureInterface::getFrame24()
         }
         if (cameras[0].buffer24 != NULL)
         {
-            result.rgbBufferLeft = new G12Buffer(cameras[0].buffer24);
+            result.rgbBufferLeft = new RGB24Buffer(cameras[0].buffer24);
         }
         if (cameras[1].buffer24 != NULL)
         {
-            result.rgbBufferRight = new G12Buffer(cameras[1].buffer24);
+            result.rgbBufferRight = new RGB24Buffer(cameras[1].buffer24);
         }
 
         result.timeStampLeft  = cameras[0].timestamp;
