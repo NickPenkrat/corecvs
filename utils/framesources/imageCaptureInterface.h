@@ -142,6 +142,10 @@ public:
         FramePair clone() const
         {
             FramePair result(new G12Buffer(bufferLeft), new G12Buffer(bufferRight));
+            if (rgbBufferLeft != NULL)
+                result.rgbBufferLeft = new RGB24Buffer(rgbBufferLeft);
+            if (rgbBufferRight != NULL)
+                result.rgbBufferRight = new RGB24Buffer(rgbBufferRight);
             result.timeStampLeft  = timeStampLeft;
             result.timeStampRight = timeStampRight;
             return result;
@@ -152,7 +156,7 @@ public:
         int64_t     diffTimeStamps() const  { return timeStampLeft     - timeStampRight;        }
     };
 
-    bool isRgb;
+    bool mIsRgb;
 
     struct CameraFormat
     {
@@ -175,14 +179,12 @@ public:
      *  Fabric to create particular implementation of the capturer
      **/
     static ImageCaptureInterface *fabric(string input, bool isRgb = false);
+
     /**
      *  Main function to request frames from image interface
      **/
     virtual FramePair    getFrame() = 0;
-    virtual FramePair    getFrameRGB24()
-    {
-        return getFrame();
-    }
+    virtual FramePair    getFrameRGB24()    { return getFrame(); }
 
     virtual CapErrorCode setCaptureProperty(int id, int value);
 
@@ -191,7 +193,7 @@ public:
     virtual CapErrorCode getCaptureName(QString &value);
 
     /**
-     *  Enumrates camera formats
+     *  Enumerates camera formats
      **/
     virtual CapErrorCode getFormats(int *num, CameraFormat *&);
 

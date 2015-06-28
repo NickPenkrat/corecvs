@@ -134,7 +134,4 @@ private:
     uint64_t skippedCount;
 
     uint64_t maxDesync; /**< Maximum de-synchronization that we will not attempt to correct */
-
-    bool mIsRgb;
-
 };
