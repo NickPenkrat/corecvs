@@ -155,6 +155,7 @@ DirectShowCaptureInterface::DirectShowCaptureInterface(string _devname, bool isR
 
 ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::initCapture()
 {
+    int res;
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
     {
         cameras[i].deviceHandle = deviceID[i] >= 0 ? DirectShowCapDll_initCapture(deviceID[i]) : -1;
@@ -166,8 +167,8 @@ ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::initCapture()
         {
             continue;
         }
-        DirectShowCapDll_setFormat(cameras[i].deviceHandle, &format[i]);
-        DirectShowCapDll_setFrameCallback(cameras[i].deviceHandle, this, DirectShowCaptureInterface::callback);
+        res = DirectShowCapDll_setFormat(cameras[i].deviceHandle, &format[i]);
+        res = DirectShowCapDll_setFrameCallback(cameras[i].deviceHandle, this, DirectShowCaptureInterface::callback);
     }
 
     printf("Real Formats:\n");
