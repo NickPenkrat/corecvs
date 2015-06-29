@@ -218,6 +218,7 @@ ALIGN_STACK_SSE void DirectShowCaptureInterface::memberCallback(DSCapDeviceId de
             if (mIsRgb)
             {
                 camera->buffer24 = new RGB24Buffer(camera->buffer);
+                camera->buffer24->fillWithYUYV((uint8_t *)data.data);
             }
         }
         else if (data.format.type == CAP_MJPEG)
