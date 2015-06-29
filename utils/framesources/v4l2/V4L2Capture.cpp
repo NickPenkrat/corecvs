@@ -40,38 +40,41 @@ const char* V4L2CaptureInterface::CODEC_NAMES[] =
 STATIC_ASSERT(CORE_COUNT_OF(V4L2CaptureInterface::CODEC_NAMES) == V4L2CaptureInterface::CODEC_NUMBER, wrong_codec_names_number);
 
 V4L2CaptureInterface::V4L2CaptureInterface(string _devname, bool isRgb)
-    : spin(this), mIsRgb(isRgb)
+    : spin(this)
 {
+    mIsRgb = isRgb;
     setConfigurationString(_devname);
 }
 
 V4L2CaptureInterface::V4L2CaptureInterface(string _devname, int h, int w, int fps, bool isRgb)
-    : spin(this),  mIsRgb(isRgb)
+    : spin(this)
 {
+    mIsRgb = isRgb;
     interfaceName = QString("%1:1/%2:yuyv:%3x%4").arg(_devname.c_str()).arg(fps).arg(w).arg(h).toStdString();
     deviceName[Frames::LEFT_FRAME] =  _devname;
 
     decoder = UNCOMPRESSED;
 
-    cameraMode.fpsnum   = 1;
-    cameraMode.fpsdenum = fps;
-    cameraMode.width = w;
-    cameraMode.height = h;
+    cameraMode.fpsnum     = 1;
+    cameraMode.fpsdenum   = fps;
+    cameraMode.width      = w;
+    cameraMode.height     = h;
     cameraMode.compressed = false;
 }
 
 V4L2CaptureInterface::V4L2CaptureInterface(string _devname, ImageCaptureInterface::CameraFormat format, bool isRgb)
-    : spin(this),  mIsRgb(isRgb)
+    : spin(this)
 {
+    mIsRgb = isRgb;
     interfaceName = QString("%1:1/%2:yuyv:%3x%4").arg(_devname.c_str()).arg(format.fps).arg(format.width).arg(format.height).toStdString();
     deviceName[Frames::LEFT_FRAME] =  _devname;
 
     decoder = UNCOMPRESSED;
 
-    cameraMode.fpsnum   = 1;
-    cameraMode.fpsdenum = format.fps;
-    cameraMode.width = format.width;
-    cameraMode.height = format.height;
+    cameraMode.fpsnum     = 1;
+    cameraMode.fpsdenum   = format.fps;
+    cameraMode.width      = format.width;
+    cameraMode.height     = format.height;
     cameraMode.compressed = false;
 }
 
@@ -118,7 +121,7 @@ int V4L2CaptureInterface::setConfigurationString(string _devname)
         deviceStringPattern.cap(WidthGroup)   .toLatin1().constData(),
         deviceStringPattern.cap(HeightGroup)  .toLatin1().constData(),
         deviceStringPattern.cap(CompressionGroup).toLatin1().constData(),
-        isRgb ? "on" : "off"
+        mIsRgb ? "on" : "off"
     );
 
     deviceName[Frames::RIGHT_FRAME] = deviceStringPattern.cap(Device1Group).toLatin1().constData();

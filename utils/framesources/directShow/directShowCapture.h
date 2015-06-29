@@ -29,7 +29,7 @@ using namespace std;
     typedef ImageCaptureInterface::CapErrorCode CapErrorCode;
 
     static const char*          codec_names[];
-    int                         compressed;
+    int                         mCompressed;
 
     /* Main fields */
     QMutex                      protectFrame;
@@ -46,11 +46,12 @@ using namespace std;
     /* Maximum allowed desync */
     //unsigned int                delay;
 
-    DirectShowCaptureInterface(string _devname);
+    DirectShowCaptureInterface(string _devname, bool isRgb = false);
     DirectShowCaptureInterface(string _devname, int h, int w, int fps, bool isRgb);
     DirectShowCaptureInterface(string _devname, ImageCaptureInterface::CameraFormat format, bool isRgb);
 
     virtual FramePair    getFrame();
+    virtual FramePair    getFrameRGB24();
 
     virtual CapErrorCode initCapture();
     virtual CapErrorCode startCapture();

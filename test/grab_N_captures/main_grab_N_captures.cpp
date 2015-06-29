@@ -184,14 +184,17 @@ int main(int argc, char **argv)
             printf("WB %i set.\n", whiteBalance);
         }
 
-        if (!waiter->mCaptureInterfaces.empty())
-        {
-            waiter->mCurrentCam = 0;
-            waiter->mCaptureInterfaces[0].input->startCapture();
-        } else {
-            waiter->finilizeCapture();
-        }
 
+    }
+
+    if (!waiter->mCaptureInterfaces.empty())
+    {
+
+        qDebug() << "Starting first camera";
+        waiter->mCurrentCam = 0;
+        waiter->mCaptureInterfaces[0].input->startCapture();
+    } else {
+        waiter->finilizeCapture();
     }
 
     QTimer::singleShot(20000, &app, SLOT(quit()));

@@ -51,7 +51,7 @@ void Frames::fetchNewFrames(ImageCaptureInterface *input)
 {
     SYNC_PRINT(("Frames::fetchNewFrames():Swapped is %d\n", mSwapped));
 
-    ImageCaptureInterface::FramePair pair = input->isRgb ? input->getFrameRGB24() : input->getFrame();
+    ImageCaptureInterface::FramePair pair = input->mIsRgb ? input->getFrameRGB24() : input->getFrame();
     if (!pair.hasBoth())
     {
         printf("Alert: We have received one or zero frames\n");
@@ -67,7 +67,7 @@ void Frames::fetchNewFrames(ImageCaptureInterface *input)
     currentFrames[LEFT_FRAME]  = mSwapped ? pair.bufferRight : pair.bufferLeft;
     currentFrames[RIGHT_FRAME] = mSwapped ? pair.bufferLeft  : pair.bufferRight;
 
-    if (input->isRgb)
+    if (input->mIsRgb)
     {
 //        printf("Frames::fetchNewFrames() : rgb\n");
         currentRgbFrames[LEFT_FRAME]  = mSwapped ? pair.rgbBufferRight : pair.rgbBufferLeft;

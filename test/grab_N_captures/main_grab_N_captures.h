@@ -14,7 +14,16 @@ class Waiter : public QObject
     Q_OBJECT
 
 public:
-    Waiter() {}
+    Waiter()
+    {
+        mCaptureMapper = new QSignalMapper();
+        connect(mCaptureMapper, SIGNAL(mapped(int)), this, SLOT(onFrameReady(int)));
+    }
+
+    ~Waiter()
+    {
+        delete mCaptureMapper;
+    }
 
     struct CameraDescriptor {
         int camId;
@@ -38,6 +47,7 @@ void finilizeCapture()
                 .arg(mCaptureInterfaces[i].camId)
                 .arg(0);
         mCaptureInterfaces[i].result->save(name);
+        qDebug() << "Saving " << name;
         delete_safe(mCaptureInterfaces[i].result);
     }
 
@@ -47,6 +57,8 @@ void finilizeCapture()
 public slots:
     void onFrameReady(int camId)
     {
+         qDebug() << "Frame ready for cam " << camId;
+
         /* This protects the events from flooding input queue */
         static bool flushEvents = false;
         if (flushEvents) {
