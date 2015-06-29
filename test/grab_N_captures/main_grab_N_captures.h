@@ -1,10 +1,12 @@
 #include "global.h"
+#include <QtCore/qcoreapplication.h>
 #include <QtCore/QObject>
-//#include <QtCore/QThread>
-//#include <QtCore/QMutex>
 #include "imageCaptureInterface.h"
-//#include "bmpLoader.h"
 #include "qtFileLoader.h"
+#include "qtHelper.h"
+#include <QSignalMapper>
+#include "log.h"
+#include "g12Image.h"
 
 
 class Waiter : public QObject
@@ -14,60 +16,91 @@ class Waiter : public QObject
 public:
     Waiter() {}
 
-    ImageCaptureInterface *input;
-    int *frameToSkip;
+    struct CameraDescriptor {
+        int camId;
+        int toSkip;
+        ImageCaptureInterface *input;
+        QImage *result;
+    };
 
-public slots:
-    void onFrameReady()
+    QSignalMapper *mCaptureMapper;
+    int mCurrentCam;
+    QList<CameraDescriptor> mCaptureInterfaces;
+
+
+void finilizeCapture()
+{
+    /* Save images here */
+    for (int i = 0; i < mCaptureInterfaces.count(); i++)
     {
-        (*frameToSkip)--;
-        if (*frameToSkip != 1)
-            return;
-
-        SYNC_PRINT(("Hello from onFrameReady()\n"));
-        QString captureName;
-        QString leftDeviceName;
-        QString rightDeviceName;
-
-        ImageCaptureInterface::FramePair pair = input->isRgb ? input->getFrameRGB24() : input->getFrame();
-
-        input->getCaptureName(captureName);
-        input->getDeviceName(0, leftDeviceName);
-        input->getDeviceName(1, rightDeviceName);
-
-        leftDeviceName  = leftDeviceName .replace("/", "_");
-        rightDeviceName = rightDeviceName.replace("/", "_");
-
-        if (pair.bufferLeft != NULL) {
-            RGB24Buffer* res = new RGB24Buffer(pair.bufferLeft);
-            saveToFile(res, captureName + "_" + leftDeviceName);
-            delete_safe(res);
-        }
-
-        if (pair.bufferRight != NULL) {
-            RGB24Buffer* res = new RGB24Buffer(pair.bufferRight);
-            saveToFile(res, captureName + "_" + rightDeviceName);
-            delete_safe(res);
-        }
-
-        if (pair.rgbBufferLeft != NULL)
-            saveToFile(pair.rgbBufferLeft, captureName + "_" + leftDeviceName + "_RGB");
-
-        if (pair.rgbBufferRight != NULL)
-            saveToFile(pair.rgbBufferRight, captureName + "_" + rightDeviceName + "_RGB");
-
-        delete_safe(pair.bufferRight);
-        delete_safe(pair.bufferLeft);
-        delete_safe(pair.rgbBufferRight);
-        delete_safe(pair.rgbBufferLeft);
+        QString name = QString("SP%1%2_%3deg.jpg")
+                .arg("cam")
+                .arg(mCaptureInterfaces[i].camId)
+                .arg(0);
+        mCaptureInterfaces[i].result->save(name);
+        delete_safe(mCaptureInterfaces[i].result);
     }
 
-private:
-    void saveToFile(RGB24Buffer *resultRGB, const QString &suffix)
+    mCaptureInterfaces.clear();
+}
+
+public slots:
+    void onFrameReady(int camId)
     {
-        ASSERT_TRUE(resultRGB != NULL, "Null buffer could not be saved");
-        QString filename = "snapshot_" + suffix + ".jpg";
-        QTFileLoader().save(filename.toStdString(), resultRGB, 100);
-        printf("File <%s> saved!\n", filename.toStdString().c_str());
+        /* This protects the events from flooding input queue */
+        static bool flushEvents = false;
+        if (flushEvents) {
+            return;
+        }
+        flushEvents = true;
+        /* Flush all events in queue */
+        QCoreApplication::processEvents();
+        flushEvents = false;
+
+        if (camId != mCurrentCam) {
+            return;
+        }
+
+        /* Add frame skip */
+        if (mCaptureInterfaces[mCurrentCam].toSkip > 0)
+        {
+            mCaptureInterfaces[mCurrentCam].toSkip--;
+            return;
+        }
+
+        if (mCurrentCam >= mCaptureInterfaces.count())
+        {
+            SYNC_PRINT(("Internal problem"));
+        }
+
+        CameraDescriptor &descr = mCaptureInterfaces[mCurrentCam];
+        /* This could happen beacause of the old notifications */
+        if (descr.input == NULL)
+        {
+            L_INFO_P("Frame arrived after camera shutdown from %d", camId);
+            return;
+        }
+
+        ImageCaptureInterface::FramePair pair =  descr.input->getFrameRGB24();
+        if (pair.rgbBufferLeft == NULL) {
+            L_ERROR_P("Unexpected zero buffer form camera %d", camId);
+            pair.freeBuffers();
+            return;
+        }
+
+        mCaptureInterfaces[mCurrentCam].result = toQImage(pair.rgbBufferLeft);
+        pair.freeBuffers();
+
+        delete_safe(descr.input);
+
+        /* Last camera */
+        if (mCurrentCam == mCaptureInterfaces.size() - 1)
+        {
+            finilizeCapture();
+            return;
+        }
+
+        mCurrentCam++;
+        mCaptureInterfaces[mCurrentCam].input->startCapture();
     }
 };
