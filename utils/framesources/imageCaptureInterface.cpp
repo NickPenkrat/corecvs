@@ -56,15 +56,11 @@ char const *CaptureStatistics::names[] =
     "Frame Data size"
 };
 
-bool ImageCaptureInterface::isRgb = false;
-
 STATIC_ASSERT(CORE_COUNT_OF(CaptureStatistics::names) == CaptureStatistics::MAX_ID, wrong_comment_num_capture_stats);
 
 
 ImageCaptureInterface* ImageCaptureInterface::fabric(string input, bool isRGB)
 {
-    isRgb = isRGB;
-
     string file("file:");
     if (input.substr(0, file.size()).compare(file) == 0)
     {
@@ -83,7 +79,6 @@ ImageCaptureInterface* ImageCaptureInterface::fabric(string input, bool isRGB)
     string sync("sync:");
     if (input.substr(0, sync.size()).compare(sync) == 0)
     {
-        //isRgb = false;
         string tmp = input.substr(sync.size());
         return new SyncCamerasCaptureInterface(tmp);
     }
@@ -94,7 +89,7 @@ ImageCaptureInterface* ImageCaptureInterface::fabric(string input, bool isRGB)
     if (input.substr(0, v4l2.size()).compare(v4l2) == 0)
     {
         string tmp = input.substr(v4l2.size());
-        return new V4L2CaptureInterface(tmp, isRgb);
+        return new V4L2CaptureInterface(tmp, isRGB);
     }
 
     string v4l2d("v4l2d:");
@@ -119,7 +114,7 @@ ImageCaptureInterface* ImageCaptureInterface::fabric(string input, bool isRGB)
     if (input.substr(0, dshow.size()).compare(dshow) == 0)
     {
         string tmp = input.substr(dshow.size());
-        return new DirectShowCaptureInterface(tmp);
+        return new DirectShowCaptureInterface(tmp, isRGB);
     }
 
     string dshowd("dshowd:");
@@ -189,6 +184,7 @@ void ImageCaptureInterface::notifyAboutNewFrame(frame_data_t frameData)
 }
 
 ImageCaptureInterface::ImageCaptureInterface()
+   : mIsRgb(false)
 {
    qRegisterMetaType<frame_data_t>("frame_data_t");
 }

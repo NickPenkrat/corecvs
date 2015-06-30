@@ -30,3 +30,9 @@ void setValueBlocking(QDoubleSpinBox *box, double value)
     box->blockSignals(wasBlocked);
 }
 
+
+QDebug &operator<<(QDebug &stream, const corecvs::Vector2d<int> &vector)
+{
+    stream << "[" << vector.x() << "," << vector.y() << "]";
+    return stream;
+}
