@@ -15,7 +15,8 @@ SUBDIRS +=       \
     serialize1   \
     adoptcolor   \
 #    avigrab     \
-    decodebayer \
+    decodebayer  \
+    genvectorui  \
 
 
 
@@ -25,4 +26,4 @@ serialize1.file    = serialize1/serialize1.pro
 adoptcolor.file    = adoptcolor/adoptcolor.pro
 avigrab.file       = avigrab/avigrab.pro
 decodebayer.file   = decodebayer/decodebayer.pro
-
+genvectorui.file   = genvectorui/genvectorui.pro

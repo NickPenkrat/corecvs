@@ -164,7 +164,7 @@
           </size>
          </property>
          <property name="currentIndex">
-          <number>2</number>
+          <number>3</number>
          </property>
          <widget class="QWidget" name="tab_LevMarq">
           <property name="minimumSize">
@@ -928,7 +928,6 @@
  </customwidgets>
  <resources>
   <include location="../../resources/main.qrc"/>
-  <include location="../../resources/main.qrc"/>
  </resources>
  <connections>
   <connection>
@@ -938,8 +937,8 @@
    <slot>showBufferChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>299</x>
-     <y>86</y>
+     <x>418</x>
+     <y>376</y>
     </hint>
     <hint type="destinationlabel">
      <x>5</x>

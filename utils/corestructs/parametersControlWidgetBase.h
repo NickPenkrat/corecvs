@@ -130,11 +130,26 @@ class ParametersControlWidgetBase : public QWidget, public SaveableWidget
     Q_OBJECT
 
 public:
-    ParametersControlWidgetBase(QWidget *parent) : QWidget(parent) {};
+    ParametersControlWidgetBase(QWidget *parent = NULL) : QWidget(parent) {}
 
     virtual BaseReflectionStatic *createParametersVirtual() const;
     virtual ~ParametersControlWidgetBase();
 };
+
+class ParametersControlWidgetBaseFabric {
+public:
+    virtual ParametersControlWidgetBase *produce() = 0;
+};
+
+template <class WidgetToProduce>
+class ParametersControlWidgetBaseFabricImpl : public ParametersControlWidgetBaseFabric {
+public:
+    virtual ParametersControlWidgetBase *produce()
+    {
+        return new WidgetToProduce();
+    }
+};
+
 
 
 
