@@ -84,7 +84,8 @@ HEADERS += \
     statistics/graphData.h \
     corestructs/g12Image.h \
     visitors/jsonGetter.h \
-    visitors/jsonSetter.h
+    visitors/jsonSetter.h \
+    widgets/vectorWidget.h
 
 SOURCES += \
     frames.cpp \
@@ -141,7 +142,8 @@ SOURCES += \
     statistics/graphData.cpp \
     corestructs/g12Image.cpp \
     visitors/jsonGetter.cpp \
-    visitors/jsonSetter.cpp
+    visitors/jsonSetter.cpp \
+    widgets/vectorWidget.cpp
 
 
 
@@ -511,3 +513,6 @@ with_synccam {
 }
 
 OTHER_FILES += ../tools/generator/xml/draw3d.xml
+
+FORMS += \
+    widgets/vectorWidget.ui

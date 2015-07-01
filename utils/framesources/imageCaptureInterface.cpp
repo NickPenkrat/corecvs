@@ -43,8 +43,8 @@
 #endif
 
 #ifdef WITH_OPENCV
-# include "openCVCapture.h"
-# include "openCVFileCapture.h"
+ #include "opencv/openCVCapture.h"
+ #include "opencv/openCVFileCapture.h"
 #endif
 
 char const *CaptureStatistics::names[] =

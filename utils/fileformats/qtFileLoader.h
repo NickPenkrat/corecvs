@@ -42,6 +42,6 @@ public:
     virtual bool acceptsFile(string name);
 
     virtual G12Buffer * load(string name);
-    void save(string name, RGB24Buffer *input);
-
+    void save(const std::string& name, RGB24Buffer *input);
+    void save(const std::string& name, RGB24Buffer *input, int quality);
 };

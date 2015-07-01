@@ -274,7 +274,7 @@ void PDOGenerator::generatePDOH()
             continue;
     result +=
     "class " + target + ";\n";
-    pointedTypes.push_back(target);
+        pointedTypes.push_back(target);
     }
 
     result +=
