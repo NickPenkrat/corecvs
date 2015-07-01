@@ -1,13 +1,13 @@
 #include "directShow.h"
 
-
-const char* DirectShowCameraDescriptor::codec_names[] =
-{
-        "yuv",
-        "rgb",
-        "mjpeg",
-        "mjpeg fast decoder"
+cchar* DirectShowCameraDescriptor::codec_names[] = {
+    "yuyv",  "rgb",   "mjpeg",   "fjpeg"
 };
+
+CAPTURE_FORMAT_TYPE DirectShowCameraDescriptor::codec_types[] = {
+    CAP_YUV, CAP_RGB, CAP_MJPEG, CAP_MJPEG //, CAP_I420
+};
+
 
 void DirectShowCameraDescriptor::setFromCameraParam(CaptureParameter &param,CameraParameter &camParam)
 {
@@ -18,8 +18,6 @@ void DirectShowCameraDescriptor::setFromCameraParam(CaptureParameter &param,Came
     param.setStep        (camParam.step);
     param.setDefaultValue(camParam.defaultValue);
 }
-
-
 
 int DirectShowCameraDescriptor::queryCameraParameters(CameraParameters &parameters)
 {

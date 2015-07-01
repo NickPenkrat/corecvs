@@ -6,7 +6,7 @@
 #include "mathUtils.h" // roundDivUp
 #include "preciseTimer.h"
 #include "directShowCaptureDecouple.h"
-#include "mjpegDecoderLazy.h"
+//#include "mjpegDecoderLazy.h"
 #include "cameraControlParameters.h"
 
 #include "decoupleYUYV.h"
@@ -66,24 +66,20 @@ DirectShowCaptureDecoupleInterface::DirectShowCaptureDecoupleInterface(string _d
     if (!err || height <= 0) height = 600;
 
     compressed = DirectShowCameraDescriptor::UNCOMPRESSED_YUV;
-    int formatId = CAP_YUV;
     if (!deviceStringPattern.cap(CompressionGroup).isEmpty())
     {
-       if        (!deviceStringPattern.cap(CompressionGroup).compare(QString(":rgb"))) {
+       if      (!deviceStringPattern.cap(CompressionGroup).compare(QString(":rgb"))) {
            compressed = DirectShowCameraDescriptor::UNCOMPRESSED_RGB;
-           formatId = CAP_RGB;
            mIsRgb = true;
        }
        else if (!deviceStringPattern.cap(CompressionGroup).compare(QString(":mjpeg"))) {
            compressed = DirectShowCameraDescriptor::COMPRESSED_JPEG;
-           formatId = CAP_MJPEG;
        }
        else if (!deviceStringPattern.cap(CompressionGroup).compare(QString(":fjpeg"))) {
            compressed = DirectShowCameraDescriptor::COMPRESSED_FAST_JPEG;
-           formatId = CAP_MJPEG;
        }
     }
-
+    int formatId = DirectShowCameraDescriptor::codec_types[compressed];
 
     coupling = DecoupleYUYV::ANAGLYPH_RC;
     if (!deviceStringPattern.cap(CouplingGroup).compare(QString(":sbs"))) {
@@ -96,7 +92,7 @@ DirectShowCaptureDecoupleInterface::DirectShowCaptureDecoupleInterface(string _d
         coupling = DecoupleYUYV::ANAGLYPH_RC_FAST;
     }
 
-    printf("Capture Right device: DShow %d\n", cameraName );
+    printf("Capture Right device: DShow %d\n", cameraName);
     printf("Format is: %s\n", DirectShowCameraDescriptor::codec_names[compressed]);
     printf("Coupling is: %d\n", coupling);
 

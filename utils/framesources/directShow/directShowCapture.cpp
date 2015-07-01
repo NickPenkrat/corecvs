@@ -18,24 +18,25 @@
 #include "mjpegDecoderLazy.h"
 #include "cameraControlParameters.h"
 
-const char* DirectShowCaptureInterface::codec_names[] =
-{
-    "yuv",
-    "rgb",
-    "mjpeg",
-    "mjpeg fast decoder"
-};
 
-void DirectShowCaptureInterface::init(const string &_devname, int h, int w, int fps, bool isRgb, int compressed)
+void DirectShowCaptureInterface::init(const string &devname, int h, int w, int fps, bool isRgb, int compressed)
 {
-    devname = QString("%1:1/%2:yuyv:%3x%4").arg(_devname.c_str()).arg(fps).arg(w).arg(h).toStdString();
+    ASSERT_TRUE_P((uint)compressed < COUNT_OF(codec_names), "invalid 'compressed' in DirectShowCaptureInterface::init()");
 
-    deviceID[Frames::LEFT_FRAME]  = atoi(_devname.c_str());
+    mDevname = QString("%1:1/%2:%3:%4x%5")
+        .arg(devname.c_str())
+        .arg(fps)
+        .arg(DirectShowCameraDescriptor::codec_names[compressed])
+        .arg(w)
+        .arg(h)
+        .toStdString();
+
+    deviceID[Frames::LEFT_FRAME]  = atoi(devname.c_str());
     deviceID[Frames::RIGHT_FRAME] = -1;
 
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
     {
-        format[i].type   = CAP_YUV;
+        format[i].type   = DirectShowCameraDescriptor::codec_types[compressed];
         format[i].height = h;
         format[i].width  = w;
         format[i].fps    = fps;
@@ -47,22 +48,22 @@ void DirectShowCaptureInterface::init(const string &_devname, int h, int w, int 
     isRunning    = false;
 }
 
-DirectShowCaptureInterface::DirectShowCaptureInterface(string _devname, int h, int w, int fps, bool isRgb)
+DirectShowCaptureInterface::DirectShowCaptureInterface(const string &devname, int h, int w, int fps, bool isRgb)
 {
-    init(_devname, h, w, fps, isRgb
+    init(devname, h, w, fps, isRgb
         , DirectShowCameraDescriptor::UNCOMPRESSED_YUV);
 }
 
-DirectShowCaptureInterface::DirectShowCaptureInterface(string _devname, ImageCaptureInterface::CameraFormat inFormat, bool isRgb)
+DirectShowCaptureInterface::DirectShowCaptureInterface(const string &devname, ImageCaptureInterface::CameraFormat inFormat, bool isRgb)
 {
-    init(_devname, inFormat.height, inFormat.width, inFormat.fps, isRgb
+    init(devname, inFormat.height, inFormat.width, inFormat.fps, isRgb
         , DirectShowCameraDescriptor::UNCOMPRESSED_YUV);
 }
 
-DirectShowCaptureInterface::DirectShowCaptureInterface(string _devname, bool isRgb)
+DirectShowCaptureInterface::DirectShowCaptureInterface(const string &devname, bool isRgb)
 {
-    devname = _devname;
-    mIsRgb  = isRgb;
+    mDevname = devname;
+    mIsRgb   = isRgb;
 
     //     Group Number                   1       2 3        4 5      6       7 8       9       10     11        1213     14
     QRegExp deviceStringPattern(QString("^([^,:]*)(,([^:]*))?(:(\\d*)/(\\d*))?((:mjpeg)|(:yuyv)|(:rgb)|(:fjpeg))?(:(\\d*)x(\\d*))?$"));
@@ -74,12 +75,12 @@ DirectShowCaptureInterface::DirectShowCaptureInterface(string _devname, bool isR
     static const int WidthGroup       = 13;
     static const int HeightGroup      = 14;
 
-    printf ("Input string %s\n", _devname.c_str());
-    QString qdevname(_devname.c_str());
+    printf ("Input string %s\n", devname.c_str());
+    QString qdevname(devname.c_str());
     int result = deviceStringPattern.indexIn(qdevname);
     if (result == -1)
     {
-        printf("Error in device string format:%s\n", _devname.c_str());
+        printf("Error in device string format:%s\n", devname.c_str());
         return;
     }
     printf( "Parsed data:\n"
@@ -116,29 +117,26 @@ DirectShowCaptureInterface::DirectShowCaptureInterface(string _devname, bool isR
     if (!err || height <= 0) height = 600;
 
     mCompressed = DirectShowCameraDescriptor::UNCOMPRESSED_YUV;
-    int formatId = CAP_YUV;
     if (!deviceStringPattern.cap(CompressionGroup).isEmpty())
     {
-       if        (!deviceStringPattern.cap(CompressionGroup).compare(QString(":rgb"))) {
+       if      (!deviceStringPattern.cap(CompressionGroup).compare(QString(":rgb"))) {
            mCompressed = DirectShowCameraDescriptor::UNCOMPRESSED_RGB;
-           formatId = CAP_RGB;
            mIsRgb   = true;
        }
        else if (!deviceStringPattern.cap(CompressionGroup).compare(QString(":mjpeg"))) {
            mCompressed = DirectShowCameraDescriptor::COMPRESSED_JPEG;
-           formatId = CAP_MJPEG;
        }
        else if (!deviceStringPattern.cap(CompressionGroup).compare(QString(":fjpeg"))) {
            mCompressed = DirectShowCameraDescriptor::COMPRESSED_FAST_JPEG;
-           formatId = CAP_MJPEG;
        }
     }
+    int formatId = DirectShowCameraDescriptor::codec_types[mCompressed];
 
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
     {
         printf("Capture %s device: DShow %d\n", Frames::getEnumName((Frames::FrameSourceId)i), deviceID[i]);
     }
-    printf("Format is: %s\n", codec_names[mCompressed]);
+    printf("Format is: %s\n", DirectShowCameraDescriptor::codec_names[mCompressed]);
 
     /* TODO: Make cycle here */
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
@@ -155,7 +153,6 @@ DirectShowCaptureInterface::DirectShowCaptureInterface(string _devname, bool isR
 
 ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::initCapture()
 {
-    int res;
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
     {
         cameras[i].deviceHandle = deviceID[i] >= 0 ? DirectShowCapDll_initCapture(deviceID[i]) : -1;
@@ -164,16 +161,21 @@ ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::initCapture()
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
     {
         if (!isCorrectDeviceHandle(i))
-        {
             continue;
+
+        if (DirectShowCapDll_setFormat(cameras[i].deviceHandle, &format[i]) != 0)
+        {
+            //printf("Failed to set format\n");
         }
-        res = DirectShowCapDll_setFormat(cameras[i].deviceHandle, &format[i]);
-        res = DirectShowCapDll_setFrameCallback(cameras[i].deviceHandle, this, DirectShowCaptureInterface::callback);
+        DirectShowCapDll_setFrameCallback(cameras[i].deviceHandle, this, DirectShowCaptureInterface::callback);
     }
 
     printf("Real Formats:\n");
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
     {
+        if (!isCorrectDeviceHandle(i))
+            continue;
+
         DirectShowCapDll_printSimpleFormat(&format[i]);
         printf("\n");
     }
@@ -214,18 +216,22 @@ ALIGN_STACK_SSE void DirectShowCaptureInterface::memberCallback(DSCapDeviceId de
 
         if (data.format.type == CAP_YUV)
         {
-            camera->buffer = new G12Buffer(data.format.height, data.format.width, false);
-            camera->buffer->fillWithYUYV((uint16_t *)data.data);
-            if (mIsRgb)
-            {
-                camera->buffer24 = new RGB24Buffer(camera->buffer);
+            if (mIsRgb) {
+                camera->buffer24 = new RGB24Buffer(data.format.height, data.format.width, false);
                 camera->buffer24->fillWithYUYV((uint8_t *)data.data);
+            }
+            else {
+                camera->buffer = new G12Buffer(data.format.height, data.format.width, false);
+                camera->buffer->fillWithYUYV((uint16_t *)data.data);
             }
         }
         else if (data.format.type == CAP_MJPEG)
         {
             MjpegDecoderLazy *lazyDecoder = new MjpegDecoderLazy;   // don't place it at stack, it's too huge!
-            camera->buffer = lazyDecoder->decode((unsigned char *)data.data);
+            if (mIsRgb)
+                camera->buffer24 = lazyDecoder->decodeRGB24((uchar *)data.data);
+            else
+                camera->buffer   = lazyDecoder->decode((uchar *)data.data);
             delete lazyDecoder;
         }
         else if (data.format.type == CAP_RGB)
@@ -458,11 +464,11 @@ DirectShowCaptureInterface::CapErrorCode DirectShowCaptureInterface::getDeviceNa
     QRegExp deviceStringPattern(QString("^([^,:]*)(,([^:]*))?(:(\\d*)/(\\d*))?((:mjpeg)|(:yuyv)|(:rgb)|(:fjpeg))?(:(\\d*)x(\\d*))?$"));
     static const int Device1Group     = 1;
     static const int Device2Group     = 3;
-    QString qdevname(devname.c_str());
+    QString qdevname(mDevname.c_str());
     int result = deviceStringPattern.indexIn(qdevname);
     if (result == -1)
     {
-        printf("Error in device string format:%s\n", devname.c_str());
+        printf("Error in device string format:%s\n", mDevname.c_str());
         return ImageCaptureInterface::FAILURE;
     }
     if (num == 0)

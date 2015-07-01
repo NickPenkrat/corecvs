@@ -28,15 +28,13 @@ using namespace std;
  public:
     typedef ImageCaptureInterface::CapErrorCode CapErrorCode;
 
-    static const char*          codec_names[];
-    int                         mCompressed;
-
     /* Main fields */
     QMutex                      protectFrame;
-    string                      devname;  /**< Stores the device name*/
+    string                      mDevname;  /**< Stores the device name*/
     DirectShowCameraDescriptor  cameras [Frames::MAX_INPUTS_NUMBER];
     CaptureTypeFormat           format  [Frames::MAX_INPUTS_NUMBER];
     int                         deviceID[Frames::MAX_INPUTS_NUMBER];
+    int                         mCompressed;
 
     /* Statistics fields */
     PreciseTimer                lastFrameTime;
@@ -46,9 +44,9 @@ using namespace std;
     /* Maximum allowed desync */
     //unsigned int                delay;
 
-    DirectShowCaptureInterface(string _devname, bool isRgb = false);
-    DirectShowCaptureInterface(string _devname, int h, int w, int fps, bool isRgb);
-    DirectShowCaptureInterface(string _devname, ImageCaptureInterface::CameraFormat format, bool isRgb);
+    DirectShowCaptureInterface(const string &devname, bool isRgb = false);
+    DirectShowCaptureInterface(const string &devname, int h, int w, int fps, bool isRgb);
+    DirectShowCaptureInterface(const string &devname, ImageCaptureInterface::CameraFormat format, bool isRgb);
 
     virtual FramePair    getFrame();
     virtual FramePair    getFrameRGB24();
@@ -72,7 +70,7 @@ using namespace std;
     virtual ~DirectShowCaptureInterface();
 
  private:
-    void init(const string &_devname, int h, int w, int fps, bool isRgb, int compressed);
+    void init(const string &devname, int h, int w, int fps, bool isRgb, int compressed);
 
     bool isCorrectDeviceHandle(int cameraNum);
  };
