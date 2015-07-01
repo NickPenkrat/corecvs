@@ -57,3 +57,5 @@ include(utils/utils.pri)
 include(clustering3d/clustering3d.pri)
 
 include(xml/generated/generated.pri)
+
+include(features2d/features2d.pri)

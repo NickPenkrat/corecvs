@@ -1,0 +1,66 @@
+#include "openCvDescriptorMatcherWrapper.h"
+
+#include "openCvKeyPointsWrapper.h"
+#if 0
+#include "openCvDescriptorBufferWrapper.h"
+#endif
+
+OpenCvDescriptorMatcherWrapper::OpenCvDescriptorMatcherWrapper(cv::DescriptorMatcher *matcher) : matcher(matcher) {
+
+}
+
+#if 0
+OpenCvDescriptorMatcherWrapper::OpenCvDescriptorMatcherWrapper(const OpenCvDescriptorMatcherWrapper &w) {
+	// FIXME: Will it blend?!
+	extractor = new cv::DescriptorMatcher(*w.extractor);
+}
+#endif
+
+OpenCvDescriptorMatcherWrapper::~OpenCvDescriptorMatcherWrapper() {
+	delete matcher;
+}
+
+void OpenCvDescriptorMatcherWrapper::knnMatchImpl(DescriptorBuffer &query, DescriptorBuffer &train, std::vector<std::vector<RawMatch>> &matches, size_t K) {
+	cv::Mat qd = convert(query), td = convert(train);
+	std::vector<std::vector<cv::DMatch>> matches_cv;
+	matcher->knnMatch(qd, td, matches_cv, K);
+
+	matches.clear();
+	matches.resize(matches_cv.size());
+
+	for(size_t idx = 0; idx < matches.size(); ++idx) {
+		for(auto m: matches_cv[idx]) {
+			matches[idx].push_back(convert(m, 0, 0));
+		}
+	}
+}
+
+void init_opencv_matchers_provider() {
+	DescriptorMatcherProvider::getInstance().add(new OpenCvDescriptorMatcherProvider());
+}
+
+#define SWITCH_TYPE(str, expr) \
+	if(type == #str) { \
+		expr \
+	}
+
+DescriptorMatcher* OpenCvDescriptorMatcherProvider::getDescriptorMatcher(const DescriptorType &type, const DetectorsParams &params) {
+	SWITCH_TYPE(SIFT, return new OpenCvDescriptorMatcherWrapper(new cv::FlannBasedMatcher););
+	SWITCH_TYPE(SURF, return new OpenCvDescriptorMatcherWrapper(new cv::FlannBasedMatcher););
+	SWITCH_TYPE(ORB, return new OpenCvDescriptorMatcherWrapper(new cv::FlannBasedMatcher(new cv::flann::LshIndexParams(20, 10, 2))););
+	SWITCH_TYPE(BRISK, return new OpenCvDescriptorMatcherWrapper(new cv::FlannBasedMatcher(new cv::flann::LshIndexParams(20, 10, 2))););
+	assert(false);
+	return 0;
+}
+
+bool OpenCvDescriptorMatcherProvider::provides(const DescriptorType &type) {
+	SWITCH_TYPE(SIFT, return true;);
+	SWITCH_TYPE(SURF, return true;);
+	SWITCH_TYPE(BRISK, return true;);
+	SWITCH_TYPE(ORB, return true;);
+	return false;
+}
+
+#undef SWITCH_TYPE
+
+
