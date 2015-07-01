@@ -10,7 +10,6 @@ exists(../../../config.pri) {
 TEMPLATE = subdirs
 
 SUBDIRS +=       \
-    grab         \
     grab_N_captures \
     serialize1   \
     adoptcolor   \
@@ -30,7 +29,7 @@ avigrab.file       = avigrab/avigrab.pro
 decodebayer.file   = decodebayer/decodebayer.pro
 genvectorui.file   = genvectorui/genvectorui.pro
 opencvLineDetector.file = opencvLineDetector/opencvLineDetector.pro
-xmlserialize.file    = xmlserialize/xmlserialize.pro
+serialize1.file    = serialize1/serialize1.pro
 adoptcolor.file      = adoptcolor/adoptcolor.pro
 avigrab.file         = avigrab/avigrab.pro
 topcon.file          = topcon/topcon.pro

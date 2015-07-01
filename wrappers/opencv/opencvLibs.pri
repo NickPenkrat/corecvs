@@ -62,8 +62,9 @@ with_opencv {
                     -llibopencv_features2d249 \
                     -llibopencv_flann249 \
                     -llibopencv_legacy249 \
-                    -llibopencv_objdetect249 \
-                    -llibopencv_imgproc249
+                    -llibopencv_nonfree249 \
+                    -llibopencv_imgproc249 \
+                    -llibopencv_objdetect249
             } else:exists($$OPENCV_PATH/build/x64/vc12/bin/opencv_core2411.dll) {
                 !build_pass:message(Using <$$OPENCV_PATH/build/x64/vc12/bin>)
                 INCLUDEPATH += $$OPENCV_PATH/build/include \
