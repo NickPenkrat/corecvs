@@ -97,7 +97,24 @@ public:
     {
     }
 
+    template<class VisitorType>
+        void accept(VisitorType &visitor)
+        {
+            visitor.visit(p1    , 0.0, "p1");
+            visitor.visit(p2    , 0.0, "p2");
+            visitor.visit(aspect, 0.0, "aspect");
+            visitor.visit(focal , 0.0, "focal");
+            visitor.visit(center.x(), 0.0, "centerX");
+            visitor.visit(center.y(), 0.0, "centerY");
 
+            koeff.resize(6);
+            for (int i = 0; i < 6; i++)
+            {
+                char s[10];
+                snprintf(s, CORE_COUNT_OF(s), "koeff%d", i);
+                visitor.visit(koeff[i], 0.0, s);
+            }
+        }
 };
 
 
