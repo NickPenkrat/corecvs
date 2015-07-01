@@ -25,7 +25,6 @@ contains(DEFINES, WITH_OPENCV) {                    # if it's installed properly
 		$$OPENCV_WRAPPER_DIR/openCvDetectorWrapper.cpp \
 		$$OPENCV_WRAPPER_DIR/featureDetectorCV.cpp \
 		$$OPENCV_WRAPPER_DIR/OpenCVTools.cpp \
-		$$OPENCV_WRAPPER_DIR/faceDetect/faceDetect.cpp \
 		$$OPENCV_WRAPPER_DIR/openCvDescriptorMatcherWrapper.cpp \
 		$$OPENCV_WRAPPER_DIR/openCvFileReader.cpp \
 		$$OPENCV_WRAPPER_DIR/KLTFlow.cpp \
