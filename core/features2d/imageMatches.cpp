@@ -5,15 +5,13 @@
 #include <cassert>
 
 std::istream& operator>>(std::istream& is, RawMatch &rm) {
-	is >> rm.imgQ >> rm.imgT >> rm.featureQ >> rm.featureT >> rm.distance;
+	is >> rm.featureQ >> rm.featureT >> rm.distance;
 	return is;
 }
 
 std::ostream& operator<<(std::ostream& os, const RawMatch &rm) {
 	os << std::setprecision(15) << std::scientific;
-	os << std::setw(20) << rm.imgQ << "\t" <<
-		  std::setw(20) << rm.imgT << "\t" << 
-		  std::setw(20) << rm.featureQ << "\t" <<
+	os << std::setw(20) << rm.featureQ << "\t" <<
 		  std::setw(20) << rm.featureT << "\t" <<
 		  std::setw(20) << rm.distance << "\t";
 	return os;

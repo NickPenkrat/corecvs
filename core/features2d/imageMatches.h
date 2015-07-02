@@ -6,16 +6,13 @@
 #include <iostream>
 
 struct RawMatch {
-	size_t imgQ;
-	size_t imgT;
-
 	size_t featureQ;
 	size_t featureT;
 
 	double distance;
 
-	RawMatch(const size_t &imgQ = ~(size_t)0, const size_t &imgT = ~(size_t)0, const size_t &featureQ = ~(size_t)0, const size_t &featureT = ~(size_t)0, const double &distance = 1000.0)
-		: imgQ(imgQ), imgT(imgT), featureQ(featureQ), featureT(featureT), distance(distance) {
+	RawMatch(const size_t &featureQ = ~(size_t)0, const size_t &featureT = ~(size_t)0, const double &distance = 1000.0)
+		: featureQ(featureQ), featureT(featureT), distance(distance) {
 		}
 #if 0
 	RawMatch(const cv::DMatch &dmatch, const size_t &imgQ, const size_t &imgT)

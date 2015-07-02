@@ -97,7 +97,7 @@ void SiftGpuMatcher::knnMatchImpl( RuntimeTypeBuffer &queryDescriptors, RuntimeT
 		int queryIdx = buffer[j][0];
 		int trainIdx = buffer[j][1];
 
-		matches[queryIdx].push_back(RawMatch(0, 0, queryIdx, trainIdx, 0.5));
+		matches[queryIdx].push_back(RawMatch(queryIdx, trainIdx, 0.5));
 	}
 	
 	for(size_t i = 0; i < queryDescriptors.getRows(); ++i) {

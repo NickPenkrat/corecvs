@@ -11,7 +11,7 @@ KeyPoint convert(const cv::KeyPoint &kp);
 
 cv::DMatch convert(const RawMatch &rm);
 
-RawMatch convert(const cv::DMatch &dm, size_t imgQ, size_t imgT);
+RawMatch convert(const cv::DMatch &dm);
 
 cv::Mat convert(const RuntimeTypeBuffer &buffer);
 

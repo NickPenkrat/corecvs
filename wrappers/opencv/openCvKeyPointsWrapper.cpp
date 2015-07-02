@@ -14,8 +14,8 @@ cv::DMatch convert(const RawMatch &rm) {
 	return cv::DMatch(rm.featureQ, rm.featureT, rm.distance);
 }
 
-RawMatch convert(const cv::DMatch &dm, size_t imgQ, size_t imgT) {
-	return RawMatch(imgQ, imgT, dm.queryIdx, dm.trainIdx, dm.distance);
+RawMatch convert(const cv::DMatch &dm) {
+	return RawMatch(dm.queryIdx, dm.trainIdx, dm.distance);
 }
 
 cv::Mat convert(const RuntimeTypeBuffer &buffer) {

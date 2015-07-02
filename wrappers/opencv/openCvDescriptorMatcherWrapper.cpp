@@ -30,7 +30,7 @@ void OpenCvDescriptorMatcherWrapper::knnMatchImpl(RuntimeTypeBuffer &query, Runt
 
 	for(size_t idx = 0; idx < matches.size(); ++idx) {
 		for(auto m: matches_cv[idx]) {
-			matches[idx].push_back(convert(m, 0, 0));
+			matches[idx].push_back(convert(m));
 		}
 	}
 }

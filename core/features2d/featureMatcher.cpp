@@ -306,12 +306,6 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline) {
 		DescriptorMatcher* matcher = DescriptorMatcherProvider::getInstance().getMatcher(descriptorType);
 		matcher->knnMatch(qb, tb, rawMatches.matches[s], responsesPerPoint);
 
-		for(auto v: rawMatches.matches[s]) {
-			for(auto rm: v) {
-				rm.imgQ = I;
-				rm.imgT = J;
-			}
-		}
 #endif
 
 		// It's time to replace indicies
