@@ -4,10 +4,10 @@
 #include <string>
 #include <algorithm>
 
-#include "featureMatcher.h"
+#include "featureMatchingPipeline.h"
 
 #ifdef WITH_OPENCV
-#include "openCvDetectorWrapper.h"
+#include "openCvFeatureDetectorWrapper.h"
 #include "openCvDescriptorExtractorWrapper.h"
 #include "openCvDescriptorMatcherWrapper.h"
 #include "openCvFileReader.h"

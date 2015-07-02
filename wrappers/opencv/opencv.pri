@@ -15,14 +15,14 @@ contains(DEFINES, WITH_OPENCV) {                    # if it's installed properly
 		$$OPENCV_WRAPPER_DIR/KLTFlow.h \
 		$$OPENCV_WRAPPER_DIR/openCvDescriptorExtractorWrapper.h \
 		$$OPENCV_WRAPPER_DIR/openCvDescriptorMatcherWrapper.h \
-		$$OPENCV_WRAPPER_DIR/openCvDetectorWrapper.h \
+		$$OPENCV_WRAPPER_DIR/openCvFeatureDetectorWrapper.h \
 		$$OPENCV_WRAPPER_DIR/openCvFileReader.h \
 		$$OPENCV_WRAPPER_DIR/openCvKeyPointsWrapper.h \
 		$$OPENCV_WRAPPER_DIR/OpenCVTools.h \
 		$$OPENCV_WRAPPER_DIR/semiGlobalBlockMatching.h
 
     SOURCES += \
-		$$OPENCV_WRAPPER_DIR/openCvDetectorWrapper.cpp \
+		$$OPENCV_WRAPPER_DIR/openCvFeatureDetectorWrapper.cpp \
 		$$OPENCV_WRAPPER_DIR/featureDetectorCV.cpp \
 		$$OPENCV_WRAPPER_DIR/OpenCVTools.cpp \
 		$$OPENCV_WRAPPER_DIR/openCvDescriptorMatcherWrapper.cpp \

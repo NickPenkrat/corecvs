@@ -1,15 +1,8 @@
-#include "openCvDetectorWrapper.h"
+#include "openCvFeatureDetectorWrapper.h"
 #include "openCvKeyPointsWrapper.h"
 
 OpenCvFeatureDetectorWrapper::OpenCvFeatureDetectorWrapper(cv::FeatureDetector *detector) : detector(detector) {
 }
-
-#if 0
-OpenCvFeatureDetectorWrapper::OpenCvFeatureDetectorWrapper(const OpenCvFeatureDetectorWrapper &wrapper) {
-	// FIXME: Will it blend?!
-	detector = new cv::FeatureDetector(*wrapper.detector);
-}
-#endif
 
 OpenCvFeatureDetectorWrapper::~OpenCvFeatureDetectorWrapper() {
 	delete detector;

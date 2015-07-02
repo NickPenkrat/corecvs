@@ -7,66 +7,6 @@
 #include "detectorParams.h"
 #include "imageKeyPoints.h"
 
-#if 0
-enum class FeatureDetectorType {
-	FAST,
-	STAR,
-	SIFT,
-	SURF,
-	ORB,
-	BRISK,
-	SIFTGPU
-};
-
-#define DETECTOR_TYPE_FROM_STRING(str) \
-	if(!strcmp(name, #str)) \
-type = FeatureDetectorType::str;
-#define DETECTOR_TYPE_TO_STRING(str) \
-	case FeatureDetectorType::str: \
-return #str;
-
-struct DetectorType {
-	FeatureDetectorType type;
-
-	DetectorType(FeatureDetectorType type = FeatureDetectorType::SIFT) : type(type) {}
-	DetectorType(const char* name) {
-		init(name);
-	}
-	DetectorType(const std::string& name) {
-		init(name.c_str());
-	}
-	operator FeatureDetectorType() const { return type; }
-	explicit operator const char*() const {
-		switch(type) {
-			DETECTOR_TYPE_TO_STRING(SIFT);
-			DETECTOR_TYPE_TO_STRING(SURF);
-			DETECTOR_TYPE_TO_STRING(ORB);
-			DETECTOR_TYPE_TO_STRING(BRISK);
-			DETECTOR_TYPE_TO_STRING(FAST);
-			DETECTOR_TYPE_TO_STRING(STAR);
-			DETECTOR_TYPE_TO_STRING(SIFTGPU);
-		}
-	}
-	explicit operator std::string() const {
-		return std::string((const char*)(*this));
-	}
-private:
-	void init(const char* name) {
-		type = FeatureDetectorType::SURF;
-		DETECTOR_TYPE_FROM_STRING(SIFT);
-		DETECTOR_TYPE_FROM_STRING(SURF);
-		DETECTOR_TYPE_FROM_STRING(ORB);
-		DETECTOR_TYPE_FROM_STRING(BRISK);
-		DETECTOR_TYPE_FROM_STRING(FAST);
-		DETECTOR_TYPE_FROM_STRING(STAR);
-		DETECTOR_TYPE_FROM_STRING(SIFTGPU);
-	}
-};
-#else
-#if 0
-typedef std::string DetectorType;
-#endif
-#endif
 
 // TODO: it seems unclear wether or not we need detectImpl instead of just 
 // making detect/compute itself virtual

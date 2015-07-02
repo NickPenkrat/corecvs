@@ -56,18 +56,6 @@ void SiftGpu::detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoi
 	(*this)(image, keyPoints,buffer);
 }
 
-#if 0
-void SiftGpu::detectImpl( const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, const cv::Mat& mask) const {
-	(*this)(image, mask, keypoints, cv::noArray());
-}
-
-
-void SiftGpu::computeImpl( const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors ) const {
-	(*this)(image, cv::Mat(), keypoints, descriptors, true);
-}
-#endif
-
-
 int SiftGpu::descriptorSize() const { 
 	return 128;
 }
@@ -80,13 +68,6 @@ void SiftGpu::operator()(RuntimeTypeBuffer &img, std::vector<KeyPoint>& keypoint
 	RuntimeTypeBuffer buffer;
 	(*this)(img, keypoints, buffer);
 }
-
-#if 0
-void SiftGpu::operator()(cv::InputArray img, cv::InputArray mask,
-		std::vector<cv::KeyPoint>& keypoints) const {
-	(*this)(img, mask, keypoints, cv::noArray());
-}
-#endif
 
 SiftGPU::SiftKeypoint SiftGpu::convert(const KeyPoint &k) {
 	//TODO: check what orientation and size really represent
@@ -122,59 +103,9 @@ void SiftGpu::operator()(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keypoi
 
 	if(computeDescriptors) {
 		descriptors = RuntimeTypeBuffer(keypoints.size(), descriptorSize(), RuntimeBufferDataType::F32);
-#if 0
-		descriptors.create(keypoints.size(), descriptorSize(), descriptorType());
-		cv::Mat _descriptors = descriptors.getMat();
-#endif
 		siftGpu->GetFeatureVector(0, descriptors.row<float>(0));
 	}
 }
-
-
-#if 0
-void SiftGpu::operator()(cv::InputArray img, cv::InputArray _mask,
-		std::vector<cv::KeyPoint>& keypoints,
-		cv::OutputArray descriptors,
-		bool useProvidedKeypoints) const {
-	
-	cv::Mat image = img.getMat(), mask = _mask.getMat();
-
-	if( image.empty() || image.depth() != CV_8U) {
-		std::cerr << __LINE__ << " : Invalid image depth (!=CV_8U)" << std::endl;
-		exit(0);
-	}
-
-	if( !mask.empty() && mask.type() != CV_8UC1) {
-		std::cerr << __LINE__ << " : Invalid image depth (!=CV_8U)" << std::endl;
-		exit(0);
-	}
-	
-	std::vector<SiftGPU::SiftKeypoint> keypoints_sgpu;
-	if( useProvidedKeypoints ) {
-		keypoints_sgpu.reserve(keypoints.size());
-		for(auto kp: keypoints)
-			keypoints_sgpu.push_back(SiftGpu::convert(kp));
-		siftGpu->SetKeypointList(keypoints_sgpu.size(), &keypoints_sgpu[0]);
-		siftGpu->RunSIFT(image.cols, image.rows, (unsigned char*)image.data, GL_LUMINANCE, GL_UNSIGNED_BYTE);
-	} else {
-		std::cerr << "Running SIFTGPU" << std::endl;
-		siftGpu->RunSIFT(image.cols, image.rows, (unsigned char*)image.data, GL_LUMINANCE, GL_UNSIGNED_BYTE);
-		int num = siftGpu->GetFeatureNum();
-		keypoints_sgpu.resize(num);
-		siftGpu->GetFeatureVector(&keypoints_sgpu[0], 0);
-		keypoints.reserve(num);
-		for(auto k: keypoints_sgpu)
-			keypoints.push_back(SiftGpu::convert(k));
-	}
-
-	if(descriptors.needed()) {
-		descriptors.create(keypoints.size(), descriptorSize(), descriptorType());
-		cv::Mat _descriptors = descriptors.getMat();
-
-		siftGpu->GetFeatureVector(0, (float*)_descriptors.data);
-	}
-}
-#endif
 
 SiftGpu::~SiftGpu() {
 	delete siftGpu;

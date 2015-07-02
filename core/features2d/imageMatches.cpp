@@ -49,19 +49,11 @@ void RawMatches::load(std::istream &ifs) {
 		matches[i].resize(L);
 
 		for(size_t j = 0; j < L; ++j) {
-//			matches[i][j].resize(K);
 			ifs >> K;
 			matches[i][j].resize(K);
 
 			for(size_t k = 0; k < K; ++k) {
-#if 0
-				ifs >> matches[i][j][k].trainIdx
-					>> matches[i][j][k].queryIdx
-					>> matches[i][j][k].distance;
-//		rawMatches[i][j][k].queryIdx = matchPlan.plan[i].queryFeatures[j];
-#else
 				ifs >> matches[i][j][k];
-#endif
 			}
 
 		}
@@ -86,13 +78,7 @@ void RawMatches::save(std::ostream &ofs) const {
 		for(size_t j = 0; j < L; ++j) {
 			ofs << (K = matches[i][j].size()) << "\t";
 			for(size_t k = 0; k < K; ++k) {
-#if 0
-				ofs << std::setw(15) << matches[i][j][k].trainIdx << "\t" 
-					<< std::setw(15) << matches[i][j][k].queryIdx << "\t"
-					<< std::setw(15) << matches[i][j][k].distance << "\t";
-#else
 				ofs << matches[i][j][k];
-#endif
 			}
 			ofs << std::endl;		
 		}

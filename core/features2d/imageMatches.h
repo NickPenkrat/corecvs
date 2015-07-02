@@ -14,16 +14,6 @@ struct RawMatch {
 	RawMatch(const size_t &featureQ = ~(size_t)0, const size_t &featureT = ~(size_t)0, const double &distance = 1000.0)
 		: featureQ(featureQ), featureT(featureT), distance(distance) {
 		}
-#if 0
-	RawMatch(const cv::DMatch &dmatch, const size_t &imgQ, const size_t &imgT)
-		: imgQ(imgQ), imgT(imgT), featureQ(dmatch.queryIdx), featureT(dmatch.trainIdx), distance(dmatch.distance)
-	{
-	}
-
-	operator cv::DMatch() const {
-		return cv::DMatch(featureQ, featureT, distance);
-	}
-#endif
 
 	friend std::istream& operator>>(std::istream& is, RawMatch &rm);
 	friend std::ostream& operator<<(std::ostream& os, const RawMatch &rm);

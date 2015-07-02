@@ -19,20 +19,10 @@ RawMatch convert(const cv::DMatch &dm) {
 }
 
 cv::Mat convert(const RuntimeTypeBuffer &buffer) {
-#if 0
-	std::cout << "DB to Mat" << std::endl;
-	std::cout << buffer.getType().getCvType() << std::endl;
-	std::cout << "Type " << (std::string)buffer.getType() << std::endl;
-#endif
 	return cv::Mat(buffer.getRows(), buffer.getCols(), buffer.getType().getCvType(), buffer.row<void>((size_t)0));
-//	return (cv::Mat)buffer;
 }
 
 RuntimeTypeBuffer convert(const cv::Mat &mat) {
-#if 0
-	std::cout << "Mat to DB" << std::endl;
-	std::cout << (std::string)BufferType((size_t)mat.type()) << std::endl;
-#endif
-return RuntimeTypeBuffer(mat.rows, mat.cols, mat.data, BufferType((size_t)mat.type()));
+	return RuntimeTypeBuffer(mat.rows, mat.cols, mat.data, BufferType((size_t)mat.type()));
 }
 

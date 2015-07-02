@@ -1,11 +1,6 @@
 #ifndef SIFTGPUWRAPPER_H
 #define SIFTGPUWRAPPER_H
 
-#if 0
-#include <opencv2/core/core.hpp>
-#include <opencv2/features2d/features2d.hpp>
-#endif
-
 #include "imageKeyPoints.h"
 #include "descriptorExtractorProvider.h"
 #include "featureDetectorProvider.h"

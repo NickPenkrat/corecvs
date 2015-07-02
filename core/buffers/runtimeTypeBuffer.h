@@ -104,24 +104,6 @@ public:
 		copy((uint8_t*)data);
 	}
 
-#if 0
-	RuntimeTypeBuffer(const cv::Mat &mat) : rows(mat.rows), cols(mat.cols) {
-		switch(mat.type()) {
-			case CV_8U:
-				type = RuntimeBufferDataType::U8;
-				break;
-			case CV_32F:
-				type = RuntimeBufferDataType::F32;
-				break;
-			default:
-				assert(false);
-		}
-		sz = type.getSize();
-		allocate();
-		copy((uint8_t*)mat.data);
-	}
-#endif
-
 	~RuntimeTypeBuffer() {
 		free(data);
 	}
@@ -179,13 +161,6 @@ public:
 		return rows * getRowSize();
 	}
 
-#if 0
-	operator cv::Mat() const { 
-		// Note it is not const really! flawed(?) OpenCV design does not allow us to have const data
-		return cv::Mat(rows, cols, type.getCvType(), (void*)data);
-	}
-#endif
-
 	template<typename T>
 	T& at(const size_t &i, const size_t &j) {
 		return *(T*)(data + sz * (i * cols + j));
@@ -227,11 +202,6 @@ private:
 	void copy(uint8_t *src) {
 		memcpy(data, src, getDataSize());
 	}
-#if 0
-	size_t getDataSize() const {
-		return sz * cols * rows;
-	}
-#endif
 	uint8_t *data;
 	size_t rows;
 	size_t cols;

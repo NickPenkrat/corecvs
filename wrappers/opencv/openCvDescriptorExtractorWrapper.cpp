@@ -5,13 +5,6 @@ OpenCvDescriptorExtractorWrapper::OpenCvDescriptorExtractorWrapper(cv::Descripto
 
 }
 
-#if 0
-OpenCvDescriptorExtractorWrapper::OpenCvDescriptorExtractorWrapper(const OpenCvDescriptorExtractorWrapper &w) {
-	// FIXME: Will it blend?!
-	extractor = new cv::DescriptorExtractor(*w.extractor);
-}
-#endif
-
 OpenCvDescriptorExtractorWrapper::~OpenCvDescriptorExtractorWrapper() {
 	delete extractor;
 }

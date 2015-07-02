@@ -1,20 +1,10 @@
 #include "openCvDescriptorMatcherWrapper.h"
 
 #include "openCvKeyPointsWrapper.h"
-#if 0
-#include "openCvRuntimeTypeBufferWrapper.h"
-#endif
 
 OpenCvDescriptorMatcherWrapper::OpenCvDescriptorMatcherWrapper(cv::DescriptorMatcher *matcher) : matcher(matcher) {
 
 }
-
-#if 0
-OpenCvDescriptorMatcherWrapper::OpenCvDescriptorMatcherWrapper(const OpenCvDescriptorMatcherWrapper &w) {
-	// FIXME: Will it blend?!
-	extractor = new cv::DescriptorMatcher(*w.extractor);
-}
-#endif
 
 OpenCvDescriptorMatcherWrapper::~OpenCvDescriptorMatcherWrapper() {
 	delete matcher;

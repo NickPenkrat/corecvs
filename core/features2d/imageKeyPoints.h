@@ -18,16 +18,6 @@ struct KeyPoint {
 		: x(x), y(y), size(size), angle(angle), response(response), octave(octave) {
 	}
 
-#if 0
-	KeyPoint(const cv::KeyPoint &kp)
-		: x(kp.pt.x), y(kp.pt.y), size(kp.size), angle(kp.angle), response(kp.response), octave(kp.octave) {
-	}
-
-	operator cv::KeyPoint() const {
-		return cv::KeyPoint(x, y, size, angle, response, octave);
-	}
-#endif
-
 	friend std::ostream& operator<<(std::ostream& os, const KeyPoint &kp);
 	friend std::istream& operator>>(std::istream& is, KeyPoint &kp);
 

@@ -52,16 +52,7 @@ void ImageKeyPoints::load(std::istream& is) {
 
 	for(size_t j = 0; j < M; ++j) {
 		assert(is);
-#if 0
-		is  >> keyPoints[j].pt.x 
-			>> keyPoints[j].pt.y 
-			>> keyPoints[j].size
-			>> keyPoints[j].angle
-			>> keyPoints[j].response
-			>> keyPoints[j].octave;
-#else
 		is >> keyPoints[j];
-#endif
 	}
 }
 
@@ -71,18 +62,7 @@ void ImageKeyPoints::save(std::ostream& os) const {
 	os.precision(9);
 
 	for(size_t j = 0; j < M; ++j) {
-		assert(os);
-#if 0
-		os  << std::setw(15) <<  keyPoints[j].pt.x << "\t"
-			<< std::setw(15) <<  keyPoints[j].pt.y  << "\t"
-			<< std::setw(15) <<  keyPoints[j].size << "\t"
-			<< std::setw(15) <<  keyPoints[j].angle << "\t"
-			<< std::setw(15) <<  keyPoints[j].response << "\t"
-			<< std::setw(15) <<  keyPoints[j].octave << "\t"
-			<< std::endl;
-#else
 		os << keyPoints[j] << std::endl;
-#endif
 	}
 }
 

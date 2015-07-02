@@ -4,15 +4,6 @@
 #include "descriptorExtractorProvider.h"
 #include "imageMatches.h"
 
-#if 0
-class DescriptorMatcherProvider {
-	public:
-		static cv::DescriptorMatcher* getDescriptorMatcher(const DescriptorType &type);
-	protected:
-		DescriptorMatcherProvider();
-};
-#endif
-
 class DescriptorMatcher {
 public:
 	void knnMatch(RuntimeTypeBuffer &query, RuntimeTypeBuffer &train, std::vector<std::vector<RawMatch>> &matches, size_t K);

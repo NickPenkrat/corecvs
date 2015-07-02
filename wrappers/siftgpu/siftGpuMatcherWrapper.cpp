@@ -107,115 +107,6 @@ void SiftGpuMatcher::knnMatchImpl( RuntimeTypeBuffer &queryDescriptors, RuntimeT
 
 	delete[] buffer;
 }
-#if 0
-void SiftGpuMatcher::knnMatchImpl( const cv::Mat& queryDescriptors, std::vector<std::vector<cv::DMatch> >& matches, int knn, const std::vector<cv::Mat>& masks, bool compactResult ) {
-	if(knn != 1) {
-		std::cerr << "SiftGPU matcher does not support k-NN and does not"
-					 "provide matching distance" << std::endl;
-	}
-	if(queryDescriptors.empty() || trainDescCollection.empty()) {
-		matches.clear();
-		return;
-	}
-
-	assert(queryDescriptors.type() == trainDescCollection[0].type());
-	assert(queryDescriptors.type() == CV_32F);
-
-	matches.resize(queryDescriptors.rows);
-
-	size_t imgCount = trainDescCollection.size();
-
-	for(size_t i = 0; i < (size_t)queryDescriptors.rows; ++i) {
-		matches[i].resize(0);
-		matches[i].reserve(knn);
-	}
-
-	size_t maxRows = queryDescriptors.rows;
-	for(size_t i = 0; i < imgCount; ++i)
-		maxRows = std::max(maxRows, (size_t)trainDescCollection[i].rows);
-
-	if(maxRows > 8192)
-		siftMatchGpu->SetMaxSift(maxRows);
-
-	int (*buffer)[2] = new int[maxRows][2];
-
-	siftMatchGpu->SetDescriptors(0, queryDescriptors.rows, (float*)queryDescriptors.data);
-	for(size_t i = 0; i < imgCount; ++i) {
-		siftMatchGpu->SetDescriptors(1, trainDescCollection[i].rows, (float*)trainDescCollection[i].data);
-		int nmatch = siftMatchGpu->GetSiftMatch(maxRows, buffer);
-		for(int j = 0; j < nmatch; ++j) {
-			int queryIdx = buffer[j][0];
-			int trainIdx = buffer[j][1];
-
-			matches[queryIdx].push_back(cv::DMatch(queryIdx, trainIdx, i, 0.5));
-		}
-	}
-	size_t idx = 0;
-	for(size_t i = 0; i < (size_t)queryDescriptors.rows; ++i) {
-		matches[i].resize(std::min(knn, (int)matches[i].size()));
-		if(matches[i].size() && compactResult) {
-			matches[idx++] = matches[i];
-		}
-	}
-	if(compactResult) {
-		matches.resize(idx);
-	}
-
-	delete[] buffer;
-}
-
-void SiftGpuMatcher::radiusMatchImpl( const cv::Mat& queryDescriptors, std::vector<std::vector<cv::DMatch> >& matches, float maxDistance,
-				const std::vector<cv::Mat>& masks, bool compactResult) {
-
-	if(queryDescriptors.empty() || trainDescCollection.empty()) {
-		matches.clear();
-		return;
-	}
-
-	assert(queryDescriptors.type() == trainDescCollection[0].type());
-	assert(queryDescriptors.type() == CV_32F);
-
-	matches.reserve(queryDescriptors.rows);
-
-	size_t imgCount = trainDescCollection.size();
-
-	for(size_t i = 0; i < (size_t)queryDescriptors.rows; ++i) {
-		matches[i].resize(0);
-	}
-
-	size_t maxRows = queryDescriptors.rows;
-	for(size_t i = 0; i < imgCount; ++i)
-		maxRows = std::max(maxRows, (size_t)trainDescCollection[i].rows);
-
-	if(maxRows > 8192)
-		siftMatchGpu->SetMaxSift(maxRows);
-
-	int (*buffer)[2] = new int[maxRows][2];
-
-	siftMatchGpu->SetDescriptors(0, queryDescriptors.rows, (float*)queryDescriptors.data);
-	for(size_t i = 0; i < imgCount; ++i) {
-		siftMatchGpu->SetDescriptors(1, trainDescCollection[i].rows, (float*)trainDescCollection[i].data);
-		int nmatch = siftMatchGpu->GetSiftMatch(maxRows, buffer, maxDistance);
-		for(int j = 0; j < nmatch; ++j) {
-			int queryIdx = buffer[j][0];
-			int trainIdx = buffer[j][1];
-
-			matches[queryIdx].push_back(cv::DMatch(queryIdx, trainIdx, i, 0.5));
-		}
-	}
-	size_t idx = 0;
-	for(size_t i = 0; i < (size_t)queryDescriptors.rows; ++i) {
-		if(matches[i].size() && compactResult) {
-			matches[idx++] = matches[i];
-		}
-	}
-	if(compactResult) {
-		matches.resize(idx);
-	}
-
-	delete[] buffer;
-}
-#endif
 
 void init_siftgpu_matcher_provider() {
 	DescriptorMatcherProvider::getInstance().add(new SiftGpuDescriptorMatcherProvider());
@@ -227,14 +118,6 @@ void init_siftgpu_matcher_provider() {
 	}
 
 DescriptorMatcher* SiftGpuDescriptorMatcherProvider::getDescriptorMatcher(const DescriptorType &type, const DetectorsParams &params) {
-#if 0
-	auto siftParams = params.siftParams;
-	auto surfParams = params.surfParams;
-	auto starParams = params.starParams;
-	auto fastParams = params.fastParams;
-	auto briskParams = params.briskParams;
-	auto orbParams = params.orbParams;
-#endif
 	SWITCH_TYPE(SIFTGPU, return new SiftGpuMatcher;);
 	assert(false);
 	return 0;

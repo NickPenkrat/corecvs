@@ -1,4 +1,4 @@
-#include "featureMatcher.h"
+#include "featureMatchingPipeline.h"
 
 #include <cassert>
 #include <fstream>
@@ -11,11 +11,8 @@
 #include "bufferReaderProvider.h"
 #include "vsfmIo.h"
 
-//#include "openCvKeyPointsWrapper.h"
-
-
 const char* KEYPOINT_EXTENSION = "keypoints";
-const char* DESCRIPTOR_EXTENSION = "descriptors.xml";
+const char* DESCRIPTOR_EXTENSION = "descriptors";
 const char* SIFT_EXTENSION = "sift";
 
 std::string changeExtension(const std::string &imgName, const std::string &desiredExt) {
@@ -75,23 +72,11 @@ void KeyPointDetectionStage::run(FeatureMatchingPipeline *pipeline) {
 		Image& image = pipeline->images[i];
 		std::cerr << "Computing keypoints for " << image.filename << std::endl;
 		image.keyPoints.keyPoints.clear();
-#if 0
-		image.img = cv::imread(image.filename, CV_LOAD_IMAGE_GRAYSCALE);
-
-		std::vector<cv::KeyPoint> kps;
-		detector->detect(image.img, kps);
-		image.keyPoints.keyPoints.clear();
-		for(auto kp: kps)
-			image.keyPoints.keyPoints.push_back(kp);
-#else
+		
 		BufferReader* reader = BufferReaderProvider::getInstance().getBufferReader(image.filename);
 		RuntimeTypeBuffer img = reader->read(image.filename);
 		delete reader;
-#if 0
-		RuntimeTypeBuffer img(convert(cv::imread(image.filename, CV_LOAD_IMAGE_GRAYSCALE)));
-#endif
 		detector->detect(img, image.keyPoints.keyPoints);
-#endif
 
 		std::cerr << "Detected " << image.keyPoints.keyPoints.size() << " features on " << image.filename << std::endl;
 	}
@@ -167,32 +152,12 @@ void DescriptorExtractionStage::run(FeatureMatchingPipeline *pipeline) {
 	for(size_t i = 0; i < N; ++i) {
 		Image& image = pipeline->images[i];
 		std::cerr << "Computing descriptors for " << image.filename << std::endl;
-#if 0
-		cv::Mat img = cv::imread(image.filename, CV_LOAD_IMAGE_GRAYSCALE);
-		image.descriptors.type = descriptorType;
-
-		cv::Mat mat;
-		std::vector<cv::KeyPoint> kps;
-		for(auto kp: image.keyPoints.keyPoints)
-			kps.push_back((cv::KeyPoint)kp);
-
-		assert(kps.size() == image.keyPoints.keyPoints.size());
-
-		extractor->compute(img, kps, mat);//image.keyPoints.keyPoints, mat);
-		image.keyPoints.keyPoints.clear();
-		for(auto kp: kps)
-			image.keyPoints.keyPoints.push_back(kp);
-
-		image.descriptors.mat = RuntimeTypeBuffer(mat);
-#else
+		
 		BufferReader* reader = BufferReaderProvider::getInstance().getBufferReader(image.filename);
 		RuntimeTypeBuffer img = reader->read(image.filename);
 		delete reader;
-#if 0
-		RuntimeTypeBuffer img(convert(cv::imread(image.filename, CV_LOAD_IMAGE_GRAYSCALE)));
-#endif
+		
 		extractor->compute(img, image.keyPoints.keyPoints, image.descriptors.mat);
-#endif
 
 		assert(image.descriptors.mat.getRows() == image.keyPoints.keyPoints.size());
 		std::cerr << "Computed " << image.descriptors.mat.getRows() << " descriptors on " << image.filename << std::endl;
@@ -259,40 +224,6 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline) {
 
 		assert(I < N && J < N);
 
-#if 0
-		// Now we need to subset descriptors
-		cv::Mat qd = (cv::Mat)images[I].descriptors.mat;
-		cv::Mat td = (cv::Mat)images[J].descriptors.mat;
-		cv::Mat qd2 = (cv::Mat)images[I].descriptors.mat;
-		cv::Mat td2 = (cv::Mat)images[J].descriptors.mat;
-		
-		qd.rows = query.queryFeatures.size();
-		td.rows = query.trainFeatures.size();
-
-		for(size_t j = 0; j < query.queryFeatures.size(); ++j) {
-			qd2.row(query.queryFeatures[j]).copyTo(qd.row(j));
-		}
-		for(size_t j = 0; j < query.trainFeatures.size(); ++j) {
-			td2.row(query.trainFeatures[j]).copyTo(td.row(j));
-		}
-
-		// Some descriptors (ORB, BRISK, SIFTGPU) require specific matchers, 
-		// otherwise we use FLANN-based matcher
-//		std::vector<cv::DMatch> matches;
-//		
-		cv::DescriptorMatcher* matcher = DescriptorMatcherProvider::getDescriptorMatcher(descriptorType);
-		std::vector<std::vector<cv::DMatch>> matches;
-		matcher->knnMatch(qd, td, matches, responsesPerPoint);
-
-		rawMatches.matches[s].clear();
-		rawMatches.matches[s].resize(matches.size());
-		for(size_t idx = 0; idx < matches.size(); ++idx) {
-			for(auto m: matches[idx]) {
-				rawMatches.matches[s][idx].push_back(RawMatch(m, I, J));
-			}
-		}
-		delete matcher;
-#else
 		RuntimeTypeBuffer qb(images[I].descriptors.mat);
 		RuntimeTypeBuffer tb(images[J].descriptors.mat);
 
@@ -305,8 +236,6 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline) {
 
 		DescriptorMatcher* matcher = DescriptorMatcherProvider::getInstance().getMatcher(descriptorType);
 		matcher->knnMatch(qb, tb, rawMatches.matches[s], responsesPerPoint);
-
-#endif
 
 		// It's time to replace indicies
 		for(auto v: rawMatches.matches[s]) {
@@ -347,11 +276,7 @@ void RefineMatchesStage::run(FeatureMatchingPipeline *pipeline) {
 	// k - feature index
 	// l - match index (<= 2)
 	// Yep, it is too ugly
-#if 0
-	std::vector<std::vector<std::vector<std::vector<cv::DMatch>>>> accumulator;
-#else
 	std::vector<std::vector<std::vector<std::vector<RawMatch>>>> accumulator;
-#endif
 
 	size_t N = pipeline->images.size();
 
@@ -374,15 +299,6 @@ void RefineMatchesStage::run(FeatureMatchingPipeline *pipeline) {
 
 		for(size_t i = 0; i < rawMatches.matches[s].size(); ++i) {
 			for(size_t j = 0; j < rawMatches.matches[s][i].size(); ++j) {
-#if 0
-				cv::DMatch dm = rawMatches.matches[s][i][j];
-				if(dm.distance < accumulator[query][train][dm.queryIdx][0].distance) {
-					accumulator[query][train][dm.queryIdx][1] = accumulator[query][train][dm.queryIdx][0];
-					accumulator[query][train][dm.queryIdx][0] = dm;
-				} else if( dm.distance < accumulator[query][train][dm.queryIdx][1].distance) {
-					accumulator[query][train][dm.queryIdx][1] = dm;
-				}
-#else
 				RawMatch dm = rawMatches.matches[s][i][j];
 				if(dm.distance < accumulator[query][train][dm.featureQ][0].distance) {
 					accumulator[query][train][dm.featureQ][1] = accumulator[query][train][dm.featureQ][0];
@@ -390,17 +306,12 @@ void RefineMatchesStage::run(FeatureMatchingPipeline *pipeline) {
 				} else if( dm.distance < accumulator[query][train][dm.featureQ][1].distance) {
 					accumulator[query][train][dm.featureQ][1] = dm;
 				}
-#endif
 			}
 		}
 	}
 	std::cerr << "Reshape finished" << std::endl;
 
-#if 0
-	std::vector<std::vector<std::vector<cv::DMatch>>> ratioInliers(N);
-#else
 	std::vector<std::vector<std::vector<RawMatch>>> ratioInliers(N);
-#endif
 	for(size_t i = 0; i < N; ++i) {
 		ratioInliers[i].resize(N);
 		for(size_t j = 0; j < N; ++j)
@@ -425,18 +336,9 @@ void RefineMatchesStage::run(FeatureMatchingPipeline *pipeline) {
 	for(size_t q = 0; q < N; ++q) {
 		for(size_t t = 0; t < N; ++t) {
 			for(size_t k = 0; k < images[q].keyPoints.keyPoints.size(); ++k) {
-#if 0
-				cv::DMatch& dm = ratioInliers[q][t][k];
-#else
 				RawMatch& dm = ratioInliers[q][t][k];
-#endif
-#if 0
-				if(dm.trainIdx >= 0 && dm.queryIdx >= 0 && ratioInliers[t][q][dm.trainIdx].trainIdx != static_cast<int>(k))
-					dm.trainIdx = dm.queryIdx = -1;
-#else
 				if(dm.featureT != ~(size_t)0 && dm.featureQ != ~(size_t)0 && ratioInliers[t][q][dm.featureT].featureT != static_cast<int>(k))
 					dm.featureT = dm.featureQ = ~(size_t)0;
-#endif
 			}
 		}
 	}
@@ -448,15 +350,9 @@ void RefineMatchesStage::run(FeatureMatchingPipeline *pipeline) {
 		for(size_t j = i + 1; j < N; ++j) {
 			std::vector<Match> matches;
 			for(size_t k = 0; k < images[i].keyPoints.keyPoints.size(); ++k) {
-#if 0
-				cv::DMatch& dm = ratioInliers[i][j][k];
-				if(ratioInliers[i][j][k].trainIdx >= 0 && ratioInliers[i][j][k].queryIdx >= 0)
-					matches.push_back(Match(i, j, dm.queryIdx, dm.trainIdx, dm.distance));
-#else
 				RawMatch& dm = ratioInliers[i][j][k];
 				if(ratioInliers[i][j][k].featureT != ~(size_t)0 && ratioInliers[i][j][k].featureQ != ~(size_t)0)
 					matches.push_back(Match(i, j, dm.featureQ, dm.featureT, dm.distance));
-#endif
 			}
 			if(matches.size()) {
 				refinedMatches.matchSets.push_back(RefinedMatchSet(i, j, matches));
