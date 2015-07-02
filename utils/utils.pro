@@ -85,7 +85,8 @@ HEADERS += \
     corestructs/g12Image.h \
     visitors/jsonGetter.h \
     visitors/jsonSetter.h \
-    widgets/vectorWidget.h
+    widgets/vectorWidget.h \
+    distortioncorrector/lensCorrectionParametresContolWidget.h
 
 SOURCES += \
     frames.cpp \
@@ -143,7 +144,8 @@ SOURCES += \
     corestructs/g12Image.cpp \
     visitors/jsonGetter.cpp \
     visitors/jsonSetter.cpp \
-    widgets/vectorWidget.cpp
+    widgets/vectorWidget.cpp \
+    distortioncorrector/lensCorrectionParametresContolWidget.cpp
 
 
 
@@ -515,4 +517,5 @@ with_synccam {
 OTHER_FILES += ../tools/generator/xml/draw3d.xml
 
 FORMS += \
-    widgets/vectorWidget.ui
+    widgets/vectorWidget.ui \
+    distortioncorrector/lensCorrectionParametresContolWidget.ui

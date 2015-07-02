@@ -18,6 +18,8 @@
 #include "visitors/xmlSetter.h"
 #include "visitors/qSettingsGetter.h"
 #include "visitors/xmlGetter.h"
+#include "visitors/jsonSetter.h"
+#include "visitors/jsonGetter.h"
 
 using corecvs::BaseReflectionStatic;
 
@@ -25,22 +27,32 @@ using corecvs::BaseReflectionStatic;
 class WidgetSaver {
 	SettingsSetter *mQtSettings;
 	XmlSetter      *mXmlSetter;
+    JSONSetter     *mJsonSetter;
 
 public:
 	WidgetSaver() :
 		mQtSettings(NULL),
-		mXmlSetter(NULL)
+        mXmlSetter(NULL),
+        mJsonSetter(NULL)
 	{}
 
 	WidgetSaver(SettingsSetter *qtSettigns) :
 		mQtSettings(qtSettigns),
-		mXmlSetter(NULL)
+        mXmlSetter(NULL),
+        mJsonSetter(NULL)
 	{}
 
 	WidgetSaver(XmlSetter *xmlSetter) :
 		mQtSettings(NULL),
-		mXmlSetter(xmlSetter)
+        mXmlSetter(xmlSetter),
+        mJsonSetter(NULL)
 	{}
+
+    WidgetSaver(JSONSetter *jsonSetter) :
+        mQtSettings(NULL),
+        mXmlSetter(NULL),
+        mJsonSetter(jsonSetter)
+    {}
 
 template <class ParametersClass>
 	void saveParameters (ParametersClass &paramsClass, QString name)
@@ -57,28 +69,41 @@ template <class ParametersClass>
 			paramsClass.accept(*mXmlSetter);
 			return;
 		}
+
+        if (mJsonSetter){
+            paramsClass.accept(*mJsonSetter);
+        }
 	}
 };
 
 class WidgetLoader {
 	SettingsGetter *mQtSettings;
 	XmlGetter      *mXmlGetter;
-
+    JSONGetter     *mJsonGetter;
 public:
 	WidgetLoader() :
 		mQtSettings(NULL),
-		mXmlGetter(NULL)
+        mXmlGetter(NULL),
+        mJsonGetter(NULL)
 	{}
 
 	WidgetLoader(SettingsGetter *qtSettigns) :
 		mQtSettings(qtSettigns),
-		mXmlGetter(NULL)
+        mXmlGetter(NULL),
+        mJsonGetter(NULL)
 	{}
 
 	WidgetLoader(XmlGetter *xmlSetter) :
 		mQtSettings(NULL),
-		mXmlGetter(xmlSetter)
+        mXmlGetter(xmlSetter),
+        mJsonGetter(NULL)
 	{}
+
+    WidgetLoader(JSONGetter *jsonGetter) :
+        mQtSettings(NULL),
+        mXmlGetter(NULL),
+        mJsonGetter(jsonGetter)
+    {}
 
 template <class ParametersClass>
 	void loadParameters (ParametersClass &paramsClass, QString name)
@@ -94,6 +119,10 @@ template <class ParametersClass>
 			paramsClass.accept(*mXmlGetter);
 			return;
 		}
+
+        if (mJsonGetter){
+            paramsClass.accept(*mJsonGetter);
+        }
 	}
 };
 
