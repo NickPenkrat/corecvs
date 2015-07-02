@@ -6,7 +6,7 @@
 #include "mathUtils.h" // roundDivUp
 #include "preciseTimer.h"
 #include "directShowCaptureDecouple.h"
-#include "mjpegDecoderLazy.h"
+//#include "mjpegDecoderLazy.h"
 #include "cameraControlParameters.h"
 
 #include "decoupleYUYV.h"
@@ -14,7 +14,7 @@
 
 DirectShowCaptureDecoupleInterface::DirectShowCaptureDecoupleInterface(string _devname)
 {
-    this->devname = _devname;
+    devname = _devname;
 
     //     Group Number                   1       2 3      4       56        7       8         9 10     11     1213    14
     QRegExp deviceStringPattern(QString("^([^,:]*)(:(\\d*)/(\\d*))?((:mjpeg)|(:yuyv)|(:fjpeg))?(:(\\d*)x(\\d*))?((:rc)|(:rc2)|(:sbs)|(:rcf))?$"));
@@ -35,23 +35,22 @@ DirectShowCaptureDecoupleInterface::DirectShowCaptureDecoupleInterface(string _d
         printf("Error in device string format:%s\n", _devname.c_str());
         return;
     }
-    printf (
-                "Parsed data:\n"
-                "Device =%s\n"
-                "FPS %s/%s\n"
-                "Size [%sx%s]\n"
-                "Compressing: %s\n"
-                "Coupling: <%s>\n",
-                deviceStringPattern.cap(DeviceGroup).toLatin1().constData(),
-                deviceStringPattern.cap(FpsNumGroup).toLatin1().constData(),
-                deviceStringPattern.cap(FpsDenumGroup).toLatin1().constData(),
-                deviceStringPattern.cap(WidthGroup).toLatin1().constData(),
-                deviceStringPattern.cap(HeightGroup).toLatin1().constData(),
-                deviceStringPattern.cap(CompressionGroup).toLatin1().constData(),
-                deviceStringPattern.cap(CouplingGroup).toLatin1().constData()
+    printf("Parsed data:\n"
+           "Device =%s\n"
+           "FPS %s/%s\n"
+           "Size [%sx%s]\n"
+           "Compressing: %s\n"
+           "Coupling: <%s>\n",
+           deviceStringPattern.cap(DeviceGroup).toLatin1().constData(),
+           deviceStringPattern.cap(FpsNumGroup).toLatin1().constData(),
+           deviceStringPattern.cap(FpsDenumGroup).toLatin1().constData(),
+           deviceStringPattern.cap(WidthGroup).toLatin1().constData(),
+           deviceStringPattern.cap(HeightGroup).toLatin1().constData(),
+           deviceStringPattern.cap(CompressionGroup).toLatin1().constData(),
+           deviceStringPattern.cap(CouplingGroup).toLatin1().constData()
     );
 
-    int cameraName =  deviceStringPattern.cap(DeviceGroup).toInt();
+    int cameraName = deviceStringPattern.cap(DeviceGroup).toInt();
 
     bool err;
     int fpsnum = deviceStringPattern.cap(FpsNumGroup).toInt(&err);
@@ -67,21 +66,20 @@ DirectShowCaptureDecoupleInterface::DirectShowCaptureDecoupleInterface(string _d
     if (!err || height <= 0) height = 600;
 
     compressed = DirectShowCameraDescriptor::UNCOMPRESSED_YUV;
-    int formatId = CAP_YUV;
     if (!deviceStringPattern.cap(CompressionGroup).isEmpty())
     {
-       if        (!deviceStringPattern.cap(CompressionGroup).compare(QString(":rgb"))) {
+       if      (!deviceStringPattern.cap(CompressionGroup).compare(QString(":rgb"))) {
            compressed = DirectShowCameraDescriptor::UNCOMPRESSED_RGB;
-           formatId = CAP_RGB;
-       } else if (!deviceStringPattern.cap(CompressionGroup).compare(QString(":mjpeg"))) {
+           mIsRgb = true;
+       }
+       else if (!deviceStringPattern.cap(CompressionGroup).compare(QString(":mjpeg"))) {
            compressed = DirectShowCameraDescriptor::COMPRESSED_JPEG;
-           formatId = CAP_MJPEG;
-       } else if (!deviceStringPattern.cap(CompressionGroup).compare(QString(":fjpeg"))) {
+       }
+       else if (!deviceStringPattern.cap(CompressionGroup).compare(QString(":fjpeg"))) {
            compressed = DirectShowCameraDescriptor::COMPRESSED_FAST_JPEG;
-           formatId = CAP_MJPEG;
        }
     }
-
+    int formatId = DirectShowCameraDescriptor::codec_types[compressed];
 
     coupling = DecoupleYUYV::ANAGLYPH_RC;
     if (!deviceStringPattern.cap(CouplingGroup).compare(QString(":sbs"))) {
@@ -94,7 +92,7 @@ DirectShowCaptureDecoupleInterface::DirectShowCaptureDecoupleInterface(string _d
         coupling = DecoupleYUYV::ANAGLYPH_RC_FAST;
     }
 
-    printf("Capture Right device: DShow %d\n", cameraName );
+    printf("Capture Right device: DShow %d\n", cameraName);
     printf("Format is: %s\n", DirectShowCameraDescriptor::codec_names[compressed]);
     printf("Coupling is: %d\n", coupling);
 
@@ -261,7 +259,7 @@ ImageCaptureInterface::CapErrorCode DirectShowCaptureDecoupleInterface::getForma
     delete format;
     format = new CameraFormat[number];
     DirectShowCapDll_getFormats(cameras[0].deviceHandle, number, captureTypeFormats);
-    for (int i = 0; i < number; i ++)
+    for (int i = 0; i < number; i++)
     {
         format[i].fps    = captureTypeFormats[i].fps;
         format[i].width  = captureTypeFormats[i].width;

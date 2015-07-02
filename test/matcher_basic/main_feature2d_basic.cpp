@@ -44,9 +44,9 @@ int main(int argc, char ** argv) {
 	init_siftgpu_matcher_provider();
 #endif
 
-	filenames.push_back("./data/kermit000.jpg");
-	filenames.push_back("./data/kermit001.jpg");
-	filenames.push_back("./data/kermit002.jpg");
+	filenames.push_back("./data/kermit_dataset/kermit000.jpg");
+	filenames.push_back("./data/kermit_dataset/kermit001.jpg");
+	filenames.push_back("./data/kermit_dataset/kermit002.jpg");
 
 	run_detector("SIFTGPU");
 	run_detector("SIFT");

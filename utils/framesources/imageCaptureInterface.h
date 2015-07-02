@@ -69,6 +69,9 @@ class ImageCaptureInterface : public QObject
     Q_OBJECT
 
 public:
+    /**
+     *   Error code for init functions
+     **/
     enum CapErrorCode
     {
         SUCCESS       = 0,
@@ -82,17 +85,6 @@ public:
         CAMERA_RIGHT  = 0x10,
         CAMERA_BOTH   = 0x11
     };
-
-    /**
-     *  This structure will hold the rational number
-     *  for the FPS
-     *
-     **/
-    typedef struct
-    {
-        uint16_t num;    /**< the numerator*/
-        uint16_t denom;  /**< the denominator*/
-    } fps_t;
 
     /**
      * Used to pass capture parameters in set/get requests
@@ -136,18 +128,24 @@ public:
             freeBuffers();
             bufferLeft  = new G12Buffer(height, width, shouldInit);
             bufferRight = new G12Buffer(height, width, shouldInit);
-            return hasBoth() && bufferLeft->isAllocated() && bufferRight->isAllocated();
+            return hasBoth();
         }
 
         void freeBuffers()
         {
             if (bufferLeft  != NULL) delete_safe(bufferLeft);
             if (bufferRight != NULL) delete_safe(bufferRight);
+            if (rgbBufferLeft  != NULL) delete_safe(rgbBufferLeft);
+            if (rgbBufferRight != NULL) delete_safe(rgbBufferRight);
         }
 
         FramePair clone() const
         {
             FramePair result(new G12Buffer(bufferLeft), new G12Buffer(bufferRight));
+            if (rgbBufferLeft != NULL)
+                result.rgbBufferLeft = new RGB24Buffer(rgbBufferLeft);
+            if (rgbBufferRight != NULL)
+                result.rgbBufferRight = new RGB24Buffer(rgbBufferRight);
             result.timeStampLeft  = timeStampLeft;
             result.timeStampRight = timeStampRight;
             return result;
@@ -158,7 +156,7 @@ public:
         int64_t     diffTimeStamps() const  { return timeStampLeft     - timeStampRight;        }
     };
 
-    static bool isRgb;
+    bool mIsRgb;
 
     struct CameraFormat
     {
@@ -181,14 +179,12 @@ public:
      *  Fabric to create particular implementation of the capturer
      **/
     static ImageCaptureInterface *fabric(string input, bool isRgb = false);
+
     /**
      *  Main function to request frames from image interface
      **/
     virtual FramePair    getFrame() = 0;
-    virtual FramePair    getFrameRGB24()
-    {
-        return getFrame();
-    }
+    virtual FramePair    getFrameRGB24()    { return getFrame(); }
 
     virtual CapErrorCode setCaptureProperty(int id, int value);
 
@@ -196,6 +192,9 @@ public:
 
     virtual CapErrorCode getCaptureName(QString &value);
 
+    /**
+     *  Enumerates camera formats
+     **/
     virtual CapErrorCode getFormats(int *num, CameraFormat *&);
 
     /**

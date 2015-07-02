@@ -30,7 +30,7 @@ UTILS_INCLUDEPATH = \
     $$UTILSDIR/framesources/syncCam \
     $$UTILSDIR/framesources/file \
     $$UTILSDIR/framesources/avcodec \
-    $$UTILSDIR/framesources/opencv \
+#    $$UTILSDIR/framesources/opencv \
     $$UTILSDIR/processor \
     $$UTILSDIR/rectifier \
     $$UTILSDIR/statistics \     # obsolete?

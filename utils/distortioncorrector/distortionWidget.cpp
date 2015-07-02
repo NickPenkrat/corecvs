@@ -16,6 +16,17 @@
 #include "ui_distortionWidget.h"
 #include "distPointsFunction.h"
 
+#ifdef WITH_OPENCV
+# include "opencv2/imgproc/imgproc.hpp"
+# include "opencv2/highgui/highgui.hpp"
+# include <opencv2/calib3d/calib3d.hpp>
+# include "opencv2/core/core_c.h"
+# include "OpenCVTools.h"
+
+using namespace cv;
+
+#endif
+
 using corecvs::DistPointsFunction;
 
 
@@ -50,6 +61,7 @@ DistortionWidget::DistortionWidget(QWidget *parent) :
     connect(mUi->setParamsButton,        SIGNAL(released()), this, SLOT(setParams()));
     connect(mUi->saveButton,             SIGNAL(released()), this, SLOT(addVector()));
     connect(mUi->cornerDetectorButton,   SIGNAL(released()), this, SLOT(detectCorners()));
+    connect(mUi->crossDetectorButton,    SIGNAL(released()), this, SLOT(detectCrosses()));
     connect(mUi->updateScoreButton,      SIGNAL(released()), this, SLOT(updateScore()));
     connect(mUi->deleteButton,           SIGNAL(released()), this, SLOT(deletePointPair()));
     mDistortionParameters = new DistortionParameters();
@@ -163,6 +175,64 @@ void DistortionWidget::detectCorners()
         addPointPair(Vector3dd(), cornerSegment->getMean());
     }
     delete_safe(grad);
+}
+
+void DistortionWidget::detectCrosses()
+{
+#ifdef WITH_OPENCV
+    if(mBufferInput == NULL) {
+        return;
+    }
+
+    IplImage *inputIpl = OpenCVTools::getCVImageFromG12Buffer(mBufferInput);
+    int             found;
+    vector<Point2f> pointbuf;
+    Mat             view = cv::Mat(inputIpl, false);
+
+    int chessV = mUi->vCrossesCountBox->value();
+    int chessH = mUi->hCrossesCountBox->value();
+    int cellSize = mUi->cellSizeBox->value();
+
+    Size            boardSize(chessV, chessH);
+
+    found = findChessboardCorners( view, boardSize, pointbuf, CV_CALIB_CB_ADAPTIVE_THRESH );
+
+    if(found)
+    {
+        L_INFO_P("Cross detected: %i", found);
+
+        delete mBufferWithCorners;
+        drawChessboardCorners(view, boardSize, Mat(pointbuf), found);
+
+        IplImage viewImage = view;
+        mBufferWithCorners = OpenCVTools::getG12BufferFromCVImage(&viewImage);
+
+        PaintImageWidget *canvas = mUi->widget;
+
+        if(mUi->clearOldValuesCheckBox->isChecked())
+        {
+            mCorrectionMap.clear();
+            canvas->mPaths.clear();
+        }
+
+        for(int ih = 0; ih < chessH; ih++)
+        {
+            canvas->mPaths.append(PaintImageWidget::VertexPath());
+            PaintImageWidget::VertexPath &path = canvas->mPaths.last();
+            for(int iw=0; iw < chessV; iw++)
+            {
+                Vector2dd point(pointbuf.at(ih * chessV + iw).x,pointbuf.at(ih * chessV + iw).y);
+                addPointPair(Vector3dd(cellSize * ih, cellSize * iw, 0), point);
+                canvas->addVertex(point);
+                canvas->addVertexToPath(&canvas->mPoints.last(), &path);
+            }
+        }
+    }
+    cvReleaseImage(&inputIpl);
+    return;
+#else
+    return;
+#endif
 }
 
 void DistortionWidget::tryAddPoint(int toolID, const QPointF &point)
@@ -332,7 +402,6 @@ void DistortionWidget::doLinesTransform()
     updateAdditionalData();
     L_INFO_P("Ending distortion calibration");
     updateScore();
-
 }
 
 void DistortionWidget::updateScore()
@@ -479,9 +548,7 @@ void DistortionWidget::printVectorPair(const Vector3dd &key, const Vector2dd &va
     table->setItem(row, 2, new QTableWidgetItem(QString::number(key.z())));
     table->setItem(row, 3, new QTableWidgetItem(QString::number(value.x())));
     table->setItem(row, 4, new QTableWidgetItem(QString::number(value.y())));
-
 }
-
 
 void DistortionWidget::addPointPair(const Vector3dd &key, const Vector2dd &value)
 {

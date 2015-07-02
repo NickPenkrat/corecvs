@@ -69,6 +69,7 @@ private slots:
     void addVector();
     void initTransform();
     void detectCorners();
+    void detectCrosses();
     void resetParameters();
     void choosePoint(int row, int column);
     void showBufferChanged();

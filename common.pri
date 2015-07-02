@@ -227,8 +227,10 @@ isEmpty(CCACHE_TOOLCHAIN_ON) {
     QMAKE_CFLAGS_STATIC_LIB=
     QMAKE_CXXFLAGS_STATIC_LIB=
 
-    QMAKE_CFLAGS +=-fPIC
-    QMAKE_CXXFLAGS +=-fPIC
+    !win32 {
+        QMAKE_CFLAGS +=-fPIC
+        QMAKE_CXXFLAGS +=-fPIC
+    }
 } else {
    #QMAKE_CXXFLAGS_DEBUG   += /showIncludes
 

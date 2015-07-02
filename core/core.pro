@@ -59,3 +59,10 @@ include(clustering3d/clustering3d.pri)
 include(xml/generated/generated.pri)
 
 include(features2d/features2d.pri)
+
+OTHER_FILES +=            \
+    xml/parameters.xml    \
+    xml/bufferFilters.xml \
+    xml/clustering1.xml   \
+    xml/filterBlock.xml   \
+    xml/precise.xml       \
