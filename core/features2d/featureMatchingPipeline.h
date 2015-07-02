@@ -3,6 +3,8 @@
 
 #include <vector>
 #include <string>
+#include <stack>
+#include <chrono>
 
 #include "detectorParams.h"
 #include "featureDetectorProvider.h"
@@ -94,6 +96,8 @@ public:
 	~FeatureMatchingPipeline();
 	void run();
 	void add(FeatureMatchingPipelineStage* stage, bool run, std::pair<bool, std::string> saveParams = std::make_pair(false, std::string()), std::pair<bool, std::string> loadParams = std::make_pair(false, std::string()));
+	void tic();
+	void toc(const std::string &name, const std::string &evt);
 
 	std::vector<Image> images;
 	MatchPlan matchPlan;
@@ -109,6 +113,7 @@ private:
 	std::vector<bool> runEnable;
 	std::vector<std::pair<bool, std::string>> saveParams;
 	std::vector<std::pair<bool, std::string>> loadParams;
+	std::stack<std::chrono::time_point<std::chrono::high_resolution_clock>> tics;
 	FeatureMatchingPipeline(const FeatureMatchingPipeline&);
 };
 

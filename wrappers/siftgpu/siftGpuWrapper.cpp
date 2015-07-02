@@ -91,7 +91,6 @@ void SiftGpu::operator()(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keypoi
 		siftGpu->SetKeypointList(keypoints_sgpu.size(), &keypoints_sgpu[0]);
 		siftGpu->RunSIFT(image.getCols(), image.getRows(), image.row<unsigned char>(0), GL_LUMINANCE, GL_UNSIGNED_BYTE);
 	} else {
-		std::cerr << "Running SIFTGPU" << std::endl;
 		siftGpu->RunSIFT(image.getCols(), image.getRows(), image.row<unsigned char>(0), GL_LUMINANCE, GL_UNSIGNED_BYTE);
 		int num = siftGpu->GetFeatureNum();
 		keypoints_sgpu.resize(num);

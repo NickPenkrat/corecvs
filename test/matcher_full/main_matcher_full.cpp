@@ -12,6 +12,11 @@
 #include "openCvDescriptorExtractorWrapper.h"
 #include "openCvDescriptorMatcherWrapper.h"
 #include "openCvFileReader.h"
+
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#else
+#error OpenCV is required
 #endif
 #ifdef WITH_SIFTGPU
 #include "siftGpuWrapper.h"
@@ -20,17 +25,28 @@
 
 std::vector<std::string> filenames;
 
-void run_detector(const std::string &detector) {
-	FeatureMatchingPipeline pipeline(filenames);
-	pipeline.add(new KeyPointDetectionStage(DetectorType(detector), DetectorsParams()), true);
-	pipeline.run();
 
-	assert(pipeline.images[0].keyPoints.keyPoints.size());
-	assert(pipeline.images[1].keyPoints.keyPoints.size());
-	assert(pipeline.images[2].keyPoints.keyPoints.size());
+class DrawMatchesStage : public FeatureMatchingPipelineStage {
+public:
+	void run(FeatureMatchingPipeline *pipeline) {
+		auto images = pipeline->images;
+		for(auto img: images) {
+			char filename[1000];
+			sprintf(filename, "%s.features.png", img.filename.c_str());
 
-	std::cout << detector << " detector is OK (some points were detected)" << std::endl;
-}
+			cv::Mat src = cv::imread(img.filename);
+			
+			auto keyPoints = img.keyPoints.keyPoints;
+			for(auto kp: keyPoints) {
+				cv::circle(src, cv::Point((int)kp.x, (int)kp.y), 2, cv::Scalar(255,0,0), -2);
+			}
+
+			cv::imwrite(filename, src);
+		}
+	}
+	void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename) {}
+	void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const {};
+};
 
 std::string base;
 std::string tempBase;
@@ -67,14 +83,23 @@ void run(const std::string &detector) {
 
 	FeatureMatchingPipeline pipeline(filenames);
 
-	pipeline.add(new KeyPointDetectionStage(DetectorType(detector), DetectorsParams()), true, std::make_pair<bool, std::string>(true, "mm"));
+	pipeline.add(new KeyPointDetectionStage(DetectorType(detector), DetectorsParams()), true, std::make_pair<bool, std::string>(true, ""));
+	pipeline.add(new DrawMatchesStage, true);
 	pipeline.add(new DescriptorExtractionStage(DescriptorType(detector), DetectorsParams()), true, std::make_pair<bool, std::string>(true, "desc"));
 	pipeline.add(new MatchingPlanComputationStage(), true, std::make_pair<bool, std::string>(true, tempBase + "plan.txt"));
 	pipeline.add(new MatchingStage(DescriptorType(detector)), true, std::make_pair<bool, std::string>(true, tempBase + "raw_matches.txt"));
 	pipeline.add(new RefineMatchesStage(), true, std::make_pair<bool, std::string>(true, tempBase + "refined_matches.txt"));
 	pipeline.add(new VsfmWriterStage(false), true, std::make_pair<bool, std::string>(true, tempBase + "vsfm_matches.txt"));
 
+	std::cerr << std::endl << "Running with " << detector << " detector/descriptor" << std::endl << std::endl;
 	pipeline.run();
+	std::cerr <<
+		"Detected keypoints were saved to " << tempBase << "*.keypoints (matches are drawn on .png images)" << std::endl <<
+		"Extracted descriptors were saved to " << tempBase << "*.descriptors" << std::endl <<
+		"Matching plan was saved to " << tempBase << "plan.txt" << std::endl <<
+		"Raw matches were saved to " << tempBase << "raw_matches.txt" << std::endl <<
+		"You can now run VisualSFM in " << tempBase << " folder (import pairwise matching data from vsfm_matches.txt" << std::endl << std::endl;
+
 }
 
 int main(int argc, char ** argv) {
@@ -93,6 +118,6 @@ int main(int argc, char ** argv) {
 	detectBase();
 	run("SIFT");
 	run("SURF");
-//	run("SIFTGPU");
+	run("SIFTGPU");
 	return 0;
 }

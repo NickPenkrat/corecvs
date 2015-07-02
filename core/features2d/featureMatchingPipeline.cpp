@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <iomanip>
+#include <sstream>
 
 #include "featureDetectorProvider.h"
 #include "descriptorExtractorProvider.h"
@@ -66,20 +67,28 @@ void FeatureMatchingPipeline::add(FeatureMatchingPipelineStage *ps, bool run, st
 
 void KeyPointDetectionStage::run(FeatureMatchingPipeline *pipeline) {
 	FeatureDetector* detector = FeatureDetectorProvider::getInstance().getDetector(detectorType, detectorsParams);
+	pipeline->tic();
+	std::stringstream ss1, ss2;
+
 	size_t N = pipeline->images.size();
 
 	for(size_t i = 0; i < N; ++i) {
 		Image& image = pipeline->images[i];
-		std::cerr << "Computing keypoints for " << image.filename << std::endl;
 		image.keyPoints.keyPoints.clear();
+		
+		ss1 << "Detecting keypoints with " << detectorType << " on " << image.filename;
+		pipeline->tic();
 		
 		BufferReader* reader = BufferReaderProvider::getInstance().getBufferReader(image.filename);
 		RuntimeTypeBuffer img = reader->read(image.filename);
 		delete reader;
 		detector->detect(img, image.keyPoints.keyPoints);
-
-		std::cerr << "Detected " << image.keyPoints.keyPoints.size() << " features on " << image.filename << std::endl;
+		ss2 << image.keyPoints.keyPoints.size() << " keypoints";
+		pipeline->toc(ss1.str(), ss2.str());
+		ss1.str(""); ss2.str("");
 	}
+	ss1 << "Detecting keypoints with " << detectorType;
+	pipeline->toc(ss1.str(), ss2.str());
 	delete detector;
 }
 
@@ -87,7 +96,6 @@ void KeyPointDetectionStage::saveResults(FeatureMatchingPipeline *pipeline, cons
 	std::vector<Image>& images = pipeline->images;
 	for(size_t i = 0; i < images.size(); ++i) {
 		std::string filename = changeExtension(images[i].filename, KEYPOINT_EXTENSION);
-		std::cerr << "Saving keypoints to " << filename << std::endl;
 
 		images[i].keyPoints.save(filename);
 	}
@@ -99,11 +107,8 @@ void KeyPointDetectionStage::loadResults(FeatureMatchingPipeline *pipeline, cons
 	for(size_t i = 0; i < images.size(); ++i) {
 		std::string filename = changeExtension(images[i].filename, KEYPOINT_EXTENSION);
 		std::ifstream ifs;
-		std::cerr << "Loading keypoints from " << filename << std::endl;
 
 		images[i].keyPoints.load(filename);
-
-		std::cerr << "Loaded " << images[i].keyPoints.keyPoints.size() << " keypoints from " << filename << std::endl;
 	}
 }
 
@@ -111,10 +116,9 @@ KeyPointDetectionStage::KeyPointDetectionStage(DetectorType type, DetectorsParam
 }
 
 void DescriptorExtractionStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const {
-	std::vector<Image> &images = pipeline->images;
+	auto images = pipeline->images;
 	for(size_t i = 0; i < images.size(); ++i) {
 		std::string filename = changeExtension(images[i].filename, DESCRIPTOR_EXTENSION);
-		std::cerr << "Saving descriptors to " << filename << std::endl;
 
 		images[i].descriptors.save(filename);
 		
@@ -122,7 +126,6 @@ void DescriptorExtractionStage::saveResults(FeatureMatchingPipeline *pipeline, c
 		// to compute descriptor for each of keypoint, so some of them are removed.
 		// So, we need to overwrite keypoint files!
 		filename = changeExtension(images[i].filename, KEYPOINT_EXTENSION);
-		std::cerr << "Saving keypoints to " << filename << std::endl;
 
 		images[i].keyPoints.save(filename);
 	}
@@ -134,12 +137,10 @@ void DescriptorExtractionStage::loadResults(FeatureMatchingPipeline *pipeline, c
 	for(size_t i = 0; i < images.size(); ++i) {
 		Image &image = images[i];
 		std::string filename = changeExtension(image.filename, DESCRIPTOR_EXTENSION);
-		std::cerr << "Loading descriptors from " << filename << std::endl;
 
 		image.descriptors.load(filename);
 
 		assert(image.descriptors.type == descriptorType);
-		std::cerr << "Loaded " << image.descriptors.mat.getRows() << " descriptors from " << filename << std::endl;
 
 		assert(image.keyPoints.keyPoints.size() == (image.descriptors.mat.getRows()));
 	}
@@ -148,10 +149,15 @@ void DescriptorExtractionStage::loadResults(FeatureMatchingPipeline *pipeline, c
 
 void DescriptorExtractionStage::run(FeatureMatchingPipeline *pipeline) {
 	DescriptorExtractor* extractor = DescriptorExtractorProvider::getInstance().getDescriptorExtractor(descriptorType, detectorsParams);
+	pipeline->tic();
+	std::stringstream ss1, ss2;
+	std::vector<Image> &images = pipeline->images;
+	
 	size_t N = pipeline->images.size();
 	for(size_t i = 0; i < N; ++i) {
 		Image& image = pipeline->images[i];
-		std::cerr << "Computing descriptors for " << image.filename << std::endl;
+		ss1 << "Extracting " << descriptorType << " descriptors " << " from " << image.filename;
+		pipeline->tic();
 		
 		BufferReader* reader = BufferReaderProvider::getInstance().getBufferReader(image.filename);
 		RuntimeTypeBuffer img = reader->read(image.filename);
@@ -160,8 +166,13 @@ void DescriptorExtractionStage::run(FeatureMatchingPipeline *pipeline) {
 		extractor->compute(img, image.keyPoints.keyPoints, image.descriptors.mat);
 
 		assert(image.descriptors.mat.getRows() == image.keyPoints.keyPoints.size());
-		std::cerr << "Computed " << image.descriptors.mat.getRows() << " descriptors on " << image.filename << std::endl;
+		ss2 << image.descriptors.mat.getRows() << " descriptors";
+		pipeline->toc(ss1.str(), ss2.str());
+		ss1.str(""); ss2.str("");
 	}
+
+	ss1 << "Extracting " << descriptorType << " descriptors";
+	pipeline->toc(ss1.str(), ss2.str());
 	delete extractor;
 }
 
@@ -169,17 +180,15 @@ DescriptorExtractionStage::DescriptorExtractionStage(DescriptorType type, Detect
 }
 
 void MatchingPlanComputationStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const {
-	std::cerr << "Saving match plan from " << filename << std::endl;	
 	pipeline->matchPlan.save(filename);
 }
 
 void MatchingPlanComputationStage::loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename) {
-	std::cerr << "Loading match plan from " << filename << std::endl;	
 	pipeline->matchPlan.load(filename);
 }
 
 void MatchingPlanComputationStage::run(FeatureMatchingPipeline *pipeline) {
-	std::cerr << "Creating match plan" << std::endl;
+	pipeline->tic();
 	MatchPlan &matchPlan = pipeline->matchPlan;
 	std::vector<Image> &images = pipeline->images;
 	size_t N = images.size();
@@ -198,7 +207,7 @@ void MatchingPlanComputationStage::run(FeatureMatchingPipeline *pipeline) {
 			matchPlan.plan.push_back({i, j, query, train});
 		}
 	}
-	std::cerr << "Created match plan with " << matchPlan.plan.size() << " entries" << std::endl;
+	pipeline->toc("Preparing matching plan", "");
 }
 
 
@@ -206,8 +215,7 @@ MatchingStage::MatchingStage(DescriptorType type, size_t responsesPerPoint) : de
 }
 
 void MatchingStage::run(FeatureMatchingPipeline *pipeline) {
-	std::cerr << "Computing raw matches" << std::endl;
-
+	pipeline->tic();
 	MatchPlan &matchPlan = pipeline->matchPlan;
 	RawMatches &rawMatches = pipeline->rawMatches;
 	std::vector<Image> &images = pipeline->images;
@@ -216,6 +224,8 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline) {
 	assert(matchPlan.plan.size());
 	rawMatches.matches.clear();
 	rawMatches.matches.resize(matchPlan.plan.size());
+
+	size_t total = 0;
 
 	for(size_t s = 0; s < matchPlan.plan.size(); ++s) {
 		size_t I = matchPlan.plan[s].queryImg;
@@ -240,21 +250,23 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline) {
 		// It's time to replace indicies
 		for(auto v: rawMatches.matches[s]) {
 			for(auto m: v) {
+				total++;
 				m.featureQ = query.queryFeatures[m.featureQ];
 				m.featureT = query.trainFeatures[m.featureT];
 			}
 		}
 
 	}
+	std::stringstream ss;
+	ss << total << " matches (non-symmetric)";
+	pipeline->toc("Computing raw matches", ss.str());
 }
 
 void MatchingStage::loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename) {
-	std::cerr << "Loading raw matches from " << filename << std::endl;
 	pipeline->rawMatches.load(filename);
 }
 
 void MatchingStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const {
-	std::cerr << "Saving raw matches to " << filename << std::endl;
 	pipeline->rawMatches.save(filename);
 }
 
@@ -263,8 +275,7 @@ RefineMatchesStage::RefineMatchesStage(bool symmetric, double scaleThreshold) :
 }
 
 void RefineMatchesStage::run(FeatureMatchingPipeline *pipeline) {
-	std::cerr << "Refining matches" << std::endl;
-
+	pipeline->tic();
 	std::vector<Image> &images = pipeline->images;
 	MatchPlan &matchPlan = pipeline->matchPlan;
 	RawMatches &rawMatches = pipeline->rawMatches;
@@ -309,7 +320,6 @@ void RefineMatchesStage::run(FeatureMatchingPipeline *pipeline) {
 			}
 		}
 	}
-	std::cerr << "Reshape finished" << std::endl;
 
 	std::vector<std::vector<std::vector<RawMatch>>> ratioInliers(N);
 	for(size_t i = 0; i < N; ++i) {
@@ -323,7 +333,7 @@ void RefineMatchesStage::run(FeatureMatchingPipeline *pipeline) {
 			if(t == q) continue;
 
 			for(size_t k = 0; k < images[q].keyPoints.keyPoints.size(); ++k) {
-				if(accumulator[q][t][k][0].distance / accumulator[q][t][k][1].distance < 1.9)
+				if(accumulator[q][t][k][0].distance / accumulator[q][t][k][1].distance < 0.9)
 					ratioInliers[q][t][k] = (accumulator[q][t][k][0]);
 			}
 
@@ -360,16 +370,16 @@ void RefineMatchesStage::run(FeatureMatchingPipeline *pipeline) {
 			}
 		}
 	}
-	std::cerr << "Refined matches " << total_matches << " remaining" << std::endl;
+	std::stringstream ss;
+	ss << total_matches << " matches (symmetric)";
+	pipeline->toc("Filtering matches", ss.str());
 }
 
 void RefineMatchesStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const {
-	std::cerr << "Saving refined matches to " << filename << std::endl;
 	pipeline->refinedMatches.save(filename);
 }
 
 void RefineMatchesStage::loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename) {
-	std::cerr << "Loading refined matches from " << filename << std::endl;
 	pipeline->refinedMatches.load(filename);
 }
 
@@ -476,5 +486,29 @@ void VsfmWriterStage::saveResults(FeatureMatchingPipeline *pipeline, const std::
 			ofs << reordering_rev[m.imgB][m.featureB] << " ";
 		}
 		ofs << std::endl;
+	}
+}
+
+void FeatureMatchingPipeline::tic() {
+	if(tics.size() == 0) {
+		for(size_t i = 0; i < 108; ++i)
+			std::cerr << "-";
+		std::cerr << std::endl;
+	}
+	tics.push(std::chrono::high_resolution_clock::now());
+}
+
+void FeatureMatchingPipeline::toc(const std::string &name, const std::string &evt) {
+	auto toc = std::chrono::high_resolution_clock::now();
+	auto tic = tics.top();
+	tics.pop();
+
+	auto ns = std::chrono::duration_cast<std::chrono::milliseconds>(toc - tic).count();
+	std::cerr << std::setw(64) << name << std::setw(32) << evt << std::setw(10) << ns << "ms" << std::endl;
+	
+	if(tics.size() == 0) {
+		for(size_t i = 0; i < 108;++i)
+			std::cerr << "-";
+		std::cerr << std::endl;
 	}
 }

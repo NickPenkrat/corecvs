@@ -13,10 +13,10 @@ struct DetectorsParams {
 
 
 		SURF(
-				double hessianThreshold = 400.0,
+				double hessianThreshold = 200.0,
 				int octaves = 4,
 				int octaveLayers = 2,
-				bool extended = false,
+				bool extended = true,
 				bool upright = false) 
 			: hessianThreshold(hessianThreshold),
 			octaves(octaves),
@@ -33,10 +33,10 @@ struct DetectorsParams {
 		int nOctaveLayers;
 
 		SIFT(
-				double contrastThreshold = 0.04,
-				double edgeThreshold = 10.0,
+				double contrastThreshold = 0.01,
+				double edgeThreshold = 16.0,
 				double sigma = 1.6,
-				int nOctaveLayers = 3) :
+				int nOctaveLayers = 4) :
 			contrastThreshold(contrastThreshold),
 			edgeThreshold(edgeThreshold),
 			sigma(sigma),

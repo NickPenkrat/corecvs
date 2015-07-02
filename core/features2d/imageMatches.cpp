@@ -34,7 +34,6 @@ void RawMatches::save(const std::string &filename) const {
 void RawMatches::load(std::istream &ifs) {
 	size_t M, K;
 	ifs >> M;
-	std::cerr << M << " matching sets" << std::endl;
 
 	matches.clear();
 	matches.resize(M);
@@ -65,8 +64,6 @@ void RawMatches::save(std::ostream &ofs) const {
 
 	size_t M = matches.size(), K ;
 	ofs << M << std::endl;
-	std::cerr << M << " matching sets" << std::endl;
-
 
 	for(size_t i = 0; i < M; ++i) {
 		assert(ofs);
@@ -102,7 +99,6 @@ void RefinedMatches::save(const std::string &filename) const {
 void RefinedMatches::load(std::istream &ifs) {
 	size_t M;
 	ifs >> M;
-	std::cerr << M << " matched image pairss" << std::endl;
 
 	matchSets.clear();
 	matchSets.reserve(M);
