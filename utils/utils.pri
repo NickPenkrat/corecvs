@@ -138,6 +138,12 @@ with_opencv {                                       # all this stuff was extract
     }    
 }
 
+with_siftgpu {
+	SIFTGPU_WRAPPER_DIR = $$UTILSDIR/../wrappers/siftgpu
+	DEFINES += WITH_SIFTGPU
+	INCLUDEPATH += $$SIFTGPU_WRAPPER_DIR $$SIFTGPU_WRAPPER_DIR/SiftGPU/src $$SIFTGPU_WRAPPER_DIR/SiftGPU/include/GL
+}
+
 with_directshow {
     DIRECT_SHOW_WRAPPER_DIR = $$UTILSDIR/../wrappers/directShow
     include($$DIRECT_SHOW_WRAPPER_DIR/directShowLibs.pri)

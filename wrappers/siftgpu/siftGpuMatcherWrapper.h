@@ -3,32 +3,34 @@
 
 #include <vector>
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/features2d/features2d.hpp>
+#include "descriptorMatcherProvider.h"
 
 #include "SiftGPU/SiftGPU.h"
 
 
-class SiftGpuMatcher : public cv::DescriptorMatcher {
+
+class SiftGpuMatcher : public DescriptorMatcher {
 	public:
 		SiftGpuMatcher();
 		SiftGpuMatcher(const SiftGpuMatcher &c);
 		virtual ~SiftGpuMatcher();
 
-		virtual bool isMaskSupported() const { return false; }
-
-		virtual cv::Ptr<cv::DescriptorMatcher> clone( bool emptyTrainData=false ) const;
-
-//		cv::AlgorithmInfo* info() const
 	protected:
-		virtual void knnMatchImpl( const cv::Mat& queryDescriptors, std::vector<std::vector<cv::DMatch> >& matches, int k,
-				const std::vector<cv::Mat>& masks=std::vector<cv::Mat>(), bool compactResult=false );
-		virtual void radiusMatchImpl( const cv::Mat& queryDescriptors, std::vector<std::vector<cv::DMatch> >& matches, float maxDistance,
-				const std::vector<cv::Mat>& masks=std::vector<cv::Mat>(), bool compactResult=false );
+		void knnMatchImpl( DescriptorBuffer &query, DescriptorBuffer &train, std::vector<std::vector<RawMatch> >& matches, size_t K);
 	private:
 		SiftMatchGPU* initSiftMatchGpu(int count = 8192);
 		SiftMatchGPU* siftMatchGpu;
 };
 
+void __attribute__ ((constructor)) init_siftgpu_matcher_provider();
+
+
+class SiftGpuDescriptorMatcherProvider : public DescriptorMatcherProviderImpl {
+	public:
+		DescriptorMatcher* getDescriptorMatcher(const DescriptorType &type, const DetectorsParams &params = DetectorsParams());
+		bool provides(const DescriptorType &type);
+		~SiftGpuDescriptorMatcherProvider() {}
+	protected:
+};
 
 #endif

@@ -16,7 +16,7 @@ private:
 	cv::DescriptorMatcher *matcher;
 };
 
-void __attribute__ ((constructor)) init_opencv_matchers_provider();
+void __attribute__ ((constructor)) __attribute__ ((used)) init_opencv_matchers_provider();
 
 
 class OpenCvDescriptorMatcherProvider : public DescriptorMatcherProviderImpl {

@@ -17,6 +17,6 @@ public:
 	~OpenCvBufferReaderProvider() {}
 };
 
-void __attribute__ ((constructor)) init_opencv_reader_provider(); 
+void __attribute__ ((constructor)) __attribute__ ((used)) init_opencv_reader_provider(); 
 
 #endif

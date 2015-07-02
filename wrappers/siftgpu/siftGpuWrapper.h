@@ -49,8 +49,10 @@ protected:
     mutable SiftGPU* siftGpu;
 };
 
-void __attribute__ ((constructor)) init_siftgpu_detector_provider();
-void __attribute__ ((constructor)) init_siftgpu_descriptor_provider();
+extern "C" {
+void __attribute__ ((constructor)) __attribute__ ((used)) init_siftgpu_detector_provider();
+void __attribute__ ((constructor)) __attribute__ ((used)) init_siftgpu_descriptor_provider();
+}
 
 class SiftGpuFeatureDetectorProvider : public FeatureDetectorProviderImpl {
 	public:

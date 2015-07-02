@@ -17,7 +17,7 @@ private:
 	OpenCvFeatureDetectorWrapper(const OpenCvFeatureDetectorWrapper &wrapper);
 };
 
-void __attribute__ ((constructor)) init_opencv_detectors_provider();
+void __attribute__ ((constructor)) __attribute__ ((used)) init_opencv_detectors_provider();
 
 class OpenCvFeatureDetectorProvider : public FeatureDetectorProviderImpl {
 	public:

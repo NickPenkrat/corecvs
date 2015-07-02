@@ -486,6 +486,19 @@ void RefineMatchesStage::loadResults(FeatureMatchingPipeline *pipeline, const st
 VsfmWriterStage::VsfmWriterStage(bool sortFeatures) : sortFeatures(sortFeatures) {
 }
 
+std::string file_name(const std::string &full_name) {
+	std::string name = full_name;
+	size_t from = 0;
+	for(size_t i = 0; i < full_name.size(); ++i)
+		if(full_name[i] == '/' || full_name[i] == '\\')
+			from = i + 1;
+	std::string res;
+	res.resize(full_name.size() - from);
+	for(size_t i = from, j = 0; i < full_name.size(); ++i, ++j)
+		res[j] = full_name[i];
+	return res;
+}
+
 void VsfmWriterStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const {
 	size_t N = pipeline->images.size();
 	std::vector<std::vector<SiftFeature>> features(N);
@@ -558,7 +571,7 @@ void VsfmWriterStage::saveResults(FeatureMatchingPipeline *pipeline, const std::
 
 	for(size_t i = 0; i < refinedMatches.matchSets.size(); ++i) {
 		RefinedMatchSet& set = refinedMatches.matchSets[i];
-		ofs << images[set.imgA].filename << std::endl << images[set.imgB].filename << std::endl;
+		ofs << file_name(images[set.imgA].filename) << std::endl << file_name(images[set.imgB].filename) << std::endl;
 
 		ofs << set.matches.size() << std::endl;
 

@@ -16,6 +16,8 @@ SUBDIRS +=       \
     adoptcolor   \
 #    avigrab     \
     decodebayer \
+    matcher_basic \
+    matcher_full \
 
 
 
@@ -25,4 +27,5 @@ serialize1.file    = serialize1/serialize1.pro
 adoptcolor.file    = adoptcolor/adoptcolor.pro
 avigrab.file       = avigrab/avigrab.pro
 decodebayer.file   = decodebayer/decodebayer.pro
-
+matcher_basic.file = matcher_basic/feature2d_basic.pro
+matcher_full.file  = matcher_full/matcher_full.pro
