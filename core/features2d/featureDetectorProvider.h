@@ -72,10 +72,10 @@ typedef std::string DetectorType;
 // making detect/compute itself virtual
 class FeatureDetector {
 public:
-	void detect(DescriptorBuffer &image, std::vector<KeyPoint> &keyPoints);
+	void detect(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints);
 	virtual ~FeatureDetector() {}
 protected:
-	virtual void detectImpl(DescriptorBuffer &image, std::vector<KeyPoint> &keyPoints) = 0;
+	virtual void detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints) = 0;
 };
 
 

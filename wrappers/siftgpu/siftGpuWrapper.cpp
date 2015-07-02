@@ -3,6 +3,8 @@
 #include <dlfcn.h>
 #include <iostream>
 
+#include "runtimeTypeBuffer.h"
+
 #include "GL/glew.h"
 
 SiftGpu::SiftGpu(double filterWidthFactor,
@@ -45,12 +47,12 @@ SiftGpu::SiftGpu(double filterWidthFactor,
 		}
 	}
 
-void SiftGpu::computeImpl(DescriptorBuffer &image, std::vector<KeyPoint> &keyPoints, DescriptorBuffer &descriptors) {
+void SiftGpu::computeImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors) {
 	(*this)(image, keyPoints, descriptors, true, true);
 }
 
-void SiftGpu::detectImpl(DescriptorBuffer &image, std::vector<KeyPoint> &keyPoints) {
-	DescriptorBuffer buffer;
+void SiftGpu::detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints) {
+	RuntimeTypeBuffer buffer;
 	(*this)(image, keyPoints,buffer);
 }
 
@@ -74,8 +76,8 @@ int SiftGpu::descriptorType() const {
 	return CV_32F;
 }
 
-void SiftGpu::operator()(DescriptorBuffer &img, std::vector<KeyPoint>& keypoints) const {
-	DescriptorBuffer buffer;
+void SiftGpu::operator()(RuntimeTypeBuffer &img, std::vector<KeyPoint>& keypoints) const {
+	RuntimeTypeBuffer buffer;
 	(*this)(img, keypoints, buffer);
 }
 
@@ -95,8 +97,8 @@ KeyPoint SiftGpu::convert(const SiftGPU::SiftKeypoint &k) {
 	return KeyPoint(k.x, k.y, k.s, k.o);
 }
 
-void SiftGpu::operator()(DescriptorBuffer &image, std::vector<KeyPoint> &keypoints, DescriptorBuffer &descriptors, bool computeDescriptors, bool useProvidedKeypoints) const {
-	if(image.getType() != BufferDataType::U8 || !image.isValid()) {
+void SiftGpu::operator()(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keypoints, RuntimeTypeBuffer &descriptors, bool computeDescriptors, bool useProvidedKeypoints) const {
+	if(image.getType() != RuntimeBufferDataType::U8 || !image.isValid()) {
 		std::cerr << __LINE__ << "Invalid image type" << std::endl;
 	}
 	
@@ -119,7 +121,7 @@ void SiftGpu::operator()(DescriptorBuffer &image, std::vector<KeyPoint> &keypoin
 	}
 
 	if(computeDescriptors) {
-		descriptors = DescriptorBuffer(keypoints.size(), descriptorSize(), BufferDataType::F32);
+		descriptors = RuntimeTypeBuffer(keypoints.size(), descriptorSize(), RuntimeBufferDataType::F32);
 #if 0
 		descriptors.create(keypoints.size(), descriptorSize(), descriptorType());
 		cv::Mat _descriptors = descriptors.getMat();

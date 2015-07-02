@@ -3,12 +3,13 @@
 
 #include <cassert>
 #include <string>
+#include <vector>
 
-#include "imageKeyPoints.h"
+#include "runtimeTypeBuffer.h"
 
 class BufferReader {
 public:
-	virtual DescriptorBuffer read(const std::string &s) = 0;
+	virtual RuntimeTypeBuffer read(const std::string &s) = 0;
 	virtual ~BufferReader() {}
 };
 

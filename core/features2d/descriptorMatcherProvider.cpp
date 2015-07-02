@@ -51,7 +51,7 @@ DescriptorMatcher* DescriptorMatcherProvider::getMatcher(const DescriptorType &t
 	return 0;
 }
 
-void DescriptorMatcher::knnMatch(DescriptorBuffer &query, DescriptorBuffer &train, std::vector<std::vector<RawMatch>> &matches, size_t K) {
+void DescriptorMatcher::knnMatch(RuntimeTypeBuffer &query, RuntimeTypeBuffer &train, std::vector<std::vector<RawMatch>> &matches, size_t K) {
 	knnMatchImpl(query, train, matches, K);
 }
 

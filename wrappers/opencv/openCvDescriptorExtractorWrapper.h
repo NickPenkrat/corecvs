@@ -10,7 +10,7 @@ public:
 	OpenCvDescriptorExtractorWrapper(cv::DescriptorExtractor *detector);
 	~OpenCvDescriptorExtractorWrapper();
 protected:
-	void computeImpl(DescriptorBuffer &image, std::vector<KeyPoint> &keyPoints, DescriptorBuffer &descripors);
+	void computeImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descripors);
 private:
 	OpenCvDescriptorExtractorWrapper(const OpenCvDescriptorExtractorWrapper &wrapper);
 	cv::DescriptorExtractor *extractor;

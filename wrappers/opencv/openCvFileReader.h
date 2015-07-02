@@ -6,7 +6,7 @@
 
 class OpenCvBufferReader : public BufferReader {
 public:
-	DescriptorBuffer read(const std::string &s);
+	RuntimeTypeBuffer read(const std::string &s);
 	~OpenCvBufferReader() {}
 };
 

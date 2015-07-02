@@ -27,12 +27,12 @@ public:
 	int descriptorSize() const;
 	int descriptorType() const;
     
-    void operator()(DescriptorBuffer &img, std::vector<KeyPoint>& keypoints) const;
+    void operator()(RuntimeTypeBuffer &img, std::vector<KeyPoint>& keypoints) const;
     
-    void operator()(DescriptorBuffer &img, std::vector<KeyPoint> &keypoints, DescriptorBuffer &descriptors, bool computeDescriptors = false, bool useProvidedKeypoints = false) const;
+    void operator()(RuntimeTypeBuffer &img, std::vector<KeyPoint> &keypoints, RuntimeTypeBuffer &descriptors, bool computeDescriptors = false, bool useProvidedKeypoints = false) const;
 protected:
-	void computeImpl(DescriptorBuffer &image, std::vector<KeyPoint> &keyPoints, DescriptorBuffer &descriptors);
-	void detectImpl(DescriptorBuffer &image, std::vector<KeyPoint> &keyPoints);
+	void computeImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors);
+	void detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints);
 
     static SiftGPU::SiftKeypoint convert(const KeyPoint &k);
     static KeyPoint convert(const SiftGPU::SiftKeypoint &k);

@@ -15,10 +15,10 @@ class DescriptorMatcherProvider {
 
 class DescriptorMatcher {
 public:
-	void knnMatch(DescriptorBuffer &query, DescriptorBuffer &train, std::vector<std::vector<RawMatch>> &matches, size_t K);
+	void knnMatch(RuntimeTypeBuffer &query, RuntimeTypeBuffer &train, std::vector<std::vector<RawMatch>> &matches, size_t K);
 	virtual ~DescriptorMatcher() {}
 protected:
-	virtual void knnMatchImpl(DescriptorBuffer &query, DescriptorBuffer &train, std::vector<std::vector<RawMatch>> &matches, size_t K) = 0;
+	virtual void knnMatchImpl(RuntimeTypeBuffer &query, RuntimeTypeBuffer &train, std::vector<std::vector<RawMatch>> &matches, size_t K) = 0;
 };
 
 

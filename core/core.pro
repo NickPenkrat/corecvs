@@ -9,7 +9,7 @@ exists(../../../config.pri) {
 include($$ROOT_DIR/config.pri)
 
 
-CONFIG  += staticlib
+CONFIG  += staticlib c++11
 TARGET   = cvs_core
 TEMPLATE = lib
 

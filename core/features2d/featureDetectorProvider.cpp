@@ -53,7 +53,7 @@ FeatureDetector* FeatureDetectorProvider::getDetector(const DetectorType &type, 
 	return 0;
 }
 
-void FeatureDetector::detect(DescriptorBuffer &image, std::vector<KeyPoint> &keyPoints) {
+void FeatureDetector::detect(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints) {
 	detectImpl(image, keyPoints);
 }
 

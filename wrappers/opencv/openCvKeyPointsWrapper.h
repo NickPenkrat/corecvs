@@ -13,9 +13,9 @@ cv::DMatch convert(const RawMatch &rm);
 
 RawMatch convert(const cv::DMatch &dm, size_t imgQ, size_t imgT);
 
-cv::Mat convert(const DescriptorBuffer &buffer);
+cv::Mat convert(const RuntimeTypeBuffer &buffer);
 
-DescriptorBuffer convert(const cv::Mat &mat);
+RuntimeTypeBuffer convert(const cv::Mat &mat);
 
 
 

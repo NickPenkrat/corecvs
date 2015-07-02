@@ -59,6 +59,6 @@ DescriptorExtractorProvider& DescriptorExtractorProvider::getInstance() {
 DescriptorExtractorProvider::DescriptorExtractorProvider() {
 }
 
-void DescriptorExtractor::compute(DescriptorBuffer &image, std::vector<KeyPoint> &keyPoints, DescriptorBuffer &buffer) {
+void DescriptorExtractor::compute(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &buffer) {
 	computeImpl(image, keyPoints, buffer);
 }

@@ -63,7 +63,7 @@ SiftGpuMatcher::SiftGpuMatcher(const SiftGpuMatcher &matcher) {
 	siftMatchGpu = initSiftMatchGpu();
 }
 
-void SiftGpuMatcher::knnMatchImpl( DescriptorBuffer &queryDescriptors, DescriptorBuffer &trainDescriptors, std::vector<std::vector<RawMatch> >& matches, size_t K) {
+void SiftGpuMatcher::knnMatchImpl( RuntimeTypeBuffer &queryDescriptors, RuntimeTypeBuffer &trainDescriptors, std::vector<std::vector<RawMatch> >& matches, size_t K) {
 	if(K != 1) {
 		std::cerr << "SiftGPU matcher does not support k-NN and does not"
 					 "provide matching distance" << std::endl;
@@ -74,7 +74,7 @@ void SiftGpuMatcher::knnMatchImpl( DescriptorBuffer &queryDescriptors, Descripto
 	}
 
 	assert(queryDescriptors.getType() == trainDescriptors.getType());
-	assert(queryDescriptors.getType() == BufferDataType::F32);
+	assert(queryDescriptors.getType() == RuntimeBufferDataType::F32);
 
 	matches.resize(queryDescriptors.getRows());
 

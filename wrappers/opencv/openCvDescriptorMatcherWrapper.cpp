@@ -2,7 +2,7 @@
 
 #include "openCvKeyPointsWrapper.h"
 #if 0
-#include "openCvDescriptorBufferWrapper.h"
+#include "openCvRuntimeTypeBufferWrapper.h"
 #endif
 
 OpenCvDescriptorMatcherWrapper::OpenCvDescriptorMatcherWrapper(cv::DescriptorMatcher *matcher) : matcher(matcher) {
@@ -20,7 +20,7 @@ OpenCvDescriptorMatcherWrapper::~OpenCvDescriptorMatcherWrapper() {
 	delete matcher;
 }
 
-void OpenCvDescriptorMatcherWrapper::knnMatchImpl(DescriptorBuffer &query, DescriptorBuffer &train, std::vector<std::vector<RawMatch>> &matches, size_t K) {
+void OpenCvDescriptorMatcherWrapper::knnMatchImpl(RuntimeTypeBuffer &query, RuntimeTypeBuffer &train, std::vector<std::vector<RawMatch>> &matches, size_t K) {
 	cv::Mat qd = convert(query), td = convert(train);
 	std::vector<std::vector<cv::DMatch>> matches_cv;
 	matcher->knnMatch(qd, td, matches_cv, K);

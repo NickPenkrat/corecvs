@@ -16,7 +16,7 @@ class SiftGpuMatcher : public DescriptorMatcher {
 		virtual ~SiftGpuMatcher();
 
 	protected:
-		void knnMatchImpl( DescriptorBuffer &query, DescriptorBuffer &train, std::vector<std::vector<RawMatch> >& matches, size_t K);
+		void knnMatchImpl( RuntimeTypeBuffer &query, RuntimeTypeBuffer &train, std::vector<std::vector<RawMatch> >& matches, size_t K);
 	private:
 		SiftMatchGPU* initSiftMatchGpu(int count = 8192);
 		SiftMatchGPU* siftMatchGpu;

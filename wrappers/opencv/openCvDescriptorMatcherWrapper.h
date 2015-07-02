@@ -10,7 +10,7 @@ public:
 	OpenCvDescriptorMatcherWrapper(cv::DescriptorMatcher *detector);
 	~OpenCvDescriptorMatcherWrapper();
 protected:
-	void knnMatchImpl(DescriptorBuffer &query, DescriptorBuffer &train, std::vector<std::vector<RawMatch>> &matches, size_t K); 
+	void knnMatchImpl(RuntimeTypeBuffer &query, RuntimeTypeBuffer &train, std::vector<std::vector<RawMatch>> &matches, size_t K); 
 private:
 	OpenCvDescriptorMatcherWrapper(const OpenCvDescriptorMatcherWrapper &wrapper);
 	cv::DescriptorMatcher *matcher;

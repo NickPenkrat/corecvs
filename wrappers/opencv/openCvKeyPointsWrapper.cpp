@@ -18,7 +18,7 @@ RawMatch convert(const cv::DMatch &dm, size_t imgQ, size_t imgT) {
 	return RawMatch(imgQ, imgT, dm.queryIdx, dm.trainIdx, dm.distance);
 }
 
-cv::Mat convert(const DescriptorBuffer &buffer) {
+cv::Mat convert(const RuntimeTypeBuffer &buffer) {
 #if 0
 	std::cout << "DB to Mat" << std::endl;
 	std::cout << buffer.getType().getCvType() << std::endl;
@@ -28,11 +28,11 @@ cv::Mat convert(const DescriptorBuffer &buffer) {
 //	return (cv::Mat)buffer;
 }
 
-DescriptorBuffer convert(const cv::Mat &mat) {
+RuntimeTypeBuffer convert(const cv::Mat &mat) {
 #if 0
 	std::cout << "Mat to DB" << std::endl;
 	std::cout << (std::string)BufferType((size_t)mat.type()) << std::endl;
 #endif
-return DescriptorBuffer(mat.rows, mat.cols, mat.data, BufferType((size_t)mat.type()));
+return RuntimeTypeBuffer(mat.rows, mat.cols, mat.data, BufferType((size_t)mat.type()));
 }
 

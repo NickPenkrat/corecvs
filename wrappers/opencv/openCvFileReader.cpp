@@ -17,7 +17,7 @@ void init_opencv_reader_provider() {
 	BufferReaderProvider::getInstance().add(new OpenCvBufferReaderProvider);
 }
 
-DescriptorBuffer OpenCvBufferReader::read(const std::string &s) {
+RuntimeTypeBuffer OpenCvBufferReader::read(const std::string &s) {
 	cv::Mat img = cv::imread(s, CV_LOAD_IMAGE_GRAYSCALE);
 	return convert(img);
 }

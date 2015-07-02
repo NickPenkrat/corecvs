@@ -16,7 +16,7 @@ OpenCvDescriptorExtractorWrapper::~OpenCvDescriptorExtractorWrapper() {
 	delete extractor;
 }
 
-void OpenCvDescriptorExtractorWrapper::computeImpl(DescriptorBuffer &image, std::vector<KeyPoint> &keyPoints, DescriptorBuffer &descriptors) {
+void OpenCvDescriptorExtractorWrapper::computeImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors) {
 	std::vector<cv::KeyPoint> kps;
 	for(auto kp: keyPoints)
 		kps.push_back(convert(kp));

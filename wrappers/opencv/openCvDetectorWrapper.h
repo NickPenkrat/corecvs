@@ -11,7 +11,7 @@ public:
 	OpenCvFeatureDetectorWrapper(cv::FeatureDetector *detector);
 	~OpenCvFeatureDetectorWrapper();
 protected:
-	void detectImpl(DescriptorBuffer &image, std::vector<KeyPoint> &keyPoints);
+	void detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints);
 private:
 	cv::FeatureDetector* detector;
 	OpenCvFeatureDetectorWrapper(const OpenCvFeatureDetectorWrapper &wrapper);

@@ -69,10 +69,10 @@ typedef std::string DescriptorType;
 
 class DescriptorExtractor {
 public:
-	void compute(DescriptorBuffer &image, std::vector<KeyPoint> &keyPoints, DescriptorBuffer &descriptors);
+	void compute(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors);
 	virtual ~DescriptorExtractor() {}
 protected:
-	virtual void computeImpl(DescriptorBuffer &image, std::vector<KeyPoint> &keyPoints, DescriptorBuffer &descriptors) = 0;
+	virtual void computeImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors) = 0;
 };
 
 class DescriptorExtractorProviderImpl {

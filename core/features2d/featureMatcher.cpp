@@ -85,10 +85,10 @@ void KeyPointDetectionStage::run(FeatureMatchingPipeline *pipeline) {
 			image.keyPoints.keyPoints.push_back(kp);
 #else
 		BufferReader* reader = BufferReaderProvider::getInstance().getBufferReader(image.filename);
-		DescriptorBuffer img = reader->read(image.filename);
+		RuntimeTypeBuffer img = reader->read(image.filename);
 		delete reader;
 #if 0
-		DescriptorBuffer img(convert(cv::imread(image.filename, CV_LOAD_IMAGE_GRAYSCALE)));
+		RuntimeTypeBuffer img(convert(cv::imread(image.filename, CV_LOAD_IMAGE_GRAYSCALE)));
 #endif
 		detector->detect(img, image.keyPoints.keyPoints);
 #endif
@@ -183,13 +183,13 @@ void DescriptorExtractionStage::run(FeatureMatchingPipeline *pipeline) {
 		for(auto kp: kps)
 			image.keyPoints.keyPoints.push_back(kp);
 
-		image.descriptors.mat = DescriptorBuffer(mat);
+		image.descriptors.mat = RuntimeTypeBuffer(mat);
 #else
 		BufferReader* reader = BufferReaderProvider::getInstance().getBufferReader(image.filename);
-		DescriptorBuffer img = reader->read(image.filename);
+		RuntimeTypeBuffer img = reader->read(image.filename);
 		delete reader;
 #if 0
-		DescriptorBuffer img(convert(cv::imread(image.filename, CV_LOAD_IMAGE_GRAYSCALE)));
+		RuntimeTypeBuffer img(convert(cv::imread(image.filename, CV_LOAD_IMAGE_GRAYSCALE)));
 #endif
 		extractor->compute(img, image.keyPoints.keyPoints, image.descriptors.mat);
 #endif
@@ -293,8 +293,8 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline) {
 		}
 		delete matcher;
 #else
-		DescriptorBuffer qb(images[I].descriptors.mat);
-		DescriptorBuffer tb(images[J].descriptors.mat);
+		RuntimeTypeBuffer qb(images[I].descriptors.mat);
+		RuntimeTypeBuffer tb(images[J].descriptors.mat);
 
 		for(size_t j = 0; j < query.queryFeatures.size(); ++j) {
 			memcpy(qb.row<void>(j), images[I].descriptors.mat.row<void>(query.queryFeatures[j]), qb.getRowSize());

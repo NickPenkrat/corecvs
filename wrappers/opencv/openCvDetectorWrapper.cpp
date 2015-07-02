@@ -15,7 +15,7 @@ OpenCvFeatureDetectorWrapper::~OpenCvFeatureDetectorWrapper() {
 	delete detector;
 }
 
-void OpenCvFeatureDetectorWrapper::detectImpl(DescriptorBuffer &image, std::vector<KeyPoint> &keyPoints) {
+void OpenCvFeatureDetectorWrapper::detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints) {
 	std::vector<cv::KeyPoint> kps;
 	cv::Mat img = convert(image);
 
