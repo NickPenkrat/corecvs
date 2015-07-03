@@ -64,7 +64,7 @@ template <typename inputType, typename reflectionType>
     {
         mNodePath.push_back(QJsonObject());
         mChildName = childName;
-        SYNC_PRINT(("push %s. Stack size %d\n", childName, mNodePath.size()));
+        SYNC_PRINT(("push %s. Stack size %lu\n", childName, mNodePath.size()));
     }
 
     void popChild()

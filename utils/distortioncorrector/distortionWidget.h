@@ -58,9 +58,6 @@ private:
     void printVectorPair(const Vector3dd &spacePoint, const Vector2dd &imagePoint);
     void addPointPair(const Vector3dd &spacePoint, const Vector2dd &imagePoint);
 
-    GraphPlotDialog     mGraphDialog;
-    AdvancedImageWidget mLevelGraphDialog;
-
 private slots:
 //    void tryAddPointToPolygon(int toolID, QPointF const &point);
     void tryAddPoint(int toolID, QPointF const &point);
@@ -76,12 +73,7 @@ private slots:
     void deletePointPair();
     void editPoint(QPointF const &prevPoint, QPointF const &newPoint);
 
-    /*Manual input slots*/
-    void addPower();
-    void delPower();
-
     void updateScore();
-    void updateAdditionalData();
 
 
     /**

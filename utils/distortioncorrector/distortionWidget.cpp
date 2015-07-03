@@ -66,13 +66,6 @@ DistortionWidget::DistortionWidget(QWidget *parent) :
     connect(mUi->deleteButton,           SIGNAL(released()), this, SLOT(deletePointPair()));
     mDistortionParameters = new DistortionParameters();
 
-    /* Additional subwidgets */
-    connect(mUi->graphButton, SIGNAL(released()), &mGraphDialog, SLOT(show()));
-    connect(mUi->levelGraphButton, SIGNAL(released()), &mLevelGraphDialog, SLOT(show()));
-
-    connect(mUi->addPowerButton, SIGNAL(released()), this, SLOT(addPower()));
-    connect(mUi->delPowerButton, SIGNAL(released()), this, SLOT(delPower()));
-
     loadPoints();
 }
 
@@ -399,7 +392,7 @@ void DistortionWidget::doLinesTransform()
    );
 
     mUi->isInverseCheckBox->setChecked(true);
-    updateAdditionalData();
+    mUi->lensCorrectionWidget->setParameters(mLinesRadialCoorection.mParams);
     L_INFO_P("Ending distortion calibration");
     updateScore();
 }
@@ -676,23 +669,11 @@ void DistortionWidget::doDefaultTransform()
 
 void DistortionWidget::doManualTransform()
 {
-    LensCorrectionParametres &lensParams = mLinesRadialCoorection.mParams;
-    lensParams.center.x() = mUi->centerXSpinBox->value();
-    lensParams.center.y() = mUi->centerYSpinBox->value();
-    lensParams.p1 = mUi->tangential1SpinBox->value();
-    lensParams.p2 = mUi->tangential2SpinBox->value();
-    lensParams.aspect = mUi->scaleSpinBox->value();
+    LensCorrectionParametres *params = mUi->lensCorrectionWidget->createParameters();
+    mLinesRadialCoorection.mParams = *params;
+    delete params;
 
-    lensParams.koeff.clear();
-    for (int i = 0; i < mUi->koefTableWidget->rowCount(); i ++) {
-        QVariant value = mUi->koefTableWidget->item(i, 1)->data(Qt::DisplayRole);
-        bool ok = true;
-        double koef = value.toDouble(&ok);
-        qDebug() << i << "(" << value << ") =" << koef << "[" << ok << "]";
-        lensParams.koeff.push_back(koef);
-    }
 
-    mLinesRadialCoorection = RadialCorrection(lensParams);
     if (!mUi->isInverseCheckBox->isChecked()) {
         mDistortionCorrectTransform = QSharedPointer<DisplacementBuffer>(new DisplacementBuffer(&mLinesRadialCoorection, mBufferInput->h, mBufferInput->w, true));
     } else {
@@ -702,65 +683,9 @@ void DistortionWidget::doManualTransform()
             (double)mBufferInput->w, (double)mBufferInput->h, 0.5)
         );
     }
-    updateScore();
-    updateAdditionalData();
+    updateScore();    
 }
 
-
-void DistortionWidget::updateAdditionalData()
-{
-    LensCorrectionParametres &lensParams = mLinesRadialCoorection.mParams;
-    /* Updating graph */
-    int diagonal = Vector2dd(mBufferInput->w, mBufferInput->h).l2Metric();
-    for (int i = 0; i < diagonal; i++) {
-        mGraphDialog.addGraphPoint(0, mLinesRadialCoorection.radialScale(((double)diagonal - i - 1) / diagonal), true);
-    }
-    mGraphDialog.update();
-
-    /* Updating distortion*/
-    Map2DFunction<DisplacementBuffer> mapFunc(mDistortionCorrectTransform.data());
-    LengthFunction lengthFunc(&mapFunc);
-    RGB24Buffer *output = new RGB24Buffer(mDistortionCorrectTransform->getSize());
-    output->drawIsolines(0.0, 0.0,
-            (double)mBufferInput->h,  (double)mBufferInput->w,
-            0.1, lengthFunc);
-
-    mLevelGraphDialog.setImage(QSharedPointer<QImage>(new RGB24Image(output)));
-    delete_safe(output);
-
-    /* Updating textual output */
-    mUi->centerXSpinBox->setValue(lensParams.center.x());
-    mUi->centerYSpinBox->setValue(lensParams.center.y());
-    mUi->tangential1SpinBox->setValue(lensParams.p1);
-    mUi->tangential2SpinBox->setValue(lensParams.p2);
-
-    mUi->scaleSpinBox->setValue(lensParams.aspect);
-
-    mUi->koefTableWidget->clear();
-    mUi->koefTableWidget->setColumnCount(2);
-    mUi->koefTableWidget->setRowCount((int)lensParams.koeff.size());
-    for (unsigned i = 0; i < lensParams.koeff.size(); i ++) {
-        mUi->koefTableWidget->setItem(i, 0, new QTableWidgetItem(QString("x^%1").arg(i + 1)));
-        QVariant value(QString::number(lensParams.koeff[i], 'g', 15));
-        QTableWidgetItem *data = new QTableWidgetItem();
-        data->setData(Qt::DisplayRole, value);
-        data->setFlags(data->flags() | Qt::ItemIsEditable);
-        mUi->koefTableWidget->setItem(i, 1, data);
-    }
-}
-
-void DistortionWidget::addPower()
-{
-    int newRow = mUi->koefTableWidget->rowCount() + 1;
-    mUi->koefTableWidget->setRowCount(newRow);
-    mUi->koefTableWidget->setColumnCount(2);
-    mUi->koefTableWidget->setItem(newRow - 1, 0, new QTableWidgetItem(QString("x^%1").arg(newRow)));
-}
-
-void DistortionWidget::delPower()
-{
-    mUi->koefTableWidget->setRowCount(mUi->koefTableWidget->rowCount() - 1);
-}
 
 /**
  *   Loading and saving of current points

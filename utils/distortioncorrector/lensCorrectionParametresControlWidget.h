@@ -13,13 +13,13 @@ namespace Ui {
 class LensCorrectionParametresContolWidget;
 }
 
-class LensCorrectionParametresContolWidget : public ParametersControlWidgetBase
+class LensCorrectionParametresControlWidget : public ParametersControlWidgetBase
 {
     Q_OBJECT
 
 public:
-    explicit LensCorrectionParametresContolWidget(QWidget *parent = 0);
-    virtual ~LensCorrectionParametresContolWidget();
+    explicit LensCorrectionParametresControlWidget(QWidget *parent = 0);
+    virtual ~LensCorrectionParametresControlWidget();
 
     LensCorrectionParametres* createParameters() const;
     void setParameters(const LensCorrectionParametres &input);
@@ -28,6 +28,11 @@ public:
 
     virtual void loadParamWidget(WidgetLoader &loader);
     virtual void saveParamWidget(WidgetSaver  &saver);
+
+    enum {
+        COLUMN_CAPTION,
+        COLUMN_EDIT
+    };
 
 public slots:
     void changeParameters()
@@ -49,6 +54,9 @@ public slots:
     void loadExample();
 
     void showGraphDialog();
+
+    void loadParams();
+    void saveParams();
 
 signals:
     void valueChanged();

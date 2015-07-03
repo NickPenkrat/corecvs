@@ -1,12 +1,12 @@
 #include <QFileDialog>
 #include "qtFileLoader.h"
 
-#include "lensCorrectionParametresContolWidget.h"
+#include "lensCorrectionParametresControlWidget.h"
 #include "ui_lensCorrectionParametresContolWidget.h"
 #include "displacementBuffer.h"
 #include "g12Image.h"
 
-LensCorrectionParametresContolWidget::LensCorrectionParametresContolWidget(QWidget *parent) :
+LensCorrectionParametresControlWidget::LensCorrectionParametresControlWidget(QWidget *parent) :
     ParametersControlWidgetBase(parent),
     ui(new Ui::LensCorrectionParametresContolWidget),
     mExample(NULL),
@@ -27,16 +27,22 @@ LensCorrectionParametresContolWidget::LensCorrectionParametresContolWidget(QWidg
 
     QObject::connect(ui->koefTableWidget, SIGNAL(itemChanged(QTableWidgetItem*)), this, SIGNAL(paramsChanged()));
 
+    QObject::connect(ui->freeParamSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+
+
+    QObject::connect(ui->loadPushButton, SIGNAL(released()), this, SLOT(loadParams()));
+    QObject::connect(ui->savePushButton, SIGNAL(released()), this, SLOT(saveParams()));
+
     QObject::connect(this, SIGNAL(paramsChanged()), this, SLOT(updateAdditionalData()));
 
 }
 
-LensCorrectionParametresContolWidget::~LensCorrectionParametresContolWidget()
+LensCorrectionParametresControlWidget::~LensCorrectionParametresControlWidget()
 {
     delete ui;
 }
 
-void LensCorrectionParametresContolWidget::loadParamWidget(WidgetLoader &loader)
+void LensCorrectionParametresControlWidget::loadParamWidget(WidgetLoader &loader)
 {
     LensCorrectionParametres *params = createParameters();
     loader.loadParameters(*params, rootPath);
@@ -44,7 +50,7 @@ void LensCorrectionParametresContolWidget::loadParamWidget(WidgetLoader &loader)
     delete params;
 }
 
-void LensCorrectionParametresContolWidget::saveParamWidget(WidgetSaver  &saver)
+void LensCorrectionParametresControlWidget::saveParamWidget(WidgetSaver  &saver)
 {
     LensCorrectionParametres *params = createParameters();
     saver.saveParameters(*params, rootPath);
@@ -52,7 +58,7 @@ void LensCorrectionParametresContolWidget::saveParamWidget(WidgetSaver  &saver)
 }
 
 
-LensCorrectionParametres *LensCorrectionParametresContolWidget::createParameters() const
+LensCorrectionParametres *LensCorrectionParametresControlWidget::createParameters() const
 {
 
     /**
@@ -69,7 +75,7 @@ LensCorrectionParametres *LensCorrectionParametresContolWidget::createParameters
     result->koeff.empty();
     for (int i = 0; i < ui->koefTableWidget->rowCount(); i++)
     {
-        QDoubleSpinBox *box = static_cast<QDoubleSpinBox *>(ui->koefTableWidget->cellWidget(i,1));
+        QDoubleSpinBox *box = static_cast<QDoubleSpinBox *>(ui->koefTableWidget->cellWidget(i,COLUMN_EDIT));
         double value = 0.0;
         if (box != NULL) {
             QVariant str = box->value();
@@ -82,7 +88,7 @@ LensCorrectionParametres *LensCorrectionParametresContolWidget::createParameters
     return result;
 }
 
-void LensCorrectionParametresContolWidget::setParameters(const LensCorrectionParametres &input)
+void LensCorrectionParametresControlWidget::setParameters(const LensCorrectionParametres &input)
 {
     // Block signals to send them all at once
     bool wasBlocked = blockSignals(true);
@@ -102,7 +108,7 @@ void LensCorrectionParametresContolWidget::setParameters(const LensCorrectionPar
     for (unsigned i = 0; i < input.koeff.size(); i++)
     {
 
-        QDoubleSpinBox *box = static_cast<QDoubleSpinBox *>(ui->koefTableWidget->cellWidget(i,1));
+        QDoubleSpinBox *box = static_cast<QDoubleSpinBox *>(ui->koefTableWidget->cellWidget(i,COLUMN_EDIT));
         box->setValue(input.koeff[i]);
     }
 
@@ -110,7 +116,7 @@ void LensCorrectionParametresContolWidget::setParameters(const LensCorrectionPar
     emit paramsChanged();
 }
 
-void LensCorrectionParametresContolWidget::setParametersVirtual(void *input)
+void LensCorrectionParametresControlWidget::setParametersVirtual(void *input)
 {
     // Modify widget parameters from outside
     LensCorrectionParametres *inputCasted = static_cast<LensCorrectionParametres *>(input);
@@ -120,32 +126,32 @@ void LensCorrectionParametresContolWidget::setParametersVirtual(void *input)
 
 /* UI related stuff */
 
-void LensCorrectionParametresContolWidget::addPower()
+void LensCorrectionParametresControlWidget::addPower()
 {
     int newRow = ui->koefTableWidget->rowCount() + 1;
     ui->koefTableWidget->setRowCount(newRow);
     ui->koefTableWidget->setColumnCount(2);
-    ui->koefTableWidget->setItem(newRow - 1, 0, new QTableWidgetItem(QString("x^%1").arg(newRow)));
+    ui->koefTableWidget->setItem(newRow - 1, COLUMN_CAPTION, new QTableWidgetItem(QString("x^%1").arg(newRow)));
 
     QDoubleSpinBox *box = new QDoubleSpinBox();
     box->setDecimals(9);
     box->setSingleStep(0.00001);
     box->setMaximum(99);
     box->setMinimum(-99);
-    ui->koefTableWidget->setCellWidget(newRow - 1, 1, box);
+    ui->koefTableWidget->setCellWidget(newRow - 1, COLUMN_EDIT, box);
 
     connect(box, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     ui->koefTableWidget->setColumnWidth(0, 60);
-    ui->koefTableWidget->setColumnWidth(1, 400);
+    ui->koefTableWidget->setColumnWidth(1, 250);
 
 }
 
-void LensCorrectionParametresContolWidget::delPower()
+void LensCorrectionParametresControlWidget::delPower()
 {
     ui->koefTableWidget->setRowCount(ui->koefTableWidget->rowCount() - 1);
 }
 
-void LensCorrectionParametresContolWidget::resetCx()
+void LensCorrectionParametresControlWidget::resetCx()
 {
     if (mExample != NULL)
     {
@@ -155,7 +161,7 @@ void LensCorrectionParametresContolWidget::resetCx()
     }
 }
 
-void LensCorrectionParametresContolWidget::resetCy()
+void LensCorrectionParametresControlWidget::resetCy()
 {
     if (mExample != NULL)
     {
@@ -165,21 +171,21 @@ void LensCorrectionParametresContolWidget::resetCy()
     }
 }
 
-void LensCorrectionParametresContolWidget::resetP1()
+void LensCorrectionParametresControlWidget::resetP1()
 {
     ui->tangential1SpinBox->setValue(0.0);
 }
 
-void LensCorrectionParametresContolWidget::resetP2()
+void LensCorrectionParametresControlWidget::resetP2()
 {
     ui->tangential2SpinBox->setValue(0.0);
 }
 
 
 /* Additional stuff */
-void LensCorrectionParametresContolWidget::updateAdditionalData()
+void LensCorrectionParametresControlWidget::updateAdditionalData()
 {
-    LensCorrectionParametres *lensParams = LensCorrectionParametresContolWidget::createParameters();
+    LensCorrectionParametres *lensParams = LensCorrectionParametresControlWidget::createParameters();
     RadialCorrection radialCorrection(*lensParams);
 
     int diagonal = sqrt(lensParams->center.l2Metric());
@@ -216,12 +222,18 @@ void LensCorrectionParametresContolWidget::updateAdditionalData()
 
         mInput = QTFileLoader::RGB24BufferFromQImage(mExample);
 
+        double step = ui->freeParamSpinBox->value();
+        if (step < 0.05)
+        {
+            step = 0.05;
+        }
+
         DisplacementBuffer* mDistortionCorrectTransform =
                  DisplacementBuffer::CacheInverse(&radialCorrection,
                  mInput->h, mInput->w,
                  0.0,0.0,
                  (double)mInput->w, (double)mInput->h,
-                 0.5, 0
+                 step, 0
         );
 
         //DisplacementBuffer* mDistortionCorrectTransform = DisplacementBuffer::TestWiggle(mInput->h, mInput->w);
@@ -276,7 +288,7 @@ void LensCorrectionParametresContolWidget::updateAdditionalData()
 }
 
 
-void LensCorrectionParametresContolWidget::loadExample()
+void LensCorrectionParametresControlWidget::loadExample()
 {
     QString filename = QFileDialog::getOpenFileName(
         this,
@@ -298,12 +310,47 @@ void LensCorrectionParametresContolWidget::loadExample()
     updateAdditionalData();
 }
 
-void LensCorrectionParametresContolWidget::showGraphDialog()
+void LensCorrectionParametresControlWidget::showGraphDialog()
 {
     mGraphDialog.show();
 }
 
-void LensCorrectionParametresContolWidget::exampleShow()
+void LensCorrectionParametresControlWidget::loadParams()
+{
+    qDebug() << "LensCorrectionParametresControlWidget::loadParams(): called";
+    QString filename =  QFileDialog::getOpenFileName(
+                this,
+                "Choose an file name",
+                ".",
+                "json distortion params (*.json)"
+                );
+
+    {
+        JSONGetter getter(filename);
+        WidgetLoader loader(&getter);
+        loadParamWidget(loader);
+    }
+}
+
+void LensCorrectionParametresControlWidget::saveParams()
+{
+    qDebug() << "LensCorrectionParametresControlWidget::saveParams(): called";
+    QString filename =  QFileDialog::getOpenFileName(
+                this,
+                "Choose an file name",
+                ".",
+                "json distortion params (*.json)"
+                );
+
+    {
+        JSONSetter setter(filename);
+        WidgetSaver saver(&setter);
+        saveParamWidget(saver);
+    }
+
+}
+
+void LensCorrectionParametresControlWidget::exampleShow()
 {
     if (mExample == NULL)
     {
@@ -312,26 +359,32 @@ void LensCorrectionParametresContolWidget::exampleShow()
     switch (ui->exampleComboBox->currentIndex()) {
     case 0:
         mDemoDialog.setImage(QSharedPointer<QImage>(new QImage(*mExample)));
+        mDemoDialog.setWindowTitle("Example Input Image");
         break;
     case 1:
         qDebug() << "Outputing corrected";
         mDemoDialog.setImage(QSharedPointer<QImage>(new RGB24Image(mCorrected)));
+        mDemoDialog.setWindowTitle("Corrected Output");
         break;
     case 2:
         qDebug() << "Outputing inverse";
         mDemoDialog.setImage(QSharedPointer<QImage>(new RGB24Image(mInverse)));
+        mDemoDialog.setWindowTitle("Inverse Corrected");
         break;
     case 3:
         qDebug() << "Outputing backproject";
         mDemoDialog.setImage(QSharedPointer<QImage>(new RGB24Image(mBackproject)));
+        mDemoDialog.setWindowTitle("Backproject Output");
         break;
     case 4:
         qDebug() << "Outputing diff";
         mDemoDialog.setImage(QSharedPointer<QImage>(new RGB24Image(mDiff)));
+        mDemoDialog.setWindowTitle("Difference");
         break;
     case 5:
         qDebug() << "Outputing isolines";
         mDemoDialog.setImage(QSharedPointer<QImage>(new RGB24Image(mIsolines)));
+        mDemoDialog.setWindowTitle("Isolines view");
         break;
     default:
         break;

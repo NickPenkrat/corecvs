@@ -86,7 +86,8 @@ HEADERS += \
     visitors/jsonGetter.h \
     visitors/jsonSetter.h \
     widgets/vectorWidget.h \
-    distortioncorrector/lensCorrectionParametresContolWidget.h
+    distortioncorrector/lensCorrectionParametresControlWidget.h \
+    distortioncorrector/cameraModelParametersControlWidget.h
 
 SOURCES += \
     frames.cpp \
@@ -145,9 +146,14 @@ SOURCES += \
     visitors/jsonGetter.cpp \
     visitors/jsonSetter.cpp \
     widgets/vectorWidget.cpp \
-    distortioncorrector/lensCorrectionParametresContolWidget.cpp
+    distortioncorrector/lensCorrectionParametresControlWidget.cpp \
+    distortioncorrector/cameraModelParametersControlWidget.cpp
 
 
+FORMS += \
+    widgets/vectorWidget.ui \
+    distortioncorrector/lensCorrectionParametresControlWidget.ui \
+    distortioncorrector/cameraModelParametersControlWidget.ui
 
 # =============================================================
 
@@ -516,6 +522,4 @@ with_synccam {
 
 OTHER_FILES += ../tools/generator/xml/draw3d.xml
 
-FORMS += \
-    widgets/vectorWidget.ui \
-    distortioncorrector/lensCorrectionParametresContolWidget.ui
+
