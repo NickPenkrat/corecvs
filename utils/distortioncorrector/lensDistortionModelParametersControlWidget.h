@@ -1,5 +1,5 @@
-#ifndef LENSCORRECTIONPARAMETRESCONTOLWIDGET_H
-#define LENSCORRECTIONPARAMETRESCONTOLWIDGET_H
+#ifndef LENSDISTORTIOMMODELPARAMETERSCONTOLWIDGET_H
+#define LENSDISTORTIOMMODELPARAMETERSCONTOLWIDGET_H
 
 #include <QWidget>
 
@@ -10,19 +10,19 @@
 #include "rgb24Buffer.h"
 
 namespace Ui {
-class LensCorrectionParametresContolWidget;
+class LensDistortionModelParametersContolWidget;
 }
 
-class LensCorrectionParametresControlWidget : public ParametersControlWidgetBase
+class LensDistortionModelParametersControlWidget : public ParametersControlWidgetBase
 {
     Q_OBJECT
 
 public:
-    explicit LensCorrectionParametresControlWidget(QWidget *parent = 0);
-    virtual ~LensCorrectionParametresControlWidget();
+    explicit LensDistortionModelParametersControlWidget(QWidget *parent = 0);
+    virtual ~LensDistortionModelParametersControlWidget();
 
-    LensCorrectionParametres* createParameters() const;
-    void setParameters(const LensCorrectionParametres &input);
+    LensDistortionModelParameters* createParameters() const;
+    void setParameters(const LensDistortionModelParameters &input);
     virtual void setParametersVirtual(void *input);
 
 
@@ -63,7 +63,7 @@ signals:
     void paramsChanged();
 
 private:
-    Ui::LensCorrectionParametresContolWidget *ui;
+    Ui::LensDistortionModelParametersContolWidget *ui;
     bool autoInit;
     QString rootPath;
 
@@ -86,4 +86,4 @@ private:
 
 };
 
-#endif // LENSCORRECTIONPARAMETRESCONTOLWIDGET_H
+#endif // LENSDISTORTIOMMODELPARAMETERSCONTOLWIDGET_H

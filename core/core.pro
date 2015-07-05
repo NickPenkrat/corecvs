@@ -64,3 +64,7 @@ OTHER_FILES +=            \
     xml/clustering1.xml   \
     xml/filterBlock.xml   \
     xml/precise.xml       \
+    xml/distortion.xml
+
+OTHER_FILES +=            \
+    ../tools/generator/regen-core.sh

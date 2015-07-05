@@ -83,8 +83,6 @@ public:
 
 };
 
-
-
 /**
  *  This class is a core class for the reflection.
  *  It describes a field of the class
@@ -120,8 +118,13 @@ public:
         TYPE_POINTER,       
 
         TYPE_COMPOSITE,
+
+        /* Array types */
+       // TYPE_DOUBLE_ARRAY,    /*< This should be made more generic*/
         TYPE_COMPOSITE_ARRAY,
-        TYPE_LAST
+        TYPE_LAST,
+
+        TYPE_VECTOR_BIT = 0x80
     };
 
     /**
@@ -210,6 +213,14 @@ template<> inline BaseField::FieldType BaseField::getType<double>()      { retur
 template<> inline BaseField::FieldType BaseField::getType<float>()       { return TYPE_FLOAT;     }
 template<> inline BaseField::FieldType BaseField::getType<bool>()        { return TYPE_BOOL;      }
 template<> inline BaseField::FieldType BaseField::getType<std::string>() { return TYPE_STRING;    }
+
+template<> inline BaseField::FieldType BaseField::getType<vector<int> >()         { return (FieldType)(TYPE_VECTOR_BIT | TYPE_INT);       }
+template<> inline BaseField::FieldType BaseField::getType<vector<int64_t> >()     { return (FieldType)(TYPE_VECTOR_BIT | TYPE_TIMESTAMP); }
+template<> inline BaseField::FieldType BaseField::getType<vector<double> >()      { return (FieldType)(TYPE_VECTOR_BIT | TYPE_DOUBLE);    }
+template<> inline BaseField::FieldType BaseField::getType<vector<float> >()       { return (FieldType)(TYPE_VECTOR_BIT | TYPE_FLOAT);     }
+template<> inline BaseField::FieldType BaseField::getType<vector<bool> >()        { return (FieldType)(TYPE_VECTOR_BIT | TYPE_BOOL);      }
+template<> inline BaseField::FieldType BaseField::getType<vector<std::string> >() { return (FieldType)(TYPE_VECTOR_BIT | TYPE_STRING);    }
+
 //template<> inline BaseField::FieldType BaseField::getType<corecvs::Vector2dd>() { return TYPE_VECTOR2DD; }
 //template<> inline BaseField::FieldType BaseField::getType<corecvs::Vector3dd>() { return TYPE_VECTOR3DD; }
 
@@ -295,6 +306,97 @@ typedef SimpleScalarField<double>      DoubleField;
 typedef SimpleScalarField<float>       FloatField;
 typedef SimpleScalarField<bool>        BoolField;
 
+/***************************************************************************************
+ *
+ * simple type vectors
+ *
+ ***************************************************************************************/
+template<typename Type>
+class SimpleVectorField : public BaseField
+{
+public:
+    typedef vector<Type> CPPType;
+    typedef Type CPPBaseType;
+
+    const Type defaultValue;
+    unsigned defaultSize;
+    bool hasAdditionalValues;
+    Type min;
+    Type max;
+    Type step;
+
+    SimpleVectorField (
+            int _id,
+            int _offset,
+            const Type _defaultValue,
+            int _defaultSize,
+            const char *_name,
+            const char *_decription   = NULL,
+            const char *_comment      = NULL,
+            bool _hasAdditionalValues = false,
+            Type _min = 0,
+            Type _max = 0,
+            Type _step = 0
+    ) :
+        BaseField(_id, BaseField::getType<vector<Type> >(), ReflectionNaming(_name, _decription, _comment) , _offset),
+        defaultValue (_defaultValue),
+        defaultSize(_defaultSize),
+        hasAdditionalValues(_hasAdditionalValues),
+        min (_min),
+        max (_max),
+        step(_step)
+    {}
+
+    SimpleVectorField (
+            int _id,
+            int _offset,
+            Type _defaultValue,
+            int _defaultSize,
+            const ReflectionNaming &_naming,
+            bool _hasAdditionalValues = false,
+            Type _min = 0, // is bad for StringField
+            Type _max = 0,
+            Type _step = 0
+    ) :
+        BaseField(_id, BaseField::getType<vector<Type> >(), _naming, _offset),
+        defaultValue (_defaultValue),
+        defaultSize (_defaultSize),
+        hasAdditionalValues(_hasAdditionalValues),
+        min (_min),
+        max (_max),
+        step(_step)
+    {}
+
+    SimpleVectorField (int _id, Type _defaultValue, int _defaultSize, const char *_name) :
+        BaseField(_id, BaseField::getType<vector<Type> >(), _name, NULL, NULL, BaseField::UNKNOWN_OFFSET),
+        defaultValue (_defaultValue),
+        defaultSize (_defaultSize),
+        hasAdditionalValues(false),
+        min (0),
+        max (0),
+        step(0)
+    {}
+
+#ifdef REFLECTION_WITH_VIRTUAL_SUPPORT
+    /**
+     * Make a bit-by-bit clone
+     **/
+    virtual BaseField* clone() const
+    {
+        return new SimpleVectorField(*this);
+    }
+#endif
+
+};
+
+typedef SimpleVectorField<int>         IntVectorField;
+typedef SimpleVectorField<int64_t>     TimestampVectorField;
+typedef SimpleVectorField<double>      DoubleVectorField;
+typedef SimpleVectorField<float>       FloatVectorField;
+typedef SimpleVectorField<bool>        BoolVectorField;
+
+
+/* Specific types */
 
 class StringField : public BaseField
 {
@@ -335,20 +437,6 @@ public:
 #endif
 
 };
-
-
-/** Small helper struct for fast and convenient initialization of Reflection*/
-/*struct StaticReflection {
-    BaseField::FieldType type;
-    int offset;
-    const char *name;
-    union {
-        int    intVal;
-        double doubleVal;
-        void * ptrVal;
-    } defaultValue;
-};
-*/
 
 class Reflection;
 

@@ -29,9 +29,15 @@ protected:
     QString j(QString in, int width);
     QString getWidgetNameForName(QString name);
 
+    QString getDefaultElementValue(const BaseField *field);
     QString getDefaultValue(const BaseField *field);
+
+    QString getCppTypeForElementType(BaseField::FieldType field);
     QString getCppTypeForType(const BaseField *field);
-    QString getFieldRefTypeForType(BaseField::FieldType type);
+
+    QString getFieldRefTypeForElementType(BaseField::FieldType field);
+    QString getFieldRefTypeForType(BaseField::FieldType intype);
+
     QString getWidgetGetterMethodForType(BaseField::FieldType type);
     QString getWidgetSetterMethodForType(BaseField::FieldType type);
     QString getUiWidgetForType(BaseField::FieldType type);

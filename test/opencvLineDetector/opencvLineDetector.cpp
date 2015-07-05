@@ -26,7 +26,6 @@
 #include "OpenCVTools.h"
 
 #include "camerasCalibration/camerasCalibrationFunc.h"
-#include "straightFunc.h"
 #include "curvatureFunc.h"
 #include "radialFunc.h"
 #include "angleFunction.h"
@@ -67,7 +66,7 @@ int main (int argc, char **argv)
 
        printf("Found in %s size %ix%i is %i\n", filename, chessW, chessH,  found);
        
-       for(int i=0;i<pointbuf.size();i++)
+       for(unsigned i = 0;i < pointbuf.size(); i++)
        {
            printf("Point %f %f\n", pointbuf[i].x,pointbuf[i].y);
        }
@@ -103,12 +102,13 @@ int main (int argc, char **argv)
            imwrite("test_with_chess_LINES.jpg", view);
 
        /// Set default camera param values
-          RadialCorrection correction(LensCorrectionParametres(
-             vector<double>(6), //vector<double>(mUi->degreeSpinBox->value()), //TODO: Read degree from JSON
+          RadialCorrection correction(LensDistortionModelParameters(
+             center.x(),
+             center.y(),
              0.0, 0.0,
+             vector<double>(6), //vector<double>(mUi->degreeSpinBox->value()), //TODO: Read degree from JSON
              1.0,
-             center.l2Metric(),
-             center
+             1.0
           ));
 
           ModelToRadialCorrection modelFactory(
@@ -151,7 +151,7 @@ int main (int argc, char **argv)
     {
        char *filename = argv[1];
 
-       LensCorrectionParametres loaded;
+       LensDistortionModelParameters loaded;
        JSONGetter getter("out.json");
        getter.visit(loaded, "intrinsic");
 

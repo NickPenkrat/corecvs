@@ -86,8 +86,8 @@ HEADERS += \
     visitors/jsonGetter.h \
     visitors/jsonSetter.h \
     widgets/vectorWidget.h \
-    distortioncorrector/lensCorrectionParametresControlWidget.h \
-    distortioncorrector/cameraModelParametersControlWidget.h
+    distortioncorrector/cameraModelParametersControlWidget.h \
+    distortioncorrector/lensDistortionModelParametersControlWidget.h
 
 SOURCES += \
     frames.cpp \
@@ -146,14 +146,14 @@ SOURCES += \
     visitors/jsonGetter.cpp \
     visitors/jsonSetter.cpp \
     widgets/vectorWidget.cpp \
-    distortioncorrector/lensCorrectionParametresControlWidget.cpp \
-    distortioncorrector/cameraModelParametersControlWidget.cpp
+    distortioncorrector/cameraModelParametersControlWidget.cpp \
+    distortioncorrector/lensDistortionModelParametersControlWidget.cpp
 
 
 FORMS += \
     widgets/vectorWidget.ui \
-    distortioncorrector/lensCorrectionParametresControlWidget.ui \
-    distortioncorrector/cameraModelParametersControlWidget.ui
+    distortioncorrector/cameraModelParametersControlWidget.ui \
+    distortioncorrector/lensDistortionModelParametersControlWidget.ui
 
 # =============================================================
 

@@ -64,6 +64,16 @@ template <typename inputType, typename reflectionType>
         popChild();
     }
 
+/* Generic Array support */
+    template <typename inputType, typename reflectionType>
+    void visit(std::vector<inputType> &fields, const reflectionType * /*fieldDescriptor*/)
+    {
+        for (int i = 0; i < fields.size(); i++)
+        {
+            fields[i].accept(*this);
+        }
+    }
+
 private:
 
     QString mFileName;
@@ -109,3 +119,8 @@ void XmlSetter::visit<void *, PointerField>(void * &field, const PointerField *f
 
 template <>
 void XmlSetter::visit<int, EnumField>(int &field, const EnumField *fieldDescriptor);
+
+/* Arrays */
+template <>
+void XmlSetter::visit<double, DoubleVectorField>(std::vector<double> &field, const DoubleVectorField *fieldDescriptor);
+

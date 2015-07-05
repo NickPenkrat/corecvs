@@ -14,11 +14,13 @@ ConfigLoader::ConfigLoader()
 
 ConfigLoader::~ConfigLoader()
 {
-    foreach (EnumReflection *ref, mEnums.values())
-        delete ref;
+    foreach (EnumReflection *ref, mEnums.values()) {
+        delete_safe(ref);
+    }
 
-    foreach (Reflection *ref, mReflections.values())
-        delete ref;
+    foreach (Reflection *ref, mReflections.values()) {
+        delete_safe(ref);
+    }
 
 }
 
@@ -130,87 +132,123 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
             QString stepValue    = fieldElement.attribute("step");
             bool hasAdditionalParameters = (!minValue.isEmpty()) || (!maxValue.isEmpty()) || (!stepValue.isEmpty());
 
+            /**/
+            QDomAttr sizeAttribute = fieldElement.attributeNode("size");
+            bool ok = false;
+            int size = sizeAttribute.value().toInt(&ok);
+            if (!ok) size = -1;
+
             BaseField *field = NULL;
 
-            if (type == "int")
+            if (size < 0)
             {
-                field = new IntFieldGen(
-                          defaultValue.toInt()
-                        , fieldNameing
-                        , hasAdditionalParameters
-                        , minValue.toInt()
-                        , maxValue.toInt()
-                        , stepValue.isEmpty() ? 1 : stepValue.toInt());
-            }
-            else if (type == "double")
-            {
-                DoubleWidgetType widgetType = fieldElement.attribute("widget") == "ExponentialSlider" ?
-                                           exponentialSlider :
-                                           doubleSpinBox;
-                field = new DoubleFieldGen(
-                          defaultValue.toDouble()
-                        , widgetType
-                        , fieldNameing
-                        , hasAdditionalParameters
-                        , minValue.toDouble()
-                        , maxValue.toDouble()
-                        , stepValue.isEmpty() ? 1.0 : stepValue.toDouble());
-            }
-            else if (type == "bool")
-            {
-                BoolWidgetType widgetType = fieldElement.attribute("widget") == "RadioButton" ?
-                                            radioButton :
-                                            checkBox;
-
-                field = new BoolFieldGen(defaultValue == "true", widgetType, fieldNameing);
-            }
-            else if (type == "string")
-            {
-                const char *dValue = toCString(defaultValue);
-                field = new StringFieldGen(dValue, fieldNameing);
-            }
-            else if (type == "Vector2dd" || type == "Vector3dd")
-            {
-                // not supported yet (and most probably won't be supported)
-            }
-            /* TODO: Use "Type *" syntax instead */
-            else if (type == "pointer")
-            {
-                QString targetType = fieldElement.attribute("target");
-                field = new PointerFieldGen(fieldNameing, toCString(targetType));
-
-            }
-            else // composite field or enum
-            {
-                Reflection *reflection = mReflections.value(type);
-                EnumReflection *enumRef = mEnums.value(type);
-
-                if (reflection) // is it a field with the type of some other class?
+                if (type == "int")
                 {
-                    QDomAttr typeAttribute = fieldElement.attributeNode("size");
-                    int size = typeAttribute.value().toInt();
+                    field = new IntFieldGen(
+                              defaultValue.toInt()
+                            , fieldNameing
+                            , hasAdditionalParameters
+                            , minValue.toInt()
+                            , maxValue.toInt()
+                            , stepValue.isEmpty() ? 1 : stepValue.toInt());
+                }
+                else if (type == "double")
+                {
+                    DoubleWidgetType widgetType = fieldElement.attribute("widget") == "ExponentialSlider" ?
+                                               exponentialSlider :
+                                               doubleSpinBox;
+                    field = new DoubleFieldGen(
+                              defaultValue.toDouble()
+                            , widgetType
+                            , fieldNameing
+                            , hasAdditionalParameters
+                            , minValue.toDouble()
+                            , maxValue.toDouble()
+                            , stepValue.isEmpty() ? 1.0 : stepValue.toDouble());
+                }
+                else if (type == "bool")
+                {
+                    BoolWidgetType widgetType = fieldElement.attribute("widget") == "RadioButton" ?
+                                                radioButton :
+                                                checkBox;
 
-                    if (size <= 0) {
-                        field = new CompositeFieldGen(fieldNameing, toCString(type), reflection);
-                    } else {
+                    field = new BoolFieldGen(defaultValue == "true", widgetType, fieldNameing);
+                }
+                else if (type == "string")
+                {
+                    const char *dValue = toCString(defaultValue);
+                    field = new StringFieldGen(dValue, fieldNameing);
+                }
+                else if (type == "Vector2dd" || type == "Vector3dd")
+                {
+                    // not supported yet (and most probably won't be supported)
+                }
+                /* TODO: Use "Type *" syntax instead */
+                else if (type == "pointer")
+                {
+                    QString targetType = fieldElement.attribute("target");
+                    field = new PointerFieldGen(fieldNameing, toCString(targetType));
+
+                }
+                else // composite field or enum
+                {
+                    Reflection *reflection = mReflections.value(type);
+                    EnumReflection *enumRef = mEnums.value(type);
+
+                    if (reflection) // is it a field with the type of some other class?
+                    {
+                         field = new CompositeFieldGen(fieldNameing, toCString(type), reflection);
+                    }
+                    else if (enumRef) // then it should be a enum
+                    {
+                        EnumWidgetType widgetType = fieldElement.attribute("widget") == "TabWidget" ?
+                                                    tabWidget :
+                                                    comboBox;
+
+                        field = new EnumFieldGen(defaultValue.toInt(), widgetType, fieldNameing, enumRef);
+                    }
+                }
+            } else {
+                /* vector types*/
+                if (type == "int")
+                {
+                    field = new IntVectorFieldGen(
+                              defaultValue.toInt()
+                            , size
+                            , fieldNameing
+                            , hasAdditionalParameters
+                            , minValue.toInt()
+                            , maxValue.toInt()
+                            , stepValue.isEmpty() ? 1 : stepValue.toInt());
+                }
+                else if (type == "double")
+                {
+                    field = new DoubleVectorFieldGen(
+                              defaultValue.toDouble()
+                            , size
+                            /*, widgetType*/
+                            , fieldNameing
+                            , hasAdditionalParameters
+                            , minValue.toDouble()
+                            , maxValue.toDouble()
+                            , stepValue.isEmpty() ? 1.0 : stepValue.toDouble());
+                }
+               /* else if (type == "bool")
+                {
+                    BoolWidgetType widgetType = fieldElement.attribute("widget") == "RadioButton" ?
+                                                radioButton :
+                                                checkBox;
+
+                    field = new BoolFieldGen(defaultValue == "true", widgetType, fieldNameing);
+                }*/ else {
+                    Reflection *reflection = mReflections.value(type);
+
+                    if (reflection) // is it a field with the type of some other class?
+                    {
                         field = new CompositeArrayFieldGen(fieldNameing, toCString(type), size, reflection);
                     }
                 }
-                else if (enumRef) // then it should be a enum
-                {
-                    EnumWidgetType widgetType = fieldElement.attribute("widget") == "TabWidget" ?
-                                                tabWidget :
-                                                comboBox;
 
-                    field = new EnumFieldGen(defaultValue.toInt(), widgetType, fieldNameing, enumRef);
-                } else {
-                    fprintf(stderr, "Error 12 (%s:%d,%d) : Type '%s' is unknown. Is neither enum, nor known type.\n",
-                            result->name.name,
-                            fieldElement.lineNumber(),
-                            fieldElement.columnNumber(),
-                            type.toLatin1().constData()
-                    );
-                }
             }
 
             if (field)
@@ -218,6 +256,13 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
                 bool isAdavnced = fieldElement.hasAttribute("adv") | fieldElement.hasAttribute("advanced");
                 field->isAdvanced = isAdavnced;
                 result->fields.push_back(field);
+            } else {
+                fprintf(stderr, "Error 12 (%s:%d,%d) : Type '%s' is unknown. Is neither enum, nor known type.\n",
+                        result->name.name,
+                        fieldElement.lineNumber(),
+                        fieldElement.columnNumber(),
+                        type.toLatin1().constData()
+                );
             }
         }
 

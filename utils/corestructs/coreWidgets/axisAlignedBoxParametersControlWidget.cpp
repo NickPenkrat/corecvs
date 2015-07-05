@@ -30,6 +30,7 @@ AxisAlignedBoxParametersControlWidget::AxisAlignedBoxParametersControlWidget(QWi
 
 AxisAlignedBoxParametersControlWidget::~AxisAlignedBoxParametersControlWidget()
 {
+
     delete mUi;
 }
 

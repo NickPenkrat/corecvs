@@ -2,7 +2,6 @@
 
 #include "log.h"
 #include "rgb24Buffer.h"
-#include "straightFunc.h"
 #include "curvatureFunc.h"
 #include "radialFunc.h"
 
@@ -295,7 +294,16 @@ void DistortionWidget::doTransformLM()
     vector<double> polynomKoeff;
     polynomKoeff.push_back(bestParams.at(0));
     polynomKoeff.push_back(bestParams.at(1));
-    LensCorrectionParametres lenCorrectParams(polynomKoeff, bestParams.at(2), bestParams.at(3), center);
+//    LensDistortionModelParameters lenCorrectParams(polynomKoeff, bestParams.at(2), bestParams.at(3), center);
+
+    LensDistortionModelParameters lenCorrectParams(
+                center.x(),
+                center.y(),
+                bestParams.at(2), bestParams.at(3),
+                polynomKoeff,
+                1.0,
+                1.0);
+
 
     RadialCorrection correction(lenCorrectParams);
     mDistortionCorrectTransform = QSharedPointer<DisplacementBuffer>(
@@ -346,14 +354,24 @@ void DistortionWidget::doLinesTransform()
     PaintImageWidget *editor = mUi->widget;
     vector<vector<Vector2dd> > straights = editor->getPaths();
     L_INFO_P("Starting distortion calibration on %d lines", straights.size());
-
-    RadialCorrection correction(LensCorrectionParametres(
+/*
+    RadialCorrection correction(LensDistortionModelParameters(
        vector<double>(mUi->degreeSpinBox->value()),
        0.0, 0.0,
        1.0,
        center.l2Metric(),
        center
     ));
+ */
+    RadialCorrection correction(LensDistortionModelParameters(
+       center.x(),
+       center.y(),
+       0.0 ,0.0,
+       vector<double>(mUi->degreeSpinBox->value()),
+       1.0,
+       1.0
+    ));
+
 
     ModelToRadialCorrection modelFactory(
         correction,
@@ -658,7 +676,15 @@ void DistortionWidget::doDefaultTransform()
            -1.71374e-20 * pow(k, 8),
              4.4494e-24 * pow(k, 9)};
     vector<double> straightParams(params, params + CORE_COUNT_OF(params));
-    LensCorrectionParametres lenCorrectionParams(straightParams, 0, 0, /*p1, p2,*/ scale, 200.0,  center);
+    LensDistortionModelParameters lenCorrectionParams(
+                center.x(),
+                center.y(),
+                0.0, 0.0,
+                straightParams,
+                1.0,
+                scale
+             );
+
     RadialCorrection radCorrection(lenCorrectionParams);
     mDistortionCorrectTransform = QSharedPointer<DisplacementBuffer>(
             new DisplacementBuffer(&radCorrection, mBufferInput->h, mBufferInput->w, true)
@@ -669,7 +695,7 @@ void DistortionWidget::doDefaultTransform()
 
 void DistortionWidget::doManualTransform()
 {
-    LensCorrectionParametres *params = mUi->lensCorrectionWidget->createParameters();
+    LensDistortionModelParameters *params = mUi->lensCorrectionWidget->createParameters();
     mLinesRadialCoorection.mParams = *params;
     delete params;
 

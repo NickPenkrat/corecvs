@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>LensCorrectionParametresContolWidget</class>
- <widget class="QWidget" name="LensCorrectionParametresContolWidget">
+ <class>LensDistortionModelParametersContolWidget</class>
+ <widget class="QWidget" name="LensDistortionModelParametersContolWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>467</width>
-    <height>248</height>
+    <width>451</width>
+    <height>276</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -90,8 +90,8 @@
      </property>
      <property name="iconSize">
       <size>
-       <width>24</width>
-       <height>24</height>
+       <width>16</width>
+       <height>16</height>
       </size>
      </property>
     </widget>
@@ -133,8 +133,8 @@
      </property>
      <property name="iconSize">
       <size>
-       <width>24</width>
-       <height>24</height>
+       <width>16</width>
+       <height>16</height>
       </size>
      </property>
     </widget>
@@ -157,8 +157,8 @@
      </property>
      <property name="iconSize">
       <size>
-       <width>24</width>
-       <height>24</height>
+       <width>16</width>
+       <height>16</height>
       </size>
      </property>
     </widget>
@@ -180,8 +180,8 @@
      </property>
      <property name="iconSize">
       <size>
-       <width>24</width>
-       <height>24</height>
+       <width>16</width>
+       <height>16</height>
       </size>
      </property>
     </widget>
@@ -234,6 +234,22 @@
         </size>
        </property>
       </widget>
+     </item>
+     <item row="2" column="1">
+      <spacer name="verticalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Minimum</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
      </item>
     </layout>
    </item>
@@ -412,7 +428,7 @@
   <connection>
    <sender>delPowerButton</sender>
    <signal>released()</signal>
-   <receiver>LensCorrectionParametresContolWidget</receiver>
+   <receiver>LensDistortionModelParametersContolWidget</receiver>
    <slot>delPower()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -428,7 +444,7 @@
   <connection>
    <sender>addPowerButton</sender>
    <signal>released()</signal>
-   <receiver>LensCorrectionParametresContolWidget</receiver>
+   <receiver>LensDistortionModelParametersContolWidget</receiver>
    <slot>addPower()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -444,7 +460,7 @@
   <connection>
    <sender>graphButton</sender>
    <signal>released()</signal>
-   <receiver>LensCorrectionParametresContolWidget</receiver>
+   <receiver>LensDistortionModelParametersContolWidget</receiver>
    <slot>showGraphDialog()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -460,7 +476,7 @@
   <connection>
    <sender>levelGraphButton_2</sender>
    <signal>released()</signal>
-   <receiver>LensCorrectionParametresContolWidget</receiver>
+   <receiver>LensDistortionModelParametersContolWidget</receiver>
    <slot>loadExample()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -476,7 +492,7 @@
   <connection>
    <sender>exampleComboBox</sender>
    <signal>currentIndexChanged(int)</signal>
-   <receiver>LensCorrectionParametresContolWidget</receiver>
+   <receiver>LensDistortionModelParametersContolWidget</receiver>
    <slot>exampleShow()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -492,7 +508,7 @@
   <connection>
    <sender>resetCxPushButton</sender>
    <signal>released()</signal>
-   <receiver>LensCorrectionParametresContolWidget</receiver>
+   <receiver>LensDistortionModelParametersContolWidget</receiver>
    <slot>resetCx()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -508,7 +524,7 @@
   <connection>
    <sender>resetP1PushButton</sender>
    <signal>released()</signal>
-   <receiver>LensCorrectionParametresContolWidget</receiver>
+   <receiver>LensDistortionModelParametersContolWidget</receiver>
    <slot>resetP1()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -524,7 +540,7 @@
   <connection>
    <sender>resetCxPushButton_3</sender>
    <signal>released()</signal>
-   <receiver>LensCorrectionParametresContolWidget</receiver>
+   <receiver>LensDistortionModelParametersContolWidget</receiver>
    <slot>resetCy()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -540,7 +556,7 @@
   <connection>
    <sender>resetP2PushButton</sender>
    <signal>released()</signal>
-   <receiver>LensCorrectionParametresContolWidget</receiver>
+   <receiver>LensDistortionModelParametersContolWidget</receiver>
    <slot>resetP2()</slot>
    <hints>
     <hint type="sourcelabel">

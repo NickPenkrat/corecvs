@@ -15,6 +15,8 @@ using corecvs::StringField;
 using corecvs::PointerField;
 using corecvs::EnumField;
 
+using corecvs::DoubleVectorField;
+
 using namespace corecvs;
 
 class JSONSetter
@@ -58,6 +60,16 @@ template <typename inputType, typename reflectionType>
         pushChild(fieldDescriptor->getSimpleName());
            field.accept(*this);
         popChild();
+    }
+
+/* Generic Array support */
+    template <typename inputType, typename reflectionType>
+    void visit(std::vector<inputType> &fields, const reflectionType * /*fieldDescriptor*/)
+    {
+        for (int i = 0; i < fields.size(); i++)
+        {
+            fields[i].accept(*this);
+        }
     }
 
     void pushChild(const char *childName)
@@ -119,5 +131,9 @@ void JSONSetter::visit<void *, PointerField>(void * &field, const PointerField *
 template <>
 void JSONSetter::visit<int, EnumField>(int &field, const EnumField *fieldDescriptor);
 
+
+/* Arrays */
+template <>
+void JSONSetter::visit<double, DoubleVectorField>(std::vector<double> &field, const DoubleVectorField *fieldDescriptor);
 
 #endif // JSONSETTER_H

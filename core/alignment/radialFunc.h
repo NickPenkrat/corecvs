@@ -10,7 +10,7 @@ public:
     RadialCorrection mLockedDimentions;
     bool mGuessCenter;
     bool mGuessTangent;
-    int  mPolynomPower;
+    int  mPolynomialDegree;
 
 #if 0
     enum InputVector2Model {
@@ -26,12 +26,12 @@ public:
             const RadialCorrection &lockedDimentions,
             bool guessCenter,
             bool guessTangent,
-            int  polynomPower
+            int  polynomialDegree
     ) :
         mLockedDimentions(lockedDimentions),
         mGuessCenter(guessCenter),
         mGuessTangent(guessTangent),
-        mPolynomPower(polynomPower)
+        mPolynomialDegree(polynomialDegree)
     {}
 
     RadialCorrection getRadial(const double in[]) const;
@@ -39,7 +39,7 @@ public:
 
     int getModelSize() const
     {
-        return mPolynomPower +
+        return mPolynomialDegree +
                (mGuessCenter  ? 2 : 0) +
                (mGuessTangent ? 2 : 0);
     }

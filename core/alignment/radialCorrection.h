@@ -11,6 +11,7 @@
 #ifndef RADIALCORRECTION_H_
 #define RADIALCORRECTION_H_
 
+#include "lensDistortionModelParameters.h"
 #include "global.h"
 #include "vector2d.h"
 #include "g12Buffer.h"
@@ -18,6 +19,7 @@
 
 namespace corecvs {
 
+#if 0
 /**
  * \ingroup distcorrect
  * \brief This structure holds the parameters to correct the image.
@@ -48,7 +50,7 @@ namespace corecvs {
  *   for more details please read the code of getCorrectionForPoint() or read the Heikkila paper
  *
  */
-class LensCorrectionParametres {
+class LensDistortionModelParameters {
 public:
     vector<double> koeff; /**< Polynom to describe radial correction */
 
@@ -60,7 +62,7 @@ public:
 
     Vector2dd center; /**< The center of the distortion \f$(x_c,y_c)\f$*/
 
-    LensCorrectionParametres(
+    LensDistortionModelParameters(
             vector<double> _koeff,
             double _p1,
             double _p2,
@@ -78,7 +80,7 @@ public:
         focal = center.l2Metric();
     }
 
-    LensCorrectionParametres(vector<double> _koeff, double _p1, double _p2, Vector2d32 _center) :
+    LensDistortionModelParameters(vector<double> _koeff, double _p1, double _p2, Vector2d32 _center) :
         p1(_p1),
         p2(_p2),
         aspect(1.0),
@@ -88,7 +90,7 @@ public:
         koeff = _koeff;
     }
 
-    LensCorrectionParametres() :
+    LensDistortionModelParameters() :
         p1(0.0),
         p2(0.0),
         aspect(1.0),
@@ -116,13 +118,13 @@ public:
             }
         }
 };
-
+#endif
 
 
 class RadialCorrection : public DeformMap<int32_t, double>, public FunctionArgs
 {
 public:
-    explicit RadialCorrection(const LensCorrectionParametres &params = LensCorrectionParametres());
+    explicit RadialCorrection(const LensDistortionModelParameters &params = LensDistortionModelParameters());
 
     virtual ~RadialCorrection();
     inline Vector2dd map(Vector2dd const & v) const
@@ -135,9 +137,9 @@ public:
         double rpow = r;
         double radialCorrection = 0;
 
-        for (unsigned i = 0; i < mParams.koeff.size(); i ++)
+        for (unsigned i = 0; i < mParams.koeff().size(); i ++)
         {
-            radialCorrection += mParams.koeff[i] * rpow;
+            radialCorrection += mParams.koeff()[i] * rpow;
             rpow *= r;
         }
         return radialCorrection;
@@ -151,7 +153,7 @@ public:
     /**
      * \brief Apply the lens distortion correction.
      *
-     * For details see LensCorrectionParametres
+     * For details see LensDistortionModelParameters
      *
      * \param y  y position of the point to be mapped
      * \param x  x position of the point to be mapped
@@ -160,11 +162,16 @@ public:
      **/
     inline Vector2dd map(double y, double x) const
     {
-        double dpx = (x - mParams.center.x()) * mParams.aspect;
-        double dpy = (y - mParams.center.y());
+        double cx = mParams.principalX();
+        double cy = mParams.principalY();
+        double p1 = mParams.tangentialX();
+        double p2 = mParams.tangentialY();
 
-        double dx = dpx / mParams.focal;
-        double dy = dpy / mParams.focal;
+        double dx = (x - cx) * mParams.aspect();
+        double dy = (y - cy);
+
+        /*double dx = dpx / mParams.focal;
+        double dy = dpy / mParams.focal;*/
 
         double dxsq = dx * dx;
         double dysq = dy * dy;
@@ -180,12 +187,13 @@ public:
         double radialX = (double)dx * radialCorrection;
         double radialY = (double)dy * radialCorrection;
 
-        double tangentX = 2 * mParams.p1 * dxdy + mParams.p2 * ( rsq + 2 * dxsq );
-        double tangentY = mParams.p1 * (rsq + 2 * dysq) + 2 * mParams.p2 * dxdy;
+        double tangentX =    2 * p1 * dxdy      + p2 * ( rsq + 2 * dxsq );
+        double tangentY = p1 * (rsq + 2 * dysq) +     2 * p2 * dxdy;
 
         return Vector2dd(
-                x + ((radialX + tangentX) / mParams.aspect * mParams.focal),
-                y + ((radialY + tangentY)                  * mParams.focal));
+                cx + ((dx + radialX + tangentX) / mParams.aspect() * mParams.scale()),
+                cy + ((dy + radialY + tangentY)                    * mParams.scale())
+               );
     }
 
     /**/
@@ -201,7 +209,12 @@ public:
     G12Buffer *doCorrectionTransform(G12Buffer *inputBuffer);
 
     //Vector2dd getCorrectionForPoint(Vector2dd input);
-    LensCorrectionParametres mParams;
+    LensDistortionModelParameters mParams;
+
+    Vector2dd center() const
+    {
+        return Vector2dd(mParams.principalX(), mParams.principalY());
+    }
 };
 
 

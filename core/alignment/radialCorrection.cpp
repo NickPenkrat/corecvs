@@ -13,7 +13,7 @@
 namespace corecvs {
 
 
-RadialCorrection::RadialCorrection(const LensCorrectionParametres &params) :
+RadialCorrection::RadialCorrection(const LensDistortionModelParameters &params) :
         FunctionArgs(2,2),
         mParams(params)
 {

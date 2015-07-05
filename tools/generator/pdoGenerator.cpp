@@ -603,7 +603,16 @@ void PDOGenerator::generatePDOCpp()
 
     if (type != BaseField::TYPE_COMPOSITE && type != BaseField::TYPE_COMPOSITE_ARRAY) {
     result+=
-    "          "+defaultValue+",\n"
+    "          "+defaultValue+",\n";
+        if (type & BaseField::TYPE_VECTOR_BIT)
+        {
+            QString defaultSize = "0";
+    result+=
+    "          "+defaultSize+",\n";
+
+        }
+
+    result+=
     "          \""+name+"\",\n"
     "          \""+descr+"\",\n"
     "          \""+comment+"\"";

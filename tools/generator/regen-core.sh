@@ -201,7 +201,7 @@ enums="sobelMixingType
        interpolationType         
        makePreciseAlgorithm
        preciseInterpolationType"
-classes=""
+classes="lensDistortionModelParameters"
 ui_classes="
         rgbColorParameters
     
