@@ -306,9 +306,9 @@ int V4L2CameraDescriptor::stop()
 
 int V4L2CameraDescriptor::dequeue( V4L2BufferDescriptor &bufferDescr)
 {
-	if (deviceHandle == INVALID_HANDLE) {
-		return 1;
-	}
+    if (deviceHandle == INVALID_HANDLE) {
+        return 1;
+    }
 
     bufferDescr.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     bufferDescr.memory = V4L2_MEMORY_MMAP;
@@ -341,9 +341,9 @@ int V4L2CameraDescriptor::dequeue( V4L2BufferDescriptor &bufferDescr)
 
 int V4L2CameraDescriptor::enqueue(V4L2BufferDescriptor buffer)
 {
-	if (deviceHandle == INVALID_HANDLE) {
-		return 1;
-	}
+    if (deviceHandle == INVALID_HANDLE) {
+        return 1;
+    }
 
     if (!buffer.isFilled)
     {
@@ -642,5 +642,22 @@ int V4L2CameraDescriptor::getCaptureFormats(int *num, ImageCaptureInterface::Cam
         formats[i] = cameraFormats[i];
     }
     return 0;
+}
+
+std::string V4L2CameraDescriptor::getSerialNumber()
+{
+    // First we need to locate the device on the bus
+
+    struct stat buf;
+
+   if (fstat(deviceHandle, &buf) == 1)
+   {
+       printf("fstat call failed with %s", strerror(errno));
+       return "none";
+   }
+
+   int major_id = major(buf.st_dev);
+   int minor_id = minor(buf.st_dev);
+
 }
 

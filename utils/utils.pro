@@ -87,7 +87,8 @@ HEADERS += \
     visitors/jsonSetter.h \
     widgets/vectorWidget.h \
     distortioncorrector/cameraModelParametersControlWidget.h \
-    distortioncorrector/lensDistortionModelParametersControlWidget.h
+    distortioncorrector/lensDistortionModelParametersControlWidget.h \
+    os/UsbBusResetter.h
 
 SOURCES += \
     frames.cpp \
@@ -147,7 +148,8 @@ SOURCES += \
     visitors/jsonSetter.cpp \
     widgets/vectorWidget.cpp \
     distortioncorrector/cameraModelParametersControlWidget.cpp \
-    distortioncorrector/lensDistortionModelParametersControlWidget.cpp
+    distortioncorrector/lensDistortionModelParametersControlWidget.cpp \
+    os/UsbBusResetter.cpp
 
 
 FORMS += \
