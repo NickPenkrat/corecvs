@@ -1,10 +1,9 @@
 #ifndef MATCHINGPLAN_H
 #define MATCHINGPLAN_H
 
-#include <vector>
 #include <deque>
 #include <iostream>
-#include <cstdint>
+#include <stdint.h>
 
 struct MatchPlanEntry {
 	void save(std::ostream &os) const;

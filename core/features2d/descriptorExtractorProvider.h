@@ -1,10 +1,8 @@
 #ifndef DESCRIPTOREXTRACTORPROVIDER_H
 #define DESCRIPTOREXTRACTORPROVIDER_H
 
-#include <cassert>
-
 #include "imageKeyPoints.h"
-#include "featureDetectorProvider.h"
+#include "algoBase.h"
 
 
 class DescriptorExtractor : public virtual AlgoBase {

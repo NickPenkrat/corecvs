@@ -1,17 +1,13 @@
 #ifndef FEATUREMATCHER_H
 #define FEATUREMATCHER_H
 
-#include <vector>
-#include <string>
 #include <stack>
 #include <map>
-//#include <chrono>
 
 #include "featureDetectorProvider.h"
 #include "descriptorExtractorProvider.h"
-#include "matchingPlan.h"
-#include "imageKeyPoints.h"
 #include "imageMatches.h"
+#include "matchingPlan.h"
 
 #ifdef WITH_TBB
 #include <tbb/tbb.h>
@@ -91,19 +87,6 @@ private:
 	bool sortFeatures;
 };
 
-#if 0
-class RandIndexStage : public FeatureMatchingPipelineStage {
-public:
-	void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename) {}
-	void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
-	void run(FeatureMatchingPipeline *pipeline);
-	RandIndexStage();
-private:
-	std::vector<std::vector<double>> index;
-};
-#endif
-
-
 class FeatureMatchingPipeline {
 public:
 	FeatureMatchingPipeline(const std::vector<std::string> &filenames);
@@ -137,12 +120,6 @@ private:
 	std::vector<bool> runEnable;
 	std::vector<std::pair<bool, std::string>> saveParams;
 	std::vector<std::pair<bool, std::string>> loadParams;
-#if 0
-	std::stack<std::unordered_map<size_t, std::chrono::time_point<std::chrono::high_resolution_clock>> tics;
-
-	std::stack<std::chrono::time_point<std::chrono::high_resolution_clock>> tics;
-	std::vector<size_t> totals, counts;
-#endif
 	FeatureMatchingPipeline(const FeatureMatchingPipeline&);
 };
 

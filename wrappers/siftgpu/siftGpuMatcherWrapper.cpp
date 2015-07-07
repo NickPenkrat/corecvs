@@ -5,7 +5,6 @@
 #else
 #include <dlfcn.h>
 #endif
-#include <algorithm>
 #include <iostream>
 
 SiftMatchGPU* SiftGpuMatcher::initSiftMatchGpu(int count) {

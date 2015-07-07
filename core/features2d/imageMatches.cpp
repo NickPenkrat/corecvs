@@ -51,9 +51,6 @@ void RawMatches::load(std::istream &ifs) {
 
 		for(size_t j = 0; j < L; ++j) {
 			ifs >> K;
-#if 0
-			matches[i][j].resize(K);
-#endif
 			for(size_t k = 0; k < K; ++k) {
 				ifs >> matches[i][j][k];
 			}
@@ -104,18 +101,12 @@ void RefinedMatches::load(std::istream &ifs) {
 	ifs >> M;
 
 	matchSets.clear();
-#if 0
-	matchSets.reserve(M);
-#endif
 	for(size_t i = 0; i < M; ++i) {
 		size_t I, J, K;
 		assert(ifs);
 		ifs >> I >> J >> K;
 
 		RefinedMatchSet set(I, J);
-#if 0
-		set.matches.reserve(K);
-#endif
 		for(size_t j = 0; j < K; ++j) {
 			size_t mi, mj;
 			double dist;

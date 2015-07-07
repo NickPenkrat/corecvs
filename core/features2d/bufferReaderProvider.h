@@ -1,7 +1,6 @@
 #ifndef BUFFERREADERPROVIDER_H
 #define BUFFERREADERPROVIDER_H
 
-#include <cassert>
 #include <string>
 #include <vector>
 

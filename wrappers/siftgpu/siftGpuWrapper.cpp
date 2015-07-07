@@ -26,20 +26,20 @@ SiftGpu::SiftGpu(double filterWidthFactor,
 	orientationNumber(orientationNumber), siftGpu(0) {
     SiftGPU* (*createNew)(int);
 #ifndef WIN32
-		void* handle = dlopen("libsiftgpu.so", RTLD_LAZY);
-		if(!handle) {
-			std::cerr << "Failed to open shared lib: " << dlerror() << std::endl;
-			exit(0);
-		}
+	void* handle = dlopen("libsiftgpu.so", RTLD_LAZY);
+	if(!handle) {
+		std::cerr << "Failed to open shared lib: " << dlerror() << std::endl;
+		exit(0);
+	}
 
-		dlerror();
+	dlerror();
 
-        createNew = (SiftGPU* (*) (int)) dlsym(handle, "CreateNewSiftGPU");
-		const char* dlsym_err = dlerror();
-		if(dlsym_err) {
-			std::cerr << "Failed to load fun: " << dlsym_err << std::endl;
-			exit(0);
-		}
+	createNew = (SiftGPU* (*) (int)) dlsym(handle, "CreateNewSiftGPU");
+	const char* dlsym_err = dlerror();
+	if(dlsym_err) {
+		std::cerr << "Failed to load fun: " << dlsym_err << std::endl;
+		exit(0);
+	}
 #else
     HINSTANCE hinstLib;
 
@@ -105,12 +105,12 @@ void SiftGpu::operator()(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keypoi
     if(image.getType() != BufferType::U8 || !image.isValid()) {
 		std::cerr << __LINE__ << "Invalid image type" << std::endl;
 	}
-	
+
 	std::vector<SiftGPU::SiftKeypoint> keypoints_sgpu;
 	if( useProvidedKeypoints ) {
 		keypoints_sgpu.reserve(keypoints.size());
         for(std::vector<KeyPoint>::iterator kp = keypoints.begin(); kp != keypoints.end(); ++kp)
-            keypoints_sgpu.push_back(SiftGpu::convert(*kp));
+			keypoints_sgpu.push_back(SiftGpu::convert(*kp));
 		siftGpu->SetKeypointList(keypoints_sgpu.size(), &keypoints_sgpu[0]);
 		siftGpu->RunSIFT(image.getCols(), image.getRows(), image.row<unsigned char>(0), GL_LUMINANCE, GL_UNSIGNED_BYTE);
 	} else {
@@ -120,11 +120,11 @@ void SiftGpu::operator()(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keypoi
 		siftGpu->GetFeatureVector(&keypoints_sgpu[0], 0);
 		keypoints.reserve(num);
         for(std::vector<SiftGPU::SiftKeypoint>::iterator kp = keypoints_sgpu.begin(); kp != keypoints_sgpu.end(); ++kp)
-            keypoints.push_back(SiftGpu::convert(*kp));
+			keypoints.push_back(SiftGpu::convert(*kp));
 	}
 
 	if(computeDescriptors) {
-        descriptors = RuntimeTypeBuffer(keypoints.size(), descriptorSize(), BufferType::F32);
+		descriptors = RuntimeTypeBuffer(keypoints.size(), descriptorSize(), BufferType::F32);
 		siftGpu->GetFeatureVector(0, descriptors.row<float>(0));
 	}
 }

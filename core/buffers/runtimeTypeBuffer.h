@@ -5,27 +5,7 @@
 #include <string>
 #include <iostream>
 #include <cassert>
-#include <cstdlib>
-#include <stdint.h> // for those who use outdated compilers
-
-
-#define BUFFER_TYPE_TO_STRING(str) \
-	case str: \
-		return #str;
-#define BUFFER_TYPE_FROM_STRING(str) \
-	if(!strcmp(name, #str)) \
-		type =str;
-#define BUFFER_SIZE(str, sz) \
-	case str: \
-		return sz;
-#define BUFFER_CVTYPE(str, type) \
-	case str: \
-		return type;
-#define BUFFER_TYPECV(str, cvtype) \
-	case cvtype:\
-		type = str;\
-		break;
-		
+#include <stdint.h> 
 
 #ifndef CV_8U
 #define CV_8U 0
@@ -64,13 +44,6 @@ public:
 		copy(b.data);
 	}
 
-// Our compiler is too old for cute move semantics
-#if 0
-	RuntimeTypeBuffer(RuntimeTypeBuffer &&b) : data(b.data), rows(b.rows), cols(b.cols), sz(b.sz), type(b.type) {
-		b.data = 0;
-	}
-#endif
-
 	RuntimeTypeBuffer& operator=(const RuntimeTypeBuffer &b) {
 		if(this == &b)
 			return *this;
@@ -84,23 +57,6 @@ public:
 		copy(b.data);
 		return *this;
 	}
-
-// Our compiler is too old for cute move semantics
-#if 0
-	RuntimeTypeBuffer& operator=(RuntimeTypeBuffer &&b) {
-		if(this == &b)
-			return *this;
-
-		free(data);
-		rows = b.rows;
-		cols = b.cols;
-		sz = b.sz;
-		type = b.type;
-		data = b.data;
-		b.data = 0;
-		return *this;
-	}
-#endif
 
 	bool isValid() const {
 		return data != 0;

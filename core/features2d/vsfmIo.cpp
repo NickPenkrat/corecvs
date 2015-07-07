@@ -42,8 +42,9 @@ std::istream& operator>>(std::istream& is, SiftFeature& f) {
 void VsfmSiftIO::writeAscii(std::ostream& os, const std::vector<SiftFeature>& features) {
 	os << features.size() << " " << SiftFeature::DESCRIPTOR_WIDTH << std::endl;
 
-    for(std::vector<SiftFeature>::const_iterator it = features.begin(); it != features.end(); ++it)
+    for(std::vector<SiftFeature>::const_iterator it = features.begin(); it != features.end(); ++it) {
         os << *it;
+	}
 }
 
 void VsfmSiftIO::readAscii(std::istream& is, std::vector<SiftFeature>& features) {

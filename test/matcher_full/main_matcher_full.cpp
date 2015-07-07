@@ -1,9 +1,6 @@
-#include <cassert>
 #include <cstring>
 #include <iostream>
 #include <fstream>
-#include <string>
-#include <algorithm>
 
 #include "featureMatchingPipeline.h"
 
@@ -64,11 +61,13 @@ void detectBase() {
 void prepareCopy(const std::string &postfix) {
 	char command[1000] = {0};
 	sprintf(command, "mkdir kermit_%s", postfix.c_str());
-//	system(std::string("mkdir kermit_") + postfix);
 	system(command);
+#ifndef WIN32
 	sprintf(command, "cp %s*.jpg kermit_%s/", base.c_str(), postfix.c_str());
+#else
+	sprintf(command, "copy %s*.jpg kermit_%s/", base.c_str(), postfix.c_str());
+#endif
 	system(command);
-//	system(std::string("cp ") + base + std::string("*.jpg kermit_") + postfix + std::string("/"));
 	tempBase = std::string("kermit_") + postfix + std::string("/");
 }
 

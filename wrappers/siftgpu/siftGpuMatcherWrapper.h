@@ -1,8 +1,6 @@
 #ifndef SIFTGPUMATCHERWRAPPER_H
 #define SIFTGPUMATCHERWRAPPER_H
 
-#include <vector>
-
 #include "descriptorMatcherProvider.h"
 
 #include "SiftGPU/SiftGPU.h"

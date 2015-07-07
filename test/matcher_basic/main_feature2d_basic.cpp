@@ -1,8 +1,5 @@
 #include <cassert>
-#include <cstring>
 #include <iostream>
-#include <string>
-#include <algorithm>
 
 #include "featureMatchingPipeline.h"
 

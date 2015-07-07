@@ -1,11 +1,10 @@
 #ifndef IMAGEMATCHES_H
 #define IMAGEMATCHES_H
 
-#include <vector>
 #include <array>
 #include <string>
 #include <iostream>
-#include <cstdint>
+#include <stdint.h>
 #include <deque>
 
 struct RawMatch {

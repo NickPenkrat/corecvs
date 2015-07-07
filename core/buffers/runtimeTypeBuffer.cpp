@@ -18,7 +18,7 @@ std::istream& operator>>(std::istream &is, RuntimeTypeBuffer &b) {
 	if(type == "F32") {
 		buffer_type = BufferType::F32;
 	}
-	
+
 	b = RuntimeTypeBuffer(R, C, buffer_type);
 	switch(b.type) {
 		case BufferType::U8:

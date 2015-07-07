@@ -1,6 +1,5 @@
 #include "featureDetectorProvider.h"
 
-
 #include <cassert>
 
 FeatureDetector* FeatureDetectorProvider::getDetector(const DetectorType &type) {

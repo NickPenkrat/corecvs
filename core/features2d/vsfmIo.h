@@ -2,8 +2,7 @@
 #define VSFMIO_H
 
 #include <array>
-#include <cstdint>
-#include <cstring>
+#include <stdint.h>
 #include <vector>
 #include <iostream>
 

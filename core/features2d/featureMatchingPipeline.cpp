@@ -2,13 +2,10 @@
 
 #include <cassert>
 #include <fstream>
-#include <iostream>
 #include <iomanip>
 #include <sstream>
-#include <cstdlib>
 #include <ctime>
 #include <algorithm>
-#include <array>
 
 #include "featureDetectorProvider.h"
 #include "descriptorExtractorProvider.h"
@@ -18,7 +15,6 @@
 
 #ifdef WITH_TBB
 #include "tbb/tbb.h"
-//#error
 #endif
 
 const char* KEYPOINT_EXTENSION = "keypoints";
@@ -82,24 +78,24 @@ public:
 		FeatureDetector* detector = FeatureDetectorProvider::getInstance().getDetector(detectorType);
 		size_t N = pipeline->images.size();
 		size_t id = r.begin();
-#if 1
+
 		std::stringstream ss1, ss2;
 		ss1 << "Detecting keypoints with " << detectorType << " on ";
 		size_t cnt = 0;
 		pipeline->tic(id, false);
 		size_t kpt = 0;
-#endif
+
 		for(size_t i = r.begin(); i != r.end(); ++i) {
 			Image& image = pipeline->images[i];
 			image.keyPoints.keyPoints.clear();
-#if 1
+
 			ss1 << image.filename << ", ";
-#endif
+
 			BufferReader* reader = BufferReaderProvider::getInstance().getBufferReader(image.filename);
 			RuntimeTypeBuffer img = reader->read(image.filename);
 			delete reader;
 			detector->detect(img, image.keyPoints.keyPoints);
-#if 1	
+
 			kpt += image.keyPoints.keyPoints.size();
 			cnt++;
 			if(cnt % 4 == 0) {
@@ -110,14 +106,14 @@ public:
 				ss1 << "Detecting keypoints with " << detectorType << " on ";
 				pipeline->tic(r.begin(), false);
 			}
-#endif
+
 		}
-#if 1
+
 		if(cnt) {
 			ss2 << kpt << " keypoints"; kpt = 0;
 			pipeline->toc(ss1.str(), ss2.str(), N, cnt, id, false); cnt = 0;
 		}
-#endif
+
 		delete detector;
 	}
 	ParallelDetector(FeatureMatchingPipeline* pipeline, DetectorType detectorType) : pipeline(pipeline), detectorType(detectorType) {}
@@ -217,18 +213,18 @@ public:
 	DescriptorExtractor* extractor = DescriptorExtractorProvider::getInstance().getDescriptorExtractor(descriptorType);
 		size_t N = pipeline->images.size();
 		size_t id = r.begin();
-#if 1
+
 		std::stringstream ss1, ss2;
 		ss1 << "Extracting " << descriptorType << " descriptors " << " from ";
 		size_t cnt = 0;
 		pipeline->tic(id, false);
 		size_t kpt = 0;
-#endif
+
 		for(size_t i = r.begin(); i != r.end(); ++i) {
 			Image& image = pipeline->images[i];
-#if 1
+
 			ss1 << image.filename << ", ";
-#endif
+
 			BufferReader* reader = BufferReaderProvider::getInstance().getBufferReader(image.filename);
 			RuntimeTypeBuffer img = reader->read(image.filename);
 			delete reader;
@@ -236,7 +232,7 @@ public:
 		image.descriptors.type = descriptorType;
 
 		assert(image.descriptors.mat.getRows() == image.keyPoints.keyPoints.size());
-#if 1	
+
 			kpt += image.keyPoints.keyPoints.size();
 			cnt++;
 			if(cnt % 4 == 0) {
@@ -247,14 +243,14 @@ public:
 		ss1 << "Extracting " << descriptorType << " descriptors " << " from ";
 				pipeline->tic(r.begin(), false);
 			}
-#endif
+
 		}
-#if 1
+
 		if(cnt) {
 			ss2 << kpt << " descriptors"; kpt = 0;
 			pipeline->toc(ss1.str(), ss2.str(), N, cnt, id, false); cnt = 0;
 		}
-#endif
+
 		delete extractor;
 	}
 	ParallelExtractor(FeatureMatchingPipeline* pipeline, DescriptorType descriptorType) : pipeline(pipeline), descriptorType(descriptorType) {}
@@ -346,13 +342,13 @@ public:
 	MatchPlan &matchPlan = pipeline->matchPlan;
 	RawMatches &rawMatches = pipeline->rawMatches;
 	std::vector<Image> &images = pipeline->images;
-#if 1
+
 		std::stringstream ss1, ss2;
 		ss1 << "Matched sets ";
 		size_t cnt = 0;
 		pipeline->tic(id, false);
 		size_t kpt = 0;
-#endif
+
 		for(size_t i = r.begin(); i != r.end(); ++i) {
 			ss1 << i << ", ";
 			size_t s = i;
@@ -393,7 +389,7 @@ public:
 				m.featureT = query.trainFeatures[m.featureT];
 			}
 		}
-#if 1	
+
 			cnt++;
 			if(cnt % 16 == 0) {
 				pipeline->toc(ss1.str(), ss2.str(), S, cnt, id, false); cnt = 0;
@@ -401,13 +397,13 @@ public:
 				ss1 << "Matched sets ";
 				pipeline->tic(r.begin(), false);
 			}
-#endif
+
 		}
-#if 1
+
 		if(cnt) {
 			pipeline->toc(ss1.str(), ss2.str(), S, cnt, id, false); cnt = 0;
 		}
-#endif
+
 	}
 	ParallelMatcher(FeatureMatchingPipeline* pipeline, DescriptorType descriptorType, size_t responsesPerPoint) : pipeline(pipeline), descriptorType(descriptorType), responsesPerPoint(responsesPerPoint) {}
 };
@@ -436,19 +432,6 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline) {
 
 		assert(I < N && J < N);
 
-#if 0
-		if(!images[I].descriptors.mat.isValid()) {
-			std::string filename = changeExtension(images[I].filename, DESCRIPTOR_EXTENSION);
-
-			images[I].descriptors.load(filename);
-		}
-		if(!images[J].descriptors.mat.isValid()) {
-			std::string filename = changeExtension(images[J].filename, DESCRIPTOR_EXTENSION);
-
-			images[J].descriptors.load(filename);
-		}
-#endif
-
 		RuntimeTypeBuffer qb(images[I].descriptors.mat);
 		RuntimeTypeBuffer tb(images[J].descriptors.mat);
 
@@ -459,7 +442,6 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline) {
 			memcpy(tb.row<void>(j), images[J].descriptors.mat.row<void>(query.trainFeatures[j]), tb.getRowSize());
 		}
 
-//		matcher->knnMatch(qb, tb, rawMatches.matches[s], responsesPerPoint);
         std::vector<std::vector<RawMatch>> ml;
         matcher->knnMatch(qb, tb, ml, responsesPerPoint);
 
@@ -472,10 +454,6 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline) {
             }
             rawMatches.matches[s].push_back(mk);
         }
-#if 0
-		images[I].descriptors.mat = RuntimeTypeBuffer();
-		images[J].descriptors.mat = RuntimeTypeBuffer();
-#endif
 
 		// It's time to replace indicies
         for(std::deque<std::array<RawMatch, 2>>::iterator it = rawMatches.matches[s].begin(); it != rawMatches.matches[s].end(); ++it) {
@@ -508,7 +486,7 @@ void MatchingStage::saveResults(FeatureMatchingPipeline *pipeline, const std::st
 	pipeline->rawMatches.save(filename);
 }
 
-#if 0
+#ifdef WITH_CLUSTERS
 RandIndexStage::RandIndexStage() {
 };
 
@@ -527,10 +505,6 @@ void RandIndexStage::saveResults(FeatureMatchingPipeline *pipeline, const std::s
 	}
 	
 }
-#endif
-#if 0
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
 
 void drawMatches(const std::string &prefix, size_t idxL, size_t idxR, std::vector<std::vector<size_t>> &cls, std::vector<int> &bestA, std::vector<int> &bestB, FeatureMatchingPipeline* pipeline, bool rl, RefinedMatchSet *set = 0) {
 	cv::Mat A, B, R;
@@ -597,9 +571,7 @@ void drawMatches(const std::string &prefix, size_t idxL, size_t idxR, std::vecto
 	cv::imwrite(filename, R);
 	std::cerr << "Writing output to " << filename << std::endl;
 }
-#endif
 
-#if 0
 class ParallelCl {
 public:
 	void operator() (const tbb::blocked_range<size_t>& r) const {
@@ -618,34 +590,6 @@ public:
 		size_t eq = 0, neq = 0, total = 0;
 //		ss1 << s << ", ";
 		cnt++;
-#if 0
-		for(size_t i = 0; i < refinedMatches.matchSets[s].matches.size(); ++i) {
-			auto& mA = refinedMatches.matchSets[s].matches[i];
-			for(size_t j = 0; j < refinedMatches.matchSets[s].matches.size(); ++j) {
-				auto& mB = refinedMatches.matchSets[s].matches[j];
-				assert(mA.imgA == mB.imgA);
-				assert(mA.imgA < N && mA.imgB < N && mB.imgA < N && mB.imgB < N);
-				assert(mA.featureA < images[mA.imgA].keyPoints.keyPoints.size());
-				assert(mA.featureB < images[mA.imgB].keyPoints.keyPoints.size());
-				assert(mB.featureA < images[mB.imgA].keyPoints.keyPoints.size());
-				assert(mB.featureB < images[mB.imgB].keyPoints.keyPoints.size());
-				bool sameA = clusters[mA.imgA][mA.featureA] == clusters[mB.imgA][mB.featureA];
-				bool sameB = clusters[mA.imgB][mA.featureB] == clusters[mB.imgB][mB.featureB];
-				if(sameA == sameB) {
-					eq++;
-				}else {
-//					std::cerr << "NEQ" << std::endl;
-					neq++;
-				}
-				total++;
-			}
-		}
-		size_t iA = refinedMatches.matchSets[s].imgA;
-		size_t iB = refinedMatches.matchSets[s].imgB;
-		std::cerr << "Computed index for " << iA << ":" << iB << std::endl;
-		index[iA][iB] = double(eq) / double(total);
-		index[iB][iA] = index[iA][iB];
-#else
 		// A. Get best-best cluster matching.
 		auto& v = refinedMatches.matchSets[s].matches;
 		size_t kA = clusters[refinedMatches.matchSets[s].imgA].size();
@@ -677,27 +621,6 @@ public:
 				sum_B[j] += clcl[i*kB+j];
 			}
 		}
-#if 0
-		for(int i = 0; i < K; ++i) {
-			for(int j = 0; j < K; ++j) {
-				if(clcl[i][j] > clcl[i][best_h[i]]) best_h[i] = j;
-				if(clcl[i][j] > clcl[best_v[j]][j]) best_v[j] = i;
-				sum_cl[i] += clcl[i][j];
-				sum_cl2[j] += clcl[i][j];
-			}
-		}
-#endif
-#if 0
-		for(int i = 0; i < K; ++i) {
-			if(best_h[i] >= 0 && best_v[best_h[i]] == i)
-				continue;
-			double n = clcl[i][best_h[i]];
-			double d1 = n / sum_cl[i];
-			double d2 = n / sum_cl2[best_h[i]];
-			if(d1 > 0.9 && d2 > 0.9) continue;
-			best_h[i] = -1;
-		}
-#endif
 			drawMatches("features", v[0].imgA, v[0].imgB, *cls, best_A, best_B, pipeline, true, &refinedMatches.matchSets[s]);
 //		std::cerr << "Computed matches for " << v[0].imgA << ":" << v[0].imgB << std::endl;
 ss1 << v[0].imgA << ":" << v[0].imgB << ", ";
@@ -709,23 +632,18 @@ ss1 << v[0].imgA << ":" << v[0].imgB << ", ";
 				continue;
 			if(best_A[clB] != clA)
 				continue;
-#if 1
 //			if(double(clcl[clA][clB]) / sum_A[clA] < 0.3)
 			if(double(clcl[clA*kB+clB]) / sum_A[clA] < 0.2)
 				continue;
 //			if(double(clcl[clA][clB]) / sum_B[clB] < 0.3)
 			if(double(clcl[clA*kB+clB]) / sum_B[clB] < 0.2)
 				continue;
-#endif
-#if 1
 //			if(clcl[clA][clB] < 8)
 			if(clcl[clA*kB+clB]<20)
 				continue;
-#endif
 			v[idx++] = v[i];
 		}
 		v.resize(idx);
-#endif
 			drawMatches("matches", v[0].imgA, v[0].imgB, *cls, best_A, best_B, pipeline, true, &refinedMatches.matchSets[s]);
 			if(cnt % 16 == 0) {
 				pipeline->toc(ss1.str(), ss2.str(), S, cnt, id, false); cnt = 0;
@@ -859,38 +777,23 @@ void RefineMatchesStage::run(FeatureMatchingPipeline *pipeline) {
 		accumulator[i].resize(N);
 		for(size_t j = 0; j < N; ++j) {
 			accumulator[i][j].resize(images[i].keyPoints.keyPoints.size());
-#if 0
-			for(size_t k = 0; k < accumulator[i][j].size(); ++k) {
-//				accumulator[i][j][k].resize(2);
-//				accumulator[i][j][k][1].distance = 1000.0;
-//				accumulator[i][j][k][0].distance = 1000.0;
-			}
-#endif
 		}
 	}
 	std::cerr << "Accumulator alloc'ed" << std::endl;
 	std::cerr << "Populate accumulator" << std::endl;
 
 
-//	std::ifstream ifs;
-//	ifs.open("matches_raw.txt", std::ifstream::in);
 	size_t S = matchPlan.plan.size();
-//	ifs >> S;
-//	assert(S == matchPlan.plan.size());
 
 	for(size_t s = 0; s < S; ++s) {
 		size_t query = matchPlan.plan[s].queryImg;
 		size_t train = matchPlan.plan[s].trainImg;
 
 		size_t L = rawMatches.matches[s].size() , K;
-//		ifs >> L;		
 
 		for(size_t i = 0; i < L; ++i) {
-//			ifs >> K;
 			K = rawMatches.matches[s][i].size();
 			for(size_t j = 0; j < K && rawMatches.matches[s][i][j].isValid(); ++j) {
-//				RawMatch dm;
-//				ifs >> dm;
 				RawMatch dm = rawMatches.matches[s][i][j];
 				if(dm.distance < accumulator[query][train][dm.featureQ][0].distance) {
 					accumulator[query][train][dm.featureQ][1] = accumulator[query][train][dm.featureQ][0];
@@ -900,11 +803,7 @@ void RefineMatchesStage::run(FeatureMatchingPipeline *pipeline) {
 				}
 			}
 		}
-//		rawMatches.matches[s].clear();
-//		rawMatches.matches[s].shrink_to_fit();
 	}
-//	rawMatches.matches.clear();
-//	rawMatches.matches.shrink_to_fit();
 	std::cerr << "Populated accumulator" << std::endl;
 	std::cerr << "Ratio filtering" << std::endl;
 
@@ -1091,17 +990,11 @@ void FeatureMatchingPipeline::tic(size_t thread_id, bool level) {
 			std::cerr << std::endl;
 		}
 		tic_data data;
-		data.thread_tics[thread_id] = clock();//std::chrono::high_resolution_clock::now();
+		data.thread_tics[thread_id] = clock();
 		tics.push(data);
 	} else {
-		tics.top().thread_tics[thread_id] = clock(); //std::chrono::high_resolution_clock::now();
+		tics.top().thread_tics[thread_id] = clock();
 	}
-#if 0
-	totals.resize(tics.size() + 1);
-	counts.resize(tics.size() + 1);
-	totals[tics.size()] = 0;
-	counts[tics.size()] = 0;
-#endif
 
 }
 
@@ -1109,20 +1002,12 @@ void FeatureMatchingPipeline::toc(const std::string &name, const std::string &ev
 #ifdef WITH_TBB
 	tbb::spin_mutex::scoped_lock lock(mutex);
 #endif
-#if 0
-	auto toc = std::chrono::high_resolution_clock::now();
-#else
 	size_t toc = clock();
-#endif
 	if(level) {
 		tic_data tic = tics.top();
 		tics.pop();
 
-#if 0
-		auto ns = std::chrono::duration_cast<std::chrono::milliseconds>(toc - tic.thread_tics[thread_id]).count();
-#else
 		size_t ns = (toc - tic.thread_tics[thread_id]) / (CLOCKS_PER_SEC / 1000);
-#endif
 		std::cerr << std::setw(64) << name << std::setw(32) << evt << std::setw(10) << ns << "ms" << std::endl;
 	
 		if(tics.size() == 0) {
@@ -1131,15 +1016,9 @@ void FeatureMatchingPipeline::toc(const std::string &name, const std::string &ev
 			std::cerr << std::endl;
 		}
 	} else {
-#if 0
-		auto& tic = tics.top();
-		auto tict = tic.thread_tics[thread_id];
-		auto ns = std::chrono::duration_cast<std::chrono::milliseconds>(toc - tict).count();
-#else
 		tic_data& tic = tics.top();
 		size_t tict = tic.thread_tics[thread_id];
 		size_t ns = toc - tict;
-#endif
 		std::cerr << std::setw(64) << name << std::setw(32) << evt << std::setw(10) << ns << "ms" << std::endl;
 	}
 }
@@ -1150,63 +1029,23 @@ void FeatureMatchingPipeline::toc(const std::string &name, const std::string &ev
 #endif
 
 	if(level) {
-#if 0
-		auto toc = std::chrono::high_resolution_clock::now();
-		auto tic = tics.top();
-		tics.pop();
-	
-		auto ns = std::chrono::duration_cast<std::chrono::milliseconds>(toc - tic.thread_tics[thread_id]).count();
-#else
 		size_t toc = clock();
 		tic_data& tic = tics.top();
 
 		size_t ns = (toc - tic.thread_tics[thread_id]) / (CLOCKS_PER_SEC / 1000);
 		tics.pop();
-#endif
-
-
-#if 0
-		size_t t = totals[tics.size() ] += ns;
-		size_t c = ++counts[tics.size() ];
-		double one = double(t)/double(c);
-		int rs = int(rem * one / 1e3);
-		int rm = rs / 60; rs = rs % 60;
-		int rh = rm / 60; rm = rm % 60;
-
-
-		std::cerr << std::setw(64) << name << std::setw(32) << evt << std::setw(10) << ns << "ms (" << rh << "h " << rm << "m " << rs << "s left)" << " [ " << one << " ] " <<  std::endl;
-	
-		if(tics.size() == 0) {
-			for(size_t i = 0; i < 108;++i)
-				std::cerr << "-";
-			std::cerr << std::endl;
-		}
-#else
 		std::cerr << std::setw(64) << name << std::setw(32) << evt << std::setw(10) << ns << "ms"  <<  std::endl;
-#endif
 	} else {
-#if 0
-		auto toc = std::chrono::high_resolution_clock::now();
-		auto& tic = tics.top();
-
-		auto ns = std::chrono::duration_cast<std::chrono::milliseconds>(toc - tic.thread_tics[thread_id]).count();
-#else
 		size_t toc = clock();
 		tic_data& tic = tics.top();
 		size_t ns = (toc - tic.thread_tics[thread_id]) / (CLOCKS_PER_SEC / 1000);
-#endif
 		size_t total = 0, count = 0;
 		tic.thread_totals[thread_id] += ns;
 		tic.thread_counts[thread_id]+= rem;
-#if 0
-		for(auto v: tic.thread_totals) total += v.second;
-#endif
-#if 0
-		total = std::chrono::duration_cast<std::chrono::milliseconds>(toc - tic.thread_tics[~(size_t)0]).count();
-#else
 		total = (toc - tic.thread_tics[~(size_t)0]);
-#endif
-		for(std::map<size_t,size_t>::iterator v = tic.thread_counts.begin(); v != tic.thread_counts.end(); ++v) count += v->second;
+		
+		for(std::map<size_t,size_t>::iterator v = tic.thread_counts.begin(); v != tic.thread_counts.end(); ++v)
+			count += v->second;
 
 		double one = double(total)/double(count);
 		int rs = int((curr - count) * one / 1e3);
@@ -1218,4 +1057,3 @@ void FeatureMatchingPipeline::toc(const std::string &name, const std::string &ev
 
 	}
 }
-

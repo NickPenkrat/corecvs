@@ -1,15 +1,8 @@
 #ifndef FEATUREDETECTORPROVIDER_H
 #define FEATUREDETECTORPROVIDER_H
 
-#include <vector>
-#include <string>
-
 #include "imageKeyPoints.h"
-
-class AlgoBase { 
-	virtual double getProperty(const std::string &name) const = 0;
-	virtual void setProperty(const std::string &name, const double &value) = 0;
-};
+#include "algoBase.h"
 
 // TODO: it seems unclear wether or not we need detectImpl instead of just 
 // making detect/compute itself virtual

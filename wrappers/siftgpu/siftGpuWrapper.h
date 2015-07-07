@@ -5,7 +5,6 @@
 #include "descriptorExtractorProvider.h"
 #include "featureDetectorProvider.h"
 
-
 #include "SiftGPU/SiftGPU.h"
 
 class SiftGpu : public virtual FeatureDetector, public virtual DescriptorExtractor {
