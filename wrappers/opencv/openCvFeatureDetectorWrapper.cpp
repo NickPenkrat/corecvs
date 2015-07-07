@@ -25,8 +25,9 @@ void OpenCvFeatureDetectorWrapper::detectImpl(RuntimeTypeBuffer &image, std::vec
 	detector->detect(img, kps);
 
 	keyPoints.clear();
-	for(auto kp: kps)
-		keyPoints.push_back(convert(kp));
+    for(std::vector<cv::KeyPoint>::iterator kp = kps.begin(); kp != kps.end(); ++kp) {
+        keyPoints.push_back(convert(*kp));
+    }
 }
 
 void init_opencv_detectors_provider() {

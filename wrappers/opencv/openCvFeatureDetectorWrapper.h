@@ -20,7 +20,9 @@ private:
 	cv::FeatureDetector* detector;
 };
 
-void __attribute__ ((constructor)) __attribute__ ((used)) init_opencv_detectors_provider();
+extern "C" {
+void init_opencv_detectors_provider();
+}
 
 class OpenCvFeatureDetectorProvider : public FeatureDetectorProviderImpl {
 	public:

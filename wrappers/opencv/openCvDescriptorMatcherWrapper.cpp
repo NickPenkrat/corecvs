@@ -19,8 +19,8 @@ void OpenCvDescriptorMatcherWrapper::knnMatchImpl(RuntimeTypeBuffer &query, Runt
 	matches.resize(matches_cv.size());
 
 	for(size_t idx = 0; idx < matches.size(); ++idx) {
-		for(auto m: matches_cv[idx]) {
-			matches[idx].push_back(convert(m));
+        for(std::vector<cv::DMatch>::iterator m = matches_cv[idx].begin(); m != matches_cv[idx].end(); ++m) {
+            matches[idx].push_back(convert(*m));
 		}
 	}
 }

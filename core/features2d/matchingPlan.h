@@ -4,6 +4,7 @@
 #include <vector>
 #include <deque>
 #include <iostream>
+#include <cstdint>
 
 struct MatchPlanEntry {
 	void save(std::ostream &os) const;

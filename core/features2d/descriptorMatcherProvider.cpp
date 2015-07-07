@@ -3,9 +3,9 @@
 #include <cassert>
 
 DescriptorMatcher* DescriptorMatcherProvider::getMatcher(const DescriptorType &type) {
-	for(auto p: providers) {
-		if(p->provides(type)) {
-			return p->getDescriptorMatcher(type);
+    for(std::vector<DescriptorMatcherProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p) {
+        if((*p)->provides(type)) {
+            return (*p)->getDescriptorMatcher(type);
 		}
 	}
 	assert(false);
@@ -17,8 +17,9 @@ void DescriptorMatcher::knnMatch(RuntimeTypeBuffer &query, RuntimeTypeBuffer &tr
 }
 
 DescriptorMatcherProvider::~DescriptorMatcherProvider() {
-	for(auto p: providers)
-		delete p;
+    for(std::vector<DescriptorMatcherProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p) {
+        delete *p;
+    }
 	providers.clear();
 }
 

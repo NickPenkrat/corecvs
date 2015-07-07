@@ -12,15 +12,17 @@ OpenCvDescriptorExtractorWrapper::~OpenCvDescriptorExtractorWrapper() {
 
 void OpenCvDescriptorExtractorWrapper::computeImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors) {
 	std::vector<cv::KeyPoint> kps;
-	for(auto kp: keyPoints)
-		kps.push_back(convert(kp));
+    for(std::vector<KeyPoint>::iterator kp = keyPoints.begin(); kp != keyPoints.end(); ++kp) {
+        kps.push_back(convert(*kp));
+    }
 	cv::Mat img = convert(image), desc;
 
 	extractor->compute(img, kps, desc);
 
 	keyPoints.clear();
-	for(auto kp: kps)
-		keyPoints.push_back(convert(kp));
+    for(std::vector<cv::KeyPoint>::iterator kp = kps.begin(); kp != kps.end(); ++kp) {
+        keyPoints.push_back(convert(*kp));
+    }
 
 	descriptors = convert(desc);
 }

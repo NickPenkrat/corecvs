@@ -4,9 +4,9 @@
 #include <cassert>
 
 FeatureDetector* FeatureDetectorProvider::getDetector(const DetectorType &type) {
-	for(auto p: providers) {
-		if(p->provides(type)) {
-			return p->getFeatureDetector(type);
+    for(std::vector<FeatureDetectorProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p) {
+        if((*p)->provides(type)) {
+            return (*p)->getFeatureDetector(type);
 		}
 	}
 	assert(false);
@@ -18,8 +18,9 @@ void FeatureDetector::detect(RuntimeTypeBuffer &image, std::vector<KeyPoint> &ke
 }
 
 FeatureDetectorProvider::~FeatureDetectorProvider() {
-	for(auto p: providers)
-		delete p;
+    for(std::vector<FeatureDetectorProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p) {
+        delete *p;
+    }
 	providers.clear();
 }
 

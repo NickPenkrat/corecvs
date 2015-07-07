@@ -1,8 +1,6 @@
-CONFIG += c++11
-
 contains(DEFINES, WITH_SIFTGPU) {                    # if it's installed properly with found path for lib
 
-    INCLUDEPATH += $$SIFTGPU_WRAPPER_DIR/SiftGPU/src $$SIFTGPU_WRAPPER_DIR/SiftGPU/include/GL
+    INCLUDEPATH += $$SIFTGPU_WRAPPER_DIR/SiftGPU/src $$SIFTGPU_WRAPPER_DIR/SiftGPU/include/
 
     HEADERS += \
 		$$SIFTGPU_WRAPPER_DIR/siftGpuWrapper.h \

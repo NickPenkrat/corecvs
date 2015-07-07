@@ -13,8 +13,9 @@
 #include "imageKeyPoints.h"
 #include "imageMatches.h"
 
-#include "tbb/tbb.h"
-
+#ifdef WITH_TBB
+#include <tbb/tbb.h>
+#endif
 
 class FeatureMatchingPipeline;
 
@@ -90,6 +91,7 @@ private:
 	bool sortFeatures;
 };
 
+#if 0
 class RandIndexStage : public FeatureMatchingPipelineStage {
 public:
 	void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename) {}
@@ -99,6 +101,7 @@ public:
 private:
 	std::vector<std::vector<double>> index;
 };
+#endif
 
 
 class FeatureMatchingPipeline {
@@ -121,13 +124,16 @@ public:
 
 private:
 	struct tic_data {
-		std::map<size_t, size_t>> thread_tics;
+        std::map<size_t, size_t> thread_tics;
 		std::map<size_t, size_t> thread_totals, thread_counts;	
 	};
 	std::stack<tic_data> tics;
 
+#ifdef WITH_TBB
 	tbb::spin_mutex mutex;
-	std::vector<FeatureMatchingPipelineStage*> pipeline;
+#endif
+
+    std::vector<FeatureMatchingPipelineStage*> pipeline;
 	std::vector<bool> runEnable;
 	std::vector<std::pair<bool, std::string>> saveParams;
 	std::vector<std::pair<bool, std::string>> loadParams;

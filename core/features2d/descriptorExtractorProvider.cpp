@@ -2,9 +2,9 @@
 
 
 DescriptorExtractor* DescriptorExtractorProvider::getDescriptorExtractor(const DescriptorType &type) {
-	for(auto p: providers) {
-		if(p->provides(type)) {
-			return p->getDescriptorExtractor(type);
+    for(std::vector<DescriptorExtractorProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p) {
+        if((*p)->provides(type)) {
+            return (*p)->getDescriptorExtractor(type);
 		}
 	}
 	assert(false);
@@ -16,8 +16,9 @@ void DescriptorExtractorProvider::add(DescriptorExtractorProviderImpl *provider)
 }
 
 DescriptorExtractorProvider::~DescriptorExtractorProvider() {
-	for(auto p: providers)
-		delete p;
+    for(std::vector<DescriptorExtractorProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p) {
+        delete *p;
+    }
 	providers.clear();
 }
 

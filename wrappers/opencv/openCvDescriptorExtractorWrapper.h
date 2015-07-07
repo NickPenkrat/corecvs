@@ -18,8 +18,9 @@ private:
 	cv::DescriptorExtractor *extractor;
 };
 
-void __attribute__ ((constructor)) __attribute__ ((used)) init_opencv_descriptors_provider();
-
+extern "C" {
+void init_opencv_descriptors_provider();
+}
 
 class OpenCvDescriptorExtractorProvider : public DescriptorExtractorProviderImpl {
 	public:

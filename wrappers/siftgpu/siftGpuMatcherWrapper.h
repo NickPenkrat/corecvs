@@ -22,7 +22,9 @@ class SiftGpuMatcher : public DescriptorMatcher {
 		SiftMatchGPU* siftMatchGpu;
 };
 
-void __attribute__ ((constructor)) init_siftgpu_matcher_provider();
+extern "C" {
+void init_siftgpu_matcher_provider();
+}
 
 
 class SiftGpuDescriptorMatcherProvider : public DescriptorMatcherProviderImpl {

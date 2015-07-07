@@ -62,7 +62,7 @@ struct BufferType {
 		init(name.c_str());
 	}
 	operator int() const { return type; }
-	explicit operator const char*() const {
+    operator const char*() const {
 		switch(type) {
 			BUFFER_TYPE_TO_STRING(U8);
 			BUFFER_TYPE_TO_STRING(F32);
@@ -70,7 +70,7 @@ struct BufferType {
 		assert(false);
 		return "INVALID";
 	}
-	explicit operator std::string() const {
+    operator std::string() const {
 		return std::string((const char*)(*this));
 	}
 	size_t getSize() const {

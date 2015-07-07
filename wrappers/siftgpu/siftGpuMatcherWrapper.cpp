@@ -34,7 +34,7 @@ SiftMatchGPU* SiftGpuMatcher::initSiftMatchGpu(int count) {
 		std::cerr << "Failed to load shared lib" << std::endl;
 	}
 
-	createNew = (SiftGPU* (*) (int)) GetProcAddress(hinstLib, "CreateNewSiftGPU");
+    createNew = (SiftMatchGPU* (*) (int)) GetProcAddress(hinstLib, "CreateNewSiftGPU");
 
 	if(!createNew) {
 		std::cerr << "Failed to load function" << std::endl;
@@ -85,7 +85,9 @@ void SiftGpuMatcher::knnMatchImpl( RuntimeTypeBuffer &queryDescriptors, RuntimeT
 		matches[i].reserve(K);
 	}
 
-	size_t maxRows = std::max(queryDescriptors.getRows(), trainDescriptors.getRows());
+    size_t rowsQ = queryDescriptors.getRows();
+    size_t rowsT = trainDescriptors.getRows();
+    size_t maxRows = rowsQ > rowsT ? rowsQ : rowsT;
 
 	if(maxRows > 8192)
 		siftMatchGpu->SetMaxSift(maxRows);
@@ -104,7 +106,7 @@ void SiftGpuMatcher::knnMatchImpl( RuntimeTypeBuffer &queryDescriptors, RuntimeT
 	}
 	
 	for(size_t i = 0; i < queryDescriptors.getRows(); ++i) {
-		matches[i].resize(std::min(K, matches[i].size()));
+        matches[i].resize(K < matches[i].size() ? K : matches[i].size());
 	}
 
 

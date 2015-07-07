@@ -15,7 +15,7 @@
 #include "bufferReaderProvider.h"
 #include "vsfmIo.h"
 
-#if 1
+#ifdef WITH_TBB
 #include "tbb/tbb.h"
 //#error
 #endif
@@ -44,8 +44,9 @@ FeatureMatchingPipeline::FeatureMatchingPipeline(const std::vector<std::string> 
 }
 
 FeatureMatchingPipeline::~FeatureMatchingPipeline() {
-	for(auto ps: pipeline)
-		ps->~FeatureMatchingPipelineStage();
+    for(std::vector<FeatureMatchingPipelineStage*>::iterator ps = pipeline.begin(); ps != pipeline.end(); ++ps) {
+        (*ps)->~FeatureMatchingPipelineStage();
+    }
 	pipeline.clear();
 }
 
@@ -71,7 +72,7 @@ void FeatureMatchingPipeline::add(FeatureMatchingPipelineStage *ps, bool run, st
 	pipeline.push_back(ps);
 }
 
-
+#ifdef WITH_TBB
 class ParallelDetector {
 	FeatureMatchingPipeline* pipeline;
 	DetectorType detectorType;
@@ -120,7 +121,7 @@ public:
 	}
 	ParallelDetector(FeatureMatchingPipeline* pipeline, DetectorType detectorType) : pipeline(pipeline), detectorType(detectorType) {}
 };
-
+#endif
 
 void KeyPointDetectionStage::run(FeatureMatchingPipeline *pipeline) {
 	FeatureDetector* detector = FeatureDetectorProvider::getInstance().getDetector(detectorType);
@@ -128,7 +129,7 @@ void KeyPointDetectionStage::run(FeatureMatchingPipeline *pipeline) {
 	std::stringstream ss1, ss2;
 
 	size_t N = pipeline->images.size();
-#if 0
+#ifndef WITH_TBB
 	for(size_t i = 0; i < N; ++i) {
 		Image& image = pipeline->images[i];
 		image.keyPoints.keyPoints.clear();
@@ -206,6 +207,7 @@ void DescriptorExtractionStage::loadResults(FeatureMatchingPipeline *pipeline, c
 	}
 }
 
+#ifdef WITH_TBB
 class ParallelExtractor {
 	FeatureMatchingPipeline* pipeline;
 	DescriptorType descriptorType;
@@ -256,6 +258,7 @@ public:
 	}
 	ParallelExtractor(FeatureMatchingPipeline* pipeline, DescriptorType descriptorType) : pipeline(pipeline), descriptorType(descriptorType) {}
 };
+#endif
 
 void DescriptorExtractionStage::run(FeatureMatchingPipeline *pipeline) {
 	DescriptorExtractor* extractor = DescriptorExtractorProvider::getInstance().getDescriptorExtractor(descriptorType);
@@ -264,7 +267,7 @@ void DescriptorExtractionStage::run(FeatureMatchingPipeline *pipeline) {
 	std::vector<Image> &images = pipeline->images;
 	
 	size_t N = pipeline->images.size();
-#if 0
+#ifndef WITH_TBB
 	for(size_t i = 0; i < N; ++i) {
 		Image& image = pipeline->images[i];
 		ss1 << "Extracting " << descriptorType << " descriptors " << " from " << image.filename;
@@ -319,13 +322,15 @@ void MatchingPlanComputationStage::run(FeatureMatchingPipeline *pipeline) {
 				continue;
 			std::deque<uint16_t> train(images[j].keyPoints.keyPoints.size());
 			for(size_t k = 0; k < images[j].keyPoints.keyPoints.size(); ++k)	train[k] = k;
-			matchPlan.plan.push_back({i, j, query, train});
+
+            MatchPlanEntry entry = {i, j, query, train};
+            matchPlan.plan.push_back(entry);
 		}
 	}
 	pipeline->toc("Preparing matching plan", "");
 }
 
-
+#ifdef WITH_TBB
 MatchingStage::MatchingStage(DescriptorType type, size_t responsesPerPoint) : descriptorType(type), responsesPerPoint(responsesPerPoint) {
 }
 class ParallelMatcher {
@@ -405,6 +410,7 @@ public:
 	}
 	ParallelMatcher(FeatureMatchingPipeline* pipeline, DescriptorType descriptorType, size_t responsesPerPoint) : pipeline(pipeline), descriptorType(descriptorType), responsesPerPoint(responsesPerPoint) {}
 };
+#endif
 
 void MatchingStage::run(FeatureMatchingPipeline *pipeline) {
 	pipeline->tic();
@@ -419,7 +425,7 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline) {
 
 	size_t total = 0;
 
-#if 0
+#ifndef WITH_TBB
 	for(size_t s = 0; s < matchPlan.plan.size(); ++s) {
 		pipeline->tic();
 		size_t I = matchPlan.plan[s].queryImg;
@@ -452,19 +458,31 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline) {
 		}
 
 		DescriptorMatcher* matcher = DescriptorMatcherProvider::getInstance().getMatcher(descriptorType);
-		matcher->knnMatch(qb, tb, rawMatches.matches[s], responsesPerPoint);
+//		matcher->knnMatch(qb, tb, rawMatches.matches[s], responsesPerPoint);
+        std::vector<std::vector<RawMatch>> ml;
+        matcher->knnMatch(qb, tb, ml, responsesPerPoint);
 
+
+        for(std::vector<std::vector<RawMatch> >::iterator it = ml.begin(); it != ml.end(); ++it) {
+            std::vector<RawMatch>& v = *it;
+            std::array<RawMatch, 2> mk;
+            for(size_t i = 0; i < v.size() && i < 2; ++i) {
+                mk[i] = v[i];
+            }
+            rawMatches.matches[s].push_back(mk);
+        }
 #if 0
 		images[I].descriptors.mat = RuntimeTypeBuffer();
 		images[J].descriptors.mat = RuntimeTypeBuffer();
 #endif
 
 		// It's time to replace indicies
-		for(auto v: rawMatches.matches[s]) {
-			for(auto m: v) {
+        for(std::deque<std::array<RawMatch, 2>>::iterator it = rawMatches.matches[s].begin(); it != rawMatches.matches[s].end(); ++it) {
+            std::array<RawMatch, 2> &v = *it;
+            for(std::array<RawMatch, 2>::iterator m = v.begin(); m != v.end(); ++m) {
 				total++;
-				m.featureQ = query.queryFeatures[m.featureQ];
-				m.featureT = query.trainFeatures[m.featureT];
+                m->featureQ = query.queryFeatures[m->featureQ];
+                m->featureT = query.trainFeatures[m->featureT];
 			}
 		}
 		std::stringstream ss1, ss2;
@@ -488,7 +506,7 @@ void MatchingStage::saveResults(FeatureMatchingPipeline *pipeline, const std::st
 	pipeline->rawMatches.save(filename);
 }
 
-
+#if 0
 RandIndexStage::RandIndexStage() {
 };
 
@@ -507,6 +525,8 @@ void RandIndexStage::saveResults(FeatureMatchingPipeline *pipeline, const std::s
 	}
 	
 }
+#endif
+#if 0
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
@@ -575,7 +595,9 @@ void drawMatches(const std::string &prefix, size_t idxL, size_t idxR, std::vecto
 	cv::imwrite(filename, R);
 	std::cerr << "Writing output to " << filename << std::endl;
 }
+#endif
 
+#if 0
 class ParallelCl {
 public:
 	void operator() (const tbb::blocked_range<size_t>& r) const {
@@ -807,7 +829,7 @@ void RandIndexStage::run(FeatureMatchingPipeline *pipeline) {
 	pipeline->toc("Computing cluster inliers", "");
 
 }
-
+#endif
 RefineMatchesStage::RefineMatchesStage(bool symmetric, double scaleThreshold) :
 	symmetric(symmetric), scaleThreshold(scaleThreshold) {
 }
@@ -1056,7 +1078,9 @@ void VsfmWriterStage::saveResults(FeatureMatchingPipeline *pipeline, const std::
 }
 
 void FeatureMatchingPipeline::tic(size_t thread_id, bool level) {
+#ifdef WITH_TBB
 	tbb::spin_mutex::scoped_lock lock(mutex);
+#endif
 	if(level) {
 		if(tics.size() == 0) {
 			for(size_t i = 0; i < 108; ++i)
@@ -1079,7 +1103,9 @@ void FeatureMatchingPipeline::tic(size_t thread_id, bool level) {
 }
 
 void FeatureMatchingPipeline::toc(const std::string &name, const std::string &evt, size_t thread_id, bool level) {
+#ifdef WITH_TBB
 	tbb::spin_mutex::scoped_lock lock(mutex);
+#endif
 #if 0
 	auto toc = std::chrono::high_resolution_clock::now();
 #else
@@ -1116,7 +1142,9 @@ void FeatureMatchingPipeline::toc(const std::string &name, const std::string &ev
 }
 
 void FeatureMatchingPipeline::toc(const std::string &name, const std::string &evt, size_t curr, size_t rem, size_t thread_id, bool level) {
+#ifdef WITH_TBB
 	tbb::spin_mutex::scoped_lock lock(mutex);
+#endif
 
 	if(level) {
 #if 0

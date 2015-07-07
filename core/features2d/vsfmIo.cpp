@@ -42,8 +42,8 @@ std::istream& operator>>(std::istream& is, SiftFeature& f) {
 void VsfmSiftIO::writeAscii(std::ostream& os, const std::vector<SiftFeature>& features) {
 	os << features.size() << " " << SiftFeature::DESCRIPTOR_WIDTH << std::endl;
 
-	for(auto it: features)
-		os << it;
+    for(std::vector<SiftFeature>::const_iterator it = features.begin(); it != features.end(); ++it)
+        os << *it;
 }
 
 void VsfmSiftIO::readAscii(std::istream& is, std::vector<SiftFeature>& features) {
@@ -56,9 +56,9 @@ void VsfmSiftIO::readAscii(std::istream& is, std::vector<SiftFeature>& features)
 
 	features.resize(N);
 
-	for(auto it: features) {
-		assert(is);
-		is >> it;
+    for(std::vector<SiftFeature>::iterator it = features.begin(); it != features.end(); ++it) {
+        assert(is);
+        is >> *it;
 	}
 }
 
@@ -75,13 +75,13 @@ void VsfmSiftIO::readBinary(std::istream& is, std::vector<SiftFeature>& features
 		   header.magicVersion == VsfmSiftIO::MAGIC_V40);
 
 	size_t i = 0;
-	for(auto f: features) {
-		is.read((char*)&f.x, sizeof(float) * SiftFeature::BINARY_FLOATS);
-		f.importance = i++;
+    for(std::vector<SiftFeature>::iterator f = features.begin(); f != features.end(); ++f){
+        is.read((char*)&f->x, sizeof(float) * SiftFeature::BINARY_FLOATS);
+        f->importance = i++;
 	}
 
-	for(auto f: features) {
-		is.read((char*)f.data.data(), header.descriptorSize);
+    for(std::vector<SiftFeature>::iterator f = features.begin(); f != features.end(); ++f){
+        is.read((char*)f->data.data(), header.descriptorSize);
 	}
 
 	uint32_t eof;
@@ -94,12 +94,12 @@ void VsfmSiftIO::writeBinary(std::ostream& os, const std::vector<SiftFeature>& f
 	header.npoint = features.size();
 
 	os.write((char*)&header, sizeof(header));
-	for(auto f: features) {
-		os.write((char*)&f.x, sizeof(float) * SiftFeature::BINARY_FLOATS);
+    for(std::vector<SiftFeature>::const_iterator f = features.begin(); f != features.end(); ++f) {
+        os.write((char*)&f->x, sizeof(float) * SiftFeature::BINARY_FLOATS);
 	}
 
-	for(auto f: features) {
-		os.write((char*)f.data.data(), SiftFeature::DESCRIPTOR_WIDTH);
+    for(std::vector<SiftFeature>::const_iterator f = features.begin(); f != features.end(); ++f) {
+        os.write((char*)f->data.data(), SiftFeature::DESCRIPTOR_WIDTH);
 	}
 
 	os.write((char*)&VsfmSiftIO::MAGIC_EOF, sizeof(VsfmSiftIO::MAGIC_EOF));
