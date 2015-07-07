@@ -31,9 +31,9 @@ using namespace std;
     /* Main fields */
     QMutex                      protectFrame;
     string                      mDevname;  /**< Stores the device name*/
-    DirectShowCameraDescriptor  cameras [Frames::MAX_INPUTS_NUMBER];
-    CaptureTypeFormat           format  [Frames::MAX_INPUTS_NUMBER];
-    int                         deviceID[Frames::MAX_INPUTS_NUMBER];
+    DirectShowCameraDescriptor  cameras [MAX_INPUTS_NUMBER];
+    CaptureTypeFormat           format  [MAX_INPUTS_NUMBER];
+    int                         deviceID[MAX_INPUTS_NUMBER];
     int                         mCompressed;
 
     /* Statistics fields */
@@ -60,6 +60,8 @@ using namespace std;
     virtual CapErrorCode getCaptureName(QString &value);
     virtual CapErrorCode getFormats(int *num, CameraFormat *&format);
     virtual CapErrorCode getDeviceName(int num, QString &name);
+    virtual std::string  getDeviceSerial(int num = Frames::LEFT_FRAME);
+
 
     /* Callback function */
     static void callback (void *thiz, DSCapDeviceId dev, FrameData data);

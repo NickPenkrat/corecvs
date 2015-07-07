@@ -19,10 +19,10 @@ class Frames
 {
 public:
     enum FrameSourceId {
-        LEFT_FRAME,
+        LEFT_FRAME = ImageCaptureInterface::LEFT_FRAME,
         DEFAULT_FRAME = LEFT_FRAME,
-        RIGHT_FRAME,
-        MAX_INPUTS_NUMBER
+        RIGHT_FRAME = ImageCaptureInterface::RIGHT_FRAME,
+        MAX_INPUTS_NUMBER = ImageCaptureInterface::MAX_INPUTS_NUMBER
     };
 
     G12Buffer   *currentFrames   [MAX_INPUTS_NUMBER];

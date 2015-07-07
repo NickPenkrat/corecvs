@@ -53,10 +53,13 @@ public:
     virtual QString      getInterfaceName();
     virtual CapErrorCode getDeviceName(int num, QString &name);
 
+    virtual std::string  getDeviceSerial(int num = LEFT_FRAME);
+
     static void getAllCameras(int *num, int *&cameras);
 
     static const int MAX_SCAN_DEVICE_ID = 20;
     static void getAllCameras(vector<std::string> &cameras, int maxDeviceId = MAX_SCAN_DEVICE_ID);
+
 
 
     enum DecoderType{
@@ -109,9 +112,9 @@ private:
 
 
 
-    string           deviceName[Frames::MAX_INPUTS_NUMBER];
+    string           deviceName[MAX_INPUTS_NUMBER];
     V4L2CameraMode   cameraMode;
-    V4L2CameraDescriptor camera[Frames::MAX_INPUTS_NUMBER];
+    V4L2CameraDescriptor camera[MAX_INPUTS_NUMBER];
 
     int formatH;
     int formatW;

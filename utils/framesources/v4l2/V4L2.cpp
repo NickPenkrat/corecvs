@@ -12,6 +12,10 @@
 #include <sys/mman.h>
 #include <sys/ioctl.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <libgen.h>
+
 #include "V4L2.h"
 
 //#define PROFILE_DEQUEUE
@@ -652,12 +656,44 @@ std::string V4L2CameraDescriptor::getSerialNumber()
 
    if (fstat(deviceHandle, &buf) == 1)
    {
-       printf("fstat call failed with %s", strerror(errno));
+       SYNC_PRINT(("fstat call failed with %s", strerror(errno)));
        return "none";
    }
 
-   int major_id = major(buf.st_dev);
-   int minor_id = minor(buf.st_dev);
+   int major_id = major(buf.st_rdev);
+   int minor_id = minor(buf.st_rdev);
+
+   SYNC_PRINT(("V4L2CameraDescriptor::getSerialNumber():"
+               "device %s major %d minor %d\n",
+               camFileName.c_str(),
+
+               major_id,
+               minor_id));
+
+   char deviceSysPath[1024] = "";
+   char linkPath[1024] = "";
+   snprintf(deviceSysPath, CORE_COUNT_OF(deviceSysPath), "/sys/dev/char/%d:%d/device", major_id, minor_id);
+   readlink(deviceSysPath, linkPath, CORE_COUNT_OF(linkPath));
+
+   SYNC_PRINT(("V4L2CameraDescriptor::getSerialNumber():Opening device softlink <%s> -> <%s>\n", deviceSysPath, linkPath));
+   /* Going for particular interface to the device */
+   snprintf(deviceSysPath, CORE_COUNT_OF(deviceSysPath), "/sys/dev/char/%d:%d/%s/../serial", major_id, minor_id, linkPath);
+
+   SYNC_PRINT(("V4L2CameraDescriptor::getSerialNumber():USB device serial path <%s>\n", deviceSysPath));
+   char *serial = NULL;
+   size_t len;
+   FILE *serialFile = fopen(deviceSysPath, "rt");
+   getline(&serial, &len, serialFile);
+   for (int i = 0; i < strlen(serial); i++)
+   {
+       if (serial[i] == '\n' || serial[i] == '\r' ) serial[i] = 0;
+   }
+   fclose(serialFile);
+
+   printf("V4L2CameraDescriptor::getSerialNumber():Serial <%s>\n", serial);
+   std::string result(serial);
+   free(serial);
+   return result;
 
 }
 

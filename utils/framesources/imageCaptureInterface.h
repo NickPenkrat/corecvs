@@ -79,11 +79,11 @@ public:
         FAILURE       = 2
     };
 
-    enum CapCameraId
-    {
-        CAMERA_LEFT   = 0x01,
-        CAMERA_RIGHT  = 0x10,
-        CAMERA_BOTH   = 0x11
+    enum FrameSourceId {
+        LEFT_FRAME,
+        DEFAULT_FRAME = LEFT_FRAME,
+        RIGHT_FRAME,
+        MAX_INPUTS_NUMBER
     };
 
     /**
@@ -205,6 +205,11 @@ public:
      * Return some id of one of the stereo-/multi- camera sub-device
      **/
     virtual CapErrorCode getDeviceName(int num, QString &name);
+
+    /**
+     * Return serial number stereo-/multi- camera sub-device if applicable
+     **/
+    virtual std::string  getDeviceSerial(int num = LEFT_FRAME);
 
     /**
      * Check if a specific property can be set/read and what values it can take

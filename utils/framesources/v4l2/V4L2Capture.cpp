@@ -623,6 +623,19 @@ ImageCaptureInterface::CapErrorCode V4L2CaptureInterface::getDeviceName(int num,
     return ImageCaptureInterface::SUCCESS;
 }
 
+string V4L2CaptureInterface::getDeviceSerial(int num)
+{
+    if (num  < 0 || num >= Frames::MAX_INPUTS_NUMBER)
+    {
+        return "wrong device";
+    }
+    if (camera[num].deviceHandle == V4L2CameraDescriptor::INVALID_HANDLE)
+    {
+        return "null";
+    }
+    return camera[num].getSerialNumber();
+}
+
 void V4L2CaptureInterface::getAllCameras(int *num, int *&cameras)
 {
     vector<int> allCameras;
@@ -671,6 +684,8 @@ void V4L2CaptureInterface::getAllCameras(vector<std::string> &cameras, int maxDe
             V4L2CameraDescriptor cameraDescriptor;
             if (cameraDescriptor.initCamera(dev, 480, 640, 1, 30, true) == 0) {
                 isActive = true;
+                /*std::string serial = cameraDescriptor.getSerialNumber();
+                printf("Serial is <%s>", serial.c_str());*/
             }
         }
 
