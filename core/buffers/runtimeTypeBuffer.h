@@ -35,66 +35,11 @@
 #define CV_32F 5
 #endif
 
-struct BufferType {
+namespace BufferType {
 	enum RuntimeBufferDataType {
 		U8,
 		F32
 	};
-
-	int type;
-
-#if 0
-	BufferType(RuntimeBufferDataType type = RuntimeBufferDataType::U8) : type(type) {}
-#endif
-
-	BufferType(int cvType = 0) {
-		switch(cvType) {
-			BUFFER_TYPECV(U8, CV_8U);
-			BUFFER_TYPECV(F32, CV_32F);
-			default:
-				type = U8;
-		}
-	}
-	BufferType(const char *name) {
-		init(name);
-	}
-	BufferType(const std::string &name) {
-		init(name.c_str());
-	}
-	operator int() const { return type; }
-    operator const char*() const {
-		switch(type) {
-			BUFFER_TYPE_TO_STRING(U8);
-			BUFFER_TYPE_TO_STRING(F32);
-		}
-		assert(false);
-		return "INVALID";
-	}
-    operator std::string() const {
-		return std::string((const char*)(*this));
-	}
-	size_t getSize() const {
-		switch(type) {
-			BUFFER_SIZE(U8, sizeof(uint8_t));
-			BUFFER_SIZE(F32, sizeof(float));
-		}
-		assert(false);
-		return 0;
-	}
-	size_t getCvType() const {
-		switch(type) {
-			BUFFER_CVTYPE(U8, CV_8U);
-			BUFFER_CVTYPE(F32, CV_32F);
-		}
-		assert(false);
-		return 0;
-	}
-private:
-	void init(const char* name) {
-		type = U8;
-		BUFFER_TYPE_FROM_STRING(U8);
-		BUFFER_TYPE_FROM_STRING(F32);
-	}
 };
 
 
@@ -102,10 +47,10 @@ private:
 class RuntimeTypeBuffer {
 public:
 	RuntimeTypeBuffer() : data(0), rows(0), cols(0), sz(0), type(BufferType::U8) {}
-	RuntimeTypeBuffer(const size_t &rows, const size_t &cols, const BufferType &type =BufferType::U8) : rows(rows), cols(cols), sz(type.getSize()), type(type) {
+	RuntimeTypeBuffer(const size_t &rows, const size_t &cols, const int &type =BufferType::U8) : rows(rows), cols(cols), sz(getTypeSize(type)), type(type) {
 		allocate();
 	}
-	RuntimeTypeBuffer(const size_t &rows, const size_t &cols, const void* data, const BufferType &type = BufferType::U8) : rows(rows), cols(cols), sz(type.getSize()), type(type) {
+	RuntimeTypeBuffer(const size_t &rows, const size_t &cols, const void* data, const int &type = BufferType::U8) : rows(rows), cols(cols), sz(getTypeSize(type)), type(type) {
 		allocate();
 		copy((uint8_t*)data);
 	}
@@ -164,7 +109,39 @@ public:
 	size_t getRowSize() const {
 		return sz * cols;
 	}
-
+	static size_t getTypeSize(int type) {
+		switch(type) {
+			case BufferType::U8:
+				return 1;
+			case BufferType::F32:
+				return 4;
+			default:
+				assert(false);
+				return 0;
+		}
+	}
+	static size_t getTypeFromCvType(int type) {
+		switch(type) {
+			case CV_8U:
+				return BufferType::U8;
+			case CV_32F:
+				return BufferType::F32;
+			default:
+				assert(false);
+				return 0;
+		}
+	}
+	size_t getCvType() const {
+		switch(type) {
+			case BufferType::U8:
+				return CV_8U;
+			case BufferType::F32:
+				return CV_32F;
+			default:
+				assert(false);
+				return 0;
+		}
+	}
 	size_t getElSize() const {
 		return sz;
 	}
@@ -196,7 +173,7 @@ public:
 	inline size_t getCols() const {
 		return cols;
 	}
-	BufferType getType() const {
+	int getType() const {
 		return type;
 	}
 
@@ -218,7 +195,7 @@ private:
 	size_t rows;
 	size_t cols;
 	size_t sz;
-	BufferType type;
+	int type;
 };
 
 std::ostream& operator<<(std::ostream &os, const RuntimeTypeBuffer &b);

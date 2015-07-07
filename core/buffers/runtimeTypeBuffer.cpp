@@ -13,8 +13,13 @@ void RuntimeTypeBuffer::save(std::ostream &os) const {
 std::istream& operator>>(std::istream &is, RuntimeTypeBuffer &b) {
 	size_t R, C;
 	std::string type;
+	int buffer_type = BufferType::U8;
 	is >> R >> C >> type;
-	b = RuntimeTypeBuffer(R, C, BufferType(type));
+	if(type == "F32") {
+		buffer_type = BufferType::F32;
+	}
+	
+	b = RuntimeTypeBuffer(R, C, buffer_type);
 	switch(b.type) {
 		case BufferType::U8:
 			for(size_t i = 0; i < R; ++i)
@@ -36,7 +41,10 @@ std::istream& operator>>(std::istream &is, RuntimeTypeBuffer &b) {
 
 std::ostream& operator<<(std::ostream &os, const RuntimeTypeBuffer &b) {
 	size_t R = b.rows, C = b.cols;
-	std::string type = (std::string)b.type;
+	std::string type = "U8";
+	if(b.type == BufferType::F32) {
+		type = "F32";
+	}
 
 	os << R << " " << C << " " << type << std::endl;
 	switch(b.type) {

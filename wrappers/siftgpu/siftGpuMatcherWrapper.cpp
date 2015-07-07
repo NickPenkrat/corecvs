@@ -76,7 +76,7 @@ void SiftGpuMatcher::knnMatchImpl( RuntimeTypeBuffer &queryDescriptors, RuntimeT
 	}
 
 	assert(queryDescriptors.getType() == trainDescriptors.getType());
-	assert(queryDescriptors.getType() == RuntimeBufferDataType::F32);
+	assert(queryDescriptors.getType() == BufferType::F32);
 
 	matches.resize(queryDescriptors.getRows());
 
@@ -97,6 +97,7 @@ void SiftGpuMatcher::knnMatchImpl( RuntimeTypeBuffer &queryDescriptors, RuntimeT
 	siftMatchGpu->SetDescriptors(0, queryDescriptors.getRows(), queryDescriptors.row<float>(0));
 	siftMatchGpu->SetDescriptors(1, trainDescriptors.getRows(), trainDescriptors.row<float>(0));
 	int nmatch = siftMatchGpu->GetSiftMatch(maxRows, buffer);
+	assert(nmatch < rowsQ);
 
 	for(int j = 0; j < nmatch; ++j) {
 		int queryIdx = buffer[j][0];
@@ -104,11 +105,12 @@ void SiftGpuMatcher::knnMatchImpl( RuntimeTypeBuffer &queryDescriptors, RuntimeT
 
 		matches[queryIdx].push_back(RawMatch(queryIdx, trainIdx, 0.5));
 	}
-	
+
+#if 0
 	for(size_t i = 0; i < queryDescriptors.getRows(); ++i) {
         matches[i].resize(K < matches[i].size() ? K : matches[i].size());
 	}
-
+#endif
 
 	delete[] buffer;
 }

@@ -7,6 +7,7 @@
 #include <sstream>
 #include <cstdlib>
 #include <ctime>
+#include <algorithm>
 #include <array>
 
 #include "featureDetectorProvider.h"
@@ -330,9 +331,9 @@ void MatchingPlanComputationStage::run(FeatureMatchingPipeline *pipeline) {
 	pipeline->toc("Preparing matching plan", "");
 }
 
-#ifdef WITH_TBB
 MatchingStage::MatchingStage(DescriptorType type, size_t responsesPerPoint) : descriptorType(type), responsesPerPoint(responsesPerPoint) {
 }
+#ifdef WITH_TBB
 class ParallelMatcher {
 	FeatureMatchingPipeline* pipeline;
 	DescriptorType descriptorType;
@@ -424,6 +425,7 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline) {
 	rawMatches.matches.resize(matchPlan.plan.size());
 
 	size_t total = 0;
+	DescriptorMatcher* matcher = DescriptorMatcherProvider::getInstance().getMatcher(descriptorType);
 
 #ifndef WITH_TBB
 	for(size_t s = 0; s < matchPlan.plan.size(); ++s) {
@@ -457,7 +459,6 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline) {
 			memcpy(tb.row<void>(j), images[J].descriptors.mat.row<void>(query.trainFeatures[j]), tb.getRowSize());
 		}
 
-		DescriptorMatcher* matcher = DescriptorMatcherProvider::getInstance().getMatcher(descriptorType);
 //		matcher->knnMatch(qb, tb, rawMatches.matches[s], responsesPerPoint);
         std::vector<std::vector<RawMatch>> ml;
         matcher->knnMatch(qb, tb, ml, responsesPerPoint);
@@ -466,7 +467,7 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline) {
         for(std::vector<std::vector<RawMatch> >::iterator it = ml.begin(); it != ml.end(); ++it) {
             std::vector<RawMatch>& v = *it;
             std::array<RawMatch, 2> mk;
-            for(size_t i = 0; i < v.size() && i < 2; ++i) {
+            for(size_t i = 0; i < v.size() && i < 2 && v[i].isValid(); ++i) {
                 mk[i] = v[i];
             }
             rawMatches.matches[s].push_back(mk);
@@ -479,7 +480,7 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline) {
 		// It's time to replace indicies
         for(std::deque<std::array<RawMatch, 2>>::iterator it = rawMatches.matches[s].begin(); it != rawMatches.matches[s].end(); ++it) {
             std::array<RawMatch, 2> &v = *it;
-            for(std::array<RawMatch, 2>::iterator m = v.begin(); m != v.end(); ++m) {
+            for(std::array<RawMatch, 2>::iterator m = v.begin(); m != v.end() && m->isValid(); ++m) {
 				total++;
                 m->featureQ = query.queryFeatures[m->featureQ];
                 m->featureT = query.trainFeatures[m->featureT];
@@ -496,6 +497,7 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline) {
 	std::stringstream ss;
 	ss << total << " matches (non-symmetric)";
 	pipeline->toc("Computing raw matches", ss.str());
+        delete matcher;
 }
 
 void MatchingStage::loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename) {
@@ -870,25 +872,26 @@ void RefineMatchesStage::run(FeatureMatchingPipeline *pipeline) {
 	std::cerr << "Populate accumulator" << std::endl;
 
 
-	std::ifstream ifs;
-	ifs.open("matches_raw.txt", std::ifstream::in);
-	size_t S;
-	ifs >> S;
-	assert(S == matchPlan.plan.size());
+//	std::ifstream ifs;
+//	ifs.open("matches_raw.txt", std::ifstream::in);
+	size_t S = matchPlan.plan.size();
+//	ifs >> S;
+//	assert(S == matchPlan.plan.size());
 
 	for(size_t s = 0; s < S; ++s) {
 		size_t query = matchPlan.plan[s].queryImg;
 		size_t train = matchPlan.plan[s].trainImg;
 
-		size_t L, K;
-		ifs >> L;		
+		size_t L = rawMatches.matches[s].size() , K;
+//		ifs >> L;		
 
 		for(size_t i = 0; i < L; ++i) {
-			ifs >> K;
-			for(size_t j = 0; j < K; ++j) {
-				RawMatch dm;
-				ifs >> dm;
-//				RawMatch dm = rawMatches.matches[s][i][j];
+//			ifs >> K;
+			K = rawMatches.matches[s][i].size();
+			for(size_t j = 0; j < K && rawMatches.matches[s][i][j].isValid(); ++j) {
+//				RawMatch dm;
+//				ifs >> dm;
+				RawMatch dm = rawMatches.matches[s][i][j];
 				if(dm.distance < accumulator[query][train][dm.featureQ][0].distance) {
 					accumulator[query][train][dm.featureQ][1] = accumulator[query][train][dm.featureQ][0];
 					accumulator[query][train][dm.featureQ][0] = dm;
@@ -1118,7 +1121,7 @@ void FeatureMatchingPipeline::toc(const std::string &name, const std::string &ev
 #if 0
 		auto ns = std::chrono::duration_cast<std::chrono::milliseconds>(toc - tic.thread_tics[thread_id]).count();
 #else
-		size_t ns = toc = tic.thread_tics[thread_id];
+		size_t ns = (toc - tic.thread_tics[thread_id]) / (CLOCKS_PER_SEC / 1000);
 #endif
 		std::cerr << std::setw(64) << name << std::setw(32) << evt << std::setw(10) << ns << "ms" << std::endl;
 	
@@ -1156,9 +1159,9 @@ void FeatureMatchingPipeline::toc(const std::string &name, const std::string &ev
 #else
 		size_t toc = clock();
 		tic_data& tic = tics.top();
-		tics.pop();
 
-		size_t ns = toc - tic.thread_tics[thread_id];
+		size_t ns = (toc - tic.thread_tics[thread_id]) / (CLOCKS_PER_SEC / 1000);
+		tics.pop();
 #endif
 
 
@@ -1190,7 +1193,7 @@ void FeatureMatchingPipeline::toc(const std::string &name, const std::string &ev
 #else
 		size_t toc = clock();
 		tic_data& tic = tics.top();
-		size_t ns = toc - tic.thread_tics[thread_id];
+		size_t ns = (toc - tic.thread_tics[thread_id]) / (CLOCKS_PER_SEC / 1000);
 #endif
 		size_t total = 0, count = 0;
 		tic.thread_totals[thread_id] += ns;
