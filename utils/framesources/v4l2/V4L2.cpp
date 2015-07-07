@@ -696,6 +696,7 @@ std::string V4L2CameraDescriptor::getSerialNumber()
 
    char *usbData = basename(linkPath);
    printf("V4L2CameraDescriptor::getSerialNumber(): Usbpath <%s>\n", usbData);
+   result = usbData;
 
    return result;
 
