@@ -1,5 +1,6 @@
 #include "openCvDescriptorExtractorWrapper.h"
 #include "openCvKeyPointsWrapper.h"
+#include "openCvDefaultParams.h"
 
 OpenCvDescriptorExtractorWrapper::OpenCvDescriptorExtractorWrapper(cv::DescriptorExtractor *extractor) : extractor(extractor) {
 
@@ -24,6 +25,14 @@ void OpenCvDescriptorExtractorWrapper::computeImpl(RuntimeTypeBuffer &image, std
 	descriptors = convert(desc);
 }
 
+void OpenCvDescriptorExtractorWrapper::setProperty(const std::string &name, const double &value) {
+	extractor->set(name, value);
+}
+
+double OpenCvDescriptorExtractorWrapper::getProperty(const std::string &name) const {
+	return extractor->get<double>(name);
+}
+
 void init_opencv_descriptors_provider() {
 	DescriptorExtractorProvider::getInstance().add(new OpenCvDescriptorExtractorProvider());
 }
@@ -33,11 +42,11 @@ void init_opencv_descriptors_provider() {
 		expr \
 	}
 
-DescriptorExtractor* OpenCvDescriptorExtractorProvider::getDescriptorExtractor(const DescriptorType &type, const DetectorsParams &params) {
-	auto siftParams = params.siftParams;
-	auto surfParams = params.surfParams;
-	auto briskParams = params.briskParams;
-	auto orbParams = params.orbParams;
+DescriptorExtractor* OpenCvDescriptorExtractorProvider::getDescriptorExtractor(const DescriptorType &type) {
+	SiftParams siftParams;
+	SurfParams surfParams;
+	BriskParams briskParams;
+	OrbParams orbParams;
 	SWITCH_TYPE(SIFT, 
 		return new OpenCvDescriptorExtractorWrapper(new cv::SIFT(0, siftParams.nOctaveLayers, siftParams.contrastThreshold, siftParams.edgeThreshold, siftParams.sigma));)
 	SWITCH_TYPE(SURF,

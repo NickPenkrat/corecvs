@@ -120,7 +120,7 @@ void init_siftgpu_matcher_provider() {
 		expr \
 	}
 
-DescriptorMatcher* SiftGpuDescriptorMatcherProvider::getDescriptorMatcher(const DescriptorType &type, const DetectorsParams &params) {
+DescriptorMatcher* SiftGpuDescriptorMatcherProvider::getDescriptorMatcher(const DescriptorType &type){
 	SWITCH_TYPE(SIFTGPU, return new SiftGpuMatcher;);
 	assert(false);
 	return 0;

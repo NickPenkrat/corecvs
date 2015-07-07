@@ -3,11 +3,11 @@
 
 #include <cassert>
 
-#include "detectorParams.h"
 #include "imageKeyPoints.h"
+#include "featureDetectorProvider.h"
 
 
-class DescriptorExtractor {
+class DescriptorExtractor : public virtual AlgoBase {
 public:
 	void compute(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors);
 	virtual ~DescriptorExtractor() {}
@@ -17,7 +17,7 @@ protected:
 
 class DescriptorExtractorProviderImpl {
 	public:
-		virtual DescriptorExtractor* getDescriptorExtractor(const DescriptorType &type, const DetectorsParams &params = DetectorsParams()) = 0;
+		virtual DescriptorExtractor* getDescriptorExtractor(const DescriptorType &type) = 0;
 		virtual bool provides(const DescriptorType &type) = 0;
 		virtual ~DescriptorExtractorProviderImpl() {}
 	protected:
@@ -26,7 +26,7 @@ class DescriptorExtractorProviderImpl {
 class DescriptorExtractorProvider {
 public:
 	void add(DescriptorExtractorProviderImpl *provider);
-	DescriptorExtractor* getDescriptorExtractor(const DescriptorType &type, const DetectorsParams &params);
+	DescriptorExtractor* getDescriptorExtractor(const DescriptorType &type);
 	static DescriptorExtractorProvider& getInstance();
 	~DescriptorExtractorProvider();
 private:

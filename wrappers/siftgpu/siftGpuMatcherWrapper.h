@@ -27,7 +27,7 @@ void __attribute__ ((constructor)) init_siftgpu_matcher_provider();
 
 class SiftGpuDescriptorMatcherProvider : public DescriptorMatcherProviderImpl {
 	public:
-		DescriptorMatcher* getDescriptorMatcher(const DescriptorType &type, const DetectorsParams &params = DetectorsParams());
+		DescriptorMatcher* getDescriptorMatcher(const DescriptorType &type);
 		bool provides(const DescriptorType &type);
 		~SiftGpuDescriptorMatcherProvider() {}
 	protected:

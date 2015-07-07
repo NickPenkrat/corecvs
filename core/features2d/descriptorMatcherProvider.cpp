@@ -2,10 +2,10 @@
 
 #include <cassert>
 
-DescriptorMatcher* DescriptorMatcherProvider::getMatcher(const DescriptorType &type, const DetectorsParams &params) {
+DescriptorMatcher* DescriptorMatcherProvider::getMatcher(const DescriptorType &type) {
 	for(auto p: providers) {
 		if(p->provides(type)) {
-			return p->getDescriptorMatcher(type, params);
+			return p->getDescriptorMatcher(type);
 		}
 	}
 	assert(false);

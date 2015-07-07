@@ -115,13 +115,7 @@ SiftGpu::~SiftGpu() {
 		expr \
 	}
 
-DescriptorExtractor* SiftGpuDescriptorExtractorProvider::getDescriptorExtractor(const DescriptorType &type, const DetectorsParams &params) {
-	auto siftParams = params.siftParams;
-	auto surfParams = params.surfParams;
-	auto starParams = params.starParams;
-	auto fastParams = params.fastParams;
-	auto briskParams = params.briskParams;
-	auto orbParams = params.orbParams;
+DescriptorExtractor* SiftGpuDescriptorExtractorProvider::getDescriptorExtractor(const DescriptorType &type) {
 	SWITCH_TYPE(SIFTGPU, 
 		return new SiftGpu();)
 	return 0;
@@ -133,13 +127,7 @@ bool SiftGpuDescriptorExtractorProvider::provides(const DescriptorType &type) {
 }
 
 
-FeatureDetector* SiftGpuFeatureDetectorProvider::getFeatureDetector(const DetectorType &type, const DetectorsParams &params) {
-	auto siftParams = params.siftParams;
-	auto surfParams = params.surfParams;
-	auto starParams = params.starParams;
-	auto fastParams = params.fastParams;
-	auto briskParams = params.briskParams;
-	auto orbParams = params.orbParams;
+FeatureDetector* SiftGpuFeatureDetectorProvider::getFeatureDetector(const DetectorType &type) {
 	SWITCH_TYPE(SIFTGPU, 
 		return new SiftGpu();)
 	return 0;

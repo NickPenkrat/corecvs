@@ -34,7 +34,7 @@ void init_opencv_matchers_provider() {
 		expr \
 	}
 
-DescriptorMatcher* OpenCvDescriptorMatcherProvider::getDescriptorMatcher(const DescriptorType &type, const DetectorsParams &params) {
+DescriptorMatcher* OpenCvDescriptorMatcherProvider::getDescriptorMatcher(const DescriptorType &type) {
 	SWITCH_TYPE(SIFT, return new OpenCvDescriptorMatcherWrapper(new cv::FlannBasedMatcher););
 	SWITCH_TYPE(SURF, return new OpenCvDescriptorMatcherWrapper(new cv::FlannBasedMatcher););
 	SWITCH_TYPE(ORB, return new OpenCvDescriptorMatcherWrapper(new cv::FlannBasedMatcher(new cv::flann::LshIndexParams(20, 10, 2))););

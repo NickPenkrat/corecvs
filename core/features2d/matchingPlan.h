@@ -2,6 +2,7 @@
 #define MATCHINGPLAN_H
 
 #include <vector>
+#include <deque>
 #include <iostream>
 
 struct MatchPlanEntry {
@@ -11,11 +12,11 @@ struct MatchPlanEntry {
 	friend std::ostream& operator<<(std::ostream& os, const MatchPlanEntry& mp);
 	friend std::istream& operator>>(std::istream& is, MatchPlanEntry& mp);
 
-	size_t queryImg;
-	size_t trainImg;
+	uint16_t queryImg;
+	uint16_t trainImg;
 
-	std::vector<size_t> queryFeatures;
-	std::vector<size_t> trainFeatures;
+	std::deque<uint16_t> queryFeatures;
+	std::deque<uint16_t> trainFeatures;
 };
 
 struct MatchPlan {
@@ -27,7 +28,7 @@ struct MatchPlan {
 	friend std::ostream& operator<<(std::ostream& os, const MatchPlan& mp);
 	friend std::istream& operator>>(std::istream& is, MatchPlan& mp);
 
-	std::vector<MatchPlanEntry> plan;
+	std::deque<MatchPlanEntry> plan;
 };
 
 #endif

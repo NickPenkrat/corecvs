@@ -1,11 +1,21 @@
 #include "openCvFeatureDetectorWrapper.h"
 #include "openCvKeyPointsWrapper.h"
 
+#include "openCvDefaultParams.h"
+
 OpenCvFeatureDetectorWrapper::OpenCvFeatureDetectorWrapper(cv::FeatureDetector *detector) : detector(detector) {
 }
 
 OpenCvFeatureDetectorWrapper::~OpenCvFeatureDetectorWrapper() {
 	delete detector;
+}
+
+double OpenCvFeatureDetectorWrapper::getProperty(const std::string &name) const {
+	return detector->get<double>(name);
+}
+
+void OpenCvFeatureDetectorWrapper::setProperty(const std::string &name, const double &value) {
+	detector->set(name, value);
 }
 
 void OpenCvFeatureDetectorWrapper::detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints) {
@@ -28,13 +38,13 @@ void init_opencv_detectors_provider() {
 		expr \
 	}
 
-FeatureDetector* OpenCvFeatureDetectorProvider::getFeatureDetector(const DetectorType &type, const DetectorsParams &params) {
-	auto siftParams = params.siftParams;
-	auto surfParams = params.surfParams;
-	auto starParams = params.starParams;
-	auto fastParams = params.fastParams;
-	auto briskParams = params.briskParams;
-	auto orbParams = params.orbParams;
+FeatureDetector* OpenCvFeatureDetectorProvider::getFeatureDetector(const DetectorType &type) {
+	SiftParams siftParams;
+	SurfParams surfParams;
+	StarParams starParams;
+	FastParams fastParams;
+	BriskParams briskParams;
+	OrbParams orbParams;
 	SWITCH_TYPE(SIFT, 
 		return new OpenCvFeatureDetectorWrapper(new cv::SIFT(0, siftParams.nOctaveLayers, siftParams.contrastThreshold, siftParams.edgeThreshold, siftParams.sigma));)
 	SWITCH_TYPE(SURF,

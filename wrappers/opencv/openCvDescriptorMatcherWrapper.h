@@ -21,7 +21,7 @@ void __attribute__ ((constructor)) __attribute__ ((used)) init_opencv_matchers_p
 
 class OpenCvDescriptorMatcherProvider : public DescriptorMatcherProviderImpl {
 	public:
-		DescriptorMatcher* getDescriptorMatcher(const DescriptorType &type, const DetectorsParams &params = DetectorsParams());
+		DescriptorMatcher* getDescriptorMatcher(const DescriptorType &type);
 		bool provides(const DescriptorType &type);
 		~OpenCvDescriptorMatcherProvider() {}
 	protected:

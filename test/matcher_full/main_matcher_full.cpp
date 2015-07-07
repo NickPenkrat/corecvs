@@ -83,9 +83,9 @@ void run(const std::string &detector) {
 
 	FeatureMatchingPipeline pipeline(filenames);
 
-	pipeline.add(new KeyPointDetectionStage(DetectorType(detector), DetectorsParams()), true, std::make_pair<bool, std::string>(true, ""));
+	pipeline.add(new KeyPointDetectionStage(DetectorType(detector)), true, std::make_pair<bool, std::string>(true, ""));
 	pipeline.add(new DrawMatchesStage, true);
-	pipeline.add(new DescriptorExtractionStage(DescriptorType(detector), DetectorsParams()), true, std::make_pair<bool, std::string>(true, "desc"));
+	pipeline.add(new DescriptorExtractionStage(DescriptorType(detector)), true, std::make_pair<bool, std::string>(true, "desc"));
 	pipeline.add(new MatchingPlanComputationStage(), true, std::make_pair<bool, std::string>(true, tempBase + "plan.txt"));
 	pipeline.add(new MatchingStage(DescriptorType(detector)), true, std::make_pair<bool, std::string>(true, tempBase + "raw_matches.txt"));
 	pipeline.add(new RefineMatchesStage(), true, std::make_pair<bool, std::string>(true, tempBase + "refined_matches.txt"));

@@ -3,10 +3,10 @@
 
 #include <cassert>
 
-FeatureDetector* FeatureDetectorProvider::getDetector(const DetectorType &type, const DetectorsParams &params) {
+FeatureDetector* FeatureDetectorProvider::getDetector(const DetectorType &type) {
 	for(auto p: providers) {
 		if(p->provides(type)) {
-			return p->getFeatureDetector(type, params);
+			return p->getFeatureDetector(type);
 		}
 	}
 	assert(false);

@@ -1,10 +1,10 @@
 #include "descriptorExtractorProvider.h"
 
 
-DescriptorExtractor* DescriptorExtractorProvider::getDescriptorExtractor(const DescriptorType &type, const DetectorsParams &params) {
+DescriptorExtractor* DescriptorExtractorProvider::getDescriptorExtractor(const DescriptorType &type) {
 	for(auto p: providers) {
 		if(p->provides(type)) {
-			return p->getDescriptorExtractor(type, params);
+			return p->getDescriptorExtractor(type);
 		}
 	}
 	assert(false);

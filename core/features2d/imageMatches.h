@@ -2,33 +2,43 @@
 #define IMAGEMATCHES_H
 
 #include <vector>
+#include <array>
 #include <string>
 #include <iostream>
+#include <cstdint>
+#include <deque>
 
 struct RawMatch {
-	size_t featureQ;
-	size_t featureT;
+	uint16_t featureQ;
+	uint16_t featureT;
 
-	double distance;
+	float distance;
+	static const uint16_t INVALID_MARKER;
 
-	RawMatch(const size_t &featureQ = ~(size_t)0, const size_t &featureT = ~(size_t)0, const double &distance = 1000.0)
+	RawMatch(const uint16_t &featureQ = INVALID_MARKER, const uint16_t &featureT = INVALID_MARKER, const double &distance = 1000.0)
 		: featureQ(featureQ), featureT(featureT), distance(distance) {
 		}
+
+	bool isValid() const {
+		return featureQ != INVALID_MARKER && featureT != INVALID_MARKER;
+	}
 
 	friend std::istream& operator>>(std::istream& is, RawMatch &rm);
 	friend std::ostream& operator<<(std::ostream& os, const RawMatch &rm);
 };
 
 struct Match {
-	size_t imgA;
-	size_t imgB;
+	uint16_t imgA;
+	uint16_t imgB;
 
-	size_t featureA;
-	size_t featureB;
+	uint16_t featureA;
+	uint16_t featureB;
 
 	double distance;
 
-	Match(const size_t &imgA, const size_t &imgB, const size_t &featureA, const size_t &featureB, const double &distance) : distance(distance) {
+	Match() {
+	}
+	Match(const uint16_t &imgA, const uint16_t &imgB, const uint16_t &featureA, const uint16_t &featureB, const double &distance) : distance(distance) {
 		if(imgA < imgB) {
 			this->imgA = imgA;
 			this->featureA = featureA;
@@ -47,20 +57,20 @@ struct RefinedMatchSet {
 	size_t imgA;
 	size_t imgB;
 
-	std::vector<Match> matches;
+	std::deque<Match> matches;
 
 	RefinedMatchSet(const size_t &_imgA, const size_t &_imgB) {
 		imgB = std::max(_imgA, _imgB);
 		imgA = std::min(_imgA, _imgB);
 	}
-	RefinedMatchSet(const size_t &_imgA, const size_t &_imgB, const std::vector<Match> &_matches) : matches(_matches) {
+	RefinedMatchSet(const size_t &_imgA, const size_t &_imgB, const std::deque<Match> &_matches) : matches(_matches) {
 		imgB = std::max(_imgA, _imgB);
 		imgA = std::min(_imgA, _imgB);
 	}
 };
 
 struct RefinedMatches {
-	std::vector<RefinedMatchSet> matchSets;
+	std::deque<RefinedMatchSet> matchSets;
 
 	void load(std::istream &is);
 	void save(std::ostream &os) const;
@@ -70,7 +80,7 @@ struct RefinedMatches {
 };
 
 struct RawMatches {
-	std::vector<std::vector<std::vector<RawMatch>>> matches;
+	std::deque<std::deque<std::array<RawMatch,2>>> matches;
 	
 	void load(std::istream &is);
 	void save(std::ostream &os) const;

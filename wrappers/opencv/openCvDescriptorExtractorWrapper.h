@@ -9,6 +9,8 @@ class OpenCvDescriptorExtractorWrapper : public DescriptorExtractor {
 public:
 	OpenCvDescriptorExtractorWrapper(cv::DescriptorExtractor *detector);
 	~OpenCvDescriptorExtractorWrapper();
+	void setProperty(const std::string &name, const double &value);
+	double getProperty(const std::string &name) const;
 protected:
 	void computeImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descripors);
 private:
@@ -21,7 +23,7 @@ void __attribute__ ((constructor)) __attribute__ ((used)) init_opencv_descriptor
 
 class OpenCvDescriptorExtractorProvider : public DescriptorExtractorProviderImpl {
 	public:
-		DescriptorExtractor* getDescriptorExtractor(const DescriptorType &type, const DetectorsParams &params = DetectorsParams());
+		DescriptorExtractor* getDescriptorExtractor(const DescriptorType &type);
 		bool provides(const DescriptorType &type);
 		~OpenCvDescriptorExtractorProvider() {}
 	protected:

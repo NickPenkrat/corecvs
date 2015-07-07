@@ -53,7 +53,7 @@ std::ostream& operator<<(std::ostream &os, const RuntimeTypeBuffer &b) {
 			os << std::setprecision(15) << std::scientific;
 			for(size_t i = 0; i < R; ++i) {
 				for(size_t j = 0; j < C; ++j) {
-					os << std::setw(20) << b.at<float>(i, j);
+					os << std::setw(20) << b.at<float>(i, j) << "\t";
 				}
 				os << std::endl;
 			}

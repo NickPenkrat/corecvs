@@ -8,7 +8,7 @@
 
 #include "SiftGPU/SiftGPU.h"
 
-class SiftGpu : public FeatureDetector, public DescriptorExtractor {
+class SiftGpu : public virtual FeatureDetector, public virtual DescriptorExtractor {
 public:
 	SiftGpu(double filterWidthFactor = 4.0,
 			double orientationFactor = 2.0,
@@ -21,6 +21,10 @@ public:
 	~SiftGpu();
 	int descriptorSize() const;
 	int descriptorType() const;
+
+	// TODO: add meaningful implementation for converting params to siftgpu's argc/argv
+	double getProperty(const std::string &name) const { return 0.0; }
+	void setProperty(const std::string &name, const double &value) {}
     
     void operator()(RuntimeTypeBuffer &img, std::vector<KeyPoint>& keypoints) const;
     
@@ -51,7 +55,7 @@ void __attribute__ ((constructor)) __attribute__ ((used)) init_siftgpu_descripto
 
 class SiftGpuFeatureDetectorProvider : public FeatureDetectorProviderImpl {
 	public:
-		FeatureDetector* getFeatureDetector(const DetectorType &type, const DetectorsParams &params = DetectorsParams());
+		FeatureDetector* getFeatureDetector(const DetectorType &type);
 		bool provides(const DetectorType &type);
 		~SiftGpuFeatureDetectorProvider() {}
 	protected:
@@ -59,7 +63,7 @@ class SiftGpuFeatureDetectorProvider : public FeatureDetectorProviderImpl {
 
 class SiftGpuDescriptorExtractorProvider : public DescriptorExtractorProviderImpl {
 	public:
-		DescriptorExtractor* getDescriptorExtractor(const DescriptorType &type, const DetectorsParams &params = DetectorsParams());
+		DescriptorExtractor* getDescriptorExtractor(const DescriptorType &type);
 		bool provides(const DescriptorType &type);
 		~SiftGpuDescriptorExtractorProvider() {}
 	protected:

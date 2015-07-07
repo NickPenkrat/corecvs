@@ -21,7 +21,7 @@ std::vector<std::string> filenames;
 
 void run_detector(const std::string &detector) {
 	FeatureMatchingPipeline pipeline(filenames);
-	pipeline.add(new KeyPointDetectionStage(DetectorType(detector), DetectorsParams()), true);
+	pipeline.add(new KeyPointDetectionStage(DetectorType(detector)), true);
 	pipeline.run();
 
 	assert(pipeline.images[0].keyPoints.keyPoints.size());

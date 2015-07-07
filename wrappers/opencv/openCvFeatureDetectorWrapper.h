@@ -9,19 +9,22 @@
 class OpenCvFeatureDetectorWrapper : public FeatureDetector {
 public:
 	OpenCvFeatureDetectorWrapper(cv::FeatureDetector *detector);
+	double getProperty(const std::string &name) const;
+	void setProperty(const std::string &name, const double &value);
 	~OpenCvFeatureDetectorWrapper();
 protected:
 	void detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints);
 private:
+	OpenCvFeatureDetectorWrapper(const OpenCvFeatureDetectorWrapper&);
+	OpenCvFeatureDetectorWrapper& operator=(const OpenCvFeatureDetectorWrapper&);
 	cv::FeatureDetector* detector;
-	OpenCvFeatureDetectorWrapper(const OpenCvFeatureDetectorWrapper &wrapper);
 };
 
 void __attribute__ ((constructor)) __attribute__ ((used)) init_opencv_detectors_provider();
 
 class OpenCvFeatureDetectorProvider : public FeatureDetectorProviderImpl {
 	public:
-		FeatureDetector* getFeatureDetector(const DetectorType &type, const DetectorsParams &params = DetectorsParams());
+		FeatureDetector* getFeatureDetector(const DetectorType &type);
 		bool provides(const DetectorType &type);
 		~OpenCvFeatureDetectorProvider() {}
 	protected:
