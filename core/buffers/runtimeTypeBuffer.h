@@ -5,27 +5,25 @@
 #include <string>
 #include <iostream>
 #include <cassert>
+#include <cstdlib>
+#include <stdint.h> // for those who use outdated compilers
 
-enum class RuntimeBufferDataType {
-	U8,
-	F32
-};
 
 #define BUFFER_TYPE_TO_STRING(str) \
-	case RuntimeBufferDataType::str: \
+	case str: \
 		return #str;
 #define BUFFER_TYPE_FROM_STRING(str) \
 	if(!strcmp(name, #str)) \
-		type = RuntimeBufferDataType::str;
+		type =str;
 #define BUFFER_SIZE(str, sz) \
-	case RuntimeBufferDataType::str: \
+	case str: \
 		return sz;
 #define BUFFER_CVTYPE(str, type) \
-	case RuntimeBufferDataType::str: \
+	case str: \
 		return type;
 #define BUFFER_TYPECV(str, cvtype) \
 	case cvtype:\
-		type = RuntimeBufferDataType::str;\
+		type = str;\
 		break;
 		
 
@@ -38,15 +36,23 @@ enum class RuntimeBufferDataType {
 #endif
 
 struct BufferType {
-	RuntimeBufferDataType type;
+	enum RuntimeBufferDataType {
+		U8,
+		F32
+	};
 
+	int type;
+
+#if 0
 	BufferType(RuntimeBufferDataType type = RuntimeBufferDataType::U8) : type(type) {}
-	explicit BufferType(size_t cvType) {
+#endif
+
+	BufferType(int cvType = 0) {
 		switch(cvType) {
 			BUFFER_TYPECV(U8, CV_8U);
 			BUFFER_TYPECV(F32, CV_32F);
 			default:
-				type = RuntimeBufferDataType::U8;
+				type = U8;
 		}
 	}
 	BufferType(const char *name) {
@@ -55,7 +61,7 @@ struct BufferType {
 	BufferType(const std::string &name) {
 		init(name.c_str());
 	}
-	operator RuntimeBufferDataType() const { return type; }
+	operator int() const { return type; }
 	explicit operator const char*() const {
 		switch(type) {
 			BUFFER_TYPE_TO_STRING(U8);
@@ -85,7 +91,7 @@ struct BufferType {
 	}
 private:
 	void init(const char* name) {
-		type = RuntimeBufferDataType::U8;
+		type = U8;
 		BUFFER_TYPE_FROM_STRING(U8);
 		BUFFER_TYPE_FROM_STRING(F32);
 	}
@@ -95,11 +101,11 @@ private:
 // TODO: add row-aligned allocation & getters
 class RuntimeTypeBuffer {
 public:
-	RuntimeTypeBuffer() : data(0), rows(0), cols(0), sz(0), type(RuntimeBufferDataType::U8) {}
-	RuntimeTypeBuffer(const size_t &rows, const size_t &cols, const BufferType &type = RuntimeBufferDataType::U8) : rows(rows), cols(cols), sz(type.getSize()), type(type) {
+	RuntimeTypeBuffer() : data(0), rows(0), cols(0), sz(0), type(BufferType::U8) {}
+	RuntimeTypeBuffer(const size_t &rows, const size_t &cols, const BufferType &type =BufferType::U8) : rows(rows), cols(cols), sz(type.getSize()), type(type) {
 		allocate();
 	}
-	RuntimeTypeBuffer(const size_t &rows, const size_t &cols, const void* data, const BufferType &type = RuntimeBufferDataType::U8) : rows(rows), cols(cols), sz(type.getSize()), type(type) {
+	RuntimeTypeBuffer(const size_t &rows, const size_t &cols, const void* data, const BufferType &type = BufferType::U8) : rows(rows), cols(cols), sz(type.getSize()), type(type) {
 		allocate();
 		copy((uint8_t*)data);
 	}
@@ -113,9 +119,12 @@ public:
 		copy(b.data);
 	}
 
+// Our compiler is too old for cute move semantics
+#if 0
 	RuntimeTypeBuffer(RuntimeTypeBuffer &&b) : data(b.data), rows(b.rows), cols(b.cols), sz(b.sz), type(b.type) {
 		b.data = 0;
 	}
+#endif
 
 	RuntimeTypeBuffer& operator=(const RuntimeTypeBuffer &b) {
 		if(this == &b)
@@ -131,6 +140,8 @@ public:
 		return *this;
 	}
 
+// Our compiler is too old for cute move semantics
+#if 0
 	RuntimeTypeBuffer& operator=(RuntimeTypeBuffer &&b) {
 		if(this == &b)
 			return *this;
@@ -144,6 +155,7 @@ public:
 		b.data = 0;
 		return *this;
 	}
+#endif
 
 	bool isValid() const {
 		return data != 0;
@@ -197,7 +209,7 @@ public:
 private:
 	void allocate() {
 		size_t bytes = getDataSize();
-		data = (uint8_t*)aligned_alloc(16, bytes);
+		data = (uint8_t*)malloc(bytes);
 	}
 	void copy(uint8_t *src) {
 		memcpy(data, src, getDataSize());

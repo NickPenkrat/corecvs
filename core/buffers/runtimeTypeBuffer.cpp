@@ -16,7 +16,7 @@ std::istream& operator>>(std::istream &is, RuntimeTypeBuffer &b) {
 	is >> R >> C >> type;
 	b = RuntimeTypeBuffer(R, C, BufferType(type));
 	switch(b.type) {
-		case RuntimeBufferDataType::U8:
+		case BufferType::U8:
 			for(size_t i = 0; i < R; ++i)
 				for(size_t j = 0; j < C; ++j) {
 					int v;
@@ -24,7 +24,7 @@ std::istream& operator>>(std::istream &is, RuntimeTypeBuffer &b) {
 					b.at<uint8_t>(i, j) = v;
 				}
 			break;
-		case RuntimeBufferDataType::F32:
+		case BufferType::F32:
 			for(size_t i = 0; i < R; ++i)
 				for(size_t j = 0; j < C; ++j) {
 					is >> b.at<float>(i, j);
@@ -40,7 +40,7 @@ std::ostream& operator<<(std::ostream &os, const RuntimeTypeBuffer &b) {
 
 	os << R << " " << C << " " << type << std::endl;
 	switch(b.type) {
-		case RuntimeBufferDataType::U8:
+		case BufferType::U8:
 			for(size_t i = 0; i < R; ++i) {
 				for(size_t j = 0; j < C; ++j) {
 					int v = b.at<uint8_t>(i, j);
@@ -49,7 +49,7 @@ std::ostream& operator<<(std::ostream &os, const RuntimeTypeBuffer &b) {
 				os << std::endl;
 			}
 			break;
-		case RuntimeBufferDataType::F32:
+		case BufferType::F32:
 			os << std::setprecision(15) << std::scientific;
 			for(size_t i = 0; i < R; ++i) {
 				for(size_t j = 0; j < C; ++j) {
