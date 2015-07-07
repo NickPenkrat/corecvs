@@ -843,7 +843,9 @@ void PDOGenerator::generateControlWidgetCpp()
     for (int i = 0; i < fieldNumber; i++ )
     {
         enterFieldContext(i);
-        if (type == BaseField::TYPE_COMPOSITE)  continue;
+        if (type == BaseField::TYPE_COMPOSITE) {
+            result += "//";
+        }
 
         result+=
     "    params."+j(setterName,20)+"("+prefix+"mUi->"+boxName+"->"+getWidgetGetterMethodForType(type)+suffix+");\n";
