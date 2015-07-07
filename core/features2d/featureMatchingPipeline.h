@@ -4,8 +4,8 @@
 #include <vector>
 #include <string>
 #include <stack>
-#include <unordered_map>
-#include <chrono>
+#include <map>
+//#include <chrono>
 
 #include "featureDetectorProvider.h"
 #include "descriptorExtractorProvider.h"
@@ -121,8 +121,8 @@ public:
 
 private:
 	struct tic_data {
-		std::unordered_map<size_t, std::chrono::time_point<std::chrono::high_resolution_clock>> thread_tics;
-		std::unordered_map<size_t, size_t> thread_totals, thread_counts;	
+		std::map<size_t, size_t>> thread_tics;
+		std::map<size_t, size_t> thread_totals, thread_counts;	
 	};
 	std::stack<tic_data> tics;
 

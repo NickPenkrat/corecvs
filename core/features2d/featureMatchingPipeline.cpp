@@ -6,6 +6,8 @@
 #include <iomanip>
 #include <sstream>
 #include <cstdlib>
+#include <ctime>
+#include <array>
 
 #include "featureDetectorProvider.h"
 #include "descriptorExtractorProvider.h"
@@ -724,7 +726,7 @@ void RandIndexStage::run(FeatureMatchingPipeline *pipeline) {
 	RefinedMatches &refinedMatches = pipeline->refinedMatches;
 	size_t N = pipeline->images.size();
 	index.resize(N);
-	auto& images = pipeline->images;
+	std::deque<Image>& images = pipeline->images;
 	for(size_t i = 0; i < N; ++i) index[i].resize(N);
 
 	std::vector<std::vector<size_t>> clusters(N);
@@ -824,7 +826,7 @@ void RefineMatchesStage::run(FeatureMatchingPipeline *pipeline) {
 	// l - match index (<= 2)
 	// Yep, it is too ugly
 	std::cerr << "Prealloc accumulator" << std::endl;
-	std::deque<std::deque<std::deque<std::array<RawMatch,2>>>> accumulator;
+	std::deque<std::deque<std::deque<std::array<RawMatch,2> > > > accumulator;
 
 	size_t N = pipeline->images.size();
 
@@ -881,7 +883,7 @@ void RefineMatchesStage::run(FeatureMatchingPipeline *pipeline) {
 	std::cerr << "Populated accumulator" << std::endl;
 	std::cerr << "Ratio filtering" << std::endl;
 
-	std::deque<std::deque<std::deque<RawMatch>>> ratioInliers(N);
+	std::deque<std::deque<std::deque<RawMatch> > > ratioInliers(N);
 	for(size_t i = 0; i < N; ++i) {
 		ratioInliers[i].resize(N);
 		for(size_t j = 0; j < N; ++j)
@@ -965,7 +967,7 @@ std::string file_name(const std::string &full_name) {
 
 void VsfmWriterStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const {
 	size_t N = pipeline->images.size();
-	std::vector<std::vector<SiftFeature>> features(N);
+	std::vector<std::vector<SiftFeature> > features(N);
 
 	// 1. assign importance to features 
 	// 2. sort features by their importance (?)
@@ -999,8 +1001,8 @@ void VsfmWriterStage::saveResults(FeatureMatchingPipeline *pipeline, const std::
 		}
 	}
 
-	std::vector<std::vector<size_t>> reordering(N);
-	std::vector<std::vector<size_t>> reordering_rev(N);
+	std::vector<std::vector<size_t> > reordering(N);
+	std::vector<std::vector<size_t> > reordering_rev(N);
 	for(size_t i = 0; i < N; ++i) {
 		size_t M;
 		reordering[i].resize(M = images[i].keyPoints.keyPoints.size());
@@ -1030,7 +1032,7 @@ void VsfmWriterStage::saveResults(FeatureMatchingPipeline *pipeline, const std::
 	}
 
 	std::ofstream ofs;
-	ofs.open(filename, std::ofstream::out);
+	ofs.open(filename.c_str(), std::ofstream::out);
 	assert(ofs);
 
 	for(size_t i = 0; i < refinedMatches.matchSets.size(); ++i) {
@@ -1039,15 +1041,15 @@ void VsfmWriterStage::saveResults(FeatureMatchingPipeline *pipeline, const std::
 
 		ofs << set.matches.size() << std::endl;
 
-		for(auto m: set.matches) {
-			assert(m.imgA == set.imgA);
-			ofs << reordering_rev[m.imgA][m.featureA] << " ";
+		for(std::deque<Match>::iterator m = set.matches.begin(); m != set.matches.end(); ++m) {
+			assert(m->imgA == set.imgA);
+			ofs << reordering_rev[m->imgA][m->featureA] << " ";
 		}
 		ofs << std::endl;
 
-		for(auto m: set.matches) {
-			assert(m.imgB == set.imgB);
-			ofs << reordering_rev[m.imgB][m.featureB] << " ";
+		for(std::deque<Match>::iterator m = set.matches.begin(); m != set.matches.end(); ++m) {
+			assert(m->imgB == set.imgB);
+			ofs << reordering_rev[m->imgB][m->featureB] << " ";
 		}
 		ofs << std::endl;
 	}
@@ -1062,10 +1064,10 @@ void FeatureMatchingPipeline::tic(size_t thread_id, bool level) {
 			std::cerr << std::endl;
 		}
 		tic_data data;
-		data.thread_tics[thread_id] = std::chrono::high_resolution_clock::now();
+		data.thread_tics[thread_id] = clock();//std::chrono::high_resolution_clock::now();
 		tics.push(data);
 	} else {
-		tics.top().thread_tics[thread_id] = std::chrono::high_resolution_clock::now();
+		tics.top().thread_tics[thread_id] = clock(); //std::chrono::high_resolution_clock::now();
 	}
 #if 0
 	totals.resize(tics.size() + 1);
@@ -1078,12 +1080,20 @@ void FeatureMatchingPipeline::tic(size_t thread_id, bool level) {
 
 void FeatureMatchingPipeline::toc(const std::string &name, const std::string &evt, size_t thread_id, bool level) {
 	tbb::spin_mutex::scoped_lock lock(mutex);
+#if 0
 	auto toc = std::chrono::high_resolution_clock::now();
+#else
+	size_t toc = clock();
+#endif
 	if(level) {
-		auto tic = tics.top();
+		tic_data tic = tics.top();
 		tics.pop();
 
+#if 0
 		auto ns = std::chrono::duration_cast<std::chrono::milliseconds>(toc - tic.thread_tics[thread_id]).count();
+#else
+		size_t ns = toc = tic.thread_tics[thread_id];
+#endif
 		std::cerr << std::setw(64) << name << std::setw(32) << evt << std::setw(10) << ns << "ms" << std::endl;
 	
 		if(tics.size() == 0) {
@@ -1092,9 +1102,15 @@ void FeatureMatchingPipeline::toc(const std::string &name, const std::string &ev
 			std::cerr << std::endl;
 		}
 	} else {
+#if 0
 		auto& tic = tics.top();
 		auto tict = tic.thread_tics[thread_id];
 		auto ns = std::chrono::duration_cast<std::chrono::milliseconds>(toc - tict).count();
+#else
+		tic_data& tic = tics.top();
+		size_t tict = tic.thread_tics[thread_id];
+		size_t ns = toc - tict;
+#endif
 		std::cerr << std::setw(64) << name << std::setw(32) << evt << std::setw(10) << ns << "ms" << std::endl;
 	}
 }
@@ -1103,11 +1119,19 @@ void FeatureMatchingPipeline::toc(const std::string &name, const std::string &ev
 	tbb::spin_mutex::scoped_lock lock(mutex);
 
 	if(level) {
+#if 0
 		auto toc = std::chrono::high_resolution_clock::now();
 		auto tic = tics.top();
 		tics.pop();
 	
 		auto ns = std::chrono::duration_cast<std::chrono::milliseconds>(toc - tic.thread_tics[thread_id]).count();
+#else
+		size_t toc = clock();
+		tic_data& tic = tics.top();
+		tics.pop();
+
+		size_t ns = toc - tic.thread_tics[thread_id];
+#endif
 
 
 #if 0
@@ -1130,18 +1154,28 @@ void FeatureMatchingPipeline::toc(const std::string &name, const std::string &ev
 		std::cerr << std::setw(64) << name << std::setw(32) << evt << std::setw(10) << ns << "ms"  <<  std::endl;
 #endif
 	} else {
+#if 0
 		auto toc = std::chrono::high_resolution_clock::now();
 		auto& tic = tics.top();
 
 		auto ns = std::chrono::duration_cast<std::chrono::milliseconds>(toc - tic.thread_tics[thread_id]).count();
+#else
+		size_t toc = clock();
+		tic_data& tic = tics.top();
+		size_t ns = toc - tic.thread_tics[thread_id];
+#endif
 		size_t total = 0, count = 0;
 		tic.thread_totals[thread_id] += ns;
 		tic.thread_counts[thread_id]+= rem;
 #if 0
 		for(auto v: tic.thread_totals) total += v.second;
 #endif
+#if 0
 		total = std::chrono::duration_cast<std::chrono::milliseconds>(toc - tic.thread_tics[~(size_t)0]).count();
-		for(auto v: tic.thread_counts) count += v.second;
+#else
+		total = (toc - tic.thread_tics[~(size_t)0]);
+#endif
+		for(std::map<size_t,size_t>::iterator v = tic.thread_counts.begin(); v != tic.thread_counts.end(); ++v) count += v->second;
 
 		double one = double(total)/double(count);
 		int rs = int((curr - count) * one / 1e3);
