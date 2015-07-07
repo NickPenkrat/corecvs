@@ -49,7 +49,7 @@ private:
     void doManualTransform();
 
     /* Current correction result in different forms */
-    RadialCorrection mLinesRadialCoorection;
+    //RadialCorrection mLinesRadialCoorection;
     QSharedPointer<DisplacementBuffer> mDistortionCorrectTransform;
 
     /* Some data for semiautomatic corner detection*/
@@ -66,7 +66,7 @@ private slots:
     void addVector();
     void initTransform();
     void detectCorners();
-    void detectCrosses();
+    void detectCheckerboard();
     void resetParameters();
     void choosePoint(int row, int column);
     void showBufferChanged();

@@ -18,6 +18,7 @@ public:
     ~OpenCVFilterParametersControlWidget();
 
     OpenCVFilterParameters* createParameters() const;
+    void getParameters(OpenCVFilterParameters& params) const;
     void setParameters(const OpenCVFilterParameters &input);
     virtual void setParametersVirtual(void *input);
 

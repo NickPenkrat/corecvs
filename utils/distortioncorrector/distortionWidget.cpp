@@ -60,7 +60,7 @@ DistortionWidget::DistortionWidget(QWidget *parent) :
     connect(mUi->setParamsButton,        SIGNAL(released()), this, SLOT(setParams()));
     connect(mUi->saveButton,             SIGNAL(released()), this, SLOT(addVector()));
     connect(mUi->cornerDetectorButton,   SIGNAL(released()), this, SLOT(detectCorners()));
-    connect(mUi->crossDetectorButton,    SIGNAL(released()), this, SLOT(detectCrosses()));
+    connect(mUi->crossDetectorButton,    SIGNAL(released()), this, SLOT(detectCheckerboard()));
     connect(mUi->updateScoreButton,      SIGNAL(released()), this, SLOT(updateScore()));
     connect(mUi->deleteButton,           SIGNAL(released()), this, SLOT(deletePointPair()));
     mDistortionParameters = new DistortionParameters();
@@ -169,7 +169,7 @@ void DistortionWidget::detectCorners()
     delete_safe(grad);
 }
 
-void DistortionWidget::detectCrosses()
+void DistortionWidget::detectCheckerboard()
 {
 #ifdef WITH_OPENCV
     if(mBufferInput == NULL) {
@@ -181,9 +181,11 @@ void DistortionWidget::detectCrosses()
     vector<Point2f> pointbuf;
     Mat             view = cv::Mat(inputIpl, false);
 
-    int chessV = mUi->vCrossesCountBox->value();
-    int chessH = mUi->hCrossesCountBox->value();
-    int cellSize = mUi->cellSizeBox->value();
+    CheckerboardDetectionParameters *params = mUi->checkerboardParametersWidget->createParameters();
+
+    int chessV = params->vCrossesCount();
+    int chessH = params->hCrossesCount();
+    int cellSize = params->cellSize();
 
     Size            boardSize(chessV, chessH);
 
@@ -201,7 +203,7 @@ void DistortionWidget::detectCrosses()
 
         PaintImageWidget *canvas = mUi->widget;
 
-        if(mUi->clearOldValuesCheckBox->isChecked())
+        if(params->cleanExisting())
         {
             mCorrectionMap.clear();
             canvas->mPaths.clear();
@@ -219,8 +221,23 @@ void DistortionWidget::detectCrosses()
                 canvas->addVertexToPath(&canvas->mPoints.last(), &path);
             }
         }
+
+        for(int iw=0; iw < chessV; iw++)
+        {
+            canvas->mPaths.append(PaintImageWidget::VertexPath());
+            PaintImageWidget::VertexPath &path = canvas->mPaths.last();
+
+            for(int ih = 0; ih < chessH; ih++)
+            {
+                Vector2dd point(pointbuf.at(ih * chessV + iw).x,pointbuf.at(ih * chessV + iw).y);
+                addPointPair(Vector3dd(cellSize * ih, cellSize * iw, 0), point);
+                canvas->addVertex(point);
+                canvas->addVertexToPath(&canvas->mPoints.last(), &path);
+            }
+        }
     }
     cvReleaseImage(&inputIpl);
+    delete_safe (params);
     return;
 #else
     return;
@@ -346,10 +363,9 @@ void DistortionWidget::doInversionTransform()
  **/
 void DistortionWidget::doLinesTransform()
 {
-    double scale = mUi->lineScaleSpinBox->value();
-    qDebug() << "doLinesTransform: aspectCorrection = "<< scale;
+    LineDistortionEstimatorParameters params;
+    mUi->lineDistortionWidget->getParameters(params);
 
-    Vector2dd center(mBufferInput->w / 2.0, mBufferInput->h /2.0);
 
     PaintImageWidget *editor = mUi->widget;
     vector<vector<Vector2dd> > straights = editor->getPaths();
@@ -363,11 +379,14 @@ void DistortionWidget::doLinesTransform()
        center
     ));
  */
+
+    Vector2dd center(mBufferInput->w / 2.0, mBufferInput->h /2.0);
+
     RadialCorrection correction(LensDistortionModelParameters(
        center.x(),
        center.y(),
        0.0 ,0.0,
-       vector<double>(mUi->degreeSpinBox->value()),
+       vector<double>(params.polinomDegree()),
        1.0,
        1.0
     ));
@@ -375,20 +394,19 @@ void DistortionWidget::doLinesTransform()
 
     ModelToRadialCorrection modelFactory(
         correction,
-        mUi->estimateCenterCheckBox->isChecked(),
-        mUi->estimateTangentCheckBox->isChecked(),
-        mUi->degreeSpinBox->value()
+        params.estimateCenter(),
+        params.estimateTangent(),
+        params.polinomDegree()
     );
 
     FunctionArgs *costFuntion = NULL;
-    if (mUi->costFunctionComboBox->currentIndex() == 0) {
+    if (params.costAlgorithm() == LineDistortionEstimatorCost::JOINT_ANGLE_COST) {
         costFuntion = new AnglePointsFunction (straights, modelFactory);
-        //straightF.simpleJacobian = mUi->simpleJacobianCheckBox->isChecked();
     } else {
         costFuntion = new DistPointsFunction  (straights, modelFactory);
     }
 
-    LevenbergMarquardt straightLevMarq(mUi->iterationsSpinBox->value(), 2, 1.5);
+    LevenbergMarquardt straightLevMarq(params.iterationNumber(), 2, 1.5);
     straightLevMarq.f = costFuntion;
 
     /* First aproximation is zero vector */
@@ -398,7 +416,7 @@ void DistortionWidget::doLinesTransform()
     vector<double> value(costFuntion->outputs, 0);
     vector<double> straightParams = straightLevMarq.fit(first, value);
 
-    mLinesRadialCoorection = modelFactory.getRadial(&straightParams[0]);
+    RadialCorrection mLinesRadialCoorection = modelFactory.getRadial(&straightParams[0]);
 
     L_INFO_P("Inverting the distortion buffer");
 
@@ -406,10 +424,11 @@ void DistortionWidget::doLinesTransform()
             mBufferInput->h, mBufferInput->w,
             0.0,0.0,
             (double)mBufferInput->w, (double)mBufferInput->h,
-            0.5, mUi->preciseInvertionCheckBox->isChecked())
+            0.5, false)
    );
 
     mUi->isInverseCheckBox->setChecked(true);
+
     mUi->lensCorrectionWidget->setParameters(mLinesRadialCoorection.mParams);
     L_INFO_P("Ending distortion calibration");
     updateScore();
@@ -420,23 +439,28 @@ void DistortionWidget::updateScore()
     PaintImageWidget *editor = mUi->widget;
     vector<vector<Vector2dd> > straights = editor->getPaths();
 
+    RadialCorrection radialCorrection;
+    mUi->lensCorrectionWidget->getParameters(radialCorrection.mParams);
+
+    LineDistortionEstimatorParameters params;
+    mUi->lineDistortionWidget->getParameters(params);
+
     ModelToRadialCorrection modelFactory(
-        mLinesRadialCoorection,
-        mUi->estimateCenterCheckBox->isChecked(),
-        mUi->estimateTangentCheckBox->isChecked(),
-        mUi->degreeSpinBox->value()
+        radialCorrection,
+        params.estimateCenter(),
+        params.estimateTangent(),
+        params.polinomDegree()
     );
 
     FunctionArgs *costFuntion = NULL;
-    if (mUi->costFunctionComboBox->currentIndex() == 0) {
+    if (params.costAlgorithm() == LineDistortionEstimatorCost::JOINT_ANGLE_COST) {
         costFuntion = new AnglePointsFunction (straights, modelFactory);
-           //straightF.simpleJacobian = mUi->simpleJacobianCheckBox->isChecked();
     } else {
         costFuntion = new DistPointsFunction  (straights, modelFactory);
     }
 
     vector<double> modelParameters(costFuntion->inputs, 0);
-    modelFactory.getModel(mLinesRadialCoorection, &modelParameters[0]);
+    modelFactory.getModel(radialCorrection, &modelParameters[0]);
 
     vector<double> result(costFuntion->outputs);
     costFuntion->operator()(&modelParameters[0], &result[0]);
@@ -458,7 +482,7 @@ void DistortionWidget::updateScore()
         if (path.vertexes.size() < 3) {
             continue;
         }
-        if (mUi->costFunctionComboBox->currentIndex() == 0)
+        if (params.costAlgorithm() == LineDistortionEstimatorCost::JOINT_ANGLE_COST)
         {
             for (int j = 1; j < path.vertexes.size() - 1; j++) {
                 path.vertexes[j]->weight = fabs(result[count]) / maxValue;
@@ -513,10 +537,14 @@ void DistortionWidget::showBufferChanged()
             image = new G12Image(buffer);
             QPainter painter(image);
             vector<vector<Vector2dd> > straights = mUi->widget->getPaths();
+
+            RadialCorrection linesRadialCoorection;
+            mUi->lensCorrectionWidget->getParameters(linesRadialCoorection.mParams);
+
             for (unsigned i = 0; i < straights.size(); i++) {
                 for (unsigned j = 0; j < straights[i].size(); j++) {
                     Vector2dd point = straights[i][j];
-                    Vector2dd moved = mLinesRadialCoorection.map(point.y(), point.x());
+                    Vector2dd moved = linesRadialCoorection.map(point.y(), point.x());
                     painter.setPen(Qt::yellow);
                     painter.drawLine(moved.x() - 1, moved.y() - 1, moved.x() + 1, moved.y() + 1);
                     painter.drawLine(moved.x() + 1, moved.y() - 1, moved.x() - 1, moved.y() + 1);
@@ -695,15 +723,13 @@ void DistortionWidget::doDefaultTransform()
 
 void DistortionWidget::doManualTransform()
 {
-    LensDistortionModelParameters *params = mUi->lensCorrectionWidget->createParameters();
-    mLinesRadialCoorection.mParams = *params;
-    delete params;
-
+    RadialCorrection linesRadialCoorection;
+    mUi->lensCorrectionWidget->getParameters(linesRadialCoorection.mParams);
 
     if (!mUi->isInverseCheckBox->isChecked()) {
-        mDistortionCorrectTransform = QSharedPointer<DisplacementBuffer>(new DisplacementBuffer(&mLinesRadialCoorection, mBufferInput->h, mBufferInput->w, true));
+        mDistortionCorrectTransform = QSharedPointer<DisplacementBuffer>(new DisplacementBuffer(&linesRadialCoorection, mBufferInput->h, mBufferInput->w, true));
     } else {
-        mDistortionCorrectTransform = QSharedPointer<DisplacementBuffer>(DisplacementBuffer::CacheInverse(&mLinesRadialCoorection,
+        mDistortionCorrectTransform = QSharedPointer<DisplacementBuffer>(DisplacementBuffer::CacheInverse(&linesRadialCoorection,
             mBufferInput->h, mBufferInput->w,
             0.0,0.0,
             (double)mBufferInput->w, (double)mBufferInput->h, 0.5)

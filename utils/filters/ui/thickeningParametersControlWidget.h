@@ -17,6 +17,8 @@ public:
     ~ThickeningParametersControlWidget();
 
     ThickeningParameters* createParameters() const;
+
+    void getParameters(ThickeningParameters& params) const;
     void setParameters(const ThickeningParameters &input);
     void setParametersVirtual(void *input);
 

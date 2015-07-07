@@ -22,6 +22,10 @@ public:
     virtual ~LensDistortionModelParametersControlWidget();
 
     LensDistortionModelParameters* createParameters() const;
+    LensDistortionModelParameters getParameters() const;
+    void getParameters(LensDistortionModelParameters &params) const;
+
+
     void setParameters(const LensDistortionModelParameters &input);
     virtual void setParametersVirtual(void *input);
 
@@ -46,6 +50,8 @@ public slots:
     void resetCy();
     void resetP1();
     void resetP2();
+    void resetAspect();
+    void resetScale();
 
 
     void updateAdditionalData();

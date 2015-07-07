@@ -693,6 +693,10 @@ std::string V4L2CameraDescriptor::getSerialNumber()
    printf("V4L2CameraDescriptor::getSerialNumber():Serial <%s>\n", serial);
    std::string result(serial);
    free(serial);
+
+   char *usbData = basename(linkPath);
+   printf("V4L2CameraDescriptor::getSerialNumber(): Usbpath <%s>\n", usbData);
+
    return result;
 
 }

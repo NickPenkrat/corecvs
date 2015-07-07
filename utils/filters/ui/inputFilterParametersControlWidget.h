@@ -18,6 +18,8 @@ public:
     ~InputFilterParametersControlWidget();
 
     InputFilterParameters* createParameters() const;
+
+    void getParameters(InputFilterParameters& params) const;
     void setParameters(const InputFilterParameters &input);
     virtual void setParametersVirtual(void *input);
 

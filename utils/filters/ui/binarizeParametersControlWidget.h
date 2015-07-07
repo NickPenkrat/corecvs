@@ -17,6 +17,8 @@ public:
     ~BinarizeParametersControlWidget();
 
     BinarizeParameters* createParameters() const;
+
+    void getParameters(BinarizeParameters& params) const;
     void setParameters(const BinarizeParameters &input);
 
     virtual BaseReflectionStatic *createParametersVirtual() const

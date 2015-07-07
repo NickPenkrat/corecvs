@@ -157,14 +157,22 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
                     DoubleWidgetType widgetType = fieldElement.attribute("widget") == "ExponentialSlider" ?
                                                exponentialSlider :
                                                doubleSpinBox;
+
+                    QString prefix = fieldElement.attribute("prefix");
+                    QString suffix = fieldElement.attribute("suffix");
+
                     field = new DoubleFieldGen(
                               defaultValue.toDouble()
                             , widgetType
+                            , prefix
+                            , suffix
                             , fieldNameing
                             , hasAdditionalParameters
                             , minValue.toDouble()
                             , maxValue.toDouble()
                             , stepValue.isEmpty() ? 1.0 : stepValue.toDouble());
+
+
                 }
                 else if (type == "bool")
                 {

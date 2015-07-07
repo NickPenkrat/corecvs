@@ -195,13 +195,13 @@ WIDGETS_DIR="${UTILS_DIR}/corestructs/coreWidgets"
 WIDGETS_REL_DIR="\$\${UTILSDIR}/corestructs/coreWidgets"
 WPRIFILE="${WIDGETS_DIR}/coreWidgets.pri"
 
-enums="sobelMixingType
+enums="
+       sobelMixingType
        openCVBinaryFilterType 
        operation 
        interpolationType         
        makePreciseAlgorithm
        preciseInterpolationType"
-classes="lensDistortionModelParameters"
 ui_classes="
         rgbColorParameters
     
@@ -212,6 +212,13 @@ full_ui_classes="
         headSearchParameters
         makePreciseParameters
        "
+
+
+enums+=" lineDistortionEstimatorCost"
+classes+=" lensDistortionModelParameters"
+
+full_ui_classes+=" checkerboardDetectionParameters"
+full_ui_classes+=" lineDistortionEstimatorParameters"
 
 PRIFILE="${DST_DIR}/generated.pri"
 

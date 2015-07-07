@@ -11,6 +11,7 @@
  * \ingroup cppcorefiles
  */
 
+#include <QString>
 #include "reflection.h"
 
 using corecvs::BaseField;
@@ -162,9 +163,14 @@ class DoubleFieldGen : public DoubleField
 {
 public:
     DoubleWidgetType widgetType;
+    QString prefix;
+    QString suffix;
+
     DoubleFieldGen(
         double _defaultValue,
         DoubleWidgetType _widgetType,
+        QString _prefix,
+        QString _suffix,
         const ReflectionNaming &_nameing,
         bool _hasAdditionalValues = false,
         double _min = 0.0,
@@ -180,7 +186,9 @@ public:
             _max,
             _step
         ),
-        widgetType(_widgetType)
+        widgetType(_widgetType),
+        prefix(_prefix),
+        suffix(_suffix)
     {}
 
     virtual BaseField* clone() const
@@ -258,7 +266,7 @@ public:
             _enumReflection
         ),
         widgetType(_widgetType)
-    {};
+    {}
 
     virtual BaseField* clone() const
     {
