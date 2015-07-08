@@ -73,10 +73,10 @@ int main(int argc, char ** argv) {
 	filenames.push_back(base + "./data/kermit_dataset/kermit001.jpg");
 	filenames.push_back(base + "./data/kermit_dataset/kermit002.jpg");
 
-	run_detector("SIFTGPU");
 	run_detector("SIFT");
 	run_detector("SURF");
 	run_detector("ORB");
+	run_detector("SIFTGPU");
 
 	return 0;
 }
