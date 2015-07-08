@@ -77,6 +77,18 @@ private:
 	double scaleThreshold;
 };
 
+class MatchAndRefineStage : public FeatureMatchingPipelineStage {
+public:
+	void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename);
+	void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
+	void run(FeatureMatchingPipeline* pipeline);
+	~MatchAndRefineStage() {}
+	MatchAndRefineStage(DescriptorType descriptorType, double scaleThreshold = 0.7);
+private:
+	DescriptorType descriptorType;
+	double scaleThreshold;
+};
+
 class VsfmWriterStage : public FeatureMatchingPipelineStage {
 public:
 	void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename) {}

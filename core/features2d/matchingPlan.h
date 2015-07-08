@@ -6,6 +6,8 @@
 #include <stdint.h>
 
 struct MatchPlanEntry {
+	bool isBetween(uint16_t imgA, uint16_t imgB);
+
 	void save(std::ostream &os) const;
 	void load(std::istream &is);
 

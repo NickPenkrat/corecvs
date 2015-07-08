@@ -486,6 +486,134 @@ void MatchingStage::saveResults(FeatureMatchingPipeline *pipeline, const std::st
 	pipeline->rawMatches.save(filename);
 }
 
+
+
+MatchAndRefineStage::MatchAndRefineStage(DescriptorType descriptorType, double scaleThreshold) : descriptorType(descriptorType), scaleThreshold(scaleThreshold) {
+}
+
+void MatchAndRefineStage::loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename) {
+	pipeline->refinedMatches.load(filename);
+}
+
+void MatchAndRefineStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const {
+	pipeline->refinedMatches.save(filename);
+}
+
+void MatchAndRefineStage::run(FeatureMatchingPipeline *pipeline) {
+	pipeline->tic();
+	DescriptorMatcher* matcher = DescriptorMatcherProvider::getInstance().getMatcher(descriptorType);
+
+	MatchPlan &matchPlan = pipeline->matchPlan;
+	RawMatches &rawMatches = pipeline->rawMatches;
+	RefinedMatches &refinedMatches = pipeline->refinedMatches;
+	std::vector<Image> &images = pipeline->images;
+	size_t N = images.size();
+	size_t responsesPerPoint = 2;
+
+	for(size_t I = 0; I < N; ++I) {
+		for(size_t J = I + 1; J < N; ++J) {
+			std::vector<size_t> reqs;
+			for(size_t i = 0; i < matchPlan.plan.size(); ++i)
+				if(matchPlan.plan[i].isBetween(I, J))
+					reqs.push_back(i);
+// step 1: match
+			for(size_t s = 0; s < reqs.size(); ++s) {
+				size_t Is = matchPlan.plan[reqs[s]].queryImg;
+				size_t Js = matchPlan.plan[reqs[s]].trainImg;
+				auto &query = matchPlan.plan[reqs[s]];
+
+				assert(Is < N && Js < N);
+
+				RuntimeTypeBuffer qb(images[Is].descriptors.mat);
+				RuntimeTypeBuffer tb(images[Js].descriptors.mat);
+
+				for(size_t j = 0; j < query.queryFeatures.size(); ++j) {
+					memcpy(qb.row<void>(j), images[Is].descriptors.mat.row<void>(query.queryFeatures[j]), qb.getRowSize());
+				}
+				for(size_t j = 0; j < query.trainFeatures.size(); ++j) {
+					memcpy(tb.row<void>(j), images[Js].descriptors.mat.row<void>(query.trainFeatures[j]), tb.getRowSize());
+				}
+
+		        std::vector<std::vector<RawMatch>> ml;
+		        matcher->knnMatch(qb, tb, ml, responsesPerPoint);
+
+
+		        for(std::vector<std::vector<RawMatch> >::iterator it = ml.begin(); it != ml.end(); ++it) {
+		            std::vector<RawMatch>& v = *it;
+		            std::array<RawMatch, 2> mk;
+		            for(size_t i = 0; i < v.size() && i < 2 && v[i].isValid(); ++i) {
+		                mk[i] = v[i];
+		            }
+		            rawMatches.matches[s].push_back(mk);
+		        }
+
+				// It's time to replace indicies
+		        for(std::deque<std::array<RawMatch, 2>>::iterator it = rawMatches.matches[s].begin(); it != rawMatches.matches[s].end(); ++it) {
+		            std::array<RawMatch, 2> &v = *it;
+		            for(std::array<RawMatch, 2>::iterator m = v.begin(); m != v.end() && m->isValid(); ++m) {
+		                m->featureQ = query.queryFeatures[m->featureQ];
+		                m->featureT = query.trainFeatures[m->featureT];
+					}
+				}
+			}
+// step 2: merge and clean temp
+			std::deque<std::array<RawMatch, 2> > accumulator[2];
+
+			accumulator[0].resize(images[I].keyPoints.keyPoints.size());
+			accumulator[1].resize(images[J].keyPoints.keyPoints.size());
+
+			for(size_t si = 0; si < reqs.size(); ++si) {
+				size_t s = reqs[si];
+				size_t query = matchPlan.plan[s].queryImg;
+//				size_t train = matchPlan.plan[s].trainImg;
+
+//				train = train == I ? 0 : 1;
+				query = query == I ? 0 : 1;
+
+				for(size_t i = 0; i < rawMatches.matches[s].size(); ++i) {
+					for(size_t j = 0; j < rawMatches.matches[s][i].size() && rawMatches.matches[s][i][j].isValid(); ++j) {
+						RawMatch &dm = rawMatches.matches[s][i][j];
+						if(dm.distance < accumulator[query][dm.featureQ][0].distance) {
+							accumulator[query][dm.featureQ][1] = accumulator[query][dm.featureQ][0];
+							accumulator[query][dm.featureQ][0] = dm;
+						} else if( dm.distance < accumulator[query][dm.featureQ][1].distance) {
+							accumulator[query][dm.featureQ][1] = dm;
+						}
+					}
+				}
+				rawMatches.matches[s].clear();
+				rawMatches.matches[s].shrink_to_fit();
+			}
+// step 3: refine by distance
+			std::deque<RawMatch> ratioInliers[2];
+			ratioInliers[0].resize(images[I].keyPoints.keyPoints.size());
+			ratioInliers[1].resize(images[J].keyPoints.keyPoints.size());
+
+			for(size_t i = 0; i < 2; ++i) {
+				for(size_t j = 0; j < ratioInliers[0].size(); ++j) {
+					if(accumulator[i][j][0].distance / accumulator[i][j][1].distance < scaleThreshold)
+						ratioInliers[i][j] = accumulator[i][j][0];
+				}
+			}
+// step 4: refine by symmetry
+			std::deque<Match> final_matches;
+			for(size_t i = 0; i < images[I].keyPoints.keyPoints.size(); ++i) {
+				RawMatch &rm = ratioInliers[0][i];
+				if(!rm.isValid()) continue;
+				if(ratioInliers[1][rm.featureT].featureT == rm.featureQ)
+					final_matches.push_back(Match(I, J, rm.featureQ, rm.featureT, rm.distance));
+			}
+			if(final_matches.size()) {
+				refinedMatches.matchSets.push_back(RefinedMatchSet(I, J, final_matches));
+			}
+
+		}
+	}
+
+	pipeline->toc("Computing & refining matches on-the-fly", "");
+	delete matcher;
+}
+
 #ifdef WITH_CLUSTERS
 RandIndexStage::RandIndexStage() {
 };

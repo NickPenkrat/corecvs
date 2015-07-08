@@ -23,6 +23,10 @@ std::istream& operator>>(std::istream& is, MatchPlanEntry& mp) {
 	return is;
 }
 
+bool MatchPlanEntry::isBetween(uint16_t imgA, uint16_t imgB) {
+	return (queryImg == imgA && trainImg == imgB) || (trainImg == imgA && queryImg == imgB);
+}
+
 void MatchPlanEntry::load(std::istream &is) {
 	size_t I, J, K, L;
 	is >> I >> J >> K >> L;
