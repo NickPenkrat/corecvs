@@ -96,7 +96,7 @@ void prepareCopy(const std::string &postfix)
 #ifndef WIN32
 	command << "cp ";
 #else
-	command << "copy ";
+	command << "copy /Y ";
 #endif
 	command << base << "*.jpg " << base << "kermit_" << postfix << PATH_SEPARATOR;
 	system(command.str().c_str());
