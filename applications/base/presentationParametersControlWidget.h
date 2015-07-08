@@ -19,6 +19,7 @@ public:
     ~PresentationParametersControlWidget();
 
     PresentationParameters* createParameters() const;
+    void getParameters(PresentationParameters &params) const;
     void setParameters(const PresentationParameters &input);
     virtual void setParametersVirtual(void *input);
 

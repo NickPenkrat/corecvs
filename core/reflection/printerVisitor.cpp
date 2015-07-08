@@ -55,6 +55,20 @@ void PrinterVisitor::visit<int, EnumField>(int &field, const EnumField *fieldDes
 }
 
 
+/* Arrays block */
+
+template <>
+void PrinterVisitor::visit<double, DoubleVectorField>(std::vector<double> &field, const DoubleVectorField *fieldDescriptor)
+{
+    if (stream == NULL) return;
+    *stream << fieldDescriptor->getSimpleName() << "= [";
+    for (int i = 0; i < field.size(); i++ )
+    {
+        *stream << ( i == 0 ? " " : ", ") << field[i] ;
+    }
+    *stream << "]" << endl;
+}
+
 /* Old style visitor */
 template <>
 void PrinterVisitor::visit<int>(int &intField, int /*defaultValue*/, const char *fieldName)
@@ -83,6 +97,7 @@ void PrinterVisitor::visit<bool>(bool &boolField, bool /*defaultValue*/, const c
     if (stream == NULL) return;
     *stream << fieldName << "=" << boolField << endl;
 }
+
 
 
 

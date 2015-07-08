@@ -224,6 +224,11 @@ ImageCaptureInterface::CapErrorCode ImageCaptureInterface::getDeviceName(int /*n
     return FAILURE;
 }
 
+string ImageCaptureInterface::getDeviceSerial(int num)
+{
+    return "";
+}
+
 ImageCaptureInterface::CapErrorCode ImageCaptureInterface::initCapture()
 {
     return FAILURE;

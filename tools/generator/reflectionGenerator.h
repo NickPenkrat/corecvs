@@ -11,10 +11,12 @@
  * \ingroup cppcorefiles
  */
 
+#include <QString>
 #include "reflection.h"
 
 using corecvs::BaseField;
 using corecvs::SimpleScalarField;
+using corecvs::SimpleVectorField;
 using corecvs::BoolField;
 using corecvs::DoubleField;
 using corecvs::StringField;
@@ -32,7 +34,7 @@ class ReflectionGen : public Reflection
 public:
     const char *uiBaseClass;
 
-    ReflectionGen () : uiBaseClass(NULL) {};
+    ReflectionGen () : uiBaseClass(NULL) {}
 };
 
 template<typename Type>
@@ -55,7 +57,7 @@ public:
             _min,
             _max,
             _step
-    ) {};
+    ) {}
 
     virtual BaseField* clone() const
     {
@@ -68,6 +70,41 @@ typedef SimpleScalarFieldGen<int64_t>     TimestampFieldGen;
 //typedef SimpleScalarFieldGen<double>      DoubleFieldGen;
 //typedef SimpleScalarFieldGen<std::string> StringFieldGen;
 
+
+template<typename Type>
+class SimpleVectorFieldGen : public SimpleVectorField<Type>
+{
+public:
+    SimpleVectorFieldGen (
+            const Type _defaultValue,
+            int _defaultSize,
+            const ReflectionNaming &_nameing,
+            bool _hasAdditionalValues = false,
+            Type _min = Type(0),
+            Type _max = Type(0),
+            Type _step = Type(0)
+    ) : SimpleVectorField<Type>(
+            BaseField::UNKNOWN_ID,
+            BaseField::UNKNOWN_OFFSET,
+            _defaultValue,
+            _defaultSize,
+            _nameing,
+            _hasAdditionalValues,
+            _min,
+            _max,
+            _step
+    ) {}
+
+    virtual BaseField* clone() const
+    {
+        return new SimpleVectorFieldGen(*this);
+    }
+};
+
+typedef SimpleVectorFieldGen<int>         IntVectorFieldGen;
+typedef SimpleVectorFieldGen<double>      DoubleVectorFieldGen;
+
+
 class StringFieldGen : public StringField
 {
 public:
@@ -79,7 +116,7 @@ public:
             BaseField::UNKNOWN_OFFSET,
             _defaultValue,
             _nameing
-    ) {};
+    ) {}
 
     virtual BaseField* clone() const
     {
@@ -126,9 +163,14 @@ class DoubleFieldGen : public DoubleField
 {
 public:
     DoubleWidgetType widgetType;
+    QString prefix;
+    QString suffix;
+
     DoubleFieldGen(
         double _defaultValue,
         DoubleWidgetType _widgetType,
+        QString _prefix,
+        QString _suffix,
         const ReflectionNaming &_nameing,
         bool _hasAdditionalValues = false,
         double _min = 0.0,
@@ -144,7 +186,9 @@ public:
             _max,
             _step
         ),
-        widgetType(_widgetType)
+        widgetType(_widgetType),
+        prefix(_prefix),
+        suffix(_suffix)
     {}
 
     virtual BaseField* clone() const
@@ -222,7 +266,7 @@ public:
             _enumReflection
         ),
         widgetType(_widgetType)
-    {};
+    {}
 
     virtual BaseField* clone() const
     {

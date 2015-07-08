@@ -12,6 +12,10 @@
 #include <sys/mman.h>
 #include <sys/ioctl.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <libgen.h>
+
 #include "V4L2.h"
 
 //#define PROFILE_DEQUEUE
@@ -306,9 +310,9 @@ int V4L2CameraDescriptor::stop()
 
 int V4L2CameraDescriptor::dequeue( V4L2BufferDescriptor &bufferDescr)
 {
-	if (deviceHandle == INVALID_HANDLE) {
-		return 1;
-	}
+    if (deviceHandle == INVALID_HANDLE) {
+        return 1;
+    }
 
     bufferDescr.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     bufferDescr.memory = V4L2_MEMORY_MMAP;
@@ -341,9 +345,9 @@ int V4L2CameraDescriptor::dequeue( V4L2BufferDescriptor &bufferDescr)
 
 int V4L2CameraDescriptor::enqueue(V4L2BufferDescriptor buffer)
 {
-	if (deviceHandle == INVALID_HANDLE) {
-		return 1;
-	}
+    if (deviceHandle == INVALID_HANDLE) {
+        return 1;
+    }
 
     if (!buffer.isFilled)
     {
@@ -642,5 +646,59 @@ int V4L2CameraDescriptor::getCaptureFormats(int *num, ImageCaptureInterface::Cam
         formats[i] = cameraFormats[i];
     }
     return 0;
+}
+
+std::string V4L2CameraDescriptor::getSerialNumber()
+{
+    // First we need to locate the device on the bus
+
+    struct stat buf;
+
+   if (fstat(deviceHandle, &buf) == 1)
+   {
+       SYNC_PRINT(("fstat call failed with %s", strerror(errno)));
+       return "none";
+   }
+
+   int major_id = major(buf.st_rdev);
+   int minor_id = minor(buf.st_rdev);
+
+   SYNC_PRINT(("V4L2CameraDescriptor::getSerialNumber():"
+               "device %s major %d minor %d\n",
+               camFileName.c_str(),
+
+               major_id,
+               minor_id));
+
+   char deviceSysPath[1024] = "";
+   char linkPath[1024] = "";
+   snprintf(deviceSysPath, CORE_COUNT_OF(deviceSysPath), "/sys/dev/char/%d:%d/device", major_id, minor_id);
+   readlink(deviceSysPath, linkPath, CORE_COUNT_OF(linkPath));
+
+   SYNC_PRINT(("V4L2CameraDescriptor::getSerialNumber():Opening device softlink <%s> -> <%s>\n", deviceSysPath, linkPath));
+   /* Going for particular interface to the device */
+   snprintf(deviceSysPath, CORE_COUNT_OF(deviceSysPath), "/sys/dev/char/%d:%d/%s/../serial", major_id, minor_id, linkPath);
+
+   SYNC_PRINT(("V4L2CameraDescriptor::getSerialNumber():USB device serial path <%s>\n", deviceSysPath));
+   char *serial = NULL;
+   size_t len;
+   FILE *serialFile = fopen(deviceSysPath, "rt");
+   getline(&serial, &len, serialFile);
+   for (int i = 0; i < strlen(serial); i++)
+   {
+       if (serial[i] == '\n' || serial[i] == '\r' ) serial[i] = 0;
+   }
+   fclose(serialFile);
+
+   printf("V4L2CameraDescriptor::getSerialNumber():Serial <%s>\n", serial);
+   std::string result(serial);
+   free(serial);
+
+   char *usbData = basename(linkPath);
+   printf("V4L2CameraDescriptor::getSerialNumber(): Usbpath <%s>\n", usbData);
+   result = usbData;
+
+   return result;
+
 }
 

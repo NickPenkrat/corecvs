@@ -18,6 +18,7 @@ public:
     ~OpenCVSGMParametersControlWidget();
 
     OpenCVSGMParameters* createParameters() const;
+    void getParameters(OpenCVSGMParameters &params) const;
     void setParameters(const OpenCVSGMParameters &input);
     virtual void setParametersVirtual(void *input);
 

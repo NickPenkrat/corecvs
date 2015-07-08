@@ -12,16 +12,16 @@ RadialCorrection ModelToRadialCorrection::getRadial(const double in[]) const
     int count = 0;
     RadialCorrection result = mLockedDimentions;
     if (mGuessCenter) {
-        result.mParams.center.x() = in[count++];
-        result.mParams.center.y() = in[count++];
+        result.mParams.setPrincipalX(in[count++]);
+        result.mParams.setPrincipalY(in[count++]);
     }
     if (mGuessTangent) {
-        result.mParams.p1 = in[count++];
-        result.mParams.p2 = in[count++];
+        result.mParams.setTangentialX(in[count++]);
+        result.mParams.setTangentialY(in[count++]);
     }
-    result.mParams.koeff.clear();
-    for (int i = 0; i < mPolynomPower; i++) {
-        result.mParams.koeff.push_back(in[count++]);
+    result.mParams.mKoeff.clear();
+    for (int i = 0; i < mPolynomialDegree; i++) {
+        result.mParams.mKoeff.push_back(in[count++]);
     }
     return result;
 }
@@ -30,16 +30,16 @@ void ModelToRadialCorrection::getModel(const RadialCorrection &correction, doubl
 {
     int count = 0;
     if (mGuessCenter) {
-        in[count++] = correction.mParams.center.x();
-        in[count++] = correction.mParams.center.y();
+        in[count++] = correction.mParams.principalX();
+        in[count++] = correction.mParams.principalY();
     }
     if (mGuessTangent) {
-        in[count++] = correction.mParams.p1;
-        in[count++] = correction.mParams.p2;
+        in[count++] = correction.mParams.tangentialX();
+        in[count++] = correction.mParams.tangentialY();
     }
-    for (int i = 0; i < mPolynomPower; i++) {
-        if (i < (int)correction.mParams.koeff.size()) {
-            in[count++] = correction.mParams.koeff[i];
+    for (int i = 0; i < mPolynomialDegree; i++) {
+        if (i < (int)correction.mParams.mKoeff.size()) {
+            in[count++] = correction.mParams.mKoeff[i];
         } else {
             in[count++] = 0.0;
         }

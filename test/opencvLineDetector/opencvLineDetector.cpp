@@ -67,7 +67,7 @@ int main (int argc, char **argv)
 
         printf("Found in %s size %ix%i is %i\n", filename, chessW, chessH,  found);
 
-        for (int i = 0; i < pointbuf.size(); i++)
+        for(unsigned i = 0;i < pointbuf.size(); i++)
         {
             printf("Point %f %f\n", pointbuf[i].x,pointbuf[i].y);
         }
@@ -101,12 +101,13 @@ int main (int argc, char **argv)
        imwrite("test_with_chess_LINES.jpg", view);
 
        /// Set default camera param values
-        RadialCorrection correction(LensCorrectionParametres(
-             vector<double>(6), //vector<double>(mUi->degreeSpinBox->value()), //TODO: Read degree from JSON
+       RadialCorrection correction(LensDistortionModelParameters(
+             center.x(),
+             center.y(),
              0.0, 0.0,
+             vector<double>(6), //vector<double>(mUi->degreeSpinBox->value()), //TODO: Read degree from JSON
              1.0,
-             center.l2Metric(),
-             center
+             1.0
           ));
 
         ModelToRadialCorrection modelFactory(
@@ -116,7 +117,7 @@ int main (int argc, char **argv)
               6 //mUi->degreeSpinBox->value()//TODO: Read degree from JSON
           );
 
-        FunctionArgs *costFuntion = NULL;
+          FunctionArgs *costFuntion = NULL;
           int isAngleCost = 0; //TODO: now use angle cost function in future read from JSON
           if (isAngleCost) {
               costFuntion = new AnglePointsFunction (straights, modelFactory);
@@ -150,7 +151,7 @@ int main (int argc, char **argv)
     {
        char *filename = argv[1];
 
-       LensCorrectionParametres loaded;
+       LensDistortionModelParameters loaded;
        JSONGetter getter("out.json");
        getter.visit(loaded, "intrinsic");
 
@@ -169,17 +170,6 @@ int main (int argc, char **argv)
                 (double)image->w, (double)image->h,
                 0.5, 1 //TODO: Use right value of mUi->preciseInvertionCheckBox->isChecked())
        );
-
-
-       printf("\n aspect %f \n", mLinesRadialCoorection.mParams.aspect);
-       printf(" center %f x %f \n", mLinesRadialCoorection.mParams.center.x(), mLinesRadialCoorection.mParams.center.y());
-       printf(" focal %f \n", mLinesRadialCoorection.mParams.focal);
-       for (int k = 0; k < mLinesRadialCoorection.mParams.koeff.size(); k++) {
-           printf(" koeff %f,", mLinesRadialCoorection.mParams.koeff.at(k));
-       }
-       printf("\n p1 %f \n", mLinesRadialCoorection.mParams.p1);
-       printf(" p2 %f \n",   mLinesRadialCoorection.mParams.p2);
-
 
        image = image->doReverseDeformationBl<G12Buffer, DisplacementBuffer>(
                    mDistortionCorrectTransform,

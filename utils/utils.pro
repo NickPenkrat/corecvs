@@ -85,7 +85,10 @@ HEADERS += \
     corestructs/g12Image.h \
     visitors/jsonGetter.h \
     visitors/jsonSetter.h \
-    widgets/vectorWidget.h
+    widgets/vectorWidget.h \
+    distortioncorrector/cameraModelParametersControlWidget.h \
+    distortioncorrector/lensDistortionModelParametersControlWidget.h \
+    os/UsbBusResetter.h
 
 SOURCES += \
     frames.cpp \
@@ -143,9 +146,16 @@ SOURCES += \
     corestructs/g12Image.cpp \
     visitors/jsonGetter.cpp \
     visitors/jsonSetter.cpp \
-    widgets/vectorWidget.cpp
+    widgets/vectorWidget.cpp \
+    distortioncorrector/cameraModelParametersControlWidget.cpp \
+    distortioncorrector/lensDistortionModelParametersControlWidget.cpp \
+    os/UsbBusResetter.cpp
 
 
+FORMS += \
+    widgets/vectorWidget.ui \
+    distortioncorrector/cameraModelParametersControlWidget.ui \
+    distortioncorrector/lensDistortionModelParametersControlWidget.ui
 
 # =============================================================
 
@@ -520,5 +530,4 @@ with_synccam {
 
 OTHER_FILES += ../tools/generator/xml/draw3d.xml
 
-FORMS += \
-    widgets/vectorWidget.ui
+

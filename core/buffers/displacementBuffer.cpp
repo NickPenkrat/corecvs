@@ -11,6 +11,10 @@
 namespace corecvs {
 
 
+/**
+ *   This method  tries to invert the radial correction buffer there are different ways to do this in terms of speed/quality
+ *
+ **/
 DisplacementBuffer *DisplacementBuffer::CacheInverse(
     RadialCorrection *inverseMap,
     int h, int w,
@@ -65,6 +69,26 @@ DisplacementBuffer *DisplacementBuffer::CacheInverse(
     }
 
     delete_safe(distance);
+    return toReturn;
+}
+
+DisplacementBuffer *DisplacementBuffer::TestWiggle(int h, int w, double power, double step)
+{
+    DisplacementBuffer *toReturn = new DisplacementBuffer(h, w);
+
+    for (int i = 0; i < toReturn->h; i++ )
+    {
+        for (int j = 0; j < toReturn->w; j++ )
+        {
+            toReturn->element(i,j) =  Vector2dd(sin(i / step), sin(j / step)) * power ;
+            /*if ((i / 100) % 2) {
+                toReturn->element(i,j) = Vector2dd(1.4, 0);
+            } else {
+                toReturn->element(i,j) = Vector2dd(1, 0);
+            }*/
+        }
+    }
+
     return toReturn;
 }
 

@@ -17,6 +17,7 @@ public:
     ~GraphPlotParametersControlWidget();
 
     GraphPlotParameters* createParameters() const;
+    void getParameters(GraphPlotParameters &params) const;
     void setParameters(const GraphPlotParameters &input);
     virtual void setParametersVirtual(void *input);
 
