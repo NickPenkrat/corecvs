@@ -88,6 +88,7 @@ HEADERS += \
     widgets/vectorWidget.h \
     distortioncorrector/cameraModelParametersControlWidget.h \
     distortioncorrector/lensDistortionModelParametersControlWidget.h \
+    distortioncorrector/calibrationFeaturesWidget.h \
     os/UsbBusResetter.h
 
 SOURCES += \
@@ -149,13 +150,16 @@ SOURCES += \
     widgets/vectorWidget.cpp \
     distortioncorrector/cameraModelParametersControlWidget.cpp \
     distortioncorrector/lensDistortionModelParametersControlWidget.cpp \
+    distortioncorrector/calibrationFeaturesWidget.cpp \
     os/UsbBusResetter.cpp
 
 
 FORMS += \
     widgets/vectorWidget.ui \
     distortioncorrector/cameraModelParametersControlWidget.ui \
-    distortioncorrector/lensDistortionModelParametersControlWidget.ui
+    distortioncorrector/lensDistortionModelParametersControlWidget.ui \
+    distortioncorrector/calibrationFeaturesWidget.ui \
+
 
 # =============================================================
 

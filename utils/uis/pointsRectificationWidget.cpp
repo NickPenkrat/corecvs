@@ -1,7 +1,8 @@
 #include "pointsRectificationWidget.h"
 #include "ui_pointsRectificationWidget.h"
 #include "g12Image.h"
-#include "painterHelpers.h"
+#include "qtHelper.h"
+
 
 PointsRectificationWidget::PointsRectificationWidget(QWidget *parent) :
       QWidget(parent)
@@ -16,7 +17,7 @@ PointsRectificationWidget::PointsRectificationWidget(QWidget *parent) :
     connect(mUi->addButton    , SIGNAL(released()), this, SLOT(addPair()));
     connect(mUi->rectifyButton, SIGNAL(released()), this, SLOT(initCorrespondancePoints()));
 
-    connect(mUi->leftWidget, SIGNAL(editPoint(QPointF,QPointF)), this, SLOT(editPointLeftImage(QPointF,QPointF)));
+    connect(mUi->leftWidget,  SIGNAL(editPoint(QPointF,QPointF)), this, SLOT(editPointLeftImage(QPointF,QPointF)));
     connect(mUi->rightWidget, SIGNAL(editPoint(QPointF,QPointF)), this, SLOT(editPointRightImage(QPointF,QPointF)));
 
     connect(mUi->leftWidget , SIGNAL(notifyCenterPointChanged(QPoint)), this, SLOT(updateRightCenter(QPoint)));
@@ -26,7 +27,7 @@ PointsRectificationWidget::PointsRectificationWidget(QWidget *parent) :
     connect(mUi->rightWidget, SIGNAL(notifyZoomChanged(double)), this, SLOT(updateLeftZoom (double)));
 
     connect(mUi->rightWidget, SIGNAL(toolButtonClicked(ToolButtonType)), mUi->leftWidget, SLOT(clickToolButton(ToolButtonType)));
-    connect(mUi->leftWidget, SIGNAL(toolButtonClicked(ToolButtonType)), mUi->rightWidget, SLOT(clickToolButton(ToolButtonType)));
+    connect(mUi->leftWidget,  SIGNAL(toolButtonClicked(ToolButtonType)), mUi->rightWidget, SLOT(clickToolButton(ToolButtonType)));
 
 }
 
