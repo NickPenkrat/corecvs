@@ -26,12 +26,12 @@ class DrawMatchesStage : public FeatureMatchingPipelineStage
 public:
 	void run(FeatureMatchingPipeline *pipeline) {
 		auto images = pipeline->images;
-        for each(const Image& img in images)
+        FOREACH(const Image& img, images)
         {
 			cv::Mat src = cv::imread(img.filename);
 			
 			auto keyPoints = img.keyPoints.keyPoints;
-			for each(const KeyPoint& kp in keyPoints) {
+			FOREACH(const KeyPoint& kp, keyPoints) {
 				cv::circle(src, cv::Point((int)kp.x, (int)kp.y), 2, cv::Scalar(255,0,0), -2);
 			}
 
@@ -83,13 +83,13 @@ void run(const std::string &detector)
 
 	FeatureMatchingPipeline pipeline(filenames);
 
-	pipeline.add(new KeyPointDetectionStage(DetectorType(detector)), true, std::make_pair<bool, std::string>(true, ""));
+	pipeline.add(new KeyPointDetectionStage(DetectorType(detector)), true, true);
 	pipeline.add(new DrawMatchesStage, true);
-	pipeline.add(new DescriptorExtractionStage(DescriptorType(detector)), true, std::make_pair<bool, std::string>(true, "desc"));
-	pipeline.add(new MatchingPlanComputationStage(), true, std::make_pair<bool, std::string>(true, tempBase + "plan.txt"));
-	pipeline.add(new MatchingStage(DescriptorType(detector)), true, std::make_pair<bool, std::string>(true, tempBase + "raw_matches.txt"));
-	pipeline.add(new RefineMatchesStage(), true, std::make_pair<bool, std::string>(true, tempBase + "refined_matches.txt"));
-	pipeline.add(new VsfmWriterStage(false), true, std::make_pair<bool, std::string>(true, tempBase + "vsfm_matches.txt"));
+	pipeline.add(new DescriptorExtractionStage(DescriptorType(detector)), true, true);
+	pipeline.add(new MatchingPlanComputationStage(), true, true, tempBase + "plan.txt");
+	pipeline.add(new MatchingStage(DescriptorType(detector)), true, true, tempBase + "raw_matches.txt");
+	pipeline.add(new RefineMatchesStage(), true, true, tempBase + "refined_matches.txt");
+	pipeline.add(new VsfmWriterStage(false), true, true, tempBase + "vsfm_matches.txt");
 
 	std::cerr << std::endl << "Running with " << detector << " detector/descriptor" << std::endl << std::endl;
 	pipeline.run();

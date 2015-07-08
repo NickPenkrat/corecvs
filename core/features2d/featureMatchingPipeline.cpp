@@ -62,9 +62,9 @@ void FeatureMatchingPipeline::run() {
 	}
 }
 
-void FeatureMatchingPipeline::add(FeatureMatchingPipelineStage *ps, bool run, std::pair<bool, std::string> saveParams, std::pair<bool, std::string> loadParams) {
-	this->saveParams.push_back(saveParams);
-	this->loadParams.push_back(loadParams);
+void FeatureMatchingPipeline::add(FeatureMatchingPipelineStage *ps, bool run, bool saveData, const std::string &saveName, bool loadData, const std::string& loadName) {
+	this->saveParams.push_back(std::make_pair(saveData, saveName));
+	this->loadParams.push_back(std::make_pair(loadData, loadName));
 	runEnable.push_back(run);
 	pipeline.push_back(ps);
 }

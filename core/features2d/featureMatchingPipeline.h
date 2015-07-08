@@ -92,7 +92,7 @@ public:
 	FeatureMatchingPipeline(const std::vector<std::string> &filenames);
 	~FeatureMatchingPipeline();
 	void run();
-	void add(FeatureMatchingPipelineStage* stage, bool run, std::pair<bool, std::string> saveParams = std::make_pair(false, std::string()), std::pair<bool, std::string> loadParams = std::make_pair(false, std::string()));
+	void add(FeatureMatchingPipelineStage* stage, bool run, bool saveData = false, const std::string &saveName = "", bool loadData = false, const std::string &loadName = "");
 	void tic(size_t thread_id = ~(size_t)0, bool level = true);
 	void toc(const std::string &name, const std::string &evt, size_t thread_id = ~(size_t)0, bool level = true);
 	void toc(const std::string &name, const std::string &evt, const size_t curr, const size_t rem, size_t thread_id = ~(size_t)0, bool level = true);
