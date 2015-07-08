@@ -184,7 +184,10 @@ public:
      *  Main function to request frames from image interface
      **/
     virtual FramePair    getFrame() = 0;
-    virtual FramePair    getFrameRGB24()    { return getFrame(); }
+    virtual FramePair    getFrameRGB24()
+    {
+        return getFrame();
+    }
 
     virtual CapErrorCode setCaptureProperty(int id, int value);
 

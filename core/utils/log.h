@@ -10,6 +10,10 @@
 #ifndef _MSC_VER
 #include <sys/time.h>
 #endif
+#ifdef __linux__
+#include <unistd.h>
+#include <sys/syscall.h>
+#endif
 
 #include <fstream>
 #include <vector>
@@ -100,6 +104,7 @@ public:
         cchar      *mOriginFileName;
         int         mOriginLineNumber;
         cchar      *mOriginFunctionName;
+        int         mThreadId;
 
         time_t      rawtime;
 	};
@@ -131,6 +136,11 @@ public:
             message.get()->mOriginFileName     = originFileName;
             message.get()->mOriginFunctionName = originFunctionName;
             message.get()->mOriginLineNumber   = originLineNumber;
+#ifdef __linux__
+            message.get()->mThreadId =  syscall(SYS_gettid);
+#else
+            message.get()->mThreadId = 0;
+#endif
             time(&message.get()->rawtime);
         }
 

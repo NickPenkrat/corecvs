@@ -65,6 +65,8 @@ DistortionWidget::DistortionWidget(QWidget *parent) :
     connect(mUi->deleteButton,           SIGNAL(released()), this, SLOT(deletePointPair()));
     mDistortionParameters = new DistortionParameters();
 
+    CheckerboardDetectionParameters params;
+    mUi->checkerboardParametersWidget->setParameters(params);
     loadPoints();
 }
 
@@ -181,13 +183,14 @@ void DistortionWidget::detectCheckerboard()
     vector<Point2f> pointbuf;
     Mat             view = cv::Mat(inputIpl, false);
 
-    CheckerboardDetectionParameters *params = mUi->checkerboardParametersWidget->createParameters();
+    CheckerboardDetectionParameters params;
+    mUi->checkerboardParametersWidget->getParameters(params);
 
-    int chessV = params->vCrossesCount();
-    int chessH = params->hCrossesCount();
-    int cellSize = params->cellSize();
+    int chessV = params.vCrossesCount();
+    int chessH = params.hCrossesCount();
+    int cellSize = params.cellSize();
 
-    Size            boardSize(chessV, chessH);
+    Size boardSize(chessV, chessH);
 
     found = findChessboardCorners( view, boardSize, pointbuf, CV_CALIB_CB_ADAPTIVE_THRESH );
 
@@ -203,7 +206,7 @@ void DistortionWidget::detectCheckerboard()
 
         PaintImageWidget *canvas = mUi->widget;
 
-        if(params->cleanExisting())
+        if(params.cleanExisting())
         {
             mCorrectionMap.clear();
             canvas->mPaths.clear();
@@ -222,7 +225,7 @@ void DistortionWidget::detectCheckerboard()
             }
         }
 
-        for(int iw=0; iw < chessV; iw++)
+        for(int iw = 0; iw < chessV; iw++)
         {
             canvas->mPaths.append(PaintImageWidget::VertexPath());
             PaintImageWidget::VertexPath &path = canvas->mPaths.last();
@@ -236,8 +239,7 @@ void DistortionWidget::detectCheckerboard()
             }
         }
     }
-    cvReleaseImage(&inputIpl);
-    delete_safe (params);
+    cvReleaseImage(&inputIpl);   
     return;
 #else
     return;

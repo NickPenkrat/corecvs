@@ -66,8 +66,6 @@ QString BaseGenerator::getCppTypeForElementType(const BaseField::FieldType type)
         default:
             return "/* Something is not supported by generator */";
     }
-
-
 }
 
 QString BaseGenerator::getCppTypeForType(const BaseField *field)
