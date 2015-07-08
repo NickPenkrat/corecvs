@@ -1,6 +1,8 @@
 #include <cstring>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
+#include <sstream>
 
 #include "global.h"
 #include "featureMatchingPipeline.h"
@@ -46,28 +48,59 @@ std::string base;
 std::string tempBase;
 int N = 11;
 
-void detectBase()
+bool checkIfExists(const std::string& name) {
+	std::ifstream is;
+	is.open(name, std::ios_base::in);
+	return is;
+}
+
+bool detectBase(const std::string &filename) {
+	bool ok = false;
+	for(size_t i = 0; i < 15; ++i) {
+		std::cout << "Searching for " << filename << " in " << base << "  :  ";
+		if(ok = checkIfExists(base + filename)) break;
+		std::cout << "FAILED" << std::endl;
+		base = ".." + (PATH_SEPARATOR + base);
+	}
+	if(ok)
+		std::cout << "OK!" << std::endl;
+	return ok;
+}
+
+bool checkFiles()
 {
 	std::ifstream ts;
-	base = "./data/kermit_dataset/";
-	ts.open("./data/kermit_dataset/kermit000.jpg", std::istream::in);
-	if (!ts) {
-		base = "../data/kermit_dataset/";
+	std::stringstream base_name;
+	base_name << "." << PATH_SEPARATOR << "data" << PATH_SEPARATOR << "kermit_dataset" << PATH_SEPARATOR;
+	base = base_name.str();
+	if(!detectBase("kermit000.jpg")) {
+		std::cout << "Error: unable to find data dir" << std::endl;
+		exit(0);
+	}
+	for(size_t i = 0; i < N; ++i) {
+		std::stringstream ss;
+		ss << base << "kermit" << std::setw(3) << std::setfill('0') << i << ".jpg";
+		if(!checkIfExists(ss.str())) {
+			std::cout << "Error: unable to find file " << ss.str() << std::endl;
+			exit(0);
+		}
 	}
 }
 
 void prepareCopy(const std::string &postfix)
 {
-	char command[1000] = {0};
-	snprintf2buf(command, "mkdir kermit_%s", postfix.c_str());
-	system(command);
+	std::stringstream command;
+	command << "mkdir " << base << "kermit_" << postfix;
+	system(command.str().c_str());
+	command.str("");
 #ifndef WIN32
-	sprintf(command, "cp %s*.jpg kermit_%s/", base.c_str(), postfix.c_str());
+	command << "cp ";
 #else
-	sprintf(command, "copy %s*.jpg kermit_%s/", base.c_str(), postfix.c_str());
+	command << "copy ";
 #endif
-	system(command);
-	tempBase = std::string("kermit_") + postfix + std::string("/");
+	command << base << "*.jpg " << base << "kermit_" << postfix << PATH_SEPARATOR;
+	system(command.str().c_str());
+	tempBase = (base + PATH_SEPARATOR) + std::string("kermit_") + postfix + PATH_SEPARATOR;
 }
 
 void run(const std::string &detector)
@@ -116,7 +149,7 @@ int main(int argc, char ** argv)
 	init_siftgpu_matcher_provider();
 #endif
 
-	detectBase();
+	checkFiles();
 	run("SIFT");
 	run("SURF");
 	run("SIFTGPU");
