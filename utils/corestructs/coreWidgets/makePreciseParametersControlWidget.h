@@ -20,6 +20,7 @@ public:
     ~MakePreciseParametersControlWidget();
 
     MakePreciseParameters* createParameters() const;
+    void getParameters(MakePreciseParameters &params) const;
     void setParameters(const MakePreciseParameters &input);
     virtual void setParametersVirtual(void *input);
     

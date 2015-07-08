@@ -53,6 +53,22 @@ void PresentationParametersControlWidget::saveParamWidget(WidgetSaver  &saver)
     delete params;
 }
 
+ /* Composite fields are NOT supported so far */
+void PresentationParametersControlWidget::getParameters(PresentationParameters& params) const
+{
+
+    params.setOutput           (static_cast<OutputStyle::OutputStyle>(mUi->outputComboBox->currentIndex()));
+    params.setStereo           (static_cast<StereoStyle::StereoStyle>(mUi->stereoComboBox->currentIndex()));
+    params.setFlow             (static_cast<FlowStyle::FlowStyle>(mUi->flowComboBox->currentIndex()));
+    params.setShowClusters     (mUi->showClustersCheckBox->isChecked());
+    params.setShowHistogram    (mUi->showHistogramCheckBox->isChecked());
+    params.setAutoUpdateHistogram(mUi->autoUpdateHistogramCheckBox->isChecked());
+    params.setShowAreaOfInterest(mUi->showAreaOfInterestCheckBox->isChecked());
+    params.setProduce3D        (mUi->produce3DCheckBox->isChecked());
+    params.setProduce6D        (mUi->produce6DCheckBox->isChecked());
+    params.setDump3D           (mUi->dump3DCheckBox->isChecked());
+
+}
 
 PresentationParameters *PresentationParametersControlWidget::createParameters() const
 {

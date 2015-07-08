@@ -17,6 +17,8 @@ public:
     ~BackgroundFilterParametersControlWidget();
 
     BackgroundFilterParameters* createParameters() const;
+
+    void getParameters(BackgroundFilterParameters& params) const;
     void setParameters(const BackgroundFilterParameters &input);
     virtual void setParametersVirtual(void *input);
 

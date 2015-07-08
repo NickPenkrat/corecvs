@@ -30,10 +30,10 @@ void DirectShowCaptureInterface::init(const string &devname, int h, int w, int f
         .arg(h)
         .toStdString();
 
-    deviceID[Frames::LEFT_FRAME]  = atoi(devname.c_str());
-    deviceID[Frames::RIGHT_FRAME] = -1;
+    deviceID[LEFT_FRAME]  = atoi(devname.c_str());
+    deviceID[RIGHT_FRAME] = -1;
 
-    for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
+    for (int i = 0; i < MAX_INPUTS_NUMBER; i++)
     {
         format[i].type   = DirectShowCameraDescriptor::codec_types[compressed];
         format[i].height = h;
@@ -479,6 +479,11 @@ DirectShowCaptureInterface::CapErrorCode DirectShowCaptureInterface::getDeviceNa
         name = deviceStringPattern.cap(Device2Group);
     }
     return ImageCaptureInterface::SUCCESS;
+}
+
+string DirectShowCaptureInterface::getDeviceSerial(int num)
+{
+    return "unsupported";
 }
 
 void DirectShowCaptureInterface::getAllCameras(vector<string> &cameras)

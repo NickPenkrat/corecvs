@@ -61,6 +61,27 @@ void Draw3dParametersControlWidget::saveParamWidget(WidgetSaver  &saver)
     delete params;
 }
 
+ /* Composite fields are NOT supported so far */
+void Draw3dParametersControlWidget::getParameters(Draw3dParameters& params) const
+{
+
+    params.setStyle            (static_cast<Draw3dStyle::Draw3dStyle>(mUi->styleComboBox->currentIndex()));
+//    params.setColor            (mUi->colorControlWidget->createParameters());
+//    params.setSecondaryColor   (mUi->secondaryColorControlWidget->createParameters());
+    params.setShowCaption      (mUi->showCaptionCheckBox->isChecked());
+    params.setFontSize         (mUi->fontSizeSpinBox->value());
+    params.setFontWidth        (mUi->fontWidthSpinBox->value());
+//    params.setFontColor        (mUi->fontColorControlWidget->createParameters());
+    params.setTextureCorrodinates(static_cast<Draw3dTextureGen::Draw3dTextureGen>(mUi->textureCorrodinatesComboBox->currentIndex()));
+    params.setTextureAlpha     (mUi->textureAlphaSpinBox->value());
+    params.setTextureScale     (mUi->textureScaleSpinBox->value());
+    params.setDecalMatrixType  (mUi->decalMatrixTypeSpinBox->value());
+    params.setDecalLeftCam     (mUi->decalLeftCamCheckBox->isChecked());
+    params.setDecalLeftAlpha   (mUi->decalLeftAlphaSpinBox->value());
+    params.setDecalRightCam    (mUi->decalRightCamCheckBox->isChecked());
+    params.setDecalRightAlpha  (mUi->decalRightAlphaSpinBox->value());
+
+}
 
 Draw3dParameters *Draw3dParametersControlWidget::createParameters() const
 {

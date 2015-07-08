@@ -380,7 +380,7 @@ void GraphPlotDialog::addGraphPoint(unsigned graphId, double value, bool isValid
 */
 
     mData[graphId].push_front(GraphValue(value, isValid));
-    while (mData[graphId].size() > 1000) {
+    while (mData[graphId].size() > 2000) {
         mData[graphId].pop_back();
     }
 

@@ -18,6 +18,8 @@ public:
     ~SobelParametersControlWidget();
 
     SobelParameters* createParameters() const;
+
+    void getParameters(SobelParameters &params) const;
     void setParameters(const SobelParameters &input);
     virtual void setParametersVirtual(void *input);
 

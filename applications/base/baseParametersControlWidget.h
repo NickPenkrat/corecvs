@@ -19,6 +19,8 @@ public:
     ~BaseParametersControlWidget();
 
     BaseParameters* createParameters() const;
+
+    void getParameters(BaseParameters &params) const;
     void setParameters(const BaseParameters &input);
     virtual void setParametersVirtual(void *input);
 

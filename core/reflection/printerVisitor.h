@@ -24,7 +24,7 @@ public:
         stream(&_stream)
     {}
 
-/* Array support */
+/* Generic Array support */
     template <typename inputType, typename reflectionType>
     void visit(std::vector<inputType> &fields, const reflectionType * /*fieldDescriptor*/)
     {
@@ -74,9 +74,11 @@ template <>
 void PrinterVisitor::visit<std::string, StringField>(std::string &field, const StringField *fieldDescriptor);
 
 /* Arrays */
-template <>
-void PrinterVisitor::visit<std::string, StringField>(std::string &field, const StringField *fieldDescriptor);
 
+template <>
+void PrinterVisitor::visit<double, DoubleVectorField>(std::vector<double> &field, const DoubleVectorField *fieldDescriptor);
+
+/* Old style */
 
 template <>
 void PrinterVisitor::visit<double>(double &doubleField, double defaultValue, const char *fieldName);

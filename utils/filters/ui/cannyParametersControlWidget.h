@@ -18,6 +18,7 @@ public:
     ~CannyParametersControlWidget();
 
     CannyParameters* createParameters() const;
+    void getParameters(CannyParameters& params) const;
     void setParameters(const CannyParameters &input);
     virtual void setParametersVirtual(void *input);
 

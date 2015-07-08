@@ -28,12 +28,11 @@ with_opencv {
 
 grab.file            = grab/grab.pro
 grab_N_captures.file = grab_N_captures/grab_N_captures.pro
-serialize1.file    = serialize1/serialize1.pro
-matcher_basic.file = matcher_basic/feature2d_basic.pro
-matcher_full.file  = matcher_full/matcher_full.pro
+serialize1.file      = serialize1/serialize1.pro
+matcher_basic.file   = matcher_basic/feature2d_basic.pro
+matcher_full.file    = matcher_full/matcher_full.pro
 genvectorui.file     = genvectorui/genvectorui.pro
 opencvLineDetector.file = opencvLineDetector/opencvLineDetector.pro
-serialize1.file      = serialize1/serialize1.pro
 adoptcolor.file      = adoptcolor/adoptcolor.pro
 avigrab.file         = avigrab/avigrab.pro
 topcon.file          = topcon/topcon.pro

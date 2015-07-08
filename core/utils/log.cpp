@@ -43,10 +43,12 @@ void Log::message(Message &message)
 }
 
 Log::Log(const LogLevel /*maxLocalLevel*/)
-{}
+{
+}
 
 Log::~Log()
-{}
+{
+}
 
 std::string Log::msgBufToString(const char* msg)
 {
@@ -110,9 +112,12 @@ cchar* LogDrain::time2str(time_t &time)
 
 void StdStreamLogDrain::drain(Log::Message &message)
 {
-    //static const std::string sLevels[] = { "    ", "    ", "    ", "WRN ", "ERR " };
     std::ostringstream prefix;
 
+    if (message.get()->mThreadId != 0)
+    {
+        prefix << message.get()->mThreadId << ":";
+    }
     prefix << time2str(message.get()->rawtime)      << ":"
            << Log::levelName(message.get()->mLevel)
            << message.get()->mOriginFileName        << ":"

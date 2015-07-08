@@ -17,6 +17,7 @@ public:
     ~MaskingParametersControlWidget();
 
     MaskingParameters* createParameters() const;
+    void getParameters(MaskingParameters &params) const;
     void setParameters(const MaskingParameters &input);
     virtual void setParametersVirtual(void *input);
 
@@ -27,6 +28,7 @@ public:
 
     virtual void loadParamWidget(WidgetLoader &loader);
     virtual void saveParamWidget(WidgetSaver  &saver);
+
 
 public slots:
     void changeParameters()

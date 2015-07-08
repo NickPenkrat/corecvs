@@ -92,6 +92,12 @@ public:
             bool useLM = false
     );
 
+    static DisplacementBuffer *TestWiggle(
+            int h, int w,
+            double power = 5,
+            double step = 20
+    );
+
     inline DisplacementBuffer (DistortionCorrectTransform *transform, int h, int w) : DisplacementBufferBase (h, w, false)
     {
         for (int i = 0; i < h; i ++)
@@ -109,7 +115,7 @@ public:
     {
         Vector2dd  pointd(x, y);
         Vector2d32 pointi(x, y);
-        return element(pointi) + pointd;
+        return this->element(pointi) + pointd;
     }
 
 };

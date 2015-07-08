@@ -47,6 +47,7 @@ public:
     }
 
     RectifyParameters* createParameters() const;
+    void getParameters(RectifyParameters &params) const;
     void setParameters(const RectifyParameters &input);
     virtual void setParametersVirtual(void *input);
 

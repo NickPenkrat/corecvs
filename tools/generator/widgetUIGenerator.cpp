@@ -148,7 +148,7 @@ void WidgetUiGenerator::generateWidgetUi()
 
     if (type == BaseField::TYPE_DOUBLE)
     {
-        const DoubleField *dfield = static_cast<const DoubleField *>(field);
+        const DoubleFieldGen *dfield = static_cast<const DoubleFieldGen *>(field);
         if (dfield->hasAdditionalValues)
             result +=
     "       <property name=\"minimum\">\n"
@@ -162,6 +162,18 @@ void WidgetUiGenerator::generateWidgetUi()
     "       </property>\n"
     "       <property name=\"value\">\n"
     "        <double>" + QString::number(dfield->defaultValue) + "</double>\n"
+    "       </property>\n";
+
+        if (!dfield->prefix.isEmpty())
+            result +=
+    "       <property name=\"prefix\">\n"
+    "        <string>" + dfield->prefix + "</string>\n"
+    "       </property>\n";
+
+        if (!dfield->suffix.isEmpty())
+            result +=
+    "       <property name=\"suffix\">\n"
+    "        <string>" + dfield->suffix + "</string>\n"
     "       </property>\n";
     }
 

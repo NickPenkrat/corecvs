@@ -17,8 +17,8 @@
 
 #include "frames.h"
 
-Frames::Frames()
-  : mSwapped(false)
+Frames::Frames() :
+    mSwapped(false)
   , mTimestamp(0)
   , mDesyncTime(0)
   , mStartProcessTimestamp(0)

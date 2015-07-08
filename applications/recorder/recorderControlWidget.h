@@ -19,6 +19,8 @@ public:
     ~RecorderControlWidget();
 
     Recorder* createParameters() const;
+
+    void getParameters(Recorder &params) const;
     void setParameters(const Recorder &input);
     virtual void setParametersVirtual(void *input);
 

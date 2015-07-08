@@ -3,6 +3,7 @@
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
 #include <QJsonDocument>
+#include <QJsonArray>
 
 #include "jsonGetter.h"
 
@@ -134,4 +135,20 @@ template <>
 void JSONGetter::visit<int, EnumField>(int &/*field*/, const EnumField * /*fieldDescriptor*/)
 {
     qDebug() << "JSONGetter::visit<int, EnumField>(int &field, const EnumField *fieldDescriptor) NOT YET SUPPORTED";
+}
+
+template <>
+void JSONGetter::visit<double, DoubleVectorField>(std::vector<double> &field, const DoubleVectorField *fieldDescriptor)
+{
+    QJsonArray array = mNodePath.back().value(fieldDescriptor->name.name).toArray();
+
+    for (int i = 0; i < array.size(); i++ )
+    {
+        QJsonValue value = array[i];
+        if (value.isDouble()) {
+            field.push_back(value.toDouble());
+        } else {
+            field.push_back(fieldDescriptor->defaultValue);
+        }
+    }
 }

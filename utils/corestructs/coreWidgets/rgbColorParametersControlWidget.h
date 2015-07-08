@@ -26,6 +26,7 @@ public:
 
     RgbColorParameters* createParameters() const;
     void setParameters(const RgbColorParameters &input);
+    void getParameters(RgbColorParameters &params) const;
     virtual void setParametersVirtual(void *input);
 
     virtual void loadParamWidget(WidgetLoader &loader);
