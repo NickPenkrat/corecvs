@@ -18,4 +18,5 @@ include($$UTILSDIR/utils.pri)
 SOURCES += main_matcher_full.cpp
 
 CONFIG += c++11 console
-QMAKE_LFLAGS += -ldl
+
+!win32:QMAKE_LFLAGS += -ldl
