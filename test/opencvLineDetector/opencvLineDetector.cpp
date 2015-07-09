@@ -26,7 +26,6 @@
 #include "OpenCVTools.h"
 
 #include "camerasCalibration/camerasCalibrationFunc.h"
-#include "straightFunc.h"
 #include "curvatureFunc.h"
 #include "radialFunc.h"
 #include "angleFunction.h"

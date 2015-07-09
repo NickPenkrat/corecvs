@@ -2,6 +2,7 @@
 
 #include <QWidget>
 
+#include "rgb24Buffer.h"
 #include "advancedImageWidget.h"
 #include "distortionParameters.h"
 #include "vector3d.h"
@@ -12,6 +13,9 @@
 #include "spatialGradient.h"
 #include "segmentator.h"
 #include "graphPlotDialog.h"
+#include "calibrationFeaturesWidget.h"
+
+
 
 namespace Ui {
 class DistortionWidget;
@@ -27,14 +31,15 @@ public:
     //DistortionParameters *getDistortionParameters();
     QSharedPointer<DisplacementBuffer> distortionCorrectionTransform();
     void setBuffer(G12Buffer *buffer);
+    void setBuffer(RGB24Buffer *buffer);
 
 private:
     /* Images */
-    G12Buffer *mBufferInput;
-    G12Buffer *mBufferWithCorners;
+    RGB24Buffer *mBufferInput;
+    RGB24Buffer *mBufferWithCorners;
 
     QList<QLine> mCorrectionVectors;
-    vector<QPair<Vector3dd, Vector2dd> > mCorrectionMap;
+    //vector<PointObservation> mCorrectionMap;
     void setCameraParameters();
 
     /* Parameters */
@@ -63,24 +68,12 @@ private slots:
     void tryAddPoint(int toolID, QPointF const &point);
     void initExistingPoint(int toolID, QPointF const &point);
     void setParams();
-    void addVector();
     void initTransform();
     void detectCorners();
     void detectCheckerboard();
     void resetParameters();
-    void choosePoint(int row, int column);
     void showBufferChanged();
-    void deletePointPair();
-    void editPoint(QPointF const &prevPoint, QPointF const &newPoint);
-
     void updateScore();
-
-
-    /**
-     * Saving/loading state
-     **/
-    void savePoints();
-    void loadPoints();
 
 signals:
     void recalculationFinished(QSharedPointer<DisplacementBuffer> result);

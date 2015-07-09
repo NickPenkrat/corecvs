@@ -98,7 +98,7 @@ public:
         return getJacobian(in.element, delta);
     }
 
-    virtual ~FunctionArgs() {};
+    virtual ~FunctionArgs() {}
 
 };
 
@@ -182,20 +182,14 @@ public:
 
     virtual void operator()(const double in[], double out[])
     {
-#ifdef _MSC_VER
-        double* tmpOut = new double[F->outputs];
-#else
-        double tmpOut[F->outputs];
-#endif
-        F->operator ()(in, tmpOut);
+        vector<double> tmpOut(F->outputs);
+
+        F->operator ()(in, &tmpOut[0]);
         out[0] = 0.0;
         for (int i = 0; i < F->outputs; i++) {
             out[0] += tmpOut[i] * tmpOut[i];
         }
         out[0] = sqrt(out[0]);
-#ifdef _MSC_VER
-        delete[] tmpOut;
-#endif
     }
 };
 
@@ -204,13 +198,10 @@ template<typename RealFuncType, int inputDim, int outputDim>
 class FunctionStatic
 {
 public:
-    //const int  inputDim =  inputDim;
-    //const int outputDim = outputDim;
-
     typedef FixedVector<double, inputDim>   InputType;
     typedef FixedVector<double, outputDim> OutputType;
 
-    void operator()(const InputType &/*in*/, OutputType &/*out*/) {};
+    void operator()(const InputType &/*in*/, OutputType &/*out*/) {}
 
     OutputType f(const InputType &in)
     {

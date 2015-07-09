@@ -80,6 +80,8 @@
         <file>select_by_color.png</file>
         <file>draw_eraser.png</file>
         <file>color_adjustment.png</file>
+        <file>checkerboard.png</file>
+        <file>table_lightning.png</file>
     </qresource>
     <qresource prefix="/new/graph">
         <file>draw_line.png</file>
