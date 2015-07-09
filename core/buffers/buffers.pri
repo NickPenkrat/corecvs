@@ -48,6 +48,7 @@ HEADERS += \
     buffers/g12Buffer3d.h \
     buffers/buffer3d.h \
     buffers/transformationCache.h \
+    buffers/runtimeTypeBuffer.h
 
 
 SOURCES += \
@@ -82,5 +83,6 @@ SOURCES += \
     buffers/g12Buffer3d.cpp \
     buffers/buffer3d.cpp \
     buffers/transformationCache.cpp \
+    buffers/runtimeTypeBuffer.cpp \
 
 

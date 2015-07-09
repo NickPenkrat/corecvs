@@ -5,7 +5,6 @@
  * \date Jul 15, 2010
  * \author apimenov
  */
-
 #include <QtCore/QRegExp>
 #include <QtCore/QString>
 
@@ -21,7 +20,7 @@
 
 void DirectShowCaptureInterface::init(const string &devname, int h, int w, int fps, bool isRgb, int compressed)
 {
-    ASSERT_TRUE_P((uint)compressed < COUNT_OF(codec_names), "invalid 'compressed' in DirectShowCaptureInterface::init()");
+    ASSERT_TRUE_P((uint)compressed < DirectShowCameraDescriptor::codec_size, ("invalid 'compressed' in DirectShowCaptureInterface::init()"));
 
     mDevname = QString("%1:1/%2:%3:%4x%5")
         .arg(devname.c_str())

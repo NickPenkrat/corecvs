@@ -15,6 +15,7 @@ class DirectShowCameraDescriptor
 public:
     static cchar*              codec_names[];
     static CAPTURE_FORMAT_TYPE codec_types[];
+    static uint                codec_size;
 
     DSCapDeviceId   deviceHandle;
     int             size;

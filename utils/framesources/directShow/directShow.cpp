@@ -8,6 +8,8 @@ CAPTURE_FORMAT_TYPE DirectShowCameraDescriptor::codec_types[] = {
     CAP_YUV, CAP_RGB, CAP_MJPEG, CAP_MJPEG //, CAP_I420
 };
 
+uint DirectShowCameraDescriptor::codec_size = CORE_COUNT_OF(codec_names);
+
 
 void DirectShowCameraDescriptor::setFromCameraParam(CaptureParameter &param,CameraParameter &camParam)
 {

@@ -488,6 +488,12 @@ with_opencv {
     }
 }
 
+with_siftgpu {
+	DEFINES += WITH_SIFTGPU
+	SIFTGPU_WRAPPER_DIR = $$UTILSDIR/../wrappers/siftgpu
+	include($$SIFTGPU_WRAPPER_DIR/siftgpu.pri)
+}
+
 
 with_directshow {
     HEADERS += \

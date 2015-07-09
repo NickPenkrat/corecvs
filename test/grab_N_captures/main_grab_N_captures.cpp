@@ -130,7 +130,9 @@ int main(int argc, char **argv)
         {
             printf("I can`t open the camera %s", captureString);
             return 0;
-        }else{
+        }
+        else
+        {
             printf("Camera %s init success", captureString);
         }
         waiter->mCaptureInterfaces.append(camDesc);
@@ -138,7 +140,7 @@ int main(int argc, char **argv)
         waiter->mCaptureMapper->setMapping(camDesc.input, waiter->mCaptureInterfaces.count() - 1);
 
         CameraParameters mCameraParameters;
-        if(getParam){
+        if (getParam) {
             camDesc.input->queryCameraParameters(mCameraParameters);
         }
 
@@ -184,12 +186,10 @@ int main(int argc, char **argv)
             printf("WB %i set.\n", whiteBalance);
         }
 
-
     }
 
     if (!waiter->mCaptureInterfaces.empty())
     {
-
         qDebug() << "Starting first camera";
         waiter->mCurrentCam = 0;
         waiter->mCaptureInterfaces[0].input->startCapture();

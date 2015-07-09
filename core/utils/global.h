@@ -277,6 +277,18 @@ inline void deletearr_safe (Type * &ptr)
 # define VEC_DATA_PTR(vec)      vec.data()
 #endif
 
+#ifdef _WIN32
+#   define PATH_SEPARATOR "\\"
+#else
+#   define PATH_SEPARATOR  "/"
+#endif
+
+#ifdef _WIN32
+#   define FOREACH(X, Y) for each (X in Y)
+#else
+#   define FOREACH(X, Y) for (X : Y)
+#endif
+
 //#define QSTR_DATA_PTR(qstring)        (qstring).toLatin1().data()
 #define   QSTR_DATA_PTR(qstring)        (qstring).toStdString().c_str()  // after using textCodecs we should use this
 

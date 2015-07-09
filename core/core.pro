@@ -9,7 +9,7 @@ exists(../../../config.pri) {
 include($$ROOT_DIR/config.pri)
 
 
-CONFIG  += staticlib
+CONFIG  += staticlib c++11
 TARGET   = cvs_core
 TEMPLATE = lib
 
@@ -55,8 +55,11 @@ include(stats/stats.pri)
 include(tbbwrapper/tbbwrapper.pri)
 include(utils/utils.pri)
 include(clustering3d/clustering3d.pri)
+include(features2d/features2d.pri)
 
 include(xml/generated/generated.pri)
+
+
 
 OTHER_FILES +=            \
     xml/parameters.xml    \

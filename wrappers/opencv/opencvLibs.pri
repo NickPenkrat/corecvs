@@ -29,12 +29,12 @@ with_opencv {
                 !build_pass:message(Using <$$OPENCV_PATH/build/x64/vc10/bin>)
                 INCLUDEPATH += $$OPENCV_INC_INSTALLED
                 LIBS        += -L$$OPENCV_PATH/build/x64/vc10/lib/ $$OPENCV_249_LIBS
-
+                    
             } else:exists($$OPENCV_PATH/build/bin/Release/opencv_core249.dll): win32-msvc* {   # git's OpenCV tag=2.4.9 built by MSVC with GPU
                 !build_pass:message(Using <$$OPENCV_PATH/build/bin/Release>)
                 INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
                 LIBS        += -L$$OPENCV_PATH/build/lib/Release/  $$OPENCV_249_LIBS
-
+                
             } else:exists($$OPENCV_PATH/build/x64/mingw/bin/libopencv_core246.dll): !win32-msvc* {   # installed OpenCV v.2.4.6 with MINGW support
                 !build_pass:message(Using <$$OPENCV_PATH/build/x64/mingw/bin>)
                 INCLUDEPATH += $$OPENCV_INC_INSTALLED
@@ -65,28 +65,6 @@ with_opencv {
                     -llibopencv_nonfree249 \
                     -llibopencv_imgproc249 \
                     -llibopencv_objdetect249
-            } else:exists($$OPENCV_PATH/build/x64/vc12/bin/opencv_core2411.dll) {
-                !build_pass:message(Using <$$OPENCV_PATH/build/x64/vc12/bin>)
-                INCLUDEPATH += $$OPENCV_PATH/build/include \
-                    $$OPENCV_PATH/sources/modules/core/include \
-                    $$OPENCV_PATH/sources/modules/calib3d/include \
-                    $$OPENCV_PATH/sources/modules/video/include \
-                    $$OPENCV_PATH/sources/modules/highgui/include \
-                    $$OPENCV_PATH/sources/modules/imgproc/include \
-                    $$OPENCV_PATH/sources/modules/features2d/include \
-                    $$OPENCV_PATH/sources/modules/flann/include \
-                    $$OPENCV_PATH/sources/modules/objdetect/include \
-                    $$OPENCV_PATH/sources/modules/legacy/include
-                LIBS += \
-                    -L$$OPENCV_PATH/build/x64/vc12/lib/ \
-                    -lopencv_calib3d2411 \
-                    -lopencv_video2411 \
-                    -lopencv_core2411 \
-                    -lopencv_highgui2411 \
-                    -lopencv_features2d2411 \
-                    -lopencv_legacy2411 \
-                    -lopencv_objdetect2411 \
-                    -lopencv_imgproc2411
             } else {
                 message(Using <$$OPENCV_PATH>)
                 message(Unsupported OpenCV version - please adapt the opencvLibs.pri for other versions)
@@ -107,9 +85,13 @@ with_opencv {
     } else {
         isEmpty(OPENCV_PATH) {
             !build_pass:message(Compiling with system OpenCV)
-#           LIBS += -lcv -lhighgui -lcxcore
-            LIBS += -lopencv_highgui -lopencv_video -lopencv_core -lopencv_flann -lopencv_imgproc -lopencv_calib3d -lopencv_features2d -lopencv_objdetect # for opencv 2.3+
-#            LIBS += -lopencv_nonfree
+            LIBS += -lopencv_calib3d -lopencv_core -lopencv_features2d -lopencv_flann \
+                    -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml \
+                    -lopencv_objdetect -lopencv_ocl -lopencv_video
+
+            LIBS += -lopencv_nonfree
+            LIBS += -lopencv_contrib -lopencv_gpu -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_videostab -lopencv_gpu
+
         } else {
             !build_pass:message(Compiling with OpenCV from $$OPENCV_PATH)
             LIBS += -L$$OPENCV_PATH/lib/
@@ -122,7 +104,7 @@ with_opencv {
             LIBS += -lopencv_ml
             LIBS += -lopencv_flann
 #           LIBS += -lopencv_videostab
-#            LIBS += -lopencv_nonfree
+            LIBS += -lopencv_nonfree
             LIBS += -lopencv_features2d
 #           LIBS += -lopencv_photo
             LIBS += -lopencv_video
