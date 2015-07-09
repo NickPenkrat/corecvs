@@ -355,7 +355,7 @@ SIFTGPU_EXPORT_EXTERN ComboSiftGPU* CreateComboSiftGPU();
 //Multi-process mode and remote mode
 SIFTGPU_EXPORT_EXTERN ComboSiftGPU* CreateRemoteSiftGPU(int port = 7777, char* remote_server = NULL);
 //Run SiftGPU computation on a remote computer/process/thread
-//if( remote_server == NULL) 
+//if ( remote_server == NULL) 
 //			a local server is created in a different process and connected
 //			multiple-GPU can be used by creating multiple instances
 //			GPU selection done through SiftGPU::ParseParam function

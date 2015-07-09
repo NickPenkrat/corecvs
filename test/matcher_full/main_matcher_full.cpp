@@ -26,37 +26,45 @@
 class DrawMatchesStage : public FeatureMatchingPipelineStage
 {
 public:
-	void run(FeatureMatchingPipeline *pipeline) {
+	void run(FeatureMatchingPipeline *pipeline)
+	{
 		auto images = pipeline->images;
-        FOREACH(const Image& img, images)
-        {
+		FOREACH(const Image& img, images)
+
+		{
 			cv::Mat src = cv::imread(img.filename);
-			
+
 			auto keyPoints = img.keyPoints.keyPoints;
-			FOREACH(const KeyPoint& kp, keyPoints) {
+			FOREACH(const KeyPoint& kp, keyPoints)
+			{
 				cv::circle(src, cv::Point((int)kp.x, (int)kp.y), 2, cv::Scalar(255,0,0), -2);
 			}
 
 			cv::imwrite(img.filename + ".features.png", src);
 		}
 	}
-	void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename) {}
-	void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const {};
+	void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename)
+	{}
+	void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const
+	{};
 };
 
 std::string base;
 std::string tempBase;
 int N = 11;
 
-bool checkIfExists(const std::string& name) {
+bool checkIfExists(const std::string& name)
+{
 	std::ifstream is;
 	is.open(name, std::ios_base::in);
 	return is;
 }
 
-bool detectBase(const std::string &filename) {
+bool detectBase(const std::string &filename)
+{
 	bool ok = false;
-	for(size_t i = 0; i < 15; ++i) {
+	for(size_t i = 0; i < 15; ++i)
+	{
 		std::cout << "Searching for " << filename << " in " << base << "  :  ";
 		if(ok = checkIfExists(base + filename)) break;
 		std::cout << "FAILED" << std::endl;
@@ -73,14 +81,17 @@ bool checkFiles()
 	std::stringstream base_name;
 	base_name << "." << PATH_SEPARATOR << "data" << PATH_SEPARATOR << "kermit_dataset" << PATH_SEPARATOR;
 	base = base_name.str();
-	if(!detectBase("kermit000.jpg")) {
+	if(!detectBase("kermit000.jpg"))
+	{
 		std::cout << "Error: unable to find data dir" << std::endl;
 		exit(0);
 	}
-	for(size_t i = 0; i < N; ++i) {
+	for(size_t i = 0; i < N; ++i)
+	{
 		std::stringstream ss;
 		ss << base << "kermit" << std::setw(3) << std::setfill('0') << i << ".jpg";
-		if(!checkIfExists(ss.str())) {
+		if(!checkIfExists(ss.str()))
+		{
 			std::cout << "Error: unable to find file " << ss.str() << std::endl;
 			exit(0);
 		}
@@ -108,8 +119,9 @@ void run(const std::string &detector)
 	prepareCopy(detector);
 	std::vector<std::string> filenames;
 	for (int i = 0; i < N; ++i)
-    {
-	    char name[1000];
+
+	{
+		char name[1000];
 		snprintf2buf(name, "%skermit%03d.jpg", tempBase.c_str(), i);
 		filenames.push_back(std::string(name));
 	}
@@ -127,12 +139,12 @@ void run(const std::string &detector)
 	std::cerr << std::endl << "Running with " << detector << " detector/descriptor" << std::endl << std::endl;
 	pipeline.run();
 	std::cerr
-        << "Detected keypoints were saved to " << tempBase << "*.keypoints (matches are drawn on .png images)" << std::endl
-        << "Extracted descriptors were saved to " << tempBase << "*.descriptors" << std::endl
-        << "Matching plan was saved to " << tempBase << "plan.txt" << std::endl
-        << "Raw matches were saved to " << tempBase << "raw_matches.txt" << std::endl
-        << "You can now run VisualSFM in " << tempBase << " folder (import pairwise matching data from vsfm_matches.txt" << std::endl
-        << std::endl;
+		<< "Detected keypoints were saved to " << tempBase << "*.keypoints (matches are drawn on .png images)" << std::endl
+		<< "Extracted descriptors were saved to " << tempBase << "*.descriptors" << std::endl
+		<< "Matching plan was saved to " << tempBase << "plan.txt" << std::endl
+		<< "Raw matches were saved to " << tempBase << "raw_matches.txt" << std::endl
+		<< "You can now run VisualSFM in " << tempBase << " folder (import pairwise matching data from vsfm_matches.txt" << std::endl
+		<< std::endl;
 }
 
 int main(int argc, char ** argv)

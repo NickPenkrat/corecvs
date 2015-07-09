@@ -6,22 +6,23 @@
 
 #include "runtimeTypeBuffer.h"
 
-class BufferReader {
+class BufferReader
+{
 public:
 	virtual RuntimeTypeBuffer read(const std::string &s) = 0;
 	virtual ~BufferReader() {}
 };
 
-class BufferReaderProviderImpl {
-	public:
-		virtual BufferReader* getBufferReader(const std::string &filename) = 0;
-		virtual bool provides(const std::string &filename) = 0;
-		virtual ~BufferReaderProviderImpl() {}
-	protected:
-
+class BufferReaderProviderImpl
+{
+public:
+	virtual BufferReader* getBufferReader(const std::string &filename) = 0;
+	virtual bool provides(const std::string &filename) = 0;
+	virtual ~BufferReaderProviderImpl() {}
 };
 
-class BufferReaderProvider {
+class BufferReaderProvider
+{
 public:
 	void add(BufferReaderProviderImpl *provider);
 	BufferReader* getBufferReader(const std::string &filename);

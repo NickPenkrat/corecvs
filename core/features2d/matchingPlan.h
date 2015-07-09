@@ -5,7 +5,8 @@
 #include <iostream>
 #include <stdint.h>
 
-struct MatchPlanEntry {
+struct MatchPlanEntry
+{
 	bool isBetween(uint16_t imgA, uint16_t imgB);
 
 	void save(std::ostream &os) const;
@@ -21,7 +22,8 @@ struct MatchPlanEntry {
 	std::deque<uint16_t> trainFeatures;
 };
 
-struct MatchPlan {
+struct MatchPlan
+{
 	void save(std::ostream &os) const;
 	void load(std::istream &is);
 	void save(const std::string &filename) const;

@@ -20,15 +20,18 @@
 std::vector<std::string> filenames;
 std::string base = std::string(".") + PATH_SEPARATOR;
 
-bool checkIfExists(const std::string& name) {
+bool checkIfExists(const std::string& name)
+{
 	std::ifstream is;
 	is.open(name, std::ios_base::in);
 	return is;
 }
 
-bool detectBase(const std::string &filename) {
+bool detectBase(const std::string &filename)
+{
 	bool ok = false;
-	for(size_t i = 0; i < 15; ++i) {
+	for(size_t i = 0; i < 15; ++i)
+	{
 		std::cout << "Searching for " << filename << " in " << base << "  :  ";
 		if(ok = checkIfExists(base + filename)) break;
 		std::cout << "FAILED" << std::endl;
@@ -39,7 +42,8 @@ bool detectBase(const std::string &filename) {
 	return ok;
 }
 
-void run_detector(const std::string &detector) {
+void run_detector(const std::string &detector)
+{
 	FeatureMatchingPipeline pipeline(filenames);
 	pipeline.add(new KeyPointDetectionStage(DetectorType(detector)), true);
 	pipeline.run();
@@ -51,7 +55,8 @@ void run_detector(const std::string &detector) {
 	std::cout << detector << " detector is OK (some points were detected)" << std::endl;
 }
 
-int main(int argc, char ** argv) {
+int main(int argc, char ** argv)
+{
 #ifdef WITH_OPENCV
 	init_opencv_detectors_provider();
 	init_opencv_matchers_provider();
@@ -64,7 +69,8 @@ int main(int argc, char ** argv) {
 	init_siftgpu_matcher_provider();
 #endif
 
-	if(!detectBase("./data/kermit_dataset/kermit000.jpg")) {
+	if(!detectBase("./data/kermit_dataset/kermit000.jpg"))
+	{
 		std::cout << "Unable to find data" << std::endl;
 		exit(-1);
 	}

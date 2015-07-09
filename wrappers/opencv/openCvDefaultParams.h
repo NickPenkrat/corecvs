@@ -1,7 +1,8 @@
 #ifndef OPENCVDEFAULTPARAMS_H
 #define OPENCVDEFAULTPARAMS_H
 
-struct SurfParams {
+struct SurfParams
+{
 	double hessianThreshold;
 	int octaves;
 	int octaveLayers;
@@ -10,20 +11,22 @@ struct SurfParams {
 
 
 	SurfParams(
-			double hessianThreshold = 200.0,
+			double hessianThreshold = 350.0,
 			int octaves = 4,
 			int octaveLayers = 2,
 			bool extended = true,
-			bool upright = false) 
+			bool upright = false)
 		: hessianThreshold(hessianThreshold),
 		octaves(octaves),
 		octaveLayers(octaveLayers),
 		extended(extended),
-		upright(upright) {
-		}
+		upright(upright)
+	{
+	}
 };
 
-struct SiftParams {
+struct SiftParams
+{
 	double contrastThreshold;
 	double edgeThreshold;
 	double sigma;
@@ -37,11 +40,13 @@ struct SiftParams {
 		contrastThreshold(contrastThreshold),
 		edgeThreshold(edgeThreshold),
 		sigma(sigma),
-		nOctaveLayers(nOctaveLayers) {
-		}
+		nOctaveLayers(nOctaveLayers)
+	{
+	}
 };
 
-struct StarParams {
+struct StarParams
+{
 	int maxSize;
 	int responseThreshold;
 	int lineThresholdProjected;
@@ -58,11 +63,13 @@ struct StarParams {
 		responseThreshold(responseThreshold),
 		lineThresholdProjected(lineThresholdProjected),
 		lineThresholdBinarized(lineThresholdBinarized),
-		supressNonmaxSize(supressNonmaxSize) {
-		}
+		supressNonmaxSize(supressNonmaxSize)
+	{
+	}
 };
 
-struct FastParams {
+struct FastParams
+{
 	int threshold;
 	bool nonmaxSuppression;
 	int type;
@@ -71,12 +78,14 @@ struct FastParams {
 			int threshold = 1,
 			bool nonmaxSuppression = true,
 			int type = 2) ://cv::FastFeatureDetector::TYPE_9_16) :
-		threshold(threshold), nonmaxSuppression(nonmaxSuppression), type(type) {
-		}
+		threshold(threshold), nonmaxSuppression(nonmaxSuppression), type(type)
+	{
+	}
 
 };
 
-struct OrbParams {
+struct OrbParams
+{
 	double scaleFactor;
 	int nLevels;
 	int edgeThreshold;
@@ -86,21 +95,24 @@ struct OrbParams {
 	int patchSize;
 
 	OrbParams(double scaleFactor = 1.2, int nLevels = 8, int edgeThreshold = 31,
-			int firstLevel = 0, int WTA_K = 2, int scoreType = 0, //cv::ORB::HARRIS_SCORE, 
+			int firstLevel = 0, int WTA_K = 2, int scoreType = 0, //cv::ORB::HARRIS_SCORE,
 			int patchSize = 31):
 		scaleFactor(scaleFactor), nLevels(nLevels), edgeThreshold(edgeThreshold), firstLevel(firstLevel),
-		WTA_K(WTA_K), scoreType(scoreType), patchSize(patchSize) {
-		}
+		WTA_K(WTA_K), scoreType(scoreType), patchSize(patchSize)
+	{
+	}
 };
 
-struct BriskParams {
+struct BriskParams
+{
 	int thresh;
 	int octaves;
 	double patternScale;
 
 	BriskParams(int thresh = 30, int octaves = 3, double patternScale = 1.0) :
-		thresh(thresh), octaves(octaves), patternScale(patternScale) {
-		}
+		thresh(thresh), octaves(octaves), patternScale(patternScale)
+	{
+	}
 };
 
 

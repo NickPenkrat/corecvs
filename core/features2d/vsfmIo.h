@@ -6,7 +6,8 @@
 #include <vector>
 #include <iostream>
 
-struct SiftFeature {
+struct SiftFeature
+{
 	float x;
 	float y;
 	float color;
@@ -19,13 +20,16 @@ struct SiftFeature {
 
 	double importance;
 
-	SiftFeature() : x(0.f), y(0.f), color(0.f), scale(0.f), orientation(0.f), importance(0.0) {
+	SiftFeature() : x(0.f), y(0.f), color(0.f), scale(0.f), orientation(0.f), importance(0.0)
+	{
 	}
 
-	SiftFeature(float x, float y, float scale = 0.f, float orientation = 0.f, float color = 0.f, double importance = 0.0) : x(x), y(y), color(color), scale(scale), orientation(orientation), importance(importance) {
+	SiftFeature(float x, float y, float scale = 0.f, float orientation = 0.f, float color = 0.f, double importance = 0.0) : x(x), y(y), color(color), scale(scale), orientation(orientation), importance(importance)
+	{
 	}
 
-	SiftFeature(float x, float y, uint8_t *data, float scale = 0.f, float orientation = 0.f, float color = 0.f, double importance = 0.0) : x(x), y(y), color(color), scale(scale), orientation(orientation), importance(importance) {
+	SiftFeature(float x, float y, uint8_t *data, float scale = 0.f, float orientation = 0.f, float color = 0.f, double importance = 0.0) : x(x), y(y), color(color), scale(scale), orientation(orientation), importance(importance)
+	{
 		std::copy(data, data + DESCRIPTOR_WIDTH, this->data.begin());
 	}
 };
@@ -33,7 +37,8 @@ struct SiftFeature {
 std::ostream& operator<<(std::ostream& os, const SiftFeature& f);
 std::istream& operator>>(std::istream& is, SiftFeature& f);
 
-struct VsfmSiftIO {
+struct VsfmSiftIO
+{
 	static void writeAscii(std::ostream& os, const std::vector<SiftFeature>& features);
 	static void readAscii(std::istream& os, std::vector<SiftFeature>& features);
 	static void writeBinary(std::ostream& os, const std::vector<SiftFeature>& features);
@@ -44,7 +49,8 @@ struct VsfmSiftIO {
 	static const uint32_t MAGIC_EOF;
 };
 
-struct SiftHeader {
+struct SiftHeader
+{
 	uint32_t magicName;
 	uint32_t magicVersion;
 	uint32_t npoint;
@@ -56,8 +62,9 @@ struct SiftHeader {
 		magicVersion(VsfmSiftIO::MAGIC_V40),
 		npoint(0),
 		keyPointSize(SiftFeature::BINARY_FLOATS),
-		descriptorSize(SiftFeature::DESCRIPTOR_WIDTH) {
-		}
+		descriptorSize(SiftFeature::DESCRIPTOR_WIDTH)
+	{
+	}
 };
 
 

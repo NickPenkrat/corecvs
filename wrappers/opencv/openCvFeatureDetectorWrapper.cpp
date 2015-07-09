@@ -3,65 +3,75 @@
 
 #include "openCvDefaultParams.h"
 
-OpenCvFeatureDetectorWrapper::OpenCvFeatureDetectorWrapper(cv::FeatureDetector *detector) : detector(detector) {
+OpenCvFeatureDetectorWrapper::OpenCvFeatureDetectorWrapper(cv::FeatureDetector *detector) : detector(detector)
+{
 }
 
-OpenCvFeatureDetectorWrapper::~OpenCvFeatureDetectorWrapper() {
+OpenCvFeatureDetectorWrapper::~OpenCvFeatureDetectorWrapper()
+{
 	delete detector;
 }
 
-double OpenCvFeatureDetectorWrapper::getProperty(const std::string &name) const {
+double OpenCvFeatureDetectorWrapper::getProperty(const std::string &name) const
+{
 	return detector->get<double>(name);
 }
 
-void OpenCvFeatureDetectorWrapper::setProperty(const std::string &name, const double &value) {
+void OpenCvFeatureDetectorWrapper::setProperty(const std::string &name, const double &value)
+{
 	detector->set(name, value);
 }
 
-void OpenCvFeatureDetectorWrapper::detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints) {
+void OpenCvFeatureDetectorWrapper::detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints)
+{
 	std::vector<cv::KeyPoint> kps;
 	cv::Mat img = convert(image);
 
 	detector->detect(img, kps);
 
 	keyPoints.clear();
-    for(std::vector<cv::KeyPoint>::iterator kp = kps.begin(); kp != kps.end(); ++kp) {
-        keyPoints.push_back(convert(*kp));
-    }
+	for(std::vector<cv::KeyPoint>::iterator kp = kps.begin(); kp != kps.end(); ++kp)
+	{
+		keyPoints.push_back(convert(*kp));
+	}
 }
 
-void init_opencv_detectors_provider() {
+void init_opencv_detectors_provider()
+{
 	FeatureDetectorProvider::getInstance().add(new OpenCvFeatureDetectorProvider());
 }
 
 #define SWITCH_TYPE(str, expr) \
-	if(type == #str) { \
-		expr \
+	if(type == #str) \
+	{ \
+		expr; \
 	}
 
-FeatureDetector* OpenCvFeatureDetectorProvider::getFeatureDetector(const DetectorType &type) {
+FeatureDetector* OpenCvFeatureDetectorProvider::getFeatureDetector(const DetectorType &type)
+{
 	SiftParams siftParams;
 	SurfParams surfParams;
 	StarParams starParams;
 	FastParams fastParams;
 	BriskParams briskParams;
 	OrbParams orbParams;
-	SWITCH_TYPE(SIFT, 
-		return new OpenCvFeatureDetectorWrapper(new cv::SIFT(0, siftParams.nOctaveLayers, siftParams.contrastThreshold, siftParams.edgeThreshold, siftParams.sigma));)
+	SWITCH_TYPE(SIFT,
+			return new OpenCvFeatureDetectorWrapper(new cv::SIFT(0, siftParams.nOctaveLayers, siftParams.contrastThreshold, siftParams.edgeThreshold, siftParams.sigma));)
 	SWITCH_TYPE(SURF,
-		return new OpenCvFeatureDetectorWrapper(new cv::SURF(surfParams.hessianThreshold, surfParams.octaves, surfParams.octaveLayers, surfParams.extended, surfParams.upright));)
+			return new OpenCvFeatureDetectorWrapper(new cv::SURF(surfParams.hessianThreshold, surfParams.octaves, surfParams.octaveLayers, surfParams.extended, surfParams.upright));)
 	SWITCH_TYPE(STAR,
-		return new OpenCvFeatureDetectorWrapper(new cv::StarFeatureDetector(starParams.maxSize, starParams.responseThreshold, starParams.lineThresholdProjected, starParams.lineThresholdBinarized,	starParams.supressNonmaxSize));)
+			return new OpenCvFeatureDetectorWrapper(new cv::StarFeatureDetector(starParams.maxSize, starParams.responseThreshold, starParams.lineThresholdProjected, starParams.lineThresholdBinarized,	starParams.supressNonmaxSize));)
 	SWITCH_TYPE(FAST,
-		return new OpenCvFeatureDetectorWrapper(new cv::FastFeatureDetector(fastParams.threshold, fastParams.nonmaxSuppression));)
+			return new OpenCvFeatureDetectorWrapper(new cv::FastFeatureDetector(fastParams.threshold, fastParams.nonmaxSuppression));)
 	SWITCH_TYPE(BRISK,
-		return new OpenCvFeatureDetectorWrapper(new cv::BRISK(briskParams.thresh, briskParams.octaves, briskParams.patternScale));)
+			return new OpenCvFeatureDetectorWrapper(new cv::BRISK(briskParams.thresh, briskParams.octaves, briskParams.patternScale));)
 	SWITCH_TYPE(ORB,
-		return new OpenCvFeatureDetectorWrapper(new cv::ORB(2000, orbParams.scaleFactor, orbParams.nLevels, orbParams.edgeThreshold, orbParams.firstLevel, orbParams.WTA_K, orbParams.scoreType, orbParams.patchSize));)
+			return new OpenCvFeatureDetectorWrapper(new cv::ORB(2000, orbParams.scaleFactor, orbParams.nLevels, orbParams.edgeThreshold, orbParams.firstLevel, orbParams.WTA_K, orbParams.scoreType, orbParams.patchSize));)
 	return 0;
 }
 
-bool OpenCvFeatureDetectorProvider::provides(const DetectorType &type) {
+bool OpenCvFeatureDetectorProvider::provides(const DetectorType &type)
+{
 	SWITCH_TYPE(SIFT, return true;);
 	SWITCH_TYPE(SURF, return true;);
 	SWITCH_TYPE(STAR, return true;);

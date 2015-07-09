@@ -5,7 +5,8 @@
 #include <opencv2/nonfree/features2d.hpp>
 #include <opencv2/features2d/features2d.hpp>
 
-class OpenCvDescriptorExtractorWrapper : public DescriptorExtractor {
+class OpenCvDescriptorExtractorWrapper : public DescriptorExtractor
+{
 public:
 	OpenCvDescriptorExtractorWrapper(cv::DescriptorExtractor *detector);
 	~OpenCvDescriptorExtractorWrapper();
@@ -18,16 +19,19 @@ private:
 	cv::DescriptorExtractor *extractor;
 };
 
-extern "C" {
-void init_opencv_descriptors_provider();
+extern "C"
+{
+	void init_opencv_descriptors_provider();
 }
 
-class OpenCvDescriptorExtractorProvider : public DescriptorExtractorProviderImpl {
-	public:
-		DescriptorExtractor* getDescriptorExtractor(const DescriptorType &type);
-		bool provides(const DescriptorType &type);
-		~OpenCvDescriptorExtractorProvider() {}
-	protected:
+class OpenCvDescriptorExtractorProvider : public DescriptorExtractorProviderImpl
+{
+public:
+	DescriptorExtractor* getDescriptorExtractor(const DescriptorType &type);
+	bool provides(const DescriptorType &type);
+	~OpenCvDescriptorExtractorProvider()
+	{}
+protected:
 };
 
 
