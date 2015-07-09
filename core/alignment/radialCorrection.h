@@ -50,8 +50,10 @@ namespace corecvs {
  *   for more details please read the code of getCorrectionForPoint() or read the Heikkila paper
  *
  */
-class LensDistortionModelParameters {
+class LensCorrectionParametres {
 public:
+//    double k1;          /**< Second order radial correction coefficient - \f$k_1\f$*/
+//    double k2;          /**< Fourth order radial correction coefficient - \f$k_2\f$*/
     vector<double> koeff; /**< Polynom to describe radial correction */
 
     double p1;       /**< First tangent correction coefficient - \f$p_1\f$*/
@@ -62,7 +64,7 @@ public:
 
     Vector2dd center; /**< The center of the distortion \f$(x_c,y_c)\f$*/
 
-    LensDistortionModelParameters(
+    LensCorrectionParametres(
             vector<double> _koeff,
             double _p1,
             double _p2,
@@ -80,32 +82,29 @@ public:
         focal = center.l2Metric();
     }
 
-    LensDistortionModelParameters(vector<double> _koeff, double _p1, double _p2, Vector2d32 _center) :
+    LensCorrectionParametres(vector<double> _koeff, double _p1, double _p2, Vector2d32 _center) :
         p1(_p1),
         p2(_p2),
         aspect(1.0),
-        focal(1.0),
         center(_center)
     {
         koeff = _koeff;
     }
 
-    LensDistortionModelParameters() :
+    LensCorrectionParametres() :
         p1(0.0),
         p2(0.0),
         aspect(1.0),
-        focal(1.0),
-        center(Vector2dd(320,240))
-    {
-    }
+        center(Vector2dd(320, 240))
+    {}
 
     template<class VisitorType>
         void accept(VisitorType &visitor)
         {
             visitor.visit(p1    , 0.0, "p1");
             visitor.visit(p2    , 0.0, "p2");
-            visitor.visit(aspect, 1.0, "aspect");
-            visitor.visit(focal , 1.0, "focal");
+            visitor.visit(aspect, 0.0, "aspect");
+            visitor.visit(focal , 0.0, "focal");
             visitor.visit(center.x(), 0.0, "centerX");
             visitor.visit(center.y(), 0.0, "centerY");
 
