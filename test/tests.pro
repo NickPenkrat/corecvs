@@ -16,7 +16,7 @@ SUBDIRS +=       \
 #   adoptcolor   \
 #    avigrab     \
     decodebayer \   
-    genvectorui  \
+#    genvectorui  \
 
 with_opencv {
     SUBDIRS +=       \
