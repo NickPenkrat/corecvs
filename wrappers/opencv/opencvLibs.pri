@@ -65,6 +65,28 @@ with_opencv {
                     -llibopencv_nonfree249 \
                     -llibopencv_imgproc249 \
                     -llibopencv_objdetect249
+            } else:exists($$OPENCV_PATH/build/x64/vc12/bin/opencv_core2411.dll) {
+                !build_pass:message(Using <$$OPENCV_PATH/build/x64/vc12/bin>)
+                INCLUDEPATH += $$OPENCV_PATH/build/include \
+                    $$OPENCV_PATH/sources/modules/core/include \
+                    $$OPENCV_PATH/sources/modules/calib3d/include \
+                    $$OPENCV_PATH/sources/modules/video/include \
+                    $$OPENCV_PATH/sources/modules/highgui/include \
+                    $$OPENCV_PATH/sources/modules/imgproc/include \
+                    $$OPENCV_PATH/sources/modules/features2d/include \
+                    $$OPENCV_PATH/sources/modules/flann/include \
+                    $$OPENCV_PATH/sources/modules/objdetect/include \
+                    $$OPENCV_PATH/sources/modules/legacy/include
+                LIBS += \
+                    -L$$OPENCV_PATH/build/x64/vc12/lib/ \
+                    -lopencv_calib3d2411 \
+                    -lopencv_video2411 \
+                    -lopencv_core2411 \
+                    -lopencv_highgui2411 \
+                    -lopencv_features2d2411 \
+                    -lopencv_legacy2411 \
+                    -lopencv_objdetect2411 \
+                    -lopencv_imgproc2411
             } else {
                 message(Using <$$OPENCV_PATH>)
                 message(Unsupported OpenCV version - please adapt the opencvLibs.pri for other versions)
