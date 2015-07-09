@@ -98,7 +98,7 @@
           </size>
          </property>
          <property name="currentIndex">
-          <number>2</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="tab_LevMarq">
           <property name="sizePolicy">
@@ -189,131 +189,8 @@
              </item>
             </layout>
            </item>
-           <item row="0" column="1">
-            <widget class="QTableWidget" name="pointsTableWidget">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>16777215</width>
-               <height>300</height>
-              </size>
-             </property>
-             <property name="editTriggers">
-              <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::EditKeyPressed</set>
-             </property>
-             <column>
-              <property name="text">
-               <string>x Space</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>y Space</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>z Space</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>x Image</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>y Image</string>
-              </property>
-             </column>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <layout class="QGridLayout" name="gridLayout_2">
-             <item row="0" column="1">
-              <widget class="QDoubleSpinBox" name="xCoordSpinBox">
-               <property name="decimals">
-                <number>6</number>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="5">
-              <widget class="QDoubleSpinBox" name="imageXSpinBox">
-               <property name="readOnly">
-                <bool>true</bool>
-               </property>
-               <property name="decimals">
-                <number>6</number>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="3">
-              <widget class="QDoubleSpinBox" name="zCoordSpinBox">
-               <property name="readOnly">
-                <bool>false</bool>
-               </property>
-               <property name="decimals">
-                <number>6</number>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="0">
-              <widget class="QLabel" name="label_5">
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>15</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Coordinates</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="4">
-              <widget class="Line" name="line">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="2">
-              <widget class="QDoubleSpinBox" name="yCoordSpinBox">
-               <property name="decimals">
-                <number>6</number>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="6">
-              <widget class="QDoubleSpinBox" name="imageYSpinBox">
-               <property name="readOnly">
-                <bool>true</bool>
-               </property>
-               <property name="decimals">
-                <number>6</number>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QPushButton" name="saveButton">
-               <property name="text">
-                <string>Save</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="2">
-              <widget class="QPushButton" name="deleteButton">
-               <property name="text">
-                <string>Delete</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
+           <item row="0" column="1" rowspan="2">
+            <widget class="CalibrationFeaturesWidget" name="calibrationFeatures" native="true"/>
            </item>
           </layout>
          </widget>
@@ -786,6 +663,12 @@
    <header>lineDistortionEstimatorParametersControlWidget.h</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>CalibrationFeaturesWidget</class>
+   <extends>QWidget</extends>
+   <header>calibrationFeaturesWidget.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
  <resources>
   <include location="../../resources/main.qrc"/>
@@ -799,7 +682,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>418</x>
-     <y>343</y>
+     <y>262</y>
     </hint>
     <hint type="destinationlabel">
      <x>5</x>
