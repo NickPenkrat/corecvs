@@ -679,25 +679,34 @@ std::string V4L2CameraDescriptor::getSerialNumber()
    /* Going for particular interface to the device */
    snprintf(deviceSysPath, CORE_COUNT_OF(deviceSysPath), "/sys/dev/char/%d:%d/%s/../serial", major_id, minor_id, linkPath);
 
+   std::string result;
+
    SYNC_PRINT(("V4L2CameraDescriptor::getSerialNumber():USB device serial path <%s>\n", deviceSysPath));
    char *serial = NULL;
    size_t len;
    FILE *serialFile = fopen(deviceSysPath, "rt");
-   getline(&serial, &len, serialFile);
-   for (int i = 0; i < strlen(serial); i++)
+   if (serialFile != NULL)
    {
-       if (serial[i] == '\n' || serial[i] == '\r' ) serial[i] = 0;
-   }
-   fclose(serialFile);
+         getline(&serial, &len, serialFile);
+         for (int i = 0; i < strlen(serial); i++)
+         {
+             if (serial[i] == '\n' || serial[i] == '\r' ) serial[i] = 0;
+         }
+         fclose(serialFile);
 
-   printf("V4L2CameraDescriptor::getSerialNumber():Serial <%s>\n", serial);
-   std::string result(serial);
-   free(serial);
+
+        SYNC_PRINT(("V4L2CameraDescriptor::getSerialNumber():Serial <%s>\n", serial));
+        result = serial;
+        free(serial);
+   } else {
+        SYNC_PRINT(("V4L2CameraDescriptor::getSerialNumber():serialFile is NULL\n"));
+   }
 
    char *usbData = basename(linkPath);
-   printf("V4L2CameraDescriptor::getSerialNumber(): Usbpath <%s>\n", usbData);
+   SYNC_PRINT(("V4L2CameraDescriptor::getSerialNumber(): Usbpath <%s>\n", usbData));
    result = usbData;
 
+   SYNC_PRINT(("V4L2CameraDescriptor::getSerialNumber(): returning <%s>\n", result.c_str()));
    return result;
 
 }
