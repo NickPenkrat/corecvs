@@ -12,6 +12,7 @@
  * \author ivarfolomeev
  */
 
+#include "global.h"
 #include <cstddef>
 
 #ifdef WITH_TBB
