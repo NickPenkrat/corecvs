@@ -21,6 +21,8 @@
 using namespace tbb;
 #endif
 
+#include "global.h"
+
 namespace corecvs {
 
 template <typename IndexType>
