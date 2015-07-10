@@ -12,11 +12,11 @@ public:
     {
         return std::vector<int>();
     }
-    virtual bool powerOffBus(int id)
+    virtual bool powerOffBus(int /*id*/)
     {
         return false;
     }
-    virtual bool powerOnBus(int id)
+    virtual bool powerOnBus(int /*id*/)
     {
         return false;
     }

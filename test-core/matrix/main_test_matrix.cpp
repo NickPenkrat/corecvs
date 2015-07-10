@@ -482,6 +482,34 @@ void testMatrixOperations (void)
     SubResult.fillWithArgs(-6.0, 6.0, 3.0, 4.0);
     ASSERT_TRUE((Arg1 - Arg2).notTooFar(&SubResult, 1e-7), "Invalid subtracion");
 
+    /* Scalar multplication and division */
+
+    Matrix ScalarMultResult(2,2);
+    ScalarMultResult.fillWithArgs(-10.0, 8.0, 6.0, 5.0);
+    Matrix resMul = Arg1 * 2.0;
+    cout << "Multiplication real result:"   << endl << resMul << endl;
+    cout << "Multiplication exp  result:"   << endl << ScalarMultResult << endl;
+
+    ASSERT_TRUE(resMul.notTooFar(&ScalarMultResult, 1e-7), "Invalid scalar Multiplication");
+
+    /* In place multplication and division */
+    Matrix ScalarDivResult(2,2);
+    ScalarDivResult.fillWithArgs(-2.5, 2.0, 1.5, 1.25);
+
+    Matrix Arg1ToDiv(Arg1);
+    Matrix Arg1ToMul(Arg1);
+
+    Arg1ToDiv /= 2.0;
+    Arg1ToMul /= 0.5;
+
+    cout << "Division result:"   << endl << Arg1ToDiv << endl;
+    cout << "Second div result:" << endl << Arg1ToMul << endl;
+    cout << flush;
+    fflush(stdout);
+
+    ASSERT_TRUE(Arg1ToDiv.notTooFar(&ScalarDivResult,  1e-7), "Invalid scalar Division1");
+    ASSERT_TRUE(Arg1ToMul.notTooFar(&ScalarMultResult, 1e-7), "Invalid scalar Division2");
+
 
 }
 
@@ -514,9 +542,9 @@ int main (int /*argC*/, char ** /*argV*/)
     cout << "Testing " << endl;
 #if 1
     //testMatrixVectorMult();
-    //testMatrixOperations();
+    testMatrixOperations();
+    return 0;
     testMatrix44VectorProduct();   
-    //return 0;
     testMatrix44();
     testDouble();
     testMatrixSerialisation();
