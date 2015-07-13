@@ -44,6 +44,10 @@ with_avx {
     !win32-msvc* {
         QMAKE_CFLAGS   += -mavx -mavx2
         QMAKE_CXXFLAGS += -mavx -mavx2
+    } else:win32-msvc2010 {
+        QMAKE_CFLAGS   += /arch:AVX
+        QMAKE_CXXFLAGS += /arch:AVX
+        DEFINES -= WITH_AVX2
     } else {
         QMAKE_CFLAGS   += /arch:AVX /arch:AVX2
         QMAKE_CXXFLAGS += /arch:AVX /arch:AVX2
