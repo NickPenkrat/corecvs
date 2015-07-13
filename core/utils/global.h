@@ -139,7 +139,7 @@ typedef int                bool_t;                          // fast Boolean type
    #define STATIC_ASSERT(CONDITION, VALUE)                         \
      _Pragma("GCC diagnostic push")                                \
      _Pragma("GCC diagnostic ignored \"-Wunused-local-typedefs\"") \
-     typedef int foo_##VALUE[(CONDITION) ? 1 : -1];                \
+     __attribute__((unused)) typedef int foo_##VALUE[(CONDITION) ? 1 : -1];                \
      _Pragma("GCC diagnostic pop")
 
 #else
