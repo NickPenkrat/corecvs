@@ -51,7 +51,7 @@ with_sse {
     !win32-msvc* {
         QMAKE_CFLAGS   += -msse2
         QMAKE_CXXFLAGS += -msse2
-    } else:win32-msvc2010 {
+    } else {
         QMAKE_CFLAGS   += /arch:SSE2
         QMAKE_CXXFLAGS += /arch:SSE2
     }
@@ -62,9 +62,6 @@ with_sse3 {
     !win32-msvc* {
         QMAKE_CFLAGS   += -msse3
         QMAKE_CXXFLAGS += -msse3
-    } else:win32-msvc2010 {
-        QMAKE_CFLAGS   += /arch:SSE3
-        QMAKE_CXXFLAGS += /arch:SSE3
     } else {
         DEFINES -= WITH_SSE3
     }
@@ -75,9 +72,6 @@ with_sse4 {
     !win32-msvc* {
         QMAKE_CFLAGS   += -msse4.1
         QMAKE_CXXFLAGS += -msse4.1
-    } else:win32-msvc2010 {
-        QMAKE_CFLAGS   += /arch:SSE4.1
-        QMAKE_CXXFLAGS += /arch:SSE4.1
     } else {
         DEFINES -= WITH_SSE4
     }
