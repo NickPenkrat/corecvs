@@ -484,9 +484,9 @@ void DistortionWidget::updateScore()
 
     int count = 0;
     PaintImageWidget *canvas = mUi->widget;
-    for (unsigned i = 0; i < (unsigned)canvas->mPaths.size(); i++)
+    for (unsigned i = 0; i < (unsigned)canvas->mFeatures.mPaths.size(); i++)
     {
-        PaintImageWidget::VertexPath &path = canvas->mPaths[i];
+        SelectableGeometryFeatures::VertexPath &path = canvas->mFeatures.mPaths[i];
         if (path.vertexes.size() < 3) {
             continue;
         }
@@ -596,7 +596,8 @@ void DistortionWidget::addPointPair(const Vector3dd &key, const Vector2dd &value
 {
     PointObservation observation(key, value);
     mUi->calibrationFeatures->addObservation(observation);
-    mUi->widget->addVertex(value);
+    /*TODO!!!!*/
+    //mUi->widget->addVertex(value);
 }
 
 
