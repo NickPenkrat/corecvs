@@ -40,9 +40,14 @@ asserts {
 }
 
 with_avx {
-    QMAKE_CFLAGS   += -mavx
-    QMAKE_CXXFLAGS += -mavx
-    DEFINES        += WITH_AVX
+    DEFINES += WITH_AVX WITH_AVX2
+    !win32-msvc* {
+        QMAKE_CFLAGS   += -mavx -mavx2
+        QMAKE_CXXFLAGS += -mavx -mavx2
+    } else {
+        QMAKE_CFLAGS   += /arch:AVX /arch:AVX2
+        QMAKE_CXXFLAGS += /arch:AVX /arch:AVX2
+    }
 }
 
 with_sse {
@@ -52,8 +57,8 @@ with_sse {
         QMAKE_CFLAGS   += -msse2
         QMAKE_CXXFLAGS += -msse2
     } else {
-        QMAKE_CFLAGS   += /arch:SSE2
-        QMAKE_CXXFLAGS += /arch:SSE2
+        #QMAKE_CFLAGS   += /arch:SSE2     # actual only for x86 mode
+        #QMAKE_CXXFLAGS += /arch:SSE2
     }
 }
 with_sse3 {
@@ -63,7 +68,7 @@ with_sse3 {
         QMAKE_CFLAGS   += -msse3
         QMAKE_CXXFLAGS += -msse3
     } else {
-        DEFINES -= WITH_SSE3
+        #DEFINES -= WITH_SSE3
     }
 }
 with_sse4 {
@@ -73,7 +78,7 @@ with_sse4 {
         QMAKE_CFLAGS   += -msse4.1
         QMAKE_CXXFLAGS += -msse4.1
     } else {
-        DEFINES -= WITH_SSE4
+        #DEFINES -= WITH_SSE4
     }
 }
 
