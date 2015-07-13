@@ -227,8 +227,11 @@ isEmpty(CCACHE_TOOLCHAIN_ON) {
     QMAKE_CXXFLAGS_STATIC_LIB=
 
     !win32 {
-        QMAKE_CFLAGS +=-fPIC
+        QMAKE_CFLAGS   +=-fPIC
         QMAKE_CXXFLAGS +=-fPIC
+    }
+    !win32 {
+        QMAKE_LFLAGS += -ldl			# load symbol links from "dll/so" files
     }
 } else {
    #QMAKE_CXXFLAGS_DEBUG   += /showIncludes
