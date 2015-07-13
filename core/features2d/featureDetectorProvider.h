@@ -4,9 +4,8 @@
 #include "imageKeyPoints.h"
 #include "algoBase.h"
 
-// TODO: it seems unclear wether or not we need detectImpl instead of just 
-// making detect/compute itself virtual
-class FeatureDetector : public virtual AlgoBase {
+class FeatureDetector : public virtual AlgoBase
+{
 public:
 	void detect(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints);
 	virtual ~FeatureDetector() {}
@@ -14,15 +13,17 @@ protected:
 	virtual void detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints) = 0;
 };
 
-class FeatureDetectorProviderImpl {
-	public:
-		virtual FeatureDetector* getFeatureDetector(const DetectorType &type) = 0;
-		virtual bool provides(const DetectorType &type) = 0;
-		virtual ~FeatureDetectorProviderImpl() {}
-	protected:
+class FeatureDetectorProviderImpl
+{
+public:
+	virtual FeatureDetector* getFeatureDetector(const DetectorType &type) = 0;
+	virtual bool provides(const DetectorType &type) = 0;
+	virtual ~FeatureDetectorProviderImpl() {}
+protected:
 };
 
-class FeatureDetectorProvider {
+class FeatureDetectorProvider
+{
 public:
 	void add(FeatureDetectorProviderImpl *provider);
 	FeatureDetector* getDetector(const DetectorType &type);

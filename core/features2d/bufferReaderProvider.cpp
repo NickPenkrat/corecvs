@@ -1,8 +1,11 @@
 #include "bufferReaderProvider.h"
 
-BufferReader* BufferReaderProvider::getBufferReader(const std::string &filename) {
-    for(std::vector<BufferReaderProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p) {
-        if((*p)->provides(filename)) {
+BufferReader* BufferReaderProvider::getBufferReader(const std::string &filename)
+{
+    for (std::vector<BufferReaderProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p)
+    {
+        if ((*p)->provides(filename))
+        {
             return (*p)->getBufferReader(filename);
 		}
 	}
@@ -10,23 +13,28 @@ BufferReader* BufferReaderProvider::getBufferReader(const std::string &filename)
 	return 0;
 }
 
-void BufferReaderProvider::add(BufferReaderProviderImpl *provider) {
+void BufferReaderProvider::add(BufferReaderProviderImpl *provider)
+{
 	providers.push_back(provider);
 }
 
-BufferReaderProvider::~BufferReaderProvider() {
-    for(std::vector<BufferReaderProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p) {
+BufferReaderProvider::~BufferReaderProvider()
+{
+    for (std::vector<BufferReaderProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p)
+    {
         delete *p;
     }
 	providers.clear();
 }
 
-BufferReaderProvider& BufferReaderProvider::getInstance() {
+BufferReaderProvider& BufferReaderProvider::getInstance()
+{
 	static BufferReaderProvider provider;
 	return provider;
 }
 
-BufferReaderProvider::BufferReaderProvider() {
+BufferReaderProvider::BufferReaderProvider()
+{
 }
 
 

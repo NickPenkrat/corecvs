@@ -9,9 +9,11 @@
 typedef std::string DescriptorType;
 typedef std::string DetectorType;
 
-struct KeyPoint {
+struct KeyPoint
+{
 	KeyPoint(double x = 0.0, double y = 0.0, double size = 0.0, double angle = -1.0, double response = 0.0, int octave = 0)
-		: x(x), y(y), size(size), angle(angle), response(response), octave(octave) {
+		: x(x), y(y), size(size), angle(angle), response(response), octave(octave)
+	{
 	}
 
 	friend std::ostream& operator<<(std::ostream& os, const KeyPoint &kp);
@@ -25,7 +27,8 @@ struct KeyPoint {
 	int octave;
 };
 
-struct ImageKeyPoints {
+struct ImageKeyPoints
+{
 	void save(const std::string &filename) const;
 	void load(const std::string &filename);
 	void save(std::ostream &os) const;
@@ -33,12 +36,13 @@ struct ImageKeyPoints {
 
 	friend std::ostream& operator<<(std::ostream& os, const ImageKeyPoints& kp);
 	friend std::istream& operator>>(std::istream& is, ImageKeyPoints& kp);
-	
+
 	std::vector<KeyPoint> keyPoints;
 };
 
 
-struct ImageDescriptors {
+struct ImageDescriptors
+{
 	RuntimeTypeBuffer mat;
 	DescriptorType type;
 
@@ -50,10 +54,11 @@ struct ImageDescriptors {
 	friend std::istream& operator>>(std::istream &is, ImageDescriptors &b);
 };
 
-struct Image {
+struct Image
+{
 	ImageDescriptors descriptors;
 	ImageKeyPoints keyPoints;
-	
+
 	size_t id;
 	std::string filename;
 

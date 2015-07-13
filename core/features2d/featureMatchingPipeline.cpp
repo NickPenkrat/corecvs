@@ -21,11 +21,12 @@ const char* KEYPOINT_EXTENSION = "keypoints";
 const char* DESCRIPTOR_EXTENSION = "descriptors";
 const char* SIFT_EXTENSION = "sift";
 
-std::string changeExtension(const std::string &imgName, const std::string &desiredExt) {
+std::string changeExtension(const std::string &imgName, const std::string &desiredExt)
+{
 	std::string res(imgName);
 
 	int dotPos = res.size() - 1;
-	for(; dotPos >= 0 && res[dotPos] != '.'; --dotPos);
+	for (; dotPos >= 0 && res[dotPos] != '.'; --dotPos);
 	assert(dotPos >= 0);
 
 	res.resize(dotPos + 1 + desiredExt.size());
@@ -34,47 +35,63 @@ std::string changeExtension(const std::string &imgName, const std::string &desir
 	return res;
 }
 
-FeatureMatchingPipeline::FeatureMatchingPipeline(const std::vector<std::string> &filenames) {
+FeatureMatchingPipeline::FeatureMatchingPipeline(const std::vector<std::string> &filenames)
+{
 	images.reserve(filenames.size());
-	for(size_t i = 0; i < filenames.size(); ++i)
+	for (size_t i = 0; i < filenames.size(); ++i)
+	{
 		images.push_back(Image(i,filenames[i]));
+	}
 }
 
-FeatureMatchingPipeline::~FeatureMatchingPipeline() {
-    for(std::vector<FeatureMatchingPipelineStage*>::iterator ps = pipeline.begin(); ps != pipeline.end(); ++ps) {
-        (*ps)->~FeatureMatchingPipelineStage();
-    }
+FeatureMatchingPipeline::~FeatureMatchingPipeline()
+{
+	for (std::vector<FeatureMatchingPipelineStage*>::iterator ps = pipeline.begin(); ps != pipeline.end(); ++ps)
+	{
+		(*ps)->~FeatureMatchingPipelineStage();
+	}
 	pipeline.clear();
 }
 
-void FeatureMatchingPipeline::run() {
-	for(size_t id = 0; id < pipeline.size(); ++id) {
+void FeatureMatchingPipeline::run()
+{
+	for (size_t id = 0; id < pipeline.size(); ++id)
+	{
 		auto sParams = saveParams[id];
 		auto lParams = loadParams[id];
 		auto ps = pipeline[id];
 
-		if(lParams.first)
+		if (lParams.first)
+		{
 			ps->loadResults(this, lParams.second);
-		if(runEnable[id])
+		}
+		if (runEnable[id])
+		{
 			ps->run(this);
-		if(sParams.first)
+		}
+		if (sParams.first)
+		{
 			ps->saveResults(this, sParams.second);
+		}
 	}
 }
 
-void FeatureMatchingPipeline::add(FeatureMatchingPipelineStage *ps, bool run, std::pair<bool, std::string> saveParams, std::pair<bool, std::string> loadParams) {
-	this->saveParams.push_back(saveParams);
-	this->loadParams.push_back(loadParams);
+void FeatureMatchingPipeline::add(FeatureMatchingPipelineStage *ps, bool run, bool saveData, const std::string &saveName, bool loadData, const std::string& loadName)
+{
+	this->saveParams.push_back(std::make_pair(saveData, saveName));
+	this->loadParams.push_back(std::make_pair(loadData, loadName));
 	runEnable.push_back(run);
 	pipeline.push_back(ps);
 }
 
 #ifdef WITH_TBB
-class ParallelDetector {
+class ParallelDetector
+{
 	FeatureMatchingPipeline* pipeline;
 	DetectorType detectorType;
 public:
-	void operator() (const tbb::blocked_range<size_t>& r) const {
+	void operator() (const tbb::blocked_range<size_t>& r) const
+	{
 		FeatureDetector* detector = FeatureDetectorProvider::getInstance().getDetector(detectorType);
 		size_t N = pipeline->images.size();
 		size_t id = r.begin();
@@ -85,7 +102,8 @@ public:
 		pipeline->tic(id, false);
 		size_t kpt = 0;
 
-		for(size_t i = r.begin(); i != r.end(); ++i) {
+		for (size_t i = r.begin(); i != r.end(); ++i)
+		{
 			Image& image = pipeline->images[i];
 			image.keyPoints.keyPoints.clear();
 
@@ -98,7 +116,8 @@ public:
 
 			kpt += image.keyPoints.keyPoints.size();
 			cnt++;
-			if(cnt % 4 == 0) {
+			if (cnt % 4 == 0)
+			{
 				ss2 << kpt << " keypoints"; kpt = 0;
 				pipeline->toc(ss1.str(), ss2.str(), N, cnt, id, false); cnt = 0;
 				ss1.str("");
@@ -109,7 +128,8 @@ public:
 
 		}
 
-		if(cnt) {
+		if (cnt)
+		{
 			ss2 << kpt << " keypoints"; kpt = 0;
 			pipeline->toc(ss1.str(), ss2.str(), N, cnt, id, false); cnt = 0;
 		}
@@ -120,20 +140,22 @@ public:
 };
 #endif
 
-void KeyPointDetectionStage::run(FeatureMatchingPipeline *pipeline) {
+void KeyPointDetectionStage::run(FeatureMatchingPipeline *pipeline)
+{
 	FeatureDetector* detector = FeatureDetectorProvider::getInstance().getDetector(detectorType);
 	pipeline->tic();
 	std::stringstream ss1, ss2;
 
 	size_t N = pipeline->images.size();
 #ifndef WITH_TBB
-	for(size_t i = 0; i < N; ++i) {
+	for (size_t i = 0; i < N; ++i)
+	{
 		Image& image = pipeline->images[i];
 		image.keyPoints.keyPoints.clear();
-		
+
 		ss1 << "Detecting keypoints with " << detectorType << " on " << image.filename;
 		pipeline->tic();
-		
+
 		BufferReader* reader = BufferReaderProvider::getInstance().getBufferReader(image.filename);
 		RuntimeTypeBuffer img = reader->read(image.filename);
 		delete reader;
@@ -143,16 +165,18 @@ void KeyPointDetectionStage::run(FeatureMatchingPipeline *pipeline) {
 		ss1.str(""); ss2.str("");
 	}
 #else
-	tbb::parallel_for(tbb::blocked_range<size_t>(0, N, std::max(N / 16, (size_t)1)), ParallelDetector(pipeline,detectorType));
+	tbb::parallel_for (tbb::blocked_range<size_t>(0, N, std::max(N / 16, (size_t)1)), ParallelDetector(pipeline,detectorType));
 #endif
 	ss1 << "Detecting keypoints with " << detectorType;
 	pipeline->toc(ss1.str(), ss2.str());
 	delete detector;
 }
 
-void KeyPointDetectionStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const {
+void KeyPointDetectionStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const
+{
 	std::vector<Image>& images = pipeline->images;
-	for(size_t i = 0; i < images.size(); ++i) {
+	for (size_t i = 0; i < images.size(); ++i)
+	{
 		std::string filename = changeExtension(images[i].filename, KEYPOINT_EXTENSION);
 
 		images[i].keyPoints.save(filename);
@@ -160,9 +184,11 @@ void KeyPointDetectionStage::saveResults(FeatureMatchingPipeline *pipeline, cons
 
 }
 
-void KeyPointDetectionStage::loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename) {
+void KeyPointDetectionStage::loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename)
+{
 	std::vector<Image>& images = pipeline->images;
-	for(size_t i = 0; i < images.size(); ++i) {
+	for (size_t i = 0; i < images.size(); ++i)
+	{
 		std::string filename = changeExtension(images[i].filename, KEYPOINT_EXTENSION);
 		std::ifstream ifs;
 
@@ -170,16 +196,19 @@ void KeyPointDetectionStage::loadResults(FeatureMatchingPipeline *pipeline, cons
 	}
 }
 
-KeyPointDetectionStage::KeyPointDetectionStage(DetectorType type) : detectorType(type) {
+KeyPointDetectionStage::KeyPointDetectionStage(DetectorType type) : detectorType(type)
+{
 }
 
-void DescriptorExtractionStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const {
+void DescriptorExtractionStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const
+{
 	auto images = pipeline->images;
-	for(size_t i = 0; i < images.size(); ++i) {
+	for (size_t i = 0; i < images.size(); ++i)
+	{
 		std::string filename = changeExtension(images[i].filename, DESCRIPTOR_EXTENSION);
 
 		images[i].descriptors.save(filename);
-		
+
 		// NOTE: in some cases (e.g. using different detector/descriptor setup) we are not able
 		// to compute descriptor for each of keypoint, so some of them are removed.
 		// So, we need to overwrite keypoint files!
@@ -187,12 +216,14 @@ void DescriptorExtractionStage::saveResults(FeatureMatchingPipeline *pipeline, c
 
 		images[i].keyPoints.save(filename);
 	}
-	
+
 }
 
-void DescriptorExtractionStage::loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename) {
+void DescriptorExtractionStage::loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename)
+{
 	std::vector<Image> &images = pipeline->images;
-	for(size_t i = 0; i < images.size(); ++i) {
+	for (size_t i = 0; i < images.size(); ++i)
+	{
 		Image &image = images[i];
 		std::string filename = changeExtension(image.filename, DESCRIPTOR_EXTENSION);
 
@@ -205,12 +236,14 @@ void DescriptorExtractionStage::loadResults(FeatureMatchingPipeline *pipeline, c
 }
 
 #ifdef WITH_TBB
-class ParallelExtractor {
+class ParallelExtractor
+{
 	FeatureMatchingPipeline* pipeline;
 	DescriptorType descriptorType;
 public:
-	void operator() (const tbb::blocked_range<size_t>& r) const {
-	DescriptorExtractor* extractor = DescriptorExtractorProvider::getInstance().getDescriptorExtractor(descriptorType);
+	void operator() (const tbb::blocked_range<size_t>& r) const
+	{
+		DescriptorExtractor* extractor = DescriptorExtractorProvider::getInstance().getDescriptorExtractor(descriptorType);
 		size_t N = pipeline->images.size();
 		size_t id = r.begin();
 
@@ -220,7 +253,8 @@ public:
 		pipeline->tic(id, false);
 		size_t kpt = 0;
 
-		for(size_t i = r.begin(); i != r.end(); ++i) {
+		for (size_t i = r.begin(); i != r.end(); ++i)
+		{
 			Image& image = pipeline->images[i];
 
 			ss1 << image.filename << ", ";
@@ -228,25 +262,27 @@ public:
 			BufferReader* reader = BufferReaderProvider::getInstance().getBufferReader(image.filename);
 			RuntimeTypeBuffer img = reader->read(image.filename);
 			delete reader;
-		extractor->compute(img, image.keyPoints.keyPoints, image.descriptors.mat);
-		image.descriptors.type = descriptorType;
+			extractor->compute(img, image.keyPoints.keyPoints, image.descriptors.mat);
+			image.descriptors.type = descriptorType;
 
-		assert(image.descriptors.mat.getRows() == image.keyPoints.keyPoints.size());
+			assert(image.descriptors.mat.getRows() == image.keyPoints.keyPoints.size());
 
 			kpt += image.keyPoints.keyPoints.size();
 			cnt++;
-			if(cnt % 4 == 0) {
+			if (cnt % 4 == 0)
+			{
 				ss2 << kpt << " descriptors"; kpt = 0;
 				pipeline->toc(ss1.str(), ss2.str(), N, cnt, id, false); cnt = 0;
 				ss1.str("");
 				ss2.str("");
-		ss1 << "Extracting " << descriptorType << " descriptors " << " from ";
+				ss1 << "Extracting " << descriptorType << " descriptors " << " from ";
 				pipeline->tic(r.begin(), false);
 			}
 
 		}
 
-		if(cnt) {
+		if (cnt)
+		{
 			ss2 << kpt << " descriptors"; kpt = 0;
 			pipeline->toc(ss1.str(), ss2.str(), N, cnt, id, false); cnt = 0;
 		}
@@ -257,19 +293,21 @@ public:
 };
 #endif
 
-void DescriptorExtractionStage::run(FeatureMatchingPipeline *pipeline) {
+void DescriptorExtractionStage::run(FeatureMatchingPipeline *pipeline)
+{
 	DescriptorExtractor* extractor = DescriptorExtractorProvider::getInstance().getDescriptorExtractor(descriptorType);
 	pipeline->tic();
 	std::stringstream ss1, ss2;
 	std::vector<Image> &images = pipeline->images;
-	
+
 	size_t N = pipeline->images.size();
 #ifndef WITH_TBB
-	for(size_t i = 0; i < N; ++i) {
+	for (size_t i = 0; i < N; ++i)
+	{
 		Image& image = pipeline->images[i];
 		ss1 << "Extracting " << descriptorType << " descriptors " << " from " << image.filename;
 		pipeline->tic();
-		
+
 		BufferReader* reader = BufferReaderProvider::getInstance().getBufferReader(image.filename);
 		RuntimeTypeBuffer img = reader->read(image.filename);
 		delete reader;
@@ -283,7 +321,7 @@ void DescriptorExtractionStage::run(FeatureMatchingPipeline *pipeline) {
 		ss1.str(""); ss2.str("");
 	}
 #else
-	tbb::parallel_for(tbb::blocked_range<size_t>(0, N, std::max(N / 16,(size_t)1)), ParallelExtractor(pipeline,descriptorType));
+	tbb::parallel_for (tbb::blocked_range<size_t>(0, N, std::max(N / 16,(size_t)1)), ParallelExtractor(pipeline,descriptorType));
 #endif
 
 	ss1 << "Extracting " << descriptorType << " descriptors";
@@ -291,18 +329,22 @@ void DescriptorExtractionStage::run(FeatureMatchingPipeline *pipeline) {
 	delete extractor;
 }
 
-DescriptorExtractionStage::DescriptorExtractionStage(DescriptorType type) : descriptorType(type) {
+DescriptorExtractionStage::DescriptorExtractionStage(DescriptorType type) : descriptorType(type)
+{
 }
 
-void MatchingPlanComputationStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const {
+void MatchingPlanComputationStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const
+{
 	pipeline->matchPlan.save(filename);
 }
 
-void MatchingPlanComputationStage::loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename) {
+void MatchingPlanComputationStage::loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename)
+{
 	pipeline->matchPlan.load(filename);
 }
 
-void MatchingPlanComputationStage::run(FeatureMatchingPipeline *pipeline) {
+void MatchingPlanComputationStage::run(FeatureMatchingPipeline *pipeline)
+{
 	pipeline->tic();
 	MatchPlan &matchPlan = pipeline->matchPlan;
 	std::vector<Image> &images = pipeline->images;
@@ -310,38 +352,49 @@ void MatchingPlanComputationStage::run(FeatureMatchingPipeline *pipeline) {
 
 	matchPlan.plan.clear();
 
-	for(size_t i = 0; i < N; ++i) {
+	for (size_t i = 0; i < N; ++i)
+	{
 		std::deque<uint16_t> query(images[i].keyPoints.keyPoints.size());
-		for(size_t j = 0; j < images[i].keyPoints.keyPoints.size(); ++j)	query[j] = j;
+		for (size_t j = 0; j < images[i].keyPoints.keyPoints.size(); ++j)
+		{
+			query[j] = j;
+		}
 
-		for(size_t j = 0; j < N; ++j) {
-			if(i == j)
+		for (size_t j = 0; j < N; ++j)
+		{
+			if (i == j)
 				continue;
 			std::deque<uint16_t> train(images[j].keyPoints.keyPoints.size());
-			for(size_t k = 0; k < images[j].keyPoints.keyPoints.size(); ++k)	train[k] = k;
+			for (size_t k = 0; k < images[j].keyPoints.keyPoints.size(); ++k)
+			{
+				train[k] = k;
+			}
 
-            MatchPlanEntry entry = {i, j, query, train};
-            matchPlan.plan.push_back(entry);
+			MatchPlanEntry entry = {i, j, query, train};
+			matchPlan.plan.push_back(entry);
 		}
 	}
 	pipeline->toc("Preparing matching plan", "");
 }
 
-MatchingStage::MatchingStage(DescriptorType type, size_t responsesPerPoint) : descriptorType(type), responsesPerPoint(responsesPerPoint) {
+MatchingStage::MatchingStage(DescriptorType type, size_t responsesPerPoint) : descriptorType(type), responsesPerPoint(responsesPerPoint)
+{
 }
 #ifdef WITH_TBB
-class ParallelMatcher {
+class ParallelMatcher
+{
 	FeatureMatchingPipeline* pipeline;
 	DescriptorType descriptorType;
 	size_t responsesPerPoint;
 public:
-	void operator() (const tbb::blocked_range<size_t>& r) const {
+	void operator() (const tbb::blocked_range<size_t>& r) const
+	{
 		size_t N = pipeline->images.size();
 		size_t S = pipeline->matchPlan.plan.size();
 		size_t id = r.begin();
-	MatchPlan &matchPlan = pipeline->matchPlan;
-	RawMatches &rawMatches = pipeline->rawMatches;
-	std::vector<Image> &images = pipeline->images;
+		MatchPlan &matchPlan = pipeline->matchPlan;
+		RawMatches &rawMatches = pipeline->rawMatches;
+		std::vector<Image> &images = pipeline->images;
 
 		std::stringstream ss1, ss2;
 		ss1 << "Matched sets ";
@@ -349,49 +402,57 @@ public:
 		pipeline->tic(id, false);
 		size_t kpt = 0;
 
-		for(size_t i = r.begin(); i != r.end(); ++i) {
+		for (size_t i = r.begin(); i != r.end(); ++i)
+		{
 			ss1 << i << ", ";
 			size_t s = i;
-		size_t I = matchPlan.plan[s].queryImg;
-		size_t J = matchPlan.plan[s].trainImg;
-		auto &query = matchPlan.plan[s];
+			size_t I = matchPlan.plan[s].queryImg;
+			size_t J = matchPlan.plan[s].trainImg;
+			auto &query = matchPlan.plan[s];
 
-		assert(I < N && J < N);
-
-
-		RuntimeTypeBuffer qb(images[I].descriptors.mat);
-		RuntimeTypeBuffer tb(images[J].descriptors.mat);
-
-		for(size_t j = 0; j < query.queryFeatures.size(); ++j) {
-			memcpy(qb.row<void>(j), images[I].descriptors.mat.row<void>(query.queryFeatures[j]), qb.getRowSize());
-		}
-		for(size_t j = 0; j < query.trainFeatures.size(); ++j) {
-			memcpy(tb.row<void>(j), images[J].descriptors.mat.row<void>(query.trainFeatures[j]), tb.getRowSize());
-		}
-
-		DescriptorMatcher* matcher = DescriptorMatcherProvider::getInstance().getMatcher(descriptorType);
-		std::vector<std::vector<RawMatch>> ml;
-		matcher->knnMatch(qb, tb, ml, responsesPerPoint);
+			assert(I < N && J < N);
 
 
-		for(auto& v: ml) {
-			std::array<RawMatch, 2> mk;
-			for(size_t i = 0; i < v.size(); ++i) {
-				mk[i] = v[i];
+			RuntimeTypeBuffer qb(images[I].descriptors.mat);
+			RuntimeTypeBuffer tb(images[J].descriptors.mat);
+
+			for (size_t j = 0; j < query.queryFeatures.size(); ++j)
+			{
+				memcpy(qb.row<void>(j), images[I].descriptors.mat.row<void>(query.queryFeatures[j]), qb.getRowSize());
 			}
-			rawMatches.matches[s].push_back(mk);
-		}
-
-		// It's time to replace indicies
-		for(auto& v: rawMatches.matches[s]) {
-			for(auto& m: v) {
-				m.featureQ = query.queryFeatures[m.featureQ];
-				m.featureT = query.trainFeatures[m.featureT];
+			for (size_t j = 0; j < query.trainFeatures.size(); ++j)
+			{
+				memcpy(tb.row<void>(j), images[J].descriptors.mat.row<void>(query.trainFeatures[j]), tb.getRowSize());
 			}
-		}
+
+			DescriptorMatcher* matcher = DescriptorMatcherProvider::getInstance().getMatcher(descriptorType);
+			std::vector<std::vector<RawMatch>> ml;
+			matcher->knnMatch(qb, tb, ml, responsesPerPoint);
+
+
+			for (auto& v: ml)
+			{
+				std::array<RawMatch, 2> mk;
+				for (size_t i = 0; i < v.size(); ++i)
+				{
+					mk[i] = v[i];
+				}
+				rawMatches.matches[s].push_back(mk);
+			}
+
+			// It's time to replace indicies
+			for (auto& v: rawMatches.matches[s])
+			{
+				for (auto& m: v)
+				{
+					m.featureQ = query.queryFeatures[m.featureQ];
+					m.featureT = query.trainFeatures[m.featureT];
+				}
+			}
 
 			cnt++;
-			if(cnt % 16 == 0) {
+			if (cnt % 16 == 0)
+			{
 				pipeline->toc(ss1.str(), ss2.str(), S, cnt, id, false); cnt = 0;
 				ss1.str("");
 				ss1 << "Matched sets ";
@@ -400,7 +461,8 @@ public:
 
 		}
 
-		if(cnt) {
+		if (cnt)
+		{
 			pipeline->toc(ss1.str(), ss2.str(), S, cnt, id, false); cnt = 0;
 		}
 
@@ -409,7 +471,8 @@ public:
 };
 #endif
 
-void MatchingStage::run(FeatureMatchingPipeline *pipeline) {
+void MatchingStage::run(FeatureMatchingPipeline *pipeline)
+{
 	pipeline->tic();
 	MatchPlan &matchPlan = pipeline->matchPlan;
 	RawMatches &rawMatches = pipeline->rawMatches;
@@ -424,7 +487,8 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline) {
 	DescriptorMatcher* matcher = DescriptorMatcherProvider::getInstance().getMatcher(descriptorType);
 
 #ifndef WITH_TBB
-	for(size_t s = 0; s < matchPlan.plan.size(); ++s) {
+	for (size_t s = 0; s < matchPlan.plan.size(); ++s)
+	{
 		pipeline->tic();
 		size_t I = matchPlan.plan[s].queryImg;
 		size_t J = matchPlan.plan[s].trainImg;
@@ -435,33 +499,39 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline) {
 		RuntimeTypeBuffer qb(images[I].descriptors.mat);
 		RuntimeTypeBuffer tb(images[J].descriptors.mat);
 
-		for(size_t j = 0; j < query.queryFeatures.size(); ++j) {
+		for (size_t j = 0; j < query.queryFeatures.size(); ++j)
+		{
 			memcpy(qb.row<void>(j), images[I].descriptors.mat.row<void>(query.queryFeatures[j]), qb.getRowSize());
 		}
-		for(size_t j = 0; j < query.trainFeatures.size(); ++j) {
+		for (size_t j = 0; j < query.trainFeatures.size(); ++j)
+		{
 			memcpy(tb.row<void>(j), images[J].descriptors.mat.row<void>(query.trainFeatures[j]), tb.getRowSize());
 		}
 
-        std::vector<std::vector<RawMatch>> ml;
-        matcher->knnMatch(qb, tb, ml, responsesPerPoint);
+		std::vector<std::vector<RawMatch>> ml;
+		matcher->knnMatch(qb, tb, ml, responsesPerPoint);
 
 
-        for(std::vector<std::vector<RawMatch> >::iterator it = ml.begin(); it != ml.end(); ++it) {
-            std::vector<RawMatch>& v = *it;
-            std::array<RawMatch, 2> mk;
-            for(size_t i = 0; i < v.size() && i < 2 && v[i].isValid(); ++i) {
-                mk[i] = v[i];
-            }
-            rawMatches.matches[s].push_back(mk);
-        }
+		for (std::vector<std::vector<RawMatch> >::iterator it = ml.begin(); it != ml.end(); ++it)
+		{
+			std::vector<RawMatch>& v = *it;
+			std::array<RawMatch, 2> mk;
+			for (size_t i = 0; i < v.size() && i < 2 && v[i].isValid(); ++i)
+			{
+				mk[i] = v[i];
+			}
+			rawMatches.matches[s].push_back(mk);
+		}
 
 		// It's time to replace indicies
-        for(std::deque<std::array<RawMatch, 2>>::iterator it = rawMatches.matches[s].begin(); it != rawMatches.matches[s].end(); ++it) {
-            std::array<RawMatch, 2> &v = *it;
-            for(std::array<RawMatch, 2>::iterator m = v.begin(); m != v.end() && m->isValid(); ++m) {
+		for (std::deque<std::array<RawMatch, 2>>::iterator it = rawMatches.matches[s].begin(); it != rawMatches.matches[s].end(); ++it)
+		{
+			std::array<RawMatch, 2> &v = *it;
+			for (std::array<RawMatch, 2>::iterator m = v.begin(); m != v.end() && m->isValid(); ++m)
+			{
 				total++;
-                m->featureQ = query.queryFeatures[m->featureQ];
-                m->featureT = query.trainFeatures[m->featureT];
+				m->featureQ = query.queryFeatures[m->featureQ];
+				m->featureT = query.trainFeatures[m->featureT];
 			}
 		}
 		std::stringstream ss1, ss2;
@@ -470,43 +540,421 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline) {
 	}
 #else
 	size_t S = matchPlan.plan.size();
-	tbb::parallel_for(tbb::blocked_range<size_t>(0, S, std::max(S / 16,(size_t)1)), ParallelMatcher(pipeline,descriptorType, responsesPerPoint));
+	tbb::parallel_for (tbb::blocked_range<size_t>(0, S, std::max(S / 16,(size_t)1)), ParallelMatcher(pipeline,descriptorType, responsesPerPoint));
 #endif
 	std::stringstream ss;
 	ss << total << " matches (non-symmetric)";
 	pipeline->toc("Computing raw matches", ss.str());
-        delete matcher;
+	delete matcher;
 }
 
-void MatchingStage::loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename) {
+void MatchingStage::loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename)
+{
 	pipeline->rawMatches.load(filename);
 }
 
-void MatchingStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const {
+void MatchingStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const
+{
 	pipeline->rawMatches.save(filename);
 }
 
+
+#ifdef WITH_TBB
+class ParallelMatcherRefiner
+{
+	FeatureMatchingPipeline* pipeline;
+	DescriptorType descriptorType;
+	double scaleThreshold = 0.95;
+	size_t responsesPerPoint = 2;
+	std::vector<int> *first_ptr, *next_ptr, *idx_ptr;
+public:
+	void operator() (const tbb::blocked_range<size_t>& r) const
+	{
+		DescriptorMatcher* matcher = DescriptorMatcherProvider::getInstance().getMatcher(descriptorType);
+		size_t id = r.begin();
+		MatchPlan &matchPlan = pipeline->matchPlan;
+		RawMatches &rawMatches = pipeline->rawMatches;
+		RefinedMatches &refinedMatches = pipeline->refinedMatches;
+		std::vector<Image> &images = pipeline->images;
+		std::vector<int> &first = *first_ptr;
+		std::vector<int> &next = *next_ptr;
+		std::vector<int> &idx = *idx_ptr;
+
+
+		size_t N = images.size();
+		size_t S = N*(N-1)/2;
+		size_t responsesPerPoint = 2;
+		size_t cnt = 0;
+		pipeline->tic(id, false);
+		std::stringstream ss1, ss2;
+		ss1 << "Matched sets ";
+
+		for (size_t perm_id = r.begin(); perm_id < r.end(); ++perm_id)
+		{
+			// Now let's get image indicies from combination id
+			double tt = -0.5 + sqrt(1.0 + 8.0 * perm_id) / 2.0;
+			size_t J = 1+(size_t)tt;
+			size_t I = perm_id - (J - 1) * J / 2;
+			assert(I < J);
+			ss1 << "(" << I << ", " << J << ")";
+
+			std::vector<size_t> reqs;
+#if 0
+			for (size_t i = 0; i < matchPlan.plan.size(); ++i)
+				if (matchPlan.plan[i].isBetween(I, J))
+					reqs.push_back(i);
+#else
+			size_t next_id = first[J*(J-1)/2+I+1];
+			while(next_id)
+			{
+				reqs.push_back(idx[next_id]);
+				assert(matchPlan.plan[idx[next_id]].isBetween(I,J));
+				next_id = next[next_id];
+			}
+#endif
+			// step 1: match
+			for (size_t si = 0; si < reqs.size(); ++si)
+			{
+				size_t s = reqs[si];
+				size_t Is = matchPlan.plan[s].queryImg;
+				size_t Js = matchPlan.plan[s].trainImg;
+				auto &query = matchPlan.plan[s];
+
+				assert(Is < N && Js < N);
+
+				RuntimeTypeBuffer qb(images[Is].descriptors.mat);
+				RuntimeTypeBuffer tb(images[Js].descriptors.mat);
+
+				for (size_t j = 0; j < query.queryFeatures.size(); ++j)
+				{
+					memcpy(qb.row<void>(j), images[Is].descriptors.mat.row<void>(query.queryFeatures[j]), qb.getRowSize());
+				}
+				for (size_t j = 0; j < query.trainFeatures.size(); ++j)
+				{
+					memcpy(tb.row<void>(j), images[Js].descriptors.mat.row<void>(query.trainFeatures[j]), tb.getRowSize());
+				}
+
+				std::vector<std::vector<RawMatch>> ml;
+				matcher->knnMatch(qb, tb, ml, responsesPerPoint);
+
+
+				for (std::vector<std::vector<RawMatch> >::iterator it = ml.begin(); it != ml.end(); ++it)
+				{
+					std::vector<RawMatch>& v = *it;
+					std::array<RawMatch, 2> mk;
+					for (size_t i = 0; i < v.size() && i < 2 && v[i].isValid(); ++i)
+					{
+						mk[i] = v[i];
+					}
+					rawMatches.matches[s].push_back(mk);
+				}
+
+				// It's time to replace indicies
+				for (std::deque<std::array<RawMatch, 2>>::iterator it = rawMatches.matches[s].begin(); it != rawMatches.matches[s].end(); ++it)
+				{
+					std::array<RawMatch, 2> &v = *it;
+					for (std::array<RawMatch, 2>::iterator m = v.begin(); m != v.end() && m->isValid(); ++m)
+					{
+						m->featureQ = query.queryFeatures[m->featureQ];
+						m->featureT = query.trainFeatures[m->featureT];
+					}
+				}
+			}
+			// step 2: merge and clean temp
+			std::deque<std::array<RawMatch, 2> > accumulator[2];
+
+			accumulator[0].resize(images[I].keyPoints.keyPoints.size());
+			accumulator[1].resize(images[J].keyPoints.keyPoints.size());
+
+			for (size_t si = 0; si < reqs.size(); ++si)
+			{
+				size_t s = reqs[si];
+				size_t query = matchPlan.plan[s].queryImg;
+				//				size_t train = matchPlan.plan[s].trainImg;
+
+				//				train = train == I ? 0 : 1;
+				query = query == I ? 0 : 1;
+
+				for (size_t i = 0; i < rawMatches.matches[s].size(); ++i)
+				{
+					for (size_t j = 0; j < rawMatches.matches[s][i].size() && rawMatches.matches[s][i][j].isValid(); ++j)
+					{
+						RawMatch &dm = rawMatches.matches[s][i][j];
+						if (dm.distance < accumulator[query][dm.featureQ][0].distance)
+						{
+							accumulator[query][dm.featureQ][1] = accumulator[query][dm.featureQ][0];
+							accumulator[query][dm.featureQ][0] = dm;
+						} else if ( dm.distance < accumulator[query][dm.featureQ][1].distance) {
+							accumulator[query][dm.featureQ][1] = dm;
+						}
+					}
+				}
+				rawMatches.matches[s].clear();
+				rawMatches.matches[s].shrink_to_fit();
+			}
+			// step 3: refine by distance
+			std::deque<RawMatch> ratioInliers[2];
+			ratioInliers[0].resize(images[I].keyPoints.keyPoints.size());
+			ratioInliers[1].resize(images[J].keyPoints.keyPoints.size());
+
+			for (size_t i = 0; i < 2; ++i)
+			{
+				for (size_t j = 0; j < ratioInliers[i].size(); ++j)
+				{
+					if (accumulator[i][j][0].distance / accumulator[i][j][1].distance < scaleThreshold)
+						ratioInliers[i][j] = accumulator[i][j][0];
+				}
+			}
+			// step 4: refine by symmetry
+			std::deque<Match> final_matches;
+			for (size_t i = 0; i < images[I].keyPoints.keyPoints.size(); ++i)
+			{
+				RawMatch &rm = ratioInliers[0][i];
+				if (!rm.isValid())
+					continue;
+				if (ratioInliers[1][rm.featureT].featureT == rm.featureQ)
+					final_matches.push_back(Match(I, J, rm.featureQ, rm.featureT, rm.distance));
+			}
+			refinedMatches.matchSets[J*(J-1)/2+I]=(RefinedMatchSet(I, J, final_matches));
+			cnt++;
+			if (cnt % 16 == 0)
+			{
+				pipeline->toc(ss1.str(), ss2.str(), S, cnt, id, false); cnt = 0;
+				ss1.str("");
+				ss1 << "Matched sets ";
+				pipeline->tic(r.begin(), false);
+			}
+
+		}
+		if (cnt)
+		{
+			pipeline->toc(ss1.str(), ss2.str(), S, cnt, id, false); cnt = 0;
+		}
+		delete matcher;
+	}
+	ParallelMatcherRefiner(FeatureMatchingPipeline* pipeline, DescriptorType descriptorType, size_t responsesPerPoint, std::vector<int> *first, std::vector<int> *next, std::vector<int> *idx) : pipeline(pipeline), descriptorType(descriptorType), responsesPerPoint(responsesPerPoint), first_ptr(first), next_ptr(next), idx_ptr(idx) {}
+};
+#endif
+
+MatchAndRefineStage::MatchAndRefineStage(DescriptorType descriptorType, double scaleThreshold) : descriptorType(descriptorType), scaleThreshold(scaleThreshold)
+{
+}
+
+void MatchAndRefineStage::loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename)
+{
+	pipeline->refinedMatches.load(filename);
+}
+
+void MatchAndRefineStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const
+{
+	pipeline->refinedMatches.save(filename);
+}
+
+void MatchAndRefineStage::run(FeatureMatchingPipeline *pipeline)
+{
+	pipeline->tic();
+	DescriptorMatcher* matcher = DescriptorMatcherProvider::getInstance().getMatcher(descriptorType);
+
+	MatchPlan &matchPlan = pipeline->matchPlan;
+	RawMatches &rawMatches = pipeline->rawMatches;
+	RefinedMatches &refinedMatches = pipeline->refinedMatches;
+	std::vector<Image> &images = pipeline->images;
+	size_t N = images.size();
+	size_t responsesPerPoint = 2;
+	size_t P = N*(N-1)/2;
+	size_t S = matchPlan.plan.size();
+	std::vector<int> first(P+1);
+	std::vector<int> next(S+1);
+	std::vector<int> idx(S+1);
+	std::vector<int> last(P+1);
+	size_t last_id = 1;
+
+	for (size_t s = 0; s < matchPlan.plan.size(); ++s)
+	{
+		size_t I = matchPlan.plan[s].queryImg;
+		size_t J = matchPlan.plan[s].trainImg;
+		if (I > J)
+		{
+			std::swap(I, J);
+		}
+		size_t pair_id = J*(J-1)/2+I;
+		if (!last[pair_id+1])
+		{
+			first[pair_id+1] = last_id;
+			idx[last_id] = s;
+			last[pair_id+1] = last_id;
+			last_id++;
+		} else {
+			next[last[pair_id+1]] = last_id;
+			last[pair_id+1] = last_id;
+			idx[last_id] = s;
+			last_id++;
+		}
+	}
+
+	rawMatches.matches.resize(matchPlan.plan.size());
+	refinedMatches.matchSets.resize(N*(N-1)/2);
+#ifndef WITH_TBB
+	for (size_t I = 0; I < N; ++I)
+	{
+		for (size_t J = I + 1; J < N; ++J)
+		{
+			std::vector<size_t> reqs;
+#if 0
+			for (size_t i = 0; i < matchPlan.plan.size(); ++i)
+				if (matchPlan.plan[i].isBetween(I, J))
+					reqs.push_back(i);
+#else
+			size_t next_id = first[J*(J-1)/2+I+1];
+			while(next_id)
+			{
+				reqs.push_back(idx[next_id]);
+				assert(matchPlan.plan[idx[next_id]].isBetween(I,J));
+				next_id = next[next_id];
+			}
+#endif
+			// step 1: match
+			for (size_t si = 0; si < reqs.size(); ++si)
+			{
+				size_t s = reqs[si];
+				size_t Is = matchPlan.plan[s].queryImg;
+				size_t Js = matchPlan.plan[s].trainImg;
+				auto &query = matchPlan.plan[s];
+
+				assert(Is < N && Js < N);
+
+				RuntimeTypeBuffer qb(images[Is].descriptors.mat);
+				RuntimeTypeBuffer tb(images[Js].descriptors.mat);
+
+				for (size_t j = 0; j < query.queryFeatures.size(); ++j)
+				{
+					memcpy(qb.row<void>(j), images[Is].descriptors.mat.row<void>(query.queryFeatures[j]), qb.getRowSize());
+				}
+				for (size_t j = 0; j < query.trainFeatures.size(); ++j)
+				{
+					memcpy(tb.row<void>(j), images[Js].descriptors.mat.row<void>(query.trainFeatures[j]), tb.getRowSize());
+				}
+
+				std::vector<std::vector<RawMatch>> ml;
+				matcher->knnMatch(qb, tb, ml, responsesPerPoint);
+
+
+				for (std::vector<std::vector<RawMatch> >::iterator it = ml.begin(); it != ml.end(); ++it)
+				{
+					std::vector<RawMatch>& v = *it;
+					std::array<RawMatch, 2> mk;
+					for (size_t i = 0; i < v.size() && i < 2 && v[i].isValid(); ++i)
+					{
+						mk[i] = v[i];
+					}
+					rawMatches.matches[s].push_back(mk);
+				}
+
+				// It's time to replace indicies
+				for (std::deque<std::array<RawMatch, 2>>::iterator it = rawMatches.matches[s].begin(); it != rawMatches.matches[s].end(); ++it)
+				{
+					std::array<RawMatch, 2> &v = *it;
+					for (std::array<RawMatch, 2>::iterator m = v.begin(); m != v.end() && m->isValid(); ++m)
+					{
+						m->featureQ = query.queryFeatures[m->featureQ];
+						m->featureT = query.trainFeatures[m->featureT];
+					}
+				}
+			}
+			// step 2: merge and clean temp
+			std::deque<std::array<RawMatch, 2> > accumulator[2];
+
+			accumulator[0].resize(images[I].keyPoints.keyPoints.size());
+			accumulator[1].resize(images[J].keyPoints.keyPoints.size());
+
+			for (size_t si = 0; si < reqs.size(); ++si)
+			{
+				size_t s = reqs[si];
+				size_t query = matchPlan.plan[s].queryImg;
+				//				size_t train = matchPlan.plan[s].trainImg;
+
+				//				train = train == I ? 0 : 1;
+				query = query == I ? 0 : 1;
+
+				for (size_t i = 0; i < rawMatches.matches[s].size(); ++i)
+				{
+					for (size_t j = 0; j < rawMatches.matches[s][i].size() && rawMatches.matches[s][i][j].isValid(); ++j)
+					{
+						RawMatch &dm = rawMatches.matches[s][i][j];
+						if (dm.distance < accumulator[query][dm.featureQ][0].distance)
+						{
+							accumulator[query][dm.featureQ][1] = accumulator[query][dm.featureQ][0];
+							accumulator[query][dm.featureQ][0] = dm;
+						} else if ( dm.distance < accumulator[query][dm.featureQ][1].distance) {
+							accumulator[query][dm.featureQ][1] = dm;
+						}
+					}
+				}
+				rawMatches.matches[s].clear();
+				rawMatches.matches[s].shrink_to_fit();
+			}
+			// step 3: refine by distance
+			std::deque<RawMatch> ratioInliers[2];
+			ratioInliers[0].resize(images[I].keyPoints.keyPoints.size());
+			ratioInliers[1].resize(images[J].keyPoints.keyPoints.size());
+
+			for (size_t i = 0; i < 2; ++i)
+			{
+				for (size_t j = 0; j < ratioInliers[i].size(); ++j)
+				{
+					if (accumulator[i][j][0].distance / accumulator[i][j][1].distance < scaleThreshold)
+						ratioInliers[i][j] = accumulator[i][j][0];
+				}
+			}
+			// step 4: refine by symmetry
+			std::deque<Match> final_matches;
+			for (size_t i = 0; i < images[I].keyPoints.keyPoints.size(); ++i)
+			{
+				RawMatch &rm = ratioInliers[0][i];
+				if (!rm.isValid()) continue;
+				if (ratioInliers[1][rm.featureT].featureT == rm.featureQ)
+					final_matches.push_back(Match(I, J, rm.featureQ, rm.featureT, rm.distance));
+			}
+			if (final_matches.size())
+			{
+				refinedMatches.matchSets[J*(J-1)/2+I]=(RefinedMatchSet(I, J, final_matches));
+			}
+			std::cerr << "Computed all matches for " << I << ":" << J << std::endl;
+		}
+	}
+#else
+	tbb::parallel_for (tbb::blocked_range<size_t>(0, P, std::max(P / 16,(size_t)1)), ParallelMatcherRefiner(pipeline,descriptorType, responsesPerPoint, &first, &next, &idx));
+#endif
+	pipeline->toc("Computing & refining matches on-the-fly", "");
+	delete matcher;
+}
+
 #ifdef WITH_CLUSTERS
-RandIndexStage::RandIndexStage() {
+RandIndexStage::RandIndexStage()
+{
 };
 
-void RandIndexStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const {
+void RandIndexStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const
+{
 	std::ofstream os;
 	os.open(filename, std::ostream::out);
 
 
 	size_t N = index.size();
 
-	for(size_t i = 0; i < N; ++i) {
-		for(size_t j = 0; j < N; ++j) {
+	for (size_t i = 0; i < N; ++i)
+	{
+		for (size_t j = 0; j < N; ++j)
+		{
 			os << std::setprecision(9) <<  index[i][j] << (j + 1 == N ? "" : ",");
 		}
 		os << std::endl;
 	}
-	
+
 }
 
-void drawMatches(const std::string &prefix, size_t idxL, size_t idxR, std::vector<std::vector<size_t>> &cls, std::vector<int> &bestA, std::vector<int> &bestB, FeatureMatchingPipeline* pipeline, bool rl, RefinedMatchSet *set = 0) {
+void drawMatches(const std::string &prefix, size_t idxL, size_t idxR, std::vector<std::vector<size_t>> &cls, std::vector<int> &bestA, std::vector<int> &bestB, FeatureMatchingPipeline* pipeline, bool rl, RefinedMatchSet *set = 0)
+{
 	cv::Mat A, B, R;
 	auto& images = pipeline->images;
 	A = cv::imread(images[idxL].filename);
@@ -526,25 +974,28 @@ void drawMatches(const std::string &prefix, size_t idxL, size_t idxR, std::vecto
 	char filename[1000];
 	sprintf(filename, "%s_%s-%s.jpg", prefix.c_str(), images[idxL].filename.c_str(), images[idxR].filename.c_str());
 
-	if(rl){//bestA.size()) {
-		for(size_t i = 0; i < images[idxL].keyPoints.keyPoints.size(); ++i) {
-	//kp: images[idxL].keyPoints.keyPoints) {
+	if (rl)
+	{
+		for (size_t i = 0; i < images[idxL].keyPoints.keyPoints.size(); ++i)
+		{
 			auto& kp = images[idxL].keyPoints.keyPoints[i];
 			size_t idx = cls[idxL][i];
-			if(bestA[bestB[idx]] != idx) idx = 0;
+			if (bestA[bestB[idx]] != idx) idx = 0;
 			cv::circle(viewA, cv::Point(kp.x, kp.y), 5, cv::Scalar((idx * 67 + 35) % 256, (idx * 7 + 142) % 256, (idx * 217 + 251) % 256), -5);
 		}
-		for(size_t i = 0; i < images[idxR].keyPoints.keyPoints.size(); ++i) {
-	//kp: images[idxL].keyPoints.keyPoints) {
+		for (size_t i = 0; i < images[idxR].keyPoints.keyPoints.size(); ++i)
+		{
 			auto& kp = images[idxR].keyPoints.keyPoints[i];
 			size_t idx = cls[idxR][i];
-			if(bestB[bestA[idx]] != idx) { idx = 0; } else { idx = bestA[idx]; }
-			
+			if (bestB[bestA[idx]] != idx) { idx = 0; } else { idx = bestA[idx]; }
+
 			cv::circle(viewB, cv::Point(kp.x, kp.y), 5, cv::Scalar((idx * 67 + 35) % 256, (idx * 7 + 142) % 256, (idx * 217 + 251) % 256), -5);
 		}
-		if(set) {
+		if (set)
+		{
 			auto& s = *set;
-			for(size_t i = 0; i < set->matches.size(); ++i) {
+			for (size_t i = 0; i < set->matches.size(); ++i)
+			{
 				size_t kpL = idxL < idxR ? set->matches[i].featureA : set->matches[i].featureB;
 				size_t kpR = idxL < idxR ? set->matches[i].featureB : set->matches[i].featureA;
 				auto& kpA = images[idxL].keyPoints.keyPoints[kpL];
@@ -555,18 +1006,18 @@ void drawMatches(const std::string &prefix, size_t idxL, size_t idxR, std::vecto
 			}
 		}
 	} else {
-	for(size_t i = 0; i < images[idxL].keyPoints.keyPoints.size(); ++i) {
-//kp: images[idxL].keyPoints.keyPoints) {
-		auto& kp = images[idxL].keyPoints.keyPoints[i];
-		size_t idx = cls[idxL][i];
-		cv::circle(viewA, cv::Point(kp.x, kp.y), 5, cv::Scalar((idx * 67 + 35) % 256, (idx * 7 + 142) % 256, (idx * 217 + 251) % 256), -5);
-	}
-	for(size_t i = 0; i < images[idxR].keyPoints.keyPoints.size(); ++i) {
-//kp: images[idxL].keyPoints.keyPoints) {
-		auto& kp = images[idxR].keyPoints.keyPoints[i];
-		size_t idx = cls[idxR][i];
-		cv::circle(viewB, cv::Point(kp.x, kp.y), 5, cv::Scalar((idx * 67 + 35) % 256, (idx * 7 + 142) % 256, (idx * 217 + 251) % 256), -5);
-	}
+		for (size_t i = 0; i < images[idxL].keyPoints.keyPoints.size(); ++i)
+		{
+			auto& kp = images[idxL].keyPoints.keyPoints[i];
+			size_t idx = cls[idxL][i];
+			cv::circle(viewA, cv::Point(kp.x, kp.y), 5, cv::Scalar((idx * 67 + 35) % 256, (idx * 7 + 142) % 256, (idx * 217 + 251) % 256), -5);
+		}
+		for (size_t i = 0; i < images[idxR].keyPoints.keyPoints.size(); ++i)
+		{
+			auto& kp = images[idxR].keyPoints.keyPoints[i];
+			size_t idx = cls[idxR][i];
+			cv::circle(viewB, cv::Point(kp.x, kp.y), 5, cv::Scalar((idx * 67 + 35) % 256, (idx * 7 + 142) % 256, (idx * 217 + 251) % 256), -5);
+		}
 	}
 	cv::imwrite(filename, R);
 	std::cerr << "Writing output to " << filename << std::endl;
@@ -574,85 +1025,86 @@ void drawMatches(const std::string &prefix, size_t idxL, size_t idxR, std::vecto
 
 class ParallelCl {
 public:
-	void operator() (const tbb::blocked_range<size_t>& r) const {
-	RefinedMatches &refinedMatches = pipeline->refinedMatches;
-	size_t S = refinedMatches.matchSets.size();
-	size_t N = pipeline->images.size();
-	std::vector<std::vector<size_t>>&clusters = *cls;
-	std::vector<int> clcl;
-	size_t id = r.begin();
+	void operator() (const tbb::blocked_range<size_t>& r) const
+	{
+		RefinedMatches &refinedMatches = pipeline->refinedMatches;
+		size_t S = refinedMatches.matchSets.size();
+		size_t N = pipeline->images.size();
+		std::vector<std::vector<size_t>>&clusters = *cls;
+		std::vector<int> clcl;
+		size_t id = r.begin();
 		std::stringstream ss1, ss2;
 		ss1 << "Computed cluster inliers for sets ";
 		size_t cnt = 0;
 		pipeline->tic(id, false);
 
-	for(size_t s = r.begin(); s < r.end(); ++s) {
-		size_t eq = 0, neq = 0, total = 0;
-//		ss1 << s << ", ";
-		cnt++;
-		// A. Get best-best cluster matching.
-		auto& v = refinedMatches.matchSets[s].matches;
-		size_t kA = clusters[refinedMatches.matchSets[s].imgA].size();
-		size_t kB = clusters[refinedMatches.matchSets[s].imgB].size();
+		for (size_t s = r.begin(); s < r.end(); ++s)
+		{
+			size_t eq = 0, neq = 0, total = 0;
+			cnt++;
+			// A. Get best-best cluster matching.
+			auto& v = refinedMatches.matchSets[s].matches;
+			size_t kA = clusters[refinedMatches.matchSets[s].imgA].size();
+			size_t kB = clusters[refinedMatches.matchSets[s].imgB].size();
 
-		//std::vector<std::vector<int>> clcl(kA);
-//		for(size_t i = 0; i < kA; ++i)
-//			clcl[i].resize(kB);
+			//std::vector<std::vector<int>> clcl(kA);
+			//		for (size_t i = 0; i < kA; ++i)
+			//			clcl[i].resize(kB);
 
-		if(clcl.size() < kB * kA) clcl.resize(kB * kA);
-		for(size_t i = 0; i < kB * kA; ++i) clcl[i] = 0;
+			if (clcl.size() < kB * kA) clcl.resize(kB * kA);
+			for (size_t i = 0; i < kB * kA; ++i) clcl[i] = 0;
 
-		for(auto m: v) {
-			//clcl[clusters[m.imgA][m.featureA]][clusters[m.imgB][m.featureB]]++;
-			clcl[clusters[m.imgA][m.featureA]*kB  +clusters[m.imgB][m.featureB]]++;
-		}
-//		std::vector<int> best_h(K), best_v(K), sum_cl(K), sum_cl2(K);
-
-		std::vector<int> best_A(kB), best_B(kA), sum_A(kA), sum_B(kB);
-
-		for(int i = 0; i < kA; ++i) {
-			for(int j = 0; j < kB; ++j) {
-			//	if(clcl[i][j] > clcl[i][best_B[i]]) best_B[i] = j;
-			//	if(clcl[i][j] > clcl[best_A[j]][j]) best_A[j] = i;
-				if(clcl[i*kB+j] > clcl[i*kB+best_B[i]]) best_B[i] = j;
-				if(clcl[i*kB+j] > clcl[best_A[j]*kB+j]) best_A[j] = i;
-
-				sum_A[i] += clcl[i*kB+j];
-				sum_B[j] += clcl[i*kB+j];
+			for (auto& m: v)
+			{
+				//clcl[clusters[m.imgA][m.featureA]][clusters[m.imgB][m.featureB]]++;
+				clcl[clusters[m.imgA][m.featureA]*kB  +clusters[m.imgB][m.featureB]]++;
 			}
-		}
+			//		std::vector<int> best_h(K), best_v(K), sum_cl(K), sum_cl2(K);
+
+			std::vector<int> best_A(kB), best_B(kA), sum_A(kA), sum_B(kB);
+
+			for (int i = 0; i < kA; ++i)
+			{
+				for (int j = 0; j < kB; ++j)
+				{
+					if (clcl[i*kB+j] > clcl[i*kB+best_B[i]]) best_B[i] = j;
+					if (clcl[i*kB+j] > clcl[best_A[j]*kB+j]) best_A[j] = i;
+
+					sum_A[i] += clcl[i*kB+j];
+					sum_B[j] += clcl[i*kB+j];
+				}
+			}
 			drawMatches("features", v[0].imgA, v[0].imgB, *cls, best_A, best_B, pipeline, true, &refinedMatches.matchSets[s]);
-//		std::cerr << "Computed matches for " << v[0].imgA << ":" << v[0].imgB << std::endl;
-ss1 << v[0].imgA << ":" << v[0].imgB << ", ";
-		int idx = 0;
-		for(int i = 0; i < v.size(); ++i) {
-			int clA = clusters[v[i].imgA][v[i].featureA];
-			int clB = clusters[v[i].imgB][v[i].featureB];
-			if(best_B[clA] != clB)
-				continue;
-			if(best_A[clB] != clA)
-				continue;
-//			if(double(clcl[clA][clB]) / sum_A[clA] < 0.3)
-			if(double(clcl[clA*kB+clB]) / sum_A[clA] < 0.2)
-				continue;
-//			if(double(clcl[clA][clB]) / sum_B[clB] < 0.3)
-			if(double(clcl[clA*kB+clB]) / sum_B[clB] < 0.2)
-				continue;
-//			if(clcl[clA][clB] < 8)
-			if(clcl[clA*kB+clB]<20)
-				continue;
-			v[idx++] = v[i];
-		}
-		v.resize(idx);
+			ss1 << v[0].imgA << ":" << v[0].imgB << ", ";
+			int idx = 0;
+			for (int i = 0; i < v.size(); ++i)
+			{
+				int clA = clusters[v[i].imgA][v[i].featureA];
+				int clB = clusters[v[i].imgB][v[i].featureB];
+				if (best_B[clA] != clB)
+					continue;
+				if (best_A[clB] != clA)
+					continue;
+				if (double(clcl[clA*kB+clB]) / sum_A[clA] < 0.2)
+					continue;
+				if (double(clcl[clA*kB+clB]) / sum_B[clB] < 0.2)
+					continue;
+				if (clcl[clA*kB+clB]<20)
+					continue;
+				v[idx++] = v[i];
+			}
+			v.resize(idx);
 			drawMatches("matches", v[0].imgA, v[0].imgB, *cls, best_A, best_B, pipeline, true, &refinedMatches.matchSets[s]);
-			if(cnt % 16 == 0) {
+			if (cnt % 16 == 0)
+			{
 				pipeline->toc(ss1.str(), ss2.str(), S, cnt, id, false); cnt = 0;
 				ss1.str("");
 				ss1 << "Computed cluster inliers for sets  ";
 				pipeline->tic(r.begin(), false);
 			}
-	}
-		if(cnt) {
+		}
+		if (cnt)
+		{
 			pipeline->toc(ss1.str(), ss2.str(), S, cnt, id, false); cnt = 0;
 		}
 	}
@@ -663,16 +1115,18 @@ ss1 << v[0].imgA << ":" << v[0].imgB << ", ";
 };
 
 
-void RandIndexStage::run(FeatureMatchingPipeline *pipeline) {
+void RandIndexStage::run(FeatureMatchingPipeline *pipeline)
+{
 	pipeline->tic();
 	RefinedMatches &refinedMatches = pipeline->refinedMatches;
 	size_t N = pipeline->images.size();
 	index.resize(N);
 	std::deque<Image>& images = pipeline->images;
-	for(size_t i = 0; i < N; ++i) index[i].resize(N);
+	for (size_t i = 0; i < N; ++i) index[i].resize(N);
 
 	std::vector<std::vector<size_t>> clusters(N);
-	for(size_t i = 0; i < N; ++i) {
+	for (size_t i = 0; i < N; ++i)
+	{
 		size_t M = images[i].keyPoints.keyPoints.size();
 		auto& kp = images[i].keyPoints.keyPoints;
 		std::cerr << "Computing clusters for " << images[i].filename << std::endl;
@@ -682,50 +1136,59 @@ void RandIndexStage::run(FeatureMatchingPipeline *pipeline) {
 		std::vector<size_t> cl(M);
 		std::vector<size_t> cnt(K);
 
-		for(size_t j = 0; j < M; ++j)
+		for (size_t j = 0; j < M; ++j)
 			cl[j] = rand() % K;
 
 		size_t I = 1000000;
 		bool stop = false;
-		for(size_t j = 0; j < I && !stop; ++j) {
+		for (size_t j = 0; j < I && !stop; ++j)
+		{
 			stop = true;
 			cx.clear(); cx.resize(K);
 			cy.clear(); cy.resize(K);
 			cnt.clear();cnt.resize(K);
 
-			for(size_t k = 0; k < M; ++k) {
+			for (size_t k = 0; k < M; ++k)
+			{
 				cnt[cl[k]]++;
 				cx[cl[k]] += kp[k].x;
 				cy[cl[k]] += kp[k].y;
 			}
 
-			for(size_t k = 0; k < K; ++k) {
+			for (size_t k = 0; k < K; ++k)
+			{
 				cx[k] /= cnt[k];
 				cy[k] /= cnt[k];
 			}
 
-			for(size_t k = 0; k < K; ++k) {
-				if(cnt[k] == 0) {
+			for (size_t k = 0; k < K; ++k)
+			{
+				if (cnt[k] == 0)
+				{
 					size_t idx;
 					cx[k] = kp[idx = (rand() % M)].x;
 					cy[k] = kp[idx].y;
-			//		std::cerr << "Re-init cluster " << k << std::endl;
+					//		std::cerr << "Re-init cluster " << k << std::endl;
 				}
 			}
 
-			for(size_t k = 0; k < M; ++k) {
+			for (size_t k = 0; k < M; ++k)
+			{
 				double mindist = 1e100;
 				size_t minidx = 0;
-				for(size_t l = 0; l < K; ++l) {
+				for (size_t l = 0; l < K; ++l)
+				{
 					double dx = (cx[l] - kp[k].x);
 					double dy = (cy[l] - kp[k].y);
 					double len = dx * dx + dy * dy;
-					if(mindist > len) {
+					if (mindist > len)
+					{
 						mindist = len;
 						minidx = l;
 					}
 				}
-				if(cl[k] != minidx) {
+				if (cl[k] != minidx)
+				{
 					cl[k] = minidx;
 					stop = false;
 				}
@@ -736,8 +1199,10 @@ void RandIndexStage::run(FeatureMatchingPipeline *pipeline) {
 		char fname[10000];
 		sprintf(fname, "%s.csv", images[i].filename.c_str());
 		os.open(fname, std::ofstream::out);
-		for(size_t k = 0; k < M; ++k)
+		for (size_t k = 0; k < M; ++k)
+		{
 			os << clusters[i][k] << ", ";
+		}
 		assert(clusters[i].size() == images[i].keyPoints.keyPoints.size());
 	}
 
@@ -745,16 +1210,18 @@ void RandIndexStage::run(FeatureMatchingPipeline *pipeline) {
 
 	pipeline->tic();
 	size_t S = refinedMatches.matchSets.size();
-	tbb::parallel_for(tbb::blocked_range<size_t>(0, S, std::max(S / 16,(size_t)1)), ParallelCl(&clusters,pipeline));
+	tbb::parallel_for (tbb::blocked_range<size_t>(0, S, std::max(S / 16,(size_t)1)), ParallelCl(&clusters,pipeline));
 	pipeline->toc("Computing cluster inliers", "");
 
 }
 #endif
 RefineMatchesStage::RefineMatchesStage(bool symmetric, double scaleThreshold) :
-	symmetric(symmetric), scaleThreshold(scaleThreshold) {
+	symmetric(symmetric), scaleThreshold(scaleThreshold)
+{
 }
 
-void RefineMatchesStage::run(FeatureMatchingPipeline *pipeline) {
+void RefineMatchesStage::run(FeatureMatchingPipeline *pipeline)
+{
 	pipeline->tic();
 	std::vector<Image> &images = pipeline->images;
 	MatchPlan &matchPlan = pipeline->matchPlan;
@@ -773,9 +1240,11 @@ void RefineMatchesStage::run(FeatureMatchingPipeline *pipeline) {
 	size_t N = pipeline->images.size();
 
 	accumulator.resize(N);
-	for(size_t i = 0; i < N; ++i) {
+	for (size_t i = 0; i < N; ++i)
+	{
 		accumulator[i].resize(N);
-		for(size_t j = 0; j < N; ++j) {
+		for (size_t j = 0; j < N; ++j)
+		{
 			accumulator[i][j].resize(images[i].keyPoints.keyPoints.size());
 		}
 	}
@@ -785,20 +1254,24 @@ void RefineMatchesStage::run(FeatureMatchingPipeline *pipeline) {
 
 	size_t S = matchPlan.plan.size();
 
-	for(size_t s = 0; s < S; ++s) {
+	for (size_t s = 0; s < S; ++s)
+	{
 		size_t query = matchPlan.plan[s].queryImg;
 		size_t train = matchPlan.plan[s].trainImg;
 
 		size_t L = rawMatches.matches[s].size() , K;
 
-		for(size_t i = 0; i < L; ++i) {
+		for (size_t i = 0; i < L; ++i)
+		{
 			K = rawMatches.matches[s][i].size();
-			for(size_t j = 0; j < K && rawMatches.matches[s][i][j].isValid(); ++j) {
+			for (size_t j = 0; j < K && rawMatches.matches[s][i][j].isValid(); ++j)
+			{
 				RawMatch dm = rawMatches.matches[s][i][j];
-				if(dm.distance < accumulator[query][train][dm.featureQ][0].distance) {
+				if (dm.distance < accumulator[query][train][dm.featureQ][0].distance)
+				{
 					accumulator[query][train][dm.featureQ][1] = accumulator[query][train][dm.featureQ][0];
 					accumulator[query][train][dm.featureQ][0] = dm;
-				} else if( dm.distance < accumulator[query][train][dm.featureQ][1].distance) {
+				} else if ( dm.distance < accumulator[query][train][dm.featureQ][1].distance) {
 					accumulator[query][train][dm.featureQ][1] = dm;
 				}
 			}
@@ -808,18 +1281,24 @@ void RefineMatchesStage::run(FeatureMatchingPipeline *pipeline) {
 	std::cerr << "Ratio filtering" << std::endl;
 
 	std::deque<std::deque<std::deque<RawMatch> > > ratioInliers(N);
-	for(size_t i = 0; i < N; ++i) {
+	for (size_t i = 0; i < N; ++i)
+	{
 		ratioInliers[i].resize(N);
-		for(size_t j = 0; j < N; ++j)
+		for (size_t j = 0; j < N; ++j)
+		{
 			ratioInliers[i][j].resize(images[i].keyPoints.keyPoints.size());
+		}
 	}
 
-	for(size_t q = 0; q < N; ++q) {
-		for(size_t t = 0; t < N; ++t) {
-			if(t == q) continue;
+	for (size_t q = 0; q < N; ++q)
+	{
+		for (size_t t = 0; t < N; ++t)
+		{
+			if (t == q) continue;
 
-			for(size_t k = 0; k < images[q].keyPoints.keyPoints.size(); ++k) {
-				if(accumulator[q][t][k][0].distance / accumulator[q][t][k][1].distance < 0.9)
+			for (size_t k = 0; k < images[q].keyPoints.keyPoints.size(); ++k)
+			{
+				if (accumulator[q][t][k][0].distance / accumulator[q][t][k][1].distance < 0.9)
 					ratioInliers[q][t][k] = (accumulator[q][t][k][0]);
 			}
 			accumulator[q][t].clear();
@@ -832,11 +1311,14 @@ void RefineMatchesStage::run(FeatureMatchingPipeline *pipeline) {
 	std::cerr << "Symmetry filtering" << std::endl;
 
 	// The second step is to remove non-symmetric matches
-	for(size_t q = 0; q < N; ++q) {
-		for(size_t t = 0; t < N; ++t) {
-			for(size_t k = 0; k < images[q].keyPoints.keyPoints.size(); ++k) {
+	for (size_t q = 0; q < N; ++q)
+	{
+		for (size_t t = 0; t < N; ++t)
+		{
+			for (size_t k = 0; k < images[q].keyPoints.keyPoints.size(); ++k)
+			{
 				RawMatch& dm = ratioInliers[q][t][k];
-				if(dm.featureT != RawMatch::INVALID_MARKER && dm.featureQ != RawMatch::INVALID_MARKER && ratioInliers[t][q][dm.featureT].featureT != static_cast<int>(k))
+				if (dm.featureT != RawMatch::INVALID_MARKER && dm.featureQ != RawMatch::INVALID_MARKER && ratioInliers[t][q][dm.featureT].featureT != static_cast<int>(k))
 					dm.featureT = dm.featureQ = RawMatch::INVALID_MARKER;
 			}
 		}
@@ -846,15 +1328,19 @@ void RefineMatchesStage::run(FeatureMatchingPipeline *pipeline) {
 	// Now we can compose final match set
 	size_t total_matches = 0;
 	refinedMatches.matchSets.clear();
-	for(size_t i = 0; i < N; ++i) {
-		for(size_t j = i + 1; j < N; ++j) {
+	for (size_t i = 0; i < N; ++i)
+	{
+		for (size_t j = i + 1; j < N; ++j)
+		{
 			std::deque<Match> matches;
-			for(size_t k = 0; k < images[i].keyPoints.keyPoints.size(); ++k) {
+			for (size_t k = 0; k < images[i].keyPoints.keyPoints.size(); ++k)
+			{
 				RawMatch& dm = ratioInliers[i][j][k];
-				if(ratioInliers[i][j][k].featureT != RawMatch::INVALID_MARKER && ratioInliers[i][j][k].featureQ != RawMatch::INVALID_MARKER)
+				if (ratioInliers[i][j][k].featureT != RawMatch::INVALID_MARKER && ratioInliers[i][j][k].featureQ != RawMatch::INVALID_MARKER)
 					matches.push_back(Match(i, j, dm.featureQ, dm.featureT, dm.distance));
 			}
-			if(matches.size()) {
+			if (matches.size())
+			{
 				refinedMatches.matchSets.push_back(RefinedMatchSet(i, j, matches));
 				total_matches += matches.size();
 			}
@@ -865,35 +1351,40 @@ void RefineMatchesStage::run(FeatureMatchingPipeline *pipeline) {
 	pipeline->toc("Filtering matches", ss.str());
 }
 
-void RefineMatchesStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const {
+void RefineMatchesStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const
+{
 	pipeline->refinedMatches.save(filename);
 }
 
-void RefineMatchesStage::loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename) {
+void RefineMatchesStage::loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename)
+{
 	pipeline->refinedMatches.load(filename);
 }
 
-VsfmWriterStage::VsfmWriterStage(bool sortFeatures) : sortFeatures(sortFeatures) {
+VsfmWriterStage::VsfmWriterStage(bool sortFeatures) : sortFeatures(sortFeatures)
+{
 }
 
-std::string file_name(const std::string &full_name) {
+std::string file_name(const std::string &full_name)
+{
 	std::string name = full_name;
 	size_t from = 0;
-	for(size_t i = 0; i < full_name.size(); ++i)
-		if(full_name[i] == '/' || full_name[i] == '\\')
+	for (size_t i = 0; i < full_name.size(); ++i)
+		if (full_name[i] == '/' || full_name[i] == '\\')
 			from = i + 1;
 	std::string res;
 	res.resize(full_name.size() - from);
-	for(size_t i = from, j = 0; i < full_name.size(); ++i, ++j)
+	for (size_t i = from, j = 0; i < full_name.size(); ++i, ++j)
 		res[j] = full_name[i];
 	return res;
 }
 
-void VsfmWriterStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const {
+void VsfmWriterStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const
+{
 	size_t N = pipeline->images.size();
 	std::vector<std::vector<SiftFeature> > features(N);
 
-	// 1. assign importance to features 
+	// 1. assign importance to features
 	// 2. sort features by their importance (?)
 	// 3. move backwards features without matches (?)
 	// 4. write .SIFT
@@ -902,9 +1393,11 @@ void VsfmWriterStage::saveResults(FeatureMatchingPipeline *pipeline, const std::
 
 	uint8_t data[128] = {0}; // Just do not care about data
 
-	for(size_t i = 0; i < N; ++i) {
+	for (size_t i = 0; i < N; ++i)
+	{
 		features[i].resize(images[i].keyPoints.keyPoints.size());
-		for(size_t k = 0; k < images[i].keyPoints.keyPoints.size(); ++k) {
+		for (size_t k = 0; k < images[i].keyPoints.keyPoints.size(); ++k)
+		{
 			features[i][k] = SiftFeature(
 					images[i].keyPoints.keyPoints[k].x,
 					images[i].keyPoints.keyPoints[k].y,
@@ -917,8 +1410,10 @@ void VsfmWriterStage::saveResults(FeatureMatchingPipeline *pipeline, const std::
 		}
 	}
 
-	for(size_t i = 0; i < refinedMatches.matchSets.size(); ++i) {
-		for(size_t j = 0; j < refinedMatches.matchSets[i].matches.size(); ++j) {
+	for (size_t i = 0; i < refinedMatches.matchSets.size(); ++i)
+	{
+		for (size_t j = 0; j < refinedMatches.matchSets[i].matches.size(); ++j)
+		{
 			Match& m = refinedMatches.matchSets[i].matches[j];
 			features[m.imgA][m.featureA].importance += 1.0;
 			features[m.imgB][m.featureB].importance += 1.0;
@@ -927,24 +1422,28 @@ void VsfmWriterStage::saveResults(FeatureMatchingPipeline *pipeline, const std::
 
 	std::vector<std::vector<size_t> > reordering(N);
 	std::vector<std::vector<size_t> > reordering_rev(N);
-	for(size_t i = 0; i < N; ++i) {
+	for (size_t i = 0; i < N; ++i)
+	{
 		size_t M;
 		reordering[i].resize(M = images[i].keyPoints.keyPoints.size());
 		reordering_rev[i].resize(M);
-		for(size_t j = 0; j < M; ++j)
+		for (size_t j = 0; j < M; ++j)
 			reordering[i][j] = j;
-		if(sortFeatures) {
+		if (sortFeatures)
+		{
 			std::sort(reordering[i].begin(), reordering[i].end(),
-					[&](const size_t &a, const size_t &b) {
-					return features[i][a].importance > features[i][b].importance; });
+					[&](const size_t &a, const size_t &b)
+					{return features[i][a].importance > features[i][b].importance; });
 		}
-		for(size_t j = 0; j < M; ++j)
+		for (size_t j = 0; j < M; ++j)
 			reordering_rev[i][reordering[i][j]] = j;
 	}
 
-	for(size_t i = 0; i < N; ++i) {
+	for (size_t i = 0; i < N; ++i)
+	{
 		std::vector<SiftFeature> write_features(features[i].size());
-		for(size_t j = 0; j < features[i].size(); ++j) {
+		for (size_t j = 0; j < features[i].size(); ++j)
+		{
 			write_features[j] = features[i][reordering[i][j]];
 		}
 
@@ -959,19 +1458,22 @@ void VsfmWriterStage::saveResults(FeatureMatchingPipeline *pipeline, const std::
 	ofs.open(filename.c_str(), std::ofstream::out);
 	assert(ofs);
 
-	for(size_t i = 0; i < refinedMatches.matchSets.size(); ++i) {
+	for (size_t i = 0; i < refinedMatches.matchSets.size(); ++i)
+	{
 		RefinedMatchSet& set = refinedMatches.matchSets[i];
 		ofs << file_name(images[set.imgA].filename) << std::endl << file_name(images[set.imgB].filename) << std::endl;
 
 		ofs << set.matches.size() << std::endl;
 
-		for(std::deque<Match>::iterator m = set.matches.begin(); m != set.matches.end(); ++m) {
+		for (std::deque<Match>::iterator m = set.matches.begin(); m != set.matches.end(); ++m)
+		{
 			assert(m->imgA == set.imgA);
 			ofs << reordering_rev[m->imgA][m->featureA] << " ";
 		}
 		ofs << std::endl;
 
-		for(std::deque<Match>::iterator m = set.matches.begin(); m != set.matches.end(); ++m) {
+		for (std::deque<Match>::iterator m = set.matches.begin(); m != set.matches.end(); ++m)
+		{
 			assert(m->imgB == set.imgB);
 			ofs << reordering_rev[m->imgB][m->featureB] << " ";
 		}
@@ -979,14 +1481,19 @@ void VsfmWriterStage::saveResults(FeatureMatchingPipeline *pipeline, const std::
 	}
 }
 
-void FeatureMatchingPipeline::tic(size_t thread_id, bool level) {
+void FeatureMatchingPipeline::tic(size_t thread_id, bool level)
+{
 #ifdef WITH_TBB
 	tbb::spin_mutex::scoped_lock lock(mutex);
 #endif
-	if(level) {
-		if(tics.size() == 0) {
-			for(size_t i = 0; i < 108; ++i)
+	if (level)
+	{
+		if (tics.size() == 0)
+		{
+			for (size_t i = 0; i < 108; ++i)
+			{
 				std::cerr << "-";
+			}
 			std::cerr << std::endl;
 		}
 		tic_data data;
@@ -998,37 +1505,42 @@ void FeatureMatchingPipeline::tic(size_t thread_id, bool level) {
 
 }
 
-void FeatureMatchingPipeline::toc(const std::string &name, const std::string &evt, size_t thread_id, bool level) {
+void FeatureMatchingPipeline::toc(const std::string &name, const std::string &evt, size_t thread_id, bool level)
+{
 #ifdef WITH_TBB
 	tbb::spin_mutex::scoped_lock lock(mutex);
 #endif
 	size_t toc = clock();
-	if(level) {
+	if (level)
+	{
 		tic_data tic = tics.top();
 		tics.pop();
 
 		size_t ns = (toc - tic.thread_tics[thread_id]) / (CLOCKS_PER_SEC / 1000);
 		std::cerr << std::setw(64) << name << std::setw(32) << evt << std::setw(10) << ns << "ms" << std::endl;
-	
-		if(tics.size() == 0) {
-			for(size_t i = 0; i < 108;++i)
+
+		if (tics.size() == 0)
+		{
+			for (size_t i = 0; i < 108;++i)
 				std::cerr << "-";
 			std::cerr << std::endl;
 		}
 	} else {
 		tic_data& tic = tics.top();
 		size_t tict = tic.thread_tics[thread_id];
-		size_t ns = toc - tict;
+		size_t ns = (toc - tict)  / (CLOCKS_PER_SEC / 1000);
 		std::cerr << std::setw(64) << name << std::setw(32) << evt << std::setw(10) << ns << "ms" << std::endl;
 	}
 }
 
-void FeatureMatchingPipeline::toc(const std::string &name, const std::string &evt, size_t curr, size_t rem, size_t thread_id, bool level) {
+void FeatureMatchingPipeline::toc(const std::string &name, const std::string &evt, size_t curr, size_t rem, size_t thread_id, bool level)
+{
 #ifdef WITH_TBB
 	tbb::spin_mutex::scoped_lock lock(mutex);
 #endif
 
-	if(level) {
+	if (level)
+	{
 		size_t toc = clock();
 		tic_data& tic = tics.top();
 
@@ -1042,9 +1554,9 @@ void FeatureMatchingPipeline::toc(const std::string &name, const std::string &ev
 		size_t total = 0, count = 0;
 		tic.thread_totals[thread_id] += ns;
 		tic.thread_counts[thread_id]+= rem;
-		total = (toc - tic.thread_tics[~(size_t)0]);
-		
-		for(std::map<size_t,size_t>::iterator v = tic.thread_counts.begin(); v != tic.thread_counts.end(); ++v)
+		total = (toc - tic.thread_tics[~(size_t)0]) / (CLOCKS_PER_SEC / 1000);
+
+		for (std::map<size_t,size_t>::iterator v = tic.thread_counts.begin(); v != tic.thread_counts.end(); ++v)
 			count += v->second;
 
 		double one = double(total)/double(count);
