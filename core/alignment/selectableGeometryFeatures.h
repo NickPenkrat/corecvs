@@ -21,7 +21,7 @@ public:
         double      weight;
         VertexPath *ownerPath;
 
-        explicit Vertex(const Vector2dd &_position);
+        explicit Vertex(const Vector2dd &_position = Vector2dd(0.0));
 
         bool isInPath() {
             return (ownerPath != NULL);
@@ -34,37 +34,43 @@ public:
     vector<Vertex > mPoints;
     vector<Vertex*> mSelectedPoints;
 
-    void addSelection(Vertex &vertex);
-    void removeSelection(Vertex &vertex);
-    void deselectAllPoints();
-
-
     Vertex *findClosest(const Vector2dd &position);
     //Vertex *lastVertex();
 
     struct VertexPath
     {
-        bool isSelected;
+        bool mSelected;
         vector<Vertex *> vertexes;
+
+        bool isSelected();
+        bool isEmpty();
     };
 
     /** Pathes **/
     vector<VertexPath> mPaths;
     vector<VertexPath *> mSelectedPaths;
 
-    void appendPath();
-    void deselectAllPath();
-    void addVertexToPath(Vertex *vertex, VertexPath *path);
-    void addSelection(VertexPath &path);
+    VertexPath *appendNewPath();
+    void deletePath(VertexPath *path);
 
+    void addVertexToPath(Vertex *vertex, VertexPath *path);
+    void removeVertexFromPath(Vertex *vertex, bool purgeEmptyPath = true);
+
+    Vertex* appendNewVertex(const Vector2dd &point = Vector2dd(0.0));
     void deleteVertex(const Vector2dd &point);
     void deleteVertex(Vertex *vertex);
-    void deleteVertex(int num);
-
-    void addVertex(const Vertex &vertex);
-    void addVertex(const Vector2dd &point);
 
     void clearAll();
+
+    void addSelection   (VertexPath *path);
+    void removeSelection(VertexPath *path);
+
+    void addSelection   (Vertex *vertex);
+    void removeSelection(Vertex *vertex);
+
+
+    void deselectAllPoints();
+    void deselectAllPath();
     void deselectAll();
 
     /****/

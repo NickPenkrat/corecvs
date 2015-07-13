@@ -206,25 +206,25 @@ void DistortionWidget::detectCheckerboard()
         if(params.cleanExisting())
         {
             mUi->calibrationFeatures->clearObservationPoints();
-            canvas->mPaths.clear();
+            canvas->mFeatures.mPaths.clear();
         }
 
         for(int ih = 0; ih < chessH; ih++)
         {
-            canvas->mPaths.append(PaintImageWidget::VertexPath());
+/*            canvas->mPaths.append(PaintImageWidget::VertexPath());
             PaintImageWidget::VertexPath &path = canvas->mPaths.last();
-            for(int iw=0; iw < chessV; iw++)
+            for(int iw = 0; iw < chessV; iw++)
             {
                 Vector2dd point(pointbuf.at(ih * chessV + iw).x,pointbuf.at(ih * chessV + iw).y);
                 addPointPair(Vector3dd(cellSize * ih, cellSize * iw, 0), point);
                 canvas->addVertex(point);
                 canvas->addVertexToPath(&canvas->mPoints.last(), &path);
-            }
+            } */
         }
 
         for(int iw = 0; iw < chessV; iw++)
         {
-            canvas->mPaths.append(PaintImageWidget::VertexPath());
+/*            canvas->mPaths.append(PaintImageWidget::VertexPath());
             PaintImageWidget::VertexPath &path = canvas->mPaths.last();
 
             for(int ih = 0; ih < chessH; ih++)
@@ -233,10 +233,10 @@ void DistortionWidget::detectCheckerboard()
                 addPointPair(Vector3dd(cellSize * ih, cellSize * iw, 0), point);
                 canvas->addVertex(point);
                 canvas->addVertexToPath(&canvas->mPoints.last(), &path);
-            }
+            }*/
         }
     }
-    cvReleaseImage(&inputIpl);   
+    cvReleaseImage(&inputIpl);
     delete_safe(grayChannel);
     return;
 #else
@@ -648,7 +648,7 @@ void DistortionWidget::doManualTransform()
             (double)mBufferInput->w, (double)mBufferInput->h, 0.5)
         );
     }
-    updateScore();    
+    updateScore();
 }
 
 

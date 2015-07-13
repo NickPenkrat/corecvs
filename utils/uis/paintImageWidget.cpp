@@ -53,7 +53,7 @@ void PaintImageWidget::childRepaint(QPaintEvent *event, QWidget *who)
     for (unsigned i = 0; i < mFeatures.mPaths.size(); i++)
     {
         SelectableGeometryFeatures::VertexPath *path = &mFeatures.mPaths[i];
-        painter.setPen(path->isSelected ? Qt::yellow : Qt::green);
+        painter.setPen(path->mSelected ? Qt::yellow : Qt::green);
         for (unsigned i = 1; i < path->vertexes.size(); i++)
         {
             Vector2dd point1 = path->vertexes[i    ]->position;
