@@ -10,6 +10,10 @@
 #include <algorithm>
 #include <vector>
 
+#if (__cplusplus == 201103L)
+#include <functional>
+#endif
+
 #include "global.h"
 
 #include "abstractBuffer.h"
@@ -207,9 +211,13 @@ public:
 
     inline Matrix& operator *=(const double v)
     {
+#if (__cplusplus == 201103L)
+        this->mapOperationElementwize([v] (Matrix::InternalElementType e) { return e * v; });
+#else
         using std::multiplies;
         binder2nd<multiplies<double> > multiplier(multiplies<double>(), v);
         this->mapOperationElementwize<binder2nd<multiplies<double> > >(multiplier);
+#endif
         return *this;
     }
 
@@ -219,9 +227,13 @@ public:
      * */
     inline Matrix& operator /=(const double v)
     {
+#if (__cplusplus == 201103L)
+        this->mapOperationElementwize([v] (Matrix::InternalElementType e) { return e / v; });
+#else
         using std::divides;
         binder2nd<divides<double> > divider(divides<double>(), v);
         this->mapOperationElementwize<binder2nd<divides<double> > >(divider);
+#endif
         return *this;
     }
 

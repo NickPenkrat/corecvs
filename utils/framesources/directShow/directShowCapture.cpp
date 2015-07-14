@@ -483,7 +483,7 @@ DirectShowCaptureInterface::CapErrorCode DirectShowCaptureInterface::getDeviceNa
 
 string DirectShowCaptureInterface::getDeviceSerial(int num)
 {
-    return "unsupported";
+    return "-unsupported-";
 }
 
 void DirectShowCaptureInterface::getAllCameras(vector<string> &cameras)

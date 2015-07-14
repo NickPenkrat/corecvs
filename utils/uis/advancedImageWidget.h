@@ -86,6 +86,8 @@ signals:
     void notifyCenterPointChanged(QPoint point);
 
 protected:
+
+    bool isRotationLandscape();
     void drawResized (QPainter &painter);
 
     /* Freeze related variables */
@@ -101,6 +103,14 @@ protected:
 
     QPoint mZoomCenter;
 
+    /**
+     * Two input geometry controls
+     * Trasformation is done it three steps
+     *   1. Input is cropped to mInputRect
+     *   2. Rotated according to ui->rotation
+     *   3. Output is scaled to mOutputRect
+     **/
+
     QRect mOutputRect;
     QRect mInputRect;
 
@@ -109,8 +119,20 @@ protected:
     QPoint mSelectionStart;
     QPoint mSelectionEnd;
 
+    /**
+     * Image is transformed only once. If  transformation is done, result is saved to
+     * this variable.
+     **/
     QImage *mResizeCache;
 
+
+    /**
+     *  Exandable toolbar has several predefined  instuments, and th ability to add addintional tools
+     *  tools added by user can be used to select point, line or area.
+     *
+     *  For more advanced tools you will need to derive from this class
+     *
+     **/
     enum ToolClass {
         NO_TOOL,
         ZOOM_SELECT_TOOL,
@@ -126,7 +148,7 @@ protected:
 
     ToolClass mCurrentToolClass;
 
-    /** Tool bars */
+    /** Tools in the toolbar bars */
     struct WidgetToolButton {
         int id;
         QToolButton *button;
@@ -158,13 +180,13 @@ protected:
     void saveFlowImage(QImage * image);
     void recalculateZoomCenter();
 
+public:
     /* Saving loading parameters to/from widget */
     /* TODO: Use visitors here*/
     QString mRootPath;
     virtual void loadFromQSettings(const QString &fileName, const QString &_root);
     virtual void saveToQSettings  (const QString &fileName, const QString &_root);
 
-public:
     void setSavingRoot(const QString &root)
     {
     	mRootPath = root;

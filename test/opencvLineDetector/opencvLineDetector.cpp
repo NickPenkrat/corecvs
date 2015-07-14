@@ -66,7 +66,7 @@ int main (int argc, char **argv)
 
         printf("Found in %s size %ix%i is %i\n", filename, chessW, chessH,  found);
 
-        for(unsigned i = 0;i < pointbuf.size(); i++)
+        for (int i = 0; i < pointbuf.size(); i++)
         {
             printf("Point %f %f\n", pointbuf[i].x,pointbuf[i].y);
         }
@@ -77,36 +77,38 @@ int main (int argc, char **argv)
 
         vector<vector<Vector2dd> > straights;
 
-       for (int ih = 0; ih < chessH; ih++)
-       {
-           printf("Line %i ", ih);
-           vector<Vector2dd> straight;
-           double prevX = 0;
-           double prevY = 0;
-           for (int iw = 0; iw < chessW; iw++)
-           {
-               straight.push_back(Vector2dd(pointbuf.at(ih * chessW + iw).x,pointbuf.at(ih * chessW + iw).y));
-               printf("  Point %i  %f %f", ih * chessW + iw, pointbuf[ih * chessW + iw].x,pointbuf[ih * chessW + iw].y);
-               if (prevX != 0 && prevY != 0)
-               {
-                   cv::line(view,Point(prevX,prevY),Point( pointbuf[ih * chessW + iw].x,pointbuf[ih * chessW + iw].y),Scalar(0,255,0));
-               }
-               prevX = pointbuf[ih * chessW + iw].x;
-               prevY = pointbuf[ih * chessW + iw].y;
-           }
-           printf("\n");
-           straights.push_back(straight);
-       }
-       imwrite("test_with_chess_LINES.jpg", view);
+        for (int ih = 0; ih < chessH; ih++)
+        {
+            printf("Line %i ", ih);
+            vector<Vector2dd> straight;
+            double prevX = 0;
+            double prevY = 0;
+            for (int iw = 0; iw < chessW; iw++)
+            {
+                straight.push_back(Vector2dd(pointbuf.at(ih * chessW + iw).x,pointbuf.at(ih * chessW + iw).y));
+                printf("  Point %i  %f %f", ih * chessW + iw, pointbuf[ih * chessW + iw].x,pointbuf[ih * chessW + iw].y);
+                if (prevX != 0 && prevY != 0)
+                {
+                    cv::line(view, Point(prevX, prevY)
+                        , Point(pointbuf[ih * chessW + iw].x
+                              , pointbuf[ih * chessW + iw].y), Scalar(0,255,0));
+                }
+                prevX = pointbuf[ih * chessW + iw].x;
+                prevY = pointbuf[ih * chessW + iw].y;
+            }
+            printf("\n");
+            straights.push_back(straight);
+        }
+        imwrite("test_with_chess_LINES.jpg", view);
 
-       /// Set default camera param values
-       RadialCorrection correction(LensDistortionModelParameters(
-             center.x(),
-             center.y(),
-             0.0, 0.0,
-             vector<double>(6), //vector<double>(mUi->degreeSpinBox->value()), //TODO: Read degree from JSON
-             1.0,
-             1.0
+        /// Set default camera param values
+        RadialCorrection correction(LensCorrectionParametres(
+            center.x(),
+            center.y(),
+            0.0, 0.0,
+            vector<double>(6), //vector<double>(mUi->degreeSpinBox->value()), //TODO: Read degree from JSON
+            1.0,
+            1.0
           ));
 
         ModelToRadialCorrection modelFactory(
@@ -169,6 +171,17 @@ int main (int argc, char **argv)
                 (double)image->w, (double)image->h,
                 0.5, 1 //TODO: Use right value of mUi->preciseInvertionCheckBox->isChecked())
        );
+
+
+       printf("\n aspect %f \n", mLinesRadialCoorection.mParams.aspect);
+       printf(" center %f x %f \n", mLinesRadialCoorection.mParams.center.x(), mLinesRadialCoorection.mParams.center.y());
+       printf(" focal %f \n", mLinesRadialCoorection.mParams.focal);
+       for (int k = 0; k < mLinesRadialCoorection.mParams.koeff.size(); k++) {
+           printf(" koeff %f,", mLinesRadialCoorection.mParams.koeff.at(k));
+       }
+       printf("\n p1 %f \n", mLinesRadialCoorection.mParams.p1);
+       printf(" p2 %f \n",   mLinesRadialCoorection.mParams.p2);
+
 
        image = image->doReverseDeformationBl<G12Buffer, DisplacementBuffer>(
                    mDistortionCorrectTransform,
