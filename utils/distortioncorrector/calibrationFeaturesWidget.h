@@ -5,9 +5,12 @@
 
 #include "vector2d.h"
 #include "vector3d.h"
+#include "calibrationFeaturesWidget.h"
+#include "selectableGeometryFeatures.h"
 
 using corecvs::Vector2dd;
 using corecvs::Vector3dd;
+using corecvs::SelectableGeometryFeatures;
 
 /* Move this to separate class */
 struct PointObservation
@@ -78,6 +81,8 @@ public:
 
 
     ObservationList observationList;
+    SelectableGeometryFeatures *geometryFeatures;
+
 
     void manualAddPoint(const Vector2dd &point);
     void clearObservationPoints();

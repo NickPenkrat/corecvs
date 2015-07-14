@@ -2,6 +2,8 @@
 #include "ui_calibrationFeaturesWidget.h"
 #include <QSettings>
 
+using namespace corecvs;
+
 CalibrationFeaturesWidget::CalibrationFeaturesWidget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::CalibrationFeaturesWidget)
@@ -148,6 +150,30 @@ void CalibrationFeaturesWidget::updateWidget()
     }
 
 
+    /* And tree */
+
+    QTreeWidget *tree = ui->treeWidget;
+    for(unsigned i = 0; i < geometryFeatures->mPaths.size();i++ )
+    {
+        SelectableGeometryFeatures::VertexPath *path = geometryFeatures->mPaths[i];
+        QTreeWidgetItem *item = new QTreeWidgetItem(QStringList("Line"));
+        tree->insertTopLevelItem(tree->topLevelItemCount(),item);
+        for(unsigned j = 0; j < path->vertexes.size(); j++ )
+        {
+            SelectableGeometryFeatures::Vertex* vertex = path->vertexes[j];
+
+            QTreeWidgetItem *subitem = new QTreeWidgetItem(QStringList("Vertex"));
+            item->addChild(subitem);
+            QSpinBox *xSpinBox = new QSpinBox();
+            xSpinBox->setValue(vertex->position.x());
+
+            QSpinBox *ySpinBox = new QSpinBox();
+            ySpinBox->setValue(vertex->position.y());
+
+            tree->setItemWidget(subitem, 1, xSpinBox);
+            tree->setItemWidget(subitem, 2, ySpinBox);
+        }
+    }
 }
 /*
 void CalibrationFeaturesWidget::editPoint(const QPointF &prevPoint, const QPointF &newPoint)

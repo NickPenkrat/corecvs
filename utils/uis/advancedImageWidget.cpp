@@ -544,10 +544,14 @@ void AdvancedImageWidget::childMouseMoved(QMouseEvent * event)
     if (mCurrentToolClass == PAN_TOOL)
     {
         mZoomCenter += shift;
+        /*
         if (mZoomCenter.x() < mImage->rect().left())   mZoomCenter.setX(mImage->rect().left()  );
         if (mZoomCenter.x() > mImage->rect().right())  mZoomCenter.setX(mImage->rect().right() );
         if (mZoomCenter.y() < mImage->rect().top())    mZoomCenter.setY(mImage->rect().top()   );
         if (mZoomCenter.y() > mImage->rect().bottom()) mZoomCenter.setY(mImage->rect().bottom());
+        */
+
+
         recomputeRects();
         emit notifyCenterPointChanged(mZoomCenter);
     }
