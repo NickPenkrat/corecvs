@@ -23,7 +23,7 @@ std::string changeExtension(const std::string &imgName, const std::string &desir
 {
     std::string res(imgName);
 
-    int dotPos = res.size() - 1;
+    int dotPos = (int)res.size() - 1;
     for (; dotPos >= 0 && res[dotPos] != '.'; --dotPos);
     assert(dotPos >= 0);
 
@@ -277,7 +277,7 @@ void DescriptorExtractionStage::run(FeatureMatchingPipeline *pipeline)
     DescriptorExtractor* extractor = DescriptorExtractorProvider::getInstance().getDescriptorExtractor(descriptorType);
     pipeline->tic();
     std::stringstream ss1, ss2;
-    std::vector<Image> &images = pipeline->images;
+//  std::vector<Image> &images = pipeline->images;
 
     size_t N = pipeline->images.size();
 
@@ -316,7 +316,7 @@ void FileNameRefinedMatchingPlanComputationStage::run(FeatureMatchingPipeline *p
         std::deque<uint16_t> query(images[i].keyPoints.keyPoints.size());
         for (size_t j = 0; j < images[i].keyPoints.keyPoints.size(); ++j)
         {
-            query[j] = j;
+            query[j] = (uint16_t)j;
         }
 
         for (size_t j = 0; j < N; ++j)
@@ -327,19 +327,19 @@ void FileNameRefinedMatchingPlanComputationStage::run(FeatureMatchingPipeline *p
             std::string& name2 = images[j].filename;
             int idx1 = (name1[name1.size() - 6]-'0')*10 + name1[name1.size() - 5] - '0';
             int idx2 = (name2[name2.size() - 6]-'0')*10 + name2[name2.size() - 5] - '0';
-            int diff = (24*100+idx1 - idx2)%24;
-            int diff2 = (24*100+idx2-idx1)%24;
-            diff = std::min(diff, diff2);
-            if(diff > 5) {
+            int diff  = (24 * 100 + idx1 - idx2) % 24;
+            int diff2 = (24 * 100 + idx2 - idx1) % 24;
+            diff = CORE_MIN(diff, diff2);
+            if (diff > 5) {
                 continue;
             }
             std::deque<uint16_t> train(images[j].keyPoints.keyPoints.size());
             for (size_t k = 0; k < images[j].keyPoints.keyPoints.size(); ++k)
             {
-                train[k] = k;
+                train[k] = (uint16_t)k;
             }
 
-            MatchPlanEntry entry = {i, j, query, train};
+            MatchPlanEntry entry = { (uint16_t)i, (uint16_t)j, query, train };
             matchPlan.plan.push_back(entry);
         }
     }
@@ -370,7 +370,7 @@ void MatchingPlanComputationStage::run(FeatureMatchingPipeline *pipeline)
         std::deque<uint16_t> query(images[i].keyPoints.keyPoints.size());
         for (size_t j = 0; j < images[i].keyPoints.keyPoints.size(); ++j)
         {
-            query[j] = j;
+            query[j] = (uint16_t)j;
         }
 
         for (size_t j = 0; j < N; ++j)
@@ -380,10 +380,10 @@ void MatchingPlanComputationStage::run(FeatureMatchingPipeline *pipeline)
             std::deque<uint16_t> train(images[j].keyPoints.keyPoints.size());
             for (size_t k = 0; k < images[j].keyPoints.keyPoints.size(); ++k)
             {
-                train[k] = k;
+                train[k] = (uint16_t)k;
             }
 
-            MatchPlanEntry entry = {i, j, query, train};
+            MatchPlanEntry entry = { (uint16_t)i, (uint16_t)j, query, train };
             matchPlan.plan.push_back(entry);
         }
     }
@@ -402,7 +402,7 @@ class ParallelMatcher
 public:
     void operator() (const corecvs::BlockedRange<size_t>& r) const
     {
-        size_t N = pipeline->images.size();
+//        size_t N = pipeline->images.size();
         size_t S = pipeline->matchPlan.plan.size();
         size_t id = r.begin();
         MatchPlan &matchPlan = pipeline->matchPlan;
@@ -413,7 +413,7 @@ public:
         ss1 << "Matched sets ";
         size_t cnt = 0;
         pipeline->tic(id, false);
-        size_t kpt = 0;
+//        size_t kpt = 0;
 
         for (size_t i = r.begin(); i != r.end(); ++i)
         {
@@ -489,14 +489,15 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline)
     pipeline->tic();
     MatchPlan &matchPlan = pipeline->matchPlan;
     RawMatches &rawMatches = pipeline->rawMatches;
-    std::vector<Image> &images = pipeline->images;
+//    std::vector<Image> &images = pipeline->images;
 
     assert(matchPlan.plan.size());
     rawMatches.matches.clear();
     rawMatches.matches.resize(matchPlan.plan.size());
 
     size_t S = matchPlan.plan.size();
-    corecvs::parallelable_for ((size_t)0, S, std::max(S / 16,(size_t)1), ParallelMatcher(pipeline,descriptorType, responsesPerPoint));
+    corecvs::parallelable_for ((size_t)0, S, CORE_MAX(S / 16, (size_t)1)
+        , ParallelMatcher(pipeline,descriptorType, responsesPerPoint));
     
     std::stringstream ss;
     pipeline->toc("Computing raw matches", ss.str());
@@ -657,7 +658,7 @@ public:
                 if (!rm.isValid())
                     continue;
                 if (ratioInliers[1][rm.featureT].featureT == rm.featureQ)
-                    final_matches.push_back(Match(I, J, rm.featureQ, rm.featureT, rm.distance));
+                    final_matches.push_back(Match((uint16_t)I, (uint16_t)J, rm.featureQ, rm.featureT, rm.distance));
             }
             refinedMatches.matchSets[J*(J-1)/2+I]=(RefinedMatchSet(I, J, final_matches));
             cnt++;
@@ -723,14 +724,15 @@ void MatchAndRefineStage::run(FeatureMatchingPipeline *pipeline)
         size_t pair_id = J*(J-1)/2+I;
         if (!last[pair_id+1])
         {
-            first[pair_id+1] = last_id;
-            idx[last_id] = s;
-            last[pair_id+1] = last_id;
+            first[pair_id+1] = (int)last_id;
+            idx  [last_id  ] = (int)s;
+            last [pair_id+1] = (int)last_id;
             last_id++;
-        } else {
-            next[last[pair_id+1]] = last_id;
-            last[pair_id+1] = last_id;
-            idx[last_id] = s;
+        }
+        else {
+            next[last[pair_id+1]] = (int)last_id;
+            last[pair_id + 1]     = (int)last_id;
+            idx [last_id    ]     = (int)s;
             last_id++;
         }
     }
@@ -1152,7 +1154,7 @@ void RefineMatchesStage::run(FeatureMatchingPipeline *pipeline)
             {
                 RawMatch& dm = ratioInliers[i][j][k];
                 if (ratioInliers[i][j][k].featureT != RawMatch::INVALID_MARKER && ratioInliers[i][j][k].featureQ != RawMatch::INVALID_MARKER)
-                    matches.push_back(Match(i, j, dm.featureQ, dm.featureT, dm.distance));
+                    matches.push_back(Match((uint16_t)i, (uint16_t)j, dm.featureQ, dm.featureT, dm.distance));
             }
             if (matches.size())
             {
