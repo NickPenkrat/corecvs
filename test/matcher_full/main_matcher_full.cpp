@@ -57,7 +57,7 @@ bool checkIfExists(const std::string& name)
 {
 	std::ifstream is;
 	is.open(name, std::ios_base::in);
-	return is;
+	return (bool)is;
 }
 
 bool detectBase(const std::string &filename)
