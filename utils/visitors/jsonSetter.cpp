@@ -111,17 +111,14 @@ void JSONSetter::visit<int, EnumField>(int &field, const EnumField *fieldDescrip
 
 template <>
 void JSONSetter::visit<double, DoubleVectorField>(std::vector<double> &field, const DoubleVectorField *fieldDescriptor)
-{
-    QJsonArray array = mNodePath.back().value(fieldDescriptor->name.name).toArray();
+{    
+    QJsonArray array;
 
-    for (int i = 0; i < array.size(); i++ )
+    for (int i = 0; i < field.size(); i++ )
     {
-        QJsonValue value = array[i];
-        if (value.isDouble()) {
-            field.push_back(value.toDouble());
-        } else {
-            field.push_back(fieldDescriptor->defaultValue);
-        }
+        QJsonValue value = field[i];
+        array.append(value);
     }
+    mNodePath.back().insert(fieldDescriptor->name.name, array);
 }
 

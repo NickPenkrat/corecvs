@@ -3,31 +3,36 @@
 namespace corecvs {
 
 SelectableGeometryFeatures::Vertex::Vertex(const Vector2dd &_position) :
-    isSelected(false),
+    mSelected(false),
     position(_position),
     weight(-1.0),
     ownerPath(NULL)
 {}
 
+bool SelectableGeometryFeatures::Vertex::isSelected()
+{
+    return mSelected;
+}
+
 
 void SelectableGeometryFeatures::addSelection(SelectableGeometryFeatures::Vertex *vertex)
 {
     mSelectedPoints.push_back(vertex);
-    vertex->isSelected = true;
+    vertex->mSelected = true;
 }
 
 void SelectableGeometryFeatures::removeSelection(SelectableGeometryFeatures::Vertex *vertex)
 {
     vector<Vertex*>::iterator it = std::remove(mSelectedPoints.begin(), mSelectedPoints.end(), vertex);
     mSelectedPoints.erase( it, mSelectedPoints.end() );
-    vertex->isSelected = false;
+    vertex->mSelected = false;
 }
 
 void SelectableGeometryFeatures::deselectAllPoints()
 {
     for (unsigned i = 0; i < mSelectedPoints.size(); i++)
     {
-        mSelectedPoints[i]->isSelected = false;
+        mSelectedPoints[i]->mSelected = false;
     }
     mSelectedPoints.clear();
 }
@@ -38,11 +43,11 @@ SelectableGeometryFeatures::Vertex *SelectableGeometryFeatures::findClosest(cons
     Vertex *result =  NULL;
     for (unsigned i = 0; i < mPoints.size(); i++)
     {
-        double dist = (position - mPoints[i].position).l2Metric();
+        double dist = (position - mPoints[i]->position).l2Metric();
         if (dist < minDist)
         {
             minDist = dist;
-            result = &mPoints[i];
+            result = mPoints[i];
         }
     }
     return result;
@@ -50,8 +55,8 @@ SelectableGeometryFeatures::Vertex *SelectableGeometryFeatures::findClosest(cons
 
 SelectableGeometryFeatures::VertexPath*  SelectableGeometryFeatures::appendNewPath()
 {
-     mPaths.push_back(VertexPath());
-     return &mPaths.back();
+     mPaths.push_back(new VertexPath());
+     return mPaths.back();
 }
 
 void SelectableGeometryFeatures::deletePath(SelectableGeometryFeatures::VertexPath *path)
@@ -64,16 +69,16 @@ void SelectableGeometryFeatures::deletePath(SelectableGeometryFeatures::VertexPa
     {
         path->vertexes[i]->ownerPath = NULL;
     }
-    vector<VertexPath>::iterator it = std::remove(mPaths.begin(), mPaths.end(), path);
+    vector<VertexPath *>::iterator it = std::remove(mPaths.begin(), mPaths.end(), path);
     mPaths.erase( it, mPaths.end() );
-
+    delete path;
 }
 
 SelectableGeometryFeatures::Vertex* SelectableGeometryFeatures::appendNewVertex(const Vector2dd &point)
 {
-    mPoints.push_back(Vertex(point));
-    mPoints.back().ownerPath = NULL;
-    return &mPoints.back();
+    mPoints.push_back(new Vertex(point));
+    mPoints.back()->ownerPath = NULL;
+    return mPoints.back();
 }
 
 
@@ -127,12 +132,15 @@ void SelectableGeometryFeatures::deleteVertex(Vertex *vertex)
 {
     VertexPath *ownerPath = vertex->ownerPath;
 
+    removeSelection(vertex);
+
     if (ownerPath != NULL) {
         removeVertexFromPath(vertex);
     }
 
-    vector<Vertex>::iterator it = std::remove(mPoints.begin(), mPoints.end(), *vertex);
+    vector<Vertex *>::iterator it = std::remove(mPoints.begin(), mPoints.end(), vertex);
     mPoints.erase( it, mPoints.end() );
+    delete vertex;
 }
 
 /*
@@ -172,17 +180,15 @@ void SelectableGeometryFeatures::deleteVertex(const Vector2dd &point)
 
     for (unsigned i = 0; i < mPoints.size(); i++)
     {
-        if (mPoints[i].position == point)
+        if (mPoints[i]->position == point)
         {
-            toDelete.push_back(&mPoints[i]);
+            toDelete.push_back(mPoints[i]);
         }
     }
 
     for (unsigned i = 0; i < toDelete.size(); i++)
-    {
-        Vertex *vertex = toDelete[i];
-        removeSelection(*vertex);
-        deleteVertex(vertex);
+    {       
+        deleteVertex(toDelete[i]);
     }
 }
 

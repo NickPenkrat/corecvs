@@ -30,8 +30,8 @@ void PaintImageWidget::childRepaint(QPaintEvent *event, QWidget *who)
 
     for (unsigned i = 0; i < mFeatures.mPoints.size(); i ++)
     {
-        SelectableGeometryFeatures::Vertex *vertex = &mFeatures.mPoints[i];
-        painter.setPen(vertex->isSelected ? Qt::red : Qt::green);
+        SelectableGeometryFeatures::Vertex *vertex = mFeatures.mPoints[i];
+        painter.setPen(vertex->isSelected() ? Qt::red : Qt::green);
         if (vertex->ownerPath == NULL)
         {
             drawCircle(painter, imageToWidgetF(vertex->position), 5);
@@ -52,7 +52,7 @@ void PaintImageWidget::childRepaint(QPaintEvent *event, QWidget *who)
 
     for (unsigned i = 0; i < mFeatures.mPaths.size(); i++)
     {
-        SelectableGeometryFeatures::VertexPath *path = &mFeatures.mPaths[i];
+        SelectableGeometryFeatures::VertexPath *path = mFeatures.mPaths[i];
         painter.setPen(path->mSelected ? Qt::yellow : Qt::green);
         for (unsigned i = 1; i < path->vertexes.size(); i++)
         {
@@ -118,8 +118,7 @@ void PaintImageWidget::toolButtonReleased(QWidget *button)
         /* Find or create a path to add to*/
         if (mFeatures.mSelectedPaths.empty())
         {
-            mFeatures.appendPath();
-            newPath = &mFeatures.mPaths.back();
+            newPath = mFeatures.appendNewPath();
         }
         else
         {
@@ -138,20 +137,11 @@ void PaintImageWidget::toolButtonReleased(QWidget *button)
     }
     else if (button == mDeletePointButton)
     {
-        mFeatures.mSelectedPoints.clear();
+        //mFeatures.mSelectedPoints.clear();
 
-        for (int i = 0; i < mFeatures.mPoints.size();)
-        {
-            if (mFeatures.mPoints[i].isSelected)
-            {
-                mFeatures.deleteVertex(i);
-            }
-            else
-            {
-                i++;
-            }
+        while (!mFeatures.mSelectedPoints.empty()) {
+            mFeatures.deleteVertex(mFeatures.mSelectedPoints[0]);
         }
-
         mUi->widget->update();
     }
 }
@@ -177,21 +167,21 @@ void PaintImageWidget::childMousePressed(QMouseEvent *event)
                 {
                     mFeatures.deselectAll();
                 }
-                mFeatures.addSelection(*vertex);
+                mFeatures.addSelection(vertex);
                 if (vertex->isInPath())
                 {
-                    mFeatures.addSelection(*vertex->ownerPath);
+                    mFeatures.addSelection(vertex->ownerPath);
                 }
                 return;
             }
         }
 
-        mFeatures.addVertex(imagePoint);
+        SelectableGeometryFeatures::Vertex *newVertex = mFeatures.appendNewVertex(imagePoint);
         if (!shiftPressed)
         {
             mFeatures.deselectAll();
         }
-        mFeatures.addSelection(mFeatures.mPoints.back());
+        mFeatures.addSelection(newVertex);
     }
 }
 
@@ -243,11 +233,11 @@ void PaintImageWidget::clickToolButton(PaintImageWidget::ToolButtonType type)
 
 QPointF PaintImageWidget::currentPoint()
 {
-    if (mSelectedPoints.isEmpty())
+    if (mFeatures.mSelectedPoints.empty())
     {
         return QPointF();
     }
-    return Core2Qt::QPointFromVector2dd(mSelectedPoints.last()->position);
+    return Core2Qt::QPointFromVector2dd(mFeatures.mSelectedPoints.back()->position);
 }
 
 void PaintImageWidget::setSelectedPoint(const QPointF &/*point*/, bool /*isSelected*/)
@@ -265,9 +255,9 @@ void PaintImageWidget::setSelectedPoint(const QPointF &/*point*/, bool /*isSelec
 vector<vector<Vector2dd> > PaintImageWidget::getPaths()
 {
     vector<vector<Vector2dd> >straights;
-    for (int i = 0; i < mPaths.size(); i++)
+    for (int i = 0; i < mFeatures.mPaths.size(); i++)
     {
-        PaintImageWidget::VertexPath *vertexPath = &mPaths[i];
+        SelectableGeometryFeatures::VertexPath *vertexPath = mFeatures.mPaths[i];
         vector<Vector2dd> path;
         for (int j = 0; j < vertexPath->vertexes.size(); j++)
         {

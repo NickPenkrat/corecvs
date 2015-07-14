@@ -33,7 +33,9 @@ LensDistortionModelParametersControlWidget::LensDistortionModelParametersControl
     QObject::connect(ui->loadPushButton, SIGNAL(released()), this, SLOT(loadParams()));
     QObject::connect(ui->savePushButton, SIGNAL(released()), this, SLOT(saveParams()));
 
-    QObject::connect(this, SIGNAL(paramsChanged()), this, SLOT(updateAdditionalData()));
+    QObject::connect(this, SIGNAL(paramsChanged()), this, SLOT(updateAdditionalDataNeeded()));
+    QObject::connect(ui->refreshButton, SIGNAL(released()), this, SLOT(updateAdditionalData()));
+
 
 }
 
@@ -211,14 +213,23 @@ void LensDistortionModelParametersControlWidget::resetScale()
     ui->scaleSpinBox->setValue(1.0);
 }
 
+void LensDistortionModelParametersControlWidget::updateAdditionalDataNeeded()
+{
+    if (ui->autoRefeshCheckBox->isChecked()){
+        updateAdditionalData();
+    }
+}
+
 
 /* Additional stuff */
 void LensDistortionModelParametersControlWidget::updateAdditionalData()
 {
-    LensDistortionModelParameters *lensParams = LensDistortionModelParametersControlWidget::createParameters();
-    RadialCorrection radialCorrection(*lensParams);
+    setCursor(Qt::BusyCursor);
 
-    Vector2dd principal(lensParams->principalX(), lensParams->principalY());
+    LensDistortionModelParameters lensParams = LensDistortionModelParametersControlWidget::getParameters();
+    RadialCorrection radialCorrection(lensParams);
+
+    Vector2dd principal(lensParams.principalX(), lensParams.principalY());
 
     int diagonal = sqrt(principal.l2Metric());
     if (mExample != NULL)
@@ -238,7 +249,7 @@ void LensDistortionModelParametersControlWidget::updateAdditionalData()
     mGraphDialog.update();
 
     PrinterVisitor printer;
-    printer.visit(*lensParams, "inputPrams");
+    printer.visit(lensParams, "inputPrams");
 
 
     if (mExample != NULL)
@@ -315,8 +326,8 @@ void LensDistortionModelParametersControlWidget::updateAdditionalData()
         exampleShow();
     }
 
+    unsetCursor();
 
-    delete lensParams;
 }
 
 

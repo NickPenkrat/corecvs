@@ -486,19 +486,19 @@ void DistortionWidget::updateScore()
     PaintImageWidget *canvas = mUi->widget;
     for (unsigned i = 0; i < (unsigned)canvas->mFeatures.mPaths.size(); i++)
     {
-        SelectableGeometryFeatures::VertexPath &path = canvas->mFeatures.mPaths[i];
-        if (path.vertexes.size() < 3) {
+        SelectableGeometryFeatures::VertexPath *path = canvas->mFeatures.mPaths[i];
+        if (path->vertexes.size() < 3) {
             continue;
         }
         if (params.costAlgorithm() == LineDistortionEstimatorCost::JOINT_ANGLE_COST)
         {
-            for (int j = 1; j < path.vertexes.size() - 1; j++) {
-                path.vertexes[j]->weight = fabs(result[count]) / maxValue;
+            for (unsigned j = 1; j < path->vertexes.size() - 1; j++) {
+                path->vertexes[j]->weight = fabs(result[count]) / maxValue;
                 count++;
             }
         } else {
-            for (int j = 0; j < path.vertexes.size(); j++) {
-                path.vertexes[j]->weight = fabs(result[count]) / maxValue;
+            for (unsigned j = 0; j < path->vertexes.size(); j++) {
+                path->vertexes[j]->weight = fabs(result[count]) / maxValue;
                 count++;
             }
         }

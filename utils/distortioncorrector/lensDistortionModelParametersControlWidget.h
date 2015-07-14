@@ -54,6 +54,7 @@ public slots:
     void resetScale();
 
 
+    void updateAdditionalDataNeeded();
     void updateAdditionalData();
 
     void exampleShow();

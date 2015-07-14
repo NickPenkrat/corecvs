@@ -16,12 +16,14 @@ public:
 
     struct Vertex
     {
-        bool        isSelected;
+        bool        mSelected;
         Vector2dd   position;
         double      weight;
         VertexPath *ownerPath;
 
         explicit Vertex(const Vector2dd &_position = Vector2dd(0.0));
+
+        bool isSelected();
 
         bool isInPath() {
             return (ownerPath != NULL);
@@ -31,7 +33,7 @@ public:
     typedef Vector2dd * TargetPoint;
 
     /** Points **/
-    vector<Vertex > mPoints;
+    vector<Vertex*> mPoints;
     vector<Vertex*> mSelectedPoints;
 
     Vertex *findClosest(const Vector2dd &position);
@@ -47,7 +49,7 @@ public:
     };
 
     /** Pathes **/
-    vector<VertexPath> mPaths;
+    vector<VertexPath *> mPaths;
     vector<VertexPath *> mSelectedPaths;
 
     VertexPath *appendNewPath();
