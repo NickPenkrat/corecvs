@@ -57,6 +57,15 @@ public:
 	~MatchingPlanComputationStage() {}
 };
 
+class FileNameRefinedMatchingPlanComputationStage : public FeatureMatchingPipelineStage
+{
+public:
+	void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename);
+	void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
+	void run(FeatureMatchingPipeline *pipeline);
+	~FileNameRefinedMatchingPlanComputationStage() {}
+};
+
 class MatchingStage : public FeatureMatchingPipelineStage
 {
 public:
