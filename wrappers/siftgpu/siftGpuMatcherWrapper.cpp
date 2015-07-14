@@ -1,3 +1,5 @@
+#include "global.h"
+
 #include "siftGpuMatcherWrapper.h"
 
 #ifdef WIN32
@@ -69,6 +71,8 @@ SiftGpuMatcher::SiftGpuMatcher(const SiftGpuMatcher &matcher)
 	// TODO: check if SiftMatchGPU is stateless.
 	// Note: by default __max_sift member is inaccessible
 	siftMatchGpu = initSiftMatchGpu();
+
+    CORE_UNUSED(matcher);
 }
 
 void SiftGpuMatcher::knnMatchImpl( RuntimeTypeBuffer &queryDescriptors, RuntimeTypeBuffer &trainDescriptors, std::vector<std::vector<RawMatch> >& matches, size_t K)
@@ -94,14 +98,14 @@ void SiftGpuMatcher::knnMatchImpl( RuntimeTypeBuffer &queryDescriptors, RuntimeT
 	size_t rowsT = trainDescriptors.getRows();
 	size_t maxRows = rowsQ > rowsT ? rowsQ : rowsT;
 
-	if(maxRows > 8192)
-		siftMatchGpu->SetMaxSift(maxRows);
+	if (maxRows > 8192)
+		siftMatchGpu->SetMaxSift((int)maxRows);
 
 	int (*buffer)[2] = new int[maxRows][2];
 
-	siftMatchGpu->SetDescriptors(0, queryDescriptors.getRows(), queryDescriptors.row<float>(0));
-	siftMatchGpu->SetDescriptors(1, trainDescriptors.getRows(), trainDescriptors.row<float>(0));
-	int nmatch = siftMatchGpu->GetSiftMatch(maxRows, buffer);
+	siftMatchGpu->SetDescriptors(0, (int)queryDescriptors.getRows(), queryDescriptors.row<float>(0));
+	siftMatchGpu->SetDescriptors(1, (int)trainDescriptors.getRows(), trainDescriptors.row<float>(0));
+	int nmatch = siftMatchGpu->GetSiftMatch((int)maxRows, buffer);
 	assert(nmatch < rowsQ);
 
 	for (int j = 0; j < nmatch; ++j)

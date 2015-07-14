@@ -29,7 +29,8 @@ std::istream& operator>>(std::istream& is, MatchPlanEntry& mp)
 
 bool MatchPlanEntry::isBetween(uint16_t imgA, uint16_t imgB)
 {
-	return (queryImg == imgA && trainImg == imgB) || (trainImg == imgA && queryImg == imgB);
+	return (queryImg == imgA && trainImg == imgB) ||
+           (trainImg == imgA && queryImg == imgB);
 }
 
 void MatchPlanEntry::load(std::istream &is)
@@ -37,8 +38,8 @@ void MatchPlanEntry::load(std::istream &is)
 	size_t I, J, K, L;
 	is >> I >> J >> K >> L;
 
-	queryImg = I;
-	trainImg = J;
+	queryImg = (uint16_t)I;
+	trainImg = (uint16_t)J;
 
 	queryFeatures.resize(K);
 	for (size_t i = 0; i < K; ++i)

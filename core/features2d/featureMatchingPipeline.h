@@ -1,16 +1,16 @@
-#ifndef FEATUREMATCHER_H
-#define FEATUREMATCHER_H
+#pragma once
 
 #include <stack>
 #include <map>
 
-#include "featureDetectorProvider.h"
-#include "descriptorExtractorProvider.h"
-#include "imageMatches.h"
-#include "matchingPlan.h"
+#include "global.h"
+
+#include "imageKeyPoints.h"
+#include "imageMatches.h"   // RawMatches
+#include "matchingPlan.h"   // MatchPlan
 
 #ifdef WITH_TBB
-#include <tbb/tbb.h>
+#include <tbb/tbb.h>        // tbb::spin_mutex
 #endif
 
 class FeatureMatchingPipeline;
@@ -99,9 +99,9 @@ private:
 class VsfmWriterStage : public FeatureMatchingPipelineStage
 {
 public:
-	void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename) {}
+	void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename) { CORE_UNUSED(pipeline); CORE_UNUSED(filename); }
 	void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
-	void run(FeatureMatchingPipeline *pipeline) {}
+	void run(FeatureMatchingPipeline *pipeline) { CORE_UNUSED(pipeline); }
 	VsfmWriterStage(bool sortFeatures);
 private:
 	bool sortFeatures;
@@ -112,19 +112,20 @@ class FeatureMatchingPipeline
 public:
 	FeatureMatchingPipeline(const std::vector<std::string> &filenames);
 	~FeatureMatchingPipeline();
+
 	void run();
 	void add(FeatureMatchingPipelineStage* stage, bool run, bool saveData = false, const std::string &saveName = "", bool loadData = false, const std::string &loadName = "");
 	void tic(size_t thread_id = ~(size_t)0, bool level = true);
 	void toc(const std::string &name, const std::string &evt, size_t thread_id = ~(size_t)0, bool level = true);
 	void toc(const std::string &name, const std::string &evt, const size_t curr, const size_t rem, size_t thread_id = ~(size_t)0, bool level = true);
 
-	std::vector<Image> images;
-	MatchPlan matchPlan;
-	RawMatches rawMatches;
-	RefinedMatches refinedMatches;
+	std::vector<Image>  images;
+	MatchPlan           matchPlan;
+	RawMatches          rawMatches;
+	RefinedMatches      refinedMatches;
 
-	DetectorType detectorType;
-	DescriptorType descriptorType;
+	DetectorType        detectorType;
+	DescriptorType      descriptorType;
 
 private:
 	struct tic_data
@@ -138,12 +139,9 @@ private:
 	tbb::spin_mutex mutex;
 #endif
 
-    std::vector<FeatureMatchingPipelineStage*> pipeline;
-	std::vector<bool> runEnable;
-	std::vector<std::pair<bool, std::string>> saveParams;
-	std::vector<std::pair<bool, std::string>> loadParams;
+    std::vector<FeatureMatchingPipelineStage*>  pipeline;
+	std::vector<bool>                           runEnable;
+	std::vector<std::pair<bool, std::string> >  saveParams;
+	std::vector<std::pair<bool, std::string> >  loadParams;
 	FeatureMatchingPipeline(const FeatureMatchingPipeline&);
 };
-
-
-#endif

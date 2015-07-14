@@ -1,5 +1,4 @@
-#ifndef MATCHINGPLAN_H
-#define MATCHINGPLAN_H
+#pragma once
 
 #include <deque>
 #include <iostream>
@@ -34,5 +33,3 @@ struct MatchPlan
 
 	std::deque<MatchPlanEntry> plan;
 };
-
-#endif

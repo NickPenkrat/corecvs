@@ -1,5 +1,4 @@
-#ifndef IMAGEKEYPOINTS_H
-#define IMAGEKEYPOINTS_H
+#pragma once
 
 #include <vector>
 #include <iostream>
@@ -13,8 +12,7 @@ struct KeyPoint
 {
 	KeyPoint(double x = 0.0, double y = 0.0, double size = 0.0, double angle = -1.0, double response = 0.0, int octave = 0)
 		: x(x), y(y), size(size), angle(angle), response(response), octave(octave)
-	{
-	}
+	{}
 
 	friend std::ostream& operator<<(std::ostream& os, const KeyPoint &kp);
 	friend std::istream& operator>>(std::istream& is, KeyPoint &kp);
@@ -24,7 +22,7 @@ struct KeyPoint
 	double size;
 	double angle;
 	double response;
-	int octave;
+	int    octave;
 };
 
 struct ImageKeyPoints
@@ -44,7 +42,7 @@ struct ImageKeyPoints
 struct ImageDescriptors
 {
 	RuntimeTypeBuffer mat;
-	DescriptorType type;
+	DescriptorType    type;
 
 	void load(std::istream &is);
 	void save(std::ostream &os) const;
@@ -57,14 +55,11 @@ struct ImageDescriptors
 struct Image
 {
 	ImageDescriptors descriptors;
-	ImageKeyPoints keyPoints;
+	ImageKeyPoints   keyPoints;
 
-	size_t id;
-	std::string filename;
-
+	size_t           id;
+	std::string      filename;
 
 	Image(const size_t &id);
 	Image(const size_t &id, const std::string &filename);
 };
-
-#endif

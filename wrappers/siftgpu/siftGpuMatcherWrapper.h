@@ -3,7 +3,7 @@
 
 #include "descriptorMatcherProvider.h"
 
-#include "SiftGPU/SiftGPU.h"
+#include "SiftGPU/src/SiftGPU/SiftGPU.h"
 
 class SiftGpuMatcher : public DescriptorMatcher
 {
