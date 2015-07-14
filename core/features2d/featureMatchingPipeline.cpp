@@ -402,7 +402,7 @@ class ParallelMatcher
 public:
     void operator() (const corecvs::BlockedRange<size_t>& r) const
     {
-//        size_t N = pipeline->images.size();
+        size_t N = pipeline->images.size();  CORE_UNUSED(N);
         size_t S = pipeline->matchPlan.plan.size();
         size_t id = r.begin();
         MatchPlan &matchPlan = pipeline->matchPlan;
@@ -557,7 +557,7 @@ public:
             while(next_id)
             {
                 reqs.push_back(idx[next_id]);
-                assert(matchPlan.plan[idx[next_id]].isBetween(I,J));
+                assert(matchPlan.plan[idx[next_id]].isBetween((uint16_t)I, (uint16_t)J));
                 next_id = next[next_id];
             }
             // step 1: match
