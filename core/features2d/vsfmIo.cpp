@@ -12,14 +12,17 @@ const uint32_t VsfmSiftIO::MAGIC_EOF  = BYTES_MAGIC('\xff', 'E', 'O', 'F');
 #undef BYTES_MAGIC
 
 
-std::ostream& operator<<(std::ostream& os, const SiftFeature& f) {
+std::ostream& operator<<(std::ostream& os, const SiftFeature& f)
+{
 	os << f.x << " " << f.y << " " << f.scale << " " << f.orientation << std::endl;
 
-	for(size_t i = 0; i < SiftFeature::DESCRIPTOR_WIDTH; ++i) {
+	for (size_t i = 0; i < SiftFeature::DESCRIPTOR_WIDTH; ++i)
+	{
 		os << (int)f.data[i] << " ";
 
 		// TODO: do we really need this linebreak?!
-		if((i + 1) % 20 == 0) {
+		if ((i + 1) % 20 == 0)
+		{
 			os << std::endl;
 		}
 	}
@@ -27,27 +30,32 @@ std::ostream& operator<<(std::ostream& os, const SiftFeature& f) {
 	return os;
 }
 
-std::istream& operator>>(std::istream& is, SiftFeature& f) {
+std::istream& operator>>(std::istream& is, SiftFeature& f)
+{
 	is >> f.x >> f.y >> f.scale >> f.orientation;
 
-	for(size_t i = 0; i < SiftFeature::DESCRIPTOR_WIDTH; ++i) {
+	for (size_t i = 0; i < SiftFeature::DESCRIPTOR_WIDTH; ++i)
+	{
 		int a;
 		is >> a;
 		f.data[i] = a;
 	}
 	return is;
-	
+
 }
 
-void VsfmSiftIO::writeAscii(std::ostream& os, const std::vector<SiftFeature>& features) {
+void VsfmSiftIO::writeAscii(std::ostream& os, const std::vector<SiftFeature>& features)
+{
 	os << features.size() << " " << SiftFeature::DESCRIPTOR_WIDTH << std::endl;
 
-    for(std::vector<SiftFeature>::const_iterator it = features.begin(); it != features.end(); ++it) {
-        os << *it;
+	for (std::vector<SiftFeature>::const_iterator it = features.begin(); it != features.end(); ++it)
+	{
+		os << *it;
 	}
 }
 
-void VsfmSiftIO::readAscii(std::istream& is, std::vector<SiftFeature>& features) {
+void VsfmSiftIO::readAscii(std::istream& is, std::vector<SiftFeature>& features)
+{
 	size_t N, sz;
 	is >> N >> sz;
 
@@ -57,13 +65,15 @@ void VsfmSiftIO::readAscii(std::istream& is, std::vector<SiftFeature>& features)
 
 	features.resize(N);
 
-    for(std::vector<SiftFeature>::iterator it = features.begin(); it != features.end(); ++it) {
-        assert(is);
-        is >> *it;
+	for (std::vector<SiftFeature>::iterator it = features.begin(); it != features.end(); ++it)
+	{
+		assert(is);
+		is >> *it;
 	}
 }
 
-void VsfmSiftIO::readBinary(std::istream& is, std::vector<SiftFeature>& features) {
+void VsfmSiftIO::readBinary(std::istream& is, std::vector<SiftFeature>& features)
+{
 	SiftHeader header;
 	is.read((char*)&header, sizeof(header));
 
@@ -71,18 +81,18 @@ void VsfmSiftIO::readBinary(std::istream& is, std::vector<SiftFeature>& features
 	features.resize(header.npoint);
 
 	assert(header.descriptorSize == SiftFeature::DESCRIPTOR_WIDTH &&
-		   header.keyPointSize == SiftFeature::BINARY_FLOATS &&
-		   header.magicName == VsfmSiftIO::MAGIC_SIFT &&
-		   header.magicVersion == VsfmSiftIO::MAGIC_V40);
+			header.keyPointSize == SiftFeature::BINARY_FLOATS &&
+			header.magicName == VsfmSiftIO::MAGIC_SIFT &&
+			header.magicVersion == VsfmSiftIO::MAGIC_V40);
 
 	size_t i = 0;
-    for(std::vector<SiftFeature>::iterator f = features.begin(); f != features.end(); ++f){
-        is.read((char*)&f->x, sizeof(float) * SiftFeature::BINARY_FLOATS);
-        f->importance = i++;
+	for (std::vector<SiftFeature>::iterator f = features.begin(); f != features.end(); ++f){
+		is.read((char*)&f->x, sizeof(float) * SiftFeature::BINARY_FLOATS);
+		f->importance = i++;
 	}
 
-    for(std::vector<SiftFeature>::iterator f = features.begin(); f != features.end(); ++f){
-        is.read((char*)f->data.data(), header.descriptorSize);
+	for (std::vector<SiftFeature>::iterator f = features.begin(); f != features.end(); ++f){
+		is.read((char*)f->data.data(), header.descriptorSize);
 	}
 
 	uint32_t eof;
@@ -90,17 +100,20 @@ void VsfmSiftIO::readBinary(std::istream& is, std::vector<SiftFeature>& features
 	assert(eof == VsfmSiftIO::MAGIC_EOF);
 }
 
-void VsfmSiftIO::writeBinary(std::ostream& os, const std::vector<SiftFeature>& features) {
+void VsfmSiftIO::writeBinary(std::ostream& os, const std::vector<SiftFeature>& features)
+{
 	SiftHeader header;
-	header.npoint = features.size();
+	header.npoint = (uint32_t)features.size();
 
 	os.write((char*)&header, sizeof(header));
-    for(std::vector<SiftFeature>::const_iterator f = features.begin(); f != features.end(); ++f) {
-        os.write((char*)&f->x, sizeof(float) * SiftFeature::BINARY_FLOATS);
+	for (std::vector<SiftFeature>::const_iterator f = features.begin(); f != features.end(); ++f)
+	{
+		os.write((char*)&f->x, sizeof(float) * SiftFeature::BINARY_FLOATS);
 	}
 
-    for(std::vector<SiftFeature>::const_iterator f = features.begin(); f != features.end(); ++f) {
-        os.write((char*)f->data.data(), SiftFeature::DESCRIPTOR_WIDTH);
+	for (std::vector<SiftFeature>::const_iterator f = features.begin(); f != features.end(); ++f)
+	{
+		os.write((char*)f->data.data(), SiftFeature::DESCRIPTOR_WIDTH);
 	}
 
 	os.write((char*)&VsfmSiftIO::MAGIC_EOF, sizeof(VsfmSiftIO::MAGIC_EOF));

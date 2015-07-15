@@ -1,21 +1,22 @@
-#ifndef FEATUREMATCHER_H
-#define FEATUREMATCHER_H
+#pragma once
 
 #include <stack>
 #include <map>
 
-#include "featureDetectorProvider.h"
-#include "descriptorExtractorProvider.h"
-#include "imageMatches.h"
-#include "matchingPlan.h"
+#include "global.h"
+
+#include "imageKeyPoints.h"
+#include "imageMatches.h"   // RawMatches
+#include "matchingPlan.h"   // MatchPlan
 
 #ifdef WITH_TBB
-#include <tbb/tbb.h>
+#include <tbb/tbb.h>        // tbb::spin_mutex
 #endif
 
 class FeatureMatchingPipeline;
 
-class FeatureMatchingPipelineStage {
+class FeatureMatchingPipelineStage
+{
 public:
 	virtual void run(FeatureMatchingPipeline *pipeline) = 0;
 	virtual void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename) = 0;
@@ -23,7 +24,8 @@ public:
 	virtual ~FeatureMatchingPipelineStage() {}
 };
 
-class KeyPointDetectionStage : public FeatureMatchingPipelineStage {
+class KeyPointDetectionStage : public FeatureMatchingPipelineStage
+{
 public:
 	KeyPointDetectionStage(DetectorType type);
 	void run(FeatureMatchingPipeline *pipeline);
@@ -34,7 +36,8 @@ private:
 	DetectorType detectorType;
 };
 
-class DescriptorExtractionStage : public FeatureMatchingPipelineStage {
+class DescriptorExtractionStage : public FeatureMatchingPipelineStage
+{
 public:
 	DescriptorExtractionStage(DescriptorType type);
 	void run(FeatureMatchingPipeline *pipeline);
@@ -45,7 +48,8 @@ private:
 	DescriptorType descriptorType;
 };
 
-class MatchingPlanComputationStage : public FeatureMatchingPipelineStage {
+class MatchingPlanComputationStage : public FeatureMatchingPipelineStage
+{
 public:
 	void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename);
 	void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
@@ -53,7 +57,17 @@ public:
 	~MatchingPlanComputationStage() {}
 };
 
-class MatchingStage : public FeatureMatchingPipelineStage {
+class FileNameRefinedMatchingPlanComputationStage : public FeatureMatchingPipelineStage
+{
+public:
+	void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename);
+	void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
+	void run(FeatureMatchingPipeline *pipeline);
+	~FileNameRefinedMatchingPlanComputationStage() {}
+};
+
+class MatchingStage : public FeatureMatchingPipelineStage
+{
 public:
 	void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename);
 	void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
@@ -65,7 +79,8 @@ private:
 	size_t responsesPerPoint;
 };
 
-class RefineMatchesStage : public FeatureMatchingPipelineStage {
+class RefineMatchesStage : public FeatureMatchingPipelineStage
+{
 public:
 	void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename);
 	void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
@@ -77,38 +92,55 @@ private:
 	double scaleThreshold;
 };
 
-class VsfmWriterStage : public FeatureMatchingPipelineStage {
+class MatchAndRefineStage : public FeatureMatchingPipelineStage
+{
 public:
-	void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename) {}
+	void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename);
 	void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
-	void run(FeatureMatchingPipeline *pipeline) {}
+	void run(FeatureMatchingPipeline* pipeline);
+	~MatchAndRefineStage() {}
+	MatchAndRefineStage(DescriptorType descriptorType, double scaleThreshold = 0.95);
+private:
+	DescriptorType descriptorType;
+	double scaleThreshold;
+};
+
+class VsfmWriterStage : public FeatureMatchingPipelineStage
+{
+public:
+	void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename) { CORE_UNUSED(pipeline); CORE_UNUSED(filename); }
+	void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
+	void run(FeatureMatchingPipeline *pipeline) { CORE_UNUSED(pipeline); }
 	VsfmWriterStage(bool sortFeatures);
 private:
 	bool sortFeatures;
 };
 
-class FeatureMatchingPipeline {
+class FeatureMatchingPipeline
+{
 public:
 	FeatureMatchingPipeline(const std::vector<std::string> &filenames);
 	~FeatureMatchingPipeline();
+
 	void run();
-	void add(FeatureMatchingPipelineStage* stage, bool run, std::pair<bool, std::string> saveParams = std::make_pair(false, std::string()), std::pair<bool, std::string> loadParams = std::make_pair(false, std::string()));
+	void add(FeatureMatchingPipelineStage* stage, bool run, bool saveData = false, const std::string &saveName = "", bool loadData = false, const std::string &loadName = "");
 	void tic(size_t thread_id = ~(size_t)0, bool level = true);
 	void toc(const std::string &name, const std::string &evt, size_t thread_id = ~(size_t)0, bool level = true);
 	void toc(const std::string &name, const std::string &evt, const size_t curr, const size_t rem, size_t thread_id = ~(size_t)0, bool level = true);
 
-	std::vector<Image> images;
-	MatchPlan matchPlan;
-	RawMatches rawMatches;
-	RefinedMatches refinedMatches;
+	std::vector<Image>  images;
+	MatchPlan           matchPlan;
+	RawMatches          rawMatches;
+	RefinedMatches      refinedMatches;
 
-	DetectorType detectorType;
-	DescriptorType descriptorType;
+	DetectorType        detectorType;
+	DescriptorType      descriptorType;
 
 private:
-	struct tic_data {
+	struct tic_data
+	{
         std::map<size_t, size_t> thread_tics;
-		std::map<size_t, size_t> thread_totals, thread_counts;	
+		std::map<size_t, size_t> thread_totals, thread_counts;
 	};
 	std::stack<tic_data> tics;
 
@@ -116,12 +148,9 @@ private:
 	tbb::spin_mutex mutex;
 #endif
 
-    std::vector<FeatureMatchingPipelineStage*> pipeline;
-	std::vector<bool> runEnable;
-	std::vector<std::pair<bool, std::string>> saveParams;
-	std::vector<std::pair<bool, std::string>> loadParams;
+    std::vector<FeatureMatchingPipelineStage*>  pipeline;
+	std::vector<bool>                           runEnable;
+	std::vector<std::pair<bool, std::string> >  saveParams;
+	std::vector<std::pair<bool, std::string> >  loadParams;
 	FeatureMatchingPipeline(const FeatureMatchingPipeline&);
 };
-
-
-#endif

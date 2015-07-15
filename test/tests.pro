@@ -13,16 +13,16 @@ SUBDIRS +=       \
     grab         \
     grab_N_captures \
     serialize1   \
-    adoptcolor   \
+#   adoptcolor   \
 #    avigrab     \
     decodebayer \   
-    genvectorui  \
+#    genvectorui  \
 
 with_opencv {
     SUBDIRS +=       \
-    opencvLineDetector \
-    matcher_basic \
-    matcher_full \
+    	opencvLineDetector \
+        matcher_basic \
+        matcher_full \
 
 }
 

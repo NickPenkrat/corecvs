@@ -40,9 +40,18 @@ asserts {
 }
 
 with_avx {
-    QMAKE_CFLAGS   += -mavx
-    QMAKE_CXXFLAGS += -mavx
-    DEFINES        += WITH_AVX
+    DEFINES += WITH_AVX WITH_AVX2
+    !win32-msvc* {
+        QMAKE_CFLAGS   += -mavx -mavx2
+        QMAKE_CXXFLAGS += -mavx -mavx2
+    } else:win32-msvc2010 {
+        QMAKE_CFLAGS   += -arch:AVX
+        QMAKE_CXXFLAGS += -arch:AVX
+        DEFINES -= WITH_AVX2
+    } else {
+        QMAKE_CFLAGS   += -arch:AVX -arch:AVX2
+        QMAKE_CXXFLAGS += -arch:AVX -arch:AVX2
+    }
 }
 
 with_sse {
@@ -51,9 +60,9 @@ with_sse {
     !win32-msvc* {
         QMAKE_CFLAGS   += -msse2
         QMAKE_CXXFLAGS += -msse2
-    } else:win32-msvc2010 {
-        QMAKE_CFLAGS   += /arch:SSE2
-        QMAKE_CXXFLAGS += /arch:SSE2
+    } else {
+        #QMAKE_CFLAGS   += -arch:SSE2     # actual only for x86 mode
+        #QMAKE_CXXFLAGS += -arch:SSE2
     }
 }
 with_sse3 {
@@ -62,11 +71,8 @@ with_sse3 {
     !win32-msvc* {
         QMAKE_CFLAGS   += -msse3
         QMAKE_CXXFLAGS += -msse3
-    } else:win32-msvc2010 {
-        QMAKE_CFLAGS   += /arch:SSE3
-        QMAKE_CXXFLAGS += /arch:SSE3
     } else {
-        DEFINES -= WITH_SSE3
+        #DEFINES -= WITH_SSE3
     }
 }
 with_sse4 {
@@ -75,11 +81,8 @@ with_sse4 {
     !win32-msvc* {
         QMAKE_CFLAGS   += -msse4.1
         QMAKE_CXXFLAGS += -msse4.1
-    } else:win32-msvc2010 {
-        QMAKE_CFLAGS   += /arch:SSE4.1
-        QMAKE_CXXFLAGS += /arch:SSE4.1
     } else {
-        DEFINES -= WITH_SSE4
+        #DEFINES -= WITH_SSE4
     }
 }
 
@@ -228,8 +231,11 @@ isEmpty(CCACHE_TOOLCHAIN_ON) {
     QMAKE_CXXFLAGS_STATIC_LIB=
 
     !win32 {
-        QMAKE_CFLAGS +=-fPIC
+        QMAKE_CFLAGS   +=-fPIC
         QMAKE_CXXFLAGS +=-fPIC
+    }
+    !win32 {
+        QMAKE_LFLAGS += -ldl			# load symbol links from "dll/so" files
     }
 } else {
    #QMAKE_CXXFLAGS_DEBUG   += /showIncludes

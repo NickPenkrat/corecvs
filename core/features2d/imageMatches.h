@@ -7,7 +7,8 @@
 #include <stdint.h>
 #include <deque>
 
-struct RawMatch {
+struct RawMatch
+{
 	uint16_t featureQ;
 	uint16_t featureT;
 
@@ -15,10 +16,12 @@ struct RawMatch {
 	static const uint16_t INVALID_MARKER;
 
 	RawMatch(const uint16_t &featureQ = INVALID_MARKER, const uint16_t &featureT = INVALID_MARKER, const double &distance = 1000.0)
-		: featureQ(featureQ), featureT(featureT), distance(distance) {
-		}
+		: featureQ(featureQ), featureT(featureT), distance(distance)
+	{
+	}
 
-	bool isValid() const {
+	bool isValid() const
+	{
 		return featureQ != INVALID_MARKER && featureT != INVALID_MARKER;
 	}
 
@@ -26,7 +29,8 @@ struct RawMatch {
 	friend std::ostream& operator<<(std::ostream& os, const RawMatch &rm);
 };
 
-struct Match {
+struct Match
+{
 	uint16_t imgA;
 	uint16_t imgB;
 
@@ -35,15 +39,19 @@ struct Match {
 
 	double distance;
 
-	Match() {
+	Match()
+	{
 	}
-	Match(const uint16_t &imgA, const uint16_t &imgB, const uint16_t &featureA, const uint16_t &featureB, const double &distance) : distance(distance) {
-		if(imgA < imgB) {
+	Match(const uint16_t &imgA, const uint16_t &imgB, const uint16_t &featureA, const uint16_t &featureB, const double &distance) : distance(distance)
+	{
+		if (imgA < imgB)
+		{
 			this->imgA = imgA;
 			this->featureA = featureA;
 			this->imgB = imgB;
 			this->featureB = featureB;
-		} else {
+		} else
+		{
 			this->imgA = imgB;
 			this->featureA = featureB;
 			this->imgB = imgA;
@@ -52,23 +60,31 @@ struct Match {
 	}
 };
 
-struct RefinedMatchSet {
+struct RefinedMatchSet
+{
 	size_t imgA;
 	size_t imgB;
 
 	std::deque<Match> matches;
 
-	RefinedMatchSet(const size_t &_imgA, const size_t &_imgB) {
+	RefinedMatchSet() : imgA(~(size_t)0), imgB(~(size_t)0)
+	{
+	}
+
+	RefinedMatchSet(const size_t &_imgA, const size_t &_imgB)
+	{
 		imgB = std::max(_imgA, _imgB);
 		imgA = std::min(_imgA, _imgB);
 	}
-	RefinedMatchSet(const size_t &_imgA, const size_t &_imgB, const std::deque<Match> &_matches) : matches(_matches) {
+	RefinedMatchSet(const size_t &_imgA, const size_t &_imgB, const std::deque<Match> &_matches) : matches(_matches)
+	{
 		imgB = std::max(_imgA, _imgB);
 		imgA = std::min(_imgA, _imgB);
 	}
 };
 
-struct RefinedMatches {
+struct RefinedMatches
+{
 	std::deque<RefinedMatchSet> matchSets;
 
 	void load(std::istream &is);
@@ -78,9 +94,10 @@ struct RefinedMatches {
 	void save(const std::string &filename) const;
 };
 
-struct RawMatches {
+struct RawMatches
+{
 	std::deque<std::deque<std::array<RawMatch,2>>> matches;
-	
+
 	void load(std::istream &is);
 	void save(std::ostream &os) const;
 

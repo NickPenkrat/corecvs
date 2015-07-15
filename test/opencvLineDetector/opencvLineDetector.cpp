@@ -75,41 +75,43 @@ int main (int argc, char **argv)
 
         Vector2dd center(image->w / 2.0, image->h /2.0);
 
-       vector<vector<Vector2dd> > straights;
+        vector<vector<Vector2dd> > straights;
 
-       for (int ih = 0; ih < chessH; ih++)
-       {
-           printf("Line %i ", ih);
-           vector<Vector2dd> straight;
-           double prevX = 0;
-           double prevY = 0;
-           for (int iw = 0; iw < chessW; iw++)
-           {
-               straight.push_back(Vector2dd(pointbuf.at(ih * chessW + iw).x,pointbuf.at(ih * chessW + iw).y));
-               printf("  Point %i  %f %f", ih * chessW + iw, pointbuf[ih * chessW + iw].x,pointbuf[ih * chessW + iw].y);
-               if (prevX != 0 && prevY != 0)
-               {
-                   cv::line(view,Point(prevX,prevY),Point( pointbuf[ih * chessW + iw].x,pointbuf[ih * chessW + iw].y),Scalar(0,255,0));
-               }
-               prevX = pointbuf[ih * chessW + iw].x;
-               prevY = pointbuf[ih * chessW + iw].y;
-           }
-           printf("\n");
-           straights.push_back(straight);
-       }
-       imwrite("test_with_chess_LINES.jpg", view);
+        for (int ih = 0; ih < chessH; ih++)
+        {
+            printf("Line %i ", ih);
+            vector<Vector2dd> straight;
+            double prevX = 0;
+            double prevY = 0;
+            for (int iw = 0; iw < chessW; iw++)
+            {
+                straight.push_back(Vector2dd(pointbuf.at(ih * chessW + iw).x,pointbuf.at(ih * chessW + iw).y));
+                printf("  Point %i  %f %f", ih * chessW + iw, pointbuf[ih * chessW + iw].x,pointbuf[ih * chessW + iw].y);
+                if (prevX != 0 && prevY != 0)
+                {
+                    cv::line(view, Point(prevX, prevY)
+                        , Point(pointbuf[ih * chessW + iw].x
+                              , pointbuf[ih * chessW + iw].y), Scalar(0,255,0));
+                }
+                prevX = pointbuf[ih * chessW + iw].x;
+                prevY = pointbuf[ih * chessW + iw].y;
+            }
+            printf("\n");
+            straights.push_back(straight);
+        }
+        imwrite("test_with_chess_LINES.jpg", view);
 
-       /// Set default camera param values
-          RadialCorrection correction(LensDistortionModelParameters(
-             center.x(),
-             center.y(),
-             0.0, 0.0,
-             vector<double>(6), //vector<double>(mUi->degreeSpinBox->value()), //TODO: Read degree from JSON
-             1.0,
-             1.0
+        /// Set default camera param values
+        RadialCorrection correction(LensCorrectionParametres(
+            center.x(),
+            center.y(),
+            0.0, 0.0,
+            vector<double>(6), //vector<double>(mUi->degreeSpinBox->value()), //TODO: Read degree from JSON
+            1.0,
+            1.0
           ));
 
-          ModelToRadialCorrection modelFactory(
+        ModelToRadialCorrection modelFactory(
               correction,
               1, //mUi->estimateCenterCheckBox->isChecked(),
               1, //mUi->estimateTangentCheckBox->isChecked(),

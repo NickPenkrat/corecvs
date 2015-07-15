@@ -4,7 +4,8 @@
 #include "descriptorExtractorProvider.h"
 #include "imageMatches.h"
 
-class DescriptorMatcher {
+class DescriptorMatcher
+{
 public:
 	void knnMatch(RuntimeTypeBuffer &query, RuntimeTypeBuffer &train, std::vector<std::vector<RawMatch>> &matches, size_t K);
 	virtual ~DescriptorMatcher() {}
@@ -13,15 +14,17 @@ protected:
 };
 
 
-class DescriptorMatcherProviderImpl {
-	public:
-		virtual DescriptorMatcher* getDescriptorMatcher(const DetectorType &type) = 0;
-		virtual bool provides(const DetectorType &type) = 0;
-		virtual ~DescriptorMatcherProviderImpl() {}
-	protected:
+class DescriptorMatcherProviderImpl
+{
+public:
+	virtual DescriptorMatcher* getDescriptorMatcher(const DetectorType &type) = 0;
+	virtual bool provides(const DetectorType &type) = 0;
+	virtual ~DescriptorMatcherProviderImpl() {}
+protected:
 };
 
-class DescriptorMatcherProvider {
+class DescriptorMatcherProvider
+{
 public:
 	void add(DescriptorMatcherProviderImpl *provider);
 	DescriptorMatcher* getMatcher(const DescriptorType &type);

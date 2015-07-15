@@ -41,10 +41,9 @@ UTILS_INCLUDEPATH = \
 
 
 !win32 {
-UTILS_INCLUDEPATH += \
-    $$UTILSDIR/framesources/v4l2 \
+    UTILS_INCLUDEPATH += \
+        $$UTILSDIR/framesources/v4l2 \
 }
-
 
 INCLUDEPATH += $$UTILS_INCLUDEPATH
 
@@ -86,7 +85,10 @@ contains(TARGET, cvs_utils) {
 DESTDIR = $$UTILS_BINDIR
 
 
-CONFIG += with_opengl                           # always include here OpenGL dependent modules as utils's and related projects need it
+!odroid {
+    CONFIG += with_opengl                       # always include here OpenGL dependent modules as utils's and related projects need it
+}
+
 with_opengl {
     QT += opengl                                # this must be defined for utils's and all related sources
 
@@ -139,9 +141,9 @@ with_opencv {                                       # all this stuff was extract
 }
 
 with_siftgpu {
-	SIFTGPU_WRAPPER_DIR = $$UTILSDIR/../wrappers/siftgpu
-	DEFINES += WITH_SIFTGPU
-	INCLUDEPATH += $$SIFTGPU_WRAPPER_DIR $$SIFTGPU_WRAPPER_DIR/SiftGPU/src $$SIFTGPU_WRAPPER_DIR/SiftGPU/include/GL
+    SIFTGPU_WRAPPER_DIR = $$UTILSDIR/../wrappers/siftgpu
+    DEFINES += WITH_SIFTGPU
+    INCLUDEPATH += $$SIFTGPU_WRAPPER_DIR
 }
 
 with_directshow {
