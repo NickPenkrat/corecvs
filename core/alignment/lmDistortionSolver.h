@@ -28,6 +28,10 @@ public:
     Vector2dd initialCenter;
 
     RadialCorrection solve();
+
+    void computeCosts(const RadialCorrection &correction, bool updatePoints = true);
+    double costs[LineDistortionEstimatorCost::LINE_DISTORTION_ESTIMATOR_COST_LAST];
+
 };
 
 

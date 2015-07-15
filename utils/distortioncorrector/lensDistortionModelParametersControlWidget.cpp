@@ -290,21 +290,21 @@ void LensDistortionModelParametersControlWidget::updateAdditionalData()
                     *mDistortionCorrectTransform,
                     mInput->h, mInput->w
                 );
-        mCorrected->drawCrosshare1(10,10, RGBColor::Red());
+        //mCorrected->drawCrosshare1(10,10, RGBColor::Red());
 
 
         mInverse = mInput->doReverseDeformation<RGB24Buffer, RadialCorrection>(
                     radialCorrection,
                     mInput->h, mInput->w
                 );
-        mInverse->drawCrosshare1(10,10, RGBColor::Green());
+        //mInverse->drawCrosshare1(10,10, RGBColor::Green());
 
 
         mBackproject = mCorrected->doReverseDeformation<RGB24Buffer, RadialCorrection>(
                     radialCorrection,
                     mCorrected->h, mCorrected->w
                 );
-        mBackproject->drawCrosshare1(10,10, RGBColor::Yellow());
+        //mBackproject->drawCrosshare1(10,10, RGBColor::Yellow());
 
         Map2DFunction<DisplacementBuffer> mapFunc(mDistortionCorrectTransform);
         LengthFunction lengthFunc(&mapFunc);

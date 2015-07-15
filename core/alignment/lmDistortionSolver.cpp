@@ -53,7 +53,10 @@ RadialCorrection LMDistortionSolver::solve()
 
 LMLinesDistortionSolver::LMLinesDistortionSolver()
 {
-
+    for (int costType = 0; costType < LineDistortionEstimatorCost::LINE_DISTORTION_ESTIMATOR_COST_LAST; costType++)
+    {
+        costs[costType] = 0;
+    }
 }
 
 RadialCorrection LMLinesDistortionSolver::solve()
@@ -104,21 +107,72 @@ RadialCorrection LMLinesDistortionSolver::solve()
     vector<double> value(costFuntion->outputs, 0);
     vector<double> straightParams = straightLevMarq.fit(first, value);
 
-
-  //  L_INFO_P("Inverting the distortion buffer");
-
-  /* mDistortionCorrectTransform = QSharedPointer<DisplacementBuffer>(DisplacementBuffer::CacheInverse(&mLinesRadialCoorection,
-            mBufferInput->h, mBufferInput->w,
-            0.0,0.0,
-            (double)mBufferInput->w, (double)mBufferInput->h,
-            0.5, false)
-   );
-
-    mUi->isInverseCheckBox->setChecked(true);
-
-    mUi->lensCorrectionWidget->setParameters(mLinesRadialCoorection.mParams);*/
     L_INFO_P("Ending distortion calibration");
 //    updateScore();
     return modelFactory.getRadial(&straightParams[0]);
 
+}
+
+void LMLinesDistortionSolver::computeCosts(const RadialCorrection &correction, bool updatePoints)
+{
+    vector<vector<Vector2dd> > straights = lineList->getLines();
+
+    ModelToRadialCorrection modelFactory(
+        correction,
+        parameters.estimateCenter(),
+        parameters.estimateTangent(),
+        parameters.polinomDegree()
+    );
+
+    FunctionArgs *costFuntion = NULL;
+    for (int costType = 0; costType < LineDistortionEstimatorCost::LINE_DISTORTION_ESTIMATOR_COST_LAST; costType++)
+    {
+
+        if (costType == LineDistortionEstimatorCost::JOINT_ANGLE_COST) {
+            costFuntion = new AnglePointsFunction (straights, modelFactory);
+        } else {
+            costFuntion = new DistPointsFunction  (straights, modelFactory);
+        }
+
+        vector<double> modelParameters(costFuntion->inputs, 0);
+        modelFactory.getModel(correction, &modelParameters[0]);
+
+        vector<double> result(costFuntion->outputs);
+        costFuntion->operator()(&modelParameters[0], &result[0]);
+
+        double sqSum = 0;
+        double maxValue = 0.0;
+        for (unsigned i = 0; i < result.size(); i++) {
+            if (fabs(result[i]) > maxValue) {
+                maxValue = fabs(result[i]);
+            }
+            sqSum += result[i] * result[i];
+        }
+
+        if (updatePoints && costType == parameters.costAlgorithm())
+        {
+            int count = 0;
+            for (unsigned i = 0; i < (unsigned)lineList->mPaths.size(); i++)
+            {
+                SelectableGeometryFeatures::VertexPath *path = lineList->mPaths[i];
+                if (path->vertexes.size() < 3) {
+                    continue;
+                }
+                if (parameters.costAlgorithm() == LineDistortionEstimatorCost::JOINT_ANGLE_COST)
+                {
+                    for (unsigned j = 1; j < path->vertexes.size() - 1; j++) {
+                        path->vertexes[j]->weight = fabs(result[count]) / maxValue;
+                        count++;
+                    }
+                } else {
+                    for (unsigned j = 0; j < path->vertexes.size(); j++) {
+                        path->vertexes[j]->weight = fabs(result[count]) / maxValue;
+                        count++;
+                    }
+                }
+            }
+        }
+
+        costs[costType] = sqSum / result.size();
+    }
 }

@@ -28,6 +28,8 @@ public:
     explicit CalibrationFeaturesWidget(QWidget *parent = 0);
     ~CalibrationFeaturesWidget();
 
+    static const int REASONABLE_INF;
+
     enum {
         COLUMN_X,
         COLUMN_Y,

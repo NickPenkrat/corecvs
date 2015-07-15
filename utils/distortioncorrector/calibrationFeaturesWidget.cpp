@@ -4,14 +4,15 @@
 
 using namespace corecvs;
 
+
+const int CalibrationFeaturesWidget::REASONABLE_INF = 999999;
+
 CalibrationFeaturesWidget::CalibrationFeaturesWidget(QWidget *parent) :
     QWidget(parent),
     geometryFeatures(NULL),
     ui(new Ui::CalibrationFeaturesWidget)
 {
     ui->setupUi(this);
-
-    const int REASONABLE_INF = 999999;
 
     ui->imageXSpinBox->setMaximum( REASONABLE_INF);
     ui->imageYSpinBox->setMaximum( REASONABLE_INF);
@@ -138,7 +139,7 @@ void CalibrationFeaturesWidget::updateWidget()
 {
     QTableWidget *table = ui->pointsTableWidget;
     table->setRowCount(0);
-    for (int i = 0; i < observationList.size(); i++)
+    for (unsigned i = 0; i < observationList.size(); i++)
     {
         PointObservation &observation = observationList[i];
         table->insertRow(table->rowCount());
@@ -155,6 +156,11 @@ void CalibrationFeaturesWidget::updateWidget()
 
     QTreeWidget *tree = ui->treeWidget;
     tree->clear();
+    tree->setColumnCount(4);
+    tree->header()->resizeSection(0, 200);
+    tree->header()->resizeSection(1, 100);
+    tree->header()->resizeSection(2, 100);
+
     if (geometryFeatures)
     {
         for(unsigned i = 0; i < geometryFeatures->mPaths.size();i++ )
@@ -168,11 +174,16 @@ void CalibrationFeaturesWidget::updateWidget()
 
                 QTreeWidgetItem *subitem = new QTreeWidgetItem(QStringList("Vertex"));
                 item->addChild(subitem);
-                QSpinBox *xSpinBox = new QSpinBox();
+                QDoubleSpinBox *xSpinBox = new QDoubleSpinBox();
+                xSpinBox->setMaximum( REASONABLE_INF);
+                xSpinBox->setMinimum(-REASONABLE_INF);
                 xSpinBox->setValue(vertex->position.x());
 
-                QSpinBox *ySpinBox = new QSpinBox();
+                QDoubleSpinBox *ySpinBox = new QDoubleSpinBox();
+                ySpinBox->setMaximum( REASONABLE_INF);
+                ySpinBox->setMinimum(-REASONABLE_INF);
                 ySpinBox->setValue(vertex->position.y());
+
 
                 tree->setItemWidget(subitem, 1, xSpinBox);
                 tree->setItemWidget(subitem, 2, ySpinBox);

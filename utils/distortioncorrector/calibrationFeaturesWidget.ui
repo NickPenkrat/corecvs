@@ -213,7 +213,17 @@
         <widget class="QTreeWidget" name="treeWidget">
          <column>
           <property name="text">
-           <string notr="true">1</string>
+           <string notr="true">Id</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>X</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Y</string>
           </property>
          </column>
         </widget>
