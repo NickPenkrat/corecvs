@@ -103,7 +103,7 @@ void VsfmSiftIO::readBinary(std::istream& is, std::vector<SiftFeature>& features
 void VsfmSiftIO::writeBinary(std::ostream& os, const std::vector<SiftFeature>& features)
 {
 	SiftHeader header;
-	header.npoint = features.size();
+	header.npoint = (uint32_t)features.size();
 
 	os.write((char*)&header, sizeof(header));
 	for (std::vector<SiftFeature>::const_iterator f = features.begin(); f != features.end(); ++f)

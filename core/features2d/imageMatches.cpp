@@ -128,7 +128,7 @@ void RefinedMatches::load(std::istream &ifs)
 			size_t mi, mj;
 			double dist;
 			ifs >> mi >> mj >> dist;
-			set.matches.push_back(Match(I, J, mi, mj, dist));
+			set.matches.push_back(Match((uint16_t)I, (uint16_t)J, (uint16_t)mi, (uint16_t)mj, dist));
 		}
 		matchSets.push_back(set);
 	}

@@ -111,7 +111,7 @@ void prepareCopy(const std::string &postfix)
 #endif
 	command << base << "*.jpg " << base << "kermit_" << postfix << PATH_SEPARATOR;
 	system(command.str().c_str());
-	tempBase = (base + PATH_SEPARATOR) + std::string("kermit_") + postfix + PATH_SEPARATOR;
+	tempBase = (base /*+ PATH_SEPARATOR*/) + std::string("kermit_") + postfix + PATH_SEPARATOR;
 }
 
 void run(const std::string &detector)
