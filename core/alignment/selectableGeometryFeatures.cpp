@@ -230,6 +230,20 @@ SelectableGeometryFeatures::~SelectableGeometryFeatures()
     clearAll();
 }
 
+vector<vector<Vector2dd> > SelectableGeometryFeatures::getLines()
+{
+    vector<vector<Vector2dd> > toReturn;
+    for (unsigned i = 0; i < mPaths.size(); i++)
+    {
+        toReturn.resize(toReturn.size() + 1);
+        for (unsigned j = 0; j < mPaths[i]->vertexes.size(); j++)
+        {
+            toReturn.back().push_back(mPaths[i]->vertexes.operator[](j)->position);
+        }
+    }
+    return toReturn;
+}
+
 bool SelectableGeometryFeatures::VertexPath::isSelected()
 {
     return mSelected;

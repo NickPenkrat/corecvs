@@ -4,10 +4,60 @@
 #include <algorithm>
 #include <vector>
 #include "vector2d.h"
+#include "vector3d.h"
+
 
 namespace corecvs {
 
 using std::vector;
+
+/* Move this to separate class */
+struct PointObservation
+{
+    Vector3dd point;
+    Vector2dd projection;
+
+    PointObservation(
+            Vector3dd _point      = Vector3dd(0),
+            Vector2dd _projection = Vector2dd(0)
+    ) : point(_point),
+        projection(_projection)
+    {}
+
+
+    inline double &x()
+    {
+        return point.x();
+    }
+
+    inline double &y()
+    {
+        return point.y();
+    }
+
+    inline double &z()
+    {
+        return point.z();
+    }
+
+    inline double &u()
+    {
+        return projection.x();
+    }
+
+    inline double &v()
+    {
+        return projection.y();
+    }
+};
+
+
+class ObservationList : public std::vector<PointObservation>
+{
+    public:
+
+};
+
 
 class SelectableGeometryFeatures
 {
@@ -80,6 +130,9 @@ public:
 
     SelectableGeometryFeatures();
     virtual ~SelectableGeometryFeatures();
+
+    /* Helper function */
+    vector<vector<Vector2dd> > getLines();
 };
 
 }

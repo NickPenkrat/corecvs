@@ -25,16 +25,21 @@ LensDistortionModelParametersControlWidget::LensDistortionModelParametersControl
     QObject::connect(ui->tangential1SpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(ui->tangential2SpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
 
+    QObject::connect(ui->scaleSpinBox,  SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->aspectSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+
     QObject::connect(ui->koefTableWidget, SIGNAL(itemChanged(QTableWidgetItem*)), this, SIGNAL(paramsChanged()));
 
-    QObject::connect(ui->freeParamSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
 
+
+    QObject::connect(ui->freeParamSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
 
     QObject::connect(ui->loadPushButton, SIGNAL(released()), this, SLOT(loadParams()));
     QObject::connect(ui->savePushButton, SIGNAL(released()), this, SLOT(saveParams()));
 
     QObject::connect(this, SIGNAL(paramsChanged()), this, SLOT(updateAdditionalDataNeeded()));
     QObject::connect(ui->refreshButton, SIGNAL(released()), this, SLOT(updateAdditionalData()));
+    QObject::connect(ui->autoRefeshCheckBox, SIGNAL(toggled(bool)), this, SLOT(updateAdditionalDataNeeded()));
 
 
 }

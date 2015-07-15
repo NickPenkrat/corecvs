@@ -252,23 +252,6 @@ void PaintImageWidget::setSelectedPoint(const QPointF &/*point*/, bool /*isSelec
     update();
 }
 
-vector<vector<Vector2dd> > PaintImageWidget::getPaths()
-{
-    vector<vector<Vector2dd> >straights;
-    for (int i = 0; i < mFeatures.mPaths.size(); i++)
-    {
-        SelectableGeometryFeatures::VertexPath *vertexPath = mFeatures.mPaths[i];
-        vector<Vector2dd> path;
-        for (int j = 0; j < vertexPath->vertexes.size(); j++)
-        {
-            path.push_back(vertexPath->vertexes[j]->position);
-        }
-        straights.push_back(path);
-    }
-    return straights;
-}
-
-
 Vector2dd PaintImageWidget::widgetToImageF(const Vector2dd &p)
 {
     return Qt2Core::Vector2ddFromQPointF(AdvancedImageWidget::widgetToImageF(Core2Qt::QPointFromVector2dd(p)));
