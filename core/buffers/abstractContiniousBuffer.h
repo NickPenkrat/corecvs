@@ -16,7 +16,7 @@
 #include "abstractBuffer.h"
 #include "matrix.h"
 
-#include "fixedPointBlMapper.h"
+//#include "fixedPointBlMapper.h"
 //#include "bilinearMapPoint.h"
 
 namespace corecvs {
@@ -408,8 +408,15 @@ public:
     };
 
     template<class ReturnType, class DeformMapType>
-    ReturnType *doReverseDeformation(DeformMapType &map, IndexType newH, IndexType newW )
+    ReturnType *doReverseDeformation(DeformMapType &map, IndexType newH = -1, IndexType newW = -1)
     {
+        if (newH == -1) {
+            newH = this->h;
+        }
+        if (newW == -1) {
+            newW = this->w;
+        }
+
         ReturnType *toReturn = new ReturnType(newH, newW);
         DOTRACE(("Starting integer transform to %d %d...\n", newW - 1, newH - 1));
 

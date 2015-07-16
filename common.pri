@@ -31,6 +31,15 @@ build_pass:CONFIG(release, debug|release) {
     }
 }
 
+CONFIG += c++11
+
+contains(QMAKE_HOST.arch, "armv7l") {
+    message(Odroid platform with ARM detected)
+    CONFIG += odroid
+} else {
+    #message(standard x86/64 platform detected)
+}
+
 trace {
     DEFINES += TRACE
 }
@@ -57,7 +66,7 @@ with_avx {
 with_sse {
     DEFINES += WITH_SSE
 
-    !win32-msvc* {
+    !win32-msvc*:!odroid {
         QMAKE_CFLAGS   += -msse2
         QMAKE_CXXFLAGS += -msse2
     } else {
@@ -68,7 +77,7 @@ with_sse {
 with_sse3 {
     DEFINES += WITH_SSE3
 
-    !win32-msvc* {
+    !win32-msvc*:!odroid {
         QMAKE_CFLAGS   += -msse3
         QMAKE_CXXFLAGS += -msse3
     } else {
@@ -78,7 +87,7 @@ with_sse3 {
 with_sse4 {
     DEFINES += WITH_SSE4
 
-    !win32-msvc* {
+    !win32-msvc*:!odroid {
         QMAKE_CFLAGS   += -msse4.1
         QMAKE_CXXFLAGS += -msse4.1
     } else {

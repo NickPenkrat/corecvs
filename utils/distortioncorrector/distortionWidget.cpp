@@ -69,6 +69,7 @@ DistortionWidget::DistortionWidget(QWidget *parent) :
 
 void DistortionWidget::resetParameters()
 {
+    qDebug() << "DistortionWidget::resetParameters(): resetting parameters";
     mUi->bufferSelectorBox->setCurrentIndex(0);
     clearParameters();
     mDistortionCorrectTransform = QSharedPointer<DisplacementBuffer>(
@@ -432,10 +433,9 @@ void DistortionWidget::showBufferChanged()
             if (mDistortionCorrectTransform == NULL) {
                 break;
             }
-            RGB24Buffer *buffer = mBufferInput->doReverseDeformationBl<RGB24Buffer, DisplacementBuffer>(
-                        mDistortionCorrectTransform.data(),
-                        mBufferInput->h,
-                        mBufferInput->w);
+
+            FixedPointDisplace displace(*mDistortionCorrectTransform, mDistortionCorrectTransform->h, mDistortionCorrectTransform->w);
+            RGB24Buffer *buffer = mBufferInput->doReverseDeformationBlPrecomp(&displace);
 
             image = new RGB24Image(buffer);
             QPainter painter(image);

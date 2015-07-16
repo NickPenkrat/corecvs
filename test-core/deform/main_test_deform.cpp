@@ -48,7 +48,7 @@ void testFastDeform ()
     G12Buffer *buffer1Transformed = image->doReverseTransform<ProjectiveTransform>(&inverseLeft, image->h, image->w);
     ASSERT_TRUE(buffer1Transformed->verify(),"Result image is corrupted");
 
-    FixedPointDisplace *displace = new FixedPointDisplace (inverseLeftMatrix, image->h, image->w);
+    FixedPointDisplace *displace = new FixedPointDisplace (inverseLeft, image->h, image->w);
     G12Buffer *buffer2Transformed = image->doReverseDeformationBlPrecomp(displace, image->h, image->w);
 
     BMPLoader().save("proc.bmp",  buffer1Transformed);
@@ -67,9 +67,66 @@ void testFastDeform ()
 
 }
 
+template<typename operation>
+    void touchOperationElementwize (RGB24Buffer *buffer, operation &map)
+    {
+        for (int i = 0; i < buffer->h; i++)
+        {
+            RGBColor *thisElemRunner = &(buffer->element(i,0));
+            for (int j = 0; j < buffer->w; j++)
+            {
+                map(i, j, (RGBColor *)thisElemRunner);
+                thisElemRunner++;
+            }
+        }
+    }
+
+
+void testFastDeform24 ()
+{
+    Matrix33 inverseLeftMatrix(
+        1, 0, -13,
+        0, 1, -9.5,
+        0, 0, 1
+    );
+
+    ProjectiveTransform inverseLeft(inverseLeftMatrix);
+
+
+    RGB24Buffer *image = new RGB24Buffer(300, 300);
+
+    auto operation = [](int i, int j, RGBColor *pixel)
+    {
+        i = i / 20;
+        j = j / 20;
+        if ( (i % 2) &&  (j % 2))   *pixel = RGBColor::Green();
+        if (!(i % 2) &&  (j % 2))   *pixel = RGBColor::Yellow();
+        if ( (i % 2) && !(j % 2))   *pixel = RGBColor::Red();
+        if (!(i % 2) && !(j % 2))   *pixel = RGBColor::Blue();
+    };
+    touchOperationElementwize(image, operation);
+    RGB24Buffer *buffer1Transformed = image->doReverseDeformation  <RGB24Buffer, ProjectiveTransform>(inverseLeft);
+    RGB24Buffer *buffer2Transformed = image->doReverseDeformationBl<RGB24Buffer, ProjectiveTransform>(&inverseLeft);
+
+    FixedPointDisplace *displace = new FixedPointDisplace (inverseLeft, image->h, image->w);
+    RGB24Buffer *buffer3Transformed = image->doReverseDeformationBlPrecomp(displace, image->h, image->w);
+
+
+    BMPLoader().save("input.bmp", image);
+    BMPLoader().save("transform-int.bmp"    , buffer1Transformed);
+    BMPLoader().save("transform-bl.bmp"     , buffer2Transformed);
+    BMPLoader().save("transform-precomp.bmp", buffer3Transformed);
+
+
+    delete_safe(buffer1Transformed);
+    delete_safe(buffer2Transformed);
+    delete_safe(image);
+}
+
 int main (int /*argC*/, char ** /*argV*/)
 {
-    testFastDeform ();
+    //testFastDeform ();
+    testFastDeform24 ();
     cout << "PASSED" << endl;
     return 0;
 }

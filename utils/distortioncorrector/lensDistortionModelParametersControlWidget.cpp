@@ -1,4 +1,5 @@
 #include <QFileDialog>
+#include "abstractPainter.h"
 #include "qtFileLoader.h"
 
 #include "lensDistortionModelParametersControlWidget.h"
@@ -286,25 +287,17 @@ void LensDistortionModelParametersControlWidget::updateAdditionalData()
 
         //DisplacementBuffer* mDistortionCorrectTransform = DisplacementBuffer::TestWiggle(mInput->h, mInput->w);
 
-        mCorrected = mInput->doReverseDeformation<RGB24Buffer, DisplacementBuffer>(
-                    *mDistortionCorrectTransform,
-                    mInput->h, mInput->w
-                );
-        //mCorrected->drawCrosshare1(10,10, RGBColor::Red());
+        if (!ui->bilinearCheckBox->isChecked()) {
+            mCorrected = mInput->doReverseDeformation<RGB24Buffer, DisplacementBuffer>(*mDistortionCorrectTransform);
+        } else {
+            FixedPointDisplace displace(*mDistortionCorrectTransform, mDistortionCorrectTransform->h, mDistortionCorrectTransform->w);
+            mCorrected = mInput->doReverseDeformationBlPrecomp(&displace);
+        }
 
 
-        mInverse = mInput->doReverseDeformation<RGB24Buffer, RadialCorrection>(
-                    radialCorrection,
-                    mInput->h, mInput->w
-                );
-        //mInverse->drawCrosshare1(10,10, RGBColor::Green());
 
-
-        mBackproject = mCorrected->doReverseDeformation<RGB24Buffer, RadialCorrection>(
-                    radialCorrection,
-                    mCorrected->h, mCorrected->w
-                );
-        //mBackproject->drawCrosshare1(10,10, RGBColor::Yellow());
+        mInverse     = mInput    ->doReverseDeformation<RGB24Buffer, RadialCorrection  >(radialCorrection);
+        mBackproject = mCorrected->doReverseDeformation<RGB24Buffer, RadialCorrection  >(radialCorrection);
 
         Map2DFunction<DisplacementBuffer> mapFunc(mDistortionCorrectTransform);
         LengthFunction lengthFunc(&mapFunc);
@@ -314,14 +307,19 @@ void LensDistortionModelParametersControlWidget::updateAdditionalData()
                 (double)mDistortionCorrectTransform->h,  (double)mDistortionCorrectTransform->w,
                 0.1, lengthFunc);
 
+        double sum = 0;
         mDiff = new RGB24Buffer(mInput->getSize());
         for (int i = 0; i < mInput->h; i++)
         {
             for (int j = 0; j < mInput->w; j++)
             {
-                mDiff->element(i,j) = RGBColor::diff(mInput->element(i,j),mBackproject->element(i,j));
+                RGBColor diff = RGBColor::diff(mInput->element(i,j),mBackproject->element(i,j));
+                mDiff->element(i,j) = diff;
+                sum += diff.luma();
             }
         }
+        sum /= mInput->h * mInput->w;
+        AbstractPainter<RGB24Buffer>(mDiff).drawFormat(20, 20, RGBColor::Indigo(), 1, "mean diff: %f", sum);
 
 
         delete_safe(mDistortionCorrectTransform);

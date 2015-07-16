@@ -495,7 +495,7 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="4">
+     <item row="0" column="5">
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -521,6 +521,13 @@
        </property>
        <property name="value">
         <double>0.500000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="4">
+      <widget class="QCheckBox" name="bilinearCheckBox">
+       <property name="text">
+        <string>Bilnear</string>
        </property>
       </widget>
      </item>
