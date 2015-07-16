@@ -63,15 +63,6 @@ RadialCorrection LMLinesDistortionSolver::solve()
 {
     vector<vector<Vector2dd> > straights = lineList->getLines();
     L_INFO_P("Starting distortion calibration on %d lines", straights.size());
-/*
-    RadialCorrection correction(LensDistortionModelParameters(
-       vector<double>(mUi->degreeSpinBox->value()),
-       0.0, 0.0,
-       1.0,
-       center.l2Metric(),
-       center
-    ));
- */
 
     RadialCorrection correction(LensDistortionModelParameters(
        initialCenter.x(),
@@ -81,7 +72,6 @@ RadialCorrection LMLinesDistortionSolver::solve()
        1.0,
        1.0
     ));
-
 
     ModelToRadialCorrection modelFactory(
         correction,
@@ -173,6 +163,6 @@ void LMLinesDistortionSolver::computeCosts(const RadialCorrection &correction, b
             }
         }
 
-        costs[costType] = sqSum / result.size();
+        costs[costType] = sqrt(sqSum / result.size());
     }
 }

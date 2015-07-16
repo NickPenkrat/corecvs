@@ -371,6 +371,7 @@ void LensDistortionModelParametersControlWidget::loadParams()
                 "json distortion params (*.json)"
                 );
 
+    if (!filename.isEmpty())
     {
         JSONGetter getter(filename);
         WidgetLoader loader(&getter);

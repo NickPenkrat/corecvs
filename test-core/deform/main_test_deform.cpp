@@ -1,11 +1,11 @@
 /**
  * \file main_test_deform.cpp
- * \brief This is the main file for the test deform 
+ * \brief This is the main file for the test deform
  *
  * \date Mar 01, 2012
  * \author alexander
  *
- * \ingroup autotest  
+ * \ingroup autotest
  */
 
 #include <iostream>
@@ -18,8 +18,9 @@
 #include "bufferFactory.h"
 #include "bmpLoader.h"
 #include "rgb24Buffer.h"
+#include "radialCorrection.h"
 
-
+#include "preciseTimer.h"
 
 using namespace std;
 using corecvs::Matrix33;
@@ -106,16 +107,20 @@ void testFastDeform24 ()
     };
     touchOperationElementwize(image, operation);
     RGB24Buffer *buffer1Transformed = image->doReverseDeformation  <RGB24Buffer, ProjectiveTransform>(inverseLeft);
+
+    /* This would produce empty buffer due to overflow. This is by design */
     RGB24Buffer *buffer2Transformed = image->doReverseDeformationBl<RGB24Buffer, ProjectiveTransform>(&inverseLeft);
+    RGB24Buffer *buffer3Transformed = image->doReverseDeformationBlTyped<ProjectiveTransform>(&inverseLeft);
 
     FixedPointDisplace *displace = new FixedPointDisplace (inverseLeft, image->h, image->w);
-    RGB24Buffer *buffer3Transformed = image->doReverseDeformationBlPrecomp(displace, image->h, image->w);
+    RGB24Buffer *buffer4Transformed = image->doReverseDeformationBlPrecomp(displace, image->h, image->w);
 
 
     BMPLoader().save("input.bmp", image);
     BMPLoader().save("transform-int.bmp"    , buffer1Transformed);
     BMPLoader().save("transform-bl.bmp"     , buffer2Transformed);
-    BMPLoader().save("transform-precomp.bmp", buffer3Transformed);
+    BMPLoader().save("transform-blt.bmp"    , buffer3Transformed);
+    BMPLoader().save("transform-precomp.bmp", buffer4Transformed);
 
 
     delete_safe(buffer1Transformed);
@@ -123,10 +128,69 @@ void testFastDeform24 ()
     delete_safe(image);
 }
 
+void testRadialInversion( void )
+{
+    RGB24Buffer *image = new RGB24Buffer(2500, 4000);
+
+    auto operation = [](int i, int j, RGBColor *pixel)
+    {
+        i = i / 100;
+        j = j / 200;
+        if ( (i % 2) &&  (j % 2))   *pixel = RGBColor::Green();
+        if (!(i % 2) &&  (j % 2))   *pixel = RGBColor::Yellow();
+        if ( (i % 2) && !(j % 2))   *pixel = RGBColor::Red();
+        if (!(i % 2) && !(j % 2))   *pixel = RGBColor::Blue();
+    };
+    touchOperationElementwize(image, operation);
+
+    LensDistortionModelParameters deformator;
+    deformator.setPrincipalX(image->w / 2);
+    deformator.setPrincipalY(image->h / 2);
+
+    deformator.setTangentialX(0.000001);
+    deformator.setTangentialY(0.000001);
+
+    deformator.setAspect(1.0);
+    deformator.setScale(1.0);
+
+    deformator.mKoeff.push_back( 0.0001);
+    deformator.mKoeff.push_back(-0.00000002);
+    deformator.mKoeff.push_back( 0.00000000000003);
+
+    RadialCorrection T(deformator);
+    PreciseTimer timer;
+
+    cout << "Starting deformaiton... " << flush;
+    timer = PreciseTimer::currentTime();
+    RGB24Buffer *defomed = image->doReverseDeformationBlTyped<RadialCorrection>(&T);
+    cout << "done in: " << timer.usecsToNow() << "us" << endl;
+
+    /* */
+    cout << "Starting invertion... " << flush;
+    RadialCorrection invert = T.invertCorrection(image->h, image->w, 30);
+    cout << "done" << endl;
+
+    cout << "Starting backprojection... " << flush;
+    timer = PreciseTimer::currentTime();
+    RGB24Buffer *backproject = defomed->doReverseDeformationBlTyped<RadialCorrection>(&invert);
+    cout << "done in: " << timer.usecsToNow() << "us" << endl;
+    cout << "done" << endl;
+
+    BMPLoader().save("input.bmp"      , image);
+    BMPLoader().save("forward.bmp"    , defomed);
+    BMPLoader().save("backproject.bmp", backproject);
+
+
+
+}
+
 int main (int /*argC*/, char ** /*argV*/)
 {
     //testFastDeform ();
-    testFastDeform24 ();
+    //testFastDeform24 ();
+
+    testRadialInversion();
+
     cout << "PASSED" << endl;
     return 0;
 }
