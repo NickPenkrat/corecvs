@@ -19,7 +19,8 @@ contains(DEFINES, WITH_OPENCV) {                    # if it's installed properly
 		$$OPENCV_WRAPPER_DIR/openCvFileReader.h \
 		$$OPENCV_WRAPPER_DIR/openCvKeyPointsWrapper.h \
 		$$OPENCV_WRAPPER_DIR/OpenCVTools.h \
-		$$OPENCV_WRAPPER_DIR/semiGlobalBlockMatching.h
+		$$OPENCV_WRAPPER_DIR/semiGlobalBlockMatching.h \
+		$$OPENCV_WRAPPER_DIR/openCvCheckerboardDetector.h
 
     SOURCES += \
 		$$OPENCV_WRAPPER_DIR/openCvFeatureDetectorWrapper.cpp \
@@ -30,7 +31,8 @@ contains(DEFINES, WITH_OPENCV) {                    # if it's installed properly
 		$$OPENCV_WRAPPER_DIR/KLTFlow.cpp \
 		$$OPENCV_WRAPPER_DIR/openCvKeyPointsWrapper.cpp \
 		$$OPENCV_WRAPPER_DIR/openCvDescriptorExtractorWrapper.cpp \
-		$$OPENCV_WRAPPER_DIR/semiGlobalBlockMatching.cpp 
+		$$OPENCV_WRAPPER_DIR/semiGlobalBlockMatching.cpp \
+		$$OPENCV_WRAPPER_DIR/openCvCheckerboardDetector.cpp
 
     # Face Detection
     #
