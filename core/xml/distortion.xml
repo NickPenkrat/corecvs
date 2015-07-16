@@ -1,4 +1,6 @@
 <poco version="5.0">
+  <include name="parameters.xml"/>
+
 
   <class name="Lens Distortion Model Parameters" description="Lens Distortion Model Parameters">
     <comment>
@@ -66,10 +68,11 @@
 </class> -->
 
   <class name="Checkerboard Detection Parameters">
-    <field type="int"       name="V crosses count"    defaultValue="11"   />
-    <field type="int"       name="H crosses count"    defaultValue="18"   />
-    <field type="double"    name="Cell size"          defaultValue="50"   suffix="mm" />
-    <field type="bool"      name="Clean existing"     defaultValue="true" />
+    <field type="ImageChannel" name="Channel"            defaultValue="0"   />
+    <field type="int"          name="V crosses count"    defaultValue="11"   />
+    <field type="int"          name="H crosses count"    defaultValue="18"   />
+    <field type="double"       name="Cell size"          defaultValue="50"   suffix="mm" />
+    <field type="bool"         name="Clean existing"     defaultValue="true" />
   </class>
 
   <enum name="Line Distortion Estimator Cost">

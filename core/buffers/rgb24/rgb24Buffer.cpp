@@ -881,7 +881,7 @@ G12Buffer *RGB24Buffer::toG12Buffer()
 
 
 /* We need to optimize this */
-G8Buffer* RGB24Buffer::getChannel(ChannelID channel)
+G8Buffer* RGB24Buffer::getChannel(ImageChannel::ImageChannel channel)
 {
     G8Buffer *result = new G8Buffer(getSize(), false);
 
@@ -892,27 +892,27 @@ G8Buffer* RGB24Buffer::getChannel(ChannelID channel)
             uint8_t pixel = 0;
             switch (channel)
             {
-                case CHANNEL_R:
+                case ImageChannel::R:
                     pixel = element(i,j).r();
                     break;
-                case CHANNEL_G:
+                case ImageChannel::G:
                     pixel = element(i,j).g();
                     break;
-                case CHANNEL_B:
+                case ImageChannel::B:
                     pixel = element(i,j).b();
                     break;
                 default:
-                case CHANNEL_GRAY:
+                case ImageChannel::GRAY:
                     pixel = element(i,j).brightness();
                     break;
 
-                case CHANNEL_HUE:
+                case ImageChannel::HUE:
                     pixel = ((int)element(i,j).hue()) * 255 / 360;
                     break;
-                case CHANNEL_SATURATION:
+                case ImageChannel::SATURATION:
                     pixel = element(i,j).saturation();
                     break;
-                case CHANNEL_VALUE:
+                case ImageChannel::VALUE:
                     pixel = element(i,j).value();
                     break;
 

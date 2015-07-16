@@ -23,7 +23,7 @@
 #include "rgbColor.h"
 #include "function.h"
 #include "correspondanceList.h"
-
+#include "imageChannel.h"
 
 namespace corecvs {
 
@@ -171,17 +171,7 @@ public:
 
     G12Buffer *toG12Buffer();
 
-    enum ChannelID {
-        CHANNEL_R,
-        CHANNEL_G,
-        CHANNEL_B,
-        CHANNEL_GRAY,
-        CHANNEL_HUE,
-        CHANNEL_SATURATION,
-        CHANNEL_VALUE,
-        CHANNEL_LAST
-    };
-    G8Buffer* getChannel(ChannelID channel);
+    G8Buffer* getChannel(ImageChannel::ImageChannel channel);
 
     template<class SelectorPrediate>
     Vector3dd getMeanValue(int x1, int y1, int x2, int y2, const SelectorPrediate &predicate)

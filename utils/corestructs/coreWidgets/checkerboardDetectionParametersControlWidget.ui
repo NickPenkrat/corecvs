@@ -23,39 +23,91 @@
     <item row="0" column="0">
      <widget class="QLabel" name="label_0">
        <property name="text">
-         <string>V crosses count</string>
+         <string>Channel</string>
        </property>
      </widget>
     </item>
     <item row="0" column="1">
-     <widget class="QSpinBox" name="vCrossesCountSpinBox">
+     <widget class="QComboBox" name="channelComboBox">
+       <property name="currentIndex">
+         <number>0</number>
+       </property>
+       <item>
+        <property name="text">
+         <string>R</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>G</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>B</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Gray</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Hue</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Saturation</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Value</string>
+        </property>
+       </item>
        <property name="toolTip">
-         <string>V crosses count</string>
+         <string>Channel</string>
        </property>
      </widget>
     </item>
     <item row="1" column="0">
      <widget class="QLabel" name="label_1">
        <property name="text">
-         <string>H crosses count</string>
+         <string>V crosses count</string>
        </property>
      </widget>
     </item>
     <item row="1" column="1">
-     <widget class="QSpinBox" name="hCrossesCountSpinBox">
+     <widget class="QSpinBox" name="vCrossesCountSpinBox">
        <property name="toolTip">
-         <string>H crosses count</string>
+         <string>V crosses count</string>
        </property>
      </widget>
     </item>
     <item row="2" column="0">
      <widget class="QLabel" name="label_2">
        <property name="text">
-         <string>Cell size</string>
+         <string>H crosses count</string>
        </property>
      </widget>
     </item>
     <item row="2" column="1">
+     <widget class="QSpinBox" name="hCrossesCountSpinBox">
+       <property name="toolTip">
+         <string>H crosses count</string>
+       </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="label_3">
+       <property name="text">
+         <string>Cell size</string>
+       </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
      <widget class="QDoubleSpinBox" name="cellSizeSpinBox">
        <property name="toolTip">
          <string>Cell size</string>
@@ -65,14 +117,14 @@
        </property>
      </widget>
     </item>
-    <item row="3" column="0">
-     <widget class="QLabel" name="label_3">
+    <item row="4" column="0">
+     <widget class="QLabel" name="label_4">
        <property name="text">
          <string>Clean existing</string>
        </property>
      </widget>
     </item>
-    <item row="3" column="1">
+    <item row="4" column="1">
      <widget class="QCheckBox" name="cleanExistingCheckBox">
        <property name="toolTip">
          <string>Clean existing</string>
@@ -82,7 +134,7 @@
        </property>
      </widget>
     </item>
-   <item row="4" column="0">
+   <item row="5" column="0">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -95,7 +147,7 @@
      </property>
     </spacer>
    </item>
-   <item row="4" column="2">
+   <item row="5" column="2">
     <spacer name="horizontalSpacer">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -113,6 +165,12 @@
  <layoutdefault spacing="3" margin="3"/>
  <resources/>
  <connections>
+  <connection>
+   <sender>channelComboBox</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>CheckerboardDetectionParametersControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
   <connection>
    <sender>vCrossesCountSpinBox</sender>
    <signal>valueChanged(int)</signal>

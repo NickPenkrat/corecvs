@@ -21,8 +21,8 @@ SUBDIRS +=       \
 with_opencv {
     SUBDIRS +=       \
     	opencvLineDetector \
-        matcher_basic \
-        matcher_full \
+#        matcher_basic \
+#        matcher_full \
 
 }
 

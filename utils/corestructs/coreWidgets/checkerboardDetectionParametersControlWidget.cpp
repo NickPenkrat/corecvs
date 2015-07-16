@@ -20,6 +20,7 @@ CheckerboardDetectionParametersControlWidget::CheckerboardDetectionParametersCon
 {
     mUi->setupUi(this);
 
+    QObject::connect(mUi->channelComboBox, SIGNAL(currentIndexChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->vCrossesCountSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->hCrossesCountSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->cellSizeSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
@@ -51,6 +52,7 @@ void CheckerboardDetectionParametersControlWidget::saveParamWidget(WidgetSaver  
 void CheckerboardDetectionParametersControlWidget::getParameters(CheckerboardDetectionParameters& params) const
 {
 
+    params.setChannel          (static_cast<ImageChannel::ImageChannel>(mUi->channelComboBox->currentIndex()));
     params.setVCrossesCount    (mUi->vCrossesCountSpinBox->value());
     params.setHCrossesCount    (mUi->hCrossesCountSpinBox->value());
     params.setCellSize         (mUi->cellSizeSpinBox->value());
@@ -67,7 +69,8 @@ CheckerboardDetectionParameters *CheckerboardDetectionParametersControlWidget::c
 
 
     CheckerboardDetectionParameters *result = new CheckerboardDetectionParameters(
-          mUi->vCrossesCountSpinBox->value()
+          static_cast<ImageChannel::ImageChannel>(mUi->channelComboBox->currentIndex())
+        , mUi->vCrossesCountSpinBox->value()
         , mUi->hCrossesCountSpinBox->value()
         , mUi->cellSizeSpinBox->value()
         , mUi->cleanExistingCheckBox->isChecked()
@@ -79,6 +82,7 @@ void CheckerboardDetectionParametersControlWidget::setParameters(const Checkerbo
 {
     // Block signals to send them all at once
     bool wasBlocked = blockSignals(true);
+    mUi->channelComboBox->setCurrentIndex(input.channel());
     mUi->vCrossesCountSpinBox->setValue(input.vCrossesCount());
     mUi->hCrossesCountSpinBox->setValue(input.hCrossesCount());
     mUi->cellSizeSpinBox->setValue(input.cellSize());
