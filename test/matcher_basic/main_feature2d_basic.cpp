@@ -19,6 +19,7 @@
 
 std::vector<std::string> filenames;
 std::string base = std::string(".") + PATH_SEPARATOR;
+size_t N = 3;
 
 bool checkIfExists(const std::string& name)
 {
@@ -69,15 +70,19 @@ int main(int argc, char ** argv)
 	init_siftgpu_matcher_provider();
 #endif
 
-	if(!detectBase("./data/kermit_dataset/kermit000.jpg"))
+	std::stringstream file0;
+	file0 << "data" << PATH_SEPARATOR << "kermit_dataset" << PATH_SEPARATOR << "kermit000.jpg";
+	if(!detectBase(file0.str()))
 	{
 		std::cout << "Unable to find data" << std::endl;
 		exit(-1);
 	}
 
-	filenames.push_back(base + "./data/kermit_dataset/kermit000.jpg");
-	filenames.push_back(base + "./data/kermit_dataset/kermit001.jpg");
-	filenames.push_back(base + "./data/kermit_dataset/kermit002.jpg");
+	for(size_t i = 0; i < N; ++i) {
+		std::stringstream ss;
+		ss << base << "data" << PATH_SEPARATOR << "kermit_dataset" << PATH_SEPARATOR << "kermit" << std::setw(3) << std::setfill('0') << i << ".jpg";
+		filenames.push_back(ss.str());
+	}
 
 	run_detector("SIFT");
 	run_detector("SURF");
