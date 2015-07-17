@@ -4,7 +4,7 @@
 #include "descriptorExtractorProvider.h"
 #include "imageMatches.h"
 
-class DescriptorMatcher
+class DescriptorMatcher : public virtual AlgoBase
 {
 public:
 	void knnMatch(RuntimeTypeBuffer &query, RuntimeTypeBuffer &train, std::vector<std::vector<RawMatch>> &matches, size_t K);

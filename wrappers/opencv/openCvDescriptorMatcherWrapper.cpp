@@ -22,12 +22,22 @@ void OpenCvDescriptorMatcherWrapper::knnMatchImpl(RuntimeTypeBuffer &query, Runt
     matches.resize(matches_cv.size());
 
     for(size_t idx = 0; idx < matches.size(); ++idx)
-{
+    {
         for(std::vector<cv::DMatch>::iterator m = matches_cv[idx].begin(); m != matches_cv[idx].end(); ++m)
-{
+        {
             matches[idx].push_back(convert(*m));
         }
     }
+}
+
+void OpenCvDescriptorMatcherWrapper::setProperty(const std::string &name, const double &value)
+{
+    matcher->set(name, value);
+}
+
+double OpenCvDescriptorMatcherWrapper::getProperty(const std::string &name) const
+{
+    return matcher->get<double>(name);
 }
 
 void init_opencv_matchers_provider()

@@ -34,6 +34,7 @@ public:
 	~KeyPointDetectionStage() {};
 private:
 	DetectorType detectorType;
+	bool parallelable;
 };
 
 class DescriptorExtractionStage : public FeatureMatchingPipelineStage
@@ -46,6 +47,7 @@ public:
 	~DescriptorExtractionStage() {};
 private:
 	DescriptorType descriptorType;
+	bool parallelable;
 };
 
 class MatchingPlanComputationStage : public FeatureMatchingPipelineStage
@@ -78,6 +80,7 @@ private:
 	DescriptorType descriptorType;
 	MatcherType matcherType;
 	size_t responsesPerPoint;
+	bool parallelable;
 };
 
 class RefineMatchesStage : public FeatureMatchingPipelineStage
@@ -105,6 +108,7 @@ private:
 	DescriptorType descriptorType;
 	MatcherType matcherType;
 	double scaleThreshold;
+	bool parallelable;
 };
 
 class EpipolarRefiner : public FeatureMatchingPipelineStage

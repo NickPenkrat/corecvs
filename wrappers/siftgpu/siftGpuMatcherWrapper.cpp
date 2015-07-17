@@ -63,7 +63,7 @@ SiftGpuMatcher::SiftGpuMatcher()
 
 SiftGpuMatcher::~SiftGpuMatcher()
 {
-    delete siftMatchGpu;
+    free(siftMatchGpu);
 }
 
 SiftGpuMatcher::SiftGpuMatcher(const SiftGpuMatcher &matcher)

@@ -144,7 +144,7 @@ void KeyPointDetectionStage::run(FeatureMatchingPipeline *pipeline)
 
     size_t N = pipeline->images.size();
 
-    corecvs::parallelable_for ((size_t)0, N, CORE_MAX(N / 16, (size_t)1), ParallelDetector(pipeline,detectorType), detectorType != "SIFTGPU");
+    corecvs::parallelable_for ((size_t)0, N, CORE_MAX(N / 16, (size_t)1), ParallelDetector(pipeline,detectorType), parallelable);
 
     ss1 << "Detecting keypoints with " << detectorType;
     pipeline->toc(ss1.str(), ss2.str());
@@ -177,6 +177,9 @@ void KeyPointDetectionStage::loadResults(FeatureMatchingPipeline *pipeline, cons
 
 KeyPointDetectionStage::KeyPointDetectionStage(DetectorType type) : detectorType(type)
 {
+    FeatureDetector* detector = FeatureDetectorProvider::getInstance().getDetector(detectorType);
+    parallelable = detector->isParallelable();
+    delete detector;
 }
 
 void DescriptorExtractionStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &_filename) const
@@ -278,7 +281,7 @@ void DescriptorExtractionStage::run(FeatureMatchingPipeline *pipeline)
 
     size_t N = pipeline->images.size();
 
-    corecvs::parallelable_for ((size_t)0, N, CORE_MAX(N / 16,(size_t)1), ParallelExtractor(pipeline,descriptorType), descriptorType != "SIFTGPU");
+    corecvs::parallelable_for ((size_t)0, N, CORE_MAX(N / 16,(size_t)1), ParallelExtractor(pipeline,descriptorType), parallelable);
 
     ss1 << "Extracting " << descriptorType << " descriptors";
     pipeline->toc(ss1.str(), ss2.str());
@@ -286,6 +289,9 @@ void DescriptorExtractionStage::run(FeatureMatchingPipeline *pipeline)
 
 DescriptorExtractionStage::DescriptorExtractionStage(DescriptorType type) : descriptorType(type)
 {
+    DescriptorExtractor* extractor = DescriptorExtractorProvider::getInstance().getDescriptorExtractor(descriptorType);
+    parallelable = extractor->isParallelable();
+    delete extractor;
 }
 
 void FileNameRefinedMatchingPlanComputationStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const
@@ -389,6 +395,9 @@ void MatchingPlanComputationStage::run(FeatureMatchingPipeline *pipeline)
 
 MatchingStage::MatchingStage(DescriptorType type, MatcherType matcherType, size_t responsesPerPoint) : descriptorType(type), matcherType(matcherType), responsesPerPoint(responsesPerPoint)
 {
+    DescriptorMatcher* matcher = DescriptorMatcherProvider::getInstance().getMatcher(descriptorType, matcherType);
+    parallelable = matcher->isParallelable();
+    delete matcher;
 }
 
 class ParallelMatcher
@@ -489,7 +498,7 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline)
     rawMatches.matches.resize(matchPlan.plan.size());
 
     size_t S = matchPlan.plan.size();
-    corecvs::parallelable_for ((size_t)0, S, CORE_MAX(S / 16, (size_t)1), ParallelMatcher(pipeline, descriptorType, matcherType, responsesPerPoint), descriptorType != "SIFTGPU");
+    corecvs::parallelable_for ((size_t)0, S, CORE_MAX(S / 16, (size_t)1), ParallelMatcher(pipeline, descriptorType, matcherType, responsesPerPoint), parallelable);
     
     std::stringstream ss;
     pipeline->toc("Computing raw matches", ss.str());
@@ -676,6 +685,9 @@ public:
 
 MatchAndRefineStage::MatchAndRefineStage(DescriptorType descriptorType, MatcherType matcherType, double scaleThreshold) : descriptorType(descriptorType), matcherType(matcherType), scaleThreshold(scaleThreshold)
 {
+    DescriptorMatcher* matcher = DescriptorMatcherProvider::getInstance().getMatcher(descriptorType, matcherType);
+    parallelable = matcher->isParallelable();
+    delete matcher;
 }
 
 void MatchAndRefineStage::loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename)
@@ -733,7 +745,7 @@ void MatchAndRefineStage::run(FeatureMatchingPipeline *pipeline)
     rawMatches.matches.resize(matchPlan.plan.size());
     refinedMatches.matchSets.resize(N*(N-1)/2);
     
-    corecvs::parallelable_for ((size_t)0, P, CORE_MAX(P / 16,(size_t)1), ParallelMatcherRefiner(pipeline, descriptorType, matcherType, responsesPerPoint, &first, &next, &idx), descriptorType != "SIFTGPU");
+    corecvs::parallelable_for ((size_t)0, P, CORE_MAX(P / 16,(size_t)1), ParallelMatcherRefiner(pipeline, descriptorType, matcherType, responsesPerPoint, &first, &next, &idx), parallelable);
     
     pipeline->toc("Computing & refining matches on-the-fly", "");
 }

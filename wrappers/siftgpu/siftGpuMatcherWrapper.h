@@ -11,6 +11,19 @@ public:
     SiftGpuMatcher();
     SiftGpuMatcher(const SiftGpuMatcher &c);
     virtual ~SiftGpuMatcher();
+
+    // TODO: add meaningful implementation for converting params to siftgpu's argc/argv
+    double getProperty(const std::string &name) const
+    {
+        CORE_UNUSED(name);
+        return 0.0;
+    }
+    void setProperty(const std::string &name, const double &value)
+    {
+        CORE_UNUSED(name);
+        CORE_UNUSED(value);
+    }
+    bool isParallelable() { return false; }
 protected:
     void knnMatchImpl( RuntimeTypeBuffer &query, RuntimeTypeBuffer &train, std::vector<std::vector<RawMatch> >& matches, size_t K);
 private:

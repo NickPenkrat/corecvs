@@ -10,6 +10,8 @@ class OpenCvDescriptorMatcherWrapper : public DescriptorMatcher
 public:
 	OpenCvDescriptorMatcherWrapper(cv::DescriptorMatcher *detector);
 	~OpenCvDescriptorMatcherWrapper();
+	void setProperty(const std::string &name, const double &value);
+	double getProperty(const std::string &name) const;
 protected:
 	void knnMatchImpl(RuntimeTypeBuffer &query, RuntimeTypeBuffer &train, std::vector<std::vector<RawMatch>> &matches, size_t K);
 private:
