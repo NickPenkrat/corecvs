@@ -23,12 +23,12 @@ public:
         NONE
     };
 
-    static bool DetectFullCheckerboard(const cv::Mat &mat, int width, int height, vector<vector<Vector2dd> >* straights);
-    static BoardAlign DetectPartCheckerboardH(const cv::Mat &mat, int width, int height, vector<vector<Vector2dd> >* straights);
-    static BoardAlign DetectPartCheckerboardV(const cv::Mat &mat, int width, int height, vector<vector<Vector2dd> >* straights);
+    static bool DetectFullCheckerboard(const cv::Mat &mat, int width, int height, vector<vector<Vector2dd> > *straights, int precise = 11);
+    static BoardAlign DetectPartCheckerboardH(const cv::Mat &mat, int width, int height, vector<vector<Vector2dd> > straights);
+    static BoardAlign DetectPartCheckerboardV(const cv::Mat &mat, int width, int height, vector<vector<Vector2dd> > straights);
     static void DrawCheckerboardLines(cv::Mat &dst, const vector<vector<Vector2dd> > &straights);
 private:
-    static void fillStraight(const vector<Point2f> &buffer, int width, int height, vector<vector<Vector2dd> >* straights);
+    static void fillStraight(const vector<Point2f> &buffer, int width, int height, vector<vector<Vector2dd> > *straights);
 };
 
 #endif

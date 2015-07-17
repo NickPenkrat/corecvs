@@ -72,43 +72,61 @@ static bool getStringCmdOption(const std::string & value, const std::string & op
     return 0;
 }
 
-static bool cmdIfHelp(char** begin, char** end, const std::string& option)
+static unsigned cmdIfOption(const vector<string> &all_args, const std::string& option, unsigned* pos)
 {
-    return std::find(begin, end, option) != end;
-}
-
-
-static void applyDistorsion(G12Buffer *image, DisplacementBuffer* mDistortionCorrectTransform)
-{
-    image = image->doReverseDeformationBl<G12Buffer, DisplacementBuffer>(
-                mDistortionCorrectTransform,
-                image->h, image->w
-            );
+    for (unsigned i=0;i<all_args.size();i++)
+    {
+        if(all_args[i].find(option)){
+            *pos = i;
+            return i;
+        }
+    }
+    return 0;
 }
 
 int main (int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
 
-    if (cmdIfHelp(argv, argv + argc, "--verbose"))
+    vector<string> all_args;
+    all_args.assign(argv + 1, argv + argc);
+    unsigned pos;
+
+    if (cmdIfOption(all_args, "--verbose", &pos))
     {
         verbose = 1;
     }
 
-    if (cmdIfHelp(argv, argv + argc, "--draw_proccess"))
+    if (cmdIfOption(all_args, "--draw_proccess", &pos))
     {
         drawProccess = 1;
+    }
+
+    if (cmdIfOption(all_args, "--test_opencv", &pos))
+    {
+        BMPLoader *loader   = new BMPLoader();
+        G12Buffer *image    = loader->load("SPA0_360deg_1.bmp");
+        IplImage  *iplImage = OpenCVTools::getCVImageFromG12Buffer(image);
+                Mat            view = cv::Mat(iplImage, false);
+                imshow("sf",view);
+        int key = waitKey(1000000);
+        return 0;
     }
 
     string fileName = "";
     int chessW = 18;
     int chessH = 11;
     int found;
+    int precise = 11;
 
     if (getStringCmdOption(argv[1], "--calcFullCheckerBoard:", &fileName) &&
         getIntCmdOption(argv[2], "--chessW:", &chessW) &&
         getIntCmdOption(argv[3], "--chessH:", &chessH) )
     {
+        if(cmdIfOption(all_args, "--precise", &pos))
+        {
+             getIntCmdOption(argv[pos], "--precise:", &precise);
+        }
         if(verbose)
         {
             SYNC_PRINT(("Calc full %s with %ix%i\n", fileName.c_str(), chessW, chessH));
@@ -116,69 +134,86 @@ int main (int argc, char **argv)
 
         BMPLoader *loader   = new BMPLoader();
         G12Buffer *image    = loader->load(fileName);
+        if(verbose)
+        {
+            SYNC_PRINT(("Loaded %s.\n",fileName.c_str()));
+        }
+
         IplImage  *iplImage = OpenCVTools::getCVImageFromG12Buffer(image);
         Mat            view = cv::Mat(iplImage, false);
 
         vector<vector<Vector2dd> > straights;
-        found = OpenCvCheckerboardDetector::DetectFullCheckerboard(view, chessW, chessH, &straights);
 
-        if(drawProccess)
+        found = OpenCvCheckerboardDetector::DetectFullCheckerboard(view, chessW, chessH, &straights, precise);
+
+        if(found)
         {
-            OpenCvCheckerboardDetector::DrawCheckerboardLines(view, straights);
-            imwrite("test_with_chess_LINES.jpg", view);
-        }
+            if(verbose)
+            {
+                SYNC_PRINT(("Checkerboard found.\n"));
+            }
+            if(drawProccess)
+            {
+                OpenCvCheckerboardDetector::DrawCheckerboardLines(view, straights);
+                imwrite("test_with_chess_LINES.jpg", view);
+                if(verbose)
+                {
+                    SYNC_PRINT(("test_with_chess_LINES.jpg saved.\n"));
+                }
+            }
 
-        Vector2dd center(image->w / 2.0, image->h /2.0);
+            Vector2dd center(image->w / 2.0, image->h /2.0);
 
-        /// Set default camera param values
-        RadialCorrection correction(LensCorrectionParametres(
-           center.x(),
-           center.y(),
-           0.0, 0.0,
-           vector<double>(6), //vector<double>(mUi->degreeSpinBox->value()), //TODO: Read degree from JSON
-           1.0,
-           1.0
-        ));
+            /// Set default camera param values
+            RadialCorrection correction(LensDistortionModelParameters(
+               center.x(),
+               center.y(),
+               0.0, 0.0,
+               vector<double>(6), //vector<double>(mUi->degreeSpinBox->value()), //TODO: Read degree from JSON
+               1.0,
+               1.0
+            ));
 
-        ModelToRadialCorrection modelFactory(
-              correction,
-              1, //mUi->estimateCenterCheckBox->isChecked(),
-              1, //mUi->estimateTangentCheckBox->isChecked(),
-              6 //mUi->degreeSpinBox->value()//TODO: Read degree from JSON
-          );
+            ModelToRadialCorrection modelFactory(
+                  correction,
+                  1, //mUi->estimateCenterCheckBox->isChecked(),
+                  1, //mUi->estimateTangentCheckBox->isChecked(),
+                  6 //mUi->degreeSpinBox->value()//TODO: Read degree from JSON
+              );
 
-        FunctionArgs *costFuntion = NULL;
-        int isAngleCost = 0; //TODO: now use angle cost function in future read from JSON
-        if (isAngleCost) {
-            costFuntion = new AnglePointsFunction (straights, modelFactory);
-            //straightF.simpleJacobian = mUi->simpleJacobianCheckBox->isChecked();
-        } else {
-            costFuntion = new DistPointsFunction  (straights, modelFactory);
-        }
+            FunctionArgs *costFuntion = NULL;
+            int isAngleCost = 0; //TODO: now use angle cost function in future read from JSON
+            if (isAngleCost) {
+                costFuntion = new AnglePointsFunction (straights, modelFactory);
+                //straightF.simpleJacobian = mUi->simpleJacobianCheckBox->isChecked();
+            } else {
+                costFuntion = new DistPointsFunction  (straights, modelFactory);
+            }
 
-        int iterations = 1000; //mUi->iterationsSpinBox->value();
-        LevenbergMarquardt straightLevMarq(iterations, 2, 1.5);
-        straightLevMarq.f = costFuntion;
+            int iterations = 1000; //mUi->iterationsSpinBox->value();
+            LevenbergMarquardt straightLevMarq(iterations, 2, 1.5);
+            straightLevMarq.f = costFuntion;
 
-        /* First aproximation is zero vector */
+            /* First aproximation is zero vector */
 
-        vector<double> first(costFuntion->inputs, 0);
-        modelFactory.getModel(correction, &first[0]);
+            vector<double> first(costFuntion->inputs, 0);
+            modelFactory.getModel(correction, &first[0]);
 
-        vector<double> value(costFuntion->outputs, 0);
-        vector<double> straightParams = straightLevMarq.fit(first, value);
+            vector<double> value(costFuntion->outputs, 0);
+            vector<double> straightParams = straightLevMarq.fit(first, value);
 
-        RadialCorrection mLinesRadialCoorection = modelFactory.getRadial(&straightParams[0]);
-        {
-            JSONSetter setter("out.json");
-            setter.visit(mLinesRadialCoorection.mParams, "intrinsic");
-        }
-        if(verbose)
-        {
-            SYNC_PRINT(("Written\n"));
+            RadialCorrection mLinesRadialCoorection = modelFactory.getRadial(&straightParams[0]);
+            {
+                JSONSetter setter("out.json");
+                setter.visit(mLinesRadialCoorection.mParams, "intrinsic");
+            }
+            if(verbose)
+            {
+                SYNC_PRINT(("Written\n"));
+            }
         }
     }
-    else if (cmdIfHelp(argv, argv + argc, "--apply"))
+    else if (cmdIfOption(all_args, "--apply", &pos))
     {
         string filename = argv[2];
 
@@ -207,26 +242,25 @@ int main (int argc, char **argv)
                  0.5, 0 //TODO: Use right value of mUi->preciseInvertionCheckBox->isChecked())
         );
 
-
-        applyDistorsion(image, mDistortionCorrectTransform);
+        image = image->doReverseDeformationBl<G12Buffer, DisplacementBuffer>(
+                    mDistortionCorrectTransform,
+                    image->h, image->w
+                );
         loader->save("dist_" + filename, image);
 
         for (int i = 3; i < argc; i++)
         {
             SYNC_PRINT(("Apply %s\n",argv[i]));
             image = loader->load(argv[i]);
-            applyDistorsion(image, mDistortionCorrectTransform);
+            image = image->doReverseDeformationBl<G12Buffer, DisplacementBuffer>(
+                        mDistortionCorrectTransform,
+                        image->h, image->w
+                    );
+
             string newFileName(argv[i]);
             loader->save("dist_" + newFileName, image);
         }
 
-        image = image->doReverseDeformationBl<G12Buffer, DisplacementBuffer>(
-                   mDistortionCorrectTransform,
-                   image->h, image->w
-               );
-
-        string newFileName(filename);
-        loader->save("dist_" + newFileName, image);
     }
     return 0;
 }

@@ -3,11 +3,11 @@
 #include "openCvCheckerboardDetector.h"
 
 void OpenCvCheckerboardDetector::DrawCheckerboardLines(cv::Mat &dst, const vector<vector<Vector2dd> > &straights){
-    for(int i = 0; i < straights.size(); i++)
+    for(unsigned i = 0; i < straights.size(); i++)
     {
         double prevX = 0;
         double prevY = 0;
-        for(int p = 0; p < straights[i].size(); p++)
+        for(unsigned p = 0; p < straights[i].size(); p++)
         {
             double curX = straights[i][p].x();
             double curY = straights[i][p].y();
@@ -21,24 +21,39 @@ void OpenCvCheckerboardDetector::DrawCheckerboardLines(cv::Mat &dst, const vecto
     }
 }
 
-bool OpenCvCheckerboardDetector::DetectFullCheckerboard(const cv::Mat &mat, int width, int height, vector<vector<Vector2dd> >* straights){
+bool OpenCvCheckerboardDetector::DetectFullCheckerboard(const cv::Mat &mat, int width, int height, vector<vector<Vector2dd> > *straights, int precise){
     int             found;
     Size            boardSize(width, height);
-    vector<Point2f>   pointbuf;
-    found = findChessboardCorners( mat, boardSize, pointbuf, CV_CALIB_CB_ADAPTIVE_THRESH );
+    vector<Point2f> pointbuf;
+    SYNC_PRINT(("Start ..."));
+    found = findChessboardCorners(mat, boardSize, pointbuf,
+                                  CALIB_CB_ADAPTIVE_THRESH
+                                  +  CALIB_CB_FAST_CHECK );
     if(!found){
           SYNC_PRINT(("Failed to detect.\n"));
         return 0;
     }
+
+    for (unsigned i = 0; i < pointbuf.size(); i++)
+    {
+         SYNC_PRINT(("Point %f %f\n", pointbuf[i].x,pointbuf[i].y));
+    }
+
+    SYNC_PRINT(("Finding lines %ix%i...", width, height));
     fillStraight(pointbuf, width, height, straights);
+    SYNC_PRINT(("Good\n"));
+    if(found && precise){
+        cornerSubPix ( mat ,  pointbuf ,  Size ( precise ,  precise ),  Size ( - 1 ,  - 1 ),
+          TermCriteria ( CV_TERMCRIT_EPS  +  CV_TERMCRIT_ITER ,  30 ,  0.1 ));
+    }
     return found;
 }
 
-OpenCvCheckerboardDetector::BoardAlign OpenCvCheckerboardDetector::DetectPartCheckerboardH(const cv::Mat &mat, int width, int height, vector<vector<Vector2dd> >* straights){
+OpenCvCheckerboardDetector::BoardAlign OpenCvCheckerboardDetector::DetectPartCheckerboardH(const cv::Mat &mat, int width, int height, vector<vector<Vector2dd> > straights){
     int found;
     vector<Point2f> pointbuf;
     int widthOfPart = 0;
-    for(int i = width; i > 2; i--)
+    for(unsigned i = width; i > 2; i--)
     {
         Size boardSize(i, height);
         SYNC_PRINT(("Try %ix%i",i, height));
@@ -46,11 +61,11 @@ OpenCvCheckerboardDetector::BoardAlign OpenCvCheckerboardDetector::DetectPartChe
         found = findChessboardCorners( mat, boardSize, pointbuf, CV_CALIB_CB_ADAPTIVE_THRESH );
         if(found)
         {
-            fillStraight(pointbuf, width, height, straights);
+//            fillStraight(pointbuf, width, height, straights);
             widthOfPart = i;
             double left = pointbuf.at(0).x;
             double right = pointbuf.at(width - 1).x;
-            for(int j = 1; j < height; j++)
+            for(unsigned j = 1; j < height; j++)
             {
                 if(left   > pointbuf.at(width * j).x)
                     left  = pointbuf.at(width * j).x;
@@ -74,11 +89,11 @@ OpenCvCheckerboardDetector::BoardAlign OpenCvCheckerboardDetector::DetectPartChe
     return BoardAlign::NONE;
 }
 
-OpenCvCheckerboardDetector::BoardAlign OpenCvCheckerboardDetector::DetectPartCheckerboardV(const cv::Mat &mat, int width, int height, vector<vector<Vector2dd> >* straights){
+OpenCvCheckerboardDetector::BoardAlign OpenCvCheckerboardDetector::DetectPartCheckerboardV(const cv::Mat &mat, int width, int height, vector<vector<Vector2dd> > straights){
     int found;
     vector<Point2f> pointbuf;
     int heightOfPart = 0;
-    for(int j = height; j > 2; j--)
+    for(unsigned j = height; j > 2; j--)
     {
         Size boardSize(width, j);
         SYNC_PRINT(("Try %ix%i",width, j));
@@ -86,11 +101,11 @@ OpenCvCheckerboardDetector::BoardAlign OpenCvCheckerboardDetector::DetectPartChe
         found = findChessboardCorners( mat, boardSize, pointbuf, CV_CALIB_CB_ADAPTIVE_THRESH );
         if(found)
         {
-            fillStraight(pointbuf, width, height, straights);
+//            fillStraight(pointbuf, width, height, straights);
             heightOfPart = j;
             double top = pointbuf.at(0).y;
             double bottom = pointbuf.at(width - 1).y;
-            for(int i = 1; i < width; i++)
+            for(unsigned i = 1; i < width; i++)
             {
                 if(top     > pointbuf.at(height * i).y)
                     top    = pointbuf.at(height * i).y;
@@ -114,25 +129,27 @@ OpenCvCheckerboardDetector::BoardAlign OpenCvCheckerboardDetector::DetectPartChe
     return BoardAlign::NONE;
 }
 
-void OpenCvCheckerboardDetector::fillStraight(const vector<Point2f> &buffer, int width, int height, vector<vector<Vector2dd> >* straights)
+void OpenCvCheckerboardDetector::fillStraight(const vector<Point2f> &buffer, int width, int height, vector<vector<Vector2dd> > *straights)
 {
-    straights->clear();
-    for (int ih = 0; ih < height; ih++)
+        SYNC_PRINT(("--------- %i --------------\n", buffer.at(1).x));
+    vector<vector<Vector2dd> > tempSstraights;
+    for (unsigned ih = 0; ih < height; ih++)
     {
         vector<Vector2dd> straight;
-        for (int iw = 0; iw < width; iw++)
+        for (unsigned iw = 0; iw < width; iw++)
         {
             straight.push_back(Vector2dd(buffer.at(ih * width + iw).x,buffer.at(ih * width + iw).y));
         }
         straights->push_back(straight);
     }
-    for (int iw = 0; iw < width; iw++)
+    for (unsigned iw = 0; iw < width; iw++)
     {
         vector<Vector2dd> straight;
-        for (int ih = 0; ih < height; ih++)
+        for (unsigned ih = 0; ih < height; ih++)
         {
             straight.push_back(Vector2dd(buffer.at(iw + width * ih).x,buffer.at(iw + width * ih).y));
         }
         straights->push_back(straight);
     }
+//    Mat(tempSstraights).copyTo(straights);
 }
