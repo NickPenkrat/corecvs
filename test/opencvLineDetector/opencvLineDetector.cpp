@@ -250,7 +250,11 @@ int main (int argc, char **argv)
 
         for (int i = 3; i < argc; i++)
         {
-            SYNC_PRINT(("Apply %s\n",argv[i]));
+            if(verbose)
+            {
+                SYNC_PRINT(("Apply %s\n",argv[i]));
+            }
+
             image = loader->load(argv[i]);
             image = image->doReverseDeformationBl<G12Buffer, DisplacementBuffer>(
                         mDistortionCorrectTransform,
