@@ -13,7 +13,7 @@ JSONGetter::JSONGetter(const QString &fileName)
     QFile file(mFileName);
     QJsonObject  object;
 
-    if (!file.open(QFile::ReadWrite)) {
+    if (file.open(QFile::ReadWrite)) {
 
         QByteArray array = file.readAll();
 

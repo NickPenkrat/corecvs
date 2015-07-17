@@ -24,11 +24,11 @@
   </class>  
 
   <enum name="ImageChannel">
-      <item name="R"          id="0" />
-      <item name="G"          id="1" />
-      <item name="B"          id="2" />
-      <item name="Gray"       id="3" />
-      <item name="Hue"        id="4" />
+      <item name="R"          id="0" icon=":/new/colors/colors/color_red.png@main.qrc"/>
+      <item name="G"          id="1" icon=":/new/colors/colors/color_green.png@main.qrc"/>
+      <item name="B"          id="2" icon=":/new/colors/colors/color_blue.png@main.qrc"/>
+      <item name="Gray"       id="3" icon=":/new/colors/colors/color_gray.png@main.qrc"/>
+      <item name="Hue"        id="4" icon=":/new/colors/colors/color_wheel.png@main.qrc"/>
       <item name="Saturation" id="5" />
       <item name="Value"      id="6" />
   </enum>

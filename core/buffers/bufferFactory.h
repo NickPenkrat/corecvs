@@ -42,6 +42,9 @@ public:
      */
     virtual G12Buffer* loadG12Bitmap(string name);
 
+
+
+
     /** Main function to get a 16-bits buffer from the file with the given path name
      */
     virtual G12Buffer* loadG16Bitmap(string name);

@@ -84,7 +84,6 @@ public:
 
                 out[2 * (i * mSteps + j)    ] = diff.x();
                 out[2 * (i * mSteps + j) + 1] = diff.y();
-
             }
         }
     }
@@ -183,10 +182,12 @@ RadialCorrection RadialCorrection::invertCorrection(int h, int w, int step)
 
     LevenbergMarquardt lmFit;
     lmFit.maxIterations = 101;
+    lmFit.maxLambda = 10e8;
+    lmFit.lambdaFactor = 8;
     lmFit.f = &cost;
     lmFit.traceCrucial  = true;
     lmFit.traceProgress = true;
-    //lmFit.traceMatrix   = true;
+    lmFit.traceMatrix   = true;
 
     vector<double> initialGuess(cost.inputs);
     RadialCorrectionInversionCostFunction::fillWithRadial(guess, &(initialGuess[0]));

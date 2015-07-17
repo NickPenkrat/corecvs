@@ -1,3 +1,4 @@
+#include <QMessageBox>
 #include <QFileDialog>
 #include "abstractPainter.h"
 #include "qtFileLoader.h"
@@ -219,6 +220,24 @@ void LensDistortionModelParametersControlWidget::resetScale()
     ui->scaleSpinBox->setValue(1.0);
 }
 
+void LensDistortionModelParametersControlWidget::invertCorrection()
+{
+    int result = QMessageBox::information(this, "Warning", "This will invert the radial distortion. Could take some time",
+                             QMessageBox::Ok, QMessageBox::Cancel);
+
+    if (result != QMessageBox::Ok) {
+        return;
+    }
+
+    LensDistortionModelParameters lensParams = LensDistortionModelParametersControlWidget::getParameters();
+    RadialCorrection radialCorrection(lensParams);
+
+    setCursor(Qt::BusyCursor);
+    RadialCorrection inverted = radialCorrection.invertCorrection(radialCorrection.center().x() * 2.0, radialCorrection.center().y() * 2.0, 300);
+    unsetCursor();
+    LensDistortionModelParametersControlWidget::setParameters(inverted.mParams);
+}
+
 void LensDistortionModelParametersControlWidget::updateAdditionalDataNeeded()
 {
     if (ui->autoRefeshCheckBox->isChecked()){
@@ -293,8 +312,6 @@ void LensDistortionModelParametersControlWidget::updateAdditionalData()
             FixedPointDisplace displace(*mDistortionCorrectTransform, mDistortionCorrectTransform->h, mDistortionCorrectTransform->w);
             mCorrected = mInput->doReverseDeformationBlPrecomp(&displace);
         }
-
-
 
         mInverse     = mInput    ->doReverseDeformation<RGB24Buffer, RadialCorrection  >(radialCorrection);
         mBackproject = mCorrected->doReverseDeformation<RGB24Buffer, RadialCorrection  >(radialCorrection);

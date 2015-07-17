@@ -36,25 +36,50 @@
         <property name="text">
          <string>R</string>
         </property>
+        <property name="icon">
+        <iconset resource="main.qrc">
+         <normaloff>:/new/colors/colors/color_red.png</normaloff>:/new/colors/colors/color_red.png
+        </iconset>
+        </property>
        </item>
        <item>
         <property name="text">
          <string>G</string>
+        </property>
+        <property name="icon">
+        <iconset resource="main.qrc">
+         <normaloff>:/new/colors/colors/color_green.png</normaloff>:/new/colors/colors/color_green.png
+        </iconset>
         </property>
        </item>
        <item>
         <property name="text">
          <string>B</string>
         </property>
+        <property name="icon">
+        <iconset resource="main.qrc">
+         <normaloff>:/new/colors/colors/color_blue.png</normaloff>:/new/colors/colors/color_blue.png
+        </iconset>
+        </property>
        </item>
        <item>
         <property name="text">
          <string>Gray</string>
         </property>
+        <property name="icon">
+        <iconset resource="main.qrc">
+         <normaloff>:/new/colors/colors/color_gray.png</normaloff>:/new/colors/colors/color_gray.png
+        </iconset>
+        </property>
        </item>
        <item>
         <property name="text">
          <string>Hue</string>
+        </property>
+        <property name="icon">
+        <iconset resource="main.qrc">
+         <normaloff>:/new/colors/colors/color_wheel.png</normaloff>:/new/colors/colors/color_wheel.png
+        </iconset>
         </property>
        </item>
        <item>

@@ -108,7 +108,7 @@ void WidgetUiGenerator::generateWidgetUi()
 
         for (int j = 0; j < eref->optionsNumber(); j ++)
         {
-            const EnumOption *option = eref->options[j];
+            const EnumOptionGen *option = static_cast<const EnumOptionGen *>(eref->options[j]);
             QString name = option->name.name;
             QString descr = option->name.decription;
 
@@ -116,7 +116,21 @@ void WidgetUiGenerator::generateWidgetUi()
     "       <item>\n"
     "        <property name=\"text\">\n"
     "         <string>"+descr+"</string>\n"
-    "        </property>\n"
+    "        </property>\n";
+            if (!option->icon.isEmpty())
+            {
+              QStringList icon = option->icon.split("@");
+              QString iconName = icon[0];
+              QString iconRes  = icon[1];
+
+      result +=
+    "        <property name=\"icon\">\n"
+    "        <iconset resource=\""+iconRes+"\">\n"
+    "         <normaloff>"+iconName+"</normaloff>"+iconName+"\n"
+    "        </iconset>\n"
+    "        </property>\n";
+            }
+      result +=
     "       </item>\n";
         }
     }
