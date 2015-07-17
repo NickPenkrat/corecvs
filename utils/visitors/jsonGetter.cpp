@@ -11,19 +11,23 @@ JSONGetter::JSONGetter(const QString &fileName)
 {
     mFileName = fileName;
     QFile file(mFileName);
-    if (!file.open(QFile::ReadWrite)) {
-        qDebug() << "Can't open file <" << mFileName << ">";
-        return;
-    }
-    QByteArray array = file.readAll();
+    QJsonObject  object;
 
-    QJsonDocument document = QJsonDocument::fromJson(array);
-    if (document.isNull())
-    {
-         SYNC_PRINT(("Fail parsing the data"));
+    if (file.open(QFile::ReadWrite)) {
+
+        QByteArray array = file.readAll();
+
+        QJsonDocument document = QJsonDocument::fromJson(array);
+        if (document.isNull())
+        {
+             SYNC_PRINT(("Fail parsing the data"));
+        }
+        object = document.object();
+        file.close();
+
+    } else {
+        qDebug() << "Can't open file <" << mFileName << ">";
     }
-    QJsonObject  object = document.object();
-    file.close();
 
     mNodePath.push_back(object);
 }

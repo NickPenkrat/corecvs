@@ -17,7 +17,7 @@ V4L2CaptureDecoupleInterface::V4L2CaptureDecoupleInterface(string _devname)
 
     //     Group Number                   1       2 3      4       56        7       8         9 10     11     1213    14
     QRegExp deviceStringPattern(QString("^([^,:]*)(:(\\d*)/(\\d*))?((:mjpeg)|(:yuyv)|(:fjpeg))?(:(\\d*)x(\\d*))?((:rc)|(:rc2)|(:sbs)|(:rcf)|(:sc1))?$"));
-    static const int DeviceGroup     = 1;
+    static const int DeviceGroup      = 1;
     static const int FpsNumGroup      = 3;
     static const int FpsDenumGroup    = 4;
     static const int CompressionGroup = 5;

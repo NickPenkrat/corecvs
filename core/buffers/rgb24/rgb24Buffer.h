@@ -23,7 +23,7 @@
 #include "rgbColor.h"
 #include "function.h"
 #include "correspondanceList.h"
-
+#include "imageChannel.h"
 
 namespace corecvs {
 
@@ -171,17 +171,7 @@ public:
 
     G12Buffer *toG12Buffer();
 
-    enum ChannelID {
-        CHANNEL_R,
-        CHANNEL_G,
-        CHANNEL_B,
-        CHANNEL_GRAY,
-        CHANNEL_HUE,
-        CHANNEL_SATURATION,
-        CHANNEL_VALUE,
-        CHANNEL_LAST
-    };
-    G8Buffer* getChannel(ChannelID channel);
+    G8Buffer* getChannel(ImageChannel::ImageChannel channel);
 
     template<class SelectorPrediate>
     Vector3dd getMeanValue(int x1, int y1, int x2, int y2, const SelectorPrediate &predicate)
@@ -258,18 +248,37 @@ public:
                 ("Invalid coordinate in AbstractContiniousBuffer::elementBl(double y=%lf, double x=%lf) buffer sizes is [%dx%d]",
                    y, x, this->w, this->h));
 
+        double k1 = x - j;
+        double k2 = y - i;
+
+/*
         RGBEx a = this->element(i    ,j    );
         RGBEx b = this->element(i    ,j + 1);
         RGBEx c = this->element(i + 1,j    );
         RGBEx d = this->element(i + 1,j + 1);
 
-        double k1 = x - j;
-        double k2 = y - i;
 
         RGBEx result =
              (a * (1 - k1) + k1 * b) * (1 - k2) +
              (c * (1 - k1) + k1 * d) *      k2;
-        return result.toRGBColor();
+        return result.toRGBColor();*/
+
+        /* So far use slow version. Generally this sould be done with fixed point */
+        Vector3dd a = this->element(i    ,j    ).toDouble();
+        Vector3dd b = this->element(i    ,j + 1).toDouble();
+        Vector3dd c = this->element(i + 1,j    ).toDouble();
+        Vector3dd d = this->element(i + 1,j + 1).toDouble();
+
+
+        Vector3dd result =
+             (a * (1 - k1) + k1 * b) * (1 - k2) +
+             (c * (1 - k1) + k1 * d) *      k2;
+        return RGBColor::FromDouble(result);
+    }
+
+    RGB24Buffer::InternalElementType elementBl(Vector2dd &point)
+    {
+        return elementBl(point.y(), point.x());
     }
 
     RGB24Buffer::InternalElementType elementBlPrecomp(const BilinearMapPoint &point)

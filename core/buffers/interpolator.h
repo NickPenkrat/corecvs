@@ -36,7 +36,7 @@ public:
     public:
         ParallelDoReverseDeformationBl(
             OutputType *_toReturn,
-            const FixedPointDisplace *_map,
+            const Mapper *_map,
             InputType *_buf
             ) :
         toReturn(_toReturn), map(_map), buf(_buf)

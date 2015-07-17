@@ -83,6 +83,14 @@
         <file>checkerboard.png</file>
         <file>table_lightning.png</file>
     </qresource>
+    <qresource prefix="/new/colors">
+        <file>colors/color_blue.png</file>
+        <file>colors/color_green.png</file>
+        <file>colors/color_red.png</file>
+        <file>colors/color_gray.png</file>
+        <file>colors/color_wheel.png</file>
+        <file>colors/contrast.png</file>
+    </qresource>
     <qresource prefix="/new/graph">
         <file>draw_line.png</file>
         <file>draw_points.png</file>

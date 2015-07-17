@@ -201,7 +201,8 @@ enums="
        operation 
        interpolationType         
        makePreciseAlgorithm
-       preciseInterpolationType"
+       preciseInterpolationType
+       imageChannel"
 ui_classes="
         rgbColorParameters
     

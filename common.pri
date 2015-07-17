@@ -66,32 +66,32 @@ with_avx {
 with_sse {
     DEFINES += WITH_SSE
 
-    !win32-msvc*:!odroid {
+    !win32-msvc* {
         QMAKE_CFLAGS   += -msse2
         QMAKE_CXXFLAGS += -msse2
     } else {
-        #QMAKE_CFLAGS   += -arch:SSE2     # actual only for x86 mode
-        #QMAKE_CXXFLAGS += -arch:SSE2
+#       QMAKE_CFLAGS   += -arch:SSE2     # actual only for x86 mode
+#       QMAKE_CXXFLAGS += -arch:SSE2
     }
 }
 with_sse3 {
     DEFINES += WITH_SSE3
 
-    !win32-msvc*:!odroid {
+    !win32-msvc* {
         QMAKE_CFLAGS   += -msse3
         QMAKE_CXXFLAGS += -msse3
     } else {
-        #DEFINES -= WITH_SSE3
+#       DEFINES -= WITH_SSE3
     }
 }
 with_sse4 {
     DEFINES += WITH_SSE4
 
-    !win32-msvc*:!odroid {
+    !win32-msvc* {
         QMAKE_CFLAGS   += -msse4.1
         QMAKE_CXXFLAGS += -msse4.1
     } else {
-        #DEFINES -= WITH_SSE4
+#       DEFINES -= WITH_SSE4
     }
 }
 

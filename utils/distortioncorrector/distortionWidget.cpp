@@ -173,20 +173,20 @@ void DistortionWidget::detectCorners()
 
 void DistortionWidget::detectCheckerboard()
 {
-#ifdef WITH_OPENCV
+#ifdef WITH_OPENCV    
+    CheckerboardDetectionParameters params;
+    mUi->checkerboardParametersWidget->getParameters(params);
+
     if(mBufferInput == NULL) {
         return;
     }
 
-    G12Buffer *grayChannel = mBufferInput->toG12Buffer();
+    G8Buffer *workChannel = mBufferInput->getChannel(params.channel());
 
-    IplImage *inputIpl = OpenCVTools::getCVImageFromG12Buffer(grayChannel);
+    IplImage *inputIpl = OpenCVTools::getCVImageFromG8Buffer(workChannel);
     int             found;
     vector<Point2f> pointbuf;
     Mat             view = cv::Mat(inputIpl, false);
-
-    CheckerboardDetectionParameters params;
-    mUi->checkerboardParametersWidget->getParameters(params);
 
     int chessV = params.vCrossesCount();
     int chessH = params.hCrossesCount();
@@ -244,7 +244,7 @@ void DistortionWidget::detectCheckerboard()
 
     }
     cvReleaseImage(&inputIpl);
-    delete_safe(grayChannel);
+    delete_safe(workChannel);
     return;
 #else
     return;
