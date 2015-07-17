@@ -96,6 +96,7 @@ bool checkFiles()
             exit(0);
         }
     }
+    return true;
 }
 
 void prepareCopy(const std::string &postfix)
@@ -111,7 +112,7 @@ void prepareCopy(const std::string &postfix)
 #endif
     command << base << "*.jpg " << base << "kermit_" << postfix << PATH_SEPARATOR;
     system(command.str().c_str());
-    tempBase = (base + PATH_SEPARATOR) + std::string("kermit_") + postfix + PATH_SEPARATOR;
+    tempBase = base + "kermit_" + postfix + PATH_SEPARATOR;
 }
 
 void run(const std::string &detector)
@@ -123,6 +124,10 @@ void run(const std::string &detector)
     {
         char name[1000];
         snprintf2buf(name, "%skermit%03d.jpg", tempBase.c_str(), i);
+        if(!checkIfExists(name))
+        {
+            std::cerr << "FAILED: Unable to find " << name << " terminating" << std::endl;
+        }
         filenames.push_back(std::string(name));
     }
 
@@ -138,8 +143,7 @@ void run(const std::string &detector)
     pipeline.add(new DrawMatchesStage, true);
     pipeline.add(new DescriptorExtractionStage(DescriptorType(detector)), true, true);
     pipeline.add(new MatchingPlanComputationStage(), true, true, tempBase + "plan.txt");
-    pipeline.add(new MatchingStage(DescriptorType(detector), matcherType), true, true, tempBase + "raw_matches.txt");
-    pipeline.add(new RefineMatchesStage(), true, true, tempBase + "refined_matches.txt");
+    pipeline.add(new MatchAndRefineStage(DescriptorType(detector), matcherType), true, true, tempBase + "raw_matches.txt");
     pipeline.add(new VsfmWriterStage(false), true, true, tempBase + "vsfm_matches.txt");
 
     std::cerr << std::endl << "Running with " << detector << " detector/descriptor" << std::endl << std::endl;

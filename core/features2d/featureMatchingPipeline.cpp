@@ -139,17 +139,15 @@ public:
 
 void KeyPointDetectionStage::run(FeatureMatchingPipeline *pipeline)
 {
-    FeatureDetector* detector = FeatureDetectorProvider::getInstance().getDetector(detectorType);
     pipeline->tic();
     std::stringstream ss1, ss2;
 
     size_t N = pipeline->images.size();
 
-    corecvs::parallelable_for ((size_t)0, N, CORE_MAX(N / 16, (size_t)1), ParallelDetector(pipeline,detectorType));
+    corecvs::parallelable_for ((size_t)0, N, CORE_MAX(N / 16, (size_t)1), ParallelDetector(pipeline,detectorType), detectorType != "SIFTGPU");
 
     ss1 << "Detecting keypoints with " << detectorType;
     pipeline->toc(ss1.str(), ss2.str());
-    delete detector;
 }
 
 void KeyPointDetectionStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &_filename) const
@@ -275,18 +273,15 @@ public:
 
 void DescriptorExtractionStage::run(FeatureMatchingPipeline *pipeline)
 {
-    DescriptorExtractor* extractor = DescriptorExtractorProvider::getInstance().getDescriptorExtractor(descriptorType);
     pipeline->tic();
     std::stringstream ss1, ss2;
-//  std::vector<Image> &images = pipeline->images;
 
     size_t N = pipeline->images.size();
 
-    corecvs::parallelable_for ((size_t)0, N, CORE_MAX(N / 16,(size_t)1), ParallelExtractor(pipeline,descriptorType));
+    corecvs::parallelable_for ((size_t)0, N, CORE_MAX(N / 16,(size_t)1), ParallelExtractor(pipeline,descriptorType), descriptorType != "SIFTGPU");
 
     ss1 << "Extracting " << descriptorType << " descriptors";
     pipeline->toc(ss1.str(), ss2.str());
-    delete extractor;
 }
 
 DescriptorExtractionStage::DescriptorExtractionStage(DescriptorType type) : descriptorType(type)
@@ -454,7 +449,7 @@ public:
             // It's time to replace indicies
             for (std::deque<std::array<RawMatch, 2> >::iterator v = rawMatches.matches[s].begin(); v != rawMatches.matches[s].end(); ++v)
             {
-                for (std::array<RawMatch, 2>::iterator m = v->begin(); m != v->end(); ++m)
+                for (std::array<RawMatch, 2>::iterator m = v->begin(); m != v->end() && m->isValid(); ++m)
                 {
                     m->featureQ = query.queryFeatures[m->featureQ];
                     m->featureT = query.trainFeatures[m->featureT];
@@ -488,15 +483,13 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline)
     pipeline->tic();
     MatchPlan &matchPlan = pipeline->matchPlan;
     RawMatches &rawMatches = pipeline->rawMatches;
-//    std::vector<Image> &images = pipeline->images;
 
     assert(matchPlan.plan.size());
     rawMatches.matches.clear();
     rawMatches.matches.resize(matchPlan.plan.size());
 
     size_t S = matchPlan.plan.size();
-    corecvs::parallelable_for ((size_t)0, S, CORE_MAX(S / 16, (size_t)1)
-        , ParallelMatcher(pipeline,descriptorType, matcherType, responsesPerPoint));
+    corecvs::parallelable_for ((size_t)0, S, CORE_MAX(S / 16, (size_t)1), ParallelMatcher(pipeline, descriptorType, matcherType, responsesPerPoint), descriptorType != "SIFTGPU");
     
     std::stringstream ss;
     pipeline->toc("Computing raw matches", ss.str());
@@ -557,7 +550,7 @@ public:
             while(next_id)
             {
                 reqs.push_back(idx[next_id]);
-                assert(matchPlan.plan[idx[next_id]].isBetween(I,J));
+                assert(matchPlan.plan[idx[next_id]].isBetween((uint16_t)I, (uint16_t)J));
                 next_id = next[next_id];
             }
             // step 1: match
@@ -740,7 +733,7 @@ void MatchAndRefineStage::run(FeatureMatchingPipeline *pipeline)
     rawMatches.matches.resize(matchPlan.plan.size());
     refinedMatches.matchSets.resize(N*(N-1)/2);
     
-    corecvs::parallelable_for ((size_t)0, P, CORE_MAX(P / 16,(size_t)1), ParallelMatcherRefiner(pipeline, descriptorType, matcherType, responsesPerPoint, &first, &next, &idx));
+    corecvs::parallelable_for ((size_t)0, P, CORE_MAX(P / 16,(size_t)1), ParallelMatcherRefiner(pipeline, descriptorType, matcherType, responsesPerPoint, &first, &next, &idx), descriptorType != "SIFTGPU");
     
     pipeline->toc("Computing & refining matches on-the-fly", "");
 }
