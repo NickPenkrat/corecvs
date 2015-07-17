@@ -426,6 +426,16 @@
  </widget>
  <resources>
   <include location="../../../resources/main.qrc"/>
+  <include location="../../../resources/main.qrc"/>
+  <include location="../../../resources/main.qrc"/>
+  <include location="../../../resources/main.qrc"/>
+  <include location="../../../resources/main.qrc"/>
+  <include location="../../../resources/main.qrc"/>
+  <include location="../../../resources/main.qrc"/>
+  <include location="../../../resources/main.qrc"/>
+  <include location="../../../resources/main.qrc"/>
+  <include location="../../../resources/main.qrc"/>
+  <include location="../../../resources/main.qrc"/>
  </resources>
  <connections>
   <connection>

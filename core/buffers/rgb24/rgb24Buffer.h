@@ -32,7 +32,10 @@ namespace corecvs {
 
 typedef AbstractContiniousBuffer<RGBColor, int32_t> RGB24BufferBase;
 
-class RGB24Buffer : public RGB24BufferBase, public FixedPointBlMapper<RGB24Buffer, RGB24Buffer, RGB24BufferBase::InternalIndexType, RGB24BufferBase::InternalElementType>
+class RGB24Buffer : public RGB24BufferBase,
+                    public FixedPointBlMapper<RGB24Buffer, RGB24Buffer, RGB24BufferBase::InternalIndexType, RGB24BufferBase::InternalElementType>,
+                    public           BlMapper<RGB24Buffer, RGB24Buffer, RGB24BufferBase::InternalIndexType, RGB24BufferBase::InternalElementType>
+
 {
 public:
 //    RGB24Buffer(int32_t h, int32_t w) : CRGB24BufferBase(h, w) {}
@@ -242,6 +245,32 @@ public:
         }
 
     };
+
+    /* This should be merged with generic elementBl */
+    RGB24Buffer::InternalElementType elementBl(double y, double x)
+    {
+        /* floor() is needed here because of values (-1..0] which will be
+         * rounded to 0 and cause error */
+        RGB24Buffer::InternalIndexType i = (RGB24Buffer::InternalIndexType)floor(y);
+        RGB24Buffer::InternalIndexType j = (RGB24Buffer::InternalIndexType)floor(x);
+
+        ASSERT_TRUE_P(this->isValidCoordBl(y,x),
+                ("Invalid coordinate in AbstractContiniousBuffer::elementBl(double y=%lf, double x=%lf) buffer sizes is [%dx%d]",
+                   y, x, this->w, this->h));
+
+        RGBEx a = this->element(i    ,j    );
+        RGBEx b = this->element(i    ,j + 1);
+        RGBEx c = this->element(i + 1,j    );
+        RGBEx d = this->element(i + 1,j + 1);
+
+        double k1 = x - j;
+        double k2 = y - i;
+
+        RGBEx result =
+             (a * (1 - k1) + k1 * b) * (1 - k2) +
+             (c * (1 - k1) + k1 * d) *      k2;
+        return result.toRGBColor();
+    }
 
     RGB24Buffer::InternalElementType elementBlPrecomp(const BilinearMapPoint &point)
     {

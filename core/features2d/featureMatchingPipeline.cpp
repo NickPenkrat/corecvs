@@ -4,8 +4,8 @@
 #include <fstream>
 #include <iomanip>
 #include <sstream>
+#include <algorithm>
 #include <ctime>  // clock???  Please use PreciseTimer!!!
-//#include <algorithm> ?! we are using std::sort on 1249, so it looks ok
 
 #include "featureDetectorProvider.h"
 #include "descriptorExtractorProvider.h"

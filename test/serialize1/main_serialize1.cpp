@@ -3,6 +3,7 @@
 #include <unistd.h>
 #endif
 #include <QtXml/QDomDocument>
+#include <vector>
 
 #include "vector3d.h"
 #include "xmlSetter.h"
@@ -106,6 +107,76 @@ void testJSON1()
 
 
 
+
+class TestComplexStructure : public BaseReflection<TestComplexStructure>{
+public:
+    std::vector<double> testField;
+
+    static int staticInit();
+
+    template<class VisitorType>
+        void accept(VisitorType &visitor)
+        {
+            visitor.visit(testField,  static_cast<const DoubleVectorField *>(fields()[0]));
+        }
+
+};
+
+template<>
+Reflection BaseReflection<TestComplexStructure>::reflection = Reflection();
+template<>
+int BaseReflection<TestComplexStructure>::dummy = TestComplexStructure::staticInit();
+
+int TestComplexStructure::staticInit()
+{
+
+    ReflectionNaming &nameing = naming();
+    nameing = ReflectionNaming("TestComplexStructure");
+
+    fields().push_back(
+        new DoubleVectorField
+        (
+          0,
+          offsetof(TestComplexStructure, testField),
+          0,
+          0,
+          "testField",
+          "testField",
+          "testField"
+        )
+    );
+   return 0;
+}
+
+void testJSON2()
+{
+    TestComplexStructure testObject;
+    for (int i = 0; i < 7; i++) {
+        testObject.testField.push_back(i / 7.8);
+    }
+
+    /*======== Now saving ===========*/
+    {
+        JSONSetter setter("out.txt");
+        setter.visit(testObject, "vector");
+    }
+
+    /*======== And loading back =======*/
+    TestComplexStructure testObject1;
+    {
+        JSONGetter getter("out.txt");
+        getter.visit(testObject1, "vector");
+    }
+
+    ASSERT_TRUE(testObject.testField.size() == testObject1.testField.size(), "Wrong loaded array size");
+    for (int i = 0; i < testObject.testField.size(); i++) {
+        ASSERT_TRUE_P(testObject1.testField[i] == testObject.testField[i], ("Error at pos %d", i));
+        cout << testObject1.testField[i] << " == " << testObject.testField[i] << std::endl;
+    }
+    cout << std::endl;
+
+}
+
 int main (int /*argc*/, char ** /*argv*/)
 {
     printf("Quick test\n");
@@ -113,7 +184,8 @@ int main (int /*argc*/, char ** /*argv*/)
 //    testXML1();
 //    testXML2();
 
-    testJSON1();
+//    testJSON1();
+    testJSON2();
 
 
 	return 0;

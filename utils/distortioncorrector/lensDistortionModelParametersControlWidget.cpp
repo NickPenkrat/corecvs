@@ -1,4 +1,5 @@
 #include <QFileDialog>
+#include "abstractPainter.h"
 #include "qtFileLoader.h"
 
 #include "lensDistortionModelParametersControlWidget.h"
@@ -25,15 +26,22 @@ LensDistortionModelParametersControlWidget::LensDistortionModelParametersControl
     QObject::connect(ui->tangential1SpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(ui->tangential2SpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
 
+    QObject::connect(ui->scaleSpinBox,  SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->aspectSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+
     QObject::connect(ui->koefTableWidget, SIGNAL(itemChanged(QTableWidgetItem*)), this, SIGNAL(paramsChanged()));
 
-    QObject::connect(ui->freeParamSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
 
+
+    QObject::connect(ui->freeParamSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
 
     QObject::connect(ui->loadPushButton, SIGNAL(released()), this, SLOT(loadParams()));
     QObject::connect(ui->savePushButton, SIGNAL(released()), this, SLOT(saveParams()));
 
-    QObject::connect(this, SIGNAL(paramsChanged()), this, SLOT(updateAdditionalData()));
+    QObject::connect(this, SIGNAL(paramsChanged()), this, SLOT(updateAdditionalDataNeeded()));
+    QObject::connect(ui->refreshButton, SIGNAL(released()), this, SLOT(updateAdditionalData()));
+    QObject::connect(ui->autoRefeshCheckBox, SIGNAL(toggled(bool)), this, SLOT(updateAdditionalDataNeeded()));
+
 
 }
 
@@ -211,14 +219,23 @@ void LensDistortionModelParametersControlWidget::resetScale()
     ui->scaleSpinBox->setValue(1.0);
 }
 
+void LensDistortionModelParametersControlWidget::updateAdditionalDataNeeded()
+{
+    if (ui->autoRefeshCheckBox->isChecked()){
+        updateAdditionalData();
+    }
+}
+
 
 /* Additional stuff */
 void LensDistortionModelParametersControlWidget::updateAdditionalData()
 {
-    LensDistortionModelParameters *lensParams = LensDistortionModelParametersControlWidget::createParameters();
-    RadialCorrection radialCorrection(*lensParams);
+    setCursor(Qt::BusyCursor);
 
-    Vector2dd principal(lensParams->principalX(), lensParams->principalY());
+    LensDistortionModelParameters lensParams = LensDistortionModelParametersControlWidget::getParameters();
+    RadialCorrection radialCorrection(lensParams);
+
+    Vector2dd principal(lensParams.principalX(), lensParams.principalY());
 
     int diagonal = sqrt(principal.l2Metric());
     if (mExample != NULL)
@@ -238,7 +255,7 @@ void LensDistortionModelParametersControlWidget::updateAdditionalData()
     mGraphDialog.update();
 
     PrinterVisitor printer;
-    printer.visit(*lensParams, "inputPrams");
+    printer.visit(lensParams, "inputPrams");
 
 
     if (mExample != NULL)
@@ -270,25 +287,17 @@ void LensDistortionModelParametersControlWidget::updateAdditionalData()
 
         //DisplacementBuffer* mDistortionCorrectTransform = DisplacementBuffer::TestWiggle(mInput->h, mInput->w);
 
-        mCorrected = mInput->doReverseDeformation<RGB24Buffer, DisplacementBuffer>(
-                    *mDistortionCorrectTransform,
-                    mInput->h, mInput->w
-                );
-        mCorrected->drawCrosshare1(10,10, RGBColor::Red());
+        if (!ui->bilinearCheckBox->isChecked()) {
+            mCorrected = mInput->doReverseDeformation<RGB24Buffer, DisplacementBuffer>(*mDistortionCorrectTransform);
+        } else {
+            FixedPointDisplace displace(*mDistortionCorrectTransform, mDistortionCorrectTransform->h, mDistortionCorrectTransform->w);
+            mCorrected = mInput->doReverseDeformationBlPrecomp(&displace);
+        }
 
 
-        mInverse = mInput->doReverseDeformation<RGB24Buffer, RadialCorrection>(
-                    radialCorrection,
-                    mInput->h, mInput->w
-                );
-        mInverse->drawCrosshare1(10,10, RGBColor::Green());
 
-
-        mBackproject = mCorrected->doReverseDeformation<RGB24Buffer, RadialCorrection>(
-                    radialCorrection,
-                    mCorrected->h, mCorrected->w
-                );
-        mBackproject->drawCrosshare1(10,10, RGBColor::Yellow());
+        mInverse     = mInput    ->doReverseDeformation<RGB24Buffer, RadialCorrection  >(radialCorrection);
+        mBackproject = mCorrected->doReverseDeformation<RGB24Buffer, RadialCorrection  >(radialCorrection);
 
         Map2DFunction<DisplacementBuffer> mapFunc(mDistortionCorrectTransform);
         LengthFunction lengthFunc(&mapFunc);
@@ -298,14 +307,19 @@ void LensDistortionModelParametersControlWidget::updateAdditionalData()
                 (double)mDistortionCorrectTransform->h,  (double)mDistortionCorrectTransform->w,
                 0.1, lengthFunc);
 
+        double sum = 0;
         mDiff = new RGB24Buffer(mInput->getSize());
         for (int i = 0; i < mInput->h; i++)
         {
             for (int j = 0; j < mInput->w; j++)
             {
-                mDiff->element(i,j) = RGBColor::diff(mInput->element(i,j),mBackproject->element(i,j));
+                RGBColor diff = RGBColor::diff(mInput->element(i,j),mBackproject->element(i,j));
+                mDiff->element(i,j) = diff;
+                sum += diff.luma();
             }
         }
+        sum /= mInput->h * mInput->w;
+        AbstractPainter<RGB24Buffer>(mDiff).drawFormat(20, 20, RGBColor::Indigo(), 1, "mean diff: %f", sum);
 
 
         delete_safe(mDistortionCorrectTransform);
@@ -315,8 +329,8 @@ void LensDistortionModelParametersControlWidget::updateAdditionalData()
         exampleShow();
     }
 
+    unsetCursor();
 
-    delete lensParams;
 }
 
 

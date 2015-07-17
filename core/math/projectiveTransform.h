@@ -53,9 +53,7 @@ public:
         return map(v);
     }
 
-
-
-    ~ProjectiveTransform(){};
+    ~ProjectiveTransform(){}
 };
 
 

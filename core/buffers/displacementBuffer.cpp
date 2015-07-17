@@ -24,6 +24,14 @@ DisplacementBuffer *DisplacementBuffer::CacheInverse(
     bool useLM
 )
 {
+    cout << "DisplacementBuffer::CacheInverse() called" << endl;
+    cout << "  Inverse Map:" << inverseMap->mParams << endl;
+    cout << "  H:" << h << " W:" << w << endl;
+    cout << "  x1:" << x1 << " y1:" << y1 << endl;
+    cout << "  x2:" << x2 << " y2:" << y2 << endl;
+    cout << "  step:" << step << endl;
+    cout << "  UseLM:" << (useLM ? "yes" : "no") << endl;
+
     DisplacementBuffer *toReturn = new DisplacementBuffer(h, w);
     AbstractBuffer<double> *distance = new AbstractBuffer<double>(h, w, 10.0);
 

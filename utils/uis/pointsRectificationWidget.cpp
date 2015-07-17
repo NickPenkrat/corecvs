@@ -139,8 +139,8 @@ void PointsRectificationWidget::addPointPair(const QPointF &leftPoint, const QPo
         item->setEditable(false);
     }
     mPointModel->appendRow(items);
-    mUi->leftWidget ->addVertex(Qt2Core::Vector2ddFromQPointF(leftPoint ));
-    mUi->rightWidget->addVertex(Qt2Core::Vector2ddFromQPointF(rightPoint));
+    mUi->leftWidget ->mFeatures.appendNewVertex(Qt2Core::Vector2ddFromQPointF(leftPoint ));
+    mUi->rightWidget->mFeatures.appendNewVertex(Qt2Core::Vector2ddFromQPointF(rightPoint));
 }
 
 void PointsRectificationWidget::deletePairs()
@@ -164,8 +164,8 @@ void PointsRectificationWidget::deletePairs()
         QPointF rightPoint(mPointModel->item(selectedRow, 2)->text().toDouble(),
                            mPointModel->item(selectedRow, 3)->text().toDouble());
 
-        mUi->leftWidget->deleteVertex(Qt2Core::Vector2ddFromQPointF(leftPoint));
-        mUi->rightWidget->deleteVertex(Qt2Core::Vector2ddFromQPointF(rightPoint));
+        mUi->leftWidget ->mFeatures.deleteVertex(Qt2Core::Vector2ddFromQPointF(leftPoint));
+        mUi->rightWidget->mFeatures.deleteVertex(Qt2Core::Vector2ddFromQPointF(rightPoint));
 
         mPointModel->removeRow(selectedRow);
     }

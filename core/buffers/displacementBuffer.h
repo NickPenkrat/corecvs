@@ -118,6 +118,13 @@ public:
         return this->element(pointi) + pointd;
     }
 
+    /*Bilinear approach should be used*/
+    inline Vector2dd map(Vector2dd pointd) const
+    {
+        Vector2d32 pointi(pointd.x(), pointd.y());
+        return this->element(pointi) + pointd;
+    }
+
 };
 
 

@@ -7,6 +7,7 @@
 #include "qtHelper.h"
 
 #include "camerasCalibration/camerasCalibrationFunc.h"
+#include "lmDistortionSolver.h"
 
 #include "g12Image.h"
 #include "displacementBuffer.h"
@@ -68,6 +69,7 @@ DistortionWidget::DistortionWidget(QWidget *parent) :
 
 void DistortionWidget::resetParameters()
 {
+    qDebug() << "DistortionWidget::resetParameters(): resetting parameters";
     mUi->bufferSelectorBox->setCurrentIndex(0);
     clearParameters();
     mDistortionCorrectTransform = QSharedPointer<DisplacementBuffer>(
@@ -98,6 +100,7 @@ void DistortionWidget::setParams()
 
 void DistortionWidget::initTransform()
 {
+    setCursor(Qt::BusyCursor);
     switch (mUi->methodSelectorBox->currentIndex())
     {
     case 0:
@@ -116,8 +119,10 @@ void DistortionWidget::initTransform()
         doManualTransform();
         break;
     }
+    unsetCursor();
     mUi->bufferSelectorBox->setCurrentIndex(2);
     showBufferChanged();
+
     emit recalculationFinished(mDistortionCorrectTransform);
 }
 
@@ -206,37 +211,39 @@ void DistortionWidget::detectCheckerboard()
         if(params.cleanExisting())
         {
             mUi->calibrationFeatures->clearObservationPoints();
-            canvas->mPaths.clear();
+            canvas->mFeatures.mPaths.clear();
         }
+
+        SelectableGeometryFeatures *features = &canvas->mFeatures;
 
         for(int ih = 0; ih < chessH; ih++)
         {
-            canvas->mPaths.append(PaintImageWidget::VertexPath());
-            PaintImageWidget::VertexPath &path = canvas->mPaths.last();
-            for(int iw=0; iw < chessV; iw++)
+            SelectableGeometryFeatures::VertexPath * path = features->appendNewPath();
+
+            for(int iw = 0; iw < chessV; iw++)
             {
                 Vector2dd point(pointbuf.at(ih * chessV + iw).x,pointbuf.at(ih * chessV + iw).y);
                 addPointPair(Vector3dd(cellSize * ih, cellSize * iw, 0), point);
-                canvas->addVertex(point);
-                canvas->addVertexToPath(&canvas->mPoints.last(), &path);
+                features->addVertexToPath(features->appendNewVertex(point), path);
             }
         }
 
         for(int iw = 0; iw < chessV; iw++)
         {
-            canvas->mPaths.append(PaintImageWidget::VertexPath());
-            PaintImageWidget::VertexPath &path = canvas->mPaths.last();
+            SelectableGeometryFeatures::VertexPath * path = features->appendNewPath();
 
             for(int ih = 0; ih < chessH; ih++)
             {
                 Vector2dd point(pointbuf.at(ih * chessV + iw).x,pointbuf.at(ih * chessV + iw).y);
                 addPointPair(Vector3dd(cellSize * ih, cellSize * iw, 0), point);
-                canvas->addVertex(point);
-                canvas->addVertexToPath(&canvas->mPoints.last(), &path);
+                features->addVertexToPath(features->appendNewVertex(point), path);
             }
         }
+        mUi->calibrationFeatures->geometryFeatures = features;
+        mUi->calibrationFeatures->updateWidget();
+
     }
-    cvReleaseImage(&inputIpl);   
+    cvReleaseImage(&inputIpl);
     delete_safe(grayChannel);
     return;
 #else
@@ -296,41 +303,14 @@ void DistortionWidget::setBuffer(RGB24Buffer *buffer)
 
 void DistortionWidget::doTransformLM()
 {
-    Vector2d32 center(mUi->widget->mImage.data()->width() * 0.5, mUi->widget->mImage.data()->height() * 0.5);
-    vector<double> values;
-    vector<Vector3dd> arguments;
-    foreach (PointObservation observation, mUi->calibrationFeatures->observationList)
-    {
-        values.push_back(observation.u());
-        values.push_back(observation.v());
-        arguments.push_back(observation.point);
-    }
-    CamerasCalibrationFunc func(&arguments, center);
-    vector<double> bestParams;
+    qDebug() << "DistortionWidget::doTransformLM(): Starting LM transform" << endl;
+    LMDistortionSolver solver;
+    solver.initialCenter = Vector2dd(mUi->widget->mImage.data()->width() * 0.5, mUi->widget->mImage.data()->height() * 0.5);;
+    solver.list = &mUi->calibrationFeatures->observationList;
 
-    double params[] = {0, 0, 0, 0, -5.09, 11.1, -30.4, 35, 0.12, 0.04, -4.81, 14.6, -11.2, 11.2};
-    vector<double> parameters(params, params + CORE_COUNT_OF(params));
-    LevenbergMarquardt LMTransform(10000, 4, 1.2);
-    LMTransform.f = &func;
-    func.setIsDistored(false);
-    bestParams = LMTransform.fit(parameters,values);
-    func.setIsDistored(true);
-    bestParams = LMTransform.fit(bestParams, values);
-    vector<double> polynomKoeff;
-    polynomKoeff.push_back(bestParams.at(0));
-    polynomKoeff.push_back(bestParams.at(1));
-//    LensDistortionModelParameters lenCorrectParams(polynomKoeff, bestParams.at(2), bestParams.at(3), center);
-
-    LensDistortionModelParameters lenCorrectParams(
-                center.x(),
-                center.y(),
-                bestParams.at(2), bestParams.at(3),
-                polynomKoeff,
-                1.0,
-                1.0);
+    RadialCorrection correction = solver.solve();
 
 
-    RadialCorrection correction(lenCorrectParams);
     mDistortionCorrectTransform = QSharedPointer<DisplacementBuffer>(
             new DisplacementBuffer(&correction, mBufferInput->h, mBufferInput->w, false)
     );
@@ -342,6 +322,8 @@ void DistortionWidget::doTransformLM()
 
 void DistortionWidget::doInversionTransform()
 {
+    qDebug() << "DistortionWidget::doInversionTransform(): Starting Inverstion transform" << endl;
+
     Vector2dd centre(mUi->widget->mImage.data()->width() * 0.5, mUi->widget->mImage.data()->height() * 0.5);
     vector<Vector2dd> points = mDistortionParameters->getPoints();
 
@@ -374,140 +356,51 @@ void DistortionWidget::doLinesTransform()
     LineDistortionEstimatorParameters params;
     mUi->lineDistortionWidget->getParameters(params);
 
+    LMLinesDistortionSolver solver;
+    solver.initialCenter = Vector2dd(mBufferInput->w / 2.0, mBufferInput->h /2.0);
+    solver.lineList = &mUi->widget->mFeatures;
+    solver.parameters = params;
 
-    PaintImageWidget *editor = mUi->widget;
-    vector<vector<Vector2dd> > straights = editor->getPaths();
-    L_INFO_P("Starting distortion calibration on %d lines", straights.size());
-/*
-    RadialCorrection correction(LensDistortionModelParameters(
-       vector<double>(mUi->degreeSpinBox->value()),
-       0.0, 0.0,
-       1.0,
-       center.l2Metric(),
-       center
-    ));
- */
-
-    Vector2dd center(mBufferInput->w / 2.0, mBufferInput->h /2.0);
-
-    RadialCorrection correction(LensDistortionModelParameters(
-       center.x(),
-       center.y(),
-       0.0 ,0.0,
-       vector<double>(params.polinomDegree()),
-       1.0,
-       1.0
-    ));
-
-
-    ModelToRadialCorrection modelFactory(
-        correction,
-        params.estimateCenter(),
-        params.estimateTangent(),
-        params.polinomDegree()
-    );
-
-    FunctionArgs *costFuntion = NULL;
-    if (params.costAlgorithm() == LineDistortionEstimatorCost::JOINT_ANGLE_COST) {
-        costFuntion = new AnglePointsFunction (straights, modelFactory);
-    } else {
-        costFuntion = new DistPointsFunction  (straights, modelFactory);
-    }
-
-    LevenbergMarquardt straightLevMarq(params.iterationNumber(), 2, 1.5);
-    straightLevMarq.f = costFuntion;
-
-    /* First aproximation is zero vector */
-    vector<double> first(costFuntion->inputs, 0);
-    modelFactory.getModel(correction, &first[0]);
-
-    vector<double> value(costFuntion->outputs, 0);
-    vector<double> straightParams = straightLevMarq.fit(first, value);
-
-    RadialCorrection mLinesRadialCoorection = modelFactory.getRadial(&straightParams[0]);
+    RadialCorrection correction = solver.solve();
 
     L_INFO_P("Inverting the distortion buffer");
 
-   mDistortionCorrectTransform = QSharedPointer<DisplacementBuffer>(DisplacementBuffer::CacheInverse(&mLinesRadialCoorection,
+    cout << "DistortionWidget::doLinesTransform():" << correction.mParams << std::endl;
+    DisplacementBuffer *transform =
+            DisplacementBuffer::CacheInverse(
+            &correction,
             mBufferInput->h, mBufferInput->w,
-            0.0,0.0,
+            0.0, 0.0,
             (double)mBufferInput->w, (double)mBufferInput->h,
-            0.5, false)
-   );
+            0.5, 0);
 
+    mDistortionCorrectTransform = QSharedPointer<DisplacementBuffer>(transform);
     mUi->isInverseCheckBox->setChecked(true);
 
-    mUi->lensCorrectionWidget->setParameters(mLinesRadialCoorection.mParams);
+    mUi->lensCorrectionWidget->setParameters(correction.mParams);
     L_INFO_P("Ending distortion calibration");
     updateScore();
 }
 
 void DistortionWidget::updateScore()
 {
-    PaintImageWidget *editor = mUi->widget;
-    vector<vector<Vector2dd> > straights = editor->getPaths();
-
-    RadialCorrection radialCorrection;
-    mUi->lensCorrectionWidget->getParameters(radialCorrection.mParams);
-
     LineDistortionEstimatorParameters params;
     mUi->lineDistortionWidget->getParameters(params);
 
-    ModelToRadialCorrection modelFactory(
-        radialCorrection,
-        params.estimateCenter(),
-        params.estimateTangent(),
-        params.polinomDegree()
-    );
 
-    FunctionArgs *costFuntion = NULL;
-    if (params.costAlgorithm() == LineDistortionEstimatorCost::JOINT_ANGLE_COST) {
-        costFuntion = new AnglePointsFunction (straights, modelFactory);
-    } else {
-        costFuntion = new DistPointsFunction  (straights, modelFactory);
-    }
+    RadialCorrection corrector(mUi->lensCorrectionWidget->getParameters());
 
-    vector<double> modelParameters(costFuntion->inputs, 0);
-    modelFactory.getModel(radialCorrection, &modelParameters[0]);
+    LMLinesDistortionSolver solver;
+    solver.initialCenter =  Vector2dd(mBufferInput->w / 2.0, mBufferInput->h /2.0);
+    solver.lineList = &mUi->widget->mFeatures;
+    solver.parameters = params;
+    solver.computeCosts(corrector, true);
 
-    vector<double> result(costFuntion->outputs);
-    costFuntion->operator()(&modelParameters[0], &result[0]);
-
-    double sqSum = 0;
-    double maxValue = 0.0;
-    for (unsigned i = 0; i < result.size(); i++) {
-        if (fabs(result[i]) > maxValue) {
-            maxValue = fabs(result[i]);
-        }
-        sqSum += result[i] * result[i];
-    }
-
-    int count = 0;
-    PaintImageWidget *canvas = mUi->widget;
-    for (unsigned i = 0; i < (unsigned)canvas->mPaths.size(); i++)
-    {
-        PaintImageWidget::VertexPath &path = canvas->mPaths[i];
-        if (path.vertexes.size() < 3) {
-            continue;
-        }
-        if (params.costAlgorithm() == LineDistortionEstimatorCost::JOINT_ANGLE_COST)
-        {
-            for (int j = 1; j < path.vertexes.size() - 1; j++) {
-                path.vertexes[j]->weight = fabs(result[count]) / maxValue;
-                count++;
-            }
-        } else {
-            for (int j = 0; j < path.vertexes.size(); j++) {
-                path.vertexes[j]->weight = fabs(result[count]) / maxValue;
-                count++;
-            }
-        }
-    }
-    canvas->update();
-
-    sqSum /= result.size();
-
-    mUi->scoreLabel->setText(QString::number(sqrt(sqSum)));
+    mUi->widget->update();
+    mUi->scoreLabel->setText( QString("Line:%1px  Joint:%2")
+            .arg(solver.costs[LineDistortionEstimatorCost::LINE_DEVIATION_COST])
+            .arg(solver.costs[LineDistortionEstimatorCost::JOINT_ANGLE_COST])
+        );
 }
 
 QSharedPointer<DisplacementBuffer> DistortionWidget::distortionCorrectionTransform()
@@ -540,17 +433,21 @@ void DistortionWidget::showBufferChanged()
             if (mDistortionCorrectTransform == NULL) {
                 break;
             }
-            RGB24Buffer *buffer = mBufferInput->doReverseDeformationBl<RGB24Buffer, DisplacementBuffer>(
-                        mDistortionCorrectTransform.data(), mBufferInput->h, mBufferInput->w);
+
+            FixedPointDisplace displace(*mDistortionCorrectTransform, mDistortionCorrectTransform->h, mDistortionCorrectTransform->w);
+            RGB24Buffer *buffer = mBufferInput->doReverseDeformationBlPrecomp(&displace);
+
             image = new RGB24Image(buffer);
             QPainter painter(image);
-            vector<vector<Vector2dd> > straights = mUi->widget->getPaths();
+            vector<vector<Vector2dd> > straights = mUi->widget->mFeatures.getLines();
 
             RadialCorrection linesRadialCoorection;
             mUi->lensCorrectionWidget->getParameters(linesRadialCoorection.mParams);
 
-            for (unsigned i = 0; i < straights.size(); i++) {
-                for (unsigned j = 0; j < straights[i].size(); j++) {
+            for (unsigned i = 0; i < straights.size(); i++)
+            {
+                for (unsigned j = 0; j < straights[i].size(); j++)
+                {
                     Vector2dd point = straights[i][j];
                     Vector2dd moved = linesRadialCoorection.map(point.y(), point.x());
                     painter.setPen(Qt::yellow);
@@ -568,35 +465,12 @@ void DistortionWidget::showBufferChanged()
     }
 }
 
-/*Seems like a trash*/
-#if 0
-void DistortionWidget::printVectorPair(const Vector3dd &key, const Vector2dd &value)
-{
-    QTableWidget *table = mUi->calibrationFeatures;
-    for (int i = 0; i < table->rowCount(); i ++)
-    {
-        if (table->item(i, 3)->text().toDouble() == value.x() &&
-            table->item(i, 4)->text().toDouble() == value.y())
-        {
-            table->item(i, 0)->setText(QString::number(key.x()));
-            table->item(i, 1)->setText(QString::number(key.y()));
-            table->item(i, 2)->setText(QString::number(key.z()));
-            return;
-        }
-    }
-    for (int i = 0; i < table->rowCount(); i ++)
-    {
-        for (int j = 0; j < table->columnCount(); j ++)
-            table->item(i, j)->setBackgroundColor(Qt::color0);
-    }
-}
-#endif
 
 void DistortionWidget::addPointPair(const Vector3dd &key, const Vector2dd &value)
 {
     PointObservation observation(key, value);
     mUi->calibrationFeatures->addObservation(observation);
-    mUi->widget->addVertex(value);
+    mUi->widget->mFeatures.appendNewVertex(value);
 }
 
 
@@ -635,6 +509,8 @@ void DistortionWidget::doDefaultTransform()
 
 void DistortionWidget::doManualTransform()
 {
+    qDebug() << "DistortionWidget::doManualTransform(): Starting Manual transform" << endl;
+
     RadialCorrection linesRadialCoorection;
     mUi->lensCorrectionWidget->getParameters(linesRadialCoorection.mParams);
 
@@ -647,7 +523,7 @@ void DistortionWidget::doManualTransform()
             (double)mBufferInput->w, (double)mBufferInput->h, 0.5)
         );
     }
-    updateScore();    
+    updateScore();
 }
 
 
