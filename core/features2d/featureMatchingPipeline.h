@@ -73,9 +73,10 @@ public:
 	void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
 	void run(FeatureMatchingPipeline *pipeline);
 	~MatchingStage() {}
-	MatchingStage(DescriptorType type, size_t responsesPerPoint = 2);
+	MatchingStage(DescriptorType type, MatcherType matcher, size_t responsesPerPoint = 2);
 private:
 	DescriptorType descriptorType;
+	MatcherType matcherType;
 	size_t responsesPerPoint;
 };
 
@@ -99,16 +100,29 @@ public:
 	void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
 	void run(FeatureMatchingPipeline* pipeline);
 	~MatchAndRefineStage() {}
-	MatchAndRefineStage(DescriptorType descriptorType, double scaleThreshold = 0.95);
+	MatchAndRefineStage(DescriptorType descriptorType, MatcherType matcherType, double scaleThreshold = 0.95);
 private:
 	DescriptorType descriptorType;
+	MatcherType matcherType;
 	double scaleThreshold;
+};
+
+class EpipolarRefiner : public FeatureMatchingPipelineStage
+{
+public:
+	void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename);
+	void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
+	void run(FeatureMatchingPipeline *pipeline);
+	EpipolarRefiner(double distanceLimit = 100.0);
+private:
+	double distanceLimit;
+
 };
 
 class VsfmWriterStage : public FeatureMatchingPipelineStage
 {
 public:
-	void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename) { CORE_UNUSED(pipeline); CORE_UNUSED(filename); }
+	void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename);
 	void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
 	void run(FeatureMatchingPipeline *pipeline) { CORE_UNUSED(pipeline); }
 	VsfmWriterStage(bool sortFeatures);
@@ -136,6 +150,9 @@ public:
 	DetectorType        detectorType;
 	DescriptorType      descriptorType;
 
+#ifdef WITH_TBB
+	tbb::spin_mutex mutex;
+#endif
 private:
 	struct tic_data
 	{
@@ -144,9 +161,6 @@ private:
 	};
 	std::stack<tic_data> tics;
 
-#ifdef WITH_TBB
-	tbb::spin_mutex mutex;
-#endif
 
     std::vector<FeatureMatchingPipelineStage*>  pipeline;
 	std::vector<bool>                           runEnable;

@@ -25,8 +25,8 @@ extern "C"
 class OpenCvDescriptorMatcherProvider : public DescriptorMatcherProviderImpl
 {
 public:
-	DescriptorMatcher* getDescriptorMatcher(const DescriptorType &type);
-	bool provides(const DescriptorType &type);
+	DescriptorMatcher* getDescriptorMatcher(const DescriptorType &descriptor, const MatcherType &matcher);
+	bool provides(const DescriptorType &descriptor, const MatcherType &matcher);
 	~OpenCvDescriptorMatcherProvider() {}
 protected:
 };

@@ -17,8 +17,8 @@ protected:
 class DescriptorMatcherProviderImpl
 {
 public:
-	virtual DescriptorMatcher* getDescriptorMatcher(const DetectorType &type) = 0;
-	virtual bool provides(const DetectorType &type) = 0;
+	virtual DescriptorMatcher* getDescriptorMatcher(const DescriptorType &descriptor, const MatcherType &matcher) = 0;
+	virtual bool provides(const DescriptorType &descriptor, const MatcherType &matcher) = 0;
 	virtual ~DescriptorMatcherProviderImpl() {}
 protected:
 };
@@ -27,7 +27,7 @@ class DescriptorMatcherProvider
 {
 public:
 	void add(DescriptorMatcherProviderImpl *provider);
-	DescriptorMatcher* getMatcher(const DescriptorType &type);
+	DescriptorMatcher* getMatcher(const DescriptorType &descriptor, const MatcherType &matcher);
 	static DescriptorMatcherProvider& getInstance();
 	~DescriptorMatcherProvider();
 private:
