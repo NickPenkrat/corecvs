@@ -71,9 +71,8 @@ int main(int argc, char ** argv)
     init_siftgpu_matcher_provider();
 #endif
 
-    std::stringstream file0;
-    file0 << "data" << PATH_SEPARATOR << "kermit_dataset" << PATH_SEPARATOR << "kermit000.jpg";
-    if(!detectBase(file0.str()))
+    std::string file0 = "data" PATH_SEPARATOR  "kermit_dataset" PATH_SEPARATOR "kermit000.jpg";
+    if(!detectBase(file0))
     {
         std::cout << "Unable to find data" << std::endl;
         exit(-1);

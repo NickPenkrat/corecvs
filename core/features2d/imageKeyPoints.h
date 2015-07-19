@@ -7,6 +7,7 @@
 
 typedef std::string DescriptorType;
 typedef std::string DetectorType;
+typedef std::string MatcherType;
 
 struct KeyPoint
 {

@@ -133,11 +133,17 @@ void run(const std::string &detector)
 
     FeatureMatchingPipeline pipeline(filenames);
 
+    MatcherType matcherType = "ANN";
+    if(detector == "SIFTGPU")
+    {
+        matcherType = "BF";
+    }
+
     pipeline.add(new KeyPointDetectionStage(DetectorType(detector)), true, true);
     pipeline.add(new DrawMatchesStage, true);
     pipeline.add(new DescriptorExtractionStage(DescriptorType(detector)), true, true);
     pipeline.add(new MatchingPlanComputationStage(), true, true, tempBase + "plan.txt");
-    pipeline.add(new MatchAndRefineStage(DescriptorType(detector)), true, true, tempBase + "raw_matches.txt");
+    pipeline.add(new MatchAndRefineStage(DescriptorType(detector), matcherType), true, true, tempBase + "raw_matches.txt");
     pipeline.add(new VsfmWriterStage(false), true, true, tempBase + "vsfm_matches.txt");
 
     std::cerr << std::endl << "Running with " << detector << " detector/descriptor" << std::endl << std::endl;

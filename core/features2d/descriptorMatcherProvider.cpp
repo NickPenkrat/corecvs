@@ -2,13 +2,13 @@
 
 #include <cassert>
 
-DescriptorMatcher* DescriptorMatcherProvider::getMatcher(const DescriptorType &type)
+DescriptorMatcher* DescriptorMatcherProvider::getMatcher(const DescriptorType &type, const MatcherType &matcher)
 {
     for (std::vector<DescriptorMatcherProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p)
     {
-        if ((*p)->provides(type))
+        if ((*p)->provides(type, matcher))
         {
-            return (*p)->getDescriptorMatcher(type);
+            return (*p)->getDescriptorMatcher(type, matcher);
 		}
 	}
 	assert(false);

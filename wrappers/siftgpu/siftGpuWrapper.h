@@ -9,7 +9,7 @@
 
 #include "SiftGPU/src/SiftGPU/SiftGPU.h"
 
-class SiftGpu : public virtual FeatureDetector, public virtual DescriptorExtractor
+class SiftGpu : public FeatureDetector, public DescriptorExtractor
 {
 public:
 	SiftGpu(double filterWidthFactor = 4.0,
@@ -35,6 +35,7 @@ public:
         CORE_UNUSED(name);
         CORE_UNUSED(value);
     }
+    bool isParallelable() { return false; }
 
 	void operator()(RuntimeTypeBuffer &img, std::vector<KeyPoint>& keypoints) const;
 
