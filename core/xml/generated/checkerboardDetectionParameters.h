@@ -30,6 +30,7 @@ namespace corecvs {
 /*
  *  Additional includes for enum section.
  */
+#include "imageChannel.h"
 
 /**
  * \brief Checkerboard Detection Parameters 
@@ -39,6 +40,7 @@ class CheckerboardDetectionParameters : public BaseReflection<CheckerboardDetect
 {
 public:
     enum FieldId {
+        CHANNEL_ID,
         V_CROSSES_COUNT_ID,
         H_CROSSES_COUNT_ID,
         CELL_SIZE_ID,
@@ -47,6 +49,12 @@ public:
     };
 
     /** Section with variables */
+
+    /** 
+     * \brief Channel 
+     * Channel 
+     */
+    int mChannel;
 
     /** 
      * \brief V crosses count 
@@ -80,6 +88,11 @@ public:
     {
         return (const unsigned char *)(this) + fields()[fieldId]->offset;
     }
+    ImageChannel::ImageChannel channel() const
+    {
+        return static_cast<ImageChannel::ImageChannel>(mChannel);
+    }
+
     int vCrossesCount() const
     {
         return mVCrossesCount;
@@ -101,6 +114,11 @@ public:
     }
 
     /* Section with setters */
+    void setChannel(ImageChannel::ImageChannel channel)
+    {
+        mChannel = channel;
+    }
+
     void setVCrossesCount(int vCrossesCount)
     {
         mVCrossesCount = vCrossesCount;
@@ -126,6 +144,7 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
+        visitor.visit((int &)mChannel,            static_cast<const EnumField *>    (fields()[CHANNEL_ID]));
         visitor.visit(mVCrossesCount,             static_cast<const IntField *>     (fields()[V_CROSSES_COUNT_ID]));
         visitor.visit(mHCrossesCount,             static_cast<const IntField *>     (fields()[H_CROSSES_COUNT_ID]));
         visitor.visit(mCellSize,                  static_cast<const DoubleField *>  (fields()[CELL_SIZE_ID]));
@@ -139,12 +158,14 @@ template<class VisitorType>
     }
 
     CheckerboardDetectionParameters(
-          int vCrossesCount
+          ImageChannel::ImageChannel channel
+        , int vCrossesCount
         , int hCrossesCount
         , double cellSize
         , bool cleanExisting
     )
     {
+        mChannel = channel;
         mVCrossesCount = vCrossesCount;
         mHCrossesCount = hCrossesCount;
         mCellSize = cellSize;

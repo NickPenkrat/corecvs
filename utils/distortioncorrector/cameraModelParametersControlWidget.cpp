@@ -12,3 +12,10 @@ CameraModelParametersControlWidget::~CameraModelParametersControlWidget()
 {
     delete ui;
 }
+
+LensDistortionModelParameters CameraModelParametersControlWidget::lensDistortionParameters()
+{
+    LensDistortionModelParameters result;
+    ui->lensDistortionWidget->getParameters(result);
+    return result;
+}

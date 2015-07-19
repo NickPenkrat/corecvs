@@ -92,7 +92,10 @@ void ConfigLoader::loadEnums(QDomDocument const &config)
         {
             QDomElement itemElement = items.at(j).toElement();
             int id = itemElement.attribute("id").toInt();
-            enumReflection->options.push_back(new EnumOption(id, getNamingFromXML(itemElement)));
+
+            QString iconName = itemElement.attribute("icon");
+
+            enumReflection->options.push_back(new EnumOptionGen(id, getNamingFromXML(itemElement), iconName));
         }
 
         // TODO: add support for comment and description
@@ -212,7 +215,6 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
                         EnumWidgetType widgetType = fieldElement.attribute("widget") == "TabWidget" ?
                                                     tabWidget :
                                                     comboBox;
-
                         field = new EnumFieldGen(defaultValue.toInt(), widgetType, fieldNameing, enumRef);
                     }
                 }

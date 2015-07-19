@@ -34,6 +34,7 @@ public:
     bool traceCrucial;
     bool trace;
     bool traceMatrix;
+    bool traceJacobian;
 
     LevenbergMarquardt(int _maxIterations = 25, double _startLambda = 10, double _lambdaFactor = 2.0) :
         f(NULL),
@@ -46,7 +47,8 @@ public:
         traceProgress(true),
         traceCrucial(false),
         trace(false),
-        traceMatrix(false)
+        traceMatrix(false),
+        traceJacobian(false)
         {}
 
     vector<double> fit(const vector<double> &input, const vector<double> &output);

@@ -38,6 +38,26 @@ int CheckerboardDetectionParameters::staticInit()
      
 
     fields().push_back(
+        new EnumField
+        (
+          CheckerboardDetectionParameters::CHANNEL_ID,
+          offsetof(CheckerboardDetectionParameters, mChannel),
+          0,
+          "Channel",
+          "Channel",
+          "Channel",
+          new EnumReflection(7
+          , new EnumOption(0,"R")
+          , new EnumOption(1,"G")
+          , new EnumOption(2,"B")
+          , new EnumOption(3,"Gray")
+          , new EnumOption(4,"Hue")
+          , new EnumOption(5,"Saturation")
+          , new EnumOption(6,"Value")
+          )
+        )
+    );
+    fields().push_back(
         new IntField
         (
           CheckerboardDetectionParameters::V_CROSSES_COUNT_ID,

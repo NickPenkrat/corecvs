@@ -27,6 +27,7 @@ using corecvs::PointerField;
 using corecvs::ReflectionNaming;
 using corecvs::Reflection;
 using corecvs::EnumReflection;
+using corecvs::EnumOption;
 
 
 class ReflectionGen : public Reflection
@@ -248,16 +249,34 @@ enum EnumWidgetType {
     tabWidget
 };
 
+class EnumOptionGen : public EnumOption
+{
+public:
+    QString icon;
+
+    EnumOptionGen(
+        int _id,
+        const ReflectionNaming &_nameing,
+        QString _icon = QString("")
+    ) : EnumOption(_id,_nameing),
+        icon(_icon)
+    {
+
+    }
+};
+
 class EnumFieldGen : public EnumField
 {
 public:
     EnumWidgetType widgetType;
 
+
     EnumFieldGen(
             int _defaultValue,
             EnumWidgetType _widgetType,
             const ReflectionNaming &_nameing,
-            const EnumReflection *_enumReflection
+            const EnumReflection *_enumReflection,
+            QString _icon = QString("")
     ) : EnumField (
             BaseField::UNKNOWN_ID,
             BaseField::UNKNOWN_OFFSET,

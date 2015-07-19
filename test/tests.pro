@@ -15,15 +15,15 @@ SUBDIRS +=       \
     serialize1   \
 #   adoptcolor   \
 #    avigrab     \
-    decodebayer \   
+#    decodebayer \
 #    genvectorui  \
+
 
 with_opencv {
     SUBDIRS +=       \
     	opencvLineDetector \
-        matcher_basic \
-        matcher_full \
-
+#        matcher_basic \
+#        matcher_full \
 }
 
 grab.file               = grab/grab.pro
@@ -37,4 +37,5 @@ adoptcolor.file         = adoptcolor/adoptcolor.pro
 avigrab.file            = avigrab/avigrab.pro
 topcon.file             = topcon/topcon.pro
 decodebayer.file        = decodebayer/decodebayer.pro
+
 

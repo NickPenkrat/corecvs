@@ -59,7 +59,7 @@ vector<double> LevenbergMarquardt::fit(const vector<double> &input, const vector
 
         Matrix J = f->getJacobian(&(beta[0]));
 
-        if (traceMatrix) {
+        if (traceJacobian) {
             cout << "New Jacobian:" << endl << J << endl;
         }
 
@@ -167,7 +167,7 @@ vector<double> LevenbergMarquardt::fit(const vector<double> &input, const vector
                 }
 
                 if (traceMatrix) {
-                    cout << "New soluton:" << endl << beta << endl;
+                    cout << "New soluton:" << endl << beta << " - " << normNew << endl;
                 }
                 break;
             }
@@ -176,11 +176,10 @@ vector<double> LevenbergMarquardt::fit(const vector<double> &input, const vector
                 if (trace) {
                     cout << "Rejected lambda old: "<< lambda << " lambda new:" << lambda * lambdaFactor << endl;
                 }
+                lambda *= lambdaFactor; // Current solution is worse. Try new lambda
                 if (traceMatrix) {
-                    cout << "Keep soluton:" << endl << beta << endl;
+                    cout << "Keep soluton:" << endl << beta << " - " << normNew << " l:"<<  lambda << endl;
                 }
-
-                lambda *= lambdaFactor;// Current solution is worse. Try new lambda
             }
         }
     }

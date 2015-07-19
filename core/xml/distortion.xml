@@ -1,4 +1,6 @@
 <poco version="5.0">
+  <include name="parameters.xml"/>
+
 
   <class name="Lens Distortion Model Parameters" description="Lens Distortion Model Parameters">
     <comment>
@@ -31,16 +33,18 @@
  *   for more details please read the code of getCorrectionForPoint() or read the Heikkila paper
     </comment>
 
-    <field type="double"    name="principalX"    defaultValue="240" comment="The center of the distortion \f$x_c\f$" />
-    <field type="double"    name="principalY"    defaultValue="320" comment="The center of the distortion \f$y_c\f$"/>
+    <field type="double"    name="principalX"      defaultValue="240" comment="The center of the distortion \f$x_c\f$" />
+    <field type="double"    name="principalY"      defaultValue="320" comment="The center of the distortion \f$y_c\f$"/>
 
-    <field type="double"    name="tangentialX"    defaultValue="0" comment="First tangent correction coefficient - \f$p_1\f$"/>
-    <field type="double"    name="tangentialY"    defaultValue="0" comment="Second tangent correction coefficient - \f$p_2\f$"/>
+    <field type="double"    name="tangentialX"     defaultValue="0" comment="First tangent correction coefficient - \f$p_1\f$"/>
+    <field type="double"    name="tangentialY"     defaultValue="0" comment="Second tangent correction coefficient - \f$p_2\f$"/>
 
-    <field type="double"    name="koeff"         defaultValue="0.0" size="6" comment="Polynom to describe radial correction"/>
+    <field type="double"    name="koeff"           defaultValue="0.0" size="6" comment="Polynom to describe radial correction"/>
 
-    <field type="double"    name="aspect"    defaultValue="1.0"/>
-    <field type="double"    name="scale"     defaultValue="1.0"/>
+    <field type="double"    name="aspect"          defaultValue="1.0"/>
+    <field type="double"    name="scale"           defaultValue="1.0"/>
+
+    <!-- <field type="double"    name="Normalize Focal" defaultValue="1.0"/> -->
   </class>
 
 <!--
@@ -66,10 +70,11 @@
 </class> -->
 
   <class name="Checkerboard Detection Parameters">
-    <field type="int"       name="V crosses count"    defaultValue="11"   />
-    <field type="int"       name="H crosses count"    defaultValue="18"   />
-    <field type="double"    name="Cell size"          defaultValue="50"   suffix="mm" />
-    <field type="bool"      name="Clean existing"     defaultValue="true" />
+    <field type="ImageChannel" name="Channel"            defaultValue="0"   />
+    <field type="int"          name="V crosses count"    defaultValue="11"   />
+    <field type="int"          name="H crosses count"    defaultValue="18"   />
+    <field type="double"       name="Cell size"          defaultValue="50"   suffix="mm" />
+    <field type="bool"         name="Clean existing"     defaultValue="true" />
   </class>
 
   <enum name="Line Distortion Estimator Cost">
