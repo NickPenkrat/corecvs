@@ -10,13 +10,10 @@ include($$ROOT_DIR/config.pri)
 
 TEMPLATE=app
 TARGET=test_matcher_full
+CONFIG += console
 
 TEST_DIR = $$PWD
 UTILSDIR = $$TEST_DIR/../../utils
 include($$UTILSDIR/utils.pri)
 
 SOURCES += main_matcher_full.cpp
-
-CONFIG += c++11 console
-
-!win32:QMAKE_LFLAGS += -ldl

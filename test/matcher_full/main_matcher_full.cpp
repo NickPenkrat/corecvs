@@ -96,6 +96,7 @@ bool checkFiles()
             exit(0);
         }
     }
+    return true;
 }
 
 void prepareCopy(const std::string &postfix)
