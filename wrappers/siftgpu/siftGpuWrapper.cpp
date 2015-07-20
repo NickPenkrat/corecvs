@@ -1,6 +1,5 @@
 #include "siftGpuWrapper.h"
 
-
 #ifdef WIN32
 #include <Windows.h>
 #else
@@ -10,7 +9,7 @@
 
 #include "runtimeTypeBuffer.h"
 
-#include <GL/glew.h>
+#include <GL/glew.h>        // GL_LUMINANCE, ...
 
 SiftGpu::SiftGpu(double filterWidthFactor,
         double orientationFactor,
@@ -48,28 +47,27 @@ SiftGpu::SiftGpu(double filterWidthFactor,
 
     hinstLib = LoadLibraryA("siftgpu.dll");
 
-    if(!hinstLib)
+    if (!hinstLib)
     {
         std::cerr << "Failed to load shared lib siftgpu.dll" << std::endl;
         exit(0);
     }
 
     createNew = (SiftGPU* (*) (int)) GetProcAddress(hinstLib, "CreateNewSiftGPU");
-
-    if(!createNew)
+    if (!createNew)
     {
         std::cerr << "Failed to load function from siftgpu.dll" << std::endl;
         exit(0);
     }
 #endif
     siftGpu = createNew(1);
-    const char *argv[] =
-    {"-v", "0", "-fo", "-1", "-da", "-tc2", "7680", "-nomc"};
-    int argc = 8;
+    const char *argv[] = {"-v", "0", "-fo", "-1", "-da", "-tc2", "7680", "-nomc"};
+    int argc = CORE_COUNT_OF(argv);
 
     siftGpu->ParseParam(argc, const_cast<char**>(argv));
     int support = siftGpu->CreateContextGL();
-    if(support != SiftGPU::SIFTGPU_FULL_SUPPORTED)
+
+    if (support != SiftGPU::SIFTGPU_FULL_SUPPORTED)
     {
         std::cerr << support << " siftgpu is unsupported" << std::endl;
         exit(0);
@@ -152,11 +150,15 @@ void SiftGpu::operator()(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keypoi
 
 SiftGpu::~SiftGpu()
 {
-    free(siftGpu);
+#ifdef WIN32
+    delete siftGpu;     // windows requires to "delete" the allocated object inside siftGpu.dll instead of free-ing it
+#else
+    free siftGpu;       // linux: valgrid said that free is better
+#endif
 }
 
 #define SWITCH_TYPE(str, expr) \
-    if(type == #str) \
+    if (type == #str) \
     { \
         expr; \
     }
@@ -164,8 +166,8 @@ SiftGpu::~SiftGpu()
 DescriptorExtractor* SiftGpuDescriptorExtractorProvider::getDescriptorExtractor(const DescriptorType &type)
 {
     SWITCH_TYPE(SIFTGPU,
-            return new SiftGpu();)
-        return 0;
+       return new SiftGpu();)
+    return 0;
 }
 
 bool SiftGpuDescriptorExtractorProvider::provides(const DescriptorType &type)
@@ -179,7 +181,7 @@ FeatureDetector* SiftGpuFeatureDetectorProvider::getFeatureDetector(const Detect
 {
     SWITCH_TYPE(SIFTGPU,
             return new SiftGpu();)
-        return 0;
+    return 0;
 }
 
 bool SiftGpuFeatureDetectorProvider::provides(const DetectorType &type)

@@ -24,7 +24,7 @@ SiftMatchGPU* SiftGpuMatcher::initSiftMatchGpu(int count)
 
     createNew = (SiftMatchGPU* (*) (int)) dlsym(handle, "CreateNewSiftMatchGPU");
     const char* dlsym_err = dlerror();
-    if(dlsym_err)
+    if (dlsym_err)
     {
         std::cerr << "Failed to load fun: " << dlsym_err << std::endl;
         exit(0);
@@ -33,21 +33,19 @@ SiftMatchGPU* SiftGpuMatcher::initSiftMatchGpu(int count)
     HINSTANCE hinstLib;
 
     hinstLib = LoadLibraryA("siftgpu.dll");
-
-    if(!hinstLib)
+    if (!hinstLib)
     {
         std::cerr << "Failed to load shared lib" << std::endl;
     }
 
-    createNew = (SiftMatchGPU* (*) (int)) GetProcAddress(hinstLib, "CreateNewSiftGPU");
-
-    if(!createNew)
+    createNew = (SiftMatchGPU* (*) (int)) GetProcAddress(hinstLib, "CreateNewSiftMatchGPU");
+    if (!createNew)
     {
         std::cerr << "Failed to load function" << std::endl;
     }
 #endif
     SiftMatchGPU* res = createNew(count);
-    if(!(res && res->VerifyContextGL()))
+    if (!(res && res->VerifyContextGL()))
     {
         std::cerr << "Failed to initalize SiftGPU matcher" << std::endl;
         exit(0);
@@ -63,7 +61,11 @@ SiftGpuMatcher::SiftGpuMatcher()
 
 SiftGpuMatcher::~SiftGpuMatcher()
 {
-    free(siftMatchGpu);
+#ifdef WIN32
+    delete siftMatchGpu;     // windows requires to "delete" the allocated object inside siftGpu.dll instead of free-ing it
+#else
+    free(siftMatchGpu);      // linux: valgrid said that free is better
+#endif
 }
 
 SiftGpuMatcher::SiftGpuMatcher(const SiftGpuMatcher &matcher)

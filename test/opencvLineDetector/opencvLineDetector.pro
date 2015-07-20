@@ -10,12 +10,13 @@ ROOT_DIR=$$PWD/$$ROOT_DIR
 include($$ROOT_DIR/config.pri)
 
 TEMPLATE=app
-TARGET=opencvLineDetector
-CONFIG+=CONSOLE
-QT+=core gui xml
+TARGET  =opencvLineDetector
+CONFIG += CONSOLE
+QT += core
+QT -= gui
+QT -= xml
 
-TEST_DIR = $$PWD
-UTILSDIR = $$TEST_DIR/../../utils
+UTILSDIR = $$ROOT_DIR/src/open/utils
 include($$UTILSDIR/utils.pri)
 
 SOURCES += opencvLineDetector.cpp
