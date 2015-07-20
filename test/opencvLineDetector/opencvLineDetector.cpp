@@ -219,7 +219,7 @@ int main (int argc, char **argv)
 
         if(verbose)
         {
-            SYNC_PRINT(("Apply %s\n",filename));
+            SYNC_PRINT(("Apply %s\n",filename.c_str()));
         }
 
         LensDistortionModelParameters loaded;

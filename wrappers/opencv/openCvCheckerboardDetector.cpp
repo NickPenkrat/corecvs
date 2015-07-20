@@ -1,6 +1,9 @@
 #include <opencv/cv.h>
+
+#include "preciseTimer.h"
 #include "OpenCVTools.h"
 #include "openCvCheckerboardDetector.h"
+
 
 void OpenCvCheckerboardDetector::DrawCheckerboardLines(cv::Mat &dst, const vector<vector<Vector2dd> > &straights){
     for(unsigned i = 0; i < straights.size(); i++)
@@ -57,7 +60,8 @@ OpenCvCheckerboardDetector::BoardAlign OpenCvCheckerboardDetector::DetectPartChe
     {
         Size boardSize(i, height);
         SYNC_PRINT(("Try %ix%i",i, height));
-        DWORD startTime = GetTickCount();
+        PreciseTimer timer = PreciseTimer::currentTime();
+
         found = findChessboardCorners( mat, boardSize, pointbuf, CV_CALIB_CB_ADAPTIVE_THRESH );
         if(found)
         {
@@ -83,8 +87,7 @@ OpenCvCheckerboardDetector::BoardAlign OpenCvCheckerboardDetector::DetectPartChe
                 return BoardAlign::RIGHT;
             }
         }
-        DWORD intervalTime = GetTickCount() - startTime;
-        SYNC_PRINT((" failed. Time: %i\n",intervalTime));
+        SYNC_PRINT((" failed. Time: %i us\n", timer.usecsToNow()));
     }
     return BoardAlign::NONE;
 }
@@ -97,7 +100,7 @@ OpenCvCheckerboardDetector::BoardAlign OpenCvCheckerboardDetector::DetectPartChe
     {
         Size boardSize(width, j);
         SYNC_PRINT(("Try %ix%i",width, j));
-        DWORD startTime = GetTickCount();
+        PreciseTimer timer = PreciseTimer::currentTime();
         found = findChessboardCorners( mat, boardSize, pointbuf, CV_CALIB_CB_ADAPTIVE_THRESH );
         if(found)
         {
@@ -123,8 +126,8 @@ OpenCvCheckerboardDetector::BoardAlign OpenCvCheckerboardDetector::DetectPartChe
                 return BoardAlign::BOTTOM;
             }
         }
-        DWORD intervalTime = GetTickCount() - startTime;
-        SYNC_PRINT((" failed. Time: %i\n",intervalTime));
+
+         SYNC_PRINT((" failed. Time: %i us\n", timer.usecsToNow()));
     }
     return BoardAlign::NONE;
 }
