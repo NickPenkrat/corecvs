@@ -45,6 +45,9 @@ public:
         H_CROSSES_COUNT_ID,
         CELL_SIZE_ID,
         CLEAN_EXISTING_ID,
+        PRECISE_DIAMETER_ID,
+        ITERATION_COUNT_ID,
+        MIN_ACCURACY_ID,
         CHECKERBOARD_DETECTION_PARAMETERS_FIELD_ID_NUM
     };
 
@@ -80,6 +83,24 @@ public:
      */
     bool mCleanExisting;
 
+    /** 
+     * \brief Precise Diameter 
+     * Precise Diameter 
+     */
+    int mPreciseDiameter;
+
+    /** 
+     * \brief Iteration count 
+     * Iteration count 
+     */
+    int mIterationCount;
+
+    /** 
+     * \brief Min accuracy 
+     * Min accuracy 
+     */
+    double mMinAccuracy;
+
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
 
@@ -113,6 +134,21 @@ public:
         return mCleanExisting;
     }
 
+    int preciseDiameter() const
+    {
+        return mPreciseDiameter;
+    }
+
+    int iterationCount() const
+    {
+        return mIterationCount;
+    }
+
+    double minAccuracy() const
+    {
+        return mMinAccuracy;
+    }
+
     /* Section with setters */
     void setChannel(ImageChannel::ImageChannel channel)
     {
@@ -139,6 +175,21 @@ public:
         mCleanExisting = cleanExisting;
     }
 
+    void setPreciseDiameter(int preciseDiameter)
+    {
+        mPreciseDiameter = preciseDiameter;
+    }
+
+    void setIterationCount(int iterationCount)
+    {
+        mIterationCount = iterationCount;
+    }
+
+    void setMinAccuracy(double minAccuracy)
+    {
+        mMinAccuracy = minAccuracy;
+    }
+
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
@@ -149,6 +200,9 @@ template<class VisitorType>
         visitor.visit(mHCrossesCount,             static_cast<const IntField *>     (fields()[H_CROSSES_COUNT_ID]));
         visitor.visit(mCellSize,                  static_cast<const DoubleField *>  (fields()[CELL_SIZE_ID]));
         visitor.visit(mCleanExisting,             static_cast<const BoolField *>    (fields()[CLEAN_EXISTING_ID]));
+        visitor.visit(mPreciseDiameter,           static_cast<const IntField *>     (fields()[PRECISE_DIAMETER_ID]));
+        visitor.visit(mIterationCount,            static_cast<const IntField *>     (fields()[ITERATION_COUNT_ID]));
+        visitor.visit(mMinAccuracy,               static_cast<const DoubleField *>  (fields()[MIN_ACCURACY_ID]));
     }
 
     CheckerboardDetectionParameters()
@@ -163,6 +217,9 @@ template<class VisitorType>
         , int hCrossesCount
         , double cellSize
         , bool cleanExisting
+        , int preciseDiameter
+        , int iterationCount
+        , double minAccuracy
     )
     {
         mChannel = channel;
@@ -170,6 +227,9 @@ template<class VisitorType>
         mHCrossesCount = hCrossesCount;
         mCellSize = cellSize;
         mCleanExisting = cleanExisting;
+        mPreciseDiameter = preciseDiameter;
+        mIterationCount = iterationCount;
+        mMinAccuracy = minAccuracy;
     }
 
     friend ostream& operator << (ostream &out, CheckerboardDetectionParameters &toSave)

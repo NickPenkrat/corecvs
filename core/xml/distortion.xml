@@ -75,6 +75,11 @@
     <field type="int"          name="H crosses count"    defaultValue="18"   />
     <field type="double"       name="Cell size"          defaultValue="50"   suffix="mm" />
     <field type="bool"         name="Clean existing"     defaultValue="true" />
+
+    <field type="int"          name="Precise Diameter"   defaultValue="50"    min="0" max="999999"  />
+    <field type="int"          name="Iteration count"    defaultValue="50"    min="1" max="999999"  />
+    <field type="double"       name="Min accuracy"       defaultValue="0.001" suffix="px" />
+ 
   </class>
 
   <enum name="Line Distortion Estimator Cost">
