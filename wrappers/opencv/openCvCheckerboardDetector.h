@@ -8,6 +8,8 @@
 #include <string>
 #include "global.h"
 
+#include "selectableGeometryFeatures.h"
+
 using namespace cv;
 
 class OpenCvCheckerboardDetector{
@@ -23,12 +25,20 @@ public:
         NONE
     };
 
-    static bool DetectFullCheckerboard(const cv::Mat &mat, int width, int height, vector<vector<Vector2dd> > *straights, int precise = 11);
+    static bool DetectFullCheckerboard(const cv::Mat &mat, int width, int height, SelectableGeometryFeatures *lineList,
+                                       int precise = 11,
+                                       int maxIterationCount = 100,
+                                       double minAccuracy = 0.001);
+    static bool DetectFullCheckerboard(const cv::Mat &mat, int width, int height, vector<vector<Vector2dd> > *straights,
+                                       int precise = 11,
+                                       int maxIterationCount = 100,
+                                       double minAccuracy = 0.001);
     static BoardAlign DetectPartCheckerboardH(const cv::Mat &mat, int width, int height, vector<vector<Vector2dd> > straights);
     static BoardAlign DetectPartCheckerboardV(const cv::Mat &mat, int width, int height, vector<vector<Vector2dd> > straights);
     static void DrawCheckerboardLines(cv::Mat &dst, const vector<vector<Vector2dd> > &straights);
 private:
     static void fillStraight(const vector<Point2f> &buffer, int width, int height, vector<vector<Vector2dd> > *straights);
+    static void fillLineList(const vector<vector<Vector2dd> > &straights, int width, int height, SelectableGeometryFeatures *lineList);
 };
 
 #endif

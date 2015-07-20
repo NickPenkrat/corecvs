@@ -19,10 +19,10 @@ QT+=core gui xml
 TEST_DIR = $$PWD
 #TEST_DIR = .
 #message (Original PWD $$PWD  $$TEST_DIR)
-#COREDIR=../../core
-#include($$COREDIR/core.pri)                         # it uses COREDIR, TARGET and detects     COREBINDIR!
+COREDIR=../../core
+include($$COREDIR/core.pri)                         # it uses COREDIR, TARGET and detects     COREBINDIR!
 
-UTILSDIR = $$TEST_DIR/../../utils
+UTILSDIR = ../../utils
 include($$UTILSDIR/utils.pri)
 
 SOURCES += opencvLineDetector.cpp
@@ -30,5 +30,4 @@ SOURCES += opencvLineDetector.cpp
 #HEADERS += opencvLineDetector.h
 
 core.file                = src/open/core/core.pro
-#unitTests.file           = src/open/test-core/unitTests.pro
 utils.file               = src/open/utils/utils.pro

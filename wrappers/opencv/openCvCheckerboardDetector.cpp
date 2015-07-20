@@ -2,6 +2,7 @@
 
 #include "preciseTimer.h"
 #include "OpenCVTools.h"
+
 #include "openCvCheckerboardDetector.h"
 
 
@@ -24,11 +25,62 @@ void OpenCvCheckerboardDetector::DrawCheckerboardLines(cv::Mat &dst, const vecto
     }
 }
 
-bool OpenCvCheckerboardDetector::DetectFullCheckerboard(const cv::Mat &mat, int width, int height, vector<vector<Vector2dd> > *straights, int precise){
+bool OpenCvCheckerboardDetector::DetectFullCheckerboard(const cv::Mat &mat, int width, int height, SelectableGeometryFeatures *lineList, int precise,
+                                                        int maxIterationCount,
+                                                        double minAccuracy){
+//    vector<vector<Vector2dd> > straights;
+//    bool detected = DetectFullCheckerboard(mat, width, height, &straights, precise, maxIterationCount, minAccuracy);
+
     int             found;
     Size            boardSize(width, height);
     vector<Point2f> pointbuf;
-    SYNC_PRINT(("Start ..."));
+
+    SYNC_PRINT(("Start ...\n"));
+    found = findChessboardCorners(mat, boardSize, pointbuf,
+                                  CALIB_CB_ADAPTIVE_THRESH
+                                  +  CALIB_CB_FAST_CHECK );
+
+
+//    if(!detected)
+//    {
+//        return 0;
+//    }
+
+    for(int ih = 0; ih < height; ih++)
+    {
+        SelectableGeometryFeatures::VertexPath * path = lineList->appendNewPath();
+
+        for(int iw = 0; iw < width; iw++)
+        {
+            Vector2dd point(pointbuf.at(ih * width + iw).x,pointbuf.at(ih * width + iw).y);
+//            addPointPair(Vector3dd(cellSize * ih, cellSize * iw, 0), point);
+            lineList->addVertexToPath(lineList->appendNewVertex(point), path);
+        }
+    }
+
+    for(int iw = 0; iw < width; iw++)
+    {
+        SelectableGeometryFeatures::VertexPath * path = lineList->appendNewPath();
+
+        for(int ih = 0; ih < height; ih++)
+        {
+            Vector2dd point(pointbuf.at(ih * height + iw).x,pointbuf.at(ih * height + iw).y);
+//            addPointPair(Vector3dd(cellSize * ih, cellSize * iw, 0), point);
+            lineList->addVertexToPath(lineList->appendNewVertex(point), path);
+        }
+    }
+
+    return 1;
+}
+
+
+bool OpenCvCheckerboardDetector::DetectFullCheckerboard(const cv::Mat &mat, int width, int height, vector<vector<Vector2dd> > *straights, int precise,
+                                                        int maxIterationCount,
+                                                        double minAccuracy){
+    int             found;
+    Size            boardSize(width, height);
+    vector<Point2f> pointbuf;
+    SYNC_PRINT(("Start ...\n"));
     found = findChessboardCorners(mat, boardSize, pointbuf,
                                   CALIB_CB_ADAPTIVE_THRESH
                                   +  CALIB_CB_FAST_CHECK );
@@ -47,7 +99,7 @@ bool OpenCvCheckerboardDetector::DetectFullCheckerboard(const cv::Mat &mat, int 
     SYNC_PRINT(("Good\n"));
     if(found && precise){
         cornerSubPix ( mat ,  pointbuf ,  Size ( precise ,  precise ),  Size ( - 1 ,  - 1 ),
-          TermCriteria ( CV_TERMCRIT_EPS  +  CV_TERMCRIT_ITER ,  30 ,  0.1 ));
+          TermCriteria ( CV_TERMCRIT_EPS  +  CV_TERMCRIT_ITER ,  maxIterationCount, minAccuracy ));
     }
     return found;
 }
