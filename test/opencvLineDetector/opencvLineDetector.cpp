@@ -280,7 +280,7 @@ int main (int argc, char **argv)
             {
                 solver.computeCosts(mLinesRadialCoorection, false);
 
-                SYNC_PRINT(("Score is: %f", solver.costs[LineDistortionEstimatorCost::LINE_DEVIATION_COST]));
+                SYNC_PRINT(("Score is: %f\n", solver.costs[LineDistortionEstimatorCost::LINE_DEVIATION_COST]));
                 SYNC_PRINT(("Written\n"));
             }
         }
@@ -304,48 +304,48 @@ int main (int argc, char **argv)
             cout << mLinesRadialCoorection.mParams << endl;
         }
 
-        BMPLoader *loader   = new BMPLoader();
-        RGB24Buffer *image    = loader->loadRGB(filename.c_str());
+        BMPLoader  *loader   = new BMPLoader();
+        RGB24Buffer *image   = loader->loadRGB(filename.c_str());
 
         if(verbose)
         {
             SYNC_PRINT(("Loaded %s.\n",filename.c_str()));
         }
 
-        DisplacementBuffer* mDistortionCorrectTransform =
-                 DisplacementBuffer::CacheInverse(&mLinesRadialCoorection,
-                 image->h, image->w,
-                 0.0,0.0,
-                 (double)image->w, (double)image->h,
-                 0.5, 0 //TODO: Use right value of mUi->preciseInvertionCheckBox->isChecked())
-        );
+        DisplacementBuffer* mDistortionCorrectTransform;
 
-        image = image->doReverseDeformationBl<RGB24Buffer, DisplacementBuffer>(
-                    mDistortionCorrectTransform,
-                    image->h, image->w
-                );
-        loader->save("dist_" + filename, image);
-
-        for (int i = 3; i < argc; i++)
-        {
-            if(!cmdIfOption(all_args, "--", &pos))
-            {
-                if(verbose)
-                {
-                    SYNC_PRINT(("Apply %s\n",argv[i]));
-                }
-
-                image = loader->loadRGB(argv[i]);
-                image = image->doReverseDeformationBl<RGB24Buffer, DisplacementBuffer>(
-                            mDistortionCorrectTransform,
-                            image->h, image->w
-                        );
-
-                string newFileName(argv[i]);
-                loader->save(prefix + "_" + newFileName, image);
-            }
+        if (false) {
+            mDistortionCorrectTransform = new DisplacementBuffer(&mLinesRadialCoorection, image->h, image->w, true);
+        } else {
+            mDistortionCorrectTransform = DisplacementBuffer::CacheInverse(&mLinesRadialCoorection,
+                image->h, image->w,
+                0.0,0.0,
+                (double)image->w, (double)image->h, 0.5
+            );
         }
 
+        image = image->doReverseDeformationBlTyped<DisplacementBuffer>(
+                    mDistortionCorrectTransform);
+        loader->save("dist_" + filename, image);
+
+//        for (int i = 3; i < argc; i++)
+//        {
+//            if(!cmdIfOption(all_args, "--", &pos))
+//            {
+//                if(verbose)
+//                {
+//                    SYNC_PRINT(("Apply %s\n",argv[i]));
+//                }
+
+//                image = loader->loadRGB(argv[i]);
+//                image = image-><RGB24Buffer, DisplacementBuffer>(
+//                            mDistortionCorrectTransform,
+//                            image->h, image->w);
+
+//                string newFileName(argv[i]);
+//                loader->save(prefix + "_" + newFileName, image);
+//            }
+//        }
     }
     return 0;
 }
