@@ -49,6 +49,7 @@ using namespace cv;
 using namespace corecvs;
 
 bool verbose = 0;
+bool isInverse = 0;
 bool drawProccess = 0;
 bool useGreenChannel = 0;
 
@@ -138,20 +139,10 @@ int main (int argc, char **argv)
         SYNC_PRINT(("json_file_name: %s\n", jsonFileName.toLatin1().constData()));
     }
 
-    if (cmdIfOption(all_args, "--verbose", &pos))
-    {
-        verbose = 1;
-    }
-
-    if (cmdIfOption(all_args, "--use_green_channel", &pos))
-    {
-        useGreenChannel = 1;
-    }
-
-    if (cmdIfOption(all_args, "--draw_proccess", &pos))
-    {
-        drawProccess = 1;
-    }
+    verbose = cmdIfOption(all_args, "--verbose", &pos);
+    useGreenChannel = cmdIfOption(all_args, "--use_green_channel", &pos);
+    isInverse = cmdIfOption(all_args, "--is_inverse", &pos);
+    drawProccess = cmdIfOption(all_args, "--draw_proccess", &pos);
 
     if (cmdIfOption(all_args, "--test_opencv", &pos))
     {
@@ -160,7 +151,7 @@ int main (int argc, char **argv)
         IplImage  *iplImage = OpenCVTools::getCVImageFromG8Buffer(image);
                 Mat            view = cv::Mat(iplImage, false);
                 imshow("sf",view);
-        int key = waitKey(1000000);
+        waitKey(1000000);
         return 0;
     }
 
@@ -271,13 +262,6 @@ int main (int argc, char **argv)
     }
     else if (cmdIfOption(all_args, "--apply", &pos))
     {
-        string fileName = argv[2];
-
-        if(verbose)
-        {
-            SYNC_PRINT(("Apply to <%s>\n",fileName.c_str()));
-        }
-
         LensDistortionModelParameters loaded;
         JSONGetter getter(jsonFileName);
         getter.visit(loaded, "intrinsic");
@@ -288,53 +272,68 @@ int main (int argc, char **argv)
             cout << mLinesRadialCoorection.mParams << endl;
         }
 
-        RGB24Buffer *image   = BufferFactory::getInstance()->loadRGB24Bitmap(fileName);
+        DisplacementBuffer* mDistortionCorrectTransform = NULL;
 
-        if (image == NULL)
+        for (int i = 0; i < argc; i++)
         {
-            SYNC_PRINT(("Failed to load <%s>.\n",fileName.c_str()));
-            return 1;
-        } else {
-            if(verbose)
+            if(!getIntCmdOption(all_args[i], "--", &found))
             {
-                SYNC_PRINT(("Loaded <%s>.\n",fileName.c_str()));
+                fileName = all_args[i].c_str();
+                if(verbose)
+                {
+                    SYNC_PRINT(("Apply to <%s>\n",fileName.c_str()));
+                }
+
+                RGB24Buffer *image   = BufferFactory::getInstance()->loadRGB24Bitmap(fileName);
+                if (image == NULL)
+                {
+                    SYNC_PRINT(("Failed to load <%s>.\n",fileName.c_str()));
+                    return 1;
+                } else {
+                    if(verbose)
+                    {
+                        SYNC_PRINT(("Loaded <%s>.\n",fileName.c_str()));
+                    }
+                }
+
+                if(mDistortionCorrectTransform == NULL){
+                    if (!isInverse) {
+                        mDistortionCorrectTransform = new DisplacementBuffer(&mLinesRadialCoorection, image->h, image->w, true);
+                    } else {
+                        mDistortionCorrectTransform = DisplacementBuffer::CacheInverse(&mLinesRadialCoorection,
+                            image->h, image->w,
+                            0.0,0.0,
+                            (double)image->w, (double)image->h, 0.5
+                        );
+                    }
+                }
+
+                image = image->doReverseDeformationBlTyped<DisplacementBuffer>(mDistortionCorrectTransform);
+                if (image == NULL)
+                {
+                    SYNC_PRINT(("Failed to do transformation.\n"));
+                    return 2;
+                }
+
+
+                string path = "";
+                string name = fileName;
+
+                size_t pos = name.find_last_of("/\\");
+                if (pos != string::npos)
+                {
+                    path = name.substr(0, pos+1);
+                    name = name.substr(pos + 1);
+                }
+
+                string outputFileName = path + "dist_" + name;
+
+                SYNC_PRINT(("Saving to <%s>\n", outputFileName.c_str()));
+                QTFileLoader().save(outputFileName, image, 100);
+
             }
         }
 
-        DisplacementBuffer* mDistortionCorrectTransform;
-
-        if (false) {
-            mDistortionCorrectTransform = new DisplacementBuffer(&mLinesRadialCoorection, image->h, image->w, true);
-        } else {
-            mDistortionCorrectTransform = DisplacementBuffer::CacheInverse(&mLinesRadialCoorection,
-                image->h, image->w,
-                0.0,0.0,
-                (double)image->w, (double)image->h, 0.5
-            );
-        }
-
-        image = image->doReverseDeformationBlTyped<DisplacementBuffer>(mDistortionCorrectTransform);
-        if (image == NULL)
-        {
-            SYNC_PRINT(("Failed to do transformation.\n"));
-            return 2;
-        }
-
-
-        string path = "";
-        string name = fileName;
-
-        size_t pos = name.find_last_of("/\\");
-        if (pos != string::npos)
-        {
-            path = name.substr(0, pos+1);
-            name = name.substr(pos + 1);
-        }
-
-        string outputFileName = path + "dist_" + name;
-
-        SYNC_PRINT(("Saving to <%s>\n", outputFileName.c_str()));
-        QTFileLoader().save(outputFileName, image, 100);
 
 
 //        for (int i = 3; i < argc; i++)
