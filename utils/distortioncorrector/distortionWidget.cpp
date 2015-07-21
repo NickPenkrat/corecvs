@@ -496,7 +496,8 @@ void DistortionWidget::doDefaultTransform()
                 0.0, 0.0,
                 straightParams,
                 1.0,
-                scale
+                scale,
+                center.l2Metric()
              );
 
     RadialCorrection radCorrection(lenCorrectionParams);

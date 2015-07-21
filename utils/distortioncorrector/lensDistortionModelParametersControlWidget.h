@@ -52,6 +52,7 @@ public slots:
     void resetP2();
     void resetAspect();
     void resetScale();
+    void resetNormalize();
     void invertCorrection();
 
 

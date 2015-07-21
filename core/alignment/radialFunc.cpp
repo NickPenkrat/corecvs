@@ -20,8 +20,21 @@ RadialCorrection ModelToRadialCorrection::getRadial(const double in[]) const
         result.mParams.setTangentialY(in[count++]);
     }
     result.mParams.mKoeff.clear();
-    for (int i = 0; i < mPolynomialDegree; i++) {
-        result.mParams.mKoeff.push_back(in[count++]);
+
+    if (mEvenDegreeOnly) {
+        for (int i = 0; i < mPolynomialDegree; i++)
+        {
+            if (i % 2)   /*even powers are stored at odd indexes */
+            {
+                result.mParams.mKoeff.push_back(in[count++]);
+            } else {
+                result.mParams.mKoeff.push_back(0.0);
+            }
+        }
+    } else {
+        for (int i = 0; i < mPolynomialDegree; i++) {
+            result.mParams.mKoeff.push_back(in[count++]);
+        }
     }
     return result;
 }
@@ -37,16 +50,34 @@ void ModelToRadialCorrection::getModel(const RadialCorrection &correction, doubl
         in[count++] = correction.mParams.tangentialX();
         in[count++] = correction.mParams.tangentialY();
     }
-    for (int i = 0; i < mPolynomialDegree; i++) {
-        if (i < (int)correction.mParams.mKoeff.size()) {
+
+    if (mEvenDegreeOnly) {
+        for (int i = 0; i < mPolynomialDegree / 2; i++)
+        {
+            if (i * 2 + 1 < correction.mParams.mKoeff.size())
+            {
+                in[count++] = correction.mParams.mKoeff[i * 2 + 1];
+            } else {
+                in[count++] = 0.0;
+            }
+        }
+    } else {
+        int i = 0;
+        int copyDegree = CORE_MIN(mPolynomialDegree, (int)correction.mParams.mKoeff.size());
+        for (; i < copyDegree; i++)
+        {
             in[count++] = correction.mParams.mKoeff[i];
-        } else {
+        }
+        for (; i < mPolynomialDegree; i++)
+        {
             in[count++] = 0.0;
         }
     }
 }
 
 
+
+#ifdef OUTDATED
 
 RadialFunc::RadialFunc(const vector<Vector2dd> &undistortedPoints, const Vector2dd &center, int polynomDegree) :
     FunctionArgs(polynomDegree, (int)undistortedPoints.size() * 2),
@@ -57,12 +88,12 @@ RadialFunc::RadialFunc(const vector<Vector2dd> &undistortedPoints, const Vector2
 {
 }
 
+
 /**
  * TODO: keep model in one place only
  **/
-void RadialFunc::operator ()(const double /*in*/[], double /*out*/[])
+void RadialFunc::operator ()(const double in[], double out[])
 {
-#if 0
 //    double p1 = in[mPolynomDegree];
 //    double p2 = in[mPolynomDegree + 1];
     for (unsigned i = 0; i < mUndistortedPoints.size(); i ++)
@@ -98,7 +129,6 @@ void RadialFunc::operator ()(const double /*in*/[], double /*out*/[])
         out[2 * i] = x;
         out[2 * i + 1] = y;
     }
-#endif
 }
 
 Matrix RadialFunc::getJacobian(const double /*in*/[], double /*delta*/)
@@ -132,4 +162,9 @@ void RadialFunc::setScaleFactor(double scaleFactor)
 {
     mScaleFactor = scaleFactor;
 }
-}
+#endif
+
+} // namespace corecvs;
+
+
+

@@ -133,7 +133,7 @@ int main (int argc, char **argv)
     if(cmdIfOption(all_args, "--json_file_name", &pos))
     {
         getStringCmdOption(argv[pos], "--json_file_name:", &jsonFileName);
-        SYNC_PRINT(("json_file_name: %s\n", jsonFileName.toStdString()));
+        SYNC_PRINT(("json_file_name: %s\n", jsonFileName.toLatin1().constData()));
     }
 
     if (cmdIfOption(all_args, "--verbose", &pos))

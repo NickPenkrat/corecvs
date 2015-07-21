@@ -21,14 +21,15 @@ LensDistortionModelParametersControlWidget::LensDistortionModelParametersControl
 {
     ui->setupUi(this);
 
-    QObject::connect(ui->centerXSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
-    QObject::connect(ui->centerYSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->centerXSpinBox,     SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->centerYSpinBox,     SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
 
     QObject::connect(ui->tangential1SpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(ui->tangential2SpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
 
-    QObject::connect(ui->scaleSpinBox,  SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
-    QObject::connect(ui->aspectSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->scaleSpinBox,       SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->aspectSpinBox,      SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->normalizerSpinBox,  SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
 
     QObject::connect(ui->koefTableWidget, SIGNAL(itemChanged(QTableWidgetItem*)), this, SIGNAL(paramsChanged()));
 
@@ -76,6 +77,7 @@ void LensDistortionModelParametersControlWidget::getParameters(LensDistortionMod
 
     params.setAspect(ui->aspectSpinBox->value());
     params.setScale (ui->scaleSpinBox->value());
+    params.setNormalizingFocal(ui->normalizerSpinBox->value());
 
     params.mKoeff.empty();
     for (int i = 0; i < ui->koefTableWidget->rowCount(); i++)
@@ -122,6 +124,7 @@ void LensDistortionModelParametersControlWidget::setParameters(const LensDistort
 
     ui->scaleSpinBox->setValue(input.scale());
     ui->aspectSpinBox->setValue(input.aspect());
+    ui->normalizerSpinBox->setValue(input.normalizingFocal());
 
     ui->koefTableWidget->setRowCount(0);
     for (unsigned i = 0; i < input.mKoeff.size(); i++)
@@ -164,9 +167,9 @@ void LensDistortionModelParametersControlWidget::addPower()
 
     QDoubleSpinBox *box = new QDoubleSpinBox();
     box->setDecimals(9);
-    box->setSingleStep(0.00001);
-    box->setMaximum(99);
-    box->setMinimum(-99);
+    box->setSingleStep(0.01);
+    box->setMaximum( 999999999);
+    box->setMinimum(-999999999);
     ui->koefTableWidget->setCellWidget(newRow - 1, COLUMN_EDIT, box);
 
     connect(box, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
@@ -189,6 +192,7 @@ void LensDistortionModelParametersControlWidget::resetCx()
         ui->centerXSpinBox->setValue(100);
     }
 }
+
 
 void LensDistortionModelParametersControlWidget::resetCy()
 {
@@ -218,6 +222,18 @@ void LensDistortionModelParametersControlWidget::resetAspect()
 void LensDistortionModelParametersControlWidget::resetScale()
 {
     ui->scaleSpinBox->setValue(1.0);
+}
+
+void LensDistortionModelParametersControlWidget::resetNormalize()
+{
+    if (ui->centerXSpinBox->value() != 0 ||  ui->centerYSpinBox->value() != 0)
+    {
+        Vector2dd center(ui->centerXSpinBox->value(), ui->centerYSpinBox->value());
+        ui->normalizerSpinBox->setValue(center.l2Metric());
+    } else {
+        ui->centerYSpinBox->setValue(140);
+    }
+
 }
 
 void LensDistortionModelParametersControlWidget::invertCorrection()
@@ -267,7 +283,7 @@ void LensDistortionModelParametersControlWidget::updateAdditionalData()
         mGraphDialog.addGraphPoint(0, 0, false);
     }
 
-    for (int i = 0; i < diagonal; i++)
+    for (int i = diagonal - 1; i >=0; i--)
     {
         mGraphDialog.addGraphPoint(0, radialCorrection.radialScale((double)i), true);
     }

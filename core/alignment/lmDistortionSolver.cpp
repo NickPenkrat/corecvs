@@ -44,7 +44,8 @@ RadialCorrection LMDistortionSolver::solve()
                 bestParams.at(2), bestParams.at(3),
                 polynomKoeff,
                 1.0,
-                1.0);
+                1.0,
+                initialCenter.l2Metric());
 
 
     return RadialCorrection(lenCorrectParams);
@@ -70,14 +71,16 @@ RadialCorrection LMLinesDistortionSolver::solve()
        0.0 ,0.0,
        vector<double>(parameters.polinomDegree()),
        1.0,
-       1.0
+       1.0,
+       initialCenter.l2Metric()
     ));
 
     ModelToRadialCorrection modelFactory(
         correction,
         parameters.estimateCenter(),
         parameters.estimateTangent(),
-        parameters.polinomDegree()
+        parameters.polinomDegree(),
+        parameters.evenPowersOnly()
     );
 
     FunctionArgs *costFuntion = NULL;
@@ -111,7 +114,8 @@ void LMLinesDistortionSolver::computeCosts(const RadialCorrection &correction, b
         correction,
         parameters.estimateCenter(),
         parameters.estimateTangent(),
-        parameters.polinomDegree()
+        parameters.polinomDegree(),
+        parameters.evenPowersOnly()
     );
 
     FunctionArgs *costFuntion = NULL;
