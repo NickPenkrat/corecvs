@@ -133,6 +133,8 @@ public:
 
     /* Helper function */
     vector<vector<Vector2dd> > getLines();
+    /**/
+    void print();
 };
 
 }

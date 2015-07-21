@@ -114,6 +114,8 @@ static bool cmdIfOption(const vector<string> &all_args, const std::string& optio
 
 int main (int argc, char **argv)
 {
+
+    QTRGB24Loader::registerMyself();
     QCoreApplication app(argc, argv);
 
     vector<string> all_args;
@@ -191,17 +193,20 @@ int main (int argc, char **argv)
             SYNC_PRINT(("Calc full %s with %ix%i\n", fileName.c_str(), chessW, chessH));
         }
 
-        BMPLoader *loader   = new BMPLoader();
         IplImage  *iplImage;
-        Vector2dd center;
+        RGB24Buffer *image = BufferFactory::getInstance()->loadRGB24Bitmap(fileName);
+        if (image == NULL)
+        {
+            SYNC_PRINT(("Failed to load <%s>.\n",fileName.c_str()));
+            return 1;
+        }
+
+        Vector2dd  center = Vector2dd(image->w, image->h) / 2.0;
 
         if(useGreenChannel){
-            G8Buffer *image    = loader->loadRGB(fileName)->getChannel(ImageChannel::G);
-            center = Vector2dd(image->w / 2.0, image->h /2.0);
-            iplImage = OpenCVTools::getCVImageFromG8Buffer(image);
-        }else{
-            RGB24Buffer *image    = loader->loadRGB(fileName);
-            center = Vector2dd(image->w / 2.0, image->h /2.0);
+            G8Buffer *channel  = image->getChannel(ImageChannel::G);
+            iplImage = OpenCVTools::getCVImageFromG8Buffer(channel);
+        } else {
             iplImage = OpenCVTools::getCVImageFromRGB24Buffer(image);
         }
 
@@ -233,36 +238,15 @@ int main (int argc, char **argv)
                 }
             }
 
-//            /// Set default camera param values
-//            RadialCorrection correction(LensDistortionModelParameters(
-//               center.x(),
-//               center.y(),
-//               0.0, 0.0,
-//               vector<double>(6), //vector<double>(mUi->degreeSpinBox->value()), //TODO: Read degree from JSON
-//               1.0,
-//               1.0
-//            ));
-
-
-//            FunctionArgs *costFuntion = NULL;
-//            int isAngleCost = 0; //TODO: now use angle cost function in future read from JSON
-//            if (isAngleCost) {
-//                costFuntion = new AnglePointsFunction (straights, modelFactory);
-//                //straightF.simpleJacobian = mUi->simpleJacobianCheckBox->isChecked();
-//            } else {
-//                costFuntion = new DistPointsFunction  (straights, modelFactory);
-//            }
-
-
             LMLinesDistortionSolver solver;
             LineDistortionEstimatorParameters params;
 
             params = LineDistortionEstimatorParameters();
+            params.setSimpleJacobian(true);
             params.setEstimateCenter(true);
             params.setEstimateTangent(true);
             params.setEvenPowersOnly(false);
-            params.setSimpleJacobian(true);
-            params.setPolinomDegree(6);
+            params.setIterationNumber(1000);
             params.setCostAlgorithm(LineDistortionEstimatorCost::LINE_DEVIATION_COST);
 
 
@@ -287,11 +271,11 @@ int main (int argc, char **argv)
     }
     else if (cmdIfOption(all_args, "--apply", &pos))
     {
-        string filename = argv[2];
+        string fileName = argv[2];
 
         if(verbose)
         {
-            SYNC_PRINT(("Apply %s\n",filename.c_str()));
+            SYNC_PRINT(("Apply to <%s>\n",fileName.c_str()));
         }
 
         LensDistortionModelParameters loaded;
@@ -304,12 +288,17 @@ int main (int argc, char **argv)
             cout << mLinesRadialCoorection.mParams << endl;
         }
 
-        BMPLoader  *loader   = new BMPLoader();
-        RGB24Buffer *image   = loader->loadRGB(filename.c_str());
+        RGB24Buffer *image   = BufferFactory::getInstance()->loadRGB24Bitmap(fileName);
 
-        if(verbose)
+        if (image == NULL)
         {
-            SYNC_PRINT(("Loaded %s.\n",filename.c_str()));
+            SYNC_PRINT(("Failed to load <%s>.\n",fileName.c_str()));
+            return 1;
+        } else {
+            if(verbose)
+            {
+                SYNC_PRINT(("Loaded <%s>.\n",fileName.c_str()));
+            }
         }
 
         DisplacementBuffer* mDistortionCorrectTransform;
@@ -324,9 +313,29 @@ int main (int argc, char **argv)
             );
         }
 
-        image = image->doReverseDeformationBlTyped<DisplacementBuffer>(
-                    mDistortionCorrectTransform);
-        loader->save("dist_" + filename, image);
+        image = image->doReverseDeformationBlTyped<DisplacementBuffer>(mDistortionCorrectTransform);
+        if (image == NULL)
+        {
+            SYNC_PRINT(("Failed to do transformation.\n"));
+            return 2;
+        }
+
+
+        string path = "";
+        string name = fileName;
+
+        size_t pos = name.find_last_of("/\\");
+        if (pos != string::npos)
+        {
+            path = name.substr(0, pos+1);
+            name = name.substr(pos + 1);
+        }
+
+        string outputFileName = path + "dist_" + name;
+
+        SYNC_PRINT(("Saving to <%s>\n", outputFileName.c_str()));
+        QTFileLoader().save(outputFileName, image, 100);
+
 
 //        for (int i = 3; i < argc; i++)
 //        {

@@ -44,7 +44,7 @@
     <field type="double"    name="aspect"            defaultValue="1.0"/>
     <field type="double"    name="scale"             defaultValue="1.0"/>
 
-    <field type="double"    name="Normalizing Focal" defaultValue="400"/>
+    <field type="double"    name="Normalizing Focal" defaultValue="1"/>
 
 
     <!-- <field type="double"    name="Normalize Focal" defaultValue="1.0"/> -->
