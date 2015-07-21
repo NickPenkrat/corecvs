@@ -49,6 +49,7 @@ using namespace cv;
 using namespace corecvs;
 
 bool verbose = 0;
+bool isInverse = 0;
 bool drawProccess = 0;
 bool useGreenChannel = 0;
 
@@ -136,20 +137,10 @@ int main (int argc, char **argv)
         SYNC_PRINT(("json_file_name: %s\n", jsonFileName.toLatin1().constData()));
     }
 
-    if (cmdIfOption(all_args, "--verbose", &pos))
-    {
-        verbose = 1;
-    }
-
-    if (cmdIfOption(all_args, "--use_green_channel", &pos))
-    {
-        useGreenChannel = 1;
-    }
-
-    if (cmdIfOption(all_args, "--draw_proccess", &pos))
-    {
-        drawProccess = 1;
-    }
+    verbose = cmdIfOption(all_args, "--verbose", &pos);
+    useGreenChannel = cmdIfOption(all_args, "--use_green_channel", &pos);
+    isInverse = cmdIfOption(all_args, "--is_inverse", &pos);
+    drawProccess = cmdIfOption(all_args, "--draw_proccess", &pos);
 
     if (cmdIfOption(all_args, "--test_opencv", &pos))
     {
@@ -158,7 +149,7 @@ int main (int argc, char **argv)
         IplImage  *iplImage = OpenCVTools::getCVImageFromG8Buffer(image);
                 Mat            view = cv::Mat(iplImage, false);
                 imshow("sf",view);
-        int key = waitKey(1000000);
+        waitKey(1000000);
         return 0;
     }
 
@@ -233,27 +224,6 @@ int main (int argc, char **argv)
                 }
             }
 
-//            /// Set default camera param values
-//            RadialCorrection correction(LensDistortionModelParameters(
-//               center.x(),
-//               center.y(),
-//               0.0, 0.0,
-//               vector<double>(6), //vector<double>(mUi->degreeSpinBox->value()), //TODO: Read degree from JSON
-//               1.0,
-//               1.0
-//            ));
-
-
-//            FunctionArgs *costFuntion = NULL;
-//            int isAngleCost = 0; //TODO: now use angle cost function in future read from JSON
-//            if (isAngleCost) {
-//                costFuntion = new AnglePointsFunction (straights, modelFactory);
-//                //straightF.simpleJacobian = mUi->simpleJacobianCheckBox->isChecked();
-//            } else {
-//                costFuntion = new DistPointsFunction  (straights, modelFactory);
-//            }
-
-
             LMLinesDistortionSolver solver;
             LineDistortionEstimatorParameters params;
 
@@ -287,13 +257,6 @@ int main (int argc, char **argv)
     }
     else if (cmdIfOption(all_args, "--apply", &pos))
     {
-        string filename = argv[2];
-
-        if(verbose)
-        {
-            SYNC_PRINT(("Apply %s\n",filename.c_str()));
-        }
-
         LensDistortionModelParameters loaded;
         JSONGetter getter(jsonFileName);
         getter.visit(loaded, "intrinsic");
@@ -305,47 +268,41 @@ int main (int argc, char **argv)
         }
 
         BMPLoader  *loader   = new BMPLoader();
-        RGB24Buffer *image   = loader->loadRGB(filename.c_str());
-
-        if(verbose)
-        {
-            SYNC_PRINT(("Loaded %s.\n",filename.c_str()));
-        }
 
         DisplacementBuffer* mDistortionCorrectTransform;
+        bool correctionCreated = false;
 
-        if (false) {
-            mDistortionCorrectTransform = new DisplacementBuffer(&mLinesRadialCoorection, image->h, image->w, true);
-        } else {
-            mDistortionCorrectTransform = DisplacementBuffer::CacheInverse(&mLinesRadialCoorection,
-                image->h, image->w,
-                0.0,0.0,
-                (double)image->w, (double)image->h, 0.5
-            );
+        for (int i = 0; i < argc; i++)
+        {
+            if(!getIntCmdOption(all_args[i], "--", &found))
+            {
+                string newFileName(all_args[i].c_str());
+                if(verbose)
+                {
+                    SYNC_PRINT(("Apply %s\n",newFileName.c_str()));
+                }
+
+                RGB24Buffer *image;
+                image = loader->loadRGB(newFileName);
+
+                if(!correctionCreated){
+                    if (!isInverse) {
+                        mDistortionCorrectTransform = new DisplacementBuffer(&mLinesRadialCoorection, image->h, image->w, true);
+                    } else {
+                        mDistortionCorrectTransform = DisplacementBuffer::CacheInverse(&mLinesRadialCoorection,
+                            image->h, image->w,
+                            0.0,0.0,
+                            (double)image->w, (double)image->h, 0.5
+                        );
+                    }
+                    correctionCreated = true;
+                }
+                image = image->doReverseDeformationBlTyped<DisplacementBuffer>(
+                            mDistortionCorrectTransform);
+
+                loader->save(prefix + "_" + newFileName, image);
+            }
         }
-
-        image = image->doReverseDeformationBlTyped<DisplacementBuffer>(
-                    mDistortionCorrectTransform);
-        loader->save("dist_" + filename, image);
-
-//        for (int i = 3; i < argc; i++)
-//        {
-//            if(!cmdIfOption(all_args, "--", &pos))
-//            {
-//                if(verbose)
-//                {
-//                    SYNC_PRINT(("Apply %s\n",argv[i]));
-//                }
-
-//                image = loader->loadRGB(argv[i]);
-//                image = image-><RGB24Buffer, DisplacementBuffer>(
-//                            mDistortionCorrectTransform,
-//                            image->h, image->w);
-
-//                string newFileName(argv[i]);
-//                loader->save(prefix + "_" + newFileName, image);
-//            }
-//        }
     }
     return 0;
 }
