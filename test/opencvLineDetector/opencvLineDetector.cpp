@@ -56,6 +56,9 @@ bool useGreenChannel = 0;
 
 static bool getIntCmdOption(const std::string & value, const std::string & option, int *param)
 {
+//    cout << "Value" << value << std::endl;
+//    cout << "Option" << option << std::endl;
+
     size_t  position = value.find(option);
     if (position != std::string::npos)
     {
@@ -240,6 +243,8 @@ int main (int argc, char **argv)
             params.setIterationNumber(1000);
             params.setCostAlgorithm(LineDistortionEstimatorCost::LINE_DEVIATION_COST);
 
+            lineList.print();
+
 
             solver.initialCenter = center;
             solver.lineList = &lineList;
@@ -274,7 +279,7 @@ int main (int argc, char **argv)
 
         DisplacementBuffer* mDistortionCorrectTransform = NULL;
 
-        for (int i = 0; i < argc; i++)
+        for (int i = 0; i < all_args.size(); i++)
         {
             if(!getIntCmdOption(all_args[i], "--", &found))
             {

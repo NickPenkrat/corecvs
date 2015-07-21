@@ -38,24 +38,24 @@ bool OpenCvCheckerboardDetector::DetectFullCheckerboard(const cv::Mat &mat, int 
     SYNC_PRINT(("Start ...\n"));
     found = findChessboardCorners(mat, boardSize, pointbuf,
                                   CALIB_CB_ADAPTIVE_THRESH
-                                  +  CALIB_CB_FAST_CHECK );
+                                  /*+  CALIB_CB_FAST_CHECK */);
 
-    for(int ih = 0; ih < height; ih++)
+    for(int i = 0; i < height; i++)
     {
         SelectableGeometryFeatures::VertexPath * path = lineList->appendNewPath();
-        for(int iw = 0; iw < width; iw++)
+        for(int j = 0; j < width; j++)
         {
-            Vector2dd point(pointbuf.at(ih * width + iw).x,pointbuf.at(ih * width + iw).y);
+            Vector2dd point(pointbuf.at(i * width + j).x, pointbuf.at(i * width + j).y);
             lineList->addVertexToPath(lineList->appendNewVertex(point), path);
         }
     }
 
-    for(int iw = 0; iw < width; iw++)
+    for(int j = 0; j < width; j++)
     {
         SelectableGeometryFeatures::VertexPath * path = lineList->appendNewPath();
-        for(int ih = 0; ih < height; ih++)
+        for(int i = 0; i < height; i++)
         {
-            Vector2dd point(pointbuf.at(ih * height + iw).x,pointbuf.at(ih * height + iw).y);
+            Vector2dd point(pointbuf.at(i * width + j).x, pointbuf.at(i * width + j).y);
             lineList->addVertexToPath(lineList->appendNewVertex(point), path);
         }
     }

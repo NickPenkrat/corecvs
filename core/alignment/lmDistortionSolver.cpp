@@ -62,6 +62,9 @@ LMLinesDistortionSolver::LMLinesDistortionSolver()
 
 RadialCorrection LMLinesDistortionSolver::solve()
 {
+    lineList->print();
+    cout << "Parameters:" << parameters << std::endl;
+
     vector<vector<Vector2dd> > straights = lineList->getLines();
     L_INFO_P("Starting distortion calibration on %d lines", straights.size());
 

@@ -246,9 +246,10 @@ vector<vector<Vector2dd> > SelectableGeometryFeatures::getLines()
 
 void SelectableGeometryFeatures::print()
 {
+    cout << "Size is:" << mPaths.size() << std::endl;
     for (unsigned i = 0; i < mPaths.size(); i++)
     {
-        cout << "[";
+        cout << "[" << mPaths[i]->vertexes.size() << " :";
         for (unsigned j = 0; j < mPaths[i]->vertexes.size(); j++)
         {
             cout  << (j == 0 ? "" : ",") << mPaths[i]->vertexes.operator[](j)->position;
