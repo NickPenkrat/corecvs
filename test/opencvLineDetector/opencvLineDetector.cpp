@@ -10,14 +10,14 @@
 #include <QtCore/QThread>
 #include <QtCore/QMutex>
 #include "QTimer"
-#ifdef WIN32
-# include <windows.h>
-# define tSleep  Sleep
-#else
-# include <unistd.h>
-# include <stdlib.h>
-# define tSleep _sleep
-#endif
+//#ifdef WIN32
+//# include <windows.h>
+//# define tSleep  Sleep
+//#else
+//# include <unistd.h>
+//# include <stdlib.h>
+//# define tSleep _sleep
+//#endif
 #include "imageCaptureInterface.h"
 #include "bmpLoader.h"
 #include "qtFileLoader.h"
