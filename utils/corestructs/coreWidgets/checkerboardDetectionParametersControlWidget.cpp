@@ -25,6 +25,9 @@ CheckerboardDetectionParametersControlWidget::CheckerboardDetectionParametersCon
     QObject::connect(mUi->hCrossesCountSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->cellSizeSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->cleanExistingCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->preciseDiameterSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->iterationCountSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->minAccuracySpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
 }
 
 CheckerboardDetectionParametersControlWidget::~CheckerboardDetectionParametersControlWidget()
@@ -57,6 +60,9 @@ void CheckerboardDetectionParametersControlWidget::getParameters(CheckerboardDet
     params.setHCrossesCount    (mUi->hCrossesCountSpinBox->value());
     params.setCellSize         (mUi->cellSizeSpinBox->value());
     params.setCleanExisting    (mUi->cleanExistingCheckBox->isChecked());
+    params.setPreciseDiameter  (mUi->preciseDiameterSpinBox->value());
+    params.setIterationCount   (mUi->iterationCountSpinBox->value());
+    params.setMinAccuracy      (mUi->minAccuracySpinBox->value());
 
 }
 
@@ -74,6 +80,9 @@ CheckerboardDetectionParameters *CheckerboardDetectionParametersControlWidget::c
         , mUi->hCrossesCountSpinBox->value()
         , mUi->cellSizeSpinBox->value()
         , mUi->cleanExistingCheckBox->isChecked()
+        , mUi->preciseDiameterSpinBox->value()
+        , mUi->iterationCountSpinBox->value()
+        , mUi->minAccuracySpinBox->value()
     );
     return result;
 }
@@ -87,6 +96,9 @@ void CheckerboardDetectionParametersControlWidget::setParameters(const Checkerbo
     mUi->hCrossesCountSpinBox->setValue(input.hCrossesCount());
     mUi->cellSizeSpinBox->setValue(input.cellSize());
     mUi->cleanExistingCheckBox->setChecked(input.cleanExisting());
+    mUi->preciseDiameterSpinBox->setValue(input.preciseDiameter());
+    mUi->iterationCountSpinBox->setValue(input.iterationCount());
+    mUi->minAccuracySpinBox->setValue(input.minAccuracy());
     blockSignals(wasBlocked);
     emit paramsChanged();
 }

@@ -57,8 +57,6 @@ void RecorderDialog::createCalculator()
     connect(mapper, SIGNAL(recorderParamsChanged(QSharedPointer<Recorder>))
             , this, SLOT(recorderControlParametersChanged(QSharedPointer<Recorder>)));
 
-
-
   /*  connect(mapper, SIGNAL(baseParametersParamsChanged(QSharedPointer<BaseParameters>))
             , this, SLOT(baseControlParametersChanged(QSharedPointer<Base>)));*/
 
@@ -186,7 +184,7 @@ void RecorderDialog::processResult()
             mRecorderControlWidget->ui()->frameCountLabel->setText(QString("Frame (frame pairs) written: %1").arg(fod->frameCount));
 
 
-        fod->mMainImage.print();
+//        fod->mMainImage.print();
 
         if (i == eventList.size() - 1) {
             mImage = QSharedPointer<QImage>(new QImage(fod->mMainImage.width(), fod->mMainImage.height(),  QImage::Format_RGB32));

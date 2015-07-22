@@ -33,33 +33,24 @@
  *   for more details please read the code of getCorrectionForPoint() or read the Heikkila paper
     </comment>
 
-    <field type="double"    name="principalX"      defaultValue="240" comment="The center of the distortion \f$x_c\f$" />
-    <field type="double"    name="principalY"      defaultValue="320" comment="The center of the distortion \f$y_c\f$"/>
+    <field type="double"    name="principalX"        defaultValue="240" comment="The center of the distortion \f$x_c\f$" />
+    <field type="double"    name="principalY"        defaultValue="320" comment="The center of the distortion \f$y_c\f$"/>
 
-    <field type="double"    name="tangentialX"     defaultValue="0" comment="First tangent correction coefficient - \f$p_1\f$"/>
-    <field type="double"    name="tangentialY"     defaultValue="0" comment="Second tangent correction coefficient - \f$p_2\f$"/>
+    <field type="double"    name="tangentialX"       defaultValue="0"  comment="First tangent correction coefficient - \f$p_1\f$"/>
+    <field type="double"    name="tangentialY"       defaultValue="0" comment="Second tangent correction coefficient - \f$p_2\f$"/>
 
-    <field type="double"    name="koeff"           defaultValue="0.0" size="6" comment="Polynom to describe radial correction"/>
+    <field type="double"    name="koeff"             defaultValue="0.0" size="6" comment="Polynom to describe radial correction"/>
 
-    <field type="double"    name="aspect"          defaultValue="1.0"/>
-    <field type="double"    name="scale"           defaultValue="1.0"/>
+    <field type="double"    name="aspect"            defaultValue="1.0"/>
+    <field type="double"    name="scale"             defaultValue="1.0"/>
+
+    <field type="double"    name="Normalizing Focal" defaultValue="1"/>
+
 
     <!-- <field type="double"    name="Normalize Focal" defaultValue="1.0"/> -->
   </class>
 
-<!--
-
-    vector<double> koeff; /**< Polynom to describe radial correction */
-
-    double p1;       /**< First tangent correction coefficient - \f$p_1\f$*/
-    double p2;       /**< Second tangent correction coefficient - \f$p_2\f$*/
-
-    double aspect;    /**< y/x matrix ratio */
-    double focal;     /**< focal */
-
-    Vector2dd center; /**< The center of the distortion \f$(x_c,y_c)\f$*/
-
-<class name="Camera Extirinsic Parameteres" description="">
+<!-- class name="Camera Extirinsic Parameteres" description="">
     <field type="double" name="yaw"            defaultValue="0.0"    />
     <field type="double" name="pitch"          defaultValue="0.0"    />
     <field type="double" name="roll"           defaultValue="0.0"    />
@@ -75,6 +66,10 @@
     <field type="int"          name="H crosses count"    defaultValue="18"   />
     <field type="double"       name="Cell size"          defaultValue="50"   suffix="mm" />
     <field type="bool"         name="Clean existing"     defaultValue="true" />
+
+    <field type="int"          name="Precise Diameter"   defaultValue="50"    min="0" max="999999"  />
+    <field type="int"          name="Iteration count"    defaultValue="50"    min="1" max="999999"  />
+    <field type="double"       name="Min accuracy"       defaultValue="0.001" suffix="px" /> 
   </class>
 
   <enum name="Line Distortion Estimator Cost">

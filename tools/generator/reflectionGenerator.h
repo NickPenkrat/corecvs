@@ -275,8 +275,7 @@ public:
             int _defaultValue,
             EnumWidgetType _widgetType,
             const ReflectionNaming &_nameing,
-            const EnumReflection *_enumReflection,
-            QString _icon = QString("")
+            const EnumReflection *_enumReflection
     ) : EnumField (
             BaseField::UNKNOWN_ID,
             BaseField::UNKNOWN_OFFSET,

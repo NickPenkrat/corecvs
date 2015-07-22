@@ -101,6 +101,45 @@ int CheckerboardDetectionParameters::staticInit()
           "Clean existing"
         )
     );
+    fields().push_back(
+        new IntField
+        (
+          CheckerboardDetectionParameters::PRECISE_DIAMETER_ID,
+          offsetof(CheckerboardDetectionParameters, mPreciseDiameter),
+          50,
+          "Precise Diameter",
+          "Precise Diameter",
+          "Precise Diameter",
+          true,
+         0,
+         999999
+        )
+    );
+    fields().push_back(
+        new IntField
+        (
+          CheckerboardDetectionParameters::ITERATION_COUNT_ID,
+          offsetof(CheckerboardDetectionParameters, mIterationCount),
+          50,
+          "Iteration count",
+          "Iteration count",
+          "Iteration count",
+          true,
+         1,
+         999999
+        )
+    );
+    fields().push_back(
+        new DoubleField
+        (
+          CheckerboardDetectionParameters::MIN_ACCURACY_ID,
+          offsetof(CheckerboardDetectionParameters, mMinAccuracy),
+          0.001,
+          "Min accuracy",
+          "Min accuracy",
+          "Min accuracy"
+        )
+    );
    return 0;
 }
 

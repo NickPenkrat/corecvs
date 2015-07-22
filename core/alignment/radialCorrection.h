@@ -33,7 +33,7 @@ public:
         return map(v.y(), v.x());
     }
 
-    double radialScale(double r) const
+    inline double radialScaleNormalized(double r) const
     {
         double rpow = r;
         double radialCorrection = 0;
@@ -45,6 +45,13 @@ public:
         }
         return radialCorrection;
     }
+
+    inline double radialScale(double r) const
+    {
+        double normalizedR = r / mParams.normalizingFocal();
+        return radialScaleNormalized(normalizedR);
+    }
+
 
     inline Vector2dd map(int y, int x) const
     {
@@ -68,8 +75,8 @@ public:
         double p1 = mParams.tangentialX();
         double p2 = mParams.tangentialY();
 
-        double dx = (x - cx) * mParams.aspect();
-        double dy = (y - cy);
+        double dx = (x - cx) / mParams.normalizingFocal() * mParams.aspect();
+        double dy = (y - cy) / mParams.normalizingFocal();
 
         /*double dx = dpx / mParams.focal;
         double dy = dpy / mParams.focal;*/
@@ -81,7 +88,7 @@ public:
         double rsq = dxsq + dysq;
         double r = sqrt(rsq);
 
-        double radialCorrection = radialScale(r);
+        double radialCorrection = radialScaleNormalized(r);
 //        SYNC_PRINT(("RadialCorrection::map (): [%lf %lf ] %lf %lf\n", x, y, rsq, radialCorrection));
 
 
@@ -89,11 +96,11 @@ public:
         double radialY = (double)dy * radialCorrection;
 
         double tangentX =    2 * p1 * dxdy      + p2 * ( rsq + 2 * dxsq );
-        double tangentY = p1 * (rsq + 2 * dysq) +     2 * p2 * dxdy;
+        double tangentY = p1 * (rsq + 2 * dysq) +     2 * p2 * dxdy      ;
 
         return Vector2dd(
-                cx + ((dx + radialX + tangentX) / mParams.aspect() * mParams.scale()),
-                cy + ((dy + radialY + tangentY)                    * mParams.scale())
+                cx + ((dx + radialX + tangentX) / mParams.aspect() * mParams.scale() * mParams.normalizingFocal()),
+                cy + ((dy + radialY + tangentY)                    * mParams.scale() * mParams.normalizingFocal())
                );
     }
 

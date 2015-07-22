@@ -74,6 +74,7 @@ public:
         KOEFF_ID,
         ASPECT_ID,
         SCALE_ID,
+        NORMALIZING_FOCAL_ID,
         LENS_DISTORTION_MODEL_PARAMETERS_FIELD_ID_NUM
     };
 
@@ -121,6 +122,12 @@ public:
      */
     double mScale;
 
+    /** 
+     * \brief Normalizing Focal 
+     * Normalizing Focal 
+     */
+    double mNormalizingFocal;
+
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
 
@@ -164,6 +171,11 @@ public:
         return mScale;
     }
 
+    double normalizingFocal() const
+    {
+        return mNormalizingFocal;
+    }
+
     /* Section with setters */
     void setPrincipalX(double principalX)
     {
@@ -200,6 +212,11 @@ public:
         mScale = scale;
     }
 
+    void setNormalizingFocal(double normalizingFocal)
+    {
+        mNormalizingFocal = normalizingFocal;
+    }
+
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
@@ -212,6 +229,7 @@ template<class VisitorType>
         visitor.visit(mKoeff,                     static_cast<const DoubleVectorField *>(fields()[KOEFF_ID]));
         visitor.visit(mAspect,                    static_cast<const DoubleField *>  (fields()[ASPECT_ID]));
         visitor.visit(mScale,                     static_cast<const DoubleField *>  (fields()[SCALE_ID]));
+        visitor.visit(mNormalizingFocal,          static_cast<const DoubleField *>  (fields()[NORMALIZING_FOCAL_ID]));
     }
 
     LensDistortionModelParameters()
@@ -228,6 +246,7 @@ template<class VisitorType>
         , vector<double> koeff
         , double aspect
         , double scale
+        , double normalizingFocal
     )
     {
         mPrincipalX = principalX;
@@ -237,6 +256,7 @@ template<class VisitorType>
         mKoeff = koeff;
         mAspect = aspect;
         mScale = scale;
+        mNormalizingFocal = normalizingFocal;
     }
 
     friend ostream& operator << (ostream &out, LensDistortionModelParameters &toSave)

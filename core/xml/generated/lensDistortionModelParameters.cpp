@@ -115,6 +115,17 @@ int LensDistortionModelParameters::staticInit()
           "scale"
         )
     );
+    fields().push_back(
+        new DoubleField
+        (
+          LensDistortionModelParameters::NORMALIZING_FOCAL_ID,
+          offsetof(LensDistortionModelParameters, mNormalizingFocal),
+          400,
+          "Normalizing Focal",
+          "Normalizing Focal",
+          "Normalizing Focal"
+        )
+    );
    return 0;
 }
 

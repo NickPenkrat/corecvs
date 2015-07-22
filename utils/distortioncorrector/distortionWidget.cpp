@@ -188,11 +188,11 @@ void DistortionWidget::detectCheckerboard()
     vector<Point2f> pointbuf;
     Mat             view = cv::Mat(inputIpl, false);
 
-    int chessV = params.vCrossesCount();
-    int chessH = params.hCrossesCount();
+    int chessHeight = params.vCrossesCount();
+    int chessWidth  = params.hCrossesCount();
     int cellSize = params.cellSize();
 
-    Size boardSize(chessV, chessH);
+    Size boardSize(chessWidth, chessHeight);
 
     found = findChessboardCorners( view, boardSize, pointbuf, CV_CALIB_CB_ADAPTIVE_THRESH );
 
@@ -216,29 +216,30 @@ void DistortionWidget::detectCheckerboard()
 
         SelectableGeometryFeatures *features = &canvas->mFeatures;
 
-        for(int ih = 0; ih < chessH; ih++)
+        for(int i = 0; i < chessHeight; i++)
         {
             SelectableGeometryFeatures::VertexPath * path = features->appendNewPath();
 
-            for(int iw = 0; iw < chessV; iw++)
+            for(int j = 0; j < chessWidth; j++)
             {
-                Vector2dd point(pointbuf.at(ih * chessV + iw).x,pointbuf.at(ih * chessV + iw).y);
-                addPointPair(Vector3dd(cellSize * ih, cellSize * iw, 0), point);
+                Vector2dd point(pointbuf.at(i * chessWidth + j).x,pointbuf.at(i * chessWidth + j).y);
+                addPointPair(Vector3dd(cellSize * j, cellSize * i, 0), point);
                 features->addVertexToPath(features->appendNewVertex(point), path);
             }
         }
 
-        for(int iw = 0; iw < chessV; iw++)
+        for(int j = 0; j < chessWidth; j++)
         {
             SelectableGeometryFeatures::VertexPath * path = features->appendNewPath();
 
-            for(int ih = 0; ih < chessH; ih++)
+            for(int i = 0; i < chessHeight; i++)
             {
-                Vector2dd point(pointbuf.at(ih * chessV + iw).x,pointbuf.at(ih * chessV + iw).y);
-                addPointPair(Vector3dd(cellSize * ih, cellSize * iw, 0), point);
+                Vector2dd point(pointbuf.at(i * chessWidth + j).x,pointbuf.at(i * chessWidth + j).y);
+                //addPointPair(Vector3dd(cellSize * j, cellSize * i, 0), point);
                 features->addVertexToPath(features->appendNewVertex(point), path);
             }
         }
+
         mUi->calibrationFeatures->geometryFeatures = features;
         mUi->calibrationFeatures->updateWidget();
 
@@ -496,7 +497,8 @@ void DistortionWidget::doDefaultTransform()
                 0.0, 0.0,
                 straightParams,
                 1.0,
-                scale
+                scale,
+                center.l2Metric()
              );
 
     RadialCorrection radCorrection(lenCorrectionParams);
