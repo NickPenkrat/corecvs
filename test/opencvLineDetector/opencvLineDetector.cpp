@@ -1,15 +1,17 @@
-#include "cameraControlParameters.h"
-#include <opencv2/calib3d/calib3d.hpp>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <string>
 #include "global.h"
-#include <stdio.h>
-#include <QtCore/QObject>
+
+//#include "cameraControlParameters.h"
+//#include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>  // imshow, waitkey
+#include <string>
+//#include <stdio.h>
+#include <QtCore/QString>
+//#include <QtCore/QObject>
 #include <QtCore/QCoreApplication>
-#include <QtCore/QThread>
-#include <QtCore/QMutex>
-#include "QTimer"
+//#include <QtCore/QThread>
+//#include <QtCore/QMutex>
+//#include "QTimer"
 //#ifdef WIN32
 //# include <windows.h>
 //# define tSleep  Sleep
@@ -18,22 +20,22 @@
 //# include <stdlib.h>
 //# define tSleep _sleep
 //#endif
-#include "imageCaptureInterface.h"
+//#include "imageCaptureInterface.h"
 #include "bmpLoader.h"
 #include "qtFileLoader.h"
 
 /// OpenCV wrapper
 #include "OpenCVTools.h"
 
-#include "camerasCalibration/camerasCalibrationFunc.h"
-#include "curvatureFunc.h"
-#include "radialFunc.h"
-#include "angleFunction.h"
-#include "anglePointsFunction.h"
-#include "distPointsFunction.h"
-#include "levenmarq.h"
-#include "distortionCorrectTransform.h"
-#include "distortionParameters.h"
+//#include "camerasCalibration/camerasCalibrationFunc.h"
+//#include "curvatureFunc.h"
+//#include "radialFunc.h"
+//#include "angleFunction.h"
+//#include "anglePointsFunction.h"
+//#include "distPointsFunction.h"
+//#include "levenmarq.h"
+//#include "distortionCorrectTransform.h"
+//#include "distortionParameters.h"
 #include "displacementBuffer.h"
 
 #include "lmDistortionSolver.h"
@@ -75,7 +77,7 @@ static bool getDoubleCmdOption(const std::string & value, const std::string & op
     if (position != std::string::npos)
     {
         std::string strSub = value.substr (position + option.length());
-        *param = stod(strSub.c_str());
+        *param = std::stod(strSub.c_str());
         return 1;
     }
     return 0;
@@ -118,42 +120,40 @@ static bool cmdIfOption(const vector<string> &all_args, const std::string& optio
 
 int main (int argc, char **argv)
 {
-
     QTRGB24Loader::registerMyself();
     QCoreApplication app(argc, argv);
 
     vector<string> all_args;
     all_args.assign(argv + 1, argv + argc);
 
-    unsigned pos;
-
     QString jsonFileName = "out.json";
     string prefix = "dist";
+    unsigned pos;
 
-    if(cmdIfOption(all_args, "--prefix", &pos))
+    if (cmdIfOption(all_args, "--prefix", &pos))
     {
         getStringCmdOption(argv[pos], "--prefix:", &prefix);
         SYNC_PRINT(("prifix: %s\n", prefix.c_str()));
     }
 
-    if(cmdIfOption(all_args, "--json_file_name", &pos))
+    if (cmdIfOption(all_args, "--json_file_name", &pos))
     {
         getStringCmdOption(argv[pos], "--json_file_name:", &jsonFileName);
         SYNC_PRINT(("json_file_name: %s\n", jsonFileName.toLatin1().constData()));
     }
 
-    verbose = cmdIfOption(all_args, "--verbose", &pos);
+    verbose         = cmdIfOption(all_args, "--verbose", &pos);
     useGreenChannel = cmdIfOption(all_args, "--use_green_channel", &pos);
-    isInverse = cmdIfOption(all_args, "--is_inverse", &pos);
-    drawProccess = cmdIfOption(all_args, "--draw_proccess", &pos);
+    isInverse       = cmdIfOption(all_args, "--is_inverse", &pos);
+    drawProccess    = cmdIfOption(all_args, "--draw_proccess", &pos);
 
     if (cmdIfOption(all_args, "--test_opencv", &pos))
     {
         BMPLoader *loader   = new BMPLoader();
         G8Buffer *image    = loader->loadRGB("SPA0_360deg_1.bmp")->getChannel(ImageChannel::G);
         IplImage  *iplImage = OpenCVTools::getCVImageFromG8Buffer(image);
-                Mat            view = cv::Mat(iplImage, false);
-                imshow("sf",view);
+        Mat            view = cv::Mat(iplImage, false);
+        imshow("sf", view);
         waitKey(1000000);
         return 0;
     }
@@ -166,23 +166,24 @@ int main (int argc, char **argv)
     int maxIterationCount = 100;
     double minAccuracy = 0.001;
 
-    if (getStringCmdOption(argv[1], "--calcFullCheckerBoard:", &fileName) &&
+    if (argc > 3 &&
+        getStringCmdOption(argv[1], "--calcFullCheckerBoard:", &fileName) &&
         getIntCmdOption(argv[2], "--chessW:", &chessW) &&
         getIntCmdOption(argv[3], "--chessH:", &chessH) )
     {
-        if(cmdIfOption(all_args, "--max_iteration_count", &pos))
+        if (cmdIfOption(all_args, "--max_iteration_count", &pos))
         {
-             getIntCmdOption(argv[pos], "--max_iteration_count:", &maxIterationCount);
+            getIntCmdOption(argv[pos], "--max_iteration_count:", &maxIterationCount);
         }
-        if(cmdIfOption(all_args, "--min_accuracy", &pos))
+        if (cmdIfOption(all_args, "--min_accuracy", &pos))
         {
-             getDoubleCmdOption(argv[pos], "--min_accuracy:", &minAccuracy);
+            getDoubleCmdOption(argv[pos], "--min_accuracy:", &minAccuracy);
         }
-        if(cmdIfOption(all_args, "--precise", &pos))
+        if (cmdIfOption(all_args, "--precise", &pos))
         {
-             getIntCmdOption(argv[pos], "--precise:", &precise);
+            getIntCmdOption(argv[pos], "--precise:", &precise);
         }
-        if(verbose)
+        if (verbose)
         {
             SYNC_PRINT(("Calc full %s with %ix%i\n", fileName.c_str(), chessW, chessH));
         }
@@ -197,14 +198,14 @@ int main (int argc, char **argv)
 
         Vector2dd  center = Vector2dd(image->w, image->h) / 2.0;
 
-        if(useGreenChannel){
+        if (useGreenChannel) {
             G8Buffer *channel  = image->getChannel(ImageChannel::G);
             iplImage = OpenCVTools::getCVImageFromG8Buffer(channel);
         } else {
             iplImage = OpenCVTools::getCVImageFromRGB24Buffer(image);
         }
 
-        if(verbose)
+        if (verbose)
         {
             SYNC_PRINT(("Loaded %s.\n",fileName.c_str()));
         }
@@ -216,17 +217,17 @@ int main (int argc, char **argv)
 
         found = OpenCvCheckerboardDetector::DetectFullCheckerboard(view, chessW, chessH, &lineList, precise);
 
-        if(found)
+        if (found)
         {
-            if(verbose)
+            if (verbose)
             {
                 SYNC_PRINT(("Checkerboard found.\n"));
             }
-            if(drawProccess)
+            if (drawProccess)
             {
 //                OpenCvCheckerboardDetector::DrawCheckerboardLines(view, straights);
                 imwrite("test_with_chess_LINES.jpg", view);
-                if(verbose)
+                if (verbose)
                 {
                     SYNC_PRINT(("test_with_chess_LINES.jpg saved.\n"));
                 }
@@ -360,5 +361,21 @@ int main (int argc, char **argv)
 //            }
 //        }
     }
+    else {
+        printf("Usage examples:\n\n"
+            "To detect distortion params:\n"
+            "opencvLineDetector.exe --calcFullCheckerBoard:<filename> --chessW:18 --chessH:11\n"
+            "                       --precise:100 --use_green_channel --max_iteration_count:50 --min_accuracy:0.001\n\n"
+            "To apply found distortion params:\n"
+            "opencvLineDetector.exe --apply <filenames_via_spaces>\n"
+            );
+        //--prefix
+        //--json_file_name
+        //--verbose
+        //--is_inverse
+        //--draw_proccess
+        //--test_opencv
+    }
+
     return 0;
 }
