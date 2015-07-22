@@ -85,6 +85,8 @@ static bool getDoubleCmdOption(const std::string & value, const std::string & op
 
 static bool getStringCmdOption(const std::string & value, const std::string & option, std::string *param)
 {
+    cout << "Value" << value << std::endl;
+    cout << "Option" << option << std::endl;
     size_t  position = value.find(option);
     if (position != std::string::npos)
     {
@@ -96,6 +98,8 @@ static bool getStringCmdOption(const std::string & value, const std::string & op
 
 static bool getStringCmdOption(const std::string & value, const std::string & option, QString *param)
 {
+    cout << "Value" << value << std::endl;
+    cout << "Option" << option << std::endl;
     size_t  position = value.find(option);
     if (position != std::string::npos)
     {
@@ -124,7 +128,7 @@ int main (int argc, char **argv)
     QCoreApplication app(argc, argv);
 
     vector<string> all_args;
-    all_args.assign(argv + 1, argv + argc);
+    all_args.assign(argv, argv + argc);
 
     QString jsonFileName = "out.json";
     string prefix = "dist";
@@ -138,6 +142,7 @@ int main (int argc, char **argv)
 
     if (cmdIfOption(all_args, "--json_file_name", &pos))
     {
+
         getStringCmdOption(argv[pos], "--json_file_name:", &jsonFileName);
         SYNC_PRINT(("json_file_name: %s\n", jsonFileName.toLatin1().constData()));
     }
@@ -280,7 +285,7 @@ int main (int argc, char **argv)
 
         DisplacementBuffer* mDistortionCorrectTransform = NULL;
 
-        for (int i = 0; i < all_args.size(); i++)
+        for (int i = 1; i < all_args.size(); i++)
         {
             if(!getIntCmdOption(all_args[i], "--", &found))
             {
@@ -332,7 +337,7 @@ int main (int argc, char **argv)
                     name = name.substr(pos + 1);
                 }
 
-                string outputFileName = path + "dist_" + name;
+                string outputFileName = path + prefix + name;
 
                 SYNC_PRINT(("Saving to <%s>\n", outputFileName.c_str()));
                 QTFileLoader().save(outputFileName, image, 100);
