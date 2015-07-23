@@ -120,7 +120,7 @@ int LensDistortionModelParameters::staticInit()
         (
           LensDistortionModelParameters::NORMALIZING_FOCAL_ID,
           offsetof(LensDistortionModelParameters, mNormalizingFocal),
-          400,
+          1,
           "Normalizing Focal",
           "Normalizing Focal",
           "Normalizing Focal"

@@ -327,7 +327,7 @@ public:
                 for (j = 0; j < newW - 1; j++)
                 {
                     Vector2dd p = map->map(i,j);
-                    if (buf->isValidCoordBl(p) && buf->isValidCoord(p.y() + 1, p.x() + 1)) {
+                    if (buf->isValidCoordBl(p)) {
                         toReturn->element(i,j) = buf->elementBl(p);
                     } else {
                         toReturn->element(i,j) = ElementType(0x0);

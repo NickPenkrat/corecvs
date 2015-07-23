@@ -142,6 +142,9 @@
        <property name="toolTip">
          <string>Estimate Tangent</string>
        </property>
+       <property name="checked">
+           <bool>true</bool>
+       </property>
      </widget>
     </item>
     <item row="6" column="0">
@@ -155,6 +158,9 @@
      <widget class="QCheckBox" name="estimateCenterCheckBox">
        <property name="toolTip">
          <string>Estimate Center</string>
+       </property>
+       <property name="checked">
+           <bool>true</bool>
        </property>
      </widget>
     </item>

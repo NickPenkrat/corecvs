@@ -23,16 +23,22 @@ HEADERS += \
     math/generic/genericMath.h \
     math/sse/sseWrapper.h \
     math/sse/sseInteger.h \
-    math/sse/int8x16.h \
-    math/sse/int32x4.h \
     math/sse/int64x2.h \
+    math/sse/int32x4.h \
     math/sse/int32x8.h \
     math/sse/float32x4.h \
     math/sse/sseMath.h \
+    \
     math/sse/intBase16x8.h \
-    math/sse/uInt16x8.h \
     math/sse/__int16x8.h \
     math/sse/int16x8.h \
+    math/sse/uInt16x8.h \
+    \
+    math/sse/intBase8x16.h \
+    math/sse/int8x16.h \
+    math/sse/uint8x16.h \
+    math/sse/uInt8x16.h \
+    \
     math/mathUtils.h \
     math/eulerAngles.h \
     math/puzzleBlock.h \

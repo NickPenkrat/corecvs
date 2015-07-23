@@ -36,9 +36,7 @@ bool OpenCvCheckerboardDetector::DetectFullCheckerboard(const cv::Mat &mat, int 
     vector<Point2f> pointbuf;
 
     SYNC_PRINT(("Start ...\n"));
-    found = findChessboardCorners(mat, boardSize, pointbuf,
-                                  CALIB_CB_ADAPTIVE_THRESH
-                                  /*+  CALIB_CB_FAST_CHECK */);
+    found = findChessboardCorners(mat, boardSize, pointbuf, CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_FAST_CHECK );
 
     for(int i = 0; i < height; i++)
     {
@@ -129,7 +127,7 @@ OpenCvCheckerboardDetector::BoardAlign OpenCvCheckerboardDetector::DetectPartChe
                 return BoardAlign::RIGHT;
             }
         }
-        SYNC_PRINT((" failed. Time: %i us\n", timer.usecsToNow()));
+        SYNC_PRINT((" failed. Time: %PRIu64 us\n", timer.usecsToNow()));
     }
     return BoardAlign::NONE;
 }
