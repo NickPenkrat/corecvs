@@ -1,5 +1,4 @@
-#ifndef SELECTABLEGEOMETRYFEATURES_H
-#define SELECTABLEGEOMETRYFEATURES_H
+#pragma once
 
 #include <algorithm>
 #include <vector>
@@ -138,5 +137,3 @@ public:
 };
 
 }
-
-#endif // SELECTABLEGEOMETRYFEATURES_H
