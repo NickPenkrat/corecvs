@@ -25,6 +25,36 @@ void OpenCvCheckerboardDetector::DrawCheckerboardLines(cv::Mat &dst, const vecto
     }
 }
 
+bool OpenCvCheckerboardDetector::DetectFullCheckerboard(
+        G8Buffer *input,
+        const CheckerboardDetectionParameters &params,
+        SelectableGeometryFeatures *lineList,
+        G8Buffer **output
+        )
+{
+    IplImage *iplImage = OpenCVTools::getCVImageFromG8Buffer(input);
+    Mat view = cv::Mat(iplImage);
+
+    bool toReturn = DetectFullCheckerboard(view,
+                     params.hCrossesCount(),
+                     params.vCrossesCount(),
+                     lineList,
+                     params.preciseDiameter(),
+                     params.iterationCount(),
+                     params.minAccuracy());
+
+    if (output != NULL)
+    {
+        G8Buffer *header = G8Buffer::CreateBuffer<G8Buffer>(iplImage->height, iplImage->width, iplImage->widthStep, (uint8_t *)iplImage->imageData);
+        *output = new G8Buffer(header);
+        delete header;
+    }
+
+
+    cvReleaseImage(&iplImage);
+    return toReturn;
+}
+
 bool OpenCvCheckerboardDetector::DetectFullCheckerboard(const cv::Mat &mat, int width, int height, SelectableGeometryFeatures *lineList, int precise,
                                                         int maxIterationCount,
                                                         double minAccuracy){

@@ -8,9 +8,12 @@
 #include <string>
 #include "global.h"
 
+#include "g8Buffer.h"
+#include "checkerboardDetectionParameters.h"
 #include "selectableGeometryFeatures.h"
 
 using namespace cv;
+using corecvs::G8Buffer;
 
 class OpenCvCheckerboardDetector{
 public:
@@ -25,6 +28,14 @@ public:
         NONE
     };
 
+
+
+    static bool DetectFullCheckerboard(G8Buffer *input,
+                                       const CheckerboardDetectionParameters &params,
+                                       SelectableGeometryFeatures *lineList,
+                                       G8Buffer **output = NULL);
+
+
     static bool DetectFullCheckerboard(const cv::Mat &mat, int width, int height, SelectableGeometryFeatures *lineList,
                                        int precise = 11,
                                        int maxIterationCount = 100,
@@ -33,6 +44,7 @@ public:
                                        int precise = 11,
                                        int maxIterationCount = 100,
                                        double minAccuracy = 0.001);
+
     static BoardAlign DetectPartCheckerboardH(const cv::Mat &mat, int width, int height, vector<vector<Vector2dd> > straights);
     static BoardAlign DetectPartCheckerboardV(const cv::Mat &mat, int width, int height, vector<vector<Vector2dd> > straights);
     static void DrawCheckerboardLines(cv::Mat &dst, const vector<vector<Vector2dd> > &straights);

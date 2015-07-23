@@ -193,7 +193,7 @@ int main (int argc, char **argv)
             SYNC_PRINT(("Calc full %s with %ix%i\n", fileName.c_str(), chessW, chessH));
         }
 
-        IplImage  *iplImage;
+
         RGB24Buffer *image = BufferFactory::getInstance()->loadRGB24Bitmap(fileName);
         if (image == NULL)
         {
@@ -203,11 +203,21 @@ int main (int argc, char **argv)
 
         Vector2dd  center = Vector2dd(image->w, image->h) / 2.0;
 
+
+        G8Buffer *channel = NULL;
+
+        CheckerboardDetectionParameters params;
+        params.setHCrossesCount(chessW);
+        params.setVCrossesCount(chessH);
+        params.setPreciseDiameter(precise);
+        params.setMinAccuracy(minAccuracy);
+        params.setIterationCount(maxIterationCount);
+
+
         if (useGreenChannel) {
-            G8Buffer *channel  = image->getChannel(ImageChannel::G);
-            iplImage = OpenCVTools::getCVImageFromG8Buffer(channel);
+            channel  = image->getChannel(ImageChannel::G);
         } else {
-            iplImage = OpenCVTools::getCVImageFromRGB24Buffer(image);
+            channel  = image->getChannel(ImageChannel::GRAY);
         }
 
         if (verbose)
@@ -215,12 +225,10 @@ int main (int argc, char **argv)
             SYNC_PRINT(("Loaded %s.\n",fileName.c_str()));
         }
 
-        Mat view = cv::Mat(iplImage);
 
-//        vector<vector<Vector2dd> > straights;
         SelectableGeometryFeatures lineList;
-
-        found = OpenCvCheckerboardDetector::DetectFullCheckerboard(view, chessW, chessH, &lineList, precise);
+        G8Buffer *boardOutput = NULL;
+        found = OpenCvCheckerboardDetector::DetectFullCheckerboard(channel, params, &lineList, &boardOutput);
 
         if (found)
         {
@@ -231,7 +239,10 @@ int main (int argc, char **argv)
             if (drawProccess)
             {
 //                OpenCvCheckerboardDetector::DrawCheckerboardLines(view, straights);
-                imwrite("test_with_chess_LINES.jpg", view);
+                //imwrite("test_with_chess_LINES.jpg", view);
+                RGB24Buffer *toSave = new RGB24Buffer(boardOutput);
+                QTFileLoader().save("test_with_chess_LINES.jpg", toSave, 100);
+                delete_safe(toSave);
                 if (verbose)
                 {
                     SYNC_PRINT(("test_with_chess_LINES.jpg saved.\n"));
@@ -295,7 +306,7 @@ int main (int argc, char **argv)
                     SYNC_PRINT(("Apply to <%s>\n",fileName.c_str()));
                 }
 
-                RGB24Buffer *image   = BufferFactory::getInstance()->loadRGB24Bitmap(fileName);
+                RGB24Buffer *image = BufferFactory::getInstance()->loadRGB24Bitmap(fileName);
                 if (image == NULL)
                 {
                     SYNC_PRINT(("Failed to load <%s>.\n",fileName.c_str()));
