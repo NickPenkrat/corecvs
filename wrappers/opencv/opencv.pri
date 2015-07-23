@@ -4,8 +4,6 @@ isEmpty(OPENCV_WRAPPER_DIR) {
     include(opencvLibs.pri)
 }
 
-CONFIG += c++11
-
 contains(DEFINES, WITH_OPENCV) {                    # if it's installed properly with found path for lib
 
     INCLUDEPATH += $$OPENCV_WRAPPER_DIR

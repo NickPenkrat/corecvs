@@ -38,9 +38,26 @@ static bool getIntCmdOption(const std::string & value, const std::string & optio
     return 0;
 }
 
-static bool cmdIfHelp(char** begin, char** end, const std::string& option)
+static bool cmdIfOption(char** begin, char** end, const std::string& option)
 {
     return std::find(begin, end, option) != end;
+}
+
+static void usage()
+{
+    printf("\n\n\n"
+        " Info supported params:\n"
+        "                 test_grab_N_captures --info v4l2:/dev/video1  v4l2:/dev/video0\n"
+        "\n"
+        " Capture frames: test_grab_N_captures v4l2:/dev/video1  v4l2:/dev/video0\n"
+        " Capture frames: test_grab_N_captures 0 1\n"
+        "\n"
+        " To set additional params:\n"
+        "\t\tExposure:      --exposure:VALUE\n"
+        "\t\tWhite balance: --whiteBalance:VALUE\n"
+        "\t\tGain:          --gain:VALUE\n"
+        "\n"
+        "\t\tVALUE - in range from min to max for param\n");
 }
 
 int main(int argc, char **argv)
@@ -50,27 +67,20 @@ int main(int argc, char **argv)
 
     QCoreApplication app(argc, argv);
 
-    if (cmdIfHelp(argv, argv + argc, "--help"))
+    if (cmdIfOption(argv, argv + argc, "--help"))
     {
-        printf("\n\n\n Info supported params: test_grab_N_captures --info v4l2:/dev/video1  v4l2:/dev/video0\n");
-        printf("\n Capture frames: test_grab_N_captures v4l2:/dev/video1  v4l2:/dev/video0\n");
-        printf("\n Capture frames: test_grab_N_captures dshow:0,1\n");
-        printf("\n\n To set additional params:\n");
-        printf("\t\tExposure:      --exposure:VALUE\n");
-        printf("\t\tWhite balance: --whiteBalance:VALUE\n");
-        printf("\t\tGain:          --gain:VALUE\n");
-        printf("\n\t\tVALUE - in range from min to max for param\n");
+        usage();
         return 0;
     }
 
-    if (cmdIfHelp(argv, argv + argc, "--info"))
+    if (cmdIfOption(argv, argv + argc, "--info"))
     {
         info = true;
     }
 
-    vector<char*> deviceNames;
-    vector<ImageCaptureInterface*> captures;
-    vector<int*> frameToSkipList;
+    vector<cchar *>                 deviceNames;
+    vector<ImageCaptureInterface *> captures;
+    vector<int *>                   frameToSkipList;
 
     int gain = -1;                 // getIntCmdOption(argv, argv + argc, "--exposure:");
     int exposure = -1;
@@ -78,6 +88,18 @@ int main(int argc, char **argv)
 
     printf("\n\n");
     printf("Read command-line\n");
+
+    if (argc < 2)
+    {
+        printf("There's no given camera to read. Using the default one.\n");
+#ifdef WIN32
+        cchar* deviceDef = "0";
+#else
+        cchar* deviceDef = "v4l2:/dev/video0";
+#endif
+        deviceNames.push_back(deviceDef);
+        printf("Device %s added.\n", deviceDef);
+    }
 
     for (int i = 1; i < argc; i++)
     {
@@ -111,17 +133,17 @@ int main(int argc, char **argv)
 
     for (int i = 0; i < deviceNames.size(); i++)
     {
-        char * captureString = deviceNames[i];
-        printf("Attempting a grab 1 __________    %s    _________\n", captureString);
+        cchar * captureString = deviceNames[i];
+        printf("Attempting a grab __________    %s    _________\n", captureString);
 
         Waiter::CameraDescriptor camDesc;
         camDesc.camId = i;
 
-        camDesc.input = new CAPTURE_INTERFACE(
-                        captureString,
-                        1944,
-                        2592,
-                        8, true);
+        camDesc.input = new CAPTURE_INTERFACE(captureString,
+                            1944,
+                            2592,
+                            8,
+                            true);  // rgb mode
         camDesc.result = NULL;
         camDesc.toSkip = 10;
 

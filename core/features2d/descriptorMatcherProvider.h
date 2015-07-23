@@ -4,7 +4,7 @@
 #include "descriptorExtractorProvider.h"
 #include "imageMatches.h"
 
-class DescriptorMatcher
+class DescriptorMatcher : public virtual AlgoBase
 {
 public:
 	void knnMatch(RuntimeTypeBuffer &query, RuntimeTypeBuffer &train, std::vector<std::vector<RawMatch>> &matches, size_t K);
@@ -17,8 +17,8 @@ protected:
 class DescriptorMatcherProviderImpl
 {
 public:
-	virtual DescriptorMatcher* getDescriptorMatcher(const DetectorType &type) = 0;
-	virtual bool provides(const DetectorType &type) = 0;
+	virtual DescriptorMatcher* getDescriptorMatcher(const DescriptorType &descriptor, const MatcherType &matcher) = 0;
+	virtual bool provides(const DescriptorType &descriptor, const MatcherType &matcher) = 0;
 	virtual ~DescriptorMatcherProviderImpl() {}
 protected:
 };
@@ -27,7 +27,7 @@ class DescriptorMatcherProvider
 {
 public:
 	void add(DescriptorMatcherProviderImpl *provider);
-	DescriptorMatcher* getMatcher(const DescriptorType &type);
+	DescriptorMatcher* getMatcher(const DescriptorType &descriptor, const MatcherType &matcher);
 	static DescriptorMatcherProvider& getInstance();
 	~DescriptorMatcherProvider();
 private:

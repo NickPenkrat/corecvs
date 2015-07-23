@@ -6,7 +6,6 @@
 #include <sstream>
 #include <algorithm>
 #include <ctime>  // clock???  Please use PreciseTimer!!!
-//#include <algorithm> ?! we are using std::sort on 1249, so it looks ok
 
 #include "featureDetectorProvider.h"
 #include "descriptorExtractorProvider.h"
@@ -19,6 +18,7 @@
 static const char* KEYPOINT_EXTENSION   = "keypoints";
 static const char* DESCRIPTOR_EXTENSION = "descriptors";
 static const char* SIFT_EXTENSION       = "sift";
+
 
 std::string changeExtension(const std::string &imgName, const std::string &desiredExt)
 {
@@ -144,7 +144,7 @@ void KeyPointDetectionStage::run(FeatureMatchingPipeline *pipeline)
 
     size_t N = pipeline->images.size();
 
-    corecvs::parallelable_for ((size_t)0, N, CORE_MAX(N / 16, (size_t)1), ParallelDetector(pipeline,detectorType), detectorType != "SIFTGPU");
+    corecvs::parallelable_for ((size_t)0, N, CORE_MAX(N / 16, (size_t)1), ParallelDetector(pipeline,detectorType), parallelable);
 
     ss1 << "Detecting keypoints with " << detectorType;
     pipeline->toc(ss1.str(), ss2.str());
@@ -177,6 +177,9 @@ void KeyPointDetectionStage::loadResults(FeatureMatchingPipeline *pipeline, cons
 
 KeyPointDetectionStage::KeyPointDetectionStage(DetectorType type) : detectorType(type)
 {
+    FeatureDetector* detector = FeatureDetectorProvider::getInstance().getDetector(detectorType);
+    parallelable = detector->isParallelable();
+    delete detector;
 }
 
 void DescriptorExtractionStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &_filename) const
@@ -278,7 +281,7 @@ void DescriptorExtractionStage::run(FeatureMatchingPipeline *pipeline)
 
     size_t N = pipeline->images.size();
 
-    corecvs::parallelable_for ((size_t)0, N, CORE_MAX(N / 16,(size_t)1), ParallelExtractor(pipeline,descriptorType), descriptorType != "SIFTGPU");
+    corecvs::parallelable_for ((size_t)0, N, CORE_MAX(N / 16,(size_t)1), ParallelExtractor(pipeline,descriptorType), parallelable);
 
     ss1 << "Extracting " << descriptorType << " descriptors";
     pipeline->toc(ss1.str(), ss2.str());
@@ -286,6 +289,9 @@ void DescriptorExtractionStage::run(FeatureMatchingPipeline *pipeline)
 
 DescriptorExtractionStage::DescriptorExtractionStage(DescriptorType type) : descriptorType(type)
 {
+    DescriptorExtractor* extractor = DescriptorExtractorProvider::getInstance().getDescriptorExtractor(descriptorType);
+    parallelable = extractor->isParallelable();
+    delete extractor;
 }
 
 void FileNameRefinedMatchingPlanComputationStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const
@@ -326,7 +332,8 @@ void FileNameRefinedMatchingPlanComputationStage::run(FeatureMatchingPipeline *p
             int diff  = (24 * 100 + idx1 - idx2) % 24;
             int diff2 = (24 * 100 + idx2 - idx1) % 24;
             diff = CORE_MIN(diff, diff2);
-            if (diff > 5) {
+            if (diff > 5)
+            {
                 continue;
             }
             std::deque<uint16_t> train(images[j].keyPoints.keyPoints.size());
@@ -386,19 +393,23 @@ void MatchingPlanComputationStage::run(FeatureMatchingPipeline *pipeline)
     pipeline->toc("Preparing matching plan", "");
 }
 
-MatchingStage::MatchingStage(DescriptorType type, size_t responsesPerPoint) : descriptorType(type), responsesPerPoint(responsesPerPoint)
+MatchingStage::MatchingStage(DescriptorType type, MatcherType matcherType, size_t responsesPerPoint) : descriptorType(type), matcherType(matcherType), responsesPerPoint(responsesPerPoint)
 {
+    DescriptorMatcher* matcher = DescriptorMatcherProvider::getInstance().getMatcher(descriptorType, matcherType);
+    parallelable = matcher->isParallelable();
+    delete matcher;
 }
 
 class ParallelMatcher
 {
     FeatureMatchingPipeline* pipeline;
     DescriptorType descriptorType;
+    MatcherType matcherType;
     size_t responsesPerPoint;
 public:
     void operator() (const corecvs::BlockedRange<size_t>& r) const
     {
-        size_t N = pipeline->images.size();  CORE_UNUSED(N);
+        DescriptorMatcher* matcher = DescriptorMatcherProvider::getInstance().getMatcher(descriptorType, matcherType);
         size_t S = pipeline->matchPlan.plan.size();
         size_t id = r.begin();
         MatchPlan &matchPlan = pipeline->matchPlan;
@@ -409,7 +420,6 @@ public:
         ss1 << "Matched sets ";
         size_t cnt = 0;
         pipeline->tic(id, false);
-//        size_t kpt = 0;
 
         for (size_t i = r.begin(); i != r.end(); ++i)
         {
@@ -418,9 +428,6 @@ public:
             size_t I = matchPlan.plan[s].queryImg;
             size_t J = matchPlan.plan[s].trainImg;
             auto &query = matchPlan.plan[s];
-
-            assert(I < N && J < N);
-
 
             RuntimeTypeBuffer qb(images[I].descriptors.mat);
             RuntimeTypeBuffer tb(images[J].descriptors.mat);
@@ -434,7 +441,6 @@ public:
                 memcpy(tb.row<void>(j), images[J].descriptors.mat.row<void>(query.trainFeatures[j]), tb.getRowSize());
             }
 
-            DescriptorMatcher* matcher = DescriptorMatcherProvider::getInstance().getMatcher(descriptorType);
             std::vector<std::vector<RawMatch>> ml;
             matcher->knnMatch(qb, tb, ml, responsesPerPoint);
 
@@ -474,9 +480,10 @@ public:
         {
             pipeline->toc(ss1.str(), ss2.str(), S, cnt, id, false); cnt = 0;
         }
+        delete matcher;
 
     }
-    ParallelMatcher(FeatureMatchingPipeline* pipeline, DescriptorType descriptorType, size_t responsesPerPoint) : pipeline(pipeline), descriptorType(descriptorType), responsesPerPoint(responsesPerPoint) {}
+    ParallelMatcher(FeatureMatchingPipeline* pipeline, DescriptorType descriptorType, MatcherType matcherType, size_t responsesPerPoint) : pipeline(pipeline), descriptorType(descriptorType), matcherType(matcherType), responsesPerPoint(responsesPerPoint) {}
 };
 
 
@@ -485,15 +492,13 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline)
     pipeline->tic();
     MatchPlan &matchPlan = pipeline->matchPlan;
     RawMatches &rawMatches = pipeline->rawMatches;
-//    std::vector<Image> &images = pipeline->images;
 
     assert(matchPlan.plan.size());
     rawMatches.matches.clear();
     rawMatches.matches.resize(matchPlan.plan.size());
 
     size_t S = matchPlan.plan.size();
-    corecvs::parallelable_for ((size_t)0, S, CORE_MAX(S / 16, (size_t)1)
-        , ParallelMatcher(pipeline,descriptorType, responsesPerPoint), descriptorType != "SIFTGPU");
+    corecvs::parallelable_for ((size_t)0, S, CORE_MAX(S / 16, (size_t)1), ParallelMatcher(pipeline, descriptorType, matcherType, responsesPerPoint), parallelable);
     
     std::stringstream ss;
     pipeline->toc("Computing raw matches", ss.str());
@@ -514,13 +519,14 @@ class ParallelMatcherRefiner
 {
     FeatureMatchingPipeline* pipeline;
     DescriptorType descriptorType;
+    MatcherType matcherType;
     size_t responsesPerPoint;
     double scaleThreshold;
     std::vector<int> *first_ptr, *next_ptr, *idx_ptr;
 public:
     void operator() (const corecvs::BlockedRange<size_t>& r) const
     {
-        DescriptorMatcher* matcher = DescriptorMatcherProvider::getInstance().getMatcher(descriptorType);
+        DescriptorMatcher* matcher = DescriptorMatcherProvider::getInstance().getMatcher(descriptorType, matcherType);
         size_t id = r.begin();
         MatchPlan &matchPlan = pipeline->matchPlan;
         RawMatches &rawMatches = pipeline->rawMatches;
@@ -656,6 +662,7 @@ public:
                 if (ratioInliers[1][rm.featureT].featureT == rm.featureQ)
                     final_matches.push_back(Match((uint16_t)I, (uint16_t)J, rm.featureQ, rm.featureT, rm.distance));
             }
+
             refinedMatches.matchSets[J*(J-1)/2+I]=(RefinedMatchSet(I, J, final_matches));
             cnt++;
             if (cnt % 16 == 0)
@@ -673,11 +680,14 @@ public:
         }
         delete matcher;
     }
-    ParallelMatcherRefiner(FeatureMatchingPipeline* pipeline, DescriptorType descriptorType, size_t responsesPerPoint, std::vector<int> *first, std::vector<int> *next, std::vector<int> *idx, double scaleThreshold = 0.95) : pipeline(pipeline), descriptorType(descriptorType), responsesPerPoint(responsesPerPoint), scaleThreshold(scaleThreshold), first_ptr(first), next_ptr(next), idx_ptr(idx) {}
+    ParallelMatcherRefiner(FeatureMatchingPipeline* pipeline, DescriptorType descriptorType, MatcherType matcherType, size_t responsesPerPoint, std::vector<int> *first, std::vector<int> *next, std::vector<int> *idx, double scaleThreshold = 0.95) : pipeline(pipeline), descriptorType(descriptorType), matcherType(matcherType), responsesPerPoint(responsesPerPoint), scaleThreshold(scaleThreshold), first_ptr(first), next_ptr(next), idx_ptr(idx) {}
 };
 
-MatchAndRefineStage::MatchAndRefineStage(DescriptorType descriptorType, double scaleThreshold) : descriptorType(descriptorType), scaleThreshold(scaleThreshold)
+MatchAndRefineStage::MatchAndRefineStage(DescriptorType descriptorType, MatcherType matcherType, double scaleThreshold) : descriptorType(descriptorType), matcherType(matcherType), scaleThreshold(scaleThreshold)
 {
+    DescriptorMatcher* matcher = DescriptorMatcherProvider::getInstance().getMatcher(descriptorType, matcherType);
+    parallelable = matcher->isParallelable();
+    delete matcher;
 }
 
 void MatchAndRefineStage::loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename)
@@ -693,7 +703,6 @@ void MatchAndRefineStage::saveResults(FeatureMatchingPipeline *pipeline, const s
 void MatchAndRefineStage::run(FeatureMatchingPipeline *pipeline)
 {
     pipeline->tic();
-    DescriptorMatcher* matcher = DescriptorMatcherProvider::getInstance().getMatcher(descriptorType);
 
     MatchPlan &matchPlan = pipeline->matchPlan;
     RawMatches &rawMatches = pipeline->rawMatches;
@@ -736,10 +745,9 @@ void MatchAndRefineStage::run(FeatureMatchingPipeline *pipeline)
     rawMatches.matches.resize(matchPlan.plan.size());
     refinedMatches.matchSets.resize(N*(N-1)/2);
     
-    corecvs::parallelable_for ((size_t)0, P, CORE_MAX(P / 16,(size_t)1), ParallelMatcherRefiner(pipeline,descriptorType, responsesPerPoint, &first, &next, &idx), descriptorType != "SIFTGPU");
+    corecvs::parallelable_for ((size_t)0, P, CORE_MAX(P / 16,(size_t)1), ParallelMatcherRefiner(pipeline, descriptorType, matcherType, responsesPerPoint, &first, &next, &idx), parallelable);
     
     pipeline->toc("Computing & refining matches on-the-fly", "");
-    delete matcher;
 }
 
 #ifdef WITH_CLUSTERS
@@ -1190,6 +1198,54 @@ std::string file_name(const std::string &full_name)
     for (size_t i = from, j = 0; i < full_name.size(); ++i, ++j)
         res[j] = full_name[i];
     return res;
+}
+
+void VsfmWriterStage::loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename)
+{
+    // 1. Read keypoints from .SIFT
+    // 2. Read matches from provided filename
+
+    std::vector<Image> &images = pipeline->images;
+    RefinedMatches &refinedMatches = pipeline->refinedMatches;
+    size_t N = pipeline->images.size();
+    std::vector<SiftFeature> features;
+
+    for (size_t i = 0; i < N; ++i)
+    {
+        images[i].keyPoints.keyPoints.clear();
+
+        std::string file = changeExtension(images[i].filename, SIFT_EXTENSION);
+
+        std::ifstream of;
+        of.open(file.c_str(), std::ifstream::in);
+        VsfmSiftIO::readBinary(of, features);
+
+        size_t M;
+        images[i].keyPoints.keyPoints.resize(M = features.size());
+        for (size_t j = 0; j < M; ++j)
+            images[i].keyPoints.keyPoints[j] = KeyPoint(features[i].x, features[i].y, features[i].scale, features[i].orientation);
+    }
+
+    std::ifstream ofs;
+    ofs.open(filename.c_str(), std::ifstream::in);
+    assert(ofs);
+
+    while (ofs)
+    {
+        size_t I, J, K;
+        ofs >> I >> J >> K;
+        std::vector<size_t> idxA(K), idxB(K);
+        for (size_t i = 0; i < K; ++i)
+            ofs >> idxA[i];
+        for (size_t i = 0; i < K; ++i)
+            ofs >> idxB[i];
+        std::deque<Match> matches;
+        for(size_t i = 0; i < K; ++i)
+            matches.push_back(Match(I, J, idxA[i], idxB[i], 0.0));
+
+        RefinedMatchSet set(I, J, matches);
+        refinedMatches.matchSets.push_back(set);
+    }
 }
 
 void VsfmWriterStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const
