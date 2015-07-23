@@ -17,8 +17,9 @@
 #include "int32x8.h"
 #include "int16x8.h"
 #include "uInt16x8.h"
+
 #include "int8x16.h"
-#include "uint8x16.h"
+#include "uInt8x16.h"
 
 #include "float32x4.h"
 

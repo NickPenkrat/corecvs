@@ -36,7 +36,7 @@ HEADERS += \
     \
     math/sse/intBase8x16.h \
     math/sse/int8x16.h \
-    math/sse/uint8x16.h \
+#    math/sse/uint8x16.h \
     math/sse/uInt8x16.h \
     \
     math/mathUtils.h \
