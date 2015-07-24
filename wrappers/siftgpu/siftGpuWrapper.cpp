@@ -153,7 +153,7 @@ SiftGpu::~SiftGpu()
 #ifdef WIN32
     delete siftGpu;     // windows requires to "delete" the allocated object inside siftGpu.dll instead of free-ing it
 #else
-    free(siftGpu);       // linux: valgrid said that free is better
+    free (siftGpu);       // linux: valgrid said that free is better
 #endif
 }
 

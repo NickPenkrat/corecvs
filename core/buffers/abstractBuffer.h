@@ -169,6 +169,7 @@ public:
     enum BufferType {
         NORMAL_BUFFER,
         VIEW_BUFFER,
+        EXTERNAL_DATA_BUFFER,
         EMPTY_BUFFER
     };
 
@@ -369,11 +370,13 @@ template<typename ResultType>
     {
         // This is the only legitimate place to use default constructor
         ResultType *toReturn = new ResultType();
-        toReturn->flags      = VIEW_BUFFER;
+
         toReturn->h          = h;
         toReturn->w          = w;
         toReturn->stride     = this->stride;
+
         toReturn->data       = &(this->element(y, x));
+        toReturn->flags      = VIEW_BUFFER;
         /**
          * Prevent original buffer from being deleted
          * MemoryBlock magically counts references
@@ -388,6 +391,18 @@ template<typename ResultType>
     ResultType *createView()
     {
         return this->createView<ResultType>(0, 0, this->h, this->w);
+    }
+
+
+    /** This allows to build a buffer on top of the exising buffer. User is fully responsible for memory management **/
+template<typename ResultType>
+    static ResultType* CreateBuffer(IndexType _h, IndexType _w, IndexType _stride, ElementType *_data)
+    {
+        ResultType* toReturn = new ResultType();
+        toReturn->_init(_h, _w, _stride, false, false);
+        toReturn->data = _data;
+        toReturn->flags = EXTERNAL_DATA_BUFFER;
+        return toReturn;
     }
 
 
@@ -491,6 +506,11 @@ template<typename ResultType>
         return data != NULL;
     }
 
+    inline int numElements() const
+    {
+        return h * stride;
+    }
+
     /**
      *  Calculate image buffer size in bytes
      **/
@@ -538,9 +558,6 @@ template<typename ResultType>
      **/
     void fillWith(const ElementType &value)
     {
-        /*for (IndexType i = 0; i < h; i++)
-            for (IndexType j = 0; j < w; j++)
-                this->element(i,j) = value; */
         fillRectangleWith(0, 0, h, w, value);
     }
 
@@ -1054,6 +1071,20 @@ private:
             if (shouldInit) {
                 CORE_CLEAR_MEMORY(this->data, allocatedSize);
             }
+
+#ifdef ASSERTS
+            /**
+             *  Mark the margin zone that is used for alignment with a distinct pattern.
+             **/
+            for (IndexType i = 0; i < this->getH(); i++)
+            {
+                uint8_t *start = reinterpret_cast<uint8_t *>(&this->element(i, this->w));
+                uint8_t *end   = reinterpret_cast<uint8_t *>(&this->element(i + 1,   0));
+
+                for (unsigned j = 0; start + j < end; j++)
+                    start[j] = (uint8_t)(j * 2);
+            }
+#endif
         }
         else
         {
@@ -1061,19 +1092,6 @@ private:
             this->data = NULL;
         }
 
-//#ifdef ASSERTS
-        /**
-         *  Mark the margin zone that is used for alignment with a distinct pattern.
-         **/
-        for (IndexType i = 0; i < this->getH(); i++)
-        {
-            uint8_t *start = reinterpret_cast<uint8_t *>(&this->element(i, this->w));
-            uint8_t *end   = reinterpret_cast<uint8_t *>(&this->element(i + 1,   0));
-
-            for (unsigned j = 0; start + j < end; j++)
-                start[j] = (uint8_t)(j * 2);
-        }
-//#endif
 
         return 0;
     }

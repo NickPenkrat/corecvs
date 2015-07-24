@@ -42,7 +42,7 @@ int CheckerboardDetectionParameters::staticInit()
         (
           CheckerboardDetectionParameters::CHANNEL_ID,
           offsetof(CheckerboardDetectionParameters, mChannel),
-          0,
+          3,
           "Channel",
           "Channel",
           "Channel",

@@ -237,6 +237,39 @@ void testSignUnsign16 ( void )
 #endif
 }
 
+
+void testSaturatedArithmetics()
+{
+#ifdef WITH_SSE
+    int8_t a0t[16] = {  55, 100, 120, -100, -80,  10,  10,  10, 0, 0, 0, 0, 0, 0, 0, 0};
+    int8_t a1t[16] = {  55, 100, 120, -100, -80, 120, 120, 120, 0, 0, 0, 0, 0, 0, 0, 0};
+
+    Int8x16 A0(a0t);
+    Int8x16 A1(a1t);
+
+    Int8x16 sSum = adds(A0, A1);
+    Int8x16 sDif = subs(A0, A1);
+
+    cout << "Signed Sum :" << sSum << endl;
+    cout << "Signed Diff:" << sDif << endl;
+
+
+    uint8_t b0t[16] = {  55, 100, 150, 200, 250,  10,  10,  10, 0, 0, 0, 0, 0, 0, 0, 0};
+    uint8_t b1t[16] = {  55, 100, 150, 200, 250, 100, 100, 100, 0, 0, 0, 0, 0, 0, 0, 0};
+
+    UInt8x16 B0(b0t);
+    UInt8x16 B1(b1t);
+
+    UInt8x16 uSum = adds(B0, B1);
+    UInt8x16 uDif = subs(B0, B1);
+
+    cout << "Unsigned Sum :" << uSum << endl;
+    cout << "Unsigned Diff:" << uDif << endl;
+
+
+#endif
+}
+
 void testAdditionalFunctions()
 {
 #ifdef WITH_SSE
@@ -539,8 +572,14 @@ void test64bit()
     cout << "Testing 64 bit sse wrapper" << endl;
     cout << "Testing 64 bit to 16bit" << endl;
 
+#if _MSC_VER != 1600    // TODO: for msvc2010 it doesn't linking, why?
     Int64x2 l64(0xFF);
     cout << "Lower byte in 64 bit" << l64 << endl;
+#else
+    Int64x2 l64;
+    cout << "test64bit() FAILED on msvc2010" << endl;
+    exit(-1);
+#endif
 
     UInt8x16 l8(l64.data);
     cout << "Lower byte in 8 bit"  << l8 << endl;
