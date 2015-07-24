@@ -164,7 +164,7 @@ int main (int argc, char **argv)
             SYNC_PRINT(("Calc full %s with %ix%i\n", fileName.c_str(), chessW, chessH));
         }
 
-        IplImage  *iplImage;
+
         RGB24Buffer *image = BufferFactory::getInstance()->loadRGB24Bitmap(fileName);
         if (image == NULL)
         {
@@ -174,25 +174,24 @@ int main (int argc, char **argv)
 
         Vector2dd center = Vector2dd(image->w, image->h) / 2.0;
 
-        if (useGreenChannel) {
-            G8Buffer *channel = image->getChannel(ImageChannel::G);
-            iplImage = OpenCVTools::getCVImageFromG8Buffer(channel);
-        }
-        else {
-            iplImage = OpenCVTools::getCVImageFromRGB24Buffer(image);
-        }
+        CheckerboardDetectionParameters params;
+        params.setHCrossesCount(chessW);
+        params.setVCrossesCount(chessH);
+        params.setPreciseDiameter(precise);
+        params.setMinAccuracy(minAccuracy);
+        params.setIterationCount(maxIterationCount);
+
+        G8Buffer *channel = image->getChannel(useGreenChannel ? ImageChannel::G : ImageChannel::GRAY);
 
         if (verbose)
         {
             SYNC_PRINT(("Loaded %s.\n", fileName.c_str()));
         }
 
-        Mat view = cv::Mat(iplImage);
 
-//        vector<vector<Vector2dd> > straights;
         SelectableGeometryFeatures lineList;
-
-        found = OpenCvCheckerboardDetector::DetectFullCheckerboard(view, chessW, chessH, &lineList, precise);
+        G8Buffer *boardOutput = NULL;
+        found = OpenCvCheckerboardDetector::DetectFullCheckerboard(channel, params, &lineList, &boardOutput);
 
         if (found)
         {
@@ -203,7 +202,10 @@ int main (int argc, char **argv)
             if (drawProccess)
             {
 //                OpenCvCheckerboardDetector::DrawCheckerboardLines(view, straights);
-                imwrite("test_with_chess_LINES.jpg", view);
+                //imwrite("test_with_chess_LINES.jpg", view);
+                RGB24Buffer *toSave = new RGB24Buffer(boardOutput);
+                QTFileLoader().save("test_with_chess_LINES.jpg", toSave, 100);
+                delete_safe(toSave);
                 if (verbose)
                 {
                     SYNC_PRINT(("test_with_chess_LINES.jpg saved.\n"));
@@ -340,7 +342,7 @@ int main (int argc, char **argv)
             "opencvLineDetector.exe --calcFullCheckerBoard:<filename> --chessW:18 --chessH:11\n"
             "                       --use_green_channel --max_iteration_count:50 --min_accuracy:0.001\n\n"
             "To apply found distortion params:\n"
-            "opencvLineDetector.exe --apply --is_inverse <filenames_via_spaces>\n"
+            "opencvLineDetector.exe --apply <filenames_via_spaces>\n"
             );
         //--prefix
         //--json_file_name

@@ -248,7 +248,7 @@ void testConverstions()
 
 }
 
-int main (int /*argC*/, char **/*argV*/)
+int main (int /*argC*/, char ** /*argV*/)
 {
     testSimilarity1();
     //testConverstions();

@@ -7,6 +7,7 @@
 using namespace corecvs;
 
 namespace corecvs {
+    class checkerboardDetectionParameters;
     class SelectableGeometryFeatures;
 };
 
@@ -25,6 +26,12 @@ public:
         BOTTOM,
         NONE
     };
+
+
+    static bool DetectFullCheckerboard(G8Buffer *input,
+                                       const CheckerboardDetectionParameters &params,
+                                       SelectableGeometryFeatures *lineList,
+                                       G8Buffer **output = NULL);
 
     static bool DetectFullCheckerboard(const cv::Mat &mat, int width, int height, SelectableGeometryFeatures *lineList,
                                        int precise = 11,

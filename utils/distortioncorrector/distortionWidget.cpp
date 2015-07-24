@@ -23,6 +23,7 @@
 # include <opencv2/calib3d/calib3d.hpp>
 # include "opencv2/core/core_c.h"
 # include "OpenCVTools.h"
+# include "openCvCheckerboardDetector.h"
 
 using namespace cv;
 
@@ -183,68 +184,34 @@ void DistortionWidget::detectCheckerboard()
 
     G8Buffer *workChannel = mBufferInput->getChannel(params.channel());
 
-    IplImage *inputIpl = OpenCVTools::getCVImageFromG8Buffer(workChannel);
-    int             found;
-    vector<Point2f> pointbuf;
-    Mat             view = cv::Mat(inputIpl, false);
+    int found;
+    PaintImageWidget *canvas = mUi->widget;
 
-    int chessHeight = params.vCrossesCount();
-    int chessWidth  = params.hCrossesCount();
-    int cellSize = params.cellSize();
+    if(params.cleanExisting())
+    {
+        mUi->calibrationFeatures->clearObservationPoints();
+        canvas->mFeatures.mPaths.clear();
+    }
 
-    Size boardSize(chessWidth, chessHeight);
+    SelectableGeometryFeatures *features = &canvas->mFeatures;
 
-    found = findChessboardCorners( view, boardSize, pointbuf, CV_CALIB_CB_ADAPTIVE_THRESH );
+    G8Buffer *output = NULL;
+    found = OpenCvCheckerboardDetector::DetectFullCheckerboard(workChannel, params, features, &output);
 
     if(found)
     {
-        L_INFO_P("Cross detected: %i", found);
+        L_INFO_P("Chessboard detected: %d", found);
 
-        delete mBufferWithCorners;
-        drawChessboardCorners(view, boardSize, Mat(pointbuf), found);
-
-        IplImage viewImage = view;
-        mBufferWithCorners = OpenCVTools::getRGB24BufferFromCVImage(&viewImage);
-
-        PaintImageWidget *canvas = mUi->widget;
-
-        if(params.cleanExisting())
-        {
-            mUi->calibrationFeatures->clearObservationPoints();
-            canvas->mFeatures.mPaths.clear();
+        if (output != NULL) {
+            delete_safe(mBufferWithCorners);
+            mBufferWithCorners = new RGB24Buffer(output);
         }
-
-        SelectableGeometryFeatures *features = &canvas->mFeatures;
-
-        for(int i = 0; i < chessHeight; i++)
-        {
-            SelectableGeometryFeatures::VertexPath * path = features->appendNewPath();
-
-            for(int j = 0; j < chessWidth; j++)
-            {
-                Vector2dd point(pointbuf.at(i * chessWidth + j).x,pointbuf.at(i * chessWidth + j).y);
-                addPointPair(Vector3dd(cellSize * j, cellSize * i, 0), point);
-                features->addVertexToPath(features->appendNewVertex(point), path);
-            }
-        }
-
-        for(int j = 0; j < chessWidth; j++)
-        {
-            SelectableGeometryFeatures::VertexPath * path = features->appendNewPath();
-
-            for(int i = 0; i < chessHeight; i++)
-            {
-                Vector2dd point(pointbuf.at(i * chessWidth + j).x,pointbuf.at(i * chessWidth + j).y);
-                //addPointPair(Vector3dd(cellSize * j, cellSize * i, 0), point);
-                features->addVertexToPath(features->appendNewVertex(point), path);
-            }
-        }
-
         mUi->calibrationFeatures->geometryFeatures = features;
         mUi->calibrationFeatures->updateWidget();
 
     }
-    cvReleaseImage(&inputIpl);
+
+    delete_safe(output);
     delete_safe(workChannel);
     return;
 #else

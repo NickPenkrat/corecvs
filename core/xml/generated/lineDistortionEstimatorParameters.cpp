@@ -107,7 +107,7 @@ int LineDistortionEstimatorParameters::staticInit()
         (
           LineDistortionEstimatorParameters::ESTIMATE_TANGENT_ID,
           offsetof(LineDistortionEstimatorParameters, mEstimateTangent),
-          false,
+          true,
           "Estimate Tangent",
           "Estimate Tangent",
           "Estimate Tangent"
@@ -118,7 +118,7 @@ int LineDistortionEstimatorParameters::staticInit()
         (
           LineDistortionEstimatorParameters::ESTIMATE_CENTER_ID,
           offsetof(LineDistortionEstimatorParameters, mEstimateCenter),
-          false,
+          true,
           "Estimate Center",
           "Estimate Center",
           "Estimate Center"
