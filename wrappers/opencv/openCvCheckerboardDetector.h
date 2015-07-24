@@ -6,8 +6,9 @@
 
 using namespace corecvs;
 
+class CheckerboardDetectionParameters;
 namespace corecvs {
-    class checkerboardDetectionParameters;
+    class G8Buffer;
     class SelectableGeometryFeatures;
 };
 

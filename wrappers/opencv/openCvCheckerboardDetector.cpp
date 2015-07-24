@@ -2,6 +2,8 @@
 #include "selectableGeometryFeatures.h"
 #include "checkerboardDetectionParameters.h"
 #include "preciseTimer.h"
+/// OpenCV wrapper
+#include "OpenCVTools.h"
 
 #include <opencv2/imgproc/imgproc.hpp>  // cornerSubPix
 #include <opencv2/calib3d/calib3d.hpp>  // findChessboardCorners
@@ -34,7 +36,7 @@ bool OpenCvCheckerboardDetector::DetectFullCheckerboard(
     )
 {
     IplImage *iplImage = OpenCVTools::getCVImageFromG8Buffer(input);
-    Mat view = cv::Mat(iplImage);
+    cv::Mat view = cv::Mat(iplImage);
 
     bool toReturn = DetectFullCheckerboard(view,
                      params.hCrossesCount(),

@@ -18,6 +18,7 @@
 #include "lmDistortionSolver.h"
 #include "printerVisitor.h"
 #include "openCvCheckerboardDetector.h"
+#include "checkerboardDetectionParameters.h"
 #include "selectableGeometryFeatures.h"
 
 using namespace cv;
