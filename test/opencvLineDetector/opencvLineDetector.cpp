@@ -321,8 +321,12 @@ int main (int argc, char **argv)
 
                 if(mDistortionCorrectTransform == NULL){
                     if (!isInverse) {
+                        if(verbose) { SYNC_PRINT(("Forward transform\n")); }
+
                         mDistortionCorrectTransform = new DisplacementBuffer(&mLinesRadialCoorection, image->h, image->w, false);
                     } else {
+                        if(verbose) { SYNC_PRINT(("Inverse transform\n")); }
+
                         mDistortionCorrectTransform = DisplacementBuffer::CacheInverse(&mLinesRadialCoorection,
                             image->h, image->w,
                             0.0,0.0,
@@ -331,8 +335,8 @@ int main (int argc, char **argv)
                     }
                 }
 
-                image = image->doReverseDeformationBlTyped<DisplacementBuffer>(mDistortionCorrectTransform);
-                if (image == NULL)
+                RGB24Buffer *deformed = image->doReverseDeformationBlTyped<DisplacementBuffer>(mDistortionCorrectTransform);
+                if (deformed == NULL)
                 {
                     SYNC_PRINT(("Failed to do transformation.\n"));
                     return 2;
@@ -352,7 +356,10 @@ int main (int argc, char **argv)
                 string outputFileName = path + prefix + name;
 
                 SYNC_PRINT(("Saving to <%s>\n", outputFileName.c_str()));
-                QTFileLoader().save(outputFileName, image, 100);
+                QTFileLoader().save(outputFileName, deformed, 100);
+
+                delete_safe(deformed);
+                delete_safe(image);
 
             }
         }

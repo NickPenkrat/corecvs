@@ -214,7 +214,7 @@ void testRadialApplication ( void )
     cout << "Applying forward deformation cache... " << flush;
     timer = PreciseTimer::currentTime();
     RGB24Buffer *corrected22 = defomed->doReverseDeformationBlTyped<DisplacementBuffer>(forward);
-    cout << "done in: " << timer.usecsToNow() << "us" << endl;
+    cout << "done in: " << timer.usecsToNow()  << "us"  << endl;
 
     RGB24Buffer *diff22 = RGB24Buffer::diff(image, corrected22);
 

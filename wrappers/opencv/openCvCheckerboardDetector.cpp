@@ -57,7 +57,8 @@ bool OpenCvCheckerboardDetector::DetectFullCheckerboard(
 
 bool OpenCvCheckerboardDetector::DetectFullCheckerboard(const cv::Mat &mat, int width, int height, SelectableGeometryFeatures *lineList, int precise,
                                                         int maxIterationCount,
-                                                        double minAccuracy){
+                                                        double minAccuracy)
+{
 //    vector<vector<Vector2dd> > straights;
 //    bool detected = DetectFullCheckerboard(mat, width, height, &straights, precise, maxIterationCount, minAccuracy);
 
@@ -204,7 +205,7 @@ OpenCvCheckerboardDetector::BoardAlign OpenCvCheckerboardDetector::DetectPartChe
 
 void OpenCvCheckerboardDetector::fillStraight(const vector<Point2f> &buffer, int width, int height, vector<vector<Vector2dd> > *straights)
 {
-        SYNC_PRINT(("--------- %i --------------\n", buffer.at(1).x));
+    SYNC_PRINT(("--------- %i --------------\n", buffer.at(1).x));
     vector<vector<Vector2dd> > tempSstraights;
     for (unsigned ih = 0; ih < height; ih++)
     {
