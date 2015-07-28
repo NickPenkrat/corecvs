@@ -69,7 +69,10 @@
 
     <field type="int"          name="Precise Diameter"   defaultValue="50"    min="0" max="999999"  />
     <field type="int"          name="Iteration count"    defaultValue="50"    min="1" max="999999"  />
-    <field type="double"       name="Min accuracy"       defaultValue="0.001" suffix="px" /> 
+    <field type="double"       name="Min accuracy"       defaultValue="0.001" suffix="px" />
+
+    <field type="bool"         name="Partial Board"      defaultValue="true"/>
+
   </class>
 
   <enum name="Line Distortion Estimator Cost">
