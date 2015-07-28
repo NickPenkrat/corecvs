@@ -318,9 +318,10 @@ int main (int argc, char **argv)
                     }
                 }
 
+
                 if(mDistortionCorrectTransform == NULL){
                     if (!isInverse) {
-                        mDistortionCorrectTransform = new DisplacementBuffer(&mLinesRadialCoorection, image->h, image->w, true);
+                        mDistortionCorrectTransform = new DisplacementBuffer(&mLinesRadialCoorection, image->h, image->w, false);
                     } else {
                         mDistortionCorrectTransform = DisplacementBuffer::CacheInverse(&mLinesRadialCoorection,
                             image->h, image->w,

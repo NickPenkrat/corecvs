@@ -11,6 +11,7 @@
 LensDistortionModelParametersControlWidget::LensDistortionModelParametersControlWidget(QWidget *parent) :
     ParametersControlWidgetBase(parent),
     ui(new Ui::LensDistortionModelParametersContolWidget),
+    rootPath("intrinsic"),
     mExample(NULL),
     mInput(NULL),
     mCorrected(NULL),
