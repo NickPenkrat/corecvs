@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vector2d.h"
+#include "vector3d.h"
 
 #include <opencv2/core/core.hpp>        // cv::Mat, Point2f
 
@@ -47,7 +48,7 @@ public:
     static BoardAlign DetectPartCheckerboardV(const cv::Mat &mat, int width, int height, Straights straights);
 
     static void DrawCheckerboardLines(cv::Mat &dst, const Straights &straights);
-
+    static std::vector<std::pair<Vector2dd, Vector3dd>> GetPoints(const cv::Mat &mat, int width, int height, double squareSize = 50.0);
 private:
     static void fillStraight(const vector<cv::Point2f> &buffer, int width, int height, Straights *straights);
     static void fillLineList(const Straights &straights, int width, int height, SelectableGeometryFeatures *lineList);
