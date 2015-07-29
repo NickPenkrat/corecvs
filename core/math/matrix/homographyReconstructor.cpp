@@ -79,6 +79,7 @@ HomographyReconstructor::~HomographyReconstructor()
 /**
  *   TODO: This function doubles the code form rectificator.cpp
  **/
+// FIXME
 void HomographyReconstructor::noramlisePoints(Matrix33 &transformLeft, Matrix33 &transformRight)
 {
     Vector2dd lmean(0.0);
@@ -501,6 +502,8 @@ void HomographyReconstructor::CostFunction::operator()(const double in[], double
     out[0] = reconstructor->getCostFunction(H);
 }
 
+
+
 /*
 void HomographyReconstructor::CostFunctionBack::operator()(const double in[], double out[])
 {
@@ -582,8 +585,8 @@ Matrix33 HomographyReconstructor::getBestHomographyClassicKalman()
 /**
  *  This block is devoted to LM reconstruction
  **/
-
-Matrix33 HomographyReconstructor::getBestHomographyLM(Matrix33 /*guess*/)
+// FIXME: implement full cost-function for LM
+Matrix33 HomographyReconstructor::getBestHomographyLM(Matrix33 guess)
 {
     CostFunction F(this);
     LevenbergMarquardt LMfit;
@@ -592,9 +595,15 @@ Matrix33 HomographyReconstructor::getBestHomographyLM(Matrix33 /*guess*/)
     LMfit.maxIterations = 25;
 
     vector<double> input(8);
-    input[0] = 1.0; input[1] = 0.0; input[2] = 0.0;
-    input[3] = 0.0; input[4] = 1.0; input[5] = 0.0;
-    input[6] = 0.0; input[7] = 0.0;
+    for(int i = 0; i < 3; ++i)
+    {
+        for(int j = 0; j < 3; ++j)
+        {
+            if(i * 3 + j == 8)
+                break;
+            input[i * 3 + j] = guess.a(i, j) / guess.a(2, 2);
+        }
+    }
 
     vector<double> output(1);
     output[0] = 0.0;
