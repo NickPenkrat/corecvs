@@ -47,15 +47,6 @@ with_opencv {
                 INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
                 LIBS        += $$OPENCV_249_LIBS_ADD_OWN_BUILT
 
-            } else:exists($$OPENCV_PATH/build/x64/mingw/bin/libopencv_core246.dll): !win32-msvc* {   # installed OpenCV v.2.4.6 with MINGW support
-                !build_pass:message(Using <$$OPENCV_PATH/build/x64/mingw/bin>)
-                INCLUDEPATH += $$OPENCV_INC_INSTALLED
-                LIBS += \
-                    -L$$OPENCV_PATH/build/x64/mingw/lib/ \
-                    -llibopencv_calib3d246    -llibopencv_video246 -llibopencv_core246   -llibopencv_highgui246 \
-                    -llibopencv_features2d246 -llibopencv_flann246 -llibopencv_legacy246 -llibopencv_nonfree246 \
-                    -llibopencv_imgproc246    -llibopencv_objdetect246
-
             } else:exists($$OPENCV_PATH/build.mg/bin/libopencv_core249.dll): !win32-msvc* {   # git's OpenCV tag=2.4.9 built by MINGW without GPU
                 !build_pass:message(Using <$$OPENCV_PATH/build.mg/bin>)
                 INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
