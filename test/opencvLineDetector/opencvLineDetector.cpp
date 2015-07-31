@@ -282,6 +282,35 @@ int main (int argc, char **argv)
             }
         }
     }
+    else if (argc > 3 &&
+        getStringCmdOption(argv[1], "--calcPartCheckerBoard:", &fileName) &&
+        getIntCmdOption(argv[2], "--chessW:", &chessW) &&
+        getIntCmdOption(argv[3], "--chessH:", &chessH) )
+    {
+        RGB24Buffer *image = BufferFactory::getInstance()->loadRGB24Bitmap(fileName);
+        G8Buffer *channel = NULL;
+        channel  = image->getChannel(ImageChannel::GRAY);
+
+        if (cmdIfOption(all_args, "--min_accuracy", &pos))
+        {
+            getDoubleCmdOption(argv[pos], "--min_accuracy:", &minAccuracy);
+        }
+        if (cmdIfOption(all_args, "--precise", &pos))
+        {
+            getIntCmdOption(argv[pos], "--precise:", &precise);
+        }
+
+        CheckerboardDetectionParameters params;
+        params.setHCrossesCount(chessW);
+        params.setVCrossesCount(chessH);
+        params.setPreciseDiameter(precise);
+        params.setMinAccuracy(minAccuracy);
+        params.setIterationCount(maxIterationCount);
+
+        ObservationList *observationList;
+        Size cellSize(50,50);
+        OpenCvCheckerboardDetector::DetectPartCheckerboardV(channel, params, observationList, cellSize);
+    }
     else if (cmdIfOption(all_args, "--apply", &pos))
     {
         LensDistortionModelParameters loaded;

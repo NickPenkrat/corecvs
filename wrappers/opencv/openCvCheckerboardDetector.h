@@ -28,29 +28,47 @@ public:
         NONE
     };
 
-
-
     static bool DetectFullCheckerboard(G8Buffer *input,
                                        const CheckerboardDetectionParameters &params,
                                        SelectableGeometryFeatures *lineList,
                                        G8Buffer **output = NULL);
+
+    static bool DetectPartCheckerboardV(G8Buffer *input,
+                                        const CheckerboardDetectionParameters &params,
+                                        ObservationList *observation,
+                                        Size cellSize,  //TODO: move into params
+                                        G8Buffer **output = NULL);
+
+    static bool DetectPartCheckerboardH(G8Buffer *input,
+                                        const CheckerboardDetectionParameters &params,
+                                        ObservationList *observation,
+                                        Size cellSize,  //TODO: move into params
+                                        G8Buffer **output = NULL);
 
 
     static bool DetectFullCheckerboard(const cv::Mat &mat, int width, int height, SelectableGeometryFeatures *lineList,
                                        int precise = 11,
                                        int maxIterationCount = 100,
                                        double minAccuracy = 0.001);
+
     static bool DetectFullCheckerboard(const cv::Mat &mat, int width, int height, vector<vector<Vector2dd> > *straights,
                                        int precise = 11,
                                        int maxIterationCount = 100,
                                        double minAccuracy = 0.001);
 
-    static BoardAlign DetectPartCheckerboardH(const cv::Mat &mat, int width, int height, vector<vector<Vector2dd> > straights);
-    static BoardAlign DetectPartCheckerboardV(const cv::Mat &mat, int width, int height, vector<vector<Vector2dd> > straights);
+    static BoardAlign DetectPartCheckerboardH(const cv::Mat &mat, int width, int height, Size cellSize, ObservationList *observationList);
+
+    static BoardAlign DetectPartCheckerboardV(const cv::Mat &mat, int width, int height, Size cellSize, ObservationList *observationList);
+
     static void DrawCheckerboardLines(cv::Mat &dst, const vector<vector<Vector2dd> > &straights);
+    static void DrawCheckerboardIndex(cv::Mat &dst, const vector<Point2f> &pointbuf);
 private:
     static void fillStraight(const vector<Point2f> &buffer, int width, int height, vector<vector<Vector2dd> > *straights);
-    static void fillLineList(const vector<vector<Vector2dd> > &straights, int width, int height, SelectableGeometryFeatures *lineList);
+    static void fillStraight(const vector<Point2f> &buffer, int width, int height, SelectableGeometryFeatures *lineList);
+
+    static void fillPoints(const vector<Point2f> &pointbuf, Size fullSize, Size partSize, Size cellSize, BoardAlign alignment, ObservationList *observationList);
+
+    static bool fastCheckCheckerboard(const cv::Mat &mat, Size boardSize);
 };
 
 #endif
