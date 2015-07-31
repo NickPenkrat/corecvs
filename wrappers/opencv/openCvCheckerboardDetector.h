@@ -36,13 +36,11 @@ public:
     static bool DetectPartCheckerboardV(G8Buffer *input,
                                         const CheckerboardDetectionParameters &params,
                                         ObservationList *observation,
-                                        Size cellSize,  //TODO: move into params
                                         G8Buffer **output = NULL);
 
     static bool DetectPartCheckerboardH(G8Buffer *input,
                                         const CheckerboardDetectionParameters &params,
                                         ObservationList *observation,
-                                        Size cellSize,  //TODO: move into params
                                         G8Buffer **output = NULL);
 
 
@@ -56,9 +54,9 @@ public:
                                        int maxIterationCount = 100,
                                        double minAccuracy = 0.001);
 
-    static BoardAlign DetectPartCheckerboardH(const cv::Mat &mat, int width, int height, Size cellSize, ObservationList *observationList);
+    static BoardAlign DetectPartCheckerboardH(const cv::Mat &mat, const CheckerboardDetectionParameters &params, ObservationList *observationList);
 
-    static BoardAlign DetectPartCheckerboardV(const cv::Mat &mat, int width, int height, Size cellSize, ObservationList *observationList);
+    static BoardAlign DetectPartCheckerboardV(const cv::Mat &mat, const CheckerboardDetectionParameters &params, ObservationList *observationList);
 
     static void DrawCheckerboardLines(cv::Mat &dst, const vector<vector<Vector2dd> > &straights);
     static void DrawCheckerboardIndex(cv::Mat &dst, const vector<Point2f> &pointbuf);
