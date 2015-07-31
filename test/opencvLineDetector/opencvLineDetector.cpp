@@ -168,6 +168,7 @@ int main (int argc, char **argv)
     int chessH = 11;
     int found;
     int precise = 11;
+    int cellSize = 50;
     int maxIterationCount = 100;
     double minAccuracy = 0.001;
 
@@ -299,6 +300,10 @@ int main (int argc, char **argv)
         {
             getIntCmdOption(argv[pos], "--precise:", &precise);
         }
+        if (cmdIfOption(all_args, "--cell_size", &pos))
+        {
+            getIntCmdOption(argv[pos], "--cell_size:", &cellSize);
+        }
 
         CheckerboardDetectionParameters params;
         params.setHCrossesCount(chessW);
@@ -306,10 +311,10 @@ int main (int argc, char **argv)
         params.setPreciseDiameter(precise);
         params.setMinAccuracy(minAccuracy);
         params.setIterationCount(maxIterationCount);
+        params.setCellSize(cellSize);
 
         ObservationList *observationList;
-        Size cellSize(50,50);
-        OpenCvCheckerboardDetector::DetectPartCheckerboardV(channel, params, observationList, cellSize);
+        OpenCvCheckerboardDetector::DetectPartCheckerboardV(channel, params, observationList);
     }
     else if (cmdIfOption(all_args, "--apply", &pos))
     {

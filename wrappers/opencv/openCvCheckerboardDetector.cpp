@@ -75,7 +75,6 @@ bool OpenCvCheckerboardDetector::DetectPartCheckerboardV(
         G8Buffer *input,
         const CheckerboardDetectionParameters &params,
         ObservationList *observation,
-        Size cellSize,
         G8Buffer **output
         )
 {
@@ -83,9 +82,7 @@ bool OpenCvCheckerboardDetector::DetectPartCheckerboardV(
     Mat view = cv::Mat(iplImage);
 
     BoardAlign alignment = DetectPartCheckerboardV(view,
-                                                   params.hCrossesCount(),
-                                                   params.vCrossesCount(),
-                                                   cellSize,
+                                                   params,
                                                    observation);
 
     if (output != NULL)
@@ -102,7 +99,6 @@ bool OpenCvCheckerboardDetector::DetectPartCheckerboardH(
         G8Buffer *input,
         const CheckerboardDetectionParameters &params,
         ObservationList *observation,
-        Size cellSize,
         G8Buffer **output
         )
 {
@@ -173,43 +169,45 @@ bool OpenCvCheckerboardDetector::DetectFullCheckerboard(const cv::Mat &mat, int 
     return found;
 }
 
-OpenCvCheckerboardDetector::BoardAlign OpenCvCheckerboardDetector::DetectPartCheckerboardH(const cv::Mat &mat, int width, int height, Size cellSize, ObservationList *observationList){
-    int found;
-    vector<Point2f> pointbuf;
-    int widthOfPart = 0;
-    for(unsigned i = width; i > 2; i--)
-    {
-        Size boardSize(i, height);
-        SYNC_PRINT(("Try %ix%i",i, height));
-        PreciseTimer timer = PreciseTimer::currentTime();
+OpenCvCheckerboardDetector::BoardAlign OpenCvCheckerboardDetector::DetectPartCheckerboardH(const cv::Mat &mat, const CheckerboardDetectionParameters &params, ObservationList *observationList){
+//    int found;
+//    vector<Point2f> pointbuf;
+//    int widthOfPart = 0;
+//    int width = params.hCrossesCount();
+//    int height = params.vCrossesCount();
+//    for(unsigned i = width; i > 2; i--)
+//    {
+//        Size boardSize(i, height);
+//        SYNC_PRINT(("Try %ix%i",i, height));
+//        PreciseTimer timer = PreciseTimer::currentTime();
 
-        found = findChessboardCorners( mat, boardSize, pointbuf, CV_CALIB_CB_ADAPTIVE_THRESH );
-        if(found)
-        {
-//            fillStraight(pointbuf, width, height, straights);
-            widthOfPart = i;
-            double left = pointbuf.at(0).x;
-            double right = pointbuf.at(width - 1).x;
-            for(unsigned j = 1; j < height; j++)
-            {
-                if(left   > pointbuf.at(width * j).x)
-                    left  = pointbuf.at(width * j).x;
-                if(right  > pointbuf.at(width * (j + 1) - 1).x)
-                    right = pointbuf.at(width * (j + 1) - 1).x;
-            }
-            if(left < right)
-            {
-                SYNC_PRINT((" LEFT\n"));
-                return BoardAlign::LEFT;
-            }
-            else
-            {
-                SYNC_PRINT((" RIGHT\n"));
-                return BoardAlign::RIGHT;
-            }
-        }
-        SYNC_PRINT((" failed. Time: %PRIu64 us\n", timer.usecsToNow()));
-    }
+//        found = findChessboardCorners( mat, boardSize, pointbuf, CV_CALIB_CB_ADAPTIVE_THRESH );
+//        if(found)
+//        {
+////            fillStraight(pointbuf, width, height, straights);
+//            widthOfPart = i;
+//            double left = pointbuf.at(0).x;
+//            double right = pointbuf.at(width - 1).x;
+//            for(unsigned j = 1; j < height; j++)
+//            {
+//                if(left   > pointbuf.at(width * j).x)
+//                    left  = pointbuf.at(width * j).x;
+//                if(right  > pointbuf.at(width * (j + 1) - 1).x)
+//                    right = pointbuf.at(width * (j + 1) - 1).x;
+//            }
+//            if(left < right)
+//            {
+//                SYNC_PRINT((" LEFT\n"));
+//                return BoardAlign::LEFT;
+//            }
+//            else
+//            {
+//                SYNC_PRINT((" RIGHT\n"));
+//                return BoardAlign::RIGHT;
+//            }
+//        }
+//        SYNC_PRINT((" failed. Time: %PRIu64 us\n", timer.usecsToNow()));
+//    }
     return BoardAlign::NONE;
 }
 
@@ -218,8 +216,11 @@ bool OpenCvCheckerboardDetector::fastCheckCheckerboard(const cv::Mat &mat, Size 
     return findChessboardCorners( mat, boardSize, pointbuf, CALIB_CB_FAST_CHECK );
 }
 
-OpenCvCheckerboardDetector::BoardAlign OpenCvCheckerboardDetector::DetectPartCheckerboardV(const cv::Mat &mat, int width, int height, Size cellSize, ObservationList *observationList){
+OpenCvCheckerboardDetector::BoardAlign OpenCvCheckerboardDetector::DetectPartCheckerboardV(const cv::Mat &mat, const CheckerboardDetectionParameters &params, ObservationList *observationList){
     SYNC_PRINT(("Start  !!!!!!!!!!!!!!!!!!!!!!!\n"));
+
+    int width = params.hCrossesCount();
+    int height = params.vCrossesCount();
     for(unsigned j = height; j > 2; j--)
     {
         Size boardSize(width, j);
@@ -243,16 +244,20 @@ OpenCvCheckerboardDetector::BoardAlign OpenCvCheckerboardDetector::DetectPartChe
                     if( top    > pointbuf.at(j * (i + 1) - 1).y)
                         top    = pointbuf.at(j * (i + 1) - 1).y;
                 }
+
+                cornerSubPix ( mat ,  pointbuf ,  Size ( params.preciseDiameter() , params.preciseDiameter() ),  Size ( - 1 ,  - 1 ),
+                  TermCriteria ( CV_TERMCRIT_EPS  +  CV_TERMCRIT_ITER , params.iterationCount(), params.minAccuracy() ));
+
                 if(top < bottom)
                 {
                     SYNC_PRINT((" TOP\n"));
-                    fillPoints(pointbuf, Size(width, height), boardSize, cellSize, BoardAlign::TOP, observationList);
+                    fillPoints(pointbuf, Size(width, height), boardSize, Size(params.cellSize(),params.cellSize()), BoardAlign::TOP, observationList);
                     return BoardAlign::TOP;
                 }
                 else
                 {
                     SYNC_PRINT((" BOTTOM\n"));
-                    fillPoints(pointbuf, Size(width, height), boardSize, cellSize, BoardAlign::BOTTOM, observationList);
+                    fillPoints(pointbuf, Size(width, height), boardSize, Size(params.cellSize(),params.cellSize()), BoardAlign::BOTTOM, observationList);
                     return BoardAlign::BOTTOM;
                 }
             }
