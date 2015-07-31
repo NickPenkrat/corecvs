@@ -29,17 +29,17 @@ void OpenCvCheckerboardDetector::DrawCheckerboardLines(cv::Mat &dst, const vecto
 void OpenCvCheckerboardDetector::DrawCheckerboardIndex(cv::Mat &dst, const vector<Point2f> &pointbuf){
     for(unsigned i = 0; i < pointbuf.size(); i++)
     {
-        Point p1(pointbuf[i]);
+        Point2f p1(pointbuf[i]);
         Scalar crossColor = Scalar(255, 50, 50);
         circle (dst, p1, 22, crossColor, 1);
-        line(dst, p1 + Point(-18, -18), p1 + Point(-9, -9), crossColor);
-        line(dst, p1 + Point( 18,  18), p1 + Point( 9,  9), crossColor);
-        line(dst, p1 + Point( 18, -18), p1 + Point( 9, -9), crossColor);
-        line(dst, p1 + Point(-18,  18), p1 + Point(-9,  9), crossColor);
+        line(dst, p1 + Point2f(-18, -18), p1 + Point2f(-9, -9), crossColor);
+        line(dst, p1 + Point2f( 18,  18), p1 + Point2f( 9,  9), crossColor);
+        line(dst, p1 + Point2f( 18, -18), p1 + Point2f( 9, -9), crossColor);
+        line(dst, p1 + Point2f(-18,  18), p1 + Point2f(-9,  9), crossColor);
 
         std::stringstream ss; ss << i;
-        putText(dst, ss.str(), Point(p1.x + 5, p1.y - 5), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0,0,0),2);
-        putText(dst, ss.str(), Point(p1.x + 5, p1.y - 5), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(255,255,255),1);
+        putText(dst, ss.str(), Point2f(p1.x + 5, p1.y - 5), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0,0,0),2);
+        putText(dst, ss.str(), Point2f(p1.x + 5, p1.y - 5), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(255,255,255),1);
     }
 }
 
@@ -277,7 +277,7 @@ void OpenCvCheckerboardDetector::fillPoints(const vector<Point2f> &pointbuf, Siz
         for(int i = fullSize.width; i > 0; i--){
             for(int j = partSize.height; j > 0; j--){
 
-                Point p(pointbuf[j * i - 1]);
+                Point2f p(pointbuf[j * i - 1]);
                 SYNC_PRINT(("i %i  j %i = %i  %i  = %i  %i \n", i, j,checkerboardShiftX + i,checkerboardShiftY + j, p.x, p.y));
 
                 PointObservation point;
