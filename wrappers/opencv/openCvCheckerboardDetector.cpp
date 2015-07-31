@@ -209,13 +209,13 @@ OpenCvCheckerboardDetector::BoardAlign OpenCvCheckerboardDetector::DetectPartChe
 //            fillStraight(pointbuf, width, height, straights);
             heightOfPart = j;
             double top = pointbuf.at(0).y;
-            double bottom = pointbuf.at(width - 1).y;
+            double bottom = pointbuf.at((heightOfPart - 1) *width).y;
             for (unsigned i = 1; i < (unsigned)width; i++)
             {
-                if(top     > pointbuf.at(j * i).y)
-                    top    = pointbuf.at(j * i).y;
-                if(bottom  > pointbuf.at(j * (i + 1) - 1).y)
-                    bottom = pointbuf.at(j * (i + 1) - 1).y;
+                if(top     > pointbuf.at(i).y)
+                    top    = pointbuf.at(i).y;
+                if(bottom  > pointbuf.at((heightOfPart - 1) * width + i).y)
+                    bottom = pointbuf.at((heightOfPart - 1) * width + i).y;
             }
             if (top < bottom)
             {
@@ -253,16 +253,39 @@ std::vector<std::pair<Vector2dd, Vector3dd>> OpenCvCheckerboardDetector::GetPoin
         if (found)
         {
             heightOfPart = j;
-            double top = pointbuf.at(0).y;
-            double bottom = pointbuf.at(width - 1).y;
-            for (unsigned i = 1; i < (unsigned)width; i++)
-            {
-                if(top     > pointbuf.at(j * i).y)
-                    top    = pointbuf.at(j * i).y;
-                if(bottom  > pointbuf.at(j * (i + 1) - 1).y)
-                    bottom = pointbuf.at(j * (i + 1) - 1).y;
+            double mean = 0.0;
+            for(auto pt: pointbuf)
+                mean += pt.y;
+            mean /= pointbuf.size();
+
+            for(int ii = 0; ii < j; ++ii) {
+                std::sort(pointbuf.begin() + width * ii, pointbuf.begin() + width * (ii+1), [](const cv::Point2f &a, const cv::Point2f &b) { return a.x < b.x; });
             }
-            if (top < bottom)
+            std::vector<double> yb;
+            for(int ii = 0; ii < j; ++ii)
+                yb.push_back(pointbuf[ii * width].y);
+            std::sort(yb.begin(), yb.end());
+
+            decltype(pointbuf) pbf = pointbuf;
+            for(int ii = 0; ii < j; ++ii)
+            {
+                int jj = 0;
+                for(jj = 0; jj < j; ++jj)
+                {
+                    if(yb[ii] == pointbuf[jj * width].y)
+                        break;
+                }
+                for(int kk = 0; kk < width; ++kk)
+                {
+                    pbf[ii * width + kk] = pointbuf[jj * width + kk];
+                }
+            }
+            pointbuf = pbf;
+            cv::Mat gr;
+            cv::cvtColor(mat, gr, CV_BGR2GRAY);
+            cv::cornerSubPix(gr, pointbuf, cv::Size(11, 11), cv::Size(-1, -1)
+            , cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 100, 1e-3));
+            if  (mean < (mat.rows / 2.0))
             {
                 SYNC_PRINT((" TOP\n"));
                 res.resize(pointbuf.size());
