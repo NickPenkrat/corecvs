@@ -32,7 +32,7 @@ DisplacementBuffer *DisplacementBuffer::CacheInverse(
     cout << "  step:" << step << endl;
     cout << "  UseLM:" << (useLM ? "yes" : "no") << endl;
 
-    DisplacementBuffer *toReturn = new DisplacementBuffer(h, w);
+    DisplacementBuffer *toReturn = new DisplacementBuffer(h, w, Vector2dd(numeric_limits<double>::max(), numeric_limits<double>::max()));
     AbstractBuffer<double> *distance = new AbstractBuffer<double>(h, w, 10.0);
 
     for (double y = y1; y < y2; y += step)

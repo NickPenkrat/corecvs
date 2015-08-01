@@ -58,7 +58,7 @@
       <string/>
      </property>
      <property name="icon">
-      <iconset resource="../../resources/main.qrc">
+      <iconset resource="../../../restricted/resources/resresource.qrc">
        <normaloff>:/new/prefix1/bullet_blue.png</normaloff>:/new/prefix1/bullet_blue.png</iconset>
      </property>
      <property name="iconSize">
@@ -88,7 +88,7 @@
       <string/>
      </property>
      <property name="icon">
-      <iconset resource="../../resources/main.qrc">
+      <iconset resource="../../../restricted/resources/resresource.qrc">
        <normaloff>:/new/prefix1/bullet_blue.png</normaloff>:/new/prefix1/bullet_blue.png</iconset>
      </property>
      <property name="iconSize">
@@ -138,7 +138,7 @@
       <string/>
      </property>
      <property name="icon">
-      <iconset resource="../../resources/main.qrc">
+      <iconset resource="../../../restricted/resources/resresource.qrc">
        <normaloff>:/new/prefix1/bullet_blue.png</normaloff>:/new/prefix1/bullet_blue.png</iconset>
      </property>
      <property name="iconSize">
@@ -168,7 +168,7 @@
       <string/>
      </property>
      <property name="icon">
-      <iconset resource="../../resources/main.qrc">
+      <iconset resource="../../../restricted/resources/resresource.qrc">
        <normaloff>:/new/prefix1/bullet_blue.png</normaloff>:/new/prefix1/bullet_blue.png</iconset>
      </property>
      <property name="iconSize">
@@ -191,7 +191,7 @@
       <string/>
      </property>
      <property name="icon">
-      <iconset resource="../../resources/main.qrc">
+      <iconset resource="../../../restricted/resources/resresource.qrc">
        <normaloff>:/new/prefix1/bullet_blue.png</normaloff>:/new/prefix1/bullet_blue.png</iconset>
      </property>
      <property name="iconSize">
@@ -231,7 +231,7 @@
       <string/>
      </property>
      <property name="icon">
-      <iconset resource="../../resources/main.qrc">
+      <iconset resource="../../../restricted/resources/resresource.qrc">
        <normaloff>:/new/prefix1/bullet_blue.png</normaloff>:/new/prefix1/bullet_blue.png</iconset>
      </property>
      <property name="iconSize">
@@ -260,7 +260,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="../../resources/main.qrc">
+        <iconset resource="../../../restricted/resources/resresource.qrc">
          <normaloff>:/new/prefix1/plus.png</normaloff>:/new/prefix1/plus.png</iconset>
        </property>
        <property name="iconSize">
@@ -287,7 +287,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="../../resources/main.qrc">
+        <iconset resource="../../../restricted/resources/resresource.qrc">
          <normaloff>:/new/prefix1/minus.png</normaloff>:/new/prefix1/minus.png</iconset>
        </property>
        <property name="iconSize">
@@ -337,7 +337,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="../../resources/main.qrc">
+        <iconset resource="../../../restricted/resources/resresource.qrc">
          <normaloff>:/new/prefix1/refresh.png</normaloff>:/new/prefix1/refresh.png</iconset>
        </property>
        <property name="iconSize">
@@ -354,7 +354,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="../../resources/main.qrc">
+        <iconset resource="../../../restricted/resources/resresource.qrc">
          <normaloff>:/new/prefix1/remove.png</normaloff>:/new/prefix1/remove.png</iconset>
        </property>
        <property name="iconSize">
@@ -371,7 +371,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="../../resources/main.qrc">
+        <iconset resource="../../../restricted/resources/resresource.qrc">
          <normaloff>:/new/prefix1/install.png</normaloff>:/new/prefix1/install.png</iconset>
        </property>
        <property name="iconSize">
@@ -450,7 +450,7 @@
      <item row="0" column="1">
       <widget class="QPushButton" name="levelGraphButton_2">
        <property name="icon">
-        <iconset resource="../../resources/main.qrc">
+        <iconset resource="../../../restricted/resources/resresource.qrc">
          <normaloff>:/new/prefix1/picture_save.png</normaloff>:/new/prefix1/picture_save.png</iconset>
        </property>
        <property name="iconSize">
@@ -464,7 +464,7 @@
      <item row="0" column="0">
       <widget class="QPushButton" name="graphButton">
        <property name="icon">
-        <iconset resource="../../resources/main.qrc">
+        <iconset resource="../../../restricted/resources/resresource.qrc">
          <normaloff>:/new/prefix1/Line Chart.png</normaloff>:/new/prefix1/Line Chart.png</iconset>
        </property>
        <property name="iconSize">
@@ -549,6 +549,26 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="comparePushButton">
+       <property name="toolTip">
+        <string>Compare with other deformation</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="../../resources/main.qrc">
+         <normaloff>:/new/prefix1/price_comparison.png</normaloff>:/new/prefix1/price_comparison.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>24</width>
+         <height>24</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="verticalSpacer_3">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
@@ -593,7 +613,7 @@
       <string/>
      </property>
      <property name="icon">
-      <iconset resource="../../resources/main.qrc">
+      <iconset resource="../../../restricted/resources/resresource.qrc">
        <normaloff>:/new/prefix1/bullet_blue.png</normaloff>:/new/prefix1/bullet_blue.png</iconset>
      </property>
     </widget>
@@ -601,6 +621,7 @@
   </layout>
  </widget>
  <resources>
+  <include location="../../../restricted/resources/resresource.qrc"/>
   <include location="../../resources/main.qrc"/>
  </resources>
  <connections>
@@ -812,6 +833,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>comparePushButton</sender>
+   <signal>released()</signal>
+   <receiver>LensDistortionModelParametersContolWidget</receiver>
+   <slot>compareCorrection()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>475</x>
+     <y>54</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>542</x>
+     <y>60</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>delPower()</slot>
@@ -829,5 +866,6 @@
   <slot>resetScale()</slot>
   <slot>invertCorrection()</slot>
   <slot>resetNormalize()</slot>
+  <slot>compareCorrection()</slot>
  </slots>
 </ui>

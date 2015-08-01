@@ -365,10 +365,16 @@ void DistortionWidget::updateScore()
     solver.computeCosts(corrector, true);
 
     mUi->widget->update();
-    mUi->scoreLabel->setText( QString("Line:%1px  Joint:%2")
+  /*  mUi->scoreLabel->setText( QString("Line:%1px  Joint:%2")
             .arg(solver.costs[LineDistortionEstimatorCost::LINE_DEVIATION_COST])
             .arg(solver.costs[LineDistortionEstimatorCost::JOINT_ANGLE_COST])
-        );
+        );*/
+
+    EllipticalApproximation1d &cost = solver.costs[LineDistortionEstimatorCost::LINE_DEVIATION_COST];
+    mUi->scoreLabel->setText( QString("Avg sq Err:%1px  MaxErr:%2px")
+               .arg(cost.getRadiusAround0())
+               .arg(cost.getMax()));
+
 }
 
 QSharedPointer<DisplacementBuffer> DistortionWidget::distortionCorrectionTransform()

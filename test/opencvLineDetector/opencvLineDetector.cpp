@@ -278,7 +278,9 @@ int main (int argc, char **argv)
             {
                 solver.computeCosts(mLinesRadialCoorection, false);
 
-                SYNC_PRINT(("Score is: %f\n", solver.costs[LineDistortionEstimatorCost::LINE_DEVIATION_COST]));
+                SYNC_PRINT(("Score     is: %f\n", solver.costs[LineDistortionEstimatorCost::LINE_DEVIATION_COST].getRadiusAround0()));
+                SYNC_PRINT(("Max error is: %f\n", solver.costs[LineDistortionEstimatorCost::LINE_DEVIATION_COST].getMax()));
+
                 SYNC_PRINT(("Written\n"));
             }
         }

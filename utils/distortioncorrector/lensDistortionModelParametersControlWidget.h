@@ -54,6 +54,7 @@ public slots:
     void resetScale();
     void resetNormalize();
     void invertCorrection();
+    void compareCorrection();
 
 
     void updateAdditionalDataNeeded();
