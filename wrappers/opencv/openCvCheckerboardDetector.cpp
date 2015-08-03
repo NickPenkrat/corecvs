@@ -132,12 +132,17 @@ bool OpenCvCheckerboardDetector::DetectFullCheckerboard(const cv::Mat &mat, int 
     vector<Point2f> pointbuf;
     SYNC_PRINT(("Start ...\n"));
     found = findChessboardCorners(mat, boardSize, pointbuf, CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_FAST_CHECK );
-    if(found && precise){
+    if (found && precise)
+    {
         cornerSubPix ( mat ,  pointbuf ,  Size ( precise ,  precise ),  Size ( - 1 ,  - 1 ),
           TermCriteria ( CV_TERMCRIT_EPS  +  CV_TERMCRIT_ITER ,  maxIterationCount, minAccuracy ));
     }
-    fillStraight(pointbuf, width, height, lineList);
-    return 1;
+    if (found)
+    {
+        fillStraight(pointbuf, width, height, lineList);
+        return true;
+    }
+    return false;
 }
 
 bool OpenCvCheckerboardDetector::DetectFullCheckerboard(const cv::Mat &mat, int width, int height, vector<vector<Vector2dd> > *straights, int precise,
