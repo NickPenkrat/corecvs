@@ -428,6 +428,7 @@ std::vector<std::pair<Vector2dd, Vector3dd>> OpenCvCheckerboardDetector::GetPoin
             break;
         }
     }
+    return res;
 }
 
 void OpenCvCheckerboardDetector::fillStraight(const vector<Point2f> &buffer, int width, int height, vector<vector<Vector2dd> > *straights)
