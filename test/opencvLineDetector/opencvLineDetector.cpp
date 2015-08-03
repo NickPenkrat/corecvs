@@ -129,6 +129,7 @@ int main (int argc, char **argv)
         waitKey(1000000);
         return 0;
     }
+
     string fileName = "";
     int chessW   = 18;
     int chessH   = 11;
@@ -248,9 +249,10 @@ int main (int argc, char **argv)
         params.setIterationCount(maxIterationCount);
         params.setCellSize(cellSize);
 
-        ObservationList *observationList;
+        ObservationList *observationList = new ObservationList;
         OpenCvCheckerboardDetector::DetectPartCheckerboardV(channel, params, observationList);
 
+        delete_safe(observationList);
         delete_safe(channel);
         delete_safe(image);
     }

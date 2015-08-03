@@ -10,6 +10,7 @@ class CheckerboardDetectionParameters;
 namespace corecvs {
     class G8Buffer;
     class SelectableGeometryFeatures;
+    class ObservationList;
 };
 
 typedef vector<vector<Vector2dd> > Straights;
@@ -28,7 +29,6 @@ public:
         NONE
     };
 
-
     static bool DetectFullCheckerboard(G8Buffer *input,
                                        const CheckerboardDetectionParameters &params,
                                        SelectableGeometryFeatures *lineList,
@@ -36,14 +36,13 @@ public:
 
     static bool DetectPartCheckerboardV(G8Buffer *input,
                                         const CheckerboardDetectionParameters &params,
-                                        ObservationList *observation,
+                                        ObservationList *observationList,
                                         G8Buffer **output = NULL);
 
     static bool DetectPartCheckerboardH(G8Buffer *input,
                                         const CheckerboardDetectionParameters &params,
-                                        ObservationList *observation,
+                                        ObservationList *observationList,
                                         G8Buffer **output = NULL);
-
 
     static bool DetectFullCheckerboard(const cv::Mat &mat, int width, int height, SelectableGeometryFeatures *lineList,
                                        int precise = 11,
@@ -55,7 +54,6 @@ public:
                                        double minAccuracy = 0.001);
 
     static BoardAlign DetectPartCheckerboardH(const cv::Mat &mat, const CheckerboardDetectionParameters &params, ObservationList *observationList);
-
     static BoardAlign DetectPartCheckerboardV(const cv::Mat &mat, const CheckerboardDetectionParameters &params, ObservationList *observationList);
 
     static void DrawCheckerboardLines(cv::Mat &dst, const Straights &straights);
@@ -65,7 +63,7 @@ private:
     static void fillStraight(const vector<cv::Point2f> &buffer, int width, int height, Straights *straights);
     static void fillStraight(const vector<cv::Point2f> &buffer, int width, int height, SelectableGeometryFeatures *lineList);
 
-    static void fillPoints(const vector<Point2f> &pointbuf, Size fullSize, Size partSize, Size cellSize, BoardAlign alignment, ObservationList *observationList);
+    static void fillPoints(const vector<cv::Point2f> &pointbuf, cv::Size fullSize, cv::Size partSize, cv::Size cellSize, BoardAlign alignment, ObservationList *observationList);
 
-    static bool fastCheckCheckerboard(const cv::Mat &mat, Size boardSize);
+    static bool fastCheckCheckerboard(const cv::Mat &mat, cv::Size boardSize);
 };

@@ -1,11 +1,12 @@
 #include "openCvCheckerboardDetector.h"
-#include "selectableGeometryFeatures.h"
+#include "selectableGeometryFeatures.h"  // ObservationList
 #include "checkerboardDetectionParameters.h"
 #include "preciseTimer.h"
 /// OpenCV wrapper
 #include "OpenCVTools.h"
 
 #include <opencv2/imgproc/imgproc.hpp>  // cornerSubPix
+#include <opencv2/highgui/highgui.hpp>  // imwrite
 #include <opencv2/calib3d/calib3d.hpp>  // findChessboardCorners
 
 void OpenCvCheckerboardDetector::DrawCheckerboardLines(cv::Mat &dst, const Straights &straights)
@@ -32,17 +33,17 @@ void OpenCvCheckerboardDetector::DrawCheckerboardIndex(cv::Mat &dst, const vecto
 {
     for (unsigned i = 0; i < pointbuf.size(); i++)
     {
-        Point2f p1(pointbuf[i]);
-        Scalar crossColor = Scalar(255, 50, 50);
+        cv::Point2f p1(pointbuf[i]);
+        cv::Scalar crossColor = cv::Scalar(255, 50, 50);
         circle (dst, p1, 22, crossColor, 1);
-        line(dst, p1 + Point2f(-18, -18), p1 + Point2f(-9, -9), crossColor);
-        line(dst, p1 + Point2f( 18,  18), p1 + Point2f( 9,  9), crossColor);
-        line(dst, p1 + Point2f( 18, -18), p1 + Point2f( 9, -9), crossColor);
-        line(dst, p1 + Point2f(-18,  18), p1 + Point2f(-9,  9), crossColor);
+        line(dst, p1 + cv::Point2f(-18, -18), p1 + cv::Point2f(-9, -9), crossColor);
+        line(dst, p1 + cv::Point2f( 18,  18), p1 + cv::Point2f( 9,  9), crossColor);
+        line(dst, p1 + cv::Point2f( 18, -18), p1 + cv::Point2f( 9, -9), crossColor);
+        line(dst, p1 + cv::Point2f(-18,  18), p1 + cv::Point2f(-9,  9), crossColor);
 
         std::stringstream ss; ss << i;
-        putText(dst, ss.str(), Point2f(p1.x + 5, p1.y - 5), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0,0,0),       2);
-        putText(dst, ss.str(), Point2f(p1.x + 5, p1.y - 5), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(255,255,255), 1);
+        putText(dst, ss.str(), cv::Point2f(p1.x + 5, p1.y - 5), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0,0,0),       2);
+        putText(dst, ss.str(), cv::Point2f(p1.x + 5, p1.y - 5), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255,255,255), 1);
     }
 }
 
@@ -57,18 +58,18 @@ bool OpenCvCheckerboardDetector::DetectFullCheckerboard(
     cv::Mat view = cv::Mat(iplImage);
 
     bool toReturn = DetectFullCheckerboard(view,
-                     params.hCrossesCount(),
-                     params.vCrossesCount(),
-                     lineList,
-                     params.preciseDiameter(),
-                     params.iterationCount(),
-                     params.minAccuracy());
+                        params.hCrossesCount(),
+                        params.vCrossesCount(),
+                        lineList,
+                        params.preciseDiameter(),
+                        params.iterationCount(),
+                        params.minAccuracy());
 
     if (output != NULL)
     {
         G8Buffer *header = G8Buffer::CreateBuffer<G8Buffer>(iplImage->height, iplImage->width, iplImage->widthStep, (uint8_t *)iplImage->imageData);
         *output = new G8Buffer(header);
-        delete header;
+        delete_safe(header);
     }
 
     cvReleaseImage(&iplImage);
@@ -76,35 +77,33 @@ bool OpenCvCheckerboardDetector::DetectFullCheckerboard(
 }
 
 bool OpenCvCheckerboardDetector::DetectPartCheckerboardV(
-        G8Buffer *input,
-        const CheckerboardDetectionParameters &params,
-        ObservationList *observation,
-        G8Buffer **output
-        )
+    G8Buffer *input
+  , const CheckerboardDetectionParameters &params
+  , ObservationList *observationList
+  , G8Buffer **output
+    )
 {
     IplImage *iplImage = OpenCVTools::getCVImageFromG8Buffer(input);
-    Mat view = cv::Mat(iplImage);
+    cv::Mat view = cv::Mat(iplImage);
 
-    BoardAlign alignment = DetectPartCheckerboardV(view,
-                                                   params,
-                                                   observation);
+    BoardAlign alignment = DetectPartCheckerboardV(view, params, observationList);
 
     if (output != NULL)
     {
         G8Buffer *header = G8Buffer::CreateBuffer<G8Buffer>(iplImage->height, iplImage->width, iplImage->widthStep, (uint8_t *)iplImage->imageData);
         *output = new G8Buffer(header);
-        delete header;
+        delete_safe(header);
     }
     cvReleaseImage(&iplImage);
     return false;
 }
 
 bool OpenCvCheckerboardDetector::DetectPartCheckerboardH(
-        G8Buffer *input,
-        const CheckerboardDetectionParameters &params,
-        ObservationList *observation,
-        G8Buffer **output
-        )
+    G8Buffer *input
+  , const CheckerboardDetectionParameters &params
+  , ObservationList *observationList
+  , G8Buffer **output
+    )
 {
 //    IplImage *iplImage = OpenCVTools::getCVImageFromG8Buffer(input);
 //    Mat view = cv::Mat(iplImage);
@@ -124,7 +123,7 @@ bool OpenCvCheckerboardDetector::DetectPartCheckerboardH(
 //        delete header;
 //    }
 //    cvReleaseImage(&iplImage);
-    return 0;//toReturn;
+    return false;//toReturn;
 }
 
 bool OpenCvCheckerboardDetector::DetectFullCheckerboard(
@@ -139,17 +138,6 @@ bool OpenCvCheckerboardDetector::DetectFullCheckerboard(
     CORE_UNUSED(maxIterationCount);
     CORE_UNUSED(minAccuracy);
     SYNC_PRINT(("Start ...\n"));
-    found = findChessboardCorners(mat, boardSize, pointbuf, CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_FAST_CHECK );
-    if(found && precise){
-        cornerSubPix ( mat ,  pointbuf ,  Size ( precise ,  precise ),  Size ( - 1 ,  - 1 ),
-          TermCriteria ( CV_TERMCRIT_EPS  +  CV_TERMCRIT_ITER ,  maxIterationCount, minAccuracy ));
-    }
-    fillStraight(pointbuf, width, height, lineList);
-    return 1;
-}
-
-//    Straights straights;
-//    bool detected = DetectFullCheckerboard(mat, width, height, &straights, precise, maxIterationCount, minAccuracy);
 
     int                 found;
     cv::Size            boardSize(width, height);
@@ -171,15 +159,16 @@ bool OpenCvCheckerboardDetector::DetectFullCheckerboard(
     SYNC_PRINT(("Finding lines %ix%i...", width, height));
     if (precise)
     {
-        cornerSubPix(mat, pointbuf, Size(precise, precise), Size(-1,-1),
-            TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, maxIterationCount, minAccuracy));
+        cornerSubPix(mat, pointbuf, cv::Size(precise, precise), cv::Size(-1, -1),
+            cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, maxIterationCount, minAccuracy));
     }
-    fillStraight(pointbuf, width, height, straights);
+
+    fillStraight(pointbuf, width, height, lineList);
     return found;
 }
 
 OpenCvCheckerboardDetector::BoardAlign
-OpenCvCheckerboardDetector::DetectPartCheckerboardH(const cv::Mat &mat
+    OpenCvCheckerboardDetector::DetectPartCheckerboardH(const cv::Mat &mat
     , const CheckerboardDetectionParameters &params
     , ObservationList *observationList
     )
@@ -225,10 +214,10 @@ OpenCvCheckerboardDetector::DetectPartCheckerboardH(const cv::Mat &mat
     return BoardAlign::NONE;
 }
 
-bool OpenCvCheckerboardDetector::fastCheckCheckerboard(const cv::Mat &mat, Size boardSize)
+bool OpenCvCheckerboardDetector::fastCheckCheckerboard(const cv::Mat &mat, cv::Size boardSize)
 {
-    vector<Point2f> pointbuf;
-    return findChessboardCorners(mat, boardSize, pointbuf, CALIB_CB_FAST_CHECK);
+    vector<cv::Point2f> pointbuf;
+    return findChessboardCorners(mat, boardSize, pointbuf, cv::CALIB_CB_FAST_CHECK);
 }
 
 OpenCvCheckerboardDetector::BoardAlign
@@ -243,23 +232,23 @@ OpenCvCheckerboardDetector::DetectPartCheckerboardV(const cv::Mat &mat
     int height = params.vCrossesCount();
     for (unsigned j = height; j > 2; j--)
     {
-        Size boardSize(width, j);
+        cv::Size boardSize(width, j);
         if (fastCheckCheckerboard(mat, boardSize))
         {
             SYNC_PRINT(("--------- Fast found %i --------------\n", j));
-            vector<Point2f> pointbuf;
-            boardSize = Size(width, j);
-            if (findChessboardCorners(mat, boardSize, pointbuf, CALIB_CB_FAST_CHECK))
+            vector<cv::Point2f> pointbuf;
+            boardSize = cv::Size(width, j);
+            if (findChessboardCorners(mat, boardSize, pointbuf, cv::CALIB_CB_FAST_CHECK))
             {
                 SYNC_PRINT(("--------- Found     %i --------------\n", j));
 
-                Mat out(mat);
-                DrawCheckerboardIndex(out,pointbuf);
-                cv::imwrite("pointIndexes.jpg",out);
+                cv::Mat out(mat);
+                DrawCheckerboardIndex(out, pointbuf);
+                cv::imwrite("pointIndexes.jpg", out);
 
                 double top    = pointbuf.at(0).y;
                 double bottom = pointbuf.at(width - 1).y;
-                for (unsigned i = 0; i < width - 1; i++)
+                for (int i = 0; i < width - 1; i++)
                 {
                     if (bottom > pointbuf.at(j * i).y)
                         bottom = pointbuf.at(j * i).y;
@@ -267,19 +256,19 @@ OpenCvCheckerboardDetector::DetectPartCheckerboardV(const cv::Mat &mat
                         top    = pointbuf.at(j * (i + 1) - 1).y;
                 }
 
-                cornerSubPix(mat, pointbuf, Size(params.preciseDiameter(), params.preciseDiameter()), Size(-1, -1),
-                    TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, params.iterationCount(), params.minAccuracy()));
+                cornerSubPix(mat, pointbuf, cv::Size(params.preciseDiameter(), params.preciseDiameter()), cv::Size(-1, -1),
+                    cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, params.iterationCount(), params.minAccuracy()));
 
                 if (top < bottom)
                 {
                     SYNC_PRINT((" TOP\n"));
-                    fillPoints(pointbuf, Size(width, height), boardSize, Size(params.cellSize(),params.cellSize()), BoardAlign::TOP, observationList);
+                    fillPoints(pointbuf, cv::Size(width, height), boardSize, cv::Size(params.cellSize(),params.cellSize()), BoardAlign::TOP, observationList);
                     return BoardAlign::TOP;
                 }
                 else
                 {
                     SYNC_PRINT((" BOTTOM\n"));
-                    fillPoints(pointbuf, Size(width, height), boardSize, Size(params.cellSize(),params.cellSize()), BoardAlign::BOTTOM, observationList);
+                    fillPoints(pointbuf, cv::Size(width, height), boardSize, cv::Size(params.cellSize(),params.cellSize()), BoardAlign::BOTTOM, observationList);
                     return BoardAlign::BOTTOM;
                 }
             }
@@ -290,14 +279,14 @@ OpenCvCheckerboardDetector::DetectPartCheckerboardV(const cv::Mat &mat
 }
 
 void OpenCvCheckerboardDetector::fillPoints(const vector<cv::Point2f> &pointbuf
-    , Size fullSize
-    , Size partSize
-    , Size cellSize
+    , cv::Size fullSize
+    , cv::Size partSize
+    , cv::Size cellSize
     , BoardAlign alignment
     , ObservationList *observationList
     )
 {
-    observationList = new ObservationList();
+    //observationList = new ObservationList();
 
     if (alignment == BoardAlign::BOTTOM)
     {
@@ -310,7 +299,7 @@ void OpenCvCheckerboardDetector::fillPoints(const vector<cv::Point2f> &pointbuf
         {
             for (int j = partSize.height; j > 0; j--)
             {
-                Point2f p(pointbuf[j * i - 1]);
+                cv::Point2f p(pointbuf[j * i - 1]);
                 SYNC_PRINT(("i %i  j %i = %i  %i  = %i  %i \n", i, j, checkerboardShiftX + i, checkerboardShiftY + j, p.x, p.y));
 
                 PointObservation point;
@@ -331,7 +320,9 @@ void OpenCvCheckerboardDetector::fillPoints(const vector<cv::Point2f> &pointbuf
         {
             for (int j = 0; j < fullSize.height; j++)
             {
-                PointObservation observation(Vector3dd(cellSize.width * i, cellSize.height * j, 0)
+                PointObservation observation(Vector3dd(cellSize.width  * i
+                                                     , cellSize.height * j
+                                                     , 0)
                                            , Vector2dd(pointbuf.at(j * fullSize.height + i).x
                                                      , pointbuf.at(j * fullSize.height + i).y));
                 observationList->push_back(observation);
@@ -344,9 +335,11 @@ void OpenCvCheckerboardDetector::fillPoints(const vector<cv::Point2f> &pointbuf
         {
             for (int j = 0; j < partSize.height;j++)
             {
-                PointObservation observation(Vector3dd(cellSize.width * i, cellSize.height * j, 0)
+                PointObservation observation(Vector3dd(cellSize.width  * i
+                                                     , cellSize.height * j
+                                                     , 0)
                                            , Vector2dd(pointbuf.at(j * fullSize.height + i).x
-                                                      ,pointbuf.at(j * fullSize.height + i).y));
+                                                     , pointbuf.at(j * fullSize.height + i).y));
                 observationList->push_back(observation);
             }
         }
@@ -357,7 +350,9 @@ void OpenCvCheckerboardDetector::fillPoints(const vector<cv::Point2f> &pointbuf
         {
             for (int j = 0; j < partSize.height; j++)
             {
-                PointObservation observation(Vector3dd(cellSize.width * i, cellSize.height * (fullSize.width - partSize.width + j), 0)
+                PointObservation observation(Vector3dd(cellSize.width  * i
+                                                     , cellSize.height * (fullSize.width - partSize.width + j)
+                                                     , 0)
                                             ,Vector2dd(pointbuf.at(j * fullSize.height + i).x
                                                      , pointbuf.at(j * fullSize.height + i).y));
                 observationList->push_back(observation);
@@ -366,7 +361,7 @@ void OpenCvCheckerboardDetector::fillPoints(const vector<cv::Point2f> &pointbuf
     }
 }
 
-void OpenCvCheckerboardDetector::fillStraight(const vector<Point2f> &pointbuf, int width, int height, SelectableGeometryFeatures *lineList)
+void OpenCvCheckerboardDetector::fillStraight(const vector<cv::Point2f> &pointbuf, int width, int height, SelectableGeometryFeatures *lineList)
 {
     for (int i = 0; i < height; i++)
     {
@@ -389,8 +384,6 @@ void OpenCvCheckerboardDetector::fillStraight(const vector<Point2f> &pointbuf, i
     }
 }
 
-void OpenCvCheckerboardDetector::fillStraight(const vector<Point2f> &buffer, int width, int height, vector<vector<Vector2dd> > *straights)
-{
 void OpenCvCheckerboardDetector::fillStraight(
     const vector<cv::Point2f> &buffer
     , int width, int height
