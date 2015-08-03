@@ -130,41 +130,30 @@ int main (int argc, char **argv)
         return 0;
     }
     string fileName = "";
-    int chessW = 18;
-    int chessH = 11;
-    int precise = 100;
+    int chessW   = 18;
+    int chessH   = 11;
+    int precise  = 100;
     int cellSize = 50;
     int maxIterationCount = 100;
-    double minAccuracy = 0.001;
+    double minAccuracy    = 0.001;
     int found;
+
+    if (cmdIfOption(all_args, "--chessW",       &pos))  getIntCmdOption   (argv[pos], "--chessW:",       &chessW);
+    if (cmdIfOption(all_args, "--chessH",       &pos))  getIntCmdOption   (argv[pos], "--chessH:",       &chessH);
+    if (cmdIfOption(all_args, "--min_accuracy", &pos))  getDoubleCmdOption(argv[pos], "--min_accuracy:", &minAccuracy);
+    if (cmdIfOption(all_args, "--precise",      &pos))  getIntCmdOption   (argv[pos], "--precise:",      &precise);
+    if (cmdIfOption(all_args, "--cell_size",    &pos))  getIntCmdOption   (argv[pos], "--cell_size:",    &cellSize);
 
     if (argc > 1 && getStringCmdOption(argv[1], "--calcFullCheckerBoard:", &fileName))
     {
-        if (cmdIfOption(all_args, "--chessW", &pos))
-        {
-            getIntCmdOption(argv[pos], "--chessW:", &chessW);
-        }
-        if (cmdIfOption(all_args, "--chessH", &pos))
-        {
-            getIntCmdOption(argv[pos], "--chessH:", &chessH);
-        }
         if (cmdIfOption(all_args, "--max_iteration_count", &pos))
         {
             getIntCmdOption(argv[pos], "--max_iteration_count:", &maxIterationCount);
-        }
-        if (cmdIfOption(all_args, "--min_accuracy", &pos))
-        {
-            getDoubleCmdOption(argv[pos], "--min_accuracy:", &minAccuracy);
-        }
-        if (cmdIfOption(all_args, "--precise", &pos))
-        {
-            getIntCmdOption(argv[pos], "--precise:", &precise);
         }
         if (verbose)
         {
             SYNC_PRINT(("Calc full %s with %ix%i\n", fileName.c_str(), chessW, chessH));
         }
-
 
         RGB24Buffer *image = BufferFactory::getInstance()->loadRGB24Bitmap(fileName);
         if (image == NULL)
@@ -246,27 +235,10 @@ int main (int argc, char **argv)
             }
         }
     }
-    else if (argc > 3 &&
-        getStringCmdOption(argv[1], "--calcPartCheckerBoard:", &fileName) &&
-        getIntCmdOption(argv[2], "--chessW:", &chessW) &&
-        getIntCmdOption(argv[3], "--chessH:", &chessH) )
+    else if (argc > 1 && getStringCmdOption(argv[1], "--calcPartCheckerBoard:", &fileName))
     {
-        RGB24Buffer *image = BufferFactory::getInstance()->loadRGB24Bitmap(fileName);
-        G8Buffer *channel = NULL;
-        channel  = image->getChannel(ImageChannel::GRAY);
-
-        if (cmdIfOption(all_args, "--min_accuracy", &pos))
-        {
-            getDoubleCmdOption(argv[pos], "--min_accuracy:", &minAccuracy);
-        }
-        if (cmdIfOption(all_args, "--precise", &pos))
-        {
-            getIntCmdOption(argv[pos], "--precise:", &precise);
-        }
-        if (cmdIfOption(all_args, "--cell_size", &pos))
-        {
-            getIntCmdOption(argv[pos], "--cell_size:", &cellSize);
-        }
+        RGB24Buffer *image   = BufferFactory::getInstance()->loadRGB24Bitmap(fileName);
+        G8Buffer    *channel = image->getChannel(ImageChannel::GRAY);
 
         CheckerboardDetectionParameters params;
         params.setHCrossesCount(chessW);
@@ -278,6 +250,9 @@ int main (int argc, char **argv)
 
         ObservationList *observationList;
         OpenCvCheckerboardDetector::DetectPartCheckerboardV(channel, params, observationList);
+
+        delete_safe(channel);
+        delete_safe(image);
     }
     else if (cmdIfOption(all_args, "--apply", &pos))
     {
