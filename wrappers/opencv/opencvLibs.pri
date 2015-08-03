@@ -7,7 +7,7 @@ with_opencv {
             }
             DEFINES += WITH_OPENCV          # we assume that we'll find OpenCV if it's installed; otherwise please adapt this file.
 
-            OPENCV_INC_INSTALLED    = $$OPENCV_PATH/build/include
+            OPENCV_INC_INSTALLED    = $$OPENCV_PATH/build/include               # really installed to build?
             OPENCV_INC_NOTINSTALLED = $$OPENCV_PATH/include \
                                       $$OPENCV_PATH/modules/calib3d/include \
                                       $$OPENCV_PATH/modules/video/include \
@@ -30,10 +30,10 @@ with_opencv {
                 INCLUDEPATH += $$OPENCV_INC_INSTALLED
                 LIBS        += -L$$OPENCV_PATH/build/x64/vc10/lib/ $$OPENCV_249_LIBS
                     
-            } else:exists($$OPENCV_PATH/build/x64/vc12/bin/opencv_core249.dll): win32-msvc* {   # git's OpenCV tag=2.4.9 built by MSVC with GPU
-                !build_pass:message(Using <$$OPENCV_PATH/build/x64/vc12/bin>)
-                INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
-                LIBS        += -L$$OPENCV_PATH/build/x64/vc12/lib/  $$OPENCV_249_LIBS
+            } else:exists($$OPENCV_PATH/x64/vc12/bin/opencv_core249.dll): win32-msvc* {   # we don't install opencv to build folder:)
+                !build_pass:message(Using <$$OPENCV_PATH/x64/vc12/bin>)
+                INCLUDEPATH += $$OPENCV_INC_INSTALLED
+                LIBS        += -L$$OPENCV_PATH/x64/vc12/lib/  $$OPENCV_249_LIBS
 
             } else:exists($$OPENCV_PATH/build/bin/Release/opencv_core249.dll): win32-msvc* {   # git's OpenCV tag=2.4.9 built by MSVC with GPU
                 !build_pass:message(Using <$$OPENCV_PATH/build/bin/Release>)
