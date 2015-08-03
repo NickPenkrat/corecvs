@@ -10,8 +10,8 @@ ROOT_DIR=$$PWD/$$ROOT_DIR
 include($$ROOT_DIR/config.pri)
 
 TEMPLATE=app
-TARGET  =multicamera_calibration
-CONFIG += CONSOLE
+TARGET  = test_camera_calibration
+CONFIG += CONSOLE c++11
 QT += core
 QT -= gui
 QT -= xml
@@ -19,4 +19,4 @@ QT -= xml
 UTILSDIR = $$ROOT_DIR/src/open/utils
 include($$UTILSDIR/utils.pri)
 
-SOURCES += multicamera_calibration.cpp
+SOURCES += camera_calibration.cpp
