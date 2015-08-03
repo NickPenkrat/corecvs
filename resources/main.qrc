@@ -82,6 +82,7 @@
         <file>color_adjustment.png</file>
         <file>checkerboard.png</file>
         <file>table_lightning.png</file>
+        <file>price_comparison.png</file>
     </qresource>
     <qresource prefix="/new/colors">
         <file>colors/color_blue.png</file>

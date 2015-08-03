@@ -25,7 +25,6 @@ with_opencv {
         matcher_basic \
         matcher_full \
         multicamera_calibration \
-        camera_calibration
 }
 
 grab.file               = grab/grab.pro

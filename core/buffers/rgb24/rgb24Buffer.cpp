@@ -929,8 +929,8 @@ G8Buffer* RGB24Buffer::getChannel(ImageChannel::ImageChannel channel)
 double RGB24Buffer::diffL2(RGB24Buffer *buffer1, RGB24Buffer *buffer2)
 {
     double sum = 0;
-    int h = std::min(buffer1->h, buffer2->w);
-    int w = std::min(buffer1->w, buffer2->w);
+    int h = CORE_MIN(buffer1->h, buffer2->w);
+    int w = CORE_MIN(buffer1->w, buffer2->w);
 
     for (int i = 0; i < h; i++)
     {
@@ -941,6 +941,33 @@ double RGB24Buffer::diffL2(RGB24Buffer *buffer1, RGB24Buffer *buffer2)
     }
     sum /= (double) h * w;
     return sum;
+}
+
+void RGB24Buffer::diffBuffer(RGB24Buffer *that, int *diffPtr)
+{
+    int sum = 0;
+    int h = CORE_MIN(this->h, that->w);
+    int w = CORE_MIN(this->w, that->w);
+
+    for (int i = 0; i < h; i++)
+    {
+        for (int j = 0; j < w; j++)
+        {
+            RGBColor diff = RGBColor::diff(this->element(i,j), that->element(i,j));
+            sum += diff.brightness();
+            this->element(i,j) = diff;
+        }
+    }
+    if (diffPtr != NULL) {
+        *diffPtr = sum;
+    }
+}
+
+RGB24Buffer *RGB24Buffer::diff(RGB24Buffer *buffer1, RGB24Buffer *buffer2, int *diff)
+{
+    RGB24Buffer *toReturn = new RGB24Buffer(buffer1);
+    toReturn->diffBuffer(buffer2, diff);
+    return toReturn;
 }
 
 

@@ -69,7 +69,7 @@ public:
         }
     }
 
-    inline DisplacementBuffer (RadialCorrection *inverseMap, int h, int w, bool isInverse) : DisplacementBufferBase (h, w, false)
+    inline DisplacementBuffer (RadialCorrection *inverseMap, int h, int w, bool isInverse = false) : DisplacementBufferBase (h, w, false)
     {
         int koef = isInverse ? 1 : -1;
         for (int i = 0; i < h; i ++)

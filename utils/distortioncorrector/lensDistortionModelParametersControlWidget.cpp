@@ -11,6 +11,7 @@
 LensDistortionModelParametersControlWidget::LensDistortionModelParametersControlWidget(QWidget *parent) :
     ParametersControlWidgetBase(parent),
     ui(new Ui::LensDistortionModelParametersContolWidget),
+    rootPath("intrinsic"),
     mExample(NULL),
     mInput(NULL),
     mCorrected(NULL),
@@ -252,6 +253,38 @@ void LensDistortionModelParametersControlWidget::invertCorrection()
     RadialCorrection inverted = radialCorrection.invertCorrection(radialCorrection.center().x() * 2.0, radialCorrection.center().y() * 2.0, 300);
     unsetCursor();
     LensDistortionModelParametersControlWidget::setParameters(inverted.mParams);
+}
+
+void LensDistortionModelParametersControlWidget::compareCorrection()
+{
+    QString filename =  QFileDialog::getOpenFileName(
+                this,
+                "Choose an file to compare with",
+                ".",
+                "json distortion params (*.json)"
+                );
+
+    if (!filename.isEmpty())
+    {
+        JSONGetter getter(filename);
+        LensDistortionModelParameters otherLensParams;
+        otherLensParams.accept(getter);
+        RadialCorrection otherRadialCorrection(otherLensParams);
+
+
+        LensDistortionModelParameters thisLensParams = LensDistortionModelParametersControlWidget::getParameters();
+        RadialCorrection thisRadialCorrection(thisLensParams);
+
+        EllipticalApproximation1d diff = thisRadialCorrection.compareWith(otherRadialCorrection, thisRadialCorrection.center().x() * 2.0, thisRadialCorrection.center().y() * 2.0, 300 );
+
+        QMessageBox::information(this, "Comparison result",
+                                 QString("Avg:%1 Max:%2").arg(diff.getRadiusAround0()).arg(diff.getMax()),
+                                 QMessageBox::Ok
+                                 );
+    }
+
+
+
 }
 
 void LensDistortionModelParametersControlWidget::updateAdditionalDataNeeded()
