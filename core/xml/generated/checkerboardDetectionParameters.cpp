@@ -140,6 +140,17 @@ int CheckerboardDetectionParameters::staticInit()
           "Min accuracy"
         )
     );
+    fields().push_back(
+        new BoolField
+        (
+          CheckerboardDetectionParameters::PARTIAL_BOARD_ID,
+          offsetof(CheckerboardDetectionParameters, mPartialBoard),
+          true,
+          "Partial Board",
+          "Partial Board",
+          "Partial Board"
+        )
+    );
    return 0;
 }
 

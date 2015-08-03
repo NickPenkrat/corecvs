@@ -168,6 +168,42 @@ bool OpenCvCheckerboardDetector::DetectFullCheckerboard(
     return found;
 }
 
+bool OpenCvCheckerboardDetector::DetectFullCheckerboard(
+    const cv::Mat &mat
+  , int width, int height
+  , Straights *straights
+  , int precise
+  , int maxIterationCount
+  , double minAccuracy
+    )
+{
+    int                 found;
+    Size                boardSize(width, height);
+    vector<cv::Point2f> pointbuf;
+
+    SYNC_PRINT(("Start ...\n"));
+    found = findChessboardCorners(mat, boardSize, pointbuf,
+                                  CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_FAST_CHECK);
+    if (!found) {
+        SYNC_PRINT(("Failed to detect.\n"));
+        return 0;
+    }
+
+    for (unsigned i = 0; i < pointbuf.size(); i++)
+    {
+         SYNC_PRINT(("Point %f %f\n", pointbuf[i].x, pointbuf[i].y));
+    }
+
+    SYNC_PRINT(("Finding lines %ix%i...", width, height));
+    if (precise) {
+        cornerSubPix(mat, pointbuf, cv::Size(precise, precise), cv::Size(-1, -1),
+            cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, maxIterationCount, minAccuracy));
+    }
+
+    fillStraight(pointbuf, width, height, straights);
+    return found;
+}
+
 OpenCvCheckerboardDetector::BoardAlign
     OpenCvCheckerboardDetector::DetectPartCheckerboardH(const cv::Mat &mat
     , const CheckerboardDetectionParameters &params
@@ -287,8 +323,6 @@ void OpenCvCheckerboardDetector::fillPoints(const vector<cv::Point2f> &pointbuf
     , ObservationList *observationList
     )
 {
-    //observationList = new ObservationList();
-
     if (alignment == BoardAlign::BOTTOM)
     {
         int checkerboardShiftX = -fullSize.width;
