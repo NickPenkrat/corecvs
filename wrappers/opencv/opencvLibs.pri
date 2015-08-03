@@ -30,11 +30,16 @@ with_opencv {
                 INCLUDEPATH += $$OPENCV_INC_INSTALLED
                 LIBS        += -L$$OPENCV_PATH/build/x64/vc10/lib/ $$OPENCV_249_LIBS
                     
+            } else:exists($$OPENCV_PATH/build/x64/vc12/bin/opencv_core249.dll): win32-msvc* {   # git's OpenCV tag=2.4.9 built by MSVC with GPU
+                !build_pass:message(Using <$$OPENCV_PATH/build/x64/vc12/bin>)
+                INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
+                LIBS        += -L$$OPENCV_PATH/build/x64/vc12/lib/  $$OPENCV_249_LIBS
+
             } else:exists($$OPENCV_PATH/build/bin/Release/opencv_core249.dll): win32-msvc* {   # git's OpenCV tag=2.4.9 built by MSVC with GPU
                 !build_pass:message(Using <$$OPENCV_PATH/build/bin/Release>)
                 INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
                 LIBS        += -L$$OPENCV_PATH/build/lib/Release/  $$OPENCV_249_LIBS
-                
+
             } else:exists($$OPENCV_PATH/build/x64/mingw/bin/libopencv_core246.dll): !win32-msvc* {   # installed OpenCV v.2.4.6 with MINGW support
                 !build_pass:message(Using <$$OPENCV_PATH/build/x64/mingw/bin>)
                 INCLUDEPATH += $$OPENCV_INC_INSTALLED
