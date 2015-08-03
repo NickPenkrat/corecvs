@@ -95,7 +95,8 @@ bool OpenCvCheckerboardDetector::DetectPartCheckerboardV(
         delete_safe(header);
     }
     cvReleaseImage(&iplImage);
-    return false;
+
+    return alignment != BoardAlign::NONE;
 }
 
 bool OpenCvCheckerboardDetector::DetectPartCheckerboardH(

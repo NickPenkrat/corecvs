@@ -249,10 +249,9 @@ int main (int argc, char **argv)
         params.setIterationCount(maxIterationCount);
         params.setCellSize(cellSize);
 
-        ObservationList *observationList = new ObservationList;
-        OpenCvCheckerboardDetector::DetectPartCheckerboardV(channel, params, observationList);
+        ObservationList observationList;
+        OpenCvCheckerboardDetector::DetectPartCheckerboardV(channel, params, &observationList);
 
-        delete_safe(observationList);
         delete_safe(channel);
         delete_safe(image);
     }
