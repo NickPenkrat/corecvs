@@ -315,8 +315,8 @@ int main (int argc, char **argv)
         params.setIterationCount(maxIterationCount);
         params.setCellSize(cellSize);
 
-        ObservationList *observationList;
-        OpenCvCheckerboardDetector::DetectPartCheckerboardV(channel, params, observationList);
+        ObservationList observationList;
+        OpenCvCheckerboardDetector::DetectPartCheckerboardV(channel, params, &observationList);
     }
     else if (cmdIfOption(all_args, "--apply", &pos))
     {
