@@ -178,12 +178,12 @@ bool OpenCvCheckerboardDetector::DetectFullCheckerboard(
     )
 {
     int                 found;
-    Size                boardSize(width, height);
+    cv::Size            boardSize(width, height);
     vector<cv::Point2f> pointbuf;
 
     SYNC_PRINT(("Start ...\n"));
     found = findChessboardCorners(mat, boardSize, pointbuf,
-                                  CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_FAST_CHECK);
+                                  cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_FAST_CHECK);
     if (!found) {
         SYNC_PRINT(("Failed to detect.\n"));
         return 0;
