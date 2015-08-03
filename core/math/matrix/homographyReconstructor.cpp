@@ -80,7 +80,7 @@ HomographyReconstructor::~HomographyReconstructor()
  *   TODO: This function doubles the code form rectificator.cpp
  **/
 // FIXME
-void HomographyReconstructor::noramlisePoints(Matrix33 &transformLeft, Matrix33 &transformRight)
+void HomographyReconstructor::normalisePoints(Matrix33 &transformLeft, Matrix33 &transformRight)
 {
     Vector2dd lmean(0.0);
     Vector2dd lmeansq(0.0);

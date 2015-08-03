@@ -198,7 +198,7 @@ void testProjectiveFromPoints2 (void)
 
  Matrix33 L;
  Matrix33 R;
- reconstructorN.noramlisePoints(L, R);
+ reconstructorN.normalisePoints(L, R);
  Matrix33 resultLSEn = reconstructorN.getBestHomographyLSE();
  Matrix33 resultLSEn1 = reconstructorN.getBestHomographyLSE1();
  Matrix33 resultLSEn2 = reconstructorN.getBestHomographyLSE2();
@@ -207,7 +207,7 @@ void testProjectiveFromPoints2 (void)
  resultLSEn1 = R.inv() * resultLSEn1 * L;
  resultLSEn2 = R.inv() * resultLSEn2 * L;
 
- reconstructorI.noramlisePoints(L, R);
+ reconstructorI.normalisePoints(L, R);
  Matrix33 resultLSEii = reconstructorI.getBestHomographyLSE1();
  Matrix33 resultLSEi = L.inv() * resultLSEii.inv() * R;
 
