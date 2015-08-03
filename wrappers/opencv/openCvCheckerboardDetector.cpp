@@ -92,7 +92,7 @@ bool OpenCvCheckerboardDetector::DetectPartCheckerboardV(
         delete header;
     }
     cvReleaseImage(&iplImage);
-    return false;
+    return (alignment != BoardAlign::NONE);
 }
 
 bool OpenCvCheckerboardDetector::DetectPartCheckerboardH(
@@ -270,7 +270,7 @@ OpenCvCheckerboardDetector::BoardAlign OpenCvCheckerboardDetector::DetectPartChe
 
 void OpenCvCheckerboardDetector::fillPoints(const vector<Point2f> &pointbuf, Size fullSize, Size partSize, Size cellSize, BoardAlign alignment, ObservationList *observationList){
 
-    observationList = new ObservationList();
+    // observationList = new ObservationList();
 
     if(alignment == BoardAlign::BOTTOM){
 

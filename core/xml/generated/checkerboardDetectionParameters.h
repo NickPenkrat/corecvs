@@ -48,6 +48,7 @@ public:
         PRECISE_DIAMETER_ID,
         ITERATION_COUNT_ID,
         MIN_ACCURACY_ID,
+        PARTIAL_BOARD_ID,
         CHECKERBOARD_DETECTION_PARAMETERS_FIELD_ID_NUM
     };
 
@@ -101,6 +102,12 @@ public:
      */
     double mMinAccuracy;
 
+    /** 
+     * \brief Partial Board 
+     * Partial Board 
+     */
+    bool mPartialBoard;
+
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
 
@@ -149,6 +156,11 @@ public:
         return mMinAccuracy;
     }
 
+    bool partialBoard() const
+    {
+        return mPartialBoard;
+    }
+
     /* Section with setters */
     void setChannel(ImageChannel::ImageChannel channel)
     {
@@ -190,6 +202,11 @@ public:
         mMinAccuracy = minAccuracy;
     }
 
+    void setPartialBoard(bool partialBoard)
+    {
+        mPartialBoard = partialBoard;
+    }
+
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
@@ -203,6 +220,7 @@ template<class VisitorType>
         visitor.visit(mPreciseDiameter,           static_cast<const IntField *>     (fields()[PRECISE_DIAMETER_ID]));
         visitor.visit(mIterationCount,            static_cast<const IntField *>     (fields()[ITERATION_COUNT_ID]));
         visitor.visit(mMinAccuracy,               static_cast<const DoubleField *>  (fields()[MIN_ACCURACY_ID]));
+        visitor.visit(mPartialBoard,              static_cast<const BoolField *>    (fields()[PARTIAL_BOARD_ID]));
     }
 
     CheckerboardDetectionParameters()
@@ -220,6 +238,7 @@ template<class VisitorType>
         , int preciseDiameter
         , int iterationCount
         , double minAccuracy
+        , bool partialBoard
     )
     {
         mChannel = channel;
@@ -230,6 +249,7 @@ template<class VisitorType>
         mPreciseDiameter = preciseDiameter;
         mIterationCount = iterationCount;
         mMinAccuracy = minAccuracy;
+        mPartialBoard = partialBoard;
     }
 
     friend ostream& operator << (ostream &out, CheckerboardDetectionParameters &toSave)
