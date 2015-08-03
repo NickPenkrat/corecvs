@@ -146,6 +146,7 @@ void JSONGetter::visit<double, DoubleVectorField>(std::vector<double> &field, co
 {
     QJsonArray array = mNodePath.back().value(fieldDescriptor->name.name).toArray();
 
+    field.clear();
     for (int i = 0; i < array.size(); i++ )
     {
         QJsonValue value = array[i];

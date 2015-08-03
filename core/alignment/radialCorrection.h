@@ -11,6 +11,7 @@
 #ifndef RADIALCORRECTION_H_
 #define RADIALCORRECTION_H_
 
+#include "ellipticalApproximation.h"
 #include "lensDistortionModelParameters.h"
 #include "global.h"
 #include "vector2d.h"
@@ -127,6 +128,7 @@ public:
 
 
     RadialCorrection invertCorrection(int h, int w, int step);
+    EllipticalApproximation1d compareWith(const RadialCorrection &other, int h, int w, int steps);
 };
 
 

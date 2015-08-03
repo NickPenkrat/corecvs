@@ -5,6 +5,8 @@
 #include "anglePointsFunction.h"
 #include "distPointsFunction.h"
 
+namespace corecvs {
+
 LMDistortionSolver::LMDistortionSolver()
 {
 }
@@ -56,7 +58,7 @@ LMLinesDistortionSolver::LMLinesDistortionSolver()
 {
     for (int costType = 0; costType < LineDistortionEstimatorCost::LINE_DISTORTION_ESTIMATOR_COST_LAST; costType++)
     {
-        costs[costType] = 0;
+        costs[costType] = EllipticalApproximation1d();
     }
 }
 
@@ -125,6 +127,7 @@ void LMLinesDistortionSolver::computeCosts(const RadialCorrection &correction, b
     FunctionArgs *costFuntion = NULL;
     for (int costType = 0; costType < LineDistortionEstimatorCost::LINE_DISTORTION_ESTIMATOR_COST_LAST; costType++)
     {
+        costs[costType] = EllipticalApproximation1d();
 
         if (costType == LineDistortionEstimatorCost::JOINT_ANGLE_COST) {
             costFuntion = new AnglePointsFunction (straights, modelFactory);
@@ -138,18 +141,14 @@ void LMLinesDistortionSolver::computeCosts(const RadialCorrection &correction, b
         vector<double> result(costFuntion->outputs);
         costFuntion->operator()(&modelParameters[0], &result[0]);
 
-        double sqSum = 0;
-        double maxValue = 0.0;
         for (unsigned i = 0; i < result.size(); i++) {
-            if (fabs(result[i]) > maxValue) {
-                maxValue = fabs(result[i]);
-            }
-            sqSum += result[i] * result[i];
+            costs[costType].addPoint(result[i]);
         }
 
         if (updatePoints && costType == parameters.costAlgorithm())
         {
             int count = 0;
+            double maxValue = costs[costType].getMax();
             for (unsigned i = 0; i < (unsigned)lineList->mPaths.size(); i++)
             {
                 SelectableGeometryFeatures::VertexPath *path = lineList->mPaths[i];
@@ -169,8 +168,8 @@ void LMLinesDistortionSolver::computeCosts(const RadialCorrection &correction, b
                     }
                 }
             }
-        }
-
-        costs[costType] = sqrt(sqSum / result.size());
+        }      
     }
 }
+
+} // namespace corecvs

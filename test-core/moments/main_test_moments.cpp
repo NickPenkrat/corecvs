@@ -85,9 +85,31 @@ void testMoments3(void)
     cout << "Main direction2:" << dir.normalised() << endl;
 }
 
+void testMoments4(void)
+{
+    cout << "Running testMoments4" << endl;
+    EllipticalApproximation1d test;
+    test = EllipticalApproximation1d();
+    test.addPoint(1.0);
+    cout << test.getRadiusAround0()  << endl;
+    cout << test.getMean()  << endl;
+    cout << test.getMax()  << endl;
+
+    EllipticalApproximation1d test2;
+    test2 = test;
+    test2.addPoint(0.5);
+    cout << test2.getRadiusAround0()  << endl;
+    cout << test2.getMean()  << endl;
+    cout << test2.getMax()  << endl;
+
+    cout << "passed" << endl;
+
+}
+
 
 int main (int /*argC*/, char ** /*argV*/)
 {
+    testMoments4();
     testMoments1();
     testMoments2();
     testMoments3();

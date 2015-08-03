@@ -300,8 +300,15 @@ public:
       , mCount(other.mCount)
     {
         this->mInfMatrix = new Matrix(other.mInfMatrix);
-        //printf("EllipticalApproximationUnified(const EllipticalApproximationUnified &other) called\n");
+       // SYNC_PRINT(("EllipticalApproximationUnified(const EllipticalApproximationUnified &other) called\n"));
+    }
 
+    void operator =(const EllipticalApproximationUnified &other)
+    {
+        this->mInfMatrix = new Matrix(other.mInfMatrix);
+        this->mSum = other.mSum;
+        this->mCount = other.mCount;
+        // SYNC_PRINT(("EllipticalApproximationUnified::operator =(const EllipticalApproximationUnified &other) called\n"));
     }
 
     ~EllipticalApproximationUnified()
@@ -538,6 +545,14 @@ public:
         return mMax;
     }
 
+
+    friend ostream & operator <<(ostream &out, const EllipticalApproximation1d &stats)
+    {
+        out << "Min:" << stats.getMin()  << endl;
+        out << "Max:" << stats.getMax()  << endl;
+        out << "Avg:" << stats.getMean() << endl;
+        return out;
+    }
 
 };
 

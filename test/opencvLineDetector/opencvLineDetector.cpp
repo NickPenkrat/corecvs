@@ -129,14 +129,14 @@ int main (int argc, char **argv)
         waitKey(1000000);
         return 0;
     }
-
     string fileName = "";
     int chessW = 18;
     int chessH = 11;
-    int found;
     int precise = 100;
-    int maxIterationCount = 50;
+    int cellSize = 50;
+    int maxIterationCount = 100;
     double minAccuracy = 0.001;
+    int found;
 
     if (argc > 1 && getStringCmdOption(argv[1], "--calcFullCheckerBoard:", &fileName))
     {
@@ -239,10 +239,45 @@ int main (int argc, char **argv)
             {
                 solver.computeCosts(linesRadialCorrection, false);
 
-                SYNC_PRINT(("Score is: %f\n", solver.costs[LineDistortionEstimatorCost::LINE_DEVIATION_COST]));
+                SYNC_PRINT(("Score     is: %f\n", solver.costs[LineDistortionEstimatorCost::LINE_DEVIATION_COST].getRadiusAround0()));
+                SYNC_PRINT(("Max error is: %f\n", solver.costs[LineDistortionEstimatorCost::LINE_DEVIATION_COST].getMax()));
+
                 SYNC_PRINT(("Written\n"));
             }
         }
+    }
+    else if (argc > 3 &&
+        getStringCmdOption(argv[1], "--calcPartCheckerBoard:", &fileName) &&
+        getIntCmdOption(argv[2], "--chessW:", &chessW) &&
+        getIntCmdOption(argv[3], "--chessH:", &chessH) )
+    {
+        RGB24Buffer *image = BufferFactory::getInstance()->loadRGB24Bitmap(fileName);
+        G8Buffer *channel = NULL;
+        channel  = image->getChannel(ImageChannel::GRAY);
+
+        if (cmdIfOption(all_args, "--min_accuracy", &pos))
+        {
+            getDoubleCmdOption(argv[pos], "--min_accuracy:", &minAccuracy);
+        }
+        if (cmdIfOption(all_args, "--precise", &pos))
+        {
+            getIntCmdOption(argv[pos], "--precise:", &precise);
+        }
+        if (cmdIfOption(all_args, "--cell_size", &pos))
+        {
+            getIntCmdOption(argv[pos], "--cell_size:", &cellSize);
+        }
+
+        CheckerboardDetectionParameters params;
+        params.setHCrossesCount(chessW);
+        params.setVCrossesCount(chessH);
+        params.setPreciseDiameter(precise);
+        params.setMinAccuracy(minAccuracy);
+        params.setIterationCount(maxIterationCount);
+        params.setCellSize(cellSize);
+
+        ObservationList *observationList;
+        OpenCvCheckerboardDetector::DetectPartCheckerboardV(channel, params, observationList);
     }
     else if (cmdIfOption(all_args, "--apply", &pos))
     {
@@ -271,21 +306,24 @@ int main (int argc, char **argv)
                 RGB24Buffer *image = BufferFactory::getInstance()->loadRGB24Bitmap(fileName);
                 if (image == NULL)
                 {
-                    SYNC_PRINT(("Failed to load <%s>.\n",fileName.c_str()));
+                    SYNC_PRINT(("Failed to load <%s>.\n", fileName.c_str()));
                     return 1;
                 }
                 else if (verbose)
                 {
-                    SYNC_PRINT(("Loaded <%s>.\n",fileName.c_str()));
+                    SYNC_PRINT(("Loaded <%s>.\n", fileName.c_str()));
                 }
 
                 if (distortionCorrectTransform == NULL)
                 {
                     if (!isInverse) {
+                        if (verbose) { SYNC_PRINT(("Forward transform\n")); }
                         distortionCorrectTransform = new DisplacementBuffer(&linesRadialCorrection
-                            , image->h, image->w, true); // true - inverse  //FixMe: true/false doesn't work!!!
+                            , image->h, image->w, false); // false - !inverse
                     }
                     else {
+                        if (verbose) { SYNC_PRINT(("Inverse transform\n")); }
+
                         distortionCorrectTransform = DisplacementBuffer::CacheInverse(&linesRadialCorrection
                             , image->h, image->w
                             , 0.0, 0.0
@@ -293,8 +331,8 @@ int main (int argc, char **argv)
                     }
                 }
 
-                image = image->doReverseDeformationBlTyped<DisplacementBuffer>(distortionCorrectTransform);
-                if (image == NULL)
+                RGB24Buffer *deformed = image->doReverseDeformationBlTyped<DisplacementBuffer>(distortionCorrectTransform);
+                if (deformed == NULL)
                 {
                     SYNC_PRINT(("Failed to do transformation.\n"));
                     return 2;
@@ -313,10 +351,12 @@ int main (int argc, char **argv)
                 string outputFileName = path + prefix + name;
 
                 SYNC_PRINT(("Saving to <%s>\n", outputFileName.c_str()));
-                QTFileLoader().save(outputFileName, image, 100);
+                QTFileLoader().save(outputFileName, deformed, 100);
+
+                delete_safe(deformed);
+                delete_safe(image);
             }
         }
-
 //        for (int i = 3; i < argc; i++)
 //        {
 //            if(!cmdIfOption(all_args, "--", &pos))

@@ -215,6 +215,8 @@ public:
 
     virtual ~RGB24Buffer() {}
     static double diffL2 (RGB24Buffer *buffer1, RGB24Buffer *buffer2);
+    void diffBuffer(RGB24Buffer *that, int *diffPtr);
+    static RGB24Buffer *diff(RGB24Buffer *buffer1, RGB24Buffer *buffer2, int *diff = NULL);
 
 
     class RGBEx : public FixedVectorBase<RGBEx, uint16_t, 4>

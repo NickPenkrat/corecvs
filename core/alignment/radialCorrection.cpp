@@ -10,6 +10,7 @@
 #include "global.h"
 #include "radialCorrection.h"
 #include "levenmarq.h"
+#include "ellipticalApproximation.h"
 
 namespace corecvs {
 
@@ -88,32 +89,17 @@ public:
         }
     }
 
-    double aggregatedCost(const double in[], double *maxDeviation = NULL)
+    EllipticalApproximation1d aggregatedCost(const double in[])
     {
         vector<double> error(outputs);
         operator ()(in, &error[0]);
 
-        double meanErr = 0.0;
-        double max = 0.0;
+        EllipticalApproximation1d result;
         for (unsigned i = 0; i < error.size(); i++)
         {
-            meanErr += error[i] * error[i];
-            // cout << error[i] << " ";
-            if (fabs(error[i]) > max) {
-                max = fabs(error[i]);
-            }
-        }
-
-        if (!error.empty()) {
-            meanErr /= error.size();
-        } else {
-            meanErr = 0;
-        }
-
-        if (maxDeviation != NULL) {
-            *maxDeviation = max;
-        }
-        return sqrt(meanErr);
+            result.addPoint(error[i]);
+        }   
+        return result;
     }
 
     static void fillWithRadial(const RadialCorrection &input, double out[])
@@ -193,11 +179,10 @@ RadialCorrection RadialCorrection::invertCorrection(int h, int w, int step)
     RadialCorrectionInversionCostFunction::fillWithRadial(guess, &(initialGuess[0]));
     cout << guess.mParams << endl;
 
-    double max, mean;
-    max = 0.0;
-    mean = cost.aggregatedCost(&(initialGuess[0]), &max);
-    SYNC_PRINT(("Start Mean Error: %f px\n", mean));
-    SYNC_PRINT(("Start Max  Error: %f px\n", max));
+    EllipticalApproximation1d stats;
+    stats = cost.aggregatedCost(&(initialGuess[0]));
+    SYNC_PRINT(("Start Mean Error: %f px\n", stats.getRadiusAround0()));
+    SYNC_PRINT(("Start Max  Error: %f px\n", stats.getMax()));
 
     vector<double> target(cost.outputs, 0.0);
     vector<double> optimal = lmFit.fit(initialGuess, target);
@@ -207,14 +192,40 @@ RadialCorrection RadialCorrection::invertCorrection(int h, int w, int step)
     /* Cost */
 
     cout << guess.mParams << endl;
-    max = 0.0;
-    mean = cost.aggregatedCost(&(optimal[0]), &max);
-    SYNC_PRINT(("Final Mean Error: %f px\n", mean));
-    SYNC_PRINT(("Final Max  Error: %f px\n", max));
+    stats = cost.aggregatedCost(&(optimal[0]));
+    SYNC_PRINT(("Final Mean Error: %f px\n", stats.getRadiusAround0()));
+    SYNC_PRINT(("Final Max  Error: %f px\n", stats.getMax()));
 
 
     return guess;
 }
+
+/* use sample points. We can improve maximium numerically, but it's ok so far */
+EllipticalApproximation1d RadialCorrection::compareWith(const RadialCorrection &other, int h, int w, int steps)
+{
+
+    EllipticalApproximation1d result;
+
+    double dh = (double)h / (steps - 1);
+    double dw = (double)w / (steps - 1);
+
+    for (int i = 0; i < steps; i++)
+    {
+        for (int j = 0; j < steps; j++)
+        {
+            Vector2dd point(dw * j, dh * i);
+
+            Vector2dd deformedThis  =       map(point); /* this could be cached */
+            Vector2dd deformedOther = other.map(point);
+            result.addPoint((deformedOther - deformedThis).l2Metric());
+        }
+    }
+
+    return result;
+}
+
+
+
 
 
 } //namespace corecvs

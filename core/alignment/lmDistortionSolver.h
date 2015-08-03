@@ -4,6 +4,9 @@
 #include "radialCorrection.h"
 #include "selectableGeometryFeatures.h"
 #include "lineDistortionEstimatorParameters.h"
+#include "ellipticalApproximation.h"
+
+namespace corecvs {
 
 class LMDistortionSolver
 {
@@ -30,11 +33,11 @@ public:
     RadialCorrection solve();
 
     void computeCosts(const RadialCorrection &correction, bool updatePoints = true);
-    double costs[LineDistortionEstimatorCost::LINE_DISTORTION_ESTIMATOR_COST_LAST];
+    EllipticalApproximation1d costs[LineDistortionEstimatorCost::LINE_DISTORTION_ESTIMATOR_COST_LAST];
 
 };
 
 
-
+}  // namespace corecvs
 
 #endif // LMDISTORTIONSOLVER_H
