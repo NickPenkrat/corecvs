@@ -76,17 +76,17 @@ bool OpenCvCheckerboardDetector::DetectFullCheckerboard(
     return toReturn;
 }
 
-bool OpenCvCheckerboardDetector::DetectPartCheckerboardV(
-    G8Buffer *input
+bool OpenCvCheckerboardDetector::DetectPartCheckerboardV(G8Buffer *input
   , const CheckerboardDetectionParameters &params
   , ObservationList *observationList
+  , SelectableGeometryFeatures *lineList
   , G8Buffer **output
     )
 {
     IplImage *iplImage = OpenCVTools::getCVImageFromG8Buffer(input);
     cv::Mat view = cv::Mat(iplImage);
 
-    BoardAlign alignment = DetectPartCheckerboardV(view, params, observationList);
+    BoardAlign alignment = DetectPartCheckerboardV(view, params, observationList, lineList);
 
     if (output != NULL)
     {
@@ -103,6 +103,7 @@ bool OpenCvCheckerboardDetector::DetectPartCheckerboardH(
     G8Buffer *input
   , const CheckerboardDetectionParameters &params
   , ObservationList *observationList
+  , SelectableGeometryFeatures *lineList
   , G8Buffer **output
     )
 {
@@ -208,6 +209,7 @@ OpenCvCheckerboardDetector::BoardAlign
     OpenCvCheckerboardDetector::DetectPartCheckerboardH(const cv::Mat &mat
     , const CheckerboardDetectionParameters &params
     , ObservationList *observationList
+    , SelectableGeometryFeatures *lineList
     )
 {
 //    int found;
@@ -261,9 +263,10 @@ OpenCvCheckerboardDetector::BoardAlign
 OpenCvCheckerboardDetector::DetectPartCheckerboardV(const cv::Mat &mat
     , const CheckerboardDetectionParameters &params
     , ObservationList *observationList
+    , SelectableGeometryFeatures *lineList
     )
 {
-    SYNC_PRINT(("Start  !!!!!!!!!!!!!!!!!!!!!!!\n"));
+    SYNC_PRINT(("OpenCvCheckerboardDetector::DetectPartCheckerboardV():called\n"));
 
     int width  = params.hCrossesCount();
     int height = params.vCrossesCount();
@@ -296,16 +299,27 @@ OpenCvCheckerboardDetector::DetectPartCheckerboardV(const cv::Mat &mat
                 cornerSubPix(mat, pointbuf, cv::Size(params.preciseDiameter(), params.preciseDiameter()), cv::Size(-1, -1),
                     cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, params.iterationCount(), params.minAccuracy()));
 
+                if (lineList != NULL)
+                {
+                    fillStraight(pointbuf, boardSize.width, boardSize.height, lineList );
+                }
+
                 if (top < bottom)
                 {
-                    SYNC_PRINT((" TOP\n"));
-                    fillPoints(pointbuf, cv::Size(width, height), boardSize, cv::Size(params.cellSize(),params.cellSize()), BoardAlign::TOP, observationList);
+                    SYNC_PRINT((" TOP\n"));                    
+                    if (observationList != NULL)
+                    {
+                        fillPoints(pointbuf, cv::Size(width, height), boardSize, cv::Size(params.cellSize(),params.cellSize()), BoardAlign::TOP, observationList);
+                    }
                     return BoardAlign::TOP;
                 }
                 else
                 {
                     SYNC_PRINT((" BOTTOM\n"));
-                    fillPoints(pointbuf, cv::Size(width, height), boardSize, cv::Size(params.cellSize(),params.cellSize()), BoardAlign::BOTTOM, observationList);
+                    if (observationList != NULL)
+                    {
+                        fillPoints(pointbuf, cv::Size(width, height), boardSize, cv::Size(params.cellSize(),params.cellSize()), BoardAlign::BOTTOM, observationList);
+                    }
                     return BoardAlign::BOTTOM;
                 }
             }

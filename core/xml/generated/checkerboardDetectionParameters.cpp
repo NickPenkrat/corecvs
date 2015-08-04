@@ -134,7 +134,7 @@ int CheckerboardDetectionParameters::staticInit()
         (
           CheckerboardDetectionParameters::MIN_ACCURACY_ID,
           offsetof(CheckerboardDetectionParameters, mMinAccuracy),
-          0.001,
+          1e-05,
           "Min accuracy",
           "Min accuracy",
           "Min accuracy"
