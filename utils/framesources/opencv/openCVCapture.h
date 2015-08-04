@@ -11,7 +11,7 @@
 
 /* GCC 4.6 needs this to compile*/
 #include <cstddef>
-#include <opencv/highgui.h>
+#include <opencv2/highgui/highgui.hpp>  // CvCapture
 #include <QtCore/QThread>
 #include <QtCore/QMutex>
 #include <string>
