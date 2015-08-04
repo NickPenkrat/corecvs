@@ -7,12 +7,12 @@ with_opencv {
             }
             DEFINES += WITH_OPENCV          # we assume that we'll find OpenCV if it's installed; otherwise please adapt this file.
 
-            OPENCV_INC_NOTINSTALLED = $$OPENCV_PATH/build/include    # strange path, usually empty, but distributive has all includes there?...
+            #OPENCV_INC_NOTINSTALLED = $$OPENCV_PATH/build/include    # strange path, usually empty, but distributive has all includes there?...
 
             # the following paths are taking includes directly from sources
-	    #
-            exists($$OPENCV_PATH/sources/modules/core/include/opencv2/core.hpp) {	# since v.2.4.11 sources at folder
-	        OPENCV_INC_NOTINSTALLED += 
+            #
+            exists($$OPENCV_PATH/sources/modules/core/include/opencv2/core/core.hpp) { 	# since v.2.4.11 sources at folder
+                OPENCV_INC_NOTINSTALLED += \
                     $$OPENCV_PATH/sources/modules/core/include \
                     $$OPENCV_PATH/sources/modules/calib3d/include \
                     $$OPENCV_PATH/sources/modules/video/include \
@@ -25,8 +25,8 @@ with_opencv {
                     $$OPENCV_PATH/sources/modules/nonfree/include \
                     $$OPENCV_PATH/sources/modules/ml/include \
 
-            } else:exists($$OPENCV_PATH/modules/core/include/opencv2/core.hpp) {
-	        OPENCV_INC_NOTINSTALLED += 
+            } else:exists($$OPENCV_PATH/modules/core/include/opencv2/core/core.hpp) {        # 2.4.9 has sources at the root folder
+                OPENCV_INC_NOTINSTALLED += \
                     $$OPENCV_PATH/modules/core/include \
                     $$OPENCV_PATH/modules/calib3d/include \
                     $$OPENCV_PATH/modules/video/include \
@@ -39,7 +39,7 @@ with_opencv {
                     $$OPENCV_PATH/modules/nonfree/include \
                     $$OPENCV_PATH/modules/ml/include \
 
-	    }
+            }
 
             OPENCV_249_LIBS_R       = -lopencv_calib3d249     -lopencv_video249   -lopencv_core249    -lopencv_highgui249 \
                                       -lopencv_features2d249  -lopencv_flann249   -lopencv_legacy249  -lopencv_nonfree249 \
