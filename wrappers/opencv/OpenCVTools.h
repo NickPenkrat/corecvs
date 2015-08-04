@@ -5,13 +5,11 @@
  * \date Apr 6, 2011
  * \author alexander
  */
-
-#ifndef OPENCVTOOLS_H_
-#define OPENCVTOOLS_H_
+#pragma once
 
 #define __XMLDocument_FWD_DEFINED__  // to omit conflict "msxml.h:3376: using typedef-name 'XMLDocument' after 'class'"
 
-#include <opencv/cv.h>
+#include <opencv2/core/types_c.h> // CvSize, IplImage
 
 #include "global.h"
 
@@ -39,8 +37,4 @@ template<typename OtherStruct>
     {
         return cvSize(other.x(), other.y());
     }
-
-
 };
-
-#endif /* OPENCVTOOLS_H_ */

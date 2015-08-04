@@ -2,24 +2,30 @@
 #include "selectableGeometryFeatures.h"  // ObservationList
 #include "checkerboardDetectionParameters.h"
 #include "preciseTimer.h"
+/// OpenCV wrapper
 #include "OpenCVTools.h"
 
 #include <opencv2/imgproc/imgproc.hpp>  // cornerSubPix
 #include <opencv2/highgui/highgui.hpp>  // imwrite
 #include <opencv2/calib3d/calib3d.hpp>  // findChessboardCorners
 
-void OpenCvCheckerboardDetector::DrawCheckerboardLines(cv::Mat &dst, const vector<vector<Vector2dd> > &straights){
-    for(unsigned i = 0; i < straights.size(); i++)
+#if defined(_MSC_VER)
+#pragma warning (disable:4482)
+#endif
+
+void OpenCvCheckerboardDetector::DrawCheckerboardLines(cv::Mat &dst, const Straights &straights)
+{
+    for (unsigned i = 0; i < straights.size(); i++)
     {
         double prevX = 0;
         double prevY = 0;
-        for(unsigned p = 0; p < straights[i].size(); p++)
+        for (unsigned p = 0; p < straights[i].size(); p++)
         {
             double curX = straights[i][p].x();
             double curY = straights[i][p].y();
             if (prevX != 0 && prevY != 0)
             {
-                cv::line(dst, Point(prevX, prevY), Point(curX, curY), Scalar(0,255,0));
+                cv::line(dst, cv::Point(prevX, prevY), cv::Point(curX, curY), cv::Scalar(0,255,0));
             }
             prevX = curX;
             prevY = curY;
@@ -104,6 +110,11 @@ bool OpenCvCheckerboardDetector::DetectPartCheckerboardH(
   , G8Buffer **output
     )
 {
+    CORE_UNUSED(input);
+    CORE_UNUSED(params);
+    CORE_UNUSED(observationList);
+    CORE_UNUSED(output);
+
 //    IplImage *iplImage = OpenCVTools::getCVImageFromG8Buffer(input);
 //    Mat view = cv::Mat(iplImage);
 
@@ -208,6 +219,10 @@ OpenCvCheckerboardDetector::BoardAlign
     , ObservationList *observationList
     )
 {
+    CORE_UNUSED(mat);
+    CORE_UNUSED(params);
+    CORE_UNUSED(observationList);
+
 //    int found;
 //    vector<Point2f> pointbuf;
 //    int widthOfPart = 0;
@@ -500,7 +515,10 @@ std::vector<std::pair<Vector2dd, Vector3dd>> OpenCvCheckerboardDetector::GetPoin
     return res;
 }
 
-void OpenCvCheckerboardDetector::fillStraight(const vector<Point2f> &buffer, int width, int height, vector<vector<Vector2dd> > *straights)
+void OpenCvCheckerboardDetector::fillStraight(
+    const vector<cv::Point2f> &buffer
+    , int width, int height
+    , Straights *straights)
 {
     SYNC_PRINT(("--------- %i --------------\n", buffer.at(1).x));
     //Straights tempSstraights;
@@ -508,18 +526,20 @@ void OpenCvCheckerboardDetector::fillStraight(const vector<Point2f> &buffer, int
     for (unsigned ih = 0; ih < (unsigned)height; ih++)
     {
         vector<Vector2dd> straight;
-        for (unsigned iw = 0; iw < width; iw++)
+        for (unsigned iw = 0; iw < (unsigned)width; iw++)
         {
-            straight.push_back(Vector2dd(buffer.at(ih * width + iw).x,buffer.at(ih * width + iw).y));
+            straight.push_back(Vector2dd(buffer.at(ih * width + iw).x
+                                       , buffer.at(ih * width + iw).y));
         }
         straights->push_back(straight);
     }
-    for (unsigned iw = 0; iw < width; iw++)
+    for (unsigned iw = 0; iw < (unsigned)width; iw++)
     {
         vector<Vector2dd> straight;
-        for (unsigned ih = 0; ih < height; ih++)
+        for (unsigned ih = 0; ih < (unsigned)height; ih++)
         {
-            straight.push_back(Vector2dd(buffer.at(iw + width * ih).x,buffer.at(iw + width * ih).y));
+            straight.push_back(Vector2dd(buffer.at(iw + width * ih).x
+                                       , buffer.at(iw + width * ih).y));
         }
         straights->push_back(straight);
     }

@@ -5,10 +5,8 @@
  * \date Apr 6, 2011
  * \author alexander
  */
-#include <opencv/cv.h>
-
-
 #include "OpenCVTools.h"
+#include <opencv2/core/core_c.h> // cvCreateImage
 
 using namespace corecvs;
 
@@ -119,7 +117,6 @@ G12Buffer *OpenCVTools::getG12BufferFromCVImage(IplImage *input)
         }
     }
 
-
     return toReturn;
 }
 
@@ -127,7 +124,6 @@ G12Buffer *OpenCVTools::getG12BufferFromCVImage(IplImage *input)
 RGB24Buffer *OpenCVTools::getRGB24BufferFromCVImage(IplImage *input)
 {
     RGB24Buffer *toReturn = new RGB24Buffer(input->height, input->width);
-
 
     ASSERT_TRUE_P((input->depth == IPL_DEPTH_8U) && ((input->nChannels == 3) || (input->nChannels == 1)) ,
       ("Unsupported IplImage format: depth=%d, channels = %d\n", input->depth, input->nChannels));
@@ -170,8 +166,5 @@ RGB24Buffer *OpenCVTools::getRGB24BufferFromCVImage(IplImage *input)
         }
     }
 
-
     return toReturn;
 }
-
-
