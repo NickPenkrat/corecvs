@@ -387,8 +387,10 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
 
             win32-msvc*:!contains(QMAKE_HOST.arch, x86_64) {                
                 TBB_LIBDIR = $(TBB_PATH)/lib/ia32/vc10
-            } else:win32-msvc* {
+            } else:win32-msvc2010 {
                 TBB_LIBDIR = $(TBB_PATH)/lib/intel64/vc10
+            } else:win32-msvc* {
+                TBB_LIBDIR = $(TBB_PATH)/lib/intel64/vc12
             } else:exists($(TBB_PATH)/lib/tbb.dll) {
                 # old config when TBB's bins&libs were placed at TBB's lib dir
                 TBB_LIBDIR = $(TBB_PATH)/lib

@@ -9,6 +9,10 @@
 #include <opencv2/highgui/highgui.hpp>  // imwrite
 #include <opencv2/calib3d/calib3d.hpp>  // findChessboardCorners
 
+#if defined(_MSC_VER)
+#pragma warning (disable:4482)
+#endif
+
 void OpenCvCheckerboardDetector::DrawCheckerboardLines(cv::Mat &dst, const Straights &straights)
 {
     for (unsigned i = 0; i < straights.size(); i++)
@@ -107,6 +111,11 @@ bool OpenCvCheckerboardDetector::DetectPartCheckerboardH(
   , G8Buffer **output
     )
 {
+    CORE_UNUSED(input);
+    CORE_UNUSED(params);
+    CORE_UNUSED(observationList);
+    CORE_UNUSED(output);
+
 //    IplImage *iplImage = OpenCVTools::getCVImageFromG8Buffer(input);
 //    Mat view = cv::Mat(iplImage);
 
@@ -212,6 +221,10 @@ OpenCvCheckerboardDetector::BoardAlign
     , SelectableGeometryFeatures *lineList
     )
 {
+    CORE_UNUSED(mat);
+    CORE_UNUSED(params);
+    CORE_UNUSED(observationList);
+
 //    int found;
 //    vector<Point2f> pointbuf;
 //    int widthOfPart = 0;
