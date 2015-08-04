@@ -134,10 +134,13 @@ int CheckerboardDetectionParameters::staticInit()
         (
           CheckerboardDetectionParameters::MIN_ACCURACY_ID,
           offsetof(CheckerboardDetectionParameters, mMinAccuracy),
-          1e-05,
+          0.01,
           "Min accuracy",
           "Min accuracy",
-          "Min accuracy"
+          "Min accuracy",
+          true,
+         0,
+         999999
         )
     );
     fields().push_back(
@@ -149,6 +152,17 @@ int CheckerboardDetectionParameters::staticInit()
           "Partial Board",
           "Partial Board",
           "Partial Board"
+        )
+    );
+    fields().push_back(
+        new BoolField
+        (
+          CheckerboardDetectionParameters::FAST_BOARD_SPEEDUP_ID,
+          offsetof(CheckerboardDetectionParameters, mFastBoardSpeedup),
+          true,
+          "Fast board Speedup",
+          "Fast board Speedup",
+          "Fast board Speedup"
         )
     );
    return 0;

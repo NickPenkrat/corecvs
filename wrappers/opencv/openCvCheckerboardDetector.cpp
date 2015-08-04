@@ -286,57 +286,60 @@ OpenCvCheckerboardDetector::DetectPartCheckerboardV(const cv::Mat &mat
     for (unsigned j = height; j > 2; j--)
     {
         cv::Size boardSize(width, j);
-        if (fastCheckCheckerboard(mat, boardSize))
+        if (params.fastBoardSpeedup() && fastCheckCheckerboard(mat, boardSize))
         {
-            SYNC_PRINT(("--------- Fast found %i --------------\n", j));
-            vector<cv::Point2f> pointbuf;
-            boardSize = cv::Size(width, j);
-            if (findChessboardCorners(mat, boardSize, pointbuf, cv::CALIB_CB_FAST_CHECK))
+            continue;
+        }
+
+        SYNC_PRINT(("--------- Fast found %i --------------\n", j));
+        vector<cv::Point2f> pointbuf;
+        boardSize = cv::Size(width, j);
+        if (findChessboardCorners(mat, boardSize, pointbuf, cv::CALIB_CB_FAST_CHECK))
+        {
+            SYNC_PRINT(("--------- Found     %i --------------\n", j));
+
+            cv::Mat out(mat);
+            DrawCheckerboardIndex(out, pointbuf);
+            cv::imwrite("pointIndexes.jpg", out);
+
+            double top    = pointbuf.at(0).y;
+            double bottom = pointbuf.at(width - 1).y;
+            for (int i = 0; i < width - 1; i++)
             {
-                SYNC_PRINT(("--------- Found     %i --------------\n", j));
+                if (bottom > pointbuf.at(j * i).y)
+                    bottom = pointbuf.at(j * i).y;
+                if (top    > pointbuf.at(j * (i + 1) - 1).y)
+                    top    = pointbuf.at(j * (i + 1) - 1).y;
+            }
 
-                cv::Mat out(mat);
-                DrawCheckerboardIndex(out, pointbuf);
-                cv::imwrite("pointIndexes.jpg", out);
+            cornerSubPix(mat, pointbuf, cv::Size(params.preciseDiameter(), params.preciseDiameter()), cv::Size(-1, -1),
+                cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, params.iterationCount(), params.minAccuracy()));
 
-                double top    = pointbuf.at(0).y;
-                double bottom = pointbuf.at(width - 1).y;
-                for (int i = 0; i < width - 1; i++)
+            if (lineList != NULL)
+            {
+                fillStraight(pointbuf, boardSize.width, boardSize.height, lineList );
+            }
+
+            if (top < bottom)
+            {
+                SYNC_PRINT((" TOP\n"));
+                if (observationList != NULL)
                 {
-                    if (bottom > pointbuf.at(j * i).y)
-                        bottom = pointbuf.at(j * i).y;
-                    if (top    > pointbuf.at(j * (i + 1) - 1).y)
-                        top    = pointbuf.at(j * (i + 1) - 1).y;
+                    fillPoints(pointbuf, cv::Size(width, height), boardSize, cv::Size(params.cellSize(),params.cellSize()), BoardAlign::TOP, observationList);
                 }
-
-                cornerSubPix(mat, pointbuf, cv::Size(params.preciseDiameter(), params.preciseDiameter()), cv::Size(-1, -1),
-                    cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, params.iterationCount(), params.minAccuracy()));
-
-                if (lineList != NULL)
+                return BoardAlign::TOP;
+            }
+            else
+            {
+                SYNC_PRINT((" BOTTOM\n"));
+                if (observationList != NULL)
                 {
-                    fillStraight(pointbuf, boardSize.width, boardSize.height, lineList );
+                    fillPoints(pointbuf, cv::Size(width, height), boardSize, cv::Size(params.cellSize(),params.cellSize()), BoardAlign::BOTTOM, observationList);
                 }
-
-                if (top < bottom)
-                {
-                    SYNC_PRINT((" TOP\n"));                    
-                    if (observationList != NULL)
-                    {
-                        fillPoints(pointbuf, cv::Size(width, height), boardSize, cv::Size(params.cellSize(),params.cellSize()), BoardAlign::TOP, observationList);
-                    }
-                    return BoardAlign::TOP;
-                }
-                else
-                {
-                    SYNC_PRINT((" BOTTOM\n"));
-                    if (observationList != NULL)
-                    {
-                        fillPoints(pointbuf, cv::Size(width, height), boardSize, cv::Size(params.cellSize(),params.cellSize()), BoardAlign::BOTTOM, observationList);
-                    }
-                    return BoardAlign::BOTTOM;
-                }
+                return BoardAlign::BOTTOM;
             }
         }
+
     }
     SYNC_PRINT((" none\n"));
     return BoardAlign::NONE;

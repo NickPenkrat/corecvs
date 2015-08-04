@@ -67,11 +67,13 @@
     <field type="double"       name="Cell size"          defaultValue="50"   suffix="mm" />
     <field type="bool"         name="Clean existing"     defaultValue="true" />
 
-    <field type="int"          name="Precise Diameter"   defaultValue="50"      min="0" max="999999"  />
-    <field type="int"          name="Iteration count"    defaultValue="50"      min="1" max="999999"  />
-    <field type="double"       name="Min accuracy"       defaultValue="0.00001" suffix="px" />
+    <field type="int"          name="Precise Diameter"   defaultValue="50"      min="0"   max="999999"  />
+    <field type="int"          name="Iteration count"    defaultValue="50"      min="1"   max="999999"  />
+    <field type="double"       name="Min accuracy"       defaultValue="0.01"    min="0.0" max="999999" suffix="px" decimals="4"/>
+
 
     <field type="bool"         name="Partial Board"      defaultValue="true"/>
+    <field type="bool"         name="Fast board Speedup" defaultValue="true"/>
 
   </class>
 

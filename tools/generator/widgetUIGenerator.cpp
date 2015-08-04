@@ -189,6 +189,12 @@ void WidgetUiGenerator::generateWidgetUi()
     "       <property name=\"suffix\">\n"
     "        <string>" + dfield->suffix + "</string>\n"
     "       </property>\n";
+        if (dfield->decimals != 2)
+            result +=
+    "       <property name=\"decimals\">\n"
+    "        <number>" + QString::number(dfield->decimals) + "</number>\n"
+    "       </property>\n";
+
     }
 
     if (type == BaseField::TYPE_BOOL)
