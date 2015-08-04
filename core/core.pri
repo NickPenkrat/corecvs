@@ -58,7 +58,8 @@ CORE_INCLUDEPATH = \
     $$COREDIR/clustering3d \
     $$COREDIR/xml \
     $$COREDIR/xml/generated \                   # to allow including of generated headers without directory name prefix
-    $$COREDIR/features2d
+    $$COREDIR/features2d \
+
 
 INCLUDEPATH += $$CORE_INCLUDEPATH
 
