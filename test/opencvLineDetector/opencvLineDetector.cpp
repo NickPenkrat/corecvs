@@ -133,9 +133,9 @@ int main (int argc, char **argv)
     string fileName = "";
     int chessW   = 18;
     int chessH   = 11;
-    int precise  = 100;
+    int precise  = 50;  // TODO: =100 doesn't work!!! Why???
     int cellSize = 50;
-    int maxIterationCount = 100;
+    int maxIterationCount = 1000;
     double minAccuracy    = 0.001;
     int found;
 
@@ -178,7 +178,6 @@ int main (int argc, char **argv)
         {
             SYNC_PRINT(("Loaded %s.\n", fileName.c_str()));
         }
-
 
         SelectableGeometryFeatures lineList;
         G8Buffer *boardOutput = NULL;
@@ -225,14 +224,13 @@ int main (int argc, char **argv)
                 JSONSetter setter(jsonFileName);
                 setter.visit(linesRadialCorrection.mParams, "intrinsic");
             }
+
             if (verbose)
             {
                 solver.computeCosts(linesRadialCorrection, false);
 
                 SYNC_PRINT(("Score     is: %f\n", solver.costs[LineDistortionEstimatorCost::LINE_DEVIATION_COST].getRadiusAround0()));
                 SYNC_PRINT(("Max error is: %f\n", solver.costs[LineDistortionEstimatorCost::LINE_DEVIATION_COST].getMax()));
-
-                SYNC_PRINT(("Written\n"));
             }
         }
     }
@@ -276,7 +274,7 @@ int main (int argc, char **argv)
                 fileName = all_args[i].c_str();
                 if (verbose)
                 {
-                    SYNC_PRINT(("Apply to <%s>\n",fileName.c_str()));
+                    SYNC_PRINT(("Apply to <%s>\n", fileName.c_str()));
                 }
 
                 RGB24Buffer *image = BufferFactory::getInstance()->loadRGB24Bitmap(fileName);
