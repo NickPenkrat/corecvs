@@ -4,6 +4,9 @@
 ::opencvLineDetector.exe --apply SPA0_30deg_1.bmp SPA0_360deg_1.bmp --verbose --is_inverse --prefix:dist002_
 ::opencvLineDetector.exe --apply dist002_SPA0_30deg_1.bmp dist002_SPA0_360deg_1.bmp --verbose --!is_inverse --prefix:inverse002_
 
-call ..\..\..\..\scripts\windows\_setvars.bat x64 vc
+set ROOT_DIR=..\..\..\..
+set DATA_DIR=%ROOT_DIR%/data/testdata/distortion
 
-..\..\..\..\bin\opencvLineDetector.exe --apply ../../../../data/testdata/distortion/SPA0_360deg.jpg ../../../../data/testdata/distortion/SPA0_30deg.jpg
+call %ROOT_DIR%\scripts\windows\_setvars.bat x64 vc
+
+%ROOT_DIR%\bin\opencvLineDetector.exe --apply --json_file_name:%DATA_DIR%/calib_full.json %DATA_DIR%/SPA0_360deg.jpg %DATA_DIR%/SPA0_30deg.jpg
