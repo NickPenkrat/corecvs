@@ -1,52 +1,22 @@
 #include "global.h"
 
-//#include "cameraControlParameters.h"
-//#include <opencv2/calib3d/calib3d.hpp>
+#include <QtCore/QString>
+#include <QtCore/QCoreApplication>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>  // imshow, waitkey
 
 #include <string>
-//#include <stdio.h>
-#include <QtCore/QString>
-//#include <QtCore/QObject>
-#include <QtCore/QCoreApplication>
-//#include <QtCore/QThread>
-//#include <QtCore/QMutex>
-//#include "QTimer"
-//#ifdef WIN32
-//# include <windows.h>
-//# define tSleep  Sleep
-//#else
-//# include <unistd.h>
-//# include <stdlib.h>
-//# define tSleep _sleep
-//#endif
-//#include "imageCaptureInterface.h"
-#include "bmpLoader.h"
-#include "qtFileLoader.h"
 
 /// OpenCV wrapper
 #include "OpenCVTools.h"
 
-//#include "camerasCalibration/camerasCalibrationFunc.h"
-//#include "curvatureFunc.h"
-//#include "radialFunc.h"
-//#include "angleFunction.h"
-//#include "anglePointsFunction.h"
-//#include "distPointsFunction.h"
-//#include "levenmarq.h"
-//#include "distortionCorrectTransform.h"
-//#include "distortionParameters.h"
-#include "displacementBuffer.h"
-
-#include "lmDistortionSolver.h"
-
+#include "bmpLoader.h"
+#include "qtFileLoader.h"
 #include "jsonGetter.h"
 #include "jsonSetter.h"
 #include "displacementBuffer.h"
 #include "lmDistortionSolver.h"
 #include "printerVisitor.h"
-
 #include "openCvCheckerboardDetector.h"
 #include "checkerboardDetectionParameters.h"
 #include "selectableGeometryFeatures.h"
@@ -54,18 +24,12 @@
 using namespace cv;
 using namespace corecvs;
 
-bool verbose = 0;
-bool isInverse = 0;
-bool drawProccess = 0;
-bool useGreenChannel = 0;
-
-
-static bool getIntCmdOption(const std::string & value, const std::string & option, int *param)
+static bool_t getIntCmdOption(const std::string & value, const std::string & option, int *param)
 {
-//    cout << "Value" << value << std::endl;
-//    cout << "Option" << option << std::endl;
+    cout << "Value" << value << std::endl;
+    cout << "Option" << option << std::endl;
 
-    size_t  position = value.find(option);
+    size_t position = value.find(option);
     if (position != std::string::npos)
     {
         std::string strSub = value.substr (position + option.length());
@@ -75,7 +39,7 @@ static bool getIntCmdOption(const std::string & value, const std::string & optio
     return 0;
 }
 
-static bool getDoubleCmdOption(const std::string & value, const std::string & option, double *param)
+static bool_t getDoubleCmdOption(const std::string & value, const std::string & option, double *param)
 {
     size_t  position = value.find(option);
     if (position != std::string::npos)
@@ -87,7 +51,7 @@ static bool getDoubleCmdOption(const std::string & value, const std::string & op
     return 0;
 }
 
-static bool getStringCmdOption(const std::string & value, const std::string & option, std::string *param)
+static bool_t getStringCmdOption(const std::string & value, const std::string & option, std::string *param)
 {
     cout << "Value" << value << std::endl;
     cout << "Option" << option << std::endl;
@@ -100,7 +64,7 @@ static bool getStringCmdOption(const std::string & value, const std::string & op
     return 0;
 }
 
-static bool getStringCmdOption(const std::string & value, const std::string & option, QString *param)
+static bool_t getStringCmdOption(const std::string & value, const std::string & option, QString *param)
 {
     cout << "Value" << value << std::endl;
     cout << "Option" << option << std::endl;
@@ -113,12 +77,12 @@ static bool getStringCmdOption(const std::string & value, const std::string & op
     return 0;
 }
 
-static bool cmdIfOption(const vector<string> &all_args, const std::string& option, unsigned* pos)
+static bool_t cmdIfOption(const vector<string> &all_args, const std::string& option, unsigned* pos)
 {
-    for (unsigned i=0; i<all_args.size(); i++)
+    for (unsigned i = 0; i < all_args.size(); i++)
     {
         size_t found = all_args[i].find(option);
-        if(found != string::npos){
+        if (found != string::npos) {
             *pos = i;
             return 1;
         }
@@ -144,23 +108,21 @@ int main (int argc, char **argv)
         getStringCmdOption(argv[pos], "--prefix:", &prefix);
         SYNC_PRINT(("prifix: %s\n", prefix.c_str()));
     }
-
     if (cmdIfOption(all_args, "--json_file_name", &pos))
     {
-
         getStringCmdOption(argv[pos], "--json_file_name:", &jsonFileName);
         SYNC_PRINT(("json_file_name: %s\n", jsonFileName.toLatin1().constData()));
     }
 
-    verbose         = cmdIfOption(all_args, "--verbose", &pos);
-    useGreenChannel = cmdIfOption(all_args, "--use_green_channel", &pos);
-    isInverse       = cmdIfOption(all_args, "--is_inverse", &pos);
-    drawProccess    = cmdIfOption(all_args, "--draw_proccess", &pos);
+    bool verbose         = cmdIfOption(all_args, "--verbose",           &pos);
+    bool useGreenChannel = cmdIfOption(all_args, "--use_green_channel", &pos);
+    bool isInverse       =!cmdIfOption(all_args, "--is_direct",         &pos); // "inverse" works always except "direct" is requested
+    bool drawProccess    = cmdIfOption(all_args, "--draw_proccess",     &pos);
 
     if (cmdIfOption(all_args, "--test_opencv", &pos))
     {
         BMPLoader *loader   = new BMPLoader();
-        G8Buffer *image    = loader->loadRGB("SPA0_360deg_1.bmp")->getChannel(ImageChannel::G);
+        G8Buffer  *image    = loader->loadRGB("SPA0_360deg_1.bmp")->getChannel(ImageChannel::G);
         IplImage  *iplImage = OpenCVTools::getCVImageFromG8Buffer(image);
         Mat            view = cv::Mat(iplImage, false);
         imshow("sf", view);
@@ -169,44 +131,30 @@ int main (int argc, char **argv)
     }
 
     string fileName = "";
-    int chessW = 18;
-    int chessH = 11;
-    int found;
-    int precise = 11;
+    int chessW   = 18;
+    int chessH   = 11;
+    int precise  = 100;
     int cellSize = 50;
     int maxIterationCount = 100;
-    double minAccuracy = 0.001;
+    double minAccuracy    = 0.001;
+    int found;
 
-    if (argc > 3 &&
-        getStringCmdOption(argv[1], "--calcFullCheckerBoard:", &fileName) &&
-        getIntCmdOption(argv[2], "--chessW:", &chessW) &&
-        getIntCmdOption(argv[3], "--chessH:", &chessH) )
+    if (cmdIfOption(all_args, "--chessW",       &pos))  getIntCmdOption   (argv[pos], "--chessW:",       &chessW);
+    if (cmdIfOption(all_args, "--chessH",       &pos))  getIntCmdOption   (argv[pos], "--chessH:",       &chessH);
+    if (cmdIfOption(all_args, "--min_accuracy", &pos))  getDoubleCmdOption(argv[pos], "--min_accuracy:", &minAccuracy);
+    if (cmdIfOption(all_args, "--precise",      &pos))  getIntCmdOption   (argv[pos], "--precise:",      &precise);
+    if (cmdIfOption(all_args, "--cell_size",    &pos))  getIntCmdOption   (argv[pos], "--cell_size:",    &cellSize);
+
+    if (argc > 1 && getStringCmdOption(argv[1], "--calcFullCheckerBoard:", &fileName))
     {
-        if (cmdIfOption(all_args, "--chessW", &pos))
-        {
-            getIntCmdOption(argv[pos], "--chessW:", &chessW);
-        }
-        if (cmdIfOption(all_args, "--chessH", &pos))
-        {
-            getIntCmdOption(argv[pos], "--chessH:", &chessH);
-        }
         if (cmdIfOption(all_args, "--max_iteration_count", &pos))
         {
             getIntCmdOption(argv[pos], "--max_iteration_count:", &maxIterationCount);
-        }
-        if (cmdIfOption(all_args, "--min_accuracy", &pos))
-        {
-            getDoubleCmdOption(argv[pos], "--min_accuracy:", &minAccuracy);
-        }
-        if (cmdIfOption(all_args, "--precise", &pos))
-        {
-            getIntCmdOption(argv[pos], "--precise:", &precise);
         }
         if (verbose)
         {
             SYNC_PRINT(("Calc full %s with %ix%i\n", fileName.c_str(), chessW, chessH));
         }
-
 
         RGB24Buffer *image = BufferFactory::getInstance()->loadRGB24Bitmap(fileName);
         if (image == NULL)
@@ -215,10 +163,7 @@ int main (int argc, char **argv)
             return 1;
         }
 
-        Vector2dd  center = Vector2dd(image->w, image->h) / 2.0;
-
-
-        G8Buffer *channel = NULL;
+        Vector2dd center = Vector2dd(image->w, image->h) / 2.0;
 
         CheckerboardDetectionParameters params;
         params.setHCrossesCount(chessW);
@@ -227,16 +172,11 @@ int main (int argc, char **argv)
         params.setMinAccuracy(minAccuracy);
         params.setIterationCount(maxIterationCount);
 
-
-        if (useGreenChannel) {
-            channel  = image->getChannel(ImageChannel::G);
-        } else {
-            channel  = image->getChannel(ImageChannel::GRAY);
-        }
+        G8Buffer *channel = image->getChannel(useGreenChannel ? ImageChannel::G : ImageChannel::GRAY);
 
         if (verbose)
         {
-            SYNC_PRINT(("Loaded %s.\n",fileName.c_str()));
+            SYNC_PRINT(("Loaded %s.\n", fileName.c_str()));
         }
 
 
@@ -276,20 +216,18 @@ int main (int argc, char **argv)
 
             lineList.print();
 
-
             solver.initialCenter = center;
-            solver.lineList = &lineList;
-            solver.parameters = params;
+            solver.lineList      = &lineList;
+            solver.parameters    = params;
 
-            RadialCorrection mLinesRadialCoorection = solver.solve();
-
+            RadialCorrection linesRadialCorrection = solver.solve();
             {
                 JSONSetter setter(jsonFileName);
-                setter.visit(mLinesRadialCoorection.mParams, "intrinsic");
+                setter.visit(linesRadialCorrection.mParams, "intrinsic");
             }
-            if(verbose)
+            if (verbose)
             {
-                solver.computeCosts(mLinesRadialCoorection, false);
+                solver.computeCosts(linesRadialCorrection, false);
 
                 SYNC_PRINT(("Score     is: %f\n", solver.costs[LineDistortionEstimatorCost::LINE_DEVIATION_COST].getRadiusAround0()));
                 SYNC_PRINT(("Max error is: %f\n", solver.costs[LineDistortionEstimatorCost::LINE_DEVIATION_COST].getMax()));
@@ -298,27 +236,10 @@ int main (int argc, char **argv)
             }
         }
     }
-    else if (argc > 3 &&
-        getStringCmdOption(argv[1], "--calcPartCheckerBoard:", &fileName) &&
-        getIntCmdOption(argv[2], "--chessW:", &chessW) &&
-        getIntCmdOption(argv[3], "--chessH:", &chessH) )
+    else if (argc > 1 && getStringCmdOption(argv[1], "--calcPartCheckerBoard:", &fileName))
     {
-        RGB24Buffer *image = BufferFactory::getInstance()->loadRGB24Bitmap(fileName);
-        G8Buffer *channel = NULL;
-        channel  = image->getChannel(ImageChannel::GRAY);
-
-        if (cmdIfOption(all_args, "--min_accuracy", &pos))
-        {
-            getDoubleCmdOption(argv[pos], "--min_accuracy:", &minAccuracy);
-        }
-        if (cmdIfOption(all_args, "--precise", &pos))
-        {
-            getIntCmdOption(argv[pos], "--precise:", &precise);
-        }
-        if (cmdIfOption(all_args, "--cell_size", &pos))
-        {
-            getIntCmdOption(argv[pos], "--cell_size:", &cellSize);
-        }
+        RGB24Buffer *image   = BufferFactory::getInstance()->loadRGB24Bitmap(fileName);
+        G8Buffer    *channel = image->getChannel(ImageChannel::GRAY);
 
         CheckerboardDetectionParameters params;
         params.setHCrossesCount(chessW);
@@ -328,8 +249,11 @@ int main (int argc, char **argv)
         params.setIterationCount(maxIterationCount);
         params.setCellSize(cellSize);
 
-        ObservationList *observationList;
-        OpenCvCheckerboardDetector::DetectPartCheckerboardV(channel, params, observationList);
+        ObservationList observationList;
+        OpenCvCheckerboardDetector::DetectPartCheckerboardV(channel, params, &observationList);
+
+        delete_safe(channel);
+        delete_safe(image);
     }
     else if (cmdIfOption(all_args, "--apply", &pos))
     {
@@ -337,20 +261,20 @@ int main (int argc, char **argv)
         JSONGetter getter(jsonFileName);
         getter.visit(loaded, "intrinsic");
 
-        RadialCorrection mLinesRadialCoorection(loaded);
-        if(verbose)
+        RadialCorrection linesRadialCorrection(loaded);
+        if (verbose)
         {
-            cout << mLinesRadialCoorection.mParams << endl;
+            cout << linesRadialCorrection.mParams << endl;
         }
 
-        DisplacementBuffer* mDistortionCorrectTransform = NULL;
+        DisplacementBuffer* distortionCorrectTransform = NULL;
 
         for (int i = 1; i < all_args.size(); i++)
         {
-            if(!getIntCmdOption(all_args[i], "--", &found))
+            if (!getIntCmdOption(all_args[i], "--", &found))
             {
                 fileName = all_args[i].c_str();
-                if(verbose)
+                if (verbose)
                 {
                     SYNC_PRINT(("Apply to <%s>\n",fileName.c_str()));
                 }
@@ -358,39 +282,37 @@ int main (int argc, char **argv)
                 RGB24Buffer *image = BufferFactory::getInstance()->loadRGB24Bitmap(fileName);
                 if (image == NULL)
                 {
-                    SYNC_PRINT(("Failed to load <%s>.\n",fileName.c_str()));
+                    SYNC_PRINT(("Failed to load <%s>.\n", fileName.c_str()));
                     return 1;
-                } else {
-                    if(verbose)
-                    {
-                        SYNC_PRINT(("Loaded <%s>.\n",fileName.c_str()));
-                    }
+                }
+                else if (verbose)
+                {
+                    SYNC_PRINT(("Loaded <%s>.\n", fileName.c_str()));
                 }
 
-
-                if(mDistortionCorrectTransform == NULL){
+                if (distortionCorrectTransform == NULL)
+                {
                     if (!isInverse) {
-                        if(verbose) { SYNC_PRINT(("Forward transform\n")); }
+                        if (verbose) { SYNC_PRINT(("Forward transform\n")); }
+                        distortionCorrectTransform = new DisplacementBuffer(&linesRadialCorrection
+                            , image->h, image->w, false); // false - !inverse
+                    }
+                    else {
+                        if (verbose) { SYNC_PRINT(("Inverse transform\n")); }
 
-                        mDistortionCorrectTransform = new DisplacementBuffer(&mLinesRadialCoorection, image->h, image->w, false);
-                    } else {
-                        if(verbose) { SYNC_PRINT(("Inverse transform\n")); }
-
-                        mDistortionCorrectTransform = DisplacementBuffer::CacheInverse(&mLinesRadialCoorection,
-                            image->h, image->w,
-                            0.0,0.0,
-                            (double)image->w, (double)image->h, 0.5
-                        );
+                        distortionCorrectTransform = DisplacementBuffer::CacheInverse(&linesRadialCorrection
+                            , image->h, image->w
+                            , 0.0, 0.0
+                            , (double)image->w, (double)image->h, 0.5);
                     }
                 }
 
-                RGB24Buffer *deformed = image->doReverseDeformationBlTyped<DisplacementBuffer>(mDistortionCorrectTransform);
+                RGB24Buffer *deformed = image->doReverseDeformationBlTyped<DisplacementBuffer>(distortionCorrectTransform);
                 if (deformed == NULL)
                 {
                     SYNC_PRINT(("Failed to do transformation.\n"));
                     return 2;
                 }
-
 
                 string path = "";
                 string name = fileName;
@@ -398,7 +320,7 @@ int main (int argc, char **argv)
                 size_t pos = name.find_last_of("/\\");
                 if (pos != string::npos)
                 {
-                    path = name.substr(0, pos+1);
+                    path = name.substr(0, pos + 1);
                     name = name.substr(pos + 1);
                 }
 
@@ -409,12 +331,8 @@ int main (int argc, char **argv)
 
                 delete_safe(deformed);
                 delete_safe(image);
-
             }
         }
-
-
-
 //        for (int i = 3; i < argc; i++)
 //        {
 //            if(!cmdIfOption(all_args, "--", &pos))
@@ -426,7 +344,7 @@ int main (int argc, char **argv)
 
 //                image = loader->loadRGB(argv[i]);
 //                image = image-><RGB24Buffer, DisplacementBuffer>(
-//                            mDistortionCorrectTransform,
+//                            distortionCorrectTransform,
 //                            image->h, image->w);
 
 //                string newFileName(argv[i]);
@@ -434,11 +352,12 @@ int main (int argc, char **argv)
 //            }
 //        }
     }
-    else {
+    else
+    {
         printf("Usage examples:\n\n"
             "To detect distortion params:\n"
             "opencvLineDetector.exe --calcFullCheckerBoard:<filename> --chessW:18 --chessH:11\n"
-            "                       --precise:100 --use_green_channel --max_iteration_count:50 --min_accuracy:0.001\n\n"
+            "                       --use_green_channel --max_iteration_count:50 --min_accuracy:0.001\n\n"
             "To apply found distortion params:\n"
             "opencvLineDetector.exe --apply <filenames_via_spaces>\n"
             );

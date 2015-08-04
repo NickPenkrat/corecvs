@@ -111,7 +111,7 @@ void RadialFunc::operator ()(const double in[], double out[])
         double radialCorrection = 0;
         double r = sqrt(rsq);
         double rpow = r;
-        for (unsigned j = 0; j < mPolynomDegree; j ++)
+        for (int j = 0; j < mPolynomDegree; j++)
         {
             radialCorrection += in[j] * rpow;
             rpow *= r;

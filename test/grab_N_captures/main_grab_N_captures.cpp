@@ -215,7 +215,8 @@ int main(int argc, char **argv)
         qDebug() << "Starting first camera";
         waiter->mCurrentCam = 0;
         waiter->mCaptureInterfaces[0].input->startCapture();
-    } else {
+    }
+    else {
         waiter->finilizeCapture();
     }
 

@@ -174,7 +174,7 @@ void DistortionWidget::detectCorners()
 
 void DistortionWidget::detectCheckerboard()
 {
-#ifdef WITH_OPENCV    
+#ifdef WITH_OPENCV
     CheckerboardDetectionParameters params;
     mUi->checkerboardParametersWidget->getParameters(params);
 
@@ -194,9 +194,17 @@ void DistortionWidget::detectCheckerboard()
     }
 
     SelectableGeometryFeatures *features = &canvas->mFeatures;
+    ObservationList *list = &mUi->calibrationFeatures->observationList;
 
     G8Buffer *output = NULL;
-    found = OpenCvCheckerboardDetector::DetectFullCheckerboard(workChannel, params, features, &output);
+
+    if (params.partialBoard()) {
+        found = OpenCvCheckerboardDetector::DetectPartCheckerboardV(workChannel, params, list, &output);
+        cout << "We have added" << list->size() << " points" << endl;
+    } else {
+        found = OpenCvCheckerboardDetector::DetectFullCheckerboard(workChannel, params, features, &output);
+    }
+
 
     if(found)
     {

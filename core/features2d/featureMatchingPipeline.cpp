@@ -1241,7 +1241,7 @@ void VsfmWriterStage::loadResults(FeatureMatchingPipeline *pipeline, const std::
             ofs >> idxB[i];
         std::deque<Match> matches;
         for(size_t i = 0; i < K; ++i)
-            matches.push_back(Match(I, J, idxA[i], idxB[i], 0.0));
+			matches.push_back(Match((uint16_t)I, (uint16_t)J, (uint16_t)idxA[i], (uint16_t)idxB[i], 0.0));
 
         RefinedMatchSet set(I, J, matches);
         refinedMatches.matchSets.push_back(set);
