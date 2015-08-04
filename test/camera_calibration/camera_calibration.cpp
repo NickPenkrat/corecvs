@@ -406,9 +406,17 @@ private:
         if (n < 3) forceZeroSkew = true;
 
         if (forceZeroSkew) ++n_equ;
+        int n_equ_actual = n_equ;
+        if (n_equ < 6) n_equ = 6;
 
         corecvs::Matrix A(n_equ, 6);
-        std::cout << "NEQU: " << n_equ << std::endl;
+        for (int i = 0; i < n_equ; ++i)
+        {
+            for (int j = 0; j < 6; ++j)
+            {
+                A.a(i, j) = 0.0;
+            }
+        }
 
         for (int j = 0; j < n; ++j)
         {
@@ -442,7 +450,7 @@ private:
         {
             for (int i = 0; i < 6; ++i)
             {
-                A.a(2 * n, 0) = i == 1 ? 1.0 : 0.0;
+                A.a(2 * n, i) = i == 1 ? 1.0 : 0.0;
             }
         }
 
@@ -581,6 +589,7 @@ struct ParallelBoardDetector
                     std::ifstream csv;
                     csv.open(filename_csv, std::ios_base::in);
 
+                    cam_vec.clear();
                     do
                     {
                         double u, v, x, y, z;
@@ -643,8 +652,8 @@ struct ParallelFlatPatternCalibrator
                     calibrator.addPattern(p[cam]);
             }
 
-//            calibrator.solve(true, true);
-            calibrator.solve(false, true);
+            calibrator.solve(true, true);
+//            calibrator.solve(false, true);
 
             locations = calibrator.getExtrinsics();
             intrinsics = calibrator.getIntrinsics();
@@ -683,7 +692,7 @@ void calibrateCameras(int N, int M, std::vector<MultiCameraPatternPoints> &point
     locationData.clear();
     locationData.resize(N);
 
-    corecvs::parallelable_for (0, N, 1, ParallelFlatPatternCalibrator(&locationData, &intrinsics, &points, CameraConstraints::NONE | CameraConstraints::ZERO_SKEW | CameraConstraints::LOCK_SKEW ), true);
+    corecvs::parallelable_for (0, N, 1, ParallelFlatPatternCalibrator(&locationData, &intrinsics, &points, CameraConstraints::EQUAL_FOCAL | CameraConstraints::ZERO_SKEW | CameraConstraints::LOCK_SKEW ), true);
 }
 
 int main(int argc, char **argv)
