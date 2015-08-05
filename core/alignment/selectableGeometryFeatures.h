@@ -123,7 +123,7 @@ public:
     void deselectAllPath();
     void deselectAll();
 
-    void add(const SelectableGeometryFeatures &other)
+    void addPathFrom(const SelectableGeometryFeatures &other);
 
     /****/
     bool hasSinglePointsSelected();

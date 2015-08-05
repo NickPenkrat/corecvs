@@ -207,9 +207,45 @@ void SelectableGeometryFeatures::deselectAll()
     deselectAllPoints();
 }
 
-void SelectableGeometryFeatures::add(const SelectableGeometryFeatures &other)
+void SelectableGeometryFeatures::addPathFrom(const SelectableGeometryFeatures &other)
 {
+#if 0
+    int index = mPoints.size();
 
+    for (int i = 0; i < other.mPoints.size(); i++)
+    {
+        appendNewVertex(other.mPoints[i]->position);
+    }
+
+    /* We match the vertexes by offset... not the most clean way */
+    for (int i = 0; i < other.mPaths.size(); i++)
+    {
+        VertexPath *path = appendNewPath();
+        VertexPath *otherpath = other.mPaths[i];
+        for (unsigned j = 0; j < otherpath->vertexes.size(); j++)
+        {
+            Vertex *toCopy = otherpath->vertexes[j];
+            /* TODO: oh my god! O(n^3)??? really */
+
+
+            int index = toCopy - &(other.mPoints[0]);
+            Vertex *copy = mPoints[beforeAdd + index];
+            addVertexToPath(copy, path);
+        }
+//        appendNewVertex(other.mPoints[i]->position);
+    }
+#endif
+
+    for (unsigned i = 0; i < other.mPaths.size(); i++)
+    {
+        VertexPath *path = appendNewPath();
+        VertexPath *otherpath = other.mPaths[i];
+        for (unsigned j = 0; j < otherpath->vertexes.size(); j++)
+        {
+            Vertex *toCopy = otherpath->vertexes[j];
+            addVertexToPath(appendNewVertex(toCopy->position), path);
+        }
+    }
 
 }
 
