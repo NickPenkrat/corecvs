@@ -98,7 +98,7 @@ with_opengl {
     win32 {
         LIBS += -lglu32 -lopengl32              # these libs must be exactly here: before openCV but after our libs! It's a magic of mingw, for msvc it's easier.:)
     } else {
-        LIBS +=        -lX11 -lXext -lGLU
+        LIBS +=        -lX11 -lXext -lGLU       # TODO: why we need "Xtst" ?
        #LIBS += -lXtst -lX11 -lXext -lGLU       # these libs must be exactly here: they're required by OpenGL and some other stuff...
     }
 
