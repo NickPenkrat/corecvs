@@ -49,10 +49,6 @@ INCLUDEPATH += $$UTILS_INCLUDEPATH
 
 QT += xml gui widgets
 
-unix:!macx {
-    QT += x11extras
-}
-
 UTILS_BINDIR = $$ROOT_DIR/bin
 #message(Utils.pri ROOT_DIR is <$$ROOT_DIR>. Bindir is <$$UTILS_BINDIR>. PWD is <$$PWD>)
 
@@ -84,6 +80,11 @@ contains(TARGET, cvs_utils) {
 
 DESTDIR = $$UTILS_BINDIR
 
+
+with_x11extras {
+    QT += x11extras
+    DEFINES += WITH_X11EXTRAS
+}
 
 !odroid {
     CONFIG += with_opengl                       # always include here OpenGL dependent modules as utils's and related projects need it

@@ -4,7 +4,6 @@
 #include <QtCore/QRegExp>
 #include <QtCore/QString>
 
-#include <opencv/highgui.h>
 #include "openCVFileCapture.h"
 //#include "openCVHelper.h"
 #include "OpenCVTools.h"
