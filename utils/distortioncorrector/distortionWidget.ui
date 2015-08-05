@@ -98,7 +98,7 @@
           </size>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>2</number>
          </property>
          <widget class="QWidget" name="tab_LevMarq">
           <property name="sizePolicy">
@@ -465,7 +465,7 @@
              <string>Recalculate</string>
             </property>
             <property name="icon">
-             <iconset resource="../../../restricted/resources/resresource.qrc">
+             <iconset resource="../../resources/main.qrc">
               <normaloff>:/new/prefix1/calculator.png</normaloff>:/new/prefix1/calculator.png</iconset>
             </property>
             <property name="iconSize">
@@ -482,7 +482,7 @@
              <string>Reset</string>
             </property>
             <property name="icon">
-             <iconset resource="../../../restricted/resources/resresource.qrc">
+             <iconset resource="../../resources/main.qrc">
               <normaloff>:/new/prefix1/refresh.png</normaloff>:/new/prefix1/refresh.png</iconset>
             </property>
             <property name="iconSize">
@@ -640,6 +640,12 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>CheckerboardDetectionParametersControlWidget</class>
+   <extends>QWidget</extends>
+   <header>checkerboardDetectionParametersControlWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
    <class>PaintImageWidget</class>
    <extends>QWidget</extends>
    <header>paintImageWidget.h</header>
@@ -649,12 +655,6 @@
    <class>LensDistortionModelParametersControlWidget</class>
    <extends>QWidget</extends>
    <header>lensDistortionModelParametersControlWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>CheckerboardDetectionParametersControlWidget</class>
-   <extends>QWidget</extends>
-   <header>checkerboardDetectionParametersControlWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
@@ -671,7 +671,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../../restricted/resources/resresource.qrc"/>
+  <include location="../../resources/main.qrc"/>
  </resources>
  <connections>
   <connection>

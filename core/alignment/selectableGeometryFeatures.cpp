@@ -14,7 +14,6 @@ bool SelectableGeometryFeatures::Vertex::isSelected()
     return mSelected;
 }
 
-
 void SelectableGeometryFeatures::addSelection(SelectableGeometryFeatures::Vertex *vertex)
 {
     mSelectedPoints.push_back(vertex);
@@ -140,7 +139,7 @@ void SelectableGeometryFeatures::deleteVertex(Vertex *vertex)
 
     vector<Vertex *>::iterator it = std::remove(mPoints.begin(), mPoints.end(), vertex);
     mPoints.erase( it, mPoints.end() );
-    delete vertex;
+    delete_safe (vertex);
 }
 
 /*
@@ -206,6 +205,12 @@ void SelectableGeometryFeatures::deselectAll()
 {
     deselectAllPath();
     deselectAllPoints();
+}
+
+void SelectableGeometryFeatures::add(const SelectableGeometryFeatures &other)
+{
+
+
 }
 
 bool SelectableGeometryFeatures::hasSinglePointsSelected()

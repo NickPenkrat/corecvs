@@ -111,18 +111,19 @@ public:
     void deleteVertex(const Vector2dd &point);
     void deleteVertex(Vertex *vertex);
 
-    void clearAll();
-
     void addSelection   (VertexPath *path);
     void removeSelection(VertexPath *path);
 
     void addSelection   (Vertex *vertex);
     void removeSelection(Vertex *vertex);
 
+    void clearAll();
 
     void deselectAllPoints();
     void deselectAllPath();
     void deselectAll();
+
+    void add(const SelectableGeometryFeatures &other)
 
     /****/
     bool hasSinglePointsSelected();
