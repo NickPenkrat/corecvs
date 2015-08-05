@@ -22,11 +22,15 @@ RawMatch convert(const cv::DMatch &dm)
 
 cv::Mat convert(const RuntimeTypeBuffer &buffer)
 {
-	return cv::Mat(buffer.getRows(), buffer.getCols(), buffer.getCvType(), buffer.row<void>((size_t)0));
+	return cv::Mat((int)buffer.getRows()
+                 , (int)buffer.getCols()
+                 , (int)buffer.getCvType()
+                 , buffer.row<void>((size_t)0));
 }
 
 RuntimeTypeBuffer convert(const cv::Mat &mat)
 {
-	return RuntimeTypeBuffer(mat.rows, mat.cols, mat.data, RuntimeTypeBuffer::getTypeFromCvType(mat.type()));
+	return RuntimeTypeBuffer(mat.rows, mat.cols
+        , mat.data
+        , (int)RuntimeTypeBuffer::getTypeFromCvType(mat.type()));
 }
-

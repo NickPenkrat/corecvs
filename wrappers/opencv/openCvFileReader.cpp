@@ -1,20 +1,24 @@
 #include "openCvFileReader.h"
 #include "openCvKeyPointsWrapper.h"
 
+#include "global.h"
+
 #include <exception>
 #include <sstream>
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/core/core.hpp>        // Mat
+#include <opencv2/highgui/highgui.hpp>  // imread
 
 bool OpenCvBufferReaderProvider::provides(const std::string &filename)
 {
     // TODO: make list of supported formats
+    CORE_UNUSED(filename);
     return true;
 }
 
 BufferReader* OpenCvBufferReaderProvider::getBufferReader(const std::string &filename)
 {
+    CORE_UNUSED(filename);
     return new OpenCvBufferReader();
 }
 
@@ -26,7 +30,7 @@ void init_opencv_reader_provider()
 RuntimeTypeBuffer OpenCvBufferReader::read(const std::string &s)
 {
     cv::Mat img = cv::imread(s, CV_LOAD_IMAGE_GRAYSCALE);
-    if(!(img.rows && img.cols && img.data))
+    if (!(img.rows && img.cols && img.data))
     {
         std::stringstream ss;
         ss << "\"" << s << "\" is not a valid image file";
@@ -34,6 +38,3 @@ RuntimeTypeBuffer OpenCvBufferReader::read(const std::string &s)
     }
     return convert(img);
 }
-
-
-
