@@ -253,6 +253,3 @@ win32 {
 
     QMAKE_CLEAN += "$$MOC_DIR/mocinclude.tmp"       # it doesn't killed some-why...
 }
-
-
-
