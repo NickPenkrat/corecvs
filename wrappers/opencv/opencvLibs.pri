@@ -57,27 +57,27 @@ with_opencv {
                 OPENCV_249_LIBS_ADD_OWN_BUILT = -L$$OPENCV_PATH/build/lib/Release/  $$OPENCV_249_LIBS
             }
 
-            exists($$OPENCV_PATH/build/bin/Release/opencv_core249.dll): win32-msvc* {   # git's OpenCV tag=2.4.9 built by any own MSVC
+            exists($$OPENCV_PATH/build/bin/Release/opencv_core249.dll): win32-msvc* {               # git's OpenCV tag=2.4.9 built by any own MSVC
                 !build_pass:message(Using <$$OPENCV_PATH/build/bin/Release|Debug>)
                 INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
                 LIBS        += $$OPENCV_249_LIBS_ADD_OWN_BUILT
 
-            } else:exists($$OPENCV_PATH/build/x64/vc10/bin/opencv_core249.dll): win32-msvc2010 {  # built OpenCV v.2.4.9 with msvc10 support without GPU
+            } else:exists($$OPENCV_PATH/build/x64/vc10/bin/opencv_core249.dll): win32-msvc2010 {    # built OpenCV v.2.4.9 with msvc10 without GPU
                 !build_pass:message(Using <$$OPENCV_PATH/build/x64/vc10/bin>)
                 INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
                 LIBS        += -L$$OPENCV_PATH/build/x64/vc10/lib/ $$OPENCV_249_LIBS
 
-            } else:exists($$OPENCV_PATH/build/x64/vc12/bin/opencv_core249.dll): win32-msvc2012 {  # built OpenCV v.2.4.9 with msvc12 support without GPU
+            } else:exists($$OPENCV_PATH/build/x64/vc12/bin/opencv_core249.dll): win32-msvc2013 {    # built OpenCV v.2.4.9 with vc12 without GPU
                 !build_pass:message(Using <$$OPENCV_PATH/build/x64/vc12/bin>)
                 INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
                 LIBS        += -L$$OPENCV_PATH/build/x64/vc12/lib/ $$OPENCV_249_LIBS
 
-            } else:exists($$OPENCV_PATH/x64/vc12/bin/opencv_core249.dll): win32-msvc* {  # installed OpenCV v.2.4.9 with msvc support without GPU
+            } else:exists($$OPENCV_PATH/x64/vc12/bin/opencv_core249.dll): win32-msvc* {             # installed OpenCV v.2.4.9 with msvc* without GPU
                 !build_pass:message(Using <$$OPENCV_PATH/x64/vc12/bin>)
                 INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
                 LIBS        += -L$$OPENCV_PATH/x64/vc12/lib/ $$OPENCV_249_LIBS
 
-            } else:exists($$OPENCV_PATH/build.mg/bin/libopencv_core249.dll): !win32-msvc* {   # git's OpenCV tag=2.4.9 built by MINGW without GPU
+            } else:exists($$OPENCV_PATH/build.mg/bin/libopencv_core249.dll): !win32-msvc* {         # git's OpenCV tag=2.4.9 built by MINGW without GPU
                 !build_pass:message(Using <$$OPENCV_PATH/build.mg/bin>)
                 INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
                 LIBS += \
@@ -86,7 +86,7 @@ with_opencv {
                     -llibopencv_features2d249 -llibopencv_flann249 -llibopencv_legacy249 -llibopencv_nonfree249 \
                     -llibopencv_imgproc249    -llibopencv_objdetect249
 
-            } else:exists($$OPENCV_PATH/build/x64/vc12/bin/opencv_core2411.dll) {
+            } else:exists($$OPENCV_PATH/build/x64/vc12/bin/opencv_core2411.dll) {                   # OpenCV tag=2.4.11 built by vc12 without GPU
                 !build_pass:message(Using <$$OPENCV_PATH/build/x64/vc12/bin>)
                 INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
                 LIBS += \

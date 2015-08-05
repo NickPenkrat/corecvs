@@ -414,13 +414,17 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
 
         DEPENDPATH  += $$TBB_PATH/include
     } else {
-        #message (Using TBB at $$TBB_PATH)
-        DEFINES     += WITH_TBB
-        INCLUDEPATH += $$TBB_PATH/include
-        LIBS        += -ltbb
-   }
+        !isEmpty(TBB_PATH) {
+            #message (Using TBB at $$TBB_PATH)
+            DEFINES     += WITH_TBB
+            INCLUDEPATH += $$TBB_PATH/include
+            LIBS        += -ltbb
+        }
+        else {
+           !build_pass: message(TBB not found. Please set TBB_PATH system variable to a root folder of TBB to use it)
+        }
+      }
 }
-
 
 # More static analysis warnings
 # QMAKE_CXXFLAGS += -Wextra
