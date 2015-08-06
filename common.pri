@@ -33,12 +33,13 @@ build_pass:CONFIG(release, debug|release) {
 
 CONFIG += c++11
 
-contains(QMAKE_HOST.arch, "armv7l") {
-    message(Odroid platform with ARM detected)
-    CONFIG += odroid
-} else {
-    #message(standard x86/64 platform detected)
-}
+# TODO: this info is needed before - at config.pri!
+#contains(QMAKE_HOST.arch, "armv7l") {
+#    message(Odroid platform with ARM detected)
+#    CONFIG += odroid
+#} else {
+#    #message(standard x86/64 platform detected)
+#}
 
 trace {
     DEFINES += TRACE
@@ -269,12 +270,16 @@ isEmpty(CCACHE_TOOLCHAIN_ON) {
 
     # We keep all pdb files at intermediate directories
     #
-    gen_vsproj {
-        QMAKE_CXXFLAGS += -Fd"$(IntDir)"
-        QMAKE_LFLAGS   += /PDB:"$(IntDir)\\$(TargetName).pdb"
+    win32-msvc2013 {
+        # Since [Qt5.5.0 + msvc2013] pdb management is added automatically into bin folder
     } else {
-        QMAKE_CXXFLAGS += -Fd"$(OBJECTS_DIR)"
-        QMAKE_LFLAGS   += /PDB:"$(OBJECTS_DIR)\\$(QMAKE_TARGET).pdb"
+        gen_vsproj {
+            QMAKE_CXXFLAGS += -Fd"$(IntDir)"
+            QMAKE_LFLAGS   += /PDB:"$(IntDir)\\$(TargetName).pdb"
+        } else {
+            QMAKE_CXXFLAGS += -Fd"$(OBJECTS_DIR)"
+            QMAKE_LFLAGS   += /PDB:"$(OBJECTS_DIR)\\$(QMAKE_TARGET).pdb"
+        }
     }
 }
 
@@ -413,13 +418,17 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
 
         DEPENDPATH  += $$TBB_PATH/include
     } else {
-        #message (Using TBB at $$TBB_PATH)
-        DEFINES     += WITH_TBB
-        INCLUDEPATH += $$TBB_PATH/include
-        LIBS        += -ltbb
-   }
+        !isEmpty(TBB_PATH) {
+            #message (Using TBB at $$TBB_PATH)
+            DEFINES     += WITH_TBB
+            INCLUDEPATH += $$TBB_PATH/include
+            LIBS        += -ltbb
+        }
+        else {
+           !build_pass: message(TBB not found. Please set TBB_PATH system variable to a root folder of TBB to use it)
+        }
+      }
 }
-
 
 # More static analysis warnings
 # QMAKE_CXXFLAGS += -Wextra

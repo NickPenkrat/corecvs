@@ -2,31 +2,37 @@
 #include "openCvKeyPointsWrapper.h"
 #include "openCvDefaultParams.h"
 
-OpenCvDescriptorExtractorWrapper::OpenCvDescriptorExtractorWrapper(cv::DescriptorExtractor *extractor) : extractor(extractor)
-{
+#include "global.h"
 
-}
+#include <opencv2/features2d/features2d.hpp>    // cv::DescriptorExtractor
+#include <opencv2/nonfree/features2d.hpp>       // cv::SURF
+
+OpenCvDescriptorExtractorWrapper::OpenCvDescriptorExtractorWrapper(cv::DescriptorExtractor *extractor)
+    : extractor(extractor)
+{}
 
 OpenCvDescriptorExtractorWrapper::~OpenCvDescriptorExtractorWrapper()
 {
 	delete extractor;
 }
 
-void OpenCvDescriptorExtractorWrapper::computeImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors)
+void OpenCvDescriptorExtractorWrapper::computeImpl(RuntimeTypeBuffer &image
+    , std::vector<KeyPoint> &keyPoints
+    , RuntimeTypeBuffer &descriptors)
 {
 	std::vector<cv::KeyPoint> kps;
-	for(std::vector<KeyPoint>::iterator kp = keyPoints.begin(); kp != keyPoints.end(); ++kp)
+	FOREACH(const KeyPoint& kp, keyPoints)
 	{
-		kps.push_back(convert(*kp));
+		kps.push_back(convert(kp));
 	}
 	cv::Mat img = convert(image), desc;
 
 	extractor->compute(img, kps, desc);
 
 	keyPoints.clear();
-	for(std::vector<cv::KeyPoint>::iterator kp = kps.begin(); kp != kps.end(); ++kp)
+	FOREACH(const cv::KeyPoint& kp, kps)
 	{
-		keyPoints.push_back(convert(*kp));
+		keyPoints.push_back(convert(kp));
 	}
 
 	descriptors = convert(desc);
@@ -80,4 +86,3 @@ bool OpenCvDescriptorExtractorProvider::provides(const DescriptorType &type)
 }
 
 #undef SWITCH_TYPE
-

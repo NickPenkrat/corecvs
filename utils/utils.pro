@@ -6,11 +6,8 @@ exists(../../../config.pri) {
     message(Using local config)
     ROOT_DIR=..
 }
-#!win32 {                                        # it dues to the "mocinclude.tmp" bug on win32!
-    ROOT_DIR=$$PWD/$$ROOT_DIR
-#}
+ROOT_DIR=$$PWD/$$ROOT_DIR
 include($$ROOT_DIR/config.pri)
-
 
 CONFIG  += staticlib
 TARGET   = cvs_utils
@@ -388,7 +385,6 @@ RESOURCES += \
 
 unix:!macx:!win32 {
     message (Switching on V4L2 support)
-  
 
     HEADERS += \
         framesources/v4l2/V4L2.h \
@@ -408,7 +404,6 @@ with_opengl {
     DEPENDPATH  += opengl
     DEPENDPATH  += uis/cloudview
     INCLUDEPATH += uis/cloudview
-
 
     HEADERS     += opengl/openGLTools.h
     SOURCES     += opengl/openGLTools.cpp
@@ -525,7 +520,6 @@ with_synccam {
     HEADERS += \
         framesources/syncCam/syncCamerasCaptureInterface.h \
 
-
     SOURCES += \
         framesources/syncCam/syncCamerasCaptureInterface.cpp \
 
@@ -533,5 +527,4 @@ with_synccam {
 }
 
 OTHER_FILES += ../tools/generator/xml/draw3d.xml
-
 

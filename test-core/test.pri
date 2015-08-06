@@ -21,7 +21,7 @@ exists(../../../config.pri) {
 #!build_pass: message(Tests root dir is $$ROOT_DIR)
 include($$ROOT_DIR/config.pri)
 
-CONFIG += console
+CONFIG += console c++11
 
 win32-msvc* {
     # Sometimes mt.exe fails on embedding action in parallel making...

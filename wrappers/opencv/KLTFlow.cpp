@@ -8,7 +8,10 @@
 
 /* GCC 4.6 needs this to compile*/
 #include <cstddef>
-#include <opencv/cv.h>
+
+#include <opencv2/core/core_c.h>        // cvCreateImage
+#include <opencv2/imgproc/imgproc_c.h>  // cvGoodFeaturesToTrack
+#include <opencv2/video/tracking.hpp>   // cvCalcOpticalFlowPyrLK
 
 #include "vector2d.h"
 #include "KLTFlow.h"
