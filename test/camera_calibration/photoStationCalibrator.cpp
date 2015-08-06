@@ -2,6 +2,7 @@
 #include "tbbWrapper.h"
 
 #include <queue>
+#include <cassert>
 
 PhotoStationCalibrator::PhotoStationCalibrator(CameraConstraints constraints) : N(0), M(0), K(0), L(0), constraints(constraints)
 {
