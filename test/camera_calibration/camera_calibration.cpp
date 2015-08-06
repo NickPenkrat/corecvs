@@ -3,525 +3,23 @@
 #include <vector>
 #include <cassert>
 #include <fstream>
+#include <sstream>
 #include <string>
-#include <type_traits>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+
+#include "calibration_structs.h"
 
 #include "tbbWrapper.h"
 #include "quaternion.h"
 #include "homographyReconstructor.h"
 #include "openCvCheckerboardDetector.h"
 #include "levenmarq.h"
+#include "mesh3d.h"
 
-struct LocationData
-{
-    LocationData(corecvs::Vector3dd position = corecvs::Vector3dd(0.0, 0.0, 1.0), corecvs::Quaternion orientation = corecvs::Quaternion(0.0, 0.0, 0.0, 1.0)) : position(position), orientation(orientation)
-    {
-    }
-
-	corecvs::Vector3dd position;
-	corecvs::Quaternion orientation;
-};
-
-struct CameraIntrinsics
-{
-    CameraIntrinsics(double fx = 1.0, double fy = 1.0, double cx = 0.0, double cy = 0.0, double skew = 0.0) : fx(fx), fy(fy), cx(cx), cy(cy), skew(skew)
-    {
-    }
-
-	explicit operator corecvs::Matrix33() const
-    {
-        return corecvs::Matrix33(fx, skew, cx, 0.0, fy, cy, 0.0, 0.0, 1.0);
-    }
-	double fx, fy, cx, cy, skew;
-};
-
-struct Camera
-{
-	CameraIntrinsics intrinsics;
-	LocationData extrinsics;
-};
-
-struct Photostation
-{
-	std::vector<Camera> cameras;
-	LocationData location;
-};
-
-typedef std::vector<std::pair<Vector2dd, corecvs::Vector3dd>> PatternPoints3d;
-typedef std::vector<PatternPoints3d> MultiCameraPatternPoints;
-
-enum class CameraConstraints 
-{
-    NONE           =  0,
-    ZERO_SKEW      =  1,
-    LOCK_SKEW      =  2,
-    EQUAL_FOCAL    =  4,
-    LOCK_FOCAL     =  8,
-    LOCK_PRINCIPAL = 16
-};
-
-template<typename E>
-struct is_bitmask : std::false_type {};
-
-template<typename E>
-typename std::enable_if<is_bitmask<E>::value, E>::type operator& (const E &lhs, const E &rhs)
-{
-    typedef typename std::underlying_type<E>::type U;
-    return static_cast<E>(static_cast<U>(lhs) & static_cast<U>(rhs));
-}
-
-template<typename E>
-typename std::enable_if<is_bitmask<E>::value, E>::type operator| (const E &lhs, const E &rhs)
-{
-    typedef typename std::underlying_type<E>::type U;
-    return static_cast<E>(static_cast<U>(lhs) | static_cast<U>(rhs));
-}
-
-
-template<typename E>
-typename std::enable_if<is_bitmask<E>::value, bool>::type operator !(const E &lhs)
-{
-    typedef typename std::underlying_type<E>::type U;
-    return !static_cast<bool>(static_cast<U>(lhs));
-}
-
-template<>
-struct is_bitmask<CameraConstraints> : std::true_type {};
-
-
-struct FlatPatternCalibrator
-{
-public:
-    FlatPatternCalibrator(const CameraConstraints constraints = (CameraConstraints)0, const CameraIntrinsics lockParams = CameraIntrinsics()) : K(0), N(0), absoluteConic(6), lockParams(lockParams), constraints(constraints), forceZeroSkew(!!(constraints & CameraConstraints::ZERO_SKEW))
-
-    {
-    }
-
-	void addPattern(const PatternPoints3d &patternPoints, const LocationData &position = LocationData())
-    {
-        ++N;
-        locationData.push_back(position);
-        points.push_back(patternPoints);
-        K += patternPoints.size();
-    }
-
-	void solve(bool runPresolver = true,bool runLM = false)
-    {
-        if (runPresolver)
-        {
-            solveInitialIntrinsics();
-            solveInitialExtrinsics();
-            std::cout << std::endl << this << "RES NOP: " << getRmseReprojectionError() << std::endl;
-            enforceParams();
-        }
-        std::cout << std::endl << this << "RES INIT: " << getRmseReprojectionError() << std::endl;
-
-        if(runLM) refineGuess();
-        std::cout << std::endl <<  this << "RES LM: " << getRmseReprojectionError() << std::endl;
-    }
-
-	CameraIntrinsics getIntrinsics()
-    {
-        return intrinsics;
-    }
-
-    std::vector<LocationData> getExtrinsics()
-    {
-        return locationData;
-    }
-
-    double getRmseReprojectionError()
-    {
-        std::vector<double> err(getOutputNum() - N);
-        getFullReprojectionError(&err[0]);
-
-        double sqs = 0.0;
-        for (auto e: err) sqs += e * e;
-
-        return sqrt(sqs / K);
-    }
-
-    void getFullReprojectionError(double out[])
-    {
-        corecvs::Matrix33 A = (corecvs::Matrix33)intrinsics;
-        int idx = 0;
-
-        for (size_t i = 0; i < N; ++i)
-        {
-            auto& R = locationData[i].orientation;
-            R /= R.l2Metric();
-            auto& T = locationData[i].position;
-            auto& pt = points[i];
-            for (auto& ptp: pt)
-            {
-                auto res = A * (R * (ptp.second - T));
-                res /= res[2];
-
-                auto diff = Vector2dd(res[0], res[1]) - ptp.first;
-
-                out[idx++] = diff[0];
-                out[idx++] = diff[1];
-            }
-        }
-        assert(idx == getOutputNum() - N);
-    }
-private:
-    size_t K, N;
-
-    void enforceParams()
-    {
-#define FORCE(s, a, b) \
-        if (!!(constraints & CameraConstraints::s)) intrinsics.a = b;
-#define LOCK(s, a) \
-        if (!!(constraints & CameraConstraints::s)) intrinsics.a = lockParams.a;
-
-        FORCE(ZERO_SKEW, skew, 0.0);
-        LOCK(LOCK_SKEW, skew);
-
-        double f = (intrinsics.fx + intrinsics.fy) / 2.0;
-        FORCE(EQUAL_FOCAL, fx, f);
-        FORCE(EQUAL_FOCAL, fy, f);
-        LOCK(LOCK_FOCAL, fx);
-        LOCK(LOCK_FOCAL, fy);
-
-        LOCK(LOCK_PRINCIPAL, cx);
-        LOCK(LOCK_PRINCIPAL, cy);
-#undef FORCE
-#undef LOCK
-    }
-
-#define IFNOT(cond, expr) \
-        if (!(constraints & CameraConstraints::cond)) \
-        { \
-            expr; \
-        }
-    int getInputNum() const
-    {
-        int input = 0;
-        IFNOT(LOCK_FOCAL,
-            input ++;
-            IFNOT(EQUAL_FOCAL,
-                input++));
-        IFNOT(LOCK_PRINCIPAL, input += 2);
-        IFNOT(LOCK_SKEW, IFNOT(ZERO_SKEW, input++));
-        input += 7 * N;
-        return input;
-    }
-
-    int getOutputNum() const
-    {
-        return K * 2 + N;
-    }
-
-    // Algorithm from 
-    // Zhengyou Zhang A Flexible New Technique for Camera Calibration
-	void solveInitialIntrinsics()
-    {
-        computeHomographies();
-        computeAbsoluteConic();
-        extractIntrinsics();
-    }
-	void solveInitialExtrinsics()
-    {
-        int n = homographies.size();
-
-        auto A = (corecvs::Matrix33)intrinsics;
-        auto Ai = A.inv();
-
-        for (int i = 0; i < n; ++i)
-        {
-            auto H = homographies[i];
-            corecvs::Vector3dd h1(H.a(0, 0), H.a(1, 0), H.a(2, 0));
-            corecvs::Vector3dd h2(H.a(0, 1), H.a(1, 1), H.a(2, 1));
-            corecvs::Vector3dd h3(H.a(0, 2), H.a(1, 2), H.a(2, 2));
-
-            double lambda = (1.0 / !(Ai * h1) + 1.0 / !(Ai * h2)) / 2.0;
-
-            auto T = lambda * Ai * h3;
-            auto r1 = lambda * Ai * h1;
-            auto r2 = lambda * Ai * h2;
-            auto r3 = r1 ^ r2;
-
-            corecvs::Matrix33 R(r1[0], r2[0], r3[0],
-                       r1[1], r2[1], r3[1],
-                       r1[2], r2[2], r3[2]), V;
-
-            corecvs::Vector3dd W;
-            corecvs::Matrix::svd(&R, &W, &V);
-            
-            corecvs::Matrix33 RO = R * V.transposed();
-            auto C = -RO.transposed() * T;
-
-            corecvs::Quaternion orientation = corecvs::Quaternion::FromMatrix(RO);
-            locationData[i] = LocationData(C, orientation);
-        }
-    }
-
-    void readParams(const double in[])
-    {
-#define GET_PARAM(ref) \
-        ref = in[argin++];
-#define IF_GET_PARAM(cond, ref) \
-        if (!!(constraints & CameraConstraints::cond)) ref = in[argin++];
-#define IFNOT_GET_PARAM(cond, ref) \
-        if (!(constraints & CameraConstraints::cond)) ref = in[argin++];
-
-        int argin = 0;
-        IFNOT(LOCK_FOCAL,
-            double f;
-            GET_PARAM(f);
-            intrinsics.fx = intrinsics.fy = f;
-            IFNOT_GET_PARAM(EQUAL_FOCAL, intrinsics.fy));
-        IFNOT(LOCK_PRINCIPAL,
-            GET_PARAM(intrinsics.cx);
-            GET_PARAM(intrinsics.cy));
-        IFNOT(LOCK_SKEW,
-            IFNOT_GET_PARAM(ZERO_SKEW, intrinsics.skew));
-
-        for (size_t i = 0; i < N; ++i)
-        {
-            for (int j = 0; j < 3; ++j)
-            {
-                GET_PARAM(locationData[i].position[j]);
-            }
-            for (int j = 0; j < 4; ++j)
-            {
-                GET_PARAM(locationData[i].orientation[j]);
-            }
-        }
-        assert(argin == getInputNum());
-#undef GET_PARAM
-#undef IF_GET_PARAM
-#undef IF_NOT_GET_PARAM
-    }
-
-#define SET_PARAM(ref) \
-    out[argout++] = ref;
-#define IF_SET_PARAM(cond, ref) \
-    if (!!(constraints & CameraConstraints::cond)) out[argout++] = ref;
-#define IFNOT_SET_PARAM(cond, ref) \
-    if (!(constraints & CameraConstraints::cond)) out[argout++] = ref;
-
-    void writeParams(double out[])
-    {
-        int argout = 0;
-        IFNOT(LOCK_FOCAL,
-            SET_PARAM(intrinsics.fx);
-            IFNOT_SET_PARAM(EQUAL_FOCAL, intrinsics.fy));
-        IFNOT(LOCK_PRINCIPAL,
-            SET_PARAM(intrinsics.cx);
-            SET_PARAM(intrinsics.cy));
-        IFNOT(LOCK_SKEW,
-            IFNOT_SET_PARAM(ZERO_SKEW, intrinsics.skew));
-
-        for (size_t i = 0; i < N; ++i)
-        {
-            for (int j = 0; j < 3; ++j)
-            {
-                SET_PARAM(locationData[i].position[j]);
-            }
-            for (int j = 0; j < 4; ++j)
-            {
-                SET_PARAM(locationData[i].orientation[j]);
-            }
-        }
-
-        assert(argout == getInputNum());
-    }
-#undef SET_PARAM
-#undef IF_SET_PARAM
-#undef IFNOT_SET_PARAM
-#undef IFNOT
-    struct LMCostFunction : public corecvs::FunctionArgs
-    {
-        LMCostFunction(FlatPatternCalibrator *calibrator)
-            : FunctionArgs(calibrator->getInputNum(), calibrator->getOutputNum()), calibrator(calibrator)
-        {
-        }
-        void operator()(const double in[], double out[])
-        {
-            calibrator->readParams(in);
-            calibrator->getFullReprojectionError(out);
-            for (size_t i = 0; i < calibrator->N; ++i)
-            {
-                out[2 * calibrator->K + i] = 1.0 - calibrator->locationData[i].orientation.sumAllElementsSq();
-            }
-        }
-        FlatPatternCalibrator *calibrator;
-    };
-
-    void refineGuess()
-    {
-        std::vector<double> in(getInputNum()), out(getOutputNum());
-        writeParams(&in[0]);
-
-        LevenbergMarquardt levmar(1000);
-        levmar.f = new LMCostFunction(this);
-        
-        auto res = levmar.fit(in, out);
-        readParams(&res[0]);
-    }
-
-    void computeHomographies()
-    {
-        homographies.clear();
-        for (auto& pts: points)
-        {
-            if (!pts.size()) continue;
-
-            std::vector<Vector2dd> ptsI, ptsP;
-
-            for (auto& ptp: pts)
-            {
-                ptsI.push_back(ptp.first);
-                ptsP.push_back(Vector2dd(ptp.second[0], ptp.second[1]));
-
-            }
-
-            HomographyReconstructor p2i;
-            for (size_t i = 0; i < ptsI.size(); ++i)
-            {
-                p2i.addPoint2PointConstraint(ptsP[i], ptsI[i]);
-            }
-
-            corecvs::Matrix33 A, B;
-            p2i.normalisePoints(A, B);
-            auto res = p2i.getBestHomographyLSE();
-            res = p2i.getBestHomographyLM(res);
-            res = B.inv() * res * A;
-
-            homographies.push_back(res);
-        }
-    }
-
-    void computeAbsoluteConic()
-    {
-        absoluteConic = corecvs::Vector(6);
-        
-        int n = homographies.size();
-        int n_equ = n * 2;
-        if (n < 3) forceZeroSkew = true;
-
-        if (forceZeroSkew) ++n_equ;
-        int n_equ_actual = n_equ;
-        if (n_equ < 6) n_equ = 6;
-
-        corecvs::Matrix A(n_equ, 6);
-        for (int i = 0; i < n_equ; ++i)
-        {
-            for (int j = 0; j < 6; ++j)
-            {
-                A.a(i, j) = 0.0;
-            }
-        }
-
-        for (int j = 0; j < n; ++j)
-        {
-            corecvs::Vector v00(6), v01(6), v11(6);
-            auto& H = homographies[j];
-
-#define V(I,J) \
-            v ## I ## J[0] = H.a(0, I) * H.a(0, J); \
-            v ## I ## J[1] = H.a(0, I) * H.a(1, J) + H.a(1, I) * H.a(0, J); \
-            v ## I ## J[2] = H.a(1, I) * H.a(1, J); \
-            v ## I ## J[3] = H.a(2, I) * H.a(0, J) + H.a(0, I) * H.a(2, J); \
-            v ## I ## J[4] = H.a(2, I) * H.a(1, J) + H.a(1, I) * H.a(2, J); \
-            v ## I ## J[5] = H.a(2, I) * H.a(2, J);
-
-            V(0, 0);
-            V(0, 1);
-            V(1, 1);
-#undef V
-
-            auto v1 = v01;
-            auto v2 = v00 - v11;
-
-            for (int k = 0; k < 6; ++k)
-            {
-                A.a(2 * j, k) = v1[k];
-                A.a(2 * j + 1, k) = v2[k];
-            }
-        }
-
-        if (forceZeroSkew)
-        {
-            for (int i = 0; i < 6; ++i)
-            {
-                A.a(2 * n, i) = i == 1 ? 1.0 : 0.0;
-            }
-        }
-
-        corecvs::Matrix V(6, 6), W(1, 6);
-        corecvs::Matrix::svd(&A, &W, &V);
-
-        double min_singular = 1e100;
-        int id = -1;
-
-        for (int j = 0; j < 6; ++j)
-        {
-            if (min_singular > W.a(0, j))
-            {
-                min_singular = W.a(0, j);
-                id = j;
-            }
-        }
-
-        for (int j = 0; j < 6; ++j)
-        {
-            absoluteConic[j] = V.a(j, id);
-        }
-    }
-
-    void extractIntrinsics()
-    {
-        double b11, b12, b22, b13, b23, b33;
-        b11 = absoluteConic[0];
-        b12 = absoluteConic[1];
-        b22 = absoluteConic[2];
-        b13 = absoluteConic[3];
-        b23 = absoluteConic[4];
-        b33 = absoluteConic[5];
-
-        double cx, cy, fx, fy, lambda, skew;
-        cy = (b12 * b13 - b11 * b23) / (b11 * b22 - b12 * b12);
-        lambda = b33 - (b13 * b13 + cy * (b12 * b13 - b11 * b23)) / b11;
-        fx = sqrt(lambda / b11);
-        fy = sqrt(lambda * b11 / (b11 * b22 - b12 * b12));
-        skew = -b12 * fx * fx * fy / lambda;
-        cx = skew * cy / fx - b13 * fx * fx / lambda;
-
-        intrinsics = CameraIntrinsics(fx, fy, cx, cy, skew);
-    }
-
-    corecvs::Vector absoluteConic;
-
-    std::vector<corecvs::Matrix33> homographies;
-	std::vector<PatternPoints3d> points;
-	std::vector<LocationData> locationData;
-	CameraIntrinsics intrinsics, lockParams;
-	CameraConstraints constraints;
-    bool forceZeroSkew;
-};
-
-struct PhotoStationCalibrator
-{
-public:
-	void addCamera(CameraIntrinsics &intrinsics);
-	void addCalibrationSetup(std::vector<int> &cameraIds, std::vector<LocationData> &cameraLocations, MultiCameraPatternPoints &points);
-
-	void solve(bool fixIntrinsics = true);
-	bool isSolvable();
-	std::vector<LocationData> getCalibrationSetups();
-	Photostation getPhotostation();
-private:
-	void solveInitialLocations();
-	void refineGuess();
-
-	std::vector<std::vector<LocationData>> locationData;
-};
+#include "flatPatternCalibrator.h"
+#include "photoStationCalibrator.h"
 
 void usage()
 {
@@ -653,7 +151,6 @@ struct ParallelFlatPatternCalibrator
             }
 
             calibrator.solve(true, true);
-//            calibrator.solve(false, true);
 
             locations = calibrator.getExtrinsics();
             intrinsics = calibrator.getIntrinsics();
@@ -661,11 +158,11 @@ struct ParallelFlatPatternCalibrator
     }
 
     CameraConstraints constraints;
-    CameraIntrinsics lockParams;
+    CameraIntrinsics_ lockParams;
     std::vector<std::vector<LocationData>> *locationsVector;
-    std::vector<CameraIntrinsics> *intrinsicsVector;
+    std::vector<CameraIntrinsics_> *intrinsicsVector;
     std::vector<MultiCameraPatternPoints> *pointsVector;
-    ParallelFlatPatternCalibrator(decltype(ParallelFlatPatternCalibrator::locationsVector) locations, std::vector<CameraIntrinsics> *intrinsics, decltype(pointsVector) points, CameraConstraints constraints = CameraConstraints::NONE, CameraIntrinsics lockParams = CameraIntrinsics()) : constraints(constraints), lockParams(lockParams), locationsVector(locations), intrinsicsVector(intrinsics), pointsVector(points)
+    ParallelFlatPatternCalibrator(decltype(ParallelFlatPatternCalibrator::locationsVector) locations, std::vector<CameraIntrinsics_> *intrinsics, decltype(pointsVector) points, CameraConstraints constraints = CameraConstraints::NONE, CameraIntrinsics_ lockParams = CameraIntrinsics_()) : constraints(constraints), lockParams(lockParams), locationsVector(locations), intrinsicsVector(intrinsics), pointsVector(points)
     {
     }
 
@@ -684,7 +181,7 @@ void detectBoards(int N, int M, int M_start, int M_by, const char *pattern, std:
     corecvs::parallelable_for (0, M, 1, ParallelBoardDetector(N, M, M_start, M_by, pattern, &points), true);
 }
 
-void calibrateCameras(int N, int M, std::vector<MultiCameraPatternPoints> &points, std::vector<CameraIntrinsics> intrinsics, std::vector<std::vector<LocationData>> &locationData)
+void calibrateCameras(int N, int M, std::vector<MultiCameraPatternPoints> &points, std::vector<CameraIntrinsics_> &intrinsics, std::vector<std::vector<LocationData>> &locationData)
 {
     intrinsics.clear();
     intrinsics.resize(N);
@@ -692,7 +189,88 @@ void calibrateCameras(int N, int M, std::vector<MultiCameraPatternPoints> &point
     locationData.clear();
     locationData.resize(N);
 
-    corecvs::parallelable_for (0, N, 1, ParallelFlatPatternCalibrator(&locationData, &intrinsics, &points, CameraConstraints::EQUAL_FOCAL | CameraConstraints::ZERO_SKEW | CameraConstraints::LOCK_SKEW ), true);
+    corecvs::parallelable_for (0, N, 1, ParallelFlatPatternCalibrator(&locationData, &intrinsics, &points, CameraConstraints::ZERO_SKEW | CameraConstraints::LOCK_SKEW | CameraConstraints::EQUAL_FOCAL ), true);
+}
+
+// FIXME decide where we take image dimensions and other stuff
+void drawPly(Photostation &ps, const std::string &name, int IW = 2592, int IH = 1944, int W = 18, int H = 11, double size = 50.0, double scale = 50.0)
+{
+    // Colorblind-safe palette
+    RGBColor colors[] =
+    {
+        RGBColor(0x762a83u),
+        RGBColor(0xaf8dc3u),
+        RGBColor(0xe7d4e8u),
+        RGBColor(0xd9f0d3u),
+        RGBColor(0x7fbf7bu),
+        RGBColor(0x1b7837u)
+    };
+    Mesh3D mesh;
+    mesh.switchColor(true);
+    
+
+    auto cs = ps.location.position;
+    auto qs = ps.location.orientation.conjugated();
+
+    const int NSC = 9;
+    Vector3dd center      = Vector3dd( 0,  0,  0), 
+              center2     = Vector3dd( 0,  0,  1) * scale,
+              topLeft     = Vector3dd( 0,  0,  1) * scale, 
+              topRight    = Vector3dd(IW,  0,  1) * scale,
+              bottomRight = Vector3dd(IW, IH,  1) * scale,
+              bottomLeft  = Vector3dd( 0, IH,  1) * scale;
+    Vector3dd pts[NSC * 2] =
+    {
+        center, center2,
+        center, topLeft,
+        center, topRight,
+        center, bottomRight,
+        center, bottomLeft,
+        topLeft, topRight,
+        topRight, bottomRight,
+        bottomRight, bottomLeft,
+        bottomLeft, topLeft,
+    };
+ 
+    int color = 0;
+    for (auto& cam: ps.cameras)
+    {
+        auto cc = cam.extrinsics.position;
+        auto qc = cam.extrinsics.orientation.conjugated();
+        auto A = ((corecvs::Matrix33)cam.intrinsics).inv();
+
+        mesh.currentColor = colors[color = (color + 1) % 6];
+
+        for (int i = 0; i < NSC; ++i)
+        {
+            auto v1 = qs * (qc * (A * pts[i * 2]) + cc) + cs;
+            auto v2 = qs * (qc * (A * pts[i * 2 + 1]) + cc) + cs;
+
+            mesh.addLine(v1, v2);
+        }
+
+        auto ppv = qs * (qc * (A * Vector3dd(cam.intrinsics.cx, cam.intrinsics.cy, 1) * scale) + cc) + cs;
+
+        mesh.addLine(ppv, qs * (qc * (A * center) + cc) + cs);
+    }
+
+    mesh.currentColor = RGBColor(~0u);
+    for (int i = 0; i <= W; ++i)
+    {
+        Vector3dd v1(i * size,        0, 0);
+        Vector3dd v2(i * size, H * size, 0);
+        mesh.addLine(v1, v2);
+    }
+    for (int i = 0; i <= H; ++i)
+    {
+        Vector3dd v1(       0, i * size, 0);
+        Vector3dd v2(W * size, i * size, 0);
+        mesh.addLine(v1, v2);
+    }
+
+    std::ofstream meshof;
+    meshof.open(name, std::ios_base::out);
+    mesh.dumpPLY(meshof);
 }
 
 int main(int argc, char **argv)
@@ -705,14 +283,57 @@ int main(int argc, char **argv)
         return 0;
     }
 
+    /*
+     *  Board detection / loading
+     */
     std::vector<MultiCameraPatternPoints> points;
     detectBoards(N, M, M_start, M_by, pattern.c_str(), points);
     
-    std::vector<CameraIntrinsics> intrinsics;
+    /*
+     * Separated camera calibration
+     */
+    std::vector<CameraIntrinsics_> intrinsics;
     std::vector<std::vector<LocationData>> locations;
     
     calibrateCameras(N, M, points, intrinsics, locations);
+    assert(intrinsics.size() == locations.size());
 
+    /*
+     * Photostation calibration
+     */
+    PhotoStationCalibrator calibrator( CameraConstraints::LOCK_SKEW | CameraConstraints::EQUAL_FOCAL);
+    for (auto& ci: intrinsics)
+    	calibrator.addCamera(ci);
+	std::vector<int> cnt(N);
+    for (auto& setup: points)
+	{
+		MultiCameraPatternPoints pts;
+		std::vector<int> active;
+		std::vector<LocationData> locs;
+		for (int i = 0; i < N; ++i)
+		{
+			if (setup[i].size())
+			{
+				active.push_back(i);
+				pts.push_back(setup[i]);
+				locs.push_back(locations[i][cnt[i]++]);
+			}
+		}
+		calibrator.addCalibrationSetup(active, locs, pts);
+	}
+	calibrator.solve(true, false);
+    calibrator.recenter(); // Let us hope it'll speedup...
+	calibrator.solve(false, true);
+    calibrator.recenter();
+
+    /*
+     * Output section
+     */
+    auto ss = calibrator.getCalibrationSetups();
+	auto ps = calibrator.getPhotostation();
+    
+    // Initial camera positions
+    std::cout << "Camera positions (separated calibration)" << std::endl;
     for (auto& vc: locations)
     {
         for (auto& loc: vc)
@@ -721,5 +342,125 @@ int main(int argc, char **argv)
         }
         std::cout << std::endl;
     }
+    std::cout << std::endl;
+
+    // Pose change for setups
+    std::cout << "Pose of calibration setups" << std::endl;
+    std::cout << "|_.Setup id|_.Position|_.Axis|_.Rel. rotation|" << std::endl;
+    corecvs::Quaternion prev(0, 0, 0, 1);
+    double angle_sq1 = 0.0, angle_sq2 = 0.0;
+    for (int i = 0; i < M; ++i)
+    {
+        auto& set = ss[i];
+        corecvs::Quaternion diff = prev.conjugated() ^ set.orientation;
+        prev = set.orientation;
+        double angle = diff.getAngle() * 180.0 / M_PI;
+        auto axis = diff.getAxis();
+        if (angle > 180)
+        {
+            angle = 360.0 - angle;
+            axis = -axis;
+        }
+        std::cout << "|" << M_start + i * M_by << "|" << set.position << "|" << axis << "|" << angle << "|" << std::endl;
+        angle_sq1 += angle / M;
+        angle_sq2 += angle * angle / M;
+    }
+    double asd = angle_sq2 - angle_sq1 * angle_sq1;
+    std::cout << "|\\3=.Angle stdev|" << sqrt(asd) << "|" << std::endl << std::endl;
+
+    // Optical axis deviation from "vertical"
+    Matrix T(N, 3);
+    for (int i = 0; i < N; ++i)
+    {
+        Vector3dd v = ps.cameras[i].extrinsics.orientation.conjugated() * Vector3dd(0, 0, 1);
+        for (int j = 0; j < 3; ++j)
+        {
+            T.a(i, j) = v[j];
+        }
+    }
+    Matrix D(1, 3), V(3, 3);
+    Matrix::svd(&T, &D, &V);
+    double min_singular = D.a(0, 0);
+    int id = 0;
+    for (int i = 1; i < 3; ++i)
+    {
+        if (D.a(0, i) < min_singular)
+        {
+            min_singular = D.a(0, i);
+            id = i;
+        }
+    }
+
+    std::cout << "|_.Cam|_.angle|" << std::endl;
+    Vector3dd m_axis(V.a(0, id), V.a(1, id), V.a(2, id));
+    for (int i = 0; i < N; ++i)
+    {
+        std::cout << "|" << i << "|" << 180.0 * acos((ps.cameras[i].extrinsics.orientation.conjugated() * Vector3dd(0, 0, 1)) & m_axis) / M_PI - 90.0 << "|" << std::endl;
+    }
+    std::cout << std::endl;
+
+
+    // Relative camera poses
+    std::cout << "Relative camera poses" << std::endl;
+	for (auto& cam: ps.cameras)
+    {
+        std::cout << cam.extrinsics.position << std::endl;
+    }
+   
+    for (int i = 0; i < M; ++i)
+    {
+        std::stringstream s;
+        s << "mesh_" << M_start + i * M_by << "deg.ply";
+        ps.location = ss[i];
+        drawPly(ps, s.str());
+    }
+	
+	// Cam2cam distances 
+    std::cout << "Cam2cam distances" << std::endl;
+    std::cout << "|_.Cam #1|_.Cam #2|_.Distance (mm)|" << std::endl;
+    for (int i = 0; i < N; ++i)
+    {
+        for (int j = i + 1; j < N; ++j)
+        {
+            std::cout << "|" << i << "|" << j << "|" << (ps.cameras[i].extrinsics.position - ps.cameras[j].extrinsics.position).l2Metric() << "|" << std::endl;
+        }
+    }
+    std::cout << std::endl;
+
+    // Camera intrinsics
+    std::cout << "Final camera intrinsics" << std::endl;
+    std::cout << "|_.Cam|_.fx|_.fy|_.fx/fy|_.skew|_.atan(skew/fy)|_.cx|_.cy|" << std::endl;
+    for (int i = 0; i < N; ++i)
+    {
+        double fx = ps.cameras[i].intrinsics.fx;
+        double fy = ps.cameras[i].intrinsics.fy;
+        double cx = ps.cameras[i].intrinsics.cx;
+        double cy = ps.cameras[i].intrinsics.cy;
+        double skew=ps.cameras[i].intrinsics.skew;
+        double aspect = fx / fy;
+        double angle = atan(skew / fx) * 180.0 / M_PI;
+
+        std::cout << "|" << i << "|" << fx << "|" << fy << "|" << aspect << "|" << skew << "|" << angle << "|" << cx << "|" << cy << "|" << std::endl;
+    }
+    std::cout << std::endl;
+
+    std::cout << "Initial camera intrinsics" << std::endl;
+    std::cout << "|_.Cam|_.fx|_.fy|_.fx/fy|_.skew|_.atan(skew/fy)|_.cx|_.cy|" << std::endl;
+    for (int i = 0; i < N; ++i)
+    {
+        double fx = intrinsics[i].fx;
+        double fy = intrinsics[i].fy;
+        double cx = intrinsics[i].cx;
+        double cy = intrinsics[i].cy;
+        double skew=intrinsics[i].skew;
+        double aspect = fx / fy;
+        double angle = atan(skew / fx) * 180.0 / M_PI;
+
+        std::cout << "|" << i << "|" << fx << "|" << fy << "|" << aspect << "|" << skew << "|" << angle << "|" << cx << "|" << cy << "|" << std::endl;
+    }
+    std::cout << std::endl;
+
+
+
     return 0;
 }
