@@ -67,11 +67,11 @@ OpenCVCaptureInterface::OpenCVCaptureInterface(string _devname,  unsigned int mo
 
     SYNC_PRINT(("OpenCVCaptureInterface(): Calling first  cvCaptureFromCAM(%d)\n", id1));
     captureLeft = cvCaptureFromCAM(id1);
-    SYNC_PRINT(("OpenCVCaptureInterface(): result is 0x%x\n", captureLeft));
+    SYNC_PRINT(("OpenCVCaptureInterface(): result is 0x%P\n", captureLeft));
 
     SYNC_PRINT(("OpenCVCaptureInterface(): Calling second cvCaptureFromCAM(%d)\n", id2));
     captureRight = cvCaptureFromCAM(id2);
-    SYNC_PRINT(("OpenCVCaptureInterface(): result is 0x%x\n", captureRight));
+    SYNC_PRINT(("OpenCVCaptureInterface(): result is 0x%P\n", captureRight));
 
     if (captureLeft == NULL && captureRight == NULL)
     {
