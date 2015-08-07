@@ -286,9 +286,12 @@ OpenCvCheckerboardDetector::DetectPartCheckerboardV(const cv::Mat &mat
     for (unsigned j = height; j > 2; j--)
     {
         cv::Size boardSize(width, j);
-        if (params.fastBoardSpeedup() && fastCheckCheckerboard(mat, boardSize))
+        if (params.fastBoardSpeedup())
         {
-            continue;
+            if (!fastCheckCheckerboard(mat, boardSize))
+            {
+                continue;
+            }
         }
 
         SYNC_PRINT(("--------- Fast found %i --------------\n", j));
