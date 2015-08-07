@@ -80,17 +80,17 @@ bool OpenCvCheckerboardDetector::DetectFullCheckerboard(
     return toReturn;
 }
 
-bool OpenCvCheckerboardDetector::DetectPartCheckerboardV(
-    G8Buffer *input
+bool OpenCvCheckerboardDetector::DetectPartCheckerboardV(G8Buffer *input
   , const CheckerboardDetectionParameters &params
   , ObservationList *observationList
+  , SelectableGeometryFeatures *lineList
   , G8Buffer **output
     )
 {
     IplImage *iplImage = OpenCVTools::getCVImageFromG8Buffer(input);
     cv::Mat view = cv::Mat(iplImage);
 
-    BoardAlign alignment = DetectPartCheckerboardV(view, params, observationList);
+    BoardAlign alignment = DetectPartCheckerboardV(view, params, observationList, lineList);
 
     if (output != NULL)
     {
@@ -107,6 +107,7 @@ bool OpenCvCheckerboardDetector::DetectPartCheckerboardH(
     G8Buffer *input
   , const CheckerboardDetectionParameters &params
   , ObservationList *observationList
+  , SelectableGeometryFeatures *lineList
   , G8Buffer **output
     )
 {
@@ -217,6 +218,7 @@ OpenCvCheckerboardDetector::BoardAlign
     OpenCvCheckerboardDetector::DetectPartCheckerboardH(const cv::Mat &mat
     , const CheckerboardDetectionParameters &params
     , ObservationList *observationList
+    , SelectableGeometryFeatures *lineList
     )
 {
     CORE_UNUSED(mat);
@@ -274,55 +276,73 @@ OpenCvCheckerboardDetector::BoardAlign
 OpenCvCheckerboardDetector::DetectPartCheckerboardV(const cv::Mat &mat
     , const CheckerboardDetectionParameters &params
     , ObservationList *observationList
+    , SelectableGeometryFeatures *lineList
     )
 {
-    SYNC_PRINT(("Start  !!!!!!!!!!!!!!!!!!!!!!!\n"));
+    SYNC_PRINT(("OpenCvCheckerboardDetector::DetectPartCheckerboardV():called\n"));
 
     int width  = params.hCrossesCount();
     int height = params.vCrossesCount();
     for (unsigned j = height; j > 2; j--)
     {
         cv::Size boardSize(width, j);
-        if (fastCheckCheckerboard(mat, boardSize))
+        if (params.fastBoardSpeedup())
         {
-            SYNC_PRINT(("--------- Fast found %i --------------\n", j));
-            vector<cv::Point2f> pointbuf;
-            boardSize = cv::Size(width, j);
-            if (findChessboardCorners(mat, boardSize, pointbuf, cv::CALIB_CB_FAST_CHECK))
+            if (!fastCheckCheckerboard(mat, boardSize))
             {
-                SYNC_PRINT(("--------- Found     %i --------------\n", j));
-
-                cv::Mat out(mat);
-                DrawCheckerboardIndex(out, pointbuf);
-                cv::imwrite("pointIndexes.jpg", out);
-
-                double top    = pointbuf.at(0).y;
-                double bottom = pointbuf.at(width - 1).y;
-                for (int i = 0; i < width - 1; i++)
-                {
-                    if (bottom > pointbuf.at(j * i).y)
-                        bottom = pointbuf.at(j * i).y;
-                    if (top    > pointbuf.at(j * (i + 1) - 1).y)
-                        top    = pointbuf.at(j * (i + 1) - 1).y;
-                }
-
-                cornerSubPix(mat, pointbuf, cv::Size(params.preciseDiameter(), params.preciseDiameter()), cv::Size(-1, -1),
-                    cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, params.iterationCount(), params.minAccuracy()));
-
-                if (top < bottom)
-                {
-                    SYNC_PRINT((" TOP\n"));
-                    fillPoints(pointbuf, cv::Size(width, height), boardSize, cv::Size(params.cellSize(),params.cellSize()), BoardAlign::TOP, observationList);
-                    return BoardAlign::TOP;
-                }
-                else
-                {
-                    SYNC_PRINT((" BOTTOM\n"));
-                    fillPoints(pointbuf, cv::Size(width, height), boardSize, cv::Size(params.cellSize(),params.cellSize()), BoardAlign::BOTTOM, observationList);
-                    return BoardAlign::BOTTOM;
-                }
+                continue;
             }
         }
+
+        SYNC_PRINT(("--------- Fast found %i --------------\n", j));
+        vector<cv::Point2f> pointbuf;
+        boardSize = cv::Size(width, j);
+        if (findChessboardCorners(mat, boardSize, pointbuf, cv::CALIB_CB_FAST_CHECK))
+        {
+            SYNC_PRINT(("--------- Found     %i --------------\n", j));
+
+            cv::Mat out(mat);
+            DrawCheckerboardIndex(out, pointbuf);
+            cv::imwrite("pointIndexes.jpg", out);
+
+            double top    = pointbuf.at(0).y;
+            double bottom = pointbuf.at(width - 1).y;
+            for (int i = 0; i < width - 1; i++)
+            {
+                if (bottom > pointbuf.at(j * i).y)
+                    bottom = pointbuf.at(j * i).y;
+                if (top    > pointbuf.at(j * (i + 1) - 1).y)
+                    top    = pointbuf.at(j * (i + 1) - 1).y;
+            }
+
+            cornerSubPix(mat, pointbuf, cv::Size(params.preciseDiameter(), params.preciseDiameter()), cv::Size(-1, -1),
+                cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, params.iterationCount(), params.minAccuracy()));
+
+            if (lineList != NULL)
+            {
+                fillStraight(pointbuf, boardSize.width, boardSize.height, lineList );
+            }
+
+            if (top < bottom)
+            {
+                SYNC_PRINT((" TOP\n"));
+                if (observationList != NULL)
+                {
+                    fillPoints(pointbuf, cv::Size(width, height), boardSize, cv::Size(params.cellSize(),params.cellSize()), BoardAlign::TOP, observationList);
+                }
+                return BoardAlign::TOP;
+            }
+            else
+            {
+                SYNC_PRINT((" BOTTOM\n"));
+                if (observationList != NULL)
+                {
+                    fillPoints(pointbuf, cv::Size(width, height), boardSize, cv::Size(params.cellSize(),params.cellSize()), BoardAlign::BOTTOM, observationList);
+                }
+                return BoardAlign::BOTTOM;
+            }
+        }
+
     }
     SYNC_PRINT((" none\n"));
     return BoardAlign::NONE;

@@ -248,7 +248,7 @@ int main (int argc, char **argv)
         params.setCellSize(cellSize);
 
         ObservationList observationList;
-        OpenCvCheckerboardDetector::DetectPartCheckerboardV(channel, params, &observationList);
+        OpenCvCheckerboardDetector::DetectPartCheckerboardV(channel, params, &observationList, NULL);
 
         delete_safe(channel);
         delete_safe(image);

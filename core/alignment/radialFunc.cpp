@@ -54,7 +54,7 @@ void ModelToRadialCorrection::getModel(const RadialCorrection &correction, doubl
     if (mEvenDegreeOnly) {
         for (int i = 0; i < mPolynomialDegree / 2; i++)
         {
-            if (i * 2 + 1 < correction.mParams.mKoeff.size())
+            if (i * 2 + 1 < (int)correction.mParams.mKoeff.size())
             {
                 in[count++] = correction.mParams.mKoeff[i * 2 + 1];
             } else {
