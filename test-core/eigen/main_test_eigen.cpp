@@ -68,7 +68,7 @@ void testJacobi( void )
     }
 }
 
-int main (int /*argC*/, char **/*argV*/)
+int main (int /*argC*/, char ** /*argV*/)
 {
     testJacobi();
     cout << "PASSED" << endl;
