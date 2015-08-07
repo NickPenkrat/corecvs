@@ -55,6 +55,9 @@ public:
                                        int maxIterationCount = 100,
                                        double minAccuracy = 0.001);
 
+    static std::vector<std::pair<Vector2dd, Vector3dd> >
+                GetPoints(const cv::Mat &mat, int width, int height, double squareSize = 50.0);
+    
     static BoardAlign DetectPartCheckerboardH(const cv::Mat &mat, const CheckerboardDetectionParameters &params, ObservationList *observationList = NULL,  SelectableGeometryFeatures *lineList = NULL);
     static BoardAlign DetectPartCheckerboardV(const cv::Mat &mat, const CheckerboardDetectionParameters &params, ObservationList *observationList = NULL,  SelectableGeometryFeatures *lineList = NULL);
 

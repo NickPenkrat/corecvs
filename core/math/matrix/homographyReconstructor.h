@@ -57,7 +57,7 @@ public:
     Matrix33 getBestHomographyLM(Matrix33 guess = Matrix33(1.0));
 
 
-    void noramlisePoints(Matrix33 &transformLeft, Matrix33 &transformRight);
+    void normalisePoints(Matrix33 &transformLeft, Matrix33 &transformRight);
 
     virtual ~HomographyReconstructor();
 
