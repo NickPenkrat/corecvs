@@ -13,12 +13,9 @@
 #include "correspondanceList.h"
 #include "OpenCVTools.h"
 
-#include <stdio.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <opencv2/legacy/legacy.hpp>
-/*tmp fix*/
-//#include <opencv2/features2d/features2d.hpp> /* for old openCV */
+#include <opencv2/legacy/legacy.hpp> // BruteForceMatcher
 
 #if ((CV_MAJOR_VERSION * 10 + CV_MINOR_VERSION) * 10 + CV_SUBMINOR_VERSION) > 220
 # include <opencv2/nonfree/features2d.hpp>    /* for new openCV */
@@ -147,16 +144,17 @@ private:
         }
     }
 
-    CorrespondanceList mCorList; // output of algorithm
+    CorrespondanceList              mCorList; // output of algorithm
 
-    DetectorType mDetector;
-    vector<KeyPoint> mKeypointsImage, mKeypointsPattern;
+    DetectorType                    mDetector;
+    vector<KeyPoint>                mKeypointsImage, mKeypointsPattern;
 
-    DetectorType mDescriptor;
-    Mat mDescriptorsImage, mDescriptorsPattern;
+    DetectorType                    mDescriptor;
+    Mat                             mDescriptorsImage;
+    Mat                             mDescriptorsPattern;
 
-    BruteForceMatcher< L2<float> > mMatcher;
-    vector<DMatch> mMatches;
+    BruteForceMatcher< L2<float> >  mMatcher;
+    vector<DMatch>                  mMatches;
 };
 
 /* EOF */

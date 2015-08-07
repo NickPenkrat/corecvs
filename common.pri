@@ -270,12 +270,16 @@ isEmpty(CCACHE_TOOLCHAIN_ON) {
 
     # We keep all pdb files at intermediate directories
     #
-    gen_vsproj {
-        QMAKE_CXXFLAGS += -Fd"$(IntDir)"
-        QMAKE_LFLAGS   += /PDB:"$(IntDir)\\$(TargetName).pdb"
+    win32-msvc2013 {
+        # Since [Qt5.5.0 + msvc2013] pdb management is added automatically into bin folder
     } else {
-        QMAKE_CXXFLAGS += -Fd"$(OBJECTS_DIR)"
-        QMAKE_LFLAGS   += /PDB:"$(OBJECTS_DIR)\\$(QMAKE_TARGET).pdb"
+        gen_vsproj {
+            QMAKE_CXXFLAGS += -Fd"$(IntDir)"
+            QMAKE_LFLAGS   += /PDB:"$(IntDir)\\$(TargetName).pdb"
+        } else {
+            QMAKE_CXXFLAGS += -Fd"$(OBJECTS_DIR)"
+            QMAKE_LFLAGS   += /PDB:"$(OBJECTS_DIR)\\$(QMAKE_TARGET).pdb"
+        }
     }
 }
 

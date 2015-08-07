@@ -3,9 +3,14 @@
 
 #include "openCvDefaultParams.h"
 
+#include "global.h"
+
+#include <opencv2/features2d/features2d.hpp>    // cv::FeatureDetector
+#include <opencv2/nonfree/features2d.hpp>       // cv::SURF, cv::SIFT
+
+
 OpenCvFeatureDetectorWrapper::OpenCvFeatureDetectorWrapper(cv::FeatureDetector *detector) : detector(detector)
-{
-}
+{}
 
 OpenCvFeatureDetectorWrapper::~OpenCvFeatureDetectorWrapper()
 {
@@ -30,10 +35,11 @@ void OpenCvFeatureDetectorWrapper::detectImpl(RuntimeTypeBuffer &image, std::vec
 	detector->detect(img, kps);
 
 	keyPoints.clear();
-	for(std::vector<cv::KeyPoint>::iterator kp = kps.begin(); kp != kps.end(); ++kp)
-	{
-		keyPoints.push_back(convert(*kp));
-	}
+
+    FOREACH(const cv::KeyPoint &kp, kps)
+    {
+		keyPoints.push_back(convert(kp));
+    }
 }
 
 void init_opencv_detectors_provider()
