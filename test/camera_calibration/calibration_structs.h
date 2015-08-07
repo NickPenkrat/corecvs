@@ -33,12 +33,16 @@ struct LocationData
 	corecvs::Quaternion orientation;
 };
 
+// TODO: We already have intrinsics class somewhere, don't we?
 struct CameraIntrinsics_
 {
     CameraIntrinsics_(double fx = 1.0, double fy = 1.0, double cx = 0.0, double cy = 0.0, double skew = 0.0) : fx(fx), fy(fy), cx(cx), cy(cy), skew(skew)
     {
     }
-    
+ 
+    // The idea is that if we merge distorsion calibration WITH extrinsics/intrinsics
+    // calibration, then this method will project point using forward distorsion
+    // map
     corecvs::Vector2dd project(const corecvs::Vector3dd &pt)
     {
         double normalizer = pt[2];

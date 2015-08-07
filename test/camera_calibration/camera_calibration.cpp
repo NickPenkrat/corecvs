@@ -273,6 +273,33 @@ void drawPly(Photostation &ps, const std::string &name, int IW = 2592, int IH = 
     mesh.dumpPLY(meshof);
 }
 
+void calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<CameraIntrinsics_> &intrinsics, std::vector<std::vector<LocationData>> &locations)
+{
+    for (auto& ci: intrinsics)
+    	calibrator.addCamera(ci);
+	std::vector<int> cnt(N);
+    for (auto& setup: points)
+	{
+		MultiCameraPatternPoints pts;
+		std::vector<int> active;
+		std::vector<LocationData> locs;
+		for (int i = 0; i < N; ++i)
+		{
+			if (setup[i].size())
+			{
+				active.push_back(i);
+				pts.push_back(setup[i]);
+				locs.push_back(locations[i][cnt[i]++]);
+			}
+		}
+		calibrator.addCalibrationSetup(active, locs, pts);
+	}
+	calibrator.solve(true, false);
+    calibrator.recenter(); // Let us hope it'll speedup...
+	calibrator.solve(false, true);
+    calibrator.recenter();
+}
+
 int main(int argc, char **argv)
 {
     int N = 6, M = 24, M_start = 15, M_by = 15;
@@ -302,29 +329,7 @@ int main(int argc, char **argv)
      * Photostation calibration
      */
     PhotoStationCalibrator calibrator( CameraConstraints::LOCK_SKEW | CameraConstraints::EQUAL_FOCAL);
-    for (auto& ci: intrinsics)
-    	calibrator.addCamera(ci);
-	std::vector<int> cnt(N);
-    for (auto& setup: points)
-	{
-		MultiCameraPatternPoints pts;
-		std::vector<int> active;
-		std::vector<LocationData> locs;
-		for (int i = 0; i < N; ++i)
-		{
-			if (setup[i].size())
-			{
-				active.push_back(i);
-				pts.push_back(setup[i]);
-				locs.push_back(locations[i][cnt[i]++]);
-			}
-		}
-		calibrator.addCalibrationSetup(active, locs, pts);
-	}
-	calibrator.solve(true, false);
-    calibrator.recenter(); // Let us hope it'll speedup...
-	calibrator.solve(false, true);
-    calibrator.recenter();
+    calibratePhotostation(N, M, calibrator, points, intrinsics, locations);
 
     /*
      * Output section
