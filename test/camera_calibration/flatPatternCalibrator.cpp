@@ -44,9 +44,9 @@ double FlatPatternCalibrator::getRmseReprojectionError()
     getFullReprojectionError(&err[0]);
 
     double sqs = 0.0;
-    for (auto e: err)
+    for (auto e : err) {
         sqs += e * e;
-
+    }
     return sqrt(sqs / K);
 }
 
@@ -69,11 +69,11 @@ void FlatPatternCalibrator::getFullReprojectionError(double out[])
             out[idx++] = diff[1];
         }
     }
-    assert(idx == getOutputNum()
 #ifdef PENALIZE_QNORM
-            - N
+    assert(idx == getOutputNum() - N);
+#else
+    assert(idx == getOutputNum());
 #endif
-            );
 }
 
 #define IFNOT(cond, expr) \
@@ -91,17 +91,18 @@ int FlatPatternCalibrator::getInputNum() const
                 input++));
     IFNOT(LOCK_PRINCIPAL, input += 2);
     IFNOT(LOCK_SKEW, IFNOT(ZERO_SKEW, input++));
-    input += 7 * N;
+
+    input += 7 * (int)N;
     return input;
 }
 
 int FlatPatternCalibrator::getOutputNum() const
 {
-    return K * 2
 #ifdef PENALIZE_QNORM
-        + N
+    return (int)K * 2 + (int)N;
+#else
+    return (int)K * 2;
 #endif
-        ;
 }
 
 void FlatPatternCalibrator::enforceParams()
@@ -135,7 +136,7 @@ void FlatPatternCalibrator::solveInitialIntrinsics()
 
 void FlatPatternCalibrator::solveInitialExtrinsics()
 {
-    int n = homographies.size();
+    int n = (int)homographies.size();
 
     auto A = (corecvs::Matrix33)intrinsics;
     auto Ai = A.inv();
@@ -308,12 +309,12 @@ void FlatPatternCalibrator::computeAbsoluteConic()
 {
     absoluteConic = corecvs::Vector(6);
 
-    int n = homographies.size();
+    int n = (int)homographies.size();
     int n_equ = n * 2;
     if (n < 3) forceZeroSkew = true;
 
     if (forceZeroSkew) ++n_equ;
-    int n_equ_actual = n_equ;
+  //int n_equ_actual = n_equ;
     if (n_equ < 6) n_equ = 6;
 
     corecvs::Matrix A(n_equ, 6);

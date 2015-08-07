@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vector2d.h"
+#include "vector3d.h"
 
 #include <opencv2/core/core.hpp>        // cv::Mat, Point2f
 
