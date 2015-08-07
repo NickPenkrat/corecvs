@@ -1,10 +1,19 @@
-#pragma once
+#ifndef OPENCVCHEKERBOARDDETECTOR_H
+#define OPENCVCHEKERBOARDDETECTOR_H
 
-#include "vector2d.h"
+#include <opencv/cv.h>
+#include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <string>
+#include "global.h"
 
-#include <opencv2/core/core.hpp>        // cv::Mat, Point2f
+#include "g8Buffer.h"
+#include "checkerboardDetectionParameters.h"
+#include "selectableGeometryFeatures.h"
 
-using namespace corecvs;
+using namespace cv;
+using corecvs::G8Buffer;
 
 class CheckerboardDetectionParameters;
 namespace corecvs {
@@ -55,6 +64,8 @@ public:
                                        int maxIterationCount = 100,
                                        double minAccuracy = 0.001);
 
+    static std::vector<std::pair<Vector2dd, Vector3dd>> GetPoints(const cv::Mat &mat, int width, int height, double squareSize = 50.0);
+    
     static BoardAlign DetectPartCheckerboardH(const cv::Mat &mat, const CheckerboardDetectionParameters &params, ObservationList *observationList = NULL,  SelectableGeometryFeatures *lineList = NULL);
     static BoardAlign DetectPartCheckerboardV(const cv::Mat &mat, const CheckerboardDetectionParameters &params, ObservationList *observationList = NULL,  SelectableGeometryFeatures *lineList = NULL);
 
@@ -69,3 +80,5 @@ private:
 
     static bool fastCheckCheckerboard(const cv::Mat &mat, cv::Size boardSize);
 };
+
+#endif

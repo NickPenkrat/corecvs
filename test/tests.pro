@@ -24,6 +24,7 @@ with_opencv {
     	opencvLineDetector \
         matcher_basic \
         matcher_full \
+        camera_calibration
 }
 
 grab.file               = grab/grab.pro
@@ -32,6 +33,7 @@ serialize1.file         = serialize1/serialize1.pro
 adoptcolor.file         = adoptcolor/adoptcolor.pro
 avigrab.file            = avigrab/avigrab.pro
 decodebayer.file        = decodebayer/decodebayer.pro
+camera_calibration.file = camera_calibration/camera_calibration.pro
 genvectorui.file        = genvectorui/genvectorui.pro
 
 opencvLineDetector.file = opencvLineDetector/opencvLineDetector.pro

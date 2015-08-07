@@ -315,7 +315,7 @@ public:
             return GenericQuaternion(x,y,z,t);
         } else
         {
-            double r = sqrt(1 + c - a - c);
+            double r = sqrt(1 + c - a - b);
             double t = (R.a(1,0) - R.a(0,1)) / (2.0 * r);
             double x = (R.a(0,2) + R.a(2,0)) / (2.0 * r);
             double y = (R.a(1,2) + R.a(2,1)) / (2.0 * r);
