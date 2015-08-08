@@ -199,7 +199,7 @@ void DistortionWidget::detectCheckerboard()
     G8Buffer *output = NULL;
 
     if (params.partialBoard()) {
-        found = OpenCvCheckerboardDetector::DetectPartCheckerboardV(workChannel, params, list, &output);
+        found = OpenCvCheckerboardDetector::DetectPartCheckerboardV(workChannel, params, list, features, &output);
         cout << "We have added" << list->size() << " points" << endl;
     } else {
         found = OpenCvCheckerboardDetector::DetectFullCheckerboard(workChannel, params, features, &output);

@@ -163,12 +163,20 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
 
                     QString prefix = fieldElement.attribute("prefix");
                     QString suffix = fieldElement.attribute("suffix");
+                    int decimals = 2;
+                    bool ok;
+                    int parsed = fieldElement.attribute("decimals").toInt(&ok);
+                    if (ok) {
+                        decimals = parsed;
+                    }
+                    qDebug()  << "Decimals " << decimals;
 
                     field = new DoubleFieldGen(
                               defaultValue.toDouble()
                             , widgetType
                             , prefix
                             , suffix
+                            , decimals
                             , fieldNameing
                             , hasAdditionalParameters
                             , minValue.toDouble()

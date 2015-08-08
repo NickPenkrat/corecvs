@@ -11,7 +11,7 @@ include($$ROOT_DIR/config.pri)
 
 TEMPLATE=app
 TARGET  = test_camera_calibration
-CONFIG += CONSOLE c++11
+CONFIG += CONSOLE
 QT += core
 QT -= gui
 QT -= xml

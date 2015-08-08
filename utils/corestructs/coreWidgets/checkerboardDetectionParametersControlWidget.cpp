@@ -29,6 +29,7 @@ CheckerboardDetectionParametersControlWidget::CheckerboardDetectionParametersCon
     QObject::connect(mUi->iterationCountSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->minAccuracySpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->partialBoardCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->fastBoardSpeedupCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
 }
 
 CheckerboardDetectionParametersControlWidget::~CheckerboardDetectionParametersControlWidget()
@@ -65,6 +66,7 @@ void CheckerboardDetectionParametersControlWidget::getParameters(CheckerboardDet
     params.setIterationCount   (mUi->iterationCountSpinBox->value());
     params.setMinAccuracy      (mUi->minAccuracySpinBox->value());
     params.setPartialBoard     (mUi->partialBoardCheckBox->isChecked());
+    params.setFastBoardSpeedup (mUi->fastBoardSpeedupCheckBox->isChecked());
 
 }
 
@@ -86,6 +88,7 @@ CheckerboardDetectionParameters *CheckerboardDetectionParametersControlWidget::c
         , mUi->iterationCountSpinBox->value()
         , mUi->minAccuracySpinBox->value()
         , mUi->partialBoardCheckBox->isChecked()
+        , mUi->fastBoardSpeedupCheckBox->isChecked()
     );
     return result;
 }
@@ -103,6 +106,7 @@ void CheckerboardDetectionParametersControlWidget::setParameters(const Checkerbo
     mUi->iterationCountSpinBox->setValue(input.iterationCount());
     mUi->minAccuracySpinBox->setValue(input.minAccuracy());
     mUi->partialBoardCheckBox->setChecked(input.partialBoard());
+    mUi->fastBoardSpeedupCheckBox->setChecked(input.fastBoardSpeedup());
     blockSignals(wasBlocked);
     emit paramsChanged();
 }

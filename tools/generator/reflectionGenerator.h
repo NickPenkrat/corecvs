@@ -166,12 +166,14 @@ public:
     DoubleWidgetType widgetType;
     QString prefix;
     QString suffix;
+    int decimals;
 
     DoubleFieldGen(
         double _defaultValue,
         DoubleWidgetType _widgetType,
         QString _prefix,
         QString _suffix,
+        int _decimals,
         const ReflectionNaming &_nameing,
         bool _hasAdditionalValues = false,
         double _min = 0.0,
@@ -189,7 +191,8 @@ public:
         ),
         widgetType(_widgetType),
         prefix(_prefix),
-        suffix(_suffix)
+        suffix(_suffix),
+        decimals(_decimals)
     {}
 
     virtual BaseField* clone() const

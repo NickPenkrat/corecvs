@@ -2,13 +2,14 @@
 #define CAMERAMODELPARAMETERSCONTROLWIDGET_H
 
 #include <QWidget>
+#include "parametersControlWidgetBase.h"
 #include "lensDistortionModelParameters.h"
 
 namespace Ui {
 class CameraModelParametersControlWidget;
 }
 
-class CameraModelParametersControlWidget : public QWidget
+class CameraModelParametersControlWidget : public ParametersControlWidgetBase
 {
     Q_OBJECT
 
@@ -17,6 +18,9 @@ public:
     ~CameraModelParametersControlWidget();
 
     LensDistortionModelParameters lensDistortionParameters();
+
+    virtual void loadParamWidget(WidgetLoader &/*loader*/);
+    virtual void saveParamWidget(WidgetSaver  &/*saver*/ );
 
 private:
     Ui::CameraModelParametersControlWidget *ui;

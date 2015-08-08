@@ -49,6 +49,7 @@ public:
         ITERATION_COUNT_ID,
         MIN_ACCURACY_ID,
         PARTIAL_BOARD_ID,
+        FAST_BOARD_SPEEDUP_ID,
         CHECKERBOARD_DETECTION_PARAMETERS_FIELD_ID_NUM
     };
 
@@ -108,6 +109,12 @@ public:
      */
     bool mPartialBoard;
 
+    /** 
+     * \brief Fast board Speedup 
+     * Fast board Speedup 
+     */
+    bool mFastBoardSpeedup;
+
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
 
@@ -161,6 +168,11 @@ public:
         return mPartialBoard;
     }
 
+    bool fastBoardSpeedup() const
+    {
+        return mFastBoardSpeedup;
+    }
+
     /* Section with setters */
     void setChannel(ImageChannel::ImageChannel channel)
     {
@@ -207,6 +219,11 @@ public:
         mPartialBoard = partialBoard;
     }
 
+    void setFastBoardSpeedup(bool fastBoardSpeedup)
+    {
+        mFastBoardSpeedup = fastBoardSpeedup;
+    }
+
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
@@ -221,6 +238,7 @@ template<class VisitorType>
         visitor.visit(mIterationCount,            static_cast<const IntField *>     (fields()[ITERATION_COUNT_ID]));
         visitor.visit(mMinAccuracy,               static_cast<const DoubleField *>  (fields()[MIN_ACCURACY_ID]));
         visitor.visit(mPartialBoard,              static_cast<const BoolField *>    (fields()[PARTIAL_BOARD_ID]));
+        visitor.visit(mFastBoardSpeedup,          static_cast<const BoolField *>    (fields()[FAST_BOARD_SPEEDUP_ID]));
     }
 
     CheckerboardDetectionParameters()
@@ -239,6 +257,7 @@ template<class VisitorType>
         , int iterationCount
         , double minAccuracy
         , bool partialBoard
+        , bool fastBoardSpeedup
     )
     {
         mChannel = channel;
@@ -250,6 +269,7 @@ template<class VisitorType>
         mIterationCount = iterationCount;
         mMinAccuracy = minAccuracy;
         mPartialBoard = partialBoard;
+        mFastBoardSpeedup = fastBoardSpeedup;
     }
 
     friend ostream& operator << (ostream &out, CheckerboardDetectionParameters &toSave)

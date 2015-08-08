@@ -15,8 +15,12 @@ CONFIG += CONSOLE
 QT += core
 QT -= gui
 QT -= xml
+QT -= widgets
+QT -= opengl
 
 UTILSDIR = $$ROOT_DIR/src/open/utils
 include($$UTILSDIR/utils.pri)
+
+#QT -= gui   # is not allowed as this app uses qtFileLoader, which uses QImage that belongs QtGui
 
 SOURCES += opencvLineDetector.cpp

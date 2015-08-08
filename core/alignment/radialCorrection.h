@@ -38,10 +38,11 @@ public:
     {
         double rpow = r;
         double radialCorrection = 0;
+        const vector<double>& coeffs = mParams.koeff();
 
-        for (unsigned i = 0; i < mParams.koeff().size(); i ++)
+        for (unsigned i = 0; i < coeffs.size(); i++)
         {
-            radialCorrection += mParams.koeff()[i] * rpow;
+            radialCorrection += coeffs[i] * rpow;
             rpow *= r;
         }
         return radialCorrection;
