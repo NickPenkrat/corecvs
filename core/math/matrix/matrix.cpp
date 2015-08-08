@@ -169,11 +169,10 @@ Vector operator *(const Vector &V, const Matrix &M)
 
 Matrix operator *=(Matrix &M, const DiagonalMatrix &D)
 {
-    int32_t minDim = CORE_MIN(M.h,M.w);
-    minDim = CORE_MIN(minDim, D.size());
-    for (int i = 0; i < minDim ; i++)
+    ASSERT_TRUE (M.w == D.size(), "Matrices have wrong sizes");
+    for (int i = 0; i < M.h ; i++)
     {
-         for (int j = 0; j < minDim ; j++)
+         for (int j = 0; j < M.w ; j++)
          {
             M.a(i,j) *= D.at(i);
          }
@@ -181,31 +180,30 @@ Matrix operator *=(Matrix &M, const DiagonalMatrix &D)
     return M;
 }
 
+
 Matrix operator *(const Matrix &M, const DiagonalMatrix &D)
 {
-    int32_t minDim = CORE_MIN(M.h,M.w);
-    minDim = CORE_MIN(minDim, D.size());
-    Matrix result(minDim, minDim, false);
-    for (int i = 0; i < minDim ; i++)
+    ASSERT_TRUE (M.w == D.size(), "Matrices have wrong sizes");
+    Matrix result(M.h, M.w);
+    for (int i = 0; i < M.h; ++i)
     {
-         for (int j = 0; j < minDim ; j++)
-         {
-             result.a(i,j) = M.a(i,j) * D.at(i);
-         }
+        for (int j = 0; j < M.w; ++j)
+        {
+            result.a(i, j) = M.a(i, j) * D.at(j);
+        }
     }
     return result;
 }
 
 Matrix operator *(DiagonalMatrix &D, const Matrix &M)
 {
-    int32_t minDim = CORE_MIN(M.h,M.w);
-    minDim = CORE_MIN(minDim, D.size());
-    Matrix result(minDim, minDim, false);
-    for (int i = 0; i < minDim ; i++)
+    ASSERT_TRUE (M.h == D.size(), "Matrices have wrong sizes");
+    Matrix result(M.h, M.w);
+    for (int i = 0; i < M.h; ++i)
     {
-        for (int j = 0; j < minDim ; j++)
+        for (int j = 0; j < M.w; ++j)
         {
-            result.a(i,j) = M.a(i,j) * D.at(j);
+            result.a(i, j) = M.a(i, j) * D.at(i);
         }
     }
     return result;
