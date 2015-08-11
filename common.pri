@@ -244,9 +244,6 @@ isEmpty(CCACHE_TOOLCHAIN_ON) {
         QMAKE_CFLAGS   +=-fPIC
         QMAKE_CXXFLAGS +=-fPIC
     }
-    !win32 {
-        QMAKE_LFLAGS += -ldl			# load symbol links from "dll/so" files
-    }
 } else {
    #QMAKE_CXXFLAGS_DEBUG   += /showIncludes
 
@@ -420,14 +417,15 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
     } else {
         !isEmpty(TBB_PATH) {
             #message (Using TBB at $$TBB_PATH)
-            DEFINES     += WITH_TBB
             INCLUDEPATH += $$TBB_PATH/include
-            LIBS        += -ltbb
+            LIBS        += -L$$TBB_PATH/lib/
         }
         else {
-           !build_pass: message(TBB not found. Please set TBB_PATH system variable to a root folder of TBB to use it)
+            !build_pass: message (Using System TBB)
         }
-      }
+        DEFINES     += WITH_TBB
+        LIBS        += -ltbb
+    }
 }
 
 # More static analysis warnings
