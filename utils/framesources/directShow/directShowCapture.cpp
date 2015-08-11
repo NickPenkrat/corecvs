@@ -235,22 +235,36 @@ ALIGN_STACK_SSE void DirectShowCaptureInterface::memberCallback(DSCapDeviceId de
         }
         else if (data.format.type == CAP_RGB)
         {
-            // Take this somewhere else
-            camera->buffer = new G12Buffer(data.format.height, data.format.width, false);
-            int w = camera->buffer->w;
-            int h = camera->buffer->h;
-            for (int i = 0; i < h; i++)
-            {
-                uint8_t  *rgbData = ((uint8_t *)data.data) + 3 * (h - i - 1) * w;
-                uint16_t *greyData = &(camera->buffer->element(i,0));
-                for (int j = 0; j < w; j++)
-                {
-                    uint16_t r = rgbData[0];
-                    uint16_t g = rgbData[1];
-                    uint16_t b = rgbData[2];
-                    *greyData = (11 * r + 16 * g + 5 * b) >> 1;
-                    rgbData  += 3;
-                    greyData += 1;
+            if (mIsRgb) {
+                camera->buffer24 = new RGB24Buffer(data.format.height, data.format.width, true);
+                int w = camera->buffer24->w;
+                int h = camera->buffer24->h;
+                for (int i = 0; i < h; i++) {
+                    uint8_t  *rgbData = ((uint8_t *)data.data) + 3 * (h - i - 1) * w;
+                    RGBColor *rgb24Data = &(camera->buffer24->element(i, 0));
+                    for (int j = 0; j < w; j++) {
+                        uint16_t b = rgbData[0];
+                        uint16_t g = rgbData[1];
+                        uint16_t r = rgbData[2];
+                        *rgb24Data++ = RGBColor(r, g, b);
+                        rgbData += 3;
+                    }
+                }
+            }
+            else {
+                camera->buffer = new G12Buffer(data.format.height, data.format.width, false);
+                int w = camera->buffer->w;
+                int h = camera->buffer->h;
+                for (int i = 0; i < h; i++) {
+                    uint8_t  *rgbData = ((uint8_t *)data.data) + 3 * (h - i - 1) * w;
+                    uint16_t *greyData = &(camera->buffer->element(i, 0));
+                    for (int j = 0; j < w; j++) {
+                        uint16_t b = rgbData[0];
+                        uint16_t g = rgbData[1];
+                        uint16_t r = rgbData[2];
+                        *greyData++ = (11 * r + 16 * g + 5 * b) >> 1;
+                        rgbData += 3;
+                    }
                 }
             }
         }
