@@ -42,7 +42,8 @@ HEADERS += \
     math/mathUtils.h \
     math/eulerAngles.h \
     math/puzzleBlock.h \
-    math/matrix/similarityReconstructor.h
+    math/matrix/similarityReconstructor.h \
+    math/sse/doublex2.h
     
     
 SOURCES += \
