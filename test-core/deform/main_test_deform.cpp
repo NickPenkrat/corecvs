@@ -285,9 +285,40 @@ void testRadialInversion( void )
 
 }
 
+void testRectangularImage()
+{
+    LensDistortionModelParameters deformator;
+    deformator.setPrincipalX(1296);
+    deformator.setPrincipalY( 972);
+
+    deformator.setTangentialX(0.000);
+    deformator.setTangentialY(0.000);
+
+    deformator.setAspect(1.0);
+    deformator.setScale(1.0);
+    deformator.setNormalizingFocal(1620.0);
+
+    deformator.mKoeff.push_back(1.0);
+
+    RadialCorrection T(deformator);
+
+    Vector2dd min;
+    Vector2dd max;
+
+    T.getCircumscribedImageRect(0, 0, 1296 * 2, 972 * 2, min, max);
+    cout << min  << " => " << max << endl;
+
+    T.getInscribedImageRect    (0, 0, 1296 * 2, 972 * 2, min, max);
+    cout << min  << " => " << max << endl;
+
+
+
+}
+
 int main (int /*argC*/, char ** /*argV*/)
 {
-    testRadialApplication();
+    testRectangularImage();
+    //testRadialApplication();
     //testFastDeform ();
     //testFastDeform24 ();
 
