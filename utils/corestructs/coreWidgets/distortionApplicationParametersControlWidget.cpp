@@ -20,7 +20,8 @@ DistortionApplicationParametersControlWidget::DistortionApplicationParametersCon
 {
     mUi->setupUi(this);
 
-    QObject::connect(mUi->forceScaleSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->forceScaleCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->adoptScaleCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->resizePolicyComboBox, SIGNAL(currentIndexChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->newHSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->newWSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
@@ -51,7 +52,8 @@ void DistortionApplicationParametersControlWidget::saveParamWidget(WidgetSaver  
 void DistortionApplicationParametersControlWidget::getParameters(DistortionApplicationParameters& params) const
 {
 
-    params.setForceScale       (mUi->forceScaleSpinBox->value());
+    params.setForceScale       (mUi->forceScaleCheckBox->isChecked());
+    params.setAdoptScale       (mUi->adoptScaleCheckBox->isChecked());
     params.setResizePolicy     (static_cast<DistortionResizePolicy::DistortionResizePolicy>(mUi->resizePolicyComboBox->currentIndex()));
     params.setNewH             (mUi->newHSpinBox->value());
     params.setNewW             (mUi->newWSpinBox->value());
@@ -67,7 +69,8 @@ DistortionApplicationParameters *DistortionApplicationParametersControlWidget::c
 
 
     DistortionApplicationParameters *result = new DistortionApplicationParameters(
-          mUi->forceScaleSpinBox->value()
+          mUi->forceScaleCheckBox->isChecked()
+        , mUi->adoptScaleCheckBox->isChecked()
         , static_cast<DistortionResizePolicy::DistortionResizePolicy>(mUi->resizePolicyComboBox->currentIndex())
         , mUi->newHSpinBox->value()
         , mUi->newWSpinBox->value()
@@ -79,7 +82,8 @@ void DistortionApplicationParametersControlWidget::setParameters(const Distortio
 {
     // Block signals to send them all at once
     bool wasBlocked = blockSignals(true);
-    mUi->forceScaleSpinBox->setValue(input.forceScale());
+    mUi->forceScaleCheckBox->setChecked(input.forceScale());
+    mUi->adoptScaleCheckBox->setChecked(input.adoptScale());
     mUi->resizePolicyComboBox->setCurrentIndex(input.resizePolicy());
     mUi->newHSpinBox->setValue(input.newH());
     mUi->newWSpinBox->setValue(input.newW());

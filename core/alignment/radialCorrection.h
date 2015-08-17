@@ -103,7 +103,7 @@ public:
         return Vector2dd(
                 cx + ((dx + radialX + tangentX) / mParams.aspect() * mParams.scale() * mParams.normalizingFocal()),
                 cy + ((dy + radialY + tangentY)                    * mParams.scale() * mParams.normalizingFocal())
-               );
+               ) + Vector2dd(addShiftX, addShiftY);
     }
 
     /**/
@@ -121,6 +121,12 @@ public:
 
     //Vector2dd getCorrectionForPoint(Vector2dd input);
     LensDistortionModelParameters mParams;
+
+    /* TODO: This was not in original design. Most probably should be done by decorator.*/
+    double addShiftX;
+    double addShiftY;
+
+
 
     Vector2dd center() const
     {

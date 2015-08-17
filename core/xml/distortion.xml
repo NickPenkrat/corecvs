@@ -103,7 +103,8 @@
   </enum>
 
   <class name="Distortion Application Parameters">
-    <field type="double"                    name="Force Scale"   defaultValue="0" />
+    <field type="bool"      name="Force Scale"   defaultValue="false" />
+    <field type="bool"      name="Adopt Scale"   defaultValue="false" />
     <field type="Distortion Resize Policy"  name="Resize policy" defaultValue="0" />
     <field type="int"                       name="New H"         defaultValue="0" />
     <field type="int"                       name="New W"         defaultValue="0" />

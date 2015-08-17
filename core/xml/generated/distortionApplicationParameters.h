@@ -41,6 +41,7 @@ class DistortionApplicationParameters : public BaseReflection<DistortionApplicat
 public:
     enum FieldId {
         FORCE_SCALE_ID,
+        ADOPT_SCALE_ID,
         RESIZE_POLICY_ID,
         NEW_H_ID,
         NEW_W_ID,
@@ -53,7 +54,13 @@ public:
      * \brief Force Scale 
      * Force Scale 
      */
-    double mForceScale;
+    bool mForceScale;
+
+    /** 
+     * \brief Adopt Scale 
+     * Adopt Scale 
+     */
+    bool mAdoptScale;
 
     /** 
      * \brief Resize policy 
@@ -81,9 +88,14 @@ public:
     {
         return (const unsigned char *)(this) + fields()[fieldId]->offset;
     }
-    double forceScale() const
+    bool forceScale() const
     {
         return mForceScale;
+    }
+
+    bool adoptScale() const
+    {
+        return mAdoptScale;
     }
 
     DistortionResizePolicy::DistortionResizePolicy resizePolicy() const
@@ -102,9 +114,14 @@ public:
     }
 
     /* Section with setters */
-    void setForceScale(double forceScale)
+    void setForceScale(bool forceScale)
     {
         mForceScale = forceScale;
+    }
+
+    void setAdoptScale(bool adoptScale)
+    {
+        mAdoptScale = adoptScale;
     }
 
     void setResizePolicy(DistortionResizePolicy::DistortionResizePolicy resizePolicy)
@@ -127,7 +144,8 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(mForceScale,                static_cast<const DoubleField *>  (fields()[FORCE_SCALE_ID]));
+        visitor.visit(mForceScale,                static_cast<const BoolField *>    (fields()[FORCE_SCALE_ID]));
+        visitor.visit(mAdoptScale,                static_cast<const BoolField *>    (fields()[ADOPT_SCALE_ID]));
         visitor.visit((int &)mResizePolicy,       static_cast<const EnumField *>    (fields()[RESIZE_POLICY_ID]));
         visitor.visit(mNewH,                      static_cast<const IntField *>     (fields()[NEW_H_ID]));
         visitor.visit(mNewW,                      static_cast<const IntField *>     (fields()[NEW_W_ID]));
@@ -140,13 +158,15 @@ template<class VisitorType>
     }
 
     DistortionApplicationParameters(
-          double forceScale
+          bool forceScale
+        , bool adoptScale
         , DistortionResizePolicy::DistortionResizePolicy resizePolicy
         , int newH
         , int newW
     )
     {
         mForceScale = forceScale;
+        mAdoptScale = adoptScale;
         mResizePolicy = resizePolicy;
         mNewH = newH;
         mNewW = newW;

@@ -38,14 +38,25 @@ int DistortionApplicationParameters::staticInit()
      
 
     fields().push_back(
-        new DoubleField
+        new BoolField
         (
           DistortionApplicationParameters::FORCE_SCALE_ID,
           offsetof(DistortionApplicationParameters, mForceScale),
-          0,
+          false,
           "Force Scale",
           "Force Scale",
           "Force Scale"
+        )
+    );
+    fields().push_back(
+        new BoolField
+        (
+          DistortionApplicationParameters::ADOPT_SCALE_ID,
+          offsetof(DistortionApplicationParameters, mAdoptScale),
+          false,
+          "Adopt Scale",
+          "Adopt Scale",
+          "Adopt Scale"
         )
     );
     fields().push_back(
