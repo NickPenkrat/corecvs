@@ -124,12 +124,12 @@ public:
     void deselectAll();
 
     void addPathFrom(const SelectableGeometryFeatures &other);
+    void addAllLinesFromObservationList(const ObservationList &list);
 
     /****/
     bool hasSinglePointsSelected();
 
     SelectableGeometryFeatures();
-    explicit SelectableGeometryFeatures(const ObservationList &list);
     virtual ~SelectableGeometryFeatures();
 
     /* Helper function */

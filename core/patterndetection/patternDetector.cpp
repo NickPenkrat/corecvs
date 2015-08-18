@@ -11,5 +11,5 @@ void PatternDetector::getPointData(corecvs::SelectableGeometryFeatures &features
 {
     corecvs::ObservationList list;
     getPointData(list);
-    features = corecvs::SelectableGeometryFeatures(list);
+    features.addAllLinesFromObservationList(list);
 }
