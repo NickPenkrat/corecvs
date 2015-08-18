@@ -62,8 +62,8 @@ bool OpenCvCheckerboardDetector::DetectFullCheckerboard(
     cv::Mat view = cv::Mat(iplImage);
 
     bool toReturn = DetectFullCheckerboard(view,
-                        params.hCrossesCount(),
-                        params.vCrossesCount(),
+                        params.horCrossesCount(),
+                        params.vertCrossesCount(),
                         lineList,
                         params.preciseDiameter(),
                         params.iterationCount(),
@@ -281,8 +281,8 @@ OpenCvCheckerboardDetector::DetectPartCheckerboardV(const cv::Mat &mat
 {
     SYNC_PRINT(("OpenCvCheckerboardDetector::DetectPartCheckerboardV():called\n"));
 
-    int width  = params.hCrossesCount();
-    int height = params.vCrossesCount();
+    int width  = params. horCrossesCount();
+    int height = params.vertCrossesCount();
     for (unsigned j = height; j > 2; j--)
     {
         cv::Size boardSize(width, j);
@@ -328,7 +328,7 @@ OpenCvCheckerboardDetector::DetectPartCheckerboardV(const cv::Mat &mat
                 SYNC_PRINT((" TOP\n"));
                 if (observationList != NULL)
                 {
-                    fillPoints(pointbuf, cv::Size(width, height), boardSize, cv::Size(params.cellSize(),params.cellSize()), BoardAlign::TOP, observationList);
+                    fillPoints(pointbuf, cv::Size(width, height), boardSize, cv::Size(params.cellSizeHor(),params.cellSizeVert()), BoardAlign::TOP, observationList);
                 }
                 return BoardAlign::TOP;
             }
@@ -337,7 +337,7 @@ OpenCvCheckerboardDetector::DetectPartCheckerboardV(const cv::Mat &mat
                 SYNC_PRINT((" BOTTOM\n"));
                 if (observationList != NULL)
                 {
-                    fillPoints(pointbuf, cv::Size(width, height), boardSize, cv::Size(params.cellSize(),params.cellSize()), BoardAlign::BOTTOM, observationList);
+                    fillPoints(pointbuf, cv::Size(width, height), boardSize, cv::Size(params.cellSizeHor(),params.cellSizeVert()), BoardAlign::BOTTOM, observationList);
                 }
                 return BoardAlign::BOTTOM;
             }
@@ -429,6 +429,7 @@ void OpenCvCheckerboardDetector::fillPoints(const vector<cv::Point2f> &pointbuf
     }
 }
 
+/* Fill SelectableGeometryFeatures with lines */
 void OpenCvCheckerboardDetector::fillStraight(const vector<cv::Point2f> &pointbuf, int width, int height, SelectableGeometryFeatures *lineList)
 {
     for (int i = 0; i < height; i++)
@@ -450,6 +451,56 @@ void OpenCvCheckerboardDetector::fillStraight(const vector<cv::Point2f> &pointbu
             lineList->addVertexToPath(lineList->appendNewVertex(point), path);
         }
     }
+}
+
+/**
+ * Fill SelectableGeometryFeatures with all lines
+ *
+ * So far only main diagonal lines (with ~45 deg angle) are added.
+ * They are iterated top to bottom
+ *
+ *
+ **/
+typedef AbstractBuffer<cv::Point2f> PointViewBuf;
+
+void OpenCvCheckerboardDetector::fillStraightAndDiagonal(const vector<cv::Point2f> &pointbuf, int width, int height, SelectableGeometryFeatures *lineList)
+{
+    cv::Point2f *ptr = const_cast<cv::Point2f *>(&pointbuf[0]);
+    PointViewBuf *view = PointViewBuf::CreateBuffer<PointViewBuf> (height, width, width, ptr);
+
+
+    for (int j = 0; j < width; j++)
+    {
+        SelectableGeometryFeatures::VertexPath * path = lineList->appendNewPath();
+        for (int i = 0; i < height; i++)
+        {
+            Vector2dd point = CV2Core::Vector2ddFromPoint2f(view->element(i,j));
+            lineList->addVertexToPath(lineList->appendNewVertex(point), path);
+        }
+
+        if (j > 2) {
+            SelectableGeometryFeatures::VertexPath * path = lineList->appendNewPath();
+            for (int i = j; i -- ; i > 0)
+            {
+                Vector2dd point(pointbuf.at(i * width + j).x, pointbuf.at(i * width + j).y);
+                lineList->addVertexToPath(lineList->appendNewVertex(point), path);
+            }
+        }
+    }
+
+
+    for (int i = 0; i < height; i++)
+    {
+        SelectableGeometryFeatures::VertexPath * path = lineList->appendNewPath();
+        for (int j = 0; j < width; j++)
+        {
+            Vector2dd point = CV2Core::Vector2ddFromPoint2f(view->element(i,j));
+            lineList->addVertexToPath(lineList->appendNewVertex(point), path);
+        }
+    }
+
+    delete view;
+
 }
 
 // TODO: reduce copypaste
@@ -568,5 +619,7 @@ void OpenCvCheckerboardDetector::fillStraight(
                                        , buffer.at(iw + width * ih).y));
         }
         straights->push_back(straight);
+
+
     }
 }

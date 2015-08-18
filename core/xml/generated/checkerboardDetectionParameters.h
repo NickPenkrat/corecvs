@@ -41,9 +41,10 @@ class CheckerboardDetectionParameters : public BaseReflection<CheckerboardDetect
 public:
     enum FieldId {
         CHANNEL_ID,
-        V_CROSSES_COUNT_ID,
-        H_CROSSES_COUNT_ID,
-        CELL_SIZE_ID,
+        VERT_CROSSES_COUNT_ID,
+        HOR_CROSSES_COUNT_ID,
+        CELL_SIZE_HOR_ID,
+        CELL_SIZE_VERT_ID,
         CLEAN_EXISTING_ID,
         PRECISE_DIAMETER_ID,
         ITERATION_COUNT_ID,
@@ -62,22 +63,28 @@ public:
     int mChannel;
 
     /** 
-     * \brief V crosses count 
-     * V crosses count 
+     * \brief Vert crosses count 
+     * Vert crosses count 
      */
-    int mVCrossesCount;
+    int mVertCrossesCount;
 
     /** 
-     * \brief H crosses count 
-     * H crosses count 
+     * \brief Hor crosses count 
+     * Hor crosses count 
      */
-    int mHCrossesCount;
+    int mHorCrossesCount;
 
     /** 
-     * \brief Cell size 
-     * Cell size 
+     * \brief Cell Size Hor 
+     * Cell Size Hor 
      */
-    double mCellSize;
+    double mCellSizeHor;
+
+    /** 
+     * \brief Cell Size Vert 
+     * Cell Size Vert 
+     */
+    double mCellSizeVert;
 
     /** 
      * \brief Clean existing 
@@ -128,19 +135,24 @@ public:
         return static_cast<ImageChannel::ImageChannel>(mChannel);
     }
 
-    int vCrossesCount() const
+    int vertCrossesCount() const
     {
-        return mVCrossesCount;
+        return mVertCrossesCount;
     }
 
-    int hCrossesCount() const
+    int horCrossesCount() const
     {
-        return mHCrossesCount;
+        return mHorCrossesCount;
     }
 
-    double cellSize() const
+    double cellSizeHor() const
     {
-        return mCellSize;
+        return mCellSizeHor;
+    }
+
+    double cellSizeVert() const
+    {
+        return mCellSizeVert;
     }
 
     bool cleanExisting() const
@@ -179,19 +191,24 @@ public:
         mChannel = channel;
     }
 
-    void setVCrossesCount(int vCrossesCount)
+    void setVertCrossesCount(int vertCrossesCount)
     {
-        mVCrossesCount = vCrossesCount;
+        mVertCrossesCount = vertCrossesCount;
     }
 
-    void setHCrossesCount(int hCrossesCount)
+    void setHorCrossesCount(int horCrossesCount)
     {
-        mHCrossesCount = hCrossesCount;
+        mHorCrossesCount = horCrossesCount;
     }
 
-    void setCellSize(double cellSize)
+    void setCellSizeHor(double cellSizeHor)
     {
-        mCellSize = cellSize;
+        mCellSizeHor = cellSizeHor;
+    }
+
+    void setCellSizeVert(double cellSizeVert)
+    {
+        mCellSizeVert = cellSizeVert;
     }
 
     void setCleanExisting(bool cleanExisting)
@@ -230,9 +247,10 @@ template<class VisitorType>
     void accept(VisitorType &visitor)
     {
         visitor.visit((int &)mChannel,            static_cast<const EnumField *>    (fields()[CHANNEL_ID]));
-        visitor.visit(mVCrossesCount,             static_cast<const IntField *>     (fields()[V_CROSSES_COUNT_ID]));
-        visitor.visit(mHCrossesCount,             static_cast<const IntField *>     (fields()[H_CROSSES_COUNT_ID]));
-        visitor.visit(mCellSize,                  static_cast<const DoubleField *>  (fields()[CELL_SIZE_ID]));
+        visitor.visit(mVertCrossesCount,          static_cast<const IntField *>     (fields()[VERT_CROSSES_COUNT_ID]));
+        visitor.visit(mHorCrossesCount,           static_cast<const IntField *>     (fields()[HOR_CROSSES_COUNT_ID]));
+        visitor.visit(mCellSizeHor,               static_cast<const DoubleField *>  (fields()[CELL_SIZE_HOR_ID]));
+        visitor.visit(mCellSizeVert,              static_cast<const DoubleField *>  (fields()[CELL_SIZE_VERT_ID]));
         visitor.visit(mCleanExisting,             static_cast<const BoolField *>    (fields()[CLEAN_EXISTING_ID]));
         visitor.visit(mPreciseDiameter,           static_cast<const IntField *>     (fields()[PRECISE_DIAMETER_ID]));
         visitor.visit(mIterationCount,            static_cast<const IntField *>     (fields()[ITERATION_COUNT_ID]));
@@ -249,9 +267,10 @@ template<class VisitorType>
 
     CheckerboardDetectionParameters(
           ImageChannel::ImageChannel channel
-        , int vCrossesCount
-        , int hCrossesCount
-        , double cellSize
+        , int vertCrossesCount
+        , int horCrossesCount
+        , double cellSizeHor
+        , double cellSizeVert
         , bool cleanExisting
         , int preciseDiameter
         , int iterationCount
@@ -261,9 +280,10 @@ template<class VisitorType>
     )
     {
         mChannel = channel;
-        mVCrossesCount = vCrossesCount;
-        mHCrossesCount = hCrossesCount;
-        mCellSize = cellSize;
+        mVertCrossesCount = vertCrossesCount;
+        mHorCrossesCount = horCrossesCount;
+        mCellSizeHor = cellSizeHor;
+        mCellSizeVert = cellSizeVert;
         mCleanExisting = cleanExisting;
         mPreciseDiameter = preciseDiameter;
         mIterationCount = iterationCount;
