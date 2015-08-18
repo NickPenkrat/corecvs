@@ -228,7 +228,7 @@ void CornerKernelSet::computeKernels(double r, double alpha, double psi, int w, 
 #endif
 }
 
-void ChessboardCornerDetector::prepareDiff(DpImage &diff, bool du)
+void ChessBoardCornerDetector::prepareDiff(DpImage &diff, bool du)
 {
     double dvk[] = {-1.0, -1.0, -1.0,  0.0, 0.0, 0.0,  1.0, 1.0, 1.0};
     double duk[] = {-1.0,  0.0,  1.0, -1.0, 0.0, 1.0, -1.0, 0.0, 1.0};
@@ -240,7 +240,7 @@ void ChessboardCornerDetector::prepareDiff(DpImage &diff, bool du)
 }
 
 #define SQR
-void ChessboardCornerDetector::prepareAngleWeight()
+void ChessBoardCornerDetector::prepareAngleWeight()
 {
     int W = du.w;
     int H = du.h;
@@ -266,7 +266,7 @@ void ChessboardCornerDetector::prepareAngleWeight()
 
 // XXX: due to distortion removal we can get some black areas. 
 // Let us scale image based on 0.05 and 0.95 percentiles
-void ChessboardCornerDetector::scaleImage()
+void ChessBoardCornerDetector::scaleImage()
 {
     std::vector<double> values;
     for (int i = 0; i < img.h; ++i)
@@ -294,7 +294,7 @@ void ChessboardCornerDetector::scaleImage()
 }
 
 
-void ChessboardCornerDetector::prepareKernels()
+void ChessBoardCornerDetector::prepareKernels()
 {
     kernels.clear();
 
@@ -307,7 +307,7 @@ void ChessboardCornerDetector::prepareKernels()
     }
 }
 
-void ChessboardCornerDetector::computeCost()
+void ChessBoardCornerDetector::computeCost()
 {
     int w = img.w, h = img.h;
     cost = DpImage(h, w);
@@ -321,7 +321,7 @@ void ChessboardCornerDetector::computeCost()
     }
 }
 
-void ChessboardCornerDetector::runNms()
+void ChessBoardCornerDetector::runNms()
 {
     std::vector<std::pair<int, int>> cornerCandidates;
     cost.nonMaximumSupression(5, 0.025, cornerCandidates, 5);
@@ -330,7 +330,7 @@ void ChessboardCornerDetector::runNms()
 }
 
 
-void ChessboardCornerDetector::circularMeanShift(std::vector<double> &values, double bandwidth, std::vector<std::pair<int, double>> &modes)
+void ChessBoardCornerDetector::circularMeanShift(std::vector<double> &values, double bandwidth, std::vector<std::pair<int, double>> &modes)
 {
     int N = values.size();
     std::vector<double> smoothed(N);
@@ -395,7 +395,7 @@ void ChessboardCornerDetector::circularMeanShift(std::vector<double> &values, do
 }
 
 
-bool ChessboardCornerDetector::edgeOrientationFromGradient(int top, int bottom, int left, int right, corecvs::Vector2dd &v1, corecvs::Vector2dd &v2)
+bool ChessBoardCornerDetector::edgeOrientationFromGradient(int top, int bottom, int left, int right, corecvs::Vector2dd &v1, corecvs::Vector2dd &v2)
 {
     std::vector<double> histogram(histogramBins);
     double bin_size = M_PI / histogramBins;
@@ -438,7 +438,7 @@ bool ChessboardCornerDetector::edgeOrientationFromGradient(int top, int bottom, 
     return true;
 }
 
-void ChessboardCornerDetector::filterByOrientation()
+void ChessBoardCornerDetector::filterByOrientation()
 {
     int idx = 0, N = corners.size(), iw = w.w, ih = w.h;
     for (int i = 0; i < N; ++i)
@@ -458,7 +458,7 @@ void ChessboardCornerDetector::filterByOrientation()
     corners.resize(idx);
 }
 
-void ChessboardCornerDetector::eig22(corecvs::Matrix &A, double &lambda1, corecvs::Vector2dd &e1, double &lambda2, corecvs::Vector2dd &e2)
+void ChessBoardCornerDetector::eig22(corecvs::Matrix &A, double &lambda1, corecvs::Vector2dd &e1, double &lambda2, corecvs::Vector2dd &e2)
 {
     const double EIGTOLERANCE = 1e-9;
     assert(A.w == 2 && A.h == 2);
@@ -488,7 +488,7 @@ void ChessboardCornerDetector::eig22(corecvs::Matrix &A, double &lambda1, corecv
     }
 }
 
-void ChessboardCornerDetector::adjustCornerOrientation()
+void ChessBoardCornerDetector::adjustCornerOrientation()
 {
     int iw = du.w, ih = du.h;
     for (auto& c: corners)
@@ -532,14 +532,14 @@ void ChessboardCornerDetector::adjustCornerOrientation()
     }
 }
 
-bool ChessboardCornerDetector::invertable22(corecvs::Matrix &A)
+bool ChessBoardCornerDetector::invertable22(corecvs::Matrix &A)
 {
     assert(A.w == 2 && A.h == 2);
     const double DETTOLERANCE22 = 1e-9;
     return std::abs(A.a(0, 0) * A.a(1, 1) - A.a(1, 0) * A.a(0, 1)) > DETTOLERANCE22;
 }
 
-void ChessboardCornerDetector::solve22(corecvs::Matrix &A, corecvs::Vector2dd &B, corecvs::Vector2dd &x)
+void ChessBoardCornerDetector::solve22(corecvs::Matrix &A, corecvs::Vector2dd &B, corecvs::Vector2dd &x)
 {
     assert(A.w == 2 && A.h == 2);
     double a = A.a(0, 0), b = A.a(0, 1), c = A.a(1, 0), d = A.a(1, 1);
@@ -548,7 +548,7 @@ void ChessboardCornerDetector::solve22(corecvs::Matrix &A, corecvs::Vector2dd &B
     x[1] = (-c * B[0] + a * B[1]) / D;
 }
 
-void ChessboardCornerDetector::adjustCornerPosition()
+void ChessBoardCornerDetector::adjustCornerPosition()
 {
     int iw = du.w, ih = du.h;
     int idx = 0;
@@ -628,7 +628,7 @@ void ChessboardCornerDetector::adjustCornerPosition()
 
 
 
-void ChessboardCornerDetector::computeScores()
+void ChessBoardCornerDetector::computeScores()
 {
     int idx = 0;
     for (auto& c: corners)
@@ -645,7 +645,7 @@ void ChessboardCornerDetector::computeScores()
     corners.resize(idx);
 }
 
-void ChessboardCornerDetector::detectCorners(DpImage &image, std::vector<OrientedCorner> &corners_)
+void ChessBoardCornerDetector::detectCorners(DpImage &image, std::vector<OrientedCorner> &corners_)
 {
     corners.clear();
     img = image;
@@ -672,7 +672,7 @@ void ChessboardCornerDetector::detectCorners(DpImage &image, std::vector<Oriente
     corners_ = corners;
 }
     
-ChessboardCornerDetector::ChessboardCornerDetector(ChessboardCornerDetectorParams params) : ChessboardCornerDetectorParams(params) 
+ChessBoardCornerDetector::ChessBoardCornerDetector(ChessBoardCornerDetectorParams params) : ChessBoardCornerDetectorParams(params)
 { 
     prepareKernels();
 }

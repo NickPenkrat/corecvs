@@ -3,8 +3,31 @@
 #include "vector2d.h"
 #include "vector3d.h"
 
+#include "patternDetector.h"
+#include "checkerboardDetectionParameters.h"
+
 #include <opencv2/core/core.hpp>        // cv::Mat, Point2f
 
+
+#if 1
+class OpenCvCheckerboardDetector : public PatternDetector, protected CheckerboardDetectionParameters
+{
+public:
+    OpenCvCheckerboardDetector(const CheckerboardDetectionParameters &params = CheckerboardDetectionParameters());
+
+    virtual bool detectPattern(corecvs::G8Buffer &buffer);
+    using PatternDetector::getPointData;
+
+    virtual void getPointData(corecvs::ObservationList &observations);
+private:
+    bool detectChessBoardOpenCv(corecvs::G8Buffer &buffer);
+    void assignPointCoordinates(int iw, int ih);
+
+    std::vector<cv::Point2f> points;
+    int bw, bh;
+    corecvs::ObservationList result;
+};
+#else
 using namespace corecvs;
 
 class CheckerboardDetectionParameters;
@@ -73,3 +96,4 @@ private:
 
     static bool fastCheckCheckerboard(const cv::Mat &mat, cv::Size boardSize);
 };
+#endif

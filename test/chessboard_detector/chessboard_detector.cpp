@@ -9,6 +9,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
+#include "chessBoardDetector.h"
 #include "chessBoardCornerDetector.h"
 #include "chessBoardAssembler.h"
 
@@ -52,8 +53,8 @@ void readImage(const std::string &filename, DpImage &img)
 {
     cv::Mat im = cv::imread(filename);
     im.convertTo(im, CV_64FC1, 1.0 / 255.0);
-    // BLAH STUPID OPENCV DOES NOT SUPPORTS FP64 RGB->GRAY 
-    // BTW, I hope that it is always BGR order, is it correct?!
+    // XXX:  OPENCV DOES NOT SUPPORTS FP64 RGB->GRAY 
+    // TODO: BTW, I hope that it is always BGR order, is it correct?!
     img = DpImage(im.rows, im.cols);
     for (int i = 0; i < im.rows; ++i)
     {
@@ -61,6 +62,20 @@ void readImage(const std::string &filename, DpImage &img)
         {
                 (img.element(i, j) = 0.299 * im.at<double>(i, j * 3 + 2) + 0.587 * im.at<double>(i, j * 3 + 1) + 0.114 * im.at<double>(i, j * 3))
                 ;
+        }
+    }
+}
+
+void readImage(const std::string &filename, corecvs::RGB24Buffer &img)
+{
+    cv::Mat im = cv::imread(filename);
+    im.convertTo(im, CV_64FC1, 1.0);
+    img = corecvs::RGB24Buffer(im.rows, im.cols);
+    for (int i = 0; i < im.rows; ++i)
+    {
+        for (int j = 0; j < im.cols; ++j)
+        {
+            img.element(i, j) = corecvs::RGBColor(im.at<double>(i, j * 3 + 2), im.at<double>(i, j * 3 + 1), im.at<double>(i, j * 3));
         }
     }
 }
@@ -74,31 +89,22 @@ int main(int argc, char **argv)
         usage();
         return 0;
     }
-    DpImage img, du, dv, phi, w, c;
+#if 0
+    DpImage img;
+#else
+    corecvs::RGB24Buffer img;
+#endif
 
     readImage(filename , img);
+    ChessboardDetector detector;
+    detector.detectPattern(img);
 
-    std::vector<OrientedCorner> orientedCorners;
-    ChessboardCornerDetector detector;
-    std::cout << "Detecting corners... " << std::endl;
-    detector.detectCorners(img, orientedCorners);
-    ChessBoardAssembler assembler;
-    std::cout << orientedCorners.size() << " corners detected" << std::endl;
-    std::vector<std::vector<std::vector<corecvs::Vector2dd>>> hypothesis;
-    std::cout << "Detecting boards... " << std::endl;
-    assembler.assembleBoards(orientedCorners, hypothesis);
+    corecvs::ObservationList observations;
+    detector.getPointData(observations);
 
-    for (auto& b: hypothesis)
+    for (auto o: observations)
     {
-        for (auto& r: b)
-        {
-            for (auto& c: r)
-            {
-                std::cout << c << " ";
-            }
-            std::cout << std::endl;
-        }
-        std::cout << std::endl << std::endl;
+        std::cout << o.point << " ";
     }
     return 0;
 }

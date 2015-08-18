@@ -82,7 +82,7 @@ private:
     void computeKernels(double r, double alpha, double psi, int w, int c, double threshold = 0.05);
 };
 
-struct ChessboardCornerDetectorParams
+struct ChessBoardCornerDetectorParams
 {
     // Width of cross for corner gradient-score
     double gradientCrossWidth = 3.0;
@@ -116,10 +116,10 @@ struct ChessboardCornerDetectorParams
     double meanshiftBandwidth = 1.0;
 };
 
-class ChessboardCornerDetector : ChessboardCornerDetectorParams
+class ChessBoardCornerDetector : ChessBoardCornerDetectorParams
 {
 public:
-    ChessboardCornerDetector(ChessboardCornerDetectorParams params = ChessboardCornerDetectorParams());
+    ChessBoardCornerDetector(ChessBoardCornerDetectorParams params = ChessBoardCornerDetectorParams());
     void detectCorners(DpImage &image, std::vector<OrientedCorner> &corners);
 private:
     // initalizes kernels for corner detection

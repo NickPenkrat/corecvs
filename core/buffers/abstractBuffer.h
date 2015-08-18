@@ -938,15 +938,15 @@ template<typename ResultType>
      *  \param oper - operation to be performed
      **/
 
-template<typename operation>
-    void binaryOperationInPlace(const AbstractBuffer &that, const operation &oper = operation())
+template<typename operation, typename OtherBuffer>
+    void binaryOperationInPlace(const OtherBuffer &that, const operation &oper = operation())
     {
         IndexType h = CORE_MIN(this->h, that.h);
         IndexType w = CORE_MIN(this->w, that.w);
         for (IndexType i = 0; i < h; i++)
         {
             ElementType *thisElemRunner = &(this->element(i,0));
-            const ElementType *thatElemRunner = &(that.element(i,0));
+            const typename OtherBuffer::InternalElementType *thatElemRunner = &(that.element(i,0));
             for (IndexType j = 0; j < w; j++)
             {
                 /* Writing like this just to emphasize what is actually called */

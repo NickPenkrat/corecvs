@@ -129,6 +129,7 @@ public:
     bool hasSinglePointsSelected();
 
     SelectableGeometryFeatures();
+    explicit SelectableGeometryFeatures(const ObservationList &list);
     virtual ~SelectableGeometryFeatures();
 
     /* Helper function */

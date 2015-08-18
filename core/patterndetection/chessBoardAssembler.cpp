@@ -379,19 +379,12 @@ bool ChessBoardAssembler::BoardExpander::assignNearest(std::vector<corecvs::Vect
     std::priority_queue<std::tuple<double, int, int>> queue;
     for (int j = 0; j < M; ++j)
     {
-//        std::cout << prediction[j] << " | ";
         for (int i = 0; i < N; ++i)
         {
             queue.push(std::make_tuple(-(prediction[j] - corners[unused[i]].pos).l2Metric(), i, j));
-#if 0
-            std::cout << corners[unused[i]].pos << " : " << (prediction[j] - corners[unused[i]].pos).l2Metric() << " /\ " ;
-     
-#endif
         }
-//        std::cout << std::endl;
     }
 
-    assert(std::make_tuple(0.0, 1, 2) < std::make_tuple(1.0, -10, -10));
 
     while (queue.size())
     {

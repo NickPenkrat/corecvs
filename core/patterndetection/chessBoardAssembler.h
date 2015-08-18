@@ -22,11 +22,6 @@
 
 struct RectangularGridPattern
 {
-#if 0
-    void getCorrespondence(int fullW, int fullH, double cellSize, std::vector<OrientedCorner> &corners, std::vector<std::pair<corecvs::Vector2dd, Vector3dd>> &pts)
-    {
-    }
-#endif
     double getScore(std::vector<OrientedCorner> &corners) const
     {
         return (score = getCornersScore(corners) + getStructureScore(corners));

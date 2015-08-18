@@ -1,5 +1,7 @@
 #include "selectableGeometryFeatures.h"
 
+#include <set>
+
 namespace corecvs {
 
 SelectableGeometryFeatures::Vertex::Vertex(const Vector2dd &_position) :
@@ -309,5 +311,76 @@ bool SelectableGeometryFeatures::VertexPath::isEmpty()
     return vertexes.empty();
 }
 
+SelectableGeometryFeatures::SelectableGeometryFeatures(const ObservationList &list)
+{
+    const double LINETOLERANCE = 1e-7;
+    int N = list.size();
+    std::vector<int> used(N * N);
+    std::vector<std::vector<int>> lines;
+    for (int i = 0; i < N; ++i)
+    {
+        for (int j = i + 1; j < N; ++j)
+        {
+            if (used[i * N + j] || used[j * N + i])
+                continue;
+            used[i * N + j] = used[j * N + i] = 1;
+            corecvs::Vector3dd A, B, C, d, D;
+            A = list[i].point;
+            B = list[j].point;
+            d = (B - A).normalised();
 
+            std::vector<int> line = {i, j};
+            for (int k = 0; k < N; ++k)
+            {
+                if (k == i || k == j)
+                    continue;
+                C = list[k].point;
+                D = C - A;
+                double diff = !(D - (D & d) * d);
+
+                if (diff < LINETOLERANCE)
+                {
+                    used[i * N + k] = used[k * N + i] = used[j * N + k] = used[k * N + j] = 1;
+                    line.push_back(k);
+                }
+            }
+
+            if (line.size() >= 3)
+            {
+                std::sort(line.begin(), line.end());
+                lines.push_back(line);
+            }
+        }
+    }
+
+    int idx = 0;
+    for (auto& line: lines)
+    {
+        bool unique = true;
+        std::set<int> cset(line.begin(), line.end());
+        for (int i = 0; i < idx; ++i)
+        {
+            int common = 0;
+            for (auto& id: lines[i])
+                if (cset.count(id))
+                    common++;
+            if (common >= 2)
+            {
+                unique = false;
+                break;
+            }
+        }
+
+        if (unique)
+            lines[idx++] = line;
+    }
+    lines.resize(idx);
+
+    for (auto& line: lines)
+    {
+        auto* path = appendNewPath();
+        for (auto id: line)
+            addVertexToPath(appendNewVertex(list[id].projection), path);
+    }
+}
 }
