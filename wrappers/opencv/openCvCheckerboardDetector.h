@@ -89,8 +89,9 @@ public:
     static void DrawCheckerboardIndex(cv::Mat &dst, const vector<cv::Point2f> &pointbuf);
 
 private:
-    static void fillStraight(const vector<cv::Point2f> &buffer, int width, int height, Straights *straights);
-    static void fillStraight(const vector<cv::Point2f> &buffer, int width, int height, SelectableGeometryFeatures *lineList);
+    static void fillStraight           (const vector<cv::Point2f> &buffer,   int width, int height, Straights *straights);
+    static void fillStraight           (const vector<cv::Point2f> &buffer,   int width, int height, SelectableGeometryFeatures *lineList);
+    static void fillStraightAndDiagonal(const vector<cv::Point2f> &pointbuf, int width, int height, SelectableGeometryFeatures *lineList);
 
     static void fillPoints(const vector<cv::Point2f> &pointbuf, cv::Size fullSize, cv::Size partSize, cv::Size cellSize, BoardAlign alignment, ObservationList *observationList);
 

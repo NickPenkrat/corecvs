@@ -10,6 +10,8 @@
 #define __XMLDocument_FWD_DEFINED__  // to omit conflict "msxml.h:3376: using typedef-name 'XMLDocument' after 'class'"
 
 #include <opencv2/core/types_c.h> // CvSize, IplImage
+#include <opencv2/core/core.hpp> // CvSize, IplImage
+
 
 #include "global.h"
 
@@ -37,4 +39,14 @@ template<typename OtherStruct>
     {
         return cvSize(other.x(), other.y());
     }
+
+};
+
+class CV2Core {
+public:
+
+    static Vector2dd Vector2ddFromPoint2f(cv::Point2f &input) {
+        return Vector2dd(input.x, input.y);
+    }
+
 };

@@ -166,8 +166,8 @@ int main (int argc, char **argv)
         Vector2dd center = Vector2dd(image->w, image->h) / 2.0;
 
         CheckerboardDetectionParameters params;
-        params.setHCrossesCount(chessW);
-        params.setVCrossesCount(chessH);
+        params.setHorCrossesCount(chessW);
+        params.setVertCrossesCount(chessH);
         params.setPreciseDiameter(precise);
         params.setMinAccuracy(minAccuracy);
         params.setIterationCount(maxIterationCount);
@@ -249,14 +249,16 @@ int main (int argc, char **argv)
 
         CheckerboardDetectionParameters params;
         params.setPartialBoard(true);
-        params.setHCrossesCount(chessW);
-        params.setVCrossesCount(chessH);
+        params.setHorCrossesCount(chessW);
+        params.setVertCrossesCount(chessH);
         params.setPreciseDiameter(precise);
         params.setMinAccuracy(minAccuracy);
         params.setIterationCount(maxIterationCount);
-        params.setCellSize(cellSize);
+        params.setCellSizeHor(cellSize);
+        params.setCellSizeVert(cellSize);
 
         ObservationList observationList;
+
         //OpenCvCheckerboardDetector::DetectPartCheckerboardV(channel, params, &observationList, NULL);
         OpenCvCheckerboardDetector detector(params);
         bool found = detector.detectPattern(*channel);

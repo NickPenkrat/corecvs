@@ -46,48 +46,60 @@ int CheckerboardDetectionParameters::staticInit()
           "Channel",
           "Channel",
           "Channel",
-          new EnumReflection(7
+          new EnumReflection(8
           , new EnumOption(0,"R")
           , new EnumOption(1,"G")
           , new EnumOption(2,"B")
           , new EnumOption(3,"Gray")
-          , new EnumOption(4,"Hue")
-          , new EnumOption(5,"Saturation")
-          , new EnumOption(6,"Value")
+          , new EnumOption(4,"Luma")
+          , new EnumOption(5,"Hue")
+          , new EnumOption(6,"Saturation")
+          , new EnumOption(7,"Value")
           )
         )
     );
     fields().push_back(
         new IntField
         (
-          CheckerboardDetectionParameters::V_CROSSES_COUNT_ID,
-          offsetof(CheckerboardDetectionParameters, mVCrossesCount),
+          CheckerboardDetectionParameters::VERT_CROSSES_COUNT_ID,
+          offsetof(CheckerboardDetectionParameters, mVertCrossesCount),
           11,
-          "V crosses count",
-          "V crosses count",
-          "V crosses count"
+          "Vert crosses count",
+          "Vert crosses count",
+          "Vert crosses count"
         )
     );
     fields().push_back(
         new IntField
         (
-          CheckerboardDetectionParameters::H_CROSSES_COUNT_ID,
-          offsetof(CheckerboardDetectionParameters, mHCrossesCount),
+          CheckerboardDetectionParameters::HOR_CROSSES_COUNT_ID,
+          offsetof(CheckerboardDetectionParameters, mHorCrossesCount),
           18,
-          "H crosses count",
-          "H crosses count",
-          "H crosses count"
+          "Hor crosses count",
+          "Hor crosses count",
+          "Hor crosses count"
         )
     );
     fields().push_back(
         new DoubleField
         (
-          CheckerboardDetectionParameters::CELL_SIZE_ID,
-          offsetof(CheckerboardDetectionParameters, mCellSize),
+          CheckerboardDetectionParameters::CELL_SIZE_HOR_ID,
+          offsetof(CheckerboardDetectionParameters, mCellSizeHor),
           50,
-          "Cell size",
-          "Cell size",
-          "Cell size"
+          "Cell Size Hor",
+          "Cell Size Hor",
+          "Cell Size Hor"
+        )
+    );
+    fields().push_back(
+        new DoubleField
+        (
+          CheckerboardDetectionParameters::CELL_SIZE_VERT_ID,
+          offsetof(CheckerboardDetectionParameters, mCellSizeVert),
+          50,
+          "Cell Size Vert",
+          "Cell Size Vert",
+          "Cell Size Vert"
         )
     );
     fields().push_back(

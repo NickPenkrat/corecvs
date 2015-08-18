@@ -143,6 +143,7 @@ public:
 template<int idx>
     uint16_t getInt() const
     {
+
         return _mm_extract_epi16(this->data, idx);
     }
 

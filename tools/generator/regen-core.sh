@@ -216,10 +216,14 @@ full_ui_classes="
 
 
 enums+=" lineDistortionEstimatorCost"
+enums+=" distortionResizePolicy"
+
 classes+=" lensDistortionModelParameters"
 
 full_ui_classes+=" checkerboardDetectionParameters"
 full_ui_classes+=" lineDistortionEstimatorParameters"
+full_ui_classes+=" distortionApplicationParameters"
+
 
 PRIFILE="${DST_DIR}/generated.pri"
 

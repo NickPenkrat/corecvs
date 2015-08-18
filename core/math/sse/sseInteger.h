@@ -84,7 +84,8 @@ static uint64_t   streamedWrites;
 #endif
     }
 
-    /** Save aligned.
+    /**
+     * Save aligned.
      * \remark Not safe to use until you exactly know what you are doing
      **/
     void saveAligned(__m128i * const data) const
