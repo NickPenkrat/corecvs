@@ -309,5 +309,10 @@ bool SelectableGeometryFeatures::VertexPath::isEmpty()
     return vertexes.empty();
 }
 
+int SelectableGeometryFeatures::VertexPath::length()
+{
+    return vertexes.size();
+}
+
 
 }

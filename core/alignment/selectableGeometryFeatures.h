@@ -95,6 +95,7 @@ public:
 
         bool isSelected();
         bool isEmpty();
+        int length();
     };
 
     /** Pathes **/
