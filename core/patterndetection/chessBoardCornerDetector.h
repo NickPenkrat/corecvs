@@ -69,7 +69,7 @@ struct CornerKernelSet
     CornerKernelSet(double r, double alpha, double psi);
 
     // Computes const function for entire image
-    void computeCost(DpImage &img, DpImage &c);
+    void computeCost(DpImage &img, DpImage &c, bool parallelable = true);
 
 private:
     // One-dimension normal distribution PDF

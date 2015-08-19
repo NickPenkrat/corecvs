@@ -81,7 +81,7 @@ double OrientedCorner::scoreGradient(DpImage &w, int r, double bandwidth)
 
 double OrientedCorner::scoreIntensity(DpImage &img, int r)
 {
-    int w = r * 2 + 1;
+    int w = (r + 1) * 2 + 1;
     double alpha = atan2(v1[1], v1[0]);
     double psi = atan2(v2[1], v2[0]) - alpha;
     CornerKernelSet cks(r, alpha, psi);
@@ -96,8 +96,8 @@ double OrientedCorner::scoreIntensity(DpImage &img, int r)
     }
 
     DpImage c(w, w);
-    // FIXME: avoid computation of full cost (for example - add option to our convolution routine)
-    cks.computeCost(patch, c);
+    assert(cks.A.w == w);
+    cks.computeCost(patch, c, false);
     return std::max(c.element(r, r), 0.0);
 }
 
@@ -114,15 +114,15 @@ CornerKernelSet::CornerKernelSet(double r, double alpha, double psi)
     computeKernels(r, alpha, psi, w, c);
 }
 
-void CornerKernelSet::computeCost(DpImage &img, DpImage &c)
+void CornerKernelSet::computeCost(DpImage &img, DpImage &c, bool parallelable)
 {
     int w = img.w, h = img.h;
     c = DpImage(h, w);
 
-    auto *pfA = img.doConvolve<DpImage>(&A);
-    auto *pfB = img.doConvolve<DpImage>(&B);
-    auto *pfC = img.doConvolve<DpImage>(&C);
-    auto *pfD = img.doConvolve<DpImage>(&D);
+    auto *pfA = img.doConvolve<DpImage>(&A, true, parallelable);
+    auto *pfB = img.doConvolve<DpImage>(&B, true, parallelable);
+    auto *pfC = img.doConvolve<DpImage>(&C, true, parallelable);
+    auto *pfD = img.doConvolve<DpImage>(&D, true, parallelable);
 
     for (int i = 0; i < h; ++i)
     {
@@ -625,7 +625,6 @@ void ChessBoardCornerDetector::adjustCornerPosition()
     }
     corners.resize(idx);
 }
-
 
 
 void ChessBoardCornerDetector::computeScores()

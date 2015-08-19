@@ -50,7 +50,7 @@ public:
 
     virtual ~AbstractKernel(){}
 
-    template<typename BufferElementType, typename BufferIndexType>
+    template<typename BufferElementType, typename BufferIndexType, bool allValid = false>
         ElementType multiplyAtPoint (
                 AbstractBuffer<BufferElementType, BufferIndexType> *buffer,
                 BufferIndexType bcy,
@@ -70,7 +70,7 @@ public:
                 BufferIndexType by = bcy - this->y + dy;
 
                 // Let's pray for inlining and branch prediction
-                if (buffer->isValidCoord(by, bx))
+                if (allValid || buffer->isValidCoord(by, bx))
                 {
                     sum = sum + this->element(dy, dx) * buffer->element(by, bx);
                     count++;
