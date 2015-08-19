@@ -316,7 +316,7 @@ int SelectableGeometryFeatures::VertexPath::length()
     return vertexes.size();
 }
 
-SelectableGeometryFeatures::SelectableGeometryFeatures(const ObservationList &list)
+SelectableGeometryFeatures::addAllLinesFromObservationList(const ObservationList &list)
 {
     const double LINETOLERANCE = 1e-7;
     int N = list.size();

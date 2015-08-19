@@ -88,7 +88,7 @@ void OpenCvCheckerboardDetector::assignPointCoordinates(int iw, int ih)
         sum /= r.size();
         ymeans.emplace_back(sum[1], idx++);
     }
-    std::sort(ymeans.begin(), ymeans.end(), [](decltype(ymeans[0]) &a, decltype(ymeans[0]) &b) { return a.first < b.first; });
+    std::sort(ymeans.begin(), ymeans.end(), [](decltype(ymeans[0]) a, decltype(ymeans[0]) b) { return a.first < b.first; });
 
     decltype(best) best_reorder(best.size());
     for (int i = 0; i < best.size(); ++i)
@@ -617,6 +617,7 @@ void OpenCvCheckerboardDetector::fillStraightAndDiagonal(const vector<cv::Point2
         }
 
     }
+
 
     for (int i = 0; i < height; i++)
     {

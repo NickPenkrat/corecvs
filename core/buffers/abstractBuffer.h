@@ -751,21 +751,38 @@ template<typename ResultType>
         SelfType *buffer;
         ReturnType *toReturn;
         AbstractKernel<ConvElementType, ConvIndexType> *kernel;
+        bool onlyValid;
     public:
         ParallelDoConvolve(
                 ReturnType *_toReturn,
                 SelfType * _buffer,
-                AbstractKernel<ConvElementType, ConvIndexType> *_kernel) :
-         buffer(_buffer), toReturn(_toReturn), kernel(_kernel)
+                AbstractKernel<ConvElementType, ConvIndexType> *_kernel,
+                bool onlyValid) :
+         buffer(_buffer), toReturn(_toReturn), kernel(_kernel), onlyValid(onlyValid)
         {}
 
         void operator()( const BlockedRange<IndexType>& r ) const
         {
-            for (IndexType i = r.begin(); i != r.end(); i++)
+            int left =  onlyValid ? kernel->x : 0;
+            int right = onlyValid ? buffer->w + kernel->x - kernel->w : buffer->w;
+            if (!onlyValid)
             {
-                for (IndexType j = 0; j < toReturn->w; j++)
+                for (IndexType i = r.begin(); i != r.end(); i++)
                 {
-                    toReturn->element(i,j) = kernel->template multiplyAtPoint<ElementType, IndexType>(buffer, i,j);
+                    for (IndexType j = left; j < right; j++)
+                    {
+                        toReturn->element(i,j) = kernel->template multiplyAtPoint<ElementType, IndexType>(buffer, i,j);
+                    }
+                }
+            }
+            else
+            {
+                for (IndexType i = r.begin(); i != r.end(); i++)
+                {
+                    for (IndexType j = left; j < right; j++)
+                    {
+                        toReturn->element(i,j) = kernel->template multiplyAtPoint<ElementType, IndexType, true>(buffer, i,j);
+                    }
                 }
             }
         }
@@ -789,11 +806,13 @@ template<typename ResultType>
      **/
 
     template<typename ReturnType, typename ConvElementType, typename ConvIndexType>
-    ReturnType* doConvolve(AbstractKernel<ConvElementType, ConvIndexType> *kernel)
+    ReturnType* doConvolve(AbstractKernel<ConvElementType, ConvIndexType> *kernel, bool onlyValid = false, bool parallel = true)
     {
         IndexType i;
         ReturnType *toReturn = new ReturnType(h, w);
-        parallelable_for(0, h, ParallelDoConvolve<ReturnType, AbstractBuffer<ElementType, IndexType>, ConvElementType, ConvIndexType>(toReturn, this, kernel));
+        int top    = onlyValid ? kernel->y : 0;
+        int bottom = onlyValid ? h + kernel->y - kernel->h : h;
+        parallelable_for(top, bottom, ParallelDoConvolve<ReturnType, AbstractBuffer<ElementType, IndexType>, ConvElementType, ConvIndexType>(toReturn, this, kernel, onlyValid), parallel);
 
         return toReturn;
     }
