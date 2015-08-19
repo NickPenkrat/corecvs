@@ -764,7 +764,7 @@ template<typename ResultType>
         void operator()( const BlockedRange<IndexType>& r ) const
         {
             int left =  onlyValid ? kernel->x : 0;
-            int right = onlyValid ? buffer->w + kernel->x - kernel->w : buffer->w;
+            int right = onlyValid ? buffer->w + kernel->x - kernel->w + 1 : buffer->w;
             if (!onlyValid)
             {
                 for (IndexType i = r.begin(); i != r.end(); i++)
@@ -811,7 +811,7 @@ template<typename ResultType>
         IndexType i;
         ReturnType *toReturn = new ReturnType(h, w);
         int top    = onlyValid ? kernel->y : 0;
-        int bottom = onlyValid ? h + kernel->y - kernel->h : h;
+        int bottom = onlyValid ? h + kernel->y - kernel->h + 1 : h;
         parallelable_for(top, bottom, ParallelDoConvolve<ReturnType, AbstractBuffer<ElementType, IndexType>, ConvElementType, ConvIndexType>(toReturn, this, kernel, onlyValid), parallel);
 
         return toReturn;
