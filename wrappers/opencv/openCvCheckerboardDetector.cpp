@@ -13,6 +13,123 @@
 #pragma warning (disable:4482)
 #endif
 
+#if 1
+
+OpenCvCheckerboardDetector::OpenCvCheckerboardDetector(const CheckerboardDetectionParameters &params)
+    : CheckerboardDetectionParameters(params)
+{
+}
+
+bool OpenCvCheckerboardDetector::detectPattern(corecvs::G8Buffer &buffer)
+{
+    result.clear();
+    points.clear();
+
+    if (!detectChessBoardOpenCv(buffer))
+        return false;
+
+    assignPointCoordinates(buffer.w, buffer.h);
+    return true;
+}
+
+bool OpenCvCheckerboardDetector::detectChessBoardOpenCv(corecvs::G8Buffer &buffer)
+{
+    IplImage *iplImage = OpenCVTools::getCVImageFromG8Buffer(&buffer);
+    cv::Mat view = cv::Mat(iplImage);
+
+    // FIXME: I like width x height notation, since horizontal/vertical does not matter?
+    int hbegin = mPartialBoard ? 3 : mVertCrossesCount, hend = mVertCrossesCount;
+    int wbegin = mHorCrossesCount, wend = mHorCrossesCount;
+
+    bool found = false;
+    for (int h = hend; h >= hbegin && !found; --h)
+    {
+        for (int w = wend; w >= wbegin && !found; --w)
+        {
+            found = cv::findChessboardCorners(view, cv::Size(w, h), points, cv::CALIB_CB_ADAPTIVE_THRESH | cv::CALIB_CB_FAST_CHECK);
+            if (found)
+            {
+                bw = w; bh = h;
+                cv::cornerSubPix(view, points, cv::Size(mPreciseDiameter, mPreciseDiameter), cv::Size(-1, -1), cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, mIterationCount, mMinAccuracy));
+            }
+        }
+    }
+    cvReleaseImage(&iplImage);
+    return found;
+}
+
+void OpenCvCheckerboardDetector::assignPointCoordinates(int iw, int ih)
+{
+    // XXX: Here we reorient board and fill it's world coordinates
+    // FIXME: Might not work if board orientation significantly changes;
+    //        In order to detect orientation of [partially visible] board
+    //        we'll need to introduce some markers
+    // TODO: Note that it is a direct copy-paste from chessBoardDetector;
+    //       probably we can find place to share this code
+    std::vector<std::vector<corecvs::Vector2dd>> best(bh);
+    std::cout << "BOARD DETECTED " << bw << " x " << bh << " (" << points.size() << ")" << std::endl;
+    for (int i = 0; i < bh; ++i)
+    {
+        best[i].resize(bw);
+        for (int j = 0; j < bw; ++j)
+        {
+            auto& p = points[i * bw + j];
+            best[i][j] = corecvs::Vector2dd(p.x, p.y);
+        }
+    }
+
+    std::vector<std::pair<double, int>> ymeans;
+    int idx = 0;
+    for (auto& r: best)
+    {
+        Vector2dd sum(0.0, 0.0);
+        for (auto& p: r)
+            sum += p;
+        sum /= r.size();
+        ymeans.emplace_back(sum[1], idx++);
+    }
+    std::sort(ymeans.begin(), ymeans.end(), [](decltype(ymeans[0]) const &a, decltype(ymeans[0]) const &b) { return a.first < b.first; });
+
+    decltype(best) best_reorder(best.size());
+    for (int i = 0; i < best.size(); ++i)
+    {
+        best_reorder[i] = best[ymeans[i].second];
+        std::sort(best_reorder[i].begin(), best_reorder[i].end(), [](corecvs::Vector2dd &a, corecvs::Vector2dd &b) { return a[0] < b[0]; });
+    }
+    best = best_reorder;
+
+    corecvs::Vector2dd center(0.0, 0.0);
+    int cnt = 0;
+    for (auto& r: best)
+    {
+        for (auto& p: r)
+        {
+            center += p;
+            cnt++;
+        }
+    }
+    center /= cnt;
+    center *= 2.0;
+
+    int l = center[0] > iw ? 0 : mHorCrossesCount - bw;
+    int t = center[1] > ih ? 0 : mVertCrossesCount - bh;
+
+    result.clear();
+    for (int i = 0; i < bh; ++i)
+    {
+        for (int j = 0; j < bw; ++j)
+            result.emplace_back(corecvs::Vector3dd((j + l) * 50.0, (i + t) * 50.0, 0.0), best[i][j]);
+    }
+
+}
+
+
+void OpenCvCheckerboardDetector::getPointData(corecvs::ObservationList &observations)
+{
+    observations = result;
+}
+
+#else
 void OpenCvCheckerboardDetector::DrawCheckerboardLines(cv::Mat &dst, const Straights &straights)
 {
     for (unsigned i = 0; i < straights.size(); i++)
@@ -657,3 +774,4 @@ void OpenCvCheckerboardDetector::fillStraight(
 
     }
 }
+#endif
