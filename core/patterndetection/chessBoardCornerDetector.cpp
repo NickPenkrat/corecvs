@@ -96,9 +96,9 @@ double OrientedCorner::scoreIntensity(DpImage &img, int r)
     }
 
     DpImage c(w, w);
-    assert(cks.A.w == w);
-    cks.computeCost(patch, c, false);
-    return std::max(c.element(r, r), 0.0);
+    int cc = cks.A.x;
+    cks.computeCost(patch, c, true);
+    return std::max(c.element(cc, cc), 0.0);
 }
 
 CornerKernelSet::CornerKernelSet(double r, double alpha, double psi)
