@@ -109,7 +109,8 @@ struct ChessBoardCornerDetectorParams
     // Threshold for maximal corner-position update
     double updateThreshold = 4.0;
     // Threshold for final score
-    double scoreThreshold = 0.00125;
+    // FIXME: Check if score thresholding is usable
+    double scoreThreshold = 0.0;
     // Number of orientation/position refinement rounds
     int nRounds = 3;
     // Meanshift smoothing stdev

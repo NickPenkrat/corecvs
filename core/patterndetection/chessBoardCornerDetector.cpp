@@ -87,18 +87,25 @@ double OrientedCorner::scoreIntensity(DpImage &img, int r)
     CornerKernelSet cks(r, alpha, psi);
     DpImage patch(w, w);
     int uc = pos[0], vc = pos[1];
+    int left = std::max(0, r - uc);
+    int right = std::min(w, img.w + r - uc);
+    int top = std::max(0, r - vc);
+    int bottom = std::min(w, img.h + r - vc);
     for (int i = 0; i < w; ++i)
     {
         for (int j = 0; j < w; ++j)
         {
-            patch.element(i, j) = img.element(i - r + vc, j - r + uc);
+            if (i >= top && i < bottom && j >= left && j < right)
+                patch.element(i, j) = img.element(i - r + vc, j - r + uc);
+            else
+                patch.element(i, j) = 0.0;
         }
     }
 
     DpImage c(w, w);
     int cc = cks.A.x;
     cks.computeCost(patch, c, true);
-    return std::max(c.element(cc, cc), 0.0);
+    return std::max(c.element(cks.A.y, cks.A.x), 0.0);
 }
 
 CornerKernelSet::CornerKernelSet(double r, double alpha, double psi)

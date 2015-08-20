@@ -96,15 +96,17 @@ int main(int argc, char **argv)
 #endif
 
     readImage(filename , img);
-    ChessboardDetector detector;
+    ChessboardDetector detector(18, 11, ChessBoardDetectorMode::BEST);
     detector.detectPattern(img);
 
     corecvs::ObservationList observations;
     detector.getPointData(observations);
 
+    std::cout << "board = [";
     for (auto o: observations)
     {
-        std::cout << o.point << " ";
+        std::cout << o.projection[0] << " " << o.projection[1] << ";";
     }
+    std::cout << "];" << std::endl;
     return 0;
 }

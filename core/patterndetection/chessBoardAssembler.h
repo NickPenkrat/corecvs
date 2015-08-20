@@ -73,9 +73,12 @@ struct ChessBoardAssemblerParams
     // Factor for orthogonal error in seed estimation
     double seedTgPenalty = 5.0;
     // Factor of "conservativity" in next row prediction (should be lower to high-distorted boards
-    double conservativity = 0.75;
+    double conservativity = 0.9;
     // Maximal cost for "real" board
     double costThreshold = -10.0;
+    // Hypothesis type: consider only hypothesis that fits specified number of dims
+    int hypothesisDimensions = 1;
+    int hypothesisDim[2] = {18, 11};
 };
 
 
