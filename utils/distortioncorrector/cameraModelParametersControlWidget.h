@@ -18,6 +18,7 @@ public:
     ~CameraModelParametersControlWidget();
 
     LensDistortionModelParameters lensDistortionParameters();
+    void setLensDistortionParameters(const LensDistortionModelParameters &params);
 
     virtual void loadParamWidget(WidgetLoader &/*loader*/);
     virtual void saveParamWidget(WidgetSaver  &/*saver*/ );

@@ -20,6 +20,11 @@ LensDistortionModelParameters CameraModelParametersControlWidget::lensDistortion
     return result;
 }
 
+void CameraModelParametersControlWidget::setLensDistortionParameters(const LensDistortionModelParameters &params)
+{
+    ui->lensDistortionWidget->setParameters(params);
+}
+
 void CameraModelParametersControlWidget::loadParamWidget(WidgetLoader &loader)
 {
     ui->lensDistortionWidget->loadParamWidget(loader);
