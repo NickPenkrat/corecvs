@@ -597,12 +597,25 @@ void OpenCvCheckerboardDetector::fillStraightAndDiagonal(const vector<cv::Point2
 
         if (j > 2) {
             SelectableGeometryFeatures::VertexPath * path = lineList->appendNewPath();
-            for (int i = j; i -- ; i > 0)
+            for (int i = 0; ; i ++)
             {
-                Vector2dd point(pointbuf.at(i * width + j).x, pointbuf.at(i * width + j).y);
+                if (!view->isValidCoord(i,j - i))
+                    break;
+                Vector2dd point = CV2Core::Vector2ddFromPoint2f(view->element(i,j - i));
                 lineList->addVertexToPath(lineList->appendNewVertex(point), path);
             }
         }
+        if (j < width - 2) {
+            SelectableGeometryFeatures::VertexPath * path = lineList->appendNewPath();
+            for (int i = 0; ; i ++)
+            {
+                if (!view->isValidCoord(i,j + i))
+                    break;
+                Vector2dd point = CV2Core::Vector2ddFromPoint2f(view->element(i,j + i));
+                lineList->addVertexToPath(lineList->appendNewVertex(point), path);
+            }
+        }
+
     }
 
 
@@ -614,6 +627,28 @@ void OpenCvCheckerboardDetector::fillStraightAndDiagonal(const vector<cv::Point2
             Vector2dd point = CV2Core::Vector2ddFromPoint2f(view->element(i,j));
             lineList->addVertexToPath(lineList->appendNewVertex(point), path);
         }
+
+        if (i > 0) {
+            SelectableGeometryFeatures::VertexPath * path = lineList->appendNewPath();
+            for (int j = 0; ; j ++)
+            {
+                if (!view->isValidCoord(i + j, width - 1 - j))
+                    break;
+                Vector2dd point = CV2Core::Vector2ddFromPoint2f(view->element(i + j, width - 1 - j));
+                lineList->addVertexToPath(lineList->appendNewVertex(point), path);
+            }
+
+            path = lineList->appendNewPath();
+            for (int j = 0; ; j ++)
+            {
+                if (!view->isValidCoord(i + j,j))
+                    break;
+                Vector2dd point = CV2Core::Vector2ddFromPoint2f(view->element(i + j,j));
+                lineList->addVertexToPath(lineList->appendNewVertex(point), path);
+            }
+
+        }
+
     }
 
     delete view;

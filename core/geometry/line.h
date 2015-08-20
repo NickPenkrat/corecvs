@@ -29,7 +29,7 @@ public:
     Segment(const VectorType &_a, const VectorType &_b) :
         a(_a),
         b(_b)
-    {};
+    {}
 
     VectorType getCenter() const
     {

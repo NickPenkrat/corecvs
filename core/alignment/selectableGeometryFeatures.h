@@ -95,6 +95,7 @@ public:
 
         bool isSelected();
         bool isEmpty();
+        int length();
     };
 
     /** Pathes **/
@@ -125,6 +126,7 @@ public:
 
     void addPathFrom(const SelectableGeometryFeatures &other);
     void addAllLinesFromObservationList(const ObservationList &list);
+
 
     /****/
     bool hasSinglePointsSelected();

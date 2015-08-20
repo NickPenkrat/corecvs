@@ -1,6 +1,6 @@
-#include "selectableGeometryFeatures.h"
-
 #include <set>
+
+#include "selectableGeometryFeatures.h"
 
 namespace corecvs {
 
@@ -309,6 +309,11 @@ bool SelectableGeometryFeatures::VertexPath::isSelected()
 bool SelectableGeometryFeatures::VertexPath::isEmpty()
 {
     return vertexes.empty();
+}
+
+int SelectableGeometryFeatures::VertexPath::length()
+{
+    return vertexes.size();
 }
 
 void SelectableGeometryFeatures::addAllLinesFromObservationList(const ObservationList &list)
