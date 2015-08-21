@@ -96,7 +96,11 @@ int main(int argc, char **argv)
 #endif
 
     readImage(filename , img);
-    ChessboardDetector detector(18, 11, ChessBoardDetectorMode::BEST);
+    ChessBoardDetectorParams params;
+    params.w = 18;
+    params.h = 11;
+    params.mode = ChessBoardDetectorMode::FIT_WIDTH;
+    ChessboardDetector detector(params);
     detector.detectPattern(img);
 
     corecvs::ObservationList observations;

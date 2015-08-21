@@ -1,8 +1,19 @@
 #include "chessBoardDetector.h"
 
-ChessboardDetector::ChessboardDetector(int w, int h, ChessBoardDetectorMode mode, ChessBoardCornerDetectorParams detectorParams, ChessBoardAssemblerParams assemblerParams)
-    : mode(mode), detector(detectorParams), assembler(assemblerParams), w(w), h(h)
+ChessboardDetector::ChessboardDetector(ChessBoardDetectorParams params, ChessBoardCornerDetectorParams detectorParams, ChessBoardAssemblerParams assemblerParams)
+    : ChessBoardDetectorParams(params), detector(detectorParams)
 {
+    assemblerParams.hypothesisDimensions = 0;
+    if (!!(mode & ChessBoardDetectorMode::FIT_WIDTH))
+    {
+        assemblerParams.hypothesisDimensions++;
+        assemblerParams.hypothesisDim[0] = w;
+    }
+    if (!!(mode &ChessBoardDetectorMode::FIT_HEIGHT))
+    {
+        assemblerParams.hypothesisDim[assemblerParams.hypothesisDimensions++] = h;
+    }
+    assembler = ChessBoardAssembler(assemblerParams);
 }
 
 bool ChessboardDetector::detectPattern(corecvs::G8Buffer &buffer)
@@ -126,7 +137,7 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
     for (int i = 0; i < bh; ++i)
     {
         for (int j = 0; j < bw; ++j)
-            result.emplace_back(corecvs::Vector3dd((j + l) * 50.0, (i + t) * 50.0, 0.0), best[i][j]);
+            result.emplace_back(corecvs::Vector3dd((j + l) * stepX, (i + t) * stepY, 0.0), best[i][j]);
     }
     return true;
 }
