@@ -31,7 +31,11 @@ struct ChessBoardDetectorParams
 class ChessboardDetector : ChessBoardDetectorParams, public PatternDetector
 {
 public:
-    ChessboardDetector(ChessBoardDetectorParams params = ChessBoardDetectorParams(), ChessBoardCornerDetectorParams detectorParams = ChessBoardCornerDetectorParams(), ChessBoardAssemblerParams assemblerParams = ChessBoardAssemblerParams());
+    ChessboardDetector(
+            ChessBoardDetectorParams params = ChessBoardDetectorParams(),
+            ChessBoardCornerDetectorParams detectorParams = ChessBoardCornerDetectorParams(),
+            ChessBoardAssemblerParams assemblerParams = ChessBoardAssemblerParams()
+    );
 
     // PatternDetector interface
     bool detectPattern(corecvs::G8Buffer    &buffer);
