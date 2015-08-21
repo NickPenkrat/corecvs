@@ -12,7 +12,7 @@ void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, 
     corners = corners_;
     int N = corners.size();
 
-    corecvs::parallelable_for(0, N, ParallelBoardExpander(this));
+    corecvs::parallelable_for(0, N, ParallelBoardExpander(this), true);
 
     boards_.clear();
     std::sort(boards.begin(), boards.end(), [](const RectangularGridPattern &a, const RectangularGridPattern &b) { return a.score < b.score; });
@@ -42,12 +42,28 @@ void ChessBoardAssembler::acceptHypothesis(RectangularGridPattern &board)
             cset.insert(c);
     if (board.score > costThreshold)
         return;
+    if (hypothesisDimensions)
+    {
+        int w = board.w();
+        int h = board.h();
+        int maxfit = 0;
+        for (int i = 0; i < 2; ++i)
+        {
+            int fit = 0;
+            if (w == hypothesisDim[i & 1])
+                fit++;
+            if (h == hypothesisDim[i ^ 1])
+                fit++;
+            if (fit > maxfit) maxfit = fit;
+        }
+        if (maxfit < hypothesisDimensions)
+            return;
+    }
 
     // We may run in parallel, so need to lock
 #ifdef WITH_TBB
     tbb::mutex::scoped_lock lock(mutex);
 #endif
-
     for (int i = 0; i < boards.size(); ++i)
     {
         auto& bb = boards[i];
@@ -230,13 +246,11 @@ bool ChessBoardAssembler::BoardExpander::growBoard()
 
     for (int i = 0; i < 4; ++i)
     {
-//        RectangularGridPattern curr;
         std::vector<int> used = usedCorners;
 
         RectangularGridPattern dst = board;
         if(!growDir(static_cast<Direction>(i), dst, used))
             continue;
-//        std::cout << "Score update: " << curr.score << " -> " << best.score << std::endl;
         if (dst.score < best.score)
         {
             updated = true;

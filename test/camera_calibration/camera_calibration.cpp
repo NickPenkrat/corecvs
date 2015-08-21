@@ -107,6 +107,7 @@ struct ParallelBoardDetector
                     {
                         double u, v, x, y, z;
                         csv >> u >> v >> x >> y >> z;
+                        x *= (50.0 * 19.0 + 3.0) / (50.0 * 19.0);
                         if ((bool)csv)
                         {
                             cam_vec.push_back(std::make_pair(Vector2dd(u, v), corecvs::Vector3dd(x, y, z)));
@@ -120,7 +121,11 @@ struct ParallelBoardDetector
 
                     corecvs::ObservationList list;
 
-                    ChessboardDetector detector(18, 11, ChessBoardDetectorMode::FIT_WIDTH);
+                    ChessBoardDetectorParams params;
+                    params.w = 18;
+                    params.h = 11;
+                    params.mode = ChessBoardDetectorMode::FIT_WIDTH;
+                    ChessboardDetector detector(params);
                     bool found = detector.detectPattern(img);
                     if (found)
                     {
