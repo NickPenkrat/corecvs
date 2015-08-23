@@ -133,17 +133,17 @@ public:
     static const int inputNumber = 1;
     static const int outputNumber = 1;
 
-    inline static int getCenterX(){ return 0; };
-    inline static int getCenterY(){ return 2; };
-    inline static int getSizeX(){ return 1; };
-    inline static int getSizeY(){ return 5; };
+    inline static int getCenterX(){ return 0; }
+    inline static int getCenterY(){ return 2; }
+    inline static int getSizeX(){ return 1; }
+    inline static int getSizeY(){ return 5; }
 
     typedef typename Algebra::InputType Type;
 
 template <typename OtherAlgebra>
     Blur5Vertical(const Blur5Vertical<OtherAlgebra> &){}
 
-    Blur5Vertical(){};
+    Blur5Vertical(){}
 
     void process(Algebra &algebra) const
     {

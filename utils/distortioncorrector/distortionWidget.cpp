@@ -193,6 +193,7 @@ void DistortionWidget::detectCheckerboard()
         canvas->mFeatures.mPaths.clear();
     }
 
+#define  OPENCV_DETECTOR
 #ifdef OPENCV_DETECTOR
     OpenCvCheckerboardDetector detector(params);
 #else

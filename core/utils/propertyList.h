@@ -20,8 +20,9 @@
 #include <limits>
 
 #include "global.h"
-namespace corecvs {
+#include "utils.h"
 
+namespace corecvs {
 
 using namespace std;
 
@@ -124,21 +125,30 @@ public:
     /* Fix the limited line length */
     int load(istream &inStream)
     {
+        string line;
 
-        char buffer[500];
-        while (inStream.getline(buffer, sizeof(buffer)))
+        while (!inStream.eof())
         {
-            char value[500];
-            char name[500];
-            /* TODO: Make this safe */
-            if (buffer[0] == '#')
-                continue;
-            int result = sscanf(buffer," %s = %s ", name, value);
-            if (result != 2)
-                continue;
+            corecvs::HelperUtils::getlineSafe(inStream, line);
+            std::istringstream streamLine(line);
+            //cout << "Parsing:" << line << endl;
 
-            DOTRACE(("Property: %s = %s \n", name, value));
-            setStringProperty(name, value);
+            string name;
+            string dummy;
+            string value;
+            streamLine >> name;
+            streamLine >> dummy;
+
+            if (streamLine.fail() || dummy != "=") {
+                continue;
+            }
+
+            getline(streamLine, value);
+
+            //cout << name << ":" << dummy << ":" << value << endl;
+
+            DOTRACE(("Property: %s = %s \n", name.c_str(), value.c_str()));
+            setStringProperty(name.c_str(), value.c_str());
         }
         return true;
     }

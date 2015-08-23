@@ -25,8 +25,12 @@
 #include "doublex2.h"
 
 #include "sseMath.h"
+
 #endif //WITH_SSE
 
+#ifdef WITH_AVX
+#include "doublex4.h"
+#endif
 
 namespace corecvs {
 } //namespace corecvs

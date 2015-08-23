@@ -33,20 +33,20 @@ public:
         mArgs = args;
     }
 
-    CommandLineSetter(int argc, char **argv) :
+    CommandLineSetter(int argc, const char **argv) :
         CommandLineSetter()
     {
         mArgs.assign(argv, argv + argc);
     }
 
     /* Helper getters */
-    bool hasOption(const string& option, unsigned* pos)
+    bool hasOption(const string& option, unsigned* pos = NULL)
     {
         std::string decorated = mArgPrefix + option;
 
         for (unsigned i = 0; i < mArgs.size(); i++)
         {
-            if (mArgs[i].compare(0, decorated.length(), decorated))
+            if (mArgs[i].compare(0, decorated.length(), decorated) == 0)
             {
                 if (pos != 0) {
                     *pos = i;
@@ -64,7 +64,7 @@ public:
         if (found != NULL) *found = false;
         for (unsigned i = 0; i < mArgs.size(); i++)
         {
-            if (mArgs[i].compare(0, decorated.length(), decorated))
+            if (mArgs[i].compare(0, decorated.length(), decorated) == 0)
             {
                 if (found != NULL) *found = true;
                 return mArgs[i].substr(decorated.length());
@@ -74,7 +74,7 @@ public:
     }
 
 
-    int getInt(const string & option, int defaultInf)
+    int getInt(const string & option, int defaultInf = 0)
     {
         const string& argument = getOption(option);
 
@@ -92,7 +92,13 @@ public:
         }
     }
 
-    double getDouble(const string & option, double defaultDouble)
+    bool getBool(const string & option)
+    {
+        const string& argument = getOption(option);
+        return hasOption(option);
+    }
+
+    double getDouble(const string & option, double defaultDouble = 0.0)
     {
         const string& argument = getOption(option);
 

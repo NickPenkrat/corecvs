@@ -86,6 +86,26 @@ void testSerializer( void )
     ASSERT_TRUE(rvece == vece,   "serializer failed 5");
 
     cout << "Output" << rvecc << endl;
+}
+
+void testPropertyListLoader( void )
+{
+    const char *example =
+    "# Test \n"
+    "v.x = 1.1\n"
+    "v.y = 2.2\n"
+    "v.z = 3.3\n";
+
+    std::istringstream stream(example);
+
+    PropertyList list;
+    list.load(stream);
+    PropertyListReaderVisitor readerVisitor(&list);
+    Vector3dd test;
+    readerVisitor.visit(test, Vector3dd(0.0), "v");
+    cout << test << endl;
+
+    ASSERT_TRUE(test.notTooFar(Vector3dd(1.1, 2.2, 3.3)), "Fail parsing vector");
 
 }
 
@@ -101,6 +121,8 @@ void testSerializer1( void )
 
 int main (int /*argC*/, char ** /*argV*/)
 {
+    testPropertyListLoader();
+    return 0;
     testReflection();
     testSerializer();
     testSerializer1();
