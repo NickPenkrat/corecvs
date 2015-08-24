@@ -86,12 +86,32 @@ struct ChessBoardCornerDetectorParams
 {
     // Width of cross for corner gradient-score
     double gradientCrossWidth = 3.0;
+#if __cplusplus >= 201103L // Our compiler is cool enough to support brace-initalizer-list for structure members
     // Radius for multi-scale pattern detection
     std::vector<double> patternRadius = {4.0, 8.0, 12.0};
     // Radius for corner-scoring
     std::vector<double> cornerScores = {4.0, 8.0, 12.0};
     // Angle for rotation-variant detection
     std::vector<double> patternStartAngle = { 0.0, M_PI / 4.0 };
+#else
+    std::vector<double> patternRadius;
+    std::vector<double> cornerScores;
+    std::vector<double> patternStartAngle;
+
+    ChessBoardCornerDetectorParams()
+    {
+        patternStartAngle.push_back(0.0);
+        patternStartAngle.push_back(M_PI / 4.0);
+
+        patternradius.push_back(4.0);
+        patternradius.push_back(8.0);
+        patternradius.push_back(12.0);
+        
+        cornerScores.push_back(4.0);
+        cornerScores.push_back(8.0);
+        cornerScores.push_back(12.0);
+    }
+#endif
     // Sector size
     double sectorSize = M_PI / 2.0;
     // Number of bins for computing edge direction histogram
