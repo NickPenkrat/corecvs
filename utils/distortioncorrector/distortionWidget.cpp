@@ -196,7 +196,10 @@ void DistortionWidget::detectCheckerboard()
 #ifdef OPENCV_DETECTOR
     OpenCvCheckerboardDetector detector(params);
 #else
-    ChessboardDetector detector(params.mHorCrossesCount, params.mVertCrossesCount, ChessBoardDetectorMode::FIT_WIDTH);
+    ChessBoardDetectorParams cdp;
+    cdp.w = params.mHorCrossesCount;
+    cdp.h = params.mVertCrossesCount;
+    ChessboardDetector detector(cdp);
 #endif
     PatternDetector& patternDetector = detector;
     // FIXME: Not sure if we should ever allow user to tune what channel to use, let us just pass full buffer

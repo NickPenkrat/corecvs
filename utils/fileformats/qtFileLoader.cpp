@@ -60,6 +60,20 @@ RGB24Buffer *QTFileLoader::RGB24BufferFromQImage(QImage *image)
     return result;
 }
 
+QImage* QTFileLoader::RGB24BufferToQImage(RGB24Buffer &buffer)
+{
+    auto* img = new QImage(buffer.w, buffer.h, QImage::Format_RGB32);
+    for (int i = 0; i < buffer.h; ++i)
+    {
+        for (int j = 0; j < buffer.w; ++j)
+        {
+            auto& src = buffer.element(i, j);
+            img->setPixel(j, i, QColor(src.r(), src.g(), src.b()).rgb());
+        }
+    }
+    return img;
+}
+
 void QTFileLoader::save(const std::string& name, RGB24Buffer *input)
 {
     save(name, input, 95);

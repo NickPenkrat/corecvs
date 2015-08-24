@@ -59,7 +59,8 @@ CORE_INCLUDEPATH = \
     $$COREDIR/xml \
     $$COREDIR/xml/generated \                   # to allow including of generated headers without directory name prefix
     $$COREDIR/features2d \
-    $$COREDIR/patterndetection
+    $$COREDIR/patterndetection \
+    $$COREDIR/cameracalibration
 
 
 INCLUDEPATH += $$CORE_INCLUDEPATH

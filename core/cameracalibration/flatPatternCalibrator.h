@@ -56,7 +56,6 @@ private:
     // LM-solver
     void refineGuess();
 
-    // TODO: lots of copies back and forth. Probably we need a double** version of LM-optimization?!
     void readParams(const double in[]);
     void writeParams(double out[]);
 

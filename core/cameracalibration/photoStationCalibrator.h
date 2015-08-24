@@ -44,10 +44,13 @@ private:
     int getInputNum() const;
     int getOutputNum() const;
 
-    // TODO: lots of copies back and forth. Probably we need a double** version of LM-optimization?!
     void readParams(const double in[]);
     void writeParams(double out[]);
 
+    // XXX: A long time ago in a galaxy far, far away... I've thought that this
+    //      stuff works slowly because of slow cost-function computation.
+    //      But later I discoverd that our LM implementation (and "BLAS"
+    //      subsystem) are very slow themselves... To be continued
     struct ParallelErr
     {
         ParallelErr(PhotoStationCalibrator *calibrator, std::vector<int> *offset, double *out) : calibrator(calibrator), offset(offset), out(out) {}
@@ -117,7 +120,7 @@ private:
 
     int N, M, K, L;
 
-    std::vector<Camera> relativeCameraPositions;
+    std::vector<Camera_> relativeCameraPositions;
     std::vector<LocationData> absoluteSetupLocation;
 
     std::vector<std::vector<std::pair<bool, LocationData>>> initialGuess;
