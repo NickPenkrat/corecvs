@@ -19,11 +19,6 @@ QT -= xml
 UTILSDIR = $$ROOT_DIR/src/open/utils
 include($$UTILSDIR/utils.pri)
 
-SOURCES += camera_calibration.cpp \
-           flatPatternCalibrator.cpp \
-           photoStationCalibrator.cpp
+SOURCES += *.cpp
 
-INCLUDES += typesafeBitmaskEnums.h \
-            calibration_structs.h \
-            flatPatternCalibration.h \
-            photoStationCalibrator.h
+INCLUDES += *.h
