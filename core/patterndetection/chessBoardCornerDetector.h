@@ -103,9 +103,9 @@ struct ChessBoardCornerDetectorParams
         patternStartAngle.push_back(0.0);
         patternStartAngle.push_back(M_PI / 4.0);
 
-        patternradius.push_back(4.0);
-        patternradius.push_back(8.0);
-        patternradius.push_back(12.0);
+        patternRadius.push_back(4.0);
+        patternRadius.push_back(8.0);
+        patternRadius.push_back(12.0);
         
         cornerScores.push_back(4.0);
         cornerScores.push_back(8.0);
