@@ -61,8 +61,6 @@ void testHSVCoversion(void)
         cout << "  Res: " << rebuild << std::endl;
     }
 
-
-
 }
 
 int main (int /*argC*/, char ** /*argV*/)

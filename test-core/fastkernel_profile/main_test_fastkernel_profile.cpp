@@ -80,7 +80,7 @@ class VisiterSemiRandom
 public:
     void operator() (int y , int x , Type &element) {
         element = Type(((unsigned)(y * 54536351 + x * 8769843)) % (G12Buffer::BUFFER_MAX_VALUE + 1));
-    };
+    }
 };
 
 /**

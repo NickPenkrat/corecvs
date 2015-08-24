@@ -20,17 +20,17 @@ public:
     static const int inputNumber = 2;
     static const int outputNumber = 1;
 
-    inline static int getCenterX(){ return 0; };
-    inline static int getCenterY(){ return 0; };
-    inline static int getSizeX(){ return 1; };
-    inline static int getSizeY(){ return 1; };
+    inline static int getCenterX(){ return 0; }
+    inline static int getCenterY(){ return 0; }
+    inline static int getSizeX(){ return 1; }
+    inline static int getSizeY(){ return 1; }
 
     typedef typename Algebra::InputType Type;
 
 template <typename OtherAlgebra>
     LogicAnd(const LogicAnd<OtherAlgebra> &){}
 
-    LogicAnd(){};
+    LogicAnd(){}
 
     void process(Algebra &algebra) const
     {
@@ -49,17 +49,17 @@ public:
     static const int inputNumber = 2;
     static const int outputNumber = 1;
 
-    inline static int getCenterX(){ return 0; };
-    inline static int getCenterY(){ return 0; };
-    inline static int getSizeX(){ return 1; };
-    inline static int getSizeY(){ return 1; };
+    inline static int getCenterX(){ return 0; }
+    inline static int getCenterY(){ return 0; }
+    inline static int getSizeX(){ return 1; }
+    inline static int getSizeY(){ return 1; }
 
     typedef typename Algebra::InputType Type;
 
 template <typename OtherAlgebra>
     LogicOr(const LogicOr<OtherAlgebra> &){}
 
-    LogicOr(){};
+    LogicOr(){}
 
     void process(Algebra &algebra) const
     {
@@ -77,17 +77,17 @@ public:
     static const int inputNumber = 2;
     static const int outputNumber = 1;
 
-    inline static int getCenterX(){ return 0; };
-    inline static int getCenterY(){ return 0; };
-    inline static int getSizeX(){ return 1; };
-    inline static int getSizeY(){ return 1; };
+    inline static int getCenterX(){ return 0; }
+    inline static int getCenterY(){ return 0; }
+    inline static int getSizeX(){ return 1; }
+    inline static int getSizeY(){ return 1; }
 
     typedef typename Algebra::InputType Type;
 
 template <typename OtherAlgebra>
     LogicXor(const LogicXor<OtherAlgebra> &){}
 
-    LogicXor(){};
+    LogicXor(){}
 
     void process(Algebra &algebra) const
     {
@@ -105,17 +105,17 @@ public:
     static const int inputNumber = 2;
     static const int outputNumber = 1;
 
-    inline static int getCenterX(){ return 0; };
-    inline static int getCenterY(){ return 0; };
-    inline static int getSizeX(){ return 1; };
-    inline static int getSizeY(){ return 1; };
+    inline static int getCenterX(){ return 0; }
+    inline static int getCenterY(){ return 0; }
+    inline static int getSizeX(){ return 1; }
+    inline static int getSizeY(){ return 1; }
 
     typedef typename Algebra::InputType Type;
 
 template <typename OtherAlgebra>
     LogicSubt(const LogicSubt<OtherAlgebra> &){}
 
-    LogicSubt(){};
+    LogicSubt(){}
 
     void process(Algebra &algebra) const
     {

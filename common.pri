@@ -233,8 +233,8 @@ isEmpty(CCACHE_TOOLCHAIN_ON) {
     QMAKE_CXXFLAGS_DEBUG   += -O0 -g3
     QMAKE_LFLAGS           +=     -g3
 
-    QMAKE_CFLAGS_RELEASE   += -O3 -g3 -mtune=native
-    QMAKE_CXXFLAGS_RELEASE += -O3 -g3 -mtune=native
+#    QMAKE_CFLAGS_RELEASE   += -O3 -g3 -mtune=native
+#    QMAKE_CXXFLAGS_RELEASE += -O3 -g3 -mtune=native
 
     # Workaround for -fPIC bug
     QMAKE_CFLAGS_STATIC_LIB=

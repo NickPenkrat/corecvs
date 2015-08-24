@@ -81,6 +81,9 @@ void PrinterVisitor::visit<double, DoubleVectorField>(std::vector<double> &field
 /* Old style */
 
 template <>
+void PrinterVisitor::visit<int>(int &doubleField, int defaultValue, const char *fieldName);
+
+template <>
 void PrinterVisitor::visit<double>(double &doubleField, double defaultValue, const char *fieldName);
 
 template <>
@@ -88,6 +91,9 @@ void PrinterVisitor::visit<float>(float &floatField, float defaultValue, const c
 
 template <>
 void PrinterVisitor::visit<bool>(bool &boolField, bool defaultValue, const char *fieldName);
+
+template <>
+void PrinterVisitor::visit<std::string>(std::string &stringField, std::string defaultValue, const char *fieldName);
 
 
 } //namespace corecvs

@@ -805,15 +805,24 @@ template<typename ResultType>
      *
      **/
 
+
+    template<typename ReturnType, typename ConvElementType, typename ConvIndexType>
+    void doConvolve(ReturnType *output, AbstractKernel<ConvElementType, ConvIndexType> *kernel, bool onlyValid = false, bool parallel = true)
+    {
+        /*TODO: Well we need to process this gracefully */
+        if (output->h != h || output->w != w)
+            return;
+
+        int top    = onlyValid ? kernel->y : 0;
+        int bottom = onlyValid ? h + kernel->y - kernel->h + 1 : h;
+        parallelable_for(top, bottom, ParallelDoConvolve<ReturnType, AbstractBuffer<ElementType, IndexType>, ConvElementType, ConvIndexType>(output, this, kernel, onlyValid), parallel);
+    }
+
     template<typename ReturnType, typename ConvElementType, typename ConvIndexType>
     ReturnType* doConvolve(AbstractKernel<ConvElementType, ConvIndexType> *kernel, bool onlyValid = false, bool parallel = true)
     {
-        IndexType i;
         ReturnType *toReturn = new ReturnType(h, w);
-        int top    = onlyValid ? kernel->y : 0;
-        int bottom = onlyValid ? h + kernel->y - kernel->h + 1 : h;
-        parallelable_for(top, bottom, ParallelDoConvolve<ReturnType, AbstractBuffer<ElementType, IndexType>, ConvElementType, ConvIndexType>(toReturn, this, kernel, onlyValid), parallel);
-
+        doConvolve(toReturn, kernel, onlyValid, parallel);
         return toReturn;
     }
 

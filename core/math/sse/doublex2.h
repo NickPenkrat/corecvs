@@ -19,6 +19,8 @@ class Doublex2
 public:
     __m128d data;
 
+    static const int SIZE = 2;
+
     Doublex2() {}
 
     explicit Doublex2(const double value) {

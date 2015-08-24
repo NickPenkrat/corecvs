@@ -83,6 +83,27 @@ template<typename operation>
         }
     }
 
+void testBiliner()
+{
+    RGB24Buffer *image = new RGB24Buffer(2,2);
+    image->element(0,0) = RGBColor::Yellow();
+    image->element(0,1) = RGBColor::Green();
+    image->element(1,0) = RGBColor::Indigo();
+    image->element(1,1) = RGBColor::Black();
+
+    for (double i = 0; i < 1.0; i+=0.07 )
+    {
+        for (double j = 0; j < 1.0; j+=1.17 )
+        {
+            RGBColor d =  image->elementBlDouble(i, j);
+            RGBColor f =  image->elementBlFixed (i, j);
+
+            RGBColor diff = RGBColor::diff(d,f);
+            cout << d << " = " << f << " -> " <<  diff << endl;
+        }
+    }
+}
+
 
 void testFastDeform24 ()
 {
@@ -317,7 +338,8 @@ void testRectangularImage()
 
 int main (int /*argC*/, char ** /*argV*/)
 {
-    testRectangularImage();
+    testBiliner();
+    //testRectangularImage();
     //testRadialApplication();
     //testFastDeform ();
     //testFastDeform24 ();

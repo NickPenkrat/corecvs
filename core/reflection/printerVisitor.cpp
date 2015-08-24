@@ -70,6 +70,7 @@ void PrinterVisitor::visit<double, DoubleVectorField>(std::vector<double> &field
 }
 
 /* Old style visitor */
+
 template <>
 void PrinterVisitor::visit<int>(int &intField, int /*defaultValue*/, const char *fieldName)
 {
@@ -98,6 +99,12 @@ void PrinterVisitor::visit<bool>(bool &boolField, bool /*defaultValue*/, const c
     *stream << fieldName << "=" << boolField << endl;
 }
 
+template <>
+void PrinterVisitor::visit<std::string>(std::string &stringField, std::string /*defaultValue*/, const char *fieldName)
+{
+    if (stream == NULL) return;
+    *stream << fieldName << "=" << stringField << endl;
+}
 
 
 

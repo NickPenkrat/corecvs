@@ -40,6 +40,15 @@ public:
     template <int multiplier>
         static inline UInt16x8 mul(const UInt16x8 &val);
 
+    /* For double types */
+    template <int multiplier>
+        static inline Doublex2 mul(const Doublex2 &val);
+
+    template <int divisor>
+        static inline Doublex2 div(const Doublex2 &val);
+
+
+
     /* TODO: Unite the following lines */
     ALIGN_STACK_SSE static inline Int16x8 branchlessMask(const Int16x8 &val)
     {
@@ -242,6 +251,21 @@ inline UInt16x8 SSEMath::mul<2>(const UInt16x8 &val) {
     return val << 1;
 }
 
+/* For double types */
+template<>
+inline Doublex2 SSEMath::mul<2>(const Doublex2 &val) {
+    return val + val;
+}
+
+template<>
+inline Doublex2 SSEMath::mul<4>(const Doublex2 &val) {
+    return val * Doublex2(4.0);
+}
+
+template<>
+inline Doublex2 SSEMath::div<4>(const Doublex2 &val) {
+    return val * Doublex2(0.25);
+}
 
 
 #if 0
