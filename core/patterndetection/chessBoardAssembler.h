@@ -78,7 +78,16 @@ struct ChessBoardAssemblerParams
     double costThreshold = -10.0;
     // Hypothesis type: consider only hypothesis that fits specified number of dims
     int hypothesisDimensions = 1;
+#if __cplusplus >= 201103L // Our compiler is cool enough to support brace-initalizer-list for structure members
     int hypothesisDim[2] = {18, 11};
+#else
+    int hypothesisDim[2];
+    ChessBoardAssemblerParams()
+    {
+        hypothesisDim[0] = 18;
+        hypothesisDim[1] = 11;
+    }
+#endif
 };
 
 
