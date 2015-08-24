@@ -235,11 +235,28 @@ public:
         {
             return RGBColor((uint8_t)at(0), (uint8_t)at(1), (uint8_t)at(2), (uint8_t)at(3));
         }
+    };
 
+    class RGBEx32 : public FixedVectorBase<RGBEx32, uint32_t, 3>
+    {
+    public:
+        RGBEx32() {}
+        RGBEx32(const RGBColor &color)
+        {
+            at(0) = color.r();
+            at(1) = color.g();
+            at(2) = color.b();
+            at(3) = color.a();
+        }
+
+        RGBColor toRGBColor() const
+        {
+            return RGBColor((uint8_t)at(0), (uint8_t)at(1), (uint8_t)at(2), (uint8_t)at(3));
+        }
     };
 
     /* This should be merged with generic elementBl */
-    RGB24Buffer::InternalElementType elementBl(double y, double x)
+    RGB24Buffer::InternalElementType elementBlFixed(double y, double x)
     {
         /* floor() is needed here because of values (-1..0] which will be
          * rounded to 0 and cause error */
@@ -250,22 +267,42 @@ public:
                 ("Invalid coordinate in AbstractContiniousBuffer::elementBl(double y=%lf, double x=%lf) buffer sizes is [%dx%d]",
                    y, x, this->w, this->h));
 
+        /* Fixed point */
+        uint32_t value = 255 * 16;
+
+        uint32_t k1 = (x - j) * value;
+        uint32_t k2 = (y - i) * value;
+
+        RGBEx32 a = RGBEx32(this->element(i    ,j    ));
+        RGBEx32 b = RGBEx32(this->element(i    ,j + 1));
+        RGBEx32 c = RGBEx32(this->element(i + 1,j    ));
+        RGBEx32 d = RGBEx32(this->element(i + 1,j + 1));
+
+
+        RGBEx32 result =
+             (a * (value - k1) + k1 * b) * (value - k2) +
+             (c * (value - k1) + k1 * d) *          k2;
+        result /= (value * value);
+        return result.toRGBColor();
+    }
+
+
+    /* This should be merged with generic elementBl */
+    RGB24Buffer::InternalElementType elementBlDouble(double y, double x)
+    {
+        /* floor() is needed here because of values (-1..0] which will be
+         * rounded to 0 and cause error */
+        RGB24Buffer::InternalIndexType i = (RGB24Buffer::InternalIndexType)floor(y);
+        RGB24Buffer::InternalIndexType j = (RGB24Buffer::InternalIndexType)floor(x);
+
+        ASSERT_TRUE_P(this->isValidCoordBl(y,x),
+                ("Invalid coordinate in AbstractContiniousBuffer::elementBl(double y=%lf, double x=%lf) buffer sizes is [%dx%d]",
+                   y, x, this->w, this->h));
+
+        /* So far use slow version. Generally this sould be done with fixed point */
         double k1 = x - j;
         double k2 = y - i;
 
-/*
-        RGBEx a = this->element(i    ,j    );
-        RGBEx b = this->element(i    ,j + 1);
-        RGBEx c = this->element(i + 1,j    );
-        RGBEx d = this->element(i + 1,j + 1);
-
-
-        RGBEx result =
-             (a * (1 - k1) + k1 * b) * (1 - k2) +
-             (c * (1 - k1) + k1 * d) *      k2;
-        return result.toRGBColor();*/
-
-        /* So far use slow version. Generally this sould be done with fixed point */
         Vector3dd a = this->element(i    ,j    ).toDouble();
         Vector3dd b = this->element(i    ,j + 1).toDouble();
         Vector3dd c = this->element(i + 1,j    ).toDouble();
@@ -276,6 +313,11 @@ public:
              (a * (1 - k1) + k1 * b) * (1 - k2) +
              (c * (1 - k1) + k1 * d) *      k2;
         return RGBColor::FromDouble(result);
+    }
+
+    RGB24Buffer::InternalElementType elementBl(double y, double x)
+    {
+        return elementBlDouble(y,x);
     }
 
     RGB24Buffer::InternalElementType elementBl(Vector2dd &point)
