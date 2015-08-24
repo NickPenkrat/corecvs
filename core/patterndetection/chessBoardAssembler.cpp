@@ -152,14 +152,14 @@ bool ChessBoardAssembler::BoardExpander::initBoard(int seed)
     double d_nwse[4], d_corn[4];
     for (int i = 0; i < 4; ++i)
     {
-        auto dir = ((i & 1) * 2 - 1) * (i & 2 ? from.v1 : from.v2);
+        auto dir = ((i & 1) * 2.0 - 1.0) * (i & 2 ? from.v1 : from.v2);
         if(!getNearest(seed, dir, nwse[i], d_nwse[i]))
             return false;
         usedCorners[nwse[i]] = 1;
     }
     for (int i = 0; i < 4; ++i)
     {
-        auto dir = ((i & 1) * 2 - 1) * from.v2;
+        auto dir = ((i & 1) * 2.0 - 1.0) * from.v2;
         if (!getNearest(nwse[2+((i & 2) >> 1)], dir, corn[i], d_corn[i]))
             return false;
         usedCorners[corn[i]] = 1;
