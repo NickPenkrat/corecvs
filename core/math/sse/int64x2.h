@@ -76,6 +76,11 @@ public:
         return Int64x2(data);
     }
 
+    static Int64x2 loadLower(int64_t *value)
+    {
+        return Int64x2(_mm_loadl_epi64((__m128i *)value));
+    }
+
     /** Load aligned. Not safe to use untill you exactly know what you are doing */
     static Int64x2 loadAligned(const int64_t data[4])
     {

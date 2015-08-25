@@ -59,7 +59,7 @@ void CommandLineSetter::visit<double>(double &doubleField, double defaultValue, 
 }
 
 template <>
-void CommandLineSetter::visit<bool>(bool &boolField, bool defaultValue, const char * fieldName)
+void CommandLineSetter::visit<bool>(bool &boolField, bool /*defaultValue*/, const char * fieldName)
 {
     boolField = getBool(fieldName);
 }
