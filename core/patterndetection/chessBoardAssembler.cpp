@@ -30,7 +30,7 @@ void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, 
     }
 }
 
-void ChessBoardAssembler::acceptHypothesis(RectangularGridPattern &board)
+void ChessBoardAssembler::acceptHypothesis(RectangularGridPattern &board, const ParallelBoardExpander &expander)
 {
 
     bool intersects = false;
@@ -62,7 +62,7 @@ void ChessBoardAssembler::acceptHypothesis(RectangularGridPattern &board)
 
     // We may run in parallel, so need to lock
 #ifdef WITH_TBB
-    tbb::mutex::scoped_lock lock(mutex);
+    tbb::mutex::scoped_lock lock(expander.mutex);
 #endif
     for (int i = 0; i < boards.size(); ++i)
     {
@@ -118,7 +118,7 @@ void ChessBoardAssembler::ParallelBoardExpander::operator() (const corecvs::Bloc
         if (!expander.initBoard(seed) || !expander.getExpandedBoard(board))
             continue;
 
-        assembler->acceptHypothesis(board);
+        assembler->acceptHypothesis(board, *this);
     }
 }
 

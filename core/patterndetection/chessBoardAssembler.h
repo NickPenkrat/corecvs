@@ -122,17 +122,16 @@ protected://iivate:
         public:
             ParallelBoardExpander(ChessBoardAssembler *assembler);
             void operator() (const corecvs::BlockedRange<int>& r) const;
+#ifdef WITH_TBB
+            mutable tbb::mutex mutex;
+#endif
         private:
             ChessBoardAssembler *assembler;
     };
-    void acceptHypothesis(RectangularGridPattern &board);
+    void acceptHypothesis(RectangularGridPattern &board, const ParallelBoardExpander &expander);
     std::vector<RectangularGridPattern> boards;   
 
     std::vector<OrientedCorner> corners;
-
-#ifdef WITH_TBB
-    tbb::mutex mutex;
-#endif
 };
 
 #endif
