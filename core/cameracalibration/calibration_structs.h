@@ -33,7 +33,9 @@ struct LocationData
 	corecvs::Quaternion orientation;
 };
 
-// TODO: We already have intrinsics class somewhere, don't we?
+// XXX: We already have intrinsics class somewhere (CameraIntrinsics), but
+//      it is not full enough to hold abstract projective pin-hole model (e.g.
+//      skewed/non-rectangular)
 struct CameraIntrinsics_
 {
     CameraIntrinsics_(double fx = 1.0, double fy = 1.0, double cx = 0.0, double cy = 0.0, double skew = 0.0) : fx(fx), fy(fy), cx(cx), cy(cy), skew(skew)
@@ -57,7 +59,7 @@ struct CameraIntrinsics_
 	double fx, fy, cx, cy, skew;
 };
 
-struct Camera
+struct Camera_
 {
     corecvs::Vector2dd project(const corecvs::Vector3dd &pt)
     {
@@ -75,7 +77,7 @@ struct Photostation
         return cameras[cam].project(location.orientation * (pt - location.position));
     }
 
-	std::vector<Camera> cameras;
+	std::vector<Camera_> cameras;
 	LocationData location;
 };
 

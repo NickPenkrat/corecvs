@@ -17,3 +17,7 @@ UTILSDIR = $$TEST_DIR/../../utils
 include($$UTILSDIR/utils.pri)
 
 SOURCES += main_feature2d_basic.cpp
+
+!win32 {
+    LIBS += -ldl			# load symbol links from "dll/so" files
+}

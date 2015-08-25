@@ -17,3 +17,7 @@ UTILSDIR = $$TEST_DIR/../../utils
 include($$UTILSDIR/utils.pri)
 
 SOURCES += main_matcher_full.cpp
+
+!win32 {
+    LIBS += -ldl			# load symbol links from "dll/so" files
+}

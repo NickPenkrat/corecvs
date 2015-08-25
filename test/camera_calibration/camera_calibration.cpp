@@ -14,7 +14,7 @@
 #include "tbbWrapper.h"
 #include "quaternion.h"
 #include "homographyReconstructor.h"
-#include "openCvCheckerboardDetector.h"
+#include "chessBoardDetector.h"
 #include "levenmarq.h"
 #include "mesh3d.h"
 
@@ -59,6 +59,21 @@ bool checkIfExists(const char *filename)
     return (bool)ifs;
 }
 
+void readImage(const std::string &filename, corecvs::RGB24Buffer &img)
+{
+    cv::Mat im = cv::imread(filename);
+    im.convertTo(im, CV_64FC1, 1.0);
+    img = corecvs::RGB24Buffer(im.rows, im.cols);
+    for (int i = 0; i < im.rows; ++i)
+    {
+        for (int j = 0; j < im.cols; ++j)
+        {
+            img.element(i, j) = corecvs::RGBColor(im.at<double>(i, j * 3 + 2), im.at<double>(i, j * 3 + 1), im.at<double>(i, j * 3));
+        }
+    }
+}
+
+
 struct ParallelBoardDetector
 {
     void operator() (const corecvs::BlockedRange<int> &r) const
@@ -92,6 +107,7 @@ struct ParallelBoardDetector
                     {
                         double u, v, x, y, z;
                         csv >> u >> v >> x >> y >> z;
+                        x *= (50.0 * 19.0 + 3.0) / (50.0 * 19.0);
                         if ((bool)csv)
                         {
                             cam_vec.push_back(std::make_pair(Vector2dd(u, v), corecvs::Vector3dd(x, y, z)));
@@ -100,9 +116,24 @@ struct ParallelBoardDetector
                 }
                 else
                 {
-                    cv::Mat img = cv::imread(filename);
+                    RGB24Buffer img;
+                    readImage(filename, img);
 
-                    cam_vec = OpenCvCheckerboardDetector::GetPoints(img, 18, 11);
+                    corecvs::ObservationList list;
+
+                    ChessBoardDetectorParams params;
+                    params.w = 18;
+                    params.h = 11;
+                    params.mode = ChessBoardDetectorMode::FIT_WIDTH;
+                    ChessboardDetector detector(params);
+                    bool found = detector.detectPattern(img);
+                    if (found)
+                    {
+                        detector.getPointData(list);
+                        cam_vec.clear();
+                        for (auto& o: list)
+                            cam_vec.emplace_back(o.projection, o.point);
+                    }
 
                     std::ofstream csv;
                     csv.open(filename_csv, std::ios_base::out);

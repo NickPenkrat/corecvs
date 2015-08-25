@@ -64,30 +64,6 @@ class AbstractBuffer;
 template<typename ElementType, typename IndexType>
 class AbstractKernel;
 
-/**
- * This class holds the mapping function from coordinate domain
- * to the other coordinate domain.
- *
- * We probably should use only static poly-morphism.
- * So map should be made non-virtual
- **/
-template<typename InputIndexType, typename OutputIndexType>
-class DeformMap
-{
-public:
-
-    typedef Vector2d<InputIndexType>   InputPoint;
-    typedef Vector2d<OutputIndexType> OutputPoint;
-
-    inline OutputPoint map(const InputIndexType & /*y*/, const InputIndexType & /*x*/) {}
-
-    //inline OutputPoint map(const InputPoint &point)
-    //{
-    //    return map (point.y, point.x);
-    //}
-
-    virtual ~DeformMap() {}
-};
 
 /**
  * These are useful methods to serialize integer types not depending on the current endianess
@@ -303,13 +279,15 @@ public:
     AbstractBuffer(IndexType h, IndexType w, ElementType *_data)
     {
        _init(h, w, false);
-       fillWithRaw(_data);
+       if (_data)
+           fillWithRaw(_data);
     }
 
     AbstractBuffer(Vector2d<IndexType> size, ElementType *_data)
     {
        _init(size.y(), size.x(), false);
-       fillWithRaw(_data);
+       if (_data)
+           fillWithRaw(_data);
     }
 
 #if 0
@@ -680,6 +658,83 @@ template<typename ResultType>
         return BufferIterator<ElementType, IndexType>(this);
     };*/
 
+    /*
+     * Non-maximum supression with avg. complexity < 2.4 ops / pixel and worst-case complexity < 4-4/(w+1) ops / pixel
+     * (naive implementation costs 1.3 + 2log(w) avg. and n^2 worst-case)
+     *
+     * Check out http://homes.esat.kuleuven.be/~konijn/publications/2006/eth_biwi_00446.pdf for details
+     *
+     * \param windowHalf - half of maximum-search window
+     * \param threshold  - threshold for maximum-candidates
+     * \param maximas    - vector of local-maximum points (output)
+     * \param skip       - skip border
+     */
+    void nonMaximumSupression(const IndexType &windowHalf, const ElementType &threshold, std::vector<std::pair<IndexType, IndexType>> &maximas, const IndexType &skip = 0)
+    {
+        maximas.clear();
+        IndexType w = windowHalf;
+        IndexType s = skip;
+
+        for (auto i = s + w; i + w + s < this->w; i += w + 1)
+        {
+            for (auto j = s + w; j + w + s < this->h; j += w + 1)
+            {
+                auto mi = i, mj = j;
+                auto mx = this->element(j, i);
+
+                for (auto i2 = i; i2 < i + w + 1; ++i2)
+                {
+                    for (auto j2 = j; j2 < j + w + 1; ++j2)
+                    {
+                        if (this->element(j2, i2) > mx)
+                        {
+                            mx = this->element(j2, i2);
+                            mi = i2;
+                            mj = j2;
+                        }
+                    }
+                }
+
+                // Now we are sure, that A[mj, mi] is best in [j; j+w]x[i; i+w], need to check if it is best in [mj-w; mj+w]x[mi-w; mi+w]
+                bool failed = mx < threshold;
+
+                auto top = mj - w, bottom = std::min(mj + w + 1, j), left = mi - w, right = mi + w + 1;
+#define TRY_NMS(tv, bv, lv, rv) \
+                if (!failed) \
+                { \
+                    top = tv; \
+                    bottom = bv; \
+                    left = lv; \
+                    right = rv; \
+                    failed |= nonMaximumSupressionHelper(top, bottom, left, right, mx); \
+                }
+
+                TRY_NMS(top, bottom, left, right)
+                TRY_NMS(j, std::min(mj + w + 1, j + w + 1), mi - w, std::min(mi + w + 1, i))
+                TRY_NMS(top, bottom, i + w + 1, mi + w + 1)
+                TRY_NMS(j + w + 1, mj + w + 1, mi - w, mi + w)
+#undef TRY_NMS
+                if (!failed)
+                    maximas.push_back(std::make_pair(mi, mj));
+            }
+        }
+    }
+
+    inline bool nonMaximumSupressionHelper(IndexType &top, IndexType &bottom, IndexType &left, IndexType &right, ElementType &mx)
+    {
+        for (auto j = top; j < bottom; ++j)
+        {
+            for (auto i = left; i < right; ++i)
+            {
+                if (this->element(j, i) > mx)
+                    return true;
+            }
+        }
+        return false;
+    }
+
+
+
     template<typename ReturnType, typename ConvElementType, typename ConvIndexType>
     void innerCycleDoConvolve(ReturnType *toReturn, AbstractKernel<ConvElementType, ConvIndexType> *kernel, int i)
     {
@@ -690,25 +745,44 @@ template<typename ResultType>
     }
 
 
-    template<typename ReturnType, typename ConvElementType, typename ConvIndexType>
+    template<typename ReturnType, typename SelfType, typename ConvElementType, typename ConvIndexType>
     class ParallelDoConvolve
     {
+        SelfType *buffer;
         ReturnType *toReturn;
         AbstractKernel<ConvElementType, ConvIndexType> *kernel;
+        bool onlyValid;
     public:
         ParallelDoConvolve(
                 ReturnType *_toReturn,
-                AbstractKernel<ConvElementType, ConvIndexType> *_kernel) :
-        toReturn(_toReturn), kernel(_kernel)
+                SelfType * _buffer,
+                AbstractKernel<ConvElementType, ConvIndexType> *_kernel,
+                bool onlyValid) :
+         buffer(_buffer), toReturn(_toReturn), kernel(_kernel), onlyValid(onlyValid)
         {}
 
         void operator()( const BlockedRange<IndexType>& r ) const
         {
-            for (IndexType i = r.begin(); i != r.end(); i++)
+            int left =  onlyValid ? kernel->x : 0;
+            int right = onlyValid ? buffer->w + kernel->x - kernel->w + 1 : buffer->w;
+            if (!onlyValid)
             {
-                for (IndexType j = 0; j < toReturn->w; j++)
+                for (IndexType i = r.begin(); i != r.end(); i++)
                 {
-                    toReturn->element(i,j) = kernel->template multiplyAtPoint<ElementType, IndexType>(this, i,j);
+                    for (IndexType j = left; j < right; j++)
+                    {
+                        toReturn->element(i,j) = kernel->template multiplyAtPoint<ElementType, IndexType>(buffer, i,j);
+                    }
+                }
+            }
+            else
+            {
+                for (IndexType i = r.begin(); i != r.end(); i++)
+                {
+                    for (IndexType j = left; j < right; j++)
+                    {
+                        toReturn->element(i,j) = kernel->template multiplyAtPoint<ElementType, IndexType, true>(buffer, i,j);
+                    }
                 }
             }
         }
@@ -731,13 +805,24 @@ template<typename ResultType>
      *
      **/
 
-    template<typename ReturnType, typename ConvElementType, typename ConvIndexType>
-    ReturnType* doConvolve(AbstractKernel<ConvElementType, ConvIndexType> *kernel)
-    {
-        IndexType i;
-        ReturnType *toReturn = new ReturnType(h, w);
-        parallelable_for(0, h, ParallelDoConvolve<ReturnType, ConvElementType, ConvIndexType>(toReturn, kernel, this));
 
+    template<typename ReturnType, typename ConvElementType, typename ConvIndexType>
+    void doConvolve(ReturnType *output, AbstractKernel<ConvElementType, ConvIndexType> *kernel, bool onlyValid = false, bool parallel = true)
+    {
+        /*TODO: Well we need to process this gracefully */
+        if (output->h != h || output->w != w)
+            return;
+
+        int top    = onlyValid ? kernel->y : 0;
+        int bottom = onlyValid ? h + kernel->y - kernel->h + 1 : h;
+        parallelable_for(top, bottom, ParallelDoConvolve<ReturnType, AbstractBuffer<ElementType, IndexType>, ConvElementType, ConvIndexType>(output, this, kernel, onlyValid), parallel);
+    }
+
+    template<typename ReturnType, typename ConvElementType, typename ConvIndexType>
+    ReturnType* doConvolve(AbstractKernel<ConvElementType, ConvIndexType> *kernel, bool onlyValid = false, bool parallel = true)
+    {
+        ReturnType *toReturn = new ReturnType(h, w);
+        doConvolve(toReturn, kernel, onlyValid, parallel);
         return toReturn;
     }
 
@@ -857,15 +942,15 @@ template<typename ResultType>
      *  \param oper - operation to be performed
      **/
 
-template<typename operation>
-    void binaryOperationInPlace(const AbstractBuffer &that, const operation &oper = operation())
+template<typename operation, typename OtherBuffer>
+    void binaryOperationInPlace(const OtherBuffer &that, const operation &oper = operation())
     {
         IndexType h = CORE_MIN(this->h, that.h);
         IndexType w = CORE_MIN(this->w, that.w);
         for (IndexType i = 0; i < h; i++)
         {
             ElementType *thisElemRunner = &(this->element(i,0));
-            const ElementType *thatElemRunner = &(that.element(i,0));
+            const typename OtherBuffer::InternalElementType *thatElemRunner = &(that.element(i,0));
             for (IndexType j = 0; j < w; j++)
             {
                 /* Writing like this just to emphasize what is actually called */

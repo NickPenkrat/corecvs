@@ -13,6 +13,123 @@
 #pragma warning (disable:4482)
 #endif
 
+#if 1
+
+OpenCvCheckerboardDetector::OpenCvCheckerboardDetector(const CheckerboardDetectionParameters &params)
+    : CheckerboardDetectionParameters(params)
+{
+}
+
+bool OpenCvCheckerboardDetector::detectPattern(corecvs::G8Buffer &buffer)
+{
+    result.clear();
+    points.clear();
+
+    if (!detectChessBoardOpenCv(buffer))
+        return false;
+
+    assignPointCoordinates(buffer.w, buffer.h);
+    return true;
+}
+
+bool OpenCvCheckerboardDetector::detectChessBoardOpenCv(corecvs::G8Buffer &buffer)
+{
+    IplImage *iplImage = OpenCVTools::getCVImageFromG8Buffer(&buffer);
+    cv::Mat view = cv::Mat(iplImage);
+
+    // FIXME: I like width x height notation, since horizontal/vertical does not matter?
+    int hbegin = mPartialBoard ? 3 : mVertCrossesCount, hend = mVertCrossesCount;
+    int wbegin = mHorCrossesCount, wend = mHorCrossesCount;
+
+    bool found = false;
+    for (int h = hend; h >= hbegin && !found; --h)
+    {
+        for (int w = wend; w >= wbegin && !found; --w)
+        {
+            found = cv::findChessboardCorners(view, cv::Size(w, h), points, cv::CALIB_CB_ADAPTIVE_THRESH | cv::CALIB_CB_FAST_CHECK);
+            if (found)
+            {
+                bw = w; bh = h;
+                cv::cornerSubPix(view, points, cv::Size(mPreciseDiameter, mPreciseDiameter), cv::Size(-1, -1), cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, mIterationCount, mMinAccuracy));
+            }
+        }
+    }
+    cvReleaseImage(&iplImage);
+    return found;
+}
+
+void OpenCvCheckerboardDetector::assignPointCoordinates(int iw, int ih)
+{
+    // XXX: Here we reorient board and fill it's world coordinates
+    // FIXME: Might not work if board orientation significantly changes;
+    //        In order to detect orientation of [partially visible] board
+    //        we'll need to introduce some markers
+    // TODO: Note that it is a direct copy-paste from chessBoardDetector;
+    //       probably we can find place to share this code
+    std::vector<std::vector<corecvs::Vector2dd>> best(bh);
+    std::cout << "BOARD DETECTED " << bw << " x " << bh << " (" << points.size() << ")" << std::endl;
+    for (int i = 0; i < bh; ++i)
+    {
+        best[i].resize(bw);
+        for (int j = 0; j < bw; ++j)
+        {
+            auto& p = points[i * bw + j];
+            best[i][j] = corecvs::Vector2dd(p.x, p.y);
+        }
+    }
+
+    std::vector<std::pair<double, int>> ymeans;
+    int idx = 0;
+    for (auto& r: best)
+    {
+        Vector2dd sum(0.0, 0.0);
+        for (auto& p: r)
+            sum += p;
+        sum /= r.size();
+        ymeans.emplace_back(sum[1], idx++);
+    }
+    std::sort(ymeans.begin(), ymeans.end(), [](decltype(ymeans[0]) a, decltype(ymeans[0]) b) { return a.first < b.first; });
+
+    decltype(best) best_reorder(best.size());
+    for (int i = 0; i < best.size(); ++i)
+    {
+        best_reorder[i] = best[ymeans[i].second];
+        std::sort(best_reorder[i].begin(), best_reorder[i].end(), [](corecvs::Vector2dd &a, corecvs::Vector2dd &b) { return a[0] < b[0]; });
+    }
+    best = best_reorder;
+
+    corecvs::Vector2dd center(0.0, 0.0);
+    int cnt = 0;
+    for (auto& r: best)
+    {
+        for (auto& p: r)
+        {
+            center += p;
+            cnt++;
+        }
+    }
+    center /= cnt;
+    center *= 2.0;
+
+    int l = center[0] > iw ? 0 : mHorCrossesCount - bw;
+    int t = center[1] > ih ? 0 : mVertCrossesCount - bh;
+
+    result.clear();
+    for (int i = 0; i < bh; ++i)
+    {
+        for (int j = 0; j < bw; ++j)
+            result.emplace_back(corecvs::Vector3dd((j + l) * 50.0, (i + t) * 50.0, 0.0), best[i][j]);
+    }
+
+}
+
+
+void OpenCvCheckerboardDetector::getPointData(corecvs::ObservationList &observations)
+{
+    observations = result;
+}
+
+#else
 void OpenCvCheckerboardDetector::DrawCheckerboardLines(cv::Mat &dst, const Straights &straights)
 {
     for (unsigned i = 0; i < straights.size(); i++)
@@ -62,8 +179,8 @@ bool OpenCvCheckerboardDetector::DetectFullCheckerboard(
     cv::Mat view = cv::Mat(iplImage);
 
     bool toReturn = DetectFullCheckerboard(view,
-                        params.hCrossesCount(),
-                        params.vCrossesCount(),
+                        params.horCrossesCount(),
+                        params.vertCrossesCount(),
                         lineList,
                         params.preciseDiameter(),
                         params.iterationCount(),
@@ -281,8 +398,8 @@ OpenCvCheckerboardDetector::DetectPartCheckerboardV(const cv::Mat &mat
 {
     SYNC_PRINT(("OpenCvCheckerboardDetector::DetectPartCheckerboardV():called\n"));
 
-    int width  = params.hCrossesCount();
-    int height = params.vCrossesCount();
+    int width  = params. horCrossesCount();
+    int height = params.vertCrossesCount();
     for (unsigned j = height; j > 2; j--)
     {
         cv::Size boardSize(width, j);
@@ -328,7 +445,7 @@ OpenCvCheckerboardDetector::DetectPartCheckerboardV(const cv::Mat &mat
                 SYNC_PRINT((" TOP\n"));
                 if (observationList != NULL)
                 {
-                    fillPoints(pointbuf, cv::Size(width, height), boardSize, cv::Size(params.cellSize(),params.cellSize()), BoardAlign::TOP, observationList);
+                    fillPoints(pointbuf, cv::Size(width, height), boardSize, cv::Size(params.cellSizeHor(),params.cellSizeVert()), BoardAlign::TOP, observationList);
                 }
                 return BoardAlign::TOP;
             }
@@ -337,7 +454,7 @@ OpenCvCheckerboardDetector::DetectPartCheckerboardV(const cv::Mat &mat
                 SYNC_PRINT((" BOTTOM\n"));
                 if (observationList != NULL)
                 {
-                    fillPoints(pointbuf, cv::Size(width, height), boardSize, cv::Size(params.cellSize(),params.cellSize()), BoardAlign::BOTTOM, observationList);
+                    fillPoints(pointbuf, cv::Size(width, height), boardSize, cv::Size(params.cellSizeHor(),params.cellSizeVert()), BoardAlign::BOTTOM, observationList);
                 }
                 return BoardAlign::BOTTOM;
             }
@@ -429,6 +546,7 @@ void OpenCvCheckerboardDetector::fillPoints(const vector<cv::Point2f> &pointbuf
     }
 }
 
+/* Fill SelectableGeometryFeatures with lines */
 void OpenCvCheckerboardDetector::fillStraight(const vector<cv::Point2f> &pointbuf, int width, int height, SelectableGeometryFeatures *lineList)
 {
     for (int i = 0; i < height; i++)
@@ -450,6 +568,91 @@ void OpenCvCheckerboardDetector::fillStraight(const vector<cv::Point2f> &pointbu
             lineList->addVertexToPath(lineList->appendNewVertex(point), path);
         }
     }
+}
+
+/**
+ * Fill SelectableGeometryFeatures with all lines
+ *
+ * So far only main diagonal lines (with ~45 deg angle) are added.
+ * They are iterated top to bottom
+ *
+ *
+ **/
+typedef AbstractBuffer<cv::Point2f> PointViewBuf;
+
+void OpenCvCheckerboardDetector::fillStraightAndDiagonal(const vector<cv::Point2f> &pointbuf, int width, int height, SelectableGeometryFeatures *lineList)
+{
+    cv::Point2f *ptr = const_cast<cv::Point2f *>(&pointbuf[0]);
+    PointViewBuf *view = PointViewBuf::CreateBuffer<PointViewBuf> (height, width, width, ptr);
+
+
+    for (int j = 0; j < width; j++)
+    {
+        SelectableGeometryFeatures::VertexPath * path = lineList->appendNewPath();
+        for (int i = 0; i < height; i++)
+        {
+            Vector2dd point = CV2Core::Vector2ddFromPoint2f(view->element(i,j));
+            lineList->addVertexToPath(lineList->appendNewVertex(point), path);
+        }
+
+        if (j > 2) {
+            SelectableGeometryFeatures::VertexPath * path = lineList->appendNewPath();
+            for (int i = 0; ; i ++)
+            {
+                if (!view->isValidCoord(i,j - i))
+                    break;
+                Vector2dd point = CV2Core::Vector2ddFromPoint2f(view->element(i,j - i));
+                lineList->addVertexToPath(lineList->appendNewVertex(point), path);
+            }
+        }
+        if (j < width - 2) {
+            SelectableGeometryFeatures::VertexPath * path = lineList->appendNewPath();
+            for (int i = 0; ; i ++)
+            {
+                if (!view->isValidCoord(i,j + i))
+                    break;
+                Vector2dd point = CV2Core::Vector2ddFromPoint2f(view->element(i,j + i));
+                lineList->addVertexToPath(lineList->appendNewVertex(point), path);
+            }
+        }
+
+    }
+
+
+    for (int i = 0; i < height; i++)
+    {
+        SelectableGeometryFeatures::VertexPath * path = lineList->appendNewPath();
+        for (int j = 0; j < width; j++)
+        {
+            Vector2dd point = CV2Core::Vector2ddFromPoint2f(view->element(i,j));
+            lineList->addVertexToPath(lineList->appendNewVertex(point), path);
+        }
+
+        if (i > 0) {
+            SelectableGeometryFeatures::VertexPath * path = lineList->appendNewPath();
+            for (int j = 0; ; j ++)
+            {
+                if (!view->isValidCoord(i + j, width - 1 - j))
+                    break;
+                Vector2dd point = CV2Core::Vector2ddFromPoint2f(view->element(i + j, width - 1 - j));
+                lineList->addVertexToPath(lineList->appendNewVertex(point), path);
+            }
+
+            path = lineList->appendNewPath();
+            for (int j = 0; ; j ++)
+            {
+                if (!view->isValidCoord(i + j,j))
+                    break;
+                Vector2dd point = CV2Core::Vector2ddFromPoint2f(view->element(i + j,j));
+                lineList->addVertexToPath(lineList->appendNewVertex(point), path);
+            }
+
+        }
+
+    }
+
+    delete view;
+
 }
 
 // TODO: reduce copypaste
@@ -568,5 +771,8 @@ void OpenCvCheckerboardDetector::fillStraight(
                                        , buffer.at(iw + width * ih).y));
         }
         straights->push_back(straight);
+
+
     }
 }
+#endif

@@ -103,7 +103,7 @@ public:
         return Vector2dd(
                 cx + ((dx + radialX + tangentX) / mParams.aspect() * mParams.scale() * mParams.normalizingFocal()),
                 cy + ((dy + radialY + tangentY)                    * mParams.scale() * mParams.normalizingFocal())
-               );
+               ) + Vector2dd(addShiftX, addShiftY);
     }
 
     /**/
@@ -122,6 +122,12 @@ public:
     //Vector2dd getCorrectionForPoint(Vector2dd input);
     LensDistortionModelParameters mParams;
 
+    /* TODO: This was not in original design. Most probably should be done by decorator.*/
+    double addShiftX;
+    double addShiftY;
+
+
+
     Vector2dd center() const
     {
         return Vector2dd(mParams.principalX(), mParams.principalY());
@@ -130,6 +136,57 @@ public:
 
     RadialCorrection invertCorrection(int h, int w, int step);
     EllipticalApproximation1d compareWith(const RadialCorrection &other, int h, int w, int steps);
+
+
+
+    /* */
+    void getCircumscribedImageRect(const int32_t &x1, const int32_t &y1, const int32_t &x2, const int32_t &y2,
+                                   Vector2dd &min, Vector2dd &max)
+    {
+        min = map(y1,x1);
+        max = map(y2,x2);
+
+        for (int i = y1; i <= y2; i++)
+        {
+            Vector2dd mapLeft  = map(i, x1);
+            Vector2dd mapRight = map(i, x2);
+            if (mapLeft .x() < min.x()) min.x() = mapLeft.x();
+            if (mapRight.x() > max.x()) max.x() = mapRight.x();
+        }
+
+        for (int j = x1; j <= x2; j++)
+        {
+
+            Vector2dd mapTop    = map(y1, j);
+            Vector2dd mapBottom = map(y2, j);
+            if (mapTop   .y() < min.y()) min.y() = mapTop.y();
+            if (mapBottom.y() > max.y()) max.y() = mapBottom.y();
+        }
+    }
+
+    void getInscribedImageRect(const int32_t &x1, const int32_t &y1, const int32_t &x2, const int32_t &y2,
+                               Vector2dd &min, Vector2dd &max)
+    {
+        min = map(y1,x1);
+        max = map(y2,x2);
+
+        for (int i = y1; i <= y2; i++)
+        {
+            Vector2dd mapLeft  = map(i, x1);
+            Vector2dd mapRight = map(i, x2);
+            if (mapLeft .x() > min.x()) min.x() = mapLeft.x();
+            if (mapRight.x() < max.x()) max.x() = mapRight.x();
+        }
+
+        for (int j = x1; j <= x2; j++)
+        {
+
+            Vector2dd mapTop    = map(y1, j);
+            Vector2dd mapBottom = map(y2, j);
+            if (mapTop   .y() > min.y()) min.y() = mapTop.y();
+            if (mapBottom.y() < max.y()) max.y() = mapBottom.y();
+        }
+    }
 };
 
 

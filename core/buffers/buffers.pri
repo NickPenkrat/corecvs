@@ -48,7 +48,8 @@ HEADERS += \
     buffers/g12Buffer3d.h \
     buffers/buffer3d.h \
     buffers/transformationCache.h \
-    buffers/runtimeTypeBuffer.h
+    buffers/runtimeTypeBuffer.h \
+    buffers/deformMap.h
 
 
 SOURCES += \
@@ -84,5 +85,6 @@ SOURCES += \
     buffers/buffer3d.cpp \
     buffers/transformationCache.cpp \
     buffers/runtimeTypeBuffer.cpp \
+    buffers/deformMap.cpp
 
 

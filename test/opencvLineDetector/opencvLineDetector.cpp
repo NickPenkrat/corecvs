@@ -166,8 +166,8 @@ int main (int argc, char **argv)
         Vector2dd center = Vector2dd(image->w, image->h) / 2.0;
 
         CheckerboardDetectionParameters params;
-        params.setHCrossesCount(chessW);
-        params.setVCrossesCount(chessH);
+        params.setHorCrossesCount(chessW);
+        params.setVertCrossesCount(chessH);
         params.setPreciseDiameter(precise);
         params.setMinAccuracy(minAccuracy);
         params.setIterationCount(maxIterationCount);
@@ -181,7 +181,11 @@ int main (int argc, char **argv)
 
         SelectableGeometryFeatures lineList;
         G8Buffer *boardOutput = NULL;
-        found = OpenCvCheckerboardDetector::DetectFullCheckerboard(channel, params, &lineList, &boardOutput);
+//        found = OpenCvCheckerboardDetector::DetectFullCheckerboard(channel, params, &lineList, &boardOutput);
+        OpenCvCheckerboardDetector detector(params);
+        bool found = detector.detectPattern(*channel);
+        detector.getPointData(lineList);
+
 
         if (found)
         {
@@ -189,6 +193,8 @@ int main (int argc, char **argv)
             {
                 SYNC_PRINT(("Checkerboard found.\n"));
             }
+            // FIXME: Not Implemented Yet
+#if 0
             if (drawProccess)
             {
 //                OpenCvCheckerboardDetector::DrawCheckerboardLines(view, straights);
@@ -201,6 +207,7 @@ int main (int argc, char **argv)
                     SYNC_PRINT(("test_with_chess_LINES.jpg saved.\n"));
                 }
             }
+#endif
 
             LMLinesDistortionSolver solver;
             LineDistortionEstimatorParameters params;
@@ -236,19 +243,26 @@ int main (int argc, char **argv)
     }
     else if (argc > 1 && getStringCmdOption(argv[1], "--calcPartCheckerBoard:", &fileName))
     {
+        // FIXME: WTF? detect part of chessboard and do nothing?!
         RGB24Buffer *image   = BufferFactory::getInstance()->loadRGB24Bitmap(fileName);
         G8Buffer    *channel = image->getChannel(ImageChannel::GRAY);
 
         CheckerboardDetectionParameters params;
-        params.setHCrossesCount(chessW);
-        params.setVCrossesCount(chessH);
+        params.setPartialBoard(true);
+        params.setHorCrossesCount(chessW);
+        params.setVertCrossesCount(chessH);
         params.setPreciseDiameter(precise);
         params.setMinAccuracy(minAccuracy);
         params.setIterationCount(maxIterationCount);
-        params.setCellSize(cellSize);
+        params.setCellSizeHor(cellSize);
+        params.setCellSizeVert(cellSize);
 
         ObservationList observationList;
-        OpenCvCheckerboardDetector::DetectPartCheckerboardV(channel, params, &observationList, NULL);
+
+        //OpenCvCheckerboardDetector::DetectPartCheckerboardV(channel, params, &observationList, NULL);
+        OpenCvCheckerboardDetector detector(params);
+        bool found = detector.detectPattern(*channel);
+        detector.getPointData(observationList);
 
         delete_safe(channel);
         delete_safe(image);

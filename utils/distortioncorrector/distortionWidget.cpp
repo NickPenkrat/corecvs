@@ -16,6 +16,7 @@
 #include "distortionWidget.h"
 #include "ui_distortionWidget.h"
 #include "distPointsFunction.h"
+#include "chessBoardDetector.h"
 
 #ifdef WITH_OPENCV
 # include "opencv2/imgproc/imgproc.hpp"
@@ -184,7 +185,6 @@ void DistortionWidget::detectCheckerboard()
 
     G8Buffer *workChannel = mBufferInput->getChannel(params.channel());
 
-    int found;
     PaintImageWidget *canvas = mUi->widget;
 
     if(params.cleanExisting())
@@ -193,33 +193,25 @@ void DistortionWidget::detectCheckerboard()
         canvas->mFeatures.mPaths.clear();
     }
 
-    SelectableGeometryFeatures *features = &canvas->mFeatures;
-    ObservationList *list = &mUi->calibrationFeatures->observationList;
-
-    G8Buffer *output = NULL;
-
-    if (params.partialBoard()) {
-        found = OpenCvCheckerboardDetector::DetectPartCheckerboardV(workChannel, params, list, features, &output);
-        cout << "We have added" << list->size() << " points" << endl;
-    } else {
-        found = OpenCvCheckerboardDetector::DetectFullCheckerboard(workChannel, params, features, &output);
-    }
-
-
-    if(found)
+#define  OPENCV_DETECTOR
+#ifdef OPENCV_DETECTOR
+    OpenCvCheckerboardDetector detector(params);
+#else
+    ChessBoardDetectorParams cdp;
+    cdp.w = params.mHorCrossesCount;
+    cdp.h = params.mVertCrossesCount;
+    ChessboardDetector detector(cdp);
+#endif
+    PatternDetector& patternDetector = detector;
+    // FIXME: Not sure if we should ever allow user to tune what channel to use, let us just pass full buffer
+    // TODO:  Check if drawing points over buffer is detector's part of work
+    bool found = patternDetector.detectPattern(*mBufferInput);
+    if (found)
     {
-        L_INFO_P("Chessboard detected: %d", found);
-
-        if (output != NULL) {
-            delete_safe(mBufferWithCorners);
-            mBufferWithCorners = new RGB24Buffer(output);
-        }
-        mUi->calibrationFeatures->geometryFeatures = features;
-        mUi->calibrationFeatures->updateWidget();
-
+        patternDetector.getPointData(mUi->calibrationFeatures->observationList);
+        patternDetector.getPointData(canvas->mFeatures);
     }
 
-    delete_safe(output);
     delete_safe(workChannel);
     return;
 #else

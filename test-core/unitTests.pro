@@ -67,3 +67,5 @@ SUBDIRS += \
     distortion \
     similarity \
 	eigen \
+	commandline \
+	fastkernel_double \

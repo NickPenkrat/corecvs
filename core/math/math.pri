@@ -38,11 +38,14 @@ HEADERS += \
     math/sse/int8x16.h \
 #    math/sse/uint8x16.h \
     math/sse/uInt8x16.h \
+    math/sse/doublex2.h \
+    math/sse/doublex4.h \
     \
     math/mathUtils.h \
     math/eulerAngles.h \
     math/puzzleBlock.h \
-    math/matrix/similarityReconstructor.h
+    math/matrix/similarityReconstructor.h \
+
     
     
 SOURCES += \

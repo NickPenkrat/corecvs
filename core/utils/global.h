@@ -101,6 +101,13 @@ typedef int                bool_t;                          // fast Boolean type
 # define ASSERT_DOUBLE_EQUAL(X,Y, Text) \
     ASSERT_DOUBLE_EQUAL_E(X, Y, 1e-10, Text)
 
+# define ASSERT_DOUBLE_EQUAL_EP(X,Y,Eps, Text) \
+    ASSERT_TRUE_P((X) > ((Y) - Eps) && (X) < ((Y) + Eps), Text)
+
+# define ASSERT_DOUBLE_EQUAL_P(X,Y, Text) \
+    ASSERT_DOUBLE_EQUAL_EP(X, Y, 1e-10, Text)
+
+
 #else // ASSERTS
 
 # define ASSERT_FAIL(X)

@@ -30,6 +30,7 @@ public:
 /*  static G12Buffer   *G12BufferFromQImage(QImage *image);*/
 
     static RGB24Buffer *RGB24BufferFromQImage(QImage *image);
+    static QImage* RGB24BufferToQImage(RGB24Buffer &buffer);
     void save(const std::string& name, RGB24Buffer *input);
     void save(const std::string& name, RGB24Buffer *input, int quality);
 };

@@ -62,9 +62,11 @@
 
   <class name="Checkerboard Detection Parameters">
     <field type="ImageChannel" name="Channel"            defaultValue="3"   />
-    <field type="int"          name="V crosses count"    defaultValue="11"   />
-    <field type="int"          name="H crosses count"    defaultValue="18"   />
-    <field type="double"       name="Cell size"          defaultValue="50"   suffix="mm" />
+    <field type="int"          name="Vert crosses count" defaultValue="11"   />
+    <field type="int"          name="Hor crosses count"  defaultValue="18"   />
+    <field type="double"       name="Cell Size Hor"      defaultValue="50"   suffix="mm" />
+    <field type="double"       name="Cell Size Vert"     defaultValue="50"   suffix="mm" />
+
     <field type="bool"         name="Clean existing"     defaultValue="true" />
 
     <field type="int"          name="Precise Diameter"   defaultValue="50"      min="0"   max="999999"  />
@@ -92,6 +94,22 @@
     <field type="bool"      name="Even powers only"  defaultValue="false" />
     <field type="bool"      name="Estimate Tangent"  defaultValue="true" />
     <field type="bool"      name="Estimate Center"   defaultValue="true" />
+  </class>
+
+
+  <enum name="Distortion Resize Policy">
+    <item name="No Change"     id="0" />
+    <item name="Force Size"    id="1" />
+    <item name="To Fit Result" id="2" />
+    <item name="To No Gaps"    id="3" />
+  </enum>
+
+  <class name="Distortion Application Parameters">
+    <field type="bool"      name="Force Scale"   defaultValue="false" />
+    <field type="bool"      name="Adopt Scale"   defaultValue="false" />
+    <field type="Distortion Resize Policy"  name="Resize policy" defaultValue="0" />
+    <field type="int"                       name="New H"         defaultValue="0" />
+    <field type="int"                       name="New W"         defaultValue="0" />
   </class>
 
 </poco>

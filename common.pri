@@ -233,8 +233,8 @@ isEmpty(CCACHE_TOOLCHAIN_ON) {
     QMAKE_CXXFLAGS_DEBUG   += -O0 -g3
     QMAKE_LFLAGS           +=     -g3
 
-    QMAKE_CFLAGS_RELEASE   += -O3 -g3 -mtune=native
-    QMAKE_CXXFLAGS_RELEASE += -O3 -g3 -mtune=native
+#    QMAKE_CFLAGS_RELEASE   += -O3 -g3 -mtune=native
+#    QMAKE_CXXFLAGS_RELEASE += -O3 -g3 -mtune=native
 
     # Workaround for -fPIC bug
     QMAKE_CFLAGS_STATIC_LIB=
@@ -243,9 +243,6 @@ isEmpty(CCACHE_TOOLCHAIN_ON) {
     !win32 {
         QMAKE_CFLAGS   +=-fPIC
         QMAKE_CXXFLAGS +=-fPIC
-    }
-    !win32 {
-        QMAKE_LFLAGS += -ldl			# load symbol links from "dll/so" files
     }
 } else {
    #QMAKE_CXXFLAGS_DEBUG   += /showIncludes
@@ -420,14 +417,15 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
     } else {
         !isEmpty(TBB_PATH) {
             #message (Using TBB at $$TBB_PATH)
-            DEFINES     += WITH_TBB
             INCLUDEPATH += $$TBB_PATH/include
-            LIBS        += -ltbb
+            LIBS        += -L$$TBB_PATH/lib/
         }
         else {
-           !build_pass: message(TBB not found. Please set TBB_PATH system variable to a root folder of TBB to use it)
+            !build_pass: message (Using System TBB)
         }
-      }
+        DEFINES     += WITH_TBB
+        LIBS        += -ltbb
+    }
 }
 
 # More static analysis warnings

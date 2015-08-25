@@ -40,20 +40,25 @@ enum ImageChannel {
      */
     GRAY = 3,
     /** 
+     * \brief Luma 
+     * Luma 
+     */
+    LUMA = 4,
+    /** 
      * \brief Hue 
      * Hue 
      */
-    HUE = 4,
+    HUE = 5,
     /** 
      * \brief Saturation 
      * Saturation 
      */
-    SATURATION = 5,
+    SATURATION = 6,
     /** 
      * \brief Value 
      * Value 
      */
-    VALUE = 6,
+    VALUE = 7,
     /** 
      * \brief Last virtual option to run cycles to
      */
@@ -69,6 +74,7 @@ static inline const char *getName(const ImageChannel &value)
      case G : return "G"; break ;
      case B : return "B"; break ;
      case GRAY : return "GRAY"; break ;
+     case LUMA : return "LUMA"; break ;
      case HUE : return "HUE"; break ;
      case SATURATION : return "SATURATION"; break ;
      case VALUE : return "VALUE"; break ;
