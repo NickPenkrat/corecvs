@@ -42,7 +42,7 @@ int Draw3dParameters::staticInit()
         (
           Draw3dParameters::STYLE_ID,
           offsetof(Draw3dParameters, mStyle),
-          0,
+          3,
           "style",
           "style",
           "style",
@@ -58,25 +58,98 @@ int Draw3dParameters::staticInit()
     fields().push_back(
         new CompositeField
         (
-          Draw3dParameters::COLOR_ID,
-          offsetof(Draw3dParameters, mColor),
-          "Color",
+          Draw3dParameters::POINT_COLOR_ID,
+          offsetof(Draw3dParameters, mPointColor),
+          "Point Color",
           "RgbColorParameters",
-          "Color",
-          "Color",
+          "Point Color",
+          "Point Color",
            NULL
+        )
+    );
+    fields().push_back(
+        new BoolField
+        (
+          Draw3dParameters::POINT_COLOR_OVERRIDE_ID,
+          offsetof(Draw3dParameters, mPointColorOverride),
+          false,
+          "Point Color Override",
+          "Point Color Override",
+          "Point Color Override"
+        )
+    );
+    fields().push_back(
+        new IntField
+        (
+          Draw3dParameters::POINT_SIZE_ID,
+          offsetof(Draw3dParameters, mPointSize),
+          8,
+          "Point Size",
+          "Point Size",
+          "Point Size",
+          true,
+         0,
+         255
         )
     );
     fields().push_back(
         new CompositeField
         (
-          Draw3dParameters::SECONDARY_COLOR_ID,
-          offsetof(Draw3dParameters, mSecondaryColor),
-          "Secondary Color",
+          Draw3dParameters::EDGE_COLOR_ID,
+          offsetof(Draw3dParameters, mEdgeColor),
+          "Edge Color",
           "RgbColorParameters",
-          "Secondary Color",
-          "Secondary Color",
+          "Edge Color",
+          "Edge Color",
            NULL
+        )
+    );
+    fields().push_back(
+        new BoolField
+        (
+          Draw3dParameters::EDGE_COLOR_OVERRIDE_ID,
+          offsetof(Draw3dParameters, mEdgeColorOverride),
+          false,
+          "Edge Color Override",
+          "Edge Color Override",
+          "Edge Color Override"
+        )
+    );
+    fields().push_back(
+        new IntField
+        (
+          Draw3dParameters::EDGE_WIDTH_ID,
+          offsetof(Draw3dParameters, mEdgeWidth),
+          1,
+          "Edge Width",
+          "Edge Width",
+          "Edge Width",
+          true,
+         0,
+         255
+        )
+    );
+    fields().push_back(
+        new CompositeField
+        (
+          Draw3dParameters::FACE_COLOR_ID,
+          offsetof(Draw3dParameters, mFaceColor),
+          "Face Color",
+          "RgbColorParameters",
+          "Face Color",
+          "Face Color",
+           NULL
+        )
+    );
+    fields().push_back(
+        new BoolField
+        (
+          Draw3dParameters::FACE_COLOR_OVERRIDE_ID,
+          offsetof(Draw3dParameters, mFaceColorOverride),
+          false,
+          "Face Color Override",
+          "Face Color Override",
+          "Face Color Override"
         )
     );
     fields().push_back(

@@ -19,14 +19,14 @@ ChessboardDetector::ChessboardDetector(ChessBoardDetectorParams params, ChessBoa
 bool ChessboardDetector::detectPattern(corecvs::G8Buffer &buffer)
 {
     DpImage grayscale(buffer.h, buffer.w);
-    grayscale.binaryOperationInPlace(buffer, [](const double &a, const unsigned char &b) { return ((double)b) / 255.0; });
+    grayscale.binaryOperationInPlace(buffer, [](const double & /*a*/, const unsigned char &b) { return ((double)b) / 255.0; });
     return detectPattern(grayscale);
 }
 
 bool ChessboardDetector::detectPattern(corecvs::RGB24Buffer &buffer)
 {
     DpImage grayscale(buffer.h, buffer.w);
-    grayscale.binaryOperationInPlace(buffer, [](const double &a, const corecvs::RGBColor &b) { return (b.b() * 0.114 + b.g() * 0.587 + b.r() * 0.299 ) / 255.0; });
+    grayscale.binaryOperationInPlace(buffer, [](const double & /*a*/, const corecvs::RGBColor &b) { return (b.b() * 0.114 + b.g() * 0.587 + b.r() * 0.299 ) / 255.0; });
     return detectPattern(grayscale);
 }
 
@@ -109,7 +109,7 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
     std::sort(ymeans.begin(), ymeans.end(), [](std::pair<double, int> a, std::pair<double, int> b) { return a.first < b.first; });
 
     decltype(best) best_reorder(best.size());
-    for (int i = 0; i < best.size(); ++i)
+    for (size_t i = 0; i < best.size(); ++i)
     {
         best_reorder[i] = best[ymeans[i].second];
         std::sort(best_reorder[i].begin(), best_reorder[i].end(), [](corecvs::Vector2dd a, corecvs::Vector2dd b) { return a[0] < b[0]; });

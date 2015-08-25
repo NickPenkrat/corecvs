@@ -117,18 +117,42 @@ CloudViewDialog::CloudViewDialog(QWidget *parent) :
     camera->name = "camera";
     worldFrame->mChildren.push_back(camera);
 
-    Mesh3DScene *mesh = new Mesh3DScene();
-    PLYLoader loader;
-    ifstream file("data/box.ply", ios::in);
-    if (!file.fail() && loader.loadPLY(file, *mesh) != 0)
-    {
-        qDebug() << "CloudViewDialog::Unable to load mesh";
-    } else {
-        mesh->name = "box-ply";
-    //    addSubObject("box-ply", QSharedPointer<Scene3D>(mesh));
-    }
-    file.close();
-    worldFrame->mChildren.push_back(QSharedPointer<Scene3D>(mesh));
+    /* Test mesh load */
+        Mesh3DScene *mesh = new Mesh3DScene();
+        PLYLoader loader;
+        const char *testMeshName = "data/box.ply";
+        ifstream file(testMeshName, ios::in);
+        if (!file.fail() && loader.loadPLY(file, *mesh) != 0)
+        {
+            qDebug() << "CloudViewDialog::Unable to load mesh " << testMeshName;
+        } else {
+            mesh->name = "box-ply";
+        //    addSubObject("box-ply", QSharedPointer<Scene3D>(mesh));
+        }
+        file.close();
+        worldFrame->mChildren.push_back(QSharedPointer<Scene3D>(mesh));
+    /* Test colored mesh */
+        Mesh3DScene *meshTest = new Mesh3DScene();
+
+
+        meshTest->switchColor();
+        /* Vertex sphere */
+        meshTest->currentColor = RGBColor::Yellow();
+        meshTest->addSphere(Vector3dd(0), 50, 10);
+
+        /* Face sphere */
+        meshTest->currentColor = RGBColor::Red();
+        meshTest->addIcoSphere(Vector3dd(100.0,0.0,100.0), 50.0, 1);
+#if 1
+        /* Edge box */
+        meshTest->currentColor = RGBColor::Blue();
+        meshTest->addAOB(Vector3dd(40.0,10.0,-40.0), Vector3dd(70.0,30.0,20.0), false);
+#endif
+        meshTest->dumpPLY(cout);
+
+        meshTest->name = "Colored mesh";
+        worldFrame->mChildren.push_back(QSharedPointer<Scene3D>(meshTest));
+
 
     Mesh3DScene *box = new Mesh3DScene();
     box->addAOB(Vector3dd(0.0,0.0,0.0), Vector3dd(1.0,1.0,1.0));
@@ -144,7 +168,9 @@ TreeSceneController * CloudViewDialog::addSubObject (QString name, QSharedPointe
 {
     qDebug() << "Adding object" << name;
 
-    return mTreeModel.addObject(name, scene, visible);
+    TreeSceneController * result = mTreeModel.addObject(name, scene, visible);
+    mUi.widget->updateGL();
+    return result;
 }
 
 
@@ -773,6 +799,12 @@ void CloudViewDialog::loadMesh()
            return;
         }
     }
+
+    cout << "Loaded mesh:" << endl;
+    cout << " Edges   :" << mesh->edges.size() << endl;
+    cout << " Vertexes:" << mesh->vertexes.size() << endl;
+    cout << " Faces   :" << mesh->faces.size() << endl;
+    cout << " Bounding box " << mesh->getBoundingBox() << endl;
 
     QFileInfo fileInfo(fileName);
     addSubObject(fileInfo.baseName(), QSharedPointer<Scene3D>(mesh));

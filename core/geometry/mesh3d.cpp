@@ -83,7 +83,7 @@ void Mesh3D::addAOB(const AxisAlignedBox3d &box, bool addFaces)
 int Mesh3D::addPoint(Vector3dd point)
 {
      addVertex(point);
-     return (int)vertexes.size() - 1;
+     return vertexes.size() - 1;
 }
 
 void Mesh3D::addLine(Vector3dd point1, Vector3dd point2)
@@ -115,8 +115,8 @@ void Mesh3D::addSphere(Vector3dd center, double radius, int step)
     int vectorIndex = (int)vertexes.size();
     Vector3d32 startId(vectorIndex, vectorIndex, vectorIndex);
 
-    double dphy =     M_PI / (step + 1);
-    double dpsi = 2 * M_PI / (step + 1);
+    double dphy =     M_PI / step ;
+    double dpsi = 2 * M_PI / step ;
 
     for (int i = 0; i < step; i++)
     {
@@ -131,6 +131,154 @@ void Mesh3D::addSphere(Vector3dd center, double radius, int step)
             addVertex(center + Vector3dd(x,y,z));
         }
     }
+}
+
+/**
+ *   https://en.wikipedia.org/wiki/Regular_icosahedron#Cartesian_coordinates
+ **/
+void Mesh3D::addIcoSphere(Vector3dd center, double radius, int step)
+{
+    double scaler = radius * sqrt(5);
+    int vectorIndex = (int)vertexes.size();    
+    Vector3d32 startId(vectorIndex, vectorIndex, vectorIndex);
+    
+#if 0
+    addVertex(center + Vector3dd(0.0,  1.0,  M_PHI));  // 0
+    addVertex(center + Vector3dd(0.0, -1.0,  M_PHI));  // 1
+    addVertex(center + Vector3dd(0.0,  1.0, -M_PHI));  // 2
+    addVertex(center + Vector3dd(0.0, -1.0, -M_PHI));  // 3
+
+    addVertex(center + Vector3dd( M_PHI,  0.0,  1.0)); // 4
+    addVertex(center + Vector3dd(-M_PHI,  0.0,  1.0)); // 5
+    addVertex(center + Vector3dd( M_PHI,  0.0, -1.0)); // 6
+    addVertex(center + Vector3dd(-M_PHI,  0.0, -1.0)); // 7
+
+    addVertex(center + Vector3dd( 1.0,  M_PHI,  0.0)); // 8
+    addVertex(center + Vector3dd(-1.0,  M_PHI,  0.0)); // 9
+    addVertex(center + Vector3dd( 1.0, -M_PHI,  0.0)); // 10
+    addVertex(center + Vector3dd(-1.0, -M_PHI,  0.0)); // 11
+    /**/
+
+    /* and diagonal */
+    addFace(startId + Vector3d32(0, 4, 8));
+    addFace(startId + Vector3d32(1, 4, 8));
+    addFace(startId + Vector3d32(0, 4, 8));
+    addFace(startId + Vector3d32(0, 4, 8));
+
+    addFace(startId + Vector3d32(0, 4, 8));
+    addFace(startId + Vector3d32(0, 4, 8));
+    addFace(startId + Vector3d32(0, 4, 8));
+    addFace(startId + Vector3d32(0, 4, 8));
+
+
+    /*addFace(startId + Vector3d32(0, 1, 4));
+    addFace(startId + Vector3d32(0, 1, 5));
+
+    addFace(startId + Vector3d32(2, 3, 6));
+    addFace(startId + Vector3d32(2, 3, 7));
+    
+
+    addFace(startId + Vector3d32(4, 6,  8));
+    addFace(startId + Vector3d32(4, 6, 10));
+
+    addFace(startId + Vector3d32(5, 7,  9));
+    addFace(startId + Vector3d32(5, 7, 11));
+    
+    
+    addFace(startId + Vector3d32(8, 9,  0));
+    addFace(startId + Vector3d32(8, 9,  2));
+
+    addFace(startId + Vector3d32(10, 11, 1));
+    addFace(startId + Vector3d32(10, 11, 3));*/
+#else
+
+
+    double level = atan(0.5);
+    double da = M_PI * 2 / 5;
+    double len = sqrt(1 - level * level);
+
+    addVertex(center + Vector3dd(0.0,  0.0, 1.0) * radius);
+    for (int i = 0; i < 5; i++) {
+        double angle = da * i;
+        addVertex(center + Vector3dd(cos(angle) * len, sin(angle) * len, level) * radius);
+    }
+    for (int i = 0; i < 5; i++) {
+         double angle = da * i + (da / 2);
+         addVertex(center + Vector3dd(cos(angle) * len, sin(angle) * len, -level) * radius);
+    }
+    addVertex(center + Vector3dd(0.0,  0.0, -1.0) * radius);
+
+    /*Adding faces */
+    static int ROUND_1 = 1;
+    static int ROUND_2 = 1 + 5;
+    static int LAST_P = 1 + 5 + 5;
+    int primaryIndex = (int)faces.size();
+
+
+     for (int i = 0; i < 5; i++) {
+         addFace(startId + Vector3d32(0, i + ROUND_1, ((i + 1) % 5) + ROUND_1));
+     }
+
+     for (int i = 0; i < 5; i++) {
+         int j = ((i + 1) % 5);
+         addFace(startId + Vector3d32(j + ROUND_1, i + ROUND_1, i + ROUND_2));
+         addFace(startId + Vector3d32(i + ROUND_2, j + ROUND_2, j + ROUND_1));
+     }
+
+     for (int i = 0; i < 5; i++) {
+         addFace(startId + Vector3d32(LAST_P, ((i + 1) % 5) + ROUND_2, i + ROUND_2));
+     }
+
+     /*No we start the subdivision*/
+
+     int faceIndex = primaryIndex;
+
+     for (int stage = 0; stage < step; stage ++)
+     {
+         /*Take every face */
+
+         int lastIndex = (int)faces.size();
+         for (int f = faceIndex; f < lastIndex; f++)
+         {
+             Vector3d32 face = faces[f];
+
+             /**/
+             int startId = (int)vertexes.size();
+
+             for (int k = 0; k < 3; k++)
+             {
+                 int startid = face[k];
+                 int endid   = face[(k + 1) % 3];
+
+                 /*if (endid < startid) continue;*/
+
+                Vector3dd startvert = vertexes[startid];
+                Vector3dd endvert   = vertexes[endid];
+
+                Vector3dd add = (startvert + endvert) / 2.0;
+
+                add = center + (add - center).normalised() * radius;
+
+                addVertex(add);
+             }
+             addFace(Vector3d32(face[0], startId, startId + 2));
+             addFace(Vector3d32(startId, face[1], startId + 1));
+             addFace(Vector3d32(startId + 1, face[2], startId + 2));
+
+             addFace(Vector3d32(startId, startId + 1, startId + 2));
+         }
+         faceIndex = lastIndex;
+     }
+
+     faces.erase(faces.begin() + primaryIndex, faces.begin() + faceIndex);
+     if (hasColor) {
+         facesColor.erase(facesColor.begin() + primaryIndex, facesColor.begin() + faceIndex);
+     }
+
+
+
+#endif
+    
 }
 
 void Mesh3D::addCamera(const CameraIntrinsics &cam, double len)
@@ -354,6 +502,22 @@ Mesh3D Mesh3D::transformed(const Matrix44 &matrix)
     toReturn = *this;
     toReturn.transform(matrix);
     return toReturn;
+}
+
+AxisAlignedBox3d Mesh3D::getBoundingBox()
+{
+    Vector3dd minP;
+    Vector3dd maxP;
+
+    for (size_t i = 0; i < vertexes.size(); i++)
+    {
+        for (int j = 0; j < Vector3dd::LENGTH; j++)
+        {
+            if (minP[j] < vertexes[i][j]) minP[j] = vertexes[i][j];
+            if (maxP[j] > vertexes[i][j]) maxP[j] = vertexes[i][j];
+        }
+    }
+    return AxisAlignedBox3d(minP, maxP);
 }
 
 void Mesh3D::add(const Mesh3D &other)

@@ -103,7 +103,7 @@ double OrientedCorner::scoreIntensity(DpImage &img, int r)
     }
 
     DpImage c(w, w);
-    int cc = cks.A.x;
+    //int cc = cks.A.x;
     cks.computeCost(patch, c, true);
     return std::max(c.element(cks.A.y, cks.A.x), 0.0);
 }
@@ -166,7 +166,7 @@ void CornerKernelSet::computeKernels(double r, double alpha, double psi, int w, 
     auto v2 = corecvs::Vector2dd(cos(alpha + psi), sin(alpha + psi)).rightNormal();
     corecvs::Vector2dd cc(c, c);
 
-    double sum = 0.0;
+    //double sum = 0.0;
     for (int i = 0; i < w; ++i)
     {
         for (int j = 0; j < w; ++j)
