@@ -97,6 +97,8 @@ class ChessBoardAssembler : ChessBoardAssemblerParams
 {
 public:
     ChessBoardAssembler(ChessBoardAssemblerParams params = ChessBoardAssemblerParams());
+    ChessBoardAssembler(const ChessBoardAssembler &other);
+    ChessBoardAssembler& operator=(const ChessBoardAssembler &other);
     void assembleBoards(std::vector<OrientedCorner> &corners_, std::vector<std::vector<std::vector<corecvs::Vector2dd>>> &boards);
 
 protected://iivate:

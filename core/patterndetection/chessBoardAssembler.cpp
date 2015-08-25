@@ -7,6 +7,18 @@ ChessBoardAssembler::ChessBoardAssembler(ChessBoardAssemblerParams params) : Che
 {
 }
 
+ChessBoardAssembler::ChessBoardAssembler(const ChessBoardAssembler &other) : ChessBoardAssemblerParams(other)
+{
+}
+
+ChessBoardAssembler& ChessBoardAssembler::operator=(const ChessBoardAssembler& other)
+{
+    boards.clear();
+    corners.clear();
+    ChessBoardAssemblerParams::operator=(other);
+    return *this;
+}
+
 void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, std::vector<std::vector<std::vector<corecvs::Vector2dd>>> &boards_)
 {
     corners = corners_;
