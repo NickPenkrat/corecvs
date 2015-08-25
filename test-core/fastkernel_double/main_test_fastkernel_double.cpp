@@ -1,11 +1,11 @@
 /**
  * \file main_test_fastkernel_double.cpp
- * \brief This is the main file for the test fastkernel_double 
+ * \brief This is the main file for the test fastkernel_double
  *
  * \date авг. 22, 2015
  * \author alexander
  *
- * \ingroup autotest  
+ * \ingroup autotest
  */
 
 #include <iostream>
@@ -16,6 +16,7 @@
 #include "sobel.h"
 #include "vectorTraits.h"
 #include "arithmetic.h"
+#include "copyKernel.h"
 
 using corecvs::SobelVerticalKernel;
 using corecvs::ScalarAlgebraDouble;
@@ -24,10 +25,10 @@ using namespace std;
 using namespace corecvs;
 
 const static unsigned POLUTING_INPUTS = 10;
-const static unsigned LIMIT = 100;
+const static unsigned LIMIT = 50;
 
-const static int  TEST_H_SIZE = 2000;
-const static int  TEST_W_SIZE = 3000;
+const static int  TEST_H_SIZE = 1000;
+const static int  TEST_W_SIZE = 1500;
 
 /*const static int  TEST_H_SIZE = 8;
 const static int  TEST_W_SIZE = 8;*/
@@ -130,7 +131,7 @@ void testDoubleConvolve()
         /* Preparation */
         double duk[] = {-1.0,  0.0,  1.0, -1.0, 0.0, 1.0, -1.0, 0.0, 1.0};
         DpKernel K (3, 3, duk);
-        VerticalEdgeKernel<DummyAlgebra> kernel;
+
 
         SYNC_PRINT(("Profiling     Simple Approach:"));
         start = PreciseTimer::currentTime();
@@ -143,22 +144,23 @@ void testDoubleConvolve()
         SYNC_PRINT(("%8" PRIu64 "us %8" PRIu64 "ms SP: %8" PRIu64 "us\n", delaySimple, delaySimple / 1000, delaySimple / LIMIT));
 
     /* Run kernalized */
-        ConvolveKernel<DummyAlgebra> convolver(&K, 1, 1);
+
 #if defined (WITH_SSE)
         SYNC_PRINT(("Profiling Kernalized Approach:"));
         start = PreciseTimer::currentTime();
+
+        ConvolveKernel<DummyAlgebra> convolver(&K, 1, 1);
         BufferProcessor<DpImage, DpImage, ConvolveKernel, VectorAlgebraDouble> procScalar;
         for (unsigned i = 0; i < LIMIT; i++) {
-            DpImage *cinput[1]  = { input           [i % POLUTING_INPUTS] };
-            DpImage *coutput[1] = { outputKernalized[i % POLUTING_INPUTS] };
-
-            procScalar.process(cinput, coutput, convolver);
+            procScalar.process(&input[i % POLUTING_INPUTS], &outputKernalized[i % POLUTING_INPUTS], convolver);
         }
         uint64_t delayKernalized = start.usecsToNow();
         SYNC_PRINT(("%8" PRIu64 "us %8" PRIu64 "ms SP: %8" PRIu64 "us\n", delayKernalized, delayKernalized / 1000, delayKernalized / LIMIT));
 #endif
 
     /* Run scalar */
+    VerticalEdgeKernel<DummyAlgebra> kernel;
+
         SYNC_PRINT(("Profiling     Scalar Approach:"));
         start = PreciseTimer::currentTime();
         BufferProcessor<DpImage, DpImage, VerticalEdgeKernel, ScalarAlgebraDouble> procKernalized;
@@ -174,14 +176,15 @@ void testDoubleConvolve()
 
     /* Run vector */
 #if defined (WITH_SSE)
+    CopyKernel<DummyAlgebra> kernel1;
         SYNC_PRINT(("Profiling     Vector Approach:"));
         start = PreciseTimer::currentTime();
-        BufferProcessor<DpImage, DpImage, VerticalEdgeKernel, VectorAlgebraDouble> procVector;
+        BufferProcessor<DpImage, DpImage, CopyKernel, VectorAlgebraDouble> procVector;
         for (unsigned i = 0; i < LIMIT; i++) {
             DpImage *cinput[1]  = { input       [i % POLUTING_INPUTS] };
             DpImage *coutput[1] = { outputVector[i % POLUTING_INPUTS] };
 
-            procVector.process(cinput, coutput, kernel);
+            procVector.process(cinput, coutput, kernel1);
         }
         uint64_t delayVector = start.usecsToNow();
         SYNC_PRINT(("%8" PRIu64 "us %8" PRIu64 "ms SP: %8" PRIu64 "us\n", delayVector, delayVector / 1000, delayVector / LIMIT));
@@ -271,13 +274,67 @@ void testDoubleConvolve()
     {
         delete_safe(outputScalar[i]);
         delete_safe(outputVector[i]);
+        delete_safe(outputKernalized[i]);
+        delete_safe(outputSimple[i]);
+    }
+
+}
+
+
+void testLargeKernel()
+{
+    DpImage * input[POLUTING_INPUTS];
+    PreciseTimer start;
+
+    VisiterSemiRandom<DpImage::InternalElementType> vis;
+    for (unsigned i = 0; i < POLUTING_INPUTS; i++)
+    {
+        input[i] = new DpImage(TEST_H_SIZE ,TEST_W_SIZE);
+        input[i]->touchOperationElementwize(vis);
+    }
+
+    DpImage *outputKernalized[POLUTING_INPUTS];
+
+    for (unsigned i = 0; i < POLUTING_INPUTS; i++)
+    {
+        outputKernalized[i] = new DpImage(TEST_H_SIZE ,TEST_W_SIZE);
+    }
+
+    for (int size=3; size < 20; size+=4)
+    {
+        DpImage *kernel = new DpImage(size, size);
+        kernel->touchOperationElementwize(vis);
+
+    #if defined (WITH_SSE)
+            SYNC_PRINT(("Profiling Kernalized Approach [%dx%d]:", kernel->w, kernel->h));
+            start = PreciseTimer::currentTime();
+
+            ConvolveKernel<DummyAlgebra> convolver(kernel, kernel->h / 2, kernel->w / 2);
+            BufferProcessor<DpImage, DpImage, ConvolveKernel, VectorAlgebraDouble> procScalar;
+            for (unsigned i = 0; i < LIMIT; i++) {
+                procScalar.process(&input[i % POLUTING_INPUTS], &outputKernalized[i % POLUTING_INPUTS], convolver);
+            }
+            uint64_t delayKernalized = start.usecsToNow();
+            SYNC_PRINT(("%8" PRIu64 "us %8" PRIu64 "ms SP: %8" PRIu64 "us\n", delayKernalized, delayKernalized / 1000, delayKernalized / LIMIT));
+    #endif
+
+        delete_safe(kernel);
+    }
+
+    for (unsigned i = 0; i < POLUTING_INPUTS; i++)
+        delete_safe(input[i]);
+
+    for (unsigned i = 0; i < POLUTING_INPUTS; i++)
+    {
+        delete_safe(outputKernalized[i]);
     }
 
 }
 
 int main (int /*argC*/, char **/*argV*/)
 {
-    testDoubleConvolve();
+    testLargeKernel();
+    //testDoubleConvolve();
     cout << "PASSED" << endl;
     return 0;
 }

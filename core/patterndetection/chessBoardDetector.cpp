@@ -42,7 +42,7 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
 
     if (!boards.size())
         return false;
-   
+
     std::vector<std::vector<corecvs::Vector2dd>> best;
     bool transposed = false, found = false;
 
@@ -106,13 +106,13 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
         sum /= r.size();
         ymeans.emplace_back(sum[1], idx++);
     }
-    std::sort(ymeans.begin(), ymeans.end(), [](decltype(ymeans[0]) a, decltype(ymeans[0]) b) { return a.first < b.first; });
+    std::sort(ymeans.begin(), ymeans.end(), [](std::pair<double, int> a, std::pair<double, int> b) { return a.first < b.first; });
 
     decltype(best) best_reorder(best.size());
     for (int i = 0; i < best.size(); ++i)
     {
         best_reorder[i] = best[ymeans[i].second];
-        std::sort(best_reorder[i].begin(), best_reorder[i].end(), [](corecvs::Vector2dd &a, corecvs::Vector2dd &b) { return a[0] < b[0]; });
+        std::sort(best_reorder[i].begin(), best_reorder[i].end(), [](corecvs::Vector2dd a, corecvs::Vector2dd b) { return a[0] < b[0]; });
     }
     best = best_reorder;
 
