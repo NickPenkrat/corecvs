@@ -103,7 +103,7 @@ double OrientedCorner::scoreIntensity(DpImage &img, int r)
     }
 
     DpImage c(w, w);
-    int cc = cks.A.x;
+    //int cc = cks.A.x;
     cks.computeCost(patch, c, true);
     return std::max(c.element(cks.A.y, cks.A.x), 0.0);
 }
@@ -166,7 +166,7 @@ void CornerKernelSet::computeKernels(double r, double alpha, double psi, int w, 
     auto v2 = corecvs::Vector2dd(cos(alpha + psi), sin(alpha + psi)).rightNormal();
     corecvs::Vector2dd cc(c, c);
 
-    double sum = 0.0;
+    //double sum = 0.0;
     for (int i = 0; i < w; ++i)
     {
         for (int j = 0; j < w; ++j)
@@ -339,7 +339,7 @@ void ChessBoardCornerDetector::runNms()
 
 void ChessBoardCornerDetector::circularMeanShift(std::vector<double> &values, double bandwidth, std::vector<std::pair<int, double>> &modes)
 {
-    int N = values.size();
+    int N = (int)values.size();
     std::vector<double> smoothed(N);
 
     for (int i = 0; i < N; ++i)
@@ -447,7 +447,7 @@ bool ChessBoardCornerDetector::edgeOrientationFromGradient(int top, int bottom, 
 
 void ChessBoardCornerDetector::filterByOrientation()
 {
-    int idx = 0, N = corners.size(), iw = w.w, ih = w.h;
+    int idx = 0, N = (int)corners.size(), iw = w.w, ih = w.h;
     for (int i = 0; i < N; ++i)
     {
         auto& c = corners[i];

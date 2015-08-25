@@ -51,7 +51,7 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
 
     for (auto& b: boards)
     {
-        int bw = b[0].size(), bh = b.size();
+        int bw = (int)b[0].size(), bh = (int)b.size();
 
         bool fitw = bw == w, fith  = bh == h;
         if ((!checkW || fitw) && (!checkH || fith))
@@ -78,7 +78,7 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
     if (transposed)
     {
         decltype(best) best_t;
-        int bw = best[0].size(), bh = best.size();
+        int bw = (int)best[0].size(), bh = (int)best.size();
         best_t.resize(bw);
         for (auto& r: best_t)
             r.resize(bh);
@@ -128,7 +128,7 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
     }
     center /= cnt;
     center *= 2.0;
-    int bw = best[0].size(), bh = best.size();
+    int bw = (int)best[0].size(), bh = (int)best.size();
 
     int l = bw == w ? 0 : center[0] > buffer.w ? 0 : w - bw;
     int t = bh == h ? 0 : center[1] > buffer.h ? 0 : h - bh;

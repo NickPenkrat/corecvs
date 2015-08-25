@@ -28,6 +28,7 @@ struct RectangularGridPattern
     }
     double getCornersScore(std::vector<OrientedCorner> &corners) const
     {
+        CORE_UNUSED(corners);
         return -w() * h();
     }
     double getStructureScore(std::vector<OrientedCorner> &corners) const
@@ -61,9 +62,10 @@ struct RectangularGridPattern
     }
 
     std::vector<std::vector<int>> cornerIdx;
-    int w() const { return cornerIdx.size() ? cornerIdx[0].size() : 0; }
-    int h() const { return cornerIdx.size(); }
     mutable double score = 0.0;
+
+    int w() const { return      cornerIdx.size() ? (int)cornerIdx[0].size() : 0; }
+    int h() const { return (int)cornerIdx.size(); }
 };
 
 struct ChessBoardAssemblerParams
@@ -96,6 +98,7 @@ class ChessBoardAssembler : ChessBoardAssemblerParams
 public:
     ChessBoardAssembler(ChessBoardAssemblerParams params = ChessBoardAssemblerParams());
     void assembleBoards(std::vector<OrientedCorner> &corners_, std::vector<std::vector<std::vector<corecvs::Vector2dd>>> &boards);
+
 protected://iivate:
     enum class Direction {UP, DOWN, LEFT, RIGHT};
     class BoardExpander

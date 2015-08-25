@@ -186,4 +186,5 @@ private:
     std::vector<CornerKernelSet> kernels;
     std::vector<OrientedCorner> corners;
 };
+
 #endif
