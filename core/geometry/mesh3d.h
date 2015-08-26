@@ -134,6 +134,8 @@ private:
     //, Vector2dd &texCoord
 public:
     virtual ~Mesh3D() {}
+
+    void fillTestScene();
 };
 
 

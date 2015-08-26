@@ -569,6 +569,29 @@ void Mesh3D::addFace(const Vector3d32 &faceId)
     }
 }
 
+void Mesh3D::fillTestScene()
+{
+
+    switchColor();
+    /* Vertex sphere */
+    currentColor = RGBColor::Yellow();
+    addSphere(Vector3dd(0), 50, 10);
+
+    /* Face sphere */
+    int colorStart = facesColor.size();
+    currentColor = RGBColor::Red();
+    addIcoSphere(Vector3dd(100.0,0.0,100.0), 50.0, 1);
+    int colorEnd = facesColor.size();
+    for (int c = colorStart; c < colorEnd; c++)
+    {
+        facesColor[c] = RGBColor::rainbow(lerpLimit(0.0, 1.0, c, colorStart, colorEnd));
+    }
+
+    /* Edge box */
+    currentColor = RGBColor::Blue();
+    addAOB(Vector3dd(40.0,10.0,-40.0), Vector3dd(70.0,30.0,20.0), false);
+}
+
 
 
 } /* namespace corecvs */

@@ -133,23 +133,7 @@ CloudViewDialog::CloudViewDialog(QWidget *parent) :
         worldFrame->mChildren.push_back(QSharedPointer<Scene3D>(mesh));
     /* Test colored mesh */
         Mesh3DScene *meshTest = new Mesh3DScene();
-
-
-        meshTest->switchColor();
-        /* Vertex sphere */
-        meshTest->currentColor = RGBColor::Yellow();
-        meshTest->addSphere(Vector3dd(0), 50, 10);
-
-        /* Face sphere */
-        meshTest->currentColor = RGBColor::Red();
-        meshTest->addIcoSphere(Vector3dd(100.0,0.0,100.0), 50.0, 1);
-#if 1
-        /* Edge box */
-        meshTest->currentColor = RGBColor::Blue();
-        meshTest->addAOB(Vector3dd(40.0,10.0,-40.0), Vector3dd(70.0,30.0,20.0), false);
-#endif
-        meshTest->dumpPLY(cout);
-
+        meshTest->fillTestScene();
         meshTest->name = "Colored mesh";
         worldFrame->mChildren.push_back(QSharedPointer<Scene3D>(meshTest));
 

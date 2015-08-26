@@ -180,6 +180,10 @@ void Mesh3DScene::drawMyself(CloudViewDialog *dialog)
     }
 
     /* EDGES */
+    int oldLineWidth = 1;
+    glGetIntegerv(GL_LINE_WIDTH, &oldLineWidth);
+    glLineWidth(mParameters.edgeWidth());
+
     if (mParameters.edgeColorOverride() || !hasColor ) {
         OpenGLTools::glColorRGB(mParameters.edgeColor());
         glDrawElements(GL_LINES    , GLsizei(edges.size() * 2), GL_UNSIGNED_INT, &(edges   [0]));
@@ -190,6 +194,8 @@ void Mesh3DScene::drawMyself(CloudViewDialog *dialog)
             glDrawElements(GL_LINES    , GLsizei(2), GL_UNSIGNED_INT, &(edges[ei]));
         }
     }
+     glPointSize(oldLineWidth);
+
 
     /* POINTS */
     int oldPointSize = 1;
@@ -213,7 +219,6 @@ void Mesh3DScene::drawMyself(CloudViewDialog *dialog)
         {
             OpenGLTools::glColorRGB(vertexesColor[vi]);
             glVertex3dv((double *)&(vertexes[vi]));
-            //glDrawElements(GL_POINTS, GLsizei(1), GL_UNSIGNED_INT, &(vertexes[vi]));
         }
         glEnd();
     }
