@@ -5,6 +5,7 @@
 #include "chessBoardCornerDetector.h"
 #include "chessBoardAssembler.h"
 #include "typesafeBitmaskEnums.h"
+#include "circlePatternGenerator.h"
 
 enum class ChessBoardDetectorMode
 {
@@ -47,8 +48,10 @@ public:
     // Real pattern detection happens here
     bool detectPattern(DpImage     &buffer);
 
+    void classify(DpImage &img, CirclePatternGenerator& generator, RGB24Buffer &buffer);
 private:
     RectangularGridPattern bestPattern;
+    std::vector<std::vector<corecvs::Vector2dd>> best;
     corecvs::ObservationList result;
     std::vector<OrientedCorner> corners;
 

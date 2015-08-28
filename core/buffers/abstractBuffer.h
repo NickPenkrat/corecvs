@@ -989,6 +989,22 @@ template<typename operation>
         }
     }
 
+
+    // XXX: overload added in order to use lambdas supplied directly as arguments
+template<typename operation>
+    void touchOperationElementwize (const operation &map)
+    {
+        for (IndexType i = 0; i < h; i++)
+        {
+            ElementType *thisElemRunner = &(this->element(i,0));
+            for (IndexType j = 0; j < w; j++)
+            {
+                map.operator()(i, j, *thisElemRunner);
+                thisElemRunner++;
+            }
+        }
+    }
+
 template<typename operation>
     void touchOperationElementwize (operation &map)
     {
