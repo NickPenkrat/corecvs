@@ -223,7 +223,6 @@ void ChessboardDetector::classify(DpImage &img, CirclePatternGenerator &gen, cor
     for (auto& cv: classifier) cv.resize(w - 1);
     std::cout << w << " x " << h << std::endl;
 
-    DpImage queries((h - 1) * gen.w, (w - 1) * gen.w);
     DpImage fin(buffer.h, buffer.w);
 
     corecvs::RGBColor colors[8] =
@@ -248,39 +247,11 @@ void ChessboardDetector::classify(DpImage &img, CirclePatternGenerator &gen, cor
             C = best[i + 0][j + 1];
             D = best[i + 1][j + 1];
 
-            corecvs::HomographyReconstructor c2i;
-            c2i.addPoint2PointConstraint(corecvs::Vector2dd(0.0, 0.0), A);
-            c2i.addPoint2PointConstraint(corecvs::Vector2dd(1.0, 0.0), B);
-            c2i.addPoint2PointConstraint(corecvs::Vector2dd(0.0, 1.0), C);
-            c2i.addPoint2PointConstraint(corecvs::Vector2dd(1.0, 1.0), D);
-            corecvs::Matrix33 AA, BB;
-            c2i.normalisePoints(AA, BB);
-            auto res = c2i.getBestHomographyLSE();
-            res = c2i.getBestHomographyLM(res);
-            res = BB.inv() * res * AA;
-
-            DpImage query(gen.w, gen.w);
-            for (int y = 0; y < gen.w; ++y)
-            {
-                for (int x = 0; x < gen.w; ++x)
-                {
-                    corecvs::Vector3dd pt = res * Vector3dd(x * (1.0 / gen.w), y * (1.0 / gen.w), 1.0);
-                    pt = pt * (1.0 / pt[2]);
-                    int xx = pt[0], yy = pt[1];
-                    if (xx >= 0 && xx < img.w && yy >= 0 && yy < img.h)
-                    {
-                        queries.element(i * gen.w + y, j * gen.w + x) = query.element(y, x) = img.element(yy, xx);
-                    }
-                }
-            }
-
-            double score, secondBest;
-            corecvs::Matrix33 orientation;
-            std::cout << i << ", " << j << std::endl;
-            int cl = classifier[i][j] = gen.getBestToken(query, score, orientation, secondBest);
-
-
-
+            corecvs::Matrix33 res, orientation;
+            double score;
+            int cl = classifier[i][j] = gen.getBestToken(img, {A, B, C, D}, score, orientation, res);
+            if (cl >= 0)
+            std::cout << "DETECTED: " << cl << " " << score << std::endl;
 
             DpImage mask(buffer.h, buffer.w);
             for (int i = 0; i < 1000; ++i)
@@ -358,18 +329,6 @@ void ChessboardDetector::classify(DpImage &img, CirclePatternGenerator &gen, cor
             }
         }
     }
-    std::ofstream of;
-    of.open("data.m");
-    of << "qq = [" << std::endl;
-    for (int i = 0; i < queries.h; ++i)
-    {
-        for (int j = 0; j < queries.w; ++j)
-        {
-            of << queries.element(i, j) << " ";
-        }
-        of << "; ";
-    }
-    of << "]; " << std::endl;
     for (auto&v :classifier)
     {
         for (auto &c : v)

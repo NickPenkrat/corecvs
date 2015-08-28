@@ -1,18 +1,19 @@
 #include "circlePatternGenerator.h"
+#include "homographyReconstructor.h"
 
 #include <cassert>
 
-CirclePatternGenerator::CirclePatternGenerator(int w) : w(w)
+CirclePatternGenerator::CirclePatternGenerator(CirclePatternGeneratorParams params) : CirclePatternGeneratorParams(params)
 {
 }
 
-void CirclePatternGenerator::studentize(DpImage &image)
+void CirclePatternGenerator::studentize(DpImage &image) const
 {
     double mean, stdev;
     studentize(image, mean, stdev);
 }
 
-void CirclePatternGenerator::studentize(DpImage &image, double &mean, double &stdev)
+void CirclePatternGenerator::studentize(DpImage &image, double &mean, double &stdev) const
 {
     double s = 0.0, ssq = 0.0, N = image.w * image.h;
     image.touchOperationElementwize([&](int, int, double v) { s += v; ssq += v * v; });
@@ -28,15 +29,15 @@ void CirclePatternGenerator::studentize(DpImage &image, double &mean, double &st
 
 void CirclePatternGenerator::addToken(int token, double r, const std::vector<corecvs::Vector2dd> &centers)
 {
-    r = r * w;
-    DpImage pattern(w, w);
+    r = r * patternSize;
+    DpImage pattern(patternSize, patternSize);
     for (auto& c: centers)
     {
-        corecvs::Vector2dd csc = c * (1.0 * w);
+        corecvs::Vector2dd csc = c * (1.0 * patternSize);
         int _t = 0;
-        int _d = w-1;
+        int _d = patternSize-1;
         int _l = 0;
-        int _r = w-1;
+        int _r = patternSize-1;
 
         for (int y = _t; y <= _d; ++y)
         {
@@ -68,7 +69,7 @@ int convert(double d)
 
 void CirclePatternGenerator::createFlip(DpImage &source, DpImage &destination, int rotation, bool flip)
 {
-    destination = DpImage(w, w);
+    destination = DpImage(patternSize, patternSize);
     corecvs::Matrix33 tform = getFlipMatrix(rotation, flip);
 
     corecvs::Vector3dd dx(1.0, 0.0, 1.0), dy(0.0, 1.0, 1.0);
@@ -85,33 +86,32 @@ void CirclePatternGenerator::createFlip(DpImage &source, DpImage &destination, i
     int xdx = convert(dxc[0]), xdy = convert(dyc[0]), ydx = convert(dxc[1]), ydy = convert(dyc[1]);
 
     int xa = convert(oc[0]), ya = convert(oc[1]);
-    xa = xa * (w - 1); ya = ya * (w - 1);
+    xa = xa * (patternSize - 1); ya = ya * (patternSize - 1);
 
-    for (int i = 0; i < w; ++i)
+    for (int i = 0; i < patternSize; ++i)
     {
-        for (int j = 0; j < w; ++j)
+        for (int j = 0; j < patternSize; ++j)
         {
             int x = xa + xdx * j + xdy * i;
             int y = ya + ydx * j + ydy * i;
-            assert(y >= 0 && x >= 0 && x < w && y < w);
+            assert(y >= 0 && x >= 0 && x < patternSize && y < patternSize);
             destination.element(y, x) = source.element(i, j);
         }
     }
 }
 
-int CirclePatternGenerator::getBestToken(DpImage &query, double &score, corecvs::Matrix33 &orientation, double &secondBest)
+int CirclePatternGenerator::getBestToken(DpImage &query, double &score, corecvs::Matrix33 &orientation) const
 {
     double s = 0.0, ssq = 0.0;
-    assert(query.w == w && query.h == w);
+    assert(query.w == patternSize && query.h == patternSize);
     studentize(query, s, ssq);
     
-    double threshold = 0.5;
     double maxC = 0.0;
-    double N = w * w;
+    double N = patternSize * patternSize;
     int maxIdx = -1;
     int maxRI = -1;
     std::cout << "Selecting 1 from " << patterns.size() << " patterns. (stdev: " << ssq  << ", mean = " << s << ")" << std::endl;
-    if (ssq > 0.075)
+    if (ssq > stdevThreshold)
     {
         maxIdx = -10;
         for (int id = 0; id < patterns.size(); ++id)
@@ -119,14 +119,14 @@ int CirclePatternGenerator::getBestToken(DpImage &query, double &score, corecvs:
             for (int idp = 0; idp < 8; ++idp)
             {
                 double corscore = 0.0;
-                for (int y = 0; y < w; ++y)
-                    for (int x = 0; x < w; ++x)
+                for (int y = 0; y < patternSize; ++y)
+                    for (int x = 0; x < patternSize; ++x)
                     {
                         corscore += patterns[id][idp].element(y, x) * query.element(y, x);
                     }
                 corscore /= N;
                 std::cout << corscore << std::endl;
-                if (corscore < maxC && -corscore > threshold)
+                if (corscore < maxC && -corscore > corrThreshold)
                 {
                     maxC = corscore;
                     maxIdx = id;
@@ -136,11 +136,47 @@ int CirclePatternGenerator::getBestToken(DpImage &query, double &score, corecvs:
         }
     }
     orientation = getFlipMatrix(maxRI & 3, maxRI & 4);
-
+    score = maxC;
     return maxIdx;
 }
 
-corecvs::Matrix33 CirclePatternGenerator::getFlipMatrix(int rotation, bool flip)
+int CirclePatternGenerator::getBestToken(const DpImage &image, const std::array<corecvs::Vector2dd, 4> &cell, double &score, corecvs::Matrix33 &orientation, corecvs::Matrix33 &homography) const
+{
+    corecvs::Vector2dd A = cell[0], B = cell[1], C = cell[2], D = cell[3];
+
+    corecvs::HomographyReconstructor c2i;
+    c2i.addPoint2PointConstraint(corecvs::Vector2dd(0.0, 0.0), A);
+    c2i.addPoint2PointConstraint(corecvs::Vector2dd(1.0, 0.0), B);
+    c2i.addPoint2PointConstraint(corecvs::Vector2dd(0.0, 1.0), C);
+    c2i.addPoint2PointConstraint(corecvs::Vector2dd(1.0, 1.0), D);
+
+    corecvs::Matrix33 AA, BB;
+    c2i.normalisePoints(AA, BB);
+
+    homography = c2i.getBestHomographyLSE();
+    homography = c2i.getBestHomographyLM(homography);
+    homography = BB.inv() * homography * AA;
+
+    DpImage query(patternSize, patternSize);
+    for (int y = 0; y < patternSize; ++y)
+    {
+        for (int x = 0; x < patternSize; ++x)
+        {
+            corecvs::Vector3dd pt = homography * Vector3dd(x * (1.0 / patternSize), y * (1.0 / patternSize), 1.0);
+            pt = pt * (1.0 / pt[2]);
+            int xx = pt[0], yy = pt[1];
+            if (xx >= 0 && xx < image.w && yy >= 0 && yy < image.h)
+            {
+                // TODO: maybe we may benefit from some interpolation here
+                query.element(y, x) = image.element(yy, xx);
+            }
+        }
+    }
+
+    return getBestToken(query, score, orientation);
+}
+
+corecvs::Matrix33 CirclePatternGenerator::getFlipMatrix(int rotation, bool flip) const
 {
     // flip = transpose
     // rotation = 0..3 * pi/2 => all matrix entries should be integer

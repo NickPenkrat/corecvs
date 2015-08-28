@@ -99,7 +99,7 @@ void writeImage(const std::string &old, const std::string &nw, corecvs::RGB24Buf
 
 int main(int argc, char **argv)
 {
-    CirclePatternGenerator gen(256);
+    CirclePatternGenerator gen;
 
     gen.addToken(0, 0.08, {
         corecvs::Vector2dd(0.6018, 0.7052)});
