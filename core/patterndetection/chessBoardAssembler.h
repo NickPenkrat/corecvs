@@ -22,15 +22,18 @@
 
 struct RectangularGridPattern
 {
+
     double getScore(std::vector<OrientedCorner> &corners) const
     {
         return (score = getCornersScore(corners) + getStructureScore(corners));
     }
-    double getCornersScore(std::vector<OrientedCorner> &corners) const
+
+    double getCornersScore(std::vector<OrientedCorner> & /*corners*/ ) const
     {
         CORE_UNUSED(corners);
         return -w() * h();
     }
+
     double getStructureScore(std::vector<OrientedCorner> &corners) const
     {
         double e_struct = 0.0;

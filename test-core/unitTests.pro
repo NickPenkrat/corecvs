@@ -66,6 +66,7 @@ SUBDIRS += \
     cloud \
     distortion \
     similarity \
-	eigen \
-	commandline \
-	fastkernel_double \
+    eigen \
+    commandline \
+    fastkernel_double \
+#	readers \

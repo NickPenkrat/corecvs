@@ -284,6 +284,22 @@ void testSSEMath (void)
     }
 }
 
+void testSSEMul (void)
+{
+    uint32_t data1[4] = { 12, 554, 345, 654 };
+    uint32_t data2[4] = { 12, 554, 345, 654 };
+
+    Int32x4 in1(data1);
+    Int32x4 in2(data2);
+
+    Int32x4 result = in1 * in2;
+    cout << "Products are "<< result << endl;
+    for (unsigned i = 0; i < CORE_COUNT_OF(data1); i++)
+    {
+        ASSERT_TRUE_P( result[i] == data1[i] * data2[i], ("Problem with product"));
+    }
+}
+
 
 #endif
 
@@ -353,7 +369,8 @@ void testBooleanOperations (void)
 
 int main (int /*argC*/, char ** /*argV*/)
 {
-    testBooleanOperations ();
+    testSSEMul();
+    //testBooleanOperations ();
     return 0;
 
 #ifdef WITH_SSE

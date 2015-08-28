@@ -10,6 +10,7 @@
  */
 
 #include <emmintrin.h>
+#include <smmintrin.h>
 #include <stdint.h>
 
 #include "global.h"
@@ -21,6 +22,8 @@ namespace corecvs {
 class ALIGN_DATA(16) Int32x4 : public SSEInteger<Int32x4>
 {
 public:
+    static const int SIZE = 4;
+
     typedef SSEInteger<Int32x4> SSEBase;
 
     /* Constructors */
@@ -154,6 +157,10 @@ public:
     friend Int32x4 operator <<= (Int32x4 &left, const Int32x4 &right);
     friend Int32x4 operator >>= (Int32x4 &left, const Int32x4 &right);
 
+    /* Multiplication */
+    friend Int32x4 operator *(const Int32x4 &left, const Int32x4 &right);
+    /*friend Int32x4 operator *= (const Int32x4 &left, const Int32x4 &right);*/
+
     /* The division by constant*/
     friend Int32x4 operator /  (const Int32x4 &left, float divisor);
     friend Int32x4 operator /  (const Int32x4 &left, int divisor);
@@ -223,6 +230,34 @@ FORCE_INLINE Int32x4 operator -= (Int32x4 &left, const Int32x4 &right) {
     return left;
 }
 
+/* Multiplication */
+/* Depending on your platform this can be slow */
+FORCE_INLINE Int32x4 operator * (const Int32x4 &left, const Int32x4 &right) {
+#ifdef __SSE4_1__
+    return Int32x4(_mm_mullo_epi32(left.data, right.data));
+#else
+    Int32x4 tmp1(_mm_mul_epu32( left.data, right.data));                                       /* mul 2,0 */
+    Int32x4 tmp2(_mm_mul_epu32( left.shiftRightWhole(4).data, right.shiftRightWhole(4).data)); /* mul 3,1 */
+
+    tmp1.shuffle<_MM_SHUFFLE (0,0,2,0)>();
+    tmp2.shuffle<_MM_SHUFFLE (0,0,2,0)>();
+
+    /* shuffle results to [63..0] and pack */
+    return Int32x4(Int32x4::unpackLower(tmp1, tmp2).data);
+#endif
+}
+/*
+FORCE_INLINE Int32x4 operator *= (Int32x4 &left, const Int32x4 &right) {
+    left.data = _mm_mul_epu32(left.data, right.data);
+    return left;
+}
+*/
+
+/*FORCE_INLINE Int32x4 productLower (const Int32x4 &left, const Int32x4 &right) {
+    return Int32x4(_mm_mul_epu16(left.data, right.data));
+}*/
+
+/* Shifts */
 FORCE_INLINE Int32x4 operator << (const Int32x4 &left, uint32_t count) {
     return Int32x4(_mm_slli_epi32(left.data, count));
 }

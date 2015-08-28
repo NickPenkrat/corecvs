@@ -188,6 +188,7 @@ int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
     bool vertexColor = (objProps[OBJ_VERTEX].size() == 6);
 
     bool supportFace =
+            (objProps[OBJ_FACE].size() == 0 ) ||
             (objProps[OBJ_FACE].size() == 1 &&
              objProps[OBJ_FACE][0].name == PROP_NAME_VERTEX_INDEX ) ||
             (objProps[OBJ_FACE].size() == 4 &&
@@ -198,6 +199,7 @@ int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
     bool faceColor = (objProps[OBJ_FACE].size() == 4);
 
     bool supportEdge =
+            (objProps[OBJ_EDGE].size() == 0 ) ||
             (objProps[OBJ_EDGE].size() == 2 &&
              objProps[OBJ_EDGE][0].name == PROP_NAME_VERTEX1 &&
              objProps[OBJ_EDGE][1].name == PROP_NAME_VERTEX2 ) ||

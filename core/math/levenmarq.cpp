@@ -203,7 +203,8 @@ vector<double> LevenbergMarquardt::fit(const vector<double> &input, const vector
             }
 
 
-            int n = J.h, m = J.w;
+            //int n = J.h;
+            int m = J.w;
             Matrix V(m, m);
             DiagonalMatrix D(m);
             Matrix::svd(&J, &D, &V);

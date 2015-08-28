@@ -284,8 +284,7 @@ template<int idx>
         return Int16x8(_mm_unpackhi_epi8(left.data, right.data));
     }
 
-
-    /*Print to stream helper */
+    /* Print to stream helper */
 
     friend ostream & operator << (ostream &out, const Int8x16 &vector);
 

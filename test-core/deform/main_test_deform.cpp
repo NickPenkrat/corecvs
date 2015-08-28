@@ -97,9 +97,10 @@ void testBiliner()
         {
             RGBColor d =  image->elementBlDouble(i, j);
             RGBColor f =  image->elementBlFixed (i, j);
+            RGBColor s =  image->elementBlSSE   (i, j);
 
-            RGBColor diff = RGBColor::diff(d,f);
-            cout << d << " = " << f << " -> " <<  diff << endl;
+            RGBColor diff1 = RGBColor::diff(d,f);
+            cout << d << " = " << f << " = " << s << " -> " <<  diff1 << endl;
         }
     }
 }
