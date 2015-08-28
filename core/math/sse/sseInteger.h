@@ -147,6 +147,11 @@ static uint64_t   streamedWrites;
         return left;
     }
 
+    RealType shiftRightWhole(int shift) const
+    {
+        return RealType(_mm_srli_si128(data, shift));
+    }
+
 };
 
 

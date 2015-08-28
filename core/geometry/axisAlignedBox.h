@@ -113,6 +113,14 @@ public:
         return AxisAlignedBox3d(mLow - Vector3dd(value), mHigh + Vector3dd(value));
     }
 
+    friend ostream & operator <<(ostream &out, const AxisAlignedBox3d &box)
+    {
+        out << "[";
+            out << box.low() << " -> " << box.high();
+        out << "]";
+        return out;
+    }
+
 };
 
 

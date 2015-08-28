@@ -105,8 +105,8 @@ void ChessBoardAssembler::acceptHypothesis(RectangularGridPattern &board)
         if (intersects)
         {
             int idx = 0;
-            int j = 0;
-            for (int i = 0; i < boards.size(); ++i)
+            size_t j = 0;
+            for (size_t i = 0; i < boards.size(); ++i)
                 if (j == intersections.size() || intersections[j] != i)
                     boards[idx++] = boards[i];
                 else
@@ -389,7 +389,7 @@ bool ChessBoardAssembler::BoardExpander::assignNearest(std::vector<corecvs::Vect
     auto& corners = assembler->corners;
 
     std::vector<int> unused;
-    for (int i = 0; i < corners.size(); ++i)
+    for (size_t i = 0; i < corners.size(); ++i)
         if (!usedCorners[i])
             unused.push_back(i);
 

@@ -34,7 +34,7 @@ double OrientedCorner::scoreGradient(DpImage &w, int r, double bandwidth)
     {
         for (int j = 0; j < kw; ++j)
         {
-            K.element(i, j) = -1.0;       
+            K.element(i, j) = -1.0;
         }
     }
     double K_sum = -kw * kw, K_sum_sq = kw * kw;
@@ -103,7 +103,7 @@ double OrientedCorner::scoreIntensity(DpImage &img, int r)
     }
 
     DpImage c(w, w);
-    int cc = cks.A.x;
+    //int cc = cks.A.x;
     cks.computeCost(patch, c, true);
     return std::max(c.element(cks.A.y, cks.A.x), 0.0);
 }
@@ -166,7 +166,7 @@ void CornerKernelSet::computeKernels(double r, double alpha, double psi, int w, 
     auto v2 = corecvs::Vector2dd(cos(alpha + psi), sin(alpha + psi)).rightNormal();
     corecvs::Vector2dd cc(c, c);
 
-    double sum = 0.0;
+    //double sum = 0.0;
     for (int i = 0; i < w; ++i)
     {
         for (int j = 0; j < w; ++j)
@@ -271,7 +271,7 @@ void ChessBoardCornerDetector::prepareAngleWeight()
 }
 #undef SQR
 
-// XXX: due to distortion removal we can get some black areas. 
+// XXX: due to distortion removal we can get some black areas.
 // Let us scale image based on 0.05 and 0.95 percentiles
 void ChessBoardCornerDetector::scaleImage()
 {
@@ -419,7 +419,8 @@ bool ChessBoardCornerDetector::edgeOrientationFromGradient(int top, int bottom, 
         }
     }
 
-    std::vector<std::pair<int, double>> modes;
+    typedef std::pair<int, double> PairID;
+    std::vector<PairID > modes;
     circularMeanShift(histogram, meanshiftBandwidth, modes);
 
     if (modes.size() < 2)
@@ -427,7 +428,9 @@ bool ChessBoardCornerDetector::edgeOrientationFromGradient(int top, int bottom, 
         return false;
     }
 
-    std::sort(modes.begin(), modes.end(), [](const std::pair<int, double> &a, const std::pair<int, double> &b) { return a.second == b.second ? a.first < b.first : a.second > b.second; });
+    //std::sort(modes.begin(), modes.end(), [](decltype(modes[0]) a, decltype(modes[0]) b) { return a.second == b.second ? a.first < b.first : a.second > b.second; });
+
+    std::sort(modes.begin(), modes.end(), [](PairID a, PairID b) { return a.second == b.second ? a.first < b.first : a.second > b.second; });
     
     auto p1 = modes[0], p2 = modes[1];
     double phi1 = p1.first * bin_size, phi2 = p2.first * bin_size;
@@ -488,7 +491,7 @@ void ChessBoardCornerDetector::eig22(corecvs::Matrix &A, double &lambda1, corecv
             e2 = corecvs::Vector2dd(lambda2 - A.a(1, 1), A.a(1, 0)).normalised();
         }
     }
-    else 
+    else
     {
         e1 = corecvs::Vector2dd(1, 0);
         e2 = corecvs::Vector2dd(0, 1);
@@ -595,7 +598,8 @@ void ChessBoardCornerDetector::adjustCornerPosition()
                 double d1 = (d - (d & c.v1) * c.v1).l2Metric();
                 double d2 = (d - (d & c.v2) * c.v2).l2Metric();
 
-                if (d1 < inlierDistanceThreshold && std::abs(g & c.v1) < orientationInlierThreshold || d2 < inlierDistanceThreshold && std::abs(g & c.v2) < orientationInlierThreshold)
+                if ((d1 < inlierDistanceThreshold && std::abs(g & c.v1) < orientationInlierThreshold) ||
+                    (d2 < inlierDistanceThreshold && std::abs(g & c.v2) < orientationInlierThreshold))
                 {
                     // TODO: outer product for vectors?!
                     corecvs::Matrix D(1, 2);
@@ -613,7 +617,7 @@ void ChessBoardCornerDetector::adjustCornerPosition()
 
             }
         }
-       
+
         if (!invertable22(G))
         {
             continue;
@@ -621,7 +625,7 @@ void ChessBoardCornerDetector::adjustCornerPosition()
 
         corecvs::Vector2dd x(0, 0), B(b.at(0), b.at(1));
         solve22(G, B, x);
- 
+
         if ((x - c.pos).l2Metric() > updateThreshold)
         {
             continue;
@@ -660,7 +664,7 @@ void ChessBoardCornerDetector::detectCorners(DpImage &image, std::vector<Oriente
     prepareDiff(du, true);
     prepareDiff(dv, false);
     prepareAngleWeight();
-    
+
     computeCost();
     runNms();
 
@@ -677,8 +681,8 @@ void ChessBoardCornerDetector::detectCorners(DpImage &image, std::vector<Oriente
     computeScores();
     corners_ = corners;
 }
-    
+
 ChessBoardCornerDetector::ChessBoardCornerDetector(ChessBoardCornerDetectorParams params) : ChessBoardCornerDetectorParams(params)
-{ 
+{
     prepareKernels();
 }

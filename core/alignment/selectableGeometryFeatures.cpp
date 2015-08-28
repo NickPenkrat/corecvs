@@ -253,7 +253,7 @@ void SelectableGeometryFeatures::addPathFrom(const SelectableGeometryFeatures &o
 
 bool SelectableGeometryFeatures::hasSinglePointsSelected()
 {
-    int i = 0;
+    size_t i = 0;
     for (; i < mSelectedPoints.size(); i++)
     {
         if (!mSelectedPoints[i]->isInPath()) {

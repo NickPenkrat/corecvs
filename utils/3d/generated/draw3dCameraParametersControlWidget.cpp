@@ -14,6 +14,7 @@
 #include "rgbColorParametersControlWidget.h"
 #include "rgbColorParametersControlWidget.h"
 #include "rgbColorParametersControlWidget.h"
+#include "rgbColorParametersControlWidget.h"
 
 Draw3dCameraParametersControlWidget::Draw3dCameraParametersControlWidget(QWidget *parent, bool _autoInit, QString _rootPath)
     : ParametersControlWidgetBase(parent)
@@ -28,8 +29,14 @@ Draw3dCameraParametersControlWidget::Draw3dCameraParametersControlWidget(QWidget
     QObject::connect(mUi->nearPlaneSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->farPlaneSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->styleComboBox, SIGNAL(currentIndexChanged(int)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->colorControlWidget, SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->secondaryColorControlWidget, SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->pointColorControlWidget, SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->pointColorOverrideCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->pointSizeSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->edgeColorControlWidget, SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->edgeColorOverrideCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->edgeWidthSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->faceColorControlWidget, SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->faceColorOverrideCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->showCaptionCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->fontSizeSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->fontWidthSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
@@ -74,8 +81,14 @@ void Draw3dCameraParametersControlWidget::getParameters(Draw3dCameraParameters& 
     params.setNearPlane        (mUi->nearPlaneSpinBox->value());
     params.setFarPlane         (mUi->farPlaneSpinBox->value());
     params.setStyle            (static_cast<Draw3dStyle::Draw3dStyle>(mUi->styleComboBox->currentIndex()));
-//    params.setColor            (mUi->colorControlWidget->createParameters());
-//    params.setSecondaryColor   (mUi->secondaryColorControlWidget->createParameters());
+//    params.setPointColor       (mUi->pointColorControlWidget->createParameters());
+    params.setPointColorOverride(mUi->pointColorOverrideCheckBox->isChecked());
+    params.setPointSize        (mUi->pointSizeSpinBox->value());
+//    params.setEdgeColor        (mUi->edgeColorControlWidget->createParameters());
+    params.setEdgeColorOverride(mUi->edgeColorOverrideCheckBox->isChecked());
+    params.setEdgeWidth        (mUi->edgeWidthSpinBox->value());
+//    params.setFaceColor        (mUi->faceColorControlWidget->createParameters());
+    params.setFaceColorOverride(mUi->faceColorOverrideCheckBox->isChecked());
     params.setShowCaption      (mUi->showCaptionCheckBox->isChecked());
     params.setFontSize         (mUi->fontSizeSpinBox->value());
     params.setFontWidth        (mUi->fontWidthSpinBox->value());
@@ -99,8 +112,9 @@ Draw3dCameraParameters *Draw3dCameraParametersControlWidget::createParameters() 
      **/
 
     RgbColorParameters *tmp5 = NULL;
-    RgbColorParameters *tmp6 = NULL;
-    RgbColorParameters *tmp10 = NULL;
+    RgbColorParameters *tmp8 = NULL;
+    RgbColorParameters *tmp11 = NULL;
+    RgbColorParameters *tmp16 = NULL;
 
     Draw3dCameraParameters *result = new Draw3dCameraParameters(
           mUi->fovHSpinBox->value()
@@ -108,12 +122,18 @@ Draw3dCameraParameters *Draw3dCameraParametersControlWidget::createParameters() 
         , mUi->nearPlaneSpinBox->value()
         , mUi->farPlaneSpinBox->value()
         , static_cast<Draw3dStyle::Draw3dStyle>(mUi->styleComboBox->currentIndex())
-        , * (tmp5 = mUi->colorControlWidget->createParameters())
-        , * (tmp6 = mUi->secondaryColorControlWidget->createParameters())
+        , * (tmp5 = mUi->pointColorControlWidget->createParameters())
+        , mUi->pointColorOverrideCheckBox->isChecked()
+        , mUi->pointSizeSpinBox->value()
+        , * (tmp8 = mUi->edgeColorControlWidget->createParameters())
+        , mUi->edgeColorOverrideCheckBox->isChecked()
+        , mUi->edgeWidthSpinBox->value()
+        , * (tmp11 = mUi->faceColorControlWidget->createParameters())
+        , mUi->faceColorOverrideCheckBox->isChecked()
         , mUi->showCaptionCheckBox->isChecked()
         , mUi->fontSizeSpinBox->value()
         , mUi->fontWidthSpinBox->value()
-        , * (tmp10 = mUi->fontColorControlWidget->createParameters())
+        , * (tmp16 = mUi->fontColorControlWidget->createParameters())
         , static_cast<Draw3dTextureGen::Draw3dTextureGen>(mUi->textureCorrodinatesComboBox->currentIndex())
         , mUi->textureAlphaSpinBox->value()
         , mUi->textureScaleSpinBox->value()
@@ -124,8 +144,9 @@ Draw3dCameraParameters *Draw3dCameraParametersControlWidget::createParameters() 
         , mUi->decalRightAlphaSpinBox->value()
     );
     delete tmp5;
-    delete tmp6;
-    delete tmp10;
+    delete tmp8;
+    delete tmp11;
+    delete tmp16;
     return result;
 }
 
@@ -138,8 +159,14 @@ void Draw3dCameraParametersControlWidget::setParameters(const Draw3dCameraParame
     mUi->nearPlaneSpinBox->setValue(input.nearPlane());
     mUi->farPlaneSpinBox->setValue(input.farPlane());
     mUi->styleComboBox->setCurrentIndex(input.style());
-    mUi->colorControlWidget->setParameters(input.color());
-    mUi->secondaryColorControlWidget->setParameters(input.secondaryColor());
+    mUi->pointColorControlWidget->setParameters(input.pointColor());
+    mUi->pointColorOverrideCheckBox->setChecked(input.pointColorOverride());
+    mUi->pointSizeSpinBox->setValue(input.pointSize());
+    mUi->edgeColorControlWidget->setParameters(input.edgeColor());
+    mUi->edgeColorOverrideCheckBox->setChecked(input.edgeColorOverride());
+    mUi->edgeWidthSpinBox->setValue(input.edgeWidth());
+    mUi->faceColorControlWidget->setParameters(input.faceColor());
+    mUi->faceColorOverrideCheckBox->setChecked(input.faceColorOverride());
     mUi->showCaptionCheckBox->setChecked(input.showCaption());
     mUi->fontSizeSpinBox->setValue(input.fontSize());
     mUi->fontWidthSpinBox->setValue(input.fontWidth());
