@@ -2,6 +2,7 @@
 #define CHESSBOARDDETECTOR
 
 #include "patternDetector.h"
+#include "checkerboardDetectionParameters.h"
 #include "chessBoardCornerDetector.h"
 #include "chessBoardAssembler.h"
 #include "typesafeBitmaskEnums.h"
@@ -16,6 +17,7 @@ enum class ChessBoardDetectorMode
 template<>
 struct is_bitmask<ChessBoardDetectorMode> : std::true_type {};
 
+#if 0
 struct ChessBoardDetectorParams
 {
     int w = 18;
@@ -27,8 +29,9 @@ struct ChessBoardDetectorParams
     //      additional information, so default mode is FIT_WIDTH
     ChessBoardDetectorMode mode = ChessBoardDetectorMode::FIT_WIDTH;
 };
+#endif
 
-class ChessboardDetector : ChessBoardDetectorParams, public PatternDetector
+class ChessboardDetector : CheckerboardDetectionParameters, public PatternDetector
 {
 public:
     ChessboardDetector(

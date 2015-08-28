@@ -1,6 +1,11 @@
+#include <QDoubleSpinBox>
+#include <QSettings>
+
 #include "calibrationFeaturesWidget.h"
 #include "ui_calibrationFeaturesWidget.h"
-#include <QSettings>
+
+#include "qSettingsSetter.h"
+#include "qSettingsGetter.h"
 
 using namespace corecvs;
 
@@ -10,11 +15,12 @@ const int CalibrationFeaturesWidget::REASONABLE_INF = 999999;
 CalibrationFeaturesWidget::CalibrationFeaturesWidget(QWidget *parent) :
     QWidget(parent),
     geometryFeatures(NULL),
+    mObservationListModel(NULL),
     ui(new Ui::CalibrationFeaturesWidget)
 {
     ui->setupUi(this);
 
-    ui->imageXSpinBox->setMaximum( REASONABLE_INF);
+   /* ui->imageXSpinBox->setMaximum( REASONABLE_INF);
     ui->imageYSpinBox->setMaximum( REASONABLE_INF);
     ui->imageXSpinBox->setMinimum(-REASONABLE_INF);
     ui->imageYSpinBox->setMinimum(-REASONABLE_INF);
@@ -25,11 +31,18 @@ CalibrationFeaturesWidget::CalibrationFeaturesWidget(QWidget *parent) :
     ui->zCoordSpinBox->setMaximum( REASONABLE_INF);
     ui->xCoordSpinBox->setMinimum(-REASONABLE_INF);
     ui->yCoordSpinBox->setMinimum(-REASONABLE_INF);
-    ui->zCoordSpinBox->setMinimum(-REASONABLE_INF);
+    ui->zCoordSpinBox->setMinimum(-REASONABLE_INF);*/
 
-    connect(ui->pointsTableWidget, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(choosePoint(int,int)));
-    connect(ui->saveButton       , SIGNAL(released())                , this, SLOT(addVector()));
+    /*connect(ui->pointsTableWidget, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(choosePoint(int,int)));*/
 
+    connect(ui->addButton   , SIGNAL(released()), this, SLOT(addPoint()));
+    connect(ui->deleteButton, SIGNAL(released()), this, SLOT(removePoint()));
+
+  /*  PointObservation P(Vector3dd(1.0, 2.0, 3.0),Vector2dd(4.0, 5.0));
+    observationList.push_back(P);
+    ObsevationListModel *model = new ObsevationListModel;
+    model->mObservationList = &observationList;*/
+    ui->tableView->setModel(mObservationListModel);
 }
 
 
@@ -44,67 +57,18 @@ void CalibrationFeaturesWidget::manualAddPoint(const corecvs::Vector2dd &point)
 
 }
 
-void CalibrationFeaturesWidget::addVector()
+void CalibrationFeaturesWidget::setObservationModel(ObservationListModel *observationListModel)
 {
-    Vector3dd key(ui->xCoordSpinBox->value(), ui->yCoordSpinBox->value(), ui->zCoordSpinBox->value());
-    Vector2dd value(ui->imageXSpinBox->value(), ui->imageYSpinBox->value());
-    PointObservation observation(key, value);
-    addObservation(observation);
-    updateWidget();
+    mObservationListModel = observationListModel;
+    ui->tableView->setModel(mObservationListModel);
 }
 
-void CalibrationFeaturesWidget::addObservation(PointObservation &observation)
+void CalibrationFeaturesWidget::addPoint()
 {
-    observationList.push_back(observation);
-    /*unsigned i = 0;
-    while (i < mCorrectionMap.size())
-    {
-        if ((mCorrectionMap.at(i).projection - value).l2Metric() < EPSILON)
-        {
-            mCorrectionMap.erase(mCorrectionMap.begin() + i);
-        } else {
-            i ++;
-        }
-    }
-    mCorrectionMap.push_back(PointObservation(key, value));
-
-    printVectorPair(key, value);
-
-    mUi->widget->addVertex(value);*/
 }
 
-void CalibrationFeaturesWidget::clearObservationPoints()
+void CalibrationFeaturesWidget::removePoint()
 {
-    observationList.clear();
-    int row = ui->pointsTableWidget->rowCount();
-    for (int i = 0; i < row; i ++)
-    {
-        ui->pointsTableWidget->removeRow(0);
-    }
-}
-
-void CalibrationFeaturesWidget::choosePoint(int row, int /*column*/)
-{
-    QTableWidget *table = ui->pointsTableWidget;
-
-    for (int i = 0; i < table->rowCount(); i ++)
-    {
-        for (int j = 0; j < table->columnCount(); j ++)
-        {
-            table->item(i, j)->setBackgroundColor(Qt::color0);
-        }
-    }
-    for (int i = 0; i < table->columnCount(); i ++)
-    {
-        table->item(row, i)->setBackgroundColor(Qt::yellow);
-    }
-    ui->imageXSpinBox->setValue(table->item(row, 3)->text().toDouble());
-    ui->imageYSpinBox->setValue(table->item(row, 4)->text().toDouble());
-
-    ui->xCoordSpinBox->setValue(table->item(row, 0)->text().toDouble());
-    ui->yCoordSpinBox->setValue(table->item(row, 1)->text().toDouble());
-    ui->zCoordSpinBox->setValue(table->item(row, 2)->text().toDouble());
-    //ui->widget->setCurrentPoint(QPointF(ui->dsbImageX->value(), ui->dsbImageY->value()));
 }
 
 void CalibrationFeaturesWidget::deleteObservation()
@@ -137,20 +101,6 @@ void CalibrationFeaturesWidget::deleteObservation()
 
 void CalibrationFeaturesWidget::updateWidget()
 {
-    QTableWidget *table = ui->pointsTableWidget;
-    table->setRowCount(0);
-    for (unsigned i = 0; i < observationList.size(); i++)
-    {
-        PointObservation &observation = observationList[i];
-        table->insertRow(table->rowCount());
-        int row = table->rowCount() - 1;
-        table->setItem(row, COLUMN_X, new QTableWidgetItem(QString::number(observation.x())));
-        table->setItem(row, COLUMN_Y, new QTableWidgetItem(QString::number(observation.y())));
-        table->setItem(row, COLUMN_Z, new QTableWidgetItem(QString::number(observation.z())));
-        table->setItem(row, COLUMN_U, new QTableWidgetItem(QString::number(observation.u())));
-        table->setItem(row, COLUMN_V, new QTableWidgetItem(QString::number(observation.v())));
-    }
-
 
     /* And tree */
 
@@ -228,7 +178,12 @@ void CalibrationFeaturesWidget::editPoint(const QPointF &prevPoint, const QPoint
 void CalibrationFeaturesWidget::savePoints()
 {
     QSettings settings("distortionCorrection.conf", QSettings::IniFormat);
-    settings.beginWriteArray("points");
+
+    ObservationList *list = mObservationListModel->mObservationList;
+    SettingsSetter setter(&settings);
+    setter.visit(*list, "points");
+
+    /*
     for (unsigned i = 0; i < observationList.size(); i ++)
     {
         PointObservation & observation = observationList.at(i);
@@ -238,8 +193,7 @@ void CalibrationFeaturesWidget::savePoints()
         settings.setValue("spacePoint_Z", observation.z());
         settings.setValue("imagePoint_X", observation.u());
         settings.setValue("imagePoint_Y", observation.v());
-    }
-    settings.endArray();
+    }*/
 
     /*vector<vector<Vector2dd> > straights = mUi->widget->getPaths();
     settings.beginWriteArray("lines");
@@ -259,6 +213,7 @@ void CalibrationFeaturesWidget::savePoints()
 
 void CalibrationFeaturesWidget::loadPoints()
 {
+#if 0
     QSettings settings("distortionCorrection.conf", QSettings::IniFormat);
     int size = settings.beginReadArray("points");
     for (int i = 0; i < size; i ++)
@@ -275,6 +230,7 @@ void CalibrationFeaturesWidget::loadPoints()
     settings.endArray();
 
     updateWidget();
+#endif
 
     /* TODO: Make an interface for this */
     /*PaintImageWidget *canvas = mUi->widget;
@@ -300,3 +256,194 @@ void CalibrationFeaturesWidget::loadPoints()
 }
 
 
+/* Model */
+
+ObservationListModel::ObservationListModel(QObject *parent) :
+    QAbstractItemModel(parent),
+    mObservationList(NULL)
+{
+
+}
+
+Qt::ItemFlags ObservationListModel::flags(const QModelIndex &index) const
+{
+    Qt::ItemFlags flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
+}
+
+QVariant ObservationListModel::data(const QModelIndex &index, int role) const
+{
+    if (!index.isValid())
+    {
+        return QVariant();
+    }
+
+    PointObservation &P = mObservationList->at(index.row());
+
+    if (role == Qt::DisplayRole)
+    {
+        switch (index.column())
+        {
+        case COLUMN_X: return QString::number(P.x());
+        case COLUMN_Y: return QString::number(P.y());
+        case COLUMN_Z: return QString::number(P.z());
+        case COLUMN_U: return QString::number(P.u());
+        case COLUMN_V: return QString::number(P.v());
+        default:
+            break;
+        }
+    }
+
+    if (role == Qt::EditRole)
+    {
+        switch (index.column())
+        {
+        case COLUMN_X: return P.x();
+        case COLUMN_Y: return P.y();
+        case COLUMN_Z: return P.z();
+        case COLUMN_U: return P.u();
+        case COLUMN_V: return P.v();
+        default:
+            break;
+        }
+    }
+
+    if (role == Qt::ToolTipRole)
+    {
+        switch (index.column())
+        {
+        case COLUMN_X: return QString( "Space X" );
+        case COLUMN_Y: return QString( "Space Y" );
+        case COLUMN_Z: return QString( "Space Z" );
+        case COLUMN_U: return QString( "Image X" );
+        case COLUMN_V: return QString( "Image Y" );
+        default:
+            break;
+        }
+    }
+
+    return QVariant();
+}
+
+bool ObservationListModel::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+    if (!index.isValid())
+    {
+        return false;
+    }
+    PointObservation &P = mObservationList->at(index.row());
+
+    bool ok = false;
+    double newValue = value.toDouble(&ok);
+    if (!ok) {
+        return false;
+    }
+
+    switch (index.column())
+    {
+         case COLUMN_X: P.x() = newValue; break;
+         case COLUMN_Y: P.y() = newValue; break;
+         case COLUMN_Z: P.z() = newValue; break;
+         case COLUMN_U: P.u() = newValue; break;
+         case COLUMN_V: P.v() = newValue; break;
+         default:
+             return false;
+    }
+
+    emit dataChanged(index, index);
+    return true;
+}
+
+int ObservationListModel::rowCount(const QModelIndex &parent) const
+{
+    return (mObservationList == NULL) ? 0 : mObservationList->size();
+}
+
+int ObservationListModel::columnCount(const QModelIndex &parent) const
+{
+    return COLUMN_NUM;
+}
+
+bool ObservationListModel::insertRows(int row, int count, const QModelIndex &parent)
+{
+    emit beginInsertRows(parent, row, row + count - 1);
+    mObservationList->insert(mObservationList->begin() + row, count, PointObservation());
+    emit endInsertRows();
+}
+
+bool ObservationListModel::removeRows(int row, int count, const QModelIndex &parent)
+{
+    emit beginRemoveRows(parent, row, row + count - 1);
+    mObservationList->erase(mObservationList->begin() + row, mObservationList->begin() + row + count);
+    emit endRemoveRows();
+}
+
+QVariant ObservationListModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+    if( role != Qt::DisplayRole)
+        return QVariant();
+
+    if (orientation == Qt::Horizontal )
+    {
+        switch( section )
+        {
+        case COLUMN_X:
+            return QString( "Space X" );
+        case COLUMN_Y:
+            return QString( "Space Y" );
+        case COLUMN_Z:
+            return QString( "Space Z" );
+
+        case COLUMN_U:
+            return QString( "Image X" );
+        case COLUMN_V:
+            return QString( "Image Y" );
+
+        default:
+            return QVariant();
+        }
+    }
+
+    if (orientation == Qt::Vertical )
+    {
+        return QString::number(section + 1);
+    }
+
+    return QVariant();
+}
+
+QModelIndex ObservationListModel::index(int row, int column, const QModelIndex &parent) const
+{
+    if (mObservationList == NULL) {
+        return QModelIndex();
+    }
+
+    if (row < mObservationList->size() && column < COLUMN_NUM) {
+        return createIndex(row, column);
+    }
+    return QModelIndex();
+}
+
+QModelIndex ObservationListModel::parent(const QModelIndex &index) const
+{
+    return QModelIndex();
+}
+
+void ObservationListModel::clearObservationPoints()
+{
+    emit beginResetModel();
+    mObservationList->clear();
+    emit endResetModel();
+}
+
+void ObservationListModel::setObservationList(ObservationList *observationList)
+{
+    emit beginResetModel();
+    mObservationList = observationList;
+    emit endResetModel();
+}
+
+/*void ObsevationListModel::clearObservationPoints()
+{
+    mObservationList->clear();
+    emit mode
+}*/

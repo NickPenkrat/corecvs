@@ -580,7 +580,7 @@ void Mesh3D::fillTestScene()
     /* Face sphere */
     int colorStart = facesColor.size();
     currentColor = RGBColor::Red();
-    addIcoSphere(Vector3dd(100.0,0.0,100.0), 50.0, 1);
+    addIcoSphere(Vector3dd(100.0,0.0,100.0), 50.0, 2);
     int colorEnd = facesColor.size();
     for (int c = colorStart; c < colorEnd; c++)
     {

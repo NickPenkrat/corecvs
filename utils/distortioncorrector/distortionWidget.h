@@ -39,6 +39,10 @@ private:
     RGB24Buffer *mBufferWithCorners;
 
     QList<QLine> mCorrectionVectors;
+
+    ObservationList mObservationList;
+    ObservationListModel mObservationListModel;
+
     //vector<PointObservation> mCorrectionMap;
     void setCameraParameters();
 
