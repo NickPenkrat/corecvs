@@ -236,8 +236,8 @@ FORCE_INLINE Int32x4 operator * (const Int32x4 &left, const Int32x4 &right) {
 #ifdef __SSE4_1__
     return Int32x4(_mm_mullo_epi32(left.data, right.data));
 #else
-    Int32x4 tmp1(_mm_mul_epu32( left.data, right.data));                                       /* mul 2,0 */
-    Int32x4 tmp2(_mm_mul_epu32( left.shiftRightWhole(4).data, right.shiftRightWhole(4).data)); /* mul 3,1 */
+    Int32x4 tmp1(_mm_mul_epu32( left.data, right.data));                                           /* mul 2,0 */
+    Int32x4 tmp2(_mm_mul_epu32( left.shiftRightWhole<4>().data, right.shiftRightWhole<4>().data)); /* mul 3,1 */
 
     tmp1.shuffle<_MM_SHUFFLE (0,0,2,0)>();
     tmp2.shuffle<_MM_SHUFFLE (0,0,2,0)>();

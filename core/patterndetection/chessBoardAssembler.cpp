@@ -389,10 +389,11 @@ bool ChessBoardAssembler::BoardExpander::assignNearest(std::vector<corecvs::Vect
     auto& corners = assembler->corners;
 
     std::vector<int> unused;
-    for (size_t i = 0; i < corners.size(); ++i)
-        if (!usedCorners[i])
-            unused.push_back(i);
-
+    for (size_t i = 0; i < corners.size(); ++i) {
+        if (!usedCorners[i]) {
+            unused.push_back((int)i);
+        }
+    }
     int N = (int)unused.size();
     int M = (int)prediction.size();
     std::vector<int> assigned(M);

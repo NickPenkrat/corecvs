@@ -30,7 +30,7 @@ struct RectangularGridPattern
 
     double getCornersScore(std::vector<OrientedCorner> & /*corners*/ ) const
     {
-        CORE_UNUSED(corners);
+        //CORE_UNUSED(corners);
         return -w() * h();
     }
 
