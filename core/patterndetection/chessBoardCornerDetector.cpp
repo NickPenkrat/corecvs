@@ -427,7 +427,7 @@ bool ChessBoardCornerDetector::edgeOrientationFromGradient(int top, int bottom, 
         return false;
     }
 
-    std::sort(modes.begin(), modes.end(), [](decltype(modes[0]) a, decltype(modes[0]) b) { return a.second == b.second ? a.first < b.first : a.second > b.second; });
+    std::sort(modes.begin(), modes.end(), [](const std::pair<int, double> &a, const std::pair<int, double> &b) { return a.second == b.second ? a.first < b.first : a.second > b.second; });
     
     auto p1 = modes[0], p2 = modes[1];
     double phi1 = p1.first * bin_size, phi2 = p2.first * bin_size;
