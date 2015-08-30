@@ -35,10 +35,12 @@ class ChessboardDetector : CheckerboardDetectionParameters, public PatternDetect
 {
 public:
     ChessboardDetector(
-            ChessBoardDetectorParams params = ChessBoardDetectorParams(),
+            CheckerboardDetectionParameters params = CheckerboardDetectionParameters(),
             ChessBoardCornerDetectorParams detectorParams = ChessBoardCornerDetectorParams(),
             ChessBoardAssemblerParams assemblerParams = ChessBoardAssemblerParams()
     );
+
+    static ChessBoardDetectorMode getMode(const CheckerboardDetectionParameters &params);
 
     // PatternDetector interface
     bool detectPattern(corecvs::G8Buffer    &buffer);

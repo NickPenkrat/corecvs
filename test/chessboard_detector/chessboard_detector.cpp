@@ -96,10 +96,11 @@ int main(int argc, char **argv)
 #endif
 
     readImage(filename , img);
-    ChessBoardDetectorParams params;
-    params.w = 18;
-    params.h = 11;
-    params.mode = ChessBoardDetectorMode::FIT_WIDTH;
+    CheckerboardDetectionParameters params;
+    params.setCellSizeHor (18);
+    params.setCellSizeVert(11);
+    params.setFitWidth (true );
+    params.setFitHeight(false);
     ChessboardDetector detector(params);
     detector.detectPattern(img);
 

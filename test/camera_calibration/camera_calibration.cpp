@@ -121,10 +121,11 @@ struct ParallelBoardDetector
 
                     corecvs::ObservationList list;
 
-                    ChessBoardDetectorParams params;
-                    params.w = 18;
-                    params.h = 11;
-                    params.mode = ChessBoardDetectorMode::FIT_WIDTH;
+                    CheckerboardDetectionParameters params;
+                    params.setCellSizeHor (18);
+                    params.setCellSizeVert(11);
+                    params.setFitWidth (true );
+                    params.setFitHeight(false);
                     ChessboardDetector detector(params);
                     bool found = detector.detectPattern(img);
                     if (found)
