@@ -29,6 +29,13 @@ struct LocationData
     {
     }
 
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        visitor.visit(position, corecvs::Vector3dd(0.0, 0.0, -1.0), "position1");
+        visitor.visit(orientation, corecvs::Quaternion(0.0, 0.0, 0.0, 1.0), "orientation2");
+    }
+
 	corecvs::Vector3dd position;
 	corecvs::Quaternion orientation;
 };
@@ -55,7 +62,17 @@ struct CameraIntrinsics_
     {
         return corecvs::Matrix33(fx, skew, cx, 0.0, fy, cy, 0.0, 0.0, 1.0);
     }
-	
+
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        visitor.visit(fx, 1.0, "fx");
+        visitor.visit(fy, 1.0, "fy");
+        visitor.visit(cx, 1.0, "cx");
+        visitor.visit(cy, 1.0, "cy");
+        visitor.visit(skew, 1.0, "skew");
+    }
+
 	double fx, fy, cx, cy, skew;
 };
 
@@ -68,6 +85,13 @@ struct Camera_
 
     CameraIntrinsics_ intrinsics;
 	LocationData extrinsics;
+
+	template<class VisitorType>
+	void accept(VisitorType &visitor)
+    {
+        visitor.visit(intrinsics, CameraIntrinsics_(), "intrinsics");
+        visitor.visit(extrinsics, LocationData(), "extrinsics");
+    }
 };
 
 struct Photostation
@@ -79,6 +103,13 @@ struct Photostation
 
 	std::vector<Camera_> cameras;
 	LocationData location;
+
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        visitor.visit(cameras, "cameras");
+        visitor.visit(location, LocationData(), "location");
+    }
 };
 
 typedef std::vector<std::pair<corecvs::Vector2dd, corecvs::Vector3dd>> PatternPoints3d;
