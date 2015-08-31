@@ -1,5 +1,5 @@
 #include <fstream>
-
+#include <sstream>
 #include <QtCore/QDebug>
 #include <QtOpenGL/QtOpenGL>
 #include <QtOpenGL/QGLWidget>
@@ -89,7 +89,7 @@ CloudViewDialog::CloudViewDialog(QWidget *parent) :
     mUi.treeView->setModel(&mTreeModel);
     mUi.treeView->setDragEnabled(true);
     mUi.treeView->setAcceptDrops(true);
-    mUi.treeView->setDropIndicatorShown(true);
+    //mUi.treeView->setDropIndicatDraw3dParametersorShown(true);
     mUi.treeView->setColumnWidth(TreeSceneModel::NAME_COLUMN,200);
     mUi.treeView->setColumnWidth(TreeSceneModel::FLAG_COLUMN,30);
     mUi.treeView->setColumnWidth(TreeSceneModel::PARAMETER_COLUMN,20);
@@ -146,6 +146,23 @@ CloudViewDialog::CloudViewDialog(QWidget *parent) :
 
     addSubObject("World Frame", worldFrame);
 
+}
+
+void CloudViewDialog::addMesh(QString name, Mesh3D *mesh)
+{
+    std::stringstream ss;
+    mesh->dumpPLY(ss);
+    Mesh3DScene *scene = new Mesh3DScene();
+    PLYLoader loader;
+    loader.loadPLY(ss, *scene);
+
+    cout << "Loaded mesh:" << endl;
+    cout << " Edges   :" << scene->edges.size() << endl;
+    cout << " Vertexes:" << scene->vertexes.size() << endl;
+    cout << " Faces   :" << scene->faces.size() << endl;
+    cout << " Bounding box " << scene->getBoundingBox() << endl;
+
+    addSubObject(name, QSharedPointer<Scene3D>((Scene3D*)scene));
 }
 
 TreeSceneController * CloudViewDialog::addSubObject (QString name, QSharedPointer<Scene3D> scene, bool visible)
@@ -791,7 +808,7 @@ void CloudViewDialog::loadMesh()
     cout << " Bounding box " << mesh->getBoundingBox() << endl;
 
     QFileInfo fileInfo(fileName);
-    addSubObject(fileInfo.baseName(), QSharedPointer<Scene3D>(mesh));
+    addSubObject(fileInfo.baseName(), QSharedPointer<Scene3D>((Scene3D*)mesh));
 }
 
 void CloudViewDialog::addCoordinateFrame()
