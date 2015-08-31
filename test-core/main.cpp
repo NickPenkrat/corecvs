@@ -10,7 +10,12 @@
 #include "fixedVector.h"
 #include "fixedArray.h"
 
+
+#include "vector3d.h"
+
 //#include <opencv2/opencv.hpp>
+
+#include "vector3d.h"
 
 using namespace std;
 using namespace corecvs;

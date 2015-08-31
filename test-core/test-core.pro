@@ -1,14 +1,10 @@
-exists(../../config.pri) {
-    ROOT_DIR=../..
-} else {
-    message(Using local config)
-    ROOT_DIR=..
-}
-ROOT_DIR=$$PWD/$$ROOT_DIR
+include(../config.pri)
+message("OPEN_ROOT_DIRECTORY pro file path : ["$${OPEN_ROOT_DIRECTORY}"]")
 
-include($$ROOT_DIR/config.pri)
-include(../core/core.pri)
-include(../wrappers/gtest/gtest.pri)
+include($${OPEN_ROOT_DIRECTORY}/core/core.pri)
+include($${OPEN_ROOT_DIRECTORY}/wrappers/gtest/gtest.pri)
+
+#include(affine/affine.pri)
 
 TEMPLATE = app
 TARGET   = test_core
@@ -16,3 +12,7 @@ CONFIG  += console
 CONFIG  -= app_bundle
 
 SOURCES += main.cpp
+#SOURCES += affine/main_test_affine.cpp
+
+
+
