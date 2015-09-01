@@ -38,8 +38,8 @@ public:
 
     virtual ~JSONSetter();
 
-template <class Type>
-    void visit(Type &field, Type defaultValue, const char *fieldName)
+template <class Type, class Castable>
+    void visit(Type &field, Castable defaultValue, const char *fieldName)
     {
         pushChild(fieldName);
            field.accept(*this);
@@ -77,6 +77,31 @@ template <typename inputType, typename reflectionType>
         }
 
         mNodePath.back().insert(arrayName, array);
+    }
+    template <typename innerType>
+    void visit(std::vector<std::vector<innerType>> &fields, const char *arrayName)
+    {
+        QJsonArray arrayOuter;
+        for (int i = 0; i < fields.size(); ++i)
+        {
+            QJsonArray arrayInner;
+            visit(fields[i], arrayInner);
+            arrayOuter.append(arrayInner);
+        }
+
+        mNodePath.back().insert(arrayName, arrayOuter);
+    }
+    // XXX: Here we hope that either stack is unwinded automatically or it is not too big
+    template <typename innerType>
+    void visit(std::vector<innerType> &fields, QJsonArray &array)
+    {
+        for (int i = 0; i < fields.size(); ++i)
+        {
+            mNodePath.push_back(QJsonObject());
+            fields[i].accept(*this);
+            array.append(mNodePath.back());
+            mNodePath.pop_back();
+        }
     }
 
     template <typename inputType, typename reflectionType>
