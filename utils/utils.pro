@@ -31,6 +31,7 @@ HEADERS += \
     framesources/decoders/mjpegDecoder.h \
     framesources/decoders/mjpegDecoderLazy.h \
     framesources/decoders/decoupleYUYV.h \
+    framesources/decoders/aLowCodec.h \
     \
     framesources/file/imageFileCaptureInterface.h \
     framesources/file/fileCapture.h \
@@ -95,6 +96,7 @@ SOURCES += \
     framesources/decoders/mjpegDecoder.cpp \
     framesources/decoders/mjpegDecoderLazy.cpp \
     framesources/decoders/decoupleYUYV.cpp \
+    framesources/decoders/aLowCodec.cpp \
     \
     framesources/file/imageFileCaptureInterface.cpp \
     framesources/file/fileCapture.cpp \

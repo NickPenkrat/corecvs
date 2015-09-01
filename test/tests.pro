@@ -17,6 +17,7 @@ SUBDIRS +=       \
 #    avigrab     \
 #    decodebayer \
 #    genvectorui  \
+    aLowCodec \
 
 
 with_opencv {
@@ -37,6 +38,7 @@ decodebayer.file        = decodebayer/decodebayer.pro
 camera_calibration.file = camera_calibration/camera_calibration.pro
 chessboard_detector.file= chessboard_detector/chessboard_detector.pro
 genvectorui.file        = genvectorui/genvectorui.pro
+aLowCodec.file          = aLowCodec/aLowCodec.pro
 
 opencvLineDetector.file = opencvLineDetector/opencvLineDetector.pro
 
