@@ -8,6 +8,7 @@
 #include "vector3d.h"
 #include "vector2d.h"
 #include "typesafeBitmaskEnums.h"
+#include "lensDistortionModelParameters.h"
 
 enum class CameraConstraints 
 {
@@ -32,8 +33,8 @@ struct LocationData
     template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(position, corecvs::Vector3dd(0.0, 0.0, -1.0), "position1");
-        visitor.visit(orientation, corecvs::Quaternion(0.0, 0.0, 0.0, 1.0), "orientation2");
+        visitor.visit(position, corecvs::Vector3dd(0.0, 0.0, -1.0), "position");
+        visitor.visit(orientation, corecvs::Quaternion(0.0, 0.0, 0.0, 1.0), "orientation");
     }
 
 	corecvs::Vector3dd position;
@@ -45,13 +46,12 @@ struct LocationData
 //      skewed/non-rectangular)
 struct CameraIntrinsics_
 {
-    CameraIntrinsics_(double fx = 1.0, double fy = 1.0, double cx = 0.0, double cy = 0.0, double skew = 0.0) : fx(fx), fy(fy), cx(cx), cy(cy), skew(skew)
+    CameraIntrinsics_(double fx = 1.0, double fy = 1.0, double cx = 0.0, double cy = 0.0, double skew = 0.0, corecvs::Vector2dd size = corecvs::Vector2dd(2592.0, 1944.0)) : fx(fx), fy(fy), cx(cx), cy(cy), skew(skew), size(size)
     {
     }
  
-    // The idea is that if we merge distorsion calibration WITH extrinsics/intrinsics
-    // calibration, then this method will project point using forward distorsion
-    // map
+    // TODO: The idea is that if we merge distorsion calibration WITH extrinsics/intrinsics
+    //       calibration, then this method will project point using forward distorsion map
     corecvs::Vector2dd project(const corecvs::Vector3dd &pt)
     {
         double normalizer = pt[2];
@@ -71,9 +71,11 @@ struct CameraIntrinsics_
         visitor.visit(cx, 1.0, "cx");
         visitor.visit(cy, 1.0, "cy");
         visitor.visit(skew, 1.0, "skew");
+        visitor.visit(size, corecvs::Vector2dd(2592.0, 1944.0), "size");
     }
 
 	double fx, fy, cx, cy, skew;
+    corecvs::Vector2dd size;
 };
 
 struct Camera_
@@ -85,12 +87,14 @@ struct Camera_
 
     CameraIntrinsics_ intrinsics;
 	LocationData extrinsics;
+    LensDistortionModelParameters distortion;
 
 	template<class VisitorType>
 	void accept(VisitorType &visitor)
     {
         visitor.visit(intrinsics, CameraIntrinsics_(), "intrinsics");
         visitor.visit(extrinsics, LocationData(), "extrinsics");
+        visitor.visit(distortion, LensDistortionModelParameters(), "distortion");
     }
 };
 

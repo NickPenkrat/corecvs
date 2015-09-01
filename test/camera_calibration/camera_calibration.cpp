@@ -18,6 +18,9 @@
 #include "levenmarq.h"
 #include "mesh3d.h"
 
+#include "jsonSetter.h"
+#include "jsonGetter.h"
+
 #include "flatPatternCalibrator.h"
 #include "photoStationCalibrator.h"
 
@@ -333,6 +336,7 @@ void calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std
 
 int main(int argc, char **argv)
 {
+    // TODO: read current calibration / algo parameters from json
     int N = 6, M = 24, M_start = 15, M_by = 15;
     std::string pattern = "distSPA%d_%ddeg.%s";
     if(!parseArgs(argc, argv, N, M, M_start, M_by, pattern))
@@ -497,6 +501,9 @@ int main(int argc, char **argv)
     std::cout << std::endl;
 
 
+    JSONSetter setter("calibration.json");
+    setter.visit(ps, "photostation");
+    setter.visit(ss, "calibrationLocations");
 
     return 0;
 }
