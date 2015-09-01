@@ -30,7 +30,7 @@ void PhotoStationCalibrator::addCalibrationSetup(std::vector<int> &cameraIds, st
     {
         int idx = cameraIds[i];
         patternPoints[M][idx] = points[i];
-        K += points[i].size();
+        K += (int)points[i].size();
         ++L;
         cameraLocations[i].orientation.normalise();
         initialGuess[M][idx] = std::make_pair(true, cameraLocations[i]);
@@ -116,7 +116,7 @@ void PhotoStationCalibrator::getFullReprojectionError(double out[])
         {
             K0 += patternPoints[j][i].size() * 2;
         }
-        offset[j + 1] = K0 + offset[j];
+        offset[j + 1] = (int)K0 + offset[j];
     }
 
     corecvs::parallelable_for (0, M, 1, ParallelErr(this, &offset, out));
@@ -294,10 +294,10 @@ void PhotoStationCalibrator::LMStructure::operator() (const double in[], double 
             auto& qs = absoluteSetupLocation[i].orientation;
             auto& cs = absoluteSetupLocation[i].position;
 
-            auto& qc = relativeCameraPositions[j].extrinsics.orientation;
+          //auto& qc = relativeCameraPositions[j].extrinsics.orientation;
             auto& cc = relativeCameraPositions[j].extrinsics.position;
 
-            auto& qr = initialGuess[i][j].second.orientation;
+          //auto& qr = initialGuess[i][j].second.orientation;
             auto& cr = initialGuess[i][j].second.position;
 
             auto diff = (qs.conjugated() * cc) + cs - cr;
@@ -321,12 +321,16 @@ void PhotoStationCalibrator::LMStructure::operator() (const double in[], double 
 struct LSQCenter : public corecvs::FunctionArgs
 {
     int N;
-    std::vector<corecvs::Vector3dd> centers;
+    std::vector<corecvs::Vector3dd>  centers;
     std::vector<corecvs::Quaternion> rotations;
-    LSQCenter(decltype(centers) &centers, decltype(rotations) &rotations) :
-        FunctionArgs(3, centers.size() * (centers.size() - 1) * 3), N(centers.size()), centers(centers), rotations(rotations)
-    {
-    }
+
+    LSQCenter(decltype(centers) &centers, decltype(rotations) &rotations)
+        : FunctionArgs(3, (int)(centers.size() * (centers.size() - 1) * 3))
+        , N((int)centers.size())
+        , centers(centers)
+        , rotations(rotations)
+    {}
+
     void operator()(const double in[], double out[])
     {
         corecvs::Vector3dd x(in[0], in[1], in[2]);
@@ -337,11 +341,11 @@ struct LSQCenter : public corecvs::FunctionArgs
             {
                 if (i == j)
                     continue;
-                auto& qi= rotations[i];
-                auto& ci= centers[i];
-                auto& qj= rotations[j];
-                auto& cj= centers[j];
-                auto e =  qj * ((qi.conjugated() * x) + ci - cj) - x;
+                auto& qi = rotations[i];
+                auto& ci = centers[i];
+                auto& qj = rotations[j];
+                auto& cj = centers[j];
+                auto   e = qj * ((qi.conjugated() * x) + ci - cj) - x;
 
                 for (int j = 0; j < 3; ++j)
                     out[idx++] = e[j];

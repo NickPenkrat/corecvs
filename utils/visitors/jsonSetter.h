@@ -39,7 +39,7 @@ public:
     virtual ~JSONSetter();
 
 template <class Type>
-    void visit(Type &field, Type defaultValue, const char *fieldName)
+    void visit(Type &field, Type /*defaultValue*/, const char *fieldName)
     {
         pushChild(fieldName);
            field.accept(*this);
@@ -67,7 +67,7 @@ template <typename inputType, typename reflectionType>
     void visit(std::vector<inputType> &fields, const char * arrayName)
     {
         QJsonArray array;
-        int before = mNodePath.size();
+      //int before = (int)mNodePath.size();
         for (int i = 0; i < fields.size(); i++)
         {
             mNodePath.push_back(QJsonObject());

@@ -82,8 +82,8 @@ void Mesh3D::addAOB(const AxisAlignedBox3d &box, bool addFaces)
 
 int Mesh3D::addPoint(Vector3dd point)
 {
-     addVertex(point);
-     return vertexes.size() - 1;
+    addVertex(point);
+    return (int)vertexes.size() - 1;
 }
 
 void Mesh3D::addLine(Vector3dd point1, Vector3dd point2)
@@ -138,7 +138,7 @@ void Mesh3D::addSphere(Vector3dd center, double radius, int step)
  **/
 void Mesh3D::addIcoSphere(Vector3dd center, double radius, int step)
 {
-    double scaler = radius * sqrt(5);
+    //double scaler = radius * sqrt(5);
     int vectorIndex = (int)vertexes.size();    
     Vector3d32 startId(vectorIndex, vectorIndex, vectorIndex);
     
@@ -578,10 +578,12 @@ void Mesh3D::fillTestScene()
     addSphere(Vector3dd(0), 50, 10);
 
     /* Face sphere */
-    int colorStart = facesColor.size();
+    int colorStart = (int)facesColor.size();
+    int colorEnd   = (int)facesColor.size();
+
     currentColor = RGBColor::Red();
-    addIcoSphere(Vector3dd(100.0,0.0,100.0), 50.0, 1);
-    int colorEnd = facesColor.size();
+    addIcoSphere(Vector3dd(100.0, 0.0, 100.0), 50.0, 1);
+
     for (int c = colorStart; c < colorEnd; c++)
     {
         facesColor[c] = RGBColor::rainbow(lerpLimit(0.0, 1.0, c, colorStart, colorEnd));
@@ -591,7 +593,6 @@ void Mesh3D::fillTestScene()
     currentColor = RGBColor::Blue();
     addAOB(Vector3dd(40.0,10.0,-40.0), Vector3dd(70.0,30.0,20.0), false);
 }
-
 
 
 } /* namespace corecvs */

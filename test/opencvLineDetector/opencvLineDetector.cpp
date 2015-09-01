@@ -117,7 +117,7 @@ int main (int argc, char **argv)
     bool verbose         = cmdIfOption(all_args, "--verbose",           &pos);
     bool useGreenChannel = cmdIfOption(all_args, "--use_green_channel", &pos);
     bool isInverse       =!cmdIfOption(all_args, "--is_direct",         &pos); // "inverse" works always except "direct" is requested
-    bool drawProccess    = cmdIfOption(all_args, "--draw_proccess",     &pos);
+  //bool drawProccess    = cmdIfOption(all_args, "--draw_proccess",     &pos);
 
     if (cmdIfOption(all_args, "--test_opencv", &pos))
     {
@@ -180,7 +180,7 @@ int main (int argc, char **argv)
         }
 
         SelectableGeometryFeatures lineList;
-        G8Buffer *boardOutput = NULL;
+      //G8Buffer *boardOutput = NULL;
 //        found = OpenCvCheckerboardDetector::DetectFullCheckerboard(channel, params, &lineList, &boardOutput);
         OpenCvCheckerboardDetector detector(params);
         bool found = detector.detectPattern(*channel);
@@ -261,7 +261,7 @@ int main (int argc, char **argv)
 
         //OpenCvCheckerboardDetector::DetectPartCheckerboardV(channel, params, &observationList, NULL);
         OpenCvCheckerboardDetector detector(params);
-        bool found = detector.detectPattern(*channel);
+        /*bool found =*/ detector.detectPattern(*channel);
         detector.getPointData(observationList);
 
         delete_safe(channel);
