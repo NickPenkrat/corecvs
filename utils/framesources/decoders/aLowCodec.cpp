@@ -31,7 +31,7 @@ inline uint8_t code12to8(uint16_t value)
 
 /** The decoding rules are taken from the document "AR1820HS_DS_G.pdf", page 94
 */
-inline uint8_t decode8to12(uint8_t value)
+inline uint16_t decode8to12(uint8_t value)
 {
     switch (value & 0xE0) {
         case 0x00:  return value;                              // 000abcde => 0 0 0 0 0 0 0 a b c d e
@@ -54,9 +54,9 @@ RGB24Buffer *ALowCodec::code(const RGB24Buffer *rgb24buffer)
         uint8_t r = rgb.r();
         uint8_t g = rgb.g();
         uint8_t b = rgb.b();
-        r = code12to8(r << 4);
-        g = code12to8(g << 4);
-        b = code12to8(b << 4);
+        r = code12to8((uint16_t)r << 4);
+        g = code12to8((uint16_t)g << 4);
+        b = code12to8((uint16_t)b << 4);
         return RGBColor(r, g, b);
     });
 

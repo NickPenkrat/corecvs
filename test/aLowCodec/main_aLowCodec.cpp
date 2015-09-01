@@ -6,8 +6,34 @@
 #include "qtFileLoader.h"
 #include "bmpLoader.h"
 
+#if 0
+using namespace corecvs;
+
+inline bool testRGB(int r, int g, int b) {
+    uint8_t rc = code12to8((uint16_t)r << 4);
+    uint8_t gc = code12to8((uint16_t)g << 4);
+    uint8_t bc = code12to8((uint16_t)b << 4);
+
+    uint8_t rd = decode8to12(rc) >> 4;
+    uint8_t gd = decode8to12(gc) >> 4;
+    uint8_t bd = decode8to12(bc) >> 4;
+
+    ASSERT_TRUE_P(CORE_ABS(rd - r) <= 32);
+    ASSERT_TRUE_P(CORE_ABS(gd - g) <= 32);
+    ASSERT_TRUE_P(CORE_ABS(bd - b) <= 32);
+}
+
+void testCodec(void)
+{
+    testRGB( 20,  40,  70);
+    testRGB(130, 250, 250);
+}
+#endif
+
 int main (int argc, char **argv)
 {
+    //testCodec();
+
     QTRGB24Loader::registerMyself();
     ALowCodec codec;
 
