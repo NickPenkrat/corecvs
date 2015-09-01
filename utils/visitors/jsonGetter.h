@@ -4,6 +4,7 @@
 #include <QtCore/QString>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonArray>
 #include "reflection.h"
 
 using corecvs::IntField;
@@ -72,6 +73,26 @@ public:
         for (int i = 0; i < fields.size(); i++)
         {
             fields[i].accept(*this);
+        }
+    }
+
+    template <typename inputType>
+    void visit(std::vector<inputType> &fields, const char* arrayName)
+    {
+        fields.clear();
+        QJsonObject mainNode = mNodePath.back();
+        if (mainNode.value(arrayName).isArray())
+        {
+            QJsonArray array = mainNode.value(arrayName).toArray();
+            // FIXME: using ugly Qt's foreach instead of fancy c++11 one since Qt containers are weird
+            foreach (QJsonValue v, array)
+            {
+                inputType el;
+                mNodePath.push_back(v.toObject());
+                el.accept(*this);
+                fields.push_back(el);
+                mNodePath.pop_back();
+            }
         }
     }
 

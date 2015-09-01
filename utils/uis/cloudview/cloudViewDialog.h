@@ -152,11 +152,13 @@ protected:
     /* OpenGL textures */
 public:
     GLuint mFancyTexture;
+    TreeSceneController* addSubObject (QString name, QSharedPointer<Scene3D> scene, bool visible = true);
+    void addMesh(QString name, Mesh3D *mesh);
 private:
     GLuint mCameraTexture[Frames::MAX_INPUTS_NUMBER];
 
 protected:
-    TreeSceneController* addSubObject (QString name, QSharedPointer<Scene3D> scene, bool visible = true);
+
 
     void setZoom(double value);
     void zoom(int delta);
