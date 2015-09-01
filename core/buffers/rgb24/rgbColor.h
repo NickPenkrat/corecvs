@@ -1,5 +1,4 @@
-#ifndef RGBCOLOR_H_
-#define RGBCOLOR_H_
+#pragma once
 /**
  * \file rgbColor.h
  * \brief a header for rgbColor.c
@@ -143,14 +142,12 @@ public:
 
     inline uint8_t brightness() const
     {
-        /**
-         * TODO: Should I add ~1.5 = 2 to the sum?
-         * because
+        /** We add 1 to the sum, because
+         *     0,  1,  0 -> 0
          *     0,  1,  1 -> 1
-         *   255,255,254 -> 255;
-         *
-         * */
-        return ((uint16_t)r() + (uint16_t)g() + (uint16_t)b()) / 3;
+         *   255,255,254 -> 255
+         */
+        return (sum() + 1) / 3;
     }
 
     inline uint16_t sum() const
@@ -172,9 +169,14 @@ public:
     }
 
 
+    inline double yd() const
+    {
+        return 0.299 * r() + 0.587 * g() + 0.114 * b();
+    }
+
     inline int16_t y() const
     {
-        return (int)( 0.299   * r() + 0.587   * g() + 0.114   * b());
+        return (int)(yd() + 0.5);
     }
 
     inline int16_t cb() const
@@ -376,9 +378,9 @@ public:
 
     static RGBColor lerpColor(const RGBColor &first, const RGBColor &second, double alpha)
     {
-        uint8_t r = (uint8_t)lerp<double>(first.r(), second.r(),alpha);
-        uint8_t g = (uint8_t)lerp<double>(first.g(), second.g(),alpha);
-        uint8_t b = (uint8_t)lerp<double>(first.b(), second.b(),alpha);
+        uint8_t r = (uint8_t)lerp<double>(first.r(), second.r(), alpha);
+        uint8_t g = (uint8_t)lerp<double>(first.g(), second.g(), alpha);
+        uint8_t b = (uint8_t)lerp<double>(first.b(), second.b(), alpha);
         return RGBColor(r, g, b);
     }
 
@@ -388,7 +390,7 @@ public:
         int16_t g = (int16_t)first.g() - (int16_t)second.g();
         int16_t b = (int16_t)first.b() - (int16_t)second.b();
 
-        return RGBColor(r > 0 ? r : -r , g > 0 ? g : -g, b > 0 ? b : -b);
+        return RGBColor(CORE_ABS(r), CORE_ABS(g), CORE_ABS(b));
     }
 
     /**
@@ -526,7 +528,4 @@ template<class VisitorType>
 
 };
 
-
 } //namespace corecvs
-#endif  //RGBCOLOR_H_
-
