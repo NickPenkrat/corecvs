@@ -8,6 +8,7 @@
  * \ingroup autotest  
  */
 
+#include "gtest/gtest.h"
 
 #ifndef ASSERTS
 #define ASSERTS
