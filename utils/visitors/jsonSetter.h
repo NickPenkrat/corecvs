@@ -38,8 +38,8 @@ public:
 
     virtual ~JSONSetter();
 
-template <class Type, class Castable>
-    void visit(Type &field, Castable defaultValue, const char *fieldName)
+template <class Type>
+    void visit(Type &field, Type defaultValue, const char *fieldName)
     {
         pushChild(fieldName);
            field.accept(*this);
