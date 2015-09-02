@@ -10,6 +10,7 @@ ROOT_DIR=$$PWD/$$ROOT_DIR
 include($$ROOT_DIR/config.pri)
 
 TEMPLATE=app
+CONFIG+=console
 TARGET=test_aLowCodec
 
 include(../../utils/utils.pri)
