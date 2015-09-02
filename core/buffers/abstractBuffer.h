@@ -849,7 +849,7 @@ template<typename ResultType>
 
             for (IndexType i = r.begin(); i != r.end(); i++)
             {
-                ElementType *line = &buf->element(i,0);
+                ElementType *line = &buf->element(i, 0);
                 for (j = kernel->centerX; j < toReturn->w - kernel->w + kernel->centerX; j++)
                 {
                     toReturn->element(i,j) =
@@ -882,8 +882,8 @@ template<typename ResultType>
             return false;
         for (int i = 0; i < this->h; i++)
         {
-            const ElementType *thisElemRunner = &(this->element(i,0));
-            const ElementType *thatElemRunner = &(that.element(i,0));
+            const ElementType *thisElemRunner = &(this->element(i, 0));
+            const ElementType *thatElemRunner = &(that.element(i, 0));
             for (int j = 0; j < this->w; j++)
             {
                 if (*thatElemRunner != *thisElemRunner)
@@ -916,8 +916,8 @@ template<typename ResultType>
         int diffs = 0;
         for (int i = 0; i < this->h; i++)
         {
-            const ElementType *thisElemRunner = &(this->element(i,0));
-            const ElementType *thatElemRunner = &(that.element(i,0));
+            const ElementType *thisElemRunner = &(this->element(i, 0));
+            const ElementType *thatElemRunner = &(that.element(i, 0));
             for (int j = 0; j < this->w; j++)
             {
                 if (*thatElemRunner != *thisElemRunner)
@@ -949,8 +949,8 @@ template<typename operation, typename OtherBuffer>
         IndexType w = CORE_MIN(this->w, that.w);
         for (IndexType i = 0; i < h; i++)
         {
-            ElementType *thisElemRunner = &(this->element(i,0));
-            const typename OtherBuffer::InternalElementType *thatElemRunner = &(that.element(i,0));
+            ElementType *thisElemRunner = &(this->element(i, 0));
+            const typename OtherBuffer::InternalElementType *thatElemRunner = &(that.element(i, 0));
             for (IndexType j = 0; j < w; j++)
             {
                 /* Writing like this just to emphasize what is actually called */
@@ -966,7 +966,7 @@ template<typename operation, typename OtherBuffer>
     {
         for (IndexType i = 0; i < h; i++)
         {
-            ElementType *thisElemRunner = &(this->element(i,0));
+            ElementType *thisElemRunner = &(this->element(i, 0));
             for (IndexType j = 0; j < w; j++)
             {
                 *thisElemRunner = operation().operator()(*thisElemRunner, that);
@@ -980,7 +980,7 @@ template<typename operation>
     {
         for (IndexType i = 0; i < h; i++)
         {
-            ElementType *thisElementRunner = &(this->element(i,0));
+            ElementType *thisElementRunner = &(this->element(i, 0));
             for (IndexType j = 0; j < w; j++)
             {
                 *thisElementRunner = map.operator()(*thisElementRunner);
@@ -994,7 +994,7 @@ template<typename operation>
     {
         for (IndexType i = 0; i < h; i++)
         {
-            ElementType *thisElemRunner = &(this->element(i,0));
+            ElementType *thisElemRunner = &(this->element(i, 0));
             for (IndexType j = 0; j < w; j++)
             {
                 map.operator()(i, j, *thisElemRunner);
@@ -1090,8 +1090,8 @@ template<typename OtherType>
         OtherType *toReturn = new OtherType(this->h, this->w);
         for (IndexType i = 0; i < h; i++)
         {
-            ElementType *thisElemRunner = &(this->element(i,0));
-            typename OtherType::InternalElementType *thatElemRunner = &(toReturn->element(h - 1 - i,0));
+            ElementType *thisElemRunner = &(this->element(i, 0));
+            typename OtherType::InternalElementType *thatElemRunner = &(toReturn->element(h - 1 - i, 0));
             for (IndexType j = 0; j < w; j++)
             {
                 *thatElemRunner = *thisElemRunner;

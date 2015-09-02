@@ -19,14 +19,18 @@ ChessboardDetector::ChessboardDetector(ChessBoardDetectorParams params, ChessBoa
 bool ChessboardDetector::detectPattern(corecvs::G8Buffer &buffer)
 {
     DpImage grayscale(buffer.h, buffer.w);
-    grayscale.binaryOperationInPlace(buffer, [](const double & /*a*/, const unsigned char &b) { return ((double)b) / 255.0; });
+    grayscale.binaryOperationInPlace(buffer, [](const double & /*a*/, const unsigned char &b) {
+        return ((double)b) / 255.0;
+    });
     return detectPattern(grayscale);
 }
 
 bool ChessboardDetector::detectPattern(corecvs::RGB24Buffer &buffer)
 {
     DpImage grayscale(buffer.h, buffer.w);
-    grayscale.binaryOperationInPlace(buffer, [](const double & /*a*/, const corecvs::RGBColor &b) { return (b.b() * 0.114 + b.g() * 0.587 + b.r() * 0.299 ) / 255.0; });
+    grayscale.binaryOperationInPlace(buffer, [](const double & /*a*/, const corecvs::RGBColor &b) {
+        return b.yd() / 255.0;
+    });
     return detectPattern(grayscale);
 }
 

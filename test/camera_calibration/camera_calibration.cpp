@@ -309,8 +309,9 @@ void drawPly(Photostation &ps, const std::string &name, int IW = 2592, int IH = 
 
 void calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<CameraIntrinsics_> &intrinsics, std::vector<std::vector<LocationData>> &locations)
 {
-    for (auto& ci: intrinsics)
-    	calibrator.addCamera(ci);
+    for (auto& ci : intrinsics) {
+        calibrator.addCamera(ci);
+    }
 	std::vector<int> cnt(N);
     for (auto& setup: points)
 	{

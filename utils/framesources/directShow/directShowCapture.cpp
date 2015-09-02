@@ -243,10 +243,8 @@ ALIGN_STACK_SSE void DirectShowCaptureInterface::memberCallback(DSCapDeviceId de
                     uint8_t  *rgbData = ((uint8_t *)data.data) + 3 * (h - i - 1) * w;
                     RGBColor *rgb24Data = &(camera->buffer24->element(i, 0));
                     for (int j = 0; j < w; j++) {
-                        uint16_t b = rgbData[0];
-                        uint16_t g = rgbData[1];
-                        uint16_t r = rgbData[2];
-                        *rgb24Data++ = RGBColor(r, g, b);
+                        RGBColor rgb(rgbData[2], rgbData[1], rgbData[0]);   // the given data format has B,G,R order
+                        *rgb24Data++ = rgb;
                         rgbData += 3;
                     }
                 }
@@ -259,10 +257,8 @@ ALIGN_STACK_SSE void DirectShowCaptureInterface::memberCallback(DSCapDeviceId de
                     uint8_t  *rgbData = ((uint8_t *)data.data) + 3 * (h - i - 1) * w;
                     uint16_t *greyData = &(camera->buffer->element(i, 0));
                     for (int j = 0; j < w; j++) {
-                        uint16_t b = rgbData[0];
-                        uint16_t g = rgbData[1];
-                        uint16_t r = rgbData[2];
-                        *greyData++ = (11 * r + 16 * g + 5 * b) >> 1;
+                        RGBColor rgb(rgbData[2], rgbData[1], rgbData[0]);   // the given data format has B,G,R order
+                        *greyData++ = rgb.luma12();
                         rgbData += 3;
                     }
                 }
@@ -497,6 +493,7 @@ DirectShowCaptureInterface::CapErrorCode DirectShowCaptureInterface::getDeviceNa
 
 string DirectShowCaptureInterface::getDeviceSerial(int num)
 {
+    CORE_UNUSED(num);
     return "-unsupported-";
 }
 
