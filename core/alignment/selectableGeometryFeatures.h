@@ -48,6 +48,13 @@ struct PointObservation
     {
         return projection.y();
     }
+
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        visitor.visit(point, corecvs::Vector3dd(), "point3d");
+        visitor.visit(projection, corecvs::Vector2dd(), "projection");
+    }
 };
 
 

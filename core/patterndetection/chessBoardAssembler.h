@@ -93,6 +93,18 @@ struct ChessBoardAssemblerParams
         hypothesisDim[1] = 11;
     }
 #endif
+
+    template<typename VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        visitor.visit(seedThreshold, 0.3, "seedThreshold");
+        visitor.visit(seedTgPenalty, 5.0, "seedTgPenalty");
+        visitor.visit(conservativity, 0.9, "conservativity");
+        visitor.visit(costThreshold, -10.0, "costThreshold");
+        visitor.visit(hypothesisDimensions, 1, "hypothesisDimensions");
+        visitor.visit(hypothesisDim[0], 18, "hypothesisDim[0]");
+        visitor.visit(hypothesisDim[1], 11, "hypothesisDim[0]");
+    }
 };
 
 

@@ -12,7 +12,6 @@ enum class ChessBoardDetectorMode
     FIT_WIDTH = 1,
     FIT_HEIGHT = 2
 };
-
 template<>
 struct is_bitmask<ChessBoardDetectorMode> : std::true_type {};
 
@@ -26,6 +25,18 @@ struct ChessBoardDetectorParams
     //      in order to assign correct coordinates we need some
     //      additional information, so default mode is FIT_WIDTH
     ChessBoardDetectorMode mode = ChessBoardDetectorMode::FIT_WIDTH;
+
+    template<typename VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        visitor.visit(w, 18, "w");
+        visitor.visit(h, 11, "h");
+        visitor.visit(stepX, 50.0, "stepX");
+        visitor.visit(stepY, 50.0, "stepY");
+        auto m = asInteger(mode);
+        visitor.visit(m, 0, "mode");
+        mode = static_cast<ChessBoardDetectorMode>(m);
+    }
 };
 
 class ChessboardDetector : ChessBoardDetectorParams, public PatternDetector

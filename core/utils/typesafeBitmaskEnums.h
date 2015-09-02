@@ -29,5 +29,10 @@ typename std::enable_if<is_bitmask<E>::value, bool>::type operator !(const E &lh
     return !static_cast<bool>(static_cast<U>(lhs));
 }
 
+template<typename E>
+typename std::enable_if<std::is_enum<E>::value, typename std::underlying_type<E>::type>::type asInteger(E e)
+{
+    return static_cast<typename std::underlying_type<E>::type>(e);
+}
 
 #endif
