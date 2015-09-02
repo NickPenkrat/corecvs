@@ -51,7 +51,7 @@ int main (int argc, char **argv)
     ALowCodec codec;
 
     if (argc < 2) {
-        printf("Usage test_aLowCodec [--decode|--code] <in_filename> <out_filename>");
+        printf("Use test_aLowCodec [--decode|--code] <in_filename> <out_filename>");
     }
 
     bool   code = false;
@@ -108,9 +108,13 @@ int main (int argc, char **argv)
         QTFileLoader().save("result100.jpg", out, 100);
         QTFileLoader().save("result85.jpg", out, 85);
     }
-    else {
-        if (oPath.find(".bmp"))
+    else
+    {
+        QString oPathUp = QString(oPath.c_str()).toLower();
+        if (oPathUp.indexOf(".bmp") > 0)
             BMPLoader().save(oPath, out);
+        else if (oPathUp.indexOf("_85.jpg") > 0)
+            QTFileLoader().save(oPath, out, 85);
         else
             QTFileLoader().save(oPath, out, 100);
     }
