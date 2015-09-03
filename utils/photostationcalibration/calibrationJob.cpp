@@ -1,5 +1,6 @@
 #include "calibrationJob.h"
-#include  <cassert>
+
+#include <array>
 
 #include "openCvCheckerboardDetector.h"
 #include "lmDistortionSolver.h"
@@ -294,9 +295,6 @@ struct ParallelSingleCalibrator
 
 void CalibrationJob::allCalibrateSingleCamera()
 {
-    std::cout << "calibrating all cameras: " << photostation.cameras.size() << std::endl;
-    static int count = 0;
-    assert(count++ == 0);
     corecvs::parallelable_for(0, (int)photostation.cameras.size(), ParallelSingleCalibrator(this));
 }
 
