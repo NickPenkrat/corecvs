@@ -404,7 +404,19 @@ void PhotoStationCalibrator::refineGuess()
     std::vector<double> in(getInputNum()), out(getOutputNum());
     writeParams(&in[0]);
 
-    corecvs::LevenbergMarquardt levmar(500);
+    // TODO: TIL: there is some problem in calibrator; non-linear part does not converges,
+    //       it stucks somewhere at random point. Further investigation required
+    //       Possible outcomes:
+    //       * Adding gradient-norm related part (aka L-M instead of L) will help
+    //       * Standartizing items (since we have lots of coordinates ~[-100 .. 100]
+    //         and some quaternions [-1 .. 1] will help
+    //       * Making BFS from multiple cameras and then taking the mean of solutions
+    //         will be a better starting point for non-linear part
+    //       * Some global stochastic-like procedure for minimization
+    // TODO: Maybe we should test if such problem is solvable in some math package
+    //       with "proven" implementations of linear algebra and ML-like non-linear
+    //       optimization
+    corecvs::LevenbergMarquardt levmar(1000, 1e-6, 1.1);
     levmar.f = new LMCostFunction(this);
 
     auto res = levmar.fit(in, out);
