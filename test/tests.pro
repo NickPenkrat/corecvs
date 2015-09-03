@@ -26,7 +26,12 @@ with_opencv {
         matcher_basic \
         matcher_full \
         camera_calibration \
-        chessboard_detector
+        chessboard_detector \
+        calibration_job_generate \
+        calibration_job_detect \
+        calibration_job_estimate_distortion \
+        calibration_job_apply_undistortion \
+        calibration_job_calibrate
 }
 
 grab.file               = grab/grab.pro
@@ -44,3 +49,9 @@ opencvLineDetector.file = opencvLineDetector/opencvLineDetector.pro
 
 matcher_basic.file      = matcher_basic/feature2d_basic.pro
 matcher_full.file       = matcher_full/matcher_full.pro
+
+calibration_job_generate= calibration_job_generate/calibration_job_generate.pro
+calibration_job_detect  = calibration_job_detect/calibration_job_detect.pro
+calibration_job_estimate_distortion = calibration_job_estimate_distortion/calibration_job_estimate_distortion.pro
+calibration_job_apply_undistortion = calibration_job_apply_undistortion/calibration_job_apply_undistortion.pro
+calibration_job_calibrate = calibration_job_calibrate/calibration_job_calibrate.pro
