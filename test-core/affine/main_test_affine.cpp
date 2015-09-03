@@ -8,8 +8,6 @@
  * \ingroup autotest  
  */
 
-#include "gtest/gtest.h"
-
 #ifndef ASSERTS
 #define ASSERTS
 #endif
@@ -18,11 +16,10 @@
 #define TRACE
 #endif
 
-
-
 #include <vector>
 #include <stdint.h>
 #include <iostream>
+#include "gtest/gtest.h"
 
 #include "global.h"
 
