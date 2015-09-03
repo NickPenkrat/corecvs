@@ -65,7 +65,7 @@ ssewrappers/main_test_ssewrappers.cpp \
 #train_vj/main_train_vj.cpp #todo: file read
 triangulator/main_test_triangulator.cpp \
 vector/main_test_vector.cpp \
-yuv/main_test_yuv.cpp
+#yuv/main_test_yuv.cpp\ #todo: FromRGB not working
 
 
 
