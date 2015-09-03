@@ -9,43 +9,45 @@
 #if 1
 using namespace corecvs;
 
-inline bool checkChanError(int chan, int res)
+inline void testChan(uint16_t chan12)
 {
-    if (chan <   64) ASSERT_TRUE_S(CORE_ABS(res - chan) <=  0);
-    if (chan <  128) ASSERT_TRUE_S(CORE_ABS(res - chan) <=  1);
-    if (chan <  256) ASSERT_TRUE_S(CORE_ABS(res - chan) <=  2);
-    if (chan <  512) ASSERT_TRUE_S(CORE_ABS(res - chan) <=  4);
-    if (chan < 1024) ASSERT_TRUE_S(CORE_ABS(res - chan) <=  8);
-    if (chan < 2048) ASSERT_TRUE_S(CORE_ABS(res - chan) <= 16);
-    if (chan < 4096) ASSERT_TRUE_S(CORE_ABS(res - chan) <= 32);
+    uint8_t  coded  = code12to8(chan12);
+    uint16_t res    = decode8to12(coded);
+
+    if (chan12 <   64) { ASSERT_TRUE_S(CORE_ABS(res - chan12) <=  0); return; }
+    if (chan12 <  128) { ASSERT_TRUE_S(CORE_ABS(res - chan12) <=  1); return; }
+    if (chan12 <  256) { ASSERT_TRUE_S(CORE_ABS(res - chan12) <=  2); return; }
+    if (chan12 <  512) { ASSERT_TRUE_S(CORE_ABS(res - chan12) <=  4); return; }
+    if (chan12 < 1024) { ASSERT_TRUE_S(CORE_ABS(res - chan12) <=  8); return; }
+    if (chan12 < 2048) { ASSERT_TRUE_S(CORE_ABS(res - chan12) <= 16); return; }
+    if (chan12 < 4096) { ASSERT_TRUE_S(CORE_ABS(res - chan12) <= 32); return; }
+
     ASSERT_FAIL("Channel value is out of range");
 }
 
 inline void testRGB(int r8, int g8, int b8)
 {
-    uint8_t rc = code12to8((uint16_t)r8 << 4);
-    uint8_t gc = code12to8((uint16_t)g8 << 4);
-    uint8_t bc = code12to8((uint16_t)b8 << 4);
-
-    uint8_t rd = decode8to12(rc) >> 4;
-    uint8_t gd = decode8to12(gc) >> 4;
-    uint8_t bd = decode8to12(bc) >> 4;
-
-    checkChanError(r8, rd);
-    checkChanError(g8, gd);
-    checkChanError(b8, bd);
+    testChan(r8 << 4);
+    testChan(g8 << 4);
+    testChan(b8 << 4);
 }
 
 void testCodec(void)
 {
     testRGB( 20,  40,  70);
     testRGB(130, 250, 255);
+    testChan(350);
+    testChan(600);
+    testChan(1023);
+    testChan(1024);
+    testChan(2100);
+    testChan(4095);
 }
 #endif
 
 int main(int argc, char **argv)
 {
-    //testCodec();
+    testCodec();
 
     QTRGB24Loader::registerMyself();
     ALowCodec codec;
@@ -111,11 +113,13 @@ int main(int argc, char **argv)
     }
     else
     {
-        QString oPathUp = QString(oPath.c_str()).toLower();
-        if (oPathUp.indexOf(".bmp") > 0)
+        QString oPathLwr = QString(oPath.c_str()).toLower();
+        if (oPathLwr.indexOf(".bmp") > 0)
             BMPLoader().save(oPath, out);
-        else if (oPathUp.indexOf("_85.jpg") > 0)
+        else if (oPathLwr.indexOf("_85.jpg") > 0)
             QTFileLoader().save(oPath, out, 85);
+        else if (oPathLwr.indexOf("_50.jpg") > 0)
+            QTFileLoader().save(oPath, out, 50);
         else
             QTFileLoader().save(oPath, out, 100);
     }
