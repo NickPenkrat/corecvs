@@ -43,7 +43,7 @@ void testCodec(void)
 }
 #endif
 
-int main (int argc, char **argv)
+int main(int argc, char **argv)
 {
     //testCodec();
 
@@ -51,7 +51,8 @@ int main (int argc, char **argv)
     ALowCodec codec;
 
     if (argc < 2) {
-        printf("Use test_aLowCodec [--decode|--code] <in_filename> <out_filename>");
+        printf("Use test_aLowCodec [--code|--decode] in_filename.{bmp|jpg} <out_filename_{.bmp|_85.jpg|.jpg}>\n");
+        return 1;
     }
 
     bool   code = false;
