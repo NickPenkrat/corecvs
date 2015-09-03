@@ -87,7 +87,8 @@ HEADERS += \
     distortioncorrector/cameraModelParametersControlWidget.h \
     distortioncorrector/lensDistortionModelParametersControlWidget.h \
     distortioncorrector/calibrationFeaturesWidget.h \
-    os/UsbBusResetter.h
+    os/UsbBusResetter.h \
+    photostationcalibration/calibrationJob.h
 
 SOURCES += \
     frames.cpp \
@@ -150,7 +151,8 @@ SOURCES += \
     distortioncorrector/cameraModelParametersControlWidget.cpp \
     distortioncorrector/lensDistortionModelParametersControlWidget.cpp \
     distortioncorrector/calibrationFeaturesWidget.cpp \
-    os/UsbBusResetter.cpp
+    os/UsbBusResetter.cpp \
+    photostationcalibration/calibrationJob.cpp
 
 
 FORMS += \
