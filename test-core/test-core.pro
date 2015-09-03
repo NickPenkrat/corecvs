@@ -33,6 +33,13 @@ fastkernel_profile/main_test_fastkernel_profile.cpp \
 fileformats/main_test_fileformats.cpp \
 filter_blocks/main_test_filter_blocks.cpp \
 #gaussianSolution/main.cpp \
-geometry/main_test_geometry.cpp
+geometry/main_test_geometry.cpp \
+gradient/main_test_gradient.cpp \
+histogram/main_test_histogram.cpp \
+homography/main_test_homography.cpp \
+integral/main_test_integral.cpp \
+kalman/main_test_kalman.cpp \
+klt_cycle/main_test_klt_cycle.cpp \
+levenberg/main_test_levenberg.cpp
 
 
