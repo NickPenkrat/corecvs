@@ -25,7 +25,7 @@ using namespace corecvs;
 const unsigned GRID_STEP = 10;
 const unsigned GRID_SIZE = GRID_STEP * GRID_STEP;
 
-TEST(Rectification, printMatrixInfo)
+void printMatrixInfo (const Matrix33 &matrix)
 {
     printf("Guessed fundamental matrix:\n");
     matrix.print();
