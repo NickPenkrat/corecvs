@@ -11,6 +11,7 @@
 #include <iostream>
 #include <iomanip>
 #include <vector>
+#include "gtest/gtest.h"
 
 #include "global.h"
 
@@ -78,7 +79,7 @@ void testRadialModel(void)
 }
 #endif
 
-void testRadialJacobian(void)
+TEST(Distortion, testRadialJacobian)
 {
     vector<vector<Vector2dd> > samples;
 
@@ -106,12 +107,3 @@ void testRadialJacobian(void)
 
 }
 
-int main (int /*argC*/, char ** /*argV*/)
-{
-//    cout << "testRadialModel" << endl;
-//    testRadialModel();
-    cout << "testRadialJacobian" << endl;
-    testRadialJacobian();
-    cout << "PASSED" << endl;
-    return 0;
-}

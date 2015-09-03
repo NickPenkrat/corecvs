@@ -9,6 +9,8 @@
  */
 
 #include <iostream>
+#include "gtest/gtest.h"
+
 #include "global.h"
 
 #include "fixedPointDisplace.h"
@@ -32,7 +34,7 @@ using corecvs::FixedPointDisplace;
 using corecvs::BMPLoader;
 using corecvs::RGB24Buffer;
 
-void testFastDeform ()
+TEST(Deform, testFastDeform)
 {
 
     Matrix33 inverseLeftMatrix(
@@ -83,8 +85,7 @@ template<typename operation>
         }
     }
 
-
-void testFastDeform24 ()
+TEST(Deform, testFastDeform24)
 {
     cout << "Starting test: testFastDeform24 ()" << endl;
     Matrix33 inverseLeftMatrix(
@@ -130,8 +131,7 @@ void testFastDeform24 ()
     delete_safe(image);
 }
 
-
-void testRadialApplication ( void )
+TEST(Deform, testRadialApplication)
 {
     cout << "Starting test: testRadialApplication ()" << endl;
     RGB24Buffer *image = new RGB24Buffer(2500, 4000);
@@ -229,7 +229,7 @@ void testRadialApplication ( void )
 
 }
 
-void testRadialInversion( void )
+TEST(Deform, testRadialInversion)
 {
     RGB24Buffer *image = new RGB24Buffer(2500, 4000);
 
@@ -285,14 +285,3 @@ void testRadialInversion( void )
 
 }
 
-int main (int /*argC*/, char ** /*argV*/)
-{
-    testRadialApplication();
-    //testFastDeform ();
-    //testFastDeform24 ();
-
-    //testRadialInversion();
-
-    cout << "PASSED" << endl;
-    return 0;
-}

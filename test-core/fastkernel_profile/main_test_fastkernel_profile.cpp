@@ -11,7 +11,7 @@
 #include <iostream>
 #include <string.h>
 #include <stdint.h>
-
+#include "gtest/gtest.h"
 
 /*#ifndef ASSERTS
 #define ASSERTS
@@ -418,7 +418,8 @@ void _profileManualSobelH (void)
 
 }
 
-int main (int /*argC*/, char** /*argV*/)
+//int main (int /*argC*/, char** /*argV*/)
+TEST(FastKernelProfile, main)
 {
     cout << "Starting fastkernel profiling test" << endl;
 	_profileAlgnmentAccessSpeed();
@@ -458,5 +459,5 @@ int main (int /*argC*/, char** /*argV*/)
     _profileMemcpy();
 
     cout << "PASSED" << endl;
-    return 0;
+//    return 0;
 }

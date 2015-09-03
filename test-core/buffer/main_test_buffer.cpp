@@ -116,7 +116,7 @@ TEST(Buffer, testG12Buffer)
 
 }
 
-TEST(Buffer, testBilinerTransform)
+TEST(Buffer, DISABLED_testBilinerTransform)
 {
     Matrix33 inverseLeftMatrix(
     1, 0, -13,
@@ -166,7 +166,7 @@ TEST(Buffer, testDerivative)
     delete input;
 }
 
-TEST(Buffer, testNonMinimal)
+TEST(Buffer, DISABLED_testNonMinimal)
 {
     G12Buffer *image = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
     ASSERT_TRUE(image, "Could not open test image\n");
@@ -187,7 +187,7 @@ TEST(Buffer, testNonMinimal)
     delete image;
 }
 
-TEST(Buffer, testBufferDifference)
+TEST(Buffer, DISABLED_testBufferDifference)
 {
     G12Buffer *input1 = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
     G12Buffer *input2 = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0002_c0.pgm");
@@ -204,7 +204,7 @@ TEST(Buffer, testBufferDifference)
 
 }
 
-TEST(Buffer, testBufferThreshold)
+TEST(Buffer, DISABLED_testBufferThreshold)
 {
     G12Buffer *input1 = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
     int level = 1500;
