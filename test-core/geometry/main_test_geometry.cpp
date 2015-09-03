@@ -10,6 +10,8 @@
 
 #include <fstream>
 #include <iostream>
+#include "gtest/gtest.h"
+
 #include "global.h"
 #include "polygons.h"
 #include "vector2d.h"
@@ -25,8 +27,7 @@ using corecvs::Polygon;
 using corecvs::Mesh3D;
 using corecvs::AxisAlignedBox3d;
 
-
-void testPolygonInside()
+TEST(Geometry, testPolygonInside)
 {
     corecvs::Polygon p;
     p.push_back(Vector2dd(0.0,0.0));
@@ -51,8 +52,7 @@ void testPolygonInside()
     }
 }
 
-
-void testIntersection()
+TEST(Geometry, testIntersection)
 {
 
     RGB24Buffer image(1000,1000, RGBColor::White());
@@ -113,7 +113,7 @@ void testIntersection()
 
 }
 
-void testIntersection3D()
+TEST(Geometry, testIntersection3D)
 {
     Mesh3D mesh;
     AxisAlignedBox3d box(Vector3dd(-100, -100, -100), Vector3dd(100, 100, 100));
@@ -140,9 +140,9 @@ void testIntersection3D()
 
 }
 
-int main (int /*argC*/, char ** /*argV*/)
-{
-    testIntersection3D();
-    testIntersection();
-    testPolygonInside();
-}
+//int main (int /*argC*/, char ** /*argV*/)
+//{
+//    testIntersection3D();
+//    testIntersection();
+//    testPolygonInside();
+//}

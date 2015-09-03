@@ -1,3 +1,4 @@
+#include "gtest/gtest.h"
 #include "matrix.h"
 
 using namespace corecvs;
@@ -386,11 +387,12 @@ bool isCorrectSolutionForPolynomInterpolation()
 
 }
 
-int main(int argc, char *argv[])
+//int main(int argc, char *argv[])
+TEST(GaussianSolution, testRotations)
 {
   //  QCoreApplication a(argc, argv);
     cout << "\n" << isCorrectSolutionForPolynomInterpolation();
-    int a;
-    cin >> a;
+//    int a;
+//    cin >> a;
    // return a.exec();
 }
