@@ -54,7 +54,7 @@ rectificator/main_test_rectificator.cpp \
 rectificator1/main_test_rectificator1.cpp \
 rgb24buffer/main_test_rgb24buffer.cpp \
 serializer/main_test_serializer.cpp \
-sig_epsilon/main_test_sig_epsilon.cpp \
+#sig_epsilon/main_test_sig_epsilon.cpp \ #todo: missing include
 #signature_compare/main_test_signature_compare.cpp \ #todo: file read
 similarity/main_test_similarity.cpp \
 #snooker/ #todo: move code

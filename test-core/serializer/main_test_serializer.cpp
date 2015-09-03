@@ -36,7 +36,7 @@ TEST(Serializer, testReflection)
 
 }
 
-TEST(Serializer, testReflection)
+TEST(Serializer, testReflection1)
 {
     Vector3dd vec3a(5.0, 0.4, -1.0);
     Vector3dd vec3b(6.0, 0.5, -1.1);
