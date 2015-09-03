@@ -15,6 +15,7 @@
 #include <sstream>
 #include <iostream>
 #include <limits>
+#include "gtest/gtest.h"
 
 #include "global.h"
 
@@ -25,7 +26,7 @@
 using namespace std;
 using namespace corecvs;
 
-void testMatrix33 ( void )
+TEST(MatrixTest, testMatrix33)
 {
     // Test case 1: Test general constructors
     cout << "Testing Matrix33\n";
@@ -101,7 +102,7 @@ void testMatrix33 ( void )
 
 }
 
-void testMatrix44 ( void )
+TEST(MatrixTest, testMatrix44)
 {
     Matrix44 a = Matrix44(1.0);
     Matrix44 ares = Matrix44(1.0);
@@ -119,7 +120,7 @@ void testMatrix44 ( void )
     ASSERT_TRUE(a.notTooFar(ares, 1e-5), "Rotation problem\n");
 }
 
-void testMatrixVectorProduct (void)
+TEST(MatrixTest, testMatrixVectorProduct)
 {
     Matrix33 a1 = Matrix33 (
              1,  2,  3,
@@ -138,7 +139,7 @@ void testMatrixVectorProduct (void)
 
 }
 
-void testMatrix44VectorProduct (void)
+TEST(MatrixTest, testMatrix44VectorProduct)
 {
     Matrix44 matrix = Matrix44 (
              2,  0,  0,  0,
@@ -159,14 +160,7 @@ void testMatrix44VectorProduct (void)
 
 }
 
-
-void testMatrixGaussianSolve (void)
-{
-
-}
-
-
-void testMatrixVectorMult (void)
+TEST(MatrixTest, testMatrixVectorMult)
 {
     double vec1data[] = {1.0, 2.0, 0.5};
     Vector a(3, vec1data);
@@ -197,8 +191,7 @@ void testMatrixVectorMult (void)
     ASSERT_TRUE(vec2r.notTooFar(res2, 1e-7), "Wrong vector x matrix");
 }
 
-
-void testMatrixStatics (void)
+TEST(MatrixTest, testMatrixStatics)
 {
     Vector3dd a(3.0,-4.0,5.0);
     Matrix33 m1 = Matrix33::CrossProductLeft(a);
@@ -216,8 +209,7 @@ void testMatrixStatics (void)
     ASSERT_TRUE(c1.notTooFar(d1, 1e-5), "Matrix cross product right representation fails");
 }
 
-
-void testMatrixSVD (void)
+TEST(MatrixTest, testMatrixSVD)
 {
     cout << "Testing SVD\n";
     // Test case 1: SVD with CMatrix
@@ -269,11 +261,7 @@ void testMatrixSVD (void)
     delete VT;
 }
 
-
-
-
-
-void testVector3d (void)
+TEST(MatrixTest, testVector3d)
 {
     cout << "Testing Vector3dd\n";
 
@@ -337,7 +325,7 @@ void testVector3d (void)
 
 }
 
-void testVector2d (void)
+TEST(MatrixTest, testVector2d)
 {
     cout << "Testing Vector2d\n";
     Vector2dd v1 = Vector2dd(cos(M_PI / 6.0), sin(M_PI / 6.0));
@@ -362,7 +350,7 @@ void testVector2d (void)
     ASSERT_TRUE(rightNormal.notTooFar(v3.rightNormal() , 1e-10), "Right Normal Error\n");
 }
 
-void testMatrixSerialisation (void)
+TEST(MatrixTest, testMatrixSerialisation)
 {
     Matrix33 m = Matrix33::RotationX(0.1) * Matrix33::RotationY(0.1);
     Matrix33 m1;
@@ -375,7 +363,7 @@ void testMatrixSerialisation (void)
     ASSERT_TRUE(m1.notTooFar(m), "serialization fails\n");
 }
 
-void testDouble (void)
+TEST(MatrixTest, testDouble)
 {
     cout << "Testing Double support\n";
     double vals[] = {numeric_limits<double>::min(), 1.0, numeric_limits<double>::max()};
@@ -414,7 +402,7 @@ Matrix addMatrix(const Matrix &A, const Matrix &B)
     return result;
 }
 
-void testMatrixOperations (void)
+TEST(MatrixTest, testMatrixOperations)
 {
     /*Matrix result(5,5, false);
 
@@ -513,7 +501,7 @@ void testMatrixOperations (void)
 
 }
 
-void testVectorMatrixConversions()
+TEST(MatrixTest, testVectorMatrixConversions)
 {
     Matrix44 input(Matrix33::RotationY(0.1), Vector3dd(6,7,8));
     Vector3dd pos(45.0,45.0,45.0);
@@ -537,25 +525,25 @@ void testVectorMatrixConversions()
 
 }
 
-int main (int /*argC*/, char ** /*argV*/)
-{
-    cout << "Testing " << endl;
-#if 1
-    //testMatrixVectorMult();
-    testMatrixOperations();
-    return 0;
-    testMatrix44VectorProduct();   
-    testMatrix44();
-    testDouble();
-    testMatrixSerialisation();
-    testMatrixVectorProduct  ();
-    testMatrix33 ();
-    testMatrixStatics();
-    testMatrixSVD ();
-    testVector3d ();
-    testVector2d ();
-#endif
-    testVectorMatrixConversions();
-    cout << "PASSED" << endl;
-    return 0;
-}
+//int main (int /*argC*/, char ** /*argV*/)
+//{
+//    cout << "Testing " << endl;
+//#if 1
+//    //testMatrixVectorMult();
+//    testMatrixOperations();
+//    return 0;
+//    testMatrix44VectorProduct();
+//    testMatrix44();
+//    testDouble();
+//    testMatrixSerialisation();
+//    testMatrixVectorProduct  ();
+//    testMatrix33 ();
+//    testMatrixStatics();
+//    testMatrixSVD ();
+//    testVector3d ();
+//    testVector2d ();
+//#endif
+//    testVectorMatrixConversions();
+//    cout << "PASSED" << endl;
+//    return 0;
+//}

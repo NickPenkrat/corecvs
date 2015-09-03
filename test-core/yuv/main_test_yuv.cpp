@@ -9,6 +9,8 @@
  */
 
 #include <iostream>
+#include "gtest/gtest.h"
+
 #include "global.h"
 
 #include "yuv/yuv422Planes.h"
@@ -19,7 +21,7 @@ using corecvs::YUV422Planes;
 using corecvs::YUVColor;
 
 
-void testYUVConvertion( void )
+TEST(YUV, testYUVConvertion)
 {
     cout << "testYUVConvertion(): called" << endl;
 
@@ -36,15 +38,9 @@ void testYUVConvertion( void )
     return;
 }
 
-void testYUVDraw( void )
-{
-
-}
-
-
-int main (int /*argC*/, char **/*argV*/)
-{
-    testYUVConvertion();
-    cout << "PASSED" << endl;
-    return 0;
-}
+//int main (int /*argC*/, char **/*argV*/)
+//{
+//    testYUVConvertion();
+//    cout << "PASSED" << endl;
+//    return 0;
+//}

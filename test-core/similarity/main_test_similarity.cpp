@@ -11,6 +11,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include "gtest/gtest.h"
 
 #include "global.h"
 #include "vector3d.h"
@@ -20,8 +21,7 @@
 using namespace std;
 using namespace corecvs;
 
-
-void testSimilarity()
+TEST(Similarity, testSimilarity)
 {
     Matrix44 transform = Quaternion::Rotation(Vector3dd(0.345,-0.2,-123), 0.12).toMatrix() * Matrix44::Scale(2.0);
 
@@ -84,8 +84,7 @@ void testSimilarity()
 
 }
 
-
-void testSimilarity1()
+TEST(Similarity, testSimilarity1)
 {
     vector<Vector3dd> data;
     vector<Vector3dd> out;
@@ -191,7 +190,7 @@ void testSimilarity1()
 
 }
 
-void testCostFunction (void)
+TEST(Similarity, testCostFunction)
 {
     Similarity s;
     s.rotation = Quaternion::Rotation(Vector3dd(1.0,2.0,3.0), 4.0);
@@ -227,7 +226,7 @@ void testCostFunction (void)
 
 }
 
-void testConverstions()
+TEST(Similarity, testConverstions)
 {
     cout << "======================================================" << endl;
     cout << "testConverstions" << endl;
@@ -248,13 +247,13 @@ void testConverstions()
 
 }
 
-int main (int /*argC*/, char ** /*argV*/)
-{
-    testSimilarity1();
-    //testConverstions();
-    //testSimilarity();
-    //testCostFunction();
+//int main (int /*argC*/, char ** /*argV*/)
+//{
+//    testSimilarity1();
+//    //testConverstions();
+//    //testSimilarity();
+//    //testCostFunction();
 
-    cout << "PASSED" << endl;
-    return 0;
-}
+//    cout << "PASSED" << endl;
+//    return 0;
+//}

@@ -9,6 +9,7 @@
  */
 
 #include <iostream>
+#include "gtest/gtest.h"
 
 #include "global.h"
 
@@ -21,7 +22,7 @@
 using namespace std;
 using corecvs::EssentialDecomposition;
 
-void testDepthAndDisparity()
+TEST(Triangulator, testDepthAndDisparity)
 {
     EssentialDecomposition decomposition(Matrix33(1.0), Vector3dd(-1.0,0.0,0.0));
 
@@ -62,9 +63,9 @@ void testDepthAndDisparity()
 
 }
 
-int main (int /*argC*/, char ** /*argV*/)
-{
-    testDepthAndDisparity();
-    cout << "PASSED" << endl;
-    return 0;
-}
+//int main (int /*argC*/, char ** /*argV*/)
+//{
+//    testDepthAndDisparity();
+//    cout << "PASSED" << endl;
+//    return 0;
+//}

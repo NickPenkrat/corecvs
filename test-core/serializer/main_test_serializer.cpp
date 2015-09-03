@@ -9,6 +9,7 @@
  */
 
 #include <iostream>
+#include "gtest/gtest.h"
 
 #ifndef ASSERTS
 #define ASSERTS
@@ -26,7 +27,7 @@
 using namespace std;
 using namespace corecvs;
 
-void testReflection( void )
+TEST(Serializer, testReflection)
 {
     Vector2dd vec(5.0, 0.4);
     PrinterVisitor visitor;
@@ -35,9 +36,7 @@ void testReflection( void )
 
 }
 
-
-
-void testSerializer( void )
+TEST(Serializer, testReflection)
 {
     Vector3dd vec3a(5.0, 0.4, -1.0);
     Vector3dd vec3b(6.0, 0.5, -1.1);
@@ -89,7 +88,7 @@ void testSerializer( void )
 
 }
 
-void testSerializer1( void )
+TEST(Serializer, testSerializer1)
 {
     RectificationResult result;
     PropertyList list;
@@ -99,12 +98,12 @@ void testSerializer1( void )
     list.save(cout);
 }
 
-int main (int /*argC*/, char ** /*argV*/)
-{
-    testReflection();
-    testSerializer();
-    testSerializer1();
+//int main (int /*argC*/, char ** /*argV*/)
+//{
+//    testReflection();
+//    testSerializer();
+//    testSerializer1();
 
-    cout << "PASSED" << endl;
-        return 0;
-}
+//    cout << "PASSED" << endl;
+//        return 0;
+//}
