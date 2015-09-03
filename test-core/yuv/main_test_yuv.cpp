@@ -35,7 +35,7 @@ TEST(YUV, testYUVConvertion)
         RGBColor back = converted.toRGB();
         cout << " -> rgb:" << back << endl;
     }
-    return;
+//    return;
 }
 
 //int main (int /*argC*/, char **/*argV*/)

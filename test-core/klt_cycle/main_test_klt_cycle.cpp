@@ -85,7 +85,7 @@ TEST(KltCycle, testKLT)
 
     delete sg;
 
-    return 0;
+//    return 0;
 }
 
 //int main (void)
