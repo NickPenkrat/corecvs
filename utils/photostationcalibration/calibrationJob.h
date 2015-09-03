@@ -13,6 +13,7 @@
 #include "distortionApplicationParameters.h"
 #include "chessBoardDetector.h"
 #include "calibration_structs.h"
+#include "photoStationCalibrator.h"
 
 struct ImageData
 {
@@ -20,6 +21,7 @@ struct ImageData
     std::string undistortedFileName;
     corecvs::ObservationList sourcePattern;
     corecvs::ObservationList undistortedPattern;
+    LocationData location;
 
     template<class VisitorType>
     void accept(VisitorType &visitor)
@@ -28,6 +30,7 @@ struct ImageData
         visitor.visit(undistortedFileName, std::string(""), "undistortedFileName");
         visitor.visit((std::vector<PointObservation>&)sourcePattern, "sourcePattern");
         visitor.visit((std::vector<PointObservation>&)undistortedPattern, "undistortedPattern");
+        visitor.visit(location, LocationData(), "viewLocation");
     }
 };
 
@@ -57,6 +60,16 @@ struct CalibrationSettings
 
     DistortionApplicationParameters distortionApplicationParameters;
 
+    // TODO: move to some <<CalibratorParams>> structure
+    bool singleCameraCalibratorUseZhangPresolver = true;
+    bool singleCameraCalibratorUseLMSolver = true;
+    CameraConstraints singleCameraCalibratorConstraints = CameraConstraints::ZERO_SKEW | CameraConstraints::EQUAL_FOCAL | CameraConstraints::LOCK_SKEW;
+
+    bool photostationCalibratorUseBFSPresolver = true;
+    bool photostationCalibratorUseLMSolver = true;
+    CameraConstraints photostationCalibratorConstraints = CameraConstraints::ZERO_SKEW | CameraConstraints::EQUAL_FOCAL | CameraConstraints::LOCK_SKEW;
+
+    CameraIntrinsics_ calibrationLockParams;
 
     template<class VisitorType>
     void accept(VisitorType &visitor)
@@ -70,6 +83,20 @@ struct CalibrationSettings
 
         visitor.visit(distortionEstimationParameters, LineDistortionEstimatorParameters(), "lineDistortionEstimationParameters");
         visitor.visit(distortionApplicationParameters, DistortionApplicationParameters(), "distortionApplicationParameters");
+
+        visitor.visit(singleCameraCalibratorUseZhangPresolver, true, "singleCameraCalibratorUseZhangPresolver");
+        visitor.visit(singleCameraCalibratorUseLMSolver, true, "singleCameraCalibratorUseLMSolver");
+        auto m = asInteger(singleCameraCalibratorConstraints);
+        visitor.visit(m, asInteger(CameraConstraints::ZERO_SKEW | CameraConstraints::EQUAL_FOCAL | CameraConstraints::LOCK_SKEW), "singleCameraCalibratorConstraints");
+        singleCameraCalibratorConstraints = static_cast<CameraConstraints>(m);
+
+        visitor.visit(photostationCalibratorUseBFSPresolver, true, "photostationCalibratorUseBFSPresolver");
+        visitor.visit(photostationCalibratorUseLMSolver, true, "photostationCalibratorUseLMSolver");
+        m = asInteger(photostationCalibratorConstraints);
+        visitor.visit(m, asInteger(CameraConstraints::ZERO_SKEW | CameraConstraints::EQUAL_FOCAL | CameraConstraints::LOCK_SKEW), "photostationCalibratorConstraints");
+        photostationCalibratorConstraints = static_cast<CameraConstraints>(m);
+
+        visitor.visit(calibrationLockParams, CameraIntrinsics_(), "calibrationLockParams");
     }
 };
 
@@ -109,6 +136,11 @@ struct CalibrationJob
     void removeDistortion(corecvs::RGB24Buffer &src, corecvs::RGB24Buffer &dst, corecvs::DisplacementBuffer &transform, double outW, double outH);
     void allRemoveDistortion();
 
+    bool calibrateSingleCamera(int cameraId);
+    void allCalibrateSingleCamera();
+
+    void calibratePhotostation();
+    void calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<CameraIntrinsics_> &intrinsics, std::vector<std::vector<LocationData>> &locations, bool runBFS, bool runLM);
     void calibrate();
 };
 

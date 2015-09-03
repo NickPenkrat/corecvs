@@ -1,7 +1,14 @@
 #include "calibrationJob.h"
+#include  <cassert>
 
 #include "openCvCheckerboardDetector.h"
 #include "lmDistortionSolver.h"
+#include "flatPatternCalibrator.h"
+#include "photoStationCalibrator.h"
+
+#include "qtFileLoader.h"
+
+#include "tbbWrapper.h"
 
 bool CalibrationJob::detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::ObservationList &list)
 {
@@ -84,21 +91,31 @@ bool CalibrationJob::estimateDistortion(corecvs::SelectableGeometryFeatures &fea
     return true;
 }
 
+struct ParallelDistortionEstimator
+{
+    void operator() (const corecvs::BlockedRange<int> &r) const
+    {
+        for (int cam = r.begin(); cam < r.end(); ++cam)
+        {
+            corecvs::SelectableGeometryFeatures sgf;
+            for (auto& v: job->observations[cam])
+            {
+                sgf.addAllLinesFromObservationList(v.sourcePattern);
+            }
+            auto& psIterator = job->photostation.cameras[cam];
+            job->estimateDistortion(sgf, psIterator.intrinsics.size[0], psIterator.intrinsics.size[1], psIterator.distortion);
+        }
+    }
+
+    ParallelDistortionEstimator(CalibrationJob *job) : job(job)
+    {}
+
+    CalibrationJob *job;
+};
+
 void CalibrationJob::allEstimateDistortion()
 {
-    // TODO: check if distortion estimator is parallelized and add TBB parallelizator if it is not
-    auto psIterator = photostation.cameras.begin();
-    for (auto& c: observations)
-    {
-        corecvs::SelectableGeometryFeatures sgf;
-        for (auto& v: c)
-        {
-            sgf.addAllLinesFromObservationList(v.sourcePattern);
-        }
-
-        estimateDistortion(sgf, psIterator->intrinsics.size[0], psIterator->intrinsics.size[1], psIterator->distortion);
-        ++psIterator;
-    }
+    corecvs::parallelable_for(0, (int)photostation.cameras.size(), ParallelDistortionEstimator(this));
 }
 
 typedef std::array<corecvs::Vector2dd, 2> Rect;
@@ -178,20 +195,183 @@ void CalibrationJob::removeDistortion(corecvs::RGB24Buffer &src, corecvs::RGB24B
     delete res;
 }
 
+struct ParallelDistortionRemoval
+{
+    void operator() (const corecvs::BlockedRange<int> &r) const
+    {
+        for (int camId = r.begin(); camId < r.end(); ++camId)
+        {
+            auto& observationsIterator = job->observations[camId];
+            auto& cam = job->photostation.cameras[camId];
+
+            corecvs::DisplacementBuffer transform;
+            double newW, newH;
+            job->prepareUndistortionTransformation(cam.distortion, cam.intrinsics.size[0], cam.intrinsics.size[1], transform, newW, newH);
+            for (auto& ob: observationsIterator)
+            {
+                corecvs::RGB24Buffer source = job->LoadImage(ob.sourceFileName), dst;
+                job->removeDistortion(source, dst, transform, newW, newH);
+                job->SaveImage(ob.undistortedFileName, dst);
+            }
+        }
+    }
+
+    ParallelDistortionRemoval(CalibrationJob *job) : job(job)
+    {}
+
+    CalibrationJob *job;
+};
+
 void CalibrationJob::allRemoveDistortion()
 {
-    auto observationsIterator = observations.begin();
-    for (auto& cam: photostation.cameras)
+    corecvs::parallelable_for (0, (int)photostation.cameras.size(), ParallelDistortionRemoval(this));
+}
+
+void CalibrationJob::SaveImage(const std::string &path, corecvs::RGB24Buffer &img)
+{
+    QTFileLoader().save(path, &img, 100);
+}
+
+corecvs::RGB24Buffer CalibrationJob::LoadImage(const std::string &path)
+{
+    auto* buffer = QTRGB24Loader().load(path);
+    if (!buffer)
+        return corecvs::RGB24Buffer();
+    corecvs::RGB24Buffer res = *buffer;
+    return res;
+}
+
+bool CalibrationJob::calibrateSingleCamera(int cameraId)
+{
+    std::vector<LocationData> locations;
+    int valid_locations = 0;
+
+    FlatPatternCalibrator calibrator(settings.singleCameraCalibratorConstraints, settings.calibrationLockParams);
+
+    for (auto& o: observations[cameraId])
     {
-        corecvs::DisplacementBuffer transform;
-        double newW, newH;
-        prepareUndistortionTransformation(cam.distortion, cam.intrinsics.size[0], cam.intrinsics.size[1], transform, newW, newH);
-        for (auto& ob: *observationsIterator)
+        PatternPoints3d patternPoints;
+        for (auto& p: o.undistortedPattern)
+            patternPoints.emplace_back(p.projection, p.point);
+
+        if (patternPoints.size())
         {
-            corecvs::RGB24Buffer source = LoadImage(ob.sourceFileName), dst;
-            removeDistortion(source, dst, transform, newW, newH);
-            SaveImage(ob.undistortedFileName, dst);
+            calibrator.addPattern(patternPoints);
+            valid_locations++;
         }
-        ++observationsIterator;
     }
+
+    if (valid_locations > 2)
+    {
+        valid_locations = 0;
+        calibrator.solve(settings.singleCameraCalibratorUseZhangPresolver, settings.singleCameraCalibratorUseLMSolver);
+
+        photostation.cameras[cameraId].intrinsics = calibrator.getIntrinsics();
+        locations = calibrator.getExtrinsics();
+
+        for (auto& o: observations[cameraId])
+        {
+            if (o.undistortedPattern.size())
+                o.location = locations[valid_locations++];
+        }
+        return true;
+    }
+    return false;
+}
+
+struct ParallelSingleCalibrator
+{
+    void operator() (const corecvs::BlockedRange<int> &r) const
+    {
+        for (int cameraId = r.begin(); cameraId < r.end(); ++cameraId)
+            job->calibrateSingleCamera(cameraId);
+    }
+
+    CalibrationJob *job;
+
+    ParallelSingleCalibrator(CalibrationJob *job) : job(job) {}
+};
+
+void CalibrationJob::allCalibrateSingleCamera()
+{
+    std::cout << "calibrating all cameras: " << photostation.cameras.size() << std::endl;
+    static int count = 0;
+    assert(count++ == 0);
+    corecvs::parallelable_for(0, (int)photostation.cameras.size(), ParallelSingleCalibrator(this));
+}
+
+void CalibrationJob::calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<CameraIntrinsics_> &intrinsics, std::vector<std::vector<LocationData>> &locations, bool runBFS, bool runLM)
+{
+    for (auto& ci: intrinsics)
+    {
+        calibrator.addCamera(ci);
+    }
+
+	std::vector<int> cnt(N);
+    for (auto& setup: points)
+	{
+		MultiCameraPatternPoints pts;
+		std::vector<int> active;
+		std::vector<LocationData> locs;
+		for (int i = 0; i < N; ++i)
+		{
+			if (setup[i].size())
+			{
+				active.push_back(i);
+				pts.push_back(setup[i]);
+				locs.push_back(locations[i][cnt[i]++]);
+			}
+		}
+		calibrator.addCalibrationSetup(active, locs, pts);
+	}
+	if (runBFS)
+        calibrator.solve(true, false);
+    calibrator.recenter(); // Let us hope it'll speedup...
+    if (runLM)
+        calibrator.solve(false, true);
+    calibrator.recenter();
+}
+
+void CalibrationJob::calibratePhotostation()
+{
+    int M = calibrationSetups.size();
+    int N = photostation.cameras.size();
+    std::vector<MultiCameraPatternPoints> points(M);
+    for (int i = 0; i < M; ++i)
+    {
+        points[i].resize(N);
+        for (auto& s: calibrationSetups[i])
+        {
+            points[i][s.cameraId].clear();
+            for (auto& p: observations[s.cameraId][s.imageId].undistortedPattern)
+                points[i][s.cameraId].emplace_back(p.projection, p.point);
+        }
+    }
+
+    std::vector<CameraIntrinsics_> intrinsics;
+    for (auto& c: photostation.cameras)
+        intrinsics.push_back(c.intrinsics);
+    std::vector<std::vector<LocationData>> locations(N);
+    for (int i = 0; i < N; ++i)
+    {
+        for (auto& o: observations[i])
+            locations[i].push_back(o.location);
+    }
+
+    PhotoStationCalibrator calibrator(settings.photostationCalibratorConstraints);
+    calibratePhotostation(N, M, calibrator, points, intrinsics, locations, settings.photostationCalibratorUseBFSPresolver, settings.photostationCalibratorUseLMSolver);
+    auto ps = calibrator.getPhotostation();
+    for (int i = 0; i < N; ++i)
+    {
+        photostation.cameras[i].intrinsics = ps.cameras[i].intrinsics;
+        photostation.cameras[i].extrinsics = ps.cameras[i].extrinsics;
+    }
+
+    calibrationSetupLocations = calibrator.getCalibrationSetups();
+}
+
+void CalibrationJob::calibrate()
+{
+    allCalibrateSingleCamera();
+    calibratePhotostation();
 }
