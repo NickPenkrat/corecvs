@@ -21,7 +21,7 @@
 using namespace std;
 using namespace corecvs;
 
-TEST(Histogram, testBinarization)
+TEST(Histogram, DISABLED_testBinarization)
 {
     G12Buffer *image = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
 

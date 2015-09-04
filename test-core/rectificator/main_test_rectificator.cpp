@@ -132,7 +132,7 @@ TEST(Rectification, testSVDDesc)
 
 }
 
-TEST(Rectification, testComposeDecompose)
+TEST(Rectification, DISABLED_testComposeDecompose)
 {
     Matrix33  R = Matrix33::RotationZ(M_PI/6);
     Vector3dd t = Vector3dd(2.0, 1.0, 0.0);

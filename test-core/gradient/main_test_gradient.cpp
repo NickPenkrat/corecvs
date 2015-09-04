@@ -114,7 +114,7 @@ TEST(Gradient, testGradientDescent)
     ASSERT_TRUE(res   .notTooFar(min, 1e-2), "GD opt failed");
 }
 
-TEST(Gradient, testGradientDescentRnToRm)
+TEST(Gradient, DISABLED_testGradientDescentRnToRm)
 {
     GradientRnToRmTest function;
 

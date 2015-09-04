@@ -89,7 +89,7 @@ TEST(Integral, testIntergralBufferBlur)
     delete integral;
 }
 
-TEST(Integral, testIntegralBlurLarge)
+TEST(Integral, DISABLED_testIntegralBlurLarge)
 {
     cout << "Testing bluring on large file" << endl;
     G12Buffer *input = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");

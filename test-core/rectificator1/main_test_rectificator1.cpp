@@ -34,7 +34,7 @@ using namespace corecvs;
 
 #define GRID_STEP (10)
 
-TEST(Rectification1, testAligner)
+TEST(Rectification1, DISABLED_testAligner)
 {
     Vector3dd z1;
 
@@ -175,7 +175,7 @@ TEST(Rectification1, __testUnDistortion)
     delete graph;
 }
 
-TEST(Rectification1, testRectificatorCubeEssential)
+TEST(Rectification1, DISABLED_testRectificatorCubeEssential)
 {
     vector<Vector3dd> *pointsIn3d = NULL;
     vector<Vector2dd> imagesL;
@@ -376,7 +376,7 @@ TEST(Rectification1, testRectificatorCubeEssential)
 
 }
 
-TEST(Rectification1, testRectificatorCube)
+TEST(Rectification1, DISABLED_testRectificatorCube)
 {
 
     cout << "=============================Testing old style rectificator=================================" << endl;
