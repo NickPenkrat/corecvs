@@ -22,7 +22,7 @@ SUBDIRS +=       \
 
 with_opencv {
     SUBDIRS +=       \
-    	opencvLineDetector \
+    	distortion_corrector \
         matcher_basic \
         matcher_full \
         camera_calibration \
@@ -45,7 +45,7 @@ chessboard_detector.file= chessboard_detector/chessboard_detector.pro
 genvectorui.file        = genvectorui/genvectorui.pro
 aLowCodec.file          = aLowCodec/aLowCodec.pro
 
-opencvLineDetector.file = opencvLineDetector/opencvLineDetector.pro
+distortion_corrector.file = distortion_corrector/distortion_corrector.pro
 
 matcher_basic.file      = matcher_basic/feature2d_basic.pro
 matcher_full.file       = matcher_full/matcher_full.pro
