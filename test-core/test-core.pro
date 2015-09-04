@@ -59,7 +59,7 @@ serializer/main_test_serializer.cpp \
 similarity/main_test_similarity.cpp \
 #snooker/ #todo: move code
 sphericdist/main_test_sphericdist.cpp \
-ssewrappers/main_test_ssewrappers.cpp \
+#ssewrappers/main_test_ssewrappers.cpp \ #todo: can't build
 #stateMachineTest/ #todo: qt4 deps
 #tbb_wrapper/main_test_tbb_wrapper.cpp #todo: tbb deps
 #train_vj/main_train_vj.cpp #todo: file read
