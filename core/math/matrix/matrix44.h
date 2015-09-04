@@ -84,6 +84,7 @@ public:
     Matrix44 transposed() const;
 
     Matrix44 inverted() const;
+    double trace() const;
     double det() const;
 
     double frobeniusNorm() const;

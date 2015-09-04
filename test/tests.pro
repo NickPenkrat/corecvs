@@ -21,11 +21,11 @@ SUBDIRS +=       \
 
 with_opencv {
     SUBDIRS +=       \
-    	opencvLineDetector \
-        matcher_basic \
-        matcher_full \
-        camera_calibration \
-        chessboard_detector
+#    	opencvLineDetector \
+#        matcher_basic \
+#        matcher_full \
+#        camera_calibration \
+#        chessboard_detector
 }
 
 grab.file               = grab/grab.pro

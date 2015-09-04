@@ -15,8 +15,8 @@ TEMPLATE = subdirs
 
 with_opencv:!macx {
     #!contains(SUBDIRS, ocv-homo):                  # such operator doesn't work!
-    SUBDIRS *= ocv-homo                             # adds project only if it doesn't exist
-    SUBDIRS *= openCV
+#    SUBDIRS *= ocv-homo                             # adds project only if it doesn't exist
+#    SUBDIRS *= openCV
 }
 
 SUBDIRS += \
