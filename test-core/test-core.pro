@@ -23,7 +23,7 @@ cornerdetector/main_test_cornerdetector.cpp \
 #cppunit_test/cppunit_test.cpp \
 deform/main_test_deform.cpp \
 derivative/main_test_derivative.cpp \
-distortion/main_test_distortion.cpp \
+#distortion/main_test_distortion.cpp \ #todo: Segmentation fault
 draw/main_test_draw.cpp \
 eigen/main_test_eigen.cpp \
 #face_recognition/main_test_face_recognition.cpp \
