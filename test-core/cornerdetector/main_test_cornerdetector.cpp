@@ -25,7 +25,7 @@
 using namespace std;
 using namespace corecvs;
 
-TEST(Cornerdetector, testCornerDetector)
+TEST(Cornerdetector, DISABLED_testCornerDetector)
 {
     G12Buffer *input = BufferFactory::getInstance()->loadG12Bitmap("data/calib-object.bmp");
     SpatialGradient *grad = new SpatialGradient(input);

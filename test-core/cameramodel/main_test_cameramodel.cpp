@@ -40,7 +40,7 @@ using corecvs::BMPLoader;
 using corecvs::fround;
 using corecvs::AbstractPainter;
 
-TEST(Cameramodel, generateReality)
+TEST(Cameramodel, DISABLED_generateReality)
 {
 	//const double BASELINE = -210;
 	const double FOCAL    =  640;

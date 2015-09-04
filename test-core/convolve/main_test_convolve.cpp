@@ -25,7 +25,7 @@
 using namespace corecvs;
 
 //int main ( int /*argV*/, char * /*argC*/[])
-TEST(Convolve, main)
+TEST(Convolve, DISABLED_main)
 {
     G12Buffer *buffer = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
 

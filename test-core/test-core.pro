@@ -28,8 +28,8 @@ draw/main_test_draw.cpp \
 eigen/main_test_eigen.cpp \
 #face_recognition/main_test_face_recognition.cpp \
 #face_recognition1/main_test_face_recognition1.cpp \
-fastkernel/main_test_fastkernel.cpp \
-fastkernel_profile/main_test_fastkernel_profile.cpp \
+#fastkernel/main_test_fastkernel.cpp \ #todo: pc hangup
+#fastkernel_profile/main_test_fastkernel_profile.cpp \ #todo: pc hangup
 fileformats/main_test_fileformats.cpp \
 #filter_blocks/main_test_filter_blocks.cpp \ #todo: can't build
 #gaussianSolution/main.cpp \

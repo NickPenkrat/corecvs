@@ -34,7 +34,7 @@ using corecvs::FixedPointDisplace;
 using corecvs::BMPLoader;
 using corecvs::RGB24Buffer;
 
-TEST(Deform, testFastDeform)
+TEST(Deform, DISABLED_testFastDeform)
 {
 
     Matrix33 inverseLeftMatrix(
@@ -85,7 +85,7 @@ template<typename operation>
         }
     }
 
-TEST(Deform, testFastDeform24)
+TEST(Deform, DISABLED_testFastDeform24)
 {
     cout << "Starting test: testFastDeform24 ()" << endl;
     Matrix33 inverseLeftMatrix(
@@ -131,7 +131,7 @@ TEST(Deform, testFastDeform24)
     delete_safe(image);
 }
 
-TEST(Deform, testRadialApplication)
+TEST(Deform, DISABLED_testRadialApplication)
 {
     cout << "Starting test: testRadialApplication ()" << endl;
     RGB24Buffer *image = new RGB24Buffer(2500, 4000);
@@ -229,7 +229,7 @@ TEST(Deform, testRadialApplication)
 
 }
 
-TEST(Deform, testRadialInversion)
+TEST(Deform, DISABLED_testRadialInversion)
 {
     RGB24Buffer *image = new RGB24Buffer(2500, 4000);
 
