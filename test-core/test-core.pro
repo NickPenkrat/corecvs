@@ -48,7 +48,7 @@ moments/main_test_moments.cpp \
 morphologic/main_test_morphologic.cpp \
 #ocv-homo/main_test_ocv-homo.cpp \ # todo: main + opencv deps
 #openCV/main_test_openCV.cpp \ # todo: main + opencv deps
-polynomDistortion/main.cpp \
+#polynomDistortion/main.cpp \ # todo: can't build
 #ransac/main_test_ransac.cpp \ #todo: the best test ever seen
 rectificator/main_test_rectificator.cpp \
 rectificator1/main_test_rectificator1.cpp \
