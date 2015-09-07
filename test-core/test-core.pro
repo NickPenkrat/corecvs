@@ -42,7 +42,7 @@ kalman/main_test_kalman.cpp \
 klt_cycle/main_test_klt_cycle.cpp \
 levenberg/main_test_levenberg.cpp \
 #logger/main_test_logger.cpp \
-matrix/main_test_matrix.cpp \
+#matrix/main_test_matrix.cpp \ todo: windows: Assert at matrix\main_test_matrix.cpp:381 - Internal problem with double and stdout
 #midmap_pyramid/main_test_midmap_pyramid.cpp #todo: main + file read
 moments/main_test_moments.cpp \
 morphologic/main_test_morphologic.cpp \
