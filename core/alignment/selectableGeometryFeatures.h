@@ -4,6 +4,7 @@
 #include <vector>
 #include "vector2d.h"
 #include "vector3d.h"
+#include "rgb24Buffer.h"
 
 
 namespace corecvs {
@@ -145,6 +146,7 @@ public:
     vector<vector<Vector2dd> > getLines();
     /**/
     void print();
+    void draw(corecvs::RGB24Buffer &buffer);
 };
 
 }
