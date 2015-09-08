@@ -39,11 +39,11 @@ public:
     virtual ~JSONSetter();
 
 template <class Type>
-    void visit(Type &field, Type defaultValue, const char *fieldName)
+    void visit(Type &field, Type /*defaultValue*/, const char *fieldName)
     {
         pushChild(fieldName);
            field.accept(*this);
-        popChild();
+        popChild(fieldName);
     }
 
 template <class inputType>
@@ -51,7 +51,7 @@ template <class inputType>
     {
         pushChild(fieldName);
             field.accept(*this);
-        popChild();
+        popChild(fieldName);
     }
 
 template <typename inputType, typename reflectionType>
@@ -59,10 +59,51 @@ template <typename inputType, typename reflectionType>
     {
         pushChild(fieldDescriptor->getSimpleName());
            field.accept(*this);
-        popChild();
+        popChild(fieldDescriptor->getSimpleName());
     }
 
 /* Generic Array support */
+    template <typename inputType>
+    void visit(std::vector<inputType> &fields, const char * arrayName)
+    {
+        QJsonArray array;
+      //int before = (int)mNodePath.size();
+        for (int i = 0; i < fields.size(); i++)
+        {
+            mNodePath.push_back(QJsonObject());
+            fields[i].accept(*this);
+            array.append(mNodePath.back());
+            mNodePath.pop_back();
+        }
+
+        mNodePath.back().insert(arrayName, array);
+    }
+    template <typename innerType>
+    void visit(std::vector<std::vector<innerType>> &fields, const char *arrayName)
+    {
+        QJsonArray arrayOuter;
+        for (int i = 0; i < fields.size(); ++i)
+        {
+            QJsonArray arrayInner;
+            visit(fields[i], arrayInner);
+            arrayOuter.append(arrayInner);
+        }
+
+        mNodePath.back().insert(arrayName, arrayOuter);
+    }
+    // XXX: Here we hope that either stack is unwinded automatically or it is not too big
+    template <typename innerType>
+    void visit(std::vector<innerType> &fields, QJsonArray &array)
+    {
+        for (int i = 0; i < fields.size(); ++i)
+        {
+            mNodePath.push_back(QJsonObject());
+            fields[i].accept(*this);
+            array.append(mNodePath.back());
+            mNodePath.pop_back();
+        }
+    }
+
     template <typename inputType, typename reflectionType>
     void visit(std::vector<inputType> &fields, const reflectionType * /*fieldDescriptor*/)
     {
@@ -75,15 +116,15 @@ template <typename inputType, typename reflectionType>
     void pushChild(const char *childName)
     {
         mNodePath.push_back(QJsonObject());
-        mChildName = childName;
+     //   mChildName = childName;
         SYNC_PRINT(("push %s. Stack size %lu\n", childName, mNodePath.size()));
     }
 
-    void popChild()
+    void popChild(const char *childName)
     {
         QJsonObject mainNode = mNodePath.back();
         mNodePath.pop_back();
-        mNodePath.back().insert(mChildName, mainNode);
+        mNodePath.back().insert(childName, mainNode);
     }
 
 private:

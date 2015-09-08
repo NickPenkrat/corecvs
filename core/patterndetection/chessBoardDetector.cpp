@@ -36,14 +36,18 @@ ChessBoardDetectorMode ChessboardDetector::getMode(const CheckerboardDetectionPa
 bool ChessboardDetector::detectPattern(corecvs::G8Buffer &buffer)
 {
     DpImage grayscale(buffer.h, buffer.w);
-    grayscale.binaryOperationInPlace(buffer, [](const double & /*a*/, const unsigned char &b) { return ((double)b) / 255.0; });
+    grayscale.binaryOperationInPlace(buffer, [](const double & /*a*/, const unsigned char &b) {
+        return ((double)b) / 255.0;
+    });
     return detectPattern(grayscale);
 }
 
 bool ChessboardDetector::detectPattern(corecvs::RGB24Buffer &buffer)
 {
     DpImage grayscale(buffer.h, buffer.w);
-    grayscale.binaryOperationInPlace(buffer, [](const double & /*a*/, const corecvs::RGBColor &b) { return (b.b() * 0.114 + b.g() * 0.587 + b.r() * 0.299 ) / 255.0; });
+    grayscale.binaryOperationInPlace(buffer, [](const double & /*a*/, const corecvs::RGBColor &b) {
+        return b.yd() / 255.0;
+    });
     return detectPattern(grayscale);
 }
 
@@ -75,6 +79,7 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
         bool fitw = (bw == horCrossesCount());
         bool fith = (bh == vertCrossesCount());
 
+
         if ((!checkW || fitw) && (!checkH || fith))
         {
             best = b;
@@ -99,7 +104,7 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
     if (transposed)
     {
         decltype(best) best_t;
-        int bw = best[0].size(), bh = best.size();
+        int bw = (int)best[0].size(), bh = (int)best.size();
         best_t.resize(bw);
         for (auto& r: best_t)
             r.resize(bh);
@@ -149,7 +154,7 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
     }
     center /= cnt;
     center *= 2.0;
-    int bw = best[0].size(), bh = best.size();
+    int bw = (int)best[0].size(), bh = (int)best.size();
 
     int l = (bw ==  horCrossesCount()) ? 0 : (center[0] > buffer.w ? 0 : ( horCrossesCount() - bw));
     int t = (bh == vertCrossesCount()) ? 0 : (center[1] > buffer.h ? 0 : (vertCrossesCount() - bh));

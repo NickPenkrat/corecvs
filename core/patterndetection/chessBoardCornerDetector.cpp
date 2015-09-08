@@ -5,6 +5,10 @@
 #include <algorithm>
 #include <set>
 
+#include "vectorTraits.h"
+#include "fastKernel.h"
+#include "arithmetic.h"
+
 double OrientedCorner::scoreCorner(DpImage &img, DpImage &weight, std::vector<double> &radius, double bandwidth)
 {
     int iw = img.w, ih = img.h;
@@ -104,7 +108,7 @@ double OrientedCorner::scoreIntensity(DpImage &img, int r)
 
     DpImage c(w, w);
     //int cc = cks.A.x;
-    cks.computeCost(patch, c, true);
+    cks.computeCost(patch, c, true, false);
     return std::max(c.element(cks.A.y, cks.A.x), 0.0);
 }
 
@@ -121,15 +125,41 @@ CornerKernelSet::CornerKernelSet(double r, double alpha, double psi)
     computeKernels(r, alpha, psi, w, c);
 }
 
-void CornerKernelSet::computeCost(DpImage &img, DpImage &c, bool parallelable)
+#include <chrono>
+void CornerKernelSet::computeCost(DpImage &img, DpImage &c, bool parallelable, bool new_style)
 {
     int w = img.w, h = img.h;
     c = DpImage(h, w);
 
-    auto *pfA = img.doConvolve<DpImage>(&A, true, parallelable);
-    auto *pfB = img.doConvolve<DpImage>(&B, true, parallelable);
-    auto *pfC = img.doConvolve<DpImage>(&C, true, parallelable);
-    auto *pfD = img.doConvolve<DpImage>(&D, true, parallelable);
+
+    DpImage *pfA, *pfB, *pfC, *pfD;
+    if (!new_style)
+    {
+       pfA = img.doConvolve<DpImage>(&A, true, parallelable);
+       pfB = img.doConvolve<DpImage>(&B, true, parallelable);
+       pfC = img.doConvolve<DpImage>(&C, true, parallelable);
+       pfD = img.doConvolve<DpImage>(&D, true, parallelable);
+    }
+    else
+    {
+        // TODO: I hope we'll change the design of the whole thing
+        pfA = new DpImage(img.h, img.w, false);
+        pfB = new DpImage(img.h, img.w, false);
+        pfC = new DpImage(img.h, img.w, false);
+        pfD = new DpImage(img.h, img.w, false);
+
+        corecvs::ConvolveKernel<corecvs::DummyAlgebra> convA(&A, A.y, A.x);
+        corecvs::ConvolveKernel<corecvs::DummyAlgebra> convB(&B, B.y, B.x);
+        corecvs::ConvolveKernel<corecvs::DummyAlgebra> convC(&C, C.y, C.x);
+        corecvs::ConvolveKernel<corecvs::DummyAlgebra> convD(&D, D.y, D.x);
+
+        DpImage *in = &img;
+        corecvs::BufferProcessor<DpImage, DpImage, corecvs::ConvolveKernel, corecvs::VectorAlgebraDouble> proScalar;
+        proScalar.process(&in, &pfA, convA);
+        proScalar.process(&in, &pfB, convB);
+        proScalar.process(&in, &pfC, convC);
+        proScalar.process(&in, &pfD, convD);
+    }
 
     for (int i = 0; i < h; ++i)
     {
@@ -339,7 +369,7 @@ void ChessBoardCornerDetector::runNms()
 
 void ChessBoardCornerDetector::circularMeanShift(std::vector<double> &values, double bandwidth, std::vector<std::pair<int, double>> &modes)
 {
-    int N = values.size();
+    int N = (int)values.size();
     std::vector<double> smoothed(N);
 
     for (int i = 0; i < N; ++i)
@@ -431,7 +461,7 @@ bool ChessBoardCornerDetector::edgeOrientationFromGradient(int top, int bottom, 
     //std::sort(modes.begin(), modes.end(), [](decltype(modes[0]) a, decltype(modes[0]) b) { return a.second == b.second ? a.first < b.first : a.second > b.second; });
 
     std::sort(modes.begin(), modes.end(), [](PairID a, PairID b) { return a.second == b.second ? a.first < b.first : a.second > b.second; });
-
+    
     auto p1 = modes[0], p2 = modes[1];
     double phi1 = p1.first * bin_size, phi2 = p2.first * bin_size;
     if (phi1 > phi2)
@@ -450,7 +480,7 @@ bool ChessBoardCornerDetector::edgeOrientationFromGradient(int top, int bottom, 
 
 void ChessBoardCornerDetector::filterByOrientation()
 {
-    int idx = 0, N = corners.size(), iw = w.w, ih = w.h;
+    int idx = 0, N = (int)corners.size(), iw = w.w, ih = w.h;
     for (int i = 0; i < N; ++i)
     {
         auto& c = corners[i];

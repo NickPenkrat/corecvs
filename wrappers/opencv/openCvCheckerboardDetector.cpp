@@ -91,7 +91,7 @@ void OpenCvCheckerboardDetector::assignPointCoordinates(int iw, int ih)
     std::sort(ymeans.begin(), ymeans.end(), [](std::pair<double, int> a, std::pair<double, int> b) { return a.first < b.first; });
 
     decltype(best) best_reorder(best.size());
-    for (int i = 0; i < best.size(); ++i)
+    for (size_t i = 0; i < best.size(); ++i)
     {
         best_reorder[i] = best[ymeans[i].second];
         std::sort(best_reorder[i].begin(), best_reorder[i].end(), [](const corecvs::Vector2dd &a, const corecvs::Vector2dd &b) { return a[0] < b[0]; });
@@ -682,21 +682,21 @@ OpenCvCheckerboardDetector::GetPoints(
             }
             mean /= pointbuf.size();
 
-            for (int ii = 0; ii < j; ++ii) {
+            for (unsigned ii = 0; ii < j; ++ii) {
                 std::sort(pointbuf.begin() + width * ii
                         , pointbuf.begin() + width * (ii + 1)
                         , [](const cv::Point2f &a, const cv::Point2f &b) { return a.x < b.x; });
             }
             std::vector<double> yb;
-            for (int ii = 0; ii < j; ++ii) {
+            for (unsigned ii = 0; ii < j; ++ii) {
                 yb.push_back(pointbuf[ii * width].y);
             }
             std::sort(yb.begin(), yb.end());
 
             decltype(pointbuf) pbf = pointbuf;
-            for (int ii = 0; ii < j; ++ii)
+            for (unsigned ii = 0; ii < j; ++ii)
             {
-                int jj = 0;
+                unsigned jj = 0;
                 for (jj = 0; jj < j; ++jj)
                 {
                     if (yb[ii] == pointbuf[jj * width].y)
@@ -730,7 +730,7 @@ OpenCvCheckerboardDetector::GetPoints(
                 SYNC_PRINT((" BOTTOM\n"));
                 res.resize(pointbuf.size());
                 int idx = 0;
-                for (int y = 0; y < j; ++y) {
+                for (unsigned y = 0; y < j; ++y) {
                     for (int x = 0; x < width; ++x) {
                         res[idx].first  = Vector2dd(pointbuf[idx].x, pointbuf[idx].y);
                         res[idx].second = Vector3dd(x * squareSize, y * squareSize, 0.0);

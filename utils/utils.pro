@@ -31,6 +31,7 @@ HEADERS += \
     framesources/decoders/mjpegDecoder.h \
     framesources/decoders/mjpegDecoderLazy.h \
     framesources/decoders/decoupleYUYV.h \
+    framesources/decoders/aLowCodec.h \
     \
     framesources/file/imageFileCaptureInterface.h \
     framesources/file/fileCapture.h \
@@ -86,7 +87,8 @@ HEADERS += \
     distortioncorrector/cameraModelParametersControlWidget.h \
     distortioncorrector/lensDistortionModelParametersControlWidget.h \
     distortioncorrector/calibrationFeaturesWidget.h \
-    os/UsbBusResetter.h
+    os/UsbBusResetter.h \
+    photostationcalibration/calibrationJob.h
 
 SOURCES += \
     frames.cpp \
@@ -95,6 +97,7 @@ SOURCES += \
     framesources/decoders/mjpegDecoder.cpp \
     framesources/decoders/mjpegDecoderLazy.cpp \
     framesources/decoders/decoupleYUYV.cpp \
+    framesources/decoders/aLowCodec.cpp \
     \
     framesources/file/imageFileCaptureInterface.cpp \
     framesources/file/fileCapture.cpp \
@@ -148,7 +151,8 @@ SOURCES += \
     distortioncorrector/cameraModelParametersControlWidget.cpp \
     distortioncorrector/lensDistortionModelParametersControlWidget.cpp \
     distortioncorrector/calibrationFeaturesWidget.cpp \
-    os/UsbBusResetter.cpp
+    os/UsbBusResetter.cpp \
+    photostationcalibration/calibrationJob.cpp
 
 
 FORMS += \

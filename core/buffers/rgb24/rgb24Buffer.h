@@ -41,7 +41,7 @@ class RGB24Buffer : public RGB24BufferBase,
 {
 public:
 //    RGB24Buffer(int32_t h, int32_t w) : CRGB24BufferBase(h, w) {}
-    RGB24Buffer(RGB24Buffer &that) : RGB24BufferBase (that) {}
+    RGB24Buffer(const RGB24Buffer &that) : RGB24BufferBase (that) {}
     RGB24Buffer(RGB24Buffer *that) : RGB24BufferBase (that) {}
 
     RGB24Buffer(RGB24Buffer *src, int32_t x1, int32_t y1, int32_t x2, int32_t y2) :

@@ -207,7 +207,6 @@ DirectShowCaptureDecoupleInterface::~DirectShowCaptureDecoupleInterface()
             so after the call of the callback reset, we will never again
             receive a frame. So it will be safe to destroy the object
         */
-
         DirectShowCapDll_setFrameCallback(cameras[0].deviceHandle, NULL, NULL);
         DirectShowCapDll_stop(cameras[0].deviceHandle);
     }

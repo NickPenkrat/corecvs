@@ -69,4 +69,4 @@ SUBDIRS += \
     eigen \
     commandline \
     fastkernel_double \
-	readers \
+#	readers \

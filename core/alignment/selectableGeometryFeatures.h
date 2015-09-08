@@ -53,8 +53,8 @@ struct PointObservation
     template<class VisitorType>
         void accept(VisitorType &visitor)
         {
-            visitor.visit(point     , Vector3dd(0), "world");
-            visitor.visit(projection, Vector2dd(0), "image");
+            visitor.visit(point, Vector3dd(), "point3d");
+            visitor.visit(projection, Vector2dd(), "projection");
         }
 
 };

@@ -7,6 +7,7 @@
 #include "abstractBuffer.h"
 #include "vector2d.h"
 #include "matrix.h"
+#include "reflection.h"
 
 typedef corecvs::AbstractBuffer<double> DpImage;
 typedef corecvs::AbstractKernel<double> DpKernel;
@@ -69,7 +70,7 @@ struct CornerKernelSet
     CornerKernelSet(double r, double alpha, double psi);
 
     // Computes const function for entire image
-    void computeCost(DpImage &img, DpImage &c, bool parallelable = true);
+    void computeCost(DpImage &img, DpImage &c, bool parallelable = true, bool new_style = true);
 
 private:
     // One-dimension normal distribution PDF
@@ -135,6 +136,29 @@ struct ChessBoardCornerDetectorParams
     int nRounds = 3;
     // Meanshift smoothing stdev
     double meanshiftBandwidth = 1.0;
+
+    template<typename VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        visitor.visit(gradientCrossWidth, 3.0, "gradientCrossWidth");
+        visitor.visit(sectorSize, M_PI / 2.0, "sectorSize");
+        visitor.visit(histogramBins, 32, "histogramBins");
+        visitor.visit(minAngle, M_PI / 10.0, "minAngle");
+        visitor.visit(neighborhood, 25, "neighborhood");
+        visitor.visit(gradThreshold, 0.1, "gradThreshold");
+        visitor.visit(orientationInlierThreshold, 0.25, "orientationInlierThreshold");
+        visitor.visit(inlierDistanceThreshold, 5.0, "inlierDistanceThreshold");
+        visitor.visit(updateThreshold, 4.0, "updateThreshold");
+        visitor.visit(scoreThreshold, 0.0, "scoreThreshold");
+        visitor.visit(nRounds, 3, "nRounds");
+        visitor.visit(meanshiftBandwidth, 1.0, "meanshiftBandwidth");
+        corecvs::DoubleVectorField dvf(0, 0, 0, "patternStartAngle");
+        visitor.visit(patternStartAngle, &dvf);
+        corecvs::DoubleVectorField dvf2(0, 0, 0, "patternRadius");
+        visitor.visit(patternRadius, &dvf2);
+        corecvs::DoubleVectorField dvf3(0, 0, 0, "cornerScores");
+        visitor.visit(cornerScores, &dvf3);
+    }
 };
 
 class ChessBoardCornerDetector : ChessBoardCornerDetectorParams
@@ -186,4 +210,5 @@ private:
     std::vector<CornerKernelSet> kernels;
     std::vector<OrientedCorner> corners;
 };
+
 #endif

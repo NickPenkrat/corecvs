@@ -4,6 +4,7 @@
 #include <QtCore/QString>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonArray>
 #include "reflection.h"
 
 using corecvs::IntField;
@@ -75,6 +76,59 @@ public:
         }
     }
 
+    template <typename inputType>
+    void visit(std::vector<inputType> &fields, const char* arrayName)
+    {
+        fields.clear();
+        QJsonObject mainNode = mNodePath.back();
+        if (mainNode.value(arrayName).isArray())
+        {
+            QJsonArray array = mainNode.value(arrayName).toArray();
+            // FIXME: using ugly Qt's foreach instead of fancy c++11 one since Qt containers are weird
+            foreach (QJsonValue v, array)
+            {
+                inputType el;
+                mNodePath.push_back(v.toObject());
+                el.accept(*this);
+                fields.push_back(el);
+                mNodePath.pop_back();
+            }
+        }
+    }
+    template <typename innerType>
+    void visit(std::vector<std::vector<innerType>> &fields, const char* arrayName)
+    {
+        fields.clear();
+        QJsonObject mainNode = mNodePath.back();
+        if (mainNode.value(arrayName).isArray())
+        {
+            QJsonArray array = mainNode.value(arrayName).toArray();
+
+            foreach (QJsonValue ai, array)
+            {
+                if (!ai.isArray())
+                    continue;
+                std::vector<innerType> inner;
+                QJsonArray array = ai.toArray();
+                visit(inner, array);
+                fields.push_back(inner);
+            }
+        }
+    }
+    template <typename innerType>
+    void visit(std::vector<innerType> &fields, QJsonArray &array)
+    {
+        fields.clear();
+        foreach (QJsonValue v, array)
+        {
+            innerType el;
+            mNodePath.push_back(v.toObject());
+            el.accept(*this);
+            fields.push_back(el);
+            mNodePath.pop_back();
+        }
+    }
+
     void pushChild(const char *childName)
     {
         QJsonObject mainNode = mNodePath.back();
@@ -104,6 +158,9 @@ void JSONGetter::visit<float>(float &floatField, float defaultValue, const char 
 
 template <>
 void JSONGetter::visit<bool>(bool &boolField, bool defaultValue, const char * /*fieldName*/);
+
+template <>
+void JSONGetter::visit<std::string>(std::string &stringField, std::string defaultValue, const char* fieldName);
 
 /* New style visitor */
 
