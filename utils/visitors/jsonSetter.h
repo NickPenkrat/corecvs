@@ -67,8 +67,7 @@ template <typename inputType, typename reflectionType>
     void visit(std::vector<inputType> &fields, const char * arrayName)
     {
         QJsonArray array;
-      //int before = (int)mNodePath.size();
-        for (int i = 0; i < fields.size(); i++)
+        for (size_t i = 0; i < fields.size(); i++)
         {
             mNodePath.push_back(QJsonObject());
             fields[i].accept(*this);
@@ -82,7 +81,7 @@ template <typename inputType, typename reflectionType>
     void visit(std::vector<std::vector<innerType>> &fields, const char *arrayName)
     {
         QJsonArray arrayOuter;
-        for (int i = 0; i < fields.size(); ++i)
+        for (size_t i = 0; i < fields.size(); ++i)
         {
             QJsonArray arrayInner;
             visit(fields[i], arrayInner);
@@ -95,7 +94,7 @@ template <typename inputType, typename reflectionType>
     template <typename innerType>
     void visit(std::vector<innerType> &fields, QJsonArray &array)
     {
-        for (int i = 0; i < fields.size(); ++i)
+        for (size_t i = 0; i < fields.size(); ++i)
         {
             mNodePath.push_back(QJsonObject());
             fields[i].accept(*this);
@@ -107,7 +106,7 @@ template <typename inputType, typename reflectionType>
     template <typename inputType, typename reflectionType>
     void visit(std::vector<inputType> &fields, const reflectionType * /*fieldDescriptor*/)
     {
-        for (int i = 0; i < fields.size(); i++)
+        for (size_t i = 0; i < fields.size(); i++)
         {
             fields[i].accept(*this);
         }

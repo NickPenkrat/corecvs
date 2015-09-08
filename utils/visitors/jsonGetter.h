@@ -39,10 +39,9 @@ public:
     /**
      *  Visitor method that will traverse xml and object tree and fill object with data form xml
      *
-     *
      **/
     template <class Type>
-        void visit(Type &field, Type defaultValue, const char *fieldName)
+    void visit(Type &field, Type, const char *fieldName)
     {
         pushChild(fieldName);
             field.accept(*this);
@@ -58,7 +57,7 @@ public:
         }
 
     template <typename inputType, typename reflectionType>
-        void visit(inputType &field, const reflectionType * fieldDescriptor)
+    void visit(inputType &field, const reflectionType * fieldDescriptor)
     {
         pushChild(fieldDescriptor->getSimpleName());
            field.accept(*this);
@@ -66,11 +65,11 @@ public:
     }
 
 
-/* Generic Array support */
+    /* Generic Array support */
     template <typename inputType, typename reflectionType>
     void visit(std::vector<inputType> &fields, const reflectionType * /*fieldDescriptor*/)
     {
-        for (int i = 0; i < fields.size(); i++)
+        for (size_t i = 0; i < fields.size(); i++)
         {
             fields[i].accept(*this);
         }
