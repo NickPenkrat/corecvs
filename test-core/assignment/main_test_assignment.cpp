@@ -9,6 +9,8 @@
  */
 
 #include <iostream>
+#include "gtest/gtest.h"
+
 #include "global.h"
 #include "g12Buffer.h"
 #include "assignmentOptimal.h"
@@ -68,7 +70,7 @@ void doTestLimits (void)
 }
 */
 
-void testSizes (void)
+TEST(Assignment, testSizes)
 {
     printf("Starting test...\n");
 
@@ -112,8 +114,7 @@ void testSizes (void)
     } */
 }
 
-
-void testGeneric0 (void)
+TEST(Assignment, testGeneric0)
 {
     printf("Starting test...\n");
 
@@ -138,7 +139,7 @@ void testGeneric0 (void)
     delete mapping;
 }
 
-void testGeneric1 (void)
+TEST(Assignment, testGeneric1)
 {
     printf("Starting test...\n");
 
@@ -160,7 +161,7 @@ void testGeneric1 (void)
     delete mapping;
 }
 
-void testGeneric2 (void)
+TEST(Assignment, testGeneric2)
 {
     printf("Starting test...\n");
 
@@ -185,7 +186,7 @@ void testGeneric2 (void)
     delete mapping;
 }
 
-void testGeneric3 (void)
+TEST(Assignment, testGeneric3)
 {
     printf("Starting test...\n");
 
@@ -212,7 +213,7 @@ void testGeneric3 (void)
 }
 
 #if 0
-void doProfileGeneric(void)
+TEST(Assignment, doProfileGeneric)
 {
     static const int testSizeRows    = 50;
     static const int testSizeColumns = 50;
@@ -242,14 +243,3 @@ void doProfileGeneric(void)
 
 
 #endif
-int main (void)
-{
-/*    doTestLimits ();*/
-    testSizes  ();
-    testGeneric0();
-    testGeneric1();
-    testGeneric2();
-    testGeneric3();
-/*    doProfileGeneric();*/
-    return 0;
-}

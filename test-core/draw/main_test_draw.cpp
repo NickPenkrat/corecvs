@@ -9,6 +9,7 @@
  */
 
 #include <iostream>
+#include "gtest/gtest.h"
 
 #include "global.h"
 
@@ -20,7 +21,7 @@
 using namespace std;
 using namespace corecvs;
 
-void testCircles(void)
+TEST(Draw, testCircles)
 {
     RGB24Buffer *buffer = new RGB24Buffer(21, 42);
 
@@ -46,7 +47,7 @@ void testCircles(void)
     delete_safe(buffer);
 }
 
-void testFloodFill(void)
+TEST(Draw, testFloodFill)
 {
     int h = 20;
     int w = 20;
@@ -69,12 +70,4 @@ void testFloodFill(void)
     //printf("Double Mark: %d\n", predicate.doubleMark);
 
     delete_safe(buffer);
-}
-
-int main (int /*argC*/, char ** /*argV*/)
-{
-    testFloodFill();
-    testCircles();
-    cout << "PASSED" << endl;
-    return 0;
 }

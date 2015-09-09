@@ -9,18 +9,17 @@
  */
 
 #include <iostream>
+#include "gtest/gtest.h"
 
 #include "global.h"
 
 #include "rgb24Buffer.h"
 #include "rgbColor.h"
 
-
-
 using namespace std;
 using namespace corecvs;
 
-void testRGB(void )
+TEST(Color, testRGB)
 {
     ASSERT_TRUE(sizeof(RGBColor) == sizeof(uint32_t), "Compiler aligned RGB color in an unexpeced way");
 
@@ -43,7 +42,7 @@ void testRGB(void )
 
 }
 
-void testHSVCoversion(void)
+TEST(Color, testHSVCoversion)
 {
     RGBColor testColors[] = {
         RGBColor::Black(), RGBColor::Red(), RGBColor::Green(), RGBColor::Blue(), RGBColor::Cyan(),
@@ -61,12 +60,4 @@ void testHSVCoversion(void)
         cout << "  Res: " << rebuild << std::endl;
     }
 
-}
-
-int main (int /*argC*/, char ** /*argV*/)
-{
-    //testRGB();
-    testHSVCoversion();
-    cout << "PASSED" << endl;
-    return 0;
 }

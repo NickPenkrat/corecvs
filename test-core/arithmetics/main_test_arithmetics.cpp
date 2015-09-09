@@ -14,11 +14,13 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <iostream>
+#include "gtest/gtest.h"
 
 #include "global.h"
 
 #include "sse_trace.h"
 #include "preciseTimer.h"
+
 
 using namespace std;
 using namespace corecvs;
@@ -170,11 +172,8 @@ uint16_t divby10(uint16_t value)
     return result;
 }
 
-
-
-
 ALIGN_STACK_SSE
-void testDivisionBy25( void )
+TEST(Arithmetics, testDivisionBy25)
 {
     unsigned LIMIT = 0x1000 * 25;
 //    unsigned LIMIT = 150;
@@ -221,7 +220,7 @@ void testDivisionBy25( void )
 }
 
 ALIGN_STACK_SSE
-void profileDivisionBy25( void )
+TEST(Arithmetics, profileDivisionBy25)
 {
     const unsigned  LIMIT = 500;
     PreciseTimer start;
@@ -315,7 +314,7 @@ void profileDivisionBy25( void )
 }
 #endif // WITH_SSE
 
-void testDivisionBy10( void )
+TEST(Arithmetics, testDivisionBy10)
 {
     /*for (uint16_t i = 0; i < 0x3FFF; i++)
     {
@@ -356,13 +355,3 @@ void testDivisionBy10( void )
     }
 }
 
-int main (int /*argC*/, char ** /*argV*/)
-{
-    testDivisionBy10();
-#ifdef WITH_SSE
-    //testDivisionBy25();
-    //profileDivisionBy25();
-#endif
-    printf("FINISHED\n");
-    return 0;
-}
