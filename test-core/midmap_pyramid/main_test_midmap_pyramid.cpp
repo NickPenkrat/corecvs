@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <string>
 #include <cstdio>
+#include "gtest/gtest.h"
 
 #include "global.h"
 

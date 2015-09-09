@@ -9,6 +9,8 @@
  */
 
 #include <iostream>
+#include "gtest/gtest.h"
+
 #include "global.h"
 #include "rgb24Buffer.h"
 #include "../../core/fileformats/bmpLoader.h"
@@ -17,14 +19,14 @@
 using namespace std;
 using namespace corecvs;
 
-void testDrawLine( void )
+TEST(RGB24BufferTest, testDrawLine)
 {
     RGB24Buffer *buffer = new RGB24Buffer(1080, 1920);
     buffer->drawLine(1689, 1066, -79, 387, RGBColor(255,255,255));
     delete buffer;
 }
 
-void testConversionToG12( void )
+TEST(RGB24BufferTest, testConversionToG12)
 {
     RGB24Buffer *buffer = new RGB24Buffer(100, 100);
     for (int i = 0; i < 10; i++) {
@@ -39,12 +41,12 @@ void testConversionToG12( void )
     delete_safe(result);
 }
 
-int main (int /*argC*/, char ** /*argV*/)
-{
+//int main (int /*argC*/, char ** /*argV*/)
+//{
 
-    testConversionToG12();
-//    testDrawLine();
+//    testConversionToG12();
+////    testDrawLine();
 
-    cout << "PASSED" << endl;
-    return 0;
-}
+//    cout << "PASSED" << endl;
+//    return 0;
+//}

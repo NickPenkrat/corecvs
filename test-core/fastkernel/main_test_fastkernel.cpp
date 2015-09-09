@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <stdint.h>
+#include "gtest/gtest.h"
 
 #ifndef ASSERTS
 #define ASSERTS
@@ -67,7 +68,7 @@ public:
     };
 };
 
-void _testFastKernel( void )
+TEST(FastKernel, _testFastKernel)
 {
     printf("Testing the fast kernel infrastructure with integer scalar\n");
     G12Buffer *input = new G12Buffer(TEST_H_SMALL_SIZE,TEST_W_SMALL_SIZE);
@@ -94,7 +95,7 @@ public:
     typedef ScalarAlgebraMulti<TraitVector3dd, TraitVector3dd, inputNumber, outputNumber> Type;
 };
 
-void _testFastKernelVector3dd( void )
+TEST(FastKernel, _testFastKernelVector3dd)
 {
     printf("Testing the fast kernel infrastructure with Vector3dd\n");
     typedef AbstractBuffer<Vector3dd> BufferType;
@@ -115,7 +116,7 @@ void _testFastKernelVector3dd( void )
 
 #ifdef WITH_SSE
 
-void _testFastKernelSSE( void )
+TEST(FastKernel, _testFastKernelSSE)
 {
     printf("Testing the fast kernel infrastructure with SSE\n");
     G12Buffer *input = new G12Buffer(TEST_H_SMALL_SIZE,TEST_W_SMALL_SIZE);
@@ -146,11 +147,6 @@ void _testFastKernelSSE( void )
     delete output;
     return;
 }
-
-
-
-
-
 
 /*
 void _profileManualAddStream (void)
@@ -201,9 +197,7 @@ void _profileManualAddStream (void)
 }
 */
 
-
-
-void testEdgeDetector()
+TEST(FastKernel, DISABLED_testEdgeDetector)
 {
     G12Buffer *input = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
     BufferProcessor<G12Buffer, G12Buffer, EdgeMagnitude, G12BufferAlgebra> processor;
@@ -224,7 +218,7 @@ void testEdgeDetector()
     delete input;
 }
 
-void profileEdgeDetector()
+TEST(FastKernel, DISABLED_profileEdgeDetector)
 {
     const static unsigned int LIMIT = 100;
     G12Buffer *inputs[LIMIT];
@@ -257,8 +251,7 @@ void profileEdgeDetector()
 
 }
 
-
-void testSSEMath (void)
+TEST(FastKernel, testSSEMath)
 {
     uint16_t valueT = -(1 < 2);
     uint16_t valueF =   2 < 1;
@@ -303,7 +296,7 @@ void testSSEMul (void)
 
 #endif
 
-void testBooleanOperations (void)
+TEST(FastKernel, testBooleanOperations)
 {
     G8Buffer *mask1 = new G8Buffer(100, 100);
     G8Buffer *mask2 = new G8Buffer(100, 100);
@@ -367,38 +360,37 @@ void testBooleanOperations (void)
 }
 
 
-int main (int /*argC*/, char ** /*argV*/)
-{
-    testSSEMul();
-    //testBooleanOperations ();
-    return 0;
+//int main (int /*argC*/, char ** /*argV*/)
+//{
+//    testBooleanOperations ();
+//    return 0;
 
-#ifdef WITH_SSE
-	_testFastKernel();
-	_testFastKernelSSE();
-
+//#ifdef WITH_SSE
+//	_testFastKernel();
+//	_testFastKernelSSE();
 
 
-#ifdef PROFILE_ACCESS_ALIGNMENT
-    Int16x8::resetAlignmnetCouters();
-#endif
+
+//#ifdef PROFILE_ACCESS_ALIGNMENT
+//    Int16x8::resetAlignmnetCouters();
+//#endif
 
 
-#ifdef PROFILE_ACCESS_ALIGNMENT
-	uint64_t total     = Int16x8::alignedUWrites + Int16x8::alignedAWrites + Int16x8::unalignedUWrites + Int16x8::streamedWrites;
-	uint64_t dquwrites = Int16x8::alignedUWrites + Int16x8::unalignedUWrites;
-	printf("Total accesses          : %llu\n", total);
-	printf("Unaligned instructions  : %12llu %7.2lf%%\n", dquwrites, dquwrites * 100.0 / total);
-	printf("   Unaligned accesses   : %12llu %7.2lf%%\n", Int16x8::unalignedUWrites, Int16x8::unalignedUWrites * 100.0 / total);
-	printf("   Aligned   accesses   : %12llu %7.2lf%%\n", Int16x8::alignedUWrites, Int16x8::alignedUWrites * 100.0 / total);
-	printf("Aligned   instructions  : %12llu %7.2lf%%\n", Int16x8::alignedAWrites, Int16x8::alignedAWrites * 100.0 / total);
-	printf("Streamed  instructions  : %12llu %7.2lf%%\n", Int16x8::streamedWrites, Int16x8::streamedWrites * 100.0 / total);
+//#ifdef PROFILE_ACCESS_ALIGNMENT
+//	uint64_t total     = Int16x8::alignedUWrites + Int16x8::alignedAWrites + Int16x8::unalignedUWrites + Int16x8::streamedWrites;
+//	uint64_t dquwrites = Int16x8::alignedUWrites + Int16x8::unalignedUWrites;
+//	printf("Total accesses          : %llu\n", total);
+//	printf("Unaligned instructions  : %12llu %7.2lf%%\n", dquwrites, dquwrites * 100.0 / total);
+//	printf("   Unaligned accesses   : %12llu %7.2lf%%\n", Int16x8::unalignedUWrites, Int16x8::unalignedUWrites * 100.0 / total);
+//	printf("   Aligned   accesses   : %12llu %7.2lf%%\n", Int16x8::alignedUWrites, Int16x8::alignedUWrites * 100.0 / total);
+//	printf("Aligned   instructions  : %12llu %7.2lf%%\n", Int16x8::alignedAWrites, Int16x8::alignedAWrites * 100.0 / total);
+//	printf("Streamed  instructions  : %12llu %7.2lf%%\n", Int16x8::streamedWrites, Int16x8::streamedWrites * 100.0 / total);
 
-	Int16x8::resetAlignmnetCouters();
-#endif
+//	Int16x8::resetAlignmnetCouters();
+//#endif
 
 
-#endif // WITH_SSE
-    cout << "PASSED" << endl;
-    return 0;
-}
+//#endif // WITH_SSE
+//    cout << "PASSED" << endl;
+//    return 0;
+//}

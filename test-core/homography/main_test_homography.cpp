@@ -11,11 +11,11 @@
 
 
 #include <iostream>
+#include "gtest/gtest.h"
 
 #ifndef ASSERTS
 #define ASSERTS
 #endif
-
 
 #include "global.h"
 
@@ -23,12 +23,10 @@
 #include "homographyReconstructor.h"
 #include "matrix33.h"
 
-
 using namespace std;
 using namespace corecvs;
 
-
-void testProjectiveFromPoints (void)
+TEST(Homography, testProjectiveFromPoints)
 {
     cout << "Test 4 point to point reconstruction" << endl;
     Vector2dd points[4] = {
@@ -52,9 +50,7 @@ void testProjectiveFromPoints (void)
     ASSERT_TRUE(result.notTooFar(Matrix33(1.0), 1e-7), "Wrong points reconstructions");
 }
 
-
-
-void testProjectiveInverse (void)
+TEST(Homography, testProjectiveInverse)
 {
     Matrix33 R = Matrix33::RotationZ(0.4);
     Matrix33 S = Matrix33::ShiftProj(3,4);
@@ -101,7 +97,7 @@ void testProjectiveInverse (void)
 
 }
 
-void testProjectiveFromPoints2 (void)
+TEST(Homography, testProjectiveFromPoints2)
 {
  static unsigned const NUM = 5;
  cout << "Test " << NUM << " point to point reconstruction" << endl;
@@ -304,8 +300,7 @@ void testProjectiveFromPoints2 (void)
 
 }
 
-
-void testProjectiveFromPoints1 (void)
+TEST(Homography, testProjectiveFromPoints1)
 {
     static unsigned const NUM = 5;
     cout << "Test " << NUM << " point to point reconstruction" << endl;
@@ -361,8 +356,7 @@ void testProjectiveFromPoints1 (void)
 
 }
 
-
-void testProjectiveFromLine (void)
+TEST(Homography, testProjectiveFromLine)
 {
     static unsigned const NUM = 8;
     cout << "Test " << NUM << " line to point reconstruction" << endl;
@@ -409,14 +403,14 @@ void testProjectiveFromLine (void)
     ASSERT_TRUE(H.notTooFar(Matrix33::Scale2(2.0), 1e-7), "Wrong line based reconstructions");
 }
 
-int main (int /*argC*/, char ** /*argV*/)
-{
-    testProjectiveFromPoints2();
-    return 0;
-    testProjectiveInverse ();
-    testProjectiveFromPoints();
-    testProjectiveFromPoints1();
-    testProjectiveFromLine();
-        cout << "PASSED" << endl;
-        return 0;
-}
+//int main (int /*argC*/, char ** /*argV*/)
+//{
+//    testProjectiveFromPoints2();
+//    return 0;
+//    testProjectiveInverse ();
+//    testProjectiveFromPoints();
+//    testProjectiveFromPoints1();
+//    testProjectiveFromLine();
+//        cout << "PASSED" << endl;
+//        return 0;
+//}

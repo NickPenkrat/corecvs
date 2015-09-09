@@ -8,7 +8,6 @@
  * \ingroup autotest  
  */
 
-
 #ifndef ASSERTS
 #define ASSERTS
 #endif
@@ -20,6 +19,7 @@
 #include <vector>
 #include <stdint.h>
 #include <iostream>
+#include "gtest/gtest.h"
 
 #include "global.h"
 
@@ -29,11 +29,10 @@
 #include "preciseTimer.h"
 #include "eulerAngles.h"
 
-
 using namespace std;
 using namespace corecvs;
 
-void testRotations(void)
+TEST(Affine, testRotations)
 {
     Vector3dd vx(1.0,0.0,0.0);
     Affine3DM  aym = Affine3DM::RotationY(degToRad(135.0));
@@ -55,7 +54,7 @@ void testRotations(void)
 
 }
 
-void testMatrixToQuaternion (void)
+TEST(Affine, testMatrixToQuaternion)
 {
     const int TEST_SIZE = 9;
     vector<Vector3dd> axis(TEST_SIZE);
@@ -94,7 +93,7 @@ void testMatrixToQuaternion (void)
 
 }
 
-void profileHamilton( void )
+TEST(Affine, profileHamilton)
 {
     static unsigned LIMIT = 10000;
     static unsigned INPUTS = 1000;
@@ -145,11 +144,9 @@ void profileHamilton( void )
     delay = timer.usecsToNow();
     printf("Additions: %8" PRIu64 "us\n", delay); fflush(stdout);
     cout << a << endl;
-
-
 }
 
-void testEulerAngels( void )
+TEST(Affine, testEulerAngels)
 {
     CameraAngles anglesCam(0.7, 0.4, 0.1);
     Matrix33 matrixCam = anglesCam.toMatrix();
@@ -167,17 +164,5 @@ void testEulerAngels( void )
     cout << "A:(" << anglesCam1.pitch() << ", "
                   << anglesCam1.yaw()   << ", "
                   << anglesCam1.roll()  << ")" << endl;
-
-
 }
 
-int main (int /*argC*/, char ** /*argV*/)
-{
-    testEulerAngels();
-//    testMatrixToQuaternion();
-
-//    testRotations();
-//    profileHamilton();
-        cout << "PASSED" << endl;
-        return 0;
-}

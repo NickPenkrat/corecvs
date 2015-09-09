@@ -10,6 +10,8 @@
 
 #include <stdint.h>
 #include <iostream>
+#include "gtest/gtest.h"
+
 #include "global.h"
 #include "g12Buffer.h"
 #include "bmpLoader.h"
@@ -17,7 +19,6 @@
 
 using namespace std;
 using namespace corecvs;
-
 
 uint16_t inputData12[10*10] =
 {
@@ -49,9 +50,6 @@ uint8_t inputData8[10*10] =
    0x00, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-
-
-
 uint16_t elementData[3*3] =
 {
    0x0000, 0x0FFF, 0x0000,
@@ -59,8 +57,7 @@ uint16_t elementData[3*3] =
    0x0000, 0x0FFF, 0x0000
 };
 
-
-void testErodeDilate12 (void)
+TEST(Morphologic, testErodeDilate12)
 {
     G12Buffer *input   = new G12Buffer(10,10, inputData12);
     G12Buffer *element = new G12Buffer(3,3, elementData);
@@ -77,7 +74,7 @@ void testErodeDilate12 (void)
     delete element;
 }
 
-void testErodeDilate8 (void)
+TEST(Morphologic, testErodeDilate8)
 {
     G8Buffer  *input   = new  G8Buffer(10,10, inputData8);
     G12Buffer *element = new G12Buffer( 3, 3, elementData);
@@ -94,11 +91,10 @@ void testErodeDilate8 (void)
     delete element;
 }
 
-
-int main (int /*argC*/, char ** /*argV*/)
-{
-    /*testErodeDilate12();*/
-    testErodeDilate8 ();
-    cout << "PASSED" << endl;
-    return 0;
-}
+//int main (int /*argC*/, char ** /*argV*/)
+//{
+//    /*testErodeDilate12();*/
+//    testErodeDilate8 ();
+//    cout << "PASSED" << endl;
+//    return 0;
+//}

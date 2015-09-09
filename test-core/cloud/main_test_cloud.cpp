@@ -9,6 +9,8 @@
  */
 
 #include <iostream>
+#include "gtest/gtest.h"
+
 #include "global.h"
 #include "cloud.h"
 #include "preciseTimer.h"
@@ -16,11 +18,10 @@
 #include "clustering3d.h"
 #include "buffer3d.h"
 
-
 using namespace std;
 
-
-int main (int /*argC*/, char ** /*argV*/)
+//int main (int /*argC*/, char ** /*argV*/)
+TEST(CloudTest, main)
 {
 //    srand(int64_t(0));
 
@@ -94,5 +95,5 @@ int main (int /*argC*/, char ** /*argV*/)
 
 
     cout << "PASSED" << endl;
-    return 0;
+//    return 0;
 }
