@@ -23,6 +23,8 @@ struct ImageData
     corecvs::ObservationList undistortedPattern;
     LocationData location;
 
+    double distortionRmse, distortionMaxError, calibrationRmse, calibrationMaxError, singleCameraRmse, singleCameraMaxError;
+
     template<class VisitorType>
     void accept(VisitorType &visitor)
     {
@@ -31,6 +33,12 @@ struct ImageData
         visitor.visit((std::vector<PointObservation>&)sourcePattern, "sourcePattern");
         visitor.visit((std::vector<PointObservation>&)undistortedPattern, "undistortedPattern");
         visitor.visit(location, LocationData(), "viewLocation");
+        visitor.visit(distortionRmse, -1.0, "distortionRmse");
+        visitor.visit(distortionMaxError, -1.0, "distortionMaxError");
+        visitor.visit(calibrationRmse, -1.0, "calibrationRmse");
+        visitor.visit(calibrationMaxError, -1.0, "calibrationMaxError");
+        visitor.visit(calibrationRmse, -1.0, "singleCameraRmse");
+        visitor.visit(calibrationMaxError, -1.0, "singleCameraMaxError");
     }
 };
 
@@ -54,6 +62,7 @@ struct CalibrationSettings
     ChessBoardCornerDetectorParams chessBoardCornerDetectorParams;
 
     bool useOpenCVDetector = false;
+    double forceFactor = 1.0;
     CheckerboardDetectionParameters openCvDetectorParameters;
 
     LineDistortionEstimatorParameters distortionEstimationParameters;
@@ -79,6 +88,7 @@ struct CalibrationSettings
         visitor.visit(chessBoardCornerDetectorParams, ChessBoardCornerDetectorParams(), "chessBoardCornerDetectorParams");
 
         visitor.visit(useOpenCVDetector, false, "useOpenCVDetector");
+        visitor.visit(forceFactor, 1.0, "forceYFactor");
         visitor.visit(openCvDetectorParameters, CheckerboardDetectionParameters(), "openCvDetectorParameters");
 
         visitor.visit(distortionEstimationParameters, LineDistortionEstimatorParameters(), "lineDistortionEstimationParameters");
@@ -129,6 +139,8 @@ struct CalibrationJob
    
     bool estimateDistortion(corecvs::SelectableGeometryFeatures &features, double w, double h, LensDistortionModelParameters &params);
     bool estimateDistortion(corecvs::ObservationList &list, double w, double h, LensDistortionModelParameters &params);
+    void computeDistortionError(corecvs::ObservationList &list, LensDistortionModelParameters &params, double &rmse, double &maxError);
+    void computeDistortionError(corecvs::SelectableGeometryFeatures &sgf, LensDistortionModelParameters &params, double &rmse, double &maxError);
     void allEstimateDistortion();
 
     void prepareUndistortionTransformation(LensDistortionModelParameters &source, double w, double h, corecvs::DisplacementBuffer &dest, double &newW, double &newH);
@@ -139,9 +151,13 @@ struct CalibrationJob
     bool calibrateSingleCamera(int cameraId);
     void allCalibrateSingleCamera();
 
+    void computeSingleCameraErrors();
+    void computeCalibrationErrors();
     void calibratePhotostation();
     void calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<CameraIntrinsics_> &intrinsics, std::vector<std::vector<LocationData>> &locations, bool runBFS, bool runLM);
     void calibrate();
+    double factor = 1.0;
+    std::vector<double> factors;
 };
 
 #endif

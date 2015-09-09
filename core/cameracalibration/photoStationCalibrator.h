@@ -8,10 +8,12 @@
 
 //#define PENALIZE_QNORM
 
+//#define CALIB_FACTOR
+
 struct PhotoStationCalibrator
 {
 public:
-    PhotoStationCalibrator(CameraConstraints constraints = CameraConstraints::NONE);
+    PhotoStationCalibrator(CameraConstraints constraints = CameraConstraints::NONE, const double lockFactor = 1.0);
 
     // Add camera
     void addCamera(CameraIntrinsics_ &intrinsics);
@@ -39,6 +41,7 @@ public:
     void recenter();
 
     void validate();
+    double factor = 1.0;
 private:
     void getFullReprojectionError(double out[]);
     int getInputNum() const;
@@ -73,7 +76,11 @@ private:
 
                     for (auto& pt: patternPoints[j][i])
                     {
-                        auto diff = relativeCameraPositions[i].project(Qs * (pt.second - Cs)) - pt.first;
+                        auto p = pt.second;
+
+                        p[1] *= calibrator->factor;
+
+                        auto diff = relativeCameraPositions[i].project(Qs * (p - Cs)) - pt.first;
                         out[idx++] = diff[0];
                         out[idx++] = diff[1];
                     }
@@ -112,6 +119,7 @@ private:
 
 
     // Prepares initialization for non-linear search
+    double trySolveInitialLocations(std::vector<int> &order);
     void solveInitialLocations();
     // Solves calibration setup pose from absolute and relative camera pose
     void solveCameraToSetup(const LocationData &realLocation, int camera, int setup);

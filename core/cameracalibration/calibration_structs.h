@@ -20,7 +20,7 @@ enum class CameraConstraints
     EQUAL_FOCAL    =  4, // Makes fx = fy in non-linear phase
     LOCK_FOCAL     =  8, // Locks fx and fy
     LOCK_PRINCIPAL = 16, // Locks cx and cy
-
+    UNLOCK_YSCALE  = 32  // Unlock Y scale of pattern. This is dangerous if you are not sure what are you doing
 };
 
 template<>

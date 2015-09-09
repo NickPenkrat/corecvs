@@ -68,6 +68,25 @@ void CalibrationJob::allDetectChessBoard(bool distorted)
     }
 }
 
+void CalibrationJob::computeDistortionError(corecvs::ObservationList &list, LensDistortionModelParameters &params, double &rmse, double &maxError)
+{
+    corecvs::SelectableGeometryFeatures sgf;
+    sgf.addAllLinesFromObservationList(list);
+    computeDistortionError(sgf, params, rmse, maxError);
+}
+
+void CalibrationJob::computeDistortionError(corecvs::SelectableGeometryFeatures &sgf, LensDistortionModelParameters &params, double &rmse, double &maxError)
+{
+    corecvs::RadialCorrection corrector(params);
+    corecvs::LMLinesDistortionSolver solver;
+    solver.lineList = &sgf;
+    solver.computeCosts(corrector, true);
+
+    EllipticalApproximation1d &cost = solver.costs[LineDistortionEstimatorCost::LINE_DEVIATION_COST];
+    rmse = cost.getRadiusAround0();
+    maxError = cost.getMax();
+}
+
 bool CalibrationJob::estimateDistortion(corecvs::ObservationList &list, double w, double h, LensDistortionModelParameters &params)
 {
     corecvs::SelectableGeometryFeatures sgf;
@@ -105,6 +124,10 @@ struct ParallelDistortionEstimator
             }
             auto& psIterator = job->photostation.cameras[cam];
             job->estimateDistortion(sgf, psIterator.intrinsics.size[0], psIterator.intrinsics.size[1], psIterator.distortion);
+            for (auto& v: job->observations[cam])
+            {
+                job->computeDistortionError(v.sourcePattern, psIterator.distortion, v.distortionRmse, v.distortionMaxError);
+            }
         }
     }
 
@@ -264,6 +287,7 @@ bool CalibrationJob::calibrateSingleCamera(int cameraId)
 
     if (valid_locations > 2)
     {
+        calibrator.factor = settings.forceFactor;
         valid_locations = 0;
         calibrator.solve(settings.singleCameraCalibratorUseZhangPresolver, settings.singleCameraCalibratorUseLMSolver);
 
@@ -275,6 +299,7 @@ bool CalibrationJob::calibrateSingleCamera(int cameraId)
             if (o.undistortedPattern.size())
                 o.location = locations[valid_locations++];
         }
+        factors[cameraId] = calibrator.factor;
         return true;
     }
     return false;
@@ -295,7 +320,14 @@ struct ParallelSingleCalibrator
 
 void CalibrationJob::allCalibrateSingleCamera()
 {
+    factors.resize(photostation.cameras.size(), 1.0);
     corecvs::parallelable_for(0, (int)photostation.cameras.size(), ParallelSingleCalibrator(this));
+    double fac = 0.0;
+    for (auto& f: factors)
+        fac += f;
+    fac /= factors.size();
+    factor = fac;
+    std::cout << "OPTFAC_MEAN: " << factor << std::endl;
 }
 
 void CalibrationJob::calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<CameraIntrinsics_> &intrinsics, std::vector<std::vector<LocationData>> &locations, bool runBFS, bool runLM)
@@ -304,7 +336,7 @@ void CalibrationJob::calibratePhotostation(int N, int M, PhotoStationCalibrator 
     {
         calibrator.addCamera(ci);
     }
-
+    calibrator.factor = factor;
 	std::vector<int> cnt(N);
     for (auto& setup: points)
 	{
@@ -328,6 +360,7 @@ void CalibrationJob::calibratePhotostation(int N, int M, PhotoStationCalibrator 
     if (runLM)
         calibrator.solve(false, true);
     calibrator.recenter();
+    factor = calibrator.factor;
 }
 
 void CalibrationJob::calibratePhotostation()
@@ -368,8 +401,93 @@ void CalibrationJob::calibratePhotostation()
     calibrationSetupLocations = calibrator.getCalibrationSetups();
 }
 
+void CalibrationJob::computeCalibrationErrors()
+{
+    auto setupLocsIterator = calibrationSetupLocations.begin();
+    for (auto& s: calibrationSetups)
+    {
+        auto loc = *setupLocsIterator;
+        photostation.location = loc;
+        for (auto& v: s)
+        {
+            auto& view = observations[v.cameraId][v.imageId];
+            int cam = v.cameraId;
+
+            if (view.undistortedPattern.size())
+            {
+                int cnt = 0;
+                double me = -1.0, rmse = 0.0;
+
+                for (auto &p: view.undistortedPattern)
+                {
+                    auto ppp = p.point;
+                    ppp[1] *= factor;
+                    auto pp = photostation.project(ppp, cam) - p.projection;
+                    if (!pp > me)
+                    {
+                        me = !pp;
+                    }
+                    rmse += pp & pp;
+                    cnt++;
+                }
+                rmse = cnt ? std::sqrt(rmse / cnt) : -1.0;
+                view.calibrationRmse =  rmse;
+                view.calibrationMaxError = me;
+            }
+            else
+            {
+                view.calibrationRmse = -1.0;
+                view.calibrationMaxError = -1.0;
+            }
+        }
+        setupLocsIterator++;
+    }
+}
+
+void CalibrationJob::computeSingleCameraErrors()
+{
+    for (auto& s: calibrationSetups)
+    {
+        for (auto& c: s)
+        {
+            auto cam = photostation.cameras[c.cameraId];
+            auto&view= observations[c.cameraId][c.imageId];
+
+            if (view.undistortedPattern.size())
+            {
+                int cnt = 0;
+                double me = -1.0, rmse = 0.0;
+                cam.extrinsics = view.location;
+
+                for (auto &p: view.undistortedPattern)
+                {
+                    auto ppp = p.point;
+                    ppp[1] *= factor;
+                    auto pp = cam.project(ppp) - p.projection;
+                    if (!pp > me)
+                    {
+                        me = !pp;
+                    }
+                    rmse += pp & pp;
+                    cnt++;
+                }
+                rmse = cnt ? std::sqrt(rmse / cnt) : -1.0;
+                view.singleCameraRmse =  rmse;
+                view.singleCameraMaxError = me;
+            }
+            else
+            {
+                view.singleCameraRmse = -1.0;
+                view.singleCameraMaxError = -1.0;
+            }
+        }
+    }
+}
+
 void CalibrationJob::calibrate()
 {
     allCalibrateSingleCamera();
+    computeSingleCameraErrors();
     calibratePhotostation();
+    computeCalibrationErrors();
 }
