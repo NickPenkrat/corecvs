@@ -338,6 +338,7 @@ void CalibrationJob::calibratePhotostation(int N, int M, PhotoStationCalibrator 
     }
     calibrator.factor = factor;
 	std::vector<int> cnt(N);
+	int set = 0;
     for (auto& setup: points)
 	{
 		MultiCameraPatternPoints pts;
@@ -349,10 +350,11 @@ void CalibrationJob::calibratePhotostation(int N, int M, PhotoStationCalibrator 
 			{
 				active.push_back(i);
 				pts.push_back(setup[i]);
-				locs.push_back(locations[i][cnt[i]++]);
+				locs.push_back(locations[set][i]);
 			}
 		}
 		calibrator.addCalibrationSetup(active, locs, pts);
+		set++;
 	}
 	if (runBFS)
         calibrator.solve(true, false);
@@ -382,11 +384,14 @@ void CalibrationJob::calibratePhotostation()
     std::vector<CameraIntrinsics_> intrinsics;
     for (auto& c: photostation.cameras)
         intrinsics.push_back(c.intrinsics);
-    std::vector<std::vector<LocationData>> locations(N);
-    for (int i = 0; i < N; ++i)
+    std::vector<std::vector<LocationData>> locations(M);
+    for (int i = 0; i < M; ++i)
     {
-        for (auto& o: observations[i])
-            locations[i].push_back(o.location);
+        locations[i].resize(N);
+        for (auto &o: calibrationSetups[i])
+        {
+            locations[i][o.cameraId] = observations[o.cameraId][o.imageId].location;
+        }
     }
 
     PhotoStationCalibrator calibrator(settings.photostationCalibratorConstraints);
