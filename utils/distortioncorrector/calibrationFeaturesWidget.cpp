@@ -417,7 +417,7 @@ QModelIndex ObservationListModel::index(int row, int column, const QModelIndex &
         return QModelIndex();
     }
 
-    if (row < mObservationList->size() && column < COLUMN_NUM) {
+    if (row < (int)mObservationList->size() && column < COLUMN_NUM) {
         return createIndex(row, column);
     }
     return QModelIndex();

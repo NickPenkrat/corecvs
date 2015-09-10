@@ -198,13 +198,15 @@ private:
     // mean-shift mode detector
     // TODO: do we need it outside detector?!
     void circularMeanShift(std::vector<double> &values, double bandwidth, std::vector<std::pair<int, double>> &modes);
+
+#if DEPRICATED
     // Computes right eigen vectors and numbers for 2x2 matrix
-    void eig22(corecvs::Matrix &A, double &lambda1, corecvs::Vector2dd &e1, double &lambda2, corecvs::Vector2dd &e2);
+    void eig22(corecvs::Matrix22 &A, double &lambda1, corecvs::Vector2dd &e1, double &lambda2, corecvs::Vector2dd &e2, double EIGTOLERANCE = 1e-9);
     // Checks if 2x2 matrix seems to be invertible
     bool invertable22(corecvs::Matrix &A);
     // Linear solver for 2x2 matrix
     void solve22(corecvs::Matrix &A, corecvs::Vector2dd &B, corecvs::Vector2dd &x);
-
+#endif
 
     DpImage du, dv, w, phi, cost, img;
     std::vector<CornerKernelSet> kernels;
