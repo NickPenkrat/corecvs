@@ -371,7 +371,8 @@ inline Matrix33::Matrix33(double _A)
 
 
 
-inline Matrix33::Matrix33(double _a00, double _a01, double _a02,
+inline Matrix33::Matrix33(
+         double _a00, double _a01, double _a02,
          double _a10, double _a11, double _a12,
          double _a20, double _a21, double _a22)
 {

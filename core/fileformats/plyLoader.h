@@ -66,9 +66,14 @@ public:
         OBJ_LAST
     };
 
+    bool trace;
+
     friend istream &operator >> (istream &in, Prop &toLoad);
 
-    PLYLoader();
+    PLYLoader() :
+        trace (false)
+    {}
+
     int loadPLY(istream &input, Mesh3D &mesh);
     virtual ~PLYLoader();
 };

@@ -23,6 +23,7 @@
 
 #include "vector3d.h"
 #include "fixedVector.h"
+
 namespace corecvs {
 
 using std::numeric_limits;
@@ -70,8 +71,7 @@ public:
     { }
 
     Matrix22(double _a00, double _a01,
-             double _a10, double _a11
-             );
+             double _a10, double _a11);
 
     /* Element accessors */
     double &a(int i,int j);
@@ -105,12 +105,25 @@ public:
      **/
     static Vector2dd solve(const Matrix22 &A, const Vector2dd &b);
 
+    /**
+     * Comuting eigen values and vectors
+     *
+     * \param A              - input matrix
+     * \param lambda1        - first eigenvalue
+     * \param e1             - first eigenvector
+     * \param lambda2        - second eigenvalue
+     * \param e2             - second eigenvector
+     * \param EIGTOLERANCE
+     **/
+    static void eigen(const Matrix22 &A, double &lambda1, Vector2dd &e1, double &lambda2, Vector2dd &e2, double EIGTOLERANCE = 1e-9);
+
     friend Matrix22 operator * (const Matrix22 &M1, const Matrix22 &M2);
     friend Matrix22 operator *=(      Matrix22 &M1, const Matrix22 &M2);
 
     friend inline Vector2dd operator *(const Matrix22 &matrix, const Vector2dd &V);
     friend inline Vector2dd operator *(const Vector2dd &V, const Matrix22 &matrix);
 
+    static Matrix22 VectorByVector(const Vector2dd &a, const Vector2dd &b);
 
     Vector2dd     aV(int i) const;
     Vector2dd    row(int i) const;
@@ -121,6 +134,12 @@ public:
 /**
  *  Geting Matrix element functions block
  **/
+
+inline Matrix22::Matrix22(double _a00, double _a01, double _a10, double _a11)
+{
+    a(0,0) = _a00;  a(0,1) = _a01;
+    a(1,0) = _a10;  a(1,1) = _a11;
+}
 
 inline double &Matrix22::a(int i,int j)
 {
@@ -142,44 +161,73 @@ inline const double &Matrix22::operator ()(int i,int j) const
     return (*this)[i * W + j];
 }
 
-double &Matrix22::a00()
+inline double &Matrix22::a00()
 {
     return (*this)[0];
 }
 
-double &Matrix22::a01()
+inline double &Matrix22::a01()
 {
     return (*this)[1];
 }
 
-double &Matrix22::a10()
+inline double &Matrix22::a10()
 {
     return (*this)[2];
 }
 
-double &Matrix22::a11()
+inline double &Matrix22::a11()
 {
     return (*this)[3];
 }
 
-const double &Matrix22::a00() const
+inline const double &Matrix22::a00() const
 {
     return (*this)[0];
 }
 
-const double &Matrix22::a01() const
+inline const double &Matrix22::a01() const
 {
     return (*this)[1];
 }
 
-const double &Matrix22::a10() const
+inline const double &Matrix22::a10() const
 {
     return (*this)[2];
 }
 
-const double &Matrix22::a11() const
+inline const double &Matrix22::a11() const
 {
     return (*this)[3];
+}
+
+inline bool Matrix22::isInvertable(double tolerance)
+{
+    return det() > tolerance;
+}
+
+inline double Matrix22::det() const {
+    return a00() * a11() - a01() * a10();
+}
+
+inline Vector2dd Matrix22::solve(const Matrix22 &A, const Vector2dd &b)
+{
+    double D = A.det();
+    return Vector2dd (( A.a11() * b[0] - A.a01() * b[1]), (-A.a10() * b[0] + A.a00() * b[1])) / D;
+}
+
+inline Vector2dd operator *(const Matrix22 &matrix, const Vector2dd &V)
+{
+    return Vector2dd(
+        matrix.a00() * V.x() + matrix.a01() * V.y(),
+        matrix.a10() * V.x() + matrix.a11() * V.y()
+    );
+}
+
+inline Matrix22 operator*= (Matrix22 &M1, const Matrix22 &M2)
+{
+    M1 = M1 * M2;
+    return M1;
 }
 
 
