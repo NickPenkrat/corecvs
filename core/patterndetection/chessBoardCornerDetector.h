@@ -77,7 +77,7 @@ private:
     // TODO: find if we already have it somewhere
     static double pdf(double x, double sigma)
     {
-        return exp(-x * x/(2.0 * sigma * sigma)) / (sigma * sqrt(2.0 * M_PI));
+        return exp(-x * x / (2.0 * sigma * sigma)) / (sigma * sqrt(2.0 * M_PI));
     }
     // Initialization routine
     void computeKernels(double r, double alpha, double psi, int w, int c, double threshold = 0.05);
@@ -107,7 +107,7 @@ struct ChessBoardCornerDetectorParams
         patternRadius.push_back(4.0);
         patternRadius.push_back(8.0);
         patternRadius.push_back(12.0);
-        
+
         cornerScores.push_back(4.0);
         cornerScores.push_back(8.0);
         cornerScores.push_back(12.0);
@@ -188,7 +188,7 @@ private:
     void adjustCornerOrientation();
     // Adjusts corner position (LSQ for weighted gradient-orthogonality to edges)
     void adjustCornerPosition();
-    // Assigns final score 
+    // Assigns final score
     void computeScores();
 
 

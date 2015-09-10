@@ -2,6 +2,7 @@
 #define CHESSBOARDDETECTOR
 
 #include "patternDetector.h"
+#include "checkerboardDetectionParameters.h"
 #include "chessBoardCornerDetector.h"
 #include "chessBoardAssembler.h"
 #include "typesafeBitmaskEnums.h"
@@ -15,6 +16,7 @@ enum class ChessBoardDetectorMode
 template<>
 struct is_bitmask<ChessBoardDetectorMode> : std::true_type {};
 
+#if 0
 struct ChessBoardDetectorParams
 {
     int w = 18;
@@ -38,15 +40,18 @@ struct ChessBoardDetectorParams
         mode = static_cast<ChessBoardDetectorMode>(m);
     }
 };
+#endif
 
-class ChessboardDetector : ChessBoardDetectorParams, public PatternDetector
+class ChessboardDetector : CheckerboardDetectionParameters, public PatternDetector
 {
 public:
     ChessboardDetector(
-            ChessBoardDetectorParams params = ChessBoardDetectorParams(),
+            CheckerboardDetectionParameters params = CheckerboardDetectionParameters(),
             ChessBoardCornerDetectorParams detectorParams = ChessBoardCornerDetectorParams(),
             ChessBoardAssemblerParams assemblerParams = ChessBoardAssemblerParams()
     );
+
+    static ChessBoardDetectorMode getMode(const CheckerboardDetectionParameters &params);
 
     // PatternDetector interface
     bool detectPattern(corecvs::G8Buffer    &buffer);

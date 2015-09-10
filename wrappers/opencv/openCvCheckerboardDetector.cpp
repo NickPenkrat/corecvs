@@ -91,7 +91,7 @@ void OpenCvCheckerboardDetector::assignPointCoordinates(int iw, int ih)
     std::sort(ymeans.begin(), ymeans.end(), [](std::pair<double, int> a, std::pair<double, int> b) { return a.first < b.first; });
 
     decltype(best) best_reorder(best.size());
-    for (int i = 0; i < best.size(); ++i)
+    for (size_t i = 0; i < best.size(); ++i)
     {
         best_reorder[i] = best[ymeans[i].second];
         std::sort(best_reorder[i].begin(), best_reorder[i].end(), [](const corecvs::Vector2dd &a, const corecvs::Vector2dd &b) { return a[0] < b[0]; });

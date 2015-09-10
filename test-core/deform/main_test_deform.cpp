@@ -85,6 +85,29 @@ template<typename operation>
         }
     }
 
+TEST(Deform, DISABLED_testBiliner)
+{
+    RGB24Buffer *image = new RGB24Buffer(2,2);
+    image->element(0,0) = RGBColor::Yellow();
+    image->element(0,1) = RGBColor::Green();
+    image->element(1,0) = RGBColor::Indigo();
+    image->element(1,1) = RGBColor::Black();
+
+    for (double i = 0; i < 1.0; i+=0.07 )
+    {
+        for (double j = 0; j < 1.0; j+=1.17 )
+        {
+            RGBColor d =  image->elementBlDouble(i, j);
+            RGBColor f =  image->elementBlFixed (i, j);
+            RGBColor s =  image->elementBlSSE   (i, j);
+
+            RGBColor diff1 = RGBColor::diff(d,f);
+            cout << d << " = " << f << " = " << s << " -> " <<  diff1 << endl;
+        }
+    }
+}
+
+
 TEST(Deform, DISABLED_testFastDeform24)
 {
     cout << "Starting test: testFastDeform24 ()" << endl;
@@ -285,3 +308,48 @@ TEST(Deform, DISABLED_testRadialInversion)
 
 }
 
+TEST(Deform, DISABLED_testRectangularImage)
+{
+    LensDistortionModelParameters deformator;
+    deformator.setPrincipalX(1296);
+    deformator.setPrincipalY( 972);
+
+    deformator.setTangentialX(0.000);
+    deformator.setTangentialY(0.000);
+
+    deformator.setAspect(1.0);
+    deformator.setScale(1.0);
+    deformator.setNormalizingFocal(1620.0);
+
+    deformator.mKoeff.push_back(1.0);
+
+    RadialCorrection T(deformator);
+
+    Vector2dd min;
+    Vector2dd max;
+
+    T.getCircumscribedImageRect(0, 0, 1296 * 2, 972 * 2, min, max);
+    cout << min  << " => " << max << endl;
+
+    T.getInscribedImageRect    (0, 0, 1296 * 2, 972 * 2, min, max);
+    cout << min  << " => " << max << endl;
+
+
+
+}
+
+#if 0
+int main (int /*argC*/, char ** /*argV*/)
+{
+    testBiliner();
+    //testRectangularImage();
+    //testRadialApplication();
+    //testFastDeform ();
+    //testFastDeform24 ();
+
+    //testRadialInversion();
+
+    cout << "PASSED" << endl;
+    return 0;
+}
+#endif

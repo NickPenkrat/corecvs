@@ -45,6 +45,7 @@ HEADERS += \
     math/eulerAngles.h \
     math/puzzleBlock.h \
     math/matrix/similarityReconstructor.h \
+    math/matrix/matrix22.h
 
     
     
@@ -63,4 +64,5 @@ SOURCES += \
     math/helperFunctions.cpp \
     math/generic/genericMath.cpp \
     math/sse/sseWrapper.cpp \
-    math/matrix/similarityReconstructor.cpp
+    math/matrix/similarityReconstructor.cpp \
+    math/matrix/matrix22.cpp

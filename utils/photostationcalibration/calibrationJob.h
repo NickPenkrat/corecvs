@@ -57,13 +57,14 @@ struct CalibrationSetupEntry
 
 struct CalibrationSettings
 {
-    ChessBoardDetectorParams chessBoardDetectorParams;
+    /* TODO : rename this */
+    CheckerboardDetectionParameters openCvDetectorParameters;
+
     ChessBoardAssemblerParams chessBoardAssemblerParams;
     ChessBoardCornerDetectorParams chessBoardCornerDetectorParams;
 
-    bool useOpenCVDetector = false;
+
     double forceFactor = 1.0;
-    CheckerboardDetectionParameters openCvDetectorParameters;
 
     LineDistortionEstimatorParameters distortionEstimationParameters;
 
@@ -83,12 +84,13 @@ struct CalibrationSettings
     template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(chessBoardDetectorParams, ChessBoardDetectorParams(), "chessBoardDetectorParams");
+//        visitor.visit(chessBoardDetectorParams, ChessBoardDetectorParams(), "chessBoardDetectorParams");
         visitor.visit(chessBoardAssemblerParams, ChessBoardAssemblerParams(), "chessBoardAssemblerParams");
         visitor.visit(chessBoardCornerDetectorParams, ChessBoardCornerDetectorParams(), "chessBoardCornerDetectorParams");
 
-        visitor.visit(useOpenCVDetector, false, "useOpenCVDetector");
+//        visitor.visit(useOpenCVDetector, false, "useOpenCVDetector");
         visitor.visit(forceFactor, 1.0, "forceYFactor");
+
         visitor.visit(openCvDetectorParameters, CheckerboardDetectionParameters(), "openCvDetectorParameters");
 
         visitor.visit(distortionEstimationParameters, LineDistortionEstimatorParameters(), "lineDistortionEstimationParameters");

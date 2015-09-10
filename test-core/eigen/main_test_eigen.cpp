@@ -70,3 +70,11 @@ TEST(Eigen, testJacobi)
     }
 }
 
+#if 0
+int main (int /*argC*/, char ** /*argV*/)
+{
+    testJacobi();
+    cout << "PASSED" << endl;
+    return 0;
+}
+#endif

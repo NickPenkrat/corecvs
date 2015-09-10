@@ -360,10 +360,18 @@ TEST(FastKernel, testBooleanOperations)
 }
 
 
+<<<<<<< HEAD
+int main (int /*argC*/, char ** /*argV*/)
+{
+    testSSEMul();
+    //testBooleanOperations ();
+    return 0;
+=======
 //int main (int /*argC*/, char ** /*argV*/)
 //{
 //    testBooleanOperations ();
 //    return 0;
+>>>>>>> official/master_topcon
 
 //#ifdef WITH_SSE
 //	_testFastKernel();

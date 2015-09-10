@@ -66,7 +66,10 @@ DistortionWidget::DistortionWidget(QWidget *parent) :
 
     CheckerboardDetectionParameters params;
     mUi->checkerboardParametersWidget->setParameters(params);
-    mUi->calibrationFeatures->loadPoints();
+    //mUi->calibrationFeatures->loadPoints();
+
+    mObservationListModel.mObservationList = &mObservationList;
+    mUi->calibrationFeatures->setObservationModel(&mObservationListModel);
 }
 
 void DistortionWidget::resetParameters()
@@ -130,8 +133,8 @@ void DistortionWidget::initTransform()
 
 void DistortionWidget::clearParameters()
 {
-    mUi->widget->clear();
-    mUi->calibrationFeatures->clearObservationPoints();
+   /* mUi->widget->clear();
+    mUi->calibrationFeatures->clearObservationPoints();*/
 
     delete mDistortionParameters;
     mDistortionParameters = new DistortionParameters();
@@ -189,7 +192,7 @@ void DistortionWidget::detectCheckerboard()
 
     if(params.cleanExisting())
     {
-        mUi->calibrationFeatures->clearObservationPoints();
+       // mUi->calibrationFeatures->clearObservationPoints();
         canvas->mFeatures.mPaths.clear();
     }
 
@@ -208,7 +211,10 @@ void DistortionWidget::detectCheckerboard()
     bool found = patternDetector.detectPattern(*mBufferInput);
     if (found)
     {
-        patternDetector.getPointData(mUi->calibrationFeatures->observationList);
+        mObservationListModel.clearObservationPoints();
+        patternDetector.getPointData(mObservationList);
+        mObservationListModel.setObservationList(&mObservationList);
+
         patternDetector.getPointData(canvas->mFeatures);
     }
 
@@ -274,7 +280,7 @@ void DistortionWidget::doTransformLM()
     qDebug() << "DistortionWidget::doTransformLM(): Starting LM transform" << endl;
     LMDistortionSolver solver;
     solver.initialCenter = Vector2dd(mUi->widget->mImage.data()->width() * 0.5, mUi->widget->mImage.data()->height() * 0.5);;
-    solver.list = &mUi->calibrationFeatures->observationList;
+    solver.list = &mObservationList;
 
     RadialCorrection correction = solver.solve();
 
@@ -443,7 +449,9 @@ void DistortionWidget::showBufferChanged()
 void DistortionWidget::addPointPair(const Vector3dd &key, const Vector2dd &value)
 {
     PointObservation observation(key, value);
-    mUi->calibrationFeatures->addObservation(observation);
+    mObservationListModel.setObservationList(NULL);
+    mObservationList.push_back(observation);
+    mObservationListModel.setObservationList(&mObservationList);
     mUi->widget->mFeatures.appendNewVertex(value);
 }
 

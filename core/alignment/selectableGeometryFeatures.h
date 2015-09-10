@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <vector>
+#include <sstream>
 #include "vector2d.h"
 #include "vector3d.h"
 #include "rgb24Buffer.h"
@@ -18,8 +19,8 @@ struct PointObservation
     Vector2dd projection;
 
     PointObservation(
-            Vector3dd _point      = Vector3dd(0),
-            Vector2dd _projection = Vector2dd(0)
+            const Vector3dd &_point      = Vector3dd(0),
+            const Vector2dd &_projection = Vector2dd(0)
     ) : point(_point),
         projection(_projection)
     {}
@@ -51,18 +52,32 @@ struct PointObservation
     }
 
     template<class VisitorType>
-    void accept(VisitorType &visitor)
-    {
-        visitor.visit(point, corecvs::Vector3dd(), "point3d");
-        visitor.visit(projection, corecvs::Vector2dd(), "projection");
-    }
+        void accept(VisitorType &visitor)
+        {
+            visitor.visit(point, Vector3dd(), "point3d");
+            visitor.visit(projection, Vector2dd(), "projection");
+        }
+
 };
 
 
 class ObservationList : public std::vector<PointObservation>
 {
-    public:
+public:
+    template<class VisitorType>
+        void accept(VisitorType &visitor)
+        {
+            int sizeToVisit = this->size();
+            visitor.visit(sizeToVisit, 0, "size");
+            resize(sizeToVisit);
 
+            for (int i = 0; i < sizeToVisit; i++)
+            {
+                std::ostringstream ss;
+                ss << "a[" << i << "]";
+                visitor.visit(operator [](i), PointObservation(), ss.str().c_str());
+            }
+        }
 };
 
 

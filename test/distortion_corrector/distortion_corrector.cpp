@@ -127,7 +127,6 @@ int main (int argc, char **argv)
     }
 
     string fileName = "";
-    int found;
 
     int chessW      = setter.getInt("chessW",       18);
     int chessH      = setter.getInt("chessH",       11);
@@ -139,10 +138,11 @@ int main (int argc, char **argv)
     if (setter.hasOption("calcMultiCheckerBoard")){
         corecvs::ObservationList observations;
 
-        ChessBoardDetectorParams params;
-        params.w = chessW;
-        params.h = chessH;
-        params.mode = ChessBoardDetectorMode::FIT_WIDTH;
+        CheckerboardDetectionParameters params;
+        params.setHorCrossesCount (chessW);
+        params.setVertCrossesCount(chessH);
+        params.setFitWidth(true);
+        params.setFitHeight(false);
 
 
         if (setter.hasOption("files"))

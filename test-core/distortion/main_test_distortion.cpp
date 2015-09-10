@@ -107,3 +107,16 @@ TEST(Distortion, testRadialJacobian)
 
 }
 
+<<<<<<< HEAD
+
+int main (int /*argC*/, char ** /*argV*/)
+{
+//    cout << "testRadialModel" << endl;
+//    testRadialModel();
+    cout << "testRadialJacobian" << endl;
+    testRadialJacobian();
+    cout << "PASSED" << endl;
+    return 0;
+}
+=======
+>>>>>>> official/master_topcon

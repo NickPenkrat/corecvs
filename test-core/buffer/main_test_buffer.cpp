@@ -48,9 +48,9 @@ using namespace std;
 using namespace corecvs;
 
 
-void testAlwaysFail (void)
+TEST(Generic, testAlwaysFail)
 {
-    ASSERT_TRUE(false,"Just Fail\n");
+    ASSERT_EQ(0, 1) << "Just Fail\n";
 }
 
 

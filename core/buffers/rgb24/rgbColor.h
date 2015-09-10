@@ -176,7 +176,7 @@ public:
 
     inline int16_t y() const
     {
-        return (int)(yd() + 0.5);
+        return fround(yd());
     }
 
     inline int16_t cb() const
@@ -188,6 +188,28 @@ public:
     {
         return (int)( 0.50000 * r() - 0.41869 * g() - 0.08131 * b());
     }
+
+
+    /**
+     *  TODO: I should test the consitency of conversions
+     *
+     * Y = ( (  66 * R + 129 * G +  25 * B + 128) >> 8) +  16
+     * U = ( ( -38 * R -  74 * G + 112 * B + 128) >> 8) + 128
+     * V = ( ( 112 * R -  94 * G -  18 * B + 128) >> 8) + 128
+     *
+     *
+     **/
+
+    inline int16_t u() const
+    {
+        return ( ( -38 * r() -  74 * g() + 112 * b() + 128) >> 8) + 128;
+    }
+
+    inline int16_t v() const
+    {
+        return ( ( 112 * r() -  94 * g() -  18 * b() + 128) >> 8) + 128;
+    }
+
 
     /*TODO: Move out common code */
 
