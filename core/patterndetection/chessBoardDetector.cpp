@@ -25,7 +25,7 @@ ChessboardDetector::ChessboardDetector (
 
 ChessBoardDetectorMode ChessboardDetector::getMode(const CheckerboardDetectionParameters &params)
 {
-    ChessBoardDetectorMode mode;
+    ChessBoardDetectorMode mode = ChessBoardDetectorMode::BEST;
     if (params. fitWidth()) mode = mode | ChessBoardDetectorMode::FIT_WIDTH;
     if (params.fitHeight()) mode = mode | ChessBoardDetectorMode::FIT_HEIGHT;
     return mode;

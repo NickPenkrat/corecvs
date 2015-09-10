@@ -61,8 +61,8 @@
 </class> -->
 
   <enum name="Checkerboard Detection Algorithm">
-    <item name="OpenCV Detector"   id="0" />
-    <item name="Homebrew Detector" id="1" />
+    <item name="Homebrew Detector" id="0" />
+    <item name="OpenCV Detector"   id="1" />
   </enum>
 
   <class name="Checkerboard Detection Parameters">  
@@ -88,7 +88,7 @@
     <field type="bool"         name="Fast board Speedup" defaultValue="true"/>
 
     <field type="bool"         name="Fit Width"  defaultValue="true"/>
-    <field type="bool"         name="Fit Height" defaultValue="true"/>
+    <field type="bool"         name="Fit Height" defaultValue="false"/>
   </class>
 
   <enum name="Line Distortion Estimator Cost">

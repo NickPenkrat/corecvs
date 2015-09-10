@@ -20,15 +20,15 @@ namespace CheckerboardDetectionAlgorithm {
  */
 enum CheckerboardDetectionAlgorithm {
     /** 
-     * \brief OpenCV Detector 
-     * OpenCV Detector 
-     */
-    OPENCV_DETECTOR = 0,
-    /** 
      * \brief Homebrew Detector 
      * Homebrew Detector 
      */
-    HOMEBREW_DETECTOR = 1,
+    HOMEBREW_DETECTOR = 0,
+    /** 
+     * \brief OpenCV Detector 
+     * OpenCV Detector 
+     */
+    OPENCV_DETECTOR = 1,
     /** 
      * \brief Last virtual option to run cycles to
      */
@@ -40,8 +40,8 @@ static inline const char *getName(const CheckerboardDetectionAlgorithm &value)
 {
     switch (value) 
     {
-     case OPENCV_DETECTOR : return "OPENCV_DETECTOR"; break ;
      case HOMEBREW_DETECTOR : return "HOMEBREW_DETECTOR"; break ;
+     case OPENCV_DETECTOR : return "OPENCV_DETECTOR"; break ;
      default : return "Not in range"; break ;
      
     }
