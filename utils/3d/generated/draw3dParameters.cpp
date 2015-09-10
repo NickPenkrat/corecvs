@@ -83,7 +83,7 @@ int Draw3dParameters::staticInit()
         (
           Draw3dParameters::POINT_SIZE_ID,
           offsetof(Draw3dParameters, mPointSize),
-          8,
+          1,
           "Point Size",
           "Point Size",
           "Point Size",
