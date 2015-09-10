@@ -268,6 +268,7 @@ ObservationListModel::ObservationListModel(QObject *parent) :
 Qt::ItemFlags ObservationListModel::flags(const QModelIndex &index) const
 {
     Qt::ItemFlags flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
+    return flags;
 }
 
 QVariant ObservationListModel::data(const QModelIndex &index, int role) const
@@ -368,6 +369,9 @@ bool ObservationListModel::insertRows(int row, int count, const QModelIndex &par
     emit beginInsertRows(parent, row, row + count - 1);
     mObservationList->insert(mObservationList->begin() + row, count, PointObservation());
     emit endInsertRows();
+    // FIXME: I just do not know what happens here, but without return statement
+    //        it does not builds on windows
+    return false;
 }
 
 bool ObservationListModel::removeRows(int row, int count, const QModelIndex &parent)
@@ -375,6 +379,9 @@ bool ObservationListModel::removeRows(int row, int count, const QModelIndex &par
     emit beginRemoveRows(parent, row, row + count - 1);
     mObservationList->erase(mObservationList->begin() + row, mObservationList->begin() + row + count);
     emit endRemoveRows();
+    // FIXME: I just do not know what happens here, but without return statement
+    //        it does not builds on windows
+    return false;
 }
 
 QVariant ObservationListModel::headerData(int section, Qt::Orientation orientation, int role) const
