@@ -17,6 +17,7 @@
 
 #include <iostream>
 #include <limits>
+#include <algorithm>
 
 #include <math.h>
 #include <string.h>
