@@ -1,26 +1,11 @@
-#include "global.h"
-
 #include <vector>
 #include <cassert>
-#include <fstream>
-#include <sstream>
 #include <string>
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-
-#include "calibration_structs.h"
-
-#include "tbbWrapper.h"
-#include "quaternion.h"
-#include "homographyReconstructor.h"
-#include "chessBoardDetector.h"
-#include "levenmarq.h"
-#include "mesh3d.h"
-
-#include "jsonSetter.h"
+#include "calibrationJob.h"
 #include "jsonGetter.h"
 
+<<<<<<< HEAD
 #include "flatPatternCalibrator.h"
 #include "photoStationCalibrator.h"
 
@@ -336,80 +321,21 @@ void calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std
     calibrator.recenter();
 }
 
+=======
+>>>>>>> official/dkorchemkin_mergestage
 int main(int argc, char **argv)
 {
-    // TODO: read current calibration / algo parameters from json
-    int N = 6, M = 24, M_start = 15, M_by = 15;
-    std::string pattern = "distSPA%d_%ddeg.%s";
-    if(!parseArgs(argc, argv, N, M, M_start, M_by, pattern))
-    {
-        usage();
-        return 0;
-    }
-
-    /*
-     *  Board detection / loading
-     */
-    std::vector<MultiCameraPatternPoints> points;
-    detectBoards(N, M, M_start, M_by, pattern.c_str(), points);
-    
-    /*
-     * Separated camera calibration
-     */
-    std::vector<CameraIntrinsics_> intrinsics;
-    std::vector<std::vector<LocationData>> locations;
-    
-    calibrateCameras(N, M, points, intrinsics, locations);
-    assert(intrinsics.size() == locations.size());
-
-    /*
-     * Photostation calibration
-     */
-    PhotoStationCalibrator calibrator( CameraConstraints::LOCK_SKEW | CameraConstraints::EQUAL_FOCAL);
-    calibratePhotostation(N, M, calibrator, points, intrinsics, locations);
-
-    /*
-     * Output section
-     */
-    auto ss = calibrator.getCalibrationSetups();
-	auto ps = calibrator.getPhotostation();
-    
-    // Initial camera positions
-    std::cout << "Camera positions (separated calibration)" << std::endl;
-    for (auto& vc: locations)
-    {
-        for (auto& loc: vc)
-        {
-            std::cout << loc.position << " ";
-        }
-        std::cout << std::endl;
-    }
-    std::cout << std::endl;
-
-    // Pose change for setups
-    std::cout << "Pose of calibration setups" << std::endl;
-    std::cout << "|_.Setup id|_.Position|_.Axis|_.Rel. rotation|" << std::endl;
-    corecvs::Quaternion prev(0, 0, 0, 1);
-    double angle_sq1 = 0.0, angle_sq2 = 0.0;
-    for (int i = 0; i < M; ++i)
-    {
-        auto& set = ss[i];
-        corecvs::Quaternion diff = prev.conjugated() ^ set.orientation;
-        prev = set.orientation;
-        double angle = diff.getAngle() * 180.0 / M_PI;
-        auto axis = diff.getAxis();
-        if (angle > 180)
-        {
-            angle = 360.0 - angle;
-            axis = -axis;
-        }
-        std::cout << "|" << M_start + i * M_by << "|" << set.position << "|" << axis << "|" << angle << "|" << std::endl;
-        angle_sq1 += angle / M;
-        angle_sq2 += angle * angle / M;
-    }
-    double asd = angle_sq2 - angle_sq1 * angle_sq1;
-    std::cout << "|\\3=.Angle stdev|" << sqrt(asd) << "|" << std::endl << std::endl;
-
+    std::string name = "job.json";
+    if (argc > 1)
+        name = argv[1];
+    CalibrationJob job;
+    JSONGetter *get1 = new JSONGetter(name.c_str());
+    get1->visit(job, "job");
+    delete get1;
+    auto ps = job.photostation;
+    auto ss = job.calibrationSetupLocations;
+    int N = ps.cameras.size();
+    int M = ss.size();
     // Optical axis deviation from "vertical"
     Matrix T(N, 3);
     for (int i = 0; i < N; ++i)
@@ -448,7 +374,7 @@ int main(int argc, char **argv)
     {
         std::cout << cam.extrinsics.position << std::endl;
     }
-   
+#if 0
     for (int i = 0; i < M; ++i)
     {
         std::stringstream s;
@@ -456,7 +382,7 @@ int main(int argc, char **argv)
         ps.location = ss[i];
         drawPly(ps, s.str());
     }
-	
+#endif
 	// Cam2cam distances 
     std::cout << "Cam2cam distances" << std::endl;
     std::cout << "|_.Cam #1|_.Cam #2|_.Distance (mm)|" << std::endl;
@@ -486,26 +412,15 @@ int main(int argc, char **argv)
     }
     std::cout << std::endl;
 
-    std::cout << "Initial camera intrinsics" << std::endl;
-    std::cout << "|_.Cam|_.fx|_.fy|_.fx/fy|_.skew|_.atan(skew/fy)|_.cx|_.cy|" << std::endl;
-    for (int i = 0; i < N; ++i)
+    std::cout << "Errors: " << std::endl;
+    std::cout << "|_.Cam#|_.file|_.Distortion RMSE|_.Distortion max error|_.Calibration RMSE|_.Calibration max error|" << std::endl;
+    for (auto &o: job.calibrationSetups)
     {
-        double fx = intrinsics[i].fx;
-        double fy = intrinsics[i].fy;
-        double cx = intrinsics[i].cx;
-        double cy = intrinsics[i].cy;
-        double skew=intrinsics[i].skew;
-        double aspect = fx / fy;
-        double angle = atan(skew / fx) * 180.0 / M_PI;
-
-        std::cout << "|" << i << "|" << fx << "|" << fy << "|" << aspect << "|" << skew << "|" << angle << "|" << cx << "|" << cy << "|" << std::endl;
+        for (auto &s: o)
+        {
+            auto& view = job.observations[s.cameraId][s.imageId];
+            std::cout << "|" << s.cameraId << "|" << view.sourceFileName << "|" << view.distortionRmse << "|" << view.distortionMaxError << "|" << view.calibrationRmse << "|" << view.calibrationMaxError << "|" << std::endl;
+        }
     }
-    std::cout << std::endl;
-
-
-    JSONSetter setter("calibration.json");
-    setter.visit(ps, "photostation");
-    setter.visit(ss, "calibrationLocations");
-
     return 0;
 }

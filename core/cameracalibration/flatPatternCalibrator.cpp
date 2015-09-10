@@ -1,7 +1,7 @@
 #include "flatPatternCalibrator.h"
 #include <cassert>
 
-FlatPatternCalibrator::FlatPatternCalibrator(const CameraConstraints constraints, const CameraIntrinsics_ lockParams) : K(0), N(0), absoluteConic(6), lockParams(lockParams), constraints(constraints), forceZeroSkew(!!(constraints & CameraConstraints::ZERO_SKEW))
+FlatPatternCalibrator::FlatPatternCalibrator(const CameraConstraints constraints, const CameraIntrinsics_ lockParams, const double lockFactor) : factor(lockFactor), K(0), N(0), absoluteConic(6), lockParams(lockParams), constraints(constraints), forceZeroSkew(!!(constraints & CameraConstraints::ZERO_SKEW))
 {
 }
 
@@ -26,6 +26,7 @@ void FlatPatternCalibrator::solve(bool runPresolver, bool runLM)
 
     if(runLM) refineGuess();
     std::cout << std::endl <<  this << "RES LM: " << getRmseReprojectionError() << std::endl;
+    std::cout << "OPTFAC: " << factor << std::endl;
 }
 
 CameraIntrinsics_ FlatPatternCalibrator::getIntrinsics()
@@ -62,7 +63,11 @@ void FlatPatternCalibrator::getFullReprojectionError(double out[])
         auto& pt = points[i];
         for (auto& ptp: pt)
         {
-            auto res = intrinsics.project(R * (ptp.second - C));
+            auto pp = ptp.second;
+
+            pp[1] *= factor;
+
+            auto res = intrinsics.project(R * (pp - C));
             auto diff = res - ptp.first;
 
             out[idx++] = diff[0];
@@ -93,6 +98,8 @@ int FlatPatternCalibrator::getInputNum() const
     IFNOT(LOCK_SKEW, IFNOT(ZERO_SKEW, input++));
 
     input += 7 * (int)N;
+    input++;
+    IFNOT(UNLOCK_YSCALE, input--);
     return input;
 }
 
@@ -203,6 +210,7 @@ void FlatPatternCalibrator::readParams(const double in[])
             locationData[i].orientation.normalise();
         }
     }
+    IF_GET_PARAM(UNLOCK_YSCALE, factor);
     assert(argin == getInputNum());
 #undef GET_PARAM
 #undef IF_GET_PARAM
@@ -239,7 +247,7 @@ void FlatPatternCalibrator::writeParams(double out[])
             SET_PARAM(locationData[i].orientation[j]);
         }
     }
-
+    IF_SET_PARAM(UNLOCK_YSCALE, factor);
     assert(argout == getInputNum());
 }
 

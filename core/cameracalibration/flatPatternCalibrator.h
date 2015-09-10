@@ -20,7 +20,7 @@
 struct FlatPatternCalibrator
 {
 public:
-    FlatPatternCalibrator(const CameraConstraints constraints = CameraConstraints::NONE, const CameraIntrinsics_ lockParams = CameraIntrinsics_());
+    FlatPatternCalibrator(const CameraConstraints constraints = CameraConstraints::NONE, const CameraIntrinsics_ lockParams = CameraIntrinsics_(), const double lockFactor = 1.0);
 
     // Add 2d-3d correspondences and initial guess for camera location
     // TODO: add check for pattern planarity and [maybe] support of other planes than z=0
@@ -41,6 +41,7 @@ public:
 
     int getInputNum() const;
     int getOutputNum() const;
+    double factor = 1.0;
 private:
     size_t K, N;
 
