@@ -25,12 +25,10 @@ ChessboardDetector::ChessboardDetector (
 
 ChessBoardDetectorMode ChessboardDetector::getMode(const CheckerboardDetectionParameters &params)
 {
-    int toReturn;
-    if (params. fitWidth()) toReturn |= (int)ChessBoardDetectorMode::FIT_WIDTH;
-    if (params.fitHeight()) toReturn |= (int)ChessBoardDetectorMode::FIT_HEIGHT;
-
-
-    return ChessBoardDetectorMode(toReturn);
+    ChessBoardDetectorMode mode;
+    if (params. fitWidth()) mode = mode | ChessBoardDetectorMode::FIT_WIDTH;
+    if (params.fitHeight()) mode = mode | ChessBoardDetectorMode::FIT_HEIGHT;
+    return mode;
 }
 
 bool ChessboardDetector::detectPattern(corecvs::G8Buffer &buffer)
