@@ -23,7 +23,7 @@ struct ImageData
     corecvs::ObservationList undistortedPattern;
     LocationData location;
 
-    double distortionRmse, distortionMaxError, calibrationRmse, calibrationMaxError, singleCameraRmse, singleCameraMaxError;
+    double distortionRmse = -1.0, distortionMaxError = -1.0, calibrationRmse = -1.0, calibrationMaxError = -1.0, singleCameraRmse = -1.0, singleCameraMaxError = -1.0;
 
     template<class VisitorType>
     void accept(VisitorType &visitor)
@@ -118,6 +118,7 @@ struct CalibrationJob
     std::vector<LocationData> calibrationSetupLocations;
     std::vector<std::vector<ImageData>> observations;
     std::vector<std::vector<CalibrationSetupEntry>> calibrationSetups;
+    bool calibrated = false;
 
     CalibrationSettings settings;
 
@@ -129,6 +130,7 @@ struct CalibrationJob
         visitor.visit(calibrationSetups, "calibrationSetups");
         visitor.visit(observations, "observations");
         visitor.visit(settings, CalibrationSettings(), "algorithmSettings");
+        visitor.visit(calibrated, false, "calibrated");
     }
 
     static corecvs::RGB24Buffer LoadImage(const std::string& path);

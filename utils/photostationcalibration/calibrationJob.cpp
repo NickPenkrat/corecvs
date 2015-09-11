@@ -404,6 +404,7 @@ void CalibrationJob::calibratePhotostation()
     }
 
     calibrationSetupLocations = calibrator.getCalibrationSetups();
+    calibrated = true;
 }
 
 void CalibrationJob::computeCalibrationErrors()
