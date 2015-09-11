@@ -59,7 +59,11 @@ void CameraModelParametersControlWidget::setCameraParameters(double &fx, double 
 
 void CameraModelParametersControlWidget::readUi()
 {
-    fx = fy = ui->spinBoxFocal->value();
+    fx = ui->spinBoxFocalX->value();
+    fy = ui->spinBoxFocalY->value();
+    cx = ui->spinBoxCx->value();
+    cy = ui->spinBoxCy->value();
+    skew = ui->spinBoxSkew->value();
     _pos[0] =  ui->spinBoxX->value();
     _pos[1] =  ui->spinBoxY->value();
     _pos[2] =  ui->spinBoxZ->value();
@@ -72,7 +76,11 @@ void CameraModelParametersControlWidget::readUi()
 
 void CameraModelParametersControlWidget::writeUi()
 {
-    ui->spinBoxFocal->setValue(fx);
+    ui->spinBoxFocalX->setValue(fx);
+    ui->spinBoxFocalY->setValue(fy);
+    ui->spinBoxCx->setValue(cx);
+    ui->spinBoxCy->setValue(cy);
+    ui->spinBoxSkew->setValue(skew);
     ui->spinBoxX->setValue(_pos[0]);
     ui->spinBoxY->setValue(_pos[1]);
     ui->spinBoxZ->setValue(_pos[2]);
