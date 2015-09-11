@@ -113,7 +113,7 @@ public:
     /* converters */
     int32_t getInt(uint32_t idx) const
     {
-        ASSERT_TRUE(idx < 4, "Wrong idx in getInt()");
+        CORE_ASSERT_TRUE(idx < 4, "Wrong idx in getInt()");
         ALIGN_DATA(16) int32_t result[4];
         saveAligned(result);
         return result[idx];

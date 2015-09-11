@@ -78,7 +78,7 @@ TEST(Buffer, testG12Buffer)
    ( AbstractBuffer<TestAbstractBufferClass>::DATA_ALIGN_GRANULARITY,
      AbstractBuffer<TestAbstractBufferClass>::DATA_ALIGN_GRANULARITY );
    delete b;
-   ASSERT_TRUE(TestAbstractBufferClass::counter == 0, "Abstract buffer violates the C++ new/delete contract")
+   CORE_ASSERT_TRUE(TestAbstractBufferClass::counter == 0, "Abstract buffer violates the C++ new/delete contract")
 
    /* Test case 3: Test internal buffer destruction */
    TestAbstractBufferClass::counter = 0;
@@ -87,7 +87,7 @@ TEST(Buffer, testG12Buffer)
    ( AbstractBuffer<TestAbstractBufferClass>::DATA_ALIGN_GRANULARITY + 1,
      AbstractBuffer<TestAbstractBufferClass>::DATA_ALIGN_GRANULARITY + 1);
    delete d;
-   ASSERT_TRUE(TestAbstractBufferClass::counter == 0, "Abstract buffer violates the C++ new/delete contract")
+   CORE_ASSERT_TRUE(TestAbstractBufferClass::counter == 0, "Abstract buffer violates the C++ new/delete contract")
 
 
    /* Test case 4: Alignment */
@@ -96,17 +96,11 @@ TEST(Buffer, testG12Buffer)
    for (unsigned i = 0; i < testLen; i++)
    {
        c[i] = new G12Buffer(i+1,i+i);
-       ASSERT_FALSE(
-             ((uintptr_t)c[i]->data) & AbstractBuffer<TestAbstractBufferClass>::DATA_ALIGN_GRANULARITY,
-             "Buffer alignment broken"
-       );
+       CORE_ASSERT_FALSE(((uintptr_t)c[i]->data) & AbstractBuffer<TestAbstractBufferClass>::DATA_ALIGN_GRANULARITY, "Buffer alignment broken");
 
        uintptr_t line1 = (uintptr_t)&(c[i]->element(0,0));
        uintptr_t line2 = (uintptr_t)&(c[i]->element(1,0));
-       ASSERT_FALSE( (line1 - line2) & AbstractBuffer<TestAbstractBufferClass>::DATA_ALIGN_GRANULARITY,
-               "Stride alignment broken"
-       );
-
+       CORE_ASSERT_FALSE((line1 - line2) & AbstractBuffer<TestAbstractBufferClass>::DATA_ALIGN_GRANULARITY, "Stride alignment broken");
    }
 
    for (unsigned i = 0; i < testLen; i++)
@@ -127,10 +121,10 @@ TEST(Buffer, DISABLED_testBilinerTransform)
     ProjectiveTransform inverseLeft(inverseLeftMatrix);
 
     G12Buffer *image = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
-    ASSERT_TRUE(image, "Could not open test image\n");
-    ASSERT_TRUE(image->verify(),"Input image is corrupted");
+    CORE_ASSERT_TRUE(image, "Could not open test image\n");
+    CORE_ASSERT_TRUE(image->verify(), "Input image is corrupted");
     G12Buffer *buffer1Transformed = image->doReverseTransform<ProjectiveTransform>(&inverseLeft, image->h, image->w);
-    ASSERT_TRUE(buffer1Transformed->verify(),"Result image is corrupted");
+    CORE_ASSERT_TRUE(buffer1Transformed->verify(), "Result image is corrupted");
 
     BMPLoader *loader = new BMPLoader();
     RGB24Buffer *toSave = new RGB24Buffer(buffer1Transformed);
@@ -159,7 +153,7 @@ TEST(Buffer, testDerivative)
         for (int j = 1; j < result->w - 1; j++)
         {
             cout << "  " << result->element(i,j);
-            ASSERT_TRUE(result->element(i,j) == Vector2d<int16_t>(8,32), "Error computing buffer");
+            CORE_ASSERT_TRUE(result->element(i, j) == Vector2d<int16_t>(8, 32), "Error computing buffer");
         }
         cout << "\n";
     }
@@ -170,8 +164,8 @@ TEST(Buffer, testDerivative)
 TEST(Buffer, DISABLED_testNonMinimal)
 {
     G12Buffer *image = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
-    ASSERT_TRUE(image, "Could not open test image\n");
-    ASSERT_TRUE(image->verify(),"Input image is corrupted");
+    CORE_ASSERT_TRUE(image, "Could not open test image\n");
+    CORE_ASSERT_TRUE(image->verify(), "Input image is corrupted");
 
     DerivativeBuffer *result = new DerivativeBuffer(image);
     G12Buffer *filtered = result->nonMaximalSuppression();

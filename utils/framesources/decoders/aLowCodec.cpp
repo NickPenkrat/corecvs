@@ -26,7 +26,7 @@ inline uint8_t code12to8(uint16_t value)
     if (value < 1024) return ((value >> 4) & 0x1f) | 0xA0;  // 0 0 1 a b c d e X X X X => 101abcde
     if (value < 2048) return ((value >> 5) & 0x1f) | 0xC0;  // 0 1 a b c d e X X X X X => 110abcde
     if (value < 4096) return ((value >> 6) & 0x1f) | 0xE0;  // 1 a b c d e X X X X X X => 111abcde
-    ASSERT_FAIL("code12to8: value is out of range");
+    CORE_ASSERT_FAIL("code12to8: value is out of range");
 }
 
 /** The decoding rules are taken from the document "AR1820HS_DS_G.pdf", page 94
@@ -43,7 +43,7 @@ inline uint16_t decode8to12(uint8_t value)
         case 0xC0:  return ((value & 0x1f) << 5) | 0x410;      // 110abcde => 0 1 a b c d e 1 0 0 0 0
         case 0xE0:  return ((value & 0x1f) << 6) | 0x820;      // 111abcde => 1 a b c d e 1 0 0 0 0 0
     }
-    ASSERT_FAIL("decode8to12: value is out of range");
+    CORE_ASSERT_FAIL("decode8to12: value is out of range");
 }
 
 RGB24Buffer *ALowCodec::code(const RGB24Buffer *rgb24buffer)

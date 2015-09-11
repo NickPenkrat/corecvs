@@ -322,7 +322,7 @@ void StereoAligner::getAlignmentTransformation(
     printf("Old Matrix was\n");
     F.print();
     printf("\n");
-    ASSERT_TRUE(Fprim.notTooFar(F, 1e-5), "Matrix reconstruction failed");
+    CORE_ASSERT_TRUE(Fprim.notTooFar(F, 1e-5), "Matrix reconstruction failed");
 //#endif // ASSERTS
 
     double det1 = rotationalPartFirst .det();
@@ -378,7 +378,7 @@ Vector3dd StereoAligner::getBestZ(const Matrix33 &F, const Vector2dd &rect, unsi
         if (rightDistortions != NULL)
             rightDistortions[i] = distRight;
 
-        ASSERT_TRUE(distLeft > 0 && distRight > 0, "Internal error");
+        CORE_ASSERT_TRUE(distLeft > 0 && distRight > 0, "Internal error");
 
         if (distLeft + distRight <  minsum)
         {
@@ -429,7 +429,7 @@ void StereoAligner::getLateralCorrection(
         unsigned threshold
         )
 {
-    ASSERT_TRUE(list->size() != 0, "Input list should not ne empty");
+    CORE_ASSERT_TRUE(list->size() != 0, "Input list should not ne empty");
     double min = numeric_limits<double>::max();
     double max = numeric_limits<double>::min();
     vector<double> sortedLaterals;

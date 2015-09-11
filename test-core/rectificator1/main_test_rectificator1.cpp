@@ -84,8 +84,8 @@ TEST(Rectification1, testEpipoles)
 #ifdef ASSERTS
     Vector3dd left = e1 * F;
     Vector3dd right = F * e2;
-    ASSERT_TRUE(left.notTooFar(leftResult, 1e-10), "Left Epipole Error");
-    ASSERT_TRUE(right.notTooFar(rightResult, 1e-10), "Right Epipole Error");
+    CORE_ASSERT_TRUE(left.notTooFar(leftResult, 1e-10), "Left Epipole Error");
+    CORE_ASSERT_TRUE(right.notTooFar(rightResult, 1e-10), "Right Epipole Error");
 #endif
 }
 
@@ -478,7 +478,7 @@ TEST(Rectification1, DISABLED_testRectificatorCube)
     printf("Old Matrix was\n");
     F.print();
     printf("\n");
-    ASSERT_TRUE(Fprim.notTooFar(F, 1e-5), "Matrix reconstruction failed");
+    CORE_ASSERT_TRUE(Fprim.notTooFar(F, 1e-5), "Matrix reconstruction failed");
 
     delete pointsIn3d;
 

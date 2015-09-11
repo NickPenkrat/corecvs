@@ -110,8 +110,8 @@ TEST(Gradient, testGradientDescent)
     cout << "Minimum Answer:" << resMin << endl;
     cout << "        Answer:" << res    << endl;
 
-    ASSERT_TRUE(resMin.notTooFar(min, 1e-2), "Minimum search failed");
-    ASSERT_TRUE(res   .notTooFar(min, 1e-2), "GD opt failed");
+    CORE_ASSERT_TRUE(resMin.notTooFar(min, 1e-2), "Minimum search failed");
+    CORE_ASSERT_TRUE(res.notTooFar(min, 1e-2), "GD opt failed");
 }
 
 TEST(Gradient, DISABLED_testGradientDescentRnToRm)
@@ -147,9 +147,8 @@ TEST(Gradient, DISABLED_testGradientDescentRnToRm)
         cout << target[i] << ",";
     cout << endl;
 
-
-    ASSERT_DOUBLE_EQUAL_E(result[0],toguess[0], 1e-7, "Wrong result");
-    ASSERT_DOUBLE_EQUAL_E(result[1],toguess[1], 1e-7, "Wrong result");
+    CORE_ASSERT_DOUBLE_EQUAL_E(result[0], toguess[0], 1e-7, "Wrong result");
+    CORE_ASSERT_DOUBLE_EQUAL_E(result[1], toguess[1], 1e-7, "Wrong result");
 }
 
 TEST(Gradient, testGradientDescentRnToRm2)

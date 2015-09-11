@@ -515,9 +515,9 @@ template<typename ResultType>
      **/
     void fillRectangleWith(IndexType y, IndexType x, IndexType rectH, IndexType rectW, const ElementType &value)
     {
-        ASSERT_TRUE_P(x >= 0 && y >= 0 && x < w && y < h, ("[%d:%d] origin is not inside the buffer [%dx%d]", x, y, w, h));
-        ASSERT_TRUE_P(x + rectW >= 0 && y + rectH >= 0 &&
-                      x + rectW <= w && y + rectH <= h, ("[%d:%d] right lower corner is not inside the buffer [%dx%d]", x + rectW, y + rectH, w, h));
+        CORE_ASSERT_TRUE_P(x >= 0 && y >= 0 && x < w && y < h, ("[%d:%d] origin is not inside the buffer [%dx%d]", x, y, w, h));
+        CORE_ASSERT_TRUE_P(x + rectW >= 0 && y + rectH >= 0 &&
+                           x + rectW <= w && y + rectH <= h, ("[%d:%d] right lower corner is not inside the buffer [%dx%d]", x + rectW, y + rectH, w, h));
 
         for (IndexType i = y; i < y + rectH; i++)
         {
@@ -630,7 +630,7 @@ template<typename ResultType>
         printf("Internal error with input [%d x %d] (%d, %d) -> (%d, %d)\n", src->w, src->h, x1, y1, x2, y2);
         fflush(stdout);
 
-        ASSERT_TRUE_P(src != NULL, ("src == NULL"));
+        CORE_ASSERT_TRUE_P(src != NULL, ("src == NULL"));
         IndexType tmp;
         if (x1 > x2) { tmp = x1; x1 = x2; x2 = tmp; }
         if (y1 > y2) { tmp = y1; y1 = y2; y2 = tmp; }
@@ -642,10 +642,10 @@ template<typename ResultType>
 
         _init(y2 - y1, x2 - x1);
 
-        ASSERT_TRUE_P((x1 > 0) && (y1 > 0) && (x2 > x1) && (y2 > y1),
-                ("Internal error with input [%d x %d] (%d, %d) -> (%d, %d)", src->w, src->h, x1, y1, x2, y2));
-        ASSERT_TRUE_P((src->w > x2) && (src->h > y2),
-                ("Internal error with input [%d x %d] (%d, %d) -> (%d, %d)", src->w, src->h, x1, y1, x2, y2));
+        CORE_ASSERT_TRUE_P((x1 > 0) && (y1 > 0) && (x2 > x1) && (y2 > y1),
+            ("Internal error with input [%d x %d] (%d, %d) -> (%d, %d)", src->w, src->h, x1, y1, x2, y2));
+        CORE_ASSERT_TRUE_P((src->w > x2) && (src->h > y2),
+            ("Internal error with input [%d x %d] (%d, %d) -> (%d, %d)", src->w, src->h, x1, y1, x2, y2));
 
         for (IndexType i = 0; i < h; i++) {
             memcpy(&element(i, 0), &(src->element(y1 + i, x1)), sizeof(ElementType) * w);
@@ -889,7 +889,7 @@ template<typename ResultType>
                 if (*thatElemRunner != *thisElemRunner)
                 {
 #ifdef ASSERTS
-                  printf("Buffers have equal sizes [h=%d w=%d]\n", this->h, this->w);
+                    printf("Buffers have equal sizes [h=%d w=%d]\n", this->h, this->w);
 
                     printf("[ 0x");
                     for (size_t k = 0; k < sizeof(ElementType); k++)
@@ -898,7 +898,7 @@ template<typename ResultType>
                     for (size_t k = 0; k < sizeof(ElementType); k++)
                         printf("%02X ", ((uint8_t *)(void*)(thatElemRunner))[k]);
                     printf("]\nPos y=%d x=%d\n", i , j);
-                    ASSERT_FAIL_P(("Buffers don't match"));
+                    CORE_ASSERT_FAIL_P(("Buffers don't match"));
 #endif
                     return false;
                 }

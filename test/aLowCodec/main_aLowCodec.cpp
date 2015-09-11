@@ -18,9 +18,9 @@ inline bool testRGB(int r, int g, int b) {
     uint8_t gd = decode8to12(gc) >> 4;
     uint8_t bd = decode8to12(bc) >> 4;
 
-    ASSERT_TRUE_P(CORE_ABS(rd - r) <= 32);
-    ASSERT_TRUE_P(CORE_ABS(gd - g) <= 32);
-    ASSERT_TRUE_P(CORE_ABS(bd - b) <= 32);
+    CORE_ASSERT_TRUE_P(CORE_ABS(rd - r) <= 32);
+    CORE_ASSERT_TRUE_P(CORE_ABS(gd - g) <= 32);
+    CORE_ASSERT_TRUE_P(CORE_ABS(bd - b) <= 32);
 }
 
 void testCodec(void)

@@ -168,9 +168,10 @@ void testJSON2()
         getter.visit(testObject1, "vector");
     }
 
-    ASSERT_TRUE(testObject.testField.size() == testObject1.testField.size(), "Wrong loaded array size");
-    for (int i = 0; i < testObject.testField.size(); i++) {
-        ASSERT_TRUE_P(testObject1.testField[i] == testObject.testField[i], ("Error at pos %d", i));
+    CORE_ASSERT_TRUE(testObject.testField.size() == testObject1.testField.size(), "Wrong loaded array size");
+    for (int i = 0; i < testObject.testField.size(); i++)
+    {
+        CORE_ASSERT_TRUE_P(testObject1.testField[i] == testObject.testField[i], ("Error at pos %d", i));
         cout << testObject1.testField[i] << " == " << testObject.testField[i] << std::endl;
     }
     cout << std::endl;

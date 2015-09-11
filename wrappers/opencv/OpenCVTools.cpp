@@ -79,9 +79,8 @@ G12Buffer *OpenCVTools::getG12BufferFromCVImage(IplImage *input)
 {
     G12Buffer *toReturn = new G12Buffer(input->height, input->width);
 
-
-    ASSERT_TRUE_P((input->depth == IPL_DEPTH_8U) && ((input->nChannels == 3) || (input->nChannels == 1)),
-      ("Unsupported IplImage format: depth=%d, channels = %d\n", input->depth, input->nChannels));
+    CORE_ASSERT_TRUE_P((input->depth == IPL_DEPTH_8U) && ((input->nChannels == 3) || (input->nChannels == 1)),
+        ("Unsupported IplImage format: depth=%d, channels = %d\n", input->depth, input->nChannels));
 
     if (input->nChannels == 3)
     {
@@ -125,8 +124,8 @@ RGB24Buffer *OpenCVTools::getRGB24BufferFromCVImage(IplImage *input)
 {
     RGB24Buffer *toReturn = new RGB24Buffer(input->height, input->width);
 
-    ASSERT_TRUE_P((input->depth == IPL_DEPTH_8U) && ((input->nChannels == 3) || (input->nChannels == 1)) ,
-      ("Unsupported IplImage format: depth=%d, channels = %d\n", input->depth, input->nChannels));
+    CORE_ASSERT_TRUE_P((input->depth == IPL_DEPTH_8U) && ((input->nChannels == 3) || (input->nChannels == 1)),
+        ("Unsupported IplImage format: depth=%d, channels = %d\n", input->depth, input->nChannels));
 
     if (input->nChannels == 3)
     {

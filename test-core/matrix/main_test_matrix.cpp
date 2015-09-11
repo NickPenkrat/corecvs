@@ -40,8 +40,8 @@ TEST(MatrixTest, testMatrix33)
             4.0,5.0,7.0,
             8.0,9.0,10.0);
 
-    ASSERT_TRUE  (a1 == a2, "Matrix should be equal");
-    ASSERT_FALSE (a1 != a2, "Matrix should not be unequal");
+    CORE_ASSERT_TRUE(a1 == a2, "Matrix should be equal");
+    CORE_ASSERT_FALSE(a1 != a2, "Matrix should not be unequal");
 
 
     // Test case 2 : Test inversion and multiplication
@@ -57,8 +57,8 @@ TEST(MatrixTest, testMatrix33)
 
     Matrix33 b2 = b1inv * b1;
 
-    ASSERT_TRUE(b1inv.notTooFar(b1res, 1e-5), "Inversion gives wrong result");
-    ASSERT_TRUE(b2.notTooFar(Matrix33(1.0), 1e-5), "Inversion of inverse should give unit matrix gives wrong result");
+    CORE_ASSERT_TRUE(b1inv.notTooFar(b1res, 1e-5), "Inversion gives wrong result");
+    CORE_ASSERT_TRUE(b2.notTooFar(Matrix33(1.0), 1e-5), "Inversion of inverse should give unit matrix gives wrong result");
 
     // Test case 3 : Test constructors
     Matrix33 c1 = Matrix33(
@@ -66,7 +66,7 @@ TEST(MatrixTest, testMatrix33)
              0.0,2.0,0.0,
              0.0,0.0,2.0 );
     Matrix33 c2 = Matrix33(2.0);
-    ASSERT_TRUE  (c1 == c2, "Matrix should be equal");
+    CORE_ASSERT_TRUE(c1 == c2, "Matrix should be equal");
 
     // Test case 4: Determinant
     Matrix33 d1 = Matrix33 (
@@ -93,13 +93,11 @@ TEST(MatrixTest, testMatrix33)
     double d5det = d5.det();
     double d5res = 1.0;
 
-
-    ASSERT_TRUE_P(d1det < d1res + 1e-5 && d1det > d1res - 1e-5, ("Determinant should be %lf but is %lf", d1res, d1det));
-    ASSERT_TRUE_P(d2det < d2res + 1e-5 && d2det > d2res - 1e-5, ("Determinant should be %lf but is %lf", d2res, d2det));
-    ASSERT_TRUE_P(d3det < d3res + 1e-5 && d3det > d3res - 1e-5, ("Determinant should be %lf but is %lf", d3res, d3det));
-    ASSERT_TRUE_P(d4det < d4res + 1e-5 && d4det > d4res - 1e-5, ("Determinant should be %lf but is %lf", d4res, d4det));
-    ASSERT_TRUE_P(d5det < d5res + 1e-5 && d5det > d5res - 1e-5, ("Determinant should be %lf but is %lf", d5res, d5det));
-
+    CORE_ASSERT_TRUE_P(d1det < d1res + 1e-5 && d1det > d1res - 1e-5, ("Determinant should be %lf but is %lf", d1res, d1det));
+    CORE_ASSERT_TRUE_P(d2det < d2res + 1e-5 && d2det > d2res - 1e-5, ("Determinant should be %lf but is %lf", d2res, d2det));
+    CORE_ASSERT_TRUE_P(d3det < d3res + 1e-5 && d3det > d3res - 1e-5, ("Determinant should be %lf but is %lf", d3res, d3det));
+    CORE_ASSERT_TRUE_P(d4det < d4res + 1e-5 && d4det > d4res - 1e-5, ("Determinant should be %lf but is %lf", d4res, d4det));
+    CORE_ASSERT_TRUE_P(d5det < d5res + 1e-5 && d5det > d5res - 1e-5, ("Determinant should be %lf but is %lf", d5res, d5det));
 }
 
 TEST(MatrixTest, testMatrix44)
@@ -117,7 +115,7 @@ TEST(MatrixTest, testMatrix44)
     cout << a;
     cout << ares;
 
-    ASSERT_TRUE(a.notTooFar(ares, 1e-5), "Rotation problem\n");
+    CORE_ASSERT_TRUE(a.notTooFar(ares, 1e-5), "Rotation problem\n");
 }
 
 TEST(MatrixTest, testMatrixVectorProduct)
@@ -130,12 +128,12 @@ TEST(MatrixTest, testMatrixVectorProduct)
 
     Vector3dd a3 = a1 * a2;
     Vector3dd a3res = Vector3dd(1 + 4 + 9, 2 + 12, 5 + 12);
-    ASSERT_TRUE(a3.notTooFar(a3res, 1e-5), "Av matrix vector multiplication fails");
+    CORE_ASSERT_TRUE(a3.notTooFar(a3res, 1e-5), "Av matrix vector multiplication fails");
 
 
     Vector3dd a4 = a2 * a1;
     Vector3dd a4res = Vector3dd(1 + 15, 2 + 2 + 18, 3 + 8);
-    ASSERT_TRUE(a4.notTooFar(a4res, 1e-5), "vA matrix vector multiplication fails");
+    CORE_ASSERT_TRUE(a4.notTooFar(a4res, 1e-5), "vA matrix vector multiplication fails");
 
 }
 
@@ -187,8 +185,8 @@ TEST(MatrixTest, testMatrixVectorMult)
     double vec2rdata[4] = {1.0, 3.5, -1.0};
     Vector vec1r(2, vec1rdata);
     Vector vec2r(3, vec2rdata);
-    ASSERT_TRUE(vec1r.notTooFar(res1, 1e-7), "Wrong matrix x vector");
-    ASSERT_TRUE(vec2r.notTooFar(res2, 1e-7), "Wrong vector x matrix");
+    CORE_ASSERT_TRUE(vec1r.notTooFar(res1, 1e-7), "Wrong matrix x vector");
+    CORE_ASSERT_TRUE(vec2r.notTooFar(res2, 1e-7), "Wrong vector x matrix");
 }
 
 TEST(MatrixTest, testMatrixStatics)
@@ -199,14 +197,14 @@ TEST(MatrixTest, testMatrixStatics)
 
     Vector3dd c =  a ^ b;
     Vector3dd d = m1 * b;
-    ASSERT_TRUE(c.notTooFar(d, 1e-5), "Matrix cross product left representation fails");
+    CORE_ASSERT_TRUE(c.notTooFar(d, 1e-5), "Matrix cross product left representation fails");
 
     Matrix33 m2 = Matrix33::CrossProductRight(a);
 
     Vector3dd c1 =  b ^ a;
     Vector3dd d1 = m2 * b;
 
-    ASSERT_TRUE(c1.notTooFar(d1, 1e-5), "Matrix cross product right representation fails");
+    CORE_ASSERT_TRUE(c1.notTooFar(d1, 1e-5), "Matrix cross product right representation fails");
 }
 
 TEST(MatrixTest, testMatrixSVD)
@@ -249,7 +247,7 @@ TEST(MatrixTest, testMatrixSVD)
     Acopy->print();
 #endif
 
-    ASSERT_TRUE(result1->notTooFar(Acopy, 1e-7), "Matrix should be equal" );
+    CORE_ASSERT_TRUE(result1->notTooFar(Acopy, 1e-7), "Matrix should be equal");
     delete A;
     delete Acopy;
     delete W;
@@ -275,13 +273,13 @@ TEST(MatrixTest, testVector3d)
     Vector3dd v3   = v1 ^ v2;
     Vector3dd v3res(2.499999999999999,33.78,3.716);
 
-    ASSERT_TRUE(v3.notTooFar(v3res, 1e-7),"Cross product is wrong");
+    CORE_ASSERT_TRUE(v3.notTooFar(v3res, 1e-7), "Cross product is wrong");
 
     double angle1 = v3 & v1;
     double angle2 = v3 & v2;
 
-    ASSERT_TRUE(angle1 < 1e-7 && angle1 > -1e-7, "Cross product must give orthogonal value");
-    ASSERT_TRUE(angle2 < 1e-7 && angle2 > -1e-7, "Cross product must give orthogonal value");
+    CORE_ASSERT_TRUE(angle1 < 1e-7 && angle1 > -1e-7, "Cross product must give orthogonal value");
+    CORE_ASSERT_TRUE(angle2 < 1e-7 && angle2 > -1e-7, "Cross product must give orthogonal value");
 
     /* Test case 2 - arithmetic operations */
     Vector3dd in1(0);
@@ -290,39 +288,38 @@ TEST(MatrixTest, testVector3d)
 
     double dotProduct = in2 & in3;
     double dotProductRes = 6.0;
-    ASSERT_DOUBLE_EQUAL(dotProduct, dotProductRes, "Wrong dot product\n");
+    CORE_ASSERT_DOUBLE_EQUAL(dotProduct, dotProductRes, "Wrong dot product\n");
 
     in1 = in2 * in3;
     Vector3dd prodRes = Vector3dd(1.0, -4.0, 9.0);
-    ASSERT_TRUE(in1.notTooFar(prodRes, 1e-10), "Wrong elementwise product\n")
+    CORE_ASSERT_TRUE(in1.notTooFar(prodRes, 1e-10), "Wrong elementwise product\n")
 
     in1 = in2 + in3;
     Vector3dd sumRes = Vector3dd(2.0, 0.0, 6.0);
-    ASSERT_TRUE(in1.notTooFar(sumRes, 1e-10), "Wrong elementwise sum\n")
+    CORE_ASSERT_TRUE(in1.notTooFar(sumRes, 1e-10), "Wrong elementwise sum\n")
     in1 = in2;
     in1 += in3;
-    ASSERT_TRUE(in1.notTooFar(sumRes, 1e-10), "Wrong elementwise += sum\n")
+    CORE_ASSERT_TRUE(in1.notTooFar(sumRes, 1e-10), "Wrong elementwise += sum\n")
 
     in1 = in2 - in3;
     Vector3dd subRes = Vector3dd(0.0, -4.0, 0.0);
-    ASSERT_TRUE(in1.notTooFar(subRes, 1e-10), "Wrong elementwise subtraction\n")
+    CORE_ASSERT_TRUE(in1.notTooFar(subRes, 1e-10), "Wrong elementwise subtraction\n")
     in1 = in2;
     in1 -= in3;
-    ASSERT_TRUE(in1.notTooFar(subRes, 1e-10), "Wrong elementwise subtraction\n")
+    CORE_ASSERT_TRUE(in1.notTooFar(subRes, 1e-10), "Wrong elementwise subtraction\n")
 
     in1 = -in2;
     Vector3dd negRes = Vector3dd(-1.0,2.0,-3.0);
-    ASSERT_TRUE(in1.notTooFar(negRes, 1e-10), "Wrong elementwise negation\n")
+    CORE_ASSERT_TRUE(in1.notTooFar(negRes, 1e-10), "Wrong elementwise negation\n")
 
     in1 = in2 * 2;
     Vector3dd intconstRes = Vector3dd(2.0,-4.0,6.0);
-    ASSERT_TRUE(in1.notTooFar(intconstRes , 1e-10), "Wrong elementwise int const mul\n")
+    CORE_ASSERT_TRUE(in1.notTooFar(intconstRes, 1e-10), "Wrong elementwise int const mul\n")
 
 
     in1 = in2 * 2.0;
     Vector3dd constRes = Vector3dd(2.0,-4.0,6.0);
-    ASSERT_TRUE(in1.notTooFar(constRes , 1e-10), "Wrong elementwise const mul\n")
-
+    CORE_ASSERT_TRUE(in1.notTooFar(constRes, 1e-10), "Wrong elementwise const mul\n")
 }
 
 TEST(MatrixTest, testVector2d)
@@ -335,19 +332,19 @@ TEST(MatrixTest, testVector2d)
     double sineRes = -sqrt(3.0) / 2.0;
 
     DOTRACE(("Sine is %lg should be %lg\n", sine, sineRes));
-    ASSERT_DOUBLE_EQUAL(sine, sineRes, "Sine calculation failed\n");
+    CORE_ASSERT_DOUBLE_EQUAL(sine, sineRes, "Sine calculation failed\n");
 
     double cosine    = v1.cosineTo(v2);
     double cosineRes = 1.0 / 2.0;
     DOTRACE(("Cosine is %lg should be %lg\n", cosine, sineRes));
-    ASSERT_DOUBLE_EQUAL(cosine, cosineRes, "Cosine calculation failed\n");
+    CORE_ASSERT_DOUBLE_EQUAL(cosine, cosineRes, "Cosine calculation failed\n");
 
     Vector2dd v3 = Vector2dd(2.0, 1.0);
     Vector2dd leftNormal  = Vector2dd(-1.0,  2.0);
     Vector2dd rightNormal = Vector2dd( 1.0, -2.0);
 
-    ASSERT_TRUE(leftNormal .notTooFar(v3.leftNormal()  , 1e-10), "Left  Normal Error\n");
-    ASSERT_TRUE(rightNormal.notTooFar(v3.rightNormal() , 1e-10), "Right Normal Error\n");
+    CORE_ASSERT_TRUE(leftNormal.notTooFar(v3.leftNormal(), 1e-10), "Left  Normal Error\n");
+    CORE_ASSERT_TRUE(rightNormal.notTooFar(v3.rightNormal(), 1e-10), "Right Normal Error\n");
 }
 
 TEST(MatrixTest, testMatrixSerialisation)
@@ -360,7 +357,7 @@ TEST(MatrixTest, testMatrixSerialisation)
     iss >> m1;
     m.print();
     m1.print();
-    ASSERT_TRUE(m1.notTooFar(m), "serialization fails\n");
+    CORE_ASSERT_TRUE(m1.notTooFar(m), "serialization fails\n");
 }
 
 TEST(MatrixTest, DISABLED_testDouble)
@@ -378,7 +375,7 @@ TEST(MatrixTest, DISABLED_testDouble)
         istringstream iss (oss.str(),istringstream::in);
         double result;
         iss >> result;
-        ASSERT_TRUE_P(result == vals[i], ("Internal problem with double and stdout"));
+        CORE_ASSERT_TRUE_P(result == vals[i], ("Internal problem with double and stdout"));
 
     }
 }
@@ -386,7 +383,7 @@ TEST(MatrixTest, DISABLED_testDouble)
 /* TODO: Use abstract buffer binaryOperation elementWize */
 Matrix addMatrix(const Matrix &A, const Matrix &B)
 {
-    //ASSERT_TRUE (A.w == B.w && A.h == B.h, "Matrices have wrong sizes");
+    //CORE_ASSERT_TRUE (A.w == B.w && A.h == B.h, "Matrices have wrong sizes");
     Matrix result(2, 2, false);
 
     for (int row = 0; row < result.h ; row++)
@@ -435,13 +432,13 @@ TEST(MatrixTest, testMatrixOperations)
 
     Matrix invA = A.inv();
     Matrix invAr(3,3, invAdata);
-    ASSERT_TRUE(invA.notTooFar(&invAr, 1e-7), "Invalid inversion");
-    ASSERT_TRUE(A.notTooFar(&Aorig, 1e-7), "inversion was not const");
+    CORE_ASSERT_TRUE(invA.notTooFar(&invAr, 1e-7), "Invalid inversion");
+    CORE_ASSERT_TRUE(A.notTooFar(&Aorig, 1e-7), "inversion was not const");
     cout << "Inv" << endl << invA << endl;
 
     Matrix invSVDA = A.invSVD();
-    ASSERT_TRUE(invSVDA.notTooFar(&invAr, 1e-7), "Invalid inversion");
-    ASSERT_TRUE(A.notTooFar(&Aorig, 1e-7), "inversion was not const");
+    CORE_ASSERT_TRUE(invSVDA.notTooFar(&invAr, 1e-7), "Invalid inversion");
+    CORE_ASSERT_TRUE(A.notTooFar(&Aorig, 1e-7), "inversion was not const");
     cout << "Inv SVD" << endl << invA << endl;
 
 
@@ -452,7 +449,7 @@ TEST(MatrixTest, testMatrixOperations)
     cout << "Trans" << endl << Atrans << endl;
     cout << "Trans inplace" << endl << Acopy << endl;
 
-    ASSERT_TRUE(Acopy.notTooFar(&Atrans, 1e-7), "Invalid transposition");
+    CORE_ASSERT_TRUE(Acopy.notTooFar(&Atrans, 1e-7), "Invalid transposition");
 
 
     /* Test arithmetic operations */
@@ -463,12 +460,12 @@ TEST(MatrixTest, testMatrixOperations)
 
     Matrix SumResult(2,2);
     SumResult.fillWithArgs(-4.0, 2.0, 3.0, 1.0);
-    ASSERT_TRUE(addMatrix(Arg1,Arg2).notTooFar(&SumResult, 1e-7), "Invalid addition");
-    ASSERT_TRUE((Arg1 + Arg2).notTooFar(&SumResult, 1e-7), "Invalid addition");
+    CORE_ASSERT_TRUE(addMatrix(Arg1, Arg2).notTooFar(&SumResult, 1e-7), "Invalid addition");
+    CORE_ASSERT_TRUE((Arg1 + Arg2).notTooFar(&SumResult, 1e-7), "Invalid addition");
 
     Matrix SubResult(2,2);
     SubResult.fillWithArgs(-6.0, 6.0, 3.0, 4.0);
-    ASSERT_TRUE((Arg1 - Arg2).notTooFar(&SubResult, 1e-7), "Invalid subtracion");
+    CORE_ASSERT_TRUE((Arg1 - Arg2).notTooFar(&SubResult, 1e-7), "Invalid subtracion");
 
     /* Scalar multplication and division */
 
@@ -478,7 +475,7 @@ TEST(MatrixTest, testMatrixOperations)
     cout << "Multiplication real result:"   << endl << resMul << endl;
     cout << "Multiplication exp  result:"   << endl << ScalarMultResult << endl;
 
-    ASSERT_TRUE(resMul.notTooFar(&ScalarMultResult, 1e-7), "Invalid scalar Multiplication");
+    CORE_ASSERT_TRUE(resMul.notTooFar(&ScalarMultResult, 1e-7), "Invalid scalar Multiplication");
 
     /* In place multplication and division */
     Matrix ScalarDivResult(2,2);
@@ -495,10 +492,8 @@ TEST(MatrixTest, testMatrixOperations)
     cout << flush;
     fflush(stdout);
 
-    ASSERT_TRUE(Arg1ToDiv.notTooFar(&ScalarDivResult,  1e-7), "Invalid scalar Division1");
-    ASSERT_TRUE(Arg1ToMul.notTooFar(&ScalarMultResult, 1e-7), "Invalid scalar Division2");
-
-
+    CORE_ASSERT_TRUE(Arg1ToDiv.notTooFar(&ScalarDivResult, 1e-7), "Invalid scalar Division1");
+    CORE_ASSERT_TRUE(Arg1ToMul.notTooFar(&ScalarMultResult, 1e-7), "Invalid scalar Division2");
 }
 
 TEST(MatrixTest, testVectorMatrixConversions)
