@@ -363,7 +363,7 @@ TEST(MatrixTest, testMatrixSerialisation)
     ASSERT_TRUE(m1.notTooFar(m), "serialization fails\n");
 }
 
-TEST(MatrixTest, testDouble)
+TEST(MatrixTest, DISABLED_testDouble)
 {
     cout << "Testing Double support\n";
     double vals[] = {numeric_limits<double>::min(), 1.0, numeric_limits<double>::max()};
