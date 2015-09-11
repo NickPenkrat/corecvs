@@ -14,6 +14,7 @@
 using namespace std;
 using namespace corecvs;
 
+
 TEST(EnvTest, CheckTopconDirTest) {
     if(const char* dir = std::getenv("TOPCON_DIR"))
         SUCCEED();
