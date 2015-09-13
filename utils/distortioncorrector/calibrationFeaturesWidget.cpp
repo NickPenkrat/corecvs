@@ -7,6 +7,8 @@
 #include "qSettingsSetter.h"
 #include "qSettingsGetter.h"
 
+#include "painterHelpers.h"
+
 using namespace corecvs;
 
 
@@ -265,14 +267,19 @@ ObservationListModel::ObservationListModel(QObject *parent) :
 
 }
 
-Qt::ItemFlags ObservationListModel::flags(const QModelIndex &index) const
+Qt::ItemFlags ObservationListModel::flags(const QModelIndex & /*index*/) const
 {
     Qt::ItemFlags flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
 }
 
 QVariant ObservationListModel::data(const QModelIndex &index, int role) const
 {
-    if (!index.isValid())
+    if (!index.isValid() || mObservationList == NULL)
+    {
+        return QVariant();
+    }
+
+    if (mObservationList->size() <= index.row())
     {
         return QVariant();
     }
@@ -324,7 +331,7 @@ QVariant ObservationListModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-bool ObservationListModel::setData(const QModelIndex &index, const QVariant &value, int role)
+bool ObservationListModel::setData(const QModelIndex &index, const QVariant &value, int /*role*/)
 {
     if (!index.isValid())
     {
@@ -353,18 +360,22 @@ bool ObservationListModel::setData(const QModelIndex &index, const QVariant &val
     return true;
 }
 
-int ObservationListModel::rowCount(const QModelIndex &parent) const
+int ObservationListModel::rowCount(const QModelIndex &/*parent*/) const
 {
     return (mObservationList == NULL) ? 0 : mObservationList->size();
 }
 
-int ObservationListModel::columnCount(const QModelIndex &parent) const
+int ObservationListModel::columnCount(const QModelIndex &/*parent*/) const
 {
     return COLUMN_NUM;
 }
 
 bool ObservationListModel::insertRows(int row, int count, const QModelIndex &parent)
 {
+    if (mObservationList == NULL) {
+        return false;
+    }
+
     emit beginInsertRows(parent, row, row + count - 1);
     mObservationList->insert(mObservationList->begin() + row, count, PointObservation());
     emit endInsertRows();
@@ -372,6 +383,10 @@ bool ObservationListModel::insertRows(int row, int count, const QModelIndex &par
 
 bool ObservationListModel::removeRows(int row, int count, const QModelIndex &parent)
 {
+    if (mObservationList == NULL) {
+        return false;
+    }
+
     emit beginRemoveRows(parent, row, row + count - 1);
     mObservationList->erase(mObservationList->begin() + row, mObservationList->begin() + row + count);
     emit endRemoveRows();
@@ -411,7 +426,7 @@ QVariant ObservationListModel::headerData(int section, Qt::Orientation orientati
     return QVariant();
 }
 
-QModelIndex ObservationListModel::index(int row, int column, const QModelIndex &parent) const
+QModelIndex ObservationListModel::index(int row, int column, const QModelIndex &/*parent*/) const
 {
     if (mObservationList == NULL) {
         return QModelIndex();
@@ -423,7 +438,7 @@ QModelIndex ObservationListModel::index(int row, int column, const QModelIndex &
     return QModelIndex();
 }
 
-QModelIndex ObservationListModel::parent(const QModelIndex &index) const
+QModelIndex ObservationListModel::parent(const QModelIndex &/*index*/) const
 {
     return QModelIndex();
 }
@@ -442,8 +457,61 @@ void ObservationListModel::setObservationList(ObservationList *observationList)
     emit endResetModel();
 }
 
+int ObservationListModel::elementCount()
+{
+    if (mObservationList == NULL)
+        return 0;
+    return mObservationList->size();
+}
+
 /*void ObsevationListModel::clearObservationPoints()
 {
     mObservationList->clear();
     emit mode
 }*/
+
+void PointListEditImageWidget::setObservationModel(ObservationListModel *observationListModel)
+{
+    disconnect(mObservationListModel, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
+               this, SLOT(update()));
+
+    mObservationListModel = observationListModel;
+
+    connect(mObservationListModel, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
+               this, SLOT(update()));
+}
+
+void PointListEditImageWidget::childRepaint(QPaintEvent *event, QWidget *who)
+{
+    AdvancedImageWidget::childRepaint(event, who);
+    if (mImage.isNull())
+    {
+        return;
+    }
+
+    if (mObservationListModel == NULL)
+    {
+        return;
+    }
+
+    /* Now the points */
+    QPainter painter(who);
+
+    QModelIndex topLevel = mObservationListModel->parent(QModelIndex());
+
+
+
+    int rows = mObservationListModel->rowCount(topLevel);
+
+    for (unsigned i = 0; i < rows; i ++)
+    {
+        QModelIndex indexX = mObservationListModel->index(i, 0, topLevel);
+        QModelIndex indexY = mObservationListModel->index(i, 0, topLevel);
+
+        double x = mObservationListModel->data(indexX).toDouble();
+        double y = mObservationListModel->data(indexY).toDouble();
+
+        Vector2dd point(x,y);
+        drawCircle(painter, imageToWidgetF(point), 5);
+    }
+}

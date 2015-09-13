@@ -9,6 +9,8 @@
 #include "calibrationFeaturesWidget.h"
 #include "selectableGeometryFeatures.h"
 
+#include "advancedImageWidget.h"
+
 using corecvs::Vector2dd;
 using corecvs::Vector3dd;
 using corecvs::SelectableGeometryFeatures;
@@ -20,6 +22,8 @@ using corecvs::PointObservation;
 namespace Ui {
 class CalibrationFeaturesWidget;
 }
+
+Q_DECLARE_METATYPE(ObservationList *);
 
 class ObservationListModel : public QAbstractItemModel
 {
@@ -60,6 +64,9 @@ public:
 
     void clearObservationPoints();
     void setObservationList(ObservationList *observationList);
+
+    /* Some additional methods */
+    int elementCount();
 
 //private:
 
@@ -110,6 +117,28 @@ signals:
 
 private:
     Ui::CalibrationFeaturesWidget *ui;
+};
+
+
+class PointListEditImageWidget : public AdvancedImageWidget {
+   Q_OBJECT
+
+public:
+   ObservationListModel *mObservationListModel;
+
+   PointListEditImageWidget() :
+       mObservationListModel(NULL)
+   {}
+
+   void setObservationModel(ObservationListModel *observationListModel);
+
+
+
+   // AdvancedImageWidget interface
+public slots:
+   void childRepaint(QPaintEvent *event, QWidget *who);
+
+
 };
 
 #endif // CALIBRATIONFEATURESWIDGET_H

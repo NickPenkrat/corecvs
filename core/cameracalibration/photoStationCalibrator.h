@@ -131,7 +131,7 @@ private:
     std::vector<Camera_> relativeCameraPositions;
     std::vector<LocationData> absoluteSetupLocation;
 
-    std::vector<std::vector<std::pair<bool, LocationData>>> initialGuess;
+    std::vector<std::vector<std::pair<bool, LocationData> > > initialGuess;
     std::vector<MultiCameraPatternPoints> patternPoints;
 
     CameraConstraints constraints;

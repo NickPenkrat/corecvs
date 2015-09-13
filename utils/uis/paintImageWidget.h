@@ -44,9 +44,6 @@ public:
 
     vector<vector<Vector2dd> > getPaths();
 
-    Vector2dd widgetToImageF(const Vector2dd &p);
-    Vector2dd imageToWidgetF(const Vector2dd &p);
-
 public slots:
     virtual void toolButtonReleased(QWidget *button);
 

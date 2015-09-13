@@ -17,6 +17,7 @@
 #include "advancedImageWidget.h"
 #include "saveFlowSettings.h"
 #include "mathUtils.h"
+#include "qtHelper.h"
 
 AdvancedImageWidget::AdvancedImageWidget(QWidget *parent, bool showHeader):
     ViAreaWidget(parent, false)
@@ -140,14 +141,6 @@ void AdvancedImageWidget::drawResized (QPainter &painter)
         return;
     }
 
-    // We should keep the trivial transform really trivial
-    /*if (mOutputRect == mInputRect) {
-        printf("Trivial transform\n");
-    } else {
-        qDebug() << mOutputRect << " - " << mInputRect << endl;
-    }*/
-
-
     if (mUi->rotationComboBox->currentIndex() == 0)
     {
         painter.drawImage(mOutputRect, *mImage, mInputRect);
@@ -231,6 +224,17 @@ QPoint AdvancedImageWidget::widgetToImage(const QPoint &p)
 {
     QPointF out = widgetToImageF(p);
     return QPoint(fround(out.x()), fround(out.y()));
+}
+
+
+Vector2dd AdvancedImageWidget::widgetToImageF(const Vector2dd &p)
+{
+    return Qt2Core::Vector2ddFromQPointF(AdvancedImageWidget::widgetToImageF(Core2Qt::QPointFromVector2dd(p)));
+}
+
+Vector2dd AdvancedImageWidget::imageToWidgetF(const Vector2dd &p)
+{
+    return Qt2Core::Vector2ddFromQPointF(AdvancedImageWidget::imageToWidgetF(Core2Qt::QPointFromVector2dd(p)));
 }
 
 

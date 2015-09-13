@@ -1,5 +1,5 @@
-#ifndef CALIBRATIONJOB
-#define CALIBRATIONJOB
+#ifndef CALIBRATION_JOB_H_
+#define CALIBRATION_JOB_H_
 
 #include <string>
 #include <vector>
@@ -162,4 +162,4 @@ struct CalibrationJob
     std::vector<double> factors;
 };
 
-#endif
+#endif // CALIBRATION_JOB_H_
