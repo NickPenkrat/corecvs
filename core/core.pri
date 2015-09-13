@@ -1,8 +1,6 @@
 # This file should be included by any project outside that wants to use core's files.
 #
-## input1 parameter: $$COREDIR    - path to core project files
-# input2 parameter: $$TARGET     - the current project output name
-#
+# input1 parameter: $$TARGET     - the current project output name
 # output parameter: $$COREBINDIR - path to the output|used core library
 #
 

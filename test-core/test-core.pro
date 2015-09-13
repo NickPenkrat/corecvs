@@ -1,12 +1,35 @@
-include(../../../config.pri)
-
-include($${OPEN_ROOT_DIRECTORY}/core/core.pri)
-include($${OPEN_ROOT_DIRECTORY}/wrappers/gtest/gtest.pri)
+# try use global config 
+exists(../../../config.pri) {
+    ROOT_DIR=../../..
+} else { 
+    message(Using local config by test-core.pri)
+    ROOT_DIR=..
+}
+ROOT_DIR=$$PWD/$$ROOT_DIR
+include($$ROOT_DIR/config.pri)
 
 TEMPLATE = app
 TARGET   = test_core
 CONFIG  += console
 CONFIG  -= app_bundle
+
+#message(OPEN_ROOT_DIRECTORY = $${OPEN_ROOT_DIRECTORY})
+#include($${OPEN_ROOT_DIRECTORY}/core/core.pri)
+#include($${OPEN_ROOT_DIRECTORY}/wrappers/gtest/gtest.pri)
+
+include(../core/core.pri)
+include(../wrappers/gtest/gtest.pri)
+
+DESTDIR = $$ROOT_DIR/bin
+
+TARGET_ORIG = $$TARGET                              # store original target name for proper detection of the obj.dir
+TARGET      = $$join(TARGET,,,$$BUILD_CFG_SFX)      # add 'd' at the end for debug versions
+
+OBJECTS_DIR = $$ROOT_DIR/.obj/$$TARGET_ORIG$$BUILD_CFG_NAME
+
+MOC_DIR  = $$OBJECTS_DIR                            # we have to set it to omit creating dummy dirs: debug,release
+#UI_DIR  = $$OBJECTS_DIR
+#RCC_DIR = $$OBJECTS_DIR
 
 SOURCES += \
     main.cpp \
@@ -70,10 +93,4 @@ SOURCES += \
     \
     # todo: FromRGB not working \
     yuv/main_test_yuv.cpp \
-
-
-
-
-
-
 

@@ -1,7 +1,7 @@
 # This file must be included for any external usage of cvs_application_base library!
 #
 # Input  parameter : $$TARGET, $$HOSTBASE_DIR, $$ROOT_DIR
-# Output parameters: $$HOSTBASE_BINDIR, $$OBJECTS_DIR
+# Output parameters: $$HOSTBASE_BINDIR
 #
 
 # all projects, which start by including this file, set defined config and QT-config to below values:
@@ -13,8 +13,7 @@ CONFIG += console                                   # create console log for all
 # all our hostBased apps use utils lib
 
 # Using only open part of the project
-UTILSDIR = $$HOSTBASE_DIR/../../utils
-include($$UTILSDIR/utils.pri)
+include($$HOSTBASE_DIR/../../utils/utils.pri)
 
 #message(Utils dir $$UTILSDIR)
 #message(Utils bin dir $$UTILS_BINDIR)

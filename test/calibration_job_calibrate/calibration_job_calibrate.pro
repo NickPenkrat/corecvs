@@ -9,12 +9,11 @@ exists(../../../../config.pri) {
 ROOT_DIR=$$PWD/$$ROOT_DIR
 include($$ROOT_DIR/config.pri)
 
-TEMPLATE=app
-TARGET  = test_calibration_job_calibrate
-CONFIG += CONSOLE
+TEMPLATE = app
+TARGET   = test_calibration_job_calibrate
+CONFIG  += CONSOLE
 
-UTILSDIR = $$ROOT_DIR/src/open/utils
-include($$UTILSDIR/utils.pri)
+include($$ROOT_DIR/src/open/utils/utils.pri)
 
 SOURCES += calibration_job_calibrate.cpp
 
