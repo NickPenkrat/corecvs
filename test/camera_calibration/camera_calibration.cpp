@@ -10,14 +10,16 @@ int main(int argc, char **argv)
     std::string name = "job.json";
     if (argc > 1)
         name = argv[1];
+
     CalibrationJob job;
     JSONGetter *get1 = new JSONGetter(name.c_str());
     get1->visit(job, "job");
     delete get1;
+
     auto ps = job.photostation;
     auto ss = job.calibrationSetupLocations;
-    int N = ps.cameras.size();
-    int M = ss.size();
+    int  N  = (int)ps.cameras.size();
+    int  M  = (int)ss.size();
     // Optical axis deviation from "vertical"
     Matrix T(N, 3);
     for (int i = 0; i < N; ++i)
