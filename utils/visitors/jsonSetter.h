@@ -67,8 +67,7 @@ template <typename inputType, typename reflectionType>
     void visit(std::vector<inputType> &fields, const char * arrayName)
     {
         QJsonArray array;
-      //int before = (int)mNodePath.size();
-        for (int i = 0; i < fields.size(); i++)
+        for (size_t i = 0; i < fields.size(); i++)
         {
             mNodePath.push_back(QJsonObject());
             fields[i].accept(*this);
@@ -78,11 +77,36 @@ template <typename inputType, typename reflectionType>
 
         mNodePath.back().insert(arrayName, array);
     }
+    template <typename innerType>
+    void visit(std::vector<std::vector<innerType>> &fields, const char *arrayName)
+    {
+        QJsonArray arrayOuter;
+        for (size_t i = 0; i < fields.size(); ++i)
+        {
+            QJsonArray arrayInner;
+            visit(fields[i], arrayInner);
+            arrayOuter.append(arrayInner);
+        }
+
+        mNodePath.back().insert(arrayName, arrayOuter);
+    }
+    // XXX: Here we hope that either stack is unwinded automatically or it is not too big
+    template <typename innerType>
+    void visit(std::vector<innerType> &fields, QJsonArray &array)
+    {
+        for (size_t i = 0; i < fields.size(); ++i)
+        {
+            mNodePath.push_back(QJsonObject());
+            fields[i].accept(*this);
+            array.append(mNodePath.back());
+            mNodePath.pop_back();
+        }
+    }
 
     template <typename inputType, typename reflectionType>
     void visit(std::vector<inputType> &fields, const reflectionType * /*fieldDescriptor*/)
     {
-        for (int i = 0; i < fields.size(); i++)
+        for (size_t i = 0; i < fields.size(); i++)
         {
             fields[i].accept(*this);
         }

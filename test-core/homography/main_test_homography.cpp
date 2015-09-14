@@ -11,11 +11,11 @@
 
 
 #include <iostream>
+#include "gtest/gtest.h"
 
 #ifndef ASSERTS
 #define ASSERTS
 #endif
-
 
 #include "global.h"
 
@@ -23,12 +23,10 @@
 #include "homographyReconstructor.h"
 #include "matrix33.h"
 
-
 using namespace std;
 using namespace corecvs;
 
-
-void testProjectiveFromPoints (void)
+TEST(Homography, testProjectiveFromPoints)
 {
     cout << "Test 4 point to point reconstruction" << endl;
     Vector2dd points[4] = {
@@ -49,12 +47,10 @@ void testProjectiveFromPoints (void)
         cout << "Predicted:" << result * points[i] << "<->" << images[i] << endl;
     }
 
-    ASSERT_TRUE(result.notTooFar(Matrix33(1.0), 1e-7), "Wrong points reconstructions");
+    CORE_ASSERT_TRUE(result.notTooFar(Matrix33(1.0), 1e-7), "Wrong points reconstructions");
 }
 
-
-
-void testProjectiveInverse (void)
+TEST(Homography, testProjectiveInverse)
 {
     Matrix33 R = Matrix33::RotationZ(0.4);
     Matrix33 S = Matrix33::ShiftProj(3,4);
@@ -96,12 +92,11 @@ void testProjectiveInverse (void)
     cout << "Hinv" << endl << Hinv <<  endl;
     cout << "gHinv" << endl << gHinv <<  endl;
 
-    ASSERT_TRUE(H.notTooFar(gH, 1e-7), "Wrong points reconstructions");
-    ASSERT_TRUE(Hinv.notTooFar(gHinv, 1e-7), "Wrong points reconstructions");
-
+    CORE_ASSERT_TRUE(H.notTooFar(gH, 1e-7), "Wrong points reconstructions");
+    CORE_ASSERT_TRUE(Hinv.notTooFar(gHinv, 1e-7), "Wrong points reconstructions");
 }
 
-void testProjectiveFromPoints2 (void)
+TEST(Homography, testProjectiveFromPoints2)
 {
  static unsigned const NUM = 5;
  cout << "Test " << NUM << " point to point reconstruction" << endl;
@@ -304,8 +299,7 @@ void testProjectiveFromPoints2 (void)
 
 }
 
-
-void testProjectiveFromPoints1 (void)
+TEST(Homography, testProjectiveFromPoints1)
 {
     static unsigned const NUM = 5;
     cout << "Test " << NUM << " point to point reconstruction" << endl;
@@ -355,14 +349,12 @@ void testProjectiveFromPoints1 (void)
     cout << "MarqLev" << endl << resultLMq << endl;
 
     Matrix33 realH = Matrix33::ShiftProj(0.0, 1.0) * Matrix33::Scale2(3.0);
-    ASSERT_TRUE(resultLSE .notTooFar(realH , 1e-7), "Wrong points1 reconstructions");
-    ASSERT_TRUE(resultLSE1.notTooFar(realH , 1e-7), "Wrong points1 reconstructions");
-    ASSERT_TRUE(resultLSE2.notTooFar(realH , 1e-7), "Wrong points1 reconstructions");
-
+    CORE_ASSERT_TRUE(resultLSE.notTooFar(realH, 1e-7), "Wrong points1 reconstructions");
+    CORE_ASSERT_TRUE(resultLSE1.notTooFar(realH, 1e-7), "Wrong points1 reconstructions");
+    CORE_ASSERT_TRUE(resultLSE2.notTooFar(realH, 1e-7), "Wrong points1 reconstructions");
 }
 
-
-void testProjectiveFromLine (void)
+TEST(Homography, testProjectiveFromLine)
 {
     static unsigned const NUM = 8;
     cout << "Test " << NUM << " line to point reconstruction" << endl;
@@ -406,17 +398,17 @@ void testProjectiveFromLine (void)
     cout << "H" << endl;
     cout << H << endl;
 
-    ASSERT_TRUE(H.notTooFar(Matrix33::Scale2(2.0), 1e-7), "Wrong line based reconstructions");
+    CORE_ASSERT_TRUE(H.notTooFar(Matrix33::Scale2(2.0), 1e-7), "Wrong line based reconstructions");
 }
 
-int main (int /*argC*/, char ** /*argV*/)
-{
-    testProjectiveFromPoints2();
-    return 0;
-    testProjectiveInverse ();
-    testProjectiveFromPoints();
-    testProjectiveFromPoints1();
-    testProjectiveFromLine();
-        cout << "PASSED" << endl;
-        return 0;
-}
+//int main (int /*argC*/, char ** /*argV*/)
+//{
+//    testProjectiveFromPoints2();
+//    return 0;
+//    testProjectiveInverse ();
+//    testProjectiveFromPoints();
+//    testProjectiveFromPoints1();
+//    testProjectiveFromLine();
+//        cout << "PASSED" << endl;
+//        return 0;
+//}

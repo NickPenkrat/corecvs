@@ -14,8 +14,7 @@ MOC_DIR  = $$OBJECTS_DIR
 #UI_DIR  = $$OBJECTS_DIR
 #RCC_DIR = $$OBJECTS_DIR
 
-COREDIR = ../../core
-include($$COREDIR/core.pri)
+include(../../core/core.pri)
 
 SOURCES += \
     main.cpp \

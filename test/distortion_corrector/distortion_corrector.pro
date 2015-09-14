@@ -9,18 +9,15 @@ exists(../../../../config.pri) {
 ROOT_DIR=$$PWD/$$ROOT_DIR
 include($$ROOT_DIR/config.pri)
 
-TEMPLATE=app
-TARGET  =opencvLineDetector
-CONFIG += CONSOLE
+TEMPLATE = app
+TARGET   = distortion_corrector
+CONFIG  += CONSOLE
 QT += core
-QT -= gui
 QT -= xml
 QT -= widgets
 QT -= opengl
-
-UTILSDIR = $$ROOT_DIR/src/open/utils
-include($$UTILSDIR/utils.pri)
-
 #QT -= gui   # is not allowed as this app uses qtFileLoader, which uses QImage that belongs QtGui
 
-SOURCES += opencvLineDetector.cpp
+include($$ROOT_DIR/src/open/utils/utils.pri)
+
+SOURCES += distortion_corrector.cpp

@@ -17,7 +17,6 @@ public:
     // Returns previously detected points as SGF (by default - brutforces
     // ObservationList)
     virtual void getPointData(corecvs::SelectableGeometryFeatures &features);
-    virtual void drawDetected(corecvs::RGB24Buffer &buffer, bool drawSGF = true);
     virtual ~PatternDetector() {}
 };
 

@@ -7,6 +7,7 @@
  *
  */
 #include <iostream>
+#include "gtest/gtest.h"
 
 #ifndef ASSERTS
 #define ASSERTS
@@ -26,7 +27,7 @@ using namespace corecvs;
 #ifdef WITH_SSE
 
 /* Test reverse function in 16x8 types */
-void testSSEWrapperReverse (void)
+TEST(SSEWrappers, testSSEWrapperReverse)
 {
     uint16_t data[8] = {1,2,3,4,5,6,7,8};
     uint16_t dataRes[8];
@@ -36,15 +37,14 @@ void testSSEWrapperReverse (void)
 
     for (unsigned i = 0; i < 8; i++)
     {
-
-        ASSERT_TRUE_P(data[i] == dataRes[7-i], ("Reversing error:%i [%d != %d]", i, data[i], dataRes[7-i]));
+        CORE_ASSERT_TRUE_P(data[i] == dataRes[7 - i], ("Reversing error:%i [%d != %d]", i, data[i], dataRes[7 - i]));
         cout << dataRes[i] << " ";
     }
 
     cout << endl;
 }
 
-void testSSEWrapper (void)
+TEST(SSEWrappers, testSSEWrapper)
 {
     uint64_t LIMIT = 5;
     __m128i acc0 = _mm_set1_epi32(128);
@@ -74,11 +74,11 @@ void testSSEWrapper (void)
 
         acc1 -= a1;
     }
-    ASSERT_TRUE(sse32(acc0, 0) ==  sse32(acc1.data, 0), "Ops... arithmetics flaw" );
+    CORE_ASSERT_TRUE(sse32(acc0, 0) == sse32(acc1.data, 0), "Ops... arithmetics flaw");
 }
 #endif
 
-void profileSSEWrapper (void)
+TEST(SSEWrappers, profileSSEWrapper)
 {
 #ifdef WITH_SSE
     uint64_t LIMIT = 10000000;
@@ -127,11 +127,11 @@ void profileSSEWrapper (void)
 
     printf("Results are %s\n",sse32(acc0, 0) ==  sse32(acc1.data, 0) ? "equal" : "different");
 
-    ASSERT_TRUE(sse32(acc0, 0) ==  sse32(acc1.data, 0), "Ops... arithmetics flaw" );
+    CORE_ASSERT_TRUE(sse32(acc0, 0) == sse32(acc1.data, 0), "Ops... arithmetics flaw");
 #endif
 }
 
-void testBasicArithmetics ( void )
+TEST(SSEWrappers, testBasicArithmetics)
 {
 #ifdef WITH_SSE
     //2763 3070 3377 3684 3991
@@ -174,7 +174,7 @@ void testBasicArithmetics ( void )
 #endif
 }
 
-void testSignUnsign16 ( void )
+TEST(SSEWrappers, testSignUnsign16)
 {
 #ifdef WITH_SSE
     cout << "RUNNING:testSignUnsign";
@@ -237,8 +237,7 @@ void testSignUnsign16 ( void )
 #endif
 }
 
-
-void testSaturatedArithmetics()
+TEST(SSEWrappers, testSaturatedArithmetics)
 {
 #ifdef WITH_SSE
     int8_t a0t[16] = {  55, 100, 120, -100, -80,  10,  10,  10, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -270,7 +269,7 @@ void testSaturatedArithmetics()
 #endif
 }
 
-void testAdditionalFunctions()
+TEST(SSEWrappers, testAdditionalFunctions)
 {
 #ifdef WITH_SSE
     cout << "Starting testAdditionalFunctions" << endl;
@@ -286,12 +285,12 @@ void testAdditionalFunctions()
     /*Testing ABS*/
     Int16x8 absa0 = SSEMath::abs(a0);
     cout << "SSEMath::abs()=" << absa0 << endl;
-    ASSERT_TRUE_P(absa0[0] ==  8700, ("Wrong SSE abs result 0"));
-    ASSERT_TRUE_P(absa0[1] ==  8700, ("Wrong SSE abs result 1"));
+    CORE_ASSERT_TRUE_P(absa0[0] == 8700, ("Wrong SSE abs result 0"));
+    CORE_ASSERT_TRUE_P(absa0[1] == 8700, ("Wrong SSE abs result 1"));
 
     int16_t absb0 = GenericMath<uint16_t>::abs(b0);
     cout << "GenericMath<uint16_t>::abs()=" << absb0 << endl;
-    ASSERT_TRUE_P(absb0 == 8700, ("Wrong GenericMath abs result"));
+    CORE_ASSERT_TRUE_P(absb0 == 8700, ("Wrong GenericMath abs result"));
 
     /* Testing max */
     cout << "Finished" << endl;
@@ -299,7 +298,7 @@ void testAdditionalFunctions()
 }
 
 #ifdef WITH_SSE
-void testRGBReader(void)
+TEST(SSEWrappers, testRGBReader)
 {
     cout << "Starting testRGBReader..." << endl;
     uint8_t data[4 * 16];
@@ -334,7 +333,7 @@ void testRGBReader(void)
     cout << "Finished" << endl;
 }
 
-void testExtendingRGBReader(void)
+TEST(SSEWrappers, testExtendingRGBReader)
 {
     uint8_t data[4 * 8];
     for (unsigned i = 0; i < 8; i++)
@@ -363,15 +362,14 @@ void testExtendingRGBReader(void)
         for (unsigned j = 0; j < 4; j++)
         {
             cout << (int)outData[i*4 + j] << " ";
-            ASSERT_TRUE_P(data[i*4 + j] == outData[i*4 + j], ("Error"));
+            CORE_ASSERT_TRUE_P(data[i * 4 + j] == outData[i * 4 + j], ("Error"));
         }
         cout << endl;
     }
     cout << "Finished" << endl;
 }
 
-
-void testDoubleExtendingRGBReader(void)
+TEST(SSEWrappers, testDoubleExtendingRGBReader)
 {
     uint8_t data[8 * 8];
     for (unsigned i = 0; i < 8; i++)
@@ -409,15 +407,14 @@ void testDoubleExtendingRGBReader(void)
         for (unsigned j = 0; j < 8; j++)
         {
             cout << (int)outData[i*8 + j] << " ";
-//            ASSERT_TRUE_P(data[i*4 + j] == outData[i*4 + j], ("Error"));
+//            CORE_ASSERT_TRUE_P(data[i*4 + j] == outData[i*4 + j], ("Error"));
         }
         cout << endl;
     }
     cout << "Finished" << endl;
 }
 
-
-void testDoubleExtendingRGBReader1(void)
+TEST(SSEWrappers, testDoubleExtendingRGBReader1)
 {
     uint8_t data[8 * 8];
     for (unsigned i = 0; i < 8; i++)
@@ -500,7 +497,7 @@ void testDoubleExtendingRGBReader1(void)
 
 }
 
-void testPack(void)
+TEST(SSEWrappers, testPack)
 {
     Int32x4 a((int32_t)0xA);
     cout << "a =" << Int8x16(a.data) << endl;
@@ -514,7 +511,7 @@ void testPack(void)
     cout << "Finished" << endl;
 }
 
-void testSelector(void)
+TEST(SSEWrappers, testSelector)
 {
     Int16x8 con8bit((int16_t)0xFF);
     Int16x8 con0bit((int16_t)0x00);
@@ -533,8 +530,7 @@ void testSelector(void)
     cout << "Finished" << endl;
 }
 
-
-void testExtendingReader(void)
+TEST(SSEWrappers, testExtendingReader)
 {
     uint16_t data[2 * 8];
     for (unsigned i = 0; i < 8; i++)
@@ -566,8 +562,7 @@ void testExtendingReader(void)
     cout << "Finished" << endl;
 }
 
-
-void test64bit()
+TEST(SSEWrappers, test64bit)
 {
     cout << "Testing 64 bit sse wrapper" << endl;
     cout << "Testing 64 bit to 16bit" << endl;
@@ -613,31 +608,30 @@ void test64bit()
     cout << "Finished" << endl;
 }
 
-
 #endif
 
-int main (int /*argC*/, char ** /*argV*/)
-{
-#ifdef WITH_SSE
-    testSelector();
-    return 0;
+//int main (int /*argC*/, char ** /*argV*/)
+//{
+//#ifdef WITH_SSE
+//    testSelector();
+//    return 0;
 
-    //    testPack();
+//    //    testPack();
+////    testRGBReader();
+//    //testDoubleExtendingRGBReader1();
+////    test64bit();
+//    testDoubleExtendingRGBReader();
+//    testSignUnsign16 ( );
+//    testAdditionalFunctions();
 //    testRGBReader();
-    //testDoubleExtendingRGBReader1();
-//    test64bit();
-    testDoubleExtendingRGBReader();
-    testSignUnsign16 ( );
-    testAdditionalFunctions();
-    testRGBReader();
-    testExtendingRGBReader();
-    testExtendingReader();
-    testSSEWrapperReverse();
-    testSSEWrapper ();
-    testBasicArithmetics();
-    return 0;
-    profileSSEWrapper();
-#endif
-    cout << "PASSED" << endl;
-    return 0;
-}
+//    testExtendingRGBReader();
+//    testExtendingReader();
+//    testSSEWrapperReverse();
+//    testSSEWrapper ();
+//    testBasicArithmetics();
+//    return 0;
+//    profileSSEWrapper();
+//#endif
+//    cout << "PASSED" << endl;
+//    return 0;
+//}

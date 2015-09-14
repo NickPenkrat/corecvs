@@ -9,6 +9,8 @@
 #include "vector2d.h"
 #include "typesafeBitmaskEnums.h"
 #include "lensDistortionModelParameters.h"
+#include "mesh3d.h"
+#include "selectableGeometryFeatures.h"
 
 enum class CameraConstraints 
 {
@@ -18,7 +20,7 @@ enum class CameraConstraints
     EQUAL_FOCAL    =  4, // Makes fx = fy in non-linear phase
     LOCK_FOCAL     =  8, // Locks fx and fy
     LOCK_PRINCIPAL = 16, // Locks cx and cy
-
+    UNLOCK_YSCALE  = 32  // Unlock Y scale of pattern. This is dangerous if you are not sure what are you doing
 };
 
 template<>
@@ -103,6 +105,80 @@ struct Photostation
     corecvs::Vector2dd project(const corecvs::Vector3dd &pt, int cam)
     {
         return cameras[cam].project(location.orientation * (pt - location.position));
+    }
+
+    corecvs::Mesh3D drawPly(corecvs::ObservationList &list, double scale = 50.0)
+    {
+        auto& ps = *this;
+        // Colorblind-safe palette
+        RGBColor colors[] =
+        {
+            RGBColor(0x762a83u),
+            RGBColor(0xaf8dc3u),
+            RGBColor(0xe7d4e8u),
+            RGBColor(0xd9f0d3u),
+            RGBColor(0x7fbf7bu),
+            RGBColor(0x1b7837u)
+        };
+        Mesh3D mesh;
+        mesh.switchColor(true);
+
+
+        auto cs = ps.location.position;
+        auto qs = ps.location.orientation.conjugated();
+
+        int color = 0;
+        for (auto& cam: ps.cameras)
+        {
+            double IW = cam.intrinsics.size[0];
+            double IH = cam.intrinsics.size[1];
+            const int NSC = 9;
+            Vector3dd center      = Vector3dd( 0,  0,  0),
+                    center2     = Vector3dd( 0,  0,  1) * scale,
+                    topLeft     = Vector3dd( 0,  0,  1) * scale,
+                    topRight    = Vector3dd(IW,  0,  1) * scale,
+                    bottomRight = Vector3dd(IW, IH,  1) * scale,
+                    bottomLeft  = Vector3dd( 0, IH,  1) * scale;
+            Vector3dd pts[NSC * 2] =
+            {
+                center, center2,
+                center, topLeft,
+                center, topRight,
+                center, bottomRight,
+                center, bottomLeft,
+                topLeft, topRight,
+                topRight, bottomRight,
+                bottomRight, bottomLeft,
+                bottomLeft, topLeft,
+            };
+
+            auto cc = cam.extrinsics.position;
+            auto qc = cam.extrinsics.orientation.conjugated();
+            auto A = ((corecvs::Matrix33)cam.intrinsics).inv();
+
+            mesh.currentColor = colors[color = (color + 1) % 6];
+
+            for (int i = 0; i < NSC; ++i)
+            {
+                auto v1 = qs * (qc * (A * pts[i * 2]) + cc) + cs;
+                auto v2 = qs * (qc * (A * pts[i * 2 + 1]) + cc) + cs;
+
+                mesh.addLine(v1, v2);
+            }
+
+            auto ppv = qs * (qc * (A * Vector3dd(cam.intrinsics.cx, cam.intrinsics.cy, 1) * scale) + cc) + cs;
+
+            mesh.addLine(ppv, qs * (qc * (A * center) + cc) + cs);
+        }
+
+        mesh.currentColor = RGBColor(~0u);
+        for (auto& pt: list)
+        {
+            mesh.addPoint(pt.point);
+        }
+
+        return mesh;
+
     }
 
 	std::vector<Camera_> cameras;

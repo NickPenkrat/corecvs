@@ -9,15 +9,13 @@ exists(../../../../config.pri) {
 ROOT_DIR=$$PWD/$$ROOT_DIR
 include($$ROOT_DIR/config.pri)
 
-TEMPLATE=app
-TARGET=test_grab_N_captures
-CONFIG+=CONSOLE
-QT+=core
-QT-=gui
+TEMPLATE = app
+TARGET   = test_grab_N_captures
+CONFIG  += CONSOLE
+QT += core
+QT -= gui
 
-TEST_DIR = $$PWD
-UTILSDIR = $$TEST_DIR/../../utils
-include($$UTILSDIR/utils.pri)
+include(../../utils/utils.pri)
 
 SOURCES += main_grab_N_captures.cpp
 HEADERS += main_grab_N_captures.h

@@ -7,6 +7,7 @@
 #include "abstractBuffer.h"
 #include "vector2d.h"
 #include "matrix.h"
+#include "reflection.h"
 
 typedef corecvs::AbstractBuffer<double> DpImage;
 typedef corecvs::AbstractKernel<double> DpKernel;
@@ -69,14 +70,14 @@ struct CornerKernelSet
     CornerKernelSet(double r, double alpha, double psi);
 
     // Computes const function for entire image
-    void computeCost(DpImage &img, DpImage &c, bool parallelable = true);
+    void computeCost(DpImage &img, DpImage &c, bool parallelable = true, bool new_style = true);
 
 private:
     // One-dimension normal distribution PDF
     // TODO: find if we already have it somewhere
     static double pdf(double x, double sigma)
     {
-        return exp(-x * x/(2.0 * sigma * sigma)) / (sigma * sqrt(2.0 * M_PI));
+        return exp(-x * x / (2.0 * sigma * sigma)) / (sigma * sqrt(2.0 * M_PI));
     }
     // Initialization routine
     void computeKernels(double r, double alpha, double psi, int w, int c, double threshold = 0.05);
@@ -106,7 +107,7 @@ struct ChessBoardCornerDetectorParams
         patternRadius.push_back(4.0);
         patternRadius.push_back(8.0);
         patternRadius.push_back(12.0);
-        
+
         cornerScores.push_back(4.0);
         cornerScores.push_back(8.0);
         cornerScores.push_back(12.0);
@@ -135,6 +136,29 @@ struct ChessBoardCornerDetectorParams
     int nRounds = 3;
     // Meanshift smoothing stdev
     double meanshiftBandwidth = 1.0;
+
+    template<typename VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        visitor.visit(gradientCrossWidth, 3.0, "gradientCrossWidth");
+        visitor.visit(sectorSize, M_PI / 2.0, "sectorSize");
+        visitor.visit(histogramBins, 32, "histogramBins");
+        visitor.visit(minAngle, M_PI / 10.0, "minAngle");
+        visitor.visit(neighborhood, 25, "neighborhood");
+        visitor.visit(gradThreshold, 0.1, "gradThreshold");
+        visitor.visit(orientationInlierThreshold, 0.25, "orientationInlierThreshold");
+        visitor.visit(inlierDistanceThreshold, 5.0, "inlierDistanceThreshold");
+        visitor.visit(updateThreshold, 4.0, "updateThreshold");
+        visitor.visit(scoreThreshold, 0.0, "scoreThreshold");
+        visitor.visit(nRounds, 3, "nRounds");
+        visitor.visit(meanshiftBandwidth, 1.0, "meanshiftBandwidth");
+        corecvs::DoubleVectorField dvf(0, 0, 0, "patternStartAngle");
+        visitor.visit(patternStartAngle, &dvf);
+        corecvs::DoubleVectorField dvf2(0, 0, 0, "patternRadius");
+        visitor.visit(patternRadius, &dvf2);
+        corecvs::DoubleVectorField dvf3(0, 0, 0, "cornerScores");
+        visitor.visit(cornerScores, &dvf3);
+    }
 };
 
 class ChessBoardCornerDetector : ChessBoardCornerDetectorParams
@@ -164,7 +188,7 @@ private:
     void adjustCornerOrientation();
     // Adjusts corner position (LSQ for weighted gradient-orthogonality to edges)
     void adjustCornerPosition();
-    // Assigns final score 
+    // Assigns final score
     void computeScores();
 
 
@@ -174,13 +198,15 @@ private:
     // mean-shift mode detector
     // TODO: do we need it outside detector?!
     void circularMeanShift(std::vector<double> &values, double bandwidth, std::vector<std::pair<int, double>> &modes);
+
+#if DEPRICATED
     // Computes right eigen vectors and numbers for 2x2 matrix
-    void eig22(corecvs::Matrix &A, double &lambda1, corecvs::Vector2dd &e1, double &lambda2, corecvs::Vector2dd &e2);
+    void eig22(corecvs::Matrix22 &A, double &lambda1, corecvs::Vector2dd &e1, double &lambda2, corecvs::Vector2dd &e2, double EIGTOLERANCE = 1e-9);
     // Checks if 2x2 matrix seems to be invertible
     bool invertable22(corecvs::Matrix &A);
     // Linear solver for 2x2 matrix
     void solve22(corecvs::Matrix &A, corecvs::Vector2dd &B, corecvs::Vector2dd &x);
-
+#endif
 
     DpImage du, dv, w, phi, cost, img;
     std::vector<CornerKernelSet> kernels;

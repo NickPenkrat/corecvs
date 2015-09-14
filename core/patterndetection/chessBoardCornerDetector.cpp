@@ -5,6 +5,15 @@
 #include <algorithm>
 #include <set>
 
+#include "vectorTraits.h"
+#include "fastKernel.h"
+#include "arithmetic.h"
+#include "matrix22.h"
+
+using corecvs::Vector2dd;
+using corecvs::Matrix22;
+
+
 double OrientedCorner::scoreCorner(DpImage &img, DpImage &weight, std::vector<double> &radius, double bandwidth)
 {
     int iw = img.w, ih = img.h;
@@ -104,7 +113,7 @@ double OrientedCorner::scoreIntensity(DpImage &img, int r)
 
     DpImage c(w, w);
     //int cc = cks.A.x;
-    cks.computeCost(patch, c, true);
+    cks.computeCost(patch, c, true, false);
     return std::max(c.element(cks.A.y, cks.A.x), 0.0);
 }
 
@@ -121,15 +130,41 @@ CornerKernelSet::CornerKernelSet(double r, double alpha, double psi)
     computeKernels(r, alpha, psi, w, c);
 }
 
-void CornerKernelSet::computeCost(DpImage &img, DpImage &c, bool parallelable)
+#include <chrono>
+void CornerKernelSet::computeCost(DpImage &img, DpImage &c, bool parallelable, bool new_style)
 {
     int w = img.w, h = img.h;
     c = DpImage(h, w);
 
-    auto *pfA = img.doConvolve<DpImage>(&A, true, parallelable);
-    auto *pfB = img.doConvolve<DpImage>(&B, true, parallelable);
-    auto *pfC = img.doConvolve<DpImage>(&C, true, parallelable);
-    auto *pfD = img.doConvolve<DpImage>(&D, true, parallelable);
+
+    DpImage *pfA, *pfB, *pfC, *pfD;
+    if (!new_style)
+    {
+       pfA = img.doConvolve<DpImage>(&A, true, parallelable);
+       pfB = img.doConvolve<DpImage>(&B, true, parallelable);
+       pfC = img.doConvolve<DpImage>(&C, true, parallelable);
+       pfD = img.doConvolve<DpImage>(&D, true, parallelable);
+    }
+    else
+    {
+        // TODO: I hope we'll change the design of the whole thing
+        pfA = new DpImage(img.h, img.w, false);
+        pfB = new DpImage(img.h, img.w, false);
+        pfC = new DpImage(img.h, img.w, false);
+        pfD = new DpImage(img.h, img.w, false);
+
+        corecvs::ConvolveKernel<corecvs::DummyAlgebra> convA(&A, A.y, A.x);
+        corecvs::ConvolveKernel<corecvs::DummyAlgebra> convB(&B, B.y, B.x);
+        corecvs::ConvolveKernel<corecvs::DummyAlgebra> convC(&C, C.y, C.x);
+        corecvs::ConvolveKernel<corecvs::DummyAlgebra> convD(&D, D.y, D.x);
+
+        DpImage *in = &img;
+        corecvs::BufferProcessor<DpImage, DpImage, corecvs::ConvolveKernel, corecvs::VectorAlgebraDouble> proScalar;
+        proScalar.process(&in, &pfA, convA);
+        proScalar.process(&in, &pfB, convB);
+        proScalar.process(&in, &pfC, convC);
+        proScalar.process(&in, &pfD, convD);
+    }
 
     for (int i = 0; i < h; ++i)
     {
@@ -162,16 +197,16 @@ void CornerKernelSet::computeCost(DpImage &img, DpImage &c, bool parallelable)
 
 void CornerKernelSet::computeKernels(double r, double alpha, double psi, int w, int c, double threshold)
 {
-    auto v1 = corecvs::Vector2dd(cos(alpha),       sin(alpha)).rightNormal();
-    auto v2 = corecvs::Vector2dd(cos(alpha + psi), sin(alpha + psi)).rightNormal();
-    corecvs::Vector2dd cc(c, c);
+    Vector2dd v1 = Vector2dd::FromPolar(alpha      ).rightNormal();
+    Vector2dd v2 = Vector2dd::FromPolar(alpha + psi).rightNormal();
+    Vector2dd cc(c, c);
 
     //double sum = 0.0;
     for (int i = 0; i < w; ++i)
     {
         for (int j = 0; j < w; ++j)
         {
-            corecvs::Vector2dd p(i, j);
+            Vector2dd p(i, j);
             auto v = p - cc;
             // Now we check if it is inside => cross product changes sign
             auto p1 = v & v1, p2 = v &v2;
@@ -332,8 +367,9 @@ void ChessBoardCornerDetector::runNms()
 {
     std::vector<std::pair<int, int>> cornerCandidates;
     cost.nonMaximumSupression(5, 0.025, cornerCandidates, 5);
-    for (auto& cc: cornerCandidates)
+    for (auto& cc: cornerCandidates) {
         corners.emplace_back(corecvs::Vector2dd(cc.first, cc.second));
+    }
 }
 
 
@@ -373,7 +409,7 @@ void ChessBoardCornerDetector::circularMeanShift(std::vector<double> &values, do
         int i = seed;
         while (1)
         {
-            int left = (i + N - 1) % N;
+            int left  = (i + N - 1) % N;
             int right = (i + N + 1) % N;
             double val = smoothed[i], lval = smoothed[left], rval = smoothed[right];
 
@@ -412,7 +448,7 @@ bool ChessBoardCornerDetector::edgeOrientationFromGradient(int top, int bottom, 
         for (int j = left; j <= right; ++j)
         {
             double Phi = phi.element(i, j);
-            double W  = w.element(i, j);
+            double W   =   w.element(i, j);
 
             int bin = std::max(std::min((int)(Phi / bin_size), histogramBins - 1), 0);
             histogram[bin] += W;
@@ -443,8 +479,8 @@ bool ChessBoardCornerDetector::edgeOrientationFromGradient(int top, int bottom, 
         return false;
     }
 
-    v1 = corecvs::Vector2dd(cos(phi1), sin(phi1));
-    v2 = corecvs::Vector2dd(cos(phi2), sin(phi2));
+    v1 = Vector2dd::FromPolar(phi1);
+    v2 = Vector2dd::FromPolar(phi2);
     return true;
 }
 
@@ -455,10 +491,10 @@ void ChessBoardCornerDetector::filterByOrientation()
     {
         auto& c = corners[i];
 
-        int top = std::max(0.0, c.pos[1] - neighborhood);
+        int top    = std::max(     0.0, c.pos[1] - neighborhood);
         int bottom = std::min(ih - 1.0, c.pos[1] + neighborhood);
-        int left = std::max(0.0, c.pos[0] - neighborhood);
-        int right = std::min(iw - 1.0, c.pos[0] + neighborhood);
+        int left   = std::max(     0.0, c.pos[0] - neighborhood);
+        int right  = std::min(iw - 1.0, c.pos[0] + neighborhood);
 
         if (edgeOrientationFromGradient(top, bottom, left, right, c.v1, c.v2))
         {
@@ -468,47 +504,18 @@ void ChessBoardCornerDetector::filterByOrientation()
     corners.resize(idx);
 }
 
-void ChessBoardCornerDetector::eig22(corecvs::Matrix &A, double &lambda1, corecvs::Vector2dd &e1, double &lambda2, corecvs::Vector2dd &e2)
-{
-    const double EIGTOLERANCE = 1e-9;
-    assert(A.w == 2 && A.h == 2);
-    double T = A.a(0, 0) + A.a(1, 1);
-    double D = A.a(0, 0) * A.a(1, 1) - A.a(1, 0) * A.a(0, 1);
-    lambda2 = T / 2.0 + std::sqrt(T * T / 4.0 - D);
-    lambda1 = T / 2.0 - std::sqrt(T * T / 4.0 - D);
-
-    double c = std::abs(A.a(1, 0)), b = std::abs(A.a(0, 1));
-    if (std::max(b, c) > EIGTOLERANCE)
-    {
-        if (b > c)
-        {
-            e1 = corecvs::Vector2dd(A.a(0, 1), lambda1 - A.a(0, 0)).normalised();
-            e2 = corecvs::Vector2dd(A.a(0, 1), lambda2 - A.a(0, 0)).normalised();
-        }
-        else
-        {
-            e1 = corecvs::Vector2dd(lambda1 - A.a(1, 1), A.a(1, 0)).normalised();
-            e2 = corecvs::Vector2dd(lambda2 - A.a(1, 1), A.a(1, 0)).normalised();
-        }
-    }
-    else
-    {
-        e1 = corecvs::Vector2dd(1, 0);
-        e2 = corecvs::Vector2dd(0, 1);
-    }
-}
-
 void ChessBoardCornerDetector::adjustCornerOrientation()
 {
     int iw = du.w, ih = du.h;
     for (auto& c: corners)
     {
-        corecvs::Matrix A1(2, 2), A2(2, 2);
+        Matrix22 A1(0.0);
+        Matrix22 A2(0.0);
 
-        int top = std::max(0.0, c.pos[1] - neighborhood);
+        int top    = std::max(     0.0, c.pos[1] - neighborhood);
         int bottom = std::min(ih - 1.0, c.pos[1] + neighborhood);
-        int left = std::max(0.0, c.pos[0] - neighborhood);
-        int right = std::min(iw - 1.0, c.pos[0] + neighborhood);
+        int left   = std::max(     0.0, c.pos[0] - neighborhood);
+        int right  = std::min(iw - 1.0, c.pos[0] + neighborhood);
 
         for (int i = top; i <= bottom; ++i)
         {
@@ -533,29 +540,13 @@ void ChessBoardCornerDetector::adjustCornerOrientation()
             }
         }
 
-        corecvs::Vector2dd e1, e2, e;
+        Vector2dd e1, e2, e;
         double l1, l2;
-        eig22(A1, l1, e1, l2, e);
-        eig22(A2, l1, e2, l2, e);
+        Matrix22::eigen(A1, l1, e1, l2, e);
+        Matrix22::eigen(A2, l1, e2, l2, e);
         c.v1 = (c.v1 & e1) > 0.0 ? e1 : -e1;
         c.v2 = (c.v2 & e2) > 0.0 ? e2 : -e2;
     }
-}
-
-bool ChessBoardCornerDetector::invertable22(corecvs::Matrix &A)
-{
-    assert(A.w == 2 && A.h == 2);
-    const double DETTOLERANCE22 = 1e-9;
-    return std::abs(A.a(0, 0) * A.a(1, 1) - A.a(1, 0) * A.a(0, 1)) > DETTOLERANCE22;
-}
-
-void ChessBoardCornerDetector::solve22(corecvs::Matrix &A, corecvs::Vector2dd &B, corecvs::Vector2dd &x)
-{
-    assert(A.w == 2 && A.h == 2);
-    double a = A.a(0, 0), b = A.a(0, 1), c = A.a(1, 0), d = A.a(1, 1);
-    double D = a * d - b * c;
-    x[0] = ( d * B[0] - b * B[1]) / D;
-    x[1] = (-c * B[0] + a * B[1]) / D;
 }
 
 void ChessBoardCornerDetector::adjustCornerPosition()
@@ -564,15 +555,14 @@ void ChessBoardCornerDetector::adjustCornerPosition()
     int idx = 0;
     for (auto& c: corners)
     {
-        corecvs::Matrix G(2, 2);
-        corecvs::Vector b(2);
+        Matrix22  G(0.0);
+        Vector2dd b(0.0, 0.0);
         // FIXME: current corecvs::Vector implementation does not zero itself on init
-        b.at(0) = 0.0; b.at(1) = 0.0;
 
-        int top = std::max(0.0, c.pos[1] - neighborhood);
+        int top    = std::max(     0.0, c.pos[1] - neighborhood);
         int bottom = std::min(ih - 1.0, c.pos[1] + neighborhood);
-        int left = std::max(0.0, c.pos[0] - neighborhood);
-        int right = std::min(iw - 1.0, c.pos[0] + neighborhood);
+        int left   = std::max(     0.0, c.pos[0] - neighborhood);
+        int right  = std::min(iw - 1.0, c.pos[0] + neighborhood);
 
         int cu = c.pos[0];
         int cv = c.pos[1];
@@ -587,13 +577,13 @@ void ChessBoardCornerDetector::adjustCornerPosition()
                     continue;
                 }
 
-                corecvs::Vector2dd g(du.element(i, j), dv.element(i, j));
+                Vector2dd g(du.element(i, j), dv.element(i, j));
                 if (g.l2Metric() < gradThreshold)
                     continue;
                 g.normalise();
 
-                corecvs::Vector2dd p(j, i);
-                corecvs::Vector2dd d = p - c.pos;
+                Vector2dd p(j, i);
+                Vector2dd d = p - c.pos;
 
                 double d1 = (d - (d & c.v1) * c.v1).l2Metric();
                 double d2 = (d - (d & c.v2) * c.v2).l2Metric();
@@ -602,29 +592,24 @@ void ChessBoardCornerDetector::adjustCornerPosition()
                     (d2 < inlierDistanceThreshold && std::abs(g & c.v2) < orientationInlierThreshold))
                 {
                     // TODO: outer product for vectors?!
-                    corecvs::Matrix D(1, 2);
-                    D.a(0, 0) = du.element(i, j);
-                    D.a(0, 1) = dv.element(i, j);
-                    auto H = D.t() * D;
-                    corecvs::Vector DD(2);
-                    DD.at(0) = j;
-                    DD.at(1) = i;
+                    Vector2dd D(du.element(i, j), dv.element(i, j));
+                    Matrix22 H = Matrix22::VectorByVector(D, D);
+                    Vector2dd DD(j, i);
 
                     inliers++;
                     G = G + H;
-                    b = b +  H * DD;
+                    b = b + H * DD;
                 }
 
             }
         }
 
-        if (!invertable22(G))
+        if (!G.isInvertable())
         {
             continue;
         }
 
-        corecvs::Vector2dd x(0, 0), B(b.at(0), b.at(1));
-        solve22(G, B, x);
+        Vector2dd x = Matrix22::solve(G, b);
 
         if ((x - c.pos).l2Metric() > updateThreshold)
         {
@@ -686,3 +671,53 @@ ChessBoardCornerDetector::ChessBoardCornerDetector(ChessBoardCornerDetectorParam
 {
     prepareKernels();
 }
+
+#if DEPRECATED
+
+bool ChessBoardCornerDetector::invertable22(corecvs::Matrix &A)
+{
+    assert(A.w == 2 && A.h == 2);
+    const double DETTOLERANCE22 = 1e-9;
+    return std::abs(A.a(0, 0) * A.a(1, 1) - A.a(1, 0) * A.a(0, 1)) > DETTOLERANCE22;
+}
+
+void ChessBoardCornerDetector::solve22(corecvs::Matrix &A, corecvs::Vector2dd &B, corecvs::Vector2dd &x)
+{
+    assert(A.w == 2 && A.h == 2);
+    double a = A.a(0, 0), b = A.a(0, 1), c = A.a(1, 0), d = A.a(1, 1);
+    double D = a * d - b * c;
+    x[0] = ( d * B[0] - b * B[1]) / D;
+    x[1] = (-c * B[0] + a * B[1]) / D;
+}
+
+void ChessBoardCornerDetector::eig22(corecvs::Matrix &A, double &lambda1, corecvs::Vector2dd &e1, double &lambda2, corecvs::Vector2dd &e2)
+{
+    const double EIGTOLERANCE = 1e-9;
+    assert(A.w == 2 && A.h == 2);
+    double T = A.a(0, 0) + A.a(1, 1);
+    double D = A.a(0, 0) * A.a(1, 1) - A.a(1, 0) * A.a(0, 1);
+    lambda2 = T / 2.0 + std::sqrt(T * T / 4.0 - D);
+    lambda1 = T / 2.0 - std::sqrt(T * T / 4.0 - D);
+
+    double c = std::abs(A.a(1, 0)), b = std::abs(A.a(0, 1));
+    if (std::max(b, c) > EIGTOLERANCE)
+    {
+        if (b > c)
+        {
+            e1 = corecvs::Vector2dd(A.a(0, 1), lambda1 - A.a(0, 0)).normalised();
+            e2 = corecvs::Vector2dd(A.a(0, 1), lambda2 - A.a(0, 0)).normalised();
+        }
+        else
+        {
+            e1 = corecvs::Vector2dd(lambda1 - A.a(1, 1), A.a(1, 0)).normalised();
+            e2 = corecvs::Vector2dd(lambda2 - A.a(1, 1), A.a(1, 0)).normalised();
+        }
+    }
+    else
+    {
+        e1 = corecvs::Vector2dd(1, 0);
+        e2 = corecvs::Vector2dd(0, 1);
+    }
+}
+
+#endif

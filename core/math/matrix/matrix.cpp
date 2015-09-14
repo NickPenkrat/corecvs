@@ -12,6 +12,8 @@
 #include "matrix.h"
 #include "matrix33.h"
 
+#include <cassert>
+
 namespace corecvs {
 
 /* The constructor is not in single cycle due to possible stride of the matrix */
@@ -92,7 +94,7 @@ Matrix operator *(const Matrix &B, const double &a)
 /* TODO: Merge functions below */
 Matrix *Matrix::mul(const Matrix& V)
 {
-    ASSERT_TRUE (this->w == V.h, "Matrices have wrong sizes");
+    CORE_ASSERT_TRUE(this->w == V.h, "Matrices have wrong sizes");
     Matrix *result = new Matrix(this->h, V.w, false);
 
     int row, column, runner;
@@ -110,10 +112,24 @@ Matrix *Matrix::mul(const Matrix& V)
     return result;
 }
 
-
+// I've prepared dirty implementation of GEMM/GEMV-like functions
+// with fma-intrinsics and tbb stuff
+// GEMM is also can be optimized with any BLAS-like library providing
+// cblas interface (build with WITH_BLAS and apropriate linker flags)
+//
+// USE IT ON YOUR OUR RISK
+//
+// Note, that it can be further improved with aligned reading,
+// block-matrix multiplication, etc; but adding BLAS-library
+// seems to be better alternative
+//
+// You'll need to modify cvs.pro, config.pri to make it buildable
+// Easiest way is to comment out all -msse -mavx ... compiler keys,
+// add -march=native (and -Ofast)
+#ifndef WITH_DIRTY_GEMM_HACKS
 Matrix operator *(const Matrix &A, const Matrix &B)
 {
-    ASSERT_TRUE (A.w == B.h, "Matrices have wrong sizes");
+    CORE_ASSERT_TRUE(A.w == B.h, "Matrices have wrong sizes");
     Matrix result(A.h, B.w, false);
 
     int row, column, runner;
@@ -134,7 +150,7 @@ Matrix operator *(const Matrix &A, const Matrix &B)
 
 Vector operator *(const Matrix &M, const Vector &V)
 {
-    ASSERT_TRUE (M.w == V.size(), "Matrix and vector have wrong sizes");
+    CORE_ASSERT_TRUE(M.w == V.size(), "Matrix and vector have wrong sizes");
     Vector result(M.h);
     int row, column;
     for (row = 0; row < M.h; row++)
@@ -145,6 +161,247 @@ Vector operator *(const Matrix &M, const Vector &V)
             sum += V.at(column) * M.a(row, column);
         }
         result.at(row) = sum;
+    }
+    return result;
+}
+
+Vector operator *(const Vector &V, const Matrix &M)
+{
+    CORE_ASSERT_TRUE(M.h == V.size(), "Matrix and vector have wrong sizes");
+    Vector result(M.w);
+    int row, column;
+    for (column = 0; column < M.w ; column++)
+    {
+        double sum = 0.0;
+        for (row = 0; row < M.h; row++)
+        {
+            sum += V.at(row) * M.a(row, column);
+        }
+        result.at(column) = sum;
+    }
+    return result;
+}
+
+
+Matrix operator *=(Matrix &M, const DiagonalMatrix &D)
+{
+    CORE_ASSERT_TRUE(M.w == D.size(), "Matrices have wrong sizes");
+    for (int i = 0; i < M.h ; i++)
+    {
+         for (int j = 0; j < M.w ; j++)
+         {
+            M.a(i,j) *= D.at(i);
+         }
+    }
+    return M;
+}
+
+
+Matrix operator *(const Matrix &M, const DiagonalMatrix &D)
+{
+    CORE_ASSERT_TRUE(M.w == D.size(), "Matrices have wrong sizes");
+    Matrix result(M.h, M.w);
+    for (int i = 0; i < M.h; ++i)
+    {
+        for (int j = 0; j < M.w; ++j)
+        {
+            result.a(i, j) = M.a(i, j) * D.at(j);
+        }
+    }
+    return result;
+}
+
+Matrix operator *(DiagonalMatrix &D, const Matrix &M)
+{
+    CORE_ASSERT_TRUE(M.h == D.size(), "Matrices have wrong sizes");
+    Matrix result(M.h, M.w);
+    for (int i = 0; i < M.h; ++i)
+    {
+        for (int j = 0; j < M.w; ++j)
+        {
+            result.a(i, j) = M.a(i, j) * D.at(i);
+        }
+    }
+    return result;
+}
+#else
+
+#ifdef WITH_BLAS
+// Okay, let's hope this means lapack too!
+#include <cblas.h>
+#endif
+
+#ifndef WITH_BLAS
+#include "tbbWrapper.h"
+#include "immintrin.h"
+
+struct ParallelMM
+{
+    void operator() (const corecvs::BlockedRange<int> &r) const
+    {
+        auto& A = *pA;
+        auto& B = *pB;
+        auto& result = *pResult;
+        int row, column, runner;
+        for (row = r.begin(); row < r.end(); ++row)
+        {
+            for (column = 0; column + 3 < result.w ; column+= 4)
+            {
+                __m256d sum = _mm256_setzero_pd();
+                for (runner = 0; runner < A.w; runner++)
+                {
+                    __m256d bc = _mm256_broadcast_sd(&A.a(row, runner));
+                    __m256d rw = _mm256_loadu_pd(&B.a(runner, column));
+#ifdef WITH_FMA
+                    sum = _mm256_fmadd_pd(bc, rw, sum);
+#else
+                    sum = _mm256_add_pd(_mm256_mul_pd(bc, rw), sum);
+#endif
+//                    sum += A.a(row, runner) * B.a(runner, column);
+                }
+                for (int jj = 0; jj < 4; ++jj)
+                {
+                   result.a(row, column + jj) = ((double*)&sum)[jj];
+                }
+            }
+            for (; column < result.w ; ++column)
+            {
+                double sum = 0;
+                for (runner = 0; runner < A.w; runner++)
+                {
+                    sum += A.a(row, runner) * B.a(runner, column);
+                }
+                result.a(row, column) = sum;
+            }
+        }
+    }
+    ParallelMM(const Matrix *pA, const Matrix *pB, Matrix *pResult) : pA(pA), pB(pB), pResult(pResult)
+    {
+    }
+    const Matrix *pA, *pB;
+    Matrix *pResult;
+};
+
+struct ParallelMV
+{
+    void operator() (const corecvs::BlockedRange<int> &r) const
+    {
+        auto& A = *pA;
+        auto& B = *pB;
+        auto& result = *pResult;
+        int row, column, runner;
+        for (row = r.begin(); row < r.end(); ++row)
+        {
+            __m256d sum_ = _mm256_setzero_pd();
+            for (column = 0; column + 3 < A.w ; column+=4)
+            {
+                __m256d bc = _mm256_loadu_pd(&A.a(row, column));
+                __m256d rw = *((__m256d*)&B.at(column));//_mm256_loadu_pd(&B.at(column));
+#ifdef WITH_FMA
+                sum_ = _mm256_fmadd_pd(bc, rw, sum_);
+#else
+                sum_ = _mm256_add_pd(_mm256_mul_pd(bc, rw), sum_);
+#endif
+            }
+            double* sp = ((double*)&sum_);
+            double sum = sp[0]+sp[1]+sp[2]+sp[3];
+            for (; column < A.w ; column++)
+            {
+                sum += B.at(column) * A.a(row, column);
+            }
+            result.at(row) = sum;
+        }
+    }
+    ParallelMV(const Matrix *pA, const Vector *pB, Vector *pResult) : pA(pA), pB(pB), pResult(pResult)
+    {
+    }
+    const Matrix *pA;
+    const Vector *pB;
+    Vector *pResult;
+};
+struct ParallelMD
+{
+    void operator() (const corecvs::BlockedRange<int> &r) const
+    {
+        auto& A = *pA;
+        auto& B = *pB;
+        auto& result = *pResult;
+        int row, column, runner;
+        for (row = r.begin(); row < r.end(); ++row)
+        {
+            for (column = 0; column + 3 < result.w ; column+= 4)
+            {
+                __m256d diag = _mm256_loadu_pd(&B.at(column));
+                __m256d mat  = _mm256_loadu_pd(&A.a(row, column));
+                __m256d res  = _mm256_mul_pd(diag, mat);
+                _mm256_storeu_pd(&result.a(row, column), res);
+            }
+            for (; column < result.w ; ++column)
+            {
+                result.a(row, column) = A.a(row, column) * B.at(column);
+            }
+        }
+    }
+    ParallelMD(const Matrix *pA, const DiagonalMatrix *pB, Matrix *pResult) : pA(pA), pB(pB), pResult(pResult)
+    {
+    }
+    const Matrix *pA;
+    const DiagonalMatrix *pB;
+    Matrix *pResult;
+};
+#endif
+Matrix operator *(const Matrix &A, const Matrix &B)
+{
+    ASSERT_TRUE (A.w == B.h, "Matrices have wrong sizes");
+    Matrix result(A.h, B.w, false);
+
+#ifndef  WITH_BLAS
+    int row, column, runner;
+    if (A.h < 64)
+    {
+       for (row = 0; row < result.h ; row++)
+           for (column = 0; column < result.w ; column++)
+           {
+               double sum = 0;
+               for (runner = 0; runner < A.w; runner++)
+               {
+                   sum += A.a(row, runner) * B.a(runner, column);
+               }
+               result.a(row, column) = sum;
+           }
+    }
+    else
+    {
+        corecvs::parallelable_for (0, result.h, 8, ParallelMM(&A, &B, &result),   true);
+    }
+#else
+    cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, A.h, B.w, A.w, 1.0, A.data, A.stride, B.data, B.stride, 0.0, result.data, result.stride);
+#endif
+
+    return result;
+}
+
+
+Vector operator *(const Matrix &M, const Vector &V)
+{
+    ASSERT_TRUE (M.w == V.size(), "Matrix and vector have wrong sizes");
+    Vector result(M.h);
+    int row, column;
+    if (M.h < 64)
+    {
+       for (row = 0; row < M.h; row++)
+       {
+           double sum = 0.0;
+           for (column = 0; column < M.w ; column++)
+           {
+               sum += V.at(column) * M.a(row, column);
+           }
+           result.at(row) = sum;
+       }
+    }
+    else
+    {
+        corecvs::parallelable_for (0, M.h, 8, ParallelMV(&M, &V, &result));
     }
     return result;
 }
@@ -169,10 +426,12 @@ Vector operator *(const Vector &V, const Matrix &M)
 
 Matrix operator *=(Matrix &M, const DiagonalMatrix &D)
 {
-    ASSERT_TRUE (M.w == D.size(), "Matrices have wrong sizes");
-    for (int i = 0; i < M.h ; i++)
+    assert(false);
+    int32_t minDim = CORE_MIN(M.h,M.w);
+    minDim = CORE_MIN(minDim, D.size());
+    for (int i = 0; i < minDim ; i++)
     {
-         for (int j = 0; j < M.w ; j++)
+         for (int j = 0; j < minDim ; j++)
          {
             M.a(i,j) *= D.at(i);
          }
@@ -183,21 +442,28 @@ Matrix operator *=(Matrix &M, const DiagonalMatrix &D)
 
 Matrix operator *(const Matrix &M, const DiagonalMatrix &D)
 {
-    ASSERT_TRUE (M.w == D.size(), "Matrices have wrong sizes");
+    assert(M.w == D.size());
     Matrix result(M.h, M.w);
-    for (int i = 0; i < M.h; ++i)
+    if (M.h < 16)
     {
-        for (int j = 0; j < M.w; ++j)
-        {
-            result.a(i, j) = M.a(i, j) * D.at(j);
-        }
+       for (int i = 0; i < M.h; ++i)
+       {
+           for (int j = 0; j < M.w; ++j)
+           {
+               result.a(i, j) = M.a(i, j) * D.at(j);
+           }
+       }
+    }
+    else
+    {
+       corecvs::parallelable_for (0, result.h, 8, ParallelMD(&M, &D, &result),   true);
     }
     return result;
 }
 
 Matrix operator *(DiagonalMatrix &D, const Matrix &M)
 {
-    ASSERT_TRUE (M.h == D.size(), "Matrices have wrong sizes");
+    assert(M.h == D.size());
     Matrix result(M.h, M.w);
     for (int i = 0; i < M.h; ++i)
     {
@@ -208,12 +474,12 @@ Matrix operator *(DiagonalMatrix &D, const Matrix &M)
     }
     return result;
 }
-
+#endif
 
 /* TODO: Use abstract buffer binaryOperation elementWize */
 Matrix operator +(const Matrix &A, const Matrix &B)
 {
-    ASSERT_TRUE (A.w == B.w && A.h == B.h, "Matrices have wrong sizes");
+    CORE_ASSERT_TRUE(A.w == B.w && A.h == B.h, "Matrices have wrong sizes");
     Matrix result(A.h, A.w, false);
 
     for (int row = 0; row < result.h ; row++)
@@ -230,7 +496,7 @@ Matrix operator +(const Matrix &A, const Matrix &B)
 
 Matrix operator -(const Matrix &A, const Matrix &B)
 {
-    ASSERT_TRUE (A.w == B.w && A.h == B.h, "Matrices have wrong sizes");
+    CORE_ASSERT_TRUE(A.w == B.w && A.h == B.h, "Matrices have wrong sizes");
     Matrix result(A.h, A.w, false);
 
     for (int row = 0; row < result.h ; row++)
@@ -294,7 +560,7 @@ Matrix *Matrix::transposed() const
 
 void Matrix::transpose()
 {
-    ASSERT_TRUE(this->h == this->w, "Matrix should be square to transpose.");
+    CORE_ASSERT_TRUE(this->h == this->w, "Matrix should be square to transpose.");
 
     for (int row = 0; row < this->h ; row++)
     {
@@ -399,7 +665,7 @@ void Matrix::svd (Matrix33 *A, Vector3dd *W, Matrix33 *V)
  */
 bool Matrix::matrixSolveGaussian(Matrix *A, Matrix *B)
 {
-    ASSERT_FALSE(A->h != A->w || A->w != B->h || B->w != 1, "Matrix has wrong sizes");
+    CORE_ASSERT_FALSE(A->h != A->w || A->w != B->h || B->w != 1, "Matrix has wrong sizes");
 
     int row, column, rowRunner, runner;
     int n = A->w;
@@ -490,7 +756,7 @@ Matrix Matrix::inv() const
 
     double multiplier;
 
-    ASSERT_TRUE(this->h == this->w, "Matrix should be square to invert.");
+    CORE_ASSERT_TRUE(this->h == this->w, "Matrix should be square to invert.");
 
     unsigned rank = this->h;
     // Start with identity matrix
@@ -544,7 +810,7 @@ Matrix Matrix::inv() const
 
 Matrix Matrix::invSVD() const
 {
-    ASSERT_TRUE(this->h == this->w, "Matrix should be square to invert.");
+    CORE_ASSERT_TRUE(this->h == this->w, "Matrix should be square to invert.");
     int rank = this->h;
     Matrix X(this);
     Matrix result(rank, rank, 1.0);
@@ -569,7 +835,7 @@ Matrix Matrix::invSVD() const
 
 double Matrix::detSVD() const
 {
-    ASSERT_TRUE(this->h == this->w, "Matrix should be square to invert.");
+    CORE_ASSERT_TRUE(this->h == this->w, "Matrix should be square to invert.");
     int rank = this->h;
     Matrix X(this);
     Matrix result(rank, rank, 1.0);
@@ -668,10 +934,10 @@ Matrix Matrix::row(int row)
  */
 void Matrix::svd (Matrix *A, Matrix *W, Matrix *V)
 {
-    ASSERT_TRUE((A != NULL && W != NULL && V != NULL), "NULL input Matrix\n");
+    CORE_ASSERT_TRUE((A != NULL && W != NULL && V != NULL), "NULL input Matrix\n");
 
-    ASSERT_TRUE((W->h ==    1 && W->w == A->w), "Matrix W has wrong size\n" );
-    ASSERT_TRUE((A->w == V->h && A->w == V->w),"Matrix V has wrong size\n");
+    CORE_ASSERT_TRUE((W->h == 1 && W->w == A->w), "Matrix W has wrong size\n");
+    CORE_ASSERT_TRUE((A->w == V->h && A->w == V->w), "Matrix V has wrong size\n");
 
     int n = A->w;
     int m = A->h;
@@ -684,8 +950,8 @@ void Matrix::svd (Matrix *A, Matrix *W, Matrix *V)
     double scale = 0.0;
     double *rv1;
 
-    ASSERT_FALSE((m < n), "SVDCMP: You must augment A with extra zero rows");
-    ASSERT_TRUE(n > 0 , "A width should not be zero");
+    CORE_ASSERT_FALSE((m < n), "SVDCMP: You must augment A with extra zero rows");
+    CORE_ASSERT_TRUE(n > 0, "A width should not be zero");
 
     rv1 = new double[n];
 
@@ -930,7 +1196,7 @@ void Matrix::svd (Matrix *A, Matrix *W, Matrix *V)
 
 void Matrix::svd(Matrix *A, DiagonalMatrix *W, Matrix *V)
 {
-    ASSERT_TRUE((W->size() == A->w), "Matrix W has wrong size\n" );
+    CORE_ASSERT_TRUE((W->size() == A->w), "Matrix W has wrong size\n");
     Matrix WVec(1, W->size());
     svd(A, &WVec, V);
     for (int i = 0; i < W->size(); i++)
@@ -955,10 +1221,10 @@ void Matrix::svd(Matrix *A, DiagonalMatrix *W, Matrix *V)
 int Matrix::jacobi(Matrix *a, DiagonalMatrix *d, Matrix *v, int *nrotpt)
 {
 
-    ASSERT_TRUE((a != NULL && d != NULL && v != NULL), "NULL input Matrix\n");
-    ASSERT_TRUE((a->h == a->w), "Matrix A is not square\n" );
-    ASSERT_TRUE((v->h == a->h && v->w == a->w), "Matrix V has wrong size\n" );
-    ASSERT_TRUE((a->w == d->size()),"Matrix D has wrong size\n");
+    CORE_ASSERT_TRUE((a != NULL && d != NULL && v != NULL), "NULL input Matrix\n");
+    CORE_ASSERT_TRUE((a->h == a->w), "Matrix A is not square\n");
+    CORE_ASSERT_TRUE((v->h == a->h && v->w == a->w), "Matrix V has wrong size\n");
+    CORE_ASSERT_TRUE((a->w == d->size()), "Matrix D has wrong size\n");
 
     int j,iq,ip,i;
     double tresh,theta,tau,t,sm,s,h,g,c,*b,*z;

@@ -64,7 +64,7 @@ int DistortionApplicationParameters::staticInit()
         (
           DistortionApplicationParameters::RESIZE_POLICY_ID,
           offsetof(DistortionApplicationParameters, mResizePolicy),
-          0,
+          3,
           "Resize policy",
           "Resize policy",
           "Resize policy",

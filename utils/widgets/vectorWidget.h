@@ -23,6 +23,7 @@ public slots:
     void addEntry();
     void removeEntry();
 
+signals:
 
 private:
     Ui::VectorWidget *ui;

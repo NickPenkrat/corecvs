@@ -52,15 +52,14 @@ public:
         R(_R),
         P(_P)
     {
-        ASSERT_TRUE_P(f->inputs == stateDim,
+        CORE_ASSERT_TRUE_P(f->inputs == stateDim,
                 ("F should map from the state size %d != %d", f->inputs, stateDim));
-        ASSERT_TRUE_P(f->outputs == stateDim,
+        CORE_ASSERT_TRUE_P(f->outputs == stateDim,
                 ("F should map to the state size %d != %d", f->outputs, stateDim));
-        ASSERT_TRUE_P(P.h == stateDim && P.w == stateDim,
+        CORE_ASSERT_TRUE_P(P.h == stateDim && P.w == stateDim,
                 ("P should be square and equal to state size [%d x %d], %d ", P.h, P.w, stateDim));
-        ASSERT_TRUE_P(Q.h == stateDim && Q.w == stateDim,
+        CORE_ASSERT_TRUE_P(Q.h == stateDim && Q.w == stateDim,
                 ("Q should be square and equal to state size [%d x %d], %d", Q.h, Q.w, stateDim));
-
     }
 
     virtual ~ClassicKalman();

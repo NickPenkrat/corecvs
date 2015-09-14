@@ -9,6 +9,8 @@
  */
 
 #include <iostream>
+#include "gtest/gtest.h"
+
 #include "global.h"
 #include "g12Buffer.h"
 #include "ppmLoader.h"
@@ -22,7 +24,6 @@
 #include "bmpLoader.h"
 #include "mathUtils.h"
 #include "abstractPainter.h"
-
 
 using namespace std;
 using corecvs::G12Buffer;
@@ -38,11 +39,8 @@ using corecvs::BufferFactory;
 using corecvs::BMPLoader;
 using corecvs::fround;
 using corecvs::AbstractPainter;
-//using corecvs::degToRad(double d);
 
-
-
-void generateReality (void)
+TEST(Cameramodel, DISABLED_generateReality)
 {
 	//const double BASELINE = -210;
 	const double FOCAL    =  640;
@@ -163,11 +161,4 @@ void generateReality (void)
 	painterR.drawChar(10,10, 'R',  G12Buffer::BUFFER_MAX_VALUE);
    	BMPLoader().save("out_c1.bmp", outputR);
 
-}
-
-int main (int /*argC*/, char ** /*argV*/)
-{
-	generateReality ();
-    cout << "PASSED" << endl;
-    return 0;
 }

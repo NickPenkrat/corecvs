@@ -109,7 +109,7 @@ public:
         int32_t i = floor(y);
         int32_t j = floor(x);
 
-        ASSERT_TRUE_P(buffer->isValidCoordBl(y,x),
+        CORE_ASSERT_TRUE_P(buffer->isValidCoordBl(y, x),
                 ("Invalid coordinate in AbstractContiniousBuffer::elementBl(double y=%lf, double x=%lf) buffer sizes is [%dx%d]",
                    y, x, buffer->w, buffer->h));
 
@@ -202,7 +202,7 @@ public:
         int32_t i = floor(y);
         int32_t j = floor(x);
 
-        ASSERT_TRUE_P(buffer->isValidCoordBl(y,x),
+        CORE_ASSERT_TRUE_P(buffer->isValidCoordBl(y, x),
             ("Invalid coordinate in AbstractContiniousBuffer::elementBl(double y=%lf, double x=%lf) buffer sizes is [%dx%d]",
                y, x, buffer->w, buffer->h));
 
@@ -232,7 +232,7 @@ public:
         int w = buffer->getW();
         int h = buffer->getH();
 
-        ASSERT_TRUE_P(buffer->isValidCoordBl(y,x),
+        CORE_ASSERT_TRUE_P(buffer->isValidCoordBl(y, x),
                       ("Invalid coordinate in AbstractContiniousBuffer::elementBl(double y=%lf, double x=%lf) buffer sizes is [%dx%d]",
                        y, x, w, h));
 

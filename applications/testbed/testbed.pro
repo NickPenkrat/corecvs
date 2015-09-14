@@ -15,8 +15,7 @@ TARGET   = testbed
 TEMPLATE = app
 
 # Using only open part of the project
-UTILSDIR = ../../utils
-include($$UTILSDIR/utils.pri)
+include(../../utils/utils.pri)
 
 
 HEADERS = \

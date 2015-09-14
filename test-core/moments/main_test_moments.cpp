@@ -9,6 +9,7 @@
  */
 
 #include <iostream>
+#include "gtest/gtest.h"
 
 #ifndef ASSERTS
 #define ASSERTS
@@ -22,21 +23,21 @@
 using namespace std;
 using namespace corecvs;
 
-void testMoments1(void)
+TEST(Moments, testRotations)
 {
     cout << "Running testMoments1" << endl;
     EllipticalApproximation ell;
     ell.addPoint(Vector2dd(0.0,0.0));
     ell.addPoint(Vector2dd(1.0,1.0));
 
-    ASSERT_DOUBLE_EQUAL(ell.getCenter().x(), 0.5, "Wrong center");
-    ASSERT_DOUBLE_EQUAL(ell.getCenter().y(), 0.5, "Wrong center");
+    CORE_ASSERT_DOUBLE_EQUAL(ell.getCenter().x(), 0.5, "Wrong center");
+    CORE_ASSERT_DOUBLE_EQUAL(ell.getCenter().y(), 0.5, "Wrong center");
 
     double angle = ell.getEllipseOrientation();
     Vector2dd axis = ell.getEllipseAxis();
     printf("angle %2.2lf\n", radToDeg(angle));
     printf("axis %2.2lf %2.2lf\n", axis.x(), axis.y());
-    ASSERT_DOUBLE_EQUAL(radToDeg(angle), 45.0, "Wrong orientation");
+    CORE_ASSERT_DOUBLE_EQUAL(radToDeg(angle), 45.0, "Wrong orientation");
 
     Vector2dd mainDir = ell.getMainDirection();
 
@@ -44,24 +45,24 @@ void testMoments1(void)
     cout << "Main direction1:" << Vector2dd::FromPolar(angle, 1.0) << endl;
 }
 
-void testMoments2(void)
+TEST(Moments, testMoments2)
 {
     cout << "Running testMoments2" << endl;
     EllipticalApproximation ell;
     ell.addPoint(Vector2dd(0.0,0.0));
     ell.addPoint(Vector2dd(0.0,1.0));
 
-    ASSERT_DOUBLE_EQUAL(ell.getCenter().x(),0.0, "Wrong center");
-    ASSERT_DOUBLE_EQUAL(ell.getCenter().y(),0.5, "Wrong center");
+    CORE_ASSERT_DOUBLE_EQUAL(ell.getCenter().x(), 0.0, "Wrong center");
+    CORE_ASSERT_DOUBLE_EQUAL(ell.getCenter().y(), 0.5, "Wrong center");
 
     double angle = ell.getEllipseOrientation();
     Vector2dd axis = ell.getEllipseAxis();
     printf("angle %2.2lf\n", angle / M_PI * 180);
     printf("axis %2.2lf %2.2lf\n", axis.x(), axis.y());
-    ASSERT_DOUBLE_EQUAL(angle / M_PI * 180, 90.0, "Wrong orientation");
+    CORE_ASSERT_DOUBLE_EQUAL(angle / M_PI * 180, 90.0, "Wrong orientation");
 }
 
-void testMoments3(void)
+TEST(Moments, testMoments3)
 {
     cout << "Running testMoments3" << endl;
     EllipticalApproximation ell;
@@ -85,7 +86,7 @@ void testMoments3(void)
     cout << "Main direction2:" << dir.normalised() << endl;
 }
 
-void testMoments4(void)
+TEST(Moments, testMoments4)
 {
     cout << "Running testMoments4" << endl;
     EllipticalApproximation1d test;
@@ -107,12 +108,12 @@ void testMoments4(void)
 }
 
 
-int main (int /*argC*/, char ** /*argV*/)
-{
-    testMoments4();
-    testMoments1();
-    testMoments2();
-    testMoments3();
-    cout << "PASSED" << endl;
-    return 0;
-}
+//int main (int /*argC*/, char ** /*argV*/)
+//{
+//    testMoments4();
+//    testMoments1();
+//    testMoments2();
+//    testMoments3();
+//    cout << "PASSED" << endl;
+//    return 0;
+//}

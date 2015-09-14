@@ -1,3 +1,5 @@
+#include "gtest/gtest.h"
+
 #include <QtCore/QCoreApplication>
 #include "curvatureFunc.h"
 #include "levenmarq.h"
@@ -7,7 +9,8 @@
 using namespace corecvs;
 
 //p1 = p2 = 0;
-void testAproximation()
+
+TEST(PolynomDistortion, testAproximation)
 {
     double k1 = 15 * 1e-9;
     double k2 = 5 * 1e-17;
@@ -54,10 +57,10 @@ void testAproximation()
     }
 }
 
-int main(int argc, char *argv[])
-{
-    QCoreApplication a(argc, argv);
+//int main(int argc, char *argv[])
+//{
+//    QCoreApplication a(argc, argv);
     
-    testAproximation();
-    return a.exec();
-}
+//    testAproximation();
+//    return a.exec();
+//}

@@ -136,9 +136,9 @@ void JSONGetter::visit<void *, PointerField>(void * &/*field*/, const PointerFie
 }
 
 template <>
-void JSONGetter::visit<int, EnumField>(int &/*field*/, const EnumField * /*fieldDescriptor*/)
+void JSONGetter::visit<int, EnumField>(int &field, const EnumField *fieldDescriptor)
 {
-    qDebug() << "JSONGetter::visit<int, EnumField>(int &field, const EnumField *fieldDescriptor) NOT YET SUPPORTED";
+    visit<int>(field, fieldDescriptor->defaultValue, fieldDescriptor->name.name);
 }
 
 template <>

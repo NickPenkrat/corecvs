@@ -79,7 +79,7 @@ with_opencv {
                 LIBS += -L$$OPENCV_PATH/build/x64/vc12/lib/ \
                         -lopencv_calib3d2411    -lopencv_video2411   -lopencv_core2411    -lopencv_highgui2411   \
                         -lopencv_features2d2411 -lopencv_flann2411   -lopencv_imgproc2411 -lopencv_objdetect2411 \
-                        -llibopencv_nonfree2411 -lopencv_legacy2411 #-llibopencv_ml2411
+                        -lopencv_nonfree2411 -lopencv_legacy2411 #-llibopencv_ml2411
                 DEFINES += WITH_OPENCV
             } else {
                 message(Using <$$OPENCV_PATH>)

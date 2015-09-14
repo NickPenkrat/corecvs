@@ -21,7 +21,7 @@ namespace corecvs {
 
 void RGB24Buffer::drawG12Buffer(G12Buffer *src, int32_t y, int32_t x)
 {
-    ASSERT_TRUE((this->h == src->h && this->w == src->w), "Wrong sizes");
+    CORE_ASSERT_TRUE((this->h == src->h && this->w == src->w), "Wrong sizes");
     int i,j;
     for (i = 0; i < src->h; i++)
     {
@@ -35,7 +35,7 @@ void RGB24Buffer::drawG12Buffer(G12Buffer *src, int32_t y, int32_t x)
 
 void RGB24Buffer::drawG8Buffer(G8Buffer *src, int32_t y, int32_t x)
 {
-    ASSERT_TRUE((this->h == src->h && this->w == src->w), "Wrong sizes");
+    CORE_ASSERT_TRUE((this->h == src->h && this->w == src->w), "Wrong sizes");
     int i,j;
     for (i = 0; i < src->h; i++)
     {
@@ -259,7 +259,7 @@ void RGB24Buffer::drawFlowBuffer(FlowBuffer *src, int32_t y, int32_t x)
             res += Vector2d32(j, i);
             if (!this->isValidCoord(res))
             {
-                ASSERT_FAIL("Overflow in the flow");
+                CORE_ASSERT_FAIL("Overflow in the flow");
             }
 #endif
 

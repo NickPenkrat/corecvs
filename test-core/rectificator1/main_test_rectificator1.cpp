@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <vector>
 #include <limits>
+#include "gtest/gtest.h"
 
 #include "global.h"
 
@@ -33,7 +34,7 @@ using namespace corecvs;
 
 #define GRID_STEP (10)
 
-void testAligner (void)
+TEST(Rectification1, DISABLED_testAligner)
 {
     Vector3dd z1;
 
@@ -61,7 +62,7 @@ void testAligner (void)
 
 }
 
-void testEpipoles ( void )
+TEST(Rectification1, testEpipoles)
 {
     EssentialMatrix F = Matrix33( -4.68373e-06, 5.35286e-05, -0.0168343,
        -5.35711e-05, -4.77577e-06, 0.00601651,
@@ -83,13 +84,12 @@ void testEpipoles ( void )
 #ifdef ASSERTS
     Vector3dd left = e1 * F;
     Vector3dd right = F * e2;
-    ASSERT_TRUE(left.notTooFar(leftResult, 1e-10), "Left Epipole Error");
-    ASSERT_TRUE(right.notTooFar(rightResult, 1e-10), "Right Epipole Error");
+    CORE_ASSERT_TRUE(left.notTooFar(leftResult, 1e-10), "Left Epipole Error");
+    CORE_ASSERT_TRUE(right.notTooFar(rightResult, 1e-10), "Right Epipole Error");
 #endif
 }
 
-
-void __testUnDistortion ( void )
+TEST(Rectification1, __testUnDistortion)
 {
 
     Vector3dd affineProjective(0.0,0.0,1.0);
@@ -175,8 +175,7 @@ void __testUnDistortion ( void )
     delete graph;
 }
 
-
-void testRectificatorCubeEssential (void)
+TEST(Rectification1, DISABLED_testRectificatorCubeEssential)
 {
     vector<Vector3dd> *pointsIn3d = NULL;
     vector<Vector2dd> imagesL;
@@ -377,9 +376,7 @@ void testRectificatorCubeEssential (void)
 
 }
 
-
-
-void testRectificatorCube (void)
+TEST(Rectification1, DISABLED_testRectificatorCube)
 {
 
     cout << "=============================Testing old style rectificator=================================" << endl;
@@ -481,20 +478,20 @@ void testRectificatorCube (void)
     printf("Old Matrix was\n");
     F.print();
     printf("\n");
-    ASSERT_TRUE(Fprim.notTooFar(F, 1e-5), "Matrix reconstruction failed");
+    CORE_ASSERT_TRUE(Fprim.notTooFar(F, 1e-5), "Matrix reconstruction failed");
 
     delete pointsIn3d;
 
 }
 
-int main (int /*argC*/, char ** /*argV*/)
-{
-    testRectificatorCubeEssential();
-//    testRectificatorCube ();
-    return 0;
-    __testUnDistortion();
-    testEpipoles();
-    testAligner();
-    cout << "PASSED" << endl;
-    return 0;
-}
+//int main (int /*argC*/, char ** /*argV*/)
+//{
+//    testRectificatorCubeEssential();
+////    testRectificatorCube ();
+//    return 0;
+//    __testUnDistortion();
+//    testEpipoles();
+//    testAligner();
+//    cout << "PASSED" << endl;
+//    return 0;
+//}

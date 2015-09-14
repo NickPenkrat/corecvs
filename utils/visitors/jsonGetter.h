@@ -39,10 +39,9 @@ public:
     /**
      *  Visitor method that will traverse xml and object tree and fill object with data form xml
      *
-     *
      **/
     template <class Type>
-        void visit(Type &field, Type defaultValue, const char *fieldName)
+    void visit(Type &field, Type, const char *fieldName)
     {
         pushChild(fieldName);
             field.accept(*this);
@@ -58,7 +57,7 @@ public:
         }
 
     template <typename inputType, typename reflectionType>
-        void visit(inputType &field, const reflectionType * fieldDescriptor)
+    void visit(inputType &field, const reflectionType * fieldDescriptor)
     {
         pushChild(fieldDescriptor->getSimpleName());
            field.accept(*this);
@@ -66,11 +65,11 @@ public:
     }
 
 
-/* Generic Array support */
+    /* Generic Array support */
     template <typename inputType, typename reflectionType>
     void visit(std::vector<inputType> &fields, const reflectionType * /*fieldDescriptor*/)
     {
-        for (int i = 0; i < fields.size(); i++)
+        for (size_t i = 0; i < fields.size(); i++)
         {
             fields[i].accept(*this);
         }
@@ -93,6 +92,39 @@ public:
                 fields.push_back(el);
                 mNodePath.pop_back();
             }
+        }
+    }
+    template <typename innerType>
+    void visit(std::vector<std::vector<innerType>> &fields, const char* arrayName)
+    {
+        fields.clear();
+        QJsonObject mainNode = mNodePath.back();
+        if (mainNode.value(arrayName).isArray())
+        {
+            QJsonArray array = mainNode.value(arrayName).toArray();
+
+            foreach (QJsonValue ai, array)
+            {
+                if (!ai.isArray())
+                    continue;
+                std::vector<innerType> inner;
+                QJsonArray array = ai.toArray();
+                visit(inner, array);
+                fields.push_back(inner);
+            }
+        }
+    }
+    template <typename innerType>
+    void visit(std::vector<innerType> &fields, QJsonArray &array)
+    {
+        fields.clear();
+        foreach (QJsonValue v, array)
+        {
+            innerType el;
+            mNodePath.push_back(v.toObject());
+            el.accept(*this);
+            fields.push_back(el);
+            mNodePath.pop_back();
         }
     }
 
@@ -125,6 +157,9 @@ void JSONGetter::visit<float>(float &floatField, float defaultValue, const char 
 
 template <>
 void JSONGetter::visit<bool>(bool &boolField, bool defaultValue, const char * /*fieldName*/);
+
+template <>
+void JSONGetter::visit<std::string>(std::string &stringField, std::string defaultValue, const char* fieldName);
 
 /* New style visitor */
 

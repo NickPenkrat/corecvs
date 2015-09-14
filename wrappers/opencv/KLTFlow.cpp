@@ -50,7 +50,7 @@ std::vector<FloatFlowVector> *KLTFlow::getOpenCVKLT(
 {
     std::vector<FloatFlowVector> *result = new std::vector<FloatFlowVector>();
 
-    ASSERT_TRUE_P(first->hasSameSize(second),("Inputs to getOpenCVKLT must have same size\n"));
+    CORE_ASSERT_TRUE_P(first->hasSameSize(second), ("Inputs to getOpenCVKLT must have same size\n"));
 
     Vector2d<int32_t> size = first->getSize();
     CvSize sizeCV  = cvSize(size.x(), size.y());

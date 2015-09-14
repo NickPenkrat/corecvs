@@ -9,6 +9,7 @@
  */
 
 #include <iostream>
+#include "gtest/gtest.h"
 
 #ifndef ASSERTS
 #define ASSERTS
@@ -26,7 +27,7 @@
 using namespace std;
 using namespace corecvs;
 
-void testReflection( void )
+TEST(Serializer, testReflection)
 {
     Vector2dd vec(5.0, 0.4);
     PrinterVisitor visitor;
@@ -35,9 +36,7 @@ void testReflection( void )
 
 }
 
-
-
-void testSerializer( void )
+TEST(Serializer, testReflection1)
 {
     Vector3dd vec3a(5.0, 0.4, -1.0);
     Vector3dd vec3b(6.0, 0.5, -1.1);
@@ -79,11 +78,11 @@ void testSerializer( void )
     readerVisitor.visit( rvecd,  vecdd, "vector4" );
     readerVisitor.visit( rvece,  veced, "vector5" );
 
-    ASSERT_TRUE(rvec3a == vec3a, "serializer failed 1");
-    ASSERT_TRUE(rvec3b == vec3b, "serializer failed 2");
-    ASSERT_TRUE(rvecc == vecc,   "serializer failed 3");
-    ASSERT_TRUE(rvecd == vecd,   "serializer failed 4");
-    ASSERT_TRUE(rvece == vece,   "serializer failed 5");
+    CORE_ASSERT_TRUE(rvec3a == vec3a, "serializer failed 1");
+    CORE_ASSERT_TRUE(rvec3b == vec3b, "serializer failed 2");
+    CORE_ASSERT_TRUE(rvecc == vecc, "serializer failed 3");
+    CORE_ASSERT_TRUE(rvecd == vecd, "serializer failed 4");
+    CORE_ASSERT_TRUE(rvece == vece, "serializer failed 5");
 
     cout << "Output" << rvecc << endl;
 }
@@ -105,11 +104,10 @@ void testPropertyListLoader( void )
     readerVisitor.visit(test, Vector3dd(0.0), "v");
     cout << test << endl;
 
-    ASSERT_TRUE(test.notTooFar(Vector3dd(1.1, 2.2, 3.3)), "Fail parsing vector");
-
+    CORE_ASSERT_TRUE(test.notTooFar(Vector3dd(1.1, 2.2, 3.3)), "Fail parsing vector");
 }
 
-void testSerializer1( void )
+TEST(Serializer, testSerializer1)
 {
     RectificationResult result;
     PropertyList list;
@@ -119,14 +117,11 @@ void testSerializer1( void )
     list.save(cout);
 }
 
-int main (int /*argC*/, char ** /*argV*/)
-{
-    testPropertyListLoader();
-    return 0;
-    testReflection();
-    testSerializer();
-    testSerializer1();
-
-    cout << "PASSED" << endl;
-        return 0;
-}
+//int main (int /*argC*/, char ** /*argV*/)
+//{
+//    testReflection();
+//    testSerializer();
+//    testSerializer1();
+//    cout << "PASSED" << endl;
+//        return 0;
+//}

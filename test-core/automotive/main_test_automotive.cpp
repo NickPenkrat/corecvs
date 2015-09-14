@@ -10,6 +10,8 @@
 
 #include <iostream>
 #include <vector>
+#include "gtest/gtest.h"
+
 #include "global.h"
 #include "vector3d.h"
 #include "matrix44.h"
@@ -86,7 +88,8 @@ void drawSituation(
 }
 
 
-int main (int /*argC*/, char ** /*argV*/)
+//int main (int /*argC*/, char ** /*argV*/)
+TEST(Automotive, main)
 {
     Vector3dd cameraPos(-200.0,0.0,0.0);
     ShiftRotateTransformation  realCameraExtr(EulerAngles(0.0,0.0,0.0), cameraPos);
@@ -111,5 +114,5 @@ int main (int /*argC*/, char ** /*argV*/)
     drawSituation(realCameraExtr, forwardCarMovement, realCameraExtr, pitchUpCarMovement, "CarPitch-Wrong.txt");
     drawSituation(realCameraExtr, forwardCarMovement, realCameraExtr, turnLeftCarMovement, "CarYaw-Wrong.txt");
 
-    return 0;
+//    return 0;
 }

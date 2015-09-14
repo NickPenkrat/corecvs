@@ -1,19 +1,34 @@
 #include "chessBoardDetector.h"
 
-ChessboardDetector::ChessboardDetector(ChessBoardDetectorParams params, ChessBoardCornerDetectorParams detectorParams, ChessBoardAssemblerParams assemblerParams)
-    : ChessBoardDetectorParams(params), detector(detectorParams)
+ChessboardDetector::ChessboardDetector (
+        CheckerboardDetectionParameters params,
+        ChessBoardCornerDetectorParams detectorParams,
+        ChessBoardAssemblerParams assemblerParams
+    )
+    : CheckerboardDetectionParameters(params),
+      detector(detectorParams)
 {
+    ChessBoardDetectorMode mode =  getMode(*this);
+
     assemblerParams.hypothesisDimensions = 0;
     if (!!(mode & ChessBoardDetectorMode::FIT_WIDTH))
     {
         assemblerParams.hypothesisDimensions++;
-        assemblerParams.hypothesisDim[0] = w;
+        assemblerParams.hypothesisDim[0] = horCrossesCount();
     }
     if (!!(mode &ChessBoardDetectorMode::FIT_HEIGHT))
     {
-        assemblerParams.hypothesisDim[assemblerParams.hypothesisDimensions++] = h;
+        assemblerParams.hypothesisDim[assemblerParams.hypothesisDimensions++] = vertCrossesCount();
     }
     assembler = ChessBoardAssembler(assemblerParams);
+}
+
+ChessBoardDetectorMode ChessboardDetector::getMode(const CheckerboardDetectionParameters &params)
+{
+    ChessBoardDetectorMode mode = ChessBoardDetectorMode::BEST;
+    if (params. fitWidth()) mode = mode | ChessBoardDetectorMode::FIT_WIDTH;
+    if (params.fitHeight()) mode = mode | ChessBoardDetectorMode::FIT_HEIGHT;
+    return mode;
 }
 
 bool ChessboardDetector::detectPattern(corecvs::G8Buffer &buffer)
@@ -36,6 +51,7 @@ bool ChessboardDetector::detectPattern(corecvs::RGB24Buffer &buffer)
 
 bool ChessboardDetector::detectPattern(DpImage &buffer)
 {
+    ChessBoardDetectorMode mode =  getMode(*this);
     corners.clear();
     bestPattern = RectangularGridPattern();
     detector.detectCorners(buffer, corners);
@@ -55,17 +71,21 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
 
     for (auto& b: boards)
     {
-        int bw = (int)b[0].size(), bh = (int)b.size();
+        int bw = (int)b[0].size();
+        int bh = (int)b.size();
 
-        bool fitw = bw == w, fith  = bh == h;
+        bool fitw = (bw == horCrossesCount());
+        bool fith = (bh == vertCrossesCount());
+
+
         if ((!checkW || fitw) && (!checkH || fith))
         {
             best = b;
             found = true;
             break;
         }
-        fitw = bh == w;
-        fith = bw == h;
+        fitw = (bh ==  horCrossesCount());
+        fith = (bw == vertCrossesCount());
         if ((!checkW || fitw) && (!checkH || fith))
         {
             best = b;
@@ -134,14 +154,14 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
     center *= 2.0;
     int bw = (int)best[0].size(), bh = (int)best.size();
 
-    int l = bw == w ? 0 : center[0] > buffer.w ? 0 : w - bw;
-    int t = bh == h ? 0 : center[1] > buffer.h ? 0 : h - bh;
+    int l = (bw ==  horCrossesCount()) ? 0 : (center[0] > buffer.w ? 0 : ( horCrossesCount() - bw));
+    int t = (bh == vertCrossesCount()) ? 0 : (center[1] > buffer.h ? 0 : (vertCrossesCount() - bh));
 
     result.clear();
     for (int i = 0; i < bh; ++i)
     {
         for (int j = 0; j < bw; ++j)
-            result.emplace_back(corecvs::Vector3dd((j + l) * stepX, (i + t) * stepY, 0.0), best[i][j]);
+            result.emplace_back(corecvs::Vector3dd((j + l) * cellSizeHor(), (i + t) * cellSizeVert(), 0.0), best[i][j]);
     }
     return true;
 }

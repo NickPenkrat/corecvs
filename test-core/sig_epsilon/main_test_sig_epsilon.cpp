@@ -10,6 +10,8 @@
 
 #include <stdio.h>
 #include <iostream>
+#include "gtest/gtest.h"
+
 #include "epsilons.h"
 
 using namespace std;
@@ -17,7 +19,7 @@ using namespace std;
 /**
  *  Test for valgrind to check boundaries problems
  **/
-void testEpsilonTable (void)
+TEST(SigEpsilon, testEpsilonTable)
 {
     LinearFeaturingParameters params(1,8,2,150);
     EpsilonTable3Linear epsTable(params);
@@ -33,7 +35,7 @@ void testEpsilonTable (void)
 
 #ifdef WITH_SSE
 /* Test for checking the SSE epsilon generation*/
-void _testEpsilonSSESimulated (void)
+TEST(SigEpsilon, _testEpsilonSSESimulated)
 {
     LinearFeaturingParameters params(1,8,2,150);
     EpsilonCalcualtor3Linear epsTable(params);
@@ -55,7 +57,7 @@ void _testEpsilonSSESimulated (void)
 #ifdef WITH_SSE
 /* Test for checking the SSE epsilon generation*/
 ALIGN_STACK_SSE
-void _testEpsilonSSEVectorised (void)
+TEST(SigEpsilon, _testEpsilonSSEVectorised)
 {
     LinearFeaturingParameters params(1,8,2,150);
     EpsilonCalcualtor3Linear epsTable(params);
@@ -78,12 +80,12 @@ void _testEpsilonSSEVectorised (void)
 #endif // #ifdef WITH_SSE
 
 
-int main (int /*argC*/, char **/*argV*/)
-{
-#ifdef WITH_SSE
-    _testEpsilonSSESimulated ();
-    _testEpsilonSSEVectorised ();
-#endif
-    cout << "PASSED";
-    return 0;
-}
+//int main (int /*argC*/, char **/*argV*/)
+//{
+//#ifdef WITH_SSE
+//    _testEpsilonSSESimulated ();
+//    _testEpsilonSSEVectorised ();
+//#endif
+//    cout << "PASSED";
+//    return 0;
+//}

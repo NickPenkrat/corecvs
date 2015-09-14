@@ -8,6 +8,7 @@
 
 #include <vector>
 #include <algorithm>
+#include "gtest/gtest.h"
 
 #include "global.h"
 
@@ -23,7 +24,6 @@ using namespace corecvs;
 
 const unsigned GRID_STEP = 10;
 const unsigned GRID_SIZE = GRID_STEP * GRID_STEP;
-
 
 void printMatrixInfo (const Matrix33 &matrix)
 {
@@ -66,7 +66,7 @@ void printMatrixInfo (const Matrix33 &matrix)
     printf("\n");*/
 }
 
-void testFundamentalEstimator ( void )
+TEST(Rectification, testFundamentalEstimator)
 {
     cout << "=================Fundamental Estimator test===============" << endl;
 
@@ -115,7 +115,7 @@ void testFundamentalEstimator ( void )
 
 }
 
-void testSVDDesc ( void )
+TEST(Rectification, testSVDDesc)
 {
     Matrix33  R = Matrix33::RotationZ(M_PI/6);
     Vector3dd t = Vector3dd(2.0, 1.0, 0.0);
@@ -132,7 +132,7 @@ void testSVDDesc ( void )
 
 }
 
-void testComposeDecompose ( void )
+TEST(Rectification, DISABLED_testComposeDecompose)
 {
     Matrix33  R = Matrix33::RotationZ(M_PI/6);
     Vector3dd t = Vector3dd(2.0, 1.0, 0.0);
@@ -161,16 +161,16 @@ void testComposeDecompose ( void )
 
 
 
-int main (int /*argC*/, char ** /*argV*/)
-{
-    //vector<int> a;
-    //vector<int>::iterator b = find (a.begin(), a.end(), 1);
-    //printf("%s\n", b == a.end() ? "true" : "flase");
+//int main (int /*argC*/, char ** /*argV*/)
+//{
+//    //vector<int> a;
+//    //vector<int>::iterator b = find (a.begin(), a.end(), 1);
+//    //printf("%s\n", b == a.end() ? "true" : "flase");
 
-    //testSVDDesc();
-    //testFundamentalEstimator ();
-    testComposeDecompose();
+//    //testSVDDesc();
+//    //testFundamentalEstimator ();
+//    testComposeDecompose();
 
 
-}
+//}
 

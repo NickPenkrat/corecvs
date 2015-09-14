@@ -9,6 +9,7 @@
  */
 
 #include <iostream>
+#include "gtest/gtest.h"
 
 #include "g12Buffer.h"
 #include "histogram.h"
@@ -20,7 +21,7 @@
 using namespace std;
 using namespace corecvs;
 
-void testBinarization (void)
+TEST(Histogram, DISABLED_testBinarization)
 {
     G12Buffer *image = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
 
@@ -47,9 +48,9 @@ void testBinarization (void)
 
 }
 
-int main (int /*argC*/, char ** /*argV*/)
-{
-    testBinarization ();
-    cout << "PASSED" << endl;
-    return 0;
-}
+//int main (int /*argC*/, char ** /*argV*/)
+//{
+//    testBinarization ();
+//    cout << "PASSED" << endl;
+//    return 0;
+//}

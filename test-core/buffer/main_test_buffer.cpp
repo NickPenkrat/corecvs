@@ -17,6 +17,7 @@
 #endif
 
 #include <iostream>
+#include "gtest/gtest.h"
 
 #include "global.h"
 
@@ -30,8 +31,6 @@
 #include "derivativeBuffer.h"
 #include "g12Buffer.h"
 #include "abstractBuffer.h"
-
-
 #include "memoryBlock.h"
 #include "matrix33.h"
 #include "projectiveTransform.h"
@@ -48,11 +47,12 @@
 using namespace std;
 using namespace corecvs;
 
-
-void testAlwaysFail (void)
+#if 0 // FIXME: there should be better way to disable test
+TEST(Generic, testAlwaysFail)
 {
-    ASSERT_TRUE(false,"Just Fail\n");
+    ASSERT_EQ(0, 1) << "Just Fail\n";
 }
+#endif
 
 
 class TestAbstractBufferClass {
@@ -64,7 +64,7 @@ public:
 
 int TestAbstractBufferClass::counter = 0;
 
-void testG12Buffer (void)
+TEST(Buffer, testG12Buffer)
 {
    /* Test case 1: Create and destroy buffer*/
    G12Buffer *a = new G12Buffer(1,1);
@@ -78,7 +78,7 @@ void testG12Buffer (void)
    ( AbstractBuffer<TestAbstractBufferClass>::DATA_ALIGN_GRANULARITY,
      AbstractBuffer<TestAbstractBufferClass>::DATA_ALIGN_GRANULARITY );
    delete b;
-   ASSERT_TRUE(TestAbstractBufferClass::counter == 0, "Abstract buffer violates the C++ new/delete contract")
+   CORE_ASSERT_TRUE(TestAbstractBufferClass::counter == 0, "Abstract buffer violates the C++ new/delete contract")
 
    /* Test case 3: Test internal buffer destruction */
    TestAbstractBufferClass::counter = 0;
@@ -87,7 +87,7 @@ void testG12Buffer (void)
    ( AbstractBuffer<TestAbstractBufferClass>::DATA_ALIGN_GRANULARITY + 1,
      AbstractBuffer<TestAbstractBufferClass>::DATA_ALIGN_GRANULARITY + 1);
    delete d;
-   ASSERT_TRUE(TestAbstractBufferClass::counter == 0, "Abstract buffer violates the C++ new/delete contract")
+   CORE_ASSERT_TRUE(TestAbstractBufferClass::counter == 0, "Abstract buffer violates the C++ new/delete contract")
 
 
    /* Test case 4: Alignment */
@@ -96,17 +96,11 @@ void testG12Buffer (void)
    for (unsigned i = 0; i < testLen; i++)
    {
        c[i] = new G12Buffer(i+1,i+i);
-       ASSERT_FALSE(
-             ((uintptr_t)c[i]->data) & AbstractBuffer<TestAbstractBufferClass>::DATA_ALIGN_GRANULARITY,
-             "Buffer alignment broken"
-       );
+       CORE_ASSERT_FALSE(((uintptr_t)c[i]->data) & AbstractBuffer<TestAbstractBufferClass>::DATA_ALIGN_GRANULARITY, "Buffer alignment broken");
 
        uintptr_t line1 = (uintptr_t)&(c[i]->element(0,0));
        uintptr_t line2 = (uintptr_t)&(c[i]->element(1,0));
-       ASSERT_FALSE( (line1 - line2) & AbstractBuffer<TestAbstractBufferClass>::DATA_ALIGN_GRANULARITY,
-               "Stride alignment broken"
-       );
-
+       CORE_ASSERT_FALSE((line1 - line2) & AbstractBuffer<TestAbstractBufferClass>::DATA_ALIGN_GRANULARITY, "Stride alignment broken");
    }
 
    for (unsigned i = 0; i < testLen; i++)
@@ -117,7 +111,7 @@ void testG12Buffer (void)
 
 }
 
-void testBilinerTransform (void)
+TEST(Buffer, DISABLED_testBilinerTransform)
 {
     Matrix33 inverseLeftMatrix(
     1, 0, -13,
@@ -127,10 +121,10 @@ void testBilinerTransform (void)
     ProjectiveTransform inverseLeft(inverseLeftMatrix);
 
     G12Buffer *image = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
-    ASSERT_TRUE(image, "Could not open test image\n");
-    ASSERT_TRUE(image->verify(),"Input image is corrupted");
+    CORE_ASSERT_TRUE(image, "Could not open test image\n");
+    CORE_ASSERT_TRUE(image->verify(), "Input image is corrupted");
     G12Buffer *buffer1Transformed = image->doReverseTransform<ProjectiveTransform>(&inverseLeft, image->h, image->w);
-    ASSERT_TRUE(buffer1Transformed->verify(),"Result image is corrupted");
+    CORE_ASSERT_TRUE(buffer1Transformed->verify(), "Result image is corrupted");
 
     BMPLoader *loader = new BMPLoader();
     RGB24Buffer *toSave = new RGB24Buffer(buffer1Transformed);
@@ -142,7 +136,7 @@ void testBilinerTransform (void)
     delete image;
 }
 
-void testDerivative (void)
+TEST(Buffer, testDerivative)
 {
     uint16_t inputData[] = {
         1,   2,  3,  4,
@@ -159,7 +153,7 @@ void testDerivative (void)
         for (int j = 1; j < result->w - 1; j++)
         {
             cout << "  " << result->element(i,j);
-            ASSERT_TRUE(result->element(i,j) == Vector2d<int16_t>(8,32), "Error computing buffer");
+            CORE_ASSERT_TRUE(result->element(i, j) == Vector2d<int16_t>(8, 32), "Error computing buffer");
         }
         cout << "\n";
     }
@@ -167,11 +161,11 @@ void testDerivative (void)
     delete input;
 }
 
-void testNonMinimal(void)
+TEST(Buffer, DISABLED_testNonMinimal)
 {
     G12Buffer *image = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
-    ASSERT_TRUE(image, "Could not open test image\n");
-    ASSERT_TRUE(image->verify(),"Input image is corrupted");
+    CORE_ASSERT_TRUE(image, "Could not open test image\n");
+    CORE_ASSERT_TRUE(image->verify(), "Input image is corrupted");
 
     DerivativeBuffer *result = new DerivativeBuffer(image);
     G12Buffer *filtered = result->nonMaximalSuppression();
@@ -188,8 +182,7 @@ void testNonMinimal(void)
     delete image;
 }
 
-
-void testBufferDifference ( void )
+TEST(Buffer, DISABLED_testBufferDifference)
 {
     G12Buffer *input1 = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
     G12Buffer *input2 = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0002_c0.pgm");
@@ -206,7 +199,7 @@ void testBufferDifference ( void )
 
 }
 
-void testBufferThreshold ( void )
+TEST(Buffer, DISABLED_testBufferThreshold)
 {
     G12Buffer *input1 = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
     int level = 1500;
@@ -216,8 +209,7 @@ void testBufferThreshold ( void )
     delete output;
 }
 
-
-void testMemoryBlock (void)
+TEST(Buffer, testMemoryBlock)
 {
     MemoryBlockRef block;
     block.allocate(500,0xFF);
@@ -232,7 +224,7 @@ public:
     int j;
 };
 
-void testObjectBlock (void)
+TEST(Buffer, testObjectBlock)
 {
     /*ObjectRef<int> obj;
     obj.allocate();
@@ -246,8 +238,7 @@ void testObjectBlock (void)
     ObjectRef<TestDummyClass> ptr1 = ptr;
 }
 
-
-void testFont ( void )
+TEST(Buffer, testFont)
 {
     RGB24Buffer *buffer = new RGB24Buffer(400, 1600);
     AbstractPainter<RGB24Buffer> painter(buffer);
@@ -304,8 +295,7 @@ int lastBit(int i)
 	return k;
 }
 
-
-void _testReduceChessboard ( void )
+TEST(Buffer, _testReduceChessboard)
 {
     RGB24Buffer *buffer = new RGB24Buffer(512, 512);
     for(int i = 0; i < buffer->h ; i++)
@@ -332,8 +322,7 @@ void _testReduceChessboard ( void )
     delete buffer;
 }
 
-
-void _testReduceChessboard1 ( void )
+TEST(Buffer, _testReduceChessboard1)
 {
     RGB24Buffer *buffer = new RGB24Buffer(512, 512);
     for(int i = 0; i < buffer->h ; i++)
@@ -363,7 +352,8 @@ void _testReduceChessboard1 ( void )
     delete buffer;
 }
 
-void testBoolean (void) {
+TEST(Buffer, testBoolean)
+{
     int h = 45;
     int w = 45;
     G8Buffer *buffer = new G8Buffer(h, w);
@@ -392,29 +382,4 @@ void testBoolean (void) {
     delete_safe(sourceImage);
     delete_safe(unpackBuffer);
     delete_safe(buffer);
-}
-
-
-int main (int /*argC*/, char ** /*argV*/)
-{
-    testBoolean();
-    return 0;
-    testFont ();
-	//_testReduceChessboard1();
-    return 0;
-
-	testObjectBlock();
-    //testMemoryBlock();
-    return 0;
-    testBufferDifference();
-    testBufferThreshold ();
-  //  return 0;
-
-    testDerivative ();
-    testNonMinimal ();
-    testG12Buffer ();
-    testBilinerTransform ();
-
-    cout << "PASSED" << endl;
-    return 0;
 }

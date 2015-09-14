@@ -217,6 +217,7 @@ full_ui_classes="
 
 enums+=" lineDistortionEstimatorCost"
 enums+=" distortionResizePolicy"
+enums+=" checkerboardDetectionAlgorithm"
 
 classes+=" lensDistortionModelParameters"
 

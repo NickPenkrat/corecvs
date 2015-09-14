@@ -41,7 +41,7 @@ class RGB24Buffer : public RGB24BufferBase,
 {
 public:
 //    RGB24Buffer(int32_t h, int32_t w) : CRGB24BufferBase(h, w) {}
-    RGB24Buffer(RGB24Buffer &that) : RGB24BufferBase (that) {}
+    RGB24Buffer(const RGB24Buffer &that) : RGB24BufferBase (that) {}
     RGB24Buffer(RGB24Buffer *that) : RGB24BufferBase (that) {}
 
     RGB24Buffer(RGB24Buffer *src, int32_t x1, int32_t y1, int32_t x2, int32_t y2) :
@@ -268,7 +268,7 @@ public:
         RGB24Buffer::InternalIndexType i = (RGB24Buffer::InternalIndexType)floor(y);
         RGB24Buffer::InternalIndexType j = (RGB24Buffer::InternalIndexType)floor(x);
 
-        ASSERT_TRUE_P(this->isValidCoordBl(y,x),
+        CORE_ASSERT_TRUE_P(this->isValidCoordBl(y, x),
                 ("Invalid coordinate in AbstractContiniousBuffer::elementBl(double y=%lf, double x=%lf) buffer sizes is [%dx%d]",
                    y, x, this->w, this->h));
 
@@ -303,7 +303,7 @@ public:
         RGB24Buffer::InternalIndexType i = (RGB24Buffer::InternalIndexType)floor(y);
         RGB24Buffer::InternalIndexType j = (RGB24Buffer::InternalIndexType)floor(x);
 
-        ASSERT_TRUE_P(this->isValidCoordBl(y,x),
+        CORE_ASSERT_TRUE_P(this->isValidCoordBl(y, x),
                 ("Invalid coordinate in AbstractContiniousBuffer::elementBl(double y=%lf, double x=%lf) buffer sizes is [%dx%d]",
                    y, x, this->w, this->h));
 
@@ -335,7 +335,7 @@ public:
         RGB24Buffer::InternalIndexType i = (RGB24Buffer::InternalIndexType)floor(y);
         RGB24Buffer::InternalIndexType j = (RGB24Buffer::InternalIndexType)floor(x);
 
-        ASSERT_TRUE_P(this->isValidCoordBl(y,x),
+        CORE_ASSERT_TRUE_P(this->isValidCoordBl(y, x),
                 ("Invalid coordinate in AbstractContiniousBuffer::elementBl(double y=%lf, double x=%lf) buffer sizes is [%dx%d]",
                    y, x, this->w, this->h));
 

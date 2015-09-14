@@ -139,7 +139,7 @@ int Draw3dCameraParameters::staticInit()
         (
           Draw3dCameraParameters::POINT_SIZE_ID,
           offsetof(Draw3dCameraParameters, mPointSize),
-          8,
+          1,
           "Point Size",
           "Point Size",
           "Point Size",

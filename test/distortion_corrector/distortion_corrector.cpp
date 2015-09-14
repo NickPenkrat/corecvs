@@ -1,7 +1,13 @@
 #include "global.h"
 
+#include <vector>
+#include <cassert>
+#include <iostream>
+#include <fstream>
+
 #include <QtCore/QString>
 #include <QtCore/QCoreApplication>
+
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>  // imshow, waitkey
 
@@ -10,6 +16,7 @@
 /// OpenCV wrapper
 #include "OpenCVTools.h"
 
+#include "commandLineSetter.h"
 #include "bmpLoader.h"
 #include "qtFileLoader.h"
 #include "jsonGetter.h"
@@ -21,73 +28,66 @@
 #include "checkerboardDetectionParameters.h"
 #include "selectableGeometryFeatures.h"
 
+#include "chessBoardDetector.h"
+#include "chessBoardCornerDetector.h"
+#include "chessBoardAssembler.h"
+
+#include "calibration_structs.h"
+
 using namespace cv;
 using namespace corecvs;
 
-static bool_t getIntCmdOption(const std::string & value, const std::string & option, int *param)
-{
-    cout << "Value" << value << std::endl;
-    cout << "Option" << option << std::endl;
 
-    size_t position = value.find(option);
-    if (position != std::string::npos)
+vector<string> fileList;
+
+vector<string> splitString(const string &s, const char &delimiter)
+{
+    vector<string> res;
+    string st;
+    istringstream f(s);
+    while (getline(f, st, delimiter))
     {
-        std::string strSub = value.substr (position + option.length());
-        *param = atoi(strSub.c_str());
-        return 1;
+        res.push_back(st);
     }
-    return 0;
+    return res;
 }
 
-static bool_t getDoubleCmdOption(const std::string & value, const std::string & option, double *param)
+bool checkIfExists(const char *filename)
 {
-    size_t  position = value.find(option);
-    if (position != std::string::npos)
-    {
-        std::string strSub = value.substr (position + option.length());
-        *param = std::stod(strSub.c_str());
-        return 1;
-    }
-    return 0;
+    std::ifstream ifs;
+    ifs.open(filename, std::ios_base::in);
+
+    return (bool)ifs;
 }
 
-static bool_t getStringCmdOption(const std::string & value, const std::string & option, std::string *param)
+void readImage(const std::string &filename, corecvs::RGB24Buffer &img)
 {
-    cout << "Value" << value << std::endl;
-    cout << "Option" << option << std::endl;
-    size_t  position = value.find(option);
-    if (position != std::string::npos)
+    cv::Mat im = cv::imread(filename);
+    im.convertTo(im, CV_64FC1, 1.0);
+    img = corecvs::RGB24Buffer(im.rows, im.cols);
+    for (int i = 0; i < im.rows; ++i)
     {
-        *param = value.substr (position + option.length());
-        return 1;
-    }
-    return 0;
-}
-
-static bool_t getStringCmdOption(const std::string & value, const std::string & option, QString *param)
-{
-    cout << "Value" << value << std::endl;
-    cout << "Option" << option << std::endl;
-    size_t  position = value.find(option);
-    if (position != std::string::npos)
-    {
-        *param = QString::fromUtf8(value.substr (position + option.length()).c_str());
-        return 1;
-    }
-    return 0;
-}
-
-static bool_t cmdIfOption(const vector<string> &all_args, const std::string& option, unsigned* pos)
-{
-    for (unsigned i = 0; i < all_args.size(); i++)
-    {
-        size_t found = all_args[i].find(option);
-        if (found != string::npos) {
-            *pos = i;
-            return 1;
+        for (int j = 0; j < im.cols; ++j)
+        {
+            img.element(i, j) = corecvs::RGBColor(im.at<double>(i, j * 3 + 2), im.at<double>(i, j * 3 + 1), im.at<double>(i, j * 3));
         }
     }
-    return 0;
+}
+
+void readFileList(const string &filename)
+{
+    ifstream f(filename);
+    string currentLine;
+    while (!f.eof())
+    {
+        getline(f, currentLine);
+        if (!currentLine.empty())
+        {
+            string imageFileName = currentLine.substr(0, currentLine.find(" "));
+            fileList.push_back(imageFileName);
+        }
+    }
+    f.close();
 }
 
 int main (int argc, char **argv)
@@ -96,30 +96,26 @@ int main (int argc, char **argv)
 
     QCoreApplication app(argc, argv);
 
-    vector<string> all_args;
-    all_args.assign(argv, argv + argc);
+    CommandLineSetter setter(argc, (const char **)argv);
 
-    QString jsonFileName = "out.json";
-    string prefix = "dist";
-    unsigned pos;
+    bool verbose         = setter.getBool("verbose"          );
 
-    if (cmdIfOption(all_args, "--prefix", &pos))
-    {
-        getStringCmdOption(argv[pos], "--prefix:", &prefix);
-        SYNC_PRINT(("prifix: %s\n", prefix.c_str()));
-    }
-    if (cmdIfOption(all_args, "--json_file_name", &pos))
-    {
-        getStringCmdOption(argv[pos], "--json_file_name:", &jsonFileName);
-        SYNC_PRINT(("json_file_name: %s\n", jsonFileName.toLatin1().constData()));
+    string prefix = setter.getString("prefix", "dist");
+    if (verbose)
+    {    SYNC_PRINT(("prifix: %s\n", prefix.c_str()));
     }
 
-    bool verbose         = cmdIfOption(all_args, "--verbose",           &pos);
-    bool useGreenChannel = cmdIfOption(all_args, "--use_green_channel", &pos);
-    bool isInverse       =!cmdIfOption(all_args, "--is_direct",         &pos); // "inverse" works always except "direct" is requested
-  //bool drawProccess    = cmdIfOption(all_args, "--draw_proccess",     &pos);
+    QString jsonFileName = QString(setter.getString("json_file_name", "out.json").c_str());
+    if (verbose)
+    {    SYNC_PRINT(("json_file_name: %s\n", jsonFileName.toLatin1().constData()));
+    }
 
-    if (cmdIfOption(all_args, "--test_opencv", &pos))
+
+    bool useGreenChannel = setter.getBool("use_green_channel");
+    bool isInverse       =!setter.getBool("is_direct"        ); // "inverse" works always except "direct" is requested
+    bool drawProccess    = setter.getBool("draw_proccess"    );
+
+    if (setter.getBool("test_opencv"))
     {
         BMPLoader *loader   = new BMPLoader();
         G8Buffer  *image    = loader->loadRGB("SPA0_360deg_1.bmp")->getChannel(ImageChannel::G);
@@ -131,26 +127,98 @@ int main (int argc, char **argv)
     }
 
     string fileName = "";
-    int chessW   = 18;
-    int chessH   = 11;
-    int precise  = 50;  // TODO: =100 doesn't work!!! Why???
-    int cellSize = 50;
-    int maxIterationCount = 1000;
-    double minAccuracy    = 0.001;
-    int found;
 
-    if (cmdIfOption(all_args, "--chessW",       &pos))  getIntCmdOption   (argv[pos], "--chessW:",       &chessW);
-    if (cmdIfOption(all_args, "--chessH",       &pos))  getIntCmdOption   (argv[pos], "--chessH:",       &chessH);
-    if (cmdIfOption(all_args, "--min_accuracy", &pos))  getDoubleCmdOption(argv[pos], "--min_accuracy:", &minAccuracy);
-    if (cmdIfOption(all_args, "--precise",      &pos))  getIntCmdOption   (argv[pos], "--precise:",      &precise);
-    if (cmdIfOption(all_args, "--cell_size",    &pos))  getIntCmdOption   (argv[pos], "--cell_size:",    &cellSize);
+    int chessW      = setter.getInt("chessW",       18);
+    int chessH      = setter.getInt("chessH",       11);
+    double minAccuracy = setter.getDouble("min_accuracy", 0.001);
+    double precise     = setter.getDouble("precise",      50);   // TODO: =100 doesn't work!!! Why???
+    double cellSize    = setter.getDouble("cell_size",    50);
 
-    if (argc > 1 && getStringCmdOption(argv[1], "--calcFullCheckerBoard:", &fileName))
-    {
-        if (cmdIfOption(all_args, "--max_iteration_count", &pos))
+
+    if (setter.hasOption("calcMultiCheckerBoard")){
+        corecvs::ObservationList observations;
+
+        CheckerboardDetectionParameters params;
+        params.setHorCrossesCount (chessW);
+        params.setVertCrossesCount(chessH);
+        params.setFitWidth(true);
+        params.setFitHeight(false);
+
+
+        if (setter.hasOption("files"))
         {
-            getIntCmdOption(argv[pos], "--max_iteration_count:", &maxIterationCount);
+            string fileNames = setter.getString("files", "");
+            fileList = splitString(fileNames, ',');
         }
+
+        if (setter.hasOption("fileslist"))
+        {
+            string fileNames = setter.getString("fileslist", "");
+            readFileList(fileNames);
+        }
+
+        int w = 0;
+        int h = 0;
+
+        for (string fileName: fileList)
+        {
+            if (!checkIfExists(fileName.c_str()))
+            {
+                std::cout << "File " << fileName << " not found!" << std::endl;
+                continue;
+            }
+            corecvs::RGB24Buffer img;
+            readImage(fileName.c_str() , img);
+
+            if(!w){
+                w = img.w;
+                h = img.h;
+            }
+
+            ChessboardDetector detector(params);
+            detector.detectPattern(img);
+
+            corecvs::ObservationList localObservations;
+            detector.getPointData(localObservations);
+            for (auto o: observations)
+            {
+                observations.push_back(o);
+            }
+        }
+
+        SelectableGeometryFeatures features;
+        features.addAllLinesFromObservationList(observations);
+
+        /// TODO: read from JSON
+        LineDistortionEstimatorParameters parameters;
+
+        parameters = LineDistortionEstimatorParameters();
+        parameters.setSimpleJacobian(true);
+        parameters.setEstimateCenter(true);
+        parameters.setEstimateTangent(true);
+        parameters.setEvenPowersOnly(false);
+        parameters.setIterationNumber(1000);
+        parameters.setCostAlgorithm(LineDistortionEstimatorCost::LINE_DEVIATION_COST);
+
+        LMLinesDistortionSolver solver;
+        solver.initialCenter = Vector2dd(w / 2.0, h /2.0);
+        solver.lineList = &features;
+        solver.parameters = parameters;
+
+                RadialCorrection correction = solver.solve();
+
+                Camera_ camera;
+                camera.distortion = correction.mParams;
+                JSONSetter setter(jsonFileName);
+                setter.visit(camera, "intrinsic");
+    }
+
+    else if (setter.hasOption("calcFullCheckerBoard"))
+    {
+        fileName = setter.getString("calcFullCheckerBoard", "");
+
+        int maxIterationCount = setter.getInt("max_iteration_count", 1000);
+
         if (verbose)
         {
             SYNC_PRINT(("Calc full %s with %ix%i\n", fileName.c_str(), chessW, chessH));
@@ -180,7 +248,7 @@ int main (int argc, char **argv)
         }
 
         SelectableGeometryFeatures lineList;
-      //G8Buffer *boardOutput = NULL;
+        G8Buffer *boardOutput = NULL;
 //        found = OpenCvCheckerboardDetector::DetectFullCheckerboard(channel, params, &lineList, &boardOutput);
         OpenCvCheckerboardDetector detector(params);
         bool found = detector.detectPattern(*channel);
@@ -241,8 +309,12 @@ int main (int argc, char **argv)
             }
         }
     }
-    else if (argc > 1 && getStringCmdOption(argv[1], "--calcPartCheckerBoard:", &fileName))
+    else if (setter.hasOption("calcPartCheckerBoard"))
     {
+        fileName = setter.getString("calcFullCheckerBoard", "");
+
+        int maxIterationCount = setter.getInt("max_iteration_count", 1000);
+
         // FIXME: WTF? detect part of chessboard and do nothing?!
         RGB24Buffer *image   = BufferFactory::getInstance()->loadRGB24Bitmap(fileName);
         G8Buffer    *channel = image->getChannel(ImageChannel::GRAY);
@@ -261,13 +333,13 @@ int main (int argc, char **argv)
 
         //OpenCvCheckerboardDetector::DetectPartCheckerboardV(channel, params, &observationList, NULL);
         OpenCvCheckerboardDetector detector(params);
-        /*bool found =*/ detector.detectPattern(*channel);
+        bool found = detector.detectPattern(*channel);
         detector.getPointData(observationList);
 
         delete_safe(channel);
         delete_safe(image);
     }
-    else if (cmdIfOption(all_args, "--apply", &pos))
+    else if (setter.hasOption("apply"))
     {
         LensDistortionModelParameters loaded;
         JSONGetter getter(jsonFileName);
@@ -281,11 +353,13 @@ int main (int argc, char **argv)
 
         DisplacementBuffer* distortionCorrectTransform = NULL;
 
-        for (int i = 1; i < all_args.size(); i++)
+        QString fileNames = QString(setter.getString("calcMultiCheckerBoard", "").c_str());
+        QStringList fileList = fileNames.split(",", QString::SkipEmptyParts);
+        for (QString curFileName: fileList)
         {
-            if (!getIntCmdOption(all_args[i], "--", &found))
+            fileName = curFileName.toStdString();
+            if (checkIfExists(fileName.c_str()))
             {
-                fileName = all_args[i].c_str();
                 if (verbose)
                 {
                     SYNC_PRINT(("Apply to <%s>\n", fileName.c_str()));
