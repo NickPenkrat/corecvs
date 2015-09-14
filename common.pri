@@ -438,5 +438,4 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
 # QMAKE_CXXFLAGS += -Winit-self
 # QMAKE_CXXFLAGS += -Wunreachable-code
 
-OPEN_ROOT_DIRECTORY = $$PWD
-
+#OPEN_ROOT_DIRECTORY = $$PWD
