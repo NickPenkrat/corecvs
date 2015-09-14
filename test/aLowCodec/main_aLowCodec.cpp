@@ -14,15 +14,15 @@ inline void testChan(uint16_t chan12)
     uint8_t  coded  = code12to8(chan12);
     uint16_t res    = decode8to12(coded);
 
-    if (chan12 <   64) { ASSERT_TRUE_S(CORE_ABS(res - chan12) <=  0); return; }
-    if (chan12 <  128) { ASSERT_TRUE_S(CORE_ABS(res - chan12) <=  1); return; }
-    if (chan12 <  256) { ASSERT_TRUE_S(CORE_ABS(res - chan12) <=  2); return; }
-    if (chan12 <  512) { ASSERT_TRUE_S(CORE_ABS(res - chan12) <=  4); return; }
-    if (chan12 < 1024) { ASSERT_TRUE_S(CORE_ABS(res - chan12) <=  8); return; }
-    if (chan12 < 2048) { ASSERT_TRUE_S(CORE_ABS(res - chan12) <= 16); return; }
-    if (chan12 < 4096) { ASSERT_TRUE_S(CORE_ABS(res - chan12) <= 32); return; }
+    if (chan12 <   64) { CORE_ASSERT_TRUE_S(CORE_ABS(res - chan12) <= 0); return; }
+    if (chan12 <  128) { CORE_ASSERT_TRUE_S(CORE_ABS(res - chan12) <= 1); return; }
+    if (chan12 <  256) { CORE_ASSERT_TRUE_S(CORE_ABS(res - chan12) <= 2); return; }
+    if (chan12 <  512) { CORE_ASSERT_TRUE_S(CORE_ABS(res - chan12) <= 4); return; }
+    if (chan12 < 1024) { CORE_ASSERT_TRUE_S(CORE_ABS(res - chan12) <= 8); return; }
+    if (chan12 < 2048) { CORE_ASSERT_TRUE_S(CORE_ABS(res - chan12) <= 16); return; }
+    if (chan12 < 4096) { CORE_ASSERT_TRUE_S(CORE_ABS(res - chan12) <= 32); return; }
 
-    ASSERT_FAIL("Channel value is out of range");
+    CORE_ASSERT_FAIL("Channel value is out of range");
 }
 
 inline void testRGB(int r8, int g8, int b8)
