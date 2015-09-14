@@ -9,8 +9,8 @@ isEmpty(GTEST_PATH) {
     INCLUDEPATH += $$GTEST_PATH/include
 
     CONFIG(debug, debug|release) {
-       #LIBS += -L$$GTEST_PATH/build/Debug   -lgtest
-        LIBS += -L$$GTEST_PATH/build/Release -lgtest
+        LIBS += -L$$GTEST_PATH/build/Debug   -lgtest
+       #LIBS += -L$$GTEST_PATH/build/Release -lgtest
     }
     CONFIG(release, debug|release) {
         LIBS += -L$$GTEST_PATH/build/Release -lgtest
