@@ -98,7 +98,7 @@ int Draw3dCameraParameters::staticInit()
         (
           Draw3dCameraParameters::STYLE_ID,
           offsetof(Draw3dCameraParameters, mStyle),
-          0,
+          3,
           "style",
           "style",
           "style",
@@ -114,25 +114,98 @@ int Draw3dCameraParameters::staticInit()
     fields().push_back(
         new CompositeField
         (
-          Draw3dCameraParameters::COLOR_ID,
-          offsetof(Draw3dCameraParameters, mColor),
-          "Color",
+          Draw3dCameraParameters::POINT_COLOR_ID,
+          offsetof(Draw3dCameraParameters, mPointColor),
+          "Point Color",
           "RgbColorParameters",
-          "Color",
-          "Color",
+          "Point Color",
+          "Point Color",
            NULL
+        )
+    );
+    fields().push_back(
+        new BoolField
+        (
+          Draw3dCameraParameters::POINT_COLOR_OVERRIDE_ID,
+          offsetof(Draw3dCameraParameters, mPointColorOverride),
+          false,
+          "Point Color Override",
+          "Point Color Override",
+          "Point Color Override"
+        )
+    );
+    fields().push_back(
+        new IntField
+        (
+          Draw3dCameraParameters::POINT_SIZE_ID,
+          offsetof(Draw3dCameraParameters, mPointSize),
+          1,
+          "Point Size",
+          "Point Size",
+          "Point Size",
+          true,
+         0,
+         255
         )
     );
     fields().push_back(
         new CompositeField
         (
-          Draw3dCameraParameters::SECONDARY_COLOR_ID,
-          offsetof(Draw3dCameraParameters, mSecondaryColor),
-          "Secondary Color",
+          Draw3dCameraParameters::EDGE_COLOR_ID,
+          offsetof(Draw3dCameraParameters, mEdgeColor),
+          "Edge Color",
           "RgbColorParameters",
-          "Secondary Color",
-          "Secondary Color",
+          "Edge Color",
+          "Edge Color",
            NULL
+        )
+    );
+    fields().push_back(
+        new BoolField
+        (
+          Draw3dCameraParameters::EDGE_COLOR_OVERRIDE_ID,
+          offsetof(Draw3dCameraParameters, mEdgeColorOverride),
+          false,
+          "Edge Color Override",
+          "Edge Color Override",
+          "Edge Color Override"
+        )
+    );
+    fields().push_back(
+        new IntField
+        (
+          Draw3dCameraParameters::EDGE_WIDTH_ID,
+          offsetof(Draw3dCameraParameters, mEdgeWidth),
+          1,
+          "Edge Width",
+          "Edge Width",
+          "Edge Width",
+          true,
+         0,
+         255
+        )
+    );
+    fields().push_back(
+        new CompositeField
+        (
+          Draw3dCameraParameters::FACE_COLOR_ID,
+          offsetof(Draw3dCameraParameters, mFaceColor),
+          "Face Color",
+          "RgbColorParameters",
+          "Face Color",
+          "Face Color",
+           NULL
+        )
+    );
+    fields().push_back(
+        new BoolField
+        (
+          Draw3dCameraParameters::FACE_COLOR_OVERRIDE_ID,
+          offsetof(Draw3dCameraParameters, mFaceColorOverride),
+          false,
+          "Face Color Override",
+          "Face Color Override",
+          "Face Color Override"
         )
     );
     fields().push_back(

@@ -99,7 +99,9 @@ public:
     void addLine(Vector3dd point1, Vector3dd point2);
     void addTriangle(Vector3dd point1, Vector3dd point2, Vector3dd point3);
 
-    void addSphere(Vector3dd center, double radius, int step);
+    void addSphere   (Vector3dd center, double radius, int step);
+    void addIcoSphere(Vector3dd center, double radius, int step = 1);
+
 
     void addCamera(const CameraIntrinsics &cam, double len);
 
@@ -119,6 +121,8 @@ public:
     void transform (const Matrix44 &matrix);
     Mesh3D transformed(const Matrix44 &matrix);
 
+    AxisAlignedBox3d getBoundingBox();
+
     void add(const Mesh3D &other);
 
 private:
@@ -130,6 +134,8 @@ private:
     //, Vector2dd &texCoord
 public:
     virtual ~Mesh3D() {}
+
+    void fillTestScene();
 };
 
 

@@ -22,7 +22,7 @@ ChessBoardAssembler& ChessBoardAssembler::operator=(const ChessBoardAssembler& o
 void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, std::vector<std::vector<std::vector<corecvs::Vector2dd>>> &boards_)
 {
     corners = corners_;
-    int N = corners.size();
+    int N = (int)corners.size();
 
     corecvs::parallelable_for(0, N, ParallelBoardExpander(this), true);
 
@@ -105,8 +105,8 @@ void ChessBoardAssembler::acceptHypothesis(RectangularGridPattern &board)
         if (intersects)
         {
             int idx = 0;
-            int j = 0;
-            for (int i = 0; i < boards.size(); ++i)
+            size_t j = 0;
+            for (size_t i = 0; i < boards.size(); ++i)
                 if (j == intersections.size() || intersections[j] != i)
                     boards[idx++] = boards[i];
                 else
@@ -197,7 +197,7 @@ bool ChessBoardAssembler::BoardExpander::initBoard(int seed)
             ssq[i] += v * v;
         }
         int N;
-        s[i] /= (N = dv[i].size());
+        s[i] /= (N = (int)dv[i].size());
         ssq[i] = std::sqrt(ssq[i] / N - s[i] * s[i]);
 
         if (ssq[i] / s[i] > varThreshold)
@@ -215,7 +215,7 @@ bool ChessBoardAssembler::BoardExpander::getNearest(int from_id, corecvs::Vector
     auto& from = corners[from_id];
 
     double best_dist = 1e100;
-    int best_id = -1, N = corners.size();
+    int best_id = -1, N = (int)corners.size();
 
     for (int i = 0; i < N; ++i)
     {
@@ -389,12 +389,13 @@ bool ChessBoardAssembler::BoardExpander::assignNearest(std::vector<corecvs::Vect
     auto& corners = assembler->corners;
 
     std::vector<int> unused;
-    for (int i = 0; i < corners.size(); ++i)
-        if (!usedCorners[i])
-            unused.push_back(i);
-
-    int N = unused.size();
-    int M = prediction.size();
+    for (size_t i = 0; i < corners.size(); ++i) {
+        if (!usedCorners[i]) {
+            unused.push_back((int)i);
+        }
+    }
+    int N = (int)unused.size();
+    int M = (int)prediction.size();
     std::vector<int> assigned(M);
     assignment.resize(M);
 

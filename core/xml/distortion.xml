@@ -60,7 +60,17 @@
     <field type="double" name="posZ"            defaultValue="0.0"    />
 </class> -->
 
-  <class name="Checkerboard Detection Parameters">
+  <enum name="Checkerboard Detection Algorithm">
+    <item name="Homebrew Detector" id="0" />
+    <item name="OpenCV Detector"   id="1" />
+  </enum>
+
+  <class name="Checkerboard Detection Parameters">  
+    <field type="bool"         name="Use Undistortion"      defaultValue="true"/>
+
+    <field type="Checkerboard Detection Algorithm" name="Algorithm" defaultValue="0" />
+
+
     <field type="ImageChannel" name="Channel"            defaultValue="3"   />
     <field type="int"          name="Vert crosses count" defaultValue="11"   />
     <field type="int"          name="Hor crosses count"  defaultValue="18"   />
@@ -77,6 +87,8 @@
     <field type="bool"         name="Partial Board"      defaultValue="true"/>
     <field type="bool"         name="Fast board Speedup" defaultValue="true"/>
 
+    <field type="bool"         name="Fit Width"  defaultValue="true"/>
+    <field type="bool"         name="Fit Height" defaultValue="false"/>
   </class>
 
   <enum name="Line Distortion Estimator Cost">
@@ -107,7 +119,7 @@
   <class name="Distortion Application Parameters">
     <field type="bool"      name="Force Scale"   defaultValue="false" />
     <field type="bool"      name="Adopt Scale"   defaultValue="false" />
-    <field type="Distortion Resize Policy"  name="Resize policy" defaultValue="0" />
+    <field type="Distortion Resize Policy"  name="Resize policy" defaultValue="3" />
     <field type="int"                       name="New H"         defaultValue="0" />
     <field type="int"                       name="New W"         defaultValue="0" />
   </class>

@@ -38,6 +38,32 @@ int CheckerboardDetectionParameters::staticInit()
      
 
     fields().push_back(
+        new BoolField
+        (
+          CheckerboardDetectionParameters::USE_UNDISTORTION_ID,
+          offsetof(CheckerboardDetectionParameters, mUseUndistortion),
+          true,
+          "Use Undistortion",
+          "Use Undistortion",
+          "Use Undistortion"
+        )
+    );
+    fields().push_back(
+        new EnumField
+        (
+          CheckerboardDetectionParameters::ALGORITHM_ID,
+          offsetof(CheckerboardDetectionParameters, mAlgorithm),
+          0,
+          "Algorithm",
+          "Algorithm",
+          "Algorithm",
+          new EnumReflection(2
+          , new EnumOption(0,"Homebrew Detector")
+          , new EnumOption(1,"OpenCV Detector")
+          )
+        )
+    );
+    fields().push_back(
         new EnumField
         (
           CheckerboardDetectionParameters::CHANNEL_ID,
@@ -175,6 +201,28 @@ int CheckerboardDetectionParameters::staticInit()
           "Fast board Speedup",
           "Fast board Speedup",
           "Fast board Speedup"
+        )
+    );
+    fields().push_back(
+        new BoolField
+        (
+          CheckerboardDetectionParameters::FIT_WIDTH_ID,
+          offsetof(CheckerboardDetectionParameters, mFitWidth),
+          true,
+          "Fit Width",
+          "Fit Width",
+          "Fit Width"
+        )
+    );
+    fields().push_back(
+        new BoolField
+        (
+          CheckerboardDetectionParameters::FIT_HEIGHT_ID,
+          offsetof(CheckerboardDetectionParameters, mFitHeight),
+          false,
+          "Fit Height",
+          "Fit Height",
+          "Fit Height"
         )
     );
    return 0;

@@ -20,9 +20,4 @@ UTILSDIR = $$TEST_DIR/../../utils
 include($$UTILSDIR/utils.pri)
 
 SOURCES += main_grab.cpp
-
 HEADERS += main_grab.h
-
-core.file                = src/open/core/core.pro
-unitTests.file           = src/open/test-core/unitTests.pro
-utils.file               = src/open/utils/utils.pro

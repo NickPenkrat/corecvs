@@ -6,10 +6,11 @@
  * \author alexander
  * \ingroup autotest
  */
-
-#include <global.h>
 #include <sstream>
 #include <iostream>
+#include "gtest/gtest.h"
+
+#include <global.h>
 #include "rawLoader.h"
 #include "g12Buffer.h"
 #include "bmpLoader.h"
@@ -19,7 +20,7 @@
 using namespace std;
 using namespace corecvs;
 
-void testFileFormats ( void )
+TEST(Fileformats, testFileFormats)
 {
     /** Test case 1 */
     RAWLoader *rawLoader = new RAWLoader();
@@ -59,7 +60,7 @@ void testFileFormats ( void )
     delete bmpLoader1;
 }
 
-void testPlyLoader()
+TEST(Fileformats, testPlyLoader)
 {
     const char *tests[4];
     tests[0] = "sdvfas";
@@ -116,11 +117,4 @@ void testPlyLoader()
         printf("Test case %d result: %d\n", i, result);
     }
 
-}
-
-int main (int /*argC*/, char ** /*argV*/)
-{
-    testPlyLoader();
-    cout << "PASSED" << endl;
-    return 0;
 }

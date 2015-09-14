@@ -13,6 +13,7 @@
 #endif
 
 #include <iostream>
+#include "gtest/gtest.h"
 
 #include "global.h"
 
@@ -38,7 +39,7 @@ using corecvs::GeneratedFilterBlock;
  *   F   G   H
  *
  **/
-void testFilterBlocks()
+TEST(FilterBlocks, testFilterBlocks)
 {
     FilterGraph graph;
 
@@ -87,7 +88,7 @@ void testFilterBlocks()
  *   F   G   H
  *
  **/
-void testFilterBlocksGenerated()
+TEST(FilterBlocks, testFilterBlocksGenerated)
 {
     FilterGraph graph;
 
@@ -173,11 +174,11 @@ void testFilterBlocksGenerated()
 //    BMPLoader().save("graph.bmp", (G12Buffer *)abcd->getPin(0));
 //}
 
-int main (int /*argC*/, char ** /*argV*/)
-{
-    //testFilterBlocks();
-    testFilterBlocksGenerated();
-    //testOperationBlock();
-    cout << "PASSED" << endl;
-    return 0;
-}
+//int main (int /*argC*/, char ** /*argV*/)
+//{
+//    //testFilterBlocks();
+//    testFilterBlocksGenerated();
+//    //testOperationBlock();
+//    cout << "PASSED" << endl;
+//    return 0;
+//}

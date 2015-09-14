@@ -83,6 +83,10 @@
         <file>checkerboard.png</file>
         <file>table_lightning.png</file>
         <file>price_comparison.png</file>
+        <file>picture.png</file>
+        <file>photostation.png</file>
+        <file>script_add.png</file>
+        <file>script_save.png</file>
     </qresource>
     <qresource prefix="/new/colors">
         <file>colors/color_blue.png</file>

@@ -25,6 +25,8 @@
 #include "correspondanceList.h"
 #include "imageChannel.h"
 
+#include "readers.h"
+
 namespace corecvs {
 
 #define FLAGS_INCLUDE_MARGIN 0x1
@@ -39,7 +41,7 @@ class RGB24Buffer : public RGB24BufferBase,
 {
 public:
 //    RGB24Buffer(int32_t h, int32_t w) : CRGB24BufferBase(h, w) {}
-    RGB24Buffer(RGB24Buffer &that) : RGB24BufferBase (that) {}
+    RGB24Buffer(const RGB24Buffer &that) : RGB24BufferBase (that) {}
     RGB24Buffer(RGB24Buffer *that) : RGB24BufferBase (that) {}
 
     RGB24Buffer(RGB24Buffer *src, int32_t x1, int32_t y1, int32_t x2, int32_t y2) :
@@ -256,6 +258,44 @@ public:
     };
 
     /* This should be merged with generic elementBl */
+    RGB24Buffer::InternalElementType elementBlSSE(double y, double x)
+    {
+#ifndef WITH_SSE
+       return elementBlFixed(y, x);
+#else
+        /* floor() is needed here because of values (-1..0] which will be
+         * rounded to 0 and cause error */
+        RGB24Buffer::InternalIndexType i = (RGB24Buffer::InternalIndexType)floor(y);
+        RGB24Buffer::InternalIndexType j = (RGB24Buffer::InternalIndexType)floor(x);
+
+        ASSERT_TRUE_P(this->isValidCoordBl(y,x),
+                ("Invalid coordinate in AbstractContiniousBuffer::elementBl(double y=%lf, double x=%lf) buffer sizes is [%dx%d]",
+                   y, x, this->w, this->h));
+
+        /* Fixed point */
+        const int FIXED_SHIFT = 11;
+        uint32_t value = (1 << FIXED_SHIFT);
+
+        Int32x4 k1 ((int32_t)((x - j) * value));
+        Int32x4 k2 ((int32_t)((y - i) * value));
+        Int32x4 v  (value);
+
+        FixedVector<Int32x4, 2> in1 = SSEReader2BBBB_QQQQ::read((uint8_t *)&this->element(i  ,j));
+        FixedVector<Int32x4, 2> in2 = SSEReader2BBBB_QQQQ::read((uint8_t *)&this->element(i+1,j));
+
+        Int32x4 result =
+             (in1[0] * (v - k1) + k1 * in1[1]) * (v - k2) +
+             (in2[0] * (v - k1) + k1 * in2[1]) *      k2;
+        result >>= (FIXED_SHIFT * 2);
+
+        int32_t data[4];
+        result.save(data);
+        return RGBColor(data[2], data[1], data[0]);
+#endif
+    }
+
+
+
     RGB24Buffer::InternalElementType elementBlFixed(double y, double x)
     {
         /* floor() is needed here because of values (-1..0] which will be
@@ -317,12 +357,12 @@ public:
 
     RGB24Buffer::InternalElementType elementBl(double y, double x)
     {
-        return elementBlDouble(y,x);
+        return elementBlSSE(y,x);
     }
 
     RGB24Buffer::InternalElementType elementBl(Vector2dd &point)
     {
-        return elementBl(point.y(), point.x());
+        return elementBlSSE(point.y(), point.x());
     }
 
     RGB24Buffer::InternalElementType elementBlPrecomp(const BilinearMapPoint &point)

@@ -14,9 +14,6 @@ namespace corecvs {
 
 using std::istringstream;
 
-PLYLoader::PLYLoader()
-{
-}
 
 /**
  *
@@ -42,6 +39,10 @@ PLYLoader::PLYLoader()
  *
  **/
 
+
+#define LOCAL_PRINT(X) if (trace) { SYNC_PRINT(X); }
+
+
 int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
 {
     //char line[300];
@@ -49,7 +50,7 @@ int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
 
     HelperUtils::getlineSafe (input, line);
     if (line != "ply") {
-        SYNC_PRINT(("Not a PLY file\n"));
+        LOCAL_PRINT(("Not a PLY file\n"));
         return 1;
     }
 
@@ -82,7 +83,7 @@ int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
         string command;
         work >> command;
 
-        SYNC_PRINT(("Input line: %s\n", line.c_str()));
+        LOCAL_PRINT(("Input line: %s\n", line.c_str()));
 
         if (command == com_format)
         {
@@ -91,14 +92,14 @@ int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
             if (format ==  form_ascii)
             {
                 plyFormat = ASCII;
-                SYNC_PRINT(("PLY ascii format\n"));
+                LOCAL_PRINT(("PLY ascii format\n"));
                 continue;
             }
 
             if (format ==  form_binaryle)
             {
                 plyFormat = BINARY_LITTLE_ENDIAN;
-                SYNC_PRINT(("PLY binary format\n"));
+                LOCAL_PRINT(("PLY binary format\n"));
                 continue;
             }
 
@@ -147,7 +148,7 @@ int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
             if (work.bad()) {
                SYNC_PRINT(("Number is not found"));
             }
-            SYNC_PRINT(("Number %d %d\n", propState, objNumber[propState]));
+            LOCAL_PRINT(("Number %d %d\n", propState, objNumber[propState]));
             continue;
         }
 
@@ -167,9 +168,9 @@ int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
     {
         for (unsigned i = 0; i < objProps[k].size(); i++)
         {
-            SYNC_PRINT((" %d %d \n", objProps[k][i].type, objProps[k][i].name));
+            LOCAL_PRINT((" %d %d \n", objProps[k][i].type, objProps[k][i].name));
         }
-        SYNC_PRINT(("\n"));
+        LOCAL_PRINT(("\n"));
     }
 
     /* Checking if we support this format? */
@@ -188,6 +189,7 @@ int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
     bool vertexColor = (objProps[OBJ_VERTEX].size() == 6);
 
     bool supportFace =
+            (objProps[OBJ_FACE].size() == 0 ) ||
             (objProps[OBJ_FACE].size() == 1 &&
              objProps[OBJ_FACE][0].name == PROP_NAME_VERTEX_INDEX ) ||
             (objProps[OBJ_FACE].size() == 4 &&
@@ -198,6 +200,7 @@ int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
     bool faceColor = (objProps[OBJ_FACE].size() == 4);
 
     bool supportEdge =
+            (objProps[OBJ_EDGE].size() == 0 ) ||
             (objProps[OBJ_EDGE].size() == 2 &&
              objProps[OBJ_EDGE][0].name == PROP_NAME_VERTEX1 &&
              objProps[OBJ_EDGE][1].name == PROP_NAME_VERTEX2 ) ||
@@ -210,7 +213,7 @@ int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
     bool edgeColor = (objProps[OBJ_EDGE].size() == 5);
 
     if (!supportVertex || !supportFace || !supportEdge) {
-         SYNC_PRINT(("Unsupported format\n"));
+         LOCAL_PRINT(("Unsupported format\n"));
         return 1;
     }
 
@@ -229,7 +232,7 @@ int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
 
             if (hasColor) {
                 work >> mesh.currentColor;
-                SYNC_PRINT(("Color %d %d %d\n", mesh.currentColor.r(), mesh.currentColor.g(), mesh.currentColor.b()));
+                LOCAL_PRINT(("Color %d %d %d\n", mesh.currentColor.r(), mesh.currentColor.g(), mesh.currentColor.b()));
 
             }
 
@@ -265,7 +268,7 @@ int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
 
             if (hasColor) {
                 work >> mesh.currentColor;
-                SYNC_PRINT(("Color %d %d %d\n", mesh.currentColor.r(), mesh.currentColor.g(), mesh.currentColor.b()));
+                LOCAL_PRINT(("Color %d %d %d\n", mesh.currentColor.r(), mesh.currentColor.g(), mesh.currentColor.b()));
             }
 
             if (!face.isInCube(
@@ -275,7 +278,7 @@ int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
                 SYNC_PRINT(("Vertex index is wrong on face %i\n", i));
                 return 1;
             }
-            SYNC_PRINT(("%d %d %d\n", face.x(), face.y(), face.z()));
+            LOCAL_PRINT(("%d %d %d\n", face.x(), face.y(), face.z()));
 
             mesh.addFace(face);
         }
@@ -295,7 +298,7 @@ int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
 
             if (hasColor) {
                 work >> mesh.currentColor;
-                SYNC_PRINT(("Color %d %d %d\n", mesh.currentColor.r(), mesh.currentColor.g(), mesh.currentColor.b()));
+                LOCAL_PRINT(("Color %d %d %d\n", mesh.currentColor.r(), mesh.currentColor.g(), mesh.currentColor.b()));
 
             }
 
@@ -306,7 +309,7 @@ int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
                 SYNC_PRINT(("Vertex index is wrong on edge %i\n", i));
                 return 1;
             }
-            SYNC_PRINT(("Edge %d %d\n", edge.x(), edge.y()));
+            LOCAL_PRINT(("Edge %d %d\n", edge.x(), edge.y()));
 
             mesh.addEdge(edge);
         }
@@ -324,6 +327,7 @@ int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
 
     return 0;
 }
+#undef LOCAL_PRINT
 
 
 PLYLoader::~PLYLoader()

@@ -38,6 +38,7 @@ UTILS_INCLUDEPATH = \
     $$UTILSDIR/uis/cloudview \    
     $$UTILSDIR/visitors \
     $$UTILSDIR/widgets \
+    $$UTILSDIR/photostationcalibration
 
 
 !win32 {

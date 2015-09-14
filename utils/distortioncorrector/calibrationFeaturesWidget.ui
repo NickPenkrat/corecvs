@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1153</width>
-    <height>689</height>
+    <width>1093</width>
+    <height>431</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -32,7 +32,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="pointsTab">
       <attribute name="title">
@@ -56,134 +56,42 @@
        </property>
        <item row="0" column="0">
         <layout class="QGridLayout" name="gridLayout_2">
-         <item row="1" column="6">
-          <widget class="QDoubleSpinBox" name="imageYSpinBox">
-           <property name="readOnly">
-            <bool>true</bool>
-           </property>
-           <property name="decimals">
-            <number>6</number>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QPushButton" name="saveButton">
-           <property name="text">
-            <string>Add</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QDoubleSpinBox" name="xCoordSpinBox">
-           <property name="decimals">
-            <number>6</number>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="2">
-          <widget class="QPushButton" name="deleteButton">
-           <property name="text">
-            <string>Delete</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="4">
-          <widget class="Line" name="line">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="5">
-          <widget class="QDoubleSpinBox" name="imageXSpinBox">
-           <property name="readOnly">
-            <bool>true</bool>
-           </property>
-           <property name="decimals">
-            <number>6</number>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="2">
-          <widget class="QDoubleSpinBox" name="yCoordSpinBox">
-           <property name="decimals">
-            <number>6</number>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="3">
-          <widget class="QDoubleSpinBox" name="zCoordSpinBox">
-           <property name="readOnly">
-            <bool>false</bool>
-           </property>
-           <property name="decimals">
-            <number>6</number>
-           </property>
-          </widget>
-         </item>
          <item row="1" column="0">
-          <widget class="QLabel" name="label_5">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>15</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>Coordinates</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1" colspan="6">
-          <widget class="QTableWidget" name="pointsTableWidget">
+          <widget class="QPushButton" name="addButton">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
+            <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
-           <property name="editTriggers">
-            <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::EditKeyPressed</set>
+           <property name="text">
+            <string>Add</string>
            </property>
-           <column>
-            <property name="text">
-             <string>x Space</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>y Space</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>z Space</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>x Image</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>y Image</string>
-            </property>
-           </column>
+           <property name="icon">
+            <iconset resource="../../resources/main.qrc">
+             <normaloff>:/new/prefix1/plus.png</normaloff>:/new/prefix1/plus.png</iconset>
+           </property>
           </widget>
          </item>
-         <item row="0" column="0">
-          <spacer name="verticalSpacer">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
+         <item row="1" column="1">
+          <widget class="QPushButton" name="deleteButton">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
            </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
+           <property name="text">
+            <string>Delete</string>
            </property>
-          </spacer>
+           <property name="icon">
+            <iconset resource="../../resources/main.qrc">
+             <normaloff>:/new/prefix1/minus.png</normaloff>:/new/prefix1/minus.png</iconset>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0" colspan="3">
+          <widget class="QTableView" name="tableView"/>
          </item>
         </layout>
        </item>
@@ -234,6 +142,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../../resources/main.qrc"/>
+ </resources>
  <connections/>
 </ui>

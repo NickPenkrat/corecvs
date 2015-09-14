@@ -13,6 +13,7 @@
 #endif
 #include <iostream>
 #include <stdint.h>
+#include "gtest/gtest.h"
 
 #include "global.h"
 
@@ -21,7 +22,7 @@
 
 using namespace corecvs;
 
-void testIntergralBufferGeneration ()
+TEST(Integral, testIntergralBufferGeneration)
 {
     cout << "Testing the Integral Buffer generation" << endl;
 
@@ -56,7 +57,7 @@ void testIntergralBufferGeneration ()
     delete integral;
 }
 
-void testIntergralBufferBlur ()
+TEST(Integral, testIntergralBufferBlur)
 {
     uint16_t i[] = {
                 1,   2,  3,  4,
@@ -88,7 +89,7 @@ void testIntergralBufferBlur ()
     delete integral;
 }
 
-void testIntegralBlurLarge()
+TEST(Integral, DISABLED_testIntegralBlurLarge)
 {
     cout << "Testing bluring on large file" << endl;
     G12Buffer *input = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
@@ -128,7 +129,7 @@ void testIntegralBlurLarge()
 
 #ifdef WITH_SSE
 ALIGN_STACK_SSE
-void testIntergralBufferSSE (void)
+TEST(Integral, testIntergralBufferSSE)
 {
     cout << "Testing the Integral Buffer SSE reading" << endl;
 
@@ -168,7 +169,7 @@ void testIntergralBufferSSE (void)
     delete integral;
 }
 
-void testIntergralBufferSSE_New (void)
+TEST(Integral, testIntergralBufferSSE_New)
 {
     cout << "Testing the Integral Buffer SSE reading New" << endl;
 
@@ -209,8 +210,7 @@ void testIntergralBufferSSE_New (void)
     delete integral;
 }
 
-
-void testBlurBufferSSE (void)
+TEST(Integral, testBlurBufferSSE)
 {
     G12Buffer *image = new G12Buffer(14,15);
     for (int i = 0; i < image->h; i++)
@@ -240,24 +240,22 @@ void testBlurBufferSSE (void)
 }
 #endif
 
+//int main (int /*a*/, char * /*b*/[])
+//{
+//#ifdef WITH_SSE
+//    testBlurBufferSSE();
+//#endif
+
+//    testIntegralBlurLarge();
+//    testIntergralBufferBlur();
+//    testIntergralBufferGeneration ();
+
+//#ifdef WITH_SSE
+//    testIntergralBufferSSE();
+//    testIntergralBufferSSE_New();
+//#endif
 
 
-int main (int /*a*/, char * /*b*/[])
-{
-#ifdef WITH_SSE
-    testBlurBufferSSE();
-#endif
-
-    testIntegralBlurLarge();
-    testIntergralBufferBlur();
-    testIntergralBufferGeneration ();
-
-#ifdef WITH_SSE
-    testIntergralBufferSSE();
-    testIntergralBufferSSE_New();
-#endif
-
-
-    cout << "PASSED" << endl;
-    return 0;
-}
+//    cout << "PASSED" << endl;
+//    return 0;
+//}

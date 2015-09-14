@@ -82,9 +82,9 @@ void G8Buffer::addBufferSat(G8Buffer *that)
     }
 }
 
-void G8Buffer::averageWith(G8Buffer *that)
+void G8Buffer::averageWith(G8Buffer * /*that*/)
 {
-
+    // NYI
 }
 
 

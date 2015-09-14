@@ -923,8 +923,6 @@ G8Buffer* RGB24Buffer::getChannel(ImageChannel::ImageChannel channel)
         }
     }
 
-
-
     return result;
 }
 

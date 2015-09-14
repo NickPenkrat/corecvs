@@ -46,7 +46,7 @@ public:
 #if 1  // Switched off - too much compatibility issues
     /*  TODO: Could fail for 32 bit build */
     Int64x2(int64_t constant) {
-#if !defined( _MSC_VER )
+#if 1
         this->data = _mm_set1_epi64x(constant);
 #else
         __m64 input;
@@ -74,6 +74,11 @@ public:
     static Int64x2 load(const int64_t data[4])
     {
         return Int64x2(data);
+    }
+
+    static Int64x2 loadLower(int64_t *value)
+    {
+        return Int64x2(_mm_loadl_epi64((__m128i *)value));
     }
 
     /** Load aligned. Not safe to use untill you exactly know what you are doing */

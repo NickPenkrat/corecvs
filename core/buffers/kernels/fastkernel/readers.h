@@ -164,6 +164,45 @@ public:
 
 };
 
+/**/
+class SSEReaderBBBB_QQQQ {
+public:
+
+    static const int SAFE_STEP = 16;
+    static const int BYTE_STEP = 4;
+
+    /**
+     *  This function reads _16_ bytes, takes 4 first and extends them to UInt32x4
+     **/
+    static Int32x4 read(uint8_t *ptr)
+    {
+        Int8x16 input(ptr);
+        Int16x8 extended = Int8x16::unpackLower(input, Int8x16((int8_t)0));
+        return Int16x8::unpackLower(extended, Int16x8((int16_t)0));
+    }
+};
+
+class SSEReader2BBBB_QQQQ {
+public:
+
+    static const int SAFE_STEP = 16;
+    static const int BYTE_STEP = 8;
+
+    /**
+     *  This function reads _16_ bytes, takes 4 first and 4 second bytes and extends them to UInt32x4 each
+     **/
+    static FixedVector<Int32x4, 2> read(uint8_t *ptr)
+    {
+        FixedVector<Int32x4, 2> result;
+
+        Int8x16 input(Int64x2::loadLower((int64_t *)ptr).data);
+        Int16x8 extended = Int8x16::unpackLower(input, Int8x16((int8_t)0));
+        result[0] = Int16x8::unpackLower(extended, Int16x8((int16_t)0));
+        result[1] = Int16x8::unpackHigher(extended, Int16x8((int16_t)0));
+        return result;
+    }
+};
+
 
 class SSEReader8DD_DD {
 public:

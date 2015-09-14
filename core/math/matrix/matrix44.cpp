@@ -235,6 +235,16 @@ Matrix44 Matrix44::inverted() const
    return toReturn;
 }
 
+double Matrix44::trace() const
+{
+    double sum = 0.0;
+    for (int row = 0; row < Matrix44::H ; row++)
+    {
+        sum += a(row, row);
+    }
+    return sum;
+}
+
 
 
 double Matrix44::det() const {

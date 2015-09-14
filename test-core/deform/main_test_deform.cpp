@@ -9,6 +9,8 @@
  */
 
 #include <iostream>
+#include "gtest/gtest.h"
+
 #include "global.h"
 
 #include "fixedPointDisplace.h"
@@ -32,7 +34,7 @@ using corecvs::FixedPointDisplace;
 using corecvs::BMPLoader;
 using corecvs::RGB24Buffer;
 
-void testFastDeform ()
+TEST(Deform, DISABLED_testFastDeform)
 {
 
     Matrix33 inverseLeftMatrix(
@@ -83,7 +85,7 @@ template<typename operation>
         }
     }
 
-void testBiliner()
+TEST(Deform, DISABLED_testBiliner)
 {
     RGB24Buffer *image = new RGB24Buffer(2,2);
     image->element(0,0) = RGBColor::Yellow();
@@ -97,15 +99,16 @@ void testBiliner()
         {
             RGBColor d =  image->elementBlDouble(i, j);
             RGBColor f =  image->elementBlFixed (i, j);
+            RGBColor s =  image->elementBlSSE   (i, j);
 
-            RGBColor diff = RGBColor::diff(d,f);
-            cout << d << " = " << f << " -> " <<  diff << endl;
+            RGBColor diff1 = RGBColor::diff(d,f);
+            cout << d << " = " << f << " = " << s << " -> " <<  diff1 << endl;
         }
     }
 }
 
 
-void testFastDeform24 ()
+TEST(Deform, DISABLED_testFastDeform24)
 {
     cout << "Starting test: testFastDeform24 ()" << endl;
     Matrix33 inverseLeftMatrix(
@@ -151,8 +154,7 @@ void testFastDeform24 ()
     delete_safe(image);
 }
 
-
-void testRadialApplication ( void )
+TEST(Deform, DISABLED_testRadialApplication)
 {
     cout << "Starting test: testRadialApplication ()" << endl;
     RGB24Buffer *image = new RGB24Buffer(2500, 4000);
@@ -250,7 +252,7 @@ void testRadialApplication ( void )
 
 }
 
-void testRadialInversion( void )
+TEST(Deform, DISABLED_testRadialInversion)
 {
     RGB24Buffer *image = new RGB24Buffer(2500, 4000);
 
@@ -306,7 +308,7 @@ void testRadialInversion( void )
 
 }
 
-void testRectangularImage()
+TEST(Deform, DISABLED_testRectangularImage)
 {
     LensDistortionModelParameters deformator;
     deformator.setPrincipalX(1296);
@@ -336,6 +338,7 @@ void testRectangularImage()
 
 }
 
+#if 0
 int main (int /*argC*/, char ** /*argV*/)
 {
     testBiliner();
@@ -349,3 +352,4 @@ int main (int /*argC*/, char ** /*argV*/)
     cout << "PASSED" << endl;
     return 0;
 }
+#endif

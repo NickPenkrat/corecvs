@@ -2,6 +2,7 @@
  */
 
 #include <iostream>
+#include "gtest/gtest.h"
 
 #include "global.h"
 
@@ -129,7 +130,7 @@ void initializeFeatureVector(RectCortegeList *featureVectors, G12Buffer *input,
     CortegeListSorter::sort(featureVectors);
 }
 
-void compareFeaturingGenerators()
+TEST(SignatureCompare, compareFeaturingGenerators)
 {
     G12Buffer *input0 = BufferFactory::getInstance()->loadG12Bitmap("../data/pair/image0001_c0.pgm");
     G12Buffer *input1 = BufferFactory::getInstance()->loadG12Bitmap("../data/pair/image0002_c0.pgm");

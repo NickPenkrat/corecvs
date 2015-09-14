@@ -62,7 +62,7 @@ void PrinterVisitor::visit<double, DoubleVectorField>(std::vector<double> &field
 {
     if (stream == NULL) return;
     *stream << fieldDescriptor->getSimpleName() << "= [";
-    for (int i = 0; i < field.size(); i++ )
+    for (size_t i = 0; i < field.size(); i++ )
     {
         *stream << ( i == 0 ? " " : ", ") << field[i] ;
     }
