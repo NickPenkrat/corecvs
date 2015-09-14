@@ -1,4 +1,6 @@
 #include "chessBoardDetector.h"
+#include "homographyReconstructor.h"
+#include <fstream>
 
 ChessboardDetector::ChessboardDetector (
         CheckerboardDetectionParameters params,
@@ -11,6 +13,8 @@ ChessboardDetector::ChessboardDetector (
     ChessBoardDetectorMode mode =  getMode(*this);
 
     assemblerParams.hypothesisDimensions = 0;
+    idealWidth = horCrossesCount();
+    idealHeight = vertCrossesCount();
     if (!!(mode & ChessBoardDetectorMode::FIT_WIDTH))
     {
         assemblerParams.hypothesisDimensions++;
@@ -19,6 +23,21 @@ ChessboardDetector::ChessboardDetector (
     if (!!(mode &ChessBoardDetectorMode::FIT_HEIGHT))
     {
         assemblerParams.hypothesisDim[assemblerParams.hypothesisDimensions++] = vertCrossesCount();
+    }
+    if (!(mode & (ChessBoardDetectorMode::FIT_WIDTH | ChessBoardDetectorMode::FIT_HEIGHT)))
+    {
+        type = AlignmentType::FIT_ALL;
+    }
+    else
+    {
+        if (!!(mode & ChessBoardDetectorMode::FIT_HEIGHT))
+        {
+            type = AlignmentType::FIT_HEIGHT;
+        }
+        if (!!(mode & ChessBoardDetectorMode::FIT_WIDTH))
+        {
+            type = AlignmentType::FIT_WIDTH;
+        }
     }
     assembler = ChessBoardAssembler(assemblerParams);
 }
@@ -62,8 +81,7 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
 
     if (!boards.size())
         return false;
-
-    std::vector<std::vector<corecvs::Vector2dd>> best;
+   
     bool transposed = false, found = false;
 
     bool checkW = !!(mode & ChessBoardDetectorMode::FIT_WIDTH);
@@ -80,7 +98,7 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
 
         if ((!checkW || fitw) && (!checkH || fith))
         {
-            best = b;
+            bestBoard = b;
             found = true;
             break;
         }
@@ -88,7 +106,7 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
         fith = (bw == vertCrossesCount());
         if ((!checkW || fitw) && (!checkH || fith))
         {
-            best = b;
+            bestBoard = b;
             found = true;
             transposed = true;
             break;
@@ -98,75 +116,145 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
     if (!found)
         return false;
 
-    std::cout << best[0].size() << " x " << best.size() << std::endl;
-    if (transposed)
+    bool aligned = align(buffer);
+    if (aligned)
     {
-        decltype(best) best_t;
-        int bw = (int)best[0].size(), bh = (int)best.size();
-        best_t.resize(bw);
-        for (auto& r: best_t)
-            r.resize(bh);
-
-        for (int i = 0; i < bh; ++i)
+        result = observationList;
+        for (auto& p: result)
         {
-            for (int j = 0; j < bw; ++j)
-            {
-                best_t[j][i] = best[i][j];
-            }
+            p.point.x() *= cellSizeHor();
+            p.point.y() *= cellSizeVert();
         }
-        best = best_t;
+        std::cout << result.size() << " features" << std::endl;
+        return true;
     }
-
-    // XXX: Here we need to fix some orientation of partially-visible pattern
-    //      It is not possible, if we have no additional data (e.g. markers)
-    //      So we orient it in some way.
-    std::vector<std::pair<double, int>> ymeans;
-    int idx = 0;
-    for (auto& r: best)
-    {
-        Vector2dd sum(0.0, 0.0);
-        for (auto& p: r)
-            sum += p;
-        sum /= r.size();
-        ymeans.emplace_back(sum[1], idx++);
-    }
-    std::sort(ymeans.begin(), ymeans.end(), [](std::pair<double, int> a, std::pair<double, int> b) { return a.first < b.first; });
-
-    decltype(best) best_reorder(best.size());
-    for (size_t i = 0; i < best.size(); ++i)
-    {
-        best_reorder[i] = best[ymeans[i].second];
-        std::sort(best_reorder[i].begin(), best_reorder[i].end(), [](corecvs::Vector2dd a, corecvs::Vector2dd b) { return a[0] < b[0]; });
-    }
-    best = best_reorder;
-
-    corecvs::Vector2dd center(0.0, 0.0);
-    int cnt = 0;
-    for (auto& r: best)
-    {
-        for (auto& p: r)
-        {
-            center += p;
-            cnt++;
-        }
-    }
-    center /= cnt;
-    center *= 2.0;
-    int bw = (int)best[0].size(), bh = (int)best.size();
-
-    int l = (bw ==  horCrossesCount()) ? 0 : (center[0] > buffer.w ? 0 : ( horCrossesCount() - bw));
-    int t = (bh == vertCrossesCount()) ? 0 : (center[1] > buffer.h ? 0 : (vertCrossesCount() - bh));
-
-    result.clear();
-    for (int i = 0; i < bh; ++i)
-    {
-        for (int j = 0; j < bw; ++j)
-            result.emplace_back(corecvs::Vector3dd((j + l) * cellSizeHor(), (i + t) * cellSizeVert(), 0.0), best[i][j]);
-    }
-    return true;
+    return false;
 }
 
 void ChessboardDetector::getPointData(ObservationList &observations)
 {
     observations = result;
+}
+
+// FIXME: Temporary code; needs serious rework
+void ChessboardDetector::classify(DpImage &img, CirclePatternGenerator &gen, corecvs::RGB24Buffer &buffer)
+{
+    int w = bestBoard[0].size();
+    int h = bestBoard.size();
+    std::vector<std::vector<int>> classifier(h - 1);
+    for (auto& cv: classifier) cv.resize(w - 1);
+    std::cout << w << " x " << h << std::endl;
+
+    DpImage fin(buffer.h, buffer.w);
+
+    corecvs::RGBColor colors[8] =
+    {
+        corecvs::RGBColor(0xffff00),
+        corecvs::RGBColor(0x00ffff),
+        corecvs::RGBColor(0xff00ff),
+        corecvs::RGBColor(0x00ff00),
+        corecvs::RGBColor(0x0000ff),
+        corecvs::RGBColor(0xff0000),
+        corecvs::RGBColor(0x7f0000),
+        corecvs::RGBColor(0x007f00)
+    };
+    corecvs::RGBColor board_col = corecvs::RGBColor(0x7f0000);
+    for (int i = 0; i + 1 < h; ++i)
+    {
+        for (int j = 0; j + 1 < w; ++j)
+        {
+            corecvs::Vector2dd A, B, C, D;
+            A = bestBoard[i + 0][j + 0];
+            B = bestBoard[i + 1][j + 0];
+            C = bestBoard[i + 0][j + 1];
+            D = bestBoard[i + 1][j + 1];
+
+            corecvs::Matrix33 res, orientation;
+            double score;
+            int cl = classifier[i][j] = gen.getBestToken(img, {A, B, C, D}, score, orientation, res);
+            if (cl >= 0)
+            std::cout << "DETECTED: " << cl << " " << score << std::endl;
+
+            DpImage mask(buffer.h, buffer.w);
+            for (int i = 0; i < 1000; ++i)
+            {
+                for (int j = 0; j < 1000; ++j)
+                {
+                    corecvs::Vector3dd pt = res * Vector3dd(j * (1e-3), i * (1e-3), 1.0);
+
+                    int xx = pt[0], yy = pt[1];
+                    if (xx >= 0 && xx < img.w && yy >= 0 && yy < img.h)
+                    {
+                        mask.element(yy, xx) = 1.0;
+                    }
+
+                }
+            }
+            {
+
+                for (int i = 0; i < buffer.h; ++i)
+                {
+                    for (int j = 0; j < buffer.w; ++j)
+                    {
+                        auto A = buffer.element(i, j);
+                        auto B = cl >= 0 ? colors[cl] : board_col;
+                        if (mask.element(i, j) > 0.0 && fin.element(i, j) < 0.5)
+                        {
+                            buffer.element(i, j) = RGBColor::lerpColor(A, B, 0.3);
+                        }
+                    }
+                }
+            }
+            if (cl >= 0){
+                DpImage maskA(buffer.h, buffer.w), maskB(buffer.h, buffer.w);
+                corecvs::Vector2dd A = (orientation * corecvs::Vector3dd(0.0, 0.0, 1.0)).project(),
+                                B = (orientation * corecvs::Vector3dd(1.0, 0.0, 1.0)).project(),
+                                C = (orientation * corecvs::Vector3dd(0.0, 1.0, 1.0)).project();
+                std::cout << "ABC: " <<  A << " " << B << " " << C << std::endl;
+                for (int i = 0; i < 1000; ++i)
+                {
+                    double alpha = i * 1e-3;
+                    corecvs::Vector2dd AB = A * alpha + B * (1.0 - alpha);
+                    corecvs::Vector2dd AC = A * alpha + C * (1.0 - alpha);
+                    corecvs::Vector3dd ab = res * corecvs::Vector3dd(AB[0], AB[1], 1.0);
+                    corecvs::Vector3dd ac = res * corecvs::Vector3dd(AC[0], AC[1], 1.0);
+                                    ab = ab * (1.0 / ab[2]);
+                                    int xxx = ab[0], yyy = ab[1];
+                                    for (int xx = xxx; xx < xxx + 3; ++xx)
+                                        for (int yy = yyy; yy < yyy + 3; ++yy)
+                                    if (xx >= 0 && xx < img.w && yy >= 0 && yy < img.h)
+                                    {
+                                        maskA.element(yy, xx) = 1.0;
+                                        fin.element(yy, xx) = 1.0;
+                                    }
+                                    ac = ac * (1.0 / ac[2]);
+                                    xxx = ac[0], yyy = ac[1];
+                                    for (int xx = xxx; xx < xxx + 3; ++xx)
+                                        for (int yy = yyy; yy < yyy + 3; ++yy)
+                                    if (xx >= 0 && xx < img.w && yy >= 0 && yy < img.h)
+                                    {
+                                        fin.element(yy, xx) = 1.0;
+                                        maskB.element(yy, xx) = 1.0;
+                                    }
+
+                }
+                for (int i = 0; i < buffer.h; ++i)
+                {
+                    for (int j = 0; j < buffer.w; ++j)
+                    {
+                        if (maskA.element(i, j) > 0.0)
+                            buffer.element(i, j) = RGBColor(0xff0000);
+                        if (maskB.element(i, j) > 0.0)
+                            buffer.element(i, j) = RGBColor(0x00ff00);
+                    }
+                }
+            }
+        }
+    }
+    for (auto&v :classifier)
+    {
+        for (auto &c : v)
+            std::cout << c << "\t";
+        std::cout << std::endl;
+    }
 }
