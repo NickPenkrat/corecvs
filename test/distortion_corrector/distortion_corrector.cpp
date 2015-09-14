@@ -248,7 +248,7 @@ int main (int argc, char **argv)
         }
 
         SelectableGeometryFeatures lineList;
-        G8Buffer *boardOutput = NULL;
+//        G8Buffer *boardOutput = NULL;
 //        found = OpenCvCheckerboardDetector::DetectFullCheckerboard(channel, params, &lineList, &boardOutput);
         OpenCvCheckerboardDetector detector(params);
         bool found = detector.detectPattern(*channel);

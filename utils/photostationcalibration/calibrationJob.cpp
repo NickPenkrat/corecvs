@@ -33,8 +33,10 @@ bool CalibrationJob::detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::Sel
     }
     else
     {
-        patternDetector = new ChessboardDetector(settings.openCvDetectorParameters, settings.chessBoardCornerDetectorParams, settings.chessBoardAssemblerParams);
+        patternDetector = new ChessboardDetector(settings.openCvDetectorParameters, settings.chessBoardCornerDetectorParams, settings.chessBoardAssemblerParams);       
+        patternDetector->setStatistics(&stats);
         patternDetector->detectPattern(buffer);
+
     }
 
     if (features)
@@ -404,6 +406,7 @@ void CalibrationJob::calibratePhotostation()
     }
 
     calibrationSetupLocations = calibrator.getCalibrationSetups();
+    calibrated = true;
 }
 
 void CalibrationJob::computeCalibrationErrors()

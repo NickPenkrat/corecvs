@@ -58,8 +58,8 @@ int CheckerboardDetectionParameters::staticInit()
           "Algorithm",
           "Algorithm",
           new EnumReflection(2
-          , new EnumOption(0,"OpenCV Detector")
-          , new EnumOption(1,"Homebrew Detector")
+          , new EnumOption(0,"Homebrew Detector")
+          , new EnumOption(1,"OpenCV Detector")
           )
         )
     );
@@ -219,7 +219,7 @@ int CheckerboardDetectionParameters::staticInit()
         (
           CheckerboardDetectionParameters::FIT_HEIGHT_ID,
           offsetof(CheckerboardDetectionParameters, mFitHeight),
-          true,
+          false,
           "Fit Height",
           "Fit Height",
           "Fit Height"

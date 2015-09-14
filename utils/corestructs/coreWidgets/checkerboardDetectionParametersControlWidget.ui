@@ -51,12 +51,12 @@
        </property>
        <item>
         <property name="text">
-         <string>OpenCV Detector</string>
+         <string>Homebrew Detector</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>Homebrew Detector</string>
+         <string>OpenCV Detector</string>
         </property>
        </item>
        <property name="toolTip">
@@ -376,9 +376,6 @@
      <widget class="QCheckBox" name="fitHeightCheckBox">
        <property name="toolTip">
          <string>Fit Height</string>
-       </property>
-       <property name="checked">
-           <bool>true</bool>
        </property>
      </widget>
     </item>

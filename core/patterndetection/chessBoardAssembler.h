@@ -153,6 +153,14 @@ protected://iivate:
 #ifdef WITH_TBB
     tbb::mutex mutex;
 #endif
+
+public:
+    void setStatistics(corecvs::Statistics *stats);
+    corecvs::Statistics *getStatistics();
+
+
+private:
+    corecvs::Statistics *stats;
 };
 
 #endif

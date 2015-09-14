@@ -47,11 +47,12 @@
 using namespace std;
 using namespace corecvs;
 
-
+#if 0 // FIXME: there should be better way to disable test
 TEST(Generic, testAlwaysFail)
 {
     ASSERT_EQ(0, 1) << "Just Fail\n";
 }
+#endif
 
 
 class TestAbstractBufferClass {

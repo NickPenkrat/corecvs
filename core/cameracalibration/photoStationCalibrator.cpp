@@ -425,7 +425,8 @@ void PhotoStationCalibrator::refineGuess()
     // TODO: Maybe we should test if such problem is solvable in some math package
     //       with "proven" implementations of linear algebra and ML-like non-linear
     //       optimization
-    corecvs::LevenbergMarquardt levmar(5000, 1e-3, 1.5);
+    // FIXME: Changed limit to 750 since change in rmse is not big; but it still decreases!
+    corecvs::LevenbergMarquardt levmar(750, 1e-3, 1.5);
     levmar.f = new LMCostFunction(this);
 
     auto res = levmar.fit(in, out);

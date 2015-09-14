@@ -6,7 +6,8 @@ ChessboardDetector::ChessboardDetector (
         ChessBoardAssemblerParams assemblerParams
     )
     : CheckerboardDetectionParameters(params),
-      detector(detectorParams)
+      detector(detectorParams),
+      stats(NULL)
 {
     ChessBoardDetectorMode mode =  getMode(*this);
 
@@ -25,12 +26,10 @@ ChessboardDetector::ChessboardDetector (
 
 ChessBoardDetectorMode ChessboardDetector::getMode(const CheckerboardDetectionParameters &params)
 {
-    int toReturn;
-    if (params. fitWidth()) toReturn |= (int)ChessBoardDetectorMode::FIT_WIDTH;
-    if (params.fitHeight()) toReturn |= (int)ChessBoardDetectorMode::FIT_HEIGHT;
-
-
-    return ChessBoardDetectorMode(toReturn);
+    ChessBoardDetectorMode mode = ChessBoardDetectorMode::BEST;
+    if (params. fitWidth()) mode = mode | ChessBoardDetectorMode::FIT_WIDTH;
+    if (params.fitHeight()) mode = mode | ChessBoardDetectorMode::FIT_HEIGHT;
+    return mode;
 }
 
 bool ChessboardDetector::detectPattern(corecvs::G8Buffer &buffer)
@@ -53,17 +52,40 @@ bool ChessboardDetector::detectPattern(corecvs::RGB24Buffer &buffer)
 
 bool ChessboardDetector::detectPattern(DpImage &buffer)
 {
+    if (stats != NULL) stats->startInterval();
+
     ChessBoardDetectorMode mode =  getMode(*this);
     corners.clear();
     bestPattern = RectangularGridPattern();
+
+    std::string prefix;
+    if (stats != NULL) {
+        prefix = stats->prefix;
+        stats->prefix = "Corners -> " + stats->prefix;
+        detector.setStatistics(stats);
+    }
+
     detector.detectCorners(buffer, corners);
+
+    if (stats != NULL) stats->prefix = prefix;
+    if (stats != NULL) stats->resetInterval("Detector");
 
     std::vector<std::vector<std::vector<corecvs::Vector2dd>>> boards;
 
+    if (stats != NULL) {
+        prefix = stats->prefix;
+        stats->prefix = "Assembler -> " + stats->prefix;
+        assembler.setStatistics(stats);
+    }
     assembler.assembleBoards(corners, boards);
+    if (stats != NULL) stats->prefix = prefix;
 
     if (!boards.size())
         return false;
+
+
+    if (stats != NULL) stats->resetInterval("Assemble");
+
 
     std::vector<std::vector<corecvs::Vector2dd>> best;
     bool transposed = false, found = false;
@@ -165,7 +187,20 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
         for (int j = 0; j < bw; ++j)
             result.emplace_back(corecvs::Vector3dd((j + l) * cellSizeHor(), (i + t) * cellSizeVert(), 0.0), best[i][j]);
     }
+
+    if (stats != NULL) stats->resetInterval("Filling result");
+
     return true;
+}
+
+void ChessboardDetector::setStatistics(Statistics *stats)
+{
+    this->stats = stats;
+}
+
+Statistics *ChessboardDetector::getStatistics()
+{
+    return stats;
 }
 
 void ChessboardDetector::getPointData(ObservationList &observations)

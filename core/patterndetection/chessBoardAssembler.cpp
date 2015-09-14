@@ -24,7 +24,11 @@ void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, 
     corners = corners_;
     int N = (int)corners.size();
 
+    if (stats != NULL) stats->startInterval();
+
     corecvs::parallelable_for(0, N, ParallelBoardExpander(this), true);
+
+    if (stats != NULL) stats->resetInterval("Board Expander");
 
     boards_.clear();
     std::sort(boards.begin(), boards.end(), [](const RectangularGridPattern &a, const RectangularGridPattern &b) { return a.score < b.score; });
@@ -40,6 +44,8 @@ void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, 
         }
         boards_.push_back(board);
     }
+
+    if (stats != NULL) stats->resetInterval("Board Outputing");
 }
 
 void ChessBoardAssembler::acceptHypothesis(RectangularGridPattern &board)
@@ -76,7 +82,7 @@ void ChessBoardAssembler::acceptHypothesis(RectangularGridPattern &board)
 #ifdef WITH_TBB
     tbb::mutex::scoped_lock lock(mutex);
 #endif
-    for (int i = 0; i < boards.size(); ++i)
+    for (size_t i = 0; i < boards.size(); ++i)
     {
         auto& bb = boards[i];
         bool localIntersect = false;
@@ -426,4 +432,15 @@ bool ChessBoardAssembler::BoardExpander::assignNearest(std::vector<corecvs::Vect
         assigned[j] = 1;
     }
     return true;
+}
+
+
+void ChessBoardAssembler::setStatistics(corecvs::Statistics *stats)
+{
+    this->stats = stats;
+}
+
+corecvs::Statistics *ChessBoardAssembler::getStatistics()
+{
+    return stats;
 }

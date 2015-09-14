@@ -227,11 +227,7 @@ template <class StreamType>
 
         /* Flags */
         int size = (int)this->sumValues.size();
-        bool *isPrinted = new bool[size];
-        for (int i = 0; i < size; i++)
-        {
-            isPrinted[i] = false;
-        }
+        vector<bool> isPrinted(size, false);
 
         int printCount = 0;
         /* First show all filters */
@@ -259,15 +255,13 @@ template <class StreamType>
         int j = 0;
         for (uit = this->sumValues.begin(); uit != this->sumValues.end(); ++uit, j++ )
         {
-            if (isPrinted[j])
-            {
+            if (isPrinted[j]) {
                 continue;
             }
 
             stream.printUnitedStat(uit->first, maxCaptionLen, uit->second, printCount);
             printCount++;
-        }
-        deletearr_safe(isPrinted);
+        }        
     }
 
     class SimplePrinter {
@@ -295,6 +289,8 @@ template <class StreamType>
         SimplePrinter printer;
         printStats(printer);
         printf("=============================================================\n");
+        fflush(stdout);
+        SYNC_PRINT(("\n"));
     }
 
     class AdvancedPrinter {
