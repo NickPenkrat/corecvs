@@ -126,7 +126,8 @@ class PointListEditImageWidget : public AdvancedImageWidget {
 public:
    ObservationListModel *mObservationListModel;
 
-   PointListEditImageWidget() :
+   PointListEditImageWidget(QWidget *parent = NULL, bool showHeader = true) :
+       AdvancedImageWidget(parent, showHeader),
        mObservationListModel(NULL)
    {}
 
