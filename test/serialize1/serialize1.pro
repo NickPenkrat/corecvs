@@ -2,18 +2,19 @@
 exists(../../../../config.pri) {
     ROOT_DIR=../../../..
     #message(Using global config)
+    include($$ROOT_DIR/config.pri)
 } else { 
     message(Using local config)
     ROOT_DIR=../..
+    include($$ROOT_DIR/cvs-config.pri)
 }
 ROOT_DIR=$$PWD/$$ROOT_DIR
-include($$ROOT_DIR/config.pri)
 
 TEMPLATE = app
 TARGET   = test_serialize1
-QT += xml
+QT 	+= xml
 
-include(../../utils/utils.pri)
+include($$ROOT_DIR/src/open/utils/utils.pri)                        # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
 
 SOURCES += main_serialize1.cpp
 HEADERS += main_serialize1.h

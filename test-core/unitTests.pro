@@ -1,23 +1,23 @@
+# We're to include config.pri here to detect whether we use opencv or not!
 # try use global config 
 exists(../../../config.pri) {
     ROOT_DIR=../../..
     #message(Using global config)
+    include($$ROOT_DIR/config.pri)
 } else { 
     message(Using local config)
     ROOT_DIR=..
+    include($$ROOT_DIR/cvs-config.pri)
 }
-!win32 {                                            # it dues to the "mocinclude.tmp" bug on win32!
-    ROOT_DIR=$$PWD/$$ROOT_DIR
-}
-include($$ROOT_DIR/config.pri)
+ROOT_DIR=$$PWD/$$ROOT_DIR
  
 TEMPLATE = subdirs
 
-with_opencv:!macx {
-    #!contains(SUBDIRS, ocv-homo):                  # such operator doesn't work!
-#    SUBDIRS *= ocv-homo                             # adds project only if it doesn't exist
-#    SUBDIRS *= openCV
-}
+#with_opencv:!macx {
+#    #!contains(SUBDIRS, ocv-homo):                  # such operator doesn't work!
+##    SUBDIRS *= ocv-homo                             # adds project only if it doesn't exist
+##    SUBDIRS *= openCV
+#}
 
 SUBDIRS += \
     convolve \

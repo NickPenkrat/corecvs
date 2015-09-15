@@ -2,17 +2,18 @@
 exists(../../../../config.pri) {
     ROOT_DIR=../../../..
     #message(Using global config)
+    include($$ROOT_DIR/config.pri)
 } else { 
     message(Using local config)
     ROOT_DIR=../..
+    include($$ROOT_DIR/cvs-config.pri)
 }
 ROOT_DIR=$$PWD/$$ROOT_DIR
-include($$ROOT_DIR/config.pri)
 
-TEMPLATE=app
-CONFIG+=console
-TARGET=test_aLowCodec
+TEMPLATE = app
+TARGET   = test_aLowCodec
+CONFIG  += console
 
-include(../../utils/utils.pri)
+include($$ROOT_DIR/src/open/utils/utils.pri)                        # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
 
 SOURCES += main_aLowCodec.cpp

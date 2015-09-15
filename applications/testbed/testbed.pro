@@ -1,28 +1,24 @@
 # try use global config
 exists(../../../../config.pri) {
     ROOT_DIR=../../../..
+    include($$ROOT_DIR/config.pri)
 } else { 
     message(Using local config)
     ROOT_DIR=../..
+    include($$ROOT_DIR/cvs-config.pri)
 }
-!win32 {                                        # it dues to the "mocinclude.tmp" bug on win32!
-    ROOT_DIR=$$PWD/$$ROOT_DIR
-}
-include($$ROOT_DIR/config.pri)
+ROOT_DIR=$$PWD/$$ROOT_DIR
 
-QT += xml
-TARGET   = testbed
 TEMPLATE = app
+TARGET   = testbed
+QT      += xml
 
-# Using only open part of the project
-include(../../utils/utils.pri)
-
+include($$ROOT_DIR/src/open/utils/utils.pri)                        # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
 
 HEADERS = \
     testbedMainWindow.h \
 #    pointScene.h \
 
-          
 
 SOURCES = \
     testbedMainWindow.cpp \

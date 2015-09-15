@@ -2,17 +2,18 @@
 exists(../../../../config.pri) {
     ROOT_DIR=../../../..
     #message(Using global config1)
+    include($$ROOT_DIR/config.pri)
 } else { 
     message(Using local config)
     ROOT_DIR=../..
+    include($$ROOT_DIR/cvs-config.pri)
 }
 ROOT_DIR=$$PWD/$$ROOT_DIR
-include($$ROOT_DIR/config.pri)
 
 TEMPLATE = app
 TARGET   = test_calibration_job_generate
-CONFIG  += CONSOLE
+CONFIG  += console
 
-include($$ROOT_DIR/src/open/utils/utils.pri)
+include($$ROOT_DIR/src/open/utils/utils.pri)                        # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
 
 SOURCES += calibration_job_generate.cpp

@@ -8,14 +8,15 @@
 exists(../../../config.pri) {
     ROOT_DIR=../../..
     #message(Using global config)
+    include($$ROOT_DIR/config.pri)
 } else { 
     message(Using local config)
     ROOT_DIR=..
+    include($$ROOT_DIR/cvs-config.pri)
 }
 ROOT_DIR=$$PWD/$$ROOT_DIR
-#!build_pass: message(Tests root dir is $$ROOT_DIR)
 
-include($$ROOT_DIR/config.pri)
+#!build_pass: message(Tests root dir is $$ROOT_DIR)
 
 CONFIG += console
 CONFIG -= app_bundle

@@ -2,21 +2,22 @@
 exists(../../../../config.pri) {
     ROOT_DIR=../../../..
     #message(Using global config)
+    include($$ROOT_DIR/config.pri)
 } else { 
     message(Using local config)
     ROOT_DIR=../..
+    include($$ROOT_DIR/cvs-config.pri)
 }
 ROOT_DIR=$$PWD/$$ROOT_DIR
-include($$ROOT_DIR/config.pri)
 
 TEMPLATE = app
 TARGET   = test_camera_calibration
-CONFIG  += CONSOLE
-QT += core
-QT -= gui
-QT -= xml
+CONFIG  += console
+QT 	+= core
+QT 	-= gui
+QT 	-= xml
 
-include($$ROOT_DIR/src/open/utils/utils.pri)
+include($$ROOT_DIR/src/open/utils/utils.pri)                        # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
 
 SOURCES  += *.cpp
 INCLUDES += *.h
