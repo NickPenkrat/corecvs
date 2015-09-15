@@ -57,7 +57,7 @@ public:
 
     virtual QVariant headerData(int section, Qt::Orientation orientation, int role ) const;
 
-    virtual QModelIndex index(int row, int column, const QModelIndex &parent ) const;
+    virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
     virtual QModelIndex parent(const QModelIndex &index) const;
 
 public:

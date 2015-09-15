@@ -18,8 +18,8 @@ const int CalibrationFeaturesWidget::REASONABLE_INF = 999999;
 
 CalibrationFeaturesWidget::CalibrationFeaturesWidget(QWidget *parent) :
     QWidget(parent),
-    geometryFeatures(NULL),
     mObservationListModel(NULL),
+    geometryFeatures(NULL),    
     ui(new Ui::CalibrationFeaturesWidget)
 {
     ui->setupUi(this);
@@ -292,7 +292,7 @@ QVariant ObservationListModel::data(const QModelIndex &index, int role) const
         return QVariant();
     }
 
-    if (mObservationList->size() <= index.row())
+    if ((int)mObservationList->size() <= index.row())
     {
         return QVariant();
     }
@@ -511,6 +511,11 @@ void PointListEditImageWidget::setObservationModel(ObservationListModel *observa
     connect(mObservationListModel, SIGNAL(columnsInserted(QModelIndex,int,int))             , this, SLOT(invalidateModel()));
     connect(mObservationListModel, SIGNAL(columnsMoved(QModelIndex,int,int,QModelIndex,int)), this, SLOT(invalidateModel()));
     connect(mObservationListModel, SIGNAL(columnsRemoved(QModelIndex,int,int))              , this, SLOT(invalidateModel()));
+
+    connect(mObservationListModel, SIGNAL(rowsInserted(QModelIndex,int,int))             , this, SLOT(invalidateModel()));
+    connect(mObservationListModel, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)), this, SLOT(invalidateModel()));
+    connect(mObservationListModel, SIGNAL(rowsRemoved(QModelIndex,int,int))              , this, SLOT(invalidateModel()));
+
     connect(mObservationListModel, SIGNAL(modelReset())                                     , this, SLOT(invalidateModel()));
 }
 
@@ -582,13 +587,25 @@ void PointListEditImageWidget::toolButtonReleased(QWidget *button)
     else if (button == mAddButton)
     {
         qDebug() << "Add Button";
-        mCurrentToolClass = (ToolClass)ADD_POINT_TOOL;
+        //mCurrentToolClass = (ToolClass)ADD_POINT_TOOL;
+        mObservationListModel->insertRow(mObservationListModel->rowCount());
+        mSelectedPoint = mObservationListModel->rowCount() - 1;
+
+        QModelIndex indexX = mObservationListModel->index(mSelectedPoint, ObservationListModel::COLUMN_U);
+        QModelIndex indexY = mObservationListModel->index(mSelectedPoint, ObservationListModel::COLUMN_V);
+
+        mObservationListModel->setData(indexY, QVariant(mZoomCenter.y()), Qt::EditRole);
+        mObservationListModel->setData(indexX, QVariant(mZoomCenter.x()), Qt::EditRole);
         mUi->widget->update();
     }
     else if (button == mDeleteButton)
     {
         qDebug() << "Delete Button";
-        mCurrentToolClass = (ToolClass)DEL_POINT_TOOL;
+        if (mSelectedPoint >= 0)
+        {
+            mObservationListModel->removeRow(mSelectedPoint);
+            mSelectedPoint = -1;
+        }
         mUi->widget->update();
     }
 }
@@ -628,7 +645,6 @@ int PointListEditImageWidget::findClosest(Vector2dd imagePoint, double limitDist
 
 void PointListEditImageWidget::childMousePressed(QMouseEvent *event)
 {
-    QModelIndex topLevel = mObservationListModel->parent(QModelIndex());
     AdvancedImageWidget::childMousePressed(event);
 
     PaintToolClass tool = (PaintToolClass)mCurrentToolClass;
