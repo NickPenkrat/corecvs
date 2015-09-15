@@ -66,7 +66,7 @@ INCLUDEPATH += $$CORE_INCLUDEPATH
 exists(../../../config.pri) {
     COREBINDIR = $$COREDIR/../../../bin
 } else {
-    message(Using local core. config should be $$COREDIR/../../../config.pri)
+    message(Using local core. Global config should be at $$COREDIR/../../../config.pri)
     COREBINDIR = $$COREDIR/../bin
 }
 

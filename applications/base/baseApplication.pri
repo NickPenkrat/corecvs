@@ -10,10 +10,9 @@ QT      = core gui xml
 CONFIG += link_prl
 CONFIG += console                                   # create console log for all our apps
 
-# all our hostBased apps use utils lib
-
-# Using only open part of the project
-include($$HOSTBASE_DIR/../../utils/utils.pri)
+# All our hostBased apps use utils.lib
+#
+include($$ROOT_DIR/src/open/utils/utils.pri)                        # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
 
 #message(Utils dir $$UTILSDIR)
 #message(Utils bin dir $$UTILS_BINDIR)

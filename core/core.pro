@@ -2,16 +2,16 @@
 exists(../../../config.pri) {
     #message(Using global config)
     ROOT_DIR=../../..
+    include($$ROOT_DIR/config.pri)
 } else { 
     message(Using local config)
     ROOT_DIR=..
+    include($$ROOT_DIR/cvs-config.pri)
 }
-include($$ROOT_DIR/config.pri)
 
-
-CONFIG  += staticlib
-TARGET   = cvs_core
 TEMPLATE = lib
+TARGET   = cvs_core
+CONFIG  += staticlib
 
 include(core.pri)                                   # it uses TARGET and detects COREBINDIR!
 

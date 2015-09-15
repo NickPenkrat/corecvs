@@ -2,16 +2,17 @@
 exists(../../../config.pri) {
     ROOT_DIR=../../..
     #message(Using global config)
+    include($$ROOT_DIR/config.pri)
 } else {
     message(Using local config)
     ROOT_DIR=..
+    include($$ROOT_DIR/cvs-config.pri)
 }
 ROOT_DIR=$$PWD/$$ROOT_DIR
-include($$ROOT_DIR/config.pri)
 
-CONFIG  += staticlib
-TARGET   = cvs_utils
 TEMPLATE = lib
+TARGET   = cvs_utils
+CONFIG  += staticlib
 
 include(utils.pri)                      # it uses TARGET and detects UTILS_BINDIR, OBJECTS_DIR,...!
 
