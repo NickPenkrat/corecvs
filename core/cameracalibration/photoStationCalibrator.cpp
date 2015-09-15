@@ -27,7 +27,7 @@ void PhotoStationCalibrator::addCalibrationSetup(std::vector<int> &cameraIds, st
     assert(cameraLocations.size() == points.size());
     assert(cameraIds.size() == points.size());
 
-    for (int i = 0; i < cameraIds.size(); ++i)
+    for (size_t i = 0; i < cameraIds.size(); ++i)
     {
         int idx = cameraIds[i];
         patternPoints[M][idx] = points[i];

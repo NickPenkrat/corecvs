@@ -159,7 +159,7 @@ void CornerKernelSet::computeCost(DpImage &img, DpImage &c, bool parallelable, b
         corecvs::ConvolveKernel<corecvs::DummyAlgebra> convD(&D, D.y, D.x);
 
         DpImage *in = &img;
-        corecvs::BufferProcessor<DpImage, DpImage, corecvs::ConvolveKernel, corecvs::VectorAlgebraDouble> proScalar;
+        corecvs::BufferProcessor<DpImage, DpImage, corecvs::ConvolveKernel, corecvs::AlgebraDouble> proScalar;
         proScalar.process(&in, &pfA, convA);
         proScalar.process(&in, &pfB, convB);
         proScalar.process(&in, &pfC, convC);

@@ -13,6 +13,7 @@
 #include "global.h"
 #include <immintrin.h>
 
+
 namespace corecvs {
 
 class Doublex4
@@ -44,13 +45,15 @@ public:
         this->data = _mm256_loadu_pd(data_ptr);
     }
 
-    Doublex4 Zero()
+    inline static Doublex4 Zero()
     {
-        Doublex4 result;
-        result.data = _mm256_setzero_pd();
-        return result;
+        return Doublex4(_mm256_setzero_pd());
     }
 
+    inline static Doublex4 Broadcast(const double *data_ptr)
+    {
+        return Doublex4(_mm256_broadcast_sd(data_ptr));
+    }
 
     void save(double * const data) const
     {
@@ -159,6 +162,16 @@ FORCE_INLINE Doublex4 operator /=(Doublex4 &left, const Doublex4 &right) {
     left.data = _mm256_div_pd(left.data, right.data);
     return left;
 }
+
+FORCE_INLINE Doublex4 multiplyAdd(const Doublex4 &mul1, const Doublex4 &mul2, const Doublex4 &add1) {
+#ifdef WITH_FMA
+    return Doublex4(_mm256_fmadd_pd(mul1.data, mul2.data, add1.data));
+#else
+    return mul1 * mul2 + add1;
+#endif
+}
+
+
 
 } //namespace corecvs
 

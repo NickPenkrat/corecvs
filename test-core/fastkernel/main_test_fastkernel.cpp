@@ -65,7 +65,7 @@ class VisiterSemiRandom
 public:
     void operator() (int y , int x , Type &element) {
         element = Type(((unsigned)(y * 54536351 + x * 8769843 + 5)) % (G12Buffer::BUFFER_MAX_VALUE + 1));
-    };
+    }
 };
 
 TEST(FastKernel, _testFastKernel)
@@ -360,19 +360,17 @@ TEST(FastKernel, testBooleanOperations)
 }
 
 
-<<<<<<< HEAD
+#if 0
 int main (int /*argC*/, char ** /*argV*/)
 {
     testSSEMul();
     //testBooleanOperations ();
     return 0;
-=======
+
 //int main (int /*argC*/, char ** /*argV*/)
 //{
 //    testBooleanOperations ();
 //    return 0;
->>>>>>> official/master_topcon
-
 //#ifdef WITH_SSE
 //	_testFastKernel();
 //	_testFastKernelSSE();
@@ -402,3 +400,5 @@ int main (int /*argC*/, char ** /*argV*/)
 //    cout << "PASSED" << endl;
 //    return 0;
 //}
+
+#endif

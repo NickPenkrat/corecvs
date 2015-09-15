@@ -10,6 +10,9 @@
 #include "matrix.h"
 #include "matrix33.h"
 
+#include "tbbWrapper.h"
+#include "sseWrapper.h"
+
 namespace corecvs {
 
 /* The constructor is not in single cycle due to possible stride of the matrix */
@@ -226,7 +229,6 @@ Matrix operator *(DiagonalMatrix &D, const Matrix &M)
 #   include <cblas.h>
 # endif
 
-# ifndef WITH_BLAS
 
 #   include "tbbWrapper.h"
 #   include "immintrin.h"
@@ -235,35 +237,45 @@ struct ParallelMM
 {
     void operator() (const corecvs::BlockedRange<int> &r) const
     {
-        auto& A = *pA;
-        auto& B = *pB;
-        auto& result = *pResult;
-        int row, column, runner;
-        for (row = r.begin(); row < r.end(); ++row)
+        const Matrix& A = *pA;
+        const Matrix& B = *pB;
+        Matrix& result = *pResult;
+
+        for (int row = r.begin(); row < r.end(); row++)
         {
-            for (column = 0; column + 3 < result.w; column += 4)
+            int column = 0;
+#if WITH_SSE
+            const int STEP = DoublexN::SIZE;
+            ALIGN_DATA(16) double scratch[STEP];
+
+            for (; column + STEP - 1 < result.w; column += STEP)
             {
-                __m256d sum = _mm256_setzero_pd();
-                for (runner = 0; runner < A.w; runner++)
+                const double *ALine = &A.a(row, 0);
+                const double *BCol  = &B.a(0, column);
+
+                DoublexN sum = DoublexN::Zero();
+                for (int runner = 0; runner < A.w; runner++)
                 {
-                    __m256d bc = _mm256_broadcast_sd(&A.a(row, runner));
-                    __m256d rw = _mm256_loadu_pd(&B.a(runner, column));
-#   ifdef WITH_FMA
-                    sum = _mm256_fmadd_pd(bc, rw, sum);
-#   else
-                    sum = _mm256_add_pd(_mm256_mul_pd(bc, rw), sum);
-#   endif
-//                    sum += A.a(row, runner) * B.a(runner, column);
+                    DoublexN bc = DoublexN::Broadcast(ALine);
+                    DoublexN rw(BCol);
+                    sum = multiplyAdd(bc, rw, sum);
+
+                    ALine++;
+                    BCol += B.stride;
                 }
-                for (int jj = 0; jj < 4; ++jj)
+
+                sum.saveAligned(scratch);
+
+                for (int jj = 0; jj < STEP; ++jj)
                 {
-                   result.a(row, column + jj) = ((double*)&sum)[jj];
+                   result.a(row, column + jj) = scratch[jj];
                 }
             }
+#endif
             for (; column < result.w; ++column)
             {
                 double sum = 0;
-                for (runner = 0; runner < A.w; runner++)
+                for (int runner = 0; runner < A.w; runner++)
                 {
                     sum += A.a(row, runner) * B.a(runner, column);
                 }
@@ -274,7 +286,8 @@ struct ParallelMM
     ParallelMM(const Matrix *pA, const Matrix *pB, Matrix *pResult) : pA(pA), pB(pB), pResult(pResult)
     {
     }
-    const Matrix *pA, *pB;
+    const Matrix *pA;
+    const Matrix *pB;
     Matrix *pResult;
 };
 
@@ -285,9 +298,12 @@ struct ParallelMV
         auto& A = *pA;
         auto& B = *pB;
         auto& result = *pResult;
-        int row, column, runner;
+        int row;
         for (row = r.begin(); row < r.end(); ++row)
         {
+            int column = 0;
+            double sum = 0;
+#ifdef WITH_AVX
             __m256d sum_ = _mm256_setzero_pd();
             for (column = 0; column + 3 < A.w; column += 4)
             {
@@ -300,7 +316,8 @@ struct ParallelMV
 #   endif
             }
             double* sp = ((double*)&sum_);
-            double sum = sp[0]+sp[1]+sp[2]+sp[3];
+            sum = sp[0]+sp[1]+sp[2]+sp[3];
+#endif
             for (; column < A.w; column++)
             {
                 sum += B.at(column) * A.a(row, column);
@@ -323,11 +340,12 @@ struct ParallelMD
         const Matrix& A = *pA;
         const DiagonalMatrix& B = *pB;
         Matrix& result = *pResult;
-        int row;
-        int column;
-
+        int row;        
         for (row = r.begin(); row < r.end(); ++row)
         {
+            int column = 0;
+
+#ifdef WITH_AVX
             for (column = 0; column + 3 < result.w; column += 4)
             {
                 __m256d diag = _mm256_loadu_pd(&B.at(column));
@@ -335,7 +353,8 @@ struct ParallelMD
                 __m256d res  = _mm256_mul_pd(diag, mat);
                 _mm256_storeu_pd(&result.a(row, column), res);
             }
-            for (; column < result.w; ++column)
+#endif
+            for (; column < result.w; column++)
             {
                 result.a(row, column) = A.a(row, column) * B.at(column);
             }
@@ -350,7 +369,6 @@ struct ParallelMD
     Matrix *pResult;
 };
 
-#   endif // !WITH_BLAS
 
 Matrix operator *(const Matrix &A, const Matrix &B)
 {
@@ -358,25 +376,7 @@ Matrix operator *(const Matrix &A, const Matrix &B)
     Matrix result(A.h, B.w, false);
 
 #   ifndef  WITH_BLAS
-    int row, column, runner;
-    if (A.h < 64)
-    {
-       for (row = 0; row < result.h; row++)
-           for (column = 0; column < result.w; column++)
-           {
-               double sum = 0;
-               for (runner = 0; runner < A.w; runner++)
-               {
-                   sum += A.a(row, runner) * B.a(runner, column);
-               }
-               result.a(row, column) = sum;
-           }
-    }
-    else
-    {
-        corecvs::parallelable_for (0, result.h, 8, ParallelMM(&A, &B, &result), true);
-    }
-
+    parallelable_for (0, result.h, 8, ParallelMM(&A, &B, &result), !(A.h < 64));
 #   else // !WITH_BLAS
     cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, A.h, B.w, A.w, 1.0, A.data, A.stride, B.data, B.stride, 0.0, result.data, result.stride);
 #   endif // WITH_BLAS

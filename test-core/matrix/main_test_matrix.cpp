@@ -22,6 +22,7 @@
 #include "mathUtils.h"
 #include "matrix33.h"
 #include "matrix.h"
+#include "preciseTimer.h"
 
 using namespace std;
 using namespace corecvs;
@@ -520,13 +521,88 @@ TEST(MatrixTest, testVectorMatrixConversions)
 
 }
 
-#if 0
-/* Profile matrix */
-TEST(MatrixProfile, profileMatrixDiagonal)
+/**
+ *   We need matrix of 10x10 to trigger vector path
+ *
+ *
+ **/
+TEST(MatrixTest, testLargeMatrixOperations)
 {
+    Matrix A(10,10);
+    Matrix B(10,10);
+
+    auto touch = [](int i, int j, double &el) -> void { el = i + j; };
+    A.touchOperationElementwize(touch);
+    B.touchOperationElementwize(touch);
+
+    Matrix AB = A * B;
+    Matrix BA = B * A;
+
+}
+
+TEST(MatrixTest, test10MatrixMultiply)
+{
+     Matrix A(10,10);
+     auto touch = [](int i, int j, double &el) -> void { el = ((i+1) * (j + 1)) + ((j + 1) / 5.0); };
+     A.touchOperationElementwize(touch);
+
+     cout << A << endl;
+
+     double data[] =
+
+     { 554.4, 1016.4,  1478.4, 1940.4, 2402.4, 2864.4, 3326.4,  3788.4,  4250.4,  4712.4,
+      1016.4, 1863.4,  2710.4, 3557.4, 4404.4, 5251.4, 6098.4,  6945.4,  7792.4,  8639.4,
+      1478.4, 2710.4,  3942.4, 5174.4, 6406.4, 7638.4, 8870.4, 10102.4, 11334.4, 12566.4,
+      1940.4, 3557.4,  5174.4, 6791.4, 8408.4,10025.4,11642.4, 13259.4, 14876.4, 16493.4,
+      2402.4, 4404.4,  6406.4, 8408.4,10410.4,12412.4,14414.4, 16416.4, 18418.4, 20420.4,
+      2864.4, 5251.4,  7638.4,10025.4,12412.4,14799.4,17186.4, 19573.4, 21960.4, 24347.4,
+      3326.4, 6098.4,  8870.4,11642.4,14414.4,17186.4,19958.4, 22730.4, 25502.4, 28274.4,
+      3788.4, 6945.4, 10102.4,13259.4,16416.4,19573.4,22730.4, 25887.4, 29044.4, 32201.4,
+      4250.4, 7792.4, 11334.4,14876.4,18418.4,21960.4,25502.4, 29044.4, 32586.4, 36128.4,
+      4712.4, 8639.4, 12566.4,16493.4,20420.4,24347.4,28274.4, 32201.4, 36128.4, 40055.4 };
 
 
+     Matrix result(10,10, data);
+     Matrix AAT = A * A.t();
 
+     ASSERT_TRUE(AAT. notTooFar(&result, 1e-8, true));
+}
+
+#if 1
+/* Profile matrix */
+
+const static unsigned POLUTING_INPUTS = 20;
+const static unsigned LIMIT = 50;
+
+const static int  TEST_H_SIZE = 1000;
+const static int  TEST_W_SIZE = TEST_H_SIZE;
+
+
+TEST(MatrixProfile, profileMatrixMul)
+{
+    PreciseTimer start;
+    Matrix * input[POLUTING_INPUTS];
+
+    for (unsigned i = 0; i < POLUTING_INPUTS; i++)
+    {
+        input[i] = new Matrix(TEST_H_SIZE ,TEST_W_SIZE);
+        auto touch = [](int i, int j, double &el) -> void { el = ((i+1) * (j + 1)) + ((j + 1) / 5.0); };
+        input[i]->touchOperationElementwize(touch);
+    }
+
+    SYNC_PRINT(("Profiling     Simple Approach:"));
+    start = PreciseTimer::currentTime();
+    for (unsigned i = 0; i < LIMIT; i++) {
+        Matrix &A = *input[i % POLUTING_INPUTS];
+        Matrix B = A * A;
+
+    }
+    uint64_t delaySimple = start.usecsToNow();
+    SYNC_PRINT(("%8" PRIu64 "us %8" PRIu64 "ms SP: %8" PRIu64 "us\n", delaySimple, delaySimple / 1000, delaySimple / LIMIT));
+
+    for (unsigned i = 0; i < POLUTING_INPUTS; i++) {
+        delete_safe(input[i]);
+    }
 
 }
 #endif

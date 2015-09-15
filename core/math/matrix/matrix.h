@@ -279,18 +279,27 @@ public:
     friend ostream & operator <<(ostream &out, const Matrix &matrix);
     void print(ostream &out);
 
-    inline bool notTooFar(const Matrix *V, double epsilon = 0.0) const
+    inline bool notTooFar(const Matrix *V, double epsilon = 0.0, bool trace = false ) const
     {
         int h = getH();
         int w = getW();
-        if (h != V->getH() || w != V->getW())
+        if (h != V->getH() || w != V->getW()) {
+            if (trace) {
+                SYNC_PRINT(("[%d x %d] != [%d x %d]", h, w, V->getH(), V->getW()));
+            }
             return false;
+        }
 
         for (int i = 0; i < h; i++)
             for (int j = 0; j < w; j++)
             if (  this->element(i,j) > V->element(i,j) + epsilon ||
                   this->element(i,j) < V->element(i,j) - epsilon )
+            {
+                if (trace) {
+                    SYNC_PRINT(("[%d x %d] %lf != %lf\n", i, j, this->element(i,j), V->element(i,j)));
+                }
                 return false;
+            }
         return true;
     }
 
