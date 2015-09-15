@@ -68,7 +68,7 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
     detector.detectCorners(buffer, corners);
 
     if (stats != NULL) stats->prefix = prefix;
-    if (stats != NULL) stats->resetInterval("Detector");
+    if (stats != NULL) stats->resetInterval("Corners");
 
     std::vector<std::vector<std::vector<corecvs::Vector2dd>>> boards;
 

@@ -44,11 +44,11 @@ class ImageWidget : public ViAreaWidget {
 public:
     QImage *image;
 
-    ImageWidget() : image(NULL) {};
+    ImageWidget() : image(NULL) {}
     void setImage(QImage *_image);
 
     virtual void paintEvent(QPaintEvent * );
 
-    ~ImageWidget(){};
+    ~ImageWidget(){}
 };
 

@@ -167,8 +167,8 @@ void AdvancedImageWidget::drawResized (QPainter &painter)
 
 QPointF AdvancedImageWidget::widgetToImageF(const QPointF &p)
 {
-    if (mOutputRect.height() == 0 || mInputRect.height() == 0 ||
-        mInputRect .height() == 0 || mInputRect.height() == 0)
+    if (mOutputRect.height() == 0 || mOutputRect.width() == 0 ||
+        mInputRect .height() == 0 || mInputRect .width() == 0)
     {
         return p;
     }
@@ -194,14 +194,14 @@ QPointF AdvancedImageWidget::widgetToImageF(const QPointF &p)
 
 QPointF AdvancedImageWidget::imageToWidgetF(const QPointF &p)
 {
-    if (mOutputRect.height() == 0 || mInputRect.height() == 0 ||
-        mInputRect.height() == 0 || mInputRect.height() == 0)
+    if (mOutputRect.height() == 0 || mOutputRect.width() == 0 ||
+        mInputRect .height() == 0 || mInputRect .width() == 0)
     {
         return p;
     }
 
-    double x1 = (double)(p.x() - mInputRect.left()) / (mInputRect. width() - 1);
-    double y1 = (double)(p.y() - mInputRect. top()) / (mInputRect.height() - 1);
+    double x1 = (double)(p.x() - mInputRect.x()) / (mInputRect. width());
+    double y1 = (double)(p.y() - mInputRect.y()) / (mInputRect.height());
     double x2 = x1;
     double y2 = y1;
 
@@ -527,7 +527,7 @@ void AdvancedImageWidget::childMouseMoved(QMouseEvent * event)
     {
         QColor color = mImage->pixel(imagePoint);
 
-        QString info = QString("[%1 x %2] of [%3 x %4] (%5 %6 %7)")
+        QString info = QString("[%1 x %2] of [%3 x %4] (R:%5 G:%6 B:%7)")
                 .arg(imagePoint.x())
                 .arg(imagePoint.y())
                 .arg(mImage->width())

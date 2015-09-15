@@ -325,6 +325,51 @@ template <class StreamType>
     }
 
 
+    class AdvancedSteamPrinter {
+    public:
+        ostream &outStream;
+
+        AdvancedSteamPrinter(ostream &stream) :
+            outStream(stream)
+        {
+
+        }
+
+        void printUnitedStat(const string &name, int length, const UnitedStat &stat, int /*lineNum*/)
+        {
+            /*Well I'm just lazy*/
+            char output[1000] = "";
+
+            if (stat.type == SingleStat::TIME)
+            {
+                snprintf(output, CORE_COUNT_OF(output),
+                    "%-*s : %7" PRIu64 " us : %7" PRIu64 " ms : %7" PRIu64 " us  \n",
+                    length,
+                    name.c_str(),
+                    stat.sum / stat.number,
+                    ((stat.sum / stat.number) + 500) / 1000,
+                    (stat.min == std::numeric_limits<uint64_t>::max()) ? 0 : stat.min);
+
+            } else {
+                snprintf( output, CORE_COUNT_OF(output),
+                    "%-*s : %7" PRIu64 "\n",
+                    length,
+                    name.c_str(),
+                    stat.sum / stat.number);
+            }
+            outStream << output << std::flush;
+        }
+    };
+
+    virtual void printAdvanced(ostream &stream)
+    {
+        printf("=============================================================\n");
+        AdvancedSteamPrinter printer(stream);
+        printStats(printer);
+        printf("=============================================================\n");
+    }
+
+
     class WikiPrinter {
     public:
         void printUnitedStat(const string &/*name*/, int /*length*/, const UnitedStat &stat, int /*lineNum*/)
