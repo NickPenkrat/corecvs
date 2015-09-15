@@ -16,7 +16,7 @@ CONFIG += console
 
 TARGET  = test_directshow
 
-OBJECTS_DIR = $$ROOT_DIR/.obj/tests/directshow$$BUILD_CFG_NAME
+OBJECTS_DIR = $$ROOT_DIR/.obj/directshow$$BUILD_CFG_NAME
 
 MOC_DIR = $$OBJECTS_DIR			                    # we have to set this to omit creating dummy dirs: debug,release
 

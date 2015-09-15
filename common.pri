@@ -233,8 +233,12 @@ isEmpty(CCACHE_TOOLCHAIN_ON) {
     QMAKE_CXXFLAGS_DEBUG   += -O0 -g3
     QMAKE_LFLAGS           +=     -g3
 
-#    QMAKE_CFLAGS_RELEASE   += -O3 -g3 -mtune=native
-#    QMAKE_CXXFLAGS_RELEASE += -O3 -g3 -mtune=native
+    QMAKE_CFLAGS_RELEASE   += -O3
+    QMAKE_CXXFLAGS_RELEASE += -O3
+#   QMAKE_CFLAGS_RELEASE   += -g3
+#   QMAKE_CXXFLAGS_RELEASE += -g3
+#   QMAKE_CFLAGS_RELEASE   += -mtune=native     # TODO: native doesn't work while we could use (SSE & !AVX)
+#   QMAKE_CXXFLAGS_RELEASE += -mtune=native     # TODO: native doesn't work while we could use (SSE & !AVX)
 
     # Workaround for -fPIC bug
     QMAKE_CFLAGS_STATIC_LIB=
@@ -285,19 +289,19 @@ isEmpty(CCACHE_TOOLCHAIN_ON) {
 # On the 'distclean' command tree recursively generated makefiles (and object_script as well) haven't been deleted.
 # It happens when a project has the same name as its directory.
 #
-build_pass :                          # must clean only for the concrete configuration
-!gen_vsproj {                                       # QMake doesn't support clean command for generated VS projects
+build_pass {                                      # must clean only for the concrete configuration
+  !gen_vsproj {                                   # QMake doesn't support clean command for generated VS projects
     CONFIG(debug, debug|release) {
         QMAKE_DISTCLEAN += object_script.*        # delete these files always for each project even if they are absent
     }
     CONFIG(release, debug|release) {
         QMAKE_DISTCLEAN += object_script.*        # delete these files always for each project even if they are absent
     }
-#   QMAKE_DISTCLEAN += object_script.*        # commented as it's repeated twice when open (common|release)
+#   QMAKE_DISTCLEAN += object_script.*            # commented as it's repeated twice when open (common|release)
 
 #   QMAKE_DISTCLEAN += Makefile.$(QMAKE_TARGET)*  # doesn't work as we make different target name with the project name
-#   QMAKE_DISTCLEAN += Makefile.$(TARGET)*      # doesn't work as make's target has an output filename, not the project name!
-#   QMAKE_DISTCLEAN += Makefile.*         # doesn't work as it kills both makefiles and the cleaning is stopped!
+#   QMAKE_DISTCLEAN += Makefile.$(TARGET)*        # doesn't work as make's target has an output filename, not the project name!
+#   QMAKE_DISTCLEAN += Makefile.*                 # doesn't work as it kills both makefiles and the cleaning is stopped!
 
     # We have to check those projects, which have the same name as their folders!!!
     #
@@ -320,6 +324,9 @@ build_pass :                          # must clean only for the concrete configu
        #QMAKE_DISTCLEAN += Makefile*        # doesn't work as it tries to delete Makefile.unitTests.Debug/Release that are really used on distclean cmd!
         QMAKE_DISTCLEAN += Makefile Makefile.Debug Makefile.Release     # these files are generated indeed!
     }
+  } else {
+    # unfortunately QMake doesn't support clean command inside generated VS projects
+  }
 }
 
 msvc_analyser {
@@ -438,5 +445,4 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
 # QMAKE_CXXFLAGS += -Winit-self
 # QMAKE_CXXFLAGS += -Wunreachable-code
 
-OPEN_ROOT_DIRECTORY = $$PWD
-
+#OPEN_ROOT_DIRECTORY = $$PWD

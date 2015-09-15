@@ -30,6 +30,8 @@ CONFIG +=       \
    with_sse     \
    with_sse3    \
    with_sse4    \
+   with_avx     \
+   with_avx2    \
 #   with_tbb     \
 
 

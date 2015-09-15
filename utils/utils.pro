@@ -13,11 +13,11 @@ CONFIG  += staticlib
 TARGET   = cvs_utils
 TEMPLATE = lib
 
-UTILSDIR = $$PWD
-include($$UTILSDIR/utils.pri)                      # it uses UTILSDIR, TARGET and detects UTILS_BINDIR, OBJECTS_DIR,...!
+include(utils.pri)                      # it uses TARGET and detects UTILS_BINDIR, OBJECTS_DIR,...!
 
 QT += gui
 
+# TODO: split this huge project into parts by these keys: utils, utils_gui?
 CONFIG += with_filters
 CONFIG += with_widgets
 
@@ -531,4 +531,3 @@ with_synccam {
 }
 
 OTHER_FILES += ../tools/generator/xml/draw3d.xml
-

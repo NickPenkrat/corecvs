@@ -1,7 +1,7 @@
 #include "flatPatternCalibrator.h"
 #include <cassert>
 
-FlatPatternCalibrator::FlatPatternCalibrator(const CameraConstraints constraints, const CameraIntrinsics_ lockParams, const double lockFactor) : factor(lockFactor), K(0), N(0), absoluteConic(6), lockParams(lockParams), constraints(constraints), forceZeroSkew(!!(constraints & CameraConstraints::ZERO_SKEW))
+FlatPatternCalibrator::FlatPatternCalibrator(const CameraConstraints constraints, const CameraIntrinsics lockParams, const double lockFactor) : factor(lockFactor), K(0), N(0), absoluteConic(6), lockParams(lockParams), constraints(constraints), forceZeroSkew(!!(constraints & CameraConstraints::ZERO_SKEW))
 {
 }
 
@@ -29,7 +29,7 @@ void FlatPatternCalibrator::solve(bool runPresolver, bool runLM)
     std::cout << "OPTFAC: " << factor << std::endl;
 }
 
-CameraIntrinsics_ FlatPatternCalibrator::getIntrinsics()
+CameraIntrinsics FlatPatternCalibrator::getIntrinsics()
 {
     return intrinsics;
 }
@@ -122,14 +122,14 @@ void FlatPatternCalibrator::enforceParams()
     FORCE(ZERO_SKEW, skew, 0.0);
     LOCK(LOCK_SKEW, skew);
 
-    double f = (intrinsics.fx + intrinsics.fy) / 2.0;
-    FORCE(EQUAL_FOCAL, fx, f);
-    FORCE(EQUAL_FOCAL, fy, f);
-    LOCK(LOCK_FOCAL, fx);
-    LOCK(LOCK_FOCAL, fy);
+    double f = (intrinsics.focal.x() + intrinsics.focal.y()) / 2.0;
+    FORCE(EQUAL_FOCAL, focal.x(), f);
+    FORCE(EQUAL_FOCAL, focal.y(), f);
+    LOCK(LOCK_FOCAL, focal.x());
+    LOCK(LOCK_FOCAL, focal.y());
 
-    LOCK(LOCK_PRINCIPAL, cx);
-    LOCK(LOCK_PRINCIPAL, cy);
+    LOCK(LOCK_PRINCIPAL, principal.x());
+    LOCK(LOCK_PRINCIPAL, principal.y());
 #undef FORCE
 #undef LOCK
 }
@@ -190,11 +190,11 @@ void FlatPatternCalibrator::readParams(const double in[])
     IFNOT(LOCK_FOCAL,
             double f;
             GET_PARAM(f);
-            intrinsics.fx = intrinsics.fy = f;
-            IFNOT_GET_PARAM(EQUAL_FOCAL, intrinsics.fy));
+            intrinsics.focal = Vector2dd(f,f);
+            IFNOT_GET_PARAM(EQUAL_FOCAL, intrinsics.focal.y()));
     IFNOT(LOCK_PRINCIPAL,
-            GET_PARAM(intrinsics.cx);
-            GET_PARAM(intrinsics.cy));
+            GET_PARAM(intrinsics.principal.x());
+            GET_PARAM(intrinsics.principal.y()));
     IFNOT(LOCK_SKEW,
             IFNOT_GET_PARAM(ZERO_SKEW, intrinsics.skew));
 
@@ -228,11 +228,11 @@ void FlatPatternCalibrator::writeParams(double out[])
 {
     int argout = 0;
     IFNOT(LOCK_FOCAL,
-            SET_PARAM(intrinsics.fx);
-            IFNOT_SET_PARAM(EQUAL_FOCAL, intrinsics.fy));
+            SET_PARAM(intrinsics.focal.x());
+            IFNOT_SET_PARAM(EQUAL_FOCAL, intrinsics.focal.y()));
     IFNOT(LOCK_PRINCIPAL,
-            SET_PARAM(intrinsics.cx);
-            SET_PARAM(intrinsics.cy));
+            SET_PARAM(intrinsics.principal.x());
+            SET_PARAM(intrinsics.principal.y()));
     IFNOT(LOCK_SKEW,
             IFNOT_SET_PARAM(ZERO_SKEW, intrinsics.skew));
 
@@ -409,5 +409,5 @@ void FlatPatternCalibrator::extractIntrinsics()
     skew = -b12 * fx * fx * fy / lambda;
     cx = skew * cy / fx - b13 * fx * fx / lambda;
 
-    intrinsics = CameraIntrinsics_(fx, fy, cx, cy, skew);
+    intrinsics = CameraIntrinsics(fx, fy, cx, cy, skew);
 }

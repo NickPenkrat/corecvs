@@ -184,7 +184,7 @@ public:
 	//destructor
 	SIFTGPU_EXPORT virtual ~SiftGPU();
 	//set the active pyramid...dropped function
-    SIFTGPU_EXPORT virtual void SetActivePyramid(int index) {}
+        SIFTGPU_EXPORT virtual void SetActivePyramid(int index) {}
 	//retrieve the number of images in the image list
 	SIFTGPU_EXPORT virtual int GetImageCount();
 	//set parameter GlobalUtil::_ForceTightPyramid

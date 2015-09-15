@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CAMERA_PARAMETERS_H_
+#define CAMERA_PARAMETERS_H_
 /**
  * \file cameraParameters.h
  * \brief a header for cameraParameters.c
@@ -19,8 +20,10 @@ namespace corecvs {
  *
  *  Camera intrinsics scale and shift the image.
  *
+ *  THIS IS DEPRICATED.
+ *
  ***/
-class CameraIntrinsics
+class CameraIntrinsicsLegacy
 {
 public:
     Vector2dd resolution;   /**< Imager resolution (in pixel) */
@@ -28,14 +31,14 @@ public:
     double f;               /**< Focal length (in mm) */
     double k;               /**< Pixel size (in mm)   */
 
-    CameraIntrinsics() :
+    CameraIntrinsicsLegacy() :
         resolution(0.0)
       , center(0.0)
       , f(1.0)
       , k(1.0)
     {}
 
-    CameraIntrinsics(
+    CameraIntrinsicsLegacy(
         Vector2dd _resolution,
         Vector2dd _center,
         double _f,
@@ -70,3 +73,5 @@ template<class VisitorType>
 };
 
 } //namespace corecvs
+
+#endif // CAMERA_PARAMETERS_H_

@@ -50,7 +50,7 @@ bool CalibrationJob::detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::Sel
 
 void CalibrationJob::allDetectChessBoard(bool distorted)
 {
-    int N = observations.size();
+    int N = (int)observations.size();
     photostation.cameras.resize(N);
     auto psIterator = photostation.cameras.begin();
 
@@ -332,7 +332,7 @@ void CalibrationJob::allCalibrateSingleCamera()
     std::cout << "OPTFAC_MEAN: " << factor << std::endl;
 }
 
-void CalibrationJob::calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<CameraIntrinsics_> &intrinsics, std::vector<std::vector<LocationData>> &locations, bool runBFS, bool runLM)
+void CalibrationJob::calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<CameraIntrinsics> &intrinsics, std::vector<std::vector<LocationData>> &locations, bool runBFS, bool runLM)
 {
     for (auto& ci: intrinsics)
     {
@@ -369,8 +369,8 @@ void CalibrationJob::calibratePhotostation(int N, int M, PhotoStationCalibrator 
 
 void CalibrationJob::calibratePhotostation()
 {
-    int M = calibrationSetups.size();
-    int N = photostation.cameras.size();
+    int M = (int)calibrationSetups.size();
+    int N = (int)photostation.cameras.size();
     std::vector<MultiCameraPatternPoints> points(M);
     for (int i = 0; i < M; ++i)
     {
@@ -383,7 +383,7 @@ void CalibrationJob::calibratePhotostation()
         }
     }
 
-    std::vector<CameraIntrinsics_> intrinsics;
+    std::vector<CameraIntrinsics> intrinsics;
     for (auto& c: photostation.cameras)
         intrinsics.push_back(c.intrinsics);
     std::vector<std::vector<LocationData>> locations(M);

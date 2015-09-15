@@ -38,7 +38,7 @@ void drawSituation(
 
    const Vector2dd imageSize(imageW, imageH);
 
-   CameraIntrinsics camIntr(imageSize, imageSize / 2.0, 40.0, 1.0);
+   CameraIntrinsicsLegacy camIntr(imageSize, imageSize / 2.0, 40.0, 1.0);
 
    std::vector<FloatFlowVector> *flowVectors = FlowSimulator::simulateFlow(camIntr, realCameraExtr, realCarMovement);
 

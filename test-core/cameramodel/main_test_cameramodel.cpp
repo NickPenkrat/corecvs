@@ -33,7 +33,7 @@ using corecvs::lerp;
 using corecvs::Vector3dd;
 using corecvs::Matrix44;
 using corecvs::Vector2dd;
-using corecvs::CameraIntrinsics;
+using corecvs::CameraIntrinsicsLegacy;
 using corecvs::Matrix33;
 using corecvs::BufferFactory;
 using corecvs::BMPLoader;
@@ -73,8 +73,8 @@ TEST(Cameramodel, DISABLED_generateReality)
 
 	Vector2dd imageResolution = Vector2dd(RESOLUTION_X, RESOLUTION_Y);
 
-	CameraIntrinsics  leftCameraIntrinsics(imageResolution,imageResolution / 2.0, FOCAL, 1.0);
-	CameraIntrinsics rightCameraIntrinsics(imageResolution,imageResolution / 2.0, FOCAL, 1.0);
+	CameraIntrinsicsLegacy  leftCameraIntrinsics(imageResolution,imageResolution / 2.0, FOCAL, 1.0);
+	CameraIntrinsicsLegacy rightCameraIntrinsics(imageResolution,imageResolution / 2.0, FOCAL, 1.0);
 
 	Matrix44 LK  = leftCameraIntrinsics .getKMatrix();
 	Matrix44 RK  = rightCameraIntrinsics.getKMatrix();

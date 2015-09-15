@@ -67,7 +67,7 @@ typedef int                bool_t;                          // fast Boolean type
 #   define printf xil_printf
 #endif
 
-#define DASSERT_FAIL(X)                                         \
+#define CORE_DASSERT_FAIL(X)                                    \
     do {                                                        \
         printf("Assert at %s:%d - %s\n", __FILE__, __LINE__, X);\
         fflush(stdout);                                         \
@@ -75,7 +75,7 @@ typedef int                bool_t;                          // fast Boolean type
         exit (-2);                                              \
     } while (0)
 
-#define DASSERT_FAIL_P(X)                                       \
+#define CORE_DASSERT_FAIL_P(X)                                  \
     do {                                                        \
         printf("Assert at %s:%d - ", __FILE__, __LINE__);       \
         printf X;                                               \
@@ -86,48 +86,54 @@ typedef int                bool_t;                          // fast Boolean type
 
 #ifdef ASSERTS
 
-# define ASSERT_FAIL(X)          DASSERT_FAIL(X)
-# define ASSERT_FAIL_P(X)        DASSERT_FAIL_P(X)
-# define ASSERT_TRUE(Y, X)       if (!(Y)) { ASSERT_FAIL(X);   }
-# define ASSERT_TRUE_S(Y)        if (!(Y)) { ASSERT_FAIL(#Y);  }
-# define ASSERT_FALSE(Y, X)      if (Y)    { ASSERT_FAIL(X);   }
-# define ASSERT_FALSE_S(Y)       if (Y)    { ASSERT_FAIL(#Y);  }
-# define ASSERT_TRUE_P(Y, X)     if (!(Y)) { ASSERT_FAIL_P(X); }
-# define ASSERT_FALSE_P(Y, X)    if (Y)    { ASSERT_FAIL_P(X); }
+# define CORE_ASSERT_FAIL(X)        CORE_DASSERT_FAIL(X)
+# define CORE_ASSERT_FAIL_P(X)      CORE_DASSERT_FAIL_P(X)
+# define CORE_ASSERT_TRUE_S(Y)      if (!(Y)) { CORE_ASSERT_FAIL(#Y);  }
+# define CORE_ASSERT_TRUE_P(Y, X)   if (!(Y)) { CORE_ASSERT_FAIL_P(X); }
+# define CORE_ASSERT_FALSE_S(Y)     if (Y)    { CORE_ASSERT_FAIL(#Y);  }
+# define CORE_ASSERT_FALSE_P(Y, X)  if (Y)    { CORE_ASSERT_FAIL_P(X); }
 
-# define ASSERT_DOUBLE_EQUAL_E(X,Y,Eps, Text) \
-    ASSERT_TRUE((X) > ((Y) - Eps) && (X) < ((Y) + Eps), Text)
+// added prefix CORE as gtest has macros with the same names
+# define CORE_ASSERT_TRUE(Y, X)     if (!(Y)) { CORE_ASSERT_FAIL(X);   }
+# define CORE_ASSERT_FALSE(Y, X)    if (Y)    { CORE_ASSERT_FAIL(X);   }
 
-# define ASSERT_DOUBLE_EQUAL(X,Y, Text) \
-    ASSERT_DOUBLE_EQUAL_E(X, Y, 1e-10, Text)
+# define CORE_ASSERT_DOUBLE_EQUAL_E(X,Y,Eps, Text) \
+         CORE_ASSERT_TRUE((X) > ((Y) - Eps) && (X) < ((Y) + Eps), Text)
 
-# define ASSERT_DOUBLE_EQUAL_EP(X,Y,Eps, Text) \
-    ASSERT_TRUE_P((X) > ((Y) - Eps) && (X) < ((Y) + Eps), Text)
+# define CORE_ASSERT_DOUBLE_EQUAL(X,Y, Text) \
+         CORE_ASSERT_DOUBLE_EQUAL_E(X, Y, 1e-10, Text)
 
-# define ASSERT_DOUBLE_EQUAL_P(X,Y, Text) \
-    ASSERT_DOUBLE_EQUAL_EP(X, Y, 1e-10, Text)
+# define CORE_ASSERT_DOUBLE_EQUAL_EP(X,Y,Eps, Text) \
+         CORE_ASSERT_TRUE_P((X) > ((Y) - Eps) && (X) < ((Y) + Eps), Text)
 
+# define CORE_ASSERT_DOUBLE_EQUAL_P(X,Y, Text) \
+         CORE_ASSERT_DOUBLE_EQUAL_EP(X, Y, 1e-10, Text)
 
 #else // ASSERTS
 
-# define ASSERT_FAIL(X)
-# define ASSERT_TRUE_S(Y)
-# define ASSERT_TRUE(Y, X)
-# define ASSERT_FALSE_S(Y)
-# define ASSERT_FALSE(Y, X)
-# define ASSERT_TRUE_P(Y, X)
-# define ASSERT_FALSE_P(Y, X)
-# define ASSERT_DOUBLE_EQUAL_E(X,Y,Eps, Text)
-# define ASSERT_DOUBLE_EQUAL(X,Y,Text)
+# define CORE_ASSERT_FAIL(X)
+# define CORE_ASSERT_FAIL_P(X)
+# define CORE_ASSERT_TRUE_S(Y)
+# define CORE_ASSERT_TRUE_P(Y, X)
+# define CORE_ASSERT_FALSE_S(Y)
+# define CORE_ASSERT_FALSE_P(Y, X)
+
+# define CORE_ASSERT_TRUE(Y, X)
+# define CORE_ASSERT_FALSE(Y, X)
+
+# define CORE_ASSERT_DOUBLE_EQUAL_E(X,Y,Eps, Text)
+# define CORE_ASSERT_DOUBLE_EQUAL(X,Y,Text)
+# define CORE_ASSERT_DOUBLE_EQUAL_EP(X,Y,Eps, Text)
+# define CORE_ASSERT_DOUBLE_EQUAL_P(X,Y, Text)
 
 # ifdef DEBUG
-#  define DASSERT_TRUE_P(Y, X)   if (!(Y)) { DASSERT_FAIL_P(X); }
+#  define DASSERT_TRUE_P(Y, X)   if (!(Y)) { CORE_DASSERT_FAIL_P(X); }
 # else
 #  define DASSERT_TRUE_P(Y, X)
-#  undef  DASSERT_FAIL
-#  define DASSERT_FAIL(X)
-#  undef  DASSERT_FAIL_P
-#  define DASSERT_FAIL_P(X)
+#  undef  CORE_DASSERT_FAIL
+#  define CORE_DASSERT_FAIL(X)
+#  undef  CORE_DASSERT_FAIL_P
+#  define CORE_DASSERT_FAIL_P(X)
 # endif
 
 #endif // !ASSERTS
@@ -248,7 +254,7 @@ inline int snprintf2buf(char (&d)[size], cchar* fmt, ...)
     int iLen = vsnprintf((char*)d, size, fmt, varList);
 #endif
     va_end(varList);
-    ASSERT_TRUE_S(iLen < (int)size);
+    CORE_ASSERT_TRUE_S(iLen < (int)size);
     return iLen;
 }
 

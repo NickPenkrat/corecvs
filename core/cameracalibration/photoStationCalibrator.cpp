@@ -9,7 +9,7 @@ PhotoStationCalibrator::PhotoStationCalibrator(CameraConstraints constraints, co
 {
 }
 
-void PhotoStationCalibrator::addCamera(CameraIntrinsics_ &intrinsics)
+void PhotoStationCalibrator::addCamera(CameraIntrinsics &intrinsics)
 {
     N++;
     relativeCameraPositions.push_back({intrinsics, LocationData()});
@@ -179,24 +179,26 @@ void PhotoStationCalibrator::readParams(const double in[])
     int argin = 0;
     for (int i = 0; i < N; ++i)
     {
+        Camera_ &toFill = relativeCameraPositions[i];
+
         IFNOT(LOCK_FOCAL,
                 double f;
                 GET_PARAM(f);
-                relativeCameraPositions[i].intrinsics.fx = relativeCameraPositions[i].intrinsics.fy = f;
-                IFNOT_GET_PARAM(EQUAL_FOCAL, relativeCameraPositions[i].intrinsics.fy));
+                toFill.intrinsics.focal = Vector2dd(f, f);
+                IFNOT_GET_PARAM(EQUAL_FOCAL, toFill.intrinsics.focal.y()));
         IFNOT(LOCK_PRINCIPAL,
-                GET_PARAM(relativeCameraPositions[i].intrinsics.cx);
-                GET_PARAM(relativeCameraPositions[i].intrinsics.cy));
+                GET_PARAM(toFill.intrinsics.principal.x());
+                GET_PARAM(toFill.intrinsics.principal.y()));
         IFNOT(LOCK_SKEW,
-                IFNOT_GET_PARAM(ZERO_SKEW, relativeCameraPositions[i].intrinsics.skew));
+                IFNOT_GET_PARAM(ZERO_SKEW, toFill.intrinsics.skew));
         if (i > 0)
         {
             for (int j = 0; j < 3; ++j)
-                GET_PARAM(relativeCameraPositions[i].extrinsics.position[j]);
+                GET_PARAM(toFill.extrinsics.position[j]);
             for (int j = 0; j < 4; ++j)
             {
-                GET_PARAM(relativeCameraPositions[i].extrinsics.orientation[j]);
-                relativeCameraPositions[i].extrinsics.orientation.normalise(); 
+                GET_PARAM(toFill.extrinsics.orientation[j]);
+                toFill.extrinsics.orientation.normalise();
             }
         }
     }
@@ -221,23 +223,25 @@ void PhotoStationCalibrator::writeParams(double out[])
     int argout = 0;
     for (int i = 0; i < N; ++i)
     {
+       Camera_ &toWrite = relativeCameraPositions[i];
+
         IFNOT(LOCK_FOCAL,
-                SET_PARAM(relativeCameraPositions[i].intrinsics.fx);
-                IFNOT_SET_PARAM(EQUAL_FOCAL, relativeCameraPositions[i].intrinsics.fy));
+                SET_PARAM(toWrite.intrinsics.focal.x());
+                IFNOT_SET_PARAM(EQUAL_FOCAL, toWrite.intrinsics.focal.y()));
         IFNOT(LOCK_PRINCIPAL,
-                SET_PARAM(relativeCameraPositions[i].intrinsics.cx);
-                SET_PARAM(relativeCameraPositions[i].intrinsics.cy));
+                SET_PARAM(toWrite.intrinsics.principal.x());
+                SET_PARAM(toWrite.intrinsics.principal.y()));
         IFNOT(LOCK_SKEW,
                 IFNOT_SET_PARAM(ZERO_SKEW, relativeCameraPositions[i].intrinsics.skew));
         if (i > 0)
         {
             for (int j = 0; j < 3; ++j)
             {
-                SET_PARAM(relativeCameraPositions[i].extrinsics.position[j]);
+                SET_PARAM(toWrite.extrinsics.position[j]);
             }
             for (int j = 0; j < 4; ++j)
             {
-                SET_PARAM(relativeCameraPositions[i].extrinsics.orientation[j]);
+                SET_PARAM(toWrite.extrinsics.orientation[j]);
             }
         }
     }

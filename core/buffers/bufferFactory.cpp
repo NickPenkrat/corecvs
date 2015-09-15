@@ -18,7 +18,7 @@ CountedPtr<BufferFactory> BufferFactory::sThis;
 //static
 BufferFactory* BufferFactory::getInstance()
 {
-    ASSERT_TRUE(sThis.get() != NULL, "Out of memory!");
+    CORE_ASSERT_TRUE(sThis.get() != NULL, "Out of memory!");
 
     if (sThis.get()->mLoadersG12.size() == 0)
     {

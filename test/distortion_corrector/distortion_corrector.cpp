@@ -32,7 +32,7 @@
 #include "chessBoardCornerDetector.h"
 #include "chessBoardAssembler.h"
 
-#include "calibration_structs.h"
+#include "calibrationStructs.h"
 
 using namespace cv;
 using namespace corecvs;

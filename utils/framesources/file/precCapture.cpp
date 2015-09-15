@@ -104,7 +104,7 @@ bool FilePreciseCapture::FileSpinThread::grabFramePair()
             // Protection from the stack overflow, when there're no files at the given path
             //
             if (pInterface->mCurrentCount < 0) {
-                ASSERT_TRUE(pInterface->mCount == 1, "wrong image counting");
+                CORE_ASSERT_TRUE(pInterface->mCount == 1, "wrong image counting");
                 return false;                               // there's no chance to detect the right path to files
             }
             pInterface->resetImageFileCounter();

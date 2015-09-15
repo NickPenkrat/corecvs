@@ -73,9 +73,8 @@ TEST(Levenberg, testMarquardtLevenberg)
         cout << target[i] << ",";
     cout << endl;
 
-
-    ASSERT_DOUBLE_EQUAL_E(result[0],toguess[0], 1e-7, "Wrong result");
-    ASSERT_DOUBLE_EQUAL_E(result[1],toguess[1], 1e-7, "Wrong result");
+    CORE_ASSERT_DOUBLE_EQUAL_E(result[0], toguess[0], 1e-7, "Wrong result");
+    CORE_ASSERT_DOUBLE_EQUAL_E(result[1], toguess[1], 1e-7, "Wrong result");
 }
 
 TEST(Levenberg, DISABLED_plotRosenberg)

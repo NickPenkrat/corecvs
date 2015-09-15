@@ -628,7 +628,7 @@ Matrix33 Matrix33::ProjectiveByPoints(Vector2dd points[4], Vector2dd images[4])
  **/
 Matrix33 Matrix33::ProjectiveByPoints(int pointNumber, Vector2dd points[], Vector2dd images[])
 {
-    ASSERT_TRUE(pointNumber >= 4, "Too few points to create transform");
+    CORE_ASSERT_TRUE(pointNumber >= 4, "Too few points to create transform");
 
     if (pointNumber == 4)
         return ProjectiveByPoints(points, images);

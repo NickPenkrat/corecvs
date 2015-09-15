@@ -9,15 +9,13 @@ exists(../../../../config.pri) {
 ROOT_DIR=$$PWD/$$ROOT_DIR
 include($$ROOT_DIR/config.pri)
 
-TEMPLATE=app
-TARGET  = test_chessboard_detector
-CONFIG += CONSOLE
+TEMPLATE = app
+TARGET   = test_chessboard_detector
+CONFIG  += CONSOLE
 QT += core
 QT -= gui
 QT -= xml
 
-UTILSDIR = $$ROOT_DIR/src/open/utils
-include($$UTILSDIR/utils.pri)
+include($$ROOT_DIR/src/open/utils/utils.pri)
 
 SOURCES += chessboard_detector.cpp
-

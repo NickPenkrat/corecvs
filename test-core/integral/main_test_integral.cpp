@@ -50,7 +50,7 @@ TEST(Integral, testIntergralBufferGeneration)
     IntegralBuffer<uint32_t, uint16_t, int32_t> *integral =
         new IntegralBuffer<uint32_t, uint16_t, int32_t>(iBuf);
 
-    ASSERT_TRUE(integral->isEqual(rBuf), "Buffers should be equal");
+    CORE_ASSERT_TRUE(integral->isEqual(rBuf), "Buffers should be equal");
 
     delete iBuf;
     delete rBuf;
@@ -81,7 +81,7 @@ TEST(Integral, testIntergralBufferBlur)
 
     AbstractBuffer<uint16_t, int32_t> *iBuf2;
     iBuf2 = integral->rectangularBlur<AbstractBuffer<uint16_t, int32_t> >(1,1);
-    ASSERT_TRUE(iBuf2->isEqual(rBuf), "Buffers should be equal");
+    CORE_ASSERT_TRUE(iBuf2->isEqual(rBuf), "Buffers should be equal");
 
     delete iBuf;
     delete rBuf;
@@ -111,9 +111,9 @@ TEST(Integral, DISABLED_testIntegralBlurLarge)
             unsigned tmp = integral->rectangle(j - BLUR_RADIUS, i - BLUR_RADIUS, j + BLUR_RADIUS, i + BLUR_RADIUS );
             unsigned result = (tmp / ((2 * BLUR_RADIUS + 1) * (2 * BLUR_RADIUS + 1)));
 
-            ASSERT_TRUE_P(blurFast->element(i - BLUR_RADIUS, j - BLUR_RADIUS) == result,
-                   ("Error calculating blur buffer at %d %d  %d != %d",
-                    i, j, blurFast->element(i - BLUR_RADIUS, j - BLUR_RADIUS), result));
+            CORE_ASSERT_TRUE_P(blurFast->element(i - BLUR_RADIUS, j - BLUR_RADIUS) == result,
+                ("Error calculating blur buffer at %d %d  %d != %d",
+                 i, j, blurFast->element(i - BLUR_RADIUS, j - BLUR_RADIUS), result));
 
             *offset = result;
             offset++;
@@ -124,7 +124,6 @@ TEST(Integral, DISABLED_testIntegralBlurLarge)
     delete blurFast;
     delete integral;
     delete input;
-
 }
 
 #ifdef WITH_SSE
@@ -154,16 +153,15 @@ TEST(Integral, testIntergralBufferSSE)
 
     DOTRACE(("Results are: %u %u %u %u\n", resultArray[0],resultArray[1],resultArray[2], resultArray[3]));
 
-    ASSERT_TRUE(resultArray[0] == 28, "Error in SSE integral buffer calculation 1");
-    ASSERT_TRUE(resultArray[1] == 32, "Error in SSE integral buffer calculation 2");
-    ASSERT_TRUE(resultArray[2] == 36, "Error in SSE integral buffer calculation 3");
-    ASSERT_TRUE(resultArray[3] == 40, "Error in SSE integral buffer calculation 4");
+    CORE_ASSERT_TRUE(resultArray[0] == 28, "Error in SSE integral buffer calculation 1");
+    CORE_ASSERT_TRUE(resultArray[1] == 32, "Error in SSE integral buffer calculation 2");
+    CORE_ASSERT_TRUE(resultArray[2] == 36, "Error in SSE integral buffer calculation 3");
+    CORE_ASSERT_TRUE(resultArray[3] == 40, "Error in SSE integral buffer calculation 4");
 
-    ASSERT_TRUE(integral->rectangle(0,0,0,3) == 28, "Error in integral buffer calculation 1");
-    ASSERT_TRUE(integral->rectangle(1,0,1,3) == 32, "Error in integral buffer calculation 2");
-    ASSERT_TRUE(integral->rectangle(2,0,2,3) == 36, "Error in integral buffer calculation 3");
-    ASSERT_TRUE(integral->rectangle(3,0,3,3) == 40, "Error in integral buffer calculation 4");
-
+    CORE_ASSERT_TRUE(integral->rectangle(0, 0, 0, 3) == 28, "Error in integral buffer calculation 1");
+    CORE_ASSERT_TRUE(integral->rectangle(1, 0, 1, 3) == 32, "Error in integral buffer calculation 2");
+    CORE_ASSERT_TRUE(integral->rectangle(2, 0, 2, 3) == 36, "Error in integral buffer calculation 3");
+    CORE_ASSERT_TRUE(integral->rectangle(3, 0, 3, 3) == 40, "Error in integral buffer calculation 4");
 
     delete input;
     delete integral;
@@ -195,16 +193,15 @@ TEST(Integral, testIntergralBufferSSE_New)
 
     DOTRACE(("New Results are: %u %u %u %u\n", resultArray[0],resultArray[1],resultArray[2], resultArray[3]));
 
-    ASSERT_TRUE(resultArray[0] == 28, "Error in SSE integral buffer calculation 1");
-    ASSERT_TRUE(resultArray[1] == 32, "Error in SSE integral buffer calculation 2");
-    ASSERT_TRUE(resultArray[2] == 36, "Error in SSE integral buffer calculation 3");
-    ASSERT_TRUE(resultArray[3] == 40, "Error in SSE integral buffer calculation 4");
+    CORE_ASSERT_TRUE(resultArray[0] == 28, "Error in SSE integral buffer calculation 1");
+    CORE_ASSERT_TRUE(resultArray[1] == 32, "Error in SSE integral buffer calculation 2");
+    CORE_ASSERT_TRUE(resultArray[2] == 36, "Error in SSE integral buffer calculation 3");
+    CORE_ASSERT_TRUE(resultArray[3] == 40, "Error in SSE integral buffer calculation 4");
 
-    ASSERT_TRUE(integral->rectangle(0,0,0,3) == 28, "Error in integral buffer calculation 1");
-    ASSERT_TRUE(integral->rectangle(1,0,1,3) == 32, "Error in integral buffer calculation 2");
-    ASSERT_TRUE(integral->rectangle(2,0,2,3) == 36, "Error in integral buffer calculation 3");
-    ASSERT_TRUE(integral->rectangle(3,0,3,3) == 40, "Error in integral buffer calculation 4");
-
+    CORE_ASSERT_TRUE(integral->rectangle(0, 0, 0, 3) == 28, "Error in integral buffer calculation 1");
+    CORE_ASSERT_TRUE(integral->rectangle(1, 0, 1, 3) == 32, "Error in integral buffer calculation 2");
+    CORE_ASSERT_TRUE(integral->rectangle(2, 0, 2, 3) == 36, "Error in integral buffer calculation 3");
+    CORE_ASSERT_TRUE(integral->rectangle(3, 0, 3, 3) == 40, "Error in integral buffer calculation 4");
 
     delete input;
     delete integral;
