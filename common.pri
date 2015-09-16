@@ -437,9 +437,14 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
 
 with_blas {
   !win32 {
+    !isEmpty(BLAS_PATH) {
+        !build_pass: message (Using BLAS from <$$BLAS_PATH>)
+#        INCLUDEPATH += $(BLAS_PATH)/include
+    } else {
         !build_pass: message (Using System BLAS)
-        DEFINES     += WITH_BLAS
-        LIBS        += -lblas
+    }
+    DEFINES     += WITH_BLAS
+    LIBS        += -lblas
   }
 }
 

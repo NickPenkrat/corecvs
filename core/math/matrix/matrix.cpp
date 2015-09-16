@@ -307,21 +307,25 @@ struct ParallelMV
         {
             int column = 0;
             double sum = 0;
-#ifdef WITH_AVX
-            __m256d sum_ = _mm256_setzero_pd();
-            for (column = 0; column + 3 < A.w; column += 4)
+#ifdef WITH_SSE
+            const int STEP = DoublexN::SIZE;
+            ALIGN_DATA(16) double scratch[STEP];
+
+            DoublexN sumV = DoublexN::Zero();
+
+            for (column = 0; column + STEP - 1 < A.w; column += STEP)
             {
-                __m256d bc = _mm256_loadu_pd(&A.a(row, column));
-                __m256d rw = *((__m256d*)&B.at(column));//_mm256_loadu_pd(&B.at(column));
-#   ifdef WITH_FMA
-                sum_ = _mm256_fmadd_pd(bc, rw, sum_);
-#   else
-                sum_ = _mm256_add_pd(_mm256_mul_pd(bc, rw), sum_);
-#   endif
+                DoublexN bc = DoublexN(&A.a(row, column));
+                DoublexN rw = DoublexN(&B.at(column));
+                sumV = multiplyAdd(bc, rw, sumV);
             }
-            double* sp = ((double*)&sum_);
-            sum = sp[0]+sp[1]+sp[2]+sp[3];
+
+            sumV.saveAligned(scratch);
+            for (int i = 0; i < STEP; i++) {
+                sum += scratch[i];
+            }
 #endif
+
             for (; column < A.w; column++)
             {
                 sum += B.at(column) * A.a(row, column);

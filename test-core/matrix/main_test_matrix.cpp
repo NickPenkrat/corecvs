@@ -526,17 +526,21 @@ TEST(MatrixTest, testVectorMatrixConversions)
  *
  *
  **/
-TEST(MatrixTest, testLargeMatrixOperations)
+TEST(MatrixTest, testMatrixProps)
 {
-    Matrix A(10,10);
-    Matrix B(10,10);
+    double dataAnan[] = {NAN, 1, 0, 2};
+    Matrix Anan(2, 2, dataAnan);
 
-    auto touch = [](int i, int j, double &el) -> void { el = i + j; };
-    A.touchOperationElementwize(touch);
-    B.touchOperationElementwize(touch);
 
-    Matrix AB = A * B;
-    Matrix BA = B * A;
+    double dataAinf[] = {5, 1, INFINITY, 2};
+    Matrix Ainf(2, 2, dataAinf);
+
+    double dataAok[] = {5, 1, -57245, 2};
+    Matrix Aok(2, 2, dataAok);
+
+    ASSERT_TRUE(!Ainf.isFinite());
+    ASSERT_TRUE(!Anan.isFinite());
+    ASSERT_TRUE( Aok .isFinite());
 
 }
 
@@ -606,93 +610,160 @@ TEST(MatrixProfile, DISABLED_profileMatrixMul1000)
 
 }
 
-TEST(MatrixProfile, DISABLED_profileMatrixMulSize3)
-{
-    int sizes[]= {1024, 2048, 4096};
+void printHeader () {
+    SYNC_PRINT(("|           |      Test size, mem and algo       | Runs|"));
+    SYNC_PRINT(("   Time us   |   Time ms  |    One run us  |    Throughput    | \n"));
+}
 
-    for (int testnum = 0; testnum < CORE_COUNT_OF(sizes); testnum++)
+void printName (const char *name, int testsize, double mem, int runs) {
+    SYNC_PRINT(("| Profiling | [%5dx%-5d] (%6.1lf Mb) % 8s | %3d |", testsize, testsize, mem / 1000000.0, name, runs));
+
+}
+
+void printResult(double gflops, uint64_t delay, int runs) {
+     double runss = 1000000.0 / ((double)delay / runs);
+     double gflopss = runss * gflops;
+
+     SYNC_PRINT(("%10" PRIu64 "us | %8" PRIu64 "ms | SP: %8" PRIu64 "us | % 7.3lf Gflops/s |\n",
+         delay,
+         delay / 1000,
+         delay / runs,
+         gflopss
+     ));
+}
+
+TEST(MatrixProfile, profileMatrixMulSize3)
+{
+    int sizes   []= {1024, 2048, 4096, 16384};
+    int polca   []= {  20,   20,    5,     1};
+    int runs    []= {  10,    5,    2,     2};
+
+    bool runsimple[]= { true, false, false, false};
+    bool runslow  []= { true, true , false, false};
+    bool runour   []= { true, true ,  true, false};
+    bool runfast  []= { true, true ,  true,  true};
+
+
+    printHeader();
+
+    for (size_t testnum = 0; testnum < CORE_COUNT_OF(sizes); testnum++)
     {
-        int  TEST_H_SIZE = sizes[testnum];
-        int  TEST_W_SIZE = TEST_H_SIZE;
+
+        int       TEST_H_SIZE = sizes[testnum];
+        int       TEST_W_SIZE = TEST_H_SIZE;
+        unsigned  POLUTING_INPUTS = polca[testnum];
+        unsigned  LIMIT = runs[testnum];
+
+        double mem    = 2.0 * sizeof(double) * (double)TEST_H_SIZE * TEST_H_SIZE;
+        double flop   = 2.0 * (double)TEST_H_SIZE * TEST_H_SIZE * TEST_H_SIZE;
+        double gflop  = flop / 1000000.0 / 1000.0;
+
 
 
         PreciseTimer start;
         Matrix * input1[POLUTING_INPUTS];
         Matrix * input2[POLUTING_INPUTS];
+        Matrix AB(1,1);
 
         for (unsigned i = 0; i < POLUTING_INPUTS; i++)
         {
             input1[i] = new Matrix(TEST_H_SIZE ,TEST_W_SIZE);
             input2[i] = new Matrix(TEST_H_SIZE ,TEST_W_SIZE);
 
-            auto touch1 = [](int i, int j, double &el) -> void { el = ((i+1) * (j + 1)) + ((j + 1) / 5.0); };
+           // auto touch1 = [](int i, int j, double &el) -> void { el = ((i+1) * (j + 1)) + ((j + 1) / 5.0); };
+            auto touch1 = [](int i, int j, double &el) -> void
+            {
+                uint16_t semirand = (uint16_t )(i * 1237657 + j * 235453);
+                el = ((double)semirand - 32768) / 65536.0;
+            };
             input1[i]->touchOperationElementwize(touch1);
 
-            auto touch2 = [](int i, int j, double &el) -> void { el = ((i+4) * (j + 1)) + ((i + 1) / 5.0); };
+           // auto touch2 = [](int i, int j, double &el) -> void { el = ((i+4) * (j + 1)) + ((i + 1) / 5.0); };
+            auto touch2 = [](int i, int j, double &el) -> void
+            {
+                uint16_t semirand = (uint16_t )(i * 54657 + j * 2517);
+                el = ((double)semirand - 32768) / 65536.0;
+            };
             input2[i]->touchOperationElementwize(touch2);
 
         }
 
-        if (testnum == 0)
+        if (runsimple[testnum])
         {
-            SYNC_PRINT(("Profiling  [%dx%d] x [%dx%d]  Simple Approach:", TEST_H_SIZE, TEST_W_SIZE, TEST_H_SIZE, TEST_W_SIZE));
+            printName("Simple", TEST_H_SIZE, mem, LIMIT);
             start = PreciseTimer::currentTime();
             for (unsigned i = 0; i < LIMIT; i++) {
                 Matrix &A = *input1[i % POLUTING_INPUTS];
                 Matrix &B = *input2[i % POLUTING_INPUTS];
-                Matrix AB = Matrix::multiplyHomebrew(A, B, false, false);
+                AB = Matrix::multiplyHomebrew(A, B, false, false);
             }
             uint64_t delaySimple = start.usecsToNow();
-            SYNC_PRINT(("%10" PRIu64 "us %8" PRIu64 "ms SP: %8" PRIu64 "us\n", delaySimple, delaySimple / 1000, delaySimple / LIMIT));
+            printResult(gflop, delaySimple, LIMIT);
         }
 
-        SYNC_PRINT(("Profiling  [%dx%d] x [%dx%d]  TBB    Approach:", TEST_H_SIZE, TEST_W_SIZE, TEST_H_SIZE, TEST_W_SIZE));
-        start = PreciseTimer::currentTime();
-        for (unsigned i = 0; i < LIMIT; i++) {
-            Matrix &A = *input1[i % POLUTING_INPUTS];
-            Matrix &B = *input2[i % POLUTING_INPUTS];
-            Matrix AB = Matrix::multiplyHomebrew(A, B, true, false);
-        }
-        uint64_t delayTBB = start.usecsToNow();
-        SYNC_PRINT(("%10" PRIu64 "us %8" PRIu64 "ms SP: %8" PRIu64 "us\n", delayTBB, delayTBB / 1000, delayTBB / LIMIT));
+        /*if (!AB.isFinite()) {
+            SYNC_PRINT(("Matrix is not finite\n"));
+        } else {
+            SYNC_PRINT(("Matrix is finite - ok\n"));
+        }*/
+
+
+        if (runslow[testnum])
+        {
+            printName("TBB", TEST_H_SIZE, mem, LIMIT);
+            start = PreciseTimer::currentTime();
+            for (unsigned i = 0; i < LIMIT; i++) {
+                Matrix &A = *input1[i % POLUTING_INPUTS];
+                Matrix &B = *input2[i % POLUTING_INPUTS];
+                AB = Matrix::multiplyHomebrew(A, B, true, false);
+            }
+            uint64_t delayTBB = start.usecsToNow();
+            printResult(gflop, delayTBB, LIMIT);
 
 #ifdef WITH_SSE
 #ifdef WITH_AVX
-        SYNC_PRINT(("Profiling  [%dx%d] x [%dx%d] AVX/SSE Approach:", TEST_H_SIZE, TEST_W_SIZE, TEST_H_SIZE, TEST_W_SIZE));
+            printName("AVX/SSE", TEST_H_SIZE, mem, LIMIT);
 #else
-        SYNC_PRINT(("Profiling  [%dx%d] x [%dx%d] ---/SSE Approach:", TEST_H_SIZE, TEST_W_SIZE, TEST_H_SIZE, TEST_W_SIZE));
+            printName("---/SSE", TEST_H_SIZE, mem, LIMIT);
 #endif
-        start = PreciseTimer::currentTime();
-        for (unsigned i = 0; i < LIMIT; i++) {
-            Matrix &A = *input1[i % POLUTING_INPUTS];
-            Matrix &B = *input2[i % POLUTING_INPUTS];
-            Matrix AB = Matrix::multiplyHomebrew(A, B, false, true);
+            start = PreciseTimer::currentTime();
+            for (unsigned i = 0; i < LIMIT; i++) {
+                Matrix &A = *input1[i % POLUTING_INPUTS];
+                Matrix &B = *input2[i % POLUTING_INPUTS];
+                AB = Matrix::multiplyHomebrew(A, B, false, true);
+            }
+            uint64_t delayVector = start.usecsToNow();
+            printResult(gflop, delayVector, LIMIT);
         }
-        uint64_t delayVector = start.usecsToNow();
-        SYNC_PRINT(("%10" PRIu64 "us %8" PRIu64 "ms SP: %8" PRIu64 "us\n", delayVector, delayVector / 1000, delayVector / LIMIT));
-
-        SYNC_PRINT(("Profiling  [%dx%d] x [%dx%d] All On  Approach:", TEST_H_SIZE, TEST_W_SIZE, TEST_H_SIZE, TEST_W_SIZE));
-        start = PreciseTimer::currentTime();
-        for (unsigned i = 0; i < LIMIT; i++) {
-            Matrix &A = *input1[i % POLUTING_INPUTS];
-            Matrix &B = *input2[i % POLUTING_INPUTS];
-            Matrix AB = Matrix::multiplyHomebrew(A, B, true, true);
-        }
-        uint64_t delayHome = start.usecsToNow();
-        SYNC_PRINT(("%10" PRIu64 "us %8" PRIu64 "ms SP: %8" PRIu64 "us\n", delayHome, delayHome / 1000, delayHome / LIMIT));
 #endif
+        if (runour[testnum])
+        {
+            printName("All On", TEST_H_SIZE, mem, LIMIT);
+            start = PreciseTimer::currentTime();
+            for (unsigned i = 0; i < LIMIT; i++) {
+                Matrix &A = *input1[i % POLUTING_INPUTS];
+                Matrix &B = *input2[i % POLUTING_INPUTS];
+                AB = Matrix::multiplyHomebrew(A, B, true, true);
+            }
+            uint64_t delayHome = start.usecsToNow();
+            printResult(gflop, delayHome, LIMIT);
 
+        }
+
+        if (runfast[testnum])
+        {
 #ifdef WITH_BLAS
-        SYNC_PRINT(("Profiling  [%dx%d] x [%dx%d]  BLAS   Approach:", TEST_H_SIZE, TEST_W_SIZE, TEST_H_SIZE, TEST_W_SIZE));
-        start = PreciseTimer::currentTime();
-        for (unsigned i = 0; i < LIMIT; i++) {
-            Matrix &A = *input1[i % POLUTING_INPUTS];
-            Matrix &B = *input2[i % POLUTING_INPUTS];
-            Matrix AB = Matrix::multiplyBlas(A, B);
-        }
-        uint64_t delayBlas = start.usecsToNow();
-        SYNC_PRINT(("%10" PRIu64 "us %8" PRIu64 "ms SP: %8" PRIu64 "us\n", delayBlas, delayBlas / 1000, delayBlas / LIMIT));
+            printName("OpenBLAS", TEST_H_SIZE, mem, LIMIT);
+            start = PreciseTimer::currentTime();
+            for (unsigned i = 0; i < LIMIT; i++) {
+                Matrix &A = *input1[i % POLUTING_INPUTS];
+                Matrix &B = *input2[i % POLUTING_INPUTS];
+                AB = Matrix::multiplyBlas(A, B);
+            }
+            uint64_t delayBlas = start.usecsToNow();
+           printResult(gflop, delayBlas, LIMIT);
 #endif
+        }
 
 
         for (unsigned i = 0; i < POLUTING_INPUTS; i++) {
