@@ -98,9 +98,12 @@ int main(int argc, char **argv)
     CheckerboardDetectionParameters params;
     params.setCellSizeHor (26);
     params.setCellSizeVert(18);
+#if 0
     params.setFitWidth (false);
     params.setFitHeight(false);
-    BoardAlignerParams paramsA;
+#endif
+    BoardAlignerParams paramsA = BoardAlignerParams::GetNewBoard();
+#if 0
     paramsA.idealWidth = 26;
     paramsA.idealHeight = 18;
     paramsA.type = AlignmentType::FIT_MARKERS;
@@ -213,6 +216,7 @@ int main(int argc, char **argv)
                 std::make_pair( 4, 16)
             })
     };
+#endif
     ChessboardDetector detector(params, paramsA);
     detector.detectPattern(img);
 

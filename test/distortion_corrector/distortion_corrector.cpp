@@ -139,10 +139,17 @@ int main (int argc, char **argv)
         corecvs::ObservationList observations;
 
         CheckerboardDetectionParameters params;
+        BoardAlignerParams alignerParams = BoardAlignerParams::GetOldBoard();
+#if 0
         params.setHorCrossesCount (chessW);
         params.setVertCrossesCount(chessH);
         params.setFitWidth(true);
         params.setFitHeight(false);
+#else
+        alignerParams.idealWidth = chessW;
+        alignerParams.idealHeight = chessH;
+        alignerParams.type = AlignmentType::FIT_WIDTH;
+#endif
 
 
         if (setter.hasOption("files"))
@@ -175,7 +182,7 @@ int main (int argc, char **argv)
                 h = img.h;
             }
 
-            ChessboardDetector detector(params);
+            ChessboardDetector detector(params, alignerParams);
             detector.detectPattern(img);
 
             corecvs::ObservationList localObservations;
@@ -234,8 +241,10 @@ int main (int argc, char **argv)
         Vector2dd center = Vector2dd(image->w, image->h) / 2.0;
 
         CheckerboardDetectionParameters params;
-        params.setHorCrossesCount(chessW);
-        params.setVertCrossesCount(chessH);
+        BoardAlignerParams alignerParams = BoardAlignerParams::GetOldBoard();
+//        params.setHorCrossesCount(chessW);
+//        params.setVertCrossesCount(chessH);
+        alignerParams.type = AlignmentType::FIT_ALL;
         params.setPreciseDiameter(precise);
         params.setMinAccuracy(minAccuracy);
         params.setIterationCount(maxIterationCount);
@@ -250,7 +259,7 @@ int main (int argc, char **argv)
         SelectableGeometryFeatures lineList;
         G8Buffer *boardOutput = NULL;
 //        found = OpenCvCheckerboardDetector::DetectFullCheckerboard(channel, params, &lineList, &boardOutput);
-        OpenCvCheckerboardDetector detector(params);
+        OpenCvCheckerboardDetector detector(params, alignerParams);
         bool found = detector.detectPattern(*channel);
         detector.getPointData(lineList);
 
@@ -321,18 +330,21 @@ int main (int argc, char **argv)
 
         CheckerboardDetectionParameters params;
         params.setPartialBoard(true);
-        params.setHorCrossesCount(chessW);
-        params.setVertCrossesCount(chessH);
         params.setPreciseDiameter(precise);
         params.setMinAccuracy(minAccuracy);
         params.setIterationCount(maxIterationCount);
         params.setCellSizeHor(cellSize);
         params.setCellSizeVert(cellSize);
 
+        BoardAlignerParams alignerParams = BoardAlignerParams::GetOldBoard();
+        alignerParams.idealWidth = chessW;
+        alignerParams.idealHeight = chessH;
+        alignerParams.type = AlignmentType::FIT_WIDTH;
+
         ObservationList observationList;
 
         //OpenCvCheckerboardDetector::DetectPartCheckerboardV(channel, params, &observationList, NULL);
-        OpenCvCheckerboardDetector detector(params);
+        OpenCvCheckerboardDetector detector(params, alignerParams);
         bool found = detector.detectPattern(*channel);
         detector.getPointData(observationList);
 
