@@ -18,6 +18,7 @@ SUBDIRS +=       \
 #    decodebayer \
 #    genvectorui  \
     aLowCodec \
+    new_board_detector
 
 
 with_opencv {
@@ -44,6 +45,8 @@ camera_calibration.file = camera_calibration/camera_calibration.pro
 chessboard_detector.file= chessboard_detector/chessboard_detector.pro
 genvectorui.file        = genvectorui/genvectorui.pro
 aLowCodec.file          = aLowCodec/aLowCodec.pro
+
+new_board_detector.file = new_board_detector/new_board_detector.pro
 
 distortion_corrector.file = distortion_corrector/distortion_corrector.pro
 
