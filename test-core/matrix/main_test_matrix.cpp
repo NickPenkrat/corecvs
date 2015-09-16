@@ -575,7 +575,7 @@ const static unsigned POLUTING_INPUTS = 20;
 const static unsigned LIMIT = 5;
 
 
-TEST(MatrixProfile, profileMatrixMul1000)
+TEST(MatrixProfile, DISABLED_profileMatrixMul1000)
 {
     PreciseTimer start;
     Matrix * input[POLUTING_INPUTS];
@@ -606,7 +606,7 @@ TEST(MatrixProfile, profileMatrixMul1000)
 
 }
 
-TEST(MatrixProfile, profileMatrixMulSize3)
+TEST(MatrixProfile, DISABLED_profileMatrixMulSize3)
 {
     int sizes[]= {1024, 2048, 4096};
 
