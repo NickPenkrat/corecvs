@@ -233,6 +233,7 @@ Matrix operator *(DiagonalMatrix &D, const Matrix &M)
 #   include "tbbWrapper.h"
 #   include "immintrin.h"
 
+template<int vectorize = true>
 struct ParallelMM
 {
     void operator() (const corecvs::BlockedRange<int> &r) const
@@ -245,30 +246,33 @@ struct ParallelMM
         {
             int column = 0;
 #if WITH_SSE
-            const int STEP = DoublexN::SIZE;
-            ALIGN_DATA(16) double scratch[STEP];
-
-            for (; column + STEP - 1 < result.w; column += STEP)
+            if (vectorize)
             {
-                const double *ALine = &A.a(row, 0);
-                const double *BCol  = &B.a(0, column);
+                const int STEP = DoublexN::SIZE;
+                ALIGN_DATA(16) double scratch[STEP];
 
-                DoublexN sum = DoublexN::Zero();
-                for (int runner = 0; runner < A.w; runner++)
+                for (; column + STEP - 1 < result.w; column += STEP)
                 {
-                    DoublexN bc = DoublexN::Broadcast(ALine);
-                    DoublexN rw(BCol);
-                    sum = multiplyAdd(bc, rw, sum);
+                    const double *ALine = &A.a(row, 0);
+                    const double *BCol  = &B.a(0, column);
 
-                    ALine++;
-                    BCol += B.stride;
-                }
+                    DoublexN sum = DoublexN::Zero();
+                    for (int runner = 0; runner < A.w; runner++)
+                    {
+                        DoublexN bc = DoublexN::Broadcast(ALine);
+                        DoublexN rw(BCol);
+                        sum = multiplyAdd(bc, rw, sum);
 
-                sum.saveAligned(scratch);
+                        ALine++;
+                        BCol += B.stride;
+                    }
 
-                for (int jj = 0; jj < STEP; ++jj)
-                {
-                   result.a(row, column + jj) = scratch[jj];
+                    sum.saveAligned(scratch);
+
+                    for (int jj = 0; jj < STEP; ++jj)
+                    {
+                       result.a(row, column + jj) = scratch[jj];
+                    }
                 }
             }
 #endif
@@ -370,16 +374,40 @@ struct ParallelMD
 };
 
 
+
+Matrix Matrix::multiplyHomebrew(const Matrix &A, const Matrix &B, bool parallel, bool vectorize)
+{
+    CORE_ASSERT_TRUE(A.w == B.h, "Matrices have wrong sizes");
+    Matrix result(A.h, B.w, false);
+    if (vectorize) {
+        parallelable_for (0, result.h, 8, ParallelMM<true>(&A, &B, &result), parallel);
+    } else {
+        parallelable_for (0, result.h, 8, ParallelMM<false>(&A, &B, &result), parallel);
+    }
+    return result;
+}
+
+#ifdef WITH_BLAS
+Matrix Matrix::multiplyBlas(const Matrix &A, const Matrix &B)
+{
+    CORE_ASSERT_TRUE(A.w == B.h, "Matrices have wrong sizes");
+    Matrix result(A.h, B.w, false);
+    cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, A.h, B.w, A.w, 1.0, A.data, A.stride, B.data, B.stride, 0.0, result.data, result.stride);
+    return result;
+}
+#endif
+
+
 Matrix operator *(const Matrix &A, const Matrix &B)
 {
     CORE_ASSERT_TRUE(A.w == B.h, "Matrices have wrong sizes");
     Matrix result(A.h, B.w, false);
 
-#   ifndef  WITH_BLAS
-    parallelable_for (0, result.h, 8, ParallelMM(&A, &B, &result), !(A.h < 64));
-#   else // !WITH_BLAS
+#ifndef WITH_BLAS
+    parallelable_for (0, result.h, 8, ParallelMM<>(&A, &B, &result), !(A.h < 64));
+#else // !WITH_BLAS
     cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, A.h, B.w, A.w, 1.0, A.data, A.stride, B.data, B.stride, 0.0, result.data, result.stride);
-#   endif // WITH_BLAS
+#endif // WITH_BLAS
 
     return result;
 }

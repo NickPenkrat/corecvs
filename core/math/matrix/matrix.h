@@ -303,8 +303,12 @@ public:
         return true;
     }
 
-/*pivate:
-    static void svd (int h, int w, double *A, double *W, double *V);*/
+/* Some more specific way to call multiplication */
+    static Matrix multiplyHomebrew(const Matrix &A, const Matrix &B, bool parallel = true, bool vectorize = true);
+#ifdef WITH_BLAS
+    static Matrix multiplyBlas(const Matrix &A, const Matrix &B);
+#endif
+
 };
 
 } //namespace corecvs
