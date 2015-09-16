@@ -13,7 +13,7 @@
 class OpenCvCheckerboardDetector : public PatternDetector, protected CheckerboardDetectionParameters, protected BoardAligner
 {
 public:
-    OpenCvCheckerboardDetector(const CheckerboardDetectionParameters &params = CheckerboardDetectionParameters());
+    OpenCvCheckerboardDetector(const CheckerboardDetectionParameters &params = CheckerboardDetectionParameters(), BoardAlignerParams boardAlignerParams = BoardAlignerParams());
 
     virtual bool detectPattern(corecvs::G8Buffer &buffer);
     using PatternDetector::getPointData;

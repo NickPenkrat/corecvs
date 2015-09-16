@@ -59,6 +59,7 @@ struct CalibrationSettings
 {
     /* TODO : rename this */
     CheckerboardDetectionParameters openCvDetectorParameters;
+    BoardAlignerParams boardAlignerParams = BoardAlignerParams::GetOldBoard();
 
     ChessBoardAssemblerParams chessBoardAssemblerParams;
     ChessBoardCornerDetectorParams chessBoardCornerDetectorParams;
@@ -87,6 +88,7 @@ struct CalibrationSettings
 //        visitor.visit(chessBoardDetectorParams, ChessBoardDetectorParams(), "chessBoardDetectorParams");
         visitor.visit(chessBoardAssemblerParams, ChessBoardAssemblerParams(), "chessBoardAssemblerParams");
         visitor.visit(chessBoardCornerDetectorParams, ChessBoardCornerDetectorParams(), "chessBoardCornerDetectorParams");
+        visitor.visit(boardAlignerParams, BoardAlignerParams::GetOldBoard(), "boardAlignerParams");
 
 //        visitor.visit(useOpenCVDetector, false, "useOpenCVDetector");
         visitor.visit(forceFactor, 1.0, "forceYFactor");

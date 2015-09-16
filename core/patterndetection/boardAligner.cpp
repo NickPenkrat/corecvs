@@ -169,17 +169,13 @@ bool BoardAligner::alignDim(DpImage &img, bool fitW, bool fitH)
 
 bool BoardAligner::alignSingleMarker(DpImage &img)
 {
-    assert(markerCells.size() == circleCenters.size());
-    assert(markerCells.size() == 1);
-
+    assert(boardMarkers.size() == 1);
     classify(false, img);
     return bfs();
 }
 
 bool BoardAligner::alignMarkers(DpImage &img)
 {
-    assert(markerCells.size() == circleCenters.size());
-
     classify(true, img);
     return bfs();
 }
@@ -201,8 +197,6 @@ bool BoardAligner::bfs()
         {{-1, 0}, {0, 1}},
         {{-1, 0}, {0,-1}}
     };
-    idealWidth = 26;
-    idealHeight = 18;
     std::cout << "Best board: " << w << " x " << h << "; Req: " << idealWidth << " x " << idealHeight << std::endl;
 
     for (int y = 0; y < h && seedx < 0; ++y)
@@ -268,6 +262,7 @@ bool BoardAligner::bfs()
             {
                 if (cx != initialClassifier[y][x].first || cy != initialClassifier[y][x].second)
                 {
+                    std::cout << "Classifier mismatch" << std::endl;
                     printClassifier(true);
                     printClassifier(false);
                     return false;
@@ -276,6 +271,7 @@ bool BoardAligner::bfs()
 
         }
     }
+    std::cout << "Classifier OK" << std::endl;
     return true;
 }
 
@@ -298,9 +294,13 @@ bool BoardAligner::createList()
                 classifier[y][x].second < 0 ||
                 classifier[y][x].first >= idealWidth ||
                 classifier[y][x].second >= idealHeight)
+            {
+                std::cout << "OL fail" << std::endl;
                 return false;
+            }
         }
     }
+    std::cout << "OL OK" << std::endl;
     return true;
 }
 
@@ -416,9 +416,9 @@ void BoardAligner::classify(bool trackOrientation, DpImage &img)
         r.resize(w, std::make_pair(-1, -1));
 
     CirclePatternGenerator gen;
-    int N = circleCenters.size();
+    int N = boardMarkers.size();
     for (int i = 0; i < N; ++i)
-        gen.addToken(i, circleRadius, circleCenters[i]);
+        gen.addToken(i, boardMarkers[i].circleRadius, boardMarkers[i].circleCenters);
 
     std::vector<std::pair<std::pair<int,int>, double>> data;
 
@@ -452,7 +452,7 @@ void BoardAligner::classify(bool trackOrientation, DpImage &img)
                     auto P = (orientation * corecvs::Vector3dd(order[k][0], order[k][1], 1.0).project()) + corecvs::Vector2dd(0.5, 0.5);
                     assert(P[0] > 0.0 && P[1] > 0.0);
                     assert(P[0] < 2.0 && P[1] < 2.0);
-                    classifier[i + P[1]][j + P[0]] = markerCells[cl][k];
+                    classifier[i + P[1]][j + P[0]] = std::make_pair(boardMarkers[cl].cornerX + order[k][0], boardMarkers[cl].cornerY + order[k][1]);
 
                 }
 

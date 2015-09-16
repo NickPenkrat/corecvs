@@ -13,8 +13,8 @@
 #pragma warning (disable:4482)
 #endif
 
-OpenCvCheckerboardDetector::OpenCvCheckerboardDetector(const CheckerboardDetectionParameters &params)
-    : CheckerboardDetectionParameters(params)
+OpenCvCheckerboardDetector::OpenCvCheckerboardDetector(const CheckerboardDetectionParameters &params, BoardAlignerParams boardAlignerParams)
+    : CheckerboardDetectionParameters(params), BoardAligner(boardAlignerParams)
 {
 }
 
@@ -35,9 +35,9 @@ bool OpenCvCheckerboardDetector::detectChessBoardOpenCv(corecvs::G8Buffer &buffe
     IplImage *iplImage = OpenCVTools::getCVImageFromG8Buffer(&buffer);
     cv::Mat view = cv::Mat(iplImage);
 
-    // FIXME: I like width x height notation, since horizontal/vertical does not matter?
-    int hbegin = mPartialBoard ? 3 : mVertCrossesCount, hend = mVertCrossesCount;
-    int wbegin = mHorCrossesCount, wend = mHorCrossesCount;
+    // TODO: check if we can add full support of aligner (seems to be impossible)
+    int hbegin = mPartialBoard ? 3 : idealHeight, hend = idealHeight;
+    int wbegin = idealWidth, wend = idealWidth;
 
     bool found = false;
     for (int h = hend; h >= hbegin && !found; --h)
@@ -75,11 +75,6 @@ void OpenCvCheckerboardDetector::assignPointCoordinates(corecvs::G8Buffer &buffe
         return ((double)b) / 255.0;
     });
 
-    type = AlignmentType::FIT_ALL;
-    if (mPartialBoard)
-        type = AlignmentType::FIT_WIDTH;
-    idealWidth = mHorCrossesCount;
-    idealHeight = mVertCrossesCount;
     align(dpImage);
     result = observationList;
 }

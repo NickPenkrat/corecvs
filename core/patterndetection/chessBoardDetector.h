@@ -30,7 +30,7 @@ public:
             ChessBoardAssemblerParams assemblerParams = ChessBoardAssemblerParams()
     );
 
-    static ChessBoardDetectorMode getMode(const CheckerboardDetectionParameters &params);
+    static ChessBoardDetectorMode getMode(const BoardAlignerParams &params);
 
     // PatternDetector interface
     bool detectPattern(corecvs::G8Buffer    &buffer);

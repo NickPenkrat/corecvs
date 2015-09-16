@@ -97,11 +97,8 @@ int main(int argc, char **argv)
 
     readImage(filename , img);
     CheckerboardDetectionParameters params;
-    params.setCellSizeHor (18);
-    params.setCellSizeVert(11);
-    params.setFitWidth (true );
-    params.setFitHeight(false);
-    ChessboardDetector detector(params);
+    BoardAlignerParams alignerParams = BoardAlignerParams::GetOldBoard();
+    ChessboardDetector detector(params, alignerParams);
     detector.detectPattern(img);
 
     corecvs::ObservationList observations;

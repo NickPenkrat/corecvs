@@ -12,43 +12,47 @@ ChessboardDetector::ChessboardDetector (
       BoardAligner(alignerParams),
       detector(detectorParams)
 {
-    ChessBoardDetectorMode mode =  getMode(*this);
-
     assemblerParams.hypothesisDimensions = 0;
-    idealWidth = horCrossesCount();
-    idealHeight = vertCrossesCount();
-    if (!!(mode & ChessBoardDetectorMode::FIT_WIDTH))
+    switch (type)
     {
-        assemblerParams.hypothesisDimensions++;
-        assemblerParams.hypothesisDim[0] = horCrossesCount();
-    }
-    if (!!(mode &ChessBoardDetectorMode::FIT_HEIGHT))
-    {
-        assemblerParams.hypothesisDim[assemblerParams.hypothesisDimensions++] = vertCrossesCount();
-    }
-    if (!(mode & (ChessBoardDetectorMode::FIT_WIDTH | ChessBoardDetectorMode::FIT_HEIGHT)))
-    {
-//        type = AlignmentType::FIT_ALL;
-    }
-    else
-    {
-        if (!!(mode & ChessBoardDetectorMode::FIT_HEIGHT))
-        {
-            type = AlignmentType::FIT_HEIGHT;
-        }
-        if (!!(mode & ChessBoardDetectorMode::FIT_WIDTH))
-        {
-            type = AlignmentType::FIT_WIDTH;
-        }
+        case AlignmentType::FIT_MARKER_ORIENTATION:
+        case AlignmentType::FIT_MARKERS:
+            break;
+        case AlignmentType::FIT_WIDTH:
+            assemblerParams.hypothesisDimensions = 1;
+            assemblerParams.hypothesisDim[0] = idealWidth;
+            break;
+        case AlignmentType::FIT_HEIGHT:
+            assemblerParams.hypothesisDimensions = 1;
+            assemblerParams.hypothesisDim[0] = idealHeight;
+            break;
+        case AlignmentType::FIT_ALL:
+            assemblerParams.hypothesisDimensions = 2;
+            assemblerParams.hypothesisDim[0] = idealWidth;
+            assemblerParams.hypothesisDim[1] = idealHeight;
+            break;
     }
     assembler = ChessBoardAssembler(assemblerParams);
 }
 
-ChessBoardDetectorMode ChessboardDetector::getMode(const CheckerboardDetectionParameters &params)
+ChessBoardDetectorMode ChessboardDetector::getMode(const BoardAlignerParams &params)
 {
     ChessBoardDetectorMode mode = ChessBoardDetectorMode::BEST;
-    if (params. fitWidth()) mode = mode | ChessBoardDetectorMode::FIT_WIDTH;
-    if (params.fitHeight()) mode = mode | ChessBoardDetectorMode::FIT_HEIGHT;
+    switch (params.type)
+    {
+        case AlignmentType::FIT_MARKER_ORIENTATION:
+        case AlignmentType::FIT_MARKERS:
+            break;
+        case AlignmentType::FIT_WIDTH:
+            mode = ChessBoardDetectorMode::FIT_WIDTH;
+            break;
+        case AlignmentType::FIT_HEIGHT:
+            mode = ChessBoardDetectorMode::FIT_HEIGHT;
+            break;
+        case AlignmentType::FIT_ALL:
+            mode = ChessBoardDetectorMode::FIT_HEIGHT | ChessBoardDetectorMode::FIT_WIDTH;
+            break;
+    }
     return mode;
 }
 
@@ -94,8 +98,8 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
         int bw = b[0].size();
         int bh = b.size();
 
-        bool fitw = (bw == horCrossesCount());
-        bool fith = (bh == vertCrossesCount());
+        bool fitw = (bw == idealWidth);
+        bool fith = (bh == idealHeight);
 
 
         if ((!checkW || fitw) && (!checkH || fith))
@@ -104,8 +108,8 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
             found = true;
             break;
         }
-        fitw = (bh ==  horCrossesCount());
-        fith = (bw == vertCrossesCount());
+        fitw = (bh ==  idealWidth);
+        fith = (bw == idealHeight);
         if ((!checkW || fitw) && (!checkH || fith))
         {
             bestBoard = b;
@@ -121,6 +125,7 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
     bool aligned = align(buffer);
     if (aligned)
     {
+        std::cout << (aligned ? "ALIGN OK" : "ALIGN FAILED") << std::endl;
         result = observationList;
         for (auto& p: result)
         {
