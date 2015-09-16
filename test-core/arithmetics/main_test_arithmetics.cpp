@@ -339,11 +339,9 @@ TEST(Arithmetics, testDivisionBy10)
                  }
                  result >>= 4;
 
-
                  uint16_t check = result * 10;
                  if (check > a) {result--; check -= 10;}
                  if (check <= a - 10) {result++; check += 10;}
-
 
                  buffer[pos] = a - check + '0';
                  a = result;
@@ -351,7 +349,20 @@ TEST(Arithmetics, testDivisionBy10)
                 break;
             }
         buffer[pos++] = 0;
-        printf("%d == %s\n", delay, buffer);
+
+      //printf("%d == %s\n", delay, buffer);
+        //    6 ==    6
+        //   10 ==   01
+        //   19 ==   91
+        //   20 ==   02
+        //   92 ==   92
+        //   99 ==   99
+        //  100 ==  001
+        //  101 ==  101
+        //  109 ==  901
+        //  591 ==  195
+        // 1023 == 3201
+        // ...
     }
 }
 

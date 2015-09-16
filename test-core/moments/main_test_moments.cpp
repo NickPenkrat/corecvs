@@ -30,14 +30,14 @@ TEST(Moments, testRotations)
     ell.addPoint(Vector2dd(0.0,0.0));
     ell.addPoint(Vector2dd(1.0,1.0));
 
-    ASSERT_DOUBLE_EQUAL(ell.getCenter().x(), 0.5, "Wrong center");
-    ASSERT_DOUBLE_EQUAL(ell.getCenter().y(), 0.5, "Wrong center");
+    CORE_ASSERT_DOUBLE_EQUAL(ell.getCenter().x(), 0.5, "Wrong center");
+    CORE_ASSERT_DOUBLE_EQUAL(ell.getCenter().y(), 0.5, "Wrong center");
 
     double angle = ell.getEllipseOrientation();
     Vector2dd axis = ell.getEllipseAxis();
     printf("angle %2.2lf\n", radToDeg(angle));
     printf("axis %2.2lf %2.2lf\n", axis.x(), axis.y());
-    ASSERT_DOUBLE_EQUAL(radToDeg(angle), 45.0, "Wrong orientation");
+    CORE_ASSERT_DOUBLE_EQUAL(radToDeg(angle), 45.0, "Wrong orientation");
 
     Vector2dd mainDir = ell.getMainDirection();
 
@@ -52,14 +52,14 @@ TEST(Moments, testMoments2)
     ell.addPoint(Vector2dd(0.0,0.0));
     ell.addPoint(Vector2dd(0.0,1.0));
 
-    ASSERT_DOUBLE_EQUAL(ell.getCenter().x(),0.0, "Wrong center");
-    ASSERT_DOUBLE_EQUAL(ell.getCenter().y(),0.5, "Wrong center");
+    CORE_ASSERT_DOUBLE_EQUAL(ell.getCenter().x(), 0.0, "Wrong center");
+    CORE_ASSERT_DOUBLE_EQUAL(ell.getCenter().y(), 0.5, "Wrong center");
 
     double angle = ell.getEllipseOrientation();
     Vector2dd axis = ell.getEllipseAxis();
     printf("angle %2.2lf\n", angle / M_PI * 180);
     printf("axis %2.2lf %2.2lf\n", axis.x(), axis.y());
-    ASSERT_DOUBLE_EQUAL(angle / M_PI * 180, 90.0, "Wrong orientation");
+    CORE_ASSERT_DOUBLE_EQUAL(angle / M_PI * 180, 90.0, "Wrong orientation");
 }
 
 TEST(Moments, testMoments3)

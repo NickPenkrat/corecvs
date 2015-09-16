@@ -1,13 +1,11 @@
 # This file must be included for any external usage of cvs_utils library!
 #
-# Input1 parameter  - $$UTILSDIR
-# Input2 parameter  - $$TARGET
-# Input3 parameter  - $$ROOT_DIR
+# Input1 parameter  - $$TARGET
+# Input2 parameter  - $$ROOT_DIR
 # Output parameters - $$UTILS_BINDIR
 #
 
-COREDIR=../core
-include($$COREDIR/core.pri)                         # it uses COREDIR, TARGET and detects     COREBINDIR!
+include(../core/core.pri)                         # it uses TARGET and detects COREBINDIR!
 
 UTILSDIR=$$PWD
 

@@ -18,13 +18,13 @@ class CommandLineSetter
 {
 public:
     std::string mArgPrefix;
-    std::string mArgSepatator;
+    std::string mArgSeparator;
 
     vector<string> mArgs;
 
     CommandLineSetter() {
         mArgPrefix = "--";
-        mArgSepatator = "=";
+        mArgSeparator = "=";
     }
 
     CommandLineSetter(const vector<std::string> &args) :
@@ -59,7 +59,7 @@ public:
 
     const string getOption(const string& option, bool *found = NULL)
     {
-        std::string decorated = mArgPrefix + option + mArgSepatator;
+        std::string decorated = mArgPrefix + option + mArgSeparator;
 
         if (found != NULL) *found = false;
         for (unsigned i = 0; i < mArgs.size(); i++)
@@ -94,7 +94,7 @@ public:
 
     bool getBool(const string & option)
     {
-        const string& argument = getOption(option);
+        //const string& argument = getOption(option);
         return hasOption(option);
     }
 

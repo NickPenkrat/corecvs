@@ -95,8 +95,8 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
 
     for (auto& b: boards)
     {
-        int bw = b[0].size();
-        int bh = b.size();
+        int bw = (int)b[0].size();
+        int bh = (int)b.size();
 
         bool fitw = (bw == idealWidth);
         bool fith = (bh == idealHeight);

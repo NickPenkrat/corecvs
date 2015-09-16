@@ -223,7 +223,7 @@ public:
     template<class BufferToTransform>
     BufferToTransform *remap (BufferToTransform *input)
     {
-        ASSERT_TRUE(input->h == mInputH && input->w == mInputW, "Wrong size...");
+        CORE_ASSERT_TRUE(input->h == mInputH && input->w == mInputW, "Wrong size...");
         BufferToTransform *result = new BufferToTransform(mOutputH, mOutputW);
         parallelable_for(0, mOutputH, ParallelRemap<BufferToTransform>(result, input, this));
         return result;

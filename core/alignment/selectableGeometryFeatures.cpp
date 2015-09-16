@@ -313,13 +313,13 @@ bool SelectableGeometryFeatures::VertexPath::isEmpty()
 
 int SelectableGeometryFeatures::VertexPath::length()
 {
-    return vertexes.size();
+    return (int)vertexes.size();
 }
 
 void SelectableGeometryFeatures::addAllLinesFromObservationList(const ObservationList &list)
 {
     const double LINETOLERANCE = 1e-7;
-    int N = list.size();
+    int N = (int)list.size();
     std::vector<int> used(N * N);
     std::vector<std::vector<int>> lines;
     for (int i = 0; i < N; ++i)

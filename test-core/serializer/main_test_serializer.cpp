@@ -78,11 +78,11 @@ TEST(Serializer, testReflection1)
     readerVisitor.visit( rvecd,  vecdd, "vector4" );
     readerVisitor.visit( rvece,  veced, "vector5" );
 
-    ASSERT_TRUE(rvec3a == vec3a, "serializer failed 1");
-    ASSERT_TRUE(rvec3b == vec3b, "serializer failed 2");
-    ASSERT_TRUE(rvecc == vecc,   "serializer failed 3");
-    ASSERT_TRUE(rvecd == vecd,   "serializer failed 4");
-    ASSERT_TRUE(rvece == vece,   "serializer failed 5");
+    CORE_ASSERT_TRUE(rvec3a == vec3a, "serializer failed 1");
+    CORE_ASSERT_TRUE(rvec3b == vec3b, "serializer failed 2");
+    CORE_ASSERT_TRUE(rvecc == vecc, "serializer failed 3");
+    CORE_ASSERT_TRUE(rvecd == vecd, "serializer failed 4");
+    CORE_ASSERT_TRUE(rvece == vece, "serializer failed 5");
 
     cout << "Output" << rvecc << endl;
 }
@@ -104,8 +104,7 @@ void testPropertyListLoader( void )
     readerVisitor.visit(test, Vector3dd(0.0), "v");
     cout << test << endl;
 
-    ASSERT_TRUE(test.notTooFar(Vector3dd(1.1, 2.2, 3.3)), "Fail parsing vector");
-
+    CORE_ASSERT_TRUE(test.notTooFar(Vector3dd(1.1, 2.2, 3.3)), "Fail parsing vector");
 }
 
 TEST(Serializer, testSerializer1)

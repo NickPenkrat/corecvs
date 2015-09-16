@@ -1,8 +1,6 @@
 # This file should be included by any project outside that wants to use core's files.
 #
-## input1 parameter: $$COREDIR    - path to core project files
-# input2 parameter: $$TARGET     - the current project output name
-#
+# input1 parameter: $$TARGET     - the current project output name
 # output parameter: $$COREBINDIR - path to the output|used core library
 #
 
@@ -68,7 +66,7 @@ INCLUDEPATH += $$CORE_INCLUDEPATH
 exists(../../../config.pri) {
     COREBINDIR = $$COREDIR/../../../bin
 } else {
-    message(Using local core. config should be $$COREDIR/../../../config.pri)
+    message(Using local core. Global config should be at $$COREDIR/../../../config.pri)
     COREBINDIR = $$COREDIR/../bin
 }
 

@@ -86,7 +86,7 @@ TEST(Assignment, testSizes)
     printAssignment(mapping, M->h, M->w);
     float cost = computeCost<float>(mapping, M);
     printf("Total cost: %lf expexted:%lf\n", cost, resultCost);
-    ASSERT_DOUBLE_EQUAL(cost, resultCost, "Assignment was not optimal");
+    CORE_ASSERT_DOUBLE_EQUAL(cost, resultCost, "Assignment was not optimal");
     delete M;
     delete mapping;
  /*   {
@@ -134,7 +134,7 @@ TEST(Assignment, testGeneric0)
     printAssignment(mapping, M->h, M->w);
     float cost = computeCost<float>(mapping, M);
     printf("Total cost: %lf expexted:%lf\n", cost, resultCost);
-    ASSERT_DOUBLE_EQUAL(cost, resultCost, "Assignment was not optimal");
+    CORE_ASSERT_DOUBLE_EQUAL(cost, resultCost, "Assignment was not optimal");
     delete M;
     delete mapping;
 }
@@ -156,7 +156,7 @@ TEST(Assignment, testGeneric1)
     printAssignment(mapping,  M->h, M->w);
     float cost = computeCost<float>(mapping, M);
     printf("Total cost: %lf expexted:%lf\n", cost, resultCost);
-    ASSERT_DOUBLE_EQUAL(cost, resultCost, "Assignment was not optimal");
+    CORE_ASSERT_DOUBLE_EQUAL(cost, resultCost, "Assignment was not optimal");
     delete M;
     delete mapping;
 }
@@ -181,7 +181,7 @@ TEST(Assignment, testGeneric2)
     printAssignment(mapping,  M->h, M->w);
     float cost = computeCost<float>(mapping, M);
     printf("Total cost: %lf expexted:%lf\n", cost, resultCost);
-    ASSERT_DOUBLE_EQUAL(cost, resultCost, "Assignment was not optimal");
+    CORE_ASSERT_DOUBLE_EQUAL(cost, resultCost, "Assignment was not optimal");
     delete M;
     delete mapping;
 }
@@ -207,7 +207,7 @@ TEST(Assignment, testGeneric3)
     printAssignment(mapping, M->h, M->w);
     float cost = computeCost<float>(mapping, M);
     printf("Total cost: %lf expected:%lf\n", cost, resultCost);
-    ASSERT_DOUBLE_EQUAL(cost, resultCost, "Assignment was not optimal");
+    CORE_ASSERT_DOUBLE_EQUAL(cost, resultCost, "Assignment was not optimal");
     delete M;
     delete mapping;
 }

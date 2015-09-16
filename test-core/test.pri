@@ -3,38 +3,32 @@
 # input1 parameter: $$OBJ_TESTS_DIRNAME    - name of common intermediate dir for all UnitTests of the current project
 # input2 parameter: $$USE_CORE_PRI_FILE    - required core|rescore project file to include
 #
-# input3 parameter: $$COREDIR              - possible requiring    core folder path (when "core.pri" is including)
-# input4 parameter: $$RES_COREDIR          - possible requiring rescore folder path (when "core_restricted.pri" is including)
-#
 
 # try use global config 
 exists(../../../config.pri) {
     ROOT_DIR=../../..
     #message(Using global config)
+    include($$ROOT_DIR/config.pri)
 } else { 
     message(Using local config)
     ROOT_DIR=..
+    include($$ROOT_DIR/cvs-config.pri)
 }
-#!win32 {                                            # it dues to the "mocinclude.tmp" bug on win32!
-    ROOT_DIR=$$PWD/$$ROOT_DIR
-#}
+ROOT_DIR=$$PWD/$$ROOT_DIR
+
 #!build_pass: message(Tests root dir is $$ROOT_DIR)
-include($$ROOT_DIR/config.pri)
 
 CONFIG += console
+CONFIG -= app_bundle
 
-win32-msvc* {
-    # Sometimes mt.exe fails on embedding action in parallel making...
-    #CONFIG -= embed_manifest_exe
-}
+#win32-msvc* {
+#    # Sometimes mt.exe fails on embedding action in parallel making...
+#    CONFIG -= embed_manifest_exe
+#}
 
 DESTDIR = $$ROOT_DIR/bin
-#COREDIR = $$ROOT_DIR/$$COREDIR
-#RES_COREDIR = $$ROOT_DIR/$$RES_COREDIR
 
 #message(We Using core $$USE_CORE_PRI_FILE)
-#message(  With    coredir $$COREDIR)
-#message(  With rescoredir $$RES_COREDIR)
 include($$USE_CORE_PRI_FILE)
 
 

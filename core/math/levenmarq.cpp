@@ -31,9 +31,9 @@ vector<double> LevenbergMarquardt::fit(const vector<double> &input, const vector
 
     Vector beta(input);
     Vector target(output);
-    ASSERT_TRUE  ( f != NULL, "Function is NULL");
-    ASSERT_TRUE_P( beta.size() == f->inputs, ("input guess has wrong dimension %d instead of %d\n", beta.size(), f->inputs));
-    ASSERT_TRUE_P( (int)output.size() == f->outputs, ("output has wrong dimension %d instead of %d\n", (int)output.size(), f->outputs));
+    CORE_ASSERT_TRUE(f != NULL, "Function is NULL");
+    CORE_ASSERT_TRUE_P(beta.size() == f->inputs, ("input guess has wrong dimension %d instead of %d\n", beta.size(), f->inputs));
+    CORE_ASSERT_TRUE_P((int)output.size() == f->outputs, ("output has wrong dimension %d instead of %d\n", (int)output.size(), f->outputs));
 
     Vector y(f->outputs);    /**<Will hold the current function result*/
     Vector diff(f->outputs); /**<Will hold current difference to traget*/

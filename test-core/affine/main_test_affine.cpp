@@ -47,11 +47,10 @@ TEST(Affine, testRotations)
     Vector3dd t3q = cyq * vx;
 
     Vector3dd r1 = Vector3dd(-1.0 / sqrt(2.0), 0, -1.0 / sqrt(2.0));
-    ASSERT_TRUE_P(t1m.notTooFar(r1, 1e-8), (" Y rotation returned a mistake with Matrix Affine"));
-    ASSERT_TRUE_P(t1q.notTooFar(r1, 1e-8), (" Y rotation returned a mistake with Quaternion Affine"));
-    ASSERT_TRUE_P(t2q.notTooFar(r1, 1e-8), (" Y rotation returned a mistake with Clean Quaternion"));
-    ASSERT_TRUE_P(t3q.notTooFar(r1, 1e-8), (" Y rotation returned a mistake with Clean Quaternion"));
-
+    CORE_ASSERT_TRUE_P(t1m.notTooFar(r1, 1e-8), (" Y rotation returned a mistake with Matrix Affine"));
+    CORE_ASSERT_TRUE_P(t1q.notTooFar(r1, 1e-8), (" Y rotation returned a mistake with Quaternion Affine"));
+    CORE_ASSERT_TRUE_P(t2q.notTooFar(r1, 1e-8), (" Y rotation returned a mistake with Clean Quaternion"));
+    CORE_ASSERT_TRUE_P(t3q.notTooFar(r1, 1e-8), (" Y rotation returned a mistake with Clean Quaternion"));
 }
 
 TEST(Affine, testMatrixToQuaternion)

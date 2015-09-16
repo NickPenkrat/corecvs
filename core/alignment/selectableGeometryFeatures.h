@@ -67,7 +67,7 @@ public:
     template<class VisitorType>
         void accept(VisitorType &visitor)
         {
-            int sizeToVisit = this->size();
+            int sizeToVisit = (int)this->size();
             visitor.visit(sizeToVisit, 0, "size");
             resize(sizeToVisit);
 

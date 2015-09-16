@@ -48,7 +48,7 @@ bool CalibrationJob::detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::Sel
 
 void CalibrationJob::allDetectChessBoard(bool distorted)
 {
-    int N = observations.size();
+    int N = (int)observations.size();
     photostation.cameras.resize(N);
     auto psIterator = photostation.cameras.begin();
 
@@ -367,8 +367,8 @@ void CalibrationJob::calibratePhotostation(int N, int M, PhotoStationCalibrator 
 
 void CalibrationJob::calibratePhotostation()
 {
-    int M = calibrationSetups.size();
-    int N = photostation.cameras.size();
+    int M = (int)calibrationSetups.size();
+    int N = (int)photostation.cameras.size();
     std::vector<MultiCameraPatternPoints> points(M);
     for (int i = 0; i < M; ++i)
     {

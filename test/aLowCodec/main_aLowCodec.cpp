@@ -6,50 +6,72 @@
 #include "qtFileLoader.h"
 #include "bmpLoader.h"
 
-#if 0
+#if 1
 using namespace corecvs;
 
-inline bool testRGB(int r, int g, int b) {
-    uint8_t rc = code12to8((uint16_t)r << 4);
-    uint8_t gc = code12to8((uint16_t)g << 4);
-    uint8_t bc = code12to8((uint16_t)b << 4);
+inline void testChan(uint16_t chan12)
+{
+    uint8_t  coded  = code12to8(chan12);
+    uint16_t res    = decode8to12(coded);
 
-    uint8_t rd = decode8to12(rc) >> 4;
-    uint8_t gd = decode8to12(gc) >> 4;
-    uint8_t bd = decode8to12(bc) >> 4;
+    if (chan12 <   64) { CORE_ASSERT_TRUE_S(CORE_ABS(res - chan12) <= 0); return; }
+    if (chan12 <  128) { CORE_ASSERT_TRUE_S(CORE_ABS(res - chan12) <= 1); return; }
+    if (chan12 <  256) { CORE_ASSERT_TRUE_S(CORE_ABS(res - chan12) <= 2); return; }
+    if (chan12 <  512) { CORE_ASSERT_TRUE_S(CORE_ABS(res - chan12) <= 4); return; }
+    if (chan12 < 1024) { CORE_ASSERT_TRUE_S(CORE_ABS(res - chan12) <= 8); return; }
+    if (chan12 < 2048) { CORE_ASSERT_TRUE_S(CORE_ABS(res - chan12) <= 16); return; }
+    if (chan12 < 4096) { CORE_ASSERT_TRUE_S(CORE_ABS(res - chan12) <= 32); return; }
 
-    ASSERT_TRUE_P(CORE_ABS(rd - r) <= 32);
-    ASSERT_TRUE_P(CORE_ABS(gd - g) <= 32);
-    ASSERT_TRUE_P(CORE_ABS(bd - b) <= 32);
+    CORE_ASSERT_FAIL("Channel value is out of range");
+}
+
+inline void testRGB(int r8, int g8, int b8)
+{
+    testChan(r8 << 4);
+    testChan(g8 << 4);
+    testChan(b8 << 4);
 }
 
 void testCodec(void)
 {
     testRGB( 20,  40,  70);
-    testRGB(130, 250, 250);
+    testRGB(130, 250, 255);
+    testChan(350);
+    testChan(600);
+    testChan(1023);
+    testChan(1024);
+    testChan(2100);
+    testChan(4095);
 }
 #endif
 
-int main (int argc, char **argv)
+int main(int argc, char **argv)
 {
-    //testCodec();
+    testCodec();
 
     QTRGB24Loader::registerMyself();
     ALowCodec codec;
 
     if (argc < 2) {
-        printf("Usage test_aLowCodec [--decode] <in_filename> <out_filename>");
+        printf("Use test_aLowCodec [--code|--decode] in_filename.{bmp|jpg} <out_filename_{.bmp|_85.jpg|.jpg}>\n");
+        return 1;
     }
 
-    bool code = true;
+    bool   code = false;
+    bool decode = false;
     string in("../../../../data/testdata/distortion/SPA0_360deg.jpg");
     string oPath;
 
     if (argc >= 2) {
         int idxIn = 1;
-        if (QString("--decode") == argv[1])
+        if (QString("--code") == argv[1])
         {
-            code = false;
+            code = true;
+            idxIn = 2;
+        }
+        else if (QString("--decode") == argv[1])
+        {
+            decode = true;
             idxIn = 2;
         }
         if (argc >= 1 + idxIn) {
@@ -68,18 +90,18 @@ int main (int argc, char **argv)
         return -1;
     }
 
-    RGB24Buffer *out;
+    RGB24Buffer *out = image;
     if (code)
     {
         out = codec.code(image);
     }
-    else
+    else if (decode)
     {
         out = codec.decode(image);
     }
     if (out == NULL)
     {
-        SYNC_PRINT(("Failed to %s the image <%s>.\n", code ? "code" : "decode", in.c_str()));
+        SYNC_PRINT(("Failed to %s the image <%s>.\n", code ? "code" : (decode ? "decode" : "convert"), in.c_str()));
         return -2;
     }
 
@@ -89,13 +111,21 @@ int main (int argc, char **argv)
         QTFileLoader().save("result100.jpg", out, 100);
         QTFileLoader().save("result85.jpg", out, 85);
     }
-    else {
-        if (oPath.find(".bmp"))
+    else
+    {
+        QString oPathLwr = QString(oPath.c_str()).toLower();
+        if (oPathLwr.indexOf(".bmp") > 0)
             BMPLoader().save(oPath, out);
+        else if (oPathLwr.indexOf("_85.jpg") > 0)
+            QTFileLoader().save(oPath, out, 85);
+        else if (oPathLwr.indexOf("_50.jpg") > 0)
+            QTFileLoader().save(oPath, out, 50);
         else
             QTFileLoader().save(oPath, out, 100);
     }
-    delete_safe(out);
+    if (out != image) {
+        delete_safe(out);
+    }
     delete_safe(image);
     return 0;
 }

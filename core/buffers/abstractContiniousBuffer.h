@@ -83,9 +83,9 @@ public:
 //        IndexType i = (IndexType) floor(y);
 //        IndexType j = (IndexType) floor(x);
 
-//        ASSERT_TRUE_P(this->isValidCoordBl(y,x),
-//                ("Invalid coordinate in AbstractContiniousBuffer::elementBl(double y=%lf, double x=%lf) buffer sizes is [%dx%d]",
-//                   y, x, this->w, this->h));
+//        CORE_ASSERT_TRUE_P(this->isValidCoordBl(y,x),
+//            ("Invalid coordinate in AbstractContiniousBuffer::elementBl(double y=%lf, double x=%lf) buffer sizes is [%dx%d]",
+//             y, x, this->w, this->h));
 
 //        double a = (double)this->element(i    ,j    );
 //        double b = (double)this->element(i    ,j + 1);
@@ -175,9 +175,9 @@ public:
         IndexType i = (IndexType)floor(y);
         IndexType j = (IndexType)floor(x);
 
-        ASSERT_TRUE_P(this->isValidCoordBl(y,x),
-                ("Invalid coordinate in AbstractContiniousBuffer::elementBl(double y=%lf, double x=%lf) buffer sizes is [%dx%d]",
-                   y, x, this->w, this->h));
+        CORE_ASSERT_TRUE_P(this->isValidCoordBl(y, x),
+            ("Invalid coordinate in AbstractContiniousBuffer::elementBl(double y=%lf, double x=%lf) buffer sizes is [%dx%d]",
+             y, x, this->w, this->h));
 
         ElementType a = this->element(i    ,j    );
         ElementType b = this->element(i    ,j + 1);
@@ -205,9 +205,9 @@ public:
         IndexType i = floor(y);
         IndexType j = floor(x);
 
-        ASSERT_TRUE_P(this->isValidCoordBl(y,x),
-                ("Invalid coordinate in AbstractContiniousBuffer::elementBl(double y=%lf, double x=%lf) buffer sizes is [%dx%d]",
-                   y, x, this->w, this->h));
+        CORE_ASSERT_TRUE_P(this->isValidCoordBl(y, x),
+            ("Invalid coordinate in AbstractContiniousBuffer::elementBl(double y=%lf, double x=%lf) buffer sizes is [%dx%d]",
+             y, x, this->w, this->h));
 
         ElementType a = this->element(i    ,j    );
         ElementType b = this->element(i    ,j + 1);
@@ -248,9 +248,9 @@ public:
         IndexType i = floor(y);
         IndexType j = floor(x);
 
-        ASSERT_TRUE_P(this->isValidCoordBl(y,x),
-                ("Invalid coordinate in AbstractContiniousBuffer::elementBl(double y=%lf, double x=%lf) buffer sizes is [%dx%d]",
-                   y, x, this->w, this->h));
+        CORE_ASSERT_TRUE_P(this->isValidCoordBl(y, x),
+            ("Invalid coordinate in AbstractContiniousBuffer::elementBl(double y=%lf, double x=%lf) buffer sizes is [%dx%d]",
+             y, x, this->w, this->h));
 
         ElementType &a = this->element(i    ,j    );
         ElementType &b = this->element(i    ,j + 1);

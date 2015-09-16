@@ -147,8 +147,8 @@ public:
             G12Buffer *second
             )
     {
-        ASSERT_TRUE(first  != NULL, "Arguments should not be null");
-        ASSERT_TRUE(second != NULL, "Arguments should not be null");
+        CORE_ASSERT_TRUE(first != NULL, "Arguments should not be null");
+        CORE_ASSERT_TRUE(second != NULL, "Arguments should not be null");
 
         FlowBuffer *prevFlow = NULL;
         FlowBuffer *currentFlow = NULL;
@@ -200,9 +200,9 @@ public:
             double nullThreshold) const
     {
 
-        ASSERT_TRUE(calculationContext.first    != NULL, "NULL parameter fisrt");
-        ASSERT_TRUE(calculationContext.second   != NULL, "NULL parameter second");
-        ASSERT_TRUE(calculationContext.gradient != NULL, "NULL parameter gradient");
+        CORE_ASSERT_TRUE(calculationContext.first != NULL, "NULL parameter fisrt");
+        CORE_ASSERT_TRUE(calculationContext.second != NULL, "NULL parameter second");
+        CORE_ASSERT_TRUE(calculationContext.gradient != NULL, "NULL parameter gradient");
         G12Buffer *first  = calculationContext.first;
         G12Buffer *second = calculationContext.second;
 
@@ -326,10 +326,9 @@ public:
             Vector2dd *startGuess,
             double nullThreshold) const
     {
-
-        ASSERT_TRUE(calculationContext.first    != NULL, "NULL parameter fisrt");
-        ASSERT_TRUE(calculationContext.second   != NULL, "NULL parameter second");
-        ASSERT_TRUE(calculationContext.gradient != NULL, "NULL parameter gradient");
+        CORE_ASSERT_TRUE(calculationContext.first != NULL, "NULL parameter fisrt");
+        CORE_ASSERT_TRUE(calculationContext.second != NULL, "NULL parameter second");
+        CORE_ASSERT_TRUE(calculationContext.gradient != NULL, "NULL parameter gradient");
         G12Buffer *first  = calculationContext.first;
         G12Buffer *second = calculationContext.second;
 

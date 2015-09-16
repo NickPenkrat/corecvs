@@ -36,7 +36,6 @@ using corecvs::RGB24Buffer;
 
 TEST(Deform, DISABLED_testFastDeform)
 {
-
     Matrix33 inverseLeftMatrix(
         1, 0, -13,
         0, 1, -9.5,
@@ -45,12 +44,11 @@ TEST(Deform, DISABLED_testFastDeform)
 
     ProjectiveTransform inverseLeft(inverseLeftMatrix);
 
-
     G12Buffer *image = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
-    ASSERT_TRUE(image, "Could not open test image\n");
-    ASSERT_TRUE(image->verify(),"Input image is corrupted");
+    CORE_ASSERT_TRUE(image, "Could not open test image\n");
+    CORE_ASSERT_TRUE(image->verify(), "Input image is corrupted");
     G12Buffer *buffer1Transformed = image->doReverseTransform<ProjectiveTransform>(&inverseLeft, image->h, image->w);
-    ASSERT_TRUE(buffer1Transformed->verify(),"Result image is corrupted");
+    CORE_ASSERT_TRUE(buffer1Transformed->verify(), "Result image is corrupted");
 
     FixedPointDisplace *displace = new FixedPointDisplace (inverseLeft, image->h, image->w);
     G12Buffer *buffer2Transformed = image->doReverseDeformationBlPrecomp(displace, image->h, image->w);

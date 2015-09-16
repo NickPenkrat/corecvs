@@ -37,8 +37,7 @@ TEST(SSEWrappers, testSSEWrapperReverse)
 
     for (unsigned i = 0; i < 8; i++)
     {
-
-        ASSERT_TRUE_P(data[i] == dataRes[7-i], ("Reversing error:%i [%d != %d]", i, data[i], dataRes[7-i]));
+        CORE_ASSERT_TRUE_P(data[i] == dataRes[7 - i], ("Reversing error:%i [%d != %d]", i, data[i], dataRes[7 - i]));
         cout << dataRes[i] << " ";
     }
 
@@ -75,7 +74,7 @@ TEST(SSEWrappers, testSSEWrapper)
 
         acc1 -= a1;
     }
-    ASSERT_TRUE(sse32(acc0, 0) ==  sse32(acc1.data, 0), "Ops... arithmetics flaw" );
+    CORE_ASSERT_TRUE(sse32(acc0, 0) == sse32(acc1.data, 0), "Ops... arithmetics flaw");
 }
 #endif
 
@@ -128,7 +127,7 @@ TEST(SSEWrappers, profileSSEWrapper)
 
     printf("Results are %s\n",sse32(acc0, 0) ==  sse32(acc1.data, 0) ? "equal" : "different");
 
-    ASSERT_TRUE(sse32(acc0, 0) ==  sse32(acc1.data, 0), "Ops... arithmetics flaw" );
+    CORE_ASSERT_TRUE(sse32(acc0, 0) == sse32(acc1.data, 0), "Ops... arithmetics flaw");
 #endif
 }
 
@@ -286,12 +285,12 @@ TEST(SSEWrappers, testAdditionalFunctions)
     /*Testing ABS*/
     Int16x8 absa0 = SSEMath::abs(a0);
     cout << "SSEMath::abs()=" << absa0 << endl;
-    ASSERT_TRUE_P(absa0[0] ==  8700, ("Wrong SSE abs result 0"));
-    ASSERT_TRUE_P(absa0[1] ==  8700, ("Wrong SSE abs result 1"));
+    CORE_ASSERT_TRUE_P(absa0[0] == 8700, ("Wrong SSE abs result 0"));
+    CORE_ASSERT_TRUE_P(absa0[1] == 8700, ("Wrong SSE abs result 1"));
 
     int16_t absb0 = GenericMath<uint16_t>::abs(b0);
     cout << "GenericMath<uint16_t>::abs()=" << absb0 << endl;
-    ASSERT_TRUE_P(absb0 == 8700, ("Wrong GenericMath abs result"));
+    CORE_ASSERT_TRUE_P(absb0 == 8700, ("Wrong GenericMath abs result"));
 
     /* Testing max */
     cout << "Finished" << endl;
@@ -363,7 +362,7 @@ TEST(SSEWrappers, testExtendingRGBReader)
         for (unsigned j = 0; j < 4; j++)
         {
             cout << (int)outData[i*4 + j] << " ";
-            ASSERT_TRUE_P(data[i*4 + j] == outData[i*4 + j], ("Error"));
+            CORE_ASSERT_TRUE_P(data[i * 4 + j] == outData[i * 4 + j], ("Error"));
         }
         cout << endl;
     }
@@ -408,7 +407,7 @@ TEST(SSEWrappers, testDoubleExtendingRGBReader)
         for (unsigned j = 0; j < 8; j++)
         {
             cout << (int)outData[i*8 + j] << " ";
-//            ASSERT_TRUE_P(data[i*4 + j] == outData[i*4 + j], ("Error"));
+//            CORE_ASSERT_TRUE_P(data[i*4 + j] == outData[i*4 + j], ("Error"));
         }
         cout << endl;
     }
