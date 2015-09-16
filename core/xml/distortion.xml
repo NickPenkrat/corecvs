@@ -72,8 +72,6 @@
 
 
     <field type="ImageChannel" name="Channel"            defaultValue="3"   />
-    <field type="int"          name="Vert crosses count" defaultValue="11"   />
-    <field type="int"          name="Hor crosses count"  defaultValue="18"   />
     <field type="double"       name="Cell Size Hor"      defaultValue="50"   suffix="mm" />
     <field type="double"       name="Cell Size Vert"     defaultValue="50"   suffix="mm" />
 
@@ -87,8 +85,6 @@
     <field type="bool"         name="Partial Board"      defaultValue="true"/>
     <field type="bool"         name="Fast board Speedup" defaultValue="true"/>
 
-    <field type="bool"         name="Fit Width"  defaultValue="true"/>
-    <field type="bool"         name="Fit Height" defaultValue="false"/>
   </class>
 
   <enum name="Line Distortion Estimator Cost">
