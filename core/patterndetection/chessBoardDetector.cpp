@@ -10,7 +10,8 @@ ChessboardDetector::ChessboardDetector (
     )
     : CheckerboardDetectionParameters(params),
       BoardAligner(alignerParams),
-      detector(detectorParams)
+      detector(detectorParams),
+      stats(NULL)
 {
     assemblerParams.hypothesisDimensions = 0;
     switch (type)
@@ -76,18 +77,39 @@ bool ChessboardDetector::detectPattern(corecvs::RGB24Buffer &buffer)
 
 bool ChessboardDetector::detectPattern(DpImage &buffer)
 {
+    if (stats != NULL) stats->startInterval();
+
     ChessBoardDetectorMode mode =  getMode(*this);
     corners.clear();
     bestPattern = RectangularGridPattern();
+
+    std::string prefix;
+    if (stats != NULL) {
+        prefix = stats->prefix;
+        stats->prefix = "Corners -> " + stats->prefix;
+        detector.setStatistics(stats);
+    }
+
     detector.detectCorners(buffer, corners);
+
+    if (stats != NULL) stats->prefix = prefix;
+    if (stats != NULL) stats->resetInterval("Corners");
 
     std::vector<std::vector<std::vector<corecvs::Vector2dd>>> boards;
 
+    if (stats != NULL) {
+        prefix = stats->prefix;
+        stats->prefix = "Assembler -> " + stats->prefix;
+        assembler.setStatistics(stats);
+    }
     assembler.assembleBoards(corners, boards);
+    if (stats != NULL) stats->prefix = prefix;
 
     if (!boards.size())
         return false;
-   
+
+    if (stats != NULL) stats->resetInterval("Assemble");
+
     bool transposed = false, found = false;
 
     bool checkW = !!(mode & ChessBoardDetectorMode::FIT_WIDTH);
@@ -149,7 +171,7 @@ void ChessboardDetector::drawClassifier(corecvs::RGB24Buffer &buffer)
 }
 
 // FIXME: Temporary code; needs serious rework
-void ChessboardDetector::classify(DpImage &img, CirclePatternGenerator &gen, corecvs::RGB24Buffer &buffer)
+bool ChessboardDetector::classify(DpImage &img, CirclePatternGenerator &gen, corecvs::RGB24Buffer &buffer)
 {
     int w = bestBoard[0].size();
     int h = bestBoard.size();
@@ -269,4 +291,19 @@ void ChessboardDetector::classify(DpImage &img, CirclePatternGenerator &gen, cor
             std::cout << c << "\t";
         std::cout << std::endl;
     }
+
+    if (stats != NULL) stats->resetInterval("Filling result");
+
+    return true;
 }
+
+void ChessboardDetector::setStatistics(Statistics *stats)
+{
+    this->stats = stats;
+}
+
+Statistics *ChessboardDetector::getStatistics()
+{
+    return stats;
+}
+

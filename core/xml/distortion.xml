@@ -68,7 +68,7 @@
   <class name="Checkerboard Detection Parameters">  
     <field type="bool"         name="Use Undistortion"      defaultValue="true"/>
 
-    <field type="Checkerboard Detection Algorithm" name="Algorithm" defaultValue="0" />
+    <field type="Checkerboard Detection Algorithm" name="Algorithm" defaultValue="1" />
 
 
     <field type="ImageChannel" name="Channel"            defaultValue="3"   />

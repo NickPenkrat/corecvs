@@ -227,11 +227,7 @@ template <class StreamType>
 
         /* Flags */
         int size = (int)this->sumValues.size();
-        bool *isPrinted = new bool[size];
-        for (int i = 0; i < size; i++)
-        {
-            isPrinted[i] = false;
-        }
+        vector<bool> isPrinted(size, false);
 
         int printCount = 0;
         /* First show all filters */
@@ -259,15 +255,13 @@ template <class StreamType>
         int j = 0;
         for (uit = this->sumValues.begin(); uit != this->sumValues.end(); ++uit, j++ )
         {
-            if (isPrinted[j])
-            {
+            if (isPrinted[j]) {
                 continue;
             }
 
             stream.printUnitedStat(uit->first, maxCaptionLen, uit->second, printCount);
             printCount++;
-        }
-        deletearr_safe(isPrinted);
+        }        
     }
 
     class SimplePrinter {
@@ -295,6 +289,8 @@ template <class StreamType>
         SimplePrinter printer;
         printStats(printer);
         printf("=============================================================\n");
+        fflush(stdout);
+        SYNC_PRINT(("\n"));
     }
 
     class AdvancedPrinter {
@@ -324,6 +320,51 @@ template <class StreamType>
     {
         printf("=============================================================\n");
         AdvancedPrinter printer;
+        printStats(printer);
+        printf("=============================================================\n");
+    }
+
+
+    class AdvancedSteamPrinter {
+    public:
+        ostream &outStream;
+
+        AdvancedSteamPrinter(ostream &stream) :
+            outStream(stream)
+        {
+
+        }
+
+        void printUnitedStat(const string &name, int length, const UnitedStat &stat, int /*lineNum*/)
+        {
+            /*Well I'm just lazy*/
+            char output[1000] = "";
+
+            if (stat.type == SingleStat::TIME)
+            {
+                snprintf(output, CORE_COUNT_OF(output),
+                    "%-*s : %7" PRIu64 " us : %7" PRIu64 " ms : %7" PRIu64 " us  \n",
+                    length,
+                    name.c_str(),
+                    stat.sum / stat.number,
+                    ((stat.sum / stat.number) + 500) / 1000,
+                    (stat.min == std::numeric_limits<uint64_t>::max()) ? 0 : stat.min);
+
+            } else {
+                snprintf( output, CORE_COUNT_OF(output),
+                    "%-*s : %7" PRIu64 "\n",
+                    length,
+                    name.c_str(),
+                    stat.sum / stat.number);
+            }
+            outStream << output << std::flush;
+        }
+    };
+
+    virtual void printAdvanced(ostream &stream)
+    {
+        printf("=============================================================\n");
+        AdvancedSteamPrinter printer(stream);
         printStats(printer);
         printf("=============================================================\n");
     }

@@ -17,6 +17,7 @@
 #include "advancedImageWidget.h"
 #include "saveFlowSettings.h"
 #include "mathUtils.h"
+#include "qtHelper.h"
 
 AdvancedImageWidget::AdvancedImageWidget(QWidget *parent, bool showHeader):
     ViAreaWidget(parent, false)
@@ -140,14 +141,6 @@ void AdvancedImageWidget::drawResized (QPainter &painter)
         return;
     }
 
-    // We should keep the trivial transform really trivial
-    /*if (mOutputRect == mInputRect) {
-        printf("Trivial transform\n");
-    } else {
-        qDebug() << mOutputRect << " - " << mInputRect << endl;
-    }*/
-
-
     if (mUi->rotationComboBox->currentIndex() == 0)
     {
         painter.drawImage(mOutputRect, *mImage, mInputRect);
@@ -174,8 +167,8 @@ void AdvancedImageWidget::drawResized (QPainter &painter)
 
 QPointF AdvancedImageWidget::widgetToImageF(const QPointF &p)
 {
-    if (mOutputRect.height() == 0 || mInputRect.height() == 0 ||
-        mInputRect .height() == 0 || mInputRect.height() == 0)
+    if (mOutputRect.height() == 0 || mOutputRect.width() == 0 ||
+        mInputRect .height() == 0 || mInputRect .width() == 0)
     {
         return p;
     }
@@ -201,14 +194,14 @@ QPointF AdvancedImageWidget::widgetToImageF(const QPointF &p)
 
 QPointF AdvancedImageWidget::imageToWidgetF(const QPointF &p)
 {
-    if (mOutputRect.height() == 0 || mInputRect.height() == 0 ||
-        mInputRect.height() == 0 || mInputRect.height() == 0)
+    if (mOutputRect.height() == 0 || mOutputRect.width() == 0 ||
+        mInputRect .height() == 0 || mInputRect .width() == 0)
     {
         return p;
     }
 
-    double x1 = (double)(p.x() - mInputRect.left()) / (mInputRect. width() - 1);
-    double y1 = (double)(p.y() - mInputRect. top()) / (mInputRect.height() - 1);
+    double x1 = (double)(p.x() - mInputRect.x()) / (mInputRect. width());
+    double y1 = (double)(p.y() - mInputRect.y()) / (mInputRect.height());
     double x2 = x1;
     double y2 = y1;
 
@@ -231,6 +224,17 @@ QPoint AdvancedImageWidget::widgetToImage(const QPoint &p)
 {
     QPointF out = widgetToImageF(p);
     return QPoint(fround(out.x()), fround(out.y()));
+}
+
+
+Vector2dd AdvancedImageWidget::widgetToImageF(const Vector2dd &p)
+{
+    return Qt2Core::Vector2ddFromQPointF(AdvancedImageWidget::widgetToImageF(Core2Qt::QPointFromVector2dd(p)));
+}
+
+Vector2dd AdvancedImageWidget::imageToWidgetF(const Vector2dd &p)
+{
+    return Qt2Core::Vector2ddFromQPointF(AdvancedImageWidget::imageToWidgetF(Core2Qt::QPointFromVector2dd(p)));
 }
 
 
@@ -523,7 +527,7 @@ void AdvancedImageWidget::childMouseMoved(QMouseEvent * event)
     {
         QColor color = mImage->pixel(imagePoint);
 
-        QString info = QString("[%1 x %2] of [%3 x %4] (%5 %6 %7)")
+        QString info = QString("[%1 x %2] of [%3 x %4] (R:%5 G:%6 B:%7)")
                 .arg(imagePoint.x())
                 .arg(imagePoint.y())
                 .arg(mImage->width())

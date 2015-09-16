@@ -3,6 +3,8 @@
 
 #include <vector>
 
+#include "calculationStats.h"
+
 #include "abstractKernel.h"
 #include "abstractBuffer.h"
 #include "vector2d.h"
@@ -211,6 +213,15 @@ private:
     DpImage du, dv, w, phi, cost, img;
     std::vector<CornerKernelSet> kernels;
     std::vector<OrientedCorner> corners;
+
+public:
+    void setStatistics(corecvs::Statistics *stats);
+    corecvs::Statistics *getStatistics();
+
+
+private:
+    corecvs::Statistics *stats;
+
 };
 
 #endif

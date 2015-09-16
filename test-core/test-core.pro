@@ -46,16 +46,12 @@ SOURCES += \
     color/main_test_color.cpp \
     convolve/main_test_convolve.cpp \
     cornerdetector/main_test_cornerdetector.cpp \
-    #cppunit_test/cppunit_test.cpp \
     deform/main_test_deform.cpp \
     derivative/main_test_derivative.cpp \
-    #distortion/main_test_distortion.cpp \ #todo: Segmentation fault
     draw/main_test_draw.cpp \
     eigen/main_test_eigen.cpp \
     #face_recognition/main_test_face_recognition.cpp \
     #face_recognition1/main_test_face_recognition1.cpp \
-    #fastkernel/main_test_fastkernel.cpp \ #todo: pc hangup
-    #fastkernel_profile/main_test_fastkernel_profile.cpp \ #todo: pc hangup
     #fileformats/main_test_fileformats.cpp \ #todo: RAW Image load failed
     #filter_blocks/main_test_filter_blocks.cpp \ #todo: can't build
     #gaussianSolution/main.cpp \
@@ -91,7 +87,19 @@ SOURCES += \
     #train_vj/main_train_vj.cpp #todo: file read
     triangulator/main_test_triangulator.cpp \
     vector/main_test_vector.cpp \
-    \
-    # todo: FromRGB not working \
+    \    
     yuv/main_test_yuv.cpp \
+
+
+# Never to be fixed
+OTHER_FILES += \
+    cppunit_test/cppunit_test.cpp \
+
+
+# Things need to be fixed
+OTHER_FILES += \
+    fastkernel/main_test_fastkernel.cpp \
+    fastkernel_profile/main_test_fastkernel_profile.cpp \
+    fastkernel_double/main_test_fastkernel_double.cpp \
+    distortion/main_test_distortion.cpp \
 

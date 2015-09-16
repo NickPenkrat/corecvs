@@ -50,10 +50,10 @@ asserts {
 }
 
 with_avx {
-    DEFINES += WITH_AVX WITH_AVX2
+    DEFINES += WITH_AVX WITH_AVX2 WITH_FMA
     !win32-msvc* {
-        QMAKE_CFLAGS   += -mavx -mavx2
-        QMAKE_CXXFLAGS += -mavx -mavx2
+        QMAKE_CFLAGS   += -mavx -mavx2 -mfma
+        QMAKE_CXXFLAGS += -mavx -mavx2 -mfma
     } else:win32-msvc2010 {
         QMAKE_CFLAGS   += /arch:AVX
         QMAKE_CXXFLAGS += /arch:AVX
@@ -433,6 +433,19 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
         DEFINES     += WITH_TBB
         LIBS        += -ltbb
     }
+}
+
+with_blas {
+  !win32 {
+    !isEmpty(BLAS_PATH) {
+        !build_pass: message (Using BLAS from <$$BLAS_PATH>)
+#        INCLUDEPATH += $(BLAS_PATH)/include
+    } else {
+        !build_pass: message (Using System BLAS)
+    }
+    DEFINES     += WITH_BLAS
+    LIBS        += -lblas
+  }
 }
 
 # More static analysis warnings

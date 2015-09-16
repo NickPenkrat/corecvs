@@ -1,8 +1,10 @@
-#ifndef CALIBRATIONJOB
-#define CALIBRATIONJOB
+#ifndef CALIBRATION_JOB_H_
+#define CALIBRATION_JOB_H_
 
 #include <string>
 #include <vector>
+
+#include "calculationStats.h"
 
 #include "rgb24Buffer.h"
 #include "displacementBuffer.h"
@@ -12,7 +14,7 @@
 #include "lineDistortionEstimatorParameters.h"
 #include "distortionApplicationParameters.h"
 #include "chessBoardDetector.h"
-#include "calibration_structs.h"
+#include "calibrationStructs.h"
 #include "photoStationCalibrator.h"
 
 struct ImageData
@@ -80,7 +82,7 @@ struct CalibrationSettings
     bool photostationCalibratorUseLMSolver = true;
     CameraConstraints photostationCalibratorConstraints = CameraConstraints::ZERO_SKEW | CameraConstraints::EQUAL_FOCAL | CameraConstraints::LOCK_SKEW;
 
-    CameraIntrinsics_ calibrationLockParams;
+    CameraIntrinsics calibrationLockParams;
 
     template<class VisitorType>
     void accept(VisitorType &visitor)
@@ -110,7 +112,7 @@ struct CalibrationSettings
         visitor.visit(m, asInteger(CameraConstraints::ZERO_SKEW | CameraConstraints::EQUAL_FOCAL | CameraConstraints::LOCK_SKEW), "photostationCalibratorConstraints");
         photostationCalibratorConstraints = static_cast<CameraConstraints>(m);
 
-        visitor.visit(calibrationLockParams, CameraIntrinsics_(), "calibrationLockParams");
+        visitor.visit(calibrationLockParams, CameraIntrinsics(), "calibrationLockParams");
     }
 };
 
@@ -160,10 +162,14 @@ struct CalibrationJob
     void computeSingleCameraErrors();
     void computeCalibrationErrors();
     void calibratePhotostation();
-    void calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<CameraIntrinsics_> &intrinsics, std::vector<std::vector<LocationData>> &locations, bool runBFS, bool runLM);
+    void calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<CameraIntrinsics> &intrinsics, std::vector<std::vector<LocationData>> &locations, bool runBFS, bool runLM);
     void calibrate();
     double factor = 1.0;
     std::vector<double> factors;
+
+public:
+    corecvs::Statistics stats;
+
 };
 
-#endif
+#endif // CALIBRATION_JOB_H_

@@ -84,15 +84,17 @@ int main(int argc, char **argv)
     std::cout << "|_.Cam|_.fx|_.fy|_.fx/fy|_.skew|_.atan(skew/fy)|_.cx|_.cy|" << std::endl;
     for (int i = 0; i < N; ++i)
     {
-        double fx = ps.cameras[i].intrinsics.fx;
-        double fy = ps.cameras[i].intrinsics.fy;
-        double cx = ps.cameras[i].intrinsics.cx;
-        double cy = ps.cameras[i].intrinsics.cy;
-        double skew=ps.cameras[i].intrinsics.skew;
-        double aspect = fx / fy;
-        double angle = atan(skew / fx) * 180.0 / M_PI;
+        CameraIntrinsics &intr = ps.cameras[i].intrinsics;
 
-        std::cout << "|" << i << "|" << fx << "|" << fy << "|" << aspect << "|" << skew << "|" << angle << "|" << cx << "|" << cy << "|" << std::endl;
+        double fx   = intr.focal.x();
+        double fy   = intr.focal.y();
+        double cx   = intr.principal.x();
+        double cy   = intr.principal.y();
+        double skew = intr.skew;
+        double faspect = intr.focal.x() / intr.focal.y();
+        double angle = radToDeg(atan(skew / fx));
+
+        std::cout << "|" << i << "|" << fx << "|" << fy << "|" << faspect << "|" << skew << "|" << angle << "|" << cx << "|" << cy << "|" << std::endl;
     }
     std::cout << std::endl;
 

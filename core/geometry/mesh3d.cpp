@@ -281,7 +281,7 @@ void Mesh3D::addIcoSphere(Vector3dd center, double radius, int step)
     
 }
 
-void Mesh3D::addCamera(const CameraIntrinsics &cam, double len)
+void Mesh3D::addCamera(const CameraIntrinsicsLegacy &cam, double len)
 {
     //double aspect = cam.
 

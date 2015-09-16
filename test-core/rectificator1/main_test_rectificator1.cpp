@@ -214,8 +214,8 @@ TEST(Rectification1, DISABLED_testRectificatorCubeEssential)
      **/
 
     Vector2dd resolution(400.0, 400.0);
-    CameraIntrinsics  leftCameraIntrinsics(resolution, resolution  / 2.0, 360.0, 1.0);
-    CameraIntrinsics rightCameraIntrinsics(resolution, resolution  / 2.0, 360.0, 1.0);
+    CameraIntrinsicsLegacy  leftCameraIntrinsics(resolution, resolution  / 2.0, 360.0, 1.0);
+    CameraIntrinsicsLegacy rightCameraIntrinsics(resolution, resolution  / 2.0, 360.0, 1.0);
 
 
     Matrix44 LK = leftCameraIntrinsics.getKMatrix();

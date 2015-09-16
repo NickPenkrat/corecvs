@@ -12,6 +12,10 @@
 
 #include "global.h"
 
+#ifdef WITH_FMA
+#   include <immintrin.h>
+#endif
+
 namespace corecvs {
 
 class Doublex2
@@ -43,13 +47,15 @@ public:
         this->data = _mm_loadu_pd(data_ptr);
     }
 
-    Doublex2 Zero()
+    static inline Doublex2 Zero()
     {
-        Doublex2 result;
-        result.data = _mm_setzero_pd();
-        return result;
+        return Doublex2(_mm_setzero_pd());
     }
 
+    static inline Doublex2 Broadcast(const double *data_ptr)
+    {
+        return Doublex2(_mm_loaddup_pd(data_ptr));
+    }
 
     void save(double * const data) const
     {
@@ -158,6 +164,16 @@ FORCE_INLINE Doublex2 operator /=(Doublex2 &left, const Doublex2 &right) {
     left.data = _mm_div_pd(left.data, right.data);
     return left;
 }
+
+/* Hide this in namespace or SSEMath */
+FORCE_INLINE Doublex2 multiplyAdd(const Doublex2 &mul1, const Doublex2 &mul2, const Doublex2 &add1) {
+#ifdef WITH_FMA
+    return Doublex2(_mm_fmadd_pd(mul1.data, mul2.data, add1.data));
+#else
+    return mul1 * mul2 + add1;
+#endif
+}
+
 
 } //namespace corecvs
 

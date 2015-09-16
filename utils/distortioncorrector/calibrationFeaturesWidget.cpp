@@ -1,11 +1,15 @@
 #include <QDoubleSpinBox>
 #include <QSettings>
 
+
 #include "calibrationFeaturesWidget.h"
 #include "ui_calibrationFeaturesWidget.h"
 
 #include "qSettingsSetter.h"
 #include "qSettingsGetter.h"
+
+#include "painterHelpers.h"
+#include "qtHelper.h"
 
 using namespace corecvs;
 
@@ -14,8 +18,8 @@ const int CalibrationFeaturesWidget::REASONABLE_INF = 999999;
 
 CalibrationFeaturesWidget::CalibrationFeaturesWidget(QWidget *parent) :
     QWidget(parent),
-    geometryFeatures(NULL),
     mObservationListModel(NULL),
+    geometryFeatures(NULL),    
     ui(new Ui::CalibrationFeaturesWidget)
 {
     ui->setupUi(this);
@@ -42,7 +46,7 @@ CalibrationFeaturesWidget::CalibrationFeaturesWidget(QWidget *parent) :
     observationList.push_back(P);
     ObsevationListModel *model = new ObsevationListModel;
     model->mObservationList = &observationList;*/
-    ui->tableView->setModel(mObservationListModel);
+    ui->tableView->setModel(mObservationListModel);       
 }
 
 
@@ -52,7 +56,7 @@ CalibrationFeaturesWidget::~CalibrationFeaturesWidget()
     delete ui;
 }
 
-void CalibrationFeaturesWidget::manualAddPoint(const corecvs::Vector2dd &point)
+void CalibrationFeaturesWidget::manualAddPoint(const corecvs::Vector2dd &/*point*/)
 {
 
 }
@@ -65,10 +69,20 @@ void CalibrationFeaturesWidget::setObservationModel(ObservationListModel *observ
 
 void CalibrationFeaturesWidget::addPoint()
 {
+    mObservationListModel->insertRow(mObservationListModel->rowCount());
 }
 
 void CalibrationFeaturesWidget::removePoint()
 {
+    QItemSelectionModel *selection = ui->tableView->selectionModel();
+    QModelIndex current = selection->currentIndex();
+
+    if (current == QModelIndex()) {
+        mObservationListModel->removeRow(mObservationListModel->rowCount() - 1);
+        return;
+    }
+
+    mObservationListModel->removeRow(current.row());
 }
 
 void CalibrationFeaturesWidget::deleteObservation()
@@ -265,7 +279,7 @@ ObservationListModel::ObservationListModel(QObject *parent) :
 
 }
 
-Qt::ItemFlags ObservationListModel::flags(const QModelIndex &index) const
+Qt::ItemFlags ObservationListModel::flags(const QModelIndex & /*index*/) const
 {
     Qt::ItemFlags flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
     return flags;
@@ -273,7 +287,12 @@ Qt::ItemFlags ObservationListModel::flags(const QModelIndex &index) const
 
 QVariant ObservationListModel::data(const QModelIndex &index, int role) const
 {
-    if (!index.isValid())
+    if (!index.isValid() || mObservationList == NULL)
+    {
+        return QVariant();
+    }
+
+    if ((int)mObservationList->size() <= index.row())
     {
         return QVariant();
     }
@@ -325,7 +344,7 @@ QVariant ObservationListModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-bool ObservationListModel::setData(const QModelIndex &index, const QVariant &value, int role)
+bool ObservationListModel::setData(const QModelIndex &index, const QVariant &value, int /*role*/)
 {
     if (!index.isValid())
     {
@@ -354,18 +373,22 @@ bool ObservationListModel::setData(const QModelIndex &index, const QVariant &val
     return true;
 }
 
-int ObservationListModel::rowCount(const QModelIndex &parent) const
+int ObservationListModel::rowCount(const QModelIndex &/*parent*/) const
 {
     return (mObservationList == NULL) ? 0 : mObservationList->size();
 }
 
-int ObservationListModel::columnCount(const QModelIndex &parent) const
+int ObservationListModel::columnCount(const QModelIndex &/*parent*/) const
 {
     return COLUMN_NUM;
 }
 
 bool ObservationListModel::insertRows(int row, int count, const QModelIndex &parent)
 {
+    if (mObservationList == NULL) {
+        return false;
+    }
+
     emit beginInsertRows(parent, row, row + count - 1);
     mObservationList->insert(mObservationList->begin() + row, count, PointObservation());
     emit endInsertRows();
@@ -376,6 +399,10 @@ bool ObservationListModel::insertRows(int row, int count, const QModelIndex &par
 
 bool ObservationListModel::removeRows(int row, int count, const QModelIndex &parent)
 {
+    if (mObservationList == NULL) {
+        return false;
+    }
+
     emit beginRemoveRows(parent, row, row + count - 1);
     mObservationList->erase(mObservationList->begin() + row, mObservationList->begin() + row + count);
     emit endRemoveRows();
@@ -418,7 +445,7 @@ QVariant ObservationListModel::headerData(int section, Qt::Orientation orientati
     return QVariant();
 }
 
-QModelIndex ObservationListModel::index(int row, int column, const QModelIndex &parent) const
+QModelIndex ObservationListModel::index(int row, int column, const QModelIndex &/*parent*/) const
 {
     if (mObservationList == NULL) {
         return QModelIndex();
@@ -430,7 +457,7 @@ QModelIndex ObservationListModel::index(int row, int column, const QModelIndex &
     return QModelIndex();
 }
 
-QModelIndex ObservationListModel::parent(const QModelIndex &index) const
+QModelIndex ObservationListModel::parent(const QModelIndex &/*index*/) const
 {
     return QModelIndex();
 }
@@ -449,8 +476,237 @@ void ObservationListModel::setObservationList(ObservationList *observationList)
     emit endResetModel();
 }
 
+int ObservationListModel::elementCount()
+{
+    if (mObservationList == NULL)
+        return 0;
+    return mObservationList->size();
+}
+
 /*void ObsevationListModel::clearObservationPoints()
 {
     mObservationList->clear();
     emit mode
 }*/
+
+PointListEditImageWidget::PointListEditImageWidget(QWidget *parent, bool showHeader) :
+    AdvancedImageWidget(parent, showHeader),
+    mObservationListModel(NULL),
+    mSelectedPoint(-1)
+{
+    mMoveButton   = addToolButton("Select",            QIcon(":/new/prefix1/select_by_color.png"));
+    mAddButton    = addToolButton("Add Point To Path", QIcon(":/new/prefix1/vector_add.png"), false);
+    mDeleteButton = addToolButton("Delete Point",      QIcon(":/new/prefix1/vector_delete.png"), false);
+}
+
+void PointListEditImageWidget::setObservationModel(ObservationListModel *observationListModel)
+{
+    disconnect(mObservationListModel, 0, this, 0);
+
+    mObservationListModel = observationListModel;
+
+    connect(mObservationListModel, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
+            this, SLOT(update()));
+
+    connect(mObservationListModel, SIGNAL(columnsInserted(QModelIndex,int,int))             , this, SLOT(invalidateModel()));
+    connect(mObservationListModel, SIGNAL(columnsMoved(QModelIndex,int,int,QModelIndex,int)), this, SLOT(invalidateModel()));
+    connect(mObservationListModel, SIGNAL(columnsRemoved(QModelIndex,int,int))              , this, SLOT(invalidateModel()));
+
+    connect(mObservationListModel, SIGNAL(rowsInserted(QModelIndex,int,int))             , this, SLOT(invalidateModel()));
+    connect(mObservationListModel, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)), this, SLOT(invalidateModel()));
+    connect(mObservationListModel, SIGNAL(rowsRemoved(QModelIndex,int,int))              , this, SLOT(invalidateModel()));
+
+    connect(mObservationListModel, SIGNAL(modelReset())                                     , this, SLOT(invalidateModel()));
+}
+
+/* This is called when model indexes are changed, and our cache is no longer valid */
+void PointListEditImageWidget::invalidateModel()
+{
+    mSelectedPoint = -1;
+    update();
+}
+
+void PointListEditImageWidget::childRepaint(QPaintEvent *event, QWidget *who)
+{
+    AdvancedImageWidget::childRepaint(event, who);
+    if (mImage.isNull())
+    {
+        return;
+    }
+
+    if (mObservationListModel == NULL)
+    {
+        return;
+    }
+
+    /* Now the points */
+    QPainter painter(who);
+
+    QModelIndex topLevel = mObservationListModel->parent(QModelIndex());
+
+
+
+    int rows = mObservationListModel->rowCount(topLevel);
+
+    for (int i = 0; i < rows; i ++)
+    {
+        Vector2dd point = getPointById(i);
+        Vector2dd imageCoords = imageToWidgetF(point);
+        painter.setPen(Qt::yellow);
+        drawCircle(painter, imageCoords, 5);
+        painter.setPen(Qt::blue);
+        drawCircle(painter, imageCoords, 10);
+
+        if (i == mSelectedPoint) {
+            painter.setPen(Qt::red);
+            drawCircle(painter, imageCoords, 7);
+
+            /* Test it a bit */
+            imageCoords = imageToWidgetF(widgetToImageF(imageCoords));
+            painter.setPen(Qt::cyan);
+            drawCircle(painter, imageCoords, 3);
+
+
+        }
+    }
+}
+
+
+void PointListEditImageWidget::toolButtonReleased(QWidget *button)
+{
+
+    mUi->widget->unsetCursor();
+    AdvancedImageWidget::toolButtonReleased(button);
+
+    if (button == mMoveButton)
+    {
+        qDebug() << "Move Button";
+        mCurrentToolClass = (ToolClass)MOVE_POINT_TOOL;
+        mUi->widget->setCursor(Qt::ArrowCursor);
+    }
+    else if (button == mAddButton)
+    {
+        qDebug() << "Add Button";
+        //mCurrentToolClass = (ToolClass)ADD_POINT_TOOL;
+        mObservationListModel->insertRow(mObservationListModel->rowCount());
+        mSelectedPoint = mObservationListModel->rowCount() - 1;
+
+        QModelIndex indexX = mObservationListModel->index(mSelectedPoint, ObservationListModel::COLUMN_U);
+        QModelIndex indexY = mObservationListModel->index(mSelectedPoint, ObservationListModel::COLUMN_V);
+
+        mObservationListModel->setData(indexY, QVariant(mZoomCenter.y()), Qt::EditRole);
+        mObservationListModel->setData(indexX, QVariant(mZoomCenter.x()), Qt::EditRole);
+        mUi->widget->update();
+    }
+    else if (button == mDeleteButton)
+    {
+        qDebug() << "Delete Button";
+        if (mSelectedPoint >= 0)
+        {
+            mObservationListModel->removeRow(mSelectedPoint);
+            mSelectedPoint = -1;
+        }
+        mUi->widget->update();
+    }
+}
+
+Vector2dd PointListEditImageWidget::getPointById(int row)
+{
+    QModelIndex topLevel = mObservationListModel->parent(QModelIndex());
+    QModelIndex indexX = mObservationListModel->index(row, ObservationListModel::COLUMN_U, topLevel);
+    QModelIndex indexY = mObservationListModel->index(row, ObservationListModel::COLUMN_V, topLevel);
+
+    double x = mObservationListModel->data(indexX).toDouble();
+    double y = mObservationListModel->data(indexY).toDouble();
+
+    return Vector2dd(x,y);
+}
+
+int PointListEditImageWidget::findClosest(Vector2dd imagePoint, double limitDistance )
+{
+    QModelIndex topLevel = mObservationListModel->parent(QModelIndex());
+    int rows = mObservationListModel->rowCount(topLevel);
+
+    double bestDistance = limitDistance;
+    int bestIndex = -1;
+
+    for (int i = 0; i < rows; i ++)
+    {
+        Vector2dd currentPoint = getPointById(i);
+        double dist = (imagePoint - currentPoint).l2Metric();
+        if (dist < bestDistance) {
+            bestDistance = dist;
+            bestIndex = i;
+        }
+    }
+
+    return bestIndex;
+}
+
+void PointListEditImageWidget::childMousePressed(QMouseEvent *event)
+{
+    AdvancedImageWidget::childMousePressed(event);
+
+    PaintToolClass tool = (PaintToolClass)mCurrentToolClass;
+
+    if (tool == ADD_POINT_TOOL)
+    {
+    }
+
+    if (tool == DEL_POINT_TOOL)
+    {
+    }
+
+    if (tool == MOVE_POINT_TOOL)
+    {
+
+        Vector2dd releasePoint = Vector2dd(event->x(), event->y());
+//        bool shiftPressed = event->modifiers().testFlag(Qt::ShiftModifier);
+
+        Vector2dd imagePoint = widgetToImageF(releasePoint);
+        mSelectedPoint = findClosest(imagePoint, 5);
+        mUi->widget->update();
+
+    }
+}
+
+void PointListEditImageWidget::childMouseMoved(QMouseEvent * event)
+{
+    QModelIndex topLevel = mObservationListModel->parent(QModelIndex());
+
+    switch (mCurrentToolClass)
+    {
+    case MOVE_POINT_TOOL:
+    {
+        //   qDebug() << "Drag in selected tool";
+        if (!mIsMousePressed)
+            break;
+
+        Vector2dd dragStart    = widgetToImageF(Qt2Core::Vector2ddFromQPoint(mSelectionEnd));
+        Vector2dd currentPoint = widgetToImageF(Qt2Core::Vector2ddFromQPoint(event->pos()));
+        Vector2dd shift = (dragStart - currentPoint);
+
+
+       /* for (unsigned i = 0; i < mFeatures.mSelectedPoints.size(); i++)
+        {
+            mFeatures.mSelectedPoints[i]->position -= shift;
+        }*/
+        if (mSelectedPoint >= 0) {
+            Vector2dd currentPoint = getPointById(mSelectedPoint);
+
+            QModelIndex indexX = mObservationListModel->index(mSelectedPoint, ObservationListModel::COLUMN_U, topLevel);
+            QModelIndex indexY = mObservationListModel->index(mSelectedPoint, ObservationListModel::COLUMN_V, topLevel);
+
+            currentPoint -= shift;
+            mObservationListModel->setData(indexY, QVariant(currentPoint.y()), Qt::EditRole);
+            mObservationListModel->setData(indexX, QVariant(currentPoint.x()), Qt::EditRole);
+        }
+
+
+        mUi->widget->update();
+    }
+    default:
+        break;
+    }
+    AdvancedImageWidget::childMouseMoved(event);
+}

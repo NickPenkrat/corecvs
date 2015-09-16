@@ -1,6 +1,8 @@
 #ifndef PATTERNDETECTOR
 #define PATTERNDETECTOR
 
+#include "calculationStats.h"
+
 #include "selectableGeometryFeatures.h"
 #include "g8Buffer.h"
 #include "rgb24Buffer.h"
@@ -18,6 +20,8 @@ public:
     // ObservationList)
     virtual void getPointData(corecvs::SelectableGeometryFeatures &features);
     virtual ~PatternDetector() {}
+
+    virtual void setStatistics(corecvs::Statistics */*stats*/ = NULL) {}
 };
 
 #endif

@@ -263,8 +263,8 @@ void UniversalRectifier::recalculate(void)
 
 
     /* First prepare the common output */
-    CameraIntrinsics cameraLeft (inputList->getSize(), inputList->getSize() / 2.0, focalLeft , 1.0);
-    CameraIntrinsics cameraRight(inputList->getSize(), inputList->getSize() / 2.0, focalRight, 1.0);
+    CameraIntrinsicsLegacy cameraLeft (inputList->getSize(), inputList->getSize() / 2.0, focalLeft , 1.0);
+    CameraIntrinsicsLegacy cameraRight(inputList->getSize(), inputList->getSize() / 2.0, focalRight, 1.0);
 
 #if 0
     PrinterVisitor visitor;

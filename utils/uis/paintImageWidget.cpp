@@ -252,12 +252,3 @@ void PaintImageWidget::setSelectedPoint(const QPointF &/*point*/, bool /*isSelec
     update();
 }
 
-Vector2dd PaintImageWidget::widgetToImageF(const Vector2dd &p)
-{
-    return Qt2Core::Vector2ddFromQPointF(AdvancedImageWidget::widgetToImageF(Core2Qt::QPointFromVector2dd(p)));
-}
-
-Vector2dd PaintImageWidget::imageToWidgetF(const Vector2dd &p)
-{
-    return Qt2Core::Vector2ddFromQPointF(AdvancedImageWidget::imageToWidgetF(Core2Qt::QPointFromVector2dd(p)));
-}

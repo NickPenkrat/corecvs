@@ -13,7 +13,7 @@ public:
     TextLabelWidget(QWidget *parent = 0);
     ~TextLabelWidget();
 
-    void setText(QString &string)
+    void setText(const QString &string)
     {
     	ui.label->setText(string);
     }

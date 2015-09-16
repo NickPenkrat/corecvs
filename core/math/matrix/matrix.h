@@ -108,26 +108,6 @@ public:
 
 
     /**
-     * The element getter for a matrix that is used like vector (i.e has height or width of 1)
-     *
-     * \remark !!!! IT IS UNTIMATELY DICOURAGED TO USE THIS FUNCTION NOW !!!!
-     *
-     * \param x
-     *         An index of the vector element
-     * \return
-     *         A matrix element
-     **/
-   /* inline double &a(int32_t x)
-    {
-        return data[x];
-    };
-
-    const inline double &a(int32_t x) const
-    {
-        return data[x];
-    }; */
-
-    /**
      * Pseudonim to resemble the mathematics notation
      *
      * \param x the column of the matrix
@@ -211,13 +191,7 @@ public:
 
     inline Matrix& operator *=(const double v)
     {
-#if (__cplusplus == 201103L)
         this->mapOperationElementwize([v] (Matrix::InternalElementType e) { return e * v; });
-#else
-        using std::multiplies;
-        binder2nd<multiplies<double> > multiplier(multiplies<double>(), v);
-        this->mapOperationElementwize<binder2nd<multiplies<double> > >(multiplier);
-#endif
         return *this;
     }
 
@@ -227,13 +201,7 @@ public:
      * */
     inline Matrix& operator /=(const double v)
     {
-#if (__cplusplus == 201103L)
         this->mapOperationElementwize([v] (Matrix::InternalElementType e) { return e / v; });
-#else
-        using std::divides;
-        binder2nd<divides<double> > divider(divides<double>(), v);
-        this->mapOperationElementwize<binder2nd<divides<double> > >(divider);
-#endif
         return *this;
     }
 
@@ -279,23 +247,44 @@ public:
     friend ostream & operator <<(ostream &out, const Matrix &matrix);
     void print(ostream &out);
 
-    inline bool notTooFar(const Matrix *V, double epsilon = 0.0) const
+    inline bool notTooFar(const Matrix *V, double epsilon = 0.0, bool trace = false ) const
     {
         int h = getH();
         int w = getW();
-        if (h != V->getH() || w != V->getW())
+        if (h != V->getH() || w != V->getW()) {
+            if (trace) {
+                SYNC_PRINT(("[%d x %d] != [%d x %d]", h, w, V->getH(), V->getW()));
+            }
             return false;
+        }
 
         for (int i = 0; i < h; i++)
             for (int j = 0; j < w; j++)
             if (  this->element(i,j) > V->element(i,j) + epsilon ||
                   this->element(i,j) < V->element(i,j) - epsilon )
+            {
+                if (trace) {
+                    SYNC_PRINT(("[%d x %d] %lf != %lf\n", i, j, this->element(i,j), V->element(i,j)));
+                }
                 return false;
+            }
         return true;
     }
 
-/*pivate:
-    static void svd (int h, int w, double *A, double *W, double *V);*/
+    inline bool isFinite()
+    {
+        bool result = true;
+        auto toucher = [&result] (int, int, Matrix::InternalElementType &e) -> void { result &= std::isfinite(e); };
+        this->touchOperationElementwize(toucher);
+        return result;
+    }
+
+/* Some more specific way to call multiplication */
+    static Matrix multiplyHomebrew(const Matrix &A, const Matrix &B, bool parallel = true, bool vectorize = true);
+#ifdef WITH_BLAS
+    static Matrix multiplyBlas(const Matrix &A, const Matrix &B);
+#endif
+
 };
 
 } //namespace corecvs

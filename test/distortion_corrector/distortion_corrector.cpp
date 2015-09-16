@@ -32,7 +32,7 @@
 #include "chessBoardCornerDetector.h"
 #include "chessBoardAssembler.h"
 
-#include "calibration_structs.h"
+#include "calibrationStructs.h"
 
 using namespace cv;
 using namespace corecvs;
@@ -257,7 +257,7 @@ int main (int argc, char **argv)
         }
 
         SelectableGeometryFeatures lineList;
-        G8Buffer *boardOutput = NULL;
+//        G8Buffer *boardOutput = NULL;
 //        found = OpenCvCheckerboardDetector::DetectFullCheckerboard(channel, params, &lineList, &boardOutput);
         OpenCvCheckerboardDetector detector(params, alignerParams);
         bool found = detector.detectPattern(*channel);

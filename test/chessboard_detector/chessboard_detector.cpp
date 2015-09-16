@@ -32,8 +32,11 @@ bool checkIfExists(const char *filename)
 
 bool parseArgs(int argc, char **argv, std::string &filename, int &W, int &H)
 {
-    if (argc < 2 || argc > 2 && argc < 4 || argc > 4)
+    //if (argc < 2 || argc > 2 && argc < 4 || argc > 4)
+    if (!(argc == 2 || argc == 4))
+    {
         return false;
+    }
     filename = std::string(argv[1]);
     if (!checkIfExists(argv[1]))
     {

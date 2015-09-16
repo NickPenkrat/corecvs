@@ -103,7 +103,7 @@ public:
     void addIcoSphere(Vector3dd center, double radius, int step = 1);
 
 
-    void addCamera(const CameraIntrinsics &cam, double len);
+    void addCamera(const CameraIntrinsicsLegacy &cam, double len);
 
     void add2AxisEllipse  (const EllipticalApproximation3d &approx);
     void addMatrixSurface (double *data, int h, int w);

@@ -10,6 +10,9 @@
 
 
 #include <vector>
+
+#include <vector2d.h>
+
 #include <QWidget>
 #include <QtGui>
 
@@ -172,6 +175,10 @@ protected:
     QPointF widgetToImageF(const QPointF &p);
     QPointF imageToWidgetF(const QPointF &p);
     QPoint  widgetToImage(const QPoint &p);
+
+    Vector2dd widgetToImageF(const Vector2dd &p);
+    Vector2dd imageToWidgetF(const Vector2dd &p);
+
     QRect computeInputRect();
 
     QSize mImageSize;

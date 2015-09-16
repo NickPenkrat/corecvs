@@ -1,6 +1,8 @@
 #ifndef CHESSBOARDDETECTOR
 #define CHESSBOARDDETECTOR
 
+#include "calculationStats.h"
+
 #include "patternDetector.h"
 #include "checkerboardDetectionParameters.h"
 #include "chessBoardCornerDetector.h"
@@ -42,9 +44,13 @@ public:
     // Real pattern detection happens here
     bool detectPattern(DpImage     &buffer);
 
-    void classify(DpImage &img, CirclePatternGenerator& generator, RGB24Buffer &buffer);
+    bool classify(DpImage &img, CirclePatternGenerator& generator, RGB24Buffer &buffer);
 
     void drawClassifier(corecvs::RGB24Buffer &buffer);
+
+    void setStatistics(Statistics *stats);
+    Statistics *getStatistics();
+
 private:
 
     RectangularGridPattern bestPattern;
@@ -53,6 +59,10 @@ private:
 
     ChessBoardCornerDetector detector;
     ChessBoardAssembler assembler;
+
+/* Some statistics */
+    Statistics *stats;
+
 };
 
 #endif

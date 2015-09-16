@@ -33,6 +33,15 @@
 #endif
 
 namespace corecvs {
+
+#ifdef WITH_AVX
+typedef Doublex4 DoublexN;
+#else
+#   ifdef WITH_SSE
+typedef Doublex2 DoublexN;
+#   endif
+#endif
+
 } //namespace corecvs
 
 #endif /* SEEWRAPPER_H_ */

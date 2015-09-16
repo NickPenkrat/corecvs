@@ -10,6 +10,9 @@
 #include "matrix.h"
 #include "matrix33.h"
 
+#include "tbbWrapper.h"
+#include "sseWrapper.h"
+
 namespace corecvs {
 
 /* The constructor is not in single cycle due to possible stride of the matrix */
@@ -107,6 +110,8 @@ Matrix *Matrix::mul(const Matrix& V)
 
     return result;
 }
+
+#define WITH_DIRTY_GEMM_HACKS
 
 // I've prepared dirty implementation of GEMM/GEMV-like functions with fma-intrinsics and tbb stuff.
 // GEMM is also can be optimized with any BLAS-like library providing
@@ -224,44 +229,57 @@ Matrix operator *(DiagonalMatrix &D, const Matrix &M)
 #   include <cblas.h>
 # endif
 
-# ifndef WITH_BLAS
 
 #   include "tbbWrapper.h"
 #   include "immintrin.h"
 
+template<int vectorize = true>
 struct ParallelMM
 {
     void operator() (const corecvs::BlockedRange<int> &r) const
     {
-        auto& A = *pA;
-        auto& B = *pB;
-        auto& result = *pResult;
-        int row, column, runner;
-        for (row = r.begin(); row < r.end(); ++row)
+        const Matrix& A = *pA;
+        const Matrix& B = *pB;
+        Matrix& result = *pResult;
+
+        for (int row = r.begin(); row < r.end(); row++)
         {
-            for (column = 0; column + 3 < result.w; column += 4)
+            int column = 0;
+#if WITH_SSE
+            if (vectorize)
             {
-                __m256d sum = _mm256_setzero_pd();
-                for (runner = 0; runner < A.w; runner++)
+                const int STEP = DoublexN::SIZE;
+                ALIGN_DATA(16) double scratch[STEP];
+
+                for (; column + STEP - 1 < result.w; column += STEP)
                 {
-                    __m256d bc = _mm256_broadcast_sd(&A.a(row, runner));
-                    __m256d rw = _mm256_loadu_pd(&B.a(runner, column));
-#   ifdef WITH_FMA
-                    sum = _mm256_fmadd_pd(bc, rw, sum);
-#   else
-                    sum = _mm256_add_pd(_mm256_mul_pd(bc, rw), sum);
-#   endif
-//                    sum += A.a(row, runner) * B.a(runner, column);
-                }
-                for (int jj = 0; jj < 4; ++jj)
-                {
-                   result.a(row, column + jj) = ((double*)&sum)[jj];
+                    const double *ALine = &A.a(row, 0);
+                    const double *BCol  = &B.a(0, column);
+
+                    DoublexN sum = DoublexN::Zero();
+                    for (int runner = 0; runner < A.w; runner++)
+                    {
+                        DoublexN bc = DoublexN::Broadcast(ALine);
+                        DoublexN rw(BCol);
+                        sum = multiplyAdd(bc, rw, sum);
+
+                        ALine++;
+                        BCol += B.stride;
+                    }
+
+                    sum.saveAligned(scratch);
+
+                    for (int jj = 0; jj < STEP; ++jj)
+                    {
+                       result.a(row, column + jj) = scratch[jj];
+                    }
                 }
             }
+#endif
             for (; column < result.w; ++column)
             {
                 double sum = 0;
-                for (runner = 0; runner < A.w; runner++)
+                for (int runner = 0; runner < A.w; runner++)
                 {
                     sum += A.a(row, runner) * B.a(runner, column);
                 }
@@ -272,7 +290,8 @@ struct ParallelMM
     ParallelMM(const Matrix *pA, const Matrix *pB, Matrix *pResult) : pA(pA), pB(pB), pResult(pResult)
     {
     }
-    const Matrix *pA, *pB;
+    const Matrix *pA;
+    const Matrix *pB;
     Matrix *pResult;
 };
 
@@ -283,22 +302,30 @@ struct ParallelMV
         auto& A = *pA;
         auto& B = *pB;
         auto& result = *pResult;
-        int row, column, runner;
+        int row;
         for (row = r.begin(); row < r.end(); ++row)
         {
-            __m256d sum_ = _mm256_setzero_pd();
-            for (column = 0; column + 3 < A.w; column += 4)
+            int column = 0;
+            double sum = 0;
+#ifdef WITH_SSE
+            const int STEP = DoublexN::SIZE;
+            ALIGN_DATA(16) double scratch[STEP];
+
+            DoublexN sumV = DoublexN::Zero();
+
+            for (column = 0; column + STEP - 1 < A.w; column += STEP)
             {
-                __m256d bc = _mm256_loadu_pd(&A.a(row, column));
-                __m256d rw = *((__m256d*)&B.at(column));//_mm256_loadu_pd(&B.at(column));
-#   ifdef WITH_FMA
-                sum_ = _mm256_fmadd_pd(bc, rw, sum_);
-#   else
-                sum_ = _mm256_add_pd(_mm256_mul_pd(bc, rw), sum_);
-#   endif
+                DoublexN bc = DoublexN(&A.a(row, column));
+                DoublexN rw = DoublexN(&B.at(column));
+                sumV = multiplyAdd(bc, rw, sumV);
             }
-            double* sp = ((double*)&sum_);
-            double sum = sp[0]+sp[1]+sp[2]+sp[3];
+
+            sumV.saveAligned(scratch);
+            for (int i = 0; i < STEP; i++) {
+                sum += scratch[i];
+            }
+#endif
+
             for (; column < A.w; column++)
             {
                 sum += B.at(column) * A.a(row, column);
@@ -318,12 +345,15 @@ struct ParallelMD
 {
     void operator() (const corecvs::BlockedRange<int> &r) const
     {
-        auto& A = *pA;
-        auto& B = *pB;
-        auto& result = *pResult;
-        int row, column, runner;
+        const Matrix& A = *pA;
+        const DiagonalMatrix& B = *pB;
+        Matrix& result = *pResult;
+        int row;        
         for (row = r.begin(); row < r.end(); ++row)
         {
+            int column = 0;
+
+#ifdef WITH_AVX
             for (column = 0; column + 3 < result.w; column += 4)
             {
                 __m256d diag = _mm256_loadu_pd(&B.at(column));
@@ -331,12 +361,14 @@ struct ParallelMD
                 __m256d res  = _mm256_mul_pd(diag, mat);
                 _mm256_storeu_pd(&result.a(row, column), res);
             }
-            for (; column < result.w; ++column)
+#endif
+            for (; column < result.w; column++)
             {
                 result.a(row, column) = A.a(row, column) * B.at(column);
             }
         }
     }
+
     ParallelMD(const Matrix *pA, const DiagonalMatrix *pB, Matrix *pResult) : pA(pA), pB(pB), pResult(pResult)
     {
     }
@@ -345,36 +377,41 @@ struct ParallelMD
     Matrix *pResult;
 };
 
-#   endif // !WITH_BLAS
+
+
+Matrix Matrix::multiplyHomebrew(const Matrix &A, const Matrix &B, bool parallel, bool vectorize)
+{
+    CORE_ASSERT_TRUE(A.w == B.h, "Matrices have wrong sizes");
+    Matrix result(A.h, B.w, false);
+    if (vectorize) {
+        parallelable_for (0, result.h, 8, ParallelMM<true>(&A, &B, &result), parallel);
+    } else {
+        parallelable_for (0, result.h, 8, ParallelMM<false>(&A, &B, &result), parallel);
+    }
+    return result;
+}
+
+#ifdef WITH_BLAS
+Matrix Matrix::multiplyBlas(const Matrix &A, const Matrix &B)
+{
+    CORE_ASSERT_TRUE(A.w == B.h, "Matrices have wrong sizes");
+    Matrix result(A.h, B.w, false);
+    cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, A.h, B.w, A.w, 1.0, A.data, A.stride, B.data, B.stride, 0.0, result.data, result.stride);
+    return result;
+}
+#endif
+
 
 Matrix operator *(const Matrix &A, const Matrix &B)
 {
     CORE_ASSERT_TRUE(A.w == B.h, "Matrices have wrong sizes");
     Matrix result(A.h, B.w, false);
 
-#   ifndef  WITH_BLAS
-    int row, column, runner;
-    if (A.h < 64)
-    {
-       for (row = 0; row < result.h; row++)
-           for (column = 0; column < result.w; column++)
-           {
-               double sum = 0;
-               for (runner = 0; runner < A.w; runner++)
-               {
-                   sum += A.a(row, runner) * B.a(runner, column);
-               }
-               result.a(row, column) = sum;
-           }
-    }
-    else
-    {
-        corecvs::parallelable_for (0, result.h, 8, ParallelMM(&A, &B, &result), true);
-    }
-
-#   else // !WITH_BLAS
+#ifndef WITH_BLAS
+    parallelable_for (0, result.h, 8, ParallelMM<>(&A, &B, &result), !(A.h < 64));
+#else // !WITH_BLAS
     cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, A.h, B.w, A.w, 1.0, A.data, A.stride, B.data, B.stride, 0.0, result.data, result.stride);
-#   endif // WITH_BLAS
+#endif // WITH_BLAS
 
     return result;
 }

@@ -37,7 +37,7 @@ public:
     {
         return QRect(
             rect.corner.x(),  rect.corner.y(),
-            rect.size.x(),    rect.size.y());
+            rect.size.  x(),  rect.size.  y());
     }
 };
 
@@ -75,5 +75,7 @@ QDebug & operator<< (QDebug & stream, const Vector2d<int> & vector);
 
 
 void setValueBlocking(QDoubleSpinBox *box, double value);
+
+QString printWindowFlags(const Qt::WindowFlags &flags);
 
 /* EOF */

@@ -71,11 +71,11 @@
      <property name="suffix">
       <string>px</string>
      </property>
-     <property name="maximum">
-      <double>1000000000.000000000000000</double>
-     </property>
      <property name="minimum">
       <double>-1000000000.000000000000000</double>
+     </property>
+     <property name="maximum">
+      <double>1000000000.000000000000000</double>
      </property>
     </widget>
    </item>
@@ -84,11 +84,11 @@
      <property name="suffix">
       <string>px</string>
      </property>
-     <property name="maximum">
-      <double>1000000000.000000000000000</double>
-     </property>
      <property name="minimum">
       <double>-1000000000.000000000000000</double>
+     </property>
+     <property name="maximum">
+      <double>1000000000.000000000000000</double>
      </property>
     </widget>
    </item>
@@ -97,11 +97,11 @@
      <property name="suffix">
       <string>px</string>
      </property>
-     <property name="maximum">
-      <double>1000000000.000000000000000</double>
-     </property>
      <property name="minimum">
       <double>-1000000000.000000000000000</double>
+     </property>
+     <property name="maximum">
+      <double>1000000000.000000000000000</double>
      </property>
     </widget>
    </item>
@@ -113,42 +113,42 @@
     </widget>
    </item>
    <item row="3" column="0">
-    <widget class="QLabel" name="label_2">
+    <widget class="QLabel" name="label_11">
      <property name="text">
       <string>Projection</string>
      </property>
     </widget>
    </item>
    <item row="4" column="0">
-    <widget class="QLabel" name="label_3">
+    <widget class="QLabel" name="labelFocalX">
      <property name="text">
       <string>Focal x</string>
      </property>
     </widget>
    </item>
    <item row="5" column="0">
-    <widget class="QLabel" name="label_3">
+    <widget class="QLabel" name="labelFocalY">
      <property name="text">
       <string>Focal y</string>
      </property>
     </widget>
    </item>
    <item row="6" column="0">
-    <widget class="QLabel" name="label_2">
+    <widget class="QLabel" name="labelSkew">
      <property name="text">
       <string>Skew</string>
      </property>
     </widget>
    </item>
    <item row="7" column="0">
-    <widget class="QLabel" name="label_3">
+    <widget class="QLabel" name="label_12">
      <property name="text">
       <string>Center x</string>
      </property>
     </widget>
    </item>
    <item row="8" column="0">
-    <widget class="QLabel" name="label_3">
+    <widget class="QLabel" name="labelCenterY">
      <property name="text">
       <string>Center y</string>
      </property>

@@ -113,9 +113,9 @@ void testDoubleConvolve()
 
     for (unsigned i = 0; i < POLUTING_INPUTS; i++)
     {
-        outputSimple[i] = new DpImage(TEST_H_SIZE ,TEST_W_SIZE);
-        outputScalar[i] = new DpImage(TEST_H_SIZE ,TEST_W_SIZE);
-        outputVector[i] = new DpImage(TEST_H_SIZE ,TEST_W_SIZE);
+        outputSimple[i]     = new DpImage(TEST_H_SIZE ,TEST_W_SIZE);
+        outputScalar[i]     = new DpImage(TEST_H_SIZE ,TEST_W_SIZE);
+        outputVector[i]     = new DpImage(TEST_H_SIZE ,TEST_W_SIZE);
         outputKernalized[i] = new DpImage(TEST_H_SIZE ,TEST_W_SIZE);
     }
 

@@ -167,11 +167,27 @@ public:
 };
 
 #if defined(WITH_SSE) || defined(WITH_AVX)
-template<int inputNumber, int outputNumber>
+template<int inputNumber = 1, int outputNumber = 1>
+class AlgebraDouble
+{
+public:
+    typedef VectorAlgebraMulti<TraitDoubleBufferVector, inputNumber, outputNumber> Type;
+};
+
+template<int inputNumber = 1, int outputNumber = 1>
 class VectorAlgebraDouble
 {
 public:
     typedef VectorAlgebraMulti<TraitDoubleBufferVector, inputNumber, outputNumber> Type;
+};
+#else
+template<int inputNumber = 1, int outputNumber = 1>
+class AlgebraDouble
+{
+public:
+    typedef TraitGeneric<double> TraitDouble;
+    typedef ScalarAlgebraMulti<TraitDouble, TraitDouble, inputNumber, outputNumber> Type;
+
 };
 #endif
 
