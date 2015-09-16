@@ -21,7 +21,7 @@ enum class AlignmentType
 
 struct BoardAlignerParams
 {
-    AlignmentType type;
+    AlignmentType type = AlignmentType::FIT_WIDTH;
     std::vector<std::vector<corecvs::Vector2dd>> circleCenters;
     /*
      * Square poses:
@@ -42,10 +42,13 @@ class BoardAligner : protected BoardAlignerParams
 public:
     BoardAligner(BoardAlignerParams params = BoardAlignerParams());
     bool align(DpImage &img);
+    void drawDebugInfo(corecvs::RGB24Buffer &buffer);
 protected:
     std::vector<std::vector<corecvs::Vector2dd>> bestBoard;
     std::vector<std::vector<std::pair<int, int>>> classifier;
+    std::vector<std::vector<std::pair<int, int>>> initialClassifier;
     corecvs::ObservationList observationList;
+    void printClassifier(bool initial);
 private:
     bool alignDim(DpImage &img, bool fitW, bool fitH);
     bool alignSingleMarker(DpImage &img);

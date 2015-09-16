@@ -4,10 +4,12 @@
 
 ChessboardDetector::ChessboardDetector (
         CheckerboardDetectionParameters params,
+        BoardAlignerParams alignerParams,
         ChessBoardCornerDetectorParams detectorParams,
         ChessBoardAssemblerParams assemblerParams
     )
     : CheckerboardDetectionParameters(params),
+      BoardAligner(alignerParams),
       detector(detectorParams)
 {
     ChessBoardDetectorMode mode =  getMode(*this);
@@ -26,7 +28,7 @@ ChessboardDetector::ChessboardDetector (
     }
     if (!(mode & (ChessBoardDetectorMode::FIT_WIDTH | ChessBoardDetectorMode::FIT_HEIGHT)))
     {
-        type = AlignmentType::FIT_ALL;
+//        type = AlignmentType::FIT_ALL;
     }
     else
     {
@@ -134,6 +136,11 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
 void ChessboardDetector::getPointData(ObservationList &observations)
 {
     observations = result;
+}
+
+void ChessboardDetector::drawClassifier(corecvs::RGB24Buffer &buffer)
+{
+    BoardAligner::drawDebugInfo(buffer);
 }
 
 // FIXME: Temporary code; needs serious rework

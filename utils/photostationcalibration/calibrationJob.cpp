@@ -33,7 +33,7 @@ bool CalibrationJob::detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::Sel
     }
     else
     {
-        patternDetector = new ChessboardDetector(settings.openCvDetectorParameters, settings.chessBoardCornerDetectorParams, settings.chessBoardAssemblerParams);
+        patternDetector = new ChessboardDetector(settings.openCvDetectorParameters, BoardAlignerParams(), settings.chessBoardCornerDetectorParams, settings.chessBoardAssemblerParams);
         patternDetector->detectPattern(buffer);
     }
 

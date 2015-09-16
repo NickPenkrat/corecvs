@@ -25,6 +25,7 @@ class ChessboardDetector : CheckerboardDetectionParameters,
 public:
     ChessboardDetector(
             CheckerboardDetectionParameters params = CheckerboardDetectionParameters(),
+            BoardAlignerParams alignerParams = BoardAlignerParams(),
             ChessBoardCornerDetectorParams detectorParams = ChessBoardCornerDetectorParams(),
             ChessBoardAssemblerParams assemblerParams = ChessBoardAssemblerParams()
     );
@@ -42,7 +43,10 @@ public:
     bool detectPattern(DpImage     &buffer);
 
     void classify(DpImage &img, CirclePatternGenerator& generator, RGB24Buffer &buffer);
+
+    void drawClassifier(corecvs::RGB24Buffer &buffer);
 private:
+
     RectangularGridPattern bestPattern;
     corecvs::ObservationList result;
     std::vector<OrientedCorner> corners;

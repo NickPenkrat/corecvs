@@ -2,6 +2,9 @@
 
 #include <cassert>
 
+#include "abstractPainter.h"
+#include "homographyReconstructor.h"
+
 BoardAligner::BoardAligner(BoardAlignerParams params) : BoardAlignerParams(params)
 {
 }
@@ -161,15 +164,6 @@ bool BoardAligner::alignDim(DpImage &img, bool fitW, bool fitH)
         }
         std::cout << std::endl;
     }
-#if 0
-    for (int i = lb; i < lb + w; ++i)
-    {
-        for (int j = tb; j < tb + h; ++j)
-        {
-            observationList.emplace_back(bestBoard[j][i], corecvs::Vector3dd(i, j, 0.0));
-        }
-    }
-#endif
     return true;
 }
 
@@ -192,12 +186,13 @@ bool BoardAligner::alignMarkers(DpImage &img)
 
 bool BoardAligner::bfs()
 {
-    decltype(classifier) cc = classifier;
+    initialClassifier = classifier;
     int h = classifier.size();
     int w = classifier[0].size();
 
     int seedx = -1, seedy = -1;
     int xdx, xdy, ydx, ydy;
+    int biasx, biasy;
 
     int corner[4][2][2] =
     {
@@ -206,6 +201,9 @@ bool BoardAligner::bfs()
         {{-1, 0}, {0, 1}},
         {{-1, 0}, {0,-1}}
     };
+    idealWidth = 26;
+    idealHeight = 18;
+    std::cout << "Best board: " << w << " x " << h << "; Req: " << idealWidth << " x " << idealHeight << std::endl;
 
     for (int y = 0; y < h && seedx < 0; ++y)
     {
@@ -228,6 +226,8 @@ bool BoardAligner::bfs()
                     classifier[y2][x2].first < 0)
                     continue;
                 seedx = x; seedy = y;
+                biasx = classifier[y][x].first;
+                biasy = classifier[y][x].second;
 
                 int xv = classifier[y ][x ].first,
                     yv = classifier[y ][x ].second,
@@ -249,19 +249,29 @@ bool BoardAligner::bfs()
     if ((xdx * xdx + xdy * xdy != 1) || (ydx * ydx + ydy * ydy != 1))
         return false;
 
+    std::cout << "IW: " << idealWidth << "IH: " << idealHeight << std::endl;
     for (int y = 0; y < h; ++y)
     {
         for (int x = 0; x < w; ++x)
         {
-            int cx = classifier[y][x].first  = (x - seedx) * xdx + (y - seedy) * xdy + seedx;
-            int cy = classifier[y][x].second = (x - seedx) * ydx + (y - seedy) * ydy + seedy;
+            int cx = classifier[y][x].first  = (x - seedx) * xdx + (y - seedy) * xdy + biasx;
+            int cy = classifier[y][x].second = (x - seedx) * ydx + (y - seedy) * ydy + biasy;
 
             if (cx < 0 || cx >= idealWidth || cy < 0 || cy >= idealHeight)
-                return false;
-            if (cc[y][x].first >= 0)
             {
-                if (cx != cc[y][x].first || cy != cc[y][x].second)
+                std::cout << "Classifier overflow" << std::endl;
+                std::cout << "Classifier" << std::endl;
+                printClassifier(false);
+                return false;
+            }
+            if (initialClassifier[y][x].first >= 0)
+            {
+                if (cx != initialClassifier[y][x].first || cy != initialClassifier[y][x].second)
+                {
+                    printClassifier(true);
+                    printClassifier(false);
                     return false;
+                }
             }
 
         }
@@ -294,6 +304,109 @@ bool BoardAligner::createList()
     return true;
 }
 
+
+void BoardAligner::printClassifier(bool initial)
+{
+    auto& c = initial ? initialClassifier : classifier;
+    std::cout << (initial ? "Initial " : "") << "Classifier: " << std::endl;
+
+    for (auto& r: c)
+    {
+        for (auto& p: r)
+            std::cout << "[" << p.first << ", " << p.second << "] ";
+        std::cout << std::endl;
+    }
+}
+
+void BoardAligner::drawDebugInfo(corecvs::RGB24Buffer &buffer)
+{
+    if (!bestBoard.size() || !bestBoard[0].size()) return;
+
+    int w = bestBoard[0].size();
+    int h = bestBoard.size();
+    // A: draw board
+    DpImage mask(buffer.h, buffer.w);
+    corecvs::RGBColor board_col = corecvs::RGBColor(0x7f0000);
+    for (int i = 0; i + 1 < h; ++i)
+    {
+        for (int j = 0; j + 1 < w; ++j)
+        {
+            corecvs::Vector2dd A, B, C, D;
+            A = bestBoard[i + 0][j + 0];
+            B = bestBoard[i + 1][j + 0];
+            C = bestBoard[i + 0][j + 1];
+            D = bestBoard[i + 1][j + 1];
+
+            corecvs::Matrix33 res, orientation, homography;
+    corecvs::HomographyReconstructor c2i;
+    c2i.addPoint2PointConstraint(corecvs::Vector2dd(0.0, 0.0), A);
+    c2i.addPoint2PointConstraint(corecvs::Vector2dd(1.0, 0.0), B);
+    c2i.addPoint2PointConstraint(corecvs::Vector2dd(0.0, 1.0), C);
+    c2i.addPoint2PointConstraint(corecvs::Vector2dd(1.0, 1.0), D);
+
+    corecvs::Matrix33 AA, BB;
+    c2i.normalisePoints(AA, BB);
+
+    homography = c2i.getBestHomographyLSE();
+    homography = c2i.getBestHomographyLM(homography);
+    res = BB.inv() * homography * AA;
+            double score;
+
+            for (int i = 0; i < 1000; ++i)
+            {
+                for (int j = 0; j < 1000; ++j)
+                {
+                    corecvs::Vector3dd pt = res * Vector3dd(j * (1e-3), i * (1e-3), 1.0);
+                    pt /= pt[2];
+
+                    int xx = pt[0], yy = pt[1];
+                    if (xx >= 0 && xx < buffer.w && yy >= 0 && yy < buffer.h)
+                    {
+                        mask.element(yy, xx) = 1.0;
+                    }
+
+                }
+            }
+        }
+    }
+    for (int i = 0; i < buffer.h; ++i)
+    {
+        for (int j = 0; j < buffer.w; ++j)
+        {
+            auto A = buffer.element(i, j);
+            auto B = board_col;
+            if (mask.element(i, j) > 0.0)
+            {
+                buffer.element(i, j) = RGBColor::lerpColor(A, B, 0.3);
+            }
+        }
+    }
+
+    corecvs::AbstractPainter<corecvs::RGB24Buffer> p(&buffer);
+    // C: draw final classifier
+    for (int i = 0; i < h; ++i)
+    {
+        for (int j = 0; j < w; ++j)
+        {
+            p.drawFormat(bestBoard[i][j].x(), bestBoard[i][j].y(), corecvs::RGBColor(0xffff00), 2, "(%d, %d)", classifier[i][j].first, classifier[i][j].second);
+        }
+    }
+    // B: draw initial classifier
+    if (initialClassifier.size())
+    {
+        for (int i = 0; i < h; ++i)
+        {
+            for (int j = 0; j < w; ++j)
+            {
+                if (initialClassifier[i][j].first >= 0)
+                {
+                    p.drawFormat(bestBoard[i][j].x(), bestBoard[i][j].y(), corecvs::RGBColor(0x00ffff), 2, "(%d, %d)", initialClassifier[i][j].first, initialClassifier[i][j].second);
+                }
+            }
+        }
+    }
+}
+
 void BoardAligner::classify(bool trackOrientation, DpImage &img)
 {
     int h = bestBoard.size(), w = bestBoard[0].size();
@@ -306,6 +419,8 @@ void BoardAligner::classify(bool trackOrientation, DpImage &img)
     int N = circleCenters.size();
     for (int i = 0; i < N; ++i)
         gen.addToken(i, circleRadius, circleCenters[i]);
+
+    std::vector<std::pair<std::pair<int,int>, double>> data;
 
     for (int i = 0; i + 1 < h; ++i)
     {
@@ -330,12 +445,13 @@ void BoardAligner::classify(bool trackOrientation, DpImage &img)
 
             if (cl >= 0)
             {
+                data.emplace_back(std::make_pair(i, j), score);
                 // Take sq. orientation and place classifier
                 for (int k = 0; k < 4; ++k)
                 {
                     auto P = (orientation * corecvs::Vector3dd(order[k][0], order[k][1], 1.0).project()) + corecvs::Vector2dd(0.5, 0.5);
                     assert(P[0] > 0.0 && P[1] > 0.0);
-                    assert(P[0] < 1.5 && P[1] < 1.5);
+                    assert(P[0] < 2.0 && P[1] < 2.0);
                     classifier[i + P[1]][j + P[0]] = markerCells[cl][k];
 
                 }
@@ -344,4 +460,11 @@ void BoardAligner::classify(bool trackOrientation, DpImage &img)
 
         }
     }
+
+    std::cout << "Scores:" << std::endl;
+    for (auto& p: data)
+    {
+        std::cout << "[" << p.first.first << ", " << p.first.second << "]: " << p.second << std::endl;
+    }
+    printClassifier(false);
 }

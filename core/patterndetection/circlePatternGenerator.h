@@ -17,7 +17,7 @@ struct CirclePatternGeneratorParams
 {
     int patternSize = 128;
     double stdevThreshold = 0.075;
-    double corrThreshold = 0.3;
+    double corrThreshold = 0.7;
 
 };
 
