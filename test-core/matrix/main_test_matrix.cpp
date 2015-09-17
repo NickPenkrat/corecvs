@@ -361,7 +361,13 @@ TEST(MatrixTest, testMatrixSerialisation)
     CORE_ASSERT_TRUE(m1.notTooFar(m), "serialization fails\n");
 }
 
+// XXX: https://connect.microsoft.com/VisualStudio/feedback/details/863099/istringstream-fails-to-convert-certain-double-values-correctly
+//      This test will never be working on MS VS 2013
+#if _MSC_VER == 1800
+TEST(MatrixTest, DISABLED_testDouble)
+#else
 TEST(MatrixTest, testDouble)
+#endif
 {
     cout << "Testing Double support\n";
     double vals[] = {numeric_limits<double>::min(), 1.0, numeric_limits<double>::max()};
@@ -376,10 +382,7 @@ TEST(MatrixTest, testDouble)
         istringstream iss (oss.str(),istringstream::in);
         double result;
         iss >> result;
-        std::cout << std::setprecision(std::numeric_limits<double>::digits10 + 15) <<  result << " ";
-        std::cout << std::setprecision(std::numeric_limits<double>::digits10 + 15) << vals[i] << std::endl;
         CORE_ASSERT_TRUE_P(result == vals[i], ("Internal problem with double and stdout"));
-
     }
 }
 
