@@ -661,8 +661,8 @@ TEST(MatrixProfile, profileMatrixMulSize3)
 
 
         PreciseTimer start;
-        Matrix * input1[POLUTING_INPUTS];
-        Matrix * input2[POLUTING_INPUTS];
+        Matrix ** input1 = new Matrix*[POLUTING_INPUTS]; // Unfortunately VS2013 does not support C99
+        Matrix ** input2 = new Matrix*[POLUTING_INPUTS];
         Matrix AB(1,1);
 
         for (unsigned i = 0; i < POLUTING_INPUTS; i++)
@@ -770,6 +770,8 @@ TEST(MatrixProfile, profileMatrixMulSize3)
             delete_safe(input1[i]);
             delete_safe(input2[i]);
         }
+        delete input1;
+        delete input2;
 
     }
 
