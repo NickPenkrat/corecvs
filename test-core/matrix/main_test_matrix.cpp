@@ -632,7 +632,7 @@ void printResult(double gflops, uint64_t delay, int runs) {
      ));
 }
 
-TEST(MatrixProfile, profileMatrixMulSize3)
+TEST(MatrixProfile, DISABLED_profileMatrixMulSize3)
 {
     int sizes   []= {1024, 2048, 4096, 16384};
     int polca   []= {  20,   20,    5,     1};
