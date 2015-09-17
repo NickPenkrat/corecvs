@@ -160,7 +160,7 @@ public:
 
 
 private:
-    corecvs::Statistics *stats;
+    corecvs::Statistics *stats = 0;
 };
 
 #endif
