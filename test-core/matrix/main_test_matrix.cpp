@@ -376,7 +376,8 @@ TEST(MatrixTest, testDouble)
         istringstream iss (oss.str(),istringstream::in);
         double result;
         iss >> result;
-        cout << result << " " << vals[i] << std::endl;
+        std::cout << std::setprecision(std::numeric_limits<double>::digits10 + 15) <<  result << " ";
+        std::cout << std::setprecision(std::numeric_limits<double>::digits10 + 15) << vals[i] << std::endl;
         CORE_ASSERT_TRUE_P(result == vals[i], ("Internal problem with double and stdout"));
 
     }
