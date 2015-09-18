@@ -137,6 +137,7 @@ public:
    QToolButton *mAddButton;
    QToolButton *mMoveButton;
    QToolButton *mDeleteButton;
+   QToolButton *mAddInfoButton;
 
 
    PointListEditImageWidget(QWidget *parent = NULL, bool showHeader = true);
@@ -155,6 +156,7 @@ public slots:
 protected:
    int findClosest(Vector2dd imagePoint, double limitDistance = numeric_limits<double>::max());
    Vector2dd getPointById(int row);
+   QString   getMetaById (int row);
 };
 
 #endif // CALIBRATIONFEATURESWIDGET_H

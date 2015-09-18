@@ -140,7 +140,7 @@ bool BoardAligner::alignDim(DpImage &img, bool fitW, bool fitH)
         }
     }
     std::cout << "Ok, continue..." << std::endl;
-    corecvs::Vector2dd mean;
+    corecvs::Vector2dd mean(0.0);
     for (auto& r: bestBoard)
         for (auto& c: r)
             mean += c;

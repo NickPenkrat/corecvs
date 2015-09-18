@@ -80,6 +80,11 @@ public:
         }
 };
 
+struct NamePointObservation : public PointObservation
+{
+    std::string name;
+    void *payload;
+};
 
 class SelectableGeometryFeatures
 {
