@@ -108,7 +108,7 @@ void SiftGpuMatcher::knnMatchImpl( RuntimeTypeBuffer &queryDescriptors, RuntimeT
     siftMatchGpu->SetDescriptors(0, (int)queryDescriptors.getRows(), queryDescriptors.row<float>(0));
     siftMatchGpu->SetDescriptors(1, (int)trainDescriptors.getRows(), trainDescriptors.row<float>(0));
     int nmatch = siftMatchGpu->GetSiftMatch((int)maxRows, buffer);
-    assert(nmatch < rowsQ);
+    assert((size_t)nmatch < rowsQ);
 
     for (int j = 0; j < nmatch; ++j)
     {

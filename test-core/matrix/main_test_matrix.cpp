@@ -616,7 +616,7 @@ void printHeader () {
 }
 
 void printName (const char *name, int testsize, double mem, int runs) {
-    SYNC_PRINT(("| Profiling | [%5dx%-5d] (%6.1lf Mb) % 8s | %3d |", testsize, testsize, mem / 1000000.0, name, runs));
+    SYNC_PRINT(("| Profiling | [%5dx%-5d] (%6.1lf Mb) %8s | %3d |", testsize, testsize, mem / 1000000.0, name, runs));
 
 }
 

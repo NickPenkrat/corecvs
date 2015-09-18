@@ -49,7 +49,7 @@ const qreal Pi = 3.14;
 
 //! [0]
 Arrow::Arrow(DiagramItem *startItem, DiagramItem *endItem,
-         QGraphicsItem *parent, QGraphicsScene *scene)
+         QGraphicsItem *parent, QGraphicsScene * /*scene*/)
     : QGraphicsLineItem(parent/*, scene*/)
 {
 //    cout<<"Arrow::Arrow"<<endl;

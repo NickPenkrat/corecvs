@@ -131,7 +131,7 @@ int main(int argc, char **argv)
 
     Waiter *waiter = new Waiter;
 
-    for (int i = 0; i < deviceNames.size(); i++)
+    for (size_t i = 0; i < deviceNames.size(); i++)
     {
         cchar * captureString = deviceNames[i];
         printf("Attempting a grab __________    %s    _________\n", captureString);

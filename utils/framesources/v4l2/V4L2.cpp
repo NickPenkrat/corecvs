@@ -688,7 +688,7 @@ std::string V4L2CameraDescriptor::getSerialNumber()
    if (serialFile != NULL)
    {
          getline(&serial, &len, serialFile);
-         for (int i = 0; i < strlen(serial); i++)
+         for (size_t i = 0; i < strlen(serial); i++)
          {
              if (serial[i] == '\n' || serial[i] == '\r' ) serial[i] = 0;
          }

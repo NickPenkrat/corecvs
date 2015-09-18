@@ -113,7 +113,7 @@ void ChessBoardAssembler::acceptHypothesis(RectangularGridPattern &board)
             int idx = 0;
             size_t j = 0;
             for (size_t i = 0; i < boards.size(); ++i)
-                if (j == intersections.size() || intersections[j] != i)
+                if (j == intersections.size() || (size_t)intersections[j] != i)
                     boards[idx++] = boards[i];
                 else
                     j++;
@@ -343,7 +343,8 @@ void ChessBoardAssembler::BoardExpander::predictor(Direction dir, std::vector<co
 {
     auto& corners = assembler->corners;
     prediction.clear();
-    int N, i[3] = {0}, j[3] = {0}, inc_i = 0, inc_j = 0, h = board.h(), w = board.w();
+    int N;
+    int i[3] = {0}, j[3] = {0}, inc_i = 0, inc_j = 0, h = board.h(), w = board.w();
     switch(dir)
     {
         case Direction::UP:
@@ -361,6 +362,7 @@ void ChessBoardAssembler::BoardExpander::predictor(Direction dir, std::vector<co
             j[0] = 2; j[1] = 1; j[2] = 0;
             inc_i = 1;
             break;
+        default:
         case Direction::RIGHT:
             N = h;
             j[0] = w - 3; j[1] = w - 2; j[0] = w - 1;

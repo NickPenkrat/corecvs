@@ -104,8 +104,12 @@ void SiftGpu::operator()(RuntimeTypeBuffer &img, std::vector<KeyPoint>& keypoint
 SiftGPU::SiftKeypoint SiftGpu::convert(const KeyPoint &k)
 {
     //TODO: check what orientation and size really represent
-    SiftGPU::SiftKeypoint kp =
-    { k.x, k.y, k.size, k.angle };
+    SiftGPU::SiftKeypoint kp = {
+        (float)k.x,
+        (float)k.y,
+        (float)k.size,
+        (float)k.angle
+    };
     return kp;
 }
 

@@ -26,7 +26,7 @@ public:
 
 class GraphData {
 public:
-    int limit;
+    size_t limit;
     std::vector<GraphHistory> mData;
 
     GraphData() :

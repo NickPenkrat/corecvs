@@ -111,10 +111,10 @@ void PhotoStationCalibrator::getFullReprojectionError(double out[])
     assert(idx == getOutputNum() - N - M + 1);
 #else
     std::vector<int> offset(M);
-    for (size_t j = 0; j + 1 < M; ++j)
+    for (size_t j = 0; j + 1 < (size_t)M; ++j)
     {
         size_t K0 = 0;
-        for (size_t i = 0; i < N; ++i)
+        for (size_t i = 0; i < (size_t)N; ++i)
         {
             K0 += patternPoints[j][i].size() * 2;
         }

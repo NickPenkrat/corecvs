@@ -16,17 +16,21 @@ using namespace corecvs;
 
 
 TEST(EnvTest, CheckTopconDirTest) {
-    if(const char* dir = std::getenv("TOPCON_DIR"))
+    if(const char* dir = std::getenv("TOPCON_DIR")) {
+        CORE_UNUSED(dir);
         SUCCEED();
-    else
+    } else {
         FAIL();
+    }
 }
 
 TEST(EnvTest, CheckTopconDirGDriveTest) {
-    if(const char* dir = std::getenv("TOPCON_DIR_GDRIVE"))
+    if(const char* dir = std::getenv("TOPCON_DIR_GDRIVE")) {
+        CORE_UNUSED(dir);
         SUCCEED();
-    else
+    } else {
         FAIL();
+    }
 }
 
 TEST(VectorTest, MulAllElements) {
