@@ -85,28 +85,6 @@ int CheckerboardDetectionParameters::staticInit()
         )
     );
     fields().push_back(
-        new IntField
-        (
-          CheckerboardDetectionParameters::VERT_CROSSES_COUNT_ID,
-          offsetof(CheckerboardDetectionParameters, mVertCrossesCount),
-          11,
-          "Vert crosses count",
-          "Vert crosses count",
-          "Vert crosses count"
-        )
-    );
-    fields().push_back(
-        new IntField
-        (
-          CheckerboardDetectionParameters::HOR_CROSSES_COUNT_ID,
-          offsetof(CheckerboardDetectionParameters, mHorCrossesCount),
-          18,
-          "Hor crosses count",
-          "Hor crosses count",
-          "Hor crosses count"
-        )
-    );
-    fields().push_back(
         new DoubleField
         (
           CheckerboardDetectionParameters::CELL_SIZE_HOR_ID,
@@ -201,28 +179,6 @@ int CheckerboardDetectionParameters::staticInit()
           "Fast board Speedup",
           "Fast board Speedup",
           "Fast board Speedup"
-        )
-    );
-    fields().push_back(
-        new BoolField
-        (
-          CheckerboardDetectionParameters::FIT_WIDTH_ID,
-          offsetof(CheckerboardDetectionParameters, mFitWidth),
-          true,
-          "Fit Width",
-          "Fit Width",
-          "Fit Width"
-        )
-    );
-    fields().push_back(
-        new BoolField
-        (
-          CheckerboardDetectionParameters::FIT_HEIGHT_ID,
-          offsetof(CheckerboardDetectionParameters, mFitHeight),
-          false,
-          "Fit Height",
-          "Fit Height",
-          "Fit Height"
         )
     );
    return 0;

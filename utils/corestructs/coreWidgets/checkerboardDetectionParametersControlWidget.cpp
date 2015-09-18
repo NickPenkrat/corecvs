@@ -23,8 +23,6 @@ CheckerboardDetectionParametersControlWidget::CheckerboardDetectionParametersCon
     QObject::connect(mUi->useUndistortionCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->algorithmComboBox, SIGNAL(currentIndexChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->channelComboBox, SIGNAL(currentIndexChanged(int)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->vertCrossesCountSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->horCrossesCountSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->cellSizeHorSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->cellSizeVertSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->cleanExistingCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
@@ -33,8 +31,6 @@ CheckerboardDetectionParametersControlWidget::CheckerboardDetectionParametersCon
     QObject::connect(mUi->minAccuracySpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->partialBoardCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->fastBoardSpeedupCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->fitWidthCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->fitHeightCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
 }
 
 CheckerboardDetectionParametersControlWidget::~CheckerboardDetectionParametersControlWidget()
@@ -65,8 +61,6 @@ void CheckerboardDetectionParametersControlWidget::getParameters(CheckerboardDet
     params.setUseUndistortion  (mUi->useUndistortionCheckBox->isChecked());
     params.setAlgorithm        (static_cast<CheckerboardDetectionAlgorithm::CheckerboardDetectionAlgorithm>(mUi->algorithmComboBox->currentIndex()));
     params.setChannel          (static_cast<ImageChannel::ImageChannel>(mUi->channelComboBox->currentIndex()));
-    params.setVertCrossesCount (mUi->vertCrossesCountSpinBox->value());
-    params.setHorCrossesCount  (mUi->horCrossesCountSpinBox->value());
     params.setCellSizeHor      (mUi->cellSizeHorSpinBox->value());
     params.setCellSizeVert     (mUi->cellSizeVertSpinBox->value());
     params.setCleanExisting    (mUi->cleanExistingCheckBox->isChecked());
@@ -75,8 +69,6 @@ void CheckerboardDetectionParametersControlWidget::getParameters(CheckerboardDet
     params.setMinAccuracy      (mUi->minAccuracySpinBox->value());
     params.setPartialBoard     (mUi->partialBoardCheckBox->isChecked());
     params.setFastBoardSpeedup (mUi->fastBoardSpeedupCheckBox->isChecked());
-    params.setFitWidth         (mUi->fitWidthCheckBox->isChecked());
-    params.setFitHeight        (mUi->fitHeightCheckBox->isChecked());
 
 }
 
@@ -92,8 +84,6 @@ CheckerboardDetectionParameters *CheckerboardDetectionParametersControlWidget::c
           mUi->useUndistortionCheckBox->isChecked()
         , static_cast<CheckerboardDetectionAlgorithm::CheckerboardDetectionAlgorithm>(mUi->algorithmComboBox->currentIndex())
         , static_cast<ImageChannel::ImageChannel>(mUi->channelComboBox->currentIndex())
-        , mUi->vertCrossesCountSpinBox->value()
-        , mUi->horCrossesCountSpinBox->value()
         , mUi->cellSizeHorSpinBox->value()
         , mUi->cellSizeVertSpinBox->value()
         , mUi->cleanExistingCheckBox->isChecked()
@@ -102,8 +92,6 @@ CheckerboardDetectionParameters *CheckerboardDetectionParametersControlWidget::c
         , mUi->minAccuracySpinBox->value()
         , mUi->partialBoardCheckBox->isChecked()
         , mUi->fastBoardSpeedupCheckBox->isChecked()
-        , mUi->fitWidthCheckBox->isChecked()
-        , mUi->fitHeightCheckBox->isChecked()
     );
     return result;
 }
@@ -115,8 +103,6 @@ void CheckerboardDetectionParametersControlWidget::setParameters(const Checkerbo
     mUi->useUndistortionCheckBox->setChecked(input.useUndistortion());
     mUi->algorithmComboBox->setCurrentIndex(input.algorithm());
     mUi->channelComboBox->setCurrentIndex(input.channel());
-    mUi->vertCrossesCountSpinBox->setValue(input.vertCrossesCount());
-    mUi->horCrossesCountSpinBox->setValue(input.horCrossesCount());
     mUi->cellSizeHorSpinBox->setValue(input.cellSizeHor());
     mUi->cellSizeVertSpinBox->setValue(input.cellSizeVert());
     mUi->cleanExistingCheckBox->setChecked(input.cleanExisting());
@@ -125,8 +111,6 @@ void CheckerboardDetectionParametersControlWidget::setParameters(const Checkerbo
     mUi->minAccuracySpinBox->setValue(input.minAccuracy());
     mUi->partialBoardCheckBox->setChecked(input.partialBoard());
     mUi->fastBoardSpeedupCheckBox->setChecked(input.fastBoardSpeedup());
-    mUi->fitWidthCheckBox->setChecked(input.fitWidth());
-    mUi->fitHeightCheckBox->setChecked(input.fitHeight());
     blockSignals(wasBlocked);
     emit paramsChanged();
 }

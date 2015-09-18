@@ -8,6 +8,8 @@
 #include "chessBoardCornerDetector.h"
 #include "chessBoardAssembler.h"
 #include "typesafeBitmaskEnums.h"
+#include "circlePatternGenerator.h"
+#include "boardAligner.h"
 
 enum class ChessBoardDetectorMode
 {
@@ -18,42 +20,19 @@ enum class ChessBoardDetectorMode
 template<>
 struct is_bitmask<ChessBoardDetectorMode> : std::true_type {};
 
-#if 0
-struct ChessBoardDetectorParams
-{
-    int w = 18;
-    int h = 11;
-    double stepX = 50.0;
-    double stepY = 50.0;
-    // XXX: Note that in case of detecting not full chessboard
-    //      in order to assign correct coordinates we need some
-    //      additional information, so default mode is FIT_WIDTH
-    ChessBoardDetectorMode mode = ChessBoardDetectorMode::FIT_WIDTH;
-
-    template<typename VisitorType>
-    void accept(VisitorType &visitor)
-    {
-        visitor.visit(w, 18, "w");
-        visitor.visit(h, 11, "h");
-        visitor.visit(stepX, 50.0, "stepX");
-        visitor.visit(stepY, 50.0, "stepY");
-        auto m = asInteger(mode);
-        visitor.visit(m, 0, "mode");
-        mode = static_cast<ChessBoardDetectorMode>(m);
-    }
-};
-#endif
-
-class ChessboardDetector : CheckerboardDetectionParameters, public PatternDetector
+class ChessboardDetector : CheckerboardDetectionParameters,
+                           public PatternDetector,
+                           protected BoardAligner
 {
 public:
     ChessboardDetector(
             CheckerboardDetectionParameters params = CheckerboardDetectionParameters(),
+            BoardAlignerParams alignerParams = BoardAlignerParams(),
             ChessBoardCornerDetectorParams detectorParams = ChessBoardCornerDetectorParams(),
             ChessBoardAssemblerParams assemblerParams = ChessBoardAssemblerParams()
     );
 
-    static ChessBoardDetectorMode getMode(const CheckerboardDetectionParameters &params);
+    static ChessBoardDetectorMode getMode(const BoardAlignerParams &params);
 
     // PatternDetector interface
     bool detectPattern(corecvs::G8Buffer    &buffer);
@@ -65,11 +44,15 @@ public:
     // Real pattern detection happens here
     bool detectPattern(DpImage     &buffer);
 
+    bool classify(DpImage &img, CirclePatternGenerator& generator, RGB24Buffer &buffer);
+
+    void drawClassifier(corecvs::RGB24Buffer &buffer);
 
     void setStatistics(Statistics *stats);
     Statistics *getStatistics();
 
 private:
+
     RectangularGridPattern bestPattern;
     corecvs::ObservationList result;
     std::vector<OrientedCorner> corners;

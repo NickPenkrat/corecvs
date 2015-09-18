@@ -44,8 +44,6 @@ public:
         USE_UNDISTORTION_ID,
         ALGORITHM_ID,
         CHANNEL_ID,
-        VERT_CROSSES_COUNT_ID,
-        HOR_CROSSES_COUNT_ID,
         CELL_SIZE_HOR_ID,
         CELL_SIZE_VERT_ID,
         CLEAN_EXISTING_ID,
@@ -54,8 +52,6 @@ public:
         MIN_ACCURACY_ID,
         PARTIAL_BOARD_ID,
         FAST_BOARD_SPEEDUP_ID,
-        FIT_WIDTH_ID,
-        FIT_HEIGHT_ID,
         CHECKERBOARD_DETECTION_PARAMETERS_FIELD_ID_NUM
     };
 
@@ -78,18 +74,6 @@ public:
      * Channel 
      */
     int mChannel;
-
-    /** 
-     * \brief Vert crosses count 
-     * Vert crosses count 
-     */
-    int mVertCrossesCount;
-
-    /** 
-     * \brief Hor crosses count 
-     * Hor crosses count 
-     */
-    int mHorCrossesCount;
 
     /** 
      * \brief Cell Size Hor 
@@ -139,18 +123,6 @@ public:
      */
     bool mFastBoardSpeedup;
 
-    /** 
-     * \brief Fit Width 
-     * Fit Width 
-     */
-    bool mFitWidth;
-
-    /** 
-     * \brief Fit Height 
-     * Fit Height 
-     */
-    bool mFitHeight;
-
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
 
@@ -172,16 +144,6 @@ public:
     ImageChannel::ImageChannel channel() const
     {
         return static_cast<ImageChannel::ImageChannel>(mChannel);
-    }
-
-    int vertCrossesCount() const
-    {
-        return mVertCrossesCount;
-    }
-
-    int horCrossesCount() const
-    {
-        return mHorCrossesCount;
     }
 
     double cellSizeHor() const
@@ -224,16 +186,6 @@ public:
         return mFastBoardSpeedup;
     }
 
-    bool fitWidth() const
-    {
-        return mFitWidth;
-    }
-
-    bool fitHeight() const
-    {
-        return mFitHeight;
-    }
-
     /* Section with setters */
     void setUseUndistortion(bool useUndistortion)
     {
@@ -248,16 +200,6 @@ public:
     void setChannel(ImageChannel::ImageChannel channel)
     {
         mChannel = channel;
-    }
-
-    void setVertCrossesCount(int vertCrossesCount)
-    {
-        mVertCrossesCount = vertCrossesCount;
-    }
-
-    void setHorCrossesCount(int horCrossesCount)
-    {
-        mHorCrossesCount = horCrossesCount;
     }
 
     void setCellSizeHor(double cellSizeHor)
@@ -300,16 +242,6 @@ public:
         mFastBoardSpeedup = fastBoardSpeedup;
     }
 
-    void setFitWidth(bool fitWidth)
-    {
-        mFitWidth = fitWidth;
-    }
-
-    void setFitHeight(bool fitHeight)
-    {
-        mFitHeight = fitHeight;
-    }
-
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
@@ -318,8 +250,6 @@ template<class VisitorType>
         visitor.visit(mUseUndistortion,           static_cast<const BoolField *>    (fields()[USE_UNDISTORTION_ID]));
         visitor.visit((int &)mAlgorithm,          static_cast<const EnumField *>    (fields()[ALGORITHM_ID]));
         visitor.visit((int &)mChannel,            static_cast<const EnumField *>    (fields()[CHANNEL_ID]));
-        visitor.visit(mVertCrossesCount,          static_cast<const IntField *>     (fields()[VERT_CROSSES_COUNT_ID]));
-        visitor.visit(mHorCrossesCount,           static_cast<const IntField *>     (fields()[HOR_CROSSES_COUNT_ID]));
         visitor.visit(mCellSizeHor,               static_cast<const DoubleField *>  (fields()[CELL_SIZE_HOR_ID]));
         visitor.visit(mCellSizeVert,              static_cast<const DoubleField *>  (fields()[CELL_SIZE_VERT_ID]));
         visitor.visit(mCleanExisting,             static_cast<const BoolField *>    (fields()[CLEAN_EXISTING_ID]));
@@ -328,8 +258,6 @@ template<class VisitorType>
         visitor.visit(mMinAccuracy,               static_cast<const DoubleField *>  (fields()[MIN_ACCURACY_ID]));
         visitor.visit(mPartialBoard,              static_cast<const BoolField *>    (fields()[PARTIAL_BOARD_ID]));
         visitor.visit(mFastBoardSpeedup,          static_cast<const BoolField *>    (fields()[FAST_BOARD_SPEEDUP_ID]));
-        visitor.visit(mFitWidth,                  static_cast<const BoolField *>    (fields()[FIT_WIDTH_ID]));
-        visitor.visit(mFitHeight,                 static_cast<const BoolField *>    (fields()[FIT_HEIGHT_ID]));
     }
 
     CheckerboardDetectionParameters()
@@ -342,8 +270,6 @@ template<class VisitorType>
           bool useUndistortion
         , CheckerboardDetectionAlgorithm::CheckerboardDetectionAlgorithm algorithm
         , ImageChannel::ImageChannel channel
-        , int vertCrossesCount
-        , int horCrossesCount
         , double cellSizeHor
         , double cellSizeVert
         , bool cleanExisting
@@ -352,15 +278,11 @@ template<class VisitorType>
         , double minAccuracy
         , bool partialBoard
         , bool fastBoardSpeedup
-        , bool fitWidth
-        , bool fitHeight
     )
     {
         mUseUndistortion = useUndistortion;
         mAlgorithm = algorithm;
         mChannel = channel;
-        mVertCrossesCount = vertCrossesCount;
-        mHorCrossesCount = horCrossesCount;
         mCellSizeHor = cellSizeHor;
         mCellSizeVert = cellSizeVert;
         mCleanExisting = cleanExisting;
@@ -369,8 +291,6 @@ template<class VisitorType>
         mMinAccuracy = minAccuracy;
         mPartialBoard = partialBoard;
         mFastBoardSpeedup = fastBoardSpeedup;
-        mFitWidth = fitWidth;
-        mFitHeight = fitHeight;
     }
 
     friend ostream& operator << (ostream &out, CheckerboardDetectionParameters &toSave)

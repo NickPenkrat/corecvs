@@ -26,14 +26,14 @@ bool CalibrationJob::detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::Sel
     PatternDetector *patternDetector;
     if (settings.openCvDetectorParameters.algorithm() == CheckerboardDetectionAlgorithm::OPENCV_DETECTOR)
     {
-        patternDetector = new OpenCvCheckerboardDetector(settings.openCvDetectorParameters);
+        patternDetector = new OpenCvCheckerboardDetector(settings.openCvDetectorParameters, settings.boardAlignerParams);
         G8Buffer* channel = buffer.getChannel(settings.openCvDetectorParameters.channel());
         patternDetector->detectPattern(*channel);
         delete channel;
     }
     else
     {
-        patternDetector = new ChessboardDetector(settings.openCvDetectorParameters, settings.chessBoardCornerDetectorParams, settings.chessBoardAssemblerParams);       
+        patternDetector = new ChessboardDetector(settings.openCvDetectorParameters, settings.boardAlignerParams, settings.chessBoardCornerDetectorParams, settings.chessBoardAssemblerParams);
         patternDetector->setStatistics(&stats);
         patternDetector->detectPattern(buffer);
 

@@ -19,6 +19,7 @@ SUBDIRS +=       \
 #    decodebayer \
 #    genvectorui  \
     aLowCodec \
+    new_board_detector
 
 
 with_opencv {
@@ -43,6 +44,8 @@ avigrab.file                        = avigrab/avigrab.pro
 decodebayer.file                    = decodebayer/decodebayer.pro
 genvectorui.file                    = genvectorui/genvectorui.pro
 aLowCodec.file                      = aLowCodec/aLowCodec.pro
+
+new_board_detector.file             = new_board_detector/new_board_detector.pro
 
 distortion_corrector.file           = distortion_corrector/distortion_corrector.pro
 

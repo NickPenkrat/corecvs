@@ -361,7 +361,13 @@ TEST(MatrixTest, testMatrixSerialisation)
     CORE_ASSERT_TRUE(m1.notTooFar(m), "serialization fails\n");
 }
 
+// XXX: https://connect.microsoft.com/VisualStudio/feedback/details/863099/istringstream-fails-to-convert-certain-double-values-correctly
+//      This test will never be working on MS VS 2013
+#if _MSC_VER == 1800
+TEST(MatrixTest, DISABLED_testDouble)
+#else
 TEST(MatrixTest, testDouble)
+#endif
 {
     cout << "Testing Double support\n";
     double vals[] = {numeric_limits<double>::min(), 1.0, numeric_limits<double>::max()};
@@ -377,7 +383,6 @@ TEST(MatrixTest, testDouble)
         double result;
         iss >> result;
         CORE_ASSERT_TRUE_P(result == vals[i], ("Internal problem with double and stdout"));
-
     }
 }
 
@@ -632,7 +637,7 @@ void printResult(double gflops, uint64_t delay, int runs) {
      ));
 }
 
-TEST(MatrixProfile, profileMatrixMulSize3)
+TEST(MatrixProfile, DISABLED_profileMatrixMulSize3)
 {
     int sizes   []= {1024, 2048, 4096, 16384};
     int polca   []= {  20,   20,    5,     1};
@@ -661,8 +666,8 @@ TEST(MatrixProfile, profileMatrixMulSize3)
 
 
         PreciseTimer start;
-        Matrix * input1[POLUTING_INPUTS];
-        Matrix * input2[POLUTING_INPUTS];
+        Matrix ** input1 = new Matrix*[POLUTING_INPUTS]; // Unfortunately VS2013 does not support C99
+        Matrix ** input2 = new Matrix*[POLUTING_INPUTS];
         Matrix AB(1,1);
 
         for (unsigned i = 0; i < POLUTING_INPUTS; i++)
@@ -770,6 +775,8 @@ TEST(MatrixProfile, profileMatrixMulSize3)
             delete_safe(input1[i]);
             delete_safe(input2[i]);
         }
+        delete input1;
+        delete input2;
 
     }
 
