@@ -158,7 +158,7 @@ struct Photostation
         return cameras[cam].project(location.orientation * (pt - location.position));
     }
 
-    Mesh3D drawPly(ObservationList &list, double scale = 50.0)
+    void drawPly(Mesh3D &mesh, double scale = 50.0)
     {
         auto& ps = *this;
         // Colorblind-safe palette
@@ -171,12 +171,9 @@ struct Photostation
             RGBColor(0x7fbf7bu),
             RGBColor(0x1b7837u)
         };
-        Mesh3D mesh;
-        mesh.switchColor(true);
-
-
         auto cs = ps.location.position;
         auto qs = ps.location.orientation.conjugated();
+        std::cout << qs << std::endl;
 
         int color = 0;
         for (auto& cam: ps.cameras)
@@ -221,12 +218,30 @@ struct Photostation
 
             mesh.addLine(ppv, qs * (qc * (A * center) + cc) + cs);
         }
+    }
 
+    void drawPly(Mesh3D &mesh, ObservationList &list)
+    {
         mesh.currentColor = RGBColor(~0u);
         for (auto& pt: list)
         {
             mesh.addPoint(pt.point);
         }
+
+    }
+
+    void drawPly(Mesh3D &mesh, ObservationList &list, double scale)
+    {
+        drawPly(mesh, list);
+        drawPly(mesh, scale);
+    }
+
+    Mesh3D drawPly(ObservationList &list, double scale = 50.0)
+    {
+        Mesh3D mesh;
+        mesh.switchColor(true);
+
+        drawPly(mesh, list, scale);
 
         return mesh;
 
