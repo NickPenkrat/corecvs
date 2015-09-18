@@ -21,7 +21,7 @@ public:
     virtual void getPointData(corecvs::SelectableGeometryFeatures &features);
     virtual ~PatternDetector() {}
 
-    virtual void setStatistics(corecvs::Statistics */*stats*/ = NULL) {}
+    virtual void setStatistics(corecvs::Statistics * /*stats*/ = NULL) {}
 };
 
 #endif

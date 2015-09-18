@@ -52,7 +52,7 @@ int main(int argc, char **argv)
             img.sourceFileName = sourceFileName;
             img.undistortedFileName = undistFileName;
 
-            CalibrationSetupEntry entry = { j, job.observations[j].size() };
+            CalibrationSetupEntry entry = { j, (int)job.observations[j].size() };
 
             job.observations[j].push_back(img);
             job.calibrationSetups[i].push_back(entry);
