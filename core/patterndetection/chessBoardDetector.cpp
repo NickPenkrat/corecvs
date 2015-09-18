@@ -173,8 +173,8 @@ void ChessboardDetector::drawClassifier(corecvs::RGB24Buffer &buffer)
 // FIXME: Temporary code; needs serious rework
 bool ChessboardDetector::classify(DpImage &img, CirclePatternGenerator &gen, corecvs::RGB24Buffer &buffer)
 {
-    int w = bestBoard[0].size();
-    int h = bestBoard.size();
+    int w = (int)bestBoard[0].size();
+    int h = (int)bestBoard.size();
     std::vector<std::vector<int>> classifier(h - 1);
     for (auto& cv: classifier) cv.resize(w - 1);
     std::cout << w << " x " << h << std::endl;
