@@ -133,6 +133,18 @@ struct Camera_
     LocationData extrinsics;
     LensDistortionModelParameters distortion;
 
+    Camera_() {}
+
+    Camera_(
+            const CameraIntrinsics &_intrinsics,
+            const LocationData &_extrinsics,
+            const LensDistortionModelParameters &_distortion = LensDistortionModelParameters()
+    ) :
+        intrinsics(_intrinsics),
+        extrinsics(_extrinsics),
+        distortion(_distortion)
+    {}
+
     Vector2dd project(const Vector3dd &pt)
     {
         return intrinsics.project(extrinsics.orientation * (pt - extrinsics.position));

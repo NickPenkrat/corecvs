@@ -673,7 +673,11 @@ std::string V4L2CameraDescriptor::getSerialNumber()
    char deviceSysPath[1024] = "";
    char linkPath[1024] = "";
    snprintf(deviceSysPath, CORE_COUNT_OF(deviceSysPath), "/sys/dev/char/%d:%d/device", major_id, minor_id);
-   readlink(deviceSysPath, linkPath, CORE_COUNT_OF(linkPath));
+   ssize_t err = readlink(deviceSysPath, linkPath, CORE_COUNT_OF(linkPath));
+   if (err == -1)
+   {
+       SYNC_PRINT(("V4L2CameraDescriptor::getSerialNumber():Opening device softlink failed\n"));
+   }
 
    SYNC_PRINT(("V4L2CameraDescriptor::getSerialNumber():Opening device softlink <%s> -> <%s>\n", deviceSysPath, linkPath));
    /* Going for particular interface to the device */
@@ -687,8 +691,13 @@ std::string V4L2CameraDescriptor::getSerialNumber()
    FILE *serialFile = fopen(deviceSysPath, "rt");
    if (serialFile != NULL)
    {
-         getline(&serial, &len, serialFile);
-         for (int i = 0; i < strlen(serial); i++)
+         err = getline(&serial, &len, serialFile);
+         if (err == -1)
+         {
+             SYNC_PRINT(("V4L2CameraDescriptor::getSerialNumber():Error reading the line\n"));
+         }
+
+         for (size_t i = 0; i < strlen(serial); i++)
          {
              if (serial[i] == '\n' || serial[i] == '\r' ) serial[i] = 0;
          }

@@ -155,7 +155,7 @@ void XmlSetter::visit<int, EnumField>(int &field, const EnumField *fieldDescript
 }
 
 template <>
-void XmlSetter::visit<double, DoubleVectorField>(std::vector<double> &field, const DoubleVectorField *fieldDescriptor)
+void XmlSetter::visit<double, DoubleVectorField>(std::vector<double> & /*field*/, const DoubleVectorField */*fieldDescriptor*/)
 {
     qDebug() << "XmlSetter::visit<double, DoubleVectorField>() NOT YET SUPPORTED";
 }

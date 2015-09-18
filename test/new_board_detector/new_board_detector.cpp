@@ -34,7 +34,7 @@ bool checkIfExists(const char *filename)
 }
 
 
-bool parseArgs(int argc, char **argv, std::string &filename, int &W, int &H)
+bool parseArgs(int argc, char **argv, std::string &filename, int & W, int & H)
 {
     if (argc < 2 || argc > 2)
         return false;

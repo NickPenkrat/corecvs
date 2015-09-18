@@ -43,10 +43,10 @@ public:
             cv::imwrite(img.filename + ".features.png", src);
         }
     }
-    void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename)
+    void loadResults(FeatureMatchingPipeline * /*pipeline*/, const std::string & /*filename*/)
     {}
-    void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const
-    {};
+    void saveResults(FeatureMatchingPipeline * /*pipeline*/, const std::string & /*filename*/) const
+    {}
 };
 
 std::string base;
@@ -86,7 +86,7 @@ bool checkFiles()
         std::cout << "Error: unable to find data dir" << std::endl;
         exit(0);
     }
-    for(size_t i = 0; i < N; ++i)
+    for(int i = 0; i < N; ++i)
     {
         std::stringstream ss;
         ss << base << "kermit" << std::setw(3) << std::setfill('0') << i << ".jpg";
@@ -103,7 +103,11 @@ void prepareCopy(const std::string &postfix)
 {
     std::stringstream command;
     command << "mkdir " << base << "kermit_" << postfix;
-    system(command.str().c_str());
+    int result = system(command.str().c_str());
+    if (result != 0) {
+        SYNC_PRINT(("prepareCopy() : <%s> returns %d\n", command.str().c_str(), result));
+    }
+
     command.str("");
 #ifndef WIN32
     command << "cp ";
@@ -111,7 +115,10 @@ void prepareCopy(const std::string &postfix)
     command << "copy /Y ";
 #endif
     command << base << "*.jpg " << base << "kermit_" << postfix << PATH_SEPARATOR;
-    system(command.str().c_str());
+    result = system(command.str().c_str());
+    if (result != 0) {
+        SYNC_PRINT(("prepareCopy() : <%s> returns %d\n", command.str().c_str(), result));
+    }
     tempBase = base + "kermit_" + postfix + PATH_SEPARATOR;
 }
 
@@ -157,7 +164,7 @@ void run(const std::string &detector)
         << std::endl;
 }
 
-int main(int argc, char ** argv)
+int main(int /*argc*/, char ** /*argv*/)
 {
 #ifdef WITH_OPENCV
     init_opencv_detectors_provider();

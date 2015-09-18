@@ -87,6 +87,7 @@
         <file>photostation.png</file>
         <file>script_add.png</file>
         <file>script_save.png</file>
+        <file>info_rhombus.png</file>
     </qresource>
     <qresource prefix="/new/colors">
         <file>colors/color_blue.png</file>

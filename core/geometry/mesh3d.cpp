@@ -506,8 +506,8 @@ Mesh3D Mesh3D::transformed(const Matrix44 &matrix)
 
 AxisAlignedBox3d Mesh3D::getBoundingBox()
 {
-    Vector3dd minP;
-    Vector3dd maxP;
+    Vector3dd minP = Vector3dd( numeric_limits<double>::max());
+    Vector3dd maxP = Vector3dd(-numeric_limits<double>::max());
 
     for (size_t i = 0; i < vertexes.size(); i++)
     {

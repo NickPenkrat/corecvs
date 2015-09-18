@@ -162,7 +162,7 @@ void CalibrationJob::prepareUndistortionTransformation(LensDistortionModelParame
     correction.getInscribedImageRect    (input[0][0], input[0][1], input[1][0], input[1][1], outIns[0], outIns[1]);
 
     Rect output = input;
-    corecvs::Vector2dd shift;
+    corecvs::Vector2dd shift(0.0);
 
     switch (undistParams.resizePolicy())
     {
@@ -332,7 +332,7 @@ void CalibrationJob::allCalibrateSingleCamera()
     std::cout << "OPTFAC_MEAN: " << factor << std::endl;
 }
 
-void CalibrationJob::calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<CameraIntrinsics> &intrinsics, std::vector<std::vector<LocationData>> &locations, bool runBFS, bool runLM)
+void CalibrationJob::calibratePhotostation(int N, int /*M*/, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<CameraIntrinsics> &intrinsics, std::vector<std::vector<LocationData>> &locations, bool runBFS, bool runLM)
 {
     for (auto& ci: intrinsics)
     {

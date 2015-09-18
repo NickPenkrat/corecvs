@@ -165,7 +165,6 @@ public:
     	return max(value, -value);
     }
 
-
 };
 
 /** Unsigned operations */

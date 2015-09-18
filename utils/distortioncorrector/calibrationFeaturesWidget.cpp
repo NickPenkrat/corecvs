@@ -494,9 +494,12 @@ PointListEditImageWidget::PointListEditImageWidget(QWidget *parent, bool showHea
     mObservationListModel(NULL),
     mSelectedPoint(-1)
 {
-    mMoveButton   = addToolButton("Select",            QIcon(":/new/prefix1/select_by_color.png"));
-    mAddButton    = addToolButton("Add Point To Path", QIcon(":/new/prefix1/vector_add.png"), false);
-    mDeleteButton = addToolButton("Delete Point",      QIcon(":/new/prefix1/vector_delete.png"), false);
+    mMoveButton    = addToolButton("Select",            QIcon(":/new/prefix1/select_by_color.png"));
+    mAddButton     = addToolButton("Add Point To Path", QIcon(":/new/prefix1/vector_add.png"     ), false);
+    mDeleteButton  = addToolButton("Delete Point",      QIcon(":/new/prefix1/vector_delete.png"  ), false);
+    mAddInfoButton = addToolButton("Toggle info",       QIcon(":/new/prefix1/info_rhombus.png"   ), false);
+    mAddInfoButton ->setCheckable(true);
+
 }
 
 void PointListEditImageWidget::setObservationModel(ObservationListModel *observationListModel)
@@ -557,16 +560,27 @@ void PointListEditImageWidget::childRepaint(QPaintEvent *event, QWidget *who)
         painter.setPen(Qt::blue);
         drawCircle(painter, imageCoords, 10);
 
+        if (mAddInfoButton->isChecked())
+        {
+            QString meta = getMetaById(i);
+            QPointF pos = Core2Qt::QPointFromVector2dd(imageCoords + Vector2dd(5, -10));
+            painter.setPen(Qt::black);
+            painter.drawText(pos, meta);
+            pos += QPointF(1,1);
+            painter.setPen(Qt::white);
+            painter.drawText(pos, meta);
+
+        }
+
+
         if (i == mSelectedPoint) {
             painter.setPen(Qt::red);
             drawCircle(painter, imageCoords, 7);
 
-            /* Test it a bit */
+            /* Test it a bit and use QSelectionModel */
             imageCoords = imageToWidgetF(widgetToImageF(imageCoords));
             painter.setPen(Qt::cyan);
             drawCircle(painter, imageCoords, 3);
-
-
         }
     }
 }
@@ -607,6 +621,9 @@ void PointListEditImageWidget::toolButtonReleased(QWidget *button)
             mSelectedPoint = -1;
         }
         mUi->widget->update();
+    } else if (button == mAddInfoButton)
+    {
+        mUi->widget->update();
     }
 }
 
@@ -620,6 +637,21 @@ Vector2dd PointListEditImageWidget::getPointById(int row)
     double y = mObservationListModel->data(indexY).toDouble();
 
     return Vector2dd(x,y);
+}
+
+QString PointListEditImageWidget::getMetaById(int row)
+{
+    QModelIndex topLevel = mObservationListModel->parent(QModelIndex());
+    QModelIndex indexX = mObservationListModel->index(row, ObservationListModel::COLUMN_X, topLevel);
+    QModelIndex indexY = mObservationListModel->index(row, ObservationListModel::COLUMN_Y, topLevel);
+    QModelIndex indexZ = mObservationListModel->index(row, ObservationListModel::COLUMN_Z, topLevel);
+
+
+    double x = mObservationListModel->data(indexX).toDouble();
+    double y = mObservationListModel->data(indexY).toDouble();
+    double z = mObservationListModel->data(indexZ).toDouble();
+
+    return QString("%1 [%2 %3 %4]").arg(row + 1).arg(x).arg(y).arg(z);
 }
 
 int PointListEditImageWidget::findClosest(Vector2dd imagePoint, double limitDistance )

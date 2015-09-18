@@ -97,6 +97,9 @@ template <typename OtherAlgebra>
     {
         // TODO: Correct this please
         Type result((uint16_t)0xFFFFU);
+        //Type result((uint16_t)0xFFU);
+        //Type result(0u);
+        //result = ~result;
 
         for (int i = 0; i < element->h; i++)
         {
@@ -110,7 +113,7 @@ template <typename OtherAlgebra>
                 result &= algebra.getInput(i,j);
             }
         }
-        algebra.putOutput(0,0,result);
+        algebra.putOutput(0, 0, result);
     }
 };
 

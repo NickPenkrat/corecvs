@@ -114,7 +114,7 @@ void JSONSetter::visit<double, DoubleVectorField>(std::vector<double> &field, co
 {    
     QJsonArray array;
 
-    for (int i = 0; i < field.size(); i++ )
+    for (size_t i = 0; i < field.size(); i++ )
     {
         QJsonValue value = field[i];
         array.append(value);

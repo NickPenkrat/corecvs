@@ -232,7 +232,7 @@ void DistortionWidget::tryAddPoint(int toolID, const QPointF &point)
     mUi->calibrationFeatures->manualAddPoint(Qt2Core::Vector2ddFromQPointF(point));
 }
 
-void DistortionWidget::initExistingPoint(int toolID, const QPointF &point)
+void DistortionWidget::initExistingPoint(int toolID, const QPointF & /*point*/)
 {
     if (toolID != 0) {
         return;

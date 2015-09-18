@@ -27,7 +27,7 @@ TEST(YUV, testYUVConvertion)
 
     RGBColor color[] = {RGBColor::Black(), RGBColor::White(), RGBColor::Red(), RGBColor::Orange(), RGBColor::Yellow(), RGBColor::Green(), RGBColor::Cyan(), RGBColor::Violet(), RGBColor::Indigo() };
 
-    for (int i = 0; i < CORE_COUNT_OF(color); i++)
+    for (size_t i = 0; i < CORE_COUNT_OF(color); i++)
     {
         cout << i << " = rgb:" << color[i];
         YUVColor converted = YUVColor::FromRGB(color[i]);
