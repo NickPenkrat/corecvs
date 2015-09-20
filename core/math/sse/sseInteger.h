@@ -45,6 +45,14 @@ public:
         this->data = data;
     }
 
+    static RealType Zero() {
+        return RealType(_mm_setzero_si128());
+    }
+
+    static RealType AllOnes() {
+        return RealType(_mm_set1_epi32(0xFFFF));
+    }
+
     /** Load unaligned. Not safe to use until you exactly know what you are doing */
     static SSEInteger load(const __m128i * const data_ptr)
     {

@@ -114,7 +114,7 @@ int CirclePatternGenerator::getBestToken(DpImage &query, double &score, corecvs:
     if (ssq > stdevThreshold)
     {
         maxIdx = -10;
-        for (int id = 0; id < patterns.size(); ++id)
+        for (size_t id = 0; id < patterns.size(); id++)
         {
             for (int idp = 0; idp < 8; ++idp)
             {

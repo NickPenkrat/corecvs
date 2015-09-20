@@ -130,11 +130,11 @@ bool BoardAligner::alignDim(DpImage &img, bool fitW, bool fitH)
     }
     else
     {
-        if (fitW && bestBoard[0].size() != idealWidth)
+        if (fitW && bestBoard[0].size() != (size_t)idealWidth)
         {
             return false;
         }
-        if (fitH && bestBoard.size() != idealHeight)
+        if (fitH && bestBoard.size() != (size_t)idealHeight)
         {
             return false;
         }
@@ -338,18 +338,18 @@ void BoardAligner::drawDebugInfo(corecvs::RGB24Buffer &buffer)
             D = bestBoard[i + 1][j + 1];
 
             corecvs::Matrix33 res, orientation, homography;
-    corecvs::HomographyReconstructor c2i;
-    c2i.addPoint2PointConstraint(corecvs::Vector2dd(0.0, 0.0), A);
-    c2i.addPoint2PointConstraint(corecvs::Vector2dd(1.0, 0.0), B);
-    c2i.addPoint2PointConstraint(corecvs::Vector2dd(0.0, 1.0), C);
-    c2i.addPoint2PointConstraint(corecvs::Vector2dd(1.0, 1.0), D);
+            corecvs::HomographyReconstructor c2i;
+            c2i.addPoint2PointConstraint(corecvs::Vector2dd(0.0, 0.0), A);
+            c2i.addPoint2PointConstraint(corecvs::Vector2dd(1.0, 0.0), B);
+            c2i.addPoint2PointConstraint(corecvs::Vector2dd(0.0, 1.0), C);
+            c2i.addPoint2PointConstraint(corecvs::Vector2dd(1.0, 1.0), D);
 
-    corecvs::Matrix33 AA, BB;
-    c2i.normalisePoints(AA, BB);
+            corecvs::Matrix33 AA, BB;
+            c2i.normalisePoints(AA, BB);
 
-    homography = c2i.getBestHomographyLSE();
-    homography = c2i.getBestHomographyLM(homography);
-    res = BB.inv() * homography * AA;
+            homography = c2i.getBestHomographyLSE();
+            homography = c2i.getBestHomographyLM(homography);
+            res = BB.inv() * homography * AA;
             double score;
 
             for (int i = 0; i < 1000; ++i)

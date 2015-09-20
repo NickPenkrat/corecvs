@@ -96,10 +96,9 @@ template <typename OtherAlgebra>
     inline void process(Algebra &algebra) const
     {
         // TODO: Correct this please
-        Type result((uint16_t)0xFFFFU);
-        //Type result((uint16_t)0xFFU);
-        //Type result(0u);
-        //result = ~result;
+        //Type result((uint16_t)0xFFFFU);
+        Type result;
+        Algebra::fillOnes(result);
 
         for (int i = 0; i < element->h; i++)
         {

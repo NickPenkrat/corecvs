@@ -347,8 +347,10 @@ int main (int argc, char **argv)
         ObservationList observationList;
 
         //OpenCvCheckerboardDetector::DetectPartCheckerboardV(channel, params, &observationList, NULL);
-        OpenCvCheckerboardDetector detector(params, alignerParams);
-        bool found = detector.detectPattern(*channel);
+        OpenCvCheckerboardDetector detector(params, alignerParams);        
+
+        //bool found = detector.detectPattern(*channel);
+
         detector.getPointData(observationList);
 
         delete_safe(channel);
