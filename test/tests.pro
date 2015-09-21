@@ -1,4 +1,4 @@
-# We're to include config.pri here to detect whether we use opencv or not!
+# We are to include config.pri here to detect whether we use opencv or not!
 # try use global config
 exists(../../../config.pri) {
     #message(Using global config)
@@ -24,17 +24,17 @@ SUBDIRS +=       \
 
 with_opencv {
     SUBDIRS +=       \
-    	distortion_corrector \
-        matcher_basic \
-        matcher_full \
-        camera_calibration \
-        chessboard_detector \
-        calibration_job_generate \
-        calibration_job_detect \
-        calibration_job_estimate_distortion \
-        calibration_job_apply_undistortion \
-        calibration_job_calibrate \
-        photostation_placer
+#    	distortion_corrector \
+#        matcher_basic \
+#        matcher_full \
+#        camera_calibration \
+#        chessboard_detector \
+#        calibration_job_generate \
+#        calibration_job_detect \
+#        calibration_job_estimate_distortion \
+#        calibration_job_apply_undistortion \
+#        calibration_job_calibrate \
+#        photostation_placer
 }
 
 grab.file                           = grab/grab.pro
