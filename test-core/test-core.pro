@@ -29,13 +29,14 @@ TARGET      = $$join(TARGET,,,$$BUILD_CFG_SFX)      # add 'd' at the end for deb
 OBJECTS_DIR = $$ROOT_DIR/.obj/$$TARGET_ORIG$$BUILD_CFG_NAME
 
 MOC_DIR  = $$OBJECTS_DIR                            # we have to set it to omit creating dummy dirs: debug,release
-#UI_DIR  = $$OBJECTS_DIR
-#RCC_DIR = $$OBJECTS_DIR
+UI_DIR   = $$OBJECTS_DIR
+RCC_DIR  = $$OBJECTS_DIR
 
 SOURCES += \
     main.cpp \
     \
     affine/main_test_affine.cpp \
+    aLowCodec/main_test_aLowCodec.cpp \
     arithmetics/main_test_arithmetics.cpp \
     assignment/main_test_assignment.cpp \
     automotive/main_test_automotive.cpp \
@@ -44,6 +45,7 @@ SOURCES += \
     cholesky/main_test_cholesky.cpp \
     cloud/main_test_cloud.cpp \
     color/main_test_color.cpp \
+    commandline/main_test_commandline.cpp \
     convolve/main_test_convolve.cpp \
     cornerdetector/main_test_cornerdetector.cpp \
     deform/main_test_deform.cpp \

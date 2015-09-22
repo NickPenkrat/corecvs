@@ -8,15 +8,17 @@
 #pragma once
 
 #include <stdint.h>
-#include "rgb24Buffer.h"
 
-using namespace corecvs;
+namespace corecvs
+{
+
+class RGB24Buffer;
 
 /** The coding rules are taken from the document "AR1820HS_DS_G.pdf", page 93
  */
 inline uint8_t code12to8(uint16_t value)
 {
-    /*if (value <   32) return value; */                      // 0 0 0 0 0 0 0 a b c d e => 000abcde
+  /*if (value <   32) return value; */                      // 0 0 0 0 0 0 0 a b c d e => 000abcde
     if (value <   64) return value;                         // 0 0 0 0 0 0 1 a b c d e => 001abcde
     if (value <  128) return ((value >> 1) & 0x1f) | 0x40;  // 0 0 0 0 0 1 a b c d e X => 010abcde
     if (value <  256) return ((value >> 2) & 0x1f) | 0x60;  // 0 0 0 0 1 a b c d e X X => 011abcde
@@ -51,6 +53,8 @@ class ALowCodec
 public:
     ALowCodec() {}
 
-    RGB24Buffer  *  code(const RGB24Buffer *rgb24buffer);
-    RGB24Buffer  *decode(const RGB24Buffer *rgb24buffer);
+    static RGB24Buffer  *  code(const RGB24Buffer *rgb24buffer);
+    static RGB24Buffer  *decode(const RGB24Buffer *rgb24buffer);
 };
+
+} // namespace corecvs
