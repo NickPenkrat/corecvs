@@ -42,7 +42,7 @@ public:
      *
      **/
     template <class Type>
-        void visit(Type &field, Type defaultValue, const char *fieldName)
+        void visit(Type &field, Type /*defaultValue*/, const char *fieldName)
     {
         pushChild(fieldName);
             field.accept(*this);
