@@ -22,6 +22,7 @@ build_pass:CONFIG(debug, debug|release) {
     }
 }
 build_pass:CONFIG(release, debug|release) {
+                 DEFINES +=  NDEBUG
     win32-msvc* {
         BUILD_CFG_NAME = /release
     } else:win32 {
