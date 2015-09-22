@@ -24,6 +24,17 @@ struct KeyPoint
 	double angle;
 	double response;
 	int    octave;
+
+    template<typename V>
+    void accept(V &visitor)
+    {
+        visitor.visit(x,         0.0, "x");
+        visitor.visit(y,         0.0, "y");
+        visitor.visit(size,      0.0, "size");
+        visitor.visit(angle,    -1.0, "angle");
+        visitor.visit(response,  0.0, "response");
+        visitor.visit(octave,      0, "octave");
+    }
 };
 
 struct ImageKeyPoints

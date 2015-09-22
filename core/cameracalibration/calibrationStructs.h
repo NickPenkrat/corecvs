@@ -68,6 +68,7 @@ struct CameraIntrinsics
     Vector2dd principal;        /**< Principal point of optical axis on image plane (in pixel). Usually center of imager */
     double skew;
     Vector2dd size;    /**< Imager resolution (in pixel) */
+    Vector2dd distortedSize;
 
 
     CameraIntrinsics(
@@ -76,11 +77,13 @@ struct CameraIntrinsics
             double cx = DEFAULT_SIZE_X / 2.0,
             double cy = DEFAULT_SIZE_Y / 2.0,
             double skew = 0.0,
-            Vector2dd size = Vector2dd(DEFAULT_SIZE_X, DEFAULT_SIZE_Y)) :
+            Vector2dd size = Vector2dd(DEFAULT_SIZE_X, DEFAULT_SIZE_Y),
+            Vector2dd distortedSize = Vector2dd(DEFAULT_SIZE_X, DEFAULT_SIZE_Y)) :
         focal      (fx, fy),
         principal  (cx, cy),
         skew       (skew),
-        size       (size)
+        size       (size),
+        distortedSize (distortedSize)
     {
     }
  
@@ -122,6 +125,7 @@ struct CameraIntrinsics
         visitor.visit(principal.y(), DEFAULT_SIZE_Y / 2.0, "cy"  );
         visitor.visit(skew         , 0.0                 , "skew");
         visitor.visit(size         , DEFAULT_SIZE        , "size");
+        visitor.visit(distortedSize, DEFAULT_SIZE        , "distortedSize");
     }
 
 

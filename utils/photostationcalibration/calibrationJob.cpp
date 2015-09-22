@@ -62,7 +62,7 @@ void CalibrationJob::allDetectChessBoard(bool distorted)
             corecvs::RGB24Buffer buffer = LoadImage(filename);
             if (buffer.h && buffer.w)
             {
-                psIterator->intrinsics.size = corecvs::Vector2dd(buffer.w, buffer.h);
+                (distorted ? psIterator->intrinsics.distortedSize : psIterator->intrinsics.size) = corecvs::Vector2dd(buffer.w, buffer.h);
             }
             detectChessBoard(buffer, distorted ? v.sourcePattern : v.undistortedPattern);
         }
@@ -125,7 +125,7 @@ struct ParallelDistortionEstimator
                 sgf.addAllLinesFromObservationList(v.sourcePattern);
             }
             auto& psIterator = job->photostation.cameras[cam];
-            job->estimateDistortion(sgf, psIterator.intrinsics.size[0], psIterator.intrinsics.size[1], psIterator.distortion);
+            job->estimateDistortion(sgf, psIterator.intrinsics.distortedSize[0], psIterator.intrinsics.distortedSize[1], psIterator.distortion);
             for (auto& v: job->observations[cam])
             {
                 job->computeDistortionError(v.sourcePattern, psIterator.distortion, v.distortionRmse, v.distortionMaxError);
@@ -232,7 +232,9 @@ struct ParallelDistortionRemoval
 
             corecvs::DisplacementBuffer transform;
             double newW, newH;
-            job->prepareUndistortionTransformation(cam.distortion, cam.intrinsics.size[0], cam.intrinsics.size[1], transform, newW, newH);
+            job->prepareUndistortionTransformation(cam.distortion, cam.intrinsics.distortedSize[0], cam.intrinsics.distortedSize[1], transform, newW, newH);
+            cam.intrinsics.size[0] = newW;
+            cam.intrinsics.size[1] = newH;
             for (auto& ob: observationsIterator)
             {
                 corecvs::RGB24Buffer source = job->LoadImage(ob.sourceFileName), dst;
