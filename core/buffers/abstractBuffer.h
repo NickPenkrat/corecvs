@@ -627,10 +627,9 @@ template<typename ResultType>
      */
     AbstractBuffer(AbstractBuffer *src, IndexType x1, IndexType y1, IndexType x2, IndexType y2)
     {
-        printf("Internal error with input [%d x %d] (%d, %d) -> (%d, %d)\n", src->w, src->h, x1, y1, x2, y2);
-        fflush(stdout);
+        SYNC_PRINT(("Internal error with input [%d x %d] (%d, %d) -> (%d, %d)\n", src->w, src->h, x1, y1, x2, y2));
 
-        CORE_ASSERT_TRUE_P(src != NULL, ("src == NULL"));
+        CORE_ASSERT_TRUE_P(src != NULL, ("AbstractBuffer.ctor got src == NULL"));
         IndexType tmp;
         if (x1 > x2) { tmp = x1; x1 = x2; x2 = tmp; }
         if (y1 > y2) { tmp = y1; y1 = y2; y2 = tmp; }

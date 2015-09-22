@@ -9,6 +9,8 @@
 
 #include <stdint.h>
 
+#include "global.h"
+
 namespace corecvs
 {
 
