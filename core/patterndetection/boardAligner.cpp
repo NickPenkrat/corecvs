@@ -40,11 +40,10 @@ bool BoardAligner::align(DpImage &img)
 
 void BoardAligner::transpose()
 {
+    if (!bestBoard.size())
+        return;
 
-
-    if (!bestBoard.size()) return;
-
-    int w = bestBoard[0].size(), h = bestBoard.size();
+    int w = (int)bestBoard[0].size(), h = (int)bestBoard.size();
     decltype(bestBoard) board(w);
     for (auto& r: board) r.resize(h);
 
@@ -63,8 +62,8 @@ void BoardAligner::transpose()
 // sort rows increasing y
 void BoardAligner::fixOrientation()
 {
-    int w = bestBoard[0].size();
-    int h = bestBoard.size();
+    int w = (int)bestBoard[0].size();
+    int h = (int)bestBoard.size();
 
     std::vector<double> sr(h), ssr(h), sc(w), ssc(w);
     for (int i = 0; i < h; ++i)
@@ -92,8 +91,8 @@ void BoardAligner::fixOrientation()
     }
     if (mr > mc)
         transpose();
-    w = bestBoard[0].size();
-    h = bestBoard.size();
+    w = (int)bestBoard[0].size();
+    h = (int)bestBoard.size();
 
     for (auto& r: bestBoard)
         std::sort(r.begin(), r.end(), [](const corecvs::Vector2dd &a, const corecvs::Vector2dd &b) { return a[0] < b[0]; });
@@ -116,7 +115,7 @@ void BoardAligner::fixOrientation()
 bool BoardAligner::alignDim(DpImage &img, bool fitW, bool fitH)
 {
     if (!fitW && !fitH) return false;
-    int w = bestBoard[0].size(), h = bestBoard.size();
+    int w = (int)bestBoard[0].size(), h = (int)bestBoard.size();
     std::cout << "Best board: " << w << " x " << h << "; Req: " << idealWidth << " x " << idealHeight << std::endl;
     if (fitW && fitH)
     {
@@ -183,8 +182,8 @@ bool BoardAligner::alignMarkers(DpImage &img)
 bool BoardAligner::bfs()
 {
     initialClassifier = classifier;
-    int h = classifier.size();
-    int w = classifier[0].size();
+    int h = (int)classifier.size();
+    int w = (int)classifier[0].size();
 
     int seedx = -1, seedy = -1;
     int xdx, xdy, ydx, ydy;
@@ -277,8 +276,8 @@ bool BoardAligner::bfs()
 
 bool BoardAligner::createList()
 {
-    int h = classifier.size();
-    int w = classifier[0].size();
+    int h = (int)classifier.size();
+    int w = (int)classifier[0].size();
     observationList.clear();
     for (int y = 0; y < h; ++y)
     {
@@ -322,8 +321,8 @@ void BoardAligner::drawDebugInfo(corecvs::RGB24Buffer &buffer)
 {
     if (!bestBoard.size() || !bestBoard[0].size()) return;
 
-    int w = bestBoard[0].size();
-    int h = bestBoard.size();
+    int w = (int)bestBoard[0].size();
+    int h = (int)bestBoard.size();
     // A: draw board
     DpImage mask(buffer.h, buffer.w);
     corecvs::RGBColor board_col = corecvs::RGBColor(0x7f0000);
@@ -350,7 +349,7 @@ void BoardAligner::drawDebugInfo(corecvs::RGB24Buffer &buffer)
     homography = c2i.getBestHomographyLSE();
     homography = c2i.getBestHomographyLM(homography);
     res = BB.inv() * homography * AA;
-            double score;
+            //double score;
 
             for (int i = 0; i < 1000; ++i)
             {
@@ -364,7 +363,6 @@ void BoardAligner::drawDebugInfo(corecvs::RGB24Buffer &buffer)
                     {
                         mask.element(yy, xx) = 1.0;
                     }
-
                 }
             }
         }
@@ -409,14 +407,14 @@ void BoardAligner::drawDebugInfo(corecvs::RGB24Buffer &buffer)
 
 void BoardAligner::classify(bool trackOrientation, DpImage &img)
 {
-    int h = bestBoard.size(), w = bestBoard[0].size();
+    int h = (int)bestBoard.size(), w = (int)bestBoard[0].size();
     classifier.clear();
     classifier.resize(h);
     for (auto& r: classifier)
         r.resize(w, std::make_pair(-1, -1));
 
     CirclePatternGenerator gen;
-    int N = boardMarkers.size();
+    int N = (int)boardMarkers.size();
     for (int i = 0; i < N; ++i)
         gen.addToken(i, boardMarkers[i].circleRadius, boardMarkers[i].circleCenters);
 
