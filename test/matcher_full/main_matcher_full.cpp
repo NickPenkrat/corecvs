@@ -66,7 +66,10 @@ bool detectBase(const std::string &filename)
     for(size_t i = 0; i < 15; ++i)
     {
         std::cout << "Searching for " << filename << " in " << base << "  :  ";
-        if(ok = checkIfExists(base + filename)) break;
+        ok = checkIfExists(base + filename);
+        if(ok) {
+                break;
+        }
         std::cout << "FAILED" << std::endl;
         base = ".." + (PATH_SEPARATOR + base);
     }

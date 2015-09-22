@@ -326,7 +326,9 @@ TEST(Arithmetics, testDivisionBy10)
     {
         short int a = delay;
         /*short int b;*/
+#ifdef BUF_DUMP
         char buffer[10];
+#endif
 
         int pos = 0;
         for (; pos < 5; pos++)
@@ -343,14 +345,17 @@ TEST(Arithmetics, testDivisionBy10)
                  if (check > a) {result--; check -= 10;}
                  if (check <= a - 10) {result++; check += 10;}
 
+#ifdef BUF_DUMP
                  buffer[pos] = a - check + '0';
+#endif
                  a = result;
             } else {
                 break;
             }
+#ifdef BUF_DUMP
         buffer[pos++] = 0;
 
-      //printf("%d == %s\n", delay, buffer);
+      printf("%d == %s\n", delay, buffer);
         //    6 ==    6
         //   10 ==   01
         //   19 ==   91
@@ -363,6 +368,7 @@ TEST(Arithmetics, testDivisionBy10)
         //  591 ==  195
         // 1023 == 3201
         // ...
+#endif
     }
 }
 

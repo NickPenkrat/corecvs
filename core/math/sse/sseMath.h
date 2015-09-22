@@ -49,6 +49,7 @@ public:
 
 
 
+
     /* TODO: Unite the following lines */
     ALIGN_STACK_SSE static inline Int16x8 branchlessMask(const Int16x8 &val)
     {
@@ -70,13 +71,15 @@ public:
         return UInt16x8((condition & ifTrue) | (andNot(condition, ifFalse)));
     }
 
-
-
     ALIGN_STACK_SSE static inline Int32x4 selector(const Int32x4 &condition, const Int32x4 &ifTrue, const Int32x4 &ifFalse)
     {
         return (condition & ifTrue) | (andNot(condition, ifFalse));
     }
 
+    ALIGN_STACK_SSE static inline void fillOnes(UInt16x8 &var)
+    {
+        var = UInt16x8::AllOnes();
+    }
 
     /**
      * blockSAD8(): get UInt16x8 vector

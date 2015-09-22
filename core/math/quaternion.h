@@ -278,6 +278,12 @@ public:
         return GenericQuaternion(0.0, 0.0, 0.0, 1.0);
     }
 
+    static GenericQuaternion Identity()
+    {
+        return RotationIdentity();
+    }
+
+
     static GenericQuaternion FromMatrix(const Matrix33 &R)
     {
         double a = R.a(0,0);

@@ -49,20 +49,73 @@ asserts {
     DEFINES += ASSERTS
 }
 
+# Autodetect block
+
+with_native:!win32 {
+
+    CPU_FLAGS=$$system(cat /proc/cpuinfo | grep -m 1 "^flags")
+#    message (Platform natively support $$CPU_FLAGS)
+
+    contains(CPU_FLAGS, "sse") {
+        CONFIG += with_sse
+#        message (Natively support SSE);
+    }
+    contains(CPU_FLAGS, "sse2") {
+        CONFIG += with_sse2
+#        message (Natively support SSE2);
+    }
+    contains(CPU_FLAGS, "ssse3") {
+        CONFIG += with_sse3
+#        message (Natively support SSE3);
+    }
+    contains(CPU_FLAGS, "avx") {
+        CONFIG += with_avx
+#        message (Natively support AVX);
+    }
+    contains(CPU_FLAGS, "avx2") {
+        CONFIG += with_avx2
+#        message (Natively support AVX2);
+    }
+    contains(CPU_FLAGS, "fma") {
+        CONFIG += with_fma
+#        message (Natively support FMA);
+    }
+}
+
 with_avx {
-    DEFINES += WITH_AVX WITH_AVX2 WITH_FMA
+    DEFINES += WITH_AVX
     !win32-msvc* {
-        QMAKE_CFLAGS   += -mavx -mavx2 -mfma
-        QMAKE_CXXFLAGS += -mavx -mavx2 -mfma
+        QMAKE_CFLAGS   += -mavx
+        QMAKE_CXXFLAGS += -mavx
     } else:win32-msvc2010 {
         QMAKE_CFLAGS   += /arch:AVX
         QMAKE_CXXFLAGS += /arch:AVX
-        DEFINES -= WITH_AVX2
     } else {
-        QMAKE_CFLAGS   += /arch:AVX /arch:AVX2
-        QMAKE_CXXFLAGS += /arch:AVX /arch:AVX2
+        QMAKE_CFLAGS   += /arch:AVX
+        QMAKE_CXXFLAGS += /arch:AVX
     }
 }
+
+with_avx2 {
+    DEFINES += WITH_AVX2 WITH_FMA
+    !win32-msvc* {
+        QMAKE_CFLAGS   += -mavx2
+        QMAKE_CXXFLAGS += -mavx2
+    } else:!win32-msvc2010 {
+        QMAKE_CFLAGS   += /arch:AVX2
+        QMAKE_CXXFLAGS += /arch:AVX2
+    }
+}
+
+with_fma {
+    DEFINES += WITH_FMA
+    !win32-msvc* {
+        QMAKE_CFLAGS   += -mfma
+        QMAKE_CXXFLAGS += -mfma
+    }
+}
+
+
 
 with_sse {
     DEFINES += WITH_SSE
@@ -121,38 +174,30 @@ gcc_env_toolchain {
   QMAKE_LINK_C_SHLIB = gcc-$$GCC_POSTFIX
 }
 
-gcc45_toolchain {
-  QMAKE_CC = gcc-4.5
-  QMAKE_CXX = g++-4.5
-  QMAKE_LINK =  g++-4.5
-  QMAKE_LINK_SHLIB =  g++-4.5
-  QMAKE_LINK_C = gcc-4.5
-  QMAKE_LINK_C_SHLIB = gcc-4.5
-}
-
 clang_toolchain {
-  QMAKE_CC = clang
-  QMAKE_CXX = clang++
-  QMAKE_LINK =  clang++
+  CLANG_POSTFIX="-3.6"
+
+  CONFIG -= warn_on
+
+  QMAKE_CC = clang$$CLANG_POSTFIX
+  QMAKE_CXX = clang++$$CLANG_POSTFIX
+  QMAKE_LINK =  clang++$$CLANG_POSTFIX
   QMAKE_LINK_SHLIB =  clang
   QMAKE_LINK_C = clang
   QMAKE_LINK_C_SHLIB = clang
-}
 
-gcc47_toolchain {
-  QMAKE_CC = gcc-4.7
-  QMAKE_CXX = g++-4.7
-  QMAKE_LINK =  g++-4.7
-  QMAKE_LINK_SHLIB =  g++-4.7
-  QMAKE_LINK_C = gcc-4.7
-  QMAKE_LINK_C_SHLIB = gcc-4.7
-  gcc_lto {
-     QMAKE_CFLAGS_RELEASE += -flto
-     QMAKE_CXXFLAGS_RELEASE += -flto
-     QMAKE_LFLAGS += -flto
-  }
-}
+#  QMAKE_CFLAGS += -stdlib=libc++
+#  QMAKE_CXXFLAGS += -stdlib=libc++
 
+
+   QMAKE_CFLAGS += -Wall -Wno-inconsistent-missing-override
+   QMAKE_CFLAGS += -Wall -Wno-overloaded-virtual
+   QMAKE_CXXFLAGS += -Wall -Wno-inconsistent-missing-override
+   QMAKE_CXXFLAGS += -Wall -Wno-overloaded-virtual
+
+#   QMAKE_CFLAGS_WARN_OFF   -=  -Wall
+#   QMAKE_CXXFLAGS_WARN_OFF -=  -Wall
+}
 gcc48_toolchain {
   QMAKE_CC = gcc-4.8
   QMAKE_CXX = g++-4.8

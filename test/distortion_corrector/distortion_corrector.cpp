@@ -98,16 +98,18 @@ int main (int argc, char **argv)
 
     CommandLineSetter setter(argc, (const char **)argv);
 
-    bool verbose         = setter.getBool("verbose"          );
+    bool verbose = setter.getBool("verbose");
 
     string prefix = setter.getString("prefix", "dist");
     if (verbose)
-    {    SYNC_PRINT(("prifix: %s\n", prefix.c_str()));
+    {
+        SYNC_PRINT(("prefix: %s\n", prefix.c_str()));
     }
 
     QString jsonFileName = QString(setter.getString("json_file_name", "out.json").c_str());
     if (verbose)
-    {    SYNC_PRINT(("json_file_name: %s\n", jsonFileName.toLatin1().constData()));
+    {
+        SYNC_PRINT(("json_file_name: %s\n", jsonFileName.toLatin1().constData()));
     }
 
 
@@ -128,14 +130,15 @@ int main (int argc, char **argv)
 
     string fileName = "";
 
-    int chessW      = setter.getInt("chessW",       18);
-    int chessH      = setter.getInt("chessH",       11);
+    int    chessW      = setter.getInt   ("chessW",       18);
+    int    chessH      = setter.getInt   ("chessH",       11);
     double minAccuracy = setter.getDouble("min_accuracy", 0.001);
     double precise     = setter.getDouble("precise",      50);   // TODO: =100 doesn't work!!! Why???
     double cellSize    = setter.getDouble("cell_size",    50);
 
 
-    if (setter.hasOption("calcMultiCheckerBoard")){
+    if (setter.hasOption("calcMultiCheckerBoard"))
+    {
         corecvs::ObservationList observations;
 
         CheckerboardDetectionParameters params;
@@ -344,8 +347,10 @@ int main (int argc, char **argv)
         ObservationList observationList;
 
         //OpenCvCheckerboardDetector::DetectPartCheckerboardV(channel, params, &observationList, NULL);
-        OpenCvCheckerboardDetector detector(params, alignerParams);
-        bool found = detector.detectPattern(*channel);
+        OpenCvCheckerboardDetector detector(params, alignerParams);        
+
+        //bool found = detector.detectPattern(*channel);
+
         detector.getPointData(observationList);
 
         delete_safe(channel);
@@ -454,10 +459,10 @@ int main (int argc, char **argv)
     {
         printf("Usage examples:\n\n"
             "To detect distortion params:\n"
-            "opencvLineDetector.exe --calcFullCheckerBoard:<filename> --chessW:18 --chessH:11\n"
-            "                       --use_green_channel --max_iteration_count:50 --min_accuracy:0.001\n\n"
+            "\tdistortion_corrector --calcFullCheckerBoard:<filename> --chessW:18 --chessH:11\n"
+            "\t                     --use_green_channel --max_iteration_count:1000 --min_accuracy:0.001\n\n"
             "To apply found distortion params:\n"
-            "opencvLineDetector.exe --apply <filenames_via_spaces>\n"
+            "\topencvLineDetector.exe --apply <filenames_via_spaces>\n"
             );
         //--prefix
         //--json_file_name

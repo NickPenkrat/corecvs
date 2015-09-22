@@ -15,7 +15,7 @@
 
 namespace corecvs {
 
-enum class CameraConstraints 
+enum class CameraConstraints
 {
     NONE           =  0x00,
     ZERO_SKEW      =  0x01, // This forces skew to zero, but not locks it to zero during non-linear optimization
@@ -37,7 +37,14 @@ namespace corecvs {
 
 struct LocationData
 {
-    LocationData(Vector3dd position = Vector3dd(0.0, 0.0, 1.0), Quaternion orientation = Quaternion(0.0, 0.0, 0.0, 1.0)) : position(position), orientation(orientation)
+    Vector3dd position;
+    Quaternion orientation;
+
+    LocationData(
+            Vector3dd position = Vector3dd(0.0, 0.0, 1.0),
+            Quaternion orientation = Quaternion::Identity()) :
+        position(position),
+        orientation(orientation)
     {
     }
 
@@ -45,11 +52,9 @@ struct LocationData
     void accept(VisitorType &visitor)
     {
         visitor.visit(position, Vector3dd(0.0, 0.0, -1.0), "position");
-        visitor.visit(orientation, Quaternion(0.0, 0.0, 0.0, 1.0), "orientation");
+        visitor.visit(orientation, Quaternion::Identity(), "orientation");
     }
 
-    Vector3dd position;
-    Quaternion orientation;
 };
 
 /**
@@ -86,7 +91,7 @@ struct CameraIntrinsics
         distortedSize (distortedSize)
     {
     }
- 
+
     // TODO: The idea is that if we merge distorsion calibration WITH extrinsics/intrinsics
     //       calibration, then this method will project point using forward distorsion map
     Vector2dd project(const Vector3dd &p)
@@ -94,7 +99,7 @@ struct CameraIntrinsics
         Vector2dd result = (focal * p.xy() + Vector2dd(skew * p.y(), 0.0)) / p.z() + principal;
         return result;
     }
-	
+
     explicit operator Matrix33() const
     {
         return getKMatrix33();
@@ -154,8 +159,8 @@ struct Camera_
         return intrinsics.project(extrinsics.orientation * (pt - extrinsics.position));
     }
 
-	template<class VisitorType>
-	void accept(VisitorType &visitor)
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
     {
         visitor.visit(intrinsics, CameraIntrinsics()             , "intrinsics");
         visitor.visit(extrinsics, LocationData()                 , "extrinsics");

@@ -569,9 +569,7 @@ void PointListEditImageWidget::childRepaint(QPaintEvent *event, QWidget *who)
             pos += QPointF(1,1);
             painter.setPen(Qt::white);
             painter.drawText(pos, meta);
-
         }
-
 
         if (i == mSelectedPoint) {
             painter.setPen(Qt::red);
