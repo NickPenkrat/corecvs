@@ -30,6 +30,11 @@ inline void testRGB(int r8, int g8, int b8)
     testChan(b8 << 4);
 }
 
+inline void testDeath() {
+    printf("testDeath called");
+    exit(-3);
+}
+
 TEST(ALowCodec, testALowCodec)
 {
     testRGB( 20,  40,  70);
@@ -44,6 +49,8 @@ TEST(ALowCodec, testALowCodec)
 
     //SYNC_PRINT(("Now the assertion must be raised, but the test will be failed: "));
     //testChan(5000);
+
+    ASSERT_EXIT(testDeath(), ::testing::ExitedWithCode(-3), "");
 
     SYNC_PRINT(("Now the assertion must raised and caught: "));
     try {
