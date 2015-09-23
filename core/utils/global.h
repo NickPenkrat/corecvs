@@ -94,7 +94,7 @@ typedef int                bool_t;                          // fast Boolean type
     do {                                                        \
         printf("Assert at %s:%d - %s\n", __FILE__, __LINE__, X);\
         fflush(stdout);                                         \
-        stackTraceHandler(0xFF);                                \
+        /*stackTraceHandler(0xFF);*/                                \
         RAISE_ASSERT(X);                                        \
     } while (0)
 
@@ -104,7 +104,7 @@ typedef int                bool_t;                          // fast Boolean type
         printf X;                                               \
         fflush(stdout);                                         \
         stackTraceHandler(0xFF);                                \
-        RAISE_ASSERT(#X);                                       \
+        /*RAISE_ASSERT(#X);*/                                       \
     } while (0)
 
 
