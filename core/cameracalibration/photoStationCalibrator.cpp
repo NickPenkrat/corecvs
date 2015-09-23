@@ -9,7 +9,7 @@ PhotoStationCalibrator::PhotoStationCalibrator(CameraConstraints constraints, co
 {
 }
 
-void PhotoStationCalibrator::addCamera(CameraIntrinsics &intrinsics)
+void PhotoStationCalibrator::addCamera(PinholeCameraIntrinsics &intrinsics)
 {
     N++;
     relativeCameraPositions.push_back({intrinsics, LocationData()});
@@ -65,7 +65,7 @@ std::vector<LocationData> PhotoStationCalibrator::getCalibrationSetups()
 
 Photostation PhotoStationCalibrator::getPhotostation()
 {
-    return { relativeCameraPositions, LocationData() };
+    return Photostation(relativeCameraPositions, LocationData());
 }
 
 double PhotoStationCalibrator::getRmseReprojectionError()
@@ -179,7 +179,7 @@ void PhotoStationCalibrator::readParams(const double in[])
     int argin = 0;
     for (int i = 0; i < N; ++i)
     {
-        Camera_ &toFill = relativeCameraPositions[i];
+        CameraModel &toFill = relativeCameraPositions[i];
 
         IFNOT(LOCK_FOCAL,
                 double f;
@@ -223,7 +223,7 @@ void PhotoStationCalibrator::writeParams(double out[])
     int argout = 0;
     for (int i = 0; i < N; ++i)
     {
-       Camera_ &toWrite = relativeCameraPositions[i];
+       CameraModel &toWrite = relativeCameraPositions[i];
 
         IFNOT(LOCK_FOCAL,
                 SET_PARAM(toWrite.intrinsics.focal.x());

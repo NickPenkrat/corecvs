@@ -88,6 +88,7 @@ TEST(Affine, testMatrixToQuaternion)
         cout << Q  << " l= " << Q .l2Metric() << endl;
         //cout << M << endl;
         cout << Q1 << " l= " << Q1.l2Metric() << endl;
+        ASSERT_TRUE(Q.notTooFar(Q1, 1e-7));
     }
 
 }

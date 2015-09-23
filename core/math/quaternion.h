@@ -38,29 +38,29 @@ public:
 
     }
 
-    inline explicit GenericQuaternion(const BaseClass &V) : BaseClass(V) {};
-    inline explicit GenericQuaternion(const ElementType &x) : BaseClass(x) {};
-    inline GenericQuaternion(): BaseClass() {};
+    inline explicit GenericQuaternion(const BaseClass &V) : BaseClass(V) {}
+    inline explicit GenericQuaternion(const ElementType &x) : BaseClass(x) {}
+    inline GenericQuaternion(): BaseClass() {}
 
     inline ElementType &x()
     {
         return (*this)[0];
-    };
+    }
 
     inline ElementType &y()
     {
         return (*this)[1];
-    };
+    }
 
     inline ElementType &z()
     {
         return (*this)[2];
-    };
+    }
 
     inline ElementType &t()
     {
         return (*this)[3];
-    };
+    }
 
     inline VectorType v() const
     {
@@ -71,22 +71,22 @@ public:
     inline const ElementType &x() const
     {
         return (*this)[0];
-    };
+    }
 
     inline const ElementType &y() const
     {
         return (*this)[1];
-    };
+    }
 
     inline const ElementType &z() const
     {
         return (*this)[2];
-    };
+    }
 
     inline const ElementType &t() const
     {
         return (*this)[3];
-    };
+    }
 
     /**
      *   Hamilton Product

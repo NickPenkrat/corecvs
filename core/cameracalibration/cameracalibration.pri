@@ -1,8 +1,7 @@
 HEADERS += \
-	cameracalibration/*.h
-
+	cameracalibration/*.h \
 
 SOURCES += \
-	cameracalibration/*.cpp
+	cameracalibration/*.cpp \
 
-CONFIG += c++11
+#CONFIG += c++11

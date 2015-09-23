@@ -332,7 +332,7 @@ void CalibrationJob::allCalibrateSingleCamera()
     std::cout << "OPTFAC_MEAN: " << factor << std::endl;
 }
 
-void CalibrationJob::calibratePhotostation(int N, int /*M*/, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<CameraIntrinsics> &intrinsics, std::vector<std::vector<LocationData>> &locations, bool runBFS, bool runLM)
+void CalibrationJob::calibratePhotostation(int N, int /*M*/, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<PinholeCameraIntrinsics> &intrinsics, std::vector<std::vector<LocationData>> &locations, bool runBFS, bool runLM)
 {
     for (auto& ci: intrinsics)
     {
@@ -383,7 +383,7 @@ void CalibrationJob::calibratePhotostation()
         }
     }
 
-    std::vector<CameraIntrinsics> intrinsics;
+    std::vector<PinholeCameraIntrinsics> intrinsics;
     for (auto& c: photostation.cameras)
         intrinsics.push_back(c.intrinsics);
     std::vector<std::vector<LocationData>> locations(M);

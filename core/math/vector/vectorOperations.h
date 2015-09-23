@@ -278,7 +278,6 @@ public:
      * \param V1
      * \param V2
      **/    
-    //friend inline RealType operator /(const VectorOperationsBase &V1, const VectorOperationsBase &V2)
     friend inline ReturnType operator /(const RealType &V1, const RealType &V2)
     {
         int length = V1._size() < V2._size() ? V1._size() : V2._size();
@@ -298,7 +297,6 @@ public:
      * \param c
      * \param V
      **/
-    //friend inline RealType operator *(const ElementType &c, const VectorOperationsBase &V)
     friend inline ReturnType operator *(const ElementType &c, const RealType &V)
     {
         ReturnType result = V._createVector(V._size());

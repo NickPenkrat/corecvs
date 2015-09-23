@@ -32,7 +32,7 @@
 #include "chessBoardCornerDetector.h"
 #include "chessBoardAssembler.h"
 
-#include "calibrationStructs.h"
+#include "calibrationPhotostation.h"
 
 using namespace cv;
 using namespace corecvs;
@@ -215,12 +215,12 @@ int main (int argc, char **argv)
         solver.lineList = &features;
         solver.parameters = parameters;
 
-                RadialCorrection correction = solver.solve();
+        RadialCorrection correction = solver.solve();
 
-                Camera_ camera;
-                camera.distortion = correction.mParams;
-                JSONSetter setter(jsonFileName);
-                setter.visit(camera, "intrinsic");
+        CameraModel camera;
+        camera.distortion = correction.mParams;
+        JSONSetter setter(jsonFileName);
+        setter.visit(camera, "intrinsic");
     }
 
     else if (setter.hasOption("calcFullCheckerBoard"))

@@ -24,17 +24,17 @@ SUBDIRS +=       \
 
 with_opencv {
     SUBDIRS +=       \
-#    	distortion_corrector \
-#        matcher_basic \
-#        matcher_full \
-#        camera_calibration \
-#        chessboard_detector \
-#        calibration_job_generate \
-#        calibration_job_detect \
-#        calibration_job_estimate_distortion \
-#        calibration_job_apply_undistortion \
-#        calibration_job_calibrate \
-#        photostation_placer
+        distortion_corrector \
+        matcher_basic \
+        matcher_full \
+        camera_calibration \
+        chessboard_detector \
+        calibration_job_generate \
+        calibration_job_detect \
+        calibration_job_estimate_distortion \
+        calibration_job_apply_undistortion \
+        calibration_job_calibrate \
+        photostation_placer
 }
 
 grab.file                           = grab/grab.pro
