@@ -32,7 +32,7 @@ inline void testRGB(int r8, int g8, int b8)
 
 inline void testDeath() {
     printf("testDeath called");
-    exit(-3);
+    exit(-2);
 }
 
 TEST(ALowCodec, testALowCodec)
@@ -50,7 +50,11 @@ TEST(ALowCodec, testALowCodec)
     //SYNC_PRINT(("Now the assertion must be raised, but the test will be failed: "));
     //testChan(5000);
 
-    ASSERT_EXIT(testDeath(), ::testing::ExitedWithCode(-3), "");
+#ifdef WIN32
+    ASSERT_EXIT(testDeath(), ::testing::ExitedWithCode(-2), "");
+#else
+    ASSERT_EXIT(testDeath(), ::testing::ExitedWithCode(254), "");
+#endif
 
     SYNC_PRINT(("Now the assertion must raised and caught: "));
     try {
