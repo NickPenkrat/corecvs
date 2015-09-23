@@ -30,8 +30,9 @@ inline void testRGB(int r8, int g8, int b8)
     testChan(b8 << 4);
 }
 
-inline void testDeath() {
-    printf("testDeath called");
+inline void testDeath()
+{
+    printf("testDeath is called: ");
     exit(-2);
 }
 
@@ -53,7 +54,7 @@ TEST(ALowCodec, testALowCodec)
 #ifdef WIN32
     ASSERT_EXIT(testDeath(), ::testing::ExitedWithCode(-2), "");
 #else
-    ASSERT_EXIT(testDeath(), ::testing::ExitedWithCode(254), "");
+    ASSERT_EXIT(testDeath(), ::testing::ExitedWithCode(256 -2), "");    // TODO: this is a bug on Linux for the gtest implementation?
 #endif
 
     SYNC_PRINT(("Now the assertion must raised and caught: "));
@@ -64,6 +65,9 @@ TEST(ALowCodec, testALowCodec)
         SYNC_PRINT(("We've got AssertException (%s)\n", e.what()));
         SUCCEED();
         return;
+    }
+    catch (...) {
+        SYNC_PRINT(("We've got other than AssertException\n"));
     }
     ADD_FAILURE() << "Didn't throw AssertException as expected";
 
