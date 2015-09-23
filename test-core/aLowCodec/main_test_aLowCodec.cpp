@@ -32,7 +32,7 @@ inline void testRGB(int r8, int g8, int b8)
 
 inline void testDeath()
 {
-    printf("testDeath is called: ");
+    printf("testDeath is called:\n");
     exit(-2);
 }
 
