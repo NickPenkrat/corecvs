@@ -66,13 +66,8 @@ TEST(ALowCodec, testALowCodec)
         SUCCEED();
         return;
     }
-    catch (const AssertExceptionL & e) {
-        SYNC_PRINT(("We've got AssertExceptionL (%s)\n", e.what()));
-        SUCCEED();
-        return;
-    }
     catch (...) {
-        SYNC_PRINT(("We've got other than AssertException\n"));
+        SYNC_PRINT(("We've got unknown exception\n"));
     }
     ADD_FAILURE() << "Didn't throw AssertException as expected";
 
