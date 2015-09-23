@@ -44,10 +44,6 @@ typedef int                bool_t;                          // fast Boolean type
 # endif
 #endif
 
-//#ifdef is__cplusplus
-//    extern "C" {
-//#endif
-
 // Hooks for memory profiling and leaks search
 #if defined(ASSERTS) || defined(TRACE)
 #   include <stdlib.h>
@@ -76,7 +72,7 @@ typedef int                bool_t;                          // fast Boolean type
      */
     struct AssertException : public std::exception
     {
-        AssertException(const char* codeExpr) : std::exception(codeExpr) {}
+        AssertException(const char * const &codeExpr) : std::exception(codeExpr) {}
     };
 #  define RAISE_ASSERT(text)    throw AssertException(text);
 # else
@@ -130,10 +126,10 @@ typedef int                bool_t;                          // fast Boolean type
          CORE_ASSERT_DOUBLE_EQUAL_EP(X, Y, 1e-10, Text)
 
 # ifdef GTEST_INCLUDE_GTEST_GTEST_H_
-#  undef  CORE_DASSERT_FAIL
-#  define CORE_DASSERT_FAIL(X)    GTEST_NONFATAL_FAILURE_(X)
-#  undef  CORE_DASSERT_FAIL_P
-#  define CORE_DASSERT_FAIL_P(X)  do { SYNC_PRINT(X); GTEST_NONFATAL_FAILURE_("xxx"); } while (0)
+//#  undef  CORE_DASSERT_FAIL
+//#  define CORE_DASSERT_FAIL(X)    GTEST_NONFATAL_FAILURE_(X)
+//#  undef  CORE_DASSERT_FAIL_P
+//#  define CORE_DASSERT_FAIL_P(X)  do { SYNC_PRINT(X); GTEST_NONFATAL_FAILURE_("xxx"); } while (0)
 # endif
 
 #else // ASSERTS
@@ -210,10 +206,8 @@ do {                  \
 #ifdef is__cplusplus
 extern "C" {
 #endif
-
-void stackTraceHandler(int sig);
-void setSegVHandler();
-
+    void stackTraceHandler(int sig);
+    void setSegVHandler();
 #ifdef is__cplusplus
 } // extern "C"
 #endif
@@ -256,9 +250,6 @@ void setSegVHandler();
 
 #define REFLECTION_IN_CORE
 
-//#ifdef is__cplusplus
-//    } //     extern "C"
-//#endif
 
 /** Useful macros for best compatibility with using development environments
  */

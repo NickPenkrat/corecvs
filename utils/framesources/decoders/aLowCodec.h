@@ -29,6 +29,7 @@ inline uint8_t code12to8(uint16_t value)
     if (value < 2048) return ((value >> 5) & 0x1f) | 0xC0;  // 0 1 a b c d e X X X X X => 110abcde
     if (value < 4096) return ((value >> 6) & 0x1f) | 0xE0;  // 1 a b c d e X X X X X X => 111abcde
     CORE_ASSERT_FAIL("code12to8: value is out of range");
+    return 0;
 }
 
 /** The decoding rules are taken from the document "AR1820HS_DS_G.pdf", page 94
@@ -46,6 +47,7 @@ inline uint16_t decode8to12(uint8_t value)
     case 0xE0:  return ((value & 0x1f) << 6) | 0x820;      // 111abcde => 1 a b c d e 1 0 0 0 0 0
     }
     CORE_ASSERT_FAIL("decode8to12: value is out of range");
+    return 0;
 }
 
 /** The main class of the A-Low codec
