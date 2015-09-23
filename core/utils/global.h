@@ -73,7 +73,7 @@ typedef int                bool_t;                          // fast Boolean type
      */
     struct AssertException : public std::runtime_error
     {
-        AssertException(const char* codeExpr) : std::runtime_error(codeExpr) { printf("AssertException ctor\n"); }
+        AssertException(const char* codeExpr) : std::runtime_error(codeExpr) {}
     };
 
 #  define RAISE_ASSERT(text)    throw AssertException(text);
