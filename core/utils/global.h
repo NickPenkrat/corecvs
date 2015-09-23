@@ -65,6 +65,7 @@ typedef int                bool_t;                          // fast Boolean type
 
 #ifdef is__cplusplus
 # ifdef ASSERTS
+
 #   include <stdexcept>
     /** This structure need to issue the exception, which nobody catches
      *  that allow gtest to continue tests execution,
@@ -74,27 +75,20 @@ typedef int                bool_t;                          // fast Boolean type
     {
         AssertException(const char* codeExpr) : std::runtime_error(codeExpr) { printf("AssertException ctor\n"); }
     };
-    struct AssertExceptionL : public std::exception
-    {
-        AssertExceptionL(const char*) : std::exception() { printf("AssertExceptionL ctor\n"); }
-    };
-#  ifdef WIN32
-#   define RAISE_ASSERT(text)    throw AssertException(text);
-#  else
-#   define RAISE_ASSERT(text)    throw AssertExceptionL(text);
-#  endif
+
+#  define RAISE_ASSERT(text)    throw AssertException(text);
 # else
 #  define RAISE_ASSERT(text)
 # endif
 #else
-# define RAISE_ASSERT(text)     exit(-2)
+# define  RAISE_ASSERT(text)    exit(-2)
 #endif
 
 #define CORE_DASSERT_FAIL(X)                                    \
     do {                                                        \
         printf("Assert at %s:%d - %s\n", __FILE__, __LINE__, X);\
         fflush(stdout);                                         \
-        /*stackTraceHandler(0xFF);*/                                \
+        stackTraceHandler(0xFF);                                \
         RAISE_ASSERT(X);                                        \
     } while (0)
 
@@ -104,7 +98,7 @@ typedef int                bool_t;                          // fast Boolean type
         printf X;                                               \
         fflush(stdout);                                         \
         stackTraceHandler(0xFF);                                \
-        /*RAISE_ASSERT(#X);*/                                       \
+        RAISE_ASSERT(#X);                                       \
     } while (0)
 
 
