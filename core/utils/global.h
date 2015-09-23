@@ -65,14 +65,14 @@ typedef int                bool_t;                          // fast Boolean type
 
 #ifdef is__cplusplus
 # ifdef ASSERTS
-#   include <exception>
+#   include <stdexcept>
     /** This structure need to issue the exception, which nobody catches
      *  that allow gtest to continue tests execution,
      *  but for the application it dues to stop unless we catch this exception.
      */
-    struct AssertException : public std::exception
+    struct AssertException : public std::runtime_error
     {
-        AssertException(const char * const &codeExpr) : std::exception(codeExpr) {}
+        AssertException(const char* codeExpr) : std::runtime_error(codeExpr) {}
     };
 #  define RAISE_ASSERT(text)    throw AssertException(text);
 # else
