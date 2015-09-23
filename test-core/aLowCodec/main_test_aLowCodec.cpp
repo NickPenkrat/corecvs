@@ -32,7 +32,7 @@ inline void testRGB(int r8, int g8, int b8)
 
 inline void testDeath()
 {
-    printf("testDeath is called:\n");
+    printf("testDeath is called\n");
     exit(-2);
 }
 
@@ -63,6 +63,11 @@ TEST(ALowCodec, testALowCodec)
     }
     catch (const AssertException & e) {
         SYNC_PRINT(("We've got AssertException (%s)\n", e.what()));
+        SUCCEED();
+        return;
+    }
+    catch (const AssertExceptionL & e) {
+        SYNC_PRINT(("We've got AssertExceptionL (%s)\n", e.what()));
         SUCCEED();
         return;
     }
