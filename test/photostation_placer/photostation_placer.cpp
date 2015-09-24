@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <cstdio>
 
+#include "calibrationHelpers.h"
 #include "calibrationJob.h"
 #include "jsonSetter.h"
 #include "jsonGetter.h"
@@ -119,7 +120,7 @@ int main(int argc, char **argv)
         ps.location = kp.second;
         ps.location.position -= sum; // only for mesh output purposes
         std::cout << "Placing " << kp.first <<  ps.location.position << " " << ps.location.orientation << std::endl;
-        ps.drawPly(mesh);
+        CalibrationHelpers::drawPly(mesh, ps);
     }
     
     std::ofstream of;
