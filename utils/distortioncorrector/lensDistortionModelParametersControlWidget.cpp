@@ -323,7 +323,7 @@ void LensDistortionModelParametersControlWidget::updateAdditionalData()
     mGraphDialog.update();
 
     PrinterVisitor printer;
-    printer.visit(lensParams, "inputPrams");
+    printer.visit(lensParams, LensDistortionModelParameters(), "inputPrams");
 
 
     if (mExample != NULL)

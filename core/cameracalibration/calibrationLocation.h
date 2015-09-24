@@ -85,7 +85,7 @@ public:
      *    X' =  A * X + b
      *    Camera position is an odinary point, it will change accordingly.
      *    Camera rotation had used to transform Zaxis to the main optical axis.
-     *    In a new world Zasix has shifted to new position, so new camera matrix should first undo this shift,
+     *    In a new world Zaxis has shifted to new position, so new camera matrix should first undo this shift,
      *    and then apply the old transform;
      *
      *    R' = R * A^-1
@@ -96,6 +96,12 @@ public:
         position    = rotate * position + translate;
         orientation = orientation ^ rotate.conjugated();
     }
+
+    void transform(const LocationData &outerTransform)
+    {
+        transform(outerTransform.orientation, outerTransform.position);
+    }
+
 
 
     template<class VisitorType>

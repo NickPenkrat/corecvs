@@ -118,6 +118,9 @@ public:
 #endif
 
     void dumpPLY(ostream &out);
+    int  dumpPLY(const string &filename);
+
+
     void transform (const Matrix44 &matrix);
     Mesh3D transformed(const Matrix44 &matrix);
 

@@ -79,8 +79,10 @@ struct PinholeCameraIntrinsics
         principal  (cx, cy),
         skew       (skew),
         size       (size)
-    {
-    }
+    {}
+
+    PinholeCameraIntrinsics(Vector2dd resolution, double hfov);
+
 
     /**
      * This actually doesn't differ from matrix multiplication, just is a little bit more lightweight
@@ -173,6 +175,11 @@ public:
     Vector2dd project(const Vector3dd &pt)
     {
         return intrinsics.project(extrinsics.project(pt));
+    }
+
+    bool isVisible(Vector2dd &point)
+    {
+        return point.isInRect(Vector2dd(0.0,0.0), intrinsics.size);
     }
 
 

@@ -5,6 +5,20 @@ namespace corecvs {
 int ScenePart::OBJECT_COUNT = 0;
 
 
+PinholeCameraIntrinsics::PinholeCameraIntrinsics(Vector2dd resolution, double hfov) :
+    principal(resolution / 2.0),
+    skew(0.0),
+    size(resolution)
+
+{
+    double ratio = tan(hfov / 2.0);
+    double f = (size.x() / 2.0) / ratio;
+
+    focal = Vector2dd(f,f);
+}
+
+
+
 /**
  *  We will denote it by matrix \f$K\f$.
  *

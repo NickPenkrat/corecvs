@@ -3,6 +3,8 @@
  *
  * \date Dec 13, 2012
  **/
+#include <fstream>
+
 #include "mathUtils.h"      // M_PI
 #include "mesh3d.h"
 
@@ -486,6 +488,20 @@ void Mesh3D::dumpPLY(ostream &out)
 
 //    SYNC_PRINT(("This 0x%X. Edges %d", this, edges.size()));
 
+}
+
+int Mesh3D::dumpPLY(const std::string &filename)
+{
+    std::ofstream out(filename, std::ios::out);
+    if (out.bad())
+    {
+        SYNC_PRINT(("Mesh3D::dumpPLY(%s): could not save\n", filename.c_str()));
+        return 1;
+    }
+
+    dumpPLY(out);
+    out.close();
+    return 0;
 }
 
 void Mesh3D::transform(const Matrix44 &matrix)

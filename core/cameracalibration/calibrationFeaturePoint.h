@@ -20,9 +20,9 @@ public:
     CalibrationFeaturePoint * featurePoint;
 
     Vector2dd                 observation;
-    Vector2dd accuracy;
-    bool isKnown;
-    MetaContainer meta;
+    Vector2dd                 accuracy;
+    bool                      isKnown;
+    MetaContainer             meta;
 };
 
 
@@ -39,14 +39,19 @@ public:
     Vector3dd reprojectedPosition;
     bool hasKnownReprojectedPosition;
 
-    enum {
-        POINT_USER_DEFINED,  /**< Point that comes from a file */
-        POINT_RECONSTRUCTED,
-        POINT_TEMPORARY
+    enum PointType{
+        POINT_USER_DEFINED  = 0x01,  /**< Point that comes from a file */
+        POINT_RECONSTRUCTED = 0x02,
+        POINT_TEMPORARY     = 0x04,
+
+        POINT_ALL           = 0xFF
     };
+
+    PointType type;
 
     /** Observation related block */
     std::unordered_map<CameraModel *, CalibrationObservation> observations;
+
 
 
 
@@ -54,7 +59,16 @@ public:
     RGBColor color;
 /**/
 
-    CalibrationFeaturePoint();
+    CalibrationFeaturePoint() :
+        hasKnownPosition(false)
+    {}
+
+
+    CalibrationFeaturePoint(Vector3dd _position, const std::string &_name = std::string()) :
+        name(_name),
+        position(_position),
+        hasKnownPosition(true)
+    {}
 
     void transform(const Matrix33 &matrix, const Vector3dd &translate)
     {

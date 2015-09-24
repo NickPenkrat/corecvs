@@ -61,7 +61,11 @@ struct Photostation
         return cameras[cam].project(pt);
     }
 
-
+    CameraModel getWorldCamera(int cam) {
+        CameraModel toReturn = cameras[cam];
+        toReturn.extrinsics.transform(location);
+        return toReturn;
+    }
 
 
     template<class VisitorType>

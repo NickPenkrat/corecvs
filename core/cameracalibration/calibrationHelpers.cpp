@@ -15,7 +15,7 @@ RGBColor CalibrationHelpers::palette[] =
 void CalibrationHelpers::drawPly(Mesh3D &mesh, Photostation &ps, double scale)
 {
     // Colorblind-safe palette
-    Vector3dd cs = ps.location.position;
+    Vector3dd  cs = ps.location.position;
     Quaternion qs = ps.location.orientation.conjugated();
     std::cout << qs << std::endl;
 
@@ -25,7 +25,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, Photostation &ps, double scale)
         double IW = cam.intrinsics.size[0];
         double IH = cam.intrinsics.size[1];
         const int NSC = 9;
-        Vector3dd center      = Vector3dd( 0,  0,  0),
+        Vector3dd center    = Vector3dd( 0,  0,  0),
                 center2     = Vector3dd( 0,  0,  1) * scale,
                 topLeft     = Vector3dd( 0,  0,  1) * scale,
                 topRight    = Vector3dd(IW,  0,  1) * scale,
@@ -46,7 +46,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, Photostation &ps, double scale)
 
         Vector3dd cc    = cam.extrinsics.position;
         Quaternion qc   = cam.extrinsics.orientation.conjugated();
-        Matrix33 K = cam.intrinsics.getInvKMatrix33();
+        Matrix33 K      = cam.intrinsics.getInvKMatrix33();
 
         mesh.currentColor = palette[colorId];
         colorId = (colorId + 1) % CORE_COUNT_OF(palette);

@@ -351,6 +351,17 @@ public:
         return result;
     }
 
+
+template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        visitor.visit(x(), ElementType(0), "x");
+        visitor.visit(y(), ElementType(0), "y");
+        visitor.visit(z(), ElementType(0), "z");
+        visitor.visit(t(), ElementType(0), "t");
+
+    }
+
 };
 
 typedef GenericQuaternion<double> Quaternion;
