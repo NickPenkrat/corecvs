@@ -89,7 +89,8 @@ HEADERS += \
     distortioncorrector/lensDistortionModelParametersControlWidget.h \
     distortioncorrector/calibrationFeaturesWidget.h \
     os/UsbBusResetter.h \
-    photostationcalibration/calibrationJob.h
+    photostationcalibration/calibrationJob.h \
+    uis/cloudview/scene3dTreeView.h
 
 SOURCES += \
     frames.cpp \
@@ -153,7 +154,8 @@ SOURCES += \
     distortioncorrector/lensDistortionModelParametersControlWidget.cpp \
     distortioncorrector/calibrationFeaturesWidget.cpp \
     os/UsbBusResetter.cpp \
-    photostationcalibration/calibrationJob.cpp
+    photostationcalibration/calibrationJob.cpp \
+    uis/cloudview/scene3dTreeView.cpp
 
 
 FORMS += \

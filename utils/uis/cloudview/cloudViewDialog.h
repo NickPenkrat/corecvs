@@ -77,6 +77,8 @@ public slots:
     void savePointsPCD();
     void savePointsPLY();
 
+    /* Tree manipulation functions */
+    void toggledVisibility();
 //    void treeItemClicked(QTreeWidgetItem *, int);
 
     /* Load New Mesh*/

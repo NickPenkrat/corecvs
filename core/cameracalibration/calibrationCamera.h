@@ -1,6 +1,9 @@
 #ifndef CALIBRATIONCAMERA_H
 #define CALIBRATIONCAMERA_H
 
+#include <tbb/tbb_machine.h>
+#include <unordered_map>
+
 #include "vector2d.h"
 #include "vector3d.h"
 #include "quaternion.h"
@@ -9,9 +12,34 @@
 #include "convexPolyhedron.h"
 #include "lensDistortionModelParameters.h"
 
-#include <tbb/tbb_machine.h>
 
 namespace corecvs {
+
+
+/**
+ * This class is so far just a common base for all objects in scene heap.
+ * Should bring this to other file
+ **/
+class ScenePart {
+public:
+
+
+    /* No particular reson for this, except to encourage leak checks */
+    static int OBJECT_COUNT;
+
+    /* We could have copy constructors and stuff... but so far this is enough */
+    ScenePart() {
+        OBJECT_COUNT++;
+
+    }
+
+    virtual ~ScenePart() {
+        OBJECT_COUNT++;
+    }
+};
+
+
+typedef std::unordered_map<std::string, void *> MetaContainer;
 
 
 
@@ -203,25 +231,6 @@ struct PinholeCameraIntrinsics
     }
 
 
-};
-
-/* This class is so far just a common base for all objects in scene heap */
-class ScenePart {
-public:
-
-
-    /* No particular reson for this, except to encourage leak checks */
-    static int OBJECT_COUNT;
-
-    /* We could have copy constructors ans stuff... but so far this is enough */
-    ScenePart() {
-        OBJECT_COUNT++;
-
-    }
-
-    virtual ~ScenePart() {
-        OBJECT_COUNT++;
-    }
 };
 
 class CameraModel : public ScenePart
