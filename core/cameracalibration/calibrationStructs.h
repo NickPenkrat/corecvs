@@ -94,10 +94,20 @@ struct CameraIntrinsics
 
     // TODO: The idea is that if we merge distorsion calibration WITH extrinsics/intrinsics
     //       calibration, then this method will project point using forward distorsion map
-    Vector2dd project(const Vector3dd &p)
+    Vector2dd project(const Vector3dd &p) const
     {
         Vector2dd result = (focal * p.xy() + Vector2dd(skew * p.y(), 0.0)) / p.z() + principal;
         return result;
+    }
+
+    bool isVisible(const Vector3dd &p) const
+    {
+        if (p[2] <= 0.0) return false;
+        auto proj = project(p);
+        for (int i = 0; i < 2; ++i)
+            if (proj[i] < 0.0 || proj[i] > size[i])
+                return false;
+        return true;
     }
 
     explicit operator Matrix33() const
@@ -154,9 +164,26 @@ struct Camera_
         distortion(_distortion)
     {}
 
-    Vector2dd project(const Vector3dd &pt)
+    Vector3dd transformToIntrinsicSystem(const Vector3dd &pt) const
     {
-        return intrinsics.project(extrinsics.orientation * (pt - extrinsics.position));
+        return extrinsics.orientation * (pt - extrinsics.position);
+    }
+
+    bool isVisible(const Vector3dd &pt) const
+    {
+        return intrinsics.isVisible(transformToIntrinsicSystem(pt));
+    }
+
+    Vector2dd project(const Vector3dd &pt) const
+    {
+        return intrinsics.project(transformToIntrinsicSystem(pt));
+    }
+
+    Matrix44 getKMatrix() const
+    {
+        Matrix44 intrinsicsKM = intrinsics.getKMatrix();
+        Matrix44 total = (intrinsicsKM - Matrix44::Shift(extrinsics.position)) * Matrix44(extrinsics.orientation.toMatrix());
+        return total;
     }
 
     template<class VisitorType>
@@ -173,10 +200,32 @@ struct Photostation
     std::vector<Camera_> cameras;
     LocationData location;
 
-
-    Vector2dd project(const Vector3dd &pt, int cam)
+    Camera_ getRawCamera(int cam) const
     {
-        return cameras[cam].project(location.orientation * (pt - location.position));
+        auto c = cameras[cam];
+        c.extrinsics.orientation = c.extrinsics.orientation ^ location.orientation;
+        c.extrinsics.position = (location.orientation.conjugated() * cameras[cam].extrinsics.position) + location.position;
+        return c;
+    }
+
+    Matrix44 getKMatrix(int cam) const
+    {
+        return getRawCamera(cam).getKMatrix();
+    }
+
+    Vector3dd transformToCameraSystem(const Vector3dd &pt) const
+    {
+        return location.orientation * (pt - location.position);
+    }
+
+    Vector2dd project(const Vector3dd &pt, int cam) const
+    {
+        return cameras[cam].project(transformToCameraSystem(pt));
+    }
+
+    bool isVisible(const Vector3dd &pt, int cam) const
+    {
+        return cameras[cam].isVisible(transformToCameraSystem(pt));
     }
 
     void drawPly(Mesh3D &mesh, double scale = 50.0)
