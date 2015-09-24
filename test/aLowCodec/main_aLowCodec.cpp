@@ -6,51 +6,9 @@
 #include "qtFileLoader.h"
 #include "bmpLoader.h"
 
-#if 1
-using namespace corecvs;
-
-inline void testChan(uint16_t chan12)
-{
-    uint8_t  coded  = code12to8(chan12);
-    uint16_t res    = decode8to12(coded);
-
-    if (chan12 <   64) { CORE_ASSERT_TRUE_S(CORE_ABS(res - chan12) <= 0); return; }
-    if (chan12 <  128) { CORE_ASSERT_TRUE_S(CORE_ABS(res - chan12) <= 1); return; }
-    if (chan12 <  256) { CORE_ASSERT_TRUE_S(CORE_ABS(res - chan12) <= 2); return; }
-    if (chan12 <  512) { CORE_ASSERT_TRUE_S(CORE_ABS(res - chan12) <= 4); return; }
-    if (chan12 < 1024) { CORE_ASSERT_TRUE_S(CORE_ABS(res - chan12) <= 8); return; }
-    if (chan12 < 2048) { CORE_ASSERT_TRUE_S(CORE_ABS(res - chan12) <= 16); return; }
-    if (chan12 < 4096) { CORE_ASSERT_TRUE_S(CORE_ABS(res - chan12) <= 32); return; }
-
-    CORE_ASSERT_FAIL("Channel value is out of range");
-}
-
-inline void testRGB(int r8, int g8, int b8)
-{
-    testChan(r8 << 4);
-    testChan(g8 << 4);
-    testChan(b8 << 4);
-}
-
-void testCodec(void)
-{
-    testRGB( 20,  40,  70);
-    testRGB(130, 250, 255);
-    testChan(350);
-    testChan(600);
-    testChan(1023);
-    testChan(1024);
-    testChan(2100);
-    testChan(4095);
-}
-#endif
-
 int main(int argc, char **argv)
 {
-    testCodec();
-
     QTRGB24Loader::registerMyself();
-    ALowCodec codec;
 
     if (argc < 2) {
         printf("Use test_aLowCodec [--code|--decode] in_filename.{bmp|jpg} <out_filename_{.bmp|_85.jpg|.jpg}>\n");
@@ -93,11 +51,11 @@ int main(int argc, char **argv)
     RGB24Buffer *out = image;
     if (code)
     {
-        out = codec.code(image);
+        out = ALowCodec::code(image);
     }
     else if (decode)
     {
-        out = codec.decode(image);
+        out = ALowCodec::decode(image);
     }
     if (out == NULL)
     {

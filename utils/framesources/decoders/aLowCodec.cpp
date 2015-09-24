@@ -12,6 +12,9 @@
 #include "global.h"
 
 #include "aLowCodec.h"
+#include "rgb24Buffer.h"
+
+using namespace corecvs;
 
 RGB24Buffer *ALowCodec::code(const RGB24Buffer *rgb24buffer)
 {

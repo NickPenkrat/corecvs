@@ -44,10 +44,6 @@ typedef int                bool_t;                          // fast Boolean type
 # endif
 #endif
 
-#ifdef is__cplusplus
-    extern "C" {
-#endif
-
 // Hooks for memory profiling and leaks search
 #if defined(ASSERTS) || defined(TRACE)
 #   include <stdlib.h>
@@ -67,12 +63,33 @@ typedef int                bool_t;                          // fast Boolean type
 #   define printf xil_printf
 #endif
 
+#ifdef is__cplusplus
+# ifdef ASSERTS
+
+#   include <stdexcept>
+    /** This structure need to issue the exception, which nobody catches
+     *  that allow gtest to continue tests execution,
+     *  but for the application it dues to stop unless we catch this exception.
+     */
+    struct AssertException : public std::runtime_error
+    {
+        AssertException(const char* codeExpr) : std::runtime_error(codeExpr) {}
+    };
+
+#  define RAISE_ASSERT(text)    throw AssertException(text);
+# else
+#  define RAISE_ASSERT(text)
+# endif
+#else
+# define  RAISE_ASSERT(text)    exit(-2)
+#endif
+
 #define CORE_DASSERT_FAIL(X)                                    \
     do {                                                        \
         printf("Assert at %s:%d - %s\n", __FILE__, __LINE__, X);\
         fflush(stdout);                                         \
         stackTraceHandler(0xFF);                                \
-        exit (-2);                                              \
+        RAISE_ASSERT(X);                                        \
     } while (0)
 
 #define CORE_DASSERT_FAIL_P(X)                                  \
@@ -81,8 +98,9 @@ typedef int                bool_t;                          // fast Boolean type
         printf X;                                               \
         fflush(stdout);                                         \
         stackTraceHandler(0xFF);                                \
-        exit (-2);                                              \
+        RAISE_ASSERT(#X);                                       \
     } while (0)
+
 
 #ifdef ASSERTS
 
@@ -93,23 +111,37 @@ typedef int                bool_t;                          // fast Boolean type
 # define CORE_ASSERT_FALSE_S(Y)     if (Y)    { CORE_ASSERT_FAIL(#Y);  }
 # define CORE_ASSERT_FALSE_P(Y, X)  if (Y)    { CORE_ASSERT_FAIL_P(X); }
 
-// added prefix CORE as gtest has macros with the same names
+// these both macros without prefix "CORE_" are conflicting with gtest's ones
 # define CORE_ASSERT_TRUE(Y, X)     if (!(Y)) { CORE_ASSERT_FAIL(X);   }
 # define CORE_ASSERT_FALSE(Y, X)    if (Y)    { CORE_ASSERT_FAIL(X);   }
 
 # define CORE_ASSERT_DOUBLE_EQUAL_E(X,Y,Eps, Text) \
          CORE_ASSERT_TRUE((X) > ((Y) - Eps) && (X) < ((Y) + Eps), Text)
 
-# define CORE_ASSERT_DOUBLE_EQUAL(X,Y, Text) \
-         CORE_ASSERT_DOUBLE_EQUAL_E(X, Y, 1e-10, Text)
-
 # define CORE_ASSERT_DOUBLE_EQUAL_EP(X,Y,Eps, Text) \
          CORE_ASSERT_TRUE_P((X) > ((Y) - Eps) && (X) < ((Y) + Eps), Text)
+
+# define CORE_ASSERT_DOUBLE_EQUAL(X,Y, Text) \
+         CORE_ASSERT_DOUBLE_EQUAL_E(X, Y, 1e-10, Text)
 
 # define CORE_ASSERT_DOUBLE_EQUAL_P(X,Y, Text) \
          CORE_ASSERT_DOUBLE_EQUAL_EP(X, Y, 1e-10, Text)
 
+# ifdef GTEST_INCLUDE_GTEST_GTEST_H_
+//#  undef  CORE_DASSERT_FAIL
+//#  define CORE_DASSERT_FAIL(X)    GTEST_NONFATAL_FAILURE_(X)
+//#  undef  CORE_DASSERT_FAIL_P
+//#  define CORE_DASSERT_FAIL_P(X)  do { SYNC_PRINT(X); GTEST_NONFATAL_FAILURE_("xxx"); } while (0)
+# endif
+
 #else // ASSERTS
+
+# if !defined(DEBUG) || defined(NDEBUG)
+#  undef  CORE_DASSERT_FAIL
+#  define CORE_DASSERT_FAIL(X)
+#  undef  CORE_DASSERT_FAIL_P
+#  define CORE_DASSERT_FAIL_P(X)
+# endif // !DEBUG
 
 # define CORE_ASSERT_FAIL(X)
 # define CORE_ASSERT_FAIL_P(X)
@@ -121,20 +153,10 @@ typedef int                bool_t;                          // fast Boolean type
 # define CORE_ASSERT_TRUE(Y, X)
 # define CORE_ASSERT_FALSE(Y, X)
 
-# define CORE_ASSERT_DOUBLE_EQUAL_E(X,Y,Eps, Text)
-# define CORE_ASSERT_DOUBLE_EQUAL(X,Y,Text)
+# define CORE_ASSERT_DOUBLE_EQUAL_E( X,Y,Eps, Text)
 # define CORE_ASSERT_DOUBLE_EQUAL_EP(X,Y,Eps, Text)
-# define CORE_ASSERT_DOUBLE_EQUAL_P(X,Y, Text)
-
-# ifdef DEBUG
-#  define DASSERT_TRUE_P(Y, X)   if (!(Y)) { CORE_DASSERT_FAIL_P(X); }
-# else
-#  define DASSERT_TRUE_P(Y, X)
-#  undef  CORE_DASSERT_FAIL
-#  define CORE_DASSERT_FAIL(X)
-#  undef  CORE_DASSERT_FAIL_P
-#  define CORE_DASSERT_FAIL_P(X)
-# endif
+# define CORE_ASSERT_DOUBLE_EQUAL(   X,Y, Text)
+# define CORE_ASSERT_DOUBLE_EQUAL_P( X,Y, Text)
 
 #endif // !ASSERTS
 
@@ -165,7 +187,6 @@ do {                  \
     fflush(stdout);   \
 } while (0)
 
-/** TODO: Add flush*/
 #ifdef TRACE
 #   define DOTRACE(X) SYNC_PRINT(X)
 #else
@@ -184,8 +205,14 @@ do {                  \
 
 #ifndef OPENCL_KERNEL_CODE
 
-void stackTraceHandler(int sig);
-void setSegVHandler();
+#ifdef is__cplusplus
+extern "C" {
+#endif
+    void stackTraceHandler(int sig);
+    void setSegVHandler();
+#ifdef is__cplusplus
+} // extern "C"
+#endif
 
 #endif // !OPENCL_KERNEL_CODE
 
@@ -225,9 +252,6 @@ void setSegVHandler();
 
 #define REFLECTION_IN_CORE
 
-#ifdef is__cplusplus
-    } //     extern "C"
-#endif
 
 /** Useful macros for best compatibility with using development environments
  */

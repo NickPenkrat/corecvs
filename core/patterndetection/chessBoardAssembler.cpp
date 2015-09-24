@@ -99,7 +99,7 @@ void ChessBoardAssembler::acceptHypothesis(RectangularGridPattern &board)
         if (localIntersect)
         {
             intersects = true;
-            intersections.push_back(i);
+            intersections.push_back((int)i);
             if (bb.score < board.score)
                 best = false;
         }
