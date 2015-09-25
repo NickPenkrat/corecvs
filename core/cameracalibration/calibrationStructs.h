@@ -182,7 +182,7 @@ struct Camera_
     Matrix44 getKMatrix() const
     {
         Matrix44 intrinsicsKM = intrinsics.getKMatrix();
-        Matrix44 total = (intrinsicsKM - Matrix44::Shift(extrinsics.position)) * Matrix44(extrinsics.orientation.toMatrix());
+        Matrix44 total = intrinsicsKM * Matrix44(extrinsics.orientation.toMatrix()) * Matrix44::Shift(-extrinsics.position);
         return total;
     }
 
