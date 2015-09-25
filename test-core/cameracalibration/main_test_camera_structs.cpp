@@ -128,3 +128,13 @@ TEST(CalibrationStructsTest, testPhotostationStruct)
                 ASSERT_NEAR(check[k][j], ref[j], 1e-6);
     }
 }
+
+TEST(CalibrationStructsTest, testIntrinsicsStructisVisible)
+{
+    corecvs::CameraIntrinsics intrinsics(1.0, 1.0, 0.5, 0.5, 0.0, corecvs::Vector2dd(1.0, 1.0));
+    ASSERT_TRUE (intrinsics.isVisible(corecvs::Vector3dd( 0.0,  0.0, 1.0)));
+    ASSERT_FALSE(intrinsics.isVisible(corecvs::Vector3dd( 2.0,  0.0, 1.0)));
+    ASSERT_FALSE(intrinsics.isVisible(corecvs::Vector3dd(-2.0,  0.0, 1.0)));
+    ASSERT_FALSE(intrinsics.isVisible(corecvs::Vector3dd( 0.0, -2.0, 1.0)));
+    ASSERT_FALSE(intrinsics.isVisible(corecvs::Vector3dd( 0.0,  2.0, 1.0)));
+}
