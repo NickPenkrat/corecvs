@@ -89,6 +89,7 @@ SOURCES += \
     vector/main_test_vector.cpp \
     \    
     yuv/main_test_yuv.cpp \
+    cameracalibration/main_test_camera_structs.cpp
 
 
 # Never to be fixed
