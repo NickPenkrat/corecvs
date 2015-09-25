@@ -50,7 +50,8 @@ public:
     PointType type;
 
     /** Observation related block */
-    std::unordered_map<CameraModel *, CalibrationObservation> observations;
+    typedef std::unordered_map<CameraModel *, CalibrationObservation> ObservContainer;
+    ObservContainer observations;
 
 
 

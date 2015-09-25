@@ -13,23 +13,32 @@ void CalibrationScene::projectForward(CalibrationFeaturePoint::PointType mask)
         if ( (point->type & mask) == 0)
             continue;
 
+        //cout << "Projecting point:" << point->name << " (" << point->position << ")"<< endl;
+
         for (size_t stationId = 0; stationId < stations.size(); stationId++)
         {
             Photostation &station = stations[stationId];
             for (size_t camId = 0; camId < station.cameras.size(); camId++)
             {
                 CameraModel *camera = &(station.cameras[camId]);
-                Vector2dd projection = camera->project(point->position);
-                if (!camera->isVisible(projection))
+                CameraModel worldCam = station.getWorldCamera(camId);
+
+
+                Vector2dd projection = worldCam.project(point->position);
+                if (!worldCam.isVisible(projection) || !worldCam.isInFront(point->position))
                     continue;
 
                 CalibrationObservation observation;
-                observation.accuracy = Vector2dd(0.0);
-                observation.camera = camera;
+                observation.accuracy     = Vector2dd(0.0);
+                observation.camera       = camera;
                 observation.featurePoint = point;
-                observation.isKnown = true;
-                observation.observation = projection;
+                observation.isKnown      = true;
+                observation.observation  = projection;
+
+                //cout << point->observations.size() << " -> ";
                 point->observations[camera] = observation;
+                //cout << point->observations.size() << endl;
+                //cout << "Camera:" << camera->fileName << " = " << projection << endl;
             }
         }
     }

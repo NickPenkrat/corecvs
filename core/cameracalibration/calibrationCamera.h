@@ -155,7 +155,7 @@ public:
 public:
     /* This should be moved to the derived class */
     RGB24Buffer *image;
-    std::string fileMame;
+    std::string fileName;
 
 
 public:
@@ -177,11 +177,19 @@ public:
         return intrinsics.project(extrinsics.project(pt));
     }
 
+    /**
+     * Only checks for the fact that point belongs to viewport.
+     * If you are projecting 3d point you should be sure that point is in front
+     **/
     bool isVisible(Vector2dd &point)
     {
         return point.isInRect(Vector2dd(0.0,0.0), intrinsics.size);
     }
 
+    bool isInFront(Vector3dd &pt)
+    {
+        return (pt & forwardDirection()) > 0;
+    }
 
     Ray3d rayFromPixel(const Vector2dd &point);
     Ray3d rayFromCenter();

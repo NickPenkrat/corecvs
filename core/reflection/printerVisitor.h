@@ -16,53 +16,62 @@ class PrinterVisitor
 public:
     std::ostream *stream;
     int indentation;
+    int dIndent;
 
     explicit  PrinterVisitor(ostream *_stream) :
         stream(_stream),
-        indentation(0)
+        indentation(0),
+        dIndent(1)
     {}
 
     explicit  PrinterVisitor(ostream &_stream = cout) :
         stream(&_stream),
-        indentation(0)
+        indentation(0),
+        dIndent(1)
     {}
 
-    std::string ident() {
-        return std::string(" ", indentation);
+    explicit  PrinterVisitor(int indent, int dindent, ostream &_stream = cout) :
+        stream(&_stream),
+        indentation(indent),
+        dIndent(dindent)
+    {}
+
+    std::string indent() {
+        return std::string(indentation, ' ');
     }
 
 /* Generic Array support */
     template <typename inputType, typename reflectionType>
     void visit(std::vector<inputType> &fields, const reflectionType * /*fieldDescriptor*/)
     {
-        indentation++;
+        indentation += dIndent;
         for (int i = 0; i < fields.size(); i++)
         {
             fields[i].accept(*this);
         }
-        indentation--;
+        indentation -= dIndent;
     }
 
 template <typename inputType, typename reflectionType>
     void visit(inputType &field, const reflectionType * fieldDescriptor)
     {
         if (stream != NULL) {
-            *stream << ident() << fieldDescriptor->getSimpleName() << ":" << std::endl;
+            *stream << indent() << fieldDescriptor->getSimpleName() << ":" << std::endl;
         }
-        indentation++;
+        indentation += dIndent;
         field.accept(*this);
-        indentation--;
+        indentation -= dIndent;
     }
 
 template <class Type>
     void visit(Type &field, Type /*defaultValue*/, const char * fieldName)
 	{
         if (stream != NULL) {
-            *stream << ident() << fieldName << ":" << std::endl;
+            *stream << indent() << fieldName << ":" << std::endl;
         }
-        indentation++;
+        indentation += dIndent;
 		field.accept(*this);
-        indentation--;
+        indentation -= dIndent;
 	}
 
 };

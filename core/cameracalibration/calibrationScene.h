@@ -19,6 +19,7 @@ public:
     vector<Photostation> stations;
     vector<CalibrationFeaturePoint> points;
 
+    /** **/
     void projectForward(CalibrationFeaturePoint::PointType mask);
 
 
