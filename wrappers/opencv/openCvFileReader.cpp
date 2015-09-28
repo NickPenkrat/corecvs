@@ -61,7 +61,7 @@ void OpenCvBufferReader::writeRgb(const corecvs::RGB24Buffer &buffer, const std:
     auto* b = OpenCVTools::getCVImageFromRGB24Buffer(&const_cast<corecvs::RGB24Buffer&>(buffer));
     cv::Mat mat(b);
     imwrite(s, mat);
-    delete b;
+    cvReleaseImage(&b);
 }
 
 void OpenCvBufferReader::write(const RuntimeTypeBuffer &buffer, const std::string &s)
