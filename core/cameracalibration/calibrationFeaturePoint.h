@@ -16,6 +16,8 @@ class CalibrationFeaturePoint;
 
 class CalibrationObservation {
 public:
+    CalibrationObservation() {}
+
     CameraModel *             camera;
     CalibrationFeaturePoint * featurePoint;
 
@@ -23,6 +25,9 @@ public:
     Vector2dd                 accuracy;
     bool                      isKnown;
     MetaContainer             meta;
+
+    /* Ray to point */
+    Ray3d                     observRay;
 };
 
 

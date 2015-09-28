@@ -59,8 +59,10 @@ template<class RealType, class VectorType>
 class BaseRay
 {
 public:
-    VectorType a;
-    VectorType p;
+    VectorType a; /**< Directional vector */
+    VectorType p; /**< Starting point     */
+
+    BaseRay() {}
 
     BaseRay(const VectorType &_a, const VectorType & _p) :
         a(_a),
@@ -185,6 +187,8 @@ public:
 class Ray3d : public BaseRay<Ray3d, Vector3dd>
 {
 public:
+    Ray3d() {}
+
     Ray3d(const Vector3dd &_a, const Vector3dd & _p) :
         BaseRay<Ray3d, Vector3dd>(_a, _p)
     {}

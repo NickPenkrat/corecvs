@@ -22,6 +22,12 @@ public:
     /** **/
     void projectForward(CalibrationFeaturePoint::PointType mask);
 
+    /* Manipulation with structures */
+    void addCameraToStation(CameraModel * cam, Photostation *station)
+    {
+        station->cameras.push_back(*cam);
+        cam->station = station;
+    }
 
 };
 

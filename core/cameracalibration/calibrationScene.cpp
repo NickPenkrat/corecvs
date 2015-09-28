@@ -35,9 +35,10 @@ void CalibrationScene::projectForward(CalibrationFeaturePoint::PointType mask)
                 observation.isKnown      = true;
                 observation.observation  = projection;
 
-                //cout << point->observations.size() << " -> ";
+                observation.observRay    = worldCam.rayToPoint(point->position);
+
                 point->observations[camera] = observation;
-                //cout << point->observations.size() << endl;
+
                 //cout << "Camera:" << camera->fileName << " = " << projection << endl;
             }
         }

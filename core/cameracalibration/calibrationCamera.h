@@ -43,8 +43,6 @@ typedef std::unordered_map<std::string, void *> MetaContainer;
 
 
 
-
-
 /**
  * XXX: We already have intrinsics class somewhere (CameraIntrinsicsLegacy), but
  *      it is not full enough to hold abstract projective pin-hole model (e.g. skewed/non-rectangular)
@@ -138,6 +136,8 @@ struct PinholeCameraIntrinsics
 
 };
 
+class Photostation;
+
 class CameraModel : public ScenePart
 {
 public:
@@ -153,6 +153,8 @@ public:
     //Matrix33 rotMatrix;
 
 public:
+    Photostation *station;
+
     /* This should be moved to the derived class */
     RGB24Buffer *image;
     std::string fileName;
@@ -172,9 +174,14 @@ public:
     {}
 
 
-    Vector2dd project(const Vector3dd &pt)
+    Vector2dd project(const Vector3dd &p)
     {
-        return intrinsics.project(extrinsics.project(pt));
+        return intrinsics.project(extrinsics.project(p));
+    }
+
+    Ray3d rayToPoint(const Vector3dd &p)
+    {
+        return extrinsics.relativeRay(p);
     }
 
     /**

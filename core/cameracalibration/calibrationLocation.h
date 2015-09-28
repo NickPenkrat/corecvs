@@ -5,6 +5,7 @@
 #include "vector3d.h"
 #include "quaternion.h"
 #include "matrix44.h"
+#include "line.h"
 
 namespace corecvs {
 
@@ -79,6 +80,11 @@ public:
         return orientation.conjugated() * pt + position;
     }
 
+    Ray3d relativeRay(const Vector3dd &p)
+    {
+        return Ray3d(position, worldToCam(p));
+    }
+
     /**
      *    If we want to transform the world, let's see how camera model will evolve.
      *
@@ -110,6 +116,11 @@ public:
         visitor.visit(position,    Vector3dd(0.0, 0.0, -1.0), "position");
         visitor.visit(orientation, Quaternion::Identity()   , "orientation");
     }
+
+    /* Pretty print */
+    void prettyPrint (ostream &out = cout);
+    void prettyPrint1(ostream &out = cout);
+
 
 };
 
