@@ -198,11 +198,13 @@ void CalibrationJob::prepareUndistortionTransformation(LensDistortionModelParame
         correction.addShiftY = shift[1];
     }
 
-    result = DisplacementBuffer::CacheInverse(
+    auto* foo = DisplacementBuffer::CacheInverse(
             &correction, newH, newW,
             output[0][0], output[0][1],
             output[1][0], output[1][1],
             0.25, 0.0);
+    result = *foo;
+    delete foo;
 }
 
 void CalibrationJob::removeDistortion(corecvs::RGB24Buffer &src, corecvs::RGB24Buffer &dst, LensDistortionModelParameters &params)
