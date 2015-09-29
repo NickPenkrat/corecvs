@@ -57,7 +57,7 @@ public:
     Vector3dd position;
     Quaternion orientation;
 
-    LocationData(
+    explicit LocationData(
             Vector3dd position = Vector3dd(0.0, 0.0, 1.0),
             Quaternion orientation = Quaternion::Identity()) :
         position(position),
