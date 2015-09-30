@@ -32,8 +32,7 @@ TEST(Serializer, testReflection)
     Vector2dd vec(5.0, 0.4);
     PrinterVisitor visitor;
 
-    visitor.visit(vec, static_cast<const CompositeField *>(NULL));
-
+    ASSERT_EXIT(visitor.visit(vec, static_cast<const CompositeField *>(NULL)), ::testing::ExitedWithCode(1), "");
 }
 
 TEST(Serializer, testReflection1)
@@ -87,7 +86,7 @@ TEST(Serializer, testReflection1)
     cout << "Output" << rvecc << endl;
 }
 
-void testPropertyListLoader( void )
+TEST(Serializer, testPropertyListLoader)
 {
     const char *example =
     "# Test \n"
