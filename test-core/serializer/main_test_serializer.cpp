@@ -27,11 +27,12 @@
 using namespace std;
 using namespace corecvs;
 
-TEST(Serializer, /*DISABLED_*/testReflection)   // disabled as on Linux it doesn't work - it fails by the "signal 11" :(
+TEST(Serializer, testReflection)
 {
     Vector2dd vec(5.0, 0.4);
     PrinterVisitor visitor;
 
+    // unfortunately such an error is differently handling on linux and win!
 #ifdef WIN32
     ASSERT_EXIT(visitor.visit(vec, static_cast<const CompositeField *>(NULL)), ::testing::ExitedWithCode(1), "");
 #else
