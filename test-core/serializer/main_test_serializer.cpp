@@ -35,7 +35,7 @@ TEST(Serializer, /*DISABLED_*/testReflection)   // disabled as on Linux it doesn
 #ifdef WIN32
     ASSERT_EXIT(visitor.visit(vec, static_cast<const CompositeField *>(NULL)), ::testing::ExitedWithCode(1), "");
 #else
-    ASSERT_THROW(visitor.visit(vec, static_cast<const CompositeField *>(NULL), ::testing::KilledBySignal(11), "");
+    ASSERT_EXIT(visitor.visit(vec, static_cast<const CompositeField *>(NULL), ::testing::KilledBySignal(11), "");
 #endif
 }
 
