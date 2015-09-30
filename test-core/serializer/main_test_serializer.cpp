@@ -32,10 +32,10 @@ TEST(Serializer, /*DISABLED_*/testReflection)   // disabled as on Linux it doesn
     Vector2dd vec(5.0, 0.4);
     PrinterVisitor visitor;
 
-#ifdef WIN32
+#ifndef WIN32
     ASSERT_EXIT(visitor.visit(vec, static_cast<const CompositeField *>(NULL)), ::testing::ExitedWithCode(1), "");
 #else
-    ASSERT_EXIT(visitor.visit(vec, static_cast<const CompositeField *>(NULL), ::testing::KilledBySignal(11), "");
+    ASSERT_EXIT(visitor.visit(vec, static_cast<const CompositeField *>(NULL)), ::testing::KilledBySignal(11), "");
 #endif
 }
 
