@@ -611,16 +611,59 @@ public:
         return minimum;
     }
 
-    /** Please don't use this for double so far*/
     inline ElementType maximum() const
     {
-        ElementType maximum = numeric_limits<ElementType>::min();
+        ElementType maximum = numeric_limits<ElementType>::lowest();
         for (int i = 0; i < _size(); i++)
         {
             if (_at(i) > maximum)
                 maximum = _at(i);
         }
         return maximum;
+    }
+
+    inline ElementType minimumId() const
+    {
+        ElementType minimum = numeric_limits<ElementType>::max();
+        int minId = 0;
+        for (int i = 0; i < _size(); i++)
+        {
+            if (_at(i) < minimum) {
+                minimum = _at(i);
+                minId = i;
+            }
+        }
+        return minId;
+    }
+
+    inline ElementType maximumId() const
+    {
+        ElementType maximum = numeric_limits<ElementType>::lowest();
+        int maxId = 0;
+        for (int i = 0; i < _size(); i++)
+        {
+            if (_at(i) > maximum) {
+                maximum = _at(i);
+                maxId = i;
+            }
+        }
+        return maxId;
+    }
+
+
+    inline ElementType minimumAbsId() const
+    {
+        ElementType minimum = numeric_limits<ElementType>::max();
+        int minId = 0;
+        for (int i = 0; i < _size(); i++)
+        {
+            ElementType absolute = CORE_ABS(_at(i));
+            if (absolute < minimum) {
+                minimum = absolute;
+                minId = i;
+            }
+        }
+        return minId;
     }
 
     /* Reflection block */

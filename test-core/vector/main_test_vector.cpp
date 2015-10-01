@@ -26,8 +26,8 @@ template<int length>
 class TestVector : public VectorOperationsBase< TestVector<length>, int>
 {
 public:
-    TestVector(){};
-    TestVector(int /*i*/){};
+    TestVector(){}
+    TestVector(int /*i*/){}
 
     typedef int InnerElementType;
     int elements[length];

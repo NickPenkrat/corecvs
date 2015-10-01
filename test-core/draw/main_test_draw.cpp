@@ -23,7 +23,7 @@ using namespace corecvs;
 
 TEST(Draw, testCircles)
 {
-    RGB24Buffer *buffer = new RGB24Buffer(21, 42);
+    RGB24Buffer *buffer = new RGB24Buffer(21, 52);
 
     RGBColor colors[] = {
         RGBColor::Red(),
@@ -40,12 +40,31 @@ TEST(Draw, testCircles)
 
     for (int i = 11; i >=1; i-= 2)
     {
-        buffer->drawArc(31, 10, i, colors[i % CORE_COUNT_OF(colors)] );
+        buffer->drawArc(33, 10, i, colors[i % CORE_COUNT_OF(colors)] );
     }
 
     BMPLoader().save("circles.bmp", buffer);
     delete_safe(buffer);
 }
+
+TEST(Draw, testCircles1)
+{
+    RGB24Buffer *buffer = new RGB24Buffer(100, 100);
+
+
+    buffer->drawArc(50, 50, 40, RGBColor::White() );
+
+    for (int i = 0; i < 40; i++ )
+    {
+        Vector2dd point = Vector2dd(50.0, 50.0) + Vector2dd::FromPolar(degToRad(360.0 / 40 * i), 40);
+        buffer->setElement(fround(point.y()), fround(point.x()), RGBColor::Blue());
+    }
+
+    BMPLoader().save("circles1.bmp", buffer);
+    delete_safe(buffer);
+
+}
+
 
 TEST(Draw, testFloodFill)
 {

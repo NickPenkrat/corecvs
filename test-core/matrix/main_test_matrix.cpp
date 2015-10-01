@@ -317,11 +317,26 @@ TEST(MatrixTest, testVector3d)
     Vector3dd intconstRes = Vector3dd(2.0,-4.0,6.0);
     CORE_ASSERT_TRUE(in1.notTooFar(intconstRes, 1e-10), "Wrong elementwise int const mul\n")
 
-
     in1 = in2 * 2.0;
     Vector3dd constRes = Vector3dd(2.0,-4.0,6.0);
     CORE_ASSERT_TRUE(in1.notTooFar(constRes, 1e-10), "Wrong elementwise const mul\n")
 }
+
+TEST(MatrixTest, testVector3dOrtogonal)
+{
+    Vector3dd in(100, 20, 30);
+    Vector3dd ort1;
+    Vector3dd ort2;
+
+    in.orthogonal(ort1, ort2);
+    ASSERT_TRUE( fabs(!ort1 - 1.0) < 1e-8);
+    ASSERT_TRUE( fabs(!ort2 - 1.0) < 1e-8);
+
+    ASSERT_TRUE( fabs((ort1 & in)) < 1e-8);
+    ASSERT_TRUE( fabs((ort2 & in)) < 1e-8);
+    ASSERT_TRUE( fabs((ort2 & ort1)) < 1e-8);
+}
+
 
 TEST(MatrixTest, testVector2d)
 {

@@ -196,6 +196,20 @@ public:
         return this->isInHypercube(low, high);
     }
 
+    void orthogonal(Vector3d<ElementType> &first, Vector3d<ElementType> &second) const
+    {
+        Vector3d<ElementType> n = this->normalised();
+        int min = n.minimumAbsId();
+        Vector3d<ElementType> ort(0.0);
+        ort[min] = 1.0;
+
+        ort = ort - n * (n & ort);
+
+        first  = ort.normalised();
+        second = (ort ^ *this).normalised();
+    }
+
+
 
     /*template<typename OtherType>
     inline operator Vector3d<OtherType>()

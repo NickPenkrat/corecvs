@@ -105,3 +105,9 @@ OTHER_FILES += \
     fastkernel_double/main_test_fastkernel_double.cpp \
     distortion/main_test_distortion.cpp \
 
+
+OTHER_FILES += \
+    gentest.sh
+
+SOURCES += \
+	conic/main_test_conic.cpp \

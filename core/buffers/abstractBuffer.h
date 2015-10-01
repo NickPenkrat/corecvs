@@ -429,6 +429,16 @@ template<typename ResultType>
     }
 
     /**
+     *   Safe way to set element. Slow, however
+     **/
+    inline void setElement(const IndexType y, const IndexType x, const ElementType &e)
+    {
+        if (isValidCoord(y,x)) {
+            element(y, x) = e;
+        }
+    }
+
+    /**
      * Checks if this buffer has the same size as the other
      */
     inline bool hasSameSize (const  AbstractBuffer<ElementType, IndexType> *other) const
