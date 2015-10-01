@@ -69,6 +69,12 @@ public:
     RGBColor currentColor;
     Matrix44 currentTransform;
 
+    vector<Matrix44> transformStack;
+
+    void mulTransform(const Matrix44 &transform);
+    void popTransform();
+
+
 /* Methods */
 
 

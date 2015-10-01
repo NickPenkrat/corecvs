@@ -1,5 +1,5 @@
 #include "calibrationHelpers.h"
-
+#include "abstractPainter.h"
 
 RGBColor CalibrationHelpers::palette[] =
 {
@@ -63,6 +63,14 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, Photostation &ps, double scale)
 
         mesh.addLine(ppv, qs * (qc * (K * center) + cc) + cs);
     }
+
+    if (printNames) {
+        AbstractPainter<Mesh3D> p(&mesh);
+        mesh.mulTransform(Matrix44::Shift(ps.location.position));
+        mesh.setColor(RGBColor::Blue());
+        p.drawFormatVector(scale / 5.0, scale / 5.0, 0, scale / 3.0, "TEST STRING", ps.name.c_str());
+        mesh.popTransform();
+    }
 }
 
 void CalibrationHelpers::drawPly(Mesh3D &mesh, ObservationList &list)
@@ -79,6 +87,39 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, Photostation &ps, ObservationList
 {
     drawPly(mesh, list);
     drawPly(mesh, ps, scale);
+}
+
+void CalibrationHelpers::drawPly(Mesh3D &mesh, CalibrationFeaturePoint &fp, double scale)
+{
+    if (!largePoints) {
+        mesh.addPoint(fp.position);
+    } else {
+        mesh.addIcoSphere(fp.position, scale / 100.0, 2);
+    }
+
+    if (printNames) {
+        AbstractPainter<Mesh3D> p(&mesh);
+        mesh.mulTransform(Matrix44::Shift(fp.position));
+        mesh.setColor(RGBColor::Blue());
+        p.drawFormatVector(scale / 5.0, scale / 5.0, 0, scale / 3.0, "%s", fp.name.c_str());
+        mesh.popTransform();
+    }
+
+}
+
+
+void CalibrationHelpers::drawScene(Mesh3D &mesh, CalibrationScene &scene, double scale)
+{
+    for (Photostation &ps: scene.stations)
+    {
+        drawPly(mesh, ps, scale);
+    }
+
+    for (CalibrationFeaturePoint &fp: scene.points)
+    {
+        drawPly(mesh, fp, scale);
+    }
+
 }
 
 

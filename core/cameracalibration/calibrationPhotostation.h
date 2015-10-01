@@ -41,10 +41,13 @@ namespace corecvs {
 /**
  *   See CalibrationScene for more data on ownership of the objectes in structure
  **/
-struct Photostation
+class Photostation
 {
+public:
     std::vector<CameraModel> cameras;
     LocationData location;
+
+    std::string name;
 
     Photostation(){}
 

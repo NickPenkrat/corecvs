@@ -114,7 +114,7 @@ void UniversalRectifier::iterativeMethod( void )
 
 void UniversalRectifier::manualMethod( void )
 {
-    CameraAngles euler(params.manualPitch(), params.manualYaw(), params.manualRoll());
+    CameraAnglesLegacy euler(params.manualPitch(), params.manualYaw(), params.manualRoll());
     Matrix33 R = euler.toMatrix();
     Vector3dd direction(params.manualX(), params.manualY(), params.manualZ());
     direction.normalise();

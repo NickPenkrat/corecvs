@@ -13,7 +13,7 @@ int main(int argc, char **argv)
 {
     std::string filenameIn = "job.json";
     std::string filenameOut= "job.json";
-    bool undistorted = false;
+    //bool undistorted = false;
 
     if (argc >= 2)
     {

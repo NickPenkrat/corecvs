@@ -120,7 +120,7 @@ int main(int argc, char **argv)
         ps.location = kp.second;
         ps.location.position -= sum; // only for mesh output purposes
         std::cout << "Placing " << kp.first <<  ps.location.position << " " << ps.location.orientation << std::endl;
-        CalibrationHelpers::drawPly(mesh, ps);
+        CalibrationHelpers().drawPly(mesh, ps);
     }
     
     std::ofstream of;

@@ -31,6 +31,22 @@ void Mesh3D::setColor(const RGBColor &color)
     currentColor = color;
 }
 
+void Mesh3D::mulTransform(const Matrix44 &transform)
+{
+    transformStack.push_back(currentTransform);
+    currentTransform = currentTransform * transform;
+}
+
+void Mesh3D::popTransform()
+{
+    if (transformStack.empty()) {
+        SYNC_PRINT(("Mesh3D::popTransform(): Poping on empty stack\n"));
+        return;
+    }
+    currentTransform = transformStack.back();
+    transformStack.pop_back();
+}
+
 void Mesh3D::setCentral(Vector3dd _central)
 {
     centralPoint = _central;

@@ -266,11 +266,11 @@ ostream &operator << (ostream &out, const Similarity &reconstructor)
     out << "Scale Right by: "  << reconstructor.scaleR << " (" << (1 / reconstructor.scaleR) << ")" << endl;
 
     out << "Quaternion:" << reconstructor.rotation << endl;
-    double angle = reconstructor.rotation.getAngle();
+    double angle = reconstructor.rotation.normalised().getAngle();
     out << "Rotate by: " << angle << " (" << radToDeg(angle) << "deg) around " << reconstructor.rotation.getAxis() << endl;
     Quaternion rot = reconstructor.rotation;
     rot = -rot;
-    out << "Rotate by: " << rot.getAngle() << " around " << rot.getAxis() << endl;
+    out << "Rotate by: " << rot.normalised().getAngle() << " around " << rot.getAxis() << endl;
     return  out;
 }
 

@@ -19,7 +19,7 @@ void LocationData::prettyPrint1(std::ostream &out)
     double   angle = radToDeg(o.getAngle());
 
     out << "Pos:" <<  position << endl;
-    out << "Rotation around" << axis << " angle " << angle << "deg" << endl;
+    out << "Rotation around: " << axis << " angle " << angle << "deg" << endl;
 }
 
 } // namespace corecvs

@@ -35,7 +35,7 @@ public:
         return mUi->bPointsMatching;
     }
 
-    void setManualTab(CameraAngles &angle, Vector3dd &dir)
+    void setManualTab(CameraAnglesLegacy &angle, Vector3dd &dir)
     {
         mUi->manualPitchSpinBox->setValue(angle.pitch());
         mUi->manualYawSpinBox  ->setValue(angle.yaw());
