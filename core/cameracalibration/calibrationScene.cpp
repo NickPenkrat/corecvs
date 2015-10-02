@@ -2,7 +2,6 @@
 
 CalibrationScene::CalibrationScene()
 {
-
 }
 
 void CalibrationScene::projectForward(CalibrationFeaturePoint::PointType mask)
@@ -21,7 +20,7 @@ void CalibrationScene::projectForward(CalibrationFeaturePoint::PointType mask)
             for (size_t camId = 0; camId < station.cameras.size(); camId++)
             {
                 CameraModel *camera = &(station.cameras[camId]);
-                CameraModel worldCam = station.getWorldCamera(camId);
+                CameraModel worldCam = station.getWorldCamera((int)camId);
 
 
                 Vector2dd projection = worldCam.project(point->position);
@@ -44,4 +43,3 @@ void CalibrationScene::projectForward(CalibrationFeaturePoint::PointType mask)
         }
     }
 }
-

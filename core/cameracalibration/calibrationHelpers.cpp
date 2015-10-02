@@ -1,5 +1,7 @@
 #include "calibrationHelpers.h"
-
+#include "mesh3d.h"
+#include "calibrationPhotostation.h"
+#include "selectableGeometryFeatures.h"
 
 RGBColor CalibrationHelpers::palette[] =
 {
@@ -33,25 +35,25 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, Photostation &ps, double scale)
                 bottomLeft  = Vector3dd( 0, IH,  1) * scale;
         Vector3dd pts[NSC * 2] =
         {
-            center, center2,
-            center, topLeft,
-            center, topRight,
-            center, bottomRight,
-            center, bottomLeft,
-            topLeft, topRight,
-            topRight, bottomRight,
+            center,      center2,
+            center,      topLeft,
+            center,      topRight,
+            center,      bottomRight,
+            center,      bottomLeft,
+            topLeft,     topRight,
+            topRight,    bottomRight,
             bottomRight, bottomLeft,
-            bottomLeft, topLeft,
+            bottomLeft,  topLeft,
         };
 
-        Vector3dd cc    = cam.extrinsics.position;
-        Quaternion qc   = cam.extrinsics.orientation.conjugated();
-        Matrix33 K      = cam.intrinsics.getInvKMatrix33();
+        Vector3dd  cc  = cam.extrinsics.position;
+        Quaternion qc  = cam.extrinsics.orientation.conjugated();
+        Matrix33   K   = cam.intrinsics.getInvKMatrix33();
 
         mesh.currentColor = palette[colorId];
         colorId = (colorId + 1) % CORE_COUNT_OF(palette);
 
-                for (int i = 0; i < NSC; ++i)
+        for (int i = 0; i < NSC; ++i)
         {
             auto v1 = qs * (qc * (K * pts[i * 2]) + cc) + cs;
             auto v2 = qs * (qc * (K * pts[i * 2 + 1]) + cc) + cs;
@@ -72,7 +74,6 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, ObservationList &list)
     {
         mesh.addPoint(pt.point);
     }
-
 }
 
 void CalibrationHelpers::drawPly(Mesh3D &mesh, Photostation &ps, ObservationList &list, double scale)
@@ -80,5 +81,3 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, Photostation &ps, ObservationList
     drawPly(mesh, list);
     drawPly(mesh, ps, scale);
 }
-
-

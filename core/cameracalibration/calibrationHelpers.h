@@ -1,10 +1,12 @@
-#ifndef CALIBRATIONHELPERS_H
-#define CALIBRATIONHELPERS_H
+#pragma once
 
-#include "mesh3d.h"
-#include "calibrationPhotostation.h"
+#include "rgbColor.h"
 
 namespace corecvs {
+
+class Mesh3D;
+class Photostation;
+class ObservationList;
 
 class CalibrationHelpers
 {
@@ -18,5 +20,3 @@ public:
 };
 
 } // namespace corecvs
-
-#endif // CALIBRATIONHELPERS_H

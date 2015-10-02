@@ -1,19 +1,18 @@
-#ifndef CALIBRATIONCAMERA_H
-#define CALIBRATIONCAMERA_H
+#pragma once
 
-#include <tbb/tbb_machine.h>
 #include <unordered_map>
 
+#include "calibrationLocation.h"  // LocationData
+#include "lensDistortionModelParameters.h"
 #include "line.h"
 #include "convexPolyhedron.h"
-#include "lensDistortionModelParameters.h"
-#include "calibrationLocation.h"
 
 /* Future derived */
-#include "rgb24Buffer.h"
-
+//#include "rgb24Buffer.h"
 
 namespace corecvs {
+
+class RGB24Buffer;
 
 
 /**
@@ -23,8 +22,7 @@ namespace corecvs {
 class ScenePart {
 public:
 
-
-    /* No particular reson for this, except to encourage leak checks */
+    /* No particular reason for this, except to encourage leak checks */
     static int OBJECT_COUNT;
 
     /* We could have copy constructors and stuff... but so far this is enough */
@@ -62,7 +60,7 @@ struct PinholeCameraIntrinsics
 
     Vector2dd focal;            /**< Focal length (in px) in two directions */
     Vector2dd principal;        /**< Principal point of optical axis on image plane (in pixel). Usually center of imager */
-    double skew;                /**< Skew parameter to compensate for optical axis tilt */
+    double    skew;             /**< Skew parameter to compensate for optical axis tilt */
     Vector2dd size;             /**< Imager resolution (in pixel) */
 
 
@@ -72,11 +70,11 @@ struct PinholeCameraIntrinsics
             double cx = DEFAULT_SIZE_X / 2.0,
             double cy = DEFAULT_SIZE_Y / 2.0,
             double skew = 0.0,
-            Vector2dd size = Vector2dd(DEFAULT_SIZE_X, DEFAULT_SIZE_Y)) :
-        focal      (fx, fy),
-        principal  (cx, cy),
-        skew       (skew),
-        size       (size)
+            Vector2dd size = Vector2dd(DEFAULT_SIZE_X, DEFAULT_SIZE_Y))
+      : focal    (fx, fy)
+      , principal(cx, cy)
+      , skew     (skew)
+      , size     (size)
     {}
 
     PinholeCameraIntrinsics(Vector2dd resolution, double hfov);
@@ -98,27 +96,20 @@ struct PinholeCameraIntrinsics
         result.x() = p.x() / focal.x() + skew / (focal.x() * focal.y()) * p.y() + ( principal.y() * skew / focal.y() - principal.x()) / focal.x();
         result.y() = p.y() / focal.y() - principal.y() / focal.y();
         return Vector3dd(result.x(), result.y(), 1.0);
-
     }
 
-    explicit operator Matrix33() const
-    {
-        return getKMatrix33();
-    }
+    explicit operator Matrix33() const  { return getKMatrix33(); }
 
-    Matrix44 getKMatrix()  const;
-    Matrix44 getInvKMatrix()  const;
+    Matrix44 getKMatrix() const;
+    Matrix44 getInvKMatrix() const;
 
-    Matrix33 getKMatrix33()  const;
-    Matrix33 getInvKMatrix33()  const;
+    Matrix33 getKMatrix33() const;
+    Matrix33 getInvKMatrix33() const;
 
-    double getVFov() const;
-    double getHFov() const;
+    double   getVFov() const;
+    double   getHFov() const;
 
-    double getAspect() const
-    {
-        return size.y() / size.x();
-    }
+    double   getAspect() const          { return size.y() / size.x(); }
 
     template<class VisitorType>
     void accept(VisitorType &visitor)
@@ -132,8 +123,6 @@ struct PinholeCameraIntrinsics
         visitor.visit(skew         , 0.0                 , "skew");
         visitor.visit(size         , DEFAULT_SIZE        , "size");
     }
-
-
 };
 
 class Photostation;
@@ -142,23 +131,21 @@ class CameraModel : public ScenePart
 {
 public:
     /**/
-    PinholeCameraIntrinsics intrinsics;
+    PinholeCameraIntrinsics         intrinsics;
     /**/
+    LensDistortionModelParameters   distortion;
     /**/
-    LensDistortionModelParameters distortion;
+    LocationData                    extrinsics;
 
-public:
-    LocationData extrinsics;
     /* cache for rotation should be introduced. First of all it is faster... */
     //Matrix33 rotMatrix;
 
 public:
-    Photostation *station;
+    Photostation   *station;
 
     /* This should be moved to the derived class */
-    RGB24Buffer *image;
-    std::string fileName;
-
+    RGB24Buffer    *image;
+    std::string     fileName;
 
 public:
     CameraModel() {}
@@ -166,11 +153,10 @@ public:
     CameraModel(
             const PinholeCameraIntrinsics &_intrinsics,
             const LocationData &_extrinsics = LocationData(),
-            const LensDistortionModelParameters &_distortion = LensDistortionModelParameters()
-    ) :
-        intrinsics(_intrinsics),
-        distortion(_distortion),
-        extrinsics(_extrinsics)
+            const LensDistortionModelParameters &_distortion = LensDistortionModelParameters())
+      : intrinsics(_intrinsics)
+      , distortion(_distortion)
+      , extrinsics(_extrinsics)
     {}
 
 
@@ -198,18 +184,18 @@ public:
         return (pt & forwardDirection()) > 0;
     }
 
-    Ray3d rayFromPixel(const Vector2dd &point);
-    Ray3d rayFromCenter();
+    Ray3d               rayFromPixel(const Vector2dd &point);
+    Ray3d               rayFromCenter();
 
-    Vector3dd forwardDirection() const;
-    Vector3dd topDirection() const;
-    Vector3dd rightDirection() const;
+    Vector3dd           forwardDirection() const;
+    Vector3dd           topDirection() const;
+    Vector3dd           rightDirection() const;
 
-    Matrix33  getRotationMatrix() const;
-    Matrix44  getCameraMatrix() const;
-    Vector3dd getCameraTVector() const;
+    Matrix33            getRotationMatrix() const;
+    Matrix44            getCameraMatrix() const;
+    Vector3dd           getCameraTVector() const;
 
-    ConvexPolyhedron getViewport(const Vector2dd &p1, const Vector2dd &p2);
+    ConvexPolyhedron    getViewport(const Vector2dd &p1, const Vector2dd &p2);
 
 
     template<class VisitorType>
@@ -223,5 +209,3 @@ public:
 
 
 } // namespace corecvs
-
-#endif // CALIBRATIONCAMERA_H

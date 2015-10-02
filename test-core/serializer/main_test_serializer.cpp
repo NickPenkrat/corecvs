@@ -27,7 +27,7 @@
 using namespace std;
 using namespace corecvs;
 
-TEST(Serializer, testReflection)
+TEST(Serializer, testReflectionDEATH)
 {
     Vector2dd vec(5.0, 0.4);
     PrinterVisitor visitor;
