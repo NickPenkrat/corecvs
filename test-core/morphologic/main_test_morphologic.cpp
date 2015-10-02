@@ -63,8 +63,10 @@ TEST(Morphologic, testErodeDilate12)
     G12Buffer *element = new G12Buffer(3,3, elementData);
 
     BMPLoader().save("input.bmp", input);
+
     G12Buffer *erode  = Morphological::erode(input, element, 1, 1);
     BMPLoader().save("erode.bmp", erode);
+
     G12Buffer *dilate = Morphological::dilate(input, element, 1, 1);
     BMPLoader().save("dilate.bmp", dilate);
 
@@ -80,8 +82,10 @@ TEST(Morphologic, testErodeDilate8)
     G12Buffer *element = new G12Buffer( 3, 3, elementData);
 
     BMPLoader().save("input8.bmp", input);
+
     G8Buffer *erode  = Morphological::erode(input, element, 1, 1);
     BMPLoader().save("erode8.bmp", erode);
+
     G8Buffer *dilate = Morphological::dilate(input, element, 1, 1);
     BMPLoader().save("dilate8.bmp", dilate);
 
@@ -90,11 +94,3 @@ TEST(Morphologic, testErodeDilate8)
     delete input;
     delete element;
 }
-
-//int main (int /*argC*/, char ** /*argV*/)
-//{
-//    /*testErodeDilate12();*/
-//    testErodeDilate8 ();
-//    cout << "PASSED" << endl;
-//    return 0;
-//}

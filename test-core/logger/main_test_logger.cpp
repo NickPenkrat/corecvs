@@ -8,15 +8,12 @@
  * \ingroup autotest  
  */
 
-#include <iostream>
-
-#ifndef ASSERTS
-#define ASSERTS
-#endif
-
 #ifndef TRACE
 #define TRACE
 #endif
+
+#include <iostream>
+#include "gtest/gtest.h"
 
 #include "global.h"
 
@@ -25,7 +22,7 @@
 
 using namespace std;
 
-int main (int /*argC*/, char ** /*argV*/)
+TEST(Logger, testDummy)  // TODO: add log to file and then check its content!
 {
  //   L_ERROR("Test with place");
 
@@ -35,7 +32,4 @@ int main (int /*argC*/, char ** /*argV*/)
     Log::MessageScoped(&logger, Log::LEVEL_ERROR, "A", 0, "F");
 
     cout << Log::formatted("Here we go %d\n", 1, 2, "three");
-
-    cout << "PASSED" << endl;
-    return 0;
 }

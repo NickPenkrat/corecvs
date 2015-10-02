@@ -7,4 +7,4 @@ include(../testsCommon.pri)
 
 #TARGET = gaussianSolution
 
-SOURCES += main.cpp
+SOURCES += main_gaussianSolution.cpp

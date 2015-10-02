@@ -13,6 +13,7 @@
 #include "gtest/gtest.h"
 
 #include "global.h"
+
 #include "vector3d.h"
 #include "matrix44.h"
 #include "cameraParameters.h"

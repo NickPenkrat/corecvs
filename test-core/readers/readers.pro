@@ -5,7 +5,7 @@
 ##################################################################
 include(../testsCommon.pri)
 
-TARGET = test_readers
+#TARGET = test_readers
 
 SOURCES += main_test_readers.cpp
 

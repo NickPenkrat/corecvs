@@ -93,8 +93,6 @@ void prettyTraceHandler(int sig)
         }
     }
     free(frameName);
-
-    exit(1);
 }
 #endif
 

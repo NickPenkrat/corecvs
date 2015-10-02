@@ -13,10 +13,6 @@
 #include <stdint.h>
 #include "gtest/gtest.h"
 
-/*#ifndef ASSERTS
-#define ASSERTS
-#endif*/
-
 #include "global.h"
 
 #include "mathUtils.h"
@@ -274,7 +270,7 @@ void _profileVectorKernel(const char *name, bool vectorRun = 1, const Kernel<Dum
         printf("%8" PRIu64 "us %8" PRIu64 "ms SP: %8" PRIu64 "us %4.2lf%%", delayVector, delayVector / 1000, delayVector / LIMIT, delayVector * 100.0 / delayScalar); fflush(stdout);
 
         for (int j = 0; j < outputNumber; j++) {
-            ASSERT_TRUE_P(outputScalar[0][j]->isEqual(outputVector[0][j]), ("Scalar and Vector computation results are not equal. Output %d is different\n", j));
+            CORE_ASSERT_TRUE_P(outputScalar[0][j]->isEqual(outputVector[0][j]), ("Scalar and Vector computation results are not equal. Output %d is different\n", j));
         }
         printf ("+\n");
 
@@ -289,7 +285,7 @@ void _profileVectorKernel(const char *name, bool vectorRun = 1, const Kernel<Dum
         printf("%8" PRIu64 "us %8" PRIu64 "ms SP: %8" PRIu64 "us %4.2lf%%", delayVector, delayVector / 1000, delayVector / LIMIT, delayVector * 100.0 / delayScalar); fflush(stdout);
 
         for (int j = 0; j < outputNumber; j++) {
-            ASSERT_TRUE_P(outputScalar[0][j]->isEqual(outputVector[0][j]), ("Scalar and Vector computation results are not equal. Output %d is different\n", j));
+            CORE_ASSERT_TRUE_P(outputScalar[0][j]->isEqual(outputVector[0][j]), ("Scalar and Vector computation results are not equal. Output %d is different\n", j));
         }
         printf ("+\n");
 
@@ -304,7 +300,7 @@ void _profileVectorKernel(const char *name, bool vectorRun = 1, const Kernel<Dum
         printf("%8" PRIu64 "us %8" PRIu64 "ms SP: %8" PRIu64 "us %4.2lf%%", delayVector, delayVector / 1000, delayVector / LIMIT, delayVector * 100.0 / delayScalar); fflush(stdout);
 
         for (int j = 0; j < outputNumber; j++) {
-             ASSERT_TRUE_P(outputScalar[0][j]->isEqual(outputVector[0][j]), ("Scalar and Vector computation results are not equal. Output %d is different\n", j));
+            CORE_ASSERT_TRUE_P(outputScalar[0][j]->isEqual(outputVector[0][j]), ("Scalar and Vector computation results are not equal. Output %d is different\n", j));
         }
         printf ("+\n");
 #endif
@@ -418,11 +414,11 @@ void _profileManualSobelH (void)
 
 }
 
-//int main (int /*argC*/, char** /*argV*/)
-TEST(FastKernelProfile, main)
+TEST(FastKernelProfile, main)   // TODO: move to perf-tests!
 {
     cout << "Starting fastkernel profiling test" << endl;
-	_profileAlgnmentAccessSpeed();
+
+    _profileAlgnmentAccessSpeed();
     _profileVectorKernel<Blur5Horisontal>("Hor");
     _profileVectorKernel<Blur5Vertical>("Ver");
 
@@ -457,7 +453,4 @@ TEST(FastKernelProfile, main)
     _profileVectorKernel<EdgeMagnitude>("Edge");
     _profileVectorKernel<CopyKernel>("Copy");
     _profileMemcpy();
-
-    cout << "PASSED" << endl;
-//    return 0;
 }

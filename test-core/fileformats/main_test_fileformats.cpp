@@ -20,7 +20,7 @@
 using namespace std;
 using namespace corecvs;
 
-TEST(Fileformats, testFileFormats)
+TEST(FileFormats, testFileFormats)
 {
     /** Test case 1 */
     RAWLoader *rawLoader = new RAWLoader();
@@ -51,7 +51,7 @@ TEST(Fileformats, testFileFormats)
     delete ppmLoader;
 
 
-    /** Test case 2 */
+    /** Test case 4 */
     BMPLoader *bmpLoader1 = new BMPLoader();
     G12Buffer *bmp1 = bmpLoader1->load("data/calib-object.bmp");
     ASSERT_TRUE(bmp1 != NULL, "BMP Image load failed");
@@ -60,7 +60,7 @@ TEST(Fileformats, testFileFormats)
     delete bmpLoader1;
 }
 
-TEST(Fileformats, testPlyLoader)
+TEST(FileFormats, testPlyLoader)
 {
     const char *tests[4];
     tests[0] = "sdvfas";

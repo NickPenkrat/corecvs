@@ -17,7 +17,7 @@
 
 using namespace corecvs;
 
-TEST(CommandLine, testCommandLine)
+TEST(CommandLine, main)
 {
     const char *argv[] = {"--bool", "--int=42", "--double=3.14", "--string=test1"};
     int argc = CORE_COUNT_OF(argv);

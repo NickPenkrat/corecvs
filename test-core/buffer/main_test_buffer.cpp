@@ -8,10 +8,6 @@
  * \ingroup autotest
  */
 
-#ifndef ASSERTS
-#define ASSERTS
-#endif
-
 #ifndef TRACE
 #define TRACE
 #endif
@@ -47,19 +43,16 @@
 using namespace std;
 using namespace corecvs;
 
-#if 0 // FIXME: there should be better way to disable test
-TEST(Generic, testAlwaysFail)
+TEST(Generic, DISABLED_testAlwaysFail)
 {
     ASSERT_EQ(0, 1) << "Just Fail\n";
 }
-#endif
-
 
 class TestAbstractBufferClass {
 public:
     static int counter;
-    TestAbstractBufferClass()  {counter++;}
-    ~TestAbstractBufferClass() {counter--;}
+    TestAbstractBufferClass()  { counter++; }
+    ~TestAbstractBufferClass() { counter--; }
 };
 
 int TestAbstractBufferClass::counter = 0;
@@ -108,15 +101,15 @@ TEST(Buffer, testG12Buffer)
        delete c[i];
    }
    delete[] c;
-
 }
 
-TEST(Buffer, DISABLED_testBilinerTransform)
+TEST(Buffer, testBilinearTransform)
 {
     Matrix33 inverseLeftMatrix(
-    1, 0, -13,
-    0, 1, -9.5,
-    0, 0, 1);
+        1, 0, -13,
+        0, 1, -9.5,
+        0, 0, 1
+    );
 
     ProjectiveTransform inverseLeft(inverseLeftMatrix);
 
@@ -126,14 +119,14 @@ TEST(Buffer, DISABLED_testBilinerTransform)
     G12Buffer *buffer1Transformed = image->doReverseTransform<ProjectiveTransform>(&inverseLeft, image->h, image->w);
     CORE_ASSERT_TRUE(buffer1Transformed->verify(), "Result image is corrupted");
 
-    BMPLoader *loader = new BMPLoader();
+    BMPLoader   *loader = new BMPLoader();
     RGB24Buffer *toSave = new RGB24Buffer(buffer1Transformed);
     loader->save("proc.bmp", toSave);
 
-    delete toSave;
-    delete loader;
-    delete buffer1Transformed;
-    delete image;
+    delete_safe(toSave);
+    delete_safe(loader);
+    delete_safe(buffer1Transformed);
+    delete_safe(image);
 }
 
 TEST(Buffer, testDerivative)
@@ -145,7 +138,7 @@ TEST(Buffer, testDerivative)
         13, 14, 15, 16
     };
 
-    G12Buffer *input= new G12Buffer(4,4,inputData);
+    G12Buffer *input = new G12Buffer(4, 4, inputData);
 
     DerivativeBuffer *result = new DerivativeBuffer(input);
     for (int i = 1; i < result->h - 1; i++)
@@ -157,11 +150,11 @@ TEST(Buffer, testDerivative)
         }
         cout << "\n";
     }
-    delete result;
-    delete input;
+    delete_safe(result);
+    delete_safe(input);
 }
 
-TEST(Buffer, DISABLED_testNonMinimal)
+TEST(Buffer, testNonMinimal)
 {
     G12Buffer *image = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
     CORE_ASSERT_TRUE(image, "Could not open test image\n");
@@ -175,44 +168,44 @@ TEST(Buffer, DISABLED_testNonMinimal)
     loader->save("proc111.bmp", toSave);
 
     cout << "Saved result";
-    delete result;
-    delete filtered;
-    delete toSave;
-    delete loader;
-    delete image;
+    delete_safe(toSave);
+    delete_safe(loader);
+    delete_safe(filtered);
+    delete_safe(result);
+    delete_safe(image);
 }
 
-TEST(Buffer, DISABLED_testBufferDifference)
+TEST(Buffer, testBufferDifference)
 {
     G12Buffer *input1 = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
     G12Buffer *input2 = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0002_c0.pgm");
 
     G12Buffer *output1 = G12Buffer::difference(input1, input2);
     (BMPLoader()).save("difference.bmp", output1);
+
     G12Buffer *output2 = output1->binarize(500);
     (BMPLoader()).save("movemask.bmp", output2);
 
-    delete input1;
-    delete input2;
-    delete output1;
-    delete output2;
-
+    delete_safe(output2);
+    delete_safe(output1);
+    delete_safe(input2);
+    delete_safe(input1);
 }
 
-TEST(Buffer, DISABLED_testBufferThreshold)
+TEST(Buffer, testBufferThreshold)
 {
     G12Buffer *input1 = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
     int level = 1500;
     G12Buffer *output = input1->binarize(level);
     (BMPLoader()).save("threshold.bmp", output);
-    delete input1;
-    delete output;
+    delete_safe(output);
+    delete_safe(input1);
 }
 
 TEST(Buffer, testMemoryBlock)
 {
     MemoryBlockRef block;
-    block.allocate(500,0xFF);
+    block.allocate(500, 0xFF);
     MemoryBlockRef block1(block);
     MemoryBlockRef block2;
     block2 = block1;
@@ -242,10 +235,9 @@ TEST(Buffer, testFont)
 {
     RGB24Buffer *buffer = new RGB24Buffer(400, 1600);
     AbstractPainter<RGB24Buffer> painter(buffer);
-    painter.drawFormat( 5, 5, RGBColor(0xFFFFFF), 1, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-    painter.drawFormat( 5,25, RGBColor(0xFF00FF), 1, "abcdefghijklmnopqrstuvwxyz");
-    painter.drawFormat( 5,45, RGBColor(0xFFFF00), 1, "0123456789%?$:\'\"");
-
+    painter.drawFormat(5,  5, RGBColor(0xFFFFFF), 1, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    painter.drawFormat(5, 25, RGBColor(0xFF00FF), 1, "abcdefghijklmnopqrstuvwxyz");
+    painter.drawFormat(5, 45, RGBColor(0xFFFF00), 1, "0123456789%?$:\'\"");
 
     const char *string = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRTUVWXYZ";
     for (unsigned i = 0; i < strlen(string); i++)
@@ -265,10 +257,8 @@ TEST(Buffer, testFont)
     painter.drawFormatVector( 5, 145, RGBColor(0xFF00FF), 1, string1);
     painter.drawFormatVector( 5, 200, RGBColor(0xFFFFFF), 2, string1);
 
-
     (BMPLoader()).save("font.bmp", buffer);
-    delete buffer;
-
+    delete_safe(buffer);
 }
 
 bool beforeLastBit(int i)
@@ -298,9 +288,9 @@ int lastBit(int i)
 TEST(Buffer, _testReduceChessboard)
 {
     RGB24Buffer *buffer = new RGB24Buffer(512, 512);
-    for(int i = 0; i < buffer->h ; i++)
+    for (int i = 0; i < buffer->h ; i++)
     {
-        for(int j = 0; j < buffer->w ; j++)
+        for (int j = 0; j < buffer->w ; j++)
         {
         	int last1 = lastBit(i);
         	int last2 = lastBit(j);
@@ -319,15 +309,15 @@ TEST(Buffer, _testReduceChessboard)
         }
     }
     (BMPLoader()).save("chess.bmp", buffer);
-    delete buffer;
+    delete_safe(buffer);
 }
 
 TEST(Buffer, _testReduceChessboard1)
 {
     RGB24Buffer *buffer = new RGB24Buffer(512, 512);
-    for(int i = 0; i < buffer->h ; i++)
+    for (int i = 0; i < buffer->h ; i++)
     {
-        for(int j = 0; j < buffer->w ; j++)
+        for (int j = 0; j < buffer->w ; j++)
         {
         	int last1 = lastBit(i);
         	int last2 = lastBit(j);
@@ -349,7 +339,7 @@ TEST(Buffer, _testReduceChessboard1)
         }
     }
     (BMPLoader()).save("chess.bmp", buffer);
-    delete buffer;
+    delete_safe(buffer);
 }
 
 TEST(Buffer, testBoolean)
@@ -373,13 +363,12 @@ TEST(Buffer, testBoolean)
     RGB24Buffer *image = new RGB24Buffer(unpackBuffer->h, unpackBuffer->w);
     image->drawG8Buffer(unpackBuffer);
 
-
     (BMPLoader()).save("unpacked.bmp", image);
 
     packedBuffer.printBuffer();
 
+    delete_safe(unpackBuffer);
     delete_safe(image);
     delete_safe(sourceImage);
-    delete_safe(unpackBuffer);
     delete_safe(buffer);
 }

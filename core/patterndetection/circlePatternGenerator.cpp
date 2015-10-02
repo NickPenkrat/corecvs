@@ -128,9 +128,9 @@ int CirclePatternGenerator::getBestToken(DpImage &query, double &score, corecvs:
                 std::cout << corscore << std::endl;
                 if (corscore < maxC && -corscore > corrThreshold)
                 {
-                    maxC = corscore;
-                    maxIdx = id;
-                    maxRI = idp;
+                    maxC   = corscore;
+                    maxIdx = (int)id;
+                    maxRI  = idp;
                 }
             }
         }

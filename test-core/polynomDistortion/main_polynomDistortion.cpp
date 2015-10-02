@@ -1,12 +1,16 @@
+#include <iostream>
 #include "gtest/gtest.h"
 
-#include <QtCore/QCoreApplication>
+#include "global.h"
+
+//#include <QtCore/QCoreApplication>
 #include "curvatureFunc.h"
 #include "levenmarq.h"
 #include "radialFunc.h"
-#include "QDebug"
 
+using namespace std;
 using namespace corecvs;
+
 
 //p1 = p2 = 0;
 

@@ -5,7 +5,7 @@
 ##################################################################
 include(../testsCommon.pri)
 
-TARGET = test_fastkernel_double
+#TARGET = test_fastkernel_double
 
 SOURCES += main_test_fastkernel_double.cpp
 

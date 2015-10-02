@@ -11,10 +11,6 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#ifndef ASSERTS
-#define ASSERTS
-#endif
-
 #include "global.h"
 
 #include "vector3d.h"
@@ -120,12 +116,3 @@ TEST(Serializer, testSerializer1)
 
     list.save(cout);
 }
-
-//int main (int /*argC*/, char ** /*argV*/)
-//{
-//    testReflection();
-//    testSerializer();
-//    testSerializer1();
-//    cout << "PASSED" << endl;
-//        return 0;
-//}

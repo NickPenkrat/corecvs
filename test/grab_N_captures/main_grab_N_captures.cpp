@@ -137,7 +137,7 @@ int main(int argc, char **argv)
         printf("Attempting a grab __________    %s    _________\n", captureString);
 
         Waiter::CameraDescriptor camDesc;
-        camDesc.camId = i;
+        camDesc.camId = (int)i;
 
         camDesc.input = new CAPTURE_INTERFACE(captureString,
                             1944,
