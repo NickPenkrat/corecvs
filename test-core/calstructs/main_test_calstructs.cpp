@@ -59,22 +59,21 @@ TEST(calstructs, testCameraModel)
     /* Direction in camera frame */
     Vector3dd dirInCam = model.dirToPoint(point);
 
-
-    cout << "Direction        :" << dirInCam << endl;
-
-    Vector2dd projection1 =  model.intrinsics.project(dirInCam);
+    Vector2dd project = model.project(point);
+    Vector3dd reverse = model.intrinsics.reverse(project);
 
 
+    cout << "Direction         :" << dirInCam << endl;
+    cout << "Direct  Projection:" << project << endl;
+    cout << "Reverse Projection:" << reverse << endl;
 
-    Vector2dd projection  = model.project(point);
-    //Vector2dd projection1 = model.project(rayInCam.getPoint(1.0));
-    cout << "Direct Projection:" << projection << endl;
-    cout << "Ray    Projection:" << projection1 << endl;
+    Vector3dd ratio = (dirInCam / reverse);
+    cout << "Proportion        :" << ratio << endl;
 
-   // ASSERT_TRUE(rayInCam.p.notTooFar(model.extrinsics.position, 1e-7));
+    ASSERT_TRUE(ratio.notTooFar(Vector3dd(ratio.x()), 1e-7));
 
    // ASSERT_TRUE(rayInCam.projectOnRay(point).notTooFar(point, 1e-7));
-    ASSERT_TRUE(projection.notTooFar(projection1));
+    //ASSERT_TRUE(projection.notTooFar(projection1));
 
     CalibrationHelpers().drawCamera(mesh, model, 2.0);
 

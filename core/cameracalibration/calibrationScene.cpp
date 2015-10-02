@@ -39,11 +39,22 @@ void CalibrationScene::projectForward(CalibrationFeaturePoint::PointType mask, b
                 observation.isKnown      = true;
                 observation.observation  = projection;
 
+                Vector3dd direct = worldCam.dirToPoint(point->position).normalised();
+                Vector3dd indirect = worldCam.intrinsics.reverse(projection).normalised();
+
                 if (!round) {
-                    observation.observDir    = worldCam.dirToPoint(point->position);
+                    observation.observDir = direct;
                 } else {
-                    observation.observDir    = Vector3dd(projection, 1.0);
+                    observation.observDir = indirect;
                 }
+
+                /*if (direct.notTooFar(indirect, 1e-7))
+                {
+                    SYNC_PRINT(("Ok\n"));
+                } else {
+                    cout << direct << " - " << indirect << "  ";
+                    SYNC_PRINT(("Fail\n"));
+                }*/
 
                 point->observations[camera] = observation;
 
