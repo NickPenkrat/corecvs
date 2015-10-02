@@ -31,15 +31,17 @@ DESTDIR = $$ROOT_DIR/bin
 #message(We Using core $$USE_CORE_PRI_FILE)
 include($$USE_CORE_PRI_FILE)
 
-
-TARGET_ORIG = $$TARGET                              # store original target name for proper detection of the obj.dir
-!contains(OBJ_TESTS_DIRNAME, tests_restricted) {    # first include file is "testsCommon.pri" (open tests), second - "testsRestricted.pri" (restricted tests)
-    TARGET = $$join(TARGET,,test_,)                 # use target name common format for all open tests as  "test_<name of the test>"
-} else {
-    TARGET = $$join(TARGET,,test_res_,)             # use target name common format for all restricted tests as  "test_res_<name of the test>"
+isEmpty(TARGET_ORIG) {                              # be careful of multiple including of this file
+    TARGET_ORIG = $$TARGET                          # store original target name for proper detection of the obj.dir
+    !contains(OBJ_TESTS_DIRNAME, tests_restricted) {# first include file is "testsCommon.pri" (open tests), second - "testsRestricted.pri" (restricted tests)
+        TARGET = $$join(TARGET,,test_,)             # use target name common format for all open tests as  "test_<name of the test>"
+    } else {
+        TARGET = $$join(TARGET,,test_res_,)         # use target name common format for all restricted tests as  "test_res_<name of the test>"
+    }
+    TARGET = $$join(TARGET,,,$$BUILD_CFG_SFX)       # add 'd' at the end for debug versions
 }
-TARGET = $$join(TARGET,,,$$BUILD_CFG_SFX)           # add 'd' at the end for debug versions
-
 OBJECTS_DIR = $$ROOT_DIR/.obj/$$OBJ_TESTS_DIRNAME/$$TARGET_ORIG$$BUILD_CFG_NAME
 
 MOC_DIR = $$OBJECTS_DIR                             # we have to set it to omit creating dummy dirs: debug,release
+UI_DIR  = $$OBJECTS_DIR
+RCC_DIR = $$OBJECTS_DIR
