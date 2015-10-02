@@ -24,13 +24,13 @@ static bool checkFileExist(const char* dirName, const string& filePath)
     cchar* dir = getenv(dirName);
     if (dir == NULL) {
         //FAIL();
-        CORE_ASSERT_FAIL_P(("absent environment variable %s", dirName));
+        CORE_ASSERT_FAIL_P(("Missed environment variable %s", dirName));
         return false;
     }
     //SUCCEED();
     cout << dirName << "=" << dir << endl;
 
-    return checkFileExist(dir, filePath);
+    return checkFileExist(string(dir), filePath);
 }
 
 // Check existance for the "data/pair/image0001_c0.pgm"
@@ -40,14 +40,14 @@ TEST(EnvTest, CheckCurrentDirTest)
         + PATH_SEPARATOR + "pair"
         + PATH_SEPARATOR + "image0001_c0.pgm";
 
-    CORE_ASSERT_TRUE(checkFileExist(".", filePath), "Missed expected repo DB at the current folder");
+    CORE_ASSERT_TRUE(checkFileExist(string("."), filePath), "Missed expected repo DB at the current folder");
 }
 
 // Check existance for the "<TOPCON_DIR>/data/dataMeasure_12_Roof/mosk_test_001_good/_DSC8173.jpg"
 TEST(EnvTest, CheckTopconDirTest)
 {
     string filePath = string("data")
-        + PATH_SEPARATOR + "dataMeasure_12_Roof"
+        + PATH_SEPARATOR + "Measure_12_Roof"
         + PATH_SEPARATOR + "mosk_test_001_good"
         + PATH_SEPARATOR + "_DSC8173.jpg";
 

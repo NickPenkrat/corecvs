@@ -2,7 +2,7 @@
  * \file main_test_calstructs.cpp
  * \brief This is the main file for the test calstructs 
  *
- * \date окт. 02, 2015
+ * \date Oct 02, 2015
  * \author alexander
  *
  * \ingroup autotest  
