@@ -5,18 +5,16 @@ namespace corecvs {
 int ScenePart::OBJECT_COUNT = 0;
 
 
-PinholeCameraIntrinsics::PinholeCameraIntrinsics(Vector2dd resolution, double hfov) :
-    principal(resolution / 2.0),
-    skew(0.0),
-    size(resolution)
-
+PinholeCameraIntrinsics::PinholeCameraIntrinsics(Vector2dd resolution, double hfov)
+  : principal(resolution / 2.0)
+  , skew(0.0)
+  , size(resolution)
 {
     double ratio = tan(hfov / 2.0);
     double f = (size.x() / 2.0) / ratio;
 
     focal = Vector2dd(f,f);
 }
-
 
 
 /**
@@ -155,7 +153,6 @@ ConvexPolyhedron CameraModel::getViewport(const Vector2dd &p1, const Vector2dd &
     Vector3dd d2 = extrinsics.camToWorld(intrinsics.reverse(p2));
     Vector3dd d3 = extrinsics.camToWorld(intrinsics.reverse(p3));
     Vector3dd d4 = extrinsics.camToWorld(intrinsics.reverse(p4));
-
 
     toReturn.faces.push_back( Plane3d::FromPoints(position, d1, d2) );
     toReturn.faces.push_back( Plane3d::FromPoints(position, d2, d3) );

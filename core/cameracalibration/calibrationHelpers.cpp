@@ -1,6 +1,7 @@
 #include "calibrationHelpers.h"
 #include "abstractPainter.h"
 
+
 RGBColor CalibrationHelpers::palette[] =
 {
     RGBColor(0x762a83u),
@@ -68,10 +69,6 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, Photostation &ps, double scale)
     int colorId = 0;
     for (CameraModel &cam: ps.cameras)
     {
-        mesh.setColor(palette[colorId]);
-        colorId = (colorId + 1) % CORE_COUNT_OF(palette);
-
-
         double IW = cam.intrinsics.size[0];
         double IH = cam.intrinsics.size[1];
         const int NSC = 9;
@@ -83,21 +80,23 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, Photostation &ps, double scale)
                 bottomLeft  = Vector3dd( 0, IH,  1) * scale;
         Vector3dd pts[NSC * 2] =
         {
-            center, center2,
-            center, topLeft,
-            center, topRight,
-            center, bottomRight,
-            center, bottomLeft,
-            topLeft, topRight,
-            topRight, bottomRight,
+            center,      center2,
+            center,      topLeft,
+            center,      topRight,
+            center,      bottomRight,
+            center,      bottomLeft,
+            topLeft,     topRight,
+            topRight,    bottomRight,
             bottomRight, bottomLeft,
-            bottomLeft, topLeft,
+            bottomLeft,  topLeft,
         };
 
-        Vector3dd cc    = cam.extrinsics.position;
-        Quaternion qc   = cam.extrinsics.orientation.conjugated();
-        Matrix33 K      = cam.intrinsics.getInvKMatrix33();
+        Vector3dd  cc  = cam.extrinsics.position;
+        Quaternion qc  = cam.extrinsics.orientation.conjugated();
+        Matrix33   K   = cam.intrinsics.getInvKMatrix33();
 
+        mesh.currentColor = palette[colorId];
+        colorId = (colorId + 1) % CORE_COUNT_OF(palette);
 
         for (int i = 0; i < NSC; ++i)
         {
@@ -128,7 +127,6 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, ObservationList &list)
     {
         mesh.addPoint(pt.point);
     }
-
 }
 
 void CalibrationHelpers::drawPly(Mesh3D &mesh, Photostation &ps, ObservationList &list, double scale)

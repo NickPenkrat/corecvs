@@ -23,8 +23,7 @@ namespace corecvs {
 class ScenePart {
 public:
 
-
-    /* No particular reson for this, except to encourage leak checks */
+    /* No particular reason for this, except to encourage leak checks */
     static int OBJECT_COUNT;
 
     /* We could have copy constructors and stuff... but so far this is enough */
@@ -62,7 +61,7 @@ struct PinholeCameraIntrinsics
 
     Vector2dd focal;            /**< Focal length (in px) in two directions */
     Vector2dd principal;        /**< Principal point of optical axis on image plane (in pixel). Usually center of imager */
-    double skew;                /**< Skew parameter to compensate for optical axis tilt */
+    double    skew;             /**< Skew parameter to compensate for optical axis tilt */
     Vector2dd size;             /**< Imager resolution (in pixel) */
 
 
@@ -112,8 +111,8 @@ struct PinholeCameraIntrinsics
     Matrix33 getKMatrix33()  const;
     Matrix33 getInvKMatrix33()  const;
 
-    double getVFov() const;
-    double getHFov() const;
+    double   getVFov() const;
+    double   getHFov() const;
 
     double getAspect() const
     {
@@ -168,12 +167,11 @@ public:
     //Matrix33 rotMatrix;
 
 public:
-    Photostation *station;
+    Photostation   *station;
 
     /* This should be moved to the derived class */
-    RGB24Buffer *image;
-    std::string fileName;
-
+    RGB24Buffer    *image;
+    std::string     fileName;
 
 public:
     CameraModel() {}
@@ -221,8 +219,8 @@ public:
         return (pt & forwardDirection()) > 0;
     }
 
-    Ray3d rayFromPixel(const Vector2dd &point);
-    Ray3d rayFromCenter();
+    Ray3d     rayFromPixel(const Vector2dd &point);
+    Ray3d     rayFromCenter();
 
     Vector3dd forwardDirection() const;
     Vector3dd topDirection() const;

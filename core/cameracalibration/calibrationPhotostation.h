@@ -9,6 +9,7 @@
 
 #include <type_traits>
 
+#include "typesafeBitmaskEnums.h"
 #include "calibrationCamera.h"
 #include "typesafeBitmaskEnums.h"
 #include "lensDistortionModelParameters.h"
@@ -53,10 +54,9 @@ public:
 
     Photostation(
         const std::vector<CameraModel> & _cameras,
-        const LocationData &_location = LocationData()
-    ) :
-        cameras(_cameras),
-        location(_location)
+        const LocationData &_location = LocationData())
+      : cameras(_cameras)
+      , location(_location)
     {}
 
     Vector2dd project(const Vector3dd &pt, int cam)
@@ -80,7 +80,7 @@ public:
 };
 
 typedef std::vector<std::pair<Vector2dd, Vector3dd>> PatternPoints3d;
-typedef std::vector<PatternPoints3d> MultiCameraPatternPoints;
+typedef std::vector<PatternPoints3d>                 MultiCameraPatternPoints;
 
 }
 

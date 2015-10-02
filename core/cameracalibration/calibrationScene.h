@@ -1,7 +1,6 @@
-#ifndef CALIBRATIONSCENE_H
-#define CALIBRATIONSCENE_H
+#pragma once
 
-#include "calibrationCamera.h"
+#include "calibrationCamera.h" // ScenePart
 #include "calibrationPhotostation.h"
 #include "calibrationFeaturePoint.h"
 
@@ -13,10 +12,9 @@ public:
     CalibrationScene();
 
     /* This is for future, when all the heap/memory will be completed */
-    vector<ScenePart *> mOwnedObjects;
+    vector<ScenePart *>             mOwnedObjects;
 
-
-    vector<Photostation> stations;
+    vector<Photostation>            stations;
     vector<CalibrationFeaturePoint> points;
 
     /**
@@ -26,7 +24,7 @@ public:
     void projectForward(CalibrationFeaturePoint::PointType mask, bool round = false);
 
     /* Manipulation with structures */
-    void addCameraToStation(CameraModel * cam, Photostation *station)
+    void addCameraToStation(CameraModel *cam, Photostation *station)
     {
         station->cameras.push_back(*cam);
         cam->station = station;
@@ -43,5 +41,3 @@ public:
         return toReturn;
     }
 };
-
-#endif // CALIBRATIONSCENE_H

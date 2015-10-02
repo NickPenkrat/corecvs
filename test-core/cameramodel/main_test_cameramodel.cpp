@@ -84,6 +84,7 @@ TEST(Cameramodel, generateReality)
 
 	cout << "Left Matrix:\n"  << leftCamera  << "\n";
 	cout << "Right Matrix:\n" << rightCamera << "\n";
+
 	/* Now let's project some points */
 
 	struct Billboard {
@@ -112,6 +113,7 @@ TEST(Cameramodel, generateReality)
 
 
    	G12Buffer *input = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
+    CORE_ASSERT_TRUE(input != NULL, "The Cameramodel data is absent");
 
 	G12Buffer *outputL = new G12Buffer(RESOLUTION_Y, RESOLUTION_X);
 	G12Buffer *outputR = new G12Buffer(RESOLUTION_Y, RESOLUTION_X);
@@ -161,6 +163,9 @@ TEST(Cameramodel, generateReality)
 	painterR.drawChar(10,10, 'R',  G12Buffer::BUFFER_MAX_VALUE);
    	BMPLoader().save("out_c1.bmp", outputR);
 
+    delete_safe(outputR);
+    delete_safe(outputL);
+    delete_safe(input);
 }
 
 #include "calibrationCamera.h"

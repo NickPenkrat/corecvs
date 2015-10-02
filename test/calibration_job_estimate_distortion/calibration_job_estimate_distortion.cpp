@@ -13,7 +13,7 @@ int main(int argc, char **argv)
 {
     std::string filenameIn = "job.json";
     std::string filenameOut= "job.json";
-    bool undistorted = false;
+    //bool undistorted = false;
 
     if (argc >= 2)
     {
@@ -24,8 +24,8 @@ int main(int argc, char **argv)
         filenameOut = std::string(argv[2]);
     }
 
-    std::cout << "Reading job from " << filenameIn << std::endl <<
-                 "Saving job to " << filenameOut << std::endl;
+    std::cout << "Reading job from " << filenameIn  << std::endl <<
+                 "Saving job to "    << filenameOut << std::endl;
 
     CalibrationJob job;
     JSONGetter getter(filenameIn.c_str());

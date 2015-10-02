@@ -12,6 +12,7 @@
 
 #include "calibrationHelpers.h"
 #include "calibrationJob.h"
+#include "mesh3d.h"
 #include "jsonSetter.h"
 #include "jsonGetter.h"
 
@@ -43,12 +44,11 @@ std::unordered_map<std::string, LocationData>  parseGps(const std::string &filen
         if (!data.size()) continue;
 
         std::smatch m;
-        if(!std::regex_match(data, m, re) || m.size() < 5) // 4 tokens + final
+        if (!std::regex_match(data, m, re) || m.size() < 5) // 4 tokens + final
         {
             std::cout << "REJECTED: " << data << std::endl;
             continue;
         }
-
 
         std::string key;
         double n, e, h;
