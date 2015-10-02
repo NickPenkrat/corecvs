@@ -4,6 +4,8 @@
 #include "calibrationPhotostation.h"
 #include "calibrationFeaturePoint.h"
 
+namespace corecvs {
+
 /* Heap of Calibration related stuff */
 
 class CalibrationScene
@@ -41,3 +43,5 @@ public:
         return toReturn;
     }
 };
+
+} // namespace corecvs

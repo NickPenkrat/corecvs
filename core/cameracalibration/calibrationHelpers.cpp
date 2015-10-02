@@ -1,8 +1,12 @@
 #include "calibrationHelpers.h"
 #include "mesh3d.h"
+#include "calibrationCamera.h"
 #include "calibrationPhotostation.h"
 #include "calibrationScene.h"
 #include "selectableGeometryFeatures.h"
+#include "abstractPainter.h"
+
+using namespace corecvs;
 
 RGBColor CalibrationHelpers::palette[] =
 {

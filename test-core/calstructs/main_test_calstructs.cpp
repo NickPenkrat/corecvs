@@ -13,6 +13,7 @@
 
 #include "global.h"
 
+#include "mesh3d.h"
 #include "calibrationScene.h"
 #include "calibrationHelpers.h"
 
