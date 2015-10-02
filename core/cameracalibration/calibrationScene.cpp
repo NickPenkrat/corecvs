@@ -4,7 +4,7 @@ CalibrationScene::CalibrationScene()
 {
 }
 
-void CalibrationScene::projectForward(CalibrationFeaturePoint::PointType mask)
+void CalibrationScene::projectForward(CalibrationFeaturePoint::PointType mask, bool round)
 {
     for (size_t pointId = 0; pointId < points.size(); pointId++)
     {
@@ -27,6 +27,11 @@ void CalibrationScene::projectForward(CalibrationFeaturePoint::PointType mask)
                 if (!worldCam.isVisible(projection) || !worldCam.isInFront(point->position))
                     continue;
 
+                if (round) {
+                    projection.x() = fround(projection.x());
+                    projection.y() = fround(projection.y());
+                }
+
                 CalibrationObservation observation;
                 observation.accuracy     = Vector2dd(0.0);
                 observation.camera       = camera;
@@ -34,7 +39,11 @@ void CalibrationScene::projectForward(CalibrationFeaturePoint::PointType mask)
                 observation.isKnown      = true;
                 observation.observation  = projection;
 
-                observation.observRay    = worldCam.rayToPoint(point->position);
+                if (!round) {
+                    observation.observDir    = worldCam.dirToPoint(point->position);
+                } else {
+                    observation.observDir    = Vector3dd(projection, 1.0);
+                }
 
                 point->observations[camera] = observation;
 

@@ -25,6 +25,8 @@
 #include "correspondanceList.h"
 #include "imageChannel.h"
 
+#include "conic.h"
+
 #include "readers.h"
 
 namespace corecvs {
@@ -138,9 +140,14 @@ public:
     void drawVLine(int x1, int y1, int y2, RGBColor color );
 
 
-    void drawCircle(int x, int y, int rad, RGBColor color );
-    void drawArc (int x, int y, int rad, RGBColor color );
-    void drawArc1(int x, int y, int rad, RGBColor color );
+//    void drawCircle(int x, int y, int rad, RGBColor color );
+//    void drawCircle(const Circle2d &circle, RGBColor color );
+
+    void drawArc   (int x, int y, int rad, RGBColor color );
+    void drawArc1  (int x, int y, int rad, RGBColor color );
+
+    void drawArc   (const Circle2d &circle, RGBColor color );
+
 
     /* Some alternatives */
     void drawLine(double x1, double y1, double x2, double y2, RGBColor color );

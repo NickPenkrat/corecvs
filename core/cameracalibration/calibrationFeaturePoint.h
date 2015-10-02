@@ -27,7 +27,7 @@ public:
     MetaContainer             meta;
 
     /* Ray to point */
-    Ray3d                     observRay;
+    Vector3dd                 observDir;
 };
 
 

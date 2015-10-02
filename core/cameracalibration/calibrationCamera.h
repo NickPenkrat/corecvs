@@ -123,6 +123,12 @@ struct PinholeCameraIntrinsics
         visitor.visit(skew         , 0.0                 , "skew");
         visitor.visit(size         , DEFAULT_SIZE        , "size");
     }
+
+    /* Helper pseudonim getters */
+    double h() const                    { return size.y();      }
+    double w() const                    { return size.x();      }
+    double cx() const                   { return principal.x(); }
+    double cy() const                   { return principal.y(); }
 };
 
 class Photostation;
@@ -165,9 +171,17 @@ public:
         return intrinsics.project(extrinsics.project(p));
     }
 
-    Ray3d rayToPoint(const Vector3dd &p)
+    /**
+     * Return a direction in camera corrdinate frame passing though a point p.
+     *
+     * This only uses extrinsics and provides the way to intercept the projection process before
+     * intrinsics application take action
+     *
+     * \param p
+     **/
+    Vector3dd dirToPoint(const Vector3dd &p)
     {
-        return extrinsics.relativeRay(p);
+        return extrinsics.camToWorld(p);
     }
 
     /**

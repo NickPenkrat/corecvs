@@ -88,6 +88,13 @@ double PinholeCameraIntrinsics::getHFov() const
 
 /* Camera */
 
+/**
+ * Returns a ray in a world coordinate system that originates at the camera position and goes through
+ * given pixel
+ *
+ *  \param point - a point in image coorinates
+ *
+ **/
 Ray3d CameraModel::rayFromPixel(const Vector2dd &point)
 {
     Vector3dd direction = intrinsics.reverse(point);

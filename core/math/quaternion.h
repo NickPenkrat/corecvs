@@ -175,6 +175,17 @@ public:
     }
 
     /**
+     *  This makes rotation always positive, by optionally swapping the direction of rotation axis
+     **/
+    inline GenericQuaternion positivised() const
+    {
+        if (t() < 0) {
+            return - (*this);
+        }
+        return *this;
+    }
+
+    /**
      *  TODO:
      *  Add -
      *
@@ -210,16 +221,19 @@ public:
         wx = t() * x2;   wy = t() * y2;   wz = t() * z2;
 
         return Matrix33 (
-        1.0f - (yy + zz),          xy - wz,           xz + wy,
-                 xy + wz, 1.0f - (xx + zz),           yz - wx,
-                 xz - wy,          yz + wx,  1.0f - (xx + yy)
+        1.0f - (yy + zz),     xy - wz     ,     xz + wy,
+             xy + wz    , 1.0f - (xx + zz),     yz - wx,
+             xz - wy    ,     yz + wx     ,  1.0f - (xx + yy)
         );
     }
 
+
+
     /**
-     *   NB - this function expects normalized quaternion as input
+     *   NB - this function expects normalized quaternion as input.
+     *   Normalise it explicitly
      **/
-    inline double  getAngle() const  {
+    inline double  getAngle() const  {        
         return 2 * acos(t());
     }
 

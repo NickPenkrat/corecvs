@@ -7,6 +7,7 @@
  **/
 
 #include <type_traits>
+#include <cstring>
 
 #include "typesafeBitmaskEnums.h"
 #include "calibrationCamera.h"
@@ -41,6 +42,7 @@ class Photostation
 public:
     std::vector<CameraModel> cameras;
     LocationData             location;
+    std::string              name;
 
     Photostation() {}
 

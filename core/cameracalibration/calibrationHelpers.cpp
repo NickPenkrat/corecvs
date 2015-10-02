@@ -1,6 +1,7 @@
 #include "calibrationHelpers.h"
 #include "mesh3d.h"
 #include "calibrationPhotostation.h"
+#include "calibrationScene.h"
 #include "selectableGeometryFeatures.h"
 
 RGBColor CalibrationHelpers::palette[] =
@@ -12,6 +13,52 @@ RGBColor CalibrationHelpers::palette[] =
     RGBColor(0x7fbf7bu),
     RGBColor(0x1b7837u)
 };
+
+void CalibrationHelpers::drawCamera(Mesh3D &mesh, CameraModel &cam, double scale)
+{
+    double w = cam.intrinsics.w();
+    double h = cam.intrinsics.h();
+
+    Vector3dd
+            center      = Vector3dd( 0,  0,  0),
+            center2     = Vector3dd( 0,  0,  1) * scale,
+            topLeft     = Vector3dd( 0,  0,  1) * scale,
+            topRight    = Vector3dd( w,  0,  1) * scale,
+            bottomRight = Vector3dd( w,  h,  1) * scale,
+            bottomLeft  = Vector3dd( 0,  h,  1) * scale;
+
+    Vector3dd edges[] =
+    {
+        center, center2,
+        center, topLeft,
+        center, topRight,
+        center, bottomRight,
+        center, bottomLeft,
+        topLeft, topRight,
+        topRight, bottomRight,
+        bottomRight, bottomLeft,
+        bottomLeft, topLeft,
+    };
+
+    const int edgenumber = CORE_COUNT_OF(edges) / 2;
+
+    Vector3dd cc    = cam.extrinsics.position;
+    Quaternion qc   = cam.extrinsics.orientation.conjugated();
+    Matrix33 K      = cam.intrinsics.getInvKMatrix33();
+
+
+    for (int i = 0; i < edgenumber; ++i)
+    {
+        Vector3dd v1 = qc * (K * edges[i * 2    ]) + cc;
+        Vector3dd v2 = qc * (K * edges[i * 2 + 1]) + cc;
+
+        mesh.addLine(v1, v2);
+    }
+
+    Vector3dd ppv = qc * (K.mulBy2dRight(cam.intrinsics.principal) * scale) + cc;
+
+    mesh.addLine(ppv, qc * (K * center) + cc);
+}
 
 
 void CalibrationHelpers::drawPly(Mesh3D &mesh, Photostation &ps, double scale)
@@ -65,6 +112,15 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, Photostation &ps, double scale)
 
         mesh.addLine(ppv, qs * (qc * (K * center) + cc) + cs);
     }
+
+    if (printNames)
+    {
+        AbstractPainter<Mesh3D> p(&mesh);
+        mesh.mulTransform(Matrix44::Shift(ps.location.position));
+        mesh.setColor(RGBColor::Blue());
+        p.drawFormatVector(scale / 5.0, scale / 5.0, 0, scale / 3.0, "TEST STRING", ps.name.c_str());
+        mesh.popTransform();
+    }
 }
 
 void CalibrationHelpers::drawPly(Mesh3D &mesh, ObservationList &list)
@@ -81,3 +137,34 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, Photostation &ps, ObservationList
     drawPly(mesh, list);
     drawPly(mesh, ps, scale);
 }
+
+void CalibrationHelpers::drawPly(Mesh3D &mesh, CalibrationFeaturePoint &fp, double scale)
+{
+    if (!largePoints) {
+        mesh.addPoint(fp.position);
+    } else {
+        mesh.addIcoSphere(fp.position, scale / 100.0, 2);
+    }
+
+    if (printNames) {
+        AbstractPainter<Mesh3D> p(&mesh);
+        mesh.mulTransform(Matrix44::Shift(fp.position));
+        mesh.setColor(RGBColor::Blue());
+        p.drawFormatVector(scale / 5.0, scale / 5.0, 0, scale / 3.0, "%s", fp.name.c_str());
+        mesh.popTransform();
+    }
+}
+
+void CalibrationHelpers::drawScene(Mesh3D &mesh, CalibrationScene &scene, double scale)
+{
+    for (Photostation &ps: scene.stations)
+    {
+        drawPly(mesh, ps, scale);
+    }
+
+    for (CalibrationFeaturePoint &fp: scene.points)
+    {
+        drawPly(mesh, fp, scale);
+    }
+}
+

@@ -17,8 +17,11 @@ public:
     vector<Photostation>            stations;
     vector<CalibrationFeaturePoint> points;
 
-    /** **/
-    void projectForward(CalibrationFeaturePoint::PointType mask);
+    /**
+     *  Creates and fills the observations with points. It optionally simulates camera by rounding the projection to nearest pixel
+     *
+     **/
+    void projectForward(CalibrationFeaturePoint::PointType mask, bool round = false);
 
     /* Manipulation with structures */
     void addCameraToStation(CameraModel *cam, Photostation *station)
@@ -27,4 +30,14 @@ public:
         cam->station = station;
     }
 
+    size_t totalObservations()
+    {
+        size_t toReturn = 0;
+        for (size_t pointId = 0; pointId < points.size(); pointId++)
+        {
+            CalibrationFeaturePoint *point = &(points[pointId]);
+            toReturn += point->observations.size();
+        }
+        return toReturn;
+    }
 };

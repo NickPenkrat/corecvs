@@ -32,6 +32,20 @@ MOC_DIR  = $$OBJECTS_DIR                            # we have to set it to omit 
 UI_DIR   = $$OBJECTS_DIR
 RCC_DIR  = $$OBJECTS_DIR
 
+OTHER_FILES += \
+    gentest.sh
+
+# Never to be fixed
+OTHER_FILES += \
+    cppunit_test/cppunit_test.cpp \
+    snooker/main_test_snooker.cpp \                     # TODO: not the test code!
+
+# Things need to be fixed
+OTHER_FILES += \
+   #ocv-homo/main_test_ocv-homo.cpp \                   # TODO: main + opencv deps
+   #openCV/main_test_openCV.cpp \                       # TODO: main + opencv deps
+
+
 SOURCES += \
     main.cpp \
     \
@@ -89,15 +103,6 @@ SOURCES += \
     triangulator/main_test_triangulator.cpp \
     vector/main_test_vector.cpp \
     yuv/main_test_yuv.cpp \
+    conic/main_test_conic.cpp \
+    calstructs/main_test_calstructs.cpp \
 
-
-# Never to be fixed
-OTHER_FILES += \
-    cppunit_test/cppunit_test.cpp \
-    snooker/main_test_snooker.cpp \                     # TODO: not the test code!
-
-
-# Things need to be fixed
-OTHER_FILES += \
-   #ocv-homo/main_test_ocv-homo.cpp \                   # TODO: main + opencv deps
-   #openCV/main_test_openCV.cpp \                       # TODO: main + opencv deps

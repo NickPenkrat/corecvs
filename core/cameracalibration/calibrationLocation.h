@@ -6,6 +6,7 @@
 #include "quaternion.h"
 #include "matrix44.h"
 #include "line.h"
+#include "eulerAngles.h"
 
 namespace corecvs {
 
@@ -80,10 +81,12 @@ public:
         return orientation.conjugated() * pt + position;
     }
 
+    /*
     Ray3d relativeRay(const Vector3dd &p)
     {
-        return Ray3d(position, worldToCam(p));
+        return Ray3d(worldToCam(p), position);
     }
+    */
 
     /**
      *    If we want to transform the world, let's see how camera model will evolve.
@@ -109,7 +112,6 @@ public:
     }
 
 
-
     template<class VisitorType>
     void accept(VisitorType &visitor)
     {
@@ -120,6 +122,95 @@ public:
     /* Pretty print */
     void prettyPrint (ostream &out = cout);
     void prettyPrint1(ostream &out = cout);
+
+
+};
+
+
+/**
+ *    The classical rotation storage is in format yaw, pitch and roll
+ *
+ *    Yaw/Athimuth [0..2pi]
+ *    Pitch
+ *    Roll
+ *
+ *
+ **/
+class CameraLocationAngles : public EulerAngles
+{
+public:
+    CameraLocationAngles(double yaw, double pitch, double roll) :
+        EulerAngles(yaw, pitch, roll)
+    {}
+
+
+    double  yaw() const
+    {
+        return alpha;
+    }
+
+    void setYaw(double yaw)
+    {
+        alpha = yaw;
+    }
+
+    double  pitch() const
+    {
+        return beta;
+    }
+
+    void setPitch(double pitch)
+    {
+        beta = pitch;
+    }
+
+    double  roll() const
+    {
+        return gamma;
+    }
+
+    void setRoll(double roll)
+    {
+        gamma = roll;
+    }
+
+    Matrix33 toMatrix() const
+    {
+        return
+            Matrix33::RotationZ(roll()) *
+            Matrix33::RotationY(yaw()) *
+            Matrix33::RotationX(pitch());
+    }
+
+    /**
+     *  \f[
+     *  \pmatrix{ \phi \cr \theta \cr \psi } =
+     *
+     *  \pmatrix{
+     *     atan2  (2(q_0 q_1 + q_2 q_3),1 - 2(q_1^2 + q_2^2)) \cr
+     *     arcsin (2(q_0 q_2 - q_3 q_1)) \cr
+     *     atan2  (2(q_0 q_3 + q_1 q_2),1 - 2(q_2^2 + q_3^2))
+     *  }
+     *
+     *  \f]
+     *
+     */
+    static CameraLocationAngles FromQuaternion(Quaternion &Q)
+    {
+        double yaw   = asin  (2.0 * (Q.t() * Q.y() - Q.z() * Q.x()));
+        double pitch = atan2 (2.0 * (Q.t() * Q.x() + Q.y() * Q.z()),1.0 - 2.0 * (Q.x() * Q.x() + Q.y() * Q.y()));
+        double roll  = atan2 (2.0 * (Q.t() * Q.z() + Q.x() * Q.y()),1.0 - 2.0 * (Q.y() * Q.y() + Q.z() * Q.z()));
+        return CameraLocationAngles(yaw, pitch, roll);
+    }
+
+
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        visitor.visit(alpha, 0.0, "yaw"  );
+        visitor.visit(beta , 0.0, "pitch");
+        visitor.visit(gamma, 0.0, "roll" );
+    }
 
 
 };

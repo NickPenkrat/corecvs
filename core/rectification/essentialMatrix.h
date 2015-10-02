@@ -179,7 +179,7 @@ template<class VisitorType>
 
 	friend ostream & operator <<(ostream &out, const EssentialDecomposition &edecomp)
     {
-		Quaternion q = Quaternion::FromMatrix(edecomp.rotation);
+        Quaternion q = Quaternion::FromMatrix(edecomp.rotation).normalised();
 		out << "This matrix is rotating " << radToDeg(q.getAngle()) << "deg around axis: ";
 		out << q.getAxis() << endl;
 		out << "And then shifting by vector:" << endl;

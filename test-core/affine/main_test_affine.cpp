@@ -143,10 +143,10 @@ TEST(Affine, profileHamilton)
 
 TEST(Affine, testEulerAngles)
 {
-    CameraAngles anglesCam(0.7, 0.4, 0.1);
+    CameraAnglesLegacy anglesCam(0.7, 0.4, 0.1);
     Matrix33 matrixCam = anglesCam.toMatrix();
     Quaternion quatCam = Quaternion::FromMatrix(matrixCam);
-    CameraAngles anglesCam1 = CameraAngles::FromQuaternion(quatCam);
+    CameraAnglesLegacy anglesCam1 = CameraAnglesLegacy::FromQuaternion(quatCam);
 
 
     cout << "A:(" << anglesCam.pitch() << ", "
