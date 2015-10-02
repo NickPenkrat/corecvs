@@ -113,8 +113,6 @@ TEST(Cameramodel, generateReality)
 
 
    	G12Buffer *input = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
-    if (input == NULL)
-               input = BufferFactory::getInstance()->loadG12Bitmap("../data/pair/image0001_c0.pgm");
     CORE_ASSERT_TRUE(input != NULL, "The Cameramodel data is absent");
 
 	G12Buffer *outputL = new G12Buffer(RESOLUTION_Y, RESOLUTION_X);
