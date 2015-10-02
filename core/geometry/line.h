@@ -74,6 +74,11 @@ public:
         return p + a * t;
     }
 
+    VectorType projectOnRay(const VectorType &q)
+    {
+        return getPoint((q - p) & a.normalised());
+    }
+
     /**
      *   Normalizes the direction vector without changing the ray itself
      *

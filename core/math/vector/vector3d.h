@@ -224,6 +224,24 @@ template<class VisitorType>
         visitor.visit(z(), ElementType(0), "z");
     }
 
+    /* Some frequently used vectors*/
+    static Vector3d<ElementType> Zero() {
+        return Vector3d<ElementType>(0.0, 0.0, 0.0);
+    }
+
+    static Vector3d<ElementType> OrtX() {
+        return Vector3d<ElementType>(1.0, 0.0, 0.0);
+    }
+
+    static Vector3d<ElementType> OrtY() {
+        return Vector3d<ElementType>(0.0, 1.0, 0.0);
+    }
+
+    static Vector3d<ElementType> OrtZ() {
+        return Vector3d<ElementType>(0.0, 0.0, 1.0);
+    }
+
+
 };
 
 typedef Vector3d<double> Vector3dd;

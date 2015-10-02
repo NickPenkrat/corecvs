@@ -81,10 +81,12 @@ public:
         return orientation.conjugated() * pt + position;
     }
 
+    /*
     Ray3d relativeRay(const Vector3dd &p)
     {
         return Ray3d(worldToCam(p), position);
     }
+    */
 
     /**
      *    If we want to transform the world, let's see how camera model will evolve.

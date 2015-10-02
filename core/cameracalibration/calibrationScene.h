@@ -32,6 +32,16 @@ public:
         cam->station = station;
     }
 
+    size_t totalObservations()
+    {
+        size_t toReturn = 0;
+        for (size_t pointId = 0; pointId < points.size(); pointId++)
+        {
+            CalibrationFeaturePoint *point = &(points[pointId]);
+            toReturn += point->observations.size();
+        }
+        return toReturn;
+    }
 };
 
 #endif // CALIBRATIONSCENE_H

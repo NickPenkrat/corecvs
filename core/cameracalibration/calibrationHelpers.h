@@ -27,6 +27,9 @@ public:
         privateColor(false)
     {}
 
+    void drawCamera(Mesh3D &mesh, CameraModel &cam, double scale);
+
+
     void drawPly(Mesh3D &mesh, Photostation &ps, double scale = 50.0);
     void drawPly(Mesh3D &mesh, ObservationList &list);
     void drawPly(Mesh3D &mesh, Photostation &ps, ObservationList &list, double scale);

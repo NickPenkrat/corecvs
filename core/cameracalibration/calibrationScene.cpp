@@ -40,7 +40,11 @@ void CalibrationScene::projectForward(CalibrationFeaturePoint::PointType mask, b
                 observation.isKnown      = true;
                 observation.observation  = projection;
 
-                observation.observRay    = worldCam.rayToPoint(point->position);
+                if (!round) {
+                    observation.observDir    = worldCam.dirToPoint(point->position);
+                } else {
+                    observation.observDir    = Vector3dd(projection, 1.0);
+                }
 
                 point->observations[camera] = observation;
 

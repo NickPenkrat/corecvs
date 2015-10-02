@@ -112,6 +112,7 @@ CloudViewDialog::CloudViewDialog(QWidget *parent) :
 
     QSharedPointer<CoordinateFrame> worldFrame = QSharedPointer<CoordinateFrame>(new CoordinateFrame());
 
+#if 0
 /*    QSharedPointer<Scene3D> grid  = QSharedPointer<Scene3D>(new Grid3DScene());
     QSharedPointer<Scene3D> plane = QSharedPointer<Scene3D>(new Plane3DScene());
     grid->name  = "Grid";
@@ -148,6 +149,7 @@ CloudViewDialog::CloudViewDialog(QWidget *parent) :
     box->name = "box-mesh";
     //addSubObject("box-mesh", QSharedPointer<Scene3D>(box));
     worldFrame->mChildren.push_back(QSharedPointer<Scene3D>(box));
+#endif
 
     addSubObject("World Frame", worldFrame);
 

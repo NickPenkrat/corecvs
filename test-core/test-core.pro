@@ -111,3 +111,4 @@ OTHER_FILES += \
 
 SOURCES += \
 	conic/main_test_conic.cpp \
+	calstructs/main_test_calstructs.cpp \

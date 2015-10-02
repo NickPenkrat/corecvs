@@ -11,6 +11,52 @@ RGBColor CalibrationHelpers::palette[] =
     RGBColor(0x1b7837u)
 };
 
+void CalibrationHelpers::drawCamera(Mesh3D &mesh, CameraModel &cam, double scale)
+{
+    double w = cam.intrinsics.w();
+    double h = cam.intrinsics.h();
+
+    Vector3dd
+            center      = Vector3dd( 0,  0,  0),
+            center2     = Vector3dd( 0,  0,  1) * scale,
+            topLeft     = Vector3dd( 0,  0,  1) * scale,
+            topRight    = Vector3dd( w,  0,  1) * scale,
+            bottomRight = Vector3dd( w,  h,  1) * scale,
+            bottomLeft  = Vector3dd( 0,  h,  1) * scale;
+
+    Vector3dd edges[] =
+    {
+        center, center2,
+        center, topLeft,
+        center, topRight,
+        center, bottomRight,
+        center, bottomLeft,
+        topLeft, topRight,
+        topRight, bottomRight,
+        bottomRight, bottomLeft,
+        bottomLeft, topLeft,
+    };
+
+    const int edgenumber = CORE_COUNT_OF(edges) / 2;
+
+    Vector3dd cc    = cam.extrinsics.position;
+    Quaternion qc   = cam.extrinsics.orientation.conjugated();
+    Matrix33 K      = cam.intrinsics.getInvKMatrix33();
+
+
+    for (int i = 0; i < edgenumber; ++i)
+    {
+        Vector3dd v1 = qc * (K * edges[i * 2]) + cc;
+        Vector3dd v2 = qc * (K * edges[i * 2 + 1]) + cc;
+
+        mesh.addLine(v1, v2);
+    }
+
+    Vector3dd ppv = qc * (K.mulBy2dRight(cam.intrinsics.principal) * scale) + cc;
+
+    mesh.addLine(ppv, qc * (K * center) + cc);
+}
+
 
 void CalibrationHelpers::drawPly(Mesh3D &mesh, Photostation &ps, double scale)
 {
@@ -22,6 +68,10 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, Photostation &ps, double scale)
     int colorId = 0;
     for (CameraModel &cam: ps.cameras)
     {
+        mesh.setColor(palette[colorId]);
+        colorId = (colorId + 1) % CORE_COUNT_OF(palette);
+
+
         double IW = cam.intrinsics.size[0];
         double IH = cam.intrinsics.size[1];
         const int NSC = 9;
@@ -48,10 +98,8 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, Photostation &ps, double scale)
         Quaternion qc   = cam.extrinsics.orientation.conjugated();
         Matrix33 K      = cam.intrinsics.getInvKMatrix33();
 
-        mesh.currentColor = palette[colorId];
-        colorId = (colorId + 1) % CORE_COUNT_OF(palette);
 
-                for (int i = 0; i < NSC; ++i)
+        for (int i = 0; i < NSC; ++i)
         {
             auto v1 = qs * (qc * (K * pts[i * 2]) + cc) + cs;
             auto v2 = qs * (qc * (K * pts[i * 2 + 1]) + cc) + cs;
