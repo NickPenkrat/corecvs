@@ -306,7 +306,6 @@ void _profileVectorKernel(const char *name, bool vectorRun = 1, const Kernel<Dum
 #endif
     }
 
-
     for (unsigned i = 0; i < POLUTING_INPUTS; i++)
        for (int j = 0; j < inputNumber; j++)
            delete input[i][j];
@@ -319,8 +318,6 @@ void _profileVectorKernel(const char *name, bool vectorRun = 1, const Kernel<Dum
            delete outputVector[i][j];
        }
     }
-
-
 }
 
 
@@ -411,13 +408,10 @@ void _profileManualSobelH (void)
      }
      delay = start.usecsToNow();
      printf("%8" PRIu64 "us %8" PRIu64 "ms SP: %8" PRIu64 "us\n", delay, delay / 1000, delay / LIMIT); fflush(stdout);
-
 }
 
-TEST(FastKernelProfile, main)   // TODO: move to perf-tests!
+TEST(FastKernelProfile, DISABLED_main)   // TODO: is too slow, move to perf-tests!!!
 {
-    cout << "Starting fastkernel profiling test" << endl;
-
     _profileAlgnmentAccessSpeed();
     _profileVectorKernel<Blur5Horisontal>("Hor");
     _profileVectorKernel<Blur5Vertical>("Ver");
