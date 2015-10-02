@@ -25,9 +25,9 @@ TEST(FileFormats, testFileFormats)
     /** Test case 1 */
     RAWLoader *rawLoader = new RAWLoader();
     G12Buffer *raw = rawLoader->load("data/testdata/32x32_12h_test_raw.raw");
-    ASSERT_TRUE(raw != NULL, "RAW Image load failed");
-    ASSERT_TRUE(raw->h == raw->w, "RAW Image sizes corrupted");
-    ASSERT_TRUE(raw->verify(), "RAW Image verification failed");
+    CORE_ASSERT_TRUE(raw != NULL, "RAW Image load failed");
+    CORE_ASSERT_TRUE(raw->h == raw->w, "RAW Image sizes corrupted");
+    CORE_ASSERT_TRUE(raw->verify(), "RAW Image verification failed");
     delete raw;
     delete rawLoader;
 
@@ -35,18 +35,18 @@ TEST(FileFormats, testFileFormats)
     /** Test case 2 */
     BMPLoader *bmpLoader = new BMPLoader();
     G12Buffer *bmp = bmpLoader->load("data/testdata/test_bmp.bmp");
-    ASSERT_TRUE(bmp->h == bmp->w, "BMP Image sizes corrupted");
-    ASSERT_TRUE(bmp != NULL, "BMP Image load failed");
-    ASSERT_TRUE(bmp->verify(), "BMP Image verification failed");
+    CORE_ASSERT_TRUE(bmp->h == bmp->w, "BMP Image sizes corrupted");
+    CORE_ASSERT_TRUE(bmp != NULL, "BMP Image load failed");
+    CORE_ASSERT_TRUE(bmp->verify(), "BMP Image verification failed");
     delete bmp;
     delete bmpLoader;
 
     /** Test case 3 */
     PPMLoader *ppmLoader = new PPMLoader();
     G12Buffer *ppm = ppmLoader->load("data/testdata/test_ppm.ppm");
-    ASSERT_TRUE(ppm != NULL, "PPM Image load failed");
-    ASSERT_TRUE(ppm->h == ppm->w, "PPM Image sizes corrupted");
-    ASSERT_TRUE(ppm->verify(), "PPM Image verification failed");
+    CORE_ASSERT_TRUE(ppm != NULL, "PPM Image load failed");
+    CORE_ASSERT_TRUE(ppm->h == ppm->w, "PPM Image sizes corrupted");
+    CORE_ASSERT_TRUE(ppm->verify(), "PPM Image verification failed");
     delete ppm;
     delete ppmLoader;
 
@@ -54,8 +54,8 @@ TEST(FileFormats, testFileFormats)
     /** Test case 4 */
     BMPLoader *bmpLoader1 = new BMPLoader();
     G12Buffer *bmp1 = bmpLoader1->load("data/calib-object.bmp");
-    ASSERT_TRUE(bmp1 != NULL, "BMP Image load failed");
-    ASSERT_TRUE(bmp1->verify(), "BMP Image verification failed");
+    CORE_ASSERT_TRUE(bmp1 != NULL, "BMP Image load failed");
+    CORE_ASSERT_TRUE(bmp1->verify(), "BMP Image verification failed");
     delete bmp1;
     delete bmpLoader1;
 }
@@ -116,5 +116,4 @@ TEST(FileFormats, testPlyLoader)
         int result = loader.loadPLY(stream, mesh);
         printf("Test case %d result: %d\n", i, result);
     }
-
 }
