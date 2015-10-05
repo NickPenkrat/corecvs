@@ -58,6 +58,8 @@ include(clustering3d/clustering3d.pri)
 include(features2d/features2d.pri)
 include(patterndetection/patterndetection.pri)
 include(cameracalibration/cameracalibration.pri)
+include(graphs/graphs.pri)
+include(reconstruction/reconstruction.pri)
 
 include(xml/generated/generated.pri)
 
