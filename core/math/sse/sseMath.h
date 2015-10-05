@@ -71,6 +71,8 @@ public:
         return UInt16x8((condition & ifTrue) | (andNot(condition, ifFalse)));
     }
 
+
+
     ALIGN_STACK_SSE static inline Int32x4 selector(const Int32x4 &condition, const Int32x4 &ifTrue, const Int32x4 &ifFalse)
     {
         return (condition & ifTrue) | (andNot(condition, ifFalse));
@@ -167,6 +169,7 @@ public:
     ALIGN_STACK_SSE inline static Int16x8 abs (const Int16x8 &value) {
     	return max(value, -value);
     }
+
 
 };
 
