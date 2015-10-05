@@ -489,7 +489,7 @@ with_blas {
         !build_pass: message (Using System BLAS)
     }
     DEFINES     += WITH_BLAS
-    LIBS        += -lblas
+    LIBS        += -lopenblas
   }
 }
 
