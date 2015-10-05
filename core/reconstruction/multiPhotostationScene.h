@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "tbbWrapper.h"
-#include "calibrationStructs.h"
 #include "calibrationPhotostation.h"
 #include "mesh3d.h"
 
