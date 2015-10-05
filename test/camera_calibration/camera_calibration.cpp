@@ -84,7 +84,7 @@ int main(int argc, char **argv)
     std::cout << "|_.Cam|_.fx|_.fy|_.fx/fy|_.skew|_.atan(skew/fy)|_.cx|_.cy|" << std::endl;
     for (int i = 0; i < N; ++i)
     {
-        CameraIntrinsics &intr = ps.cameras[i].intrinsics;
+        PinholeCameraIntrinsics &intr = ps.cameras[i].intrinsics;
 
         double fx   = intr.focal.x();
         double fy   = intr.focal.y();

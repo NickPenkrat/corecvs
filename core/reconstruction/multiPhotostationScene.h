@@ -7,11 +7,13 @@
 
 #include "tbbWrapper.h"
 #include "calibrationStructs.h"
+#include "calibrationPhotostation.h"
+#include "mesh3d.h"
 
 struct MultiPhotostationScene
 {
     std::vector<PointObservation__> pointObservations;
-    std::vector<Photostation> photostations;
+    std::vector<corecvs::Photostation> photostations;
     std::vector<std::vector<CameraObservation> > cameraObservations;
 
     corecvs::Vector2dd computeReprojectionError (int ps, int cam, const corecvs::Vector3dd &point, const corecvs::Vector2dd &expected) const;

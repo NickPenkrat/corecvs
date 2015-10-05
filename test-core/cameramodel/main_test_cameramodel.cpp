@@ -40,7 +40,7 @@ using corecvs::BMPLoader;
 using corecvs::fround;
 using corecvs::AbstractPainter;
 
-TEST(Cameramodel, DISABLED_generateReality)
+TEST(Cameramodel, generateReality)
 {
 	//const double BASELINE = -210;
 	const double FOCAL    =  640;
@@ -84,6 +84,7 @@ TEST(Cameramodel, DISABLED_generateReality)
 
 	cout << "Left Matrix:\n"  << leftCamera  << "\n";
 	cout << "Right Matrix:\n" << rightCamera << "\n";
+
 	/* Now let's project some points */
 
 	struct Billboard {
@@ -112,6 +113,7 @@ TEST(Cameramodel, DISABLED_generateReality)
 
 
    	G12Buffer *input = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
+    CORE_ASSERT_TRUE(input != NULL, "The Cameramodel data is absent");
 
 	G12Buffer *outputL = new G12Buffer(RESOLUTION_Y, RESOLUTION_X);
 	G12Buffer *outputR = new G12Buffer(RESOLUTION_Y, RESOLUTION_X);
@@ -160,5 +162,64 @@ TEST(Cameramodel, DISABLED_generateReality)
 	AbstractPainter<G12Buffer> painterR(outputR);
 	painterR.drawChar(10,10, 'R',  G12Buffer::BUFFER_MAX_VALUE);
    	BMPLoader().save("out_c1.bmp", outputR);
+
+    delete_safe(outputR);
+    delete_safe(outputL);
+    delete_safe(input);
+}
+
+#include "calibrationCamera.h"
+
+using corecvs::PinholeCameraIntrinsics;
+
+TEST(Cameramodel, newPinholeCameraIntrinsics)
+{
+    PinholeCameraIntrinsics input;
+
+    SYNC_PRINT((" Testing matrix \n"));
+
+    PrinterVisitor printer;
+    SYNC_PRINT(("Default input\n"));
+    input.accept(printer);
+
+    input.skew = 0.01;
+    input.focal = Vector2dd(input.size.x() - 100, input.size.x() + 100);
+    SYNC_PRINT(("With skew and focal\n"));
+    input.accept(printer);
+
+    Matrix44 forward  = input.getKMatrix();
+    Matrix44 backward = input.getInvKMatrix();
+    SYNC_PRINT(("Forward Matrix\n"));
+    cout << forward << endl;
+    SYNC_PRINT(("Forward Matrix\n"));
+    cout << backward << endl;
+
+    SYNC_PRINT(("Product Matrix\n"));
+    cout << (backward * forward) << endl;
+
+    ASSERT_TRUE( (forward * backward).notTooFar(Matrix44(1.0), 1e-10));
+
+    SYNC_PRINT((" Testing point projection \n"));
+
+    Vector3dd P(100.0, 200.0, 300.0);
+
+    Vector2dd im = input.project(P);
+    Vector3dd im1A = input.getKMatrix33() * P;
+    Vector2dd im1 =  im1A.xy() / im1A.z();
+
+    cout << "Point " << P << endl;
+    cout << "PinholeCameraIntrinsics::project " << im  << endl;
+    cout << "PinholeCameraIntrinsics::matrix "  << im1 << endl;
+
+    ASSERT_TRUE(im.notTooFar(im1, 1e-10));
+
+    Vector3dd back  = input.reverse(im);
+    Vector3dd back1 = input.getInvKMatrix33() * Vector3dd(im.x(), im.y(), 1.0);
+
+    cout << "PinholeCameraIntrinsics::reverse " << back  << endl;
+    cout << "PinholeCameraIntrinsics::matrix "  << back1 << endl;
+
+    ASSERT_TRUE(back.notTooFar(back1, 1e-4));
+
 
 }

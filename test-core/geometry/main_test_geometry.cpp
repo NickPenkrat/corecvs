@@ -140,6 +140,22 @@ TEST(Geometry, testIntersection3D)
 
 }
 
+
+TEST(Geometry, rayBasics)
+{
+    Ray3d ray(Vector3dd::OrtX(), Vector3dd::Zero());
+    Vector3dd p(Vector3dd(1.0,1.0,1.0));
+
+    Vector3dd pr = ray.projectOnRay(p);
+
+    cout << "Ray      :" << ray << endl;
+    cout << "Point    :" << p  << endl;
+    cout << "Projected:" << pr << endl;
+
+    ASSERT_TRUE(pr.notTooFar(Vector3dd::OrtX(), 1e-7));
+
+}
+
 //int main (int /*argC*/, char ** /*argV*/)
 //{
 //    testIntersection3D();

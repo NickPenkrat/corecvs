@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "calibrationStructs.h"
+#include "calibrationPhotostation.h"
 #include "levenmarq.h"
 
 //#define PENALIZE_QNORM
@@ -16,7 +16,7 @@ public:
     PhotoStationCalibrator(CameraConstraints constraints = CameraConstraints::NONE, const double lockFactor = 1.0);
 
     // Add camera
-    void addCamera(CameraIntrinsics &intrinsics);
+    void addCamera(PinholeCameraIntrinsics &intrinsics);
 
     // Add calibration setup and corespondences for specified cameras
     void addCalibrationSetup(std::vector<int> &cameraIds, std::vector<LocationData> &cameraLocations, MultiCameraPatternPoints &points);
@@ -128,7 +128,7 @@ private:
 
     int N, M, K, L;
 
-    std::vector<Camera_> relativeCameraPositions;
+    std::vector<CameraModel> relativeCameraPositions;
     std::vector<LocationData> absoluteSetupLocation;
 
     std::vector<std::vector<std::pair<bool, LocationData> > > initialGuess;

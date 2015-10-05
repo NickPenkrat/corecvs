@@ -6,4 +6,4 @@
 
 include(../testsCommon.pri)
 
-SOURCES += main.cpp
+SOURCES += main_polynomDistortion.cpp

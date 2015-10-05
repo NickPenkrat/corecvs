@@ -9,17 +9,21 @@
  */
 
 #include <iostream>
+#include "gtest/gtest.h"
+
 #include "global.h"
+
 #include "readers.h"
 #include "rgbColor.h"
 
 using namespace std;
 using namespace corecvs;
 
-void testRGBReaders()
+TEST(Readers, testRGBReaders)  // TODO: add some checks...
 {
     cout << "testRGBReaders()" << endl;
-    RGBColor data[16] = {RGBColor::Yellow(), RGBColor::Indigo(), RGBColor::Violet(), RGBColor::Cyan() };
+
+    RGBColor data[16] = { RGBColor::Yellow(), RGBColor::Indigo(), RGBColor::Violet(), RGBColor::Cyan() };
 
     FixedVector<Int32x4, 2> color = SSEReader2BBBB_QQQQ::read((uint8_t *)data);
 
@@ -32,13 +36,4 @@ void testRGBReaders()
     cout << color[1][2] << endl;
 
     cout << data[0] << " " << data[1] << endl;
-
-
-}
-
-int main (int /*argC*/, char **/*argV*/)
-{
-    testRGBReaders();
-    cout << "PASSED" << endl;
-    return 0;
 }

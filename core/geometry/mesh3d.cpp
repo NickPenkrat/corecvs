@@ -3,10 +3,55 @@
  *
  * \date Dec 13, 2012
  **/
+#include <fstream>
+
 #include "mathUtils.h"      // M_PI
 #include "mesh3d.h"
 
 namespace corecvs {
+
+void Mesh3D::switchColor(bool on)
+{
+    if (hasColor == on)
+        return;
+    if (on) {
+        vertexesColor.resize(vertexes.size(), currentColor);
+        edgesColor   .resize(edges   .size(), currentColor);
+        facesColor   .resize(faces   .size(), currentColor);
+    } else {
+        vertexesColor.clear();
+        edgesColor.clear();
+        facesColor.clear();
+    }
+    hasColor = on;
+}
+
+void Mesh3D::setColor(const RGBColor &color)
+{
+    currentColor = color;
+}
+
+void Mesh3D::mulTransform(const Matrix44 &transform)
+{
+    transformStack.push_back(currentTransform);
+    currentTransform = currentTransform * transform;
+}
+
+void Mesh3D::popTransform()
+{
+    if (transformStack.empty()) {
+        SYNC_PRINT(("Mesh3D::popTransform(): Poping on empty stack\n"));
+        return;
+    }
+    currentTransform = transformStack.back();
+    transformStack.pop_back();
+}
+
+void Mesh3D::setCentral(Vector3dd _central)
+{
+    centralPoint = _central;
+    hasCentral = true;
+}
 
 void Mesh3D::addAOB(Vector3dd c1, Vector3dd c2, bool addFaces)
 {
@@ -278,7 +323,33 @@ void Mesh3D::addIcoSphere(Vector3dd center, double radius, int step)
 
 
 #endif
-    
+
+}
+
+void Mesh3D::addCircle(const Circle3d &circle, int step)
+{
+    Vector3dd ort1;
+    Vector3dd ort2;
+    circle.normal.orthogonal(ort1, ort2);
+
+    double dphy = 2 * M_PI / step ;
+    for (int i = 0; i < step; i++)
+    {
+        double phi  = dphy * i;
+        double phi1 = dphy * (i + 1);
+        addLine(circle.c + (ort1 * sin(phi ) + ort2 * cos(phi )) * circle.r,
+                circle.c + (ort1 * sin(phi1) + ort2 * cos(phi1)) * circle.r);
+    }
+}
+
+void Mesh3D::addSphere(const Sphere3d &sphere, int step)
+{
+    addSphere(sphere.c, sphere.r, step);
+}
+
+void Mesh3D::addIcoSphere(const Sphere3d &sphere, int step)
+{
+    addIcoSphere(sphere.c, sphere.r, step);
 }
 
 void Mesh3D::addCamera(const CameraIntrinsicsLegacy &cam, double len)
@@ -486,6 +557,20 @@ void Mesh3D::dumpPLY(ostream &out)
 
 //    SYNC_PRINT(("This 0x%X. Edges %d", this, edges.size()));
 
+}
+
+int Mesh3D::dumpPLY(const std::string &filename)
+{
+    std::ofstream out(filename, std::ios::out);
+    if (out.bad())
+    {
+        SYNC_PRINT(("Mesh3D::dumpPLY(%s): could not save\n", filename.c_str()));
+        return 1;
+    }
+
+    dumpPLY(out);
+    out.close();
+    return 0;
 }
 
 void Mesh3D::transform(const Matrix44 &matrix)

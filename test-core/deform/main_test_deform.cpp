@@ -34,7 +34,7 @@ using corecvs::FixedPointDisplace;
 using corecvs::BMPLoader;
 using corecvs::RGB24Buffer;
 
-TEST(Deform, DISABLED_testFastDeform)
+TEST(Deform, testFastDeform)
 {
     Matrix33 inverseLeftMatrix(
         1, 0, -13,
@@ -66,7 +66,6 @@ TEST(Deform, DISABLED_testFastDeform)
     delete buffer1Transformed;
     delete displace;
     delete image;
-
 }
 
 template<typename operation>
@@ -83,17 +82,17 @@ template<typename operation>
         }
     }
 
-TEST(Deform, DISABLED_testBiliner)
+TEST(Deform, DISABLED_testBilinear)
 {
-    RGB24Buffer *image = new RGB24Buffer(2,2);
+    RGB24Buffer *image = new RGB24Buffer(2, 2);
     image->element(0,0) = RGBColor::Yellow();
     image->element(0,1) = RGBColor::Green();
     image->element(1,0) = RGBColor::Indigo();
     image->element(1,1) = RGBColor::Black();
 
-    for (double i = 0; i < 1.0; i+=0.07 )
+    for (double i = 0; i < 1.0; i += 0.07 )
     {
-        for (double j = 0; j < 1.0; j+=1.17 )
+        for (double j = 0; j < 1.0; j += 1.17 )
         {
             RGBColor d =  image->elementBlDouble(i, j);
             RGBColor f =  image->elementBlFixed (i, j);
@@ -152,7 +151,7 @@ TEST(Deform, DISABLED_testFastDeform24)
     delete_safe(image);
 }
 
-TEST(Deform, DISABLED_testRadialApplication)
+TEST(Deform, testRadialApplication)  // TODO: move to perf-tests!
 {
     cout << "Starting test: testRadialApplication ()" << endl;
     RGB24Buffer *image = new RGB24Buffer(2500, 4000);
@@ -196,7 +195,7 @@ TEST(Deform, DISABLED_testRadialApplication)
      *  Or cache the inverse like we are doing here
      *
      **/
-    cout << "Starting deformaiton inversion... " << flush;
+    cout << "Starting deformation inversion... " << flush;
 
     timer = PreciseTimer::currentTime();
     DisplacementBuffer *inverse = DisplacementBuffer::CacheInverse(&T,
@@ -206,7 +205,7 @@ TEST(Deform, DISABLED_testRadialApplication)
     );
     cout << "done in: " << timer.usecsToNow() << "us" << endl;
 
-    cout << "Applying deformaiton inversion... " << flush;
+    cout << "Applying deformation inversion... " << flush;
     timer = PreciseTimer::currentTime();
     RGB24Buffer *defomed = image->doReverseDeformationBlTyped<DisplacementBuffer>(inverse);
     cout << "done in: " << timer.usecsToNow() << "us" << endl;
@@ -247,10 +246,9 @@ TEST(Deform, DISABLED_testRadialApplication)
 
     BMPLoader().save("backward-cached.bmp"      , corrected22);
     BMPLoader().save("backward-cached-diff.bmp" , diff22);
-
 }
 
-TEST(Deform, DISABLED_testRadialInversion)
+TEST(Deform, testRadialInversion)  // TODO: move to perf-tests!
 {
     RGB24Buffer *image = new RGB24Buffer(2500, 4000);
 
@@ -282,7 +280,7 @@ TEST(Deform, DISABLED_testRadialInversion)
     RadialCorrection T(deformator);
     PreciseTimer timer;
 
-    cout << "Starting deformaiton... " << flush;
+    cout << "Starting deformation... " << flush;
     timer = PreciseTimer::currentTime();
     RGB24Buffer *defomed = image->doReverseDeformationBlTyped<RadialCorrection>(&T);
     cout << "done in: " << timer.usecsToNow() << "us" << endl;
@@ -301,12 +299,9 @@ TEST(Deform, DISABLED_testRadialInversion)
     BMPLoader().save("input.bmp"      , image);
     BMPLoader().save("forward.bmp"    , defomed);
     BMPLoader().save("backproject.bmp", backproject);
-
-
-
 }
 
-TEST(Deform, DISABLED_testRectangularImage)
+TEST(Deform, testRectangularImage)
 {
     LensDistortionModelParameters deformator;
     deformator.setPrincipalX(1296);
@@ -331,23 +326,4 @@ TEST(Deform, DISABLED_testRectangularImage)
 
     T.getInscribedImageRect    (0, 0, 1296 * 2, 972 * 2, min, max);
     cout << min  << " => " << max << endl;
-
-
-
 }
-
-#if 0
-int main (int /*argC*/, char ** /*argV*/)
-{
-    testBiliner();
-    //testRectangularImage();
-    //testRadialApplication();
-    //testFastDeform ();
-    //testFastDeform24 ();
-
-    //testRadialInversion();
-
-    cout << "PASSED" << endl;
-    return 0;
-}
-#endif

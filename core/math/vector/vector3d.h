@@ -196,6 +196,20 @@ public:
         return this->isInHypercube(low, high);
     }
 
+    void orthogonal(Vector3d<ElementType> &first, Vector3d<ElementType> &second) const
+    {
+        Vector3d<ElementType> n = this->normalised();
+        int min = n.minimumAbsId();
+        Vector3d<ElementType> ort(0.0);
+        ort[min] = 1.0;
+
+        ort = ort - n * (n & ort);
+
+        first  = ort.normalised();
+        second = (ort ^ *this).normalised();
+    }
+
+
 
     /*template<typename OtherType>
     inline operator Vector3d<OtherType>()
@@ -209,6 +223,24 @@ template<class VisitorType>
         visitor.visit(y(), ElementType(0), "y");
         visitor.visit(z(), ElementType(0), "z");
     }
+
+    /* Some frequently used vectors*/
+    static Vector3d<ElementType> Zero() {
+        return Vector3d<ElementType>(0.0, 0.0, 0.0);
+    }
+
+    static Vector3d<ElementType> OrtX() {
+        return Vector3d<ElementType>(1.0, 0.0, 0.0);
+    }
+
+    static Vector3d<ElementType> OrtY() {
+        return Vector3d<ElementType>(0.0, 1.0, 0.0);
+    }
+
+    static Vector3d<ElementType> OrtZ() {
+        return Vector3d<ElementType>(0.0, 0.0, 1.0);
+    }
+
 
 };
 

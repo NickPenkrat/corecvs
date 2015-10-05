@@ -8,14 +8,8 @@
  * \ingroup autotest  
  */
 
-
-
 #include <iostream>
 #include "gtest/gtest.h"
-
-#ifndef ASSERTS
-#define ASSERTS
-#endif
 
 #include "global.h"
 
@@ -294,9 +288,6 @@ TEST(Homography, testProjectiveFromPoints2)
  }
 
  cout << endl;
-
-
-
 }
 
 TEST(Homography, testProjectiveFromPoints1)
@@ -400,15 +391,3 @@ TEST(Homography, testProjectiveFromLine)
 
     CORE_ASSERT_TRUE(H.notTooFar(Matrix33::Scale2(2.0), 1e-7), "Wrong line based reconstructions");
 }
-
-//int main (int /*argC*/, char ** /*argV*/)
-//{
-//    testProjectiveFromPoints2();
-//    return 0;
-//    testProjectiveInverse ();
-//    testProjectiveFromPoints();
-//    testProjectiveFromPoints1();
-//    testProjectiveFromLine();
-//        cout << "PASSED" << endl;
-//        return 0;
-//}

@@ -7,11 +7,6 @@
  *
  * \ingroup autotest  
  */
-
-#ifndef ASSERTS
-#define ASSERTS
-#endif
-
 #ifndef TRACE
 #define TRACE
 #endif
@@ -88,6 +83,7 @@ TEST(Affine, testMatrixToQuaternion)
         cout << Q  << " l= " << Q .l2Metric() << endl;
         //cout << M << endl;
         cout << Q1 << " l= " << Q1.l2Metric() << endl;
+        ASSERT_TRUE(Q.notTooFar(Q1, 1e-7));
     }
 
 }
@@ -145,12 +141,12 @@ TEST(Affine, profileHamilton)
     cout << a << endl;
 }
 
-TEST(Affine, testEulerAngels)
+TEST(Affine, testEulerAngles)
 {
-    CameraAngles anglesCam(0.7, 0.4, 0.1);
+    CameraAnglesLegacy anglesCam(0.7, 0.4, 0.1);
     Matrix33 matrixCam = anglesCam.toMatrix();
     Quaternion quatCam = Quaternion::FromMatrix(matrixCam);
-    CameraAngles anglesCam1 = CameraAngles::FromQuaternion(quatCam);
+    CameraAnglesLegacy anglesCam1 = CameraAnglesLegacy::FromQuaternion(quatCam);
 
 
     cout << "A:(" << anglesCam.pitch() << ", "
@@ -164,4 +160,3 @@ TEST(Affine, testEulerAngels)
                   << anglesCam1.yaw()   << ", "
                   << anglesCam1.roll()  << ")" << endl;
 }
-

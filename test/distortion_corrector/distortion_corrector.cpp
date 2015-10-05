@@ -32,7 +32,7 @@
 #include "chessBoardCornerDetector.h"
 #include "chessBoardAssembler.h"
 
-#include "calibrationStructs.h"
+#include "calibrationPhotostation.h"
 
 using namespace cv;
 using namespace corecvs;
@@ -115,7 +115,7 @@ int main (int argc, char **argv)
 
     bool useGreenChannel = setter.getBool("use_green_channel");
     bool isInverse       =!setter.getBool("is_direct"        ); // "inverse" works always except "direct" is requested
-    bool drawProccess    = setter.getBool("draw_proccess"    );
+  //bool drawProccess    = setter.getBool("draw_proccess"    );
 
     if (setter.getBool("test_opencv"))
     {
@@ -215,12 +215,12 @@ int main (int argc, char **argv)
         solver.lineList = &features;
         solver.parameters = parameters;
 
-                RadialCorrection correction = solver.solve();
+        RadialCorrection correction = solver.solve();
 
-                Camera_ camera;
-                camera.distortion = correction.mParams;
-                JSONSetter setter(jsonFileName);
-                setter.visit(camera, "intrinsic");
+        CameraModel camera;
+        camera.distortion = correction.mParams;
+        JSONSetter setter(jsonFileName);
+        setter.visit(camera, "intrinsic");
     }
 
     else if (setter.hasOption("calcFullCheckerBoard"))

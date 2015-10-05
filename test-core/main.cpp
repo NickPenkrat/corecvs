@@ -4,36 +4,68 @@
 
 #include "global.h"
 
-#include "vectorOperations.h"
-#include "preciseTimer.h"
-#include "fixedVector.h"
 #include "fixedArray.h"
-#include "vector3d.h"
-
 
 using namespace std;
 using namespace corecvs;
 
+static bool checkFileExist(const string& dirPath, const string& filePath)
+{
+    CORE_ASSERT_TRUE_S((dirPath.length() == 0 || dirPath[dirPath.length() - 1] != PATH_SEPARATOR[0]));
 
-TEST(EnvTest, CheckTopconDirTest) {
-    if(const char* dir = std::getenv("TOPCON_DIR")) {
-        CORE_UNUSED(dir);
-        SUCCEED();
-    } else {
-        FAIL();
-    }
+    string path = dirPath + PATH_SEPARATOR + filePath;
+    cout << "checking for the file <" << path << ">" << endl;
+
+    return access(path.c_str(), 0) == 0;
 }
 
-TEST(EnvTest, CheckTopconDirGDriveTest) {
-    if(const char* dir = std::getenv("TOPCON_DIR_GDRIVE")) {
-        CORE_UNUSED(dir);
-        SUCCEED();
-    } else {
-        FAIL();
+static bool checkFileExist(const char* dirName, const string& filePath)
+{
+    cchar* dir = getenv(dirName);
+    if (dir == NULL) {
+        //FAIL();
+        CORE_ASSERT_FAIL_P(("Missed environment variable %s", dirName));
+        return false;
     }
+    //SUCCEED();
+    cout << dirName << "=" << dir << endl;
+
+    return checkFileExist(string(dir), filePath);
 }
 
-TEST(VectorTest, MulAllElements) {
+// Check existance for the "data/pair/image0001_c0.pgm"
+TEST(EnvTest, CheckCurrentDirTest)
+{
+    string filePath = string("data")
+        + PATH_SEPARATOR + "pair"
+        + PATH_SEPARATOR + "image0001_c0.pgm";
+
+    CORE_ASSERT_TRUE(checkFileExist(string("."), filePath), "Missed expected repo DB at the current folder");
+}
+
+// Check existance for the "<TOPCON_DIR>/data/dataMeasure_12_Roof/mosk_test_001_good/_DSC8173.jpg"
+TEST(EnvTest, CheckTopconDirTest)
+{
+    string filePath = string("data")
+        + PATH_SEPARATOR + "Measure_12_Roof"
+        + PATH_SEPARATOR + "mosk_test_001_good"
+        + PATH_SEPARATOR + "_DSC8173.jpg";
+
+    CORE_ASSERT_TRUE(checkFileExist("TOPCON_DIR", filePath), "Missed expected DB at the TOPCON_DIR folder");
+}
+
+// Check existance for the "<TOPCON_DIR_GDRIVE>/data/tests/SPA3_0deg_3.jpg"
+TEST(EnvTest, CheckTopconDirGDriveTest)
+{
+    string filePath = string("data")
+        + PATH_SEPARATOR + "tests"
+        + PATH_SEPARATOR + "SPA3_0deg_3.jpg";
+
+    CORE_ASSERT_TRUE(checkFileExist("TOPCON_DIR_GDRIVE", filePath), "Missed expected DB at the TOPCON_DIR_GDRIVE folder");
+}
+
+TEST(VectorTest, MulAllElements)
+{
     const int LENGTH = 8;
     FixedArray<int> arr(LENGTH);
     ASSERT_EQ(arr.size(), LENGTH);

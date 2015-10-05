@@ -14,6 +14,7 @@
 #include "hersheyVectorFont.h"
 #include "rgbColor.h"
 #include "polygons.h"
+#include "conic.h"
 
 namespace corecvs {
 
@@ -177,6 +178,11 @@ public:
                     mTarget->element(y + dy, j) = color;
             }
         }
+    }
+
+    void drawCircle(const Circle2d &circle, RGBColor color)
+    {
+        drawCircle(circle.c.x(), circle.c.y(), circle.r, color);
     }
 
     class EqualPredicate

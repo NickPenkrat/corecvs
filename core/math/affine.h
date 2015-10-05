@@ -33,7 +33,7 @@ public:
     Affine3D(const LinearType &_rotor, const Vector3dd &_shift = Vector3dd(0.0)) :
         rotor(_rotor),
         shift(_shift)
-    {};
+    {}
 
     friend inline Vector3dd operator *(const Affine3D &affine, const Vector3dd &x)
     {

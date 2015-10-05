@@ -12,10 +12,6 @@
 #include <stdint.h>
 #include "gtest/gtest.h"
 
-#ifndef ASSERTS
-#define ASSERTS
-#endif
-
 #include "global.h"
 
 #include "mathUtils.h"
@@ -197,7 +193,7 @@ void _profileManualAddStream (void)
 }
 */
 
-TEST(FastKernel, DISABLED_testEdgeDetector)
+TEST(FastKernel, testEdgeDetector)
 {
     G12Buffer *input = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
     BufferProcessor<G12Buffer, G12Buffer, EdgeMagnitude, G12BufferAlgebra> processor;
@@ -218,7 +214,7 @@ TEST(FastKernel, DISABLED_testEdgeDetector)
     delete input;
 }
 
-TEST(FastKernel, DISABLED_profileEdgeDetector)
+TEST(FastKernel, profileEdgeDetector)  // TODO: move to perf-tests
 {
     const static unsigned int LIMIT = 100;
     G12Buffer *inputs[LIMIT];
@@ -269,15 +265,14 @@ TEST(FastKernel, testSSEMath)
         UInt16x8 input((uint16_t)i);
         //cout << input << endl;
         UInt16x8 output = SSEMath::div<5>(input);
-#ifdef ASSERTS
+
         uint16_t inputS = i;
         uint16_t outputS = GenericMath<uint16_t>::div<5>(inputS);
-        ASSERT_TRUE_P(output[0] == outputS, ("Problem with %d s=%d v=%d", i, outputS, output[0]));
-#endif
+        CORE_ASSERT_TRUE_P(output[0] == outputS, ("Problem with %d s=%d v=%d", i, outputS, output[0]));
     }
 }
 
-void testSSEMul (void)
+TEST(FastKernel, testSSEMul)
 {
     uint32_t data1[4] = { 12, 554, 345, 654 };
     uint32_t data2[4] = { 12, 554, 345, 654 };
@@ -289,12 +284,12 @@ void testSSEMul (void)
     cout << "Products are "<< result << endl;
     for (unsigned i = 0; i < CORE_COUNT_OF(data1); i++)
     {
-        ASSERT_TRUE_P( result[i] == data1[i] * data2[i], ("Problem with product"));
+        CORE_ASSERT_TRUE_P(result[i] == data1[i] * data2[i], ("Problem with product"));
     }
 }
 
+#endif // WITH_SSE
 
-#endif
 
 TEST(FastKernel, testBooleanOperations)
 {
@@ -345,7 +340,6 @@ TEST(FastKernel, testBooleanOperations)
     processorSubt.process(inarr, &subtmask, subtkernel);
     out->drawG8Buffer(subtmask);
     BMPLoader().save("subt.bmp", out);
-
 
 
     delete out;

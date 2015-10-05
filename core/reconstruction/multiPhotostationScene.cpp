@@ -2,6 +2,7 @@
 
 #include "multicameraTriangulator.h"
 #include "bufferReaderProvider.h"
+#include "calibrationHelpers.h"
 
 corecvs::Vector2dd MultiPhotostationScene::computeReprojectionError (int ps, int cam, const corecvs::Vector3dd &point, const corecvs::Vector2dd &expected) const
 {
@@ -133,7 +134,7 @@ void MultiPhotostationScene::ParallelColoriser::operator() (const corecvs::Block
 void MultiPhotostationScene::drawPly(corecvs::Mesh3D &mesh)
 {
     for (auto& ps: photostations)
-        ps.drawPly(mesh, 1000);
+        corecvs::CalibrationHelpers().drawPly(mesh, ps, 1000);
     int obscnt = 0;
     int NN = pointObservations.size();
     std::vector<corecvs::RGBColor> colors(NN);

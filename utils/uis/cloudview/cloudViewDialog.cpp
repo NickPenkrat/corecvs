@@ -90,11 +90,16 @@ CloudViewDialog::CloudViewDialog(QWidget *parent) :
     mUi.treeView->setDragEnabled(true);
     mUi.treeView->setAcceptDrops(true);
     //mUi.treeView->setDropIndicatDraw3dParametersorShown(true);
+
+    mUi.treeView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    mUi.treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
     mUi.treeView->setColumnWidth(TreeSceneModel::NAME_COLUMN,200);
     mUi.treeView->setColumnWidth(TreeSceneModel::FLAG_COLUMN,30);
     mUi.treeView->setColumnWidth(TreeSceneModel::PARAMETER_COLUMN,20);
 
     connect(mUi.treeView, SIGNAL(clicked(const QModelIndex &)), &mTreeModel, SLOT(clicked(const QModelIndex &)));
+    connect(mUi.treeView, SIGNAL(toggleInitiated()), this, SLOT(toggledVisibility()));
 
     connect(&mTreeModel, SIGNAL(modelChanged()), mUi.widget, SLOT(update()));
 
@@ -107,6 +112,7 @@ CloudViewDialog::CloudViewDialog(QWidget *parent) :
 
     QSharedPointer<CoordinateFrame> worldFrame = QSharedPointer<CoordinateFrame>(new CoordinateFrame());
 
+#if 0
 /*    QSharedPointer<Scene3D> grid  = QSharedPointer<Scene3D>(new Grid3DScene());
     QSharedPointer<Scene3D> plane = QSharedPointer<Scene3D>(new Plane3DScene());
     grid->name  = "Grid";
@@ -143,10 +149,13 @@ CloudViewDialog::CloudViewDialog(QWidget *parent) :
     box->name = "box-mesh";
     //addSubObject("box-mesh", QSharedPointer<Scene3D>(box));
     worldFrame->mChildren.push_back(QSharedPointer<Scene3D>(box));
+#endif
 
     addSubObject("World Frame", worldFrame);
 
 }
+
+
 
 void CloudViewDialog::addMesh(QString name, Mesh3D *mesh)
 {
@@ -760,6 +769,20 @@ void CloudViewDialog::savePointsPLY()
     mScenes[MAIN_SCENE]->dumpPLY(file);
     file.close();
     qDebug("done\n");
+}
+
+void CloudViewDialog::toggledVisibility()
+{
+    QItemSelectionModel *selection = mUi.treeView->selectionModel();
+    QModelIndexList	list = selection->selectedRows();
+    for (const QModelIndex &index : list)
+    {
+        qDebug() << "Model Ids:" << index.row();
+        QModelIndex boxIndex = index.sibling(index.row(), TreeSceneModel::FLAG_COLUMN);
+        bool isVisible = mTreeModel.data(boxIndex, Qt::CheckStateRole).toBool();
+        mTreeModel.setData(boxIndex, !isVisible, Qt::CheckStateRole);
+    }
+
 }
 
 void CloudViewDialog::loadMesh()

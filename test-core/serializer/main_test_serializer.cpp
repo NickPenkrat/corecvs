@@ -11,10 +11,6 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#ifndef ASSERTS
-#define ASSERTS
-#endif
-
 #include "global.h"
 
 #include "vector3d.h"
@@ -27,13 +23,17 @@
 using namespace std;
 using namespace corecvs;
 
-TEST(Serializer, testReflection)
+TEST(Serializer, testReflectionDEATH)
 {
     Vector2dd vec(5.0, 0.4);
     PrinterVisitor visitor;
 
-    visitor.visit(vec, static_cast<const CompositeField *>(NULL));
-
+    // unfortunately such an error is differently handling on linux and win!
+#ifdef WIN32
+    ASSERT_EXIT(visitor.visit(vec, static_cast<const CompositeField *>(NULL)), ::testing::ExitedWithCode(1), "");
+#else
+    ASSERT_EXIT(visitor.visit(vec, static_cast<const CompositeField *>(NULL)), ::testing::KilledBySignal(11), "");
+#endif
 }
 
 TEST(Serializer, testReflection1)
@@ -87,7 +87,7 @@ TEST(Serializer, testReflection1)
     cout << "Output" << rvecc << endl;
 }
 
-void testPropertyListLoader( void )
+TEST(Serializer, testPropertyListLoader)
 {
     const char *example =
     "# Test \n"
@@ -116,12 +116,3 @@ TEST(Serializer, testSerializer1)
 
     list.save(cout);
 }
-
-//int main (int /*argC*/, char ** /*argV*/)
-//{
-//    testReflection();
-//    testSerializer();
-//    testSerializer1();
-//    cout << "PASSED" << endl;
-//        return 0;
-//}

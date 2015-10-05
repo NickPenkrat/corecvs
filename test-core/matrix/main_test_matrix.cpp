@@ -8,10 +8,6 @@
  * \ingroup autotest
  */
 
-#ifndef ASSERTS
-#define ASSERTS
-#endif
-
 #include <sstream>
 #include <iostream>
 #include <limits>
@@ -317,11 +313,26 @@ TEST(MatrixTest, testVector3d)
     Vector3dd intconstRes = Vector3dd(2.0,-4.0,6.0);
     CORE_ASSERT_TRUE(in1.notTooFar(intconstRes, 1e-10), "Wrong elementwise int const mul\n")
 
-
     in1 = in2 * 2.0;
     Vector3dd constRes = Vector3dd(2.0,-4.0,6.0);
     CORE_ASSERT_TRUE(in1.notTooFar(constRes, 1e-10), "Wrong elementwise const mul\n")
 }
+
+TEST(MatrixTest, testVector3dOrtogonal)
+{
+    Vector3dd in(100, 20, 30);
+    Vector3dd ort1;
+    Vector3dd ort2;
+
+    in.orthogonal(ort1, ort2);
+    ASSERT_TRUE( fabs(!ort1 - 1.0) < 1e-8);
+    ASSERT_TRUE( fabs(!ort2 - 1.0) < 1e-8);
+
+    ASSERT_TRUE( fabs((ort1 & in)) < 1e-8);
+    ASSERT_TRUE( fabs((ort2 & in)) < 1e-8);
+    ASSERT_TRUE( fabs((ort2 & ort1)) < 1e-8);
+}
+
 
 TEST(MatrixTest, testVector2d)
 {
@@ -379,7 +390,7 @@ TEST(MatrixTest, testDouble)
         oss  << (double)vals[i];
         oss.flush();
         cout << oss.str() << endl;
-        istringstream iss (oss.str(),istringstream::in);
+        istringstream iss (oss.str(), istringstream::in);
         double result;
         iss >> result;
         CORE_ASSERT_TRUE_P(result == vals[i], ("Internal problem with double and stdout"));
@@ -523,7 +534,6 @@ TEST(MatrixTest, testVectorMatrixConversions)
     cout << out2 << endl;
     cout << out3 << endl;
     cout << out4 << endl;
-
 }
 
 /**
@@ -546,7 +556,6 @@ TEST(MatrixTest, testMatrixProps)
     ASSERT_TRUE(!Ainf.isFinite());
     ASSERT_TRUE(!Anan.isFinite());
     ASSERT_TRUE( Aok .isFinite());
-
 }
 
 TEST(MatrixTest, test10MatrixMultiply)
@@ -557,9 +566,8 @@ TEST(MatrixTest, test10MatrixMultiply)
 
      cout << A << endl;
 
-     double data[] =
-
-     { 554.4, 1016.4,  1478.4, 1940.4, 2402.4, 2864.4, 3326.4,  3788.4,  4250.4,  4712.4,
+     double data[] = {
+       554.4, 1016.4,  1478.4, 1940.4, 2402.4, 2864.4, 3326.4,  3788.4,  4250.4,  4712.4,
       1016.4, 1863.4,  2710.4, 3557.4, 4404.4, 5251.4, 6098.4,  6945.4,  7792.4,  8639.4,
       1478.4, 2710.4,  3942.4, 5174.4, 6406.4, 7638.4, 8870.4, 10102.4, 11334.4, 12566.4,
       1940.4, 3557.4,  5174.4, 6791.4, 8408.4,10025.4,11642.4, 13259.4, 14876.4, 16493.4,
@@ -568,8 +576,8 @@ TEST(MatrixTest, test10MatrixMultiply)
       3326.4, 6098.4,  8870.4,11642.4,14414.4,17186.4,19958.4, 22730.4, 25502.4, 28274.4,
       3788.4, 6945.4, 10102.4,13259.4,16416.4,19573.4,22730.4, 25887.4, 29044.4, 32201.4,
       4250.4, 7792.4, 11334.4,14876.4,18418.4,21960.4,25502.4, 29044.4, 32586.4, 36128.4,
-      4712.4, 8639.4, 12566.4,16493.4,20420.4,24347.4,28274.4, 32201.4, 36128.4, 40055.4 };
-
+      4712.4, 8639.4, 12566.4,16493.4,20420.4,24347.4,28274.4, 32201.4, 36128.4, 40055.4
+     };
 
      Matrix result(10,10, data);
      Matrix AAT = A * A.t();
@@ -577,7 +585,7 @@ TEST(MatrixTest, test10MatrixMultiply)
      ASSERT_TRUE(AAT. notTooFar(&result, 1e-8, true));
 }
 
-#if 1
+#if 1       // TODO: move them into perf-tests
 /* Profile matrix */
 
 const static unsigned POLUTING_INPUTS = 20;
@@ -604,7 +612,6 @@ TEST(MatrixProfile, DISABLED_profileMatrixMul1000)
     for (unsigned i = 0; i < LIMIT; i++) {
         Matrix &A = *input[i % POLUTING_INPUTS];
         Matrix B = A * A;
-
     }
     uint64_t delaySimple = start.usecsToNow();
     SYNC_PRINT(("%8" PRIu64 "us %8" PRIu64 "ms SP: %8" PRIu64 "us\n", delaySimple, delaySimple / 1000, delaySimple / LIMIT));
@@ -612,20 +619,21 @@ TEST(MatrixProfile, DISABLED_profileMatrixMul1000)
     for (unsigned i = 0; i < POLUTING_INPUTS; i++) {
         delete_safe(input[i]);
     }
-
 }
 
-void printHeader () {
+void printHeader()
+{
     SYNC_PRINT(("|           |      Test size, mem and algo       | Runs|"));
     SYNC_PRINT(("   Time us   |   Time ms  |    One run us  |    Throughput    | \n"));
 }
 
-void printName (const char *name, int testsize, double mem, int runs) {
+void printName(const char *name, int testsize, double mem, int runs)
+{
     SYNC_PRINT(("| Profiling | [%5dx%-5d] (%6.1lf Mb) %8s | %3d |", testsize, testsize, mem / 1000000.0, name, runs));
-
 }
 
-void printResult(double gflops, uint64_t delay, int runs) {
+void printResult(double gflops, uint64_t delay, int runs)
+{
      double runss = 1000000.0 / ((double)delay / runs);
      double gflopss = runss * gflops;
 
@@ -782,27 +790,4 @@ TEST(MatrixProfile, DISABLED_profileMatrixMulSize3)
 
 }
 
-#endif
-
-//int main (int /*argC*/, char ** /*argV*/)
-//{
-//    cout << "Testing " << endl;
-//#if 1
-//    //testMatrixVectorMult();
-//    testMatrixOperations();
-//    return 0;
-//    testMatrix44VectorProduct();
-//    testMatrix44();
-//    testDouble();
-//    testMatrixSerialisation();
-//    testMatrixVectorProduct  ();
-//    testMatrix33 ();
-//    testMatrixStatics();
-//    testMatrixSVD ();
-//    testVector3d ();
-//    testVector2d ();
-//#endif
-//    testVectorMatrixConversions();
-//    cout << "PASSED" << endl;
-//    return 0;
-//}
+#endif // profile

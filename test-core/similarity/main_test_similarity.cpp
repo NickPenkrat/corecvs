@@ -14,6 +14,7 @@
 #include "gtest/gtest.h"
 
 #include "global.h"
+
 #include "vector3d.h"
 #include "similarityReconstructor.h"
 #include "mesh3d.h"
@@ -76,12 +77,10 @@ TEST(Similarity, testSimilarity)
     cout << "Result LM(N):" << cost * cost  << endl;
 
 
-
     std::fstream file;
     file.open("out.ply", std::ios::out);
     mesh.dumpPLY(file);
     file.close();
-
 }
 
 TEST(Similarity, testSimilarity1)
@@ -187,7 +186,6 @@ TEST(Similarity, testSimilarity1)
     file.open("out.ply", std::ios::out);
     mesh.dumpPLY(file);
     file.close();
-
 }
 
 TEST(Similarity, testCostFunction)
@@ -223,8 +221,8 @@ TEST(Similarity, testCostFunction)
     cout << matrix << endl;
     cout << "=======" << endl;
     cout << matrix1 << endl;
-
 }
+
 
 TEST(Similarity, testConverstions)
 {
@@ -244,16 +242,4 @@ TEST(Similarity, testConverstions)
     Vector3dd test = sim.shiftL + Vector3dd(sim.scaleL);
 
     cout << ((sim.toMatrix() * test) - sim.shiftR - Vector3dd(sim.scaleR)) << endl;
-
 }
-
-//int main (int /*argC*/, char ** /*argV*/)
-//{
-//    testSimilarity1();
-//    //testConverstions();
-//    //testSimilarity();
-//    //testCostFunction();
-
-//    cout << "PASSED" << endl;
-//    return 0;
-//}

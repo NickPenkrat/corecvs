@@ -24,7 +24,7 @@ SUBDIRS +=       \
 
 with_opencv {
     SUBDIRS +=       \
-    	distortion_corrector \
+        distortion_corrector \
         matcher_basic \
         matcher_full \
         camera_calibration \

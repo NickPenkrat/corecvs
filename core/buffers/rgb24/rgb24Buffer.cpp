@@ -564,19 +564,24 @@ void RGB24Buffer::drawArc(int x, int y, int rad, RGBColor color)
     int olddx = 0;
     for (int dy = -rad + 1; dy <= 0; dy++)
     {
-        int newdx = (int)sqrt((float)(rad2 - (dy - 0.5) * (dy - 0.5)));
+        int newdx = fround(sqrt((float)(rad2 - (dy - 0.5) * (dy - 0.5))));
 
-        for (int dx = olddx; dx <= newdx ; dx++) {
-            if (this->isValidCoord(y - dy, x + dx))  this->element(y - dy, x + dx) = color;
-            if (this->isValidCoord(y + dy, x + dx))  this->element(y + dy, x + dx) = color;
-            if (this->isValidCoord(y - dy, x - dx))  this->element(y - dy, x - dx) = color;
-            if (this->isValidCoord(y + dy, x - dx))  this->element(y + dy, x - dx) = color;
+        for (int dx = olddx; dx <= newdx ; dx++)
+        {
+            this->setElement(y - dy, x + dx, color);
+            this->setElement(y + dy, x + dx, color);
+            this->setElement(y - dy, x - dx, color);
+            this->setElement(y + dy, x - dx, color);
         }
 
         olddx = newdx;
     }
 }
 
+void RGB24Buffer::drawArc(const Circle2d &circle, RGBColor color )
+{
+    drawArc(circle.c.x(), circle.c.y(), circle.r, color);
+}
 
 
 void RGB24Buffer::drawArc1(int x, int y, int rad, RGBColor color)
@@ -588,10 +593,10 @@ void RGB24Buffer::drawArc1(int x, int y, int rad, RGBColor color)
         int newdx = (int)sqrt((float)(rad2 - (dy - 0.5) * (dy - 0.5)));
 
         for (int dx = olddx; dx <= newdx ; dx++) {
-            if (this->isValidCoord(y - dy, x + dx))  this->element(y - dy, x + dx) = color;
-            if (this->isValidCoord(y + dy, x + dx))  this->element(y + dy, x + dx) = color;
-            if (this->isValidCoord(y - dy, x - dx))  this->element(y - dy, x - dx) = color;
-            if (this->isValidCoord(y + dy, x - dx))  this->element(y + dy, x - dx) = color;
+            this->setElement(y - dy, x + dx, color);
+            this->setElement(y + dy, x + dx, color);
+            this->setElement(y - dy, x - dx, color);
+            this->setElement(y + dy, x - dx, color);
         }
 
         olddx = newdx;

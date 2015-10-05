@@ -49,7 +49,9 @@ HEADERS += \
     buffers/buffer3d.h \
     buffers/transformationCache.h \
     buffers/runtimeTypeBuffer.h \
-    buffers/deformMap.h
+    buffers/deformMap.h \
+    buffers/focusEstimator.h \
+
 
 
 SOURCES += \
@@ -85,6 +87,7 @@ SOURCES += \
     buffers/buffer3d.cpp \
     buffers/transformationCache.cpp \
     buffers/runtimeTypeBuffer.cpp \
-    buffers/deformMap.cpp
+    buffers/deformMap.cpp \
+    buffers/focusEstimator.cpp \
 
 

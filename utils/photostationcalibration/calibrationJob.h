@@ -14,7 +14,7 @@
 #include "lineDistortionEstimatorParameters.h"
 #include "distortionApplicationParameters.h"
 #include "chessBoardDetector.h"
-#include "calibrationStructs.h"
+#include "calibrationPhotostation.h"
 #include "photoStationCalibrator.h"
 
 struct ImageData
@@ -82,7 +82,7 @@ struct CalibrationSettings
     bool photostationCalibratorUseLMSolver = true;
     CameraConstraints photostationCalibratorConstraints = CameraConstraints::ZERO_SKEW | CameraConstraints::EQUAL_FOCAL | CameraConstraints::LOCK_SKEW;
 
-    CameraIntrinsics calibrationLockParams;
+    PinholeCameraIntrinsics calibrationLockParams;
 
     template<class VisitorType>
     void accept(VisitorType &visitor)
@@ -112,7 +112,7 @@ struct CalibrationSettings
         visitor.visit(m, asInteger(CameraConstraints::ZERO_SKEW | CameraConstraints::EQUAL_FOCAL | CameraConstraints::LOCK_SKEW), "photostationCalibratorConstraints");
         photostationCalibratorConstraints = static_cast<CameraConstraints>(m);
 
-        visitor.visit(calibrationLockParams, CameraIntrinsics(), "calibrationLockParams");
+        visitor.visit(calibrationLockParams, PinholeCameraIntrinsics(), "calibrationLockParams");
     }
 };
 
@@ -162,7 +162,7 @@ struct CalibrationJob
     void computeSingleCameraErrors();
     void computeCalibrationErrors();
     void calibratePhotostation();
-    void calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<CameraIntrinsics> &intrinsics, std::vector<std::vector<LocationData>> &locations, bool runBFS, bool runLM);
+    void calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<PinholeCameraIntrinsics> &intrinsics, std::vector<std::vector<LocationData>> &locations, bool runBFS, bool runLM);
     void calibrate();
     double factor = 1.0;
     std::vector<double> factors;

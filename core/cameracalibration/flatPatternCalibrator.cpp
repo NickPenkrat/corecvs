@@ -1,7 +1,7 @@
 #include "flatPatternCalibrator.h"
 #include <cassert>
 
-FlatPatternCalibrator::FlatPatternCalibrator(const CameraConstraints constraints, const CameraIntrinsics lockParams, const double lockFactor) : factor(lockFactor), K(0), N(0), absoluteConic(6), lockParams(lockParams), constraints(constraints), forceZeroSkew(!!(constraints & CameraConstraints::ZERO_SKEW))
+FlatPatternCalibrator::FlatPatternCalibrator(const CameraConstraints constraints, const PinholeCameraIntrinsics lockParams, const double lockFactor) : factor(lockFactor), K(0), N(0), absoluteConic(6), lockParams(lockParams), constraints(constraints), forceZeroSkew(!!(constraints & CameraConstraints::ZERO_SKEW))
 {
 }
 
@@ -29,7 +29,7 @@ void FlatPatternCalibrator::solve(bool runPresolver, bool runLM)
     std::cout << "OPTFAC: " << factor << std::endl;
 }
 
-CameraIntrinsics FlatPatternCalibrator::getIntrinsics()
+PinholeCameraIntrinsics FlatPatternCalibrator::getIntrinsics()
 {
     return intrinsics;
 }
@@ -409,5 +409,5 @@ void FlatPatternCalibrator::extractIntrinsics()
     skew = -b12 * fx * fx * fy / lambda;
     cx = skew * cy / fx - b13 * fx * fx / lambda;
 
-    intrinsics = CameraIntrinsics(fx, fy, cx, cy, skew);
+    intrinsics = PinholeCameraIntrinsics(fx, fy, cx, cy, skew);
 }

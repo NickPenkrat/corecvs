@@ -6,7 +6,9 @@
 
 #include "global.h"
 
-#include "calibrationStructs.h"
+#include "calibrationCamera.h"
+#include "calibrationLocation.h"
+#include "calibrationPhotostation.h"
 
 #include <random>
 
@@ -17,7 +19,7 @@ TEST(CalibrationStructsTest, testIntrinsicsStruct)
 {
     // Here we test interoperability of intrinsics struct
     // and returned projection matrix
-    corecvs::CameraIntrinsics intrinsics(1.0, 2.0, 3.0, 4.0, 5.0);
+    corecvs::PinholeCameraIntrinsics intrinsics(1.0, 2.0, 3.0, 4.0, 5.0);
     auto M = intrinsics.getKMatrix();
 
     std::mt19937 rng(DEFAULT_SEED);
@@ -48,13 +50,13 @@ TEST(CalibrationStructsTest, testCameraStruct)
 {
     // Here we test interoperability of camera struct
     // and returned projection matrix
-    corecvs::CameraIntrinsics intrinsics(1.0, 2.0, 3.0, 4.0, 5.0);
-    corecvs::Camera_ camera(
+    corecvs::PinholeCameraIntrinsics intrinsics(1.0, 2.0, 3.0, 4.0, 5.0);
+    corecvs::CameraModel camera(
             intrinsics, 
             LocationData(
                 corecvs::Vector3dd(6.0, 7.0, 8.0),
                 corecvs::Quaternion(0.5, 0.5, 0.5, 0.5)));
-    auto M = camera.getKMatrix();
+    auto M = camera.getCameraMatrix();
 
     std::mt19937 rng(DEFAULT_SEED);
     std::uniform_real_distribution<double> unif(-1e3, 1e3);
@@ -82,8 +84,8 @@ TEST(CalibrationStructsTest, testPhotostationStruct)
 {
     // Here we test interoperability of photostation struct
     // and returned projection matrix
-    corecvs::CameraIntrinsics intrinsics(1.0, 2.0, 3.0, 4.0, 5.0);
-    corecvs::Camera_ camera(
+    corecvs::PinholeCameraIntrinsics intrinsics(1.0, 2.0, 3.0, 4.0, 5.0);
+    corecvs::CameraModel camera(
             intrinsics, 
             corecvs::LocationData(
                 corecvs::Vector3dd(6.0, 7.0, 8.0),
@@ -96,7 +98,7 @@ TEST(CalibrationStructsTest, testPhotostationStruct)
 
     corecvs::Matrix44 M[] = {
         ps.getKMatrix(0),
-        ps.getRawCamera(0).getKMatrix()
+        ps.getRawCamera(0).getCameraMatrix()
     };
     auto C = ps.getRawCamera(0);
 
@@ -131,7 +133,7 @@ TEST(CalibrationStructsTest, testPhotostationStruct)
 
 TEST(CalibrationStructsTest, testIntrinsicsStructisVisible)
 {
-    corecvs::CameraIntrinsics intrinsics(1.0, 1.0, 0.5, 0.5, 0.0, corecvs::Vector2dd(1.0, 1.0));
+    corecvs::PinholeCameraIntrinsics intrinsics(1.0, 1.0, 0.5, 0.5, 0.0, corecvs::Vector2dd(1.0, 1.0));
     ASSERT_TRUE (intrinsics.isVisible(corecvs::Vector3dd( 0.0,  0.0, 1.0)));
     ASSERT_FALSE(intrinsics.isVisible(corecvs::Vector3dd( 2.0,  0.0, 1.0)));
     ASSERT_FALSE(intrinsics.isVisible(corecvs::Vector3dd(-2.0,  0.0, 1.0)));

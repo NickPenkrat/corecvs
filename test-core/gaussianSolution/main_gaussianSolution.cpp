@@ -1,9 +1,14 @@
+#include <iostream>
 #include "gtest/gtest.h"
+
+#include "global.h"
+
 #include "matrix.h"
 
 using namespace corecvs;
 
-bool isCorrectSolution()
+
+TEST(GaussianSolution, CorrectSolution)
 {
     double a = 1;
     double b = 0;
@@ -19,7 +24,7 @@ bool isCorrectSolution()
     double derDX = 0;
 
     Matrix * A = new Matrix(16, 16);
-    Matrix * B = new Matrix (16, 1);
+    Matrix * B = new Matrix(16, 1);
 
     A->a(0, 0) = 0;
     A->a(0, 1) = 0;
@@ -328,32 +333,39 @@ bool isCorrectSolution()
     Matrix * C = new Matrix(A);
     Matrix * D = new Matrix(B);
 
-    if (!Matrix::matrixSolveGaussian(A, B))
-        return false;
+    if (!Matrix::matrixSolveGaussian(A, B)) {
+        CORE_ASSERT_FAIL("matrixSolveGaussian return false");
+    }
 
     Matrix * F = C->mul(*B);
     for (int i = 0; i < 16; i ++)
     {
-        if (F->a(i, 0) != D->a(i, 0))
-            cout << "mistake at " << i << F->a(i, 0) - D->a(i, 0);
+        if (F->a(i, 0) != D->a(i, 0)) {
+            cout << "mistake at " << i << F->a(i, 0) - D->a(i, 0) << endl;
+            CORE_ASSERT_FAIL("matrixSolveGaussian return bad solution");
+        }
         cout << B->a(i, 0) << " ";
     }
 
-    return true;
+    delete_safe(A);
+    delete_safe(B);
+    delete_safe(C);
+    delete_safe(D);
+    delete_safe(F);
 }
 
-bool isCorrectSolutionForPolynomInterpolation()
+TEST(GaussianSolution, CorrectSolutionForPolynomInterpolation)
 {
     int degree = 2;
     Matrix * A = new Matrix(pow(degree + 1, 2), pow(degree + 1, 2));
     Matrix * B = new Matrix(pow(degree + 1, 2), 1);
 
-    for (int i = -1; i < degree; i ++) {
-        for (int j = -1; j < degree; j ++)
+    for (int i = -1; i < degree; i++) {
+        for (int j = -1; j < degree; j++)
         {
-            for (int k = 0; k <= degree; k ++)
+            for (int k = 0; k <= degree; k++)
             {
-                for (int g = 0; g <= degree; g ++) {
+                for (int g = 0; g <= degree; g++) {
                     A->a((degree + 1) * (i + 1) + j + 1, k * (degree + 1) + g) = pow(i, k) * pow(j, g);
                 }
             }
@@ -363,36 +375,30 @@ bool isCorrectSolutionForPolynomInterpolation()
         for (int j = 0; j < pow(degree + 1, 2); j ++) {
             cout << A->a(i, j) << " ";
         }
-        cout << "\n";
+        cout << endl;
     }
     for (int i = 0; i < pow(degree + 1, 2); i ++) {
         B->a(i, 0) = 0;
     }
     B->a(9, 0) = 1;
+
     Matrix * C = new Matrix(A);
     Matrix * D = new Matrix(B);
 
-    if (!Matrix::matrixSolveGaussian(A, B))
-        return false;
+    if (!Matrix::matrixSolveGaussian(A, B)) {
+        CORE_ASSERT_FAIL("matrixSolveGaussian return false");
+    }
 
     Matrix * F = C->mul(*B);
     for (int i = 0; i < pow(degree + 1, 2); i ++)
     {
-        if (fabs(F->a(i, 0) - D->a(i, 0)) > pow(10, -15))
-            cout << "mistake at " << i << " " << F->a(i, 0) - D->a(i, 0) << "\n";
-        cout << B->a(i, 0) << "\n ";
+        if (fabs(F->a(i, 0) - D->a(i, 0)) > pow(10, -15)) {
+            cout << "mistake at " << i << " " << F->a(i, 0) - D->a(i, 0) << endl;
+            CORE_ASSERT_FAIL("matrixSolveGaussian return bad solution");
+        }
+        cout << B->a(i, 0) << endl << " ";
     }
 
-    return true;
-
-}
-
-//int main(int argc, char *argv[])
-TEST(GaussianSolution, testRotations)
-{
-  //  QCoreApplication a(argc, argv);
-    cout << "\n" << isCorrectSolutionForPolynomInterpolation();
-//    int a;
-//    cin >> a;
-   // return a.exec();
+    delete_safe(D);
+    delete_safe(C);
 }

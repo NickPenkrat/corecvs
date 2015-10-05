@@ -9,10 +9,6 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#ifndef ASSERTS
-#define ASSERTS
-#endif
-
 #include "global.h"
 
 #include "sse_trace.h"
@@ -40,7 +36,6 @@ TEST(SSEWrappers, testSSEWrapperReverse)
         CORE_ASSERT_TRUE_P(data[i] == dataRes[7 - i], ("Reversing error:%i [%d != %d]", i, data[i], dataRes[7 - i]));
         cout << dataRes[i] << " ";
     }
-
     cout << endl;
 }
 
@@ -76,7 +71,8 @@ TEST(SSEWrappers, testSSEWrapper)
     }
     CORE_ASSERT_TRUE(sse32(acc0, 0) == sse32(acc1.data, 0), "Ops... arithmetics flaw");
 }
-#endif
+
+#endif // WITH_SSE
 
 TEST(SSEWrappers, profileSSEWrapper)
 {
@@ -177,7 +173,6 @@ TEST(SSEWrappers, testBasicArithmetics)
 TEST(SSEWrappers, testSignUnsign16)
 {
 #ifdef WITH_SSE
-    cout << "RUNNING:testSignUnsign";
     //2763 3070 3377 3684 3991
     //0xFFF
 
@@ -232,9 +227,7 @@ TEST(SSEWrappers, testSignUnsign16)
     uint16_t resultS = uint16_t(GenericMath<uint16_t>::div<4>( positiveS - negativeS ) + int16_t((int16_t)0));
     cout << resultS << endl;
 
-
-
-#endif
+#endif // WITH_SSE
 }
 
 TEST(SSEWrappers, testSaturatedArithmetics)
@@ -252,7 +245,6 @@ TEST(SSEWrappers, testSaturatedArithmetics)
     cout << "Signed Sum :" << sSum << endl;
     cout << "Signed Diff:" << sDif << endl;
 
-
     uint8_t b0t[16] = {  55, 100, 150, 200, 250,  10,  10,  10, 0, 0, 0, 0, 0, 0, 0, 0};
     uint8_t b1t[16] = {  55, 100, 150, 200, 250, 100, 100, 100, 0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -265,14 +257,12 @@ TEST(SSEWrappers, testSaturatedArithmetics)
     cout << "Unsigned Sum :" << uSum << endl;
     cout << "Unsigned Diff:" << uDif << endl;
 
-
-#endif
+#endif // WITH_SSE
 }
 
 TEST(SSEWrappers, testAdditionalFunctions)
 {
 #ifdef WITH_SSE
-    cout << "Starting testAdditionalFunctions" << endl;
     int16_t a0t[8] = { -8700, 8700,0,0, 0,0,0,0};
     int16_t a1t[8] = {  2207, 0,0,0, 0,0,0,0};
 
@@ -291,16 +281,13 @@ TEST(SSEWrappers, testAdditionalFunctions)
     int16_t absb0 = GenericMath<uint16_t>::abs(b0);
     cout << "GenericMath<uint16_t>::abs()=" << absb0 << endl;
     CORE_ASSERT_TRUE_P(absb0 == 8700, ("Wrong GenericMath abs result"));
-
-    /* Testing max */
-    cout << "Finished" << endl;
-#endif
+#endif // WITH_SSE
 }
 
 #ifdef WITH_SSE
+
 TEST(SSEWrappers, testRGBReader)
 {
-    cout << "Starting testRGBReader..." << endl;
     uint8_t data[4 * 16];
     for (unsigned i = 0; i < 16; i++)
     {
@@ -330,7 +317,6 @@ TEST(SSEWrappers, testRGBReader)
         }
         cout << endl;
     }
-    cout << "Finished" << endl;
 }
 
 TEST(SSEWrappers, testExtendingRGBReader)
@@ -366,7 +352,6 @@ TEST(SSEWrappers, testExtendingRGBReader)
         }
         cout << endl;
     }
-    cout << "Finished" << endl;
 }
 
 TEST(SSEWrappers, testDoubleExtendingRGBReader)
@@ -411,7 +396,6 @@ TEST(SSEWrappers, testDoubleExtendingRGBReader)
         }
         cout << endl;
     }
-    cout << "Finished" << endl;
 }
 
 TEST(SSEWrappers, testDoubleExtendingRGBReader1)
@@ -493,8 +477,6 @@ TEST(SSEWrappers, testDoubleExtendingRGBReader1)
     cout << "interl =" << Int8x16(x1.data) << endl;
     Int64x2 y1 = Int32x4::unpackHigher(Int32x4(t.data), Int32x4(t1.data));
     cout << "interh =" << Int8x16(y1.data) << endl;
-
-
 }
 
 TEST(SSEWrappers, testPack)
@@ -508,7 +490,6 @@ TEST(SSEWrappers, testPack)
     cout << "ppack =" << hex << Int8x16(f.data) << dec << endl;
     f = Int16x8::pack(a, b);
     cout << " pack =" << hex << Int8x16(f.data) << dec << endl;
-    cout << "Finished" << endl;
 }
 
 TEST(SSEWrappers, testSelector)
@@ -526,8 +507,6 @@ TEST(SSEWrappers, testSelector)
     cout << "input  " << b << endl;
     b = SSEMath::selector(b < con0bit, con0bit, b);
     cout << "clipbottom" << b << endl;
-
-    cout << "Finished" << endl;
 }
 
 TEST(SSEWrappers, testExtendingReader)
@@ -559,7 +538,7 @@ TEST(SSEWrappers, testExtendingReader)
         }
         cout << endl;
     }
-    cout << "Finished" << endl;
+    cout << endl;
 }
 
 TEST(SSEWrappers, test64bit)
@@ -573,7 +552,7 @@ TEST(SSEWrappers, test64bit)
 #else
     Int64x2 l64;
     cout << "test64bit() FAILED on msvc2010" << endl;
-    exit(-1);
+    CORE_ASSERT_FAIL("STOP");
 #endif
 
     UInt8x16 l8(l64.data);
@@ -605,33 +584,7 @@ TEST(SSEWrappers, test64bit)
 
     /*UInt8x16 al16 = UInt8x16(al.data);
     cout << al16 << endl;*/
-    cout << "Finished" << endl;
+    cout << endl;
 }
 
-#endif
-
-//int main (int /*argC*/, char ** /*argV*/)
-//{
-//#ifdef WITH_SSE
-//    testSelector();
-//    return 0;
-
-//    //    testPack();
-////    testRGBReader();
-//    //testDoubleExtendingRGBReader1();
-////    test64bit();
-//    testDoubleExtendingRGBReader();
-//    testSignUnsign16 ( );
-//    testAdditionalFunctions();
-//    testRGBReader();
-//    testExtendingRGBReader();
-//    testExtendingReader();
-//    testSSEWrapperReverse();
-//    testSSEWrapper ();
-//    testBasicArithmetics();
-//    return 0;
-//    profileSSEWrapper();
-//#endif
-//    cout << "PASSED" << endl;
-//    return 0;
-//}
+#endif // WITH_SSE

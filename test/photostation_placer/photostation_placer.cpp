@@ -15,7 +15,9 @@
 #include <algorithm>
 #include <iomanip>
 
+#include "calibrationHelpers.h"
 #include "calibrationJob.h"
+#include "mesh3d.h"
 #include "jsonSetter.h"
 #include "jsonGetter.h"
 
@@ -36,7 +38,7 @@
 #include "multiPhotostationScene.h"
 
 
-corecvs::Photostation GeneratePs(double r, int cams, corecvs::Camera_ camera)
+corecvs::Photostation GeneratePs(double r, int cams, corecvs::CameraModel camera)
 {
     double step = 2.0 * M_PI / cams;
     Photostation ps;
@@ -44,7 +46,7 @@ corecvs::Photostation GeneratePs(double r, int cams, corecvs::Camera_ camera)
     for (int i = 0; i < cams; ++i)
     {
         corecvs::Quaternion q(sin(i * step / 2.0), 0.0, 0.0, cos(i * step / 2.0));
-        corecvs::Camera_ cam = camera;
+        corecvs::CameraModel cam = camera;
         cam.extrinsics.position = q * posFirst;
         cam.extrinsics.orientation = cam.extrinsics.orientation ^ q;
         ps.cameras.push_back(cam);
@@ -52,9 +54,9 @@ corecvs::Photostation GeneratePs(double r, int cams, corecvs::Camera_ camera)
     return ps;
 }
 
-corecvs::Camera_ GenerateCamera(double F, double iW, double iH, bool imageFlip)
+corecvs::CameraModel GenerateCamera(double F, double iW, double iH, bool imageFlip)
 {
-    corecvs::CameraIntrinsics in;
+    corecvs::PinholeCameraIntrinsics in;
     in.focal = corecvs::Vector2dd(F, F);
     in.principal = corecvs::Vector2dd(iW / 2.0, iH / 2.0);
     in.size = corecvs::Vector2dd(iW, iH);
@@ -69,7 +71,7 @@ corecvs::Camera_ GenerateCamera(double F, double iW, double iH, bool imageFlip)
     {
         ex.orientation = corecvs::Quaternion(0.0, 0.0, sin(M_PI / 4.0), cos(M_PI / 4.0));
     }
-    return Camera_(in, ex); 
+    return CameraModel(in, ex); 
 }
 
 corecvs::Photostation GenerateCanonPs()
@@ -1178,12 +1180,11 @@ std::unordered_map<std::string, LocationData>  parseGps(const std::string &filen
         if (!data.size()) continue;
 
         std::smatch m;
-        if(!std::regex_match(data, m, re) || m.size() < 5) // 4 tokens + final
+        if (!std::regex_match(data, m, re) || m.size() < 5) // 4 tokens + final
         {
             std::cout << "REJECTED: " << data << std::endl;
             continue;
         }
-
 
         std::string key;
         double n, e, h;
@@ -1279,7 +1280,7 @@ int main(int argc, char **argv)
         ps.location = kp.second;
         ps.location.position -= sum; // only for mesh output purposes
         std::cout << "Placing " << kp.first <<  ps.location.position << " " << ps.location.orientation << std::endl;
-        ps.drawPly(mesh);
+        CalibrationHelpers().drawPly(mesh, ps);
     }
     
     std::ofstream of;

@@ -5,19 +5,14 @@
  * \date Jun 5, 2011
  * \author alexander
  */
-
-#ifndef CLASSICKALMAN_H_
-#define CLASSICKALMAN_H_
-
-#ifndef ASSERTS
-#define ASSERTS
-#endif
+#pragma once
 
 #include "global.h"
 
 #include <vector>
 #include "matrix.h"
 #include "function.h"
+
 namespace corecvs {
 
 using std::vector;
@@ -84,7 +79,4 @@ public:
 
 };
 
-
 } //namespace corecvs
-#endif /* CLASSICKALMAN_H_ */
-

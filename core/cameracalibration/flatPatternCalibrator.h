@@ -6,7 +6,7 @@
 #include "homographyReconstructor.h"
 #include "levenmarq.h"
 
-#include "calibrationStructs.h"
+#include "calibrationPhotostation.h"
 
 // In order to get 3-dof rotation, we should penalize for quaternion norm
 // The unclear part is it's weight
@@ -20,7 +20,7 @@
 struct FlatPatternCalibrator
 {
 public:
-    FlatPatternCalibrator(const CameraConstraints constraints = CameraConstraints::NONE, const CameraIntrinsics lockParams = CameraIntrinsics(), const double lockFactor = 1.0);
+    FlatPatternCalibrator(const CameraConstraints constraints = CameraConstraints::NONE, const PinholeCameraIntrinsics lockParams = PinholeCameraIntrinsics(), const double lockFactor = 1.0);
 
     // Add 2d-3d correspondences and initial guess for camera location
     // TODO: add check for pattern planarity and [maybe] support of other planes than z=0
@@ -29,7 +29,7 @@ public:
     // Runs (pre-) solver
 	void solve(bool runPresolver = true,bool runLM = false);
 
-	CameraIntrinsics getIntrinsics();
+    PinholeCameraIntrinsics getIntrinsics();
 
     std::vector<LocationData> getExtrinsics();
     
@@ -75,7 +75,7 @@ private:
     std::vector<corecvs::Matrix33> homographies;
 	std::vector<PatternPoints3d> points;
 	std::vector<LocationData> locationData;
-	CameraIntrinsics intrinsics, lockParams;
+    PinholeCameraIntrinsics intrinsics, lockParams;
 	CameraConstraints constraints;
     bool forceZeroSkew;
 };
