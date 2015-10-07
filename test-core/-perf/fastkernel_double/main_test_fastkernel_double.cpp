@@ -5,7 +5,7 @@
  * \date авг. 22, 2015
  * \author alexander
  *
- * \ingroup autotest
+ * \ingroup perf-tests
  */
 
 #include <iostream>
@@ -97,7 +97,7 @@ template <typename OtherAlgebra>
 
 
 
-TEST(FastKernelDouble, DISABLED_testDoubleConvolve)  // TODO: move to perf-tests;   commented as is failed on the line 244!
+TEST(FastKernelDouble, testDoubleConvolve)  // TODO: it fails on the line 244!
 {
     DpImage * input[POLUTING_INPUTS];
 
@@ -282,7 +282,7 @@ TEST(FastKernelDouble, DISABLED_testDoubleConvolve)  // TODO: move to perf-tests
 }
 
 
-TEST(FastKernelDouble, testLargeKernel)  // TODO: move to perf-tests
+TEST(FastKernelDouble, testLargeKernel)
 {
     DpImage * input[POLUTING_INPUTS];
     PreciseTimer start;

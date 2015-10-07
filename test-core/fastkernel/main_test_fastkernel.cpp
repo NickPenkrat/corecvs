@@ -64,7 +64,7 @@ public:
     }
 };
 
-TEST(FastKernel, _testFastKernel)
+TEST(FastKernel, _testScalar)
 {
     printf("Testing the fast kernel infrastructure with integer scalar\n");
     G12Buffer *input = new G12Buffer(TEST_H_SMALL_SIZE,TEST_W_SMALL_SIZE);
@@ -80,7 +80,6 @@ TEST(FastKernel, _testFastKernel)
     proc.process(in, &output);
     printf("Scalar:\n");
     output->print();
-    return;
 }
 
 template<int inputNumber, int outputNumber>
@@ -91,7 +90,7 @@ public:
     typedef ScalarAlgebraMulti<TraitVector3dd, TraitVector3dd, inputNumber, outputNumber> Type;
 };
 
-TEST(FastKernel, _testFastKernelVector3dd)
+TEST(FastKernel, _testVector3dd)
 {
     printf("Testing the fast kernel infrastructure with Vector3dd\n");
     typedef AbstractBuffer<Vector3dd> BufferType;
@@ -107,12 +106,11 @@ TEST(FastKernel, _testFastKernelVector3dd)
     cout << *output;
     delete input;
     delete output;
-    return;
 }
 
 #ifdef WITH_SSE
 
-TEST(FastKernel, _testFastKernelSSE)
+TEST(FastKernel, _testSSE)
 {
     printf("Testing the fast kernel infrastructure with SSE\n");
     G12Buffer *input = new G12Buffer(TEST_H_SMALL_SIZE,TEST_W_SMALL_SIZE);
@@ -138,10 +136,8 @@ TEST(FastKernel, _testFastKernelSSE)
     procS.processSaveAligned(in, &output);
     output->print();
 
-
     delete input;
     delete output;
-    return;
 }
 
 /*
@@ -214,7 +210,7 @@ TEST(FastKernel, testEdgeDetector)
     delete input;
 }
 
-TEST(FastKernel, profileEdgeDetector)  // TODO: move to perf-tests
+TEST(FastKernel, profileEdgeDetector)  // it could be moved to perf-tests...
 {
     const static unsigned int LIMIT = 100;
     G12Buffer *inputs[LIMIT];
@@ -244,7 +240,6 @@ TEST(FastKernel, profileEdgeDetector)  // TODO: move to perf-tests
             (uint64_t)fround((double)delay / LIMIT),
             (uint64_t)fround((double)delay / 1000.0 / LIMIT));
     fflush(stdout);
-
 }
 
 TEST(FastKernel, testSSEMath)

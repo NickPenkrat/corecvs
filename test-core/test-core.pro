@@ -1,50 +1,18 @@
-# try use global config 
-exists(../../../config.pri) {
-    ROOT_DIR=../../..
-    include($$ROOT_DIR/config.pri)
-} else {
-    message(Using local config)
-    ROOT_DIR=..
-    include($$ROOT_DIR/cvs-config.pri)
-}
-ROOT_DIR=$$PWD/$$ROOT_DIR
-
-TEMPLATE = app
-TARGET   = test_core
-CONFIG  += console
-CONFIG  -= app_bundle
-
-#message(OPEN_ROOT_DIRECTORY = $${OPEN_ROOT_DIRECTORY})
-#include($${OPEN_ROOT_DIRECTORY}/core/core.pri)
-#include($${OPEN_ROOT_DIRECTORY}/wrappers/gtest/gtest.pri)
-
-include(../core/core.pri)
-include(../wrappers/gtest/gtest.pri)
-
-DESTDIR = $$ROOT_DIR/bin
-
-TARGET_ORIG = $$TARGET                              # store original target name for proper detection of the obj.dir
-TARGET      = $$join(TARGET,,,$$BUILD_CFG_SFX)      # add 'd' at the end for debug versions
-
-OBJECTS_DIR = $$ROOT_DIR/.obj/$$TARGET_ORIG$$BUILD_CFG_NAME
-
-MOC_DIR  = $$OBJECTS_DIR                            # we have to set it to omit creating dummy dirs: debug,release
-UI_DIR   = $$OBJECTS_DIR
-RCC_DIR  = $$OBJECTS_DIR
+TARGET = core                                           # default "test-core" is incorrect. The "test.pri" will set it properly to the "test_core"
+include(test.pri)
 
 OTHER_FILES += \
     gentest.sh
 
 # Never to be fixed
 OTHER_FILES += \
-    cppunit_test/cppunit_test.cpp \
+    cppunit_test/cppunit_test.cpp \                     # TODO: "cppunit" dep
     snooker/main_test_snooker.cpp \                     # TODO: not the test code!
 
-# Things need to be fixed
+# Need to be fixed
 OTHER_FILES += \
    #ocv-homo/main_test_ocv-homo.cpp \                   # TODO: main + opencv deps
    #openCV/main_test_openCV.cpp \                       # TODO: main + opencv deps
-
 
 SOURCES += \
     main.cpp \
@@ -70,11 +38,11 @@ SOURCES += \
    #face_recognition/main_test_face_recognition.cpp \     # TODO: absent input data!
    #face_recognition1/main_test_face_recognition1.cpp \   # TODO: absent input data!
     fastkernel/main_test_fastkernel.cpp \
-    fastkernel_double/main_test_fastkernel_double.cpp \   # TODO: move to perf-tests ?
-    fastkernel_profile/main_test_fastkernel_profile.cpp \ # TODO: move to perf-tests ?
+   #fastkernel_double/main_test_fastkernel_double.cpp \   # moved to perf-tests
+   #fastkernel_profile/main_test_fastkernel_profile.cpp \ # moved to perf-tests
     fileformats/main_test_fileformats.cpp \
    #filter_blocks/main_test_filter_blocks.cpp \           # TODO: can't build
-    gaussianSolution/main_gaussianSolution.cpp \          # TODO: check it...
+    gaussianSolution/main_test_gaussianSolution.cpp \     # TODO: check it...
     geometry/main_test_geometry.cpp \
     gradient/main_test_gradient.cpp \
     histogram/main_test_histogram.cpp \
@@ -88,7 +56,7 @@ SOURCES += \
     midmap_pyramid/main_test_midmap_pyramid.cpp \
     moments/main_test_moments.cpp \
     morphologic/main_test_morphologic.cpp \
-    polynomDistortion/main_polynomDistortion.cpp \      # TODO: can't build - check...?
+    polynomDistortion/main_test_polynomDistortion.cpp \ # TODO: check it...
     ransac/main_test_ransac.cpp \
     readers/main_test_readers.cpp \
     rectificator/main_test_rectificator.cpp \
@@ -105,5 +73,5 @@ SOURCES += \
     yuv/main_test_yuv.cpp \
     cameracalibration/main_test_camera_structs.cpp \
     conic/main_test_conic.cpp \
-    calstructs/main_test_calstructs.cpp
+    calstructs/main_test_calstructs.cpp \
 

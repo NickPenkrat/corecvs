@@ -226,16 +226,12 @@ TEST(Similarity, testCostFunction)
 
 TEST(Similarity, testConverstions)
 {
-    cout << "======================================================" << endl;
-    cout << "testConverstions" << endl;
-    cout << "======================================================" << endl;
     Similarity sim;
     sim.shiftL = Vector3dd(0.236471, -0.0143253, -0.399441);
     sim.scaleL = 0.148925;
     sim.shiftR = Vector3dd(-716.4, 421.6, 0);
     sim.scaleR = 2641.6;
     Quaternion Q(0.0914267, -0.686214, 0.716433, -0.0864643);
-
 
     cout << ((sim.toMatrix() * sim.shiftL) - sim.shiftR) << endl;
 

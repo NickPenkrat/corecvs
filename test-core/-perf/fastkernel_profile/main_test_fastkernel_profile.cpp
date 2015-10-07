@@ -5,7 +5,7 @@
  * \date Sep 13, 2012
  * \author apimenov
  *
- * \ingroup autotest  
+ * \ingroup perf-tests
  */
 
 #include <iostream>
@@ -410,7 +410,7 @@ void _profileManualSobelH (void)
      printf("%8" PRIu64 "us %8" PRIu64 "ms SP: %8" PRIu64 "us\n", delay, delay / 1000, delay / LIMIT); fflush(stdout);
 }
 
-TEST(FastKernelProfile, DISABLED_main)   // TODO: is too slow, move to perf-tests!!!
+TEST(FastKernelProfile, main)
 {
     _profileAlgnmentAccessSpeed();
     _profileVectorKernel<Blur5Horisontal>("Hor");
