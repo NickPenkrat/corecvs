@@ -433,7 +433,7 @@ template<typename ResultType>
      **/
     inline void setElement(const IndexType y, const IndexType x, const ElementType &e)
     {
-        if (isValidCoord(y,x)) {
+        if (isValidCoord(y, x)) {
             element(y, x) = e;
         }
     }

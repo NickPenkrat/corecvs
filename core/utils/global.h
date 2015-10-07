@@ -63,6 +63,14 @@ typedef int                bool_t;                          // fast Boolean type
 #   define printf xil_printf
 #endif
 
+#ifdef GTEST_INCLUDE_GTEST_GTEST_H_
+    // gtest.h is included - the test is being compiled. We should activate our
+    //                       internal assertion mechanism if it was switched off!
+# ifndef  ASSERTS
+#  define ASSERTS
+# endif
+#endif
+
 #ifdef is__cplusplus
 # ifdef ASSERTS
 

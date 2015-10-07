@@ -12,6 +12,7 @@
 #include "gtest/gtest.h"
 
 #include "global.h"
+
 #include "cloud.h"
 #include "preciseTimer.h"
 #include "ellipticalApproximation.h"
@@ -20,7 +21,6 @@
 
 using namespace std;
 
-//int main (int /*argC*/, char ** /*argV*/)
 TEST(CloudTest, main)
 {
 //    srand(int64_t(0));
@@ -68,7 +68,6 @@ TEST(CloudTest, main)
         cout << (*it) << endl;
 
 
-
 //    Clustering3D clusterer(pCloud, 1, 1, 1, 1);
 //    clusterer._clusterStarting();
 
@@ -85,15 +84,8 @@ TEST(CloudTest, main)
 //        }
 
 
-
-
-
 //    Buffer3d buffer(10, 10, pCloud);
 //    buffer.element(5, 5)->speed = Vector3dd(0, 0, 0);
 
 //    cout << pCloud->back().speed << endl;
-
-
-    cout << "PASSED" << endl;
-//    return 0;
 }

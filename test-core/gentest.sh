@@ -45,6 +45,7 @@ cat >${testName}/main_test_${testName}.cpp <<END_TEXT
 
 #include <iostream>
 #include "gtest/gtest.h"
+
 #include "global.h"
 
 
@@ -52,7 +53,7 @@ using namespace std;
 
 TEST(${testName}, test${testName})
 {
-    cout << "Staring test <${testName}> PASSED" << endl;
+    cout << "Starting test <${testName}>" << endl;
     cout << "Test <${testName}> PASSED" << endl;
 }
 END_TEXT

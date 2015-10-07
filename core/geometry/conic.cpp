@@ -42,7 +42,7 @@ bool Sphere3d::intersectWith(const Plane3d &plane, Circle3d &intersection)
     result.normal = plane.normal();
     result.c = projection;
 
-    double xs = (projection - c).sumAllElementsSq(); /* this seem to be faster then sqDistanceTo scince we have already got projection*/
+    double xs = (projection - c).sumAllElementsSq(); /* this seem to be faster then sqDistanceTo since we have already got projection*/
     double as = (r * r) - xs;
     if (as < 0) {
         return false;

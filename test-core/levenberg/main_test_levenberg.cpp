@@ -8,11 +8,6 @@
  * \ingroup autotest  
  */
 
-#ifndef ASSERTS
-#define ASSERTS
-#endif
-
-
 #include <iostream>
 #include "gtest/gtest.h"
 
@@ -106,13 +101,3 @@ TEST(Levenberg, DISABLED_plotRosenberg)
 
     fclose(Out);
 }
-
-//int main (int /*argC*/, char ** /*argV*/)
-//{
-//    plotRosenberg();
-// //   testMarquardtLevenberg();
-
-
-//        cout << "PASSED" << endl;
-//        return 0;
-//}

@@ -1,6 +1,12 @@
 #include "calibrationHelpers.h"
+#include "mesh3d.h"
+#include "calibrationCamera.h"
+#include "calibrationPhotostation.h"
+#include "calibrationScene.h"
+#include "selectableGeometryFeatures.h"
 #include "abstractPainter.h"
 
+using namespace corecvs;
 
 RGBColor CalibrationHelpers::palette[] =
 {
@@ -47,7 +53,7 @@ void CalibrationHelpers::drawCamera(Mesh3D &mesh, CameraModel &cam, double scale
 
     for (int i = 0; i < edgenumber; ++i)
     {
-        Vector3dd v1 = qc * (invK * edges[i * 2]) + cc;
+        Vector3dd v1 = qc * (invK * edges[i * 2    ]) + cc;
         Vector3dd v2 = qc * (invK * edges[i * 2 + 1]) + cc;
 
         mesh.addLine(v1, v2);
@@ -111,7 +117,8 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, Photostation &ps, double scale)
         mesh.addLine(ppv, qs * (qc * (K * center) + cc) + cs);
     }
 
-    if (printNames) {
+    if (printNames)
+    {
         AbstractPainter<Mesh3D> p(&mesh);
         mesh.mulTransform(Matrix44::Shift(ps.location.position));
         mesh.setColor(RGBColor::Blue());
@@ -150,9 +157,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, CalibrationFeaturePoint &fp, doub
         p.drawFormatVector(scale / 5.0, scale / 5.0, 0, scale / 3.0, "%s", fp.name.c_str());
         mesh.popTransform();
     }
-
 }
-
 
 void CalibrationHelpers::drawScene(Mesh3D &mesh, CalibrationScene &scene, double scale)
 {
@@ -165,7 +170,6 @@ void CalibrationHelpers::drawScene(Mesh3D &mesh, CalibrationScene &scene, double
     {
         drawPly(mesh, fp, scale);
     }
-
 }
 
 

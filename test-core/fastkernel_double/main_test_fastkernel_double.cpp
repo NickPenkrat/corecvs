@@ -9,7 +9,10 @@
  */
 
 #include <iostream>
+#include "gtest/gtest.h"
+
 #include "global.h"
+
 #include "preciseTimer.h"
 #include "chessBoardCornerDetector.h"
 #include "fastKernel.h"
@@ -89,13 +92,12 @@ template <typename OtherAlgebra>
 
         /*Type a00 = algebra.getInput(0,0);
         algebra.putOutput(0,0, a00);*/
-
     }
 };
 
 
 
-void testDoubleConvolve()
+TEST(FastKernelDouble, DISABLED_testDoubleConvolve)  // TODO: move to perf-tests;   commented as is failed on the line 244!
 {
     DpImage * input[POLUTING_INPUTS];
 
@@ -237,7 +239,7 @@ void testDoubleConvolve()
      {
          for (int j = 0; j < TEST_W_SIZE; j++)
          {
-             ASSERT_DOUBLE_EQUAL_EP(outputScalar[0]->element(i,j),outputVector[0]->element(i,j), 1e-5,
+             CORE_ASSERT_DOUBLE_EQUAL_EP(outputScalar[0]->element(i,j), outputVector[0]->element(i,j), 1e-5,
                      ("Scalar and Vector computation results are not equal at (%d, %d) (%lf vs %lf).\n",
                       i,j, outputScalar[0]->element(i,j),outputVector[0]->element(i,j)));
          }
@@ -248,7 +250,7 @@ void testDoubleConvolve()
      {
          for (int j = 0; j < TEST_W_SIZE; j++)
          {
-             ASSERT_DOUBLE_EQUAL_EP(outputScalar[0]->element(i,j),outputKernalized[0]->element(i,j), 1e-5,
+             CORE_ASSERT_DOUBLE_EQUAL_EP(outputScalar[0]->element(i, j), outputKernalized[0]->element(i, j), 1e-5,
                      ("Scalar and Vector computation results are not equal at (%d, %d) (%lf vs %lf).\n",
                       i,j, outputScalar[0]->element(i,j),outputKernalized[0]->element(i,j)));
          }
@@ -259,7 +261,7 @@ void testDoubleConvolve()
      {
          for (int j = 1; j < TEST_W_SIZE - 1; j++)
          {
-             ASSERT_DOUBLE_EQUAL_EP(outputScalar[0]->element(i,j),outputSimple[0]->element(i,j), 1e-5,
+             CORE_ASSERT_DOUBLE_EQUAL_EP(outputScalar[0]->element(i, j), outputSimple[0]->element(i, j), 1e-5,
                      ("Scalar and Simple computation results are not equal at (%d, %d) (%lf vs %lf).\n",
                       i,j, outputScalar[0]->element(i,j),outputSimple[0]->element(i,j)));
          }
@@ -277,11 +279,10 @@ void testDoubleConvolve()
         delete_safe(outputKernalized[i]);
         delete_safe(outputSimple[i]);
     }
-
 }
 
 
-void testLargeKernel()
+TEST(FastKernelDouble, testLargeKernel)  // TODO: move to perf-tests
 {
     DpImage * input[POLUTING_INPUTS];
     PreciseTimer start;
@@ -289,7 +290,7 @@ void testLargeKernel()
     VisiterSemiRandom<DpImage::InternalElementType> vis;
     for (unsigned i = 0; i < POLUTING_INPUTS; i++)
     {
-        input[i] = new DpImage(TEST_H_SIZE ,TEST_W_SIZE);
+        input[i] = new DpImage(TEST_H_SIZE, TEST_W_SIZE);
         input[i]->touchOperationElementwize(vis);
     }
 
@@ -297,15 +298,15 @@ void testLargeKernel()
 
     for (unsigned i = 0; i < POLUTING_INPUTS; i++)
     {
-        outputKernalized[i] = new DpImage(TEST_H_SIZE ,TEST_W_SIZE);
+        outputKernalized[i] = new DpImage(TEST_H_SIZE, TEST_W_SIZE);
     }
 
-    for (int size=3; size < 20; size+=4)
+    for (int size = 3; size < 20; size += 4)
     {
         DpImage *kernel = new DpImage(size, size);
         kernel->touchOperationElementwize(vis);
 
-    #if defined (WITH_SSE)
+#if defined (WITH_SSE)
             SYNC_PRINT(("Profiling Kernalized Approach [%dx%d]:", kernel->w, kernel->h));
             start = PreciseTimer::currentTime();
 
@@ -316,7 +317,7 @@ void testLargeKernel()
             }
             uint64_t delayKernalized = start.usecsToNow();
             SYNC_PRINT(("%8" PRIu64 "us %8" PRIu64 "ms SP: %8" PRIu64 "us\n", delayKernalized, delayKernalized / 1000, delayKernalized / LIMIT));
-    #endif
+#endif
 
         delete_safe(kernel);
     }
@@ -328,13 +329,4 @@ void testLargeKernel()
     {
         delete_safe(outputKernalized[i]);
     }
-
-}
-
-int main (int /*argC*/, char **/*argV*/)
-{
-    testLargeKernel();
-    //testDoubleConvolve();
-    cout << "PASSED" << endl;
-    return 0;
 }

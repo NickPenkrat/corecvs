@@ -12,6 +12,7 @@
 #include "gtest/gtest.h"
 
 #include "global.h"
+
 #include "matrix.h"
 
 using namespace std;
@@ -69,12 +70,3 @@ TEST(Eigen, testJacobi)
         cout << "================" << endl;
     }
 }
-
-#if 0
-int main (int /*argC*/, char ** /*argV*/)
-{
-    testJacobi();
-    cout << "PASSED" << endl;
-    return 0;
-}
-#endif

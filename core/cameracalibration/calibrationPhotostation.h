@@ -1,5 +1,4 @@
-#ifndef CALIBRATION_PHOTOSTATION
-#define CALIBRATION_PHOTOSTATION
+#pragma once
 
 /**
  * \file calibrationPhotostation.h
@@ -8,15 +7,11 @@
  **/
 
 #include <type_traits>
+#include <cstring>
 
 #include "typesafeBitmaskEnums.h"
 #include "calibrationCamera.h"
-#include "typesafeBitmaskEnums.h"
-#include "lensDistortionModelParameters.h"
-#include "mesh3d.h"
-#include "selectableGeometryFeatures.h"
-
-#include "calibrationLocation.h"
+#include "calibrationLocation.h"  // LocationData
 
 namespace corecvs {
 
@@ -46,11 +41,10 @@ class Photostation
 {
 public:
     std::vector<CameraModel> cameras;
-    LocationData location;
+    LocationData             location;
+    std::string              name;
 
-    std::string name;
-
-    Photostation(){}
+    Photostation() {}
 
     Photostation(
         const std::vector<CameraModel> & _cameras,
@@ -83,5 +77,3 @@ typedef std::vector<std::pair<Vector2dd, Vector3dd>> PatternPoints3d;
 typedef std::vector<PatternPoints3d>                 MultiCameraPatternPoints;
 
 }
-
-#endif // CALIBRATION_PHOTOSTATION

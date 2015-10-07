@@ -51,7 +51,6 @@ TEST(Draw, testCircles1)
 {
     RGB24Buffer *buffer = new RGB24Buffer(100, 100);
 
-
     buffer->drawArc(50, 50, 40, RGBColor::White() );
 
     for (int i = 0; i < 40; i++ )
@@ -62,7 +61,6 @@ TEST(Draw, testCircles1)
 
     BMPLoader().save("circles1.bmp", buffer);
     delete_safe(buffer);
-
 }
 
 

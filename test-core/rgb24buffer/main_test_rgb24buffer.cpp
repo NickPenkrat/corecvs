@@ -15,7 +15,6 @@
 #include "rgb24Buffer.h"
 #include "../../core/fileformats/bmpLoader.h"
 
-
 using namespace std;
 using namespace corecvs;
 
@@ -30,23 +29,13 @@ TEST(RGB24BufferTest, testConversionToG12)
 {
     RGB24Buffer *buffer = new RGB24Buffer(100, 100);
     for (int i = 0; i < 10; i++) {
-        buffer->drawLine(1 + i * 4, 10, 90, 90, RGBColor(255,255- 20 *i,255));
+        buffer->drawLine(1 + i * 4, 10, 90, 90, RGBColor(255, 255 - 20 * i, 255));
     }
 
     G12Buffer *result = buffer->toG12Buffer();
     BMPLoader().save("rgb24.bmp", buffer);
     BMPLoader().save("g12.bmp",   result);
 
-    delete_safe(buffer);
     delete_safe(result);
+    delete_safe(buffer);
 }
-
-//int main (int /*argC*/, char ** /*argV*/)
-//{
-
-//    testConversionToG12();
-////    testDrawLine();
-
-//    cout << "PASSED" << endl;
-//    return 0;
-//}

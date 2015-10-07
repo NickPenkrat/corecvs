@@ -7,11 +7,6 @@
  *
  * \ingroup autotest  
  */
-
-#ifndef ASSERTS
-#define ASSERTS
-#endif
-
 #ifndef TRACE
 #define TRACE
 #endif
@@ -146,7 +141,7 @@ TEST(Affine, profileHamilton)
     cout << a << endl;
 }
 
-TEST(Affine, testEulerAngels)
+TEST(Affine, testEulerAngles)
 {
     CameraAnglesLegacy anglesCam(0.7, 0.4, 0.1);
     Matrix33 matrixCam = anglesCam.toMatrix();
@@ -165,4 +160,3 @@ TEST(Affine, testEulerAngels)
                   << anglesCam1.yaw()   << ", "
                   << anglesCam1.roll()  << ")" << endl;
 }
-

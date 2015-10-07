@@ -180,7 +180,7 @@ public:
         }
     }
 
-    void drawCircle(const Circle2d &circle, RGBColor color )
+    void drawCircle(const Circle2d &circle, RGBColor color)
     {
         drawCircle(circle.c.x(), circle.c.y(), circle.r, color);
     }

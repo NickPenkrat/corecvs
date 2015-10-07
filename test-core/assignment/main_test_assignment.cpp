@@ -12,6 +12,7 @@
 #include "gtest/gtest.h"
 
 #include "global.h"
+
 #include "g12Buffer.h"
 #include "assignmentOptimal.h"
 

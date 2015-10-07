@@ -11,10 +11,6 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#ifndef ASSERTS
-#define ASSERTS
-#endif
-
 #include "global.h"
 #include "mathUtils.h"
 #include "ellipticalApproximation.h"
@@ -106,14 +102,3 @@ TEST(Moments, testMoments4)
     cout << "passed" << endl;
 
 }
-
-
-//int main (int /*argC*/, char ** /*argV*/)
-//{
-//    testMoments4();
-//    testMoments1();
-//    testMoments2();
-//    testMoments3();
-//    cout << "PASSED" << endl;
-//    return 0;
-//}

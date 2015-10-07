@@ -28,12 +28,11 @@ public:
     EulerAngles(
         double _alpha,
         double _beta,
-        double _gamma
-    )
-    : alpha(_alpha),
-      beta (_beta),
-      gamma(_gamma)
-    { }
+        double _gamma)
+    : alpha(_alpha)
+    , beta (_beta)
+    , gamma(_gamma)
+    {}
 
     friend ostream & operator <<(ostream &out, const EulerAngles &angels)
     {

@@ -2,7 +2,7 @@
  * \file main_test_calstructs.cpp
  * \brief This is the main file for the test calstructs 
  *
- * \date окт. 02, 2015
+ * \date Oct 02, 2015
  * \author alexander
  *
  * \ingroup autotest  
@@ -10,8 +10,10 @@
 
 #include <iostream>
 #include "gtest/gtest.h"
+
 #include "global.h"
 
+#include "mesh3d.h"
 #include "calibrationScene.h"
 #include "calibrationHelpers.h"
 
@@ -73,10 +75,9 @@ TEST(calstructs, testCameraModel)
     ASSERT_TRUE(ratio.notTooFar(Vector3dd(ratio.x()), 1e-7));
 
    // ASSERT_TRUE(rayInCam.projectOnRay(point).notTooFar(point, 1e-7));
-    //ASSERT_TRUE(projection.notTooFar(projection1));
+   // ASSERT_TRUE(projection.notTooFar(projection1));
 
     CalibrationHelpers().drawCamera(mesh, model, 2.0);
 
     mesh.dumpPLY("cammodel.ply");
-    cout << "Test <calstructs> PASSED" << endl;
 }
