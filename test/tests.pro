@@ -29,6 +29,7 @@ with_opencv {
         matcher_full \
         camera_calibration \
         chessboard_detector \
+        calibration \
         calibration_job_generate \
         calibration_job_detect \
         calibration_job_estimate_distortion \
@@ -55,6 +56,8 @@ matcher_full.file                   = matcher_full/matcher_full.pro
 
 camera_calibration.file             = camera_calibration/camera_calibration.pro
 chessboard_detector.file            = chessboard_detector/chessboard_detector.pro
+
+calibration.file                    = calibration/calibration.pro
 
 calibration_job_generate            = calibration_job_generate/calibration_job_generate.pro
 calibration_job_detect              = calibration_job_detect/calibration_job_detect.pro

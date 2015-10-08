@@ -491,6 +491,8 @@ with_blas {
     }
     DEFINES     += WITH_BLAS
     LIBS        += -lopenblas
+    INCLUDEPATH += -I"%MKLROOT%"\include
+    LIBS        += -lblas -lmkl_intel_lp64_dll.lib -lmkl_core_dll.lib -lmkl_tbb_thread_dll.lib -ltbb.lib
   }
 }
 

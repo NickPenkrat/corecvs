@@ -32,7 +32,8 @@ CONFIG +=       \
    with_sse4    \
    with_avx     \
    with_avx2    \
-#   with_tbb     \
+   with_tbb     \
+   with_blas    \
 
 
 !win32:!macx {
