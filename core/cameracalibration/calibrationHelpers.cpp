@@ -48,20 +48,20 @@ void CalibrationHelpers::drawCamera(Mesh3D &mesh, CameraModel &cam, double scale
 
     Vector3dd cc    = cam.extrinsics.position;
     Quaternion qc   = cam.extrinsics.orientation.conjugated();
-    Matrix33 K      = cam.intrinsics.getInvKMatrix33();
+    Matrix33 invK      = cam.intrinsics.getInvKMatrix33();
 
 
     for (int i = 0; i < edgenumber; ++i)
     {
-        Vector3dd v1 = qc * (K * edges[i * 2    ]) + cc;
-        Vector3dd v2 = qc * (K * edges[i * 2 + 1]) + cc;
+        Vector3dd v1 = qc * (invK * edges[i * 2    ]) + cc;
+        Vector3dd v2 = qc * (invK * edges[i * 2 + 1]) + cc;
 
         mesh.addLine(v1, v2);
     }
 
-    Vector3dd ppv = qc * (K.mulBy2dRight(cam.intrinsics.principal) * scale) + cc;
+    Vector3dd ppv = qc * (invK.mulBy2dRight(cam.intrinsics.principal) * scale) + cc;
 
-    mesh.addLine(ppv, qc * (K * center) + cc);
+    mesh.addLine(ppv, qc * (invK * center) + cc);
 }
 
 
@@ -171,4 +171,5 @@ void CalibrationHelpers::drawScene(Mesh3D &mesh, CalibrationScene &scene, double
         drawPly(mesh, fp, scale);
     }
 }
+
 

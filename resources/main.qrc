@@ -89,6 +89,8 @@
         <file>script_save.png</file>
         <file>info_rhombus.png</file>
         <file>sharpen.png</file>
+        <file>tipper.png</file>
+        <file>tractor.png</file>
     </qresource>
     <qresource prefix="/new/colors">
         <file>colors/color_blue.png</file>

@@ -48,10 +48,14 @@ public:
         traceCrucial(false),
         trace(false),
         traceMatrix(false),
-        traceJacobian(false)
+        traceJacobian(false),
+
+        hasParadox(false)
         {}
 
     vector<double> fit(const vector<double> &input, const vector<double> &output);
+
+    bool hasParadox;
 
 };
 

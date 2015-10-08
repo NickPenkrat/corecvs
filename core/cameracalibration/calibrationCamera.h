@@ -195,7 +195,7 @@ public:
      **/
     Vector3dd dirToPoint(const Vector3dd &p)
     {
-        return extrinsics.camToWorld(p);
+        return extrinsics.project(p);
     }
 
     /**
@@ -217,7 +217,7 @@ public:
 
     bool isInFront(Vector3dd &pt)
     {
-        return (pt & forwardDirection()) > 0;
+        return ((pt - extrinsics.position) & forwardDirection()) > 0;
     }
 
     Ray3d               rayFromPixel(const Vector2dd &point);
