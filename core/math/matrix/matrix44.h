@@ -107,6 +107,10 @@ public:
     static Matrix44 Shift(const Vector3dd &v);
     static Matrix44 Scale(const double &d);
 
+    static Matrix44 RotationX(double angle);
+    static Matrix44 RotationY(double angle);
+    static Matrix44 RotationZ(double angle);
+
     static Matrix44 Frustum(double fovY, double aspect, double zNear = 1.0, double zFar = 1000.0);
 
     ~Matrix44();

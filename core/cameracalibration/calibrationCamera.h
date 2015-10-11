@@ -155,7 +155,7 @@ public:
     /**/
     LensDistortionModelParameters   distortion;
     /**/
-    CameraLocationData                    extrinsics;
+    CameraLocationData              extrinsics;
 
     /* cache for rotation should be introduced. First of all it is faster... */
     //Matrix33 rotMatrix;

@@ -131,7 +131,7 @@ struct ReconstructionJob : ReconstructionParameters
         int argout = 0;
         for (int i = 0; i < N; ++i)
         {
-            auto loc = scene.photostations[i].location;
+            auto loc = scene.photostations[i].getLocation();
             loc.orientation = loc.orientation.normalised();
 
             if (i > 1)
@@ -153,7 +153,7 @@ struct ReconstructionJob : ReconstructionParameters
         scale = corecvs::Vector3dd(0.0, 0.0, 0.0);
         for (int i = 0; i < N; ++i)
         {
-            auto& loc = scene.photostations[i].location.position;
+            const auto& loc = scene.photostations[i].getLocation().position;
             mean += loc;
             scale += loc * loc;
         }
@@ -169,7 +169,7 @@ struct ReconstructionJob : ReconstructionParameters
         int argin = 0;
         for (int i = 0; i < N; ++i)
         {
-            auto& loc = scene.photostations[i].location;
+            auto loc = scene.photostations[i].getLocation();
 
             if (i > 1)
             {
@@ -179,6 +179,8 @@ struct ReconstructionJob : ReconstructionParameters
             for (int j = 0; j < 4; ++j)
                 loc.orientation[j] = in[argin++];
             loc.orientation = loc.orientation.normalised();
+
+            scene.photostations[i].setLocation(loc);
         }
         assert(argin == getInputNum());
     }
@@ -218,15 +220,17 @@ struct ReconstructionJob : ReconstructionParameters
 
                         if (isNotUsed) continue;
                         auto ps_copy = rJob->scene.photostations[psId];
+                        auto loc = ps_copy.getLocation();
                         if (quat)
                         {
-                            ps_copy.location.orientation[inVec] += delta;
-                            ps_copy.location.orientation.normalise();
+                            loc.orientation[inVec] += delta;
+                            loc.orientation.normalise();
                         }
                         else
                         {
-                            ps_copy.location.position[inVec] += delta;
+                            loc.position[inVec] += delta;
                         }
+                        ps_copy.setLocation(loc);
 
                         std::vector<std::pair<corecvs::Matrix44, corecvs::Vector2dd>> pairs;
                         for (auto& p: obs.projections)
@@ -537,7 +541,7 @@ struct ReconstructionJob : ReconstructionParameters
             std::string prefix = ss.str();
 
             scene.photostations.push_back(ps);
-            scene.photostations.rbegin()->location = data[prefix];
+            scene.photostations.rbegin()->setLocation(data[prefix]);
             //scene.photostations.rbegin()->location.orientation = scene.photostations.rbegin()->location.orientation ^ corecvs::Quaternion(.0, .0, sin(angleOffset[id]/2.0), cos(angleOffset[id]/2.0));
 
             std::vector<CameraObservation> observations;
@@ -564,8 +568,9 @@ struct ReconstructionJob : ReconstructionParameters
             std::string prefix = ss.str();
 
             scene.photostations.push_back(calibrationData.photostation);
-            scene.photostations.rbegin()->location = data[prefix];
-            scene.photostations.rbegin()->location.orientation = scene.photostations.rbegin()->location.orientation ^ corecvs::Quaternion(.0, .0, sin(angleOffset[id]/2.0), cos(angleOffset[id]/2.0));
+            CameraLocationData loc = data[prefix];
+            loc.orientation = scene.photostations.rbegin()->getLocation().orientation ^ corecvs::Quaternion(.0, .0, sin(angleOffset[id]/2.0), cos(angleOffset[id]/2.0));
+            scene.photostations.rbegin()->setLocation(loc);
 
             std::vector<CameraObservation> observations;
             for (int i = 0; i < 6; ++i)
@@ -1277,9 +1282,10 @@ int main(int argc, char **argv)
     for (auto& kp: map)
     {
         std::cout << "KP: " << kp.second.position << " " << kp.second.orientation << std::endl;
-        ps.location = kp.second;
-        ps.location.position -= sum; // only for mesh output purposes
-        std::cout << "Placing " << kp.first <<  ps.location.position << " " << ps.location.orientation << std::endl;
+        CameraLocationData loc = kp.second;
+        loc.position -= sum; // only for mesh output purposes
+        std::cout << "Placing " << kp.first <<  loc.position << " " << loc.orientation << std::endl;
+        ps.setLocation(loc);
         CalibrationHelpers().drawPly(mesh, ps);
     }
     

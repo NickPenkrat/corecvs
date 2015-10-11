@@ -419,7 +419,7 @@ void CalibrationJob::computeCalibrationErrors()
     for (auto& s: calibrationSetups)
     {
         auto loc = *setupLocsIterator;
-        photostation.location = loc;
+        photostation.setLocation(loc);
         for (auto& v: s)
         {
             auto& view = observations[v.cameraId][v.imageId];

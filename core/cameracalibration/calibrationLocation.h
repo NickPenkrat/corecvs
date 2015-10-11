@@ -7,6 +7,7 @@
 #include "matrix44.h"
 #include "line.h"
 #include "eulerAngles.h"
+#include "affine.h"
 
 namespace corecvs {
 
@@ -68,6 +69,32 @@ public:
     {
     }
 
+    /**
+     * Helper function that creates a CameraLocationData that acts just as a Affine3DQ
+     *
+     * Affine
+     *    X' = AR * X + AT
+     *
+     * Cam
+     *    X' = CR * (X - CT) = CR * X - CR * CT
+     *
+     *    AT = - CR * CT
+     *
+     *    CR = AR
+     *    CT = CR^{-1} (- AT)
+     *
+     *
+     **/
+    explicit CameraLocationData( const Affine3DQ &transform ) :
+        position(transform.rotor * (-transform.shift)),
+        orientation(transform.rotor)
+    {}
+
+    Affine3DQ toAffine3D() const
+    {
+        return Affine3DQ(orientation, - (orientation * position));
+    }
+
     Vector3dd project(const Vector3dd &pt) const
     {
         return orientation * (pt - position);
@@ -108,11 +135,15 @@ public:
         orientation = orientation ^ rotate.conjugated();
     }
 
-    void transform(const CameraLocationData &outerTransform)
+    void transform(const Affine3DQ &affine)
     {
-        transform(outerTransform.orientation, outerTransform.position);
+        transform(affine.rotor, affine.shift);
     }
 
+    /*void transform(const CameraLocationData &outerTransform)
+    {
+        transform(outerTransform.orientation, outerTransform.position);
+    }*/
 
     template<class VisitorType>
     void accept(VisitorType &visitor)

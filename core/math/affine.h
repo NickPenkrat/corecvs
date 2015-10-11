@@ -29,15 +29,28 @@ public:
     LinearType rotor;
     Vector3dd  shift;
 
-
-    Affine3D(const LinearType &_rotor, const Vector3dd &_shift = Vector3dd(0.0)) :
+    explicit Affine3D(
+            LinearType _rotor = LinearType::Identity(),
+            Vector3dd  _shift = Vector3dd(0.0, 0.0, 0.0)
+           ) :
         rotor(_rotor),
         shift(_shift)
-    {}
+    {
+    }
+
+   /* Affine3D(const LinearType &_rotor, const Vector3dd &_shift = Vector3dd(0.0)) :
+        rotor(_rotor),
+        shift(_shift)
+    {}*/
 
     friend inline Vector3dd operator *(const Affine3D &affine, const Vector3dd &x)
     {
         return affine.rotor * x + affine.shift;
+    }
+
+    inline Vector3dd apply(const Vector3dd &x) const
+    {
+        return (*this) * x;
     }
 
     /**
@@ -58,21 +71,40 @@ public:
 
     static Affine3D RotationX(double angle)
     {
-        return LinearType::RotationX(angle);
+        return Affine3D(LinearType::RotationX(angle));
     }
 
     static Affine3D RotationY(double angle)
     {
-        return LinearType::RotationY(angle);
+        return Affine3D(LinearType::RotationY(angle));
     }
 
     static Affine3D RotationZ(double angle)
     {
-        return LinearType::RotationZ(angle);
+        return Affine3D(LinearType::RotationZ(angle));
     }
 
-
+    Affine3D invert();
 };
+
+/**
+ *     R * X + T = Y
+ *     X = R^{-1} * (Y - T) = R^{-1} * Y + (- R^{-1} * T)
+ **/
+template<>
+inline Affine3D<Quaternion> Affine3D<Quaternion>::invert()
+{
+    Quaternion inv = this->rotor.conjugated();
+    return Affine3D<Quaternion>(inv,  - (inv * this->shift));
+}
+
+template<>
+inline Affine3D<Matrix33> Affine3D<Matrix33>::invert()
+{
+    Matrix33 inv = this->rotor.inv();
+    return Affine3D<Matrix33>(inv,  - (inv * this->shift));
+}
+
 
 typedef Affine3D<Quaternion> Affine3DQ;
 typedef Affine3D<Matrix33>   Affine3DM;

@@ -41,31 +41,56 @@ class Photostation
 {
 public:
     std::vector<CameraModel> cameras;
-    CameraLocationData             location;
+    Affine3DQ                location;
     std::string              name;
 
     Photostation() {}
 
     Photostation(
         const std::vector<CameraModel> & _cameras,
-        const CameraLocationData &_location = CameraLocationData())
+        const Affine3DQ &_location = Affine3DQ())
       : cameras(_cameras)
       , location(_location)
     {}
 
-    // TODO: this stuff probably does not work?!
-    CameraModel getWorldCamera(int cam) {
+    /** This is a legacy compatibilty block **/
+
+    Photostation(
+        const std::vector<CameraModel> & _cameras,
+        const CameraLocationData &_location)
+      : cameras(_cameras)
+      , location(_location.toAffine3D())
+    {}
+
+    CameraLocationData getLocation() const
+    {
+        return CameraLocationData(location);
+    }
+
+    void setLocation(const CameraLocationData &_location)
+    {
+        location = _location.toAffine3D();
+    }
+
+    /***/
+
+
+
+
+    CameraModel getWorldCamera(int cam) const
+    {
         CameraModel toReturn = cameras[cam];
         toReturn.extrinsics.transform(location);
         return toReturn;
     }
-    // And this - work
+
     CameraModel getRawCamera(int cam) const
     {
-        auto c = cameras[cam];
+     /*   auto c = cameras[cam];
         c.extrinsics.orientation = c.extrinsics.orientation ^ location.orientation;
         c.extrinsics.position = (location.orientation.conjugated() * cameras[cam].extrinsics.position) + location.position;
-        return c;
+        return c;*/
+        return getWorldCamera(cam);
     }
     
     Matrix44 getKMatrix(int cam) const
@@ -75,20 +100,29 @@ public:
 
     Vector2dd project(const Vector3dd &pt, int cam) const
     {
-        return cameras[cam].project(location.project(pt));
+        return cameras[cam].project(location.apply(pt));
     }
 
     bool isVisible(const Vector3dd &pt, int cam) const
     {
-        return cameras[cam].isVisible(location.project(pt));
+        return cameras[cam].isVisible(location.apply(pt));
     }
 
 
     template<class VisitorType>
     void accept(VisitorType &visitor)
     {
+        /*
+          visitor.visit(cameras, "cameras");
+          visitor.visit(location, CameraLocationData(), "location");
+        */
+
+        /* So far comptibilty is on */
         visitor.visit(cameras, "cameras");
-        visitor.visit(location, CameraLocationData(), "location");
+
+        CameraLocationData loc = getLocation();
+        visitor.visit(loc, CameraLocationData(), "location");
+        setLocation(loc);
     }
 };
 

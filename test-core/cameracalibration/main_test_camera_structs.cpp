@@ -100,9 +100,9 @@ TEST(CalibrationStructsTest, testPhotostationStruct)
                 Vector3dd(6.0, 7.0, 8.0),
                 Quaternion(0.5, 0.5, 0.5, 0.5)));
     Photostation ps;
-    ps.location = CameraLocationData(
+    ps.setLocation(CameraLocationData(
             Vector3dd(9.0, 10.0, 11.0),
-            Quaternion(-1.0, 2.0, 3.0, -4.0).normalised());
+            Quaternion(-1.0, 2.0, 3.0, -4.0).normalised()));
     ps.cameras = { camera };
 
     Matrix44 M[] = {

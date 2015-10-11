@@ -88,11 +88,11 @@ void Mesh3D::addOrts(double length, bool captions)
         popTransform();
 
         setColor(RGBColor::Green());
-        mulTransform(tl * Matrix44::Shift(0, 19.0, 0.0) * fs);
+        mulTransform(tl * Matrix44::Shift(0, 18.0, 0.0) * fs);
         p.drawFormatVector(length, 0, 0, 1, "Y");
         popTransform();
 
-        mulTransform(tl * Matrix44(Matrix33::RotationY(degToRad(-90.0))) * Matrix44::Shift(0, 19.0, 0.0) * fs);
+        mulTransform(tl * Matrix44(Matrix33::RotationY(degToRad(-90.0))) * Matrix44::Shift(0, 18.0, 0.0) * fs);
         p.drawFormatVector(length, 0, 0, 1, "Y");
         popTransform();
 
