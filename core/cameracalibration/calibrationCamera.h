@@ -141,7 +141,7 @@ public:
     /**/
     LensDistortionModelParameters   distortion;
     /**/
-    LocationData                    extrinsics;
+    CameraLocationData                    extrinsics;
 
     /* cache for rotation should be introduced. First of all it is faster... */
     //Matrix33 rotMatrix;
@@ -158,7 +158,7 @@ public:
 
     CameraModel(
             const PinholeCameraIntrinsics &_intrinsics,
-            const LocationData &_extrinsics = LocationData(),
+            const CameraLocationData &_extrinsics = CameraLocationData(),
             const LensDistortionModelParameters &_distortion = LensDistortionModelParameters())
       : intrinsics(_intrinsics)
       , distortion(_distortion)
@@ -216,7 +216,7 @@ public:
     void accept(VisitorType &visitor)
     {
         visitor.visit(intrinsics, PinholeCameraIntrinsics()      , "intrinsics");
-        visitor.visit(extrinsics, LocationData()                 , "extrinsics");
+        visitor.visit(extrinsics, CameraLocationData()                 , "extrinsics");
         visitor.visit(distortion, LensDistortionModelParameters(), "distortion");
     }
 };

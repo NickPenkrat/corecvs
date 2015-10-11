@@ -27,7 +27,7 @@ class Affine3D
 {
 public:
     LinearType rotor;
-    Vector3dd   shift;
+    Vector3dd  shift;
 
 
     Affine3D(const LinearType &_rotor, const Vector3dd &_shift = Vector3dd(0.0)) :

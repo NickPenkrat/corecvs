@@ -19,7 +19,7 @@
 // XXX: here we parse only position part; angle data is rejected
 //      we also make prefix uppercase since it is partially lower-case
 //      in Measure_15
-std::unordered_map<std::string, LocationData>  parseGps(const std::string &filename)
+std::unordered_map<std::string, CameraLocationData>  parseGps(const std::string &filename)
 {
     std::ifstream ifs;
     ifs.open(filename, std::ios_base::in);
@@ -29,7 +29,7 @@ std::unordered_map<std::string, LocationData>  parseGps(const std::string &filen
         exit(0);
     }
 
-    std::unordered_map<std::string, LocationData> locations;
+    std::unordered_map<std::string, CameraLocationData> locations;
     std::string data;
     // Just prefix and 3 numbers delimited by spaces
     std::string prefix_regex = "([A-Za-z]+)",
@@ -58,7 +58,7 @@ std::unordered_map<std::string, LocationData>  parseGps(const std::string &filen
         std::cout << "Key: " << key << " geodesic stuff: " << n << " " << e << " " << h << std::endl;
 
         // XXX: note, that stuff valid only for current proto, somewhere we should add switch for it
-        LocationData location;
+        CameraLocationData location;
         location.position[0] = e * 1e3;
         location.position[1] = n * 1e3;
         location.position[2] = h * 1e3;

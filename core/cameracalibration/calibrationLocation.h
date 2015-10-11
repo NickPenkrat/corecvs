@@ -10,6 +10,8 @@
 
 namespace corecvs {
 
+
+
 /**
  *   Contrary to what Affine3D does this class holds reference frame transformation in camera related terms
  *
@@ -52,13 +54,13 @@ namespace corecvs {
  *
  *
  **/
-class LocationData
+class CameraLocationData :
 {
 public:
     Vector3dd position;
     Quaternion orientation;
 
-    explicit LocationData(
+    explicit CameraLocationData(
             Vector3dd position = Vector3dd(0.0, 0.0, 1.0),
             Quaternion orientation = Quaternion::Identity()) :
         position(position),
@@ -106,7 +108,7 @@ public:
         orientation = orientation ^ rotate.conjugated();
     }
 
-    void transform(const LocationData &outerTransform)
+    void transform(const CameraLocationData &outerTransform)
     {
         transform(outerTransform.orientation, outerTransform.position);
     }
@@ -142,7 +144,6 @@ public:
     CameraLocationAngles(double yaw, double pitch, double roll) :
         EulerAngles(yaw, pitch, roll)
     {}
-
 
     double  yaw() const
     {

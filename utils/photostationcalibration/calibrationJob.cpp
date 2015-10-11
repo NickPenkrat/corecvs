@@ -269,7 +269,7 @@ corecvs::RGB24Buffer CalibrationJob::LoadImage(const std::string &path)
 
 bool CalibrationJob::calibrateSingleCamera(int cameraId)
 {
-    std::vector<LocationData> locations;
+    std::vector<CameraLocationData> locations;
     int valid_locations = 0;
 
     FlatPatternCalibrator calibrator(settings.singleCameraCalibratorConstraints, settings.calibrationLockParams);
@@ -332,7 +332,7 @@ void CalibrationJob::allCalibrateSingleCamera()
     std::cout << "OPTFAC_MEAN: " << factor << std::endl;
 }
 
-void CalibrationJob::calibratePhotostation(int N, int /*M*/, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<PinholeCameraIntrinsics> &intrinsics, std::vector<std::vector<LocationData>> &locations, bool runBFS, bool runLM)
+void CalibrationJob::calibratePhotostation(int N, int /*M*/, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<PinholeCameraIntrinsics> &intrinsics, std::vector<std::vector<CameraLocationData>> &locations, bool runBFS, bool runLM)
 {
     for (auto& ci: intrinsics)
     {
@@ -345,7 +345,7 @@ void CalibrationJob::calibratePhotostation(int N, int /*M*/, PhotoStationCalibra
 	{
 		MultiCameraPatternPoints pts;
 		std::vector<int> active;
-		std::vector<LocationData> locs;
+		std::vector<CameraLocationData> locs;
 		for (int i = 0; i < N; ++i)
 		{
 			if (setup[i].size())
@@ -386,7 +386,7 @@ void CalibrationJob::calibratePhotostation()
     std::vector<PinholeCameraIntrinsics> intrinsics;
     for (auto& c: photostation.cameras)
         intrinsics.push_back(c.intrinsics);
-    std::vector<std::vector<LocationData>> locations(M);
+    std::vector<std::vector<CameraLocationData>> locations(M);
     for (int i = 0; i < M; ++i)
     {
         locations[i].resize(N);

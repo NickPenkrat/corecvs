@@ -6,13 +6,13 @@ namespace corecvs {
 
 using std::endl;
 
-void LocationData::prettyPrint(std::ostream &out)
+void CameraLocationData::prettyPrint(std::ostream &out)
 {
     PrinterVisitor visitor(3, 3, out);
     accept(visitor);
 }
 
-void LocationData::prettyPrint1(std::ostream &out)
+void CameraLocationData::prettyPrint1(std::ostream &out)
 {
     Quaternion o = orientation.normalised();
     Vector3dd axis = o.getAxis();

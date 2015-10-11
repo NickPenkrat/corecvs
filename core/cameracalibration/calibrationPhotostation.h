@@ -41,14 +41,14 @@ class Photostation
 {
 public:
     std::vector<CameraModel> cameras;
-    LocationData             location;
+    CameraLocationData             location;
     std::string              name;
 
     Photostation() {}
 
     Photostation(
         const std::vector<CameraModel> & _cameras,
-        const LocationData &_location = LocationData())
+        const CameraLocationData &_location = CameraLocationData())
       : cameras(_cameras)
       , location(_location)
     {}
@@ -69,7 +69,7 @@ public:
     void accept(VisitorType &visitor)
     {
         visitor.visit(cameras, "cameras");
-        visitor.visit(location, LocationData(), "location");
+        visitor.visit(location, CameraLocationData(), "location");
     }
 };
 

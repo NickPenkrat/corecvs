@@ -123,6 +123,8 @@ typedef int                bool_t;                          // fast Boolean type
 # define CORE_ASSERT_TRUE(Y, X)     if (!(Y)) { CORE_ASSERT_FAIL(X);   }
 # define CORE_ASSERT_FALSE(Y, X)    if (Y)    { CORE_ASSERT_FAIL(X);   }
 
+# define CORE_ASSERT_EQ_P(X, Y, Text) if (X != Y) { CORE_ASSERT_FAIL_P(Text); }
+
 # define CORE_ASSERT_DOUBLE_EQUAL_E(X,Y,Eps, Text) \
          CORE_ASSERT_TRUE((X) > ((Y) - Eps) && (X) < ((Y) + Eps), Text)
 

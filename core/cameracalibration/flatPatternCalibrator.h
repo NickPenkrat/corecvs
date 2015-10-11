@@ -24,14 +24,14 @@ public:
 
     // Add 2d-3d correspondences and initial guess for camera location
     // TODO: add check for pattern planarity and [maybe] support of other planes than z=0
-	void addPattern(const PatternPoints3d &patternPoints, const LocationData &position = LocationData());
+	void addPattern(const PatternPoints3d &patternPoints, const CameraLocationData &position = CameraLocationData());
 
     // Runs (pre-) solver
 	void solve(bool runPresolver = true,bool runLM = false);
 
     PinholeCameraIntrinsics getIntrinsics();
 
-    std::vector<LocationData> getExtrinsics();
+    std::vector<CameraLocationData> getExtrinsics();
     
     // Returns RMSE for reprojection
     double getRmseReprojectionError();
@@ -74,7 +74,7 @@ private:
 
     std::vector<corecvs::Matrix33> homographies;
 	std::vector<PatternPoints3d> points;
-	std::vector<LocationData> locationData;
+	std::vector<CameraLocationData> locationData;
     PinholeCameraIntrinsics intrinsics, lockParams;
 	CameraConstraints constraints;
     bool forceZeroSkew;
