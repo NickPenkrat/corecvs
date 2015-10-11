@@ -62,6 +62,7 @@ struct PinholeCameraIntrinsics
     Vector2dd principal;        /**< Principal point of optical axis on image plane (in pixel). Usually center of imager */
     double    skew;             /**< Skew parameter to compensate for optical axis tilt */
     Vector2dd size;             /**< Imager resolution (in pixel) */
+    Vector2dd distortedSize;    /**< Source image resolution (FIXME: probably should move it somewhere) */
 
 
     PinholeCameraIntrinsics(
@@ -70,11 +71,13 @@ struct PinholeCameraIntrinsics
             double cx = DEFAULT_SIZE_X / 2.0,
             double cy = DEFAULT_SIZE_Y / 2.0,
             double skew = 0.0,
-            Vector2dd size = Vector2dd(DEFAULT_SIZE_X, DEFAULT_SIZE_Y))
-      : focal    (fx, fy)
-      , principal(cx, cy)
-      , skew     (skew)
-      , size     (size)
+            Vector2dd size = Vector2dd(DEFAULT_SIZE_X, DEFAULT_SIZE_Y),
+            Vector2dd distortedSize = Vector2dd(DEFAULT_SIZE_X, DEFAULT_SIZE_Y))
+      : focal         (fx, fy)
+      , principal     (cx, cy)
+      , skew          (skew)
+      , size          (size)
+      , distortedSize (distortedSize)
     {}
 
     PinholeCameraIntrinsics(Vector2dd resolution, double hfov);
@@ -84,18 +87,28 @@ struct PinholeCameraIntrinsics
      * This actually doesn't differ from matrix multiplication, just is a little bit more lightweight
      *
      **/
-    Vector2dd project(const Vector3dd &p)
+    Vector2dd project(const Vector3dd &p) const
     {
         Vector2dd result = (focal * p.xy() + Vector2dd(skew * p.y(), 0.0)) / p.z() + principal;
         return result;
     }
 
-    Vector3dd reverse(const Vector2dd &p)
+    Vector3dd reverse(const Vector2dd &p) const
     {
         Vector2dd result;
         result.x() = p.x() / focal.x() + skew / (focal.x() * focal.y()) * p.y() + ( principal.y() * skew / focal.y() - principal.x()) / focal.x();
         result.y() = p.y() / focal.y() - principal.y() / focal.y();
         return Vector3dd(result.x(), result.y(), 1.0);
+    }
+    
+    bool isVisible(const Vector3dd &p) const
+    {
+        if (p[2] <= 0.0) return false;
+        auto proj = project(p);
+        for (int i = 0; i < 2; ++i)
+            if (proj[i] < 0.0 || proj[i] > size[i])
+                return false;
+        return true;
     }
 
     explicit operator Matrix33() const  { return getKMatrix33(); }
@@ -122,6 +135,7 @@ struct PinholeCameraIntrinsics
         visitor.visit(principal.y(), DEFAULT_SIZE_Y / 2.0, "cy"  );
         visitor.visit(skew         , 0.0                 , "skew");
         visitor.visit(size         , DEFAULT_SIZE        , "size");
+        visitor.visit(distortedSize, DEFAULT_SIZE        , "distortedSize");
     }
 
     /* Helper pseudonim getters */
@@ -166,7 +180,7 @@ public:
     {}
 
 
-    Vector2dd project(const Vector3dd &p)
+    Vector2dd project(const Vector3dd &p) const
     {
         return intrinsics.project(extrinsics.project(p));
     }
@@ -191,6 +205,14 @@ public:
     bool isVisible(Vector2dd &point)
     {
         return point.isInRect(Vector2dd(0.0,0.0), intrinsics.size);
+    }
+    
+    /**
+     * Checks full visibility of 3d point
+     **/
+    bool isVisible(const Vector3dd &pt) const
+    {
+        return intrinsics.isVisible(extrinsics.project(pt));
     }
 
     bool isInFront(Vector3dd &pt)

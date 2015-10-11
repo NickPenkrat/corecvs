@@ -37,4 +37,32 @@ BufferReaderProvider::BufferReaderProvider()
 {
 }
 
+RuntimeTypeBuffer BufferReaderProvider::read(const std::string &s)
+{
+    BufferReader* reader = getInstance().getBufferReader(s);
+    RuntimeTypeBuffer buffer = reader->read(s);
+    delete reader;
+    return buffer;
+}
 
+corecvs::RGB24Buffer BufferReaderProvider::readRgb(const std::string &s)
+{
+    BufferReader* reader = getInstance().getBufferReader(s);
+    auto buffer = reader->readRgb(s);
+    delete reader;
+    return buffer;
+}
+
+void BufferReaderProvider::write(const RuntimeTypeBuffer& buffer, const std::string &s)
+{
+    BufferReader* reader = getInstance().getBufferReader(s);
+    reader->write(buffer, s);
+    delete reader;
+}
+
+void BufferReaderProvider::writeRgb(const corecvs::RGB24Buffer& buffer, const std::string &s)
+{
+    BufferReader* reader = getInstance().getBufferReader(s);
+    reader->writeRgb(buffer, s);
+    delete reader;
+}

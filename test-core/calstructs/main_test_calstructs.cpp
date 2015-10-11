@@ -48,7 +48,6 @@ TEST(calstructs, testCameraModel)
     mesh.setColor(RGBColor::Blue());
     mesh.addLine(Vector3dd(0.0), Vector3dd::OrtZ());
 
-
     CameraModel model(PinholeCameraIntrinsics(Vector2dd(100.0,100.0), degToRad(45.0)),
                       CameraLocationData(
                           Vector3dd(3.0,0.0,0.0),

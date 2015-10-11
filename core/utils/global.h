@@ -292,6 +292,20 @@ inline int snprintf2buf(char (&d)[size], cchar* fmt, ...)
     return iLen;
 }
 
+#include <algorithm>
+namespace std
+{
+    template<typename U, typename V>
+    struct hash<pair<U, V>>
+    {
+        std::size_t operator() (const pair<U, V> &p) const
+        {
+            return std::hash<U>()(p.first) ^ std::hash<V>()(p.second);
+        }
+    };
+};
+
+
 #ifdef USE_SAFE_RUNTIME_FUNCS
 # define CORE_FOPEN(pFile, sName, sMode)    (fopen_s(&(pFile), (sName), (sMode)) ? ((pFile) = NULL, 0) : (1))
 #else

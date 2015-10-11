@@ -53,15 +53,34 @@ public:
       , location(_location)
     {}
 
-    Vector2dd project(const Vector3dd &pt, int cam)
-    {
-        return cameras[cam].project(pt);
-    }
-
+    // TODO: this stuff probably does not work?!
     CameraModel getWorldCamera(int cam) {
         CameraModel toReturn = cameras[cam];
         toReturn.extrinsics.transform(location);
         return toReturn;
+    }
+    // And this - work
+    CameraModel getRawCamera(int cam) const
+    {
+        auto c = cameras[cam];
+        c.extrinsics.orientation = c.extrinsics.orientation ^ location.orientation;
+        c.extrinsics.position = (location.orientation.conjugated() * cameras[cam].extrinsics.position) + location.position;
+        return c;
+    }
+    
+    Matrix44 getKMatrix(int cam) const
+    {
+        return getRawCamera(cam).getCameraMatrix();
+    }
+
+    Vector2dd project(const Vector3dd &pt, int cam) const
+    {
+        return cameras[cam].project(location.project(pt));
+    }
+
+    bool isVisible(const Vector3dd &pt, int cam) const
+    {
+        return cameras[cam].isVisible(location.project(pt));
     }
 
 

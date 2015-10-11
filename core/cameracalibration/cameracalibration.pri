@@ -5,4 +5,4 @@ HEADERS += \
 SOURCES += \
 	cameracalibration/*.cpp \
 
-#CONFIG += c++11
+CONFIG += c++11

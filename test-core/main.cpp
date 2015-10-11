@@ -11,9 +11,11 @@ using namespace corecvs;
 
 static bool checkFileExist(const string& dirPath, const string& filePath)
 {
-    CORE_ASSERT_TRUE_S((dirPath.length() == 0 || dirPath[dirPath.length() - 1] != PATH_SEPARATOR[0]));
-
-    string path = dirPath + PATH_SEPARATOR + filePath;
+    string path = dirPath;
+    if (dirPath.length() > 0 && dirPath[dirPath.length() - 1] != PATH_SEPARATOR[0]) {
+        path += PATH_SEPARATOR;
+    }
+    path += filePath;
     cout << "checking for the file <" << path << ">" << endl;
 
     return access(path.c_str(), 0) == 0;

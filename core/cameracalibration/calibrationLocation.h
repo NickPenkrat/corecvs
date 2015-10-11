@@ -54,7 +54,7 @@ namespace corecvs {
  *
  *
  **/
-class CameraLocationData :
+class CameraLocationData
 {
 public:
     Vector3dd position;
@@ -68,17 +68,17 @@ public:
     {
     }
 
-    Vector3dd project(const Vector3dd &pt)
+    Vector3dd project(const Vector3dd &pt) const
     {
         return orientation * (pt - position);
     }
 
-    Vector3dd worldToCam(const Vector3dd &pt)
+    Vector3dd worldToCam(const Vector3dd &pt) const
     {
         return project(pt);
     }
 
-    Vector3dd camToWorld(const Vector3dd &pt)
+    Vector3dd camToWorld(const Vector3dd &pt) const
     {
         return orientation.conjugated() * pt + position;
     }

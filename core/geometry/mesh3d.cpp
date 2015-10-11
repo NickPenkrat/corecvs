@@ -6,6 +6,7 @@
 #include <fstream>
 
 #include "mathUtils.h"      // M_PI
+#include "abstractPainter.h"
 #include "mesh3d.h"
 
 namespace corecvs {
@@ -31,6 +32,12 @@ void Mesh3D::setColor(const RGBColor &color)
     currentColor = color;
 }
 
+void Mesh3D::mulTransform(const Matrix33 &transform)
+{
+    transformStack.push_back(currentTransform);
+    currentTransform = currentTransform * Matrix44(transform);
+}
+
 void Mesh3D::mulTransform(const Matrix44 &transform)
 {
     transformStack.push_back(currentTransform);
@@ -51,6 +58,55 @@ void Mesh3D::setCentral(Vector3dd _central)
 {
     centralPoint = _central;
     hasCentral = true;
+}
+
+void Mesh3D::addOrts(double length, bool captions)
+{
+    setColor(RGBColor::Red());
+    addLine(Vector3dd(0.0), Vector3dd::OrtX() * length);
+    setColor(RGBColor::Green());
+    addLine(Vector3dd(0.0), Vector3dd::OrtY() * length);
+    setColor(RGBColor::Blue());
+    addLine(Vector3dd(0.0), Vector3dd::OrtZ() * length);
+
+    /* Font Scale */
+    Matrix44 fs = Matrix44::Scale(1.0 / 20.0) * Matrix44(Matrix33::MirrorXZ());
+
+    /* Scale to length */
+    Matrix44 tl = Matrix44::Scale(length / 20.0);
+
+
+    AbstractPainter<Mesh3D> p(this);
+    if (captions) {
+        setColor(RGBColor::Red());
+        mulTransform(tl * Matrix44::Shift(18.0, 0.2, 0.0) * fs);
+        p.drawFormatVector(length, 0, 0, 1, "X");
+        popTransform();
+
+        mulTransform(tl * Matrix44(Matrix33::RotationX(degToRad(90.0))) * Matrix44::Shift(18.0, 0.2, 0.0)  * fs);
+        p.drawFormatVector(length, 0, 0, 1, "X");
+        popTransform();
+
+        setColor(RGBColor::Green());
+        mulTransform(tl * Matrix44::Shift(0, 19.0, 0.0) * fs);
+        p.drawFormatVector(length, 0, 0, 1, "Y");
+        popTransform();
+
+        mulTransform(tl * Matrix44(Matrix33::RotationY(degToRad(-90.0))) * Matrix44::Shift(0, 19.0, 0.0) * fs);
+        p.drawFormatVector(length, 0, 0, 1, "Y");
+        popTransform();
+
+        setColor(RGBColor::Blue());
+        mulTransform(tl * Matrix44::Shift(0.0, 0.2, 20.0) * Matrix44(Matrix33::RotationY(degToRad(90.0))) * fs);
+        p.drawFormatVector(length, 0, 0, 1, "Z");
+        popTransform();
+
+        mulTransform(tl * Matrix44(Matrix33::RotationZ(degToRad(-90.0))) * Matrix44::Shift(0.0, 0.2, 20.0) * Matrix44(Matrix33::RotationY(degToRad(90.0))) * fs);
+        p.drawFormatVector(length, 0, 0, 1, "Z");
+        popTransform();
+
+    }
+
 }
 
 void Mesh3D::addAOB(Vector3dd c1, Vector3dd c2, bool addFaces)

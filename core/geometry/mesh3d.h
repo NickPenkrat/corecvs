@@ -71,6 +71,7 @@ public:
 
     vector<Matrix44> transformStack;
 
+    void mulTransform(const Matrix33 &transform);
     void mulTransform(const Matrix44 &transform);
     void popTransform();
 
@@ -79,6 +80,8 @@ public:
 
 
     void setCentral(Vector3dd _central);
+
+    void addOrts(double length = 1.0, bool captions = false);
 
 
     void addAOB(Vector3dd corner1, Vector3dd corner2, bool addFaces = true);
