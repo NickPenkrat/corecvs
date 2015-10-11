@@ -86,7 +86,7 @@ public:
      *
      **/
     explicit CameraLocationData( const Affine3DQ &transform ) :
-        position(transform.rotor * (-transform.shift)),
+        position(transform.rotor.conjugated() * (-transform.shift)),
         orientation(transform.rotor)
     {}
 

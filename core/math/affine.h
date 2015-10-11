@@ -85,6 +85,19 @@ public:
     }
 
     Affine3D invert();
+
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        visitor.visit(shift, Vector3dd(0.0, 0.0, 0.0) , "shift");
+        visitor.visit(rotor, Quaternion::Identity()   , "rotor");
+    }
+
+    /* Pretty print */
+    void prettyPrint (ostream &out = cout);
+    void prettyPrint1(ostream &out = cout);
+
+
 };
 
 /**
