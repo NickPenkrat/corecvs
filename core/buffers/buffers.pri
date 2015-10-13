@@ -51,6 +51,7 @@ HEADERS += \
     buffers/runtimeTypeBuffer.h \
     buffers/deformMap.h \
     buffers/focusEstimator.h \
+    buffers/converters/debayer.h \
 
 
 
@@ -89,5 +90,6 @@ SOURCES += \
     buffers/runtimeTypeBuffer.cpp \
     buffers/deformMap.cpp \
     buffers/focusEstimator.cpp \
+    buffers/converters/debayer.cpp \
 
 
