@@ -74,6 +74,17 @@ G12Buffer** CR2Reader::getChannels()
 	return result;
 }
 
+G12Buffer* CR2Reader::getChannel(int channel)
+{
+	G12Buffer *b = new G12Buffer(reader->imgdata.sizes.height, reader->imgdata.sizes.width);
+	for (int i = 0; i < reader->imgdata.sizes.height; i++)
+		for (int j = 0; j < reader->imgdata.sizes.width * 4; j += 4)
+		{
+			b->element(i, j / 4) = reader->imgdata.image[0][i*reader->imgdata.sizes.width * 4 + j] >> 4;
+		}
+	return b;
+}
+
 int CR2Reader::flipIndex(int row, int col)
 {
 	if (reader->imgdata.sizes.flip & 4) { row = row + col; col = row - col; row = row - col; };

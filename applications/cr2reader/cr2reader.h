@@ -22,6 +22,7 @@ public:
 
 	G12Buffer *getBayer(bool shifted = true);
 	G12Buffer **getChannels();
+	G12Buffer *getChannel(int channel);
 	double *getGamm();
 
 	void setBPP(uint bits);
