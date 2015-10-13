@@ -2,7 +2,10 @@
 
 #include <array>
 
+#ifdef WITH_OPENCV
 #include "openCvCheckerboardDetector.h"
+#endif
+
 #include "lmDistortionSolver.h"
 #include "flatPatternCalibrator.h"
 #include "photoStationCalibrator.h"
@@ -24,6 +27,7 @@ bool CalibrationJob::detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::Sel
 bool CalibrationJob::detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::SelectableGeometryFeatures *features, corecvs::ObservationList *list)
 {
     PatternDetector *patternDetector;
+#ifdef WITH_OPENCV
     if (settings.openCvDetectorParameters.algorithm() == CheckerboardDetectionAlgorithm::OPENCV_DETECTOR)
     {
         patternDetector = new OpenCvCheckerboardDetector(settings.openCvDetectorParameters, settings.boardAlignerParams);
@@ -32,6 +36,7 @@ bool CalibrationJob::detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::Sel
         delete channel;
     }
     else
+#endif
     {
         patternDetector = new ChessboardDetector(settings.openCvDetectorParameters, settings.boardAlignerParams, settings.chessBoardCornerDetectorParams, settings.chessBoardAssemblerParams);
         patternDetector->setStatistics(&stats);
@@ -343,26 +348,26 @@ void CalibrationJob::calibratePhotostation(int N, int /*M*/, PhotoStationCalibra
         calibrator.addCamera(ci);
     }
     calibrator.factor = factor;
-	std::vector<int> cnt(N);
-	int set = 0;
+    std::vector<int> cnt(N);
+    int set = 0;
     for (auto& setup: points)
-	{
-		MultiCameraPatternPoints pts;
-		std::vector<int> active;
-		std::vector<CameraLocationData> locs;
-		for (int i = 0; i < N; ++i)
-		{
-			if (setup[i].size())
-			{
-				active.push_back(i);
-				pts.push_back(setup[i]);
-				locs.push_back(locations[set][i]);
-			}
-		}
-		calibrator.addCalibrationSetup(active, locs, pts);
-		set++;
-	}
-	if (runBFS)
+    {
+        MultiCameraPatternPoints pts;
+        std::vector<int> active;
+        std::vector<CameraLocationData> locs;
+        for (int i = 0; i < N; ++i)
+        {
+            if (setup[i].size())
+            {
+                active.push_back(i);
+                pts.push_back(setup[i]);
+                locs.push_back(locations[set][i]);
+            }
+        }
+        calibrator.addCalibrationSetup(active, locs, pts);
+        set++;
+    }
+    if (runBFS)
         calibrator.solve(true, false);
     calibrator.recenter(); // Let us hope it'll speedup...
     if (runLM)

@@ -51,8 +51,6 @@ namespace corecvs {
  *       \pmatrix { u \over t \cr v \over t  \cr 1 }
  *
  *    \f]
-
- *
  *
  **/
 class CameraLocationData
