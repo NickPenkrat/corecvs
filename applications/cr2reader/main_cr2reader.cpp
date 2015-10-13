@@ -1,4 +1,4 @@
-/*	
+/*
 	CR2 Bayer extractor console tool.
 	Internally uses LibRaw.
 
@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
 				}
 				if (writebayer)
 				{
-					rdr.writeBayer(argv[c]);
+					rdr.writeBayer((string(argv[c]) + ".pgm").c_str());
 				}
 				else
 				{
