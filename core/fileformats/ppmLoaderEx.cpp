@@ -58,18 +58,22 @@ namespace corecvs
 	{
 		char* header = nextLine(fp, 255, metadata); // skip comments and read next line
 
-		//Check the PPM file Type P5 or P6
-		if ((header[0] != 'P') || ((header[1] != '5') && (header[1] != '6')))
+		// check PPM type (currently only supports 5 or 6)
+		if ((header[0] != 'P') || (header[1] < '5') || (header[1] > '6'))
 		{
 			printf("Image is not a supported PPM\n");
 			return false;
 		}
+		// type contains a TYPE uint8_t, in our case 5 or 6
 		*type = header[1] - '0';
 
+		// get dimensions
 		header = nextLine(fp, 255, metadata);
 
+		// parse dimensions
 		if (sscanf(header, "%lu%lu", w, h) != 2)
 		{
+			// try to parse dimensions in Photoshop-like format (when a newline is used instead of whitespace or tabulation)
 			if (sscanf(header, "%lu", w) != 1)
 			{
 				printf("Image dimensions could not be read from line %s\n", header);
@@ -77,8 +81,9 @@ namespace corecvs
 			}
 			else
 			{
+				// first dimension has been read, try to read the second
 				header = nextLine(fp, 255, metadata);
-				if (sscanf(header, "%lu", h) != 1) // can be gotten rid of but i don't want to use a goto... TODO: think again
+				if (sscanf(header, "%lu", h) != 1) // duplicate code can be gotten rid of with a goto (not sure it's worth doing)
 				{
 					printf("Image dimensions could not be read from line %s\n", header);
 					return false;
@@ -86,6 +91,7 @@ namespace corecvs
 			}
 		}
 
+		// get colour depth (metric?)
 		header = nextLine(fp, 255, metadata);
 
 		if (sscanf(header, "%hu", maxval) != 1)
@@ -94,14 +100,16 @@ namespace corecvs
 			return false;
 		}
 
-		// we assume that no comments can exist after the last header line
+		// we assume that no comments exist after the colour depth header line to avoid misinterpretation of '#' first data value
 
+		// TODO: uncomment me when done integrating
 		//DOTRACE(("Image is P6 PPM [%lu %lu] max=%u\n", *h, *w, *maxval));
 		return true;
 	}
 
 	G12Buffer** PPMLoaderEx::g12BufferCreateFromColoredPPM(const string& name)
 	{
+		// TODO: remove?
 		G12Buffer **result = new G12Buffer*[3];
 		FILE      *fp = NULL;
 		uint8_t   *charImage = NULL;
@@ -211,19 +219,20 @@ namespace corecvs
 		return result;
 	}
 
+	// TODO: change type to G12 and return the bayer data
 	int PPMLoaderEx::loadBayer(const string& name, MetaData& metadata)
 	{
 		FILE      *fp = NULL;
 		uint8_t   *charImage = NULL;
 
-		//PPM Headers Variable Declaration
+		// PPM headers variable declaration
 		unsigned long int i, j;
 		unsigned long int h, w;
 		int type;
 		unsigned short int maxval;
 		int shiftCount = 0;
 
-		//Open file for reading in Binary Mode
+		// open file for reading in binary mode
 		fp = fopen(name.c_str(), "rb");
 
 		if (fp == NULL)
@@ -240,16 +249,21 @@ namespace corecvs
 		if (type != 5)
 			return 1;
 
+		// if no metadata is present, create some
 		if (!metadata["bits"])
 			metadata["bits"] = new double[1];
 
+		// get significant bit count
 		metadata["bits"][0] = 1;
 		while (maxval >> int(metadata["bits"][0]))
 			metadata["bits"][0]++;
 
 		bayer = new G12Buffer(h, w, false);
 
-		uint size = (maxval < 0x100 ? 1 : 2) * w * h;
+		// image size in bytes
+		uint64_t size = (maxval < 0x100 ? 1 : 2) * w * h;
+
+		// for reading we don't need to account for possible system byte orders, so just use a 8bit buffer
 		charImage = new uint8_t[size];
 
 		if (fread(charImage, 1, size, fp) == 0)
@@ -260,7 +274,7 @@ namespace corecvs
 
 		if (maxval <= 0xff)
 		{
-
+			// 1-byte case
 			for (i = 0; i < h; i++)
 				for (j = 0; j < w; j++)
 				{
@@ -269,6 +283,8 @@ namespace corecvs
 		}
 		else
 		{
+			// 2-byte case
+			// here we need to calculate shift to compress data into a 12bit buffer
 			for (shiftCount = 0; (maxval >> shiftCount) > G12Buffer::BUFFER_MAX_VALUE; shiftCount++);
 
 			for (i = 0; i < h; i++)
@@ -278,7 +294,7 @@ namespace corecvs
 					int offset = i * w * 2 + j;
 					this->bayer->element(i, j / 2) = ((charImage[offset + 0]) << 8 |
 						(charImage[offset + 1])) >> shiftCount;
-
+					// TODO: enable me when done with integration
 					//ASSERT_FALSE((result[0]->element(i, j) >= (1 << G12Buffer::BUFFER_BITS)), "Internal error in image loader\n");
 				}
 			}
