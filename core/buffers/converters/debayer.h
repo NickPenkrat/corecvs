@@ -13,8 +13,7 @@ public:
 
 	static Debayer* FromFile(const string& filename);
 
-	Debayer(G12Buffer *bayer, PPMLoaderEx::IMGData *data);
-	Debayer(PPMLoaderEx *loader);
+	Debayer(G12Buffer *bayer, PPMLoaderEx::MetaData &data);
 
 	G12Buffer** linear();
 	G12Buffer** nearest();
@@ -25,7 +24,7 @@ private:
 	G12Buffer* bayer;
 	G12Buffer** out;
 	PPMLoaderEx *loader;
-	PPMLoaderEx::IMGData *metadata;
+	PPMLoaderEx::MetaData metadata;
 
 	double* scale_colors(bool highlight = false);
 	uint16_t* gamma_curve(int mode, int imax, int depth = 16);

@@ -1,15 +1,16 @@
 #include "ppmLoaderEx.h"
-
 namespace corecvs
 {
+	PPMLoaderEx::MetaData PPMLoaderEx::nulldata;
+
 	PPMLoaderEx::PPMLoaderEx()
 	{
-		this->metadata = new IMGData();
+
 	}
 
 	// skips through comments and returns the first encountered non-comment line
 	// while skipping through comments also reads all available metadata
-	char* PPMLoaderEx::nextLine(FILE *fp, int sz)
+	char* PPMLoaderEx::nextLine(FILE *fp, int sz, MetaData &metadata)
 	{
 		char *buf = new char[sz];
 		while (fread(buf, 1, 1, fp))
@@ -43,7 +44,8 @@ namespace corecvs
 						sscanf(numbers, "%lf", &(values[i]));
 						numbers = strchr(numbers, ' ') + 1;
 					}
-					addParam(param, values, n);
+					if (&metadata != &nulldata)
+						metadata.insert(std::pair<string, double*>(param, values));
 				}
 				memset(buf, 0, sz);
 			}
@@ -52,31 +54,9 @@ namespace corecvs
 		return nullptr;
 	}
 
-	void PPMLoaderEx::addParam(char* param, double* values, int length)
+	bool PPMLoaderEx::readHeader(FILE *fp, unsigned long int *h, unsigned long int *w, unsigned short int *maxval, int *type, MetaData& metadata)
 	{
-		if (!strcmp(param, "pre_mul") && length <= 4)
-			memcpy(metadata->pre_mul, values, length*sizeof(values[0]));
-
-		if (!strcmp(param, "cam_mul") && length <= 4)
-			memcpy(metadata->cam_mul, values, length*sizeof(values[0]));
-
-		if (!strcmp(param, "gamm") && length <= 6)
-			memcpy(metadata->gamm, values, length*sizeof(values[0]));
-
-		if (!strcmp(param, "type") && length)
-			metadata->filters = values[0];
-
-		if (!strcmp(param, "black") && length)
-			metadata->black = values[0];
-
-		if (!strcmp(param, "white") && length)
-			metadata->white = values[0];
-		delete[] values;
-	}
-
-	bool PPMLoaderEx::readHeader(FILE *fp, unsigned long int *h, unsigned long int *w, unsigned short int *maxval, int *type)
-	{
-		char* header = nextLine(fp); // skip comments and read next line
+		char* header = nextLine(fp, 255, metadata); // skip comments and read next line
 
 		//Check the PPM file Type P5 or P6
 		if ((header[0] != 'P') || ((header[1] != '5') && (header[1] != '6')))
@@ -86,7 +66,7 @@ namespace corecvs
 		}
 		*type = header[1] - '0';
 
-		header = nextLine(fp);
+		header = nextLine(fp, 255, metadata);
 
 		if (sscanf(header, "%lu%lu", w, h) != 2)
 		{
@@ -97,7 +77,7 @@ namespace corecvs
 			}
 			else
 			{
-				header = nextLine(fp);
+				header = nextLine(fp, 255, metadata);
 				if (sscanf(header, "%lu", h) != 1) // can be gotten rid of but i don't want to use a goto... TODO: think again
 				{
 					printf("Image dimensions could not be read from line %s\n", header);
@@ -106,7 +86,7 @@ namespace corecvs
 			}
 		}
 
-		header = nextLine(fp);
+		header = nextLine(fp, 255, metadata);
 
 		if (sscanf(header, "%hu", maxval) != 1)
 		{
@@ -231,7 +211,7 @@ namespace corecvs
 		return result;
 	}
 
-	G12Buffer* PPMLoaderEx::loadBayer(const string& name)
+	int PPMLoaderEx::loadBayer(const string& name, MetaData& metadata)
 	{
 		FILE      *fp = NULL;
 		uint8_t   *charImage = NULL;
@@ -249,22 +229,25 @@ namespace corecvs
 		if (fp == NULL)
 		{
 			printf("Image %s does not exist \n", name.c_str());
-			return NULL;
+			return -1;
 		}
 
-		if (!this->readHeader(fp, &h, &w, &maxval, &type))
+		if (!readHeader(fp, &h, &w, &maxval, &type, metadata))
 		{
-			return NULL;
+			return -2;
 		}
 
 		if (type != 5)
-			return NULL;
+			return 1;
 
-		this->metadata->bits = 1;
-		while (maxval >> this->metadata->bits)
-			this->metadata->bits++;
+		if (!metadata["bits"])
+			metadata["bits"] = new double[1];
 
-		this->bayer = new G12Buffer(h, w, false);
+		metadata["bits"][0] = 1;
+		while (maxval >> int(metadata["bits"][0]))
+			metadata["bits"][0]++;
+
+		bayer = new G12Buffer(h, w, false);
 
 		uint size = (maxval < 0x100 ? 1 : 2) * w * h;
 		charImage = new uint8_t[size];
@@ -281,7 +264,7 @@ namespace corecvs
 			for (i = 0; i < h; i++)
 				for (j = 0; j < w; j++)
 				{
-					this->bayer->element(i, j) = (charImage[i * w + j]);
+					bayer->element(i, j) = (charImage[i * w + j]);
 				}
 		}
 		else
@@ -307,13 +290,8 @@ namespace corecvs
 			fclose(fp);
 		if (charImage != NULL)
 			delete[] charImage;
-		return this->bayer;
+		return 0;
 
-	}
-
-	PPMLoaderEx::IMGData* PPMLoaderEx::getMetadata()
-	{
-		return metadata;
 	}
 
 	G12Buffer* PPMLoaderEx::getBayer()

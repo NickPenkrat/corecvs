@@ -116,20 +116,22 @@ int main(int argc, char *argv[])
 				}
 				else
 				{
-					if (!ldr.loadBayer(argv[c]))
+					PPMLoaderEx::MetaData metadata;
+					if (ldr.loadBayer(argv[c], metadata))
 					{
 						cout << "Could not open " << argv[c] << "." << endl;
 						return -1;
 					}
-					Debayer d(ldr.getBayer(), ldr.getMetadata());
+					Debayer d(ldr.getBayer(), metadata);
+
 					switch (user_quality)
 					{
 					case 0:
+					default:
 						cout << "Using Nearest Neighbour interpolation..." << endl;
 						d.nearest();
 						break;
 					case 1:
-					default:
 						cout << "Using Bilinear interpolation..." << endl;
 						d.linear();
 						break;

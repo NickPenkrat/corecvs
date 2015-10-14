@@ -1,26 +1,20 @@
 #include "debayer.h"
 
-Debayer::Debayer(G12Buffer *bayer, PPMLoaderEx::IMGData* metadata)
+Debayer::Debayer(G12Buffer *bayer, PPMLoaderEx::MetaData &metadata)
 {
 	this->bayer = bayer;
 	this->metadata = metadata;
 
 }
 
-Debayer::Debayer(PPMLoaderEx *loader)
-{
-	this->loader = loader;
-	this->bayer = loader->getBayer();
-	this->metadata = loader->getMetadata();
-	PPMLoaderEx().save("out2.pgm", bayer);
-}
-
 Debayer* Debayer::FromFile(const string& filename)
 {
 	// this should be safe although ldr object is deleted upon returning
 	PPMLoaderEx ldr;
-	G12Buffer *bayer = ldr.loadBayer(filename);
-	return new Debayer(bayer, ldr.getMetadata());
+	PPMLoaderEx::MetaData data;
+	ldr.loadBayer(filename, data);
+	G12Buffer* bayer = ldr.getBayer();
+	return new Debayer(bayer, data);
 }
 
 // i have yet to understand what this actually does... 
@@ -206,36 +200,36 @@ double* Debayer::scale_colors(bool highlight)
 {
 	double* scale_mul = new double[4];
 	for (int i = 0; i < 4; i++)
-		scale_mul[i] = 4;
+		scale_mul[i] = 1;
 
-	if (!metadata || !metadata->cam_mul || !metadata->cam_mul[0] || !metadata->cam_mul[2] ||
-		!metadata->pre_mul || !metadata->pre_mul[0]) // check if white balance data available
+	if (!metadata["cam_mul"] || !metadata["cam_mul"][0] || !metadata["cam_mul"][2] ||
+		!metadata["pre_mul"] || !metadata["pre_mul"][0]) // check if white balance data available
 		// (TODO: maybe apply the gray world hypothesis instead of doing nothing?)
 		return scale_mul; // if not, return vector of 1's
 
 	unsigned c;
 	double dmin, dmax;
 
-	if (metadata->cam_mul[0] != -1)
+	if (metadata["cam_mul"][0] != -1)
 		for (int i = 0; i < 4; i++)
-			metadata->pre_mul[i] = metadata->cam_mul[i]; // clarify: why are we doing this?
+			metadata["pre_mul"][i] = metadata["cam_mul"][i]; // clarify: why are we doing this?
 
-	if (!metadata->pre_mul[1]) metadata->pre_mul[1] = 1;
-	if (!metadata->pre_mul[3]) metadata->pre_mul[3] = metadata->pre_mul[1];
+	if (!metadata["pre_mul"][1]) metadata["pre_mul"][1] = 1;
+	if (!metadata["pre_mul"][3]) metadata["pre_mul"][3] = metadata["pre_mul"][1];
 
-	metadata->white -= metadata->black;
+	metadata["white"][0] -= metadata["black"][0];
 	for (dmin = DBL_MAX, dmax = c = 0; c < 4; c++)
 	{
-		if (dmin > metadata->pre_mul[c])
-			dmin = metadata->pre_mul[c];
-		if (dmax < metadata->pre_mul[c])
-			dmax = metadata->pre_mul[c];
+		if (dmin > metadata["pre_mul"][c])
+			dmin = metadata["pre_mul"][c];
+		if (dmax < metadata["pre_mul"][c])
+			dmax = metadata["pre_mul"][c];
 	}
 
 	if (!highlight) dmax = dmin;
 	double factor = 1;
 	for (int c = 0; c < 4; c++)
-		scale_mul[c] = (metadata->pre_mul[c] /= dmax)*factor;
+		scale_mul[c] = (metadata["pre_mul"][c] /= dmax)*factor;
 	// black frame adjustment, not currently used as we don't have the black frame in metadata (use black level instead)
 	// the black level is usually almost equal for all channels with difference less than 1 bit in 12-bit case
 	// TODO: perform tests and prove the previous statement right or wrong (and maybe start using 3-channel black level)
@@ -256,17 +250,19 @@ uint16_t* Debayer::gamma_curve(int mode, int imax, int depth)
 {
 	// this code is taken from LibRaw
 	// TODO: rewrite?
+	uint16_t *curve = new uint16_t[0x10000];
+	for (int i = 0; i < 0x10000; i++)
+		curve[i] = i;
 
 	// if no gamm coefficients are present (or valid), return no transform
-	if (!metadata || !metadata->gamm)
-		return NULL;
+	if (metadata == PPMLoaderEx::nulldata || !metadata["gamm"] || !(metadata["gamm"][0] || metadata["gamm"][1] || metadata["gamm"][2] || metadata["gamm"][3] || metadata["gamm"][4]))
+		return curve;
 
 	int i;
 	double g[6], bnd[2] = { 0, 0 }, r;
-	uint16_t *curve = new uint16_t[0x10000];
 
-	g[0] = metadata->gamm[0];
-	g[1] = metadata->gamm[1];
+	g[0] = metadata["gamm"][0];
+	g[1] = metadata["gamm"][1];
 	g[2] = g[3] = g[4] = 0;
 	bnd[g[1] >= 1] = 1;
 	if (g[1] && (g[1] - 1)*(g[0] - 1) <= 0)
@@ -286,8 +282,8 @@ uint16_t* Debayer::gamma_curve(int mode, int imax, int depth)
 		- g[2] - g[3] - g[2] * g[3] * (log(g[3]) - 1)) - 1;
 	if (!mode--)
 	{
-		memcpy(metadata->gamm, g, sizeof metadata->gamm);
-		return NULL;
+		memcpy(metadata["gamm"], g, sizeof g);
+		return curve;
 	}
 	for (i = 0; i < 0x10000; i++)
 	{
@@ -324,16 +320,20 @@ int Debayer::writePPM(string filename, int depth)
 	fprintf(fp, "P6\n");
 	fprintf(fp, "############################################\n");
 	fprintf(fp, "# Custom demosaic test.\n");
-	fprintf(fp, "# Writing %d bits per pixel.\n", depth);
+	fprintf(fp, "# Writing %d bits per pixelasd.\n", depth);
 	fprintf(fp, "############################################\n");
 	fprintf(fp, "%d %d\n", bayer->w, bayer->h);
 	fprintf(fp, "%d\n", (1 << depth) - 1);
 
+	int m_white = metadata["white"] ? metadata["white"][0] : (1 << depth) - 1;
+	int m_black = metadata["black"] ? metadata["black"][0] : 0;
+	int m_bits = metadata["bits"] ? metadata["bits"][0] : depth;
+
 	for (int i = 0; i < bayer->h; i++)
 		for (int j = 0; j < bayer->w; j++)
 		{
-			if ((bayer->element(i, j))>metadata->white)
-				metadata->white = bayer->element(i, j);
+			if ((bayer->element(i, j)) > m_white)
+				m_white = bayer->element(i, j);
 		}
 
 	//double scale_mul[4] = { 1, 1, 1, 1 };
@@ -341,10 +341,9 @@ int Debayer::writePPM(string filename, int depth)
 	// 7012 was calculated by libraw
 	// TODO: decide whether to implement the calculation or export it to metadata
 
-	int shift = metadata->bits - depth;
+	int shift = m_bits - depth;
 	// t_white was chosen experimentally
-	// 1.4 is slightly bigger than 1.18 squared, where 1.18 is a reduction factor between this output without the magic number and dcraw
-	int t_white = (shift < 1 ? metadata->white << (1 - shift) : metadata->white >> (shift - 1)) / 1.4;
+	int t_white = (shift < 0 ? m_white << (-shift) : m_white >> (shift));
 	int bpp = (depth + 7) / 8;
 
 	uint16_t* curve = gamma_curve(2, t_white, depth);
@@ -355,16 +354,16 @@ int Debayer::writePPM(string filename, int depth)
 		for (int j = 0; j < bayer->w; j++)
 			for (int offset = i*bayer->w + j, k = 0; k < 3; k++)
 			{
+				uint16_t elemval = out[k]->element(i, j) - m_black;
+
+				uint16_t val = curve[clip(((shift >= 0 ? elemval >> shift : elemval << -shift) - m_black) * scale_mul[k], depth)];
+
 				if (bpp == 1)
 				{
-					uint16_t elemval = clip(out[k]->element(i, j) - metadata->black);
-					uint16_t val = curve[clip((shift >= 0 ? elemval >> shift : elemval << -shift) * scale_mul[k] * ((1 << metadata->bits) - 1) / metadata->white, depth)];
 					out_bytes[offset * 3 + k] = val; // hope that val is calculated correctly (subject to testing)
 				}
 				else
 				{
-					uint16_t elemval = clip(out[k]->element(i, j) - metadata->black);
-					uint16_t val = curve[clip((shift >= 0 ? elemval >> shift : elemval << -shift) * scale_mul[k] * ((1 << metadata->bits) - 1) / metadata->white, depth)];
 					out_bytes[(offset * 3 + k) * 2] = (val & 0xff00) >> 8;
 					out_bytes[(offset * 3 + k) * 2 + 1] = val & 0xff;
 				}
