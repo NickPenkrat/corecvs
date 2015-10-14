@@ -29,8 +29,10 @@ int CR2Reader::open(const char *filename)
 	shift = 0;
 
 	for (int i = 0; i < reader->imgdata.sizes.raw_height*reader->imgdata.sizes.raw_width; i++)
-		if (reader->imgdata.rawdata.raw_image[i]>maxval)
+	{
+		if (reader->imgdata.rawdata.raw_image[i] > maxval)
 			maxval = reader->imgdata.rawdata.raw_image[i];
+	}
 
 	while (maxval >> shift > (1 << reader->imgdata.params.output_bps) - 1)
 		shift++;
@@ -53,8 +55,37 @@ void CR2Reader::setQuality(uint quality)
 	reader->imgdata.params.user_qual = quality;
 }
 
+void CR2Reader::histUpdate(int i, int j, uint16_t val)
+{
+
+	bool is_red = !(j & 1) && !(i & 1);
+	bool is_blue = (j & 1) && (i & 1);
+	bool is_green1 = !is_red && !is_blue && !(i & 1);
+	bool is_green2 = !is_red && !is_blue && (i & 1);
+	if (!hist)
+	{
+		hist = new uint64_t*[3];
+		for (int k = 0; k < 3; k++)
+		{
+			hist[k] = new uint64_t[1 << 16];
+			for (int l = 0; l < 1 << 16; l++)
+				hist[k][l] = 0;
+		}
+	}
+	int colour = is_green1 + is_green2 + is_blue * 2;
+	hist[colour][val]++;
+
+}
+
 G12Buffer *CR2Reader::getBayer(bool shifted)
 {
+	if (hist)
+	{
+		for (int i = 0; i < 3; i++)
+			delete[] hist[i];
+		delete[] hist;
+	}
+
 	G12Buffer *result = new G12Buffer(reader->imgdata.sizes.height, reader->imgdata.sizes.width);
 	int locShift = shifted * shift;
 	for (int i = 0; i < reader->imgdata.sizes.height; i++)
@@ -62,6 +93,7 @@ G12Buffer *CR2Reader::getBayer(bool shifted)
 		{
 			int offset = (i + reader->imgdata.sizes.top_margin)*reader->imgdata.sizes.raw_width + (j + reader->imgdata.sizes.left_margin);
 			result->element(i, j) = reader->imgdata.rawdata.raw_image[offset] >> locShift;
+			histUpdate(i, j, reader->imgdata.rawdata.raw_image[offset] >> locShift);
 		}
 	return result;
 }
@@ -206,7 +238,7 @@ int CR2Reader::writeBayer(const char* filename)
 	uint8_t *img8 = (uint8_t*)img16;
 
 	uint16_t maxval = 0;
-	// shift already applied by getBayer, we got our N-bit data
+	// shift is already applied by getBayer, we got our N-bit data
 	for (int i = 0; i < b->h; i++)
 		for (int j = 0; j < b->w; j++)
 		{
@@ -215,9 +247,20 @@ int CR2Reader::writeBayer(const char* filename)
 			img16[i*b->w + j] = b->element(i, j);
 		}
 
-	// TODO: rewrite the following so as not to use winsock
 	if (!isBigEndian())
 		swab((char*)img16, (char*)img16, b->w * b->h * 2);
+
+	int hist_size = 1 << 16;
+	int t_white = hist_size;
+	int perc = 0, val = 0, total = 0, c = 0;
+
+	perc = b->w * b->h * reader->imgdata.params.auto_bright_thr;
+
+	for (t_white = c = 0; c < 3; c++) {
+		for (val = 0x2000, total = 0; --val > 32; )
+			if ((total += hist[c][val]) > perc) break;
+		if (t_white < val) t_white = val;
+	}
 
 	fprintf(fp, "P5\n");
 	fprintf(fp, "############################################\n");
@@ -229,6 +272,7 @@ int CR2Reader::writeBayer(const char* filename)
 	fprintf(fp, "# @meta %s\t@values 1\t%d\n", "type", reader->imgdata.idata.filters);
 	fprintf(fp, "# @meta %s\t@values 1\t%d\n", "white", maxval);
 	fprintf(fp, "# @meta %s\t@values 1\t%d\n", "black", reader->imgdata.color.black >> shift);
+	fprintf(fp, "# @meta %s\t@values 1\t%d\n", "t_white", t_white);
 
 	fprintf(fp, "############################################\n");
 	fprintf(fp, "%d %d\n", w, h);
@@ -236,6 +280,7 @@ int CR2Reader::writeBayer(const char* filename)
 
 	fwrite(img8, 2, b->w * b->h, fp);
 	fclose(fp);
+	delete[] img16;
 	return 0;
 }
 

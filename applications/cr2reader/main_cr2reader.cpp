@@ -15,7 +15,7 @@ using std::string;
 void usage(char *argv[])
 {
 	cout << "Raw CR2 to PPM converter. Usage:" << endl
-		<< argv[0] << " [-rn] [-b number] file1.cr2 file2.cr2" << endl
+		<< argv[0] << " [-rp] [-b number] file1.cr2 file2.cr2" << endl
 		<< "-r\tforce 8-bit PPM format for more than 8-bit data" << endl
 		<< "-b N\tuse N-bit PPM format, where N is from 1 to 16" << endl
 		<< "-p\toutput dcraw-proccessed image instead of Bayer sensor data" << endl;

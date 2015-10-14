@@ -32,7 +32,8 @@ public:
 	int writeBayer(const char* filename);
 private:
 	int flipIndex(int row, int col);
-
+	void histUpdate(int i, int j, uint16_t val);
+	uint64_t **hist = 0;
 	LibRaw *reader;
 	int shift = 0;
 };
