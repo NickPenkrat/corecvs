@@ -483,17 +483,21 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
 
 with_blas {
   !win32 {
-    !isEmpty(BLAS_PATH) {
-        !build_pass: message (Using BLAS from <$$BLAS_PATH>)
+#   !isEmpty(BLAS_PATH) {
+#        !build_pass: message (Using BLAS from <$$BLAS_PATH>)
 #        INCLUDEPATH += $(BLAS_PATH)/include
+#    } else {
+#        !build_pass: message (Using System BLAS)
+#    }
+#
+#    Someone should fix this mess!
+        QMAKE_LFLAGS += -L/opt/intel/mkl/lib/intel64
+        LIBS         += -lmkl_intel_lp64 -lmkl_core -lmkl_tbb_thread -ltbb -lstdc++ -lpthread -lm
     } else {
-        !build_pass: message (Using System BLAS)
+        INCLUDEPATH += -I"%MKLROOT%"\include
+        LIBS        += -lblas -lmkl_intel_lp64_dll.lib -lmkl_core_dll.lib -lmkl_tbb_thread_dll.lib -ltbb.lib
     }
     DEFINES     += WITH_BLAS
-    LIBS        += -lopenblas
-    INCLUDEPATH += -I"%MKLROOT%"\include
-    LIBS        += -lblas -lmkl_intel_lp64_dll.lib -lmkl_core_dll.lib -lmkl_tbb_thread_dll.lib -ltbb.lib
-  }
 }
 
 # More static analysis warnings

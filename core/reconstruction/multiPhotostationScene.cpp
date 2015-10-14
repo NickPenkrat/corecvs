@@ -81,7 +81,8 @@ void MultiPhotostationScene::ParallelUpdater::operator() (const corecvs::Blocked
 {
     for (int i = r.begin(); i < r.end(); ++i)
     {
-        scene->pointObservations[i].worldPoint = scene->backProject(scene->pointObservations[i].projections);
+        if (scene->pointObservations[i].updateable)
+            scene->pointObservations[i].worldPoint = scene->backProject(scene->pointObservations[i].projections);
     }
 }
 

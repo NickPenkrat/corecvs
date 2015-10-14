@@ -14,9 +14,11 @@
 #include <cstdio>
 #include <algorithm>
 #include <iomanip>
+#include <random>
 
 #include "calibrationHelpers.h"
 #include "calibrationJob.h"
+#include "calibrationLocation.h"
 #include "mesh3d.h"
 #include "jsonSetter.h"
 #include "jsonGetter.h"
@@ -37,6 +39,22 @@
 #include "undirectedGraph.h"
 #include "multiPhotostationScene.h"
 
+#define POI_ONLY
+#define NOUPD
+#define METERS
+//#define Q_ONLY
+#define CANON_PS
+
+corecvs::Vector3dd convertVector(const corecvs::Vector3dd& geodesic)
+{
+    auto vec = geodesic;
+    std::swap(vec[0], vec[1]);
+#ifndef METERS
+    return vec * 1e3;
+#else
+    return vec;
+#endif
+}
 
 corecvs::Photostation GeneratePs(double r, int cams, corecvs::CameraModel camera)
 {
@@ -51,8 +69,49 @@ corecvs::Photostation GeneratePs(double r, int cams, corecvs::CameraModel camera
         cam.extrinsics.orientation = cam.extrinsics.orientation ^ q;
         ps.cameras.push_back(cam);
     }
+//    ps.cameras.resize(1);
     return ps;
 }
+
+const int NPS =
+#ifdef CANON_PS
+    7
+#else
+    5
+#endif
+    ;
+
+corecvs::Vector3dd locations[NPS] =
+#ifdef CANON_PS
+{
+#ifndef METERS
+corecvs::Vector3dd(135.296, 559.462, 164.410) * 1e3,
+corecvs::Vector3dd(129.253, 564.869, 164.438) * 1e3,
+corecvs::Vector3dd(134.741, 566.896, 164.356) * 1e3,
+corecvs::Vector3dd(141.041, 569.568, 164.368) * 1e3,
+corecvs::Vector3dd(138.042, 575.810, 164.375) * 1e3,
+corecvs::Vector3dd(149.297, 579.770, 164.415) * 1e3,
+corecvs::Vector3dd(153.354, 592.804, 164.408) * 1e3
+#else
+corecvs::Vector3dd(135.296, 559.462, 164.410),
+corecvs::Vector3dd(129.253, 564.869, 164.438),
+corecvs::Vector3dd(134.741, 566.896, 164.356),
+corecvs::Vector3dd(141.041, 569.568, 164.368),
+corecvs::Vector3dd(138.042, 575.810, 164.375),
+corecvs::Vector3dd(149.297, 579.770, 164.415),
+corecvs::Vector3dd(153.354, 592.804, 164.408)
+#endif
+};
+#else
+{
+corecvs::Vector3dd(124.318, 564.418, 164.525),
+corecvs::Vector3dd(135.331, 556.671, 164.553),
+corecvs::Vector3dd(135.066, 568.676, 164.390),
+corecvs::Vector3dd(134.149, 578.438, 164.433),
+corecvs::Vector3dd(144.525, 570.309, 164.504)
+};
+#endif
+corecvs::Quaternion orientation = corecvs::Quaternion(0.5, 0.5, 0.5, 0.5);
 
 corecvs::CameraModel GenerateCamera(double F, double iW, double iH, bool imageFlip)
 {
@@ -69,19 +128,28 @@ corecvs::CameraModel GenerateCamera(double F, double iW, double iH, bool imageFl
     }
     else
     {
-        ex.orientation = corecvs::Quaternion(0.0, 0.0, sin(M_PI / 4.0), cos(M_PI / 4.0));
+        ex.orientation = corecvs::Quaternion(0.0, 0.0, sin(-M_PI / 4.0), cos(-M_PI / 4.0));
     }
     return CameraModel(in, ex); 
 }
 
-corecvs::Photostation GenerateCanonPs()
+corecvs::Photostation GenerateModelPs()
 {
+#ifdef CANON_PS
     double F = 2250.0;
     double iW = 2896;
     double iH = 1944;
     
     auto cam = GenerateCamera(F, iW, iH, false);
     return GeneratePs(0.0, 24, cam);
+#else
+    double F = 1720;
+    double iW = 2592;
+    double iH = 1944;
+
+    auto cam = GenerateCamera(F, iW, iH, true);
+    return GeneratePs(120.0, 6, cam);
+#endif
 }
 
 double angleOffset[] =
@@ -123,7 +191,22 @@ struct ReconstructionJob : ReconstructionParameters
 
     int getInputNum() const
     {
+        int cams = 0;
+#ifndef POI_ONLY
         return 7 * scene.photostations.size() - 6;
+#else
+        return 
+#ifndef Q_ONLY
+            7 
+#else
+            4
+#endif
+            * scene.photostations.size()
+#ifdef ESTIMATE_F
+            + 3 * 5
+#endif
+            ;
+#endif
     }
     void writeParams(double out[], corecvs::Vector3dd mean = corecvs::Vector3dd(0.0, 0.0, 0.0), corecvs::Vector3dd scale = corecvs::Vector3dd(1.0, 1.0, 1.0)) const
     {
@@ -134,14 +217,29 @@ struct ReconstructionJob : ReconstructionParameters
             auto loc = scene.photostations[i].location;
             loc.orientation = loc.orientation.normalised();
 
+#ifndef POI_ONLY
             if (i > 1)
+#else
+            if (1)
+#endif
             {
+#ifndef Q_ONLY
                 for (int j = 0; j < 3; ++j)
                     out[argout++] = (loc.position[j] - mean[j]) / scale[j];
+#endif
             }
             for (int j = 0; j < 4; ++j)
                 out[argout++] = loc.orientation[j];
         }
+#ifdef POI_ONLY
+#ifdef ESTIMATE_F
+        for (int i = 0; i < 5; ++i) {
+      out[argout++] = scene.photostations[i].cameras[0].intrinsics.focal.x();
+      out[argout++] = scene.photostations[i].cameras[0].intrinsics.principal.x();
+      out[argout++] = scene.photostations[i].cameras[0].intrinsics.principal.y();
+        }
+#endif
+#endif
         assert(argout == getInputNum());
     }
 
@@ -161,6 +259,8 @@ struct ReconstructionJob : ReconstructionParameters
         scale = scale / N - mean * mean;
         if (!scale < 1e-6)
             scale = corecvs::Vector3dd(1.0, 1.0, 1.0);
+        for (int j = 0; j < 3; ++j)
+            scale[j] = std::sqrt(scale[j]);
     }
 
     void readParams(const double in[], corecvs::Vector3dd mean = corecvs::Vector3dd(0.0, 0.0, 0.0), corecvs::Vector3dd scale = corecvs::Vector3dd(1.0, 1.0, 1.0))
@@ -171,15 +271,39 @@ struct ReconstructionJob : ReconstructionParameters
         {
             auto& loc = scene.photostations[i].location;
 
+#ifndef POI_ONLY
             if (i > 1)
+#else
+            if (1)
+#endif
             {
+#ifndef Q_ONLY
+                std::cout << "MSX: " << in[argin] << ", " << in[argin + 1] << ", " << in[argin + 2] << std::endl;
                 for (int j = 0; j < 3; ++j)
                     loc.position[j] = in[argin++] * scale[j] + mean[j];
+#endif
             }
             for (int j = 0; j < 4; ++j)
                 loc.orientation[j] = in[argin++];
             loc.orientation = loc.orientation.normalised();
         }
+#ifdef POI_ONLY
+#ifdef ESTIMATE_F
+        for (int kk = 0; kk < 5; ++kk){
+        double f = in[argin++];
+        double cx = in[argin++];
+        double cy = in[argin++];
+        std::cout << "F:" << f << std::endl;
+    
+        for (int i = kk; i <=kk; ++i)
+            for (int j = 0; j < scene.photostations[i].cameras.size(); ++j)
+            {
+                scene.photostations[i].cameras[j].intrinsics.focal = corecvs::Vector2dd(f, f);
+                scene.photostations[i].cameras[j].intrinsics.principal = corecvs::Vector2dd(cx, cy);
+            }
+        }
+#endif
+#endif
         assert(argin == getInputNum());
     }
 #if 1
@@ -191,7 +315,7 @@ struct ReconstructionJob : ReconstructionParameters
         double saturationThreshold;
         corecvs::Vector3dd mean, scale;
 //        corecvs::Matrix22 covariation;
-#if 10
+#if 0
         struct ParallelJacobianEvaluator
         {
             void operator() (const corecvs::BlockedRange<int> &r) const
@@ -364,7 +488,9 @@ struct ReconstructionJob : ReconstructionParameters
             rJob->readParams(in, mean, scale);
             std::vector<double> errors;
             std::cout << "UPD..." << std::endl;
+#ifndef NOUPD
             rJob->scene.updateBackProjections();
+#endif
             std::cout << "UPD...OK" << std::endl;
             rJob->scene.computeReprojectionErrors(errors);
 
@@ -410,18 +536,38 @@ struct ReconstructionJob : ReconstructionParameters
             }
             else
             {
+                int id = 0;
+                auto& scene = rJob->scene;
+#if 0
+                for (auto& po: scene.pointObservations)
+                {
+                    auto wp = po.worldPoint;
+                    for (auto& proj: po.projections)
+                    {
+                        auto cam = scene.photostations[proj.photostationId].getRawCamera(proj.cameraId);
+                        auto dp = (cam.rayFromPixel(proj.projection)).a;
+                        auto realDir = wp - cam.extrinsics.position;
+                        out[outputPtr++] = realDir.angleTo(dp); 
+                        total += out[outputPtr - 1] * out[outputPtr - 1];
+                        inliers_total += out[outputPtr - 1] * out[outputPtr - 1];
+                        cnt += 1;
+                        inliers += 1;
+                    }
+                }
+#else
                 for (int i = 0; i < errors.size(); ++i)
                 {
-                    double err = out[outputPtr++] = std::abs(errors[i]);
+                    double err = out[outputPtr++] = (errors[i]);
                     total += err * err;
                     cnt += 0.5;
                     inliers_total += err * err;
                     if (i % 2 == 0)
                         inliers++;
                 }
+#endif
             }
             std::cout << "LMF: " << std::sqrt(total / cnt) << " | " << std::sqrt(inliers_total / inliers) << " (" << cnt << " | " << inliers << ")" << std::endl;
-            assert(outputNum == outputPtr);
+//          assert(outputNum == outputPtr);
         }
 
 
@@ -433,14 +579,14 @@ struct ReconstructionJob : ReconstructionParameters
     void descriptAll();
     void solve()
     {
-        corecvs::LevenbergMarquardt LM(10000000);
+        corecvs::LevenbergMarquardt LM(1000);
         corecvs::Vector3dd mean, scale;
         getScaler(mean, scale);
 //        mean = 0.0;
 //        scale = 1.0;
         std::cout << "MV: " << mean << " " << scale << std::endl;
-        LM.f = new OptimizationFunctor(this, true,30.0,mean,scale);
-        LM.trace = true;
+        LM.f = new OptimizationFunctor(this,false,30.0,mean,scale);
+        //LM.trace = true;
         std::vector<double> in(getInputNum()), out(LM.f->outputs);
         writeParams(&in[0], mean, scale);
         auto res = LM.fit(in, out);
@@ -449,7 +595,7 @@ struct ReconstructionJob : ReconstructionParameters
     scene.computeReprojectionErrors(errors);
     std::vector<double> errors;
 #else
-    OptimizationFunctor f(this, true, 30.0);
+    OptimizationFunctor f(this, false, 30.0);
     std::vector<double> inf(getInputNum()), errors(f.outputs);
     writeParams(&inf[0]);
     f(&inf[0], &errors[0]);
@@ -483,18 +629,30 @@ struct ReconstructionJob : ReconstructionParameters
     }
     sum /= errors.size();// / 2.0;
     inlier_sum /= inliers;
+    std::ofstream er;
+    std::vector<int> camid, psid;
+    camid.resize(errors.size() / 2);
+    psid.resize(errors.size() / 2);
+    int idx = 0;
+    for (auto& p: scene.pointObservations)
+        for (auto& pp: p.projections)
+        {
+            camid[idx] = pp.cameraId;
+            psid[idx++] = pp.photostationId;
+        }
+    er.open("errors.csv", std::ios_base::out);
+    er << "X, Y, cam, ps" << std::endl;
+    for (int i = 0; i < errors.size(); i += 2)
+    {
+        er << errors[i] << ", " << errors[i + 1] << ", "
+            << camid[i / 2] << ", " << ('A' + psid[i / 2]) << std::endl;
+    }
 
     sort(errors.begin(), errors.end());
 
 
     
 
-    std::ofstream er;
-    er.open("errors.csv", std::ios_base::out);
-    for (int i = 0; i < errors.size(); i += 2)
-    {
-        er << errors[i] << ", " << errors[i + 1] << std::endl;
-    }
     int NN = errors.size();
 
     std::cout << "PTE: " << std::sqrt(sum) << " # " << inlier_sum << " | " << std::sqrt(inlier_sum)  << " (" << errors.size() <<  " | " << inliers << ")" <<
@@ -529,9 +687,9 @@ struct ReconstructionJob : ReconstructionParameters
     }
     void fill(std::unordered_map<std::string, LocationData> &data, bool)
     {
-        for (int id = 0; id < 7; ++id)
+        for (int id = 0; id < NPS; ++id)
         {
-            auto ps = GenerateCanonPs();
+            auto ps = GenerateModelPs();
             std::stringstream ss;
             ss << "SP" << (char)('A' + id);
             std::string prefix = ss.str();
@@ -1152,6 +1310,53 @@ void ReconstructionJob::undistortAll(bool singleDistortion)
     
 }
 
+std::vector<PointObservation__> parsePois(const std::string &filename)
+{
+    std::ifstream ifs;
+    ifs.open(filename, std::ios_base::in);
+
+    std::vector<PointObservation__> res;
+
+    int N;
+    ifs >> N;
+    for (int i = 0; i < N; ++i)
+    {
+        std::string label;
+        corecvs::Vector3dd pos;
+        int M;
+        ifs >> label >> pos[0] >> pos[1] >> pos[2] >> M;
+
+        std::vector<PointProjection> projections;
+        PointObservation__ observation;
+        observation.worldPoint = convertVector(pos);
+        observation.updateable = false;
+
+        for (int j = 0; j < M; ++j)
+        {
+            std::string filename;
+            double x, y;
+            ifs >> filename >> x >> y;
+            if (x < 0 || y < 0) continue;
+
+            int psId = filename[2] - 'A';
+            int camId = ((filename[3] - '0') * 10 + filename[4] - '0') - 1;
+            PointProjection proj;
+            proj.projection = corecvs::Vector2dd(x, y)+corecvs::Vector2dd(0.5, 0.5);
+            proj.cameraId = camId;
+            proj.photostationId = psId;
+ //         if (camId == 0)            
+            projections.push_back(proj);
+            
+        }
+        observation.projections = projections;
+//      if (projections.size())
+        res.push_back(observation);
+    }
+
+    return res;
+
+}
+
 // XXX: here we parse only position part; angle data is rejected
 //      we also make prefix uppercase since it is partially lower-case
 //      in Measure_15
@@ -1195,9 +1400,15 @@ std::unordered_map<std::string, LocationData>  parseGps(const std::string &filen
 
         // XXX: note, that stuff valid only for current proto, somewhere we should add switch for it
         LocationData location;
+#ifndef METERS
         location.position[0] = e * 1e3;
         location.position[1] = n * 1e3;
         location.position[2] = h * 1e3;
+#else
+        location.position[0] = e;
+        location.position[1] = n;
+        location.position[2] = h;
+#endif
 //      location.position = axis * location.position;
         double phi=0.0;//-0.22*M_PI / 180.0;
 
@@ -1213,6 +1424,303 @@ std::unordered_map<std::string, LocationData>  parseGps(const std::string &filen
         std::cout << "Key: " << key << " our stuff: " << location.position << " " << location.orientation << std::endl;
     } while(ifs);
     return locations;
+}
+
+corecvs::Vector3dd generateSpherePoint(const corecvs::Vector3dd &center, const double r, std::mt19937 &rng)
+{
+    std::uniform_real_distribution<double> rngZ(-1, 1);
+    std::uniform_real_distribution<double> rngPhi(0.0, 2.0 * M_PI);
+    double phi = rngPhi(rng);
+    corecvs::Vector3dd sp(cos(phi), sin(phi), rngZ(rng));
+    return sp * r + center;
+}
+
+std::vector<corecvs::Vector3dd> generatePois(const std::vector<corecvs::Photostation> &pss, double r, size_t N, std::mt19937 &rng)
+{
+    corecvs::Vector3dd center;
+    double cnt = 0.0;
+    for (auto& ps: pss)
+    {
+        center += ps.location.position;
+        cnt += 1.0;
+    }
+    center = center * (1.0 / cnt);
+
+    std::vector<corecvs::Vector3dd> pois;
+    while (pois.size() < N)
+    {
+        auto vec = generateSpherePoint(center, r, rng);
+        int isVisible = 0;
+        for (auto& ps: pss)
+            if (ps.isVisible(vec))
+            {
+                isVisible++;
+            } 
+        if (isVisible < 5)
+            continue;
+        pois.push_back(vec);
+    }
+    return pois;
+}
+
+corecvs::Vector2dd generateNormalLimited(double sigma, double maxDelta, std::mt19937 &rng)
+{
+    corecvs::Vector2dd res;
+    std::normal_distribution<double> rnn(0.0, sigma);
+    do
+    {
+        res[0] = rnn(rng);
+        res[1] = rnn(rng);
+    } while (!res > maxDelta);
+    return res;
+}
+
+corecvs::Quaternion generateQuaternionDelta(double sigma, std::mt19937 &rng)
+{
+    auto v = generateSpherePoint(corecvs::Vector3dd(0, 0, 0), 1.0, rng);
+    double phi = generateNormalLimited(sigma * M_PI / 180.0, M_PI / 2.0, rng)[0];
+    double s = sin(phi / 2.0);
+    double c = cos(phi / 2.0);
+    return corecvs::Quaternion(s * v[0], s * v[1], s * v[2], c);
+}
+
+corecvs::Vector3dd generateVectorDelta(double sigma, std::mt19937 &rng)
+{
+    corecvs::Vector3dd vec(0.0, 0.0, 0.0);
+    for (int i = 0; i < 3; ++i)
+        vec[i] = generateNormalLimited(sigma, sigma * 100, rng)[0];
+    return vec;
+}
+
+std::vector<PointObservation__> generateObservations(const std::vector<corecvs::Photostation> &pss, const std::vector<corecvs::Vector3dd> &pois, double sigma, double maxDelta, std::mt19937 &rng)
+{
+    std::vector<PointObservation__> observations;
+    for (auto& poi: pois)
+    {
+        PointObservation__ observation;
+        observation.updateable = false;
+        observation.worldPoint = poi;
+
+        for (size_t i = 0; i < pss.size(); ++i)
+        {
+            for (size_t j = 0; j < pss[i].cameras.size(); ++j)
+            {
+                if (pss[i].isVisible(poi, j))
+                {
+                    PointProjection proj;
+                    proj.photostationId = i;
+                    proj.cameraId = j;
+                    proj.projection = pss[i].project(poi, j) + generateNormalLimited(sigma, maxDelta, rng);
+                    observation.projections.push_back(proj);
+                }
+            }
+        }
+
+        observations.push_back(observation);
+    }
+    return observations;
+}
+
+std::vector<std::vector<double>> runExp(int N, double R, double sigma, double maxDelta, double sigmaPos, double sigmaAngle, int M)
+{
+    std::vector<std::vector<double>> results;
+    std::random_device hw;
+    std::mt19937 rng(hw());
+    for (int jj = 0; jj < M; ++jj)
+    {
+        ReconstructionJob job;
+        auto ps = GenerateModelPs();
+        std::vector<Photostation> pss;
+        for (int i = 0; i < NPS; ++i)
+        {
+            ps.location.position = locations[i];
+            ps.location.orientation = orientation;
+            pss.push_back(ps);
+        }
+//        std::cout << "MCo: POI" << std::endl;
+        auto pois = generatePois(pss, R, N, rng);
+
+        for (int kk = 0; kk < 1; ++kk)
+        {
+//            std::cout << "MCi: " << kk << " / " << M << " (" << jj << " / " << M << ")" << std::endl;
+//            std::cout << "MCi: GO" << std::endl;
+            auto obs = generateObservations(pss, pois, sigma, maxDelta, rng);
+            job.scene.photostations = pss;
+            job.scene.pointObservations = obs;
+ 
+            for (int i = 0; i < NPS; ++i)
+            {
+                job.scene.photostations[i].location.position += generateVectorDelta(sigmaPos, rng);
+                job.scene.photostations[i].location.orientation = job.scene.photostations[i].location.orientation ^ generateQuaternionDelta(sigmaAngle, rng);
+            }
+//            std::cout << "MCi: ERR" << std::endl;
+            std::vector<double> errors;
+            job.scene.computeReprojectionErrors(errors);
+            double ssq = 0.0;
+            double mxr = 0.0;
+            for (int i = 0; i < errors.size(); i += 2)
+            {
+                double r2 = errors[i] * errors[i] + errors[i + 1] * errors[i + 1];
+                double r = std::sqrt(r2);
+                if (r > mxr) mxr = r;
+                ssq += r2;
+            }
+            double rmseI = std::sqrt(ssq / (errors.size() / 2.0));
+            double mxrI = mxr;
+            
+//            std::cout << "MCi: SOL" << std::endl;
+            job.solve();
+
+            std::vector<double> output = { R, N, sigma, sigmaPos, sigmaAngle, jj};
+            for (int i = 0; i < pss.size(); ++i)
+            {
+                for (int j = 0; j < 3; ++j)
+                    output.push_back((pss[i].location.position[j] - job.scene.photostations[i].location.position[j]));
+                for (int j = 0; j < 4; ++j)
+                    output.push_back((pss[i].location.orientation.conjugated() ^job.scene.photostations[i].location.orientation)[j]);
+            }
+
+//            std::cout << "MCi: ERR" << std::endl;
+            errors.clear();
+            job.scene.computeReprojectionErrors(errors);
+            ssq = 0.0;
+            mxr = 0.0;
+            for (int i = 0; i < errors.size(); i += 2)
+            {
+                double r2 = errors[i] * errors[i] + errors[i + 1] * errors[i + 1];
+                double r = std::sqrt(r2);
+                if (r > mxr) mxr = r;
+                ssq += r2;
+            }
+            double rmse = std::sqrt(ssq / (errors.size() / 2.0));
+            output.push_back(rmse);
+            output.push_back(mxr);
+            output.push_back(rmseI);
+            output.push_back(mxrI);
+            results.push_back(output);
+        }
+    }
+    return results;
+}
+
+struct Desc
+{
+    int N;
+    double sigma;
+    double R;
+    double maxDelta;
+    double sigmaPos;
+    double sigmaAngle;
+    int M;
+};
+
+struct ParallelSimulator
+{
+public:
+    void operator() (const corecvs::BlockedRange<int> &r) const
+    {
+        for (int i = r.begin(); i < r.end(); ++i)
+        {
+            auto& d = descriptions[i];
+            std::cout << "MCST: Starting #" << i << std::endl; // N = " << d.N << " R = " << d.R << " sigma = " << d.sigma << std::endl;
+            (*results)[i] = runExp(d.N, d.R, d.sigma, d.maxDelta, d.sigmaPos, d.sigmaAngle, d.M);
+            std::cout << "MCST: Ending #" << i << std::endl; // N = " << d.N << " R = " << d.R << " sigma = " << d.sigma << std::endl;
+        }
+
+    }
+    std::vector<Desc> descriptions;
+    std::vector<std::vector<std::vector<double>>> *results;
+    ParallelSimulator(decltype(results) results, const std::vector<Desc> &desc) :
+        descriptions(desc), results(results)
+    {
+    }
+};
+
+#define NEL(A) ((sizeof(A)) / sizeof(A[0]))
+
+void run()
+{
+    int N[] = {8, 16, 128, 1024};
+    double sigma[] = {0.01, 0.1, 0.5};
+    double sigma_pos[] = {
+#ifndef METERS
+      0.001,
+        0.5 * 1e3,
+      1.0  * 1e3,
+#else
+      0.001 * 1e-3,
+        0.5,
+      1.0
+#endif
+    };
+    double sigma_angle[] = {
+      0.001,
+        2.0,
+        5.0
+//      5.0
+    };
+    double R[] = { 
+#ifndef METERS
+        1e3 * 
+#endif
+            30.0 
+    };
+    double maxDelta = 3.0;
+    int M = 64;
+    int Nn = NEL(N), sigman = NEL(sigma), Rn = NEL(R), sigmaPn = NEL(sigma_pos), sigmaAn = NEL(sigma_angle);
+
+    std::ofstream log;
+    log.open("errors_mc_vps.csv", std::ios_base::out);
+    log << "R, N, sigma, sigmaPos, sigmaAngle, PointSet, ";
+    for (int i = 0; i < NPS; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            log << "d" << (char)('X' + j) << i << ", ";
+        }
+        for (int j = 0; j < 4; ++j)
+        {
+            log << "dQ" << (j < 3 ? (char)('X' + j) : 'W') << i << (i == 6 && j == 3 ? "" : ", ");
+        }
+#ifdef Q_ONLY
+//        log << ", w";
+#endif
+    }
+    log << ", rmse, max, rmseInitial, maxInitial";
+    log << std::endl;
+
+    std::vector<Desc> descriptions;
+    for (int i = 0; i < Nn; ++i)
+        for (int j = 0; j < sigman; ++j)
+            for (int k = 0; k < Rn; ++k)
+                for (int l = 0; l < sigmaPn; ++l)
+                    for (int m = 0; m < sigmaAn; ++m)
+            {
+                std::cout << "MC: Creating N = " << N[i] << " R = " << R[k] << " sigma = " << sigma[j] << std::endl;
+#if 0
+                auto res = runExp(N[i], R[k], sigma[j], maxDelta, M);
+                for (auto& r: res)
+                {
+                    for (int ii = 0; ii < r.size(); ++ii)
+                        log << r[ii] << (ii + 1 == r.size() ? "" : ", ");
+                    log << std::endl;
+                }
+#else
+                for (int ii = 0; ii < M; ++ii)
+                descriptions.push_back({ N[i], sigma[j], R[k], maxDelta, sigma_pos[l], sigma_angle[m], 1 });
+#endif
+            }
+    int NN = descriptions.size();
+    std::vector<std::vector<std::vector<double>>> results(NN);
+    corecvs::parallelable_for(0, NN, ParallelSimulator(&results, descriptions));
+    for (auto& res: results)
+                for (auto& r: res)
+                {
+                    for (int ii = 0; ii < r.size(); ++ii)
+                        log << std::setprecision(15) <<  r[ii] << (ii + 1 == r.size() ? "" : ", ");
+                    log << std::endl;
+                }
+            
 }
 
 int main(int argc, char **argv)
@@ -1246,7 +1754,9 @@ int main(int argc, char **argv)
                  "Saving mesh to " << filenamePly << std::endl;
 
 
-
+#if 1
+    run();
+#else
     std::vector<int> p = {0, 1, 2};
     corecvs::Vector3dd arr[] =
     {
@@ -1256,7 +1766,102 @@ int main(int argc, char **argv)
     };
 
     auto map = parseGps(filenameGPS);
+    auto loc = map["SPA"];
+    std::cout << "PS location: " << loc.position << std::endl;
+    auto pps = GenerateModelPs();
+    pps.location = loc;
+    corecvs::Vector3dd poi1 = convertVector(corecvs::Vector3dd(507.97, 163.182, 175.785));
+    corecvs::Vector2dd truth[] = 
+    {
+        corecvs::Vector2dd(2108, 508),
+        corecvs::Vector2dd(1503, 527),
+        corecvs::Vector2dd(906, 515),
+    };
+    int truth_id[] = 
+    {
+        10, 11, 12
+    };
+    double avg = 0.0;
+    double mx = 0.0;
+    int cnt = 0;
+    for (int i = 0; i < pps.cameras.size(); ++i)
+    {
+        if (pps.isVisible(poi1, i))
+        {
+            std::cout << "SPA" << std::setw(2) << std::setfill('0') << (i + 1) << ": " << pps.project(poi1, i) << std::endl;
+            for (int j = 0; j < 3; ++j)
+            {
+                if (truth_id[j] == i + 1)
+                {
+                    auto v = truth[j] - pps.project(poi1, i);
+                    std:: cout << "DIFF: " << v << std::endl;
+                    if (!v > mx)
+                        mx = !v;
+                    avg += v[0] * v[0] + v[1] * v[1];
+                    cnt++;
+                }
+            }
+        }
+        else
+        {
+            std::cout << "SPA" << std::setw(2) << std::setfill('0') << (i + 1) << ": not visible" << std::endl;
+        }
+    }
+    std::cout << "RMSE err: " << std::sqrt(avg / cnt) << std::endl;
+    std::cout << "Max err: " << mx << std::endl;
+    Mesh3D meshh;
+    meshh.switchColor(true);
+    pps.location = corecvs::LocationData();
+    CalibrationHelpers().drawPly(meshh, pps, 1000.0);
+    std::ofstream mofs;
+    mofs.open("mesh_n.ply", std::ios_base::out);
+    meshh.dumpPLY(mofs);
 
+    ReconstructionJob rec;
+    rec.fill(map, false);
+    rec.scene.pointObservations = parsePois("pois_new.txt");
+    std::vector<double> errors;
+    rec.scene.computeReprojectionErrors(errors);
+    double ssq = 0.0;
+    mx = 0.0;
+    for (int i = 0; i < errors.size(); i += 2)
+    {
+        ssq += errors[i]     * errors[i];
+        ssq += errors[i + 1] * errors[i + 1];
+        if (mx < std::abs(errors[i]))
+            mx = std::abs(errors[i]);
+        if (mx < std::abs(errors[i + 1]))
+            mx = std::abs(errors[i + 1]);
+    }
+    std::cout << "Mean: " << std::sqrt(ssq / (errors.size() / 2)) << " max: " <<  mx << std::endl;
+    rec.detectAll();
+    rec.solve();
+    std::cout << "X,Y,Z,Xe,Ye,Ze" << std::endl;
+    for (int i = 0; i < rec.scene.photostations.size(); ++i)
+    {
+        std::stringstream pref;
+        pref << "SP" << (char)('A' + (char)i);
+        std::cout << pref.str() << ", ";
+        std::cout <<
+            rec.scene.photostations[i].location.position[0] << ", " <<
+            rec.scene.photostations[i].location.position[1] << ", " <<
+            rec.scene.photostations[i].location.position[2] << ", " <<
+            map[pref.str()].position[0] << ", " << 
+            map[pref.str()].position[1] << ", " <<
+            map[pref.str()].position[2] << std::endl;
+    }
+    auto cc= rec.scene.photostations[0].location.orientation;
+    for (int i = 0; i < rec.scene.photostations.size(); ++i)
+    {
+        auto o = cc.conjugated() ^ rec.scene.photostations[i].location.orientation;
+        corecvs::Vector3dd axis(o[0], o[1], o[2]);
+        axis.normalise();
+        double phi = acos(o[3]) * 2.0 * 180.0 / M_PI;
+        std::cout << axis << " " << phi << std::endl;
+    }
+#endif
+    return 0;
+#if 0
     CalibrationJob job;
     JSONGetter getter(filenameCalibration.c_str());
     getter.visit(job, "job");
@@ -1304,4 +1909,5 @@ int main(int argc, char **argv)
     JSONSetter setter("output.json");
     setter.visit(jobR.scene, "scene");
     return 0;
+#endif
 }

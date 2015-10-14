@@ -83,6 +83,14 @@ public:
         return cameras[cam].isVisible(location.project(pt));
     }
 
+    bool isVisible(const Vector3dd &pt) const
+    {
+        for (size_t i = 0; i < cameras.size(); ++i)
+            if (isVisible(pt, i))
+                return true;
+        return false;
+    }
+
 
     template<class VisitorType>
     void accept(VisitorType &visitor)
