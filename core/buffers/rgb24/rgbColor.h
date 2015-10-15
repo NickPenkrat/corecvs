@@ -6,6 +6,8 @@
  * \date Apr 19, 2011
  * \author alexander
  */
+#include "rgbColorT.h"
+#if 0
 
 #include <stdint.h>
 
@@ -551,3 +553,4 @@ template<class VisitorType>
 };
 
 } //namespace corecvs
+#endif

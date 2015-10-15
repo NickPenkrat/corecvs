@@ -12,7 +12,7 @@
 
 namespace corecvs {
 
-class RGB24Buffer;
+//class RGB24Buffer;
 
 
 /**
@@ -164,7 +164,7 @@ public:
     Photostation   *station;
 
     /* This should be moved to the derived class */
-    RGB24Buffer    *image;
+    //RGB24Buffer    *image;
     std::string     fileName;
 
 public:

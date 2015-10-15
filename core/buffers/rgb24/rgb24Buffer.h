@@ -1,3 +1,7 @@
+#include "rgbBufferT.h"
+
+#if 0
+
 #ifndef CRGB24BUFFER_H_
 #define CRGB24BUFFER_H_
 /**
@@ -396,3 +400,4 @@ private:
 } //namespace corecvs
 #endif /* CRGB24BUFFER_H_ */
 
+#endif

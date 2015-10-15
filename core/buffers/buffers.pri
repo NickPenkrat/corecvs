@@ -35,8 +35,9 @@ HEADERS += \
     buffers/kernels/blurProcessor.h \
     buffers/kernels/spatialGradient.h \
     buffers/morphological/morphological.h \
-    buffers/rgb24/rgbColor.h \
+    buffers/rgb24/rgbColorT.h \
     buffers/rgb24/rgb24Buffer.h \
+    buffers/rgb24/rgbBufferT.h \
     buffers/rgb24/hardcodeFont.h \
     buffers/rgb24/hersheyVectorFont.h \
     buffers/rgb24/abstractPainter.h \
@@ -79,7 +80,7 @@ SOURCES += \
     buffers/kernels/spatialGradient.cpp \
     buffers/kernels/logicKernels.cpp \    
     buffers/morphological/morphological.cpp \
-    buffers/rgb24/rgb24Buffer.cpp \
+#    buffers/rgb24/rgb24Buffer.cpp \
     buffers/rgb24/rgbColor.cpp \
     buffers/rgb24/hardcodeFont.cpp \
     buffers/rgb24/hersheyVectorFont.cpp \    

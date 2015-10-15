@@ -977,4 +977,3 @@ RGB24Buffer *RGB24Buffer::diff(RGB24Buffer *buffer1, RGB24Buffer *buffer2, int *
 
 
 } //namespace corecvs
-
