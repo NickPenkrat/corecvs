@@ -17,16 +17,14 @@ namespace corecvs
 
 		PPMLoaderEx();
 		G12Buffer** g12BufferCreateFromColoredPPM(const string &name);
-		static MetaData nulldata;
-		int loadBayer(const string& name, MetaData& metadata = nulldata);
+		int loadBayer(const string& name, MetaData *metadata = nullptr);
 		int save(string name, G12Buffer *buf);
 		G12Buffer* getBayer();
 
 	private:
 		G12Buffer* bayer;
-
-		bool readHeader(FILE *fp, unsigned long int *h, unsigned long int *w, unsigned short int *maxval, int *type, MetaData& metadata = nulldata);
-		char* nextLine(FILE *fp, int sz, MetaData& metadata);
+		bool readHeader(FILE *fp, unsigned long int *h, unsigned long int *w, unsigned short int *maxval, int *type, MetaData *metadata = nullptr);
+		char* nextLine(FILE *fp, int sz, MetaData* metadata);
 		//MetaData metadata;
 	};
 }

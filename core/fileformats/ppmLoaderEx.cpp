@@ -1,7 +1,6 @@
 #include "ppmLoaderEx.h"
 namespace corecvs
 {
-	PPMLoaderEx::MetaData PPMLoaderEx::nulldata;
 
 	PPMLoaderEx::PPMLoaderEx()
 	{
@@ -10,7 +9,7 @@ namespace corecvs
 
 	// skips through comments and returns the first encountered non-comment line
 	// while skipping through comments also reads all available metadata
-	char* PPMLoaderEx::nextLine(FILE *fp, int sz, MetaData &metadata)
+	char* PPMLoaderEx::nextLine(FILE *fp, int sz, MetaData *metadata)
 	{
 		char *buf = new char[sz];
 		while (fread(buf, 1, 1, fp))
@@ -44,8 +43,8 @@ namespace corecvs
 						sscanf(numbers, "%lf", &(values[i]));
 						numbers = strchr(numbers, ' ') + 1;
 					}
-					if (&metadata != &nulldata)
-						metadata.insert(std::pair<string, double*>(param, values));
+					if (metadata != nullptr)
+						metadata->insert(std::pair<string, double*>(param, values));
 				}
 				memset(buf, 0, sz);
 			}
@@ -54,7 +53,7 @@ namespace corecvs
 		return nullptr;
 	}
 
-	bool PPMLoaderEx::readHeader(FILE *fp, unsigned long int *h, unsigned long int *w, unsigned short int *maxval, int *type, MetaData& metadata)
+	bool PPMLoaderEx::readHeader(FILE *fp, unsigned long int *h, unsigned long int *w, unsigned short int *maxval, int *type, MetaData* metadata)
 	{
 		char* header = nextLine(fp, 255, metadata); // skip comments and read next line
 
@@ -220,7 +219,7 @@ namespace corecvs
 	}
 
 	// TODO: change type to G12 and return the bayer data
-	int PPMLoaderEx::loadBayer(const string& name, MetaData& metadata)
+	int PPMLoaderEx::loadBayer(const string& name, MetaData *meta)
 	{
 		FILE      *fp = NULL;
 		uint8_t   *charImage = NULL;
@@ -241,7 +240,10 @@ namespace corecvs
 			return -1;
 		}
 
-		if (!readHeader(fp, &h, &w, &maxval, &type, metadata))
+		// create an alias to metadata
+		MetaData &metadata = *meta;
+
+		if (!readHeader(fp, &h, &w, &maxval, &type, meta))
 		{
 			return -2;
 		}
@@ -250,13 +252,17 @@ namespace corecvs
 			return 1;
 
 		// if no metadata is present, create some
-		if (!metadata["bits"])
-			metadata["bits"] = new double[1];
+		// if metadata is nulldata, don't
+		if (meta != nullptr)
+		{
+			if (!metadata["bits"])
+				metadata["bits"] = new double[1];
 
-		// get significant bit count
-		metadata["bits"][0] = 1;
-		while (maxval >> int(metadata["bits"][0]))
-			metadata["bits"][0]++;
+			// get significant bit count
+			metadata["bits"][0] = 1;
+			while (maxval >> int(metadata["bits"][0]))
+				metadata["bits"][0]++;
+		}
 
 		bayer = new G12Buffer(h, w, false);
 

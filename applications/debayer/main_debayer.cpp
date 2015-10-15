@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
 				}
 				else
 				{
-					PPMLoaderEx::MetaData metadata;
+					PPMLoaderEx::MetaData *metadata = new PPMLoaderEx::MetaData;
 					if (ldr.loadBayer(argv[c], metadata))
 					{
 						cout << "Could not open " << argv[c] << "." << endl;

@@ -1,20 +1,19 @@
 #include "debayer.h"
 
-Debayer::Debayer(G12Buffer *bayer, PPMLoaderEx::MetaData &metadata)
+Debayer::Debayer(G12Buffer *bayer, MetaData *metadata)
 {
 	this->bayer = bayer;
-	this->metadata = metadata;
-
+	this->metadata_ptr = metadata;
 }
 
 Debayer* Debayer::FromFile(const string& filename)
 {
-	// this should be safe although ldr object is deleted upon returning
+	// this should work
 	PPMLoaderEx ldr;
-	PPMLoaderEx::MetaData data;
-	ldr.loadBayer(filename, data);
+	MetaData *metadata = new MetaData;
+	ldr.loadBayer(filename);
 	G12Buffer* bayer = ldr.getBayer();
-	return new Debayer(bayer, data);
+	return new Debayer(bayer);
 }
 
 // i have yet to understand what this actually does... 
@@ -196,15 +195,19 @@ G12Buffer** Debayer::linear()
 	return out;
 }
 
-double* Debayer::scale_colors(bool highlight)
+double* Debayer::scale_colors(bool highlight, MetaData *meta)
 {
 	double* scale_mul = new double[4];
 	for (int i = 0; i < 4; i++)
 		scale_mul[i] = 1;
 
-	if (!metadata["cam_mul"] || !metadata["cam_mul"][0] || !metadata["cam_mul"][2] ||
-		!metadata["pre_mul"] || !metadata["pre_mul"][0]) // check if white balance data available
-		// (TODO: maybe apply the gray world hypothesis instead of doing nothing?)
+	// alias for ease of use
+	MetaData &metadata = *meta;
+
+	// check if meta- and white balance data available
+	if (meta == nullptr ||
+		!metadata["cam_mul"] || !metadata["cam_mul"][0] || !metadata["cam_mul"][2] || !metadata["pre_mul"] || !metadata["pre_mul"][0])
+		// TODO: maybe apply the gray world hypothesis instead of doing nothing
 		return scale_mul; // if not, return vector of 1's
 
 	unsigned c;
@@ -246,7 +249,7 @@ double* Debayer::scale_colors(bool highlight)
 	return scale_mul;
 }
 
-uint16_t* Debayer::gamma_curve(int mode, int imax, int depth)
+uint16_t* Debayer::gamma_curve(int mode, int imax, int depth, MetaData *meta)
 {
 	// this code is taken from LibRaw
 	// TODO: rewrite?
@@ -254,8 +257,11 @@ uint16_t* Debayer::gamma_curve(int mode, int imax, int depth)
 	for (int i = 0; i < 0x10000; i++)
 		curve[i] = i;
 
+	// alias
+	MetaData &metadata = *meta;
+
 	// if no gamm coefficients are present (or valid), return no transform
-	if (metadata == PPMLoaderEx::nulldata || !metadata["gamm"] || !(metadata["gamm"][0] || metadata["gamm"][1] || metadata["gamm"][2] || metadata["gamm"][3] || metadata["gamm"][4]))
+	if (meta == nullptr || !metadata["gamm"] || !(metadata["gamm"][0] || metadata["gamm"][1] || metadata["gamm"][2] || metadata["gamm"][3] || metadata["gamm"][4]))
 		return curve;
 
 	int i;
@@ -325,9 +331,13 @@ int Debayer::writePPM(string filename, int depth)
 	fprintf(fp, "%d %d\n", bayer->w, bayer->h);
 	fprintf(fp, "%d\n", (1 << depth) - 1);
 
-	int m_white = metadata["white"] ? metadata["white"][0] : (1 << depth) - 1;
-	int m_black = metadata["black"] ? metadata["black"][0] : 0;
-	int m_bits = metadata["bits"] ? metadata["bits"][0] : depth;
+	// alias for ease of use
+	MetaData &metadata = *this->metadata_ptr;
+
+	// always check for metadata contents
+	int m_white = this->metadata_ptr != nullptr && metadata["white"] ? metadata["white"][0] : (1 << depth) - 1;
+	int m_black = this->metadata_ptr != nullptr &&  metadata["black"] ? metadata["black"][0] : 0;
+	int m_bits = this->metadata_ptr != nullptr &&  metadata["bits"] ? metadata["bits"][0] : depth;
 
 	for (int i = 0; i < bayer->h; i++)
 		for (int j = 0; j < bayer->w; j++)
@@ -337,7 +347,7 @@ int Debayer::writePPM(string filename, int depth)
 		}
 
 	//double scale_mul[4] = { 1, 1, 1, 1 };
-	double* scale_mul = scale_colors();
+	double* scale_mul = scale_colors(false, this->metadata_ptr);
 	// 7012 was calculated by libraw
 	// TODO: decide whether to implement the calculation or export it to metadata
 
@@ -346,7 +356,7 @@ int Debayer::writePPM(string filename, int depth)
 	int t_white = (shift < 0 ? m_white << (-shift) : m_white >> (shift));
 	int bpp = (depth + 7) / 8;
 
-	uint16_t* curve = gamma_curve(2, t_white, depth);
+	uint16_t* curve = gamma_curve(2, t_white, depth, this->metadata_ptr);
 
 	uint8_t *out_bytes = new uint8_t[bayer->w*bayer->h * 3 * bpp];
 
@@ -370,6 +380,7 @@ int Debayer::writePPM(string filename, int depth)
 			}
 	fwrite(out_bytes, bpp, bayer->w*bayer->h * 3, fp);
 	fclose(fp);
+	return 0;
 }
 
 Debayer::~Debayer()
