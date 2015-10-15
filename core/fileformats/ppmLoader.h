@@ -9,6 +9,7 @@
  */
 
 #include <string>
+#include <map>
 
 #include "global.h"
 
@@ -17,27 +18,33 @@
 
 namespace corecvs {
 
-using std::string;
+    using std::string;
 
-class PPMLoader : public BufferLoader<G12Buffer>
-{
-    static string prefix1;
+    class PPMLoader : public BufferLoader<G12Buffer>
+    {
 
-    bool readHeader(FILE *fp, unsigned long int *h, unsigned long int *w, unsigned short int *maxval, int *type);
+    public:
+        typedef std::map<string, double*> MetaData;
 
-public:
-    PPMLoader() {}
-    virtual ~PPMLoader() {}
+        PPMLoader() {}
+        virtual ~PPMLoader() {}
 
-    virtual bool acceptsFile(string name);
-    virtual G12Buffer * load(string name);
+        virtual bool acceptsFile(string name);
+        virtual G12Buffer * load(string name);
+        G12Buffer * load(string name, MetaData *metadata);
 
-    G12Buffer* g12BufferCreateFromPPM (string& name);
-    G12Buffer* g16BufferCreateFromPPM (string& name);
+        G12Buffer* g12BufferCreateFromPGM(string& name, MetaData *metadata = nullptr);
+        G12Buffer* g16BufferCreateFromPPM(string& name);
 
-    int save(string name, G12Buffer *buffer);
-    int saveG16(string name, G12Buffer *buffer);
+        int save(string name, G12Buffer *buffer);
+        int saveG16(string name, G12Buffer *buffer);
 
-};
+    private:
+        static string prefix1, prefix2;
+
+        char* nextLine(FILE *fp, int sz, MetaData *metadata);
+        bool readHeader(FILE *fp, unsigned long int *h, unsigned long int *w, unsigned short int *maxval, int *type, MetaData* metadata);
+
+    };
 
 } //namespace corecvs

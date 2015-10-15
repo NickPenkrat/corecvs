@@ -17,7 +17,8 @@ static bool checkFileExist(const string& dirPath, const string& filePath)
     }
     path += filePath;
     cout << "checking for the file <" << path << ">" << endl;
-
+    FILE* fp = fopen("test.test", "wb");
+    fwrite("hi", 2, 1, fp);
     return access(path.c_str(), 0) == 0;
 }
 
@@ -76,5 +77,7 @@ TEST(VectorTest, MulAllElements)
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+     RUN_ALL_TESTS();
+     getchar();
+     return 0;
 }

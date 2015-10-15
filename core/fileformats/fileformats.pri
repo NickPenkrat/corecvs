@@ -5,7 +5,6 @@ HEADERS += \
     fileformats/rawLoader.h \
     fileformats/plyLoader.h \
     fileformats/stlLoader.h \
-    fileformats/ppmLoaderEx.h \
 
 
 SOURCES += \
@@ -15,6 +14,5 @@ SOURCES += \
     fileformats/rawLoader.cpp \
     fileformats/plyLoader.cpp \
     fileformats/stlLoader.cpp \
-    fileformats/ppmLoaderEx.cpp \
     
 
