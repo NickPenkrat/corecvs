@@ -97,7 +97,6 @@ public:
     void prettyPrint (ostream &out = cout);
     void prettyPrint1(ostream &out = cout);
 
-
 };
 
 /**

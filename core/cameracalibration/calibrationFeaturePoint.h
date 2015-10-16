@@ -31,7 +31,7 @@ public:
 };
 
 
-class CalibrationFeaturePoint
+class CalibrationFeaturePoint : public ScenePart
 {
 public:
     std::string name;
@@ -65,12 +65,14 @@ public:
     RGBColor color;
 /**/
 
-    CalibrationFeaturePoint() :
+    CalibrationFeaturePoint(CalibrationScene * owner = NULL) :
+        ScenePart(owner),
         hasKnownPosition(false)
     {}
 
 
-    CalibrationFeaturePoint(Vector3dd _position, const std::string &_name = std::string()) :
+    CalibrationFeaturePoint(Vector3dd _position, const std::string &_name = std::string(), CalibrationScene * owner = NULL) :
+        ScenePart(owner),
         name(_name),
         position(_position),
         hasKnownPosition(true)

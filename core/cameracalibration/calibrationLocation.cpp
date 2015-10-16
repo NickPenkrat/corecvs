@@ -22,4 +22,9 @@ void CameraLocationData::prettyPrint1(std::ostream &out)
     out << "Rotation around: " << axis << " angle " << angle << "deg" << endl;
 }
 
+void CameraLocationAngles::prettyPrint(std::ostream &out)
+{
+
+}
+
 } // namespace corecvs

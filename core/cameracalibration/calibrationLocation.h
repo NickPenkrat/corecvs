@@ -8,6 +8,8 @@
 #include "line.h"
 #include "eulerAngles.h"
 #include "affine.h"
+#include "printerVisitor.h"
+
 #include "mathUtils.h"
 
 namespace corecvs {
@@ -109,12 +111,6 @@ public:
         return orientation.conjugated() * pt + position;
     }
 
-    /*
-    Ray3d relativeRay(const Vector3dd &p)
-    {
-        return Ray3d(worldToCam(p), position);
-    }
-    */
 
     /**
      *    If we want to transform the world, let's see how camera model will evolve.
@@ -174,6 +170,11 @@ public:
     CameraLocationAngles(double yaw = 0.0, double pitch = 0.0, double roll = 0.0) :
         EulerAngles(yaw, pitch, roll)
     {}
+
+    static CameraLocationAngles FromAngles(double yawDeg, double pitchDeg, double rollDeg)
+    {
+        return CameraLocationAngles(degToRad(yawDeg), degToRad(pitchDeg), degToRad(rollDeg));
+    }
 
     double  yaw() const
     {
@@ -258,6 +259,15 @@ public:
                     degToRad(roll())
                     );
     }
+
+    friend ostream& operator << (ostream &out, CameraLocationAngles &toSave)
+    {
+        PrinterVisitor printer(out);
+        toSave.accept<PrinterVisitor>(printer);
+        return out;
+    }
+
+    void prettyPrint (ostream &out = cout);
 
 };
 

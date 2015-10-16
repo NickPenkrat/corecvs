@@ -149,3 +149,12 @@ TEST(CalibrationStructsTest, testIntrinsicsStructisVisible)
     ASSERT_FALSE(intrinsics.isVisible(corecvs::Vector3dd( 0.0, -2.0, 1.0)));
     ASSERT_FALSE(intrinsics.isVisible(corecvs::Vector3dd( 0.0,  2.0, 1.0)));
 }
+
+
+TEST(CalibrationStructsTest, testStructConversion)
+{
+    CameraLocationAngles angles = CameraLocationAngles::FromAngles(45, 10, 2);
+    Quaternion q = Quaternion::FromMatrix(angles.toMatrix());
+    q.printAxisAndAngle();
+
+}

@@ -37,14 +37,16 @@ namespace corecvs {
 /**
  *   See CalibrationScene for more data on ownership of the objectes in structure
  **/
-class Photostation
+class Photostation : public ScenePart
 {
 public:
     std::vector<CameraModel> cameras;
     Affine3DQ                location;
     std::string              name;
 
-    Photostation() {}
+    Photostation(CalibrationScene * owner = NULL) :
+        ScenePart(owner)
+    {}
 
     Photostation(
         const std::vector<CameraModel> & _cameras,
@@ -72,9 +74,11 @@ public:
         location = _location.toAffine3D();
     }
 
-    /***/
-
-
+    /* New style setter */
+    void setLocation(const Affine3DQ &_location)
+    {
+        location = _location;
+    }
 
 
     CameraModel getWorldCamera(int cam) const

@@ -162,14 +162,14 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, CalibrationFeaturePoint &fp, doub
 
 void CalibrationHelpers::drawScene(Mesh3D &mesh, CalibrationScene &scene, double scale)
 {
-    for (Photostation &ps: scene.stations)
+    for (Photostation *ps: scene.stations)
     {
-        drawPly(mesh, ps, scale);
+        drawPly(mesh, *ps, scale);
     }
 
-    for (CalibrationFeaturePoint &fp: scene.points)
+    for (CalibrationFeaturePoint *fp: scene.points)
     {
-        drawPly(mesh, fp, scale);
+        drawPly(mesh, *fp, scale);
     }
 }
 
