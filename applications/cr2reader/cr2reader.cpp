@@ -137,6 +137,7 @@ int isBigEndian()
 
 int CR2Reader::writePPM(const char* filename, bool fullcolour)
 {
+    // TODO: implement this in PPMLoader!
     int h = reader->imgdata.sizes.height;
     int w = reader->imgdata.sizes.width;
 
@@ -217,6 +218,7 @@ int CR2Reader::writePPM(const char* filename, bool fullcolour)
 
 int CR2Reader::writeBayer(const char* filename)
 {
+    // TODO: implement this in PPMLoader too!
     if (reader == NULL || reader->imgdata.params.output_bps > 16)
         return -1;
 
@@ -265,7 +267,6 @@ int CR2Reader::writeBayer(const char* filename)
     fprintf(fp, "P5\n");
     fprintf(fp, "############################################\n");
     fprintf(fp, "# Bit depth: %i bits per channel.\n", reader->imgdata.params.output_bps);
-
     fprintf(fp, "# @meta %s\t@values 4\t%f %f %f %f\n", "pre_mul", reader->imgdata.color.pre_mul[0], reader->imgdata.color.pre_mul[1], reader->imgdata.color.pre_mul[2], reader->imgdata.color.pre_mul[3]);
     fprintf(fp, "# @meta %s\t@values 4\t%f %f %f %f\n", "cam_mul", reader->imgdata.color.cam_mul[0], reader->imgdata.color.cam_mul[1], reader->imgdata.color.cam_mul[2], reader->imgdata.color.cam_mul[3]);
     fprintf(fp, "# @meta %s\t@values 6\t%f %f %f %f %f %f\n", "gamm", reader->imgdata.params.gamm[0], reader->imgdata.params.gamm[1], reader->imgdata.params.gamm[2], reader->imgdata.params.gamm[3], reader->imgdata.params.gamm[4], reader->imgdata.params.gamm[5]);
@@ -273,7 +274,6 @@ int CR2Reader::writeBayer(const char* filename)
     fprintf(fp, "# @meta %s\t@values 1\t%d\n", "white", maxval);
     fprintf(fp, "# @meta %s\t@values 1\t%d\n", "black", reader->imgdata.color.black >> shift);
     fprintf(fp, "# @meta %s\t@values 1\t%d\n", "t_white", t_white);
-
     fprintf(fp, "############################################\n");
     fprintf(fp, "%d %d\n", w, h);
     fprintf(fp, "%d\n", (1 << reader->imgdata.params.output_bps) - 1);
