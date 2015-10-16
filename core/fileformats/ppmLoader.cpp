@@ -38,7 +38,7 @@ namespace corecvs
         if (metadata)
             DOTRACE(("Will load the file %s as PPM with metadata\n ", name.c_str()));
         else
-            DOTRACE(("Will load the file %s as plain PPM\n ", name.c_str()));
+            DOTRACE(("Will load the file %s as PPM (ignoring any available metadata)\n ", name.c_str()));
 
         G12Buffer *toReturn = g12BufferCreateFromPGM(name, metadata);
         return toReturn;
@@ -247,17 +247,17 @@ namespace corecvs
 
         MetaData &metadata = *meta;
 
-        fprintf(fp, "P5\n");
+        fprintf(fp, "P%d\n", type);
         fprintf(fp, "############################################\n");
         fprintf(fp, "# This file is written by DeepView library.\n");
-        fprintf(fp, "# \n");
-        fprintf(fp, "# The original source buffer had 12 bit.\n");
 
         // TODO: test this!
         if (meta)
             for (MetaData::iterator i = metadata.begin(); i != metadata.end(); i++)
             {
                 // this may be confusing
+                // the structure of metadata is as follows:
+                // [1. NAME : 2. [1. LENGTH : 2. VALUES]]
                 fprintf(fp, "# @meta %s\t@values %i\t", "black", i->second.first);
                 for (int j = 0; j < i->second.first; j++)
                     fprintf(fp, "%f ", i->second[j]);

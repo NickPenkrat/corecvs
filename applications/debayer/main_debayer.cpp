@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
                 }
                 else
                 {
-                    PPMLoader::MetaData *metadata = new PPMLoader::MetaData;
+                    MetaData *metadata = new MetaData;
                     G12Buffer* bayer = ldr.g12BufferCreateFromPGM(string(argv[c]), metadata);
                     Debayer d(bayer, metadata);
 
