@@ -170,7 +170,7 @@ public:
 class CameraLocationAngles : public EulerAngles
 {
 public:
-    CameraLocationAngles(double yaw, double pitch, double roll) :
+    CameraLocationAngles(double yaw = 0.0, double pitch = 0.0, double roll = 0.0) :
         EulerAngles(yaw, pitch, roll)
     {}
 

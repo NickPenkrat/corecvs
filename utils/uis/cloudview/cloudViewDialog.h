@@ -44,6 +44,8 @@ public:
     ~CloudViewDialog();
 
 public slots:
+    void setCollapseTree(bool collapse);
+
     void downRotate();
     void upRotate();
     void leftRotate();

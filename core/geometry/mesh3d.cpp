@@ -234,15 +234,46 @@ void Mesh3D::addSphere(Vector3dd center, double radius, int step)
     }
 }
 
+void Mesh3D::addCylinder(Vector3dd center, double radius, double height, int step)
+{
+    int vectorIndex = (int)vertexes.size();
+    Vector3d32 startId(vectorIndex, vectorIndex, vectorIndex);
+
+    double dpsi = 2 * M_PI / step ;
+    height = height / 2.0;
+
+    addVertex(center + Vector3dd(0.0, 0.0, -height));
+    addVertex(center + Vector3dd(0.0, 0.0,  height));
+
+
+    for (int i = 0; i < step; i++)
+    {
+         double psi = dpsi * i;
+         addVertex(center + Vector3dd::FromCylindrical(psi, radius, -height));
+         addVertex(center + Vector3dd::FromCylindrical(psi, radius,  height));
+    }
+
+    for (int i = 0; i < step; i++)
+    {
+        int i1 = 2 * ( i            ) + 2;
+        int i2 = 2 * ((i + 1) % step) + 2;
+        addFace(Vector3d32(0, i1    , i2    ) + startId); // Top cap
+        addFace(Vector3d32(1, i1 + 1, i2 + 1) + startId); // Bottom cap
+
+        addFace(Vector3d32(i1, i2    , i2 + 1) + startId); // Side
+        addFace(Vector3d32(i1, i2 + 1, i1 + 1) + startId); //
+    }
+}
+
 /**
  *   https://en.wikipedia.org/wiki/Regular_icosahedron#Cartesian_coordinates
  **/
 void Mesh3D::addIcoSphere(Vector3dd center, double radius, int step)
 {
     //double scaler = radius * sqrt(5);
-    int vectorIndex = (int)vertexes.size();    
+    int vectorIndex = (int)vertexes.size();
     Vector3d32 startId(vectorIndex, vectorIndex, vectorIndex);
-    
+
 #if 0
     addVertex(center + Vector3dd(0.0,  1.0,  M_PHI));  // 0
     addVertex(center + Vector3dd(0.0, -1.0,  M_PHI));  // 1
@@ -277,15 +308,15 @@ void Mesh3D::addIcoSphere(Vector3dd center, double radius, int step)
 
     addFace(startId + Vector3d32(2, 3, 6));
     addFace(startId + Vector3d32(2, 3, 7));
-    
+
 
     addFace(startId + Vector3d32(4, 6,  8));
     addFace(startId + Vector3d32(4, 6, 10));
 
     addFace(startId + Vector3d32(5, 7,  9));
     addFace(startId + Vector3d32(5, 7, 11));
-    
-    
+
+
     addFace(startId + Vector3d32(8, 9,  0));
     addFace(startId + Vector3d32(8, 9,  2));
 
@@ -504,6 +535,19 @@ void Mesh3D::addMatrixSurface(double *data, int h, int w)
     }
 }
 
+void Mesh3D::clear()
+{
+    vertexes.clear();
+    faces.clear();
+    edges.clear();
+
+    textureCoords.clear();
+
+    vertexesColor.clear();
+    facesColor.clear();
+    edgesColor.clear();
+}
+
 void Mesh3D::drawLine(double x1, double y1, double x2, double y2, int /*color*/)
 {
     addLine(Vector3dd(x1, y1, 0.0), Vector3dd(x2, y2, 0.0));
@@ -661,27 +705,41 @@ AxisAlignedBox3d Mesh3D::getBoundingBox()
     return AxisAlignedBox3d(minP, maxP);
 }
 
-void Mesh3D::add(const Mesh3D &other)
+void Mesh3D::add(const Mesh3D &other, bool preserveColor)
 {
     int newZero = (int)vertexes.size();
     vertexes.reserve(vertexes.size() + other.vertexes.size());
     faces.reserve(faces.size() + other.faces.size());
     edges.reserve(edges.size() + other.edges.size());
 
+    RGBColor backup = currentColor;
+    preserveColor = preserveColor & other.hasColor;
+
     for (unsigned i = 0; i < other.vertexes.size(); i++)
     {
+        if (preserveColor)
+            currentColor = other.vertexesColor[i];
+
         addVertex(other.vertexes[i]);
     }
 
     for (unsigned i = 0; i < other.faces.size(); i++)
     {
+        if (preserveColor)
+            currentColor = other.facesColor[i];
+
         addFace(other.faces[i] + Vector3d32(newZero, newZero, newZero));
     }
 
     for (unsigned i = 0; i < other.edges.size(); i++)
     {
+        if (preserveColor)
+            currentColor = other.edgesColor[i];
+
         addEdge(other.edges[i] + Vector2d32(newZero, newZero));
     }
+
+    currentColor = backup;
 }
 
 

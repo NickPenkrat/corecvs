@@ -23,8 +23,8 @@ UTILS_INCLUDEPATH = \
     $$UTILSDIR/filters/graph \
     $$UTILSDIR/filters/ui \                         # include isn't used, but need for DEPENDPATH!
     $$UTILSDIR/framesources \
-    $$UTILSDIR/framesources/directShow \    
-    $$UTILSDIR/framesources/decoders \    
+    $$UTILSDIR/framesources/directShow \
+    $$UTILSDIR/framesources/decoders \
     $$UTILSDIR/framesources/syncCam \
     $$UTILSDIR/framesources/file \
     $$UTILSDIR/framesources/avcodec \
@@ -33,10 +33,11 @@ UTILS_INCLUDEPATH = \
     $$UTILSDIR/rectifier \
     $$UTILSDIR/statistics \     # obsolete?
     $$UTILSDIR/uis \
-    $$UTILSDIR/uis/cloudview \    
+    $$UTILSDIR/uis/cloudview \
     $$UTILSDIR/visitors \
     $$UTILSDIR/widgets \
-    $$UTILSDIR/photostationcalibration
+    $$UTILSDIR/photostationcalibration \
+    $$UTILSDIR/tablecontrol \
 
 
 !win32 {
@@ -102,10 +103,10 @@ with_opengl {
     }
 
     INCLUDEPATH += $$UTILSDIR/opengl
-    
+
     with_openglext {
         DEFINES += WITH_OPENGLEXT
-    } 
+    }
 }
 
 with_ueye {
@@ -138,7 +139,7 @@ with_opencv {                                       # all this stuff was extract
     contains(DEFINES, WITH_OPENCV) {
         INCLUDEPATH += $$OPENCV_WRAPPER_DIR
         INCLUDEPATH += $$OPENCV_WRAPPER_DIR/faceDetect
-    }    
+    }
 }
 
 with_siftgpu {
@@ -160,7 +161,7 @@ with_avcodec {
 
     win32 {
         isEmpty(AVCODEC_PATH): AVCODEC_PATH = "c:/ffmpeg"
-        !build_pass: message(AvCodec $$AVCODEC_PATH)   
+        !build_pass: message(AvCodec $$AVCODEC_PATH)
 
         DEFINES     += WITH_AVCODEC
         INCLUDEPATH += $$AVCODEC_PATH/include
