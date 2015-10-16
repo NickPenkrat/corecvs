@@ -2,11 +2,12 @@
 #define TABLECONTROLWIDGET_H
 
 #include "calibrationCamera.h"
+#include "rotationPlanGenerator.h"
 
 #include <QWidget>
 
 namespace Ui {
-class TableControlWidget;
+class RotaryTableControlWidget;
 }
 
 
@@ -28,16 +29,35 @@ public:
     };
 
     vector<CameraLocationAngles> positions;
-    void loadCommands ();
+    int selected;
+
+    void loadCommands(QString filename);
+    void saveCommands(QString filename);
     void updateTable ();
 
+    RotationPlanGenerator generator;
+
+
 public slots:
+    void execute();
+    void executeAndIncrement();
+
+
+    void save();
+    void load();
+    void generate();
+
     void updateState();
+    void selectedToCurrent();
     void tableCellClicked(int row, int column);
+    void tableCellDoubleClicked(int row, int column);
+
+    void newList(const vector<CameraLocationAngles> &input);
+
 
 private:
     QSharedPointer<Mesh3DScene> scene;
-    Ui::TableControlWidget *ui;
+    Ui::RotaryTableControlWidget *ui;
 };
 
 #endif // TABLECONTROLWIDGET_H

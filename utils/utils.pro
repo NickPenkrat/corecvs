@@ -92,7 +92,8 @@ HEADERS += \
     photostationcalibration/calibrationJob.h \
     uis/cloudview/scene3dTreeView.h \
     tablecontrol/rotaryTableControlWidget.h \
-    tablecontrol/rotaryTableMeshModel.h
+    tablecontrol/rotaryTableMeshModel.h \
+    tablecontrol/rotationPlanGenerator.h
 
 SOURCES += \
     frames.cpp \
@@ -159,7 +160,8 @@ SOURCES += \
     photostationcalibration/calibrationJob.cpp \
     uis/cloudview/scene3dTreeView.cpp \
     tablecontrol/rotaryTableControlWidget.cpp \
-    tablecontrol/rotaryTableMeshModel.cpp
+    tablecontrol/rotaryTableMeshModel.cpp \
+    tablecontrol/rotationPlanGenerator.cpp
 
 
 FORMS += \
@@ -167,7 +169,8 @@ FORMS += \
     distortioncorrector/cameraModelParametersControlWidget.ui \
     distortioncorrector/lensDistortionModelParametersControlWidget.ui \
     distortioncorrector/calibrationFeaturesWidget.ui \
-    tablecontrol/rotaryTableControlWidget.ui
+    tablecontrol/rotaryTableControlWidget.ui \
+    tablecontrol/rotationPlanGenerator.ui
 
 
 # =============================================================

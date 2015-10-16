@@ -94,7 +94,7 @@ public:
     void addTriangle(Vector3dd point1, Vector3dd point2, Vector3dd point3);
 
     void addSphere    (Vector3dd center, double radius, int step);
-    void addCylinder  (Vector3dd center, double radius, double height, int step);
+    void addCylinder  (Vector3dd center, double radius, double height, int step = 20, double phase = 0.0);
 
     void addIcoSphere(Vector3dd center, double radius, int step = 1);
 

@@ -8,6 +8,7 @@
 #include "line.h"
 #include "eulerAngles.h"
 #include "affine.h"
+#include "mathUtils.h"
 
 namespace corecvs {
 
@@ -242,6 +243,21 @@ public:
         visitor.visit(gamma, 0.0, "roll" );
     }
 
+    CameraLocationAngles toDeg() const {
+        return CameraLocationAngles(
+                    radToDeg(yaw()),
+                    radToDeg(pitch()),
+                    radToDeg(roll())
+                    );
+    }
+
+    CameraLocationAngles toRad() const {
+        return CameraLocationAngles(
+                    degToRad(yaw()),
+                    degToRad(pitch()),
+                    degToRad(roll())
+                    );
+    }
 
 };
 

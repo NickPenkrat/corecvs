@@ -234,7 +234,7 @@ void Mesh3D::addSphere(Vector3dd center, double radius, int step)
     }
 }
 
-void Mesh3D::addCylinder(Vector3dd center, double radius, double height, int step)
+void Mesh3D::addCylinder(Vector3dd center, double radius, double height, int step, double phase)
 {
     int vectorIndex = (int)vertexes.size();
     Vector3d32 startId(vectorIndex, vectorIndex, vectorIndex);
@@ -248,7 +248,7 @@ void Mesh3D::addCylinder(Vector3dd center, double radius, double height, int ste
 
     for (int i = 0; i < step; i++)
     {
-         double psi = dpsi * i;
+         double psi = dpsi * i + phase;
          addVertex(center + Vector3dd::FromCylindrical(psi, radius, -height));
          addVertex(center + Vector3dd::FromCylindrical(psi, radius,  height));
     }
@@ -257,7 +257,8 @@ void Mesh3D::addCylinder(Vector3dd center, double radius, double height, int ste
     {
         int i1 = 2 * ( i            ) + 2;
         int i2 = 2 * ((i + 1) % step) + 2;
-        addFace(Vector3d32(0, i1    , i2    ) + startId); // Top cap
+        addFace(Vector3d32(0, i2    , i1    ) + startId); // Top cap
+
         addFace(Vector3d32(1, i1 + 1, i2 + 1) + startId); // Bottom cap
 
         addFace(Vector3d32(i1, i2    , i2 + 1) + startId); // Side

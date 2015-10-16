@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>580</width>
-    <height>360</height>
+    <width>618</width>
+    <height>390</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,7 +29,7 @@
    <property name="spacing">
     <number>2</number>
    </property>
-   <item row="1" column="0">
+   <item row="2" column="0">
     <widget class="QTableWidget" name="tableWidget">
      <property name="maximumSize">
       <size>
@@ -43,6 +43,161 @@
      <property name="selectionBehavior">
       <enum>QAbstractItemView::SelectRows</enum>
      </property>
+    </widget>
+   </item>
+   <item row="4" column="0" colspan="2">
+    <widget class="QFrame" name="frame">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>10</height>
+      </size>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="leftMargin">
+       <number>2</number>
+      </property>
+      <property name="topMargin">
+       <number>2</number>
+      </property>
+      <property name="rightMargin">
+       <number>2</number>
+      </property>
+      <property name="bottomMargin">
+       <number>2</number>
+      </property>
+      <item>
+       <widget class="QPushButton" name="executePushButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Execute</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../../resources/main.qrc">
+          <normaloff>:/new/prefix1/play.png</normaloff>:/new/prefix1/play.png</iconset>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="executeIncPushButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Execute Inc</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../../resources/main.qrc">
+          <normaloff>:/new/prefix1/play.png</normaloff>:/new/prefix1/play.png</iconset>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QFrame" name="frame_2">
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <property name="spacing">
+       <number>2</number>
+      </property>
+      <property name="leftMargin">
+       <number>2</number>
+      </property>
+      <property name="topMargin">
+       <number>2</number>
+      </property>
+      <property name="rightMargin">
+       <number>2</number>
+      </property>
+      <property name="bottomMargin">
+       <number>2</number>
+      </property>
+      <item>
+       <widget class="QPushButton" name="generatePushButton">
+        <property name="text">
+         <string>Generate</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../../resources/main.qrc">
+          <normaloff>:/new/prefix1/lightning.png</normaloff>:/new/prefix1/lightning.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="savePushButton">
+        <property name="text">
+         <string>Save</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../../resources/main.qrc">
+          <normaloff>:/new/prefix1/install.png</normaloff>:/new/prefix1/install.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="loadPushButton">
+        <property name="text">
+         <string>Load</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../../resources/main.qrc">
+          <normaloff>:/new/prefix1/remove.png</normaloff>:/new/prefix1/remove.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
    <item row="0" column="0" colspan="2">
@@ -68,12 +223,18 @@
       </property>
       <item row="0" column="0">
        <widget class="QLabel" name="label_5">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="text">
          <string>Azimuth (Yaw)</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
+      <item row="3" column="2">
        <widget class="AngleEditBox" name="widgetRoll" native="true"/>
       </item>
       <item row="1" column="0">
@@ -90,32 +251,41 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
+      <item row="0" column="2">
        <widget class="AngleEditBox" name="widgetYaw" native="true"/>
       </item>
-      <item row="1" column="1">
+      <item row="1" column="2">
        <widget class="AngleEditBox" name="widgetPitch" native="true"/>
       </item>
-     </layout>
-    </widget>
-   </item>
-   <item row="3" column="0" colspan="2">
-    <widget class="QFrame" name="frame">
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>10</height>
-      </size>
-     </property>
-     <property name="frameShape">
-      <enum>QFrame::StyledPanel</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
-     </property>
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
-       <spacer name="horizontalSpacer">
+      <item row="3" column="1">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>I AXIS</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLabel" name="label">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>O AXIS</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>M AXIS</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <spacer name="horizontalSpacer_2">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
@@ -127,32 +297,18 @@
         </property>
        </spacer>
       </item>
-      <item>
-       <widget class="QPushButton" name="pushButton">
-        <property name="text">
-         <string>Execute</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../../resources/main.qrc">
-          <normaloff>:/new/prefix1/play.png</normaloff>:/new/prefix1/play.png</iconset>
-        </property>
-       </widget>
-      </item>
      </layout>
     </widget>
    </item>
-   <item row="2" column="0">
-    <widget class="QFrame" name="frame_2">
-     <property name="frameShape">
-      <enum>QFrame::StyledPanel</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
+   <item row="2" column="1" rowspan="2">
+    <widget class="CloudViewDialog" name="widget" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>100</width>
+       <height>100</height>
+      </size>
      </property>
     </widget>
-   </item>
-   <item row="1" column="1" rowspan="2">
-    <widget class="CloudViewDialog" name="widget" native="true"/>
    </item>
   </layout>
  </widget>

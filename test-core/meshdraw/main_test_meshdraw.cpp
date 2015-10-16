@@ -1,11 +1,11 @@
 /**
  * \file main_test_meshdraw.cpp
- * \brief This is the main file for the test meshdraw 
+ * \brief This is the main file for the test meshdraw
  *
  * \date окт. 11, 2015
  * \author alexander
  *
- * \ingroup autotest  
+ * \ingroup autotest
  */
 
 #include <iostream>
@@ -25,4 +25,10 @@ TEST(meshdraw, testmeshdraw)
     mesh.switchColor();
     mesh.addOrts(10, true);
     mesh.dumpPLY("mesh-orts.ply");
+
+    mesh.clear();
+    mesh.addCylinder(Vector3dd::Zero(), 10, 10, 3);
+    mesh.addCylinder(Vector3dd::OrtZ() * 20, 10, 10, 30);
+    mesh.dumpPLY("mesh-cylinder.ply");
+
 }
