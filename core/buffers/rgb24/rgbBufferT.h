@@ -1104,6 +1104,7 @@ namespace corecvs
     };
 
     typedef RGBTBuffer<uint8_t> RGB24Buffer;
+    typedef RGBTBuffer<uint16_t> RGB48Buffer;
 } //namespace corecvs
 
 #endif

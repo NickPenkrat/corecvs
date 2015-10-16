@@ -6,6 +6,8 @@ HEADERS += \
     fileformats/plyLoader.h \
     fileformats/stlLoader.h \
 
+    fileformats/metamap.h \
+
 
 SOURCES += \
     fileformats/bufferLoader.cpp \
@@ -15,4 +17,3 @@ SOURCES += \
     fileformats/plyLoader.cpp \
     fileformats/stlLoader.cpp \
     
-

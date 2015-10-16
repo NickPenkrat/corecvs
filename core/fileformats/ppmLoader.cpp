@@ -14,7 +14,8 @@
 
 #include "ppmLoader.h"
 
-namespace corecvs {
+namespace corecvs
+{
 
     string PPMLoader::prefix1(".pgm");
     string PPMLoader::prefix2(".ppm");
@@ -52,7 +53,7 @@ namespace corecvs {
         // PPM headers variable declaration
         unsigned long int i, j;
         unsigned long int h, w;
-        int type;
+        uint8_t type;
         unsigned short int maxval;
         int shiftCount = 0;
 
@@ -78,13 +79,14 @@ namespace corecvs {
         // if metadata is null, don't
         if (meta != nullptr)
         {
-            if (!metadata["bits"])
-                metadata["bits"] = new double[1];
-
             // get significant bit count
-            metadata["bits"][0] = 1;
-            while (maxval >> int(metadata["bits"][0]))
+            if (!metadata["bits"])
+                metadata["bits"] = 1;
+            while (maxval >> metadata["bits"])
+            {
+                int test = metadata["bits"];
                 metadata["bits"][0]++;
+            }
         }
 
         result = new G12Buffer(h, w, false);
@@ -166,14 +168,16 @@ namespace corecvs {
                 {
                     char* numbers = strrchr(buf, '\t') + 1;
                     double *values = new double[n];
+
                     // read n param values
                     for (int i = 0; i < n; i++)
                     {
                         sscanf(numbers, "%lf", &(values[i]));
                         numbers = strchr(numbers, ' ') + 1;
                     }
+
                     if (metadata != nullptr)
-                        metadata->insert(std::pair<string, double*>(param, values));
+                        metadata->insert(MetaPair(param, MetaValue(n, values)));
                 }
                 memset(buf, 0, sz);
             }
@@ -182,7 +186,7 @@ namespace corecvs {
         return nullptr;
     }
 
-    bool PPMLoader::readHeader(FILE *fp, unsigned long int *h, unsigned long int *w, unsigned short int *maxval, int *type, MetaData* metadata)
+    bool PPMLoader::readHeader(FILE *fp, unsigned long int *h, unsigned long int *w, unsigned short int *maxval, uint8_t *type, MetaData* metadata)
     {
         // skip comments and read next line
         char* header = nextLine(fp, 255, metadata);
@@ -236,6 +240,36 @@ namespace corecvs {
         return true;
     }
 
+    bool PPMLoader::writeHeader(FILE *fp, unsigned long int h, unsigned long int w, uint8_t type, MetaData* meta)
+    {
+        if (!fp || !h || !w || type < 5 || type > 6)
+            return false;
+
+        MetaData &metadata = *meta;
+
+        fprintf(fp, "P5\n");
+        fprintf(fp, "############################################\n");
+        fprintf(fp, "# This file is written by DeepView library.\n");
+        fprintf(fp, "# \n");
+        fprintf(fp, "# The original source buffer had 12 bit.\n");
+
+        // TODO: test this!
+        if (meta)
+            for (MetaData::iterator i = metadata.begin(); i != metadata.end(); i++)
+            {
+                // this may be confusing
+                fprintf(fp, "# @meta %s\t@values %i\t", "black", i->second.first);
+                for (int j = 0; j < i->second.first; j++)
+                    fprintf(fp, "%f ", i->second[j]);
+            }
+
+        fprintf(fp, "############################################\n");
+        fprintf(fp, "%d %d\n", w, h);
+        fprintf(fp, "%d\n", G12Buffer::BUFFER_MAX_VALUE);
+
+        return true;
+    }
+
     int PPMLoader::save(string name, G12Buffer *buffer)
     {
         int h = buffer->h;
@@ -247,22 +281,13 @@ namespace corecvs {
         FILE *fp;
         fp = fopen(name.c_str(), "wb");
 
-        if (fp == NULL) {
+        if (fp == NULL)
+        {
             printf("Image %s could not be written \n", name.c_str());
             return -1;
         }
 
-        fprintf(fp, "P5\n");
-        fprintf(fp, "############################################\n");
-        fprintf(fp, "# This file is written by DeepView library.\n");
-        fprintf(fp, "# \n");
-        fprintf(fp, "# The original source buffer had 12 bit.\n");
-
-        /// \todo TODO: Add some metadata saving
-
-        fprintf(fp, "############################################\n");
-        fprintf(fp, "%d %d\n", w, h);
-        fprintf(fp, "%d\n", G12Buffer::BUFFER_MAX_VALUE);
+        writeHeader(fp, h, w, 5, nullptr);
 
         uint8_t *charImage = new uint8_t[2 * w * h];
         int i, j;
@@ -290,7 +315,8 @@ namespace corecvs {
         FILE *fp;
         fp = fopen(name.c_str(), "wb");
 
-        if (fp == NULL) {
+        if (fp == NULL)
+        {
             printf("Image %s could not be written \n", name.c_str());
             return -1;
         }
@@ -336,14 +362,15 @@ namespace corecvs {
         //PGM Headers Variable Declaration
         unsigned long int i, j;
         unsigned long int h, w;
-        int type;
+        uint8_t type;
         unsigned short int maxval;
         int shiftCount = 0;
 
         //Open file for Reading in Binary Mode
         fp = fopen(name.c_str(), "rb");
 
-        if (fp == NULL) {
+        if (fp == NULL)
+        {
             printf("Image %s does not exist \n", name.c_str());
             return NULL;
         }
@@ -369,7 +396,8 @@ namespace corecvs {
                     toReturn->element(i, j) = (charImage[i * w + j]) << 8;
 
         }
-        else {
+        else
+        {
             for (shiftCount = 0; (maxval >> shiftCount) >(1 << 16); shiftCount++);
 
             charImage = new uint8_t[2 * w * h];

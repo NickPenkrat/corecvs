@@ -15,8 +15,11 @@
 
 #include "bufferLoader.h"
 #include "g12Buffer.h"
+#include "rgbBufferT.h"
+#include "metamap.h"
 
-namespace corecvs {
+namespace corecvs
+{
 
     using std::string;
 
@@ -24,8 +27,6 @@ namespace corecvs {
     {
 
     public:
-        typedef std::map<string, double*> MetaData;
-
         PPMLoader() {}
         virtual ~PPMLoader() {}
 
@@ -37,13 +38,16 @@ namespace corecvs {
         G12Buffer* g16BufferCreateFromPPM(string& name);
 
         int save(string name, G12Buffer *buffer);
+        int save(string name, RGB24Buffer *buffer);
+        int save(string name, RGB48Buffer *buffer);
         int saveG16(string name, G12Buffer *buffer);
 
     private:
         static string prefix1, prefix2;
 
         char* nextLine(FILE *fp, int sz, MetaData *metadata);
-        bool readHeader(FILE *fp, unsigned long int *h, unsigned long int *w, unsigned short int *maxval, int *type, MetaData* metadata);
+        bool readHeader(FILE *fp, unsigned long int *h, unsigned long int *w, unsigned short int *maxval, uint8_t *type, MetaData* metadata);
+        bool PPMLoader::writeHeader(FILE *fp, unsigned long int h, unsigned long int w, uint8_t type, MetaData* metadata);
 
     };
 

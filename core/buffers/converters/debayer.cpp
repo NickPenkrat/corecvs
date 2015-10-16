@@ -4,6 +4,7 @@ Debayer::Debayer(G12Buffer *bayer, MetaData *metadata)
 {
     this->bayer = bayer;
     this->metadata_ptr = metadata;
+    this->out = nullptr;
 }
 
 Debayer* Debayer::FromFile(string filename)
@@ -58,6 +59,9 @@ G12Buffer** Debayer::nearest()
                 blue->element(i, j) = bayer->element(i, j);
             }
         }
+
+    if (out)
+        delete[] out;
     out = new G12Buffer*[3];
     out[0] = red; out[1] = green; out[2] = blue;
     return out;
@@ -189,6 +193,9 @@ G12Buffer** Debayer::linear()
                 blue->element(i, j) = bayer->element(i, j);
             }
         }
+
+    if (out)
+        delete[] out;
     out = new G12Buffer*[3];
     out[0] = red; out[1] = green; out[2] = blue;
     return out;
@@ -202,7 +209,6 @@ double* Debayer::scale_colors(bool highlight, MetaData *meta)
 
     // alias for ease of use
     MetaData &metadata = *meta;
-
     // check if meta- and white balance data available
     if (meta == nullptr ||
         !metadata["cam_mul"] || !metadata["cam_mul"][0] || !metadata["cam_mul"][2] || !metadata["pre_mul"] || !metadata["pre_mul"][0])
@@ -287,7 +293,7 @@ uint16_t* Debayer::gamma_curve(int mode, int imax, int depth, MetaData *meta)
         - g[2] - g[3] - g[2] * g[3] * (log(g[3]) - 1)) - 1;
     if (!mode--)
     {
-        memcpy(metadata["gamm"], g, sizeof g);
+        memcpy(metadata["gamm"].second, g, sizeof g);
         return curve;
     }
     for (i = 0; i < 0x10000; i++)

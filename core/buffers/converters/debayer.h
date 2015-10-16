@@ -9,8 +9,6 @@ using corecvs::PPMLoader;
 class Debayer
 {
 private:
-    // this type is used here quite often
-    typedef PPMLoader::MetaData MetaData;
 
     G12Buffer* bayer;
     G12Buffer** out;
