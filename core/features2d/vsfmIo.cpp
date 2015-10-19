@@ -1,6 +1,6 @@
 #include "vsfmIo.h"
 
-#include <cassert>
+#include "global.h"
 
 #define BYTES_MAGIC(a, b, c, d) \
 	((uint32_t(d) << 24) | (uint32_t(c) << 16) | (uint32_t(b) << 8) | uint32_t(a))
@@ -61,13 +61,13 @@ void VsfmSiftIO::readAscii(std::istream& is, std::vector<SiftFeature>& features)
 
 	// it seems that VSFM toolkit does not support other descriptors widths,
 	// so just "check" that size is correct
-	assert(sz == SiftFeature::DESCRIPTOR_WIDTH);
+    CORE_ASSERT_TRUE_S(sz == SiftFeature::DESCRIPTOR_WIDTH);
 
 	features.resize(N);
 
 	for (std::vector<SiftFeature>::iterator it = features.begin(); it != features.end(); ++it)
 	{
-		assert(is);
+        CORE_ASSERT_TRUE_S(is);
 		is >> *it;
 	}
 }
@@ -80,7 +80,7 @@ void VsfmSiftIO::readBinary(std::istream& is, std::vector<SiftFeature>& features
 	features.clear();
 	features.resize(header.npoint);
 
-	assert(header.descriptorSize == SiftFeature::DESCRIPTOR_WIDTH &&
+    CORE_ASSERT_TRUE_S(header.descriptorSize == SiftFeature::DESCRIPTOR_WIDTH &&
 			header.keyPointSize == SiftFeature::BINARY_FLOATS &&
 			header.magicName == VsfmSiftIO::MAGIC_SIFT &&
 			header.magicVersion == VsfmSiftIO::MAGIC_V40);
@@ -97,7 +97,7 @@ void VsfmSiftIO::readBinary(std::istream& is, std::vector<SiftFeature>& features
 
 	uint32_t eof;
 	is.read((char*)&eof, sizeof(eof));
-	assert(eof == VsfmSiftIO::MAGIC_EOF);
+    CORE_ASSERT_TRUE_S(eof == VsfmSiftIO::MAGIC_EOF);
 }
 
 void VsfmSiftIO::writeBinary(std::ostream& os, const std::vector<SiftFeature>& features)

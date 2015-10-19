@@ -39,6 +39,7 @@ public slots:
     void capture(bool shouldAdvance = false);
     void captureAndAdvance();
     void stopCapture();
+    void outputDir();
 
     void tableClick(int lineid, int colid);
     void previewRequest(int lineid);
@@ -51,25 +52,22 @@ public slots:
     void newCaptureFrame(int camId);
     void initateNewFrame();
 
-    void finilizeCapture(bool isOk = true);
+    void finalizeCapture(bool isOk = true);
 
 protected:
     void showEvent ( QShowEvent * event );
 
 private:
-    bool mCamsScanned;
+    bool                   mCamsScanned;
 
     ImageCaptureInterface *mPreviewInterface;
-    CapSettingsDialog *mCapSettingsDialog;
-
-    GraphPlotDialog focusDialog;
+    CapSettingsDialog     *mCapSettingsDialog;
+    GraphPlotDialog        focusDialog;
     RotaryTableControlWidget rotaryDialog;
 
-
-
- /**
-  * This relates to capture process
-  **/
+    /**
+     * This relates to capture process
+     **/
     struct CameraDescriptor {
         int camId;
         int toSkip;
@@ -86,10 +84,10 @@ private:
         }
     };
 
-    QSignalMapper *mCaptureMapper;
-   // int mCurrentCam;
-    QList<CameraDescriptor> mCaptureInterfaces;
-    bool mAdvanceAfterSave;
+    QSignalMapper           *mCaptureMapper;
+    // int mCurrentCam;
+    QList<CameraDescriptor>  mCaptureInterfaces;
+    bool                     mAdvanceAfterSave;
 
 private:
     Ui::PhotostationCaptureDialog *ui;

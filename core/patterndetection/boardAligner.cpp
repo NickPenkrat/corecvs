@@ -168,7 +168,7 @@ bool BoardAligner::alignDim(DpImage &img, bool fitW, bool fitH)
 
 bool BoardAligner::alignSingleMarker(DpImage &img)
 {
-    assert(boardMarkers.size() == 1);
+    CORE_ASSERT_TRUE_S(boardMarkers.size() == 1);
     classify(false, img);
     return bfs();
 }
@@ -449,14 +449,11 @@ void BoardAligner::classify(bool trackOrientation, DpImage &img)
                 for (int k = 0; k < 4; ++k)
                 {
                     auto P = (orientation * corecvs::Vector3dd(order[k][0], order[k][1], 1.0).project()) + corecvs::Vector2dd(0.5, 0.5);
-                    assert(P[0] > 0.0 && P[1] > 0.0);
-                    assert(P[0] < 2.0 && P[1] < 2.0);
+                    CORE_ASSERT_TRUE_S(P[0] > 0.0 && P[1] > 0.0);
+                    CORE_ASSERT_TRUE_S(P[0] < 2.0 && P[1] < 2.0);
                     classifier[i + P[1]][j + P[0]] = std::make_pair(boardMarkers[cl].cornerX + order[k][0], boardMarkers[cl].cornerY + order[k][1]);
-
                 }
-
             }
-
         }
     }
 

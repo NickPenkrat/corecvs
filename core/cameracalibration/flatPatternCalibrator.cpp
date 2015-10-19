@@ -1,5 +1,4 @@
 #include "flatPatternCalibrator.h"
-#include <cassert>
 
 FlatPatternCalibrator::FlatPatternCalibrator(const CameraConstraints constraints, const PinholeCameraIntrinsics lockParams, const double lockFactor) : factor(lockFactor), K(0), N(0), absoluteConic(6), lockParams(lockParams), constraints(constraints), forceZeroSkew(!!(constraints & CameraConstraints::ZERO_SKEW))
 {
@@ -75,9 +74,9 @@ void FlatPatternCalibrator::getFullReprojectionError(double out[])
         }
     }
 #ifdef PENALIZE_QNORM
-    assert(idx == getOutputNum() - N);
+    CORE_ASSERT_TRUE_S(idx == getOutputNum() - N);
 #else
-    assert(idx == getOutputNum());
+    CORE_ASSERT_TRUE_S(idx == getOutputNum());
 #endif
 }
 
@@ -211,7 +210,7 @@ void FlatPatternCalibrator::readParams(const double in[])
         }
     }
     IF_GET_PARAM(UNLOCK_YSCALE, factor);
-    assert(argin == getInputNum());
+    CORE_ASSERT_TRUE_S(argin == getInputNum());
 #undef GET_PARAM
 #undef IF_GET_PARAM
 #undef IF_NOT_GET_PARAM
@@ -248,7 +247,7 @@ void FlatPatternCalibrator::writeParams(double out[])
         }
     }
     IF_SET_PARAM(UNLOCK_YSCALE, factor);
-    assert(argout == getInputNum());
+    CORE_ASSERT_TRUE_S(argout == getInputNum());
 }
 
 #undef SET_PARAM

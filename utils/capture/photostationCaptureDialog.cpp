@@ -1,4 +1,5 @@
 #include <QMessageBox>
+#include <QFileDialog>
 
 #include "g12Image.h"
 #include "photostationCaptureDialog.h"
@@ -48,6 +49,7 @@ PhotostationCaptureDialog::PhotostationCaptureDialog(QWidget *parent) :
     connect(ui->capturePushButton,        SIGNAL(released()), this, SLOT(capture()));
     connect(ui->stopPushButton,           SIGNAL(released()), this, SLOT(stopCapture()));
     connect(ui->captureAdvancePushButton, SIGNAL(released()), this, SLOT(captureAndAdvance()));
+    connect(ui->outDirButton,             SIGNAL(released()), this, SLOT(outputDir()));
 
     connect(ui->focusButton, SIGNAL(released()), &focusDialog, SLOT(show()));
     connect(ui->focusButton, SIGNAL(released()), &focusDialog, SLOT(raise()));
@@ -58,7 +60,6 @@ PhotostationCaptureDialog::PhotostationCaptureDialog(QWidget *parent) :
 
     /* OK need to check if it gets deleted on table cleanup */
     connect(ui->cameraTableWidget, SIGNAL(cellClicked(int,int)), this, SLOT(tableClick(int, int)));
-
 
 
     mCapSettingsDialog = new CapSettingsDialog();
@@ -120,10 +121,11 @@ void PhotostationCaptureDialog::refresh()
     ui->fpsSpinBox   ->setValue(settings.value("fps"   , ui->fpsSpinBox->value())   .toInt());
 
     /* Capturing */
-    ui->skipFramesSpinBox->setValue(settings.value("skipFrames", ui->skipFramesSpinBox->value()).toInt());
-    ui->prefixLineEdit   ->setText (settings.value("capPrefix" , ui->prefixLineEdit->text()).toString());
-    ui->angleStepSpinBox ->setValue(settings.value("angleStep" , ui->angleStepSpinBox->value()).toDouble());
-
+    ui->skipFramesSpinBox     ->setValue(settings.value("skipFrames", ui->skipFramesSpinBox->value()).toInt());
+    ui->stationNameLineEdit   ->setText (settings.value("nameSP"    , ui->stationNameLineEdit->text()).toString());
+    ui->fileNamePrefixLineEdit->setText (settings.value("prefix"    , ui->fileNamePrefixLineEdit->text()).toString());
+    ui->angleStepSpinBox      ->setValue(settings.value("angleStep" , ui->angleStepSpinBox->value()).toDouble());
+    ui->outDirLineEdit        ->setText (settings.value("pathDir"   , ui->outDirLineEdit->text()).toString());
 
     ui->previewWidget->loadFromQSettings(DEFAULT_FILENAME, "preview");
 
@@ -256,9 +258,10 @@ PhotostationCaptureDialog::~PhotostationCaptureDialog()
 
     /* Capturing */
     settings.setValue("skipFrames", ui->skipFramesSpinBox->value());
-    settings.setValue("capPrefix" , ui->prefixLineEdit->text());
+    settings.setValue("nameSP"    , ui->stationNameLineEdit->text());
+    settings.setValue("prefix"    , ui->fileNamePrefixLineEdit->text());    
     settings.setValue("angleStep" , ui->angleStepSpinBox->value());
-
+    settings.setValue("pathDir"   , ui->outDirLineEdit->text());
 
     for (int i = 0; i < ui->cameraTableWidget->rowCount(); i++ )
     {
@@ -456,7 +459,7 @@ void PhotostationCaptureDialog::newCaptureFrame(int camId)
         }
     }
 
-    finilizeCapture(true);
+    finalizeCapture(true);
 }
 
 void PhotostationCaptureDialog::initateNewFrame()
@@ -535,7 +538,7 @@ void PhotostationCaptureDialog::capture(bool shouldAdvance)
         mCaptureInterfaces[0].camInterface->startCapture();
     }
     else {
-        finilizeCapture( false );
+        finalizeCapture(false);
     }
 }
 
@@ -545,13 +548,13 @@ void PhotostationCaptureDialog::stopCapture()
     {
         delete_safe(mCaptureInterfaces[i].camInterface);
     }
-    finilizeCapture( false );
+    finalizeCapture(false);
 
     mCapSettingsDialog->setCaptureInterface(NULL);
     delete_safe(mPreviewInterface);
 }
 
-void PhotostationCaptureDialog::finilizeCapture(bool isOk)
+void PhotostationCaptureDialog::finalizeCapture(bool isOk)
 {
     ui->capturePushButton       ->setEnabled(true);
     ui->captureAdvancePushButton->setEnabled(true);
@@ -565,19 +568,31 @@ void PhotostationCaptureDialog::finilizeCapture(bool isOk)
     {
         if (isOk && mNamer != NULL)
         {
+            QString path   = ui->outDirLineEdit->text();
+            QString prefix = ui->fileNamePrefixLineEdit->text();
+
+            if (prefix.indexOf("SP") >= 0) {
+                QMessageBox::warning(this, "Bad filename series prefix:", prefix);
+                prefix.replace("SP", "sp");
+            }
+
             QString name = mNamer->nameForImage(
-                  ui->prefixLineEdit->text()
+                ui->stationNameLineEdit->text()
                 , mCaptureInterfaces[i].camId
                 , QString::number(ui->angleSpinBox->value()) + "deg"
-                , (AbstractImageNamer::FileType)ui->outputFormatComboBox->currentIndex()
+                , (ProjectFileNameing::FileType)ui->outputFormatComboBox->currentIndex()
+                , &path
+                , prefix
                 );
 
-            bool saveOk = mCaptureInterfaces[i].result->save(name, NULL, (ui->outputFormatComboBox->currentIndex() == 0) ? 85 : 100);
+            bool saveOk = mCaptureInterfaces[i].result->save(path, NULL
+                            , (ui->outputFormatComboBox->currentIndex() == 0) ? 85 : 100);
             if (!saveOk) {
-                failedSaves.append(name);
+                failedSaves.append(path);
             }
-            //qDebug() << "finilizeCapture() saved to =" << fullPath;
+            L_INFO_P("File <%s> %ssaved", QSTR_DATA_PTR(path), saveOk ? "" : "not ");
         }
+
         delete_safe(mCaptureInterfaces[i].result);
     }
 
@@ -586,37 +601,37 @@ void PhotostationCaptureDialog::finilizeCapture(bool isOk)
     if (mAdvanceAfterSave)
     {
         ui->angleSpinBox->setValue(ui->angleSpinBox->value() + ui->angleStepSpinBox->value());
-        QString prefix = ui->prefixLineEdit->text();
 
-        for (int i = 0; i < prefix.length(); i++)
+        QString spName = ui->stationNameLineEdit->text()
+		QString spName2 = spName;
+        for (int i = 0; i < spName.length(); i++)
         {
-            if (prefix[i] > 'Z') prefix[i] = 'Z';
-            if (prefix[i] < 'A') prefix[i] = 'A';
+            if (spName[i] > 'Z') spName[i] = 'Z';
+            if (spName[i] < 'A') spName[i] = 'A';
+        }
+        if (spName != spName2) {
+            QMessageBox::warning(this, spName2, "Bad PhotoStation point name!");
         }
 
         bool carry = true;
-        for (int i = prefix.length() - 1; i >= 0; i--)
+        for (int i = spName.length() - 1; i >= 0; i--)
         {
-            if (prefix[i] != 'Z') {
-                prefix[i] = QChar(prefix[i].unicode() + 1);
+            if (spName[i] != 'Z') {
+                spName[i] = QChar(spName[i].unicode() + 1);
                 carry = false;
                 break;
-            } else {
-                prefix[i] = 'A';
             }
+            spName[i] = 'A';
         }
         if (carry) {
-            prefix = QString("A") + prefix;
+            spName = QString("A") + spName;
         }
-        ui->prefixLineEdit->setText(prefix);
-
-        rotaryDialog.executeAndIncrement();
+        ui->stationNameLineEdit->setText(spName);
     }
 
     if (!failedSaves.isEmpty()) {
         QMessageBox::warning(this, "Error saving following files:", failedSaves.join(" "));
     }
-
 }
 
 void PhotostationCaptureDialog::showEvent(QShowEvent *event)
@@ -630,4 +645,16 @@ void PhotostationCaptureDialog::showEvent(QShowEvent *event)
 void PhotostationCaptureDialog::captureAndAdvance()
 {
     capture(true);
+}
+
+void PhotostationCaptureDialog::outputDir()
+{
+    QString path = ui->outDirLineEdit->text();
+
+    QString pathNew = QFileDialog::getExistingDirectory(this, "Choose an output folder", path);
+
+    if (pathNew.isEmpty() || pathNew == path)
+        return;
+
+    ui->outDirLineEdit->setText(pathNew);
 }

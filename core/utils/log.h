@@ -8,11 +8,13 @@
 #include <stdarg.h>
 #include <time.h>
 #ifndef _MSC_VER
-#include <sys/time.h>
+# include <sys/time.h>
 #endif
-#ifdef __linux__
-#include <unistd.h>
-#include <sys/syscall.h>
+#ifdef WIN32
+# include <windows.h>       // GetCurrentThreadId
+#else
+# include <unistd.h>
+# include <sys/syscall.h>
 #endif
 
 #include <fstream>
@@ -20,6 +22,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <mutex>        // std::mutex
 
 #include "global.h"
 
@@ -136,10 +139,10 @@ public:
             message.get()->mOriginFileName     = originFileName;
             message.get()->mOriginFunctionName = originFunctionName;
             message.get()->mOriginLineNumber   = originLineNumber;
-#ifdef __linux__
-            message.get()->mThreadId =  syscall(SYS_gettid);
+#ifdef WIN32
+            message.get()->mThreadId = (int)GetCurrentThreadId();
 #else
-            message.get()->mThreadId = 0;
+            message.get()->mThreadId = syscall(SYS_gettid);
 #endif
             time(&message.get()->rawtime);
         }
@@ -255,6 +258,7 @@ public:
 class FileLogDrain : public LogDrain
 {
     std::ofstream  mFile;
+    std::mutex     mMutex;
 
 public:
     FileLogDrain(const std::string& path, bool bAppend = false);

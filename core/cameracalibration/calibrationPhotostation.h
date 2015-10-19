@@ -133,4 +133,4 @@ public:
 typedef std::vector<std::pair<Vector2dd, Vector3dd>> PatternPoints3d;
 typedef std::vector<PatternPoints3d>                 MultiCameraPatternPoints;
 
-}
+} // namespace corecvs

@@ -31,7 +31,7 @@ using namespace corecvs;
  *
  *
  **/
-TEST(calstructs, testCameraModel)
+TEST(calStructs, testCameraModel)
 {
     Mesh3D mesh;
     mesh.switchColor();

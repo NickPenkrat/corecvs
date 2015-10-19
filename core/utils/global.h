@@ -353,9 +353,9 @@ inline void deletearr_safe (Type * &ptr)
 //#define QSTR_DATA_PTR(qstring)        (qstring).toLatin1().data()
 #define   QSTR_DATA_PTR(qstring)        (qstring).toStdString().c_str()  // after using textCodecs we should use this
 
-#define   QSTR_HAS_SLASH_AT_END(qstring)  (qstring.length() > 1 && \
-                                          (qstring[qstring.length() - 1] == '/' || \
-                                           qstring[qstring.length() - 1] == '\\'))
+#define   QSTR_HAS_SLASH_AT_END(qstring)  ((qstring).length() > 1 && \
+                                          ((qstring)[(qstring).length() - 1] == '/' || \
+                                           (qstring)[(qstring).length() - 1] == '\\'))
 
 #endif // is__cplusplus
 

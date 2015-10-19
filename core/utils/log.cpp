@@ -1,6 +1,3 @@
-//#include <iomanip>
-//#include <unistd.h>
-#include <stdexcept>
 #include <iostream>
 
 #include "log.h"
@@ -43,12 +40,10 @@ void Log::message(Message &message)
 }
 
 Log::Log(const LogLevel /*maxLocalLevel*/)
-{
-}
+{}
 
 Log::~Log()
-{
-}
+{}
 
 std::string Log::msgBufToString(const char* msg)
 {
@@ -146,7 +141,8 @@ void StdStreamLogDrain::drain(Log::Message &message)
 
 FileLogDrain::FileLogDrain(const std::string &path, bool bAppend)
     : mFile(path.c_str(), bAppend ? std::ios_base::app : std::ios_base::trunc)
-{}
+{
+}
 
 FileLogDrain::~FileLogDrain()
 {
@@ -158,13 +154,15 @@ void FileLogDrain::drain(Log::Message &message)
 {
     if (mFile.is_open())
     {
-        mFile << message.get()->s.str() << std::endl;
-        mFile.flush();
+        mMutex.lock();
+            mFile << message.get()->s.str() << std::endl;
+            mFile.flush();
+        mMutex.unlock();
     }
 }
 
-
-void LiteStdStreamLogDrain::drain(Log::Message &message) {
+void LiteStdStreamLogDrain::drain(Log::Message &message)
+{
     mOutputStream << message.get()->s.str() << std::endl;
     mOutputStream.flush();
 }
