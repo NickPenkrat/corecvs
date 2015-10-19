@@ -143,7 +143,7 @@ DescriptorMatcher* SiftGpuDescriptorMatcherProvider::getDescriptorMatcher(const 
     SWITCH_MATCHER_TYPE(BF,
         SWITCH_TYPE(SIFTGPU, return new SiftGpuMatcher;););
 
-    CORE_ASSERT_FAIL("SiftGpuDescriptorMatcherProvider::getDescriptorMatcher(%s, %s): no matcher", type.c_str(), matcher.c_str());
+    CORE_ASSERT_FAIL_P(("SiftGpuDescriptorMatcherProvider::getDescriptorMatcher(%s, %s): no matcher", type.c_str(), matcher.c_str()));
     return 0;
 }
 
@@ -152,7 +152,7 @@ bool SiftGpuDescriptorMatcherProvider::provides(const DescriptorType &type, cons
     SWITCH_MATCHER_TYPE(BF,
         SWITCH_TYPE(SIFTGPU, return true;););
 
-    CORE_ASSERT_FAIL("SiftGpuDescriptorMatcherProvider::provides(%s, %s): no provider", type.c_str(), matcher.c_str());
+    CORE_ASSERT_FAIL_P(("SiftGpuDescriptorMatcherProvider::provides(%s, %s): no provider", type.c_str(), matcher.c_str()));
 }
 
 #undef SWITCH_TYPE
