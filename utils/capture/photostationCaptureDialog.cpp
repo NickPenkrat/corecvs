@@ -580,7 +580,7 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
                 ui->stationNameLineEdit->text()
                 , mCaptureInterfaces[i].camId
                 , QString::number(ui->angleSpinBox->value()) + "deg"
-                , (ProjectFileNameing::FileType)ui->outputFormatComboBox->currentIndex()
+                , (AbstractImageNamer::FileType)ui->outputFormatComboBox->currentIndex()
                 , &path
                 , prefix
                 );
@@ -602,7 +602,7 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
     {
         ui->angleSpinBox->setValue(ui->angleSpinBox->value() + ui->angleStepSpinBox->value());
 
-        QString spName = ui->stationNameLineEdit->text()
+        QString spName = ui->stationNameLineEdit->text();
 		QString spName2 = spName;
         for (int i = 0; i < spName.length(); i++)
         {

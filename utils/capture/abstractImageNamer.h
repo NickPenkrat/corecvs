@@ -37,7 +37,7 @@ public:
     }
 
 
-    virtual QString nameForImage(QString stationName, int camId, QString metaInfo, FileType type, bool unique = true) = 0;
+    virtual QString nameForImage(const QString &stName, int camId, QString metaInfo, FileType type, QString *path = NULL, QString prefix = "", bool unique = true) = 0;
 };
 
 #endif // ABSTRACTIMAGENAMER_H
