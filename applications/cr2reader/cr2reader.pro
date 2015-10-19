@@ -1,13 +1,19 @@
+# try use global config 
+exists(../../../../config.pri) {
+    ROOT_DIR=../../../..
+    #message(Using global config)
+    include($$ROOT_DIR/config.pri)
+} else { 
+    message(Using local config)
+    ROOT_DIR=../..
+    include($$ROOT_DIR/cvs-config.pri)
+}
+
+ROOT_DIR=$$PWD/$$ROOT_DIR
+
 TEMPLATE = app
 TARGET   = cr2reader
-QT      += core xml
-QT      -= gui
-CONFIG  += console
-CONFIG  -= app_bundle
 CONFIG  += debug
-
-ROOT_DIR=../../../..
-include($$ROOT_DIR/config.pri)
 
 OBJECTS_DIR = $$ROOT_DIR/.obj/cr2reader$$BUILD_CFG_NAME
 MOC_DIR  = $$OBJECTS_DIR

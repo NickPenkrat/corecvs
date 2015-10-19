@@ -21,7 +21,6 @@ using namespace corecvs;
 
 TEST(Debayer, colorTest)
 {
-    /** Test case 1 */
     PPMLoader *ppmLoader = new PPMLoader();
     G12Buffer *ppm = ppmLoader->load("data/testdata/test_debayer.pgm");
     CORE_ASSERT_TRUE(ppm != NULL, "BMP Image load failed");
