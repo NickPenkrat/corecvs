@@ -33,3 +33,40 @@ TEST(Logger, testDummy)  // TODO: add log to file and then check its content!
 
     cout << Log::formatted("Here we go %d\n", 1, 2, "three");
 }
+
+class Foo {
+public:
+    Foo(int v) : data(v) {}
+    int data;
+};
+
+inline ostream & operator<<(ostream &os, const Foo &o) {
+    os << "foo value: " << o.data;
+    return os;
+}
+
+TEST(Logger, testObjectLog)
+{
+    ostringstream os;
+    {
+        LogDrain *prev = Log::mLogDrains[0];
+        {
+            Log::mLogDrains.resize(0);
+            Log::mLogDrains.push_back(new StdStreamLogDrain(os));
+
+            Foo foo(555);
+            L_INFO_P("test: ") << foo;
+        }
+        Log::mLogDrains.resize(0);
+        Log::mLogDrains.push_back(prev);
+    }
+
+    string out(os.str());
+    string checkStr("test: foo value: 555");
+
+    size_t pos = out.find(checkStr);
+    //cout << "pos=" << pos << " len:" << checkStr.length() << " len:" << out.length() << endl;
+
+    CORE_ASSERT_TRUE_P(pos + checkStr.length() + 1 == out.length(), ("incorrect log content"));
+    CORE_ASSERT_TRUE_P(out[out.length() - 1] == '\n', ("incorrect last char"));
+}
