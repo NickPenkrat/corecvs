@@ -38,6 +38,7 @@ UTILS_INCLUDEPATH = \
     $$UTILSDIR/widgets \
     $$UTILSDIR/photostationcalibration \
     $$UTILSDIR/tablecontrol \
+    $$UTILSDIR/capture     \
 
 
 !win32 {

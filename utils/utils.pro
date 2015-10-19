@@ -93,7 +93,8 @@ HEADERS += \
     uis/cloudview/scene3dTreeView.h \
     tablecontrol/rotaryTableControlWidget.h \
     tablecontrol/rotaryTableMeshModel.h \
-    tablecontrol/rotationPlanGenerator.h
+    tablecontrol/rotationPlanGenerator.h \
+    capture/abstractImageNamer.h
 
 SOURCES += \
     frames.cpp \
@@ -161,7 +162,8 @@ SOURCES += \
     uis/cloudview/scene3dTreeView.cpp \
     tablecontrol/rotaryTableControlWidget.cpp \
     tablecontrol/rotaryTableMeshModel.cpp \
-    tablecontrol/rotationPlanGenerator.cpp
+    tablecontrol/rotationPlanGenerator.cpp \
+    capture/abstractImageNamer.cpp
 
 
 FORMS += \
@@ -296,6 +298,7 @@ HEADERS += \
     uis/textLabelWidget.h \
     uis/pointsRectificationWidget.h \
     \
+    capture/photostationCaptureDialog.h \
 
 SOURCES += \
     widgets/generated/graphPlotParametersControlWidget.cpp \
@@ -350,6 +353,9 @@ SOURCES += \
     uis/aboutDialog.cpp \
     uis/textLabelWidget.cpp \
     uis/pointsRectificationWidget.cpp \
+    \
+    capture/photostationCaptureDialog.cpp \
+
 
 FORMS += \
     \
@@ -392,6 +398,7 @@ FORMS += \
     rectifier/rectifyParametersControlWidget.ui \
     distortioncorrector/distortionWidget.ui \
     \
+    capture/photostationCaptureDialog.ui \
 
 }
 
