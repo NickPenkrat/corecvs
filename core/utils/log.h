@@ -22,7 +22,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
-#include <mutex>        // _Mtx_t
+#include <mutex>        // std::mutex
 
 #include "global.h"
 
@@ -258,7 +258,7 @@ public:
 class FileLogDrain : public LogDrain
 {
     std::ofstream  mFile;
-    _Mtx_t         mMutex;
+    std::mutex     mMutex;
 
 public:
     FileLogDrain(const std::string& path, bool bAppend = false);

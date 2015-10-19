@@ -1,4 +1,3 @@
-//#include <stdexcept>
 #include <iostream>
 
 #include "log.h"
@@ -143,12 +142,10 @@ void StdStreamLogDrain::drain(Log::Message &message)
 FileLogDrain::FileLogDrain(const std::string &path, bool bAppend)
     : mFile(path.c_str(), bAppend ? std::ios_base::app : std::ios_base::trunc)
 {
-    _Mtx_init(&mMutex, _Mtx_plain);
 }
 
 FileLogDrain::~FileLogDrain()
 {
-    _Mtx_destroy(&mMutex);
     mFile.flush();
     mFile.close();
 }
@@ -157,10 +154,10 @@ void FileLogDrain::drain(Log::Message &message)
 {
     if (mFile.is_open())
     {
-        _Mtx_lock(&mMutex);
+        mMutex.lock();
             mFile << message.get()->s.str() << std::endl;
             mFile.flush();
-        _Mtx_unlock(&mMutex);
+        mMutex.unlock();
     }
 }
 
