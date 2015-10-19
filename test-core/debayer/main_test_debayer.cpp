@@ -1,10 +1,6 @@
 /**
-* \file main_test_fileformats.cpp
-* \brief This is the main file for the test fileformats
-*
-* \date Aug 22, 2010
-* \author alexander
-* \ingroup autotest
+* \file main_test_debayer.cpp
+* \brief This is the main file for debayer color test
 */
 #include <sstream>
 #include <iostream>
