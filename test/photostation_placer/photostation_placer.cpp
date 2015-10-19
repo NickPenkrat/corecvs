@@ -142,7 +142,7 @@ struct ReconstructionJob : ReconstructionParameters
             for (int j = 0; j < 4; ++j)
                 out[argout++] = loc.orientation[j];
         }
-        assert(argout == getInputNum());
+        CORE_ASSERT_TRUE_S(argout == getInputNum());
     }
 
     void getScaler(corecvs::Vector3dd &mean, corecvs::Vector3dd &scale)
@@ -180,7 +180,7 @@ struct ReconstructionJob : ReconstructionParameters
                 loc.orientation[j] = in[argin++];
             loc.orientation = loc.orientation.normalised();
         }
-        assert(argin == getInputNum());
+        CORE_ASSERT_TRUE_S(argin == getInputNum());
     }
 #if 1
     struct OptimizationFunctor : public corecvs::FunctionArgs
@@ -340,8 +340,8 @@ struct ReconstructionJob : ReconstructionParameters
                                         saturationThreshold);
                             if (result.a(j, k) != 0.0)
                                 result.a(j, k) /= 2e-7;
-                            assert(!std::isnan(result.a(j, k)));
-                            assert(!std::isinf(result.a(j, k)));
+                            CORE_ASSERT_TRUE_S(!std::isnan(result.a(j, k)));
+                            CORE_ASSERT_TRUE_S(!std::isinf(result.a(j, k)));
                         }
                     }
                 }
@@ -384,7 +384,7 @@ struct ReconstructionJob : ReconstructionParameters
                 {
                     double dx = errors[i];
                     double dy = errors[i + 1];
-                    assert(!std::isnan(dx) && !std::isnan(dy));
+                    CORE_ASSERT_TRUE_S(!std::isnan(dx) && !std::isnan(dy));
                     double r = std::sqrt(dx * dx + dy * dy);
 
                     if (r > saturationThreshold)
@@ -421,10 +421,8 @@ struct ReconstructionJob : ReconstructionParameters
                 }
             }
             std::cout << "LMF: " << std::sqrt(total / cnt) << " | " << std::sqrt(inliers_total / inliers) << " (" << cnt << " | " << inliers << ")" << std::endl;
-            assert(outputNum == outputPtr);
+            CORE_ASSERT_TRUE_S(outputNum == outputPtr);
         }
-
-
     };
 #endif
 

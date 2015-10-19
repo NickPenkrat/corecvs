@@ -1,8 +1,9 @@
 #include "photoStationCalibrator.h"
 #include "tbbWrapper.h"
 
+#include "global.h"
+
 #include <queue>
-#include <cassert>
 #include <algorithm>
 
 PhotoStationCalibrator::PhotoStationCalibrator(CameraConstraints constraints, const double lockFactor) : factor(lockFactor), N(0), M(0), K(0), L(0), constraints(constraints)
@@ -24,8 +25,8 @@ void PhotoStationCalibrator::addCalibrationSetup(std::vector<int> &cameraIds, st
     patternPoints[M].resize(N);
     initialGuess[M].resize(N);
 
-    assert(cameraLocations.size() == points.size());
-    assert(cameraIds.size() == points.size());
+    CORE_ASSERT_TRUE_S(cameraLocations.size() == points.size());
+    CORE_ASSERT_TRUE_S(cameraIds.size() == points.size());
 
     for (size_t i = 0; i < cameraIds.size(); ++i)
     {
@@ -108,7 +109,7 @@ void PhotoStationCalibrator::getFullReprojectionError(double out[])
             }
         }
     }
-    assert(idx == getOutputNum() - N - M + 1);
+    CORE_ASSERT_TRUE_S(idx == getOutputNum() - N - M + 1);
 #else
     std::vector<int> offset(M);
     for (size_t j = 0; j + 1 < (size_t)M; ++j)
@@ -215,7 +216,7 @@ void PhotoStationCalibrator::readParams(const double in[])
 
     IF_GET_PARAM(UNLOCK_YSCALE, factor);
 
-    assert(getInputNum() == argin);
+    CORE_ASSERT_TRUE_S(getInputNum() == argin);
 }
 
 void PhotoStationCalibrator::writeParams(double out[])
@@ -256,7 +257,7 @@ void PhotoStationCalibrator::writeParams(double out[])
 
     IF_SET_PARAM(UNLOCK_YSCALE, factor);
 
-    assert(argout == getInputNum());
+    CORE_ASSERT_TRUE_S(argout == getInputNum());
 }
 void PhotoStationCalibrator::LMCostFunction::operator()(const double in[], double out[])
 {
@@ -318,7 +319,7 @@ void PhotoStationCalibrator::LMStructure::operator() (const double in[], double 
                 out[argout++] = diff[k];
         }
     }
-    assert(argout == calibrator->L * 3);
+    CORE_ASSERT_TRUE_S(argout == calibrator->L * 3);
 }
 #undef SET_PARAM
 #undef IF_SET_PARAM
@@ -503,8 +504,8 @@ void PhotoStationCalibrator::solveCameraToSetup(const LocationData &realLocation
     corecvs::Quaternion qf = qc ^ qs;
     corecvs::Vector3dd  cf = (qs.conjugated() * cc) + cs;//qc(qs(-cs)-cc)
     std::cout << "Solving setup " << setup << " from camera " << camera << " QR: " << qr << " QC: " << qc << " QS: " << qs << " | " << " CR: " << cr << " CC: " << cc << " CS: " << cs << std::endl;
-    assert(!(cr - cf) < 1e-6);
-    assert(!(qf - qr) < 1e-6);
+    CORE_ASSERT_TRUE_S(!(cr - cf) < 1e-6);
+    CORE_ASSERT_TRUE_S(!(qf - qr) < 1e-6);
     if (qs[0] > 0.0)
         qs = -qs;
     std::cout << "CC:C>S: Setup " << setup << " is " << (acos(qs[3]) * 180.0 * 2.0 / M_PI) << std::endl;
@@ -530,8 +531,8 @@ void PhotoStationCalibrator::solveSetupToCamera(const LocationData &realLocation
     corecvs::Quaternion qf = qc ^ qs;
     corecvs::Vector3dd  cf = (qs.conjugated() * cc) + cs;//qc(qs(-cs)-cc)
     std::cout << "Solving camera " << camera<< " from setup " << setup << " QR: " << qr << " QC: " << qc << " QS: " << qs << " | " << " CR: " << cr << " CC: " << cc << " CS: " << cs << std::endl;
-    assert(!(cr - cf) < 1e-6);
-    assert(!(qf - qr) < 1e-6);
+    CORE_ASSERT_TRUE_S(!(cr - cf) < 1e-6);
+    CORE_ASSERT_TRUE_S(!(qf - qr) < 1e-6);
     if (qc[0] > 0.0)
         qc = -qc;
     std::cout << "CC:S>C: Camera " << camera << " is " << (acos(qc[3]) * 180.0 * 2.0 / M_PI) << std::endl;
@@ -723,13 +724,13 @@ void PhotoStationCalibrator::solveInitialLocations()
                 corecvs::Quaternion qq = (qc ^ qs) ^ qr.conjugated();
                 std::cout << "CC:QQ" << qq << std::endl;
                 double diffa = 2.0 * qq[3] * qq[3] - 1.0;
-//                assert (acos(diffa) < 15.0 * M_PI / 180.0);
-                assert ((cs + qs.conjugated() * cc) == (cs + (qs.conjugated() * cc)));
+//                CORE_ASSERT_TRUE_S (acos(diffa) < 15.0 * M_PI / 180.0);
+                CORE_ASSERT_TRUE_S ((cs + qs.conjugated() * cc) == (cs + (qs.conjugated() * cc)));
                 if(!(cr - (cs + qs.conjugated() * cc)) >= 60.0)
                 {
                     validate();
                 }
-//                assert (!(cr - (cs + qs.conjugated() * cc)) < 60.0);
+//                CORE_ASSERT_TRUE_S (!(cr - (cs + qs.conjugated() * cc)) < 60.0);
             }
             if (!initialGuess[setup][cam].first || setupsSolved[setup])
                 continue;

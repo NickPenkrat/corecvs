@@ -1,4 +1,3 @@
-#include <cassert>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -54,9 +53,9 @@ void run_detector(const std::string &detector)
     pipeline.add(new KeyPointDetectionStage(DetectorType(detector)), true);
     pipeline.run();
 
-    assert(pipeline.images[0].keyPoints.keyPoints.size());
-    assert(pipeline.images[1].keyPoints.keyPoints.size());
-    assert(pipeline.images[2].keyPoints.keyPoints.size());
+    CORE_ASSERT_TRUE_S(pipeline.images[0].keyPoints.keyPoints.size());
+    CORE_ASSERT_TRUE_S(pipeline.images[1].keyPoints.keyPoints.size());
+    CORE_ASSERT_TRUE_S(pipeline.images[2].keyPoints.keyPoints.size());
 
     std::cout << detector << " detector is OK (some points were detected)" << std::endl;
 }

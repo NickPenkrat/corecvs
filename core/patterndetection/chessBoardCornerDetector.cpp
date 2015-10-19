@@ -1,7 +1,6 @@
 #include "chessBoardCornerDetector.h"
 
 #include <cmath>
-#include <cassert>
 #include <algorithm>
 #include <set>
 
@@ -699,14 +698,14 @@ ChessBoardCornerDetector::ChessBoardCornerDetector(ChessBoardCornerDetectorParam
 
 bool ChessBoardCornerDetector::invertable22(corecvs::Matrix &A)
 {
-    assert(A.w == 2 && A.h == 2);
+    CORE_ASSERT_TRUE_S(A.w == 2 && A.h == 2);
     const double DETTOLERANCE22 = 1e-9;
     return std::abs(A.a(0, 0) * A.a(1, 1) - A.a(1, 0) * A.a(0, 1)) > DETTOLERANCE22;
 }
 
 void ChessBoardCornerDetector::solve22(corecvs::Matrix &A, corecvs::Vector2dd &B, corecvs::Vector2dd &x)
 {
-    assert(A.w == 2 && A.h == 2);
+    CORE_ASSERT_TRUE_S(A.w == 2 && A.h == 2);
     double a = A.a(0, 0), b = A.a(0, 1), c = A.a(1, 0), d = A.a(1, 1);
     double D = a * d - b * c;
     x[0] = ( d * B[0] - b * B[1]) / D;
@@ -716,7 +715,7 @@ void ChessBoardCornerDetector::solve22(corecvs::Matrix &A, corecvs::Vector2dd &B
 void ChessBoardCornerDetector::eig22(corecvs::Matrix &A, double &lambda1, corecvs::Vector2dd &e1, double &lambda2, corecvs::Vector2dd &e2)
 {
     const double EIGTOLERANCE = 1e-9;
-    assert(A.w == 2 && A.h == 2);
+    CORE_ASSERT_TRUE_S(A.w == 2 && A.h == 2);
     double T = A.a(0, 0) + A.a(1, 1);
     double D = A.a(0, 0) * A.a(1, 1) - A.a(1, 0) * A.a(0, 1);
     lambda2 = T / 2.0 + std::sqrt(T * T / 4.0 - D);
