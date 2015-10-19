@@ -1,30 +1,37 @@
 #pragma once
 
 #include "g12Buffer.h"
-#include "ppmLoader.h"
+#include "rgbBufferT.h"
+#include "metamap.h"
 
 using namespace std;
 using corecvs::G12Buffer;
-using corecvs::PPMLoader;
 class Debayer
 {
 private:
-
     G12Buffer* bayer;
-    G12Buffer** out;
     MetaData *metadata_ptr;
+    int depth;
+    // image metadata storage
+    uint16_t* curve;
+    double* scale_mul;
+    uint16_t m_black;
 
-    double* scale_colors(bool highlight = false, MetaData *metadata = nullptr);
-    uint16_t* gamma_curve(int mode, int imax, int depth, MetaData *metadata = nullptr);
+    double* scale_colors(bool highlight = false);
+    uint16_t* gamma_curve(int mode, int imax);
+
 public:
-    static Debayer* FromFile(string filename);
+    RGB48Buffer* out;
 
-    Debayer(G12Buffer *bayer, MetaData *data = nullptr);
+    Debayer(G12Buffer *bayer, int depth = 12, MetaData *data = nullptr);
 
-    G12Buffer** linear();
-    G12Buffer** nearest();
+    RGB48Buffer* linear();
+    RGB48Buffer* nearest();
 
-    int writePPM(string filename, int depth = 16);
+    int writePPM(string filename);
+    void postprocess();
+
+
     ~Debayer();
 };
 

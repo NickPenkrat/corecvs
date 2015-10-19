@@ -98,25 +98,6 @@ G12Buffer *CR2Reader::getBayer(bool shifted)
     return result;
 }
 
-G12Buffer** CR2Reader::getChannels()
-{
-    G12Buffer **result = new G12Buffer*[reader->imgdata.idata.colors];
-    for (int i = 0; i < reader->imgdata.idata.colors; i++)
-        result[i] = getChannel(i);
-    return result;
-}
-
-G12Buffer* CR2Reader::getChannel(int channel)
-{
-    G12Buffer *b = new G12Buffer(reader->imgdata.sizes.height, reader->imgdata.sizes.width);
-    for (int i = 0; i < reader->imgdata.sizes.height; i++)
-        for (int j = 0; j < reader->imgdata.sizes.width * 4; j += 4)
-        {
-            b->element(i, j / 4) = reader->imgdata.image[0][i*reader->imgdata.sizes.width * 4 + j] >> 4;
-        }
-    return b;
-}
-
 int CR2Reader::flipIndex(int row, int col)
 {
     if (reader->imgdata.sizes.flip & 4) { row = row + col; col = row - col; row = row - col; };
@@ -127,7 +108,8 @@ int CR2Reader::flipIndex(int row, int col)
 
 int isBigEndian()
 {
-    union {
+    union
+    {
         uint32_t i;
         char c[4];
     } bint = { 0x01020304 };
@@ -258,7 +240,8 @@ int CR2Reader::writeBayer(const char* filename)
 
     perc = b->w * b->h * reader->imgdata.params.auto_bright_thr;
 
-    for (t_white = c = 0; c < 3; c++) {
+    for (t_white = c = 0; c < 3; c++)
+    {
         for (val = 0x2000, total = 0; --val > 32; )
             if ((total += hist[c][val]) > perc) break;
         if (t_white < val) t_white = val;
@@ -284,9 +267,30 @@ int CR2Reader::writeBayer(const char* filename)
     return 0;
 }
 
-int CR2Reader::processDCRaw()
+int CR2Reader::processDCRaw(bool noScale)
 {
+    reader->imgdata.params.no_auto_scale = noScale;
     return reader->dcraw_process();
+}
+
+void CR2Reader::fakeimg(G12Buffer *img)
+{
+    int orig_width = reader->imgdata.rawdata.sizes.raw_width;
+    reader->imgdata.rawdata.sizes.raw_width = img->w;
+    reader->imgdata.rawdata.sizes.width = img->w;
+    reader->imgdata.rawdata.sizes.iwidth = img->w;
+    reader->imgdata.rawdata.sizes.raw_height = img->h;
+    reader->imgdata.rawdata.sizes.height = img->h;
+    reader->imgdata.rawdata.sizes.iheight = img->h;
+    reader->imgdata.rawdata.sizes.left_margin = 0;
+    reader->imgdata.rawdata.sizes.top_margin = 0;
+
+    for (int i = 0; i < img->h; i++)
+        for (int j = 0; j < img->w; j++)
+        {
+            reader->imgdata.rawdata.raw_image[i*orig_width + j] = img->element(i, j) << 8;
+        }
+
 }
 
 CR2Reader::~CR2Reader()

@@ -20,9 +20,6 @@
 
 namespace corecvs
 {
-
-    using std::string;
-
     class PPMLoader : public BufferLoader<G12Buffer>
     {
 
@@ -47,7 +44,7 @@ namespace corecvs
 
         char* nextLine(FILE *fp, int sz, MetaData *metadata);
         bool readHeader(FILE *fp, unsigned long int *h, unsigned long int *w, unsigned short int *maxval, uint8_t *type, MetaData* metadata);
-        bool PPMLoader::writeHeader(FILE *fp, unsigned long int h, unsigned long int w, uint8_t type, MetaData* metadata);
+        bool PPMLoader::writeHeader(FILE *fp, unsigned long int h, unsigned long int w, uint8_t type, uint64_t maxval, MetaData* metadata);
 
     };
 

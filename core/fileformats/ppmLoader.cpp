@@ -240,7 +240,7 @@ namespace corecvs
         return true;
     }
 
-    bool PPMLoader::writeHeader(FILE *fp, unsigned long int h, unsigned long int w, uint8_t type, MetaData* meta)
+    bool PPMLoader::writeHeader(FILE *fp, unsigned long int h, unsigned long int w, uint8_t type, uint64_t maxval, MetaData* meta)
     {
         if (!fp || !h || !w || type < 5 || type > 6)
             return false;
@@ -265,7 +265,7 @@ namespace corecvs
 
         fprintf(fp, "############################################\n");
         fprintf(fp, "%d %d\n", w, h);
-        fprintf(fp, "%d\n", G12Buffer::BUFFER_MAX_VALUE);
+        fprintf(fp, "%d\n", maxval);
 
         return true;
     }
@@ -287,7 +287,7 @@ namespace corecvs
             return -1;
         }
 
-        writeHeader(fp, h, w, 5, nullptr);
+        writeHeader(fp, h, w, 5, G12Buffer::BUFFER_MAX_VALUE, nullptr);
 
         uint8_t *charImage = new uint8_t[2 * w * h];
         int i, j;
@@ -299,6 +299,115 @@ namespace corecvs
                 charImage[offset * 2 + 1] = buffer->element(i, j) & 0xFF;
             }
         fwrite(charImage, 2, h * w, fp);
+        delete[] charImage;
+        fclose(fp);
+        return 0;
+    }
+
+    int PPMLoader::save(string name, RGB24Buffer *buffer)
+    {
+        int h = buffer->h;
+        int w = buffer->w;
+
+        if (buffer == NULL)
+            return -1;
+
+        FILE *fp;
+        fp = fopen(name.c_str(), "wb");
+
+        if (fp == NULL)
+        {
+            printf("Image %s could not be written \n", name.c_str());
+            return -1;
+        }
+
+        writeHeader(fp, h, w, 6, 0xff, nullptr);
+
+        uint8_t *charImage = new uint8_t[3 * w * h];
+
+        for (int i = 0; i < buffer->h; i++)
+            for (int j = 0; j < buffer->w; j++)
+            {
+                uint8_t elemval[3] = {
+                    buffer->element(i, j).r(),
+                    buffer->element(i, j).g(),
+                    buffer->element(i, j).b()
+                };
+
+                for (int offset = i*buffer->w + j, k = 0; k < 3; k++)
+                    charImage[offset * 3 + k] = elemval[k];
+            }
+
+        fwrite(charImage, 3, h * w, fp);
+
+        delete[] charImage;
+        fclose(fp);
+        return 0;
+    }
+
+    int PPMLoader::save(string name, RGB48Buffer *buffer)
+    {
+        int h = buffer->h;
+        int w = buffer->w;
+
+        if (buffer == NULL)
+            return -1;
+
+        FILE *fp;
+        fp = fopen(name.c_str(), "wb");
+
+        if (fp == NULL)
+        {
+            printf("Image %s could not be written \n", name.c_str());
+            return -1;
+        }
+        int maxval = 0;
+        for (int i = 0; i < buffer->h; i++)
+            for (int j = 0; j < buffer->w; j++)
+            {
+                if (buffer->element(i, j).r() > maxval)
+                    maxval = buffer->element(i, j).r();
+                if (buffer->element(i, j).g() > maxval)
+                    maxval = buffer->element(i, j).g();
+                if (buffer->element(i, j).b() > maxval)
+                    maxval = buffer->element(i, j).b();
+            }
+
+        int bits = 1;
+        while (maxval >> bits)
+            bits++;
+
+        int bytes = (bits + 7) / 8;
+
+        // TODO: determine shift somehow
+        writeHeader(fp, h, w, 6, (1 << bits) - 1, nullptr);
+
+        uint8_t *charImage = new uint8_t[3 * bytes * w * h];
+
+        for (int i = 0; i < buffer->h; i++)
+            for (int j = 0; j < buffer->w; j++)
+            {
+                uint16_t elemval[3] = {
+                    buffer->element(i, j).r(),
+                    buffer->element(i, j).g(),
+                    buffer->element(i, j).b()
+                };
+
+                if (bytes == 2)
+                    for (int offset = i*buffer->w + j, k = 0; k < 3; k++)
+                    {
+                        charImage[(offset * 3 + k) * 2] = (elemval[k] & 0xff00) >> 8;
+                        charImage[(offset * 3 + k) * 2 + 1] = (elemval[k] & 0xff);
+                    }
+                else
+                    for (int offset = i*buffer->w + j, k = 0; k < 3; k++)
+                    {
+                        charImage[offset * 3 + k] = (elemval[k] & 0xff);
+                    }
+            }
+
+        fwrite(charImage, 3, bytes * h * w, fp);
+
         delete[] charImage;
         fclose(fp);
         return 0;

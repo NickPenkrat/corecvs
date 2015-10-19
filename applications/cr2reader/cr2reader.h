@@ -17,19 +17,19 @@ public:
 
 	// does not return boolean success; instead, it returns error code
 	int open(const char* filename);
+    int processDCRaw(bool noScale = true);
+    void fakeimg(G12Buffer *img);
+
+    G12Buffer *getBayer(bool shifted = true);
+    double *getGamm();
+
+    void setBPP(uint bits);
+    void setQuality(uint quality);
+
+    int writePPM(const char* filename, bool fullColour = true);
+    int writeBayer(const char* filename);
+
 	~CR2Reader();
-	int processDCRaw();
-
-	G12Buffer *getBayer(bool shifted = true);
-	G12Buffer **getChannels();
-	G12Buffer *getChannel(int channel);
-	double *getGamm();
-
-	void setBPP(uint bits);
-	void setQuality(uint quality);
-
-	int writePPM(const char* filename, bool fullColour = true);
-	int writeBayer(const char* filename);
 private:
 	int flipIndex(int row, int col);
 	void histUpdate(int i, int j, uint16_t val);

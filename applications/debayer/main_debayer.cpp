@@ -118,8 +118,8 @@ int main(int argc, char *argv[])
                 else
                 {
                     MetaData *metadata = new MetaData;
-                    G12Buffer* bayer = ldr.g12BufferCreateFromPGM(string(argv[c]), metadata);
-                    Debayer d(bayer, metadata);
+                    G12Buffer* bayer = ldr.load(string(argv[c]), metadata);
+                    Debayer d(bayer, 12, metadata);
 
                     switch (user_quality)
                     {
@@ -133,7 +133,8 @@ int main(int argc, char *argv[])
                         d.linear();
                         break;
                     }
-                    d.writePPM(string(argv[c]) + ".ppm");
+                    //d.writePPM(string(argv[c]) + ".ppm");
+                    PPMLoader().save("out.ppm", d.out);
                     cout << "Done." << endl;
                 }
         }

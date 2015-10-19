@@ -1,82 +1,41 @@
 #include "debayer.h"
 
-Debayer::Debayer(G12Buffer *bayer, MetaData *metadata)
+Debayer::Debayer(G12Buffer *bayer, int depth, MetaData *metadata)
 {
     this->bayer = bayer;
     this->metadata_ptr = metadata;
     this->out = nullptr;
-}
-
-Debayer* Debayer::FromFile(string filename)
-{
-    // this should work
-    PPMLoader ldr;
-    MetaData *metadata = new MetaData;
-    G12Buffer* bayer = ldr.g12BufferCreateFromPGM(filename, metadata);
-    return new Debayer(bayer, metadata);
+    this->depth = depth;
 }
 
 // i have yet to understand what this actually does... 
 // TODO: maybe just replace it with simple 3-colour loop?
 int FC(int row, int col, int filters) { return (filters >> (((row << 1 & 14) | (col & 1)) << 1) & 3); }
 
-G12Buffer** Debayer::nearest()
+uint16_t clip(int64_t x, int depth = 16)
 {
-    G12Buffer *red = new G12Buffer(bayer->h, bayer->w, false);
-    G12Buffer *green = new G12Buffer(bayer->h, bayer->w, false);
-    G12Buffer *blue = new G12Buffer(bayer->h, bayer->w, false);
+    const uint16_t maximum = (1 << depth) - 1;
+    if (x < 0)
+        return 0;
+    if (x > maximum || x >= (1 << 16))
+        return maximum;
+    return (uint16_t)x;
+}
 
-    for (int i = 0; i < bayer->h; i++)
-        for (int j = 0; j < bayer->w; j++)
-        {
-            bool is_red = !(j & 1) && !(i & 1);
-            bool is_blue = (j & 1) && (i & 1);
-            bool is_green1 = !is_red && !is_blue && !(i & 1);
-            bool is_green2 = !is_red && !is_blue && (i & 1);
+RGB48Buffer* Debayer::nearest()
+{
+    postprocess();
 
-            if (is_red)
-            {
-                red->element(i, j) = bayer->element(i, j);
-                green->element(i, j) = bayer->element(i, j + 1);
-                blue->element(i, j) = bayer->element(i + 1, j + 1);
-            }
-            if (is_green1)
-            {
-                red->element(i, j) = bayer->element(i, j - 1);
-                green->element(i, j) = bayer->element(i, j);
-                blue->element(i, j) = bayer->element(i + 1, j);
-            }
-            if (is_green2)
-            {
-                red->element(i, j) = bayer->element(i - 1, j);
-                green->element(i, j) = bayer->element(i, j);
-                blue->element(i, j) = bayer->element(i, j + 1);
-            }
-            if (is_blue)
-            {
-                red->element(i, j) = bayer->element(i - 1, j - 1);
-                green->element(i, j) = bayer->element(i, j - 1);
-                blue->element(i, j) = bayer->element(i, j);
-            }
-        }
+    uint16_t red = 0, green = 0, blue = 0;
 
     if (out)
         delete[] out;
-    out = new G12Buffer*[3];
-    out[0] = red; out[1] = green; out[2] = blue;
-    return out;
-}
 
-G12Buffer** Debayer::linear()
-{
-    G12Buffer *red = new G12Buffer(bayer->h, bayer->w, false);
-    G12Buffer *green = new G12Buffer(bayer->h, bayer->w, false);
-    G12Buffer *blue = new G12Buffer(bayer->h, bayer->w, false);
+    out = new RGB48Buffer(bayer->h, bayer->w, false);
 
     for (int i = 0; i < bayer->h; i++)
         for (int j = 0; j < bayer->w; j++)
         {
-
             bool is_red = !(j & 1) && !(i & 1);
             bool is_blue = (j & 1) && (i & 1);
             bool is_green1 = !is_red && !is_blue && !(i & 1);
@@ -84,133 +43,187 @@ G12Buffer** Debayer::linear()
 
             if (is_red)
             {
-                red->element(i, j) = bayer->element(i, j);
+                red = bayer->element(i, j);
+                green = bayer->element(i, j + 1);
+                blue = bayer->element(i + 1, j + 1);
+            }
+            if (is_green1)
+            {
+                red = bayer->element(i, j - 1);
+                green = bayer->element(i, j);
+                blue = bayer->element(i + 1, j);
+            }
+            if (is_green2)
+            {
+                red = bayer->element(i - 1, j);
+                green = bayer->element(i, j);
+                blue = bayer->element(i, j + 1);
+            }
+            if (is_blue)
+            {
+                red = bayer->element(i - 1, j - 1);
+                green = bayer->element(i, j - 1);
+                blue = bayer->element(i, j);
+            }
+            out->setElement(i, j, RGBColor48(
+                curve[clip((int64_t)((red - m_black)*scale_mul[0]), depth)],
+                curve[clip((int64_t)((green - m_black)*scale_mul[1]), depth)],
+                curve[clip((int64_t)((blue - m_black)*scale_mul[2]), depth)]
+                ));
+        }
+
+    return out;
+}
+
+RGB48Buffer* Debayer::linear()
+{
+    postprocess();
+
+    uint16_t red = 0, green = 0, blue = 0;
+
+    if (out)
+        delete[] out;
+
+    out = new RGB48Buffer(bayer->h, bayer->w, false);
+
+    for (int i = 0; i < bayer->h; i++)
+        for (int j = 0; j < bayer->w; j++)
+        {
+            bool is_red = !(j & 1) && !(i & 1);
+            bool is_blue = (j & 1) && (i & 1);
+            bool is_green1 = !is_red && !is_blue && !(i & 1);
+            bool is_green2 = !is_red && !is_blue && (i & 1);
+
+            if (is_red)
+            {
+                red = bayer->element(i, j);
 
                 if (!(i || j))
                 {
-                    green->element(i, j) = (bayer->element(i, j + 1) + bayer->element(i + 1, j)) / 2;
-                    blue->element(i, j) = bayer->element(i + 1, j + 1);
+                    green = (bayer->element(i, j + 1) + bayer->element(i + 1, j)) / 2;
+                    blue = bayer->element(i + 1, j + 1);
                 }
                 else if (i == bayer->h - 1 && j == bayer->w - 1)
                 {
-                    green->element(i, j) = (bayer->element(i, j - 1) + bayer->element(i - 1, j)) / 2;
-                    blue->element(i, j) = bayer->element(i - 1, j - 1);
+                    green = (bayer->element(i, j - 1) + bayer->element(i - 1, j)) / 2;
+                    blue = bayer->element(i - 1, j - 1);
                 }
                 else if (!i)
                 {
-                    green->element(i, j) = (bayer->element(i, j + 1) + bayer->element(i + 1, j) + bayer->element(i, j - 1)) / 3;
-                    blue->element(i, j) = (bayer->element(i + 1, j + 1) + bayer->element(i + 1, j - 1)) / 2;
+                    green = (bayer->element(i, j + 1) + bayer->element(i + 1, j) + bayer->element(i, j - 1)) / 3;
+                    blue = (bayer->element(i + 1, j + 1) + bayer->element(i + 1, j - 1)) / 2;
                 }
                 else if (!j)
                 {
-                    green->element(i, j) = (bayer->element(i, j + 1) + bayer->element(i + 1, j) + bayer->element(i - 1, j)) / 3;
-                    blue->element(i, j) = (bayer->element(i + 1, j + 1) + bayer->element(i - 1, j + 1)) / 2;
+                    green = (bayer->element(i, j + 1) + bayer->element(i + 1, j) + bayer->element(i - 1, j)) / 3;
+                    blue = (bayer->element(i + 1, j + 1) + bayer->element(i - 1, j + 1)) / 2;
                 }
                 else if (i == bayer->h - 1)
                 {
-                    green->element(i, j) = (bayer->element(i, j - 1) + bayer->element(i - 1, j) + bayer->element(i, j + 1)) / 3;
-                    blue->element(i, j) = (bayer->element(i - 1, j + 1) + bayer->element(i - 1, j - 1)) / 2;
+                    green = (bayer->element(i, j - 1) + bayer->element(i - 1, j) + bayer->element(i, j + 1)) / 3;
+                    blue = (bayer->element(i - 1, j + 1) + bayer->element(i - 1, j - 1)) / 2;
                 }
                 else if (j == bayer->w - 1)
                 {
-                    green->element(i, j) = (bayer->element(i, j - 1) + bayer->element(i + 1, j) + bayer->element(i - 1, j)) / 3;
-                    blue->element(i, j) = (bayer->element(i + 1, j - 1) + bayer->element(i - 1, j - 1)) / 2;
+                    green = (bayer->element(i, j - 1) + bayer->element(i + 1, j) + bayer->element(i - 1, j)) / 3;
+                    blue = (bayer->element(i + 1, j - 1) + bayer->element(i - 1, j - 1)) / 2;
                 }
                 else
                 {
-                    green->element(i, j) = (bayer->element(i, j + 1) + bayer->element(i, j - 1) + bayer->element(i + 1, j) + bayer->element(i - 1, j)) / 4;
-                    blue->element(i, j) = (bayer->element(i + 1, j + 1) + bayer->element(i - 1, j + 1) + bayer->element(i + 1, j - 1) + bayer->element(i - 1, j - 1)) / 4;
+                    green = (bayer->element(i, j + 1) + bayer->element(i, j - 1) + bayer->element(i + 1, j) + bayer->element(i - 1, j)) / 4;
+                    blue = (bayer->element(i + 1, j + 1) + bayer->element(i - 1, j + 1) + bayer->element(i + 1, j - 1) + bayer->element(i - 1, j - 1)) / 4;
                 }
 
             }
             if (is_green1)
             {
                 if (j != bayer->w - 1)
-                    red->element(i, j) = (bayer->element(i, j - 1) + bayer->element(i, j + 1)) / 2;
+                    red = (bayer->element(i, j - 1) + bayer->element(i, j + 1)) / 2;
                 else
-                    red->element(i, j) = bayer->element(i, j - 1);
+                    red = bayer->element(i, j - 1);
 
-                green->element(i, j) = bayer->element(i, j);
+                green = bayer->element(i, j);
 
                 if (i > 0)
-                    blue->element(i, j) = (bayer->element(i + 1, j) + bayer->element(i - 1, j)) / 2;
+                    blue = (bayer->element(i + 1, j) + bayer->element(i - 1, j)) / 2;
                 else
-                    blue->element(i, j) = bayer->element(i + 1, j);
+                    blue = bayer->element(i + 1, j);
             }
             if (is_green2)
             {
                 if (i != bayer->h - 1)
-                    red->element(i, j) = (bayer->element(i + 1, j) + bayer->element(i - 1, j)) / 2;
+                    red = (bayer->element(i + 1, j) + bayer->element(i - 1, j)) / 2;
                 else
-                    red->element(i, j) = bayer->element(i - 1, j);
+                    red = bayer->element(i - 1, j);
 
-                green->element(i, j) = bayer->element(i, j);
+                green = bayer->element(i, j);
 
                 if (j > 0)
-                    blue->element(i, j) = (bayer->element(i, j - 1) + bayer->element(i, j + 1)) / 2;
+                    blue = (bayer->element(i, j - 1) + bayer->element(i, j + 1)) / 2;
                 else
-                    blue->element(i, j) = bayer->element(i, j - 1);
+                    blue = bayer->element(i, j - 1);
 
             }
             if (is_blue)
             {
                 if (!(i || j))
                 {
-                    green->element(i, j) = (bayer->element(i, j + 1) + bayer->element(i + 1, j)) / 2;
-                    red->element(i, j) = bayer->element(i + 1, j + 1);
+                    green = (bayer->element(i, j + 1) + bayer->element(i + 1, j)) / 2;
+                    red = bayer->element(i + 1, j + 1);
                 }
                 else if (i == bayer->h - 1 && j == bayer->w - 1)
                 {
-                    green->element(i, j) = (bayer->element(i, j - 1) + bayer->element(i - 1, j)) / 2;
-                    red->element(i, j) = bayer->element(i - 1, j - 1);
+                    green = (bayer->element(i, j - 1) + bayer->element(i - 1, j)) / 2;
+                    red = bayer->element(i - 1, j - 1);
                 }
                 else if (!i)
                 {
-                    green->element(i, j) = (bayer->element(i, j + 1) + bayer->element(i + 1, j) + bayer->element(i, j - 1)) / 3;
-                    red->element(i, j) = (bayer->element(i + 1, j + 1) + bayer->element(i + 1, j - 1)) / 2;
+                    green = (bayer->element(i, j + 1) + bayer->element(i + 1, j) + bayer->element(i, j - 1)) / 3;
+                    red = (bayer->element(i + 1, j + 1) + bayer->element(i + 1, j - 1)) / 2;
                 }
                 else if (!j)
                 {
-                    green->element(i, j) = (bayer->element(i, j + 1) + bayer->element(i + 1, j) + bayer->element(i - 1, j)) / 3;
-                    red->element(i, j) = (bayer->element(i + 1, j + 1) + bayer->element(i - 1, j + 1)) / 2;
+                    green = (bayer->element(i, j + 1) + bayer->element(i + 1, j) + bayer->element(i - 1, j)) / 3;
+                    red = (bayer->element(i + 1, j + 1) + bayer->element(i - 1, j + 1)) / 2;
                 }
                 else if (i == bayer->h - 1)
                 {
-                    green->element(i, j) = (bayer->element(i, j - 1) + bayer->element(i - 1, j) + bayer->element(i, j + 1)) / 3;
-                    red->element(i, j) = (bayer->element(i - 1, j + 1) + bayer->element(i - 1, j - 1)) / 2;
+                    green = (bayer->element(i, j - 1) + bayer->element(i - 1, j) + bayer->element(i, j + 1)) / 3;
+                    red = (bayer->element(i - 1, j + 1) + bayer->element(i - 1, j - 1)) / 2;
                 }
                 else if (j == bayer->w - 1)
                 {
-                    green->element(i, j) = (bayer->element(i, j - 1) + bayer->element(i + 1, j) + bayer->element(i - 1, j)) / 3;
-                    red->element(i, j) = (bayer->element(i + 1, j - 1) + bayer->element(i - 1, j - 1)) / 2;
+                    green = (bayer->element(i, j - 1) + bayer->element(i + 1, j) + bayer->element(i - 1, j)) / 3;
+                    red = (bayer->element(i + 1, j - 1) + bayer->element(i - 1, j - 1)) / 2;
                 }
                 else
                 {
-                    green->element(i, j) = (bayer->element(i, j + 1) + bayer->element(i, j - 1) + bayer->element(i + 1, j) + bayer->element(i - 1, j)) / 4;
-                    red->element(i, j) = (bayer->element(i + 1, j + 1) + bayer->element(i - 1, j + 1) + bayer->element(i + 1, j - 1) + bayer->element(i - 1, j - 1)) / 4;
+                    green = (bayer->element(i, j + 1) + bayer->element(i, j - 1) + bayer->element(i + 1, j) + bayer->element(i - 1, j)) / 4;
+                    red = (bayer->element(i + 1, j + 1) + bayer->element(i - 1, j + 1) + bayer->element(i + 1, j - 1) + bayer->element(i - 1, j - 1)) / 4;
                 }
 
-                blue->element(i, j) = bayer->element(i, j);
+                blue = bayer->element(i, j);
             }
+            out->setElement(i, j, RGBColor48(
+                curve[clip((int64_t)((red - m_black)*scale_mul[0]), depth)],
+                curve[clip((int64_t)((green - m_black)*scale_mul[1]), depth)],
+                curve[clip((int64_t)((blue - m_black)*scale_mul[2]), depth)]
+                ));
         }
 
-    if (out)
-        delete[] out;
-    out = new G12Buffer*[3];
-    out[0] = red; out[1] = green; out[2] = blue;
     return out;
 }
 
-double* Debayer::scale_colors(bool highlight, MetaData *meta)
+double* Debayer::scale_colors(bool highlight)
 {
     double* scale_mul = new double[4];
     for (int i = 0; i < 4; i++)
         scale_mul[i] = 1;
 
     // alias for ease of use
-    MetaData &metadata = *meta;
+    MetaData &metadata = *metadata_ptr;
     // check if meta- and white balance data available
-    if (meta == nullptr ||
+    if (metadata_ptr == nullptr ||
         !metadata["cam_mul"] || !metadata["cam_mul"][0] || !metadata["cam_mul"][2] || !metadata["pre_mul"] || !metadata["pre_mul"][0])
         // TODO: maybe apply the gray world hypothesis instead of doing nothing
         return scale_mul; // if not, return vector of 1's
@@ -254,7 +267,7 @@ double* Debayer::scale_colors(bool highlight, MetaData *meta)
     return scale_mul;
 }
 
-uint16_t* Debayer::gamma_curve(int mode, int imax, int depth, MetaData *meta)
+uint16_t* Debayer::gamma_curve(int mode, int imax)
 {
     // this code is taken from LibRaw
     // TODO: rewrite?
@@ -263,10 +276,10 @@ uint16_t* Debayer::gamma_curve(int mode, int imax, int depth, MetaData *meta)
         curve[i] = i;
 
     // alias
-    MetaData &metadata = *meta;
+    MetaData &metadata = *metadata_ptr;
 
     // if no gamm coefficients are present (or valid), return no transform
-    if (meta == nullptr || !metadata["gamm"] || !(metadata["gamm"][0] || metadata["gamm"][1] || metadata["gamm"][2] || metadata["gamm"][3] || metadata["gamm"][4]))
+    if (metadata_ptr == nullptr || !metadata["gamm"] || !(metadata["gamm"][0] || metadata["gamm"][1] || metadata["gamm"][2] || metadata["gamm"][3] || metadata["gamm"][4]))
         return curve;
 
     int i;
@@ -307,17 +320,7 @@ uint16_t* Debayer::gamma_curve(int mode, int imax, int depth, MetaData *meta)
     return curve;
 }
 
-uint16_t clip(int64_t x, int depth = 16)
-{
-    const uint16_t maximum = (1 << depth) - 1;
-    if (x < 0)
-        return 0;
-    if (x > maximum || x >= (1 << 16))
-        return maximum;
-    return (uint16_t)x;
-}
-
-int Debayer::writePPM(string filename, int depth)
+int Debayer::writePPM(string filename)
 {
     FILE *fp;
     fp = fopen(filename.c_str(), "wb");
@@ -358,23 +361,26 @@ int Debayer::writePPM(string filename, int depth)
 
     int t_white = (shift < 0 ? m_twhite << -shift : m_twhite >> shift);
 
-    //double scale_mul[4] = { 1, 1, 1, 1 };
-    double* scale_mul = scale_colors(false, this->metadata_ptr);
+    double* scale_mul = scale_colors();
 
-    // t_white was chosen experimentally
     int bpp = (depth + 7) / 8;
 
-    uint16_t* curve = gamma_curve(2, t_white, depth, this->metadata_ptr);
+    uint16_t* curve = gamma_curve(2, t_white);
 
     uint8_t *out_bytes = new uint8_t[bayer->w*bayer->h * 3 * bpp];
 
     for (int i = 0; i < bayer->h; i++)
         for (int j = 0; j < bayer->w; j++)
-            for (int offset = i*bayer->w + j, k = 0; k < 3; k++)
+        {
+            uint16_t elemval[3] = {
+                clip((uint64_t)out->element(i, j).r() - m_black),
+                clip((uint64_t)out->element(i, j).g() - m_black),
+                clip((uint64_t)out->element(i, j).b() - m_black)
+            };
+            for (int k = 0; k < 3; k++)
             {
-                uint16_t elemval = clip((uint64_t)out[k]->element(i, j) - m_black);
-
-                uint16_t val = curve[clip((shift >= 0 ? elemval >> shift : elemval << -shift) * scale_mul[k], depth)];
+                int offset = i*bayer->w + j;
+                uint16_t val = curve[clip((shift >= 0 ? elemval[k] >> shift : elemval[k] << -shift) * scale_mul[k], depth)];
 
                 if (bpp == 1)
                 {
@@ -386,9 +392,27 @@ int Debayer::writePPM(string filename, int depth)
                     out_bytes[(offset * 3 + k) * 2 + 1] = val & 0xff;
                 }
             }
+        }
     fwrite(out_bytes, bpp, bayer->w*bayer->h * 3, fp);
     fclose(fp);
     return 0;
+}
+
+void Debayer::postprocess()
+{
+    // alias for ease of use
+    MetaData &metadata = *this->metadata_ptr;
+    int m_bits = this->metadata_ptr != nullptr &&  metadata["bits"] ? metadata["bits"][0] : depth;
+    int shift = m_bits - depth;
+
+    m_black = this->metadata_ptr != nullptr &&  metadata["black"] ? metadata["black"][0] : 0;
+    int m_white = this->metadata_ptr != nullptr && metadata["white"] ? metadata["white"][0] : (1 << depth) - 1;
+    int m_twhite = this->metadata_ptr != nullptr && metadata["t_white"] ? (int)metadata["t_white"][0] : m_white;
+    int t_white = (shift < 0 ? m_twhite << -shift : m_twhite >> shift);
+
+    // calculate white balance coefficients
+    scale_mul = scale_colors();
+    curve = gamma_curve(2, t_white);
 }
 
 Debayer::~Debayer()
