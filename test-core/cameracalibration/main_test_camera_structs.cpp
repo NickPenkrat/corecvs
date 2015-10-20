@@ -155,6 +155,13 @@ TEST(CalibrationStructsTest, testStructConversion)
 {
     CameraLocationAngles angles = CameraLocationAngles::FromAngles(45, 10, 2);
     Quaternion q = Quaternion::FromMatrix(angles.toMatrix());
-    q.printAxisAndAngle();
+    CameraLocationAngles anglesR = CameraLocationAngles::FromQuaternion(q);
+    Quaternion qR = Quaternion::FromMatrix(anglesR.toMatrix());
 
+    cout << "Original:" << std::endl;
+    cout << angles << std::endl;
+    q.printAxisAndAngle();
+    cout << "Restored:" << std::endl;
+    cout << anglesR << std::endl;
+    qR.printAxisAndAngle();
 }
