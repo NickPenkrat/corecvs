@@ -1,8 +1,9 @@
 TARGET = core                                           # default "test-core" is incorrect. The "test.pri" will set it properly to the "test_core"
 include(test.pri)
 
-OTHER_FILES += \
-    gentest.sh
+OTHER_FILES +=  \
+    gentest.sh  \
+    valgrind.sh \
 
 # Never to be fixed
 OTHER_FILES += \
@@ -74,4 +75,4 @@ SOURCES += \
     cameracalibration/main_test_camera_structs.cpp \
     conic/main_test_conic.cpp \
     calstructs/main_test_calstructs.cpp \
-
+    meshdraw/main_test_meshdraw.cpp \

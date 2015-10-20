@@ -209,6 +209,14 @@ public:
         second = (ort ^ *this).normalised();
     }
 
+    /**
+     *   Return the vector from angle and length and height
+     **/
+    static Vector3d FromCylindrical(double angle, double length = 1.0, double height = 0.0)
+    {
+        return Vector3d(cos(angle) * length, sin(angle) * length, height);
+    }
+
 
 
     /*template<typename OtherType>

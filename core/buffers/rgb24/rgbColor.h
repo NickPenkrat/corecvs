@@ -383,6 +383,11 @@ public:
         return RGBColor(0, 255, 255);
     }
 
+    static RGBColor Magenta()
+    {
+        return RGBColor(255, 0, 255);
+    }
+
     static RGBColor Blue()
     {
         return RGBColor(0, 0, 255);

@@ -53,7 +53,7 @@ TEST(CalibrationStructsTest, testCameraStruct)
     corecvs::PinholeCameraIntrinsics intrinsics(1.0, 2.0, 3.0, 4.0, 5.0);
     corecvs::CameraModel camera(
             intrinsics, 
-            LocationData(
+            CameraLocationData(
                 corecvs::Vector3dd(6.0, 7.0, 8.0),
                 corecvs::Quaternion(0.5, 0.5, 0.5, 0.5)));
     auto M = camera.getCameraMatrix();
@@ -82,21 +82,30 @@ TEST(CalibrationStructsTest, testCameraStruct)
 
 TEST(CalibrationStructsTest, testPhotostationStruct)
 {
+    using corecvs::PinholeCameraIntrinsics;
+    using corecvs::CameraModel;
+    using corecvs::Vector3dd;
+    using corecvs::Vector2dd;
+    using corecvs::Quaternion;
+    using corecvs::Matrix44;
+    using corecvs::FixedVector;
+
+
     // Here we test interoperability of photostation struct
     // and returned projection matrix
-    corecvs::PinholeCameraIntrinsics intrinsics(1.0, 2.0, 3.0, 4.0, 5.0);
-    corecvs::CameraModel camera(
+    PinholeCameraIntrinsics intrinsics(1.0, 2.0, 3.0, 4.0, 5.0);
+    CameraModel camera(
             intrinsics, 
-            corecvs::LocationData(
-                corecvs::Vector3dd(6.0, 7.0, 8.0),
-                corecvs::Quaternion(0.5, 0.5, 0.5, 0.5)));
-    corecvs::Photostation ps;
-    ps.location = corecvs::LocationData(
-            corecvs::Vector3dd(9.0, 10.0, 11.0),
-            corecvs::Quaternion(-1.0, 2.0, 3.0, -4.0).normalised());
+            CameraLocationData(
+                Vector3dd(6.0, 7.0, 8.0),
+                Quaternion(0.5, 0.5, 0.5, 0.5)));
+    Photostation ps;
+    ps.setLocation(CameraLocationData(
+            Vector3dd(9.0, 10.0, 11.0),
+            Quaternion(-1.0, 2.0, 3.0, -4.0).normalised()));
     ps.cameras = { camera };
 
-    corecvs::Matrix44 M[] = {
+    Matrix44 M[] = {
         ps.getKMatrix(0),
         ps.getRawCamera(0).getCameraMatrix()
     };
@@ -107,8 +116,8 @@ TEST(CalibrationStructsTest, testPhotostationStruct)
 
     for (int i = 0; i < RNG_RETRIES; ++i)
     {
-        corecvs::FixedVector<double, 4> src1;
-        corecvs::Vector3dd src2;
+        FixedVector<double, 4> src1;
+        Vector3dd src2;
         
         for (int j = 0; j < 3; ++j)
             src1[j] =  src2[j] = unif(rng);
@@ -120,11 +129,11 @@ TEST(CalibrationStructsTest, testPhotostationStruct)
         auto dst3 = ps.project(src2, 0);
         auto dst4t = M[1] * src1;
 
-        corecvs::Vector2dd dst1(dst1t[0] / dst1t[2], dst1t[1] / dst1t[2]);
-        corecvs::Vector2dd dst4(dst4t[0] / dst4t[2], dst4t[1] / dst4t[2]);
+        Vector2dd dst1(dst1t[0] / dst1t[2], dst1t[1] / dst1t[2]);
+        Vector2dd dst4(dst4t[0] / dst4t[2], dst4t[1] / dst4t[2]);
         
         auto ref = dst3;
-        corecvs::Vector2dd check[] = { dst1, dst2, dst4 };
+        Vector2dd check[] = { dst1, dst2, dst4 };
         for (int k = 0; k < 3; ++k)
             for (int j = 0; j < 2; ++j)
                 ASSERT_NEAR(check[k][j], ref[j], 1e-6);
@@ -139,4 +148,13 @@ TEST(CalibrationStructsTest, testIntrinsicsStructisVisible)
     ASSERT_FALSE(intrinsics.isVisible(corecvs::Vector3dd(-2.0,  0.0, 1.0)));
     ASSERT_FALSE(intrinsics.isVisible(corecvs::Vector3dd( 0.0, -2.0, 1.0)));
     ASSERT_FALSE(intrinsics.isVisible(corecvs::Vector3dd( 0.0,  2.0, 1.0)));
+}
+
+
+TEST(CalibrationStructsTest, testStructConversion)
+{
+    CameraLocationAngles angles = CameraLocationAngles::FromAngles(45, 10, 2);
+    Quaternion q = Quaternion::FromMatrix(angles.toMatrix());
+    q.printAxisAndAngle();
+
 }

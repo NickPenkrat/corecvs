@@ -23,7 +23,7 @@ struct ImageData
     std::string undistortedFileName;
     corecvs::ObservationList sourcePattern;
     corecvs::ObservationList undistortedPattern;
-    LocationData location;
+    CameraLocationData location;
 
     double distortionRmse = -1.0, distortionMaxError = -1.0, calibrationRmse = -1.0, calibrationMaxError = -1.0, singleCameraRmse = -1.0, singleCameraMaxError = -1.0;
 
@@ -34,7 +34,7 @@ struct ImageData
         visitor.visit(undistortedFileName, std::string(""), "undistortedFileName");
         visitor.visit((std::vector<PointObservation>&)sourcePattern, "sourcePattern");
         visitor.visit((std::vector<PointObservation>&)undistortedPattern, "undistortedPattern");
-        visitor.visit(location, LocationData(), "viewLocation");
+        visitor.visit(location, CameraLocationData(), "viewLocation");
         visitor.visit(distortionRmse, -1.0, "distortionRmse");
         visitor.visit(distortionMaxError, -1.0, "distortionMaxError");
         visitor.visit(calibrationRmse, -1.0, "calibrationRmse");
@@ -119,7 +119,7 @@ struct CalibrationSettings
 struct CalibrationJob
 {
     Photostation photostation;
-    std::vector<LocationData> calibrationSetupLocations;
+    std::vector<CameraLocationData> calibrationSetupLocations;
     std::vector<std::vector<ImageData>> observations;
     std::vector<std::vector<CalibrationSetupEntry>> calibrationSetups;
     bool calibrated = false;
@@ -162,7 +162,7 @@ struct CalibrationJob
     void computeSingleCameraErrors();
     void computeCalibrationErrors();
     void calibratePhotostation();
-    void calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<PinholeCameraIntrinsics> &intrinsics, std::vector<std::vector<LocationData>> &locations, bool runBFS, bool runLM);
+    void calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<PinholeCameraIntrinsics> &intrinsics, std::vector<std::vector<CameraLocationData>> &locations, bool runBFS, bool runLM);
     void calibrate();
     double factor = 1.0;
     std::vector<double> factors;

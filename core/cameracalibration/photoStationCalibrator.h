@@ -19,14 +19,14 @@ public:
     void addCamera(PinholeCameraIntrinsics &intrinsics);
 
     // Add calibration setup and corespondences for specified cameras
-    void addCalibrationSetup(std::vector<int> &cameraIds, std::vector<LocationData> &cameraLocations, MultiCameraPatternPoints &points);
+    void addCalibrationSetup(std::vector<int> &cameraIds, std::vector<CameraLocationData> &cameraLocations, MultiCameraPatternPoints &points);
 
     // Runs solver
     void solve(bool runPresolver = true, bool runNonLinear = true);
     void solve(bool runPresolver, bool runNonLinear, CameraConstraints constraints);
 
     // Returns calibration setup poses
-    std::vector<LocationData> getCalibrationSetups();
+    std::vector<CameraLocationData> getCalibrationSetups();
 
     // Returns calibrated photostation
     Photostation getPhotostation();
@@ -122,16 +122,16 @@ private:
     double trySolveInitialLocations(std::vector<int> &order);
     void solveInitialLocations();
     // Solves calibration setup pose from absolute and relative camera pose
-    void solveCameraToSetup(const LocationData &realLocation, int camera, int setup);
+    void solveCameraToSetup(const CameraLocationData &realLocation, int camera, int setup);
     // Solves relative camera pose from calibration setup pose and absolute camera pose
-    void solveSetupToCamera(const LocationData &realLocation, int camera, int setup);
+    void solveSetupToCamera(const CameraLocationData &realLocation, int camera, int setup);
 
     int N, M, K, L;
 
     std::vector<CameraModel> relativeCameraPositions;
-    std::vector<LocationData> absoluteSetupLocation;
+    std::vector<CameraLocationData> absoluteSetupLocation;
 
-    std::vector<std::vector<std::pair<bool, LocationData> > > initialGuess;
+    std::vector<std::vector<std::pair<bool, CameraLocationData> > > initialGuess;
     std::vector<MultiCameraPatternPoints> patternPoints;
 
     CameraConstraints constraints;

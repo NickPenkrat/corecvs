@@ -188,6 +188,17 @@ CloudViewDialog::~CloudViewDialog()
 {
 }
 
+void CloudViewDialog::setCollapseTree(bool collapse)
+{
+    QList<int> sizes;
+    if (collapse) {
+        sizes << 1 << 0;
+    } else {
+        sizes << 1 << 1;
+    }
+        mUi.splitter->setSizes(sizes);
+}
+
 void CloudViewDialog::downRotate()
 {
     mCamera *= Matrix33::RotationX(-ROTATE_STEP);

@@ -13,11 +13,11 @@ PhotoStationCalibrator::PhotoStationCalibrator(CameraConstraints constraints, co
 void PhotoStationCalibrator::addCamera(PinholeCameraIntrinsics &intrinsics)
 {
     N++;
-    relativeCameraPositions.push_back({intrinsics, LocationData()});
+    relativeCameraPositions.push_back({intrinsics, CameraLocationData()});
 }
 
 
-void PhotoStationCalibrator::addCalibrationSetup(std::vector<int> &cameraIds, std::vector<LocationData> &cameraLocations, MultiCameraPatternPoints &points)
+void PhotoStationCalibrator::addCalibrationSetup(std::vector<int> &cameraIds, std::vector<CameraLocationData> &cameraLocations, MultiCameraPatternPoints &points)
 {
     patternPoints.resize(M + 1);
     initialGuess.resize(M + 1);
@@ -59,14 +59,14 @@ void PhotoStationCalibrator::solve(bool runPresolver, bool runNonLinear, CameraC
     std::cout << "OPTFAC_ALL: " << factor << std::endl;
 }
 
-std::vector<LocationData> PhotoStationCalibrator::getCalibrationSetups()
+std::vector<CameraLocationData> PhotoStationCalibrator::getCalibrationSetups()
 {
     return absoluteSetupLocation;
 }
 
 Photostation PhotoStationCalibrator::getPhotostation()
 {
-    return Photostation(relativeCameraPositions, LocationData());
+    return Photostation(relativeCameraPositions, CameraLocationData());
 }
 
 double PhotoStationCalibrator::getRmseReprojectionError()
@@ -484,7 +484,7 @@ void PhotoStationCalibrator::refineStruct()
 #endif
 }
 
-void PhotoStationCalibrator::solveCameraToSetup(const LocationData &realLocation, int camera, int setup)
+void PhotoStationCalibrator::solveCameraToSetup(const CameraLocationData &realLocation, int camera, int setup)
 {
     // Camera location (absolute and relative) is known, need to solve setup params
     // Qs = Qc^{-1}*Qr
@@ -499,7 +499,7 @@ void PhotoStationCalibrator::solveCameraToSetup(const LocationData &realLocation
     corecvs::Quaternion qs = qc.conjugated() ^ qr;
     corecvs::Vector3dd  cs = cr - (qs.conjugated() * cc);
 
-    absoluteSetupLocation[setup] = LocationData(cs, qs);
+    absoluteSetupLocation[setup] = CameraLocationData(cs, qs);
 
     corecvs::Quaternion qf = qc ^ qs;
     corecvs::Vector3dd  cf = (qs.conjugated() * cc) + cs;//qc(qs(-cs)-cc)
@@ -511,7 +511,7 @@ void PhotoStationCalibrator::solveCameraToSetup(const LocationData &realLocation
     std::cout << "CC:C>S: Setup " << setup << " is " << (acos(qs[3]) * 180.0 * 2.0 / M_PI) << std::endl;
 }
 
-void PhotoStationCalibrator::solveSetupToCamera(const LocationData &realLocation, int camera, int setup)
+void PhotoStationCalibrator::solveSetupToCamera(const CameraLocationData &realLocation, int camera, int setup)
 {
     // Absolute camera location and setup location are known, need to solve relative camera params
     // Qc = Qr*Qs^{-1}
@@ -526,7 +526,7 @@ void PhotoStationCalibrator::solveSetupToCamera(const LocationData &realLocation
     corecvs::Quaternion qc = qr ^ qs.conjugated();
     corecvs::Vector3dd  cc = qs * (cr - cs);
 
-    relativeCameraPositions[camera].extrinsics = LocationData(cc, qc);
+    relativeCameraPositions[camera].extrinsics = CameraLocationData(cc, qc);
 
     corecvs::Quaternion qf = qc ^ qs;
     corecvs::Vector3dd  cf = (qs.conjugated() * cc) + cs;//qc(qs(-cs)-cc)
@@ -576,7 +576,7 @@ double PhotoStationCalibrator::trySolveInitialLocations(std::vector<int> &order)
     int id1 = order[0];
     camsSolved[id1] = true;
     cameraQueue.push(id1);
-    relativeCameraPositions[id1].extrinsics = LocationData(Vector3dd(0.0, 0.0, -120.0), Quaternion(0.0, 0.0, 0.0, 1.0));
+    relativeCameraPositions[id1].extrinsics = CameraLocationData(Vector3dd(0.0, 0.0, -120.0), Quaternion(0.0, 0.0, 0.0, 1.0));
     for (int i = 0; i < M; ++i)
     {
         if (!initialGuess[i][id1].first || setupsSolved[i]) continue;

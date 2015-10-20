@@ -20,6 +20,10 @@ using corecvs::lerp;
 
 void Mesh3DScene::drawMyself(CloudViewDialog *dialog)
 {
+    //qDebug("Mesh3DScene::drawMyself() : called" );
+    //qDebug("V: %d E: %d F: %d ", );
+
+
     bool withTexture = false;
     withTexture |= (mParameters.style() == Draw3dStyle::TEXTURED) && (dialog->mFancyTexture != GLuint(-1));
     bool withTexCoords = withTexture && !textureCoords.empty();
@@ -163,7 +167,7 @@ void Mesh3DScene::drawMyself(CloudViewDialog *dialog)
    // glColor3ub(mParameters.color().r(), mParameters.color().g(), mParameters.color().b());
     glVertexPointer(3, GL_DOUBLE, sizeof(Vector3dd), &(vertexes[0]));
     if (withTexCoords) {
-        glTexCoordPointer(2, GL_DOUBLE, sizeof(Vector2dd), &(textureCoords[0]));        
+        glTexCoordPointer(2, GL_DOUBLE, sizeof(Vector2dd), &(textureCoords[0]));
     }
 
     /* FACES */

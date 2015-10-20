@@ -4,7 +4,7 @@ FlatPatternCalibrator::FlatPatternCalibrator(const CameraConstraints constraints
 {
 }
 
-void FlatPatternCalibrator::addPattern(const PatternPoints3d &patternPoints, const LocationData &position)
+void FlatPatternCalibrator::addPattern(const PatternPoints3d &patternPoints, const CameraLocationData &position)
 {
     ++N;
     locationData.push_back(position);
@@ -33,7 +33,7 @@ PinholeCameraIntrinsics FlatPatternCalibrator::getIntrinsics()
     return intrinsics;
 }
 
-std::vector<LocationData> FlatPatternCalibrator::getExtrinsics()
+std::vector<CameraLocationData> FlatPatternCalibrator::getExtrinsics()
 {
     return locationData;
 }
@@ -172,7 +172,7 @@ void FlatPatternCalibrator::solveInitialExtrinsics()
         auto C = -RO.transposed() * T;
 
         corecvs::Quaternion orientation = corecvs::Quaternion::FromMatrix(RO);
-        locationData[i] = LocationData(C, orientation);
+        locationData[i] = CameraLocationData(C, orientation);
     }
 }
 

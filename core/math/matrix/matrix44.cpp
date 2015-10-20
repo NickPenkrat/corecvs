@@ -76,6 +76,24 @@ Matrix44 Matrix44::Scale(const double &d)
     return result;
 }
 
+
+Matrix44 Matrix44::RotationX (double alpha)
+{
+     return Matrix44(Matrix33::RotationX(alpha));
+}
+
+Matrix44 Matrix44::RotationY (double alpha)
+{
+     return Matrix44(Matrix33::RotationY(alpha));
+}
+
+Matrix44 Matrix44::RotationZ (double alpha)
+{
+     return Matrix44(Matrix33::RotationZ(alpha));
+}
+
+
+
 Matrix44 Matrix44::Frustum(double fovY, double aspect, double zNear, double zFar)
 {
     double f = 1.0 / tan(fovY / 2);
