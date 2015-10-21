@@ -79,8 +79,6 @@ SOURCES += \
     buffers/kernels/spatialGradient.cpp \
     buffers/kernels/logicKernels.cpp \    
     buffers/morphological/morphological.cpp \
-    buffers/rgb24/rgb24Buffer.cpp \
-#    buffers/rgb24/rgbColor.cpp \
     buffers/rgb24/hardcodeFont.cpp \
     buffers/rgb24/hersheyVectorFont.cpp \    
     buffers/rgb24/abstractPainter.cpp \
