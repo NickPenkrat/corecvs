@@ -5,7 +5,6 @@ HEADERS += \
     fileformats/rawLoader.h \
     fileformats/plyLoader.h \
     fileformats/stlLoader.h \
-
     fileformats/metamap.h \
 
 

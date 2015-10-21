@@ -123,7 +123,8 @@ int main(int argc, char *argv[])
                 }
                 if (writebayer)
                 {
-                    rdr.writeBayer((string(argv[c]) + ".pgm").c_str());
+                    PPMLoader().save((string(argv[c]) + ".pgm").c_str(), rdr.getBayer(), rdr.getMetadata());
+                    //rdr.writeBayer(string(argv[c]) + ".pgm");
                 }
                 else
                 {
@@ -136,15 +137,5 @@ int main(int argc, char *argv[])
     else
     {
         usage(argv);
-        G12Buffer* img = PPMLoader().load("cm_lighthouse.pgm");
-        rdr.open("IMG_2584.cr2");
-        for (int i = 0; i < 13; i++)
-        {
-            cout << "quality " << i << endl;
-            rdr.setQuality(i);
-            rdr.fakeimg(img);
-            rdr.processDCRaw(true);
-            rdr.writePPM((string("result") + std::to_string(i) + ".ppm").c_str());
-        }
     }
 }

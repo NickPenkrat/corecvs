@@ -11,7 +11,7 @@ Debayer::Debayer(G12Buffer *bayer, int depth, MetaData *metadata)
 // TODO: maybe just replace it with simple 3-colour loop?
 int FC(int row, int col, int filters) { return (filters >> (((row << 1 & 14) | (col & 1)) << 1) & 3); }
 
-uint16_t Debayer::clip(int64_t x, int depth = 16)
+uint16_t Debayer::clip(int64_t x, int depth)
 {
     const uint16_t maximum = (1 << depth) - 1;
     if (x < 0)

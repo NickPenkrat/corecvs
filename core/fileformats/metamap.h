@@ -1,7 +1,15 @@
+/**
+ * \file    fileformats\metamap.h
+ *
+ * Declares the metamap class for metadata handling.
+ */
+
 #ifndef CMETAMAP_H_
 #define CMETAMAP_H_
 
+#include "global.h"
 #include <map>
+#include <string>
 
 namespace corecvs
 {
@@ -66,6 +74,7 @@ namespace corecvs
                 this->second[i] -= other.second[i];
             return *this;
         }
+
     };
 
     typedef std::pair<std::string, MetaValue> MetaPair;

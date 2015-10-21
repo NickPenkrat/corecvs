@@ -1,9 +1,10 @@
 #include "cr2reader.h"
-
 // the define fixes winsock2 conflicts for inclusion
 #define NO_WINSOCK
 #include <libraw.h>
 #undef NO_WINSOCK
+
+using namespace corecvs;
 
 CR2Reader::CR2Reader()
 {
@@ -12,15 +13,9 @@ CR2Reader::CR2Reader()
     reader->imgdata.params.output_bps = 12; // default bit depth
 }
 
-CR2Reader::CR2Reader(const char *filename) : CR2Reader()
+int CR2Reader::open(const string& filename)
 {
-    open(filename);
-}
-
-int CR2Reader::open(const char *filename)
-{
-    std::string tmp = std::string(filename);
-    int result = reader->open_file(std::string(filename).c_str());
+    int result = reader->open_file(filename.c_str());
     result |= reader->unpack();
     reader->imgdata.params.use_auto_wb = 0;
     reader->imgdata.params.use_camera_wb = 1;
@@ -43,11 +38,6 @@ int CR2Reader::open(const char *filename)
 void CR2Reader::setBPP(uint depth)
 {
     reader->imgdata.params.output_bps = depth;
-}
-
-double* CR2Reader::getGamm()
-{
-    return reader->imgdata.params.gamm;
 }
 
 void CR2Reader::setQuality(uint quality)
@@ -117,7 +107,7 @@ int isBigEndian()
     return bint.c[0] == 1;
 }
 
-int CR2Reader::writePPM(const char* filename, bool fullcolour)
+int CR2Reader::writePPM(const string& filename, bool fullcolour)
 {
     // TODO: implement this in PPMLoader!
     int h = reader->imgdata.sizes.height;
@@ -127,7 +117,7 @@ int CR2Reader::writePPM(const char* filename, bool fullcolour)
         return -1;
 
     FILE *fp;
-    fp = fopen(filename, "wb");
+    fp = fopen(filename.c_str(), "wb");
 
     if (fp == NULL)
     {
@@ -198,7 +188,51 @@ int CR2Reader::writePPM(const char* filename, bool fullcolour)
     return 0;
 }
 
-int CR2Reader::writeBayer(const char* filename)
+MetaData* CR2Reader::getMetadata()
+{
+    MetaData* meta = new MetaData;
+    MetaData &metadata = *meta;
+
+    uint16_t maxval = 0;
+
+    for (int i = 0; i < reader->imgdata.sizes.raw_height; i++)
+        for (int j = 0; j < reader->imgdata.sizes.raw_width; j++)
+        {
+            int offset = (i + reader->imgdata.sizes.top_margin)*reader->imgdata.sizes.raw_width + (j + reader->imgdata.sizes.left_margin);
+            if (maxval < reader->imgdata.rawdata.raw_image[offset])
+                maxval = reader->imgdata.rawdata.raw_image[offset];
+        }
+
+    int perc = 0, val = 0, total = 0, c = 0;
+    int t_white = 1 << 16;
+    perc = reader->imgdata.sizes.width * reader->imgdata.sizes.height * reader->imgdata.params.auto_bright_thr;
+
+    for (t_white = c = 0; c < 3; c++)
+    {
+        for (val = 0x2000, total = 0; --val > 32; )
+            if ((total += hist[c][val]) > perc) break;
+        if (t_white < val) t_white = val;
+    }
+
+    double* pre_mul = new double[3];
+    memcpy(pre_mul, reader->imgdata.color.pre_mul, 3 * sizeof(double));
+    double* cam_mul = new double[3];
+    memcpy(cam_mul, reader->imgdata.color.cam_mul, 3 * sizeof(double));
+    double* gamm = new double[6];
+    memcpy(gamm, reader->imgdata.params.gamm, 6 * sizeof(double));
+
+    metadata["pre_mul"] = MetaValue(3, pre_mul);
+    metadata["cam_mul"] = MetaValue(3, cam_mul);
+    metadata["gamm"] = MetaValue(6, gamm);
+    metadata["type"] = reader->imgdata.idata.filters;
+    metadata["white"] = maxval;
+    metadata["black"] = reader->imgdata.color.black >> shift;
+    metadata["t_white"] = t_white;
+
+    return meta;
+}
+
+int CR2Reader::writeBayer(const string& filename)
 {
     // TODO: implement this in PPMLoader too!
     if (reader == NULL || reader->imgdata.params.output_bps > 16)
@@ -208,7 +242,7 @@ int CR2Reader::writeBayer(const char* filename)
     int w = reader->imgdata.sizes.width;
 
     FILE *fp;
-    fp = fopen(filename, "wb");
+    fp = fopen(filename.c_str(), "wb");
 
     if (fp == NULL)
     {
