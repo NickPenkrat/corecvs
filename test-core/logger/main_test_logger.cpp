@@ -41,7 +41,7 @@ public:
 };
 
 inline ostream & operator<<(ostream &os, const Foo &o) {
-    os << "foo value: " << o.data;
+    os << "foo data: " << o.data;
     return os;
 }
 
@@ -54,7 +54,7 @@ TEST(Logger, testObjectLog)
             Log::mLogDrains.resize(0);
             Log::mLogDrains.push_back(new StdStreamLogDrain(os));
 
-            Foo foo(555);
+            Foo foo(678);
             L_INFO_P("test: ") << foo;
         }
         Log::mLogDrains.resize(0);
@@ -62,7 +62,7 @@ TEST(Logger, testObjectLog)
     }
 
     string out(os.str());
-    string checkStr("test: foo value: 555");
+    string checkStr("test: foo data: 678");
 
     size_t pos = out.find(checkStr);
     //cout << "pos=" << pos << " len:" << checkStr.length() << " len:" << out.length() << endl;
