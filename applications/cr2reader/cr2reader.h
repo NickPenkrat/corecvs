@@ -70,15 +70,15 @@ public:
     int writeBayer(const string& filename);
 
     /**
-    * Replaces LibRaw-unpacked Bayer data with arbitrary.
-    *
-    * \author  pavel.vasilev
-    * \date    Oct 21, 2015
-    *
-    * \param [in,out]  img If non-null, the image.
-    */
+     * Replaces LibRaw-unpacked Bayer data with arbitrary.
+     *
+     * \author  pavel.vasilev
+     * \date    Oct 21, 2015
+     *
+     * \param [in,out]  bayer   If non-null, the new Bayer data.
+     */
 
-    void fakeimg(corecvs::G12Buffer *img);
+    void fakeBayer(corecvs::G12Buffer *bayer);
 
     /**
      * Sets bits per pixel.

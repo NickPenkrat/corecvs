@@ -307,7 +307,7 @@ int CR2Reader::processDCRaw(bool noScale)
     return reader->dcraw_process();
 }
 
-void CR2Reader::fakeimg(G12Buffer *img)
+void CR2Reader::fakeBayer(G12Buffer *img)
 {
     int orig_width = reader->imgdata.rawdata.sizes.raw_width;
     reader->imgdata.rawdata.sizes.raw_width = img->w;
