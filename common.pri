@@ -482,6 +482,7 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
 }
 
 with_blas {
+  MKLROOT = $$(MKLROOT)
   !win32 {
 #   !isEmpty(BLAS_PATH) {
 #        !build_pass: message (Using BLAS from <$$BLAS_PATH>)
@@ -491,11 +492,14 @@ with_blas {
 #    }
 #
 #    Someone should fix this mess!
-        QMAKE_LFLAGS += -L/opt/intel/mkl/lib/intel64
-        INCLUDEPATH  += /opt/intel/mkl/include
+        isEmpty(MKLROOT) {
+            MKLROOT = /opt/intel/mkl
+        }
+        QMAKE_LFLAGS += -L"$$MKLROOT"/lib/intel64
+        INCLUDEPATH  += "$$MKLROOT"/include
         LIBS         += -lmkl_intel_lp64 -lmkl_core -lmkl_tbb_thread -ltbb -lstdc++ -lpthread -lm
     } else {
-        INCLUDEPATH += "%MKLROOT%"\include
+        INCLUDEPATH += $(MKLROOT)\include
         LIBS        += -lblas -lmkl_intel_lp64_dll.lib -lmkl_core_dll.lib -lmkl_tbb_thread_dll.lib -ltbb.lib
     }
     DEFINES     += WITH_BLAS WITH_MKL
