@@ -500,7 +500,7 @@ with_blas {
         LIBS         += -lmkl_intel_lp64 -lmkl_core -lmkl_tbb_thread -ltbb -lstdc++ -lpthread -lm
     } else {
         INCLUDEPATH += "$$MKLROOT\include"
-        LIBS        += -lmkl_intel_lp64_dll -lmkl_core_dll -lmkl_tbb_thread_dll -ltbb
+        LIBS        += -L"$$MKLROOT"/lib/intel64 -lmkl_intel_lp64_dll -lmkl_core_dll -lmkl_tbb_thread_dll -ltbb
     }
     DEFINES     += WITH_BLAS WITH_MKL
 }
