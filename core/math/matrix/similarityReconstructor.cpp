@@ -10,7 +10,7 @@ SimilarityReconstructor::SimilarityReconstructor() :
 
 void SimilarityReconstructor::addPoint2PointConstraint(const Vector3dd &from, const Vector3dd &to)
 {
-    p2p.push_back(Correspondance3D(from,to));
+    p2p.push_back(Correspondence3D(from,to));
 }
 
 void SimilarityReconstructor::reset(void)
@@ -242,7 +242,7 @@ double SimilarityReconstructor::getCostFunction(const Similarity &input)
     Matrix44 trans = input.toMatrix();
     for (unsigned  i = 0; i < p2p.size(); i++)
     {
-        Correspondance3D &corr = p2p[i];
+        Correspondence3D &corr = p2p[i];
         diff += (corr.end - trans * corr.start).sumAllElementsSq();
     }
     if (p2p.size() != 0) {
@@ -292,7 +292,7 @@ void SimilarityReconstructor::CostFunctionToN::operator()(const double in[], dou
     Matrix44 trans = input.toMatrix();
     for (unsigned i = 0; i < reconstructor->p2p.size(); i++)
     {
-        Correspondance3D &corr = reconstructor->p2p[i];
+        Correspondence3D &corr = reconstructor->p2p[i];
         out[i] = sqrt((corr.end - trans * corr.start).sumAllElementsSq());
     }
 }

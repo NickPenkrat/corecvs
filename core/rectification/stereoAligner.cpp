@@ -425,7 +425,7 @@ void Rectificator::normaliseScale(
 void StereoAligner::getLateralCorrection(
         Matrix33 *leftTransform,
         Matrix33 *rightTransform,
-        CorrespondanceList *list,
+        CorrespondenceList *list,
         unsigned threshold
         )
 {

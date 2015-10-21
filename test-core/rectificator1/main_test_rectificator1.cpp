@@ -19,7 +19,7 @@
 #include "matrix33.h"
 #include "matrix44.h"
 #include "vector3d.h"
-#include "correspondanceList.h"
+#include "correspondenceList.h"
 #include "bmpLoader.h"
 #include "essentialMatrix.h"
 #include "cameraParameters.h"
@@ -181,7 +181,7 @@ TEST(Rectification1, DISABLED_testRectificatorCubeEssential)
     vector<Vector2dd> imagesL;
     vector<Vector2dd> imagesR;
 
-    CorrespondanceList points;
+    CorrespondenceList points;
 
 
     // A cube of 1.5 m side at the distance of 2 meters
@@ -238,7 +238,7 @@ TEST(Rectification1, DISABLED_testRectificatorCubeEssential)
 
     for (unsigned i = 0; i < pointsIn3d-> size(); i++)
     {
-        Correspondance corr;
+        Correspondence corr;
         Vector3dd left3D  =  leftCamera * pointsIn3d->at(i);
         Vector3dd right3D = rightCamera * pointsIn3d->at(i);
 
@@ -280,7 +280,7 @@ TEST(Rectification1, DISABLED_testRectificatorCubeEssential)
 
     for (unsigned i = 0; i < points.size(); i++)
     {
-        //Correspondance *corr = &points[i];
+        //Correspondence *corr = &points[i];
         fprintf(gnuplot , "%2.7lf %2.7lf %2.7lf %2.7lf  %2.7lf %2.7lf %2.7lf\n",
                 imagesL[i].x(),
                 imagesL[i].y(),
@@ -346,7 +346,7 @@ TEST(Rectification1, DISABLED_testRectificatorCubeEssential)
         for (unsigned i = 0; i < points.size(); i++)
         {
 
-            Correspondance *corr = &points[i];
+            Correspondence *corr = &points[i];
             Vector3dd left  = Vector3dd(corr->start.x(), corr->start.y(), 1.0);
             Vector3dd right = Vector3dd(corr->  end.x(), corr->  end.y(), 1.0);
 
@@ -381,7 +381,7 @@ TEST(Rectification1, DISABLED_testRectificatorCube)
 
     cout << "=============================Testing old style rectificator=================================" << endl;
 
-    CorrespondanceList points;
+    CorrespondenceList points;
     vector<Vector3dd> *pointsIn3d = FlowSimulator::unitCube(GRID_STEP);
 
 
@@ -399,7 +399,7 @@ TEST(Rectification1, DISABLED_testRectificatorCube)
 
     for (unsigned i = 0; i < pointsIn3d->size(); i++)
     {
-        Correspondance corr;
+        Correspondence corr;
         Vector3dd left3D  =  leftCamera * pointsIn3d->at(i);
         Vector3dd right3D = rightCamera * pointsIn3d->at(i);
 
@@ -421,7 +421,7 @@ TEST(Rectification1, DISABLED_testRectificatorCube)
     //double scale;
 
     /*points.getNoramlisingTransform(leftNormalize, rightNormalize, &scale);
-    CorrespondanceList *normalisedList = new CorrespondanceList(points);
+    CorrespondenceList *normalisedList = new CorrespondenceList(points);
     normalisedList->transform(leftNormalize, rightNormalize);
 
     Matrix33 leftNormalize1;

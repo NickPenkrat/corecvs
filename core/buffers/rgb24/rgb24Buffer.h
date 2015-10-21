@@ -22,7 +22,7 @@
 #include "rectangle.h"
 #include "rgbColor.h"
 #include "function.h"
-#include "correspondanceList.h"
+#include "correspondenceList.h"
 #include "imageChannel.h"
 
 #include "conic.h"
@@ -80,7 +80,7 @@ public:
     void drawFlowBuffer1(FlowBuffer *src, double colorScaler = 20.0, int32_t y = 0, int32_t x = 0);
     void drawFlowBuffer2(FlowBuffer *src, double colorShift = 0.0, double colorScaler = 20.0, int32_t y = 0, int32_t x = 0);
     void drawFlowBuffer3(FlowBuffer *src, double colorScaler = 20.0, int32_t y = 0, int32_t x = 0);
-    void drawCorrespondanceList(CorrespondanceList *src, double colorScaler = 20.0, int32_t y = 0, int32_t x = 0);
+    void drawCorrespondenceList(CorrespondenceList *src, double colorScaler = 20.0, int32_t y = 0, int32_t x = 0);
 
     //void drawRectangle(const Rectangle<int32_t> &rect, RGBColor color, int style = 0);
 

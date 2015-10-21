@@ -10,7 +10,7 @@
 #include "rgb24Buffer.h"
 #include "flowBuffer.h"
 #include "vector2d.h"
-#include "correspondanceList.h"
+#include "correspondenceList.h"
 #include "OpenCVTools.h"
 
 #include <opencv2/core/core.hpp>
@@ -100,7 +100,7 @@ public:
         process(iplImage, iplPattern);
     }
 
-    CorrespondanceList getCorrespondanceList()
+    CorrespondenceList getCorrespondenceList()
     {
         return mCorList;
     }
@@ -135,7 +135,7 @@ private:
         mMatcher.match( mDescriptorsPattern, mDescriptorsImage, mMatches );
 
         // fill correspondences
-        Correspondance tmpCorr;
+        Correspondence tmpCorr;
         for (uint i = 0; i < mMatches.size(); i++)
         {
             tmpCorr.end   = Vector2dd(mKeypointsImage  [ mMatches[i].trainIdx ].pt.x, mKeypointsImage  [ mMatches[i].trainIdx ].pt.y);
@@ -144,7 +144,7 @@ private:
         }
     }
 
-    CorrespondanceList              mCorList; // output of algorithm
+    CorrespondenceList              mCorList; // output of algorithm
 
     DetectorType                    mDetector;
     vector<KeyPoint>                mKeypointsImage, mKeypointsPattern;
