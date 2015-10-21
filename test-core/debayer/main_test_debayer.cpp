@@ -8,7 +8,6 @@
 
 #include <global.h>
 #include "g12Buffer.h"
-#include "bmpLoader.h"
 #include "ppmLoader.h"
 #include "converters/debayer.h"
 

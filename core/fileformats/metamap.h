@@ -1,7 +1,6 @@
-#pragma once
-/*
-    This file contains definitions for MetaData construct which is used in PPMLoader to store custom image metadata
-*/
+#ifndef CMETAMAP_H_
+#define CMETAMAP_H_
+
 #include <map>
 
 namespace corecvs
@@ -47,7 +46,7 @@ namespace corecvs
                 return 0;
         }
 
-        operator int()
+        explicit operator int()
         {
             if (this->first > 0)
                 return this->second[0];
@@ -59,8 +58,17 @@ namespace corecvs
         {
             return this->second;
         }
+
+        MetaValue& operator -=(MetaValue& other)
+        {
+            int len = std::min(this->first, other.first);
+            for (int i = 0; i < len; i++)
+                this->second[i] -= other.second[i];
+            return *this;
+        }
     };
 
     typedef std::pair<std::string, MetaValue> MetaPair;
     typedef std::map<std::string, MetaValue> MetaData;
 }
+#endif

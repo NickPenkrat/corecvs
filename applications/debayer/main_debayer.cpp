@@ -61,9 +61,9 @@ int main(int argc, char *argv[])
                 }
                 if (cmdline.front() == quality)
                 {
-                    if (num < 0 || num > 1)
+                    if (num < -1 || num > 1)
                     {
-                        cout << "Only values 0-1 are supported for quality." << endl;
+                        cout << "Only values -1 through 1 are supported for quality." << endl;
                         return 1;
                     }
                     user_quality = num;
@@ -121,20 +121,10 @@ int main(int argc, char *argv[])
                     G12Buffer* bayer = ldr.load(string(argv[c]), metadata);
                     Debayer d(bayer, 12, metadata);
 
-                    switch (user_quality)
-                    {
-                    case 0:
-                    default:
-                        cout << "Using Nearest Neighbour interpolation..." << endl;
-                        d.nearest();
-                        break;
-                    case 1:
-                        cout << "Using Bilinear interpolation..." << endl;
-                        d.linear();
-                        break;
-                    }
+                    RGB48Buffer* result = d.toRGB48(Debayer::Quality(user_quality));
+
                     //d.writePPM(string(argv[c]) + ".ppm");
-                    PPMLoader().save("out.ppm", d.out);
+                    PPMLoader().save("out.ppm", result);
                     cout << "Done." << endl;
                 }
         }

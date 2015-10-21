@@ -82,7 +82,7 @@ namespace corecvs
             // get significant bit count
             if (!metadata["bits"])
                 metadata["bits"] = 1;
-            while (maxval >> metadata["bits"])
+            while (maxval >> int(metadata["bits"]))
             {
                 int test = metadata["bits"];
                 metadata["bits"][0]++;
@@ -164,7 +164,7 @@ namespace corecvs
                 int n = 0;
 
                 // read param name
-                if (sscanf(buf, " @meta %s\t@values %d\t", param, &n))
+                if (metadata != nullptr && sscanf(buf, " @meta %s\t@values %d\t", param, &n) == 2)
                 {
                     char* numbers = strrchr(buf, '\t') + 1;
                     double *values = new double[n];
@@ -176,8 +176,7 @@ namespace corecvs
                         numbers = strchr(numbers, ' ') + 1;
                     }
 
-                    if (metadata != nullptr)
-                        metadata->insert(MetaPair(param, MetaValue(n, values)));
+                    metadata->insert(MetaPair(param, MetaValue(n, values)));
                 }
                 memset(buf, 0, sz);
             }
@@ -283,7 +282,7 @@ namespace corecvs
 
         if (fp == NULL)
         {
-            printf("Image %s could not be written \n", name.c_str());
+            CORE_ASSERT_FAIL("Image could not be written");
             return -1;
         }
 
@@ -317,7 +316,7 @@ namespace corecvs
 
         if (fp == NULL)
         {
-            printf("Image %s could not be written \n", name.c_str());
+            CORE_ASSERT_FAIL("Image could not be written");
             return -1;
         }
 
@@ -358,9 +357,10 @@ namespace corecvs
 
         if (fp == NULL)
         {
-            printf("Image %s could not be written \n", name.c_str());
+            CORE_ASSERT_FAIL("Image could not be written");
             return -1;
         }
+
         int maxval = 0;
         for (int i = 0; i < buffer->h; i++)
             for (int j = 0; j < buffer->w; j++)
@@ -379,7 +379,6 @@ namespace corecvs
 
         int bytes = (bits + 7) / 8;
 
-        // TODO: determine shift somehow
         writeHeader(fp, h, w, 6, (1 << bits) - 1, nullptr);
 
         uint8_t *charImage = new uint8_t[3 * bytes * w * h];
@@ -412,7 +411,8 @@ namespace corecvs
         fclose(fp);
         return 0;
     }
-
+    
+    // TODO: get rid of G16-specific methods
     int PPMLoader::saveG16(string name, G12Buffer *buffer)
     {
         int h = buffer->h;
@@ -426,7 +426,7 @@ namespace corecvs
 
         if (fp == NULL)
         {
-            printf("Image %s could not be written \n", name.c_str());
+            CORE_ASSERT_FAIL("Image could not be written \n");
             return -1;
         }
 
