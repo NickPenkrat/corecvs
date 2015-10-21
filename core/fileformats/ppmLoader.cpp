@@ -33,7 +33,7 @@ namespace corecvs
         return load(name, nullptr);
     }
 
-    G12Buffer* PPMLoader::load(string name, MetaData *metadata)
+    G12Buffer* PPMLoader::load(const string& name, MetaData *metadata)
     {
         if (metadata)
             DOTRACE(("Will load the file %s as PPM with metadata\n ", name.c_str()));
@@ -44,7 +44,7 @@ namespace corecvs
         return toReturn;
     }
 
-    G12Buffer* PPMLoader::g12BufferCreateFromPGM(string& name, MetaData *meta)
+    G12Buffer* PPMLoader::g12BufferCreateFromPGM(const string& name, MetaData *meta)
     {
         FILE      *fp = NULL;
         uint8_t   *charImage = NULL;
@@ -84,7 +84,6 @@ namespace corecvs
                 metadata["bits"] = 1;
             while (maxval >> int(metadata["bits"]))
             {
-                int test = metadata["bits"];
                 metadata["bits"][0]++;
             }
         }
@@ -269,7 +268,7 @@ namespace corecvs
         return true;
     }
 
-    int PPMLoader::save(string name, G12Buffer *buffer)
+    int PPMLoader::save(const string& name, G12Buffer *buffer, MetaData* metadata)
     {
         int h = buffer->h;
         int w = buffer->w;
@@ -277,8 +276,7 @@ namespace corecvs
         if (buffer == NULL)
             return -1;
 
-        FILE *fp;
-        fp = fopen(name.c_str(), "wb");
+        FILE *fp = fopen(name.c_str(), "wb");
 
         if (fp == NULL)
         {
@@ -286,7 +284,7 @@ namespace corecvs
             return -1;
         }
 
-        writeHeader(fp, h, w, 5, G12Buffer::BUFFER_MAX_VALUE, nullptr);
+        writeHeader(fp, h, w, 5, G12Buffer::BUFFER_MAX_VALUE, metadata);
 
         uint8_t *charImage = new uint8_t[2 * w * h];
         int i, j;
@@ -303,7 +301,7 @@ namespace corecvs
         return 0;
     }
 
-    int PPMLoader::save(string name, RGB24Buffer *buffer)
+    int PPMLoader::save(const string& name, RGB24Buffer *buffer, MetaData* metadata)
     {
         int h = buffer->h;
         int w = buffer->w;
@@ -311,8 +309,7 @@ namespace corecvs
         if (buffer == NULL)
             return -1;
 
-        FILE *fp;
-        fp = fopen(name.c_str(), "wb");
+        FILE *fp = fopen(name.c_str(), "wb");
 
         if (fp == NULL)
         {
@@ -320,7 +317,7 @@ namespace corecvs
             return -1;
         }
 
-        writeHeader(fp, h, w, 6, 0xff, nullptr);
+        writeHeader(fp, h, w, 6, 0xff, metadata);
 
         uint8_t *charImage = new uint8_t[3 * w * h];
 
@@ -344,7 +341,7 @@ namespace corecvs
         return 0;
     }
 
-    int PPMLoader::save(string name, RGB48Buffer *buffer)
+    int PPMLoader::save(const string& name, RGB48Buffer *buffer, MetaData* metadata)
     {
         int h = buffer->h;
         int w = buffer->w;
@@ -352,8 +349,7 @@ namespace corecvs
         if (buffer == NULL)
             return -1;
 
-        FILE *fp;
-        fp = fopen(name.c_str(), "wb");
+        FILE *fp = fopen(name.c_str(), "wb");
 
         if (fp == NULL)
         {
@@ -379,7 +375,7 @@ namespace corecvs
 
         int bytes = (bits + 7) / 8;
 
-        writeHeader(fp, h, w, 6, (1 << bits) - 1, nullptr);
+        writeHeader(fp, h, w, 6, (1 << bits) - 1, metadata);
 
         uint8_t *charImage = new uint8_t[3 * bytes * w * h];
 
@@ -411,9 +407,9 @@ namespace corecvs
         fclose(fp);
         return 0;
     }
-    
+
     // TODO: get rid of G16-specific methods
-    int PPMLoader::saveG16(string name, G12Buffer *buffer)
+    int PPMLoader::saveG16(const string& name, G12Buffer *buffer)
     {
         int h = buffer->h;
         int w = buffer->w;
@@ -461,7 +457,7 @@ namespace corecvs
 
     /* Temporary 16bit download*/
 
-    G12Buffer* PPMLoader::g16BufferCreateFromPPM(string& name)
+    G12Buffer* PPMLoader::g16BufferCreateFromPPM(const string& name)
     {
         FILE      *fp = NULL;
         uint8_t   *charImage = NULL;
