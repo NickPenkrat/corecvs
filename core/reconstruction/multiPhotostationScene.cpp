@@ -59,7 +59,7 @@ corecvs::Vector3dd MultiPhotostationScene::backProject(const std::vector<std::pa
     {
         CORE_ASSERT_TRUE_S(pd.first.first < photostations.size());
         CORE_ASSERT_TRUE_S(pd.first.second < photostations[pd.first.first].cameras.size());
-        auto matrix = photostations[pd.first.first].getKMatrix(pd.first.second);
+        auto matrix = photostations[pd.first.first].getMMatrix(pd.first.second);
         auto point = pd.second;
         pairs.emplace_back(matrix, point);
     }

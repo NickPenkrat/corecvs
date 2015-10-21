@@ -171,16 +171,16 @@ void RotaryTableControlWidget::updateState()
 
 void RotaryTableControlWidget::selectedToCurrent()
 {
-    if (selected >= positions.size())
+    if (selected >= (int)positions.size())
         return;
     ui->widgetYaw  ->setValue(positions[selected].yaw  ());
     ui->widgetPitch->setValue(positions[selected].pitch());
     ui->widgetRoll ->setValue(positions[selected].roll ());
 }
 
-void RotaryTableControlWidget::tableCellClicked(int row, int column)
+void RotaryTableControlWidget::tableCellClicked(int row, int /*column*/)
 {
-    if (row >= positions.size())
+    if (row >= (int)positions.size())
         return;
 
     ui->widgetYaw  ->setValue(positions[row].yaw  ());
@@ -188,9 +188,9 @@ void RotaryTableControlWidget::tableCellClicked(int row, int column)
     ui->widgetRoll ->setValue(positions[row].roll ());
 }
 
-void RotaryTableControlWidget::tableCellDoubleClicked(int row, int column)
+void RotaryTableControlWidget::tableCellDoubleClicked(int row, int /*column*/)
 {
-    if (row >= positions.size())
+    if (row >= (int)positions.size())
         return;
 
     selected = row;

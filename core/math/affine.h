@@ -84,7 +84,7 @@ public:
         return Affine3D(LinearType::RotationZ(angle));
     }
 
-    Affine3D invert();
+    Affine3D inverted() const;
 
     template<class VisitorType>
     void accept(VisitorType &visitor)
@@ -104,14 +104,14 @@ public:
  *     X = R^{-1} * (Y - T) = R^{-1} * Y + (- R^{-1} * T)
  **/
 template<>
-inline Affine3D<Quaternion> Affine3D<Quaternion>::invert()
+inline Affine3D<Quaternion> Affine3D<Quaternion>::inverted() const
 {
     Quaternion inv = this->rotor.conjugated();
     return Affine3D<Quaternion>(inv,  - (inv * this->shift));
 }
 
 template<>
-inline Affine3D<Matrix33> Affine3D<Matrix33>::invert()
+inline Affine3D<Matrix33> Affine3D<Matrix33>::inverted() const
 {
     Matrix33 inv = this->rotor.inv();
     return Affine3D<Matrix33>(inv,  - (inv * this->shift));
