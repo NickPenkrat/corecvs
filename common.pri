@@ -492,12 +492,13 @@ with_blas {
 #
 #    Someone should fix this mess!
         QMAKE_LFLAGS += -L/opt/intel/mkl/lib/intel64
+        INCLUDEPATH  += /opt/intel/mkl/include
         LIBS         += -lmkl_intel_lp64 -lmkl_core -lmkl_tbb_thread -ltbb -lstdc++ -lpthread -lm
     } else {
-        INCLUDEPATH += -I"%MKLROOT%"\include
+        INCLUDEPATH += "%MKLROOT%"\include
         LIBS        += -lblas -lmkl_intel_lp64_dll.lib -lmkl_core_dll.lib -lmkl_tbb_thread_dll.lib -ltbb.lib
     }
-    DEFINES     += WITH_BLAS
+    DEFINES     += WITH_BLAS WITH_MKL
 }
 
 # More static analysis warnings
