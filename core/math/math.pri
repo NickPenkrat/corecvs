@@ -12,6 +12,7 @@ HEADERS += \
     math/vector/fixedVector.h \
     math/vector/vector2d.h \
     math/vector/vector3d.h \
+    math/vector/vector4d.h \
     math/vector/vector.h \
     math/fixed/fixedPoint24p8.h \
     math/lutAlgebra.h \

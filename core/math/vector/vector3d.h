@@ -7,8 +7,8 @@
  * \author Alexander Pimenov
  */
 
-#ifndef _VECTOR_H_
-#define _VECTOR_H_
+#ifndef _VECTOR3D_H_
+#define _VECTOR3D_H_
 
 #include "math.h"
 #include "vector2d.h"
@@ -196,6 +196,9 @@ public:
         return this->isInHypercube(low, high);
     }
 
+    /**
+     * Calculates two vector that give an ortogonal basis with the current one.
+     **/
     void orthogonal(Vector3d<ElementType> &first, Vector3d<ElementType> &second) const
     {
         Vector3d<ElementType> n = this->normalised();
@@ -261,5 +264,6 @@ typedef Vector3d<int16_t> Vector3d16;
 
 
 } //namespace corecvs
-#endif
+
+#endif // _VECTOR3D_H_
 

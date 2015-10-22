@@ -238,13 +238,13 @@ struct ReconstructionJob : ReconstructionParameters
                             if (p.photostationId == psId)
                             {
                                 pairs.emplace_back(
-                                        ps_copy.getKMatrix(p.cameraId),
+                                        ps_copy.getMMatrix(p.cameraId),
                                         p.projection);
                             }
                             else
                             {
                                 pairs.emplace_back(
-                                        rJob->scene.photostations[p.photostationId].getKMatrix(p.cameraId),
+                                        rJob->scene.photostations[p.photostationId].getMMatrix(p.cameraId),
                                         p.projection);
                             }
                         }
@@ -384,7 +384,7 @@ struct ReconstructionJob : ReconstructionParameters
                 double beta = 4.0 / saturationThreshold;
                 double gamma = -4.0;
 
-                for (int i = 0; i < errors.size(); i += 2)
+                for (size_t i = 0; i < errors.size(); i += 2)
                 {
                     double dx = errors[i];
                     double dy = errors[i + 1];

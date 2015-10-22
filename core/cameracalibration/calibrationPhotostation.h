@@ -97,19 +97,19 @@ public:
         return getWorldCamera(cam);
     }
     
-    Matrix44 getKMatrix(int cam) const
+    Matrix44 getMMatrix(int cam) const
     {
         return getRawCamera(cam).getCameraMatrix();
     }
 
     Vector2dd project(const Vector3dd &pt, int cam) const
     {
-        return cameras[cam].project(location.apply(pt));
+        return cameras[cam].project(location.inverted().apply(pt));
     }
 
     bool isVisible(const Vector3dd &pt, int cam) const
     {
-        return cameras[cam].isVisible(location.apply(pt));
+        return cameras[cam].isVisible(location.inverted().apply(pt));
     }
 
 

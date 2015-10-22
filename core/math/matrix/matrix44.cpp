@@ -210,6 +210,11 @@ FixedVector<double, 4> operator *(const Matrix44 &m, const FixedVector<double, 4
     return toReturn;
 }
 
+Vector4dd operator *(const Matrix44 &m, const Vector4dd &v)
+{
+    return Vector4dd( m * FixedVector<double, 4>(v.element));
+}
+
 Vector3dd operator *(const Matrix44 &m, const Vector3dd &v)
 {
     FixedVector<double, 4> v4;
