@@ -238,8 +238,9 @@ public:
     virtual void drain(Log::Message &message) = 0;
 
 protected:
-    char   timeBuffer[32];
-    cchar* time2str(time_t &time);
+    std::mutex     mMutex;
+    char           timeBuffer[32];
+    cchar*         time2str(time_t &time);
 };
 
 class StdStreamLogDrain : public LogDrain
@@ -258,7 +259,6 @@ public:
 class FileLogDrain : public LogDrain
 {
     std::ofstream  mFile;
-    std::mutex     mMutex;
 
 public:
     FileLogDrain(const std::string& path, bool bAppend = false);

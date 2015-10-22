@@ -68,5 +68,5 @@ TEST(Logger, testObjectLog)
     //cout << "pos=" << pos << " len:" << checkStr.length() << " len:" << out.length() << endl;
 
     CORE_ASSERT_TRUE_P(pos + checkStr.length() + 1 == out.length(), ("incorrect log content"));
-    CORE_ASSERT_TRUE_P(out[out.length() - 1] == '\n', ("incorrect last char"));
+    CORE_ASSERT_TRUE_P(out[out.length() - 1]       == '\n'        , ("incorrect last char"));
 }

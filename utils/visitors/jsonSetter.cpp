@@ -27,9 +27,7 @@ JSONSetter::~JSONSetter()
     QByteArray jsonData = doc.toJson();
     file.write(jsonData);
     file.close();
-
 }
-
 
 
 /*=================*/
@@ -100,7 +98,6 @@ void JSONSetter::visit<std::string, StringField>(std::string &stringField, const
 template <>
 void JSONSetter::visit<void *, PointerField>(void * &/*field*/, const PointerField * /*fieldDescriptor*/)
 {
-
 }
 
 template <>
@@ -113,7 +110,6 @@ template <>
 void JSONSetter::visit<double, DoubleVectorField>(std::vector<double> &field, const DoubleVectorField *fieldDescriptor)
 {    
     QJsonArray array;
-
     for (size_t i = 0; i < field.size(); i++ )
     {
         QJsonValue value = field[i];
@@ -121,4 +117,3 @@ void JSONSetter::visit<double, DoubleVectorField>(std::vector<double> &field, co
     }
     mNodePath.back().insert(fieldDescriptor->name.name, array);
 }
-

@@ -119,23 +119,25 @@ void StdStreamLogDrain::drain(Log::Message &message)
            << message.get()->mOriginLineNumber      << " "
            << message.get()->mOriginFunctionName    << "() ";
 
-    size_t len = prefix.str().size();
-    mOutputStream << prefix.str();
+    mMutex.lock();
+        size_t len = prefix.str().size();
+        mOutputStream << prefix.str();
 
-    const std::string &messageString = message.get()->s.str();
-    size_t pos = 0;
-    do {
-        if (pos != 0) {
-            mOutputStream << std::string(len, ' ');
-        }
-        size_t posBr = messageString.find('\n', pos);
+        const std::string &messageString = message.get()->s.str();
+        size_t pos = 0;
+        do {
+            if (pos != 0) {
+                mOutputStream << std::string(len, ' ');
+            }
+            size_t posBr = messageString.find('\n', pos);
 
-        mOutputStream << messageString.substr(pos, posBr - pos) << std::endl;
+            mOutputStream << messageString.substr(pos, posBr - pos) << std::endl;
 
-        if (posBr == std::string::npos)
-            break;
-        pos = posBr + 1;
-    } while (true);
+            if (posBr == std::string::npos)
+                break;
+            pos = posBr + 1;
+        } while (true);
+    mMutex.unlock();
 }
 
 
@@ -163,6 +165,8 @@ void FileLogDrain::drain(Log::Message &message)
 
 void LiteStdStreamLogDrain::drain(Log::Message &message)
 {
-    mOutputStream << message.get()->s.str() << std::endl;
-    mOutputStream.flush();
+    mMutex.lock();
+        mOutputStream << message.get()->s.str() << std::endl;
+        mOutputStream.flush();
+    mMutex.unlock();
 }
