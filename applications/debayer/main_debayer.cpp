@@ -8,6 +8,8 @@ Bayer to PPM converter
 #include "ppmLoader.h"
 #include "converters/debayer.h"
 
+#include <qcommandlineparser.h>
+
 using std::cout;
 using std::endl;
 using std::string;
@@ -26,111 +28,39 @@ void usage(char *argv[])
 
 int main(int argc, char *argv[])
 {
-    enum params
-    {
-        bps,
-        quality,
-    };
+    QCoreApplication app(argc, argv);
+    QCoreApplication::setApplicationName("my-copy-program");
+    QCoreApplication::setApplicationVersion("1.0");    QCommandLineParser parser;
+    parser.setApplicationDescription("PGM Bayer to RGB PPM converter");
+    parser.addHelpOption();
+    parser.addPositionalArgument("bayer", QCoreApplication::translate("main", "Raw Bayer sensor data"));
+
+    QCommandLineOption qualOption(QStringList() << "q" << "quality",
+        QCoreApplication::translate("main", "Demosaic quality"),
+        QCoreApplication::translate("main", "quality"), "0");
+    parser.addOption(qualOption);
+
+    parser.process(app);
+
+    int quality = parser.value("quality").toInt();
 
     PPMLoader ldr;
-    std::queue<params> cmdline;
-    int user_quality = 0;
+    MetaData* metadata = new MetaData;
+    string filename = parser.positionalArguments()[0].toStdString();
+    G12Buffer* bayer = ldr.load(filename, metadata);
+    Debayer d(bayer, 12, metadata);
+    RGB48Buffer *result = nullptr;
 
-    if (argc > 1)
+    switch (quality)
     {
-        // if we need additional parameters, make this a struct or binary enum
-
-        // write full colour (up to 16 bit) image
-        bool fullcolour = true;
-        for (int c = 1; c < argc; c++)
-        {
-            char arg[255];
-            int num = atoi(argv[c]);
-
-            if (cmdline.size())
-            {
-                if (cmdline.front() == bps)
-                {
-                    if (num < 1 || num > 16)
-                    {
-                        cout << "Only values 1-16 are supported for bit depth." << endl;
-                        return 1;
-                    }
-                    //rdr.setBPP(num);
-                    cmdline.pop();
-                }
-                if (cmdline.front() == quality)
-                {
-                    if (num < -1 || num > 1)
-                    {
-                        cout << "Only values -1 through 1 are supported for quality." << endl;
-                        return 1;
-                    }
-                    user_quality = num;
-                    cmdline.pop();
-                }
-                else
-                {
-                    usage(argv);
-                    return 0;
-                }
-
-            }
-            else
-                if (argv[c][0] == '-')
-                {
-                    int j = 1, k = 2;
-                    while (argv[c][j])
-                    {
-                        arg[0] = 0;
-                        switch (argv[c][j])
-                        {
-                        case 'r':
-                            fullcolour = false;
-                            break;
-                        case 'b':
-                            cmdline.push(bps);
-                            break;
-                        case 'q':
-                            cmdline.push(quality);
-                            break;
-                        case '-':
-                            while (argv[c][k])
-                                arg[k - 2] = argv[c][k++];
-                            arg[k - 2] = '\0';
-                            goto arghandle; // sorry
-                            break;
-                        default:
-                            cout << "Invalid parameter -" << argv[c][j] << ", use --usage to view help" << endl;
-                            break;
-                        }
-                        j++;
-                    }
-                arghandle:
-                    if (strlen(arg))
-                        if (!strcmp(arg, "usage"))
-                        {
-                            usage(argv);
-                        }
-                        else
-                            cout << "Invalid parameter --" << arg << ", see --usage for help." << endl;
-                }
-                else
-                {
-                    MetaData *metadata = new MetaData;
-                    G12Buffer* bayer = ldr.load(string(argv[c]), metadata);
-                    Debayer d(bayer, 12, metadata);
-
-                    RGB48Buffer* result = d.toRGB48(Debayer::Quality(user_quality));
-
-                    //d.writePPM(string(argv[c]) + ".ppm");
-                    PPMLoader().save("out.ppm", result);
-                    cout << "Done." << endl;
-                }
-        }
+    case 0:
+    default:
+        result = d.toRGB48(Debayer::Nearest);
+        break;
+    case 1:
+        result = d.toRGB48(Debayer::Bilinear);
+        break;
     }
-    else
-    {
-        usage(argv);
-    }
+
+    ldr.save("out.ppm", result);
 }

@@ -232,75 +232,6 @@ MetaData* CR2Reader::getMetadata()
     return meta;
 }
 
-int CR2Reader::writeBayer(const string& filename)
-{
-    // TODO: implement this in PPMLoader too!
-    if (reader == NULL || reader->imgdata.params.output_bps > 16)
-        return -1;
-
-    int h = reader->imgdata.sizes.height;
-    int w = reader->imgdata.sizes.width;
-
-    FILE *fp;
-    fp = fopen(filename.c_str(), "wb");
-
-    if (fp == NULL)
-    {
-        printf("Image %s could not be written \n", filename);
-        return -1;
-    }
-
-    // get shifted bayer
-    G12Buffer *b = getBayer(true);
-    uint16_t *img16 = new uint16_t[b->w*b->h];
-    uint8_t *img8 = (uint8_t*)img16;
-
-    uint16_t maxval = 0;
-    // shift is already applied by getBayer, we got our N-bit data
-    for (int i = 0; i < b->h; i++)
-        for (int j = 0; j < b->w; j++)
-        {
-            if (maxval < b->element(i, j))
-                maxval = b->element(i, j);
-            img16[i*b->w + j] = b->element(i, j);
-        }
-
-    if (!isBigEndian())
-        swab((char*)img16, (char*)img16, b->w * b->h * 2);
-
-    int hist_size = 1 << 16;
-    int t_white = hist_size;
-    int perc = 0, val = 0, total = 0, c = 0;
-
-    perc = b->w * b->h * reader->imgdata.params.auto_bright_thr;
-
-    for (t_white = c = 0; c < 3; c++)
-    {
-        for (val = 0x2000, total = 0; --val > 32; )
-            if ((total += hist[c][val]) > perc) break;
-        if (t_white < val) t_white = val;
-    }
-
-    fprintf(fp, "P5\n");
-    fprintf(fp, "############################################\n");
-    fprintf(fp, "# Bit depth: %i bits per channel.\n", reader->imgdata.params.output_bps);
-    fprintf(fp, "# @meta %s\t@values 4\t%f %f %f %f\n", "pre_mul", reader->imgdata.color.pre_mul[0], reader->imgdata.color.pre_mul[1], reader->imgdata.color.pre_mul[2], reader->imgdata.color.pre_mul[3]);
-    fprintf(fp, "# @meta %s\t@values 4\t%f %f %f %f\n", "cam_mul", reader->imgdata.color.cam_mul[0], reader->imgdata.color.cam_mul[1], reader->imgdata.color.cam_mul[2], reader->imgdata.color.cam_mul[3]);
-    fprintf(fp, "# @meta %s\t@values 6\t%f %f %f %f %f %f\n", "gamm", reader->imgdata.params.gamm[0], reader->imgdata.params.gamm[1], reader->imgdata.params.gamm[2], reader->imgdata.params.gamm[3], reader->imgdata.params.gamm[4], reader->imgdata.params.gamm[5]);
-    fprintf(fp, "# @meta %s\t@values 1\t%d\n", "type", reader->imgdata.idata.filters);
-    fprintf(fp, "# @meta %s\t@values 1\t%d\n", "white", maxval);
-    fprintf(fp, "# @meta %s\t@values 1\t%d\n", "black", reader->imgdata.color.black >> shift);
-    fprintf(fp, "# @meta %s\t@values 1\t%d\n", "t_white", t_white);
-    fprintf(fp, "############################################\n");
-    fprintf(fp, "%d %d\n", w, h);
-    fprintf(fp, "%d\n", (1 << reader->imgdata.params.output_bps) - 1);
-
-    fwrite(img8, 2, b->w * b->h, fp);
-    fclose(fp);
-    delete[] img16;
-    return 0;
-}
-
 int CR2Reader::processDCRaw(bool noScale)
 {
     reader->imgdata.params.no_auto_scale = noScale;
@@ -329,4 +260,8 @@ void CR2Reader::fakeBayer(G12Buffer *img)
 
 CR2Reader::~CR2Reader()
 {
+    for (int i = 0; i < 3; i++)
+        delete[] hist[i];
+    delete[] hist;
+    delete reader;
 }

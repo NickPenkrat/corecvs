@@ -57,19 +57,6 @@ public:
     corecvs::MetaData* getMetadata();
 
     /**
-     * Write Bayer data with metadata to file.
-     *
-     * \author  pavel.vasilev
-     * \date    Oct 21, 2015
-     *
-     * \param   filename    File to write to.
-     *
-     * \return  Error code.
-     */
-
-    int writeBayer(const string& filename);
-
-    /**
      * Replaces LibRaw-unpacked Bayer data with arbitrary.
      *
      * \author  pavel.vasilev

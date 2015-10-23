@@ -11,27 +11,10 @@
 #include "rgb24Buffer.h"
 #include "metamap.h"
 
-using namespace std;
 using corecvs::G12Buffer;
+
 class Debayer
 {
-private:
-    G12Buffer* mBayer = nullptr;
-    int mDepth = 12;
-    MetaData *mMetadata = nullptr;
-    uint16_t* mCurve = nullptr;
-    double* mScaleMul = nullptr;
-    uint16_t mBlack = 0;
-    double* scaleCoeffs();
-
-    uint16_t* gammaCurve(int mode, int imax);
-    void preprocess(bool overwrite = false);
-
-    RGB48Buffer* linear();
-    RGB48Buffer* nearest();
-
-    uint16_t clip(int64_t x, int depth = 16);
-
 public:
 
     enum Quality
@@ -68,6 +51,25 @@ public:
     RGB48Buffer* toRGB48(Quality quality);
 
     ~Debayer();
+
+private:
+    G12Buffer* mBayer = nullptr;
+    int mDepth = 12;
+    MetaData *mMetadata = nullptr;
+    uint16_t* mCurve = nullptr;
+    double* mScaleMul = nullptr;
+    uint16_t mBlack = 0;
+
+    double* scaleCoeffs();
+    uint16_t* gammaCurve(int mode, int imax);
+    void preprocess(bool overwrite = false);
+
+    RGB48Buffer* linear();
+    RGB48Buffer* nearest();
+
+    // utilitary functions
+    uint16_t clip(int64_t x, int depth = 16);
+    uint16_t clampCoord(G12Buffer* buf, Vector2d32 coord1, Vector2d32 coord2, Vector2d32 coord3 = Vector2d32(-1, -1), Vector2d32 coord4 = Vector2d32(-1, -1))
 };
 
 #endif
