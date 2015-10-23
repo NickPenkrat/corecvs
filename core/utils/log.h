@@ -67,7 +67,7 @@ public:
     static const char *level_names[];
 
     Log(const LogLevel maxLocalLevel = LEVEL_ERROR);
-    ~Log();
+   ~Log();
 
 
     /**
@@ -108,8 +108,7 @@ public:
         int         mOriginLineNumber;
         cchar      *mOriginFunctionName;
         int         mThreadId;
-
-        time_t      rawtime;
+        time_t      mTime;
 	};
 
 	/**
@@ -144,7 +143,7 @@ public:
 #else
             message.get()->mThreadId = syscall(SYS_gettid);
 #endif
-            time(&message.get()->rawtime);
+            time(&message.get()->mTime);
         }
 
         ~MessageScoped()
@@ -207,11 +206,13 @@ public:
 
     static std::string  formatted(const char *format, ... );
 
-    static std::string  msgBufToString(const char* message);
+  //static std::string  msgBufToString(const char* message);
 
     static const char*  levelName(LogLevel logLevel);
 
     static bool         shouldWrite(LogLevel messageLevel) { return messageLevel >= mMinLogLevel; }
+
+    static void         addLoggingToProg(cchar* progPath, cchar* logFileName = NULL);
 
     static LogLevel                 mMinLogLevel;
     static std::vector<LogDrain *>  mLogDrains;

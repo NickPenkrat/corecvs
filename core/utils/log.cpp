@@ -45,16 +45,16 @@ Log::Log(const LogLevel /*maxLocalLevel*/)
 Log::~Log()
 {}
 
-std::string Log::msgBufToString(const char* msg)
-{
-    std::string message(msg);
-
-    if (message.size() != 0 && message[message.size() - 1] == '\n') {
-        message.resize(message.size() - 1);
-    }
-
-    return message;
-}
+//std::string Log::msgBufToString(const char* msg)
+//{
+//    std::string message(msg);
+//
+//    if (message.size() != 0 && message[message.size() - 1] == '\n') {
+//        message.resize(message.size() - 1);
+//    }
+//
+//    return message;
+//}
 
 //static
 const char* Log::levelName(LogLevel logLevel)
@@ -113,7 +113,7 @@ void StdStreamLogDrain::drain(Log::Message &message)
     {
         prefix << message.get()->mThreadId << ":";
     }
-    prefix << time2str(message.get()->rawtime)      << ":"
+    prefix << time2str(message.get()->mTime)        << ":"
            << Log::levelName(message.get()->mLevel)
            << message.get()->mOriginFileName        << ":"
            << message.get()->mOriginLineNumber      << " "
@@ -143,8 +143,7 @@ void StdStreamLogDrain::drain(Log::Message &message)
 
 FileLogDrain::FileLogDrain(const std::string &path, bool bAppend)
     : mFile(path.c_str(), bAppend ? std::ios_base::app : std::ios_base::trunc)
-{
-}
+{}
 
 FileLogDrain::~FileLogDrain()
 {
@@ -169,4 +168,31 @@ void LiteStdStreamLogDrain::drain(Log::Message &message)
         mOutputStream << message.get()->s.str() << std::endl;
         mOutputStream.flush();
     mMutex.unlock();
+}
+
+void Log::addLoggingToProg(cchar* progPath, cchar* logFileName)
+{
+    /** add needed log drains
+     */
+    std::string pathApp(progPath);
+    size_t pos = pathApp.rfind(PATH_SEPARATOR);
+    pathApp.resize(pos + 1);
+
+    if (logFileName != NULL)
+    {
+        //Log::mLogDrains.clear();
+        //Log::mLogDrains.push_back(new StdStreamLogDrain(std::cout));
+        Log::mLogDrains.push_back(new FileLogDrain(pathApp + logFileName));
+    }
+
+#ifdef GIT_VERSION
+# define GCC_STR(value)  #value
+# define GCC_XSTR(value) GCC_STR(value)
+    //L_INFO_P("Calibrator app version: %s\n", GCC_STR(GIT_VERSION));
+    cchar* version = GCC_STR(GIT_VERSION);
+#else
+    cchar* version = "unknown";
+#endif
+
+    L_INFO_P("%s app (built %s %s v.\"%s\")", &progPath[pos + 1], __DATE__, __TIME__, version);
 }
