@@ -51,16 +51,14 @@ PhotostationCaptureDialog::PhotostationCaptureDialog(QWidget *parent) :
     connect(ui->captureAdvancePushButton, SIGNAL(released()), this, SLOT(captureAndAdvance()));
     connect(ui->outDirButton,             SIGNAL(released()), this, SLOT(outputDir()));
 
-    connect(ui->focusButton, SIGNAL(released()), &focusDialog, SLOT(show()));
-    connect(ui->focusButton, SIGNAL(released()), &focusDialog, SLOT(raise()));
+    connect(ui->focusButton, SIGNAL(released()), &mFocusDialog, SLOT(show()));
+    connect(ui->focusButton, SIGNAL(released()), &mFocusDialog, SLOT(raise()));
 
-    connect(ui->rotaryControlPushButton, SIGNAL(released()), &rotaryDialog, SLOT(show()));
-    connect(ui->rotaryControlPushButton, SIGNAL(released()), &rotaryDialog, SLOT(raise()));
-
+    connect(ui->rotaryControlPushButton, SIGNAL(released()), &mRotaryDialog, SLOT(show()));
+    connect(ui->rotaryControlPushButton, SIGNAL(released()), &mRotaryDialog, SLOT(raise()));
 
     /* OK need to check if it gets deleted on table cleanup */
     connect(ui->cameraTableWidget, SIGNAL(cellClicked(int,int)), this, SLOT(tableClick(int, int)));
-
 
     mCapSettingsDialog = new CapSettingsDialog();
 }
@@ -143,7 +141,7 @@ void PhotostationCaptureDialog::refresh()
 
     for (unsigned i = 0; i < cameras.size(); i ++)
     {
-        qDebug() << "Camera found:" <<  cameras[i].c_str();
+        //qDebug() << "Found camera id:" <<  cameras[i].c_str();
 
 #ifdef Q_OS_WIN
 #ifdef WITH_DIRECTSHOW
@@ -365,8 +363,8 @@ void PhotostationCaptureDialog::newPreviewFrame()
 
     int focusValue = corecvs::FocusEstimator::getScore(pair.rgbBufferLeft);
     ui->focusedLabel->setText(QString("Focus Score: %1").arg(focusValue));
-    focusDialog.addGraphPoint("Focal Score", focusValue, true);
-    focusDialog.update();
+    mFocusDialog.addGraphPoint("Focal Score", focusValue, true);
+    mFocusDialog.update();
 
     if (pair.rgbBufferLeft != NULL)
     {
