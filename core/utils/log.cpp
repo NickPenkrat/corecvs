@@ -1,10 +1,11 @@
 #include <iostream>
 
 #include "log.h"
+#include "commandLineSetter.h"
 
 const char *Log::level_names[] =
 {
-     "Det.Debug"   // LEVEL_DETAILED_DEBUG, /**< Detailed log */
+     "D.Debug"     // LEVEL_DETAILED_DEBUG, /**< Detailed log */
    , "Debug"       // LEVEL_DEBUG,          /**< Debugging information is outputed */
    , "Info"        // LEVEL_INFO,           /**< Normal information messages are outputed */
    , "Warning"     // LEVEL_WARNING,        /**< Only warnings are reported */
@@ -94,7 +95,7 @@ cchar* LogDrain::time2str(time_t &time)
 {
     struct tm *timeinfo = localtime(&time);
 
-    snprintf2buf(timeBuffer, "%d, %d %d %02d:%02d:%02d",
+    snprintf2buf(timeBuffer, "%d-%d-%d %02d:%02d:%02d",
         timeinfo->tm_year + 1900,
         timeinfo->tm_mon  + 1,
         timeinfo->tm_mday,
@@ -111,23 +112,23 @@ void StdStreamLogDrain::drain(Log::Message &message)
 
     if (message.get()->mThreadId != 0)
     {
-        prefix << message.get()->mThreadId << ":";
+        prefix << message.get()->mThreadId << ";";
     }
-    prefix << time2str(message.get()->mTime)        << ":"
-           << Log::levelName(message.get()->mLevel)
-           << message.get()->mOriginFileName        << ":"
-           << message.get()->mOriginLineNumber      << " "
+    prefix << time2str(message.get()->mTime)        << ";"
+           << Log::levelName(message.get()->mLevel) << ";"
+           << message.get()->mOriginFileName        << ";"
+           << message.get()->mOriginLineNumber      << ";"
            << message.get()->mOriginFunctionName    << "() ";
 
     mMutex.lock();
         size_t len = prefix.str().size();
-        mOutputStream << prefix.str();
+        mOutputStream << prefix.str() << '\t';
 
         const std::string &messageString = message.get()->s.str();
         size_t pos = 0;
         do {
             if (pos != 0) {
-                mOutputStream << std::string(len, ' ');
+                mOutputStream << std::string(len, ' ') << '\t';
             }
             size_t posBr = messageString.find('\n', pos);
 
@@ -136,7 +137,9 @@ void StdStreamLogDrain::drain(Log::Message &message)
             if (posBr == std::string::npos)
                 break;
             pos = posBr + 1;
+
         } while (true);
+        mOutputStream.flush();
     mMutex.unlock();
 }
 
@@ -170,29 +173,39 @@ void LiteStdStreamLogDrain::drain(Log::Message &message)
     mMutex.unlock();
 }
 
-void Log::addLoggingToProg(cchar* progPath, cchar* logFileName)
+void Log::addAppLog(int argc, char* argv[], cchar* logFileName)
 {
+    /** detect min LogLevel and log filename from params
+     */
+    corecvs::CommandLineSetter setter(argc, (const char **)argv);
+    Log::LogLevel minLogLevel = (Log::LogLevel)setter.getInt("logLevel", Log::LEVEL_INFO);
+    std::string   logFile     = setter.getString("logFile", logFileName ? logFileName : "");
+
     /** add needed log drains
      */
+    cchar* progPath = argv[0];
     std::string pathApp(progPath);
     size_t pos = pathApp.rfind(PATH_SEPARATOR);
-    pathApp.resize(pos + 1);
+    pathApp.resize(pos + 1);                            // extract path to the program
 
-    if (logFileName != NULL)
+    if (!logFile.empty())
     {
         //Log::mLogDrains.clear();
-        //Log::mLogDrains.push_back(new StdStreamLogDrain(std::cout));
-        Log::mLogDrains.push_back(new FileLogDrain(pathApp + logFileName));
+        //Log::mLogDrains.push_back(new LiteStdStreamLogDrain(std::cout));
+        Log::mLogDrains.push_back(new FileLogDrain(pathApp + logFile));
     }
 
 #ifdef GIT_VERSION
-# define GCC_STR(value)  #value
 # define GCC_XSTR(value) GCC_STR(value)
-    //L_INFO_P("Calibrator app version: %s\n", GCC_STR(GIT_VERSION));
-    cchar* version = GCC_STR(GIT_VERSION);
+# define GCC_STR(value)  #value
+    cchar* git_version = GCC_XSTR(GIT_VERSION);
 #else
-    cchar* version = "unknown";
+    cchar* git_version = "unknown";
 #endif
 
-    L_INFO_P("%s app (built %s %s v.\"%s\")", &progPath[pos + 1], __DATE__, __TIME__, version);
+    L_INFO_P("%s app built %s %s", &progPath[pos + 1], __DATE__, __TIME__);
+    L_INFO_P("%s app version %s" , &progPath[pos + 1], git_version);
+    Log::mMinLogLevel = LEVEL_DETAILED_DEBUG;
+    L_INFO_P("App Log Level: %s", Log::levelName(minLogLevel));
+    Log::mMinLogLevel = minLogLevel;
 }

@@ -12,6 +12,7 @@
 
 #include "global.h"
 
+#include "log.h"
 #include "preciseTimer.h"
 #include "directShowCapture.h"
 #include "mjpegDecoderLazy.h"
@@ -74,29 +75,29 @@ DirectShowCaptureInterface::DirectShowCaptureInterface(const string &devname, bo
     static const int WidthGroup       = 13;
     static const int HeightGroup      = 14;
 
-    printf ("Input string %s\n", devname.c_str());
+    L_DDEBUG_P("Input string <%s>", devname.c_str());
     QString qdevname(devname.c_str());
     int result = deviceStringPattern.indexIn(qdevname);
     if (result == -1)
     {
-        printf("Error in device string format:%s\n", devname.c_str());
+        L_ERROR_P("Error in device string format:<%s>", devname.c_str());
         return;
     }
-    printf( "Parsed data:\n"
-            "  | - Device 1=%s\n"
-            "  | - Device 2=%s\n"
-            "  | - FPS %s/%s\n"
-            "  | - Size [%sx%s]\n"
-            "  \\ - Compressing: %s\n"
-            "RGB decoding is %s\n",
-            deviceStringPattern.cap(Device1Group).toLatin1().constData(),
-            deviceStringPattern.cap(Device2Group).toLatin1().constData(),
-            deviceStringPattern.cap(FpsNumGroup).toLatin1().constData(),
-            deviceStringPattern.cap(FpsDenumGroup).toLatin1().constData(),
-            deviceStringPattern.cap(WidthGroup).toLatin1().constData(),
-            deviceStringPattern.cap(HeightGroup).toLatin1().constData(),
-            deviceStringPattern.cap(CompressionGroup).toLatin1().constData(),
-            mIsRgb ? "on" : "off"
+    L_INFO_P("Parsed data:\n"
+             "  | - Device 1=%s\n"
+             "  | - Device 2=%s\n"
+             "  | - FPS %s/%s\n"
+             "  | - Size [%sx%s]\n"
+             "  \\ - Compressing: %s\n"
+             "RGB decoding is %s",
+             deviceStringPattern.cap(Device1Group).toLatin1().constData(),
+             deviceStringPattern.cap(Device2Group).toLatin1().constData(),
+             deviceStringPattern.cap(FpsNumGroup).toLatin1().constData(),
+             deviceStringPattern.cap(FpsDenumGroup).toLatin1().constData(),
+             deviceStringPattern.cap(WidthGroup).toLatin1().constData(),
+             deviceStringPattern.cap(HeightGroup).toLatin1().constData(),
+             deviceStringPattern.cap(CompressionGroup).toLatin1().constData(),
+             mIsRgb ? "on" : "off"
     );
 
     deviceID[Frames::LEFT_FRAME ] = deviceStringPattern.cap(Device1Group).isEmpty() ? -1 : deviceStringPattern.cap(Device1Group).toInt();
@@ -133,9 +134,9 @@ DirectShowCaptureInterface::DirectShowCaptureInterface(const string &devname, bo
 
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
     {
-        printf("Capture %s device: DShow %d\n", Frames::getEnumName((Frames::FrameSourceId)i), deviceID[i]);
+        L_INFO_P("Capture %s device: DShow:%d", Frames::getEnumName((Frames::FrameSourceId)i), deviceID[i]);
     }
-    printf("Format is: %s\n", DirectShowCameraDescriptor::codec_names[mCompressed]);
+    L_INFO_P("Format is: %s", DirectShowCameraDescriptor::codec_names[mCompressed]);
 
     /* TODO: Make cycle here */
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
@@ -169,14 +170,13 @@ ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::initCapture()
         DirectShowCapDll_setFrameCallback(cameras[i].deviceHandle, this, DirectShowCaptureInterface::callback);
     }
 
-    printf("Real Formats:\n");
+    L_DDEBUG_P("Real Formats:");
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
     {
         if (!isCorrectDeviceHandle(i))
             continue;
 
         DirectShowCapDll_printSimpleFormat(&format[i]);
-        printf("\n");
     }
 
     if (isCorrectDeviceHandle(0) && isCorrectDeviceHandle(1))
@@ -477,7 +477,7 @@ DirectShowCaptureInterface::CapErrorCode DirectShowCaptureInterface::getDeviceNa
     int result = deviceStringPattern.indexIn(qdevname);
     if (result == -1)
     {
-        printf("Error in device string format:%s\n", mDevname.c_str());
+        L_ERROR_P("Error in device string format:<%s>", mDevname.c_str());
         return ImageCaptureInterface::FAILURE;
     }
     if (num == 0)
@@ -497,8 +497,30 @@ string DirectShowCaptureInterface::getDeviceSerial(int num)
     return "-unsupported-";
 }
 
+// Logging
+void LogCallback(LogLevel level, const char* format, ...)
+{
+    va_list marker;
+    va_start(marker, format);
+    size_t len = vsnprintf(NULL, 0, format, marker) + 1;    // to add a nul symbol
+    va_end(marker);
+
+    va_list marker2;
+    va_start(marker2, format);
+
+    char* buf = new char[len];
+    vsnprintf(buf, len, format, marker2);
+
+    va_end(marker2);
+
+    ::Log().log((Log::LogLevel)level, "dShowCapture", __LINE__, "capdll") << buf;
+    delete[] buf;
+}
+
 void DirectShowCaptureInterface::getAllCameras(vector<string> &cameras)
 {
+    DirectShowCapDll_setLogger(LogCallback);
+
     int num = 0;
     DirectShowCapDll_devicesNumber(&num);
     for (int i = 0; i < num; i++)

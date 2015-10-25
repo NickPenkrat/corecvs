@@ -199,6 +199,14 @@ public:
         return MessageScoped(this,  LEVEL_DETAILED_DEBUG, fileName, lineNumber, functionName);
     }
 
+    /**
+     * Create trace with the given level
+     **/
+    MessageScoped log(LogLevel level, const char *fileName = NULL, int lineNumber = -1, const char *functionName = NULL)
+    {
+        return MessageScoped(this, level, fileName, lineNumber, functionName);
+    }
+
 	/**
 	 * Log a message
 	 **/
@@ -212,7 +220,8 @@ public:
 
     static bool         shouldWrite(LogLevel messageLevel) { return messageLevel >= mMinLogLevel; }
 
-    static void         addLoggingToProg(cchar* progPath, cchar* logFileName = NULL);
+    /** add needed log drains for the app */
+    static void         addAppLog(int argc, char* argv[], cchar* logFileName = NULL);
 
     static LogLevel                 mMinLogLevel;
     static std::vector<LogDrain *>  mLogDrains;
