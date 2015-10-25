@@ -91,98 +91,16 @@ std::string Log::formatted(const char *format, ...)
     return result;
 }
 
-cchar* LogDrain::time2str(time_t &time)
-{
-    struct tm *timeinfo = localtime(&time);
-
-    snprintf2buf(timeBuffer, "%d-%d-%d %02d:%02d:%02d",
-        timeinfo->tm_year + 1900,
-        timeinfo->tm_mon  + 1,
-        timeinfo->tm_mday,
-        timeinfo->tm_hour,
-        timeinfo->tm_min,
-        timeinfo->tm_sec
-        );
-    return timeBuffer;
-}
-
-void StdStreamLogDrain::drain(Log::Message &message)
-{
-    std::ostringstream prefix;
-
-    if (message.get()->mThreadId != 0)
-    {
-        prefix << message.get()->mThreadId << ";";
-    }
-    prefix << time2str(message.get()->mTime)        << ";"
-           << Log::levelName(message.get()->mLevel) << ";"
-           << message.get()->mOriginFileName        << ";"
-           << message.get()->mOriginLineNumber      << ";"
-           << message.get()->mOriginFunctionName    << "() ";
-
-    mMutex.lock();
-        size_t len = prefix.str().size();
-        mOutputStream << prefix.str() << '\t';
-
-        const std::string &messageString = message.get()->s.str();
-        size_t pos = 0;
-        do {
-            if (pos != 0) {
-                mOutputStream << std::string(len, ' ') << '\t';
-            }
-            size_t posBr = messageString.find('\n', pos);
-
-            mOutputStream << messageString.substr(pos, posBr - pos) << std::endl;
-
-            if (posBr == std::string::npos)
-                break;
-            pos = posBr + 1;
-
-        } while (true);
-        mOutputStream.flush();
-    mMutex.unlock();
-}
-
-
-FileLogDrain::FileLogDrain(const std::string &path, bool bAppend)
-    : mFile(path.c_str(), bAppend ? std::ios_base::app : std::ios_base::trunc)
-{}
-
-FileLogDrain::~FileLogDrain()
-{
-    mFile.flush();
-    mFile.close();
-}
-
-void FileLogDrain::drain(Log::Message &message)
-{
-    if (mFile.is_open())
-    {
-        mMutex.lock();
-            mFile << message.get()->s.str() << std::endl;
-            mFile.flush();
-        mMutex.unlock();
-    }
-}
-
-void LiteStdStreamLogDrain::drain(Log::Message &message)
-{
-    mMutex.lock();
-        mOutputStream << message.get()->s.str() << std::endl;
-        mOutputStream.flush();
-    mMutex.unlock();
-}
-
 void Log::addAppLog(int argc, char* argv[], cchar* logFileName)
 {
     /** detect min LogLevel and log filename from params
-     */
+    */
     corecvs::CommandLineSetter setter(argc, (const char **)argv);
     Log::LogLevel minLogLevel = (Log::LogLevel)setter.getInt("logLevel", Log::LEVEL_INFO);
-    std::string   logFile     = setter.getString("logFile", logFileName ? logFileName : "");
+    std::string   logFile = setter.getString("logFile", logFileName ? logFileName : "");
 
     /** add needed log drains
-     */
+    */
     cchar* progPath = argv[0];
     std::string pathApp(progPath);
     size_t pos = pathApp.rfind(PATH_SEPARATOR);
@@ -204,8 +122,113 @@ void Log::addAppLog(int argc, char* argv[], cchar* logFileName)
 #endif
 
     L_INFO_P("%s app built %s %s", &progPath[pos + 1], __DATE__, __TIME__);
-    L_INFO_P("%s app version %s" , &progPath[pos + 1], git_version);
+    L_INFO_P("%s app version %s", &progPath[pos + 1], git_version);
     Log::mMinLogLevel = LEVEL_DETAILED_DEBUG;
     L_INFO_P("App Log Level: %s", Log::levelName(minLogLevel));
     Log::mMinLogLevel = minLogLevel;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+cchar* LogDrain::time2str(time_t &time)
+{
+    struct tm *timeinfo = localtime(&time);
+
+    snprintf2buf(mTimeBuffer, "%d-%d-%d %02d:%02d:%02d",
+        timeinfo->tm_year + 1900,
+        timeinfo->tm_mon  + 1,
+        timeinfo->tm_mday,
+        timeinfo->tm_hour,
+        timeinfo->tm_min,
+        timeinfo->tm_sec
+        );
+    return mTimeBuffer;
+}
+
+void LogDrain::prefix2os(std::ostringstream &os, Log::Message &message)
+{
+    if (!mFullInfo)
+    {
+        //os << time2str(message.get()->mTime) << ";"
+        //   << Log::levelName(message.get()->mLevel) << ";";
+        return;
+    }
+
+    if (message.get()->mThreadId != 0)
+        os << message.get()->mThreadId  << ";";
+
+    os << time2str(message.get()->mTime) << ";"
+       << Log::levelName(message.get()->mLevel) << ";";
+
+    if (message.get()->mOriginFileName != NULL)
+        os << message.get()->mOriginFileName << ";";
+
+    if (message.get()->mOriginLineNumber >= 0)
+        os << message.get()->mOriginLineNumber << ";";
+
+    if (message.get()->mOriginFunctionName != NULL)
+        os << message.get()->mOriginFunctionName << "();";
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+void StdStreamLogDrain::drain(Log::Message &message)
+{
+    std::ostringstream prefix;
+    prefix2os(prefix, message);
+    size_t len = prefix.str().size();
+
+    mMutex.lock();
+        if (len != 0) {
+            mOutputStream << prefix.str() << '\t';
+        }
+
+        const std::string &messageString = message.get()->s.str();
+        size_t pos = 0;
+        do {
+            if (pos != 0 && len != 0) {
+                mOutputStream << std::string(len, ' ') << '\t';
+            }
+            size_t posBr = messageString.find('\n', pos);
+
+            mOutputStream << messageString.substr(pos, posBr - pos) << std::endl;
+
+            if (posBr == std::string::npos)
+                break;
+            pos = posBr + 1;
+
+        } while (true);
+        mOutputStream.flush();
+    mMutex.unlock();
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+FileLogDrain::FileLogDrain(const std::string &path, bool bAppend, bool fullInfo)
+    : mFile(path.c_str(), bAppend ? std::ios_base::app : std::ios_base::trunc)
+{
+    mFullInfo = fullInfo;
+}
+
+FileLogDrain::~FileLogDrain()
+{
+    mFile.flush();
+    mFile.close();
+}
+
+void FileLogDrain::drain(Log::Message &message)
+{
+    if (mFile.is_open())
+    {
+        std::ostringstream prefix;
+        prefix2os(prefix, message);
+
+        mMutex.lock();
+            if (prefix.str().size() != 0) {
+                mFile << prefix.str() << '\t';
+            }
+            mFile << message.get()->s.str() << std::endl;
+            mFile.flush();
+        mMutex.unlock();
+    }
 }

@@ -249,8 +249,11 @@ public:
 
 protected:
     std::mutex     mMutex;
-    char           timeBuffer[32];
+    bool           mFullInfo;
+    char           mTimeBuffer[32];
+
     cchar*         time2str(time_t &time);
+    void           prefix2os(std::ostringstream &os, Log::Message &message);
 };
 
 class StdStreamLogDrain : public LogDrain
@@ -258,9 +261,11 @@ class StdStreamLogDrain : public LogDrain
     std::ostream &mOutputStream;
 
 public:
-    StdStreamLogDrain(std::ostream &outputStream)
+    StdStreamLogDrain(std::ostream &outputStream, bool fullInfo = true)
         : mOutputStream(outputStream)
-    {}
+    {
+        mFullInfo = fullInfo;
+    }
 
     virtual void drain(Log::Message &message);
 };
@@ -271,19 +276,7 @@ class FileLogDrain : public LogDrain
     std::ofstream  mFile;
 
 public:
-    FileLogDrain(const std::string& path, bool bAppend = false);
+    FileLogDrain(const std::string& path, bool bAppend = false, bool fullInfo = true);
     ~FileLogDrain();
-    virtual void drain(Log::Message &message);
-};
-
-class LiteStdStreamLogDrain : public LogDrain
-{
-    std::ostream &mOutputStream;
-
-public:
-    LiteStdStreamLogDrain(std::ostream &outputStream)
-        : mOutputStream(outputStream)
-    {}
-
     virtual void drain(Log::Message &message);
 };
