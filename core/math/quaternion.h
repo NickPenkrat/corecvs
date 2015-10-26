@@ -12,6 +12,8 @@
 
 #include "matrix33.h"
 #include "fixedVector.h"
+#include "mathUtils.h"
+
 namespace corecvs {
 
 const int QUATERNION_DIMENTION = 4;
@@ -375,6 +377,16 @@ template<class VisitorType>
         visitor.visit(t(), ElementType(0), "t");
 
     }
+
+    void printAxisAndAngle(std::ostream &out = cout)
+    {
+        GenericQuaternion o = this->normalised().positivised();
+        Vector3dd axis = o.getAxis();
+        double   angle = radToDeg(o.getAngle());
+
+        out << "Rotation around: " << axis << " angle " << angle << "(" << angle << " deg)" << std::endl;
+    }
+
 
 };
 

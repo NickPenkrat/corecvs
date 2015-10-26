@@ -1,6 +1,5 @@
 #include "featureMatchingPipeline.h"
 
-//#include <cassert>
 #include <fstream>
 #include <iomanip>
 #include <sstream>
@@ -26,7 +25,7 @@ std::string changeExtension(const std::string &imgName, const std::string &desir
 
     int dotPos = (int)res.size() - 1;
     for (; dotPos >= 0 && res[dotPos] != '.'; --dotPos);
-    assert(dotPos >= 0);
+    CORE_ASSERT_TRUE_S(dotPos >= 0);
 
     res.resize(dotPos + 1 + desiredExt.size());
 
@@ -211,9 +210,9 @@ void DescriptorExtractionStage::loadResults(FeatureMatchingPipeline *pipeline, c
 
         image.descriptors.load(filename);
 
-        assert(image.descriptors.type == descriptorType);
+        CORE_ASSERT_TRUE_S(image.descriptors.type == descriptorType);
 
-        assert(image.keyPoints.keyPoints.size() == (image.descriptors.mat.getRows()));
+        CORE_ASSERT_TRUE_S(image.keyPoints.keyPoints.size() == (image.descriptors.mat.getRows()));
     }
     CORE_UNUSED(_filename);
 }
@@ -247,7 +246,7 @@ public:
             extractor->compute(img, image.keyPoints.keyPoints, image.descriptors.mat);
             image.descriptors.type = descriptorType;
 
-            assert(image.descriptors.mat.getRows() == image.keyPoints.keyPoints.size());
+            CORE_ASSERT_TRUE_S(image.descriptors.mat.getRows() == image.keyPoints.keyPoints.size());
 
             kpt += image.keyPoints.keyPoints.size();
             cnt++;
@@ -493,7 +492,7 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline)
     MatchPlan &matchPlan = pipeline->matchPlan;
     RawMatches &rawMatches = pipeline->rawMatches;
 
-    assert(matchPlan.plan.size());
+    CORE_ASSERT_TRUE_S(matchPlan.plan.size());
     rawMatches.matches.clear();
     rawMatches.matches.resize(matchPlan.plan.size());
 
@@ -551,7 +550,7 @@ public:
             double tt = -0.5 + sqrt(1.0 + 8.0 * perm_id) / 2.0;
             size_t J = 1+(size_t)tt;
             size_t I = perm_id - (J - 1) * J / 2;
-            assert(I < J);
+            CORE_ASSERT_TRUE_S(I < J);
             ss1 << "(" << I << ", " << J << ")";
 
             std::vector<size_t> reqs;
@@ -559,7 +558,7 @@ public:
             while(next_id)
             {
                 reqs.push_back(idx[next_id]);
-                assert(matchPlan.plan[idx[next_id]].isBetween((uint16_t)I, (uint16_t)J));
+                CORE_ASSERT_TRUE_S(matchPlan.plan[idx[next_id]].isBetween((uint16_t)I, (uint16_t)J));
                 next_id = next[next_id];
             }
             // step 1: match
@@ -570,7 +569,7 @@ public:
                 size_t Js = matchPlan.plan[s].trainImg;
                 auto &query = matchPlan.plan[s];
 
-                assert(Is < N && Js < N);
+                CORE_ASSERT_TRUE_S(Is < N && Js < N);
 
                 RuntimeTypeBuffer qb(images[Is].descriptors.mat);
                 RuntimeTypeBuffer tb(images[Js].descriptors.mat);
@@ -1024,7 +1023,7 @@ void RandIndexStage::run(FeatureMatchingPipeline *pipeline)
         {
             os << clusters[i][k] << ", ";
         }
-        assert(clusters[i].size() == images[i].keyPoints.keyPoints.size());
+        CORE_ASSERT_TRUE_S(clusters[i].size() == images[i].keyPoints.keyPoints.size());
     }
 
     pipeline->toc("Computing clusters", "");
@@ -1228,7 +1227,7 @@ void VsfmWriterStage::loadResults(FeatureMatchingPipeline *pipeline, const std::
 
     std::ifstream ofs;
     ofs.open(filename.c_str(), std::ifstream::in);
-    assert(ofs);
+    CORE_ASSERT_TRUE_S(ofs);
 
     while (ofs)
     {
@@ -1325,7 +1324,7 @@ void VsfmWriterStage::saveResults(FeatureMatchingPipeline *pipeline, const std::
 
     std::ofstream ofs;
     ofs.open(filename.c_str(), std::ofstream::out);
-    assert(ofs);
+    CORE_ASSERT_TRUE_S(ofs);
 
     for (size_t i = 0; i < refinedMatches.matchSets.size(); ++i)
     {
@@ -1338,14 +1337,14 @@ void VsfmWriterStage::saveResults(FeatureMatchingPipeline *pipeline, const std::
 
         for (std::deque<Match>::iterator m = set.matches.begin(); m != set.matches.end(); ++m)
         {
-            assert(m->imgA == set.imgA);
+            CORE_ASSERT_TRUE_S(m->imgA == set.imgA);
             ofs << reordering_rev[m->imgA][m->featureA] << " ";
         }
         ofs << std::endl;
 
         for (std::deque<Match>::iterator m = set.matches.begin(); m != set.matches.end(); ++m)
         {
-            assert(m->imgB == set.imgB);
+            CORE_ASSERT_TRUE_S(m->imgB == set.imgB);
             ofs << reordering_rev[m->imgB][m->featureB] << " ";
         }
         ofs << std::endl;

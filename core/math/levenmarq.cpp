@@ -48,6 +48,8 @@ vector<double> LevenbergMarquardt::fit(const vector<double> &input, const vector
     double lambda = startLambda;
     double maxlambda = maxLambda;
 
+    double norm = std::numeric_limits<double>::max();
+
     for (int g = 0; (g < maxIterations) && (lambda < maxlambda) && !converged; g++)
     {
         if (traceProgress) {
@@ -70,9 +72,15 @@ vector<double> LevenbergMarquardt::fit(const vector<double> &input, const vector
         diff = target - y;
         Vector d = JT * diff;
 
-        double norm = diff.sumAllElementsSq();
+        double normOld = norm;
+        norm = diff.sumAllElementsSq();
 
         if (trace) {
+            if (normOld < norm) {
+                cout << "Paradox: Norm has not decreased..." << (normOld - norm) << endl;
+                hasParadox = true;
+            }
+
             cout << "Now  :" <<  norm << " " << lambda << endl;
         }
 

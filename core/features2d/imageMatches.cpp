@@ -1,8 +1,9 @@
 #include "imageMatches.h"
 
+#include "global.h"
+
 #include <fstream>
 #include <iomanip>
-#include <cassert>
 
 const uint16_t RawMatch::INVALID_MARKER = ~(uint16_t)0;
 
@@ -47,7 +48,7 @@ void RawMatches::load(std::istream &ifs)
 
 	for (size_t i = 0; i < M; ++i)
 	{
-		assert(ifs);
+        CORE_ASSERT_TRUE_S(ifs);
 
 		size_t L;
 
@@ -76,7 +77,7 @@ void RawMatches::save(std::ostream &ofs) const
 
 	for (size_t i = 0; i < M; ++i)
 	{
-		assert(ofs);
+        CORE_ASSERT_TRUE_S(ofs);
 
 		size_t L = matches[i].size();
 
@@ -119,7 +120,7 @@ void RefinedMatches::load(std::istream &ifs)
 	for (size_t i = 0; i < M; ++i)
 	{
 		size_t I, J, K;
-		assert(ifs);
+        CORE_ASSERT_TRUE_S(ifs);
 		ifs >> I >> J >> K;
 
 		RefinedMatchSet set(I, J);

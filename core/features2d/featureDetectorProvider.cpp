@@ -1,6 +1,6 @@
 #include "featureDetectorProvider.h"
 
-#include <cassert>
+#include "global.h"
 
 FeatureDetector* FeatureDetectorProvider::getDetector(const DetectorType &type)
 {
@@ -11,8 +11,8 @@ FeatureDetector* FeatureDetectorProvider::getDetector(const DetectorType &type)
             return (*p)->getFeatureDetector(type);
 		}
 	}
-	assert(false);
-	return 0;
+    CORE_ASSERT_FAIL_P(("FeatureDetectorProvider::getDetector(%s): no providers", type.c_str()));
+    return 0;
 }
 
 void FeatureDetector::detect(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints)

@@ -19,7 +19,7 @@ SUBDIRS +=       \
 #    decodebayer \
 #    genvectorui  \
     aLowCodec \
-    new_board_detector
+#    new_board_detector
 
 
 with_opencv {

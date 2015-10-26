@@ -115,6 +115,7 @@ TEST(TBBWrapperTest, testTasks)
     {
         printf("%d ", data[i]);
     }
+    printf("\n");
 }
 
 #endif // WITH_TBB

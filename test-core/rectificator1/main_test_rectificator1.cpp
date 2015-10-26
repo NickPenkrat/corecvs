@@ -32,7 +32,7 @@ using namespace std;
 using namespace corecvs;
 
 
-#define GRID_STEP (10)
+#define GRID_STEP   10
 
 TEST(Rectification1, DISABLED_testAligner)
 {
@@ -91,7 +91,6 @@ TEST(Rectification1, testEpipoles)
 
 TEST(Rectification1, __testUnDistortion)
 {
-
     Vector3dd affineProjective(0.0,0.0,1.0);
     double distortion = StereoAligner::getDistortion(affineProjective, Vector2dd(100.0,100.0));
 
@@ -171,7 +170,8 @@ TEST(Rectification1, __testUnDistortion)
 
     BMPLoader loader;
     loader.save("graph.bmp", graph);
-    printf ("Minimum distortions are with alpha %lf", minalpha);
+    printf ("Minimum distortions are with alpha %lf\n", minalpha);
+
     delete graph;
 }
 
@@ -216,7 +216,6 @@ TEST(Rectification1, DISABLED_testRectificatorCubeEssential)
     Vector2dd resolution(400.0, 400.0);
     CameraIntrinsicsLegacy  leftCameraIntrinsics(resolution, resolution  / 2.0, 360.0, 1.0);
     CameraIntrinsicsLegacy rightCameraIntrinsics(resolution, resolution  / 2.0, 360.0, 1.0);
-
 
     Matrix44 LK = leftCameraIntrinsics.getKMatrix();
     Matrix44 RK = rightCameraIntrinsics.getKMatrix();
@@ -292,7 +291,7 @@ TEST(Rectification1, DISABLED_testRectificatorCubeEssential)
                 );
     }
 
-    fprintf(gnuplot , "0 0 0 0 0 0 0\n");
+    fprintf(gnuplot, "0 0 0 0 0 0 0\n");
 
     fclose(gnuplot);
 
@@ -323,7 +322,6 @@ TEST(Rectification1, DISABLED_testRectificatorCubeEssential)
 
     for (selected = 0; selected < 4; selected++)
     {
-
         Matrix33  sR = R[selected];
         Vector3dd st = t[selected];
         st *= (rightCameraPosition - leftCameraPosition).l2Metric() / st.l2Metric();
@@ -378,7 +376,6 @@ TEST(Rectification1, DISABLED_testRectificatorCubeEssential)
 
 TEST(Rectification1, DISABLED_testRectificatorCube)
 {
-
     cout << "=============================Testing old style rectificator=================================" << endl;
 
     CorrespondenceList points;

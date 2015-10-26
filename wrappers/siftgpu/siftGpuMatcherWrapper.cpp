@@ -85,8 +85,8 @@ void SiftGpuMatcher::knnMatchImpl( RuntimeTypeBuffer &queryDescriptors, RuntimeT
         return;
     }
 
-    assert(queryDescriptors.getType() == trainDescriptors.getType());
-    assert(queryDescriptors.getType() == BufferType::F32);
+    CORE_ASSERT_TRUE_S(queryDescriptors.getType() == trainDescriptors.getType());
+    CORE_ASSERT_TRUE_S(queryDescriptors.getType() == BufferType::F32);
 
     matches.resize(queryDescriptors.getRows());
 
@@ -108,7 +108,7 @@ void SiftGpuMatcher::knnMatchImpl( RuntimeTypeBuffer &queryDescriptors, RuntimeT
     siftMatchGpu->SetDescriptors(0, (int)queryDescriptors.getRows(), queryDescriptors.row<float>(0));
     siftMatchGpu->SetDescriptors(1, (int)trainDescriptors.getRows(), trainDescriptors.row<float>(0));
     int nmatch = siftMatchGpu->GetSiftMatch((int)maxRows, buffer);
-    assert((size_t)nmatch < rowsQ);
+    CORE_ASSERT_TRUE_S((size_t)nmatch < rowsQ);
 
     for (int j = 0; j < nmatch; ++j)
     {
@@ -142,7 +142,8 @@ DescriptorMatcher* SiftGpuDescriptorMatcherProvider::getDescriptorMatcher(const 
 {
     SWITCH_MATCHER_TYPE(BF,
         SWITCH_TYPE(SIFTGPU, return new SiftGpuMatcher;););
-    assert(false);
+
+    CORE_ASSERT_FAIL_P(("SiftGpuDescriptorMatcherProvider::getDescriptorMatcher(%s, %s): no matcher", type.c_str(), matcher.c_str()));
     return 0;
 }
 
@@ -150,7 +151,8 @@ bool SiftGpuDescriptorMatcherProvider::provides(const DescriptorType &type, cons
 {
     SWITCH_MATCHER_TYPE(BF,
         SWITCH_TYPE(SIFTGPU, return true;););
-    return false;
+
+    CORE_ASSERT_FAIL_P(("SiftGpuDescriptorMatcherProvider::provides(%s, %s): no provider", type.c_str(), matcher.c_str()));
 }
 
 #undef SWITCH_TYPE

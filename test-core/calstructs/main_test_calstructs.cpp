@@ -31,7 +31,7 @@ using namespace corecvs;
  *
  *
  **/
-TEST(calstructs, testCameraModel)  // currently it doesn't work - assertion happens as projection1=[1.INF, 1.INF]!
+TEST(calStructs, testCameraModel)
 {
     Mesh3D mesh;
     mesh.switchColor();
@@ -49,7 +49,7 @@ TEST(calstructs, testCameraModel)  // currently it doesn't work - assertion happ
     mesh.addLine(Vector3dd(0.0), Vector3dd::OrtZ());
 
     CameraModel model(PinholeCameraIntrinsics(Vector2dd(100.0,100.0), degToRad(45.0)),
-                      LocationData(
+                      CameraLocationData(
                           Vector3dd(3.0,0.0,0.0),
                           Quaternion::RotationY(degToRad(-45.0))
                       )
@@ -60,21 +60,21 @@ TEST(calstructs, testCameraModel)  // currently it doesn't work - assertion happ
     /* Direction in camera frame */
     Vector3dd dirInCam = model.dirToPoint(point);
 
+    Vector2dd project = model.project(point);
+    Vector3dd reverse = model.intrinsics.reverse(project);
 
-    cout << "Direction        :" << dirInCam << endl;
 
-    Vector2dd projection1 = model.intrinsics.project(dirInCam);
+    cout << "Direction         :" << dirInCam << endl;
+    cout << "Direct  Projection:" << project << endl;
+    cout << "Reverse Projection:" << reverse << endl;
 
-    Vector2dd projection  = model.project(point);
-  //Vector2dd projection1 = model.project(rayInCam.getPoint(1.0));
+    Vector3dd ratio = (dirInCam / reverse);
+    cout << "Proportion        :" << ratio << endl;
 
-    cout << "Direct Projection:" << projection << endl;
-    cout << "Ray    Projection:" << projection1 << endl;
-
-   // ASSERT_TRUE(rayInCam.p.notTooFar(model.extrinsics.position, 1e-7));
+    ASSERT_TRUE(ratio.notTooFar(Vector3dd(ratio.x()), 1e-7));
 
    // ASSERT_TRUE(rayInCam.projectOnRay(point).notTooFar(point, 1e-7));
-    ASSERT_TRUE(projection.notTooFar(projection1));
+   // ASSERT_TRUE(projection.notTooFar(projection1));
 
     CalibrationHelpers().drawCamera(mesh, model, 2.0);
 

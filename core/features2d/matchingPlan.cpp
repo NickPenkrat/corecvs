@@ -1,6 +1,7 @@
 #include "matchingPlan.h"
 
-#include <cassert>
+#include "global.h"
+
 #include <fstream>
 
 std::ostream& operator<<(std::ostream& os, const MatchPlan& mp)
@@ -44,14 +45,14 @@ void MatchPlanEntry::load(std::istream &is)
 	queryFeatures.resize(K);
 	for (size_t i = 0; i < K; ++i)
 	{
-		assert(is);
+        CORE_ASSERT_TRUE_S(is);
 		is >> queryFeatures[i];
 	}
 
 	trainFeatures.resize(L);
 	for (size_t i = 0; i < L; ++i)
 	{
-		assert(is);
+        CORE_ASSERT_TRUE_S(is);
 		is >> trainFeatures[i];
 	}
 }
@@ -101,7 +102,7 @@ void MatchPlan::load(std::istream &is)
 
 	for (size_t j = 0; j < M; ++j)
 	{
-		assert(is);
+        CORE_ASSERT_TRUE_S(is);
 		is >> plan[j];
 	}
 }
@@ -113,7 +114,7 @@ void MatchPlan::save(std::ostream &os) const
 
 	for (size_t j = 0; j < M; ++j)
 	{
-		assert(os);
+        CORE_ASSERT_TRUE_S(os);
 		os << plan[j];
 	}
 }

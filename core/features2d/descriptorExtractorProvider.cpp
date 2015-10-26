@@ -1,5 +1,7 @@
 #include "descriptorExtractorProvider.h"
 
+#include "global.h"
+
 
 DescriptorExtractor* DescriptorExtractorProvider::getDescriptorExtractor(const DescriptorType &type)
 {
@@ -10,8 +12,8 @@ DescriptorExtractor* DescriptorExtractorProvider::getDescriptorExtractor(const D
             return (*p)->getDescriptorExtractor(type);
 		}
 	}
-	assert(false);
-	return 0;
+    CORE_ASSERT_FAIL_P(("DescriptorExtractorProvider::getDescriptorExtractor(%s): no providers", type.c_str()));
+    return 0;
 }
 
 void DescriptorExtractorProvider::add(DescriptorExtractorProviderImpl *provider)

@@ -35,14 +35,14 @@ public:
     virtual void setParameters(void * params)
     {
         mParameters = *static_cast<Draw3dParameters *>(params);
-    };
+    }
 
     virtual ParametersControlWidgetBase *getContolWidget()
     {
         Draw3dParametersControlWidget *result = new Draw3dParametersControlWidget();
         result->setParameters(mParameters);
         return result;
-    };
+    }
 
     virtual void replaceMesh(Mesh3D *newMesh) {
         delete_safe(owned);

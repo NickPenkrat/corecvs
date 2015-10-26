@@ -1,11 +1,10 @@
 #include "flatPatternCalibrator.h"
-#include <cassert>
 
 FlatPatternCalibrator::FlatPatternCalibrator(const CameraConstraints constraints, const PinholeCameraIntrinsics lockParams, const double lockFactor) : factor(lockFactor), K(0), N(0), absoluteConic(6), lockParams(lockParams), constraints(constraints), forceZeroSkew(!!(constraints & CameraConstraints::ZERO_SKEW))
 {
 }
 
-void FlatPatternCalibrator::addPattern(const PatternPoints3d &patternPoints, const LocationData &position)
+void FlatPatternCalibrator::addPattern(const PatternPoints3d &patternPoints, const CameraLocationData &position)
 {
     ++N;
     locationData.push_back(position);
@@ -34,7 +33,7 @@ PinholeCameraIntrinsics FlatPatternCalibrator::getIntrinsics()
     return intrinsics;
 }
 
-std::vector<LocationData> FlatPatternCalibrator::getExtrinsics()
+std::vector<CameraLocationData> FlatPatternCalibrator::getExtrinsics()
 {
     return locationData;
 }
@@ -75,9 +74,9 @@ void FlatPatternCalibrator::getFullReprojectionError(double out[])
         }
     }
 #ifdef PENALIZE_QNORM
-    assert(idx == getOutputNum() - N);
+    CORE_ASSERT_TRUE_S(idx == getOutputNum() - N);
 #else
-    assert(idx == getOutputNum());
+    CORE_ASSERT_TRUE_S(idx == getOutputNum());
 #endif
 }
 
@@ -173,7 +172,7 @@ void FlatPatternCalibrator::solveInitialExtrinsics()
         auto C = -RO.transposed() * T;
 
         corecvs::Quaternion orientation = corecvs::Quaternion::FromMatrix(RO);
-        locationData[i] = LocationData(C, orientation);
+        locationData[i] = CameraLocationData(C, orientation);
     }
 }
 
@@ -211,7 +210,7 @@ void FlatPatternCalibrator::readParams(const double in[])
         }
     }
     IF_GET_PARAM(UNLOCK_YSCALE, factor);
-    assert(argin == getInputNum());
+    CORE_ASSERT_TRUE_S(argin == getInputNum());
 #undef GET_PARAM
 #undef IF_GET_PARAM
 #undef IF_NOT_GET_PARAM
@@ -248,7 +247,7 @@ void FlatPatternCalibrator::writeParams(double out[])
         }
     }
     IF_SET_PARAM(UNLOCK_YSCALE, factor);
-    assert(argout == getInputNum());
+    CORE_ASSERT_TRUE_S(argout == getInputNum());
 }
 
 #undef SET_PARAM

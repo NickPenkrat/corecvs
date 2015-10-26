@@ -22,13 +22,13 @@ void   MultiPhotostationScene::computeReprojectionErrors(int ps, int cam, std::v
             }
         }
 }
-void   MultiPhotostationScene::computeReprojectionErrors(std::vector<double> &errors) const
+void MultiPhotostationScene::computeReprojectionErrors(std::vector<double> &errors) const
 {
-    int M = photostations.size();
+    int M = (int)photostations.size();
     errors.clear();
     for (int i = 0; i < M; ++i)
     {
-        int N = photostations[i].cameras.size();
+        int N = (int)photostations[i].cameras.size();
         for (int j = 0; j < N; ++j)
         {
             std::vector<double> err;
@@ -57,9 +57,9 @@ corecvs::Vector3dd MultiPhotostationScene::backProject(const std::vector<std::pa
     std::vector<std::pair<corecvs::Matrix44, corecvs::Vector2dd>> pairs;
     for (auto &pd: points)
     {
-        assert(pd.first.first < photostations.size());
-        assert(pd.first.second < photostations[pd.first.first].cameras.size());
-        auto matrix = photostations[pd.first.first].getKMatrix(pd.first.second);
+        CORE_ASSERT_TRUE_S(pd.first.first < photostations.size());
+        CORE_ASSERT_TRUE_S(pd.first.second < photostations[pd.first.first].cameras.size());
+        auto matrix = photostations[pd.first.first].getMMatrix(pd.first.second);
         auto point = pd.second;
         pairs.emplace_back(matrix, point);
     }
@@ -73,7 +73,7 @@ corecvs::Vector3dd MultiPhotostationScene::backProject(const std::vector<PointPr
         auto& kp = cameraObservations[proj.photostationId][proj.cameraId].keyPoints[proj.featureId];
         points.emplace_back(std::make_pair(proj.photostationId, proj.cameraId), corecvs::Vector2dd(kp.x, kp.y));
     }
-    assert(points.size() > 0);
+    CORE_ASSERT_TRUE_S(points.size() > 0);
     return backProject(points);
 }
 
@@ -93,10 +93,11 @@ void MultiPhotostationScene::updateBackProjections()
 
 int MultiPhotostationScene::getPhotostationCount() const
 {
-    assert(photostations.size() == cameraObservations.size());
-    for (size_t i = 0; i < photostations.size(); ++i)
-        assert(photostations[i].cameras.size() == cameraObservations[i].size());
-    return photostations.size();
+    CORE_ASSERT_TRUE_S(photostations.size() == cameraObservations.size());
+    for (size_t i = 0; i < photostations.size(); ++i) {
+        CORE_ASSERT_TRUE_S(photostations[i].cameras.size() == cameraObservations[i].size());
+    }
+    return (int)photostations.size();
 }
 
 void MultiPhotostationScene::ParallelColoriser::operator() (const corecvs::BlockedRange<int> &range) const
@@ -134,10 +135,11 @@ void MultiPhotostationScene::ParallelColoriser::operator() (const corecvs::Block
 
 void MultiPhotostationScene::drawPly(corecvs::Mesh3D &mesh)
 {
-    for (auto& ps: photostations)
+    for (auto& ps : photostations) {
         corecvs::CalibrationHelpers().drawPly(mesh, ps, 1000);
+    }
     int obscnt = 0;
-    int NN = pointObservations.size();
+    int NN = (int)pointObservations.size();
     std::vector<corecvs::RGBColor> colors(NN);
     corecvs::parallelable_for(0, NN, NN / 8, ParallelColoriser(&colors, this));
 

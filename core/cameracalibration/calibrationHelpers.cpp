@@ -48,28 +48,29 @@ void CalibrationHelpers::drawCamera(Mesh3D &mesh, CameraModel &cam, double scale
 
     Vector3dd cc    = cam.extrinsics.position;
     Quaternion qc   = cam.extrinsics.orientation.conjugated();
-    Matrix33 K      = cam.intrinsics.getInvKMatrix33();
+    Matrix33 invK   = cam.intrinsics.getInvKMatrix33();
 
 
     for (int i = 0; i < edgenumber; ++i)
     {
-        Vector3dd v1 = qc * (K * edges[i * 2    ]) + cc;
-        Vector3dd v2 = qc * (K * edges[i * 2 + 1]) + cc;
+        Vector3dd v1 = qc * (invK * edges[i * 2    ]) + cc;
+        Vector3dd v2 = qc * (invK * edges[i * 2 + 1]) + cc;
 
         mesh.addLine(v1, v2);
     }
 
-    Vector3dd ppv = qc * (K.mulBy2dRight(cam.intrinsics.principal) * scale) + cc;
+    Vector3dd ppv = qc * (invK.mulBy2dRight(cam.intrinsics.principal) * scale) + cc;
 
-    mesh.addLine(ppv, qc * (K * center) + cc);
+    mesh.addLine(ppv, qc * (invK * center) + cc);
 }
 
 
 void CalibrationHelpers::drawPly(Mesh3D &mesh, Photostation &ps, double scale)
 {
     // Colorblind-safe palette
-    Vector3dd  cs = ps.location.position;
-    Quaternion qs = ps.location.orientation.conjugated();
+    CameraLocationData loc = ps.getLocation();
+    Vector3dd  cs = loc.position;
+    Quaternion qs = loc.orientation.conjugated();
     std::cout << qs << std::endl;
 
     int colorId = 0;
@@ -120,7 +121,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, Photostation &ps, double scale)
     if (printNames)
     {
         AbstractPainter<Mesh3D> p(&mesh);
-        mesh.mulTransform(Matrix44::Shift(ps.location.position));
+        mesh.mulTransform(Matrix44::Shift(ps.location.shift));
         mesh.setColor(RGBColor::Blue());
         p.drawFormatVector(scale / 5.0, scale / 5.0, 0, scale / 3.0, "TEST STRING", ps.name.c_str());
         mesh.popTransform();
@@ -161,14 +162,15 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, CalibrationFeaturePoint &fp, doub
 
 void CalibrationHelpers::drawScene(Mesh3D &mesh, CalibrationScene &scene, double scale)
 {
-    for (Photostation &ps: scene.stations)
+    for (Photostation *ps: scene.stations)
     {
-        drawPly(mesh, ps, scale);
+        drawPly(mesh, *ps, scale);
     }
 
-    for (CalibrationFeaturePoint &fp: scene.points)
+    for (CalibrationFeaturePoint *fp: scene.points)
     {
-        drawPly(mesh, fp, scale);
+        drawPly(mesh, *fp, scale);
     }
 }
+
 

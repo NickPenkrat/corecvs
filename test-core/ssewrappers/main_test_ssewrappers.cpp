@@ -147,8 +147,11 @@ TEST(SSEWrappers, testBasicArithmetics)
             2 * d[0] +
             e[0]);
     printf ("Wsum: %d\n", result);
+    ASSERT_EQ(result, 10 * 0xFFF);
+
     result = result / 10;
     printf ("Normal Blur: %d\n", result);
+    ASSERT_EQ(result, 0xFFF);
 
     Int16x8 sa(a);
     Int16x8 sb(b);
@@ -157,15 +160,20 @@ TEST(SSEWrappers, testBasicArithmetics)
     Int16x8 se(e);
     printf ("Blur Input: [%d %d %d %d %d]\n", sa[0], sb[0], sc[0] ,sd[0] ,se[0]);
 
-
     Int16x8 sresult =
             sb + SSEMath::mul<2>(sc) + sd;
 
     printf ("Wsum: %d\n", sresult[0]);
+    ASSERT_TRUE(sresult[0] == 4 * 0xFFF);
+
     sresult = SSEMath::div<2>(sa + se) + sresult;
     printf ("Wsum2: %d\n", sresult[0]);
+    ASSERT_TRUE(sresult[0] == 5 * 0xFFF);
+
     sresult = Int16x8(SSEMath::div<5>(UInt16x8(sresult)));
     printf ("Wsum10: %d\n", sresult[0]);
+    ASSERT_TRUE(result == 0xFFF);
+
     printf ("SSE Blur: %d\n", sresult[0]);
 #endif
 }
@@ -219,13 +227,15 @@ TEST(SSEWrappers, testSignUnsign16)
     Int16x8 negative = Int16x8(a02 + a22 + SSEMath::mul<2>(a12));
 
     UInt16x8 result = UInt16x8(SSEMath::div<4>( positive - negative ) + Int16x8((int16_t)0));
-    cout << result << endl;
+    cout << result << endl;    
 
     int16_t positiveS = int16_t(a00t[0] + a20t[0] + GenericMath<uint16_t>::mul<2>(a10t[0]));
     int16_t negativeS = int16_t(a02t[0] + a22t[0] + GenericMath<uint16_t>::mul<2>(a12t[0]));
 
     uint16_t resultS = uint16_t(GenericMath<uint16_t>::div<4>( positiveS - negativeS ) + int16_t((int16_t)0));
     cout << resultS << endl;
+
+    ASSERT_EQ(result[0], resultS);
 
 #endif // WITH_SSE
 }
