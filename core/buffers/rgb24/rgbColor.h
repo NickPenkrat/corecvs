@@ -43,12 +43,11 @@ public:
     *
     *
     * */
-    const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
 
     explicit RGBTColor(T color)
     {
-        uint8_t shift = sizeof(T);
-
+        const int shift = sizeof(T);
+        const uint64_t max = (1 << (shift * 8)) - 1;
         r() = color & max;
         g() = (color >> shift * 8) & max;
         b() = (color >> shift * 16) & max;
@@ -363,51 +362,61 @@ public:
 
     static RGBTColor White()
     {
+        const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
         return RGBTColor(max, max, max);
     }
 
     static RGBTColor Red()
     {
+        const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
         return RGBTColor(max, 0, 0);
     }
 
     static RGBTColor Orange()
     {
+        const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
         return RGBTColor(max, max >> 1, 0);
     }
 
     static RGBTColor Yellow()
     {
+        const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
         return RGBTColor(max, max, 0);
     }
 
     static RGBTColor Green()
     {
+        const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
         return RGBTColor(0, max, 0);
     }
 
     static RGBTColor Cyan()
     {
+        const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
         return RGBTColor(0, max, max);
     }
 
     static RGBTColor Magenta()
     {
+        const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
         return RGBColor(max, 0, max);
     }
 
     static RGBTColor Blue()
     {
+        const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
         return RGBTColor(0, 0, max);
     }
 
     static RGBTColor Indigo()
     {
+        const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
         return RGBTColor(111 * max / 255, 0, max);
     }
 
     static RGBTColor Violet()
     {
+        const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
         return RGBTColor(143 * max / 255, 0, max);
     }
 
@@ -476,6 +485,7 @@ public:
     **/
     static RGBTColor rainbow1(double x)
     {
+        const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
         x *= 2;
         if (x < 0.0) x = 0.0;
         if (x > 2.0) x = 2.0;
@@ -548,6 +558,7 @@ public:
 
     static RGBTColor FromDouble(const Vector3dd &input)
     {
+        const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
         Vector3dd input1 = input;
         input1.mapToHypercube(Vector3dd(0.0, 0.0, 0.0), Vector3dd(max, max, max));
         return RGBTColor(input.x(), input.y(), input.z());
@@ -555,6 +566,7 @@ public:
 
     static RGBTColor FromHSV(uint64_t h, T s, T v)
     {
+        const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
         int c = ((int)(s * v)) / max;
         int m = v - c;
         int r, g, b;
