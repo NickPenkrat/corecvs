@@ -52,9 +52,10 @@ asserts {
 
 # Autodetect block
 
-with_native:!win32 {
+CPU_FLAGS=""
 
-    CPU_FLAGS=$$system(cat /proc/cpuinfo | grep -m 1 "^flags")
+with_native:!win32 {
+    CPU_FLAGS += $$system(cat /proc/cpuinfo | grep -m 1 "^flags")
 #    message (Platform natively support $$CPU_FLAGS)
 
     contains(CPU_FLAGS, "sse") {
@@ -81,7 +82,38 @@ with_native:!win32 {
         CONFIG += with_fma
 #        message (Natively support FMA);
     }
+
+} else {
+
+    CPU_FLAGS_PATH=$$shell_path("$$ROOT_DIR\\siblings\\ckcpu\\CHKCPU32.exe")
+    CPU_FLAGS += $$system("$$CPU_FLAGS_PATH" /V)
+
+    contains(CPU_FLAGS, "SSE,") {
+        CONFIG += with_sse
+        message (Natively support SSE);
+    }
+    contains(CPU_FLAGS, "SSE2,") {
+        CONFIG += with_sse2
+        message (Natively support SSE2);
+    }
+    contains(CPU_FLAGS, "SSSE3,") {
+        CONFIG += with_sse3
+        message (Natively support SSE3);
+    }
+    contains(CPU_FLAGS, "AVX,") {
+        CONFIG += with_avx
+        message (Natively support AVX);
+    }
+    contains(CPU_FLAGS, "AVX2,") {
+        CONFIG += with_avx2
+        message (Natively support AVX2);
+    }
+    contains(CPU_FLAGS, "FMA,") {
+        CONFIG += with_fma
+        message (Natively support FMA);
+    }
 }
+
 
 with_avx {
     DEFINES += WITH_AVX

@@ -11,24 +11,24 @@ exists(../../../config.pri) {
 TEMPLATE = subdirs
 
 SUBDIRS +=       \
-    grab         \
+#   grab         \
     grab_N_captures \
     serialize1   \
 #   adoptcolor   \
 #    avigrab     \
 #    decodebayer \
 #    genvectorui  \
-    aLowCodec \
+#    aLowCodec \
 #    new_board_detector
 
 
 with_opencv {
     SUBDIRS +=       \
-        distortion_corrector \
-        matcher_basic \
-        matcher_full \
-        camera_calibration \
-        chessboard_detector \
+#        distortion_corrector \
+#        matcher_basic \
+#        matcher_full \
+#        camera_calibration \
+#        chessboard_detector \
         calibration \
         calibration_job_generate \
         calibration_job_detect \
