@@ -23,9 +23,9 @@ TEST(Debayer, colorTest)
     Debayer d(ppm);
     RGB48Buffer* result = d.toRGB48(Debayer::Bilinear);
 
-    Vector2d<int> redRegion(2, 2);
-    Vector2d<int> greenRegion(180, 2);
-    Vector2d<int> blueRegion(90, 2);
+    Vector2d<int> redRegion(0, 0);
+    Vector2d<int> greenRegion(180, 0);
+    Vector2d<int> blueRegion(90, 0);
 
     int regionSize = 50;
 
