@@ -380,7 +380,7 @@ public:
 
         if (dy <= dx)
         {
-            int    d = (dy << 1) - dx;
+            int    d  = (dy << 1) - dx;
             int    d1 = dy << 1;
             int    d2 = (dy - dx) << 1;
 
@@ -403,7 +403,7 @@ public:
         }
         else
         {
-            int    d = (dx << 1) - dy;
+            int    d  = (dx << 1) - dy;
             int    d1 = dx << 1;
             int    d2 = (dx - dy) << 1;
 
@@ -625,9 +625,9 @@ public:
                 FixedVector<Int16x8, 4> r = SSEReader8BBBB_DDDD::read((uint32_t *)yuyv);
 
                 Int16x8 cy1 = r[0] - Int16x8((uint64_t)16);
-                Int16x8 cu = r[1] - Int16x8((uint64_t)128);
+                Int16x8 cu  = r[1] - Int16x8((uint64_t)128);
                 Int16x8 cy2 = r[2] - Int16x8((uint64_t)16);
-                Int16x8 cv = r[3] - Int16x8((uint64_t)128);
+                Int16x8 cv  = r[3] - Int16x8((uint64_t)128);
 
                 Int16x8 con0((int16_t)0);
                 Int16x8 con255((int16_t)0xFF);
@@ -995,7 +995,7 @@ public:
         Int32x4 k2((int32_t)((y - i) * value));
         Int32x4 v(value);
 
-        FixedVector<Int32x4, 2> in1 = SSEReader2BBBB_QQQQ::read((T *)&this->element(i, j));
+        FixedVector<Int32x4, 2> in1 = SSEReader2BBBB_QQQQ::read((T *)&this->element(i    , j));
         FixedVector<Int32x4, 2> in2 = SSEReader2BBBB_QQQQ::read((T *)&this->element(i + 1, j));
 
         Int32x4 result =
@@ -1026,8 +1026,8 @@ public:
         uint32_t k1 = (x - j) * value;
         uint32_t k2 = (y - i) * value;
 
-        RGBEx32 a = RGBEx32(this->element(i, j));
-        RGBEx32 b = RGBEx32(this->element(i, j + 1));
+        RGBEx32 a = RGBEx32(this->element(i    , j));
+        RGBEx32 b = RGBEx32(this->element(i    , j + 1));
         RGBEx32 c = RGBEx32(this->element(i + 1, j));
         RGBEx32 d = RGBEx32(this->element(i + 1, j + 1));
 
@@ -1055,8 +1055,8 @@ public:
         double k1 = x - j;
         double k2 = y - i;
 
-        Vector3dd a = this->element(i, j).toDouble();
-        Vector3dd b = this->element(i, j + 1).toDouble();
+        Vector3dd a = this->element(i    , j).toDouble();
+        Vector3dd b = this->element(i    , j + 1).toDouble();
         Vector3dd c = this->element(i + 1, j).toDouble();
         Vector3dd d = this->element(i + 1, j + 1).toDouble();
 

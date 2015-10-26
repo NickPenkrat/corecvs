@@ -581,18 +581,18 @@ public:
         switch (swh)
         {
         case 0:
-            r = c; g = x1; b = 0; break;
+            r = c;  g = x1; b = 0; break;
         case 1:
-            r = x2; g = c; b = 0; break;
+            r = x2; g = c;  b = 0; break;
         case 2:
-            r = 0; g = c; b = x1; break;
+            r = 0;  g = c;  b = x1; break;
         case 3:
-            r = 0; g = x2; b = c; break;
+            r = 0;  g = x2; b = c; break;
         case 4:
-            r = x1; g = 0; b = c; break;
+            r = x1; g = 0;  b = c; break;
         case 5:
         default:
-            r = c; g = 0; b = x2; break;
+            r = c;  g = 0;  b = x2; break;
         }
 
         return RGBTColor(r + m, g + m, b + m);
