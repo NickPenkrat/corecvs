@@ -11,7 +11,7 @@
 
 const int DEFAULT_SEED = 777;
 const int RNG_RETRIES = 131072;
-const double REL_SOL_TOLERANCE = 1e-6;
+const double REL_SOL_TOLERANCE = 1e-5;
 const double COEFF_LIMIT = 1e2;
 const double MAX_SCALE_LIMIT = 1e2;
 
@@ -142,7 +142,7 @@ TEST(PolynomialSolversTest, testPowN)
         std::sort(roots2.begin(), roots2.end());
         for (size_t j = 0; j < N; ++j)
         {
-            ASSERT_NEAR(roots[j], roots2[j], 1e-5);
+            ASSERT_NEAR(roots[j], roots2[j], std::abs(roots[j]) * REL_SOL_TOLERANCE);
             if (std::abs(roots[j] - roots2[j]) / std::max(std::abs(roots[j]), 1.0))
             {
                 maxdiff = std::abs(roots[j] - roots2[j]) / std::max(std::abs(roots[j]), 1.0);
