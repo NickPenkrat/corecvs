@@ -60,7 +60,8 @@ CORE_INCLUDEPATH = \
     $$COREDIR/patterndetection \
     $$COREDIR/cameracalibration \
     $$COREDIR/graphs \
-    $$COREDIR/reconstruction
+    $$COREDIR/reconstruction \
+    $$COREDIR/polynomial
 
 
 INCLUDEPATH += $$CORE_INCLUDEPATH

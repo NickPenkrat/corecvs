@@ -60,6 +60,7 @@ include(patterndetection/patterndetection.pri)
 include(cameracalibration/cameracalibration.pri)
 include(graphs/graphs.pri)
 include(reconstruction/reconstruction.pri)
+include(polynomial/polynomial.pri)
 
 include(xml/generated/generated.pri)
 

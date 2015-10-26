@@ -105,5 +105,6 @@ SOURCES += \
     yuv/main_test_yuv.cpp \
     cameracalibration/main_test_camera_structs.cpp \
     conic/main_test_conic.cpp \
-    calstructs/main_test_calstructs.cpp
+    calstructs/main_test_calstructs.cpp \
+    polynomial/main_test_polynomial.cpp
 
