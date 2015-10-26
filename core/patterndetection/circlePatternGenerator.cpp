@@ -1,8 +1,6 @@
 #include "circlePatternGenerator.h"
 #include "homographyReconstructor.h"
 
-#include <cassert>
-
 CirclePatternGenerator::CirclePatternGenerator(CirclePatternGeneratorParams params) : CirclePatternGeneratorParams(params)
 {
 }
@@ -77,12 +75,12 @@ void CirclePatternGenerator::createFlip(DpImage &source, DpImage &destination, i
     dxc /= dxc[2]; dyc /= dyc[2]; oc /= oc[2];
     dxc -= oc; dyc -= oc;
 
-    assert(-1.5 < dxc[0] && dxc[0] < 1.5);
-    assert(-1.5 < dxc[1] && dxc[1] < 1.5);
-    assert(-1.5 < dyc[0] && dyc[0] < 1.5);
-    assert(-1.5 < dyc[1] && dyc[1] < 1.5);
-    assert(-1.5 <  oc[0] &&  oc[0] < 1.5);
-    assert(-1.5 <  oc[1] &&  oc[1] < 1.5);
+    CORE_ASSERT_TRUE_S(-1.5 < dxc[0] && dxc[0] < 1.5);
+    CORE_ASSERT_TRUE_S(-1.5 < dxc[1] && dxc[1] < 1.5);
+    CORE_ASSERT_TRUE_S(-1.5 < dyc[0] && dyc[0] < 1.5);
+    CORE_ASSERT_TRUE_S(-1.5 < dyc[1] && dyc[1] < 1.5);
+    CORE_ASSERT_TRUE_S(-1.5 <  oc[0] && oc[0] < 1.5);
+    CORE_ASSERT_TRUE_S(-1.5 <  oc[1] && oc[1] < 1.5);
     int xdx = convert(dxc[0]), xdy = convert(dyc[0]), ydx = convert(dxc[1]), ydy = convert(dyc[1]);
 
     int xa = convert(oc[0]), ya = convert(oc[1]);
@@ -94,7 +92,7 @@ void CirclePatternGenerator::createFlip(DpImage &source, DpImage &destination, i
         {
             int x = xa + xdx * j + xdy * i;
             int y = ya + ydx * j + ydy * i;
-            assert(y >= 0 && x >= 0 && x < patternSize && y < patternSize);
+            CORE_ASSERT_TRUE_S(y >= 0 && x >= 0 && x < patternSize && y < patternSize);
             destination.element(y, x) = source.element(i, j);
         }
     }
@@ -103,7 +101,7 @@ void CirclePatternGenerator::createFlip(DpImage &source, DpImage &destination, i
 int CirclePatternGenerator::getBestToken(DpImage &query, double &score, corecvs::Matrix33 &orientation) const
 {
     double s = 0.0, ssq = 0.0;
-    assert(query.w == patternSize && query.h == patternSize);
+    CORE_ASSERT_TRUE_S(query.w == patternSize && query.h == patternSize);
     studentize(query, s, ssq);
     
     double maxC = 0.0;

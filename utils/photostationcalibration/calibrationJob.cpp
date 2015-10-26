@@ -2,7 +2,10 @@
 
 #include <array>
 
+#ifdef WITH_OPENCV
 #include "openCvCheckerboardDetector.h"
+#endif
+
 #include "lmDistortionSolver.h"
 #include "flatPatternCalibrator.h"
 #include "photoStationCalibrator.h"
@@ -24,6 +27,7 @@ bool CalibrationJob::detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::Sel
 bool CalibrationJob::detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::SelectableGeometryFeatures *features, corecvs::ObservationList *list)
 {
     PatternDetector *patternDetector;
+#ifdef WITH_OPENCV
     if (settings.openCvDetectorParameters.algorithm() == CheckerboardDetectionAlgorithm::OPENCV_DETECTOR)
     {
         patternDetector = new OpenCvCheckerboardDetector(settings.openCvDetectorParameters, settings.boardAlignerParams);
@@ -32,6 +36,7 @@ bool CalibrationJob::detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::Sel
         delete channel;
     }
     else
+#endif
     {
         patternDetector = new ChessboardDetector(settings.openCvDetectorParameters, settings.boardAlignerParams, settings.chessBoardCornerDetectorParams, settings.chessBoardAssemblerParams);
         patternDetector->setStatistics(&stats);
@@ -273,7 +278,7 @@ corecvs::RGB24Buffer CalibrationJob::LoadImage(const std::string &path)
 
 bool CalibrationJob::calibrateSingleCamera(int cameraId)
 {
-    std::vector<LocationData> locations;
+    std::vector<CameraLocationData> locations;
     int valid_locations = 0;
 
     FlatPatternCalibrator calibrator(settings.singleCameraCalibratorConstraints, settings.calibrationLockParams);
@@ -336,33 +341,33 @@ void CalibrationJob::allCalibrateSingleCamera()
     std::cout << "OPTFAC_MEAN: " << factor << std::endl;
 }
 
-void CalibrationJob::calibratePhotostation(int N, int /*M*/, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<PinholeCameraIntrinsics> &intrinsics, std::vector<std::vector<LocationData>> &locations, bool runBFS, bool runLM)
+void CalibrationJob::calibratePhotostation(int N, int /*M*/, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<PinholeCameraIntrinsics> &intrinsics, std::vector<std::vector<CameraLocationData>> &locations, bool runBFS, bool runLM)
 {
     for (auto& ci: intrinsics)
     {
         calibrator.addCamera(ci);
     }
     calibrator.factor = factor;
-	std::vector<int> cnt(N);
-	int set = 0;
+    std::vector<int> cnt(N);
+    int set = 0;
     for (auto& setup: points)
-	{
-		MultiCameraPatternPoints pts;
-		std::vector<int> active;
-		std::vector<LocationData> locs;
-		for (int i = 0; i < N; ++i)
-		{
-			if (setup[i].size())
-			{
-				active.push_back(i);
-				pts.push_back(setup[i]);
-				locs.push_back(locations[set][i]);
-			}
-		}
-		calibrator.addCalibrationSetup(active, locs, pts);
-		set++;
-	}
-	if (runBFS)
+    {
+        MultiCameraPatternPoints pts;
+        std::vector<int> active;
+        std::vector<CameraLocationData> locs;
+        for (int i = 0; i < N; ++i)
+        {
+            if (setup[i].size())
+            {
+                active.push_back(i);
+                pts.push_back(setup[i]);
+                locs.push_back(locations[set][i]);
+            }
+        }
+        calibrator.addCalibrationSetup(active, locs, pts);
+        set++;
+    }
+    if (runBFS)
         calibrator.solve(true, false);
     calibrator.recenter(); // Let us hope it'll speedup...
     if (runLM)
@@ -390,7 +395,7 @@ void CalibrationJob::calibratePhotostation()
     std::vector<PinholeCameraIntrinsics> intrinsics;
     for (auto& c: photostation.cameras)
         intrinsics.push_back(c.intrinsics);
-    std::vector<std::vector<LocationData>> locations(M);
+    std::vector<std::vector<CameraLocationData>> locations(M);
     for (int i = 0; i < M; ++i)
     {
         locations[i].resize(N);
@@ -419,7 +424,7 @@ void CalibrationJob::computeCalibrationErrors()
     for (auto& s: calibrationSetups)
     {
         auto loc = *setupLocsIterator;
-        photostation.location = loc;
+        photostation.setLocation(loc);
         for (auto& v: s)
         {
             auto& view = observations[v.cameraId][v.imageId];

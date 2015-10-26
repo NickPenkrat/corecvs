@@ -1,6 +1,8 @@
 #ifndef RUNTIMETYPEBUFFER_H
 #define RUNTIMETYPEBUFFER_H
 
+#include "global.h"
+
 #include <cstring>
 #include <string>
 #include <iostream>
@@ -72,8 +74,8 @@ public:
 			case BufferType::F32:
 				return 4;
 			default:
-				assert(false);
-				return 0;
+                CORE_ASSERT_FAIL_P(("RuntimeTypeBuffer::getTypeSize(%d): bad type", type));
+                return 0;
 		}
 	}
 	static size_t getTypeFromCvType(int type) {
@@ -83,8 +85,8 @@ public:
 			case CV_32F:
 				return BufferType::F32;
 			default:
-				assert(false);
-				return 0;
+                CORE_ASSERT_FAIL_P(("RuntimeTypeBuffer::getCvType(%d): bad type", type));
+                return 0;
 		}
 	}
 	size_t getCvType() const {
@@ -94,8 +96,8 @@ public:
 			case BufferType::F32:
 				return CV_32F;
 			default:
-				assert(false);
-				return 0;
+                CORE_ASSERT_FAIL_P(("RuntimeTypeBuffer::getCvType(): incorrect type %d", type));
+                return 0;
 		}
 	}
 	size_t getElSize() const {

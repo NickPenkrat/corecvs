@@ -1,6 +1,7 @@
 #include "imageKeyPoints.h"
 
-#include <cassert>
+#include "global.h"
+
 #include <iomanip>
 #include <fstream>
 
@@ -59,7 +60,7 @@ void ImageKeyPoints::load(std::istream& is)
 
 	for (size_t j = 0; j < M; ++j)
 	{
-		assert(is);
+        CORE_ASSERT_TRUE_S(is);
 		is >> keyPoints[j];
 	}
 }
@@ -115,7 +116,7 @@ void ImageDescriptors::load(const std::string &filename)
 {
 	std::ifstream is;
 	is.open(filename, std::istream::in);
-	assert(is);
+    CORE_ASSERT_TRUE_S(is);
 
 	load(is);
 }
@@ -124,7 +125,7 @@ void ImageDescriptors::save(const std::string &filename) const
 {
 	std::ofstream os;
 	os.open(filename, std::ostream::out);
-	assert(os);
+    CORE_ASSERT_TRUE_S(os);
 
 	save(os);
 }

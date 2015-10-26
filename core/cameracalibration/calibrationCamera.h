@@ -12,8 +12,8 @@
 
 namespace corecvs {
 
-//class RGB24Buffer;
-
+/*class RGB24Buffer;*/
+class CalibrationScene;
 
 /**
  * This class is so far just a common base for all objects in scene heap.
@@ -21,15 +21,18 @@ namespace corecvs {
  **/
 class ScenePart {
 public:
-
     /* No particular reason for this, except to encourage leak checks */
     static int OBJECT_COUNT;
 
-    /* We could have copy constructors and stuff... but so far this is enough */
-    ScenePart() {
-        OBJECT_COUNT++;
+    CalibrationScene *ownerScene;
 
+    /* We could have copy constructors and stuff... but so far this is enough */
+    ScenePart(CalibrationScene * owner = NULL) :
+        ownerScene(owner)
+    {
+        OBJECT_COUNT++;
     }
+
 
     virtual ~ScenePart() {
         OBJECT_COUNT++;
@@ -139,10 +142,10 @@ struct PinholeCameraIntrinsics
     }
 
     /* Helper pseudonim getters */
-    double h() const                    { return size.y();      }
-    double w() const                    { return size.x();      }
-    double cx() const                   { return principal.x(); }
-    double cy() const                   { return principal.y(); }
+    double  h() const    { return size.y();      }
+    double  w() const    { return size.x();      }
+    double cx() const    { return principal.x(); }
+    double cy() const    { return principal.y(); }
 };
 
 class Photostation;
@@ -155,7 +158,7 @@ public:
     /**/
     LensDistortionModelParameters   distortion;
     /**/
-    LocationData                    extrinsics;
+    CameraLocationData              extrinsics;
 
     /* cache for rotation should be introduced. First of all it is faster... */
     //Matrix33 rotMatrix;
@@ -164,15 +167,17 @@ public:
     Photostation   *station;
 
     /* This should be moved to the derived class */
-    //RGB24Buffer    *image;
-    std::string     fileName;
+    /*RGB24Buffer    *image;*/
+    std::string     nameId;
 
 public:
-    CameraModel() {}
+    CameraModel(CalibrationScene * owner = NULL) :
+        ScenePart(owner)
+    {}
 
     CameraModel(
             const PinholeCameraIntrinsics &_intrinsics,
-            const LocationData &_extrinsics = LocationData(),
+            const CameraLocationData &_extrinsics = CameraLocationData(),
             const LensDistortionModelParameters &_distortion = LensDistortionModelParameters())
       : intrinsics(_intrinsics)
       , distortion(_distortion)
@@ -238,7 +243,7 @@ public:
     void accept(VisitorType &visitor)
     {
         visitor.visit(intrinsics, PinholeCameraIntrinsics()      , "intrinsics");
-        visitor.visit(extrinsics, LocationData()                 , "extrinsics");
+        visitor.visit(extrinsics, CameraLocationData()           , "extrinsics");
         visitor.visit(distortion, LensDistortionModelParameters(), "distortion");
     }
 };

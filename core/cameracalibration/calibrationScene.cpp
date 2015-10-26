@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "calibrationScene.h"
 
 CalibrationScene::CalibrationScene()
@@ -8,7 +10,7 @@ void CalibrationScene::projectForward(CalibrationFeaturePoint::PointType mask, b
 {
     for (size_t pointId = 0; pointId < points.size(); pointId++)
     {
-        CalibrationFeaturePoint *point = &(points[pointId]);
+        CalibrationFeaturePoint *point = points[pointId];
         if ( (point->type & mask) == 0)
             continue;
 
@@ -16,7 +18,7 @@ void CalibrationScene::projectForward(CalibrationFeaturePoint::PointType mask, b
 
         for (size_t stationId = 0; stationId < stations.size(); stationId++)
         {
-            Photostation &station = stations[stationId];
+            Photostation &station = *stations[stationId];
             for (size_t camId = 0; camId < station.cameras.size(); camId++)
             {
                 CameraModel *camera = &(station.cameras[camId]);
@@ -62,4 +64,62 @@ void CalibrationScene::projectForward(CalibrationFeaturePoint::PointType mask, b
             }
         }
     }
+}
+
+CameraModel *CalibrationScene::createCamera()
+{
+    CameraModel *camera = fabricateCamera();
+    mOwnedObjects.push_back(camera);
+    orphanCameras.push_back(camera);
+    return camera;
+}
+
+Photostation *CalibrationScene::createPhotostation()
+{
+    Photostation *station = fabricatePhotostation();
+    mOwnedObjects.push_back(station);
+    stations.push_back(station);
+    return station;
+}
+
+CalibrationFeaturePoint *CalibrationScene::createFeaturePoint()
+{
+    CalibrationFeaturePoint *point = fabricateFeaturePoint();
+    mOwnedObjects.push_back(point);
+    points.push_back(point);
+    return point;
+}
+
+void CalibrationScene::addCameraToStation(CameraModel *cam, Photostation *station)
+{
+
+    auto it = std::find(orphanCameras.begin(), orphanCameras.end(), cam);
+    if (it != orphanCameras.end()) {
+        orphanCameras.erase(it);
+    }
+    station->cameras.push_back(*cam);
+    cam->station = station;
+}
+
+CalibrationScene::~CalibrationScene()
+{
+    for(size_t i = 0; i < mOwnedObjects.size(); i++)
+    {
+        delete_safe(mOwnedObjects[i]);
+    }
+}
+
+CameraModel *corecvs::CalibrationScene::fabricateCamera()
+{
+   return new CameraModel(this);
+}
+
+Photostation *CalibrationScene::fabricatePhotostation()
+{
+    return new Photostation(this);
+}
+
+CalibrationFeaturePoint *CalibrationScene::fabricateFeaturePoint()
+{
+    return new CalibrationFeaturePoint(this);
 }

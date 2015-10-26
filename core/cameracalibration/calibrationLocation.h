@@ -7,8 +7,14 @@
 #include "matrix44.h"
 #include "line.h"
 #include "eulerAngles.h"
+#include "affine.h"
+#include "printerVisitor.h"
+
+#include "mathUtils.h"
 
 namespace corecvs {
+
+
 
 /**
  *   Contrary to what Affine3D does this class holds reference frame transformation in camera related terms
@@ -48,22 +54,46 @@ namespace corecvs {
  *       \pmatrix { u \over t \cr v \over t  \cr 1 }
  *
  *    \f]
-
- *
  *
  **/
-class LocationData
+class CameraLocationData
 {
 public:
     Vector3dd position;
     Quaternion orientation;
 
-    explicit LocationData(
+    explicit CameraLocationData(
             Vector3dd position = Vector3dd(0.0, 0.0, 1.0),
             Quaternion orientation = Quaternion::Identity()) :
         position(position),
         orientation(orientation)
     {
+    }
+
+    /**
+     * Helper function that creates a CameraLocationData that acts just as a Affine3DQ
+     *
+     * Affine
+     *    X' = AR * X + AT
+     *
+     * Cam
+     *    X' = CR * (X - CT) = CR * X - CR * CT
+     *
+     *    AT = - CR * CT
+     *
+     *    CR = AR
+     *    CT = CR^{-1} (- AT)
+     *
+     *
+     **/
+    explicit CameraLocationData( const Affine3DQ &transform ) :
+        position(transform.rotor.conjugated() * (-transform.shift)),
+        orientation(transform.rotor)
+    {}
+
+    Affine3DQ toAffine3D() const
+    {
+        return Affine3DQ(orientation, - (orientation * position));
     }
 
     Vector3dd project(const Vector3dd &pt) const
@@ -81,12 +111,6 @@ public:
         return orientation.conjugated() * pt + position;
     }
 
-    /*
-    Ray3d relativeRay(const Vector3dd &p)
-    {
-        return Ray3d(worldToCam(p), position);
-    }
-    */
 
     /**
      *    If we want to transform the world, let's see how camera model will evolve.
@@ -106,11 +130,15 @@ public:
         orientation = orientation ^ rotate.conjugated();
     }
 
-    void transform(const LocationData &outerTransform)
+    void transform(const Affine3DQ &affine)
     {
-        transform(outerTransform.orientation, outerTransform.position);
+        transform(affine.rotor, affine.shift);
     }
 
+    /*void transform(const CameraLocationData &outerTransform)
+    {
+        transform(outerTransform.orientation, outerTransform.position);
+    }*/
 
     template<class VisitorType>
     void accept(VisitorType &visitor)
@@ -139,10 +167,14 @@ public:
 class CameraLocationAngles : public EulerAngles
 {
 public:
-    CameraLocationAngles(double yaw, double pitch, double roll) :
+    CameraLocationAngles(double yaw = 0.0, double pitch = 0.0, double roll = 0.0) :
         EulerAngles(yaw, pitch, roll)
     {}
 
+    static CameraLocationAngles FromAngles(double yawDeg, double pitchDeg, double rollDeg)
+    {
+        return CameraLocationAngles(degToRad(yawDeg), degToRad(pitchDeg), degToRad(rollDeg));
+    }
 
     double  yaw() const
     {
@@ -212,6 +244,30 @@ public:
         visitor.visit(gamma, 0.0, "roll" );
     }
 
+    CameraLocationAngles toDeg() const {
+        return CameraLocationAngles(
+                    radToDeg(yaw()),
+                    radToDeg(pitch()),
+                    radToDeg(roll())
+                    );
+    }
+
+    CameraLocationAngles toRad() const {
+        return CameraLocationAngles(
+                    degToRad(yaw()),
+                    degToRad(pitch()),
+                    degToRad(roll())
+                    );
+    }
+
+    friend ostream& operator << (ostream &out, CameraLocationAngles &toSave)
+    {
+        PrinterVisitor printer(out);
+        toSave.accept<PrinterVisitor>(printer);
+        return out;
+    }
+
+    void prettyPrint (ostream &out = cout);
 
 };
 

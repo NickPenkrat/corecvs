@@ -37,62 +37,100 @@ namespace corecvs {
 /**
  *   See CalibrationScene for more data on ownership of the objectes in structure
  **/
-class Photostation
+class Photostation : public ScenePart
 {
 public:
     std::vector<CameraModel> cameras;
-    LocationData             location;
+    Affine3DQ                location;
     std::string              name;
 
-    Photostation() {}
+    Photostation(CalibrationScene * owner = NULL) :
+        ScenePart(owner)
+    {}
 
     Photostation(
         const std::vector<CameraModel> & _cameras,
-        const LocationData &_location = LocationData())
+        const Affine3DQ &_location = Affine3DQ())
       : cameras(_cameras)
       , location(_location)
     {}
 
-    // TODO: this stuff probably does not work?!
-    CameraModel getWorldCamera(int cam) {
+    /** This is a legacy compatibilty block **/
+
+    Photostation(
+        const std::vector<CameraModel> & _cameras,
+        const CameraLocationData &_location)
+      : cameras(_cameras)
+      , location(_location.toAffine3D())
+    {}
+
+    CameraLocationData getLocation() const
+    {
+        return CameraLocationData(location);
+    }
+
+    void setLocation(const CameraLocationData &_location)
+    {
+        location = _location.toAffine3D();
+    }
+
+    /* New style setter */
+    void setLocation(const Affine3DQ &_location)
+    {
+        location = _location;
+    }
+
+
+    CameraModel getWorldCamera(int cam) const
+    {
         CameraModel toReturn = cameras[cam];
         toReturn.extrinsics.transform(location);
         return toReturn;
     }
-    // And this - work
+
     CameraModel getRawCamera(int cam) const
     {
-        auto c = cameras[cam];
+     /*   auto c = cameras[cam];
         c.extrinsics.orientation = c.extrinsics.orientation ^ location.orientation;
         c.extrinsics.position = (location.orientation.conjugated() * cameras[cam].extrinsics.position) + location.position;
-        return c;
+        return c;*/
+        return getWorldCamera(cam);
     }
     
-    Matrix44 getKMatrix(int cam) const
+    Matrix44 getMMatrix(int cam) const
     {
         return getRawCamera(cam).getCameraMatrix();
     }
 
     Vector2dd project(const Vector3dd &pt, int cam) const
     {
-        return cameras[cam].project(location.project(pt));
+        return cameras[cam].project(location.inverted().apply(pt));
     }
 
     bool isVisible(const Vector3dd &pt, int cam) const
     {
-        return cameras[cam].isVisible(location.project(pt));
+        return cameras[cam].isVisible(location.inverted().apply(pt));
     }
 
 
     template<class VisitorType>
     void accept(VisitorType &visitor)
     {
+        /*
+          visitor.visit(cameras, "cameras");
+          visitor.visit(location, CameraLocationData(), "location");
+        */
+
+        /* So far comptibilty is on */
         visitor.visit(cameras, "cameras");
-        visitor.visit(location, LocationData(), "location");
+
+        CameraLocationData loc = getLocation();
+        visitor.visit(loc, CameraLocationData(), "location");
+        setLocation(loc);
     }
 };
 
 typedef std::vector<std::pair<Vector2dd, Vector3dd>> PatternPoints3d;
 typedef std::vector<PatternPoints3d>                 MultiCameraPatternPoints;
 
-}
+} // namespace corecvs

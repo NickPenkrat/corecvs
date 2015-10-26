@@ -76,6 +76,24 @@ Matrix44 Matrix44::Scale(const double &d)
     return result;
 }
 
+
+Matrix44 Matrix44::RotationX (double alpha)
+{
+     return Matrix44(Matrix33::RotationX(alpha));
+}
+
+Matrix44 Matrix44::RotationY (double alpha)
+{
+     return Matrix44(Matrix33::RotationY(alpha));
+}
+
+Matrix44 Matrix44::RotationZ (double alpha)
+{
+     return Matrix44(Matrix33::RotationZ(alpha));
+}
+
+
+
 Matrix44 Matrix44::Frustum(double fovY, double aspect, double zNear, double zFar)
 {
     double f = 1.0 / tan(fovY / 2);
@@ -190,6 +208,11 @@ FixedVector<double, 4> operator *(const Matrix44 &m, const FixedVector<double, 4
     toReturn[2] = v[0] * m.a(2,0) + v[1] * m.a(2,1) + v[2] * m.a(2,2) + m.a(2,3) * v[3];
     toReturn[3] = v[0] * m.a(3,0) + v[1] * m.a(3,1) + v[2] * m.a(3,2) + m.a(3,3) * v[3];
     return toReturn;
+}
+
+Vector4dd operator *(const Matrix44 &m, const Vector4dd &v)
+{
+    return Vector4dd( m * FixedVector<double, 4>(v.element));
 }
 
 Vector3dd operator *(const Matrix44 &m, const Vector3dd &v)

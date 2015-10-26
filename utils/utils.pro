@@ -25,7 +25,7 @@ CONFIG += with_widgets
 #
 # In global scope we have non UI classes
 #
-HEADERS += \    
+HEADERS += \
     frames.h \
     framesources/imageCaptureInterface.h \
     framesources/cameraControlParameters.h \
@@ -90,7 +90,11 @@ HEADERS += \
     distortioncorrector/calibrationFeaturesWidget.h \
     os/UsbBusResetter.h \
     photostationcalibration/calibrationJob.h \
-    uis/cloudview/scene3dTreeView.h
+    uis/cloudview/scene3dTreeView.h \
+    tablecontrol/rotaryTableControlWidget.h \
+    tablecontrol/rotaryTableMeshModel.h \
+    tablecontrol/rotationPlanGenerator.h \
+    capture/abstractImageNamer.h
 
 SOURCES += \
     frames.cpp \
@@ -155,7 +159,11 @@ SOURCES += \
     distortioncorrector/calibrationFeaturesWidget.cpp \
     os/UsbBusResetter.cpp \
     photostationcalibration/calibrationJob.cpp \
-    uis/cloudview/scene3dTreeView.cpp
+    uis/cloudview/scene3dTreeView.cpp \
+    tablecontrol/rotaryTableControlWidget.cpp \
+    tablecontrol/rotaryTableMeshModel.cpp \
+    tablecontrol/rotationPlanGenerator.cpp \
+    capture/abstractImageNamer.cpp
 
 
 FORMS += \
@@ -163,6 +171,8 @@ FORMS += \
     distortioncorrector/cameraModelParametersControlWidget.ui \
     distortioncorrector/lensDistortionModelParametersControlWidget.ui \
     distortioncorrector/calibrationFeaturesWidget.ui \
+    tablecontrol/rotaryTableControlWidget.ui \
+    tablecontrol/rotationPlanGenerator.ui
 
 
 # =============================================================
@@ -288,6 +298,7 @@ HEADERS += \
     uis/textLabelWidget.h \
     uis/pointsRectificationWidget.h \
     \
+    capture/photostationCaptureDialog.h \
 
 SOURCES += \
     widgets/generated/graphPlotParametersControlWidget.cpp \
@@ -342,6 +353,9 @@ SOURCES += \
     uis/aboutDialog.cpp \
     uis/textLabelWidget.cpp \
     uis/pointsRectificationWidget.cpp \
+    \
+    capture/photostationCaptureDialog.cpp \
+
 
 FORMS += \
     \
@@ -384,6 +398,7 @@ FORMS += \
     rectifier/rectifyParametersControlWidget.ui \
     distortioncorrector/distortionWidget.ui \
     \
+    capture/photostationCaptureDialog.ui \
 
 }
 
@@ -434,6 +449,8 @@ with_opengl {
          3d/generated/draw3dViMouseParameters.h \
          3d/mesh3DScene.h \
          3d/coordinateFrame.h \
+         \
+
 
     SOURCES     += \
         3d/scene3D.cpp \
@@ -449,7 +466,7 @@ with_opengl {
         \
         3d/mesh3DScene.cpp \
         3d/coordinateFrame.cpp \
-                       
+
     FORMS       += \
         uis/cloudview/cloudViewDialog.ui \
         #   Generated    \
@@ -491,9 +508,9 @@ with_opencv {
 }
 
 with_siftgpu {
-	DEFINES += WITH_SIFTGPU
-	SIFTGPU_WRAPPER_DIR = $$UTILSDIR/../wrappers/siftgpu
-	include($$SIFTGPU_WRAPPER_DIR/siftgpu.pri)
+        DEFINES += WITH_SIFTGPU
+        SIFTGPU_WRAPPER_DIR = $$UTILSDIR/../wrappers/siftgpu
+        include($$SIFTGPU_WRAPPER_DIR/siftgpu.pri)
 }
 
 

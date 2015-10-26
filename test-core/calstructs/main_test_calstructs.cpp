@@ -49,7 +49,7 @@ TEST(calStructs, testCameraModel)
     mesh.addLine(Vector3dd(0.0), Vector3dd::OrtZ());
 
     CameraModel model(PinholeCameraIntrinsics(Vector2dd(100.0,100.0), degToRad(45.0)),
-                      LocationData(
+                      CameraLocationData(
                           Vector3dd(3.0,0.0,0.0),
                           Quaternion::RotationY(degToRad(-45.0))
                       )

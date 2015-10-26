@@ -1,6 +1,6 @@
 #include "descriptorMatcherProvider.h"
 
-#include <cassert>
+#include "global.h"
 
 DescriptorMatcher* DescriptorMatcherProvider::getMatcher(const DescriptorType &type, const MatcherType &matcher)
 {
@@ -11,8 +11,8 @@ DescriptorMatcher* DescriptorMatcherProvider::getMatcher(const DescriptorType &t
             return (*p)->getDescriptorMatcher(type, matcher);
 		}
 	}
-	assert(false);
-	return 0;
+    CORE_ASSERT_FAIL_P(("DescriptorMatcherProvider::getMatcher(%s, %s): no providers", type.c_str(), matcher.c_str()));
+    return 0;
 }
 
 void DescriptorMatcher::knnMatch(RuntimeTypeBuffer &query, RuntimeTypeBuffer &train, std::vector<std::vector<RawMatch> > &matches, size_t K)

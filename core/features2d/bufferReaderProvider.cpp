@@ -9,7 +9,7 @@ BufferReader* BufferReaderProvider::getBufferReader(const std::string &filename)
             return (*p)->getBufferReader(filename);
 		}
 	}
-	assert(false);
+    CORE_ASSERT_FAIL_P(("BufferReaderProvider::getBufferReader(%s): no providers", filename.c_str()));
 	return 0;
 }
 
