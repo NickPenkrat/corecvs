@@ -288,7 +288,7 @@
      </column>
      <column>
       <property name="text">
-       <string>PhotostationID</string>
+       <string>CameraID</string>
       </property>
      </column>
      <column>
