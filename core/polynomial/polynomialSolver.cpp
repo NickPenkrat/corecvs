@@ -5,15 +5,15 @@
 #include "vector.h"
 
 #ifdef WITH_BLAS
-#ifdef WITH_MKL
-#include <mkl.h>
-#include <mkl_lapacke.h>
+# ifdef WITH_MKL
+#  include <mkl.h>
+#  include <mkl_lapacke.h>
+# else
+#  include <cblas.h>
+#  include <lapacke.h>
+# endif
 #else
-#include <cblas.h>
-#include <lapacke.h>
-#endif
-#else
-#error Cannot build polynomial solver without BLAS/LAPACK
+# error Cannot build polynomial solver without BLAS/LAPACK
 #endif
 
 const double corecvs::PolynomialSolver::RELATIVE_TOLERANCE = 1e-9;
@@ -80,7 +80,9 @@ size_t corecvs::PolynomialSolver::solve(const double* coeff, double* roots, size
     return solve_companion(coeff, roots, degree);
 }
 
-// Unfortunately I do not know any super-stable closed-form methods for solving 3+-order polynomial equations and do not want to bother with Cardano/Ferrari-like stuff
+/** Unfortunately I do not know any super-stable closed-form methods for solving
+ *  3+-order polynomial equations and do not want to bother with Cardano/Ferrari-like stuff.
+ */
 size_t corecvs::PolynomialSolver::solve_companion(const double* coeff, double* roots, const size_t &degree)
 {
     /*
@@ -150,5 +152,3 @@ size_t corecvs::PolynomialSolver::solve_companion(const double* coeff, double* r
     }
     return cnt;
 }   
-
-

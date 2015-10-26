@@ -109,7 +109,7 @@ TEST(PolynomialSolversTest, testPowN)
     double coeff3[] = {-6.0, 11.0, -6.0, 1.0};
     double roots3[3];
 
-    int rcnt = corecvs::PolynomialSolver::solve(coeff3, roots3, 3);
+    int rcnt = (int)corecvs::PolynomialSolver::solve(coeff3, roots3, 3);
 
     ASSERT_TRUE(rcnt == 3);
     for (int i = 0; i < rcnt; ++i)
@@ -136,7 +136,7 @@ TEST(PolynomialSolversTest, testPowN)
         roots2.resize(N);
         coeffByRoots(coeff, roots);
     
-        int cnt = corecvs::PolynomialSolver::solve(&coeff[0], &roots2[0], N);
+        int cnt = (int)corecvs::PolynomialSolver::solve(&coeff[0], &roots2[0], N);
         ASSERT_TRUE(cnt == N);
         std::sort(roots.begin(), roots.end());
         std::sort(roots2.begin(), roots2.end());

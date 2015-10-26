@@ -114,7 +114,7 @@ public:
 
     bool isVisible(const Vector3dd &pt) const
     {
-        for (size_t i = 0; i < cameras.size(); ++i)
+        for (int i = 0; i < (int)cameras.size(); ++i)
             if (isVisible(pt, i))
                 return true;
         return false;
@@ -129,7 +129,7 @@ public:
           visitor.visit(location, CameraLocationData(), "location");
         */
 
-        /* So far comptibilty is on */
+        /* So far compatibilty is on */
         visitor.visit(cameras, "cameras");
 
         CameraLocationData loc = getLocation();
