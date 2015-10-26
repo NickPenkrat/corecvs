@@ -28,8 +28,10 @@ RGB48Buffer* Debayer::nearest()
     int bpos = 0;
     uint16_t red = 0, green = 0, blue = 0;
 
+    // swapCols inverts least significant bit for cols when set so RG/GB becomes GR/BG, etc.
+    // swapRows does the same for rows
     int swapCols = bpos & 1;
-    int swapRows = bpos & 2;
+    int swapRows = (bpos & 2) >> 1;
     RGB48Buffer *result = new RGB48Buffer(mBayer->h, mBayer->w, false);
 
     for (int i = 0; i < mBayer->h; i += 2)
@@ -38,13 +40,12 @@ RGB48Buffer* Debayer::nearest()
             for (int k = 0; k < 2; k++)
                 for (int l = 0; l < 2; l++)
                 {
+                    int pxshift = (l ^ (l & 1));
                     // i don't know how i came to this
-                    // swapRows, swapCols -> 0 "red"
-                    red = mBayer->element(i + swapRows, j + swapCols);
+                    red = mBayer->element(i + swapRows, (j + pxshift) ^ swapCols);
                     // green1 for even rows, green2 for odd
-                    green = mBayer->element(i + !k^swapRows, j + !k^!swapCols);
-                    // !swapRows, !swapCols -> 2 "blue"
-                    blue = mBayer->element(i + !swapRows, j + !swapCols);
+                    green = mBayer->element(i + !k^swapRows, j + pxshift + !k^!swapCols);
+                    blue = mBayer->element(i + !swapRows, (j + pxshift) ^ !swapCols);
 
                     result->setElement(i + k, j + l, RGBColor48(
                         mCurve[clip((int64_t)((red - mBlack)*mScaleMul[0]), mDepth)],
@@ -65,7 +66,7 @@ RGB48Buffer* Debayer::linear()
     uint16_t red = 0, green = 0, blue = 0;
 
     int swapCols = bpos & 1;
-    int swapRows = bpos & 2;
+    int swapRows = (bpos & 2) >> 1;
     RGB48Buffer *result = new RGB48Buffer(mBayer->h, mBayer->w, false);
 
     for (int i = 0; i < mBayer->h; i += 2)
@@ -74,28 +75,28 @@ RGB48Buffer* Debayer::linear()
             for (int k = 0; k < 2; k++)
                 for (int l = 0; l < 2; l++)
                 {
-                    int color = (l + swapCols) % 2 + ((k + swapRows) % 2) * 2;
+                    int color = (l ^ swapCols) % 2 + ((k ^ swapRows) % 2) * 2;
 
                     switch (color)
                     {
                     case 0: // red
                         red = mBayer->element(i + k, j + l);
-                        green = clampCoord(mBayer, Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1), Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k));
-                        blue = clampCoord(mBayer, Vector2d32(j + l - 1, i + k - 1), Vector2d32(j + l + 1, i + k - 1), Vector2d32(j + l - 1, i + k + 1), Vector2d32(j + l + 1, i + k + 1));
+                        green = clampedSum(mBayer, Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1), Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k));
+                        blue = clampedSum(mBayer, Vector2d32(j + l - 1, i + k - 1), Vector2d32(j + l + 1, i + k - 1), Vector2d32(j + l - 1, i + k + 1), Vector2d32(j + l + 1, i + k + 1));
                         break;
                     case 1: // green1
-                        red = clampCoord(mBayer, Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k));
+                        red = clampedSum(mBayer, Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k));
                         green = mBayer->element(i + k, j + l);
-                        blue = clampCoord(mBayer, Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1));
+                        blue = clampedSum(mBayer, Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1));
                         break;
                     case 2: // green2
-                        red = clampCoord(mBayer, Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1));
+                        red = clampedSum(mBayer, Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1));
                         green = mBayer->element(i + k, j + l);
-                        blue = clampCoord(mBayer, Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k));
+                        blue = clampedSum(mBayer, Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k));
                         break;
                     case 3: // blue
-                        red = clampCoord(mBayer, Vector2d32(j + l - 1, i + k - 1), Vector2d32(j + l + 1, i + k - 1), Vector2d32(j + l - 1, i + k + 1), Vector2d32(j + l + 1, i + k + 1));
-                        green = clampCoord(mBayer, Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1), Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k));
+                        red = clampedSum(mBayer, Vector2d32(j + l - 1, i + k - 1), Vector2d32(j + l + 1, i + k - 1), Vector2d32(j + l - 1, i + k + 1), Vector2d32(j + l + 1, i + k + 1));
+                        green = clampedSum(mBayer, Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1), Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k));
                         blue = mBayer->element(i + k, j + l);
                         break;
                     }
@@ -111,36 +112,35 @@ RGB48Buffer* Debayer::linear()
     return result;
 }
 
-double* Debayer::scaleCoeffs()
+void Debayer::scaleCoeffs()
 {
-    double* scale_mul = new double[3];
     for (int i = 0; i < 3; i++)
-        scale_mul[i] = 1;
+        mScaleMul[i] = 1;
 
     // check if metadata available
-    if (mMetadata == nullptr)
-        return scale_mul; // if not, return vector of 1's (no scaling)
+    if (mMetadata == nullptr || mMetadata->empty())
+        return;
 
     // alias for ease of use
     MetaData &metadata = *mMetadata;
 
     // check if metadata valid
-    if (!metadata["cam_mul"] || !metadata["cam_mul"][0] || !metadata["cam_mul"][2] || !metadata["pre_mul"] || !metadata["pre_mul"][0])
+    if (metadata["cam_mul"].empty() || metadata["cam_mul"][0] == 0 || metadata["cam_mul"][2] == 0)
     {
-        // if white balance not available, do only scaling
+        // if white balance is not available, do only scaling
         // white should be calculated before calling scaleCoeffs()
-        if (metadata["white"])
+        if (!metadata["white"].empty() && metadata["white"][0] != 0)
         {
-            double factor = ((1 << mDepth) - 1) / metadata["white"];
+            double factor = ((1 << mDepth) - 1) / metadata["white"][0];
 
             for (int i = 0; i < 3; i++)
-                scale_mul[i] = factor;
+                mScaleMul[i] = factor;
 
-            return scale_mul;
+            return;
         }
         else
             // TODO: maybe apply the gray world hypothesis instead of doing nothing
-            return scale_mul;
+            return;
     }
 
     unsigned c;
@@ -156,7 +156,7 @@ double* Debayer::scaleCoeffs()
     if (metadata["pre_mul"][1] == 0) metadata["pre_mul"][1] = 1;
 
     // black must be subtracted from the image, so we adjust maximum white level here
-    metadata["white"] -= metadata["black"];
+    metadata["white"][0] -= metadata["black"][0];
 
     // normalize pre_mul
     for (dmin = DBL_MAX, c = 0; c < 4; c++)
@@ -166,9 +166,9 @@ double* Debayer::scaleCoeffs()
     }
 
     // scale colors to the desired bit-depth
-    double factor = ((1 << mDepth) - 1) / metadata["white"];
+    double factor = ((1 << mDepth) - 1) / metadata["white"][0];
     for (int c = 0; c < 3; c++)
-        scale_mul[c] = (metadata["pre_mul"][c] /= dmin)*factor;
+        mScaleMul[c] = (metadata["pre_mul"][c] /= dmin)*factor;
 
     // black frame adjustment, not currently used as we don't have the black frame in metadata (use black level instead)
     // the black level is usually almost equal for all channels with difference less than 1 bit in 12-bit case
@@ -183,10 +183,9 @@ double* Debayer::scaleCoeffs()
     metadata->cblack[4] = metadata->cblack[5] = 0;
     }*/
 
-    return scale_mul;
 }
 
-uint16_t* Debayer::gammaCurve(int mode, int imax)
+uint16_t* Debayer::gammaCurve(int imax)
 {
     // this code is taken from LibRaw
     // TODO: rewrite?
@@ -198,12 +197,11 @@ uint16_t* Debayer::gammaCurve(int mode, int imax)
 
     if (mMetadata == nullptr)
         return curve;
-
     // alias
     MetaData &metadata = *mMetadata;
 
     // if no gamm coefficients are present (or valid), return no transform
-    if (!metadata["gamm"] || !(metadata["gamm"][0] || metadata["gamm"][1] || metadata["gamm"][2] || metadata["gamm"][3] || metadata["gamm"][4]))
+    if (metadata["gamm"].empty() || !(metadata["gamm"][0] || metadata["gamm"][1] || metadata["gamm"][2] || metadata["gamm"][3] || metadata["gamm"][4]))
         return curve;
 
     int i;
@@ -228,18 +226,12 @@ uint16_t* Debayer::gammaCurve(int mode, int imax)
         (1 - pow(g[3], 1 + g[0]))*(1 + g[4]) / (1 + g[0])) - 1;
     else      g[5] = 1 / (g[1] * (g[3] * g[3]) / 2 + 1
         - g[2] - g[3] - g[2] * g[3] * (log(g[3]) - 1)) - 1;
-    if (!mode--)
-    {
-        memcpy(metadata["gamm"].second, g, sizeof g);
-        return curve;
-    }
+
     for (i = 0; i < 0x10000; i++)
     {
         curve[i] = (1 << mDepth) - 1;
         if ((r = (double)i / imax) < 1)
-            curve[i] = (1 << mDepth) * (mode
-                ? (r < g[3] ? r*g[1] : (g[0] ? pow(r, g[0])*(1 + g[4]) - g[4] : log(r)*g[2] + 1))
-                : (r < g[2] ? r / g[1] : (g[0] ? pow((r + g[4]) / (1 + g[4]), 1 / g[0]) : exp((r - 1) / g[2]))));
+            curve[i] = (1 << mDepth) * (r < g[3] ? r*g[1] : (g[0] ? pow(r, g[0])*(1 + g[4]) - g[4] : log(r)*g[2] + 1));
     }
     return curve;
 }
@@ -267,37 +259,34 @@ RGB48Buffer* Debayer::toRGB48(Quality quality)
 void Debayer::preprocess(bool overwrite)
 {
 
-    // (re)calculate white balance coefficients
-    if (overwrite && mScaleMul != nullptr)
-        delete[] mScaleMul;
-    if (overwrite || mScaleMul == nullptr)
-        mScaleMul = scaleCoeffs();
+    // recalculate white balance coefficients
+    scaleCoeffs();
 
     int t_white = 0;
 
-    if (mMetadata != nullptr && (overwrite || mScaleMul == nullptr && mCurve == nullptr))
+    if (mMetadata != nullptr && (overwrite || mCurve == nullptr))
     {
         // alias for ease of use
         MetaData &metadata = *this->mMetadata;
-        int m_bits = this->mMetadata != nullptr &&  metadata["bits"] ? metadata["bits"][0] : mDepth;
+        int m_bits = this->mMetadata != nullptr &&  metadata["bits"][0] ? metadata["bits"][0] : mDepth;
         int shift = m_bits - mDepth;
 
-        mBlack = this->mMetadata != nullptr &&  metadata["black"] ? metadata["black"][0] : 0;
-        int m_white = this->mMetadata != nullptr && metadata["white"] ? metadata["white"][0] : (1 << mDepth) - 1;
-        int m_twhite = this->mMetadata != nullptr && metadata["t_white"] ? (int)metadata["t_white"][0] : m_white;
+        mBlack = !metadata["black"].empty() &&  metadata["black"][0] ? metadata["black"][0] : 0;
+        int m_white = !metadata["white"].empty() && metadata["white"][0] ? metadata["white"][0] : (1 << mDepth) - 1;
+        int m_twhite = !metadata["t_white"].empty() && metadata["t_white"][0] ? (int)metadata["t_white"][0] : m_white;
         t_white = (shift < 0 ? m_twhite << -shift : m_twhite >> shift);
     }
     // (re)calculate gamma correction
     if (overwrite)
         delete[] mCurve;
     if (overwrite || mCurve == nullptr)
-        mCurve = gammaCurve(2, t_white);
+        mCurve = gammaCurve(t_white);
 
 }
 
-uint16_t Debayer::clampCoord(G12Buffer* buf, Vector2d32 coord1, Vector2d32 coord2, Vector2d32 coord3 = Vector2d32(-1, -1), Vector2d32 coord4 = Vector2d32(-1, -1))
+uint16_t Debayer::clampedSum(G12Buffer* buf, Vector2d32 coord1, Vector2d32 coord2, Vector2d32 coord3, Vector2d32 coord4)
 {
-    uint16_t result = 0;
+    uint32_t result = 0;
     uint16_t div = 0;
 
     if (coord1.x() >= 0 && coord1.y() >= 0 && coord1.x() < buf->w && coord1.y() < buf->h)
@@ -327,18 +316,12 @@ uint16_t Debayer::clampCoord(G12Buffer* buf, Vector2d32 coord1, Vector2d32 coord
     if (div == 0)
         return 0;
     else
-        return result / div;
+        return uint16_t(result / div);
 }
 
 Debayer::~Debayer()
 {
     delete[] mCurve;
-    delete[] mScaleMul;
-
-    if (mMetadata != nullptr)
-        for (MetaData::iterator i = mMetadata->begin(); i != mMetadata->end(); i++)
-            delete[] i->second.second;
-
     delete mMetadata;
 }
 

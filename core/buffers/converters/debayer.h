@@ -57,11 +57,11 @@ private:
     int mDepth = 12;
     MetaData *mMetadata = nullptr;
     uint16_t* mCurve = nullptr;
-    double* mScaleMul = nullptr;
+    Vector3dd mScaleMul;
     uint16_t mBlack = 0;
 
-    double* scaleCoeffs();
-    uint16_t* gammaCurve(int mode, int imax);
+    void scaleCoeffs();
+    uint16_t* gammaCurve(int imax);
     void preprocess(bool overwrite = false);
 
     RGB48Buffer* linear();
@@ -69,7 +69,7 @@ private:
 
     // utilitary functions
     uint16_t clip(int64_t x, int depth = 16);
-    uint16_t clampCoord(G12Buffer* buf, Vector2d32 coord1, Vector2d32 coord2, Vector2d32 coord3 = Vector2d32(-1, -1), Vector2d32 coord4 = Vector2d32(-1, -1))
+    uint16_t clampedSum(G12Buffer* buf, Vector2d32 coord1, Vector2d32 coord2, Vector2d32 coord3 = Vector2d32(-1, -1), Vector2d32 coord4 = Vector2d32(-1, -1));
 };
 
 #endif

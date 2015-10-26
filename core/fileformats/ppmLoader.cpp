@@ -77,9 +77,11 @@ G12Buffer* PPMLoader::g12BufferCreateFromPGM(const string& name, MetaData *meta)
     if (meta != nullptr)
     {
         // get significant bit count
-        if (!metadata["bits"])
-            metadata["bits"] = 1;
-        while (maxval >> int(metadata["bits"]))
+        if (metadata["bits"].empty())
+        {
+            metadata["bits"].push_back(1);
+        }
+        while (maxval >> int(metadata["bits"][0]))
         {
             metadata["bits"][0]++;
         }
@@ -163,16 +165,16 @@ char* PPMLoader::nextLine(FILE *fp, int sz, MetaData *metadata)
             if (metadata != nullptr && sscanf(buf, " @meta %s\t@values %d\t", param, &n) == 2)
             {
                 char* numbers = strrchr(buf, '\t') + 1;
-                double *values = new double[n];
-
+                MetaValue values;
                 // read n param values
                 for (int i = 0; i < n; i++)
                 {
-                    sscanf(numbers, "%lf", &(values[i]));
+                    double v = 0;
+                    sscanf(numbers, "%lf", &v);
                     numbers = strchr(numbers, ' ') + 1;
+                    values.push_back(v);
                 }
-
-                metadata->insert(MetaPair(param, MetaValue(n, values)));
+                metadata->insert(MetaPair(param, values));
             }
             memset(buf, 0, sz);
         }
@@ -250,11 +252,8 @@ bool PPMLoader::writeHeader(FILE *fp, unsigned long int h, unsigned long int w, 
     if (meta)
         for (MetaData::iterator i = metadata.begin(); i != metadata.end(); i++)
         {
-            // this may be confusing
-            // the structure of metadata is as follows:
-            // [1. NAME : 2. [1. LENGTH : 2. VALUES]]
-            fprintf(fp, "# @meta %s\t@values %i\t", "black", i->second.first);
-            for (int j = 0; j < i->second.first; j++)
+            fprintf(fp, "# @meta %s\t@values %i\t", "black", i->second.size());
+            for (int j = 0; j < i->second.size(); j++)
                 fprintf(fp, "%f ", i->second[j]);
         }
 
