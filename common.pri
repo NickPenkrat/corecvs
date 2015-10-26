@@ -50,13 +50,14 @@ asserts {
     DEFINES += ASSERTS
 }
 
-# Autodetect block
-
+#
+# Autodetect CPU features block
+#
 CPU_FLAGS=""
 
 with_native:!win32 {
     CPU_FLAGS += $$system(cat /proc/cpuinfo | grep -m 1 "^flags")
-#    message (Platform natively support $$CPU_FLAGS)
+#    message (Platform natively supports $$CPU_FLAGS)
 
     contains(CPU_FLAGS, "sse") {
         CONFIG += with_sse
@@ -83,10 +84,14 @@ with_native:!win32 {
 #        message (Natively support FMA);
     }
 
-} else {
-
-    CPU_FLAGS_PATH=$$shell_path("$$ROOT_DIR\\siblings\\ckcpu\\CHKCPU32.exe")
-    CPU_FLAGS += $$system("$$CPU_FLAGS_PATH" /V)
+} else:!build_pass {
+    CPU_FLAGS_PATH=$$shell_path($$PWD/../../siblings/ckcpu/CHKCPU32.exe)
+    exists("$$CPU_FLAGS_PATH") {
+        CPU_FLAGS += $$system("$$CPU_FLAGS_PATH" /V)
+    } else {
+        message (CPU_FLAGS_PATH=$$CPU_FLAGS_PATH NOT found!)
+    }
+    #message (Platform natively supports $$CPU_FLAGS)
 
     contains(CPU_FLAGS, "SSE,") {
         CONFIG += with_sse
