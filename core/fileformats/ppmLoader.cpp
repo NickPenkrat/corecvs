@@ -134,7 +134,7 @@ done:
     if (fp != NULL)
         fclose(fp);
     if (charImage != NULL)
-        delete[] charImage;
+        deletearr_safe(charImage);
     return result;
 }
 
@@ -292,7 +292,7 @@ int PPMLoader::save(const string& name, G12Buffer *buffer, MetaData* metadata)
             charImage[offset * 2 + 1] = buffer->element(i, j) & 0xFF;
         }
     fwrite(charImage, 2, h * w, fp);
-    delete[] charImage;
+    deletearr_safe(charImage);
     fclose(fp);
     return 0;
 }
@@ -332,7 +332,7 @@ int PPMLoader::save(const string& name, RGB24Buffer *buffer, MetaData* metadata)
 
     fwrite(charImage, 3, h * w, fp);
 
-    delete[] charImage;
+    deletearr_safe(charImage);
     fclose(fp);
     return 0;
 }
@@ -399,7 +399,7 @@ int PPMLoader::save(const string& name, RGB48Buffer *buffer, MetaData* metadata)
 
     fwrite(charImage, 3, bytes * h * w, fp);
 
-    delete[] charImage;
+    deletearr_safe(charImage);
     fclose(fp);
     return 0;
 }
@@ -445,7 +445,7 @@ int PPMLoader::saveG16(const string& name, G12Buffer *buffer)
         }
     }
     fwrite(charImage, 2, h * w, fp);
-    delete[] charImage;
+    deletearr_safe(charImage);
     fclose(fp);
     return 0;
 }
@@ -526,6 +526,6 @@ done:
     if (fp != NULL)
         fclose(fp);
     if (charImage != NULL)
-        delete[] charImage;
+        deletearr_safe(charImage);
     return toReturn;
 }

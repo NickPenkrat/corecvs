@@ -46,7 +46,7 @@ public:
     explicit RGBTColor(T color)
     {
         uint8_t shift = sizeof(T);
-        uint64_t max = 1 << (shift * 8) - 1;
+        uint64_t max = (1 << (shift * 8)) - 1;
 
         r() = color & max;
         g() = (color >> shift * 8) & max;

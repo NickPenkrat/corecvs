@@ -62,7 +62,7 @@ TEST(Debayer, colorTest)
 
     CORE_ASSERT_TRUE(b_sum > r_sum + g_sum, "The decoded image has a wrong blue channel");
 
-    delete ppm;
-    delete ppmLoader;
-    delete result;
+    delete_safe(ppm);
+    delete_safe(ppmLoader);
+    delete_safe(result);
 }

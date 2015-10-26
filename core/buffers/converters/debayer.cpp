@@ -278,7 +278,7 @@ void Debayer::preprocess(bool overwrite)
     }
     // (re)calculate gamma correction
     if (overwrite)
-        delete[] mCurve;
+        deletearr_safe(mCurve);
     if (overwrite || mCurve == nullptr)
         mCurve = gammaCurve(t_white);
 
@@ -321,7 +321,6 @@ uint16_t Debayer::clampedSum(G12Buffer* buf, Vector2d32 coord1, Vector2d32 coord
 
 Debayer::~Debayer()
 {
-    delete[] mCurve;
-    delete mMetadata;
+    deletearr_safe(mCurve);
 }
 

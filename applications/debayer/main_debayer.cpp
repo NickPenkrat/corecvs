@@ -7,7 +7,7 @@ Bayer to PPM converter
 #include <iostream>
 #include "ppmLoader.h"
 #include "converters/debayer.h"
-
+//#include "commandLineSetter.h"
 #include <qcommandlineparser.h>
 
 using std::cout;
@@ -20,6 +20,7 @@ int main(int argc, char *argv[])
     QCoreApplication app(argc, argv);
     QCoreApplication::setApplicationName("PGM Demosaic Tool");
     QCoreApplication::setApplicationVersion("1.0");
+    
     QCommandLineParser parser;
     parser.setApplicationDescription("PGM Bayer to RGB PPM converter");
     parser.addHelpOption();
@@ -33,10 +34,11 @@ int main(int argc, char *argv[])
 
     int quality = parser.value("quality").toInt();
 
-    PPMLoader ldr;
-    MetaData* metadata = new MetaData;
     if (parser.positionalArguments().empty())
         parser.showHelp(-1);
+
+    PPMLoader ldr;
+    MetaData* metadata = new MetaData;
     string filename = parser.positionalArguments()[0].toStdString();
     G12Buffer* bayer = ldr.load(filename, metadata);
     Debayer d(bayer, 12, metadata);
@@ -45,13 +47,14 @@ int main(int argc, char *argv[])
     switch (quality)
     {
     case 0:
-    default:
         result = d.toRGB48(Debayer::Nearest);
         break;
     case 1:
+    default:
         result = d.toRGB48(Debayer::Bilinear);
         break;
     }
 
     ldr.save("out.ppm", result);
+    delete_safe(metadata);
 }
