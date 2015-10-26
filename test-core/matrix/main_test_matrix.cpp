@@ -645,16 +645,16 @@ void printResult(double gflops, uint64_t delay, int runs)
      ));
 }
 
-TEST(MatrixProfile, DISABLED_profileMatrixMulSize3)
+TEST(MatrixProfile, profileMatrixMulSize3)
 {
-    int sizes   []= {1024, 2048, 4096, 16384};
-    int polca   []= {  20,   20,    5,     1};
-    int runs    []= {  10,    5,    2,     2};
+    int sizes   []= {1024, 2048, 4096};
+    int polca   []= {  20,   20,    5};
+    int runs    []= {  10,    5,    2};
 
-    bool runsimple[]= { true, false, false, false};
-    bool runslow  []= { true, true , false, false};
-    bool runour   []= { true, true ,  true, false};
-    bool runfast  []= { true, true ,  true,  true};
+    bool runsimple[]= { true, false, false};
+    bool runslow  []= { true, true , false};
+    bool runour   []= { true, true ,  true};
+    bool runfast  []= { true, true ,  true};
 
 
     printHeader();
