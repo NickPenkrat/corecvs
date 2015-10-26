@@ -11,7 +11,7 @@ exists(../../../../config.pri) {
 ROOT_DIR=$$PWD/$$ROOT_DIR
 
 TEMPLATE = app
-TARGET   = calibration_test
+TARGET   = test_calibration
 CONFIG  += console
 
 #DESTDIR = $$ROOT_DIR/bin
