@@ -35,7 +35,7 @@ public:
      * correction format [Journal of Computational and Applied Mathematics 50 (1994)]
      */
     static double evaluate(const double* coeff, const double &x, const size_t &degree);
-    static constexpr double RELATIVE_TOLERANCE = 1e-9;
+    static const double RELATIVE_TOLERANCE;
 private:
     /*
      * Degree-unspecific solver based on apropriate EV-problem

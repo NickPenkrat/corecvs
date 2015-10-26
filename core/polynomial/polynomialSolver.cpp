@@ -16,6 +16,8 @@
 #error Cannot build polynomial solver without BLAS/LAPACK
 #endif
 
+const double corecvs::PolynomialSolver::RELATIVE_TOLERANCE = 1e-9;
+
 double corecvs::PolynomialSolver::evaluate(const double* coeff, const double &x, const size_t &degree)
 {
     if (!degree) return coeff[0];
