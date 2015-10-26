@@ -21,7 +21,7 @@ public:
     {
         Nearest = -5,
         Bilinear = 0,
-
+        AHD = 3,
     };
 
     /**

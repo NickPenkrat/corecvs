@@ -1,7 +1,7 @@
 /**
  * \file    fileformats\metamap.h
  *
- * Declares the metamap class for metadata handling.
+ * Declares the metamap for metadata handling.
  */
 
 #ifndef CMETAMAP_H_
