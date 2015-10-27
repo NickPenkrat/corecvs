@@ -2,6 +2,7 @@
 #define POLYNOMIALSOLVER_H
 
 #include "global.h"
+#include "polynomial.h"
 
 #define FIEDLER
 
@@ -28,12 +29,7 @@ public:
      * Dispatch method for solving arbitrary degree
      */
     static size_t solve(const double* coeff, double* roots, size_t degree);
-    /*
-     * Horner-scheme evaluator
-     * Note, that this is not machine-accurate evaluator
-     * TODO: replace with machine-accurate evaluator (for example -- Luc Paquet Precise evaluation of a polynomial at a point given in staggered
-     * correction format [Journal of Computational and Applied Mathematics 50 (1994)]
-     */
+    static void   solve(const corecvs::Polynomial &poly, std::vector<double> &roots);
     static double evaluate(const double* coeff, const double &x, const size_t &degree);
     static const double RELATIVE_TOLERANCE;
 private:

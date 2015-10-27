@@ -80,7 +80,13 @@ size_t corecvs::PolynomialSolver::solve(const double* coeff, double* roots, size
     return solve_companion(coeff, roots, degree);
 }
 
-// Unfortunately I do not know any super-stable closed-form methods for solving 3+-order polynomial equations and do not want to bother with Cardano/Ferrari-like stuff
+void corecvs::PolynomialSolver::solve(const corecvs::Polynomial &poly, std::vector<double> &roots)
+{
+    roots.resize(poly.degree());
+    roots.resize(solve(poly.data(), &roots[0], poly.degree()));
+}
+
+// Unfortunately I do not want to implement any super-stable closed-form methods for solving 3+-order polynomial equations and do not want to bother with Cardano/Ferrari-like stuff
 size_t corecvs::PolynomialSolver::solve_companion(const double* coeff, double* roots, const size_t &degree)
 {
     /*
