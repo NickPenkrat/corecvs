@@ -494,7 +494,7 @@ DirectShowCaptureInterface::CapErrorCode DirectShowCaptureInterface::getDeviceNa
 string DirectShowCaptureInterface::getDeviceSerial(int num)
 {
     CORE_UNUSED(num);
-    return "-unsupported-";
+    return "-unsupported-";                                 // first minus is very important!
 }
 
 // Logging

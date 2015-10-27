@@ -10,10 +10,10 @@
 
 #define PORT_NAME "COM1"
 
-RotaryTableControlWidget::RotaryTableControlWidget(QWidget *parent) :
-    QWidget(parent),
-    ui(new Ui::RotaryTableControlWidget),
-    mPort(PORT_NAME)
+RotaryTableControlWidget::RotaryTableControlWidget(QWidget *parent)
+    : QWidget(parent)
+    , ui(new Ui::RotaryTableControlWidget)
+    , mPort(PORT_NAME)
 {
     ui->setupUi(this);
     ui->widget->setCollapseTree(true);
