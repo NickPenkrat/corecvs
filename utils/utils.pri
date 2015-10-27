@@ -48,7 +48,7 @@ UTILS_INCLUDEPATH = \
 
 INCLUDEPATH += $$UTILS_INCLUDEPATH
 
-QT += xml gui widgets
+QT += xml gui widgets serialport
 
 UTILS_BINDIR = $$ROOT_DIR/bin
 #message(Utils.pri ROOT_DIR is <$$ROOT_DIR>. Bindir is <$$UTILS_BINDIR>. PWD is <$$PWD>)

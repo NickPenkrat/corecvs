@@ -7,18 +7,18 @@ RotationPlanGenerator::RotationPlanGenerator(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ui->widgetYawMin->setValue(0);
-    ui->widgetYawMax->setValue(degToRad(330));
+    cint pitchNum = 24;
 
-    ui->widgetPitchMin->setValue(- M_PI / 12.0);
-    ui->widgetPitchMax->setValue(  M_PI / 12.0);
+    ui->widgetYawMin->setValue(0);
+    ui->widgetYawMax->setValue(degToRad(360 - 360 / pitchNum));
+
+    ui->widgetPitchMin->setValue(-M_PI / pitchNum);
+    ui->widgetPitchMax->setValue( M_PI / pitchNum);
 
     ui->widgetRollMin->setValue(0.0);
     ui->widgetRollMax->setValue(0.0);
 
-
     connect(ui->generatePushButton, SIGNAL(released()), this, SLOT(generate()));
-
 }
 
 double intrpolate(double min, double max, int val, int maxval)
@@ -34,7 +34,6 @@ double intrpolate(double min, double max, int val, int maxval)
 void RotationPlanGenerator::generate()
 {
     vector<CameraLocationAngles> positions;
-
 
     int ny = ui->stepYawSpinBox  ->value();
     int np = ui->stepPitchSpinBox->value();

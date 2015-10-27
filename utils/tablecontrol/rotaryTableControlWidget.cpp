@@ -4,12 +4,16 @@
 #include "ui_rotaryTableControlWidget.h"
 
 #include "mesh3DScene.h"
+#include "log.h"
 
 #include "rotaryTableMeshModel.h"
 
+#define PORT_NAME "COM1"
+
 RotaryTableControlWidget::RotaryTableControlWidget(QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::RotaryTableControlWidget)
+    ui(new Ui::RotaryTableControlWidget),
+    mPort(PORT_NAME)
 {
     ui->setupUi(this);
     ui->widget->setCollapseTree(true);
@@ -38,11 +42,39 @@ RotaryTableControlWidget::RotaryTableControlWidget(QWidget *parent) :
     selected = 0;
     loadCommands("commands.json");
     updateState();
+
+    if (!mPort.isOpen())
+    {
+        mPort.open(QIODevice::ReadWrite);
+        if (!mPort.setBaudRate(QSerialPort::Baud115200)) {
+            L_ERROR_P("RotaryTable port - setBaudRate");
+        }
+        if (!mPort.setDataBits(QSerialPort::Data8)) {
+            L_ERROR_P("RotaryTable port - setDataBits");
+        }
+        if (!mPort.setParity(QSerialPort::NoParity)) {
+            L_ERROR_P("RotaryTable port - setParity");
+        }
+        if (!mPort.setStopBits(QSerialPort::OneStop)) {
+            L_ERROR_P("RotaryTable port - setStopBits");
+        }
+        if (!mPort.setFlowControl(QSerialPort::NoFlowControl)) {
+            L_ERROR_P("RotaryTable port - setFlowControl");
+        }
+
+        if (mPort.isOpen())
+        {
+            mPort.write("MODE = NONINTERPOLATED\r\nWAIT 1000\r\n");
+        }
+    }
+
+    L_INFO_P("Rotary table port <%s> opened: %s", PORT_NAME, mPort.isOpen() ? "ok" : "err");
 }
 
 RotaryTableControlWidget::~RotaryTableControlWidget()
 {
     delete ui;
+    mPort.close();
 }
 
 void RotaryTableControlWidget::loadCommands(QString filename)
@@ -79,7 +111,6 @@ void RotaryTableControlWidget::updateTable()
         int newRow = widget->rowCount();
         widget->setRowCount(newRow + 1);
 
-
         QTableWidgetItem *item1 = new QTableWidgetItem(QString("%1°").arg(radToDeg(positions[count].yaw())));
         QTableWidgetItem *item2 = new QTableWidgetItem(QString("%1°").arg(radToDeg(positions[count].pitch())));
         QTableWidgetItem *item3 = new QTableWidgetItem(QString("%1°").arg(radToDeg(positions[count].roll())));
@@ -94,17 +125,31 @@ void RotaryTableControlWidget::updateTable()
         widget->setItem(newRow, COLUMN_AXIS_1, item1);
         widget->setItem(newRow, COLUMN_AXIS_2, item2);
         widget->setItem(newRow, COLUMN_AXIS_3, item3);
-
-
     }
 }
 
 void RotaryTableControlWidget::execute()
 {
-    qDebug("Move to:");
-    qDebug() << QString ("O: %1").arg(radToDeg(ui->widgetYaw  ->value()));
-    qDebug() << QString ("M: %1").arg(radToDeg(ui->widgetPitch->value()));
-    qDebug() << QString ("I: %1").arg(radToDeg(ui->widgetRoll ->value()));
+    double y = radToDeg(ui->widgetYaw->value());
+    double p = radToDeg(ui->widgetPitch->value());
+    double r = radToDeg(ui->widgetRoll->value());
+
+    L_INFO_P("Move to [O:%.4f, M:%.4f, I:%.4f]", y, p, r);
+
+    char cmd[256];
+    snprintf2buf(cmd,
+        "AX_O %.0f\r\n"
+        "AX_M %.0f\r\n"
+        "AX_I %.0f\r\n"
+        "WAIT 2000\r\n"
+        , y, p, r);
+    L_INFO_P("The command to send:<%s>", cmd);
+
+    if (mPort.isOpen())
+    {
+        qint64 res = mPort.write(cmd);
+        L_INFO_P("The command is sent, res = %d", (int)res);
+    }
 }
 
 void RotaryTableControlWidget::executeAndIncrement()
