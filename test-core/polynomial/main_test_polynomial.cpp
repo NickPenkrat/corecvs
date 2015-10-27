@@ -5,6 +5,7 @@
 #include "gtest/gtest.h"
 
 #include "global.h"
+#include "polynomial.h"
 #include "polynomialSolver.h"
 
 #include <random>
@@ -15,18 +16,32 @@ const double REL_SOL_TOLERANCE = 1e-5;
 const double COEFF_LIMIT = 1e2;
 const double MAX_SCALE_LIMIT = 1e2;
 
-TEST(PolynomialSolversTest, testEvaluate)
+TEST(PolynomialTest, testBasics)
 {
-    // 1 + 2x + 3x^2 + 4x^3
-    double coeff[] = {  1.0,  2.0, 3.0,  4.0};
-    double xx[]    = { -2.0, -1.0, 0.0,  1.0,  2.0};
-    double values[]= {-23.0, -2.0, 1.0, 10.0, 49.0};
+    auto polyX = corecvs::Polynomial::X();
+    ASSERT_TRUE(polyX.degree() == 1);
+    ASSERT_TRUE((polyX * 2.0).degree() == 1);
+    ASSERT_TRUE((polyX * corecvs::Polynomial::X()).degree() == 2);
+    ASSERT_TRUE((polyX + 2.0).degree() == 1);
+    ASSERT_TRUE((polyX - 2.0).degree() == 1);
+    auto poly = (corecvs::Polynomial::X() - 1.0) *
+                (corecvs::Polynomial::X() - 2.0) *
+                (corecvs::Polynomial::X() - 3.0);
+    std::cout << "Poly created: " << poly << std::endl;
+    ASSERT_TRUE(poly.degree() == 3);
+    ASSERT_NEAR(poly(1.0), 0.0, 1e-9);
+    ASSERT_NEAR(poly(2.0), 0.0, 1e-9);
+    ASSERT_NEAR(poly(3.0), 0.0, 1e-9);
+    ASSERT_NEAR(poly(4.0), 6.0, 1e-9);
+}
 
-    int deg = sizeof(coeff) / sizeof( coeff[0]) - 1;
-    int n   = sizeof(values)/ sizeof(values[0]);
-
-    for (int i = 0; i < n; i++)
-        ASSERT_NEAR(corecvs::PolynomialSolver::evaluate(coeff, xx[i], deg), values[i], 1e-9);
+TEST(PolynomialTest, testFromRoots)
+{
+    std::vector<double> roots = {1.0, 2.0, 3.0, -5.0, 6.0, 7.0};
+    auto poly = corecvs::Polynomial::FromRoots(roots);
+    for (auto& r: roots)
+        ASSERT_NEAR(poly(r), 0.0, 1e-9);
+    ASSERT_FALSE(std::abs(poly(-1.0)) < 0.5);
 }
 
 TEST(PolynomialSolversTest, testPow1)
@@ -54,7 +69,7 @@ TEST(PolynomialSolversTest, testPow1)
     rootsN = corecvs::PolynomialSolver::solve_imp<1>(coeff, roots);
     ASSERT_TRUE(rootsN == 1);
     ASSERT_NEAR(corecvs::PolynomialSolver::evaluate(coeff, roots[0], 1), 0.0, REL_SOL_TOLERANCE);
-    
+
     coeff[0] = 1e11;
     coeff[1] = 1e10;
     rootsN = corecvs::PolynomialSolver::solve_imp<1>(coeff, roots);
@@ -97,7 +112,7 @@ void coeffByRoots(std::vector<double> &coeff, std::vector<double> &roots)
     {
         for (size_t i = roots.size(); i > 0; --i)
         {
-            coeff[i] = (coeff[i - 1] - r * coeff[i]); 
+            coeff[i] = (coeff[i - 1] - r * coeff[i]);
         }
         coeff[0] = -r * coeff[0];
     }
@@ -135,7 +150,7 @@ TEST(PolynomialSolversTest, testPowN)
         roots.resize(N);
         roots2.resize(N);
         coeffByRoots(coeff, roots);
-    
+
         int cnt = corecvs::PolynomialSolver::solve(&coeff[0], &roots2[0], N);
         ASSERT_TRUE(cnt == N);
         std::sort(roots.begin(), roots.end());
@@ -150,4 +165,24 @@ TEST(PolynomialSolversTest, testPowN)
         }
     }
     std::cout << "MAX diff: " << maxdiff << std::endl;
+}
+
+TEST(PolynomialSolversTest, testPowN2)
+{
+    std::mt19937 rng(DEFAULT_SEED);
+    std::uniform_real_distribution<double> unif(-COEFF_LIMIT, COEFF_LIMIT);
+    for (int iter = 0; iter < RNG_RETRIES; ++iter)
+    {
+        int N = 3 + rng() % 4;
+        std::vector<double> roots, roots2;
+        for (int i = 0; i < N; ++i)
+            roots.push_back(unif(rng));
+        auto poly = corecvs::Polynomial::FromRoots(roots);
+        corecvs::PolynomialSolver::solve(poly, roots2);
+        ASSERT_TRUE(roots.size() == roots2.size());
+        std::sort(roots.begin(), roots.end());
+        std::sort(roots2.begin(), roots2.end());
+        for (size_t i = 0; i < roots.size(); ++i)
+            ASSERT_NEAR(roots[i], roots2[i], REL_SOL_TOLERANCE * std::abs(roots[i]));
+    }
 }
