@@ -1,5 +1,6 @@
 #include "calibrationJob.h"
 
+
 #include <array>
 
 #ifdef WITH_OPENCV
@@ -273,6 +274,7 @@ corecvs::RGB24Buffer CalibrationJob::LoadImage(const std::string &path)
     if (!buffer)
         return corecvs::RGB24Buffer();
     corecvs::RGB24Buffer res = *buffer;
+    delete buffer;
     return res;
 }
 

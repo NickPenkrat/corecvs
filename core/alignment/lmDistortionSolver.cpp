@@ -89,25 +89,26 @@ RadialCorrection LMLinesDistortionSolver::solve()
         parameters.evenPowersOnly()
     );
 
-    FunctionArgs *costFuntion = NULL;
+    FunctionArgs *costFunction = NULL;
     if (parameters.costAlgorithm() == LineDistortionEstimatorCost::JOINT_ANGLE_COST) {
-        costFuntion = new AnglePointsFunction (straights, modelFactory);
+        costFunction = new AnglePointsFunction (straights, modelFactory);
     } else {
-        costFuntion = new DistPointsFunction  (straights, modelFactory);
+        costFunction = new DistPointsFunction  (straights, modelFactory);
     }
 
     LevenbergMarquardt straightLevMarq(parameters.iterationNumber(), 2, 1.5);
-    straightLevMarq.f = costFuntion;
+    straightLevMarq.f = costFunction;
 
     /* First aproximation is zero vector */
-    vector<double> first(costFuntion->inputs, 0);
+    vector<double> first(costFunction->inputs, 0);
     modelFactory.getModel(correction, &first[0]);
 
-    vector<double> value(costFuntion->outputs, 0);
+    vector<double> value(costFunction->outputs, 0);
     vector<double> straightParams = straightLevMarq.fit(first, value);
 
     L_INFO_P("Ending distortion calibration");
 //    updateScore();
+    delete costFunction;
     return modelFactory.getRadial(&straightParams[0]);
 
 }
@@ -124,22 +125,22 @@ void LMLinesDistortionSolver::computeCosts(const RadialCorrection &correction, b
         parameters.evenPowersOnly()
     );
 
-    FunctionArgs *costFuntion = NULL;
+    FunctionArgs *costFunction = NULL;
     for (int costType = 0; costType < LineDistortionEstimatorCost::LINE_DISTORTION_ESTIMATOR_COST_LAST; costType++)
     {
         costs[costType] = EllipticalApproximation1d();
 
         if (costType == LineDistortionEstimatorCost::JOINT_ANGLE_COST) {
-            costFuntion = new AnglePointsFunction (straights, modelFactory);
+            costFunction = new AnglePointsFunction (straights, modelFactory);
         } else {
-            costFuntion = new DistPointsFunction  (straights, modelFactory);
+            costFunction = new DistPointsFunction  (straights, modelFactory);
         }
 
-        vector<double> modelParameters(costFuntion->inputs, 0);
+        vector<double> modelParameters(costFunction->inputs, 0);
         modelFactory.getModel(correction, &modelParameters[0]);
 
-        vector<double> result(costFuntion->outputs);
-        costFuntion->operator()(&modelParameters[0], &result[0]);
+        vector<double> result(costFunction->outputs);
+        costFunction->operator()(&modelParameters[0], &result[0]);
 
         for (unsigned i = 0; i < result.size(); i++) {
             costs[costType].addPoint(result[i]);
@@ -170,6 +171,7 @@ void LMLinesDistortionSolver::computeCosts(const RadialCorrection &correction, b
             }
         }      
     }
+    delete costFunction;
 }
 
 } // namespace corecvs

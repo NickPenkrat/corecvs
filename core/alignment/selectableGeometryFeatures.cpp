@@ -199,6 +199,11 @@ void SelectableGeometryFeatures::clearAll()
     mSelectedPaths.clear();
     mSelectedPoints.clear();
 
+    for (auto&pp: mPaths)
+        delete pp;
+    for (auto&pp: mPoints)
+        delete pp;
+
     mPaths.clear();
     mPoints.clear();
 }
