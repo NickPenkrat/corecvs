@@ -17,9 +17,9 @@ static void addCmdsToScriptAll(const string &s)
     std::ofstream f(SCRIPT_ROTATE_PLAY_ALL, std::ios_base::app);
 
     if (!exist) {
-        f << "MODE=NONINTERPOLATED" << std::endl;
+        f << "MODE=NONINTERPOLATED" << std::endl << std::endl;
     }
-    f << s.c_str();
+    f << s.c_str() << std::endl;
     f.close();
 }
 
@@ -44,6 +44,7 @@ RotaryTableControlWidget::RotaryTableControlWidget(QWidget *parent)
 
     connect(ui->executePushButton   , SIGNAL(released()), this, SLOT(execute()));
     connect(ui->executeIncPushButton, SIGNAL(released()), this, SLOT(executeAndIncrement()));
+    connect(ui->executeAllPushButton, SIGNAL(released()), this, SLOT(executeAll()));
 
     connect(&generator, SIGNAL(newListGenerated(vector<CameraLocationAngles>)),
             this, SLOT(newList(vector<CameraLocationAngles>)));
@@ -88,7 +89,7 @@ RotaryTableControlWidget::~RotaryTableControlWidget()
     delete ui;
     //mPort.close();
 
-    addCmdsToScriptAll("END\n");
+    addCmdsToScriptAll("END");
 }
 
 void RotaryTableControlWidget::loadCommands(QString filename)
@@ -125,9 +126,13 @@ void RotaryTableControlWidget::updateTable()
         int newRow = widget->rowCount();
         widget->setRowCount(newRow + 1);
 
-        QTableWidgetItem *item1 = new QTableWidgetItem(QString("%1°").arg(radToDeg(positions[count].yaw())));
-        QTableWidgetItem *item2 = new QTableWidgetItem(QString("%1°").arg(radToDeg(positions[count].pitch())));
-        QTableWidgetItem *item3 = new QTableWidgetItem(QString("%1°").arg(radToDeg(positions[count].roll())));
+        // QString("%1°").arg(radToDeg(positions[count].yaw()))  // uses 4-5 digits after comma, which are not nice
+        char buf[32];
+#define TOSTR(dval) (snprintf(buf, "%.3f°", (float)dval), buf)
+
+        QTableWidgetItem *item1 = new QTableWidgetItem(QString(TOSTR(radToDeg(positions[count].yaw()))));
+        QTableWidgetItem *item2 = new QTableWidgetItem(QString(TOSTR(radToDeg(positions[count].pitch()))));
+        QTableWidgetItem *item3 = new QTableWidgetItem(QString(TOSTR(radToDeg(positions[count].roll()))));
 
         if (count == selected)
         {
@@ -190,12 +195,26 @@ void RotaryTableControlWidget::executeAndIncrement()
     updateTable();
 }
 
+void RotaryTableControlWidget::executeAll()
+{
+    selected = 0;
+    selectedToCurrent();
+    updateState();
+    updateTable();
+
+    QFile::remove(SCRIPT_ROTATE_PLAY_ALL);
+
+    do {
+        executeAndIncrement();
+    } while (selected != 0);
+}
+
 void RotaryTableControlWidget::save()
 {
     QString fileName = QFileDialog::getSaveFileName(this
         , tr("Save Rotation script")
         , "."
-        , tr("Roations (*.json)"));
+        , tr("Rotations (*.json)"));
 
     if (!fileName.isEmpty())
     {
@@ -208,7 +227,7 @@ void RotaryTableControlWidget::load()
     QString fileName = QFileDialog::getOpenFileName(this
         , tr("Load Rotation script")
         , "."
-        , tr("Roations (*.json)"));
+        , tr("Rotations (*.json)"));
 
     if (!fileName.isEmpty())
     {

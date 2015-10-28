@@ -14,7 +14,7 @@
    <string>Dialog</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../../../../open/resources/main.qrc">
+   <iconset resource="../../resources/main.qrc">
     <normaloff>:/new/prefix1/camera_lens.png</normaloff>:/new/prefix1/camera_lens.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout">
@@ -192,7 +192,7 @@
       <string>Refresh</string>
      </property>
      <property name="icon">
-      <iconset resource="../../../../open/resources/main.qrc">
+      <iconset resource="../../resources/main.qrc">
        <normaloff>:/new/prefix1/refresh.png</normaloff>:/new/prefix1/refresh.png</iconset>
      </property>
      <property name="iconSize">
@@ -253,7 +253,7 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="../../../../open/resources/main.qrc">
+         <iconset resource="../../resources/main.qrc">
           <normaloff>:/new/prefix1/sharpen.png</normaloff>:/new/prefix1/sharpen.png</iconset>
         </property>
         <property name="iconSize">
@@ -335,157 +335,10 @@
       <property name="verticalSpacing">
        <number>3</number>
       </property>
-      <item row="10" column="0">
-       <widget class="QPushButton" name="captureAdvancePushButton">
-        <property name="styleSheet">
-         <string notr="true">text-align:left</string>
-        </property>
-        <property name="text">
-         <string>Take Frames and Increment</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../../../../open/resources/main.qrc">
-          <normaloff>:/new/prefix1/camera_lens.png</normaloff>:/new/prefix1/camera_lens.png</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item row="10" column="1">
-       <widget class="QPushButton" name="capturePushButton">
-        <property name="styleSheet">
-         <string notr="true">text-align:left</string>
-        </property>
-        <property name="text">
-         <string>Take Frames</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../../../../open/resources/main.qrc">
-          <normaloff>:/new/prefix1/camera_lens.png</normaloff>:/new/prefix1/camera_lens.png</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="0">
-       <widget class="QPushButton" name="outDirButton">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="toolTip">
-         <string>Select output folder</string>
-        </property>
-        <property name="layoutDirection">
-         <enum>Qt::LeftToRight</enum>
-        </property>
-        <property name="text">
-         <string>Output folder</string>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item row="12" column="0" colspan="2">
-       <widget class="QPushButton" name="stopPushButton">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">text-align:left</string>
-        </property>
-        <property name="text">
-         <string>Stop Capture</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../../../../open/resources/main.qrc">
-          <normaloff>:/new/prefix1/stop.png</normaloff>:/new/prefix1/stop.png</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QSpinBox" name="skipFramesSpinBox">
-        <property name="suffix">
-         <string> frames</string>
-        </property>
-        <property name="maximum">
-         <number>99999</number>
-        </property>
-        <property name="value">
-         <number>7</number>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="1">
-       <widget class="QDoubleSpinBox" name="angleStepSpinBox">
-        <property name="suffix">
-         <string>°</string>
-        </property>
-        <property name="minimum">
-         <double>-999999.000000000000000</double>
-        </property>
-        <property name="maximum">
-         <double>999999.000000000000000</double>
-        </property>
-        <property name="value">
-         <double>15.000000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_6">
-        <property name="text">
-         <string>PhotoStation Point Name</string>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="1">
-       <widget class="QDoubleSpinBox" name="angleSpinBox">
-        <property name="suffix">
-         <string>°</string>
-        </property>
-        <property name="minimum">
-         <double>-999999.000000000000000</double>
-        </property>
-        <property name="maximum">
-         <double>999999.989999999990687</double>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="0">
        <widget class="QLabel" name="label_7">
         <property name="text">
          <string>Skip First</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="0">
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>Angle Step</string>
         </property>
        </widget>
       </item>
@@ -512,15 +365,18 @@
         </property>
        </widget>
       </item>
-      <item row="7" column="0">
-       <widget class="QLabel" name="label_11">
+      <item row="5" column="0">
+       <widget class="QLabel" name="label_4">
         <property name="text">
-         <string>Output Format</string>
+         <string>Angle Step</string>
         </property>
        </widget>
       </item>
       <item row="7" column="1">
        <widget class="QComboBox" name="outputFormatComboBox">
+        <property name="currentIndex">
+         <number>1</number>
+        </property>
         <item>
          <property name="text">
           <string>JPEG 85%</string>
@@ -587,10 +443,177 @@
         </property>
        </widget>
       </item>
+      <item row="7" column="0">
+       <widget class="QLabel" name="label_11">
+        <property name="text">
+         <string>Output Format</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QDoubleSpinBox" name="angleStepSpinBox">
+        <property name="suffix">
+         <string>°</string>
+        </property>
+        <property name="minimum">
+         <double>-999999.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>999999.000000000000000</double>
+        </property>
+        <property name="value">
+         <double>15.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QSpinBox" name="skipFramesSpinBox">
+        <property name="suffix">
+         <string> frames</string>
+        </property>
+        <property name="maximum">
+         <number>99999</number>
+        </property>
+        <property name="value">
+         <number>7</number>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="0">
+       <widget class="QPushButton" name="outDirButton">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>Select output folder</string>
+        </property>
+        <property name="layoutDirection">
+         <enum>Qt::LeftToRight</enum>
+        </property>
+        <property name="text">
+         <string>Output folder</string>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="QDoubleSpinBox" name="angleSpinBox">
+        <property name="suffix">
+         <string>°</string>
+        </property>
+        <property name="minimum">
+         <double>-999999.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>999999.989999999990687</double>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>PhotoStation Point Name</string>
+        </property>
+       </widget>
+      </item>
+      <item row="13" column="0">
+       <widget class="QPushButton" name="captureAdvancePushButton">
+        <property name="styleSheet">
+         <string notr="true">text-align:left</string>
+        </property>
+        <property name="text">
+         <string>Take Frames and Increment</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../../resources/main.qrc">
+          <normaloff>:/new/prefix1/camera_lens.png</normaloff>:/new/prefix1/camera_lens.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="0">
+       <widget class="QPushButton" name="capturePushButton">
+        <property name="styleSheet">
+         <string notr="true">text-align:left</string>
+        </property>
+        <property name="text">
+         <string>Take Frames</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../../resources/main.qrc">
+          <normaloff>:/new/prefix1/camera_lens.png</normaloff>:/new/prefix1/camera_lens.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="1">
+       <widget class="QPushButton" name="stopPushButton">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">text-align:left</string>
+        </property>
+        <property name="text">
+         <string>Stop Capture</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../../resources/main.qrc">
+          <normaloff>:/new/prefix1/stop.png</normaloff>:/new/prefix1/stop.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item row="13" column="1">
+       <widget class="QPushButton" name="rotaryControlPushButton">
+        <property name="styleSheet">
+         <string notr="true">text-align:left</string>
+        </property>
+        <property name="text">
+         <string>Rotary...</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../../resources/main.qrc">
+          <normaloff>:/new/prefix1/transform_rotate.png</normaloff>:/new/prefix1/transform_rotate.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
-<item row="3" column="1">
+   <item row="3" column="1">
     <widget class="QFrame" name="frame_3">
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
@@ -614,27 +637,11 @@
       <property name="bottomMargin">
        <number>2</number>
       </property>
-      <item>
-       <widget class="QPushButton" name="rotaryControlPushButton">
-        <property name="text">
-         <string>Rotary</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../../../../open/resources/main.qrc">
-          <normaloff>:/new/prefix1/transform_rotate.png</normaloff>:/new/prefix1/transform_rotate.png</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-       </widget>
-      </item>
      </layout>
     </widget>
    </item>
   </layout>
+  <zorder>frame_3</zorder>
   <zorder>frame</zorder>
   <zorder>progressBar</zorder>
   <zorder>refreshButton</zorder>
@@ -652,7 +659,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../../../open/resources/main.qrc"/>
+  <include location="../../resources/main.qrc"/>
  </resources>
  <connections/>
 </ui>

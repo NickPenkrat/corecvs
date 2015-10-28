@@ -42,7 +42,7 @@ public:
 public slots:
     void execute();
     void executeAndIncrement();
-
+    void executeAll();
 
     void save();
     void load();
@@ -54,7 +54,6 @@ public slots:
     void tableCellDoubleClicked(int row, int column);
 
     void newList(const vector<CameraLocationAngles> &input);
-
 
 private:
     QSharedPointer<Mesh3DScene> scene;

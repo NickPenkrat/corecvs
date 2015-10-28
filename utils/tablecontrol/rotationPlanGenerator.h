@@ -4,6 +4,8 @@
 #include "calibrationLocation.h"
 #include <QWidget>
 
+using namespace corecvs;
+
 namespace Ui {
     class RotationPlanGenerator;
 }
@@ -20,7 +22,7 @@ public slots:
     void generate();
 
 signals:
-    void newListGenerated(vector<corecvs::CameraLocationAngles> output);
+    void newListGenerated(vector<CameraLocationAngles> output);
 
 private:
     Ui::RotationPlanGenerator *ui;

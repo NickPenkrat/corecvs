@@ -33,7 +33,6 @@ RotationPlanGenerator::~RotationPlanGenerator()
 static double interpolate(double min, double max, int index, int maxIndex)
 {
     if (maxIndex <= 1)      return (min + max) / 2.0;
-
     if (index <         0)  return min;
     if (index >= maxIndex)  return max;
 
