@@ -146,6 +146,7 @@ RadialCorrection RadialCorrection::invertCorrection(int h, int w, int step)
 
     result.setPrincipalX(input.principalX());
     result.setPrincipalY(input.principalY());
+    result.setNormalizingFocal(input.normalizingFocal());
 
     result.setTangentialX(-input.tangentialX());
     result.setTangentialY(-input.tangentialY());
