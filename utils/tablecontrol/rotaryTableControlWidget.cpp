@@ -88,8 +88,6 @@ RotaryTableControlWidget::~RotaryTableControlWidget()
 {
     delete ui;
     //mPort.close();
-
-    addCmdsToScriptAll("END");
 }
 
 void RotaryTableControlWidget::loadCommands(QString filename)
@@ -128,7 +126,7 @@ void RotaryTableControlWidget::updateTable()
 
         // QString("%1°").arg(radToDeg(positions[count].yaw()))  // uses 4-5 digits after comma, which are not nice
         char buf[32];
-#define TOSTR(dval) (snprintf(buf, "%.3f°", (float)dval), buf)
+#define TOSTR(dval) (snprintf2buf(buf, "%.3f°", (float)(dval)), buf)
 
         QTableWidgetItem *item1 = new QTableWidgetItem(QString(TOSTR(radToDeg(positions[count].yaw()))));
         QTableWidgetItem *item2 = new QTableWidgetItem(QString(TOSTR(radToDeg(positions[count].pitch()))));
@@ -207,6 +205,8 @@ void RotaryTableControlWidget::executeAll()
     do {
         executeAndIncrement();
     } while (selected != 0);
+
+    addCmdsToScriptAll("END");
 }
 
 void RotaryTableControlWidget::save()
