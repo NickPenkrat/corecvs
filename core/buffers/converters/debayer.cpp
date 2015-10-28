@@ -271,11 +271,12 @@ void Debayer::preprocess(bool overwrite)
         int m_bits = this->mMetadata != nullptr &&  metadata["bits"][0] ? metadata["bits"][0] : mDepth;
         int shift = m_bits - mDepth;
 
-        mBlack = !metadata["black"].empty() &&  metadata["black"][0] ? metadata["black"][0] : 0;
-        int m_white = !metadata["white"].empty() && metadata["white"][0] ? metadata["white"][0] : (1 << mDepth) - 1;
+        mBlack =       !metadata[ "black" ].empty() && metadata[ "black" ][0] ?      metadata[ "black" ][0] : 0;
+        int m_white =  !metadata[ "white" ].empty() && metadata[ "white" ][0] ?      metadata[ "white" ][0] : (1 << mDepth) - 1;
         int m_twhite = !metadata["t_white"].empty() && metadata["t_white"][0] ? (int)metadata["t_white"][0] : m_white;
         t_white = (shift < 0 ? m_twhite << -shift : m_twhite >> shift);
     }
+
     // (re)calculate gamma correction
     if (overwrite)
         deletearr_safe(mCurve);

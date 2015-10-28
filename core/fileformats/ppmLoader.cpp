@@ -72,6 +72,8 @@ G12Buffer* PPMLoader::g12BufferCreateFromPGM(const string& name, MetaData *meta)
         return NULL;
     }
 
+    bool calcWhite = false;
+    int white = 0;
     // if no metadata is present, create some
     // if metadata is null, don't
     if (meta != nullptr)
@@ -85,6 +87,8 @@ G12Buffer* PPMLoader::g12BufferCreateFromPGM(const string& name, MetaData *meta)
         {
             metadata["bits"][0]++;
         }
+        if (metadata["white"].empty())
+            calcWhite = true;
     }
 
     result = new G12Buffer(h, w, false);
@@ -108,6 +112,10 @@ G12Buffer* PPMLoader::g12BufferCreateFromPGM(const string& name, MetaData *meta)
             for (j = 0; j < w; j++)
             {
                 result->element(i, j) = (charImage[i * w + j]);
+
+                if (calcWhite)
+                    if (result->element(i, j) > white)
+                        white = result->element(i, j);
             }
     }
     else
@@ -123,12 +131,19 @@ G12Buffer* PPMLoader::g12BufferCreateFromPGM(const string& name, MetaData *meta)
                 int offset = i * w * 2 + j;
                 result->element(i, j / 2) = ((charImage[offset + 0]) << 8 |
                     (charImage[offset + 1])) >> shiftCount;
-                // TODO: enable me when done with integration
-                //CORE_ASSERT_FALSE((result[0]->element(i, j) >= (1 << G12Buffer::BUFFER_BITS)), "Internal error in image loader\n");
+
+                CORE_ASSERT_FALSE((result->element(i, j) >= (1 << G12Buffer::BUFFER_BITS)), "Internal error in image loader\n");
+
+                if (calcWhite)
+                    if (result->element(i, j) > white)
+                        white = result->element(i, j);
             }
         }
 
     }
+
+    if (calcWhite)
+        metadata["white"].push_back(white);
 
 done:
     if (fp != NULL)
