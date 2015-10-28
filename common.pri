@@ -50,39 +50,6 @@ asserts {
     DEFINES += ASSERTS
 }
 
-# Autodetect block
-
-with_native:!win32 {
-
-    CPU_FLAGS=$$system(cat /proc/cpuinfo | grep -m 1 "^flags")
-#    message (Platform natively support $$CPU_FLAGS)
-
-    contains(CPU_FLAGS, "sse") {
-        CONFIG += with_sse
-#        message (Natively support SSE);
-    }
-    contains(CPU_FLAGS, "sse2") {
-        CONFIG += with_sse2
-#        message (Natively support SSE2);
-    }
-    contains(CPU_FLAGS, "ssse3") {
-        CONFIG += with_sse3
-#        message (Natively support SSE3);
-    }
-    contains(CPU_FLAGS, "avx") {
-        CONFIG += with_avx
-#        message (Natively support AVX);
-    }
-    contains(CPU_FLAGS, "avx2") {
-        CONFIG += with_avx2
-#        message (Natively support AVX2);
-    }
-    contains(CPU_FLAGS, "fma") {
-        CONFIG += with_fma
-#        message (Natively support FMA);
-    }
-}
-
 with_avx {
     DEFINES += WITH_AVX
     !win32-msvc* {

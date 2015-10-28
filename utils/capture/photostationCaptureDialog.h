@@ -24,7 +24,7 @@ public:
 
     enum {
         COLUMN_SYS_ID,
-        COLUMN_PS_ID,
+        COLUMN_CAM_ID,
         COLUMN_USE,
         COLUMN_PREVIEW,
         COLUMN_SETTINGS
