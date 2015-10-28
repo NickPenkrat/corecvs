@@ -36,7 +36,9 @@ HEADERS += \
     buffers/kernels/spatialGradient.h \
     buffers/morphological/morphological.h \
     buffers/rgb24/rgbColor.h \
+    buffers/rgb24/rgbTColor.h \
     buffers/rgb24/rgb24Buffer.h \
+    buffers/rgb24/rgbTBuffer.h \
     buffers/rgb24/hardcodeFont.h \
     buffers/rgb24/hersheyVectorFont.h \
     buffers/rgb24/abstractPainter.h \
@@ -81,6 +83,7 @@ SOURCES += \
     buffers/morphological/morphological.cpp \
     buffers/rgb24/hardcodeFont.cpp \
     buffers/rgb24/hersheyVectorFont.cpp \    
+    buffers/rgb24/rgb24Buffer.cpp \
     buffers/rgb24/abstractPainter.cpp \
     buffers/g12Buffer3d.cpp \
     buffers/buffer3d.cpp \

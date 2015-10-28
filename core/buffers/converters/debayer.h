@@ -8,10 +8,11 @@
 #define CDEBAYER_H_
 
 #include "g12Buffer.h"
-#include "rgb24Buffer.h"
+#include "rgbTBuffer.h"
 #include "metamap.h"
 
-using corecvs::G12Buffer;
+namespace corecvs
+{
 
 class Debayer
 {
@@ -72,4 +73,5 @@ private:
     uint16_t clampedSum(G12Buffer* buf, Vector2d32 coord1, Vector2d32 coord2, Vector2d32 coord3 = Vector2d32(-1, -1), Vector2d32 coord4 = Vector2d32(-1, -1));
 };
 
+}
 #endif

@@ -1,14 +1,11 @@
+#pragma once
 /**
-* \file rgbColor.h
-* \brief RGBTColor template class definition
-*
-* \date Oct 15, 2015
-* \author alexander
-* \author pavel.vasilev
-*/
-
-#ifndef RGBCOLOR_H_
-#define RGBCOLOR_H_
+ * \file rgbColor.h
+ * \brief a header for rgbColor.c
+ *
+ * \date Apr 19, 2011
+ * \author alexander
+ */
 
 #include <stdint.h>
 
@@ -18,43 +15,42 @@
 
 #include "generated/rgbColorParameters.h"
 
-namespace corecvs
-{
+namespace corecvs {
 /**
-*   I use inheritance because no new data members will be added
-**/
-template <typename T>
-using RGBTColorBase = FixedVector<T, 4>;
-
-template <typename T>
-class RGBTColor : public RGBTColorBase<T>
-{
+ * \file rgbColor.h
+ * \brief a header for rgbColor.c
+ *
+ * \date Apr 19, 2011
+ * \author alexander
+ */
+/**
+ *   I use inheritance because no new data members will be added
+ **/
+//class RGBColor : public FixedVectorBase<RGBColor, uint8_t,4> {
+class RGBColor : public FixedVector<uint8_t, 4> {
 public:
 
-    enum FieldId
-    {
+    typedef FixedVector<uint8_t, 4> RGBColorBase;
+
+    enum FieldId {
         FIELD_R = 2,
         FIELD_G = 1,
         FIELD_B = 0,
         FIELD_A = 3
     };
-
     /**
-    *
-    *
-    * */
-
-    explicit RGBTColor(T color)
+     *
+     *
+     * */
+    explicit RGBColor(uint32_t color)
     {
-        const int shift = sizeof(T);
-        const uint64_t max = (1 << (shift * 8)) - 1;
-        r() = color & max;
-        g() = (color >> shift * 8) & max;
-        b() = (color >> shift * 16) & max;
+        r() = color & 0xFF;
+        g() = (color >> 8) & 0xFF;
+        b() = (color >> 16) & 0xFF;
         a() = 0;
     }
-
-    explicit RGBTColor(const Vector3d<T> &other)
+    /*TODO: Make this a template*/
+    explicit RGBColor(const Vector3d32 &other)
     {
         r() = other[0];
         g() = other[1];
@@ -62,7 +58,7 @@ public:
         a() = 0;
     }
 
-    RGBTColor(T _r, T _g, T _b)
+    RGBColor(uint8_t _r, uint8_t _g, uint8_t _b)
     {
         this->r() = _r;
         this->g() = _g;
@@ -70,7 +66,7 @@ public:
         this->a() = 0;
     }
 
-    RGBTColor(T _r, T _g, T _b, T _a)
+    RGBColor(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t _a)
     {
         this->r() = _r;
         this->g() = _g;
@@ -78,7 +74,7 @@ public:
         this->a() = _a;
     }
 
-    RGBTColor(const RgbColorParameters &color)
+    RGBColor(const RgbColorParameters &color)
     {
         this->r() = color.r();
         this->g() = color.g();
@@ -86,80 +82,81 @@ public:
         this->a() = 0;
     }
 
-    RGBTColor(const RGBTColorBase<T>& base) : RGBTColorBase<T>(base) {}
+    RGBColor(const RGBColorBase& base) : RGBColorBase(base) {}
 
-    RGBTColor()
+    RGBColor()
     {
     }
 
-    inline T &r()
+    inline uint8_t &r()
     {
         return (*this)[FIELD_R];
     }
 
-    inline T &g()
+    inline uint8_t &g()
     {
         return (*this)[FIELD_G];
     }
 
-    inline T &b()
+    inline uint8_t &b()
     {
         return (*this)[FIELD_B];
     }
 
-    inline T &a()
+    inline uint8_t &a()
     {
         return (*this)[FIELD_A];
     }
 
-    inline uint64_t &color()
+    inline uint32_t &color()
     {
-        return (*(uint64_t *)this);
+        return (*(uint32_t *)this);
     }
 
     /* Constant versions for read-only form const colors */
-    inline const T &r() const
+    inline const uint8_t &r() const
     {
         return (*this)[FIELD_R];
     }
 
-    inline const T &g() const
+    inline const uint8_t &g() const
     {
         return (*this)[FIELD_G];
     }
 
-    inline const T &b() const
+    inline const uint8_t &b() const
     {
         return (*this)[FIELD_B];
     }
 
-    inline const T &a() const
+    inline const uint8_t &a() const
     {
         return (*this)[FIELD_A];
     }
 
-    inline uint64_t &color() const
+    inline uint32_t &color() const
     {
-        return (*(uint64_t *)this);
+       return (*(uint32_t *)this);
     }
 
-    inline T brightness() const
+
+    inline uint8_t brightness() const
     {
         /** We add 1 to the sum, because
-        *     0,  1,  0 -> 0
-        *     0,  1,  1 -> 1
-        *   255,255,254 -> 255
-        */
+         *     0,  1,  0 -> 0
+         *     0,  1,  1 -> 1
+         *   255,255,254 -> 255
+         */
         return (sum() + 1) / 3;
     }
 
-    inline uint32_t sum() const
+    inline uint16_t sum() const
     {
-        return (r() + g() + b());
+        return ((uint16_t)r() + (uint16_t)g() + (uint16_t)b());
     }
 
     // Y = 0.2126 R + 0.7152 G + 0.0722 B
-    inline T luma() const
+    inline uint8_t luma() const
     {
         return (11 * r() + 16 * g() + 5 * b()) >> 4;
     }
@@ -171,81 +168,81 @@ public:
         //return (11 * r() + 16 * g() + 5 * b()) >> 1;
     }
 
+
     inline double yd() const
     {
         return 0.299 * r() + 0.587 * g() + 0.114 * b();
     }
 
-    inline int32_t y() const
+    inline int16_t y() const
     {
         return fround(yd());
     }
 
-    inline int32_t cb() const
+    inline int16_t cb() const
     {
         return (int)(-0.16874 * r() - 0.33126 * g() + 0.50000 * b());
     }
 
-    inline int32_t cr() const
+    inline int16_t cr() const
     {
-        return (int)(0.50000 * r() - 0.41869 * g() - 0.08131 * b());
+        return (int)( 0.50000 * r() - 0.41869 * g() - 0.08131 * b());
     }
+
 
     /**
-    *  TODO: I should test the consitency of conversions
-    *
-    * Y = ( (  66 * R + 129 * G +  25 * B + 128) >> 8) +  16
-    * U = ( ( -38 * R -  74 * G + 112 * B + 128) >> 8) + 128
-    * V = ( ( 112 * R -  94 * G -  18 * B + 128) >> 8) + 128
-    *
-    *
-    **/
-    inline T u() const
+     *  TODO: I should test the consitency of conversions
+     *
+     * Y = ( (  66 * R + 129 * G +  25 * B + 128) >> 8) +  16
+     * U = ( ( -38 * R -  74 * G + 112 * B + 128) >> 8) + 128
+     * V = ( ( 112 * R -  94 * G -  18 * B + 128) >> 8) + 128
+     *
+     *
+     **/
+
+    inline int16_t u() const
     {
-        return ((-38 * r() - 74 * g() + 112 * b() + 128) >> 8) + 128;
+        return ( ( -38 * r() -  74 * g() + 112 * b() + 128) >> 8) + 128;
     }
 
-    inline T v() const
+    inline int16_t v() const
     {
-        return ((112 * r() - 94 * g() - 18 * b() + 128) >> 8) + 128;
+        return ( ( 112 * r() -  94 * g() -  18 * b() + 128) >> 8) + 128;
     }
+
 
     /*TODO: Move out common code */
 
-    inline T value() const
+    inline uint8_t value() const
     {
-        T m;
-        T M;
+       uint8_t m;
+       uint8_t M;
 
-        if (r() > g())
-        {
-            m = g();
-            M = r();
-        }
-        else
-        {
-            M = g();
-            m = r();
-        }
-        if (m > b()) m = b();
-        if (M < b()) M = b();
-        return M;
+       if (r() > g())
+       {
+         m = g();
+         M = r();
+       } else {
+         M = g();
+         m = r();
+       }
+       if (m > b()) m = b();
+       if (M < b()) M = b();
+       return M;
     }
 
-    inline T chroma() const
+    inline uint8_t chroma() const
     {
-        T m;
-        T M;
+        uint8_t m;
+        uint8_t M;
 
         if (r() > g())
         {
-            m = g();
-            M = r();
-        }
-        else
-        {
-            M = g();
-            m = r();
+          m = g();
+          M = r();
+        } else {
+          M = g();
+          m = r();
         }
         if (m > b()) m = b();
         if (M < b()) M = b();
@@ -254,28 +251,27 @@ public:
 
     inline uint8_t saturation() const
     {
-        T m;
-        T M;
+        uint8_t m;
+        uint8_t M;
 
         if (r() > g())
         {
-            m = g();
-            M = r();
-        }
-        else
-        {
-            M = g();
-            m = r();
+          m = g();
+          M = r();
+        } else {
+          M = g();
+          m = r();
         }
         if (m > b()) m = b();
         if (M < b()) M = b();
         return M == 0 ? 0 : (M - m) * 255 / M;
     }
 
+
     inline uint16_t hue() const
     {
-        T m;
-        T M;
+        uint8_t m;
+        uint8_t M;
 
         int16_t hue;
 
@@ -283,16 +279,14 @@ public:
         {
             m = g();
             M = r();
-        }
-        else
-        {
+        } else {
             M = g();
             m = r();
         }
         if (m > b()) m = b();
         if (M < b()) M = b();
 
-        T c = M - m;
+        uint8_t c = M - m;
         if (c == 0) return 0;
         if (M == r())
         {
@@ -310,37 +304,36 @@ public:
         return hue;
     }
 
-    static RGBTColor gray(T gray)
+    static RGBColor gray(uint8_t gray)
     {
-        return RGBTColor(gray, gray, gray);
+        return RGBColor(gray, gray, gray);
     }
 
-    static RGBTColor gray12(uint16_t gray)
+    static RGBColor gray12(uint16_t gray)
     {
-        return RGBTColor(gray >> 4, gray >> 4, gray >> 4);
+        return RGBColor(gray >> 4, gray >> 4, gray >> 4);
     }
 
     /**
-    *  C = Y - 16
-    *  D = U - 128
-    *  E = V - 128
-    *  Using the previous coefficients and noting that clamp() denotes clamping a value to the range of 0 to 255, the following formulae provide the conversion from YUV to RGB (NTSC version):
-    *  R = clamp(( 298 \times C                + 409 \times E + 128) >> 8)
-    *  G = clamp(( 298 \times C - 100 \times D - 208 \times E + 128) >> 8)
-    *  B = clamp(( 298 \times C + 516 \times D                + 128) >> 8)
-    **/
-    // TODO: generalize this!
-    static RGBTColor<uint8_t> FromYUV(int y, int u, int v)
+     *  C = Y - 16
+     *  D = U - 128
+     *  E = V - 128
+     *  Using the previous coefficients and noting that clamp() denotes clamping a value to the range of 0 to 255, the following formulae provide the conversion from YUV to RGB (NTSC version):
+     *  R = clamp(( 298 \times C                + 409 \times E + 128) >> 8)
+     *  G = clamp(( 298 \times C - 100 \times D - 208 \times E + 128) >> 8)
+     *  B = clamp(( 298 \times C + 516 \times D                + 128) >> 8)
+     **/
+    static RGBColor FromYUV(uint8_t y, uint8_t u, uint8_t v)
     {
         int c = y - 16;
         int d = u - 128;
         int e = v - 128;
 
-        int r = ((298 * c + 409 * e + 128) >> 8);
-        int g = ((298 * c - 100 * d - 208 * e + 128) >> 8);
-        int b = ((298 * c + 516 * d + 128) >> 8);
+        int r =  ((298 * c           + 409 * e + 128) >> 8);
+        int g =  ((298 * c - 100 * d - 208 * e + 128) >> 8);
+        int b =  ((298 * c + 516 * d           + 128) >> 8);
 
-        /*        int r =  ((298 * c           + 409 * e + 128) / 256);
+/*        int r =  ((298 * c           + 409 * e + 128) / 256);
         int g =  ((298 * c - 100 * d - 208 * e + 128) / 256);
         int b =  ((298 * c + 516 * d           + 128) / 256);*/
 
@@ -352,105 +345,95 @@ public:
         if (g > 255) g = 255;
         if (b > 255) b = 255;
 
+        return RGBColor(r,g,b);
+    }
+
+    static RGBColor Black()
+    {
+        return RGBColor(0, 0, 0);
+    }
+
+    static RGBColor White()
+    {
+        return RGBColor(255, 255, 255);
+    }
+
+    static RGBColor Red()
+    {
+        return RGBColor(255, 0, 0);
+    }
+
+    static RGBColor Orange()
+    {
+        return RGBColor(255, 127, 0);
+    }
+
+    static RGBColor Yellow()
+    {
+        return RGBColor(255, 255, 0);
+    }
+
+    static RGBColor Green()
+    {
+        return RGBColor(0, 255, 0);
+    }
+
+    static RGBColor Cyan()
+    {
+        return RGBColor(0, 255, 255);
+    }
+
+    static RGBColor Magenta()
+    {
+        return RGBColor(255, 0, 255);
+    }
+
+    static RGBColor Blue()
+    {
+        return RGBColor(0, 0, 255);
+    }
+
+    static RGBColor Indigo()
+    {
+        return RGBColor(111, 0, 255);
+    }
+
+    static RGBColor Violet()
+    {
+        return RGBColor(143, 0, 255);
+    }
+
+    static RGBColor lerpColor(const RGBColor &first, const RGBColor &second, double alpha)
+    {
+        uint8_t r = (uint8_t)lerp<double>(first.r(), second.r(), alpha);
+        uint8_t g = (uint8_t)lerp<double>(first.g(), second.g(), alpha);
+        uint8_t b = (uint8_t)lerp<double>(first.b(), second.b(), alpha);
         return RGBColor(r, g, b);
     }
 
-    static RGBTColor Black()
+    static RGBColor diff(const RGBColor &first, const RGBColor &second)
     {
-        return RGBTColor(0, 0, 0);
-    }
+        int16_t r = (int16_t)first.r() - (int16_t)second.r();
+        int16_t g = (int16_t)first.g() - (int16_t)second.g();
+        int16_t b = (int16_t)first.b() - (int16_t)second.b();
 
-    static RGBTColor White()
-    {
-        const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
-        return RGBTColor(max, max, max);
-    }
-
-    static RGBTColor Red()
-    {
-        const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
-        return RGBTColor(max, 0, 0);
-    }
-
-    static RGBTColor Orange()
-    {
-        const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
-        return RGBTColor(max, max >> 1, 0);
-    }
-
-    static RGBTColor Yellow()
-    {
-        const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
-        return RGBTColor(max, max, 0);
-    }
-
-    static RGBTColor Green()
-    {
-        const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
-        return RGBTColor(0, max, 0);
-    }
-
-    static RGBTColor Cyan()
-    {
-        const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
-        return RGBTColor(0, max, max);
-    }
-
-    static RGBTColor Magenta()
-    {
-        const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
-        return RGBColor(max, 0, max);
-    }
-
-    static RGBTColor Blue()
-    {
-        const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
-        return RGBTColor(0, 0, max);
-    }
-
-    static RGBTColor Indigo()
-    {
-        const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
-        return RGBTColor(111 * max / 255, 0, max);
-    }
-
-    static RGBTColor Violet()
-    {
-        const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
-        return RGBTColor(143 * max / 255, 0, max);
-    }
-
-    static RGBTColor lerpColor(const RGBTColor &first, const RGBTColor &second, double alpha)
-    {
-        T r = (T)lerp<double>(first.r(), second.r(), alpha);
-        T g = (T)lerp<double>(first.g(), second.g(), alpha);
-        T b = (T)lerp<double>(first.b(), second.b(), alpha);
-        return RGBTColor(r, g, b);
-    }
-
-    static RGBTColor diff(const RGBTColor &first, const RGBTColor &second)
-    {
-        int64_t r = (int64_t)first.r() - (int64_t)second.r();
-        int64_t g = (int64_t)first.g() - (int64_t)second.g();
-        int64_t b = (int64_t)first.b() - (int64_t)second.b();
-
-        return RGBTColor(CORE_ABS(r), CORE_ABS(g), CORE_ABS(b));
+        return RGBColor(CORE_ABS(r), CORE_ABS(g), CORE_ABS(b));
     }
 
     /**
-    *  Helper method that allows to represent the double value in interval 0..1
-    *  With a real rainbow color coding.
-    *  <ul>
-    <li>0.0    Red (web color) (Hex: \#FF0000) (RGB: 255, 0, 0)
-    <li>1/6    Orange (color wheel Orange) (Hex: \#FF7F00) (RGB: 255, 127, 0)
-    <li>2/6    Yellow (web color) (Hex: \#FFFF00) (RGB: 255, 255, 0)
-    <li>3/6    Green (X11) (Electric Green) (HTML/CSS “Lime”) (Color wheel green) (Hex: \#00FF00) (RGB: 0, 255, 0)
-    <li>4/6    Blue (web color) (Hex: \#0000FF) (RGB: 0, 0, 255)
-    <li>5/6    Indigo (Electric Indigo) (Hex: \#6600FF) (RGB: 111, 0, 255)
-    <li>1.0    Violet (Electric Violet) (Hex: \#8B00FF) (RGB: 143, 0, 255)
-    </ul>
-    **/
-    static RGBTColor rainbow(double x)
+     *  Helper method that allows to represent the double value in interval 0..1
+     *  With a real rainbow color coding.
+     *  <ul>
+         <li>0.0    Red (web color) (Hex: \#FF0000) (RGB: 255, 0, 0)
+         <li>1/6    Orange (color wheel Orange) (Hex: \#FF7F00) (RGB: 255, 127, 0)
+         <li>2/6    Yellow (web color) (Hex: \#FFFF00) (RGB: 255, 255, 0)
+         <li>3/6    Green (X11) (Electric Green) (HTML/CSS “Lime”) (Color wheel green) (Hex: \#00FF00) (RGB: 0, 255, 0)
+         <li>4/6    Blue (web color) (Hex: \#0000FF) (RGB: 0, 0, 255)
+         <li>5/6    Indigo (Electric Indigo) (Hex: \#6600FF) (RGB: 111, 0, 255)
+         <li>1.0    Violet (Electric Violet) (Hex: \#8B00FF) (RGB: 143, 0, 255)
+        </ul>
+     **/
+    static RGBColor rainbow(double x)
     {
         x *= 6;
         if (x < 0.0) x = 0.0;
@@ -475,30 +458,27 @@ public:
     }
 
     /**
-    *  Helper method that allows to represent the double value in interval 0..1
-    *  With a color coding.
-    *  <ul>
-    *    <li>0.0  blue
-    *    <li>0.5  green
-    *    <li>1.0  red
-    *  </ul>
-    **/
-    static RGBTColor rainbow1(double x)
+     *  Helper method that allows to represent the double value in interval 0..1
+     *  With a color coding.
+     *  <ul>
+     *    <li>0.0  blue
+     *    <li>0.5  green
+     *    <li>1.0  red
+     *  </ul>
+     **/
+    static RGBColor rainbow1(double x)
     {
-        const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
         x *= 2;
         if (x < 0.0) x = 0.0;
         if (x > 2.0) x = 2.0;
 
         if (x < 1.0)
         {
-            return RGBTColor(0, fround(x * max), fround((1.0 - x) * max));
+            return RGBColor(0, fround(x * 255) , fround((1.0 - x) * 255));
         }
         x -= 1.0;
-        return RGBColor(fround(x * max), fround((1.0 - x) * max), 0);
+        return RGBColor(fround(x * 255) , fround((1.0 - x) * 255), 0 );
     }
-
-    static Reflection reflect;
 
     static Reflection staticInit()
     {
@@ -510,7 +490,13 @@ public:
         return reflection;
     }
 
-    template<class VisitorType>
+#ifdef REFLECTION_IN_CORE
+    Reflection reflect = staticInit();
+#else
+    Reflection reflect;
+#endif
+
+template<class VisitorType>
     void accept(VisitorType &visitor)
     {
         visitor.visit(r(), static_cast<const IntField *>(reflect.fields[FIELD_R]));
@@ -519,24 +505,24 @@ public:
         visitor.visit(a(), static_cast<const IntField *>(reflect.fields[FIELD_A]));
     }
 
-    friend ostream & operator <<(ostream &out, const RGBTColor &color)
+    friend ostream & operator <<(ostream &out, const RGBColor &color)
     {
         out << "[";
-        out << (uint64_t)color.r() << ", " << (uint64_t)color.g() << ", " << (uint64_t)color.b() << " (" << (uint64_t)color.a() << ")";
+            out << (int)color.r() << ", " << (int)color.g() << ", " << (int)color.b() << " (" << (int)color.a() << ")";
         out << "]";
         return out;
     }
 
-    friend istream & operator >>(istream &out, RGBTColor &color)
+    friend istream & operator >>(istream &out, RGBColor &color)
     {
-        T v;
-        out >> v;
-        color.r() = v;
-        out >> v;
-        color.g() = v;
-        out >> v;
-        color.b() = v;
-        return out;
+       int v;
+       out >> v;
+       color.r() = v;
+       out >> v;
+       color.g() = v;
+       out >> v;
+       color.b() = v;
+       return out;
     }
 
     Vector3dd toDouble() const
@@ -544,32 +530,27 @@ public:
         return Vector3dd(r(), g(), b());
     }
 
-    uint64_t toRGBInt() const
+    uint32_t toRGBInt() const
     {
-        const int shift = 8 * sizeof(T);
-        return ((uint64_t)r() << (2 * shift)) | ((uint64_t)g() << shift) | ((uint64_t)b());
+        return ((uint32_t)r() << 16) | ((uint32_t)g() << 8) | ((uint32_t)b());
+    }
+    uint32_t toBRGInt() const
+    {
+        return ((uint32_t)b() << 16) | ((uint32_t)g() << 8) | ((uint32_t)r());
     }
 
-    uint64_t toBRGInt() const
+    static RGBColor FromDouble(const Vector3dd &input)
     {
-        const int shift = 8 * sizeof(T);
-        return ((uint64_t)b() << (2 * shift)) | ((uint64_t)g() << shift) | ((uint64_t)r());
-    }
-
-    static RGBTColor FromDouble(const Vector3dd &input)
-    {
-        const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
         Vector3dd input1 = input;
-        input1.mapToHypercube(Vector3dd(0.0, 0.0, 0.0), Vector3dd(max, max, max));
-        return RGBTColor(input.x(), input.y(), input.z());
+        input1.mapToHypercube(Vector3dd(0.0,0.0,0.0), Vector3dd(255.0,255.0,255.0));
+        return RGBColor(input.x(), input.y(), input.z());
     }
 
-    static RGBTColor FromHSV(uint64_t h, T s, T v)
+    static RGBColor FromHSV(uint16_t h, uint8_t s, uint8_t v)
     {
-        const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
-        int c = ((int)(s * v)) / max;
+        int c = ((int)(s * v)) / 255;
         int m = v - c;
-        int r, g, b;
+        int r,g,b;
 
         int swh = h / 60;
         int dh = h - swh * 60.0;
@@ -578,31 +559,25 @@ public:
         int x2 = c - x1;
 
 
-        switch (swh)
-        {
+        switch (swh) {
         case 0:
-            r = c;  g = x1; b = 0; break;
+            r =  c; g = x1; b = 0; break;
         case 1:
-            r = x2; g = c;  b = 0; break;
+            r = x2; g =  c; b = 0; break;
         case 2:
-            r = 0;  g = c;  b = x1; break;
+            r =  0; g =  c; b = x1; break;
         case 3:
-            r = 0;  g = x2; b = c; break;
+            r =  0; g = x2; b = c; break;
         case 4:
-            r = x1; g = 0;  b = c; break;
+            r =  x1; g =  0; b = c; break;
         case 5:
         default:
-            r = c;  g = 0;  b = x2; break;
+            r =  c; g =  0; b = x2; break;
         }
 
-        return RGBTColor(r + m, g + m, b + m);
+        return RGBColor(r + m, g + m, b + m);
     }
 
 };
 
-typedef RGBTColor<uint8_t> RGBColor;
-typedef RGBTColor<uint16_t> RGBColor48;
-
 } //namespace corecvs
-
-#endif

@@ -16,11 +16,13 @@
 
 #include "bufferLoader.h"
 #include "g12Buffer.h"
+#include "rgbTBuffer.h"
 #include "rgb24Buffer.h"
 #include "metamap.h"
 
 namespace corecvs
 {
+
 class PPMLoader : public BufferLoader<G12Buffer>
 {
 public:
