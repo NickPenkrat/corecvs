@@ -5,12 +5,11 @@
 #include "rotationPlanGenerator.h"
 
 #include <QWidget>
-#include <QtSerialPort/QSerialPort>
+//#include <QtSerialPort/QSerialPort>
 
 namespace Ui {
-class RotaryTableControlWidget;
+    class RotaryTableControlWidget;
 }
-
 
 class Mesh3DScene;
 
@@ -38,7 +37,7 @@ public:
 
     RotationPlanGenerator generator;
 
-    QSerialPort mPort;
+    //QSerialPort mPort;
 
 public slots:
     void execute();

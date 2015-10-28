@@ -1,11 +1,11 @@
 #ifndef ROTATIONPLANGENERATOR_H
 #define ROTATIONPLANGENERATOR_H
 
+#include "calibrationLocation.h"
 #include <QWidget>
-#include "calibrationCamera.h"
 
 namespace Ui {
-class RotationPlanGenerator;
+    class RotationPlanGenerator;
 }
 
 class RotationPlanGenerator : public QWidget
@@ -20,7 +20,7 @@ public slots:
     void generate();
 
 signals:
-    void newListGenerated(vector<CameraLocationAngles> output);
+    void newListGenerated(vector<corecvs::CameraLocationAngles> output);
 
 private:
     Ui::RotationPlanGenerator *ui;
