@@ -12,11 +12,11 @@ RotationPlanGenerator::RotationPlanGenerator(QWidget *parent) :
     ui->widgetYawMin->setValue(0);
     ui->widgetYawMax->setValue(degToRad(360 - 360 / pitchNum));
 
-    ui->widgetPitchMin->setValue(-M_PI / pitchNum);
-    ui->widgetPitchMax->setValue( M_PI / pitchNum);
+    ui->widgetPitchMin->setValue(0.0);
+    ui->widgetPitchMax->setValue(0.0);
 
-    ui->widgetRollMin->setValue(0.0);
-    ui->widgetRollMax->setValue(0.0);
+    ui->widgetRollMin->setValue(-M_PI / pitchNum);
+    ui->widgetRollMax->setValue( M_PI / pitchNum);
 
     connect(ui->generatePushButton, SIGNAL(released()), this, SLOT(generate()));
 }

@@ -143,7 +143,7 @@ void RotaryTableControlWidget::execute()
         "AX_I %.0f\r\n"
         "WAIT 2000\r\n"
         , y, p, r);
-    L_INFO_P("The command to send:<%s>", cmd);
+    //L_INFO_P("The command to send:<%s>", cmd);
 
     if (mPort.isOpen())
     {
