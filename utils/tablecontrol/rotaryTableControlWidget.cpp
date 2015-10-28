@@ -96,7 +96,7 @@ void RotaryTableControlWidget::saveCommands(QString filename)
     for (auto &triple: copy) {
         triple = triple.toDeg();
     }
-    setter.visit(positions, "commands");
+    setter.visit(copy, "commands");
 }
 
 void RotaryTableControlWidget::updateTable()
@@ -134,22 +134,40 @@ void RotaryTableControlWidget::execute()
     double p = radToDeg(ui->widgetPitch->value());
     double r = radToDeg(ui->widgetRoll->value());
 
-    L_INFO_P("Move to [O:%.4f, M:%.4f, I:%.4f]", y, p, r);
+    int iy = roundSign(y);
+    int ip = roundSign(p);
+    int ir = roundSign(r);
 
-    char cmd[256];
-    snprintf2buf(cmd,
-        "AX_O %.0f\r\n"
-        "AX_M %.0f\r\n"
-        "AX_I %.0f\r\n"
-        "WAIT 2000\r\n"
-        , y, p, r);
+    L_INFO_P("moving to [O:%.3f, M:%.3f, I:%.3f]", y, p, r);
+
     //L_INFO_P("The command to send:<%s>", cmd);
+    //
+    // TODO: implement for the table accroding to the doc!
+    //if (mPort.isOpen())
+    //{
+    //    qint64 res = mPort.write(cmd);
+    //    L_INFO_P("The command is sent, res = %d", (int)res);
+    //}
 
-    if (mPort.isOpen())
-    {
-        qint64 res = mPort.write(cmd);
-        L_INFO_P("The command is sent, res = %d", (int)res);
-    }
+    char filename[256]; snprintf2buf(filename, "_autoplay_rot_O=%d_M=%d_I=%d.txt", iy, ip, ir);
+
+    std::ostringstream s;
+    s << "MODE=NONINTERPOLATED" << std::endl
+      << "AX_O " << iy << std::endl
+      << "AX_M " << ip << std::endl
+      << "AX_I " << ir << std::endl
+      << "WAIT 500" << std::endl
+      << "END" << std::endl;
+
+    std::ofstream f1(filename);
+    f1 << s.str();
+    f1.close();
+
+    L_INFO_P("<%s> is saved", filename);
+
+    std::ofstream f2("_autoplay_rot_current.txt");
+    f2 << s.str();
+    f2.close();
 }
 
 void RotaryTableControlWidget::executeAndIncrement()
@@ -164,11 +182,11 @@ void RotaryTableControlWidget::executeAndIncrement()
 
 void RotaryTableControlWidget::save()
 {
-    QString fileName = QFileDialog::getSaveFileName(
-      this,
-      tr("Save Rotation script"),
-      ".",
-      tr("Roations (*.json)"));
+    QString fileName = QFileDialog::getSaveFileName(this
+        , tr("Save Rotation script")
+        , "."
+        , tr("Roations (*.json)"));
+
     if (!fileName.isEmpty())
     {
         saveCommands(fileName);
@@ -177,11 +195,11 @@ void RotaryTableControlWidget::save()
 
 void RotaryTableControlWidget::load()
 {
-    QString fileName = QFileDialog::getOpenFileName(
-      this,
-      tr("Load Rotation script"),
-      ".",
-      tr("Roations (*.json)"));
+    QString fileName = QFileDialog::getOpenFileName(this
+        , tr("Load Rotation script")
+        , "."
+        , tr("Roations (*.json)"));
+
     if (!fileName.isEmpty())
     {
         loadCommands(fileName);
@@ -199,7 +217,6 @@ void RotaryTableControlWidget::newList(const vector<CameraLocationAngles> &input
     positions = input;
     updateTable();
 }
-
 
 void RotaryTableControlWidget::updateState()
 {

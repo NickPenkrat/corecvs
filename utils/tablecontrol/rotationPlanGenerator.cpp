@@ -1,34 +1,34 @@
 #include "rotationPlanGenerator.h"
 #include "ui_rotationPlanGenerator.h"
 
-RotationPlanGenerator::RotationPlanGenerator(QWidget *parent) :
-    QWidget(parent),
-    ui(new Ui::RotationPlanGenerator)
+RotationPlanGenerator::RotationPlanGenerator(QWidget *parent)
+    : QWidget(parent)
+    , ui(new Ui::RotationPlanGenerator)
 {
     ui->setupUi(this);
 
-    cint pitchNum = 24;
-
     ui->widgetYawMin->setValue(0);
-    ui->widgetYawMax->setValue(degToRad(360 - 360 / pitchNum));
+    ui->widgetYawMax->setValue(0);
 
-    ui->widgetPitchMin->setValue(0.0);
-    ui->widgetPitchMax->setValue(0.0);
+    //cint pitchNum = ui->stepPitchSpinBox->value();  // =5
+    ui->widgetPitchMin->setValue(degToRad(-40));
+    ui->widgetPitchMax->setValue(degToRad(+40));
 
-    ui->widgetRollMin->setValue(-M_PI / pitchNum);
-    ui->widgetRollMax->setValue( M_PI / pitchNum);
+    cint rollNum = ui->stepRollSpinBox->value();    // =24
+    ui->widgetRollMin->setValue(0.0);
+    ui->widgetRollMax->setValue(degToRad(360 - 360. / rollNum));
 
     connect(ui->generatePushButton, SIGNAL(released()), this, SLOT(generate()));
 }
 
-double intrpolate(double min, double max, int val, int maxval)
+static double interpolate(double min, double max, int index, int maxIndex)
 {
-    if (maxval <= 1) return (min + max) / 2.0;
+    if (maxIndex <= 1)      return (min + max) / 2.0;
 
-    if (val <       0) return min;
-    if (val >= maxval) return max;
+    if (index <         0)  return min;
+    if (index >= maxIndex)  return max;
 
-    return min + ((max - min) * val / (maxval - 1));
+    return min + ((max - min) * index / (maxIndex - 1));
 }
 
 void RotationPlanGenerator::generate()
@@ -51,14 +51,14 @@ void RotationPlanGenerator::generate()
 
     for (int iy = 0; iy < ny; iy++)
     {
-        for (int ip = 0; ip < np; ip++)
+        for (int ir = 0; ir < nr; ir++)
         {
-            for (int ir = 0; ir < nr; ir++)
+            for (int ip = 0; ip < np; ip++)
             {
                 positions.push_back(CameraLocationAngles(
-                    intrpolate(miny, maxy, iy, ny),
-                    intrpolate(minp, maxp, ip, np),
-                    intrpolate(minr, maxr, ir, nr)
+                    interpolate(miny, maxy, iy, ny),
+                    interpolate(minp, maxp, ip, np),
+                    interpolate(minr, maxr, ir, nr)
                 ));
             }
         }
