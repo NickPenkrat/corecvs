@@ -36,6 +36,7 @@ public:
     void updateTable ();
 
     RotationPlanGenerator generator;
+    QString mScriptsPath;
 
     //QSerialPort mPort;
 
@@ -58,6 +59,10 @@ public slots:
 private:
     QSharedPointer<Mesh3DScene> scene;
     Ui::RotaryTableControlWidget *ui;
+
+    QString getPathScriptAll();
+    QString getPathScript(int iy, int ir, int ip);
+    void    addCmdsToScriptAll(const string &s);
 };
 
 #endif // TABLECONTROLWIDGET_H

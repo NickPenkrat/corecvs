@@ -126,6 +126,8 @@ void PhotostationCaptureDialog::refresh()
     ui->angleStepSpinBox      ->setValue(settings.value("angleStep" , ui->angleStepSpinBox->value()).toDouble());
     ui->outDirLineEdit        ->setText (settings.value("pathDir"   , ui->outDirLineEdit->text()).toString());
 
+    mRotaryDialog.mScriptsPath = ui->outDirLineEdit->text();
+
     ui->previewWidget->loadFromQSettings(DEFAULT_FILENAME, "preview");
 
     QMap<ImageCaptureInterface::CameraFormat, int> formatsList;
@@ -493,10 +495,10 @@ void PhotostationCaptureDialog::capture(bool shouldAdvance)
     ui->progressBar->setValue(0);
 
     mIsCalibrationMode = mRotaryDialog.isVisible() && mRotaryDialog.positions.size() != 0;
-    L_INFO_P("CalibrationMode: %d  numPositions: %d", mIsCalibrationMode, mRotaryDialog.positions.size());
     ui->angleSpinBox->setEnabled(!mIsCalibrationMode);
     ui->angle2SpinBox->setEnabled(!mIsCalibrationMode);
     ui->angleStepSpinBox->setEnabled(!mIsCalibrationMode);
+    L_INFO_P("CalibrationMode: %d  position: %d/%d", mIsCalibrationMode, mRotaryDialog.selected, mRotaryDialog.positions.size());
 
     delete_safe(mCaptureMapper);
     mCaptureMapper = new QSignalMapper();
@@ -569,6 +571,21 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
     ui->progressBar->setHidden(true);
     ui->progressBar->setValue(0);
 
+    if (mIsCalibrationMode)
+    {
+        if (ui->stationNameLineEdit->text() == "A") {
+            mRotaryDialog.selected = 0;
+        }
+
+        if (mRotaryDialog.selected < mRotaryDialog.positions.size())
+        {
+            const CameraLocationAngles& angles = mRotaryDialog.positions[mRotaryDialog.selected];
+
+            ui->angleSpinBox->setValue(radToDeg(angles.roll()));
+            ui->angle2SpinBox->setValue(radToDeg(angles.pitch()));
+        }
+    }
+
     QStringList failedSaves;
     /* Save images here */
     for (int i = 0; i < mCaptureInterfaces.count(); i++)
@@ -586,18 +603,6 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
 
             if (mIsCalibrationMode)
             {
-                if (ui->stationNameLineEdit->text() == "A") {
-                    mRotaryDialog.selected = 0;
-                }
-                //L_INFO_P("#series:%d  #poses:%d", mRotaryDialog.selected, mRotaryDialog.positions.size());
-
-                if (mRotaryDialog.selected < mRotaryDialog.positions.size())
-                {
-                    const CameraLocationAngles& angles = mRotaryDialog.positions[mRotaryDialog.selected];
-
-                    ui->angleSpinBox ->setValue(radToDeg(angles.roll()));
-                    ui->angle2SpinBox->setValue(radToDeg(angles.pitch()));
-                }
                 char buf[256];
                 snprintf2buf(buf, "%03d_%03ddeg"            // roll_pitch in degrees
                     , roundSign(ui->angleSpinBox->value())
@@ -606,6 +611,7 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
                 metaInfo = buf;
             }
             else {
+                // TODO: add here planned features
                 //metaInfo = QString::number(ui->angleSpinBox->value()) + "deg";
             }
 
@@ -705,4 +711,6 @@ void PhotostationCaptureDialog::outputDir()
         return;
 
     ui->outDirLineEdit->setText(pathNew);
+
+    mRotaryDialog.mScriptsPath = pathNew;
 }
