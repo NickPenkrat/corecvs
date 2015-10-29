@@ -181,6 +181,28 @@ int CheckerboardDetectionParameters::staticInit()
           "Fast board Speedup"
         )
     );
+    fields().push_back(
+        new BoolField
+        (
+          CheckerboardDetectionParameters::DRAW_SGFS_ON_BOARDS_ID,
+          offsetof(CheckerboardDetectionParameters, mDrawSGFsOnBoards),
+          true,
+          "Draw SGFs on boards",
+          "Draw SGFs on boards",
+          "Draw SGFs on boards"
+        )
+    );
+    fields().push_back(
+        new BoolField
+        (
+          CheckerboardDetectionParameters::SKIP_UNDISTORTED_WITH_NO_DISTORTED_BOARD_ID,
+          offsetof(CheckerboardDetectionParameters, mSkipUndistortedWithNoDistortedBoard),
+          false,
+          "Skip undistorted with no distorted board",
+          "Skip undistorted with no distorted board",
+          "Skip undistorted with no distorted board"
+        )
+    );
    return 0;
 }
 
