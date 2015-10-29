@@ -40,12 +40,12 @@ void PhotoStationCalibrator::addCalibrationSetup(std::vector<int> &cameraIds, st
     ++M;
 }
 
-void PhotoStationCalibrator::solve(bool runPresolver, bool runNonLinear)
+void PhotoStationCalibrator::solve(bool runPresolver, bool runNonLinear, int LMiterations)
 {
-    solve(runPresolver, runNonLinear, constraints);
+    solve(runPresolver, runNonLinear, constraints, LMiterations);
 }
 
-void PhotoStationCalibrator::solve(bool runPresolver, bool runNonLinear, CameraConstraints constraints)
+void PhotoStationCalibrator::solve(bool runPresolver, bool runNonLinear, CameraConstraints constraints, int LMiterations)
 {
     this->constraints = constraints;
     if (runPresolver)
@@ -54,7 +54,7 @@ void PhotoStationCalibrator::solve(bool runPresolver, bool runNonLinear, CameraC
     }
     if (runNonLinear)
     {
-        refineGuess();
+        refineGuess(LMiterations);
     }
     std::cout << "OPTFAC_ALL: " << factor << std::endl;
 }
@@ -412,7 +412,7 @@ void PhotoStationCalibrator::recenter()
     std::cout << std::endl;
 }
 
-void PhotoStationCalibrator::refineGuess()
+void PhotoStationCalibrator::refineGuess(int LMiterations)
 {
     std::cout << "Pre-LM RMSE: " << getRmseReprojectionError() << std::endl;
     std::vector<double> in(getInputNum()), out(getOutputNum());
@@ -431,7 +431,7 @@ void PhotoStationCalibrator::refineGuess()
     //       with "proven" implementations of linear algebra and ML-like non-linear
     //       optimization
     // FIXME: Changed limit to 750 since change in rmse is not big; but it still decreases!
-    corecvs::LevenbergMarquardt levmar(750, 1e-3, 1.5);
+    corecvs::LevenbergMarquardt levmar(LMiterations, 1e-3, 1.5);
     levmar.f = new LMCostFunction(this);
 
     auto res = levmar.fit(in, out);
