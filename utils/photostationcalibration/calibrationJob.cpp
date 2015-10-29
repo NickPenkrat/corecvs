@@ -1,5 +1,6 @@
 #include "calibrationJob.h"
 
+
 #include <array>
 
 #ifdef WITH_OPENCV
@@ -273,6 +274,7 @@ corecvs::RGB24Buffer CalibrationJob::LoadImage(const std::string &path)
     if (!buffer)
         return corecvs::RGB24Buffer();
     corecvs::RGB24Buffer res = *buffer;
+    delete buffer;
     return res;
 }
 
@@ -300,7 +302,7 @@ bool CalibrationJob::calibrateSingleCamera(int cameraId)
     {
         calibrator.factor = settings.forceFactor;
         valid_locations = 0;
-        calibrator.solve(settings.singleCameraCalibratorUseZhangPresolver, settings.singleCameraCalibratorUseLMSolver);
+        calibrator.solve(settings.singleCameraCalibratorUseZhangPresolver, settings.singleCameraCalibratorUseLMSolver, settings.singleCameraLMiterations);
 
         photostation.cameras[cameraId].intrinsics = calibrator.getIntrinsics();
         locations = calibrator.getExtrinsics();
@@ -371,7 +373,7 @@ void CalibrationJob::calibratePhotostation(int N, int /*M*/, PhotoStationCalibra
         calibrator.solve(true, false);
     calibrator.recenter(); // Let us hope it'll speedup...
     if (runLM)
-        calibrator.solve(false, true);
+        calibrator.solve(false, true, settings.photostationLMiterations);
     calibrator.recenter();
     factor = calibrator.factor;
 }

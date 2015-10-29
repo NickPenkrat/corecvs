@@ -27,7 +27,7 @@ public:
 	void addPattern(const PatternPoints3d &patternPoints, const CameraLocationData &position = CameraLocationData());
 
     // Runs (pre-) solver
-	void solve(bool runPresolver = true,bool runLM = false);
+	void solve(bool runPresolver = true,bool runLM = false, int LMiterations = 1000);
 
     PinholeCameraIntrinsics getIntrinsics();
 
@@ -55,7 +55,7 @@ private:
     void extractIntrinsics();
 
     // LM-solver
-    void refineGuess();
+    void refineGuess(int LMiterations);
 
     void readParams(const double in[]);
     void writeParams(double out[]);

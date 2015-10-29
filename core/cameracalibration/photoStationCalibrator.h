@@ -22,8 +22,8 @@ public:
     void addCalibrationSetup(std::vector<int> &cameraIds, std::vector<CameraLocationData> &cameraLocations, MultiCameraPatternPoints &points);
 
     // Runs solver
-    void solve(bool runPresolver = true, bool runNonLinear = true);
-    void solve(bool runPresolver, bool runNonLinear, CameraConstraints constraints);
+    void solve(bool runPresolver = true, bool runNonLinear = true, int LMiterations = 1000);
+    void solve(bool runPresolver, bool runNonLinear, CameraConstraints constraints, int LMiterations = 1000);
 
     // Returns calibration setup poses
     std::vector<CameraLocationData> getCalibrationSetups();
@@ -114,7 +114,7 @@ private:
         PhotoStationCalibrator *calibrator;
     };
     // LM-solver
-    void refineGuess();
+    void refineGuess(int LMiterations);
     void refineStruct();
 
 

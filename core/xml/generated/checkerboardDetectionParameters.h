@@ -52,6 +52,8 @@ public:
         MIN_ACCURACY_ID,
         PARTIAL_BOARD_ID,
         FAST_BOARD_SPEEDUP_ID,
+        DRAW_SGFS_ON_BOARDS_ID,
+        SKIP_UNDISTORTED_WITH_NO_DISTORTED_BOARD_ID,
         CHECKERBOARD_DETECTION_PARAMETERS_FIELD_ID_NUM
     };
 
@@ -123,6 +125,18 @@ public:
      */
     bool mFastBoardSpeedup;
 
+    /** 
+     * \brief Draw SGFs on boards 
+     * Draw SGFs on boards 
+     */
+    bool mDrawSGFsOnBoards;
+
+    /** 
+     * \brief Skip undistorted with no distorted board 
+     * Skip undistorted with no distorted board 
+     */
+    bool mSkipUndistortedWithNoDistortedBoard;
+
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
 
@@ -186,6 +200,16 @@ public:
         return mFastBoardSpeedup;
     }
 
+    bool drawSGFsOnBoards() const
+    {
+        return mDrawSGFsOnBoards;
+    }
+
+    bool skipUndistortedWithNoDistortedBoard() const
+    {
+        return mSkipUndistortedWithNoDistortedBoard;
+    }
+
     /* Section with setters */
     void setUseUndistortion(bool useUndistortion)
     {
@@ -242,6 +266,16 @@ public:
         mFastBoardSpeedup = fastBoardSpeedup;
     }
 
+    void setDrawSGFsOnBoards(bool drawSGFsOnBoards)
+    {
+        mDrawSGFsOnBoards = drawSGFsOnBoards;
+    }
+
+    void setSkipUndistortedWithNoDistortedBoard(bool skipUndistortedWithNoDistortedBoard)
+    {
+        mSkipUndistortedWithNoDistortedBoard = skipUndistortedWithNoDistortedBoard;
+    }
+
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
@@ -258,6 +292,8 @@ template<class VisitorType>
         visitor.visit(mMinAccuracy,               static_cast<const DoubleField *>  (fields()[MIN_ACCURACY_ID]));
         visitor.visit(mPartialBoard,              static_cast<const BoolField *>    (fields()[PARTIAL_BOARD_ID]));
         visitor.visit(mFastBoardSpeedup,          static_cast<const BoolField *>    (fields()[FAST_BOARD_SPEEDUP_ID]));
+        visitor.visit(mDrawSGFsOnBoards,          static_cast<const BoolField *>    (fields()[DRAW_SGFS_ON_BOARDS_ID]));
+        visitor.visit(mSkipUndistortedWithNoDistortedBoard, static_cast<const BoolField *>    (fields()[SKIP_UNDISTORTED_WITH_NO_DISTORTED_BOARD_ID]));
     }
 
     CheckerboardDetectionParameters()
@@ -278,6 +314,8 @@ template<class VisitorType>
         , double minAccuracy
         , bool partialBoard
         , bool fastBoardSpeedup
+        , bool drawSGFsOnBoards
+        , bool skipUndistortedWithNoDistortedBoard
     )
     {
         mUseUndistortion = useUndistortion;
@@ -291,6 +329,8 @@ template<class VisitorType>
         mMinAccuracy = minAccuracy;
         mPartialBoard = partialBoard;
         mFastBoardSpeedup = fastBoardSpeedup;
+        mDrawSGFsOnBoards = drawSGFsOnBoards;
+        mSkipUndistortedWithNoDistortedBoard = skipUndistortedWithNoDistortedBoard;
     }
 
     friend ostream& operator << (ostream &out, CheckerboardDetectionParameters &toSave)
