@@ -59,6 +59,7 @@ protected:
 
 private:
     bool                     mCamsScanned;
+    bool                     mIsCalibrationMode;
     ImageCaptureInterface   *mPreviewInterface;
     CapSettingsDialog       *mCapSettingsDialog;
     GraphPlotDialog          mFocusDialog;

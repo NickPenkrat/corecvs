@@ -26,15 +26,16 @@ const bool isRgb = true;
 
 const QString PhotostationCaptureDialog::DEFAULT_FILENAME = "capture.ini";
 
-PhotostationCaptureDialog::PhotostationCaptureDialog(QWidget *parent) :
-    QDialog(parent),
-    mCamsScanned(false),
-    mPreviewInterface(NULL),
-    mCapSettingsDialog(NULL),
-    mCaptureMapper(NULL),
-    mAdvanceAfterSave(false),
-    ui(new Ui::PhotostationCaptureDialog),
-    mNamer(NULL)
+PhotostationCaptureDialog::PhotostationCaptureDialog(QWidget *parent)
+    : QDialog(parent)
+    , mCamsScanned(false)
+    , mIsCalibrationMode(false)
+    , mPreviewInterface(NULL)
+    , mCapSettingsDialog(NULL)
+    , mCaptureMapper(NULL)
+    , mAdvanceAfterSave(false)
+    , ui(new Ui::PhotostationCaptureDialog)
+    , mNamer(NULL)
 {
     setWindowFlags(Qt::Window);
     ui->setupUi(this);
@@ -360,10 +361,10 @@ void PhotostationCaptureDialog::newPreviewFrame()
     //qDebug() << "PhotostationCaptureDialog::newPreviewFrame():Flood protection took:" << (time.usecsToNow() / 1000.0) << "ms";
     time = PreciseTimer::currentTime();
 
-    /*By the time we process notification mPreviewInterface could be already destroyed */
-    if (mPreviewInterface == NULL) {
+    /** By the time we process notification, mPreviewInterface could be already destroyed
+     */
+    if (mPreviewInterface == NULL)
         return;
-    }
 
     ImageCaptureInterface::FramePair pair = mPreviewInterface->getFrameRGB24();
 
@@ -450,7 +451,6 @@ void PhotostationCaptureDialog::newCaptureFrame(int camId)
     pair.freeBuffers();
     delete_safe(descr.camInterface);
 
-
     /* This logic would propably change. We are starting so far  */
 
     for (int i = 0; i < mCaptureInterfaces.count(); i++)
@@ -477,7 +477,6 @@ void PhotostationCaptureDialog::initateNewFrame()
     }
 }
 
-
 void PhotostationCaptureDialog::capture(bool shouldAdvance)
 {
     mAdvanceAfterSave = shouldAdvance;
@@ -492,6 +491,12 @@ void PhotostationCaptureDialog::capture(bool shouldAdvance)
 
     ui->progressBar->setHidden(false);
     ui->progressBar->setValue(0);
+
+    mIsCalibrationMode = mRotaryDialog.isVisible() && mRotaryDialog.positions.size() != 0;
+    L_INFO_P("CalibrationMode: %d  numPositions: %d", mIsCalibrationMode, mRotaryDialog.positions.size());
+    ui->angleSpinBox->setEnabled(!mIsCalibrationMode);
+    ui->angle2SpinBox->setEnabled(!mIsCalibrationMode);
+    ui->angleStepSpinBox->setEnabled(!mIsCalibrationMode);
 
     delete_safe(mCaptureMapper);
     mCaptureMapper = new QSignalMapper();
@@ -572,16 +577,42 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
         {
             QString path   = ui->outDirLineEdit->text();
             QString prefix = ui->fileNamePrefixLineEdit->text();
+            QString metaInfo;
 
             if (prefix.indexOf("SP") >= 0) {
                 QMessageBox::warning(this, "Bad filename series prefix:", prefix);
                 prefix.replace("SP", "sp");
             }
 
+            if (mIsCalibrationMode)
+            {
+                if (ui->stationNameLineEdit->text() == "A") {
+                    mRotaryDialog.selected = 0;
+                }
+                //L_INFO_P("#series:%d  #poses:%d", mRotaryDialog.selected, mRotaryDialog.positions.size());
+
+                if (mRotaryDialog.selected < mRotaryDialog.positions.size())
+                {
+                    const CameraLocationAngles& angles = mRotaryDialog.positions[mRotaryDialog.selected];
+
+                    ui->angleSpinBox ->setValue(radToDeg(angles.roll()));
+                    ui->angle2SpinBox->setValue(radToDeg(angles.pitch()));
+                }
+                char buf[256];
+                snprintf2buf(buf, "%03d_%03ddeg"            // roll_pitch in degrees
+                    , roundSign(ui->angleSpinBox->value())
+                    , roundSign(ui->angle2SpinBox->value()));
+
+                metaInfo = buf;
+            }
+            else {
+                //metaInfo = QString::number(ui->angleSpinBox->value()) + "deg";
+            }
+
             QString name = mNamer->nameForImage(
                 ui->stationNameLineEdit->text()
                 , mCaptureInterfaces[i].camId
-                , QString::number(ui->angleSpinBox->value()) + "deg"
+                , metaInfo
                 , (AbstractImageNamer::FileType)ui->outputFormatComboBox->currentIndex()
                 , &path
                 , prefix
@@ -602,7 +633,22 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
 
     if (mAdvanceAfterSave)
     {
-        ui->angleSpinBox->setValue(ui->angleSpinBox->value() + ui->angleStepSpinBox->value());
+        if (mIsCalibrationMode)
+        {
+            mRotaryDialog.executeAndIncrement();
+
+            if (mRotaryDialog.selected < mRotaryDialog.positions.size())
+            {
+                const CameraLocationAngles& angles = mRotaryDialog.positions[mRotaryDialog.selected];
+
+                ui->angleSpinBox->setValue(radToDeg(angles.roll()));
+                ui->angle2SpinBox->setValue(radToDeg(angles.pitch()));
+            }
+        }
+        else
+        {
+            ui->angleSpinBox->setValue(ui->angleSpinBox->value() + ui->angleStepSpinBox->value());
+        }
 
         QString spName = ui->stationNameLineEdit->text();
 		QString spName2 = spName;

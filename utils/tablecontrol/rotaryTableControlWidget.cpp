@@ -155,7 +155,7 @@ void RotaryTableControlWidget::execute()
     int ip = roundSign(p);
     int ir = roundSign(r);
 
-    L_INFO_P("moving to [O:%.3f, I:%.3f, M:%.3f]", y, r, p);
+    //L_INFO_P("moving to [O:%.3f, I:%.3f, M:%.3f]", y, r, p);
 
     //L_INFO_P("The command to send:<%s>", cmd);
     //
