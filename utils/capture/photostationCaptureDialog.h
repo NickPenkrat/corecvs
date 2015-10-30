@@ -58,10 +58,10 @@ protected:
     void showEvent ( QShowEvent * event );
 
 private:
-    bool                     mCamsScanned;
-    bool                     mIsCalibrationMode;
-    ImageCaptureInterface   *mPreviewInterface;
-    CapSettingsDialog       *mCapSettingsDialog;
+    bool                     mCamsScanned = false;
+    bool                     mIsCalibrationMode = false;    // autodetected flag that we are in the calibration mode
+    ImageCaptureInterface   *mPreviewInterface = NULL;
+    CapSettingsDialog       *mCapSettingsDialog = NULL;
     GraphPlotDialog          mFocusDialog;
     RotaryTableControlWidget mRotaryDialog;
 
@@ -79,14 +79,13 @@ private:
         bool isFilled()    { return result != NULL; }
     };
 
-    QSignalMapper           *mCaptureMapper;
-    // int mCurrentCam;
+    QSignalMapper           *mCaptureMapper = NULL;
     QList<CameraDescriptor>  mCaptureInterfaces;
-    bool                     mAdvanceAfterSave;
+    bool                     mAdvanceAfterSave = false;
 
 private:
     Ui::PhotostationCaptureDialog *ui;
-    AbstractImageNamer            *mNamer;
+    AbstractImageNamer            *mNamer = NULL;
 };
 
 #endif // PHOTOSTATIONCAPTUREDIALOG_H
