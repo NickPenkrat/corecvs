@@ -119,11 +119,11 @@ public:
     int writePPM(const string& filename, bool fullColour = true);
 
 private:
-    int flipIndex(int row, int col);
+    int flipIndex(int row, int col, bool raw = false);
     void histUpdate(int i, int j, uint16_t val);
     uint64_t **hist = 0;
     LibRaw *reader = 0;
     int shift = 0;
-    
+
 };
 
