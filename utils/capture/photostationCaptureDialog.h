@@ -86,6 +86,8 @@ private:
 private:
     Ui::PhotostationCaptureDialog *ui;
     AbstractImageNamer            *mNamer = NULL;
+
+    ImageCaptureInterface*   createCameraCapture(const string &devname, bool processError = true);
 };
 
 #endif // PHOTOSTATIONCAPTUREDIALOG_H

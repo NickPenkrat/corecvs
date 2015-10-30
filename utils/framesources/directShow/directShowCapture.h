@@ -29,11 +29,11 @@ using namespace std;
     typedef ImageCaptureInterface::CapErrorCode CapErrorCode;
 
     /* Main fields */
-    QMutex                      protectFrame;
+    QMutex                      mProtectFrame;
     string                      mDevname;  /**< Stores the device name*/
-    DirectShowCameraDescriptor  cameras [MAX_INPUTS_NUMBER];
-    CaptureTypeFormat           format  [MAX_INPUTS_NUMBER];
-    int                         deviceID[MAX_INPUTS_NUMBER];
+    DirectShowCameraDescriptor  mCameras  [MAX_INPUTS_NUMBER];
+    CaptureTypeFormat           mFormats  [MAX_INPUTS_NUMBER];
+    int                         mDeviceIDs[MAX_INPUTS_NUMBER];
     int                         mCompressed;
 
     /* Statistics fields */
@@ -51,14 +51,15 @@ using namespace std;
     virtual FramePair    getFrame();
     virtual FramePair    getFrameRGB24();
 
-    virtual CapErrorCode initCapture();
+    virtual CapErrorCode initCapture(CameraFormat *actualFormat = NULL);
     virtual CapErrorCode startCapture();
 
     virtual CapErrorCode queryCameraParameters(CameraParameters &parameters);
     virtual CapErrorCode setCaptureProperty(int id, int value);
     virtual CapErrorCode getCaptureProperty(int id, int *value);
     virtual CapErrorCode getCaptureName(QString &value);
-    virtual CapErrorCode getFormats(int *num, CameraFormat *&format);
+    virtual CapErrorCode getFormats(int *num, CameraFormat *&formats);
+    virtual QString      getInterfaceName();
     virtual CapErrorCode getDeviceName(int num, QString &name);
     virtual std::string  getDeviceSerial(int num = Frames::LEFT_FRAME);
 

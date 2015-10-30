@@ -22,8 +22,6 @@
 # define CAPTURE_INTERFACE V4L2CaptureInterface
 #endif
 
-const bool isRgb = true;
-
 const QString PhotostationCaptureDialog::DEFAULT_FILENAME = "capture.ini";
 
 PhotostationCaptureDialog::PhotostationCaptureDialog(QWidget *parent)
@@ -127,30 +125,16 @@ void PhotostationCaptureDialog::refresh()
     vector<string> cameras;
     vector<string> serials;
 
-#ifdef Q_OS_WIN
-#ifdef WITH_DIRECTSHOW
     CAPTURE_INTERFACE::getAllCameras(cameras);
-#endif
-#else
-    CAPTURE_INTERFACE::getAllCameras(cameras);
-#endif
 
     for (unsigned i = 0; i < cameras.size(); ++i)
     {
         //qDebug() << "Found camera id:" <<  cameras[i].c_str();
-        int  h      = ui->heightSpinBox->value();
-        int  w      = ui->widthSpinBox ->value();
-        int  fps    = ui->fpsSpinBox   ->value();
-        bool isYUYV = ui->codecComboBox->currentIndex() == 1;
 
-#ifdef Q_OS_WIN
-#ifdef WITH_DIRECTSHOW
-        ImageCaptureInterface *camera = new CAPTURE_INTERFACE(cameras[i], h, w, fps, isRgb);
-#endif
-#else
-        ImageCaptureInterface *camera = new CAPTURE_INTERFACE(cameras[i], h, w, fps, isRgb);
-#endif
-        camera->initCapture();
+        ImageCaptureInterface *camera = createCameraCapture(cameras[i], false);    // false - don't process any error
+        if (camera == NULL)
+            continue;
+
         int number = 0;
         ImageCaptureInterface::CameraFormat *formats = NULL;
         camera->getFormats(&number, formats);
@@ -310,22 +294,12 @@ void PhotostationCaptureDialog::previewRequest(int lineid)
     mCapSettingsDialog->setCaptureInterface(NULL);
     delete_safe(mPreviewInterface);
 
-    bool isYUYV = ui->codecComboBox->currentIndex() == 1;
+    string camSysId = ui->cameraTableWidget->item(lineid, COLUMN_SYS_ID)->text().toStdString();
 
-    mPreviewInterface = new CAPTURE_INTERFACE(
-                ui->cameraTableWidget->item(lineid, COLUMN_SYS_ID)->text().toStdString(),
-                ui->heightSpinBox->value(),
-                ui->widthSpinBox->value(),
-                ui->fpsSpinBox->value(),
-                isRgb);
-
-    ImageCaptureInterface::CapErrorCode result = mPreviewInterface->initCapture();
-
-    if (result != ImageCaptureInterface::SUCCESS_1CAM)
-    {
-        QMessageBox::information(this, "Can't open", "I can't open the camera");
+    mPreviewInterface = createCameraCapture(camSysId);
+    if (mPreviewInterface == NULL)
         return;
-    }
+
     connect(mPreviewInterface, SIGNAL(newFrameReady(frame_data_t)), this, SLOT(newPreviewFrame()));
     mPreviewInterface->startCapture();
 }
@@ -516,25 +490,14 @@ void PhotostationCaptureDialog::capture(bool shouldAdvance)
 
         string camSysId = ui->cameraTableWidget->item(lineid, COLUMN_SYS_ID)->text().toStdString();
 
-        bool isYUYV = ui->codecComboBox->currentIndex() == 1;
-
         CameraDescriptor camDesc;
         camDesc.camId = comboBox->currentIndex();
-        camDesc.camInterface = new CAPTURE_INTERFACE(camSysId
-                                                   , ui->heightSpinBox->value()
-                                                   , ui->widthSpinBox->value()
-                                                   , ui->fpsSpinBox->value()
-                                                   , isRgb);
-        camDesc.result = NULL;
         camDesc.toSkip = ui->skipFramesSpinBox->value();
+        camDesc.result = NULL;
+        camDesc.camInterface = createCameraCapture(camSysId);
+        if (camDesc.camInterface == NULL)
+            continue;
 
-        ImageCaptureInterface::CapErrorCode result = camDesc.camInterface->initCapture();
-
-        if (result != ImageCaptureInterface::SUCCESS_1CAM)
-        {
-            QMessageBox::information(this, "Error", QString("Couldn't open the camera %1").arg(camSysId.c_str()));
-            return;
-        }
         mCaptureInterfaces.append(camDesc);
         connect(camDesc.camInterface, SIGNAL(newFrameReady(frame_data_t)), mCaptureMapper, SLOT(map()));
         mCaptureMapper->setMapping(camDesc.camInterface, mCaptureInterfaces.count() - 1);
@@ -547,6 +510,56 @@ void PhotostationCaptureDialog::capture(bool shouldAdvance)
     else {
         finalizeCapture(false);
     }
+}
+
+ImageCaptureInterface* PhotostationCaptureDialog::createCameraCapture(const string &devname, bool processError)
+{
+    const bool isRgb = true;
+    bool compressed = ui->codecComboBox->currentIndex() == 0;
+
+    int  h   = ui->heightSpinBox->value();
+    int  w   = ui->widthSpinBox->value();
+    int  fps = ui->fpsSpinBox->value();
+
+    // TODO: use compressed YUYV, MJPG,... !
+
+    ImageCaptureInterface *camera = new CAPTURE_INTERFACE(devname, h, w, fps, isRgb);
+
+    ImageCaptureInterface::CameraFormat actualFormat;
+    ImageCaptureInterface::CapErrorCode result = camera->initCapture(&actualFormat);
+
+    if (!processError)
+        return camera;
+
+    if (result != ImageCaptureInterface::SUCCESS_1CAM)
+    {
+        QMessageBox::information(this, "Camera Error", QString("Couldn't open the camera <%1>").arg(camera->getInterfaceName()));
+        delete_safe(camera);
+        return false;
+    }
+
+    if ((!!actualFormat) && !(actualFormat == ImageCaptureInterface::CameraFormat(h, w, fps)))
+    {
+        int formatIdx;
+        for (formatIdx = 0; formatIdx < ui->formatsComboBox->count(); ++formatIdx)
+        {
+            QVariantList format = ui->formatsComboBox->itemData(formatIdx).toList();
+            if (format.length() != 3)
+                break;
+
+            if (actualFormat == ImageCaptureInterface::CameraFormat(format[1].toInt(), format[0].toInt(), format[2].toInt()))
+                break;
+        }
+        ui->formatsComboBox->setCurrentIndex(formatIdx);
+
+        QVariantList format = ui->formatsComboBox->itemData(formatIdx).toList();
+        h   = format[1].toInt();
+        w   = format[0].toInt();
+        fps = format[2].toInt();
+        L_INFO_P("camera <%s>: new format is: %dx%d @%d", QSTR_DATA_PTR(camera->getInterfaceName()), w, h, fps);
+    }
+
+    return camera;
 }
 
 void PhotostationCaptureDialog::stopCapture()
