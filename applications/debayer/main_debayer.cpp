@@ -7,39 +7,24 @@ Bayer to PPM converter
 #include <iostream>
 #include "ppmLoader.h"
 #include "converters/debayer.h"
-//#include "commandLineSetter.h"
-#include <qcommandlineparser.h>
+#include "commandLineSetter.h"
+//#include <qcommandlineparser.h>
 
 using std::cout;
 using std::endl;
 using std::string;
 using corecvs::PPMLoader;
 
-int main(int argc, char *argv[])
+int main(int argc, const char **argv)
 {
-    QCoreApplication app(argc, argv);
-    QCoreApplication::setApplicationName("PGM Demosaic Tool");
-    QCoreApplication::setApplicationVersion("1.0");
+    CommandLineSetter s(argc, argv);
+
+    int quality = s.getInt("quality", 1);
     
-    QCommandLineParser parser;
-    parser.setApplicationDescription("PGM Bayer to RGB PPM converter");
-    parser.addHelpOption();
-    parser.addPositionalArgument("file_containing_bayer.pgm", QCoreApplication::translate("main", "Raw Bayer sensor data"));
-
-    QCommandLineOption qualOption(QStringList() << "q" << "quality",
-        QCoreApplication::translate("main", "Demosaic quality"),
-        QCoreApplication::translate("main", "quality"), "0");
-    parser.addOption(qualOption);
-    parser.process(app);
-
-    int quality = parser.value("quality").toInt();
-
-    if (parser.positionalArguments().empty())
-        parser.showHelp(-1);
 
     PPMLoader ldr;
     MetaData* metadata = new MetaData;
-    string filename = parser.positionalArguments()[0].toStdString();
+    string filename = s.getOption("file");
     G12Buffer* bayer = ldr.load(filename, metadata);
     Debayer d(bayer, 12, metadata);
     RGB48Buffer *result = nullptr;
@@ -53,6 +38,9 @@ int main(int argc, char *argv[])
     default:
         result = d.toRGB48(Debayer::Bilinear);
         break;
+    /*case 7:
+        result = d.toRGB48(Debayer::Improved);
+        break;*/
     }
 
     ldr.save("out.ppm", result);

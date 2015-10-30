@@ -72,28 +72,43 @@ G12Buffer *CR2Reader::getBayer(bool shifted)
     if (hist)
     {
         for (int i = 0; i < 3; i++)
-            delete[] hist[i];
-        delete[] hist;
+            deletearr_safe(hist[i]);
+        deletearr_safe(hist);
     }
-
-    G12Buffer *result = new G12Buffer(reader->imgdata.sizes.height, reader->imgdata.sizes.width);
+    int h = reader->imgdata.sizes.height;
+    int w = reader->imgdata.sizes.width;
+    G12Buffer* result = new G12Buffer(h,w);
     int locShift = shifted * shift;
-    for (int i = 0; i < reader->imgdata.sizes.height; i++)
-        for (int j = 0; j < reader->imgdata.sizes.width; j++)
+    for (int i = 0; i < h; i++)
+        for (int j = 0; j < w; j++)
         {
-            int offset = (i + reader->imgdata.sizes.top_margin)*reader->imgdata.sizes.raw_width + (j + reader->imgdata.sizes.left_margin);
+            int offset =  (i + reader->imgdata.sizes.top_margin)*reader->imgdata.sizes.raw_width + (j + reader->imgdata.sizes.left_margin);
             result->element(i, j) = reader->imgdata.rawdata.raw_image[offset] >> locShift;
             histUpdate(i, j, reader->imgdata.rawdata.raw_image[offset] >> locShift);
         }
     return result;
 }
 
-int CR2Reader::flipIndex(int row, int col)
+int CR2Reader::flipIndex(int row, int col, bool raw)
 {
-    if (reader->imgdata.sizes.flip & 4) { row = row + col; col = row - col; row = row - col; };
-    if (reader->imgdata.sizes.flip & 2) row = reader->imgdata.sizes.iheight - 1 - row;
-    if (reader->imgdata.sizes.flip & 1) col = reader->imgdata.sizes.iwidth - 1 - col;
-    return row * reader->imgdata.sizes.iwidth + col;
+    if (raw)
+    {
+        int top_margin = (reader->imgdata.sizes.flip & 4) ? reader->imgdata.sizes.left_margin : reader->imgdata.sizes.top_margin;
+        int left_margin = (reader->imgdata.sizes.flip & 4) ? reader->imgdata.sizes.top_margin : reader->imgdata.sizes.left_margin;;
+
+        if (reader->imgdata.sizes.flip & 4) { row = row + col; col = row - col; row = row - col; };
+        if (reader->imgdata.sizes.flip & 2) row = reader->imgdata.sizes.height - 1 - row;
+        if (reader->imgdata.sizes.flip & 1) col = reader->imgdata.sizes.width - 1 - col;
+        // return row * reader->imgdata.sizes.raw_width + col;
+        return(row + top_margin)*reader->imgdata.sizes.raw_width + (col + left_margin);
+    }
+    else
+    {
+        if (reader->imgdata.sizes.flip & 4) { row = row + col; col = row - col; row = row - col; };
+        if (reader->imgdata.sizes.flip & 2) row = reader->imgdata.sizes.iheight - 1 - row;
+        if (reader->imgdata.sizes.flip & 1) col = reader->imgdata.sizes.iwidth - 1 - col;
+        return row * reader->imgdata.sizes.iwidth + col;
+    }
 }
 
 int isBigEndian()
@@ -195,40 +210,47 @@ MetaData* CR2Reader::getMetadata()
 
     uint16_t maxval = 0;
 
-    for (int i = 0; i < reader->imgdata.sizes.raw_height; i++)
-        for (int j = 0; j < reader->imgdata.sizes.raw_width; j++)
+    if (0)
+        for (int i = 0; i < reader->imgdata.sizes.raw_height; i++)
+            for (int j = 0; j < reader->imgdata.sizes.raw_width; j++)
+            {
+                int offset = (i + reader->imgdata.sizes.top_margin)*reader->imgdata.sizes.raw_width + (j + reader->imgdata.sizes.left_margin);
+                if (maxval < reader->imgdata.rawdata.raw_image[offset])
+                    maxval = reader->imgdata.rawdata.raw_image[offset];
+            }
+    else
+        for (int i = 0; i < reader->imgdata.sizes.height; i++)
+            for (int j = 0; j < reader->imgdata.sizes.width; j++)
+            {
+                int offset = i*reader->imgdata.sizes.width + j;
+                if (maxval < reader->imgdata.rawdata.raw_image[offset])
+                    maxval = reader->imgdata.rawdata.raw_image[offset];
+            }
+    int perc = 0, val = 0, total = 0, c = 0;
+    int t_white = (1 << 13) - 1;
+    perc = reader->imgdata.sizes.width * reader->imgdata.sizes.height * reader->imgdata.params.auto_bright_thr;
+    if (hist)
+        for (t_white = c = 0; c < 3; c++)
         {
-            int offset = (i + reader->imgdata.sizes.top_margin)*reader->imgdata.sizes.raw_width + (j + reader->imgdata.sizes.left_margin);
-            if (maxval < reader->imgdata.rawdata.raw_image[offset])
-                maxval = reader->imgdata.rawdata.raw_image[offset];
+            for (val = 0x2000, total = 0; --val > 32; )
+                if ((total += hist[c][val]) > perc) break;
+            if (t_white < val) t_white = val;
         }
 
-    int perc = 0, val = 0, total = 0, c = 0;
-    int t_white = 1 << 16;
-    perc = reader->imgdata.sizes.width * reader->imgdata.sizes.height * reader->imgdata.params.auto_bright_thr;
-
-    for (t_white = c = 0; c < 3; c++)
+    for (int i = 0; i < 6; i++)
     {
-        for (val = 0x2000, total = 0; --val > 32; )
-            if ((total += hist[c][val]) > perc) break;
-        if (t_white < val) t_white = val;
+        if (i < 3)
+        {
+            metadata["pre_mul"].push_back(reader->imgdata.color.pre_mul[i]);
+            metadata["cam_mul"].push_back(reader->imgdata.color.cam_mul[i]);
+        }
+        metadata["gamm"].push_back(reader->imgdata.params.gamm[i]);
     }
 
-    double* pre_mul = new double[3];
-    memcpy(pre_mul, reader->imgdata.color.pre_mul, 3 * sizeof(double));
-    double* cam_mul = new double[3];
-    memcpy(cam_mul, reader->imgdata.color.cam_mul, 3 * sizeof(double));
-    double* gamm = new double[6];
-    memcpy(gamm, reader->imgdata.params.gamm, 6 * sizeof(double));
-
-    metadata["pre_mul"] = MetaValue(3, pre_mul);
-    metadata["cam_mul"] = MetaValue(3, cam_mul);
-    metadata["gamm"] = MetaValue(6, gamm);
-    metadata["type"] = reader->imgdata.idata.filters;
-    metadata["white"] = maxval;
-    metadata["black"] = reader->imgdata.color.black >> shift;
-    metadata["t_white"] = t_white;
-
+    metadata["type"].push_back(reader->imgdata.idata.filters);
+    metadata["white"].push_back(maxval);
+    metadata["black"].push_back(reader->imgdata.color.black >> shift);
+    metadata["t_white"].push_back(t_white);
     return meta;
 }
 
@@ -260,8 +282,9 @@ void CR2Reader::fakeBayer(G12Buffer *img)
 
 CR2Reader::~CR2Reader()
 {
-    for (int i = 0; i < 3; i++)
-        delete[] hist[i];
-    delete[] hist;
-    delete reader;
+    if (hist != nullptr)
+        for (int i = 0; i < 3; i++)
+            deletearr_safe(hist[i]);
+    deletearr_safe(hist);
+    delete_safe(reader);
 }

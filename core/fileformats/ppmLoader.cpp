@@ -66,7 +66,7 @@ G12Buffer* PPMLoader::g12BufferCreateFromPGM(const string& name, MetaData *meta)
     // create an alias to metadata
     MetaData &metadata = *meta;
 
-    if (!readHeader(fp, &h, &w, &maxval, &type, meta) || type < 5 || type > 6)
+    if (!readHeader(fp, &h, &w, &maxval, &type, meta) || type != 5)
     {
         CORE_ASSERT_FAIL(("File " + name + " is not a valid PGM image").c_str());
         return NULL;
@@ -206,7 +206,7 @@ bool PPMLoader::readHeader(FILE *fp, unsigned long int *h, unsigned long int *w,
     // check PPM type (currently only supports 5 or 6)
     if ((header[0] != 'P') || (header[1] < '5') || (header[1] > '6'))
     {
-        printf("Image is not a supported PPM\n");
+        //printf("Image is not a supported PPM\n");
         return false;
     }
 
@@ -222,7 +222,7 @@ bool PPMLoader::readHeader(FILE *fp, unsigned long int *h, unsigned long int *w,
         // try to parse dimensions in Photoshop-like format (when a newline is used instead of whitespace or tabulation)
         if (sscanf(header, "%lu", w) != 1)
         {
-            printf("Image dimensions could not be read from line %s\n", header);
+            //printf("Image dimensions could not be read from line %s\n", header);
             return false;
         }
         else
@@ -231,7 +231,7 @@ bool PPMLoader::readHeader(FILE *fp, unsigned long int *h, unsigned long int *w,
             header = nextLine(fp, 255, metadata);
             if (sscanf(header, "%lu", h) != 1) // duplicate code can be gotten rid of with a goto (not sure it's worth doing)
             {
-                printf("Image dimensions could not be read from line %s\n", header);
+                //printf("Image dimensions could not be read from line %s\n", header);
                 return false;
             }
         }
@@ -242,7 +242,7 @@ bool PPMLoader::readHeader(FILE *fp, unsigned long int *h, unsigned long int *w,
 
     if (sscanf(header, "%hu", maxval) != 1)
     {
-        printf("Image metric could not be read form line %s\n", header);
+        //printf("Image metric could not be read form line %s\n", header);
         return false;
     }
 
@@ -267,9 +267,10 @@ bool PPMLoader::writeHeader(FILE *fp, unsigned long int h, unsigned long int w, 
     if (meta)
         for (MetaData::iterator i = metadata.begin(); i != metadata.end(); i++)
         {
-            fprintf(fp, "# @meta %s\t@values %i\t", "black", i->second.size());
+            fprintf(fp, "# @meta %s\t@values %i\t", i->first.c_str(), i->second.size());
             for (int j = 0; j < i->second.size(); j++)
                 fprintf(fp, "%f ", i->second[j]);
+            fprintf(fp, "\n");
         }
 
     fprintf(fp, "############################################\n");
