@@ -65,7 +65,7 @@ std::vector<int> UndirectedGraph::getConnectedComponent(int v)
 
 void UndirectedGraph::intersect(const std::vector<int> &a, std::vector<int> &b)
 {
-    int N = (int)a.size(), ptrA = 0, ptrB = 0, M = b.size(), ptrRes = 0;
+    int N = (int)a.size(), ptrA = 0, ptrB = 0, M = (int)b.size(), ptrRes = 0;
     for (; ptrA < N && ptrB < M;)
     {
         if (a[ptrA] == b[ptrB])
