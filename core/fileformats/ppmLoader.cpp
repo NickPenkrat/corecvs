@@ -63,10 +63,7 @@ G12Buffer* PPMLoader::g12BufferCreateFromPGM(const string& name, MetaData *meta)
         return NULL;
     }
 
-    // create an alias to metadata
-    MetaData &metadata = *meta;
-
-    if (!readHeader(fp, &h, &w, &maxval, &type, meta) || type != 5)
+    if (!readHeader(fp, &h, &w, &maxval, &type, meta) || type != 5 && type != 6)
     {
         CORE_ASSERT_FAIL(("File " + name + " is not a valid PGM image").c_str());
         return NULL;
@@ -78,6 +75,8 @@ G12Buffer* PPMLoader::g12BufferCreateFromPGM(const string& name, MetaData *meta)
     // if metadata is null, don't
     if (meta != nullptr)
     {
+        // create an alias to metadata
+        MetaData &metadata = *meta;
         // get significant bit count
         if (metadata["bits"].empty())
         {
@@ -143,7 +142,7 @@ G12Buffer* PPMLoader::g12BufferCreateFromPGM(const string& name, MetaData *meta)
     }
 
     if (calcWhite)
-        metadata["white"].push_back(white);
+        meta->at("white").push_back(white);
 
 done:
     if (fp != NULL)
