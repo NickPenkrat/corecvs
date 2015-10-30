@@ -58,7 +58,7 @@ void CalibrationJob::allDetectChessBoard(bool distorted)
 {
     int N = (int)observations.size();
     photostation.cameras.resize(N);
-    auto psIterator = photostation.cameras.begin();
+    std::vector<corecvs::CameraModel>::iterator psIterator = photostation.cameras.begin();
 
     for (auto& c: observations)
     {
@@ -283,7 +283,7 @@ bool CalibrationJob::calibrateSingleCamera(int cameraId)
     std::vector<CameraLocationData> locations;
     int valid_locations = 0;
 
-    FlatPatternCalibrator calibrator(settings.singleCameraCalibratorConstraints, settings.calibrationLockParams);
+    FlatPatternCalibrator calibrator(settings.singleCameraCalibratorConstraints, photostation.cameras[cameraId].intrinsics);
 
     for (auto& o: observations[cameraId])
     {
