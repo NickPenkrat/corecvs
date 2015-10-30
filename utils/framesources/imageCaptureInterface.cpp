@@ -186,7 +186,7 @@ void ImageCaptureInterface::notifyAboutNewFrame(frame_data_t frameData)
 ImageCaptureInterface::ImageCaptureInterface()
    : mIsRgb(false)
 {
-   qRegisterMetaType<frame_data_t>("frame_data_t");
+    qRegisterMetaType<frame_data_t>("frame_data_t");
 }
 
 ImageCaptureInterface::~ImageCaptureInterface()
