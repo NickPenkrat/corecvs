@@ -11,7 +11,7 @@ Debayer::Debayer(G12Buffer *bayer, int depth, MetaData *metadata)
 // TODO: maybe just replace it with simple 3-colour loop?
 int FC(int row, int col, int filters) { return (filters >> (((row << 1 & 14) | (col & 1)) << 1) & 3); }
 
-uint16_t Debayer::clip(int64_t x, int depth)
+uint16_t Debayer::clip(int32_t x, int depth)
 {
     const uint16_t maximum = (1 << depth) - 1;
     if (x < 0)
@@ -81,31 +81,103 @@ RGB48Buffer* Debayer::linear()
                     {
                     case 0: // red
                         red = mBayer->element(i + k, j + l);
-                        green = clampedSum(mBayer, Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1), Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k));
-                        blue = clampedSum(mBayer, Vector2d32(j + l - 1, i + k - 1), Vector2d32(j + l + 1, i + k - 1), Vector2d32(j + l - 1, i + k + 1), Vector2d32(j + l + 1, i + k + 1));
+                        green = clampedBayerSum({ Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1), Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k) });
+                        blue = clampedBayerSum({ Vector2d32(j + l - 1, i + k - 1), Vector2d32(j + l + 1, i + k - 1), Vector2d32(j + l - 1, i + k + 1), Vector2d32(j + l + 1, i + k + 1) });
                         break;
                     case 1: // green1
-                        red = clampedSum(mBayer, Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k));
+                        red = clampedBayerSum({ Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k) });
                         green = mBayer->element(i + k, j + l);
-                        blue = clampedSum(mBayer, Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1));
+                        blue = clampedBayerSum({ Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1) });
                         break;
                     case 2: // green2
-                        red = clampedSum(mBayer, Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1));
+                        red = clampedBayerSum({ Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1) });
                         green = mBayer->element(i + k, j + l);
-                        blue = clampedSum(mBayer, Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k));
+                        blue = clampedBayerSum({ Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k) });
                         break;
                     case 3: // blue
-                        red = clampedSum(mBayer, Vector2d32(j + l - 1, i + k - 1), Vector2d32(j + l + 1, i + k - 1), Vector2d32(j + l - 1, i + k + 1), Vector2d32(j + l + 1, i + k + 1));
-                        green = clampedSum(mBayer, Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1), Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k));
+                        red = clampedBayerSum({ Vector2d32(j + l - 1, i + k - 1), Vector2d32(j + l + 1, i + k - 1), Vector2d32(j + l - 1, i + k + 1), Vector2d32(j + l + 1, i + k + 1) });
+                        green = clampedBayerSum({ Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1), Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k) });
                         blue = mBayer->element(i + k, j + l);
                         break;
                     }
 
-                    result->setElement(i + k, j + l, RGBColor48(
+                    result->element(i + k, j + l) = {
                         mCurve[clip((int64_t)((red - mBlack)*mScaleMul[0]), mDepth)],
                         mCurve[clip((int64_t)((green - mBlack)*mScaleMul[1]), mDepth)],
                         mCurve[clip((int64_t)((blue - mBlack)*mScaleMul[2]), mDepth)]
-                        ));
+                    };
+                }
+        }
+
+    return result;
+}
+
+RGB48Buffer* Debayer::improved()
+{
+    // RGGB
+    // TODO: write this to metadata
+    int bpos = 0;
+    uint16_t red = 0, green = 0, blue = 0;
+
+    int swapCols = bpos & 1;
+    int swapRows = (bpos & 2) >> 1;
+    RGB48Buffer *result = new RGB48Buffer(mBayer->h, mBayer->w, false);
+    AbstractContiniousBuffer<double>* ratios = new AbstractContiniousBuffer<double>;
+
+    for (int i = 0; i < mBayer->h; i += 2)
+        for (int j = 0; j < mBayer->w; j += 2)
+        {
+            for (int k = 0; k < 2; k++)
+                for (int l = 0; l < 2; l++)
+                {
+                    int color = (l ^ swapCols) % 2 + ((k ^ swapRows) % 2) * 2;
+                    int deltar = 0, deltag = 0, deltab = 0, green_interp = 0, absh = 0, absv = 0;
+                    double alpha = 0.3, beta = 0.625, gamma = 0.75;
+                    switch (color)
+                    {
+                        // TODO: make the following code more readable
+                    case 0: // red
+                        deltar = mBayer->element(i + k, j + l) - clampedBayerSum({ Vector2d32(j + l, i + k - 2), Vector2d32(j + l, i + k + 2), Vector2d32(j + l - 2, i + k), Vector2d32(j + l + 2, i + k) });
+                        absv = abs(clampedBayerSum(Vector2d32(j + l, i + k - 1)) - clampedBayerSum(Vector2d32(j + l, i + k + 1)));
+                        absh = abs(clampedBayerSum(Vector2d32(j + l + 1, i + k)) - clampedBayerSum(Vector2d32(j + l - 1, i + k)));
+                        //green_interp = clampedBayerSum(Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1), Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k));
+                        green_interp = absv > absh ? clampedBayerSum({ Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k) }) :
+                            clampedBayerSum({ Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1) });
+                        red = mBayer->element(i + k, j + l);
+                        green = clip(green_interp + alpha*deltar, mDepth);
+                        blue = clip(clampedBayerSum({ Vector2d32(j + l - 1, i + k - 1), Vector2d32(j + l + 1, i + k - 1), Vector2d32(j + l - 1, i + k + 1), Vector2d32(j + l + 1, i + k + 1) }) + gamma*deltar, mDepth);
+                        break;
+                    case 1: // green1
+                        deltag = mBayer->element(i + k, j + l) - clampedBayerSum({ Vector2d32(j + l - 1, i + k - 1), Vector2d32(j + l - 1, i + k + 1), Vector2d32(j + l + 1, i + k - 1), Vector2d32(j + l + 1, i + k + 1) });
+                        red = clip(clampedBayerSum({ Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k) }) + beta*deltag, mDepth);
+                        green = mBayer->element(i + k, j + l);
+                        blue = clip(clampedBayerSum({ Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1) }) + beta*deltag, mDepth);
+                        break;
+                    case 2: // green2
+                        deltag = mBayer->element(i + k, j + l) - clampedBayerSum({ Vector2d32(j + l - 1, i + k - 1), Vector2d32(j + l - 1, i + k + 1), Vector2d32(j + l + 1, i + k - 1), Vector2d32(j + l + 1, i + k + 1) });
+                        red = clip(clampedBayerSum({ Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1) }) + beta*deltag, mDepth);
+                        green = mBayer->element(i + k, j + l);
+                        blue = clip(clampedBayerSum({ Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k) }) + beta*deltag, mDepth);;
+                        break;
+                    case 3: // blue
+                        deltab = mBayer->element(i + k, j + l) - clampedBayerSum({ Vector2d32(j + l, i + k - 2), Vector2d32(j + l, i + k + 2), Vector2d32(j + l - 2, i + k), Vector2d32(j + l + 2, i + k) });
+                        absv = abs(clampedBayerSum(Vector2d32(j + l, i + k - 1)) - clampedBayerSum(Vector2d32(j + l, i + k + 1)));
+                        absh = abs(clampedBayerSum(Vector2d32(j + l + 1, i + k)) - clampedBayerSum(Vector2d32(j + l - 1, i + k)));
+                        //green_interp = clampedBayerSum(Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1), Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k));
+                        green_interp = absv > absh ? clampedBayerSum({ Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k) }) :
+                            clampedBayerSum({ Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1) });
+                        red = clip(clampedBayerSum({ Vector2d32(j + l - 1, i + k - 1), Vector2d32(j + l + 1, i + k - 1), Vector2d32(j + l - 1, i + k + 1), Vector2d32(j + l + 1, i + k + 1) }) + gamma*deltab, mDepth);
+                        green = clip(green_interp + alpha*deltab, mDepth);
+                        blue = mBayer->element(i + k, j + l);
+                        break;
+                    }
+
+                    result->element(i + k, j + l) = {
+                        mCurve[clip((int32_t)((red - mBlack)*mScaleMul[0]), mDepth)],
+                        mCurve[clip((int32_t)((green - mBlack)*mScaleMul[1]), mDepth)],
+                        mCurve[clip((int32_t)((blue - mBlack)*mScaleMul[2]), mDepth)]
+                    };
+
                 }
         }
 
@@ -251,6 +323,9 @@ RGB48Buffer* Debayer::toRGB48(Quality quality)
     case Bilinear:
         result = linear();
         break;
+    case Improved:
+        result = improved();
+        break;
     }
 
     return result;
@@ -271,8 +346,8 @@ void Debayer::preprocess(bool overwrite)
         int m_bits = this->mMetadata != nullptr &&  metadata["bits"][0] ? metadata["bits"][0] : mDepth;
         int shift = m_bits - mDepth;
 
-        mBlack =       !metadata[ "black" ].empty() && metadata[ "black" ][0] ?      metadata[ "black" ][0] : 0;
-        int m_white =  !metadata[ "white" ].empty() && metadata[ "white" ][0] ?      metadata[ "white" ][0] : (1 << mDepth) - 1;
+        mBlack = !metadata["black"].empty() && metadata["black"][0] ? metadata["black"][0] : 0;
+        int m_white = !metadata["white"].empty() && metadata["white"][0] ? metadata["white"][0] : (1 << mDepth) - 1;
         int m_twhite = !metadata["t_white"].empty() && metadata["t_white"][0] ? (int)metadata["t_white"][0] : m_white;
         t_white = (shift < 0 ? m_twhite << -shift : m_twhite >> shift);
     }
@@ -285,39 +360,29 @@ void Debayer::preprocess(bool overwrite)
 
 }
 
-uint16_t Debayer::clampedSum(G12Buffer* buf, Vector2d32 coord1, Vector2d32 coord2, Vector2d32 coord3, Vector2d32 coord4)
+int32_t Debayer::clampedBayerSum(Vector2d32 coords)
 {
-    uint32_t result = 0;
+    return clampedBayerSum(vector<Vector2d32>{coords});
+}
+
+int32_t Debayer::clampedBayerSum(vector<Vector2d32> coords)
+{
+    int32_t result = 0;
     uint16_t div = 0;
 
-    if (coord1.x() >= 0 && coord1.y() >= 0 && coord1.x() < buf->w && coord1.y() < buf->h)
+    for (vector<Vector2d32>::iterator it = coords.begin(); it != coords.end(); it++)
     {
-        div++;
-        result += buf->element(coord1);
+        Vector2d32 v = (*it);
+        if (v.x() >= 0 && v.y() >= 0 && v.x() < mBayer->w && v.y() < mBayer->h)
+        {
+            div++;
+            result += mBayer->element(v);
+        }
     }
-
-    if (coord2.x() >= 0 && coord2.y() >= 0 && coord2.x() < buf->w && coord2.y() < buf->h)
-    {
-        div++;
-        result += buf->element(coord2);
-    }
-
-    if (coord3.x() >= 0 && coord3.y() >= 0 && coord3.x() < buf->w && coord3.y() < buf->h)
-    {
-        div++;
-        result += buf->element(coord3);
-    }
-
-    if (coord4.x() >= 0 && coord4.y() >= 0 && coord4.x() < buf->w && coord4.y() < buf->h)
-    {
-        div++;
-        result += buf->element(coord4);
-    }
-
     if (div == 0)
         return 0;
     else
-        return uint16_t(result / div);
+        return result / div;
 }
 
 Debayer::~Debayer()

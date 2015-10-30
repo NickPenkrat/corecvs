@@ -7,9 +7,12 @@
 #ifndef CDEBAYER_H_
 #define CDEBAYER_H_
 
+#include "global.h"
 #include "g12Buffer.h"
 #include "rgbTBuffer.h"
+#include "rgb24Buffer.h"
 #include "metamap.h"
+
 
 namespace corecvs
 {
@@ -23,6 +26,7 @@ public:
         Nearest = -5,
         Bilinear = 0,
         AHD = 3,
+        Improved = 7
     };
 
     /**
@@ -67,10 +71,31 @@ private:
 
     RGB48Buffer* linear();
     RGB48Buffer* nearest();
+    RGB48Buffer* improved();
 
-    // utilitary functions
-    uint16_t clip(int64_t x, int depth = 16);
-    uint16_t clampedSum(G12Buffer* buf, Vector2d32 coord1, Vector2d32 coord2, Vector2d32 coord3 = Vector2d32(-1, -1), Vector2d32 coord4 = Vector2d32(-1, -1));
+    /* utilitary functions */
+    /**
+     * Clip int to uint16.
+     *
+     * \param   x       Value.
+     * \param   depth   Bits to clip at.
+     *
+     * \return  Clipped value.
+     */
+
+    uint16_t clip(int32_t x, int depth = 16);
+
+    /**
+     * Calculate average.
+     *
+     * \param   coords  The coordinates to average pixels at. If the coordinate exceeds image
+     *                  boundaries, it will be ignored.
+     *
+     * \return  Averaged value.
+     */
+
+    int32_t clampedBayerSum(Vector2d32 coords);
+    int32_t clampedBayerSum(vector<Vector2d32> coords);
 };
 
 }
