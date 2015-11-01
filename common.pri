@@ -50,39 +50,6 @@ asserts {
     DEFINES += ASSERTS
 }
 
-# Autodetect block
-
-with_native:!win32 {
-
-    CPU_FLAGS=$$system(cat /proc/cpuinfo | grep -m 1 "^flags")
-#    message (Platform natively support $$CPU_FLAGS)
-
-    contains(CPU_FLAGS, "sse") {
-        CONFIG += with_sse
-#        message (Natively support SSE);
-    }
-    contains(CPU_FLAGS, "sse2") {
-        CONFIG += with_sse2
-#        message (Natively support SSE2);
-    }
-    contains(CPU_FLAGS, "ssse3") {
-        CONFIG += with_sse3
-#        message (Natively support SSE3);
-    }
-    contains(CPU_FLAGS, "avx") {
-        CONFIG += with_avx
-#        message (Natively support AVX);
-    }
-    contains(CPU_FLAGS, "avx2") {
-        CONFIG += with_avx2
-#        message (Natively support AVX2);
-    }
-    contains(CPU_FLAGS, "fma") {
-        CONFIG += with_fma
-#        message (Natively support FMA);
-    }
-}
-
 with_avx {
     DEFINES += WITH_AVX
     !win32-msvc* {
@@ -481,17 +448,35 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
     }
 }
 
-with_blas {
+with_openblas {
+   !win32 {
+       !isEmpty(BLAS_PATH) {
+            !build_pass: message (Using BLAS from <$$BLAS_PATH>)
+            INCLUDEPATH += $(BLAS_PATH)/include
+        } else {
+            !build_pass: message (Using System BLAS)
+
+        }
+        LIBS        += -lopenblas
+        DEFINES     += WITH_BLAS
+    }
+}
+
+with_mkl {
+  MKLROOT = $$(MKLROOT)
   !win32 {
-    !isEmpty(BLAS_PATH) {
-        !build_pass: message (Using BLAS from <$$BLAS_PATH>)
-#        INCLUDEPATH += $(BLAS_PATH)/include
+        isEmpty(MKLROOT) {
+            MKLROOT = /opt/intel/mkl
+        }
+        QMAKE_LFLAGS += -L"$$MKLROOT"/lib/intel64
+        INCLUDEPATH  += "$$MKLROOT"/include
+        LIBS         += -lmkl_intel_lp64 -lmkl_core -lmkl_tbb_thread -ltbb -lstdc++ -lpthread -lm
     } else {
-        !build_pass: message (Using System BLAS)
+        INCLUDEPATH += "$$MKLROOT\include"
+        LIBS        += -L"$$MKLROOT"/lib/intel64 -lmkl_intel_lp64_dll -lmkl_core_dll -lmkl_tbb_thread_dll -ltbb
     }
     DEFINES     += WITH_BLAS
-    LIBS        += -lopenblas
-  }
+    DEFINES     += WITH_MKL
 }
 
 # More static analysis warnings

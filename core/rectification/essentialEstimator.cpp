@@ -67,7 +67,7 @@ EssentialEstimator::EssentialEstimator()
  *    = \vec 0
  * \f]
  **/
-EssentialMatrix EssentialEstimator::getEssentialLSE(const vector<Correspondance*> & samples)
+EssentialMatrix EssentialEstimator::getEssentialLSE(const vector<Correspondence*> & samples)
 {
     Matrix X((int)samples.size(), 9);
     Matrix W(1,9);
@@ -128,7 +128,7 @@ EssentialMatrix EssentialEstimator::getEssentialLSE(const vector<Correspondance*
 }
 
 
-EssentialMatrix EssentialEstimator::getEssentialLM(const vector<Correspondance*> & samples)
+EssentialMatrix EssentialEstimator::getEssentialLM(const vector<Correspondence*> & samples)
 {
     CostFunction7toN costFunction(&samples);
     NormalizeFunction normalise;
@@ -165,7 +165,7 @@ EssentialMatrix EssentialEstimator::getEssentialLM(const vector<Correspondance*>
     return CostFunctionBase::getEssential(&optInput[0]);
 }
 
-EssentialMatrix EssentialEstimator::getEssentialGrad(const vector<Correspondance*> & samples)
+EssentialMatrix EssentialEstimator::getEssentialGrad(const vector<Correspondence*> & samples)
 {
     CostFunction7to1 costFunction(&samples);
     NormalizeFunction normalise;
@@ -185,7 +185,7 @@ EssentialMatrix EssentialEstimator::getEssentialGrad(const vector<Correspondance
     return CostFunctionBase::getEssential(&optInput[0]);
 }
 
-EssentialMatrix EssentialEstimator::getEssentialGradToRm(const vector<Correspondance*> & samples)
+EssentialMatrix EssentialEstimator::getEssentialGradToRm(const vector<Correspondence*> & samples)
 {
     CostFunction7toN costFunction(&samples);
     NormalizeFunction normalise;
@@ -209,7 +209,7 @@ EssentialMatrix EssentialEstimator::getEssentialGradToRm(const vector<Correspond
     return CostFunctionBase::getEssential(&optInput[0]);
 }
 
-EssentialMatrix EssentialEstimator::getEssentialSimpleKalman (const vector<Correspondance *> &samples)
+EssentialMatrix EssentialEstimator::getEssentialSimpleKalman (const vector<Correspondence *> &samples)
 {
     IdentityFunction F(CostFunctionBase::VECTOR_SIZE);
     CostFunction7to1 H(&samples);
@@ -263,7 +263,7 @@ EssentialMatrix EssentialEstimator::getEssentialSimpleKalman (const vector<Corre
 }
 
 #if 0
-EssentialMatrix EssentialEstimator::getEssentialKalman(const vector<Correspondance *> &samples)
+EssentialMatrix EssentialEstimator::getEssentialKalman(const vector<Correspondence *> &samples)
 {
     /* Setting up P, Q, R */
     CostFunction7to1 F(&samples);
@@ -319,7 +319,7 @@ EssentialMatrix EssentialEstimator::getEssentialKalman(const vector<Correspondan
 }
 
 
-EssentialMatrix EssentialEstimator::getEssentialMultiKalman(const vector<Correspondance *> &samples)
+EssentialMatrix EssentialEstimator::getEssentialMultiKalman(const vector<Correspondence *> &samples)
 {
     /* Setting up P, Q, R */
     CostFunction7toN F(&samples);
@@ -375,7 +375,7 @@ EssentialMatrix EssentialEstimator::getEssentialMultiKalman(const vector<Corresp
 #endif
 
 EssentialMatrix EssentialEstimator::getEssential             (
-        const vector<Correspondance *> &samples,
+        const vector<Correspondence *> &samples,
         OptimisationMethod method)
 {
     switch (method)
@@ -490,7 +490,7 @@ Matrix EssentialEstimator::CostFunction7to1::getJacobian(const double in[], doub
 
        for (unsigned j = 0; j < samples->size(); j++)
        {
-           Correspondance *corr = samples->at(j);
+           Correspondence *corr = samples->at(j);
            double value_plus  = m_plus .epipolarDistance(*corr);
            double value_minus = m_minus.epipolarDistance(*corr);
            sum_plus  += value_plus  * value_plus ;
@@ -503,7 +503,7 @@ Matrix EssentialEstimator::CostFunction7to1::getJacobian(const double in[], doub
 
        for (unsigned j = 0; j < samples->size(); j++)
        {
-           Correspondance *corr = samples->at(j);
+           Correspondence *corr = samples->at(j);
            double value_plus  = m_plus .epipolarDistance(*corr);
            double value_minus = m_minus.epipolarDistance(*corr);
            double value       = m.      epipolarDistance(*corr);
@@ -518,7 +518,7 @@ Matrix EssentialEstimator::CostFunction7to1::getJacobian(const double in[], doub
 
        for (unsigned j = 0; j < samples->size(); j++)
        {
-           Correspondance *corr = samples->at(j);
+           Correspondence *corr = samples->at(j);
            double value_plus  = m_plus .epipolarDistance(*corr);
            double value_minus = m_minus.epipolarDistance(*corr);
            double value       = m.      epipolarDistance(*corr);
@@ -533,7 +533,7 @@ Matrix EssentialEstimator::CostFunction7to1::getJacobian(const double in[], doub
 
        for (unsigned j = 0; j < samples->size(); j++)
        {
-           Correspondance *corr = samples->at(j);
+           Correspondence *corr = samples->at(j);
            double value_plus  = m_plus .epipolarDistance(*corr);
            double value_minus = m_minus.epipolarDistance(*corr);
            double value       = m.      epipolarDistance(*corr);

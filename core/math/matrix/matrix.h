@@ -10,9 +10,7 @@
 #include <algorithm>
 #include <vector>
 
-#if (__cplusplus == 201103L)
 #include <functional>
-#endif
 
 #include "global.h"
 

@@ -112,6 +112,14 @@ public:
         return cameras[cam].isVisible(location.inverted().apply(pt));
     }
 
+    bool isVisible(const Vector3dd &pt) const
+    {
+        for (int i = 0; i < (int)cameras.size(); ++i)
+            if (isVisible(pt, i))
+                return true;
+        return false;
+    }
+
 
     template<class VisitorType>
     void accept(VisitorType &visitor)
@@ -121,7 +129,7 @@ public:
           visitor.visit(location, CameraLocationData(), "location");
         */
 
-        /* So far comptibilty is on */
+        /* So far compatibilty is on */
         visitor.visit(cameras, "cameras");
 
         CameraLocationData loc = getLocation();

@@ -24,7 +24,7 @@ public:
 
     enum {
         COLUMN_SYS_ID,
-        COLUMN_PS_ID,
+        COLUMN_CAM_ID,
         COLUMN_USE,
         COLUMN_PREVIEW,
         COLUMN_SETTINGS
@@ -58,30 +58,25 @@ protected:
     void showEvent ( QShowEvent * event );
 
 private:
-    bool                   mCamsScanned;
-
-    ImageCaptureInterface *mPreviewInterface;
-    CapSettingsDialog     *mCapSettingsDialog;
-    GraphPlotDialog        focusDialog;
-    RotaryTableControlWidget rotaryDialog;
+    bool                     mCamsScanned;
+    bool                     mIsCalibrationMode;
+    ImageCaptureInterface   *mPreviewInterface;
+    CapSettingsDialog       *mCapSettingsDialog;
+    GraphPlotDialog          mFocusDialog;
+    RotaryTableControlWidget mRotaryDialog;
 
     /**
      * This relates to capture process
      **/
     struct CameraDescriptor {
-        int camId;
-        int toSkip;
-        ImageCaptureInterface *camInterface;
-        QImage *result;
+        int                    camId;
+        int                    toSkip;
+        ImageCaptureInterface *camInterface = NULL;
+        QImage                *result = NULL;
 
-        CameraDescriptor()  :
-            camInterface(NULL),
-            result(NULL)
-        {}
+        CameraDescriptor() {}
 
-        bool isFilled() {
-            return (result != NULL);
-        }
+        bool isFilled()    { return result != NULL; }
     };
 
     QSignalMapper           *mCaptureMapper;
@@ -91,7 +86,7 @@ private:
 
 private:
     Ui::PhotostationCaptureDialog *ui;
-    AbstractImageNamer *mNamer;
+    AbstractImageNamer            *mNamer;
 };
 
 #endif // PHOTOSTATIONCAPTUREDIALOG_H

@@ -125,7 +125,6 @@ TEST(CalibrationStructsTest, testPhotostationStruct)
         for (int j = 0; j < Vector3dd::LENGTH; j++) {
             src2[j] = unif(rng);
             src1[j] = src2[j];
-
         }
 
         src1[3] = 1.0;

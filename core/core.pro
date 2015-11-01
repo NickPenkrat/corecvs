@@ -14,6 +14,7 @@ TARGET   = cvs_core
 CONFIG  += staticlib
 
 include(core.pri)                                   # it uses TARGET and detects COREBINDIR!
+include($$ROOT_DIR/git-version.pri)
 
 OBJECTS_DIR = $$ROOT_DIR/.obj/cvs_core$$BUILD_CFG_NAME
 MOC_DIR     = $$OBJECTS_DIR
@@ -60,6 +61,7 @@ include(patterndetection/patterndetection.pri)
 include(cameracalibration/cameracalibration.pri)
 include(graphs/graphs.pri)
 include(reconstruction/reconstruction.pri)
+include(polynomial/polynomial.pri)
 
 include(xml/generated/generated.pri)
 

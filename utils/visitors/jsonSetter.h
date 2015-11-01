@@ -14,7 +14,6 @@ using corecvs::BoolField;
 using corecvs::StringField;
 using corecvs::PointerField;
 using corecvs::EnumField;
-
 using corecvs::DoubleVectorField;
 
 using namespace corecvs;
@@ -24,7 +23,6 @@ class JSONSetter
 public:
     /**
      *  Create a setter object that will store data to a file with a specified name.
-     *
      **/
     JSONSetter(QString const & filename);
 
@@ -38,7 +36,7 @@ public:
 
     virtual ~JSONSetter();
 
-template <class Type>
+    template <class Type>
     void visit(Type &field, Type /*defaultValue*/, const char *fieldName)
     {
         pushChild(fieldName);
@@ -46,7 +44,7 @@ template <class Type>
         popChild(fieldName);
     }
 
-template <class inputType>
+    template <class inputType>
     void visit(inputType &field, const char *fieldName)
     {
         pushChild(fieldName);
@@ -54,7 +52,7 @@ template <class inputType>
         popChild(fieldName);
     }
 
-template <typename inputType, typename reflectionType>
+    template <typename inputType, typename reflectionType>
     void visit(inputType &field, const reflectionType * fieldDescriptor)
     {
         pushChild(fieldDescriptor->getSimpleName());
@@ -62,7 +60,9 @@ template <typename inputType, typename reflectionType>
         popChild(fieldDescriptor->getSimpleName());
     }
 
-/* Generic Array support */
+    /*
+     * Generic Array support
+     */
     template <typename inputType>
     void visit(std::vector<inputType> &fields, const char * arrayName)
     {
@@ -77,6 +77,7 @@ template <typename inputType, typename reflectionType>
 
         mNodePath.back().insert(arrayName, array);
     }
+
     template <typename innerType>
     void visit(std::vector<std::vector<innerType>> &fields, const char *arrayName)
     {
@@ -90,6 +91,7 @@ template <typename inputType, typename reflectionType>
 
         mNodePath.back().insert(arrayName, arrayOuter);
     }
+
     // XXX: Here we hope that either stack is unwinded automatically or it is not too big
     template <typename innerType>
     void visit(std::vector<innerType> &fields, QJsonArray &array)
@@ -114,9 +116,10 @@ template <typename inputType, typename reflectionType>
 
     void pushChild(const char *childName)
     {
+        CORE_UNUSED(childName);
         mNodePath.push_back(QJsonObject());
      //   mChildName = childName;
-        SYNC_PRINT(("push %s. Stack size %lu\n", childName, mNodePath.size()));
+        //SYNC_PRINT(("push %s. Stack size %lu\n", childName, mNodePath.size()));
     }
 
     void popChild(const char *childName)
@@ -128,8 +131,8 @@ template <typename inputType, typename reflectionType>
 
 private:
     std::vector<QJsonObject> mNodePath;
-    QString     mFileName;
-    QString     mChildName;
+    QString                  mFileName;
+    QString                  mChildName;
 };
 
 template <>
@@ -170,7 +173,6 @@ void JSONSetter::visit<void *, PointerField>(void * &field, const PointerField *
 
 template <>
 void JSONSetter::visit<int, EnumField>(int &field, const EnumField *fieldDescriptor);
-
 
 /* Arrays */
 template <>

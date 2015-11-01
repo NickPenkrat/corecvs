@@ -15,7 +15,6 @@
 namespace corecvs {
 
 
-
 /**
  *   Contrary to what Affine3D does this class holds reference frame transformation in camera related terms
  *
@@ -67,8 +66,7 @@ public:
             Quaternion orientation = Quaternion::Identity()) :
         position(position),
         orientation(orientation)
-    {
-    }
+    {}
 
     /**
      * Helper function that creates a CameraLocationData that acts just as a Affine3DQ
@@ -150,8 +148,6 @@ public:
     /* Pretty print */
     void prettyPrint (ostream &out = cout);
     void prettyPrint1(ostream &out = cout);
-
-
 };
 
 
@@ -161,8 +157,6 @@ public:
  *    Yaw/Athimuth [0..2pi]
  *    Pitch
  *    Roll
- *
- *
  **/
 class CameraLocationAngles : public EulerAngles
 {

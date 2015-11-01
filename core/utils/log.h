@@ -67,7 +67,7 @@ public:
     static const char *level_names[];
 
     Log(const LogLevel maxLocalLevel = LEVEL_ERROR);
-    ~Log();
+   ~Log();
 
 
     /**
@@ -108,8 +108,7 @@ public:
         int         mOriginLineNumber;
         cchar      *mOriginFunctionName;
         int         mThreadId;
-
-        time_t      rawtime;
+        time_t      mTime;
 	};
 
 	/**
@@ -144,7 +143,7 @@ public:
 #else
             message.get()->mThreadId = syscall(SYS_gettid);
 #endif
-            time(&message.get()->rawtime);
+            time(&message.get()->mTime);
         }
 
         ~MessageScoped()
@@ -200,6 +199,14 @@ public:
         return MessageScoped(this,  LEVEL_DETAILED_DEBUG, fileName, lineNumber, functionName);
     }
 
+    /**
+     * Create trace with the given level
+     **/
+    MessageScoped log(LogLevel level, const char *fileName = NULL, int lineNumber = -1, const char *functionName = NULL)
+    {
+        return MessageScoped(this, level, fileName, lineNumber, functionName);
+    }
+
 	/**
 	 * Log a message
 	 **/
@@ -207,11 +214,14 @@ public:
 
     static std::string  formatted(const char *format, ... );
 
-    static std::string  msgBufToString(const char* message);
+  //static std::string  msgBufToString(const char* message);
 
     static const char*  levelName(LogLevel logLevel);
 
     static bool         shouldWrite(LogLevel messageLevel) { return messageLevel >= mMinLogLevel; }
+
+    /** add needed log drains for the app */
+    static void         addAppLog(int argc, char* argv[], cchar* logFileName = NULL);
 
     static LogLevel                 mMinLogLevel;
     static std::vector<LogDrain *>  mLogDrains;
@@ -238,8 +248,12 @@ public:
     virtual void drain(Log::Message &message) = 0;
 
 protected:
-    char   timeBuffer[32];
-    cchar* time2str(time_t &time);
+    std::mutex     mMutex;
+    bool           mFullInfo;
+    char           mTimeBuffer[32];
+
+    cchar*         time2str(time_t &time);
+    void           prefix2os(std::ostringstream &os, Log::Message &message);
 };
 
 class StdStreamLogDrain : public LogDrain
@@ -247,9 +261,11 @@ class StdStreamLogDrain : public LogDrain
     std::ostream &mOutputStream;
 
 public:
-    StdStreamLogDrain(std::ostream &outputStream)
+    StdStreamLogDrain(std::ostream &outputStream, bool fullInfo = true)
         : mOutputStream(outputStream)
-    {}
+    {
+        mFullInfo = fullInfo;
+    }
 
     virtual void drain(Log::Message &message);
 };
@@ -258,22 +274,9 @@ public:
 class FileLogDrain : public LogDrain
 {
     std::ofstream  mFile;
-    std::mutex     mMutex;
 
 public:
-    FileLogDrain(const std::string& path, bool bAppend = false);
+    FileLogDrain(const std::string& path, bool bAppend = false, bool fullInfo = true);
     ~FileLogDrain();
-    virtual void drain(Log::Message &message);
-};
-
-class LiteStdStreamLogDrain : public LogDrain
-{
-    std::ostream &mOutputStream;
-
-public:
-    LiteStdStreamLogDrain(std::ostream &outputStream)
-        : mOutputStream(outputStream)
-    {}
-
     virtual void drain(Log::Message &message);
 };

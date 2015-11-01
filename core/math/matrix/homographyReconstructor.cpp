@@ -22,17 +22,17 @@ HomographyReconstructor::HomographyReconstructor()
 
 void HomographyReconstructor::addPoint2PointConstraint(const Vector2dd &from, const Vector2dd &to)
 {
-    p2p.push_back(Correspondance(from,to));
+    p2p.push_back(Correspondence(from,to));
 }
 
 void HomographyReconstructor::addPoint2LineConstraint(const Vector2dd &from, const Line2d &line)
 {
-    p2l.push_back(CorrespondancePointLine(from, line));
+    p2l.push_back(CorrespondencePointLine(from, line));
 }
 
 void HomographyReconstructor::addPoint2SegmentConstraint(const Vector2dd &from, const Segment2d &seg)
 {
-    p2s.push_back(CorrespondancePointSegment(from, seg));
+    p2s.push_back(CorrespondencePointSegment(from, seg));
 }
 
 bool HomographyReconstructor::hasEnoughtConstraints()

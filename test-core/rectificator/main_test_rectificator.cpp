@@ -13,7 +13,7 @@
 #include "global.h"
 
 #include "mathUtils.h"
-#include "correspondanceList.h"
+#include "correspondenceList.h"
 #include "matrix.h"
 #include "essentialMatrix.h"
 #include "ransacEstimator.h"
@@ -70,13 +70,13 @@ TEST(Rectification, testFundamentalEstimator)
 {
     cout << "=================Fundamental Estimator test===============" << endl;
 
-    CorrespondanceList points;
+    CorrespondenceList points;
     for (unsigned i = 0; i < GRID_STEP; i++)
     {
         for (unsigned j = 0; j < GRID_STEP; j++)
         {
 
-            Correspondance corr;
+            Correspondence corr;
             double step = 1.0 / (GRID_STEP - 1);
             double x = (step * j) - 0.5;
             double y = (step * i) - 0.5;

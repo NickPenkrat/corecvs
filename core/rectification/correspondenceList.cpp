@@ -1,5 +1,5 @@
 /**
- * \file correspondanceList.cpp
+ * \file correspondenceList.cpp
  * \brief Add Comment Here
  *
  * \ingroup cppcorefiles
@@ -8,19 +8,19 @@
  */
 
 #include "mathUtils.h"
-#include "correspondanceList.h"
+#include "correspondenceList.h"
 #include "kltGenerator.h"
 namespace corecvs {
 
-CorrespondanceList::CorrespondanceList()
+CorrespondenceList::CorrespondenceList()
 {
 }
 
-CorrespondanceList::CorrespondanceList(const CorrespondanceList &list) : vector<Correspondance>(list), h(list.h), w(list.w)
+CorrespondenceList::CorrespondenceList(const CorrespondenceList &list) : vector<Correspondence>(list), h(list.h), w(list.w)
 {
 }
 
-CorrespondanceList::~CorrespondanceList()
+CorrespondenceList::~CorrespondenceList()
 {
 }
 
@@ -28,9 +28,9 @@ template<bool swap = false>
 class CFlowBufferToucherOperator
 {
 public:
-    CorrespondanceList *parent;
+    CorrespondenceList *parent;
 
-    CFlowBufferToucherOperator(CorrespondanceList *_parent) : parent(_parent){};
+    CFlowBufferToucherOperator(CorrespondenceList *_parent) : parent(_parent){};
 
     void operator ()(int32_t i, int32_t j, const FlowElement &flow)
     {
@@ -39,10 +39,10 @@ public:
 
         if (!swap)
         {
-            Correspondance corr(Vector2dd(j,i), Vector2dd((double)j + flow.x(),(double)i + flow.y()));
+            Correspondence corr(Vector2dd(j,i), Vector2dd((double)j + flow.x(),(double)i + flow.y()));
             parent->push_back(corr);
         } else {
-            Correspondance corr(Vector2dd((double)j + flow.x(),(double)i + flow.y()), Vector2dd(j,i));
+            Correspondence corr(Vector2dd((double)j + flow.x(),(double)i + flow.y()), Vector2dd(j,i));
             parent->push_back(corr);
         }
     }
@@ -51,13 +51,13 @@ public:
     {
         if (!flow.isKnown)
             return;
-        Correspondance corr(Vector2dd(j,i), flow.vector);
+        Correspondence corr(Vector2dd(j,i), flow.vector);
         parent->push_back(corr);
     }
 
 };
 
-void CorrespondanceList::getNormalizingTransform(Matrix33 &transformRight, Matrix33 &transformLeft, double *scale)
+void CorrespondenceList::getNormalizingTransform(Matrix33 &transformRight, Matrix33 &transformLeft, double *scale)
 {
     Vector2dd rightMean(0.0);
     Vector2dd rightMeanSq(0.0);
@@ -97,18 +97,18 @@ void CorrespondanceList::getNormalizingTransform(Matrix33 &transformRight, Matri
 
 
 
-void CorrespondanceList::transform(const ProjectiveTransform &transformRight, const ProjectiveTransform &transformLeft)
+void CorrespondenceList::transform(const ProjectiveTransform &transformRight, const ProjectiveTransform &transformLeft)
 {
     for (unsigned i = 0; i < this->size(); i++)
     {
-        Correspondance *corr = &((*this)[i]);
+        Correspondence *corr = &((*this)[i]);
         corr->start = transformRight (corr->start);
         corr->end   = transformLeft  (corr->end);
     }
 }
 
 
-CorrespondanceList::CorrespondanceList(FlowBuffer *input, bool swap) :
+CorrespondenceList::CorrespondenceList(FlowBuffer *input, bool swap) :
             h(input->h),
             w(input->w)
 {
@@ -122,7 +122,7 @@ CorrespondanceList::CorrespondanceList(FlowBuffer *input, bool swap) :
     }
 }
 
-CorrespondanceList::CorrespondanceList(FloatFlowBuffer *input) :
+CorrespondenceList::CorrespondenceList(FloatFlowBuffer *input) :
             h(input->h),
             w(input->w)
 {
@@ -130,7 +130,7 @@ CorrespondanceList::CorrespondanceList(FloatFlowBuffer *input) :
     input->touchOperationElementwize(toucher);
 }
 
-CorrespondanceList * CorrespondanceList::makePreciseCopy(G12Buffer *first, G12Buffer *second)
+CorrespondenceList * CorrespondenceList::makePreciseCopy(G12Buffer *first, G12Buffer *second)
 {
     SpatialGradient *sg = new SpatialGradient(first);
     SpatialGradientIntegralBuffer *gradient = new SpatialGradientIntegralBuffer(sg);
@@ -143,7 +143,7 @@ CorrespondanceList * CorrespondanceList::makePreciseCopy(G12Buffer *first, G12Bu
 
     KLTGenerator<BilinearInterpolator> kltGenerator;
 
-    CorrespondanceList *toReturn = new CorrespondanceList();
+    CorrespondenceList *toReturn = new CorrespondenceList();
     toReturn->h = this->h;
     toReturn->w = this->w;
 
@@ -158,7 +158,7 @@ CorrespondanceList * CorrespondanceList::makePreciseCopy(G12Buffer *first, G12Bu
         bool status = kltGenerator.kltIterationSubpixel(context, start, &guess, 2);
         if (status)
         {
-            Correspondance corr(
+            Correspondence corr(
                     Vector2dd(start.x(),start.y()),
                     Vector2dd(start.x() + guess.x(),start.y() + guess.y())
                     );
@@ -170,7 +170,7 @@ CorrespondanceList * CorrespondanceList::makePreciseCopy(G12Buffer *first, G12Bu
     return toReturn;
 }
 
-void CorrespondanceList::makePrecise(G12Buffer *first, G12Buffer *second)
+void CorrespondenceList::makePrecise(G12Buffer *first, G12Buffer *second)
 {
     SpatialGradient *sg = new SpatialGradient(first);
     SpatialGradientIntegralBuffer *gradient = new SpatialGradientIntegralBuffer(sg);
@@ -191,7 +191,7 @@ void CorrespondanceList::makePrecise(G12Buffer *first, G12Buffer *second)
         bool status = kltGenerator.kltIterationSubpixel(context, start, &guess, 2);
         if (status)
         {
-            Correspondance corr(
+            Correspondence corr(
                     Vector2dd(start.x(),start.y()),
                     Vector2dd(start.x() + guess.x(),start.y() + guess.y())
                     );
@@ -199,7 +199,7 @@ void CorrespondanceList::makePrecise(G12Buffer *first, G12Buffer *second)
             at(i) = corr;
             at(i).flags = oldFlags;
         } else {
-            at(i).flags |= Correspondance::FLAG_FILTERED_KLT;
+            at(i).flags |= Correspondence::FLAG_FILTERED_KLT;
         }
 
     }

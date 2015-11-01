@@ -225,8 +225,11 @@ Matrix operator *(DiagonalMatrix &D, const Matrix &M)
 #else // !WITH_DIRTY_GEMM_HACKS
 
 # ifdef WITH_BLAS
-    // Okay, let's hope this means lapack too!
+#ifdef WITH_MKL
+#   include <mkl.h>
+#else
 #   include <cblas.h>
+#endif
 # endif
 
 
