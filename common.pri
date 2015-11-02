@@ -448,17 +448,23 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
     }
 }
 
-with_blas {
+with_openblas {
+   !win32 {
+       !isEmpty(BLAS_PATH) {
+            !build_pass: message (Using BLAS from <$$BLAS_PATH>)
+            INCLUDEPATH += $(BLAS_PATH)/include
+        } else {
+            !build_pass: message (Using System BLAS)
+
+        }
+        LIBS        += -lopenblas
+        DEFINES     += WITH_BLAS
+    }
+}
+
+with_mkl {
   MKLROOT = $$(MKLROOT)
   !win32 {
-#   !isEmpty(BLAS_PATH) {
-#        !build_pass: message (Using BLAS from <$$BLAS_PATH>)
-#        INCLUDEPATH += $(BLAS_PATH)/include
-#    } else {
-#        !build_pass: message (Using System BLAS)
-#    }
-#
-#    Someone should fix this mess!
         isEmpty(MKLROOT) {
             MKLROOT = /opt/intel/mkl
         }
@@ -469,7 +475,8 @@ with_blas {
         INCLUDEPATH += "$$MKLROOT\include"
         LIBS        += -L"$$MKLROOT"/lib/intel64 -lmkl_intel_lp64_dll -lmkl_core_dll -lmkl_tbb_thread_dll -ltbb
     }
-    DEFINES     += WITH_BLAS WITH_MKL
+    DEFINES     += WITH_BLAS
+    DEFINES     += WITH_MKL
 }
 
 # More static analysis warnings
