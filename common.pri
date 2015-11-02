@@ -449,7 +449,7 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
 }
 
 with_openblas {
-   !win32 {
+    !win32 {
         !isEmpty(BLAS_PATH) {
             !build_pass: message (Using BLAS from <$$BLAS_PATH>)
             INCLUDEPATH += $(BLAS_PATH)/include
@@ -459,7 +459,7 @@ with_openblas {
         LIBS        += -lopenblas
         DEFINES     += WITH_BLAS
     } else {
-        !build_pass: message (requested openBLAS is not supported for Win)
+        !build_pass: message (requested openBLAS is not supported for Win and is deactivated)
     }
 }
 
