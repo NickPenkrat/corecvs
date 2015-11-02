@@ -451,13 +451,25 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
 with_openblas {
     !win32 {
         !isEmpty(BLAS_PATH) {
-            !build_pass: message (Using BLAS from <$$BLAS_PATH>)
-            INCLUDEPATH += $(BLAS_PATH)/include
+            exists($(BLAS_PATH)/include) {
+                !build_pass: message (Using BLAS from <$$BLAS_PATH>)
+                INCLUDEPATH += $(BLAS_PATH)/include
+                LIBS        += -lopenblas
+                DEFINES     += WITH_BLAS
+            }
+            else {
+                !build_pass: message (requested openBLAS via BLAS_PATH is not found and is deactivated)
+            }
         } else {
-            !build_pass: message (Using System BLAS)
+            exists(/usr/lib/openblas.a) {   # TODO: fix this please...
+                !build_pass: message (Using System BLAS)
+                LIBS        += -lopenblas
+                DEFINES     += WITH_BLAS
+            }
+            else {
+                !build_pass: message (requested system BLAS is not found and is deactivated)
+            }
         }
-        LIBS        += -lopenblas
-        DEFINES     += WITH_BLAS
     } else {
         !build_pass: message (requested openBLAS is not supported for Win and is deactivated)
     }
