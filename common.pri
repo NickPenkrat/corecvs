@@ -450,33 +450,40 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
 
 with_openblas {
    !win32 {
-       !isEmpty(BLAS_PATH) {
+        !isEmpty(BLAS_PATH) {
             !build_pass: message (Using BLAS from <$$BLAS_PATH>)
             INCLUDEPATH += $(BLAS_PATH)/include
         } else {
             !build_pass: message (Using System BLAS)
-
         }
         LIBS        += -lopenblas
         DEFINES     += WITH_BLAS
+    } else {
+        !build_pass: message (requested openBLAS is not supported for Win)
     }
 }
 
 with_mkl {
-  MKLROOT = $$(MKLROOT)
-  !win32 {
-        isEmpty(MKLROOT) {
-            MKLROOT = /opt/intel/mkl
-        }
-        QMAKE_LFLAGS += -L"$$MKLROOT"/lib/intel64
-        INCLUDEPATH  += "$$MKLROOT"/include
-        LIBS         += -lmkl_intel_lp64 -lmkl_core -lmkl_tbb_thread -ltbb -lstdc++ -lpthread -lm
-    } else {
-        INCLUDEPATH += "$$MKLROOT\include"
-        LIBS        += -L"$$MKLROOT"/lib/intel64 -lmkl_intel_lp64_dll -lmkl_core_dll -lmkl_tbb_thread_dll -ltbb
+    MKLROOT = $$(MKLROOT)
+    !win32: isEmpty(MKLROOT) {
+        MKLROOT = /opt/intel/mkl
     }
-    DEFINES     += WITH_BLAS
-    DEFINES     += WITH_MKL
+    exists("$$MKLROOT"/include) {
+        !win32 {
+            isEmpty(MKLROOT) {
+                MKLROOT = /opt/intel/mkl
+            }
+            LIBS    += -L"$$MKLROOT"/lib/intel64 -lmkl_intel_lp64     -lmkl_core     -lmkl_tbb_thread     -ltbb -lstdc++ -lpthread -lm
+        } else {
+            LIBS    += -L"$$MKLROOT"/lib/intel64 -lmkl_intel_lp64_dll -lmkl_core_dll -lmkl_tbb_thread_dll -ltbb
+        }
+        INCLUDEPATH += "$$MKLROOT"/include
+        DEFINES     += WITH_BLAS
+        DEFINES     += WITH_MKL
+    }
+    else {
+        !build_pass: message (requested MKL is not installed and is deactivated)
+    }
 }
 
 # More static analysis warnings
