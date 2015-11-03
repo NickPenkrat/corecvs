@@ -102,7 +102,9 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
         stats->prefix = "Assembler -> " + stats->prefix;
         assembler.setStatistics(stats);
     }
-    assembler.assembleBoards(corners, boards);
+    BoardAlignerParams params(*this);
+    BoardAligner aligner(params);
+    assembler.assembleBoards(corners, boards, &aligner, &buffer);
     if (stats != NULL) stats->prefix = prefix;
 
     if (!boards.size())
