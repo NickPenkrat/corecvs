@@ -421,7 +421,7 @@ void ChessBoardCornerDetector::prepareKernels()
     {
         for (auto& psi: patternStartAngle)
         {
-            kernels.emplace_back(r, psi, sectorSize, false);
+            kernels.emplace_back(r, psi, sectorSize, true);
         }
     }
 }
