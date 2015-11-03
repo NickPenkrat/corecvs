@@ -173,11 +173,11 @@ gcc48_toolchain {
   QMAKE_LINK_SHLIB =  g++-4.8
   QMAKE_LINK_C = gcc-4.8
   QMAKE_LINK_C_SHLIB = gcc-4.8
-  
+
   # Uncomment this when qt headers are fixed
   QMAKE_CFLAGS += -Wno-unused-local-typedefs
   QMAKE_CXXFLAGS += -Wno-unused-local-typedefs
-  
+
   gcc_lto {
      QMAKE_CFLAGS_RELEASE += -flto
      QMAKE_CXXFLAGS_RELEASE += -flto
@@ -226,7 +226,7 @@ icc_toolchain {
 
 }
 
-isEmpty(CCACHE_TOOLCHAIN_ON) { 
+isEmpty(CCACHE_TOOLCHAIN_ON) {
   ccache_toolchain {
     QMAKE_CC = ccache $$QMAKE_CC
     QMAKE_CXX = ccache $$QMAKE_CXX
@@ -407,7 +407,7 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
         !isEmpty(TBB_PATH) {
             DEFINES += WITH_TBB
 
-            win32-msvc*:!contains(QMAKE_HOST.arch, x86_64) {                
+            win32-msvc*:!contains(QMAKE_HOST.arch, x86_64) {
                 TBB_LIBDIR = $(TBB_PATH)/lib/ia32/vc10
             } else:win32-msvc2010 {
                 TBB_LIBDIR = $(TBB_PATH)/lib/intel64/vc10
@@ -416,7 +416,7 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
             } else:exists($(TBB_PATH)/lib/tbb.dll) {
                 # old config when TBB's bins&libs were placed at TBB's lib dir
                 TBB_LIBDIR = $(TBB_PATH)/lib
-            } else {              
+            } else {
                 GCC_VER    = $$system(gcc -dumpversion)
                 TBB_LIBDIR = $(TBB_PATH)/lib/intel64/mingw$$GCC_VER
                 # the "script/windows/.tbb_build_mingw.bat" places libs there
@@ -451,7 +451,7 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
 with_openblas {
     !win32 {
         !isEmpty(BLAS_PATH) {
-            exists($(BLAS_PATH)/include) {
+            exists($(BLAS_PATH)/include/cblas.h) {
                 !build_pass: message (Using BLAS from <$$BLAS_PATH>)
                 INCLUDEPATH += $(BLAS_PATH)/include
                 LIBS        += -lopenblas
@@ -461,9 +461,9 @@ with_openblas {
                 !build_pass: message (requested openBLAS via BLAS_PATH is not found and is deactivated)
             }
         } else {
-            exists(/usr/lib/openblas.a) {   # TODO: fix this please...
+            exists(/usr/include/cblas.h) {
                 !build_pass: message (Using System BLAS)
-                LIBS        += -lopenblas
+                LIBS        += -lopenblas -llapacke
                 DEFINES     += WITH_BLAS
             }
             else {
@@ -480,11 +480,8 @@ with_mkl {
     !win32: isEmpty(MKLROOT) {
         MKLROOT = /opt/intel/mkl
     }
-    exists("$$MKLROOT"/include) {
+    exists("$$MKLROOT"/include/mkl.h) {
         !win32 {
-            isEmpty(MKLROOT) {
-                MKLROOT = /opt/intel/mkl
-            }
             LIBS    += -L"$$MKLROOT"/lib/intel64 -lmkl_intel_lp64     -lmkl_core     -lmkl_tbb_thread     -ltbb -lstdc++ -lpthread -lm
         } else {
             LIBS    += -L"$$MKLROOT"/lib/intel64 -lmkl_intel_lp64_dll -lmkl_core_dll -lmkl_tbb_thread_dll -ltbb

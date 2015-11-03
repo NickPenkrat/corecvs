@@ -103,14 +103,18 @@ struct PinholeCameraIntrinsics
         result.y() = p.y() / focal.y() - principal.y() / focal.y();
         return Vector3dd(result.x(), result.y(), 1.0);
     }
-    
+
     bool isVisible(const Vector3dd &p) const
     {
-        if (p[2] <= 0.0) return false;
-        auto proj = project(p);
-        for (int i = 0; i < 2; ++i)
-            if (proj[i] < 0.0 || proj[i] > size[i])
-                return false;
+        if (p[2] <= 0.0) {
+            return false;
+        }
+        Vector2dd proj = project(p);
+
+        if (!proj.isInRect(Vector2dd(0.0, 0.0), size))
+        {
+            return false;
+        }
         return true;
     }
 
@@ -211,7 +215,7 @@ public:
     {
         return point.isInRect(Vector2dd(0.0,0.0), intrinsics.size);
     }
-    
+
     /**
      * Checks full visibility of 3d point
      **/
