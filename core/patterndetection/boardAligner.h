@@ -18,6 +18,8 @@ enum class AlignmentType
     FIT_MARKER_ORIENTATION,
     // Detect orientation 
     FIT_MARKERS
+//    // Detect orientation and board ids
+//    FIT_MARKERS_MULTIPLE
 };
 
 struct BoardMarkerDescription
@@ -25,6 +27,7 @@ struct BoardMarkerDescription
     int cornerX = 0, cornerY = 0;
     std::vector<corecvs::Vector2dd> circleCenters;
     double circleRadius = 0.08;
+    int boardId = 0;
 
     template<typename VisitorType>
     void accept(VisitorType &visitor)
@@ -33,6 +36,7 @@ struct BoardMarkerDescription
         visitor.visit(cornerY, 0, "cornerY");
         visitor.visit(circleCenters, "circleCenters");
         visitor.visit(circleRadius, 0.08, "circleRadius");
+        visitor.visit(boardId, 0, "boardId");
     }
 
 };
@@ -166,8 +170,8 @@ public:
     BoardAligner(BoardAlignerParams params = BoardAlignerParams());
     bool align(DpImage &img);
     void drawDebugInfo(corecvs::RGB24Buffer &buffer);
-protected:
     std::vector<std::vector<corecvs::Vector2dd>> bestBoard;
+protected:
     std::vector<std::vector<std::pair<int, int>>> classifier;
     std::vector<std::vector<std::pair<int, int>>> initialClassifier;
     corecvs::ObservationList observationList;

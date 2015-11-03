@@ -16,8 +16,8 @@ typedef corecvs::AbstractBuffer<double> DpImage;
 struct CirclePatternGeneratorParams
 {
     int patternSize = 128;
-    double stdevThreshold = 0.075;
-    double corrThreshold = 0.7;
+    double stdevThreshold = 0.05;
+    double corrThreshold = 0.6;
 
 };
 

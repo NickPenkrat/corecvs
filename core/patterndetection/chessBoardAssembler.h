@@ -20,6 +20,8 @@
  * 3. From intersecting boards select one with the best energy
  */
 
+struct BoardAligner;
+
 struct RectangularGridPattern
 {
 
@@ -81,6 +83,8 @@ struct ChessBoardAssemblerParams
     double conservativity = 0.9;
     // Maximal cost for "real" board
     double costThreshold = -10.0;
+    // Minimal seed distance
+    double minSeedDistance = 15.0;
     // Hypothesis type: consider only hypothesis that fits specified number of dims
     int hypothesisDimensions = 1;
 #if __cplusplus >= 201103L // Our compiler is cool enough to support brace-initalizer-list for structure members
@@ -104,6 +108,7 @@ struct ChessBoardAssemblerParams
         visitor.visit(hypothesisDimensions, 1, "hypothesisDimensions");
         visitor.visit(hypothesisDim[0], 18, "hypothesisDim[0]");
         visitor.visit(hypothesisDim[1], 11, "hypothesisDim[0]");
+        visitor.visit(minSeedDistance, 15.0, "minSeedDistance");
     }
 };
 
@@ -114,7 +119,7 @@ public:
     ChessBoardAssembler(ChessBoardAssemblerParams params = ChessBoardAssemblerParams());
     ChessBoardAssembler(const ChessBoardAssembler &other);
     ChessBoardAssembler& operator=(const ChessBoardAssembler &other);
-    void assembleBoards(std::vector<OrientedCorner> &corners_, std::vector<std::vector<std::vector<corecvs::Vector2dd>>> &boards);
+    void assembleBoards(std::vector<OrientedCorner> &corners_, std::vector<std::vector<std::vector<corecvs::Vector2dd>>> &boards, BoardAligner* aligner = 0, DpImage* buffer = 0);
 
 protected://iivate:
     enum class Direction {UP, DOWN, LEFT, RIGHT};
@@ -149,7 +154,8 @@ protected://iivate:
     std::vector<RectangularGridPattern> boards;   
 
     std::vector<OrientedCorner> corners;
-
+    BoardAligner *aligner;
+    DpImage* buffer;
 #ifdef WITH_TBB
     tbb::mutex mutex;
 #endif
