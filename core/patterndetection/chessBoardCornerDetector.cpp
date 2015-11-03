@@ -116,7 +116,7 @@ double OrientedCorner::scoreIntensity(DpImage &img, int r)
     return std::max(c.element(cks.A.y, cks.A.x), 0.0);
 }
 
-CornerKernelSet::CornerKernelSet(double r, double alpha, double psi)
+CornerKernelSet::CornerKernelSet(double r, double alpha, double psi, bool minify)
 {
     int w = ((int)(r + 1.0)) * 2 + 1;
     A = DpKernel(w, w);
@@ -127,9 +127,87 @@ CornerKernelSet::CornerKernelSet(double r, double alpha, double psi)
     int c = w / 2;
 
     computeKernels(r, alpha, psi, w, c);
+    if (minify)
+    {
+        MinifyKernel(A);
+        MinifyKernel(B);
+        MinifyKernel(C);
+        MinifyKernel(D);
+    }
 }
 
-#include <chrono>
+void CornerKernelSet::MinifyKernel(DpKernel &k)
+{
+    int t = 0, l = 0, d = k.h - 1, r = k.w - 1;
+    bool isNull = true;
+    for (; t < k.h && isNull; ++t)
+    {
+        for (int i = 0; i < k.w; ++i)
+        {
+            if (std::abs(k.element(t, i)) > 0.0)
+            {
+                isNull = false;
+                break;
+            }
+        }
+    }
+    t--;
+    isNull = true;
+    for (; d >= 0 && isNull; --d)
+    {
+        for (int i = 0; i < k.w; ++i)
+        {
+            if (std::abs(k.element(d, i)) > 0.0)
+            {
+                isNull = false;
+                break;
+            }
+        }
+    }
+    d++;
+    isNull = true;
+    for (; l < k.w && isNull; ++l)
+    {
+        for (int i = 0; i < k.h; ++i)
+        {
+            if (std::abs(k.element(i, l)) > 0.0)
+            {
+                isNull = false;
+                break;
+            }
+        }
+    }
+    l--;
+    isNull = true;
+    for (; r >= 0 && isNull; --r)
+    {
+        for (int i = 0; i < k.h; ++i)
+        {
+            if (std::abs(k.element(i, r)) > 0.0)
+            {
+                isNull = false;
+                break;
+            }
+        }
+    }
+    r++;
+    if (l > k.x) l = k.x;
+    if (t > k.y) t = k.y;
+    if (l == 0 && t == 0 && d == k.h - 1 && r == k.w - 1)
+        return;
+    for (int i = 0; i <= d - t; ++i)
+    {
+        for (int j = 0; j <= r - l; ++j)
+        {
+            k.element(i, j) = k.element(i + t, j + l);
+        }
+    }
+    k.x = k.x - l;
+    k.y = k.y - t;
+    k.w = d - t + 1;
+    k.h = r - l + 1;
+}
+
 void CornerKernelSet::computeCost(DpImage &img, DpImage &c, bool parallelable, bool new_style)
 {
     int w = img.w, h = img.h;
@@ -151,7 +229,7 @@ void CornerKernelSet::computeCost(DpImage &img, DpImage &c, bool parallelable, b
         pfB = new DpImage(img.h, img.w, false);
         pfC = new DpImage(img.h, img.w, false);
         pfD = new DpImage(img.h, img.w, false);
-
+        
         corecvs::ConvolveKernel<corecvs::DummyAlgebra> convA(&A, A.y, A.x);
         corecvs::ConvolveKernel<corecvs::DummyAlgebra> convB(&B, B.y, B.x);
         corecvs::ConvolveKernel<corecvs::DummyAlgebra> convC(&C, C.y, C.x);
@@ -343,7 +421,7 @@ void ChessBoardCornerDetector::prepareKernels()
     {
         for (auto& psi: patternStartAngle)
         {
-            kernels.emplace_back(r, psi, sectorSize);
+            kernels.emplace_back(r, psi, sectorSize, false);
         }
     }
 }
@@ -352,7 +430,18 @@ void ChessBoardCornerDetector::computeCost()
 {
     int w = img.w, h = img.h;
     cost = DpImage(h, w);
-
+#if 0
+    std::vector<DpImage> kc(kernels.size());
+    corecvs::parallelable_for(0, (int)kernels.size(),
+            [&](const corecvs::BlockedRange<int> &r)
+            {
+                for (int i = r.begin(); i < r.end(); ++i)
+                {
+                    kernels[i].computeCost(img, kc[i]);
+                }
+            });
+#endif
+#if 10
     for (auto& cks: kernels)
     {
         DpImage kc;
@@ -360,6 +449,12 @@ void ChessBoardCornerDetector::computeCost()
 
         cost.binaryOperationInPlace(kc, [](const double &a, const double &b) { return std::max(a, b); });
     }
+#else
+    for (int i = 0; i < kernels.size(); ++i)
+    {
+        cost.binaryOperationInPlace(kc[i], [](const double &a, const double &b) { return std::max(a, b); });
+    }
+#endif
 }
 
 void ChessBoardCornerDetector::runNms()

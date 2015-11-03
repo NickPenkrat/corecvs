@@ -69,7 +69,7 @@ struct CornerKernelSet
 {
     DpKernel A, B, C, D;
 
-    CornerKernelSet(double r, double alpha, double psi);
+    CornerKernelSet(double r, double alpha, double psi, bool minify = false);
 
     // Computes const function for entire image
     void computeCost(DpImage &img, DpImage &c, bool parallelable = true, bool new_style = true);
@@ -83,6 +83,7 @@ private:
     }
     // Initialization routine
     void computeKernels(double r, double alpha, double psi, int w, int c, double threshold = 0.05);
+    static void MinifyKernel(DpKernel &k);
 };
 
 struct ChessBoardCornerDetectorParams
