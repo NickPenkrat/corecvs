@@ -11,6 +11,7 @@
 #include "levenmarq.h"
 #include "gradientDescent.h"
 #include "classicKalman.h"
+#include "polynomialSolver.h"
 //#include "kalman.h"
 
 namespace corecvs {
@@ -69,26 +70,76 @@ EssentialEstimator::EssentialEstimator()
  **/
 EssentialMatrix EssentialEstimator::getEssentialLSE(const vector<Correspondence*> & samples)
 {
-    Matrix X((int)samples.size(), 9);
+    Matrix X(std::max(9, (int)samples.size()), 9, 0.0);
     Matrix W(1,9);
     Matrix V(9,9);
     Matrix33 F(0.0);
 
+#if 1
+    corecvs::Vector2dd meanL(0.0, 0.0), meanR(0.0, 0.0);
+    corecvs::Vector2dd stdevL(0.0, 0.0), stdevR(0.0, 0.0);
+    for (size_t i = 0; i < samples.size(); ++i)
+    {
+        auto L = samples[i]->start;
+        auto R = samples[i]->end;
+        meanL += L;
+        meanR += R;
+
+        stdevL += L * L;
+        stdevR += R * R;
+    }
+    double N = 1.0 / samples.size();
+    meanL *= N;
+    meanR *= N;
+    stdevL = stdevL * N - meanL * meanL;
+    stdevR = stdevR * N - meanR * meanR;
+    for (size_t i = 0; i < 2; ++i)
+    {
+        stdevL[i] = std::sqrt(stdevL[i]);
+        stdevR[i] = std::sqrt(stdevR[i]);
+    }
+#if 1
+    corecvs::Matrix33 TL = corecvs::Matrix33(
+            stdevL[0],       0.0, meanL[0],
+                  0.0, stdevL[1], meanL[1],
+                  0.0,       0.0,      1.0).inv();
+    corecvs::Matrix33 TR = corecvs::Matrix33(
+            stdevR[0],       0.0, meanR[0],
+                  0.0, stdevR[1], meanR[1],
+                  0.0,       0.0,      1.0).inv();
+#else
+    corecvs::Matrix33 TL(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
+    corecvs::Matrix33 TR(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
+#endif
+#endif
+
+    corecvs::Vector2dd ml(0.0, 0.0), mr(0.0, 0.0);
     for (unsigned i = 0; i < samples.size(); i++)
     {
         Vector2dd first  = samples[i]->start;
         Vector2dd second = samples[i]->end;
-
+#if 1
+        auto firstP = TL * corecvs::Vector3dd(first.x(), first.y(), 1.0);
+        auto secondP = TR * corecvs::Vector3dd(second.x(), second.y(), 1.0);
+        firstP /= firstP[2];
+        secondP /= secondP[2];
+        first = corecvs::Vector2dd(firstP[0], firstP[1]);
+        second = corecvs::Vector2dd(secondP[0], secondP[1]);
+        ml += first;
+        mr += second;
+#endif
         X.fillLineWithArgs(i,
         first.x() * second.x(), first.x() * second.y(), first.x(),
         first.y() * second.x(), first.y() * second.y(), first.y(),
         second.x(), second.y(),  1.0);
     }
+//    X.a(samples.size(), 0) = 1.0;
+//    std::cout << ml << std::endl << mr << std::endl;
 
 #ifdef DEEP_TRACE
-        X.print();
-        cout << endl;
-        fflush(stdout);
+//        X.print();
+//        cout << endl;
+//        fflush(stdout);
 #endif
 
     /** \todo TODO Here the transform should be done to increase the precision.
@@ -97,9 +148,13 @@ EssentialMatrix EssentialEstimator::getEssentialLSE(const vector<Correspondence*
     Matrix::svd(&X, &W, &V);
 
 #ifdef DEEP_TRACE
-    printf("The singular values:\n");
-    W.print();
-    printf("\n");
+//    printf("The singular values:\n");
+//    W.print();
+//    printf("\n");
+//    X.print();
+//    printf("\n");
+//    V.print();
+//    printf("\n");
 #endif
 
 
@@ -120,11 +175,142 @@ EssentialMatrix EssentialEstimator::getEssentialLSE(const vector<Correspondence*
         V.a(6,min), V.a(7,min), V.a(8,min)
     );
 
+    F = TL.transposed() * F * TR;
     if (F.a(2,1) < 0) {
         F = -F;
     }
 
     return EssentialMatrix(F);
+}
+
+// Note that in case of 7 point-point correspondences we can get up to 3 models
+std::vector<EssentialMatrix> EssentialEstimator::getEssential7point(const vector<Correspondence*> &samples)
+{
+    /*
+     * Here we go:
+     *  + creating standard LSE matrix
+     *  + get 2d null-space
+     *  + solve polynomial equation
+     */
+    Matrix X(std::max(9, (int)samples.size()), 9, 0.0);
+    Matrix W(1,9);
+    Matrix V(9,9);
+
+    corecvs::Vector2dd meanL(0.0, 0.0), meanR(0.0, 0.0);
+    corecvs::Vector2dd stdevL(0.0, 0.0), stdevR(0.0, 0.0);
+    for (size_t i = 0; i < samples.size(); ++i)
+    {
+        auto L = samples[i]->start;
+        auto R = samples[i]->end;
+        meanL += L;
+        meanR += R;
+
+        stdevL += L * L;
+        stdevR += R * R;
+    }
+    double N = 1.0 / samples.size();
+    meanL *= N;
+    meanR *= N;
+    stdevL = stdevL * N - meanL * meanL;
+    stdevR = stdevR * N - meanR * meanR;
+    for (size_t i = 0; i < 2; ++i)
+    {
+        stdevL[i] = std::sqrt(stdevL[i]);
+        stdevR[i] = std::sqrt(stdevR[i]);
+    }
+    corecvs::Matrix33 TL = corecvs::Matrix33(
+            stdevL[0],       0.0, meanL[0],
+                  0.0, stdevL[1], meanL[1],
+                  0.0,       0.0,      1.0).inv();
+    corecvs::Matrix33 TR = corecvs::Matrix33(
+            stdevR[0],       0.0, meanR[0],
+                  0.0, stdevR[1], meanR[1],
+                  0.0,       0.0,      1.0).inv();
+
+    corecvs::Vector2dd ml(0.0, 0.0), mr(0.0, 0.0);
+    for (unsigned i = 0; i < samples.size(); i++)
+    {
+        Vector2dd first  = samples[i]->start;
+        Vector2dd second = samples[i]->end;
+        auto firstP = TL * corecvs::Vector3dd(first.x(), first.y(), 1.0);
+        auto secondP = TR * corecvs::Vector3dd(second.x(), second.y(), 1.0);
+        firstP /= firstP[2];
+        secondP /= secondP[2];
+        first = corecvs::Vector2dd(firstP[0], firstP[1]);
+        second = corecvs::Vector2dd(secondP[0], secondP[1]);
+        ml += first;
+        mr += second;
+
+        X.fillLineWithArgs(i,
+        first.x() * second.x(), first.x() * second.y(), first.x(),
+        first.y() * second.x(), first.y() * second.y(), first.y(),
+        second.x(), second.y(),  1.0);
+    }
+
+    Matrix::svd(&X, &W, &V);
+
+    int minIdx[] = {0, 1};
+    double minval[] = { W.a(0, 0), W.a(0, 1) };
+    for (unsigned i = 2; i < 9; i ++)
+    {
+        if (W.a(0, i) < minval[1])
+        {
+            minIdx[1] = i;
+            minval[1] = W.a(0, i);
+        }
+        if (minval[0] > minval[1])
+        {
+            std::swap(minIdx[0], minIdx[1]);
+            std::swap(minval[0], minval[1]);
+        }
+    }
+
+    corecvs::Matrix33 F1(
+            V.a(0, minIdx[0]), V.a(1, minIdx[0]), V.a(2, minIdx[0]),
+            V.a(3, minIdx[0]), V.a(4, minIdx[0]), V.a(5, minIdx[0]),
+            V.a(6, minIdx[0]), V.a(7, minIdx[0]), V.a(8, minIdx[0]));
+    corecvs::Matrix33 F2(
+            V.a(0, minIdx[1]), V.a(1, minIdx[1]), V.a(2, minIdx[1]),
+            V.a(3, minIdx[1]), V.a(4, minIdx[1]), V.a(5, minIdx[1]),
+            V.a(6, minIdx[1]), V.a(7, minIdx[1]), V.a(8, minIdx[1]));
+    double f111 = F1(0, 0),
+           f112 = F1(0, 1),
+           f113 = F1(0, 2),
+           f121 = F1(1, 0),
+           f122 = F1(1, 1),
+           f123 = F1(1, 2),
+           f131 = F1(2, 0),
+           f132 = F1(2, 1),
+           f133 = F1(2, 2);
+    double f211 = F2(0, 0),
+           f212 = F2(0, 1),
+           f213 = F2(0, 2),
+           f221 = F2(1, 0),
+           f222 = F2(1, 1),
+           f223 = F2(1, 2),
+           f231 = F2(2, 0),
+           f232 = F2(2, 1),
+           f233 = F2(2, 2);
+    /*
+     * Auto-generated stub. Do not tuch or it will explode.
+     * Here we just enforce 2-rank constraint in form of
+     * det(alpha * F1 + (1-alpha) * F2) = 0
+     */
+    double alpha_0 = f211*f222*f233 - f211*f223*f232 - f212*f221*f233 + f212*f223*f231 + f213*f221*f232 - f213*f222*f231;
+    double alpha_3 = f111*f122*f133 - f111*f123*f132 - f112*f121*f133 + f112*f123*f131 + f113*f121*f132 - f113*f122*f131 - f111*f122*f233 + f111*f123*f232 + f111*f132*f223 - f111*f133*f222 + f112*f121*f233 - f112*f123*f231 - f112*f131*f223 + f112*f133*f221 - f113*f121*f232 + f113*f122*f231 + f113*f131*f222 - f113*f132*f221 - f121*f132*f213 + f121*f133*f212 + f122*f131*f213 - f122*f133*f211 - f123*f131*f212 + f123*f132*f211 + f111*f222*f233 - f111*f223*f232 - f112*f221*f233 + f112*f223*f231 + f113*f221*f232 - f113*f222*f231 - f121*f212*f233 + f121*f213*f232 + f122*f211*f233 - f122*f213*f231 - f123*f211*f232 + f123*f212*f231 + f131*f212*f223 - f131*f213*f222 - f132*f211*f223 + f132*f213*f221 + f133*f211*f222 - f133*f212*f221 - f211*f222*f233 + f211*f223*f232 + f212*f221*f233 - f212*f223*f231 - f213*f221*f232 + f213*f222*f231;
+    double alpha_2 = f111*f122*f233 - f111*f123*f232 - f111*f132*f223 + f111*f133*f222 - f112*f121*f233 + f112*f123*f231 + f112*f131*f223 - f112*f133*f221 + f113*f121*f232 - f113*f122*f231 - f113*f131*f222 + f113*f132*f221 + f121*f132*f213 - f121*f133*f212 - f122*f131*f213 + f122*f133*f211 + f123*f131*f212 - f123*f132*f211 - 2*f111*f222*f233 + 2*f111*f223*f232 + 2*f112*f221*f233 - 2*f112*f223*f231 - 2*f113*f221*f232 + 2*f113*f222*f231 + 2*f121*f212*f233 - 2*f121*f213*f232 - 2*f122*f211*f233 + 2*f122*f213*f231 + 2*f123*f211*f232 - 2*f123*f212*f231 - 2*f131*f212*f223 + 2*f131*f213*f222 + 2*f132*f211*f223 - 2*f132*f213*f221 - 2*f133*f211*f222 + 2*f133*f212*f221 + 3*f211*f222*f233 - 3*f211*f223*f232 - 3*f212*f221*f233 + 3*f212*f223*f231 + 3*f213*f221*f232 - 3*f213*f222*f231;
+    double alpha_1 = f111*f222*f233 - f111*f223*f232 - f112*f221*f233 + f112*f223*f231 + f113*f221*f232 - f113*f222*f231 - f121*f212*f233 + f121*f213*f232 + f122*f211*f233 - f122*f213*f231 - f123*f211*f232 + f123*f212*f231 + f131*f212*f223 - f131*f213*f222 - f132*f211*f223 + f132*f213*f221 + f133*f211*f222 - f133*f212*f221 - 3*f211*f222*f233 + 3*f211*f223*f232 + 3*f212*f221*f233 - 3*f212*f223*f231 - 3*f213*f221*f232 + 3*f213*f222*f231;
+    double coeff[] = { alpha_0, alpha_1, alpha_2, alpha_3 };
+    double roots[3];
+    int realRoots = PolynomialSolver::solve(coeff, roots, 3);
+
+    std::vector<EssentialMatrix> hypothesis;
+    for (int i = 0; i < realRoots; ++i)
+    {
+        hypothesis.emplace_back(TL.transposed() * (F1 * roots[i] + (1.0 - roots[i]) * F2) * TR);
+    }
+
+    return hypothesis;
 }
 
 

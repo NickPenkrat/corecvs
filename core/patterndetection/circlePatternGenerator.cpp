@@ -108,7 +108,7 @@ int CirclePatternGenerator::getBestToken(DpImage &query, double &score, corecvs:
     double N = patternSize * patternSize;
     int maxIdx = -1;
     int maxRI = -1;
-    std::cout << "Selecting 1 from " << patterns.size() << " patterns. (stdev: " << ssq  << ", mean = " << s << ")" << std::endl;
+//    std::cout << "Selecting 1 from " << patterns.size() << " patterns. (stdev: " << ssq  << ", mean = " << s << ")" << std::endl;
     if (ssq > stdevThreshold)
     {
         maxIdx = -10;
@@ -123,7 +123,7 @@ int CirclePatternGenerator::getBestToken(DpImage &query, double &score, corecvs:
                         corscore += patterns[id][idp].element(y, x) * query.element(y, x);
                     }
                 corscore /= N;
-                std::cout << corscore << std::endl;
+//                std::cout << corscore << std::endl;
                 if (corscore < maxC && -corscore > corrThreshold)
                 {
                     maxC   = corscore;
@@ -152,7 +152,7 @@ int CirclePatternGenerator::getBestToken(const DpImage &image, const std::array<
     c2i.normalisePoints(AA, BB);
 
     homography = c2i.getBestHomographyLSE();
-    homography = c2i.getBestHomographyLM(homography);
+//    homography = c2i.getBestHomographyLM(homography);
     homography = BB.inv() * homography * AA;
 
     DpImage query(patternSize, patternSize);
@@ -205,7 +205,7 @@ corecvs::Matrix33 CirclePatternGenerator::getFlipMatrix(int rotation, bool flip)
             diff += d * d;
         }
     }
-    std::cout << "DIFF: " << diff << std::endl;
-    std::cout << "FRM: " << std::endl << res << std::endl;
+//    std::cout << "DIFF: " << diff << std::endl;
+//    std::cout << "FRM: " << std::endl << res << std::endl;
     return res;
 }

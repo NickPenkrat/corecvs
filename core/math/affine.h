@@ -38,10 +38,7 @@ public:
     {
     }
 
-   /* Affine3D(const LinearType &_rotor, const Vector3dd &_shift = Vector3dd(0.0)) :
-        rotor(_rotor),
-        shift(_shift)
-    {}*/
+    static LinearType superpose(const LinearType &l1, const LinearType &l2);
 
     friend inline Vector3dd operator *(const Affine3D &affine, const Vector3dd &x)
     {
@@ -64,7 +61,7 @@ public:
     friend inline Affine3D operator *(const Affine3D &A1, const Affine3D &A2)
     {
         return Affine3D(
-             A1.rotor * A2.rotor,
+             superpose(A1.rotor, A2.rotor),
              A1.rotor * A2.shift + A1.shift
         );
     }
@@ -82,6 +79,21 @@ public:
     static Affine3D RotationZ(double angle)
     {
         return Affine3D(LinearType::RotationZ(angle));
+    }
+
+    static Affine3D Identity()
+    {
+        return Affine3D(LinearType::Identity());
+    }
+
+    static Affine3D Shift(const Vector3dd &translation)
+    {
+        return Affine3D(LinearType::Identity(), translation);
+    }
+
+    static Affine3D Shift(double x, double y, double z)
+    {
+        return Affine3D(LinearType::Identity(), Vector3dd(x, y, z));
     }
 
     Affine3D inverted() const;
@@ -115,6 +127,19 @@ inline Affine3D<Matrix33> Affine3D<Matrix33>::inverted() const
 {
     Matrix33 inv = this->rotor.inv();
     return Affine3D<Matrix33>(inv,  - (inv * this->shift));
+}
+
+/**/
+template<>
+inline Quaternion Affine3D<Quaternion>::superpose(const Quaternion &l1, const Quaternion &l2)
+{
+    return l1 ^ l2;
+}
+
+template<>
+inline Matrix33 Affine3D<Matrix33>::superpose(const Matrix33  &l1, const Matrix33 &l2)
+{
+    return l1 * l2;
 }
 
 

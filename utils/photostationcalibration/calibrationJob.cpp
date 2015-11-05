@@ -1,5 +1,6 @@
 #include "calibrationJob.h"
 
+
 #include <array>
 
 #ifdef WITH_OPENCV
@@ -57,7 +58,7 @@ void CalibrationJob::allDetectChessBoard(bool distorted)
 {
     int N = (int)observations.size();
     photostation.cameras.resize(N);
-    auto psIterator = photostation.cameras.begin();
+    std::vector<corecvs::CameraModel>::iterator psIterator = photostation.cameras.begin();
 
     for (auto& c: observations)
     {
@@ -273,6 +274,7 @@ corecvs::RGB24Buffer CalibrationJob::LoadImage(const std::string &path)
     if (!buffer)
         return corecvs::RGB24Buffer();
     corecvs::RGB24Buffer res = *buffer;
+    delete buffer;
     return res;
 }
 
@@ -281,7 +283,7 @@ bool CalibrationJob::calibrateSingleCamera(int cameraId)
     std::vector<CameraLocationData> locations;
     int valid_locations = 0;
 
-    FlatPatternCalibrator calibrator(settings.singleCameraCalibratorConstraints, settings.calibrationLockParams);
+    FlatPatternCalibrator calibrator(settings.singleCameraCalibratorConstraints, photostation.cameras[cameraId].intrinsics);
 
     for (auto& o: observations[cameraId])
     {
@@ -300,7 +302,7 @@ bool CalibrationJob::calibrateSingleCamera(int cameraId)
     {
         calibrator.factor = settings.forceFactor;
         valid_locations = 0;
-        calibrator.solve(settings.singleCameraCalibratorUseZhangPresolver, settings.singleCameraCalibratorUseLMSolver);
+        calibrator.solve(settings.singleCameraCalibratorUseZhangPresolver, settings.singleCameraCalibratorUseLMSolver, settings.singleCameraLMiterations);
 
         photostation.cameras[cameraId].intrinsics = calibrator.getIntrinsics();
         locations = calibrator.getExtrinsics();
@@ -371,7 +373,7 @@ void CalibrationJob::calibratePhotostation(int N, int /*M*/, PhotoStationCalibra
         calibrator.solve(true, false);
     calibrator.recenter(); // Let us hope it'll speedup...
     if (runLM)
-        calibrator.solve(false, true);
+        calibrator.solve(false, true, settings.photostationLMiterations);
     calibrator.recenter();
     factor = calibrator.factor;
 }

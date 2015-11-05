@@ -33,7 +33,7 @@ void CameraModelParametersControlWidget::loadParamWidget(WidgetLoader &loader)
 
 }
 
-void CameraModelParametersControlWidget::getCameraParameters(double &fx, double &fy, double &cx, double &cy, double &skew, corecvs::Vector3dd &_pos, corecvs::Quaternion &_orientation)
+void CameraModelParametersControlWidget::getCameraParameters(double &fx, double &fy, double &cx, double &cy, double &skew, corecvs::Vector3dd &_pos, corecvs::Quaternion &_orientation, corecvs::Vector2dd &size, corecvs::Vector2dd &distortedSize)
 {
     readUi();
     fx = this->fx;
@@ -43,9 +43,11 @@ void CameraModelParametersControlWidget::getCameraParameters(double &fx, double 
     skew = this->skew;
     _pos = this->_pos;
     _orientation = this->_orientation;
+    size = _size;
+    distortedSize = _distortedSize;
 }
 
-void CameraModelParametersControlWidget::setCameraParameters(double &fx, double &fy, double &cx, double &cy, double &skew, corecvs::Vector3dd &_pos, corecvs::Quaternion &_dir)
+void CameraModelParametersControlWidget::setCameraParameters(double &fx, double &fy, double &cx, double &cy, double &skew, corecvs::Vector3dd &_pos, corecvs::Quaternion &_dir, corecvs::Vector2dd &size, corecvs::Vector2dd &distortedSize)
 {
     this->fx = fx;
     this->fy = fy;
@@ -54,6 +56,8 @@ void CameraModelParametersControlWidget::setCameraParameters(double &fx, double 
     this->skew = skew;
     this->_pos = _pos;
     this->_orientation = _dir;
+    _size = size;
+    _distortedSize = distortedSize;
     writeUi();
 }
 

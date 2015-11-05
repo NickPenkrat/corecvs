@@ -1,6 +1,6 @@
 #include "flatPatternCalibrator.h"
 
-FlatPatternCalibrator::FlatPatternCalibrator(const CameraConstraints constraints, const PinholeCameraIntrinsics lockParams, const double lockFactor) : factor(lockFactor), K(0), N(0), absoluteConic(6), lockParams(lockParams), constraints(constraints), forceZeroSkew(!!(constraints & CameraConstraints::ZERO_SKEW))
+FlatPatternCalibrator::FlatPatternCalibrator(const CameraConstraints constraints, const PinholeCameraIntrinsics lockParams, const double lockFactor) : factor(lockFactor), K(0), N(0), absoluteConic(6), intrinsics(lockParams), lockParams(lockParams), constraints(constraints), forceZeroSkew(!!(constraints & CameraConstraints::ZERO_SKEW))
 {
 }
 
@@ -12,7 +12,7 @@ void FlatPatternCalibrator::addPattern(const PatternPoints3d &patternPoints, con
     K += patternPoints.size();
 }
 
-void FlatPatternCalibrator::solve(bool runPresolver, bool runLM)
+void FlatPatternCalibrator::solve(bool runPresolver, bool runLM, int LMiterations)
 {
     if (runPresolver)
     {
@@ -23,7 +23,7 @@ void FlatPatternCalibrator::solve(bool runPresolver, bool runLM)
     }
     std::cout << std::endl << this << "RES Constrained init: " << getRmseReprojectionError() << std::endl;
 
-    if(runLM) refineGuess();
+    if(runLM) refineGuess(LMiterations);
     std::cout << std::endl <<  this << "RES LM: " << getRmseReprojectionError() << std::endl;
     std::cout << "OPTFAC: " << factor << std::endl;
 }
@@ -268,12 +268,12 @@ void FlatPatternCalibrator::LMCostFunction::operator() (const double in[], doubl
 #endif
 }
 
-void FlatPatternCalibrator::refineGuess()
+void FlatPatternCalibrator::refineGuess(int LMiterations)
 {
     std::vector<double> in(getInputNum()), out(getOutputNum());
     writeParams(&in[0]);
 
-    LevenbergMarquardt levmar(1000);
+    LevenbergMarquardt levmar(LMiterations);
     levmar.f = new LMCostFunction(this);
 
     auto res = levmar.fit(in, out);

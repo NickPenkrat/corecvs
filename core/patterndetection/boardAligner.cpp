@@ -1,6 +1,7 @@
 #include "boardAligner.h"
 
 #include <cassert>
+#include <fstream>
 
 #include "abstractPainter.h"
 #include "homographyReconstructor.h"
@@ -116,7 +117,7 @@ bool BoardAligner::alignDim(DpImage &img, bool fitW, bool fitH)
 {
     if (!fitW && !fitH) return false;
     int w = (int)bestBoard[0].size(), h = (int)bestBoard.size();
-    std::cout << "Best board: " << w << " x " << h << "; Req: " << idealWidth << " x " << idealHeight << std::endl;
+//    std::cout << "Best board: " << w << " x " << h << "; Req: " << idealWidth << " x " << idealHeight << std::endl;
     if (fitW && fitH)
     {
         if (w != idealWidth)
@@ -138,7 +139,7 @@ bool BoardAligner::alignDim(DpImage &img, bool fitW, bool fitH)
             return false;
         }
     }
-    std::cout << "Ok, continue..." << std::endl;
+//    std::cout << "Ok, continue..." << std::endl;
     corecvs::Vector2dd mean(0.0);
     for (auto& r: bestBoard)
         for (auto& c: r)
@@ -196,7 +197,7 @@ bool BoardAligner::bfs()
         {{-1, 0}, {0, 1}},
         {{-1, 0}, {0,-1}}
     };
-    std::cout << "Best board: " << w << " x " << h << "; Req: " << idealWidth << " x " << idealHeight << std::endl;
+//    std::cout << "Best board: " << w << " x " << h << "; Req: " << idealWidth << " x " << idealHeight << std::endl;
 
     for (int y = 0; y < h && seedx < 0; ++y)
     {
@@ -242,7 +243,7 @@ bool BoardAligner::bfs()
     if ((xdx * xdx + xdy * xdy != 1) || (ydx * ydx + ydy * ydy != 1))
         return false;
 
-    std::cout << "IW: " << idealWidth << "IH: " << idealHeight << std::endl;
+//    std::cout << "IW: " << idealWidth << "IH: " << idealHeight << std::endl;
     for (int y = 0; y < h; ++y)
     {
         for (int x = 0; x < w; ++x)
@@ -252,25 +253,25 @@ bool BoardAligner::bfs()
 
             if (cx < 0 || cx >= idealWidth || cy < 0 || cy >= idealHeight)
             {
-                std::cout << "Classifier overflow" << std::endl;
-                std::cout << "Classifier" << std::endl;
-                printClassifier(false);
+//                std::cout << "Classifier overflow" << std::endl;
+//                std::cout << "Classifier" << std::endl;
+//                printClassifier(false);
                 return false;
             }
             if (initialClassifier[y][x].first >= 0)
             {
                 if (cx != initialClassifier[y][x].first || cy != initialClassifier[y][x].second)
                 {
-                    std::cout << "Classifier mismatch" << std::endl;
-                    printClassifier(true);
-                    printClassifier(false);
+//                    std::cout << "Classifier mismatch" << std::endl;
+//                    printClassifier(true);
+//                    printClassifier(false);
                     return false;
                 }
             }
 
         }
     }
-    std::cout << "Classifier OK" << std::endl;
+//    std::cout << "Classifier OK" << std::endl;
     return true;
 }
 
@@ -294,12 +295,12 @@ bool BoardAligner::createList()
                 classifier[y][x].first >= idealWidth ||
                 classifier[y][x].second >= idealHeight)
             {
-                std::cout << "OL fail" << std::endl;
+//                std::cout << "OL fail" << std::endl;
                 return false;
             }
         }
     }
-    std::cout << "OL OK" << std::endl;
+//    std::cout << "OL OK" << std::endl;
     return true;
 }
 
@@ -408,6 +409,7 @@ void BoardAligner::drawDebugInfo(corecvs::RGB24Buffer &buffer)
 
 void BoardAligner::classify(bool trackOrientation, DpImage &img)
 {
+//    std::cout << "CLASSIFYING" << std::endl;
     int h = (int)bestBoard.size(), w = (int)bestBoard[0].size();
     classifier.clear();
     classifier.resize(h);
@@ -420,6 +422,7 @@ void BoardAligner::classify(bool trackOrientation, DpImage &img)
         gen.addToken(i, boardMarkers[i].circleRadius, boardMarkers[i].circleCenters);
 
     std::vector<std::pair<std::pair<int,int>, double>> data;
+    DpImage tokens((h - 1) * gen.patternSize, (w - 1) * gen.patternSize);
 
     for (int i = 0; i + 1 < h; ++i)
     {
@@ -433,7 +436,14 @@ void BoardAligner::classify(bool trackOrientation, DpImage &img)
             
             double score;
             corecvs::Matrix33 orientation, res;
-            int cl =  gen.getBestToken(img, {A, B, C, D}, score, orientation, res);
+            DpImage query;
+            int cl =  gen.getBestToken(img, {A, B, C, D}, score, orientation, res);//, query);
+            for (int ii = 0; ii < query.h; ++ii)
+            {
+                for (int jj = 0; jj < query.w; ++jj)
+                    tokens.element(ii + i * gen.patternSize, jj + j * gen.patternSize)
+                        = query.element(ii, jj);
+            }
 
             if (!trackOrientation)
             {
@@ -456,11 +466,12 @@ void BoardAligner::classify(bool trackOrientation, DpImage &img)
             }
         }
     }
-
+#if 0
     std::cout << "Scores:" << std::endl;
     for (auto& p: data)
     {
         std::cout << "[" << p.first.first << ", " << p.first.second << "]: " << p.second << std::endl;
     }
     printClassifier(false);
+#endif
 }

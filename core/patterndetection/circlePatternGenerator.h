@@ -15,21 +15,23 @@ typedef corecvs::AbstractBuffer<double> DpImage;
 
 struct CirclePatternGeneratorParams
 {
-    int patternSize = 128;
-    double stdevThreshold = 0.075;
-    double corrThreshold = 0.7;
-
+    int     patternSize     = 128;
+    double  stdevThreshold  = 0.05;
+    double  corrThreshold   = 0.6;
 };
 
 class CirclePatternGenerator : public CirclePatternGeneratorParams
 {
 public:
     CirclePatternGenerator(CirclePatternGeneratorParams params = CirclePatternGeneratorParams());
-    void addToken(int token, double r, const std::vector<corecvs::Vector2dd> &centers);
-    int getBestToken(DpImage &query, double &score, corecvs::Matrix33 &orientation) const;
-    int getBestToken(const DpImage &query, const std::array<corecvs::Vector2dd, 4> &cell, double &score, corecvs::Matrix33 &orientation, corecvs::Matrix33 &homography) const;
+
+    void    addToken(int token, double r, const std::vector<corecvs::Vector2dd> &centers);
+    int     getBestToken(DpImage &query, double &score, corecvs::Matrix33 &orientation) const;
+    int     getBestToken(const DpImage &query, const std::array<corecvs::Vector2dd, 4> &cell, double &score, corecvs::Matrix33 &orientation, corecvs::Matrix33 &homography) const;
+
     std::vector<std::vector<DpImage>> patterns;
-    std::vector<int> tokens;
+    std::vector<int>                  tokens;
+
 protected:
     void studentize(DpImage &image) const;
     void studentize(DpImage &image, double &mean, double &stdev) const;

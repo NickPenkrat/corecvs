@@ -1,8 +1,13 @@
 #include <algorithm>
 
+#include "affine.h"
+
 #include "calibrationScene.h"
 
-CalibrationScene::CalibrationScene()
+using namespace corecvs;
+
+CalibrationScene::CalibrationScene() :
+     worldFrameToCameraFrame(Affine3DQ::RotationX(degToRad(90)))
 {
 }
 
@@ -88,6 +93,11 @@ CalibrationFeaturePoint *CalibrationScene::createFeaturePoint()
     mOwnedObjects.push_back(point);
     points.push_back(point);
     return point;
+}
+
+void CalibrationScene::positionCameraInStation(Photostation *station, CameraModel *camera, const Affine3DQ &location)
+{
+    camera->extrinsics = CameraLocationData( worldFrameToCameraFrame * location);
 }
 
 void CalibrationScene::addCameraToStation(CameraModel *cam, Photostation *station)

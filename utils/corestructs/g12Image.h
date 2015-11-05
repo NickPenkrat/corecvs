@@ -36,7 +36,7 @@ public:
     virtual ~G8Image();
 };
 
-class RGB24Image : public QImage{
+class RGB24Image : public QImage {
 public:
     RGB24Image(RGB24Buffer *buffer, bool mirror = false);
     virtual ~RGB24Image();

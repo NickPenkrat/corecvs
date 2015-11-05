@@ -156,13 +156,19 @@ public:
         int64_t     diffTimeStamps() const  { return timeStampLeft     - timeStampRight;        }
     };
 
-    bool mIsRgb;
+    bool mIsRgb;                                            // flag that camera supports colors
 
     struct CameraFormat
     {
-        int fps;
-        int width;
         int height;
+        int width;
+        int fps;
+
+        CameraFormat(int h = 0, int w = 0, int f = 0) : height(h), width(w), fps(f) {}
+
+        bool operator==(CameraFormat &fmt) const { return height == fmt.height && width == fmt.width && fps == fmt.fps; }
+        bool operator!=(CameraFormat &fmt) const { return !operator==(fmt); }
+        bool operator!()                   const { return height == 0 && width == 0 && fps == 0; }
     };
 
 signals:
@@ -198,7 +204,7 @@ public:
     /**
      *  Enumerates camera formats
      **/
-    virtual CapErrorCode getFormats(int *num, CameraFormat *&);
+    virtual CapErrorCode getFormats(int *num, CameraFormat *& formats);
 
     /**
      * Return the interface device string
@@ -217,10 +223,13 @@ public:
     /**
      * Check if a specific property can be set/read and what values it can take
      **/
-
     virtual CapErrorCode queryCameraParameters(CameraParameters &parameter);
 
-    virtual CapErrorCode initCapture();
+    /**
+     * Initialize capture with the given before parameters. If need it returns actually set format for cameras.
+     **/
+    virtual CapErrorCode initCapture(CameraFormat *actualFormat = NULL);
+
     virtual CapErrorCode startCapture();
     virtual CapErrorCode pauseCapture();
     virtual CapErrorCode nextFrame();

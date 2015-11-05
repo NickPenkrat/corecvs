@@ -1,4 +1,5 @@
 #include "chessBoardAssembler.h"
+#include "boardAligner.h"
 
 #include <unordered_set>
 #include <queue>
@@ -19,8 +20,10 @@ ChessBoardAssembler& ChessBoardAssembler::operator=(const ChessBoardAssembler& o
     return *this;
 }
 
-void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, std::vector<std::vector<std::vector<corecvs::Vector2dd>>> &boards_)
+void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, std::vector<std::vector<std::vector<corecvs::Vector2dd>>> &boards_, BoardAligner* aligner_, DpImage *buffer_)
 {
+    aligner = aligner_;
+    buffer = buffer_;
     corners = corners_;
     int N = (int)corners.size();
 
@@ -79,6 +82,23 @@ void ChessBoardAssembler::acceptHypothesis(RectangularGridPattern &board)
     }
 
     // We may run in parallel, so need to lock
+    if (aligner && buffer)
+    {
+//        std::cout << "RUNNING INNER EVAL" << std::endl;
+//        std::cout << board.cornerIdx.size() << " x " << board.cornerIdx[0].size() << std::endl;
+        DpImage bufferC = *buffer;
+        BoardAligner alignerc = *aligner;
+        alignerc.bestBoard.clear();
+        for (auto &v: board.cornerIdx)
+        {
+            std::vector<corecvs::Vector2dd> row;
+            for (auto &p: v)
+                row.push_back(corners[p].pos);
+            alignerc.bestBoard.push_back(row);
+        }
+        if (!alignerc.align(bufferC))
+            return;
+    }
 #ifdef WITH_TBB
     tbb::mutex::scoped_lock lock(mutex);
 #endif
@@ -192,6 +212,17 @@ bool ChessBoardAssembler::BoardExpander::initBoard(int seed)
     board.cornerIdx[0][2] = corn[0];
     board.cornerIdx[2][0] = corn[3];
     board.cornerIdx[2][2] = corn[2];
+
+    double mindist = 1e100;
+    for (int i = 0; i < 2; ++i)
+        for (int j = 0; j < 2; ++j)
+        {
+            if (i == 1 && j == 1)
+                continue;
+            mindist = std::min(mindist, !(corners[board.cornerIdx[i][j]].pos - corners[board.cornerIdx[1][1]].pos));
+        }
+    if (mindist < assembler->minSeedDistance)
+        return false;
 
     std::vector<double> dv[2] = {{ d_nwse[0], d_nwse[1] }, { d_nwse[2], d_nwse[3], d_corn[0], d_corn[1], d_corn[2], d_corn[3]}};
     double s[2] = {0.0}, ssq[2] = {0.0};

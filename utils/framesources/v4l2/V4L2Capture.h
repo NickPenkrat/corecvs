@@ -44,7 +44,7 @@ public:
     virtual CapErrorCode queryCameraParameters(CameraParameters &parameter) ;
 
 
-    virtual CapErrorCode initCapture();
+    virtual CapErrorCode initCapture(CameraFormat *actualFormat = NULL);
     virtual CapErrorCode startCapture();
 
     virtual CapErrorCode getCaptureName(QString &value);
