@@ -55,9 +55,6 @@ with_avx {
     !win32-msvc* {
         QMAKE_CFLAGS   += -mavx
         QMAKE_CXXFLAGS += -mavx
-    } else:win32-msvc2010 {
-        QMAKE_CFLAGS   += /arch:AVX
-        QMAKE_CXXFLAGS += /arch:AVX
     } else {
         QMAKE_CFLAGS   += /arch:AVX
         QMAKE_CXXFLAGS += /arch:AVX
@@ -65,7 +62,7 @@ with_avx {
 }
 
 with_avx2 {
-    DEFINES += WITH_AVX2 WITH_FMA
+    DEFINES += WITH_AVX2
     !win32-msvc* {
         QMAKE_CFLAGS   += -mavx2
         QMAKE_CXXFLAGS += -mavx2
@@ -80,14 +77,14 @@ with_fma {
     !win32-msvc* {
         QMAKE_CFLAGS   += -mfma
         QMAKE_CXXFLAGS += -mfma
+    } else {
+        QMAKE_CFLAGS   += /arch:FMA
+        QMAKE_CXXFLAGS += /arch:FMA
     }
 }
 
-
-
 with_sse {
     DEFINES += WITH_SSE
-
     !win32-msvc* {
         QMAKE_CFLAGS   += -msse2
         QMAKE_CXXFLAGS += -msse2
@@ -98,17 +95,16 @@ with_sse {
 }
 with_sse3 {
     DEFINES += WITH_SSE3
-
     !win32-msvc* {
-        QMAKE_CFLAGS   += -msse3
-        QMAKE_CXXFLAGS += -msse3
+        QMAKE_CFLAGS   += -msse3 -mssse3
+        QMAKE_CXXFLAGS += -msse3 -mssse3
     } else {
 #       DEFINES -= WITH_SSE3
     }
 }
+
 with_sse4 {
     DEFINES += WITH_SSE4
-
     !win32-msvc* {
         QMAKE_CFLAGS   += -msse4.1
         QMAKE_CXXFLAGS += -msse4.1
@@ -448,33 +444,10 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
     }
 }
 
-with_openblas {
-    !win32 {
-        !isEmpty(BLAS_PATH) {
-            exists($(BLAS_PATH)/include/cblas.h) {
-                !build_pass: message (Using BLAS from <$$BLAS_PATH>)
-                INCLUDEPATH += $(BLAS_PATH)/include
-                LIBS        += -lopenblas
-                DEFINES     += WITH_BLAS
-            }
-            else {
-                !build_pass: message (requested openBLAS via BLAS_PATH is not found and is deactivated)
-            }
-        } else {
-            exists(/usr/include/cblas.h) {
-                !build_pass: message (Using System BLAS)
-                LIBS        += -lopenblas -llapacke
-                DEFINES     += WITH_BLAS
-            }
-            else {
-                !build_pass: message (requested system BLAS is not found and is deactivated)
-            }
-        }
-    } else {
-        !build_pass: message (requested openBLAS is not supported for Win and is deactivated)
-    }
-}
-
+#
+# MKL is more preferable as it uses "tbb" internally, which we use too anyway.
+# But openblas uses an "openmp" that is bad to use with tbb simultaneously!
+#
 with_mkl {
     MKLROOT = $$(MKLROOT)
     !win32: isEmpty(MKLROOT) {
@@ -492,6 +465,36 @@ with_mkl {
     }
     else {
         !build_pass: message (requested MKL is not installed and is deactivated)
+    }
+}
+
+with_openblas {
+    contains(DEFINES, WITH_MKL) {
+        !build_pass: contains(TARGET, core): message(openBLAS is deactivated as detected MKL was activated)
+    }
+    else:!win32 {
+        !isEmpty(BLAS_PATH) {
+            exists($(BLAS_PATH)/include/cblas.h) {
+                !build_pass: message(Using BLAS from <$$BLAS_PATH>)
+                INCLUDEPATH += $(BLAS_PATH)/include
+                LIBS        += -lopenblas
+                DEFINES     += WITH_BLAS
+            }
+            else {
+                !build_pass: message(requested openBLAS via BLAS_PATH is not found and is deactivated)
+            }
+        } else {
+            exists(/usr/include/cblas.h) {
+                !build_pass: message (Using System BLAS)
+                LIBS        += -lopenblas -llapacke
+                DEFINES     += WITH_BLAS
+            }
+            else {
+                !build_pass: message(requested system BLAS is not found and is deactivated)
+            }
+        }
+    } else {
+        !build_pass: message(requested openBLAS is not supported for Win and is deactivated)
     }
 }
 
