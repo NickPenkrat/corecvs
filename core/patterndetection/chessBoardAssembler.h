@@ -20,7 +20,7 @@
  * 3. From intersecting boards select one with the best energy
  */
 
-struct BoardAligner;
+class BoardAligner;
 
 struct RectangularGridPattern
 {
