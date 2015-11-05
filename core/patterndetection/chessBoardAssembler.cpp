@@ -63,10 +63,10 @@ void ChessBoardAssembler::acceptHypothesis(RectangularGridPattern &board)
             cset.insert(c);
     if (board.score > costThreshold)
         return;
+    int w = board.w();
+    int h = board.h();
     if (hypothesisDimensions)
     {
-        int w = board.w();
-        int h = board.h();
         int maxfit = 0;
         for (int i = 0; i < 2; ++i)
         {
@@ -80,8 +80,23 @@ void ChessBoardAssembler::acceptHypothesis(RectangularGridPattern &board)
         if (maxfit < hypothesisDimensions)
             return;
     }
+    for (int i = 0; i < w; ++i)
+        for (int j = 0; j + 1 < h; ++j)
+        {
+            auto a = !(corners[board.cornerIdx[j][i]].pos - corners[board.cornerIdx[j + 1][i]].pos);
+            if (a < minSeedDistance)
+                return;
+        }
+    for (int i = 0; i < h; ++i)
+        for (int j = 0; j + 1 < w; ++j)
+        {
+            auto a = !(corners[board.cornerIdx[i][j]].pos - corners[board.cornerIdx[i][j + 1]].pos);
+            if (a < minSeedDistance)
+                return;
+        }
 
     // We may run in parallel, so need to lock
+
     if (aligner && buffer)
     {
 //        std::cout << "RUNNING INNER EVAL" << std::endl;
