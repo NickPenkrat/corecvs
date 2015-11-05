@@ -65,7 +65,6 @@ void CalibrationJob::allDetectChessBoard(bool distorted)
     {
         for (auto& v: c)
         {
-            counter++;
             std::string filename = distorted ? v.sourceFileName : v.undistortedFileName;
             corecvs::RGB24Buffer buffer = LoadImage(filename);
             if (buffer.h && buffer.w)
