@@ -31,6 +31,7 @@ SOURCES += \
     commandline/main_test_commandline.cpp \
     convolve/main_test_convolve.cpp \
     cornerdetector/main_test_cornerdetector.cpp \
+    debayer/main_test_debayer.cpp \
     deform/main_test_deform.cpp \
     derivative/main_test_derivative.cpp \
     distortion/main_test_distortion.cpp \                 # TODO: need to be fixed soon

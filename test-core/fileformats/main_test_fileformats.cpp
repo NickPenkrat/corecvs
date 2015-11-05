@@ -31,7 +31,6 @@ TEST(FileFormats, testFileFormats)
     delete raw;
     delete rawLoader;
 
-
     /** Test case 2 */
     BMPLoader *bmpLoader = new BMPLoader();
     G12Buffer *bmp = bmpLoader->load("data/testdata/test_bmp.bmp");
@@ -50,8 +49,19 @@ TEST(FileFormats, testFileFormats)
     delete ppm;
     delete ppmLoader;
 
-
     /** Test case 4 */
+    PPMLoader *metappmLoader = new PPMLoader();
+    MetaData *metadata = new MetaData;
+    G12Buffer *metappm = ppmLoader->load("data/testdata/test_pgm_metadata.pgm", metadata);
+    CORE_ASSERT_TRUE(ppm != NULL, "PGM with Metadata Image load failed");
+    CORE_ASSERT_TRUE(ppm->h == ppm->w, "PGM with Metadata Image sizes corrupted");
+    CORE_ASSERT_TRUE(ppm->verify(), "PGM with Metadata Image verification failed");
+    CORE_ASSERT_TRUE(metadata->at("hello_world")[0] == 42, "PGM Metadata read failed");
+    delete metappm;
+    delete metappmLoader;
+    delete metadata;
+
+    /** Test case 5 */
     BMPLoader *bmpLoader1 = new BMPLoader();
     G12Buffer *bmp1 = bmpLoader1->load("data/calib-object.bmp");
     CORE_ASSERT_TRUE(bmp1 != NULL, "BMP Image load failed");
@@ -100,16 +110,16 @@ TEST(FileFormats, testPlyLoader)
         "3 2 6 7 3\n"
         "3 3 7 4 0\n";
 
-/*    "4 0 1 2 3\n"
-    "4 7 6 5 4\n"
-    "4 0 4 5 1\n"
-    "4 1 5 6 2\n"
-    "4 2 6 7 3\n"
-    "4 3 7 4 0\n";*/
+    /*    "4 0 1 2 3\n"
+        "4 7 6 5 4\n"
+        "4 0 4 5 1\n"
+        "4 1 5 6 2\n"
+        "4 2 6 7 3\n"
+        "4 3 7 4 0\n";*/
 
     for (unsigned i = 0; i < CORE_COUNT_OF(tests); i++)
     {
-    	Mesh3D mesh;
+        Mesh3D mesh;
         PLYLoader loader;
         std::string str(tests[i]);
         std::istringstream stream(str);
