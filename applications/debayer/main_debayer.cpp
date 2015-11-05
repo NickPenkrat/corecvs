@@ -19,16 +19,15 @@ int main(int argc, const char **argv)
 {
     CommandLineSetter s(argc, argv);
 
-
     int quality = s.getInt("quality", 1);
-
 
     PPMLoader ldr;
     MetaData* metadata = new MetaData;
     string filename = s.getOption("file");
+    RGB48Buffer *result = nullptr;
+
     G12Buffer *bayer = ldr.load(filename, metadata);
     Debayer d(bayer, 8, metadata);
-    RGB48Buffer *result = nullptr;
 
     result = d.toRGB48(Debayer::Quality(quality));
 
