@@ -4,7 +4,7 @@
 
 #include "global.h"
 
-//#include "fixedArray.h"
+#include "fixedArray.h"
 
 using namespace std;
 using namespace corecvs;

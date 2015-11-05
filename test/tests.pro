@@ -12,8 +12,8 @@ TEMPLATE = subdirs
 
 SUBDIRS +=       \
 #   grab         \
-    grab_N_captures \
-    serialize1   \
+#    grab_N_captures \
+#    serialize1   \
 #   adoptcolor   \
 #    avigrab     \
 #    decodebayer \
@@ -30,12 +30,12 @@ with_opencv {
 #        camera_calibration \
 #        chessboard_detector \
         calibration \
-        calibration_job_generate \
-        calibration_job_detect \
-        calibration_job_estimate_distortion \
-        calibration_job_apply_undistortion \
-        calibration_job_calibrate \
-        photostation_placer
+#        calibration_job_generate \
+#        calibration_job_detect \
+#        calibration_job_estimate_distortion \
+#        calibration_job_apply_undistortion \
+#        calibration_job_calibrate \
+#        photostation_placer
 }
 
 grab.file                           = grab/grab.pro
