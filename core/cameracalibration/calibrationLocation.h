@@ -69,7 +69,7 @@ public:
     {}
 
     /**
-     * Helper function that creates a CameraLocationData that acts just as a Affine3DQ
+     * Helper function that creates a CameraLocationData that NOT acts just as a Affine3DQ
      *
      * Affine
      *    X' = AR * X + AT
@@ -82,16 +82,17 @@ public:
      *    CR = AR
      *    CT = CR^{-1} (- AT)
      *
+     * NOTE: Correct form is different. Since cam works as X=R(X'-T) and A3DQ works as X'=RX+T
      *
      **/
     explicit CameraLocationData( const Affine3DQ &transform ) :
-        position(transform.rotor.conjugated() * (-transform.shift)),
-        orientation(transform.rotor)
+        position(transform.shift),
+        orientation(transform.rotor.conjugated())
     {}
 
     Affine3DQ toAffine3D() const
     {
-        return Affine3DQ(orientation, - (orientation * position));
+        return Affine3DQ(orientation.conjugated(), position);
     }
 
     Vector3dd project(const Vector3dd &pt) const
