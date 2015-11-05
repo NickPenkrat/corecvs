@@ -186,11 +186,6 @@ void PhotoStationCalibrator::readParams(const double in[])
             for (int j = 0; j < 4; ++j)
             {
                 GET_PARAM(toFill.extrinsics.orientation[j]);
-                if (!toFill.extrinsics.orientation > mxN)
-                {
-                    mxN = !toFill.extrinsics.orientation;
-                    std::cout << "MXN: " << mxN << std::endl;
-                }
             }
             toFill.extrinsics.orientation.normalise();
         }
@@ -202,11 +197,6 @@ void PhotoStationCalibrator::readParams(const double in[])
         for (int j = 0; j < 4; ++j)
         {
             GET_PARAM(absoluteSetupLocation[i].orientation[j]);
-        }
-        if (mxN < !absoluteSetupLocation[i].orientation)
-        {
-            mxN = !absoluteSetupLocation[i].orientation;
-            std::cout << "MXN: " << mxN << std::endl;
         }
         absoluteSetupLocation[i].orientation.normalise();
     }
