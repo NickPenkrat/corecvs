@@ -409,4 +409,6 @@ void FlatPatternCalibrator::extractIntrinsics()
     cx = skew * cy / fx - b13 * fx * fx / lambda;
 
     intrinsics = PinholeCameraIntrinsics(fx, fy, cx, cy, skew);
+    intrinsics.size = lockParams.size;
+    intrinsics.distortedSize = lockParams.distortedSize;
 }
