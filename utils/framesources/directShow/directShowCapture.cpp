@@ -31,15 +31,15 @@ void DirectShowCaptureInterface::init(const string &devname, int h, int w, int f
         .arg(h)
         .toStdString();
 
-    deviceID[LEFT_FRAME]  = atoi(devname.c_str());
-    deviceID[RIGHT_FRAME] = -1;
+    mDeviceIDs[LEFT_FRAME] = atoi(devname.c_str());
+    mDeviceIDs[RIGHT_FRAME] = -1;
 
     for (int i = 0; i < MAX_INPUTS_NUMBER; i++)
     {
-        format[i].type   = DirectShowCameraDescriptor::codec_types[compressed];
-        format[i].height = h;
-        format[i].width  = w;
-        format[i].fps    = fps;
+        mFormats[i].type   = DirectShowCameraDescriptor::codec_types[compressed];
+        mFormats[i].height = h;
+        mFormats[i].width  = w;
+        mFormats[i].fps    = fps;
     }
 
     mCompressed  = compressed;
@@ -100,8 +100,8 @@ DirectShowCaptureInterface::DirectShowCaptureInterface(const string &devname, bo
              mIsRgb ? "on" : "off"
     );
 
-    deviceID[Frames::LEFT_FRAME ] = deviceStringPattern.cap(Device1Group).isEmpty() ? -1 : deviceStringPattern.cap(Device1Group).toInt();
-    deviceID[Frames::RIGHT_FRAME] = deviceStringPattern.cap(Device2Group).isEmpty() ? -1 : deviceStringPattern.cap(Device2Group).toInt();
+    mDeviceIDs[Frames::LEFT_FRAME ] = deviceStringPattern.cap(Device1Group).isEmpty() ? -1 : deviceStringPattern.cap(Device1Group).toInt();
+    mDeviceIDs[Frames::RIGHT_FRAME] = deviceStringPattern.cap(Device2Group).isEmpty() ? -1 : deviceStringPattern.cap(Device2Group).toInt();
 
     bool err;
     int fpsnum = deviceStringPattern.cap(FpsNumGroup).toInt(&err);
@@ -130,32 +130,31 @@ DirectShowCaptureInterface::DirectShowCaptureInterface(const string &devname, bo
            mCompressed = DirectShowCameraDescriptor::COMPRESSED_FAST_JPEG;
        }
     }
-    int formatId = DirectShowCameraDescriptor::codec_types[mCompressed];
 
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
     {
-        L_INFO_P("Capture %s device: DShow:%d", Frames::getEnumName((Frames::FrameSourceId)i), deviceID[i]);
+        L_INFO_P("Capture %s device: DShow:%d", Frames::getEnumName((Frames::FrameSourceId)i), mDeviceIDs[i]);
     }
     L_INFO_P("Format is: %s", DirectShowCameraDescriptor::codec_names[mCompressed]);
 
     /* TODO: Make cycle here */
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
     {
-        format[i].type   = formatId;
-        format[i].height = height;
-        format[i].width  = width;
-        format[i].fps    = (int)((double)fpsdenum / fpsnum);
+        mFormats[i].type = DirectShowCameraDescriptor::codec_types[mCompressed];
+        mFormats[i].height = height;
+        mFormats[i].width  = width;
+        mFormats[i].fps    = (int)((double)fpsdenum / fpsnum);
     }
 
     skippedCount = 0;
     isRunning = false;
 }
 
-ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::initCapture()
+ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::initCapture(CameraFormat *actualFormat)
 {
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
     {
-        cameras[i].deviceHandle = deviceID[i] >= 0 ? DirectShowCapDll_initCapture(deviceID[i]) : -1;
+        mCameras[i].deviceHandle = mDeviceIDs[i] >= 0 ? DirectShowCapDll_initCapture(mDeviceIDs[i]) : -1;
     }
 
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
@@ -163,11 +162,11 @@ ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::initCapture()
         if (!isCorrectDeviceHandle(i))
             continue;
 
-        if (DirectShowCapDll_setFormat(cameras[i].deviceHandle, &format[i]) != 0)
+        if (DirectShowCapDll_setFormat(mCameras[i].deviceHandle, &mFormats[i]) != 0)
         {
             //printf("Failed to set format\n");
         }
-        DirectShowCapDll_setFrameCallback(cameras[i].deviceHandle, this, DirectShowCaptureInterface::callback);
+        DirectShowCapDll_setFrameCallback(mCameras[i].deviceHandle, this, DirectShowCaptureInterface::callback);
     }
 
     L_DDEBUG_P("Real Formats:");
@@ -176,7 +175,12 @@ ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::initCapture()
         if (!isCorrectDeviceHandle(i))
             continue;
 
-        DirectShowCapDll_printSimpleFormat(&format[i]);
+        DirectShowCapDll_printSimpleFormat(&mFormats[i]);
+
+        if (actualFormat != NULL)
+        {
+            *actualFormat = CameraFormat(mFormats[i].height, mFormats[i].width, mFormats[i].fps);
+        }
     }
 
     if (isCorrectDeviceHandle(0) && isCorrectDeviceHandle(1))
@@ -196,13 +200,12 @@ void DirectShowCaptureInterface::callback(void *thiz, DSCapDeviceId dev, FrameDa
 ALIGN_STACK_SSE void DirectShowCaptureInterface::memberCallback(DSCapDeviceId dev, FrameData data)
 {
     //SYNC_PRINT(("Received new frame in a member %d\n", dev));
-    protectFrame.lock();
+    mProtectFrame.lock();
 
     DirectShowCameraDescriptor *camera = NULL;
-    if      (cameras[0].deviceHandle == dev)
-        camera = &cameras[0];
-    else if (cameras[1].deviceHandle == dev)
-        camera = &cameras[1];
+    if (mCameras[0].deviceHandle == dev) camera = &mCameras[0];
+    else
+    if (mCameras[1].deviceHandle == dev) camera = &mCameras[1];
     else
         goto exit;
 
@@ -271,15 +274,15 @@ ALIGN_STACK_SSE void DirectShowCaptureInterface::memberCallback(DSCapDeviceId de
         camera->decodeTime = timer.usecsToNow();
         /* If both frames are in place */
 
-        if (cameras[0].gotBuffer && cameras[1].gotBuffer)
+        if (mCameras[0].gotBuffer && mCameras[1].gotBuffer)
         {
-            cameras[0].gotBuffer = false;
-            cameras[1].gotBuffer = false;
+            mCameras[0].gotBuffer = false;
+            mCameras[1].gotBuffer = false;
 
             CaptureStatistics stats;
-            int64_t desync =  cameras[0].timestamp - cameras[1].timestamp;
+            int64_t desync = mCameras[0].timestamp - mCameras[1].timestamp;
             stats.values[CaptureStatistics::DESYNC_TIME] = desync > 0 ? desync : -desync;
-            stats.values[CaptureStatistics::DECODING_TIME] = cameras[0].decodeTime + cameras[1].decodeTime;
+            stats.values[CaptureStatistics::DECODING_TIME] = mCameras[0].decodeTime + mCameras[1].decodeTime;
             if (lastFrameTime.usecsTo(PreciseTimer()) != 0)
             {
                 stats.values[CaptureStatistics::INTERFRAME_DELAY] = lastFrameTime.usecsToNow();
@@ -287,65 +290,65 @@ ALIGN_STACK_SSE void DirectShowCaptureInterface::memberCallback(DSCapDeviceId de
             lastFrameTime = PreciseTimer::currentTime();
 
             frame_data_t frameData;
-            frameData.timestamp = cameras[0].timestamp / 2 + cameras[1].timestamp / 2;
+            frameData.timestamp = mCameras[0].timestamp / 2 + mCameras[1].timestamp / 2;
             newFrameReady(frameData);
             newStatisticsReady(stats);
         }
         else {
             frame_data_t frameData;
-            frameData.timestamp = cameras[0].timestamp;
+            frameData.timestamp = mCameras[0].timestamp;
             newFrameReady(frameData);
             //newStatisticsReady(stats);
             skippedCount++;
         }
     }
 exit:
-    protectFrame.unlock();
+    mProtectFrame.unlock();
 }
 
 
 ImageCaptureInterface::FramePair DirectShowCaptureInterface::getFrame()
 {
-    protectFrame.lock();
+    mProtectFrame.lock();
         FramePair result;
-        if (cameras[0].buffer != NULL)
+        if (mCameras[0].buffer != NULL)
         {
-            result.bufferLeft = new G12Buffer(cameras[0].buffer);
+            result.bufferLeft = new G12Buffer(mCameras[0].buffer);
         }
-        if (cameras[1].buffer != NULL)
+        if (mCameras[1].buffer != NULL)
         {
-            result.bufferRight = new G12Buffer(cameras[1].buffer);
+            result.bufferRight = new G12Buffer(mCameras[1].buffer);
         }
-        result.timeStampLeft  = cameras[0].timestamp;
-        result.timeStampRight = cameras[1].timestamp;
-    protectFrame.unlock();
+        result.timeStampLeft  = mCameras[0].timestamp;
+        result.timeStampRight = mCameras[1].timestamp;
+    mProtectFrame.unlock();
     return result;
 }
 
 ImageCaptureInterface::FramePair DirectShowCaptureInterface::getFrameRGB24()
 {
-    protectFrame.lock();
+    mProtectFrame.lock();
         FramePair result;
-        if (cameras[0].buffer != NULL)
+        if (mCameras[0].buffer != NULL)
         {
-            result.bufferLeft = new G12Buffer(cameras[0].buffer);
+            result.bufferLeft = new G12Buffer(mCameras[0].buffer);
         }
-        if (cameras[1].buffer != NULL)
+        if (mCameras[1].buffer != NULL)
         {
-            result.bufferRight = new G12Buffer(cameras[1].buffer);
+            result.bufferRight = new G12Buffer(mCameras[1].buffer);
         }
-        if (cameras[0].buffer24 != NULL)
+        if (mCameras[0].buffer24 != NULL)
         {
-            result.rgbBufferLeft = new RGB24Buffer(cameras[0].buffer24);
+            result.rgbBufferLeft = new RGB24Buffer(mCameras[0].buffer24);
         }
-        if (cameras[1].buffer24 != NULL)
+        if (mCameras[1].buffer24 != NULL)
         {
-            result.rgbBufferRight = new RGB24Buffer(cameras[1].buffer24);
+            result.rgbBufferRight = new RGB24Buffer(mCameras[1].buffer24);
         }
 
-        result.timeStampLeft  = cameras[0].timestamp;
-        result.timeStampRight = cameras[1].timestamp;
-    protectFrame.unlock();
+        result.timeStampLeft  = mCameras[0].timestamp;
+        result.timeStampRight = mCameras[1].timestamp;
+    mProtectFrame.unlock();
     return result;
 }
 
@@ -354,11 +357,11 @@ ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::startCapture()
     isRunning = true;
     if (isCorrectDeviceHandle(0))
     {
-        DirectShowCapDll_start(cameras[0].deviceHandle);
+        DirectShowCapDll_start(mCameras[0].deviceHandle);
     }
     if (isCorrectDeviceHandle(1))
     {
-        DirectShowCapDll_start(cameras[1].deviceHandle);
+        DirectShowCapDll_start(mCameras[1].deviceHandle);
     }
     //spin.start();
     return ImageCaptureInterface::SUCCESS;
@@ -377,7 +380,7 @@ DirectShowCaptureInterface::~DirectShowCaptureInterface()
         {
             if (isCorrectDeviceHandle(i))
             {
-                DirectShowCapDll_stop(cameras[i].deviceHandle);
+                DirectShowCapDll_stop(mCameras[i].deviceHandle);
             }
         }
         isRunning = false;
@@ -387,9 +390,9 @@ DirectShowCaptureInterface::~DirectShowCaptureInterface()
     {
         if (isCorrectDeviceHandle(i))
         {
-            DirectShowCapDll_setFrameCallback(cameras[i].deviceHandle, NULL, NULL);
-            DirectShowCapDll_deinit(cameras[i].deviceHandle);
-            cameras[i].deviceHandle = -1;
+            DirectShowCapDll_setFrameCallback(mCameras[i].deviceHandle, NULL, NULL);
+            DirectShowCapDll_deinit(mCameras[i].deviceHandle);
+            mCameras[i].deviceHandle = -1;
         }
     }
 }
@@ -399,7 +402,7 @@ ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::queryCameraParam
 {
     if (isCorrectDeviceHandle(0))
     {
-        cameras[0].queryCameraParameters(parameters);
+        mCameras[0].queryCameraParameters(parameters);
     }
     return ImageCaptureInterface::SUCCESS;
 }
@@ -408,11 +411,11 @@ ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::setCaptureProper
 {
     if (isCorrectDeviceHandle(0))
     {
-        cameras[0].setCaptureProperty(id, value);
+        mCameras[0].setCaptureProperty(id, value);
     }
     if (isCorrectDeviceHandle(1))
     {
-        cameras[1].setCaptureProperty(id, value);
+        mCameras[1].setCaptureProperty(id, value);
     }
     return ImageCaptureInterface::SUCCESS;
 }
@@ -421,7 +424,7 @@ ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::getCaptureProper
 {
     if (isCorrectDeviceHandle(0))
     {
-        cameras[0].getCaptureProperty(id, value);
+        mCameras[0].getCaptureProperty(id, value);
     }
     return ImageCaptureInterface::SUCCESS;
 }
@@ -432,35 +435,49 @@ ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::getCaptureName(Q
         return ImageCaptureInterface::FAILURE;
 
     char *name = NULL;
-    if (DirectShowCapDll_deviceName(cameras[0].deviceHandle, &name))
+    if (DirectShowCapDll_deviceName(mCameras[0].deviceHandle, &name))
         return ImageCaptureInterface::FAILURE;
 
     value = name;
     return ImageCaptureInterface::SUCCESS;
 }
 
-ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::getFormats(int *num, CameraFormat *&format)
+ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::getFormats(int *num, CameraFormat *&formats)
 {
     if (!isCorrectDeviceHandle(0))
         return ImageCaptureInterface::FAILURE;
-    DirectShowCapDll_getFormatNumber(cameras[0].deviceHandle, num);
+
+    if (0 != DirectShowCapDll_getFormatNumber(mCameras[0].deviceHandle, num))
+    {
+        L_ERROR_P("Error to get number of supported formats for cameraId: %d", (int)mCameras[0].deviceHandle);
+        return ImageCaptureInterface::FAILURE;
+    }
 
     int number = *num;
     CaptureTypeFormat* captureTypeFormats = new CaptureTypeFormat[number];
 
-    delete format;
-    format = new CameraFormat[number];
-    DirectShowCapDll_getFormats(cameras[0].deviceHandle, number, captureTypeFormats);
-    for (int i = 0; i < number; i ++)
+    delete formats;
+    formats = new CameraFormat[number];
+
+    if (0 != DirectShowCapDll_getFormats(mCameras[0].deviceHandle, number, captureTypeFormats))
     {
-        format[i].fps    = captureTypeFormats[i].fps;
-        format[i].width  = captureTypeFormats[i].width;
-        format[i].height = captureTypeFormats[i].height;
+        delete[] captureTypeFormats;
+        L_ERROR_P("Error to get supported formats for cameraId: %d", (int)mCameras[0].deviceHandle);
+        return ImageCaptureInterface::FAILURE;
+    }
+
+    for (int i = 0; i < number; i++)
+    {
+        formats[i] = CameraFormat(captureTypeFormats[i].height, captureTypeFormats[i].width, captureTypeFormats[i].fps);
     }
 
     delete[] captureTypeFormats;
-
     return ImageCaptureInterface::SUCCESS;
+}
+
+QString DirectShowCaptureInterface::getInterfaceName()
+{
+    return QString("dshow:") + mDevname.c_str();
 }
 
 DirectShowCaptureInterface::CapErrorCode DirectShowCaptureInterface::getDeviceName(int num, QString &name)
@@ -533,5 +550,5 @@ void DirectShowCaptureInterface::getAllCameras(vector<string> &cameras)
 
 bool DirectShowCaptureInterface::isCorrectDeviceHandle(int cameraNum)
 {
-    return cameras[cameraNum].deviceHandle >= 0;
+    return mCameras[cameraNum].deviceHandle >= 0;
 }

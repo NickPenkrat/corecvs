@@ -201,6 +201,15 @@ int DirectShowCameraDescriptor::setCaptureProperty(int id, int value)
             break;
         }
 
+        case CameraParameters::BRIGHTNESS:
+        {
+            CameraParameter param;
+            DirectShowCapDll_getCameraProp(deviceHandle, CAPDLL_AMP_Brightness, &param);
+            param.value = value;
+            DirectShowCapDll_setCameraProp(deviceHandle, CAPDLL_AMP_Brightness, &param);
+            break;
+        }
+
         default:
         {
             L_WARNING_P("Set request for unknown parameter (%d)", id);
@@ -308,6 +317,14 @@ int DirectShowCameraDescriptor::getCaptureProperty(int id, int *value)
         {
             CameraParameter param;
             DirectShowCapDll_getCameraProp(deviceHandle, CAPDLL_AMP_Gain, &param);
+            *value = param.value;
+            break;
+        }
+
+        case CameraParameters::BRIGHTNESS:
+        {
+            CameraParameter param;
+            DirectShowCapDll_getCameraProp(deviceHandle, CAPDLL_AMP_Brightness, &param);
             *value = param.value;
             break;
         }

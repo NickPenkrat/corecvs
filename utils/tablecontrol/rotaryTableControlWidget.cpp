@@ -1,36 +1,35 @@
-#include <QFileDialog>
-
 #include "rotaryTableControlWidget.h"
-#include "ui_rotaryTableControlWidget.h"
-
+#include "rotaryTableMeshModel.h"
 #include "mesh3DScene.h"
 #include "log.h"
+#include <QFileDialog>
 
-#include "rotaryTableMeshModel.h"
+#include "ui_rotaryTableControlWidget.h"
 
-#define PORT_NAME "COM1"
+//#define PORT_NAME "COM1"
 
 RotaryTableControlWidget::RotaryTableControlWidget(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::RotaryTableControlWidget)
-    , mPort(PORT_NAME)
+  //, mPort(PORT_NAME)
 {
     ui->setupUi(this);
     ui->widget->setCollapseTree(true);
 
-    connect(ui->widgetPitch, SIGNAL(valueChanged(double)), this, SLOT(updateState()));
-    connect(ui->widgetYaw  , SIGNAL(valueChanged(double)), this, SLOT(updateState()));
-    connect(ui->widgetRoll , SIGNAL(valueChanged(double)), this, SLOT(updateState()));
+    connect(ui->widgetPitch        , SIGNAL(valueChanged(double)), this, SLOT(updateState()));
+    connect(ui->widgetYaw          , SIGNAL(valueChanged(double)), this, SLOT(updateState()));
+    connect(ui->widgetRoll         , SIGNAL(valueChanged(double)), this, SLOT(updateState()));
 
-    connect(ui->tableWidget, SIGNAL(cellClicked      (int,int)), this, SLOT(tableCellClicked     (int, int)));
-    connect(ui->tableWidget, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(tableCellDoubleClicked(int,int)));
+    connect(ui->tableWidget        , SIGNAL(cellClicked      (int,int)), this, SLOT(tableCellClicked     (int, int)));
+    connect(ui->tableWidget        , SIGNAL(cellDoubleClicked(int,int)), this, SLOT(tableCellDoubleClicked(int,int)));
 
     connect(ui->generatePushButton , SIGNAL(released()), this, SLOT(generate()));
-    connect(ui->loadPushButton , SIGNAL(released()), this, SLOT(load()));
-    connect(ui->savePushButton , SIGNAL(released()), this, SLOT(save()));
+    connect(ui->loadPushButton     , SIGNAL(released()), this, SLOT(load()));
+    connect(ui->savePushButton     , SIGNAL(released()), this, SLOT(save()));
 
     connect(ui->executePushButton   , SIGNAL(released()), this, SLOT(execute()));
     connect(ui->executeIncPushButton, SIGNAL(released()), this, SLOT(executeAndIncrement()));
+    connect(ui->executeAllPushButton, SIGNAL(released()), this, SLOT(executeAll()));
 
     connect(&generator, SIGNAL(newListGenerated(vector<CameraLocationAngles>)),
             this, SLOT(newList(vector<CameraLocationAngles>)));
@@ -41,40 +40,40 @@ RotaryTableControlWidget::RotaryTableControlWidget(QWidget *parent)
 
     selected = 0;
     loadCommands("commands.json");
+    selectedToCurrent();
     updateState();
 
-    if (!mPort.isOpen())
-    {
-        mPort.open(QIODevice::ReadWrite);
-        if (!mPort.setBaudRate(QSerialPort::Baud115200)) {
-            L_ERROR_P("RotaryTable port - setBaudRate");
-        }
-        if (!mPort.setDataBits(QSerialPort::Data8)) {
-            L_ERROR_P("RotaryTable port - setDataBits");
-        }
-        if (!mPort.setParity(QSerialPort::NoParity)) {
-            L_ERROR_P("RotaryTable port - setParity");
-        }
-        if (!mPort.setStopBits(QSerialPort::OneStop)) {
-            L_ERROR_P("RotaryTable port - setStopBits");
-        }
-        if (!mPort.setFlowControl(QSerialPort::NoFlowControl)) {
-            L_ERROR_P("RotaryTable port - setFlowControl");
-        }
+    //if (!mPort.isOpen())
+    //{
+    //    mPort.open(QIODevice::ReadWrite);
+    //    if (!mPort.setBaudRate(QSerialPort::Baud115200)) {
+    //        L_ERROR_P("RotaryTable port - setBaudRate");
+    //    }
+    //    if (!mPort.setDataBits(QSerialPort::Data8)) {
+    //        L_ERROR_P("RotaryTable port - setDataBits");
+    //    }
+    //    if (!mPort.setParity(QSerialPort::NoParity)) {
+    //        L_ERROR_P("RotaryTable port - setParity");
+    //    }
+    //    if (!mPort.setStopBits(QSerialPort::OneStop)) {
+    //        L_ERROR_P("RotaryTable port - setStopBits");
+    //    }
+    //    if (!mPort.setFlowControl(QSerialPort::NoFlowControl)) {
+    //        L_ERROR_P("RotaryTable port - setFlowControl");
+    //    }
 
-        if (mPort.isOpen())
-        {
-            mPort.write("MODE = NONINTERPOLATED\r\nWAIT 1000\r\n");
-        }
-    }
-
-    L_INFO_P("Rotary table port <%s> opened: %s", PORT_NAME, mPort.isOpen() ? "ok" : "err");
+    //    if (mPort.isOpen())
+    //    {
+    //        mPort.write("MODE = NONINTERPOLATED\r\nWAIT 1000\r\n");
+    //    }
+    //}
+    //L_INFO_P("Rotary table port <%s> opened: %s", PORT_NAME, mPort.isOpen() ? "ok" : "err");
 }
 
 RotaryTableControlWidget::~RotaryTableControlWidget()
 {
     delete ui;
-    mPort.close();
+    //mPort.close();
 }
 
 void RotaryTableControlWidget::loadCommands(QString filename)
@@ -111,9 +110,15 @@ void RotaryTableControlWidget::updateTable()
         int newRow = widget->rowCount();
         widget->setRowCount(newRow + 1);
 
-        QTableWidgetItem *item1 = new QTableWidgetItem(QString("%1°").arg(radToDeg(positions[count].yaw())));
-        QTableWidgetItem *item2 = new QTableWidgetItem(QString("%1°").arg(radToDeg(positions[count].pitch())));
-        QTableWidgetItem *item3 = new QTableWidgetItem(QString("%1°").arg(radToDeg(positions[count].roll())));
+        // QString("%1°").arg(radToDeg(positions[count].yaw()))  // uses 4-5 digits after comma, which were not nice
+        char buf[32];
+#define TOSTR(dval) (snprintf2buf(buf, "%.3f°", (float)(dval)), buf)
+
+        QTableWidgetItem *item1 = new QTableWidgetItem(QString(TOSTR(radToDeg(positions[count].yaw()))));
+        QTableWidgetItem *item2 = new QTableWidgetItem(QString(TOSTR(radToDeg(positions[count].pitch()))));
+        QTableWidgetItem *item3 = new QTableWidgetItem(QString(TOSTR(radToDeg(positions[count].roll()))));
+
+#undef TOSTR
 
         if (count == selected)
         {
@@ -138,7 +143,7 @@ void RotaryTableControlWidget::execute()
     int ip = roundSign(p);
     int ir = roundSign(r);
 
-    L_INFO_P("moving to [O:%.3f, M:%.3f, I:%.3f]", y, p, r);
+    //L_INFO_P("moving to [O:%.3f, I:%.3f, M:%.3f]", y, r, p);
 
     //L_INFO_P("The command to send:<%s>", cmd);
     //
@@ -149,25 +154,21 @@ void RotaryTableControlWidget::execute()
     //    L_INFO_P("The command is sent, res = %d", (int)res);
     //}
 
-    char filename[256]; snprintf2buf(filename, "_autoplay_rot_O=%d_M=%d_I=%d.txt", iy, ip, ir);
+    QString path = getPathScript(iy, ir, ip);
 
-    std::ostringstream s;
-    s << "MODE=NONINTERPOLATED" << std::endl
-      << "AX_O " << iy << std::endl
-      << "AX_M " << ip << std::endl
-      << "AX_I " << ir << std::endl
-      << "WAIT 500" << std::endl
-      << "END" << std::endl;
+    std::ostringstream cmds;
+    cmds << "AX_O "       << iy << std::endl
+         << "AX_I "       << ir << std::endl
+         << "AX_M "       << ip << std::endl
+         << "WAIT 20000"        << std::endl;
 
-    std::ofstream f1(filename);
-    f1 << s.str();
-    f1.close();
+    std::ofstream f(QSTR_DATA_PTR(path));
+    f << "MODE=NONINTERPOLATED" << std::endl << cmds.str() << "END" << std::endl;
+    f.close();
 
-    L_INFO_P("<%s> is saved", filename);
+    L_INFO_P("<%s> saved", QSTR_DATA_PTR(path));
 
-    std::ofstream f2("_autoplay_rot_current.txt");
-    f2 << s.str();
-    f2.close();
+    addCmdsToScriptAll(cmds.str());
 }
 
 void RotaryTableControlWidget::executeAndIncrement()
@@ -180,12 +181,30 @@ void RotaryTableControlWidget::executeAndIncrement()
     updateTable();
 }
 
+void RotaryTableControlWidget::executeAll()
+{
+    selected = 0;
+    selectedToCurrent();
+    updateState();
+    updateTable();
+
+    QFile::remove(getPathScriptAll());
+
+    do {
+        executeAndIncrement();
+    } while (selected != 0);
+
+    addCmdsToScriptAll("END");
+
+    L_INFO_P("<%s> created", QSTR_DATA_PTR(getPathScriptAll()));
+}
+
 void RotaryTableControlWidget::save()
 {
     QString fileName = QFileDialog::getSaveFileName(this
         , tr("Save Rotation script")
         , "."
-        , tr("Roations (*.json)"));
+        , tr("Rotations (*.json)"));
 
     if (!fileName.isEmpty())
     {
@@ -198,7 +217,7 @@ void RotaryTableControlWidget::load()
     QString fileName = QFileDialog::getOpenFileName(this
         , tr("Load Rotation script")
         , "."
-        , tr("Roations (*.json)"));
+        , tr("Rotations (*.json)"));
 
     if (!fileName.isEmpty())
     {
@@ -260,4 +279,28 @@ void RotaryTableControlWidget::tableCellDoubleClicked(int row, int /*column*/)
     updateTable();
 }
 
+QString RotaryTableControlWidget::getPathScriptAll()
+{
+    return mScriptsPath + PATH_SEPARATOR + "_autoplay_rot_all.txt";
+}
 
+QString RotaryTableControlWidget::getPathScript(int iy, int ir, int ip)
+{
+    char filename[256];
+    snprintf2buf(filename, "_autoplay_rot_O=%03d_I=%03d_M=%02d.txt", iy, ir, ip);
+
+    return mScriptsPath + PATH_SEPARATOR + filename;
+}
+
+void RotaryTableControlWidget::addCmdsToScriptAll(const string &s)
+{
+    bool exist = QFile::exists(getPathScriptAll());
+
+    std::ofstream f(QSTR_DATA_PTR(getPathScriptAll()), std::ios_base::app);
+
+    if (!exist) {
+        f << "MODE=NONINTERPOLATED" << std::endl << std::endl;
+    }
+    f << s.c_str() << std::endl;
+    f.close();
+}

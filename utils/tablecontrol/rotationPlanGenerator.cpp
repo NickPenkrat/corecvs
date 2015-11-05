@@ -1,5 +1,9 @@
 #include "rotationPlanGenerator.h"
 #include "ui_rotationPlanGenerator.h"
+#include "mathUtils.h"
+#include "log.h"
+
+using namespace corecvs;
 
 RotationPlanGenerator::RotationPlanGenerator(QWidget *parent)
     : QWidget(parent)
@@ -10,21 +14,25 @@ RotationPlanGenerator::RotationPlanGenerator(QWidget *parent)
     ui->widgetYawMin->setValue(0);
     ui->widgetYawMax->setValue(0);
 
-    //cint pitchNum = ui->stepPitchSpinBox->value();  // =5
-    ui->widgetPitchMin->setValue(degToRad(-40));
-    ui->widgetPitchMax->setValue(degToRad(+40));
+    //cint pitchNum = ui->stepPitchSpinBox->value();                // =6:  -30, -15, 0, 15, 30, 45
+    ui->widgetPitchMin->setValue(degToRad(-30));
+    ui->widgetPitchMax->setValue(degToRad(+45));
 
-    cint rollNum = ui->stepRollSpinBox->value();    // =24
+    cint rollNum = ui->stepRollSpinBox->value();                    // =24:  0, 15, 30, ..., 345
     ui->widgetRollMin->setValue(0.0);
     ui->widgetRollMax->setValue(degToRad(360 - 360. / rollNum));
 
     connect(ui->generatePushButton, SIGNAL(released()), this, SLOT(generate()));
 }
 
+RotationPlanGenerator::~RotationPlanGenerator()
+{
+    delete ui;
+}
+
 static double interpolate(double min, double max, int index, int maxIndex)
 {
     if (maxIndex <= 1)      return (min + max) / 2.0;
-
     if (index <         0)  return min;
     if (index >= maxIndex)  return max;
 
@@ -51,23 +59,23 @@ void RotationPlanGenerator::generate()
 
     for (int iy = 0; iy < ny; iy++)
     {
-        for (int ir = 0; ir < nr; ir++)
+        for (int ir = 0; ir < nr; ir++)                     // roll position of prototype with further iterations by pitch position
         {
-            for (int ip = 0; ip < np; ip++)
+            // implement the next iteration from the pitch position from previous iteration
+            int ipStrt = (ir & 1) ? np - 1 : 0;
+            int ipStop = (ir & 1) ?      0 : np - 1;
+            int ipStep = (ir & 1) ?     -1 : 1;
+
+            for (int ip = ipStrt; ip >= CORE_MIN(ipStrt, ipStop) && ip <= CORE_MAX(ipStrt, ipStop); ip += ipStep)
             {
                 positions.push_back(CameraLocationAngles(
                     interpolate(miny, maxy, iy, ny),
                     interpolate(minp, maxp, ip, np),
                     interpolate(minr, maxr, ir, nr)
-                ));
+                    ));
             }
         }
     }
 
     emit newListGenerated(positions);
-}
-
-RotationPlanGenerator::~RotationPlanGenerator()
-{
-    delete ui;
 }

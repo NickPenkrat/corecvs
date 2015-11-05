@@ -48,7 +48,7 @@ UTILS_INCLUDEPATH = \
 
 INCLUDEPATH += $$UTILS_INCLUDEPATH
 
-QT += xml gui widgets serialport
+QT += xml gui widgets #serialport                   # serialport should be included when rotaryTable will work with it
 
 UTILS_BINDIR = $$ROOT_DIR/bin
 #message(Utils.pri ROOT_DIR is <$$ROOT_DIR>. Bindir is <$$UTILS_BINDIR>. PWD is <$$PWD>)
