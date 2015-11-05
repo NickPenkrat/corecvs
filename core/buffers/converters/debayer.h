@@ -64,6 +64,7 @@ private:
     uint16_t* mCurve = nullptr;
     Vector3dd mScaleMul;
     uint16_t mBlack = 0;
+    uint8_t mBayerPos = 3;
 
     void scaleCoeffs();
     uint16_t* gammaCurve(int imax);
@@ -86,16 +87,33 @@ private:
     uint16_t clip(int32_t x, int depth = 16);
 
     /**
-     * Calculate average.
+     * Clamp the given value. If a &lt; b, treat a as left limit and b as right. Invert limits
+     * otherwise.
+     *
+     * \param   x   Value.
+     * \param   a   Limit.
+     * \param   b   Limit.
+     *
+     * \return  Clamped value.
+     */
+
+    static int32_t clamp(int32_t x, int32_t a, int32_t b);
+
+    /**
+     * Calculate weighted average.
      *
      * \param   coords  The coordinates to average pixels at. If the coordinate exceeds image
      *                  boundaries, it will be ignored.
+     * \param   coeffs  Weights.
      *
      * \return  Averaged value.
      */
 
-    int32_t clampedBayerSum(Vector2d32 coords);
-    int32_t clampedBayerSum(vector<Vector2d32> coords);
+    int32_t weightedBayerAvg(vector<Vector2d32> coords, vector<int>coeffs = vector<int>());
+    int32_t weightedBayerAvg(Vector2d32 coords);
+    inline uint8_t colorFromBayerPos(int i, int j, bool rggb = true);
+public:
+    G12Buffer* median(G12Buffer* in);
 };
 
 }
