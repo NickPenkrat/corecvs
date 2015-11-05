@@ -43,7 +43,8 @@ public:
 
     bool hasEnoughtConstraints();
 
-    double getCostFunction(Matrix33 &input);
+    double getCostFunction(Matrix33 &input, double out[] = 0);
+    int  getConstraintNumber();
 
     friend ostream & operator << (ostream &out, const HomographyReconstructor &reconstructor);
 
@@ -87,7 +88,7 @@ private:
     class CostFunction : public FunctionArgs {
     public:
         HomographyReconstructor *reconstructor;
-        CostFunction(HomographyReconstructor *_reconstructor) : FunctionArgs(8,1), reconstructor(_reconstructor) {};
+        CostFunction(HomographyReconstructor *_reconstructor) : FunctionArgs(8, _reconstructor->getConstraintNumber()), reconstructor(_reconstructor) {};
 
         virtual void operator()(const double in[], double out[]);
     };
@@ -95,7 +96,7 @@ private:
     class CostFunctionWize : public FunctionArgs {
     public:
         HomographyReconstructor *reconstructor;
-        CostFunctionWize(HomographyReconstructor *_reconstructor) : FunctionArgs(8,1), reconstructor(_reconstructor) {};
+        CostFunctionWize(HomographyReconstructor *_reconstructor) : FunctionArgs(8,_reconstructor->getConstraintNumber()), reconstructor(_reconstructor) {};
 
         virtual void operator()(const double in[], double out[]);
         Matrix33 matrixFromState(const double in[]);
