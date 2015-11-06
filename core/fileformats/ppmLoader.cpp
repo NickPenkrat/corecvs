@@ -275,7 +275,7 @@ bool PPMLoader::writeHeader(FILE *fp, unsigned long int h, unsigned long int w, 
         }
 
     fprintf(fp, "############################################\n");
-    fprintf(fp, "%l %l\n", w, h);
+    fprintf(fp, "%lu %lu\n", w, h);
     fprintf(fp, PRIu64 "\n", maxval);
 
     return true;
