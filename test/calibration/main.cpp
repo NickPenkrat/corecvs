@@ -23,10 +23,10 @@ bool CheckGDriveCalibrationFolderTest()
 
 int main(int argc, char **argv)
 {
-    if(CheckGDriveCalibrationFolderTest)
-        ::testing::InitGoogleTest(&argc, argv);
-        return RUN_ALL_TESTS();
-    else
+    if(!CheckGDriveCalibrationFolderTest){
         CORE_ASSERT_TRUE(0, "There is no test data");
         return 0;
+    }
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
