@@ -10,11 +10,12 @@
 #include <stdint.h>
 
 #include "global.h"
+#include "rgb24Buffer.h"
 
 namespace corecvs
 {
-    template <typename T> class RGBTBuffer;
-    typedef RGBTBuffer<uint8_t> RGB24Buffer;
+    //template <typename T> class RGBTBuffer;
+    //typedef RGBTBuffer<uint8_t> RGB24Buffer;
 
     /** The coding rules are taken from the document "AR1820HS_DS_G.pdf", page 93
      */

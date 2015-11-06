@@ -3,7 +3,6 @@
  *
  * Declares the debayer class.
  */
-
 #ifndef CDEBAYER_H_
 #define CDEBAYER_H_
 
@@ -14,13 +13,11 @@
 #include "metamap.h"
 
 
-namespace corecvs
-{
+namespace corecvs {
 
 class Debayer
 {
 public:
-
     enum Quality
     {
         Nearest = -5,
@@ -39,7 +36,6 @@ public:
      * \param depthOut       Processing bit depth.
      * \param [in,out] data  (Optional) Metadata.
      */
-
     Debayer(G12Buffer *bayer, int depthOut = 12, MetaData *data = nullptr);
 
     /**
@@ -52,22 +48,21 @@ public:
      *
      * \return  Resulting image.
      */
-
     RGB48Buffer* toRGB48(Quality quality);
 
     ~Debayer();
 
 private:
-    G12Buffer* mBayer = nullptr;
-    int mDepth = 12;
-    MetaData *mMetadata = nullptr;
-    uint16_t* mCurve = nullptr;
-    Vector3dd mScaleMul;
-    uint16_t mBlack = 0;
+    G12Buffer*  mBayer = nullptr;
+    int         mDepth = 12;
+    MetaData *  mMetadata = nullptr;
+    uint16_t*   mCurve = nullptr;
+    Vector3dd   mScaleMul;
+    uint16_t    mBlack = 0;
 
-    void scaleCoeffs();
-    uint16_t* gammaCurve(int imax);
-    void preprocess(bool overwrite = false);
+    void        scaleCoeffs();
+    uint16_t*   gammaCurve(int imax);
+    void        preprocess(bool overwrite = false);
 
     RGB48Buffer* linear();
     RGB48Buffer* nearest();
@@ -82,7 +77,6 @@ private:
      *
      * \return  Clipped value.
      */
-
     uint16_t clip(int32_t x, int depth = 16);
 
     /**
@@ -93,10 +87,10 @@ private:
      *
      * \return  Averaged value.
      */
-
     int32_t clampedBayerSum(Vector2d32 coords);
     int32_t clampedBayerSum(vector<Vector2d32> coords);
 };
 
-}
-#endif
+} // namespace corecvs
+
+#endif // CDEBAYER_H_

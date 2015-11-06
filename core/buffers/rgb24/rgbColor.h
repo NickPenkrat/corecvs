@@ -433,29 +433,7 @@ public:
          <li>1.0    Violet (Electric Violet) (Hex: \#8B00FF) (RGB: 143, 0, 255)
         </ul>
      **/
-    static RGBColor rainbow(double x)
-    {
-        x *= 6;
-        if (x < 0.0) x = 0.0;
-        if (x > 6.0) x = 6.0;
-
-        switch ((int)x)
-        {
-        case 0:
-            return lerpColor(Red(), Orange(), x);
-        case 1:
-            return lerpColor(Orange(), Yellow(), x - 1);
-        case 2:
-            return lerpColor(Yellow(), Green(), x - 2);
-        case 3:
-            return lerpColor(Green(), Blue(), x - 3);
-        case 4:
-            return lerpColor(Blue(), Indigo(), x - 4);
-        case 5:
-        default:
-            return lerpColor(Indigo(), Violet(), x - 5);
-        }
-    }
+    static RGBColor rainbow(double x);
 
     /**
      *  Helper method that allows to represent the double value in interval 0..1

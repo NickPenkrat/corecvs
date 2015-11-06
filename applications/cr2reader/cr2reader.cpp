@@ -1,16 +1,39 @@
 #include "cr2reader.h"
 // the define fixes winsock2 conflicts for inclusion
 #define NO_WINSOCK
-#include <libraw.h>
+#ifdef WITH_LIBRAW
+# include <libraw.h>
+#endif
 #undef NO_WINSOCK
 
 using namespace corecvs;
+
+static inline bool_t isBigEndian()
+{
+    union {
+        uint32_t i;
+        char c[4];
+    } bint = { 0x01020304 };
+
+    return bint.c[0] == 1;
+}
+
+#ifdef WITH_LIBRAW
 
 CR2Reader::CR2Reader()
 {
     reader = new LibRaw;
     reader->imgdata.params.user_qual = 3; // default quality
     reader->imgdata.params.output_bps = 12; // default bit depth
+}
+
+CR2Reader::~CR2Reader()
+{
+    if (hist != nullptr)
+        for (int i = 0; i < 3; i++)
+            deletearr_safe(hist[i]);
+    deletearr_safe(hist);
+    delete_safe(reader);
 }
 
 int CR2Reader::open(const string& filename)
@@ -109,17 +132,6 @@ int CR2Reader::flipIndex(int row, int col, bool raw)
         if (reader->imgdata.sizes.flip & 1) col = reader->imgdata.sizes.iwidth - 1 - col;
         return row * reader->imgdata.sizes.iwidth + col;
     }
-}
-
-int isBigEndian()
-{
-    union
-    {
-        uint32_t i;
-        char c[4];
-    } bint = { 0x01020304 };
-
-    return bint.c[0] == 1;
 }
 
 int CR2Reader::writePPM(const string& filename, bool fullcolour)
@@ -280,11 +292,20 @@ void CR2Reader::fakeBayer(G12Buffer *img)
 
 }
 
-CR2Reader::~CR2Reader()
-{
-    if (hist != nullptr)
-        for (int i = 0; i < 3; i++)
-            deletearr_safe(hist[i]);
-    deletearr_safe(hist);
-    delete_safe(reader);
-}
+#else
+
+CR2Reader::CR2Reader() {}
+CR2Reader::~CR2Reader() {}
+
+int CR2Reader::open(const string& filename) { return -1; }
+void CR2Reader::setBPP(uint depth) {}
+void CR2Reader::setQuality(uint quality) {}
+void CR2Reader::histUpdate(int i, int j, uint16_t val) {}
+G12Buffer *CR2Reader::getBayer(bool shifted) { return NULL;  }
+int CR2Reader::flipIndex(int row, int col, bool raw) { return -1; }
+int CR2Reader::writePPM(const string& filename, bool fullcolour) { return -1; }
+MetaData* CR2Reader::getMetadata() { return NULL; }
+int CR2Reader::processDCRaw(bool noScale) { return -1; }
+void CR2Reader::fakeBayer(G12Buffer *img) {}
+
+#endif

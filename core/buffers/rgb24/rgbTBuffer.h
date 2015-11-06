@@ -24,7 +24,7 @@
 #include "rectangle.h"
 #include "rgbTColor.h"
 #include "function.h"
-#include "correspondanceList.h"
+#include "correspondenceList.h"
 #include "imageChannel.h"
 
 #include "conic.h"
@@ -193,14 +193,12 @@ public:
         }
     }
 
-    void drawCorrespondanceList(CorrespondanceList *src, double colorScaler = 20.0, int32_t y = 0, int32_t x = 0)
+    void drawCorrespondanceList(CorrespondenceList *src, double colorScaler = 20.0, int32_t y = 0, int32_t x = 0)
     {
         if (src == NULL)
-        {
             return;
-        }
 
-        CorrespondanceList::iterator it;
+        CorrespondenceList::iterator it;
         for (it = src->begin(); it != src->end(); ++it)
         {
             Correspondance &tmpCorr = (*it);

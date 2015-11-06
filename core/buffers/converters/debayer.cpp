@@ -122,7 +122,7 @@ RGB48Buffer* Debayer::improved()
     int swapCols = bpos & 1;
     int swapRows = (bpos & 2) >> 1;
     RGB48Buffer *result = new RGB48Buffer(mBayer->h, mBayer->w, false);
-    AbstractContiniousBuffer<double>* ratios = new AbstractContiniousBuffer<double>;
+    //AbstractContiniousBuffer<double>* ratios = new AbstractContiniousBuffer<double>;
 
     for (int i = 0; i < mBayer->h; i += 2)
         for (int j = 0; j < mBayer->w; j += 2)
@@ -333,7 +333,6 @@ RGB48Buffer* Debayer::toRGB48(Quality quality)
 
 void Debayer::preprocess(bool overwrite)
 {
-
     // recalculate white balance coefficients
     scaleCoeffs();
 
@@ -357,7 +356,6 @@ void Debayer::preprocess(bool overwrite)
         deletearr_safe(mCurve);
     if (overwrite || mCurve == nullptr)
         mCurve = gammaCurve(t_white);
-
 }
 
 int32_t Debayer::clampedBayerSum(Vector2d32 coords)
@@ -379,14 +377,11 @@ int32_t Debayer::clampedBayerSum(vector<Vector2d32> coords)
             result += mBayer->element(v);
         }
     }
-    if (div == 0)
-        return 0;
-    else
-        return result / div;
+
+    return div == 0 ? 0 : result / div;
 }
 
 Debayer::~Debayer()
 {
     deletearr_safe(mCurve);
 }
-

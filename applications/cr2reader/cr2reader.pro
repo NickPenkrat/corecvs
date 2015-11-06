@@ -8,12 +8,12 @@ exists(../../../../config.pri) {
     ROOT_DIR=../..
     include($$ROOT_DIR/cvs-config.pri)
 }
-
 ROOT_DIR=$$PWD/$$ROOT_DIR
 
 TEMPLATE = app
 TARGET   = cr2reader
-CONFIG  += debug
+
+include(../../core/core.pri)
 
 OBJECTS_DIR = $$ROOT_DIR/.obj/cr2reader$$BUILD_CFG_NAME
 MOC_DIR  = $$OBJECTS_DIR
@@ -21,10 +21,17 @@ MOC_DIR  = $$OBJECTS_DIR
 #RCC_DIR = $$OBJECTS_DIR
 DESTDIR = $$ROOT_DIR/bin
 
-include(../../core/core.pri)
+isEmpty(LIBRAW_DIR) {
+    #LIBRAW_DIR=C:/dev/LibRaw-0.17.0            # TODO: use external env.var for this!
+}
 
-INCLUDEPATH += C:/dev/LibRaw-0.17.0/libraw
-LIBS    += C:/dev/LibRaw-0.17.0/msvc-build/Debug/raw.lib
+exists($$LIBRAW_DIR/msvc-build/Debug/raw.lib) {
+    INCLUDEPATH += $$LIBRAW_DIR/libraw
+    LIBS        += $$LIBRAW_DIR/msvc-build/Debug/raw.lib
+} else {
+    message(file $$LIBRAW_DIR/msvc-build/Debug/raw.lib not found! LIBRAW is disabled)
+}
+
 
 SOURCES += \ 
     cr2reader.cpp \
@@ -32,4 +39,3 @@ SOURCES += \
 
 HEADERS += \ 
     cr2reader.h
-

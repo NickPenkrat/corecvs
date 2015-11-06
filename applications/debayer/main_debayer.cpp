@@ -1,32 +1,29 @@
 /*
-Bayer to PPM converter
-
+    Bayer to PPM converter
 */
-
-#include <queue>
 #include <iostream>
+
 #include "ppmLoader.h"
 #include "converters/debayer.h"
 #include "commandLineSetter.h"
-//#include <qcommandlineparser.h>
-
-using std::cout;
-using std::endl;
-using std::string;
-using corecvs::PPMLoader;
 
 int main(int argc, const char **argv)
 {
     CommandLineSetter s(argc, argv);
 
-    int quality = s.getInt("quality", 1);
-    
+    int         quality  = s.getInt("quality", 1);
+    std::string filename = s.getOption("file");
 
-    PPMLoader ldr;
-    MetaData* metadata = new MetaData;
-    string filename = s.getOption("file");
-    G12Buffer* bayer = ldr.load(filename, metadata);
-    Debayer d(bayer, 12, metadata);
+    MetaData meta;
+    G12Buffer* bayer = PPMLoader().load(filename, &meta);
+    if (bayer == NULL)
+    {
+        std::cout << "Couldn't open file " << filename << std::endl;
+        return -1;
+    }
+
+    Debayer d(bayer, 12, &meta);
+
     RGB48Buffer *result = nullptr;
 
     switch (quality)
@@ -43,6 +40,5 @@ int main(int argc, const char **argv)
         break;*/
     }
 
-    ldr.save("out.ppm", result);
-    delete_safe(metadata);
+    PPMLoader().save("out.ppm", result);
 }
