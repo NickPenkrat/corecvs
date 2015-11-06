@@ -133,11 +133,11 @@ G12Buffer* PPMLoader::g12BufferCreateFromPGM(const string& name, MetaData *meta)
                 result->element(i, j / 2) = ((charImage[offset + 0]) << 8 |
                     (charImage[offset + 1])) >> shiftCount;
 
-                CORE_ASSERT_FALSE((result->element(i, j) >= (1 << G12Buffer::BUFFER_BITS)), "Internal error in image loader\n");
+                CORE_ASSERT_FALSE((result->element(i, j / 2) >= (1 << G12Buffer::BUFFER_BITS)), "Internal error in image loader\n");
 
                 if (calcWhite)
-                    if (result->element(i, j) > white)
-                        white = result->element(i, j);
+                    if (result->element(i, j / 2) > white)
+                        white = result->element(i, j / 2);
             }
         }
 
