@@ -41,6 +41,8 @@ class RGBTBuffer : public AbstractContiniousBuffer<RGBTColor<T>, int32_t>
                  , public           BlMapper<RGBTBuffer<T>, RGBTBuffer<T>, int32_t, RGBTColor<T>>
 {
     typedef AbstractContiniousBuffer<RGBTColor<T>, int32_t> RGBTBufferBase;
+    typedef RGBTColor<T> InternalElementType;
+    typedef int32_t      InternalIndexType;
 
 public:
     RGBTBuffer(const RGBTBuffer &that) : RGBTBufferBase(that) {}
@@ -973,8 +975,8 @@ public:
 #else
         /* floor() is needed here because of values (-1..0] which will be
         * rounded to 0 and cause error */
-        RGBTBuffer<T>::InternalIndexType i = (RGBTBuffer<T>::InternalIndexType)floor(y);
-        RGBTBuffer<T>::InternalIndexType j = (RGBTBuffer<T>::InternalIndexType)floor(x);
+        RGBTBuffer::InternalIndexType i = (RGBTBuffer::InternalIndexType)floor(y);
+        RGBTBuffer::InternalIndexType j = (RGBTBuffer::InternalIndexType)floor(x);
 
         CORE_ASSERT_TRUE_P(this->isValidCoordBl(y, x),
             ("Invalid coordinate in AbstractContiniousBuffer::elementBl(double y=%lf, double x=%lf) buffer sizes is [%dx%d]",
@@ -1006,8 +1008,8 @@ public:
     {
         /* floor() is needed here because of values (-1..0] which will be
         * rounded to 0 and cause error */
-        RGBTBuffer<T>::InternalIndexType i = (RGBTBuffer<T>::InternalIndexType)floor(y);
-        RGBTBuffer<T>::InternalIndexType j = (RGBTBuffer<T>::InternalIndexType)floor(x);
+        RGBTBuffer::InternalIndexType i = (RGBTBuffer::InternalIndexType)floor(y);
+        RGBTBuffer::InternalIndexType j = (RGBTBuffer::InternalIndexType)floor(x);
 
         CORE_ASSERT_TRUE_P(this->isValidCoordBl(y, x),
             ("Invalid coordinate in AbstractContiniousBuffer::elementBl(double y=%lf, double x=%lf) buffer sizes is [%dx%d]",
