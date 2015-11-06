@@ -53,7 +53,7 @@ RGB48Buffer* Debayer::nearest()
                     // i don't know how i came to this
                     red   = mBayer->element(i + swapRows, (j + pxshift) ^ swapCols);
                     // green1 for even rows, green2 for odd
-                    green = mBayer->element(i + !(k ^ swapRows), j + pxshift + !(k ^ !swapCols));
+                    green = mBayer->element(i + (!k) ^ swapRows, j + pxshift + (!k) ^ !swapCols);
                     blue  = mBayer->element(i + !swapRows, (j + pxshift) ^ !swapCols);
 
                     result->setElement(i + k, j + l, RGBColor48(
