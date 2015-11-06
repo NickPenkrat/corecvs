@@ -452,10 +452,10 @@ public:
 
         if (x < 1.0)
         {
-            return RGBColor(0, fround(x * 255) , fround((1.0 - x) * 255));
+            return RGBColor(0, fround(x * 255), fround((1.0 - x) * 255));
         }
         x -= 1.0;
-        return RGBColor(fround(x * 255) , fround((1.0 - x) * 255), 0 );
+        return RGBColor(fround(x * 255), fround((1.0 - x) * 255), 0);
     }
 
     static Reflection staticInit()

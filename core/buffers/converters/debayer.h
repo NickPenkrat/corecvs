@@ -1,12 +1,13 @@
 /**
- * \file    buffers\converters\debayer.h
+ * \file    buffers/converters/debayer.h
  *
- * Declares the debayer class.
+ * Declares the Debayer class.
  */
 #ifndef CDEBAYER_H_
 #define CDEBAYER_H_
 
 #include "global.h"
+
 #include "g12Buffer.h"
 #include "rgbTBuffer.h"
 #include "rgb24Buffer.h"
@@ -18,11 +19,11 @@ namespace corecvs {
 class Debayer
 {
 public:
-    enum Quality
+    enum Quality    // TODO: is it quality or method ?
     {
-        Nearest = -5,
+        Nearest  = -5,
         Bilinear = 0,
-        AHD = 3,
+        AHD      = 3,
         Improved = 7
     };
 
@@ -38,6 +39,8 @@ public:
      */
     Debayer(G12Buffer *bayer, int depthOut = 12, MetaData *data = nullptr);
 
+    ~Debayer();
+
     /**
      * Converts the image to RGB48.
      *
@@ -49,8 +52,6 @@ public:
      * \return  Resulting image.
      */
     RGB48Buffer* toRGB48(Quality quality);
-
-    ~Debayer();
 
 private:
     G12Buffer*  mBayer = nullptr;

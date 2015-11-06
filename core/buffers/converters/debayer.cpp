@@ -1,15 +1,23 @@
 #include "debayer.h"
 
 Debayer::Debayer(G12Buffer *bayer, int depth, MetaData *metadata)
+    : mBayer(bayer)
+    , mMetadata(metadata)
+    , mDepth(depth)
+{}
+
+Debayer::~Debayer()
 {
-    this->mBayer = bayer;
-    this->mMetadata = metadata;
-    this->mDepth = depth;
+    deletearr_safe(mCurve);
 }
 
-// i have yet to understand what this actually does... 
+// I don't understand what this actually does...
 // TODO: maybe just replace it with simple 3-colour loop?
-int FC(int row, int col, int filters) { return (filters >> (((row << 1 & 14) | (col & 1)) << 1) & 3); }
+//
+int FC(int row, int col, int filters)
+{
+    return (filters >> (((row << 1 & 14) | (col & 1)) << 1) & 3);
+}
 
 uint16_t Debayer::clip(int32_t x, int depth)
 {
@@ -48,9 +56,9 @@ RGB48Buffer* Debayer::nearest()
                     blue = mBayer->element(i + !swapRows, (j + pxshift) ^ !swapCols);
 
                     result->setElement(i + k, j + l, RGBColor48(
-                        mCurve[clip((int64_t)((red - mBlack)*mScaleMul[0]), mDepth)],
-                        mCurve[clip((int64_t)((green - mBlack)*mScaleMul[1]), mDepth)],
-                        mCurve[clip((int64_t)((blue - mBlack)*mScaleMul[2]), mDepth)]
+                        mCurve[clip((int64_t)((red   - mBlack) * mScaleMul[0]), mDepth)],
+                        mCurve[clip((int64_t)((green - mBlack) * mScaleMul[1]), mDepth)],
+                        mCurve[clip((int64_t)((blue  - mBlack) * mScaleMul[2]), mDepth)]
                         ));
                 }
         }
@@ -173,9 +181,9 @@ RGB48Buffer* Debayer::improved()
                     }
 
                     result->element(i + k, j + l) = {
-                        mCurve[clip((int32_t)((red - mBlack)*mScaleMul[0]), mDepth)],
-                        mCurve[clip((int32_t)((green - mBlack)*mScaleMul[1]), mDepth)],
-                        mCurve[clip((int32_t)((blue - mBlack)*mScaleMul[2]), mDepth)]
+                        mCurve[clip((int32_t)((red   - mBlack) * mScaleMul[0]), mDepth)],
+                        mCurve[clip((int32_t)((green - mBlack) * mScaleMul[1]), mDepth)],
+                        mCurve[clip((int32_t)((blue  - mBlack) * mScaleMul[2]), mDepth)]
                     };
 
                 }
@@ -204,15 +212,14 @@ void Debayer::scaleCoeffs()
         if (!metadata["white"].empty() && metadata["white"][0] != 0)
         {
             double factor = ((1 << mDepth) - 1) / metadata["white"][0];
-
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 3; i++) {
                 mScaleMul[i] = factor;
-
+            }
             return;
         }
-        else
-            // TODO: maybe apply the gray world hypothesis instead of doing nothing
-            return;
+
+        // TODO: maybe apply the gray world hypothesis instead of doing nothing
+        return;
     }
 
     unsigned c;
@@ -225,7 +232,8 @@ void Debayer::scaleCoeffs()
             metadata["pre_mul"][i] = metadata["cam_mul"][i];
 
     // if green scale coefficient is not available, set it to 1
-    if (metadata["pre_mul"][1] == 0) metadata["pre_mul"][1] = 1;
+    if (metadata["pre_mul"][1] == 0)
+        metadata["pre_mul"][1] = 1;
 
     // black must be subtracted from the image, so we adjust maximum white level here
     metadata["white"][0] -= metadata["black"][0];
@@ -240,7 +248,7 @@ void Debayer::scaleCoeffs()
     // scale colors to the desired bit-depth
     double factor = ((1 << mDepth) - 1) / metadata["white"][0];
     for (int c = 0; c < 3; c++)
-        mScaleMul[c] = (metadata["pre_mul"][c] /= dmin)*factor;
+        mScaleMul[c] = (metadata["pre_mul"][c] /= dmin) * factor;
 
     // black frame adjustment, not currently used as we don't have the black frame in metadata (use black level instead)
     // the black level is usually almost equal for all channels with difference less than 1 bit in 12-bit case
@@ -248,13 +256,11 @@ void Debayer::scaleCoeffs()
     /*
     if (metadata->filters > 1000 && (metadata->cblack[4] + 1) / 2 == 1 && (metadata->cblack[5] + 1) / 2 == 1)
     {
-
-    for (int c = 0; c < 4; c++)
-    metadata->cblack[FC(c / 2, c % 2, metadata->filters)] +=
-    metadata->cblack[6 + c / 2 % cblack[4] * cblack[5] + c % 2 % cblack[5]];
-    metadata->cblack[4] = metadata->cblack[5] = 0;
+        for (int c = 0; c < 4; c++)
+        metadata->cblack[FC(c / 2, c % 2, metadata->filters)] +=
+        metadata->cblack[6 + c / 2 % cblack[4] * cblack[5] + c % 2 % cblack[5]];
+        metadata->cblack[4] = metadata->cblack[5] = 0;
     }*/
-
 }
 
 uint16_t* Debayer::gammaCurve(int imax)
@@ -310,9 +316,9 @@ uint16_t* Debayer::gammaCurve(int imax)
 
 RGB48Buffer* Debayer::toRGB48(Quality quality)
 {
-    RGB48Buffer *result = nullptr;
     preprocess();
 
+    RGB48Buffer *result = nullptr;
     switch (quality)
     {
     case Nearest:
@@ -352,10 +358,12 @@ void Debayer::preprocess(bool overwrite)
     }
 
     // (re)calculate gamma correction
-    if (overwrite)
+    if (overwrite) {
         deletearr_safe(mCurve);
-    if (overwrite || mCurve == nullptr)
+    }
+    if (overwrite || mCurve == nullptr) {
         mCurve = gammaCurve(t_white);
+    }
 }
 
 int32_t Debayer::clampedBayerSum(Vector2d32 coords)
@@ -379,9 +387,4 @@ int32_t Debayer::clampedBayerSum(vector<Vector2d32> coords)
     }
 
     return div == 0 ? 0 : result / div;
-}
-
-Debayer::~Debayer()
-{
-    deletearr_safe(mCurve);
 }

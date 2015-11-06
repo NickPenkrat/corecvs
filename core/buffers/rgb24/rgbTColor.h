@@ -43,7 +43,6 @@ public:
     *
     *
     * */
-
     explicit RGBTColor(T color)
     {
         const int shift = sizeof(T);

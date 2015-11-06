@@ -14,7 +14,7 @@
 #include "readers.h"
 #include "../../math/vector/fixedVector.h"
 
-#undef rad2     // it's defined at win hdrs
+#undef rad2     // it's defined at some Windows headers
 
 namespace corecvs {
 
