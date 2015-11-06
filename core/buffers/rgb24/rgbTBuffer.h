@@ -797,7 +797,7 @@ public:
     /* We need to optimize this */
     G8Buffer* getChannel(ImageChannel::ImageChannel channel)
     {
-        G8Buffer *result = new G8Buffer(getSize(), false);
+        G8Buffer *result = new G8Buffer(this->getSize(), false);
 
         for (int i = 0; i < result->h; i++)
         {
@@ -935,15 +935,15 @@ public:
         RGBEx() {}
         RGBEx(const RGBTColor<T> &color)
         {
-            at(0) = color.r();
-            at(1) = color.g();
-            at(2) = color.b();
-            at(3) = color.a();
+            this->at(0) = color.r();
+            this->at(1) = color.g();
+            this->at(2) = color.b();
+            this->at(3) = color.a();
         }
 
         RGBTColor<T> toRGBTColor() const
         {
-            return RGBTColor<T>((T)at(0), (T)at(1), (T)at(2), (T)at(3));
+            return RGBTColor<T>((T)this->at(0), (T)this->at(1), (T)this->at(2), (T)this->at(3));
         }
     };
 
@@ -953,15 +953,15 @@ public:
         RGBEx32() {}
         RGBEx32(const RGBTColor<T> &color)
         {
-            at(0) = color.r();
-            at(1) = color.g();
-            at(2) = color.b();
-            at(3) = color.a();
+            this->at(0) = color.r();
+            this->at(1) = color.g();
+            this->at(2) = color.b();
+            this->at(3) = color.a();
         }
 
         RGBTColor<T> toRGBTColor() const
         {
-            return RGBTColor<T>((T)at(0), (T)at(1), (T)at(2), (T)at(3));
+            return RGBTColor<T>((T)this->at(0), (T)this->at(1), (T)this->at(2), (T)this->at(3));
         }
     };
 
@@ -973,8 +973,8 @@ public:
 #else
         /* floor() is needed here because of values (-1..0] which will be
         * rounded to 0 and cause error */
-        RGBTBuffer::InternalIndexType i = (RGBTBuffer::InternalIndexType)floor(y);
-        RGBTBuffer::InternalIndexType j = (RGBTBuffer::InternalIndexType)floor(x);
+        RGBTBuffer<T>::InternalIndexType i = (RGBTBuffer<T>::InternalIndexType)floor(y);
+        RGBTBuffer<T>::InternalIndexType j = (RGBTBuffer<T>::InternalIndexType)floor(x);
 
         CORE_ASSERT_TRUE_P(this->isValidCoordBl(y, x),
             ("Invalid coordinate in AbstractContiniousBuffer::elementBl(double y=%lf, double x=%lf) buffer sizes is [%dx%d]",
@@ -1006,8 +1006,8 @@ public:
     {
         /* floor() is needed here because of values (-1..0] which will be
         * rounded to 0 and cause error */
-        RGBTBuffer::InternalIndexType i = (RGBTBuffer::InternalIndexType)floor(y);
-        RGBTBuffer::InternalIndexType j = (RGBTBuffer::InternalIndexType)floor(x);
+        RGBTBuffer<T>::InternalIndexType i = (RGBTBuffer<T>::InternalIndexType)floor(y);
+        RGBTBuffer<T>::InternalIndexType j = (RGBTBuffer<T>::InternalIndexType)floor(x);
 
         CORE_ASSERT_TRUE_P(this->isValidCoordBl(y, x),
             ("Invalid coordinate in AbstractContiniousBuffer::elementBl(double y=%lf, double x=%lf) buffer sizes is [%dx%d]",

@@ -1,9 +1,10 @@
 #include "debayer.h"
+#include <limits.h>     // DBL_MAX
 
 Debayer::Debayer(G12Buffer *bayer, int depth, MetaData *metadata)
     : mBayer(bayer)
-    , mMetadata(metadata)
     , mDepth(depth)
+    , mMetadata(metadata)
 {}
 
 Debayer::~Debayer()
@@ -50,10 +51,10 @@ RGB48Buffer* Debayer::nearest()
                 {
                     int pxshift = (l ^ (l & 1));
                     // i don't know how i came to this
-                    red = mBayer->element(i + swapRows, (j + pxshift) ^ swapCols);
+                    red   = mBayer->element(i + swapRows, (j + pxshift) ^ swapCols);
                     // green1 for even rows, green2 for odd
-                    green = mBayer->element(i + !k^swapRows, j + pxshift + !k^!swapCols);
-                    blue = mBayer->element(i + !swapRows, (j + pxshift) ^ !swapCols);
+                    green = mBayer->element(i + !(k ^ swapRows), j + pxshift + !(k ^ !swapCols));
+                    blue  = mBayer->element(i + !swapRows, (j + pxshift) ^ !swapCols);
 
                     result->setElement(i + k, j + l, RGBColor48(
                         mCurve[clip((int64_t)((red   - mBlack) * mScaleMul[0]), mDepth)],
