@@ -203,8 +203,10 @@ public:
             Vector2dd from = tmpCorr.start;
             Vector2dd to = tmpCorr.end;
             Vector2dd vec = to - from;
-            //RGBTColor<T> color = RGBTColor<T>(128 + (vec.x() * 5),128 + (vec.y() * 5), 0);
-            RGBTColor color = RGBTColor<T>::rainbow1(!vec / colorScaler);
+
+          //RGBTColor<T> color = RGBTColor<T>(128 + (vec.x() * 5),128 + (vec.y() * 5), 0);
+            RGBTColor<T> color = RGBTColor<T>::rainbow1(!vec / colorScaler);
+
             drawLineSimple(from.x() + x, from.y() + y, to.x() + x, to.y() + y, color);
             this->drawCrosshare3(to.x() + x, to.y() + y, color);
         }
