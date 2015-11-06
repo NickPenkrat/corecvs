@@ -29,7 +29,7 @@ exists($$LIBRAW_DIR/msvc-build/Debug/raw.lib) {
     INCLUDEPATH += $$LIBRAW_DIR/libraw
     LIBS        += $$LIBRAW_DIR/msvc-build/Debug/raw.lib
 } else {
-    message(file $$LIBRAW_DIR/msvc-build/Debug/raw.lib not found! LIBRAW is disabled)
+    !build_pass: message(file $$LIBRAW_DIR/msvc-build/Debug/raw.lib not found! The LibRaw is disabled)
 }
 
 
