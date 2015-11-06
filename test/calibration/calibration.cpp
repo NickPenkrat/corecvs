@@ -25,7 +25,7 @@ void addImageToJob(CalibrationJob* job, int camN, int imageN, const char* name)
 {
     std::stringstream fs;
     fs << dirGDrive << dirRelPath << name;
-    std::string sourceFileName = fs.str();
+    std::string sourceFileName = QDir::toNativeSeparators(QString(fs.str().c_str())).toStdString();
 
     job->observations[camN][imageN].sourceFileName = sourceFileName;
 }
@@ -34,7 +34,7 @@ void addUndistImageToJob(CalibrationJob* job, int camN, int imageN, const char* 
 {
     std::stringstream fs;
     fs << dirGDrive << dirRelPath << name;
-    std::string sourceFileName = QDir::toNativeSeparators(QString(fs.str().c_str()));
+    std::string sourceFileName = QDir::toNativeSeparators(QString(fs.str().c_str())).toStdString();
 
     job->observations[camN][imageN].undistortedFileName = sourceFileName;
 }
