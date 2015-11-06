@@ -12,14 +12,6 @@ Debayer::~Debayer()
     deletearr_safe(mCurve);
 }
 
-// I don't understand what this actually does...
-// TODO: maybe just replace it with simple 3-colour loop?
-//
-int FC(int row, int col, int filters)
-{
-    return (filters >> (((row << 1 & 14) | (col & 1)) << 1) & 3);
-}
-
 uint16_t Debayer::clip(int32_t x, int depth)
 {
     const uint16_t maximum = (1 << depth) - 1;
@@ -44,25 +36,29 @@ RGB48Buffer* Debayer::nearest()
     RGB48Buffer *result = new RGB48Buffer(mBayer->h, mBayer->w, false);
 
     for (int i = 0; i < mBayer->h; i += 2)
+    {
         for (int j = 0; j < mBayer->w; j += 2)
         {
             for (int k = 0; k < 2; k++)
+            {
                 for (int l = 0; l < 2; l++)
                 {
                     int pxshift = (l ^ (l & 1));
                     // i don't know how i came to this
-                    red   = mBayer->element(i + swapRows, (j + pxshift) ^ swapCols);
+                    red = mBayer->element(i + swapRows, (j + pxshift) ^ swapCols);
                     // green1 for even rows, green2 for odd
-                    green = mBayer->element(i + (!k) ^ swapRows, j + pxshift + (!k) ^ !swapCols);
-                    blue  = mBayer->element(i + !swapRows, (j + pxshift) ^ !swapCols);
+                    green = mBayer->element(i + (1 - k) ^ swapRows, j + pxshift + (1 - k) ^ !swapCols);
+                    blue = mBayer->element(i + !swapRows, (j + pxshift) ^ !swapCols);
 
                     result->setElement(i + k, j + l, RGBColor48(
-                        mCurve[clip((int64_t)((red   - mBlack) * mScaleMul[0]), mDepth)],
+                        mCurve[clip((int64_t)((red - mBlack) * mScaleMul[0]), mDepth)],
                         mCurve[clip((int64_t)((green - mBlack) * mScaleMul[1]), mDepth)],
-                        mCurve[clip((int64_t)((blue  - mBlack) * mScaleMul[2]), mDepth)]
+                        mCurve[clip((int64_t)((blue - mBlack) * mScaleMul[2]), mDepth)]
                         ));
                 }
         }
+        }
+    }
 
     return result;
 }

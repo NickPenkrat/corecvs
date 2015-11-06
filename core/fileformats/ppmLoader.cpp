@@ -199,7 +199,7 @@ char* PPMLoader::nextLine(FILE *fp, int sz, MetaData *metadata)
     return nullptr;
 }
 
-bool PPMLoader::readHeader(FILE *fp, unsigned long int *h, unsigned long int *w, unsigned short int *maxval, uint8_t *type, MetaData* metadata)
+bool PPMLoader::readHeader(FILE *fp, unsigned long int *h, unsigned long int *w, uint16_t *maxval, uint8_t *type, MetaData* metadata)
 {
     // skip comments and read next line
     char* header = nextLine(fp, 255, metadata);
@@ -253,14 +253,14 @@ bool PPMLoader::readHeader(FILE *fp, unsigned long int *h, unsigned long int *w,
     return true;
 }
 
-bool PPMLoader::writeHeader(FILE *fp, unsigned long int h, unsigned long int w, uint8_t type, uint64_t maxval, MetaData* meta)
+bool PPMLoader::writeHeader(FILE *fp, unsigned long int h, unsigned long int w, uint8_t type, uint16_t maxval, MetaData* meta)
 {
     if (!fp || !h || !w || type < 5 || type > 6)
         return false;
 
     MetaData &metadata = *meta;
 
-    fprintf(fp, "P%d\n", type);
+    fprintf(fp, "P%u\n", type);
     fprintf(fp, "############################################\n");
     fprintf(fp, "# This file is written by DeepView library.\n");
 
@@ -276,7 +276,7 @@ bool PPMLoader::writeHeader(FILE *fp, unsigned long int h, unsigned long int w, 
 
     fprintf(fp, "############################################\n");
     fprintf(fp, "%lu %lu\n", w, h);
-    fprintf(fp, PRIu64 "\n", maxval);
+    fprintf(fp, "%hu\n", maxval);
 
     return true;
 }
