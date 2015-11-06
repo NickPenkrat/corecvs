@@ -138,7 +138,7 @@ TEST(Calibration, testDetectDistChessBoard)
     CalibrationJob job;
     bool undistorted = false;
 
-    std::cout << "Read json gIn.json" << " mark \n";
+    std::cout << "Read json " << addPath("gIn.json").toStdString().c_str() << " mark \n";
 
     JSONGetter getter(addPath("gIn.json"));
     getter.visit(job, "job");
@@ -178,7 +178,7 @@ TEST(Calibration, testCalculate)
 {
     CalibrationJob job;
 
-    std::cout << "Read json esOutDist.json" << "mark \n";
+    std::cout << "Read json esOutDist.json " << "mark \n";
 
     JSONGetter getter(addPath("esDistOutDist.json"));
     getter.visit(job, "job");
