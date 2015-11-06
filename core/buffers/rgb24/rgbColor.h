@@ -458,6 +458,13 @@ public:
         return RGBColor(fround(x * 255), fround((1.0 - x) * 255), 0);
     }
 
+    //#ifdef REFLECTION_IN_CORE
+    //    Reflection reflect = staticInit();
+    //#else
+    //    Reflection reflect;
+    //#endif
+    static Reflection reflect;
+
     static Reflection staticInit()
     {
         Reflection reflection;
@@ -467,12 +474,6 @@ public:
         reflection.fields.push_back(new IntField(FIELD_A, 0, "a"));
         return reflection;
     }
-
-#ifdef REFLECTION_IN_CORE
-    Reflection reflect = staticInit();
-#else
-    Reflection reflect;
-#endif
 
 template<class VisitorType>
     void accept(VisitorType &visitor)
