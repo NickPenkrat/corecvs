@@ -34,7 +34,7 @@ using corecvs::FixedPointDisplace;
 using corecvs::BMPLoader;
 using corecvs::RGB24Buffer;
 
-TEST(Deform, testFastDeform)
+TEST(Deform, DISABLED_testFastDeform)
 {
     Matrix33 inverseLeftMatrix(
         1, 0, -13,
