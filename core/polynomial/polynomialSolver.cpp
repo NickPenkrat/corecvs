@@ -13,7 +13,7 @@
 #  include <lapacke.h>
 # endif
 #else
-# error Cannot build polynomial solver without BLAS/LAPACK
+# error Cannot build polynomial solver without BLAS/LAPACK/MKL
 #endif
 
 const double corecvs::PolynomialSolver::RELATIVE_TOLERANCE = 1e-9;
@@ -148,9 +148,11 @@ size_t corecvs::PolynomialSolver::solve_companion(const double* coeff, double* r
         }
     }
 #endif
+
     // evd
     corecvs::Vector wr(degree), wi(degree);
-    LAPACKE_dgeev( LAPACK_ROW_MAJOR, 'N', 'N', degree, companion.data, companion.stride, &wr[0], &wi[0], 0, degree, 0, degree );
+    LAPACKE_dgeev(LAPACK_ROW_MAJOR, 'N', 'N', degree, companion.data, companion.stride, &wr[0], &wi[0], 0, degree, 0, degree);
+
     // find non-complex and return
     size_t cnt = 0;
     for (size_t i = 0; i < degree; ++i)
