@@ -348,7 +348,7 @@ public:
         if (g > 255) g = 255;
         if (b > 255) b = 255;
 
-        return RGBColor(r, g, b);
+        return RGBTColor<uint8_t>(r, g, b);
     }
 
     static RGBTColor Black()
@@ -395,7 +395,7 @@ public:
     static RGBTColor Magenta()
     {
         const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
-        return RGBColor(max, 0, max);
+        return RGBTColor(max, 0, max);
     }
 
     static RGBTColor Blue()
@@ -491,7 +491,7 @@ public:
             return RGBTColor(0, fround(x * max), fround((1.0 - x) * max));
         }
         x -= 1.0;
-        return RGBColor(fround(x * max), fround((1.0 - x) * max), 0);
+        return RGBTColor(fround(x * max), fround((1.0 - x) * max), 0);
     }
 
     static Reflection staticInit()
