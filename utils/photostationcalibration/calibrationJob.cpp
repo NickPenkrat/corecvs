@@ -2,6 +2,7 @@
 
 
 #include <array>
+#include <queue>
 
 #ifdef WITH_OPENCV
 #include "openCvCheckerboardDetector.h"
@@ -509,4 +510,85 @@ void CalibrationJob::calibrate()
     computeSingleCameraErrors();
     calibratePhotostation();
     computeCalibrationErrors();
+}
+
+void CalibrationJob::calculateRedundancy(std::vector<int> &cameraImagesCount, std::vector<std::vector<int>> &cameraCameraRelationships, std::vector<int> &redundantSingleCamera, int &redundancyPhotostation)
+{
+    cameraImagesCount.clear();
+    cameraImagesCount.resize(photostation.cameras.size());
+    size_t id = 0;
+    for (auto& o: observations)
+    {
+        for (auto& oo: o)
+        {
+            if (oo.undistortedPattern.size())
+                cameraImagesCount[id]++;
+        }
+        id++;
+    }
+    redundantSingleCamera.clear();
+    redundantSingleCamera.resize(cameraImagesCount.size());
+
+    for (size_t i = 0; i < cameraImagesCount.size(); ++i)
+    {
+        int required = 2;
+        if (!(settings.singleCameraCalibratorConstraints & corecvs::CameraConstraints::LOCK_FOCAL))
+            required++;
+        redundantSingleCamera[i] = cameraImagesCount[i] >= required;
+    }
+
+    cameraCameraRelationships.clear();
+    cameraCameraRelationships.resize(cameraImagesCount.size());
+    size_t total = 0;
+    for (auto& s: calibrationSetups)
+    {
+        for (auto& c1: s)
+        {
+            if (!observations[c1.cameraId][c1.imageId].undistortedPattern.size())
+                continue;
+            total ++;
+            for (auto& c2: s)
+            {
+                if (!observations[c2.cameraId][c2.imageId].undistortedPattern.size())
+                    continue;
+                if (&c1 == &c2) continue;
+                cameraCameraRelationships[c1.cameraId].push_back(c2.cameraId);
+            }
+        }
+    }
+    for (auto& v: cameraCameraRelationships)
+    {
+        std::sort(v.begin(), v.end());
+        if (!v.size())
+            continue;
+        size_t id = 1;
+        for (size_t i = 1; i < v.size(); ++i)
+            if (v[i] != v[id - 1])
+            {
+                v[id++] = v[i];
+            }
+        v.resize(id);
+    }
+
+    std::vector<int> used(cameraImagesCount.size());
+    std::queue<int> bfsQueue;
+    bfsQueue.push(0);
+    used[0] = 1;
+    while (bfsQueue.size())
+    {
+        int u = bfsQueue.front(); bfsQueue.pop();
+        for (auto& cam: cameraCameraRelationships[u])
+            if (!used[cam])
+            {
+                used[cam] = 1;
+                bfsQueue.push(cam);
+            }
+    }
+    int unvisited = 0;
+    for (auto& i: used)
+        if (!i)
+        {
+            unvisited++;
+        }
+    redundancyPhotostation = unvisited ? -unvisited : total - (cameraImagesCount.size() - 1);
 }
