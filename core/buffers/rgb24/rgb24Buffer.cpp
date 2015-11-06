@@ -12,7 +12,7 @@
 #include "rgb24Buffer.h"
 #include "hardcodeFont.h"
 #include "readers.h"
-#include "../../math/vector/fixedVector.h"
+#include "fixedVector.h"
 
 #undef rad2     // it's defined at some Windows headers
 

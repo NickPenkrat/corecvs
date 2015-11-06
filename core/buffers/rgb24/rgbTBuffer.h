@@ -31,34 +31,32 @@
 
 #include "readers.h"
 
-namespace corecvs
-{
+namespace corecvs {
+
 #define FLAGS_INCLUDE_MARGIN 0x1
 
-template <typename T>
-using RGBTBufferBase = AbstractContiniousBuffer<RGBTColor<T>, int32_t>;
-
 template<typename T>
-class RGBTBuffer : public RGBTBufferBase<T>,
-    public FixedPointBlMapper<RGBTBuffer<T>, RGBTBuffer<T>, int32_t, RGBTColor<T>>,
-    public           BlMapper<RGBTBuffer<T>, RGBTBuffer<T>, int32_t, RGBTColor<T>>
-
+class RGBTBuffer : public AbstractContiniousBuffer<RGBTColor<T>, int32_t>
+                 , public FixedPointBlMapper<RGBTBuffer<T>, RGBTBuffer<T>, int32_t, RGBTColor<T>>
+                 , public           BlMapper<RGBTBuffer<T>, RGBTBuffer<T>, int32_t, RGBTColor<T>>
 {
+    typedef AbstractContiniousBuffer<RGBTColor<T>, int32_t> RGBTBufferBase;
+
 public:
-    RGBTBuffer(const RGBTBuffer &that) : RGBTBufferBase<T>(that) {}
-    RGBTBuffer(RGBTBuffer *that) : RGBTBufferBase<T>(that) {}
+    RGBTBuffer(const RGBTBuffer &that) : RGBTBufferBase(that) {}
+    RGBTBuffer(RGBTBuffer *that) : RGBTBufferBase(that) {}
 
     RGBTBuffer(RGBTBuffer *src, int32_t x1, int32_t y1, int32_t x2, int32_t y2) :
-        RGBTBufferBase<T>(src, x1, y1, x2, y2) {}
+        RGBTBufferBase(src, x1, y1, x2, y2) {}
 
-    RGBTBuffer(int32_t h, int32_t w, RGBTColor<T> *data) : RGBTBufferBase<T>(h, w, data) {}
-    RGBTBuffer(int32_t h, int32_t w, const RGBTColor<T> &data) : RGBTBufferBase<T>(h, w, data) {}
+    RGBTBuffer(int32_t h, int32_t w, RGBTColor<T> *data) : RGBTBufferBase(h, w, data) {}
+    RGBTBuffer(int32_t h, int32_t w, const RGBTColor<T> &data) : RGBTBufferBase(h, w, data) {}
 
-    RGBTBuffer(int32_t h, int32_t w, bool shouldInit = true) : RGBTBufferBase<T>(h, w, shouldInit) {}
-    RGBTBuffer(Vector2d<int32_t> size, bool shouldInit = true) : RGBTBufferBase<T>(size, shouldInit) {}
+    RGBTBuffer(int32_t h, int32_t w, bool shouldInit = true) : RGBTBufferBase(h, w, shouldInit) {}
+    RGBTBuffer(Vector2d<int32_t> size, bool shouldInit = true) : RGBTBufferBase(size, shouldInit) {}
 
     /*Helper Constructors form the relative types*/
-    RGBTBuffer(G12Buffer *buffer) : RGBTBufferBase<T>(buffer->h, buffer->w, false)
+    RGBTBuffer(G12Buffer *buffer) : RGBTBufferBase(buffer->h, buffer->w, false)
     {
         drawG12Buffer(buffer);
     }
@@ -1100,5 +1098,7 @@ private:
 };
 
 typedef RGBTBuffer<uint16_t> RGB48Buffer;
-}
+
+} // namespace corecvs
+
 #endif

@@ -6,7 +6,6 @@
 * \author alexander
 * \author pavel.vasilev
 */
-
 #ifndef CRGBTCOLOR_H_
 #define CRGBTCOLOR_H_
 
@@ -18,18 +17,16 @@
 
 #include "generated/rgbColorParameters.h"
 
-namespace corecvs
-{
+namespace corecvs {
+
 /**
 *   I use inheritance because no new data members will be added
 **/
-template <typename T>
-using RGBTColorBase = FixedVector<T, 4>;
-
 template<typename T>
-class RGBTColor : public RGBTColorBase<T>
+class RGBTColor : public FixedVector<T, 4>
 {
 public:
+    typedef FixedVector<T, 4> RGBTColorBase;
 
     enum FieldId
     {
@@ -85,7 +82,7 @@ public:
         this->a() = 0;
     }
 
-    RGBTColor(const RGBTColorBase<T>& base) : RGBTColorBase<T>(base) {}
+    RGBTColor(const RGBTColorBase& base) : RGBTColorBase(base) {}
 
     RGBTColor()
     {
@@ -607,4 +604,4 @@ typedef RGBTColor<uint16_t> RGBColor48;
 
 } //namespace corecvs
 
-#endif
+#endif // CRGBTCOLOR_H_
