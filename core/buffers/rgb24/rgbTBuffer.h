@@ -193,7 +193,7 @@ public:
         }
     }
 
-    void drawCorrespondanceList(CorrespondenceList *src, double colorScaler = 20.0, int32_t y = 0, int32_t x = 0)
+    void drawCorrespondenceList(CorrespondenceList *src, double colorScaler = 20.0, int32_t y = 0, int32_t x = 0)
     {
         if (src == NULL)
             return;
@@ -201,7 +201,7 @@ public:
         CorrespondenceList::iterator it;
         for (it = src->begin(); it != src->end(); ++it)
         {
-            Correspondance &tmpCorr = (*it);
+            Correspondence &tmpCorr = (*it);
             Vector2dd from = tmpCorr.start;
             Vector2dd to = tmpCorr.end;
             Vector2dd vec = to - from;
@@ -362,25 +362,22 @@ public:
     */
     void drawLineSimple(int x1, int y1, int x2, int y2, RGBTColor<T> color)
     {
-        if (x1 < 0 || y1 < 0 || x1 >= w || y1 >= h)
+        if (x1 < 0 || y1 < 0 || x1 >= this->w || y1 >= this->h)
             return;
-        if (x2 < 0 || y2 < 0 || x2 >= w || y2 >= h)
+        if (x2 < 0 || y2 < 0 || x2 >= this->w || y2 >= this->h)
             return;
 
-        int    dx = (x2 >= x1) ? x2 - x1 : x1 - x2;
-        int    dy = (y2 >= y1) ? y2 - y1 : y1 - y2;
-        int    sx = (x2 >= x1) ? 1 : -1;
-        int    sy = (y2 >= y1) ? 1 : -1;
-        int x;
-        int y;
-        int i;
-
+        int dx = (x2 >= x1) ? x2 - x1 : x1 - x2;
+        int dy = (y2 >= y1) ? y2 - y1 : y1 - y2;
+        int sx = (x2 >= x1) ? 1 : -1;
+        int sy = (y2 >= y1) ? 1 : -1;
+        int x, y, i;
 
         if (dy <= dx)
         {
-            int    d = (dy << 1) - dx;
-            int    d1 = dy << 1;
-            int    d2 = (dy - dx) << 1;
+            int d = (dy << 1) - dx;
+            int d1 = dy << 1;
+            int d2 = (dy - dx) << 1;
 
             element(y1, x1) = color;
 
@@ -401,9 +398,9 @@ public:
         }
         else
         {
-            int    d = (dx << 1) - dy;
-            int    d1 = dx << 1;
-            int    d2 = (dx - dy) << 1;
+            int d = (dx << 1) - dy;
+            int d1 = dx << 1;
+            int d2 = (dx - dy) << 1;
 
             element(y1, x1) = color;
 
