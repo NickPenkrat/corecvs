@@ -1,5 +1,5 @@
 #include "debayer.h"
-#include <limits.h>     // DBL_MAX
+#include <limits>
 
 Debayer::Debayer(G12Buffer *bayer, int depth, MetaData *metadata)
     : mBayer(bayer)
@@ -240,7 +240,7 @@ void Debayer::scaleCoeffs()
     metadata["white"][0] -= metadata["black"][0];
 
     // normalize pre_mul
-    for (dmin = DBL_MAX, c = 0; c < 4; c++)
+    for (dmin = std::numeric_limits<double>::max(), c = 0; c < 4; c++)
     {
         if (dmin > metadata["pre_mul"][c])
             dmin = metadata["pre_mul"][c];
