@@ -337,7 +337,7 @@ void PhotoStationCalibrator::LMStructureNormalizer::operator()(const double in[]
 
 void PhotoStationCalibrator::LMStructure::operator() (const double in[], double out[])
 {
-    int argin = 0, argout = 0;
+    int /*argin = 0,*/ argout = 0;
     auto& absoluteSetupLocation = calibrator->absoluteSetupLocation;
     auto& initialGuess = calibrator->initialGuess;
     auto& relativeCameraPositions = calibrator->relativeCameraPositions;
@@ -379,6 +379,7 @@ void PhotoStationCalibrator::LMStructure::operator() (const double in[], double 
     }
     CORE_ASSERT_TRUE_S(argout == calibrator->getStructOutputNum());
 }
+
 #undef SET_PARAM
 #undef IF_SET_PARAM
 #undef IFNOT_SET_PARAM
@@ -620,7 +621,7 @@ bool PhotoStationCalibrator::getMSTSolveOrder(std::vector<std::pair<int, int>> &
         for (int j = 0; j < M; ++j)
             if (patternPoints[j][i].size() > maxFC)
             {
-                maxFC = patternPoints[j][i].size();
+                maxFC = (int)patternPoints[j][i].size();
                 initial = std::make_pair(i, j);
             }
     int cameraSolved = 1;
@@ -656,7 +657,7 @@ bool PhotoStationCalibrator::getMSTSolveOrder(std::vector<std::pair<int, int>> &
                         if ((!cameraUsed[ii]) && patternPoints[i][ii].size() > maxFC)
                         {
                             initial = std::make_pair(ii, i);
-                            maxFC = patternPoints[i][ii].size();
+                            maxFC = (int)patternPoints[i][ii].size();
                         }
                     }
                 }
@@ -668,7 +669,7 @@ bool PhotoStationCalibrator::getMSTSolveOrder(std::vector<std::pair<int, int>> &
                         if ((!setupUsed[jj]) && patternPoints[jj][j].size() > maxFC)
                         {
                             initial = std::make_pair(j, jj);
-                            maxFC = patternPoints[jj][j].size();
+                            maxFC = (int)patternPoints[jj][j].size();
                         }
                     }
                 }
@@ -693,6 +694,7 @@ bool PhotoStationCalibrator::getMSTSolveOrder(std::vector<std::pair<int, int>> &
         std::cout << "Cam " << order[i].first << " setup " << order[i].second << " : " << patternPoints[order[i].second][order[i].first].size() << std::endl;
     }
 #endif
+    return true;
 }
 
 void PhotoStationCalibrator::solveInitialLocations()

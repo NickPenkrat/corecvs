@@ -504,7 +504,7 @@ double HomographyReconstructor::getCostFunction(Matrix33 &H, double out[])
 
 int HomographyReconstructor::getConstraintNumber()
 {
-    return p2l.size() + p2s.size() + p2p.size() * 2;
+    return (int)p2l.size() + (int)p2s.size() + (int)p2p.size() * 2;
 }
 
 
