@@ -379,7 +379,7 @@ public:
             int d1 = dy << 1;
             int d2 = (dy - dx) << 1;
 
-            element(y1, x1) = color;
+            this->element(y1, x1) = color;
 
             for (x = x1 + sx, y = y1, i = 1; i <= dx; i++, x += sx)
             {
@@ -393,7 +393,7 @@ public:
                     d += d1;
                 }
 
-                element(y, x) = color;
+                this->element(y, x) = color;
             }
         }
         else
@@ -402,7 +402,7 @@ public:
             int d1 = dx << 1;
             int d2 = (dx - dy) << 1;
 
-            element(y1, x1) = color;
+            this->element(y1, x1) = color;
 
             for (x = x1, y = y1 + sy, i = 1; i <= dy; i++, y += sy)
             {
@@ -416,7 +416,7 @@ public:
                     d += d1;
                 }
 
-                element(y, x) = color;
+                this->element(y, x) = color;
             }
         }
     }
@@ -425,7 +425,7 @@ public:
     {
         Rectangle<int> rect;
         rect.corner = Vector2d<int>(0, 0);
-        rect.size = Vector2d<int>(w - 1, h - 1);
+        rect.size = Vector2d<int>(this->w - 1, this->h - 1);
         Vector2d32 lineStart(x1, y1);
         Vector2d32 lineEnd(x2, y2);
         rect.clipCohenSutherland(lineStart, lineEnd);
@@ -738,7 +738,7 @@ public:
         {
             for (int j = 0; j < this->w; j++)
             {
-                this->element(i, j) = RGBTColor<T>::FromHSV(element(i, j).hue(), 255, 255);
+                this->element(i, j) = RGBTColor<T>::FromHSV(this->element(i, j).hue(), 255, 255);
             }
         }
     }
@@ -749,7 +749,7 @@ public:
         {
             for (int j = 0; j < this->w; j++)
             {
-                this->element(i, j) = RGBTColor<T>::FromHSV(element(i, j).hue(), element(i, j).saturation(), 255);
+                this->element(i, j) = RGBTColor<T>::FromHSV(this->element(i, j).hue(), this->element(i, j).saturation(), 255);
             }
         }
     }
@@ -757,7 +757,7 @@ public:
     G12Buffer *toG12Buffer()
     {
         G12Buffer *toReturn = new G12Buffer(this->h, this->w, false);
-        for (int i = 0; i < h; i++)
+        for (int i = 0; i < this->h; i++)
         {
             RGBTColor<T> *in = &this->element(i, 0);
             uint16_t *out = &toReturn->element(i, 0);
