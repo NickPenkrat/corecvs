@@ -12,7 +12,7 @@
 #include "global.h"
 
 #include "aLowCodec.h"
-#include "rgb24Buffer.h"
+//#include "rgb24Buffer.h"
 
 using namespace corecvs;
 

@@ -375,7 +375,7 @@ bool ObservationListModel::setData(const QModelIndex &index, const QVariant &val
 
 int ObservationListModel::rowCount(const QModelIndex &/*parent*/) const
 {
-    return (mObservationList == NULL) ? 0 : mObservationList->size();
+    return (mObservationList == NULL) ? 0 : (int)mObservationList->size();
 }
 
 int ObservationListModel::columnCount(const QModelIndex &/*parent*/) const
@@ -480,7 +480,8 @@ int ObservationListModel::elementCount()
 {
     if (mObservationList == NULL)
         return 0;
-    return mObservationList->size();
+
+    return (int)mObservationList->size();
 }
 
 /*void ObsevationListModel::clearObservationPoints()

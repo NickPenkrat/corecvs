@@ -20,8 +20,7 @@
 #include "rgb24Buffer.h"
 #include "metamap.h"
 
-namespace corecvs
-{
+namespace corecvs {
 
 class PPMLoader : public BufferLoader<G12Buffer>
 {
@@ -45,7 +44,6 @@ public:
      *
      * \return  null if it fails, else a G12Buffer*.
      */
-
     G12Buffer * load(const string& name, MetaData* metadata);
 
     G12Buffer* g12BufferCreateFromPGM(const string& name, MetaData* metadata = nullptr);
@@ -64,7 +62,6 @@ public:
      *
      * \return  Error code.
      */
-
     int save(const string& name, G12Buffer *buffer, MetaData* metadata = nullptr);
     int save(const string& name, RGB24Buffer *buffer, MetaData* metadata = nullptr);
     int save(const string& name, RGB48Buffer *buffer, MetaData* metadata = nullptr);
@@ -78,7 +75,6 @@ private:
     char* nextLine(FILE *fp, int sz, MetaData *metadata);
     bool readHeader(FILE *fp, unsigned long int *h, unsigned long int *w, unsigned short int *maxval, uint8_t *type, MetaData* metadata);
     bool writeHeader(FILE *fp, unsigned long int h, unsigned long int w, uint8_t type, uint64_t maxval, MetaData* metadata);
-
 };
 
 } //namespace corecvs

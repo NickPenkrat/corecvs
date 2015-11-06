@@ -1,5 +1,5 @@
 /**
- * \file correspondanceList.h
+ * \file correspondenceList.h
  * \brief Add Comment Here
  *
  * \ingroup cppcorefiles
@@ -7,8 +7,8 @@
  * \author alexander
  */
 
-#ifndef CCORRESPONDANCELIST_H_
-#define CCORRESPONDANCELIST_H_
+#ifndef CCorrespondenceLIST_H_
+#define CCorrespondenceLIST_H_
 
 #include <vector>
 #include "vector2d.h"
@@ -21,10 +21,10 @@ namespace corecvs {
 using std::vector;
 
 template<class FirstType, class SecondType>
-class PrimitiveCorrespondance
+class PrimitiveCorrespondence
 {
 public:
-    enum CorrespondanceFlags{
+    enum CorrespondenceFlags{
           FLAG_NONE           = 0x00,
           FLAG_FILTERED_KLT   = 0x01,
           FLAG_FILTERED_SHORT = 0x02,
@@ -40,8 +40,8 @@ public:
     uint16_t value;   /**< \brief The weight of the correspondence */
     uint16_t flags;   /**< \brief Some flags */
 
-    PrimitiveCorrespondance() {};
-    PrimitiveCorrespondance(FirstType _start, SecondType _end) :
+    PrimitiveCorrespondence() {};
+    PrimitiveCorrespondence(FirstType _start, SecondType _end) :
         start(_start),
         end(_end),
         value(0),
@@ -53,7 +53,7 @@ public:
         flags = FLAG_NONE;
     }
 
-    double correspondanceLength( void ) const
+    double correspondenceLength( void ) const
     {
         return (start - end).l2Metric();
     }
@@ -64,27 +64,27 @@ public:
     }
 };
 
-typedef PrimitiveCorrespondance<Vector2dd, Vector2dd> Correspondance;
+typedef PrimitiveCorrespondence<Vector2dd, Vector2dd> Correspondence;
 
-class CorrespondanceList : public vector<Correspondance>
+class CorrespondenceList : public vector<Correspondence>
 {
 public:
     int h;
     int w;
 
-    CorrespondanceList();
-    CorrespondanceList(const CorrespondanceList &list);
-    CorrespondanceList(FlowBuffer *input, bool swap = false);
-    CorrespondanceList(FloatFlowBuffer *input);
+    CorrespondenceList();
+    CorrespondenceList(const CorrespondenceList &list);
+    CorrespondenceList(FlowBuffer *input, bool swap = false);
+    CorrespondenceList(FloatFlowBuffer *input);
 
 
-    virtual ~CorrespondanceList();
+    virtual ~CorrespondenceList();
 
     void getNormalizingTransform(Matrix33 &transformRight, Matrix33 &transformLeft, double *scale);
 
     void transform(const ProjectiveTransform &transformRight, const ProjectiveTransform &transformLeft);
 
-    CorrespondanceList *makePreciseCopy(G12Buffer *first, G12Buffer *second);
+    CorrespondenceList *makePreciseCopy(G12Buffer *first, G12Buffer *second);
     void                makePrecise(G12Buffer *first, G12Buffer *second);
 
     void resetFlags( void )
@@ -106,7 +106,7 @@ public:
       Vector2dd mean (0.0);
       for (unsigned i = 0; i < size(); i++)
       {
-      	Correspondance *corr = &(at(i));
+      	Correspondence *corr = &(at(i));
       	mean += (corr->end - corr->start);
 
       }
@@ -116,18 +116,18 @@ public:
 
 
 /**
- *   DerivedCorrespondanceList is a wrapper around CorrespondanceList
+ *   DerivedCorrespondenceList is a wrapper around CorrespondenceList
  * that allows to modify the contense, yet remembering the pointer to the
  * origin
  **/
-class DerivedCorrespondanceList : public CorrespondanceList
+class DerivedCorrespondenceList : public CorrespondenceList
 {
 public:
-    CorrespondanceList* parent;
+    CorrespondenceList* parent;
     vector<int> map;
 
-    DerivedCorrespondanceList(CorrespondanceList *list) :
-        CorrespondanceList(*list),
+    DerivedCorrespondenceList(CorrespondenceList *list) :
+        CorrespondenceList(*list),
         parent(list)
     {
         map.reserve(parent->size());
@@ -136,7 +136,7 @@ public:
     }
 
     template<class Predicate>
-    DerivedCorrespondanceList(CorrespondanceList *list, Predicate &predicate, int flag) :
+    DerivedCorrespondenceList(CorrespondenceList *list, Predicate &predicate, int flag) :
         parent(list)
     {
         /* Some extra memory used */
@@ -165,9 +165,9 @@ public:
         }
     }
 
-    vector<Correspondance *> *toArrayOfPointers()
+    vector<Correspondence *> *toArrayOfPointers()
     {
-        vector<Correspondance *> *result = new vector<Correspondance *>();
+        vector<Correspondence *> *result = new vector<Correspondence *>();
         result->reserve(this->size());
         for(unsigned i = 0; i < this->size(); i++)
         {
@@ -179,5 +179,5 @@ public:
 
 
 } //namespace corecvs
-#endif /* CCORRESPONDANCELIST_H_ */
+#endif /* CCorrespondenceLIST_H_ */
 

@@ -12,9 +12,9 @@
 #include "rgb24Buffer.h"
 #include "hardcodeFont.h"
 #include "readers.h"
-#include "../../math/vector/fixedVector.h"
+#include "fixedVector.h"
 
-#undef rad2     // it's defined at win hdrs
+#undef rad2     // it's defined at some Windows headers
 
 namespace corecvs {
 
@@ -333,16 +333,16 @@ void RGB24Buffer::drawFlowBuffer3(FlowBuffer *src, double colorScaler, int32_t y
     }
 }
 
-void RGB24Buffer::drawCorrespondanceList(CorrespondanceList *src, double colorScaler, int32_t y, int32_t x)
+void RGB24Buffer::drawCorrespondenceList(CorrespondenceList *src, double colorScaler, int32_t y, int32_t x)
 {
     if (src == NULL) {
         return;
     }
 
-    CorrespondanceList::iterator it;
+    CorrespondenceList::iterator it;
     for (it = src->begin(); it != src->end(); ++it)
     {
-        Correspondance &tmpCorr = (*it);
+        Correspondence &tmpCorr = (*it);
         Vector2dd from = tmpCorr.start;
         Vector2dd to = tmpCorr.end;
         Vector2dd vec = to - from;

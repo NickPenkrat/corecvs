@@ -68,7 +68,7 @@
   <class name="Checkerboard Detection Parameters">  
     <field type="bool"         name="Use Undistortion"      defaultValue="true"/>
 
-    <field type="Checkerboard Detection Algorithm" name="Algorithm" defaultValue="1" />
+    <field type="Checkerboard Detection Algorithm" name="Algorithm" defaultValue="0" />
 
 
     <field type="ImageChannel" name="Channel"            defaultValue="3"   />
@@ -82,8 +82,10 @@
     <field type="double"       name="Min accuracy"       defaultValue="0.01"    min="0.0" max="999999" suffix="px" decimals="4"/>
 
 
-    <field type="bool"         name="Partial Board"      defaultValue="true"/>
-    <field type="bool"         name="Fast board Speedup" defaultValue="true"/>
+    <field type="bool"         name="Partial Board"       defaultValue="true"/>
+    <field type="bool"         name="Fast board Speedup"  defaultValue="true"/>
+    <field type="bool"         name="Draw SGFs on boards" defaultValue="true"/>
+    <field type="bool"         name="Skip undistorted with no distorted board" defaultValue="false"/>
 
   </class>
 

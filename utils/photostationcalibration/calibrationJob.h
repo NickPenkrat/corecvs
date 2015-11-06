@@ -77,10 +77,12 @@ struct CalibrationSettings
     bool singleCameraCalibratorUseZhangPresolver = true;
     bool singleCameraCalibratorUseLMSolver = true;
     CameraConstraints singleCameraCalibratorConstraints = CameraConstraints::ZERO_SKEW | CameraConstraints::EQUAL_FOCAL | CameraConstraints::LOCK_SKEW;
+    int  singleCameraLMiterations = 1000;
 
     bool photostationCalibratorUseBFSPresolver = true;
     bool photostationCalibratorUseLMSolver = true;
     CameraConstraints photostationCalibratorConstraints = CameraConstraints::ZERO_SKEW | CameraConstraints::EQUAL_FOCAL | CameraConstraints::LOCK_SKEW;
+    int  photostationLMiterations = 1000;
 
     PinholeCameraIntrinsics calibrationLockParams;
 
@@ -113,6 +115,8 @@ struct CalibrationSettings
         photostationCalibratorConstraints = static_cast<CameraConstraints>(m);
 
         visitor.visit(calibrationLockParams, PinholeCameraIntrinsics(), "calibrationLockParams");
+        visitor.visit(singleCameraLMiterations, 1000, "singleCameraLMiterations");
+        visitor.visit(photostationLMiterations, 1000, "photostationLMiterations");
     }
 };
 
@@ -164,6 +168,9 @@ struct CalibrationJob
     void calibratePhotostation();
     void calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<PinholeCameraIntrinsics> &intrinsics, std::vector<std::vector<CameraLocationData>> &locations, bool runBFS, bool runLM);
     void calibrate();
+
+    void calculateRedundancy(std::vector<int> &cameraImagesCount, std::vector<std::vector<int>> &cameraCameraRelationships, std::vector<int> &redundantSingleCamera, int &redundancyPhotostation);
+
     double factor = 1.0;
     std::vector<double> factors;
 

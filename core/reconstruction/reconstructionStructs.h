@@ -13,7 +13,7 @@ struct PointProjection
     corecvs::Vector2dd projection;
     int photostationId;
     int cameraId;
-    int featureId;
+    int featureId;    
 
     template<typename V>
     void accept(V &visitor)
@@ -32,11 +32,14 @@ struct PointObservation__
 
     std::vector<PointProjection> projections;
 
+    bool updateable = true;
+
     template<typename V>
     void accept(V &visitor)
     {
         visitor.visit(worldPoint,  corecvs::Vector3dd(0.0, 0.0, 0.0), "worldPoint");
-        visitor.visit(projections, "projections"); 
+        visitor.visit(projections, "projections");
+        visitor.visit(updateable,  true, "updateable");
     }
 };
 struct CameraObservation

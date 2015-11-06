@@ -13,6 +13,17 @@ class CalibrationScene
 public:
     CalibrationScene();
 
+    /**
+     * This field encodes the "silent transform that happens when natural world corrdinate system changes to
+     * image related. This covers but is not restritced to the transition between:
+     *
+     *   Z axis pointing to the sky and Z axis pointing to camera optical axis
+     *
+     * So far you can't change right handed system to left-handed. This cavity needs to be addressed later.
+     *
+     **/
+    Affine3DQ worldFrameToCameraFrame;
+
     /* This is for future, when all the heap/memory will be completed */
     vector<ScenePart *>             mOwnedObjects;
 
@@ -42,6 +53,7 @@ public:
     virtual CalibrationFeaturePoint  *createFeaturePoint();
 
 
+    virtual void positionCameraInStation(Photostation *station, CameraModel *camera, const Affine3DQ &location);
     virtual void addCameraToStation(CameraModel *cam, Photostation *station);
 
 

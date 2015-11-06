@@ -73,7 +73,7 @@ enum CAPDLLControlProperty
 
 struct CaptureTypeFormat
 {
-    int type;
+    int type;                       // = CAPTURE_FORMAT_TYPE
     int height;
     int width;
     int fps;

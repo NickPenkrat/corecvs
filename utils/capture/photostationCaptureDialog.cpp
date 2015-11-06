@@ -1,42 +1,32 @@
+#include "photostationCaptureDialog.h"
+#include "g12Image.h"
+#include "qtHelper.h"
+#include "log.h"
+#include "focusEstimator.h"
+//#include "../projectFileNameing.h"
+
 #include <QMessageBox>
 #include <QFileDialog>
-
-#include "g12Image.h"
-#include "photostationCaptureDialog.h"
-//#include "../projectFileNameing.h"
 
 #include "ui_photostationCaptureDialog.h"
 
 /* Temporary solution. This need to be hidden inside image capture interface */
 #ifdef Q_OS_WIN
-#ifdef WITH_DIRECTSHOW
-#include "directShowCapture.h"
-#define CAPTURE_INTERFACE DirectShowCaptureInterface
-#endif
+# ifdef WITH_DIRECTSHOW
+#  include "directShow.h"
+#  include "directShowCapture.h"
+#  define CAPTURE_INTERFACE DirectShowCaptureInterface
+# endif
 #else
-#include "V4L2Capture.h"
-#define CAPTURE_INTERFACE V4L2CaptureInterface
-#endif
-
-#include "qtHelper.h"
-#include "log.h"
-#include "focusEstimator.h"
-
-#ifdef WITH_DIRECTSHOW
-#include "directShow.h"
+# include "V4L2Capture.h"
+# define CAPTURE_INTERFACE V4L2CaptureInterface
 #endif
 
 const QString PhotostationCaptureDialog::DEFAULT_FILENAME = "capture.ini";
 
-PhotostationCaptureDialog::PhotostationCaptureDialog(QWidget *parent) :
-    QDialog(parent),
-    mCamsScanned(false),
-    mPreviewInterface(NULL),
-    mCapSettingsDialog(NULL),
-    mCaptureMapper(NULL),
-    mAdvanceAfterSave(false),
-    ui(new Ui::PhotostationCaptureDialog),
-    mNamer(NULL)
+PhotostationCaptureDialog::PhotostationCaptureDialog(QWidget *parent)
+    : QDialog(parent)
+    , ui(new Ui::PhotostationCaptureDialog)
 {
     setWindowFlags(Qt::Window);
     ui->setupUi(this);
@@ -44,6 +34,7 @@ PhotostationCaptureDialog::PhotostationCaptureDialog(QWidget *parent) :
     ui->progressBar->setHidden(true);
     ui->previewWidget->setCollapseTitle(true);
     ui->outputFormatComboBox->setCurrentIndex(1);   // set default JPEG 100%
+    ui->codecComboBox->setCurrentIndex(1);          // set default codec to YUYV
 
     connect(ui->refreshButton,            SIGNAL(released()), this, SLOT(refresh()));
     connect(ui->capturePushButton,        SIGNAL(released()), this, SLOT(capture()));
@@ -65,7 +56,7 @@ PhotostationCaptureDialog::PhotostationCaptureDialog(QWidget *parent) :
 
 uint qHash(const ImageCaptureInterface::CameraFormat &format)
 {
-    return ((format.width * 1233434 +  format.height) * 67234456567 + format.fps);
+    return ((format.width * 1233434 + format.height) * 67234456567 + format.fps);
 }
 
 bool operator==(const ImageCaptureInterface::CameraFormat &format1, const ImageCaptureInterface::CameraFormat &format2)
@@ -113,10 +104,11 @@ void PhotostationCaptureDialog::refresh()
     /* Loading will be here for a while */
     QSettings settings(DEFAULT_FILENAME, QSettings::IniFormat);
 
-
-    ui->heightSpinBox->setValue(settings.value("height", ui->heightSpinBox->value()).toInt());
-    ui->widthSpinBox ->setValue(settings.value("width" , ui->widthSpinBox->value()) .toInt()) ;
-    ui->fpsSpinBox   ->setValue(settings.value("fps"   , ui->fpsSpinBox->value())   .toInt());
+    ui->heightSpinBox  ->setValue       (settings.value("height"    , ui->heightSpinBox->value()).toInt());
+    ui->widthSpinBox   ->setValue       (settings.value("width"     , ui->widthSpinBox ->value()).toInt());
+    ui->fpsSpinBox     ->setValue       (settings.value("fps"       , ui->fpsSpinBox   ->value()).toInt());
+    ui->codecComboBox  ->setCurrentIndex(settings.value("codecIdx"  , ui->codecComboBox->currentIndex()).toInt());
+  //ui->formatsComboBox->setCurrentIndex(settings.value("formatsIdx", ui->formatsComboBox->currentIndex()).toInt()); // it must be done later!
 
     /* Capturing */
     ui->skipFramesSpinBox     ->setValue(settings.value("skipFrames", ui->skipFramesSpinBox->value()).toInt());
@@ -125,33 +117,24 @@ void PhotostationCaptureDialog::refresh()
     ui->angleStepSpinBox      ->setValue(settings.value("angleStep" , ui->angleStepSpinBox->value()).toDouble());
     ui->outDirLineEdit        ->setText (settings.value("pathDir"   , ui->outDirLineEdit->text()).toString());
 
+    mRotaryDialog.mScriptsPath = ui->outDirLineEdit->text();
+
     ui->previewWidget->loadFromQSettings(DEFAULT_FILENAME, "preview");
 
     QMap<ImageCaptureInterface::CameraFormat, int> formatsList;
     vector<string> cameras;
     vector<string> serials;
 
-#ifdef Q_OS_WIN
-#ifdef WITH_DIRECTSHOW
     CAPTURE_INTERFACE::getAllCameras(cameras);
-#endif
-#else
-    CAPTURE_INTERFACE::getAllCameras(cameras);
-#endif
 
-    for (unsigned i = 0; i < cameras.size(); i ++)
+    for (unsigned i = 0; i < cameras.size(); ++i)
     {
         //qDebug() << "Found camera id:" <<  cameras[i].c_str();
 
-#ifdef Q_OS_WIN
-#ifdef WITH_DIRECTSHOW
-        ImageCaptureInterface *camera = new CAPTURE_INTERFACE(cameras[i], 480, 640, 10, true);
-#endif
-#else
-        ImageCaptureInterface *camera = new CAPTURE_INTERFACE(cameras[i], 480, 640, 10, true);
-#endif
+        ImageCaptureInterface *camera = createCameraCapture(cameras[i], false);    // false - don't process any error
+        if (camera == NULL)
+            continue;
 
-        camera->initCapture();
         int number = 0;
         ImageCaptureInterface::CameraFormat *formats = NULL;
         camera->getFormats(&number, formats);
@@ -161,14 +144,13 @@ void PhotostationCaptureDialog::refresh()
             if (formatsList.contains(format)) {
                 formatsList[format]++;
             } else {
-                formatsList.insert(format,1);
+                formatsList.insert(format, 1);
             }
         }
         delete[] formats;
 
-
         serials.push_back(camera->getDeviceSerial());
-        delete_safe (camera);
+        delete_safe(camera);
     }
 
     ui->formatsComboBox->clear();
@@ -179,11 +161,14 @@ void PhotostationCaptureDialog::refresh()
     {
         it.next();
         QVariantList list;
-        list.append(it.key().width);
-        list.append(it.key().height);
-        list.append(it.key().fps);
-        ui->formatsComboBox->addItem(QString("%1 x %2 : %3fps - %4").arg(it.key().width).arg(it.key().height).arg(it.key().fps).arg(it.value()), list);
+        const ImageCaptureInterface::CameraFormat& fmt = it.key();
+        list.append(fmt.width);
+        list.append(fmt.height);
+        list.append(fmt.fps);
+        ui->formatsComboBox->addItem(QString("%1 x %2 : %3fps - %4").arg(fmt.width).arg(fmt.height).arg(fmt.fps).arg(it.value()), list);
     }
+    ui->formatsComboBox->setCurrentIndex(settings.value("formatsIdx", 0).toInt());
+
     connect(ui->formatsComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(newFormatSelected(int)));
 
     /* We need to fill height and width according to the camera support */
@@ -202,12 +187,12 @@ void PhotostationCaptureDialog::refresh()
         }
         ui->cameraTableWidget->setItem(i, COLUMN_SYS_ID, systemId);
         QComboBox* comboBox = new QComboBox();
-        ui->cameraTableWidget->setCellWidget(i, COLUMN_PS_ID, comboBox);
-        for (unsigned j = 0; j <  cameras.size(); j++)
+        ui->cameraTableWidget->setCellWidget(i, COLUMN_CAM_ID, comboBox);
+        for (unsigned j = 0; j < cameras.size(); j++)
         {
             comboBox->insertItem(comboBox->count(), QString("Camera %1").arg(j + 1));
         }
-
+        comboBox->insertItem(comboBox->count(), "Unassigned");
 
         QString serial = QString::fromStdString(serials[i]);
         QString prefix = "SER_";
@@ -218,11 +203,10 @@ void PhotostationCaptureDialog::refresh()
         }
 
         int index = settings.value(prefix + serial, i).toInt();
-        comboBox->insertItem(comboBox->count(), "Unassigned");
         comboBox->setCurrentIndex(index);
 
         QCheckBox* checkBox = new QCheckBox();
-        checkBox->setChecked(true);
+        checkBox->setChecked(index < cameras.size());
         ui->cameraTableWidget->setCellWidget(i, COLUMN_USE, checkBox);
 
         QTableWidgetItem* previewIcon = new QTableWidgetItem(QIcon(":/new/prefix1/play.png"), "");
@@ -236,7 +220,7 @@ void PhotostationCaptureDialog::refresh()
 
     ui->cameraTableWidget->resizeRowsToContents();
     ui->cameraTableWidget->setColumnWidth(COLUMN_SYS_ID,  100);
-    ui->cameraTableWidget->setColumnWidth(COLUMN_PS_ID,   140);
+    ui->cameraTableWidget->setColumnWidth(COLUMN_CAM_ID,  140);
     ui->cameraTableWidget->setColumnWidth(COLUMN_USE,      30);
     ui->cameraTableWidget->setColumnWidth(COLUMN_PREVIEW,  30);
     ui->cameraTableWidget->setColumnWidth(COLUMN_SETTINGS, 30);
@@ -250,9 +234,11 @@ PhotostationCaptureDialog::~PhotostationCaptureDialog()
     /* Save parameters. Draft. */
     QSettings settings(DEFAULT_FILENAME, QSettings::IniFormat);
 
-    settings.setValue("height", ui->heightSpinBox->value());
-    settings.setValue("width" , ui->widthSpinBox->value());
-    settings.setValue("fps"   , ui->fpsSpinBox->value());
+    settings.setValue("height"    , ui->heightSpinBox->value());
+    settings.setValue("width"     , ui->widthSpinBox->value());
+    settings.setValue("fps"       , ui->fpsSpinBox->value());
+    settings.setValue("codecIdx"  , ui->codecComboBox->currentIndex());
+    settings.setValue("formatsIdx", ui->formatsComboBox->currentIndex());
 
     /* Capturing */
     settings.setValue("skipFrames", ui->skipFramesSpinBox->value());
@@ -271,7 +257,7 @@ PhotostationCaptureDialog::~PhotostationCaptureDialog()
             prefix = "POS_";
         }
 
-        QComboBox *comboBox = static_cast<QComboBox *>(ui->cameraTableWidget->cellWidget(i, COLUMN_PS_ID));
+        QComboBox *comboBox = static_cast<QComboBox *>(ui->cameraTableWidget->cellWidget(i, COLUMN_CAM_ID));
         settings.setValue(prefix + serial, comboBox->currentIndex());
     }
 
@@ -279,6 +265,7 @@ PhotostationCaptureDialog::~PhotostationCaptureDialog()
     delete ui;
 
     delete_safe(mCapSettingsDialog);
+    delete_safe(mCaptureMapper);
 }
 
 void PhotostationCaptureDialog::setNamer(AbstractImageNamer *namer)
@@ -302,23 +289,17 @@ void PhotostationCaptureDialog::tableClick(int lineid, int colid)
 
 void PhotostationCaptureDialog::previewRequest(int lineid)
 {
-    qDebug() << "PhotostationCaptureDialog::previewRequest(): Preview request";
+    //qDebug() << "PhotostationCaptureDialog::previewRequest(): Preview request";
 
     mCapSettingsDialog->setCaptureInterface(NULL);
     delete_safe(mPreviewInterface);
 
-    mPreviewInterface = new CAPTURE_INTERFACE(
-                ui->cameraTableWidget->item(lineid, COLUMN_SYS_ID)->text().toStdString(),
-                ui->heightSpinBox->value(),
-                ui->widthSpinBox->value(),
-                ui->fpsSpinBox->value(),
-                true);
-    ImageCaptureInterface::CapErrorCode result = mPreviewInterface->initCapture();
-    if (result != ImageCaptureInterface::SUCCESS_1CAM)
-    {
-        QMessageBox::information(this, "Can't open", "I can't open the camera");
+    string camSysId = ui->cameraTableWidget->item(lineid, COLUMN_SYS_ID)->text().toStdString();
+
+    mPreviewInterface = createCameraCapture(camSysId);
+    if (mPreviewInterface == NULL)
         return;
-    }
+
     connect(mPreviewInterface, SIGNAL(newFrameReady(frame_data_t)), this, SLOT(newPreviewFrame()));
     mPreviewInterface->startCapture();
 }
@@ -351,10 +332,10 @@ void PhotostationCaptureDialog::newPreviewFrame()
     //qDebug() << "PhotostationCaptureDialog::newPreviewFrame():Flood protection took:" << (time.usecsToNow() / 1000.0) << "ms";
     time = PreciseTimer::currentTime();
 
-    /*By the time we process notification mPreviewInterface could be already destroyed */
-    if (mPreviewInterface == NULL) {
+    /** By the time we process notification, mPreviewInterface could be already destroyed
+     */
+    if (mPreviewInterface == NULL)
         return;
-    }
 
     ImageCaptureInterface::FramePair pair = mPreviewInterface->getFrameRGB24();
 
@@ -370,7 +351,7 @@ void PhotostationCaptureDialog::newPreviewFrame()
     {
         ui->previewWidget->setImage(QSharedPointer<QImage>(toQImage(pair.rgbBufferLeft)));
     } else {
-        qDebug() << "PhotostationCaptureDialog::newPreviewFrame():NULL frame received";
+        L_DEBUG_P("NULL frame received");
     }
 
     //qDebug() << "PhotostationCaptureDialog::newPreviewFrame(): Updateing widget took:" << (time.usecsToNow() / 1000.0) << "ms";
@@ -382,17 +363,15 @@ void PhotostationCaptureDialog::newPreviewFrame()
 
 void PhotostationCaptureDialog::newFormatSelected(int num)
 {
-    qDebug() << "PhotostationCaptureDialog::newFormatSelected(" << num << ")";
+    L_DEBUG_P("new formatId: %d", num);
 
     if (num >= ui->formatsComboBox->count())
-    {
         return;
-    }
+
     QVariantList format = ui->formatsComboBox->itemData(num).toList();
     if (format.length() != 3)
-    {
         return;
-    }
+
     ui->widthSpinBox->setValue (format[0].toInt());
     ui->heightSpinBox->setValue(format[1].toInt());
     ui->fpsSpinBox->setValue   (format[2].toInt());
@@ -402,28 +381,30 @@ void PhotostationCaptureDialog::newCaptureFrame(int camId)
 {
     /* This protects the events from flooding input queue */
     static bool flushEvents = false;
-    if (flushEvents) {
+    if (flushEvents)
         return;
-    }
+
     flushEvents = true;
     /* Flush all events in queue */
     QCoreApplication::processEvents();
     flushEvents = false;
 
     if (camId >= mCaptureInterfaces.count() || mCaptureInterfaces[camId].result != NULL)
-    {
         return;
-    }
 
     /* Add frame skip */
+    int startSkip = ui->skipFramesSpinBox->value();
     if (mCaptureInterfaces[camId].toSkip > 0)
     {
         mCaptureInterfaces[camId].toSkip--;
-        int startSkip = ui->skipFramesSpinBox->value();
         int current = (camId + 1) * startSkip - mCaptureInterfaces[camId].toSkip;
         int total   = startSkip * mCaptureInterfaces.size();
         ui->progressBar->setValue(current * ui->progressBar->maximum() / total);
         return;
+    }
+    else if (startSkip == 0)
+    {
+        ui->progressBar->setValue((camId + 1) * ui->progressBar->maximum() / mCaptureInterfaces.size());
     }
 
     CameraDescriptor &descr = mCaptureInterfaces[camId];
@@ -436,7 +417,7 @@ void PhotostationCaptureDialog::newCaptureFrame(int camId)
 
     ImageCaptureInterface::FramePair pair = descr.camInterface->getFrameRGB24();
     if (pair.rgbBufferLeft == NULL) {
-        L_ERROR_P("Unexpected zero buffer form camera %d", camId);
+        L_ERROR_P("Unexpected zero rgbBuffer from camera %d", camId);
         pair.freeBuffers();
         return;
     }
@@ -444,7 +425,6 @@ void PhotostationCaptureDialog::newCaptureFrame(int camId)
     mCaptureInterfaces[camId].result = toQImage(pair.rgbBufferLeft);
     pair.freeBuffers();
     delete_safe(descr.camInterface);
-
 
     /* This logic would propably change. We are starting so far  */
 
@@ -472,7 +452,6 @@ void PhotostationCaptureDialog::initateNewFrame()
     }
 }
 
-
 void PhotostationCaptureDialog::capture(bool shouldAdvance)
 {
     mAdvanceAfterSave = shouldAdvance;
@@ -488,6 +467,12 @@ void PhotostationCaptureDialog::capture(bool shouldAdvance)
     ui->progressBar->setHidden(false);
     ui->progressBar->setValue(0);
 
+    mIsCalibrationMode = mRotaryDialog.isVisible() && mRotaryDialog.positions.size() != 0;
+    ui->angleSpinBox->setEnabled(!mIsCalibrationMode);
+    ui->angle2SpinBox->setEnabled(!mIsCalibrationMode);
+    ui->angleStepSpinBox->setEnabled(!mIsCalibrationMode);
+    L_INFO_P("CalibrationMode: %d  position: %d/%d", mIsCalibrationMode, mRotaryDialog.selected, mRotaryDialog.positions.size());
+
     delete_safe(mCaptureMapper);
     mCaptureMapper = new QSignalMapper();
     connect(mCaptureMapper, SIGNAL(mapped(int)), this, SLOT(newCaptureFrame(int)));
@@ -495,37 +480,24 @@ void PhotostationCaptureDialog::capture(bool shouldAdvance)
     /* Ok... init all cameras */
     for (int lineid = 0; lineid < ui->cameraTableWidget->rowCount(); lineid++)
     {
-        QComboBox *comboBox = static_cast<QComboBox *>(ui->cameraTableWidget->cellWidget(lineid, COLUMN_PS_ID));
+        QComboBox *comboBox = static_cast<QComboBox *>(ui->cameraTableWidget->cellWidget(lineid, COLUMN_CAM_ID));
         QCheckBox *checkBox = static_cast<QCheckBox *>(ui->cameraTableWidget->cellWidget(lineid, COLUMN_USE));
 
-        if (!checkBox->isChecked()) {
+        if (!checkBox->isChecked())                             // = not used
             continue;
-        }
-
-        if (comboBox->currentIndex() == comboBox->count() - 1) {
+        if (comboBox->currentIndex() == comboBox->count() - 1)  // = unassigned
             continue;
-        }
 
-        string str = ui->cameraTableWidget->item(lineid, COLUMN_SYS_ID)->text().toStdString();
+        string camSysId = ui->cameraTableWidget->item(lineid, COLUMN_SYS_ID)->text().toStdString();
 
         CameraDescriptor camDesc;
         camDesc.camId = comboBox->currentIndex();
-        camDesc.camInterface = new CAPTURE_INTERFACE(
-                        str,
-                        ui->heightSpinBox->value(),
-                        ui->widthSpinBox->value(),
-                        ui->fpsSpinBox->value(),
-                        true);
-        camDesc.result = NULL;
         camDesc.toSkip = ui->skipFramesSpinBox->value();
+        camDesc.result = NULL;
+        camDesc.camInterface = createCameraCapture(camSysId);
+        if (camDesc.camInterface == NULL)
+            continue;
 
-
-        ImageCaptureInterface::CapErrorCode result = camDesc.camInterface->initCapture();
-        if (result != ImageCaptureInterface::SUCCESS_1CAM)
-        {
-            QMessageBox::information(this, "Can't open", QString("I can`t open the camera %1").arg(str.c_str()));
-            return;
-        }
         mCaptureInterfaces.append(camDesc);
         connect(camDesc.camInterface, SIGNAL(newFrameReady(frame_data_t)), mCaptureMapper, SLOT(map()));
         mCaptureMapper->setMapping(camDesc.camInterface, mCaptureInterfaces.count() - 1);
@@ -538,6 +510,56 @@ void PhotostationCaptureDialog::capture(bool shouldAdvance)
     else {
         finalizeCapture(false);
     }
+}
+
+ImageCaptureInterface* PhotostationCaptureDialog::createCameraCapture(const string &devname, bool processError)
+{
+    const bool isRgb = true;
+    bool compressed = ui->codecComboBox->currentIndex() == 0;
+
+    int  h   = ui->heightSpinBox->value();
+    int  w   = ui->widthSpinBox->value();
+    int  fps = ui->fpsSpinBox->value();
+
+    // TODO: use compressed YUYV, MJPG,... !
+
+    ImageCaptureInterface *camera = new CAPTURE_INTERFACE(devname, h, w, fps, isRgb);
+
+    ImageCaptureInterface::CameraFormat actualFormat;
+    ImageCaptureInterface::CapErrorCode result = camera->initCapture(&actualFormat);
+
+    if (!processError)
+        return camera;
+
+    if (result != ImageCaptureInterface::SUCCESS_1CAM)
+    {
+        QMessageBox::information(this, "Camera Error", QString("Couldn't open the camera <%1>").arg(camera->getInterfaceName()));
+        delete_safe(camera);
+        return false;
+    }
+
+    if ((!!actualFormat) && !(actualFormat == ImageCaptureInterface::CameraFormat(h, w, fps)))
+    {
+        int formatIdx;
+        for (formatIdx = 0; formatIdx < ui->formatsComboBox->count(); ++formatIdx)
+        {
+            QVariantList format = ui->formatsComboBox->itemData(formatIdx).toList();
+            if (format.length() != 3)
+                break;
+
+            if (actualFormat == ImageCaptureInterface::CameraFormat(format[1].toInt(), format[0].toInt(), format[2].toInt()))
+                break;
+        }
+        ui->formatsComboBox->setCurrentIndex(formatIdx);
+
+        QVariantList format = ui->formatsComboBox->itemData(formatIdx).toList();
+        h   = format[1].toInt();
+        w   = format[0].toInt();
+        fps = format[2].toInt();
+        L_INFO_P("camera <%s>: new format is: %dx%d @%d", QSTR_DATA_PTR(camera->getInterfaceName()), w, h, fps);
+    }
+
+    return camera;
 }
 
 void PhotostationCaptureDialog::stopCapture()
@@ -560,6 +582,21 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
     ui->progressBar->setHidden(true);
     ui->progressBar->setValue(0);
 
+    if (mIsCalibrationMode)
+    {
+        if (ui->stationNameLineEdit->text() == "A") {
+            mRotaryDialog.selected = 0;
+        }
+
+        if (mRotaryDialog.selected < mRotaryDialog.positions.size())
+        {
+            const CameraLocationAngles& angles = mRotaryDialog.positions[mRotaryDialog.selected];
+
+            ui->angleSpinBox->setValue(radToDeg(angles.roll()));
+            ui->angle2SpinBox->setValue(radToDeg(angles.pitch()));
+        }
+    }
+
     QStringList failedSaves;
     /* Save images here */
     for (int i = 0; i < mCaptureInterfaces.count(); i++)
@@ -568,16 +605,31 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
         {
             QString path   = ui->outDirLineEdit->text();
             QString prefix = ui->fileNamePrefixLineEdit->text();
+            QString metaInfo;
 
             if (prefix.indexOf("SP") >= 0) {
                 QMessageBox::warning(this, "Bad filename series prefix:", prefix);
                 prefix.replace("SP", "sp");
             }
 
+            if (mIsCalibrationMode)
+            {
+                char buf[256];
+                snprintf2buf(buf, "%03d_%03ddeg"            // roll_pitch in degrees
+                    , roundSign(ui->angleSpinBox->value())
+                    , roundSign(ui->angle2SpinBox->value()));
+
+                metaInfo = buf;
+            }
+            else {
+                // TODO: add here planned features
+                //metaInfo = QString::number(ui->angleSpinBox->value()) + "deg";
+            }
+
             QString name = mNamer->nameForImage(
                 ui->stationNameLineEdit->text()
                 , mCaptureInterfaces[i].camId
-                , QString::number(ui->angleSpinBox->value()) + "deg"
+                , metaInfo
                 , (AbstractImageNamer::FileType)ui->outputFormatComboBox->currentIndex()
                 , &path
                 , prefix
@@ -588,7 +640,7 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
             if (!saveOk) {
                 failedSaves.append(path);
             }
-            L_INFO_P("File <%s> %ssaved", QSTR_DATA_PTR(path), saveOk ? "" : "not ");
+            L_INFO_P("<%s> %ssaved", QSTR_DATA_PTR(path), saveOk ? "" : "not ");
         }
 
         delete_safe(mCaptureInterfaces[i].result);
@@ -598,7 +650,22 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
 
     if (mAdvanceAfterSave)
     {
-        ui->angleSpinBox->setValue(ui->angleSpinBox->value() + ui->angleStepSpinBox->value());
+        if (mIsCalibrationMode)
+        {
+            mRotaryDialog.executeAndIncrement();
+
+            if (mRotaryDialog.selected < mRotaryDialog.positions.size())
+            {
+                const CameraLocationAngles& angles = mRotaryDialog.positions[mRotaryDialog.selected];
+
+                ui->angleSpinBox->setValue(radToDeg(angles.roll()));
+                ui->angle2SpinBox->setValue(radToDeg(angles.pitch()));
+            }
+        }
+        else
+        {
+            ui->angleSpinBox->setValue(ui->angleSpinBox->value() + ui->angleStepSpinBox->value());
+        }
 
         QString spName = ui->stationNameLineEdit->text();
 		QString spName2 = spName;
@@ -655,4 +722,6 @@ void PhotostationCaptureDialog::outputDir()
         return;
 
     ui->outDirLineEdit->setText(pathNew);
+
+    mRotaryDialog.mScriptsPath = pathNew;
 }

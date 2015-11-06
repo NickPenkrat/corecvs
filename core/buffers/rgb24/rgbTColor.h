@@ -6,7 +6,6 @@
 * \author alexander
 * \author pavel.vasilev
 */
-
 #ifndef CRGBTCOLOR_H_
 #define CRGBTCOLOR_H_
 
@@ -18,18 +17,16 @@
 
 #include "generated/rgbColorParameters.h"
 
-namespace corecvs
-{
+namespace corecvs {
+
 /**
 *   I use inheritance because no new data members will be added
 **/
-template <typename T>
-using RGBTColorBase = FixedVector<T, 4>;
-
 template<typename T>
-class RGBTColor : public RGBTColorBase<T>
+class RGBTColor : public FixedVector<T, 4>
 {
 public:
+    typedef FixedVector<T, 4> RGBTColorBase;
 
     enum FieldId
     {
@@ -43,7 +40,6 @@ public:
     *
     *
     * */
-
     explicit RGBTColor(T color)
     {
         const int shift = sizeof(T);
@@ -86,7 +82,7 @@ public:
         this->a() = 0;
     }
 
-    RGBTColor(const RGBTColorBase<T>& base) : RGBTColorBase<T>(base) {}
+    RGBTColor(const RGBTColorBase& base) : RGBTColorBase(base) {}
 
     RGBTColor()
     {
@@ -352,7 +348,7 @@ public:
         if (g > 255) g = 255;
         if (b > 255) b = 255;
 
-        return RGBColor(r, g, b);
+        return RGBTColor<uint8_t>(r, g, b);
     }
 
     static RGBTColor Black()
@@ -399,7 +395,7 @@ public:
     static RGBTColor Magenta()
     {
         const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
-        return RGBColor(max, 0, max);
+        return RGBTColor(max, 0, max);
     }
 
     static RGBTColor Blue()
@@ -495,7 +491,7 @@ public:
             return RGBTColor(0, fround(x * max), fround((1.0 - x) * max));
         }
         x -= 1.0;
-        return RGBColor(fround(x * max), fround((1.0 - x) * max), 0);
+        return RGBTColor(fround(x * max), fround((1.0 - x) * max), 0);
     }
 
     static Reflection staticInit()
@@ -608,4 +604,4 @@ typedef RGBTColor<uint16_t> RGBColor48;
 
 } //namespace corecvs
 
-#endif
+#endif // CRGBTCOLOR_H_

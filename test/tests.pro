@@ -11,24 +11,27 @@ exists(../../../config.pri) {
 TEMPLATE = subdirs
 
 SUBDIRS +=       \
-    grab         \
+#   grab         \
     grab_N_captures \
     serialize1   \
 #   adoptcolor   \
 #    avigrab     \
 #    decodebayer \
 #    genvectorui  \
-    aLowCodec \
-#    new_board_detector
+#    aLowCodec \
+#    new_board_detector \
+    cr2reader           \
+    debayer             \
 
 
 with_opencv {
     SUBDIRS +=       \
-        distortion_corrector \
-        matcher_basic \
-        matcher_full \
-        camera_calibration \
-        chessboard_detector \
+#        distortion_corrector \
+#        matcher_basic \
+#        matcher_full \
+#        camera_calibration \
+#        chessboard_detector \
+        calibration \
         calibration_job_generate \
         calibration_job_detect \
         calibration_job_estimate_distortion \
@@ -46,6 +49,11 @@ decodebayer.file                    = decodebayer/decodebayer.pro
 genvectorui.file                    = genvectorui/genvectorui.pro
 aLowCodec.file                      = aLowCodec/aLowCodec.pro
 
+cr2reader.file                      = cr2reader/cr2reader.pro
+cr2reader.depends                   -= utils
+debayer.file                        = debayer/debayer.pro
+debayer.depends                     -= utils
+
 new_board_detector.file             = new_board_detector/new_board_detector.pro
 
 distortion_corrector.file           = distortion_corrector/distortion_corrector.pro
@@ -55,6 +63,8 @@ matcher_full.file                   = matcher_full/matcher_full.pro
 
 camera_calibration.file             = camera_calibration/camera_calibration.pro
 chessboard_detector.file            = chessboard_detector/chessboard_detector.pro
+
+calibration.file                    = calibration/calibration.pro
 
 calibration_job_generate            = calibration_job_generate/calibration_job_generate.pro
 calibration_job_detect              = calibration_job_detect/calibration_job_detect.pro

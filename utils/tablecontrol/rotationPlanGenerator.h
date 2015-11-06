@@ -1,11 +1,13 @@
 #ifndef ROTATIONPLANGENERATOR_H
 #define ROTATIONPLANGENERATOR_H
 
+#include "calibrationLocation.h"
 #include <QWidget>
-#include "calibrationCamera.h"
+
+using namespace corecvs;
 
 namespace Ui {
-class RotationPlanGenerator;
+    class RotationPlanGenerator;
 }
 
 class RotationPlanGenerator : public QWidget

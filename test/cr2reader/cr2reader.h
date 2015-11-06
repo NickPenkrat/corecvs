@@ -1,10 +1,12 @@
 #pragma once
 /*
-Converts .cr2 to .ppm or bayer non-filtered .ppm using LibRaw.
-LibRaw should be modified to have its methods public
+    Converts .cr2 to .ppm or bayer non-filtered .ppm using LibRaw.
+    LibRaw should be modified to have its methods public
 */
 #include <string>
+
 #include "global.h"
+
 #include "g12Buffer.h"
 #include "metamap.h"
 
@@ -15,9 +17,8 @@ class LibRaw;
 class CR2Reader
 {
 public:
-
     CR2Reader();
-    ~CR2Reader();
+   ~CR2Reader();
 
     /**
      * Open file for reading.
@@ -29,7 +30,6 @@ public:
      *
      * \return  Error code.
      */
-
     int open(const string& filename);
 
     /**
@@ -42,7 +42,6 @@ public:
      *
      * \return  null if it fails, else pointer to Bayer data.
      */
-
     corecvs::G12Buffer* getBayer(bool shifted = true);
 
     /**
@@ -53,7 +52,6 @@ public:
      *
      * \return  null if it fails, else the metadata.
      */
-
     corecvs::MetaData* getMetadata();
 
     /**
@@ -64,7 +62,6 @@ public:
      *
      * \param [in,out]  bayer   If non-null, the new Bayer data.
      */
-
     void fakeBayer(corecvs::G12Buffer *bayer);
 
     /**
@@ -75,7 +72,6 @@ public:
      *
      * \param   bits    The bit depth.
      */
-
     void setBPP(uint bits);
 
     /**
@@ -86,7 +82,6 @@ public:
      *
      * \param   quality The quality.
      */
-
     void setQuality(uint quality);
 
     /**
@@ -99,7 +94,6 @@ public:
     *
     * \return  Error code.
     */
-
     int processDCRaw(bool noWhiteBalance = true);
 
     /**
@@ -115,15 +109,13 @@ public:
      *
      * \return  Error code.
      */
-
     int writePPM(const string& filename, bool fullColour = true);
 
 private:
-    int flipIndex(int row, int col, bool raw = false);
-    void histUpdate(int i, int j, uint16_t val);
-    uint64_t **hist = 0;
-    LibRaw *reader = 0;
-    int shift = 0;
+    int     flipIndex(int row, int col, bool raw = false);
+    void    histUpdate(int i, int j, uint16_t val);
 
+    uint64_t  **hist   = NULL;
+    LibRaw     *reader = NULL;
+    int         shift  = 0;
 };
-

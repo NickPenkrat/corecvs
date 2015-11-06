@@ -32,10 +32,12 @@ G12Buffer* PPMLoader::load(string name)
 
 G12Buffer* PPMLoader::load(const string& name, MetaData *metadata)
 {
-    if (metadata)
+    if (metadata != NULL) {
         DOTRACE(("Will load the file %s as PPM with metadata\n ", name.c_str()));
-    else
+    }
+    else {
         DOTRACE(("Will load the file %s as PPM (ignoring any available metadata)\n ", name.c_str()));
+    }
 
     G12Buffer *toReturn = g12BufferCreateFromPGM(name, metadata);
     return toReturn;
@@ -63,7 +65,7 @@ G12Buffer* PPMLoader::g12BufferCreateFromPGM(const string& name, MetaData *meta)
         return NULL;
     }
 
-    if (!readHeader(fp, &h, &w, &maxval, &type, meta) || type != 5 && type != 6)
+    if (!readHeader(fp, &h, &w, &maxval, &type, meta) || (type != 5 && type != 6))
     {
         CORE_ASSERT_FAIL(("File " + name + " is not a valid PGM image").c_str());
         return NULL;
@@ -266,15 +268,15 @@ bool PPMLoader::writeHeader(FILE *fp, unsigned long int h, unsigned long int w, 
     if (meta)
         for (MetaData::iterator i = metadata.begin(); i != metadata.end(); i++)
         {
-            fprintf(fp, "# @meta %s\t@values %i\t", i->first.c_str(), i->second.size());
+            fprintf(fp, "# @meta %s\t@values %i\t", i->first.c_str(), (int)i->second.size());
             for (int j = 0; j < i->second.size(); j++)
                 fprintf(fp, "%f ", i->second[j]);
             fprintf(fp, "\n");
         }
 
     fprintf(fp, "############################################\n");
-    fprintf(fp, "%d %d\n", w, h);
-    fprintf(fp, "%d\n", maxval);
+    fprintf(fp, "%lu %lu\n", w, h);
+    fprintf(fp, PRIu64 "\n", maxval);
 
     return true;
 }

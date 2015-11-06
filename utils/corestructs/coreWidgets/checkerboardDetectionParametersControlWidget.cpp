@@ -31,6 +31,8 @@ CheckerboardDetectionParametersControlWidget::CheckerboardDetectionParametersCon
     QObject::connect(mUi->minAccuracySpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->partialBoardCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->fastBoardSpeedupCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->drawSGFsOnBoardsCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->skipUndistortedWithNoDistortedBoardCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
 }
 
 CheckerboardDetectionParametersControlWidget::~CheckerboardDetectionParametersControlWidget()
@@ -69,6 +71,8 @@ void CheckerboardDetectionParametersControlWidget::getParameters(CheckerboardDet
     params.setMinAccuracy      (mUi->minAccuracySpinBox->value());
     params.setPartialBoard     (mUi->partialBoardCheckBox->isChecked());
     params.setFastBoardSpeedup (mUi->fastBoardSpeedupCheckBox->isChecked());
+    params.setDrawSGFsOnBoards (mUi->drawSGFsOnBoardsCheckBox->isChecked());
+    params.setSkipUndistortedWithNoDistortedBoard(mUi->skipUndistortedWithNoDistortedBoardCheckBox->isChecked());
 
 }
 
@@ -92,6 +96,8 @@ CheckerboardDetectionParameters *CheckerboardDetectionParametersControlWidget::c
         , mUi->minAccuracySpinBox->value()
         , mUi->partialBoardCheckBox->isChecked()
         , mUi->fastBoardSpeedupCheckBox->isChecked()
+        , mUi->drawSGFsOnBoardsCheckBox->isChecked()
+        , mUi->skipUndistortedWithNoDistortedBoardCheckBox->isChecked()
     );
     return result;
 }
@@ -111,6 +117,8 @@ void CheckerboardDetectionParametersControlWidget::setParameters(const Checkerbo
     mUi->minAccuracySpinBox->setValue(input.minAccuracy());
     mUi->partialBoardCheckBox->setChecked(input.partialBoard());
     mUi->fastBoardSpeedupCheckBox->setChecked(input.fastBoardSpeedup());
+    mUi->drawSGFsOnBoardsCheckBox->setChecked(input.drawSGFsOnBoards());
+    mUi->skipUndistortedWithNoDistortedBoardCheckBox->setChecked(input.skipUndistortedWithNoDistortedBoard());
     blockSignals(wasBlocked);
     emit paramsChanged();
 }

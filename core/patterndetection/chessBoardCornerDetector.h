@@ -69,7 +69,7 @@ struct CornerKernelSet
 {
     DpKernel A, B, C, D;
 
-    CornerKernelSet(double r, double alpha, double psi);
+    CornerKernelSet(double r, double alpha, double psi, bool minify = false);
 
     // Computes const function for entire image
     void computeCost(DpImage &img, DpImage &c, bool parallelable = true, bool new_style = true);
@@ -83,6 +83,7 @@ private:
     }
     // Initialization routine
     void computeKernels(double r, double alpha, double psi, int w, int c, double threshold = 0.05);
+    static void MinifyKernel(DpKernel &k);
 };
 
 struct ChessBoardCornerDetectorParams
@@ -120,7 +121,7 @@ struct ChessBoardCornerDetectorParams
     // Number of bins for computing edge direction histogram
     int histogramBins = 32;
     // Minimal angle between edges
-    double minAngle = M_PI / 10.0;
+    double minAngle = M_PI / 6.0;
     // Typical radius for estimating edge-related data and refinig corner positions
     int neighborhood = 25;
     // Gradient magnitude threshold

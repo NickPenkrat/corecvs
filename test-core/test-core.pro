@@ -76,4 +76,5 @@ SOURCES += \
     cameracalibration/main_test_camera_structs.cpp \
     conic/main_test_conic.cpp \
     calstructs/main_test_calstructs.cpp \
-    meshdraw/main_test_meshdraw.cpp \
+    polynomial/main_test_polynomial.cpp \
+    meshdraw/main_test_meshdraw.cpp

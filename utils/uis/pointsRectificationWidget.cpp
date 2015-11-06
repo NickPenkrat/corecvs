@@ -7,7 +7,7 @@
 PointsRectificationWidget::PointsRectificationWidget(QWidget *parent) :
       QWidget(parent)
     , mUi(new Ui::PointsRectificationWidget)
-    , mCorrespondancePoints(NULL)
+    , mCorrespondencePoints(NULL)
     , mLeftBuffer(NULL)
     , mRightBuffer(NULL)
 {
@@ -15,7 +15,7 @@ PointsRectificationWidget::PointsRectificationWidget(QWidget *parent) :
     initModel();
     connect(mUi->deleteButton , SIGNAL(released()), this, SLOT(deletePairs()));
     connect(mUi->addButton    , SIGNAL(released()), this, SLOT(addPair()));
-    connect(mUi->rectifyButton, SIGNAL(released()), this, SLOT(initCorrespondancePoints()));
+    connect(mUi->rectifyButton, SIGNAL(released()), this, SLOT(initCorrespondencePoints()));
 
     connect(mUi->leftWidget,  SIGNAL(editPoint(QPointF,QPointF)), this, SLOT(editPointLeftImage(QPointF,QPointF)));
     connect(mUi->rightWidget, SIGNAL(editPoint(QPointF,QPointF)), this, SLOT(editPointRightImage(QPointF,QPointF)));
@@ -102,7 +102,7 @@ PointsRectificationWidget::~PointsRectificationWidget()
 {
     delete_safe(mUi);
     delete_safe(mPointModel);
-    delete_safe(mCorrespondancePoints);
+    delete_safe(mCorrespondencePoints);
     delete_safe(mLeftBuffer);
     delete_safe(mRightBuffer);
 }
@@ -183,20 +183,20 @@ void PointsRectificationWidget::addPair()
     addPointPair(leftPoint, rightPoint);
 }
 
-void PointsRectificationWidget::initCorrespondancePoints()
+void PointsRectificationWidget::initCorrespondencePoints()
 {
-    delete mCorrespondancePoints;
-    mCorrespondancePoints = new CorrespondanceList();
+    delete mCorrespondencePoints;
+    mCorrespondencePoints = new CorrespondenceList();
     for (int i = 0; i < mPointModel->rowCount(); i ++)
     {
         Vector2dd left (mPointModel->item(i, 0)->text().toDouble(), mPointModel->item(i,1)->text().toDouble());
         Vector2dd right(mPointModel->item(i, 2)->text().toDouble(), mPointModel->item(i, 3)->text().toDouble());
-        mCorrespondancePoints->push_back(Correspondance(left, right));
+        mCorrespondencePoints->push_back(Correspondence(left, right));
     }
-    mCorrespondancePoints->h = mLeftBuffer->h;
-    mCorrespondancePoints->w = mLeftBuffer->w;
+    mCorrespondencePoints->h = mLeftBuffer->h;
+    mCorrespondencePoints->w = mLeftBuffer->w;
 
-    emit readyCorrespondancePoints(mCorrespondancePoints, mLeftBuffer, mRightBuffer);
+    emit readyCorrespondencePoints(mCorrespondencePoints, mLeftBuffer, mRightBuffer);
 }
 
 /* Lock functionality */

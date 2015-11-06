@@ -225,8 +225,11 @@ Matrix operator *(DiagonalMatrix &D, const Matrix &M)
 #else // !WITH_DIRTY_GEMM_HACKS
 
 # ifdef WITH_BLAS
-    // Okay, let's hope this means lapack too!
+#ifdef WITH_MKL
+#   include <mkl.h>
+#else
 #   include <cblas.h>
+#endif
 # endif
 
 
@@ -436,7 +439,11 @@ Vector operator *(const Matrix &M, const Vector &V)
     }
     else
     {
+#ifndef  WITH_BLAS
         corecvs::parallelable_for (0, M.h, 8, ParallelMV(&M, &V, &result));
+#else
+        cblas_dgemv (CblasRowMajor, CblasNoTrans, M.h, M.w, 1.0, &M.element(0, 0), M.stride, &V[0], 1, 0.0, &result[0], 1);
+#endif
     }
     return result;
 }
@@ -446,15 +453,26 @@ Vector operator *(const Vector &V, const Matrix &M)
     CORE_ASSERT_TRUE(M.h == V.size(), "Matrix and vector have wrong sizes");
     Vector result(M.w);
     int row, column;
-    for (column = 0; column < M.w; column++)
+#ifdef WITH_BLAS
+    if (M.h < 32)
     {
-        double sum = 0.0;
-        for (row = 0; row < M.h; row++)
-        {
-            sum += V.at(row) * M.a(row, column);
-        }
-        result.at(column) = sum;
+#endif
+       for (column = 0; column < M.w; column++)
+       {
+           double sum = 0.0;
+           for (row = 0; row < M.h; row++)
+           {
+               sum += V.at(row) * M.a(row, column);
+           }
+           result.at(column) = sum;
+       }
+#ifdef WITH_BLAS
     }
+    else
+    {
+        cblas_dgemv (CblasRowMajor, CblasTrans, M.h, M.w, 1.0, &M.element(0, 0), M.stride, &V[0], 1, 0.0, &result[0], 1);
+    }
+#endif
     return result;
 }
 

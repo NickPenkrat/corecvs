@@ -50,47 +50,11 @@ asserts {
     DEFINES += ASSERTS
 }
 
-# Autodetect block
-
-with_native:!win32 {
-
-    CPU_FLAGS=$$system(cat /proc/cpuinfo | grep -m 1 "^flags")
-#    message (Platform natively support $$CPU_FLAGS)
-
-    contains(CPU_FLAGS, "sse") {
-        CONFIG += with_sse
-#        message (Natively support SSE);
-    }
-    contains(CPU_FLAGS, "sse2") {
-        CONFIG += with_sse2
-#        message (Natively support SSE2);
-    }
-    contains(CPU_FLAGS, "ssse3") {
-        CONFIG += with_sse3
-#        message (Natively support SSE3);
-    }
-    contains(CPU_FLAGS, "avx") {
-        CONFIG += with_avx
-#        message (Natively support AVX);
-    }
-    contains(CPU_FLAGS, "avx2") {
-        CONFIG += with_avx2
-#        message (Natively support AVX2);
-    }
-    contains(CPU_FLAGS, "fma") {
-        CONFIG += with_fma
-#        message (Natively support FMA);
-    }
-}
-
 with_avx {
     DEFINES += WITH_AVX
     !win32-msvc* {
         QMAKE_CFLAGS   += -mavx
         QMAKE_CXXFLAGS += -mavx
-    } else:win32-msvc2010 {
-        QMAKE_CFLAGS   += /arch:AVX
-        QMAKE_CXXFLAGS += /arch:AVX
     } else {
         QMAKE_CFLAGS   += /arch:AVX
         QMAKE_CXXFLAGS += /arch:AVX
@@ -98,7 +62,7 @@ with_avx {
 }
 
 with_avx2 {
-    DEFINES += WITH_AVX2 WITH_FMA
+    DEFINES += WITH_AVX2
     !win32-msvc* {
         QMAKE_CFLAGS   += -mavx2
         QMAKE_CXXFLAGS += -mavx2
@@ -113,14 +77,14 @@ with_fma {
     !win32-msvc* {
         QMAKE_CFLAGS   += -mfma
         QMAKE_CXXFLAGS += -mfma
+    } else {
+        QMAKE_CFLAGS   += /arch:FMA
+        QMAKE_CXXFLAGS += /arch:FMA
     }
 }
 
-
-
 with_sse {
     DEFINES += WITH_SSE
-
     !win32-msvc* {
         QMAKE_CFLAGS   += -msse2
         QMAKE_CXXFLAGS += -msse2
@@ -131,17 +95,16 @@ with_sse {
 }
 with_sse3 {
     DEFINES += WITH_SSE3
-
     !win32-msvc* {
-        QMAKE_CFLAGS   += -msse3
-        QMAKE_CXXFLAGS += -msse3
+        QMAKE_CFLAGS   += -msse3 -mssse3
+        QMAKE_CXXFLAGS += -msse3 -mssse3
     } else {
 #       DEFINES -= WITH_SSE3
     }
 }
+
 with_sse4 {
     DEFINES += WITH_SSE4
-
     !win32-msvc* {
         QMAKE_CFLAGS   += -msse4.1
         QMAKE_CXXFLAGS += -msse4.1
@@ -206,11 +169,11 @@ gcc48_toolchain {
   QMAKE_LINK_SHLIB =  g++-4.8
   QMAKE_LINK_C = gcc-4.8
   QMAKE_LINK_C_SHLIB = gcc-4.8
-  
+
   # Uncomment this when qt headers are fixed
   QMAKE_CFLAGS += -Wno-unused-local-typedefs
   QMAKE_CXXFLAGS += -Wno-unused-local-typedefs
-  
+
   gcc_lto {
      QMAKE_CFLAGS_RELEASE += -flto
      QMAKE_CXXFLAGS_RELEASE += -flto
@@ -259,7 +222,7 @@ icc_toolchain {
 
 }
 
-isEmpty(CCACHE_TOOLCHAIN_ON) { 
+isEmpty(CCACHE_TOOLCHAIN_ON) {
   ccache_toolchain {
     QMAKE_CC = ccache $$QMAKE_CC
     QMAKE_CXX = ccache $$QMAKE_CXX
@@ -440,7 +403,7 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
         !isEmpty(TBB_PATH) {
             DEFINES += WITH_TBB
 
-            win32-msvc*:!contains(QMAKE_HOST.arch, x86_64) {                
+            win32-msvc*:!contains(QMAKE_HOST.arch, x86_64) {
                 TBB_LIBDIR = $(TBB_PATH)/lib/ia32/vc10
             } else:win32-msvc2010 {
                 TBB_LIBDIR = $(TBB_PATH)/lib/intel64/vc10
@@ -449,7 +412,7 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
             } else:exists($(TBB_PATH)/lib/tbb.dll) {
                 # old config when TBB's bins&libs were placed at TBB's lib dir
                 TBB_LIBDIR = $(TBB_PATH)/lib
-            } else {              
+            } else {
                 GCC_VER    = $$system(gcc -dumpversion)
                 TBB_LIBDIR = $(TBB_PATH)/lib/intel64/mingw$$GCC_VER
                 # the "script/windows/.tbb_build_mingw.bat" places libs there
@@ -481,17 +444,58 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
     }
 }
 
-with_blas {
-  !win32 {
-    !isEmpty(BLAS_PATH) {
-        !build_pass: message (Using BLAS from <$$BLAS_PATH>)
-#        INCLUDEPATH += $(BLAS_PATH)/include
-    } else {
-        !build_pass: message (Using System BLAS)
+#
+# MKL is more preferable as it uses "tbb" internally, which we use too anyway.
+# But openblas uses an "openmp" that is bad to use with tbb simultaneously!
+#
+with_mkl {
+    MKLROOT = $$(MKLROOT)
+    !win32: isEmpty(MKLROOT) {
+        MKLROOT = /opt/intel/mkl
     }
-    DEFINES     += WITH_BLAS
-    LIBS        += -lopenblas
-  }
+    exists("$$MKLROOT"/include/mkl.h) {
+        !win32 {
+            LIBS    += -L"$$MKLROOT"/lib/intel64 -lmkl_intel_lp64     -lmkl_core     -lmkl_tbb_thread     -ltbb -lstdc++ -lpthread -lm
+        } else {
+            LIBS    += -L"$$MKLROOT"/lib/intel64 -lmkl_intel_lp64_dll -lmkl_core_dll -lmkl_tbb_thread_dll -ltbb
+        }
+        INCLUDEPATH += "$$MKLROOT"/include
+        DEFINES     += WITH_BLAS
+        DEFINES     += WITH_MKL
+    }
+    else {
+        !build_pass: message (requested MKL is not installed and is deactivated)
+    }
+}
+
+with_openblas {
+    contains(DEFINES, WITH_MKL) {
+        !build_pass: contains(TARGET, core): message(openBLAS is deactivated as detected MKL was activated)
+    }
+    else:!win32 {
+        !isEmpty(BLAS_PATH) {
+            exists($(BLAS_PATH)/include/cblas.h) {
+                !build_pass: message(Using BLAS from <$$BLAS_PATH>)
+                INCLUDEPATH += $(BLAS_PATH)/include
+                LIBS        += -lopenblas
+                DEFINES     += WITH_BLAS
+            }
+            else {
+                !build_pass: message(requested openBLAS via BLAS_PATH is not found and is deactivated)
+            }
+        } else {
+            exists(/usr/include/cblas.h) {
+                !build_pass: message (Using System BLAS)
+                LIBS        += -lopenblas -llapacke
+                DEFINES     += WITH_BLAS
+            }
+            else {
+                !build_pass: message(requested system BLAS is not found and is deactivated)
+            }
+        }
+    } else {
+        !build_pass: message(requested openBLAS is not supported for Win and is deactivated)
+    }
 }
 
 # More static analysis warnings

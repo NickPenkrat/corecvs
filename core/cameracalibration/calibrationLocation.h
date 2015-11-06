@@ -15,7 +15,6 @@
 namespace corecvs {
 
 
-
 /**
  *   Contrary to what Affine3D does this class holds reference frame transformation in camera related terms
  *
@@ -67,11 +66,10 @@ public:
             Quaternion orientation = Quaternion::Identity()) :
         position(position),
         orientation(orientation)
-    {
-    }
+    {}
 
     /**
-     * Helper function that creates a CameraLocationData that acts just as a Affine3DQ
+     * Helper function that creates a CameraLocationData that NOT acts just as a Affine3DQ
      *
      * Affine
      *    X' = AR * X + AT
@@ -84,16 +82,17 @@ public:
      *    CR = AR
      *    CT = CR^{-1} (- AT)
      *
+     * NOTE: Correct form is different. Since cam works as X=R(X'-T) and A3DQ works as X'=RX+T
      *
      **/
     explicit CameraLocationData( const Affine3DQ &transform ) :
-        position(transform.rotor.conjugated() * (-transform.shift)),
-        orientation(transform.rotor)
+        position(transform.shift),
+        orientation(transform.rotor.conjugated())
     {}
 
     Affine3DQ toAffine3D() const
     {
-        return Affine3DQ(orientation, - (orientation * position));
+        return Affine3DQ(orientation.conjugated(), position);
     }
 
     Vector3dd project(const Vector3dd &pt) const
@@ -150,8 +149,6 @@ public:
     /* Pretty print */
     void prettyPrint (ostream &out = cout);
     void prettyPrint1(ostream &out = cout);
-
-
 };
 
 
@@ -161,8 +158,6 @@ public:
  *    Yaw/Athimuth [0..2pi]
  *    Pitch
  *    Roll
- *
- *
  **/
 class CameraLocationAngles : public EulerAngles
 {

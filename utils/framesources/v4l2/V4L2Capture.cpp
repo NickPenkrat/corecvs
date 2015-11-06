@@ -504,7 +504,7 @@ ImageCaptureInterface::CapErrorCode V4L2CaptureInterface::getCaptureProperty(int
     return SUCCESS;
 }
 
-ImageCaptureInterface::CapErrorCode V4L2CaptureInterface::initCapture()
+ImageCaptureInterface::CapErrorCode V4L2CaptureInterface::initCapture(CameraFormat * /*actualFormat*/)
 {
     formatH = 0;
     formatW = 0;

@@ -5,11 +5,11 @@
 #include "rotationPlanGenerator.h"
 
 #include <QWidget>
+//#include <QtSerialPort/QSerialPort>
 
 namespace Ui {
-class RotaryTableControlWidget;
+    class RotaryTableControlWidget;
 }
-
 
 class Mesh3DScene;
 
@@ -36,12 +36,14 @@ public:
     void updateTable ();
 
     RotationPlanGenerator generator;
+    QString mScriptsPath;
 
+    //QSerialPort mPort;
 
 public slots:
     void execute();
     void executeAndIncrement();
-
+    void executeAll();
 
     void save();
     void load();
@@ -54,10 +56,13 @@ public slots:
 
     void newList(const vector<CameraLocationAngles> &input);
 
-
 private:
     QSharedPointer<Mesh3DScene> scene;
     Ui::RotaryTableControlWidget *ui;
+
+    QString getPathScriptAll();
+    QString getPathScript(int iy, int ir, int ip);
+    void    addCmdsToScriptAll(const string &s);
 };
 
 #endif // TABLECONTROLWIDGET_H
