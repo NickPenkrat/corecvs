@@ -148,7 +148,7 @@ void Mesh3DScene::drawMyself(CloudViewDialog *dialog)
         glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     }
 
-    if (mParameters.style() == Draw3dStyle::COLOR_2)
+    if (mParameters.style() == Draw3dStyle::COLOR_2 && faces.size() > 0)
     {
         glPolygonOffset ( -1.0, -2.0);
         glEnable (  GL_POLYGON_OFFSET_LINE );
@@ -159,7 +159,7 @@ void Mesh3DScene::drawMyself(CloudViewDialog *dialog)
 
 //        glDrawElements(GL_LINES    , GLsizei(edges.size() * 2), GL_UNSIGNED_INT, &(edges[0]));
 
-        glDisable (  GL_POLYGON_OFFSET_LINE );
+        glDisable (GL_POLYGON_OFFSET_LINE);
     }
 
     glPolygonMode( GL_FRONT_AND_BACK, mode );
@@ -171,15 +171,19 @@ void Mesh3DScene::drawMyself(CloudViewDialog *dialog)
     }
 
     /* FACES */
-    if (mParameters.faceColorOverride() || !hasColor ) {
-        OpenGLTools::glColorRGB(mParameters.faceColor());
-        glDrawElements(GL_TRIANGLES, GLsizei(faces.size() * 3), GL_UNSIGNED_INT, &(faces   [0]));
-    } else {
-        /* We need to speed this up */
-        for (size_t fi = 0; fi < faces.size(); fi++)
-        {
-            OpenGLTools::glColorRGB(facesColor[fi]);
-            glDrawElements(GL_TRIANGLES, GLsizei(3), GL_UNSIGNED_INT, &(faces[fi]));
+    if (faces.size() > 0)
+    {
+        if (mParameters.faceColorOverride() || !hasColor) {
+            OpenGLTools::glColorRGB(mParameters.faceColor());
+            glDrawElements(GL_TRIANGLES, GLsizei(faces.size() * 3), GL_UNSIGNED_INT, &(faces[0]));
+        }
+        else {
+            /* We need to speed this up */
+            for (size_t fi = 0; fi < faces.size(); fi++)
+            {
+                OpenGLTools::glColorRGB(facesColor[fi]);
+                glDrawElements(GL_TRIANGLES, GLsizei(3), GL_UNSIGNED_INT, &(faces[fi]));
+            }
         }
     }
 
@@ -198,7 +202,7 @@ void Mesh3DScene::drawMyself(CloudViewDialog *dialog)
             glDrawElements(GL_LINES    , GLsizei(2), GL_UNSIGNED_INT, &(edges[ei]));
         }
     }
-     glPointSize(oldLineWidth);
+    glPointSize(oldLineWidth);
 
 
     /* POINTS */
