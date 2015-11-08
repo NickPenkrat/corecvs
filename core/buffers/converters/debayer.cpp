@@ -286,19 +286,12 @@ RGB48Buffer* Debayer::improved()
                     dc[d][idx] = sqr(Lab[d][offset][1] - Lab[d][offset + shift_b][1]) + sqr(Lab[d][offset][2] - Lab[d][offset + shift_b][2]);
                 }
             }
-            
-            float eps_l_a = min(max(dl[0][0], dl[0][1]),
-                                max(dl[1][2], dl[1][3]));
-            float eps_c_a = min(max(dc[0][0], dc[0][1]),
-                                max(dc[1][2], dc[1][3]));
 
-            float eps_l_b = min(max(dl[1][0], dl[1][1]),
-                                max(dl[0][2], dl[0][3]));
-            float eps_c_b = min(max(dc[1][0], dc[1][1]),
-                                max(dc[0][2], dc[0][3]));
-
-            float eps_l = (eps_l_a + 3*eps_l_b)/4;
-            float eps_c = (eps_c_a + 3*eps_c_b)/4;
+            // min { max { DIFF(x, neighbor) } } for all neighbors from B(x, 1)
+            // the luminance and chrominance deviations are defined as maximal deviation in any direction
+            // we must choose minimal deviations to count homogenous pixels
+            float eps_l = min(max(max(dl[0][0], dl[0][1]), max(dl[0][2], dl[0][3])), max(max(dl[1][0], dl[1][1]), max(dl[1][2], dl[1][3])));
+            float eps_c = min(max(max(dc[0][0], dc[0][1]), max(dc[0][2], dc[0][3])), max(max(dc[1][0], dc[1][1]), max(dc[1][2], dc[1][3])));
 
             for (int d = 0; d < 2; d++)
             {
@@ -364,7 +357,7 @@ RGB48Buffer* Debayer::improved()
 
     // apply median filter to rgbdiff
     // filter radius
-    const int radius = 2;
+    const int radius = 1;
     // filter size - do not change
     const int size = sqr(2 * radius + 1);
 
