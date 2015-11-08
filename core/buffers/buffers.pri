@@ -54,6 +54,7 @@ HEADERS += \
     buffers/deformMap.h \
     buffers/focusEstimator.h \
     buffers/converters/debayer.h \
+    buffers/converters/rgbConverter.h \
 
 
 
