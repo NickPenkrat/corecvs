@@ -86,22 +86,22 @@ RGB48Buffer* Debayer::linear()
                     {
                     case 0: // red
                         red = mBayer->element(i + k, j + l);
-                        green = clampedBayerSum({ Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1), Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k) });
-                        blue = clampedBayerSum({ Vector2d32(j + l - 1, i + k - 1), Vector2d32(j + l + 1, i + k - 1), Vector2d32(j + l - 1, i + k + 1), Vector2d32(j + l + 1, i + k + 1) });
+                        green = weightedBayerAvg({ Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1), Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k) });
+                        blue = weightedBayerAvg({ Vector2d32(j + l - 1, i + k - 1), Vector2d32(j + l + 1, i + k - 1), Vector2d32(j + l - 1, i + k + 1), Vector2d32(j + l + 1, i + k + 1) });
                         break;
                     case 1: // green1
-                        red = clampedBayerSum({ Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k) });
+                        red = weightedBayerAvg({ Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k) });
                         green = mBayer->element(i + k, j + l);
-                        blue = clampedBayerSum({ Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1) });
+                        blue = weightedBayerAvg({ Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1) });
                         break;
                     case 2: // green2
-                        red = clampedBayerSum({ Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1) });
+                        red = weightedBayerAvg({ Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1) });
                         green = mBayer->element(i + k, j + l);
-                        blue = clampedBayerSum({ Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k) });
+                        blue = weightedBayerAvg({ Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k) });
                         break;
                     case 3: // blue
-                        red = clampedBayerSum({ Vector2d32(j + l - 1, i + k - 1), Vector2d32(j + l + 1, i + k - 1), Vector2d32(j + l - 1, i + k + 1), Vector2d32(j + l + 1, i + k + 1) });
-                        green = clampedBayerSum({ Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1), Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k) });
+                        red = weightedBayerAvg({ Vector2d32(j + l - 1, i + k - 1), Vector2d32(j + l + 1, i + k - 1), Vector2d32(j + l - 1, i + k + 1), Vector2d32(j + l + 1, i + k + 1) });
+                        green = weightedBayerAvg({ Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1), Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k) });
                         blue = mBayer->element(i + k, j + l);
                         break;
                     }
@@ -142,36 +142,36 @@ RGB48Buffer* Debayer::improved()
                     {
                         // TODO: make the following code more readable
                     case 0: // red
-                        deltar = mBayer->element(i + k, j + l) - clampedBayerSum({ Vector2d32(j + l, i + k - 2), Vector2d32(j + l, i + k + 2), Vector2d32(j + l - 2, i + k), Vector2d32(j + l + 2, i + k) });
-                        absv = abs(clampedBayerSum(Vector2d32(j + l, i + k - 1)) - clampedBayerSum(Vector2d32(j + l, i + k + 1)));
-                        absh = abs(clampedBayerSum(Vector2d32(j + l + 1, i + k)) - clampedBayerSum(Vector2d32(j + l - 1, i + k)));
-                        //green_interp = clampedBayerSum(Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1), Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k));
-                        green_interp = absv > absh ? clampedBayerSum({ Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k) }) :
-                            clampedBayerSum({ Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1) });
+                        deltar = mBayer->element(i + k, j + l) - weightedBayerAvg({ Vector2d32(j + l, i + k - 2), Vector2d32(j + l, i + k + 2), Vector2d32(j + l - 2, i + k), Vector2d32(j + l + 2, i + k) });
+                        absv = abs(weightedBayerAvg(Vector2d32(j + l, i + k - 1)) - weightedBayerAvg(Vector2d32(j + l, i + k + 1)));
+                        absh = abs(weightedBayerAvg(Vector2d32(j + l + 1, i + k)) - weightedBayerAvg(Vector2d32(j + l - 1, i + k)));
+                        //green_interp = weightedBayerAvg(Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1), Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k));
+                        green_interp = absv > absh ? weightedBayerAvg({ Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k) }) :
+                            weightedBayerAvg({ Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1) });
                         red = mBayer->element(i + k, j + l);
                         green = clip(green_interp + alpha*deltar, mDepth);
-                        blue = clip(clampedBayerSum({ Vector2d32(j + l - 1, i + k - 1), Vector2d32(j + l + 1, i + k - 1), Vector2d32(j + l - 1, i + k + 1), Vector2d32(j + l + 1, i + k + 1) }) + gamma*deltar, mDepth);
+                        blue = clip(weightedBayerAvg({ Vector2d32(j + l - 1, i + k - 1), Vector2d32(j + l + 1, i + k - 1), Vector2d32(j + l - 1, i + k + 1), Vector2d32(j + l + 1, i + k + 1) }) + gamma*deltar, mDepth);
                         break;
                     case 1: // green1
-                        deltag = mBayer->element(i + k, j + l) - clampedBayerSum({ Vector2d32(j + l - 1, i + k - 1), Vector2d32(j + l - 1, i + k + 1), Vector2d32(j + l + 1, i + k - 1), Vector2d32(j + l + 1, i + k + 1) });
-                        red = clip(clampedBayerSum({ Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k) }) + beta*deltag, mDepth);
+                        deltag = mBayer->element(i + k, j + l) - weightedBayerAvg({ Vector2d32(j + l - 1, i + k - 1), Vector2d32(j + l - 1, i + k + 1), Vector2d32(j + l + 1, i + k - 1), Vector2d32(j + l + 1, i + k + 1) });
+                        red = clip(weightedBayerAvg({ Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k) }) + beta*deltag, mDepth);
                         green = mBayer->element(i + k, j + l);
-                        blue = clip(clampedBayerSum({ Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1) }) + beta*deltag, mDepth);
+                        blue = clip(weightedBayerAvg({ Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1) }) + beta*deltag, mDepth);
                         break;
                     case 2: // green2
-                        deltag = mBayer->element(i + k, j + l) - clampedBayerSum({ Vector2d32(j + l - 1, i + k - 1), Vector2d32(j + l - 1, i + k + 1), Vector2d32(j + l + 1, i + k - 1), Vector2d32(j + l + 1, i + k + 1) });
-                        red = clip(clampedBayerSum({ Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1) }) + beta*deltag, mDepth);
+                        deltag = mBayer->element(i + k, j + l) - weightedBayerAvg({ Vector2d32(j + l - 1, i + k - 1), Vector2d32(j + l - 1, i + k + 1), Vector2d32(j + l + 1, i + k - 1), Vector2d32(j + l + 1, i + k + 1) });
+                        red = clip(weightedBayerAvg({ Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1) }) + beta*deltag, mDepth);
                         green = mBayer->element(i + k, j + l);
-                        blue = clip(clampedBayerSum({ Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k) }) + beta*deltag, mDepth);;
+                        blue = clip(weightedBayerAvg({ Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k) }) + beta*deltag, mDepth);;
                         break;
                     case 3: // blue
-                        deltab = mBayer->element(i + k, j + l) - clampedBayerSum({ Vector2d32(j + l, i + k - 2), Vector2d32(j + l, i + k + 2), Vector2d32(j + l - 2, i + k), Vector2d32(j + l + 2, i + k) });
-                        absv = abs(clampedBayerSum(Vector2d32(j + l, i + k - 1)) - clampedBayerSum(Vector2d32(j + l, i + k + 1)));
-                        absh = abs(clampedBayerSum(Vector2d32(j + l + 1, i + k)) - clampedBayerSum(Vector2d32(j + l - 1, i + k)));
-                        //green_interp = clampedBayerSum(Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1), Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k));
-                        green_interp = absv > absh ? clampedBayerSum({ Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k) }) :
-                            clampedBayerSum({ Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1) });
-                        red = clip(clampedBayerSum({ Vector2d32(j + l - 1, i + k - 1), Vector2d32(j + l + 1, i + k - 1), Vector2d32(j + l - 1, i + k + 1), Vector2d32(j + l + 1, i + k + 1) }) + gamma*deltab, mDepth);
+                        deltab = mBayer->element(i + k, j + l) - weightedBayerAvg({ Vector2d32(j + l, i + k - 2), Vector2d32(j + l, i + k + 2), Vector2d32(j + l - 2, i + k), Vector2d32(j + l + 2, i + k) });
+                        absv = abs(weightedBayerAvg(Vector2d32(j + l, i + k - 1)) - weightedBayerAvg(Vector2d32(j + l, i + k + 1)));
+                        absh = abs(weightedBayerAvg(Vector2d32(j + l + 1, i + k)) - weightedBayerAvg(Vector2d32(j + l - 1, i + k)));
+                        //green_interp = weightedBayerAvg(Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1), Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k));
+                        green_interp = absv > absh ? weightedBayerAvg({ Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k) }) :
+                            weightedBayerAvg({ Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1) });
+                        red = clip(weightedBayerAvg({ Vector2d32(j + l - 1, i + k - 1), Vector2d32(j + l + 1, i + k - 1), Vector2d32(j + l - 1, i + k + 1), Vector2d32(j + l + 1, i + k + 1) }) + gamma*deltab, mDepth);
                         green = clip(green_interp + alpha*deltab, mDepth);
                         blue = mBayer->element(i + k, j + l);
                         break;
@@ -363,25 +363,58 @@ void Debayer::preprocess(bool overwrite)
     }
 }
 
-int32_t Debayer::clampedBayerSum(Vector2d32 coords)
+int32_t Debayer::weightedBayerAvg(Vector2d32 coords)
 {
-    return clampedBayerSum(vector<Vector2d32>{coords});
+    return weightedBayerAvg(vector<Vector2d32>{coords});
 }
 
-int32_t Debayer::clampedBayerSum(vector<Vector2d32> coords)
+int32_t Debayer::weightedBayerAvg(vector<Vector2d32> coords, vector<int> coeffs)
 {
     int32_t result = 0;
     uint16_t div = 0;
 
-    for (vector<Vector2d32>::iterator it = coords.begin(); it != coords.end(); it++)
+    bool useCoeffs = coeffs.size() >= coords.size();
+
+    for (int i = 0; i < coords.size(); i++)
     {
-        Vector2d32 v = (*it);
-        if (v.x() >= 0 && v.y() >= 0 && v.x() < mBayer->w && v.y() < mBayer->h)
+        if (coords[i].x() >= 0 && coords[i].y() >= 0 && coords[i].x() < mBayer->w && coords[i].y() < mBayer->h)
         {
             div++;
-            result += mBayer->element(v);
+            if (useCoeffs)
+                result += mBayer->element(coords[i])*coeffs[i];
+            else
+                result += mBayer->element(coords[i]);
         }
     }
-
-    return div == 0 ? 0 : result / div;
+    if (div == 0)
+        return 0;
+    else
+        return result / div;
 }
+
+uint16_t Debayer::clip(int32_t x, int depth)
+{
+    const uint16_t maximum = (1 << depth) - 1;
+    if (x < 0)
+        return 0;
+    if (x > maximum || x >= (1 << 16))
+        return maximum;
+    return (uint16_t)x;
+}
+
+int32_t Debayer::clamp(int32_t x, int32_t a, int32_t b)
+{
+    if (a > b)
+        SwapInts<int32_t>(a, b);
+    if (x < a)
+        return a;
+    if (x > b)
+        return b;
+    return x;
+}
+
+Debayer::~Debayer()
+{
+    deletearr_safe(mCurve);
+}
+
