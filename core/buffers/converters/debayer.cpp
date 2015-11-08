@@ -190,7 +190,8 @@ RGB48Buffer* Debayer::improved()
     RGBColor48 pixel;
 
     // TODO: the following may hardly be considered readable by normal people
-    // the following loop style was chosen to avoid the creation of another array dimension (maybe not the best way)
+    // please kill me if i decide to write like this again
+    // TODO: rewrite all _h/_v stuff asap
 
     // interpolate red and blue first vertically, then horizontally
     for (int i = 0; i < 2; i++, green = green_h, rgb = rgb_h, Lab = Lab_h)
@@ -301,8 +302,7 @@ RGB48Buffer* Debayer::improved()
         }
     }
 
-    // combine homogenous pixels
-
+    // select homogeneous pixels
     int homo_cur[2];
     for (int i = 0; i < mBayer->h; i++)
     {
