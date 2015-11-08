@@ -22,11 +22,14 @@ int main(int argc, const char **argv)
         return -1;
     }
 
-    Debayer d(bayer, 12, &meta);
+    Debayer d(bayer, 8, &meta);
 
     RGB48Buffer *result = nullptr;
 
     result = d.toRGB48(Debayer::Method(quality));
 
     PPMLoader().save("out.ppm", result);
+    
+    delete_safe(bayer);
+    delete_safe(result);
 }

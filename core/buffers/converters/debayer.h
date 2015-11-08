@@ -63,7 +63,7 @@ private:
     MetaData *  mMetadata   = nullptr;
 
     void        scaleCoeffs();
-    uint16_t*   gammaCurve(int imax);
+    void        gammaCurve(uint16_t *curve, int imax);
     void        preprocess(bool overwrite = false);
 
     RGB48Buffer* linear();
