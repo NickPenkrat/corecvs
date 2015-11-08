@@ -59,16 +59,15 @@ G12Buffer* PPMLoader::g12BufferCreateFromPGM(const string& name, MetaData *meta)
     // open file for reading in binary mode
     fp = fopen(name.c_str(), "rb");
 
-    if (fp == NULL)
+    if (fp == nullptr)
     {
-        CORE_ASSERT_FAIL(("File " + name + " does not exist").c_str());
-        return NULL;
+        return nullptr;
     }
 
-    if (!readHeader(fp, &h, &w, &maxval, &type, meta) || (type != 5 && type != 6))
+    if(!readHeader(fp, &h, &w, &maxval, &type, meta) || (type != 5 && type != 6))
     {
-        CORE_ASSERT_FAIL(("File " + name + " is not a valid PGM image").c_str());
-        return NULL;
+        fclose(fp);
+        return nullptr;
     }
 
     bool calcWhite = false;
