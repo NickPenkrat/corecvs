@@ -26,19 +26,7 @@ int main(int argc, const char **argv)
 
     RGB48Buffer *result = nullptr;
 
-    switch (quality)
-    {
-    case 0:
-        result = d.toRGB48(Debayer::Nearest);
-        break;
-    case 1:
-    default:
-        result = d.toRGB48(Debayer::Bilinear);
-        break;
-    /*case 7:
-        result = d.toRGB48(Debayer::Improved);
-        break;*/
-    }
+    result = d.toRGB48(Debayer::Method(quality));
 
     PPMLoader().save("out.ppm", result);
 }

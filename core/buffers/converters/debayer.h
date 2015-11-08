@@ -19,7 +19,7 @@ namespace corecvs {
 class Debayer
 {
 public:
-    enum Quality    // TODO: is it quality or method ?
+    enum Method
     {
         Nearest  = -5,
         Bilinear = 0,
@@ -51,15 +51,16 @@ public:
      *
      * \return  Resulting image.
      */
-    RGB48Buffer* toRGB48(Quality quality);
+    RGB48Buffer* toRGB48(Method method);
 
 private:
-    G12Buffer*  mBayer = nullptr;
-    int         mDepth = 12;
-    MetaData *  mMetadata = nullptr;
-    uint16_t*   mCurve = nullptr;
-    Vector3dd   mScaleMul;
-    uint16_t    mBlack = 0;
+    int         mDepth      = 12;
+    Vector3dd   mScaleMul   = { 1, 1, 1 };
+    uint16_t    mBlack      = 0;
+    uint8_t     mBayerPos   = 0;
+    uint16_t*   mCurve      = nullptr;
+    G12Buffer*  mBayer      = nullptr;
+    MetaData *  mMetadata   = nullptr;
 
     void        scaleCoeffs();
     uint16_t*   gammaCurve(int imax);
@@ -70,6 +71,7 @@ private:
     RGB48Buffer* improved();
 
     /* utilitary functions */
+
     /**
      * Clip int to uint16.
      *
@@ -90,7 +92,6 @@ private:
      *
      * \return  Clamped value.
      */
-
     static int32_t clamp(int32_t x, int32_t a, int32_t b);
 
     /**
@@ -101,12 +102,9 @@ private:
      *
      * \return  Averaged value.
      */
-
     int32_t weightedBayerAvg(vector<Vector2d32> coords, vector<int>coeffs = vector<int>());
     int32_t weightedBayerAvg(Vector2d32 coords);
     inline uint8_t colorFromBayerPos(int i, int j, bool rggb = true);
-public:
-    G12Buffer* median(G12Buffer* in);
 };
 
 }

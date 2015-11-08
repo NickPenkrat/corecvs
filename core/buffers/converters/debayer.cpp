@@ -13,16 +13,6 @@ Debayer::~Debayer()
     deletearr_safe(mCurve);
 }
 
-uint16_t Debayer::clip(int32_t x, int depth)
-{
-    const uint16_t maximum = (1 << depth) - 1;
-    if (x < 0)
-        return 0;
-    if (x > maximum || x >= (1 << 16))
-        return maximum;
-    return (uint16_t)x;
-}
-
 RGB48Buffer* Debayer::nearest()
 {
     // RGGB
@@ -46,16 +36,16 @@ RGB48Buffer* Debayer::nearest()
                 {
                     int pxshift = (l ^ (l & 1));
                     // i don't know how i came to this
-                    red = mBayer->element(i + swapRows, (j + pxshift) ^ swapCols);
                     // green1 for even rows, green2 for odd
-                    green = mBayer->element(i + (1 - k) ^ swapRows, j + pxshift + (1 - k) ^ !swapCols);
-                    blue = mBayer->element(i + !swapRows, (j + pxshift) ^ !swapCols);
+                    red   = mBayer->element(i +           swapRows, (j + pxshift)           ^  swapCols);
+                    green = mBayer->element(i + (1 - k) ^ swapRows, (j + pxshift) + (1 - k) ^ !swapCols);
+                    blue  = mBayer->element(i +          !swapRows, (j + pxshift)           ^ !swapCols);
 
-                    result->setElement(i + k, j + l, RGBColor48(
+                    result->element(i + k, j + l) = {
                         mCurve[clip((int64_t)((red - mBlack) * mScaleMul[0]), mDepth)],
                         mCurve[clip((int64_t)((green - mBlack) * mScaleMul[1]), mDepth)],
                         mCurve[clip((int64_t)((blue - mBlack) * mScaleMul[2]), mDepth)]
-                        ));
+                    };
                 }
         }
         }
@@ -86,24 +76,34 @@ RGB48Buffer* Debayer::linear()
                     switch (color)
                     {
                     case 0: // red
+
+                        // conventionally, y element is first and x is second when it comes to element getters in buffers, but in vectors it's actually inverse
+                        // TODO: should I comply with the variable names and use vectors of the form { x, y } (used currently) or reverse variable order (change to { y, x })?
+                        // the latter has a better readability while the former aims to avoid confusion and clutter in coordinates
+                        // known color
                         red = mBayer->element(i + k, j + l);
-                        green = weightedBayerAvg({ Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1), Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k) });
-                        blue = weightedBayerAvg({ Vector2d32(j + l - 1, i + k - 1), Vector2d32(j + l + 1, i + k - 1), Vector2d32(j + l - 1, i + k + 1), Vector2d32(j + l + 1, i + k + 1) });
+
+                        // interpolated colors
+                        green = weightedBayerAvg({ { j + l,     i + k - 1 }, { j + l,     i + k + 1 }, { j + l - 1, i + k     }, { j + l + 1, i + k     } });
+                        blue  = weightedBayerAvg({ { j + l - 1, i + k - 1 }, { j + l + 1, i + k - 1 }, { j + l - 1, i + k + 1 }, { j + l + 1, i + k + 1 } });
                         break;
                     case 1: // green1
-                        red = weightedBayerAvg({ Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k) });
                         green = mBayer->element(i + k, j + l);
-                        blue = weightedBayerAvg({ Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1) });
+
+                        red  = weightedBayerAvg({ { j + l - 1, i + k     }, { j + l + 1, i + k     } });
+                        blue = weightedBayerAvg({ { j + l,     i + k - 1 }, { j + l    , i + k + 1 } });
                         break;
                     case 2: // green2
-                        red = weightedBayerAvg({ Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1) });
                         green = mBayer->element(i + k, j + l);
-                        blue = weightedBayerAvg({ Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k) });
+
+                        red  = weightedBayerAvg({ { j + l,     i + k - 1 }, { j + l,     i + k + 1 } });
+                        blue = weightedBayerAvg({ { j + l - 1, i + k     }, { j + l + 1, i + k     } });
                         break;
                     case 3: // blue
-                        red = weightedBayerAvg({ Vector2d32(j + l - 1, i + k - 1), Vector2d32(j + l + 1, i + k - 1), Vector2d32(j + l - 1, i + k + 1), Vector2d32(j + l + 1, i + k + 1) });
-                        green = weightedBayerAvg({ Vector2d32(j + l, i + k - 1), Vector2d32(j + l, i + k + 1), Vector2d32(j + l - 1, i + k), Vector2d32(j + l + 1, i + k) });
                         blue = mBayer->element(i + k, j + l);
+
+                        red   = weightedBayerAvg({ { j + l - 1, i + k - 1 }, { j + l + 1, i + k - 1 }, { j + l - 1, i + k + 1 }, { j + l + 1, i + k + 1 } });
+                        green = weightedBayerAvg({ { j + l,     i + k - 1 }, { j + l,     i + k + 1 }, { j + l - 1, i + k     }, { j + l + 1, i + k     } });
                         break;
                     }
 
@@ -166,12 +166,12 @@ RGB48Buffer* Debayer::improved()
                         // apply low-pass filter with coefficients -1/4,1/2,1/2,1/2,-1/4 and clamp the resulting green value by its two neighbours
                         // the coefficients are close to these of Hirakawa & Parks' optimal filter
                         // horizontal
-                        val = weightedBayerAvg({ { j + l - 2, i + k },{ j + l - 1, i + k },{ j + l, i + k },{ j + l + 1, i + k },{ j + l + 2, i + k } }, filter) / 4;
+                        val = weightedBayerAvg({ { j + l - 2, i + k }, { j + l - 1, i + k }, { j + l, i + k }, { j + l + 1, i + k }, { j + l + 2, i + k } }, filter) / 4;
                         val = clamp(val, weightedBayerAvg({ j + l - 1, i + k }), weightedBayerAvg({ j + l + 1, i + k }));
                         green_h->element(i + k, j + l) = clip(val, mDepth);
 
                         //vertical
-                        val = weightedBayerAvg({ { j + l, i + k - 2 },{ j + l, i + k - 1 },{ j + l, i + k },{ j + l, i + k + 1 },{ j + l, i + k + 2 } }, filter) / 4;
+                        val = weightedBayerAvg({ { j + l, i + k - 2 }, { j + l, i + k - 1 }, { j + l, i + k }, { j + l, i + k + 1 }, { j + l, i + k + 2 } }, filter) / 4;
                         val = clamp(val, weightedBayerAvg({ j + l, i + k - 1 }), weightedBayerAvg({ j + l, i + k + 1 }));
                         green_v->element(i + k, j + l) = clip(val, mDepth);
                         break;
@@ -401,12 +401,12 @@ uint16_t* Debayer::gammaCurve(int imax)
     return curve;
 }
 
-RGB48Buffer* Debayer::toRGB48(Quality quality)
+RGB48Buffer* Debayer::toRGB48(Method method)
 {
     preprocess();
 
     RGB48Buffer *result = nullptr;
-    switch (quality)
+    switch (method)
     {
     case Nearest:
         result = nearest();
@@ -493,3 +493,20 @@ int32_t Debayer::clamp(int32_t x, int32_t a, int32_t b)
     return x;
 }
 
+inline uint8_t Debayer::colorFromBayerPos(int i, int j, bool rggb)
+{
+    if (rggb)   // r, g1, g2, b
+        return   (j ^ (mBayerPos & 1)) & 1 | (((i ^ ((mBayerPos & 2) >> 1)) & 1) << 1);
+    else        // r, g, b
+        return (((j ^ (mBayerPos & 1)) & 1 | (((i ^ ((mBayerPos & 2) >> 1)) & 1) << 1)) + 1) >> 1;
+}
+
+inline uint16_t Debayer::clip(int32_t x, int depth)
+{
+    const uint16_t maximum = (1 << depth) - 1;
+    if (x < 0)
+        return 0;
+    if (x > maximum || x >= (1 << 16))
+        return maximum;
+    return (uint16_t)x;
+}
