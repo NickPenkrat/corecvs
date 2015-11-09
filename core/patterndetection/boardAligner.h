@@ -183,6 +183,7 @@ protected:
     corecvs::ObservationList observationList;
     void printClassifier(bool initial);
 private:
+    int patternIdentity;
     bool alignDim(DpImage &img, bool fitW, bool fitH);
     bool alignSingleMarker(DpImage &img);
     bool alignMarkers(DpImage &img);

@@ -30,6 +30,8 @@ bool BoardAligner::align(DpImage &img)
     if (!bestBoard.size() || !bestBoard[0].size())
         return false;
     observationList.clear();
+    observationList.patternIdentity = -1;
+    patternIdentity = -1;
     // used in 4/5 cases; means nothing in 5th
     fixOrientation();
     bool result = false;
@@ -295,6 +297,8 @@ bool BoardAligner::createList()
     int h = (int)classifier.size();
     int w = (int)classifier[0].size();
     observationList.clear();
+    if (patternIdentity > -1)
+        observationList.patternIdentity = patternIdentity;
     for (int y = 0; y < h; ++y)
     {
         for (int x = 0; x < w; ++x)
@@ -466,6 +470,7 @@ void BoardAligner::classify(bool trackOrientation, DpImage &img)
                     CORE_ASSERT_TRUE_S(P[0] < 2.0 && P[1] < 2.0);
                     classifier[i + P[1]][j + P[0]] = std::make_pair(boardMarkers[cl].cornerX + order[k][0], boardMarkers[cl].cornerY + order[k][1]);
                 }
+                patternIdentity = cl;
             }
         }
     }
