@@ -53,10 +53,16 @@ public:
     void setStatistics(Statistics *stats);
     Statistics *getStatistics();
 
+    size_t detectPatterns(corecvs::RGB24Buffer &source);
+    void getPatterns(std::vector<corecvs::ObservationList> &patterns);
+
+    void drawCorners(corecvs::RGB24Buffer &image);
+
 private:
 
     RectangularGridPattern bestPattern;
     corecvs::ObservationList result;
+	std::vector<corecvs::ObservationList> allPatterns;
     std::vector<OrientedCorner> corners;
 
     ChessBoardCornerDetector detector;

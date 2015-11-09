@@ -1,4 +1,6 @@
 #include "chessBoardDetector.h"
+
+#include "abstractPainter.h"
 #include "homographyReconstructor.h"
 #include <fstream>
 
@@ -309,5 +311,135 @@ void ChessboardDetector::setStatistics(Statistics *stats)
 Statistics *ChessboardDetector::getStatistics()
 {
     return stats;
+}
+
+size_t ChessboardDetector::detectPatterns(corecvs::RGB24Buffer &source)
+{
+    DpImage buffer(source.h, source.w);
+    buffer.binaryOperationInPlace(source, [](const double & /*a*/, const corecvs::RGBColor &b) {
+        return b.yd() / 255.0;
+    });
+
+    if (stats != NULL) stats->startInterval();
+
+    ChessBoardDetectorMode mode = getMode(*this);
+    corners.clear();
+    bestPattern = RectangularGridPattern();
+
+    std::string prefix;
+    if (stats != NULL) {
+        prefix = stats->prefix;
+        stats->prefix = "Corners -> " + stats->prefix;
+        detector.setStatistics(stats);
+    }
+
+    detector.detectCorners(buffer, corners);
+
+    if (stats != NULL) stats->prefix = prefix;
+    if (stats != NULL) stats->resetInterval("Corners");
+
+    std::cout << "Found " << corners.size() << " corners" << std::endl;
+
+    std::vector<std::vector<std::vector<corecvs::Vector2dd>>> boards;
+
+    if (stats != NULL) {
+        prefix = stats->prefix;
+        stats->prefix = "Assembler -> " + stats->prefix;
+        assembler.setStatistics(stats);
+    }
+    BoardAlignerParams params(*this);
+    BoardAligner aligner(params);
+    assembler.assembleBoards(corners, boards, &aligner, &buffer);
+    if (stats != NULL) stats->prefix = prefix;
+    std::cout << "Assembled " << boards.size() << " boards" << std::endl;
+
+    if (!boards.size())
+        return false;
+
+    if (stats != NULL) stats->resetInterval("Assemble");
+
+    bool checkW = !!(mode & ChessBoardDetectorMode::FIT_WIDTH);
+    bool checkH = !!(mode & ChessBoardDetectorMode::FIT_HEIGHT);
+
+    allPatterns.clear();
+
+    for (auto& b : boards)
+    {
+        bool found = false;
+        int bw = (int)b[0].size();
+        int bh = (int)b.size();
+        std::vector<std::vector<corecvs::Vector2dd>> best;
+
+        bool fitw = (bw == idealWidth);
+        bool fith = (bh == idealHeight);
+
+
+        if ((!checkW || fitw) && (!checkH || fith))
+        {
+            best = b;
+            found = true;
+        }
+        fitw = (bw == idealHeight);
+        fith = (bh == idealWidth);
+        if ((!checkW || fitw) && (!checkH || fith))
+        {
+            best = b;
+            found = true;
+            decltype(best) best_t;
+            int bw = (int)best[0].size(), bh = (int)best.size();
+            best_t.resize(bw);
+            for (auto& r : best_t)
+                r.resize(bh);
+
+            for (int i = 0; i < bh; ++i)
+            {
+                for (int j = 0; j < bw; ++j)
+                {
+                    best_t[j][i] = best[i][j];
+                }
+            }
+            best = best_t;
+        }
+        if (!found)
+            continue;
+
+        bestBoard = best;
+        bool aligned = align(buffer);
+        std::cout << (aligned ? "ALIGN OK" : "ALIGN FAILED") << std::endl;
+        if (aligned)
+        {
+            result = observationList;
+            for (auto& p : result)
+            {
+                p.point.x() *= cellSizeHor();
+                p.point.y() *= cellSizeVert();
+            }
+            std::cout << result.size() << " features" << std::endl;
+            std::cout << "found marker #" << result.patternIdentity << std::endl;
+            auto detectedPattern = result;
+            allPatterns.emplace_back(detectedPattern);
+        }
+        drawDebugInfo(source);
+    }
+    return allPatterns.size();
+}
+
+void ChessboardDetector::getPatterns(std::vector<corecvs::ObservationList>& patterns)
+{
+    patterns = allPatterns;
+}
+
+void ChessboardDetector::drawCorners(corecvs::RGB24Buffer & image)
+{
+    if (corners.size() > 0)
+    {
+        corecvs::AbstractPainter<corecvs::RGB24Buffer> p(&image);
+        for (int i = 0; i < corners.size(); i++)
+        {
+            p.drawCircle(corners[i].pos.x(), corners[i].pos.y(), 1, corecvs::RGBColor(0xffff00));
+            p.drawFormat(corners[i].pos.x() + 1, corners[i].pos.y() + 1, corecvs::RGBColor(0xffff00), 2, "%d", i);
+        }
+    }
+
 }
 
