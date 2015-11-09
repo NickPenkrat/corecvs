@@ -204,9 +204,9 @@ RGB48Buffer* Debayer::improved()
     // interpolate red and blue first vertically, then horizontally
     for (int d = 0; d < 2; d++)
     {
-        for (int i = 0; i < mBayer->h - 1; i += 2)
+        for (int i = 1; i < mBayer->h - 1; i += 2)
         {
-            for (int j = 0; j < mBayer->w - 1; j += 2)
+            for (int j = 1; j < mBayer->w - 1; j += 2)
             {
                 for (int k = 0; k < 2; k++)
                 {
@@ -298,11 +298,11 @@ RGB48Buffer* Debayer::improved()
 
             // VERSION A - proposed by Hirakawa & Parks, produces noticeable artifacts on cm_lighthouse.pgm
             //float eps_l = min(max(dl[0][0], dl[0][1]), max(dl[1][2], dl[1][3]));
-            //float eps_c = min(max(dc[0][0], dc[0][1]), max(dc[1][2], dc[1][3]));
+            float eps_c = min(max(dc[0][0], dc[0][1]), max(dc[1][2], dc[1][3]));
 
             // VERSION B - extended, produces less artifacts on cm_lighthouse.pgm, but instead produces weak zipper on test_debayer.pgm
             float eps_l = min(max(max(dl[0][0], dl[0][1]), max(dl[0][2], dl[0][3])), max(max(dl[1][0], dl[1][1]), max(dl[1][2], dl[1][3])));
-            float eps_c = min(max(max(dc[0][0], dc[0][1]), max(dc[0][2], dc[0][3])), max(max(dc[1][0], dc[1][1]), max(dc[1][2], dc[1][3])));
+            //float eps_c = min(max(max(dc[0][0], dc[0][1]), max(dc[0][2], dc[0][3])), max(max(dc[1][0], dc[1][1]), max(dc[1][2], dc[1][3])));
 
             for (int d = 0; d < 2; d++)
             {
