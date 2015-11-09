@@ -214,29 +214,39 @@ RGB48Buffer* Debayer::improved()
                     {
                         pixel[1] = green[d]->element(i + k, j + l);
 
-                        uint8_t color = colorFromBayerPos(k, l, false);
+                        uint8_t color = colorFromBayerPos(i + k, j + l, false);
 
                         if (color == 1)
                         {
-                            uint8_t interp_c = colorFromBayerPos(k + 1, l, false);
+                            uint8_t row_c = colorFromBayerPos(i + k, j + l + 1, false);
 
-                            val = pixel[1] + ((weightedBayerAvg({ j + l - 1, i + k }) + weightedBayerAvg({ j + l + 1, i + k })
-                                - green[d]->element(i + k, j + l - 1) - green[d]->element(i + k, j + l + 1)) / 2);
-                            pixel[interp_c] = clip(val, mDepth);
+                            // C = G + LP(C' - G'), where C is sought colour
+                            // LP is in fact the average
+                            val = pixel[1] + ((weightedBayerAvg({ j + l - 1, i + k }) - green[d]->element(i + k, j + l - 1)
+                                             + weightedBayerAvg({ j + l + 1, i + k }) - green[d]->element(i + k, j + l + 1)) / 2);
+                            
+                            // logically, this should be pixel[row_c], but our pixels are BGR, so this is inverted
+                            pixel[2 - row_c] = clip(val, mDepth);
 
-                            val = pixel[1] + ((weightedBayerAvg({ j + l, i + k - 1 }) + weightedBayerAvg({ j + l, i + k + 1 })
-                                - green[d]->element(i + k - 1, j + l) - green[d]->element(i + k + 1, j + l)) / 2);
-                            pixel[2 - interp_c] = clip(val, mDepth);
+                            val = pixel[1] + ((weightedBayerAvg({ j + l, i + k - 1 }) - green[d]->element(i + k - 1, j + l)
+                                             + weightedBayerAvg({ j + l, i + k + 1 }) - green[d]->element(i + k + 1, j + l)) / 2);
+                            pixel[row_c] = clip(val, mDepth);
                         }
                         else
                         {
-                            val = green[d]->element(i + k, j + l) +
-                                ((weightedBayerAvg({ j + l - 1, i + k - 1 }) + weightedBayerAvg({ j + l + 1, i + k - 1 })
-                                    + weightedBayerAvg({ j + l - 1, i + k + 1 }) + weightedBayerAvg({ j + l + 1, i + k + 1 })
-                                    - green[d]->element(i + k - 1, j + l - 1) - green[d]->element(i + k - 1, j + l + 1)
-                                    - green[d]->element(i + k + 1, j + l - 1) - green[d]->element(i + k + 1, j + l + 1)) / 4);
-                            pixel[color] = clip(val, mDepth);
+                            // known colour: inverted (same as above)
                             pixel[2 - color] = clip(mBayer->element(i + k, j + l), mDepth);
+
+                            // interpolate greens diagonally
+                            // this is not intuitive, but directly follows from the aforementioned equation
+                            val = pixel[1] +
+                                    ((weightedBayerAvg({ j + l - 1, i + k - 1 }) - green[d]->element(i + k - 1, j + l - 1)
+                                    + weightedBayerAvg({ j + l + 1, i + k - 1 }) - green[d]->element(i + k + 1, j + l + 1)
+                                    + weightedBayerAvg({ j + l - 1, i + k + 1 }) - green[d]->element(i + k - 1, j + l + 1)
+                                    + weightedBayerAvg({ j + l + 1, i + k + 1 }) - green[d]->element(i + k + 1, j + l - 1)
+                                     
+                                     ) / 4);
+                            pixel[color] = clip(val, mDepth);
                         }
                         rgb[d]->element(i + k, j + l) = pixel;
                         RGBConverter::rgb2Lab(pixel, Lab[d][(i + k)*mBayer->w + j + l]);
