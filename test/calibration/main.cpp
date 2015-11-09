@@ -17,7 +17,6 @@ bool CheckGDriveCalibrationFolderTest()
 
     std::stringstream fs;
     fs << dirGDrive << dirRelPath << fileName;
-
     return access(fs.str().c_str(), 0) == 0;
 }
 
