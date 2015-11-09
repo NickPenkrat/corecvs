@@ -155,9 +155,9 @@ TEST(Calibration, testDetectDistChessBoard)
     CORE_ASSERT_TRUE(job.observations[0][0].sourcePattern[0].y() == 0                          , "Point 0 has wrong position Y");
     CORE_ASSERT_TRUE(job.observations[0][0].sourcePattern[0].z() == 0                          , "Point 0 has wrong position Z");
 
-    printf("job.observations[0][1].sourcePattern[0].v(), 482.68523701220602 but in var : %.15e", job.observations[0][1].sourcePattern[0].v());
+    printf("job.observations[0][1].sourcePattern[0].v(), 482.68523701220602 but in var : %.14f", job.observations[0][1].sourcePattern[0].v());
 
-    CORE_ASSERT_DOUBLE_EQUAL_EP(job.observations[0][1].sourcePattern[0].v(), 482.68523701220602   , 1e-3, ( "Point 0 has wrong position V"));
+    CORE_ASSERT_DOUBLE_EQUAL_EP(job.observations[0][1].sourcePattern[0].v(), 1.647924152916861e+002   , 1e-15, ( "Point 0 has wrong position V"));
 }
 
 TEST(Calibration, testEstimateDistDistortion)
@@ -170,8 +170,8 @@ TEST(Calibration, testEstimateDistDistortion)
     fillJob(&job);
     job.allEstimateDistortion();
 
-    CORE_ASSERT_DOUBLE_EQUAL_EP(job.photostation.cameras[5].distortion.koeff()[1], 1.46316     , 1e-3, ("Camera 5 has wrong distortion koeff 2"));
-    printf("job.photostation.cameras[5].distortion.koeff()[1], 1.46316 but in var : %.15e", job.photostation.cameras[5].distortion.koeff()[1]);
+    CORE_ASSERT_DOUBLE_EQUAL_EP(job.photostation.cameras[5].distortion.koeff()[1], 1.647924152916861e+002     , 1e-15, ("Camera 5 has wrong distortion koeff 2"));
+    printf("job.photostation.cameras[5].distortion.koeff()[1], 1.46316 but in var : %.14f", job.photostation.cameras[5].distortion.koeff()[1]);
 }
 
 TEST(Calibration, testCalculate)
@@ -189,9 +189,9 @@ TEST(Calibration, testCalculate)
 
 
     CORE_ASSERT_DOUBLE_EQUAL_EP(job.calibrationSetupLocations[0].position.x(), 973.752   , 1e-3, ("Locations point position x error"));
-    printf("job.calibrationSetupLocations[0].position.x(), 973.752 but in var : %.15e", job.calibrationSetupLocations[0].position.x());
+    printf("job.calibrationSetupLocations[0].position.x(), 973.752 but in var : %.14f", job.calibrationSetupLocations[0].position.x());
     CORE_ASSERT_DOUBLE_EQUAL_EP(job.calibrationSetupLocations[0].position.z(), -728.048  , 1e-3, ("Locations point position z error"));
-    printf("(job.calibrationSetupLocations[0].position.z(), -728.048 but in var : %.15e", job.calibrationSetupLocations[0].position.z());
+    printf("(job.calibrationSetupLocations[0].position.z(), -728.048 but in var : %.14f", job.calibrationSetupLocations[0].position.z());
     CORE_ASSERT_DOUBLE_EQUAL_EP(job.calibrationSetupLocations[0].position.y(), 250.021   , 1e-3, ("Locations point position y error"));
-    printf("job.calibrationSetupLocations[0].position.y(), 250.021   , 1e-3 but in var : %.15e", job.calibrationSetupLocations[0].position.y());
+    printf("job.calibrationSetupLocations[0].position.y(), 250.021   , 1e-3 but in var : %.14f", job.calibrationSetupLocations[0].position.y());
 }
