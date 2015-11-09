@@ -504,11 +504,7 @@ public:
         return reflection;
     }
 
-#ifdef REFLECTION_IN_CORE
-    Reflection reflect = staticInit();
-#else
-    Reflection reflect;
-#endif
+    static Reflection const reflect;
 
     template<class VisitorType>
     void accept(VisitorType &visitor)
@@ -603,5 +599,13 @@ public:
 typedef RGBTColor<uint16_t> RGBColor48;
 
 } //namespace corecvs
+
+#ifdef REFLECTION_IN_CORE
+template<typename T>
+const Reflection RGBTColor<T>::reflect = staticInit();
+#else
+template<typename T>
+const Reflection RGBTColor<T>::reflect;
+#endif
 
 #endif // CRGBTCOLOR_H_
