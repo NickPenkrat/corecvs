@@ -8,6 +8,8 @@
 #include <QFile>
 #include <QDir>
 
+#include "jsonGetter.h"
+
 using namespace std;
 using namespace corecvs;
 
@@ -19,18 +21,15 @@ bool CheckGDriveCalibrationFolderTest()
 
     std::stringstream fs;
     fs << dirGDrive << dirRelPath << fileName;
-
-    std::string path = QDir::toNativeSeparators(QString(fs.str().c_str())).toStdString();
-
-    printf("[%s] exists: %d",path.c_str(),QFile::exists(path.c_str()));
     return access(fs.str().c_str(), 0) == 0;
 }
 
 int main(int argc, char **argv)
 {
-
-    CheckGDriveCalibrationFolderTest();
+    if(!CheckGDriveCalibrationFolderTest()){
+          CORE_ASSERT_TRUE(0, "There is no test data");
           return 0;
-//    ::testing::InitGoogleTest(&argc, argv);
-//    return RUN_ALL_TESTS();
+    }
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
