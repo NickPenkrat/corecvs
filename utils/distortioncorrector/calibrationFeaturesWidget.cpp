@@ -19,7 +19,7 @@ const int CalibrationFeaturesWidget::REASONABLE_INF = 999999;
 CalibrationFeaturesWidget::CalibrationFeaturesWidget(QWidget *parent) :
     QWidget(parent),
     mObservationListModel(NULL),
-    geometryFeatures(NULL),    
+    mGeometryFeatures(NULL),
     ui(new Ui::CalibrationFeaturesWidget)
 {
     ui->setupUi(this);
@@ -115,7 +115,6 @@ void CalibrationFeaturesWidget::deleteObservation()
 
 void CalibrationFeaturesWidget::updateWidget()
 {
-
     /* And tree */
 
     QTreeWidget *tree = ui->treeWidget;
@@ -125,11 +124,11 @@ void CalibrationFeaturesWidget::updateWidget()
     tree->header()->resizeSection(1, 100);
     tree->header()->resizeSection(2, 100);
 
-    if (geometryFeatures)
+    if (mGeometryFeatures)
     {
-        for(unsigned i = 0; i < geometryFeatures->mPaths.size();i++ )
+        for (unsigned i = 0; i < mGeometryFeatures->mPaths.size(); i++)
         {
-            SelectableGeometryFeatures::VertexPath *path = geometryFeatures->mPaths[i];
+            SelectableGeometryFeatures::VertexPath *path = mGeometryFeatures->mPaths[i];
             QTreeWidgetItem *item = new QTreeWidgetItem(QStringList("Line"));
             tree->insertTopLevelItem(tree->topLevelItemCount(),item);
             for(unsigned j = 0; j < path->vertexes.size(); j++ )
@@ -147,7 +146,6 @@ void CalibrationFeaturesWidget::updateWidget()
                 ySpinBox->setMaximum( REASONABLE_INF);
                 ySpinBox->setMinimum(-REASONABLE_INF);
                 ySpinBox->setValue(vertex->position.y());
-
 
                 tree->setItemWidget(subitem, 1, xSpinBox);
                 tree->setItemWidget(subitem, 2, ySpinBox);
@@ -275,9 +273,7 @@ void CalibrationFeaturesWidget::loadPoints()
 ObservationListModel::ObservationListModel(QObject *parent) :
     QAbstractItemModel(parent),
     mObservationList(NULL)
-{
-
-}
+{}
 
 Qt::ItemFlags ObservationListModel::flags(const QModelIndex & /*index*/) const
 {
