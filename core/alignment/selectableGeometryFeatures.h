@@ -83,7 +83,7 @@ public:
 struct NamePointObservation : public PointObservation
 {
     std::string name;
-    void *payload;
+    void        *payload;
 };
 
 class SelectableGeometryFeatures
@@ -169,4 +169,4 @@ public:
     void draw(corecvs::RGB24Buffer &buffer);
 };
 
-}
+} // namespace corecvs

@@ -18,7 +18,7 @@ RGBColor CalibrationHelpers::palette[] =
     RGBColor(0x1b7837u)
 };
 
-void CalibrationHelpers::drawCamera(Mesh3D &mesh, CameraModel &cam, double scale)
+void CalibrationHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, double scale)
 {
     double w = cam.intrinsics.w();
     double h = cam.intrinsics.h();
@@ -62,61 +62,31 @@ void CalibrationHelpers::drawCamera(Mesh3D &mesh, CameraModel &cam, double scale
     Vector3dd ppv = qc * (invK.mulBy2dRight(cam.intrinsics.principal) * scale) + cc;
 
     mesh.addLine(ppv, qc * (invK * center) + cc);
+    AbstractPainter<Mesh3D> p(&mesh);
+    mesh.mulTransform(Matrix44::Shift(cc));
+    p.drawFormatVector(0.0, 0.0, 0, scale / 50.0, "Cam: %s", cam.nameId.c_str());
+    mesh.popTransform();
 }
 
 
-void CalibrationHelpers::drawPly(Mesh3D &mesh, Photostation &ps, double scale)
+void CalibrationHelpers::drawPly(Mesh3D &mesh, const Photostation &ps, double scale)
 {
-    // Colorblind-safe palette
-    CameraLocationData loc = ps.getLocation();
-    Vector3dd  cs = loc.position;
-    Quaternion qs = loc.orientation.conjugated();
-    std::cout << qs << std::endl;
-
     int colorId = 0;
-    for (CameraModel &cam: ps.cameras)
+    for (int cam = 0; cam < ps.cameras.size(); ++cam)
     {
-        double IW = cam.intrinsics.size[0];
-        double IH = cam.intrinsics.size[1];
-        const int NSC = 9;
-        Vector3dd center    = Vector3dd( 0,  0,  0),
-                center2     = Vector3dd( 0,  0,  1) * scale,
-                topLeft     = Vector3dd( 0,  0,  1) * scale,
-                topRight    = Vector3dd(IW,  0,  1) * scale,
-                bottomRight = Vector3dd(IW, IH,  1) * scale,
-                bottomLeft  = Vector3dd( 0, IH,  1) * scale;
-        Vector3dd pts[NSC * 2] =
-        {
-            center,      center2,
-            center,      topLeft,
-            center,      topRight,
-            center,      bottomRight,
-            center,      bottomLeft,
-            topLeft,     topRight,
-            topRight,    bottomRight,
-            bottomRight, bottomLeft,
-            bottomLeft,  topLeft,
-        };
-
-        Vector3dd  cc  = cam.extrinsics.position;
-        Quaternion qc  = cam.extrinsics.orientation.conjugated();
-        Matrix33   K   = cam.intrinsics.getInvKMatrix33();
-
-        mesh.currentColor = palette[colorId];
-        colorId = (colorId + 1) % CORE_COUNT_OF(palette);
-
-        for (int i = 0; i < NSC; ++i)
-        {
-            auto v1 = qs * (qc * (K * pts[i * 2]) + cc) + cs;
-            auto v2 = qs * (qc * (K * pts[i * 2 + 1]) + cc) + cs;
-
-            mesh.addLine(v1, v2);
-        }
-
-        auto ppv = qs * (qc * (K.mulBy2dRight(cam.intrinsics.principal) * scale) + cc) + cs;
-
-        mesh.addLine(ppv, qs * (qc * (K * center) + cc) + cs);
+        mesh.currentColor = palette[colorId = (colorId + 1) % CORE_COUNT_OF(palette)];
+        drawCamera(mesh, ps.getRawCamera(cam), scale);
     }
+    corecvs::Vector3dd xps(scale,   0.0,   0.0),
+                       yps(  0.0, scale,   0.0),
+                       zps(  0.0,   0.0, scale),
+                       ori(  0.0,   0.0,   0.0);
+    mesh.currentColor = corecvs::RGBColor(255,   0,   0);
+    mesh.addLine(ps.location * ori, ps.location * xps);
+    mesh.currentColor = corecvs::RGBColor(  0, 255,   0);
+    mesh.addLine(ps.location * ori, ps.location * yps);
+    mesh.currentColor = corecvs::RGBColor(  0,   0, 255);
+    mesh.addLine(ps.location * ori, ps.location * zps);
 
     if (printNames)
     {
@@ -128,7 +98,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, Photostation &ps, double scale)
     }
 }
 
-void CalibrationHelpers::drawPly(Mesh3D &mesh, ObservationList &list)
+void CalibrationHelpers::drawPly(Mesh3D &mesh, const ObservationList &list)
 {
     mesh.currentColor = RGBColor(~0u);
     for (auto& pt: list)
@@ -137,13 +107,13 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, ObservationList &list)
     }
 }
 
-void CalibrationHelpers::drawPly(Mesh3D &mesh, Photostation &ps, ObservationList &list, double scale)
+void CalibrationHelpers::drawPly(Mesh3D &mesh, const Photostation &ps, const ObservationList &list, double scale)
 {
     drawPly(mesh, list);
     drawPly(mesh, ps, scale);
 }
 
-void CalibrationHelpers::drawPly(Mesh3D &mesh, CalibrationFeaturePoint &fp, double scale)
+void CalibrationHelpers::drawPly(Mesh3D &mesh, const CalibrationFeaturePoint &fp, double scale)
 {
     if (!largePoints) {
         mesh.addPoint(fp.position);
@@ -160,7 +130,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, CalibrationFeaturePoint &fp, doub
     }
 }
 
-void CalibrationHelpers::drawScene(Mesh3D &mesh, CalibrationScene &scene, double scale)
+void CalibrationHelpers::drawScene(Mesh3D &mesh, const CalibrationScene &scene, double scale)
 {
     for (Photostation *ps: scene.stations)
     {
