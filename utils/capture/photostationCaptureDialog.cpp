@@ -342,16 +342,27 @@ void PhotostationCaptureDialog::newPreviewFrame()
     //qDebug() << "PhotostationCaptureDialog::newPreviewFrame(): grabbing pair took:" << (time.usecsToNow() / 1000.0) << "ms";
     time = PreciseTimer::currentTime();
 
-    int focusValue = corecvs::FocusEstimator::getScore(pair.rgbBufferLeft);
-    ui->focusedLabel->setText(QString("Focus Score: %1").arg(focusValue));
-    mFocusDialog.addGraphPoint("Focal Score", focusValue, true);
-    mFocusDialog.update();
-
     if (pair.rgbBufferLeft != NULL)
     {
         ui->previewWidget->setImage(QSharedPointer<QImage>(toQImage(pair.rgbBufferLeft)));
-    } else {
+    }
+    else
+    {
         L_DEBUG_P("NULL frame received");
+    }
+
+    // Estimate focus for the current image that has been set
+    {
+        QRect rc = ui->previewWidget->getInputRect();
+        int x1 = rc.left();
+        int y1 = rc.top();
+        int x2 = rc.right();
+        int y2 = rc.bottom();
+
+        corecvs::FocusEstimator::Result res = corecvs::FocusEstimator::calc(pair.rgbBufferLeft, x1, y1, x2, y2);
+        ui->focusedLabel->setText(QString("Focus score: %1 out of %2").arg(res.score).arg(res.fullScore));
+        mFocusDialog.addGraphPoint("Focus score", res.score, true);
+        mFocusDialog.update();
     }
 
     //qDebug() << "PhotostationCaptureDialog::newPreviewFrame(): Updateing widget took:" << (time.usecsToNow() / 1000.0) << "ms";
