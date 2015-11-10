@@ -67,7 +67,7 @@ protected:
 const QString addPath(const char* name)
 {
     std::stringstream fs;
-    fs << dirGDrive << dirRelPath << name;
+    fs << dirTEMP << dirRelTEMP << name;
     QString sourceFileName = QDir::toNativeSeparators(QString(fs.str().c_str()));
     return sourceFileName;
 }
@@ -75,7 +75,7 @@ const QString addPath(const char* name)
 void addImageToJob(CalibrationJob* job, int camN, int imageN, const char* name)
 {
     std::stringstream fs;
-    fs << dirGDrive << dirRelPath << name;
+    fs << dirTEMP << dirRelTEMP << name;
     std::string sourceFileName = QDir::toNativeSeparators(QString(fs.str().c_str())).toStdString();
 
     job->observations[camN][imageN].sourceFileName = sourceFileName;
@@ -84,7 +84,7 @@ void addImageToJob(CalibrationJob* job, int camN, int imageN, const char* name)
 void addUndistImageToJob(CalibrationJob* job, int camN, int imageN, const char* name)
 {
     std::stringstream fs;
-    fs << dirGDrive << dirRelPath << name;
+    fs << dirTEMP << dirRelTEMP << name;
     std::string sourceFileName = QDir::toNativeSeparators(QString(fs.str().c_str())).toStdString();
 
     job->observations[camN][imageN].undistortedFileName = sourceFileName;
@@ -185,28 +185,28 @@ int compareFile(FILE* f1, FILE* f2)
 
 TEST_F(CalibrationTest, testDetectDistChessBoard)
 {
-//    CalibrationJob job;
-//    bool undistorted = false;
+    CalibrationJob job;
+    bool undistorted = false;
 
-//    JSONGetter getter(addPath("gIn.json"));
-//    getter.visit(job, "job");
+    JSONGetter getter(addPath("gIn.json"));
+    getter.visit(job, "job");
 
-//    fillJob(&job);
+    fillJob(&job);
 
-//    job.allDetectChessBoard(!undistorted);
+    job.allDetectChessBoard(!undistorted);
 
-//    CORE_ASSERT_TRUE(job.observations[0][0].sourcePattern.size() == 198                        , "Image SPA0_360deg.jpg didn't detect all points");
-//    CORE_ASSERT_TRUE(job.observations[1][3].sourcePattern.size() == 162                        , "Image SPA1_285deg.jpg didn't detect all points");
-//    CORE_ASSERT_TRUE(job.observations[2][2].sourcePattern.size() == 162                        , "Image SPA2_255deg.jpg didn't detect all points");
+    CORE_ASSERT_TRUE(job.observations[0][0].sourcePattern.size() == 198                        , "Image SPA0_360deg.jpg didn't detect all points");
+    CORE_ASSERT_TRUE(job.observations[1][3].sourcePattern.size() == 162                        , "Image SPA1_285deg.jpg didn't detect all points");
+    CORE_ASSERT_TRUE(job.observations[2][2].sourcePattern.size() == 162                        , "Image SPA2_255deg.jpg didn't detect all points");
 
-//    CORE_ASSERT_TRUE(job.observations[0][0].sourcePattern[0].x() == 0                          , "Point 0 has wrong position X");
-//    CORE_ASSERT_TRUE(job.observations[0][0].sourcePattern[0].y() == 0                          , "Point 0 has wrong position Y");
-//    CORE_ASSERT_TRUE(job.observations[0][0].sourcePattern[0].z() == 0                          , "Point 0 has wrong position Z");
+    CORE_ASSERT_TRUE(job.observations[0][0].sourcePattern[0].x() == 0                          , "Point 0 has wrong position X");
+    CORE_ASSERT_TRUE(job.observations[0][0].sourcePattern[0].y() == 0                          , "Point 0 has wrong position Y");
+    CORE_ASSERT_TRUE(job.observations[0][0].sourcePattern[0].z() == 0                          , "Point 0 has wrong position Z");
 
-//    CORE_ASSERT_DOUBLE_EQUAL_EP(job.observations[0][1].sourcePattern[0].v(), 164.79241529168607  , 1e-12, ( "Point 0 has wrong position V"));
+    CORE_ASSERT_DOUBLE_EQUAL_EP(job.observations[0][1].sourcePattern[0].v(), 164.79241529168607  , 1e-12, ( "Point 0 has wrong position V"));
 }
 
-TEST(CalibrationTest, DISABLED_testEstimateDistDistortion)
+TEST_F(CalibrationTest, DISABLED_testEstimateDistDistortion)
 {
     CalibrationJob job;
 
@@ -219,7 +219,7 @@ TEST(CalibrationTest, DISABLED_testEstimateDistDistortion)
     CORE_ASSERT_DOUBLE_EQUAL_EP(job.photostation.cameras[1].distortion.koeff()[1], 1.463163057542     , 1e-12, ("Camera 5 has wrong distortion koeff 2"));
 }
 
-TEST(CalibrationTest, DISABLED_testCalculate)
+TEST_F(CalibrationTest, DISABLED_testCalculate)
 {
     CalibrationJob job;
 
