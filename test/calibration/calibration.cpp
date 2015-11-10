@@ -14,7 +14,11 @@
 #include <QDir>
 
 const char* dirGDrive = std::getenv("TOPCON_DIR_GDRIVE");
+#ifdef WIN32
 const char* dirTEMP = std::getenv("TEMP");
+#else
+const char* dirTEMP = "/tmp";
+#endif
 const char* dirRelPath = "/data/tests/calibration/";
 const char* dirRelTEMP = "/tests/calibration/";
 
