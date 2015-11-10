@@ -251,6 +251,12 @@ extern "C" {
 #   define __STDC_FORMAT_MACROS
 #   include <inttypes.h>
 #   undef __STDC_FORMAT_MACROS
+#   ifndef PRIu64
+#   define PRIu64 "I64u"
+#   endif
+#   ifndef PRIi64
+#   define PRIi64 "I64d"
+#   endif
 #else
 #   ifndef PRIu64
 #   define PRIu64 "I64u"
