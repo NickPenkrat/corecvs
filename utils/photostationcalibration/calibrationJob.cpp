@@ -40,7 +40,6 @@ bool CalibrationJob::detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::Sel
         patternDetector = new ChessboardDetector(settings.openCvDetectorParameters, settings.boardAlignerParams, settings.chessBoardCornerDetectorParams, settings.chessBoardAssemblerParams);
         patternDetector->setStatistics(&stats);
         patternDetector->detectPattern(buffer);
-
     }
 
     if (features)
@@ -57,6 +56,8 @@ void CalibrationJob::allDetectChessBoard(bool distorted)
     int N = (int)observations.size();
     photostation.cameras.resize(N);
     std::vector<corecvs::CameraModel>::iterator psIterator = photostation.cameras.begin();
+
+    L_INFO_P("chessboard type: %s", this->settings.boardAlignerParams.boardMarkers.size() ? "new" : "old");
 
     for (auto& c: observations)
     {
