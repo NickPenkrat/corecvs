@@ -153,9 +153,9 @@ done:
     return result;
 }
 
-char* PPMLoader::nextLine(FILE *fp, int sz, MetaData *metadata)
+std::unique_ptr<char[]> PPMLoader::nextLine(FILE *fp, int sz, MetaData *metadata)
 {
-    std::unique_ptr<char> buf = new char[sz];
+    std::unique_ptr<char[]> buf = new char[sz];
     while (fread(buf, 1, 1, fp))
     {
 
@@ -201,7 +201,7 @@ char* PPMLoader::nextLine(FILE *fp, int sz, MetaData *metadata)
 bool PPMLoader::readHeader(FILE *fp, unsigned long int *h, unsigned long int *w, uint16_t *maxval, uint8_t *type, MetaData* metadata)
 {
     // skip comments and read next line
-    char* header = nextLine(fp, 255, metadata);
+    std::unique_ptr<char[]> header = nextLine(fp, 255, metadata);
 
     // check PPM type (currently only supports 5 or 6)
     if ((header[0] != 'P') || (header[1] < '5') || (header[1] > '6'))
