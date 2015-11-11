@@ -123,7 +123,7 @@ int compare(const void * a, const void * b)
     return (*(int*)a - *(int*)b);
 }
 
-RGB48Buffer* Debayer::improved()
+RGB48Buffer* Debayer::ahd()
 {
 
 #define min(a,b) ( (a)<(b)?  (a) : (b) )
@@ -237,7 +237,7 @@ RGB48Buffer* Debayer::improved()
                             // known colour: inverted (same as above)
                             pixel[2 - color] = clip(mBayer->element(i + k, j + l), mDepth);
 
-                            // interpolate greens diagonally
+                            // interpolate colour using greens diagonally
                             // this is not intuitive, but directly follows from the aforementioned equation
                             val = pixel[1] +
                                     ((weightedBayerAvg({ j + l - 1, i + k - 1 }) - green[d]->element(i + k - 1, j + l - 1)
@@ -559,8 +559,8 @@ RGB48Buffer* Debayer::toRGB48(Method method)
     case Bilinear:
         result = linear();
         break;
-    case Improved:
-        result = improved();
+    case AHD:
+        result = ahd();
         break;
     }
 

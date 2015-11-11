@@ -21,8 +21,8 @@ class Debayer
 public:
     enum Method
     {
-        Nearest  = -5,
-        Bilinear = 0,
+        Nearest  = 0,
+        Bilinear = 1,
         AHD      = 3,
         Improved = 7
     };
@@ -68,7 +68,7 @@ private:
 
     RGB48Buffer* linear();
     RGB48Buffer* nearest();
-    RGB48Buffer* improved();
+    RGB48Buffer* ahd();
 
     /* utilitary functions */
 
