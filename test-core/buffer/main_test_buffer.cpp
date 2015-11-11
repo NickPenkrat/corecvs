@@ -75,8 +75,13 @@ TEST(Buffer, testG12Buffer)
     ASSERT_TRUE(std::is_trivially_destructible<int>::value);
     ASSERT_TRUE(std::is_trivially_destructible<double>::value);
     ASSERT_TRUE(std::is_trivially_destructible<RGBColor>::value);
+#if __GNUG__ && __GNUC__ < 5
+    ASSERT_TRUE(has_trivial_default_constructor(int));
+    ASSERT_TRUE(has_trivial_default_constructor(double));
+#else
     ASSERT_TRUE(std::is_trivially_constructible<int>::value);
     ASSERT_TRUE(std::is_trivially_constructible<double>::value);
+#endif
 
     ASSERT_FALSE(std::is_trivially_destructible<TestAbstractBufferClass>::value);
     // WTF?!   ASSERT_TRUE(std::is_trivially_constructible<RGBColor>::value);
