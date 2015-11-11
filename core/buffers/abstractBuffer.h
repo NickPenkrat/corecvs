@@ -28,17 +28,6 @@
 #include "tbbWrapper.h"
 #include "mathUtils.h"                  // randRanged
 
-// XXX: Some weird outdated-compiler support logic 
-// (note, we are in 2015+, but some people use compilers that partially support c++11. 
-// It is stupid.
-#define IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T) std::is_trivially_copy_constructible<T>::value
-#if __GNUG__ && __GNUC__ < 5
-#define IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T) __has_trivial_copy(T)
-#else
-#define IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T) std::is_trivially_copy_constructible<T>::value
-#endif
-
-
 namespace corecvs {
 
 struct AlignedMemoryBlock
@@ -208,7 +197,7 @@ public:
     static const bool TRIVIALLY_DESTRUCTABLE = std::is_trivially_destructible<ElementType>::value;
     static const bool TRIVIALLY_DEFAULT_CONSTRUCTIBLE = 
 #if __GNUG__ && __GNUC__ < 5
-        has_trivial_default_constructor<ElementType>();
+        __has_trivial_default_constructor(ElementType);
 #else
         std::is_trivially_constructible<ElementType>::value;
 #endif
