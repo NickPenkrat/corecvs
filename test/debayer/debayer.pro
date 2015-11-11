@@ -12,6 +12,7 @@ ROOT_DIR=$$PWD/$$ROOT_DIR
 
 TEMPLATE = app
 TARGET   = debayer
+CONFIG  += console
 
 include(../../core/core.pri)
 
