@@ -345,8 +345,9 @@ void CalibrationJob::allCalibrateSingleCamera()
     factors.resize(photostation.cameras.size(), 1.0);
     corecvs::parallelable_for(0, (int)photostation.cameras.size(), ParallelSingleCalibrator(this));
     double fac = 0.0;
-    for (auto& f: factors)
+    for (auto& f : factors) {
         fac += f;
+    }
     fac /= factors.size();
     factor = fac;
     std::cout << "OPTFAC_MEAN: " << factor << std::endl;
@@ -354,14 +355,13 @@ void CalibrationJob::allCalibrateSingleCamera()
 
 void CalibrationJob::calibratePhotostation(int N, int /*M*/, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<PinholeCameraIntrinsics> &intrinsics, std::vector<std::vector<CameraLocationData>> &locations, bool runBFS, bool runLM)
 {
-    for (auto& ci: intrinsics)
-    {
+    for (auto& ci : intrinsics) {
         calibrator.addCamera(ci);
     }
     calibrator.factor = factor;
     std::vector<int> cnt(N);
     int set = 0;
-    for (auto& setup: points)
+    for (auto& setup : points)
     {
         MultiCameraPatternPoints pts;
         std::vector<int> active;
