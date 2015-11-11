@@ -65,7 +65,7 @@ TEST(Buffer, testG12Buffer)
     ASSERT_TRUE(__has_trivial_copy(int));
     ASSERT_TRUE(__has_trivial_copy(double));
     ASSERT_TRUE(__has_trivial_copy(RGBColor));
-    ASSERT_TRUE(__has_trivial_copy(corecvs::Vector3dd>));
+    ASSERT_TRUE(__has_trivial_copy(corecvs::Vector3dd));
 #else
     ASSERT_TRUE(std::is_trivially_copy_constructible<int>::value);
     ASSERT_TRUE(std::is_trivially_copy_constructible<double>::value);
