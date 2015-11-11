@@ -155,14 +155,14 @@ done:
 
 std::unique_ptr<char[]> PPMLoader::nextLine(FILE *fp, int sz, MetaData *metadata)
 {
-    std::unique_ptr<char[]> buf = new char[sz];
-    while (fread(buf, 1, 1, fp))
+    std::unique_ptr<char[]> buf(new char[sz]);
+    while (fread(&buf[0], 1, 1, fp))
     {
 
         if (buf[0] != '#' && buf[0] != '\n' && buf[0] != '\r')
         {
             fseek(fp, -1, SEEK_CUR);
-            if (sz > 0 && fgets(buf, sz, fp) == NULL)
+            if (sz > 0 && fgets(&buf[0], sz, fp) == NULL)
             {
                 printf("fgets() call failed %s:%d\n", __FILE__, __LINE__);
             }
@@ -170,16 +170,16 @@ std::unique_ptr<char[]> PPMLoader::nextLine(FILE *fp, int sz, MetaData *metadata
         }
         else
         {
-            fgets(buf, sz, fp);
+            fgets(&buf[0], sz, fp);
 
             // try to read metadata
             char param[256];
             int n = 0;
 
             // read param name
-            if (metadata != nullptr && sscanf(buf, " @meta %s\t@values %d\t", param, &n) == 2)
+            if (metadata != nullptr && sscanf(&buf[0], " @meta %s\t@values %d\t", param, &n) == 2)
             {
-                char* numbers = strrchr(buf, '\t') + 1;
+                char* numbers = strrchr(&buf[0], '\t') + 1;
                 MetaValue values;
                 // read n param values
                 for (int i = 0; i < n; i++)
@@ -191,7 +191,7 @@ std::unique_ptr<char[]> PPMLoader::nextLine(FILE *fp, int sz, MetaData *metadata
                 }
                 metadata->insert(MetaPair(param, values));
             }
-            memset(buf, 0, sz);
+            memset(&buf[0], 0, sz);
         }
     }
 
@@ -217,10 +217,10 @@ bool PPMLoader::readHeader(FILE *fp, unsigned long int *h, unsigned long int *w,
     header = nextLine(fp, 255, metadata);
 
     // parse dimensions
-    if (sscanf(header, "%lu%lu", w, h) != 2)
+    if (sscanf(&header[0], "%lu%lu", w, h) != 2)
     {
         // try to parse dimensions in Photoshop-like format (when a newline is used instead of whitespace or tabulation)
-        if (sscanf(header, "%lu", w) != 1)
+        if (sscanf(&header[0], "%lu", w) != 1)
         {
             //printf("Image dimensions could not be read from line %s\n", header);
             return false;
@@ -229,7 +229,7 @@ bool PPMLoader::readHeader(FILE *fp, unsigned long int *h, unsigned long int *w,
         {
             // first dimension has been read, try to read the second
             header = nextLine(fp, 255, metadata);
-            if (sscanf(header, "%lu", h) != 1) // duplicate code can be gotten rid of with a goto (not sure it's worth doing)
+            if (sscanf(&header[0], "%lu", h) != 1) // duplicate code can be gotten rid of with a goto (not sure it's worth doing)
             {
                 //printf("Image dimensions could not be read from line %s\n", header);
                 return false;
@@ -240,7 +240,7 @@ bool PPMLoader::readHeader(FILE *fp, unsigned long int *h, unsigned long int *w,
     // get colour depth (metric?)
     header = nextLine(fp, 255, metadata);
 
-    if (sscanf(header, "%hu", maxval) != 1)
+    if (sscanf(&header[0], "%hu", maxval) != 1)
     {
         //printf("Image metric could not be read form line %s\n", header);
         return false;
