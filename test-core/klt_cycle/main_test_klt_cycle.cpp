@@ -84,6 +84,9 @@ TEST(KltCycle, testKLT)
 
 
     delete sg;
+    delete second;
+    delete first;
+    delete context.gradient;
 
 //    return 0;
 }

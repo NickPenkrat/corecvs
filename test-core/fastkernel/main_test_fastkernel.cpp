@@ -80,6 +80,9 @@ TEST(FastKernel, _testScalar)
     proc.process(in, &output);
     printf("Scalar:\n");
     output->print();
+
+    delete input;
+    delete output;
 }
 
 template<int inputNumber, int outputNumber>
@@ -230,7 +233,12 @@ TEST(FastKernel, profileEdgeDetector)  // it could be moved to perf-tests...
         processor.process(&inputs[i], &edges);
         G12IntegralBuffer *integral = new G12IntegralBuffer(edges);
         G12Buffer *blurred = integral->rectangularBlur<G12Buffer>(5,5);
-        /*G12Buffer *output = */ blurred->binarize(100);
+        G12Buffer *output = blurred->binarize(100);
+        delete edges;
+        delete integral;
+        delete blurred;
+        delete inputs[i];
+        delete output;
     }
     delay = start.usecsToNow();
 

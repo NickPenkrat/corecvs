@@ -88,4 +88,5 @@ TEST(CloudTest, main)
 //    buffer.element(5, 5)->speed = Vector3dd(0, 0, 0);
 
 //    cout << pCloud->back().speed << endl;
+    delete pCloud;
 }

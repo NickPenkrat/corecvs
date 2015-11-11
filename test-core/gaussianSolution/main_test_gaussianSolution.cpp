@@ -380,7 +380,8 @@ TEST(GaussianSolution, CorrectSolutionForPolynomInterpolation)
     for (int i = 0; i < pow(degree + 1, 2); i ++) {
         B->a(i, 0) = 0;
     }
-    B->a(9, 0) = 1;
+
+    B->a(8, 0) = 1;
 
     Matrix * C = new Matrix(A);
     Matrix * D = new Matrix(B);
@@ -401,4 +402,7 @@ TEST(GaussianSolution, CorrectSolutionForPolynomInterpolation)
 
     delete_safe(D);
     delete_safe(C);
+    delete A;
+    delete B;
+    delete F;
 }
