@@ -155,7 +155,7 @@ done:
 
 char* PPMLoader::nextLine(FILE *fp, int sz, MetaData *metadata)
 {
-    char *buf = new char[sz];
+    std::unique_ptr<char> buf = new char[sz];
     while (fread(buf, 1, 1, fp))
     {
 
