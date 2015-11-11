@@ -3,14 +3,15 @@
 
 #include "calibrationJob.h"
 
-#ifdef WITH_OPENCV
-#include "openCvCheckerboardDetector.h"
-#endif
 #include "lmDistortionSolver.h"
 #include "flatPatternCalibrator.h"
 #include "photoStationCalibrator.h"
 #include "qtFileLoader.h"
 #include "tbbWrapper.h"
+#include "log.h"
+#ifdef WITH_OPENCV
+#include "openCvCheckerboardDetector.h"
+#endif
 
 bool CalibrationJob::detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::ObservationList &list)
 {
@@ -187,9 +188,16 @@ void CalibrationJob::prepareUndistortionTransformation(LensDistortionModelParame
             break;
     }
 
-    auto wh = output[1] - output[0];
+    corecvs::Vector2dd wh = output[1] - output[0];
     newW = wh[0];
     newH = wh[1];
+
+    if (newW < 10 || newH < 10)
+    {
+        L_ERROR_P("invalid undistorted output size: %dx%d", roundUp(newW), roundUp(newH));
+        newW = newH = 0;
+        return;
+    }
 
     if (undistParams.adoptScale())
     {
@@ -598,5 +606,5 @@ void CalibrationJob::calculateRedundancy(std::vector<int> &cameraImagesCount
         }
     }
 
-    redundancyPhotostation = unvisited ? -unvisited : total - ((int)cameraImagesCount.size() - 1);
+    redundancyPhotostation = unvisited ? -unvisited : (int)total - ((int)cameraImagesCount.size() - 1);
 }
