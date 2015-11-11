@@ -41,6 +41,7 @@
 #include "g8Buffer.h"
 #include "booleanBuffer.h"
 
+
 using namespace std;
 using namespace corecvs;
 
@@ -60,10 +61,17 @@ int TestAbstractBufferClass::counter = 0;
 
 TEST(Buffer, testG12Buffer)
 {
+#if __GNUG__ && __GNUC__ < 5
+    ASSERT_TRUE(__has_trivial_copy(int));
+    ASSERT_TRUE(__has_trivial_copy(double));
+    ASSERT_TRUE(__has_trivial_copy(RGBColor));
+    ASSERT_TRUE(__has_trivial_copy(corecvs::Vector3dd>));
+#else
     ASSERT_TRUE(std::is_trivially_copy_constructible<int>::value);
     ASSERT_TRUE(std::is_trivially_copy_constructible<double>::value);
     ASSERT_TRUE(std::is_trivially_copy_constructible<RGBColor>::value);
     ASSERT_TRUE(std::is_trivially_copy_constructible<corecvs::Vector3dd>::value);
+#endif
     ASSERT_TRUE(std::is_trivially_destructible<int>::value);
     ASSERT_TRUE(std::is_trivially_destructible<double>::value);
     ASSERT_TRUE(std::is_trivially_destructible<RGBColor>::value);
