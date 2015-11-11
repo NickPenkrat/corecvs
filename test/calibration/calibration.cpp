@@ -210,7 +210,7 @@ TEST_F(CalibrationTest, testDetectDistChessBoard)
     CORE_ASSERT_DOUBLE_EQUAL_EP(job.observations[0][1].sourcePattern[0].v(), 164.79241529168607  , 1e-12, ( "Point 0 has wrong position V"));
 }
 
-TEST_F(CalibrationTest, DISABLED_testEstimateDistDistortion)
+TEST_F(CalibrationTest, testEstimateDistDistortion)
 {
     CalibrationJob job;
 
@@ -223,7 +223,7 @@ TEST_F(CalibrationTest, DISABLED_testEstimateDistDistortion)
     CORE_ASSERT_DOUBLE_EQUAL_EP(job.photostation.cameras[1].distortion.koeff()[1], 1.463163057542     , 1e-12, ("Camera 5 has wrong distortion koeff 2"));
 }
 
-TEST_F(CalibrationTest, DISABLED_testCalculate)
+TEST_F(CalibrationTest, testCalculate)
 {
     CalibrationJob job;
 
