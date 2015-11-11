@@ -11,6 +11,7 @@
 #define PPMLOADER_H_
 
 #include <string>
+#include <memory>
 
 #include "global.h"
 
