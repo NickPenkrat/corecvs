@@ -1,19 +1,15 @@
-#include "calibrationJob.h"
-
-
 #include <array>
 #include <queue>
+
+#include "calibrationJob.h"
 
 #ifdef WITH_OPENCV
 #include "openCvCheckerboardDetector.h"
 #endif
-
 #include "lmDistortionSolver.h"
 #include "flatPatternCalibrator.h"
 #include "photoStationCalibrator.h"
-
 #include "qtFileLoader.h"
-
 #include "tbbWrapper.h"
 
 bool CalibrationJob::detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::ObservationList &list)
@@ -65,7 +61,7 @@ void CalibrationJob::allDetectChessBoard(bool distorted)
     {
         for (auto& v: c)
         {
-            std::string filename = distorted ? v.sourceFileName : v.undistortedFileName;
+            const std::string& filename = distorted ? v.sourceFileName : v.undistortedFileName;
             corecvs::RGB24Buffer buffer = LoadImage(filename);
             if (buffer.h && buffer.w)
             {
@@ -153,7 +149,8 @@ void CalibrationJob::allEstimateDistortion()
 
 typedef std::array<corecvs::Vector2dd, 2> Rect;
 
-void CalibrationJob::prepareUndistortionTransformation(LensDistortionModelParameters &source, double w, double h, corecvs::DisplacementBuffer &result, double &newW, double &newH)
+void CalibrationJob::prepareUndistortionTransformation(LensDistortionModelParameters &source, double w, double h
+    , corecvs::DisplacementBuffer &result, double &newW, double &newH)
 {
     RadialCorrection correction(source);
     auto undistParams = settings.distortionApplicationParameters;
@@ -271,9 +268,11 @@ void CalibrationJob::SaveImage(const std::string &path, corecvs::RGB24Buffer &im
 
 corecvs::RGB24Buffer CalibrationJob::LoadImage(const std::string &path)
 {
-    auto* buffer = QTRGB24Loader().load(path);
-    if (!buffer)
+    corecvs::RGB24Buffer* buffer = QTRGB24Loader().load(path);
+
+    if (buffer == NULL)
         return corecvs::RGB24Buffer();
+
     corecvs::RGB24Buffer res = *buffer;
     delete buffer;
     return res;
@@ -409,8 +408,11 @@ void CalibrationJob::calibratePhotostation()
     }
 
     PhotoStationCalibrator calibrator(settings.photostationCalibratorConstraints);
-    calibratePhotostation(N, M, calibrator, points, intrinsics, locations, settings.photostationCalibratorUseBFSPresolver, settings.photostationCalibratorUseLMSolver);
-    auto ps = calibrator.getPhotostation();
+    calibratePhotostation(N, M, calibrator, points, intrinsics, locations
+        , settings.photostationCalibratorUseBFSPresolver
+        , settings.photostationCalibratorUseLMSolver);
+
+    Photostation ps = calibrator.getPhotostation();
     for (int i = 0; i < N; ++i)
     {
         photostation.cameras[i].intrinsics = ps.cameras[i].intrinsics;
@@ -512,7 +514,10 @@ void CalibrationJob::calibrate()
     computeCalibrationErrors();
 }
 
-void CalibrationJob::calculateRedundancy(std::vector<int> &cameraImagesCount, std::vector<std::vector<int>> &cameraCameraRelationships, std::vector<int> &redundantSingleCamera, int &redundancyPhotostation)
+void CalibrationJob::calculateRedundancy(std::vector<int> &cameraImagesCount
+    , std::vector<std::vector<int>> &cameraCameraRelationships
+    , std::vector<int> &redundantSingleCamera
+    , int &redundancyPhotostation)
 {
     cameraImagesCount.clear();
     cameraImagesCount.resize(photostation.cameras.size());
@@ -584,11 +589,14 @@ void CalibrationJob::calculateRedundancy(std::vector<int> &cameraImagesCount, st
                 bfsQueue.push(cam);
             }
     }
+
     int unvisited = 0;
-    for (auto& i: used)
+    for (auto& i : used) {
         if (!i)
         {
             unvisited++;
         }
-    redundancyPhotostation = unvisited ? -unvisited : total - (cameraImagesCount.size() - 1);
+    }
+
+    redundancyPhotostation = unvisited ? -unvisited : total - ((int)cameraImagesCount.size() - 1);
 }

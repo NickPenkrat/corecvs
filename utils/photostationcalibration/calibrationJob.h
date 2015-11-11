@@ -17,15 +17,24 @@
 #include "calibrationPhotostation.h"
 #include "photoStationCalibrator.h"
 
+#ifdef  LoadImage
+# undef LoadImage
+#endif
+
 struct ImageData
 {
-    std::string sourceFileName;
-    std::string undistortedFileName;
+    std::string              sourceFileName;
+    std::string              undistortedFileName;
     corecvs::ObservationList sourcePattern;
     corecvs::ObservationList undistortedPattern;
-    CameraLocationData location;
+    CameraLocationData       location;
 
-    double distortionRmse = -1.0, distortionMaxError = -1.0, calibrationRmse = -1.0, calibrationMaxError = -1.0, singleCameraRmse = -1.0, singleCameraMaxError = -1.0;
+    double distortionRmse       = -1.0
+         , distortionMaxError   = -1.0
+         , calibrationRmse      = -1.0
+         , calibrationMaxError  = -1.0
+         , singleCameraRmse     = -1.0
+         , singleCameraMaxError = -1.0;
 
     template<class VisitorType>
     void accept(VisitorType &visitor)
@@ -60,31 +69,31 @@ struct CalibrationSetupEntry
 struct CalibrationSettings
 {
     /* TODO : rename this */
-    CheckerboardDetectionParameters openCvDetectorParameters;
-    BoardAlignerParams boardAlignerParams = BoardAlignerParams::GetOldBoard();
+    CheckerboardDetectionParameters     openCvDetectorParameters;
 
-    ChessBoardAssemblerParams chessBoardAssemblerParams;
-    ChessBoardCornerDetectorParams chessBoardCornerDetectorParams;
+    BoardAlignerParams                  boardAlignerParams = BoardAlignerParams::GetOldBoard();
 
+    ChessBoardAssemblerParams           chessBoardAssemblerParams;
+    ChessBoardCornerDetectorParams      chessBoardCornerDetectorParams;
 
     double forceFactor = 1.0;
 
-    LineDistortionEstimatorParameters distortionEstimationParameters;
+    LineDistortionEstimatorParameters   distortionEstimationParameters;
 
-    DistortionApplicationParameters distortionApplicationParameters;
+    DistortionApplicationParameters     distortionApplicationParameters;
 
     // TODO: move to some <<CalibratorParams>> structure
     bool singleCameraCalibratorUseZhangPresolver = true;
-    bool singleCameraCalibratorUseLMSolver = true;
+    bool singleCameraCalibratorUseLMSolver       = true;
     CameraConstraints singleCameraCalibratorConstraints = CameraConstraints::ZERO_SKEW | CameraConstraints::EQUAL_FOCAL | CameraConstraints::LOCK_SKEW;
-    int  singleCameraLMiterations = 1000;
+    int  singleCameraLMiterations                = 1000;
 
-    bool photostationCalibratorUseBFSPresolver = true;
-    bool photostationCalibratorUseLMSolver = true;
+    bool photostationCalibratorUseBFSPresolver   = true;
+    bool photostationCalibratorUseLMSolver       = true;
     CameraConstraints photostationCalibratorConstraints = CameraConstraints::ZERO_SKEW | CameraConstraints::EQUAL_FOCAL | CameraConstraints::LOCK_SKEW;
-    int  photostationLMiterations = 1000;
+    int  photostationLMiterations                = 1000;
 
-    PinholeCameraIntrinsics calibrationLockParams;
+    PinholeCameraIntrinsics             calibrationLockParams;
 
     template<class VisitorType>
     void accept(VisitorType &visitor)
@@ -122,13 +131,14 @@ struct CalibrationSettings
 
 struct CalibrationJob
 {
-    Photostation photostation;
-    std::vector<CameraLocationData> calibrationSetupLocations;
-    std::vector<std::vector<ImageData>> observations;
+    Photostation                                    photostation;
+    std::vector<CameraLocationData>                 calibrationSetupLocations;
+    std::vector<std::vector<ImageData>>             observations;
     std::vector<std::vector<CalibrationSetupEntry>> calibrationSetups;
-    bool calibrated = false;
 
-    CalibrationSettings settings;
+    bool                                            calibrated = false;
+
+    CalibrationSettings                             settings;
 
     template<class VisitorType>
     void accept(VisitorType &visitor)
@@ -142,41 +152,40 @@ struct CalibrationJob
     }
 
     static corecvs::RGB24Buffer LoadImage(const std::string& path);
-    static void SaveImage(const std::string& path, corecvs::RGB24Buffer &buffer);
+    static void                 SaveImage(const std::string& path, corecvs::RGB24Buffer &buffer);
     
-    bool detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::ObservationList &list);
-    bool detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::SelectableGeometryFeatures &features);
-    bool detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::SelectableGeometryFeatures *features = nullptr, corecvs::ObservationList *list = nullptr);
-    void allDetectChessBoard(bool distorted = true);
+    bool    detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::ObservationList &list);
+    bool    detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::SelectableGeometryFeatures &features);
+    bool    detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::SelectableGeometryFeatures *features = nullptr, corecvs::ObservationList *list = nullptr);
+    void    allDetectChessBoard(bool distorted = true);
    
-    bool estimateDistortion(corecvs::SelectableGeometryFeatures &features, double w, double h, LensDistortionModelParameters &params);
-    bool estimateDistortion(corecvs::ObservationList &list, double w, double h, LensDistortionModelParameters &params);
-    void computeDistortionError(corecvs::ObservationList &list, LensDistortionModelParameters &params, double &rmse, double &maxError);
-    void computeDistortionError(corecvs::SelectableGeometryFeatures &sgf, LensDistortionModelParameters &params, double &rmse, double &maxError);
-    void allEstimateDistortion();
+    bool    estimateDistortion(corecvs::SelectableGeometryFeatures &features, double w, double h, LensDistortionModelParameters &params);
+    bool    estimateDistortion(corecvs::ObservationList &list, double w, double h, LensDistortionModelParameters &params);
+    void    computeDistortionError(corecvs::ObservationList &list, LensDistortionModelParameters &params, double &rmse, double &maxError);
+    void    computeDistortionError(corecvs::SelectableGeometryFeatures &sgf, LensDistortionModelParameters &params, double &rmse, double &maxError);
+    void    allEstimateDistortion();
 
-    void prepareUndistortionTransformation(LensDistortionModelParameters &source, double w, double h, corecvs::DisplacementBuffer &dest, double &newW, double &newH);
-    void removeDistortion(corecvs::RGB24Buffer &src, corecvs::RGB24Buffer &dst, LensDistortionModelParameters &params);
-    void removeDistortion(corecvs::RGB24Buffer &src, corecvs::RGB24Buffer &dst, corecvs::DisplacementBuffer &transform, double outW, double outH);
-    void allRemoveDistortion();
+    void    prepareUndistortionTransformation(LensDistortionModelParameters &source, double w, double h, corecvs::DisplacementBuffer &dest, double &newW, double &newH);
+    void    removeDistortion(corecvs::RGB24Buffer &src, corecvs::RGB24Buffer &dst, LensDistortionModelParameters &params);
+    void    removeDistortion(corecvs::RGB24Buffer &src, corecvs::RGB24Buffer &dst, corecvs::DisplacementBuffer &transform, double outW, double outH);
+    void    allRemoveDistortion();
 
-    bool calibrateSingleCamera(int cameraId);
-    void allCalibrateSingleCamera();
+    bool    calibrateSingleCamera(int cameraId);
+    void    allCalibrateSingleCamera();
 
-    void computeSingleCameraErrors();
-    void computeCalibrationErrors();
-    void calibratePhotostation();
-    void calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<PinholeCameraIntrinsics> &intrinsics, std::vector<std::vector<CameraLocationData>> &locations, bool runBFS, bool runLM);
-    void calibrate();
+    void    computeSingleCameraErrors();
+    void    computeCalibrationErrors();
+    void    calibratePhotostation();
+    void    calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<PinholeCameraIntrinsics> &intrinsics, std::vector<std::vector<CameraLocationData>> &locations, bool runBFS, bool runLM);
+    void    calibrate();
 
-    void calculateRedundancy(std::vector<int> &cameraImagesCount, std::vector<std::vector<int>> &cameraCameraRelationships, std::vector<int> &redundantSingleCamera, int &redundancyPhotostation);
+    void    calculateRedundancy(std::vector<int> &cameraImagesCount, std::vector<std::vector<int>> &cameraCameraRelationships, std::vector<int> &redundantSingleCamera, int &redundancyPhotostation);
 
     double factor = 1.0;
     std::vector<double> factors;
 
 public:
     corecvs::Statistics stats;
-
 };
 
 #endif // CALIBRATION_JOB_H_

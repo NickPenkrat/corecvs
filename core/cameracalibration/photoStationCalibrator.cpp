@@ -474,6 +474,8 @@ void PhotoStationCalibrator::recenter()
 void PhotoStationCalibrator::refineGuess(int LMiterations)
 {
     recenter();
+    refineStruct();
+    recenter();
     std::cout << "Pre-LM RMSE: " << getRmseReprojectionError() << std::endl;
     std::vector<double> in(getInputNum()), out(getOutputNum());
     writeParams(&in[0]);
@@ -614,16 +616,26 @@ void PhotoStationCalibrator::validate()
  */
 bool PhotoStationCalibrator::getMSTSolveOrder(std::vector<std::pair<int, int>> &order)
 {
+    std::vector<int> totalCnt(N);
+    for (int i = 0; i < N; ++i)
+        for (int j = 0; j < M; ++j)
+            totalCnt[i] += (int)patternPoints[j][i].size();
+    int maxCam = 0;
+    for (int i = 1; i < N; ++i)
+        if (totalCnt[i] > totalCnt[maxCam])
+            maxCam = i;
     int maxFC = 0;
     order.clear();
     std::pair<int, int> initial(-1, -1);
-    for (int i = 0; i < N; ++i)
-        for (int j = 0; j < M; ++j)
-            if (patternPoints[j][i].size() > maxFC)
-            {
-                maxFC = (int)patternPoints[j][i].size();
-                initial = std::make_pair(i, j);
-            }
+//  for (int i = 0; i < N; ++i)
+    for (int j = 0; j < M; ++j) {
+        if (patternPoints[j][maxCam].size() > maxFC)
+        {
+            maxFC = (int)patternPoints[j][maxCam].size();
+            initial = std::make_pair(maxCam, j);
+        }
+    }
+
     int cameraSolved = 1;
     int setupSolved = 0;
     std::vector<int> cameraUsed(N), setupUsed(M);
