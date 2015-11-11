@@ -9,6 +9,7 @@
  * \author alexander
  */
 #include <string>
+#include <memory>
 
 #include "global.h"
 
