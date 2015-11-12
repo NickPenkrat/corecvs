@@ -60,17 +60,23 @@ struct ReconstructionParameters
 
 struct ReconstructionJob : ReconstructionParameters
 {
+    //! \brief Photostation calibration data
     CalibrationJob         calibrationData;
+    //! \brief Scene with multiple photostations and points
     MultiPhotostationScene scene;
 
+    //! \brief Number of error functor outputs
     int getOutputNum() const;
+    //! \brief Number of error functor inputs
     int getInputNum() const;
 
+    //! \brief Returns scaler for photostation positions
     void getScaler(corecvs::Vector3dd &mean, corecvs::Vector3dd &scale);
 
+    //! \brief Serializes MPS to double*
     void writeParams(double out[], corecvs::Vector3dd mean = corecvs::Vector3dd(0.0, 0.0, 0.0), corecvs::Vector3dd scale = corecvs::Vector3dd(1.0, 1.0, 1.0)) const;
 
-
+    //! \brief Deserializes MPS from double*
     void readParams(const double in[], corecvs::Vector3dd mean = corecvs::Vector3dd(0.0, 0.0, 0.0), corecvs::Vector3dd scale = corecvs::Vector3dd(1.0, 1.0, 1.0));
 
     struct OptimizationFunctor : public corecvs::FunctionArgs
@@ -89,9 +95,21 @@ struct ReconstructionJob : ReconstructionParameters
     };
 
     void undistortAll(bool singleDistortion = true);
+    /*! \brief Runs non-linear LSQ optimization on supplied photostation and POIs
+     *
+     *  \param angleError switch for error function (geometric vs reprojection)
+     */
     void solve(bool angleError = true);
+    /*! \brief Fills MultiPhotostationScene with supplied locations
+     *
+     *  Note, this method is for temporary use and somewhat tuned for old photostation
+     *
+     *  \param data Map from prefix into photostation locations
+     *  \param psLocationCnt Number of photostation locations
+     */
     void fill(std::unordered_map<std::string, corecvs::Affine3DQ> &data, int psLocationCnt = 5);
 
+    //! Serialization routine
     template <typename V>
     void accept(V &visitor)
     {
