@@ -3,6 +3,8 @@
  * of this PS using GPS coordinates
  *
  * NOTE: this one is not finalized yet and is more "playground" than "application"
+ * All files that you need are here
+ * https://drive.google.com/folderview?id=0B1FS8EqRjHUrYjNNaDM5VzZUNlk&usp=sharing
  */
 #include "reconstructionSolver.h"
 
