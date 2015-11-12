@@ -32,7 +32,7 @@
 
 #if defined(WIN32) && !defined(aligned_alloc)
 #include <malloc.h>
-#define aligned_alloc(a, b) _aligned_malloc(a, b)
+#define aligned_alloc(a, b) _aligned_malloc(b, a)
 #endif
 
 namespace corecvs {

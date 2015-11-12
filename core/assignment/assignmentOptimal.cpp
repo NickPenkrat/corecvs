@@ -206,10 +206,7 @@ bool assignmentOptimal(
    for(j = 0; j < w; j++)
    {
       if(xy[j] != -1)
-      {
-          CORE_ASSERT_TRUE_S(xy[j] < mapping->h);
          mapping->element(xy[j],0) = j;
-      }
    }
 
    delete[] v;
