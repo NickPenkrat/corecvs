@@ -65,13 +65,20 @@ corecvs::Vector3dd MultiPhotostationScene::backProject(const std::vector<std::pa
     }
     return BackProject(pairs);
 }
-corecvs::Vector3dd MultiPhotostationScene::backProject(const std::vector<PointProjection> &projections) const
+corecvs::Vector3dd MultiPhotostationScene::backProject(const std::vector<PointProjection> &projections, bool updateable) const
 {
     std::vector<std::pair<std::pair<int, int>, corecvs::Vector2dd>> points;
     for (auto& proj: projections)
     {
-        auto& kp = cameraObservations[proj.photostationId][proj.cameraId].keyPoints[proj.featureId];
-        points.emplace_back(std::make_pair(proj.photostationId, proj.cameraId), corecvs::Vector2dd(kp.x, kp.y));
+        if (updateable)
+        {
+            auto& kp = cameraObservations[proj.photostationId][proj.cameraId].keyPoints[proj.featureId];
+            points.emplace_back(std::make_pair(proj.photostationId, proj.cameraId), corecvs::Vector2dd(kp.x, kp.y));
+        }
+        else
+        {
+            points.emplace_back(std::make_pair(proj.photostationId, proj.cameraId), proj.projection);
+        }
     }
     CORE_ASSERT_TRUE_S(points.size() > 0);
     return backProject(points);

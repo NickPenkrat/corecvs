@@ -94,7 +94,8 @@ HEADERS += \
     tablecontrol/rotaryTableControlWidget.h \
     tablecontrol/rotaryTableMeshModel.h \
     tablecontrol/rotationPlanGenerator.h \
-    capture/abstractImageNamer.h
+    capture/abstractImageNamer.h \
+    reconstruction/reconstructionSolver.h
 
 SOURCES += \
     frames.cpp \
@@ -163,7 +164,8 @@ SOURCES += \
     tablecontrol/rotaryTableControlWidget.cpp \
     tablecontrol/rotaryTableMeshModel.cpp \
     tablecontrol/rotationPlanGenerator.cpp \
-    capture/abstractImageNamer.cpp
+    capture/abstractImageNamer.cpp \
+    reconstruction/reconstructionSolver.cpp
 
 
 FORMS += \
