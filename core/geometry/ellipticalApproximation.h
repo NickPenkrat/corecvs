@@ -303,11 +303,16 @@ public:
        // SYNC_PRINT(("EllipticalApproximationUnified(const EllipticalApproximationUnified &other) called\n"));
     }
 
-    void operator =(const EllipticalApproximationUnified &other)
+    EllipticalApproximationUnified& operator =(const EllipticalApproximationUnified &other)
     {
-        this->mInfMatrix = new Matrix(other.mInfMatrix);
-        this->mSum = other.mSum;
-        this->mCount = other.mCount;
+        if (&other != this)
+        {
+            if (this->mInfMatrix) delete this->mInfMatrix;
+            this->mInfMatrix = new Matrix(other.mInfMatrix);
+            this->mSum = other.mSum;
+            this->mCount = other.mCount;
+        }
+        return *this;
         // SYNC_PRINT(("EllipticalApproximationUnified::operator =(const EllipticalApproximationUnified &other) called\n"));
     }
 

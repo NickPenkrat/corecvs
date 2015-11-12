@@ -11,6 +11,7 @@
 #define PPMLOADER_H_
 
 #include <string>
+#include <memory>
 
 #include "global.h"
 
@@ -72,7 +73,7 @@ public:
 private:
     static string prefix1, prefix2;
 
-    char* nextLine(FILE *fp, int sz, MetaData *metadata);
+    std::unique_ptr<char[]> nextLine(FILE *fp, int sz, MetaData *metadata);
     bool readHeader(FILE *fp, unsigned long int *h, unsigned long int *w, uint16_t *maxval, uint8_t *type, MetaData* metadata);
     bool writeHeader(FILE *fp, unsigned long int h, unsigned long int w, uint8_t type, uint16_t maxval, MetaData* metadata);
 };

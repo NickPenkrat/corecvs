@@ -34,6 +34,8 @@ TEST(MidmapPyramid, testFunction)
         G12Buffer *level = pyr->levels[i];
         RGB24Buffer levelSave(level);
         BMPLoader().save(string(outName), &levelSave);
+        delete level;
     }
     delete_safe(pyr);
+    delete buffer;
 }
