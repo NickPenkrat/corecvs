@@ -84,7 +84,10 @@ TEST(Buffer, testG12Buffer)
 #endif
 
     ASSERT_FALSE(std::is_trivially_destructible<TestAbstractBufferClass>::value);
-    // WTF?!   ASSERT_TRUE(std::is_trivially_constructible<RGBColor>::value);
+    /*
+     * TODO: Check if we would (or would not) like this test to fail
+     */
+    //ASSERT_TRUE(std::is_trivially_constructible<RGBColor>::value);
 
    /* Test case 1: Create and destroy buffer*/
    G12Buffer *a = new G12Buffer(1,1);
