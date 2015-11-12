@@ -33,6 +33,9 @@
 #if defined(WIN32) && !defined(aligned_alloc)
 #include <malloc.h>
 #define aligned_alloc(a, b) _aligned_malloc(b, a)
+#define aligned_free(a) _aligned_free(a)
+#else
+#define aligned_free(a) free(a)
 #endif
 
 namespace corecvs {
@@ -50,7 +53,7 @@ struct AlignedMemoryBlock
     }
     ~AlignedMemoryBlock()
     {
-        free(memory);
+        aligned_free(memory);
         memory = nullptr;
     }
     void* getAlignedStart()
