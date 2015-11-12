@@ -93,7 +93,7 @@ public:
     }
 
     // XXX: Here we hope that either stack is unwinded automatically or it is not too big
-    template <typename innerType>
+    template <typename innerType, typename std::enable_if<!std::is_arithmetic<innerType>::value,int>::type foo = 0>
     void visit(std::vector<innerType> &fields, QJsonArray &array)
     {
         for (size_t i = 0; i < fields.size(); ++i)
@@ -102,6 +102,15 @@ public:
             fields[i].accept(*this);
             array.append(mNodePath.back());
             mNodePath.pop_back();
+        }
+    }
+
+    template <typename innerType, typename std::enable_if<std::is_arithmetic<innerType>::value,int>::type foo=0>
+    void visit(std::vector<innerType> &fields, QJsonArray &array)
+    {
+        for (size_t i = 0; i < fields.size(); ++i)
+        {
+            array.append((QJsonValue)(double)fields[i]);
         }
     }
 
