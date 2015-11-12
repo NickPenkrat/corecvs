@@ -88,29 +88,6 @@ void PhotoStationCalibrator::getFullReprojectionError(std::vector<double> &err)
 
 void PhotoStationCalibrator::getFullReprojectionError(double out[])
 {
-    //TODO: BTW it seems that not calculations but copies are slow
-    //May be direct writing of error function will be smarter
-#if 0
-    int idx = 0;
-    for (size_t j = 0; j < M; ++j)
-    {
-        auto& Qs = absoluteSetupLocation[j].orientation;
-        auto& Cs = absoluteSetupLocation[j].position;
-        for (size_t i = 0; i < N; ++i)
-        {
-            if (!patternPoints[j][i].size())
-                continue;
-
-            for (auto& pt: patternPoints[j][i])
-            {
-                auto diff = relativeCameraPositions[i].project(Qs * (pt.second - Cs));
-                out[idx++] = diff[0];
-                out[idx++] = diff[1];
-            }
-        }
-    }
-    CORE_ASSERT_TRUE_S(idx == getOutputNum() - N - M + 1);
-#else
     std::vector<int> offset(M);
     for (size_t j = 0; j + 1 < (size_t)M; ++j)
     {
@@ -123,7 +100,6 @@ void PhotoStationCalibrator::getFullReprojectionError(double out[])
     }
 
     corecvs::parallelable_for (0, M, 1, ParallelErr(this, &offset, out));
-#endif
 }
 
 #define IFNOT(cond, expr) \
@@ -174,6 +150,17 @@ int PhotoStationCalibrator::getOutputNum() const
         ;
 }
 
+int PhotoStationCalibrator::getStructInputNum() const
+{
+    return M * 7 + (N - 1) * 7;
+}
+
+int PhotoStationCalibrator::getStructOutputNum() const
+{
+    return L * 4;
+}
+
+
 // TODO: lots of copies back and forth. Probably we need a double** version of LM-optimization?!
 void PhotoStationCalibrator::readParams(const double in[])
 {
@@ -199,8 +186,8 @@ void PhotoStationCalibrator::readParams(const double in[])
             for (int j = 0; j < 4; ++j)
             {
                 GET_PARAM(toFill.extrinsics.orientation[j]);
-                toFill.extrinsics.orientation.normalise();
             }
+            toFill.extrinsics.orientation.normalise();
         }
     }
     for (int i = 0; i < M; ++i)
@@ -210,8 +197,8 @@ void PhotoStationCalibrator::readParams(const double in[])
         for (int j = 0; j < 4; ++j)
         {
             GET_PARAM(absoluteSetupLocation[i].orientation[j]);
-            absoluteSetupLocation[i].orientation.normalise();
         }
+        absoluteSetupLocation[i].orientation.normalise();
     }
 
     IF_GET_PARAM(UNLOCK_YSCALE, factor);
@@ -259,6 +246,66 @@ void PhotoStationCalibrator::writeParams(double out[])
 
     CORE_ASSERT_TRUE_S(argout == getInputNum());
 }
+
+void PhotoStationCalibrator::readStructureParams(const double in[])
+{
+    int argin = 0;
+    for (int i = 0; i < M; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            GET_PARAM(absoluteSetupLocation[i].position[j]);
+        }
+        for (int j = 0; j < 4; ++j)
+        {
+            GET_PARAM(absoluteSetupLocation[i].orientation[j]);
+        }
+        absoluteSetupLocation[i].orientation.normalise();
+    }
+    for (int i = 1; i < N; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            GET_PARAM(relativeCameraPositions[i].extrinsics.position[j]);
+        }
+        for (int j = 0; j < 4; ++j)
+        {
+            GET_PARAM(relativeCameraPositions[i].extrinsics.orientation[j]);
+        }
+        relativeCameraPositions[i].extrinsics.orientation.normalise();
+    }
+    CORE_ASSERT_TRUE_S(argin == getStructInputNum());
+}
+
+void PhotoStationCalibrator::writeStructureParams(double out[])
+{
+    int argout = 0;
+    for (int i = 0; i < M; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            SET_PARAM(absoluteSetupLocation[i].position[j]);
+        }
+        for (int j = 0; j < 4; ++j)
+        {
+            SET_PARAM(absoluteSetupLocation[i].orientation[j]);
+        }
+    }
+    for (int i = 1; i < N; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            SET_PARAM(relativeCameraPositions[i].extrinsics.position[j]);
+        }
+        for (int j = 0; j < 4; ++j)
+        {
+            SET_PARAM(relativeCameraPositions[i].extrinsics.orientation[j]);
+        }
+    }
+    CORE_ASSERT_TRUE_S(argout == getStructInputNum());
+}
+
+
 void PhotoStationCalibrator::LMCostFunction::operator()(const double in[], double out[])
 {
     calibrator->readParams(in);
@@ -276,27 +323,27 @@ void PhotoStationCalibrator::LMCostFunction::operator()(const double in[], doubl
 #endif
 }
 
+void PhotoStationCalibrator::LMCostFunctionNormalizer::operator()(const double in[], double out[])
+{
+    calibrator->readParams(in);
+    calibrator->writeParams(out);
+}
+
+void PhotoStationCalibrator::LMStructureNormalizer::operator()(const double in[], double out[])
+{
+    calibrator->readStructureParams(in);
+    calibrator->writeStructureParams(out);
+}
+
 void PhotoStationCalibrator::LMStructure::operator() (const double in[], double out[])
 {
-    int argin = 0, argout = 0;
+    int /*argin = 0,*/ argout = 0;
     auto& absoluteSetupLocation = calibrator->absoluteSetupLocation;
     auto& initialGuess = calibrator->initialGuess;
     auto& relativeCameraPositions = calibrator->relativeCameraPositions;
     int M = calibrator->M;
     int N = calibrator->N;
-
-    for (int i = 0; i < M; ++i)
-    {
-        for (int j = 0; j < 3; ++j)
-        {
-            GET_PARAM(absoluteSetupLocation[i].position[j]);
-        }
-        for (int j = 0; j < 4; ++j)
-        {
-            GET_PARAM(absoluteSetupLocation[i].orientation[j]);
-        }
-        absoluteSetupLocation[i].orientation.normalise();
-    }
+    calibrator->readStructureParams(in);
 
     for (int i = 0; i < M; ++i)
     {
@@ -308,19 +355,31 @@ void PhotoStationCalibrator::LMStructure::operator() (const double in[], double 
             auto& qs = absoluteSetupLocation[i].orientation;
             auto& cs = absoluteSetupLocation[i].position;
 
-          //auto& qc = relativeCameraPositions[j].extrinsics.orientation;
+            auto& qc = relativeCameraPositions[j].extrinsics.orientation;
             auto& cc = relativeCameraPositions[j].extrinsics.position;
 
-          //auto& qr = initialGuess[i][j].second.orientation;
+            auto& qr = initialGuess[i][j].second.orientation;
             auto& cr = initialGuess[i][j].second.position;
 
             auto diff = (qs.conjugated() * cc) + cs - cr;
+            qr.normalise(); qs.normalise(); qc.normalise();
+            auto diff_q = (qc ^ qs) ^ qr.conjugated();
+            auto diff_angle = std::acos(std::max(-1.0, std::min(diff_q[3], 1.0))) * 2.0;
+            if (diff_angle > M_PI)
+                diff_angle = 2.0 * M_PI - diff_angle;
+            diff_angle *= 100;
+            CORE_ASSERT_TRUE_S(!std::isnan(diff_angle));
             for (int k = 0; k < 3; ++k)
+            {
+                CORE_ASSERT_TRUE_S(!std::isnan(diff[k]));
                 out[argout++] = diff[k];
+            }
+            out[argout++] = diff_angle;
         }
     }
-    CORE_ASSERT_TRUE_S(argout == calibrator->L * 3);
+    CORE_ASSERT_TRUE_S(argout == calibrator->getStructOutputNum());
 }
+
 #undef SET_PARAM
 #undef IF_SET_PARAM
 #undef IFNOT_SET_PARAM
@@ -330,7 +389,7 @@ void PhotoStationCalibrator::LMStructure::operator() (const double in[], double 
 #undef IF_NOT_GET_PARAM
 
 
-// FIXME: This should be just a linear LSQ problem and thus should be solved 
+// FIXME: This should be just a linear LSQ problem and thus should be solved
 // with pseudo-inverse
 struct LSQCenter : public corecvs::FunctionArgs
 {
@@ -414,74 +473,53 @@ void PhotoStationCalibrator::recenter()
 
 void PhotoStationCalibrator::refineGuess(int LMiterations)
 {
+    recenter();
+    refineStruct();
+    recenter();
     std::cout << "Pre-LM RMSE: " << getRmseReprojectionError() << std::endl;
     std::vector<double> in(getInputNum()), out(getOutputNum());
     writeParams(&in[0]);
 
-    // TODO: TIL: there is some problem in calibrator; non-linear part does not converges,
-    //       it stucks somewhere at random point. Further investigation required
-    //       Possible outcomes:
-    //       * Adding gradient-norm related part (aka L-M instead of L) will help
-    //       * Standartizing items (since we have lots of coordinates ~[-100 .. 100]
-    //         and some quaternions [-1 .. 1] will help
-    //       * Making BFS from multiple cameras and then taking the mean of solutions
-    //         will be a better starting point for non-linear part
-    //       * Some global stochastic-like procedure for minimization
-    // TODO: Maybe we should test if such problem is solvable in some math package
-    //       with "proven" implementations of linear algebra and ML-like non-linear
-    //       optimization
-    // FIXME: Changed limit to 750 since change in rmse is not big; but it still decreases!
-    corecvs::LevenbergMarquardt levmar(LMiterations, 1e-3, 1.5);
+    // TODO: So far, after re-implementing presolver using MST we get more robust
+    //       initial estimate and get less problems from bad initialization
+    //
+    //       However, we can make some usefull things:
+    //       * Standartizing variables
+    corecvs::LevenbergMarquardt levmar(LMiterations, 10.0, 2);
     levmar.f = new LMCostFunction(this);
+    levmar.normalisation = new LMCostFunctionNormalizer(this);
+    levmar.trace = true;
 
     auto res = levmar.fit(in, out);
     readParams(&res[0]);
-
     std::cout << "LM validation" << std::endl;
     std::cout << "Post-LM RMSE: " << getRmseReprojectionError() << std::endl;
     validate();
+    recenter();
+    delete_safe(levmar.f);
+    delete_safe(levmar.normalisation);
     std::cout << std::endl;
 }
 
 void PhotoStationCalibrator::refineStruct()
 {
-#if 1
     std::cout << "Pre-struct-LM RMSE: " << getRmseReprojectionError() << std::endl;
-    std::vector<double> in(7 * M), out(3 * L);
-    int argin = 0;
-    for (int i = 0; i < M; ++i)
-    {
-        for (int j = 0; j < 3; ++j)
-        {
-            in[argin++] = absoluteSetupLocation[i].position[j];
-        }
-        for (int j = 0; j < 4; ++j)
-        {
-            in[argin++] = absoluteSetupLocation[i].orientation[j];
-        }
-    }
+    std::vector<double> in(getStructInputNum()), out(getStructOutputNum());
+    writeStructureParams(&in[0]);
 
-    corecvs::LevenbergMarquardt levmar(1000, 1e-6, 1.1);
+    corecvs::LevenbergMarquardt levmar(500);
     levmar.f = new LMStructure(this);
+    levmar.normalisation = new LMStructureNormalizer(this);
+    levmar.trace = true;
     auto res = levmar.fit(in, out);
-    argin = 0;
+    readStructureParams(&res[0]);
 
-    for (int i = 0; i < M; ++i)
-    {
-        for (int j = 0; j < 3; ++j)
-        {
-            absoluteSetupLocation[i].position[j] = res[argin++];
-        }
-        for (int j = 0; j < 4; ++j)
-        {
-            absoluteSetupLocation[i].orientation[j] = res[argin++];
-        }
-        absoluteSetupLocation[i].orientation.normalise();
-    }
+    delete_safe(levmar.f);
+    delete_safe(levmar.normalisation);
+
     std::cout << "Post-structure validation" << std::endl;
     std::cout << "Post-struct-LM RMSE: " << getRmseReprojectionError() << std::endl;
     validate();
-#endif
 }
 
 void PhotoStationCalibrator::solveCameraToSetup(const CameraLocationData &realLocation, int camera, int setup)
@@ -503,12 +541,16 @@ void PhotoStationCalibrator::solveCameraToSetup(const CameraLocationData &realLo
 
     corecvs::Quaternion qf = qc ^ qs;
     corecvs::Vector3dd  cf = (qs.conjugated() * cc) + cs;//qc(qs(-cs)-cc)
+#ifdef VERBOSE_OUTPUT
     std::cout << "Solving setup " << setup << " from camera " << camera << " QR: " << qr << " QC: " << qc << " QS: " << qs << " | " << " CR: " << cr << " CC: " << cc << " CS: " << cs << std::endl;
+#endif
     CORE_ASSERT_TRUE_S(!(cr - cf) < 1e-6);
     CORE_ASSERT_TRUE_S(!(qf - qr) < 1e-6);
     if (qs[0] > 0.0)
         qs = -qs;
+#ifdef VERBOSE_OUTPUT
     std::cout << "CC:C>S: Setup " << setup << " is " << (acos(qs[3]) * 180.0 * 2.0 / M_PI) << std::endl;
+#endif
 }
 
 void PhotoStationCalibrator::solveSetupToCamera(const CameraLocationData &realLocation, int camera, int setup)
@@ -530,12 +572,16 @@ void PhotoStationCalibrator::solveSetupToCamera(const CameraLocationData &realLo
 
     corecvs::Quaternion qf = qc ^ qs;
     corecvs::Vector3dd  cf = (qs.conjugated() * cc) + cs;//qc(qs(-cs)-cc)
+#ifdef VERBOSE_OUTPUT
     std::cout << "Solving camera " << camera<< " from setup " << setup << " QR: " << qr << " QC: " << qc << " QS: " << qs << " | " << " CR: " << cr << " CC: " << cc << " CS: " << cs << std::endl;
+#endif
     CORE_ASSERT_TRUE_S(!(cr - cf) < 1e-6);
     CORE_ASSERT_TRUE_S(!(qf - qr) < 1e-6);
     if (qc[0] > 0.0)
         qc = -qc;
+#ifdef VERBOSE_OUTPUT
     std::cout << "CC:S>C: Camera " << camera << " is " << (acos(qc[3]) * 180.0 * 2.0 / M_PI) << std::endl;
+#endif
 }
 
 void PhotoStationCalibrator::validate()
@@ -555,296 +601,142 @@ void PhotoStationCalibrator::validate()
             std::cout << "Cam " << cam << ", setup " << setup << std::endl;
             std::cout << "Exp: " << q2 << " Rec: " << q1 << " diff: " << (q1.conjugated() ^ q2) << std::endl;
             std::cout << "Exp: " << v2 << " Rec: " << v1 << " diff: " << v1 - v2 << std::endl;
+            std::cout << "Set: " << absoluteSetupLocation[setup].position << " " << absoluteSetupLocation[setup].orientation << std::endl;
+
             if (max_diff < !(v2 - v1))
                 max_diff = !(v2 - v1);
         }
     }
-    std::cout << "CCMXDIFF: " << max_diff << std::endl;
+    std::cout << "Max structural diff: " << max_diff << std::endl;
 }
 
-double PhotoStationCalibrator::trySolveInitialLocations(std::vector<int> &order)
+/*
+ * Here we compute maximal spanning tree from graph with verticies (cam, setup) connected
+ * with edges of cost #chessboard_corners visible from setup by cam
+ */
+bool PhotoStationCalibrator::getMSTSolveOrder(std::vector<std::pair<int, int>> &order)
 {
-    using std::vector;
-    using std::queue;
-    using corecvs::Vector3dd;
-    using corecvs::Quaternion;
-
-    vector<bool> camsSolved(N);
-    vector<bool> setupsSolved(N);
-    queue<int> cameraQueue;
-
-    int id1 = order[0];
-    camsSolved[id1] = true;
-    cameraQueue.push(id1);
-    relativeCameraPositions[id1].extrinsics = CameraLocationData(Vector3dd(0.0, 0.0, -120.0), Quaternion(0.0, 0.0, 0.0, 1.0));
-    for (int i = 0; i < M; ++i)
-    {
-        if (!initialGuess[i][id1].first || setupsSolved[i]) continue;
-        solveCameraToSetup(initialGuess[i][id1].second, id1, i);
-        setupsSolved[i] = true;
-    }
-
-    double retVal = 1e100;
-
-    for (int i = 1; i < N; ++i)
-    {
-        int id = order[i];
-        bool solved = false;
-        for (int j = 0; j < M; ++j)
-            if (initialGuess[j][id].first && setupsSolved[j])
-            {
-                solveSetupToCamera(initialGuess[j][id].second, id, j);
-                camsSolved[id] = true;
-                solved = true;
-                break;
-            }
-        if (!solved) return retVal;
-        for (int j = 0; j < M; ++j)
-        {
-            if (!initialGuess[j][id].first || setupsSolved[j]) continue;
-            solveCameraToSetup(initialGuess[j][id].second, id, j);
-            setupsSolved[j] = true;
-        }
-    }
+    std::vector<int> totalCnt(N);
     for (int i = 0; i < N; ++i)
-        if (!camsSolved[i])
-            return retVal;
-
-    double max_diff = 0;
-    for (int setup = 0; setup < M; ++setup)
-    {
-        for (int cam = 0; cam < N; ++cam)
+        for (int j = 0; j < M; ++j)
+            totalCnt[i] += (int)patternPoints[j][i].size();
+    int maxCam = 0;
+    for (int i = 1; i < N; ++i)
+        if (totalCnt[i] > totalCnt[maxCam])
+            maxCam = i;
+    int maxFC = 0;
+    order.clear();
+    std::pair<int, int> initial(-1, -1);
+//  for (int i = 0; i < N; ++i)
+    for (int j = 0; j < M; ++j) {
+        if (patternPoints[j][maxCam].size() > maxFC)
         {
-
-            if (!initialGuess[setup][cam].first)
-                continue;
-            auto q1 = relativeCameraPositions[cam].extrinsics.orientation ^ absoluteSetupLocation[setup].orientation;
-            auto q2 = initialGuess[setup][cam].second.orientation;
-            auto v1 = absoluteSetupLocation[setup].position + absoluteSetupLocation[setup].orientation.conjugated() * relativeCameraPositions[cam].extrinsics.position;
-            auto v2 = initialGuess[setup][cam].second.position;
-            std::cout << "Cam " << cam << ", setup " << setup << std::endl;
-            std::cout << "Exp: " << q2 << " Rec: " << q1 << " diff: " << (q1.conjugated() ^ q2) << std::endl;
-            std::cout << "Exp: " << v2 << " Rec: " << v1 << " diff: " << v1 - v2 << std::endl;
-            if (max_diff < !(v2 - v1))
-                max_diff = !(v2 - v1);
+            maxFC = (int)patternPoints[j][maxCam].size();
+            initial = std::make_pair(maxCam, j);
         }
     }
 
-    return max_diff;
+    int cameraSolved = 1;
+    int setupSolved = 0;
+    std::vector<int> cameraUsed(N), setupUsed(M);
+    cameraUsed[initial.first] = 1;
+    setupUsed[initial.second] = 0;
+    int totalS = 0, totalC = 0;
+    std::vector<int> cc(N), sc(M);
+    for (int i = 0; i < N; ++i)
+        for (int j = 0; j < M; ++j)
+        {
+            if (patternPoints[j][i].size())
+            {
+                cc[i]++;
+                sc[j]++;
+            }
+        }
+    for (auto& c: cc) if (c) totalC++;
+    for (auto& s: sc) if (s) totalS++;
+    while (setupSolved < totalS || cameraSolved < totalC)
+    {
+        maxFC = 0;
+        initial = std::make_pair(-1, -1);
+        for (int i = 0; i < M; ++i)
+        {
+            for (int j = 0; j < N; ++j)
+            {
+                if (setupUsed[i])
+                {
+                    for (int ii = 0; ii < N; ++ii)
+                    {
+                        if ((!cameraUsed[ii]) && patternPoints[i][ii].size() > maxFC)
+                        {
+                            initial = std::make_pair(ii, i);
+                            maxFC = (int)patternPoints[i][ii].size();
+                        }
+                    }
+                }
+                if (cameraUsed[j])
+                {
+
+                    for (int jj = 0; jj < M; ++jj)
+                    {
+                        if ((!setupUsed[jj]) && patternPoints[jj][j].size() > maxFC)
+                        {
+                            initial = std::make_pair(j, jj);
+                            maxFC = (int)patternPoints[jj][j].size();
+                        }
+                    }
+                }
+
+            }
+        }
+#ifdef VERBOSE_OUTPUT
+        std::cout << "Adding " << initial.first << " " << initial.second << " : " << maxFC << std::endl;
+#endif
+        CORE_ASSERT_TRUE_S(patternPoints[initial.second][initial.first].size() > 0);
+        CORE_ASSERT_TRUE_S(initial.first >= 0 && initial.second >= 0);
+        order.push_back(initial);
+        CORE_ASSERT_TRUE_S(cameraUsed[initial.first] || setupUsed[initial.second]);
+        if (!cameraUsed[initial.first]) cameraSolved++;
+        if (!setupUsed[initial.second]) setupSolved++;
+        cameraUsed[initial.first] = 1;
+        setupUsed[initial.second] = 1;
+    }
+#ifdef VERBOSE_OUTPUT
+    for (int i = 0; i < order.size(); ++i)
+    {
+        std::cout << "Cam " << order[i].first << " setup " << order[i].second << " : " << patternPoints[order[i].second][order[i].first].size() << std::endl;
+    }
+#endif
+    return true;
 }
 
 void PhotoStationCalibrator::solveInitialLocations()
 {
-    // 1. fix first' camera internal position and orientation to (0,0,0), (0,0,0,1)
-    // 2. initialize all uninitialized setups that has that camera
-    // 3. select uninitalized camera reachable from initialized setups and goto 2
-    // 4. check if all setups were initialized
-    // 5. Provide info (e.g. should we run LM, or it's useless)
-    //
-    decltype(relativeCameraPositions) bestPos;
-    decltype(absoluteSetupLocation) bestLocs;
-    double bestMax = 1e10;
-#if 1
-    std::vector<int> order(N);;
-    for (int i = 0; i < N; ++i)
-        order[i] = i;
-    do
-    {
-        double res = trySolveInitialLocations(order);
-        if (res < bestMax)
-        {
-            bestMax = res;
-            bestPos = relativeCameraPositions;
-            bestLocs = absoluteSetupLocation;
-        }
-    } while (std::next_permutation(order.begin(), order.end()));
-    relativeCameraPositions = bestPos;
-    absoluteSetupLocation = bestLocs;
-#else
-    for (int id1 = 0; id1 < 6; ++id1)
-    {
+    /*
+     * Here we use MST-approach for initialization
+     */
+    std::vector<std::pair<int, int>> order2;
+    getMSTSolveOrder(order2);
     std::vector<bool> camsSolved(N);
-    std::vector<bool> setupsSolved(N);
-    std::queue<int> cameraQueue;
-
-    camsSolved[id1] = true;
-    cameraQueue.push(id1);
-    relativeCameraPositions[id1].extrinsics = { corecvs::Vector3dd(0.0, 0.0, -120.0), corecvs::Quaternion(0.0, 0.0, 0.0, 1.0)};
-
-    corecvs::Quaternion total(0.0, 0.0, 0.0, 1.0);
-    std::cout << "CC" << std::endl << "CC" << std::endl;
-    for (int j = 0; j < M; ++j)
+    std::vector<bool> setupsSolved(M);
+    auto initial = order2[0];
+    camsSolved[initial.first] = true;
+    relativeCameraPositions[initial.first].extrinsics = corecvs::CameraLocationData(corecvs::Vector3dd(0.0, 0.0, -120.0), corecvs::Quaternion(0.0, 0.0, 0.0, 1.0));
+    for (int i = 0; i < order2.size(); ++i)
     {
-        std::cout << "CC|PS: " << j << std::endl;
-        corecvs::Quaternion q1 = corecvs::Quaternion(0.0, 0.0, 0.0, 1.0);
-        int curr = 0;
-        int prev = -1;
-        for (int i = 0; i < N; ++i)
+        auto id = order2[i];
+        std::cout << "Solving c:" << id.first << " s: " << id.second << std::endl;
+        CORE_ASSERT_TRUE_S(camsSolved[id.first] || setupsSolved[id.second]);
+        CORE_ASSERT_TRUE_S(!camsSolved[id.first]||!setupsSolved[id.second]);
+        if (camsSolved[id.first])
         {
-            if (!initialGuess[j][i].first)
-                continue;
-            corecvs::Quaternion q = (initialGuess[j][i].second.orientation ^ q1.conjugated());
-            corecvs::Vector3dd axis(q[0], q[1], q[2]);
-            axis.normalise();
-            double angle = acos(q[3]) * 2.0 * 180.0 / M_PI;
-            std::cout << "CC|PSC" << i << ": " << initialGuess[j][i].second.position << " " << initialGuess[j][i].second.orientation << " " <<  axis << " ( " << angle << " ) " << std::endl;
-            q1 = initialGuess[j][i].second.orientation;
-            curr ++;
-            if (curr == 2){
-            if (prev + 1 == i)
-                total = total ^ q;
-            else
-                total = total ^ q.conjugated();
-            std::cout << "CC|QU" << total << " " << (acos(total[3]) * 180.0 * 2.0 / M_PI) << std::endl;
-            }
-            prev = i;
+            solveCameraToSetup(initialGuess[id.second][id.first].second, id.first, id.second);
+            setupsSolved[id.second] = true;
+        }
+        else
+        {
+            solveSetupToCamera(initialGuess[id.second][id.first].second, id.first, id.second);
+            camsSolved[id.first] = true;
         }
     }
-    std::cout << "CC|TOTAL: " << total << std::endl;
-    while (cameraQueue.size())
-    {
-        int cam = cameraQueue.front(); cameraQueue.pop();
-
-        for (int setup = 0; setup < M; ++setup)
-        {
-//            validate();
-            for (int ccm = 0; ccm < N; ++ccm)
-            {
-                if (!initialGuess[setup][ccm].first || !camsSolved[ccm] || !setupsSolved[setup])
-                    continue;
-                corecvs::Vector3dd  cc = relativeCameraPositions[ccm].extrinsics.position;
-                corecvs::Quaternion qc = relativeCameraPositions[ccm].extrinsics.orientation;
-                corecvs::Vector3dd  cr = initialGuess[setup][ccm].second.position;
-                corecvs::Quaternion qr = initialGuess[setup][ccm].second.orientation;
-                corecvs::Vector3dd  cs = absoluteSetupLocation[setup].position;
-                corecvs::Quaternion qs = absoluteSetupLocation[setup].orientation;
-
-                std::cout << "Solving: Checking camera " << ccm << " from setup " << setup << std::endl;
-                std::cout << "Solving setup " << setup << " from camera " << ccm << " QR: " << qr << " QC: " << qc << " QS: " << qs << " | " << " CR: " << cr << " CC: " << cc << " CS: " << cs << std::endl;
-                corecvs::Quaternion qq = (qc ^ qs) ^ qr.conjugated();
-                std::cout << "CC:QQ" << qq << std::endl;
-                double diffa = 2.0 * qq[3] * qq[3] - 1.0;
-//                CORE_ASSERT_TRUE_S (acos(diffa) < 15.0 * M_PI / 180.0);
-                CORE_ASSERT_TRUE_S ((cs + qs.conjugated() * cc) == (cs + (qs.conjugated() * cc)));
-                if(!(cr - (cs + qs.conjugated() * cc)) >= 60.0)
-                {
-                    validate();
-                }
-//                CORE_ASSERT_TRUE_S (!(cr - (cs + qs.conjugated() * cc)) < 60.0);
-            }
-            if (!initialGuess[setup][cam].first || setupsSolved[setup])
-                continue;
-
-            std::cout << "Solving setup " << setup << " from cam " << cam << std::endl;
-            solveCameraToSetup(initialGuess[setup][cam].second, cam, setup);
-            setupsSolved[setup] = true;
-
-            for (int camN = 0; camN < N; ++camN)
-            {
-                if (!initialGuess[setup][camN].first || camsSolved[camN])
-                    continue;
-
-                std::cout << "Solving camera " << camN << " from setup " << setup << std::endl;
-                solveSetupToCamera(initialGuess[setup][camN].second, camN, setup);
-                camsSolved[camN] = true;
-                cameraQueue.push(camN);
-            }
-
-        }
-    }
-
-
-    bool ok = true;
-    for (int cam = 0; cam < N; ++cam)
-    {
-        if (!camsSolved[cam])
-        {
-            std::cout << "Failed to solve cam " << cam << std::endl;
-            ok = false;
-        }
-    }
-
-    for (int set = 0; set < M; ++set)
-    {
-        if (!setupsSolved[set])
-        {
-            std::cout << "Failed to solve setup " << set << std::endl;
-            ok = false;
-        }
-    }
-
-    std::cout << "Initial validation" << std::endl;
     validate();
-    for (int c1 = 0; c1 < N; ++c1)
-    {
-        for (int c2 = c1 + 1; c2 < N; ++c2)
-        {
-            for (int s = 0; s < M; ++s)
-            {
-                if (!initialGuess[s][c1].first || !initialGuess[s][c2].first)
-                    continue;
-
-                auto dd1 = initialGuess[s][c1].second.orientation.conjugated() ^ initialGuess[s][c2].second.orientation;
-                auto dd2 = relativeCameraPositions[c1].extrinsics.orientation.conjugated() ^ relativeCameraPositions[c2].extrinsics.orientation;
-                std::cout << "xxxdiff " << c1 << "-" << c2 << " : " << dd1 << " , " << dd2 << std::endl;
-            }
-        }
-    }
-    std::cout << "xxx" << std::endl;
-    double max_diff = 0.0;
-    for (int setup = 0; setup < M; ++setup)
-    {
-        for (int cam = 0; cam < N; ++cam)
-        {
-
-            if (!initialGuess[setup][cam].first)
-                continue;
-            auto q1 = relativeCameraPositions[cam].extrinsics.orientation ^ absoluteSetupLocation[setup].orientation;
-            auto q2 = initialGuess[setup][cam].second.orientation;
-            auto v1 = absoluteSetupLocation[setup].position + absoluteSetupLocation[setup].orientation.conjugated() * relativeCameraPositions[cam].extrinsics.position;
-            auto v2 = initialGuess[setup][cam].second.position;
-            std::cout << "Cam " << cam << ", setup " << setup << std::endl;
-            std::cout << "Exp: " << q2 << " Rec: " << q1 << " diff: " << (q1.conjugated() ^ q2) << std::endl;
-            std::cout << "Exp: " << v2 << " Rec: " << v1 << " diff: " << v1 - v2 << std::endl;
-            if (max_diff < !(v2 - v1))
-                max_diff = !(v2 - v1);
-        }
-    }
-#endif
-#if 0
-    std::cout << "CCMXDIFF: " << max_diff << std::endl;
-    if (max_diff < bestMax)
-    {
-        bestLocs = absoluteSetupLocation;
-        bestPos = relativeCameraPositions;
-        bestMax = max_diff;
-    }
-    }
-#endif
-    std::cout << "FINALE: " << bestMax << std::endl;
-    absoluteSetupLocation = bestLocs;
-    relativeCameraPositions = bestPos;
-    corecvs::Quaternion prev(0.0, 0.0, 0.0, 1.0);
-    for (int cam = 0; cam < N; ++cam){
-    for (int set = 0; set < M; ++set)
-    {
-        if (!initialGuess[set][cam].first)
-            continue;
-        auto diff = initialGuess[set][cam].second.orientation;
-//        prev = absoluteSetupLocation[set].orientation;
-        if (diff[0] > 0.0)
-            diff = -diff;
-        auto ang = acos(diff.t()) * 2.0 * 180.0 / M_PI;
-        diff /= std::sqrt(1.0 - diff.t() * diff.t());
-
-        std::cout << "Adiff: " <<  diff << " " << ang << std::endl;
-    }
-     std::cout << std::endl;
-    }
-
-    // It's useless in terms of RMSE
-#if 0
-    std::cout << std::endl;
-    refineStruct();
-#endif
 }

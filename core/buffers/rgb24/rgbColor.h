@@ -452,22 +452,26 @@ public:
 
         if (x < 1.0)
         {
-            return RGBColor(0, fround(x * 255) , fround((1.0 - x) * 255));
+            return RGBColor(0, fround(x * 255), fround((1.0 - x) * 255));
         }
         x -= 1.0;
-        return RGBColor(fround(x * 255) , fround((1.0 - x) * 255), 0 );
+        return RGBColor(fround(x * 255), fround((1.0 - x) * 255), 0);
     }
 
-
+    //#ifdef REFLECTION_IN_CORE
+    //    Reflection reflect = staticInit();
+    //#else
+    //    Reflection reflect;
+    //#endif
     static Reflection reflect;
 
     static Reflection staticInit()
     {
         Reflection reflection;
-        reflection.fields.push_back( new IntField(FIELD_R, 0, "r") );
-        reflection.fields.push_back( new IntField(FIELD_G, 0, "g") );
-        reflection.fields.push_back( new IntField(FIELD_B, 0, "b") );
-        reflection.fields.push_back( new IntField(FIELD_A, 0, "a") );
+        reflection.fields.push_back(new IntField(FIELD_R, 0, "r"));
+        reflection.fields.push_back(new IntField(FIELD_G, 0, "g"));
+        reflection.fields.push_back(new IntField(FIELD_B, 0, "b"));
+        reflection.fields.push_back(new IntField(FIELD_A, 0, "a"));
         return reflection;
     }
 

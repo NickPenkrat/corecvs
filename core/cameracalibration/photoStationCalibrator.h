@@ -45,9 +45,13 @@ public:
 private:
     void getFullReprojectionError(double out[]);
     int getInputNum() const;
+    int getStructInputNum() const;
     int getOutputNum() const;
+    int getStructOutputNum() const;
 
     void readParams(const double in[]);
+    void readStructureParams(const double in[]);
+    void writeStructureParams(double out[]);
     void writeParams(double out[]);
 
     // XXX: A long time ago in a galaxy far, far away... I've thought that this
@@ -103,14 +107,35 @@ private:
         PhotoStationCalibrator *calibrator;
     };
 
+    struct LMCostFunctionNormalizer : public corecvs::FunctionArgs
+    {
+        LMCostFunctionNormalizer(PhotoStationCalibrator *calibrator)
+            : FunctionArgs(calibrator->getInputNum(), calibrator->getInputNum()), calibrator(calibrator)
+        {
+        }
+        void operator()(const double in[], double out[]);
+        PhotoStationCalibrator *calibrator;
+    };
+
     struct LMStructure : public corecvs::FunctionArgs
     {
         LMStructure(PhotoStationCalibrator *calibrator)
-            : FunctionArgs(calibrator->M * 7, calibrator->L * 3), calibrator(calibrator)
+            : FunctionArgs(calibrator->getStructInputNum(), calibrator->getStructOutputNum()), calibrator(calibrator)
         {
         }
         void operator() (const double in[], double out[]);
 
+        PhotoStationCalibrator *calibrator;
+    };
+
+    struct LMStructureNormalizer : public corecvs::FunctionArgs
+    {
+        LMStructureNormalizer(PhotoStationCalibrator *calibrator)
+            : FunctionArgs(calibrator->getStructInputNum(), calibrator->getStructInputNum()), calibrator(calibrator)
+        {
+        }
+
+        void operator() (const double in[], double out[]);
         PhotoStationCalibrator *calibrator;
     };
     // LM-solver
@@ -119,8 +144,8 @@ private:
 
 
     // Prepares initialization for non-linear search
-    double trySolveInitialLocations(std::vector<int> &order);
     void solveInitialLocations();
+    bool getMSTSolveOrder(std::vector<std::pair<int, int>> &order);
     // Solves calibration setup pose from absolute and relative camera pose
     void solveCameraToSetup(const CameraLocationData &realLocation, int camera, int setup);
     // Solves relative camera pose from calibration setup pose and absolute camera pose

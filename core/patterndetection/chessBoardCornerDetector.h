@@ -121,7 +121,7 @@ struct ChessBoardCornerDetectorParams
     // Number of bins for computing edge direction histogram
     int histogramBins = 32;
     // Minimal angle between edges
-    double minAngle = M_PI / 10.0;
+    double minAngle = M_PI / 6.0;
     // Typical radius for estimating edge-related data and refinig corner positions
     int neighborhood = 25;
     // Gradient magnitude threshold

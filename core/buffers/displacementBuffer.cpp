@@ -6,8 +6,8 @@
  * \date Mar 21, 2010
  * \author alexander
  */
-
 #include "displacementBuffer.h"
+
 namespace corecvs {
 
 
@@ -101,4 +101,3 @@ DisplacementBuffer *DisplacementBuffer::TestWiggle(int h, int w, double power, d
 }
 
 } //namespace corecvs
-

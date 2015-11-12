@@ -17,7 +17,6 @@ static bool checkFileExist(const string& dirPath, const string& filePath)
     }
     path += filePath;
     cout << "checking for the file <" << path << ">" << endl;
-
     return access(path.c_str(), 0) == 0;
 }
 

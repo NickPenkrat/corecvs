@@ -39,7 +39,6 @@ AdvancedImageWidget::AdvancedImageWidget(QWidget *parent, bool showHeader):
   , mCurrentPointButton(0)
   , mCurrentLineButton(0)
   , mImageSize(QSize())
-
 {
     mUi->setupUi(this);
     mSaveDialog = new SaveFlowSettings();
@@ -108,7 +107,7 @@ void AdvancedImageWidget::setImage(QSharedPointer<QImage> newImage)
 
     mImage = newImage;
 
-    delete_safe(mResizeCache);
+    delete_safe(mResizeCache), mResizeCache = NULL;
 
     if (mSaveProcStarted)
     {
@@ -123,8 +122,7 @@ void AdvancedImageWidget::setImage(QSharedPointer<QImage> newImage)
         saveFlowImage(mResizeCache);
     }
 
-    if ((!mImage.isNull() && mImageSize != mImage->size())
-            || (mZoomCenter == QPoint(-1,-1)))
+    if ((!mImage.isNull() && mImageSize != mImage->size()) || (mZoomCenter == QPoint(-1,-1)))
     {
         mImageSize = mImage->size();
         recalculateZoomCenter();
@@ -133,7 +131,7 @@ void AdvancedImageWidget::setImage(QSharedPointer<QImage> newImage)
     mUi->widget->update();
 }
 
-void AdvancedImageWidget::drawResized (QPainter &painter)
+void AdvancedImageWidget::drawResized(QPainter &painter)
 {
     if (mImage.isNull())
     {
@@ -160,9 +158,8 @@ void AdvancedImageWidget::drawResized (QPainter &painter)
 
     QImage rotated = cropped.transformed(transform);
 //    qDebug() << "Image before resize" << rotated.size();
+
     painter.drawImage(mOutputRect, rotated);
-
-
 }
 
 QPointF AdvancedImageWidget::widgetToImageF(const QPointF &p)
@@ -359,7 +356,7 @@ void AdvancedImageWidget::saveImageToFile()
             "./Image.bmp",
             tr("Image Files (*.png *.jpg *.bmp)"));
 
-    if(mImage == NULL)
+    if (mImage == NULL)
     {
         return;
     }
@@ -498,6 +495,7 @@ void AdvancedImageWidget::childMouseReleased(QMouseEvent * event)
         QRect selection(widgetToImage(mSelectionStart), widgetToImage(mSelectionEnd));
 
         qDebug("AdvancedImageWidget::mouseReleased: Emitting newAreaSelected(%d, _)", mCurrentSelectionButton);
+
         emit newAreaSelected(mCurrentSelectionButton, selection);
     }
 
@@ -554,8 +552,6 @@ void AdvancedImageWidget::childMouseMoved(QMouseEvent * event)
         if (mZoomCenter.y() < mImage->rect().top())    mZoomCenter.setY(mImage->rect().top()   );
         if (mZoomCenter.y() > mImage->rect().bottom()) mZoomCenter.setY(mImage->rect().bottom());
         */
-
-
         recomputeRects();
         emit notifyCenterPointChanged(mZoomCenter);
     }
@@ -707,12 +703,12 @@ void AdvancedImageWidget::recomputeRects()
 
     mOutputRect = output;
     mInputRect  = input;
-    delete_safe(mResizeCache);
+    delete_safe(mResizeCache), mResizeCache = NULL;
 }
 
 void AdvancedImageWidget::saveFlowImage(QImage * image)
 {
-    if(mSaveProcStarted && image)
+    if (mSaveProcStarted && image != NULL)
     {
         unsigned int pathLength = mImageSavePath.size() + 10;
         char *currentPath = new char[pathLength];
@@ -720,7 +716,7 @@ void AdvancedImageWidget::saveFlowImage(QImage * image)
         image->save(currentPath);
         mImageNumber++;
         mUi->fileValuelabel->setText(currentPath);
-        delete []currentPath;
+        delete[] currentPath;
     }
 }
 
@@ -818,7 +814,7 @@ void AdvancedImageWidget::loadFromQSettings(const QString &fileName, const QStri
     mUi->rotationComboBox   ->setCurrentIndex(loader.value("rotation", 0).toInt());
 }
 
-void AdvancedImageWidget::saveToQSettings  (const QString &fileName, const QString &_root)
+void AdvancedImageWidget::saveToQSettings(const QString &fileName, const QString &_root)
 {
     QSettings saver(fileName, QSettings::IniFormat);
     saver.beginGroup(_root + mRootPath);

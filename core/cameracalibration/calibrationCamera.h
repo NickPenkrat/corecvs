@@ -249,6 +249,7 @@ public:
         visitor.visit(intrinsics, PinholeCameraIntrinsics()      , "intrinsics");
         visitor.visit(extrinsics, CameraLocationData()           , "extrinsics");
         visitor.visit(distortion, LensDistortionModelParameters(), "distortion");
+        visitor.visit(nameId,     std::string("")                , "nameId"    );
     }
 };
 

@@ -8,7 +8,7 @@ Mesh3D RotaryTableMeshModel::getMesh(const CameraLocationAngles &state)
 {
     Mesh3D mesh;
     mesh.switchColor(true);
-    int stackstate = mesh.transformStack.size();
+    int stackstate = (int)mesh.transformStack.size();
 
     mesh.setColor(RGBColor::Red());
     mesh.addCylinder(Vector3dd(0,0,-50), 525, 100, 3, degToRad(30));

@@ -95,7 +95,7 @@ EssentialMatrix EssentialEstimator::getEssentialLSE(const vector<Correspondence*
     stdevR = stdevR * N - meanR * meanR;
     for (size_t i = 0; i < 2; ++i)
     {
-        stdevL[i] = std::sqrt(stdevL[i]);
+        stdevL[i] = std::sqrt(stdevL[i]);       // TODO: this must be present in statistics/approx blocks...
         stdevR[i] = std::sqrt(stdevR[i]);
     }
 #if 1

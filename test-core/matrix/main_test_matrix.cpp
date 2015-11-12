@@ -357,6 +357,25 @@ TEST(MatrixTest, testVector2d)
     CORE_ASSERT_TRUE(rightNormal.notTooFar(v3.rightNormal(), 1e-10), "Right Normal Error\n");
 }
 
+TEST(MatrixTest, testGeneralMatrixVectorProduct)
+{
+    Matrix A(3, 3);
+    Vector V(3);
+    A.a(0, 0) = 1.0; A.a(0, 1) = 2.0; A.a(0, 2) = 3.0;
+    A.a(1, 0) = 4.0; A.a(1, 1) =-3.0; A.a(1, 2) =-1.0;
+    A.a(2, 0) =-1.0; A.a(2, 1) =-1.0; A.a(2, 2) = 3.0;
+    V[0] = 2.0; V[1] = 3.0; V[2] = 4.0;
+
+    Vector AV = A * V;
+    Vector VA = V * A;
+    ASSERT_NEAR(AV[0], 20.0, 1e-9);
+    ASSERT_NEAR(AV[1], -5.0, 1e-9);
+    ASSERT_NEAR(AV[2],  7.0, 1e-9);
+    ASSERT_NEAR(VA[0], 10.0, 1e-9);
+    ASSERT_NEAR(VA[1], -9.0, 1e-9);
+    ASSERT_NEAR(VA[2], 15.0, 1e-9);
+}
+
 TEST(MatrixTest, testMatrixSerialisation)
 {
     Matrix33 m = Matrix33::RotationX(0.1) * Matrix33::RotationY(0.1);

@@ -7,7 +7,6 @@
  *
  * \ingroup autotest  
  */
-
 #include <iostream>
 #include "gtest/gtest.h"
 
@@ -21,6 +20,8 @@ using namespace corecvs;
 
 TEST(Color, testRGB)
 {
+    //cout << "sizeof(RGBColor) = " << sizeof(RGBColor) << endl;
+
     CORE_ASSERT_TRUE(sizeof(RGBColor) == sizeof(uint32_t), "Compiler aligned RGB color in an unexpeced way");
 
     RGBColor black (  0,   0,   0);
@@ -55,5 +56,4 @@ TEST(Color, testHSVCoversion)
         cout << "  HSV: " << h << "," << s  << "," << v << std::endl;
         cout << "  Res: " << rebuild << std::endl;
     }
-
 }

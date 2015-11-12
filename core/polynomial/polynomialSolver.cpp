@@ -13,14 +13,16 @@
 #  include <lapacke.h>
 # endif
 #else
-# error Cannot build polynomial solver without BLAS/LAPACK
+# error Cannot build polynomial solver without BLAS/LAPACK/MKL
 #endif
 
 const double corecvs::PolynomialSolver::RELATIVE_TOLERANCE = 1e-9;
 
 double corecvs::PolynomialSolver::evaluate(const double* coeff, const double &x, const size_t &degree)
 {
-    if (!degree) return coeff[0];
+    if (!degree)
+        return coeff[0];
+
     double v = coeff[degree];
     for (size_t i = degree; i > 0; --i)
     {
@@ -32,7 +34,9 @@ double corecvs::PolynomialSolver::evaluate(const double* coeff, const double &x,
 template<>
 size_t corecvs::PolynomialSolver::solve_imp<1>(const double* coeff, double* roots, const size_t &degree)
 {
-    if (std::abs(coeff[1]) < RELATIVE_TOLERANCE * coeff[0]) return 0;
+    if (std::abs(coeff[1]) < RELATIVE_TOLERANCE * coeff[0])
+        return 0;
+
     roots[0] = -coeff[0] / coeff[1];
     return 1;
 }
@@ -144,9 +148,11 @@ size_t corecvs::PolynomialSolver::solve_companion(const double* coeff, double* r
         }
     }
 #endif
+
     // evd
     corecvs::Vector wr(degree), wi(degree);
-    LAPACKE_dgeev( LAPACK_ROW_MAJOR, 'N', 'N', degree, companion.data, companion.stride, &wr[0], &wi[0], 0, degree, 0, degree );
+    LAPACKE_dgeev(LAPACK_ROW_MAJOR, 'N', 'N', degree, companion.data, companion.stride, &wr[0], &wi[0], 0, degree, 0, degree);
+
     // find non-complex and return
     size_t cnt = 0;
     for (size_t i = 0; i < degree; ++i)

@@ -19,7 +19,9 @@ SUBDIRS +=       \
 #    decodebayer \
 #    genvectorui  \
 #    aLowCodec \
-#    new_board_detector
+#    new_board_detector \
+    cr2reader           \
+    debayer             \
 
 
 with_opencv {
@@ -46,6 +48,11 @@ avigrab.file                        = avigrab/avigrab.pro
 decodebayer.file                    = decodebayer/decodebayer.pro
 genvectorui.file                    = genvectorui/genvectorui.pro
 aLowCodec.file                      = aLowCodec/aLowCodec.pro
+
+cr2reader.file                      = cr2reader/cr2reader.pro
+cr2reader.depends                   -= utils
+debayer.file                        = debayer/debayer.pro
+debayer.depends                     -= utils
 
 new_board_detector.file             = new_board_detector/new_board_detector.pro
 

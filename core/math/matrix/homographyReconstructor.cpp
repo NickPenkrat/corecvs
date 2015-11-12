@@ -344,8 +344,8 @@ Matrix33 HomographyReconstructor::getBestHomographyLSE1( void )
         lineNum += 1;
     }
 
-    cout << "X" << endl << mX << endl;
-    cout << "B" << endl << mB << endl;
+//    cout << "X" << endl << mX << endl;
+//    cout << "B" << endl << mB << endl;
 
     Matrix mXTX = mX.t() * mX;
     Matrix mXTB = mX.t() * mB;
@@ -353,7 +353,7 @@ Matrix33 HomographyReconstructor::getBestHomographyLSE1( void )
     Matrix result = mXTX.invSVD() * mXTB;
 
     Matrix test = mX * result - mB;
-    cout << "Residual:" << test.frobeniusNorm() << endl;
+//    cout << "Residual:" << test.frobeniusNorm() << endl;
 
     Matrix33 toReturn(
         result.a(0,0), result.a(1,0), result.a(2,0),
@@ -382,8 +382,8 @@ Matrix33 HomographyReconstructor::getBestHomographyLSE( void )
         lineNum += 1;
     }
 
-    cout << "X" << endl << mX << endl;
-    cout << "B" << endl << mB << endl;
+ //   cout << "X" << endl << mX << endl;
+//    cout << "B" << endl << mB << endl;
 
 
     Matrix U(mX);
@@ -405,7 +405,7 @@ Matrix33 HomographyReconstructor::getBestHomographyLSE( void )
     Matrix result = VT * UtB8;
 
     Matrix test = mX * result - mB;
-    cout << "Residual:" << test.frobeniusNorm() << endl;
+//    cout << "Residual:" << test.frobeniusNorm() << endl;
 
     Matrix33 toReturn(
         result.a(0,0), result.a(1,0), result.a(2,0),
@@ -434,14 +434,14 @@ Matrix33 HomographyReconstructor::getBestHomographyLSE2( void )
         lineNum += 1;
     }
 
-    cout << "X" << endl << mX << endl;
+//    cout << "X" << endl << mX << endl;
 
     Matrix U(mX);
     Matrix W(1, 9);
     Matrix VT(9, 9);
     Matrix::svd(&U, &W, &VT);
 
-    cout << "Singualar Values" << endl << W << endl;
+ //   cout << "Singualar Values" << endl << W << endl;
 
     int minId = -1;
     double minval = std::numeric_limits<double>::max();
@@ -463,8 +463,8 @@ Matrix33 HomographyReconstructor::getBestHomographyLSE2( void )
     Matrix result(9, 1, toReturn.element);
     Matrix test = mX * result;
 
-    cout << "Result" << endl << test << endl;
-    cout << "Residual:" << test.frobeniusNorm() << endl;
+//    cout << "Result" << endl << test << endl;
+//    cout << "Residual:" << test.frobeniusNorm() << endl;
     return toReturn;
 }
 
@@ -475,12 +475,19 @@ Matrix33 HomographyReconstructor::getBestHomographyLSE2( void )
  *
  *
  **/
-double HomographyReconstructor::getCostFunction(Matrix33 &H)
+double HomographyReconstructor::getCostFunction(Matrix33 &H, double out[])
 {
+    int argout = 0;
     double cost = 0.0;
     for (unsigned i = 0; i < p2p.size(); i++)
     {
         Vector2dd point = (H * p2p[i].start);
+        auto diff = point - p2p[i].end;
+        if (out)
+        {
+            out[argout++] = diff[0];
+            out[argout++] = diff[1];
+        }
         cost += (point - p2p[i].end).sumAllElementsSq();
     }
 
@@ -488,9 +495,16 @@ double HomographyReconstructor::getCostFunction(Matrix33 &H)
     {
         Vector2dd point = H * p2l[i].start;
         double distanceSq = p2l[i].end.sqDistanceTo(point);
+        if (out)
+            out[argout++] = std::sqrt(distanceSq);
         cost += distanceSq;
     }
     return cost;
+}
+
+int HomographyReconstructor::getConstraintNumber()
+{
+    return (int)p2l.size() + (int)p2s.size() + (int)p2p.size() * 2;
 }
 
 
@@ -499,7 +513,7 @@ void HomographyReconstructor::CostFunction::operator()(const double in[], double
     Matrix33 H(in[0], in[1], in[2],
                in[3], in[4], in[5],
                in[6], in[7], 1.0);
-    out[0] = reconstructor->getCostFunction(H);
+    reconstructor->getCostFunction(H, out);
 }
 
 
@@ -525,7 +539,7 @@ void HomographyReconstructor::CostFunctionTwoWay::operator()(const double in[], 
 void HomographyReconstructor::CostFunctionWize::operator()(const double in[], double out[])
 {
     Matrix33 H = matrixFromState(in);
-    out[0] = reconstructor->getCostFunction(H);
+    reconstructor->getCostFunction(H, out);
 }
 
 Matrix33 HomographyReconstructor::CostFunctionWize::matrixFromState(const double in[])
@@ -605,8 +619,7 @@ Matrix33 HomographyReconstructor::getBestHomographyLM(Matrix33 guess)
         }
     }
 
-    vector<double> output(1);
-    output[0] = 0.0;
+    vector<double> output(getConstraintNumber());
 
     vector<double> optInput = LMfit.fit(input, output);
 
