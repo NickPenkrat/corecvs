@@ -30,6 +30,11 @@
 #include "tbbWrapper.h"
 #include "mathUtils.h"                  // randRanged
 
+#if defined(WIN32) && !defined(aligned_alloc)
+#include <malloc.h>
+#define aligned_alloc(a, b) _aligned_alloc(a, b)
+#endif
+
 namespace corecvs {
 
 struct AlignedMemoryBlock
