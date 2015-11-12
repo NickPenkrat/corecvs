@@ -198,14 +198,14 @@ public:
      **/
     typedef ElementType InternalElementType;
     typedef IndexType   InternalIndexType;
-    static const bool TRIVIALLY_COPY_CONSTRUCTIBLE = 
+    static const bool TRIVIALLY_COPY_CONSTRUCTIBLE =
 #if __GNUG__ && __GNUC__ < 5
         __has_trivial_copy(ElementType);
 #else
         std::is_trivially_copy_constructible<ElementType>::value;
 #endif
     static const bool TRIVIALLY_DESTRUCTABLE = std::is_trivially_destructible<ElementType>::value;
-    static const bool TRIVIALLY_DEFAULT_CONSTRUCTIBLE = 
+    static const bool TRIVIALLY_DEFAULT_CONSTRUCTIBLE =
 #if __GNUG__ && __GNUC__ < 5
         __has_trivial_constructor(ElementType);
 #else
@@ -280,6 +280,7 @@ public:
     AbstractBuffer() : AbstractBufferParams()
         , data(NULL)
       //, _allocatedSize(0)
+        , memoryBlock()
         , flags(EMPTY_BUFFER)
     {
         bufferCount++;
@@ -362,6 +363,18 @@ public:
            fillWithRaw(_data);
     }
 
+    AbstractBuffer(IndexType h, IndexType w, IndexType stride, ElementType* data)
+    {
+        _init(h, w, stride, false);
+        if (data)
+            fillWithRaw(data);
+    }
+
+    AbstractBuffer(Vector2d<IndexType> size, IndexType stride, ElementType* data)
+        : AbstractBuffer(size.y(), size.x(), stride, data)
+    {
+    }
+
 #if 0
     /**
      * Constructor from data provided by arguments.
@@ -389,6 +402,62 @@ public:
     {
         _init(size.y(), size.x(), stride, false);
         fillWith(data);
+    }
+
+
+    /*
+     * It is slow and should not be used frequently
+     */
+    AbstractBuffer(const std::vector<std::vector<ElementType>> &vec, IndexType h, IndexType w, IndexType stride = STRIDE_AUTO)
+    {
+        std::vector<ElementType> el;
+        el.reserve(w * h);
+        for (IndexType i = 0; i < h; ++i)
+        {
+            for (IndexType j = 0; j < w; ++j)
+            {
+                el.emplace_back(vec[i][j]);
+            }
+        }
+        _init(h, w, stride, false);
+        fillWithRaw(&el[0]);
+    }
+
+    explicit operator std::vector<std::vector<ElementType>> () const
+    {
+        std::vector<std::vector<ElementType>> el(h);
+        for (IndexType i = 0; i < h; ++i)
+        {
+            for (IndexType j = 0; j < w; ++j)
+            {
+                el[i].emplace_back(element(i, j));
+            }
+        }
+        return el;
+    }
+
+    /*
+     * NOTE: YOU SHOULD NEVER USE IT FOR SERIALIZING HUGE DATA
+     */
+    template<typename V>
+    void accept(V& visitor)
+    {
+        auto vec = (std::vector<std::vector<ElementType>>)(*this);
+        int w = this->w, h = this->h, stride = this->stride;
+        visitor.visit(w, (IndexType)0, "width");
+        visitor.visit(h, (IndexType)0, "height");
+        visitor.visit(stride, w, "stride");
+        visitor.visit(vec, "data");
+        if (w == this->w && h == this->h && stride == this->stride && data)
+        {
+            std::vector<ElementType> vec2;
+            for (IndexType i = 0; i < h; ++i)
+                for (IndexType j = 0; j < w; ++j)
+                    vec2.emplace_back(vec[i][j]);
+            fillWithRaw(&vec2[0]);
+            return;
+        }
+        *this = AbstractBuffer(vec, h, w, stride);
     }
 
     /**
@@ -596,7 +665,13 @@ template<typename ResultType>
             ElementType *line = &(element(i, x));
             for (IndexType j = 0; j < rectW; j++)
             {
-                *line++ = value;
+                if (TRIVIALLY_COPY_CONSTRUCTIBLE && TRIVIALLY_DESTRUCTABLE)
+                    *line++ = value;
+                else
+                {
+                    line->~ElementType();
+                    new (line++) ElementType(value);
+                }
             }
         }
     }
@@ -1266,7 +1341,7 @@ private:
                     });
             this->data = (ElementType*)memoryBlock.getAlignedStart();
 
-            if (shouldInit) {
+            if (shouldInit || !TRIVIALLY_DEFAULT_CONSTRUCTIBLE) {
                 CORE_CLEAR_MEMORY(this->data, allocatedSize);
                 init_array(data, h, w, stride);
             }
@@ -1331,7 +1406,11 @@ private:
         else
         {
             for (IndexType i = 0; i < cnt; ++i)
-                dst[i] = src[i];
+            {
+                if (!TRIVIALLY_DESTRUCTABLE)
+                    dst[i].~ElementType();
+                new (dst + i) ElementType(src[i]);
+            }
         }
     }
     static void copy(ElementType* dst, ElementType* src, IndexType h, IndexType w, IndexType strideDst, IndexType strideSrc)
