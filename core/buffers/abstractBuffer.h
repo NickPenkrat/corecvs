@@ -204,7 +204,7 @@ public:
     static const bool TRIVIALLY_DESTRUCTABLE = std::is_trivially_destructible<ElementType>::value;
     static const bool TRIVIALLY_DEFAULT_CONSTRUCTIBLE = 
 #if __GNUG__ && __GNUC__ < 5
-        __has_trivial_default_constructor(ElementType);
+        __has_trivial_constructor(ElementType);
 #else
         std::is_trivially_constructible<ElementType>::value;
 #endif
