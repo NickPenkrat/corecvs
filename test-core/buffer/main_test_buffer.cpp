@@ -13,6 +13,7 @@
 #endif
 
 #include <iostream>
+#include <type_traits>
 #include "gtest/gtest.h"
 
 #include "global.h"
@@ -57,8 +58,73 @@ public:
 
 int TestAbstractBufferClass::counter = 0;
 
+TEST(Buffer, testBufferCC)
+{
+    int N = 5;
+    AbstractBuffer<AbstractBuffer<int, int>, int> buff(N, N, AbstractBuffer<int, int>(N, N));
+
+    int idx = 0;
+    for (int i1 = 0; i1 < N; ++i1)
+    {
+        for (int j1 = 0; j1 < N; ++j1)
+        {
+            for (int i2 = 0; i2 < N; ++i2)
+            {
+                for (int j2 = 0; j2 < N; ++j2)
+                {
+                    buff.element(i1, j1).element(i2, j2) = idx++;
+                }
+            }
+        }
+    }
+
+    int idx2 = 0;
+    for (int i1 = 0; i1 < N; ++i1)
+    {
+        for (int j1 = 0; j1 < N; ++j1)
+        {
+            for (int i2 = 0; i2 < N; ++i2)
+            {
+                for (int j2 = 0; j2 < N; ++j2)
+                {
+                    ASSERT_EQ(buff.element(i1, j1).element(i2, j2), idx2++);
+                }
+            }
+        }
+    }
+
+}
+
 TEST(Buffer, testG12Buffer)
 {
+#if __GNUG__ && __GNUC__ < 5
+    ASSERT_TRUE(__has_trivial_copy(int));
+    ASSERT_TRUE(__has_trivial_copy(double));
+    ASSERT_TRUE(__has_trivial_copy(RGBColor));
+    ASSERT_TRUE(__has_trivial_copy(corecvs::Vector3dd));
+#else
+    ASSERT_TRUE(std::is_trivially_copy_constructible<int>::value);
+    ASSERT_TRUE(std::is_trivially_copy_constructible<double>::value);
+    ASSERT_TRUE(std::is_trivially_copy_constructible<RGBColor>::value);
+    ASSERT_TRUE(std::is_trivially_copy_constructible<corecvs::Vector3dd>::value);
+#endif
+    ASSERT_TRUE(std::is_trivially_destructible<int>::value);
+    ASSERT_TRUE(std::is_trivially_destructible<double>::value);
+    ASSERT_TRUE(std::is_trivially_destructible<RGBColor>::value);
+#if __GNUG__ && __GNUC__ < 5
+    ASSERT_TRUE(has_trivial_default_constructor<int>());
+    ASSERT_TRUE(has_trivial_default_constructor<double>());
+#else
+    ASSERT_TRUE(std::is_trivially_constructible<int>::value);
+    ASSERT_TRUE(std::is_trivially_constructible<double>::value);
+#endif
+
+    ASSERT_FALSE(std::is_trivially_destructible<TestAbstractBufferClass>::value);
+    /*
+     * TODO: Check if we would (or would not) like this test to fail
+     */
+    //ASSERT_TRUE(std::is_trivially_constructible<RGBColor>::value);
+
    /* Test case 1: Create and destroy buffer*/
    G12Buffer *a = new G12Buffer(1,1);
    a->element(0,0) = 0;
@@ -71,6 +137,7 @@ TEST(Buffer, testG12Buffer)
    ( AbstractBuffer<TestAbstractBufferClass>::DATA_ALIGN_GRANULARITY,
      AbstractBuffer<TestAbstractBufferClass>::DATA_ALIGN_GRANULARITY );
    delete b;
+   std::cout << TestAbstractBufferClass::counter << std::endl;
    CORE_ASSERT_TRUE(TestAbstractBufferClass::counter == 0, "Abstract buffer violates the C++ new/delete contract")
 
    /* Test case 3: Test internal buffer destruction */
@@ -101,6 +168,21 @@ TEST(Buffer, testG12Buffer)
        delete c[i];
    }
    delete[] c;
+
+    /* Test case 5: Views */
+    TestAbstractBufferClass::counter = 0;
+    AbstractBuffer<TestAbstractBufferClass> *main = new AbstractBuffer<TestAbstractBufferClass>(10, 10);
+    int oldCnt = TestAbstractBufferClass::counter;
+    ASSERT_EQ(oldCnt, 100);
+    AbstractBuffer<TestAbstractBufferClass> *view1 = main->createView<AbstractBuffer<TestAbstractBufferClass>>();
+    ASSERT_EQ(oldCnt, TestAbstractBufferClass::counter);
+    delete view1;
+    ASSERT_EQ(oldCnt, TestAbstractBufferClass::counter);
+    AbstractBuffer<TestAbstractBufferClass> *view2 = main->createView<AbstractBuffer<TestAbstractBufferClass>>();
+    delete main;
+    ASSERT_EQ(oldCnt, TestAbstractBufferClass::counter);
+    delete view2;
+    ASSERT_EQ(0, TestAbstractBufferClass::counter);
 }
 
 TEST(Buffer, testBilinearTransform)
@@ -139,6 +221,12 @@ TEST(Buffer, testDerivative)
     };
 
     G12Buffer *input = new G12Buffer(4, 4, inputData);
+    for (int i = 0; i < 4; ++i)
+        for (int j = 0; j < 4; ++j)
+        {
+            std::cout << i << ", " << j << std::endl;
+            ASSERT_EQ(input->element(i, j), inputData[i * 4 + j]);
+        }
 
     DerivativeBuffer *result = new DerivativeBuffer(input);
     for (int i = 1; i < result->h - 1; i++)

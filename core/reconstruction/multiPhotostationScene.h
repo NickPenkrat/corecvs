@@ -23,7 +23,7 @@ struct MultiPhotostationScene
     static corecvs::Vector3dd BackProject(const std::vector<std::pair<corecvs::Matrix44, corecvs::Vector2dd>> &points);
 
     corecvs::Vector3dd backProject(const std::vector<std::pair<std::pair<int, int>, corecvs::Vector2dd>> &points) const;
-    corecvs::Vector3dd backProject(const std::vector<PointProjection> &projections) const;
+    corecvs::Vector3dd backProject(const std::vector<PointProjection> &projections, bool updateable = true) const;
 
     struct ParallelUpdater
     {

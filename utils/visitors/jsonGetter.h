@@ -114,7 +114,8 @@ public:
             }
         }
     }
-    template <typename innerType>
+
+    template <typename innerType, typename std::enable_if<!std::is_arithmetic<innerType>::value,int>::type foo = 0>
     void visit(std::vector<innerType> &fields, QJsonArray &array)
     {
         fields.clear();
@@ -125,6 +126,17 @@ public:
             el.accept(*this);
             fields.push_back(el);
             mNodePath.pop_back();
+        }
+    }
+
+    template <typename innerType, typename std::enable_if<std::is_arithmetic<innerType>::value,int>::type foo = 0>
+    void visit(std::vector<innerType> &fields, QJsonArray &array)
+    {
+        fields.clear();
+        foreach (QJsonValue v, array)
+        {
+            if (v.isDouble())
+                fields.push_back(v.toDouble());
         }
     }
 

@@ -69,6 +69,7 @@ public:
      */
     Matrix(int32_t h, int32_t w, double *data) : MatrixBase(h, w, data) {}
 
+    Matrix() : MatrixBase() {}
 #if 0
     /**
      * This function creates a matrix filling it with values form the given vector
@@ -154,7 +155,9 @@ public:
     Matrix t() const;
     void transpose();
 
-    //double det(void) const; /* NYI*/
+#ifdef WITH_BLAS
+    double det(void) const;
+#endif
     double trace(void) const;
 
     double frobeniusNorm() const;

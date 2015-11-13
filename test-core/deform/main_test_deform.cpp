@@ -102,6 +102,7 @@ TEST(Deform, DISABLED_testBilinear)
             cout << d << " = " << f << " = " << s << " -> " <<  diff1 << endl;
         }
     }
+    delete image;
 }
 
 
@@ -148,6 +149,8 @@ TEST(Deform, DISABLED_testFastDeform24)
 
     delete_safe(buffer1Transformed);
     delete_safe(buffer2Transformed);
+    delete_safe(buffer3Transformed);
+    delete_safe(buffer4Transformed);
     delete_safe(image);
 }
 
@@ -207,7 +210,7 @@ TEST(Deform, testRadialApplication)  // TODO: move to perf-tests!
 
     cout << "Applying deformation inversion... " << flush;
     timer = PreciseTimer::currentTime();
-    RGB24Buffer *defomed = image->doReverseDeformationBlTyped<DisplacementBuffer>(inverse);
+    RGB24Buffer *deformed = image->doReverseDeformationBlTyped<DisplacementBuffer>(inverse);
     cout << "done in: " << timer.usecsToNow() << "us" << endl;
 
     /**
@@ -220,7 +223,7 @@ TEST(Deform, testRadialApplication)  // TODO: move to perf-tests!
     /*2.1*/
     cout << "Applying forward deformation... " << flush;
     timer = PreciseTimer::currentTime();
-    RGB24Buffer *corrected21 = defomed->doReverseDeformationBlTyped<RadialCorrection>(&T);
+    RGB24Buffer *corrected21 = deformed->doReverseDeformationBlTyped<RadialCorrection>(&T);
     cout << "done in: " << timer.usecsToNow() << "us" << endl;
 
     RGB24Buffer *diff21 = RGB24Buffer::diff(image, corrected21);
@@ -233,19 +236,28 @@ TEST(Deform, testRadialApplication)  // TODO: move to perf-tests!
 
     cout << "Applying forward deformation cache... " << flush;
     timer = PreciseTimer::currentTime();
-    RGB24Buffer *corrected22 = defomed->doReverseDeformationBlTyped<DisplacementBuffer>(forward);
+    RGB24Buffer *corrected22 = deformed->doReverseDeformationBlTyped<DisplacementBuffer>(forward);
     cout << "done in: " << timer.usecsToNow()  << "us"  << endl;
 
     RGB24Buffer *diff22 = RGB24Buffer::diff(image, corrected22);
 
 
     BMPLoader().save("input.bmp"                , image);
-    BMPLoader().save("forward.bmp"              , defomed);
+    BMPLoader().save("forward.bmp"              , deformed);
     BMPLoader().save("backward-direct.bmp"      , corrected21);
     BMPLoader().save("backward-direct-diff.bmp" , diff21);
 
     BMPLoader().save("backward-cached.bmp"      , corrected22);
     BMPLoader().save("backward-cached-diff.bmp" , diff22);
+
+    delete image;
+    delete deformed;
+    delete forward;
+    delete inverse;
+    delete diff21;
+    delete diff22;
+    delete corrected21;
+    delete corrected22;
 }
 
 TEST(Deform, testRadialInversion)  // TODO: move to perf-tests!
@@ -282,7 +294,7 @@ TEST(Deform, testRadialInversion)  // TODO: move to perf-tests!
 
     cout << "Starting deformation... " << flush;
     timer = PreciseTimer::currentTime();
-    RGB24Buffer *defomed = image->doReverseDeformationBlTyped<RadialCorrection>(&T);
+    RGB24Buffer *deformed = image->doReverseDeformationBlTyped<RadialCorrection>(&T);
     cout << "done in: " << timer.usecsToNow() << "us" << endl;
 
     /* */
@@ -292,13 +304,17 @@ TEST(Deform, testRadialInversion)  // TODO: move to perf-tests!
 
     cout << "Starting backprojection... " << flush;
     timer = PreciseTimer::currentTime();
-    RGB24Buffer *backproject = defomed->doReverseDeformationBlTyped<RadialCorrection>(&invert);
+    RGB24Buffer *backproject = deformed->doReverseDeformationBlTyped<RadialCorrection>(&invert);
     cout << "done in: " << timer.usecsToNow() << "us" << endl;
     cout << "done" << endl;
 
     BMPLoader().save("input.bmp"      , image);
-    BMPLoader().save("forward.bmp"    , defomed);
+    BMPLoader().save("forward.bmp"    , deformed);
     BMPLoader().save("backproject.bmp", backproject);
+
+    delete image;
+    delete deformed;
+    delete backproject;
 }
 
 TEST(Deform, testRectangularImage)

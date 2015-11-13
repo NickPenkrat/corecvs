@@ -34,12 +34,15 @@ struct PointObservation__
 
     bool updateable = true;
 
+    std::string label;
+
     template<typename V>
     void accept(V &visitor)
     {
         visitor.visit(worldPoint,  corecvs::Vector3dd(0.0, 0.0, 0.0), "worldPoint");
         visitor.visit(projections, "projections");
         visitor.visit(updateable,  true, "updateable");
+        visitor.visit(label, std::string(""), std::string("label"));
     }
 };
 struct CameraObservation

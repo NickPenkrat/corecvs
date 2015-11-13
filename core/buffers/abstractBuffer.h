@@ -16,9 +16,12 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdlib.h>
 
 #include <string>
 #include <functional>
+#include <type_traits>
+#include <memory>
 
 #include "global.h"
 
@@ -27,7 +30,61 @@
 #include "tbbWrapper.h"
 #include "mathUtils.h"                  // randRanged
 
+#if defined(WIN32) && !defined(aligned_alloc)
+#include <malloc.h>
+#define aligned_alloc(a, b) _aligned_malloc(b, a)
+#define aligned_free(a) _aligned_free(a)
+#else
+#define aligned_free(a) free(a)
+#endif
+
 namespace corecvs {
+
+struct AlignedMemoryBlock
+{
+    AlignedMemoryBlock(size_t size, size_t align)
+    {
+        align = std::max(align, (size_t)1);
+        CORE_ASSERT_TRUE_S(!(align & (align - 1)));
+        memory = aligned_alloc(align, ((size + align - 1) / align) * align);
+    }
+    AlignedMemoryBlock() : memory(nullptr)
+    {
+    }
+    ~AlignedMemoryBlock()
+    {
+        aligned_free(memory);
+        memory = nullptr;
+    }
+    void* getAlignedStart()
+    {
+        return memory;
+    }
+private:
+    AlignedMemoryBlock(const AlignedMemoryBlock&);
+    void* memory;
+};
+
+
+struct AMBReference
+{
+    template<typename D>
+    AMBReference(size_t size, size_t align, const D &deleter) : ptr(new AlignedMemoryBlock(size, align), deleter)
+    {
+    }
+    AMBReference(size_t size, size_t align) : ptr(new AlignedMemoryBlock(size, align))
+    {
+    }
+    AMBReference() : ptr(nullptr)
+    {
+    }
+    void* getAlignedStart()
+    {
+        return ptr->getAlignedStart();
+    }
+private:
+    std::shared_ptr<AlignedMemoryBlock> ptr;
+};
 
 using std::string;
 using std::cout;
@@ -141,6 +198,19 @@ public:
      **/
     typedef ElementType InternalElementType;
     typedef IndexType   InternalIndexType;
+    static const bool TRIVIALLY_COPY_CONSTRUCTIBLE =
+#if __GNUG__ && __GNUC__ < 5
+        __has_trivial_copy(ElementType);
+#else
+        std::is_trivially_copy_constructible<ElementType>::value;
+#endif
+    static const bool TRIVIALLY_DESTRUCTABLE = std::is_trivially_destructible<ElementType>::value;
+    static const bool TRIVIALLY_DEFAULT_CONSTRUCTIBLE =
+#if __GNUG__ && __GNUC__ < 5
+        __has_trivial_constructor(ElementType);
+#else
+        std::is_trivially_constructible<ElementType>::value;
+#endif
 
     enum BufferType {
         NORMAL_BUFFER,
@@ -186,7 +256,7 @@ public:
     //IndexType stride;
 
     /**
-     * The given stride value to have automatically chosen stride of the buffer 
+     * The given stride value to have automatically chosen stride of the buffer
      **/
     static const IndexType STRIDE_AUTO = (IndexType)0;
 
@@ -210,6 +280,7 @@ public:
     AbstractBuffer() : AbstractBufferParams()
         , data(NULL)
       //, _allocatedSize(0)
+        , memoryBlock()
         , flags(EMPTY_BUFFER)
     {
         bufferCount++;
@@ -228,6 +299,7 @@ public:
     AbstractBuffer(IndexType h, IndexType w, bool shouldInit = true, IndexType stride = STRIDE_AUTO)
     {
         _init(h, w, stride, shouldInit);
+
     }
 
 
@@ -255,7 +327,8 @@ public:
     AbstractBuffer(const AbstractBuffer &that)
     {
         _init(that.getH(), that.getW(), that.getStride(), false);
-        memcpy(this->data, that.data, that.sizeInBytes());
+        copy(this->data, that.data, h, w, stride, stride);
+//        memcpy(this->data, that.data, that.sizeInBytes());
     }
 
     /**
@@ -290,6 +363,18 @@ public:
            fillWithRaw(_data);
     }
 
+    AbstractBuffer(IndexType h, IndexType w, IndexType stride, ElementType* data)
+    {
+        _init(h, w, stride, false);
+        if (data)
+            fillWithRaw(data);
+    }
+
+    AbstractBuffer(Vector2d<IndexType> size, IndexType stride, ElementType* data)
+        : AbstractBuffer(size.y(), size.x(), stride, data)
+    {
+    }
+
 #if 0
     /**
      * Constructor from data provided by arguments.
@@ -319,6 +404,62 @@ public:
         fillWith(data);
     }
 
+
+    /*
+     * It is slow and should not be used frequently
+     */
+    AbstractBuffer(const std::vector<std::vector<ElementType>> &vec, IndexType h, IndexType w, IndexType stride = STRIDE_AUTO)
+    {
+        std::vector<ElementType> el;
+        el.reserve(w * h);
+        for (IndexType i = 0; i < h; ++i)
+        {
+            for (IndexType j = 0; j < w; ++j)
+            {
+                el.emplace_back(vec[i][j]);
+            }
+        }
+        _init(h, w, stride, false);
+        fillWithRaw(&el[0]);
+    }
+
+    explicit operator std::vector<std::vector<ElementType>> () const
+    {
+        std::vector<std::vector<ElementType>> el(h);
+        for (IndexType i = 0; i < h; ++i)
+        {
+            for (IndexType j = 0; j < w; ++j)
+            {
+                el[i].emplace_back(element(i, j));
+            }
+        }
+        return el;
+    }
+
+    /*
+     * NOTE: YOU SHOULD NEVER USE IT FOR SERIALIZING HUGE DATA
+     */
+    template<typename V>
+    void accept(V& visitor)
+    {
+        auto vec = (std::vector<std::vector<ElementType>>)(*this);
+        int w = this->w, h = this->h, stride = this->stride;
+        visitor.visit(w, (IndexType)0, "width");
+        visitor.visit(h, (IndexType)0, "height");
+        visitor.visit(stride, w, "stride");
+        visitor.visit(vec, "data");
+        if (w == this->w && h == this->h && stride == this->stride && data)
+        {
+            std::vector<ElementType> vec2;
+            for (IndexType i = 0; i < h; ++i)
+                for (IndexType j = 0; j < w; ++j)
+                    vec2.emplace_back(vec[i][j]);
+            fillWithRaw(&vec2[0]);
+            return;
+        }
+        *this = AbstractBuffer(vec, h, w, stride);
+    }
+
     /**
      * Destructor. Main buffer will be deleted with MemoryBlockRef smart pointer destruction
      *
@@ -328,16 +469,6 @@ public:
      **/
     ~AbstractBuffer()
     {
-        if (data != NULL)
-        {
-            /* Should I really do this? Will this be optimized out for basic types */
-            IndexType i;
-            IndexType elementNumber = this->numElements();
-            for (i = 0; i < elementNumber; i++)
-            {
-                data[i].~ElementType();
-            }
-        }
         this->data = NULL;
         bufferCount--;                                      // this must be always as it's incremented at each ctor
     }
@@ -534,7 +665,13 @@ template<typename ResultType>
             ElementType *line = &(element(i, x));
             for (IndexType j = 0; j < rectW; j++)
             {
-                *line++ = value;
+                if (TRIVIALLY_COPY_CONSTRUCTIBLE && TRIVIALLY_DESTRUCTABLE)
+                    *line++ = value;
+                else
+                {
+                    line->~ElementType();
+                    new (line++) ElementType(value);
+                }
             }
         }
     }
@@ -558,14 +695,10 @@ template<typename ResultType>
     {
        if (this->w == this->stride)
        {
-           memcpy(this->data, _data, this->sizeInBytes());
+           copy(data, _data, w * h);
            return;
        }
-       size_t rawLength = sizeof(ElementType) * this->w;
-       for (int i = 0; i < (int)this->h; i++)
-       {
-           memcpy(&this->element(i, 0), &_data[i * this->w], rawLength);
-       }
+       copy(data, _data, h, w, stride, w);
     }
 
     /**
@@ -579,14 +712,20 @@ template<typename ResultType>
         int copyW = CORE_MIN(this->w, other.w);
 
         /* If buffers have same horizontal geometry use fast method*/
-        if (other.stride == this->stride && other.w == this->w) {
-            memcpy(this->data, other.data, sizeof(ElementType) * copyH * stride);
+        if (TRIVIALLY_COPY_CONSTRUCTIBLE)
+        {
+               if (other.stride == this->stride && other.w == this->w)
+            {
+                memcpy(this->data, other.data, sizeof(ElementType) * copyH * stride);
+                return;
+            }
+            for (int i = 0; i < copyH; i++)
+            {
+                memcpy(&this->element(i, 0), &other.element(i, 0), sizeof(ElementType) * copyW);
+            }
             return;
         }
-        /* Otherwise copy line by line */
-        for (int i = 0; i < copyH; i++) {
-            memcpy(&this->element(i, 0), &other.element(i, 0), sizeof(ElementType) * copyW);
-        }
+        copy(data, other.data, copyH, copyW, stride, other.stride);
     }
 
     /**
@@ -656,8 +795,19 @@ template<typename ResultType>
         CORE_ASSERT_TRUE_P((src->w > x2) && (src->h > y2),
             ("Internal error with input [%d x %d] (%d, %d) -> (%d, %d)", src->w, src->h, x1, y1, x2, y2));
 
-        for (IndexType i = 0; i < h; i++) {
-            memcpy(&element(i, 0), &(src->element(y1 + i, x1)), sizeof(ElementType) * w);
+        if (TRIVIALLY_COPY_CONSTRUCTIBLE)
+        {
+            for (IndexType i = 0; i < h; i++)
+            {
+                memcpy(&element(i, 0), &(src->element(y1 + i, x1)), sizeof(ElementType) * w);
+            }
+        }
+        else
+        {
+            for (IndexType i = 0; i < h; ++i)
+            {
+                copy(data + i * stride, &src->element(y1 + i, x1), w);
+            }
         }
     }
 
@@ -1043,7 +1193,9 @@ friend ostream & operator <<(ostream &out, const AbstractBuffer &buffer)
         return out;
     }
 
-    bool dump(ostream& s, bool binaryMode) const
+    template<typename T=ElementType, typename I=IndexType>
+    typename std::enable_if<AbstractBuffer<T, I>::TRIVIALLY_COPY_CONSTRUCTIBLE, bool>::type
+    dump(ostream& s, bool binaryMode) const
     {
         AbstractBufferParams::dump(s, sizeof(ElementType), binaryMode);
         if (binaryMode) {
@@ -1052,7 +1204,9 @@ friend ostream & operator <<(ostream &out, const AbstractBuffer &buffer)
         return !s.bad();
     }
 
-    bool load(istream& s, bool binaryMode)
+    template<typename T=ElementType, typename I=IndexType>
+    typename std::enable_if<AbstractBuffer<T, I>::TRIVIALLY_COPY_CONSTRUCTIBLE, bool>::type
+    load(istream& s, bool binaryMode)
     {
         if (!AbstractBufferParams::load(s, sizeof(ElementType), binaryMode))
             return false;
@@ -1076,7 +1230,7 @@ template<typename OtherType>
         OtherType *toReturn = new OtherType(this->h, this->w);
         for (IndexType i = 0; i < h; i++)
         {
-            memcpy(&(toReturn->element(h - 1 - i, 0)), &(this->element(i, 0)), w * sizeof(ElementType));
+            copy(&(toReturn->element(h - 1 - i, 0)), &(this->element(i, 0)), w);
         }
         return toReturn;
     }
@@ -1086,7 +1240,7 @@ template<typename OtherType>
   {
       for (IndexType i = 0; i < h / 2; i++)
       {
-          memcpy(&(this->element(h - 1 - i, 0)), &(this->element(i, 0)), w * sizeof(ElementType));
+          copy(&(this->element(h - 1 - i, 0)), &(this->element(i, 0)), w);
       }
   }
 
@@ -1136,7 +1290,8 @@ protected:
      **/
     //size_t _allocatedSize;
 
-    MemoryBlockRef memoryBlock;
+    //MemoryBlockRef memoryBlock;
+    AMBReference memoryBlock;
 
     BufferType flags;
 
@@ -1175,13 +1330,22 @@ private:
         if (shouldAlloc)
         {
             size_t allocatedSize = this->sizeInBytes();
-            this->memoryBlock.allocate(allocatedSize, DATA_ALIGN_GRANULARITY);
-            this->data = new(this->memoryBlock.getAlignedStart(DATA_ALIGN_GRANULARITY)) ElementType[this->numElements()];
+            auto wa = this->w, ha = this->h, sa = this->stride;
+            memoryBlock =
+                TRIVIALLY_DESTRUCTABLE ?
+                    AMBReference(allocatedSize, DATA_ALIGN_GRANULARITY + 1) :
+                    AMBReference(allocatedSize, DATA_ALIGN_GRANULARITY + 1, [=](AlignedMemoryBlock* b)
+                    {
+                        del((ElementType*)b->getAlignedStart(), ha, wa, sa);
+                        delete b;
+                    });
+            this->data = (ElementType*)memoryBlock.getAlignedStart();
 
-            if (shouldInit) {
+            if (shouldInit || !TRIVIALLY_DEFAULT_CONSTRUCTIBLE) {
                 CORE_CLEAR_MEMORY(this->data, allocatedSize);
+                init_array(data, h, w, stride);
             }
-
+#if 0
 #ifdef ASSERTS
             /**
              *  Mark the margin zone that is used for alignment with a distinct pattern.
@@ -1194,6 +1358,7 @@ private:
                 for (unsigned j = 0; start + j < end; j++)
                     start[j] = (uint8_t)(j * 2);
             }
+#endif
 #endif
         }
         else
@@ -1227,6 +1392,71 @@ private:
     int _init(IndexType h, IndexType w, bool shouldInit = true, bool shouldAlloc = true)
     {
         return _init(h, w, _getStride(w), shouldInit, shouldAlloc);
+    }
+
+    static void copy(ElementType* dst, ElementType* src, IndexType cnt)
+    {
+        /*
+         * Using traits swithc to memcpy if possible
+         */
+        if (TRIVIALLY_COPY_CONSTRUCTIBLE)
+        {
+            memcpy(dst, src, cnt * sizeof(ElementType));
+        }
+        else
+        {
+            for (IndexType i = 0; i < cnt; ++i)
+            {
+                if (!TRIVIALLY_DESTRUCTABLE)
+                    dst[i].~ElementType();
+                new (dst + i) ElementType(src[i]);
+            }
+        }
+    }
+    static void copy(ElementType* dst, ElementType* src, IndexType h, IndexType w, IndexType strideDst, IndexType strideSrc)
+    {
+        for (IndexType i = 0; i < h; ++i)
+            copy(dst + i * strideDst, src + i * strideSrc, w);
+    }
+    static void del(ElementType* ptr, IndexType w, IndexType h, IndexType stride)
+    {
+        /*
+         * Using traits switch between "do nothing" (memory is cleared by memoryBlock)
+         * and "destruct all elements"
+         */
+        if (!TRIVIALLY_DESTRUCTABLE)
+        {
+            for (IndexType i = 0; i < h; ++i)
+                for (IndexType j = 0; j < w; ++j)
+                    ptr[i * stride + j].~ElementType();
+        }
+    }
+    static void init_array(ElementType* ptr, IndexType h, IndexType w, IndexType stride)
+    {
+        /*
+         * This initalizes array with default constructor
+         */
+        if (!TRIVIALLY_DEFAULT_CONSTRUCTIBLE)
+        {
+            for (IndexType i = 0; i < h; ++i)
+                for (IndexType j = 0; j < w; ++j)
+                    new (ptr + i * stride + j) ElementType();
+        }
+        else
+        {
+            memset(ptr, 0, sizeof(ElementType) * stride * h);
+        }
+
+    }
+    static void init_array(const ElementType& el, ElementType* ptr, IndexType h, IndexType w, IndexType stride)
+    {
+        for (IndexType i = 0; i < h; ++i)
+        {
+            for (IndexType j = 0; j < w; ++j)
+            {
+                new (ptr + i * stride + j) ElementType(el);
+            }
+        }
     }
 
 }; // AbstractBuffer
