@@ -72,10 +72,15 @@ void CameraModelParametersControlWidget::readUi()
     _pos[1] =  ui->spinBoxY->value();
     _pos[2] =  ui->spinBoxZ->value();
 
-    double yaw = ui->widgetYaw->value(), pitch = ui->widgetPitch->value(), roll = ui->widgetRoll->value();
+    double yaw = ui->widgetYaw->value() / 2.0, pitch = ui->widgetPitch->value() / 2.0, roll = ui->widgetRoll->value() / 2.0;
     // FIXME: I just selected arbitrary values
-    corecvs::Matrix33 R = Matrix33::RotationX(roll) * Matrix33::RotationY(pitch) * Matrix33::RotationZ(yaw);
-    _orientation = Quaternion::FromMatrix(R);
+    double t = cos(roll)*cos(pitch)*cos(yaw)+sin(roll)*sin(pitch)*sin(yaw);
+    double x = sin(roll)*cos(pitch)*cos(yaw)-cos(roll)*sin(pitch)*sin(yaw);
+    double y = cos(roll)*sin(pitch)*cos(yaw)+sin(roll)*cos(pitch)*sin(yaw);
+    double z = cos(roll)*cos(pitch)*sin(yaw)-sin(roll)*sin(pitch)*cos(yaw);
+
+
+    _orientation = Quaternion(x, y, z, t);
 }
 
 void CameraModelParametersControlWidget::writeUi()
