@@ -20,8 +20,8 @@ SUBDIRS +=       \
 #    genvectorui  \
 #    aLowCodec \
 #    new_board_detector \
-    cr2reader           \
-    debayer             \
+#    cr2reader           \
+#    debayer             \
 
 
 with_opencv {
