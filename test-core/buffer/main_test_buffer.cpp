@@ -41,7 +41,6 @@
 #include "g8Buffer.h"
 #include "booleanBuffer.h"
 
-
 using namespace std;
 using namespace corecvs;
 
@@ -58,6 +57,43 @@ public:
 };
 
 int TestAbstractBufferClass::counter = 0;
+
+TEST(Buffer, testBufferCC)
+{
+    int N = 5;
+    AbstractBuffer<AbstractBuffer<int, int>, int> buff(N, N, AbstractBuffer<int, int>(N, N));
+
+    int idx = 0;
+    for (int i1 = 0; i1 < N; ++i1)
+    {
+        for (int j1 = 0; j1 < N; ++j1)
+        {
+            for (int i2 = 0; i2 < N; ++i2)
+            {
+                for (int j2 = 0; j2 < N; ++j2)
+                {
+                    buff.element(i1, j1).element(i2, j2) = idx++;
+                }
+            }
+        }
+    }
+
+    int idx2 = 0;
+    for (int i1 = 0; i1 < N; ++i1)
+    {
+        for (int j1 = 0; j1 < N; ++j1)
+        {
+            for (int i2 = 0; i2 < N; ++i2)
+            {
+                for (int j2 = 0; j2 < N; ++j2)
+                {
+                    ASSERT_EQ(buff.element(i1, j1).element(i2, j2), idx2++);
+                }
+            }
+        }
+    }
+
+}
 
 TEST(Buffer, testG12Buffer)
 {
@@ -84,7 +120,10 @@ TEST(Buffer, testG12Buffer)
 #endif
 
     ASSERT_FALSE(std::is_trivially_destructible<TestAbstractBufferClass>::value);
-    // WTF?!   ASSERT_TRUE(std::is_trivially_constructible<RGBColor>::value);
+    /*
+     * TODO: Check if we would (or would not) like this test to fail
+     */
+    //ASSERT_TRUE(std::is_trivially_constructible<RGBColor>::value);
 
    /* Test case 1: Create and destroy buffer*/
    G12Buffer *a = new G12Buffer(1,1);
