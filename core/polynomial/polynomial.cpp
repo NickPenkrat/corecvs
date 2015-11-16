@@ -51,6 +51,11 @@ corecvs::Polynomial& corecvs::Polynomial::operator*=(const double &v)
     return *this;
 }
 
+corecvs::Polynomial corecvs::operator*(const double &lhs, const corecvs::Polynomial &rhs)
+{
+    return rhs * lhs;
+}
+
 corecvs::Polynomial  corecvs::Polynomial::operator* (const corecvs::Polynomial &rhs) const
 {
     corecvs::Polynomial ans = *this;
@@ -72,6 +77,13 @@ corecvs::Polynomial& corecvs::Polynomial::operator*=(const corecvs::Polynomial &
     }
     *this = coeff;
     return *this;
+}
+
+corecvs::Polynomial corecvs::Polynomial::operator- () const
+{
+    corecvs::Polynomial ret = *this;
+    for (auto& c: ret)
+        c *= -1.0;
 }
 
 corecvs::Polynomial  corecvs::Polynomial::operator+ (const corecvs::Polynomial &rhs) const
