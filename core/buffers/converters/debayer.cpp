@@ -1,6 +1,10 @@
 #include "debayer.h"
 #include <limits>
 #include "rgbConverter.h"
+#include <fftw/fftw3.h>
+#include <mkl_dfti.h>
+#include "ppmLoader.h"
+#include <complex>
 
 Debayer::Debayer(G12Buffer *bayer, int depth, MetaData *metadata)
     : mBayer(bayer)
@@ -50,7 +54,7 @@ RGB48Buffer* Debayer::nearest()
             }
         }
     }
-
+    
     return result;
 }
 
@@ -126,10 +130,10 @@ int compare(const void * a, const void * b)
 RGB48Buffer* Debayer::ahd()
 {
 
-#define min(a,b) ( (a)<(b)?  (a) : (b) )
-#define max(a,b) ( (a)>(b)?  (a) : (b) )
-#define abs(x)   ( (x)>0.0?  (x) : (-(x)) )
-#define sqr(x)   ( (x)*(x) )
+#define MIN(a,b) ( (a)<(b)?  (a) : (b) )
+#define MAX(a,b) ( (a)>(b)?  (a) : (b) )
+#define ABS(x)   ( (x)>0.0?  (x) : (-(x)) )
+#define SQR(x)   ( (x)*(x) )
 
     // allocate buffers for two directions
     G12Buffer *green[2] = {
@@ -196,10 +200,6 @@ RGB48Buffer* Debayer::ahd()
     }
 
     RGBColor48 pixel;
-
-    // TODO: the following may hardly be considered readable by normal people
-    // please kill me if i decide to write like this again
-    // TODO: rewrite all _h/_v stuff asap
 
     // interpolate red and blue first vertically, then horizontally
     for (int d = 0; d < 2; d++)
@@ -289,16 +289,16 @@ RGB48Buffer* Debayer::ahd()
                     int shift_a = k*mBayer->w;
                     if (offset + shift_a < 0 || offset + shift_a >= mBayer->h*mBayer->w)
                         continue;
-                    dl[d][idx] = abs(Lab[d][offset][0] - Lab[d][offset + shift_a][0]);
-                    dc[d][idx] = sqr(Lab[d][offset][1] - Lab[d][offset + shift_a][1]) + sqr(Lab[d][offset][2] - Lab[d][offset + shift_a][2]);
+                    dl[d][idx] = ABS(Lab[d][offset][0] - Lab[d][offset + shift_a][0]);
+                    dc[d][idx] = SQR(Lab[d][offset][1] - Lab[d][offset + shift_a][1]) + SQR(Lab[d][offset][2] - Lab[d][offset + shift_a][2]);
                 }
                 for (int l = -1; l < 2; l += 2, idx++)
                 {
                     int shift_b = l;
                     if (offset + shift_b < 0 || offset + shift_b >= mBayer->h*mBayer->w)
                         continue;
-                    dl[d][idx] = abs(Lab[d][offset][0] - Lab[d][offset + shift_b][0]);
-                    dc[d][idx] = sqr(Lab[d][offset][1] - Lab[d][offset + shift_b][1]) + sqr(Lab[d][offset][2] - Lab[d][offset + shift_b][2]);
+                    dl[d][idx] = ABS(Lab[d][offset][0] - Lab[d][offset + shift_b][0]);
+                    dc[d][idx] = SQR(Lab[d][offset][1] - Lab[d][offset + shift_b][1]) + SQR(Lab[d][offset][2] - Lab[d][offset + shift_b][2]);
                 }
             }
 
@@ -307,12 +307,12 @@ RGB48Buffer* Debayer::ahd()
             // we must choose minimal deviations to count homogenous pixels
 
             // VERSION A - proposed by Hirakawa & Parks, produces noticeable artifacts on cm_lighthouse.pgm
-            //float eps_l = min(max(dl[0][0], dl[0][1]), max(dl[1][2], dl[1][3]));
-            float eps_c = min(max(dc[0][0], dc[0][1]), max(dc[1][2], dc[1][3]));
+            //float eps_l = MIN(MAX(dl[0][0], dl[0][1]), MAX(dl[1][2], dl[1][3]));
+            float eps_c = MIN(MAX(dc[0][0], dc[0][1]), MAX(dc[1][2], dc[1][3]));
 
             // VERSION B - extended, produces less artifacts on cm_lighthouse.pgm, but instead produces weak zipper on test_debayer.pgm
-            float eps_l = min(max(max(dl[0][0], dl[0][1]), max(dl[0][2], dl[0][3])), max(max(dl[1][0], dl[1][1]), max(dl[1][2], dl[1][3])));
-            //float eps_c = min(max(max(dc[0][0], dc[0][1]), max(dc[0][2], dc[0][3])), max(max(dc[1][0], dc[1][1]), max(dc[1][2], dc[1][3])));
+            float eps_l = MIN(MAX(MAX(dl[0][0], dl[0][1]), MAX(dl[0][2], dl[0][3])), MAX(MAX(dl[1][0], dl[1][1]), MAX(dl[1][2], dl[1][3])));
+            //float eps_c = MIN(MAX(MAX(dc[0][0], dc[0][1]), MAX(dc[0][2], dc[0][3])), MAX(MAX(dc[1][0], dc[1][1]), MAX(dc[1][2], dc[1][3])));
 
             for (int d = 0; d < 2; d++)
             {
@@ -380,7 +380,7 @@ RGB48Buffer* Debayer::ahd()
     // radius of 2 gives less false color artifacts for some images, but the colors become somewhat degraded and blurred for other images
     const int radius = 1;
     // filter size - do not change
-    const int size = sqr(2 * radius + 1);
+    const int size = SQR(2 * radius + 1);
 
     // median filter pass count, no difference except for running time observed between 1 and 2, more than 2 is redundant
     const int passes = 2;
@@ -423,7 +423,105 @@ RGB48Buffer* Debayer::ahd()
 #undef abs
 #undef sqr
 }
+#if 0
+RGB48Buffer* Debayer::fourier()
+{
+    uint h = getNearUpperPowerOf2(mBayer->h);
+    uint w = getNearUpperPowerOf2(mBayer->w);
 
+    fftw_complex* newdata = fftw_alloc_complex(h*w);
+    fftw_complex* fourier = fftw_alloc_complex(h*w);
+    
+    for (int i = 0; i < h; i++)
+        for (int j = 0; j < w; j++)
+        {
+            newdata[i*mBayer->w + j][0] = (i < mBayer->h && j < mBayer->w) ? mBayer->data[i*mBayer->w + j] : 0;
+            newdata[i*mBayer->w + j][1] = 0;
+        }
+    fftw_plan plan = fftw_plan_dft_2d(w, h, newdata, fourier, FFTW_FORWARD, 0);
+    
+    fftw_execute(plan);
+    fftw_destroy_plan(plan);
+
+    G12Buffer *out = new G12Buffer(mBayer->w, mBayer->h, true);
+    for (int i = 0; i < mBayer->h; i++)
+        for (int j = 0; j < mBayer->w; j++)
+        {
+            out->data[i*mBayer->w + j] = clip(sqrt(fourier[i][0] * fourier[i][0] + fourier[i][1] * fourier[i][1]));
+        }
+    PPMLoader().save("fourier.pgm", out);
+
+    deletearr_safe(newdata);
+    deletearr_safe(fourier);
+    return nullptr;
+}
+#else
+RGB48Buffer* Debayer::fourier()
+{
+    DFTI_DESCRIPTOR_HANDLE descriptor;
+    MKL_LONG status;
+
+    
+
+    uint h = mBayer->h;
+    uint w = mBayer->w;
+
+    fftw_complex* in_r, *in_g, *in_b, *out_r, *out_g, *out_b;
+
+    in_r = fftw_alloc_complex(h*w);
+    in_g = fftw_alloc_complex(h*w);
+    in_b = fftw_alloc_complex(h*w);
+
+    out_r = fftw_alloc_complex(h*w);
+    out_g = fftw_alloc_complex(h*w);
+    out_b = fftw_alloc_complex(h*w);
+
+    RGB48Buffer *out_fourier = new RGB48Buffer(h, w, false),
+                *out_orig    = new RGB48Buffer(h, w, false);
+
+    for (int i = 0; i < h; i++)
+        for (int j = 0; j < w; j++)
+        {
+            int offset = i*w + j;
+            int color = colorFromBayerPos(i, j, false);
+            switch (color)
+            {
+            case 0:
+                in_r[offset][0] = (i < mBayer->h && j < mBayer->w) ? mBayer->data[i*mBayer->w + j] : 0, 0;
+                break;
+            case 1:
+                in_g[offset][0] = (i < mBayer->h && j < mBayer->w) ? mBayer->data[i*mBayer->w + j] : 0, 0;
+                break;
+            case 2:
+                in_b[offset][0] = (i < mBayer->h && j < mBayer->w) ? mBayer->data[i*mBayer->w + j] : 0, 0;
+                break;
+            }
+            out_orig->element(i, j) = RGBColor48(in_r[i*mBayer->w + j][0], in_g[i*mBayer->w + j][0], in_b[i*mBayer->w + j][0]);
+        }
+
+    fftw_plan plan = fftw_plan_dft_2d(h, w, in_r, out_r, FFTW_FORWARD, 0);
+    fftw_execute(plan);
+    fftw_execute_dft(plan, in_g, out_g);
+    fftw_execute_dft(plan, in_b, out_b);
+    fftw_destroy_plan(plan);
+
+    int newsize = sqrt(h*w);
+    G12Buffer *val_r = new G12Buffer(h, w, false),
+              *val_g = new G12Buffer(h, w, false),
+              *val_b = new G12Buffer(h, w, false);
+    for (int i = 0; i < h; i++)
+        for (int j = 0; j < w; j++)
+        {
+            val_r->element(i, j) = clip(sqrtf(SQR(out_r[i*w + j][0]) + SQR(out_r[i*w + j][1]))/10);
+            val_g->element(i, j) = clip(sqrtf(SQR(out_g[i*w + j][0]) + SQR(out_g[i*w + j][1]))/10);
+            val_b->element(i, j) = clip(sqrtf(SQR(out_b[i*w + j][0]) + SQR(out_b[i*w + j][1]))/10);
+        }
+
+    PPMLoader().save("four_out.pgm", val_g);
+    PPMLoader().save("four_in.ppm", out_orig);
+    return nullptr;
+}
+#endif
 void Debayer::scaleCoeffs()
 {
     for (int i = 0; i < 3; i++)

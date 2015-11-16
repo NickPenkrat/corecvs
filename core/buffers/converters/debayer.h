@@ -2,6 +2,7 @@
  * \file    buffers/converters/debayer.h
  *
  * Declares the Debayer class.
+ * \author Pavel.Vasilev
  */
 #ifndef CDEBAYER_H_
 #define CDEBAYER_H_
@@ -52,6 +53,7 @@ public:
      * \return  Resulting image.
      */
     RGB48Buffer* toRGB48(Method method);
+    RGB48Buffer* fourier();
 
 private:
     int         mDepth      = 12;

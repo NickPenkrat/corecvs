@@ -77,7 +77,7 @@ public:
 
 }
 
-const float RGBConverter::lab_eps(0.008856451586);
+const float RGBConverter::lab_eps(216.f/24389);
 const float RGBConverter::lab_coeff(903.3f);
 const float RGBConverter::srgb2xyz[3][3] {
     { 0.412453, 0.357585, 0.180423 },
