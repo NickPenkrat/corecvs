@@ -1343,7 +1343,7 @@ private:
 
             if (shouldInit || !TRIVIALLY_DEFAULT_CONSTRUCTIBLE) {
                 CORE_CLEAR_MEMORY(this->data, allocatedSize);
-                init_array(data, h, w, stride);
+                init_array(data, this->h, this->w, this->stride);
             }
 #if 0
 #ifdef ASSERTS
@@ -1418,7 +1418,7 @@ private:
         for (IndexType i = 0; i < h; ++i)
             copy(dst + i * strideDst, src + i * strideSrc, w);
     }
-    static void del(ElementType* ptr, IndexType w, IndexType h, IndexType stride)
+    static void del(ElementType* ptr, IndexType h, IndexType w, IndexType stride)
     {
         /*
          * Using traits switch between "do nothing" (memory is cleared by memoryBlock)

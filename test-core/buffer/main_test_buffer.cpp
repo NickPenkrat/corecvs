@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <type_traits>
+#include <map>
 #include "gtest/gtest.h"
 
 #include "global.h"
@@ -40,6 +41,7 @@
 #include "abstractPainter.h"
 #include "g8Buffer.h"
 #include "booleanBuffer.h"
+#include "polynomial.h"
 
 using namespace std;
 using namespace corecvs;
@@ -52,11 +54,39 @@ TEST(Generic, DISABLED_testAlwaysFail)
 class TestAbstractBufferClass {
 public:
     static int counter;
-    TestAbstractBufferClass()  { counter++; }
-    ~TestAbstractBufferClass() { counter--; }
+    static std::map<void*, int> advancedCounter;
+    TestAbstractBufferClass()
+    {
+        counter++;
+        advancedCounter[this]++;
+    }
+    ~TestAbstractBufferClass()
+    {
+        counter--;
+        advancedCounter[this]--;
+    }
+    static bool checkCorrectness()
+    {
+        if (counter != 0)
+        {
+            std::cout << "Reference counter is not null" << std::endl;
+            return false;
+        }
+        for (auto&p : advancedCounter)
+            std::cout << p.first << " : " << p.second << std::endl;
+        for (auto&p : advancedCounter)
+            if (p.second != 0)
+            {
+                std::cout << "Reference counter for " << p.first << " is not null" << std::endl;
+                return false;
+            }
+        return true;
+    }
+    int boo;
 };
 
 int TestAbstractBufferClass::counter = 0;
+std::map<void*, int> TestAbstractBufferClass::advancedCounter;
 
 TEST(Buffer, testBufferCC)
 {
@@ -120,6 +150,7 @@ TEST(Buffer, testG12Buffer)
 #endif
 
     ASSERT_FALSE(std::is_trivially_destructible<TestAbstractBufferClass>::value);
+    ASSERT_FALSE(std::is_trivially_destructible<Polynomial>::value);
     /*
      * TODO: Check if we would (or would not) like this test to fail
      */
@@ -132,6 +163,7 @@ TEST(Buffer, testG12Buffer)
 
    /* Test case 2: Test internal buffer destruction */
    TestAbstractBufferClass::counter = 0;
+   TestAbstractBufferClass::advancedCounter.clear();
 
    AbstractBuffer<TestAbstractBufferClass> *b = new AbstractBuffer<TestAbstractBufferClass>
    ( AbstractBuffer<TestAbstractBufferClass>::DATA_ALIGN_GRANULARITY,
@@ -139,8 +171,10 @@ TEST(Buffer, testG12Buffer)
    delete b;
    std::cout << TestAbstractBufferClass::counter << std::endl;
    CORE_ASSERT_TRUE(TestAbstractBufferClass::counter == 0, "Abstract buffer violates the C++ new/delete contract")
+    ASSERT_TRUE(TestAbstractBufferClass::checkCorrectness());
 
    /* Test case 3: Test internal buffer destruction */
+   TestAbstractBufferClass::advancedCounter.clear();
    TestAbstractBufferClass::counter = 0;
 
    AbstractBuffer<TestAbstractBufferClass> *d = new AbstractBuffer<TestAbstractBufferClass>
@@ -148,6 +182,7 @@ TEST(Buffer, testG12Buffer)
      AbstractBuffer<TestAbstractBufferClass>::DATA_ALIGN_GRANULARITY + 1);
    delete d;
    CORE_ASSERT_TRUE(TestAbstractBufferClass::counter == 0, "Abstract buffer violates the C++ new/delete contract")
+    ASSERT_TRUE(TestAbstractBufferClass::checkCorrectness());
 
 
    /* Test case 4: Alignment */
@@ -170,6 +205,7 @@ TEST(Buffer, testG12Buffer)
    delete[] c;
 
     /* Test case 5: Views */
+    TestAbstractBufferClass::advancedCounter.clear();
     TestAbstractBufferClass::counter = 0;
     AbstractBuffer<TestAbstractBufferClass> *main = new AbstractBuffer<TestAbstractBufferClass>(10, 10);
     int oldCnt = TestAbstractBufferClass::counter;
@@ -183,6 +219,7 @@ TEST(Buffer, testG12Buffer)
     ASSERT_EQ(oldCnt, TestAbstractBufferClass::counter);
     delete view2;
     ASSERT_EQ(0, TestAbstractBufferClass::counter);
+    ASSERT_TRUE(TestAbstractBufferClass::checkCorrectness());
 }
 
 TEST(Buffer, testBilinearTransform)
