@@ -16,6 +16,116 @@ const double REL_SOL_TOLERANCE = 1e-5;
 const double COEFF_LIMIT = 1e2;
 const double MAX_SCALE_LIMIT = 1e2;
 
+TEST(PolynomialMatrixTest, testBasics)
+{
+    corecvs::PolynomialMatrix m(3, 3, corecvs::Polynomial::X());
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            for (double x = -1.0; x <= 1.0; x += 0.01)
+                ASSERT_NEAR(x, m.element(i, j)(x), 1e-9);
+        }
+    }
+    // XXX: basic test for copies
+    m.element(0, 0) = m.element(1, 1) = m.element(2, 2) = 1.0;
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            for (double x = -1.0; x <= 1.0; x += 0.01)
+                ASSERT_NEAR(i == j ? 1.0 : x, m.element(i, j)(x), 1e-9);
+        }
+    }
+}
+
+#define M(a, b, c) m.element(a, b) = c;
+auto X = corecvs::Polynomial::X();
+
+TEST(PolynomialMatrixTest, testEvaluate)
+{
+    corecvs::PolynomialMatrix m(2, 2, 0.0);
+    M(0, 0, 1.0); M(0, 1,         X);
+    M(1, 0, X*X); M(1, 1, X*X+X+1.0);
+    for (double x = -10.0; x < 10.0; x += 0.01)
+    {
+        auto E = m(x);
+        ASSERT_NEAR(E.a(0, 0),       1.0, 1e-9);
+        ASSERT_NEAR(E.a(0, 1),         x, 1e-9);
+        ASSERT_NEAR(E.a(1, 0),       x*x, 1e-9);
+        ASSERT_NEAR(E.a(1, 1), x*x+x+1.0, 1e-9);
+    }
+}
+
+TEST(PolynomialMatrixTest, testDet)
+{
+    corecvs::PolynomialMatrix m(3, 3, corecvs::Polynomial::X());
+    // All rows lineary-dependent => 0-degree poly should be equal to 0.0
+    auto poly = m.det(0);
+    ASSERT_NEAR(poly[0], 0.0, 1e-9);
+
+    M(0, 0,         X); M(0, 1,   X * X); M(0, 2, X * X * X);
+    M(1, 0,       1.0); M(1, 1, X + 1.0); M(1, 2,      10.0);
+    M(2, 0, X*X*X*X*X); M(2, 1,     2.0); M(2, 2,         X);
+    /*         X X^2 X^3
+     * det (   1 X+1  10 ) = -x^9 -x^8 +10x^7 +2x^3 + x^2 - 20x
+     *       X^5   2   X
+     */
+//  std::cout << m << std::endl;
+    auto P = m.det(9);
+    cout << P << std::endl;
+    ASSERT_NEAR(P[0],  0.0, 1e-9);
+    ASSERT_NEAR(P[1],-20.0, 1e-9);
+    ASSERT_NEAR(P[2],  1.0, 1e-9);
+    ASSERT_NEAR(P[3],  2.0, 1e-9);
+    ASSERT_NEAR(P[4],  0.0, 1e-9);
+    ASSERT_NEAR(P[5],  0.0, 1e-9);
+    ASSERT_NEAR(P[6],  0.0, 1e-9);
+    ASSERT_NEAR(P[7], 10.0, 1e-9);
+    ASSERT_NEAR(P[8], -1.0, 1e-9);
+    ASSERT_NEAR(P[9], -1.0, 1e-9);
+
+    /*
+     * More interesting example (coeffs at x^6 are vanished)
+     *       X   X*X X*X*X
+     * det ( X*X X*X     X ) = 2x^5-5x^4+4x^3-x^2
+     *       1     1  3-2X
+     */
+
+    M(0, 0,   X); M(0, 1, X*X); M(0, 2,        X*X*X);
+    M(1, 0, X*X); M(1, 1, X*X); M(1, 2,            X);
+    M(2, 0, 1.0); M(2, 1, 1.0); M(2, 2, X*(-2.0)+3.0);
+    P = m.det(5);
+    std::cout << P << std::endl;
+    ASSERT_NEAR(P[0], 0.0, 1e-9);
+    ASSERT_NEAR(P[1], 0.0, 1e-9);
+    ASSERT_NEAR(P[2],-1.0, 1e-9);
+    ASSERT_NEAR(P[3], 4.0, 1e-9);
+    ASSERT_NEAR(P[4],-5.0, 1e-9);
+    ASSERT_NEAR(P[5], 2.0, 1e-9);
+}
+
+
+TEST(PolynomialTest, testInterpolation)
+{
+    auto X = corecvs::Polynomial::X();
+    auto P = (X - 1.0) * (X - 2.0) * (X - 3.0);
+    std::vector<double> v, x = {-1.0, -1.0 / 3.0, 1.0 / 3.0, 1.0};
+    for (auto& xx: x)
+    {
+        v.push_back(P(xx));
+        std::cout << *v.rbegin() << " ";
+    }
+    std::cout << std::endl;
+    std::cout << "P: " << P << std::endl;
+    auto P2 = corecvs::Polynomial::Interpolate(x, v);
+    std::cout << "PI: " << P2 << std::endl;
+    auto PD = P2 - P;
+    for (double xx = -10.0; xx <= 10.0; xx += 0.001)
+        ASSERT_NEAR(PD(xx), 0.0, 1e-6);
+
+}
+
 TEST(PolynomialTest, testBasics)
 {
     auto polyX = corecvs::Polynomial::X();
@@ -49,9 +159,9 @@ TEST(PolynomialSolversTest, testPow1)
     std::mt19937 rng(DEFAULT_SEED);
     std::uniform_real_distribution<double> unif(-COEFF_LIMIT, COEFF_LIMIT);
 
-    const int POW = 1;
+    //const int POW = 1;
     double coeff[2], roots[1];
-    int rootsN;
+    size_t rootsN;
 
     for (int i = 0; i < RNG_RETRIES; ++i)
     {
@@ -82,9 +192,9 @@ TEST(PolynomialSolversTest, testPow2)
     std::mt19937 rng(DEFAULT_SEED);
     std::uniform_real_distribution<double> unif(-COEFF_LIMIT, COEFF_LIMIT);
 
-    const int POW = 2;
+    //const int POW = 2;
     double coeff[3], roots[2];
-    int rootsN;
+    size_t rootsN;
 
     for (int i = 0; i < RNG_RETRIES; ++i)
     {

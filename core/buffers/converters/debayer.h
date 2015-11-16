@@ -1,11 +1,14 @@
 /**
  * \file    buffers/converters/debayer.h
  *
+ * \author pavel.vasilev
+ * \date 21 Oct 2015
+ *
  * Declares the Debayer class.
  * \author Pavel.Vasilev
  */
-#ifndef CDEBAYER_H_
-#define CDEBAYER_H_
+#ifndef DEBAYER_H
+#define DEBAYER_H
 
 #include "global.h"
 
@@ -31,9 +34,6 @@ public:
     /**
      * Constructor.
      *
-     * \author pavel.vasilev
-     * \date 21 Oct 2015
-     *
      * \param [in,out] bayer Raw bayer data.
      * \param depthOut       Processing bit depth.
      * \param [in,out] data  (Optional) Metadata.
@@ -44,9 +44,6 @@ public:
 
     /**
      * Converts the image to RGB48.
-     *
-     * \author  pavel.vasilev
-     * \date    21 oct 2015
      *
      * \param   quality Demosaic quality (method).
      *
@@ -106,8 +103,10 @@ private:
      */
     int32_t weightedBayerAvg(vector<Vector2d32> coords, vector<int>coeffs = vector<int>());
     int32_t weightedBayerAvg(Vector2d32 coords);
-    inline uint8_t colorFromBayerPos(int i, int j, bool rggb = true);
+
+    uint8_t colorFromBayerPos(int i, int j, bool rggb = true);
 };
 
-}
-#endif
+} // namespace corecvs
+
+#endif // DEBAYER_H

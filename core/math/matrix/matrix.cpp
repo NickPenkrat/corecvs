@@ -351,7 +351,7 @@ struct ParallelMD
         const Matrix& A = *pA;
         const DiagonalMatrix& B = *pB;
         Matrix& result = *pResult;
-        int row;        
+        int row;
         for (row = r.begin(); row < r.end(); ++row)
         {
             int column = 0;
@@ -567,16 +567,18 @@ Matrix operator -(const Matrix &A, const Matrix &B)
 ostream & operator <<(ostream &out, const Matrix &matrix)
 {
     streamsize wasPrecision = out.precision(6);
+    out << "[";
     for (int i = 0; i < matrix.h; i++)
     {
-        out << "[";
         for (int j = 0; j < matrix.w; j++)
         {
             out.width(9);
             out << matrix.a(i, j) << " ";
         }
-        out << "]\n";
+        if (i + 1 < matrix.h)
+            out << ";\n";
     }
+    out << "]" << std::endl;
     out.precision(wasPrecision);
     return out;
 }
@@ -886,6 +888,10 @@ Matrix Matrix::invSVD() const
     return V * X;
 }
 
+/*
+ * FIXME: This is obviously incorrect, since determinant computed with this
+ * routine will always be >= 0
+ */
 double Matrix::detSVD() const
 {
     CORE_ASSERT_TRUE(this->h == this->w, "Matrix should be square to invert.");
@@ -904,6 +910,24 @@ double Matrix::detSVD() const
     }
     return det;
 }
+
+#ifdef WITH_BLAS
+double corecvs::Matrix::det() const
+{
+    CORE_ASSERT_TRUE(w == h, "Determinant of square matrices can be computed");
+    corecvs::Vector tau(w);
+    corecvs::Matrix R = *this;
+    LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, h, w, &R.a(0, 0), stride, &tau[0]);
+    double det = 1.0;
+    for (int i = 0; i < w; ++i)
+        det *= R.a(i, i);
+    double tauM = 1.0;
+    for (int i = 0; i < w; ++i)
+        if (tau[i] != 0.0)
+            tauM *= -1.0;
+    return det * tauM;
+}
+#endif
 
 Vector2d32 Matrix::getMinCoord() const
 {

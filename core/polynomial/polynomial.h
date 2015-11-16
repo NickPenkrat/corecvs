@@ -2,6 +2,8 @@
 #define POLYNOMIAL_H
 
 #include "vector.h"
+#include "abstractBuffer.h"
+#include "matrix.h"
 
 #include <vector>
 
@@ -26,6 +28,7 @@ public:
      */
     double         operator()(const double &at   ) const;
 
+    // TODO: This stuff should be out-of-class
     Polynomial  operator* (const double &v) const;
     Polynomial& operator*=(const double &v);
     Polynomial  operator* (const Polynomial &rhs) const;
@@ -45,14 +48,26 @@ public:
 
     static Polynomial X();
     static Polynomial FromRoots(const std::vector<double> &roots);
+    static Polynomial Interpolate(const std::vector<double> &x, const std::vector<double> &Px);
 
     template<typename V>
-    void accept(V visitor)
+    void accept(V& visitor)
     {
         visitor.visit((std::vector<double>&)*this, "coeff");
     }
 };
+
+class PolynomialMatrix : public corecvs::AbstractBuffer<Polynomial, int32_t>
+{
+public:
+    PolynomialMatrix(int h = 0, int w = 0, const Polynomial& poly = 0.0);
+    corecvs::Matrix operator() (const double &x) const;
+    Polynomial det(const size_t requiredPower) const;
+};
 }
+
+
+
 std::ostream& operator<<(std::ostream&, const corecvs::Polynomial& p);
 
 

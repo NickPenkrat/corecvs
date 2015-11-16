@@ -3,10 +3,8 @@
  *
  * Declares the metamap for metadata handling.
  */
-#ifndef CMETAMAP_H_
-#define CMETAMAP_H_
-
-//#include "global.h"
+#ifndef CMETAMAP_H
+#define CMETAMAP_H
 
 #include <map>
 #include <string>
@@ -20,4 +18,4 @@ typedef std::map<std::string, MetaValue>    MetaData;
 
 } // namespace corecvs
 
-#endif // CMETAMAP_H_
+#endif // CMETAMAP_H

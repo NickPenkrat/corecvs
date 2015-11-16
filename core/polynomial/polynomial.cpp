@@ -148,3 +148,74 @@ corecvs::Polynomial corecvs::Polynomial::FromRoots(const std::vector<double> &ro
         ans *= corecvs::Polynomial::X() - r;
     return ans;
 }
+
+corecvs::Polynomial corecvs::Polynomial::Interpolate(const std::vector<double> &x, const std::vector<double> &Px)
+{
+    CORE_ASSERT_TRUE_S(x.size() == Px.size());
+    CORE_ASSERT_TRUE_S(x.size());
+    size_t N = x.size() - 1, N1 = x.size();
+
+    std::vector<double> coeff(N1);
+    coeff[0] = Px[0];
+    for (size_t i = 1; i < N1; ++i)
+    {
+        double nom   = Px[i];
+        double denom = 1.0;
+        for (size_t j = 0; j < i; ++j)
+            denom *= x[i] - x[j];
+        double prod = 1.0;
+        for (size_t j = 0; j < i; ++j)
+        {
+            nom -= coeff[j] * prod;
+            prod *= x[i] - x[j];
+        }
+        coeff[i] = nom / denom;
+    }
+    corecvs::Polynomial p, P = 1.0;
+    for (size_t i = 0; i < N1; ++i)
+    {
+        p += P * coeff[i];
+        P *= X() - x[i];
+    }
+    return p;
+}
+
+corecvs::PolynomialMatrix::PolynomialMatrix(int h, int w, const Polynomial& poly)
+    : corecvs::AbstractBuffer<Polynomial, int32_t>(h, w, poly)
+{
+
+}
+
+corecvs::Matrix corecvs::PolynomialMatrix::operator() (const double &x) const
+{
+    corecvs::Matrix result(h, w);
+    for (int i = 0; i < h; ++i)
+    {
+        for (int j = 0; j < w; ++j)
+        {
+            result.a(i, j) = element(i, j)(x);
+        }
+    }
+    return result;
+}
+
+corecvs::Polynomial corecvs::PolynomialMatrix::det(const size_t requiredPower) const
+{
+    std::vector<double> evaluationPoints(requiredPower + 1);
+    double each = 2.0 / requiredPower;
+    double left = -1.0;
+    for (auto& v: evaluationPoints)
+    {
+        v = left;
+        left += each;
+    }
+
+    std::vector<double> evaluatedValues;
+    for (auto& v: evaluationPoints)
+    {
+        evaluatedValues.push_back((*this)(v).det());
+        std::cout << "x = " << v << "; det = " << (*this)(v).det() << std::endl << (*this)(v) << std::endl;
+    }
+
+    return corecvs::Polynomial::Interpolate(evaluationPoints, evaluatedValues);
+}

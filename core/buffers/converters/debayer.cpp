@@ -60,13 +60,13 @@ RGB48Buffer* Debayer::nearest()
 
 RGB48Buffer* Debayer::linear()
 {
-    // RGGB
-    // TODO: write this to metadata
-    int bpos = 0;
     uint16_t red = 0, green = 0, blue = 0;
 
-    int swapCols = bpos & 1;
-    int swapRows = (bpos & 2) >> 1;
+    // RGGB
+    // TODO: write this to metadata
+    //int bpos = 0;
+    //int swapCols = bpos & 1;
+    //int swapRows = (bpos & 2) >> 1;
     RGB48Buffer *result = new RGB48Buffer(mBayer->h, mBayer->w, false);
 
     for (int i = 0; i < mBayer->h; i += 2)
@@ -596,7 +596,7 @@ void Debayer::scaleCoeffs()
 void Debayer::gammaCurve(uint16_t *curve, int imax)
 {
     // this code is taken from LibRaw
-    // TODO: rewrite?
+    // TODO: rewrite it?
 
     // initialize curve as a straight line (no correction)
     for (int i = 0; i < 0x10000; i++)
@@ -607,18 +607,21 @@ void Debayer::gammaCurve(uint16_t *curve, int imax)
     // alias
     MetaData &metadata = *mMetadata;
 
-    // if no gamm coefficients are present (or valid), return no transform
-    if (metadata["gamm"].empty() || !(metadata["gamm"][0] || metadata["gamm"][1] || metadata["gamm"][2] || metadata["gamm"][3] || metadata["gamm"][4]))
+    // if no gamma coefficients are present (or valid), return no transform
+    auto& gammData = metadata["gamm"];
+    if (gammData.empty() ||
+        (gammData.size() == 5) && !(gammData[0] || gammData[1] || gammData[2] || gammData[3] || gammData[4]))
         return;
 
     int i;
-    double g[6], bnd[2] = { 0, 0 }, r;
+    double r, g[6], bnd[2] = { 0, 0 };
 
-    g[0] = metadata["gamm"][0];
-    g[1] = metadata["gamm"][1];
+    g[0] = gammData[0];
+    g[1] = gammData[1];
     g[2] = g[3] = g[4] = 0;
     bnd[g[1] >= 1] = 1;
-    if (g[1] && (g[1] - 1)*(g[0] - 1) <= 0)
+
+    if (g[1] && (g[1] - 1) * (g[0] - 1) <= 0)
     {
         for (i = 0; i < 48; i++)
         {
