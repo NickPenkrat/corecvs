@@ -423,39 +423,7 @@ RGB48Buffer* Debayer::ahd()
 #undef abs
 #undef sqr
 }
-#if 0
-RGB48Buffer* Debayer::fourier()
-{
-    uint h = getNearUpperPowerOf2(mBayer->h);
-    uint w = getNearUpperPowerOf2(mBayer->w);
 
-    fftw_complex* newdata = fftw_alloc_complex(h*w);
-    fftw_complex* fourier = fftw_alloc_complex(h*w);
-    
-    for (int i = 0; i < h; i++)
-        for (int j = 0; j < w; j++)
-        {
-            newdata[i*mBayer->w + j][0] = (i < mBayer->h && j < mBayer->w) ? mBayer->data[i*mBayer->w + j] : 0;
-            newdata[i*mBayer->w + j][1] = 0;
-        }
-    fftw_plan plan = fftw_plan_dft_2d(w, h, newdata, fourier, FFTW_FORWARD, 0);
-    
-    fftw_execute(plan);
-    fftw_destroy_plan(plan);
-
-    G12Buffer *out = new G12Buffer(mBayer->w, mBayer->h, true);
-    for (int i = 0; i < mBayer->h; i++)
-        for (int j = 0; j < mBayer->w; j++)
-        {
-            out->data[i*mBayer->w + j] = clip(sqrt(fourier[i][0] * fourier[i][0] + fourier[i][1] * fourier[i][1]));
-        }
-    PPMLoader().save("fourier.pgm", out);
-
-    deletearr_safe(newdata);
-    deletearr_safe(fourier);
-    return nullptr;
-}
-#else
 RGB48Buffer* Debayer::fourier()
 {
     DFTI_DESCRIPTOR_HANDLE descriptor;
@@ -521,7 +489,7 @@ RGB48Buffer* Debayer::fourier()
     PPMLoader().save("four_in.ppm", out_orig);
     return nullptr;
 }
-#endif
+
 void Debayer::scaleCoeffs()
 {
     for (int i = 0; i < 3; i++)
