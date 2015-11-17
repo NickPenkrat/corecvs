@@ -4,39 +4,37 @@
 // TODO: refine this list
 #include <vector>
 #include <string>
-#include <sstream>
-#include <regex>
-#include <fstream>
+//#include <sstream>
+//#include <regex>
+//#include <fstream>
 #include <unordered_map>
-#include <unordered_set>
-#include <cstdio>
-#include <algorithm>
-#include <iomanip>
-#include <chrono>
-#include <random>
-#include "calibrationHelpers.h"
+//#include <unordered_set>
+//#include <cstdio>
+//#include <algorithm>
+//#include <iomanip>
+//#include <chrono>
+//#include <random>
+//#include "calibrationHelpers.h"
 #include "calibrationJob.h"
-#include "calibrationLocation.h"
-#include "mesh3d.h"
-#include "jsonSetter.h"
-#include "jsonGetter.h"
+#include "calibrationPhotostation.h"
+//#include "calibrationLocation.h"
+//#include "mesh3d.h"
+//#include "jsonSetter.h"
+//#include "jsonGetter.h"
 
 #include "imageKeyPoints.h"
 #include "reconstructionStructs.h"
 
 #include "vector3d.h"
-#include "vector2d.h"
-#include "bufferReaderProvider.h"
+//#include "vector2d.h"
+//#include "bufferReaderProvider.h"
 
-#include "openCvFileReader.h"
-#include "featureMatchingPipeline.h"
-#include "openCvDescriptorExtractorWrapper.h"
-#include "openCvFeatureDetectorWrapper.h"
-#include "openCvDescriptorMatcherWrapper.h"
-#include "multicameraTriangulator.h"
-#include "undirectedGraph.h"
+//#include "featureMatchingPipeline.h"
+//#include "multicameraTriangulator.h"
+//#include "undirectedGraph.h"
 #include "multiPhotostationScene.h"
-#include "essentialEstimator.h"
+//#include "essentialEstimator.h"
+#include "displacementBuffer.h"
 
 // TODO: make this stuff reconstruction params
 #define POI_ONLY
@@ -147,4 +145,4 @@ struct ReconstructionJob : ReconstructionParameters
 };
 
 
-#endif
+#endif // RECONSTRUCTIONSOLVER_H
