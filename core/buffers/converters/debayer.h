@@ -56,7 +56,7 @@ private:
     int         mDepth      = 12;
     Vector3dd   mScaleMul   = { 1, 1, 1 };
     uint16_t    mBlack      = 0;
-    uint8_t     mBayerPos   = 3;
+    uint8_t     mBayerPos   = 0;
     uint16_t*   mCurve      = nullptr;
     G12Buffer*  mBayer      = nullptr;
     MetaData *  mMetadata   = nullptr;
