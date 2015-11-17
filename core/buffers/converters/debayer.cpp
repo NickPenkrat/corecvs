@@ -213,7 +213,7 @@ RGB48Buffer* Debayer::ahd()
                 {
                     for (int l = 0; l < 2; l++)
                     {
-                        pixel[1] = green[d]->element(i + k, j + l);
+                        pixel[1] = clip(green[d]->element(i + k, j + l) * mScaleMul[1], mDepth);
 
                         uint8_t color = colorFromBayerPos(i + k, j + l, false);
 
@@ -227,16 +227,16 @@ RGB48Buffer* Debayer::ahd()
                                              + weightedBayerAvg({ j + l + 1, i + k }) - green[d]->element(i + k, j + l + 1)) / 2);
                             
                             // logically, this should be pixel[row_c], but our pixels are BGR, so this is inverted
-                            pixel[2 - row_c] = clip(val, mDepth);
+                            pixel[2 - row_c] = clip(val * mScaleMul[row_c], mDepth);
 
                             val = pixel[1] + ((weightedBayerAvg({ j + l, i + k - 1 }) - green[d]->element(i + k - 1, j + l)
                                              + weightedBayerAvg({ j + l, i + k + 1 }) - green[d]->element(i + k + 1, j + l)) / 2);
-                            pixel[row_c] = clip(val, mDepth);
+                            pixel[row_c] = clip(val * mScaleMul[2 - row_c], mDepth);
                         }
                         else
                         {
                             // known colour: inverted (same as above)
-                            pixel[2 - color] = clip(mBayer->element(i + k, j + l), mDepth);
+                            pixel[2 - color] = clip(mBayer->element(i + k, j + l) * mScaleMul[color], mDepth);
 
                             // interpolate colour using greens diagonally
                             // this is not intuitive, but directly follows from the aforementioned equation
@@ -247,7 +247,7 @@ RGB48Buffer* Debayer::ahd()
                                     + weightedBayerAvg({ j + l + 1, i + k + 1 }) - green[d]->element(i + k + 1, j + l - 1)
                                      
                                      ) / 4);
-                            pixel[color] = clip(val, mDepth);
+                            pixel[color] = clip(val * mScaleMul[2 - color], mDepth);
                         }
                         rgb[d]->element(i + k, j + l) = pixel;
                         RGBConverter::rgb2Lab(pixel, Lab[d][(i + k)*mBayer->w + j + l]);
@@ -406,9 +406,9 @@ RGB48Buffer* Debayer::ahd()
                 uint32_t b = window[1][4] + result->element(i, j).g();
                 uint32_t g = (r + b - window[0][4] - window[1][4]) / 2;
                 result->element(i, j) = RGBColor48(
-                    clip(r*mScaleMul[0], mDepth), 
-                    clip(g*mScaleMul[1], mDepth),
-                    clip(b*mScaleMul[2], mDepth)
+                    clip(r, mDepth), 
+                    clip(g, mDepth),
+                    clip(b, mDepth)
                 );
 
                 rgbDiff[0][i*mBayer->w + j] = r - g;

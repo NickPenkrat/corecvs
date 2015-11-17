@@ -24,7 +24,9 @@ int main(int argc, const char **argv)
         return -1;
     }
 
-    Debayer d(bayer, 8, 3, &meta);
+    int bpos = meta["b_pos"].empty() ? 0 : meta["b_pos"][0];
+
+    Debayer d(bayer, 8, bpos, &meta);
 
     RGB48Buffer *result = d.toRGB48(Debayer::Method(quality));
 
