@@ -3,14 +3,15 @@
 
 #include "calibrationJob.h"
 
-#ifdef WITH_OPENCV
-#include "openCvCheckerboardDetector.h"
-#endif
 #include "lmDistortionSolver.h"
 #include "flatPatternCalibrator.h"
 #include "photoStationCalibrator.h"
 #include "qtFileLoader.h"
 #include "tbbWrapper.h"
+#include "log.h"
+#ifdef WITH_OPENCV
+#include "openCvCheckerboardDetector.h"
+#endif
 
 bool CalibrationJob::detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::ObservationList &list)
 {
@@ -39,7 +40,6 @@ bool CalibrationJob::detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::Sel
         patternDetector = new ChessboardDetector(settings.openCvDetectorParameters, settings.boardAlignerParams, settings.chessBoardCornerDetectorParams, settings.chessBoardAssemblerParams);
         patternDetector->setStatistics(&stats);
         patternDetector->detectPattern(buffer);
-
     }
 
     if (features)
@@ -56,6 +56,8 @@ void CalibrationJob::allDetectChessBoard(bool distorted)
     int N = (int)observations.size();
     photostation.cameras.resize(N);
     std::vector<corecvs::CameraModel>::iterator psIterator = photostation.cameras.begin();
+
+    L_INFO_P("chessboard type: %s", this->settings.boardAlignerParams.boardMarkers.size() ? "new" : "old");
 
     for (auto& c: observations)
     {
@@ -187,9 +189,16 @@ void CalibrationJob::prepareUndistortionTransformation(LensDistortionModelParame
             break;
     }
 
-    auto wh = output[1] - output[0];
+    corecvs::Vector2dd wh = output[1] - output[0];
     newW = wh[0];
     newH = wh[1];
+
+    if (newW < 10 || newH < 10)
+    {
+        L_ERROR_P("invalid undistorted output size: %dx%d", roundUp(newW), roundUp(newH));
+        newW = newH = 0;
+        return;
+    }
 
     if (undistParams.adoptScale())
     {
@@ -336,8 +345,9 @@ void CalibrationJob::allCalibrateSingleCamera()
     factors.resize(photostation.cameras.size(), 1.0);
     corecvs::parallelable_for(0, (int)photostation.cameras.size(), ParallelSingleCalibrator(this));
     double fac = 0.0;
-    for (auto& f: factors)
+    for (auto& f : factors) {
         fac += f;
+    }
     fac /= factors.size();
     factor = fac;
     std::cout << "OPTFAC_MEAN: " << factor << std::endl;
@@ -345,14 +355,13 @@ void CalibrationJob::allCalibrateSingleCamera()
 
 void CalibrationJob::calibratePhotostation(int N, int /*M*/, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<PinholeCameraIntrinsics> &intrinsics, std::vector<std::vector<CameraLocationData>> &locations, bool runBFS, bool runLM)
 {
-    for (auto& ci: intrinsics)
-    {
+    for (auto& ci : intrinsics) {
         calibrator.addCamera(ci);
     }
     calibrator.factor = factor;
     std::vector<int> cnt(N);
     int set = 0;
-    for (auto& setup: points)
+    for (auto& setup : points)
     {
         MultiCameraPatternPoints pts;
         std::vector<int> active;
@@ -598,5 +607,5 @@ void CalibrationJob::calculateRedundancy(std::vector<int> &cameraImagesCount
         }
     }
 
-    redundancyPhotostation = unvisited ? -unvisited : total - ((int)cameraImagesCount.size() - 1);
+    redundancyPhotostation = unvisited ? -unvisited : (int)total - ((int)cameraImagesCount.size() - 1);
 }

@@ -376,7 +376,7 @@ TEST(Rectification, testEssentialEstimator)
             rmse += diff * diff;
         }
         rmse = std::sqrt(rmse / cv.size());
-        double rmseValid = rmse;
+        //double rmseValid = rmse;
         ASSERT_NEAR(rmse, 0.0, (15.0));
 //      std::cout << "ORIG:OK" << std::endl; 
         rmse = 0.0;

@@ -217,9 +217,9 @@ TEST(PolynomialSolversTest, testPow1)
     std::mt19937 rng(DEFAULT_SEED);
     std::uniform_real_distribution<double> unif(-COEFF_LIMIT, COEFF_LIMIT);
 
-    const int POW = 1;
+    //const int POW = 1;
     double coeff[2], roots[1];
-    int rootsN;
+    size_t rootsN;
 
     for (int i = 0; i < RNG_RETRIES; ++i)
     {
@@ -250,9 +250,9 @@ TEST(PolynomialSolversTest, testPow2)
     std::mt19937 rng(DEFAULT_SEED);
     std::uniform_real_distribution<double> unif(-COEFF_LIMIT, COEFF_LIMIT);
 
-    const int POW = 2;
+    //const int POW = 2;
     double coeff[3], roots[2];
-    int rootsN;
+    size_t rootsN;
 
     for (int i = 0; i < RNG_RETRIES; ++i)
     {

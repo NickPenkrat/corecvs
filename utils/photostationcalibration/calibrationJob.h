@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "calculationStats.h"
-
 #include "rgb24Buffer.h"
 #include "displacementBuffer.h"
 #include "selectableGeometryFeatures.h"
@@ -181,7 +180,7 @@ struct CalibrationJob
 
     void    calculateRedundancy(std::vector<int> &cameraImagesCount, std::vector<std::vector<int>> &cameraCameraRelationships, std::vector<int> &redundantSingleCamera, int &redundancyPhotostation);
 
-    double factor = 1.0;
+    double  factor = 1.0;
     std::vector<double> factors;
 
 public:

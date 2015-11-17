@@ -1420,6 +1420,10 @@ private:
     }
     static void del(ElementType* ptr, IndexType h, IndexType w, IndexType stride)
     {
+        CORE_UNUSED(ptr);
+        CORE_UNUSED(w);
+        CORE_UNUSED(h);
+        CORE_UNUSED(stride);
         /*
          * Using traits switch between "do nothing" (memory is cleared by memoryBlock)
          * and "destruct all elements"
@@ -1446,7 +1450,6 @@ private:
         {
             memset(ptr, 0, sizeof(ElementType) * stride * h);
         }
-
     }
     static void init_array(const ElementType& el, ElementType* ptr, IndexType h, IndexType w, IndexType stride)
     {

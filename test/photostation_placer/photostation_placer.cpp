@@ -6,8 +6,18 @@
  * All files that you need are here
  * https://drive.google.com/folderview?id=0B1FS8EqRjHUrYjNNaDM5VzZUNlk&usp=sharing
  */
-#include "reconstructionSolver.h"
+#include <fstream>
+#include <regex>
 
+#include "reconstructionSolver.h"
+#include "jsonGetter.h"
+
+#ifdef WITH_OPENCV
+# include "openCvFileReader.h"
+# include "openCvDescriptorExtractorWrapper.h"
+# include "openCvFeatureDetectorWrapper.h"
+# include "openCvDescriptorMatcherWrapper.h"
+#endif
 
 corecvs::Vector3dd convertVector(const corecvs::Vector3dd& geodesic)
 {
@@ -95,8 +105,12 @@ std::vector<PointObservation__> parsePois(const std::string &filename, bool m15 
 // XXX: here we parse only position part; angle data is rejected
 //      we also make prefix uppercase since it is partially lower-case
 //      in Measure_15
-std::unordered_map<std::string, corecvs::Affine3DQ>  parseGps(const std::string &filename, const corecvs::Matrix33 &axis = corecvs::Matrix33(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0) )
+std::unordered_map<std::string, corecvs::Affine3DQ>
+    parseGps(const std::string &filename
+           , const corecvs::Matrix33 &axis = corecvs::Matrix33(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0) )
 {
+    CORE_UNUSED(axis);
+
     std::ifstream ifs;
     ifs.open(filename, std::ios_base::in);
     if (!ifs)

@@ -140,11 +140,15 @@ TEST(CalibrationStructsTest, testPhotostationStruct)
         Vector2dd dst4 = dst4t.xyz().project();
 
         Vector2dd ref = dst3;
-        
-        cout <<  ref << std::endl;
-        cout << dst1 << std::endl;
-        cout << dst2 << std::endl;
-        cout << dst4 << std::endl;
+
+        if (i < 10 || i > RNG_RETRIES - 10) {
+            cout << ref << std::endl;
+            cout << dst1 << std::endl;
+            cout << dst2 << std::endl;
+            cout << dst4 << std::endl;
+        }
+        else if (i == 10)
+            cout << "..." << std::endl;
 
         CORE_ASSERT_TRUE_P(dst1.notTooFar(ref, 1e-6), (" "));
         CORE_ASSERT_TRUE_P(dst2.notTooFar(ref, 1e-6), (" "));

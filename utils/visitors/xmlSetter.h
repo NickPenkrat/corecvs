@@ -1,10 +1,12 @@
-#pragma once
+#ifndef XMLSETTER_H
+#define XMLSETTER_H
 
+#include <QtCore/QtCore>
 #include "QtCore/QString"
+
 #include "basePathVisitor.h"
 #include "reflection.h"
 #include "baseXMLVisitor.h"
-#include <QtCore/QtCore>
 
 using corecvs::IntField;
 using corecvs::DoubleField;
@@ -124,3 +126,5 @@ void XmlSetter::visit<int, EnumField>(int &field, const EnumField *fieldDescript
 template <>
 void XmlSetter::visit<double, DoubleVectorField>(std::vector<double> &field, const DoubleVectorField *fieldDescriptor);
 
+
+#endif // XMLSETTER_H

@@ -1,17 +1,31 @@
+#include <vector>
+#include <string>
+#include <sstream>
+
 #include "reconstructionSolver.h"
+#include "levenmarq.h"
+
+#ifdef WITH_OPENCV
+# include "openCvFileReader.h"  // inside it requires BufferReaderProvider
+# include "openCvDescriptorExtractorWrapper.h"
+# include "openCvFeatureDetectorWrapper.h"
+# include "openCvDescriptorMatcherWrapper.h"
+#else
+# include "bufferReaderProvider.h"
+#endif
 
 int ReconstructionJob::getOutputNum() const
 {
     std::vector<double> err;
     scene.computeReprojectionErrors(err);
-    return err.size();
+    return (int)err.size();
 }
 
 int ReconstructionJob::getInputNum() const
 {
-    int cams = 0;
+    //int cams = 0;
 #ifndef POI_ONLY
-    return 7 * scene.photostations.size() - 6;
+    return 7 * (int)scene.photostations.size() - 6;
 #else
     return 
 #ifndef Q_ONLY
@@ -19,7 +33,7 @@ int ReconstructionJob::getInputNum() const
 #else
         4
 #endif
-        * scene.photostations.size()
+        * (int)scene.photostations.size()
 #ifdef ESTIMATE_FC
 #ifdef ESTIMATE_F
         + 6
@@ -37,7 +51,7 @@ int ReconstructionJob::getInputNum() const
     
 void ReconstructionJob::writeParams(double out[], corecvs::Vector3dd mean, corecvs::Vector3dd scale) const
 {
-    int N = scene.photostations.size();
+    int N = (int)scene.photostations.size();
     int argout = 0;
     for (int i = 0; i < N; ++i)
     {
@@ -87,8 +101,8 @@ void ReconstructionJob::writeParams(double out[], corecvs::Vector3dd mean, corec
     
 void ReconstructionJob::getScaler(corecvs::Vector3dd &mean, corecvs::Vector3dd &scale)
 {
-    int N = scene.photostations.size();
-    int argin = 0;
+    int N = (int)scene.photostations.size();
+    //int argin = 0;
     mean = corecvs::Vector3dd(0.0, 0.0, 0.0);
     scale = corecvs::Vector3dd(0.0, 0.0, 0.0);
     for (int i = 0; i < N; ++i)
@@ -107,7 +121,7 @@ void ReconstructionJob::getScaler(corecvs::Vector3dd &mean, corecvs::Vector3dd &
     
 void ReconstructionJob::readParams(const double in[], corecvs::Vector3dd mean, corecvs::Vector3dd scale)
 {
-    int N = scene.photostations.size();
+    int N = (int)scene.photostations.size();
     int argin = 0;
     for (int i = 0; i < N; ++i)
     {
@@ -182,7 +196,7 @@ void ReconstructionJob::OptimizationFunctor::operator() (const double in[], doub
 #endif
     rJob->scene.computeReprojectionErrors(errors);
 
-    int outputNum = FunctionArgs::outputs;
+    //int outputNum = FunctionArgs::outputs;
     int outputPtr = 0;
     double total = 0.0;
     double cnt  = 0.0;
@@ -224,7 +238,7 @@ void ReconstructionJob::OptimizationFunctor::operator() (const double in[], doub
     }
     else
     {
-        int id = 0;
+        //int id = 0;
         auto& scene = rJob->scene;
         if (angleError)
         {
@@ -297,7 +311,7 @@ void ReconstructionJob::undistortAll(bool singleDistortion)
     std::vector<corecvs::DisplacementBuffer> transformations;
     for (int i = 0; i < M; ++i)
     {
-        int N = scene.photostations[i].cameras.size();
+        int N = (int)scene.photostations[i].cameras.size();
         if (i == 0 || !singleDistortion)
         {
             transformations.resize(N);
@@ -305,8 +319,6 @@ void ReconstructionJob::undistortAll(bool singleDistortion)
         }
         corecvs::parallelable_for(0, N, ParallelUndistortionCalculator(&scene.cameraObservations[i], &transformations, &scene.photostations[i]));
     }
-
-    
 }
 
 void ReconstructionJob::ParallelUndistortionCalculator::operator() (const corecvs::BlockedRange<int> &r) const
@@ -339,7 +351,9 @@ void ReconstructionJob::ParallelUndistortionMapEstimator::operator() (const core
     
 void ReconstructionJob::fill(std::unordered_map<std::string, corecvs::Affine3DQ> &data, int psLocationCnt)
 {
-    int id = 0;
+    CORE_UNUSED(psLocationCnt);
+
+    //int id = 0;
     for (int id = 0; id < 5; ++id)
     {
         std::stringstream ss;
