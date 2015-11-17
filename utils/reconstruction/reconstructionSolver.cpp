@@ -6,10 +6,12 @@
 #include "levenmarq.h"
 
 #ifdef WITH_OPENCV
-# include "openCvFileReader.h"
+# include "openCvFileReader.h"  // inside it requires BufferReaderProvider
 # include "openCvDescriptorExtractorWrapper.h"
 # include "openCvFeatureDetectorWrapper.h"
 # include "openCvDescriptorMatcherWrapper.h"
+#else
+# include "bufferReaderProvider.h"
 #endif
 
 int ReconstructionJob::getOutputNum() const
@@ -317,8 +319,6 @@ void ReconstructionJob::undistortAll(bool singleDistortion)
         }
         corecvs::parallelable_for(0, N, ParallelUndistortionCalculator(&scene.cameraObservations[i], &transformations, &scene.photostations[i]));
     }
-
-    
 }
 
 void ReconstructionJob::ParallelUndistortionCalculator::operator() (const corecvs::BlockedRange<int> &r) const
