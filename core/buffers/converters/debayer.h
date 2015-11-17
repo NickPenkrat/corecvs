@@ -38,7 +38,7 @@ public:
      * \param depthOut       Processing bit depth.
      * \param [in,out] data  (Optional) Metadata.
      */
-    Debayer(G12Buffer *bayer, int depthOut = 12, MetaData *data = nullptr);
+    Debayer(G12Buffer *bayer, int depthOut = 12, int bayerPos = 0, MetaData *data = nullptr);
 
     ~Debayer();
 
@@ -56,7 +56,7 @@ private:
     int         mDepth      = 12;
     Vector3dd   mScaleMul   = { 1, 1, 1 };
     uint16_t    mBlack      = 0;
-    uint8_t     mBayerPos   = 0;
+    uint8_t     mBayerPos   = 3;
     uint16_t*   mCurve      = nullptr;
     G12Buffer*  mBayer      = nullptr;
     MetaData *  mMetadata   = nullptr;

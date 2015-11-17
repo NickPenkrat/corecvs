@@ -6,9 +6,10 @@
 #include "ppmLoader.h"
 #include <complex>
 
-Debayer::Debayer(G12Buffer *bayer, int depth, MetaData *metadata)
+Debayer::Debayer(G12Buffer *bayer, int depth, int bayerPos, MetaData *metadata)
     : mBayer(bayer)
     , mDepth(depth)
+    , mBayerPos(bayerPos)
     , mMetadata(metadata)
 {}
 
@@ -401,10 +402,14 @@ RGB48Buffer* Debayer::ahd()
 
                 }
 
-                uint16_t r = clip(window[0][4] + result->element(i, j).g(), mDepth);
-                uint16_t b = clip(window[1][4] + result->element(i, j).g(), mDepth);
-                uint16_t g = (r + b - window[0][4] - window[1][4]) / 2;
-                result->element(i, j) = { r, g, b };
+                uint32_t r = window[0][4] + result->element(i, j).g();
+                uint32_t b = window[1][4] + result->element(i, j).g();
+                uint32_t g = (r + b - window[0][4] - window[1][4]) / 2;
+                result->element(i, j) = RGBColor48(
+                    clip(r*mScaleMul[0], mDepth), 
+                    clip(g*mScaleMul[1], mDepth),
+                    clip(b*mScaleMul[2], mDepth)
+                );
 
                 rgbDiff[0][i*mBayer->w + j] = r - g;
                 rgbDiff[1][i*mBayer->w + j] = b - g;
@@ -503,7 +508,8 @@ void Debayer::scaleCoeffs()
     MetaData &metadata = *mMetadata;
 
     // check if metadata valid
-    if (metadata["cam_mul"].empty() || metadata["cam_mul"][0] == 0 || metadata["cam_mul"][2] == 0)
+    if ((metadata["cam_mul"].empty() || metadata["cam_mul"][0] == 0 || metadata["cam_mul"][2] == 0) &&
+        (metadata["pre_mul"].empty() || metadata["pre_mul"][0] == 0 || metadata["pre_mul"][2] == 0))
     {
         // if white balance is not available, do only scaling
         // white should be calculated before calling scaleCoeffs()
@@ -525,26 +531,40 @@ void Debayer::scaleCoeffs()
 
     // if cam_mul coefficients are available directly, use them in future
     // if not, use pre_mul when available
-    if (metadata["cam_mul"][0] != -1)
-        for (int i = 0; i < 4; i++)
-            metadata["pre_mul"][i] = metadata["cam_mul"][i];
 
+    if (metadata["pre_mul"].empty())
+        metadata["pre_mul"] = MetaValue(4, 1.0);
+
+    if (!metadata["cam_mul"].empty() && metadata["cam_mul"][0] != -1)
+    {
+        for (int i = 0; i < 3; i++)
+            metadata["pre_mul"][i] = metadata["cam_mul"][i];
+    }
     // if green scale coefficient is not available, set it to 1
     if (metadata["pre_mul"][1] == 0)
         metadata["pre_mul"][1] = 1;
 
     // black must be subtracted from the image, so we adjust maximum white level here
-    metadata["white"][0] -= metadata["black"][0];
+    if(!metadata["white"].empty() && !metadata["black"].empty())
+        metadata["white"][0] -= metadata["black"][0];
 
     // normalize pre_mul
-    for (dmin = std::numeric_limits<double>::max(), c = 0; c < 4; c++)
+    for (dmin = std::numeric_limits<double>::max(), c = 0; c < 3; c++)
     {
         if (dmin > metadata["pre_mul"][c])
             dmin = metadata["pre_mul"][c];
     }
 
     // scale colors to the desired bit-depth
-    double factor = ((1 << mDepth) - 1) / metadata["white"][0];
+    double factor;
+
+    if (!metadata["white"].empty())
+        factor = ((1 << mDepth) - 1) / metadata["white"][0];
+    else if (!metadata["bits"].empty())
+        factor = ((1 << mDepth) - 1) / metadata["bits"][0];
+    else
+        factor = 1.0;
+
     for (int c = 0; c < 3; c++)
         mScaleMul[c] = (metadata["pre_mul"][c] /= dmin) * factor;
 
@@ -623,7 +643,6 @@ RGB48Buffer* Debayer::toRGB48(Method method)
     case Nearest:
         result = nearest();
         break;
-
     default:
     case Bilinear:
         result = linear();
@@ -643,7 +662,7 @@ void Debayer::preprocess(bool overwrite)
 
     int t_white = 0;
 
-    if (mMetadata != nullptr && (overwrite || mCurve == nullptr))
+    if (mMetadata != nullptr && !mMetadata->empty() && (overwrite || mCurve == nullptr))
     {
         // alias for ease of use
         MetaData &metadata = *this->mMetadata;
