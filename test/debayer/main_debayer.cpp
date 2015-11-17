@@ -20,11 +20,12 @@ int main(int argc, const char **argv)
 
     if (bayer == NULL)
     {
-        std::cout << "Couldn't open file " << filename << std::endl;
+        std::cout << "Couldn't open file \"" << filename << "\"." << std::endl;
         return -1;
     }
 
     int bpos = meta["b_pos"].empty() ? 0 : meta["b_pos"][0];
+    bpos = s.getInt("bpos", bpos);
 
     Debayer d(bayer, 8, bpos, &meta);
 

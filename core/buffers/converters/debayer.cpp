@@ -11,7 +11,9 @@ Debayer::Debayer(G12Buffer *bayer, int depth, int bayerPos, MetaData *metadata)
     , mDepth(depth)
     , mBayerPos(bayerPos)
     , mMetadata(metadata)
-{}
+{
+    mMaximum = (1 << depth) - 1;
+}
 
 Debayer::~Debayer()
 {
@@ -215,19 +217,19 @@ RGB48Buffer* Debayer::ahd()
 
                         if (color == 1)
                         {
-                            uint8_t row_c = colorFromBayerPos(i + k, j + l + 1, false);
+                            uint8_t rowColor = colorFromBayerPos(i + k, j + l + 1, false);
 
                             // C = G + LP(C' - G'), where C is sought colour
                             // LP is in fact the average
                             val = pixel[1] + ((weightedBayerAvg({ j + l - 1, i + k }) - green[d]->element(i + k, j + l - 1)
                                              + weightedBayerAvg({ j + l + 1, i + k }) - green[d]->element(i + k, j + l + 1)) / 2);
                             
-                            // logically, this should be pixel[row_c], but our pixels are BGR, so this is inverted
-                            pixel[2 - row_c] = clip(val * mScaleMul[row_c], mDepth);
+                            // logically, this should be pixel[rowColor], but our pixels are BGR, so this is inverted
+                            pixel[2 - rowColor] = clip(val * mScaleMul[rowColor], mDepth);
 
                             val = pixel[1] + ((weightedBayerAvg({ j + l, i + k - 1 }) - green[d]->element(i + k - 1, j + l)
                                              + weightedBayerAvg({ j + l, i + k + 1 }) - green[d]->element(i + k + 1, j + l)) / 2);
-                            pixel[row_c] = clip(val * mScaleMul[2 - row_c], mDepth);
+                            pixel[rowColor] = clip(val * mScaleMul[2 - rowColor], mDepth);
                         }
                         else
                         {
@@ -283,19 +285,19 @@ RGB48Buffer* Debayer::ahd()
                 int idx = 0;
                 for (int k = -1; k < 2; k += 2, idx++)
                 {
-                    int shift_a = k*mBayer->w;
-                    if (offset + shift_a < 0 || offset + shift_a >= mBayer->h*mBayer->w)
+                    int shiftA = k*mBayer->w;
+                    if (offset + shiftA < 0 || offset + shiftA >= mBayer->h*mBayer->w)
                         continue;
-                    dl[d][idx] = CORE_ABS(Lab[d][offset][0] - Lab[d][offset + shift_a][0]);
-                    dc[d][idx] = SQR(Lab[d][offset][1] - Lab[d][offset + shift_a][1]) + SQR(Lab[d][offset][2] - Lab[d][offset + shift_a][2]);
+                    dl[d][idx] = CORE_ABS(Lab[d][offset][0] - Lab[d][offset + shiftA][0]);
+                    dc[d][idx] = SQR(Lab[d][offset][1] - Lab[d][offset + shiftA][1]) + SQR(Lab[d][offset][2] - Lab[d][offset + shiftA][2]);
                 }
                 for (int l = -1; l < 2; l += 2, idx++)
                 {
-                    int shift_b = l;
-                    if (offset + shift_b < 0 || offset + shift_b >= mBayer->h*mBayer->w)
+                    int shiftB = l;
+                    if (offset + shiftB < 0 || offset + shiftB >= mBayer->h*mBayer->w)
                         continue;
-                    dl[d][idx] = CORE_ABS(Lab[d][offset][0] - Lab[d][offset + shift_b][0]);
-                    dc[d][idx] = SQR(Lab[d][offset][1] - Lab[d][offset + shift_b][1]) + SQR(Lab[d][offset][2] - Lab[d][offset + shift_b][2]);
+                    dl[d][idx] = CORE_ABS(Lab[d][offset][0] - Lab[d][offset + shiftB][0]);
+                    dc[d][idx] = SQR(Lab[d][offset][1] - Lab[d][offset + shiftB][1]) + SQR(Lab[d][offset][2] - Lab[d][offset + shiftB][2]);
                 }
             }
 
@@ -304,19 +306,19 @@ RGB48Buffer* Debayer::ahd()
             // we must choose minimal deviations to count homogenous pixels
 
             // VERSION A - proposed by Hirakawa & Parks, produces noticeable artifacts on cm_lighthouse.pgm
-            float eps_l = CORE_MIN(CORE_MAX(dl[0][0], dl[0][1]), CORE_MAX(dl[1][2], dl[1][3]));
-            float eps_c = CORE_MIN(CORE_MAX(dc[0][0], dc[0][1]), CORE_MAX(dc[1][2], dc[1][3]));
+            //float epsL = CORE_MIN(CORE_MAX(dl[0][0], dl[0][1]), CORE_MAX(dl[1][2], dl[1][3]));
+            float epsC = CORE_MIN(CORE_MAX(dc[0][0], dc[0][1]), CORE_MAX(dc[1][2], dc[1][3]));
 
             // VERSION B - extended, produces less artifacts on cm_lighthouse.pgm, but instead produces weak zipper on test_debayer.pgm
-            //float eps_l = MIN(MAX(MAX(dl[0][0], dl[0][1]), MAX(dl[0][2], dl[0][3])), MAX(MAX(dl[1][0], dl[1][1]), MAX(dl[1][2], dl[1][3])));
-            //float eps_c = MIN(MAX(MAX(dc[0][0], dc[0][1]), MAX(dc[0][2], dc[0][3])), MAX(MAX(dc[1][0], dc[1][1]), MAX(dc[1][2], dc[1][3])));
+            float epsL = CORE_MIN(CORE_MAX(CORE_MAX(dl[0][0], dl[0][1]), CORE_MAX(dl[0][2], dl[0][3])), CORE_MAX(CORE_MAX(dl[1][0], dl[1][1]), CORE_MAX(dl[1][2], dl[1][3])));
+            //float epsC = CORE_MIN(CORE_MAX(CORE_MAX(dc[0][0], dc[0][1]), CORE_MAX(dc[0][2], dc[0][3])), CORE_MAX(CORE_MAX(dc[1][0], dc[1][1]), CORE_MAX(dc[1][2], dc[1][3])));
 
             for (int d = 0; d < 2; d++)
             {
                 int homo_val = 0;
                 for (int j = 0; j < 4; j++)
                 {
-                    if (dl[d][j] <= eps_l && dc[d][j] <= eps_c)
+                    if (dl[d][j] <= epsL && dc[d][j] <= epsC)
                     {
                         homo_val++;
                     }
@@ -389,6 +391,7 @@ RGB48Buffer* Debayer::ahd()
             for (int j = radius + 1; j < mBayer->w - radius - 1; j++)
             {
                 int32_t window[2][size];
+                int offset = i * mBayer->w + j;
                 for (int c = 0; c < 2; c++)
                 {
                     int idx = 0;
@@ -408,8 +411,8 @@ RGB48Buffer* Debayer::ahd()
                     clip(b, mDepth)
                 );
 
-                rgbDiff[0][i*mBayer->w + j] = r - g;
-                rgbDiff[1][i*mBayer->w + j] = b - g;
+                rgbDiff[0][offset] = r - g;
+                rgbDiff[1][offset] = b - g;
             }
         }
 
@@ -751,10 +754,9 @@ inline uint8_t Debayer::colorFromBayerPos(int i, int j, bool rggb)
 
 inline uint16_t Debayer::clip(int32_t x, int depth)
 {
-    const uint16_t maximum = (1 << depth) - 1;
     if (x < 0)
         return 0;
-    if (x > maximum || x >= (1 << 16))
-        return maximum;
+    if (x > mMaximum)
+        return mMaximum;
     return (uint16_t)x;
 }
