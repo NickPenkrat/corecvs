@@ -266,6 +266,12 @@ PhotostationCaptureDialog::~PhotostationCaptureDialog()
 
     delete_safe(mCapSettingsDialog);
     delete_safe(mCaptureMapper);
+
+    for (int i = 0; i < mCaptureInterfaces.count(); i++)
+    {
+        CORE_ASSERT_TRUE_S(mCaptureInterfaces[i].camInterface == NULL);
+        CORE_ASSERT_TRUE_S(mCaptureInterfaces[i].result == NULL);
+    }
 }
 
 void PhotostationCaptureDialog::setNamer(AbstractImageNamer *namer)
@@ -432,6 +438,8 @@ void PhotostationCaptureDialog::newCaptureFrame(int camId)
         pair.freeBuffers();
         return;
     }
+
+    CORE_ASSERT_TRUE_S(mCaptureInterfaces[camId].result == NULL);
 
     mCaptureInterfaces[camId].result = toQImage(pair.rgbBufferLeft);
     pair.freeBuffers();
@@ -655,6 +663,11 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
         }
 
         delete_safe(mCaptureInterfaces[i].result);
+    }
+
+    for (int i = 0; i < mCaptureInterfaces.count(); i++) {
+        CORE_ASSERT_TRUE_S(mCaptureInterfaces[i].camInterface == NULL);
+        CORE_ASSERT_TRUE_S(mCaptureInterfaces[i].result == NULL);
     }
 
     mCaptureInterfaces.clear();
