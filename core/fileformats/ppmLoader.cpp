@@ -162,7 +162,7 @@ int PPMLoader::nextLine(FILE *fp, char *buf, int sz, MetaData *metadata)
         {
             // not a comment/newline, rewind and read whole line
             fseek(fp, -1, SEEK_CUR);
-            if (sz > 0 && fgets(buf, sz, fp) == NULL)
+            if (sz > 0 && fgets(buf, sz, fp) == nullptr)
             {
                 printf("fgets() call failed %s:%d\n", __FILE__, __LINE__);
             }
@@ -178,7 +178,8 @@ int PPMLoader::nextLine(FILE *fp, char *buf, int sz, MetaData *metadata)
                 return 0;
             }
 
-            fgets(buf, sz, fp);
+            if (fgets(buf, sz, fp) == nullptr)
+                return 1;
 
             // try to read metadata
             char param[256];
@@ -210,11 +211,8 @@ bool PPMLoader::readHeader(FILE *fp, unsigned long int *h, unsigned long int *w,
 {
     char header[255];
 
-    // skip comments and read next line
-    fgets(header, sizeof header, fp);
-
     // check PPM type (currently only supports 5 or 6)
-    if ((header[0] != 'P') || (header[1] < '5') || (header[1] > '6'))
+    if (fgets(header, sizeof header, fp) == nullptr || (header[0] != 'P') || (header[1] < '5') || (header[1] > '6'))
     {
         //printf("Image is not a supported PPM\n");
         return false;
