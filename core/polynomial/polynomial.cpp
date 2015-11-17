@@ -142,6 +142,11 @@ corecvs::Polynomial::Polynomial(const std::vector<double> &coeff)
 {
 }
 
+corecvs::Polynomial::Polynomial(const std::initializer_list<double> &coeff)
+    : std::vector<double>(coeff)
+{
+}
+
 corecvs::Polynomial::Polynomial(const corecvs::Vector &coeff)
     : corecvs::Polynomial(&coeff.at(0), coeff.size() - 1)
 {

@@ -46,6 +46,7 @@ public:
     Polynomial(const double *coeff, size_t degree);
     Polynomial(const corecvs::Vector &coeff);
     Polynomial(const std::vector<double> &coeff);
+    Polynomial(const std::initializer_list<double> &coeff);
 
     static Polynomial X();
     static Polynomial FromRoots(const std::vector<double> &roots);
