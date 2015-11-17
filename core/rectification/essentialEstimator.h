@@ -130,6 +130,7 @@ public:
     EssentialMatrix getEssentialGradToRm     (const vector<Correspondence *> &samples);
     EssentialMatrix getEssentialSimpleKalman (const vector<Correspondence *> &samples);
     std::vector<EssentialMatrix> getEssential7point(const vector<Correspondence*> &samples);
+    std::vector<EssentialMatrix> getEssential5point(const vector<Correspondence*> &samples);
 #if 0
     EssentialMatrix getEssentialKalman       (const vector<Correspondence *> &samples);
     EssentialMatrix getEssentialMultiKalman  (const vector<Correspondence *> &samples);
