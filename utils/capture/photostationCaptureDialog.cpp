@@ -205,7 +205,7 @@ void PhotostationCaptureDialog::refresh()
         comboBox->setCurrentIndex(index);
 
         QCheckBox* checkBox = new QCheckBox();
-        checkBox->setChecked(index < cameras.size());
+        checkBox->setChecked(index < (int)cameras.size());
         ui->cameraTableWidget->setCellWidget(i, COLUMN_USE, checkBox);
 
         QTableWidgetItem* previewIcon = new QTableWidgetItem(QIcon(":/new/prefix1/play.png"), "");
@@ -553,7 +553,7 @@ ImageCaptureInterface* PhotostationCaptureDialog::createCameraCapture(const stri
     {
         QMessageBox::information(this, "Camera Error", QString("Couldn't open the camera <%1>").arg(camera->getInterfaceName()));
         delete_safe(camera);
-        return false;
+        return nullptr;
     }
 
     if ((!!actualFormat) && !(actualFormat == ImageCaptureInterface::CameraFormat(h, w, fps)))

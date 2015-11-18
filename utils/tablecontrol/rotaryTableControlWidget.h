@@ -29,7 +29,7 @@ public:
     };
 
     vector<CameraLocationAngles> positions;
-    int selected;
+    uint selected;
 
     void loadCommands(QString filename);
     void saveCommands(QString filename);

@@ -252,7 +252,7 @@ void RotaryTableControlWidget::updateState()
 
 void RotaryTableControlWidget::selectedToCurrent()
 {
-    if (selected >= (int)positions.size())
+    if (selected >= positions.size())
         return;
     ui->widgetYaw  ->setValue(positions[selected].yaw  ());
     ui->widgetPitch->setValue(positions[selected].pitch());

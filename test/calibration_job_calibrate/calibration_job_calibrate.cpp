@@ -9,20 +9,20 @@
 #include "jsonSetter.h"
 #include "jsonGetter.h"
 #include "abstractPainter.h"
+
 void draw(corecvs::ObservationList list, corecvs::RGB24Buffer &buffer)
 {
     double minh = 1e10,  minv = 1e10, maxh = 0, maxv = 0;
-    for (int i = 0; i < list.size(); ++i)
+    for (uint i = 0; i < list.size(); ++i)
     {
         auto el = list[i].point;
         if (el[0] < minv) minv = el[0];
         if (el[1] < minh) minh = el[1];
         if (el[0] > maxv) maxv = el[0];
         if (el[1] > maxh) maxh = el[1];
-
     }
 
-    for (int i = 0; i < list.size(); ++i)
+    for (uint i = 0; i < list.size(); ++i)
     {
         auto el = list[i].point;
         auto el2= list[i].projection;
@@ -38,7 +38,6 @@ void draw(corecvs::ObservationList list, corecvs::RGB24Buffer &buffer)
                 }
         }
     }
-
 }
 
 int main(int argc, char **argv)

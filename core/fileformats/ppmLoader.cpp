@@ -280,7 +280,7 @@ bool PPMLoader::writeHeader(FILE *fp, unsigned long int h, unsigned long int w, 
         for (MetaData::iterator i = metadata.begin(); i != metadata.end(); i++)
         {
             fprintf(fp, "# @meta %s\t@values %i\t", i->first.c_str(), (int)i->second.size());
-            for (int j = 0; j < i->second.size(); j++)
+            for (uint j = 0; j < i->second.size(); j++)
                 fprintf(fp, "%f ", i->second[j]);
             fprintf(fp, "\n");
         }

@@ -153,7 +153,7 @@ corecvs::Polynomial corecvs::Polynomial::Interpolate(const std::vector<double> &
 {
     CORE_ASSERT_TRUE_S(x.size() == Px.size());
     CORE_ASSERT_TRUE_S(x.size());
-    size_t N = x.size() - 1, N1 = x.size();
+    size_t /*N = x.size() - 1,*/ N1 = x.size();
 
     std::vector<double> coeff(N1);
     coeff[0] = Px[0];
