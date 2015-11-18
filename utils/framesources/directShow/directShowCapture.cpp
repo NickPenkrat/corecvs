@@ -345,7 +345,6 @@ ImageCaptureInterface::FramePair DirectShowCaptureInterface::getFrameRGB24()
         {
             result.rgbBufferRight = new RGB24Buffer(mCameras[1].buffer24);
         }
-
         result.timeStampLeft  = mCameras[0].timestamp;
         result.timeStampRight = mCameras[1].timestamp;
     mProtectFrame.unlock();
@@ -390,13 +389,15 @@ DirectShowCaptureInterface::~DirectShowCaptureInterface()
     {
         if (isCorrectDeviceHandle(i))
         {
+            delete_safe(mCameras[i].buffer);
+            delete_safe(mCameras[i].buffer24);
+
             DirectShowCapDll_setFrameCallback(mCameras[i].deviceHandle, NULL, NULL);
             DirectShowCapDll_deinit(mCameras[i].deviceHandle);
             mCameras[i].deviceHandle = -1;
         }
     }
 }
-
 
 ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::queryCameraParameters(CameraParameters &parameters)
 {
