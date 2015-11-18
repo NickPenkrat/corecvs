@@ -689,12 +689,33 @@ void Debayer::preprocess(bool overwrite)
     }
 }
 
-int32_t Debayer::weightedBayerAvg(Vector2d32 coords)
+inline int32_t Debayer::weightedBayerAvg(const Vector2d32& coords)
 {
-    return weightedBayerAvg(vector<Vector2d32>{coords});
+    int32_t x = coords.x(),
+            y = coords.y();
+    if (x < 0)
+        x = -x;
+
+    if (y < 0)
+        y = -y;
+
+    if (x >= mBayer->w)
+    {
+        x = 2 * mBayer->w - coords.x() - 1;
+    }
+
+    if (y >= mBayer->h)
+    {
+        y = 2 * mBayer->h - y - 1;
+    }
+
+    if (x >= 0 && y >= 0 && x < mBayer->w && y < mBayer->h)
+    {
+        return mBayer->element(coords);
+    }
 }
 
-int32_t Debayer::weightedBayerAvg(vector<Vector2d32> coords, vector<int> coeffs)
+inline int32_t Debayer::weightedBayerAvg(const vector<Vector2d32>& coords, const vector<int>& coeffs)
 {
     int32_t result = 0;
     uint16_t div = 0;
@@ -703,29 +724,13 @@ int32_t Debayer::weightedBayerAvg(vector<Vector2d32> coords, vector<int> coeffs)
 
     for (int i = 0; i < coords.size(); i++)
     {
-        if (coords[i].x() < 0)
-            coords[i].x() = -coords[i].x();
-
-        if (coords[i].y() < 0)
-            coords[i].y() = -coords[i].y();
-
-        if (coords[i].x() >= mBayer->w)
-        {
-            coords[i].x() = 2 * mBayer->w - coords[i].x() - 1;
-        }
-
-        if (coords[i].y() >= mBayer->h)
-        {
-            coords[i].y() = 2 * mBayer->h - coords[i].y() - 1;
-        }
-
         if (coords[i].x() >= 0 && coords[i].y() >= 0 && coords[i].x() < mBayer->w && coords[i].y() < mBayer->h)
         {
             div++;
             if (useCoeffs)
-                result += mBayer->element(coords[i])*coeffs[i];
+                result += weightedBayerAvg(coords[i]) * coeffs[i];
             else
-                result += mBayer->element(coords[i]);
+                result += weightedBayerAvg(coords[i]);
         }
     }
     if (div == 0)
@@ -734,7 +739,7 @@ int32_t Debayer::weightedBayerAvg(vector<Vector2d32> coords, vector<int> coeffs)
         return result / div;
 }
 
-int32_t Debayer::clamp(int32_t x, int32_t a, int32_t b)
+inline int32_t Debayer::clamp(int32_t x, int32_t a, int32_t b)
 {
     if (a > b)
         SwapXY<int32_t>(a, b);
