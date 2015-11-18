@@ -455,9 +455,9 @@ with_mkl {
     }
     exists("$$MKLROOT"/include/mkl.h) {
         !win32 {
-            LIBS    += -L"$$MKLROOT"/lib/intel64 -lmkl_intel_lp64     -lmkl_core     -lmkl_tbb_thread     -ltbb -lstdc++ -lpthread -lm
+            LIBS    += -L"$$MKLROOT"/lib/intel64 -lmkl_intel_lp64     -lmkl_core     -lmkl_tbb_thread     -lstdc++ -lpthread -lm
         } else {
-            LIBS    += -L"$$MKLROOT"/lib/intel64 -lmkl_intel_lp64_dll -lmkl_core_dll -lmkl_tbb_thread_dll -ltbb
+            LIBS    += -L"$$MKLROOT"/lib/intel64 -lmkl_intel_lp64_dll -lmkl_core_dll -lmkl_tbb_thread_dll
         }
         INCLUDEPATH += "$$MKLROOT"/include
         DEFINES     += WITH_BLAS
