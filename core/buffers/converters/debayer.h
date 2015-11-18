@@ -17,7 +17,6 @@
 #include "rgb24Buffer.h"
 #include "metamap.h"
 
-
 namespace corecvs {
 
 class Debayer
@@ -80,7 +79,7 @@ private:
      *
      * \return  Clipped value.
      */
-    inline uint16_t clip(int32_t x, int depth = 16);
+    inline uint16_t clip(int32_t x);
 
     /**
      * Clamp the given value. If a &lt; b, treat a as left limit and b as right. Invert limits
@@ -105,7 +104,7 @@ private:
     inline int32_t weightedBayerAvg(const vector<Vector2d32>& coords, const vector<int>& coeffs = vector<int>());
     inline int32_t weightedBayerAvg(const Vector2d32& coords);
 
-    inline uint8_t colorFromBayerPos(int i, int j, bool rggb = true);
+    inline uint8_t colorFromBayerPos(uint i, uint j, bool rggb = true);
 };
 
 } // namespace corecvs
