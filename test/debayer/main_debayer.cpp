@@ -55,25 +55,8 @@ int main(int argc, const char **argv)
     Debayer d(bayer, 8, bpos, &meta);
 
     RGB48Buffer *result = new RGB48Buffer(bayer->h, bayer->w, false);
+
     d.toRGB48(Debayer::Method(quality), result);
-
-    double time = 0;
-
-    //
-    for (int i = 0; i < 10; i++)
-    {
-        double start = clock();
-
-        d.toRGB48(Debayer::AHD, result);
-
-        double end = clock();
-        double curtime = double(end - start) / CLOCKS_PER_SEC;
-        time += curtime;
-        cout << curtime << endl;
-    }
-    cout << endl << time / 10 << endl;
-    getchar();
-    //
 
     PPMLoader().save("debayer_out.ppm", result);
     
