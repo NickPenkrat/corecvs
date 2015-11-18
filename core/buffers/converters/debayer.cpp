@@ -418,6 +418,7 @@ void Debayer::ahd(RGB48Buffer *result)
 
 RGB48Buffer* Debayer::fourier()
 {
+    // this method is for research and test purposes only
     uint h = mBayer->h;
     uint w = mBayer->w;
 
@@ -795,7 +796,7 @@ inline int32_t Debayer::weightedBayerAvg(const Vector2d32& coords)
     {
         y = 2 * mBayer->h - y - 1;
     }
-
+    
     if (x >= 0 && y >= 0 && x < mBayer->w && y < mBayer->h)
         return mBayer->element(y, x);
     else

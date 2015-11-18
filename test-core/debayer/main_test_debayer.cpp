@@ -21,7 +21,8 @@ TEST(Debayer, colorTest)
     CORE_ASSERT_TRUE(ppm != NULL, "BMP Image load failed");
     CORE_ASSERT_TRUE(ppm->verify(), "BMP Image verification failed");
     Debayer d(ppm);
-    RGB48Buffer* result = d.toRGB48(Debayer::Bilinear);
+    RGB48Buffer* result = new RGB48Buffer(ppm->h, ppm->w, false);
+    d.toRGB48(Debayer::Bilinear, result);
 
     Vector2d<int> redRegion(0, 0);
     Vector2d<int> greenRegion(180, 0);
