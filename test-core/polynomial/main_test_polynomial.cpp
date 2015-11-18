@@ -201,6 +201,10 @@ TEST(PolynomialTest, testBasics)
     ASSERT_NEAR(poly(2.0), 0.0, 1e-9);
     ASSERT_NEAR(poly(3.0), 0.0, 1e-9);
     ASSERT_NEAR(poly(4.0), 6.0, 1e-9);
+    auto mpoly = -poly;
+    mpoly += poly;
+    for (size_t i = 0; i <= mpoly.degree(); ++i)
+        ASSERT_NEAR(mpoly[i], 0.0, 1e-9);
 }
 
 TEST(PolynomialTest, testFromRoots)

@@ -84,6 +84,7 @@ corecvs::Polynomial corecvs::Polynomial::operator- () const
     corecvs::Polynomial ret = *this;
     for (auto& c: ret)
         c *= -1.0;
+    return ret;
 }
 
 corecvs::Polynomial  corecvs::Polynomial::operator+ (const corecvs::Polynomial &rhs) const
@@ -231,7 +232,6 @@ corecvs::Polynomial corecvs::PolynomialMatrix::det(const size_t requiredPower) c
     for (auto& v: evaluationPoints)
     {
         evaluatedValues.push_back((*this)(v).det());
-        std::cout << "x = " << v << "; det = " << (*this)(v).det() << std::endl << (*this)(v) << std::endl;
     }
 
     return corecvs::Polynomial::Interpolate(evaluationPoints, evaluatedValues);
