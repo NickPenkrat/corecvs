@@ -277,7 +277,7 @@ void Debayer::ahd(RGB48Buffer *result)
                     int shiftA = k*mBayer->w;
                     if (offset + shiftA < 0 || offset + shiftA >= mBayer->h*mBayer->w)
                         continue;
-                    dl[d][idx] = CORE_ABS(Lab[d][offset][0] - Lab[d][offset + shiftA][0]);
+                    dl[d][idx] = abs(Lab[d][offset][0] - Lab[d][offset + shiftA][0]);
                     dc[d][idx] = pow(Lab[d][offset][1] - Lab[d][offset + shiftA][1], 2) + pow(Lab[d][offset][2] - Lab[d][offset + shiftA][2], 2);
                 }
                 for (int l = -1; l < 2; l += 2, idx++)
@@ -285,7 +285,7 @@ void Debayer::ahd(RGB48Buffer *result)
                     int shiftB = l;
                     if (offset + shiftB < 0 || offset + shiftB >= mBayer->h*mBayer->w)
                         continue;
-                    dl[d][idx] = CORE_ABS(Lab[d][offset][0] - Lab[d][offset + shiftB][0]);
+                    dl[d][idx] = abs(Lab[d][offset][0] - Lab[d][offset + shiftB][0]);
                     dc[d][idx] = pow(Lab[d][offset][1] - Lab[d][offset + shiftB][1], 2) + pow(Lab[d][offset][2] - Lab[d][offset + shiftB][2], 2);
                 }
             }
@@ -295,12 +295,12 @@ void Debayer::ahd(RGB48Buffer *result)
             // we must choose minimal deviations to count homogenous pixels
 
             // VERSION A - proposed by Hirakawa & Parks, produces noticeable artifacts on cm_lighthouse.pgm
-            //float epsL = CORE_MIN(CORE_MAX(dl[0][0], dl[0][1]), CORE_MAX(dl[1][2], dl[1][3]));
-            float epsC = CORE_MIN(CORE_MAX(dc[0][0], dc[0][1]), CORE_MAX(dc[1][2], dc[1][3]));
+            //float epsL = min(max(dl[0][0], dl[0][1]), max(dl[1][2], dl[1][3]));
+            float epsC = min(max(dc[0][0], dc[0][1]), max(dc[1][2], dc[1][3]));
 
             // VERSION B - extended, produces less artifacts on cm_lighthouse.pgm, but instead produces weak zipper on test_debayer.pgm
-            float epsL = CORE_MIN(CORE_MAX(CORE_MAX(dl[0][0], dl[0][1]), CORE_MAX(dl[0][2], dl[0][3])), CORE_MAX(CORE_MAX(dl[1][0], dl[1][1]), CORE_MAX(dl[1][2], dl[1][3])));
-            //float epsC = CORE_MIN(CORE_MAX(CORE_MAX(dc[0][0], dc[0][1]), CORE_MAX(dc[0][2], dc[0][3])), CORE_MAX(CORE_MAX(dc[1][0], dc[1][1]), CORE_MAX(dc[1][2], dc[1][3])));
+            float epsL = min(max(max(dl[0][0], dl[0][1]), max(dl[0][2], dl[0][3])), max(max(dl[1][0], dl[1][1]), max(dl[1][2], dl[1][3])));
+            //float epsC = min(max(max(dc[0][0], dc[0][1]), max(dc[0][2], dc[0][3])), max(max(dc[1][0], dc[1][1]), max(dc[1][2], dc[1][3])));
 
             for (int d = 0; d < 2; d++)
             {
