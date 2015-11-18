@@ -3,7 +3,6 @@
 #include "qtHelper.h"
 #include "log.h"
 #include "focusEstimator.h"
-//#include "../projectFileNameing.h"
 
 #include <QMessageBox>
 #include <QFileDialog>
@@ -406,7 +405,7 @@ void PhotostationCaptureDialog::newCaptureFrame(int camId)
     QCoreApplication::processEvents();
     flushEvents = false;
 
-    if (camId >= mCaptureInterfaces.count() || mCaptureInterfaces[camId].result != NULL)
+    if (camId >= mCaptureInterfaces.count() || mCaptureInterfaces[camId].isFilled())
         return;
 
     /* Add frame skip */
@@ -439,7 +438,7 @@ void PhotostationCaptureDialog::newCaptureFrame(int camId)
         return;
     }
 
-    CORE_ASSERT_TRUE_S(mCaptureInterfaces[camId].result == NULL);
+    CORE_ASSERT_TRUE_S(!mCaptureInterfaces[camId].isFilled());
 
     mCaptureInterfaces[camId].result = toQImage(pair.rgbBufferLeft);
     pair.freeBuffers();
@@ -644,6 +643,7 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
                 // TODO: add here planned features
                 //metaInfo = QString::number(ui->angleSpinBox->value()) + "deg";
             }
+            CORE_ASSERT_TRUE_S(mCaptureInterfaces[i].isFilled());
 
             QString name = mNamer->nameForImage(
                 ui->stationNameLineEdit->text()
@@ -669,7 +669,6 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
         CORE_ASSERT_TRUE_S(mCaptureInterfaces[i].camInterface == NULL);
         CORE_ASSERT_TRUE_S(mCaptureInterfaces[i].result == NULL);
     }
-
     mCaptureInterfaces.clear();
 
     if (mAdvanceAfterSave)
