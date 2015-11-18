@@ -217,7 +217,7 @@ TEST(MatrixProfile, testMulSize3)
             delete_safe(input1[i]);
             delete_safe(input2[i]);
         }
-        delete input1;
-        delete input2;
+        delete[] input1;
+        delete[] input2;
     }
 }
