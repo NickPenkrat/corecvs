@@ -110,9 +110,9 @@ void Debayer::linear(RGB48Buffer *result)
                     }
 
                     result->element(i + k, j + l) = {
-                        mCurve[clip((int64_t)((red - mBlack)*mScaleMul[0]), mDepth)],
-                        mCurve[clip((int64_t)((green - mBlack)*mScaleMul[1]), mDepth)],
-                        mCurve[clip((int64_t)((blue - mBlack)*mScaleMul[2]), mDepth)]
+                        mCurve[clip((int64_t)((red   - mBlack) * mScaleMul[0]), mDepth)],
+                        mCurve[clip((int64_t)((green - mBlack) * mScaleMul[1]), mDepth)],
+                        mCurve[clip((int64_t)((blue  - mBlack) * mScaleMul[2]), mDepth)]
                     };
                 }
         }
@@ -137,8 +137,8 @@ void Debayer::ahd(RGB48Buffer *result)
     };
 
     float(*Lab[2])[3] = {
-        new float[mBayer->h*mBayer->w][3],
-        new float[mBayer->h*mBayer->w][3]
+        new float[mBayer->h * mBayer->w][3],
+        new float[mBayer->h * mBayer->w][3]
     };
 
     const vector<int> filter = { -1, 2, 2, 2, -1 };
@@ -240,7 +240,7 @@ void Debayer::ahd(RGB48Buffer *result)
                             pixel[color] = clip(val * mScaleMul[2 - color], mDepth);
                         }
                         rgb[d]->element(i + k, j + l) = pixel;
-                        RGBConverter::rgb2Lab(pixel, Lab[d][(i + k)*mBayer->w + j + l]);
+                        RGBConverter::rgb2Lab(pixel, Lab[d][(i + k) * mBayer->w + j + l]);
                     }
                 }
             }
@@ -252,8 +252,8 @@ void Debayer::ahd(RGB48Buffer *result)
     delete_safe(green[1]);
 
     float *homo[2] = {
-        new float[mBayer->h*mBayer->w],
-        new float[mBayer->h*mBayer->w]
+        new float[mBayer->h * mBayer->w],
+        new float[mBayer->h * mBayer->w]
     };
 
     // build homogeneity maps using cielab metric
@@ -274,8 +274,8 @@ void Debayer::ahd(RGB48Buffer *result)
                 int idx = 0;
                 for (int k = -1; k < 2; k += 2, idx++)
                 {
-                    int shiftA = k*mBayer->w;
-                    if (offset + shiftA < 0 || offset + shiftA >= mBayer->h*mBayer->w)
+                    int shiftA = k * mBayer->w;
+                    if (offset + shiftA < 0 || offset + shiftA >= mBayer->h * mBayer->w)
                         continue;
                     dl[d][idx] = abs(Lab[d][offset][0] - Lab[d][offset + shiftA][0]);
                     dc[d][idx] = pow(Lab[d][offset][1] - Lab[d][offset + shiftA][1], 2) + pow(Lab[d][offset][2] - Lab[d][offset + shiftA][2], 2);
@@ -283,7 +283,7 @@ void Debayer::ahd(RGB48Buffer *result)
                 for (int l = -1; l < 2; l += 2, idx++)
                 {
                     int shiftB = l;
-                    if (offset + shiftB < 0 || offset + shiftB >= mBayer->h*mBayer->w)
+                    if (offset + shiftB < 0 || offset + shiftB >= mBayer->h * mBayer->w)
                         continue;
                     dl[d][idx] = abs(Lab[d][offset][0] - Lab[d][offset + shiftB][0]);
                     dc[d][idx] = pow(Lab[d][offset][1] - Lab[d][offset + shiftB][1], 2) + pow(Lab[d][offset][2] - Lab[d][offset + shiftB][2], 2);
@@ -318,8 +318,8 @@ void Debayer::ahd(RGB48Buffer *result)
     }
 
     int32_t *rgbDiff[4] = {
-        new int32_t[mBayer->h*mBayer->w], // R - G
-        new int32_t[mBayer->h*mBayer->w], // B - G
+        new int32_t[mBayer->h * mBayer->w], // R - G
+        new int32_t[mBayer->h * mBayer->w], // B - G
     };
 
     // select homogeneous pixels
@@ -386,7 +386,7 @@ void Debayer::ahd(RGB48Buffer *result)
                     int idx = 0;
                     for (int k = i - radius; k <= i + radius; k++)
                         for (int l = j - radius; l <= j + radius; l++)
-                            window[c][idx++] = rgbDiff[c][k*mBayer->w + l];
+                            window[c][idx++] = rgbDiff[c][k * mBayer->w + l];
                     qsort(window[c], size, sizeof(window[c][0]), compare);
 
                 }
