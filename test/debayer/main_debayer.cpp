@@ -54,7 +54,8 @@ int main(int argc, const char **argv)
 
     Debayer d(bayer, 8, bpos, &meta);
 
-    RGB48Buffer *result = d.toRGB48(Debayer::Method(quality));
+    RGB48Buffer *result = new RGB48Buffer(bayer->h, bayer->w, false);
+    d.toRGB48(Debayer::Method(quality), result);
 
     double time = 0;
 
@@ -63,7 +64,7 @@ int main(int argc, const char **argv)
     {
         double start = clock();
 
-        result = d.toRGB48(Debayer::Method(3));
+        d.toRGB48(Debayer::AHD, result);
 
         double end = clock();
         double curtime = double(end - start) / CLOCKS_PER_SEC;

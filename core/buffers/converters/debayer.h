@@ -49,7 +49,7 @@ public:
      *
      * \return  Resulting image.
      */
-    RGB48Buffer* toRGB48(Method method);
+    void toRGB48(Method method, RGB48Buffer* out);
     RGB48Buffer* fourier();
 
 private:
@@ -66,9 +66,9 @@ private:
     void        gammaCurve(uint16_t *curve, int imax);
     void        preprocess(bool overwrite = false);
 
-    RGB48Buffer* linear();
-    RGB48Buffer* nearest();
-    RGB48Buffer* ahd();
+    void linear(RGB48Buffer* out);
+    void nearest(RGB48Buffer* out);
+    void ahd(RGB48Buffer* out);
 
     /* utilitary functions */
 

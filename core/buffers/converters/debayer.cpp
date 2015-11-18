@@ -7,6 +7,9 @@
 #include <complex>
 
 using std::pow;
+using std::max;
+using std::min;
+using std::abs;
 
 Debayer::Debayer(G12Buffer *bayer, int depth, int bayerPos, MetaData *metadata)
     : mBayer(bayer)
@@ -22,7 +25,7 @@ Debayer::~Debayer()
     deletearr_safe(mCurve);
 }
 
-RGB48Buffer* Debayer::nearest()
+void Debayer::nearest(RGB48Buffer *result)
 {
     // RGGB
     // TODO: write this to metadata
@@ -33,7 +36,6 @@ RGB48Buffer* Debayer::nearest()
     // swapRows does the same for rows
     int swapCols = bpos & 1;
     int swapRows = (bpos & 2) >> 1;
-    RGB48Buffer *result = new RGB48Buffer(mBayer->h, mBayer->w, false);
 
     for (int i = 0; i < mBayer->h; i += 2)
     {
@@ -59,20 +61,11 @@ RGB48Buffer* Debayer::nearest()
             }
         }
     }
-    
-    return result;
 }
 
-RGB48Buffer* Debayer::linear()
+void Debayer::linear(RGB48Buffer *result)
 {
     uint16_t red = 0, green = 0, blue = 0;
-
-    // RGGB
-    // TODO: write this to metadata
-    //int bpos = 0;
-    //int swapCols = bpos & 1;
-    //int swapRows = (bpos & 2) >> 1;
-    RGB48Buffer *result = new RGB48Buffer(mBayer->h, mBayer->w, false);
 
     for (int i = 0; i < mBayer->h; i += 2)
         for (int j = 0; j < mBayer->w; j += 2)
@@ -123,8 +116,6 @@ RGB48Buffer* Debayer::linear()
                     };
                 }
         }
-
-    return result;
 }
 
 int compare(const void * a, const void * b)
@@ -132,7 +123,7 @@ int compare(const void * a, const void * b)
     return (*(int*)a - *(int*)b);
 }
 
-RGB48Buffer* Debayer::ahd()
+void Debayer::ahd(RGB48Buffer *result)
 {
 
     // allocate buffers for two directions
@@ -264,9 +255,6 @@ RGB48Buffer* Debayer::ahd()
         new float[mBayer->h*mBayer->w],
         new float[mBayer->h*mBayer->w]
     };
-
-    RGB48Buffer *result = new RGB48Buffer(mBayer->h, mBayer->w, false);
-
 
     // build homogeneity maps using cielab metric
     for (int i = 0; i < mBayer->h; i++)
@@ -421,9 +409,6 @@ RGB48Buffer* Debayer::ahd()
     deletearr_safe(rgbDiff[1]);
     deletearr_safe(rgbDiff[2]);
     deletearr_safe(rgbDiff[3]);
-
-    return result;
-
 }
 
 RGB48Buffer* Debayer::fourier()
@@ -639,7 +624,7 @@ void Debayer::gammaCurve(uint16_t *curve, int imax)
     }
 }
 
-RGB48Buffer* Debayer::toRGB48(Method method)
+void Debayer::toRGB48(Method method, RGB48Buffer *output)
 {
     preprocess();
 
@@ -647,18 +632,16 @@ RGB48Buffer* Debayer::toRGB48(Method method)
     switch (method)
     {
     case Nearest:
-        result = nearest();
+        nearest(output);
         break;
     case Bilinear:
-        result = linear();
+        linear(output);
         break;
     default:
     case AHD:
-        result = ahd();
+        ahd(output);
         break;
     }
-
-    return result;
 }
 
 void Debayer::preprocess(bool overwrite)
@@ -711,7 +694,7 @@ inline int32_t Debayer::weightedBayerAvg(const Vector2d32& coords)
 
     if (x >= 0 && y >= 0 && x < mBayer->w && y < mBayer->h)
     {
-        return mBayer->element(coords);
+        return mBayer->element(y, x);
     }
 }
 
