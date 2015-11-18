@@ -6,6 +6,8 @@
 #include "ppmLoader.h"
 #include <complex>
 
+using std::pow;
+
 Debayer::Debayer(G12Buffer *bayer, int depth, int bayerPos, MetaData *metadata)
     : mBayer(bayer)
     , mDepth(depth)
@@ -130,7 +132,6 @@ int compare(const void * a, const void * b)
     return (*(int*)a - *(int*)b);
 }
 
-#define SQR(X) ((X)*(X))
 RGB48Buffer* Debayer::ahd()
 {
 
@@ -289,7 +290,7 @@ RGB48Buffer* Debayer::ahd()
                     if (offset + shiftA < 0 || offset + shiftA >= mBayer->h*mBayer->w)
                         continue;
                     dl[d][idx] = CORE_ABS(Lab[d][offset][0] - Lab[d][offset + shiftA][0]);
-                    dc[d][idx] = SQR(Lab[d][offset][1] - Lab[d][offset + shiftA][1]) + SQR(Lab[d][offset][2] - Lab[d][offset + shiftA][2]);
+                    dc[d][idx] = pow(Lab[d][offset][1] - Lab[d][offset + shiftA][1], 2) + pow(Lab[d][offset][2] - Lab[d][offset + shiftA][2], 2);
                 }
                 for (int l = -1; l < 2; l += 2, idx++)
                 {
@@ -297,11 +298,11 @@ RGB48Buffer* Debayer::ahd()
                     if (offset + shiftB < 0 || offset + shiftB >= mBayer->h*mBayer->w)
                         continue;
                     dl[d][idx] = CORE_ABS(Lab[d][offset][0] - Lab[d][offset + shiftB][0]);
-                    dc[d][idx] = SQR(Lab[d][offset][1] - Lab[d][offset + shiftB][1]) + SQR(Lab[d][offset][2] - Lab[d][offset + shiftB][2]);
+                    dc[d][idx] = pow(Lab[d][offset][1] - Lab[d][offset + shiftB][1], 2) + pow(Lab[d][offset][2] - Lab[d][offset + shiftB][2], 2);
                 }
             }
 
-            // min { max { DIFF(x, neighbor) } } for all neighbors from B(x, 1)
+            // min { max { DIFF(x, neighbor) } } for all vertical/horizontal immediate neighbors from B(x, 1)
             // the luminance and chrominance deviations are defined as maximal deviation in any direction
             // we must choose minimal deviations to count homogenous pixels
 
@@ -381,7 +382,7 @@ RGB48Buffer* Debayer::ahd()
     // radius of 2 gives less false color artifacts for some images, but the colors become somewhat degraded and blurred for other images
     const int radius = 1;
     // filter size - do not change
-    const int size = SQR(2 * radius + 1);
+    const int size = (2 * radius + 1)*(2 * radius + 1);
     // median filter pass count, no difference except for running time observed between 1 and 2, more than 2 is redundant
     const int passes = 2;
 
@@ -482,9 +483,9 @@ RGB48Buffer* Debayer::fourier()
         for (int j = 0; j < w; j++)
         {
             int offset = i * w + j;
-            val_r->element(i, j) = clip(sqrtf(SQR(out_r[offset][0]) + SQR(out_r[offset][1])) / 10);
-            val_g->element(i, j) = clip(sqrtf(SQR(out_g[offset][0]) + SQR(out_g[offset][1])) / 10);
-            val_b->element(i, j) = clip(sqrtf(SQR(out_b[offset][0]) + SQR(out_b[offset][1])) / 10);
+            val_r->element(i, j) = clip(sqrtf(pow(out_r[offset][0], 2) + pow(out_r[offset][1], 2)) / 10);
+            val_g->element(i, j) = clip(sqrtf(pow(out_g[offset][0], 2) + pow(out_g[offset][1], 2)) / 10);
+            val_b->element(i, j) = clip(sqrtf(pow(out_b[offset][0], 2) + pow(out_b[offset][1], 2)) / 10);
         }
 
     PPMLoader().save("four_out.pgm", val_g);
@@ -648,10 +649,10 @@ RGB48Buffer* Debayer::toRGB48(Method method)
     case Nearest:
         result = nearest();
         break;
-    default:
     case Bilinear:
         result = linear();
         break;
+    default:
     case AHD:
         result = ahd();
         break;
@@ -736,7 +737,7 @@ int32_t Debayer::weightedBayerAvg(vector<Vector2d32> coords, vector<int> coeffs)
 int32_t Debayer::clamp(int32_t x, int32_t a, int32_t b)
 {
     if (a > b)
-        SwapInts<int32_t>(a, b);
+        SwapXY<int32_t>(a, b);
     if (x < a)
         return a;
     if (x > b)
