@@ -49,17 +49,18 @@ TEST(Logger, testObjectLog)
 {
     ostringstream os;
     {
-        LogDrain *prev = Log::mLogDrains[0];
+        //auto &prev = Log::mLogDrains[0];
         {
             Log::mLogDrains.resize(0);
-            Log::mLogDrains.push_back(new StdStreamLogDrain(os));
+            Log::mLogDrains.push_back(std::unique_ptr<LogDrain>(new StdStreamLogDrain(os)));
 
             Foo foo1(123);
             Foo foo2(456);
             L_INFO_P("test:") << " foo1:" << foo1 << " foo2:" << foo2; // << std::endl;
         }
         Log::mLogDrains.resize(0);
-        Log::mLogDrains.push_back(prev);
+        //Log::mLogDrains.push_back(prev);
+        Log::staticInit();
     }
 
     string out(os.str());
