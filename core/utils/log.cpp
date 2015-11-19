@@ -93,8 +93,8 @@ std::string Log::formatted(const char *format, ...)
 
 void Log::addAppLog(int argc, char* argv[], cchar* logFileName)
 {
-    /** detect min LogLevel and log filename from params
-    */
+    /** Detect min LogLevel and log filename from params
+     */
     corecvs::CommandLineSetter setter(argc, (const char **)argv);
     Log::LogLevel minLogLevel = (Log::LogLevel)setter.getInt("logLevel", Log::LEVEL_INFO);
     std::string   logFile = setter.getString("logFile", logFileName ? logFileName : "");
@@ -126,6 +126,11 @@ void Log::addAppLog(int argc, char* argv[], cchar* logFileName)
     Log::mMinLogLevel = LEVEL_DETAILED_DEBUG;
     L_INFO_P("App Log Level: %s", Log::levelName(minLogLevel));
     Log::mMinLogLevel = minLogLevel;
+
+    // Some MSVC stuff code to activate the memory leak detector dump if we have >1 exits!
+#ifdef USE_MSVC_DEBUG_MEM
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////
