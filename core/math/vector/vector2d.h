@@ -198,11 +198,15 @@ typedef Vector2d<int16_t> Vector2d16;
 
 //#ifdef REFLECTION_IN_CORE
 
-//template<typename ElementType>
-//Reflection Vector2d<ElementType>::reflection = Reflection();
-//
-//template<typename ElementType>
-//int Vector2d<ElementType>::dummy = Vector2d<ElementType>::staticInit();
+#if 1
+
+template<typename ElementType>
+Reflection Vector2d<ElementType>::reflection = Reflection();
+
+template<typename ElementType>
+int Vector2d<ElementType>::dummy = Vector2d<ElementType>::staticInit();
+
+#else
 
 template<> Reflection Vector2d<double>::reflection = Reflection();
 template<> int        Vector2d<double>::dummy = Vector2d<double>::staticInit();
@@ -218,6 +222,8 @@ template<> int        Vector2d<int32_t>::dummy = Vector2d<int32_t>::staticInit()
 
 template<> Reflection Vector2d<int16_t>::reflection = Reflection();
 template<> int        Vector2d<int16_t>::dummy = Vector2d<int16_t>::staticInit();
+
+#endif
 
 //#endif
 
