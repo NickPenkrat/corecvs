@@ -263,6 +263,9 @@ PhotostationCaptureDialog::~PhotostationCaptureDialog()
     ui->previewWidget->saveToQSettings(DEFAULT_FILENAME, "preview");
     delete ui;
 
+    mCapSettingsDialog->setCaptureInterface(NULL);
+    delete_safe(mPreviewInterface);
+
     delete_safe(mCapSettingsDialog);
     delete_safe(mCaptureMapper);
 
