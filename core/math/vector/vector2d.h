@@ -182,6 +182,7 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
+        CORE_ASSERT_TRUE_S(reflection.fields.size() == 2);
         visitor.visit(x(), static_cast<const ReflectionType *>(reflection.fields[FIELD_X]));
         visitor.visit(y(), static_cast<const ReflectionType *>(reflection.fields[FIELD_Y]));
     }
@@ -198,7 +199,7 @@ typedef Vector2d<int16_t> Vector2d16;
 
 //#ifdef REFLECTION_IN_CORE
 
-#if 1
+#if 0   // it's doesn't work - dummy and hence staticInit() don't appear at the code!
 
 template<typename ElementType>
 Reflection Vector2d<ElementType>::reflection = Reflection();
@@ -208,20 +209,22 @@ int Vector2d<ElementType>::dummy = Vector2d<ElementType>::staticInit();
 
 #else
 
-template<> Reflection Vector2d<double>::reflection = Reflection();
-template<> int        Vector2d<double>::dummy = Vector2d<double>::staticInit();
+// It's moved to vector2d.cpp
 
-template<> Reflection Vector2d<uint32_t>::reflection = Reflection();
-template<> int        Vector2d<uint32_t>::dummy = Vector2d<uint32_t>::staticInit();
-
-template<> Reflection Vector2d<uint16_t>::reflection = Reflection();
-template<> int        Vector2d<uint16_t>::dummy = Vector2d<uint16_t>::staticInit();
-
-template<> Reflection Vector2d<int32_t>::reflection = Reflection();
-template<> int        Vector2d<int32_t>::dummy = Vector2d<int32_t>::staticInit();
-
-template<> Reflection Vector2d<int16_t>::reflection = Reflection();
-template<> int        Vector2d<int16_t>::dummy = Vector2d<int16_t>::staticInit();
+//template<> Reflection Vector2d<double>::reflection = Reflection();
+//template<> int        Vector2d<double>::dummy = Vector2d<double>::staticInit();
+//
+//template<> Reflection Vector2d<uint32_t>::reflection = Reflection();
+//template<> int        Vector2d<uint32_t>::dummy = Vector2d<uint32_t>::staticInit();
+//
+//template<> Reflection Vector2d<uint16_t>::reflection = Reflection();
+//template<> int        Vector2d<uint16_t>::dummy = Vector2d<uint16_t>::staticInit();
+//
+//template<> Reflection Vector2d<int32_t>::reflection = Reflection();
+//template<> int        Vector2d<int32_t>::dummy = Vector2d<int32_t>::staticInit();
+//
+//template<> Reflection Vector2d<int16_t>::reflection = Reflection();
+//template<> int        Vector2d<int16_t>::dummy = Vector2d<int16_t>::staticInit();
 
 #endif
 
