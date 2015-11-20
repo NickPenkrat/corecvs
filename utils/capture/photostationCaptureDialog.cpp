@@ -413,17 +413,17 @@ void PhotostationCaptureDialog::newCaptureFrame(int camId)
 
     /* Add frame skip */
     int startSkip = ui->skipFramesSpinBox->value();
-    if (mCaptureInterfaces[camId].toSkip > 0)
+    if (startSkip == 0)
+    {
+        ui->progressBar->setValue((camId + 1) * ui->progressBar->maximum() / mCaptureInterfaces.size());
+    }
+    else if (mCaptureInterfaces[camId].toSkip > 0)
     {
         mCaptureInterfaces[camId].toSkip--;
         int current = (camId + 1) * startSkip - mCaptureInterfaces[camId].toSkip;
         int total   = startSkip * mCaptureInterfaces.size();
         ui->progressBar->setValue(current * ui->progressBar->maximum() / total);
         return;
-    }
-    else if (startSkip == 0)
-    {
-        ui->progressBar->setValue((camId + 1) * ui->progressBar->maximum() / mCaptureInterfaces.size());
     }
 
     CameraDescriptor &descr = mCaptureInterfaces[camId];
