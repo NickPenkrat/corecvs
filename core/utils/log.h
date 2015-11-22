@@ -46,6 +46,13 @@ using corecvs::ObjectRef;
 
 class LogDrain;
 
+class LogDrainsKeeper : public std::vector<LogDrain *>
+{
+public:
+    LogDrainsKeeper() {}
+   ~LogDrainsKeeper();
+};
+
 /** \class Log
  *
  *  \brief Class that controls the log
@@ -223,9 +230,10 @@ public:
     /** add needed log drains for the app */
     static void         addAppLog(int argc, char* argv[], cchar* logFileName = NULL);
 
-    static LogLevel                               mMinLogLevel;
-    static std::vector<std::unique_ptr<LogDrain>> mLogDrains;
-    static int                                    mDummy;
+    static LogLevel                                 mMinLogLevel;
+  //static std::vector<std::unique_ptr<LogDrain>>   mLogDrains;
+    static LogDrainsKeeper                          mLogDrains;
+    static int                                      mDummy;
 
 public:
     /** This is a static init function */
@@ -245,6 +253,8 @@ Log::Message operator<< (Log::Message msg, const T& t) {
 class LogDrain
 {
 public:
+    virtual ~LogDrain() {}
+
     virtual void drain(Log::Message &message) = 0;
 
 protected:
@@ -266,6 +276,7 @@ public:
     {
         mFullInfo = fullInfo;
     }
+    virtual ~StdStreamLogDrain() {}
 
     virtual void drain(Log::Message &message);
 };
@@ -277,6 +288,7 @@ class FileLogDrain : public LogDrain
 
 public:
     FileLogDrain(const std::string& path, bool bAppend = false, bool fullInfo = true);
-    ~FileLogDrain();
+    virtual ~FileLogDrain();
+
     virtual void drain(Log::Message &message);
 };
