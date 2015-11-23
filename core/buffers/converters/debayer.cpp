@@ -3,7 +3,7 @@
 #include "rgbConverter.h"
 #include "ppmLoader.h"
 #include <complex>
-#include "fftwWrapper.h"
+#include "../../utils/fftw/fftwWrapper.h"
 
 using std::pow;
 using std::max;
