@@ -86,7 +86,7 @@ public:
         transform(input, output, size, FFTW_FORWARD);
     }
 
-    void transformForward(std::vector<double>& const input, fftw_complex *output)
+    void transformForward(const std::vector<double>& input, fftw_complex *output)
     {
         transformForward(input.data(), output, input.size());
     }
