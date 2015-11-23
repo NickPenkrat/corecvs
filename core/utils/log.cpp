@@ -15,28 +15,18 @@ const char *Log::level_names[] =
 
 STATIC_ASSERT(CORE_COUNT_OF(Log::level_names) == Log::LEVEL_LAST, wrong_number_of_log_levels);
 
-LogDrainsKeeper::~LogDrainsKeeper()
-{
-    FOREACH(LogDrain* logDrain, *this)
-    {
-        delete logDrain;
-    }
-    clear();
-}
-
 /**
  * It is impossible to tell when this function will be executed, so you should not log from
  * static initializers
  **/
-Log::LogLevel                            Log::mMinLogLevel = LEVEL_FIRST;
-//std::vector<std::unique_ptr<LogDrain>> Log::mLogDrains;
-LogDrainsKeeper                          Log::mLogDrains;
+Log::LogLevel   Log::mMinLogLevel = LEVEL_FIRST;
+LogDrainsKeeper Log::mLogDrains;
 
 int Log::mDummy = Log::staticInit();
 
 int Log::staticInit()
 {
-    mLogDrains.push_back(/*std::unique_ptr<LogDrain>*/(new StdStreamLogDrain(std::cout)));
+    mLogDrains.add(new StdStreamLogDrain(std::cout));
     return 0;
 }
 
@@ -106,8 +96,8 @@ void Log::addAppLog(int argc, char* argv[], cchar* logFileName)
     if (!logFile.empty())
     {
       //Log::mLogDrains.clear();
-      //Log::mLogDrains.push_back(std::unique_ptr<LogDrain>(new LiteStdStreamLogDrain(std::cout)));
-        Log::mLogDrains.push_back(/*std::unique_ptr<LogDrain>*/(new FileLogDrain(pathApp + logFile)));
+      //Log::mLogDrains.add(new LiteStdStreamLogDrain(std::cout));
+        Log::mLogDrains.add(new FileLogDrain(pathApp + logFile));
     }
 
 #ifdef GIT_VERSION

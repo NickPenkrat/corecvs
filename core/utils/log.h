@@ -46,11 +46,30 @@ using corecvs::ObjectRef;
 
 class LogDrain;
 
-class LogDrainsKeeper : public std::vector<LogDrain *>
+class LogDrainDeleter
+{
+    bool mNeedDel;
+public:
+    LogDrainDeleter(bool needDel = true) : mNeedDel(needDel) {}
+
+    template<typename T>
+    void operator()(T* p)
+    {
+        CORE_UNUSED(p);
+        if (mNeedDel)
+            delete p;
+    }
+};
+
+class LogDrainsKeeper : public std::vector<std::unique_ptr<LogDrain, LogDrainDeleter>>
 {
 public:
     LogDrainsKeeper() {}
-   ~LogDrainsKeeper();
+   ~LogDrainsKeeper() {}
+
+   void add(LogDrain* p, bool needDel = true) {
+       push_back(std::unique_ptr<LogDrain, LogDrainDeleter>(p, LogDrainDeleter(needDel)));
+   }
 };
 
 /** \class Log
@@ -230,10 +249,9 @@ public:
     /** add needed log drains for the app */
     static void         addAppLog(int argc, char* argv[], cchar* logFileName = NULL);
 
-    static LogLevel                                 mMinLogLevel;
-  //static std::vector<std::unique_ptr<LogDrain>>   mLogDrains;
-    static LogDrainsKeeper                          mLogDrains;
-    static int                                      mDummy;
+    static LogLevel         mMinLogLevel;
+    static LogDrainsKeeper  mLogDrains;
+    static int              mDummy;
 
 public:
     /** This is a static init function */
