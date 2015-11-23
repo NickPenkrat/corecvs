@@ -37,7 +37,7 @@ public:
      * \param depthOut       Processing bit depth.
      * \param [in,out] data  (Optional) Metadata.
      */
-    Debayer(G12Buffer *bayer, int depthOut = 12, int bayerPos = 0, MetaData *data = nullptr);
+    Debayer(G12Buffer *bayer, int depthOut = 12, MetaData *data = nullptr, int bayerPos = -1);
 
     ~Debayer();
 
@@ -49,6 +49,37 @@ public:
      * \return  Resulting image.
      */
     void toRGB48(Method method, RGB48Buffer* out);
+
+    /**
+    * Peak signal to noise ratio in 2 images, one being the original and the other being estimated.
+    * The orded in which images are passed does not affect the result.
+    *
+    * \param   img1 Image A
+    * \param   img2 Image B
+    *
+    * \return  Peak signal to noise ratio in decibels.
+    */
+    double psnr(RGB48Buffer *img1, RGB48Buffer *img2);
+
+    /**
+    * Root-mean-square deviation in 2 images, one being the original and the other being estimated.
+    * The orded in which images are passed does not affect the result.
+    *
+    * \param   img1 Image A
+    * \param   img2 Image B
+    *
+    * \return  Root-mean-square deviation.
+    */
+    double rmsd(RGB48Buffer *img1, RGB48Buffer *img2);
+
+    /**
+    * Fill bayer data from RGB48 image applying Bayerian grid to it.
+    *
+    * \param   inRGB Image to get pixel data from.
+    */
+    void fromRgb(RGB48Buffer *inRgb);
+
+    // use for testing only!
     RGB48Buffer* fourier();
 
 private:
@@ -105,6 +136,8 @@ private:
     inline int32_t weightedBayerAvg(const Vector2d32& coords);
 
     inline uint8_t colorFromBayerPos(uint i, uint j, bool rggb = true);
+
+    double mse(RGB48Buffer *img1, RGB48Buffer *img2);
 };
 
 } // namespace corecvs
