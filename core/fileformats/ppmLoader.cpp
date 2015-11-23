@@ -43,6 +43,12 @@ G12Buffer* PPMLoader::load(const string& name, MetaData *metadata)
     return toReturn;
 }
 
+RGB48Buffer* PPMLoader::loadRGB(const string& name, MetaData *metadata)
+{
+    RGB48Buffer *toReturn = rgb48BufferCreateFromPPM(name, metadata);
+    return toReturn;
+}
+
 G12Buffer* PPMLoader::g12BufferCreateFromPGM(const string& name, MetaData *meta)
 {
     FILE      *fp = NULL;
@@ -144,6 +150,126 @@ G12Buffer* PPMLoader::g12BufferCreateFromPGM(const string& name, MetaData *meta)
 
     if (calcWhite)
         meta->at("white").push_back(white);
+
+done:
+    if (fp != NULL)
+        fclose(fp);
+    if (charImage != NULL)
+        deletearr_safe(charImage);
+    return result;
+}
+
+RGB48Buffer* PPMLoader::rgb48BufferCreateFromPPM(const string& name, MetaData *meta)
+{
+    FILE      *fp = NULL;
+    uint8_t   *charImage = NULL;
+    RGB48Buffer *result = NULL;
+
+    // PPM headers variable declaration
+    unsigned long int i, j;
+    unsigned long int h, w;
+    uint8_t type;
+    unsigned short int maxval;
+    int shiftCount = 0;
+    int8_t c;
+
+    // open file for reading in binary mode
+    fp = fopen(name.c_str(), "rb");
+
+    if (fp == nullptr)
+    {
+        return nullptr;
+    }
+
+    if(!readHeader(fp, &h, &w, &maxval, &type, meta) || (type != 6))
+    {
+        fclose(fp);
+        return nullptr;
+    }
+
+    bool calcWhite = false;
+    int white = 0;
+    // if no metadata is present, create some
+    // if metadata is null, don't
+    if (meta != nullptr)
+    {
+        // create an alias to metadata
+        MetaData &metadata = *meta;
+        // get significant bit count
+        if (metadata["bits"].empty())
+        {
+            metadata["bits"].push_back(1);
+        }
+        while (maxval >> int(metadata["bits"][0]))
+        {
+            metadata["bits"][0]++;
+        }
+        if (metadata["white"].empty())
+            calcWhite = true;
+    }
+
+    result = new RGB48Buffer(h, w, false);
+
+    // image size in bytes
+    uint64_t size = (maxval < 0x100 ? 1 : 2) * w * h * 3;
+
+    // for reading we don't need to account for possible system byte orders, so just use a 8bit buffer
+    charImage = new uint8_t[size];
+
+    if (fread(charImage, 1, size, fp) == 0)
+    {
+        CORE_ASSERT_FAIL("fread() call failed");
+        goto done;
+    }
+
+    if (maxval <= 0xff)
+    {
+        // 1-byte case
+        for (i = 0; i < h; i++)
+            for (j = 0; j < w * 3; j += 3)
+            {
+                for (c = 0; c < 3; c++)
+                {
+                    result->element(i, j / 3)[2 - c] = (charImage[i * w * 3 + j + c]);
+
+                    if (calcWhite)
+                        if (result->element(i, j / 3)[c] > white)
+                            white = result->element(i, j / 3)[c];
+                }
+            }
+    }
+    else
+    {
+        // 2-byte case
+        for (i = 0; i < h; i++)
+        {
+            for (j = 0; j < w * 2; j += 2)
+            {
+                for (c = 2; c >= 0; c--)
+                {
+                    int offset = i * w * 2 + j;
+                    result->element(i, j / 2)[c] = ((charImage[offset + 0]) << 8 |
+                                                    (charImage[offset + 1]));
+
+                    if (calcWhite && result->element(i, j / 2)[c] > white)
+                        white = result->element(i, j / 2)[c];
+                }
+            }
+        }
+
+    }
+
+    if (calcWhite)
+    {
+        if (meta->at("white").empty())
+        {
+            meta->at("white").push_back(white);
+        }
+        else
+        {
+            meta->at("white")[0] = white;
+        }
+    }
 
 done:
     if (fp != NULL)

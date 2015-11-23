@@ -50,6 +50,9 @@ public:
     G12Buffer* g12BufferCreateFromPGM(const string& name, MetaData* metadata = nullptr);
     G12Buffer* g16BufferCreateFromPPM(const string& name, MetaData* metadata = nullptr);
 
+    RGB48Buffer* loadRGB(const string& name, MetaData* metadata);
+    RGB48Buffer* rgb48BufferCreateFromPPM(const string& name, MetaData* metadata = nullptr);
+
     /**
      * Save method overloads.
      *
