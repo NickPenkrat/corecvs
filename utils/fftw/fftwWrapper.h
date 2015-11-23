@@ -104,13 +104,9 @@ public:
     *
     */
     template<typename ElementType>
-    void transformForward2DT(AbstractBuffer<ElementType, int32_t> *input, AbstractBuffer<ElementType, int32_t> *output)
+    void transformForward2DT(AbstractBuffer<ElementType, int32_t> *input, fftw_complex *output)
     {
-        if (!input->hasSameSize(output))
-            return;
-
         double *indata = fftw_alloc_real(input->h * input->w);
-        fftw_complex *outdata = fftw_alloc_complex(input->h * input->w);
 
         for (int i = 0; i < input->h; i++)
             for (int j = 0; j < input->w; j++)
@@ -120,14 +116,14 @@ public:
 
         if (mDimensions.size() == 2 && mDimensions[0] == input->h && mDimensions[1] == input->w)
         {
-            fftw_execute_dft_r2c(mPlan, indata, outdata);
+            fftw_execute_dft_r2c(mPlan, indata, output);
         }
         else
         {
             if (mPlan)
                 fftw_destroy_plan(mPlan);
 
-            mPlan = fftw_plan_dft_r2c_2d(input->h, input->w, indata, outdata, 0);
+            mPlan = fftw_plan_dft_r2c_2d(input->h, input->w, indata, output, 0);
             mDimensions.clear();
             mDimensions.push_back(input->h);
             mDimensions.push_back(input->w);
@@ -135,18 +131,18 @@ public:
         }
     }
 
-    void transformForward2D(AbstractBuffer<uint16_t, int32_t> *input, AbstractBuffer<uint16_t, int32_t> *output)
+    void transformForward2D(AbstractBuffer<uint16_t, int32_t> *input, fftw_complex *output)
     {
         return transformForward2DT(input, output);
     }
 
-    void transform2D(fftw_complex *input, fftw_complex *output, int sizeX, int sizeY, int sign)
+    void transform2D(fftw_complex *input, fftw_complex *output, int sizeY, int sizeX, int sign)
     {
-        if (mDimensions.size() == 2 && mDimensions[0] == sizeX && mDimensions[1] == sizeY)
+        /*if (mDimensions.size() == 2 && mDimensions[0] == sizeX && mDimensions[1] == sizeY)
         {
             fftw_execute_dft(mPlan, input, output);
         }
-        else
+        else*/
         {
             if (mPlan)
                 fftw_destroy_plan(mPlan);
