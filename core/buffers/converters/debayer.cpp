@@ -971,6 +971,24 @@ double Debayer::mse(RGB48Buffer *img1, RGB48Buffer *img2)
     return err / (img1->h * img1->w * 3);
 }
 
+double Debayer::mse(G12Buffer *img1, G12Buffer *img2)
+{
+    if (img1->w != img2->w || img1->h != img2->h)
+        return -1;
+
+    double err = 0;
+
+    for (int i = 0; i < img1->h; i++)
+    {
+        for (int j = 0; j < img1->w; j++)
+        {
+            err += pow(img1->element(i, j) - img2->element(i, j), 2);
+        }
+    }
+
+    return err / (img1->h * img1->w * 3);
+}
+
 double Debayer::psnr(RGB48Buffer *img1, RGB48Buffer *img2)
 {
     // check image sizes
@@ -981,11 +999,35 @@ double Debayer::psnr(RGB48Buffer *img1, RGB48Buffer *img2)
 
     if (MSE == 0)
         return 1;
-    
-    return 2 * log10(mMaximum) - log10(MSE / (3 * img1->h * img1->w));
+
+    return 2 * log10((1 << 16) - 1) - log10(MSE / (3 * img1->h * img1->w));
+}
+
+double Debayer::psnr(G12Buffer *img1, G12Buffer *img2)
+{
+    // check image sizes
+    if (img1->w != img2->w || img1->h != img2->h)
+        return -1;
+
+    double MSE = mse(img1, img2);
+
+    if (MSE == 0)
+        return 1;
+
+    return 2 * log10((1 << 12) - 1) - log10(MSE / (3 * img1->h * img1->w));
 }
 
 double Debayer::rmsd(RGB48Buffer *img1, RGB48Buffer *img2)
+{
+    if (img1->w != img2->w || img1->h != img2->h)
+        return -1;
+
+    double MSE = mse(img1, img2);
+
+    return sqrt(MSE);
+}
+
+double Debayer::rmsd(G12Buffer *img1, G12Buffer *img2)
 {
     if (img1->w != img2->w || img1->h != img2->h)
         return -1;
