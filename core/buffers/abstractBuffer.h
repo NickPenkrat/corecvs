@@ -1410,8 +1410,7 @@ private:
         for (IndexType i = 0; i < h; ++i)
             _copy(dst + i * strideDst, src + i * strideSrc, w);
     }
-
-    static void _del(ElementType* ptr, IndexType w, IndexType h, IndexType stride)
+    static void _del(ElementType* ptr, IndexType h, IndexType w, IndexType stride)
     {
         CORE_UNUSED(ptr);
         CORE_UNUSED(w);

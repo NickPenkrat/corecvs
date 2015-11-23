@@ -647,8 +647,13 @@ public:
             {
                 for (size_t j = 0; j < ratioInliers[i].size(); ++j)
                 {
-                    if (accumulator[i][j][0].distance / accumulator[i][j][1].distance < scaleThreshold)
+                    double ratio;
+                    if ((ratio = accumulator[i][j][0].distance / accumulator[i][j][1].distance) < scaleThreshold)
+                    {
                         ratioInliers[i][j] = accumulator[i][j][0];
+                        ratioInliers[i][j].best2ndBest = ratio;
+                    }
+                        
                 }
             }
             // step 4: refine by symmetry
@@ -659,7 +664,7 @@ public:
                 if (!rm.isValid())
                     continue;
                 if (ratioInliers[1][rm.featureT].featureT == rm.featureQ)
-                    final_matches.push_back(Match((uint16_t)I, (uint16_t)J, rm.featureQ, rm.featureT, rm.distance));
+                    final_matches.push_back(Match((uint16_t)I, (uint16_t)J, rm.featureQ, rm.featureT, rm.distance, rm.best2ndBest));
             }
 
             refinedMatches.matchSets[J*(J-1)/2+I]=(RefinedMatchSet(I, J, final_matches));
@@ -744,7 +749,7 @@ void MatchAndRefineStage::run(FeatureMatchingPipeline *pipeline)
     rawMatches.matches.resize(matchPlan.plan.size());
     refinedMatches.matchSets.resize(N*(N-1)/2);
     
-    corecvs::parallelable_for ((size_t)0, P, CORE_MAX(P / 16,(size_t)1), ParallelMatcherRefiner(pipeline, descriptorType, matcherType, responsesPerPoint, &first, &next, &idx), parallelable);
+    corecvs::parallelable_for ((size_t)0, P, CORE_MAX(P / 16,(size_t)1), ParallelMatcherRefiner(pipeline, descriptorType, matcherType, responsesPerPoint, &first, &next, &idx, scaleThreshold), parallelable);
     
     pipeline->toc("Computing & refining matches on-the-fly", "");
 }

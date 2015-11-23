@@ -229,6 +229,7 @@ Matrix operator *(DiagonalMatrix &D, const Matrix &M)
 #   include <mkl.h>
 #else
 #   include <cblas.h>
+#   include <lapacke.h>
 #endif
 # endif
 
@@ -1405,6 +1406,8 @@ int Matrix::jacobi(Matrix *a, DiagonalMatrix *d, Matrix *v, int *nrotpt)
             z[ip] = 0.0;
         }
     }
+    delete b;
+    delete z;
     SYNC_PRINT(("Too many iterations in routine jacobi"));
     return 1;
 }

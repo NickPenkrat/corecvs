@@ -43,9 +43,9 @@ void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, 
             std::vector<corecvs::Vector2dd> row;
             for (auto& c: v)
                 row.push_back(corners[c].pos);
-            board.push_back(row);
+            board.emplace_back(std::move(row));
         }
-        boards_.push_back(board);
+        boards_.emplace_back(std::move(board));
     }
 
     if (stats != NULL) stats->resetInterval("Board Outputing");
@@ -457,19 +457,19 @@ bool ChessBoardAssembler::BoardExpander::assignNearest(std::vector<corecvs::Vect
         return false;
 
 
-    std::priority_queue<std::tuple<double, int, int>> queue;
+    std::vector<std::tuple<double, int, int>> queue;
     for (int j = 0; j < M; ++j)
     {
         for (int i = 0; i < N; ++i)
         {
-            queue.push(std::make_tuple(-(prediction[j] - corners[unused[i]].pos).l2Metric(), i, j));
+            queue.emplace_back(!(prediction[j] - corners[unused[i]].pos), i, j);
         }
     }
 
-
-    while (queue.size())
+    size_t total_assigned = 0;
+    std::sort(queue.begin(), queue.end(), [](const std::tuple<double, int, int> &a, const std::tuple<double, int, int> &b) { return a < b; });
+    for (auto &T: queue)
     {
-        auto T = queue.top(); queue.pop();
         int i = unused[std::get<1>(T)], j = std::get<2>(T);
         if (usedCorners[i])
             continue;
@@ -478,6 +478,9 @@ bool ChessBoardAssembler::BoardExpander::assignNearest(std::vector<corecvs::Vect
         assignment[j] = i;
         usedCorners[i] = 1;
         assigned[j] = 1;
+        total_assigned++;
+        if (M == total_assigned)
+            break;
     }
     return true;
 }

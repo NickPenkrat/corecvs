@@ -313,6 +313,144 @@ std::vector<EssentialMatrix> EssentialEstimator::getEssential7point(const vector
     return hypothesis;
 }
 
+std::vector<EssentialMatrix> EssentialEstimator::getEssential5point(const vector<Correspondence*> &samples)
+{
+    Matrix XLSE(std::max(9, (int)samples.size()), 9, 0.0);
+    Matrix WLSE(1,9);
+    Matrix V(9,9);
+    
+    for (unsigned i = 0; i < samples.size(); i++)
+    {
+        Vector2dd first  = samples[i]->start;
+        Vector2dd second = samples[i]->end;
+
+        XLSE.fillLineWithArgs(i,
+        first.x() * second.x(), first.x() * second.y(), first.x(),
+        first.y() * second.x(), first.y() * second.y(), first.y(),
+        second.x(), second.y(),  1.0);
+    }
+
+    Matrix::svd(&XLSE, &WLSE, &V);
+
+    std::vector<int> ids;
+    for (int i = 0; i < 9; ++i)
+        ids.push_back(i);
+    std::sort(ids.begin(), ids.end(), [&](const int &a, const int &b) { return WLSE.a(0, a) < WLSE.a(0, b); });
+
+    corecvs::Vector X(9), Y(9), Z(9), W(9);
+    for (int i = 0; i < 9; ++i)
+    {
+        X[i] = V.a(i, ids[0]);
+        Y[i] = V.a(i, ids[1]);
+        Z[i] = V.a(i, ids[2]);
+        W[i] = V.a(i, ids[3]);
+    }
+
+    /*
+     * And here goes black magick. We know that X,Y,Z,W form nullspace of XLSE.
+     * So Essential matrix (up to some scale factor) has form x*X+y*Y+z*Z+W and we would like to get x, y, z
+     * Now we enforce constraints: det(E)=0 and 2EE'E-trace(EE')E=0 and use
+     * monomial bases {x^3 y^3 x^2y x^2z x^2 y^2z y^2 xyz xy | x y 1} where for first 10 bases we get
+     * 10 numerical elements and for last 3 we get 10 polynomial (w.r.t z) elements from each equaion
+     *
+     * Then we eliminate left 10x10 (numerical part) to diagonal matrix and apply this transformation
+     * to the right 10x3 part of matrix.
+     *
+     * Then we enforce xy*z=xyz y^2*z=y^2z and x^2*z=x^2z and get 3x3 polynomial (w.r.t z) matrix which has
+     * eigen-value 0 and thus it's determinant (10th degree polynomial) gives us z (and from z we get x and y)
+     *
+     * This gives us up to ten hypotheses
+     */
+    //Let's construct numerical part of matrix (2EE'E... goes first 9 eqs, then det(E) = 0).
+    const double x1 = X[0], x2 = X[1], x3 = X[2], x4 = X[3], x5 = X[4], x6 = X[5], x7 = X[6], x8 = X[7], x9 = X[8];
+    const double y1 = Y[0], y2 = Y[1], y3 = Y[2], y4 = Y[3], y5 = Y[4], y6 = Y[5], y7 = Y[6], y8 = Y[7], y9 = Y[8];
+    const double z1 = Z[0], z2 = Z[1], z3 = Z[2], z4 = Z[3], z5 = Z[4], z6 = Z[5], z7 = Z[6], z8 = Z[7], z9 = Z[8];
+    const double w1 = W[0], w2 = W[1], w3 = W[2], w4 = W[3], w5 = W[4], w6 = W[5], w7 = W[6], w8 = W[7], w9 = W[8];
+    // Please, do not touch unused variables for the sake of readability
+    const double x12 = x1 * x1, x22 = x2 * x2, x32 = x3 * x3, x42 = x4 * x4, x52 = x5 * x5, x62 = x6 * x6, x72 = x7 * x7, x82 = x8 * x8, x92 = x9 * x9;
+    const double y12 = y1 * y1, y22 = y2 * y2, y32 = y3 * y3, y42 = y4 * y4, y52 = y5 * y5, y62 = y6 * y6, y72 = y7 * y7, y82 = y8 * y8, y92 = y9 * y9;
+    const double z12 = z1 * z1, z22 = z2 * z2, z32 = z3 * z3, z42 = z4 * z4, z52 = z5 * z5, z62 = z6 * z6, z72 = z7 * z7, z82 = z8 * z8, z92 = z9 * z9;
+    const double w12 = w1 * w1, w22 = w2 * w2, w32 = w3 * w3, w42 = w4 * w4, w52 = w5 * w5, w62 = w6 * w6, w72 = w7 * w7, w82 = w8 * w8, w92 = w9 * w9;
+
+    corecvs::Matrix A(10, 10);
+#include "p5pNumericPart.h"
+// Now we fill polynomial part of matrix
+    corecvs::PolynomialMatrix B(10, 3);
+#include "p5pPolynomialPart.h"
+
+    A = A.inv();
+
+    /*
+     * Actually, we need only x^2z, x^2, y^2z, y^2, xyz, xy rows of A^{-1}*B
+     */
+    A.data = &A.element(4, 0);
+    A.h = 6;
+
+    auto BB = A * B;
+    corecvs::PolynomialMatrix Bf(3, 3);
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            Bf.a(i, j) = BB.a(2 * i, j)  - corecvs::Polynomial::X() * BB.a(2 * i + 1, j);
+        }
+    }
+
+    // Now Bf is a final polynomial-matrix and we can start solving z, x, y
+    auto P1 = Bf.a(0, 1) * Bf.a(1, 2) - Bf.a(0, 2) * Bf.a(1, 1);
+    auto P2 = Bf.a(0, 2) * Bf.a(1, 0) - Bf.a(0, 0) * Bf.a(1, 2);
+    auto P3 = Bf.a(0, 0) * Bf.a(1, 1) - Bf.a(0, 1) * Bf.a(1, 0);
+    auto P = P1 * Bf.a(2, 0) + P2 * Bf.a(2, 1) + P3 * Bf.a(2, 2);
+    std::vector<double> roots;
+    corecvs::PolynomialSolver::solve(P, roots);
+
+    std::vector<corecvs::EssentialMatrix> hypothesis;
+    for (auto& z: roots)
+    {
+        auto A = Bf(z);
+        double a = A.a(0, 0), b = A.a(0, 1), c = A.a(0, 2), 
+               d = A.a(1, 0), e = A.a(1, 1), f = A.a(1, 2),
+               g = A.a(2, 0), h = A.a(2, 1), i = A.a(2, 2),
+               x, y;
+        double d1 = b * g - a * h,
+               d2 = e * g - d * h,
+               d3 = b * d - a * e;
+        double md = std::abs(d1), ab;
+        int idd = 1;
+        if ((ab = std::abs(d2)) > md) { md = ab; idd = 2; }
+        if ((ab = std::abs(d3)) > md) { md = ab; idd = 3; }
+        CORE_ASSERT_TRUE_S(md > 1e-9);
+        switch (idd)
+        {
+            case 1:
+                x = (c * h - i * b) / d1;
+                y = (a * i - c * g) / d1;
+                break;
+            case 2:
+                x = (f * h - i * e) / d2;
+                y = (d * i - f * g) / d2;
+                break;
+            case 3:
+                x = (c * e - f * b) / d3;
+                y = (f * a - c * d) / d3;
+                break;
+            default:
+                CORE_ASSERT_TRUE_S(false);
+        }
+        corecvs::Vector v(3);
+        v[0] = x;
+        v[1] = y;
+        v[2] = 1.0;
+        auto Av = A*v;
+        auto EE = x * X + y * Y + z * Z + W;
+        corecvs::Matrix33 E(EE[0], EE[1], EE[2],
+                            EE[3], EE[4], EE[5],
+                            EE[6], EE[7], EE[8]);
+        hypothesis.emplace_back(E);
+    }
+    return hypothesis;
+}
+
 
 EssentialMatrix EssentialEstimator::getEssentialLM(const vector<Correspondence*> & samples)
 {

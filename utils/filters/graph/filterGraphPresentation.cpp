@@ -198,6 +198,7 @@ void FilterGraphPresentation::drawGraph(void)
         presentation->draw(x, y);
         levels[level]++;
     } // for i
+    delete[] levels;
 } // drawGraph
 
 void FilterGraphPresentation::addFilter(void)

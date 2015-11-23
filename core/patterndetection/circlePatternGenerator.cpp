@@ -138,8 +138,37 @@ int CirclePatternGenerator::getBestToken(DpImage &query, double &score, corecvs:
     return maxIdx;
 }
 
+void CirclePatternGenerator::flushCache()
+{
+    tbb::reader_writer_lock::scoped_lock writelock(rw_lock);
+    cache.clear();
+}
+
+void CirclePatternGenerator::putCache(const std::array<Vector2dd, 4> &k, const std::tuple<double, corecvs::Matrix33, corecvs::Matrix33, int> &v) const
+{
+    tbb::reader_writer_lock::scoped_lock writelock(rw_lock);
+    cache[k] = v;
+}
+
+bool CirclePatternGenerator::inCache(const std::array<Vector2dd, 4> &k, double &score, corecvs::Matrix33 &orientation, corecvs::Matrix33 &homography, int &token) const
+{
+    tbb::reader_writer_lock::scoped_lock_read readlock(rw_lock);
+    if (!cache.count(k))
+        return false;
+    auto t = cache[k];
+    score = std::get<0>(t);
+    orientation = std::get<1>(t);
+    homography = std::get<2>(t);
+    token = std::get<3>(t);
+    return true;
+}
+
 int CirclePatternGenerator::getBestToken(const DpImage &image, const std::array<corecvs::Vector2dd, 4> &cell, double &score, corecvs::Matrix33 &orientation, corecvs::Matrix33 &homography) const
 {
+    int token;
+    if (inCache(cell, score, orientation, homography, token))
+        return token;
+
     corecvs::Vector2dd A = cell[0], B = cell[1], C = cell[2], D = cell[3];
 
     corecvs::HomographyReconstructor c2i;
@@ -171,7 +200,9 @@ int CirclePatternGenerator::getBestToken(const DpImage &image, const std::array<
         }
     }
 
-    return getBestToken(query, score, orientation);
+    token = getBestToken(query, score, orientation);
+    putCache(cell, std::make_tuple(score, orientation, homography, token));
+    return token;
 }
 
 corecvs::Matrix33 CirclePatternGenerator::getFlipMatrix(int rotation, bool flip) const
