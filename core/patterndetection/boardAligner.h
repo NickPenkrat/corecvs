@@ -1,6 +1,8 @@
 #ifndef BOARDALIGNER
 #define BOARDALIGNER
 
+#include <memory>
+
 #include "vector2d.h"
 #include "circlePatternGenerator.h"
 #include "selectableGeometryFeatures.h"
@@ -168,10 +170,14 @@ class BoardAligner : protected BoardAlignerParams
 {
 public:
     BoardAligner(BoardAlignerParams params = BoardAlignerParams());
+    BoardAligner(BoardAlignerParams params, const std::shared_ptr<CirclePatternGenerator> &sharedGenerator);
+    static CirclePatternGenerator* FillGenerator(const BoardAlignerParams &params);
     bool align(DpImage &img);
     void drawDebugInfo(corecvs::RGB24Buffer &buffer);
     std::vector<std::vector<corecvs::Vector2dd>> bestBoard;
 protected:
+    std::shared_ptr<CirclePatternGenerator> generator;
+    bool sharedGenerator;
     std::vector<std::vector<std::pair<int, int>>> classifier;
     std::vector<std::vector<std::pair<int, int>>> initialClassifier;
     corecvs::ObservationList observationList;
