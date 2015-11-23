@@ -35,32 +35,56 @@ int main(int argc, const char **argv)
 
     CommandLineSetter s(argc, argv);
 
-    int         quality  = s.getInt("method", 1);
+    int         quality  = s.getInt("method", 3);
     std::string filename = s.getOption("file");
+    bool        toBayer  = s.getBool("toBayer");
+    int bpos = s.getInt("bpos", -1);
 
     MetaData meta;
-    
-    G12Buffer* bayer = PPMLoader().load(filename, &meta);
 
-    if (bayer == NULL)
+    G12Buffer* bayer;
+    if (!toBayer)
     {
-        std::cout << "Couldn't open file \"" << filename << "\"." << std::endl;
-        return -1;
+        bayer = PPMLoader().load(filename, &meta);
+        if (bayer == nullptr)
+        {
+            std::cout << "Couldn't open file \"" << filename << "\"." << std::endl;
+            return -1;
+        }
+
+        RGB48Buffer *result = new RGB48Buffer(bayer->h, bayer->w, false);
+
+        double time = 0;
+
+        Debayer d(bayer, 8, &meta, bpos);
+
+        d.toRGB48(Debayer::Method(quality), result);
+
+        PPMLoader().save("debayer_out.ppm", result);
+        delete_safe(result);
+    }
+    else
+    {
+        RGB48Buffer *inRgb = PPMLoader().loadRGB(filename, &meta);
+
+        if (inRgb == nullptr)
+        {
+            std::cout << "Couldn't open file \"" << filename << "\"." << std::endl;
+            return -1;
+        }
+
+        bayer = new G12Buffer(inRgb->h, inRgb->w, false);
+
+        Debayer d(bayer, 8, &meta, bpos);
+        d.fromRgb(inRgb);
+
+        PPMLoader().save("toBayer_out.pgm", bayer);
+
+        delete_safe(inRgb);
     }
 
-    
-    int bpos = meta["b_pos"].empty() ? 0 : meta["b_pos"][0];
-    bpos = s.getInt("bpos", bpos);
 
-    Debayer d(bayer, 8, bpos, &meta);
-
-    RGB48Buffer *result = new RGB48Buffer(bayer->h, bayer->w, false);
-
-    d.toRGB48(Debayer::Method(quality), result);
-
-    PPMLoader().save("debayer_out.ppm", result);
     
     delete_safe(bayer);
-    delete_safe(result);
     return 0;
 }
