@@ -19,24 +19,22 @@ STATIC_ASSERT(CORE_COUNT_OF(Log::level_names) == Log::LEVEL_LAST, wrong_number_o
  * It is impossible to tell when this function will be executed, so you should not log from
  * static initializers
  **/
-Log::LogLevel           Log::mMinLogLevel = LEVEL_FIRST;
-std::vector<LogDrain *> Log::mLogDrains;
+Log::LogLevel                          Log::mMinLogLevel = LEVEL_FIRST;
+std::vector<std::unique_ptr<LogDrain>> Log::mLogDrains;
 
 int Log::mDummy = Log::staticInit();
 
 int Log::staticInit()
 {
-    LogDrain *defaultDrain = new StdStreamLogDrain(std::cout);
-    mLogDrains.push_back(defaultDrain);
-//	logStream.reset(new std::ofstream(fileName.c_str(), std::ios::out | std::ios::app));
+    mLogDrains.push_back(std::unique_ptr<LogDrain>(new StdStreamLogDrain(std::cout)));
     return 0;
 }
 
 void Log::message(Message &message)
 {
-    for (unsigned int i = 0; i < mLogDrains.size(); i++)
+    FOREACH (auto& el, mLogDrains)
     {
-        mLogDrains[i]->drain(message);
+        el->drain(message);
     }
 }
 
@@ -45,17 +43,6 @@ Log::Log(const LogLevel /*maxLocalLevel*/)
 
 Log::~Log()
 {}
-
-//std::string Log::msgBufToString(const char* msg)
-//{
-//    std::string message(msg);
-//
-//    if (message.size() != 0 && message[message.size() - 1] == '\n') {
-//        message.resize(message.size() - 1);
-//    }
-//
-//    return message;
-//}
 
 //static
 const char* Log::levelName(LogLevel logLevel)
@@ -93,8 +80,8 @@ std::string Log::formatted(const char *format, ...)
 
 void Log::addAppLog(int argc, char* argv[], cchar* logFileName)
 {
-    /** detect min LogLevel and log filename from params
-    */
+    /** Detect min LogLevel and log filename from params
+     */
     corecvs::CommandLineSetter setter(argc, (const char **)argv);
     Log::LogLevel minLogLevel = (Log::LogLevel)setter.getInt("logLevel", Log::LEVEL_INFO);
     std::string   logFile = setter.getString("logFile", logFileName ? logFileName : "");
@@ -108,9 +95,9 @@ void Log::addAppLog(int argc, char* argv[], cchar* logFileName)
 
     if (!logFile.empty())
     {
-        //Log::mLogDrains.clear();
-        //Log::mLogDrains.push_back(new LiteStdStreamLogDrain(std::cout));
-        Log::mLogDrains.push_back(new FileLogDrain(pathApp + logFile));
+      //Log::mLogDrains.clear();
+      //Log::mLogDrains.push_back(std::unique_ptr<LogDrain>(new LiteStdStreamLogDrain(std::cout)));
+        Log::mLogDrains.push_back(std::unique_ptr<LogDrain>(new FileLogDrain(pathApp + logFile)));
     }
 
 #ifdef GIT_VERSION
@@ -126,6 +113,11 @@ void Log::addAppLog(int argc, char* argv[], cchar* logFileName)
     Log::mMinLogLevel = LEVEL_DETAILED_DEBUG;
     L_INFO_P("App Log Level: %s", Log::levelName(minLogLevel));
     Log::mMinLogLevel = minLogLevel;
+
+    // Some MSVC stuff code to activate the memory leak detector dump if we have >1 exits!
+#ifdef USE_MSVC_DEBUG_MEM
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////

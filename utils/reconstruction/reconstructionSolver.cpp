@@ -208,7 +208,7 @@ void ReconstructionJob::OptimizationFunctor::operator() (const double in[], doub
         double beta = 4.0 / saturationThreshold;
         double gamma = -4.0;
 
-        for (int i = 0; i < errors.size(); i += 2)
+        for (uint i = 0; i < errors.size(); i += 2)
         {
             double dx = errors[i];
             double dy = errors[i + 1];
@@ -258,7 +258,7 @@ void ReconstructionJob::OptimizationFunctor::operator() (const double in[], doub
                 }
             }
         } else {
-            for (int i = 0; i < errors.size(); ++i)
+            for (uint i = 0; i < errors.size(); ++i)
             {
                 double err = out[outputPtr++] = (errors[i]);
                 total += err * err;

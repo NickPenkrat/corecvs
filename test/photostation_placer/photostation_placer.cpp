@@ -220,7 +220,7 @@ void run_m15_pois()
     std::vector<double> errors;
     rec.scene.computeReprojectionErrors(errors);
     double ssq = 0.0;
-    for (int i = 0; i < errors.size(); ++i)
+    for (uint i = 0; i < errors.size(); ++i)
         ssq += errors[i] * errors[i];
     std::cout << "ERROR: " << std::sqrt(ssq / (errors.size() / 2)) << std::endl;
     corecvs::Vector3dd meanPos(0.0, 0.0, 0.0);
@@ -243,7 +243,7 @@ void run_m15_pois()
      */
     rec.scene.computeReprojectionErrors(errors);
     ssq = 0.0;
-    for (int i = 0; i < errors.size(); ++i)
+    for (uint i = 0; i < errors.size(); ++i)
         ssq += errors[i] * errors[i];
     // Final reprojection error
     std::cout << "ERROR: " << std::sqrt(ssq / (errors.size() / 2)) << std::endl;

@@ -223,9 +223,9 @@ public:
     /** add needed log drains for the app */
     static void         addAppLog(int argc, char* argv[], cchar* logFileName = NULL);
 
-    static LogLevel                 mMinLogLevel;
-    static std::vector<LogDrain *>  mLogDrains;
-    static int                      mDummy;
+    static LogLevel                               mMinLogLevel;
+    static std::vector<std::unique_ptr<LogDrain>> mLogDrains;
+    static int                                    mDummy;
 
 public:
     /** This is a static init function */

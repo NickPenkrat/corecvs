@@ -133,10 +133,10 @@ public:
 
         void freeBuffers()
         {
-            if (bufferLeft  != NULL) delete_safe(bufferLeft);
-            if (bufferRight != NULL) delete_safe(bufferRight);
-            if (rgbBufferLeft  != NULL) delete_safe(rgbBufferLeft);
-            if (rgbBufferRight != NULL) delete_safe(rgbBufferRight);
+            delete_safe(bufferLeft);
+            delete_safe(bufferRight);
+            delete_safe(rgbBufferLeft);
+            delete_safe(rgbBufferRight);
         }
 
         FramePair clone() const

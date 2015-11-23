@@ -624,14 +624,14 @@ bool PhotoStationCalibrator::getMSTSolveOrder(std::vector<std::pair<int, int>> &
     for (int i = 1; i < N; ++i)
         if (totalCnt[i] > totalCnt[maxCam])
             maxCam = i;
-    int maxFC = 0;
+    size_t maxFC = 0;
     order.clear();
     std::pair<int, int> initial(-1, -1);
 //  for (int i = 0; i < N; ++i)
     for (int j = 0; j < M; ++j) {
         if (patternPoints[j][maxCam].size() > maxFC)
         {
-            maxFC = (int)patternPoints[j][maxCam].size();
+            maxFC = patternPoints[j][maxCam].size();
             initial = std::make_pair(maxCam, j);
         }
     }
@@ -669,19 +669,18 @@ bool PhotoStationCalibrator::getMSTSolveOrder(std::vector<std::pair<int, int>> &
                         if ((!cameraUsed[ii]) && patternPoints[i][ii].size() > maxFC)
                         {
                             initial = std::make_pair(ii, i);
-                            maxFC = (int)patternPoints[i][ii].size();
+                            maxFC = patternPoints[i][ii].size();
                         }
                     }
                 }
                 if (cameraUsed[j])
                 {
-
                     for (int jj = 0; jj < M; ++jj)
                     {
                         if ((!setupUsed[jj]) && patternPoints[jj][j].size() > maxFC)
                         {
                             initial = std::make_pair(j, jj);
-                            maxFC = (int)patternPoints[jj][j].size();
+                            maxFC = patternPoints[jj][j].size();
                         }
                     }
                 }
@@ -721,7 +720,7 @@ void PhotoStationCalibrator::solveInitialLocations()
     auto initial = order2[0];
     camsSolved[initial.first] = true;
     relativeCameraPositions[initial.first].extrinsics = corecvs::CameraLocationData(corecvs::Vector3dd(0.0, 0.0, -120.0), corecvs::Quaternion(0.0, 0.0, 0.0, 1.0));
-    for (int i = 0; i < order2.size(); ++i)
+    for (uint i = 0; i < order2.size(); ++i)
     {
         auto id = order2[i];
         std::cout << "Solving c:" << id.first << " s: " << id.second << std::endl;

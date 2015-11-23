@@ -249,19 +249,19 @@ TEST(PolynomialSolversTest, testPowN)
     std::vector<double> coeff, roots, roots2;
     for (int i = 0; i < RNG_RETRIES; ++i)
     {
-        int N = (rng() % 5) + 3;
+        uint N = (rng() % 5) + 3;
         if (coeff.size() < N + 1)
         {
             coeff.resize(N + 1);
             roots.resize(N + 1);
         }
-        for (int j = 0; j < N; ++j)
+        for (uint j = 0; j < N; ++j)
             roots[j] = unif(rng);
         roots.resize(N);
         roots2.resize(N);
         coeffByRoots(coeff, roots);
 
-        int cnt = (int)corecvs::PolynomialSolver::solve(&coeff[0], &roots2[0], N);
+        uint cnt = (uint)corecvs::PolynomialSolver::solve(&coeff[0], &roots2[0], N);
         ASSERT_TRUE(cnt == N);
         std::sort(roots.begin(), roots.end());
         std::sort(roots2.begin(), roots2.end());
