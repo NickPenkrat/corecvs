@@ -1334,7 +1334,7 @@ private:
 
             if (shouldInit || !TRIVIALLY_DEFAULT_CONSTRUCTIBLE) {
                 CORE_CLEAR_MEMORY(this->data, allocatedSize);
-                _initArray(data, h, w, stride);
+                _initArray(data, h, w, sa);
             }
 #if 0
 #ifdef ASSERTS
@@ -1413,8 +1413,8 @@ private:
     static void _del(ElementType* ptr, IndexType h, IndexType w, IndexType stride)
     {
         CORE_UNUSED(ptr);
-        CORE_UNUSED(w);
         CORE_UNUSED(h);
+        CORE_UNUSED(w);
         CORE_UNUSED(stride);
         /*
          * Using traits switch between "do nothing" (memory is cleared by memoryBlock)
