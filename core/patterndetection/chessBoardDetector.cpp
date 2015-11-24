@@ -348,7 +348,8 @@ size_t ChessboardDetector::detectPatterns(corecvs::RGB24Buffer &source)
         assembler.setStatistics(stats);
     }
     BoardAlignerParams params(*this);
-    BoardAligner aligner(params);
+    sharedGenerator->flushCache();
+    BoardAligner aligner(params, sharedGenerator);
     assembler.assembleBoards(corners, boards, &aligner, &buffer);
     if (stats != NULL) stats->prefix = prefix;
     std::cout << "Assembled " << boards.size() << " boards" << std::endl;
