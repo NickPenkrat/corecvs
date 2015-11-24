@@ -140,19 +140,25 @@ int CirclePatternGenerator::getBestToken(DpImage &query, double &score, corecvs:
 
 void CirclePatternGenerator::flushCache()
 {
+#ifdef WITH_TBB
     tbb::reader_writer_lock::scoped_lock writelock(rw_lock);
+#endif
     cache.clear();
 }
 
 void CirclePatternGenerator::putCache(const std::array<Vector2dd, 4> &k, const std::tuple<double, corecvs::Matrix33, corecvs::Matrix33, int> &v) const
 {
+#ifdef WITH_TBB
     tbb::reader_writer_lock::scoped_lock writelock(rw_lock);
+#endif
     cache[k] = v;
 }
 
 bool CirclePatternGenerator::inCache(const std::array<Vector2dd, 4> &k, double &score, corecvs::Matrix33 &orientation, corecvs::Matrix33 &homography, int &token) const
 {
+#ifdef WITH_TBB
     tbb::reader_writer_lock::scoped_lock_read readlock(rw_lock);
+#endif
     if (!cache.count(k))
         return false;
     auto t = cache[k];

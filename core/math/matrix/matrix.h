@@ -102,8 +102,8 @@ public:
 
     Matrix(int32_t h, int32_t w, bool shouldInit) : MatrixBase(h, w, shouldInit) {}
 
-    explicit Matrix(Matrix33 &in);
-    explicit Matrix(Matrix44 &in);
+    explicit Matrix(const Matrix33 &in);
+    explicit Matrix(const Matrix44 &in);
 
 
     /**
@@ -126,6 +126,8 @@ public:
      *  Matrix multiplication.
      **/
     Matrix *mul(const Matrix& V);
+
+    friend Matrix operator -(const Matrix &A);
 
     friend Matrix operator *(const double &a, const Matrix &B);
     friend Matrix operator *(const Matrix &B, const double &a);

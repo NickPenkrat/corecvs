@@ -77,4 +77,5 @@ SOURCES += \
     conic/main_test_conic.cpp \
     calstructs/main_test_calstructs.cpp \
     polynomial/main_test_polynomial.cpp \
-    meshdraw/main_test_meshdraw.cpp
+    meshdraw/main_test_meshdraw.cpp \
+    reconstruction/main_test_reconstruction.cpp
