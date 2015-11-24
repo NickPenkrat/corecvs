@@ -10,7 +10,7 @@ using namespace std;
 using namespace corecvs;
 
 const int DEFAULT_SEED = 777;
-const int RNG_RETRIES = 16384;
+const int RNG_RETRIES = 1024;
 
 TEST(Reconstruction, testP3P)
 {
@@ -50,6 +50,7 @@ TEST(Reconstruction, testP3P)
         if (minDiffPos > 1e-3)
             cntInValid++;
     }
+    std::cout << "Invalid: " << (((double)cntInValid)/RNG_RETRIES) << std::endl;
     ASSERT_LE(cntInValid, 0.001 * RNG_RETRIES);
 }
 
@@ -91,6 +92,7 @@ TEST(Reconstruction, testP4P)
         if (minDiffPos > 1e-3)
             cntInValid++;
     }
+    std::cout << "Invalid: " << (((double)cntInValid)/RNG_RETRIES) << std::endl;
     ASSERT_LE(cntInValid, 0.001 * RNG_RETRIES);
 }
 
@@ -132,6 +134,7 @@ TEST(Reconstruction, testP6P)
         if (minDiffPos > 1e-3)
             cntInValid++;
     }
+    std::cout << "Invalid: " << (((double)cntInValid)/RNG_RETRIES) << std::endl;
     ASSERT_LE(cntInValid, 0.001 * RNG_RETRIES);
 }
 
@@ -172,5 +175,6 @@ TEST(Reconstruction, testPNP)
         if (minDiffPos > 1e-3)
             cntInValid++;
     }
+    std::cout << "Invalid: " << (((double)cntInValid)/RNG_RETRIES) << std::endl;
     ASSERT_LE(cntInValid, 0.001 * RNG_RETRIES);
 }
