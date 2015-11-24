@@ -50,10 +50,11 @@ public:
 
     explicit operator Vector() const
     {
-        Vector v(3);
+        Vector v(4);
         v[0] = (*this)[0];
         v[1] = (*this)[1];
         v[2] = (*this)[2];
+        v[3] = (*this)[3];
         return v;
     }
 
