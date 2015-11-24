@@ -3,7 +3,7 @@
 #include "rgbConverter.h"
 #include "ppmLoader.h"
 #include <complex>
-#include "../../utils/fftw/fftwWrapper.h"
+#include "math/fftw/fftwWrapper.h"
 
 using std::pow;
 using std::max;
@@ -530,13 +530,13 @@ RGB48Buffer* Debayer::fourier()
 
     fftw_complex* in_r, *in_g, *in_b, *out_r, *out_g, *out_b;
 
-    in_r = fftw_alloc_complex(h*w);
-    in_g = fftw_alloc_complex(h*w);
-    in_b = fftw_alloc_complex(h*w);
+    in_r = new fftw_complex[h * w];
+    in_g = new fftw_complex[h * w];
+    in_b = new fftw_complex[h * w];
 
-    out_r = fftw_alloc_complex(h*w);
-    out_g = fftw_alloc_complex(h*w);
-    out_b = fftw_alloc_complex(h*w);
+    out_r = new fftw_complex[h * w];
+    out_g = new fftw_complex[h * w];
+    out_b = new fftw_complex[h * w];
 
     for (uint i = 0; i < h; i++)
         for (uint j = 0; j < w; j++)
@@ -557,7 +557,7 @@ RGB48Buffer* Debayer::fourier()
 
     FFTW fftw;
 
-    fftw.transform2D(in_r, out_r, h, w, FFTW_FORWARD);
+    fftw.transform2D(h, w, in_r, out_r, FFTW::Forward);
     
     double coeff = 5.1 / 12;
     for (int i = 0; (uint)i < h; i++)
@@ -591,7 +591,7 @@ RGB48Buffer* Debayer::fourier()
             tmp2->element(i, j) = clip(sqrt(pow(out_r[i*w + j][0], 2) + pow(out_r[i*w + j][1], 2)) * 5000);
         }
 
-    fftw.transform2D(out_r, in_r, h, w, FFTW_BACKWARD);
+    fftw.transform2D(h, w, out_r, in_r, FFTW::Backward);
 
     double *rgbDiff[2] = {
         new double[h*w],
@@ -632,48 +632,7 @@ RGB48Buffer* Debayer::fourier()
                 white = window[12];
 
         }
-
-    // apply median filter to rgb result
-    // filter radius
-    // radius of 1 gives nice results
-    // radius of 2 gives less false color artifacts for some images, but the colors become somewhat degraded and blurred for other images
-    const int radius = 1;
-    // filter size - do not change
-    const int size = (2 * radius + 1) * (2 * radius + 1);
-    // median filter pass count, no difference except for running time observed between 1 and 2, more than 2 is redundant
-    const int passes = 0;
-
-    for (uint p = 0; p < passes; p++)
-        for (uint i = radius; i < h - radius; i++)
-        {
-            for (uint j = radius; j < w - radius; j++)
-            {
-                double window[2][size];
-                uint offset = i * w + j;
-                for (uint c = 0; c < 2; c++)
-                {
-                    int idx = 0;
-                    for (uint k = i - radius; k <= i + radius; k++)
-                        for (uint l = j - radius; l <= j + radius; l++)
-                            window[c][idx++] = rgbDiff[c][k * w + l];
-                    qsort(window[c], size, sizeof(window[c][0]), compared);
-
-                }
-
-                double r = window[0][4] + val_g[offset];
-                double b = window[1][4] + val_g[offset];
-                double g = (r + b - window[0][4] - window[1][4]) / 2;
-                
-                val_r[offset] = r;
-                val_g[offset] = g;
-                val_b[offset] = b;
-
-                rgbDiff[0][offset] = r - g;
-                rgbDiff[1][offset] = b - g;
-            }
-        }
-
-
+    
     double ampl = 1 * 255.0 / white;
     for (uint i = 0; i < h; i++)
         for (uint j = 0; j < w; j++)

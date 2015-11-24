@@ -18,7 +18,6 @@ UTILS_INCLUDEPATH = \
     $$UTILSDIR/corestructs/libWidgets \
     $$UTILSDIR/corestructs/parametersMapper \
     $$UTILSDIR/distortioncorrector \                # include isn't used, but need for DEPENDPATH!
-    $$UTILSDIR/fftw \
     $$UTILSDIR/fileformats \
     $$UTILSDIR/filters \
     $$UTILSDIR/filters/graph \

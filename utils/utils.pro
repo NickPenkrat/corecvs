@@ -72,7 +72,6 @@ HEADERS += \
     \
     distortioncorrector/distortionParameters.h \
     camcalc/colorTimer.h \
-    fftw/fftwWrapper.h \
     \
 #    Generated    \
     \

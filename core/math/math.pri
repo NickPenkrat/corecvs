@@ -1,5 +1,7 @@
 HEADERS += \ 
+
     math/eulerAngles.h \
+    math/fftw/fftwWrapper.h \
     math/matrix/matrix.h \
     math/matrix/matrix22.h \
     math/matrix/matrix33.h \
@@ -50,6 +52,7 @@ HEADERS += \
     
     
 SOURCES += \
+    math/fftw/fftwWrapper.cpp \
     math/matrix/matrix.cpp \
     math/matrix/matrix22.cpp \
     math/matrix/matrix33.cpp \

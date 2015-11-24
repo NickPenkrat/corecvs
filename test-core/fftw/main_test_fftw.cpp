@@ -10,7 +10,7 @@
 #include "g12Buffer.h"
 #include "ppmLoader.h"
 #include "converters/debayer.h"
-#include "../../utils/fftw/fftwWrapper.h"
+#include "fftw/fftwWrapper.h"
 
 using namespace std;
 using namespace corecvs;
@@ -36,8 +36,8 @@ TEST(FFTWWrapper, doublePrecisionTest)
         }
     }
 
-    fftw.transform2D(input, fft, ppm->h, ppm->w, FFTW_FORWARD);
-    fftw.transform2D(fft, output, ppm->h, ppm->w, FFTW_BACKWARD);
+    fftw.transform2D(ppm->w, ppm->h, input, fft, FFTW::Forward);
+    fftw.transform2D(ppm->w, ppm->h, fft, output, FFTW::Backward);
 
     G12Buffer* fftResult = new G12Buffer(ppm->h, ppm->w, false);
 
@@ -50,7 +50,7 @@ TEST(FFTWWrapper, doublePrecisionTest)
     }
     PPMLoader().save("tmp.pgm", fftResult);
     double error = Debayer::rmsd(ppm, fftResult);
-    
+    cout << "Root-mean-square error is " << error << endl;
     CORE_ASSERT_TRUE(error < 1, "FFT Transform failed: error is too big");
 
     delete_safe(ppm);
