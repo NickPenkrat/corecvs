@@ -45,8 +45,8 @@ struct PNPSolver
             std::vector<corecvs::Vector3dd> &directions,
             std::vector<corecvs::Vector3dd> &points3d);
 private:
-    static constexpr double INLIER_CHIRALITY = 1.0 / 3.0 - 0.01;
-    static constexpr double ELIMINATE_THRESHOLD = 1e-9;
+    static const double INLIER_CHIRALITY;
+    static const double ELIMINATE_THRESHOLD;
     //! Real solver
     static std::vector<corecvs::Affine3DQ> solvePNP_(
             std::vector<corecvs::Vector3dd> &centers,

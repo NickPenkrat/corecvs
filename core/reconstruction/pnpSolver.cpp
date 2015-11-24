@@ -15,6 +15,9 @@
 
 using namespace corecvs;
 
+const double PNPSolver::INLIER_CHIRALITY = 1.0 / 3.0 - 0.01;
+const double PNPSolver::ELIMINATE_THRESHOLD = 1e-9;
+
 std::vector<Affine3DQ> PNPSolver::solvePNP(
             std::vector<Vector3dd> &centers,
             std::vector<Vector3dd> &directions,

@@ -37,7 +37,7 @@ TEST(Reconstruction, testP3P)
             double diffAng = r.rotor.getAngle();
             if (diffAng > M_PI)
                 diffAng = 2.0 * M_PI - diffAng;
-            if (diffPos < minDiffPos && diffAng < minDiffAngle)
+            if (diffPos < minDiffPos)
             {
                 minDiffPos = diffPos;
                 minDiffAngle = diffAng;
