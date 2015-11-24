@@ -12,7 +12,7 @@ TEMPLATE = subdirs
 
 SUBDIRS +=       \
 #   grab         \
-#    grab_N_captures \
+    grab_N_captures \
 #    serialize1   \
 #   adoptcolor   \
 #    avigrab     \
@@ -21,7 +21,7 @@ SUBDIRS +=       \
 #    aLowCodec \
 #    new_board_detector \
 #    cr2reader           \
-#    debayer             \
+    debayer             \
 
 
 with_opencv {
