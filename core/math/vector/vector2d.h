@@ -20,6 +20,7 @@
 #endif // REFLECTION_IN_CORE
 
 #include "fixedVector.h"
+#include "vector.h"
 
 namespace corecvs {
 
@@ -46,6 +47,14 @@ public:
     inline Vector2d(const BaseClass &V) : BaseClass(V) {}
     inline explicit Vector2d(const ElementType &x) : BaseClass(x) {}
     inline Vector2d(): BaseClass() {}
+
+    explicit operator Vector() const
+    {
+        Vector v(2);
+        v[0] = (*this)[0];
+        v[1] = (*this)[1];
+        return v;
+    }
 
     inline ElementType &x()
     {
