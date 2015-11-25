@@ -41,6 +41,7 @@ class CheckerboardDetectionParameters : public BaseReflection<CheckerboardDetect
 {
 public:
     enum FieldId {
+        ESTIMATE_UNDISTORTED_FROM_DISTORTED_ID,
         USE_UNDISTORTION_ID,
         ALGORITHM_ID,
         CHANNEL_ID,
@@ -58,6 +59,12 @@ public:
     };
 
     /** Section with variables */
+
+    /** 
+     * \brief Estimate undistorted from distorted 
+     * Estimate undistorted from distorted 
+     */
+    bool mEstimateUndistortedFromDistorted;
 
     /** 
      * \brief Use Undistortion 
@@ -145,6 +152,11 @@ public:
     {
         return (const unsigned char *)(this) + fields()[fieldId]->offset;
     }
+    bool estimateUndistortedFromDistorted() const
+    {
+        return mEstimateUndistortedFromDistorted;
+    }
+
     bool useUndistortion() const
     {
         return mUseUndistortion;
@@ -211,6 +223,11 @@ public:
     }
 
     /* Section with setters */
+    void setEstimateUndistortedFromDistorted(bool estimateUndistortedFromDistorted)
+    {
+        mEstimateUndistortedFromDistorted = estimateUndistortedFromDistorted;
+    }
+
     void setUseUndistortion(bool useUndistortion)
     {
         mUseUndistortion = useUndistortion;
@@ -281,6 +298,7 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
+        visitor.visit(mEstimateUndistortedFromDistorted, static_cast<const BoolField *>    (fields()[ESTIMATE_UNDISTORTED_FROM_DISTORTED_ID]));
         visitor.visit(mUseUndistortion,           static_cast<const BoolField *>    (fields()[USE_UNDISTORTION_ID]));
         visitor.visit((int &)mAlgorithm,          static_cast<const EnumField *>    (fields()[ALGORITHM_ID]));
         visitor.visit((int &)mChannel,            static_cast<const EnumField *>    (fields()[CHANNEL_ID]));
@@ -303,7 +321,8 @@ template<class VisitorType>
     }
 
     CheckerboardDetectionParameters(
-          bool useUndistortion
+          bool estimateUndistortedFromDistorted
+        , bool useUndistortion
         , CheckerboardDetectionAlgorithm::CheckerboardDetectionAlgorithm algorithm
         , ImageChannel::ImageChannel channel
         , double cellSizeHor
@@ -318,6 +337,7 @@ template<class VisitorType>
         , bool skipUndistortedWithNoDistortedBoard
     )
     {
+        mEstimateUndistortedFromDistorted = estimateUndistortedFromDistorted;
         mUseUndistortion = useUndistortion;
         mAlgorithm = algorithm;
         mChannel = channel;

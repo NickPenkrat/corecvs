@@ -56,22 +56,42 @@ void CalibrationJob::allDetectChessBoard(bool distorted)
     int N = (int)observations.size();
     photostation.cameras.resize(N);
     std::vector<corecvs::CameraModel>::iterator psIterator = photostation.cameras.begin();
+    bool estimate = !distorted && settings.openCvDetectorParameters.mEstimateUndistortedFromDistorted;
+
+    if (estimate)
+    {
+        prepareAllRadialCorrections();
+    }
 
     L_INFO_P("chessboard type: %s", this->settings.boardAlignerParams.boardMarkers.size() ? "new" : "old");
 
+    int camId = 0;
     for (auto& c: observations)
     {
         for (auto& v: c)
         {
-            const std::string& filename = distorted ? v.sourceFileName : v.undistortedFileName;
-            corecvs::RGB24Buffer buffer = LoadImage(filename);
-            if (buffer.h && buffer.w)
+            if (!estimate)
             {
-                (distorted ? psIterator->intrinsics.distortedSize : psIterator->intrinsics.size) = corecvs::Vector2dd(buffer.w, buffer.h);
+                const std::string& filename = distorted ? v.sourceFileName : v.undistortedFileName;
+                corecvs::RGB24Buffer buffer = LoadImage(filename);
+                if (buffer.h && buffer.w)
+                {
+                    (distorted ? psIterator->intrinsics.distortedSize : psIterator->intrinsics.size) = corecvs::Vector2dd(buffer.w, buffer.h);
+                }
+                detectChessBoard(buffer, distorted ? v.sourcePattern : v.undistortedPattern);
             }
-            detectChessBoard(buffer, distorted ? v.sourcePattern : v.undistortedPattern);
+            else
+            {
+                for (auto&p: v.sourcePattern)
+                {
+                    auto pc = p;
+                    pc.projection = corrections[camId].map(pc.projection);
+                    v.undistortedPattern.push_back(pc);
+                }
+            }
         }
         ++psIterator;
+        ++camId;
     }
 }
 
@@ -149,12 +169,9 @@ void CalibrationJob::allEstimateDistortion()
     corecvs::parallelable_for(0, (int)photostation.cameras.size(), ParallelDistortionEstimator(this));
 }
 
-typedef std::array<corecvs::Vector2dd, 2> Rect;
-
-void CalibrationJob::prepareUndistortionTransformation(LensDistortionModelParameters &source, double w, double h
-    , corecvs::DisplacementBuffer &result, double &newW, double &newH)
+void CalibrationJob::prepareRadialCorrection(LensDistortionModelParameters &source, double w, double h, RadialCorrection &correction, double &newW, double &newH, Rect &output)
 {
-    RadialCorrection correction(source);
+    correction = RadialCorrection(source);
     auto undistParams = settings.distortionApplicationParameters;
     if (settings.distortionApplicationParameters.forceScale())
     {
@@ -167,7 +184,7 @@ void CalibrationJob::prepareUndistortionTransformation(LensDistortionModelParame
     correction.getCircumscribedImageRect(input[0][0], input[0][1], input[1][0], input[1][1], outCir[0], outCir[1]);
     correction.getInscribedImageRect    (input[0][0], input[0][1], input[1][0], input[1][1], outIns[0], outIns[1]);
 
-    Rect output = input;
+    output = input;
     corecvs::Vector2dd shift(0.0);
 
     switch (undistParams.resizePolicy())
@@ -211,6 +228,26 @@ void CalibrationJob::prepareUndistortionTransformation(LensDistortionModelParame
         correction.addShiftY = shift[1];
     }
 
+}
+
+void CalibrationJob::prepareAllRadialCorrections()
+{
+    double foo, boo;
+    Rect moo;
+    corrections.resize(photostation.cameras.size());
+    for (size_t i = 0; i < photostation.cameras.size(); ++i)
+    {
+        auto& cam = photostation.cameras[i];
+        prepareRadialCorrection(cam.distortion, cam.intrinsics.distortedSize[0], cam.intrinsics.distortedSize[1], corrections[i], foo, boo, moo);
+    }
+}
+
+void CalibrationJob::prepareUndistortionTransformation(LensDistortionModelParameters &source, double w, double h
+    , corecvs::DisplacementBuffer &result, double &newW, double &newH)
+{
+    RadialCorrection correction;
+    Rect output;
+    prepareRadialCorrection(source, w, h, correction, newW, newH, output);
     auto* foo = DisplacementBuffer::CacheInverse(
             &correction, newH, newW,
             output[0][0], output[0][1],

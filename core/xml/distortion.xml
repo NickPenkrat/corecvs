@@ -66,6 +66,7 @@
   </enum>
 
   <class name="Checkerboard Detection Parameters">  
+    <field type="bool"         name="Estimate undistorted from distorted" defaultValue="true"/>
     <field type="bool"         name="Use Undistortion"      defaultValue="true"/>
 
     <field type="Checkerboard Detection Algorithm" name="Algorithm" defaultValue="0" />
