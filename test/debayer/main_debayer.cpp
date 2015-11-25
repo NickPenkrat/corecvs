@@ -15,14 +15,18 @@ int main(int argc, const char **argv)
     std::string filename = s.getOption("file");
 
     MetaData meta;
+    
     G12Buffer* bayer = PPMLoader().load(filename, &meta);
+
     if (bayer == NULL)
     {
         std::cout << "Couldn't open file " << filename << std::endl;
         return -1;
     }
 
-    Debayer d(bayer, 8, &meta);
+    int bpos = meta["b_pos"].empty() ? 0 : meta["b_pos"][0];
+
+    Debayer d(bayer, 8, bpos, &meta);
 
     RGB48Buffer *result = d.toRGB48(Debayer::Method(quality));
 

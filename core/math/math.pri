@@ -56,6 +56,7 @@ SOURCES += \
     math/matrix/matrix44.cpp \
     math/matrix/diagonalMatrix.cpp \
     math/matrix/homographyReconstructor.cpp \
+    math/vector/vector2d.cpp \
     math/lutAlgebra.cpp \
     math/affine.cpp \
     math/projectiveTransform.cpp \

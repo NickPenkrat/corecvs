@@ -195,7 +195,7 @@ TEST(Rectification, test7point)
             cl.push_back(&cc);
         auto Fv = corecvs::EssentialEstimator().getEssential7point(cl);
         
-        for (int i = 0; i < cv.size(); ++i)
+        for (uint i = 0; i < cv.size(); ++i)
         {
             corecvs::Vector3dd L(cv[i].start[0], cv[i].start[1], 1.0);
             corecvs::Vector3dd R(cv[i].end[0], cv[i].end[1], 1.0);
@@ -298,7 +298,7 @@ TEST(Rectification, testEssentialEstimator)
         cl.push_back(&cc);
     corecvs::Matrix33 F = corecvs::EssentialEstimator().getEssentialLSE(cl);
     
-    for (int i = 0; i < cv.size(); ++i)
+    for (uint i = 0; i < cv.size(); ++i)
     {
         corecvs::Vector3dd L(cv[i].start[0], cv[i].start[1], 1.0);
         corecvs::Vector3dd R(cv[i].end[0], cv[i].end[1], 1.0);
@@ -339,7 +339,7 @@ TEST(Rectification, testEssentialEstimator)
             cl.push_back(&cc);
         auto F1 = corecvs::EssentialEstimator().getEssentialLSE(cl);
         F1.assertRank2();
-        for (int i = 0; i < cl.size(); ++i)
+        for (uint i = 0; i < cl.size(); ++i)
         {
             cl[i]->start += corecvs::Vector2dd(
                     std::min(1.0, std::max(-1.0, rnorm(rng))), 
@@ -351,7 +351,7 @@ TEST(Rectification, testEssentialEstimator)
         auto F = corecvs::EssentialEstimator().getEssentialLSE(cl);
         F.assertRank2();
         double rmse1 = 0.0;
-        for (int i = 0; i < cv.size(); ++i)
+        for (uint i = 0; i < cv.size(); ++i)
         {
             corecvs::Vector3dd L(cv[i].start[0], cv[i].start[1], 1.0);
             corecvs::Vector3dd R(cv[i].end[0], cv[i].end[1], 1.0);
@@ -365,7 +365,7 @@ TEST(Rectification, testEssentialEstimator)
         ASSERT_NEAR(rmse1, 0.0, 5);
        
         double rmse = 0.0;
-        for (int i = 0; i < cv.size(); ++i)
+        for (uint i = 0; i < cv.size(); ++i)
         {
             corecvs::Vector3dd L(cv[i].start[0], cv[i].start[1], 1.0);
             corecvs::Vector3dd R(cv[i].end[0], cv[i].end[1], 1.0);
@@ -380,7 +380,7 @@ TEST(Rectification, testEssentialEstimator)
         ASSERT_NEAR(rmse, 0.0, (15.0));
 //      std::cout << "ORIG:OK" << std::endl; 
         rmse = 0.0;
-        for (int i = 0; i < cv.size(); ++i)
+        for (uint i = 0; i < cv.size(); ++i)
         {
             corecvs::Vector3dd L(cv[i].start[0], cv[i].start[1], 1.0);
             corecvs::Vector3dd R(cv[i].end[0], cv[i].end[1], 1.0);

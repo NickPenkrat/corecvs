@@ -72,7 +72,7 @@ void CalibrationHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, double
 void CalibrationHelpers::drawPly(Mesh3D &mesh, const Photostation &ps, double scale)
 {
     int colorId = 0;
-    for (int cam = 0; cam < ps.cameras.size(); ++cam)
+    for (uint cam = 0; cam < ps.cameras.size(); ++cam)
     {
         mesh.currentColor = palette[colorId = (colorId + 1) % CORE_COUNT_OF(palette)];
         drawCamera(mesh, ps.getRawCamera(cam), scale);

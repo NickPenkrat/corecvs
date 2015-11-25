@@ -5,6 +5,7 @@
  * \date 21 Oct 2015
  *
  * Declares the Debayer class.
+ * \author Pavel.Vasilev
  */
 #ifndef DEBAYER_H
 #define DEBAYER_H
@@ -37,7 +38,7 @@ public:
      * \param depthOut       Processing bit depth.
      * \param [in,out] data  (Optional) Metadata.
      */
-    Debayer(G12Buffer *bayer, int depthOut = 12, MetaData *data = nullptr);
+    Debayer(G12Buffer *bayer, int depthOut = 12, int bayerPos = 0, MetaData *data = nullptr);
 
     ~Debayer();
 
@@ -49,12 +50,13 @@ public:
      * \return  Resulting image.
      */
     RGB48Buffer* toRGB48(Method method);
+    RGB48Buffer* fourier();
 
 private:
     int         mDepth      = 12;
     Vector3dd   mScaleMul   = { 1, 1, 1 };
     uint16_t    mBlack      = 0;
-    uint8_t     mBayerPos   = 0;
+    uint8_t     mBayerPos   = 3;
     uint16_t*   mCurve      = nullptr;
     G12Buffer*  mBayer      = nullptr;
     MetaData *  mMetadata   = nullptr;

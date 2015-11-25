@@ -90,7 +90,7 @@ TEST(MatrixProfile, testMulSize3)
     bool runsimple[] = { true, false, false, false };
     bool runslow  [] = { true, true , false, false };
     bool runour   [] = { true, true ,  true, false };
-    bool runfast  [] = { true, true ,  true,  true };
+    bool runfast  [] = { true, true ,  true, false };   // 16K * 16K - skip at all
 
 
     printHeader();
@@ -211,7 +211,6 @@ TEST(MatrixProfile, testMulSize3)
            printResult(gflop, delayBlas, LIMIT);
 #endif
         }
-
 
         for (unsigned i = 0; i < POLUTING_INPUTS; i++) {
             delete_safe(input1[i]);

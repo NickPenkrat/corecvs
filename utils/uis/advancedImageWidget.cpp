@@ -5,8 +5,6 @@
  * \author Olga Sapershteyn
  * \author Alexander Pimenov
  */
-
-
 #include <QtCore/QDebug>
 #include <QPainter>
 #include <QFileDialog>
@@ -19,8 +17,8 @@
 #include "mathUtils.h"
 #include "qtHelper.h"
 
-AdvancedImageWidget::AdvancedImageWidget(QWidget *parent, bool showHeader):
-    ViAreaWidget(parent, false)
+AdvancedImageWidget::AdvancedImageWidget(QWidget *parent, bool showHeader)
+  : ViAreaWidget(parent, false)
   , mImage(NULL)
   , mIsFreezed(false)
     /* Icons */

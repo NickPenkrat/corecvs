@@ -114,7 +114,7 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
 
     if (stats != NULL) stats->resetInterval("Assemble");
 
-    bool transposed = false, found = false;
+    bool /*transposed = false,*/ found = false;
 
     bool checkW = !!(mode & ChessBoardDetectorMode::FIT_WIDTH);
     bool checkH = !!(mode & ChessBoardDetectorMode::FIT_HEIGHT);
@@ -140,7 +140,7 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
         {
             bestBoard = b;
             found = true;
-            transposed = true;
+            //transposed = true;
             break;
         }
     }

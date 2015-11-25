@@ -185,7 +185,7 @@ TEST(Reconstruction, testP6P)
     // 100x100m cube
     std::uniform_real_distribution<double> runif(-1e2, 1e2);
     int NPT = 6;
-    int manySols = 0;
+    //int manySols = 0;
     int cntInValid = 0;
     for (int i = 0; i < RNG_RETRIES; ++i)
     {

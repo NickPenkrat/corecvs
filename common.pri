@@ -446,7 +446,9 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
 
 #
 # MKL is more preferable as it uses "tbb" internally, which we use too anyway.
-# But openblas uses an "openmp" that is bad to use with tbb simultaneously!
+# But openBLAS uses an "OpenMP" that is bad to use with tbb simultaneously, nevertheless you can switch off tbb as well.
+# Therefore we support MKL with tbb threading and also MKL with openMP threading model on Windows/Linux platforms.
+# For more detailed MKL's linker options, see "https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor".
 #
 with_mkl {
     MKLROOT = $$(MKLROOT)
@@ -455,9 +457,19 @@ with_mkl {
     }
     exists("$$MKLROOT"/include/mkl.h) {
         !win32 {
-            LIBS    += -L"$$MKLROOT"/lib/intel64 -lmkl_intel_lp64     -lmkl_core     -lmkl_tbb_thread     -ltbb -lstdc++ -lpthread -lm
+            LIBS        += -L"$$MKLROOT"/lib/intel64 -lmkl_intel_lp64 -lmkl_core
+            with_tbb {
+                LIBS    += -lmkl_tbb_thread -lstdc++ -lpthread -lm      # -ltbb was already included above
+            } else {
+                LIBS    += -lmkl_gnu_thread -ldl -lpthread -lm          # with OpenMP's threading layer, GNU's OpenMP library (libgomp)
+            }
         } else {
-            LIBS    += -L"$$MKLROOT"/lib/intel64 -lmkl_intel_lp64_dll -lmkl_core_dll -lmkl_tbb_thread_dll -ltbb
+            LIBS        += -L"$$MKLROOT"/lib/intel64 -lmkl_intel_lp64_dll -lmkl_core_dll
+            with_tbb {
+                LIBS    += -lmkl_tbb_thread_dll                         # -ltbb was already included above
+            } else {
+                LIBS    += -lmkl_intel_thread_dll -llibiomp5md          # with OpenMP's threading layer, Intel's OpenMP library (libiomp5)
+            }
         }
         INCLUDEPATH += "$$MKLROOT"/include
         DEFINES     += WITH_BLAS

@@ -11,13 +11,13 @@
 
 #include <limits>
 #include <stdint.h>
+#include <string.h>
 
 #include <map>
 #include <string>
 
 #include "global.h"
 
-#include "string.h"
 #include "fixedVector.h"
 #include "preciseTimer.h"
 #include "calculationStats.h"
@@ -160,7 +160,6 @@ public:
 //            printf("%s =? %s\n", input.c_str(), mFilterString.c_str());
             return (input == mFilterString);
         }
-
     };
 
 
@@ -279,7 +278,6 @@ template <class StreamType>
             printf("%-20s : %7" PRIu64 "\n",
                 name.c_str(),
                 stat.sum / stat.number);
-
          }
     };
 
@@ -312,7 +310,6 @@ template <class StreamType>
                 length,
                 name.c_str(),
                 stat.sum / stat.number);
-
          }
     };
 
@@ -439,5 +436,5 @@ template <class StreamType>
 
 
 } //namespace corecvs
-#endif /* CORECALCULATIONSTATS_H_ */
 
+#endif /* CORECALCULATIONSTATS_H_ */
