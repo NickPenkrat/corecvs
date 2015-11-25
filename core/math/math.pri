@@ -1,5 +1,4 @@
 HEADERS += \ 
-
     math/eulerAngles.h \
     math/matrix/matrix.h \
     math/matrix/matrix22.h \
