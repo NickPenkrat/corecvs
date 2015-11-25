@@ -20,6 +20,8 @@
 # undef LoadImage
 #endif
 
+typedef std::array<corecvs::Vector2dd, 2> Rect;
+
 struct ImageData
 {
     std::string              sourceFileName;
@@ -134,6 +136,7 @@ struct CalibrationJob
     std::vector<CameraLocationData>                 calibrationSetupLocations;
     std::vector<std::vector<ImageData>>             observations;
     std::vector<std::vector<CalibrationSetupEntry>> calibrationSetups;
+    std::vector<RadialCorrection>                   corrections;
 
     bool                                            calibrated = false;
 
@@ -164,6 +167,8 @@ struct CalibrationJob
     void    computeDistortionError(corecvs::SelectableGeometryFeatures &sgf, LensDistortionModelParameters &params, double &rmse, double &maxError);
     void    allEstimateDistortion();
 
+    void    prepareRadialCorrection(LensDistortionModelParameters &source, double w, double h, RadialCorrection &correction, double &newW, double &newH, Rect &output);
+    void    prepareAllRadialCorrections();
     void    prepareUndistortionTransformation(LensDistortionModelParameters &source, double w, double h, corecvs::DisplacementBuffer &dest, double &newW, double &newH);
     void    removeDistortion(corecvs::RGB24Buffer &src, corecvs::RGB24Buffer &dst, LensDistortionModelParameters &params);
     void    removeDistortion(corecvs::RGB24Buffer &src, corecvs::RGB24Buffer &dst, corecvs::DisplacementBuffer &transform, double outW, double outH);
