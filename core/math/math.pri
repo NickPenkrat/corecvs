@@ -1,7 +1,6 @@
 HEADERS += \ 
 
     math/eulerAngles.h \
-    math/fftw/fftwWrapper.h \
     math/matrix/matrix.h \
     math/matrix/matrix22.h \
     math/matrix/matrix33.h \
@@ -49,10 +48,10 @@ HEADERS += \
     math/eulerAngles.h \
     math/puzzleBlock.h \
     math/matrix/similarityReconstructor.h \
+    math/fftw/fftwWrapper.h \
     
     
 SOURCES += \
-    math/fftw/fftwWrapper.cpp \
     math/matrix/matrix.cpp \
     math/matrix/matrix22.cpp \
     math/matrix/matrix33.cpp \
@@ -70,4 +69,5 @@ SOURCES += \
     math/generic/genericMath.cpp \
     math/sse/sseWrapper.cpp \
     math/matrix/similarityReconstructor.cpp \
+    math/fftw/fftwWrapper.cpp \
 
