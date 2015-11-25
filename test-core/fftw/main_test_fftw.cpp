@@ -10,6 +10,7 @@
 #include "g12Buffer.h"
 #include "ppmLoader.h"
 #include "converters/debayer.h"
+#include "converters/errorMetrics.h"
 #include "fftw/fftwWrapper.h"
 
 using namespace std;
@@ -49,7 +50,7 @@ TEST(FFTWWrapper, doublePrecisionTest)
         }
     }
     PPMLoader().save("tmp.pgm", fftResult);
-    double error = Debayer::rmsd(ppm, fftResult);
+    double error = ErrorMetrics::rmsd(ppm, fftResult);
     cout << "Root-mean-square error is " << error << endl;
     CORE_ASSERT_TRUE(error < 1, "FFT Transform failed: error is too big");
 

@@ -5,8 +5,8 @@
 * \date    Nov 23, 2015
 */
 
-#ifndef FFTWWRAPPER_H
-#define FFTWWRAPPER_H
+#ifndef FFTWWRAPPER_H_
+#define FFTWWRAPPER_H_
 
 #include "global.h"
 

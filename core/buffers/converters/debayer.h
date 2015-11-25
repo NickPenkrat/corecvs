@@ -51,30 +51,6 @@ public:
     void toRGB48(Method method, RGB48Buffer* out);
 
     /**
-    * Peak signal to noise ratio in 2 images, one being the original and the other being estimated.
-    * The orded in which images are passed does not affect the result.
-    *
-    * \param   img1 Image A
-    * \param   img2 Image B
-    *
-    * \return  Peak signal to noise ratio in decibels.
-    */
-    static double psnr(RGB48Buffer *img1, RGB48Buffer *img2);
-    static double psnr(G12Buffer *img1, G12Buffer *img2);
-
-    /**
-    * Root-mean-square deviation in 2 images, one being the original and the other being estimated.
-    * The orded in which images are passed does not affect the result.
-    *
-    * \param   img1 Image A
-    * \param   img2 Image B
-    *
-    * \return  Root-mean-square deviation.
-    */
-    static double rmsd(RGB48Buffer *img1, RGB48Buffer *img2);
-    static double rmsd(G12Buffer *img1, G12Buffer *img2);
-
-    /**
     * Fill bayer data from RGB48 image applying Bayerian grid to it.
     *
     * \param   inRGB Image to get pixel data from.
@@ -138,9 +114,6 @@ private:
     inline int32_t weightedBayerAvg(const Vector2d32& coords);
 
     inline uint8_t colorFromBayerPos(uint i, uint j, bool rggb = true);
-
-    static double mse(RGB48Buffer *img1, RGB48Buffer *img2);
-    static double mse(G12Buffer *img1, G12Buffer *img2);
 };
 
 } // namespace corecvs
