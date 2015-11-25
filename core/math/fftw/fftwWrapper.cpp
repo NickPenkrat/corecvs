@@ -54,11 +54,6 @@ void FFTW::transformBackward(int size, fftw_complex *input, fftw_complex *output
     transform(size, input, output, FFTW_BACKWARD);
 }
 
-void FFTW::transformForward2D(AbstractBuffer<uint16_t, int32_t> *input, fftw_complex *output)
-{
-    transformForward2DT(input, output);
-}
-
 void FFTW::transform2D(int sizeX, int sizeY, fftw_complex *input, fftw_complex *output, int direction)
 {
     doTransform(sizeX, sizeY, input, output, direction);
@@ -67,7 +62,7 @@ void FFTW::transform2D(int sizeX, int sizeY, fftw_complex *input, fftw_complex *
 
 void FFTW::doTransform(int sizeX, int sizeY, fftw_complex *input, fftw_complex *output, int sign)
 {
-
+    // TODO: clarify when it's possible to keep the old plan
     /*if (!mDimensions.empty() && mDimensions[0] == sizeX && mDimensions[1] == sizeY)
     {
         fftw_execute_dft(mPlan, input, output);
@@ -87,4 +82,35 @@ void FFTW::doTransform(int sizeX, int sizeY, fftw_complex *input, fftw_complex *
         mDimensions.push_back(sizeY);
         fftw_execute(mPlan);
     }
+}
+
+void FFTW::transformForward2D(AbstractBuffer<uint16_t, int32_t> *input, fftw_complex *output)
+{
+    // TODO: rewrite
+    double *indata = fftw_alloc_real(input->h * input->w);
+
+    for (int i = 0; i < input->h; i++)
+        for (int j = 0; j < input->w; j++)
+        {
+            indata[i * input->w + j] = input->element(i, j);
+        }
+
+    if (!mDimensions.empty() && mDimensions[0] == input->h && mDimensions[1] == input->w)
+    {
+        fftw_execute_dft_r2c(mPlan, indata, output);
+    }
+    else
+    {
+        if (mPlan)
+            fftw_destroy_plan(mPlan);
+
+        mPlan = fftw_plan_dft_r2c_2d(input->h, input->w, indata, output, 0);
+
+        mDimensions.clear();
+        mDimensions.push_back(input->h);
+        mDimensions.push_back(input->w);
+        fftw_execute(mPlan);
+    }
+
+    delete_safe(indata);
 }
