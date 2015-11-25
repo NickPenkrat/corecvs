@@ -40,6 +40,7 @@
 #define POI_ONLY
 #define NOUPD
 #define METERS
+//#define Q_ONLY
 
 struct ReconstructionParameters
 {
@@ -90,6 +91,22 @@ struct ReconstructionJob : ReconstructionParameters
         {
         }
         void operator() (const double in[], double out[]);
+    };
+
+    struct NormalizationFunctor : public corecvs::FunctionArgs
+    {
+    private:
+        ReconstructionJob* rJob;
+        corecvs::Vector3dd mean, scale;
+    public:
+        NormalizationFunctor(decltype(rJob) rJob,corecvs::Vector3dd mean = corecvs::Vector3dd(0.0, 0.0, 0.0), corecvs::Vector3dd scale = corecvs::Vector3dd(1.0, 1.0, 1.0)) : FunctionArgs(rJob->getInputNum(), rJob->getInputNum()), rJob(rJob), mean(mean), scale(scale)//, covariation(covariation)
+        {
+        }
+        void operator() (const double in[], double out[])
+        {
+            rJob->readParams(in, mean, scale);
+            rJob->writeParams(out, mean, scale);
+        }
     };
 
     void undistortAll(bool singleDistortion = true);
