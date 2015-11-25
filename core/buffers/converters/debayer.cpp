@@ -42,12 +42,11 @@ void Debayer::nearest(RGB48Buffer *result)
     uint32_t red = 0, green = 0, blue = 0;
     // swapCols inverts least significant bit for cols when set so RG/GB becomes GR/BG, etc.
     // swapRows does the same for rows
-    uint swapCols =  mBayerPos & 1;
-    uint swapRows = (mBayerPos & 2) >> 1;
+    int swapCols =  mBayerPos & 1;
+    int swapRows = (mBayerPos & 2) >> 1;
 
     RGBColor48 pixel;
 
-    int offset = 0;
     int i = 0;
 
     // for now, don't handle first and last rows/columns if swapRows/swapCols is set
@@ -76,8 +75,8 @@ void Debayer::linear(RGB48Buffer *result)
 {
     uint32_t red = 0, green = 0, blue = 0;
 
-    uint swapCols = mBayerPos & 1;
-    uint swapRows = (mBayerPos & 2) >> 1;
+    int swapCols = mBayerPos & 1;
+    int swapRows = (mBayerPos & 2) >> 1;
 
     int i = 0;
 
@@ -176,7 +175,6 @@ void Debayer::linear(RGB48Buffer *result)
     for (; i < mBayer->h; i += 2)
         for (int j = 0; j < mBayer->w; j += 2)
         {
-            int offset = i * mBayer->w + j;
 
             for (int k = 0; k < 2; k++)
                 for (int l = 0; l < 2; l++)
@@ -257,18 +255,16 @@ void Debayer::ahd(RGB48Buffer *result)
 
     const vector<int> filter = { -1, 2, 2, 2, -1 };
 
-    uint16_t cur = 0;
     int32_t val = 0;
 
-    uint swapCols = mBayerPos & 1;
-    uint swapRows = (mBayerPos & 2) >> 1;
+    int swapCols = mBayerPos & 1;
+    int swapRows = (mBayerPos & 2) >> 1;
 
     // interpolate green
     for (int i = swapRows; i < mBayer->h - swapRows; i += 2)
     {
         for (int j = swapCols; j < mBayer->w - swapCols; j += 2)
         {
-            int offset = i*mBayer->w + j;
             green[0]->element(i, j + 1) = mBayer->element(i, j + 1);
             green[1]->element(i, j + 1) = mBayer->element(i, j + 1);
 
@@ -516,6 +512,129 @@ void Debayer::ahd(RGB48Buffer *result)
             }
         }
 
+
+    // process border using Nearest Neighbor interpolation
+    // for green color, linear interpolation was used
+    uint16_t r = 0;
+    uint16_t b = 0;
+    uint16_t g = 0;
+
+    // jPartial means interpolate cols [0 through R) and [W - R, W)
+    int jPartial[4] = { 0, radius, mBayer->w - radius, mBayer->w };
+    // jFull means interpolate cols [0 through W). -1 is for the condition to fail on second pass
+    int jFull[4] = { 0, mBayer->w, 0, -1 };
+
+    if (mBayer->h > 2 && mBayer->w > 2)
+    {
+        for (int i = 0; i < mBayer->h; i++)
+        {
+            int* jBounds;
+
+            if (i >= radius && i < mBayer->h - radius)
+                jBounds = jPartial;
+            else
+                jBounds = jFull;
+            
+            int j = 0;
+            for (int pass = 0; pass < 2; pass++)
+            {
+                for (j = jBounds[2 * pass]; j < jBounds[2 * pass + 1]; j++)
+                {
+                    r = g = b = 0;
+                    int c = colorFromBayerPos(i, j);
+                    int g_div = 0;
+                    switch (c)
+                    {
+                    case 0:
+                        r = mBayer->element(i, j);
+                        if (j < mBayer->w - 1)
+                        {
+                            g += mBayer->element(i, j + 1);
+                            if (i < mBayer->h - 1)
+                                b = mBayer->element(i + 1, j + 1);
+                            else
+                                b = mBayer->element(i - 1, j + 1);
+
+                            g_div++;
+                        }
+                        else
+                        {
+                            g += mBayer->element(i, j - 1);
+                            if (i < mBayer->h - 1)
+                                b = mBayer->element(i + 1, j - 1);
+                            else
+                                b = mBayer->element(i - 1, j - 1);
+
+                            g_div++;
+                        }
+                        g /= g_div;
+                        break;
+
+                    case 1:
+                        g = mBayer->element(i, j);
+
+                        if (j < mBayer->w - 1)
+                        {
+                            r = mBayer->element(i, j + 1);
+                        }
+                        if (j > 0)
+                        {
+                            r = mBayer->element(i, j - 1);
+                        }
+
+                        if (i < mBayer->h - 1)
+                            b = mBayer->element(i + 1, j);
+                        else
+                            b = mBayer->element(i - 1, j);
+                        break;
+
+                    case 2:
+                        g = mBayer->element(i, j);
+
+                        if (j < mBayer->w - 1)
+                        {
+                            b = mBayer->element(i, j + 1);
+                        }
+                        if (j > 0)
+                        {
+                            b = mBayer->element(i, j - 1);
+                        }
+
+                        if (i < mBayer->h - 1)
+                            r = mBayer->element(i + 1, j);
+                        else
+                            r = mBayer->element(i - 1, j);
+                        break;
+
+                    case 3:
+                        b = mBayer->element(i, j);
+                        if (j < mBayer->w - 1)
+                        {
+                            g += mBayer->element(i, j + 1);
+                            if (i < mBayer->h - 1)
+                                r = mBayer->element(i + 1, j + 1);
+                            else
+                                r = mBayer->element(i - 1, j + 1);
+                            g_div++;
+                        }
+                        else
+                        {
+                            g += mBayer->element(i, j - 1);
+                            if (i < mBayer->h - 1)
+                                r = mBayer->element(i + 1, j - 1);
+                            else
+                                r = mBayer->element(i - 1, j - 1);
+                            g_div++;
+                        }
+                        g /= g_div;
+                        break;
+                    }
+                    result->element(i, j) = RGBColor48(r, g, b);
+                }
+            }
+        }
+    }
+
     deletearr_safe(rgbDiff[0]);
     deletearr_safe(rgbDiff[1]);
     deletearr_safe(rgbDiff[2]);
@@ -571,7 +690,7 @@ RGB48Buffer* Debayer::fourier()
             if (distx > w * coeff || disty > h * coeff)
             {
                 int maxdist = max(distx, disty);
-                    mul = (double)w * coeff / pow(distx, 1.1);
+                mul = (double)w * coeff / pow(distx, 1.1);
             }
             out_r[i*w + j][0] /= (h * w);
             out_r[i*w + j][1] /= (h * w);
@@ -930,7 +1049,6 @@ void Debayer::fromRgb(RGB48Buffer *inRgb)
     {
         for (int j = 0; j < mBayer->w; j++)
         {
-            int offset = i * mBayer->w + j;
             uint8_t c = colorFromBayerPos(i, j, false);
             mBayer->element(i, j) = inRgb->element(i, j)[2 - c];
         }
