@@ -603,8 +603,8 @@ void run_pois(int camIdOffset, bool distorted)
             {
                 if (p.photostationId != pi)
                     continue;
-                auto pp = rec.scene.photostations[p.photostationId].project(o.worldPoint, p.cameraId);
-                auto pp2= rec.scene.photostations[p.photostationId].project(wp, p.cameraId);
+                auto pp = rec.scene.photostations[p.photostationId].project(wp, p.cameraId);
+                auto pp2= rec.scene.photostations[p.photostationId].project(rp, p.cameraId);
                 auto diff1 = pp - p.projection;
                 auto diff2 = pp2- p.projection;
                 std::cout << !diff1 << "|" << !diff2 << "|";
