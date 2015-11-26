@@ -21,14 +21,6 @@
 # include "openCvDescriptorMatcherWrapper.h"
 #endif
 
-#define M16
-
-#ifdef M16
-#define CAMOFFSET 10
-#else
-#define CAMOFFSET 3
-#endif
-
 corecvs::Vector3dd convertVector(const corecvs::Vector3dd& geodesic)
 {
     auto vec = geodesic;
@@ -40,20 +32,7 @@ corecvs::Vector3dd convertVector(const corecvs::Vector3dd& geodesic)
 #endif
 }
 
-double angles[]
-{
-    0.0,
-    1.88193,
-   13.59540,
-    0.47901,
-  -18.83661,
-    3.33087,
-   -9.35315,
-    0.52329,
-   -1.88995
-};
-
-std::vector<PointObservation__> parsePois(CalibrationJob &calibration, const std::string &filename, int camIdOffset = 3, bool less10Cams = true)
+std::vector<PointObservation__> parsePois(CalibrationJob &calibration, const std::string &filename, int camIdOffset = 3, bool distorted = false, bool less10Cams = true)
 {
     std::ifstream ifs;
     ifs.open(filename, std::ios_base::in);
@@ -109,10 +88,11 @@ std::vector<PointObservation__> parsePois(CalibrationJob &calibration, const std
                 (filename[camIdOffset] - '0')
                 :((filename[camIdOffset] - '0') * 10 + filename[camIdOffset + 1] - '0') - 1;
             PointProjection proj;
-            proj.projection = corecvs::Vector2dd(x, y)-corecvs::Vector2dd(0.5, 0.5);
-#ifdef M16
-            proj.projection = calibration.corrections[camId].map(proj.projection);
-#endif
+            proj.projection = corecvs::Vector2dd(x, y);
+            if (distorted)
+            {
+                proj.projection = calibration.corrections[camId].map(proj.projection);
+            }
             proj.cameraId = camId;
             proj.photostationId = psId;
  //         if (camId == 0)
@@ -186,24 +166,10 @@ std::unordered_map<std::string, corecvs::Affine3DQ>
         location.position[1] = n;
         location.position[2] = h;
 #endif
-//      location.position = axis * location.position;
         double phi=
-#ifdef M16
-            -angles[key[2] - 'A'] / 2.0 / 180.0 * M_PI;
-#else
             0.0;
-#endif
 
-        location.orientation =
-#if 0
-            corecvs::Quaternion(0.0, 0.0, 0.0, 1.0);//corecvs::Quaternion(0.5, 0.5, 0.5, 0.5);//corecvs::Quaternion(sin(M_PI / 4.0), 0.0, 0.0, cos(M_PI / 4.0));
-#else
-        corecvs::Quaternion(0,0,sin(phi),cos(phi / 2.0))
-#ifndef M16
-            ^ corecvs::Quaternion(0.5, 0.5, 0.5, 0.5)
-#endif
-            ;//onjugated;
-#endif
+        location.orientation = corecvs::Quaternion(0.0, 0.0, 0.0, 1.0);
 
         locations[key] = location.toAffine3D();
 
@@ -212,9 +178,10 @@ std::unordered_map<std::string, corecvs::Affine3DQ>
     return locations;
 }
 
-void run_m15_pois()
+void run_pois(int camIdOffset, bool distorted)
 {
-    // 1. Read pois
+    // 0. Reposition camera
+    // 1. Read & filter pois
     // 2. Read GT
     // 3. Run solver
     // 4. Compute reprojection & distance error
@@ -228,6 +195,9 @@ void run_m15_pois()
     JSONGetter getter("calibration.json");
     getter.visit(jobC, "job");
 
+    /*
+     * Repositioning camera into E-N plane by first 6 cameras
+     */
     std::vector<int> perm;
     for (int i = 0; i < jobC.photostation.cameras.size(); ++i)
         perm.push_back(i);
@@ -262,7 +232,6 @@ void run_m15_pois()
         jobC.photostation.cameras[i] = jobC.photostation.getRawCamera(i);
     }
 
-#ifdef M16
     jobC.photostation.location.rotor = corecvs::Quaternion::FromMatrix(
             corecvs::Matrix33(
                 1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0
@@ -272,7 +241,6 @@ void run_m15_pois()
     {
         jobC.photostation.cameras[i] = jobC.photostation.getRawCamera(i);
     }
-#endif
 
     jobC.photostation.location.rotor = corecvs::Quaternion(0, 0, 0, 1);
     jobC.photostation.location.shift = corecvs::Vector3dd(0, 0, 0);
@@ -307,15 +275,11 @@ void run_m15_pois()
      * Next step is parsing pois (and scaling/transforming them from geodesic
      * system)
      */
-    rec.scene.pointObservations = parsePois(jobC, "pois_m15.txt",CAMOFFSET, true);
+    rec.scene.pointObservations = parsePois(jobC, "pois_m15.txt",camIdOffset, distorted, true);
 
     /*
-     * Now we run solver 2 times: with geometrical error,
-     * and continue optimization with graphical (e.g. reprojection)
-     * error
+     * Now we select only good points
      */
-    // Geometrical error optimization
-    //
     for (int i = 0; i < rec.scene.photostations.size(); ++i)
     {
         std::vector<std::tuple<int, corecvs::Vector2dd, corecvs::Vector3dd>> pspa;
@@ -333,7 +297,7 @@ void run_m15_pois()
         double bhScore = 1e100;
         corecvs::Affine3DQ bh;
         std::mt19937 rng;
-        for (int iii = 0; iii < 1000; ++iii)
+        for (int iii = 0; iii < 10000; ++iii)
         {
             decltype(pspa) psp;
             int N = pspa.size();
@@ -382,9 +346,6 @@ void run_m15_pois()
                 if (angle < maxAngleError)
                     score -= 1.0;// diff & diff;
             }
-            std::cout << "SP" << (char)('A' + i) << " : " << h.shift;
-            h.rotor.printAxisAndAngle();
-            std::cout << "SC: " << (score) << std::endl;
             if (score < bhScore)
             {
                 bhScore = score;
@@ -395,7 +356,6 @@ void run_m15_pois()
         if (bhScore <= -3);
         rec.scene.photostations[i].location = bh;
     }
-
     std::cout << "ANGLES: " << std::endl;
     for (auto&o : rec.scene.pointObservations)
     {
@@ -429,6 +389,73 @@ void run_m15_pois()
         std::cout << std::endl;
     }
     rec.scene.pointObservations = obsNew;
+    // And refine positions
+#if 1
+    for (int i = 0; i < rec.scene.photostations.size(); ++i)
+    {
+        std::vector<std::tuple<int, corecvs::Vector2dd, corecvs::Vector3dd>> pspa;
+        for (auto &o: rec.scene.pointObservations)
+        {
+            for (auto&p: o.projections)
+            {
+                if (p.photostationId == i && !o.updateable)
+                {
+                    pspa.emplace_back(p.cameraId, p.projection, o.worldPoint);
+                }
+            }
+        }
+        if (pspa.size() < 3)
+            continue;
+
+        double bhScore = 1e100;
+        corecvs::Affine3DQ bh;
+        std::vector<corecvs::Vector3dd> pts, dirs,oris;
+        auto psp = pspa;
+        for (auto& t: psp)
+        {
+            corecvs::Vector3dd dir = jobC.photostation.getRawCamera(std::get<0>(t)).rayFromPixel(std::get<1>(t)).a.normalised();
+            corecvs::Vector3dd ori = jobC.photostation.getRawCamera(std::get<0>(t)).extrinsics.position;
+            corecvs::Vector3dd pt  = std::get<2>(t);
+            pts.push_back(pt);
+            oris.push_back(ori);
+            dirs.push_back(dir);
+        }
+        auto hyp = corecvs::PNPSolver::solvePNP(oris, dirs, pts);
+        int cnt = 0;
+        for (auto& h: hyp)
+        {
+            auto ps = jobC.photostation;
+            ps.location = h;
+            double score = 0.0;
+            int cc = 0;
+            for (auto& t: pspa)
+            {
+                auto proj = ps.project(std::get<2>(t), std::get<0>(t));
+                auto cam = ps.getRawCamera(std::get<0>(t));
+                auto dp = (cam.rayFromPixel(std::get<1>(t)).a).normalised();
+                auto diff = std::get<1>(t) - proj;
+                double angle = std::abs((std::get<2>(t) - cam.extrinsics.position).angleTo(dp)) * 180.0 / M_PI;
+                score += diff & diff;
+            }
+            std::cout << "SP" << (char)('A' + i) << " : " << h.shift;
+            h.rotor.printAxisAndAngle();
+            std::cout << "SC: " << std::sqrt(score / pspa.size()) << std::endl;
+            if (score < bhScore)
+            {
+                bhScore = score;
+                bh = h;
+            }
+        }
+        if (pspa.size() > 2)
+            rec.scene.photostations[i].location = bh;
+    }
+#endif
+    /*
+     * Now we run solver 2 times: with geometrical error,
+     * and continue optimization with graphical (e.g. reprojection)
+     * error
+     */
+    // Geometrical error optimization
 
     rec.solve(true);
     std::vector<double> errors;
@@ -601,28 +628,28 @@ int main(int argc, char **argv)
     init_opencv_descriptors_provider();
     init_opencv_reader_provider();
 
-
-    std::string filenameCalibration = "calibration.json";
-    std::string filenameGPS         = "gps.txt";
-    std::string filenamePly         = "mesh.ply";
-
+    bool m15 = false;
     if (argc > 1)
     {
-        filenameCalibration = std::string(argv[1]);
+        std::string arg(argv[1]);
+        if (arg == "m15")
+        {
+            m15 = true;
+        }
+
+        std::cout << "First argument is " << arg << ", running in " << (m15 ? "m15" : "m16") << " mode" << std::endl;
     }
-    if (argc > 2)
+    std::cout << (m15 ? "m15" : "m16") << " mode is selected" << std::endl;
+
+
+    // M15 settings
+    bool distorted = false;
+    int camIdOffset = 3;
+    // M16 settings
+    if (!m15)
     {
-        filenameGPS = std::string(argv[2]);
+        camIdOffset = 10;
+        distorted = true;
     }
-    if (argc > 3)
-    {
-        filenamePly = std::string(argv[3]);
-    }
-
-    std::cout << "Reading calibration from " << filenameCalibration << std::endl <<
-                 "Reading GPS data from " << filenameGPS << std::endl <<
-                 "Saving mesh to " << filenamePly << std::endl;
-
-
-    run_m15_pois();
+    run_pois(camIdOffset, distorted);
 }
