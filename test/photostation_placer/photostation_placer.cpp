@@ -293,6 +293,7 @@ void run_m15_pois()
     for (auto& cam: jobC.photostation.cameras)
         cam.extrinsics.position *= 1e-3;
 #endif
+    double maxAngleError = 1.0;
 
     ReconstructionJob rec;
     rec.calibrationData = jobC;
@@ -371,15 +372,19 @@ void run_m15_pois()
             auto ps = jobC.photostation;
             ps.location = h;
             double score = 0.0;
-            for (auto& t: psp)
+            for (auto& t: pspa)
             {
                 auto proj = ps.project(std::get<2>(t), std::get<0>(t));
+                auto cam = ps.getRawCamera(std::get<0>(t));
+                auto dp = (cam.rayFromPixel(std::get<1>(t)).a).normalised();
                 auto diff = std::get<1>(t) - proj;
-                score += diff & diff;
+                double angle = std::abs((std::get<2>(t) - cam.extrinsics.position).angleTo(dp)) * 180.0 / M_PI;
+                if (angle < maxAngleError)
+                    score -= 1.0;// diff & diff;
             }
             std::cout << "SP" << (char)('A' + i) << " : " << h.shift;
             h.rotor.printAxisAndAngle();
-            std::cout << "SC: " << std::sqrt(score / 6) << std::endl;
+            std::cout << "SC: " << (score) << std::endl;
             if (score < bhScore)
             {
                 bhScore = score;
@@ -387,6 +392,7 @@ void run_m15_pois()
             }
         }
         }
+        if (bhScore <= -3);
         rec.scene.photostations[i].location = bh;
     }
 
@@ -415,10 +421,10 @@ void run_m15_pois()
             auto dp = (cam.rayFromPixel(p.projection)).a;
             double angle = (o.worldPoint - cam.extrinsics.position).angleTo(dp) * 180.0 / M_PI;
             std::cout << "[SP" << ((char)('A' + p.photostationId)) << p.cameraId << " : " << angle << "]";
-            if (angle < 1)
+            if (std::abs(angle) < maxAngleError)
                 on.projections.push_back(p);
         }
-        if (on.projections.size())
+        if (on.projections.size() > 1)
             obsNew.push_back(on);
         std::cout << std::endl;
     }
@@ -518,6 +524,21 @@ void run_m15_pois()
     // Relative error as difference in POI<->POI distances
     // divided by distance from mean point to mean point between POIs
     double meanGtr = 0.0, gtrCnt = 0.0;
+    for (auto&o  : rec.scene.pointObservations)
+    {
+        std::cout << "REPERROR: " << o.label << " ";
+        for (auto&p : o.projections)
+        {
+            auto wp = rec.scene.backProject(o.projections, o.updateable);
+            auto pp = rec.scene.photostations[p.photostationId].project(o.worldPoint, p.cameraId);
+            auto pp2= rec.scene.photostations[p.photostationId].project(wp, p.cameraId);
+            auto diff1 = pp - p.projection;
+            auto diff2 = pp2- p.projection;
+            std::cout << "SP" << (char)('A' + p.photostationId) << p.cameraId << ": " << !diff1 << " | " << !diff2;
+        }
+        std::cout << std::endl;
+    }
+
     for (auto&o2 : rec.scene.pointObservations)
     {
         for (auto&o : rec.scene.pointObservations)
@@ -535,6 +556,38 @@ void run_m15_pois()
         std::cout << std::endl;
     }
     std::cout << std::endl;
+    /*
+     * Final table output
+     */
+    std::cout << "|_. POI|_. Ground truth|_. Observed|_. Error|_. Distance to mean point|_. Error w.r.t distance to photostations|";
+    for (int i = 0; i < rec.scene.photostations.size(); ++i)
+        std::cout << "_.SP" << ((char)('A' + i)) << " (RP)|_.SP" << ((char)('A' + i)) << " (WP)|";
+    std::cout << std::endl;
+    for (auto& o: rec.scene.pointObservations)
+    {
+        auto wp = o.worldPoint;
+        auto rp = rec.scene.backProject(o.projections, o.updateable);
+        std::cout << "|" << o.label << "|" << wp << "|" << rp << "|" << !(wp - rp) << "|" << !(wp - meanPos) << "|" << (!(wp - rp)/!(wp - meanPos)) * 100.0 << "%|";
+        for (int pi = 0; pi < rec.scene.photostations.size(); ++pi)
+        {
+
+            bool out = false;
+            for (auto& p: o.projections)
+            {
+                if (p.photostationId != pi)
+                    continue;
+                auto pp = rec.scene.photostations[p.photostationId].project(o.worldPoint, p.cameraId);
+                auto pp2= rec.scene.photostations[p.photostationId].project(wp, p.cameraId);
+                auto diff1 = pp - p.projection;
+                auto diff2 = pp2- p.projection;
+                std::cout << !diff1 << "|" << !diff2 << "|";
+                out = true;
+                break;
+            }
+            if (!out) std::cout << "NA|NA|";
+        }
+        std::cout << std::endl;
+    }
     // And here we get mean error in %
     std::cout << "GTRM: " << meanGtr / gtrCnt * 100.0 << std::endl;
     std::cout << "GTM: " << meanGt / gtCnt * 100.0 << std::endl;
