@@ -56,8 +56,10 @@ with_avx {
         QMAKE_CFLAGS   += -mavx
         QMAKE_CXXFLAGS += -mavx
     } else {
-        QMAKE_CFLAGS   += /arch:AVX     # = $$QMAKE_CFLAGS_AVX
-        QMAKE_CXXFLAGS += /arch:AVX
+        QMAKE_CFLAGS   += $$QMAKE_CFLAGS_AVX        # Qmake uses it as "-arch:AVX" for msvc >= VS-2010
+        QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_AVX
+
+        #!build_pass: message(DEFINES = $$DEFINES)
     }
 }
 
@@ -66,9 +68,9 @@ with_avx2 {
     !win32-msvc* {
         QMAKE_CFLAGS   += -mavx2
         QMAKE_CXXFLAGS += -mavx2
-    } else:!win32-msvc2010 {
-        QMAKE_CFLAGS   += /arch:AVX2     # = $$QMAKE_CFLAGS_AVX2
-        QMAKE_CXXFLAGS += /arch:AVX2
+    } else {
+        QMAKE_CFLAGS   += $$QMAKE_CFLAGS_AVX2        # Qmake uses it as "-arch:AVX2" for msvc >= VS-2015
+        QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_AVX2
     }
 }
 
