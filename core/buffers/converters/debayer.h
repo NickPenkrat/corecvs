@@ -78,6 +78,8 @@ private:
     void nearest(RGB48Buffer* out);
     void ahd(RGB48Buffer* out);
 
+    void borderInterpolate(int radius, RGB48Buffer *result);
+
     /* utilitary functions */
 
     /**
