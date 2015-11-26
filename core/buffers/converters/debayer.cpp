@@ -78,59 +78,13 @@ void Debayer::linear(RGB48Buffer *result)
     int swapCols = mBayerPos & 1;
     int swapRows = (mBayerPos & 2) >> 1;
 
-    int i = 0;
+    int i = 2 - swapRows;
 
-    for (; i < 2 - swapRows; i++)
-    {
-        for (int j = 0; j < mBayer->w; j++)
-        {
-            int color = colorFromBayerPos(i, j);
+    borderInterpolate(2 - min(swapCols, swapRows), result);
 
-            switch (color)
-            {
-            case 0: // red
-
-                    // conventionally, y element is first and x is second when it comes to element getters in buffers, but in vectors it's actually inverse
-                    // TODO: should I comply with the variable names and use vectors of the form { x, y } (used currently) or reverse variable order (change to { y, x })?
-                    // the latter has a better readability while the former aims to avoid confusion and clutter in coordinates
-                    // known color
-                red = mBayer->element(i, j);
-
-                // interpolated colors
-                green = weightedBayerAvg({ { j,     i - 1 }, { j,     i + 1 }, { j - 1, i     }, { j + 1, i     } });
-                blue  = weightedBayerAvg({ { j - 1, i - 1 }, { j + 1, i - 1 }, { j - 1, i + 1 }, { j + 1, i + 1 } });
-                break;
-            case 1: // green1
-                green = mBayer->element(i, j);
-
-                red  = weightedBayerAvg({ { j - 1, i     }, { j + 1, i     } });
-                blue = weightedBayerAvg({ { j,     i - 1 }, { j,     i + 1 } });
-                break;
-            case 2: // green2
-                green = mBayer->element(i, j);
-
-                red  = weightedBayerAvg({ { j,     i - 1 }, { j,     i + 1 } });
-                blue = weightedBayerAvg({ { j - 1, i     }, { j + 1, i     } });
-                break;
-            case 3: // blue
-                blue = mBayer->element(i, j);
-
-                red   = weightedBayerAvg({ { j - 1, i - 1 }, { j + 1, i - 1 }, { j - 1,     i + 1 }, { j + 1, i + 1 } });
-                green = weightedBayerAvg({ { j,     i - 1 }, { j,     i + 1 }, { j - 1,     i     }, { j + 1, i     } });
-                break;
-            }
-
-            result->element(i, j) = {
-                mCurve[clip((red - mBlack) * mScaleMul[0])],
-                mCurve[clip((green - mBlack) * mScaleMul[1])],
-                mCurve[clip((blue - mBlack) * mScaleMul[2])]
-            };
-        }
-    }
-
-    // TODO: sse part
-    //#ifdef WITH_SSE
-    /*
+    // TODO: sse-ify this part
+    #ifdef WITH_SSE
+    
     for (; i < mBayer->h - 2 + swapRows; i += 2)
     {
         for (int j = 2 - swapCols; j < mBayer->w - 2 + swapCols; j += 2)
@@ -146,7 +100,7 @@ void Debayer::linear(RGB48Buffer *result)
 
             // G1 pixel
             green =  mBayer->element(i, j + 1);
-            red   = (mBayer->element(i, j) + mBayer->element(i, j + 2)) / 2;
+            red   = (mBayer->element(i,     j    ) + mBayer->element(i,     j + 2)) / 2;
             blue  = (mBayer->element(i + 1, j + 1) + mBayer->element(i - 1, j + 1)) / 2;
 
             result->element(i, j + 1) = { clip((red - mBlack) * mScaleMul[0]), clip((green - mBlack) * mScaleMul[0]), clip((blue - mBlack) * mScaleMul[0]) };
@@ -162,66 +116,54 @@ void Debayer::linear(RGB48Buffer *result)
             // B pixel - R inverted
             blue  =  mBayer->element(i + 1, j + 1);
             green = (mBayer->element(i + 1, j) + mBayer->element(i + 1, j + 2) + mBayer->element(i + 2, j + 1) + mBayer->element(i, j + 1)) / 4;
-            red   = (mBayer->element(i, j) + mBayer->element(i, j + 2) +
+            red   = (mBayer->element(i,     j) + mBayer->element(i,     j + 2) +
                      mBayer->element(i + 2, j) + mBayer->element(i + 2, j + 2)) / 4;
 
             result->element(i + 1, j + 1) = { clip((red - mBlack) * mScaleMul[0]), clip((green - mBlack) * mScaleMul[0]), clip((blue - mBlack) * mScaleMul[0]) };
 
         }
     }
-    */
-    //#endif
+    
+    #endif
 
-    for (; i < mBayer->h; i += 2)
-        for (int j = 0; j < mBayer->w; j += 2)
+    for (; i < mBayer->h - 2 + swapRows; i += 2)
+    {
+        for (int j = 2 - swapCols; j < mBayer->w - 2 + swapCols; j += 2)
         {
 
-            for (int k = 0; k < 2; k++)
-                for (int l = 0; l < 2; l++)
-                {
-                    int color = colorFromBayerPos(i + k, j + l);
+            // R pixel
+            red = mBayer->element(i, j);
+            green = (mBayer->element(i, j - 1) + mBayer->element(i, j + 1) + mBayer->element(i + 1, j) + mBayer->element(i - 1, j)) / 4;
+            blue = (mBayer->element(i - 1, j - 1) + mBayer->element(i - 1, j + 1) +
+                mBayer->element(i + 1, j - 1) + mBayer->element(i + 1, j + 1)) / 4;
 
-                    switch (color)
-                    {
-                    case 0: // red
+            result->element(i, j) = { clip((red - mBlack) * mScaleMul[0]), clip((green - mBlack) * mScaleMul[0]), clip((blue - mBlack) * mScaleMul[0]) };
 
-                    // conventionally, y element is first and x is second when it comes to element getters in buffers, but in vectors it's actually inverse
-                    // TODO: should I comply with the variable names and use vectors of the form { x, y } (used currently) or reverse variable order (change to { y, x })?
-                    // the latter has a better readability while the former aims to avoid confusion and clutter in coordinates
-                    // known color
-                        red = mBayer->element(i + k, j + l);
+            // G1 pixel
+            green = mBayer->element(i, j + 1);
+            red = (mBayer->element(i, j) + mBayer->element(i, j + 2)) / 2;
+            blue = (mBayer->element(i + 1, j + 1) + mBayer->element(i - 1, j + 1)) / 2;
 
-                        // interpolated colors
-                        green = weightedBayerAvg({ { j + l,     i + k - 1 }, { j + l,     i + k + 1 }, { j + l - 1, i + k     }, { j + l + 1, i + k     } });
-                        blue  = weightedBayerAvg({ { j + l - 1, i + k - 1 }, { j + l + 1, i + k - 1 }, { j + l - 1, i + k + 1 }, { j + l + 1, i + k + 1 } });
-                        break;
-                    case 1: // green1
-                        green = mBayer->element(i + k, j + l);
+            result->element(i, j + 1) = { clip((red - mBlack) * mScaleMul[0]), clip((green - mBlack) * mScaleMul[0]), clip((blue - mBlack) * mScaleMul[0]) };
 
-                        red  = weightedBayerAvg({ { j + l - 1, i + k     }, { j + l + 1, i + k     } });
-                        blue = weightedBayerAvg({ { j + l,     i + k - 1 }, { j + l    , i + k + 1 } });
-                        break;
-                    case 2: // green2
-                        green = mBayer->element(i + k, j + l);
 
-                        red  = weightedBayerAvg({ { j + l,     i + k - 1 }, { j + l,     i + k + 1 } });
-                        blue = weightedBayerAvg({ { j + l - 1, i + k     }, { j + l + 1, i + k     } });
-                        break;
-                    case 3: // blue
-                        blue = mBayer->element(i + k, j + l);
+            // G2 pixel - G1 inverted
+            green = mBayer->element(i + 1, j);
+            blue = (mBayer->element(i + 1, j - 1) + mBayer->element(i + 1, j + 1)) / 2;
+            red = (mBayer->element(i + 2, j) + mBayer->element(i, j)) / 2;
 
-                        red   = weightedBayerAvg({ { j + l - 1, i + k - 1 }, { j + l + 1, i + k - 1 }, { j + l - 1, i + k + 1 }, { j + l + 1, i + k + 1 } });
-                        green = weightedBayerAvg({ { j + l,     i + k - 1 }, { j + l,     i + k + 1 }, { j + l - 1, i + k     }, { j + l + 1, i + k     } });
-                        break;
-                    }
+            result->element(i + 1, j) = { clip((red - mBlack) * mScaleMul[0]), clip((green - mBlack) * mScaleMul[0]), clip((blue - mBlack) * mScaleMul[0]) };
 
-                    result->element(i + k, j + l) = {
-                    mCurve[clip((red - mBlack) * mScaleMul[0])],
-                    mCurve[clip((green - mBlack) * mScaleMul[1])],
-                    mCurve[clip((blue - mBlack) * mScaleMul[2])]
-                    };
-                }
+            // B pixel - R inverted
+            blue = mBayer->element(i + 1, j + 1);
+            green = (mBayer->element(i + 1, j) + mBayer->element(i + 1, j + 2) + mBayer->element(i + 2, j + 1) + mBayer->element(i, j + 1)) / 4;
+            red = (mBayer->element(i, j) + mBayer->element(i, j + 2) +
+                mBayer->element(i + 2, j) + mBayer->element(i + 2, j + 2)) / 4;
+
+            result->element(i + 1, j + 1) = { clip((red - mBlack) * mScaleMul[0]), clip((green - mBlack) * mScaleMul[0]), clip((blue - mBlack) * mScaleMul[0]) };
+
         }
+    }
 
 }
 
@@ -512,7 +454,16 @@ void Debayer::ahd(RGB48Buffer *result)
             }
         }
 
+    borderInterpolate(radius, result);
 
+    deletearr_safe(rgbDiff[0]);
+    deletearr_safe(rgbDiff[1]);
+    deletearr_safe(rgbDiff[2]);
+    deletearr_safe(rgbDiff[3]);
+}
+
+void Debayer::borderInterpolate(int radius, RGB48Buffer *result)
+{
     // process border using Nearest Neighbor interpolation
     // for green color, linear interpolation was used
     uint16_t r = 0;
@@ -534,7 +485,7 @@ void Debayer::ahd(RGB48Buffer *result)
                 jBounds = jPartial;
             else
                 jBounds = jFull;
-            
+
             int j = 0;
             for (int pass = 0; pass < 2; pass++)
             {
@@ -635,10 +586,6 @@ void Debayer::ahd(RGB48Buffer *result)
         }
     }
 
-    deletearr_safe(rgbDiff[0]);
-    deletearr_safe(rgbDiff[1]);
-    deletearr_safe(rgbDiff[2]);
-    deletearr_safe(rgbDiff[3]);
 }
 
 RGB48Buffer* Debayer::fourier()
