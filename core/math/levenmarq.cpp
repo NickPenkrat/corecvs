@@ -83,6 +83,9 @@ vector<double> LevenbergMarquardt::fit(const vector<double> &input, const vector
          *      with some non-zero cost.
          *      May be we need to investigate, from which problem size we should switch to BLAS
          *      implementation.
+         * NOTE: Cool guys do not compute JTJ explicitly, since we can get all useful info from
+         *       J's QR decomposition (Q term cancels out and is not needed explicitly),
+         *       but we are using JTJ in user-enableable ouput, so I do not implement QR-way
          */
 #ifndef WITH_BLAS
         Matrix JT = J.t();
