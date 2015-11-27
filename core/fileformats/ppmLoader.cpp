@@ -205,7 +205,7 @@ RGB48Buffer* PPMLoader::rgb48BufferCreateFromPPM(const string& name, MetaData *m
             metadata["bits"][0]++;
         }
         if (metadata["white"].empty())
-            calcWhite = true;
+            metadata["white"].push_back(maxval);
     }
 
     result = new RGB48Buffer(h, w, false);
@@ -226,15 +226,11 @@ RGB48Buffer* PPMLoader::rgb48BufferCreateFromPPM(const string& name, MetaData *m
     {
         // 1-byte case
         for (i = 0; i < h; i++)
-            for (j = 0; j < w * 3; j += 3)
+            for (j = 0; j < w; j++)
             {
                 for (c = 0; c < 3; c++)
                 {
-                    result->element(i, j / 3)[2 - c] = (charImage[i * w * 3 + j + c]);
-
-                    if (calcWhite)
-                        if (result->element(i, j / 3)[c] > white)
-                            white = result->element(i, j / 3)[c];
+                    result->element(i, j)[2 - c] = (charImage[i * w * 3 + j * 3 + c]);
                 }
             }
     }
@@ -243,16 +239,13 @@ RGB48Buffer* PPMLoader::rgb48BufferCreateFromPPM(const string& name, MetaData *m
         // 2-byte case
         for (i = 0; i < h; i++)
         {
-            for (j = 0; j < w * 2; j += 2)
+            for (j = 0; j < w * 2; j++)
             {
                 for (c = 2; c >= 0; c--)
                 {
-                    int offset = i * w * 2 + j;
-                    result->element(i, j / 2)[c] = ((charImage[offset + 0]) << 8 |
+                    int offset = (i * w + j) * 6;
+                    result->element(i, j)[2 - c] = ((charImage[offset + 0]) << 8 |
                                                     (charImage[offset + 1]));
-
-                    if (calcWhite && result->element(i, j / 2)[c] > white)
-                        white = result->element(i, j / 2)[c];
                 }
             }
         }

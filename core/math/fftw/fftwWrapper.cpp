@@ -54,6 +54,22 @@ void FFTW::transformBackward(int size, fftw_complex *input, fftw_complex *output
     transform(size, input, output, FFTW_BACKWARD);
 }
 
+void FFTW::transformBackwardReal(int sizeX, int sizeY, fftw_complex *input, double *output)
+{
+    if (mPlan)
+        fftw_destroy_plan(mPlan);
+
+    if (sizeY > 0)
+        mPlan = fftw_plan_dft_c2r_2d(sizeX, sizeY, input, output, 0);
+    else
+        mPlan = fftw_plan_dft_c2r_1d(sizeX, input, output, 0);
+
+    mDimensions.clear();
+    mDimensions.push_back(sizeX);
+    mDimensions.push_back(sizeY);
+    fftw_execute(mPlan);
+}
+
 void FFTW::transform2D(int sizeX, int sizeY, fftw_complex *input, fftw_complex *output, int direction)
 {
     doTransform(sizeX, sizeY, input, output, direction);

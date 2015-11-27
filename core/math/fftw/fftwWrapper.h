@@ -106,6 +106,9 @@ public:
     */
     void transform2D(int sizeX, int sizeY, fftw_complex *input, fftw_complex *output, int direction);
 
+
+    void transformBackwardReal(int sizeX, int sizeY, fftw_complex *input, double *output);
+
 };
 
 }
