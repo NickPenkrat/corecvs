@@ -8,6 +8,7 @@
  */
 #include <fstream>
 #include <regex>
+#include <random>
 
 #include "reconstructionSolver.h"
 #include "jsonGetter.h"
