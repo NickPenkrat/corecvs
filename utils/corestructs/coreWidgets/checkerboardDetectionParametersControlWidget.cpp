@@ -20,6 +20,7 @@ CheckerboardDetectionParametersControlWidget::CheckerboardDetectionParametersCon
 {
     mUi->setupUi(this);
 
+    QObject::connect(mUi->estimateUndistortedFromDistortedCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->useUndistortionCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->algorithmComboBox, SIGNAL(currentIndexChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->channelComboBox, SIGNAL(currentIndexChanged(int)), this, SIGNAL(paramsChanged()));
@@ -60,6 +61,7 @@ void CheckerboardDetectionParametersControlWidget::saveParamWidget(WidgetSaver  
 void CheckerboardDetectionParametersControlWidget::getParameters(CheckerboardDetectionParameters& params) const
 {
 
+    params.setEstimateUndistortedFromDistorted(mUi->estimateUndistortedFromDistortedCheckBox->isChecked());
     params.setUseUndistortion  (mUi->useUndistortionCheckBox->isChecked());
     params.setAlgorithm        (static_cast<CheckerboardDetectionAlgorithm::CheckerboardDetectionAlgorithm>(mUi->algorithmComboBox->currentIndex()));
     params.setChannel          (static_cast<ImageChannel::ImageChannel>(mUi->channelComboBox->currentIndex()));
@@ -85,7 +87,8 @@ CheckerboardDetectionParameters *CheckerboardDetectionParametersControlWidget::c
 
 
     CheckerboardDetectionParameters *result = new CheckerboardDetectionParameters(
-          mUi->useUndistortionCheckBox->isChecked()
+          mUi->estimateUndistortedFromDistortedCheckBox->isChecked()
+        , mUi->useUndistortionCheckBox->isChecked()
         , static_cast<CheckerboardDetectionAlgorithm::CheckerboardDetectionAlgorithm>(mUi->algorithmComboBox->currentIndex())
         , static_cast<ImageChannel::ImageChannel>(mUi->channelComboBox->currentIndex())
         , mUi->cellSizeHorSpinBox->value()
@@ -106,6 +109,7 @@ void CheckerboardDetectionParametersControlWidget::setParameters(const Checkerbo
 {
     // Block signals to send them all at once
     bool wasBlocked = blockSignals(true);
+    mUi->estimateUndistortedFromDistortedCheckBox->setChecked(input.estimateUndistortedFromDistorted());
     mUi->useUndistortionCheckBox->setChecked(input.useUndistortion());
     mUi->algorithmComboBox->setCurrentIndex(input.algorithm());
     mUi->channelComboBox->setCurrentIndex(input.channel());

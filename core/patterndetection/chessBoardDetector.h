@@ -1,6 +1,8 @@
 #ifndef CHESSBOARDDETECTOR
 #define CHESSBOARDDETECTOR
 
+#include <memory>
+
 #include "calculationStats.h"
 
 #include "patternDetector.h"
@@ -59,6 +61,7 @@ private:
 
     ChessBoardCornerDetector detector;
     ChessBoardAssembler assembler;
+    std::shared_ptr<CirclePatternGenerator> sharedGenerator;
 
 /* Some statistics */
     Statistics *stats;

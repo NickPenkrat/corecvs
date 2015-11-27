@@ -14,22 +14,20 @@ class LoggerWidget : public QWidget, public LogDrain
 
 public:
     LoggerWidget(QWidget *parent = 0);
-    ~LoggerWidget();
+    virtual ~LoggerWidget();
 
     virtual void drain(Log::Message &message);
 
     static const char* iconResources[];
+
 public slots:
 	void doDrain(Log::Message message);
 
 private:
-    Ui::LoggerWidgetClass ui;
-
-    QIcon **mLevelIcons;
-    QPushButton **mLevelFilters;
-
-    QFont *logFont;
-
+    Ui::LoggerWidgetClass   ui;
+    QIcon                   **mLevelIcons;
+    QPushButton             **mLevelFilters;
+    QFont                   *logFont;
 };
 
 #endif // LOGGERWIDGET_H

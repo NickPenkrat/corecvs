@@ -10,11 +10,70 @@
 
 #include <random>
 
+using namespace corecvs;
+
 const int DEFAULT_SEED = 777;
 const int RNG_RETRIES = 131072;
 const double REL_SOL_TOLERANCE = 1e-5;
 const double COEFF_LIMIT = 1e2;
 const double MAX_SCALE_LIMIT = 1e2;
+#define M(i, j, c) m.a(i, j) = c;
+#define L(i, j, c) l.a(i, j) = c;
+#define MR(i, j, c) mr.a(i, j)= c;
+
+TEST(PolynomialMatrixTest, testMul)
+{
+    corecvs::PolynomialMatrix m(3, 4);
+    corecvs::Polynomial poly(1.0);
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 4; ++j)
+        {
+            m.a(i, j) = poly;
+            poly *= corecvs::Polynomial::X();
+        }
+    }
+    corecvs::Matrix l(4, 3);
+    L(0, 0, 1.0); L(0, 1, 2.0); L(0, 2, 3.0);
+    L(1, 0, 4.0); L(1, 1, 6.0); L(1, 2, 8.0);
+    L(2, 0,10.0); L(2, 1,11.0); L(2, 2, 9.0);
+    L(3, 0,-1.0); L(3, 1, 1.0); L(3, 2, 2.0);
+
+    auto MM = l * m;
+    bool validType = std::is_same<decltype(MM), corecvs::PolynomialMatrix>::value;
+    ASSERT_TRUE(validType);
+    ASSERT_EQ(MM.h, l.h);
+    ASSERT_EQ(MM.w, m.w);
+
+    auto x = corecvs::Polynomial::X();
+    auto x2 = x * x;
+    auto x3 = x * x2;
+    auto x4 = x2 * x2;
+    auto x5 = x4 * x;
+    auto x6 = x4 * x2;
+    auto x7 = x4 * x3;
+    auto x8 = x4 * x4;
+    auto x9 = x4 * x5;
+    auto x10= x5 * x5;
+    auto x11= x6 * x5;
+    corecvs::PolynomialMatrix mr(4, 4);
+
+    MR(0, 0, 3*x8 + 2*x4 + 1);   MR(0, 1, 3*x9 + 2*x5 + x);     MR(0, 2, 3*x10 + 2*x6 + x2);     MR(0, 3, 3*x11 + 2*x7 + x3);
+    MR(1, 0, 8*x8 + 6*x4 + 4);   MR(1, 1, 8*x9 + 6*x5 + 4*x);   MR(1, 2, 8*x10 + 6*x6 + 4*x2);   MR(1, 3, 8*x11 + 6*x7 + 4*x3);
+    MR(2, 0, 9*x8 + 11*x4 + 10); MR(2, 1, 9*x9 + 11*x5 + 10*x); MR(2, 2, 9*x10 + 11*x6 + 10*x2); MR(2, 3, 9*x11 + 11*x7 + 10*x3);
+    MR(3, 0, 2*x8 + x4 - 1);     MR(3, 1, 2*x9 + x5 - x);       MR(3, 2, 2*x10 + x6 - x2);       MR(3, 3, 2*x11 + x7 - x3);
+
+    auto diff = MM - mr;
+    for (int i = 0; i < 4; ++i)
+    {
+        for (int j = 0; j < 4; ++j)
+        {
+            auto p = diff.a(i, j);
+            for (size_t i = 0; i <= p.degree(); ++i)
+                ASSERT_NEAR(p[i], 0.0, 1e-9);
+        }
+    }
+}
 
 TEST(PolynomialMatrixTest, testBasics)
 {
@@ -39,7 +98,6 @@ TEST(PolynomialMatrixTest, testBasics)
     }
 }
 
-#define M(a, b, c) m.element(a, b) = c;
 auto X = corecvs::Polynomial::X();
 
 TEST(PolynomialMatrixTest, testEvaluate)
@@ -143,6 +201,10 @@ TEST(PolynomialTest, testBasics)
     ASSERT_NEAR(poly(2.0), 0.0, 1e-9);
     ASSERT_NEAR(poly(3.0), 0.0, 1e-9);
     ASSERT_NEAR(poly(4.0), 6.0, 1e-9);
+    auto mpoly = -poly;
+    mpoly += poly;
+    for (size_t i = 0; i <= mpoly.degree(); ++i)
+        ASSERT_NEAR(mpoly[i], 0.0, 1e-9);
 }
 
 TEST(PolynomialTest, testFromRoots)

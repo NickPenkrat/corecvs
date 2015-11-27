@@ -52,7 +52,7 @@ TEST(Logger, testObjectLog)
         //auto &prev = Log::mLogDrains[0];
         {
             Log::mLogDrains.resize(0);
-            Log::mLogDrains.push_back(std::unique_ptr<LogDrain>(new StdStreamLogDrain(os)));
+            Log::mLogDrains.add(new StdStreamLogDrain(os));
 
             Foo foo1(123);
             Foo foo2(456);

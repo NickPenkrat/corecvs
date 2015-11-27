@@ -6,8 +6,23 @@
 #include "abstractPainter.h"
 #include "homographyReconstructor.h"
 
-BoardAligner::BoardAligner(BoardAlignerParams params) : BoardAlignerParams(params)
+BoardAligner::BoardAligner(BoardAlignerParams params) : BoardAlignerParams(params), generator(FillGenerator(params))
 {
+}
+
+BoardAligner::BoardAligner(BoardAlignerParams params, const std::shared_ptr<CirclePatternGenerator> &sharedGenerator)
+    : BoardAlignerParams(params), generator(sharedGenerator)
+{
+    CORE_ASSERT_TRUE_S(sharedGenerator);
+}
+
+CirclePatternGenerator* BoardAligner::FillGenerator(const BoardAlignerParams &params)
+{
+    CirclePatternGenerator* generator = new CirclePatternGenerator();
+    int N = (int)params.boardMarkers.size();
+    for (int i = 0; i < N; ++i)
+        generator->addToken(i, params.boardMarkers[i].circleRadius, params.boardMarkers[i].circleCenters);
+    return generator;
 }
 
 bool BoardAligner::align(DpImage &img)
@@ -416,13 +431,7 @@ void BoardAligner::classify(bool trackOrientation, DpImage &img)
     for (auto& r: classifier)
         r.resize(w, std::make_pair(-1, -1));
 
-    CirclePatternGenerator gen;
-    int N = (int)boardMarkers.size();
-    for (int i = 0; i < N; ++i)
-        gen.addToken(i, boardMarkers[i].circleRadius, boardMarkers[i].circleCenters);
-
     std::vector<std::pair<std::pair<int,int>, double>> data;
-    DpImage tokens((h - 1) * gen.patternSize, (w - 1) * gen.patternSize);
 
     for (int i = 0; i + 1 < h; ++i)
     {
@@ -437,13 +446,7 @@ void BoardAligner::classify(bool trackOrientation, DpImage &img)
             double score;
             corecvs::Matrix33 orientation, res;
             DpImage query;
-            int cl =  gen.getBestToken(img, {A, B, C, D}, score, orientation, res);//, query);
-            for (int ii = 0; ii < query.h; ++ii)
-            {
-                for (int jj = 0; jj < query.w; ++jj)
-                    tokens.element(ii + i * gen.patternSize, jj + j * gen.patternSize)
-                        = query.element(ii, jj);
-            }
+            int cl =  generator->getBestToken(img, {A, B, C, D}, score, orientation, res);//, query);
 
             if (!trackOrientation)
             {

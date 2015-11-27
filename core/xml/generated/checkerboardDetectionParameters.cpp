@@ -40,6 +40,17 @@ int CheckerboardDetectionParameters::staticInit()
     fields().push_back(
         new BoolField
         (
+          CheckerboardDetectionParameters::ESTIMATE_UNDISTORTED_FROM_DISTORTED_ID,
+          offsetof(CheckerboardDetectionParameters, mEstimateUndistortedFromDistorted),
+          true,
+          "Estimate undistorted from distorted",
+          "Estimate undistorted from distorted",
+          "Estimate undistorted from distorted"
+        )
+    );
+    fields().push_back(
+        new BoolField
+        (
           CheckerboardDetectionParameters::USE_UNDISTORTION_ID,
           offsetof(CheckerboardDetectionParameters, mUseUndistortion),
           true,

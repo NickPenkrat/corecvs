@@ -237,11 +237,11 @@ class SimpleScalarField : public BaseField
 public:
     typedef Type CPPType;
 
-    Type defaultValue;
-    bool hasAdditionalValues;
-    Type min;
-    Type max;
-    Type step;
+    Type    defaultValue;
+    bool    hasAdditionalValues;
+    Type    min;
+    Type    max;
+    Type    step;
 
     SimpleScalarField (
             int _id,
@@ -298,6 +298,8 @@ public:
     {
         return new SimpleScalarField(*this);
     }
+
+    virtual ~SimpleScalarField() {}
 #endif
 
 };
@@ -320,12 +322,12 @@ public:
     typedef vector<Type> CPPType;
     typedef Type CPPBaseType;
 
-    const Type defaultValue;
-    unsigned defaultSize;
-    bool hasAdditionalValues;
-    Type min;
-    Type max;
-    Type step;
+    const Type  defaultValue;
+    unsigned    defaultSize;
+    bool        hasAdditionalValues;
+    Type        min;
+    Type        max;
+    Type        step;
 
     SimpleVectorField (
             int _id,
@@ -387,6 +389,8 @@ public:
     {
         return new SimpleVectorField(*this);
     }
+
+    virtual ~SimpleVectorField() {}
 #endif
 
 };
@@ -404,7 +408,7 @@ class StringField : public BaseField
 {
 public:
     typedef std::string CPPType;
-    std::string defaultValue;
+    std::string     defaultValue;
 
     StringField (
             int _id,
@@ -493,7 +497,7 @@ public:
     Reflection(int number, ...)
     {
         va_list marker;
-        va_start( marker, number );
+        va_start(marker, number);
         for (int i = 0; i < number; i++)
         {
             const BaseField *ref = va_arg(marker, const BaseField *);
@@ -546,8 +550,6 @@ public:
 };
 
 
-
-
 class CompositeField : public BaseField
 {
 public:
@@ -561,11 +563,10 @@ public:
             const char *_typeName,
             const char *_decription = NULL,
             const char *_comment = NULL,
-            const Reflection *_reflection = NULL
-    ) :
-        BaseField(_id, TYPE_COMPOSITE, _name, _decription, _comment, _offset),
-        reflection(_reflection),
-        typeName(_typeName)
+            const Reflection *_reflection = NULL)
+        : BaseField(_id, TYPE_COMPOSITE, _name, _decription, _comment, _offset)
+        , reflection(_reflection)
+        , typeName(_typeName)
     {}
 
     CompositeField (
@@ -573,11 +574,10 @@ public:
             int _offset,
             const ReflectionNaming &_nameing,
             const char *_typeName,
-            const Reflection *_reflection = NULL
-    ) :
-        BaseField(_id, TYPE_COMPOSITE, _nameing, _offset),
-        reflection(_reflection),
-        typeName(_typeName)
+            const Reflection *_reflection = NULL)
+        : BaseField(_id, TYPE_COMPOSITE, _nameing, _offset)
+        , reflection(_reflection)
+        , typeName(_typeName)
     {}
 
 #ifdef REFLECTION_WITH_VIRTUAL_SUPPORT
@@ -588,6 +588,8 @@ public:
     {
         return new CompositeField(*this);
     }
+
+    virtual ~CompositeField() {}
 #endif
 
 };
@@ -600,7 +602,7 @@ public:
     const char       *typeName;
     int               size;
 
-    CompositeArrayField (
+    CompositeArrayField(
             int _id,
             int _offset,
             const char *_name,
@@ -608,26 +610,24 @@ public:
             int _size,
             const char *_decription = NULL,
             const char *_comment = NULL,
-            const Reflection *_reflection = NULL
-    ) :
-        BaseField(_id, TYPE_COMPOSITE_ARRAY, _name, _decription, _comment, _offset),
-        reflection(_reflection),
-        typeName(_typeName),
-        size(_size)
+            const Reflection *_reflection = NULL)
+        : BaseField(_id, TYPE_COMPOSITE_ARRAY, _name, _decription, _comment, _offset)
+        , reflection(_reflection)
+        , typeName(_typeName)
+        , size(_size)
     {}
 
-    CompositeArrayField (
+    CompositeArrayField(
             int _id,
             int _offset,
             const ReflectionNaming &_nameing,
             const char *_typeName,
             int _size,
-            const Reflection *_reflection = NULL
-    ) :
-        BaseField(_id, TYPE_COMPOSITE_ARRAY, _nameing, _offset),
-        reflection(_reflection),
-        typeName(_typeName),
-        size(_size)
+            const Reflection *_reflection = NULL)
+        : BaseField(_id, TYPE_COMPOSITE_ARRAY, _nameing, _offset)
+        , reflection(_reflection)
+        , typeName(_typeName)
+        , size(_size)
     {}
 
 #ifdef REFLECTION_WITH_VIRTUAL_SUPPORT
@@ -638,6 +638,8 @@ public:
     {
         return new CompositeArrayField(*this);
     }
+
+    virtual ~CompositeArrayField() {}
 #endif
 
 };
@@ -654,22 +656,17 @@ public:
     ReflectionNaming name;
 
     EnumOption() {}
-    EnumOption(
-        int _id,
+    EnumOption(int _id,
         const char *_name,
         const char *_decription = NULL,
-        const char *_comment = NULL
-    ) :
-        id(_id),
-        name(_name, _decription, _comment)
+        const char *_comment = NULL)
+        : id(_id)
+        , name(_name, _decription, _comment)
     {}
 
-    EnumOption(
-        int _id,
-        const ReflectionNaming &_nameing
-    ) :
-        id(_id),
-        name(_nameing)
+    EnumOption(int _id, const ReflectionNaming &_nameing)
+        : id(_id)
+        , name(_nameing)
     {}
 };
 
@@ -705,7 +702,6 @@ public:
         }
         options.clear();
     }
-
 };
 
 
@@ -717,30 +713,28 @@ public:
     int                   defaultValue;
     const EnumReflection *enumReflection;
 
-    EnumField (
+    EnumField(
             int _id,
             int _offset,
             int _defaultValue,
             const char *_name,
             const char *_decription,
             const char *_comment,
-            const EnumReflection *_enumReflection
-    ) :
-        BaseField(_id, TYPE_ENUM, _name, _decription, _comment, _offset),
-        defaultValue (_defaultValue),
-        enumReflection(_enumReflection)
+            const EnumReflection *_enumReflection)
+        : BaseField(_id, TYPE_ENUM, _name, _decription, _comment, _offset)
+        , defaultValue (_defaultValue)
+        , enumReflection(_enumReflection)
     {}
 
-    EnumField (
+    EnumField(
             int _id,
             int _offset,
             int _defaultValue,
             const ReflectionNaming &_nameing,
-            const EnumReflection *_enumReflection
-    ) :
-        BaseField(_id, TYPE_ENUM, _nameing, _offset),
-        defaultValue (_defaultValue),
-        enumReflection(_enumReflection)
+            const EnumReflection *_enumReflection)
+        : BaseField(_id, TYPE_ENUM, _nameing, _offset)
+        , defaultValue (_defaultValue)
+        , enumReflection(_enumReflection)
     {
         if (enumReflection == NULL) {
             printf("Problem with data\n");
@@ -756,7 +750,7 @@ public:
         return new EnumField(*this);
     }
 
-    virtual ~EnumField()    // it must be virtual with virtual ~BaseField(), but...
+    virtual ~EnumField()    // it must be virtual with virtual ~BaseField()
     {
         delete_safe(enumReflection);
     }
@@ -771,30 +765,29 @@ public:
     typedef void * CPPType;
     const char *targetClass;
 
-
-    PointerField (
-            int _id,
-            int _offset,
-            void * /*_dummy*/,
+    PointerField(int    _id,
+            int         _offset,
+            void *    /*_dummy*/,
             const char *_name,
             const char *_decription,
             const char *_comment,
-            const char *_targetClass
-    ) :
-        BaseField(_id, TYPE_POINTER, _name, _decription, _comment, _offset),
-        targetClass (_targetClass)
+            const char *_targetClass)
+        : BaseField(_id, TYPE_POINTER, _name, _decription, _comment, _offset)
+        , targetClass(_targetClass)
     {}
 
-    PointerField (
-            int _id,
-            int _offset,
-            void * /*_dummy*/,
+    PointerField(int    _id,
+            int         _offset,
+            void *     /*_dummy*/,
             const ReflectionNaming &_nameing,
-            const char *_targetClass
-    ) :
-        BaseField(_id, TYPE_POINTER, _nameing, _offset),
-        targetClass (_targetClass)
+            const char *_targetClass)
+        : BaseField(_id, TYPE_POINTER, _nameing, _offset)
+        , targetClass(_targetClass)
     {}
+
+#ifdef REFLECTION_WITH_VIRTUAL_SUPPORT
+    virtual ~PointerField() {}
+#endif
 
 };
 
@@ -866,7 +859,8 @@ public:
 };
 
 
-class DynamicObject {
+class DynamicObject
+{
 public:
     Reflection *reflection;
     void       *rawObject;
