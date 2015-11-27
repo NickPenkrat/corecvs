@@ -11,6 +11,8 @@
 
 #include "reconstructionSolver.h"
 #include "jsonGetter.h"
+#include "jsonSetter.h"
+#include "pnpSolver.h"
 
 #ifdef WITH_OPENCV
 # include "openCvFileReader.h"
@@ -30,8 +32,7 @@ corecvs::Vector3dd convertVector(const corecvs::Vector3dd& geodesic)
 #endif
 }
 
-
-std::vector<PointObservation__> parsePois(const std::string &filename, bool m15 = true)
+std::vector<PointObservation__> parsePois(CalibrationJob &calibration, const std::string &filename, int camIdOffset = 3, bool distorted = false, bool less10Cams = true)
 {
     std::ifstream ifs;
     ifs.open(filename, std::ios_base::in);
@@ -49,10 +50,13 @@ std::vector<PointObservation__> parsePois(const std::string &filename, bool m15 
         while (!lstr.size() && (bool)ifs)
         {
             std::getline(ifs, lstr);
+            if (lstr.size() && *lstr.rbegin() == '\r')
+                lstr.resize(lstr.size() - 1);
         }
         assert(lstr.size());
         std::stringstream ss(lstr);
-    
+        std::cout << "IN: " << lstr << std::endl;
+
         ss >> label;
         if (label.size() < lstr.size())
         {
@@ -78,19 +82,23 @@ std::vector<PointObservation__> parsePois(const std::string &filename, bool m15 
             ifs >> filename >> x >> y;
             if (x < 0 || y < 0) continue;
 
-            int psId = filename[2] - 'A';
+            int psId = filename[camIdOffset - 1] - 'A';
 
-            int camId = m15 ?
-                (filename[3] - '0')
-                :((filename[3] - '0') * 10 + filename[4] - '0') - 1;
+            int camId = less10Cams ?
+                (filename[camIdOffset] - '0')
+                :((filename[camIdOffset] - '0') * 10 + filename[camIdOffset + 1] - '0') - 1;
             PointProjection proj;
-            proj.projection = corecvs::Vector2dd(x, y)-corecvs::Vector2dd(0.5, 0.5);
+            proj.projection = corecvs::Vector2dd(x, y);
+            if (distorted)
+            {
+                proj.projection = calibration.corrections[camId].map(proj.projection);
+            }
             proj.cameraId = camId;
             proj.photostationId = psId;
- //         if (camId == 0)            
+ //         if (camId == 0)
             projections.push_back(proj);
              std::cout << "POI: LABEL: " << label << ": CAM: " << filename << " (" << camId << "|" << psId << ")" << proj.projection << std::endl;
-            
+
         }
         observation.projections = projections;
 //      if (projections.size())
@@ -158,15 +166,10 @@ std::unordered_map<std::string, corecvs::Affine3DQ>
         location.position[1] = n;
         location.position[2] = h;
 #endif
-//      location.position = axis * location.position;
-        double phi=0.0;//-0.22*M_PI / 180.0;
+        double phi=
+            0.0;
 
-        location.orientation = 
-#if 0
-            corecvs::Quaternion(0.0, 0.0, 0.0, 1.0);//corecvs::Quaternion(0.5, 0.5, 0.5, 0.5);//corecvs::Quaternion(sin(M_PI / 4.0), 0.0, 0.0, cos(M_PI / 4.0));
-#else
-        corecvs::Quaternion(0,0,sin(phi),cos(phi)) ^ corecvs::Quaternion(0.5, 0.5, 0.5, 0.5);//onjugated;
-#endif
+        location.orientation = corecvs::Quaternion(0.0, 0.0, 0.0, 1.0);
 
         locations[key] = location.toAffine3D();
 
@@ -175,13 +178,14 @@ std::unordered_map<std::string, corecvs::Affine3DQ>
     return locations;
 }
 
-void run_m15_pois()
+void run_pois(int camIdOffset, bool distorted)
 {
-    // 1. Read pois
+    // 0. Reposition camera
+    // 1. Read & filter pois
     // 2. Read GT
     // 3. Run solver
     // 4. Compute reprojection & distance error
-    
+
     /*
      * First, we need to read calibration data
      * and scale it
@@ -190,15 +194,78 @@ void run_m15_pois()
     CalibrationJob jobC;
     JSONGetter getter("calibration.json");
     getter.visit(jobC, "job");
+
+    /*
+     * Repositioning camera into E-N plane by first 6 cameras
+     */
+    std::vector<int> perm;
+    for (int i = 0; i < jobC.photostation.cameras.size(); ++i)
+        perm.push_back(i);
+    std::sort(perm.begin(), perm.end(), [&](const int &a, const int &b) { return jobC.photostation.cameras[a].nameId < jobC.photostation.cameras[b].nameId; });
+
+    auto cameras = jobC.photostation.cameras;
+    auto setups = jobC.calibrationSetups;
+    auto observations = jobC.observations;
+
+    for (auto& s: jobC.calibrationSetups)
+        for (auto& v: s)
+            v.cameraId = perm[v.cameraId];
+    for (int i = 0; i < cameras.size(); ++i)
+    {
+        jobC.observations[i] = observations[perm[i]];
+        jobC.photostation.cameras[i] = cameras[i];
+    }
+
+    jobC.photostation.location.shift = corecvs::Vector3dd(0.0, 0.0, 0.0);
+    jobC.photostation.location.rotor = jobC.photostation.cameras[0].extrinsics.orientation;
+    corecvs::Vector3dd meanShift(0.0, 0.0, 0.0);
+    for (int i = 0; i < jobC.photostation.cameras.size(); ++i)
+    {
+        jobC.photostation.cameras[i] = jobC.photostation.getRawCamera(i);
+        if (i < 6)
+            meanShift += jobC.photostation.getRawCamera(i).extrinsics.position / (6.0);
+    }
+    jobC.photostation.location.rotor = corecvs::Quaternion(0.0, 0.0, 0.0, 1.0);
+    jobC.photostation.location.shift = -meanShift;
+    for (int i = 0; i < jobC.photostation.cameras.size(); ++i)
+    {
+        jobC.photostation.cameras[i] = jobC.photostation.getRawCamera(i);
+    }
+
+    jobC.photostation.location.rotor = corecvs::Quaternion::FromMatrix(
+            corecvs::Matrix33(
+                1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0
+                ));
+    jobC.photostation.location.shift = corecvs::Vector3dd(0.0, 0.0, 0.0);
+    for (int i = 0; i < jobC.photostation.cameras.size(); ++i)
+    {
+        jobC.photostation.cameras[i] = jobC.photostation.getRawCamera(i);
+    }
+
+    jobC.photostation.location.rotor = corecvs::Quaternion(0, 0, 0, 1);
+    jobC.photostation.location.shift = corecvs::Vector3dd(0, 0, 0);
+
+    JSONSetter* setter = new JSONSetter("calibration_mod.json");
+    for (int i = 0; i < jobC.calibrationSetupLocations.size(); ++i)
+    {
+       jobC.calibrationSetupLocations[i].position = corecvs::Vector3dd(0, 0, 0);
+       jobC.calibrationSetupLocations[i].orientation = corecvs::Quaternion(0, 0, 0, 1);
+    }
+    setter->visit(jobC, "job");
+    delete setter;
+
+
     auto pps = jobC.photostation;
+    jobC.prepareAllRadialCorrections();
 #ifdef METERS
     for (auto& cam: jobC.photostation.cameras)
         cam.extrinsics.position *= 1e-3;
 #endif
+    double maxAngleError = 1.0;
 
     ReconstructionJob rec;
     rec.calibrationData = jobC;
-    rec.fill(map);
+    rec.fill(map, map.size());
     for (auto& p: rec.scene.photostations)
     {
         std::cout << "CHECKPS: " << p.location.shift << " : " << p.location.rotor << std::endl;
@@ -208,14 +275,188 @@ void run_m15_pois()
      * Next step is parsing pois (and scaling/transforming them from geodesic
      * system)
      */
-    rec.scene.pointObservations = parsePois("pois_m15.txt", true);
+    rec.scene.pointObservations = parsePois(jobC, "pois_m15.txt",camIdOffset, distorted, true);
 
+    /*
+     * Now we select only good points
+     */
+    for (int i = 0; i < rec.scene.photostations.size(); ++i)
+    {
+        std::vector<std::tuple<int, corecvs::Vector2dd, corecvs::Vector3dd>> pspa;
+        for (auto &o: rec.scene.pointObservations)
+        {
+            for (auto&p: o.projections)
+            {
+                if (p.photostationId == i && !o.updateable)
+                {
+                    pspa.emplace_back(p.cameraId, p.projection, o.worldPoint);
+                }
+            }
+        }
+
+        double bhScore = 1e100;
+        corecvs::Affine3DQ bh;
+        std::mt19937 rng;
+        for (int iii = 0; iii < 10000; ++iii)
+        {
+            decltype(pspa) psp;
+            int N = pspa.size();
+            psp.resize(6);
+            int ids[6];
+            int idx = 0;
+            ids[0] = rng() % N;
+            while (idx < 6)
+            {
+                int idd = rng() % N;
+                bool isValid = true;
+                for (int ii = 0; ii < idx; ++ii)
+                    if (ids[ii] == idd)
+                        isValid = false;
+                if (isValid)
+                    ids[idx++] = idd;
+            }
+            for (int kk = 0; kk < 6; ++kk)
+            {
+                psp[kk] = pspa[ids[kk]];
+            }
+
+        std::vector<corecvs::Vector3dd> pts, dirs,oris;
+        for (auto& t: psp)
+        {
+            corecvs::Vector3dd dir = jobC.photostation.getRawCamera(std::get<0>(t)).rayFromPixel(std::get<1>(t)).a.normalised();
+            corecvs::Vector3dd ori = jobC.photostation.getRawCamera(std::get<0>(t)).extrinsics.position;
+            corecvs::Vector3dd pt  = std::get<2>(t);
+            pts.push_back(pt);
+            oris.push_back(ori);
+            dirs.push_back(dir);
+        }
+        auto hyp = corecvs::PNPSolver::solvePNP(oris, dirs, pts);
+        for (auto& h: hyp)
+        {
+            auto ps = jobC.photostation;
+            ps.location = h;
+            double score = 0.0;
+            for (auto& t: pspa)
+            {
+                auto proj = ps.project(std::get<2>(t), std::get<0>(t));
+                auto cam = ps.getRawCamera(std::get<0>(t));
+                auto dp = (cam.rayFromPixel(std::get<1>(t)).a).normalised();
+                auto diff = std::get<1>(t) - proj;
+                double angle = std::abs((std::get<2>(t) - cam.extrinsics.position).angleTo(dp)) * 180.0 / M_PI;
+                if (angle < maxAngleError)
+                    score -= 1.0;// diff & diff;
+            }
+            if (score < bhScore)
+            {
+                bhScore = score;
+                bh = h;
+            }
+        }
+        }
+        if (bhScore <= -3);
+        rec.scene.photostations[i].location = bh;
+    }
+    std::cout << "ANGLES: " << std::endl;
+    for (auto&o : rec.scene.pointObservations)
+    {
+        std::cout << "AE: " <<  o.label << ": ";
+        for (auto&p : o.projections)
+        {
+            auto cam = rec.scene.photostations[p.photostationId].getRawCamera(p.cameraId);
+            auto dp = (cam.rayFromPixel(p.projection)).a;
+            double angle = (o.worldPoint - cam.extrinsics.position).angleTo(dp) * 180.0 / M_PI;
+            std::cout << "[SP" << ((char)('A' + p.photostationId)) << p.cameraId << " : " << angle << "]";
+        }
+        std::cout << std::endl;
+    }
+    decltype(rec.scene.pointObservations) obsNew;
+    for (auto&o : rec.scene.pointObservations)
+    {
+        std::cout << "AE: " <<  o.label << ": ";
+        auto on = o;
+        on.projections.clear();
+        for (auto&p : o.projections)
+        {
+            auto cam = rec.scene.photostations[p.photostationId].getRawCamera(p.cameraId);
+            auto dp = (cam.rayFromPixel(p.projection)).a;
+            double angle = (o.worldPoint - cam.extrinsics.position).angleTo(dp) * 180.0 / M_PI;
+            std::cout << "[SP" << ((char)('A' + p.photostationId)) << p.cameraId << " : " << angle << "]";
+            if (std::abs(angle) < maxAngleError)
+                on.projections.push_back(p);
+        }
+        if (on.projections.size() > 1)
+            obsNew.push_back(on);
+        std::cout << std::endl;
+    }
+    rec.scene.pointObservations = obsNew;
+    // And refine positions
+#if 1
+    for (int i = 0; i < rec.scene.photostations.size(); ++i)
+    {
+        std::vector<std::tuple<int, corecvs::Vector2dd, corecvs::Vector3dd>> pspa;
+        for (auto &o: rec.scene.pointObservations)
+        {
+            for (auto&p: o.projections)
+            {
+                if (p.photostationId == i && !o.updateable)
+                {
+                    pspa.emplace_back(p.cameraId, p.projection, o.worldPoint);
+                }
+            }
+        }
+        if (pspa.size() < 3)
+            continue;
+
+        double bhScore = 1e100;
+        corecvs::Affine3DQ bh;
+        std::vector<corecvs::Vector3dd> pts, dirs,oris;
+        auto psp = pspa;
+        for (auto& t: psp)
+        {
+            corecvs::Vector3dd dir = jobC.photostation.getRawCamera(std::get<0>(t)).rayFromPixel(std::get<1>(t)).a.normalised();
+            corecvs::Vector3dd ori = jobC.photostation.getRawCamera(std::get<0>(t)).extrinsics.position;
+            corecvs::Vector3dd pt  = std::get<2>(t);
+            pts.push_back(pt);
+            oris.push_back(ori);
+            dirs.push_back(dir);
+        }
+        auto hyp = corecvs::PNPSolver::solvePNP(oris, dirs, pts);
+        int cnt = 0;
+        for (auto& h: hyp)
+        {
+            auto ps = jobC.photostation;
+            ps.location = h;
+            double score = 0.0;
+            int cc = 0;
+            for (auto& t: pspa)
+            {
+                auto proj = ps.project(std::get<2>(t), std::get<0>(t));
+                auto cam = ps.getRawCamera(std::get<0>(t));
+                auto dp = (cam.rayFromPixel(std::get<1>(t)).a).normalised();
+                auto diff = std::get<1>(t) - proj;
+                double angle = std::abs((std::get<2>(t) - cam.extrinsics.position).angleTo(dp)) * 180.0 / M_PI;
+                score += diff & diff;
+            }
+            std::cout << "SP" << (char)('A' + i) << " : " << h.shift;
+            h.rotor.printAxisAndAngle();
+            std::cout << "SC: " << std::sqrt(score / pspa.size()) << std::endl;
+            if (score < bhScore)
+            {
+                bhScore = score;
+                bh = h;
+            }
+        }
+        if (pspa.size() > 2)
+            rec.scene.photostations[i].location = bh;
+    }
+#endif
     /*
      * Now we run solver 2 times: with geometrical error,
      * and continue optimization with graphical (e.g. reprojection)
      * error
      */
     // Geometrical error optimization
+
     rec.solve(true);
     std::vector<double> errors;
     rec.scene.computeReprojectionErrors(errors);
@@ -235,6 +476,20 @@ void run_m15_pois()
         auto wp2 = rec.scene.backProject(o.projections, o.updateable);
         std::cout << o.label << " GT: " << wp << " OBS: " << wp2 << " (" << (!(wp - wp2)/1e3) << ")" <<  ": " << (!(wp-wp2)/!(wp - meanPos)) * 100.0 << "% " << std::endl;
     }
+    std::cout << "ANGLES: " << std::endl;
+    for (auto&o : rec.scene.pointObservations)
+    {
+        std::cout << "AE: " <<  o.label << ": ";
+        for (auto&p : o.projections)
+        {
+            auto cam = rec.scene.photostations[p.photostationId].getRawCamera(p.cameraId);
+            auto dp = (cam.rayFromPixel(p.projection)).a;
+            double angle = (o.worldPoint - cam.extrinsics.position).angleTo(dp) * 180.0 / M_PI;
+            std::cout << "[SP" << ((char)('A' + p.photostationId)) << p.cameraId << " : " << angle << "]";
+        }
+        std::cout << std::endl;
+    }
+
     std::cout << "GT:" << std::endl;
     rec.solve(false);
 
@@ -259,7 +514,20 @@ void run_m15_pois()
         }
         std::cout << std::endl;
     }
-    
+    std::cout << "ANGLES: " << std::endl;
+    for (auto&o : rec.scene.pointObservations)
+    {
+        std::cout << "AE: " <<  o.label << ": ";
+        for (auto&p : o.projections)
+        {
+            auto cam = rec.scene.photostations[p.photostationId].getRawCamera(p.cameraId);
+            auto dp = (cam.rayFromPixel(p.projection)).a;
+            double angle = (o.worldPoint - cam.extrinsics.position).angleTo(dp) * 180.0 / M_PI;
+            std::cout << "[SP" << ((char)('A' + p.photostationId)) << p.cameraId << " : " << angle << "]";
+        }
+        std::cout << std::endl;
+    }
+
     /*
      * Two methods of total (distance) error calculation
      */
@@ -283,6 +551,21 @@ void run_m15_pois()
     // Relative error as difference in POI<->POI distances
     // divided by distance from mean point to mean point between POIs
     double meanGtr = 0.0, gtrCnt = 0.0;
+    for (auto&o  : rec.scene.pointObservations)
+    {
+        std::cout << "REPERROR: " << o.label << " ";
+        for (auto&p : o.projections)
+        {
+            auto wp = rec.scene.backProject(o.projections, o.updateable);
+            auto pp = rec.scene.photostations[p.photostationId].project(o.worldPoint, p.cameraId);
+            auto pp2= rec.scene.photostations[p.photostationId].project(wp, p.cameraId);
+            auto diff1 = pp - p.projection;
+            auto diff2 = pp2- p.projection;
+            std::cout << "SP" << (char)('A' + p.photostationId) << p.cameraId << ": " << !diff1 << " | " << !diff2;
+        }
+        std::cout << std::endl;
+    }
+
     for (auto&o2 : rec.scene.pointObservations)
     {
         for (auto&o : rec.scene.pointObservations)
@@ -300,6 +583,38 @@ void run_m15_pois()
         std::cout << std::endl;
     }
     std::cout << std::endl;
+    /*
+     * Final table output
+     */
+    std::cout << "|_. POI|_. Ground truth|_. Observed|_. Error|_. Distance to mean point|_. Error w.r.t distance to photostations|";
+    for (int i = 0; i < rec.scene.photostations.size(); ++i)
+        std::cout << "_.SP" << ((char)('A' + i)) << " (RP)|_.SP" << ((char)('A' + i)) << " (WP)|";
+    std::cout << std::endl;
+    for (auto& o: rec.scene.pointObservations)
+    {
+        auto wp = o.worldPoint;
+        auto rp = rec.scene.backProject(o.projections, o.updateable);
+        std::cout << "|" << o.label << "|" << wp << "|" << rp << "|" << !(wp - rp) << "|" << !(wp - meanPos) << "|" << (!(wp - rp)/!(wp - meanPos)) * 100.0 << "%|";
+        for (int pi = 0; pi < rec.scene.photostations.size(); ++pi)
+        {
+
+            bool out = false;
+            for (auto& p: o.projections)
+            {
+                if (p.photostationId != pi)
+                    continue;
+                auto pp = rec.scene.photostations[p.photostationId].project(wp, p.cameraId);
+                auto pp2= rec.scene.photostations[p.photostationId].project(rp, p.cameraId);
+                auto diff1 = pp - p.projection;
+                auto diff2 = pp2- p.projection;
+                std::cout << !diff1 << "|" << !diff2 << "|";
+                out = true;
+                break;
+            }
+            if (!out) std::cout << "NA|NA|";
+        }
+        std::cout << std::endl;
+    }
     // And here we get mean error in %
     std::cout << "GTRM: " << meanGtr / gtrCnt * 100.0 << std::endl;
     std::cout << "GTM: " << meanGt / gtCnt * 100.0 << std::endl;
@@ -313,28 +628,28 @@ int main(int argc, char **argv)
     init_opencv_descriptors_provider();
     init_opencv_reader_provider();
 
-
-    std::string filenameCalibration = "calibration.json";
-    std::string filenameGPS         = "gps.txt";
-    std::string filenamePly         = "mesh.ply";
-
+    bool m15 = false;
     if (argc > 1)
     {
-        filenameCalibration = std::string(argv[1]);
+        std::string arg(argv[1]);
+        if (arg == "m15")
+        {
+            m15 = true;
+        }
+
+        std::cout << "First argument is " << arg << ", running in " << (m15 ? "m15" : "m16") << " mode" << std::endl;
     }
-    if (argc > 2)
+    std::cout << (m15 ? "m15" : "m16") << " mode is selected" << std::endl;
+
+
+    // M15 settings
+    bool distorted = false;
+    int camIdOffset = 3;
+    // M16 settings
+    if (!m15)
     {
-        filenameGPS = std::string(argv[2]);
+        camIdOffset = 10;
+        distorted = true;
     }
-    if (argc > 3)
-    {
-        filenamePly = std::string(argv[3]);
-    }
-
-    std::cout << "Reading calibration from " << filenameCalibration << std::endl <<
-                 "Reading GPS data from " << filenameGPS << std::endl <<
-                 "Saving mesh to " << filenamePly << std::endl;
-
-
-    run_m15_pois();
+    run_pois(camIdOffset, distorted);
 }
