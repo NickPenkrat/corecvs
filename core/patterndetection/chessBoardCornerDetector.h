@@ -70,6 +70,9 @@ struct CornerKernelSet
     DpKernel A, B, C, D;
 
     CornerKernelSet(double r, double alpha, double psi, bool minify = false);
+#ifdef WITH_AVX
+    void unsafeConvolutor(DpImage &image, DpKernel &kernel, DpImage &dst);
+#endif
 
     // Computes const function for entire image
     void computeCost(DpImage &img, DpImage &c, bool parallelable = true, bool new_style = true);

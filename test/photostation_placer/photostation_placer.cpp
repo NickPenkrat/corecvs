@@ -167,9 +167,6 @@ std::unordered_map<std::string, corecvs::Affine3DQ>
         location.position[1] = n;
         location.position[2] = h;
 #endif
-        double phi=
-            0.0;
-
         location.orientation = corecvs::Quaternion(0.0, 0.0, 0.0, 1.0);
 
         locations[key] = location.toAffine3D();
@@ -277,7 +274,32 @@ void run_pois(int camIdOffset, bool distorted)
      * system)
      */
     rec.scene.pointObservations = parsePois(jobC, "pois_m15.txt",camIdOffset, distorted, true);
-
+    std::cout << "images = {" << std::endl;
+    for (auto &o : rec.scene.pointObservations)
+    {
+        for (auto &p: o.projections)
+        {
+            std::cout << "'/hdd_4t/data/roof_v1/roof_1_SP" << ((char)('A' + p.photostationId)) << p.cameraId << "_0deg_undist.jpg'";
+            if (&p == &(*o.projections.rbegin()))
+                std::cout << ";" << std::endl;
+            else
+                std::cout << ", ";
+        }
+    }
+    std::cout << "};" << std::endl;
+    std::cout << "projections = {" << std::endl;
+    for (auto &o : rec.scene.pointObservations)
+    {
+        for (auto &p: o.projections)
+        {
+            std::cout << "[" << p.projection[0] << " " << p.projection[1] << "]";
+            if (&p == &(*o.projections.rbegin()))
+                std::cout << ";" << std::endl;
+            else
+                std::cout << ", ";
+        }
+    }
+    std::cout << "};" << std::endl;
     /*
      * Now we select only good points
      */
@@ -354,7 +376,7 @@ void run_pois(int camIdOffset, bool distorted)
             }
         }
         }
-        if (bhScore <= -3);
+        if (bhScore <= -3)
         rec.scene.photostations[i].location = bh;
     }
     std::cout << "ANGLES: " << std::endl;
