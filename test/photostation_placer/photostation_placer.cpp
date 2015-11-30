@@ -92,7 +92,7 @@ std::vector<PointObservation__> parsePois(CalibrationJob &calibration, const std
             proj.projection = corecvs::Vector2dd(x, y);
             if (distorted)
             {
-                proj.projection = calibration.corrections[camId].map(proj.projection);
+                proj.projection = calibration.corrections[camId].map(proj.projection[1], proj.projection[0]);
             }
             proj.cameraId = camId;
             proj.photostationId = psId;
@@ -176,7 +176,7 @@ std::unordered_map<std::string, corecvs::Affine3DQ>
     return locations;
 }
 
-void run_pois(int camIdOffset, bool distorted)
+void run_pois(int camIdOffset, bool distorted, bool filter, bool forceGps)
 {
     // 0. Reposition camera
     // 1. Read & filter pois
@@ -211,7 +211,7 @@ void run_pois(int camIdOffset, bool distorted)
     for (int i = 0; i < cameras.size(); ++i)
     {
         jobC.observations[i] = observations[perm[i]];
-        jobC.photostation.cameras[i] = cameras[i];
+        jobC.photostation.cameras[i] = cameras[perm[i]];
     }
 
     jobC.photostation.location.shift = corecvs::Vector3dd(0.0, 0.0, 0.0);
@@ -229,17 +229,17 @@ void run_pois(int camIdOffset, bool distorted)
     {
         jobC.photostation.cameras[i] = jobC.photostation.getRawCamera(i);
     }
-
+#if 1
     jobC.photostation.location.rotor = corecvs::Quaternion::FromMatrix(
             corecvs::Matrix33(
-                1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0
+               -1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0
                 ));
     jobC.photostation.location.shift = corecvs::Vector3dd(0.0, 0.0, 0.0);
     for (int i = 0; i < jobC.photostation.cameras.size(); ++i)
     {
         jobC.photostation.cameras[i] = jobC.photostation.getRawCamera(i);
     }
-
+#endif
     jobC.photostation.location.rotor = corecvs::Quaternion(0, 0, 0, 1);
     jobC.photostation.location.shift = corecvs::Vector3dd(0, 0, 0);
 
@@ -273,15 +273,16 @@ void run_pois(int camIdOffset, bool distorted)
      * Next step is parsing pois (and scaling/transforming them from geodesic
      * system)
      */
-    rec.scene.pointObservations = parsePois(jobC, "pois_m15.txt",camIdOffset, distorted, true);
+    rec.scene.pointObservations = parsePois(jobC, "pois_m15.txt",camIdOffset, false, true);
     std::cout << "images = {" << std::endl;
     for (auto &o : rec.scene.pointObservations)
     {
+        std::cout << "{";
         for (auto &p: o.projections)
         {
-            std::cout << "'/hdd_4t/data/roof_v1/roof_1_SP" << ((char)('A' + p.photostationId)) << p.cameraId << "_0deg_undist.jpg'";
+            std::cout << "'/hdd_4t/data/roof_v1/roof_1_SP" << ((char)('A' + p.photostationId)) << p.cameraId << "_0deg.jpg'";
             if (&p == &(*o.projections.rbegin()))
-                std::cout << ";" << std::endl;
+                std::cout << "}," << std::endl;
             else
                 std::cout << ", ";
         }
@@ -290,11 +291,41 @@ void run_pois(int camIdOffset, bool distorted)
     std::cout << "projections = {" << std::endl;
     for (auto &o : rec.scene.pointObservations)
     {
+        std::cout << "{" << std::endl;
         for (auto &p: o.projections)
         {
             std::cout << "[" << p.projection[0] << " " << p.projection[1] << "]";
             if (&p == &(*o.projections.rbegin()))
-                std::cout << ";" << std::endl;
+                std::cout << "}," << std::endl;
+            else
+                std::cout << ", ";
+        }
+    }
+    std::cout << "};" << std::endl;
+    rec.scene.pointObservations = parsePois(jobC, "pois_m15.txt",camIdOffset, distorted, true);
+    std::cout << "images = {" << std::endl;
+    for (auto &o : rec.scene.pointObservations)
+    {
+        std::cout << "{";
+        for (auto &p: o.projections)
+        {
+            std::cout << "'/hdd_4t/data/roof_v1/roof_1_SP" << ((char)('A' + p.photostationId)) << p.cameraId << "_0deg_undist.jpg'";
+            if (&p == &(*o.projections.rbegin()))
+                std::cout << "}," << std::endl;
+            else
+                std::cout << ", ";
+        }
+    }
+    std::cout << "};" << std::endl;
+    std::cout << "projections = {" << std::endl;
+    for (auto &o : rec.scene.pointObservations)
+    {
+        std::cout << "{";
+        for (auto &p: o.projections)
+        {
+            std::cout << "[" << p.projection[0] << " " << p.projection[1] << "]";
+            if (&p == &(*o.projections.rbegin()))
+                std::cout << "}," << std::endl;
             else
                 std::cout << ", ";
         }
@@ -303,115 +334,124 @@ void run_pois(int camIdOffset, bool distorted)
     /*
      * Now we select only good points
      */
-    for (int i = 0; i < rec.scene.photostations.size(); ++i)
+
+    if (filter)
     {
-        std::vector<std::tuple<int, corecvs::Vector2dd, corecvs::Vector3dd>> pspa;
-        for (auto &o: rec.scene.pointObservations)
+        std::mt19937 rng;
+        for (int i = 0; i < rec.scene.photostations.size(); ++i)
         {
-            for (auto&p: o.projections)
+            std::vector<std::tuple<int, corecvs::Vector2dd, corecvs::Vector3dd>> pspa;
+            for (auto &o: rec.scene.pointObservations)
             {
-                if (p.photostationId == i && !o.updateable)
+                for (auto&p: o.projections)
                 {
-                    pspa.emplace_back(p.cameraId, p.projection, o.worldPoint);
+                    if (p.photostationId == i && !o.updateable)
+                    {
+                        pspa.emplace_back(p.cameraId, p.projection, o.worldPoint);
+                    }
                 }
             }
-        }
 
-        double bhScore = 1e100;
-        corecvs::Affine3DQ bh;
-        std::mt19937 rng;
-        for (int iii = 0; iii < 10000; ++iii)
-        {
-            decltype(pspa) psp;
-            int N = pspa.size();
-            psp.resize(6);
-            int ids[6];
-            int idx = 0;
-            ids[0] = rng() % N;
-            while (idx < 6)
+            double bhScore = 1e100;
+            corecvs::Affine3DQ bh;
+            for (int iii = 0; iii < 10000; ++iii)
             {
-                int idd = rng() % N;
-                bool isValid = true;
-                for (int ii = 0; ii < idx; ++ii)
-                    if (ids[ii] == idd)
-                        isValid = false;
-                if (isValid)
-                    ids[idx++] = idd;
-            }
-            for (int kk = 0; kk < 6; ++kk)
-            {
-                psp[kk] = pspa[ids[kk]];
-            }
+                decltype(pspa) psp;
+                int N = pspa.size();
+                psp.resize(4);
+                int ids[4];
+                int idx = 0;
+                ids[0] = rng() % N;
+                while (idx < 4)
+                {
+                    int idd = rng() % N;
+                    bool isValid = true;
+                    for (int ii = 0; ii < idx; ++ii)
+                        if (ids[ii] == idd)
+                            isValid = false;
+                    if (isValid)
+                        ids[idx++] = idd;
+                }
+                for (int kk = 0; kk < 4; ++kk)
+                {
+                    psp[kk] = pspa[ids[kk]];
+                }
 
-        std::vector<corecvs::Vector3dd> pts, dirs,oris;
-        for (auto& t: psp)
-        {
-            corecvs::Vector3dd dir = jobC.photostation.getRawCamera(std::get<0>(t)).rayFromPixel(std::get<1>(t)).a.normalised();
-            corecvs::Vector3dd ori = jobC.photostation.getRawCamera(std::get<0>(t)).extrinsics.position;
-            corecvs::Vector3dd pt  = std::get<2>(t);
-            pts.push_back(pt);
-            oris.push_back(ori);
-            dirs.push_back(dir);
-        }
-        auto hyp = corecvs::PNPSolver::solvePNP(oris, dirs, pts);
-        for (auto& h: hyp)
-        {
-            auto ps = jobC.photostation;
-            ps.location = h;
-            double score = 0.0;
-            for (auto& t: pspa)
+            std::vector<corecvs::Vector3dd> pts, dirs,oris;
+            for (auto& t: psp)
             {
-                auto proj = ps.project(std::get<2>(t), std::get<0>(t));
-                auto cam = ps.getRawCamera(std::get<0>(t));
-                auto dp = (cam.rayFromPixel(std::get<1>(t)).a).normalised();
-                auto diff = std::get<1>(t) - proj;
-                double angle = std::abs((std::get<2>(t) - cam.extrinsics.position).angleTo(dp)) * 180.0 / M_PI;
-                if (angle < maxAngleError)
-                    score -= 1.0;// diff & diff;
+                corecvs::Vector3dd dir = jobC.photostation.getRawCamera(std::get<0>(t)).rayFromPixel(std::get<1>(t)).a.normalised();
+                corecvs::Vector3dd ori = jobC.photostation.getRawCamera(std::get<0>(t)).extrinsics.position;
+                corecvs::Vector3dd pt  = std::get<2>(t);
+                pts.push_back(pt);
+                oris.push_back(ori);
+                dirs.push_back(dir);
             }
-            if (score < bhScore)
+            auto hyp = corecvs::PNPSolver::solvePNP(oris, dirs, pts);
+            for (auto& h: hyp)
             {
-                bhScore = score;
-                bh = h;
+                auto ps = jobC.photostation;
+                ps.location = h;
+                double score = 0.0;
+                for (auto& t: pspa)
+                {
+                    auto proj = ps.project(std::get<2>(t), std::get<0>(t));
+                    auto cam = ps.getRawCamera(std::get<0>(t));
+                    auto dp = (cam.rayFromPixel(std::get<1>(t)).a).normalised();
+                    auto diff = std::get<1>(t) - proj;
+                    double angle = std::abs((std::get<2>(t) - cam.extrinsics.position).angleTo(dp)) * 180.0 / M_PI;
+                    if (angle < maxAngleError && cam.isVisible(std::get<2>(t)))
+                        score -= 1.0;// diff & diff;
+                }
+                if (score < bhScore)
+                {
+                    bhScore = score;
+                    bh = h;
+                }
+            }
+            }
+            if (bhScore <= -3)
+            {
+                if (!forceGps)
+                    rec.scene.photostations[i].location = bh;
+                else
+                    rec.scene.photostations[i].location.rotor = bh.rotor;
             }
         }
-        }
-        if (bhScore <= -3)
-        rec.scene.photostations[i].location = bh;
-    }
-    std::cout << "ANGLES: " << std::endl;
-    for (auto&o : rec.scene.pointObservations)
-    {
-        std::cout << "AE: " <<  o.label << ": ";
-        for (auto&p : o.projections)
+        std::cout << "ANGLES: " << std::endl;
+        for (auto&o : rec.scene.pointObservations)
         {
-            auto cam = rec.scene.photostations[p.photostationId].getRawCamera(p.cameraId);
-            auto dp = (cam.rayFromPixel(p.projection)).a;
-            double angle = (o.worldPoint - cam.extrinsics.position).angleTo(dp) * 180.0 / M_PI;
-            std::cout << "[SP" << ((char)('A' + p.photostationId)) << p.cameraId << " : " << angle << "]";
+            std::cout << "AE: " <<  o.label << ": ";
+            for (auto&p : o.projections)
+            {
+                auto cam = rec.scene.photostations[p.photostationId].getRawCamera(p.cameraId);
+                auto dp = (cam.rayFromPixel(p.projection)).a;
+                double angle = (o.worldPoint - cam.extrinsics.position).angleTo(dp) * 180.0 / M_PI;
+                std::cout << "[SP" << ((char)('A' + p.photostationId)) << p.cameraId << " : " << angle << "]";
+            }
+            std::cout << std::endl;
         }
-        std::cout << std::endl;
-    }
-    decltype(rec.scene.pointObservations) obsNew;
-    for (auto&o : rec.scene.pointObservations)
-    {
-        std::cout << "AE: " <<  o.label << ": ";
-        auto on = o;
-        on.projections.clear();
-        for (auto&p : o.projections)
+        decltype(rec.scene.pointObservations) obsNew;
+        for (auto&o : rec.scene.pointObservations)
         {
-            auto cam = rec.scene.photostations[p.photostationId].getRawCamera(p.cameraId);
-            auto dp = (cam.rayFromPixel(p.projection)).a;
-            double angle = (o.worldPoint - cam.extrinsics.position).angleTo(dp) * 180.0 / M_PI;
-            std::cout << "[SP" << ((char)('A' + p.photostationId)) << p.cameraId << " : " << angle << "]";
-            if (std::abs(angle) < maxAngleError)
-                on.projections.push_back(p);
+            std::cout << "AE: " <<  o.label << ": ";
+            auto on = o;
+            on.projections.clear();
+            for (auto&p : o.projections)
+            {
+                auto cam = rec.scene.photostations[p.photostationId].getRawCamera(p.cameraId);
+                auto dp = (cam.rayFromPixel(p.projection)).a;
+                double angle = (o.worldPoint - cam.extrinsics.position).angleTo(dp) * 180.0 / M_PI;
+                std::cout << "[SP" << ((char)('A' + p.photostationId)) << p.cameraId << " : " << angle << "]";
+                if (std::abs(angle) < maxAngleError && cam.isVisible(o.worldPoint))
+                    on.projections.push_back(p);
+            }
+            if (on.projections.size() > 1)
+                obsNew.push_back(on);
+            std::cout << std::endl;
         }
-        if (on.projections.size() > 1)
-            obsNew.push_back(on);
-        std::cout << std::endl;
+        rec.scene.pointObservations = obsNew;
     }
-    rec.scene.pointObservations = obsNew;
     // And refine positions
 #if 1
     for (int i = 0; i < rec.scene.photostations.size(); ++i)
@@ -470,7 +510,12 @@ void run_pois(int camIdOffset, bool distorted)
             }
         }
         if (pspa.size() > 2)
-            rec.scene.photostations[i].location = bh;
+        {
+            if (!forceGps)
+               rec.scene.photostations[i].location = bh;
+            else
+                rec.scene.photostations[i].location.rotor = bh.rotor;
+        }
     }
 #endif
     /*
@@ -652,6 +697,8 @@ int main(int argc, char **argv)
     init_opencv_reader_provider();
 
     bool m15 = false;
+    bool filter = false;
+    bool forceGps = true;
     if (argc > 1)
     {
         std::string arg(argv[1]);
@@ -661,8 +708,31 @@ int main(int argc, char **argv)
         }
 
         std::cout << "First argument is " << arg << ", running in " << (m15 ? "m15" : "m16") << " mode" << std::endl;
+
+    }
+    if (argc > 2)
+    {
+        std::string arg(argv[2]);
+        if (arg == "filter")
+        {
+            filter = true;
+        }
+
+        std::cout << "Second argument is " << arg << ", " << (filter ? "will" : "will not") << " filter pois" << std::endl;
+    }
+    if (argc > 3)
+    {
+        std::string arg(argv[2]);
+        if (arg == "forceGps")
+        {
+            forceGps = true;
+        }
+
+        std::cout << "Third argument is " << arg << ", " << (forceGps ? "will" : "will not") << " enforce GPS data" << std::endl;
     }
     std::cout << (m15 ? "m15" : "m16") << " mode is selected" << std::endl;
+    std::cout << (filter ? "will" : "will not") << " filter pois" << std::endl;
+    std::cout << (filter ? "will" : "will not") << " force GPS" << std::endl;
 
 
     // M15 settings
@@ -674,5 +744,5 @@ int main(int argc, char **argv)
         camIdOffset = 10;
         distorted = true;
     }
-    run_pois(camIdOffset, distorted);
+    run_pois(camIdOffset, distorted, filter, forceGps);
 }
