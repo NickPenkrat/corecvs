@@ -69,6 +69,7 @@ private:
     G12Buffer*  mBayer      = nullptr;
     MetaData *  mMetadata   = nullptr;
     uint16_t    mMaximum    = 0;
+    bool        mScale      = false;
 
     void        scaleCoeffs();
     void        gammaCurve(uint16_t *curve, int imax);
