@@ -158,5 +158,5 @@ const float LabConverter::srgb2xyz[3][3] {
     { 0.212671f, 0.715160f, 0.072169f },
     { 0.019334f, 0.119193f, 0.950227f }
 };
-const float LabConverter::white[3]{ 95.047, 100.000, 108.883 };
+const float LabConverter::white[3]{ 95.047f, 100.000f, 108.883f };
 #endif //LABCONVERTER_H_
