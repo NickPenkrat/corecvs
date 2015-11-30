@@ -13,7 +13,7 @@ using corecvs::Vector2dd;
 using corecvs::Matrix22;
 
 
-#ifdef WITH_AVX
+#ifdef USE_UNSAFE_CONVOLUTOR
 #include <immintrin.h>
 struct ConvolutorImpl
 {
@@ -325,7 +325,7 @@ void CornerKernelSet::computeCost(DpImage &img, DpImage &c, bool parallelable, b
         pfB = new DpImage(img.h, img.w, false);
         pfC = new DpImage(img.h, img.w, false);
         pfD = new DpImage(img.h, img.w, false);
-#ifndef WITH_AVX
+#ifndef USE_UNSAFE_CONVOLUTOR
         corecvs::ConvolveKernel<corecvs::DummyAlgebra> convA(&A, A.y, A.x);
         corecvs::ConvolveKernel<corecvs::DummyAlgebra> convB(&B, B.y, B.x);
         corecvs::ConvolveKernel<corecvs::DummyAlgebra> convC(&C, C.y, C.x);
