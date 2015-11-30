@@ -38,6 +38,13 @@ int main(int argc, const char **argv)
     int         quality  = s.getInt("method", 3);
     std::string filename = s.getOption("file");
     bool        toBayer  = s.getBool("toBayer");
+    std::string outfile  = s.getOption("ofile");
+
+    if (outfile == "")
+    {
+        outfile = "debayer_out.ppm";
+    }
+
     int bpos = s.getInt("bpos", -1);
 
     MetaData meta;
@@ -57,10 +64,10 @@ int main(int argc, const char **argv)
         double time = 0;
 
         Debayer d(bayer, 8, &meta, bpos);
-
+        d.fourier();
         d.toRGB48(Debayer::Method(quality), result);
 
-        PPMLoader().save("debayer_out.ppm", result);
+        PPMLoader().save(outfile, result);
         delete_safe(result);
     }
     else
@@ -78,7 +85,7 @@ int main(int argc, const char **argv)
         Debayer d(bayer, 8, &meta, bpos);
         d.fromRgb(inRgb);
 
-        PPMLoader().save("toBayer_out.pgm", bayer);
+        PPMLoader().save(outfile, bayer);
 
         delete_safe(inRgb);
     }
