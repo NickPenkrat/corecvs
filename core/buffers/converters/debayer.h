@@ -26,6 +26,7 @@ public:
     {
         Nearest  = 0,
         Bilinear = 1,
+        Fourier  = 2,
         AHD      = 3,
         Improved = 7
     };
@@ -58,7 +59,7 @@ public:
     void fromRgb(RGB48Buffer *inRgb);
 
     // use for testing only!
-    RGB48Buffer* fourier();
+    void fourier(RGB48Buffer *result);
 
 private:
     int         mDepth      = 12;
