@@ -297,6 +297,7 @@ void ReconstructionJob::solve(bool angleError)
 //        scale = 1.0;
     std::cout << "MV: " << mean << " " << scale << std::endl;
     LM.f = new OptimizationFunctor(this,false,30.0,mean,scale,angleError);
+    LM.normalisation = new NormalizationFunctor(this, mean, scale);
     //LM.trace = true;
     std::vector<double> in(getInputNum()), out(LM.f->outputs);
     writeParams(&in[0], mean, scale);
@@ -351,10 +352,9 @@ void ReconstructionJob::ParallelUndistortionMapEstimator::operator() (const core
     
 void ReconstructionJob::fill(std::unordered_map<std::string, corecvs::Affine3DQ> &data, int psLocationCnt)
 {
-    CORE_UNUSED(psLocationCnt);
 
     //int id = 0;
-    for (int id = 0; id < 5; ++id)
+    for (int id = 0; id < psLocationCnt; ++id)
     {
         std::stringstream ss;
         ss << "SP" << (char)('A' + id);
@@ -365,7 +365,7 @@ void ReconstructionJob::fill(std::unordered_map<std::string, corecvs::Affine3DQ>
  //       scene.photostations.rbegin()->location.orientation = scene.photostations.rbegin()->location.orientation;
 
         std::vector<CameraObservation> observations;
-        for (int i = 0; i < 6; ++i)
+        for (int i = 0; i < scene.photostations[id].cameras.size(); ++i)
         {
             CameraObservation observation;
             std::stringstream ss;
