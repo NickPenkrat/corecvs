@@ -74,7 +74,7 @@ private:
     template<typename T>
     static inline T clip(double x)
     {
-        const int const mMaximum = (1 << sizeof(T) * 8) - 1;
+        const int mMaximum = (1 << sizeof(T) * 8) - 1;
         if (x < 0)
             return 0;
         if (x > mMaximum)
