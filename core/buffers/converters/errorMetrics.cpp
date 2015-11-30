@@ -36,7 +36,7 @@ double ErrorMetrics::mse(G12Buffer *img1, G12Buffer *img2)
         }
     }
 
-    return err / (img1->h * img1->w * 3);
+    return err / (img1->h * img1->w);
 }
 
 double ErrorMetrics::psnr(RGB48Buffer *img1, RGB48Buffer *img2)
@@ -50,7 +50,7 @@ double ErrorMetrics::psnr(RGB48Buffer *img1, RGB48Buffer *img2)
     if (MSE == 0)
         return 1;
 
-    return 2 * log10((1 << 16) - 1) - log10(MSE / (3 * img1->h * img1->w));
+    return 20 * log10((1 << 8) - 1) - 10 * log10(MSE);
 }
 
 double ErrorMetrics::psnr(G12Buffer *img1, G12Buffer *img2)
@@ -64,7 +64,7 @@ double ErrorMetrics::psnr(G12Buffer *img1, G12Buffer *img2)
     if (MSE == 0)
         return 1;
 
-    return 2 * log10((1 << 12) - 1) - log10(MSE / (3 * img1->h * img1->w));
+    return 20 * log10((1 << 12) - 1) - 10 * log10(MSE);
 }
 
 double ErrorMetrics::rmsd(RGB48Buffer *img1, RGB48Buffer *img2)

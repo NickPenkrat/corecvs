@@ -389,8 +389,6 @@ bool PPMLoader::writeHeader(FILE *fp, unsigned long int h, unsigned long int w, 
     MetaData &metadata = *meta;
 
     fprintf(fp, "P%u\n", type);
-    fprintf(fp, "############################################\n");
-    fprintf(fp, "# This file is written by DeepView library.\n");
 
     // TODO: test this!
     if (meta)
@@ -402,7 +400,6 @@ bool PPMLoader::writeHeader(FILE *fp, unsigned long int h, unsigned long int w, 
             fprintf(fp, "\n");
         }
 
-    fprintf(fp, "############################################\n");
     fprintf(fp, "%lu %lu\n", w, h);
     fprintf(fp, "%hu\n", maxval);
 
@@ -568,12 +565,7 @@ int PPMLoader::saveG16(const string& name, G12Buffer *buffer)
 
     fprintf(fp, "P5\n");
     fprintf(fp, "############################################\n");
-    fprintf(fp, "# This file is written by DeepView library.\n");
-    fprintf(fp, "# \n");
     fprintf(fp, "# The original source buffer had 16 bit.\n");
-
-    /// \todo TODO: Add some metadata saving
-
     fprintf(fp, "############################################\n");
     fprintf(fp, "%d %d\n", w, h);
     fprintf(fp, "%d\n", 0xFFFF);
