@@ -26,6 +26,7 @@ public:
     {
         Nearest  = 0,
         Bilinear = 1,
+        Fourier  = 2,
         AHD      = 3,
         Improved = 7
     };
@@ -58,17 +59,19 @@ public:
     void fromRgb(RGB48Buffer *inRgb);
 
     // use for testing only!
-    RGB48Buffer* fourier();
+    void fourier(RGB48Buffer *result);
 
 private:
-    int         mDepth      = 12;
     Vector3dd   mScaleMul   = { 1, 1, 1 };
     uint16_t    mBlack      = 0;
     uint8_t     mBayerPos   = 0;
     uint16_t*   mCurve      = nullptr;
-    G12Buffer*  mBayer      = nullptr;
-    MetaData *  mMetadata   = nullptr;
     uint16_t    mMaximum    = 0;
+    bool        mScale      = false;
+
+    G12Buffer*  mBayer;
+    MetaData *  mMetadata;
+    int         mDepth;
 
     void        scaleCoeffs();
     void        gammaCurve(uint16_t *curve, int imax);

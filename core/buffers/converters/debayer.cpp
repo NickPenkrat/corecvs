@@ -344,11 +344,11 @@ void Debayer::ahd(RGB48Buffer *result)
             // we must choose minimal deviations to count homogenous pixels
 
             // VERSION A - proposed by Hirakawa & Parks, produces noticeable artifacts on cm_lighthouse.pgm
-            //float epsL = min(max(dl[0][0], dl[0][1]), max(dl[1][2], dl[1][3]));
+            float epsL = min(max(dl[0][0], dl[0][1]), max(dl[1][2], dl[1][3]));
             float epsC = min(max(dc[0][0], dc[0][1]), max(dc[1][2], dc[1][3]));
 
             // VERSION B - extended, produces less artifacts on cm_lighthouse.pgm, but instead produces weak zipper on test_debayer.pgm
-            float epsL = min(max(max(dl[0][0], dl[0][1]), max(dl[0][2], dl[0][3])), max(max(dl[1][0], dl[1][1]), max(dl[1][2], dl[1][3])));
+            //float epsL = min(max(max(dl[0][0], dl[0][1]), max(dl[0][2], dl[0][3])), max(max(dl[1][0], dl[1][1]), max(dl[1][2], dl[1][3])));
             //float epsC = min(max(max(dc[0][0], dc[0][1]), max(dc[0][2], dc[0][3])), max(max(dc[1][0], dc[1][1]), max(dc[1][2], dc[1][3])));
 
             for (int d = 0; d < 2; d++)
@@ -421,7 +421,7 @@ void Debayer::ahd(RGB48Buffer *result)
     // filter size - do not change
     const int size = (2 * radius + 1) * (2 * radius + 1);
     // median filter pass count, no difference except for running time observed between 1 and 2, more than 2 is redundant
-    const int passes = 2;
+    const int passes = 3;
 
     for (int p = 0; p < passes; p++)
         for (int i = radius; i < mBayer->h - radius; i++)
@@ -588,7 +588,7 @@ void Debayer::borderInterpolate(int radius, RGB48Buffer *result)
 
 }
 
-RGB48Buffer* Debayer::fourier()
+void Debayer::fourier(RGB48Buffer *result)
 {
     // this method is for research and test purposes only
     uint h = mBayer->h;
@@ -599,6 +599,10 @@ RGB48Buffer* Debayer::fourier()
     in_r = new fftw_complex[h * w];
     in_g = new fftw_complex[h * w];
     in_b = new fftw_complex[h * w];
+
+    memset(in_r, 0, h*w*sizeof(fftw_complex));
+    memset(in_g, 0, h*w*sizeof(fftw_complex));
+    memset(in_b, 0, h*w*sizeof(fftw_complex));
 
     out_r = new fftw_complex[h * w];
     out_g = new fftw_complex[h * w];
@@ -618,46 +622,49 @@ RGB48Buffer* Debayer::fourier()
             in_r[offset][1] = in_g[offset][1] = in_b[offset][1] = 0;
         }
 
-    RGB48Buffer *out = new RGB48Buffer(h, w, false);
-    G12Buffer *tmp2 = new G12Buffer(h, w, false);
-
     FFTW fftw;
 
     fftw.transform2D(h, w, in_r, out_r, FFTW::Forward);
-    
+    fftw.transform2D(h, w, in_g, out_g, FFTW::Forward);
+    fftw.transform2D(h, w, in_b, out_b, FFTW::Forward);
+
     double coeff = 5.1 / 12;
     for (int i = 0; (uint)i < h; i++)
         for (int j = 0; (uint)j < w; j++)
         {
             int disty = abs(i - (int)h / 2);
             int distx = abs(j - (int)w / 2);
-            //int dist = sqrt(pow(distx, 2) + pow(disty, 2));
 
-            double mul = 1;
-            if (distx > w * coeff || disty > h * coeff)
+            int rad = 1000;
+
+            bool sphere1 = (pow(i, 2) + pow(j, 2)) < rad;
+            bool sphere2 = (pow(i, 2) + pow(w - j, 2)) < rad;
+            bool sphere3 = (pow(h - i, 2) + pow(j, 2)) < rad;
+            bool sphere4 = (pow(h - i, 2) + pow(w - j, 2)) < rad;
+
+            bool sphere5 = (pow(h / 2 - i, 2) + pow(j, 2)) < rad;
+            bool sphere6 = (pow(i, 2) + pow(w / 2 - j, 2)) < rad;
+            bool sphere7 = (pow(h - i, 2) + pow(w / 2 - j, 2)) < rad;
+            bool sphere8 = (pow(h / 2 - i, 2) + pow(w - j, 2)) < rad;
+
+            double mul = 1.0 / (h*w);
+            if (distx > w * coeff || disty > h * coeff || sphere1 || sphere2 || sphere3 || sphere4 || sphere5 || sphere6 || sphere7 || sphere8)
             {
-                int maxdist = max(distx, disty);
-                mul = (double)w * coeff / pow(distx, 1.1);
+                mul = 0;
             }
-            out_r[i*w + j][0] /= (h * w);
-            out_r[i*w + j][1] /= (h * w);
             out_r[i*w + j][0] *= mul;
             out_r[i*w + j][1] *= mul;
 
-            out_g[i*w + j][0] /= (h * w);
-            out_g[i*w + j][1] /= (h * w);
             out_g[i*w + j][0] *= mul;
             out_g[i*w + j][1] *= mul;
 
-            out_b[i*w + j][0] /= (h * w);
-            out_b[i*w + j][1] /= (h * w);
             out_b[i*w + j][0] *= mul;
             out_b[i*w + j][1] *= mul;
-
-            tmp2->element(i, j) = clip(sqrt(pow(out_r[i*w + j][0], 2) + pow(out_r[i*w + j][1], 2)) * 5000);
         }
-
+    
     fftw.transform2D(h, w, out_r, in_r, FFTW::Backward);
+    fftw.transform2D(h, w, out_g, in_g, FFTW::Backward);
+    fftw.transform2D(h, w, out_b, in_b, FFTW::Backward);
 
     double *rgbDiff[2] = {
         new double[h*w],
@@ -666,16 +673,16 @@ RGB48Buffer* Debayer::fourier()
 
     double white = 0;
     double *val_r = new double[h * w],
-           *val_g = new double[h * w],
-           *val_b = new double[h * w];
+        *val_g = new double[h * w],
+        *val_b = new double[h * w];
 
     for (uint i = 0; i < h; i++)
         for (uint j = 0; j < w; j++)
         {
             uint offset = i * w + j;
-            val_r[offset] = sqrt(pow(in_r[offset][0], 2) + pow(in_r[offset][1], 2));
-            val_g[offset] = sqrt(pow(in_g[offset][0], 2) + pow(in_g[offset][1], 2));
-            val_b[offset] = sqrt(pow(in_b[offset][0], 2) + pow(in_b[offset][1], 2));
+            val_r[offset] = abs(in_r[offset][0]) + abs(in_r[offset][1]);
+            val_g[offset] = abs(in_g[offset][0]) + abs(in_g[offset][1]);
+            val_b[offset] = abs(in_b[offset][0]) + abs(in_b[offset][1]);
             rgbDiff[0][offset] = val_r[offset] - val_g[offset];
             rgbDiff[1][offset] = val_b[offset] - val_g[offset];
         }
@@ -687,40 +694,48 @@ RGB48Buffer* Debayer::fourier()
             int32_t window[25];
 
             uint idx = 0;
-                for (uint k = i - 2; k <= i + 2; k++)
-                    for (uint l = j - 2; l <= j + 2; l++)
-                    {
-                        uint offset2 = k * w + l;
-                        window[idx++] = max(val_r[offset2], max(val_g[offset2]/2, val_b[offset2]));
-                    }
+            for (uint k = i - 2; k <= i + 2; k++)
+                for (uint l = j - 2; l <= j + 2; l++)
+                {
+                    uint offset2 = k * w + l;
+                    window[idx++] = max(val_r[offset2], max(val_g[offset2] / 2, val_b[offset2]));
+                }
             qsort(window, 25, sizeof(window[0]), compare);
             if (white < window[12])
                 white = window[12];
 
         }
-    
+
     double ampl = 1 * 255.0 / white;
     for (uint i = 0; i < h; i++)
         for (uint j = 0; j < w; j++)
         {
             int offset = i * w + j;
-            out->element(i, j) = {
+            result->element(i, j) = {
                 clip(val_r[offset] * ampl),
                 uint16_t(clip(val_g[offset] * ampl / 2)),
                 clip(val_b[offset] * ampl),
             };
         }
-    PPMLoader().save("four_out.pgm", out);
-    PPMLoader().save("four_out_imag.pgm", tmp2);
 
-    //deletearr_safe(in_r);
-    //deletearr_safe(in_g);
-    //deletearr_safe(in_b);
+    deletearr_safe(in_r);
+    deletearr_safe(in_g);
+    deletearr_safe(in_b);
 
-    //deletearr_safe(out_r);
-    //deletearr_safe(out_g);
-    //deletearr_safe(out_b);
-    return nullptr;
+    deletearr_safe(in_r);
+    deletearr_safe(in_g);
+    deletearr_safe(in_b);
+
+    deletearr_safe(out_r);
+    deletearr_safe(out_g);
+    deletearr_safe(out_b);
+
+    deletearr_safe(val_r);
+    deletearr_safe(val_g);
+    deletearr_safe(val_b);
+
+    deletearr_safe(rgbDiff[0]);
+    deletearr_safe(rgbDiff[1]);
 }
 
 void Debayer::scaleCoeffs()
@@ -734,6 +749,17 @@ void Debayer::scaleCoeffs()
 
     // alias for ease of use
     MetaData &metadata = *mMetadata;
+    
+    double factor = 1.0;
+
+    // scale colors to the desired bit-depth
+    if (mScale)
+    {
+        if (!metadata["white"].empty())
+            factor = ((1 << mDepth) - 1) / metadata["white"][0];
+        else if (!metadata["bits"].empty())
+            factor = ((1 << mDepth) - 1) / ((1 << int(metadata["bits"][0])) - 1);
+    }
 
     // check if metadata valid
     if ((metadata["cam_mul"].empty() || metadata["cam_mul"][0] == 0 || metadata["cam_mul"][2] == 0) &&
@@ -741,13 +767,8 @@ void Debayer::scaleCoeffs()
     {
         // if white balance is not available, do only scaling
         // white should be calculated before calling scaleCoeffs()
-        if (!metadata["white"].empty() && metadata["white"][0] != 0)
-        {
-            double factor = ((1 << mDepth) - 1) / metadata["white"][0];
-            for (int i = 0; i < 3; i++) {
-                mScaleMul[i] = factor;
-            }
-            return;
+        for (int i = 0; i < 3; i++) {
+            mScaleMul[i] = factor;
         }
 
         // TODO: maybe apply the gray world hypothesis instead of doing nothing
@@ -783,16 +804,6 @@ void Debayer::scaleCoeffs()
             dmin = metadata["pre_mul"][c];
     }
 
-    // scale colors to the desired bit-depth
-    double factor;
-
-    if (!metadata["white"].empty())
-        factor = ((1 << mDepth) - 1) / metadata["white"][0];
-    else if (!metadata["bits"].empty())
-        factor = ((1 << mDepth) - 1) / metadata["bits"][0];
-    else
-        factor = 1.0;
-
     for (int c = 0; c < 3; c++)
         mScaleMul[c] = (metadata["pre_mul"][c] /= dmin) * factor;
 
@@ -826,7 +837,7 @@ void Debayer::gammaCurve(uint16_t *curve, int imax)
     // if no gamma coefficients are present (or valid), return no transform
     auto& gammData = metadata["gamm"];
     if (gammData.empty() ||
-        (gammData.size() == 5) && !(gammData[0] || gammData[1] || gammData[2] || gammData[3] || gammData[4]))
+        ((gammData.size() == 5) && !(gammData[0] || gammData[1] || gammData[2] || gammData[3] || gammData[4])))
         return;
 
     int i;
@@ -857,7 +868,7 @@ void Debayer::gammaCurve(uint16_t *curve, int imax)
     {
         curve[i] = (1 << mDepth) - 1;
         if ((r = (double)i / imax) < 1)
-            curve[i] = (1 << mDepth) * (r < g[3] ? r*g[1] : (g[0] ? pow(r, g[0])*(1 + g[4]) - g[4] : log(r)*g[2] + 1));
+            curve[i] = (1 << mDepth) * (r < g[3] ? r * g[1] : (g[0] ? pow(r, g[0]) * (1 + g[4]) - g[4] : log(r) * g[2] + 1));
     }
 }
 
@@ -872,6 +883,9 @@ void Debayer::toRGB48(Method method, RGB48Buffer *output)
         break;
     case Bilinear:
         linear(output);
+        break;
+    case Fourier:
+        fourier(output);
         break;
     default:
     case AHD:
@@ -972,9 +986,9 @@ inline int32_t Debayer::clamp(int32_t x, int32_t a, int32_t b)
 inline uint8_t Debayer::colorFromBayerPos(uint i, uint j, bool rggb)
 {
     if (rggb)   // r, g1, g2, b
-        return   (j ^ (mBayerPos & 1)) & 1 | (((i ^ ((mBayerPos & 2) >> 1)) & 1) << 1);
+        return   ((j ^ (mBayerPos & 1)) & 1) | (((i ^ ((mBayerPos & 2) >> 1)) & 1) << 1);
     else        // r, g, b
-        return (((j ^ (mBayerPos & 1)) & 1 | (((i ^ ((mBayerPos & 2) >> 1)) & 1) << 1)) + 1) >> 1;
+        return ((((j ^ (mBayerPos & 1)) & 1) | (((i ^ ((mBayerPos & 2) >> 1)) & 1) << 1)) + 1) >> 1;
 }
 
 inline uint16_t Debayer::clip(int32_t x)
