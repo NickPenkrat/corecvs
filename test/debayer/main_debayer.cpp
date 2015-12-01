@@ -102,8 +102,6 @@ int main(int argc, const char **argv)
         }
         RGB48Buffer *result = new RGB48Buffer(bayer->h, bayer->w, false);
 
-        double time = 0;
-
         Debayer d(bayer, 8, &meta, bpos);
         d.toRGB48(Debayer::Method(method), result);
 

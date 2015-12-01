@@ -26,7 +26,7 @@ void FFTW::transformForward(int size, fftw_complex *input, fftw_complex *output)
 
 void FFTW::transformForward(std::vector<double>& input, fftw_complex *output)
 {
-    transformForward(input.size(), input.data(), output);
+    transformForward((int)input.size(), input.data(), output);
 }
 
 void FFTW::transformBackward(int size, fftw_complex *input, fftw_complex *output)
