@@ -23,8 +23,14 @@ namespace corecvs
 
 class FFTW
 {
+public:
+    enum Direction
+    {
+        Forward = 1,
+        Backward = -1
+    };
+
 private:
-    enum Direction;
     std::vector<int> mDimensions;
     fftw_plan_s* mPlan = nullptr;
     AbstractBuffer<int16_t, int32_t> b;
@@ -32,11 +38,6 @@ private:
     void doTransform(int h, int w, fftw_complex *input, fftw_complex *output, Direction direction);
 
 public:
-    enum Direction
-    {
-        Forward = 1,
-        Backward = -1
-    };
 
     FFTW();
 
