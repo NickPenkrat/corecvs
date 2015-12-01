@@ -170,7 +170,6 @@ RGB48Buffer* PPMLoader::rgb48BufferCreateFromPPM(const string& name, MetaData *m
     unsigned long int h, w;
     uint8_t type;
     unsigned short int maxval;
-    int shiftCount = 0;
     int8_t c;
 
     // open file for reading in binary mode

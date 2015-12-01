@@ -9,7 +9,6 @@
 #include <time.h>
 #include "converters/errorMetrics.h"
 
-
 void usage()
 {
     cout << "Demosaic tool"                                                                   << endl

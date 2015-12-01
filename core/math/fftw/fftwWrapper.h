@@ -23,16 +23,15 @@ namespace corecvs
 
 class FFTW
 {
-
 private:
+    enum Direction;
     std::vector<int> mDimensions;
     fftw_plan_s* mPlan = nullptr;
     AbstractBuffer<int16_t, int32_t> b;
-
-    void doTransform(int h, int w, fftw_complex *input, fftw_complex *output, int sign);
+    Direction mDirection;
+    void doTransform(int h, int w, fftw_complex *input, fftw_complex *output, Direction direction);
 
 public:
-
     enum Direction
     {
         Forward = 1,
@@ -50,7 +49,7 @@ public:
     * \param   [out] output    Transform result.
     *
     */
-    void transform(int size, fftw_complex *input, fftw_complex *output, int direction);
+    void transform(int size, fftw_complex *input, fftw_complex *output, Direction direction);
 
     /**
     * One-dimensional forward Fast Fourier Transform on real data yielding complex data.
@@ -104,8 +103,7 @@ public:
     * \param   [out] output    Transform result.
     *
     */
-    void transform2D(int sizeX, int sizeY, fftw_complex *input, fftw_complex *output, int direction);
-
+    void transform2D(int sizeX, int sizeY, fftw_complex *input, fftw_complex *output, Direction direction);
 
     void transformBackwardReal(int sizeX, int sizeY, fftw_complex *input, double *output);
 

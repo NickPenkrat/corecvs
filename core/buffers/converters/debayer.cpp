@@ -722,6 +722,10 @@ void Debayer::fourier(RGB48Buffer *result)
     deletearr_safe(in_g);
     deletearr_safe(in_b);
 
+    deletearr_safe(in_r);
+    deletearr_safe(in_g);
+    deletearr_safe(in_b);
+
     deletearr_safe(out_r);
     deletearr_safe(out_g);
     deletearr_safe(out_b);
@@ -833,7 +837,7 @@ void Debayer::gammaCurve(uint16_t *curve, int imax)
     // if no gamma coefficients are present (or valid), return no transform
     auto& gammData = metadata["gamm"];
     if (gammData.empty() ||
-        (gammData.size() == 5) && !(gammData[0] || gammData[1] || gammData[2] || gammData[3] || gammData[4]))
+        ((gammData.size() == 5) && !(gammData[0] || gammData[1] || gammData[2] || gammData[3] || gammData[4])))
         return;
 
     int i;
@@ -864,7 +868,7 @@ void Debayer::gammaCurve(uint16_t *curve, int imax)
     {
         curve[i] = (1 << mDepth) - 1;
         if ((r = (double)i / imax) < 1)
-            curve[i] = (1 << mDepth) * (r < g[3] ? r*g[1] : (g[0] ? pow(r, g[0])*(1 + g[4]) - g[4] : log(r)*g[2] + 1));
+            curve[i] = (1 << mDepth) * (r < g[3] ? r * g[1] : (g[0] ? pow(r, g[0]) * (1 + g[4]) - g[4] : log(r) * g[2] + 1));
     }
 }
 
@@ -982,9 +986,9 @@ inline int32_t Debayer::clamp(int32_t x, int32_t a, int32_t b)
 inline uint8_t Debayer::colorFromBayerPos(uint i, uint j, bool rggb)
 {
     if (rggb)   // r, g1, g2, b
-        return   (j ^ (mBayerPos & 1)) & 1 | (((i ^ ((mBayerPos & 2) >> 1)) & 1) << 1);
+        return   ((j ^ (mBayerPos & 1)) & 1) | (((i ^ ((mBayerPos & 2) >> 1)) & 1) << 1);
     else        // r, g, b
-        return (((j ^ (mBayerPos & 1)) & 1 | (((i ^ ((mBayerPos & 2) >> 1)) & 1) << 1)) + 1) >> 1;
+        return ((((j ^ (mBayerPos & 1)) & 1) | (((i ^ ((mBayerPos & 2) >> 1)) & 1) << 1)) + 1) >> 1;
 }
 
 inline uint16_t Debayer::clip(int32_t x)

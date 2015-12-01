@@ -34,14 +34,14 @@ void FFTW::transformForward(int size, double* input, fftw_complex *output)
     }
 }
 
-void FFTW::transform(int size, fftw_complex *input, fftw_complex *output, int direction)
+void FFTW::transform(int size, fftw_complex *input, fftw_complex *output, Direction direction)
 {
     doTransform(size, 0, input, output, direction);
 }
 
 void FFTW::transformForward(int size, fftw_complex *input, fftw_complex *output)
 {
-    transform(size, input, output, FFTW_FORWARD);
+    transform(size, input, output, Forward);
 }
 
 void FFTW::transformForward(std::vector<double>& input, fftw_complex *output)
@@ -51,7 +51,7 @@ void FFTW::transformForward(std::vector<double>& input, fftw_complex *output)
 
 void FFTW::transformBackward(int size, fftw_complex *input, fftw_complex *output)
 {
-    transform(size, input, output, FFTW_BACKWARD);
+    transform(size, input, output, Backward);
 }
 
 void FFTW::transformBackwardReal(int sizeX, int sizeY, fftw_complex *input, double *output)
@@ -70,28 +70,28 @@ void FFTW::transformBackwardReal(int sizeX, int sizeY, fftw_complex *input, doub
     fftw_execute(mPlan);
 }
 
-void FFTW::transform2D(int sizeX, int sizeY, fftw_complex *input, fftw_complex *output, int direction)
+void FFTW::transform2D(int sizeX, int sizeY, fftw_complex *input, fftw_complex *output, Direction direction)
 {
     doTransform(sizeX, sizeY, input, output, direction);
 }
 
 
-void FFTW::doTransform(int sizeX, int sizeY, fftw_complex *input, fftw_complex *output, int sign)
+void FFTW::doTransform(int sizeX, int sizeY, fftw_complex *input, fftw_complex *output, Direction direction)
 {
     // TODO: clarify when it's possible to keep the old plan
-    /*if (!mDimensions.empty() && mDimensions[0] == sizeX && mDimensions[1] == sizeY)
+    if (!mDimensions.empty() && mDimensions[0] == sizeX && mDimensions[1] == sizeY && mDirection == direction)
     {
         fftw_execute_dft(mPlan, input, output);
     }
-    else*/
+    else
     {
         if (mPlan)
             fftw_destroy_plan(mPlan);
         
         if (sizeY > 0)
-            mPlan = fftw_plan_dft_2d(sizeX, sizeY, input, output, sign, 0);
+            mPlan = fftw_plan_dft_2d(sizeX, sizeY, input, output, direction, 0);
         else
-            mPlan = fftw_plan_dft_1d(sizeX, input, output, sign, 0);
+            mPlan = fftw_plan_dft_1d(sizeX, input, output, direction, 0);
 
         mDimensions.clear();
         mDimensions.push_back(sizeX);
