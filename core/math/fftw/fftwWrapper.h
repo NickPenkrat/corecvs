@@ -33,9 +33,7 @@ public:
 private:
     std::vector<int> mDimensions;
     fftw_plan_s* mPlan = nullptr;
-    AbstractBuffer<int16_t, int32_t> b;
     Direction mDirection;
-    void doTransform(int h, int w, fftw_complex *input, fftw_complex *output, Direction direction);
 
 public:
 
@@ -46,8 +44,10 @@ public:
     /**
     * One-dimensional Fast Fourier Transform on complex data yielding complex data.
     *
+    * \param   size            Data length.
     * \param   [in]  input     Input data.
     * \param   [out] output    Transform result.
+    * \param   direction       Transform direction
     *
     */
     void transform(int size, fftw_complex *input, fftw_complex *output, Direction direction);
@@ -55,6 +55,7 @@ public:
     /**
     * One-dimensional forward Fast Fourier Transform on real data yielding complex data.
     *
+    * \param   size            Data length.
     * \param   [in]  input     Input data.
     * \param   [out] output    Transform result.
     *
@@ -64,6 +65,7 @@ public:
     /**
     * One-dimensional forward Fast Fourier Transform on complex data yielding complex data.
     *
+    * \param   size            Data length.
     * \param   [in]  input     Input data.
     * \param   [out] output    Transform result.
     *
@@ -82,11 +84,22 @@ public:
     /**
     * One-dimensional backward Fast Fourier Transform.
     *
+    * \param   size            Data length.
     * \param   [in]  input     Input data.
     * \param   [out] output    Transform result.
     *
     */
     void transformBackward(int size, fftw_complex *input, fftw_complex *output);
+
+    /**
+    * One-dimensional backward Fast Fourier Transform yielding real data.
+    *
+    * \param   size            Data length.
+    * \param   [in]  input     Input data.
+    * \param   [out] output    Transform result.
+    *
+    */
+    void transformBackward(int size, fftw_complex *input, double *output);
 
     /**
     * Two-dimensional forward Fast Fourier Transform on real data yielding complex data.
@@ -100,13 +113,25 @@ public:
     /**
     * Two-dimensional forward Fast Fourier Transform on complex data yielding complex data.
     *
+    * \param   sizeX            Data length in the first dimension.
+    * \param   sizeY            Data length in the second dimension.
     * \param   [in]  input     Input data.
     * \param   [out] output    Transform result.
+    * \param   direction       Transform direction
     *
     */
     void transform2D(int sizeX, int sizeY, fftw_complex *input, fftw_complex *output, Direction direction);
 
-    void transformBackwardReal(int sizeX, int sizeY, fftw_complex *input, double *output);
+    /**
+    * Two-dimensional backward Fast Fourier Transform on complex data yielding real data.
+    *
+    * \param   sizeX           Data length in the first dimension.
+    * \param   sizeY           Data length in the second dimension.
+    * \param   [in]  input     Input data.
+    * \param   [out] output    Transform result.
+    *
+    */
+    void transformBackward2D(int sizeX, int sizeY, fftw_complex *input, double *output); 
 
 };
 
