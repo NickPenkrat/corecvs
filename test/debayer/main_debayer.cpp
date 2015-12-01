@@ -23,6 +23,9 @@ void usage()
          << " \t0\tNearest Neighbor"                                                          << endl
          << " \t1\tBilinear"                                                                  << endl
          << " \t2\tAHD"                                                                       << endl
+#ifdef WITH_MKL
+         << " \t3\tFFT-based frequency filtering"                                             << endl
+#endif
          <<                                                                                      endl
          << " --bpos=P specifies bayer position [0-3]"                                        << endl
          <<                                                                                      endl

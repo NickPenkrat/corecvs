@@ -1,8 +1,5 @@
 #include "debayer.h"
-#include <limits>
 #include "labConverter.h"
-#include "ppmLoader.h"
-#include <complex>
 #include "math/fftw/fftwWrapper.h"
 
 using std::pow;
@@ -590,6 +587,10 @@ void Debayer::borderInterpolate(int radius, RGB48Buffer *result)
 
 void Debayer::fourier(RGB48Buffer *result)
 {
+#ifndef WITH_MKL
+    SYNC_PRINT("FFT-based demosaicking is not supported by this version of debayer, using AHD instead.");
+    ahd(result);
+#else
     // this method is for research and test purposes only
     uint h = mBayer->h;
     uint w = mBayer->w;
@@ -736,6 +737,7 @@ void Debayer::fourier(RGB48Buffer *result)
 
     deletearr_safe(rgbDiff[0]);
     deletearr_safe(rgbDiff[1]);
+#endif
 }
 
 void Debayer::scaleCoeffs()
@@ -872,9 +874,12 @@ void Debayer::gammaCurve(uint16_t *curve, int imax)
     }
 }
 
-void Debayer::toRGB48(Method method, RGB48Buffer *output)
+int Debayer::toRGB48(Method method, RGB48Buffer *output)
 {
     preprocess();
+
+    if (output == nullptr)
+        return -1;
 
     switch (method)
     {
@@ -892,6 +897,8 @@ void Debayer::toRGB48(Method method, RGB48Buffer *output)
         ahd(output);
         break;
     }
+
+    return 0;
 }
 
 void Debayer::preprocess(bool overwrite)

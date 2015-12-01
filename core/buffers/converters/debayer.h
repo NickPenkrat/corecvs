@@ -27,8 +27,7 @@ public:
         Nearest  = 0,
         Bilinear = 1,
         Fourier  = 2,
-        AHD      = 3,
-        Improved = 7
+        AHD      = 3
     };
 
     /**
@@ -46,10 +45,11 @@ public:
      * Converts the image to RGB48.
      *
      * \param   quality Demosaic quality (method).
+     * \param   out     Resulting image.
      *
-     * \return  Resulting image.
+     * \return  Error code.
      */
-    void toRGB48(Method method, RGB48Buffer* out);
+    int toRGB48(Method method, RGB48Buffer* out);
 
     /**
     * Fill bayer data from RGB48 image applying Bayerian grid to it.
@@ -57,9 +57,6 @@ public:
     * \param   inRGB Image to get pixel data from.
     */
     void fromRgb(RGB48Buffer *inRgb);
-
-    // use for testing only!
-    void fourier(RGB48Buffer *result);
 
 private:
     Vector3dd   mScaleMul   = { 1, 1, 1 };
@@ -80,6 +77,9 @@ private:
     void linear(RGB48Buffer* out);
     void nearest(RGB48Buffer* out);
     void ahd(RGB48Buffer* out);
+
+    // use for testing only!
+    void fourier(RGB48Buffer *result);
 
     void borderInterpolate(int radius, RGB48Buffer *result);
 

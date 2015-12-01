@@ -104,6 +104,7 @@ void FFTW::transformForward2D(AbstractBuffer<uint16_t, int32_t> *input, fftw_com
         if (mPlan)
             fftw_destroy_plan(mPlan);
 
+        // TODO: check whether the original FFTW returns fullsize or halfsize arrays in these methods!
         mPlan = fftw_plan_dft_r2c_2d(input->h, input->w, indata, output, 0);
 
         mDimensions.clear();
@@ -127,6 +128,7 @@ void FFTW::transformBackward2D(int sizeX, int sizeY, fftw_complex *input, double
         if (mPlan)
             fftw_destroy_plan(mPlan);
 
+        // TODO: check whether the original FFTW returns fullsize or halfsize arrays in these methods!
         if (sizeY > 0)
             mPlan = fftw_plan_dft_c2r_2d(sizeX, sizeY, input, output, 0);
         else
