@@ -207,6 +207,9 @@ public:
         return extrinsics.project(p);
     }
 
+    Matrix33 fundamentalTo(const CameraModel &right) const;
+    Matrix33 essentialTo  (const CameraModel &right) const;
+
     /**
      * Only checks for the fact that point belongs to viewport.
      * If you are projecting 3d point you should be sure that point is in front

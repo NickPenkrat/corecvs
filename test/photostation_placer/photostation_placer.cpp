@@ -229,7 +229,7 @@ void run_pois(int camIdOffset, bool distorted, bool filter, bool forceGps)
     {
         jobC.photostation.cameras[i] = jobC.photostation.getRawCamera(i);
     }
-#if 1
+#if 0
     jobC.photostation.location.rotor = corecvs::Quaternion::FromMatrix(
             corecvs::Matrix33(
                -1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0
