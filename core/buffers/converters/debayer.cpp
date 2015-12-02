@@ -688,12 +688,11 @@ void Debayer::fourier(RGB48Buffer *result)
             rgbDiff[1][offset] = val_b[offset] - val_g[offset];
         }
 
+    int32_t window[25];
     // calc median maximum
     for (uint i = 2; i < h - 2; i++)
         for (uint j = 2; j < w - 2; j++)
         {
-            int32_t window[25];
-
             uint idx = 0;
             for (uint k = i - 2; k <= i + 2; k++)
                 for (uint l = j - 2; l <= j + 2; l++)
