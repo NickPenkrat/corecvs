@@ -54,8 +54,8 @@ HEADERS += \
     buffers/deformMap.h \
     buffers/focusEstimator.h \
     buffers/converters/debayer.h \
-    buffers/converters/rgbConverter.h \
-
+    buffers/converters/labConverter.h \
+    buffers/converters/errorMetrics.h \
 
 
 SOURCES += \
@@ -94,5 +94,6 @@ SOURCES += \
     buffers/deformMap.cpp \
     buffers/focusEstimator.cpp \
     buffers/converters/debayer.cpp \
+    buffers/converters/errorMetrics.cpp \
 
 
