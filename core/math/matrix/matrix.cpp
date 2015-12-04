@@ -837,7 +837,11 @@ Matrix Matrix::inv() const
      */
 #ifdef WITH_BLAS
     corecvs::Matrix copy(*this);
+#ifndef WIN32
     int pivot[h];
+#else
+    std::unique_ptr<int> pivot(new int[h]);
+#endif
     CORE_ASSERT_TRUE_S(h == w);
     LAPACKE_dgetrf(LAPACK_ROW_MAJOR, copy.h, copy.w, &copy.a(0, 0), copy.stride, pivot);
     LAPACKE_dgetri(LAPACK_ROW_MAJOR, copy.h, &copy.a(0, 0), copy.stride, pivot);
