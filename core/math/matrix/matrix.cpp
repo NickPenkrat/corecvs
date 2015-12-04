@@ -843,8 +843,8 @@ Matrix Matrix::inv() const
     std::unique_ptr<int[]> pivot(new int[h]);
 #endif
     CORE_ASSERT_TRUE_S(h == w);
-    LAPACKE_dgetrf(LAPACK_ROW_MAJOR, copy.h, copy.w, &copy.a(0, 0), copy.stride, pivot);
-    LAPACKE_dgetri(LAPACK_ROW_MAJOR, copy.h, &copy.a(0, 0), copy.stride, pivot);
+    LAPACKE_dgetrf(LAPACK_ROW_MAJOR, copy.h, copy.w, &copy.a(0, 0), copy.stride, pivot.get());
+    LAPACKE_dgetri(LAPACK_ROW_MAJOR, copy.h, &copy.a(0, 0), copy.stride, pivot.get());
     return copy;
 #else
     unsigned i, j, k;
@@ -934,8 +934,8 @@ corecvs::Vector corecvs::Matrix::linSolve(const corecvs::Matrix &A, const corecv
 #endif
     corecvs::Vector res(B);
     CORE_ASSERT_TRUE_S(A.h == B.size());
-    LAPACKE_dgetrf(LAPACK_ROW_MAJOR, copy.h, copy.w, &copy.a(0, 0), copy.stride, pivot);
-    LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', res.size(), 1, &copy.a(0, 0), copy.stride, pivot, &res[0], 1);
+    LAPACKE_dgetrf(LAPACK_ROW_MAJOR, copy.h, copy.w, &copy.a(0, 0), copy.stride, pivot.get());
+    LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', res.size(), 1, &copy.a(0, 0), copy.stride, pivot.get(), &res[0], 1);
     return res;
 }
 #endif
