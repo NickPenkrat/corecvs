@@ -840,7 +840,7 @@ Matrix Matrix::inv() const
 #ifndef WIN32
     int pivot[h];
 #else
-    std::unique_ptr<int> pivot(new int[h]);
+    std::unique_ptr<int[]> pivot(new int[h]);
 #endif
     CORE_ASSERT_TRUE_S(h == w);
     LAPACKE_dgetrf(LAPACK_ROW_MAJOR, copy.h, copy.w, &copy.a(0, 0), copy.stride, pivot);
@@ -927,7 +927,11 @@ Matrix Matrix::inv() const
 corecvs::Vector corecvs::Matrix::linSolve(const corecvs::Matrix &A, const corecvs::Vector &B)
 {
     corecvs::Matrix copy(A);
+#ifndef WIN32
     int pivot[std::min(A.h, A.w)];
+#else
+    std::unique_ptr<int[]> pivot(new int[std::min(A.h, A.w)]);
+#endif
     corecvs::Vector res(B);
     CORE_ASSERT_TRUE_S(A.h == B.size());
     LAPACKE_dgetrf(LAPACK_ROW_MAJOR, copy.h, copy.w, &copy.a(0, 0), copy.stride, pivot);
