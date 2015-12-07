@@ -75,7 +75,7 @@ TEST(Reconstruction, nonCentralRelative6P)
         }
     }
     auto ans = corecvs::RelativeNonCentralP6PSolver::SolveRelativeNonCentralP6P(LR, RR);
-    std::sort(ans.begin(), ans.end(), [=](const decltype(ans[0]) a, const decltype(ans[1]) b)
+    std::sort(ans.begin(), ans.end(), [=](const corecvs::Affine3DQ &a, const corecvs::Affine3DQ &b)
             {
                 auto q1 = a.rotor ^ ps2.location.rotor;
                 auto q2 = b.rotor ^ ps2.location.rotor;
