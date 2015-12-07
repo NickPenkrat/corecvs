@@ -419,7 +419,7 @@ std::vector<EssentialMatrix> EssentialEstimator::getEssential5point(const vector
         int idd = 1;
         if ((ab = std::abs(d2)) > md) { md = ab; idd = 2; }
         if ((ab = std::abs(d3)) > md) { md = ab; idd = 3; }
-        CORE_ASSERT_TRUE_S(md > 1e-9);
+//        CORE_ASSERT_TRUE_S(md > 1e-9);
         switch (idd)
         {
             case 1:
@@ -452,7 +452,7 @@ std::vector<EssentialMatrix> EssentialEstimator::getEssential5point(const vector
 }
 
 
-EssentialMatrix EssentialEstimator::getEssentialLM(const vector<Correspondence*> & samples)
+EssentialMatrix EssentialEstimator::getEssentialLM(const vector<Correspondence*> & samples, const Quaternion &rotation, const Vector3dd &translation)
 {
     CostFunction7toN costFunction(&samples);
     NormalizeFunction normalise;
@@ -466,8 +466,8 @@ EssentialMatrix EssentialEstimator::getEssentialLM(const vector<Correspondence*>
 
     vector<double> input(CostFunctionBase::VECTOR_SIZE);
     /* Left camera is in the negative direction of right camera */
-    Quaternion rotation    = Quaternion::RotationIdentity();
-    Vector3dd  translation = Vector3dd(-1.0, 0.0, 0.0);
+ // Quaternion rotation    = Quaternion::RotationIdentity();
+ //// Vector3dd  translation = Vector3dd(-1.0, 0.0, 0.0);
     CostFunctionBase::packState(&input[0], rotation, translation);
 
     vector<double> output(samples.size());
