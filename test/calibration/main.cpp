@@ -20,7 +20,7 @@ bool CheckGDriveCalibrationFolderTest()
     }
 
     std::stringstream fs;
-    fs << dirGDrive << dirRelPath << fileName << ends;
+    fs << dirGDrive << dirRelPath << fileName;
     string path = fs.str();
 
     if (!QFile::exists(path.c_str())) {
