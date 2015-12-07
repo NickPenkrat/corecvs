@@ -229,7 +229,7 @@ TEST_F(CalibrationTest, testEstimateDistDistortion)
     {
         for (const ImageData& im : vim)
         {
-            cout << im.sourceFileName << tab << "distortion RMSE" << tab << im.distortionRmse << endl;
+            cout << im.sourceFileName << "\tdistortion RMSE\t" << im.distortionRmse << endl;
             if (im.distortionRmse > distortionRmse)
                 distortionRmse = im.distortionRmse;
         }
@@ -257,7 +257,7 @@ TEST_F(CalibrationTest, testCalculate)
     {
         for (const ImageData& im : vim)
         {
-            cout << im.sourceFileName << tab << "calibration RMSE" << tab << im.calibrationRmse << endl;
+            cout << im.sourceFileName << "\tcalibration RMSE\t" << im.calibrationRmse << endl;
             if (im.calibrationRmse > calibrationRmse)
                 calibrationRmse = im.calibrationRmse;
         }
