@@ -64,8 +64,8 @@ void corecvs::RelativeNonCentralRansacSolver::sampleRays()
             if (idx >= 0)
                 idxs[rdy++] = idx;
         }
-        int usedRef  [pss[0].cameras.size()] = {0};
-        int usedQuery[pss[1].cameras.size()] = {0};
+		std::vector<int> usedRef  (pss[0].cameras.size());
+		std::vector<int> usedQuery(pss[1].cameras.size());
         for (int i = 0; i < 6; ++i)
         {
             auto t = matchesRansac[idxs[i]];
@@ -158,7 +158,7 @@ void corecvs::RelativeNonCentralRansacSolver::scoreCurrent()
                 continue;
             auto E = essentials[i][camRef * M + camQuery];
             double sL, sR, foo;
-            E.getScaler(ptEQ, ptER, sL, sR, foo);
+            E.getScaler(ptER, ptEQ, sL, sR, foo);
             if (sL >= 0.0 && sR >= 0.0)
             {
                 currentScores[i]++;
