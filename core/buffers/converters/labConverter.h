@@ -1,10 +1,22 @@
+/**
+* \file labConverter.h
+* \brief RGB to Lab converter definitions
+*
+* \ingroup cppcorefiles
+* \date    Nov 5, 2015
+* \author  pavel.vasilev
+*/
+
+#ifndef LABCONVERTER_H_
+#define LABCONVERTER_H_
+
 #include "global.h"
 #include "rgbTColor.h"
 #include "rgbColor.h"
 
 namespace corecvs {
 
-class RGBConverter
+class LabConverter
 {
 
 private:
@@ -45,6 +57,13 @@ private:
 
 public:
 
+    /**
+    * Convert RGB to CIELab.
+    *
+    * \param   RGB RGB pixel
+    * \param   Lab CIELab pixel
+    *
+    */
     template <typename T>
     static inline void rgb2Lab(RGBTColor<T> RGB, float* Lab)
     {
@@ -53,7 +72,7 @@ public:
         float xyz[3];
 
         for (int i = 0; i < 3; i++)
-            xyz[i] = (srgb2xyz[i][0] * RGB[0] + srgb2xyz[i][1] * RGB[1] + srgb2xyz[i][2] * RGB[2]) / max;
+            xyz[i] = (srgb2xyz[i][0] * RGB.r() + srgb2xyz[i][1] * RGB.g() + srgb2xyz[i][2] * RGB.b()) / max;
 
         xyz2Lab(xyz, Lab);
 
@@ -66,7 +85,7 @@ public:
         float xyz[3];
 
         for (int i = 0; i < 3; i++)
-            xyz[i] = (srgb2xyz[i][0] * RGB[0] + srgb2xyz[i][1] * RGB[1] + srgb2xyz[i][2] * RGB[2]) / max;
+            xyz[i] = (srgb2xyz[i][0] * RGB.r() + srgb2xyz[i][1] * RGB.g() + srgb2xyz[i][2] * RGB.b()) / max;
 
         xyz2Lab(xyz, Lab);
 
@@ -76,10 +95,12 @@ public:
 
 } // namespace corecvs
 
-const float RGBConverter::lab_eps(0.008856451586f);
-const float RGBConverter::lab_coeff(903.3f);
-const float RGBConverter::srgb2xyz[3][3] {
+const float LabConverter::lab_eps(0.008856451586f);
+const float LabConverter::lab_coeff(903.3f);
+const float LabConverter::srgb2xyz[3][3] {
     { 0.412453f, 0.357585f, 0.180423f },
     { 0.212671f, 0.715160f, 0.072169f },
     { 0.019334f, 0.119193f, 0.950227f }
 };
+
+#endif //LABCONVERTER_H_

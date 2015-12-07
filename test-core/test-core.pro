@@ -42,6 +42,7 @@ SOURCES += \
     fastkernel/main_test_fastkernel.cpp \
    #fastkernel_double/main_test_fastkernel_double.cpp \   # moved to perf-tests
    #fastkernel_profile/main_test_fastkernel_profile.cpp \ # moved to perf-tests
+    fftw/main_test_fftw.cpp \
     fileformats/main_test_fileformats.cpp \
    #filter_blocks/main_test_filter_blocks.cpp \           # TODO: can't build
     gaussianSolution/main_test_gaussianSolution.cpp \     # TODO: check it...
@@ -77,4 +78,5 @@ SOURCES += \
     conic/main_test_conic.cpp \
     calstructs/main_test_calstructs.cpp \
     polynomial/main_test_polynomial.cpp \
-    meshdraw/main_test_meshdraw.cpp
+    meshdraw/main_test_meshdraw.cpp \
+    reconstruction/main_test_reconstruction.cpp

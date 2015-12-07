@@ -37,14 +37,16 @@ public:
     Polynomial& operator+=(const Polynomial &rhs);
     Polynomial  operator- (const Polynomial &rhs) const;
     Polynomial& operator-=(const Polynomial &rhs);
+    Polynomial  operator- () const;
 
 
     size_t  degree() const;
-    
+
     Polynomial(const double &x0 = 0.0);
     Polynomial(const double *coeff, size_t degree);
     Polynomial(const corecvs::Vector &coeff);
     Polynomial(const std::vector<double> &coeff);
+    Polynomial(const std::initializer_list<double> &coeff);
 
     static Polynomial X();
     static Polynomial FromRoots(const std::vector<double> &roots);
@@ -57,13 +59,65 @@ public:
     }
 };
 
+Polynomial operator*(const double &lhs, const Polynomial &rhs);
+
 class PolynomialMatrix : public corecvs::AbstractBuffer<Polynomial, int32_t>
 {
 public:
     PolynomialMatrix(int h = 0, int w = 0, const Polynomial& poly = 0.0);
     corecvs::Matrix operator() (const double &x) const;
     Polynomial det(const size_t requiredPower) const;
+    Polynomial& a(int y, int x) { return element(y, x); }
+    Polynomial  a(int y, int x) const { return element(y, x); }
 };
+
+template<typename L, typename R>
+typename std::enable_if<
+        (std::is_same<L, PolynomialMatrix>::value && std::is_same<R, PolynomialMatrix>::value) ||
+        (std::is_same<L, corecvs::Matrix >::value && std::is_same<R, PolynomialMatrix>::value) ||
+        (std::is_same<L, PolynomialMatrix>::value && std::is_same<R, corecvs::Matrix >::value),
+    PolynomialMatrix>::type
+operator*(const L &lhs, const R &rhs)
+{
+    CORE_ASSERT_TRUE_S(lhs.w == rhs.h);
+    PolynomialMatrix ret(lhs.h, rhs.w);
+    for (int i = 0; i < lhs.h; ++i)
+        for (int j = 0; j < rhs.w; ++j)
+            for (int k = 0; k < lhs.w; ++k)
+                ret.a(i, j) += lhs.a(i, k) * rhs.a(k, j);
+    return ret;
+}
+template<typename L, typename R>
+typename std::enable_if<
+        (std::is_same<L, PolynomialMatrix>::value && std::is_same<R, PolynomialMatrix>::value) ||
+        (std::is_same<L, corecvs::Matrix >::value && std::is_same<R, PolynomialMatrix>::value) ||
+        (std::is_same<L, PolynomialMatrix>::value && std::is_same<R, corecvs::Matrix >::value),
+    PolynomialMatrix>::type
+operator+(const L &lhs, const R &rhs)
+{
+    CORE_ASSERT_TRUE_S(lhs.w == rhs.w && lhs.h == rhs.h);
+    PolynomialMatrix ret(lhs.h, lhs.w);
+    for (int i = 0; i < lhs.h; ++i)
+        for (int j = 0; j < lhs.w; ++j)
+            ret.a(i, j) = lhs.a(i, j) + rhs.a(i, j);
+    return ret;
+}
+template<typename L, typename R>
+typename std::enable_if<
+        (std::is_same<L, PolynomialMatrix>::value && std::is_same<R, PolynomialMatrix>::value) ||
+        (std::is_same<L, corecvs::Matrix >::value && std::is_same<R, PolynomialMatrix>::value) ||
+        (std::is_same<L, PolynomialMatrix>::value && std::is_same<R, corecvs::Matrix >::value),
+    PolynomialMatrix>::type
+operator-(const L &lhs, const R &rhs)
+{
+    CORE_ASSERT_TRUE_S(lhs.w == rhs.w && lhs.h == rhs.h);
+    PolynomialMatrix ret(lhs.h, lhs.w);
+    for (int i = 0; i < lhs.h; ++i)
+        for (int j = 0; j < lhs.w; ++j)
+            ret.a(i, j) = lhs.a(i, j) - rhs.a(i, j);
+    return ret;
+}
+
 }
 
 

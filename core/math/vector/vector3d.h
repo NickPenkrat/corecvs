@@ -12,6 +12,7 @@
 
 #include "math.h"
 #include "vector2d.h"
+#include "vector.h"
 namespace corecvs {
 
 /*
@@ -44,6 +45,15 @@ public:
     inline Vector3d(const Vector2d<ElementType> &V, const ElementType &x) :
         BaseClass(V,x)
     {}
+
+    explicit operator Vector() const
+    {
+        Vector v(3);
+        v[0] = (*this)[0];
+        v[1] = (*this)[1];
+        v[2] = (*this)[2];
+        return v;
+    }
 
     //@{
     /**

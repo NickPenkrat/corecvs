@@ -23,14 +23,14 @@
     <item row="0" column="0">
      <widget class="QLabel" name="label_0">
        <property name="text">
-         <string>Use Undistortion</string>
+         <string>Estimate undistorted from distorted</string>
        </property>
      </widget>
     </item>
     <item row="0" column="1">
-     <widget class="QCheckBox" name="useUndistortionCheckBox">
+     <widget class="QCheckBox" name="estimateUndistortedFromDistortedCheckBox">
        <property name="toolTip">
-         <string>Use Undistortion</string>
+         <string>Estimate undistorted from distorted</string>
        </property>
        <property name="checked">
            <bool>true</bool>
@@ -40,11 +40,28 @@
     <item row="1" column="0">
      <widget class="QLabel" name="label_1">
        <property name="text">
-         <string>Algorithm</string>
+         <string>Use Undistortion</string>
        </property>
      </widget>
     </item>
     <item row="1" column="1">
+     <widget class="QCheckBox" name="useUndistortionCheckBox">
+       <property name="toolTip">
+         <string>Use Undistortion</string>
+       </property>
+       <property name="checked">
+           <bool>true</bool>
+       </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="label_2">
+       <property name="text">
+         <string>Algorithm</string>
+       </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
      <widget class="QComboBox" name="algorithmComboBox">
        <property name="currentIndex">
          <number>0</number>
@@ -64,14 +81,14 @@
        </property>
      </widget>
     </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="label_2">
+    <item row="3" column="0">
+     <widget class="QLabel" name="label_3">
        <property name="text">
          <string>Channel</string>
        </property>
      </widget>
     </item>
-    <item row="2" column="1">
+    <item row="3" column="1">
      <widget class="QComboBox" name="channelComboBox">
        <property name="currentIndex">
          <number>3</number>
@@ -151,14 +168,14 @@
        </property>
      </widget>
     </item>
-    <item row="3" column="0">
-     <widget class="QLabel" name="label_3">
+    <item row="4" column="0">
+     <widget class="QLabel" name="label_4">
        <property name="text">
          <string>Cell Size Hor</string>
        </property>
      </widget>
     </item>
-    <item row="3" column="1">
+    <item row="4" column="1">
      <widget class="QDoubleSpinBox" name="cellSizeHorSpinBox">
        <property name="toolTip">
          <string>Cell Size Hor</string>
@@ -168,14 +185,14 @@
        </property>
      </widget>
     </item>
-    <item row="4" column="0">
-     <widget class="QLabel" name="label_4">
+    <item row="5" column="0">
+     <widget class="QLabel" name="label_5">
        <property name="text">
          <string>Cell Size Vert</string>
        </property>
      </widget>
     </item>
-    <item row="4" column="1">
+    <item row="5" column="1">
      <widget class="QDoubleSpinBox" name="cellSizeVertSpinBox">
        <property name="toolTip">
          <string>Cell Size Vert</string>
@@ -185,14 +202,14 @@
        </property>
      </widget>
     </item>
-    <item row="5" column="0">
-     <widget class="QLabel" name="label_5">
+    <item row="6" column="0">
+     <widget class="QLabel" name="label_6">
        <property name="text">
          <string>Clean existing</string>
        </property>
      </widget>
     </item>
-    <item row="5" column="1">
+    <item row="6" column="1">
      <widget class="QCheckBox" name="cleanExistingCheckBox">
        <property name="toolTip">
          <string>Clean existing</string>
@@ -202,14 +219,14 @@
        </property>
      </widget>
     </item>
-    <item row="6" column="0">
-     <widget class="QLabel" name="label_6">
+    <item row="7" column="0">
+     <widget class="QLabel" name="label_7">
        <property name="text">
          <string>Precise Diameter</string>
        </property>
      </widget>
     </item>
-    <item row="6" column="1">
+    <item row="7" column="1">
      <widget class="QSpinBox" name="preciseDiameterSpinBox">
        <property name="toolTip">
          <string>Precise Diameter</string>
@@ -228,14 +245,14 @@
        </property>
      </widget>
     </item>
-    <item row="7" column="0">
-     <widget class="QLabel" name="label_7">
+    <item row="8" column="0">
+     <widget class="QLabel" name="label_8">
        <property name="text">
          <string>Iteration count</string>
        </property>
      </widget>
     </item>
-    <item row="7" column="1">
+    <item row="8" column="1">
      <widget class="QSpinBox" name="iterationCountSpinBox">
        <property name="toolTip">
          <string>Iteration count</string>
@@ -254,14 +271,14 @@
        </property>
      </widget>
     </item>
-    <item row="8" column="0">
-     <widget class="QLabel" name="label_8">
+    <item row="9" column="0">
+     <widget class="QLabel" name="label_9">
        <property name="text">
          <string>Min accuracy</string>
        </property>
      </widget>
     </item>
-    <item row="8" column="1">
+    <item row="9" column="1">
      <widget class="QDoubleSpinBox" name="minAccuracySpinBox">
        <property name="toolTip">
          <string>Min accuracy</string>
@@ -286,14 +303,14 @@
        </property>
      </widget>
     </item>
-    <item row="9" column="0">
-     <widget class="QLabel" name="label_9">
+    <item row="10" column="0">
+     <widget class="QLabel" name="label_10">
        <property name="text">
          <string>Partial Board</string>
        </property>
      </widget>
     </item>
-    <item row="9" column="1">
+    <item row="10" column="1">
      <widget class="QCheckBox" name="partialBoardCheckBox">
        <property name="toolTip">
          <string>Partial Board</string>
@@ -303,14 +320,14 @@
        </property>
      </widget>
     </item>
-    <item row="10" column="0">
-     <widget class="QLabel" name="label_10">
+    <item row="11" column="0">
+     <widget class="QLabel" name="label_11">
        <property name="text">
          <string>Fast board Speedup</string>
        </property>
      </widget>
     </item>
-    <item row="10" column="1">
+    <item row="11" column="1">
      <widget class="QCheckBox" name="fastBoardSpeedupCheckBox">
        <property name="toolTip">
          <string>Fast board Speedup</string>
@@ -320,14 +337,14 @@
        </property>
      </widget>
     </item>
-    <item row="11" column="0">
-     <widget class="QLabel" name="label_11">
+    <item row="12" column="0">
+     <widget class="QLabel" name="label_12">
        <property name="text">
          <string>Draw SGFs on boards</string>
        </property>
      </widget>
     </item>
-    <item row="11" column="1">
+    <item row="12" column="1">
      <widget class="QCheckBox" name="drawSGFsOnBoardsCheckBox">
        <property name="toolTip">
          <string>Draw SGFs on boards</string>
@@ -337,21 +354,21 @@
        </property>
      </widget>
     </item>
-    <item row="12" column="0">
-     <widget class="QLabel" name="label_12">
+    <item row="13" column="0">
+     <widget class="QLabel" name="label_13">
        <property name="text">
          <string>Skip undistorted with no distorted board</string>
        </property>
      </widget>
     </item>
-    <item row="12" column="1">
+    <item row="13" column="1">
      <widget class="QCheckBox" name="skipUndistortedWithNoDistortedBoardCheckBox">
        <property name="toolTip">
          <string>Skip undistorted with no distorted board</string>
        </property>
      </widget>
     </item>
-   <item row="13" column="0">
+   <item row="14" column="0">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -364,7 +381,7 @@
      </property>
     </spacer>
    </item>
-   <item row="13" column="2">
+   <item row="14" column="2">
     <spacer name="horizontalSpacer">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -382,6 +399,12 @@
  <layoutdefault spacing="3" margin="3"/>
  <resources/>
  <connections>
+  <connection>
+   <sender>estimateUndistortedFromDistortedCheckBox</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>CheckerboardDetectionParametersControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
   <connection>
    <sender>useUndistortionCheckBox</sender>
    <signal>stateChanged(int)</signal>

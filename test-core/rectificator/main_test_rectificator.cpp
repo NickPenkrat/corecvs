@@ -195,6 +195,63 @@ TEST(Rectification, test7point)
             cl.push_back(&cc);
         auto Fv = corecvs::EssentialEstimator().getEssential7point(cl);
         
+        for (uint i = 0; i < cv.size(); ++i)
+        {
+            corecvs::Vector3dd L(cv[i].start[0], cv[i].start[1], 1.0);
+            corecvs::Vector3dd R(cv[i].end[0], cv[i].end[1], 1.0);
+            for (auto& F: Fv)
+            {
+                auto line = F * R;
+                double diff = L & line;
+                double lineNorm = std::sqrt(line[0] * line[0] + line[1] * line[1]);
+                ASSERT_NEAR(diff / lineNorm, 0.0, 1);
+            }
+        }
+    }
+}
+
+TEST(Rectification, test5point)
+{
+    corecvs::Matrix33 P1(4000.0,    0.0, 2000.0,
+                            0.0, 4000.0, 2000.0,
+                            0.0,    0.0,    1.0);
+    corecvs::Matrix33 P2(3000.0,    0.0, 1500.0,
+                            0.0, 3000.0, 1500.0,
+                            0.0,    0.0,    1.0);
+    corecvs::Matrix33  R(cos(.5), sin(.5), 0.0,
+                        -sin(.5), cos(.5), 0.0,
+                            0.0,     0.0,  1.0);
+    corecvs::Vector3dd T(1.0, 2.0, 3.0);
+
+    std::mt19937 rng(DEFAULT_SEED);
+    std::uniform_real_distribution<double> runif(-1e3, 1e3);
+    std::normal_distribution<double> rnorm(0.0, 0.5);
+
+    for (int rngi = 0; rngi < RNG_RETRIES; ++rngi)
+    {
+        std::vector<Correspondence> cv;
+        for (int i = 0; i < 5; ++i)
+        {
+            corecvs::Vector3dd p(runif(rng), runif(rng), runif(rng));
+            auto ppl = P1 * p;
+            auto ppr = P2 * (R * p + T);
+            auto projL = corecvs::Vector2dd(ppl[0], ppl[1]) / ppl[2];
+            auto projR = corecvs::Vector2dd(ppr[0], ppr[1]) / ppr[2];
+            ppl = P1.inv() * corecvs::Vector3dd(projL[0], projL[1], 1.0);
+            ppr = P2.inv() * corecvs::Vector3dd(projR[0], projR[1], 1.0);
+            projL = corecvs::Vector2dd(ppl[0], ppl[1]) / ppl[2];
+            projR = corecvs::Vector2dd(ppr[0], ppr[1]) / ppr[2];
+            corecvs::Correspondence corr;
+            
+            corr.start = projL;
+            corr.end   = projR;
+            cv.push_back(corr);
+        }
+        std::vector<Correspondence*> cl;
+        for (auto& cc: cv)
+            cl.push_back(&cc);
+        auto Fv = corecvs::EssentialEstimator().getEssential5point(cl);
+        
         for (int i = 0; i < cv.size(); ++i)
         {
             corecvs::Vector3dd L(cv[i].start[0], cv[i].start[1], 1.0);
@@ -208,6 +265,7 @@ TEST(Rectification, test7point)
             }
         }
     }
+
 }
 
 TEST(Rectification, testEssentialEstimator)
@@ -233,13 +291,14 @@ TEST(Rectification, testEssentialEstimator)
         corr.start = projL;
         corr.end   = projR;
         cv.push_back(corr);
+
     }
     std::vector<Correspondence*> cl;
     for (auto& cc: cv)
         cl.push_back(&cc);
     corecvs::Matrix33 F = corecvs::EssentialEstimator().getEssentialLSE(cl);
     
-    for (int i = 0; i < cv.size(); ++i)
+    for (uint i = 0; i < cv.size(); ++i)
     {
         corecvs::Vector3dd L(cv[i].start[0], cv[i].start[1], 1.0);
         corecvs::Vector3dd R(cv[i].end[0], cv[i].end[1], 1.0);
@@ -280,7 +339,7 @@ TEST(Rectification, testEssentialEstimator)
             cl.push_back(&cc);
         auto F1 = corecvs::EssentialEstimator().getEssentialLSE(cl);
         F1.assertRank2();
-        for (int i = 0; i < cl.size(); ++i)
+        for (uint i = 0; i < cl.size(); ++i)
         {
             cl[i]->start += corecvs::Vector2dd(
                     std::min(1.0, std::max(-1.0, rnorm(rng))), 
@@ -292,7 +351,7 @@ TEST(Rectification, testEssentialEstimator)
         auto F = corecvs::EssentialEstimator().getEssentialLSE(cl);
         F.assertRank2();
         double rmse1 = 0.0;
-        for (int i = 0; i < cv.size(); ++i)
+        for (uint i = 0; i < cv.size(); ++i)
         {
             corecvs::Vector3dd L(cv[i].start[0], cv[i].start[1], 1.0);
             corecvs::Vector3dd R(cv[i].end[0], cv[i].end[1], 1.0);
@@ -306,7 +365,7 @@ TEST(Rectification, testEssentialEstimator)
         ASSERT_NEAR(rmse1, 0.0, 5);
        
         double rmse = 0.0;
-        for (int i = 0; i < cv.size(); ++i)
+        for (uint i = 0; i < cv.size(); ++i)
         {
             corecvs::Vector3dd L(cv[i].start[0], cv[i].start[1], 1.0);
             corecvs::Vector3dd R(cv[i].end[0], cv[i].end[1], 1.0);
@@ -321,7 +380,7 @@ TEST(Rectification, testEssentialEstimator)
         ASSERT_NEAR(rmse, 0.0, (15.0));
 //      std::cout << "ORIG:OK" << std::endl; 
         rmse = 0.0;
-        for (int i = 0; i < cv.size(); ++i)
+        for (uint i = 0; i < cv.size(); ++i)
         {
             corecvs::Vector3dd L(cv[i].start[0], cv[i].start[1], 1.0);
             corecvs::Vector3dd R(cv[i].end[0], cv[i].end[1], 1.0);

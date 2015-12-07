@@ -287,7 +287,7 @@ TEST(FastKernel, testSSEMul)
     cout << "Products are "<< result << endl;
     for (unsigned i = 0; i < CORE_COUNT_OF(data1); i++)
     {
-        CORE_ASSERT_TRUE_P(result[i] == data1[i] * data2[i], ("Problem with product"));
+        CORE_ASSERT_TRUE_P((uint)result[i] == data1[i] * data2[i], ("Problem with product"));
     }
 }
 

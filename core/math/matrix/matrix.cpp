@@ -16,7 +16,7 @@
 namespace corecvs {
 
 /* The constructor is not in single cycle due to possible stride of the matrix */
-Matrix::Matrix(Matrix33 &in) : MatrixBase(3, 3, false)
+Matrix::Matrix(const Matrix33 &in) : MatrixBase(3, 3, false)
 {
     a(0,0) = in.a(0,0);
     a(0,1) = in.a(0,1);
@@ -32,7 +32,7 @@ Matrix::Matrix(Matrix33 &in) : MatrixBase(3, 3, false)
 }
 
 /* TODO: Make this inline */
-Matrix::Matrix(Matrix44 &in) : MatrixBase(4, 4, false)
+Matrix::Matrix(const Matrix44 &in) : MatrixBase(4, 4, false)
 {
     for (int i = 0; i < in.H; i++)
         for (int j = 0; j < in.W; j++)
@@ -68,6 +68,19 @@ Matrix::operator Matrix33() const
      a(1,0), a(1,1), a(1,2),
      a(2,0), a(2,1), a(2,2)
     );
+}
+
+Matrix operator -(const Matrix &A)
+{
+    Matrix result(A);
+    for (int i = 0; i < A.h; ++i)
+    {
+        for (int j = 0; j < A.w; ++j)
+        {
+            result.a(i, j) *= -1.0;
+        }
+    }
+    return result;
 }
 
 Matrix operator *(const double &a, const Matrix &B)
@@ -229,6 +242,7 @@ Matrix operator *(DiagonalMatrix &D, const Matrix &M)
 #   include <mkl.h>
 #else
 #   include <cblas.h>
+#   include <lapacke.h>
 #endif
 # endif
 
@@ -1405,6 +1419,8 @@ int Matrix::jacobi(Matrix *a, DiagonalMatrix *d, Matrix *v, int *nrotpt)
             z[ip] = 0.0;
         }
     }
+    delete b;
+    delete z;
     SYNC_PRINT(("Too many iterations in routine jacobi"));
     return 1;
 }

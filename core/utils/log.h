@@ -46,6 +46,32 @@ using corecvs::ObjectRef;
 
 class LogDrain;
 
+class LogDrainDeleter
+{
+    bool mNeedDel;
+public:
+    LogDrainDeleter(bool needDel = true) : mNeedDel(needDel) {}
+
+    template<typename T>
+    void operator()(T* p)
+    {
+        CORE_UNUSED(p);
+        if (mNeedDel)
+            delete p;
+    }
+};
+
+class LogDrainsKeeper : public std::vector<std::unique_ptr<LogDrain, LogDrainDeleter>>
+{
+public:
+    LogDrainsKeeper() {}
+   ~LogDrainsKeeper() {}
+
+   void add(LogDrain* p, bool needDel = true) {
+       push_back(std::unique_ptr<LogDrain, LogDrainDeleter>(p, LogDrainDeleter(needDel)));
+   }
+};
+
 /** \class Log
  *
  *  \brief Class that controls the log
@@ -223,9 +249,9 @@ public:
     /** add needed log drains for the app */
     static void         addAppLog(int argc, char* argv[], cchar* logFileName = NULL);
 
-    static LogLevel                 mMinLogLevel;
-    static std::vector<LogDrain *>  mLogDrains;
-    static int                      mDummy;
+    static LogLevel         mMinLogLevel;
+    static LogDrainsKeeper  mLogDrains;
+    static int              mDummy;
 
 public:
     /** This is a static init function */
@@ -245,6 +271,8 @@ Log::Message operator<< (Log::Message msg, const T& t) {
 class LogDrain
 {
 public:
+    virtual ~LogDrain() {}
+
     virtual void drain(Log::Message &message) = 0;
 
 protected:
@@ -266,6 +294,7 @@ public:
     {
         mFullInfo = fullInfo;
     }
+    virtual ~StdStreamLogDrain() {}
 
     virtual void drain(Log::Message &message);
 };
@@ -277,6 +306,7 @@ class FileLogDrain : public LogDrain
 
 public:
     FileLogDrain(const std::string& path, bool bAppend = false, bool fullInfo = true);
-    ~FileLogDrain();
+    virtual ~FileLogDrain();
+
     virtual void drain(Log::Message &message);
 };

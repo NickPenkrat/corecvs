@@ -51,6 +51,11 @@ corecvs::Polynomial& corecvs::Polynomial::operator*=(const double &v)
     return *this;
 }
 
+corecvs::Polynomial corecvs::operator*(const double &lhs, const corecvs::Polynomial &rhs)
+{
+    return rhs * lhs;
+}
+
 corecvs::Polynomial  corecvs::Polynomial::operator* (const corecvs::Polynomial &rhs) const
 {
     corecvs::Polynomial ans = *this;
@@ -72,6 +77,14 @@ corecvs::Polynomial& corecvs::Polynomial::operator*=(const corecvs::Polynomial &
     }
     *this = coeff;
     return *this;
+}
+
+corecvs::Polynomial corecvs::Polynomial::operator- () const
+{
+    corecvs::Polynomial ret = *this;
+    for (auto& c: ret)
+        c *= -1.0;
+    return ret;
 }
 
 corecvs::Polynomial  corecvs::Polynomial::operator+ (const corecvs::Polynomial &rhs) const
@@ -130,6 +143,11 @@ corecvs::Polynomial::Polynomial(const std::vector<double> &coeff)
 {
 }
 
+corecvs::Polynomial::Polynomial(const std::initializer_list<double> &coeff)
+    : std::vector<double>(coeff)
+{
+}
+
 corecvs::Polynomial::Polynomial(const corecvs::Vector &coeff)
     : corecvs::Polynomial(&coeff.at(0), coeff.size() - 1)
 {
@@ -153,7 +171,7 @@ corecvs::Polynomial corecvs::Polynomial::Interpolate(const std::vector<double> &
 {
     CORE_ASSERT_TRUE_S(x.size() == Px.size());
     CORE_ASSERT_TRUE_S(x.size());
-    size_t N = x.size() - 1, N1 = x.size();
+    size_t /*N = x.size() - 1,*/ N1 = x.size();
 
     std::vector<double> coeff(N1);
     coeff[0] = Px[0];
@@ -214,7 +232,6 @@ corecvs::Polynomial corecvs::PolynomialMatrix::det(const size_t requiredPower) c
     for (auto& v: evaluationPoints)
     {
         evaluatedValues.push_back((*this)(v).det());
-        std::cout << "x = " << v << "; det = " << (*this)(v).det() << std::endl << (*this)(v) << std::endl;
     }
 
     return corecvs::Polynomial::Interpolate(evaluationPoints, evaluatedValues);

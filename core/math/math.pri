@@ -47,6 +47,7 @@ HEADERS += \
     math/eulerAngles.h \
     math/puzzleBlock.h \
     math/matrix/similarityReconstructor.h \
+    math/fftw/fftwWrapper.h \
     
     
 SOURCES += \
@@ -56,6 +57,7 @@ SOURCES += \
     math/matrix/matrix44.cpp \
     math/matrix/diagonalMatrix.cpp \
     math/matrix/homographyReconstructor.cpp \
+    math/vector/vector2d.cpp \
     math/lutAlgebra.cpp \
     math/affine.cpp \
     math/projectiveTransform.cpp \
@@ -66,4 +68,5 @@ SOURCES += \
     math/generic/genericMath.cpp \
     math/sse/sseWrapper.cpp \
     math/matrix/similarityReconstructor.cpp \
+    math/fftw/fftwWrapper.cpp \
 

@@ -12,7 +12,7 @@ TEMPLATE = subdirs
 
 SUBDIRS +=       \
 #   grab         \
-#    grab_N_captures \
+    grab_N_captures \
 #    serialize1   \
 #   adoptcolor   \
 #    avigrab     \
@@ -21,7 +21,7 @@ SUBDIRS +=       \
 #    aLowCodec \
 #    new_board_detector \
 #    cr2reader           \
-#    debayer             \
+    debayer             \
 
 
 with_opencv {
@@ -37,7 +37,7 @@ with_opencv {
 #        calibration_job_estimate_distortion \
 #        calibration_job_apply_undistortion \
 #        calibration_job_calibrate \
-#        photostation_placer
+        photostation_placer
 }
 
 grab.file                           = grab/grab.pro

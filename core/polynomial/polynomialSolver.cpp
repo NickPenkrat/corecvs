@@ -34,6 +34,8 @@ double corecvs::PolynomialSolver::evaluate(const double* coeff, const double &x,
 template<>
 size_t corecvs::PolynomialSolver::solve_imp<1>(const double* coeff, double* roots, const size_t &degree)
 {
+    CORE_UNUSED(degree);
+
     if (std::abs(coeff[1]) < RELATIVE_TOLERANCE * coeff[0])
         return 0;
 
@@ -45,6 +47,8 @@ size_t corecvs::PolynomialSolver::solve_imp<1>(const double* coeff, double* root
 template<>
 size_t corecvs::PolynomialSolver::solve_imp<2>(const double* coeff, double* roots, const size_t &degree)
 {
+    CORE_UNUSED(degree);
+
     double a = coeff[2], b = coeff[1], c = coeff[0];
 
     double b2 = b * b;

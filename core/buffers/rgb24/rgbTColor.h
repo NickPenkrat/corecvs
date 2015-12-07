@@ -560,7 +560,7 @@ public:
         return RGBTColor(input.x(), input.y(), input.z());
     }
 
-    static RGBTColor FromHSV(uint64_t h, T s, T v)
+    static RGBTColor FromHSV(uint16_t h, T s, T v)
     {
         const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
         int c = ((int)(s * v)) / max;

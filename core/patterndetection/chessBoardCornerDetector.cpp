@@ -13,6 +13,98 @@ using corecvs::Vector2dd;
 using corecvs::Matrix22;
 
 
+#ifdef WITH_AVX
+#include <immintrin.h>
+struct ConvolutorImpl
+{
+    void operator() (const corecvs::BlockedRange<int> &rr) const
+    {
+        for (int i = rr.begin(); i < rr.end(); ++i)
+        {
+            for (int j = l; j + 19 < r; j += 20)
+            {
+                __m256d sum0= _mm256_setzero_pd();
+                __m256d sum1= _mm256_setzero_pd();
+                __m256d sum2= _mm256_setzero_pd();
+                __m256d sum3= _mm256_setzero_pd();
+                __m256d sum4= _mm256_setzero_pd();
+
+                for (int ii = 0; ii < kh; ++ii)
+                {
+                    double *kp = &kernel->element(ii, 0);
+                    double *ip0 = &src->element(ii + i - ky, j - kx);
+                    double *ip1 = ip0 + 4;
+                    double *ip2 = ip0 + 8;
+                    double *ip3 = ip0 +12;
+                    double *ip4 = ip0 +16;
+                    for (int jj = 0; jj < kw; ++jj)
+                    {
+                        __m256d mul1 = _mm256_broadcast_sd(kp++);
+                        __m256d mul20= _mm256_loadu_pd(ip0++);
+#ifdef WITH_FMA
+                        sum0 = _mm256_fmadd_pd(mul1, mul20, sum0);
+#else
+                        sum0 = _mm256_add_pd(_mm256_mul_pd(mul1, mul20), sum0);
+#endif
+                        __m256d mul21= _mm256_loadu_pd(ip1++);
+#ifdef WITH_FMA
+                        sum1 = _mm256_fmadd_pd(mul1, mul21, sum1);
+#else
+                        sum1 = _mm256_add_pd(_mm256_mul_pd(mul1, mul21), sum1);
+#endif
+                        __m256d mul22= _mm256_loadu_pd(ip2++);
+#ifdef WITH_FMA
+                        sum2 = _mm256_fmadd_pd(mul1, mul22, sum2);
+#else
+                        sum2 = _mm256_add_pd(_mm256_mul_pd(mul1, mul22), sum2);
+#endif
+                        __m256d mul23= _mm256_loadu_pd(ip3++);
+#ifdef WITH_FMA
+                        sum3 = _mm256_fmadd_pd(mul1, mul23, sum3);
+#else
+                        sum3 = _mm256_add_pd(_mm256_mul_pd(mul1, mul23), sum3);
+#endif
+                        __m256d mul24= _mm256_loadu_pd(ip4++);
+#ifdef WITH_FMA
+                        sum4 = _mm256_fmadd_pd(mul1, mul24, sum4);
+#else
+                        sum4 = _mm256_add_pd(_mm256_mul_pd(mul1, mul24), sum4);
+#endif
+                    }
+                }
+                _mm256_storeu_pd(&dst->element(i, j     ), sum0);
+                _mm256_storeu_pd(&dst->element(i, j +  4), sum1);
+                _mm256_storeu_pd(&dst->element(i, j +  8), sum2);
+                _mm256_storeu_pd(&dst->element(i, j + 12), sum3);
+                _mm256_storeu_pd(&dst->element(i, j + 16), sum4);
+            }
+        }
+    }
+
+    ConvolutorImpl(DpImage *src, DpImage *dst, DpKernel *kernel) : src(src), dst(dst), kernel(kernel)
+    {
+        h = src->h; w = src->w; kw = kernel->w; kh = kernel->h; kx = kernel->x; ky = kernel->y;
+        t = 0; l = 0; r = w; d = h;
+
+        t = std::max(t, ky);
+        l = std::max(l, kx);
+        d = std::min(d, h - kh + ky);
+        r = std::min(r, w - kw + kx);
+    }
+    DpImage *src, *dst;
+    DpKernel *kernel;
+    int h, w, kw, kh, kx, ky, t, l, d, r;
+};
+
+
+
+void CornerKernelSet::unsafeConvolutor(DpImage &src, DpKernel &kernel, DpImage &dst)
+{
+    ConvolutorImpl impl(&src, &dst, &kernel);
+    corecvs::parallelable_for(impl.t, impl.d, impl);
+}
+#endif
+
 double OrientedCorner::scoreCorner(DpImage &img, DpImage &weight, std::vector<double> &radius, double bandwidth)
 {
     int iw = img.w, ih = img.h;
@@ -193,8 +285,11 @@ void CornerKernelSet::MinifyKernel(DpKernel &k)
     r++;
     if (l > k.x) l = k.x;
     if (t > k.y) t = k.y;
+    if (r <= k.x) r = k.x + 1;
+    if (d <= k.y) d = k.y + 1;
     if (l == 0 && t == 0 && d == k.h - 1 && r == k.w - 1)
         return;
+    CORE_ASSERT_TRUE_S(d < k.h && r < k.w);
     for (int i = 0; i <= d - t; ++i)
     {
         for (int j = 0; j <= r - l; ++j)
@@ -204,8 +299,9 @@ void CornerKernelSet::MinifyKernel(DpKernel &k)
     }
     k.x = k.x - l;
     k.y = k.y - t;
-    k.w = d - t + 1;
-    k.h = r - l + 1;
+    k.h = d - t + 1;
+    k.w = r - l + 1;
+    CORE_ASSERT_TRUE_S(k.x >= 0 && k.x < k.w && k.y >= 0 && k.y < k.h);
 }
 
 void CornerKernelSet::computeCost(DpImage &img, DpImage &c, bool parallelable, bool new_style)
@@ -229,7 +325,7 @@ void CornerKernelSet::computeCost(DpImage &img, DpImage &c, bool parallelable, b
         pfB = new DpImage(img.h, img.w, false);
         pfC = new DpImage(img.h, img.w, false);
         pfD = new DpImage(img.h, img.w, false);
-        
+#ifndef WITH_AVX
         corecvs::ConvolveKernel<corecvs::DummyAlgebra> convA(&A, A.y, A.x);
         corecvs::ConvolveKernel<corecvs::DummyAlgebra> convB(&B, B.y, B.x);
         corecvs::ConvolveKernel<corecvs::DummyAlgebra> convC(&C, C.y, C.x);
@@ -241,6 +337,12 @@ void CornerKernelSet::computeCost(DpImage &img, DpImage &c, bool parallelable, b
         proScalar.process(&in, &pfB, convB);
         proScalar.process(&in, &pfC, convC);
         proScalar.process(&in, &pfD, convD);
+#else
+        unsafeConvolutor(img, A, *pfA);
+        unsafeConvolutor(img, B, *pfB);
+        unsafeConvolutor(img, C, *pfC);
+        unsafeConvolutor(img, D, *pfD);
+#endif
     }
 
     for (int i = 0; i < h; ++i)
@@ -421,7 +523,7 @@ void ChessBoardCornerDetector::prepareKernels()
     {
         for (auto& psi: patternStartAngle)
         {
-            kernels.emplace_back(r, psi, sectorSize, false);
+            kernels.emplace_back(r, psi, sectorSize, true);
         }
     }
 }
@@ -789,52 +891,3 @@ ChessBoardCornerDetector::ChessBoardCornerDetector(ChessBoardCornerDetectorParam
     prepareKernels();
 }
 
-#if DEPRECATED
-
-bool ChessBoardCornerDetector::invertable22(corecvs::Matrix &A)
-{
-    CORE_ASSERT_TRUE_S(A.w == 2 && A.h == 2);
-    const double DETTOLERANCE22 = 1e-9;
-    return std::abs(A.a(0, 0) * A.a(1, 1) - A.a(1, 0) * A.a(0, 1)) > DETTOLERANCE22;
-}
-
-void ChessBoardCornerDetector::solve22(corecvs::Matrix &A, corecvs::Vector2dd &B, corecvs::Vector2dd &x)
-{
-    CORE_ASSERT_TRUE_S(A.w == 2 && A.h == 2);
-    double a = A.a(0, 0), b = A.a(0, 1), c = A.a(1, 0), d = A.a(1, 1);
-    double D = a * d - b * c;
-    x[0] = ( d * B[0] - b * B[1]) / D;
-    x[1] = (-c * B[0] + a * B[1]) / D;
-}
-
-void ChessBoardCornerDetector::eig22(corecvs::Matrix &A, double &lambda1, corecvs::Vector2dd &e1, double &lambda2, corecvs::Vector2dd &e2)
-{
-    const double EIGTOLERANCE = 1e-9;
-    CORE_ASSERT_TRUE_S(A.w == 2 && A.h == 2);
-    double T = A.a(0, 0) + A.a(1, 1);
-    double D = A.a(0, 0) * A.a(1, 1) - A.a(1, 0) * A.a(0, 1);
-    lambda2 = T / 2.0 + std::sqrt(T * T / 4.0 - D);
-    lambda1 = T / 2.0 - std::sqrt(T * T / 4.0 - D);
-
-    double c = std::abs(A.a(1, 0)), b = std::abs(A.a(0, 1));
-    if (std::max(b, c) > EIGTOLERANCE)
-    {
-        if (b > c)
-        {
-            e1 = corecvs::Vector2dd(A.a(0, 1), lambda1 - A.a(0, 0)).normalised();
-            e2 = corecvs::Vector2dd(A.a(0, 1), lambda2 - A.a(0, 0)).normalised();
-        }
-        else
-        {
-            e1 = corecvs::Vector2dd(lambda1 - A.a(1, 1), A.a(1, 0)).normalised();
-            e2 = corecvs::Vector2dd(lambda2 - A.a(1, 1), A.a(1, 0)).normalised();
-        }
-    }
-    else
-    {
-        e1 = corecvs::Vector2dd(1, 0);
-        e2 = corecvs::Vector2dd(0, 1);
-    }
-}
-
-#endif

@@ -189,10 +189,8 @@ void CalibrationFeaturesWidget::editPoint(const QPointF &prevPoint, const QPoint
  **/
 void CalibrationFeaturesWidget::savePoints()
 {
-    QSettings settings("distortionCorrection.conf", QSettings::IniFormat);
-
     ObservationList *list = mObservationListModel->mObservationList;
-    SettingsSetter setter(&settings);
+    SettingsSetter setter("distortionCorrection.conf");
     setter.visit(*list, "points");
 
     /*

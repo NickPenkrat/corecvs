@@ -34,6 +34,7 @@ ChessboardDetector::ChessboardDetector (
             break;
     }
     assembler = ChessBoardAssembler(assemblerParams);
+    sharedGenerator = std::shared_ptr<CirclePatternGenerator>(BoardAligner::FillGenerator(*this));
 }
 
 ChessBoardDetectorMode ChessboardDetector::getMode(const BoardAlignerParams &params)
@@ -103,7 +104,8 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
         assembler.setStatistics(stats);
     }
     BoardAlignerParams params(*this);
-    BoardAligner aligner(params);
+    sharedGenerator->flushCache();
+    BoardAligner aligner(params, sharedGenerator);
     assembler.assembleBoards(corners, boards, &aligner, &buffer);
     if (stats != NULL) stats->prefix = prefix;
 
@@ -112,7 +114,7 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
 
     if (stats != NULL) stats->resetInterval("Assemble");
 
-    bool transposed = false, found = false;
+    bool /*transposed = false,*/ found = false;
 
     bool checkW = !!(mode & ChessBoardDetectorMode::FIT_WIDTH);
     bool checkH = !!(mode & ChessBoardDetectorMode::FIT_HEIGHT);
@@ -138,7 +140,7 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
         {
             bestBoard = b;
             found = true;
-            transposed = true;
+            //transposed = true;
             break;
         }
     }

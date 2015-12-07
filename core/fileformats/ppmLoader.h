@@ -50,6 +50,9 @@ public:
     G12Buffer* g12BufferCreateFromPGM(const string& name, MetaData* metadata = nullptr);
     G12Buffer* g16BufferCreateFromPPM(const string& name, MetaData* metadata = nullptr);
 
+    RGB48Buffer* loadRGB(const string& name, MetaData* metadata);
+    RGB48Buffer* rgb48BufferCreateFromPPM(const string& name, MetaData* metadata = nullptr);
+
     /**
      * Save method overloads.
      *
@@ -73,7 +76,7 @@ public:
 private:
     static string prefix1, prefix2;
 
-    std::unique_ptr<char[]> nextLine(FILE *fp, int sz, MetaData *metadata);
+    int nextLine(FILE *fp, char *buf, int sz, MetaData *metadata);
     bool readHeader(FILE *fp, unsigned long int *h, unsigned long int *w, uint16_t *maxval, uint8_t *type, MetaData* metadata);
     bool writeHeader(FILE *fp, unsigned long int h, unsigned long int w, uint8_t type, uint16_t maxval, MetaData* metadata);
 };

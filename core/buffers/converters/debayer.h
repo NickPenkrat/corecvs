@@ -5,6 +5,7 @@
  * \date 21 Oct 2015
  *
  * Declares the Debayer class.
+ * \author Pavel.Vasilev
  */
 #ifndef DEBAYER_H
 #define DEBAYER_H
@@ -15,7 +16,6 @@
 #include "rgbTBuffer.h"
 #include "rgb24Buffer.h"
 #include "metamap.h"
-
 
 namespace corecvs {
 
@@ -37,7 +37,7 @@ public:
      * \param depthOut       Processing bit depth.
      * \param [in,out] data  (Optional) Metadata.
      */
-    Debayer(G12Buffer *bayer, int depthOut = 12, MetaData *data = nullptr);
+    Debayer(G12Buffer *bayer, int depthOut = 12, MetaData *data = nullptr, int bayerPos = -1);
 
     ~Debayer();
 
@@ -48,7 +48,17 @@ public:
      *
      * \return  Resulting image.
      */
-    RGB48Buffer* toRGB48(Method method);
+    void toRGB48(Method method, RGB48Buffer* out);
+
+    /**
+    * Fill bayer data from RGB48 image applying Bayerian grid to it.
+    *
+    * \param   inRGB Image to get pixel data from.
+    */
+    void fromRgb(RGB48Buffer *inRgb);
+
+    // use for testing only!
+    RGB48Buffer* fourier();
 
 private:
     int         mDepth      = 12;
@@ -58,14 +68,17 @@ private:
     uint16_t*   mCurve      = nullptr;
     G12Buffer*  mBayer      = nullptr;
     MetaData *  mMetadata   = nullptr;
+    uint16_t    mMaximum    = 0;
 
     void        scaleCoeffs();
     void        gammaCurve(uint16_t *curve, int imax);
     void        preprocess(bool overwrite = false);
 
-    RGB48Buffer* linear();
-    RGB48Buffer* nearest();
-    RGB48Buffer* ahd();
+    void linear(RGB48Buffer* out);
+    void nearest(RGB48Buffer* out);
+    void ahd(RGB48Buffer* out);
+
+    void borderInterpolate(int radius, RGB48Buffer *result);
 
     /* utilitary functions */
 
@@ -77,7 +90,7 @@ private:
      *
      * \return  Clipped value.
      */
-    uint16_t clip(int32_t x, int depth = 16);
+    inline uint16_t clip(int32_t x);
 
     /**
      * Clamp the given value. If a &lt; b, treat a as left limit and b as right. Invert limits
@@ -89,7 +102,7 @@ private:
      *
      * \return  Clamped value.
      */
-    static int32_t clamp(int32_t x, int32_t a, int32_t b);
+    static inline int32_t clamp(int32_t x, int32_t a, int32_t b);
 
     /**
      * Calculate weighted average.
@@ -99,10 +112,10 @@ private:
      *
      * \return  Averaged value.
      */
-    int32_t weightedBayerAvg(vector<Vector2d32> coords, vector<int>coeffs = vector<int>());
-    int32_t weightedBayerAvg(Vector2d32 coords);
+    inline int32_t weightedBayerAvg(const vector<Vector2d32>& coords, const vector<int>& coeffs = vector<int>());
+    inline int32_t weightedBayerAvg(const Vector2d32& coords);
 
-    uint8_t colorFromBayerPos(int i, int j, bool rggb = true);
+    inline uint8_t colorFromBayerPos(uint i, uint j, bool rggb = true);
 };
 
 } // namespace corecvs

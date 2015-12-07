@@ -4,44 +4,43 @@
 // TODO: refine this list
 #include <vector>
 #include <string>
-#include <sstream>
-#include <regex>
-#include <fstream>
+//#include <sstream>
+//#include <regex>
+//#include <fstream>
 #include <unordered_map>
-#include <unordered_set>
-#include <cstdio>
-#include <algorithm>
-#include <iomanip>
-#include <chrono>
-#include <random>
-#include "calibrationHelpers.h"
+//#include <unordered_set>
+//#include <cstdio>
+//#include <algorithm>
+//#include <iomanip>
+//#include <chrono>
+//#include <random>
+//#include "calibrationHelpers.h"
 #include "calibrationJob.h"
-#include "calibrationLocation.h"
-#include "mesh3d.h"
-#include "jsonSetter.h"
-#include "jsonGetter.h"
+#include "calibrationPhotostation.h"
+//#include "calibrationLocation.h"
+//#include "mesh3d.h"
+//#include "jsonSetter.h"
+//#include "jsonGetter.h"
 
 #include "imageKeyPoints.h"
 #include "reconstructionStructs.h"
 
 #include "vector3d.h"
-#include "vector2d.h"
-#include "bufferReaderProvider.h"
+//#include "vector2d.h"
+//#include "bufferReaderProvider.h"
 
-#include "openCvFileReader.h"
-#include "featureMatchingPipeline.h"
-#include "openCvDescriptorExtractorWrapper.h"
-#include "openCvFeatureDetectorWrapper.h"
-#include "openCvDescriptorMatcherWrapper.h"
-#include "multicameraTriangulator.h"
-#include "undirectedGraph.h"
+//#include "featureMatchingPipeline.h"
+//#include "multicameraTriangulator.h"
+//#include "undirectedGraph.h"
 #include "multiPhotostationScene.h"
-#include "essentialEstimator.h"
+//#include "essentialEstimator.h"
+#include "displacementBuffer.h"
 
 // TODO: make this stuff reconstruction params
 #define POI_ONLY
 #define NOUPD
 #define METERS
+//#define Q_ONLY
 
 struct ReconstructionParameters
 {
@@ -92,6 +91,22 @@ struct ReconstructionJob : ReconstructionParameters
         {
         }
         void operator() (const double in[], double out[]);
+    };
+
+    struct NormalizationFunctor : public corecvs::FunctionArgs
+    {
+    private:
+        ReconstructionJob* rJob;
+        corecvs::Vector3dd mean, scale;
+    public:
+        NormalizationFunctor(decltype(rJob) rJob,corecvs::Vector3dd mean = corecvs::Vector3dd(0.0, 0.0, 0.0), corecvs::Vector3dd scale = corecvs::Vector3dd(1.0, 1.0, 1.0)) : FunctionArgs(rJob->getInputNum(), rJob->getInputNum()), rJob(rJob), mean(mean), scale(scale)//, covariation(covariation)
+        {
+        }
+        void operator() (const double in[], double out[])
+        {
+            rJob->readParams(in, mean, scale);
+            rJob->writeParams(out, mean, scale);
+        }
     };
 
     void undistortAll(bool singleDistortion = true);
@@ -147,4 +162,4 @@ struct ReconstructionJob : ReconstructionParameters
 };
 
 
-#endif
+#endif // RECONSTRUCTIONSOLVER_H

@@ -12,11 +12,12 @@ struct RawMatch
 	uint16_t featureQ;
 	uint16_t featureT;
 
-	float distance;
+	double distance;
+	double best2ndBest;
 	static const uint16_t INVALID_MARKER;
 
-	RawMatch(const uint16_t &featureQ = INVALID_MARKER, const uint16_t &featureT = INVALID_MARKER, const double &distance = 1000.0)
-		: featureQ(featureQ), featureT(featureT), distance(distance)
+	RawMatch(const uint16_t &featureQ = INVALID_MARKER, const uint16_t &featureT = INVALID_MARKER, const double &distance = 1000.0, double best2ndBest = 1.0)
+		: featureQ(featureQ), featureT(featureT), distance(distance), best2ndBest(best2ndBest)
 	{
 	}
 
@@ -38,11 +39,12 @@ struct Match
 	uint16_t featureB;
 
 	double distance;
+	double best2ndBest;
 
 	Match()
 	{
 	}
-	Match(const uint16_t &imgA, const uint16_t &imgB, const uint16_t &featureA, const uint16_t &featureB, const double &distance) : distance(distance)
+	Match(const uint16_t &imgA, const uint16_t &imgB, const uint16_t &featureA, const uint16_t &featureB, const double &distance, double best2ndBest = 1.0) : distance(distance), best2ndBest(best2ndBest)
 	{
 		if (imgA < imgB)
 		{

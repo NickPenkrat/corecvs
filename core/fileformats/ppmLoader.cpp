@@ -43,6 +43,12 @@ G12Buffer* PPMLoader::load(const string& name, MetaData *metadata)
     return toReturn;
 }
 
+RGB48Buffer* PPMLoader::loadRGB(const string& name, MetaData *metadata)
+{
+    RGB48Buffer *toReturn = rgb48BufferCreateFromPPM(name, metadata);
+    return toReturn;
+}
+
 G12Buffer* PPMLoader::g12BufferCreateFromPGM(const string& name, MetaData *meta)
 {
     FILE      *fp = NULL;
@@ -153,33 +159,162 @@ done:
     return result;
 }
 
-std::unique_ptr<char[]> PPMLoader::nextLine(FILE *fp, int sz, MetaData *metadata)
+RGB48Buffer* PPMLoader::rgb48BufferCreateFromPPM(const string& name, MetaData *meta)
 {
-    std::unique_ptr<char[]> buf(new char[sz]);
-    while (fread(&buf[0], 1, 1, fp))
-    {
+    FILE      *fp = NULL;
+    uint8_t   *charImage = NULL;
+    RGB48Buffer *result = NULL;
 
-        if (buf[0] != '#' && buf[0] != '\n' && buf[0] != '\r')
+    // PPM headers variable declaration
+    unsigned long int i, j;
+    unsigned long int h, w;
+    uint8_t type;
+    unsigned short int maxval;
+    int shiftCount = 0;
+    int8_t c;
+
+    // open file for reading in binary mode
+    fp = fopen(name.c_str(), "rb");
+
+    if (fp == nullptr)
+    {
+        return nullptr;
+    }
+
+    if(!readHeader(fp, &h, &w, &maxval, &type, meta) || (type != 6))
+    {
+        fclose(fp);
+        return nullptr;
+    }
+
+    bool calcWhite = false;
+    int white = 0;
+    // if no metadata is present, create some
+    // if metadata is null, don't
+    if (meta != nullptr)
+    {
+        // create an alias to metadata
+        MetaData &metadata = *meta;
+        // get significant bit count
+        if (metadata["bits"].empty())
         {
-            fseek(fp, -1, SEEK_CUR);
-            if (sz > 0 && fgets(&buf[0], sz, fp) == NULL)
+            metadata["bits"].push_back(1);
+        }
+        while (maxval >> int(metadata["bits"][0]))
+        {
+            metadata["bits"][0]++;
+        }
+        if (metadata["white"].empty())
+            calcWhite = true;
+    }
+
+    result = new RGB48Buffer(h, w, false);
+
+    // image size in bytes
+    uint64_t size = (maxval < 0x100 ? 1 : 2) * w * h * 3;
+
+    // for reading we don't need to account for possible system byte orders, so just use a 8bit buffer
+    charImage = new uint8_t[size];
+
+    if (fread(charImage, 1, size, fp) == 0)
+    {
+        CORE_ASSERT_FAIL("fread() call failed");
+        goto done;
+    }
+
+    if (maxval <= 0xff)
+    {
+        // 1-byte case
+        for (i = 0; i < h; i++)
+            for (j = 0; j < w * 3; j += 3)
             {
-                printf("fgets() call failed %s:%d\n", __FILE__, __LINE__);
+                for (c = 0; c < 3; c++)
+                {
+                    result->element(i, j / 3)[2 - c] = (charImage[i * w * 3 + j + c]);
+
+                    if (calcWhite)
+                        if (result->element(i, j / 3)[c] > white)
+                            white = result->element(i, j / 3)[c];
+                }
             }
-            return buf;
+    }
+    else
+    {
+        // 2-byte case
+        for (i = 0; i < h; i++)
+        {
+            for (j = 0; j < w * 2; j += 2)
+            {
+                for (c = 2; c >= 0; c--)
+                {
+                    int offset = i * w * 2 + j;
+                    result->element(i, j / 2)[c] = ((charImage[offset + 0]) << 8 |
+                                                    (charImage[offset + 1]));
+
+                    if (calcWhite && result->element(i, j / 2)[c] > white)
+                        white = result->element(i, j / 2)[c];
+                }
+            }
+        }
+
+    }
+
+    if (calcWhite)
+    {
+        if (meta->at("white").empty())
+        {
+            meta->at("white").push_back(white);
         }
         else
         {
-            fgets(&buf[0], sz, fp);
+            meta->at("white")[0] = white;
+        }
+    }
+
+done:
+    if (fp != NULL)
+        fclose(fp);
+    if (charImage != NULL)
+        deletearr_safe(charImage);
+    return result;
+}
+
+int PPMLoader::nextLine(FILE *fp, char *buf, int sz, MetaData *metadata)
+{
+    // read 1st character
+    while (fread(buf, 1, 1, fp))
+    {
+        if (buf[0] != '#' && buf[0] != '\n' && buf[0] != '\r')
+        {
+            // not a comment/newline, rewind and read whole line
+            fseek(fp, -1, SEEK_CUR);
+            if (sz > 0 && fgets(buf, sz, fp) == nullptr)
+            {
+                printf("fgets() call failed %s:%d\n", __FILE__, __LINE__);
+            }
+            return 0;
+        }
+        else
+        {
+            // comment or newline, try to parse
+            // if newline, clear buffer and return OK
+            if (buf[0] == '\n' || buf[0] == '\r')
+            {
+                buf[0] = 0;
+                return 0;
+            }
+
+            if (fgets(buf, sz, fp) == nullptr)
+                return 1;
 
             // try to read metadata
             char param[256];
             int n = 0;
 
             // read param name
-            if (metadata != nullptr && sscanf(&buf[0], " @meta %s\t@values %d\t", param, &n) == 2)
+            if (metadata != nullptr && sscanf(buf, " @meta %s\t@values %d\t", param, &n) == 2)
             {
-                char* numbers = strrchr(&buf[0], '\t') + 1;
+                char* numbers = strrchr(buf, '\t') + 1;
                 MetaValue values;
                 // read n param values
                 for (int i = 0; i < n; i++)
@@ -189,22 +324,21 @@ std::unique_ptr<char[]> PPMLoader::nextLine(FILE *fp, int sz, MetaData *metadata
                     numbers = strchr(numbers, ' ') + 1;
                     values.push_back(v);
                 }
-                metadata->insert(MetaPair(param, values));
+                metadata->insert(std::pair<string, MetaValue>(param, values));
             }
-            memset(&buf[0], 0, sz);
+            memset(buf, 0, sz);
         }
     }
 
-    return nullptr;
+    return 1;
 }
 
 bool PPMLoader::readHeader(FILE *fp, unsigned long int *h, unsigned long int *w, uint16_t *maxval, uint8_t *type, MetaData* metadata)
 {
-    // skip comments and read next line
-    std::unique_ptr<char[]> header = nextLine(fp, 255, metadata);
+    char header[255];
 
     // check PPM type (currently only supports 5 or 6)
-    if ((header[0] != 'P') || (header[1] < '5') || (header[1] > '6'))
+    if (fgets(header, sizeof header, fp) == nullptr || (header[0] != 'P') || (header[1] < '5') || (header[1] > '6'))
     {
         //printf("Image is not a supported PPM\n");
         return false;
@@ -212,15 +346,16 @@ bool PPMLoader::readHeader(FILE *fp, unsigned long int *h, unsigned long int *w,
 
     // type contains a TYPE uint8_t, in our case 5 or 6
     *type = header[1] - '0';
-
+    
     // get dimensions
-    header = nextLine(fp, 255, metadata);
+    if (nextLine(fp, header, sizeof header, metadata) != 0)
+        return false;
 
     // parse dimensions
-    if (sscanf(&header[0], "%lu%lu", w, h) != 2)
+    if (sscanf(header, "%lu%lu", w, h) != 2)
     {
         // try to parse dimensions in Photoshop-like format (when a newline is used instead of whitespace or tabulation)
-        if (sscanf(&header[0], "%lu", w) != 1)
+        if (sscanf(header, "%lu", w) != 1)
         {
             //printf("Image dimensions could not be read from line %s\n", header);
             return false;
@@ -228,8 +363,8 @@ bool PPMLoader::readHeader(FILE *fp, unsigned long int *h, unsigned long int *w,
         else
         {
             // first dimension has been read, try to read the second
-            header = nextLine(fp, 255, metadata);
-            if (sscanf(&header[0], "%lu", h) != 1) // duplicate code can be gotten rid of with a goto (not sure it's worth doing)
+            int error = nextLine(fp, header, sizeof header, metadata);
+            if (error || sscanf(&header[0], "%lu", h) != 1) // duplicate code can be gotten rid of with a goto (not sure it's worth doing)
             {
                 //printf("Image dimensions could not be read from line %s\n", header);
                 return false;
@@ -238,7 +373,8 @@ bool PPMLoader::readHeader(FILE *fp, unsigned long int *h, unsigned long int *w,
     }
 
     // get colour depth (metric?)
-    header = nextLine(fp, 255, metadata);
+    if (nextLine(fp, header, sizeof header, metadata) != 0)
+        return false;
 
     if (sscanf(&header[0], "%hu", maxval) != 1)
     {
@@ -268,7 +404,7 @@ bool PPMLoader::writeHeader(FILE *fp, unsigned long int h, unsigned long int w, 
         for (MetaData::iterator i = metadata.begin(); i != metadata.end(); i++)
         {
             fprintf(fp, "# @meta %s\t@values %i\t", i->first.c_str(), (int)i->second.size());
-            for (int j = 0; j < i->second.size(); j++)
+            for (uint j = 0; j < i->second.size(); j++)
                 fprintf(fp, "%f ", i->second[j]);
             fprintf(fp, "\n");
         }

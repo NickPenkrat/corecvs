@@ -8,13 +8,13 @@
  * \author alexander
  */
 
-#include <vector>
-#include <string>
 #include <string.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdarg.h>
 
+#include <vector>
+#include <string>
 
 #include "global.h"
 
@@ -94,7 +94,7 @@ public:
 class BaseField /*: public FieldCloner<BaseField>*/
 {
 protected:
-    BaseField(){}
+    BaseField() {}
 
 public:
     static const int UNKNOWN_OFFSET = -1;
@@ -173,17 +173,17 @@ template<typename Type>
 
 
     /** Id of the field */
-    int id;
+    int                 id;
 
     /** Type of the field described by enum */
-    FieldType type;
+    FieldType           type;
     /** Naming of the reflected class */
-    ReflectionNaming name;
+    ReflectionNaming    name;
     /** Offsets of the field in the class */
-    int offset;
+    int                 offset;
 
     /** flags */
-    bool isAdvanced;
+    bool                isAdvanced;
 
     const char *getSimpleName() const
     {
@@ -201,18 +201,20 @@ template<typename Type>
     {
         return new BaseField(*this);
     }
+
+    virtual ~BaseField() {}
 #endif
 
 };
 
 
 /** Template specializations for type trails */
-template<> inline BaseField::FieldType BaseField::getType<int>()         { return TYPE_INT;       }
-template<> inline BaseField::FieldType BaseField::getType<int64_t>()     { return TYPE_TIMESTAMP; }
-template<> inline BaseField::FieldType BaseField::getType<double>()      { return TYPE_DOUBLE;    }
-template<> inline BaseField::FieldType BaseField::getType<float>()       { return TYPE_FLOAT;     }
-template<> inline BaseField::FieldType BaseField::getType<bool>()        { return TYPE_BOOL;      }
-template<> inline BaseField::FieldType BaseField::getType<std::string>() { return TYPE_STRING;    }
+template<> inline BaseField::FieldType BaseField::getType<int>()                  { return TYPE_INT;       }
+template<> inline BaseField::FieldType BaseField::getType<int64_t>()              { return TYPE_TIMESTAMP; }
+template<> inline BaseField::FieldType BaseField::getType<double>()               { return TYPE_DOUBLE;    }
+template<> inline BaseField::FieldType BaseField::getType<float>()                { return TYPE_FLOAT;     }
+template<> inline BaseField::FieldType BaseField::getType<bool>()                 { return TYPE_BOOL;      }
+template<> inline BaseField::FieldType BaseField::getType<std::string>()          { return TYPE_STRING;    }
 
 template<> inline BaseField::FieldType BaseField::getType<vector<int> >()         { return (FieldType)(TYPE_VECTOR_BIT | TYPE_INT);       }
 template<> inline BaseField::FieldType BaseField::getType<vector<int64_t> >()     { return (FieldType)(TYPE_VECTOR_BIT | TYPE_TIMESTAMP); }
@@ -235,11 +237,11 @@ class SimpleScalarField : public BaseField
 public:
     typedef Type CPPType;
 
-    Type defaultValue;
-    bool hasAdditionalValues;
-    Type min;
-    Type max;
-    Type step;
+    Type    defaultValue;
+    bool    hasAdditionalValues;
+    Type    min;
+    Type    max;
+    Type    step;
 
     SimpleScalarField (
             int _id,
@@ -296,6 +298,8 @@ public:
     {
         return new SimpleScalarField(*this);
     }
+
+    virtual ~SimpleScalarField() {}
 #endif
 
 };
@@ -318,12 +322,12 @@ public:
     typedef vector<Type> CPPType;
     typedef Type CPPBaseType;
 
-    const Type defaultValue;
-    unsigned defaultSize;
-    bool hasAdditionalValues;
-    Type min;
-    Type max;
-    Type step;
+    const Type  defaultValue;
+    unsigned    defaultSize;
+    bool        hasAdditionalValues;
+    Type        min;
+    Type        max;
+    Type        step;
 
     SimpleVectorField (
             int _id,
@@ -385,6 +389,8 @@ public:
     {
         return new SimpleVectorField(*this);
     }
+
+    virtual ~SimpleVectorField() {}
 #endif
 
 };
@@ -402,7 +408,7 @@ class StringField : public BaseField
 {
 public:
     typedef std::string CPPType;
-    std::string defaultValue;
+    std::string     defaultValue;
 
     StringField (
             int _id,
@@ -434,6 +440,8 @@ public:
     {
         return new StringField(*this);
     }
+
+    virtual ~StringField() {}
 #endif
 
 };
@@ -443,11 +451,11 @@ class Reflection;
 class EmbedSubclass
 {
 public:
-    Reflection *subclass;
+    Reflection       *subclass;
     ReflectionNaming name;
 
     /* Map that renames fields of the embedded class to fields of current class */
-    struct EmbedMap{
+    struct EmbedMap {
         const char *originalName;
         const char *embeddedName;
     };
@@ -456,52 +464,46 @@ public:
 
     const char *getOrignalName(const char *embeddedName) const
     {
-        vector<EmbedMap>::const_iterator it;
-        for (it = renameing.begin(); it != renameing.end(); ++it)
+        FOREACH(const EmbedMap& el, renameing)
         {
-            if (strcmp(embeddedName, (*it).embeddedName) == 0)
-            {
-                return (*it).originalName;
-            }
+            if (strcmp(embeddedName, el.embeddedName) == 0)
+                return el.originalName;
         }
         return embeddedName;
     }
 
     const char *getEmbeddedName(const char *originalName) const
     {
-        vector<EmbedMap>::const_iterator it;
-        for (it = renameing.begin(); it != renameing.end(); ++it)
+        FOREACH(const EmbedMap& el, renameing)
         {
-            if (strcmp(originalName, (*it).originalName) == 0)
-            {
-                return (*it).embeddedName;
-            }
+            if (strcmp(originalName, el.originalName) == 0)
+                return el.embeddedName;
         }
         return originalName;
     }
 };
 
-/* Reflection for a typical PDO class*/
+/* Reflection for a typical PDO class */
 class Reflection
 {
 public:
-    ReflectionNaming name;
-    vector<const BaseField *>     fields;
+    ReflectionNaming                name;
+    vector<const BaseField *>       fields;
     /* Seems like used only in generator */
-    vector<const EmbedSubclass *> embeds;
+    vector<const EmbedSubclass *>   embeds;
 
-    Reflection(){}
+    Reflection() {}
 
     Reflection(int number, ...)
     {
         va_list marker;
-        va_start( marker, number );
+        va_start(marker, number);
         for (int i = 0; i < number; i++)
         {
-            const BaseField *ref = va_arg( marker, const BaseField *);
+            const BaseField *ref = va_arg(marker, const BaseField *);
             fields.push_back(ref);
         }
-        va_end( marker );
+        va_end(marker);
     }
 
 
@@ -532,27 +534,27 @@ public:
         return -1;
     }
 
-/*    ~Reflection()
+    /*virtual*/ ~Reflection()   // it may be non virtual
     {
-#ifndef REFLECTION_STATIC_ALLOCATION
-        for (int i = 0; i < fieldNumber(); i++) {
-            delete fields[i];
+//#ifndef REFLECTION_STATIC_ALLOCATION
+        FOREACH (const BaseField * el, fields) {
+            delete el;
         }
-        for (int i = 0; i < embeds.size(); i++) {
-            delete embeds[i];
+        fields.clear();
+        FOREACH (const EmbedSubclass * el, embeds) {
+            delete el;
         }
-#endif
-    }*/
+        embeds.clear();
+//#endif
+    }
 };
-
-
 
 
 class CompositeField : public BaseField
 {
 public:
     const Reflection *reflection;
-    const char *typeName;
+    const char       *typeName;
 
     CompositeField (
             int _id,
@@ -561,24 +563,21 @@ public:
             const char *_typeName,
             const char *_decription = NULL,
             const char *_comment = NULL,
-            const Reflection *_reflection = NULL
-    ) :
-        BaseField(_id, TYPE_COMPOSITE, _name, _decription, _comment, _offset),
-        reflection(_reflection),
-        typeName(_typeName)
+            const Reflection *_reflection = NULL)
+        : BaseField(_id, TYPE_COMPOSITE, _name, _decription, _comment, _offset)
+        , reflection(_reflection)
+        , typeName(_typeName)
     {}
-
 
     CompositeField (
             int _id,
             int _offset,
             const ReflectionNaming &_nameing,
             const char *_typeName,
-            const Reflection *_reflection = NULL
-    ) :
-        BaseField(_id, TYPE_COMPOSITE, _nameing, _offset),
-        reflection(_reflection),
-        typeName(_typeName)
+            const Reflection *_reflection = NULL)
+        : BaseField(_id, TYPE_COMPOSITE, _nameing, _offset)
+        , reflection(_reflection)
+        , typeName(_typeName)
     {}
 
 #ifdef REFLECTION_WITH_VIRTUAL_SUPPORT
@@ -589,6 +588,8 @@ public:
     {
         return new CompositeField(*this);
     }
+
+    virtual ~CompositeField() {}
 #endif
 
 };
@@ -598,10 +599,10 @@ class CompositeArrayField : public BaseField
 {
 public:
     const Reflection *reflection;
-    const char *typeName;
-    int size;
+    const char       *typeName;
+    int               size;
 
-    CompositeArrayField (
+    CompositeArrayField(
             int _id,
             int _offset,
             const char *_name,
@@ -609,27 +610,24 @@ public:
             int _size,
             const char *_decription = NULL,
             const char *_comment = NULL,
-            const Reflection *_reflection = NULL
-    ) :
-        BaseField(_id, TYPE_COMPOSITE_ARRAY, _name, _decription, _comment, _offset),
-        reflection(_reflection),
-        typeName(_typeName),
-        size(_size)
+            const Reflection *_reflection = NULL)
+        : BaseField(_id, TYPE_COMPOSITE_ARRAY, _name, _decription, _comment, _offset)
+        , reflection(_reflection)
+        , typeName(_typeName)
+        , size(_size)
     {}
 
-
-    CompositeArrayField (
+    CompositeArrayField(
             int _id,
             int _offset,
             const ReflectionNaming &_nameing,
             const char *_typeName,
             int _size,
-            const Reflection *_reflection = NULL
-    ) :
-        BaseField(_id, TYPE_COMPOSITE_ARRAY, _nameing, _offset),
-        reflection(_reflection),
-        typeName(_typeName),
-        size(_size)
+            const Reflection *_reflection = NULL)
+        : BaseField(_id, TYPE_COMPOSITE_ARRAY, _nameing, _offset)
+        , reflection(_reflection)
+        , typeName(_typeName)
+        , size(_size)
     {}
 
 #ifdef REFLECTION_WITH_VIRTUAL_SUPPORT
@@ -640,6 +638,8 @@ public:
     {
         return new CompositeArrayField(*this);
     }
+
+    virtual ~CompositeArrayField() {}
 #endif
 
 };
@@ -652,32 +652,28 @@ public:
 class EnumOption
 {
 public:
-    int id;
+    int              id;
     ReflectionNaming name;
 
     EnumOption() {}
-    EnumOption(
-        int _id,
+    EnumOption(int _id,
         const char *_name,
         const char *_decription = NULL,
-        const char *_comment = NULL
-    ) :
-        id(_id),
-        name(_name, _decription, _comment)
+        const char *_comment = NULL)
+        : id(_id)
+        , name(_name, _decription, _comment)
     {}
 
-    EnumOption(
-        int _id,
-        const ReflectionNaming &_nameing
-    ) :
-        id(_id),
-        name(_nameing)
+    EnumOption(int _id, const ReflectionNaming &_nameing)
+        : id(_id)
+        , name(_nameing)
     {}
 };
 
-class EnumReflection {
+class EnumReflection
+{
 public:
-    ReflectionNaming name;
+    ReflectionNaming           name;
     vector<const EnumOption *> options;
 
     int optionsNumber() const
@@ -690,52 +686,57 @@ public:
     EnumReflection(int number, ...)
     {
         va_list marker;
-        va_start( marker, number );
+        va_start(marker, number);
         for (int i = 0; i < number; i++)
         {
-            const EnumOption *ref = va_arg( marker, const EnumOption *);
+            const EnumOption *ref = va_arg(marker, const EnumOption *);
             options.push_back(ref);
         }
-        va_end( marker );
+        va_end(marker);
     }
 
+    /*virtual*/ ~EnumReflection()   // it may be non virtual
+    {
+        FOREACH (const EnumOption * el, options) {
+            delete el;
+        }
+        options.clear();
+    }
 };
+
 
 class EnumField : public BaseField
 {
 public:
-    typedef int CPPType;
+    typedef int           CPPType;
 
-    int defaultValue;
+    int                   defaultValue;
     const EnumReflection *enumReflection;
 
-    EnumField (
+    EnumField(
             int _id,
             int _offset,
             int _defaultValue,
             const char *_name,
             const char *_decription,
             const char *_comment,
-            const EnumReflection *_enumReflection
-    ) :
-        BaseField(_id, TYPE_ENUM, _name, _decription, _comment, _offset),
-        defaultValue (_defaultValue),
-        enumReflection(_enumReflection)
+            const EnumReflection *_enumReflection)
+        : BaseField(_id, TYPE_ENUM, _name, _decription, _comment, _offset)
+        , defaultValue (_defaultValue)
+        , enumReflection(_enumReflection)
     {}
 
-    EnumField (
+    EnumField(
             int _id,
             int _offset,
             int _defaultValue,
             const ReflectionNaming &_nameing,
-            const EnumReflection *_enumReflection
-    ) :
-        BaseField(_id, TYPE_ENUM, _nameing, _offset),
-        defaultValue (_defaultValue),
-        enumReflection(_enumReflection)
+            const EnumReflection *_enumReflection)
+        : BaseField(_id, TYPE_ENUM, _nameing, _offset)
+        , defaultValue (_defaultValue)
+        , enumReflection(_enumReflection)
     {
-        if (enumReflection == NULL)
-        {
+        if (enumReflection == NULL) {
             printf("Problem with data\n");
         }
     }
@@ -748,9 +749,15 @@ public:
     {
         return new EnumField(*this);
     }
+
+    virtual ~EnumField()    // it must be virtual with virtual ~BaseField()
+    {
+        delete_safe(enumReflection);
+    }
 #endif
 
 };
+
 
 class PointerField : public BaseField
 {
@@ -758,30 +765,29 @@ public:
     typedef void * CPPType;
     const char *targetClass;
 
-
-    PointerField (
-            int _id,
-            int _offset,
-            void * /*_dummy*/,
+    PointerField(int    _id,
+            int         _offset,
+            void *    /*_dummy*/,
             const char *_name,
             const char *_decription,
             const char *_comment,
-            const char *_targetClass
-    ) :
-        BaseField(_id, TYPE_POINTER, _name, _decription, _comment, _offset),
-        targetClass (_targetClass)
+            const char *_targetClass)
+        : BaseField(_id, TYPE_POINTER, _name, _decription, _comment, _offset)
+        , targetClass(_targetClass)
     {}
 
-    PointerField (
-            int _id,
-            int _offset,
-            void * /*_dummy*/,
+    PointerField(int    _id,
+            int         _offset,
+            void *     /*_dummy*/,
             const ReflectionNaming &_nameing,
-            const char *_targetClass
-    ) :
-        BaseField(_id, TYPE_POINTER, _nameing, _offset),
-        targetClass (_targetClass)
+            const char *_targetClass)
+        : BaseField(_id, TYPE_POINTER, _nameing, _offset)
+        , targetClass(_targetClass)
     {}
+
+#ifdef REFLECTION_WITH_VIRTUAL_SUPPORT
+    virtual ~PointerField() {}
+#endif
 
 };
 
@@ -792,11 +798,10 @@ public:
 template<typename InputType>
 struct ReflectionHelper {  typedef CompositeField Type; };
 
-
-/*template<typename InputType>
-struct ReflectionHelper {  typedef CompositeField Type; };*/
-
 template<> struct ReflectionHelper<int>         { typedef IntField       Type; };
+template<> struct ReflectionHelper<int16_t>     { typedef IntField       Type; };
+template<> struct ReflectionHelper<uint32_t>    { typedef IntField       Type; };
+template<> struct ReflectionHelper<uint16_t>    { typedef IntField       Type; };
 template<> struct ReflectionHelper<double>      { typedef DoubleField    Type; };
 template<> struct ReflectionHelper<float>       { typedef FloatField     Type; };
 template<> struct ReflectionHelper<int64_t>     { typedef TimestampField Type; };
@@ -807,7 +812,6 @@ template<> struct ReflectionHelper<void *>      { typedef PointerField   Type; }
 
 class BaseReflectionStatic
 {
-
 };
 
 /**
@@ -820,10 +824,9 @@ class BaseReflection : public BaseReflectionStatic
 {
 public:
     static Reflection reflection;
-    static int dummy;
+    static int        dummy;
 
 public:
-
     static Reflection *getReflection()
     {
         return &(RealThis::reflection);
@@ -856,10 +859,11 @@ public:
 };
 
 
-class DynamicObject {
+class DynamicObject
+{
 public:
     Reflection *reflection;
-    void *rawObject;
+    void       *rawObject;
 
     DynamicObject() :
         reflection(NULL),
