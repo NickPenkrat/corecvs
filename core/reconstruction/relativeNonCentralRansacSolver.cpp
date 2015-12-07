@@ -216,7 +216,11 @@ void corecvs::RelativeNonCentralRansacSolver::computeError(double out[])
     int N = pss[0].cameras.size();
     int M = pss[1].cameras.size();
 
+#ifndef WIN32
     corecvs::Matrix33 fundamentals[N * M];
+#else
+	std::vector<corecvs::Matrix33> fundamentals(N * M);
+#endif
 
     pss[1].location = bestHypothesis;
 
