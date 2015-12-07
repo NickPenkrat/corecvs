@@ -6,6 +6,7 @@
 #include "lensDistortionModelParameters.h"
 #include "line.h"
 #include "convexPolyhedron.h"
+#include "essentialMatrix.h"
 
 /* Future derived */
 //#include "rgb24Buffer.h"
@@ -209,6 +210,7 @@ public:
 
     Matrix33 fundamentalTo(const CameraModel &right) const;
     Matrix33 essentialTo  (const CameraModel &right) const;
+    EssentialDecomposition essentialDecomposition(const CameraModel &right) const;
 
     /**
      * Only checks for the fact that point belongs to viewport.
