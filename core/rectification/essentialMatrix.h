@@ -45,6 +45,11 @@ public:
         direction(_direction.normalised())
     {}
 
+    operator Matrix33() const
+    {
+        return Matrix33::CrossProductLeft(direction) * rotation;
+    }
+
     /**
      *  Triangulation taking as input left and right 2D projective vectors of the pixel
      *  in left (\f$n_1\f$) and right (\f$n_2\f$) cameras and returning lengths of 3D-vectors
