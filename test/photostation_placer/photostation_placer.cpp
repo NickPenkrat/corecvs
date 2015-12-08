@@ -220,19 +220,11 @@ void run_pois(int camIdOffset, bool distorted, bool filter, bool forceGps)
     for (int i = 0; i < jobC.photostation.cameras.size(); ++i)
     {
         jobC.photostation.cameras[i] = jobC.photostation.getRawCamera(i);
-        if (i < 6)
-            meanShift += jobC.photostation.getRawCamera(i).extrinsics.position / (6.0);
     }
-    jobC.photostation.location.rotor = corecvs::Quaternion(0.0, 0.0, 0.0, 1.0);
-    jobC.photostation.location.shift = -meanShift;
-    for (int i = 0; i < jobC.photostation.cameras.size(); ++i)
-    {
-        jobC.photostation.cameras[i] = jobC.photostation.getRawCamera(i);
-    }
-#if 0
+#if 1
     jobC.photostation.location.rotor = corecvs::Quaternion::FromMatrix(
             corecvs::Matrix33(
-               -1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0
+               1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0
                 ));
     jobC.photostation.location.shift = corecvs::Vector3dd(0.0, 0.0, 0.0);
     for (int i = 0; i < jobC.photostation.cameras.size(); ++i)
@@ -240,6 +232,25 @@ void run_pois(int camIdOffset, bool distorted, bool filter, bool forceGps)
         jobC.photostation.cameras[i] = jobC.photostation.getRawCamera(i);
     }
 #endif
+    jobC.photostation.location.rotor = corecvs::Quaternion(0, 0, 0, 1);
+    for (int i = 0; i < jobC.photostation.cameras.size(); ++i)
+    {
+        if (i < 6)
+            meanShift += jobC.photostation.getRawCamera(i).extrinsics.position;
+    }
+    jobC.photostation.location.rotor = corecvs::Quaternion(0.0, 0.0, 0.0, 1.0);
+    jobC.photostation.location.shift = -meanShift * (1.0 / 6.0);
+//    meanShift = corecvs::Vector3dd(0, 0, 0);
+    for (int i = 0; i < jobC.photostation.cameras.size(); ++i)
+    {
+        jobC.photostation.cameras[i] = jobC.photostation.getRawCamera(i);
+    }
+    jobC.photostation.location.shift = corecvs::Vector3dd(0, 0, 0);
+    meanShift = corecvs::Vector3dd(0, 0, 0);
+    for (int i = 0; i < jobC.photostation.cameras.size(); ++i)
+        if (i < 6)
+            meanShift += jobC.photostation.getRawCamera(i).extrinsics.position * (1.0 / 6.0);
+    std::cout << "MS: " << meanShift << std::endl;
     jobC.photostation.location.rotor = corecvs::Quaternion(0, 0, 0, 1);
     jobC.photostation.location.shift = corecvs::Vector3dd(0, 0, 0);
 
@@ -686,6 +697,36 @@ void run_pois(int camIdOffset, bool distorted, bool filter, bool forceGps)
     // And here we get mean error in %
     std::cout << "GTRM: " << meanGtr / gtrCnt * 100.0 << std::endl;
     std::cout << "GTM: " << meanGt / gtCnt * 100.0 << std::endl;
+
+    std::cout << "Focals:" << std::endl;
+    for (int i = 0; i < jobC.photostation.cameras.size(); ++i)
+    {
+        std::cout << "Camera " << jobC.photostation.cameras[i].nameId << ": ";
+        auto diff =  jobC.photostation.cameras[i].intrinsics.focal - rec.scene.photostations[0].cameras[i].intrinsics.focal;
+        std::cout << diff << (!(diff)/!jobC.photostation.cameras[i].intrinsics.focal) * 100.0 << "%" << std::endl;
+    }
+    std::cout << "CxCy" << std::endl;
+    for (int i = 0; i < jobC.photostation.cameras.size(); ++i)
+    {
+        std::cout << "Camera " << jobC.photostation.cameras[i].nameId << ": ";
+        auto diff =  jobC.photostation.cameras[i].intrinsics.principal - rec.scene.photostations[0].cameras[i].intrinsics.principal;
+        std::cout << diff << (!(diff)/!jobC.photostation.cameras[i].intrinsics.principal) * 100.0 << "%" << std::endl;
+    }
+    std::cout << "Orientations:" << std::endl;
+    for (int i = 0; i < jobC.photostation.cameras.size(); ++i)
+    {
+        std::cout << "Camera " << jobC.photostation.cameras[i].nameId << ": ";
+        auto diff =  jobC.photostation.cameras[i].extrinsics.orientation ^ rec.scene.photostations[0].cameras[i].extrinsics.orientation;
+        diff.printAxisAndAngle();
+        std::cout << std::endl;
+    }
+    std::cout << "Positions" << std::endl;
+    for (int i = 0; i < jobC.photostation.cameras.size(); ++i)
+    {
+        std::cout << "Camera " << jobC.photostation.cameras[i].nameId << ": ";
+        auto diff =  jobC.photostation.cameras[i].extrinsics.position - rec.scene.photostations[0].cameras[i].extrinsics.position;
+        std::cout << diff << (!(diff)/!jobC.photostation.cameras[i].extrinsics.position) * 100.0 << "%" << std::endl;
+    }
 }
 
 int main(int argc, char **argv)
