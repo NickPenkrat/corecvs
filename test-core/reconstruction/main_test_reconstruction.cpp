@@ -38,7 +38,7 @@ TEST(Reconstruction, testNonCentralMulticamera)
         corecvs::Vector3dd( 100.0,-100.0,   0.0),
         corecvs::Vector3dd(-100.0,-100.0,   0.0)
     };
-    int N = points.size();
+    int N = (int)points.size();
 
     corecvs::CameraModel cam(PinholeCameraIntrinsics(100.0, 100.0, 100.0, 100.0, 0.0, Vector2dd(800, 800), Vector2dd(800, 800)));
     corecvs::Photostation ps;
