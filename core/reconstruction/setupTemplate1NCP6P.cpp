@@ -17,6 +17,11 @@ void corecvs::RelativeNonCentralP6PSolver::SetupEliminationTemplate(corecvs::Mat
     CORE_ASSERT_TRUE_S(T.h == 30 && T.w == 84);
     // Here we will store polynomial coefficients for generalized essential eqs as multiplies for lambda1, lambda2, 1
     corecvs::Matrix F(5, 30); // 5 rows x 3 equations x 10 (C(3+1-1, 2+3+1-1)=10 monomials)
+    double *Fptr = &(*(Fptr + ((0) * stride) + ( 0)));
+    // XXX: some weird compilers (e.g. Visual Studio 2013 Update 5) unable to build this file with F.a(i, j)
+    //      we had similar problem on gcc-4.8 where converting this to raw pointers helped.
+    //      So we try to do this again
+    int Fstride = F.stride;
 
     for (int block = 0; block < 3; ++block)
     {
@@ -34,40 +39,40 @@ void corecvs::RelativeNonCentralP6PSolver::SetupEliminationTemplate(corecvs::Mat
 
 
             // lambda1
-            F.a(row, 0 * 10 + M200) = -b22*a52-b32*a62-b62*a32-b22*a32*b31*b51+b12*a32*b11*b61-b12*a32*b31*b41-b32*a22*b21*b61+b32*a12*b11*b61+b42*a12-b12*a22*a21*a41-b12*a32*a31*a41+b12*a32*a11*a61+b12*a22*a11*a51-b32*a12*b31*b41+b32*a22*b31*b51-b52*a22+b12*a42+b12*a22*b11*b51-b12*a22*b21*b41+b22*a32*b21*b61-b22*a12*b21*b41+b22*a12*b11*b51-b22*a12*a21*a41+b22*a12*a11*a51+b22*a32*a31*a51-b22*a32*a21*a61-b32*a22*a31*a51+b32*a22*a21*a61-b32*a12*a31*a41+b32*a12*a11*a61;
-            F.a(row, 0 * 10 + M110) = 2*b12*a12*b21*b41-2*b12*a12*b11*b51-2*b12*a12*a11*a51-2*b12*a32*a31*a51+2*b12*a32*a21*a61-2*b32*a12*b31*b51+2*b12*a12*a21*a41-2*b22*a22*a21*a41+2*b22*a22*a11*a51-2*b22*a32*a31*a41+2*b32*a12*b21*b61-2*b32*a22*b31*b41+2*b32*a22*b11*b61+2*b22*a22*b11*b51-2*b22*a22*b21*b41+2*b22*a32*a11*a61+2*b52*a12+2*b42*a22+2*b22*a42+2*b12*a52;
-            F.a(row, 0 * 10 + M020) = b22*a52-b32*a62-b62*a32-b22*a32*b31*b51+b12*a32*b11*b61-b12*a32*b31*b41+b32*a22*b21*b61-b32*a12*b11*b61-b42*a12+b12*a22*a21*a41+b12*a32*a31*a41-b12*a32*a11*a61-b12*a22*a11*a51+b32*a12*b31*b41-b32*a22*b31*b51+b52*a22-b12*a42-b12*a22*b11*b51+b12*a22*b21*b41+b22*a32*b21*b61+b22*a12*b21*b41-b22*a12*b11*b51+b22*a12*a21*a41-b22*a12*a11*a51-b22*a32*a31*a51+b22*a32*a21*a61-b32*a22*a31*a51+b32*a22*a21*a61-b32*a12*a31*a41+b32*a12*a11*a61;
-            F.a(row, 0 * 10 + M101) = 2*b12*a12*a31*a41-2*b12*a12*a11*a61+2*b12*a22*a31*a51-2*b12*a22*a21*a61+2*b22*a12*b31*b51-2*b12*a12*b11*b61+2*b32*a22*a11*a51-2*b22*a32*b21*b41+2*b22*a32*b11*b51-2*b22*a12*b21*b61-2*b32*a32*b31*b41+2*b32*a32*b11*b61-2*b32*a32*a31*a41+2*b32*a32*a11*a61-2*b32*a22*a21*a41+2*b12*a12*b31*b41+2*b62*a12+2*b42*a32+2*b32*a42+2*b12*a62;
-            F.a(row, 0 * 10 + M011) = 2*b32*a52+2*b22*a12*a31*a41+2*b22*a22*a31*a51-2*b22*a12*a11*a61-2*b12*a32*b11*b51-2*b32*a12*a11*a51+2*b32*a12*a21*a41-2*b22*a22*a21*a61+2*b32*a32*a21*a61-2*b32*a32*a31*a51-2*b12*a22*b11*b61+2*b12*a32*b21*b41+2*b32*a32*b21*b61+2*b12*a22*b31*b41-2*b22*a22*b21*b61+2*b22*a22*b31*b51-2*b32*a32*b31*b51+2*b62*a22+2*b22*a62+2*b52*a32;
-            F.a(row, 0 * 10 + M002) = -b42*a12+b32*a22*b31*b51+b32*a12*b31*b41-b32*a12*b11*b61-b32*a22*b21*b61-b12*a22*a11*a51-b12*a32*a11*a61+b12*a32*a31*a41+b12*a22*a21*a41+b32*a62-b12*a22*b21*b41+b12*a22*b11*b51+b12*a32*b31*b41-b52*a22-b12*a32*b11*b61+b62*a32+b22*a32*b31*b51-b22*a12*b11*b51+b22*a12*b21*b41-b22*a32*b21*b61-b12*a42-b22*a52+b32*a12*a31*a41-b32*a22*a21*a61+b32*a22*a31*a51-b22*a32*a21*a61+b22*a32*a31*a51-b32*a12*a11*a61-b22*a12*a21*a41+b22*a12*a11*a51;
-            F.a(row, 0 * 10 + M100) = -2*b12*a32*b11*b51+2*b12*a32*b21*b41+2*b12*a22*b11*b61-2*b22*a12*a11*a61-2*b12*a22*b31*b41-2*b22*a22*b31*b51-2*b32*a32*b31*b51+2*b32*a32*b21*b61-2*b32*a12*a21*a41+2*b32*a12*a11*a51+2*b32*a32*a31*a51-2*b32*a32*a21*a61+2*b22*a22*a31*a51-2*b22*a22*a21*a61+2*b22*a22*b21*b61+2*b22*a12*a31*a41+2*b52*a32+2*b22*a62-2*b62*a22-2*b32*a52;
-            F.a(row, 0 * 10 + M010) = -2*b12*a62+2*b32*a42-2*b42*a32+2*b62*a12-2*b22*a12*b21*b61+2*b12*a12*a11*a61-2*b12*a12*a31*a41+2*b12*a12*b31*b41-2*b32*a22*a21*a41+2*b32*a32*a11*a61-2*b32*a32*a31*a41-2*b32*a32*b11*b61+2*b32*a32*b31*b41-2*b22*a32*b11*b51+2*b22*a32*b21*b41-2*b12*a12*b11*b61+2*b22*a12*b31*b51+2*b32*a22*a11*a51+2*b12*a22*a21*a61-2*b12*a22*a31*a51;
-            F.a(row, 0 * 10 + M001) = -2*b22*a42-2*b52*a12+2*b42*a22+2*b12*a52+2*b12*a32*a21*a61-2*b12*a32*a31*a51-2*b12*a12*a11*a51+2*b12*a12*a21*a41-2*b32*a12*b21*b61+2*b32*a12*b31*b51+2*b22*a22*b11*b51-2*b22*a22*b21*b41+2*b32*a22*b11*b61-2*b32*a22*b31*b41-2*b22*a32*a11*a61+2*b22*a32*a31*a41-2*b22*a22*a11*a51+2*b22*a22*a21*a41+2*b12*a12*b11*b51-2*b12*a12*b21*b41;
-            F.a(row, 0 * 10 + M000) = b42*a12-b32*a22*b31*b51-b32*a12*b31*b41+b32*a12*b11*b61+b32*a22*b21*b61+b12*a22*a11*a51+b12*a32*a11*a61-b12*a32*a31*a41-b12*a22*a21*a41+b32*a62+b12*a22*b21*b41-b12*a22*b11*b51+b12*a32*b31*b41+b52*a22-b12*a32*b11*b61+b62*a32+b22*a32*b31*b51+b22*a12*b11*b51-b22*a12*b21*b41-b22*a32*b21*b61+b12*a42+b22*a52+b32*a12*a31*a41-b32*a22*a21*a61+b32*a22*a31*a51+b22*a32*a21*a61-b22*a32*a31*a51-b32*a12*a11*a61+b22*a12*a21*a41-b22*a12*a11*a51;
+            (*(Fptr + ((row) * stride) + ( 0 * 10 + M200))) = -b22*a52-b32*a62-b62*a32-b22*a32*b31*b51+b12*a32*b11*b61-b12*a32*b31*b41-b32*a22*b21*b61+b32*a12*b11*b61+b42*a12-b12*a22*a21*a41-b12*a32*a31*a41+b12*a32*a11*a61+b12*a22*a11*a51-b32*a12*b31*b41+b32*a22*b31*b51-b52*a22+b12*a42+b12*a22*b11*b51-b12*a22*b21*b41+b22*a32*b21*b61-b22*a12*b21*b41+b22*a12*b11*b51-b22*a12*a21*a41+b22*a12*a11*a51+b22*a32*a31*a51-b22*a32*a21*a61-b32*a22*a31*a51+b32*a22*a21*a61-b32*a12*a31*a41+b32*a12*a11*a61;
+            (*(Fptr + ((row) * stride) + ( 0 * 10 + M110))) = 2*b12*a12*b21*b41-2*b12*a12*b11*b51-2*b12*a12*a11*a51-2*b12*a32*a31*a51+2*b12*a32*a21*a61-2*b32*a12*b31*b51+2*b12*a12*a21*a41-2*b22*a22*a21*a41+2*b22*a22*a11*a51-2*b22*a32*a31*a41+2*b32*a12*b21*b61-2*b32*a22*b31*b41+2*b32*a22*b11*b61+2*b22*a22*b11*b51-2*b22*a22*b21*b41+2*b22*a32*a11*a61+2*b52*a12+2*b42*a22+2*b22*a42+2*b12*a52;
+            (*(Fptr + ((row) * stride) + ( 0 * 10 + M020))) = b22*a52-b32*a62-b62*a32-b22*a32*b31*b51+b12*a32*b11*b61-b12*a32*b31*b41+b32*a22*b21*b61-b32*a12*b11*b61-b42*a12+b12*a22*a21*a41+b12*a32*a31*a41-b12*a32*a11*a61-b12*a22*a11*a51+b32*a12*b31*b41-b32*a22*b31*b51+b52*a22-b12*a42-b12*a22*b11*b51+b12*a22*b21*b41+b22*a32*b21*b61+b22*a12*b21*b41-b22*a12*b11*b51+b22*a12*a21*a41-b22*a12*a11*a51-b22*a32*a31*a51+b22*a32*a21*a61-b32*a22*a31*a51+b32*a22*a21*a61-b32*a12*a31*a41+b32*a12*a11*a61;
+            (*(Fptr + ((row) * stride) + ( 0 * 10 + M101))) = 2*b12*a12*a31*a41-2*b12*a12*a11*a61+2*b12*a22*a31*a51-2*b12*a22*a21*a61+2*b22*a12*b31*b51-2*b12*a12*b11*b61+2*b32*a22*a11*a51-2*b22*a32*b21*b41+2*b22*a32*b11*b51-2*b22*a12*b21*b61-2*b32*a32*b31*b41+2*b32*a32*b11*b61-2*b32*a32*a31*a41+2*b32*a32*a11*a61-2*b32*a22*a21*a41+2*b12*a12*b31*b41+2*b62*a12+2*b42*a32+2*b32*a42+2*b12*a62;
+            (*(Fptr + ((row) * stride) + ( 0 * 10 + M011))) = 2*b32*a52+2*b22*a12*a31*a41+2*b22*a22*a31*a51-2*b22*a12*a11*a61-2*b12*a32*b11*b51-2*b32*a12*a11*a51+2*b32*a12*a21*a41-2*b22*a22*a21*a61+2*b32*a32*a21*a61-2*b32*a32*a31*a51-2*b12*a22*b11*b61+2*b12*a32*b21*b41+2*b32*a32*b21*b61+2*b12*a22*b31*b41-2*b22*a22*b21*b61+2*b22*a22*b31*b51-2*b32*a32*b31*b51+2*b62*a22+2*b22*a62+2*b52*a32;
+            (*(Fptr + ((row) * stride) + ( 0 * 10 + M002))) = -b42*a12+b32*a22*b31*b51+b32*a12*b31*b41-b32*a12*b11*b61-b32*a22*b21*b61-b12*a22*a11*a51-b12*a32*a11*a61+b12*a32*a31*a41+b12*a22*a21*a41+b32*a62-b12*a22*b21*b41+b12*a22*b11*b51+b12*a32*b31*b41-b52*a22-b12*a32*b11*b61+b62*a32+b22*a32*b31*b51-b22*a12*b11*b51+b22*a12*b21*b41-b22*a32*b21*b61-b12*a42-b22*a52+b32*a12*a31*a41-b32*a22*a21*a61+b32*a22*a31*a51-b22*a32*a21*a61+b22*a32*a31*a51-b32*a12*a11*a61-b22*a12*a21*a41+b22*a12*a11*a51;
+            (*(Fptr + ((row) * stride) + ( 0 * 10 + M100))) = -2*b12*a32*b11*b51+2*b12*a32*b21*b41+2*b12*a22*b11*b61-2*b22*a12*a11*a61-2*b12*a22*b31*b41-2*b22*a22*b31*b51-2*b32*a32*b31*b51+2*b32*a32*b21*b61-2*b32*a12*a21*a41+2*b32*a12*a11*a51+2*b32*a32*a31*a51-2*b32*a32*a21*a61+2*b22*a22*a31*a51-2*b22*a22*a21*a61+2*b22*a22*b21*b61+2*b22*a12*a31*a41+2*b52*a32+2*b22*a62-2*b62*a22-2*b32*a52;
+            (*(Fptr + ((row) * stride) + ( 0 * 10 + M010))) = -2*b12*a62+2*b32*a42-2*b42*a32+2*b62*a12-2*b22*a12*b21*b61+2*b12*a12*a11*a61-2*b12*a12*a31*a41+2*b12*a12*b31*b41-2*b32*a22*a21*a41+2*b32*a32*a11*a61-2*b32*a32*a31*a41-2*b32*a32*b11*b61+2*b32*a32*b31*b41-2*b22*a32*b11*b51+2*b22*a32*b21*b41-2*b12*a12*b11*b61+2*b22*a12*b31*b51+2*b32*a22*a11*a51+2*b12*a22*a21*a61-2*b12*a22*a31*a51;
+            (*(Fptr + ((row) * stride) + ( 0 * 10 + M001))) = -2*b22*a42-2*b52*a12+2*b42*a22+2*b12*a52+2*b12*a32*a21*a61-2*b12*a32*a31*a51-2*b12*a12*a11*a51+2*b12*a12*a21*a41-2*b32*a12*b21*b61+2*b32*a12*b31*b51+2*b22*a22*b11*b51-2*b22*a22*b21*b41+2*b32*a22*b11*b61-2*b32*a22*b31*b41-2*b22*a32*a11*a61+2*b22*a32*a31*a41-2*b22*a22*a11*a51+2*b22*a22*a21*a41+2*b12*a12*b11*b51-2*b12*a12*b21*b41;
+            (*(Fptr + ((row) * stride) + ( 0 * 10 + M000))) = b42*a12-b32*a22*b31*b51-b32*a12*b31*b41+b32*a12*b11*b61+b32*a22*b21*b61+b12*a22*a11*a51+b12*a32*a11*a61-b12*a32*a31*a41-b12*a22*a21*a41+b32*a62+b12*a22*b21*b41-b12*a22*b11*b51+b12*a32*b31*b41+b52*a22-b12*a32*b11*b61+b62*a32+b22*a32*b31*b51+b22*a12*b11*b51-b22*a12*b21*b41-b22*a32*b21*b61+b12*a42+b22*a52+b32*a12*a31*a41-b32*a22*a21*a61+b32*a22*a31*a51+b22*a32*a21*a61-b22*a32*a31*a51-b32*a12*a11*a61+b22*a12*a21*a41-b22*a12*a11*a51;
 
             // lambda2
-            F.a(row, 1 * 10 + M200) = -b22*a32*a11+b12*a22*a31+b22*a12*a31-b12*a32*a21-b32*a12*a21+b32*a22*a11;
-            F.a(row, 1 * 10 + M110) = -2*b12*a12*a31+2*b12*a32*a11-2*b22*a32*a21+2*b22*a22*a31;
-            F.a(row, 1 * 10 + M020) = -b22*a12*a31+b12*a32*a21-b12*a22*a31+b32*a22*a11-b32*a12*a21+b22*a32*a11;
-            F.a(row, 1 * 10 + M101) = -2*b12*a22*a11+2*b12*a12*a21+2*b32*a22*a31-2*b32*a32*a21;
-            F.a(row, 1 * 10 + M011) =  2*b32*a32*a11+2*b22*a12*a21-2*b22*a22*a11-2*b32*a12*a31;
-            F.a(row, 1 * 10 + M002) = -b22*a32*a11+b22*a12*a31+b12*a32*a21+b32*a12*a21-b32*a22*a11-b12*a22*a31;
-            F.a(row, 1 * 10 + M100) =  2*b32*a12*a31-2*b32*a32*a11+2*b22*a12*a21-2*b22*a22*a11;
-            F.a(row, 1 * 10 + M010) =  2*b32*a22*a31-2*b32*a32*a21-2*b12*a12*a21+2*b12*a22*a11;
-            F.a(row, 1 * 10 + M001) =  2*b22*a32*a21-2*b12*a12*a31-2*b22*a22*a31+2*b12*a32*a11;
-            F.a(row, 1 * 10 + M000) = -b32*a22*a11+b22*a32*a11+b32*a12*a21-b22*a12*a31-b12*a32*a21+b12*a22*a31;
+            (*(Fptr + ((row) * stride) + ( 1 * 10 + M200))) = -b22*a32*a11+b12*a22*a31+b22*a12*a31-b12*a32*a21-b32*a12*a21+b32*a22*a11;
+            (*(Fptr + ((row) * stride) + ( 1 * 10 + M110))) = -2*b12*a12*a31+2*b12*a32*a11-2*b22*a32*a21+2*b22*a22*a31;
+            (*(Fptr + ((row) * stride) + ( 1 * 10 + M020))) = -b22*a12*a31+b12*a32*a21-b12*a22*a31+b32*a22*a11-b32*a12*a21+b22*a32*a11;
+            (*(Fptr + ((row) * stride) + ( 1 * 10 + M101))) = -2*b12*a22*a11+2*b12*a12*a21+2*b32*a22*a31-2*b32*a32*a21;
+            (*(Fptr + ((row) * stride) + ( 1 * 10 + M011))) =  2*b32*a32*a11+2*b22*a12*a21-2*b22*a22*a11-2*b32*a12*a31;
+            (*(Fptr + ((row) * stride) + ( 1 * 10 + M002))) = -b22*a32*a11+b22*a12*a31+b12*a32*a21+b32*a12*a21-b32*a22*a11-b12*a22*a31;
+            (*(Fptr + ((row) * stride) + ( 1 * 10 + M100))) =  2*b32*a12*a31-2*b32*a32*a11+2*b22*a12*a21-2*b22*a22*a11;
+            (*(Fptr + ((row) * stride) + ( 1 * 10 + M010))) =  2*b32*a22*a31-2*b32*a32*a21-2*b12*a12*a21+2*b12*a22*a11;
+            (*(Fptr + ((row) * stride) + ( 1 * 10 + M001))) =  2*b22*a32*a21-2*b12*a12*a31-2*b22*a22*a31+2*b12*a32*a11;
+            (*(Fptr + ((row) * stride) + ( 1 * 10 + M000))) = -b32*a22*a11+b22*a32*a11+b32*a12*a21-b22*a12*a31-b12*a32*a21+b12*a22*a31;
 
             // 1
-            F.a(row, 2 * 10 + M200) =  b22*a12*b31+b22*a32*b11-b12*a32*b21+b12*a22*b31-b32*a22*b11-b32*a12*b21;
-            F.a(row, 2 * 10 + M110) = -2*b12*a12*b31+2*b22*a22*b31-2*b32*a22*b21+2*b32*a12*b11;
-            F.a(row, 2 * 10 + M020) = -b22*a12*b31+b22*a32*b11-b12*a22*b31-b12*a32*b21+b32*a12*b21+b32*a22*b11;
-            F.a(row, 2 * 10 + M101) =  2*b12*a12*b21+2*b22*a32*b31-2*b22*a12*b11-2*b32*a32*b21;
-            F.a(row, 2 * 10 + M011) = -2*b12*a32*b31+2*b12*a22*b21-2*b22*a22*b11+2*b32*a32*b11;
-            F.a(row, 2 * 10 + M002) = -b22*a32*b11-b22*a12*b31+b32*a12*b21+b12*a22*b31+b12*a32*b21-b32*a22*b11;
-            F.a(row, 2 * 10 + M100) = -2*b12*a32*b31-2*b12*a22*b21+2*b22*a22*b11+2*b32*a32*b11;
-            F.a(row, 2 * 10 + M010) =  2*b32*a32*b21-2*b22*a32*b31+2*b12*a12*b21-2*b22*a12*b11;
-            F.a(row, 2 * 10 + M001) = -2*b32*a12*b11+2*b12*a12*b31+2*b22*a22*b31-2*b32*a22*b21;
-            F.a(row, 2 * 10 + M000) =  b12*a32*b21+b22*a12*b31-b12*a22*b31-b22*a32*b11+b32*a22*b11-b32*a12*b21;
+            (*(Fptr + ((row) * stride) + ( 2 * 10 + M200))) =  b22*a12*b31+b22*a32*b11-b12*a32*b21+b12*a22*b31-b32*a22*b11-b32*a12*b21;
+            (*(Fptr + ((row) * stride) + ( 2 * 10 + M110))) = -2*b12*a12*b31+2*b22*a22*b31-2*b32*a22*b21+2*b32*a12*b11;
+            (*(Fptr + ((row) * stride) + ( 2 * 10 + M020))) = -b22*a12*b31+b22*a32*b11-b12*a22*b31-b12*a32*b21+b32*a12*b21+b32*a22*b11;
+            (*(Fptr + ((row) * stride) + ( 2 * 10 + M101))) =  2*b12*a12*b21+2*b22*a32*b31-2*b22*a12*b11-2*b32*a32*b21;
+            (*(Fptr + ((row) * stride) + ( 2 * 10 + M011))) = -2*b12*a32*b31+2*b12*a22*b21-2*b22*a22*b11+2*b32*a32*b11;
+            (*(Fptr + ((row) * stride) + ( 2 * 10 + M002))) = -b22*a32*b11-b22*a12*b31+b32*a12*b21+b12*a22*b31+b12*a32*b21-b32*a22*b11;
+            (*(Fptr + ((row) * stride) + ( 2 * 10 + M100))) = -2*b12*a32*b31-2*b12*a22*b21+2*b22*a22*b11+2*b32*a32*b11;
+            (*(Fptr + ((row) * stride) + ( 2 * 10 + M010))) =  2*b32*a32*b21-2*b22*a32*b31+2*b12*a12*b21-2*b22*a12*b11;
+            (*(Fptr + ((row) * stride) + ( 2 * 10 + M001))) = -2*b32*a12*b11+2*b12*a12*b31+2*b22*a22*b31-2*b32*a22*b21;
+            (*(Fptr + ((row) * stride) + ( 2 * 10 + M000))) =  b12*a32*b21+b22*a12*b31-b12*a22*b31-b22*a32*b11+b32*a22*b11-b32*a12*b21;
             row++;
         }
         // And here fun starts: first elimination template is 3 * 10 = 30 equations coming from 3x3 minors of F (as 5x3 MV-polynomial matrix)
@@ -75,105 +80,105 @@ void corecvs::RelativeNonCentralP6PSolver::SetupEliminationTemplate(corecvs::Mat
         int r2[10] = {1, 1, 2, 2, 1, 2, 2, 3, 3, 3};
         int r3[10] = {2, 3, 3, 3, 4, 4, 4, 4, 4, 4};
 
-#define FF00_000 F.a(r1[equ], 0 * 10 + M000)
-#define FF00_001 F.a(r1[equ], 0 * 10 + M001)
-#define FF00_002 F.a(r1[equ], 0 * 10 + M002)
-#define FF00_010 F.a(r1[equ], 0 * 10 + M010)
-#define FF00_011 F.a(r1[equ], 0 * 10 + M011)
-#define FF00_020 F.a(r1[equ], 0 * 10 + M020)
-#define FF00_100 F.a(r1[equ], 0 * 10 + M100)
-#define FF00_101 F.a(r1[equ], 0 * 10 + M101)
-#define FF00_110 F.a(r1[equ], 0 * 10 + M110)
-#define FF00_200 F.a(r1[equ], 0 * 10 + M200)
+#define FF00_000 (*(Fptr + ((r1[equ]) * stride) + ( 0 * 10 + M000)))
+#define FF00_001 (*(Fptr + ((r1[equ]) * stride) + ( 0 * 10 + M001)))
+#define FF00_002 (*(Fptr + ((r1[equ]) * stride) + ( 0 * 10 + M002)))
+#define FF00_010 (*(Fptr + ((r1[equ]) * stride) + ( 0 * 10 + M010)))
+#define FF00_011 (*(Fptr + ((r1[equ]) * stride) + ( 0 * 10 + M011)))
+#define FF00_020 (*(Fptr + ((r1[equ]) * stride) + ( 0 * 10 + M020)))
+#define FF00_100 (*(Fptr + ((r1[equ]) * stride) + ( 0 * 10 + M100)))
+#define FF00_101 (*(Fptr + ((r1[equ]) * stride) + ( 0 * 10 + M101)))
+#define FF00_110 (*(Fptr + ((r1[equ]) * stride) + ( 0 * 10 + M110)))
+#define FF00_200 (*(Fptr + ((r1[equ]) * stride) + ( 0 * 10 + M200)))
 
-#define FF01_000 F.a(r1[equ], 1 * 10 + M000)
-#define FF01_001 F.a(r1[equ], 1 * 10 + M001)
-#define FF01_002 F.a(r1[equ], 1 * 10 + M002)
-#define FF01_010 F.a(r1[equ], 1 * 10 + M010)
-#define FF01_011 F.a(r1[equ], 1 * 10 + M011)
-#define FF01_020 F.a(r1[equ], 1 * 10 + M020)
-#define FF01_100 F.a(r1[equ], 1 * 10 + M100)
-#define FF01_101 F.a(r1[equ], 1 * 10 + M101)
-#define FF01_110 F.a(r1[equ], 1 * 10 + M110)
-#define FF01_200 F.a(r1[equ], 1 * 10 + M200)
+#define FF01_000 (*(Fptr + ((r1[equ]) * stride) + ( 1 * 10 + M000)))
+#define FF01_001 (*(Fptr + ((r1[equ]) * stride) + ( 1 * 10 + M001)))
+#define FF01_002 (*(Fptr + ((r1[equ]) * stride) + ( 1 * 10 + M002)))
+#define FF01_010 (*(Fptr + ((r1[equ]) * stride) + ( 1 * 10 + M010)))
+#define FF01_011 (*(Fptr + ((r1[equ]) * stride) + ( 1 * 10 + M011)))
+#define FF01_020 (*(Fptr + ((r1[equ]) * stride) + ( 1 * 10 + M020)))
+#define FF01_100 (*(Fptr + ((r1[equ]) * stride) + ( 1 * 10 + M100)))
+#define FF01_101 (*(Fptr + ((r1[equ]) * stride) + ( 1 * 10 + M101)))
+#define FF01_110 (*(Fptr + ((r1[equ]) * stride) + ( 1 * 10 + M110)))
+#define FF01_200 (*(Fptr + ((r1[equ]) * stride) + ( 1 * 10 + M200)))
 
-#define FF02_000 F.a(r1[equ], 2 * 10 + M000)
-#define FF02_001 F.a(r1[equ], 2 * 10 + M001)
-#define FF02_002 F.a(r1[equ], 2 * 10 + M002)
-#define FF02_010 F.a(r1[equ], 2 * 10 + M010)
-#define FF02_011 F.a(r1[equ], 2 * 10 + M011)
-#define FF02_020 F.a(r1[equ], 2 * 10 + M020)
-#define FF02_100 F.a(r1[equ], 2 * 10 + M100)
-#define FF02_101 F.a(r1[equ], 2 * 10 + M101)
-#define FF02_110 F.a(r1[equ], 2 * 10 + M110)
-#define FF02_200 F.a(r1[equ], 2 * 10 + M200)
+#define FF02_000 (*(Fptr + ((r1[equ]) * stride) + ( 2 * 10 + M000)))
+#define FF02_001 (*(Fptr + ((r1[equ]) * stride) + ( 2 * 10 + M001)))
+#define FF02_002 (*(Fptr + ((r1[equ]) * stride) + ( 2 * 10 + M002)))
+#define FF02_010 (*(Fptr + ((r1[equ]) * stride) + ( 2 * 10 + M010)))
+#define FF02_011 (*(Fptr + ((r1[equ]) * stride) + ( 2 * 10 + M011)))
+#define FF02_020 (*(Fptr + ((r1[equ]) * stride) + ( 2 * 10 + M020)))
+#define FF02_100 (*(Fptr + ((r1[equ]) * stride) + ( 2 * 10 + M100)))
+#define FF02_101 (*(Fptr + ((r1[equ]) * stride) + ( 2 * 10 + M101)))
+#define FF02_110 (*(Fptr + ((r1[equ]) * stride) + ( 2 * 10 + M110)))
+#define FF02_200 (*(Fptr + ((r1[equ]) * stride) + ( 2 * 10 + M200)))
 
 
-#define FF10_000 F.a(r2[equ], 0 * 10 + M000)
-#define FF10_001 F.a(r2[equ], 0 * 10 + M001)
-#define FF10_002 F.a(r2[equ], 0 * 10 + M002)
-#define FF10_010 F.a(r2[equ], 0 * 10 + M010)
-#define FF10_011 F.a(r2[equ], 0 * 10 + M011)
-#define FF10_020 F.a(r2[equ], 0 * 10 + M020)
-#define FF10_100 F.a(r2[equ], 0 * 10 + M100)
-#define FF10_101 F.a(r2[equ], 0 * 10 + M101)
-#define FF10_110 F.a(r2[equ], 0 * 10 + M110)
-#define FF10_200 F.a(r2[equ], 0 * 10 + M200)
+#define FF10_000 (*(Fptr + ((r2[equ]) * stride) + ( 0 * 10 + M000)))
+#define FF10_001 (*(Fptr + ((r2[equ]) * stride) + ( 0 * 10 + M001)))
+#define FF10_002 (*(Fptr + ((r2[equ]) * stride) + ( 0 * 10 + M002)))
+#define FF10_010 (*(Fptr + ((r2[equ]) * stride) + ( 0 * 10 + M010)))
+#define FF10_011 (*(Fptr + ((r2[equ]) * stride) + ( 0 * 10 + M011)))
+#define FF10_020 (*(Fptr + ((r2[equ]) * stride) + ( 0 * 10 + M020)))
+#define FF10_100 (*(Fptr + ((r2[equ]) * stride) + ( 0 * 10 + M100)))
+#define FF10_101 (*(Fptr + ((r2[equ]) * stride) + ( 0 * 10 + M101)))
+#define FF10_110 (*(Fptr + ((r2[equ]) * stride) + ( 0 * 10 + M110)))
+#define FF10_200 (*(Fptr + ((r2[equ]) * stride) + ( 0 * 10 + M200)))
 
-#define FF11_000 F.a(r2[equ], 1 * 10 + M000)             
-#define FF11_001 F.a(r2[equ], 1 * 10 + M001)
-#define FF11_002 F.a(r2[equ], 1 * 10 + M002)
-#define FF11_010 F.a(r2[equ], 1 * 10 + M010)
-#define FF11_011 F.a(r2[equ], 1 * 10 + M011)
-#define FF11_020 F.a(r2[equ], 1 * 10 + M020)
-#define FF11_100 F.a(r2[equ], 1 * 10 + M100)
-#define FF11_101 F.a(r2[equ], 1 * 10 + M101)
-#define FF11_110 F.a(r2[equ], 1 * 10 + M110)
-#define FF11_200 F.a(r2[equ], 1 * 10 + M200)
+#define FF11_000 (*(Fptr + ((r2[equ]) * stride) + ( 1 * 10 + M000)))             
+#define FF11_001 (*(Fptr + ((r2[equ]) * stride) + ( 1 * 10 + M001)))
+#define FF11_002 (*(Fptr + ((r2[equ]) * stride) + ( 1 * 10 + M002)))
+#define FF11_010 (*(Fptr + ((r2[equ]) * stride) + ( 1 * 10 + M010)))
+#define FF11_011 (*(Fptr + ((r2[equ]) * stride) + ( 1 * 10 + M011)))
+#define FF11_020 (*(Fptr + ((r2[equ]) * stride) + ( 1 * 10 + M020)))
+#define FF11_100 (*(Fptr + ((r2[equ]) * stride) + ( 1 * 10 + M100)))
+#define FF11_101 (*(Fptr + ((r2[equ]) * stride) + ( 1 * 10 + M101)))
+#define FF11_110 (*(Fptr + ((r2[equ]) * stride) + ( 1 * 10 + M110)))
+#define FF11_200 (*(Fptr + ((r2[equ]) * stride) + ( 1 * 10 + M200)))
 
-#define FF12_000 F.a(r2[equ], 2 * 10 + M000)
-#define FF12_001 F.a(r2[equ], 2 * 10 + M001)
-#define FF12_002 F.a(r2[equ], 2 * 10 + M002)
-#define FF12_010 F.a(r2[equ], 2 * 10 + M010)
-#define FF12_011 F.a(r2[equ], 2 * 10 + M011)
-#define FF12_020 F.a(r2[equ], 2 * 10 + M020)
-#define FF12_100 F.a(r2[equ], 2 * 10 + M100)
-#define FF12_101 F.a(r2[equ], 2 * 10 + M101)
-#define FF12_110 F.a(r2[equ], 2 * 10 + M110)
-#define FF12_200 F.a(r2[equ], 2 * 10 + M200)
+#define FF12_000 (*(Fptr + ((r2[equ]) * stride) + ( 2 * 10 + M000)))
+#define FF12_001 (*(Fptr + ((r2[equ]) * stride) + ( 2 * 10 + M001)))
+#define FF12_002 (*(Fptr + ((r2[equ]) * stride) + ( 2 * 10 + M002)))
+#define FF12_010 (*(Fptr + ((r2[equ]) * stride) + ( 2 * 10 + M010)))
+#define FF12_011 (*(Fptr + ((r2[equ]) * stride) + ( 2 * 10 + M011)))
+#define FF12_020 (*(Fptr + ((r2[equ]) * stride) + ( 2 * 10 + M020)))
+#define FF12_100 (*(Fptr + ((r2[equ]) * stride) + ( 2 * 10 + M100)))
+#define FF12_101 (*(Fptr + ((r2[equ]) * stride) + ( 2 * 10 + M101)))
+#define FF12_110 (*(Fptr + ((r2[equ]) * stride) + ( 2 * 10 + M110)))
+#define FF12_200 (*(Fptr + ((r2[equ]) * stride) + ( 2 * 10 + M200)))
 
-#define FF20_000 F.a(r3[equ], 0 * 10 + M000)
-#define FF20_001 F.a(r3[equ], 0 * 10 + M001)
-#define FF20_002 F.a(r3[equ], 0 * 10 + M002)
-#define FF20_010 F.a(r3[equ], 0 * 10 + M010)
-#define FF20_011 F.a(r3[equ], 0 * 10 + M011)
-#define FF20_020 F.a(r3[equ], 0 * 10 + M020)
-#define FF20_100 F.a(r3[equ], 0 * 10 + M100)
-#define FF20_101 F.a(r3[equ], 0 * 10 + M101)
-#define FF20_110 F.a(r3[equ], 0 * 10 + M110)
-#define FF20_200 F.a(r3[equ], 0 * 10 + M200)
+#define FF20_000 (*(Fptr + ((r3[equ]) * stride) + ( 0 * 10 + M000)))
+#define FF20_001 (*(Fptr + ((r3[equ]) * stride) + ( 0 * 10 + M001)))
+#define FF20_002 (*(Fptr + ((r3[equ]) * stride) + ( 0 * 10 + M002)))
+#define FF20_010 (*(Fptr + ((r3[equ]) * stride) + ( 0 * 10 + M010)))
+#define FF20_011 (*(Fptr + ((r3[equ]) * stride) + ( 0 * 10 + M011)))
+#define FF20_020 (*(Fptr + ((r3[equ]) * stride) + ( 0 * 10 + M020)))
+#define FF20_100 (*(Fptr + ((r3[equ]) * stride) + ( 0 * 10 + M100)))
+#define FF20_101 (*(Fptr + ((r3[equ]) * stride) + ( 0 * 10 + M101)))
+#define FF20_110 (*(Fptr + ((r3[equ]) * stride) + ( 0 * 10 + M110)))
+#define FF20_200 (*(Fptr + ((r3[equ]) * stride) + ( 0 * 10 + M200)))
 
-#define FF21_000 F.a(r3[equ], 1 * 10 + M000)
-#define FF21_001 F.a(r3[equ], 1 * 10 + M001)
-#define FF21_002 F.a(r3[equ], 1 * 10 + M002)
-#define FF21_010 F.a(r3[equ], 1 * 10 + M010)
-#define FF21_011 F.a(r3[equ], 1 * 10 + M011)
-#define FF21_020 F.a(r3[equ], 1 * 10 + M020)
-#define FF21_100 F.a(r3[equ], 1 * 10 + M100)
-#define FF21_101 F.a(r3[equ], 1 * 10 + M101)
-#define FF21_110 F.a(r3[equ], 1 * 10 + M110)
-#define FF21_200 F.a(r3[equ], 1 * 10 + M200)
-#define FF22_000 F.a(r3[equ], 2 * 10 + M000)
+#define FF21_000 (*(Fptr + ((r3[equ]) * stride) + ( 1 * 10 + M000)))
+#define FF21_001 (*(Fptr + ((r3[equ]) * stride) + ( 1 * 10 + M001)))
+#define FF21_002 (*(Fptr + ((r3[equ]) * stride) + ( 1 * 10 + M002)))
+#define FF21_010 (*(Fptr + ((r3[equ]) * stride) + ( 1 * 10 + M010)))
+#define FF21_011 (*(Fptr + ((r3[equ]) * stride) + ( 1 * 10 + M011)))
+#define FF21_020 (*(Fptr + ((r3[equ]) * stride) + ( 1 * 10 + M020)))
+#define FF21_100 (*(Fptr + ((r3[equ]) * stride) + ( 1 * 10 + M100)))
+#define FF21_101 (*(Fptr + ((r3[equ]) * stride) + ( 1 * 10 + M101)))
+#define FF21_110 (*(Fptr + ((r3[equ]) * stride) + ( 1 * 10 + M110)))
+#define FF21_200 (*(Fptr + ((r3[equ]) * stride) + ( 1 * 10 + M200)))
+#define FF22_000 (*(Fptr + ((r3[equ]) * stride) + ( 2 * 10 + M000)))
 
-#define FF22_001 F.a(r3[equ], 2 * 10 + M001)
-#define FF22_002 F.a(r3[equ], 2 * 10 + M002)
-#define FF22_010 F.a(r3[equ], 2 * 10 + M010)
-#define FF22_011 F.a(r3[equ], 2 * 10 + M011)
-#define FF22_020 F.a(r3[equ], 2 * 10 + M020)
-#define FF22_100 F.a(r3[equ], 2 * 10 + M100)
-#define FF22_101 F.a(r3[equ], 2 * 10 + M101)
-#define FF22_110 F.a(r3[equ], 2 * 10 + M110)
-#define FF22_200 F.a(r3[equ], 2 * 10 + M200)
+#define FF22_001 (*(Fptr + ((r3[equ]) * stride) + ( 2 * 10 + M001)))
+#define FF22_002 (*(Fptr + ((r3[equ]) * stride) + ( 2 * 10 + M002)))
+#define FF22_010 (*(Fptr + ((r3[equ]) * stride) + ( 2 * 10 + M010)))
+#define FF22_011 (*(Fptr + ((r3[equ]) * stride) + ( 2 * 10 + M011)))
+#define FF22_020 (*(Fptr + ((r3[equ]) * stride) + ( 2 * 10 + M020)))
+#define FF22_100 (*(Fptr + ((r3[equ]) * stride) + ( 2 * 10 + M100)))
+#define FF22_101 (*(Fptr + ((r3[equ]) * stride) + ( 2 * 10 + M101)))
+#define FF22_110 (*(Fptr + ((r3[equ]) * stride) + ( 2 * 10 + M110)))
+#define FF22_200 (*(Fptr + ((r3[equ]) * stride) + ( 2 * 10 + M200)))
 
         // And for all 10 minors we generate all 84 monomials
         for (int equ = 0; equ < 10; ++equ)
