@@ -21,9 +21,9 @@ void corecvs::RelativeNonCentralP6PSolver::SetupEliminationTemplate(corecvs::Mat
     //      we had similar problem on gcc-4.8 where converting this to raw pointers helped.
     //      So we try to do this again
     //      Also i've replaced FF macroses with double&'s
-    double *Fptr = &(*(Fptr + ((0)) + ( 0)));
-    int Fstride = F.stride;
+    double *Fptr = &F.a(0, 0);
     double *Tptr = &T.a(0, 0);
+    int Fstride = F.stride;
     int Tstride = T.stride;
 
     for (int block = 0; block < 3; ++block)
@@ -83,109 +83,109 @@ void corecvs::RelativeNonCentralP6PSolver::SetupEliminationTemplate(corecvs::Mat
         int r2[10] = {1, 1, 2, 2, 1, 2, 2, 3, 3, 3};
         int r3[10] = {2, 3, 3, 3, 4, 4, 4, 4, 4, 4};
 
-double FF00_000 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 0 * 10 + M000)));
-double FF00_001 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 0 * 10 + M001)));
-double FF00_002 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 0 * 10 + M002)));
-double FF00_010 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 0 * 10 + M010)));
-double FF00_011 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 0 * 10 + M011)));
-double FF00_020 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 0 * 10 + M020)));
-double FF00_100 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 0 * 10 + M100)));
-double FF00_101 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 0 * 10 + M101)));
-double FF00_110 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 0 * 10 + M110)));
-double FF00_200 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 0 * 10 + M200)));
-
-double FF01_000 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 1 * 10 + M000)));
-double FF01_001 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 1 * 10 + M001)));
-double FF01_002 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 1 * 10 + M002)));
-double FF01_010 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 1 * 10 + M010)));
-double FF01_011 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 1 * 10 + M011)));
-double FF01_020 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 1 * 10 + M020)));
-double FF01_100 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 1 * 10 + M100)));
-double FF01_101 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 1 * 10 + M101)));
-double FF01_110 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 1 * 10 + M110)));
-double FF01_200 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 1 * 10 + M200)));
-
-double FF02_000 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 2 * 10 + M000)));
-double FF02_001 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 2 * 10 + M001)));
-double FF02_002 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 2 * 10 + M002)));
-double FF02_010 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 2 * 10 + M010)));
-double FF02_011 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 2 * 10 + M011)));
-double FF02_020 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 2 * 10 + M020)));
-double FF02_100 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 2 * 10 + M100)));
-double FF02_101 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 2 * 10 + M101)));
-double FF02_110 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 2 * 10 + M110)));
-double FF02_200 =  (*(Fptr + ((r1[equ]) *Fstride) + ( 2 * 10 + M200)));
-
-
-double FF10_000 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 0 * 10 + M000)));
-double FF10_001 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 0 * 10 + M001)));
-double FF10_002 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 0 * 10 + M002)));
-double FF10_010 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 0 * 10 + M010)));
-double FF10_011 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 0 * 10 + M011)));
-double FF10_020 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 0 * 10 + M020)));
-double FF10_100 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 0 * 10 + M100)));
-double FF10_101 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 0 * 10 + M101)));
-double FF10_110 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 0 * 10 + M110)));
-double FF10_200 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 0 * 10 + M200)));
-
-double FF11_000 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 1 * 10 + M000)))             ;
-double FF11_001 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 1 * 10 + M001)));
-double FF11_002 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 1 * 10 + M002)));
-double FF11_010 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 1 * 10 + M010)));
-double FF11_011 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 1 * 10 + M011)));
-double FF11_020 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 1 * 10 + M020)));
-double FF11_100 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 1 * 10 + M100)));
-double FF11_101 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 1 * 10 + M101)));
-double FF11_110 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 1 * 10 + M110)));
-double FF11_200 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 1 * 10 + M200)));
-
-double FF12_000 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 2 * 10 + M000)));
-double FF12_001 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 2 * 10 + M001)));
-double FF12_002 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 2 * 10 + M002)));
-double FF12_010 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 2 * 10 + M010)));
-double FF12_011 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 2 * 10 + M011)));
-double FF12_020 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 2 * 10 + M020)));
-double FF12_100 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 2 * 10 + M100)));
-double FF12_101 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 2 * 10 + M101)));
-double FF12_110 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 2 * 10 + M110)));
-double FF12_200 =  (*(Fptr + ((r2[equ]) *Fstride) + ( 2 * 10 + M200)));
-
-double FF20_000 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 0 * 10 + M000)));
-double FF20_001 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 0 * 10 + M001)));
-double FF20_002 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 0 * 10 + M002)));
-double FF20_010 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 0 * 10 + M010)));
-double FF20_011 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 0 * 10 + M011)));
-double FF20_020 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 0 * 10 + M020)));
-double FF20_100 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 0 * 10 + M100)));
-double FF20_101 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 0 * 10 + M101)));
-double FF20_110 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 0 * 10 + M110)));
-double FF20_200 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 0 * 10 + M200)));
-
-double FF21_000 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 1 * 10 + M000)));
-double FF21_001 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 1 * 10 + M001)));
-double FF21_002 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 1 * 10 + M002)));
-double FF21_010 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 1 * 10 + M010)));
-double FF21_011 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 1 * 10 + M011)));
-double FF21_020 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 1 * 10 + M020)));
-double FF21_100 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 1 * 10 + M100)));
-double FF21_101 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 1 * 10 + M101)));
-double FF21_110 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 1 * 10 + M110)));
-double FF21_200 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 1 * 10 + M200)));
-double FF22_000 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 2 * 10 + M000)));
-
-double FF22_001 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 2 * 10 + M001)));
-double FF22_002 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 2 * 10 + M002)));
-double FF22_010 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 2 * 10 + M010)));
-double FF22_011 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 2 * 10 + M011)));
-double FF22_020 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 2 * 10 + M020)));
-double FF22_100 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 2 * 10 + M100)));
-double FF22_101 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 2 * 10 + M101)));
-double FF22_110 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 2 * 10 + M110)));
-double FF22_200 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 2 * 10 + M200)));
-
         // And for all 10 minors we generate all 84 monomials
         for (int equ = 0; equ < 10; ++equ)
         {
+            double FF00_000 = (*(Fptr + ((r1[equ]) *Fstride) + (0 * 10 + M000)));
+            double FF00_001 = (*(Fptr + ((r1[equ]) *Fstride) + (0 * 10 + M001)));
+            double FF00_002 = (*(Fptr + ((r1[equ]) *Fstride) + (0 * 10 + M002)));
+            double FF00_010 = (*(Fptr + ((r1[equ]) *Fstride) + (0 * 10 + M010)));
+            double FF00_011 = (*(Fptr + ((r1[equ]) *Fstride) + (0 * 10 + M011)));
+            double FF00_020 = (*(Fptr + ((r1[equ]) *Fstride) + (0 * 10 + M020)));
+            double FF00_100 = (*(Fptr + ((r1[equ]) *Fstride) + (0 * 10 + M100)));
+            double FF00_101 = (*(Fptr + ((r1[equ]) *Fstride) + (0 * 10 + M101)));
+            double FF00_110 = (*(Fptr + ((r1[equ]) *Fstride) + (0 * 10 + M110)));
+            double FF00_200 = (*(Fptr + ((r1[equ]) *Fstride) + (0 * 10 + M200)));
+
+            double FF01_000 = (*(Fptr + ((r1[equ]) *Fstride) + (1 * 10 + M000)));
+            double FF01_001 = (*(Fptr + ((r1[equ]) *Fstride) + (1 * 10 + M001)));
+            double FF01_002 = (*(Fptr + ((r1[equ]) *Fstride) + (1 * 10 + M002)));
+            double FF01_010 = (*(Fptr + ((r1[equ]) *Fstride) + (1 * 10 + M010)));
+            double FF01_011 = (*(Fptr + ((r1[equ]) *Fstride) + (1 * 10 + M011)));
+            double FF01_020 = (*(Fptr + ((r1[equ]) *Fstride) + (1 * 10 + M020)));
+            double FF01_100 = (*(Fptr + ((r1[equ]) *Fstride) + (1 * 10 + M100)));
+            double FF01_101 = (*(Fptr + ((r1[equ]) *Fstride) + (1 * 10 + M101)));
+            double FF01_110 = (*(Fptr + ((r1[equ]) *Fstride) + (1 * 10 + M110)));
+            double FF01_200 = (*(Fptr + ((r1[equ]) *Fstride) + (1 * 10 + M200)));
+
+            double FF02_000 = (*(Fptr + ((r1[equ]) *Fstride) + (2 * 10 + M000)));
+            double FF02_001 = (*(Fptr + ((r1[equ]) *Fstride) + (2 * 10 + M001)));
+            double FF02_002 = (*(Fptr + ((r1[equ]) *Fstride) + (2 * 10 + M002)));
+            double FF02_010 = (*(Fptr + ((r1[equ]) *Fstride) + (2 * 10 + M010)));
+            double FF02_011 = (*(Fptr + ((r1[equ]) *Fstride) + (2 * 10 + M011)));
+            double FF02_020 = (*(Fptr + ((r1[equ]) *Fstride) + (2 * 10 + M020)));
+            double FF02_100 = (*(Fptr + ((r1[equ]) *Fstride) + (2 * 10 + M100)));
+            double FF02_101 = (*(Fptr + ((r1[equ]) *Fstride) + (2 * 10 + M101)));
+            double FF02_110 = (*(Fptr + ((r1[equ]) *Fstride) + (2 * 10 + M110)));
+            double FF02_200 = (*(Fptr + ((r1[equ]) *Fstride) + (2 * 10 + M200)));
+
+
+            double FF10_000 = (*(Fptr + ((r2[equ]) *Fstride) + (0 * 10 + M000)));
+            double FF10_001 = (*(Fptr + ((r2[equ]) *Fstride) + (0 * 10 + M001)));
+            double FF10_002 = (*(Fptr + ((r2[equ]) *Fstride) + (0 * 10 + M002)));
+            double FF10_010 = (*(Fptr + ((r2[equ]) *Fstride) + (0 * 10 + M010)));
+            double FF10_011 = (*(Fptr + ((r2[equ]) *Fstride) + (0 * 10 + M011)));
+            double FF10_020 = (*(Fptr + ((r2[equ]) *Fstride) + (0 * 10 + M020)));
+            double FF10_100 = (*(Fptr + ((r2[equ]) *Fstride) + (0 * 10 + M100)));
+            double FF10_101 = (*(Fptr + ((r2[equ]) *Fstride) + (0 * 10 + M101)));
+            double FF10_110 = (*(Fptr + ((r2[equ]) *Fstride) + (0 * 10 + M110)));
+            double FF10_200 = (*(Fptr + ((r2[equ]) *Fstride) + (0 * 10 + M200)));
+
+            double FF11_000 = (*(Fptr + ((r2[equ]) *Fstride) + (1 * 10 + M000)));
+            double FF11_001 = (*(Fptr + ((r2[equ]) *Fstride) + (1 * 10 + M001)));
+            double FF11_002 = (*(Fptr + ((r2[equ]) *Fstride) + (1 * 10 + M002)));
+            double FF11_010 = (*(Fptr + ((r2[equ]) *Fstride) + (1 * 10 + M010)));
+            double FF11_011 = (*(Fptr + ((r2[equ]) *Fstride) + (1 * 10 + M011)));
+            double FF11_020 = (*(Fptr + ((r2[equ]) *Fstride) + (1 * 10 + M020)));
+            double FF11_100 = (*(Fptr + ((r2[equ]) *Fstride) + (1 * 10 + M100)));
+            double FF11_101 = (*(Fptr + ((r2[equ]) *Fstride) + (1 * 10 + M101)));
+            double FF11_110 = (*(Fptr + ((r2[equ]) *Fstride) + (1 * 10 + M110)));
+            double FF11_200 = (*(Fptr + ((r2[equ]) *Fstride) + (1 * 10 + M200)));
+
+            double FF12_000 = (*(Fptr + ((r2[equ]) *Fstride) + (2 * 10 + M000)));
+            double FF12_001 = (*(Fptr + ((r2[equ]) *Fstride) + (2 * 10 + M001)));
+            double FF12_002 = (*(Fptr + ((r2[equ]) *Fstride) + (2 * 10 + M002)));
+            double FF12_010 = (*(Fptr + ((r2[equ]) *Fstride) + (2 * 10 + M010)));
+            double FF12_011 = (*(Fptr + ((r2[equ]) *Fstride) + (2 * 10 + M011)));
+            double FF12_020 = (*(Fptr + ((r2[equ]) *Fstride) + (2 * 10 + M020)));
+            double FF12_100 = (*(Fptr + ((r2[equ]) *Fstride) + (2 * 10 + M100)));
+            double FF12_101 = (*(Fptr + ((r2[equ]) *Fstride) + (2 * 10 + M101)));
+            double FF12_110 = (*(Fptr + ((r2[equ]) *Fstride) + (2 * 10 + M110)));
+            double FF12_200 = (*(Fptr + ((r2[equ]) *Fstride) + (2 * 10 + M200)));
+
+            double FF20_000 = (*(Fptr + ((r3[equ]) *Fstride) + (0 * 10 + M000)));
+            double FF20_001 = (*(Fptr + ((r3[equ]) *Fstride) + (0 * 10 + M001)));
+            double FF20_002 = (*(Fptr + ((r3[equ]) *Fstride) + (0 * 10 + M002)));
+            double FF20_010 = (*(Fptr + ((r3[equ]) *Fstride) + (0 * 10 + M010)));
+            double FF20_011 = (*(Fptr + ((r3[equ]) *Fstride) + (0 * 10 + M011)));
+            double FF20_020 = (*(Fptr + ((r3[equ]) *Fstride) + (0 * 10 + M020)));
+            double FF20_100 = (*(Fptr + ((r3[equ]) *Fstride) + (0 * 10 + M100)));
+            double FF20_101 = (*(Fptr + ((r3[equ]) *Fstride) + (0 * 10 + M101)));
+            double FF20_110 = (*(Fptr + ((r3[equ]) *Fstride) + (0 * 10 + M110)));
+            double FF20_200 = (*(Fptr + ((r3[equ]) *Fstride) + (0 * 10 + M200)));
+
+            double FF21_000 = (*(Fptr + ((r3[equ]) *Fstride) + (1 * 10 + M000)));
+            double FF21_001 = (*(Fptr + ((r3[equ]) *Fstride) + (1 * 10 + M001)));
+            double FF21_002 = (*(Fptr + ((r3[equ]) *Fstride) + (1 * 10 + M002)));
+            double FF21_010 = (*(Fptr + ((r3[equ]) *Fstride) + (1 * 10 + M010)));
+            double FF21_011 = (*(Fptr + ((r3[equ]) *Fstride) + (1 * 10 + M011)));
+            double FF21_020 = (*(Fptr + ((r3[equ]) *Fstride) + (1 * 10 + M020)));
+            double FF21_100 = (*(Fptr + ((r3[equ]) *Fstride) + (1 * 10 + M100)));
+            double FF21_101 = (*(Fptr + ((r3[equ]) *Fstride) + (1 * 10 + M101)));
+            double FF21_110 = (*(Fptr + ((r3[equ]) *Fstride) + (1 * 10 + M110)));
+            double FF21_200 = (*(Fptr + ((r3[equ]) *Fstride) + (1 * 10 + M200)));
+            double FF22_000 = (*(Fptr + ((r3[equ]) *Fstride) + (2 * 10 + M000)));
+
+            double FF22_001 = (*(Fptr + ((r3[equ]) *Fstride) + (2 * 10 + M001)));
+            double FF22_002 = (*(Fptr + ((r3[equ]) *Fstride) + (2 * 10 + M002)));
+            double FF22_010 = (*(Fptr + ((r3[equ]) *Fstride) + (2 * 10 + M010)));
+            double FF22_011 = (*(Fptr + ((r3[equ]) *Fstride) + (2 * 10 + M011)));
+            double FF22_020 = (*(Fptr + ((r3[equ]) *Fstride) + (2 * 10 + M020)));
+            double FF22_100 = (*(Fptr + ((r3[equ]) *Fstride) + (2 * 10 + M100)));
+            double FF22_101 = (*(Fptr + ((r3[equ]) *Fstride) + (2 * 10 + M101)));
+            double FF22_110 = (*(Fptr + ((r3[equ]) *Fstride) + (2 * 10 + M110)));
+            double FF22_200 = (*(Fptr + ((r3[equ]) *Fstride) + (2 * 10 + M200)));
+
             int row = block * 10 + equ;
             (*(Tptr + ((row) * Tstride) + ( 0)))  = -FF20_200*FF02_200*FF11_200+FF20_200*FF01_200*FF12_200-FF10_200*FF01_200*FF22_200+FF00_200*FF11_200*FF22_200+FF10_200*FF02_200*FF21_200-FF00_200*FF12_200*FF21_200;
             (*(Tptr + ((row) * Tstride) + ( 1)))  = FF10_200*FF02_110*FF21_200+FF10_200*FF02_200*FF21_110+FF00_110*FF11_200*FF22_200-FF10_200*FF01_110*FF22_200-FF10_200*FF01_200*FF22_110-FF00_110*FF12_200*FF21_200+FF10_110*FF02_200*FF21_200-FF10_110*FF01_200*FF22_200+FF20_110*FF01_200*FF12_200+FF20_200*FF01_110*FF12_200-FF20_200*FF02_200*FF11_110-FF20_200*FF02_110*FF11_200-FF20_110*FF02_200*FF11_200+FF20_200*FF01_200*FF12_110+FF00_200*FF11_110*FF22_200+FF00_200*FF11_200*FF22_110-FF00_200*FF12_200*FF21_110-FF00_200*FF12_110*FF21_200;
@@ -271,8 +271,6 @@ double FF22_200 =  (*(Fptr + ((r3[equ]) *Fstride) + ( 2 * 10 + M200)));
             (*(Tptr + ((row) * Tstride) + ( 81)))  = FF00_010*FF11_000*FF22_000+FF00_000*FF11_000*FF22_010+FF10_000*FF02_000*FF21_010+FF10_010*FF02_000*FF21_000-FF10_000*FF01_000*FF22_010-FF10_010*FF01_000*FF22_000-FF20_000*FF02_010*FF11_000-FF10_000*FF01_010*FF22_000-FF00_000*FF12_000*FF21_010+FF10_000*FF02_010*FF21_000+FF00_000*FF11_010*FF22_000-FF00_000*FF12_010*FF21_000+FF20_010*FF01_000*FF12_000+FF20_000*FF01_000*FF12_010+FF20_000*FF01_010*FF12_000-FF20_010*FF02_000*FF11_000-FF20_000*FF02_000*FF11_010-FF00_010*FF12_000*FF21_000;
             (*(Tptr + ((row) * Tstride) + ( 82)))  = -FF20_000*FF02_000*FF11_001+FF20_000*FF01_001*FF12_000-FF20_001*FF02_000*FF11_000+FF20_000*FF01_000*FF12_001+FF20_001*FF01_000*FF12_000-FF20_000*FF02_001*FF11_000-FF00_001*FF12_000*FF21_000+FF00_000*FF11_001*FF22_000+FF00_001*FF11_000*FF22_000-FF00_000*FF12_001*FF21_000+FF00_000*FF11_000*FF22_001+FF10_000*FF02_001*FF21_000+FF10_001*FF02_000*FF21_000+FF10_000*FF02_000*FF21_001-FF10_001*FF01_000*FF22_000-FF10_000*FF01_000*FF22_001-FF00_000*FF12_000*FF21_001-FF10_000*FF01_001*FF22_000;
             (*(Tptr + ((row) * Tstride) + ( 83)))  = -FF00_000*FF12_000*FF21_000+FF00_000*FF11_000*FF22_000+FF20_000*FF01_000*FF12_000-FF20_000*FF02_000*FF11_000-FF10_000*FF01_000*FF22_000+FF10_000*FF02_000*FF21_000;
-
         }
     }
 }
-
