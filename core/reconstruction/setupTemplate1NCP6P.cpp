@@ -17,11 +17,11 @@ void corecvs::RelativeNonCentralP6PSolver::SetupEliminationTemplate(corecvs::Mat
     CORE_ASSERT_TRUE_S(T.h == 30 && T.w == 84);
     // Here we will store polynomial coefficients for generalized essential eqs as multiplies for lambda1, lambda2, 1
     corecvs::Matrix F(5, 30); // 5 rows x 3 equations x 10 (C(3+1-1, 2+3+1-1)=10 monomials)
+    int stride = F.stride;
     double *Fptr = &(*(Fptr + ((0) * stride) + ( 0)));
     // XXX: some weird compilers (e.g. Visual Studio 2013 Update 5) unable to build this file with F.a(i, j)
     //      we had similar problem on gcc-4.8 where converting this to raw pointers helped.
     //      So we try to do this again
-    int Fstride = F.stride;
 
     for (int block = 0; block < 3; ++block)
     {
