@@ -14,13 +14,12 @@ Debayer::Debayer(G12Buffer *bayer, int depth, MetaData *metadata, int bayerPos)
 {
     mMaximum = (1 << depth) - 1;
     
-
-    if (bayerPos == -1)
+    if (bayerPos < 0)
     {
-        if (metadata == nullptr)
+        if (metadata == nullptr) {
             mBayerPos = 0;
-        else
-        {
+        }
+        else {
             MetaData &meta = *metadata;
             mBayerPos = meta["b_pos"].empty() ? 0 : meta["b_pos"][0];
         }
@@ -36,29 +35,31 @@ Debayer::~Debayer()
 
 void Debayer::nearest(RGB48Buffer *result)
 {
-    uint32_t red = 0, green = 0, blue = 0;
+    uint32_t r, g, b;
     // swapCols inverts least significant bit for cols when set so RG/GB becomes GR/BG, etc.
     // swapRows does the same for rows
+    //
     int swapCols =  mBayerPos & 1;
     int swapRows = (mBayerPos & 2) >> 1;
 
     RGBColor48 pixel;
 
-    int i = 0;
-
     // for now, don't handle first and last rows/columns if swapRows/swapCols is set
-
-    for (i = swapRows; i < mBayer->h - swapRows; i += 2)
+    //
+    int i = swapRows;
+    for (; i < mBayer->h - swapRows; i += 2)
     {
+        // TODO: sse-ify this part
+        //
         for (int j = swapCols; j < mBayer->w - swapCols; j += 2)
         {
-            red   =  mBayer->element(i, j);
-            green = (mBayer->element(i, j + 1) + mBayer->element(i + 1, j)) / 2;
-            blue  =  mBayer->element(i + 1, j + 1);
+            r =  mBayer->element(i, j);
+            g = (mBayer->element(i, j + 1) + mBayer->element(i + 1, j)) / 2;
+            b =  mBayer->element(i + 1, j + 1);
 
-            pixel[2] = mCurve[clip((red   - mBlack) * mScaleMul[0])];
-            pixel[1] = mCurve[clip((green - mBlack) * mScaleMul[1])];
-            pixel[0] = mCurve[clip((blue  - mBlack) * mScaleMul[2])];
+            pixel[2] = mCurve[outR(r)];
+            pixel[1] = mCurve[outG(g)];
+            pixel[0] = mCurve[outB(b)];
 
             result->element(i,     j    ) = pixel; // r
             result->element(i,     j + 1) = pixel; // g
@@ -70,98 +71,53 @@ void Debayer::nearest(RGB48Buffer *result)
 
 void Debayer::linear(RGB48Buffer *result)
 {
-    uint32_t red = 0, green = 0, blue = 0;
-
-    int swapCols = mBayerPos & 1;
+    uint32_t r, g, b;
+    int swapCols =  mBayerPos & 1;
     int swapRows = (mBayerPos & 2) >> 1;
 
     int i = 2 - swapRows;
 
     borderInterpolate(2 - min(swapCols, swapRows), result);
 
-    // TODO: sse-ify this part
-    #ifdef WITH_SSE
-    
     for (; i < mBayer->h - 2 + swapRows; i += 2)
     {
+        // TODO: SSE-ify this part!
+#ifdef WITH_SSE
         for (int j = 2 - swapCols; j < mBayer->w - 2 + swapCols; j += 2)
         {
-
             // R pixel
-            red   =  mBayer->element(i, j);
-            green = (mBayer->element(i, j - 1) + mBayer->element(i, j + 1) + mBayer->element(i + 1, j) + mBayer->element(i - 1, j)) / 4;
-            blue  = (mBayer->element(i - 1, j - 1) + mBayer->element(i - 1, j + 1) +
-                     mBayer->element(i + 1, j - 1) + mBayer->element(i + 1, j + 1)) / 4;
+            r =  mBayer->element(i, j);
+            g = (mBayer->element(i, j - 1) + mBayer->element(i, j + 1) + mBayer->element(i + 1, j) + mBayer->element(i - 1, j)) / 4;
+            b = (mBayer->element(i - 1, j - 1) + mBayer->element(i - 1, j + 1) +
+                 mBayer->element(i + 1, j - 1) + mBayer->element(i + 1, j + 1)) / 4;
 
-            result->element(i, j) = { clip((red - mBlack) * mScaleMul[0]), clip((green - mBlack) * mScaleMul[0]), clip((blue - mBlack) * mScaleMul[0]) };
+            result->element(i, j) = { outR(r), outG(g), outB(b) };
 
             // G1 pixel
-            green =  mBayer->element(i, j + 1);
-            red   = (mBayer->element(i,     j    ) + mBayer->element(i,     j + 2)) / 2;
-            blue  = (mBayer->element(i + 1, j + 1) + mBayer->element(i - 1, j + 1)) / 2;
+            g =  mBayer->element(i, j + 1);
+            r = (mBayer->element(i,     j    ) + mBayer->element(i,     j + 2)) / 2;
+            b = (mBayer->element(i + 1, j + 1) + mBayer->element(i - 1, j + 1)) / 2;
 
-            result->element(i, j + 1) = { clip((red - mBlack) * mScaleMul[0]), clip((green - mBlack) * mScaleMul[0]), clip((blue - mBlack) * mScaleMul[0]) };
+            result->element(i, j + 1) = { outR(r), outG(g), outB(b) };
 
 
             // G2 pixel - G1 inverted
-            green = mBayer->element(i + 1, j);
-            blue  = (mBayer->element(i + 1, j - 1) + mBayer->element(i + 1, j + 1)) / 2;
-            red   = (mBayer->element(i + 2, j    ) + mBayer->element(i,     j    )) / 2;
+            g =  mBayer->element(i + 1, j);
+            b = (mBayer->element(i + 1, j - 1) + mBayer->element(i + 1, j + 1)) / 2;
+            r = (mBayer->element(i + 2, j    ) + mBayer->element(i,     j    )) / 2;
 
-            result->element(i + 1, j) = { clip((red - mBlack) * mScaleMul[0]), clip((green - mBlack) * mScaleMul[0]), clip((blue - mBlack) * mScaleMul[0]) };
-
-            // B pixel - R inverted
-            blue  =  mBayer->element(i + 1, j + 1);
-            green = (mBayer->element(i + 1, j) + mBayer->element(i + 1, j + 2) + mBayer->element(i + 2, j + 1) + mBayer->element(i, j + 1)) / 4;
-            red   = (mBayer->element(i,     j) + mBayer->element(i,     j + 2) +
-                     mBayer->element(i + 2, j) + mBayer->element(i + 2, j + 2)) / 4;
-
-            result->element(i + 1, j + 1) = { clip((red - mBlack) * mScaleMul[0]), clip((green - mBlack) * mScaleMul[0]), clip((blue - mBlack) * mScaleMul[0]) };
-
-        }
-    }
-    
-    #endif
-
-    for (; i < mBayer->h - 2 + swapRows; i += 2)
-    {
-        for (int j = 2 - swapCols; j < mBayer->w - 2 + swapCols; j += 2)
-        {
-
-            // R pixel
-            red = mBayer->element(i, j);
-            green = (mBayer->element(i, j - 1) + mBayer->element(i, j + 1) + mBayer->element(i + 1, j) + mBayer->element(i - 1, j)) / 4;
-            blue = (mBayer->element(i - 1, j - 1) + mBayer->element(i - 1, j + 1) +
-                mBayer->element(i + 1, j - 1) + mBayer->element(i + 1, j + 1)) / 4;
-
-            result->element(i, j) = { clip((red - mBlack) * mScaleMul[0]), clip((green - mBlack) * mScaleMul[0]), clip((blue - mBlack) * mScaleMul[0]) };
-
-            // G1 pixel
-            green = mBayer->element(i, j + 1);
-            red = (mBayer->element(i, j) + mBayer->element(i, j + 2)) / 2;
-            blue = (mBayer->element(i + 1, j + 1) + mBayer->element(i - 1, j + 1)) / 2;
-
-            result->element(i, j + 1) = { clip((red - mBlack) * mScaleMul[0]), clip((green - mBlack) * mScaleMul[0]), clip((blue - mBlack) * mScaleMul[0]) };
-
-
-            // G2 pixel - G1 inverted
-            green = mBayer->element(i + 1, j);
-            blue = (mBayer->element(i + 1, j - 1) + mBayer->element(i + 1, j + 1)) / 2;
-            red = (mBayer->element(i + 2, j) + mBayer->element(i, j)) / 2;
-
-            result->element(i + 1, j) = { clip((red - mBlack) * mScaleMul[0]), clip((green - mBlack) * mScaleMul[0]), clip((blue - mBlack) * mScaleMul[0]) };
+            result->element(i + 1, j) = { outR(r), outG(g), outB(b) };
 
             // B pixel - R inverted
-            blue = mBayer->element(i + 1, j + 1);
-            green = (mBayer->element(i + 1, j) + mBayer->element(i + 1, j + 2) + mBayer->element(i + 2, j + 1) + mBayer->element(i, j + 1)) / 4;
-            red = (mBayer->element(i, j) + mBayer->element(i, j + 2) +
-                mBayer->element(i + 2, j) + mBayer->element(i + 2, j + 2)) / 4;
+            b =  mBayer->element(i + 1, j + 1);
+            g = (mBayer->element(i + 1, j) + mBayer->element(i + 1, j + 2) + mBayer->element(i + 2, j + 1) + mBayer->element(i, j + 1)) / 4;
+            r = (mBayer->element(i,     j) + mBayer->element(i,     j + 2) +
+                 mBayer->element(i + 2, j) + mBayer->element(i + 2, j + 2)) / 4;
 
-            result->element(i + 1, j + 1) = { clip((red - mBlack) * mScaleMul[0]), clip((green - mBlack) * mScaleMul[0]), clip((blue - mBlack) * mScaleMul[0]) };
-
+            result->element(i + 1, j + 1) = { outR(r), outG(g), outB(b) };
         }
+#endif
     }
-
 }
 
 int compare(const void * a, const void * b)
@@ -176,7 +132,6 @@ int compared(const void * a, const void * b)
 
 void Debayer::ahd(RGB48Buffer *result)
 {
-
     // allocate buffers for two directions
     G12Buffer *green[2] = {
         new G12Buffer(mBayer->h, mBayer->w, false),
@@ -196,7 +151,7 @@ void Debayer::ahd(RGB48Buffer *result)
 
     int32_t val = 0;
 
-    int swapCols = mBayerPos & 1;
+    int swapCols =  mBayerPos & 1;
     int swapRows = (mBayerPos & 2) >> 1;
 
     // interpolate green
@@ -249,7 +204,7 @@ void Debayer::ahd(RGB48Buffer *result)
                 {
                     for (int l = 0; l < 2; l++)
                     {
-                        pixel[1] = clip(green[d]->element(i + k, j + l) * mScaleMul[1]);
+                        pixel[1] = outG(green[d]->element(i + k, j + l));
 
                         uint8_t color = colorFromBayerPos(i + k, j + l, false);
 
@@ -280,9 +235,8 @@ void Debayer::ahd(RGB48Buffer *result)
                                     ((weightedBayerAvg({ j + l - 1, i + k - 1 }) - green[d]->element(i + k - 1, j + l - 1)
                                     + weightedBayerAvg({ j + l + 1, i + k - 1 }) - green[d]->element(i + k + 1, j + l + 1)
                                     + weightedBayerAvg({ j + l - 1, i + k + 1 }) - green[d]->element(i + k - 1, j + l + 1)
-                                    + weightedBayerAvg({ j + l + 1, i + k + 1 }) - green[d]->element(i + k + 1, j + l - 1)
-                                     
-                                     ) / 4);
+                                    + weightedBayerAvg({ j + l + 1, i + k + 1 }) - green[d]->element(i + k + 1, j + l - 1)) / 4);
+
                             pixel[color] = clip(val * mScaleMul[2 - color]);
                         }
                         rgb[d]->element(i + k, j + l) = pixel;
@@ -421,6 +375,7 @@ void Debayer::ahd(RGB48Buffer *result)
     const int passes = 3;
 
     for (int p = 0; p < passes; p++)
+    {
         for (int i = radius; i < mBayer->h - radius; i++)
         {
             for (int j = radius; j < mBayer->w - radius; j++)
@@ -434,23 +389,18 @@ void Debayer::ahd(RGB48Buffer *result)
                         for (int l = j - radius; l <= j + radius; l++)
                             window[c][idx++] = rgbDiff[c][k * mBayer->w + l];
                     qsort(window[c], size, sizeof(window[c][0]), compare);
-
                 }
 
                 uint32_t r = window[0][4] + result->element(i, j).g();
                 uint32_t b = window[1][4] + result->element(i, j).g();
                 uint32_t g = (r + b - window[0][4] - window[1][4]) / 2;
-                result->element(i, j) = RGBColor48(
-                    clip(r), 
-                    clip(g),
-                    clip(b)
-                );
+                result->element(i, j) = RGBColor48(clip(r), clip(g), clip(b));
 
                 rgbDiff[0][offset] = r - g;
                 rgbDiff[1][offset] = b - g;
             }
         }
-
+    }
     borderInterpolate(radius, result);
 
     deletearr_safe(rgbDiff[0]);
@@ -577,6 +527,7 @@ void Debayer::borderInterpolate(int radius, RGB48Buffer *result)
                         g /= g_div;
                         break;
                     }
+
                     result->element(i, j) = RGBColor48(r, g, b);
                 }
             }
@@ -588,7 +539,7 @@ void Debayer::borderInterpolate(int radius, RGB48Buffer *result)
 void Debayer::fourier(RGB48Buffer *result)
 {
 #ifndef WITH_MKL
-    SYNC_PRINT("FFT-based demosaicking is not supported by this version of debayer, using AHD instead.");
+    SYNC_PRINT("FFT-based demosaicing is not supported by this version of debayer, using AHD instead.");
     ahd(result);
 #else
     // this method is for research and test purposes only
@@ -638,7 +589,7 @@ void Debayer::fourier(RGB48Buffer *result)
 
             int rad = 1000;
 
-            bool sphere1 = (pow(i, 2) + pow(j, 2)) < rad;
+            bool sphere1 = (pow(i, 2) + pow(j, 2)) < rad;       // TODO: speed up this as pow() works via double!!!
             bool sphere2 = (pow(i, 2) + pow(w - j, 2)) < rad;
             bool sphere3 = (pow(h - i, 2) + pow(j, 2)) < rad;
             bool sphere4 = (pow(h - i, 2) + pow(w - j, 2)) < rad;
@@ -795,7 +746,7 @@ void Debayer::scaleCoeffs()
         metadata["pre_mul"][1] = 1;
 
     // black must be subtracted from the image, so we adjust maximum white level here
-    if(!metadata["white"].empty() && !metadata["black"].empty())
+    if (!metadata["white"].empty() && !metadata["black"].empty())
         metadata["white"][0] -= metadata["black"][0];
 
     // normalize pre_mul
@@ -914,8 +865,8 @@ void Debayer::preprocess(bool overwrite)
         int m_bits = this->mMetadata != nullptr &&  metadata["bits"][0] ? metadata["bits"][0] : mDepth;
         int shift = m_bits - mDepth;
 
-        mBlack = !metadata["black"].empty() && metadata["black"][0] ? metadata["black"][0] : 0;
-        int m_white = !metadata["white"].empty() && metadata["white"][0] ? metadata["white"][0] : (1 << mDepth) - 1;
+        mBlack       = !metadata["black"  ].empty() && metadata["black"  ][0] ?      metadata["black"  ][0] : 0;
+        int m_white  = !metadata["white"  ].empty() && metadata["white"  ][0] ?      metadata["white"  ][0] : (1 << mDepth) - 1;
         int m_twhite = !metadata["t_white"].empty() && metadata["t_white"][0] ? (int)metadata["t_white"][0] : m_white;
         t_white = (shift < 0 ? m_twhite << -shift : m_twhite >> shift);
     }
@@ -972,21 +923,8 @@ inline int32_t Debayer::weightedBayerAvg(const vector<Vector2d32>& coords, const
                 result += weightedBayerAvg(coords[i]);
         }
     }
-    if (div == 0)
-        return 0;
-    else
-        return result / div;
-}
 
-inline int32_t Debayer::clamp(int32_t x, int32_t a, int32_t b)
-{
-    if (a > b)
-        SwapXY<int32_t>(a, b);
-    if (x < a)
-        return a;
-    if (x > b)
-        return b;
-    return x;
+    return (div == 0) ? 0 : result / div;
 }
 
 inline uint8_t Debayer::colorFromBayerPos(uint i, uint j, bool rggb)
@@ -995,16 +933,6 @@ inline uint8_t Debayer::colorFromBayerPos(uint i, uint j, bool rggb)
         return   ((j ^ (mBayerPos & 1)) & 1) | (((i ^ ((mBayerPos & 2) >> 1)) & 1) << 1);
     else        // r, g, b
         return ((((j ^ (mBayerPos & 1)) & 1) | (((i ^ ((mBayerPos & 2) >> 1)) & 1) << 1)) + 1) >> 1;
-}
-
-inline uint16_t Debayer::clip(int32_t x)
-{
-    if (x < 0)
-        return 0;
-    if (x > mMaximum)
-        return mMaximum;
-
-    return (uint16_t)x;
 }
 
 void Debayer::fromRgb(RGB48Buffer *inRgb)

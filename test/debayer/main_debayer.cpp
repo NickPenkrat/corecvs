@@ -44,21 +44,20 @@ void usage()
 int main(int argc, const char **argv)
 {
     CommandLineSetter s(argc, argv);
-    bool        help     = s.getBool("help");
+    bool   help     = s.getBool  ("help");
+    int    method   = s.getInt   ("method", 3);
+    string filename = s.getOption("file");
+    bool   toBayer  = s.getBool  ("toBayer");
+    string outfile  = s.getString("ofile", "debayer_out.ppm");
+    bool   compare  = s.getBool  ("compare");
+    string target   = s.getOption("target");
+    int    bpos     = s.getInt   ("bpos", -1);
 
     if (help || argc < 2)
     {
         usage();
         return 0;
     }
-
-    int         method   = s.getInt("method", 3);
-    std::string filename = s.getOption("file");
-    bool        toBayer  = s.getBool("toBayer");
-    std::string outfile  = s.getString("ofile", "debayer_out.ppm");
-    bool        compare  = s.getBool("compare");
-    std::string target   = s.getOption("target");
-    int         bpos     = s.getInt("bpos", -1);
 
     MetaData meta, metaTarget;
     if (compare)

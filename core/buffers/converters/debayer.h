@@ -33,9 +33,10 @@ public:
     /**
      * Constructor.
      *
-     * \param [in,out] bayer Raw bayer data.
-     * \param depthOut       Processing bit depth.
-     * \param [in,out] data  (Optional) Metadata.
+     * \param [in,out] bayer Raw bayer data
+     * \param depthOut       Processing bit depth
+     * \param [in,out] data  (Optional) Metadata
+     * \param bayerPos       (Optional) Bayer position (RGGB or others)
      */
     Debayer(G12Buffer *bayer, int depthOut = 12, MetaData *data = nullptr, int bayerPos = -1);
 
@@ -74,14 +75,14 @@ private:
     void        gammaCurve(uint16_t *curve, int imax);
     void        preprocess(bool overwrite = false);
 
-    void linear(RGB48Buffer* out);
-    void nearest(RGB48Buffer* out);
-    void ahd(RGB48Buffer* out);
+    void        linear (RGB48Buffer* out);
+    void        nearest(RGB48Buffer* out);
+    void        ahd    (RGB48Buffer* out);
 
     // use for testing only!
-    void fourier(RGB48Buffer *result);
+    void        fourier(RGB48Buffer *result);
 
-    void borderInterpolate(int radius, RGB48Buffer *result);
+    void        borderInterpolate(int radius, RGB48Buffer *result);
 
     /* utilitary functions */
 
@@ -93,7 +94,12 @@ private:
      *
      * \return  Clipped value.
      */
-    inline uint16_t clip(int32_t x);
+    inline uint16_t clip(int32_t x)                          { return x < 0 ? 0 : (x > mMaximum ? mMaximum : (uint16_t)x); }
+
+    inline uint16_t getC(uint32_t channelValue, int chanIdx) { return clip(roundUp((channelValue - mBlack) * mScaleMul[chanIdx])); }
+    inline uint16_t outR(uint32_t r)                         { return getC(r, 0); }
+    inline uint16_t outG(uint32_t g)                         { return getC(g, 1); }
+    inline uint16_t outB(uint32_t b)                         { return getC(b, 2); }
 
     /**
      * Clamp the given value. If a &lt; b, treat a as left limit and b as right. Invert limits
@@ -105,7 +111,7 @@ private:
      *
      * \return  Clamped value.
      */
-    static inline int32_t clamp(int32_t x, int32_t a, int32_t b);
+    inline int32_t clamp(int32_t x, int32_t a, int32_t b) { if (a > b) SwapXY(a, b); return x < a ? a : (x > b ? b : x); }
 
     /**
      * Calculate weighted average.
