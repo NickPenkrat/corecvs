@@ -124,6 +124,8 @@ struct ReconstructionJob : ReconstructionParameters
      */
     void fill(std::unordered_map<std::string, corecvs::Affine3DQ> &data, int psLocationCnt = 5);
 
+    void solveWithBadPOI(bool filter, bool forceGps);
+
     //! Serialization routine
     template <typename V>
     void accept(V &visitor)
