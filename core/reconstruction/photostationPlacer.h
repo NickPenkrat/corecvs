@@ -50,7 +50,7 @@ struct PhotostationPlacerFeatureParams
 struct PhotostationPlacerEssentialFilterParams
 {
     double b2bRansacP5RPThreshold = 0.8;
-    double inlierP5RPThreshold = 5.0;
+    double inlierP5RPThreshold = 3.0;
     int maxEssentialRansacIterations = 1000;
     double b2bRansacP6RPThreshold = 0.8;
 };

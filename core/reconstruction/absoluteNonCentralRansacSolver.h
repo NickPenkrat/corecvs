@@ -11,7 +11,7 @@ namespace corecvs
 {
 struct AbsoluteNonCentralRansacSolverParams
 {
-	double reprojectionInlierThreshold = 1.0;
+	double reprojectionInlierThreshold = 2.0;
 	int fitIterations = 100;
 	int maxIterations = 100000; // Big enough for P3P
 };

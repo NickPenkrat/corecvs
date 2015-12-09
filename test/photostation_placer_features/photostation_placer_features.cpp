@@ -67,11 +67,11 @@ int main()
     };
 
     PhotostationPlacer pp;
-    const int PSN = 5;
+    const int PSN = 9;
     const int CP = 6;
     char psPrefixes[9] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'};
     
-    std::string prefix = "/home/dka/work_new/roof_v1/roof_1_SP";
+    std::string prefix = "roof_v1/roof_1_SP";
     std::string postfix= "_0deg_undist.jpg";
 
     pp.images.resize(PSN);
@@ -237,7 +237,6 @@ int main()
 		projs += p.projections.size();
 		auto proj = p.projections[0];
 		auto col = pp.keyPointColors[proj.photostationId][proj.cameraId][proj.featureId];
-		std::cout << "PID: " << proj.photostationId << " CID: " << proj.cameraId << " FID: " << proj.featureId << " COL: " << col << std::endl;
 		meshres4.setColor(col);
         meshres4.addPoint((p.worldPoint-meanpos) * 1e3);
 	}
