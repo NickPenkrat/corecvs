@@ -88,14 +88,11 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const Photostation &ps, double sc
     mesh.currentColor = corecvs::RGBColor(  0,   0, 255);
     mesh.addLine(ps.location * ori, ps.location * zps);
 
-    if (printNames)
-    {
-        AbstractPainter<Mesh3D> p(&mesh);
-        mesh.mulTransform(Matrix44::Shift(ps.location.shift));
-        mesh.setColor(RGBColor::Blue());
-        p.drawFormatVector(scale / 5.0, scale / 5.0, 0, scale / 3.0, "TEST STRING", ps.name.c_str());
-        mesh.popTransform();
-    }
+    AbstractPainter<Mesh3D> p(&mesh);
+    mesh.mulTransform(Matrix44::Shift(ps.location.shift));
+    mesh.setColor(RGBColor::Blue());
+    p.drawFormatVector(scale / 5.0, scale / 5.0, 0, scale / 3.0, "%s", ps.name.c_str());
+    mesh.popTransform();
 }
 
 void CalibrationHelpers::drawPly(Mesh3D &mesh, const ObservationList &list)
