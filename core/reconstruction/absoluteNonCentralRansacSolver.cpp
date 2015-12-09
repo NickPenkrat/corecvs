@@ -1,6 +1,7 @@
 #include "absoluteNonCentralRansacSolver.h"
 
 #include "pnpSolver.h"
+#include <random>
 
 void corecvs::AbsoluteNonCentralRansacSolver::run()
 {
