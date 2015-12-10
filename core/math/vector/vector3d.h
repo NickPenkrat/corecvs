@@ -54,6 +54,12 @@ public:
         v[2] = (*this)[2];
         return v;
     }
+    Vector3d(const Vector& v)
+    {
+        (*this)[0] = v[0];
+        (*this)[1] = v[1];
+        (*this)[2] = v[2];
+    }
 
     //@{
     /**

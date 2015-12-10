@@ -822,6 +822,32 @@ bool Matrix::matrixSolveGaussian(Matrix *A, Matrix *B)
  * */
 Matrix Matrix::inv() const
 {
+    /*
+     * Old implementation has bug:
+     *  1  1  1                                                 1 0 0
+     * (0  0  1).inv() = (sky falls and the earth collapses) = (0 1 0)
+     *  0  1  1                                                 0 0 1
+     *
+     *  It is not funny to discover this bug after some hours spent
+     *  debugging my code, so I commented it out and replaced with LAPACK calls (I've also fixed old code, if you care)
+     *
+     *  Note, however, that you should never invert matrix.
+     *  Even if it comes at zero cost (and even if someone
+     *  pay you each time you invert matrix)
+     */
+#ifdef WITH_BLAS
+    corecvs::Matrix copy(*this);
+#ifndef WIN32
+    int pivot[h];
+#else
+    std::unique_ptr<int[]> pivot_(new int[h]);
+    int* pivot = pivot_.get();
+#endif
+    CORE_ASSERT_TRUE_S(h == w);
+    LAPACKE_dgetrf(LAPACK_ROW_MAJOR, copy.h, copy.w, &copy.a(0, 0), copy.stride, pivot);
+    LAPACKE_dgetri(LAPACK_ROW_MAJOR, copy.h, &copy.a(0, 0), copy.stride, pivot);
+    return copy;
+#else
     unsigned i, j, k;
     double multiplier;
 
@@ -834,6 +860,28 @@ Matrix Matrix::inv() const
 
     for (i = 0; i < rank; ++i)
     {
+        int pivotRow = i;
+        double pivotValue = std::abs(copy.a(i, i));
+        for (int j = i + 1; j < rank; ++j)
+        {
+            double abs = std::abs(copy.a(j, i));
+            if (abs > pivotValue)
+            {
+                pivotValue = abs;
+                pivotRow = j;
+            }
+        }
+        if (pivotRow != i)
+        {
+            for (int j = i; j < rank; ++j)
+            {
+                std::swap(copy.a(pivotRow, j), copy.a(i, j));
+            }
+            for (int j = 0; j < rank; ++j)
+            {
+                std::swap(result.a(pivotRow, j), result.a(i, j));
+            }
+        }
         double divider = copy.a(i,i);
         if (fabs(divider) == 0)
         {
@@ -873,9 +921,26 @@ Matrix Matrix::inv() const
     }
 
     return result;
+#endif
 }
 
-
+#ifdef WITH_BLAS
+corecvs::Vector corecvs::Matrix::linSolve(const corecvs::Matrix &A, const corecvs::Vector &B)
+{
+    corecvs::Matrix copy(A);
+#ifndef WIN32
+    int pivot[std::min(A.h, A.w)];
+#else
+    std::unique_ptr<int[]> pivot_(new int[std::min(A.h, A.w)]);
+    int *pivot = pivot_.get();
+#endif
+    corecvs::Vector res(B);
+    CORE_ASSERT_TRUE_S(A.h == B.size());
+    LAPACKE_dgetrf(LAPACK_ROW_MAJOR, copy.h, copy.w, &copy.a(0, 0), copy.stride, pivot);
+    LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', res.size(), 1, &copy.a(0, 0), copy.stride, pivot, &res[0], 1);
+    return res;
+}
+#endif
 
 Matrix Matrix::invSVD() const
 {

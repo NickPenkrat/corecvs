@@ -37,7 +37,6 @@ with_opencv {
 #        calibration_job_estimate_distortion \
 #        calibration_job_apply_undistortion \
 #        calibration_job_calibrate \
-        photostation_placer
 }
 
 grab.file                           = grab/grab.pro
@@ -71,5 +70,3 @@ calibration_job_detect              = calibration_job_detect/calibration_job_det
 calibration_job_estimate_distortion = calibration_job_estimate_distortion/calibration_job_estimate_distortion.pro
 calibration_job_apply_undistortion  = calibration_job_apply_undistortion/calibration_job_apply_undistortion.pro
 calibration_job_calibrate           = calibration_job_calibrate/calibration_job_calibrate.pro
-
-photostation_placer.file            = photostation_placer/photostation_placer.pro

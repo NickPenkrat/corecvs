@@ -70,7 +70,7 @@ struct CornerKernelSet
     DpKernel A, B, C, D;
 
     CornerKernelSet(double r, double alpha, double psi, bool minify = false);
-#ifdef WITH_AVX
+#ifdef USE_UNSAFE_CONVOLUTOR
     void unsafeConvolutor(DpImage &image, DpKernel &kernel, DpImage &dst);
 #endif
 

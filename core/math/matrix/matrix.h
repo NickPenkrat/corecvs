@@ -174,6 +174,10 @@ public:
 
     static bool matrixSolveGaussian(Matrix *A, Matrix *B);
 
+#ifdef WITH_BLAS
+    static corecvs::Vector linSolve(const corecvs::Matrix &A, const corecvs::Vector &B);
+#endif
+
     inline Matrix& operator +=(const Matrix& V)
     {
         this->binaryOperationInPlace<plus<double> >(V);
@@ -217,8 +221,6 @@ public:
     }
 
     operator Matrix33() const;
-
-
 
     /**
      *  All elements are negated
