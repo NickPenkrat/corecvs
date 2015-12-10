@@ -44,6 +44,92 @@
 
 #include "photostationPlacer.h"
 
+corecvs::Vector3dd convertVector(const corecvs::Vector3dd& geodesic)
+{
+    auto vec = geodesic;
+    std::swap(vec[0], vec[1]);
+    return vec;
+}
+
+std::vector<PointObservation__> parsePois(CalibrationJob &calibration, const std::string &filename, int camIdOffset = 3, bool distorted = false, bool less10Cams = true)
+{
+    std::ifstream ifs;
+    ifs.open(filename, std::ios_base::in);
+
+    std::vector<PointObservation__> res;
+
+    int N;
+    ifs >> N;
+    for (int i = 0; i < N; ++i)
+    {
+        std::string label;
+        corecvs::Vector3dd pos;
+        int M;
+        std::string lstr;
+        while (!lstr.size() && (bool)ifs)
+        {
+            std::getline(ifs, lstr);
+            if (lstr.size() && *lstr.rbegin() == '\r')
+                lstr.resize(lstr.size() - 1);
+        }
+        assert(lstr.size());
+        std::stringstream ss(lstr);
+        std::cout << "IN: " << lstr << std::endl;
+
+        ss >> label;
+        if (label.size() < lstr.size())
+        {
+            ss >> pos[0] >> pos[1] >> pos[2];
+        }
+        ifs >> M;
+
+        std::vector<PointProjection> projections;
+        PointObservation__ observation;
+        observation.worldPoint = convertVector(pos);
+        observation.updateable = label.size() == lstr.size();
+        observation.label = label;
+
+        std::cout << "POI: LABEL: " << label << ": ";
+        if (!observation.updateable) std::cout << observation.worldPoint;
+        std::cout << std::endl;
+
+        for (int j = 0; j < M; ++j)
+        {
+            std::string filename;
+            double x, y;
+
+            ifs >> filename >> x >> y;
+            if (x < 0 || y < 0) continue;
+			std::cout << filename << std::endl;
+
+            int psId = filename[camIdOffset - 1] - 'A';
+
+            int camId = less10Cams ?
+                (filename[camIdOffset] - '0')
+                :((filename[camIdOffset] - '0') * 10 + filename[camIdOffset + 1] - '0') - 1;
+            PointProjection proj;
+            proj.projection = corecvs::Vector2dd(x, y);
+            if (distorted)
+            {
+                proj.projection = calibration.corrections[camId].map(proj.projection[1], proj.projection[0]);
+            }
+            proj.cameraId = camId;
+            proj.photostationId = psId;
+//        if (psId < 3)
+            projections.push_back(proj);
+             std::cout << "POI: LABEL: " << label << ": CAM: " << filename << " (" << camId << "|" << psId << ")" << proj.projection << std::endl;
+
+        }
+        observation.projections = projections;
+//      if (projections.size())
+        if (!observation.updateable && projections.size() > 1)
+        res.push_back(observation);
+    }
+
+    return res;
+
+}
+
 #if 1
 int main()
 {
@@ -71,7 +157,7 @@ int main()
     const int CP = 6;
     char psPrefixes[9] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'};
     
-    std::string prefix = "roof_v1/roof_1_SP";
+    std::string prefix = "/home/dka/work_new/roof_v1/roof_1_SP";
     std::string postfix= "_0deg_undist.jpg";
 
     pp.images.resize(PSN);
@@ -95,6 +181,8 @@ int main()
     JSONGetter getter("calibration.json");
     CalibrationJob job;
     getter.visit(job, "job");
+    job.prepareAllRadialCorrections();
+    auto pois = parsePois(job, "pois_m15.txt",10, true, true);
     photostation = job.photostation;
     for (int i = 0; i < photostation.cameras.size(); ++i)
     {
@@ -130,9 +218,9 @@ int main()
         CalibrationHelpers().drawPly(meshres, ps, 50.0);
     }
 
-    pp.selectEpipolarInliers();
-    pp.backprojectAll();
-    meshres.dumpPLY("triples.ply");
+//    pp.selectEpipolarInliers();
+//    pp.backprojectAll();
+//    meshres.dumpPLY("triples.ply");
 #if 0
     Mesh3D meshres2;
     meshres2.switchColor(true);
@@ -206,6 +294,7 @@ int main()
     	for (int k = j + 1; k < i; ++k)
     		pp.buildTracks(j, k, i);
 	}
+	pp.fitLMedians();
 
     Mesh3D meshres4;
     meshres4.switchColor(true);
@@ -244,6 +333,12 @@ int main()
 	for (auto& p : cntp)
 		std::cout << p.first << ": " << p.second << std::endl;
     meshres4.dumpPLY("triples_app.ply");
+
+    auto res = pp.verify(pois);
+    for (int i = 0; i < pois.size(); ++i)
+	{
+		std::cout << pois[i].label << pois[i].worldPoint << " | " << res[0][i].worldPoint << " | " << res[1][i].worldPoint << ":" << (res[0][i].worldPoint - res[1][i].worldPoint) << " / " << ((!(res[0][i].worldPoint - res[1][i].worldPoint) / !(res[0][i].worldPoint - meanpos))) * 100.0 << "%" << std::endl;
+	}
     return 0;
 }
 #else

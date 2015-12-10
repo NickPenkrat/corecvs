@@ -79,6 +79,7 @@ public:
     void fitLMedians();
     void appendPs();
 	void appendTracks(const std::vector<int> &inlierIds, int ps);
+	std::vector<std::vector<PointObservation__>> verify(const std::vector<PointObservation__> &pois);
 
     std::vector<std::tuple<int, corecvs::Vector2dd, int, corecvs::Vector3dd>> getPossibleTracks(int ps);
 

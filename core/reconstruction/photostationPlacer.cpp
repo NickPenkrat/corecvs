@@ -781,6 +781,31 @@ corecvs::PhotostationPlacer::getCameraMatches(int psA, int camA, int psB, int ca
     return res;
 }
 
+std::vector<std::vector<PointObservation__>> corecvs::PhotostationPlacer::verify(const std::vector<PointObservation__> &pois)
+{
+	std::vector<std::vector<PointObservation__>> res(2);
+	for (auto& obs: pois)
+	{
+		auto wp = obs.worldPoint;
+		auto obs1 = obs;
+		auto obs2 = obs;
+		for (auto& p: obs1.projections)
+		{
+			p.projection = calibratedPhotostations[p.photostationId].project(wp, p.cameraId);
+		}
+		corecvs::MulticameraTriangulator mct;
+		for (auto& p: obs2.projections)
+		{
+			mct.addCamera(calibratedPhotostations[p.photostationId].getMMatrix(p.cameraId), p.projection);
+			obs2.worldPoint = mct.triangulateLM(mct.triangulate());
+			p.projection = calibratedPhotostations[p.photostationId].project(obs2.worldPoint, p.cameraId);
+		}
+		res[0].push_back(obs1);
+		res[1].push_back(obs2);
+	}
+	return res;
+}
+
 void corecvs::PhotostationPlacer::detectAll()
 {
     std::vector<std::string> filenames;
