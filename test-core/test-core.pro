@@ -41,8 +41,7 @@ SOURCES += \
    #face_recognition1/main_test_face_recognition1.cpp \   # TODO: absent input data!
     fastkernel/main_test_fastkernel.cpp \
    #fastkernel_double/main_test_fastkernel_double.cpp \   # moved to perf-tests
-   #fastkernel_profile/main_test_fastkernel_profile.cpp \ # moved to perf-tests
-    fftw/main_test_fftw.cpp \
+   #fastkernel_profile/main_test_fastkernel_profile.cpp \ # moved to perf-tests   
     fileformats/main_test_fileformats.cpp \
    #filter_blocks/main_test_filter_blocks.cpp \           # TODO: can't build
     gaussianSolution/main_test_gaussianSolution.cpp \     # TODO: check it...
@@ -80,3 +79,11 @@ SOURCES += \
     polynomial/main_test_polynomial.cpp \
     meshdraw/main_test_meshdraw.cpp \
     reconstruction/main_test_reconstruction.cpp
+
+
+contains(DEFINES, WITH_FFTW) {
+
+SOURCES += \
+     fftw/main_test_fftw.cpp \
+
+}

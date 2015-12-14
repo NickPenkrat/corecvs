@@ -6,6 +6,19 @@
  * \date Mar 24, 2010
  * \author alexander
  */
+
+#ifdef WITH_BLAS
+#ifdef WITH_MKL
+#   include <mkl.h>
+#else
+#   include <complex>
+#   define lapack_complex_float  std::complex<float>
+#   define lapack_complex_double std::complex<double>
+#   include <lapacke.h>
+#   include <cblas.h>
+#endif
+# endif
+
 #include "global.h"
 #include "matrix.h"
 #include "matrix33.h"
@@ -237,14 +250,7 @@ Matrix operator *(DiagonalMatrix &D, const Matrix &M)
 
 #else // !WITH_DIRTY_GEMM_HACKS
 
-# ifdef WITH_BLAS
-#ifdef WITH_MKL
-#   include <mkl.h>
-#else
-#   include <cblas.h>
-#   include <lapacke.h>
-#endif
-# endif
+
 
 
 #   include "tbbWrapper.h"

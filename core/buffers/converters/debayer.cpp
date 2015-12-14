@@ -571,8 +571,8 @@ void Debayer::getYChannel(G12Buffer * output)
 
 void Debayer::fourier(RGB48Buffer *result)
 {
-#ifndef WITH_MKL
-    SYNC_PRINT("FFT-based demosaicing is not supported by this version of debayer, using AHD instead.");
+#ifndef WITH_FFTW
+    SYNC_PRINT(("FFT-based demosaicing is not supported by this version of debayer, using AHD instead."));
 #else
     // this method is for research and test purposes only
     uint h = mBayer->h;
@@ -719,7 +719,8 @@ void Debayer::fourier(RGB48Buffer *result)
 
     deletearr_safe(rgbDiff[0]);
     deletearr_safe(rgbDiff[1]);
-#endif
+
+#endif // WITH_FFTW
 }
 
 void Debayer::scaleCoeffs()

@@ -1,5 +1,5 @@
 #include "fftwWrapper.h"
-#include <fftw/fftw3.h>
+#include <fftw3.h>
 
 using namespace corecvs;
 
