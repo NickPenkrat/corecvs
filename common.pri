@@ -483,12 +483,14 @@ with_mkl {
 }
 
 with_openblas {
+    BLAS_PATH = $$(BLAS_PATH)
+
     contains(DEFINES, WITH_MKL) {
         !build_pass: contains(TARGET, core): message(openBLAS is deactivated as detected MKL was activated)
     }
     else:!win32 {
         !isEmpty(BLAS_PATH) {
-            exists($(BLAS_PATH)/include/cblas.h) {
+            exists("$$BLAS_PATH"/include/cblas.h) {
                 !build_pass: message(Using BLAS from <$$BLAS_PATH>)
                 INCLUDEPATH += $(BLAS_PATH)/include
                 LIBS        += -lopenblas
@@ -509,6 +511,28 @@ with_openblas {
         }
     } else {
         !build_pass: message(requested openBLAS is not supported for Win and is deactivated)
+    }
+}
+
+with_fftw {
+    FFTW_PATH = $$(FFTW_PATH)
+
+    !win32 {
+        isEmpty(FFTW_PATH) {
+            FFTW_PREFIX=/usr
+        } else {
+            FFTW_PREFIX=$(FFTW_PATH)
+        }
+
+        exists("$$FFTW_PREFIX"/include/fftw3.h) {
+            !build_pass: message(Using FFTW from <$$FFTW_PREFIX>)
+            INCLUDEPATH += $(FFTW_PREFIX)/include
+            LIBS        += -lfftw3
+            DEFINES     += WITH_FFTW
+        }
+        else {
+            !build_pass: message(requested FFTW is not found and is deactivated)
+        }
     }
 }
 

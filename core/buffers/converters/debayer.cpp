@@ -539,7 +539,7 @@ void Debayer::borderInterpolate(int radius, RGB48Buffer *result)
 void Debayer::fourier(RGB48Buffer *result)
 {
 #ifndef WITH_MKL
-    SYNC_PRINT("FFT-based demosaicing is not supported by this version of debayer, using AHD instead.");
+    SYNC_PRINT(("FFT-based demosaicing is not supported by this version of debayer, using AHD instead."));
     ahd(result);
 #else
     // this method is for research and test purposes only
