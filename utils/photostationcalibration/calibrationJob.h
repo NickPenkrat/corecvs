@@ -185,6 +185,9 @@ struct CalibrationJob
 
     void    calculateRedundancy(std::vector<int> &cameraImagesCount, std::vector<std::vector<int>> &cameraCameraRelationships, std::vector<int> &redundantSingleCamera, int &redundancyPhotostation);
 
+    void    reorient(const std::vector<int> &topLayerIdx);
+    void    reorient(const corecvs::Vector3dd T, const corecvs::Quaternion Q);
+
     double  factor = 1.0;
     std::vector<double> factors;
 

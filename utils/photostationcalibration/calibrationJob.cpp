@@ -9,6 +9,7 @@
 #include "qtFileLoader.h"
 #include "tbbWrapper.h"
 #include "log.h"
+#include "vector4d.h"
 #ifdef WITH_OPENCV
 #include "openCvCheckerboardDetector.h"
 #endif
@@ -645,4 +646,180 @@ void CalibrationJob::calculateRedundancy(std::vector<int> &cameraImagesCount
     }
 
     redundancyPhotostation = unvisited ? -unvisited : (int)total - ((int)cameraImagesCount.size() - 1);
+}
+
+struct CommonPlaneFunctor : FunctionArgs
+{
+    void operator() (const double* in, double *out)
+    {
+        corecvs::Vector4dd plane(in[0], in[1], in[2], in[3]);
+        plane.normalise();
+        double a = plane[0], b = plane[1], c = plane[2], d = plane[3];
+        int argout = 0;
+        for (auto& id: topLayerIdx)
+        {
+            auto cc = ps->cameras[id].extrinsics.position;
+            out[argout++] = (a * cc[0] + b * cc[1] + c * cc[2] + d) / std::sqrt(a * a + b * b + c * c);
+        }
+    }
+    corecvs::Photostation* ps;
+    std::vector<int> topLayerIdx;
+
+    CommonPlaneFunctor(corecvs::Photostation *ps, std::vector<int> topLayerIdx) : FunctionArgs(4, topLayerIdx.size()), ps(ps), topLayerIdx(topLayerIdx)
+    {
+    }
+};
+
+struct CircleFunctor : FunctionArgs
+{
+    void operator() (const double* in, double *out)
+    {
+        double cx = in[0];
+        double cy = in[1];
+        double r  = in[2];
+        corecvs::Vector2dd c(cx, cy);
+        int argout = 0;
+        for (auto& v: projections)
+            out[argout++] = r - !(c - v);
+    }
+    std::vector<corecvs::Vector2dd> projections;
+
+    CircleFunctor(std::vector<corecvs::Vector2dd> &topLayerProjections) : FunctionArgs(3, topLayerProjections.size()), projections(topLayerProjections)
+    {
+    }
+};
+
+void CalibrationJob::reorient(const corecvs::Vector3dd T, const corecvs::Quaternion Q)
+{
+
+    corecvs::Photostation reoriented = photostation;
+    reoriented.location.rotor = Q;
+    reoriented.location.shift = T;
+
+    for (int i = 0; i < reoriented.cameras.size(); ++i)
+    {
+        reoriented.cameras[i] = reoriented.getRawCamera(i);
+    }
+    reoriented.location.rotor = corecvs::Quaternion(0, 0, 0, 1);
+    reoriented.location.shift = corecvs::Vector3dd(0, 0, 0);
+
+    for (auto& sl: calibrationSetupLocations)
+    {
+        auto qs = sl.orientation;
+        auto cs = sl.position;
+        auto qsn= Q ^ qs;
+        auto csn=cs - (qs.conjugated() ^ Q.conjugated()) * T;
+
+        corecvs::Photostation ps1 = photostation;
+        corecvs::Photostation ps2 = reoriented;
+
+        photostation.setLocation(sl);
+        reoriented.setLocation(CameraLocationData(csn, qsn));
+
+        for (int i = 0; i < photostation.cameras.size(); ++i)
+        {
+            auto c1 = photostation.getRawCamera(i);
+            auto c2 = photostation.getRawCamera(i);
+            CORE_ASSERT_TRUE_S(!(c1.extrinsics.position - c2.extrinsics.position) < 1e-3);
+            double df = (c1.extrinsics.orientation ^ c2.extrinsics.orientation.conjugated())[3];
+            double ang = std::acos(std::min(1.0, df)) * 2.0;
+            ang = std::min(ang, 2.0 * M_PI - ang);
+            CORE_ASSERT_TRUE_S(ang < 1e-2);
+        }
+        sl.orientation = qsn;
+        sl.position    = csn;
+    }
+    photostation = reoriented;
+}
+
+void CalibrationJob::reorient(const std::vector<int> &topLayerIdx)
+{
+    CommonPlaneFunctor cpf(&photostation, topLayerIdx);
+    corecvs::LevenbergMarquardt lm(1000);
+
+    corecvs::Vector3dd n1 = (photostation.cameras[topLayerIdx[1]].extrinsics.position - photostation.cameras[topLayerIdx[0]].extrinsics.position) ^ (photostation.cameras[topLayerIdx[2]].extrinsics.position - photostation.cameras[topLayerIdx[0]].extrinsics.position);
+    double d1 = -(n1 & photostation.cameras[topLayerIdx[0]].extrinsics.position);
+
+
+    std::vector<double> input(4), output(topLayerIdx.size());
+    input[0] = n1[0];
+    input[1] = n1[1];
+    input[2] = n1[2];
+    input[3] = d1;
+    lm.f = &cpf;
+    auto res = lm.fit(input, output);
+    corecvs::Vector4dd plane(res[0], res[1], res[2], res[3]);
+    corecvs::Vector3dd n(res[0], res[1], res[2]);
+    plane /= !n;
+    n.normalise();
+
+    int maxIdx = 0;
+    double maxAxis = std::abs(n[0]);
+    for (int i = 0; i < 3; ++i)
+        if (std::abs(n[i]) > maxAxis)
+        {
+            maxAxis = std::abs(n[i]);
+            maxIdx = i;
+        }
+
+    corecvs::Vector3dd origin(0, 0, 0);
+    origin[maxIdx] = -plane[3] / n[maxIdx];
+
+    CORE_ASSERT_TRUE_S(std::abs((n & origin) + plane[3]) < 1e-6);
+
+    std::vector<corecvs::Vector3dd> orths = {corecvs::Vector3dd(1, 0, 0), corecvs::Vector3dd(0, 1, 0), corecvs::Vector3dd(0, 0, 1)};
+    for (int i = 0; i < 3; ++i)
+        orths[i] = n ^ (orths[i] ^ n);
+    std::sort(orths.begin(), orths.end(), [](const corecvs::Vector3dd &a, const corecvs::Vector3dd &b) { return !a > !b; });
+    corecvs::Vector3dd plane1 = (n ^ orths[0]).normalised();
+    corecvs::Vector3dd plane2 = (n ^ plane1).normalised();
+
+    CORE_ASSERT_TRUE_S(std::abs(plane1 & n) < 1e-6 && std::abs(plane2 & n) < 1e-6 && std::abs(plane1 & plane2) < 1e-6);
+
+    std::vector<corecvs::Vector2dd> projections;
+    for (auto& id: topLayerIdx)
+    {
+        auto pos = photostation.cameras[id].extrinsics.position;
+        std::cout << photostation.cameras[id].nameId << ": " << std::abs((pos - origin) & n) << std::endl;
+        auto posp = pos - ((pos - origin) & n) * n;
+
+        CORE_ASSERT_TRUE_S(std::abs(posp[0] * plane[0] + posp[1] * plane[1] + posp[2] * plane[2] + plane[3]) < 1e-3);
+        double x = (posp - origin) & plane1;
+        double y = (posp - origin) & plane2;
+        projections.emplace_back(x, y);
+    }
+    corecvs::Vector2dd avg(0, 0);
+    for (auto& v: projections)
+        avg += v / (1.0 * projections.size());
+
+    corecvs::LevenbergMarquardt lmc(1000);
+    std::vector<double> inputc(3), outputc(topLayerIdx.size());
+    inputc[0] = avg[0];
+    inputc[1] = avg[1];
+    inputc[2] = !(projections[0] - avg);
+    CircleFunctor cf(projections);
+    lmc.f = &cf;
+    auto resc = lmc.fit(inputc, outputc);
+    std::cout << "R = " << resc[2] << std::endl;
+
+    corecvs::Vector3dd finalOrigin = resc[0] * plane1 + resc[1] * plane2 + origin;
+    corecvs::Vector3dd finalPlane1 = (projections[0][0] * plane1 + projections[0][1] * plane2).normalised();
+    corecvs::Vector3dd testdPlane2 = (projections[1][0] * plane1 + projections[1][1] * plane2).normalised();
+    corecvs::Vector3dd ntest = finalPlane1 ^ testdPlane2;
+    if ((ntest & n) > 0) n *= -1;
+
+    corecvs::Vector3dd finalPlane2 = n ^ finalPlane1;
+
+    corecvs::Matrix33 R(finalPlane1[0], finalPlane1[1], finalPlane1[2],
+                        finalPlane2[0], finalPlane2[1], finalPlane2[2],
+                                  n[0],           n[1],           n[2]);
+    CORE_ASSERT_TRUE_S(std::abs(R.det() - 1.0) < 1e-3);
+
+    for (int i = 0; i < photostation.cameras.size(); ++i)
+        std::cout << photostation.cameras[i].nameId << ": " << !(photostation.cameras[i].extrinsics.position - finalOrigin) << std::endl;
+
+    corecvs::Quaternion Q = corecvs::Quaternion::FromMatrix(R).normalised();
+    corecvs::Vector3dd T = -(Q * finalOrigin);
+
+    reorient(T, Q);
 }
