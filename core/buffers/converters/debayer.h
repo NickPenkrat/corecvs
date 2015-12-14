@@ -59,6 +59,7 @@ public:
     */
     void fromRgb(RGB48Buffer *inRgb);
 
+    void        getYChannel(G12Buffer *output);
 private:
     Vector3dd   mScaleMul   = { 1, 1, 1 };
     uint16_t    mBlack      = 0;
@@ -83,6 +84,7 @@ private:
     void        fourier(RGB48Buffer *result);
 
     void        borderInterpolate(int radius, RGB48Buffer *result);
+
 
     /* utilitary functions */
 

@@ -536,11 +536,43 @@ void Debayer::borderInterpolate(int radius, RGB48Buffer *result)
 
 }
 
+void Debayer::getYChannel(G12Buffer * output)
+{
+    int F[7][7] = {
+        { 0,  0,  1,   2,   1,   0,  0 },
+        { 0, -1, -14, -25, -14, -1,  0 },
+        { 1, -14, 26,  84,  26, -14, 1 },
+        { 2, -25, 84,  224, 84, -25, 2 },
+        { 1, -14, 26,  84,  26, -14, 1 },
+        { 0, -1, -14, -25, -14, -1,  0 },
+        { 0,  0,  1,   2,   1,   0,  0 },
+    };
+    int64_t sum;
+    for (int i = 0; i < mBayer->h; i++)
+    {
+        for (int j = 0; j < mBayer->w; j++)
+        {
+            // TODO: replace this with borderInterpolate()-like loop to avoid evaluating 5 conditions at each pixel
+            int sz = (i < 3 || j < 3 || i >= mBayer->h - 3 || j >= mBayer->w - 3) ? 0 : 3;
+            int divisor = sz ? 464 : 224;
+            sum = 0;
+            for (int k = -sz; k <= sz; k++)
+            {
+                for (int l = -sz; l <= sz; l++)
+                {
+                    sum += mBayer->element(i + k, j + l) * F[k + 3][l + 3];
+                }
+            }
+
+            output->element(i, j) = clip(sum / divisor);
+        }
+    }
+}
+
 void Debayer::fourier(RGB48Buffer *result)
 {
 #ifndef WITH_MKL
     SYNC_PRINT("FFT-based demosaicing is not supported by this version of debayer, using AHD instead.");
-    ahd(result);
 #else
     // this method is for research and test purposes only
     uint h = mBayer->h;
