@@ -86,7 +86,7 @@ public:
      **/
     void normalise(void)
     {
-        double l = a.l2metric();
+        double l = a.l2Metric();
         if (l == 0.0)
             return;
         a /= l;
