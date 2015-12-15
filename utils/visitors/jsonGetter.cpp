@@ -32,6 +32,31 @@ JSONGetter::JSONGetter(const QString &fileName)
     mNodePath.push_back(object);
 }
 
+JSONGetter::JSONGetter(const std::string &fileName)
+{
+    mFileName = fileName.c_str();
+    QFile file(mFileName);
+    QJsonObject object;
+
+    if (file.open(QFile::ReadOnly))
+    {
+        QByteArray array = file.readAll();
+
+        QJsonDocument document = QJsonDocument::fromJson(array);
+        if (document.isNull())
+        {
+            SYNC_PRINT(("Fail parsing the data from <%s>\n", QSTR_DATA_PTR(mFileName)));
+        }
+        object = document.object();
+        file.close();
+    }
+    else {
+        qDebug() << "Can't open file <" << mFileName << ">";
+    }
+
+    mNodePath.push_back(object);
+}
+
 template <>
 void JSONGetter::visit<bool>(bool &boolField, bool defaultValue, const char *fieldName)
 {

@@ -31,10 +31,8 @@ public:
      * @brief JSONGetter
      * @param fileName
      */
-    JSONGetter(std::string const & fileName)
-    {
-        JSONGetter( QString(fileName.c_str()) );
-    }
+    JSONGetter(std::string const & fileName);
+
 
     /**
      *  Create a getter object that will use data from a given XML
