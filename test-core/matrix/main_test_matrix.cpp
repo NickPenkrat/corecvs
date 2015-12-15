@@ -581,7 +581,7 @@ TEST(MatrixTest, test10MatrixMultiply)
      auto touch = [](int i, int j, double &el) -> void { el = ((i+1) * (j + 1)) + ((j + 1) / 5.0); };
      A.touchOperationElementwize(touch);
 
-     cout << A << endl;
+    // cout << A << endl;
 
      double data[] = {
        554.4, 1016.4,  1478.4, 1940.4, 2402.4, 2864.4, 3326.4,  3788.4,  4250.4,  4712.4,
@@ -597,7 +597,23 @@ TEST(MatrixTest, test10MatrixMultiply)
      };
 
      Matrix result(10,10, data);
-     Matrix AAT = A * A.t();
+     Matrix AT = A.t();
+     Matrix AAT = A * AT;
 
      ASSERT_TRUE(AAT. notTooFar(&result, 1e-8, true));
+
+     Matrix AATHpv = Matrix::multiplyHomebrew(A, AT, true, true);
+     cout << "AATHpv" << endl << AATHpv << endl;
+     cout << "result" << endl << result << endl;
+     ASSERT_TRUE(AATHpv. notTooFar(&result, 1e-8, true));
+
+     Matrix AATHp = Matrix::multiplyHomebrew(A, AT, true, false);
+     ASSERT_TRUE(AATHp. notTooFar(&result, 1e-8, true));
+
+     Matrix AATHv = Matrix::multiplyHomebrew(A, AT, false, true);
+     ASSERT_TRUE(AATHv. notTooFar(&result, 1e-8, true));
+
+     Matrix AATH  = Matrix::multiplyHomebrew(A, AT, false, false);
+     ASSERT_TRUE(AATH. notTooFar(&result, 1e-8, true));
+
 }

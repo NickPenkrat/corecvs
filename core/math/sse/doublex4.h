@@ -55,6 +55,11 @@ public:
         return Doublex4(_mm256_broadcast_sd(data_ptr));
     }
 
+    void load(double * const data) const
+    {
+        _mm256_storeu_pd(data, this->data);
+    }
+
     void save(double * const data) const
     {
         _mm256_storeu_pd(data, this->data);
