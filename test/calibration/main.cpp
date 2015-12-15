@@ -10,7 +10,7 @@ using namespace std;
 
 bool CheckGDriveCalibrationFolderTest()
 {
-    const char* dirGDrive = std::getenv("TOPCON_DIR_GDRIVE");
+    const char* dirGDrive = std::getenv("TOPCON_DIR");
     const char* dirRelPath = "/data/tests/calibration/";
     const char* fileName = "esDistOutDist.json";
 

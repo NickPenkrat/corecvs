@@ -13,7 +13,7 @@
 #include <QFile>
 #include <QDir>
 
-const char* dirGDrive = std::getenv("TOPCON_DIR_GDRIVE");
+const char* dirGDrive = std::getenv("TOPCON_DIR");
 #ifdef WIN32
 const char* dirTEMP = std::getenv("TEMP");
 #else
@@ -32,7 +32,7 @@ protected:
 
     virtual void SetUp() {
         if (dirGDrive == NULL) {
-            cout << "The envvar TOPCON_DIR_GDRIVE is missed" << endl;
+            cout << "The envvar TOPCON_DIR is missed" << endl;
             FAIL();
         }
 
