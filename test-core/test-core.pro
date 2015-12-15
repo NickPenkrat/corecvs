@@ -15,6 +15,11 @@ OTHER_FILES += \
    #ocv-homo/main_test_ocv-homo.cpp \                   # TODO: main + opencv deps
    #openCV/main_test_openCV.cpp \                       # TODO: main + opencv deps
 
+contains(DEFINES, WITH_FFTW) {
+SOURCES += \
+     fftw/main_test_fftw.cpp \
+}
+
 SOURCES += \
     main.cpp \
     \
@@ -78,12 +83,5 @@ SOURCES += \
     calstructs/main_test_calstructs.cpp \
     polynomial/main_test_polynomial.cpp \
     meshdraw/main_test_meshdraw.cpp \
-    reconstruction/main_test_reconstruction.cpp
-
-
-contains(DEFINES, WITH_FFTW) {
-
-SOURCES += \
-     fftw/main_test_fftw.cpp \
-
-}
+    reconstruction/main_test_reconstruction.cpp \
+    meta/main_test_meta.cpp \

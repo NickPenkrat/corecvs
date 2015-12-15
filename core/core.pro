@@ -62,6 +62,8 @@ include(cameracalibration/cameracalibration.pri)
 include(graphs/graphs.pri)
 include(reconstruction/reconstruction.pri)
 include(polynomial/polynomial.pri)
+include(meta/meta.pri)
+
 
 include(xml/generated/generated.pri)
 
@@ -78,4 +80,5 @@ OTHER_FILES +=            \
 OTHER_FILES +=            \
     ../tools/generator/regen-core.sh \
     ../tools/generator/h_stub.sh \
+
 

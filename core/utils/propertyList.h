@@ -1,3 +1,6 @@
+#ifndef PROPERTY_LIST_H_
+#define PROPERTY_LIST_H_
+
 /**
  * \file propertyList.h
  * \brief Add Comment Here
@@ -6,9 +9,6 @@
  * \date May 24, 2010
  * \author alexander
  */
-
-#ifndef PROPERTY_LIST_H_
-#define PROPERTY_LIST_H_
 
 #include <vector>
 #include <map>
