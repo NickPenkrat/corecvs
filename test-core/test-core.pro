@@ -79,4 +79,5 @@ SOURCES += \
     calstructs/main_test_calstructs.cpp \
     polynomial/main_test_polynomial.cpp \
     meshdraw/main_test_meshdraw.cpp \
-    reconstruction/main_test_reconstruction.cpp
+    reconstruction/main_test_reconstruction.cpp \
+    function/main_test_function.cpp

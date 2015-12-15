@@ -87,15 +87,17 @@ public:
 
         for (int i = 0; i < inputs; i++)
         {
-            xc[i] = in[i] - delta;
+            double xm = xc[i] = in[i] - delta;
             operator()(&xc[0], &y_minus[0]);
-            xc[i] = in[i] + delta;
+            double xp = xc[i] = in[i] + delta;
             operator()(&xc[0], &y_plus[0]);
             xc[i] = in[i];
 
+            // Note: this stuff is not equal to 2 * delta
+            double dx = xp - xm;
             for (int j = 0; j < outputs; j++)
             {
-                result.element(j,i) = (y_plus[j] - y_minus[j]) / (2.0 * delta);
+                result.element(j,i) = (y_plus[j] - y_minus[j]) / dx;
             }
         }
         return result;
@@ -108,6 +110,58 @@ public:
 
     virtual ~FunctionArgs() {}
 
+};
+
+class SparseFunctionArgs : public FunctionArgs
+{
+public:
+    SparseFunctionArgs(int inputs, int outputs, const std::vector<std::vector<int>> &dependencyList) : FunctionArgs(inputs, outputs), dependencyList(dependencyList), fullIdx(outputs)
+    {
+        for (int i = 0; i < outputs; ++i)
+            fullIdx[i]  = i;
+    }
+    //! \brief This should compute only needed indexes
+    virtual void operator() (const double* in, double* out, const std::vector<int> &idx) = 0;
+    virtual void operator() (const double* in, double* out)
+    {
+        (*this)(in, out, fullIdx);
+    }
+    virtual corecvs::Matrix getJacobian(const double* in, double delta = 1e-7)
+    {
+        Matrix result(outputs, inputs);
+        vector<double> xc(inputs);
+        vector<double> y_minus(outputs);
+        vector<double> y_plus (outputs);
+
+        for (int i = 0; i < inputs; i++)
+        {
+            xc[i] = in[i];
+        }
+
+        for (int i = 0; i < inputs; i++)
+        {
+            double xm = xc[i] = in[i] - delta;
+            operator()(&xc[0], &y_minus[0], dependencyList[i]);
+            double xp = xc[i] = in[i] + delta;
+            operator()(&xc[0], &y_plus[0], dependencyList[i]);
+            xc[i] = in[i];
+
+            // Note: this stuff is not equal to 2 * delta
+            double dx = xp - xm;
+            int N = dependencyList[i].size();
+            for (int j = 0; j < N; j++)
+            {
+                int jj = dependencyList[i][j];
+                result.element(jj,i) = (y_plus[j] - y_minus[j]) / dx;
+            }
+        }
+        return result;
+
+    }
+    virtual ~SparseFunctionArgs() {}
+private:
+    std::vector<std::vector<int>> dependencyList;
+    std::vector<int> fullIdx;
 };
 
 class IdentityFunction : public FunctionArgs
