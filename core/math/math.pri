@@ -5,6 +5,7 @@ HEADERS += \
     math/matrix/matrix33.h \
     math/matrix/matrix44.h \
     math/matrix/diagonalMatrix.h \
+    math/sparseMatrix.h \
     math/matrix/homographyReconstructor.h \
     math/matrix/matrixOperations.h \
     math/vector/vectorOperations.h \
@@ -56,6 +57,7 @@ SOURCES += \
     math/matrix/matrix33.cpp \
     math/matrix/matrix44.cpp \
     math/matrix/diagonalMatrix.cpp \
+    math/sparseMatrix.cpp \
     math/matrix/homographyReconstructor.cpp \
     math/vector/vector2d.cpp \
     math/lutAlgebra.cpp \

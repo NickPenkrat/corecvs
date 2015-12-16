@@ -66,7 +66,7 @@ double SparseMatrix::a(int y, int x) const
 SparseMatrix::operator Matrix() const
 {
     Matrix m(h, w);
-    
+
     for (int i = 0; i < h; ++i)
     {
         for (int j = rowPointers[i]; j < rowPointers[i + 1]; ++j)
@@ -236,7 +236,7 @@ Vector corecvs::operator *(const Vector &lhs, const SparseMatrix &rhs)
     }
     return ans;
 }
-    
+
 SparseMatrix corecvs::operator *(const SparseMatrix &lhs, const SparseMatrix &rhst)
 {
     CORE_ASSERT_TRUE_S(lhs.w == rhst.h);
