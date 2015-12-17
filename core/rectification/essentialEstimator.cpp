@@ -292,7 +292,7 @@ std::vector<EssentialMatrix> EssentialEstimator::getEssential7point(const vector
            f232 = F2(2, 1),
            f233 = F2(2, 2);
     /*
-     * Auto-generated stub. Do not tuch or it will explode.
+     * Auto-generated stub. Do not touch or it will explode.
      * Here we just enforce 2-rank constraint in form of
      * det(alpha * F1 + (1-alpha) * F2) = 0
      */

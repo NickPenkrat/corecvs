@@ -9,8 +9,8 @@ using std::abs;
 
 Debayer::Debayer(G12Buffer *bayer, int depth, MetaData *metadata, int bayerPos)
     : mBayer(bayer)
-    , mDepth(depth)
     , mMetadata(metadata)
+    , mDepth(depth)
 {
     mMaximum = (1 << depth) - 1;
     
@@ -945,7 +945,7 @@ inline int32_t Debayer::weightedBayerAvg(const vector<Vector2d32>& coords, const
 
     bool useCoeffs = coeffs.size() >= coords.size();
 
-    for (int i = 0; i < coords.size(); i++)
+    for (size_t i = 0; i < coords.size(); i++)
     {
         if (coords[i].x() >= 0 && coords[i].y() >= 0 && coords[i].x() < mBayer->w && coords[i].y() < mBayer->h)
         {

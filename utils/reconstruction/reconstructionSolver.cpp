@@ -365,7 +365,7 @@ void ReconstructionJob::fill(std::unordered_map<std::string, corecvs::Affine3DQ>
  //       scene.photostations.rbegin()->location.orientation = scene.photostations.rbegin()->location.orientation;
 
         std::vector<CameraObservation> observations;
-        for (int i = 0; i < scene.photostations[id].cameras.size(); ++i)
+        for (int i = 0; i < (int)scene.photostations[id].cameras.size(); ++i)
         {
             CameraObservation observation;
             std::stringstream ss;

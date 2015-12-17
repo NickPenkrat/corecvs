@@ -35,6 +35,12 @@ public:
     {
         return (a + b) / 2.0;
     }
+
+    friend ostream & operator <<(ostream &out, const Segment &ray)
+    {
+        out << "[" << ray.a << " - " << ray.b << "]";
+        return out;
+    }
 };
 
 
@@ -184,6 +190,11 @@ public:
     Ray2d(const Vector2dd &_a, const Vector2dd & _p) :
         BaseRay<Ray2d, Vector2dd>(_a, _p)
     {}
+
+    Ray2d(const Segment2d &s) :
+        BaseRay<Ray2d, Vector2dd>(s.b - s.a, s.a)
+    {}
+
 };
 
 /**
@@ -483,13 +494,13 @@ public:
     {
        Vector2dd a = ray.a;
        Vector2dd p = ray.p;
-       Vector2dd n = p.leftNormal();
-       return Line2d(n, -(a & n));
+       Vector2dd n = a.leftNormal();
+       return Line2d(n, -(p & n));
     }
 
     static Line2d fromSegment(const Segment2d &segment)
     {
-        return fromRay(Ray2d(segment.a, segment.b - segment.a));
+        return fromRay(Ray2d(segment));
     }
 
     Vector2dd normal(void) const
@@ -534,7 +545,7 @@ public:
      *   Which make obvious the way the intersection is computed.
      *
      **/
-    Vector3dd intersectWith(const Line2d &other) const
+    Vector3dd intersectWithP(const Line2d &other) const
     {
         return (*this) ^ other;
     }
@@ -552,8 +563,12 @@ public:
         if (!intersects)
             return Vector2dd(0);
 
-        double dx = x() * other.z() - other.x() * z();
-        double dy = y() * other.z() - other.y() * z();
+//      double dx = x() * other.z() - other.x() * z();
+//      double dy = y() * other.z() - other.y() * z();
+
+        double dx = y() * other.z() - other.y() * z();
+        double dy = other.x() * z() - x() * other.z();
+
 
         return Vector2dd(dx, dy) / d;
     }

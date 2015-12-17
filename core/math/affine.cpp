@@ -12,7 +12,7 @@
 namespace corecvs {
 
 template<>
-void Affine3DQ::prettyPrint1(std::ostream &out)
+void Affine3DQ::prettyPrint1(std::ostream &out)  const
 {
     Quaternion o = rotor.normalised();
     Vector3dd axis = o.getAxis();

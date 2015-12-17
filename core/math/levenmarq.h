@@ -55,7 +55,9 @@ public:
 
     vector<double> fit(const vector<double> &input, const vector<double> &output);
 
+    /* Additional outputs */
     bool hasParadox;
+    int iterations;
 
 };
 

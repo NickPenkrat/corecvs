@@ -59,6 +59,7 @@ SOURCES += \
     klt_cycle/main_test_klt_cycle.cpp \
     levenberg/main_test_levenberg.cpp \
     logger/main_test_logger.cpp \
+    linear/main_test_linear.cpp \
     matrix/main_test_matrix.cpp \                       # TODO: Windows: assert at matrix\main_test_matrix.cpp:385 - Internal problem with double and stdout
     midmap_pyramid/main_test_midmap_pyramid.cpp \
     moments/main_test_moments.cpp \

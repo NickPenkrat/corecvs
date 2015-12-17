@@ -47,7 +47,7 @@ TEST(meta, testmeta)
     GenericQuaternion<ASTNode> Q(ASTNode("Qx"), ASTNode("Qy"), ASTNode("Qz"), ASTNode("Qt"));
     GenericQuaternion<ASTNode> P(ASTNode("Px"), ASTNode("Py"), ASTNode("Pz"), ASTNode("Pt"));
     GenericQuaternion<ASTNode> R(ASTNode("Rx"), ASTNode("Ry"), ASTNode("Rz"), ASTNode("Rt"));
-    ((Q+P^R) & Q).p->codeGenCpp("quaternion1", {"", ""});
+    ((Q+(P^R)) & Q).p->codeGenCpp("quaternion1", {"", ""});
 
 
     cout << "Test <meta> PASSED" << endl;

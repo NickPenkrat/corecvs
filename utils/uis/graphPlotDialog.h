@@ -1,5 +1,5 @@
-#ifndef GRAPHPLOTDIALOG_H
-#define GRAPHPLOTDIALOG_H
+#ifndef GRAPH_PLOT_DIALOG_H
+#define GRAPH_PLOT_DIALOG_H
 
 #include <deque>
 #include <QWidget>
@@ -9,8 +9,8 @@
 #include "graphData.h"
 #include "ui_graphPlotDialog.h"
 
-using namespace std;
-
+using std::vector;
+using std::deque;
 
 class GraphPlotDialog : public ViAreaWidget, public SaveableWidget
 {
@@ -101,4 +101,4 @@ public:
     }
 };
 
-#endif // GRAPHPLOTDIALOG_H
+#endif // GRAPH_PLOT_DIALOG_H

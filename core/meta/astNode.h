@@ -60,8 +60,8 @@ public:
 
     ASTNodeInt(/*Context *_owner,*/ double _value) :
        /* owner(_owner),*/
-        val  (_value),
         op   (OPREATOR_NUM),
+        val  (_value),
         left (NULL),
         right(NULL)
     {
@@ -69,9 +69,9 @@ public:
 
     ASTNodeInt(/*Context *_owner,*/ const char *_name) :
        /* owner(_owner),*/
+        op   (OPREATOR_ID),
         val  (0),
         name (_name),
-        op   (OPREATOR_ID),
         left (NULL),
         right(NULL)
     {
