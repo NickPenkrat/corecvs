@@ -85,7 +85,7 @@ int main(int argc, char **argv)
     /*
      * Y: Output distances to (0, 0, 0)
      */
-    for (int i = 0; i < 9; ++i)
+    for (int i = 0; i < job.photostation.cameras.size(); ++i)
     {
         auto cam = job.photostation.getRawCamera(map_fwd[i]);
         std::cout << "|_." << cam.nameId << "|" << !cam.extrinsics.position << "|" << std::endl;
@@ -155,13 +155,15 @@ int main(int argc, char **argv)
     /*
      * D: Detect camera angles intersections
      */
+    if (job.photostation.cameras.size() <= 6)
+        return 0;
     std::vector<corecvs::Ray3d> raysLow, raysHigh;
     for (int i = 0; i < 6; ++i)
     {
         auto cam = job.photostation.getRawCamera(map_fwd[i]);
         raysHigh.emplace_back(cam.rayFromPixel(cam.intrinsics.principal));
     }
-    for (int i = 7; i < 9; ++i)
+    for (int i = 7; i < job.photostation.cameras.size(); ++i)
     {
         auto cam = job.photostation.getRawCamera(map_fwd[i]);
         raysLow.emplace_back(cam.rayFromPixel(cam.intrinsics.principal));
