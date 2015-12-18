@@ -240,6 +240,7 @@ Vector corecvs::operator *(const Vector &lhs, const SparseMatrix &rhs)
 SparseMatrix corecvs::operator *(const SparseMatrix &lhs, const SparseMatrix &rhst)
 {
     CORE_ASSERT_TRUE_S(lhs.w == rhst.h);
+#ifndef WITH_MKL
     auto rhs = rhst.t();
     std::vector<double> values;
     std::vector<int> columns, rowPointers(lhs.h + 1);
@@ -278,6 +279,32 @@ SparseMatrix corecvs::operator *(const SparseMatrix &lhs, const SparseMatrix &rh
         rowPointers[i + 1] = values.size();
     }
     return SparseMatrix(lhs.h, rhs.w, values, columns, rowPointers);
+#else
+    auto lhs_mkl = (sparse_matrix_t)lhs;
+    auto rhs_mkl = (sparse_matrix_t)rhst;
+    sparse_matrix_t res;
+    mkl_sparse_spmm(SPARSE_OPERATION_NON_TRANSPOSE, lhs_mkl, rhs_mkl, &res);
+    mkl_sparse_destroy(lhs_mkl);
+    mkl_sparse_destroy(rhs_mkl);
+    SparseMatrix ress(res);
+    mkl_sparse_destroy(res);
+    return ress;
+#endif
+}
+
+SparseMatrix SparseMatrix::ata() const
+{
+#ifndef WITH_MKL
+    return t() * (*this);
+#else
+    auto lhs_mkl = (sparse_matrix_t)(*this);
+    sparse_matrix_t res;
+    mkl_sparse_spmm(SPARSE_OPERATION_TRANSPOSE, lhs_mkl, lhs_mkl, &res);
+    mkl_sparse_destroy(lhs_mkl);
+    SparseMatrix ress(res);
+    mkl_sparse_destroy(res);
+    return ress;
+#endif
 }
 
 SparseMatrix SparseMatrix::t() const
@@ -294,13 +321,126 @@ SparseMatrix SparseMatrix::t() const
 }
 
 #ifdef WITH_MKL
-SparseMatrix::operator sparse_matrix_t()
+SparseMatrix::operator sparse_matrix_t() const
 {
     sparse_matrix_t mkl_sparse;
-    mkl_sparse_d_create_csr(&mkl_sparse, SPARSE_INDEX_BASE_ZERO, h, w, &rowPointers[0], &rowPointers[1], &columns[0], &values[0]);
+    mkl_sparse_d_create_csr(&mkl_sparse, SPARSE_INDEX_BASE_ZERO, h, w, const_cast<int*>(&rowPointers[0]), const_cast<int*>(&rowPointers[1]), const_cast<int*>(&columns[0]), const_cast<double*>(&values[0]));
     return mkl_sparse;
 }
+
+SparseMatrix::SparseMatrix(const sparse_matrix_t &mklSparse)
+{
+    double *vals;
+    int *rowB, *rowE, *cols;
+    int mh, mw;
+    sparse_index_base_t indexType;
+    sparse_matrix_t copy;
+
+    mkl_sparse_convert_csr(mklSparse, SPARSE_OPERATION_NON_TRANSPOSE, &copy);
+    mkl_sparse_d_export_csr(copy, &indexType, &mh, &mw, &rowB, &rowE, &cols, &vals);
+
+    CORE_ASSERT_TRUE_S(indexType == SPARSE_INDEX_BASE_ZERO);
+
+    rowPointers.resize(mh + 1);
+    h = mh;
+    w = mw;
+
+    for (int i = 0; i < mh; ++i)
+    {
+        int prevCol = rowB[i] - 1;
+        for (int j = rowB[i]; j < rowE[i]; ++j)
+        {
+            values.push_back(vals[j]);
+            columns.push_back(cols[j]);
+        }
+        rowPointers[i + 1] = values.size();
+    }
+
+    mkl_sparse_destroy(copy);
+}
 #endif
+
+#include <chrono>
+
+SparseMatrix SparseMatrix::upper() const
+{
+    SparseMatrix copy(*this);
+    int valueIdx = 0;
+    for (int i = 0; i < h; ++i)
+    {
+        bool diagExists = false;
+        for (int j = rowPointers[i]; j < rowPointers[i + 1]; ++j)
+        {
+            if (columns[j] >= i)
+            {
+                if (columns[j] == i)
+                    diagExists = true;
+                if (columns[j] > i && !diagExists)
+                {
+                    copy.values.resize(copy.values.size() + 1);
+                    copy.columns.resize(copy.columns.size() + 1);
+                    copy.values[valueIdx] = 0.0;
+                    copy.columns[valueIdx] = i;
+                    diagExists = true;
+                    valueIdx++;
+                }
+                copy.values[valueIdx] = values[j];
+                copy.columns[valueIdx] = columns[j];
+                valueIdx++;
+            }
+        }
+        copy.rowPointers[i + 1] = valueIdx;
+    }
+    copy.values.resize(valueIdx);
+    copy.columns.resize(valueIdx);
+    return copy;
+}
+
+Vector SparseMatrix::linSolve(const Vector &rhs, bool symmetric, bool posDef) const
+{
+    if (symmetric)
+        return LinSolve(symmetric ? upper() : (*this), rhs, true, posDef);
+    return LinSolve(*this, rhs, false, posDef);
+}
+
+Vector SparseMatrix::LinSolve(const SparseMatrix &m, const Vector &rhs, bool symmetric, bool posDef)
+{
+    CORE_ASSERT_TRUE_S(rhs.size() == m.h);
+#ifndef WITH_MKL
+    return Matrix::LinSolve((Matrix)m, rhs, symmetric);
+#else
+    Vector sol(m.w);
+    _MKL_DSS_HANDLE_t dss_handle;
+    int options = MKL_DSS_DEFAULTS + MKL_DSS_ZERO_BASED_INDEXING;
+    int nnz = m.values.size();
+    int retval = dss_create(dss_handle, options);
+    int order = MKL_DSS_AUTO_ORDER;
+    int *pivot = 0;
+    int nrhs = 1;
+    int solve_options = MKL_DSS_DEFAULTS;
+    int delOptions = 0;
+
+    CORE_ASSERT_TRUE_S(retval == MKL_DSS_SUCCESS);
+    options = symmetric ? MKL_DSS_SYMMETRIC : MKL_DSS_NON_SYMMETRIC;
+    
+    retval = dss_define_structure(dss_handle, options, &m.rowPointers[0], m.h, m.w, &m.columns[0], nnz);
+    CORE_ASSERT_TRUE_S(retval == MKL_DSS_SUCCESS);
+    
+    retval = dss_reorder(dss_handle, order, pivot);
+    CORE_ASSERT_TRUE_S(retval == MKL_DSS_SUCCESS);
+   
+    int decompose_options = symmetric ?  posDef ? MKL_DSS_POSITIVE_DEFINITE : MKL_DSS_INDEFINITE : 0;
+    retval = dss_factor_real(dss_handle, decompose_options, &m.values[0]);
+    CORE_ASSERT_TRUE_S(retval == MKL_DSS_SUCCESS);
+
+
+    retval = dss_solve_real(dss_handle, solve_options, &rhs[0], nrhs, &sol[0]);
+    CORE_ASSERT_TRUE_S(retval == MKL_DSS_SUCCESS);
+
+    dss_delete(dss_handle, delOptions);
+    return sol;
+#endif
+}
 
 std::ostream& corecvs::operator<< (std::ostream &out, const SparseMatrix &sm)
 {

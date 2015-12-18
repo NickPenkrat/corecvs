@@ -625,6 +625,7 @@ TEST(MatrixTest, test10MatrixMultiply)
      ASSERT_TRUE(AAT. notTooFar(&result, 1e-8, true));
 }
 
+
 TEST(SparseMatrix, FromDense)
 {
     corecvs::Matrix m(3, 3);
@@ -696,7 +697,7 @@ TEST(SparseMatrix, ToFromDense)
 corecvs::SparseMatrix randomSparse(int h = 100, int w = 100, double sparsity = 0.1)
 {
     static std::mt19937 rng(1337);
-    std::uniform_real_distribution<double> runif(0, 1), runif_el(-1e2, 1e2);
+    std::uniform_real_distribution<double> runif(0, 1), runif_el(-1e0, 1e0);
     std::map<std::pair<int, int>, double> map;
     for (int i = 0; i < h; ++i)
     {
@@ -846,6 +847,9 @@ TEST(SparseMatrix, MulTimer)
     sparse_matrix_t res;
     mkl_sparse_spmm(SPARSE_OPERATION_NON_TRANSPOSE, mkll, mklr, &res);
     auto endMKL = std::chrono::high_resolution_clock::now();
+    mkl_sparse_destroy(mkll);
+    mkl_sparse_destroy(mklr);
+    mkl_sparse_destroy(res);
 #endif
 
     ASSERT_NEAR(((corecvs::Matrix)s - d).frobeniusNorm(), 0.0, 1e-9);
@@ -861,4 +865,134 @@ TEST(SparseMatrix, MulTimer)
 #endif
         std::endl;
     ASSERT_LE(timeSparse, timeDense);
+}
+
+#ifdef WITH_MKL
+// XXX: testing mkl sparse casting
+TEST(SparseMatrix, MKLCasts)
+{
+    auto sm = randomSparse(1000, 100, 0.01);
+    auto mkl_sm = (sparse_matrix_t)sm;
+    auto sm2= (corecvs::SparseMatrix)mkl_sm;
+
+    ASSERT_NEAR(((corecvs::Matrix)sm - (corecvs::Matrix)sm2).frobeniusNorm(), 0.0, 1e-9);
+    mkl_sparse_destroy(mkl_sm);
+}
+#endif
+
+SparseMatrix generateTri(int n = 1000, double fill = 1.0)
+{
+    Matrix m(n, n);
+    for (int i = 0; i < n; ++i)
+        m.a(i, i) = fill;
+    for (int i = 0; i < n; ++i)
+    {
+        if (i + 3 < n)
+        {
+        m.a(i, i + 3) = fill;
+        m.a(i + 3, i) = fill;
+        }
+    }
+    return SparseMatrix(m);
+}
+
+TEST(SparseMatrix, LinSolve)
+{
+    auto sm = generateTri(10000, 0.1);
+    corecvs::Vector v(10000);
+    for (int i = 0; i < 10000; ++i)
+        v[i] = (i - 5000.0) / 5000.0;
+    auto vm = sm * v;
+
+#if 0
+    auto res = Matrix::linSolve((Matrix)sm, vm);
+#else
+    auto res = sm.linSolve(vm);
+#endif
+    ASSERT_NEAR(!(res - v), 0.0, 1e-6);
+}
+
+TEST(SparseMatrix, ATA)
+{
+    auto sm = randomSparse(1000, 100, 0.01);
+    auto res = sm.ata();
+    auto dres= ((Matrix)sm).t() * ((Matrix)sm);
+    ASSERT_NEAR(((Matrix)res - dres).frobeniusNorm(), 0.0, 1e-9);
+}
+
+TEST(MatrixTest, ATA)
+{
+    auto m = (Matrix)randomSparse(1000, 100, 0.01);
+    auto res = m.ata();
+    auto res2 = m.t() * m;
+    ASSERT_NEAR(((Matrix)res - res2).frobeniusNorm(), 0.0, 1e-9);
+}
+
+Vector randomVector(int N)
+{
+    Vector v(N);
+    std::mt19937 rng;
+    std::uniform_real_distribution<double> runif(-1.0, 1.0);
+    for (int i = 0; i < N; ++i)
+        v[i] = runif(rng);
+    return v;
+}
+
+Matrix randomMatrix(int N, int M)
+{
+    Matrix m(N, M);
+    std::mt19937 rng;
+    std::uniform_real_distribution<double> runif(-1.0, 1.0);
+    for (int i = 0; i < N; ++i)
+        for (int j = 0; j < M; ++j)
+            m.a(i, j) = runif(rng);
+    return m;
+}
+
+TEST(MatrixTest, LinSolve)
+{
+    auto a = randomMatrix(100, 100);
+    auto v = randomVector(100);
+    auto vm = a * v;
+    ASSERT_NEAR(!(v - a.linSolve(vm)), 0.0, 1e-6);
+}
+
+
+TEST(MatrixTest, LinSolveSymmetric)
+{
+    auto a = randomMatrix(10000, 1000).ata();
+    auto v = randomVector(1000);
+    auto vm = a * v;
+    ASSERT_NEAR(!(v - a.linSolve(vm, true, true)), 0.0, 1e-6);
+}
+
+TEST(SparseMatrix, LinSolveSymmetric)
+{
+    Matrix M(4,4);
+    M.a(0, 0) = 1.0; M.a(0, 1) = 0.0; M.a(0, 2) = 0.0; M.a(0, 3) = 0.0;
+    M.a(1, 0) = 0.0; M.a(1, 1) = 1.0; M.a(1, 2) = 0.0; M.a(1, 3) = 0.0;
+    M.a(2, 0) = 0.0; M.a(2, 1) = 0.0; M.a(2, 2) = 1.0; M.a(2, 3) = 0.0;
+    M.a(3, 0) = 0.0; M.a(3, 1) = 0.0; M.a(3, 2) = 0.0; M.a(3, 3) = 1.0;
+    auto v = randomVector(4);
+    auto a = SparseMatrix(M);
+    auto vm = a * v;
+    ASSERT_NEAR(!(v - a.linSolve(vm, true)), 0.0, 1e-6);
+}
+
+TEST(SparseMatrix, LinSolveSymmetricNonPos)
+{
+    Matrix M(4,4);
+    M.a(0, 0) =-1.0; M.a(0, 1) = 0.0; M.a(0, 2) = 0.0; M.a(0, 3) = 0.0;
+    M.a(1, 0) = 0.0; M.a(1, 1) = 1.0; M.a(1, 2) = 2.0; M.a(1, 3) = 0.0;
+    M.a(2, 0) = 0.0; M.a(2, 1) = 2.0; M.a(2, 2) = 1.0; M.a(2, 3) = 0.0;
+    M.a(3, 0) = 0.0; M.a(3, 1) = 0.0; M.a(3, 2) = 0.0; M.a(3, 3) = 1.0;
+    auto a = (SparseMatrix)M;//
+//    auto a = randomSparse(100000, 1000, 0.005).ata();
+    std::cout << "ATA" << std::endl;
+    auto v = randomVector(4);
+    auto vm = a * v;
+    std::cout << a << std::endl;
+    std::cout << vm << std::endl;
+    ASSERT_NEAR(!(v - a.linSolve(vm,  true, false)), 0.0, 1e-6);
+
 }

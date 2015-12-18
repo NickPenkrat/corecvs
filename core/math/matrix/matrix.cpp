@@ -10,6 +10,7 @@
 #include "matrix.h"
 #include "matrix33.h"
 
+#include "cblasLapackeWrapper.h"
 #include "tbbWrapper.h"
 #include "sseWrapper.h"
 
@@ -236,15 +237,6 @@ Matrix operator *(DiagonalMatrix &D, const Matrix &M)
 }
 
 #else // !WITH_DIRTY_GEMM_HACKS
-
-# ifdef WITH_BLAS
-#ifdef WITH_MKL
-#   include <mkl.h>
-#else
-#   include <cblas.h>
-#   include <lapacke.h>
-#endif
-# endif
 
 
 #   include "tbbWrapper.h"
@@ -580,14 +572,14 @@ Matrix operator -(const Matrix &A, const Matrix &B)
 
 ostream & operator <<(ostream &out, const Matrix &matrix)
 {
-    streamsize wasPrecision = out.precision(6);
+    streamsize wasPrecision = out.precision(15);
     out << "[";
     for (int i = 0; i < matrix.h; i++)
     {
         for (int j = 0; j < matrix.w; j++)
         {
-            out.width(9);
-            out << matrix.a(i, j) << " ";
+            out.width(20);
+            out << std::scientific << matrix.a(i, j) << " ";
         }
         if (i + 1 < matrix.h)
             out << ";\n";
@@ -924,23 +916,47 @@ Matrix Matrix::inv() const
 #endif
 }
 
-#ifdef WITH_BLAS
-corecvs::Vector corecvs::Matrix::linSolve(const corecvs::Matrix &A, const corecvs::Vector &B)
+corecvs::Vector corecvs::Matrix::linSolve(const corecvs::Vector &B, bool symmetric, bool posDef) const
 {
-    corecvs::Matrix copy(A);
-#ifndef WIN32
-    int pivot[std::min(A.h, A.w)];
-#else
-    std::unique_ptr<int[]> pivot_(new int[std::min(A.h, A.w)]);
-    int *pivot = pivot_.get();
-#endif
-    corecvs::Vector res(B);
-    CORE_ASSERT_TRUE_S(A.h == B.size());
-    LAPACKE_dgetrf(LAPACK_ROW_MAJOR, copy.h, copy.w, &copy.a(0, 0), copy.stride, pivot);
-    LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', res.size(), 1, &copy.a(0, 0), copy.stride, pivot, &res[0], 1);
-    return res;
+    return LinSolve(*this, B, symmetric, posDef);
 }
+
+corecvs::Vector corecvs::Matrix::LinSolve(const corecvs::Matrix &A, const corecvs::Vector &B, bool symmetric, bool posDef)
+{
+    CORE_ASSERT_TRUE_S(A.h == B.size());
+    CORE_ASSERT_TRUE_S(A.h == A.w);
+#ifdef WITH_BLAS
+    corecvs::Matrix copy(A);
+    corecvs::Vector res(B);
+    if (!posDef)
+    {
+#ifndef WIN32
+        int pivot[std::min(A.h, A.w)];
+#else
+        std::unique_ptr<int[]> pivot_(new int[std::min(A.h, A.w)]);
+        int *pivot = pivot_.get();
 #endif
+        if (!symmetric)
+        {
+            LAPACKE_dgetrf(LAPACK_ROW_MAJOR, copy.h, copy.w, &copy.a(0, 0), copy.stride, pivot);
+            LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', res.size(), 1, &copy.a(0, 0), copy.stride, pivot, &res[0], 1);
+        }
+        else
+        {
+            LAPACKE_dsytrf(LAPACK_ROW_MAJOR, 'U', copy.h, &copy.a(0, 0), copy.stride, pivot);
+            LAPACKE_dsytrs(LAPACK_ROW_MAJOR, 'U', res.size(), 1, &copy.a(0, 0), copy.stride, pivot, &res[0], 1);
+        }
+    }
+    else
+    {
+        LAPACKE_dpotrf(LAPACK_ROW_MAJOR, 'U', copy.w, &copy.a(0, 0), copy.stride);
+        LAPACKE_dpotrs(LAPACK_ROW_MAJOR, 'U', copy.w, 1, &copy.a(0, 0), copy.stride, &res[0], 1);
+    }
+    return res;
+#else
+    return A.inv() * B;
+#endif
+}
 
 Matrix Matrix::invSVD() const
 {
@@ -1491,5 +1507,15 @@ int Matrix::jacobi(Matrix *a, DiagonalMatrix *d, Matrix *v, int *nrotpt)
 }
 #undef ROTATE
 
+Matrix Matrix::ata() const
+{
+#ifndef WITH_BLAS
+    return t() * *this;
+#else
+    Matrix res(w, w);
+    cblas_dgemm(CblasRowMajor, CblasTrans, CblasNoTrans, w, w, h, 1.0, data, stride, data, stride, 0.0, res.data, res.stride);
+    return res;
+#endif
+}
 
 } //namespace corecvs

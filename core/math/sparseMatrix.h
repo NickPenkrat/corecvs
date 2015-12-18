@@ -37,7 +37,9 @@ public:
     //! \brief Cast to dense matrix
     explicit operator Matrix() const;
 #ifdef WITH_MKL
-    explicit operator sparse_matrix_t();
+    //! \brief Note: deletion of MKL's deletions is your problem
+    explicit operator sparse_matrix_t() const;
+    SparseMatrix(const sparse_matrix_t &mklSparse);
 #endif
 
     /**
@@ -62,6 +64,10 @@ public:
 
     //! \brief Transposes matrix
     SparseMatrix t() const;
+    SparseMatrix upper() const;
+    SparseMatrix ata() const;
+    Vector linSolve(const Vector &rhs, bool symmetric = false, bool posDef = false) const;
+    static Vector LinSolve(const SparseMatrix &m, const Vector &rhs, bool symmetric = false, bool posDef = false);
 
     void print(std::ostream& out = std::cout) const;
     friend std::ostream& operator<< (std::ostream &out, const SparseMatrix &sm);
