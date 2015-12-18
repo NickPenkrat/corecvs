@@ -35,7 +35,7 @@ void corecvs::AbsoluteNonCentralRansacSolver::run()
 			currentH = h;
 		}
 
-		if (currentBest < bestInlierCnt)
+		if (currentBest <= bestInlierCnt)
 			continue;
 
 		bestInlierCnt = currentBest;
@@ -57,7 +57,7 @@ void corecvs::AbsoluteNonCentralRansacSolver::runInliersRE()
 	lm.trace = false;//true;
 
 	ps.location = bestHypothesis;
-	std::vector<double> in(7), out(bestInlierCnt * 2);
+	std::vector<double> in(forcePosition ? 4 : 7), out(bestInlierCnt * 2);
 	readParams(&in[0]);
 	writeParams(&in[0]);
 	auto res = lm.fit(in, out);
@@ -86,6 +86,8 @@ std::vector<int> corecvs::AbsoluteNonCentralRansacSolver::selectInliers(const co
 	int M = cloudMatches.size();
 	std::vector<int> inliers;
 	ps.location = hypo;
+	if (forcePosition)
+	    ps.location.shift = forcedPosition;
 	for (int i = 0; i < M; ++i)
 	{
 		auto t = cloudMatches[i];

@@ -14,6 +14,8 @@ struct AbsoluteNonCentralRansacSolverParams
 	double reprojectionInlierThreshold = 2.0;
 	int fitIterations = 100;
 	int maxIterations = 100000; // Big enough for P3P
+	bool forcePosition = false;
+    corecvs::Vector3dd forcedPosition = corecvs::Vector3dd(0, 0, 0);
 };
 class AbsoluteNonCentralRansacSolver : AbsoluteNonCentralRansacSolverParams
 {
@@ -30,18 +32,21 @@ protected:
 	void readParams(const double *in)
 	{
 		int argin = 0;
-		for (int i = 0; i < 3; ++i)
-			ps.location.shift[i] = in[argin++];
+		if (!forcePosition)
+    		for (int i = 0; i < 3; ++i)
+    			ps.location.shift[i] = in[argin++];
 		for (int i = 0; i < 4; ++i)
 			ps.location.rotor[i] = in[argin++];
 		ps.location.rotor.normalise();
 	}
 	void writeParams(double *out)
 	{
-		for (int i = 0; i < 3; ++i)
-			out[i] = ps.location.shift[i];
+	    int argout = 0;
+	    if (!forcePosition)
+    		for (int i = 0; i < 3; ++i)
+    			out[argout++] = ps.location.shift[i];
 		for (int j = 0; j < 4; ++j)
-			out[3 + j] = ps.location.rotor[j];
+			out[argout++] = ps.location.rotor[j];
 	}
 	struct ReprojectionError : FunctionArgs
 	{
@@ -50,7 +55,7 @@ protected:
 			solver->readParams(in);
 			solver->computeReprojectionErrors(out);
 		}
-		ReprojectionError(AbsoluteNonCentralRansacSolver* solver) : FunctionArgs(7, solver->bestInlierCnt * 2), solver(solver)
+		ReprojectionError(AbsoluteNonCentralRansacSolver* solver) : FunctionArgs(solver->forcePosition ? 4 : 7, solver->bestInlierCnt * 2), solver(solver)
 		{
 		}
 		AbsoluteNonCentralRansacSolver *solver;
@@ -63,7 +68,7 @@ protected:
 			solver->readParams(in);
 			solver->writeParams(out);
 		}
-		ReprojectionErrorNormalizer(AbsoluteNonCentralRansacSolver *solver): FunctionArgs(7, 7), solver(solver)
+		ReprojectionErrorNormalizer(AbsoluteNonCentralRansacSolver *solver): FunctionArgs(solver->forcePosition ? 4 : 7, solver->forcePosition ? 4 : 7), solver(solver)
 		{
 		}
 		AbsoluteNonCentralRansacSolver *solver;
