@@ -1,16 +1,6 @@
 #include "relativeNonCentralP6PSolver.h"
 
-#ifdef WITH_BLAS
-# ifdef WITH_MKL
-#  include <mkl.h>
-#  include <mkl_lapacke.h>
-# else
-#  include <cblas.h>
-#  include <lapacke.h>
-# endif
-#else
-# error Cannot build solver without BLAS/LAPACK/MKL
-#endif
+#include "cblasLapackeWrapper.h"
 
 /*
  * Here we take polynomials in T (in GRevLex order, 3 vars x 6th degree = C(3+1-1, 3+1+6-1)=C(3, 9)=84 monomials)

@@ -61,7 +61,8 @@ CORE_INCLUDEPATH = \
     $$COREDIR/cameracalibration \
     $$COREDIR/graphs \
     $$COREDIR/reconstruction \
-    $$COREDIR/polynomial
+    $$COREDIR/polynomial \
+    $$COREDIR/cblasLapackeWrapper
 
 
 INCLUDEPATH += $$CORE_INCLUDEPATH

@@ -1,16 +1,6 @@
-#ifdef WITH_BLAS
-# ifdef WITH_MKL
-#  include <mkl.h>
-#  include <mkl_lapacke.h>
-# else
-#  include <cblas.h>
-#  include <lapacke.h>
-# endif
-#else
-# error Cannot build PnP solver without BLAS/LAPACK/MKL
-#endif
-
 #include "pnpSolver.h"
+
+#include "cblasLapackeWrapper.h"
 #include "matrix33.h"
 
 using namespace corecvs;
@@ -112,6 +102,7 @@ std::vector<Affine3DQ> PNPSolver::solvePNP_(
     for (int i = 0; i < 10; ++i) CC.a(0, i) = C[i];
     // Now we call solver
     std::vector<std::pair<double, corecvs::Vector4dd>> quaternionsA;
+
     if ( N > 4)
         solvePNPImpl (M, CC, gamma, quaternionsA);
     else

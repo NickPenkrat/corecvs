@@ -1,15 +1,6 @@
 #include "pnpSolver.h"
-#ifdef WITH_BLAS
-# ifdef WITH_MKL
-#  include <mkl.h>
-#  include <mkl_lapacke.h>
-# else
-#  include <cblas.h>
-#  include <lapacke.h>
-# endif
-#else
-# error Cannot build PnP solver without BLAS/LAPACK/MKL
-#endif
+
+#include "cblasLapackeWrapper.h"
 
 using namespace corecvs;
 
