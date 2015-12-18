@@ -50,7 +50,7 @@ struct PhotostationPlacerFeatureParams
 struct PhotostationPlacerEssentialFilterParams
 {
     double b2bRansacP5RPThreshold = 0.8;
-    double inlierP5RPThreshold = 3.0;
+    double inlierP5RPThreshold = 5.0;
     int maxEssentialRansacIterations = 1000;
     double b2bRansacP6RPThreshold = 0.8;
 };
@@ -58,11 +58,13 @@ struct PhotostationPlacerEssentialFilterParams
 struct PhotostationPlacerFeatureSelectionParams
 {
     double inlierThreshold = 1.0;
-    double trackInlierThreshold = 2.0;
+    double trackInlierThreshold = 3.0;
     double pairCorrespondenceThreshold = 0.25;
+    double distanceLimit =1000.0;
     int nonLinearAfterAppend = 40;
     int nonLinearAfterAdd    = 40;
     int nonLinearFinal       =100;
+    bool tuneFocal = false;
 };
 
 class PhotostationPlacer : PhotostationPlacerFeatureParams, PhotostationPlacerEssentialFilterParams, PhotostationPlacerFeatureSelectionParams
@@ -76,7 +78,7 @@ public:
     void selectEpipolarInliers();
     void backprojectAll();
     void buildTracks(int psA, int psB, int psC);
-    void fitLMedians();
+    void fitLMedians(bool tuneFocal = false);
     void appendPs();
 	void appendTracks(const std::vector<int> &inlierIds, int ps);
 	std::vector<std::vector<PointObservation__>> verify(const std::vector<PointObservation__> &pois);
@@ -99,16 +101,18 @@ public:
 protected:
 	void readOrientationParams(const double in[]);
 	void writeOrientationParams(double out[]);
-	void computeMedianErrors(double out[]);
+	void computeMedianErrors(double out[], const std::vector<int> &idxs);
+    std::vector<std::vector<int>> getDependencyList();
+    std::vector<std::pair<int, int>> revDependency; // track, projection
 
-	struct OrientationFunctor : corecvs::FunctionArgs
+	struct OrientationFunctor : corecvs::SparseFunctionArgs
 	{
-		void operator() (const double in[], double out[])
+		void operator() (const double in[], double out[], const std::vector<int> &idxs)
 		{
 			placer->readOrientationParams(in);
-			placer->computeMedianErrors(out);
+			placer->computeMedianErrors(out, idxs);
 		}
-		OrientationFunctor(PhotostationPlacer *placer) : FunctionArgs(placer->getOrientationInputNum(), placer->getReprojectionCnt()), placer(placer)
+		OrientationFunctor(PhotostationPlacer *placer) : SparseFunctionArgs(placer->getOrientationInputNum(), placer->getReprojectionCnt(), placer->getDependencyList()), placer(placer)
 		{
 		}
 		PhotostationPlacer* placer;
