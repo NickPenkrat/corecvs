@@ -8,16 +8,9 @@
 #include "levenmarq.h"
 #include "stdlib.h"
 #include "vector.h"
+#include "sparseMatrix.h"
 
-#ifdef WITH_BLAS
-#ifdef WITH_MKL
-#include <mkl.h>
-#else
-#define LAPACK_COMPLEX_CPP
-#include <cblas.h>
-#include <lapacke.h>
-#endif
-#endif
+#include "cblasLapackeWrapper.h"
 
 namespace corecvs {
 
@@ -87,12 +80,31 @@ vector<double> LevenbergMarquardt::fit(const vector<double> &input, const vector
          *       J's QR decomposition (Q term cancels out and is not needed explicitly),
          *       but we are using JTJ in user-enableable ouput, so I do not implement QR-way
          */
+        int cnnz = 0;
+        for (int i = 0; i < J.h; ++i)
+            for (int j = 0; j < J.w; ++j)
+            {
+                if (std::abs(J.a(i, j)) > 0.0)
+                    cnnz++;
+            }
+        double ratio =cnnz /  (J.h * J.w * 1.0);
+        bool sparse = ratio < 0.0001;
+//        std::cout << "J SPARSITY:" << ratio << std::endl;
 #ifndef WITH_BLAS
         Matrix JT = J.t();
         Matrix JTJ = JT * J;
 #else
         Matrix JTJ(J.w, J.w);
-        cblas_dgemm(CblasRowMajor, CblasTrans, CblasNoTrans, J.w, J.w, J.h, 1.0, &J.a(0, 0), J.stride, &J.a(0, 0), J.stride, 0.0, &JTJ.a(0, 0), JTJ.stride);
+        if (!sparse)
+        {
+           cblas_dgemm(CblasRowMajor, CblasTrans, CblasNoTrans, J.w, J.w, J.h, 1.0, &J.a(0, 0), J.stride, &J.a(0, 0), J.stride, 0.0, &JTJ.a(0, 0), JTJ.stride);
+        }
+        else
+        {
+            SparseMatrix smJ(J);
+            SparseMatrix smJT = smJ.t();
+            JTJ = (Matrix)(smJT * smJ);
+        }
 #endif
 
         F(beta, y);
@@ -101,7 +113,14 @@ vector<double> LevenbergMarquardt::fit(const vector<double> &input, const vector
         Vector d = JT * diff;
 #else
         Vector d(J.w);
-        cblas_dgemv(CblasRowMajor, CblasTrans, J.h, J.w, 1.0, &J.a(0, 0), J.stride, &diff[0], 1, 0.0, &d[0], 1);
+        if (!sparse)
+        {
+            cblas_dgemv(CblasRowMajor, CblasTrans, J.h, J.w, 1.0, &J.a(0, 0), J.stride, &diff[0], 1, 0.0, &d[0], 1);
+        }
+        else
+        {
+            d =  diff * SparseMatrix(J);
+        }
 #endif
 
         double normOld = norm;
