@@ -23,6 +23,44 @@ bool CalibrationJob::detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::Sel
     return detectChessBoard(buffer, &features);
 }
 
+void CalibrationJob::fit(int referenceLayerCamerasCount)
+{
+    std::vector<int> perm;
+    for (int i = 0; i < photostation.cameras.size(); ++i)
+        perm.push_back(i);
+    std::sort(perm.begin(), perm.end(), [&](const int &a, const int &b) { return photostation.cameras[a].nameId < photostation.cameras[b].nameId; });
+
+    auto cameras = photostation.cameras;
+    auto setups = calibrationSetups;
+
+    for (auto& s: calibrationSetups)
+        for (auto& v: s)
+            v.cameraId = perm[v.cameraId];
+    for (int i = 0; i < cameras.size(); ++i)
+    {
+        observations[i] = observations[perm[i]];
+        photostation.cameras[i] = cameras[perm[i]];
+    }
+
+    photostation.location.shift = corecvs::Vector3dd(0.0, 0.0, 0.0);
+    photostation.location.rotor = photostation.cameras[0].extrinsics.orientation;
+    corecvs::Vector3dd meanShift(0.0, 0.0, 0.0);
+    for (int i = 0; i < photostation.cameras.size(); ++i)
+    {
+        photostation.cameras[i] = photostation.getRawCamera(i);
+        if (i < referenceLayerCamerasCount)
+            meanShift += photostation.getRawCamera(i).extrinsics.position / (6.0);
+    }
+    photostation.location.rotor = corecvs::Quaternion(0.0, 0.0, 0.0, 1.0);
+    photostation.location.shift = -meanShift;
+    for (int i = 0; i < photostation.cameras.size(); ++i)
+    {
+        photostation.cameras[i] = photostation.getRawCamera(i);
+    }
+    photostation.location.rotor = corecvs::Quaternion(0, 0, 0, 1);
+    photostation.location.shift = corecvs::Vector3dd(0, 0, 0);
+}
+
 bool CalibrationJob::detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::SelectableGeometryFeatures *features, corecvs::ObservationList *list)
 {
     PatternDetector *patternDetector;

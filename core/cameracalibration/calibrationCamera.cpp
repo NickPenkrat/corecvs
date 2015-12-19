@@ -4,6 +4,23 @@ namespace corecvs {
 
 int ScenePart::OBJECT_COUNT = 0;
 
+Matrix33 CameraModel::fundamentalTo(const CameraModel &right) const
+{
+    auto K1 = intrinsics.getKMatrix33();
+    auto K2 = right.intrinsics.getKMatrix33();
+    return K1.inv().transposed() * essentialTo(right) * K2.inv();
+}
+Matrix33 CameraModel::essentialTo  (const CameraModel &right) const
+{
+    return (Matrix33)essentialDecomposition(right);
+}
+
+EssentialDecomposition CameraModel::essentialDecomposition(const CameraModel &right) const
+{
+    auto R =  extrinsics.orientation ^ right.extrinsics.orientation.conjugated();
+    auto T =  extrinsics.orientation * (-extrinsics.position + right.extrinsics.position);
+    return EssentialDecomposition(R.toMatrix(), T);
+}
 
 PinholeCameraIntrinsics::PinholeCameraIntrinsics(Vector2dd resolution, double hfov)
   : principal(resolution / 2.0)

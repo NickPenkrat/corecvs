@@ -469,6 +469,26 @@ TEST(MatrixTest, testMatrixOperations)
     CORE_ASSERT_TRUE(invA.notTooFar(&invAr, 1e-7), "Invalid inversion");
     CORE_ASSERT_TRUE(A.notTooFar(&Aorig, 1e-7), "inversion was not const");
     cout << "Inv" << endl << invA << endl;
+    double Adata2[] = {
+        1.0, 1.0, 1.0,
+        0.0, 0.0, 1.0,
+        0.0, 1.0, 1.0
+    };
+
+    double invAdata2[] = {
+          1.0,   0.0,  -1.0,
+          0.0,  -1.0,   1.0,
+          0.0,   1.0,   0.0
+    };
+
+    Matrix A2(3,3, Adata2);
+    Matrix Aorig2(3,3, Adata2);
+    cout << "Org" << endl << A2 << endl;
+
+    Matrix invA2 = A2.inv();
+    Matrix invAr2(3,3, invAdata2);
+    CORE_ASSERT_TRUE(invA2.notTooFar(&invAr2, 1e-7), "Invalid inversion");
+    CORE_ASSERT_TRUE(A2.notTooFar(&Aorig2, 1e-7), "inversion was not const");
 
     Matrix invSVDA = A.invSVD();
     CORE_ASSERT_TRUE(invSVDA.notTooFar(&invAr, 1e-7), "Invalid inversion");

@@ -120,6 +120,14 @@ public:
         return false;
     }
 
+    std::pair<corecvs::Vector3dd, corecvs::Vector3dd>
+    createNonCentralReference(int cameraId, corecvs::Vector2dd &projection)
+    {
+        auto c = getRawCamera(cameraId);
+        auto d = c.rayFromPixel(projection).a.normalised();
+        return std::make_pair(c.extrinsics.position, d);
+    }
+
 
     template<class VisitorType>
     void accept(VisitorType &visitor)

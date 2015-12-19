@@ -183,6 +183,13 @@ struct CalibrationJob
     void    calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<PinholeCameraIntrinsics> &intrinsics, std::vector<std::vector<CameraLocationData>> &locations, bool runBFS, bool runLM);
     void    calibrate();
 
+    ///
+    /// \brief fit
+    /// Repositioning camera into E-N plane by first 6 cameras
+    /// \param referenceLayerCamerasCount
+    ///
+    void    fit(int referenceLayerCamerasCount);
+
     void    calculateRedundancy(std::vector<int> &cameraImagesCount, std::vector<std::vector<int>> &cameraCameraRelationships, std::vector<int> &redundantSingleCamera, int &redundancyPhotostation);
 
     double  factor = 1.0;
