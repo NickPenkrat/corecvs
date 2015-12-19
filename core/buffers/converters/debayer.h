@@ -30,6 +30,12 @@ public:
         Fourier  = 3
     };
 
+    enum CompareMethod
+    {
+        PSNR = 0,
+        RMSD = 1
+    };
+
     /**
      * Constructor.
      *
