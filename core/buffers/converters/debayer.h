@@ -26,8 +26,8 @@ public:
     {
         Nearest  = 0,
         Bilinear = 1,
-        Fourier  = 2,
-        AHD      = 3
+        AHD      = 2,
+        Fourier  = 3
     };
 
     /**
