@@ -291,7 +291,7 @@ SparseMatrix corecvs::operator *(const SparseMatrix &lhs, const SparseMatrix &rh
         }
         rowPointers[i + 1] = values.size();
     }
-    return SparseMatrix(lhs.h, rhs.w, values, columns, rowPointers);
+    return SparseMatrix(lhs.h, rhst.w, values, columns, rowPointers);
 #else
     auto lhs_mkl = (sparse_matrix_t)lhs;
     auto rhs_mkl = (sparse_matrix_t)rhst;
