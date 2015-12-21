@@ -66,7 +66,7 @@ double SparseMatrix::a(int y, int x) const
 double& SparseMatrix::a(int y, int x)
 {
     int i = 0;
-    for (i = rowPointers[y]; columns[i] < x && i < rowPointers[y + 1]; ++i);
+    for (i = rowPointers[y]; i < rowPointers[y + 1] && columns[i] < x; ++i);
     if (columns[i] == x && i < rowPointers[y + 1])
         return values[i];
     columns.insert(columns.begin() + i, x);
