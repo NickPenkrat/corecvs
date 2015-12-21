@@ -49,6 +49,7 @@ public:
      * in row y before returning 0)
      */
     double a(int y, int x) const;
+    double&a(int y, int x);
 
     friend SparseMatrix operator -(const SparseMatrix &a);
     friend SparseMatrix operator *(const double       &lhs, const SparseMatrix &rhs);

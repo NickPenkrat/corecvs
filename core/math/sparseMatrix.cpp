@@ -63,6 +63,19 @@ double SparseMatrix::a(int y, int x) const
     return 0.0;
 }
 
+double& SparseMatrix::a(int y, int x)
+{
+    int i = 0;
+    for (i = rowPointers[y]; columns[i] < x && i < rowPointers[y + 1]; ++i);
+    if (columns[i] == x && i < rowPointers[y + 1])
+        return values[i];
+    columns.insert(columns.begin() + i, x);
+    values.insert(values.begin() + i, 0.0);
+    for (int j = y + 1; j <= h; ++j)
+        ++rowPointers[j];
+    return values[i];
+}
+
 SparseMatrix::operator Matrix() const
 {
     Matrix m(h, w);

@@ -996,3 +996,12 @@ TEST(SparseMatrix, LinSolveSymmetricNonPos)
     ASSERT_NEAR(!(v - a.linSolve(vm,  true, false)), 0.0, 1e-6);
 
 }
+
+TEST(SparseMatrix, ReferenceA)
+{
+    std::vector<int> zeros(11);
+    SparseMatrix sm(10, 10, {}, {}, zeros);
+    ASSERT_EQ(sm.a(5, 5), 0.0);
+    sm.a(5, 5) = 10.0;
+    ASSERT_EQ(sm.a(5, 5), 10.0);
+}
