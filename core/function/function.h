@@ -16,6 +16,7 @@
 #include "global.h"
 
 #include "matrix.h"
+#include "sparseMatrix.h"
 #include "vector.h"
 
 namespace corecvs {
@@ -102,6 +103,10 @@ public:
         }
         return result;
     }
+    Matrix getNativeJacobian(const double in[], double delta = 1e-7)
+    {
+        return getJacobian(in, delta);
+    }
 
     virtual Matrix getJacobian(const Vector &in, double delta = 1e-7)
     {
@@ -126,12 +131,18 @@ public:
     {
         (*this)(in, out, fullIdx);
     }
-    virtual corecvs::Matrix getJacobian(const double* in, double delta = 1e-7)
+    Matrix getJacobian(const double* in, double delta = 1e-7)
     {
-        Matrix result(outputs, inputs);
+        return (Matrix)getNativeJacobian(in, delta);
+    }
+    SparseMatrix getNativeJacobian(const double* in, double delta = 1e-7)
+    {
         vector<double> xc(inputs);
         vector<double> y_minus(outputs);
         vector<double> y_plus (outputs);
+
+        vector<double> values;
+        vector<int> columns, rowPointers(inputs + 1);
 
         for (int i = 0; i < inputs; i++)
         {
@@ -152,10 +163,12 @@ public:
             for (int j = 0; j < N; j++)
             {
                 int jj = dependencyList[i][j];
-                result.element(jj,i) = (y_plus[j] - y_minus[j]) / dx;
+                columns.push_back(jj);
+                values.push_back((y_plus[j] - y_minus[j]) / dx);
             }
+            rowPointers[i + 1] = values.size();
         }
-        return result;
+        return SparseMatrix(inputs, outputs, values, columns, rowPointers).t();
 
     }
     virtual ~SparseFunctionArgs() {}
