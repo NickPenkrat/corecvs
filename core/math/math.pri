@@ -64,7 +64,6 @@ SOURCES += \
     math/affine.cpp \
     math/projectiveTransform.cpp \
     math/quaternion.cpp \
-    math/levenmarq.cpp \
     math/gradientDescent.cpp \
     math/helperFunctions.cpp \
     math/generic/genericMath.cpp \
