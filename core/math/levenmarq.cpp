@@ -10,8 +10,6 @@
 #include "vector.h"
 #include "sparseMatrix.h"
 
-#include "cblasLapackeWrapper.h"
-
 namespace corecvs {
 
 //#define TRACE_PROGRESS
@@ -69,59 +67,11 @@ vector<double> LevenbergMarquardt::fit(const vector<double> &input, const vector
             cout << "New Jacobian:" << endl << J << endl;
         }
 
-        /*
-         * XXX: Using obscure profiling techniques I found that out L-M implementation is slow
-         *      for big tasks. So I changed this stuff into calls to BLAS.
-         *      For small tasks it may even decrease performance since calls to BLAS come
-         *      with some non-zero cost.
-         *      May be we need to investigate, from which problem size we should switch to BLAS
-         *      implementation.
-         * NOTE: Cool guys do not compute JTJ explicitly, since we can get all useful info from
-         *       J's QR decomposition (Q term cancels out and is not needed explicitly),
-         *       but we are using JTJ in user-enableable ouput, so I do not implement QR-way
-         */
-        int cnnz = 0;
-        for (int i = 0; i < J.h; ++i)
-            for (int j = 0; j < J.w; ++j)
-            {
-                if (std::abs(J.a(i, j)) > 0.0)
-                    cnnz++;
-            }
-        double ratio =cnnz /  (J.h * J.w * 1.0);
-        bool sparse = ratio < 0.0001;
-//        std::cout << "J SPARSITY:" << ratio << std::endl;
-#ifndef WITH_BLAS
-        Matrix JT = J.t();
-        Matrix JTJ = JT * J;
-#else
-        Matrix JTJ(J.w, J.w);
-        if (!sparse)
-        {
-           cblas_dgemm(CblasRowMajor, CblasTrans, CblasNoTrans, J.w, J.w, J.h, 1.0, &J.a(0, 0), J.stride, &J.a(0, 0), J.stride, 0.0, &JTJ.a(0, 0), JTJ.stride);
-        }
-        else
-        {
-            SparseMatrix smJ(J);
-            SparseMatrix smJT = smJ.t();
-            JTJ = (Matrix)(smJT * smJ);
-        }
-#endif
+        Matrix JTJ = J.ata();
 
         F(beta, y);
         diff = target - y;
-#ifndef WITH_BLAS
-        Vector d = JT * diff;
-#else
-        Vector d(J.w);
-        if (!sparse)
-        {
-            cblas_dgemv(CblasRowMajor, CblasTrans, J.h, J.w, 1.0, &J.a(0, 0), J.stride, &diff[0], 1, 0.0, &d[0], 1);
-        }
-        else
-        {
-            d =  diff * SparseMatrix(J);
-        }
-#endif
+        Vector d = diff * J;
 
         double normOld = norm;
         norm = diff.sumAllElementsSq();
@@ -187,10 +137,7 @@ vector<double> LevenbergMarquardt::fit(const vector<double> &input, const vector
 
             // Make a temporary copy
             Matrix A(JTJ);
-#ifndef WITH_BLAS
             Vector B(d);
-#endif
-
 
             for (int j = 0; j < A.h; j++)
             {
@@ -200,20 +147,14 @@ vector<double> LevenbergMarquardt::fit(const vector<double> &input, const vector
             }
 
             /*
-             * XXX: Using obscure profiling techniques I found that out L-M implementation is slow
-             *      for big tasks. So I changed this stuff into calls to LAPACK.
-             *      For small tasks it may even decrease performance since calls to LAPACK come
-             *      with some non-zero cost.
-             *      May be we need to investigate, from which problem size we should switch to LAPACK
-             *      implementation.
+             * NOTE: A'A (generally) is semi-positive-definite, but if you are
+             *       solving well-posed problems then diag(A'A) > 0 and A'A is
+             *       positive defined.
+             *       If you are experiencing strange problems with nans/etc,
+             *       try to make last flag "false" and examine your problem for
+             *       degeneracy
              */
-#ifndef WITH_BLAS
-            delta = A.inv() * B;
-#else
-            Vector pivot(A.h);
-            delta = d;
-            LAPACKE_dsysv( LAPACK_ROW_MAJOR, 'L', A.h, 1, &A.a(0, 0), A.stride, (int*)&pivot[0], &delta[0], 1);
-#endif
+            delta = A.linSolve(B, true, true);
             F(beta + delta, yNew);
             diffNew = target - yNew;
             double normNew = diffNew.sumAllElementsSq();
