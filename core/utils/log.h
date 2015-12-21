@@ -61,15 +61,35 @@ public:
     }
 };
 
-class LogDrainsKeeper : public std::vector<std::unique_ptr<LogDrain, LogDrainDeleter>>
+class LogDrainsKeeper : public std::vector<LogDrain *>
 {
 public:
-    LogDrainsKeeper() {}
-   ~LogDrainsKeeper() {}
+    std::mutex mMutex;
 
-   void add(LogDrain* p, bool needDel = true) {
-       push_back(std::unique_ptr<LogDrain, LogDrainDeleter>(p, LogDrainDeleter(needDel)));
+    LogDrainsKeeper() {}
+   ~LogDrainsKeeper()
+    {
+        for(auto it = begin(); it != end(); ++it)
+        {
+            delete_safe(*it);
+        }
+    }
+
+   void add(LogDrain* p) {
+       mMutex.lock();
+       push_back(p);
+       mMutex.unlock();
    }
+
+   void detach(LogDrain* p) {
+       mMutex.lock();
+       const auto &it = std::find(begin(), end(), p);
+       if (it != end()){
+           erase(it);
+       }
+       mMutex.unlock();
+   }
+
 };
 
 /** \class Log
@@ -101,8 +121,8 @@ public:
      * smart pointers and could be as large as needed. Its lifetime depends on the
      * connected drains.
      **/
-	class MessageInternal
-	{
+    class MessageInternal
+    {
         friend class Log;
     public:
 
@@ -135,17 +155,17 @@ public:
         cchar      *mOriginFunctionName;
         int         mThreadId;
         time_t      mTime;
-	};
+    };
 
-	/**
-	 * Message is a smart pointer to MessageInternal. MessageInternal is usually accessed only through this structure
-	 **/
-	typedef ObjectRef<MessageInternal> Message;
+    /**
+     * Message is a smart pointer to MessageInternal. MessageInternal is usually accessed only through this structure
+     **/
+    typedef ObjectRef<MessageInternal> Message;
 
-	/**
-	 *   If we want to use qDebug style for debugging we need an object that will be destroyed when leaving the scope.
-	 *   This will trigger the flush.
-	 **/
+    /**
+     *   If we want to use qDebug style for debugging we need an object that will be destroyed when leaving the scope.
+     *   This will trigger the flush.
+     **/
     class MessageScoped
     {
     public:
@@ -233,9 +253,9 @@ public:
         return MessageScoped(this, level, fileName, lineNumber, functionName);
     }
 
-	/**
-	 * Log a message
-	 **/
+    /**
+     * Log a message
+     **/
     void                message(Message &message);
 
     static std::string  formatted(const char *format, ... );
