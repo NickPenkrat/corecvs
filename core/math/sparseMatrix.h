@@ -73,8 +73,8 @@ public:
     void print(std::ostream& out = std::cout) const;
     friend std::ostream& operator<< (std::ostream &out, const SparseMatrix &sm);
 
-private:
     int h, w;
+private:
     //! All non-zero entries of matrix
     std::vector<double> values;
     //! Column-indicies (of values)

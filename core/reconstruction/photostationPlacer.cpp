@@ -159,7 +159,7 @@ void corecvs::PhotostationPlacer::fitLMedians(bool tuneFocal )
         }
 
     std::cout << "RMSE: " << std::sqrt(totalsqr / totalcnt) << std::endl;
-    corecvs::LevenbergMarquardt lm;
+    corecvs::LevenbergMarquardtSparse lm;
     OrientationFunctor orient(this);
     OrientationNormalizationFunctor orientNorm(this);
     lm.f = &orient;
