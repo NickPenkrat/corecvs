@@ -37,19 +37,19 @@ public:
 
     virtual int setConfigurationString(string _devname);
 
-    virtual FramePair getFrame();
-    virtual FramePair getFrameRGB24();
+    virtual FramePair getFrame() override;
+    virtual FramePair getFrameRGB24() override;
 
-    virtual CapErrorCode initCapture();
-    virtual CapErrorCode startCapture();
+    virtual CapErrorCode initCapture() override;
+    virtual CapErrorCode startCapture() override;
 
-    virtual CapErrorCode setCaptureProperty(int id, int value);
-    virtual CapErrorCode getCaptureProperty(int id, int *value);
+    virtual CapErrorCode setCaptureProperty(int id, int value) override;
+    virtual CapErrorCode getCaptureProperty(int id, int *value) override;
     /**
      * Check if a specific property can be set/read and what values it can take
      **/
 
-    virtual CapErrorCode queryCameraParameters(CameraParameters &parameter);
+    virtual CapErrorCode queryCameraParameters(CameraParameters &parameter) override;
 
 private:
 
