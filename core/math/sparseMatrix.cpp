@@ -67,7 +67,7 @@ double& SparseMatrix::a(int y, int x)
 {
     int i = 0;
     for (i = rowPointers[y]; i < rowPointers[y + 1] && columns[i] < x; ++i);
-    if (columns[i] == x && i < rowPointers[y + 1])
+    if (i < rowPointers[y + 1] && columns[i] == x)
         return values[i];
     columns.insert(columns.begin() + i, x);
     values.insert(values.begin() + i, 0.0);
@@ -423,6 +423,8 @@ Vector SparseMatrix::LinSolve(const SparseMatrix &m, const Vector &rhs, bool sym
     return Matrix::LinSolve((Matrix)m, rhs, symmetric);
 #else
     Vector sol(m.w);
+    for (int i = 0; i < m.w; ++i)
+        sol[i] = 0.0;
     _MKL_DSS_HANDLE_t dss_handle;
     int options = MKL_DSS_DEFAULTS + MKL_DSS_ZERO_BASED_INDEXING;
     int nnz = m.values.size();
@@ -444,11 +446,19 @@ Vector SparseMatrix::LinSolve(const SparseMatrix &m, const Vector &rhs, bool sym
    
     int decompose_options = symmetric ?  posDef ? MKL_DSS_POSITIVE_DEFINITE : MKL_DSS_INDEFINITE : 0;
     retval = dss_factor_real(dss_handle, decompose_options, &m.values[0]);
-    CORE_ASSERT_TRUE_S(retval == MKL_DSS_SUCCESS);
+    if (retval != MKL_DSS_SUCCESS)
+    {
+       dss_delete(dss_handle, delOptions);
+       return sol;
+    }
 
 
     retval = dss_solve_real(dss_handle, solve_options, &rhs[0], nrhs, &sol[0]);
-    CORE_ASSERT_TRUE_S(retval == MKL_DSS_SUCCESS);
+    if (retval != MKL_DSS_SUCCESS)
+    {
+       dss_delete(dss_handle, delOptions);
+       return sol;
+    }
 
     dss_delete(dss_handle, delOptions);
     return sol;
