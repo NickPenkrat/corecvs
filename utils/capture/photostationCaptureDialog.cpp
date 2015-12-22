@@ -546,7 +546,6 @@ ImageCaptureInterface* PhotostationCaptureDialog::createCameraCapture(const stri
 
     ImageCaptureInterface *camera = new CAPTURE_INTERFACE(devname, h, w, fps, isRgb);
 
-
     ImageCaptureInterface::CapErrorCode result = camera->initCapture();
     ImageCaptureInterface::CameraFormat actualFormat;
     camera->getCurrentFormat(actualFormat);

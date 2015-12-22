@@ -51,8 +51,10 @@ using namespace std;
     virtual FramePair    getFrame();
     virtual FramePair    getFrameRGB24();
 
-    virtual CapErrorCode initCapture(CameraFormat *actualFormat = NULL);
+    virtual CapErrorCode initCapture();
     virtual CapErrorCode startCapture();
+
+    virtual bool         getCurrentFormat(CameraFormat &format);
 
     virtual CapErrorCode queryCameraParameters(CameraParameters &parameters);
     virtual CapErrorCode setCaptureProperty(int id, int value);
