@@ -7,6 +7,8 @@
 #include "levenmarq.h"
 #include "pnpSolver.h"
 
+#define  METERS
+
 #ifdef WITH_OPENCV
 # include "openCvFileReader.h"  // inside it requires BufferReaderProvider
 # include "openCvDescriptorExtractorWrapper.h"
