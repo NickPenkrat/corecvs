@@ -44,8 +44,8 @@ public:
     virtual CapErrorCode queryCameraParameters(CameraParameters &parameter) override;
 
 
-    virtual CapErrorCode initCapture(CameraFormat *actualFormat = NULL) override;
-    virtual CapErrorCode startCapture();
+    virtual CapErrorCode initCapture() override;
+    virtual CapErrorCode startCapture() override;
 
     virtual CapErrorCode getCaptureName(QString &value) override;
     virtual CapErrorCode getFormats(int *num, CameraFormat *& formats) override;

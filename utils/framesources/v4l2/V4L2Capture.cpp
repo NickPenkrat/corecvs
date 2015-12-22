@@ -504,7 +504,7 @@ ImageCaptureInterface::CapErrorCode V4L2CaptureInterface::getCaptureProperty(int
     return SUCCESS;
 }
 
-ImageCaptureInterface::CapErrorCode V4L2CaptureInterface::initCapture(CameraFormat * /*actualFormat*/)
+ImageCaptureInterface::CapErrorCode V4L2CaptureInterface::initCapture()
 {
     formatH = 0;
     formatW = 0;
@@ -692,7 +692,7 @@ void V4L2CaptureInterface::getAllCameras(vector<std::string> &cameras, int maxDe
         if (isActive) {
             cameras.push_back(dev);
         }
-    }   
+    }
 }
 
 
