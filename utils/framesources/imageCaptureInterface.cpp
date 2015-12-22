@@ -214,7 +214,7 @@ ImageCaptureInterface::CapErrorCode ImageCaptureInterface::getFormats(int * /*nu
     return FAILURE;
 }
 
-bool ImageCaptureInterface::getCurrentFormat(ImageCaptureInterface::CameraFormat &format)
+bool ImageCaptureInterface::getCurrentFormat(ImageCaptureInterface::CameraFormat & /*format*/)
 {
     return false;
 }
