@@ -242,7 +242,7 @@ PhotostationCaptureDialog::~PhotostationCaptureDialog()
     /* Capturing */
     settings.setValue("skipFrames", ui->skipFramesSpinBox->value());
     settings.setValue("nameSP"    , ui->stationNameLineEdit->text());
-    settings.setValue("prefix"    , ui->fileNamePrefixLineEdit->text());    
+    settings.setValue("prefix"    , ui->fileNamePrefixLineEdit->text());
     settings.setValue("angleStep" , ui->angleStepSpinBox->value());
     settings.setValue("pathDir"   , ui->outDirLineEdit->text());
 
@@ -546,8 +546,10 @@ ImageCaptureInterface* PhotostationCaptureDialog::createCameraCapture(const stri
 
     ImageCaptureInterface *camera = new CAPTURE_INTERFACE(devname, h, w, fps, isRgb);
 
+
+    ImageCaptureInterface::CapErrorCode result = camera->initCapture();
     ImageCaptureInterface::CameraFormat actualFormat;
-    ImageCaptureInterface::CapErrorCode result = camera->initCapture(&actualFormat);
+    camera->getCurrentFormat(actualFormat);
 
     if (!processError)
         return camera;
@@ -694,7 +696,7 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
         }
 
         QString spName = ui->stationNameLineEdit->text();
-		QString spName2 = spName;
+        QString spName2 = spName;
         for (int i = 0; i < spName.length(); i++)
         {
             if (spName[i] > 'Z') spName[i] = 'Z';

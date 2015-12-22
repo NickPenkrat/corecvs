@@ -1,11 +1,11 @@
 /**
  * \file main_test_meta.cpp
- * \brief This is the main file for the test meta 
+ * \brief This is the main file for the test meta
  *
  * \date дек. 15, 2015
  * \author alexander
  *
- * \ingroup autotest  
+ * \ingroup autotest
  */
 
 #include <iostream>
@@ -23,6 +23,8 @@ using namespace corecvs;
 
 TEST(meta, testmeta)
 {
+    ASTContext::MAIN_CONTEXT = new ASTContext();
+
     cout << "Starting test <meta>" << endl;
 
     ASTNode e = (ASTNode("X") * (ASTNode(5.0)  + ASTNode(4.0)));
@@ -49,6 +51,7 @@ TEST(meta, testmeta)
     GenericQuaternion<ASTNode> R(ASTNode("Rx"), ASTNode("Ry"), ASTNode("Rz"), ASTNode("Rt"));
     ((Q+(P^R)) & Q).p->codeGenCpp("quaternion1", {"", ""});
 
+    delete_safe(ASTContext::MAIN_CONTEXT);
 
     cout << "Test <meta> PASSED" << endl;
 }
