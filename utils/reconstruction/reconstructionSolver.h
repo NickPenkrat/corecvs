@@ -39,7 +39,7 @@
 // TODO: make this stuff reconstruction params
 #define POI_ONLY
 #define NOUPD
-#define METERS
+//#define METERS    // always on!
 //#define Q_ONLY
 
 struct ReconstructionParameters
