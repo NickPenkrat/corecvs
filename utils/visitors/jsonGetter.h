@@ -16,8 +16,6 @@ using corecvs::PointerField;
 using corecvs::EnumField;
 using corecvs::DoubleVectorField;
 
-using namespace corecvs;
-
 class JSONGetter
 {
 public:

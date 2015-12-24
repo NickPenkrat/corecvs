@@ -354,7 +354,7 @@ void ReconstructionJob::ParallelUndistortionMapEstimator::operator() (const core
     }
 }
     
-void ReconstructionJob::fill(std::unordered_map<std::string, corecvs::Affine3DQ> &data, int psLocationCnt)
+void ReconstructionJob::fill(std::unordered_map<std::string, corecvs::Affine3DQ> &data, size_t psLocationCnt)
 {
     std::cout << "psLocationCnt: " << psLocationCnt << std::endl;
 
