@@ -56,7 +56,8 @@ HEADERS += \
     buffers/converters/debayer.h \
     buffers/converters/labConverter.h \
     buffers/converters/errorMetrics.h \
-    buffers/memory/alignedMemoryBlock.h
+    buffers/memory/alignedMemoryBlock.h \
+    buffers/convolver/convolver.h
 
 
 SOURCES += \
@@ -96,5 +97,6 @@ SOURCES += \
     buffers/focusEstimator.cpp \
     buffers/converters/debayer.cpp \
     buffers/converters/errorMetrics.cpp \
+    buffers/convolver/convolver.cpp
 
 

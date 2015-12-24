@@ -21,6 +21,8 @@
 #include "arithmetic.h"
 #include "copyKernel.h"
 
+#include "convolver/convolver.h"
+
 using corecvs::SobelVerticalKernel;
 using corecvs::ScalarAlgebraDouble;
 
@@ -30,8 +32,8 @@ using namespace corecvs;
 const static unsigned POLUTING_INPUTS = 10;
 const static unsigned LIMIT = 50;
 
-const static int  TEST_H_SIZE = 1000;
-const static int  TEST_W_SIZE = 1500;
+const static int  TEST_H_SIZE = 3000;
+const static int  TEST_W_SIZE = 4000;
 
 /*const static int  TEST_H_SIZE = 8;
 const static int  TEST_W_SIZE = 8;*/
@@ -320,10 +322,197 @@ TEST(FastKernelDouble, testLargeKernel)
     }
 
     for (unsigned i = 0; i < POLUTING_INPUTS; i++)
+    {
         delete_safe(input[i]);
+    }
 
     for (unsigned i = 0; i < POLUTING_INPUTS; i++)
     {
         delete_safe(outputKernalized[i]);
     }
+}
+
+struct TestDescr {
+    Convolver::ConvolverImplementation imp;
+    int runs;
+    int ksize;
+    const char *name;
+
+    bool check;
+
+    DpImage *result;
+    uint64_t delay;
+};
+
+template<typename Type = uint16_t>
+class VisiterSemiRandom1
+{
+public:
+    void operator() (int y, int x, Type &element)
+    {
+        element = Type(((unsigned)(y * 0.54536351 + x * 0.8769843)));
+
+      //element = Type(1.0); if (y == 3 && x == 3) { element = Type(0.0); }
+    }
+};
+
+
+TEST(FastKernelDouble, testConvolver)
+{
+    DpImage * input[POLUTING_INPUTS];
+    PreciseTimer start;
+
+    SYNC_PRINT(("We will profile buffers [%dx%d]. We will have %d polluting inputs\n\n", TEST_H_SIZE, TEST_W_SIZE, POLUTING_INPUTS));
+
+    VisiterSemiRandom1<DpImage::InternalElementType> vis;
+    for (unsigned i = 0; i < POLUTING_INPUTS; i++)
+    {
+        input[i] = new DpImage(TEST_H_SIZE, TEST_W_SIZE);
+        input[i]->touchOperationElementwize(vis);
+    }
+
+    DpImage *output[POLUTING_INPUTS];
+
+    /*ok algos to test*/
+
+    const int kernelSize = 11;
+
+    TestDescr tests[] = {
+        {Convolver::ALGORITHM_SSE_DMITRY     , 150, 5, "Dmitry"  , true, NULL},
+
+        {Convolver::ALGORITHM_NAIVE          ,  20, 5, "Naive"   , true, NULL},
+        {Convolver::ALGORITHM_SSE_UNROLL_1   , 150, 5, "unroll 1", true, NULL},
+        {Convolver::ALGORITHM_SSE_UNROLL_2   , 150, 5, "unroll 2", true, NULL},
+        {Convolver::ALGORITHM_SSE_UNROLL_3   , 150, 5, "unroll 3", true, NULL},
+        {Convolver::ALGORITHM_SSE_UNROLL_4   , 150, 5, "unroll 4", true, NULL},
+        {Convolver::ALGORITHM_SSE_UNROLL_5   , 150, 5, "unroll 5", true, NULL},
+        {Convolver::ALGORITHM_SSE_UNROLL_6   , 150, 5, "unroll 6", false, NULL},
+        {Convolver::ALGORITHM_SSE_UNROLL_7   , 150, 5, "unroll 7", false, NULL},
+        {Convolver::ALGORITHM_SSE_UNROLL_8   , 150, 5, "unroll 8", false, NULL},
+        {Convolver::ALGORITHM_SSE_UNROLL_9   , 150, 5, "unroll 9", false, NULL},
+        {Convolver::ALGORITHM_SSE_UNROLL_10  , 150, 5, "unroll10", false, NULL},
+
+        {Convolver::ALGORITHM_SSE_UNROLL_12  , 150, 5, "unroll12", false, NULL},
+        {Convolver::ALGORITHM_SSE_UNROLL_16  , 150, 5, "unroll16", false, NULL},
+
+
+        {Convolver::ALGORITHM_SSE_UNROLL_20   , 150, 5, "unroll20", false, NULL},
+        {Convolver::ALGORITHM_SSE_UNROLL_40   , 150, 5, "unroll40", false, NULL},
+        {Convolver::ALGORITHM_SSE_UNROLL_100  , 150, 5, "unroll100", false, NULL},
+
+        {Convolver::ALGORITHM_SSE_FASTKERNEL     ,  60, 5, "Fastkernel", true, NULL},
+        {Convolver::ALGORITHM_SSE_FASTKERNEL_EXP ,  60, 5, "FastkernelE", true, NULL},
+        {Convolver::ALGORITHM_SSE_FASTKERNEL_EXP5,  60, 5, "FastkernelE5", true, NULL},
+
+        {Convolver::ALGORITHM_SSE_WRAPPERS   ,  60, 5, "Wrappers", true, NULL},
+
+        {Convolver::ALGORITHM_SSE_WRAPPERS_UNROLL_1   , 150, 5, "Wrappers u1", true, NULL},
+        {Convolver::ALGORITHM_SSE_WRAPPERS_UNROLL_5   , 150, 5, "Wrappers u5", true, NULL},
+        {Convolver::ALGORITHM_SSE_WRAPPERS_UNROLL_10  , 150, 5, "Wrappers u10", false, NULL},
+
+        {Convolver::ALGORITHM_SSE_WRAPPERS_EX_UNROLL_1, 150, 5, "Wrap Ex u1", true, NULL},
+        {Convolver::ALGORITHM_SSE_WRAPPERS_EX_UNROLL_2, 150, 5, "Wrap Ex u2", true, NULL},
+
+
+    };
+
+
+
+    /* Results are stored to compare */
+    for (size_t i = 0; i < CORE_COUNT_OF(tests); i++) {
+     //   tests[i].result = new DpImage(TEST_H_SIZE, TEST_W_SIZE);
+        tests[i].runs *= 2;
+    }
+
+    /* Cache polluting outputs */
+    for (unsigned i = 0; i < POLUTING_INPUTS; i++)
+    {
+        output[i] = new DpImage(TEST_H_SIZE, TEST_W_SIZE);
+    }
+
+    /* Main cycle */
+    for (size_t t = 0; t < CORE_COUNT_OF(tests); t++)
+    {
+        TestDescr &test = tests[t];
+        DpKernel *kernel = new DpKernel(kernelSize, kernelSize);
+
+        /* flops */
+        double flop   = 2.0 * (double)TEST_H_SIZE * TEST_W_SIZE * kernelSize * kernelSize;
+        double gflops = flop / 1000000.0 / 1000.0;
+
+        kernel->touchOperationElementwize(vis);
+        for (unsigned i = 0; i < POLUTING_INPUTS; i++)
+        {
+            output[i]->fillWith(0.0);
+        }
+
+        SYNC_PRINT(("Profiling %15s Approach [%dx%d] (%3d runs)", test.name, kernel->w, kernel->h, test.runs));
+        start = PreciseTimer::currentTime();
+
+        for (int j = 0; j < test.runs; j++) {
+            Convolver::convolve(*input[j % POLUTING_INPUTS], *kernel, *output[j % POLUTING_INPUTS], test.imp);
+        }
+
+        uint64_t delay = start.usecsToNow();
+
+        uint64_t odelay = delay / test.runs;
+        test.delay = odelay;
+        uint64_t sodelay = tests[0].delay;
+
+        double runss = 1000000.0 / ((double)delay / test.runs);
+        double gflopss = runss * gflops;
+
+        test.result = new DpImage(output[0]);
+
+        SYNC_PRINT(("%8" PRIu64 "us %8" PRIu64 "ms SP: %8" PRIu64 "us %3.2lf%% | % 7.3lf Gflops/s |\n",
+                    delay, delay / 1000, delay / test.runs, odelay * 100.0 / sodelay, gflopss));
+
+        delete_safe(kernel);
+    }
+
+    /*Check the results */
+    SYNC_PRINT(("Checking equality... \n"));
+
+    int stepoff = 20;
+    for (size_t t = 1; t < CORE_COUNT_OF(tests); t++)
+    {
+        DpImage *b1 = tests[0].result;
+        DpImage *b2 = tests[t].result;
+
+        if (!tests[t].check) {
+            continue;
+        }
+
+        SYNC_PRINT(("-> <%s> and <%s> \n", tests[0].name, tests[t].name));
+
+        for (int i = stepoff; i < TEST_H_SIZE - stepoff; i++)
+        {
+            for (int j = stepoff; j < TEST_W_SIZE - stepoff; j++)
+            {
+                CORE_ASSERT_DOUBLE_EQUAL_EP(b1->element(i, j), b2->element(i, j), 1e-2,
+                    ("Computation results <%s> and <%s> are not equal at (%d, %d) (%lf vs %lf).\n",
+                     tests[0].name, tests[t].name,
+                    i, j, b1->element(i, j), b2->element(i, j)));
+            }
+        }
+    }
+    SYNC_PRINT(("done\n"));
+
+
+
+    /*Cleanup*/
+    for (size_t i = 0; i < CORE_COUNT_OF(tests); i++) {
+        delete_safe(tests[i].result);
+    }
+
+    for (unsigned i = 0; i < POLUTING_INPUTS; i++)
+    {
+        delete_safe(input[i]);
+    }
+
+    for (unsigned i = 0; i < POLUTING_INPUTS; i++)
+    {
+        delete_safe(output[i]);
+    }
+
 }

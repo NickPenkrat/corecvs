@@ -42,11 +42,13 @@ HEADERS += \
     math/sse/uInt8x16.h \
     math/sse/doublex2.h \
     math/sse/doublex4.h \
+    math/sse/doublex8.h \
     \
     math/mathUtils.h \
     math/eulerAngles.h \
     math/puzzleBlock.h \
     math/matrix/similarityReconstructor.h \
+    math/sse/doublexT4.h
 
 SOURCES += \
     math/matrix/matrix.cpp \
@@ -66,6 +68,7 @@ SOURCES += \
     math/generic/genericMath.cpp \
     math/sse/sseWrapper.cpp \
     math/matrix/similarityReconstructor.cpp \
+    math/matrix/matrixspeed.cpp
 
 
 contains(DEFINES, WITH_FFTW) {
