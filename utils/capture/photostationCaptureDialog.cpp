@@ -648,13 +648,13 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
             }
             CORE_ASSERT_TRUE_S(mCaptureInterfaces[i].isFilled());
 
-            QString name = mNamer->nameForImage(
-                ui->stationNameLineEdit->text()
+            std::string name = mNamer->nameForImage(
+                ui->stationNameLineEdit->text().toStdString()
                 , mCaptureInterfaces[i].camId
-                , metaInfo
+                , metaInfo.toStdString()
                 , (AbstractImageNamer::FileType)ui->outputFormatComboBox->currentIndex()
-                , &path
-                , prefix
+                , &path.toStdString()
+                , prefix.toStdString()
                 );
 
             bool saveOk = mCaptureInterfaces[i].result->save(path, NULL

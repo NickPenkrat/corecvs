@@ -382,6 +382,10 @@ inline void deletearr_safe (Type * &ptr)
                                           ((qstring)[(qstring).length() - 1] == '/' || \
                                            (qstring)[(qstring).length() - 1] == '\\'))
 
+#define   STR_HAS_SLASH_AT_END(string)  ((string).length() > 1 && \
+                                        ((string)[(string).length() - 1] == '/' || \
+                                         (string)[(string).length() - 1] == '\\'))
+
 #endif // is__cplusplus
 
 /* EOF */
