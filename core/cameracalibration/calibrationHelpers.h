@@ -26,9 +26,16 @@ public:
     bool    privateColor;
     bool    largePoints;
 
+    /* */
+    bool    drawObservations;
+    bool    drawRays;
+
     CalibrationHelpers()
       : printNames(false)
       , privateColor(false)
+      , largePoints(false)
+      , drawObservations(false)
+      , drawRays(false)
     {}
 
     void drawCamera (Mesh3D &mesh, const CameraModel &cam, double scale);

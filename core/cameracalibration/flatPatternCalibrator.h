@@ -7,16 +7,17 @@
 #include "levenmarq.h"
 
 #include "calibrationPhotostation.h"
+#include "selectableGeometryFeatures.h"
 
 // In order to get 3-dof rotation, we should penalize for quaternion norm
 // The unclear part is it's weight
 //#define PENALIZE_QNORM
 
-/*
+/**
  * This class performs single-camera calibration from multiple views of flat pattern
  * using non-linear optimization with initialization via technique
  * described in Zhengyou Zhang A Flexible New Technique for Camera Calibration
- */
+ **/
 struct FlatPatternCalibrator
 {
 public:
@@ -24,7 +25,7 @@ public:
 
     // Add 2d-3d correspondences and initial guess for camera location
     // TODO: add check for pattern planarity and [maybe] support of other planes than z=0
-	void addPattern(const PatternPoints3d &patternPoints, const CameraLocationData &position = CameraLocationData());
+    void addPattern(const ObservationList &patternPoints, const CameraLocationData &position = CameraLocationData());
 
     // Runs (pre-) solver
 	void solve(bool runPresolver = true,bool runLM = false, int LMiterations = 1000);
@@ -73,7 +74,7 @@ private:
     corecvs::Vector absoluteConic;
 
     std::vector<corecvs::Matrix33> homographies;
-	std::vector<PatternPoints3d> points;
+    std::vector<ObservationList> points;
 	std::vector<CameraLocationData> locationData;
     PinholeCameraIntrinsics intrinsics, lockParams;
 	CameraConstraints constraints;

@@ -68,8 +68,42 @@ public:
         orientation(orientation)
     {}
 
+
     /**
-     * Helper function that creates a CameraLocationData that NOT acts just as a Affine3DQ
+     *  Like Affine3DQ gives us transform to Local Frame to Global Frame,
+     *  CameraLocationData acts vica versa from Global Frame to Local Frame
+     *
+     *  X' = AR * X + AT
+     *  X  = AR^{-1} * (X' - AT)
+     *
+     *
+     **/
+    explicit CameraLocationData( const Affine3DQ &transform ) :
+        position(transform.shift),
+        orientation(transform.rotor.conjugated())
+    {}
+
+    Affine3DQ toAffine3D() const
+    {
+        return Affine3DQ(orientation.conjugated(), position);
+    }
+
+
+    /**
+     *  This returns Affine3D that acts to the world just as the camera pojects the point
+     *  X' = CR * (X - CT)
+     *
+     *  X' = CR * X  + (- CR * CT)
+     *
+     **/
+    Affine3DQ toMockAffine3D() const
+    {
+        return Affine3DQ(orientation, - (orientation * position));
+    }
+
+    /**
+     * This returns CameraLocationData that projects the point just as the affine 3d acts to the world
+     * Helper function that creates a CameraLocationData that acts just as a Affine3DQ
      *
      * Affine
      *    X' = AR * X + AT
@@ -82,17 +116,14 @@ public:
      *    CR = AR
      *    CT = CR^{-1} (- AT)
      *
-     * NOTE: Correct form is different. Since cam works as X=R(X'-T) and A3DQ works as X'=RX+T
      *
      **/
-    explicit CameraLocationData( const Affine3DQ &transform ) :
-        position(transform.shift),
-        orientation(transform.rotor.conjugated())
-    {}
-
-    Affine3DQ toAffine3D() const
+    static CameraLocationData FromMockAffine3D(const Affine3DQ &transform )
     {
-        return Affine3DQ(orientation.conjugated(), position);
+        return CameraLocationData(
+                transform.rotor.conjugated() * (-transform.shift),
+                transform.rotor
+        );
     }
 
     Vector3dd project(const Vector3dd &pt) const

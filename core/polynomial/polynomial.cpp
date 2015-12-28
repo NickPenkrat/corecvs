@@ -14,7 +14,7 @@ double& corecvs::Polynomial::operator[] (const size_t &power)
     return static_cast<std::vector<double>&>(*this)[power];
 }
 
-const double corecvs::Polynomial::operator[] (const size_t &power) const
+double corecvs::Polynomial::operator[] (const size_t &power) const
 {
     return power >= size() ? 0 : static_cast<const std::vector<double>&>(*this)[power];
 }

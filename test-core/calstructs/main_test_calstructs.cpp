@@ -14,7 +14,7 @@
 #include "global.h"
 
 #include "mesh3d.h"
-#include "calibrationScene.h"
+#include "fixtureScene.h"
 #include "calibrationHelpers.h"
 
 using namespace std;

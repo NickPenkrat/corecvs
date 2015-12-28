@@ -1,7 +1,6 @@
 #pragma once
-
 /**
- * \file calibrationPhotostation.h
+ * \file cameraFixture.h
  * \ingroup cppcorefiles
  *
  **/
@@ -9,47 +8,32 @@
 #include <type_traits>
 #include <cstring>
 
+#include "pointObservation.h"
+#include "selectableGeometryFeatures.h"
+
 #include "typesafeBitmaskEnums.h"
-#include "calibrationCamera.h"
 #include "calibrationLocation.h"  // LocationData
+#include "fixtureCamera.h"
+#include "fixtureScene.h"
 
 namespace corecvs {
-
-enum class CameraConstraints
-{
-    NONE           =  0x00,
-    ZERO_SKEW      =  0x01, // This forces skew to zero, but not locks it to zero during non-linear optimization
-    LOCK_SKEW      =  0x02, // This one locks skew, but not forces it to zero
-    EQUAL_FOCAL    =  0x04, // Makes fx = fy in non-linear phase
-    LOCK_FOCAL     =  0x08, // Locks fx and fy
-    LOCK_PRINCIPAL =  0x10, // Locks cx and cy
-    UNLOCK_YSCALE  =  0x20  // Unlock Y scale of pattern. This is dangerous if you are not sure what are you doing
-};
-
-} // namespace corecvs
-
-template<>
-struct is_bitmask<CameraConstraints> : std::true_type {};
-
-namespace corecvs {
-
 
 /**
  *   See CalibrationScene for more data on ownership of the objectes in structure
  **/
-class Photostation : public ScenePart
+class CameraFixture : public FixtureScenePart
 {
 public:
-    std::vector<CameraModel> cameras;
-    Affine3DQ                location;
-    std::string              name;
+    std::vector<FixtureCamera *> cameras;
+    Affine3DQ                    location;
+    std::string                  name;
 
-    Photostation(CalibrationScene * owner = NULL) :
-        ScenePart(owner)
+    CameraFixture(FixtureScene * owner = NULL) :
+        FixtureScenePart(owner)
     {}
 
-    Photostation(
-        const std::vector<CameraModel> & _cameras,
+    CameraFixture(
+        const std::vector<FixtureCamera *> & _cameras,
         const Affine3DQ &_location = Affine3DQ())
       : cameras(_cameras)
       , location(_location)
@@ -57,11 +41,11 @@ public:
 
     /** This is a legacy compatibilty block **/
 
-    Photostation(
-        const std::vector<CameraModel> & _cameras,
+    CameraFixture(
+        const std::vector<FixtureCamera *> & _cameras,
         const CameraLocationData &_location)
       : cameras(_cameras)
-      , location(_location.toAffine3D())
+      , location(_location.toMockAffine3D())
     {}
 
     CameraLocationData getLocation() const
@@ -71,7 +55,7 @@ public:
 
     void setLocation(const CameraLocationData &_location)
     {
-        location = _location.toAffine3D();
+        location = _location.toMockAffine3D();
     }
 
     /* New style setter */
@@ -80,19 +64,16 @@ public:
         location = _location;
     }
 
-    CameraModel getWorldCamera(const CameraModel &camPtr) const
+    CameraModel getWorldCamera(CameraModel *camPtr) const
     {
-        CameraModel toReturn = camPtr;
+        CameraModel toReturn = *camPtr;
         toReturn.extrinsics.transform(location);
         return toReturn;
     }
 
-
     CameraModel getWorldCamera(int cam) const
     {
-        CameraModel toReturn = cameras[cam];
-        toReturn.extrinsics.transform(location);
-        return toReturn;
+        return getWorldCamera(cameras[cam]);
     }
 
     CameraModel getRawCamera(int cam) const
@@ -103,6 +84,19 @@ public:
         return c;*/
         return getWorldCamera(cam);
     }
+
+    void setCameraCount(int count) {
+        while  (cameras.size() > (size_t)count) {
+            FixtureCamera *model = cameras.back();
+            cameras.pop_back(); /* delete camera will generally do it, but only in owner scene.*/
+            model->ownerScene->deleteCamera(model);
+        }
+
+        while  (cameras.size() < (size_t)count) {
+            FixtureCamera *model  = ownerScene->createCamera();
+            ownerScene->addCameraToStation(model, this);
+        }
+    }
     
     Matrix44 getMMatrix(int cam) const
     {
@@ -111,19 +105,20 @@ public:
 
     Vector2dd project(const Vector3dd &pt, int cam) const
     {
-        return cameras[cam].project(location.inverted().apply(pt));
+        return cameras[cam]->project(location.inverted().apply(pt));
     }
 
     bool isVisible(const Vector3dd &pt, int cam) const
     {
-        return cameras[cam].isVisible(location.inverted().apply(pt));
+        return cameras[cam]->isVisible(location.inverted().apply(pt));
     }
 
     bool isVisible(const Vector3dd &pt) const
     {
-        for (int i = 0; i < (int)cameras.size(); ++i)
+        for (int i = 0; i < (int)cameras.size(); ++i) {
             if (isVisible(pt, i))
                 return true;
+        }
         return false;
     }
 
@@ -131,13 +126,16 @@ public:
     template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        /*
-          visitor.visit(cameras, "cameras");
-          visitor.visit(location, CameraLocationData(), "location");
-        */
-
         /* So far compatibilty is on */
-        visitor.visit(cameras, "cameras");
+        int camsize = cameras.size();
+        visitor.visit(camsize, 0, "cameras.size");
+
+        setCameraCount(camsize);
+
+        for (size_t i = 0; i < (size_t)camsize; i++)
+        {
+            visitor.visit(*cameras[i], "cameras");
+        }
 
         CameraLocationData loc = getLocation();
         visitor.visit(loc, CameraLocationData(), "location");
@@ -145,7 +143,8 @@ public:
     }
 };
 
-typedef std::vector<std::pair<Vector2dd, Vector3dd>> PatternPoints3d;
-typedef std::vector<PatternPoints3d>                 MultiCameraPatternPoints;
+//typedef std::vector<PointObservation> PatternPoints3d;
+typedef std::vector<ObservationList>  MultiCameraPatternPoints;
 
 } // namespace corecvs
+

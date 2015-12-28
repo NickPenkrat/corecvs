@@ -1,14 +1,23 @@
-#include "calibrationCamera.h"
+#include "fixtureCamera.h"
 
 namespace corecvs {
 
-int ScenePart::OBJECT_COUNT = 0;
+int FixtureScenePart::OBJECT_COUNT = 0;
 
+
+PinholeCameraIntrinsics::PinholeCameraIntrinsics(double fx, double fy, double cx, double cy, double skew, Vector2dd size, Vector2dd distortedSize)
+    : focal         (fx, fy)
+    , principal     (cx, cy)
+    , skew          (skew)
+    , size          (size)
+    , distortedSize (distortedSize)
+{}
 
 PinholeCameraIntrinsics::PinholeCameraIntrinsics(Vector2dd resolution, double hfov)
-  : principal(resolution / 2.0)
-  , skew(0.0)
-  , size(resolution)
+    : principal(resolution / 2.0)
+    , skew(0.0)
+    , size(resolution)
+    , distortedSize (size)
 {
     double ratio = tan(hfov / 2.0);
     double f = (size.x() / 2.0) / ratio;

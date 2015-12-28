@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CALIBRATION_CAMERA_H
+#define CALIBRATION_CAMERA_H
 
 #include <unordered_map>
 
@@ -6,6 +7,7 @@
 #include "lensDistortionModelParameters.h"
 #include "line.h"
 #include "convexPolyhedron.h"
+#include "pointObservation.h"
 
 /* Future derived */
 //#include "rgb24Buffer.h"
@@ -154,7 +156,7 @@ struct PinholeCameraIntrinsics
 
 class Photostation;
 
-class CameraModel : public ScenePart
+class CameraModel /*: public ScenePart*/
 {
 public:
     /**/
@@ -168,15 +170,15 @@ public:
     //Matrix33 rotMatrix;
 
 public:
-    Photostation   *station;
+  /*  Photostation   *station;*/
 
     /* This should be moved to the derived class */
     /*RGB24Buffer    *image;*/
     std::string     nameId;
 
 public:
-    CameraModel(CalibrationScene * owner = NULL) :
-        ScenePart(owner)
+    CameraModel(/*CalibrationScene * owner = NULL*/) /*:
+        ScenePart(owner)*/
     {}
 
     CameraModel(
@@ -192,6 +194,11 @@ public:
     Vector2dd project(const Vector3dd &p) const
     {
         return intrinsics.project(extrinsics.project(p));
+    }
+
+    Vector2dd reprojectionError(PointObservation &observation)
+    {
+        return observation.projection - project(observation.point);
     }
 
     /**
@@ -243,6 +250,12 @@ public:
     ConvexPolyhedron    getViewport(const Vector2dd &p1, const Vector2dd &p2);
 
 
+    void copyModelFrom(const CameraModel &other) {
+        intrinsics = other.intrinsics;
+        distortion = other.distortion;
+        extrinsics = other.extrinsics;
+    }
+
     template<class VisitorType>
     void accept(VisitorType &visitor)
     {
@@ -251,7 +264,11 @@ public:
         visitor.visit(distortion, LensDistortionModelParameters(), "distortion");
         visitor.visit(nameId,     std::string("")                , "nameId"    );
     }
+
+    void prettyPrint(std::ostream &out = cout);
 };
 
 
 } // namespace corecvs
+
+#endif // CALIBRATION_CAMERA_H

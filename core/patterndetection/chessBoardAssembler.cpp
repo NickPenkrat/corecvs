@@ -490,7 +490,7 @@ bool ChessBoardAssembler::BoardExpander::assignNearest(std::vector<corecvs::Vect
         usedCorners[i] = 1;
         assigned[j] = 1;
         total_assigned++;
-        if (M == total_assigned)
+        if (M == (int)total_assigned)
             break;
 
     }

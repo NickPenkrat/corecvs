@@ -2,7 +2,7 @@
 #include "mesh3d.h"
 #include "calibrationCamera.h"
 #include "calibrationPhotostation.h"
-#include "calibrationScene.h"
+#include "fixtureScene.h"
 #include "selectableGeometryFeatures.h"
 #include "abstractPainter.h"
 
@@ -33,50 +33,60 @@ void CalibrationHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, double
 
     Vector3dd edges[] =
     {
-        center, center2,
-        center, topLeft,
-        center, topRight,
-        center, bottomRight,
-        center, bottomLeft,
-        topLeft, topRight,
-        topRight, bottomRight,
+        center,      center2,
+        center,      topLeft,
+        center,      topRight,
+        center,      bottomRight,
+        center,      bottomLeft,
+        topLeft,     topRight,
+        topRight,    bottomRight,
         bottomRight, bottomLeft,
-        bottomLeft, topLeft,
+        bottomLeft,  topLeft,
     };
 
     const int edgenumber = CORE_COUNT_OF(edges) / 2;
-
-    Vector3dd cc    = cam.extrinsics.position;
-    Quaternion qc   = cam.extrinsics.orientation.conjugated();
     Matrix33 invK   = cam.intrinsics.getInvKMatrix33();
-
 
     for (int i = 0; i < edgenumber; ++i)
     {
-        Vector3dd v1 = qc * (invK * edges[i * 2    ]) + cc;
-        Vector3dd v2 = qc * (invK * edges[i * 2 + 1]) + cc;
+        Vector3dd v1 = cam.extrinsics.camToWorld(invK * edges[i * 2    ]);
+        Vector3dd v2 = cam.extrinsics.camToWorld(invK * edges[i * 2 + 1]);
 
         mesh.addLine(v1, v2);
+     //   cout << v1 << " " << v2 << endl;
     }
 
-    Vector3dd ppv = qc * (invK.mulBy2dRight(cam.intrinsics.principal) * scale) + cc;
-
-    mesh.addLine(ppv, qc * (invK * center) + cc);
+    if (printNames)
+    {
     AbstractPainter<Mesh3D> p(&mesh);
-    mesh.mulTransform(Matrix44::Shift(cc));
+        mesh.mulTransform(Matrix44::Shift(cam.extrinsics.position));
+        mesh.setColor(RGBColor::Blue());
     p.drawFormatVector(0.0, 0.0, 0, scale / 50.0, "Cam: %s", cam.nameId.c_str());
     mesh.popTransform();
+}
+
+    //Vector3dd ppv = qc * (invK.mulBy2dRight(cam.intrinsics.principal) * scale) + cc;
+
+    //mesh.addLine(ppv, qc * (invK * center) + cc);
 }
 
 
 void CalibrationHelpers::drawPly(Mesh3D &mesh, const Photostation &ps, double scale)
 {
+    // Colorblind-safe palette
+    CameraLocationData loc = ps.getLocation();
+    Quaternion qs = loc.orientation.conjugated();
+    std::cout << qs << std::endl;
+
     int colorId = 0;
-    for (uint cam = 0; cam < ps.cameras.size(); ++cam)
+    for (size_t cam = 0; cam < ps.cameras.size(); cam++)
     {
-        mesh.currentColor = palette[colorId = (colorId + 1) % CORE_COUNT_OF(palette)];
+ 		mesh.setColor(palette[colorId]);
+        colorId = (colorId + 1) % CORE_COUNT_OF(palette);
         drawCamera(mesh, ps.getRawCamera(cam), scale);
     }
+
+
     corecvs::Vector3dd xps(scale,   0.0,   0.0),
                        yps(  0.0, scale,   0.0),
                        zps(  0.0,   0.0, scale),
@@ -91,9 +101,9 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const Photostation &ps, double sc
     if (printNames)
     {
         AbstractPainter<Mesh3D> p(&mesh);
-        mesh.mulTransform(Matrix44::Shift(ps.location.shift));
+        mesh.mulTransform(Matrix44::Shift(ps.location.shift) * Matrix44::Scale(scale / 22.0));
         mesh.setColor(RGBColor::Blue());
-        p.drawFormatVector(scale / 5.0, scale / 5.0, 0, scale / 3.0, "TEST STRING", ps.name.c_str());
+        p.drawFormatVector(1.0, 1.0, 0, 1.0, "%s", ps.name.c_str());
         mesh.popTransform();
     }
 }
@@ -115,6 +125,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const Photostation &ps, const Obs
 
 void CalibrationHelpers::drawPly(Mesh3D &mesh, const CalibrationFeaturePoint &fp, double scale)
 {
+
     if (!largePoints) {
         mesh.addPoint(fp.position);
     } else {
@@ -123,10 +134,38 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const CalibrationFeaturePoint &fp
 
     if (printNames) {
         AbstractPainter<Mesh3D> p(&mesh);
-        mesh.mulTransform(Matrix44::Shift(fp.position));
+        mesh.mulTransform(Matrix44::Shift(fp.position) * Matrix44::Scale(scale / 22.0));
         mesh.setColor(RGBColor::Blue());
-        p.drawFormatVector(scale / 5.0, scale / 5.0, 0, scale / 3.0, "%s", fp.name.c_str());
+        p.drawFormatVector(1.0, 1.0, 0, 1.0, "%s", fp.name.c_str());
         mesh.popTransform();
+    }
+
+    if (drawObservations) {
+        for (auto it = fp.observations.begin(); it != fp.observations.end(); ++it)
+        {
+            CameraModel *cam = it->first;
+            const CalibrationObservation &observ = it->second;
+            Photostation *station = cam->station;
+            CameraModel rawCam = station->getWorldCamera(*cam);
+
+            if (fp.hasKnownPosition) {
+                mesh.addLine(rawCam.extrinsics.position, fp.position);
+            } else {
+
+            }
+
+            Ray3d ray = rawCam.rayFromPixel(observ.observation);
+            Vector3dd p2 = ray.getPoint(scale);
+            mesh.addLine(ray.p, p2);
+
+            if (!largePoints) {
+                mesh.addPoint(p2);
+            } else {
+                mesh.addIcoSphere(p2, scale / 100.0, 2);
+            }
+
+        }
+
     }
 }
 

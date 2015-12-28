@@ -8,3 +8,5 @@ SOURCES += \
     fastkernel_profile/main_test_fastkernel_profile.cpp \
     \
     matrix_profile/main_test_matrix_profile.cpp \
+    \
+    hamilton/main_test_hamilton_profile.cpp \
