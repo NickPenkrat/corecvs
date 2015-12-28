@@ -653,7 +653,7 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
                 , mCaptureInterfaces[i].camId
                 , metaInfo.toStdString()
                 , (AbstractImageNamer::FileType)ui->outputFormatComboBox->currentIndex()
-                , &path.toStdString()
+                , path.toStdString()
                 , prefix.toStdString()
                 );
 
