@@ -1,10 +1,11 @@
-#ifndef PHOTOSTATIONCALIBRATOR
-#define PHOTOSTATIONCALIBRATOR
+#ifndef PHOTOSTATION_CALIBRATOR_H
+#define PHOTOSTATION_CALIBRATOR_H
 
 #include <vector>
 
 #include "calibrationPhotostation.h"
 #include "levenmarq.h"
+
 
 //#define PENALIZE_QNORM
 
@@ -71,22 +72,23 @@ private:
             for (int j = r.begin(); j != r.end(); ++j)
             {
                 int idx = (*offset)[j];
-                auto& Qs = absoluteSetupLocation[j].orientation;
-                auto& Cs = absoluteSetupLocation[j].position;
+                Quaternion& Qs = absoluteSetupLocation[j].orientation;
+                Vector3dd & Cs = absoluteSetupLocation[j].position;
+
                 for (int i = 0; i < N; ++i)
                 {
-                    if (!patternPoints[j][i].size())
+                    if (patternPoints[j][i].empty())
                         continue;
 
                     for (auto& pt: patternPoints[j][i])
                     {
-                        auto p = pt.second;
+                        Vector3dd p = pt.point;
 
                         p[1] *= calibrator->factor;
 
-                        auto diff = relativeCameraPositions[i].project(Qs * (p - Cs)) - pt.first;
-                        out[idx++] = diff[0];
-                        out[idx++] = diff[1];
+                        Vector2dd diff = relativeCameraPositions[i].project(Qs * (p - Cs)) - pt.projection;
+                        out[idx++] = diff.x();
+                        out[idx++] = diff.y();
                     }
                 }
             }

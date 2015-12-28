@@ -55,7 +55,7 @@ public:
     PointType type;
 
     /** Observation related block */
-    typedef std::unordered_map<CameraModel *, SceneObservation> ObservContainer;
+    typedef std::unordered_map<FixtureCamera *, SceneObservation> ObservContainer;
     ObservContainer observations;
 
 

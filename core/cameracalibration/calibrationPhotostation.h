@@ -103,7 +103,7 @@ public:
         return c;*/
         return getWorldCamera(cam);
     }
-    
+
     Matrix44 getMMatrix(int cam) const
     {
         return getRawCamera(cam).getCameraMatrix();
@@ -144,8 +144,5 @@ public:
         setLocation(loc);
     }
 };
-
-typedef std::vector<std::pair<Vector2dd, Vector3dd>> PatternPoints3d;
-typedef std::vector<PatternPoints3d>                 MultiCameraPatternPoints;
 
 } // namespace corecvs

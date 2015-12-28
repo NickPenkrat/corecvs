@@ -5,6 +5,7 @@
 #include "fixtureScene.h"
 #include "selectableGeometryFeatures.h"
 #include "abstractPainter.h"
+#include "cameraFixture.h"
 
 using namespace corecvs;
 
@@ -81,7 +82,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const Photostation &ps, double sc
     int colorId = 0;
     for (size_t cam = 0; cam < ps.cameras.size(); cam++)
     {
- 		mesh.setColor(palette[colorId]);
+        mesh.setColor(palette[colorId]);
         colorId = (colorId + 1) % CORE_COUNT_OF(palette);
         drawCamera(mesh, ps.getRawCamera(cam), scale);
     }
@@ -108,6 +109,44 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const Photostation &ps, double sc
     }
 }
 
+void CalibrationHelpers::drawPly(Mesh3D &mesh, const CameraFixture &ps, double scale)
+{
+    // Colorblind-safe palette
+    CameraLocationData loc = ps.getLocation();
+    Quaternion qs = loc.orientation.conjugated();
+    std::cout << qs << std::endl;
+
+    int colorId = 0;
+    for (size_t cam = 0; cam < ps.cameras.size(); cam++)
+    {
+        mesh.setColor(palette[colorId]);
+        colorId = (colorId + 1) % CORE_COUNT_OF(palette);
+        drawCamera(mesh, ps.getRawCamera(cam), scale);
+    }
+
+
+    corecvs::Vector3dd xps(scale,   0.0,   0.0),
+                       yps(  0.0, scale,   0.0),
+                       zps(  0.0,   0.0, scale),
+                       ori(  0.0,   0.0,   0.0);
+    mesh.currentColor = corecvs::RGBColor(255,   0,   0);
+    mesh.addLine(ps.location * ori, ps.location * xps);
+    mesh.currentColor = corecvs::RGBColor(  0, 255,   0);
+    mesh.addLine(ps.location * ori, ps.location * yps);
+    mesh.currentColor = corecvs::RGBColor(  0,   0, 255);
+    mesh.addLine(ps.location * ori, ps.location * zps);
+
+    if (printNames)
+    {
+        AbstractPainter<Mesh3D> p(&mesh);
+        mesh.mulTransform(Matrix44::Shift(ps.location.shift) * Matrix44::Scale(scale / 22.0));
+        mesh.setColor(RGBColor::Blue());
+        p.drawFormatVector(1.0, 1.0, 0, 1.0, "%s", ps.name.c_str());
+        mesh.popTransform();
+    }
+}
+
+
 void CalibrationHelpers::drawPly(Mesh3D &mesh, const ObservationList &list)
 {
     mesh.currentColor = RGBColor(~0u);
@@ -123,7 +162,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const Photostation &ps, const Obs
     drawPly(mesh, ps, scale);
 }
 
-void CalibrationHelpers::drawPly(Mesh3D &mesh, const CalibrationFeaturePoint &fp, double scale)
+void CalibrationHelpers::drawPly(Mesh3D &mesh, const SceneFeaturePoint &fp, double scale)
 {
 
     if (!largePoints) {
@@ -143,10 +182,10 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const CalibrationFeaturePoint &fp
     if (drawObservations) {
         for (auto it = fp.observations.begin(); it != fp.observations.end(); ++it)
         {
-            CameraModel *cam = it->first;
-            const CalibrationObservation &observ = it->second;
-            Photostation *station = cam->station;
-            CameraModel rawCam = station->getWorldCamera(*cam);
+            FixtureCamera *cam = it->first;
+            const SceneObservation &observ = it->second;
+            CameraFixture *fixture = cam->cameraFixture;
+            FixtureCamera rawCam = fixture->getWorldCamera(cam);
 
             if (fp.hasKnownPosition) {
                 mesh.addLine(rawCam.extrinsics.position, fp.position);
@@ -169,14 +208,14 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const CalibrationFeaturePoint &fp
     }
 }
 
-void CalibrationHelpers::drawScene(Mesh3D &mesh, const CalibrationScene &scene, double scale)
+void CalibrationHelpers::drawScene(Mesh3D &mesh, const FixtureScene &scene, double scale)
 {
-    for (Photostation *ps: scene.stations)
+    for (CameraFixture *ps: scene.fixtures)
     {
         drawPly(mesh, *ps, scale);
     }
 
-    for (CalibrationFeaturePoint *fp: scene.points)
+    for (SceneFeaturePoint *fp: scene.points)
     {
         drawPly(mesh, *fp, scale);
     }

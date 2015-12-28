@@ -21,35 +21,45 @@
 #endif
 
 typedef std::array<corecvs::Vector2dd, 2> Rect;
+using std::string;
+using corecvs::ObservationList;
+
 
 struct ImageData
 {
-    std::string              sourceFileName;
-    std::string              undistortedFileName;
-    corecvs::ObservationList sourcePattern;
-    corecvs::ObservationList undistortedPattern;
-    CameraLocationData       location;
+    string              sourceFileName;
+    string              undistortedFileName;
+    ObservationList sourcePattern;
+    ObservationList undistortedPattern;
+    CameraLocationData location;
 
-    double distortionRmse       = -1.0
-         , distortionMaxError   = -1.0
-         , calibrationRmse      = -1.0
-         , calibrationMaxError  = -1.0
-         , singleCameraRmse     = -1.0
-         , singleCameraMaxError = -1.0;
+    double distortionRmse;
+    double distortionMaxError;
+    double calibrationRmse;
+    double calibrationMaxError;
+    double singleCameraRmse;
+    double singleCameraMaxError;
+
+    ImageData()
+    {
+        DefaultSetter setter;
+        accept(setter);
+    }
 
     template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(sourceFileName, std::string(""), "sourceFileName");
-        visitor.visit(undistortedFileName, std::string(""), "undistortedFileName");
-        visitor.visit((std::vector<PointObservation>&)sourcePattern, "sourcePattern");
-        visitor.visit((std::vector<PointObservation>&)undistortedPattern, "undistortedPattern");
-        visitor.visit(location, CameraLocationData(), "viewLocation");
-        visitor.visit(distortionRmse, -1.0, "distortionRmse");
-        visitor.visit(distortionMaxError, -1.0, "distortionMaxError");
-        visitor.visit(calibrationRmse, -1.0, "calibrationRmse");
-        visitor.visit(calibrationMaxError, -1.0, "calibrationMaxError");
-        visitor.visit(calibrationRmse, -1.0, "singleCameraRmse");
+        visitor.visit(sourceFileName,      string(""), "sourceFileName");
+        visitor.visit(undistortedFileName, string(""), "undistortedFileName");
+        visitor.visit((vector<PointObservation>&)sourcePattern, "sourcePattern");
+        visitor.visit((vector<PointObservation>&)undistortedPattern, "undistortedPattern");
+        visitor.visit(location,           CameraLocationData(), "viewLocation");
+
+        visitor.visit(distortionRmse,      -1.0, "distortionRmse"      );
+        visitor.visit(distortionMaxError,  -1.0, "distortionMaxError"  );
+        visitor.visit(calibrationRmse,     -1.0, "calibrationRmse"     );
+        visitor.visit(calibrationMaxError, -1.0, "calibrationMaxError" );
+        visitor.visit(calibrationRmse,     -1.0, "singleCameraRmse"    );
         visitor.visit(calibrationMaxError, -1.0, "singleCameraMaxError");
     }
 };
@@ -63,7 +73,7 @@ struct CalibrationSetupEntry
     void accept(VisitorType &visitor)
     {
         visitor.visit(cameraId, 0, "cameraId");
-        visitor.visit(imageId, 0, "imageId");
+        visitor.visit(imageId , 0, "imageId" );
     }
 };
 
@@ -147,20 +157,20 @@ struct CalibrationJob
     {
         visitor.visit(photostation, Photostation(), "photostation");
         visitor.visit(calibrationSetupLocations, "calibrationSetupLocations");
-        visitor.visit(calibrationSetups, "calibrationSetups");
-        visitor.visit(observations, "observations");
+        visitor.visit(calibrationSetups,         "calibrationSetups");
+        visitor.visit(observations,              "observations");
         visitor.visit(settings, CalibrationSettings(), "algorithmSettings");
         visitor.visit(calibrated, false, "calibrated");
     }
 
     static corecvs::RGB24Buffer LoadImage(const std::string& path);
     static void                 SaveImage(const std::string& path, corecvs::RGB24Buffer &buffer);
-    
+
     bool    detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::ObservationList &list);
     bool    detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::SelectableGeometryFeatures &features);
     bool    detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::SelectableGeometryFeatures *features = nullptr, corecvs::ObservationList *list = nullptr);
     void    allDetectChessBoard(bool distorted = true);
-   
+
     bool    estimateDistortion(corecvs::SelectableGeometryFeatures &features, double w, double h, LensDistortionModelParameters &params);
     bool    estimateDistortion(corecvs::ObservationList &list, double w, double h, LensDistortionModelParameters &params);
     void    computeDistortionError(corecvs::ObservationList &list, LensDistortionModelParameters &params, double &rmse, double &maxError);

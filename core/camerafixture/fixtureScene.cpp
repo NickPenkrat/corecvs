@@ -33,9 +33,9 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
 
         //cout << "Projecting point:" << point->name << " (" << point->position << ")"<< endl;
 
-        for (size_t stationId = 0; stationId < stations.size(); stationId++)
+        for (size_t stationId = 0; stationId < fixtures.size(); stationId++)
         {
-            CameraFixture &station = *stations[stationId];
+            CameraFixture &station = *fixtures[stationId];
             for (size_t camId = 0; camId < station.cameras.size(); camId++)
             {
                 FixtureCamera *camera = station.cameras[camId];
@@ -95,7 +95,7 @@ CameraFixture *FixtureScene::createCameraFixture()
 {
     CameraFixture *fixture = fabricateCameraFixture();
     mOwnedObjects.push_back(fixture);
-    stations.push_back(fixture);
+    fixtures.push_back(fixture);
     return fixture;
 }
 
@@ -108,13 +108,13 @@ SceneFeaturePoint *FixtureScene::createFeaturePoint()
 }
 
 /* This method assumes the scene is well formed */
-void FixtureScene::deleteCamera(CameraModel *camera)
+void FixtureScene::deleteCamera(FixtureCamera *camera)
 {
     orphanCameras.erase( std::remove( orphanCameras.begin(), orphanCameras.end(), camera ), orphanCameras.end() );
 
-    for(size_t i = 0; i < stations.size(); i++)
+    for(size_t i = 0; i < fixtures.size(); i++)
     {
-        CameraFixture *station = stations[i];
+        CameraFixture *station = fixtures[i];
         if (station == NULL) continue;
         station->cameras.erase( std::remove( station->cameras.begin(), station->cameras.end(), camera ), station->cameras.end() );
     }
@@ -146,7 +146,7 @@ void FixtureScene::deleteCameraFixture(CameraFixture *fixture, bool recursive)
         orphanCameras.insert(orphanCameras.end(), fixture->cameras.begin(), fixture->cameras.end());
     }
 
-    stations.erase( std::remove( stations.begin(), stations.end(), fixture ), stations.end() );
+    fixtures.erase( std::remove( fixtures.begin(), fixtures.end(), fixture ), fixtures.end() );
 }
 
 void FixtureScene::deleteFeaturePoint(SceneFeaturePoint *point)
@@ -165,43 +165,43 @@ bool FixtureScene::checkIntegrity()
 
     for(size_t i = 0; i < orphanCameras.size(); i++)
     {
-        CameraModel *cam = orphanCameras[i];
+        FixtureCamera *cam = orphanCameras[i];
         if (cam == NULL) {
              ok = false; SYNC_PRINT(("Orphan Camera is NULL: scene:<%s> pos <%d>\n", this->nameId.c_str(), (int)i));
         }
         if (cam->ownerScene != this) {
              ok = false; SYNC_PRINT(("Orphan Camera form other scene: cam:<%s> scene:<%s>\n", cam->nameId.c_str(), this->nameId.c_str()));
         }
-        if (cam->station != NULL) {
-             ok = false; SYNC_PRINT(("Orphan Camera pretends to have station: cam:<%s>cam->station:<%s> scene:<%s>\n", cam->nameId.c_str(), cam->station->name.c_str(), this->nameId.c_str()));
+        if (cam->cameraFixture != NULL) {
+             ok = false; SYNC_PRINT(("Orphan Camera pretends to have station: cam:<%s>cam->station:<%s> scene:<%s>\n", cam->nameId.c_str(), cam->cameraFixture->name.c_str(), this->nameId.c_str()));
         }
     }
 
-    for(size_t i = 0; i < stations.size(); i++)
+    for(size_t i = 0; i < fixtures.size(); i++)
     {
-        CameraFixture *station = stations[i];
-        if (station == NULL) {
+        CameraFixture *fixture = fixtures[i];
+        if (fixture == NULL) {
             ok = false; SYNC_PRINT(("Station is NULL: scene:<%s> pos <%d>\n", this->nameId.c_str(), (int)i));
         }
-        if (station->ownerScene != this) {
-            ok = false; SYNC_PRINT(("Station form other scene: station:<%s> scene:<%s>\n", station->name.c_str(), this->nameId.c_str()));
+        if (fixture->ownerScene != this) {
+            ok = false; SYNC_PRINT(("Station form other scene: station:<%s> scene:<%s>\n", fixture->name.c_str(), this->nameId.c_str()));
         }
 
-        for(size_t j = 0; j < station->cameras.size(); j++)
+        for(size_t j = 0; j < fixture->cameras.size(); j++)
         {
-            CameraModel *cam = station->cameras[j];
+            FixtureCamera *cam = fixture->cameras[j];
             if (cam == NULL) {
-                ok = false; SYNC_PRINT(("Station Camera is NULL: scene:<%s> station:<%s> pos <%d>\n", this->nameId.c_str(), station->name.c_str(), (int)j));
+                ok = false; SYNC_PRINT(("Station Camera is NULL: scene:<%s> station:<%s> pos <%d>\n", this->nameId.c_str(), fixture->name.c_str(), (int)j));
             }
             if (cam->ownerScene != this) {
-                ok = false; SYNC_PRINT(("Station Camera form other scene: cam:<%s> station:<%s> scene:<%s>\n", cam->nameId.c_str(), station->name.c_str(), this->nameId.c_str()));
+                ok = false; SYNC_PRINT(("Station Camera form other scene: cam:<%s> station:<%s> scene:<%s>\n", cam->nameId.c_str(), fixture->name.c_str(), this->nameId.c_str()));
             }
 
-            if (cam->station != station) {
-                if (cam->station) {
-                    ok = false; SYNC_PRINT(("Station Camera has NULL station: cam:<%s> station:<%s> scene:<%s>\n", cam->nameId.c_str(), station->name.c_str(), this->nameId.c_str()));
+            if (cam->cameraFixture != fixture) {
+                if (cam->cameraFixture) {
+                    ok = false; SYNC_PRINT(("Station Camera has NULL station: cam:<%s> station:<%s> scene:<%s>\n", cam->nameId.c_str(), fixture->name.c_str(), this->nameId.c_str()));
                 } else {
-                    ok = false;SYNC_PRINT(("Station Camera form other station: cam:<%s> station:<%s> cam->station:<%s> scene:<%s>\n", cam->nameId.c_str(), station->name.c_str(), cam->station->name.c_str(), this->nameId.c_str()));
+                    ok = false;SYNC_PRINT(("Station Camera form other station: cam:<%s> station:<%s> cam->station:<%s> scene:<%s>\n", cam->nameId.c_str(), fixture->name.c_str(), cam->cameraFixture->name.c_str(), this->nameId.c_str()));
                 }
             }
 
@@ -211,7 +211,7 @@ bool FixtureScene::checkIntegrity()
 
     for(size_t i = 0; i < points.size(); i++)
     {
-        CalibrationFeaturePoint *point = points[i];
+        SceneFeaturePoint *point = points[i];
         if (point == NULL) {
             ok = false; SYNC_PRINT(("Point is NULL: scene:<%s> pos <%d>\n", this->nameId.c_str(), (int)i));
         }
@@ -222,7 +222,7 @@ bool FixtureScene::checkIntegrity()
         for (auto it = point->observations.begin(); it != point->observations.end(); ++it)
         {
             CameraModel *cam = it->first;
-            const CalibrationObservation &observ = it->second;
+            const SceneObservation &observ = it->second;
             if (observ.camera == NULL)
             {
                 ok = false; SYNC_PRINT(("observation has null camera"));
@@ -248,7 +248,7 @@ bool FixtureScene::checkIntegrity()
 
 
 
-void FixtureScene::positionCameraInFixture(CameraFixture *fixture, CameraModel *camera, const Affine3DQ &location)
+void FixtureScene::positionCameraInFixture(CameraFixture *fixture, FixtureCamera *camera, const Affine3DQ &location)
 {
 
 
@@ -262,15 +262,15 @@ void FixtureScene::positionCameraInFixture(CameraFixture *fixture, CameraModel *
 //    camera->extrinsics.prettyPrint1();
 }
 
-void FixtureScene::addCameraToStation(CameraModel *cam, corecvs::CameraFixture *station)
+void FixtureScene::addCameraToStation(FixtureCamera *cam, CameraFixture *fixture)
 {
 
     auto it = std::find(orphanCameras.begin(), orphanCameras.end(), cam);
     if (it != orphanCameras.end()) {
         orphanCameras.erase(it);
     }
-    cam->station = station;
-    station->cameras.push_back(cam);
+    cam->cameraFixture = fixture;
+    fixture->cameras.push_back(cam);
 
 }
 
@@ -284,15 +284,15 @@ FixtureScene::~FixtureScene()
 
 FixtureCamera *corecvs::FixtureScene::fabricateCamera()
 {
-   return new CameraModel(this);
+   return new FixtureCamera(this);
 }
 
 CameraFixture *FixtureScene::fabricateCameraFixture()
 {
-    return new Photostation(this);
+    return new CameraFixture(this);
 }
 
-CalibrationFeaturePoint *FixtureScene::fabricateFeaturePoint()
+SceneFeaturePoint *FixtureScene::fabricateFeaturePoint()
 {
-    return new CalibrationFeaturePoint(this);
+    return new SceneFeaturePoint(this);
 }

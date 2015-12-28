@@ -277,20 +277,24 @@ struct ParallelDistortionRemoval
 {
     void operator() (const corecvs::BlockedRange<int> &r) const
     {
+        using namespace corecvs;
         for (int camId = r.begin(); camId < r.end(); ++camId)
         {
             auto& observationsIterator = job->observations[camId];
             auto& cam = job->photostation.cameras[camId];
 
             corecvs::DisplacementBuffer transform;
-            double newW, newH;
-            job->prepareUndistortionTransformation(cam.distortion, cam.intrinsics.distortedSize[0], cam.intrinsics.distortedSize[1], transform, newW, newH);
-            cam.intrinsics.size[0] = newW;
-            cam.intrinsics.size[1] = newH;
-            for (auto& ob: observationsIterator)
+            Vector2dd newSize;
+            job->prepareUndistortionTransformation(cam.distortion,
+                    cam.intrinsics.distortedSize.x(),
+                    cam.intrinsics.distortedSize.y(), transform, newSize.x(), newSize.y());
+
+            cam.intrinsics.size = newSize;
+
+            for (ImageData& ob: observationsIterator)
             {
-                corecvs::RGB24Buffer source = job->LoadImage(ob.sourceFileName), dst;
-                job->removeDistortion(source, dst, transform, newW, newH);
+                RGB24Buffer source = job->LoadImage(ob.sourceFileName), dst;
+                job->removeDistortion(source, dst, transform, newSize.x(), newSize.y());
                 job->SaveImage(ob.undistortedFileName, dst);
             }
         }
@@ -333,9 +337,10 @@ bool CalibrationJob::calibrateSingleCamera(int cameraId)
 
     for (auto& o: observations[cameraId])
     {
-        PatternPoints3d patternPoints;
-        for (auto& p: o.undistortedPattern)
-            patternPoints.emplace_back(p.projection, p.point);
+        ObservationList patternPoints;
+        for (PointObservation& p: o.undistortedPattern) {
+            patternPoints.emplace_back(PointObservation(p.point, p.projection));
+        }
 
         if (patternPoints.size())
         {
@@ -382,7 +387,7 @@ void CalibrationJob::allCalibrateSingleCamera()
     factors.resize(photostation.cameras.size(), 1.0);
     corecvs::parallelable_for(0, (int)photostation.cameras.size(), ParallelSingleCalibrator(this));
     double fac = 0.0;
-    for (auto& f : factors) {
+    for (double& f: factors) {
         fac += f;
     }
     fac /= factors.size();
@@ -435,8 +440,8 @@ void CalibrationJob::calibratePhotostation()
         for (auto& s: calibrationSetups[i])
         {
             points[i][s.cameraId].clear();
-            for (auto& p: observations[s.cameraId][s.imageId].undistortedPattern)
-                points[i][s.cameraId].emplace_back(p.projection, p.point);
+            for (PointObservation& p: observations[s.cameraId][s.imageId].undistortedPattern)
+                points[i][s.cameraId].emplace_back(PointObservation(p.point, p.projection));
         }
     }
 
@@ -474,23 +479,24 @@ void CalibrationJob::computeCalibrationErrors()
     auto setupLocsIterator = calibrationSetupLocations.begin();
     for (auto& s: calibrationSetups)
     {
-        auto loc = *setupLocsIterator;
+        CameraLocationData loc = *setupLocsIterator;
         photostation.setLocation(loc);
-        for (auto& v: s)
+        for (CalibrationSetupEntry& v: s)
         {
-            auto& view = observations[v.cameraId][v.imageId];
+            ImageData& view = observations[v.cameraId][v.imageId];
             int cam = v.cameraId;
 
             if (view.undistortedPattern.size())
             {
                 int cnt = 0;
-                double me = -1.0, rmse = 0.0;
+                double me = -1.0;
+                double rmse = 0.0;
 
-                for (auto &p: view.undistortedPattern)
+                for (PointObservation &p: view.undistortedPattern)
                 {
-                    auto ppp = p.point;
-                    ppp[1] *= factor;
-                    auto pp = photostation.project(ppp, cam) - p.projection;
+                    Vector3dd ppp = p.point;
+                    ppp.y() *= factor;
+                    Vector2dd pp = photostation.project(ppp, cam) - p.projection;
                     if (!pp > me)
                     {
                         me = !pp;
@@ -518,8 +524,8 @@ void CalibrationJob::computeSingleCameraErrors()
     {
         for (auto& c: s)
         {
-            auto cam = photostation.cameras[c.cameraId];
-            auto&view= observations[c.cameraId][c.imageId];
+            CameraModel cam = photostation.cameras[c.cameraId];
+            ImageData &view= observations[c.cameraId][c.imageId];
 
             if (view.undistortedPattern.size())
             {
@@ -527,11 +533,11 @@ void CalibrationJob::computeSingleCameraErrors()
                 double me = -1.0, rmse = 0.0;
                 cam.extrinsics = view.location;
 
-                for (auto &p: view.undistortedPattern)
+                for (PointObservation &p: view.undistortedPattern)
                 {
-                    auto ppp = p.point;
-                    ppp[1] *= factor;
-                    auto pp = cam.project(ppp) - p.projection;
+                    Vector3dd ppp = p.point;
+                    ppp.y() *= factor;
+                    Vector2dd pp = cam.project(ppp) - p.projection;
                     if (!pp > me)
                     {
                         me = !pp;

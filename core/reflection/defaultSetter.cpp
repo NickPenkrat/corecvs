@@ -84,7 +84,7 @@ void DefaultSetter::visit<std::string>(std::string &stringField, std::string def
     stringField = defaultValue;
 }
 
-
+#if 0
 template<class Type>
 void DefaultSetter::visit(Type &field, Type /*defaultValue*/, const char *fieldName)
 {
@@ -92,5 +92,6 @@ void DefaultSetter::visit(Type &field, Type /*defaultValue*/, const char *fieldN
         field.accept(*this);
     /*popChild();*/
 }
+#endif
 
 } //namespace corecvs

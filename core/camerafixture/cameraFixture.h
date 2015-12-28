@@ -9,7 +9,6 @@
 #include <cstring>
 
 #include "pointObservation.h"
-#include "selectableGeometryFeatures.h"
 
 #include "typesafeBitmaskEnums.h"
 #include "calibrationLocation.h"  // LocationData
@@ -64,19 +63,19 @@ public:
         location = _location;
     }
 
-    CameraModel getWorldCamera(CameraModel *camPtr) const
+    FixtureCamera getWorldCamera(FixtureCamera *camPtr) const
     {
-        CameraModel toReturn = *camPtr;
+        FixtureCamera toReturn = *camPtr;
         toReturn.extrinsics.transform(location);
         return toReturn;
     }
 
-    CameraModel getWorldCamera(int cam) const
+    FixtureCamera getWorldCamera(int cam) const
     {
         return getWorldCamera(cameras[cam]);
     }
 
-    CameraModel getRawCamera(int cam) const
+    FixtureCamera getRawCamera(int cam) const
     {
      /*   auto c = cameras[cam];
         c.extrinsics.orientation = c.extrinsics.orientation ^ location.orientation;
@@ -97,7 +96,7 @@ public:
             ownerScene->addCameraToStation(model, this);
         }
     }
-    
+
     Matrix44 getMMatrix(int cam) const
     {
         return getRawCamera(cam).getCameraMatrix();
@@ -142,9 +141,6 @@ public:
         setLocation(loc);
     }
 };
-
-//typedef std::vector<PointObservation> PatternPoints3d;
-typedef std::vector<ObservationList>  MultiCameraPatternPoints;
 
 } // namespace corecvs
 

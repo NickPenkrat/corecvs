@@ -669,7 +669,7 @@ bool PhotoStationCalibrator::getMSTSolveOrder(std::vector<std::pair<int, int>> &
                         if ((!cameraUsed[ii]) && patternPoints[i][ii].size() > maxFC)
                         {
                             initial = std::make_pair(ii, i);
-                            maxFC = patternPoints[i][ii].size();
+                            maxFC = (int)patternPoints[i][ii].size();
                         }
                     }
                 }
@@ -680,7 +680,7 @@ bool PhotoStationCalibrator::getMSTSolveOrder(std::vector<std::pair<int, int>> &
                         if ((!setupUsed[jj]) && patternPoints[jj][j].size() > maxFC)
                         {
                             initial = std::make_pair(j, jj);
-                            maxFC = patternPoints[jj][j].size();
+                            maxFC = (int)patternPoints[jj][j].size();
                         }
                     }
                 }
@@ -720,7 +720,7 @@ void PhotoStationCalibrator::solveInitialLocations()
     auto initial = order2[0];
     camsSolved[initial.first] = true;
     relativeCameraPositions[initial.first].extrinsics = corecvs::CameraLocationData(corecvs::Vector3dd(0.0, 0.0, -120.0), corecvs::Quaternion(0.0, 0.0, 0.0, 1.0));
-    for (uint i = 0; i < order2.size(); ++i)
+    for (size_t i = 0; i < order2.size(); ++i)
     {
         auto id = order2[i];
         std::cout << "Solving c:" << id.first << " s: " << id.second << std::endl;

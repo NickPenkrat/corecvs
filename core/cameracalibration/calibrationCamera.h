@@ -8,6 +8,7 @@
 #include "line.h"
 #include "convexPolyhedron.h"
 #include "pointObservation.h"
+#include "selectableGeometryFeatures.h"
 
 /* Future derived */
 //#include "rgb24Buffer.h"
@@ -267,6 +268,9 @@ public:
 
     void prettyPrint(std::ostream &out = cout);
 };
+
+//typedef std::vector<PointObservation> PatternPoints3d;
+typedef std::vector<ObservationList>  MultiCameraPatternPoints;
 
 
 } // namespace corecvs

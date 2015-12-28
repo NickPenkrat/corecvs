@@ -39,8 +39,8 @@ public:
     /* This is for future, when all the heap/memory will be completed */
     vector<FixtureScenePart *>    mOwnedObjects;
 
-    vector<CameraFixture *>       stations;
-    vector<CameraModel *>         orphanCameras;
+    vector<CameraFixture *>       fixtures;
+    vector<FixtureCamera *>       orphanCameras;
     vector<SceneFeaturePoint *>   points;
 
     /**
@@ -65,7 +65,7 @@ public:
     virtual SceneFeaturePoint  *createFeaturePoint();
 
     /* These methods  compleatly purge camera from scene */
-    virtual void deleteCamera        (CameraModel *camera);
+    virtual void deleteCamera        (FixtureCamera *camera);
     virtual void deleteCameraFixture (CameraFixture *fixture, bool recursive = true);
     virtual void deleteFeaturePoint  (SceneFeaturePoint *camera);
 
@@ -78,9 +78,8 @@ public:
      **/
     virtual bool checkIntegrity();
 
-    virtual void positionCameraInFixture(CameraFixture *station, CameraModel *camera, const Affine3DQ &location);
-    virtual void addCameraToStation(CameraModel *cam, CameraFixture *station);
-
+    virtual void positionCameraInFixture(CameraFixture *station, FixtureCamera *camera, const Affine3DQ &location);
+    virtual void addCameraToStation(FixtureCamera *cam, CameraFixture *fixture);
 
 
 
