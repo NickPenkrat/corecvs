@@ -57,5 +57,9 @@ public:
     static double mse(RGB48Buffer *img1, RGB48Buffer *img2, int border = 0);
     static double mse(G12Buffer *img1, G12Buffer *img2, int border = 0);
 
+    static double Ymse(G12Buffer * bayer, RGB48Buffer * debayer, int border);
+
+    static double Yrmsd(G12Buffer * bayer, RGB48Buffer * debayer, int border);
+
 };
 }
