@@ -177,6 +177,11 @@ public:
         return fround(yd());
     }
 
+    inline T Y() const
+    {
+        return 0.2225045 * r() + 0.7168786 * g() + 0.0606169 * b();
+    }
+
     inline int32_t cb() const
     {
         return (int)(-0.16874 * r() - 0.33126 * g() + 0.50000 * b());
