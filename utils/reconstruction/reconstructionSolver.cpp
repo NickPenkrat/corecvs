@@ -396,7 +396,7 @@ void ReconstructionJob::solveWithBadPOI(bool filter, bool forceGps)
 
     double maxAngleError = 1.0;
 
-    std::cout << "Solve: " << std::endl;
+    std::cout << "Solve: " << scene.photostations.size() << " " << scene.pointObservations.size() << std::endl;
 
     if (filter)
     {
@@ -515,6 +515,8 @@ void ReconstructionJob::solveWithBadPOI(bool filter, bool forceGps)
     }
     // And refine positions
 #if 1
+    std::cout << "Solve: " << scene.photostations.size() << " " << scene.pointObservations.size() << std::endl;
+
     for (int i = 0; i < scene.photostations.size(); ++i)
     {
         std::vector<std::tuple<int, corecvs::Vector2dd, corecvs::Vector3dd>> pspa;
