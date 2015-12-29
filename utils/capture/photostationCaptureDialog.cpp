@@ -649,7 +649,7 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
             }
             CORE_ASSERT_TRUE_S(mCaptureInterfaces[i].isFilled());
 
-            string stdPath = path.toStdString();
+            std::string stdPath = path.toStdString();
 
             std::string name = mNamer->nameForImage(
                 ui->stationNameLineEdit->text().toStdString()
