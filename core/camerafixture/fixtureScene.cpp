@@ -252,7 +252,7 @@ void FixtureScene::positionCameraInFixture(CameraFixture *fixture, FixtureCamera
 {
 
 
-//    cout << "CalibrationScene::positionCameraInStation()" << std::endl;
+//    cout << "FixtureScene::positionCameraInStation()" << std::endl;
 //    cout << "  World Transform():" << std::endl;
 //    worldFrameToCameraFrame.prettyPrint1();
 //    cout << "  Input:" << std::endl;
@@ -262,7 +262,7 @@ void FixtureScene::positionCameraInFixture(CameraFixture *fixture, FixtureCamera
 //    camera->extrinsics.prettyPrint1();
 }
 
-void FixtureScene::addCameraToStation(FixtureCamera *cam, CameraFixture *fixture)
+void FixtureScene::addCameraToFixture(FixtureCamera *cam, CameraFixture *fixture)
 {
 
     auto it = std::find(orphanCameras.begin(), orphanCameras.end(), cam);

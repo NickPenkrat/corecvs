@@ -35,7 +35,7 @@ namespace corecvs {
 
 
 /**
- *   See CalibrationScene for more data on ownership of the objectes in structure
+ *   See FixtureScene for more data on ownership of the objectes in structure
  **/
 class Photostation : public ScenePart
 {
@@ -44,7 +44,7 @@ public:
     Affine3DQ                location;
     std::string              name;
 
-    Photostation(CalibrationScene * owner = NULL) :
+    Photostation(FixtureScene * owner = NULL) :
         ScenePart(owner)
     {}
 

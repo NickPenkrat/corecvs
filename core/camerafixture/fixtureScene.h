@@ -79,7 +79,7 @@ public:
     virtual bool checkIntegrity();
 
     virtual void positionCameraInFixture(CameraFixture *station, FixtureCamera *camera, const Affine3DQ &location);
-    virtual void addCameraToStation(FixtureCamera *cam, CameraFixture *fixture);
+    virtual void addCameraToFixture     (FixtureCamera *cam, CameraFixture *fixture);
 
 
 

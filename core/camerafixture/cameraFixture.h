@@ -18,7 +18,7 @@
 namespace corecvs {
 
 /**
- *   See CalibrationScene for more data on ownership of the objectes in structure
+ *   See FixtureScene for more data on ownership of the objectes in structure
  **/
 class CameraFixture : public FixtureScenePart
 {
@@ -93,7 +93,7 @@ public:
 
         while  (cameras.size() < (size_t)count) {
             FixtureCamera *model  = ownerScene->createCamera();
-            ownerScene->addCameraToStation(model, this);
+            ownerScene->addCameraToFixture(model, this);
         }
     }
 

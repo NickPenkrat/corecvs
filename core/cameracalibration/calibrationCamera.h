@@ -16,7 +16,7 @@
 namespace corecvs {
 
 /*class RGB24Buffer;*/
-class CalibrationScene;
+class FixtureScene;
 
 /**
  * This class is so far just a common base for all objects in scene heap.
@@ -27,10 +27,10 @@ public:
     /* No particular reason for this, except to encourage leak checks */
     static int OBJECT_COUNT;
 
-    CalibrationScene *ownerScene;
+    FixtureScene *ownerScene;
 
     /* We could have copy constructors and stuff... but so far this is enough */
-    ScenePart(CalibrationScene * owner = NULL) :
+    ScenePart(FixtureScene * owner = NULL) :
         ownerScene(owner)
     {
         OBJECT_COUNT++;
@@ -155,7 +155,6 @@ struct PinholeCameraIntrinsics
     double cy() const    { return principal.y(); }
 };
 
-class Photostation;
 
 class CameraModel /*: public ScenePart*/
 {
@@ -178,7 +177,7 @@ public:
     std::string     nameId;
 
 public:
-    CameraModel(/*CalibrationScene * owner = NULL*/) /*:
+    CameraModel(/*FixtureScene * owner = NULL*/) /*:
         ScenePart(owner)*/
     {}
 
