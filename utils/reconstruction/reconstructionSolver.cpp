@@ -7,7 +7,7 @@
 #include "levenmarq.h"
 #include "pnpSolver.h"
 
-#define  METERS
+//#define  METERS
 
 #ifdef WITH_OPENCV
 # include "openCvFileReader.h"  // inside it requires BufferReaderProvider
@@ -369,7 +369,7 @@ void ReconstructionJob::fill(std::unordered_map<std::string, corecvs::Affine3DQ>
  //       scene.photostations.rbegin()->location.orientation = scene.photostations.rbegin()->location.orientation;
 
         std::vector<CameraObservation> observations;
-        for (int i = 0; i < scene.photostations[id].cameras.size(); ++i)
+        for (int i = 0; i < (int)scene.photostations[id].cameras.size(); ++i)
         {
             CameraObservation observation;
             std::stringstream ss;
@@ -420,7 +420,7 @@ void ReconstructionJob::solveWithBadPOI(bool filter, bool forceGps)
             for (int iii = 0; iii < 10000; ++iii)
             {
                 decltype(pspa) psp;
-                int N = pspa.size();
+                int N = (int)pspa.size();
                 psp.resize(4);
                 int ids[4];
                 int idx = 0;

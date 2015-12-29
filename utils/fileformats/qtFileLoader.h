@@ -18,8 +18,9 @@
 #include "bufferFactory.h"
 #include "rgb24Buffer.h"
 
-using namespace std;
 using namespace corecvs;
+
+using std::string;
 
 class QTFileLoader
 {

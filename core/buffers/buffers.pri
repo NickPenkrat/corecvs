@@ -56,6 +56,7 @@ HEADERS += \
     buffers/converters/debayer.h \
     buffers/converters/labConverter.h \
     buffers/converters/errorMetrics.h \
+    buffers/memory/alignedMemoryBlock.h
 
 
 SOURCES += \

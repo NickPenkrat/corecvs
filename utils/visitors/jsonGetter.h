@@ -5,6 +5,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+
 #include "reflection.h"
 
 using corecvs::IntField;
@@ -23,20 +24,18 @@ public:
      *  Create a getter object that will use data from a file with a specified name.
      *
      **/
-    JSONGetter(QString const & fileName);
+    JSONGetter(QString const & fileName) { init(QSTR_DATA_PTR(fileName)); }
 
     /**
      * @brief JSONGetter
      * @param fileName
      */
-    JSONGetter(std::string const & fileName);
-
+    JSONGetter(std::string const & fileName) { init(fileName.c_str()); }
 
     /**
      *  Create a getter object that will use data from a given XML
      **/
-    JSONGetter(QJsonObject &document) :
-        mDocument(document)
+    JSONGetter(QJsonObject &document) : mDocument(document)
     {
         mNodePath.push_back(mDocument);
     }
@@ -158,6 +157,8 @@ public:
     }
 
 private:
+    void init(const char *fileName);
+
     std::vector<QJsonObject> mNodePath;
     QString     mFileName;
     QJsonObject mDocument;

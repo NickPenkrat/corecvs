@@ -214,6 +214,11 @@ ImageCaptureInterface::CapErrorCode ImageCaptureInterface::getFormats(int * /*nu
     return FAILURE;
 }
 
+bool ImageCaptureInterface::getCurrentFormat(ImageCaptureInterface::CameraFormat & /*format*/)
+{
+    return false;
+}
+
 QString ImageCaptureInterface::getInterfaceName()
 {
     return "";
@@ -229,7 +234,7 @@ string ImageCaptureInterface::getDeviceSerial(int /*num*/)
     return "";
 }
 
-ImageCaptureInterface::CapErrorCode ImageCaptureInterface::initCapture(CameraFormat * /*actualFormat*/)
+ImageCaptureInterface::CapErrorCode ImageCaptureInterface::initCapture()
 {
     return FAILURE;
 }

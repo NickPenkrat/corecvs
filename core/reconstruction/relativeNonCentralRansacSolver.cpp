@@ -40,7 +40,7 @@ void corecvs::RelativeNonCentralRansacSolver::sampleRays()
     pss[1].location.rotor = corecvs::Quaternion(0, 0, 0, 1);
     pss[1].location.shift = corecvs::Vector3dd(0, 0, 0);
 
-    int N = matchesRansac.size();
+    int N = (int)matchesRansac.size();
 
     bool multiCam = true;
     int idxs[6] = { 0 };
@@ -108,9 +108,9 @@ void corecvs::RelativeNonCentralRansacSolver::estimatePose()
 
 void corecvs::RelativeNonCentralRansacSolver::scoreCurrent()
 {
-    int N = pss[0].cameras.size();
-    int M = pss[1].cameras.size();
-    int K = currentHypothesis.size();
+    int N = (int)pss[0].cameras.size();
+    int M = (int)pss[1].cameras.size();
+    int K = (int)currentHypothesis.size();
 
     fundamentals.resize(K);
     essentials.resize(K);
@@ -182,8 +182,8 @@ void corecvs::RelativeNonCentralRansacSolver::selectBest()
         return;
     if (maxCnt > maxInliers)
     {
-        int N = pss[0].cameras.size();
-        int M = pss[1].cameras.size();
+        int N = (int)pss[0].cameras.size();
+        int M = (int)pss[1].cameras.size();
         std::vector<int> inlierStats(N * M);
         maxInliers = maxCnt;
         bestHypothesis = currentHypothesis[maxIdx];
@@ -213,8 +213,8 @@ corecvs::Affine3DQ corecvs::RelativeNonCentralRansacSolver::getBestHypothesis() 
 
 void corecvs::RelativeNonCentralRansacSolver::computeError(double out[])
 {
-    int N = pss[0].cameras.size();
-    int M = pss[1].cameras.size();
+    int N = (int)pss[0].cameras.size();
+    int M = (int)pss[1].cameras.size();
 
 #ifndef WIN32
     corecvs::Matrix33 fundamentals[N * M];
@@ -255,7 +255,7 @@ void corecvs::RelativeNonCentralRansacSolver::computeError(double out[])
 
 int corecvs::RelativeNonCentralRansacSolver::getInliersCount()
 {
-    return bestInliers.size();
+    return (int)bestInliers.size();
 }
 
 void corecvs::RelativeNonCentralRansacSolver::readParams(const double in[])

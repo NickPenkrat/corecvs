@@ -13,9 +13,11 @@
 #ifdef WITH_MKL
 #include <mkl.h>
 #else
-#define LAPACK_COMPLEX_CPP
-#include <cblas.h>
-#include <lapacke.h>
+#  include <complex>
+#  define lapack_complex_float  std::complex<float>
+#  define lapack_complex_double std::complex<double>
+#  include <cblas.h>
+#  include <lapacke.h>
 #endif
 #endif
 
@@ -61,7 +63,8 @@ vector<double> LevenbergMarquardt::fit(const vector<double> &input, const vector
 
     double norm = std::numeric_limits<double>::max();
 
-    for (int g = 0; (g < maxIterations) && (lambda < maxlambda) && !converged; g++)
+    int g = 0;
+    for (g = 0; (g < maxIterations) && (lambda < maxlambda) && !converged; g++)
     {
         if (traceProgress) {
             if ((g % ((maxIterations / 100) + 1) == 0))
@@ -249,6 +252,8 @@ vector<double> LevenbergMarquardt::fit(const vector<double> &input, const vector
     for (int i = 0; i < f->inputs; i++) {
         result.push_back(beta[i]);
     }
+
+    iterations = g;
     return result;
 }
 

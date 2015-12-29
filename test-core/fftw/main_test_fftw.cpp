@@ -57,4 +57,8 @@ TEST(FFTWWrapper, doublePrecisionTest)
     delete_safe(ppm);
     delete_safe(ppmLoader);
     delete_safe(fftResult);
+
+    deletearr_safe(input);
+    deletearr_safe(fft);
+    deletearr_safe(output);
 }

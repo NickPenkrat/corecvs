@@ -35,6 +35,7 @@ CORE_INCLUDEPATH = \
     $$COREDIR/geometry \
     $$COREDIR/kalman \
     $$COREDIR/kltflow \
+    $$COREDIR/meta \
     $$COREDIR/math \
 #   $$COREDIR/math/avx \                        # not used
 #   $$COREDIR/math/fixed \                      # not used

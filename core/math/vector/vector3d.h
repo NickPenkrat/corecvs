@@ -116,6 +116,14 @@ public:
         return Vector2d<ElementType>(y(), z());
     }
 
+    void setXY(const Vector2d<ElementType> &vec2d )
+    {
+        this->x() = vec2d[0];
+        this->y() = vec2d[1];
+    }
+
+
+
     /**
      * \brief This function implements the vector cross product (See http://en.wikipedia.org/wiki/Vector_product).
      * It is computed as follows:

@@ -223,7 +223,7 @@ void corecvs::PhotostationPlacer::filterEssentialRansac(int psA, int camA, int p
     std::vector<int> bestInliers;
 
     std::mt19937 rng;
-    int N = ransacableIdx.size();
+    int N = (int)ransacableIdx.size();
     std::cout << psA << ":" << camA << "<>" << psB << ":" << camB << ": " << ransacableIdx.size() << std::endl;
     if (N == 0)
         return;
@@ -432,7 +432,7 @@ void corecvs::PhotostationPlacer::detectAll()
         for (int j = 0; j < images[i].size(); ++j)
         {
             filenames.push_back(images[i][j]);
-            img_map[filenames.size() - 1] = std::make_pair(i, j);
+            img_map[(int)filenames.size() - 1] = std::make_pair(i, j);
         }
     }
 
@@ -447,7 +447,8 @@ void corecvs::PhotostationPlacer::detectAll()
     keyPoints.resize(calibratedPhotostations.size());
     for (int i = 0; i < keyPoints.size(); ++i)
         keyPoints[i].resize(calibratedPhotostations[i].cameras.size());
-    int N = filenames.size();
+
+    int N = (int)filenames.size();
     for (int i = 0; i < N; ++i)
     {
         auto& kps = pipeline.images[i].keyPoints.keyPoints;
@@ -465,8 +466,8 @@ void corecvs::PhotostationPlacer::detectAll()
     auto& ref = pipeline.refinedMatches.matchSets;
     for (auto& ms: ref)
     {
-        auto id1 = img_map[ms.imgA];
-        auto id2 = img_map[ms.imgB];
+        auto id1 = img_map[(int)ms.imgA];
+        auto id2 = img_map[(int)ms.imgB];
         bool swap = id1.first > id2.first;
         int psIdA = swap ? id2.first : id1.first;
         int psIdB = swap ? id1.first : id2.first;
