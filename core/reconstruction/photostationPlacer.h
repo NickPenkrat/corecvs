@@ -9,6 +9,7 @@
 #include "reconstructionStructs.h"
 #include "levenmarq.h"
 #include "tbb/mutex.h"
+#include "typesafeBitmaskEnums.h"
 #include <atomic>
 
 namespace std
@@ -36,8 +37,66 @@ struct hash<std::tuple<int, int, int, int>>
 };
 }
 
+enum class PhotostationPlacerOptimizationType
+{
+    NON_DEGENERATE_ORIENTATIONS = 1, // Orientations of all cameras except first
+    DEGENERATE_ORIENTATIONS = 2,     // Orientation of first camera
+    NON_DEGENERATE_TRANSLATIONS = 4, // Translations of all cameras except first (TODO: Clarify if for noncentral camera we would like to fix "scale")
+    DEGENERATE_TRANSLATIONS = 8,     // Translation of first camera
+    FOCALS = 16,                     // Camera focals in multicamera
+    PRINCIPALS = 32,                 // Camera principals in multicamera
+    POINTS = 64,                     // 3D points
+};
+enum class PhotostationPlacerOptimizationErrorType
+{
+    REPROJECTION,                    // Reprojection error
+    ANGULAR,                         // Angular error
+    CROSS_PRODUCT,                    // Cross product error
+    RAY_DIFF
+};
+
+/*
+ * Parameters are stored in the following way (section is omitted depending on PhotostationPlacerOptimizationType)
+ * N - number of "preplaced" photostations
+ * M - number of points
+ * M'- number of projections
+ * K - number of cameras in photostation
+ *
+ * 4            Orientation of first multicamera       DEGENERATE_ORIENTATIONS
+ * 4 x (N - 1)  Orientations of multicameras           NON_DEGENERATE_ORIENTATIONS
+ * 3            Translation of first multicamera       DEGENERATE_TRANSLATIONS
+ * 3 x (N - 1)  Translations of multicameras           NON_DEGENERATE_TRANSLATIONS
+ * 1 x K        Focal lengths of cameras               FOCALS
+ * 2 x K        Principal point projections of cameras PRINCIPALS
+ * 3 x M        3D points                              POINTS
+ *
+ * Output parameters are stored sequentially as all projections of all 3d points
+ * 2 x M'       Reprojections                          ANGULAR
+ * 1 x M'       Angles between rays                    REPROJECTION
+ * 3 x M'       Ray cross products                     CROSS_PRODUCT
+ * 2 x M'       Ray differences                        RAY_DIFF
+ */
+
+template<>
+struct is_bitmask<PhotostationPlacerOptimizationType> : std::true_type {};
+
+
 namespace corecvs
 {
+
+enum class PhotostationInitializationType
+{
+    NONE,
+    GPS,
+    STATIC_POINTS
+};
+
+struct PhotostationInitialization
+{
+    PhotostationInitializationType initializationType;
+    std::vector<PointObservation__> staticPoints;
+    corecvs::Vector3dd gpsData;
+};
 
 struct PhotostationPlacerFeatureParams
 {
@@ -67,7 +126,16 @@ struct PhotostationPlacerFeatureSelectionParams
     bool tuneFocal = false;
 };
 
-class PhotostationPlacer : PhotostationPlacerFeatureParams, PhotostationPlacerEssentialFilterParams, PhotostationPlacerFeatureSelectionParams
+struct PhotostationPlacerParams
+{
+    bool forceGps = true;
+    PhotostationPlacerOptimizationType optimizationParams = 
+        PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS |
+        PhotostationPlacerOptimizationType::POINTS;// | PhotostationPlacerOptimizationType::FOCALS;
+    PhotostationPlacerOptimizationErrorType errorType = PhotostationPlacerOptimizationErrorType::RAY_DIFF;
+};
+
+class PhotostationPlacer : PhotostationPlacerFeatureParams, PhotostationPlacerEssentialFilterParams, PhotostationPlacerFeatureSelectionParams, PhotostationPlacerParams
 {
 public:
     void detectAll();
@@ -78,10 +146,12 @@ public:
     void selectEpipolarInliers();
     void backprojectAll();
     void buildTracks(int psA, int psB, int psC);
-    void fitLMedians(bool tuneFocal = false);
+    void fit(bool tuneFocal);
+    void fit(const PhotostationPlacerOptimizationType& optimizationSet = PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS, int num = 100);
     void appendPs();
 	void appendTracks(const std::vector<int> &inlierIds, int ps);
 	std::vector<std::vector<PointObservation__>> verify(const std::vector<PointObservation__> &pois);
+    std::vector<PointObservation__> projectToAll(const std::vector<PointObservation__> &pois);
 
     std::vector<std::tuple<int, corecvs::Vector2dd, int, corecvs::Vector3dd>> getPossibleTracks(int ps);
 
@@ -91,13 +161,17 @@ public:
 	std::vector<std::vector<std::vector<corecvs::RGBColor>>> keyPointColors;
     std::vector<std::vector<std::vector<std::tuple<int, int, int, int, double>>>> matches, matchesCopy;
     std::vector<std::tuple<int, int, std::vector<int>>> pairInliers;
-    std::vector<corecvs::Vector3dd> gpsData;
+    std::vector<PhotostationInitialization> psInitData;
     std::vector<std::pair<corecvs::Vector3dd,corecvs::Vector3dd>> backprojected [6];
 
 	std::vector<PointObservation__> tracks;
 	std::unordered_map<std::tuple<int, int, int>, int> trackMap;
+	int getMovablePointCount();
 	int getReprojectionCnt();
 	int getOrientationInputNum();
+	int getErrorComponentsPerPoint();
+	void getErrorSummary(PhotostationPlacerOptimizationErrorType errorType);
+	void getErrorSummaryAll();
 protected:
 	void readOrientationParams(const double in[]);
 	void writeOrientationParams(double out[]);
@@ -105,6 +179,16 @@ protected:
     std::vector<std::vector<int>> getDependencyList();
     std::vector<std::pair<int, int>> revDependency; // track, projection
 
+    struct ParallelErrorComputator
+    {
+        void operator() (const corecvs::BlockedRange<int> &r) const;
+        ParallelErrorComputator(PhotostationPlacer* placer, const std::vector<int> &idxs, double* output) : placer(placer), idxs(idxs), output(output)
+        {
+        }
+        PhotostationPlacer* placer;
+        std::vector<int> idxs;
+        double* output;
+    };
 	struct OrientationFunctor : corecvs::SparseFunctionArgs
 	{
 		void operator() (const double in[], double out[], const std::vector<int> &idxs)
