@@ -31,6 +31,8 @@
 #include "vector.h"
 #include "sparseMatrix.h"
 
+#include <chrono>
+
 namespace corecvs {
 
 template<typename MatrixClass, typename FunctionClass>
@@ -50,6 +52,8 @@ public:
     bool trace;
     bool traceMatrix;
     bool traceJacobian;
+    bool useConjugatedGradient = false;
+    int  conjugatedGradientIterations = 100;
 
     LevenbergMarquardtImpl(int _maxIterations = 25, double _startLambda = 10, double _lambdaFactor = 2.0) :
         f(NULL),
@@ -96,8 +100,12 @@ public:
 
     double norm = std::numeric_limits<double>::max();
 
+    double totalEval = 0.0, totalJEval = 0.0, totalLinSolve = 0.0, totalATA = 0.0, totalTotal = 0.0;
+
     for (int g = 0; (g < maxIterations) && (lambda < maxlambda) && !converged; g++)
     {
+        double timeEval = 0.0, timeJEval = 0.0, timeLinSolve = 0.0, timeATA = 0.0, timeTotal = 0.0;
+        auto beginT = std::chrono::high_resolution_clock::now();
         if (traceProgress) {
             if ((g % ((maxIterations / 100) + 1) == 0))
             {
@@ -105,15 +113,25 @@ public:
             }
         }
 
+        auto Jbegin = std::chrono::high_resolution_clock::now();
         MatrixClass J = f->getNativeJacobian(&(beta[0]));
+        auto Jend = std::chrono::high_resolution_clock::now();
+        timeJEval += (Jend - Jbegin).count() / 1e9;
 
         if (traceJacobian) {
             cout << "New Jacobian:" << endl << J << endl;
         }
 
+        auto ATAbegin = std::chrono::high_resolution_clock::now();
         MatrixClass JTJ = J.ata();
+        auto ATAend = std::chrono::high_resolution_clock::now();
+        timeATA += (ATAend - ATAbegin).count() / 1e9;
 
+        auto Fbegin = std::chrono::high_resolution_clock::now();
         F(beta, y);
+        auto Fend = std::chrono::high_resolution_clock::now();
+        timeEval += (Fend - Fbegin).count() / 1e9;
+
         diff = target - y;
         Vector d = diff * J;
 
@@ -198,8 +216,24 @@ public:
              *       try to make last flag "false" and examine your problem for
              *       degeneracy
              */
-            delta = A.linSolve(B, true, true);
+
+            auto LSbegin = std::chrono::high_resolution_clock::now();
+            if (!useConjugatedGradient)
+            {
+               delta = A.linSolve(B, true, true);
+            }
+            else
+            {
+                delta = conjugatedGradient(A, B);
+            }
+            auto LSend = std::chrono::high_resolution_clock::now();
+            timeLinSolve += (LSend - LSbegin).count() / 1e9;
+
+            auto EVbegin = std::chrono::high_resolution_clock::now();
             F(beta + delta, yNew);
+            auto EVend = std::chrono::high_resolution_clock::now();
+            timeEval += (EVend - EVbegin).count() / 1e9;
+
             diffNew = target - yNew;
             double normNew = diffNew.sumAllElementsSq();
             if (trace) {
@@ -242,7 +276,34 @@ public:
                 }
             }
         }
+        auto Tend = std::chrono::high_resolution_clock::now();
+        timeTotal = (Tend - beginT).count() / 1e9;
+#if 0
+        if (traceProgress)
+        {
+            std::cout << "Total : " << timeTotal << "s " << std::endl
+                      << "Eval  : " << timeEval << "s (" << timeEval / timeTotal * 100.0 << ")" << std::endl
+                      << "JEval : " << timeJEval << "s (" << timeJEval / timeTotal * 100.0 << ")" << std::endl
+                      << "ATA   : " << timeATA << "s (" << timeATA / timeTotal * 100.0 << ")" << std::endl
+                      << "LS    : " << timeLinSolve << "s (" << timeLinSolve / timeTotal * 100.0 << ")" << std::endl
+                      << "Other : " << (timeTotal - timeEval - timeJEval - timeATA - timeLinSolve) << "s (" << (timeTotal - timeEval - timeJEval - timeATA - timeLinSolve) / timeTotal * 100.0 << ")" << std::endl;
+        }
+#endif
+        totalTotal += timeTotal;
+        totalEval += timeEval;
+        totalJEval += timeJEval;
+        totalATA += timeATA;
+        totalLinSolve += timeLinSolve;
     }
+        if (traceProgress)
+        {
+            std::cout << "Total : " << totalTotal << "s " << std::endl
+                      << "Eval  : " << totalEval << "s (" << totalEval / totalTotal * 100.0 << ")" << std::endl
+                      << "JEval : " << totalJEval << "s (" << totalJEval / totalTotal * 100.0 << ")" << std::endl
+                      << "ATA   : " << totalATA << "s (" << totalATA / totalTotal * 100.0 << ")" << std::endl
+                      << "LS    : " << totalLinSolve << "s (" << totalLinSolve / totalTotal * 100.0 << ")" << std::endl
+                      << "Other : " << (totalTotal - totalEval - totalJEval - totalATA - totalLinSolve) << "s (" << (totalTotal - totalEval - totalJEval - totalATA - totalLinSolve) / totalTotal * 100.0 << ")" << std::endl;
+        }
 
     if (traceProgress) {
         cout << "]" << endl;
@@ -254,6 +315,42 @@ public:
         result.push_back(beta[i]);
     }
     return result;
+}
+
+corecvs::Vector conjugatedGradient(const MatrixClass &A, const corecvs::Vector &B)
+{
+    corecvs::Vector X(A.w), R = B, p = B;
+    double rho0 = B.sumAllElementsSq(), rho1 = 0.0;
+    for (int i = 0; i < A.w; ++i) X[i] = 0.0;
+    
+    static int cgf = 0, cgo = 0;
+    
+    std::cout << "PRECG: " << !(A*X-B) << std::endl;
+    double eps = 1e-9 * rho0;
+    for (int i = 0; i < conjugatedGradientIterations; ++i)
+    {
+        p = i ? R + (rho0 / rho1) * p : R;
+        auto w = A * p;
+        double alpha = rho0 / (w & p);
+        X = X + alpha * p;
+        R = A * X - B;
+        rho1 = rho0;
+        rho0 = R.sumAllElementsSq();
+        // XXX: sometimes matrices are close to degenerate, so
+        //      CG-step may fail
+        if (rho0 < eps)
+        {
+            break;
+        }
+        if (rho1 < rho0)
+            cgf++;
+        else
+            cgo++;
+    }
+    if ((A*X-B).sumAllElementsSq() > B.sumAllElementsSq())
+        return A.linSolve(B);
+    std::cout << "POST-CG: " << !(A*X-B) << " cg failures: " << ((double)cgf) / (double)((cgf + cgo + 1.0)) * 100.0 << "%" << std::endl;
+    return X;
 }
 
     bool hasParadox;
