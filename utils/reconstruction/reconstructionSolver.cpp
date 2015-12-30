@@ -14,6 +14,11 @@
 # include "bufferReaderProvider.h"
 #endif
 
+//#define ESTIMATE_C
+//#define ESTIMATE_FC
+//#define ESTIMATE_F
+//#define ESTIMATE_RP
+
 int ReconstructionJob::getOutputNum() const
 {
     std::vector<double> err;
@@ -36,14 +41,14 @@ int ReconstructionJob::getInputNum() const
         * (int)scene.photostations.size()
 #ifdef ESTIMATE_FC
 #ifdef ESTIMATE_F
-        + 6
+        + scene.photostations[0].cameras.size()
 #endif
 #ifdef ESTIMATE_C
-        + 2 * 6
+        + 2 * scene.photostations[0].cameras.size()
 #endif
 #endif
 #ifdef ESTIMATE_RP
-        + 7 * 5
+        + 7 * (scene.photostations[0].cameras.size() - 1)
 #endif
         ;
 #endif
@@ -73,7 +78,7 @@ void ReconstructionJob::writeParams(double out[], corecvs::Vector3dd mean, corec
             out[argout++] = loc.rotor[j];
     }
 #ifdef POI_ONLY
-    for (int i = 0; i < 6; ++i)
+    for (int i = 0; i < scene.photostations[0].cameras.size(); ++i)
     {
 #ifdef ESTIMATE_FC
 #ifdef ESTIMATE_F
@@ -144,7 +149,7 @@ void ReconstructionJob::readParams(const double in[], corecvs::Vector3dd mean, c
         loc.rotor = loc.rotor.normalised();
     }
 #ifdef POI_ONLY
-    for (int kk = 0; kk < 6; ++kk)
+    for (int kk = 0; kk < scene.photostations[0].cameras.size(); ++kk)
     {
 #ifdef ESTIMATE_FC
 #ifdef ESTIMATE_F
@@ -154,7 +159,7 @@ void ReconstructionJob::readParams(const double in[], corecvs::Vector3dd mean, c
         double cx = in[argin++];
         double cy = in[argin++];
 #endif
-        for (int i = 0; i < 5; ++i)
+        for (int i = 0; i < scene.photostations.size(); ++i)
         {
 #ifdef ESTIMATE_F
             scene.photostations[i].cameras[kk].intrinsics.focal = corecvs::Vector2dd(f, f);
@@ -173,7 +178,7 @@ void ReconstructionJob::readParams(const double in[], corecvs::Vector3dd mean, c
         for (int j = 0; j < 4; ++j)
             orientation[j] = in[argin++];
         orientation.normalise();
-        for (int i = 0; i < 5; ++i)
+        for (int i = 0; i < scene.photostations.size(); ++i)
         {
             scene.photostations[i].cameras[kk].extrinsics.position = pos;
             scene.photostations[i].cameras[kk].extrinsics.orientation = orientation;
