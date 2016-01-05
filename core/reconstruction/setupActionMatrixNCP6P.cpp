@@ -1,16 +1,6 @@
 #include "relativeNonCentralP6PSolver.h"
 
-#ifdef WITH_BLAS
-# ifdef WITH_MKL
-#  include <mkl.h>
-#  include <mkl_lapacke.h>
-# else
-#  include <cblas.h>
-#  include <lapacke.h>
-# endif
-#else
-# error Cannot build solver without BLAS/LAPACK/MKL
-#endif
+#include "cblasLapackeWrapper.h"
 
 int highMonomials[26] = { 56, 24, 26, 27, 28, 30, 31, 33, 35, 36, 37, 38, 39, 40, 42, 43, 44, 45, 46, 48, 49, 50, 51, 53, 54, 55};
 

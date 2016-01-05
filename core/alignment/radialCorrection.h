@@ -18,6 +18,7 @@
 #include "g12Buffer.h"
 #include "rgb24Buffer.h"
 #include "function.h"
+#include "levenmarq.h"
 
 namespace corecvs {
 
@@ -104,6 +105,33 @@ public:
                 cx + ((dx + radialX + tangentX) / mParams.aspect() * mParams.scale() * mParams.normalizingFocal()),
                 cy + ((dy + radialY + tangentY)                    * mParams.scale() * mParams.normalizingFocal())
                ) + Vector2dd(addShiftX, addShiftY);
+    }
+    struct InverseFunctor : FunctionArgs
+    {
+        void operator() (const double* in, double *out)
+        {
+            Vector2dd x(in[0], in[1]);
+            auto err = correction->map(x[1], x[0]) - target;
+            out[0] = err[0];
+            out[1] = err[1];
+        }
+        InverseFunctor(Vector2dd target, const RadialCorrection* correction) : FunctionArgs(2, 2), target(target), correction(correction)
+        {
+        }
+        Vector2dd target;
+        const RadialCorrection* correction;
+    };
+    Vector2dd invMap(double y, double x) const
+    {
+        InverseFunctor functor(Vector2dd(x, y), this);
+        LevenbergMarquardt lm(1000);
+        lm.f = &functor;
+        std::vector<double> in(2), out(2);
+        auto res = lm.fit(in, out);
+        auto foo = !(map(res[1], res[0]) - Vector2dd(x, y));
+        std::cout << foo << std::endl;
+        CORE_ASSERT_TRUE_S(foo < 1.0);
+        return Vector2dd(res[0], res[1]);
     }
 
     /**/

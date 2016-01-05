@@ -156,6 +156,7 @@ public:
     Matrix *transposed() const;
     Matrix t() const;
     void transpose();
+    Matrix ata() const;
 
 #ifdef WITH_BLAS
     double det(void) const;
@@ -174,9 +175,8 @@ public:
 
     static bool matrixSolveGaussian(Matrix *A, Matrix *B);
 
-#ifdef WITH_BLAS
-    static corecvs::Vector linSolve(const corecvs::Matrix &A, const corecvs::Vector &B);
-#endif
+    corecvs::Vector linSolve(const corecvs::Vector &B, bool symmetric = false, bool posDef = false) const;
+    static corecvs::Vector LinSolve(const corecvs::Matrix &A, const corecvs::Vector &B, bool symmetric = false, bool posDef = false);
 
     inline Matrix& operator +=(const Matrix& V)
     {

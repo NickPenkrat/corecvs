@@ -6,23 +6,11 @@
  * \date Mar 24, 2010
  * \author alexander
  */
-
-#ifdef WITH_BLAS
-#ifdef WITH_MKL
-#   include <mkl.h>
-#else
-#   include <complex>
-#   define lapack_complex_float  std::complex<float>
-#   define lapack_complex_double std::complex<double>
-#   include <lapacke.h>
-#   include <cblas.h>
-#endif
-# endif
-
 #include "global.h"
 #include "matrix.h"
 #include "matrix33.h"
 
+#include "cblasLapackeWrapper.h"
 #include "tbbWrapper.h"
 #include "sseWrapper.h"
 
@@ -249,8 +237,6 @@ Matrix operator *(DiagonalMatrix &D, const Matrix &M)
 }
 
 #else // !WITH_DIRTY_GEMM_HACKS
-
-
 
 
 #   include "tbbWrapper.h"
@@ -502,7 +488,6 @@ struct ParallelMM8
                     s70 = multiplyAdd(a3, b0, s70); s71 = multiplyAdd(a3, b1, s71);
 
                     As++;
-
                 }
 
                 s00.save(&result.a(row + 0, column)); s01.save(&result.a(row + 0, column + 4));
@@ -514,8 +499,6 @@ struct ParallelMM8
                 s50.save(&result.a(row + 5, column)); s51.save(&result.a(row + 5, column + 4));
                 s60.save(&result.a(row + 6, column)); s61.save(&result.a(row + 6, column + 4));
                 s70.save(&result.a(row + 7, column)); s71.save(&result.a(row + 7, column + 4));
-
-
             }
 
             for (; column < result.w; column++)
@@ -556,7 +539,6 @@ struct ParallelMM8
 };
 
 
-#if 0 // unfinished stuff
 template<int vectorize = true>
 struct ParallelMMT
 {
@@ -600,12 +582,12 @@ struct ParallelMMT
                 }
             }
 #endif
-            for (; column < result.w; column++)
+            for (; column < result.w; ++column)
             {
                 double sum = 0;
                 for (int runner = 0; runner < A.w; runner++)
                 {
-                    sum += A.a(row, runner) * B.a(column, runner);
+                    sum += A.a(row, runner) * B.a(runner, column);
                 }
                 result.a(row, column) = sum;
             }
@@ -618,7 +600,6 @@ struct ParallelMMT
     const Matrix *pB;
     Matrix *pResult;
 };
-#endif
 
 struct ParallelMV
 {
@@ -703,15 +684,16 @@ struct ParallelMD
 };
 
 
-
+/* TODO: clarify what to use ParallelMMT or ParallelMM8 at this function
+ */
 Matrix Matrix::multiplyHomebrew(const Matrix &A, const Matrix &B, bool parallel, bool vectorize)
 {
     CORE_ASSERT_TRUE(A.w == B.h, "Matrices have wrong sizes");
     Matrix result(A.h, B.w, false);
     if (vectorize) {
-        parallelable_for (0, result.h, 8, ParallelMM8<true> (&A, &B, &result), parallel);
+        parallelable_for (0, result.h, 8, ParallelMMT<true> (&A, &B, &result), parallel);
     } else {
-        parallelable_for (0, result.h, 8, ParallelMM8<false>(&A, &B, &result), parallel);
+        parallelable_for (0, result.h, 8, ParallelMMT<false>(&A, &B, &result), parallel);
     }
     return result;
 }
@@ -888,14 +870,14 @@ Matrix operator -(const Matrix &A, const Matrix &B)
 
 ostream & operator <<(ostream &out, const Matrix &matrix)
 {
-    streamsize wasPrecision = out.precision(6);
+    streamsize wasPrecision = out.precision(15);
     out << "[";
     for (int i = 0; i < matrix.h; i++)
     {
         for (int j = 0; j < matrix.w; j++)
         {
-            out.width(9);
-            out << matrix.a(i, j) << " ";
+            out.width(20);
+            out << std::scientific << matrix.a(i, j) << " ";
         }
         if (i + 1 < matrix.h)
             out << ";\n";
@@ -1232,23 +1214,47 @@ Matrix Matrix::inv() const
 #endif
 }
 
-#ifdef WITH_BLAS
-corecvs::Vector corecvs::Matrix::linSolve(const corecvs::Matrix &A, const corecvs::Vector &B)
+corecvs::Vector corecvs::Matrix::linSolve(const corecvs::Vector &B, bool symmetric, bool posDef) const
 {
-    corecvs::Matrix copy(A);
-#ifndef WIN32
-    int pivot[std::min(A.h, A.w)];
-#else
-    std::unique_ptr<int[]> pivot_(new int[std::min(A.h, A.w)]);
-    int *pivot = pivot_.get();
-#endif
-    corecvs::Vector res(B);
-    CORE_ASSERT_TRUE_S(A.h == B.size());
-    LAPACKE_dgetrf(LAPACK_ROW_MAJOR, copy.h, copy.w, &copy.a(0, 0), copy.stride, pivot);
-    LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', res.size(), 1, &copy.a(0, 0), copy.stride, pivot, &res[0], 1);
-    return res;
+    return LinSolve(*this, B, symmetric, posDef);
 }
+
+corecvs::Vector corecvs::Matrix::LinSolve(const corecvs::Matrix &A, const corecvs::Vector &B, bool symmetric, bool posDef)
+{
+    CORE_ASSERT_TRUE_S(A.h == B.size());
+    CORE_ASSERT_TRUE_S(A.h == A.w);
+#ifdef WITH_BLAS
+    corecvs::Matrix copy(A);
+    corecvs::Vector res(B);
+    if (!posDef)
+    {
+#ifndef WIN32
+        int pivot[std::min(A.h, A.w)];
+#else
+        std::unique_ptr<int[]> pivot_(new int[std::min(A.h, A.w)]);
+        int *pivot = pivot_.get();
 #endif
+        if (!symmetric)
+        {
+            LAPACKE_dgetrf(LAPACK_ROW_MAJOR, copy.h, copy.w, &copy.a(0, 0), copy.stride, pivot);
+            LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', res.size(), 1, &copy.a(0, 0), copy.stride, pivot, &res[0], 1);
+        }
+        else
+        {
+            LAPACKE_dsytrf(LAPACK_ROW_MAJOR, 'U', copy.h, &copy.a(0, 0), copy.stride, pivot);
+            LAPACKE_dsytrs(LAPACK_ROW_MAJOR, 'U', res.size(), 1, &copy.a(0, 0), copy.stride, pivot, &res[0], 1);
+        }
+    }
+    else
+    {
+        LAPACKE_dpotrf(LAPACK_ROW_MAJOR, 'U', copy.w, &copy.a(0, 0), copy.stride);
+        LAPACKE_dpotrs(LAPACK_ROW_MAJOR, 'U', copy.w, 1, &copy.a(0, 0), copy.stride, &res[0], 1);
+    }
+    return res;
+#else
+    return A.inv() * B;
+#endif
+}
 
 Matrix Matrix::invSVD() const
 {
@@ -1799,5 +1805,15 @@ int Matrix::jacobi(Matrix *a, DiagonalMatrix *d, Matrix *v, int *nrotpt)
 }
 #undef ROTATE
 
+Matrix Matrix::ata() const
+{
+#ifndef WITH_BLAS
+    return t() * *this;
+#else
+    Matrix res(w, w);
+    cblas_dgemm(CblasRowMajor, CblasTrans, CblasNoTrans, w, w, h, 1.0, data, stride, data, stride, 0.0, res.data, res.stride);
+    return res;
+#endif
+}
 
 } //namespace corecvs

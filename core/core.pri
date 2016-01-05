@@ -35,7 +35,6 @@ CORE_INCLUDEPATH = \
     $$COREDIR/geometry \
     $$COREDIR/kalman \
     $$COREDIR/kltflow \
-    $$COREDIR/meta \
     $$COREDIR/math \
 #   $$COREDIR/math/avx \                        # not used
 #   $$COREDIR/math/fixed \                      # not used
@@ -45,6 +44,7 @@ CORE_INCLUDEPATH = \
     $$COREDIR/math/sse \
     $$COREDIR/math/vector \
     $$COREDIR/meanshift \
+    $$COREDIR/meta \
     $$COREDIR/rectification \
     $$COREDIR/reflection \
     $$COREDIR/segmentation \
@@ -62,7 +62,8 @@ CORE_INCLUDEPATH = \
     $$COREDIR/cameracalibration \
     $$COREDIR/graphs \
     $$COREDIR/reconstruction \
-    $$COREDIR/polynomial
+    $$COREDIR/polynomial \
+    $$COREDIR/cblasLapackeWrapper
 
 
 INCLUDEPATH += $$CORE_INCLUDEPATH

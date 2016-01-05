@@ -13,7 +13,7 @@ namespace corecvs
 
 struct RelativeNonCentralRansacSolverSettings
 {
-    RelativeNonCentralRansacSolverSettings(size_t maxIterations =50000, double inlierThreshold = 1.0) : maxIterations(maxIterations), inlierThreshold(inlierThreshold)
+    RelativeNonCentralRansacSolverSettings(size_t maxIterations =12500, double inlierThreshold = 1.0) : maxIterations(maxIterations), inlierThreshold(inlierThreshold)
     {
     }
     size_t maxIterations = 1000000LLU;

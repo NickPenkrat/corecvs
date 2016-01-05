@@ -4,17 +4,7 @@
 #include "matrix.h"
 #include "vector.h"
 
-#ifdef WITH_BLAS
-# ifdef WITH_MKL
-#  include <mkl.h>
-#  include <mkl_lapacke.h>
-# else
-#  include <cblas.h>
-#  include <lapacke.h>
-# endif
-#else
-# error Cannot build polynomial solver without BLAS/LAPACK/MKL
-#endif
+#include "cblasLapackeWrapper.h"
 
 const double corecvs::PolynomialSolver::RELATIVE_TOLERANCE = 1e-9;
 

@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "runtimeTypeBuffer.h"
+#include "rgbColor.h"
 
 typedef std::string DescriptorType;
 typedef std::string DetectorType;
@@ -24,6 +25,7 @@ struct KeyPoint
 	double angle;
 	double response;
 	int    octave;
+	corecvs::RGBColor color;
 
     template<typename V>
     void accept(V &visitor)

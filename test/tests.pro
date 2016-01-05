@@ -37,6 +37,11 @@ with_opencv {
 #        calibration_job_estimate_distortion \
 #        calibration_job_apply_undistortion \
 #        calibration_job_calibrate \
+        \
+        geometry_verificator \
+        photostation_placer \
+        photostation_placer_features \
+
 }
 
 grab.file                           = grab/grab.pro
@@ -70,3 +75,8 @@ calibration_job_detect              = calibration_job_detect/calibration_job_det
 calibration_job_estimate_distortion = calibration_job_estimate_distortion/calibration_job_estimate_distortion.pro
 calibration_job_apply_undistortion  = calibration_job_apply_undistortion/calibration_job_apply_undistortion.pro
 calibration_job_calibrate           = calibration_job_calibrate/calibration_job_calibrate.pro
+
+geometry_verificator                = geometry_verificator/geometry_verificator.pro
+
+photostation_placer.file            = photostation_placer/photostation_placer.pro
+photostation_placer_features.file   = photostation_placer_features/photostation_placer_features.pro
