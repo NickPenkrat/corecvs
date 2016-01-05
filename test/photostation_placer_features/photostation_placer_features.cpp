@@ -143,7 +143,7 @@ void storePois(const std::vector<PointObservation__> &observations, const std::s
         for (auto& p: o.projections)
         {
             auto correction = calibration.corrections[p.cameraId];
-            auto projection = correction.invMap(p.projection[1], p.projection[0]);
+            auto projection = correction.mapFromUndistorted(p.projection[1], p.projection[0]);
             ofs << "roof_v1_SP" << ((char)('A' + p.photostationId)) << p.cameraId << "_0deg.jpg" << " " << projection[0] << " " << projection[1] << std::endl;
         }
     }

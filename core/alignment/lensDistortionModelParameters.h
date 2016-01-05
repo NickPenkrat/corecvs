@@ -75,6 +75,9 @@ public:
         ASPECT_ID,
         SCALE_ID,
         NORMALIZING_FOCAL_ID,
+        SHIFTX_ID,
+        SHIFTY_ID,
+        MAP_FORWARD_ID, // Forward = from undistorted to distorted, so for compatibility reasons defaults is false
         LENS_DISTORTION_MODEL_PARAMETERS_FIELD_ID_NUM
     };
 
@@ -128,6 +131,24 @@ public:
      */
     double mNormalizingFocal;
 
+    /** 
+     * \brief shiftX 
+     * Additional shift \f$x_s\f$ 
+     */
+    double mShiftX;
+
+    /** 
+     * \brief shiftY 
+     * Additional shift \f$y_s\f$ 
+     */
+    double mShiftY;
+
+    /** 
+     * \brief True if maps from undistorted to distorted 
+     * This one is used to identify direction of map
+     */
+    bool mMapForward;
+
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
 
@@ -176,6 +197,21 @@ public:
         return mNormalizingFocal;
     }
 
+    double shiftX() const
+    {
+        return mShiftX;
+    }
+
+    double shiftY() const
+    {
+        return mShiftY;
+    }
+
+    bool mapForward() const
+    {
+        return mMapForward;
+    }
+
     /* Section with setters */
     void setPrincipalX(double principalX)
     {
@@ -217,6 +253,22 @@ public:
         mNormalizingFocal = normalizingFocal;
     }
 
+    void setShiftX(double shiftX)
+    {
+        mShiftX = shiftX;
+    }
+
+    void setShiftY(double shiftY)
+    {
+        mShiftY = shiftY;
+    }
+
+    void setMapForward(bool mapForward)
+    {
+        mMapForward = mapForward;
+    }
+
+
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
@@ -230,6 +282,9 @@ template<class VisitorType>
         visitor.visit(mAspect,                    static_cast<const DoubleField *>  (fields()[ASPECT_ID]));
         visitor.visit(mScale,                     static_cast<const DoubleField *>  (fields()[SCALE_ID]));
         visitor.visit(mNormalizingFocal,          static_cast<const DoubleField *>  (fields()[NORMALIZING_FOCAL_ID]));
+        visitor.visit(mShiftX,                    static_cast<const DoubleField *>  (fields()[SHIFTX_ID]));
+        visitor.visit(mShiftY,                    static_cast<const DoubleField *>  (fields()[SHIFTY_ID]));
+        visitor.visit(mMapForward,                static_cast<const BoolField   *>  (fields()[MAP_FORWARD_ID]));
     }
 
     LensDistortionModelParameters()
@@ -247,6 +302,9 @@ template<class VisitorType>
         , double aspect
         , double scale
         , double normalizingFocal
+        , double shiftX
+        , double shiftY
+        , bool   mapForward = false
     )
     {
         mPrincipalX = principalX;
@@ -257,6 +315,9 @@ template<class VisitorType>
         mAspect = aspect;
         mScale = scale;
         mNormalizingFocal = normalizingFocal;
+        mShiftX = shiftX;
+        mShiftY = shiftY;
+        mMapForward = mapForward;
     }
 
     friend ostream& operator << (ostream &out, LensDistortionModelParameters &toSave)

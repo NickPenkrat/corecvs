@@ -126,6 +126,39 @@ int LensDistortionModelParameters::staticInit()
           "Normalizing Focal"
         )
     );
+    fields().push_back(
+        new DoubleField
+        (
+          LensDistortionModelParameters::SHIFTX_ID,
+          offsetof(LensDistortionModelParameters, mShiftX),
+          0,
+          "Shift X",
+          "Shift X",
+          "Shift X"
+        )
+    );
+    fields().push_back(
+        new DoubleField
+        (
+          LensDistortionModelParameters::SHIFTY_ID,
+          offsetof(LensDistortionModelParameters, mShiftY),
+          0,
+          "Shift Y",
+          "Shift Y",
+          "Shift Y"
+        )
+    );
+    fields().push_back(
+        new BoolField
+        (
+          LensDistortionModelParameters::MAP_FORWARD_ID,
+          offsetof(LensDistortionModelParameters, mMapForward),
+          false,
+          "Map forward",
+          "Map forward",
+          "True if maps from undistorted to distorted"
+        )
+    );
    return 0;
 }
 

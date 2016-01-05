@@ -70,8 +70,6 @@ HEADERS+= xml/generated/outputType.h
 #####################################################
 # Classes Section
 #####################################################
-SOURCES+= xml/generated/lensDistortionModelParameters.cpp
-HEADERS+= xml/generated/lensDistortionModelParameters.h
 
 #####################################################
 # UI Classes Section

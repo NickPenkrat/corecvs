@@ -8,7 +8,8 @@ HEADERS += \
     alignment/anglePointsFunction.h \
     alignment/distPointsFunction.h \
     alignment/selectableGeometryFeatures.h \
-    alignment/lmDistortionSolver.h
+    alignment/lmDistortionSolver.h \
+    alignment/lensDistortionModelParameters.h
 
 
 SOURCES += \
@@ -20,6 +21,7 @@ SOURCES += \
     alignment/anglePointsFunction.cpp \
     alignment/distPointsFunction.cpp \
     alignment/selectableGeometryFeatures.cpp \
-    alignment/lmDistortionSolver.cpp
+    alignment/lmDistortionSolver.cpp \
+    alignment/lensDistortionModelParameters.cpp
 
 

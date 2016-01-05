@@ -225,8 +225,8 @@ void CalibrationJob::prepareRadialCorrection(LensDistortionModelParameters &sour
     }
     else
     {
-        correction.addShiftX = shift[0];
-        correction.addShiftY = shift[1];
+        correction.mParams.mShiftX = shift[0];
+        correction.mParams.mShiftY = shift[1];
     }
 
 }
@@ -536,7 +536,7 @@ void CalibrationJob::computeFullErrors()
                     auto ppp = p.point;
                     ppp[1] *= factor;
                     auto pp = photostation.project(ppp, cam);
-                    auto cp = corrections[v.cameraId].invMap(pp[1], pp[0]) - p.projection;
+                    auto cp = corrections[v.cameraId].mapFromUndistorted(pp[1], pp[0]) - p.projection;
                     if (!cp > me)
                     {
                         me = !cp;

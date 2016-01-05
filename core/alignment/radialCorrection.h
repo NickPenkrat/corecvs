@@ -30,9 +30,25 @@ public:
 
     virtual ~RadialCorrection();
 
-    inline Vector2dd map(Vector2dd const & v) const
+    inline Vector2dd map(const Vector2dd &v, bool fromUndistorted = false) const
     {
-        return map(v.y(), v.x());
+        return fromUndistorted ? mapFromUndistorted(v) : mapToUndistorted(v);
+    }
+    inline Vector2dd map(int y, int x, bool fromUndistorted = false) const
+    {
+        return fromUndistorted ? mapFromUndistorted(y, x) : mapToUndistorted(y, x);
+    }
+    inline Vector2dd map(double y, double x, bool fromUndistorted = false) const
+    {
+        return fromUndistorted ? mapFromUndistorted(y, x) : mapToUndistorted(y, x);
+    }
+    inline Vector2dd mapToUndistorted(Vector2dd const & v) const
+    {
+        return mapToUndistorted(v.y(), v.x());
+    }
+    inline Vector2dd mapFromUndistorted(Vector2dd const & v) const
+    {
+        return mapFromUndistorted(v.y(), v.x());
     }
 
     inline double radialScaleNormalized(double r) const
@@ -56,9 +72,13 @@ public:
     }
 
 
-    inline Vector2dd map(int y, int x) const
+    inline Vector2dd mapFromUndistorted(int y, int x) const
     {
-        return map((double)y, (double)x);
+        return mapFromUndistorted((double)y, (double)x);
+    }
+    inline Vector2dd mapToUndistorted(int y, int x) const
+    {
+        return mapToUndistorted((double)y, (double)x);
     }
 
     /**
@@ -71,7 +91,7 @@ public:
      * \return A corrected buffer
      *
      **/
-    inline Vector2dd map(double y, double x) const
+    inline Vector2dd mapToUndistorted(double y, double x) const
     {
         double cx = mParams.principalX();
         double cy = mParams.principalY();
@@ -104,7 +124,7 @@ public:
         return Vector2dd(
                 cx + ((dx + radialX + tangentX) / mParams.aspect() * mParams.scale() * mParams.normalizingFocal()),
                 cy + ((dy + radialY + tangentY)                    * mParams.scale() * mParams.normalizingFocal())
-               ) + Vector2dd(addShiftX, addShiftY);
+               ) + Vector2dd(mParams.shiftX(), mParams.shiftY());
     }
     struct InverseFunctor : FunctionArgs
     {
@@ -121,7 +141,7 @@ public:
         Vector2dd target;
         const RadialCorrection* correction;
     };
-    Vector2dd invMap(double y, double x) const
+    Vector2dd mapFromUndistorted(double y, double x) const
     {
         InverseFunctor functor(Vector2dd(x, y), this);
         LevenbergMarquardt lm(1000);
@@ -137,7 +157,7 @@ public:
     /**/
     virtual void operator()(const double in[], double out[])
     {
-        Vector2dd result = map(in[1], in[0]);
+        Vector2dd result = mapToUndistorted(in[1], in[0]);
         out[1] = result.y();
         out[0] = result.x();
     }
@@ -149,11 +169,6 @@ public:
 
     //Vector2dd getCorrectionForPoint(Vector2dd input);
     LensDistortionModelParameters mParams;
-
-    /* TODO: This was not in original design. Most probably should be done by decorator.*/
-    double addShiftX;
-    double addShiftY;
-
 
 
     Vector2dd center() const
@@ -171,13 +186,13 @@ public:
     void getCircumscribedImageRect(const int32_t &x1, const int32_t &y1, const int32_t &x2, const int32_t &y2,
                                    Vector2dd &min, Vector2dd &max)
     {
-        min = map(y1,x1);
-        max = map(y2,x2);
+        min = mapToUndistorted(y1,x1);
+        max = mapToUndistorted(y2,x2);
 
         for (int i = y1; i <= y2; i++)
         {
-            Vector2dd mapLeft  = map(i, x1);
-            Vector2dd mapRight = map(i, x2);
+            Vector2dd mapLeft  = mapToUndistorted(i, x1);
+            Vector2dd mapRight = mapToUndistorted(i, x2);
             if (mapLeft .x() < min.x()) min.x() = mapLeft.x();
             if (mapRight.x() > max.x()) max.x() = mapRight.x();
         }
@@ -185,8 +200,8 @@ public:
         for (int j = x1; j <= x2; j++)
         {
 
-            Vector2dd mapTop    = map(y1, j);
-            Vector2dd mapBottom = map(y2, j);
+            Vector2dd mapTop    = mapToUndistorted(y1, j);
+            Vector2dd mapBottom = mapToUndistorted(y2, j);
             if (mapTop   .y() < min.y()) min.y() = mapTop.y();
             if (mapBottom.y() > max.y()) max.y() = mapBottom.y();
         }
@@ -195,13 +210,13 @@ public:
     void getInscribedImageRect(const int32_t &x1, const int32_t &y1, const int32_t &x2, const int32_t &y2,
                                Vector2dd &min, Vector2dd &max)
     {
-        min = map(y1,x1);
-        max = map(y2,x2);
+        min = mapToUndistorted(y1,x1);
+        max = mapToUndistorted(y2,x2);
 
         for (int i = y1; i <= y2; i++)
         {
-            Vector2dd mapLeft  = map(i, x1);
-            Vector2dd mapRight = map(i, x2);
+            Vector2dd mapLeft  = mapToUndistorted(i, x1);
+            Vector2dd mapRight = mapToUndistorted(i, x2);
             if (mapLeft .x() > min.x()) min.x() = mapLeft.x();
             if (mapRight.x() < max.x()) max.x() = mapRight.x();
         }
@@ -209,8 +224,8 @@ public:
         for (int j = x1; j <= x2; j++)
         {
 
-            Vector2dd mapTop    = map(y1, j);
-            Vector2dd mapBottom = map(y2, j);
+            Vector2dd mapTop    = mapToUndistorted(y1, j);
+            Vector2dd mapBottom = mapToUndistorted(y2, j);
             if (mapTop   .y() > min.y()) min.y() = mapTop.y();
             if (mapBottom.y() < max.y()) max.y() = mapBottom.y();
         }
