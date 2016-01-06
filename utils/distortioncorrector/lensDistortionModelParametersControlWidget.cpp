@@ -430,7 +430,7 @@ void LensDistortionModelParametersControlWidget::showGraphDialog()
 void LensDistortionModelParametersControlWidget::loadParams()
 {
     qDebug() << "LensDistortionModelParametersControlWidget::loadParams(): called";
-    QString filename =  QFileDialog::getOpenFileName(
+    QString filename = QFileDialog::getOpenFileName(
                 this,
                 "Choose an file name",
                 ".",
@@ -448,7 +448,7 @@ void LensDistortionModelParametersControlWidget::loadParams()
 void LensDistortionModelParametersControlWidget::saveParams()
 {
     qDebug() << "LensDistortionModelParametersControlWidget::saveParams(): called";
-    QString filename =  QFileDialog::getSaveFileName(
+    QString filename = QFileDialog::getSaveFileName(
                 this,
                 "Choose an file name",
                 ".",
@@ -460,7 +460,6 @@ void LensDistortionModelParametersControlWidget::saveParams()
         WidgetSaver saver(&setter);
         saveParamWidget(saver);
     }
-
 }
 
 void LensDistortionModelParametersControlWidget::exampleShow()

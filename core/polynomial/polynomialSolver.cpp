@@ -145,7 +145,7 @@ size_t corecvs::PolynomialSolver::solve_companion(const double* coeff, double* r
 
     // evd
     corecvs::Vector wr((int)degree), wi((int)degree);
-    LAPACKE_dgeev(LAPACK_ROW_MAJOR, 'N', 'N', degree, companion.data, companion.stride, &wr[0], &wi[0], 0, (int)degree, 0, (int)degree);
+    LAPACKE_dgeev(LAPACK_ROW_MAJOR, 'N', 'N', (int)degree, companion.data, companion.stride, &wr[0], &wi[0], 0, (int)degree, 0, (int)degree);
 
     // find non-complex and return
     size_t cnt = 0;

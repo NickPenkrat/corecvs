@@ -23,7 +23,7 @@ struct IntersectionFunctor : corecvs::FunctionArgs
             out[argout++] = !(point - r.projectOnRay(point));
         }
     }
-    IntersectionFunctor(std::vector<corecvs::Ray3d> &rays) : corecvs::FunctionArgs(3, rays.size()), rays(rays)
+    IntersectionFunctor(std::vector<corecvs::Ray3d> &rays) : corecvs::FunctionArgs(3, (int)rays.size()), rays(rays)
     {
     }
     std::vector<corecvs::Ray3d> rays;
@@ -42,22 +42,17 @@ corecvs::Vector3dd intersect(std::vector<corecvs::Ray3d> &rays)
 
 int main(int argc, char **argv)
 {
-    std::string filenameIn = "job.json";
-
-    if (argc >= 2)
-    {
-        filenameIn = std::string(argv[1]);
-    }
+    std::string filenameIn = argc > 1 ? argv[1] : "job.json";
 
     std::cout << "Reading job from " << filenameIn << std::endl;
 
     CalibrationJob job;
-    JSONGetter getter(filenameIn.c_str());
+    JSONGetter getter(filenameIn);
     getter.visit(job, "job");
     job.photostation.location.rotor = corecvs::Quaternion(0, 0, 0, 1);
     job.photostation.location.shift = corecvs::Vector3dd(0, 0, 0);
 
-    int N = job.photostation.cameras.size();
+    int N = (int)job.photostation.cameras.size();
 
 #ifndef WIN32 // I hope that at some time visual studio will start support c11 features
     int map_fwd[N], map_bwd[N];
