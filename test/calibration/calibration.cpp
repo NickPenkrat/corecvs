@@ -3,98 +3,101 @@
  */
 #include <vector>
 #include <string>
-#include <sstream>
 #include "gtest/gtest.h"
 
 #include "calibrationJob.h"
-//#include "jsonSetter.h"
 #include "jsonGetter.h"
 
 #include <QFile>
 #include <QDir>
 
-const char* dirGDrive = std::getenv("TOPCON_DIR");
+#define CALIBRATION_TEST_DIR_SRC    "data/tests/calibration/"   // from TOPCON_DIR
+#define CALIBRATION_TEST_DIR_DST         "tests/calibration/"   // to   TEMP_DIR
+
+const QString wrkPath()
+{
 #ifdef WIN32
-const char* dirTEMP = std::getenv("TEMP");
+    const char* dirTEMP = std::getenv("TEMP");
 #else
-const char* dirTEMP = "/tmp";
+    const char* dirTEMP = "/tmp";
 #endif
-const char* dirRelPath = "/data/tests/calibration/";
-const char* dirRelTEMP = "/tests/calibration/";
+    QString path(dirTEMP);
+    if (!QSTR_HAS_SLASH_AT_END(path)) {
+        path += PATH_SEPARATOR;
+    }
+    path += CALIBRATION_TEST_DIR_DST;
+    path = QDir::toNativeSeparators(path);
+    return path;
+}
 
-class CalibrationTest : public ::testing::Test {
-
+class CalibrationTest : public ::testing::Test
+{
 protected:
-
     CalibrationTest() {}
 
     virtual ~CalibrationTest() {}
 
-    virtual void SetUp() {
-        if (dirGDrive == NULL) {
-            cout << "The envvar TOPCON_DIR is missed" << endl;
+    virtual void SetUp()
+    {
+        const char* envDir = std::getenv("TOPCON_DIR");
+        if (envDir == NULL) {
+            cout << "The env.var. TOPCON_DIR is missed" << endl;
             FAIL();
         }
+        QString path(envDir);
+        if (!QSTR_HAS_SLASH_AT_END(path)) {
+            path += PATH_SEPARATOR;
+        }
+        path += CALIBRATION_TEST_DIR_SRC;
 
-        QString path = QString(dirTEMP) + QString(dirRelTEMP);
+        path = QDir::toNativeSeparators(path);
+        QDir source_dir(path);
 
-        std::stringstream fs;
-        fs << dirGDrive << dirRelPath;
-        QString tempName = QDir::toNativeSeparators(QString(fs.str().c_str()));
+        path = wrkPath();
 
-        QDir source_dir(tempName);
         QDir dir(path);
-
         if (!dir.exists())
         {
-            std::cout << "Creating " << path.toStdString() << "directory\n";
+            cout << "Creating " << path.toStdString() << "directory" << endl;
             dir.mkpath(path);
         }
         else
         {
-            std::cout << path.toStdString() << " already exists\n";
+            cout << path.toStdString() << " already exists" << endl;
         }
 
         foreach(QFileInfo item, source_dir.entryInfoList())
         {
             if (item.isFile())
             {
-                std::cout << "File: " << item.absoluteFilePath().toStdString() << endl;
-                std::cout << "New file: " << QDir::toNativeSeparators(path + item.fileName()).toStdString() << endl;
-                QFile toCopyFile(item.absoluteFilePath());
-                toCopyFile.copy(QDir::toNativeSeparators(path + item.fileName()));
+                QString srcPath = item.absoluteFilePath();
+                QString dstPath = path + item.fileName();
+
+                cout << "Src File: " << srcPath.toStdString() << endl;
+                cout << "New file: " << dstPath.toStdString() << endl;
+
+                QFile toCopyFile(srcPath);
+                toCopyFile.copy(dstPath);
             }
         }
     }
 
     virtual void TearDown() {}
-
 };
 
-const QString addPath(const char* name)
+inline const QString addPath(const char* name)
 {
-    std::stringstream fs;
-    fs << dirTEMP << dirRelTEMP << name;
-    QString sourceFileName = QDir::toNativeSeparators(QString(fs.str().c_str()));
-    return sourceFileName;
+    return wrkPath() + name;
 }
 
-void addImageToJob(CalibrationJob* job, int camN, int imageN, const char* name)
+inline void addImageToJob(CalibrationJob* job, int camN, int imageN, const char* name)
 {
-    std::stringstream fs;
-    fs << dirTEMP << dirRelTEMP << name;
-    std::string sourceFileName = QDir::toNativeSeparators(QString(fs.str().c_str())).toStdString();
-
-    job->observations[camN][imageN].sourceFileName = sourceFileName;
+    job->observations[camN][imageN].sourceFileName = addPath(name).toStdString();
 }
 
-void addUndistImageToJob(CalibrationJob* job, int camN, int imageN, const char* name)
+inline void addUndistImageToJob(CalibrationJob* job, int camN, int imageN, const char* name)
 {
-    std::stringstream fs;
-    fs << dirTEMP << dirRelTEMP << name;
-    std::string sourceFileName = QDir::toNativeSeparators(QString(fs.str().c_str())).toStdString();
-
-    job->observations[camN][imageN].undistortedFileName = sourceFileName;
+    job->observations[camN][imageN].undistortedFileName = addPath(name).toStdString();
 }
 
 void fillJob(CalibrationJob* job)

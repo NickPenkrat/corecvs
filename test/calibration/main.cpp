@@ -1,5 +1,4 @@
 #include <string>
-#include <iostream>
 #include "gtest/gtest.h"
 
 #include "global.h"
@@ -11,17 +10,16 @@ using namespace std;
 bool CheckGDriveCalibrationFolderTest()
 {
     const char* dirGDrive = std::getenv("TOPCON_DIR");
-    const char* dirRelPath = "/data/tests/calibration/";
-    const char* fileName = "esDistOutDist.json";
-
     if (dirGDrive == NULL) {
-        cout << "The envvar TOPCON_DIR_GDRIVE is missed" << endl;
+        cout << "The env.var. TOPCON_DIR is missed" << endl;
         return false;
     }
+    string path = dirGDrive;
+    if (!STR_HAS_SLASH_AT_END(path)) {
+        path += PATH_SEPARATOR;
+    }
 
-    std::stringstream fs;
-    fs << dirGDrive << dirRelPath << fileName;
-    string path = fs.str();
+    path += "data/tests/calibration/esDistOutDist.json";
 
     if (!QFile::exists(path.c_str())) {
         cout << "The file <" << path << "> is missed" << endl;
