@@ -106,6 +106,7 @@ public:
                 cy + ((dy + radialY + tangentY)                    * mParams.scale() * mParams.normalizingFocal())
                ) + Vector2dd(addShiftX, addShiftY);
     }
+
     struct InverseFunctor : FunctionArgs
     {
         void operator() (const double* in, double *out)

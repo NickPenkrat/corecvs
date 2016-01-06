@@ -9,7 +9,6 @@
  * \date Oct 28, 2009
  * \author alexander
  */
-
 #include <vector>
 
 #include "global.h"

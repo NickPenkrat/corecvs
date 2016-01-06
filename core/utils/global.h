@@ -198,7 +198,7 @@ do {                  \
 } while (0)
 
 #ifdef TRACE
-#   define DOTRACE(X) SYNC_PRINT(X)
+#   define DOTRACE(X)       SYNC_PRINT(X)
 #else
 #   define DOTRACE(X)
 #endif
