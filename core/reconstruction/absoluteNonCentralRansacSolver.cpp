@@ -6,7 +6,7 @@
 void corecvs::AbsoluteNonCentralRansacSolver::run()
 {
 	std::mt19937 rng;
-	int N = cloudMatches.size();
+    int N = (int)cloudMatches.size();
 	
 	for (int i = 0; i < maxIterations; ++i)
 	{
@@ -30,7 +30,7 @@ void corecvs::AbsoluteNonCentralRansacSolver::run()
 			auto ih = selectInliers(h);
 			if (ih.size() < currentBest)
 				continue;
-			currentBest = ih.size();
+            currentBest = (int)ih.size();
 			currentInliers = ih;
 			currentH = h;
 		}
@@ -83,7 +83,7 @@ void corecvs::AbsoluteNonCentralRansacSolver::computeReprojectionErrors(double *
 std::vector<int> corecvs::AbsoluteNonCentralRansacSolver::selectInliers(const corecvs::Affine3DQ &hypo)
 {
 	ps.location = hypo;
-	int M = cloudMatches.size();
+    int M = (int)cloudMatches.size();
 	std::vector<int> inliers;
 	ps.location = hypo;
 	if (forcePosition)
@@ -127,7 +127,7 @@ void corecvs::AbsoluteNonCentralRansacSolver::runInliersPNP()
 {
 	ps.location.rotor = corecvs::Quaternion(0, 0, 0, 1);
 	ps.location.shift = corecvs::Vector3dd(0, 0, 0);
-	int N = cloudMatches.size();
+    int N = (int)cloudMatches.size();
 
 	std::vector<corecvs::Vector3dd> centers, directions, points3d;
 	for (int i: inliers)
@@ -152,9 +152,9 @@ void corecvs::AbsoluteNonCentralRansacSolver::runInliersPNP()
 		auto ih = selectInliers(h);
 		if (ih.size() < currentBest)
 			continue;
-		currentBest = ih.size();
+        currentBest    = (int)ih.size();
 		currentInliers = ih;
-		currentH = h;
+		currentH       = h;
 	}
 
 	// even if total solution has less inliers it is better

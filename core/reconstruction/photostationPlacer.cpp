@@ -73,7 +73,7 @@ int corecvs::PhotostationPlacer::getReprojectionCnt()
 {
     int total = 0;
     for (auto& o: tracks)
-        total += o.projections.size();
+        total += (int)o.projections.size();
     return total * getErrorComponentsPerPoint();
 }
 
@@ -98,9 +98,9 @@ int corecvs::PhotostationPlacer::getOrientationInputNum()
     IF(NON_DEGENERATE_TRANSLATIONS,
         inputNum += (preplaced - 1) * 3);
     IF(FOCALS,
-        inputNum += calibratedPhotostations[0].cameras.size());
+        inputNum += (int)calibratedPhotostations[0].cameras.size());
     IF(PRINCIPALS,
-        inputNum += calibratedPhotostations[0].cameras.size() * 2);
+        inputNum += (int)calibratedPhotostations[0].cameras.size() * 2);
     IF(POINTS,
         inputNum += getMovablePointCount() * 3);
     return inputNum;
@@ -399,7 +399,7 @@ void corecvs::PhotostationPlacer::fit(const PhotostationPlacerOptimizationType &
 
 void corecvs::PhotostationPlacer::ParallelErrorComputator::operator() (const corecvs::BlockedRange<int> &r) const
 {
-    int argout = 0;
+  //int argout = 0;
     auto& tracks = placer->tracks;
     auto& revDependency = placer->revDependency;
     auto& calibratedPhotostations = placer->calibratedPhotostations;
@@ -794,7 +794,7 @@ void corecvs::PhotostationPlacer::buildTracks(int psA, int psB, int psC)
             po.projections.push_back(pb);
             po.projections.push_back(pc);
             po.worldPoint = res;
-            int id = tracks.size();
+            int id = (int)tracks.size();
             if (!(kpA - calibratedPhotostations[psA].project(res, camA)) > trackInlierThreshold ||
                 !(kpB - calibratedPhotostations[psB].project(res, camB)) > trackInlierThreshold ||
                 !(kpC - calibratedPhotostations[psC].project(res, camC)) > trackInlierThreshold)

@@ -10,7 +10,6 @@
  * \author alexander
  */
 
-
 #include <vector>
 
 #include "global.h"
@@ -143,14 +142,14 @@ public:
     {
         std::vector<std::vector<double>> values(inputs);
 
-        int N = groupInputs.size();
+        int N = (int)groupInputs.size();
         for (int i = 0; i < N; ++i)
         {
             auto& group = groupInputs[i];
             auto& idxs = groupOutputs[i];
             auto& remap = remapIdx[i];
 
-            int M = group.size();
+            int M = (int)group.size();
 
             std::vector<double> xp(inputs), xm(inputs), deltaS(M);
             for (int j = 0; j < inputs; ++j)
@@ -169,7 +168,7 @@ public:
             operator()(&xp[0], &yp[0], idxs);
             operator()(&xm[0], &ym[0], idxs);
 
-            int K = idxs.size();
+            int K = (int)idxs.size();
             for (int j = 0; j < K; ++j)
             {
                 int id = remap[idxs[j]];
@@ -182,7 +181,7 @@ public:
         std::vector<int> sparseColumns, sparseRowPointers(inputs + 1);
         for (int i = 0; i < inputs; ++i)
         {
-            int N = dependencyList[i].size();
+            int N = (int)dependencyList[i].size();
             CORE_ASSERT_TRUE_S(N == values[i].size());
             for (int j = 0; j < N; ++j)
             {
@@ -190,7 +189,7 @@ public:
                 sparseColumns.push_back(jj);
                 sparseValues.push_back(values[i][j]);
             }
-            sparseRowPointers[i + 1] = sparseValues.size();
+            sparseRowPointers[i + 1] = (int)sparseValues.size();
         }
         return SparseMatrix(inputs, outputs, sparseValues, sparseColumns, sparseRowPointers).t();
     }
@@ -471,5 +470,5 @@ public:
 #endif
 
 } //namespace corecvs
-#endif // _FUNCTION_H_
 
+#endif // _FUNCTION_H_

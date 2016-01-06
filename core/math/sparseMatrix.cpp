@@ -14,7 +14,7 @@ SparseMatrix::SparseMatrix(const Matrix &dense, double threshold) : h(dense.h), 
             {
                 values.push_back(val);
                 columns.push_back(j);
-                rowPointers[i + 1] = values.size();
+                rowPointers[i + 1] = (int)values.size();
             }
         }
     }
@@ -44,7 +44,7 @@ SparseMatrix::SparseMatrix(int h, int w, const std::map<std::pair<int, int>, dou
         if (r != rowPrev)
         {
             for (int i = rowPrev + 1; i <= r; ++i)
-                rowPointers[i] = values.size();
+                rowPointers[i] = (int)values.size();
             rowPrev = r;
         }
 
@@ -52,7 +52,7 @@ SparseMatrix::SparseMatrix(int h, int w, const std::map<std::pair<int, int>, dou
         columns.push_back(c);
     }
     for (int i = rowPrev + 1; i <= h; ++i)
-        rowPointers[i] = values.size();
+        rowPointers[i] = (int)values.size();
 }
 
 double SparseMatrix::a(int y, int x) const
@@ -165,7 +165,7 @@ SparseMatrix corecvs::operator +(const SparseMatrix &lhs, const SparseMatrix &rh
             columns.push_back(rhs.columns[rhs_p]);
             ++rhs_p;
         }
-        rowPointers[i + 1] = values.size();
+        rowPointers[i + 1] = (int)values.size();
     }
     return SparseMatrix(lhs.h, lhs.w, values, columns, rowPointers);
 }
@@ -216,7 +216,7 @@ SparseMatrix corecvs::operator -(const SparseMatrix &lhs, const SparseMatrix &rh
             columns.push_back(rhs.columns[rhs_p]);
             ++rhs_p;
         }
-        rowPointers[i + 1] = values.size();
+        rowPointers[i + 1] = (int)values.size();
     }
     return SparseMatrix(lhs.h, lhs.w, values, columns, rowPointers);
 }
@@ -360,13 +360,13 @@ SparseMatrix::SparseMatrix(const sparse_matrix_t &mklSparse)
 
     for (int i = 0; i < mh; ++i)
     {
-        int prevCol = rowB[i] - 1;
+      //int prevCol = rowB[i] - 1;
         for (int j = rowB[i]; j < rowE[i]; ++j)
         {
             values.push_back(vals[j]);
             columns.push_back(cols[j]);
         }
-        rowPointers[i + 1] = values.size();
+        rowPointers[i + 1] = (int)values.size();
     }
 
     mkl_sparse_destroy(copy);
@@ -427,11 +427,11 @@ Vector SparseMatrix::LinSolve(const SparseMatrix &m, const Vector &rhs, bool sym
         sol[i] = 0.0;
     _MKL_DSS_HANDLE_t dss_handle;
     int options = MKL_DSS_DEFAULTS + MKL_DSS_ZERO_BASED_INDEXING;
-    int nnz = m.values.size();
-    int retval = dss_create(dss_handle, options);
-    int order = MKL_DSS_AUTO_ORDER;
-    int *pivot = 0;
-    int nrhs = 1;
+    int nnz     = (int)m.values.size();
+    int retval  = dss_create(dss_handle, options);
+    int order   = MKL_DSS_AUTO_ORDER;
+    int *pivot  = 0;
+    int nrhs    = 1;
     int solve_options = MKL_DSS_DEFAULTS;
     int delOptions = 0;
 
