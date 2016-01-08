@@ -7,6 +7,7 @@
 
 #include "calibrationJob.h"
 #include "jsonGetter.h"
+#include "utils.h"
 
 #include <QFile>
 #include <QDir>
@@ -39,22 +40,11 @@ protected:
 
     virtual void SetUp()
     {
-        const char* envDir = std::getenv("TOPCON_DIR");
-        if (envDir == NULL) {
-            cout << "The env.var. TOPCON_DIR is missed" << endl;
-            FAIL();
-        }
-        QString path(envDir);
-        if (!QSTR_HAS_SLASH_AT_END(path)) {
-            path += PATH_SEPARATOR;
-        }
-        path += CALIBRATION_TEST_DIR_SRC;
+        string pathSrcDir = corecvs::HelperUtils::getFullPath("TOPCON_DIR", CALIBRATION_TEST_DIR_SRC, "");
 
-        path = QDir::toNativeSeparators(path);
-        QDir source_dir(path);
+        QDir source_dir(pathSrcDir.c_str());
 
-        path = wrkPath();
-
+        QString path = wrkPath();
         QDir dir(path);
         if (!dir.exists())
         {

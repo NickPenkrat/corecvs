@@ -2,6 +2,7 @@
 #include "gtest/gtest.h"
 
 #include "global.h"
+#include "utils.h"
 
 #include <QFile>
 #include <QDir>
@@ -10,20 +11,10 @@ using namespace std;
 
 void CheckWorkFolderCalibrationTest()
 {
-    const char* envDir = std::getenv("TOPCON_DIR");
-    if (envDir == NULL) {
-        CORE_ASSERT_FAIL("The env.var. TOPCON_DIR is missed!");
-    }
-    QString path(envDir);
-    if (!QSTR_HAS_SLASH_AT_END(path)) {
-        path += PATH_SEPARATOR;
-    }
+    string path = corecvs::HelperUtils::getFullPath("TOPCON_DIR", "data/tests/calibration/", "esDistOutDist.json");
 
-    path += "data/tests/calibration/esDistOutDist.json";
-    path = QDir::toNativeSeparators(path);
-
-    if (!QFile::exists(path)) {
-        cout << "The work file <" << path.toStdString() << "> is missed" << endl;
+    if (!QFile::exists(path.c_str())) {
+        cout << "The work file <" << path << "> is missed" << endl;
         CORE_ASSERT_FAIL("There is no test data!");
     }
 }
