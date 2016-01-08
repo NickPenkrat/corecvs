@@ -8,13 +8,13 @@
 
 using namespace std;
 
-TEST(CalibrationTest, CheckWorkFolder)
+void CheckWorkFolderCalibrationTest()
 {
-    const char* dirGDrive = std::getenv("TOPCON_DIR");
-    if (dirGDrive == NULL) {
+    const char* envDir = std::getenv("TOPCON_DIR");
+    if (envDir == NULL) {
         CORE_ASSERT_FAIL("The env.var. TOPCON_DIR is missed!");
     }
-    QString path(dirGDrive);
+    QString path(envDir);
     if (!QSTR_HAS_SLASH_AT_END(path)) {
         path += PATH_SEPARATOR;
     }
@@ -30,6 +30,8 @@ TEST(CalibrationTest, CheckWorkFolder)
 
 int main(int argc, char **argv)
 {
+    CheckWorkFolderCalibrationTest();
+
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
