@@ -198,10 +198,15 @@ void CalibrationJob::prepareRadialCorrection(LensDistortionModelParameters &sour
         case DistortionResizePolicy::TO_FIT_RESULT:
             output = outCir;
             shift = -output[0];
+            output[1] -= output[0];
+            output[0] -= output[0];
             break;
         case DistortionResizePolicy::TO_NO_GAPS:
             output = outIns;
             shift = -output[0];
+            output[1] -= output[0];
+            output[0] -= output[0];
+            break;
         case DistortionResizePolicy::NO_CHANGE:
         default:
             break;
@@ -251,9 +256,8 @@ void CalibrationJob::prepareUndistortionTransformation(LensDistortionModelParame
     prepareRadialCorrection(source, w, h, correction, newW, newH, output);
     auto* foo = DisplacementBuffer::CacheInverse(
             &correction, newH, newW,
-            output[0][0], output[0][1],
-            output[1][0], output[1][1],
-            0.25, 0.0);
+            0, 0, w, h,
+            0.25, false);
     result = *foo;
     delete foo;
 }
