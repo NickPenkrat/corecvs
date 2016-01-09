@@ -164,4 +164,103 @@ int LensDistortionModelParameters::staticInit()
 
 SUPPRESS_OFFSET_WARNING_END
 
+void LensDistortionModelParameters::getInscribedImageRect(const Vector2dd &tlDistorted, const Vector2dd &drDistorted, Vector2dd &tlUndistorted, Vector2dd &drUndistorted) const
+{
+    std::vector<corecvs::Vector2dd> boundaries[4];
+    getRectMap(tlDistorted, drDistorted, boundaries);
 
+    tlUndistorted = mapBackward(tlDistorted);
+    drUndistorted = mapBackward(drDistorted);
+
+    for (auto& v: boundaries[0])
+        if (v[1] > tlUndistorted[1])
+            tlUndistorted[1] = v[1];
+    for (auto& v: boundaries[2])
+        if (v[1] < drUndistorted[1])
+            drUndistorted[1] = v[1];
+    for (auto& v: boundaries[1])
+        if (v[0] > tlUndistorted[0])
+            tlUndistorted[0] = v[0];
+    for (auto& v: boundaries[3])
+        if (v[0] < drUndistorted[0])
+            drUndistorted[0] = v[0];
+}
+
+void LensDistortionModelParameters::getCircumscribedImageRect(const Vector2dd &tlDistorted, const Vector2dd &drDistorted, Vector2dd &tlUndistorted, Vector2dd &drUndistorted) const
+{
+    std::vector<corecvs::Vector2dd> boundaries[4];
+    getRectMap(tlDistorted, drDistorted, boundaries);
+
+    tlUndistorted = mapBackward(tlDistorted);
+    drUndistorted = mapBackward(drDistorted);
+
+    for (auto& v: boundaries[0])
+        if (v[1] < tlUndistorted[1])
+            tlUndistorted[1] = v[1];
+    for (auto& v: boundaries[2])
+        if (v[1] > drUndistorted[1])
+            drUndistorted[1] = v[1];
+    for (auto& v: boundaries[1])
+        if (v[0] < tlUndistorted[0])
+            tlUndistorted[0] = v[0];
+    for (auto& v: boundaries[3])
+        if (v[0] > drUndistorted[0])
+            drUndistorted[0] = v[0];
+}
+
+void LensDistortionModelParameters::getRectMap(const Vector2dd &tl, const Vector2dd &dr, std::vector<Vector2dd> boundaries[4]) const
+{
+    Vector2dd shifts[] =
+    {
+        Vector2dd(1, 0),
+        Vector2dd(0, 1),
+        Vector2dd(1, 0),
+        Vector2dd(0, 1)
+    };
+    Vector2dd origins[] =
+    {
+        tl,
+        tl,
+        Vector2dd(tl[0], dr[1]),
+        Vector2dd(dr[0], tl[1])
+    };
+    int steps[] =
+    {
+        (int)std::ceil(dr[0] - tl[0]),
+        (int)std::ceil(dr[1] - tl[1]),
+        (int)std::ceil(dr[0] - tl[0]),
+        (int)std::ceil(dr[1] - tl[1])
+    };
+
+    for (int i = 0; i < 4; ++i)
+    {
+        boundaries[i].resize(steps[i]);
+        auto& boundary = boundaries[i];
+        auto& shift    = shifts[i];
+        auto& origin   = origins[i];
+        auto& step     = steps[i];
+        if (!mMapForward)
+        {
+            for (int j = 0; j < step; ++j)
+                boundary[j] = map(origin + j * shift);
+        }
+        else
+        {
+            boundary[0] = invMap(origin);
+            *boundary.rbegin() = invMap(origin + (step - 1) * shift);
+            int cstep = step / 2;
+            while (cstep >= 1)
+            {
+                int curr = cstep;
+                for (; curr < step; curr += 2 * cstep)
+                {
+                    int left = curr - cstep;
+                    int right = std::min(step - 1, curr + cstep);
+                    auto mid = (boundary[left] + boundary[right]) / 2.0;
+                    boundary[curr] = invMap(origin + curr * shift, mid);
+                }
+                cstep /= 2;
+            }
+        }
+    }
+}

@@ -36,39 +36,19 @@ public:
     }
     inline Vector2dd map(int y, int x, bool fromUndistorted = false) const
     {
-        return fromUndistorted ? mapFromUndistorted(y, x) : mapToUndistorted(y, x);
+        return map(corecvs::Vector2dd(x, y), fromUndistorted);
     }
     inline Vector2dd map(double y, double x, bool fromUndistorted = false) const
     {
-        return fromUndistorted ? mapFromUndistorted(y, x) : mapToUndistorted(y, x);
+        return map(corecvs::Vector2dd(x, y), fromUndistorted);
     }
     inline Vector2dd mapToUndistorted(Vector2dd const & v) const
     {
-        return mapToUndistorted(v.y(), v.x());
+        return mParams.mapBackward(v);
     }
     inline Vector2dd mapFromUndistorted(Vector2dd const & v) const
     {
-        return mapFromUndistorted(v.y(), v.x());
-    }
-
-    inline double radialScaleNormalized(double r) const
-    {
-        double rpow = r;
-        double radialCorrection = 0;
-        const vector<double>& coeffs = mParams.koeff();
-
-        for (unsigned i = 0; i < coeffs.size(); i++)
-        {
-            radialCorrection += coeffs[i] * rpow;
-            rpow *= r;
-        }
-        return radialCorrection;
-    }
-
-    inline double radialScale(double r) const
-    {
-        double normalizedR = r / mParams.normalizingFocal();
-        return radialScaleNormalized(normalizedR);
+        return mParams.mapForward(v);
     }
 
 
@@ -93,65 +73,11 @@ public:
      **/
     inline Vector2dd mapToUndistorted(double y, double x) const
     {
-        double cx = mParams.principalX();
-        double cy = mParams.principalY();
-        double p1 = mParams.tangentialX();
-        double p2 = mParams.tangentialY();
-
-        double dx = (x - cx) / mParams.normalizingFocal() * mParams.aspect();
-        double dy = (y - cy) / mParams.normalizingFocal();
-
-        /*double dx = dpx / mParams.focal;
-        double dy = dpy / mParams.focal;*/
-
-        double dxsq = dx * dx;
-        double dysq = dy * dy;
-        double dxdy = dx * dy;
-
-        double rsq = dxsq + dysq;
-        double r = sqrt(rsq);
-
-        double radialCorrection = radialScaleNormalized(r);
-//        SYNC_PRINT(("RadialCorrection::map (): [%lf %lf ] %lf %lf\n", x, y, rsq, radialCorrection));
-
-
-        double radialX = (double)dx * radialCorrection;
-        double radialY = (double)dy * radialCorrection;
-
-        double tangentX =    2 * p1 * dxdy      + p2 * ( rsq + 2 * dxsq );
-        double tangentY = p1 * (rsq + 2 * dysq) +     2 * p2 * dxdy      ;
-
-        return Vector2dd(
-                cx + ((dx + radialX + tangentX) / mParams.aspect() * mParams.scale() * mParams.normalizingFocal()),
-                cy + ((dy + radialY + tangentY)                    * mParams.scale() * mParams.normalizingFocal())
-               ) + Vector2dd(mParams.shiftX(), mParams.shiftY());
+        return mapToUndistorted(corecvs::Vector2dd(x, y));
     }
-    struct InverseFunctor : FunctionArgs
-    {
-        void operator() (const double* in, double *out)
-        {
-            Vector2dd x(in[0], in[1]);
-            auto err = correction->map(x[1], x[0]) - target;
-            out[0] = err[0];
-            out[1] = err[1];
-        }
-        InverseFunctor(Vector2dd target, const RadialCorrection* correction) : FunctionArgs(2, 2), target(target), correction(correction)
-        {
-        }
-        Vector2dd target;
-        const RadialCorrection* correction;
-    };
     Vector2dd mapFromUndistorted(double y, double x) const
     {
-        InverseFunctor functor(Vector2dd(x, y), this);
-        LevenbergMarquardt lm(1000);
-        lm.f = &functor;
-        std::vector<double> in(2), out(2);
-        auto res = lm.fit(in, out);
-        auto foo = !(map(res[1], res[0]) - Vector2dd(x, y));
-        std::cout << foo << std::endl;
-        CORE_ASSERT_TRUE_S(foo < 1.0);
-        return Vector2dd(res[0], res[1]);
+        return mapFromUndistorted(corecvs::Vector2dd(x, y));
     }
 
     /**/
@@ -180,55 +106,17 @@ public:
     RadialCorrection invertCorrection(int h, int w, int step);
     EllipticalApproximation1d compareWith(const RadialCorrection &other, int h, int w, int steps);
 
-
-
     /* */
     void getCircumscribedImageRect(const int32_t &x1, const int32_t &y1, const int32_t &x2, const int32_t &y2,
                                    Vector2dd &min, Vector2dd &max)
     {
-        min = mapToUndistorted(y1,x1);
-        max = mapToUndistorted(y2,x2);
-
-        for (int i = y1; i <= y2; i++)
-        {
-            Vector2dd mapLeft  = mapToUndistorted(i, x1);
-            Vector2dd mapRight = mapToUndistorted(i, x2);
-            if (mapLeft .x() < min.x()) min.x() = mapLeft.x();
-            if (mapRight.x() > max.x()) max.x() = mapRight.x();
-        }
-
-        for (int j = x1; j <= x2; j++)
-        {
-
-            Vector2dd mapTop    = mapToUndistorted(y1, j);
-            Vector2dd mapBottom = mapToUndistorted(y2, j);
-            if (mapTop   .y() < min.y()) min.y() = mapTop.y();
-            if (mapBottom.y() > max.y()) max.y() = mapBottom.y();
-        }
+        mParams.getCircumscribedImageRect(Vector2dd(x1, y1), Vector2dd(x2, y2), min, max);
     }
 
     void getInscribedImageRect(const int32_t &x1, const int32_t &y1, const int32_t &x2, const int32_t &y2,
                                Vector2dd &min, Vector2dd &max)
     {
-        min = mapToUndistorted(y1,x1);
-        max = mapToUndistorted(y2,x2);
-
-        for (int i = y1; i <= y2; i++)
-        {
-            Vector2dd mapLeft  = mapToUndistorted(i, x1);
-            Vector2dd mapRight = mapToUndistorted(i, x2);
-            if (mapLeft .x() > min.x()) min.x() = mapLeft.x();
-            if (mapRight.x() < max.x()) max.x() = mapRight.x();
-        }
-
-        for (int j = x1; j <= x2; j++)
-        {
-
-            Vector2dd mapTop    = mapToUndistorted(y1, j);
-            Vector2dd mapBottom = mapToUndistorted(y2, j);
-            if (mapTop   .y() > min.y()) min.y() = mapTop.y();
-            if (mapBottom.y() < max.y()) max.y() = mapBottom.y();
-        }
+        mParams.getInscribedImageRect(Vector2dd(x1, y1), Vector2dd(x2, y2), min, max);
     }
 };
 
