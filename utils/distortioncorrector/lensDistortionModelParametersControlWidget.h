@@ -48,6 +48,8 @@ public slots:
     void delPower();
     void resetCx();
     void resetCy();
+    void resetSx();
+    void resetSy();
     void resetP1();
     void resetP2();
     void resetAspect();

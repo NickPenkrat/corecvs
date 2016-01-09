@@ -618,6 +618,76 @@
      </property>
     </widget>
    </item>
+   <item row="5" column="1">
+    <widget class="QLabel" name="shiftLabel">
+     <property name="text">
+      <string>Shift</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="2">
+    <widget class="QDoubleSpinBox" name="shiftXSpinBox">
+     <property name="minimum">
+      <double>-999999.000000000000000</double>
+     </property>
+     <property name="maximum">
+      <double>99999.990000000005239</double>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="3">
+    <widget class="QPushButton" name="resetSxPushButton">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="../../../restricted/resources/resresource.qrc">
+       <normaloff>:/new/prefix1/bullet_blue.png</normaloff>:/new/prefix1/bullet_blue.png</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>16</width>
+       <height>16</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="4">
+    <widget class="QDoubleSpinBox" name="shiftYSpinBox">
+     <property name="minimum">
+      <double>-99999.000000000000000</double>
+     </property>
+     <property name="maximum">
+      <double>99999.990000000005239</double>
+     </property>
+     <property name="value">
+      <double>0.000000000000000</double>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="5" colspan="2">
+    <widget class="QPushButton" name="resetSyPushButton">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="../../../restricted/resources/resresource.qrc">
+       <normaloff>:/new/prefix1/bullet_blue.png</normaloff>:/new/prefix1/bullet_blue.png</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>16</width>
+       <height>16</height>
+      </size>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <resources>
@@ -720,6 +790,18 @@
      <y>76</y>
     </hint>
    </hints>
+  </connection>
+  <connection>
+   <sender>resetSxPushButton</sender>
+   <signal>released()</signal>
+   <receiver>LensDistortionModelParametersContolWidget</receiver>
+   <slot>resetSx()</slot>
+  </connection>
+  <connection>
+   <sender>resetSyPushButton</sender>
+   <signal>released()</signal>
+   <receiver>LensDistortionModelParametersContolWidget</receiver>
+   <slot>resetSy()</slot>
   </connection>
   <connection>
    <sender>resetP1PushButton</sender>
@@ -858,6 +940,8 @@
   <slot>exampleShow()</slot>
   <slot>resetCx()</slot>
   <slot>resetCy()</slot>
+  <slot>resetSx()</slot>
+  <slot>resetSy()</slot>
   <slot>resetP1()</slot>
   <slot>resetP2()</slot>
   <slot>loadParams()</slot>

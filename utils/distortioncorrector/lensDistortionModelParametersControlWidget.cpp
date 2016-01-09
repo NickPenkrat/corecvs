@@ -31,6 +31,8 @@ LensDistortionModelParametersControlWidget::LensDistortionModelParametersControl
     QObject::connect(ui->scaleSpinBox,       SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(ui->aspectSpinBox,      SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(ui->normalizerSpinBox,  SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->shiftXSpinBox,      SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->shiftYSpinBox,      SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
 
     QObject::connect(ui->koefTableWidget, SIGNAL(itemChanged(QTableWidgetItem*)), this, SIGNAL(paramsChanged()));
 
@@ -72,6 +74,8 @@ void LensDistortionModelParametersControlWidget::getParameters(LensDistortionMod
 {
     params.setPrincipalX(ui->centerXSpinBox->value());
     params.setPrincipalY(ui->centerYSpinBox->value());
+    params.setShiftX(ui->shiftXSpinBox->value());
+    params.setShiftY(ui->shiftYSpinBox->value());
 
     params.setTangentialX(ui->tangential1SpinBox->value());
     params.setTangentialY(ui->tangential2SpinBox->value());
@@ -119,6 +123,8 @@ void LensDistortionModelParametersControlWidget::setParameters(const LensDistort
 
     ui->centerXSpinBox->setValue(input.principalX());
     ui->centerYSpinBox->setValue(input.principalY());
+    ui->shiftXSpinBox->setValue(input.shiftX());
+    ui->shiftYSpinBox->setValue(input.shiftY());
 
     ui->tangential1SpinBox->setValue(input.tangentialX());
     ui->tangential2SpinBox->setValue(input.tangentialY());
@@ -203,6 +209,17 @@ void LensDistortionModelParametersControlWidget::resetCy()
     } else {
         ui->centerYSpinBox->setValue(100);
     }
+}
+
+void LensDistortionModelParametersControlWidget::resetSx()
+{
+    ui->shiftXSpinBox->setValue(0);
+}
+
+
+void LensDistortionModelParametersControlWidget::resetSy()
+{
+    ui->shiftYSpinBox->setValue(0);
 }
 
 void LensDistortionModelParametersControlWidget::resetP1()
