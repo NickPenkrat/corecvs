@@ -170,13 +170,9 @@ void CalibrationJob::prepareUndistortionTransformation(int camId, corecvs::Displ
 {
     auto& cam = photostation.cameras[camId];
     cam.estimateUndistortedSize(settings.distortionApplicationParameters);
-    RadialCorrection correction(cam.distortion);
-    auto* foo = DisplacementBuffer::CacheInverse(
-            &correction, cam.intrinsics.size[1], cam.intrinsics.size[0],
-            0, 0, cam.intrinsics.distortedSize[0], cam.intrinsics.distortedSize[1],
+   result = RadialCorrection(cam.distortion).getUndistortionTransformation(
+            cam.intrinsics.size, cam.intrinsics.distortedSize,
             0.25, false);
-    result = *foo;
-    delete foo;
 }
 
 void CalibrationJob::removeDistortion(corecvs::RGB24Buffer &src, corecvs::RGB24Buffer &dst, corecvs::DisplacementBuffer &transform, double outW, double outH)

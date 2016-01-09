@@ -11,6 +11,7 @@
 #include "radialCorrection.h"
 #include "levenmarq.h"
 #include "ellipticalApproximation.h"
+#include "displacementBuffer.h"
 
 namespace corecvs {
 
@@ -225,7 +226,23 @@ EllipticalApproximation1d RadialCorrection::compareWith(const RadialCorrection &
     return result;
 }
 
-
+DisplacementBuffer RadialCorrection::getUndistortionTransformation(const Vector2dd &undistortedSize, const Vector2dd &distortedSize, const double step, bool useLM)
+{
+    if (mParams.mMapForward)
+    {
+        //TODO: clarify if this stuff is correct
+        return DisplacementBuffer(this, undistortedSize[1], undistortedSize[0]);
+    }
+    else
+    {
+        auto* foo = DisplacementBuffer::CacheInverse(
+            this, undistortedSize[1], undistortedSize[0],
+            0, 0, distortedSize[0], distortedSize[1], step, useLM);
+        DisplacementBuffer result = *foo;
+        delete foo;
+        return result;
+    }
+}
 
 
 

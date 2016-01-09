@@ -22,6 +22,7 @@
 
 namespace corecvs {
 
+class DisplacementBuffer;
 
 class RadialCorrection : public DeformMap<int32_t, double>, public FunctionArgs
 {
@@ -92,6 +93,7 @@ public:
     //G12Buffer *correctLens(G12Buffer *input);
     G12Buffer   *doCorrectionTransform(G12Buffer *inputBuffer);
     RGB24Buffer *doCorrectionTransform(RGB24Buffer *inputBuffer);
+    DisplacementBuffer getUndistortionTransformation(const Vector2dd &undistortedSize, const Vector2dd &distortedSize, const double step = 0.25, bool useLM = false);
 
     //Vector2dd getCorrectionForPoint(Vector2dd input);
     LensDistortionModelParameters mParams;
