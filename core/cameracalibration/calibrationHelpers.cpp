@@ -210,6 +210,11 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const SceneFeaturePoint &fp, doub
 
 void CalibrationHelpers::drawScene(Mesh3D &mesh, const FixtureScene &scene, double scale)
 {
+    for (FixtureCamera *cam: scene.orphanCameras)
+    {
+        drawCamera(mesh, *cam, scale);
+    }
+
     for (CameraFixture *ps: scene.fixtures)
     {
         drawPly(mesh, *ps, scale);

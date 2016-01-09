@@ -274,6 +274,26 @@ void FixtureScene::addCameraToFixture(FixtureCamera *cam, CameraFixture *fixture
 
 }
 
+void FixtureScene::dumpInfo(ostream &out)
+{
+    out << "FixtureScene:" << endl;
+    out << "Owned objects: " <<  mOwnedObjects.size() << endl;
+
+    out << "Orphan Cameras: " <<  orphanCameras.size() << endl;
+    out << "Fixtures: " <<  fixtures.size() << endl;
+    for(size_t i = 0; i < fixtures.size(); i++)
+    {
+        CameraFixture *fixture = fixtures[i];
+        out << "  " << "Fixture <" << fixture->name << "> " << fixture->cameras.size() << endl;
+        for(size_t j = 0; j < fixture->cameras.size(); j++)
+        {
+            FixtureCamera *cam = fixture->cameras[j];
+            out << "     " << "Camera <" << cam->nameId << "> "  << endl;
+        }
+    }
+
+}
+
 FixtureScene::~FixtureScene()
 {
     for(size_t i = 0; i < mOwnedObjects.size(); i++)

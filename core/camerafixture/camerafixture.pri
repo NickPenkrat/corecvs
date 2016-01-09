@@ -16,7 +16,8 @@ SOURCES += \
 #	camerafixture/photoStationCalibrator.cpp  \
 #	camerafixture/calibrationLocation.cpp     \
 #	camerafixture/flatPatternCalibrator.cpp   \
-    camerafixture/sceneFeaturePoint.cpp
+    camerafixture/sceneFeaturePoint.cpp \
+    camerafixture/cameraFixture.cpp
 
 
 CONFIG += c++11

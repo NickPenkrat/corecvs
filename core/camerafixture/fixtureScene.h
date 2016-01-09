@@ -2,6 +2,7 @@
 #define FIXTURE_SCENE_H_
 
 #include "fixtureCamera.h"
+#include "cameraFixture.h"
 #include "sceneFeaturePoint.h"
 
 namespace corecvs {
@@ -81,6 +82,8 @@ public:
     virtual void positionCameraInFixture(CameraFixture *station, FixtureCamera *camera, const Affine3DQ &location);
     virtual void addCameraToFixture     (FixtureCamera *cam, CameraFixture *fixture);
 
+    /* Some debugger helpers */
+    virtual void dumpInfo(ostream &out);
 
 
     size_t totalObservations()

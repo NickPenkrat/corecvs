@@ -13,7 +13,7 @@
 #include "typesafeBitmaskEnums.h"
 #include "calibrationLocation.h"  // LocationData
 #include "fixtureCamera.h"
-#include "fixtureScene.h"
+//#include "fixtureScene.h"
 
 namespace corecvs {
 
@@ -84,18 +84,7 @@ public:
         return getWorldCamera(cam);
     }
 
-    void setCameraCount(int count) {
-        while  (cameras.size() > (size_t)count) {
-            FixtureCamera *model = cameras.back();
-            cameras.pop_back(); /* delete camera will generally do it, but only in owner scene.*/
-            model->ownerScene->deleteCamera(model);
-        }
-
-        while  (cameras.size() < (size_t)count) {
-            FixtureCamera *model  = ownerScene->createCamera();
-            ownerScene->addCameraToFixture(model, this);
-        }
-    }
+    void setCameraCount(int count);
 
     Matrix44 getMMatrix(int cam) const
     {

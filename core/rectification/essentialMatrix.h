@@ -269,6 +269,29 @@ public:
      }
 
     /**
+      *    Helper function that calculates epipolar distance in 'right' frame considering following
+      *
+      * \f[
+      *
+      *      \pmatrix{ x & y & 1 }
+      *      \pmatrix{
+      *        F_{1,1} & F_{1,2} & F_{1,3}\cr
+      *        F_{2,1} & F_{2,2} & F_{2,3}\cr
+      *        F_{3,1} & F_{3,2} & F_{3,3}}
+      *      \pmatrix{ x' \cr y' \cr 1} = \pmatrix{ 0 \cr 0 \cr 0}
+      * \f]
+      *
+      *  Where (x,y) are the coordinates in "right" frame and (x' y') are form the "left" frame
+      *
+      **/
+     double epipolarDistanceFirst(const Vector2dd &right, const Vector2dd &left) const
+     {
+         Vector3dd line = this->mulBy2dRight(left);
+         Line2d epiline(line);
+         return epiline.distanceTo(right);
+     }
+
+    /**
      *  \f[ 2 E E^T E - tr ( E E^T ) E = 0 . \f]
      */
     Matrix33 criteriaMatrix() const

@@ -11,7 +11,7 @@ CameraModelParametersControlWidget::CameraModelParametersControlWidget(QWidget *
 
 CameraModelParametersControlWidget::~CameraModelParametersControlWidget()
 {
-    delete ui;
+    delete_safe(ui);
 }
 
 LensDistortionModelParameters CameraModelParametersControlWidget::lensDistortionParameters()
