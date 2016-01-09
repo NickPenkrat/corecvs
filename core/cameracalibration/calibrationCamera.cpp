@@ -179,5 +179,62 @@ ConvexPolyhedron CameraModel::getViewport(const Vector2dd &p1, const Vector2dd &
     return toReturn;
 }
 
+#ifndef Rect
+typedef std::array<corecvs::Vector2dd, 2> Rect;
+#endif
+
+void corecvs::CameraModel::estimateUndistortedSize(const DistortionApplicationParameters &applicationParams)
+{
+    Rect input = { corecvs::Vector2dd(0.0, 0.0), intrinsics.distortedSize }, output;
+    Rect outCir, outIns;
+
+    distortion.getCircumscribedImageRect(input[0], input[1], outCir[0], outCir[1]);
+    distortion.getInscribedImageRect    (input[0], input[1], outIns[0], outIns[1]);
+
+    output = input;
+    corecvs::Vector2dd shift(0.0);
+
+    switch (applicationParams.resizePolicy())
+    {
+        case DistortionResizePolicy::FORCE_SIZE:
+            output = { corecvs::Vector2dd(0.0, 0.0), intrinsics.size };
+            shift[0] = distortion.principalX() / intrinsics.distortedSize[0] * output[1][0];
+            shift[1] = distortion.principalY() / intrinsics.distortedSize[1] * output[1][1];
+            break;
+        case DistortionResizePolicy::TO_FIT_RESULT:
+            output = outCir;
+            shift = -output[0];
+            output[1] -= output[0];
+            output[0] -= output[0];
+            break;
+        case DistortionResizePolicy::TO_NO_GAPS:
+            output = outIns;
+            shift = -output[0];
+            output[1] -= output[0];
+            output[0] -= output[0];
+            break;
+        case DistortionResizePolicy::NO_CHANGE:
+        default:
+            break;
+    }
+
+    double w = intrinsics.size[0];
+    double h = intrinsics.size[1];
+    intrinsics.size = output[1] - output[0];
+    double newW = intrinsics.size[0];
+    double newH = intrinsics.size[1];
+
+    if (applicationParams.adoptScale())
+    {
+        double aspect = std::max(newW / w, newH / h);
+        distortion.setScale(1.0 / aspect);
+    }
+    else
+    {
+        distortion.mShiftX = shift[0];
+        distortion.mShiftY = shift[1];
+    }
+}
+
 
 } // namespace corecvs

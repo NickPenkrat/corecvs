@@ -111,7 +111,7 @@ std::vector<PointObservation__> parsePois(CalibrationJob &calibration, const std
             proj.projection = corecvs::Vector2dd(x, y);
             if (distorted)
             {
-                proj.projection = calibration.corrections[camId].map(proj.projection[1], proj.projection[0]);
+                proj.projection = calibration.photostation.cameras[camId].distortion.mapBackward(proj.projection);
             }
             proj.cameraId = camId;
             proj.photostationId = psId;
@@ -142,8 +142,7 @@ void storePois(const std::vector<PointObservation__> &observations, const std::s
         ofs << o.projections.size() << std::endl;
         for (auto& p: o.projections)
         {
-            auto correction = calibration.corrections[p.cameraId];
-            auto projection = correction.mapFromUndistorted(p.projection[1], p.projection[0]);
+            auto projection = calibration.photostation.cameras[p.cameraId].distortion.mapForward(p.projection);
             ofs << "roof_v1_SP" << ((char)('A' + p.photostationId)) << p.cameraId << "_0deg.jpg" << " " << projection[0] << " " << projection[1] << std::endl;
         }
     }
@@ -206,7 +205,6 @@ int main()
     JSONGetter getter("calibration.json");
     CalibrationJob job;
     getter.visit(job, "job");
-    job.prepareAllRadialCorrections();
     auto pois = parsePois(job, "pois_m15.txt",10, true, true);
     auto pois_proj = parsePois(job, "pois_all.txt",10, true, true);
 

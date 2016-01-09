@@ -92,7 +92,7 @@ std::vector<PointObservation__> parsePois(CalibrationJob &calibration, const std
             proj.projection = corecvs::Vector2dd(x, y);
             if (distorted)
             {
-                proj.projection = calibration.corrections[camId].map(proj.projection[1], proj.projection[0]);
+                proj.projection = calibration.photostation.cameras[camId].distortion.mapBackward(proj.projection);
             }
             proj.cameraId = camId;
             proj.photostationId = psId;
@@ -265,7 +265,6 @@ void run_pois(int camIdOffset, bool distorted, bool filter, bool forceGps)
 
 
     auto pps = jobC.photostation;
-    jobC.prepareAllRadialCorrections();
 #ifdef METERS
     for (auto& cam: jobC.photostation.cameras)
         cam.extrinsics.position *= 1e-3;
