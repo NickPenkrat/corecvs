@@ -48,9 +48,7 @@ HEADERS += \
     math/eulerAngles.h \
     math/puzzleBlock.h \
     math/matrix/similarityReconstructor.h \
-    math/fftw/fftwWrapper.h \
-    
-    
+
 SOURCES += \
     math/matrix/matrix.cpp \
     math/matrix/matrix22.cpp \
@@ -69,5 +67,13 @@ SOURCES += \
     math/generic/genericMath.cpp \
     math/sse/sseWrapper.cpp \
     math/matrix/similarityReconstructor.cpp \
+
+
+contains(DEFINES, WITH_FFTW) {
+HEADERS += \
+    math/fftw/fftwWrapper.h \
+
+SOURCES += \
     math/fftw/fftwWrapper.cpp \
 
+}

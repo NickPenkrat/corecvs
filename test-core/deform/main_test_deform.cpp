@@ -260,7 +260,7 @@ TEST(Deform, testRadialApplication)  // TODO: move to perf-tests!
     delete corrected22;
 }
 
-TEST(Deform, testRadialInversion)  // TODO: move to perf-tests!
+TEST(Deform, testRadialInversion)
 {
     RGB24Buffer *image = new RGB24Buffer(2500, 4000);
 

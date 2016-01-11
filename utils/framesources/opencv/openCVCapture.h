@@ -63,12 +63,12 @@ using namespace std;
 
     OpenCVCaptureInterface(string _devname, unsigned int mode);
 
-    virtual FramePair getFrame();
+    virtual FramePair getFrame() override;
 
-    virtual CapErrorCode setCaptureProperty(int id, int value);
+    virtual CapErrorCode setCaptureProperty(int id, int value) override;
 
-    virtual CapErrorCode initCapture();
-    virtual CapErrorCode startCapture();
+    virtual CapErrorCode initCapture() override;
+    virtual CapErrorCode startCapture() override;
 
     virtual ~OpenCVCaptureInterface();
  };

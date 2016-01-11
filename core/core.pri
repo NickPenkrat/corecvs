@@ -44,6 +44,7 @@ CORE_INCLUDEPATH = \
     $$COREDIR/math/sse \
     $$COREDIR/math/vector \
     $$COREDIR/meanshift \
+    $$COREDIR/meta \
     $$COREDIR/rectification \
     $$COREDIR/reflection \
     $$COREDIR/segmentation \

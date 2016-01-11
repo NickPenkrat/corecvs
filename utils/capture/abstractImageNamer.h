@@ -1,7 +1,8 @@
 #ifndef ABSTRACTIMAGENAMER_H
 #define ABSTRACTIMAGENAMER_H
 
-#include "QString"
+#include <string>
+using std::string;
 
 class AbstractImageNamer
 {
@@ -16,7 +17,7 @@ public:
         TYPE_UNKNOWN
     };
 
-    static QString getResolution(FileType type)
+    static string getResolution(FileType type)
     {
         switch (type)
         {
@@ -36,8 +37,9 @@ public:
         return "";
     }
 
-
-    virtual QString nameForImage(const QString &stName, int camId, QString metaInfo, FileType type, QString *path = NULL, QString prefix = "", bool unique = true) = 0;
+    virtual string nameForImage(const string &stName
+        , int camId, string metaInfo, FileType type
+        , string *path = NULL, string prefix = "", bool unique = true) = 0;
 };
 
 #endif // ABSTRACTIMAGENAMER_H

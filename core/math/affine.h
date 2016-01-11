@@ -106,8 +106,8 @@ public:
     }
 
     /* Pretty print */
-    void prettyPrint (ostream &out = cout);
-    void prettyPrint1(ostream &out = cout);
+    void prettyPrint (ostream &out = cout) const;
+    void prettyPrint1(ostream &out = cout) const;
 
 };
 

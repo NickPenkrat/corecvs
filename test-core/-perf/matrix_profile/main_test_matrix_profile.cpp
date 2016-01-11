@@ -83,8 +83,11 @@ void printResult(double gflops, uint64_t delay, int runs)
 
 TEST(MatrixProfile, testMulSize3)
 {
-    int  sizes    [] = { 1024, 2048, 4096, 16384 };
-    int  polca    [] = {   20,   20,    5,     1 };
+//    int  sizes    [] = { 1024, 2048, 4096, 16384 };
+
+    int  sizes    [] = { 1000, 2000, 4000, 16000 };
+
+    int  polca    [] = {   10,   20,    5,     1 };
     int  runs     [] = {   10,    5,    2,     2 };
 
     bool runsimple[] = { true, false, false, false };

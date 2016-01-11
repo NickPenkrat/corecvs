@@ -11,9 +11,18 @@ exists(../../../../config.pri) {
 ROOT_DIR=$$PWD/$$ROOT_DIR
 
 TEMPLATE = app
-TARGET   = test_photostation_placer
-CONFIG  += console
+TARGET   = cloudview
 
 include($$ROOT_DIR/src/open/utils/utils.pri)                        # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
 
-SOURCES += photostation_placer.cpp
+
+INCLUDEPATH += .
+
+HEADERS += \
+
+SOURCES += \
+    main_cloudview.cpp \
+
+FORMS += \
+
+#RESOURCES += ../../resources/main.qrc

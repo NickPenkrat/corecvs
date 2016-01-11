@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <atomic>
 
 #include "vector3d.h"
 #include "calibrationPhotostation.h"
@@ -10,7 +11,6 @@
 #include "levenmarq.h"
 #include "tbb/mutex.h"
 #include "typesafeBitmaskEnums.h"
-#include <atomic>
 
 namespace std
 {

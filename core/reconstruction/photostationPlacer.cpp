@@ -73,7 +73,7 @@ int corecvs::PhotostationPlacer::getReprojectionCnt()
 {
     int total = 0;
     for (auto& o: tracks)
-        total += o.projections.size();
+        total += (int)o.projections.size();
     return total * getErrorComponentsPerPoint();
 }
 
@@ -98,9 +98,9 @@ int corecvs::PhotostationPlacer::getOrientationInputNum()
     IF(NON_DEGENERATE_TRANSLATIONS,
         inputNum += (preplaced - 1) * 3);
     IF(FOCALS,
-        inputNum += calibratedPhotostations[0].cameras.size());
+        inputNum += (int)calibratedPhotostations[0].cameras.size());
     IF(PRINCIPALS,
-        inputNum += calibratedPhotostations[0].cameras.size() * 2);
+        inputNum += (int)calibratedPhotostations[0].cameras.size() * 2);
     IF(POINTS,
         inputNum += getMovablePointCount() * 3);
     return inputNum;
@@ -793,7 +793,7 @@ void corecvs::PhotostationPlacer::buildTracks(int psA, int psB, int psC)
             po.projections.push_back(pb);
             po.projections.push_back(pc);
             po.worldPoint = res;
-            int id = tracks.size();
+            int id = (int)tracks.size();
             if (!(kpA - calibratedPhotostations[psA].project(res, camA)) > trackInlierThreshold ||
                 !(kpB - calibratedPhotostations[psB].project(res, camB)) > trackInlierThreshold ||
                 !(kpC - calibratedPhotostations[psC].project(res, camC)) > trackInlierThreshold)
@@ -1059,7 +1059,7 @@ void corecvs::PhotostationPlacer::filterEssentialRansac(int psA, int camA, int p
     std::vector<int> bestInliers;
 
     std::mt19937 rng;
-    int N = ransacableIdx.size();
+    int N = (int)ransacableIdx.size();
     std::cout << psA << ":" << camA << "<>" << psB << ":" << camB << ": " << ransacableIdx.size() << std::endl;
     if (N == 0)
         return;
@@ -1158,6 +1158,7 @@ void corecvs::PhotostationPlacer::filterEssentialRansac(int psA, int camA, int p
 
 void corecvs::PhotostationPlacer::filterEssentialRansac()
 {
+    CORE_ASSERT_TRUE_S(calibratedPhotostations.size() >= 3);
     matchesCopy = matches;
     std::vector<std::tuple<int, int, int, int>> work;
     for (int psA = 0; psA < 3; ++psA)
@@ -1359,7 +1360,7 @@ void corecvs::PhotostationPlacer::detectAll()
         for (int j = 0; j < (int)images[i].size(); ++j)
         {
             filenames.push_back(images[i][j]);
-            img_map[filenames.size() - 1] = std::make_pair(i, j);
+            img_map[(int)filenames.size() - 1] = std::make_pair(i, j);
         }
     }
 
@@ -1380,7 +1381,7 @@ void corecvs::PhotostationPlacer::detectAll()
         keyPoints[i].resize(calibratedPhotostations[i].cameras.size());
         keyPointColors[i].resize(calibratedPhotostations[i].cameras.size());
     }
-    int N = filenames.size();
+    int N = (int)filenames.size();
     for (int i = 0; i < N; ++i)
     {
         auto& kps = pipeline.images[i].keyPoints.keyPoints;
@@ -1402,8 +1403,8 @@ void corecvs::PhotostationPlacer::detectAll()
     auto& ref = pipeline.refinedMatches.matchSets;
     for (auto& ms: ref)
     {
-        auto id1 = img_map[ms.imgA];
-        auto id2 = img_map[ms.imgB];
+        auto id1 = img_map[(int)ms.imgA];
+        auto id2 = img_map[(int)ms.imgB];
         bool swap = id1.first > id2.first;
         int psIdA = swap ? id2.first : id1.first;
         int psIdB = swap ? id1.first : id2.first;

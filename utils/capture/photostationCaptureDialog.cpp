@@ -242,7 +242,7 @@ PhotostationCaptureDialog::~PhotostationCaptureDialog()
     /* Capturing */
     settings.setValue("skipFrames", ui->skipFramesSpinBox->value());
     settings.setValue("nameSP"    , ui->stationNameLineEdit->text());
-    settings.setValue("prefix"    , ui->fileNamePrefixLineEdit->text());    
+    settings.setValue("prefix"    , ui->fileNamePrefixLineEdit->text());
     settings.setValue("angleStep" , ui->angleStepSpinBox->value());
     settings.setValue("pathDir"   , ui->outDirLineEdit->text());
 
@@ -546,8 +546,9 @@ ImageCaptureInterface* PhotostationCaptureDialog::createCameraCapture(const stri
 
     ImageCaptureInterface *camera = new CAPTURE_INTERFACE(devname, h, w, fps, isRgb);
 
+    ImageCaptureInterface::CapErrorCode result = camera->initCapture();
     ImageCaptureInterface::CameraFormat actualFormat;
-    ImageCaptureInterface::CapErrorCode result = camera->initCapture(&actualFormat);
+    camera->getCurrentFormat(actualFormat);
 
     if (!processError)
         return camera;
@@ -628,6 +629,7 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
             QString prefix = ui->fileNamePrefixLineEdit->text();
             QString metaInfo;
 
+            // prefix shouldn't have our keyword "SP"
             if (prefix.indexOf("SP") >= 0) {
                 QMessageBox::warning(this, "Bad filename series prefix:", prefix);
                 prefix.replace("SP", "sp");
@@ -648,13 +650,15 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
             }
             CORE_ASSERT_TRUE_S(mCaptureInterfaces[i].isFilled());
 
-            QString name = mNamer->nameForImage(
-                ui->stationNameLineEdit->text()
+            std::string stdPath = path.toStdString();
+
+            std::string name = mNamer->nameForImage(
+                ui->stationNameLineEdit->text().toStdString()
                 , mCaptureInterfaces[i].camId
-                , metaInfo
+                , metaInfo.toStdString()
                 , (AbstractImageNamer::FileType)ui->outputFormatComboBox->currentIndex()
-                , &path
-                , prefix
+                , &stdPath
+                , prefix.toStdString()
                 );
 
             bool saveOk = mCaptureInterfaces[i].result->save(path, NULL
@@ -694,7 +698,7 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
         }
 
         QString spName = ui->stationNameLineEdit->text();
-		QString spName2 = spName;
+        QString spName2 = spName;
         for (int i = 0; i < spName.length(); i++)
         {
             if (spName[i] > 'Z') spName[i] = 'Z';

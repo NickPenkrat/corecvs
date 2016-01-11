@@ -76,6 +76,7 @@ public:
     {
         return mapToUndistorted(corecvs::Vector2dd(x, y));
     }
+
     Vector2dd mapFromUndistorted(double y, double x) const
     {
         return mapFromUndistorted(corecvs::Vector2dd(x, y));

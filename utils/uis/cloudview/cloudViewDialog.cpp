@@ -10,8 +10,7 @@
 #include "rgb24Buffer.h"
 #include "qSettingsSetter.h"
 
-#include "plyLoader.h"
-#include "stlLoader.h"
+#include "meshLoader.h"
 
 // FIXIT: GOOPEN
 //#include "../../../restricted/applications/vimouse/faceDetection/faceMesh.h"
@@ -799,49 +798,23 @@ void CloudViewDialog::toggledVisibility()
 
 void CloudViewDialog::loadMesh()
 {
+    MeshLoader loader;
+
+    QString type = QString("3D Model (%1)").arg(loader.extentionList().c_str());
+
     QString fileName = QFileDialog::getOpenFileName(
       this,
       tr("Load 3D Model"),
       ".",
-      tr("3D Model (*.ply *.stl)"));
+      type);
 
     Mesh3DScene *mesh = new Mesh3DScene();
-    ifstream file;
-    file.open(fileName.toLatin1().data(), ios::in);
-    if (file.fail())
-    {
-        qDebug() << "Can't open mesh file" << endl;
-        return;
-    }
 
-    if (fileName.endsWith(".ply"))
+    if (!loader.load(mesh, fileName.toStdString()))
     {
-        PLYLoader loader;
-        if (loader.loadPLY(file, *mesh) != 0)
-        {
-           qDebug() << "CloudViewDialog::Unable to load mesh";
-           file.close();
+        delete_safe(mesh);
            return;
         }
-    }
-
-    if (fileName.endsWith(".stl"))
-    {
-        STLLoader loader;
-        if (loader.loadBinarySTL(file, *mesh) != 0)
-        {
-           qDebug() << "CloudViewDialog::Unable to load mesh";
-           file.close();
-           return;
-        }
-    }
-
-    cout << "Loaded mesh:" << endl;
-    cout << " Edges   :" << mesh->edges.size() << endl;
-    cout << " Vertexes:" << mesh->vertexes.size() << endl;
-    cout << " Faces   :" << mesh->faces.size() << endl;
-    cout << " Bounding box " << mesh->getBoundingBox() << endl;
-
     QFileInfo fileInfo(fileName);
     addSubObject(fileInfo.baseName(), QSharedPointer<Scene3D>((Scene3D*)mesh));
 }

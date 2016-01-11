@@ -39,10 +39,6 @@
 #include <math.h>
 #include "reflection.h"
 
-/*TODO: Find the MSVC reason and fix this ASAP */
-//#undef min
-//#undef max
-
 using std::numeric_limits;
 using std::istream;
 using std::ostream;
@@ -221,7 +217,6 @@ public:
      * \param V2
      *
      **/
-    //friend inline RealType operator +(const VectorOperationsBase &V1, const VectorOperationsBase &V2)
     friend inline ReturnType operator +(const RealType &V1, const RealType &V2)
     {
         int length = V1._size() < V2._size() ? V1._size() : V2._size();
@@ -239,7 +234,6 @@ public:
      * \param V1
      * \param V2
      **/
-    //friend inline RealType operator -(const VectorOperationsBase &V1, const VectorOperationsBase &V2)
     friend inline ReturnType operator -(const RealType &V1, const RealType &V2)
     {
         //cout << "Subtract v1: " << V1 << std::endl;
@@ -260,7 +254,6 @@ public:
      * \param V1
      * \param V2
      **/
-    //friend inline RealType operator *(const VectorOperationsBase &V1, const VectorOperationsBase &V2)
     friend inline ReturnType operator *(const RealType &V1, const RealType &V2)
     {
         int length = V1._size() < V2._size() ? V1._size() : V2._size();
@@ -306,7 +299,6 @@ public:
         return result;
     }
 
-    // friend inline RealType operator *(const VectorOperationsBase &V, const ElementType &c)
     friend inline ReturnType operator *(const RealType &V, const ElementType &c)
     {
         return operator *(c, V);
@@ -320,7 +312,6 @@ public:
      * \param c
      * \param V
      **/
-    //friend inline RealType operator /(const VectorOperationsBase &V, const ElementType &c)
     friend inline ReturnType operator /(const RealType &V, const ElementType &c)
     {
         ReturnType result = V._createVector(V._size());
@@ -342,7 +333,6 @@ public:
      *
      *
      **/
-    //friend inline ElementType operator &(const VectorOperationsBase &V1, const VectorOperationsBase &V2)
     friend inline ElementType operator &(const RealType &V1, const RealType &V2)
     {
         int length = V1._size() < V2._size() ? V1._size() : V2._size();
