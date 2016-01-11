@@ -12,7 +12,7 @@ using namespace corecvs;
 static bool checkFileExist(const string& dirPath, const string& filePath)
 {
     string path = dirPath;
-    if (dirPath.length() > 0 && dirPath[dirPath.length() - 1] != PATH_SEPARATOR[0]) {
+    if (!STR_HAS_SLASH_AT_END(path)) {
         path += PATH_SEPARATOR;
     }
     path += filePath;
@@ -34,7 +34,7 @@ static bool checkFileExist(const char* dirName, const string& filePath)
     return checkFileExist(string(dir), filePath);
 }
 
-// Check existance for the "data/pair/image0001_c0.pgm"
+// Check existance for the "./data/pair/image0001_c0.pgm"
 TEST(EnvTest, CheckCurrentDirTest)
 {
     string filePath = string("data")
@@ -44,7 +44,7 @@ TEST(EnvTest, CheckCurrentDirTest)
     CORE_ASSERT_TRUE(checkFileExist(string("."), filePath), "Missed expected repo DB at the current folder");
 }
 
-// Check existance for the "<TOPCON_DIR>/data/dataMeasure_12_Roof/mosk_test_001_good/_DSC8173.jpg"
+// Check existance for the "<TOPCON_DIR>data/dataMeasure_12_Roof/mosk_test_001_good/_DSC8173.jpg"
 TEST(EnvTest, CheckTopconDirTest)
 {
     string filePath = string("data")
@@ -55,7 +55,7 @@ TEST(EnvTest, CheckTopconDirTest)
     CORE_ASSERT_TRUE(checkFileExist("TOPCON_DIR", filePath), "Missed expected DB at the TOPCON_DIR folder");
 }
 
-// Check existance for the "<TOPCON_DIR_GDRIVE>/data/tests/SPA3_0deg_3.jpg"
+// Check existance for the "<TOPCON_DIR_GDRIVE>data/tests/SPA3_0deg_3.jpg"
 TEST(EnvTest, CheckTopconDirGDriveTest)
 {
     string filePath = string("data")
@@ -63,13 +63,6 @@ TEST(EnvTest, CheckTopconDirGDriveTest)
         + PATH_SEPARATOR + "SPA3_0deg_3.jpg";
 
     CORE_ASSERT_TRUE(checkFileExist("TOPCON_DIR_GDRIVE", filePath), "Missed expected DB at the TOPCON_DIR_GDRIVE folder");
-}
-
-TEST(VectorTest, MulAllElements)
-{
-    const int LENGTH = 8;
-    FixedArray<int> arr(LENGTH);
-    ASSERT_EQ(arr.size(), LENGTH);
 }
 
 int main(int argc, char **argv)

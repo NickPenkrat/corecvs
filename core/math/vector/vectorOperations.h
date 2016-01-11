@@ -39,10 +39,6 @@
 #include <math.h>
 #include "reflection.h"
 
-/*TODO: Find the MSVC reason and fix this ASAP */
-//#undef min
-//#undef max
-
 using std::numeric_limits;
 using std::istream;
 using std::ostream;

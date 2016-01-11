@@ -86,3 +86,4 @@ SOURCES += \
     meshdraw/main_test_meshdraw.cpp \
     reconstruction/main_test_reconstruction.cpp \
     meta/main_test_meta.cpp \
+    function/main_test_function.cpp \

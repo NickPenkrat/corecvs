@@ -17,22 +17,32 @@ using corecvs::PointerField;
 using corecvs::EnumField;
 using corecvs::DoubleVectorField;
 
-using namespace corecvs;
-
 class JSONGetter
 {
 public:
     /**
-     *  Create a getter object that will use data from a file with a specified name.
-     *
-     **/
-    JSONGetter(QString const & fileName) { init(QSTR_DATA_PTR(fileName)); }
+    *  Create a getter object that will use data from a file with a specified name.
+    *
+    * @brief JSONGetter
+    * @param fileName
+    **/
+    JSONGetter(const char * fileName) { init(fileName); }
 
     /**
+     *  Create a getter object that will use data from a file with a specified name.
+     *
+     * @brief JSONGetter
+     * @param fileName
+     **/
+    explicit JSONGetter(QString const & fileName) { init(QSTR_DATA_PTR(fileName)); }
+
+    /**
+     *  Create a getter object that will use data from a file with a specified name.
+     *
      * @brief JSONGetter
      * @param fileName
      */
-    JSONGetter(std::string const & fileName) { init(fileName.c_str()); }
+    explicit JSONGetter(std::string const & fileName) { init(fileName.c_str()); }
 
     /**
      *  Create a getter object that will use data from a given XML

@@ -110,7 +110,6 @@ public:
             RuntimeTypeBuffer img = reader->read(image.filename);
             delete reader;
             detector->detect(img, image.keyPoints.keyPoints);
-
             kpt += image.keyPoints.keyPoints.size();
             cnt++;
             if (cnt % 4 == 0)
@@ -242,11 +241,30 @@ public:
 
             BufferReader* reader = BufferReaderProvider::getInstance().getBufferReader(image.filename);
             RuntimeTypeBuffer img = reader->read(image.filename);
+            corecvs::RGB24Buffer bufferRGB = reader->readRgb(image.filename);
             delete reader;
             extractor->compute(img, image.keyPoints.keyPoints, image.descriptors.mat);
             image.descriptors.type = descriptorType;
 
             CORE_ASSERT_TRUE_S(image.descriptors.mat.getRows() == image.keyPoints.keyPoints.size());
+            for (auto& kp: image.keyPoints.keyPoints)
+            {
+                int r = 0, g = 0, b = 0;
+                int cnt = 0;
+                int x = kp.x, y = kp.y, sz = kp.size / 2;
+                for (int xx = x - sz; xx <= x + sz; ++xx)
+                    for (int yy = y - sz; yy <= y + sz; ++yy)
+                        if (xx >= 0 && xx < bufferRGB.w && yy >= 0 && yy < bufferRGB.h)
+                        {
+                            auto color = bufferRGB.element(yy, xx);
+                            r += color.r();
+                            g += color.g();
+                            b += color.b();
+                            cnt++;
+                        }
+                r /= cnt; g /= cnt; b /= cnt;
+                kp.color = corecvs::RGBColor(r, g, b);
+            }
 
             kpt += image.keyPoints.keyPoints.size();
             cnt++;
@@ -1245,7 +1263,7 @@ void VsfmWriterStage::loadResults(FeatureMatchingPipeline *pipeline, const std::
             ofs >> idxB[i];
         std::deque<Match> matches;
         for(size_t i = 0; i < K; ++i)
-			matches.push_back(Match((uint16_t)I, (uint16_t)J, (uint16_t)idxA[i], (uint16_t)idxB[i], 0.0));
+            matches.push_back(Match((uint16_t)I, (uint16_t)J, (uint16_t)idxA[i], (uint16_t)idxB[i], 0.0));
 
         RefinedMatchSet set(I, J, matches);
         refinedMatches.matchSets.push_back(set);

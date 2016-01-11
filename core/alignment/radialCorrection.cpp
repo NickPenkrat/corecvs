@@ -133,7 +133,6 @@ private:
         return 2 * steps * steps;
     }
 
-
 };
 
 
@@ -151,8 +150,7 @@ RadialCorrection RadialCorrection::invertCorrection(int h, int w, int step)
     result.setTangentialX(-input.tangentialX());
     result.setTangentialY(-input.tangentialY());
 
-    result.setScale(1.0 / input.scale());
-
+    result.setScale (1.0 / input.scale());
     result.setAspect(1.0 / input.scale()); /*< bad guess I believe */
 
     result.mKoeff.resize(RadialCorrectionInversionCostFunction::MODEL_POWER);
@@ -174,9 +172,9 @@ RadialCorrection RadialCorrection::invertCorrection(int h, int w, int step)
     lmFit.maxLambda = 10e8;
     lmFit.lambdaFactor = 8;
     lmFit.f = &cost;
-    lmFit.traceCrucial  = true;
-    lmFit.traceProgress = true;
-    lmFit.traceMatrix   = true;
+  //lmFit.traceCrucial  = true;
+  //lmFit.traceProgress = true;
+  //lmFit.traceMatrix   = true;
 
     vector<double> initialGuess(cost.inputs);
     RadialCorrectionInversionCostFunction::fillWithRadial(guess, &(initialGuess[0]));
@@ -198,7 +196,6 @@ RadialCorrection RadialCorrection::invertCorrection(int h, int w, int step)
     stats = cost.aggregatedCost(&(optimal[0]));
     SYNC_PRINT(("Final Mean Error: %f px\n", stats.getRadiusAround0()));
     SYNC_PRINT(("Final Max  Error: %f px\n", stats.getMax()));
-
 
     return guess;
 }

@@ -35,7 +35,9 @@ struct ImageData
          , calibrationRmse      = -1.0
          , calibrationMaxError  = -1.0
          , singleCameraRmse     = -1.0
-         , singleCameraMaxError = -1.0;
+         , singleCameraMaxError = -1.0
+         , fullCameraRmse       = -1.0
+         , fullCameraMaxError   = -1.0;
 
     template<class VisitorType>
     void accept(VisitorType &visitor)
@@ -51,6 +53,8 @@ struct ImageData
         visitor.visit(calibrationMaxError, -1.0, "calibrationMaxError");
         visitor.visit(calibrationRmse, -1.0, "singleCameraRmse");
         visitor.visit(calibrationMaxError, -1.0, "singleCameraMaxError");
+        visitor.visit(fullCameraRmse, -1.0, "fullCameraRmse");
+        visitor.visit(fullCameraMaxError, -1.0, "fullCameraMaxError");
     }
 };
 
@@ -179,6 +183,7 @@ struct CalibrationJob
 
     void    computeSingleCameraErrors();
     void    computeCalibrationErrors();
+    void    computeFullErrors();
     void    calibratePhotostation();
     void    calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<PinholeCameraIntrinsics> &intrinsics, std::vector<std::vector<CameraLocationData>> &locations, bool runBFS, bool runLM);
     void    calibrate();
@@ -191,6 +196,9 @@ struct CalibrationJob
     void    fit(int referenceLayerCamerasCount);
 
     void    calculateRedundancy(std::vector<int> &cameraImagesCount, std::vector<std::vector<int>> &cameraCameraRelationships, std::vector<int> &redundantSingleCamera, int &redundancyPhotostation);
+
+    void    reorient(const std::vector<int> &topLayerIdx);
+    void    reorient(const corecvs::Vector3dd T, const corecvs::Quaternion Q);
 
     double  factor = 1.0;
     std::vector<double> factors;

@@ -122,7 +122,7 @@ struct ReconstructionJob : ReconstructionParameters
      *  \param data Map from prefix into photostation locations
      *  \param psLocationCnt Number of photostation locations
      */
-    void fill(std::unordered_map<std::string, corecvs::Affine3DQ> &data, int psLocationCnt = 5);
+    void fill(std::unordered_map<std::string, corecvs::Affine3DQ> &data, size_t psLocationCnt = 5);
 
     void solveWithBadPOI(bool filter, bool forceGps);
 

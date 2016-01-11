@@ -1,16 +1,7 @@
 #include "relativeNonCentralP6PSolver.h"
 
-#ifdef WITH_BLAS
-# ifdef WITH_MKL
-#  include <mkl.h>
-#  include <mkl_lapacke.h>
-# else
-#  include <cblas.h>
-#  include <lapacke.h>
-# endif
-#else
-# error Cannot build solver without BLAS/LAPACK/MKL
-#endif
+#include "cblasLapackeWrapper.h"
+
 #include <complex>
 
 
@@ -100,7 +91,7 @@ std::vector<corecvs::Affine3DQ> corecvs::RelativeNonCentralP6PSolver::SolveRelat
                 MM.a(j, 2) = cz;
                 V[j] =-c1;
             }
-            corecvs::Vector VV = corecvs::Matrix::linSolve(MM.t() * MM, MM.t() * V);
+            corecvs::Vector VV = corecvs::Matrix::LinSolve(MM.t() * MM, MM.t() * V);
             corecvs::Vector3dd vv(VV);
             res.emplace_back(q, vv);
         }

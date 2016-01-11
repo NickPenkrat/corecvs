@@ -9,13 +9,12 @@
  * \date Oct 28, 2009
  * \author alexander
  */
-
-
 #include <vector>
 
 #include "global.h"
 
 #include "matrix.h"
+#include "sparseMatrix.h"
 #include "vector.h"
 
 namespace corecvs {
@@ -87,18 +86,25 @@ public:
 
         for (int i = 0; i < inputs; i++)
         {
-            xc[i] = in[i] - delta;
+            double xm = xc[i] = in[i] - delta;
             operator()(&xc[0], &y_minus[0]);
-            xc[i] = in[i] + delta;
+            double xp = xc[i] = in[i] + delta;
             operator()(&xc[0], &y_plus[0]);
             xc[i] = in[i];
 
+            // Note: this stuff is not equal to 2 * delta
+            double dx = xp - xm;
             for (int j = 0; j < outputs; j++)
             {
-                result.element(j,i) = (y_plus[j] - y_minus[j]) / (2.0 * delta);
+                result.element(j,i) = (y_plus[j] - y_minus[j]) / dx;
             }
         }
         return result;
+    }
+
+    Matrix getNativeJacobian(const double in[], double delta = 1e-7)
+    {
+        return getJacobian(in, delta);
     }
 
     virtual Matrix getJacobian(const Vector &in, double delta = 1e-7)
@@ -108,6 +114,138 @@ public:
 
     virtual ~FunctionArgs() {}
 
+};
+
+class SparseFunctionArgs : public FunctionArgs
+{
+public:
+    SparseFunctionArgs(int inputs, int outputs, const std::vector<std::vector<int>> &dependencyList) : FunctionArgs(inputs, outputs), dependencyList(dependencyList), fullIdx(outputs)
+    {
+        for (int i = 0; i < outputs; ++i)
+            fullIdx[i] = i;
+        minify();
+    }
+    //! \brief This should compute only needed indices
+    virtual void operator() (const double* in, double* out, const std::vector<int> &idx) = 0;
+    virtual void operator() (const double* in, double* out)
+    {
+        (*this)(in, out, fullIdx);
+    }
+
+    Matrix getJacobian(const double* in, double delta = 1e-7)
+    {
+        return (Matrix)getNativeJacobian(in, delta);
+    }
+
+    SparseMatrix getNativeJacobian(const double* in, double delta = 1e-7)
+    {
+        std::vector<std::vector<double>> values(inputs);
+
+        int N = (int)groupInputs.size();
+        for (int i = 0; i < N; ++i)
+        {
+            auto& group = groupInputs[i];
+            auto& idxs = groupOutputs[i];
+            auto& remap = remapIdx[i];
+
+            int M = (int)group.size();
+
+            std::vector<double> xp(inputs), xm(inputs), deltaS(M);
+            for (int j = 0; j < inputs; ++j)
+                xp[j] = xm[j] = in[j];
+            for (int j = 0; j < M; ++j)
+            {
+                double x = in[group[j]];
+                double xxm = x - delta;
+                double xxp = x + delta;
+                xp[group[j]] = xxp;
+                xm[group[j]] = xxm;
+                deltaS[j] = xxp - xxm;
+            }
+
+            std::vector<double> yp(idxs.size()), ym(idxs.size());
+            operator()(&xp[0], &yp[0], idxs);
+            operator()(&xm[0], &ym[0], idxs);
+
+            int K = (int)idxs.size();
+            for (int j = 0; j < K; ++j)
+            {
+                int id = remap[idxs[j]];
+                double v = (yp[j] - ym[j]) / deltaS[id];
+                values[group[id]].push_back(v);
+            }
+        }
+
+        std::vector<double> sparseValues;
+        std::vector<int> sparseColumns, sparseRowPointers(inputs + 1);
+        for (int i = 0; i < inputs; ++i)
+        {
+            int N = (int)dependencyList[i].size();
+            CORE_ASSERT_TRUE_S(N == values[i].size());
+            for (int j = 0; j < N; ++j)
+            {
+                int jj = dependencyList[i][j];
+                sparseColumns.push_back(jj);
+                sparseValues.push_back(values[i][j]);
+            }
+            sparseRowPointers[i + 1] = (int)sparseValues.size();
+        }
+        return SparseMatrix(inputs, outputs, sparseValues, sparseColumns, sparseRowPointers).t();
+    }
+
+    void minify()
+    {
+        std::vector<int> usedO(outputs);
+        std::vector<int> usedI(inputs);
+
+        for (int i = 0; i < inputs; ++i)
+        {
+            if (usedI[i])
+                continue;
+            std::vector<int> currentGroup = {i}, currentRemap(outputs, -1), currentOutputs = {};
+            usedO.clear();
+            usedO.resize(outputs);
+            for (auto& id: dependencyList[i])
+                usedO[id] = 1;
+            for (int j = i + 1; j < inputs; ++j)
+            {
+                if (usedI[j])
+                    continue;
+                bool isOk = true;
+                for (auto& id: dependencyList[j])
+                    if (usedO[id])
+                    {
+                        isOk = false;
+                        break;
+                    }
+                if (!isOk)
+                    continue;
+                currentGroup.push_back(j);
+                usedI[j] = 1;
+                for (auto& id: dependencyList[j])
+                    usedO[id] = 1;
+            }
+            CORE_ASSERT_TRUE_S(currentRemap.size() == outputs);
+            for (auto& id: currentGroup)
+                for (auto& ido: dependencyList[id])
+                {
+                    currentOutputs.push_back(ido);
+                    currentRemap[ido] = &id - &*currentGroup.begin();
+                }
+            groupInputs.push_back(currentGroup);
+            groupOutputs.push_back(currentOutputs);
+            remapIdx.push_back(currentRemap);
+
+        }
+        std::cout << "REMAPANAL: " << inputs << "->" << groupInputs.size() << std::endl;
+    }
+
+    virtual ~SparseFunctionArgs() {}
+
+private:
+    std::vector<std::vector<int>> groupInputs, groupOutputs, remapIdx;
+    std::vector<std::vector<int>> dependencyList;
+    std::vector<int>              fullIdx;
 };
 
 class IdentityFunction : public FunctionArgs
@@ -331,5 +469,5 @@ public:
 #endif
 
 } //namespace corecvs
-#endif // _FUNCTION_H_
 
+#endif // _FUNCTION_H_

@@ -14,6 +14,7 @@
 
 #include "memoryBlock.h"
 #include "vectorOperations.h"
+
 namespace corecvs {
 
 template<typename RealType, typename ElementType>
@@ -118,7 +119,5 @@ public:
 
 
 } //namespace corecvs
+
 #endif  //FIXEDARRAY_H_
-
-
-

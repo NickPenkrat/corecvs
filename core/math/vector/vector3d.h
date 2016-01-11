@@ -10,9 +10,11 @@
 #ifndef _VECTOR3D_H_
 #define _VECTOR3D_H_
 
-#include "math.h"
+#include <math.h>
+
 #include "vector2d.h"
 #include "vector.h"
+
 namespace corecvs {
 
 /*
@@ -276,10 +278,9 @@ template<class VisitorType>
         return Vector3d<ElementType>(0.0, 0.0, 1.0);
     }
 
-
 };
 
-typedef Vector3d<double> Vector3dd;
+typedef Vector3d<double>   Vector3dd;
 typedef Vector3d<uint32_t> Vector3du32;
 typedef Vector3d<uint16_t> Vector3du16;
 
@@ -290,4 +291,3 @@ typedef Vector3d<int16_t> Vector3d16;
 } //namespace corecvs
 
 #endif // _VECTOR3D_H_
-

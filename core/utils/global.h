@@ -198,7 +198,7 @@ do {                  \
 } while (0)
 
 #ifdef TRACE
-#   define DOTRACE(X) SYNC_PRINT(X)
+#   define DOTRACE(X)       SYNC_PRINT(X)
 #else
 #   define DOTRACE(X)
 #endif
@@ -381,6 +381,10 @@ inline void deletearr_safe (Type * &ptr)
 #define   QSTR_HAS_SLASH_AT_END(qstring)  ((qstring).length() > 1 && \
                                           ((qstring)[(qstring).length() - 1] == '/' || \
                                            (qstring)[(qstring).length() - 1] == '\\'))
+
+#define   STR_HAS_SLASH_AT_END(string)  ((string).length() > 1 && \
+                                        ((string)[(string).length() - 1] == '/' || \
+                                         (string)[(string).length() - 1] == '\\'))
 
 #endif // is__cplusplus
 

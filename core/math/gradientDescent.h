@@ -10,8 +10,11 @@
  */
 
 #include <limits>
+
 #include "global.h"
+
 #include "function.h"
+
 namespace corecvs {
 
 
@@ -88,5 +91,5 @@ public:
 
 
 } //namespace corecvs
-#endif /* GRADIENTDESCENT_H_ */
 
+#endif /* GRADIENTDESCENT_H_ */
