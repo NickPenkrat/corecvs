@@ -629,6 +629,7 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
             QString prefix = ui->fileNamePrefixLineEdit->text();
             QString metaInfo;
 
+            // prefix shouldn't have our keyword "SP"
             if (prefix.indexOf("SP") >= 0) {
                 QMessageBox::warning(this, "Bad filename series prefix:", prefix);
                 prefix.replace("SP", "sp");
