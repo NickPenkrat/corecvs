@@ -33,6 +33,7 @@ LensDistortionModelParametersControlWidget::LensDistortionModelParametersControl
     QObject::connect(ui->normalizerSpinBox,  SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(ui->shiftXSpinBox,      SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(ui->shiftYSpinBox,      SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->forwardMapCheckBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
 
     QObject::connect(ui->koefTableWidget, SIGNAL(itemChanged(QTableWidgetItem*)), this, SIGNAL(paramsChanged()));
 
