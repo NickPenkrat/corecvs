@@ -181,7 +181,7 @@ struct CalibrationJob
     void    computeCalibrationErrors();
     void    computeFullErrors();
     void    calibratePhotostation();
-    void    calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<PinholeCameraIntrinsics> &intrinsics, std::vector<std::vector<CameraLocationData>> &locations, bool runBFS, bool runLM);
+    void    calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<PinholeCameraIntrinsics> &intrinsics, std::vector<LensDistortionModelParameters> &distortions, std::vector<std::vector<CameraLocationData>> &locations, bool runBFS, bool runLM);
     void    calibrate();
 
     void    calculateRedundancy(std::vector<int> &cameraImagesCount, std::vector<std::vector<int>> &cameraCameraRelationships, std::vector<int> &redundantSingleCamera, int &redundancyPhotostation);
