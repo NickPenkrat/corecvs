@@ -84,6 +84,8 @@ void LensDistortionModelParametersControlWidget::getParameters(LensDistortionMod
     params.setScale (ui->scaleSpinBox->value());
     params.setNormalizingFocal(ui->normalizerSpinBox->value());
 
+    params.setMapForward(ui->forwardMapCheckBox->isChecked());
+
     params.mKoeff.empty();
     for (int i = 0; i < ui->koefTableWidget->rowCount(); i++)
     {
@@ -132,6 +134,8 @@ void LensDistortionModelParametersControlWidget::setParameters(const LensDistort
     ui->scaleSpinBox->setValue(input.scale());
     ui->aspectSpinBox->setValue(input.aspect());
     ui->normalizerSpinBox->setValue(input.normalizingFocal());
+
+    ui->forwardMapCheckBox->setChecked(input.mapForward());
 
     ui->koefTableWidget->setRowCount(0);
     for (unsigned i = 0; i < input.mKoeff.size(); i++)
