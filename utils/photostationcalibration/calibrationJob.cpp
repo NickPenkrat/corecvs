@@ -89,6 +89,8 @@ void CalibrationJob::allDetectChessBoard(bool distorted)
         ++psIterator;
         ++camId;
     }
+    if (!distorted && calibrated)
+        computeCalibrationErrors();
 }
 
 void CalibrationJob::computeDistortionError(corecvs::ObservationList &list, LensDistortionModelParameters &params, double &rmse, double &maxError)
@@ -394,6 +396,8 @@ void CalibrationJob::calibratePhotostation()
 
 void CalibrationJob::computeCalibrationErrors()
 {
+    double rmseTotal = 0.0, maxTotal = 0.0;
+    int cntTotal = 0;
     auto setupLocsIterator = calibrationSetupLocations.begin();
     for (auto& s: calibrationSetups)
     {
@@ -418,8 +422,14 @@ void CalibrationJob::computeCalibrationErrors()
                     {
                         me = !pp;
                     }
+                    if (!pp > maxTotal)
+                    {
+                        maxTotal = !pp;
+                    }
                     rmse += pp & pp;
+                    rmseTotal += pp & pp;
                     cnt++;
+                    cntTotal++;
                 }
                 rmse = cnt ? std::sqrt(rmse / cnt) : -1.0;
                 view.calibrationRmse =  rmse;
@@ -433,10 +443,14 @@ void CalibrationJob::computeCalibrationErrors()
         }
         setupLocsIterator++;
     }
+    totalCalibrationErrorMax = maxTotal;
+    totalCalibrationErrorRMSE = cntTotal ? std::sqrt(rmseTotal / cntTotal) : -1.0;
 }
 
 void CalibrationJob::computeFullErrors()
 {
+    double rmseTotal = 0.0, maxTotal = 0.0;
+    int cntTotal = 0;
     auto setupLocsIterator = calibrationSetupLocations.begin();
     for (auto& s: calibrationSetups)
     {
@@ -462,8 +476,14 @@ void CalibrationJob::computeFullErrors()
                     {
                         me = !cp;
                     }
+                    if (!cp > maxTotal)
+                    {
+                        maxTotal = !cp;
+                    }
                     rmse += cp & cp;
+                    rmseTotal += cp & cp;
                     cnt++;
+                    cntTotal++;
                 }
                 rmse = cnt ? std::sqrt(rmse / cnt) : -1.0;
                 view.fullCameraRmse = rmse;
@@ -477,6 +497,8 @@ void CalibrationJob::computeFullErrors()
         }
         setupLocsIterator++;
     }
+    totalFullErrorMax = maxTotal;
+    totalFullErrorRMSE = cntTotal ? std::sqrt(rmseTotal / cntTotal) : -1.0;
 }
 
 
