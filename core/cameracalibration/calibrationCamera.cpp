@@ -1,5 +1,7 @@
 #include "calibrationCamera.h"
 
+#include <array>
+
 namespace corecvs {
 
 int ScenePart::OBJECT_COUNT = 0;
