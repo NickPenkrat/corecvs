@@ -231,6 +231,7 @@ void corecvs::CameraModel::estimateUndistortedSize(const DistortionApplicationPa
     }
     else
     {
+        intrinsics.principal += shift - Vector2dd(distortion.mShiftX, distortion.mShiftY);
         distortion.mShiftX = shift[0];
         distortion.mShiftY = shift[1];
     }
