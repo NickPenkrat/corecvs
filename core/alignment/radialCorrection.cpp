@@ -231,9 +231,7 @@ DisplacementBuffer RadialCorrection::getUndistortionTransformation(const Vector2
     if (mParams.mMapForward)
     {
         //TODO: clarify if this stuff is correct
-        mParams.mMapForward = false;
-        return DisplacementBuffer(this, undistortedSize[1], undistortedSize[0], true);
-        mParams.mMapForward = true;
+        return DisplacementBuffer(mParams, undistortedSize[1], undistortedSize[0]);
     }
     else
     {

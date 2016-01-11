@@ -226,10 +226,10 @@ void LensDistortionModelParameters::getRectMap(const Vector2dd &tl, const Vector
     };
     int steps[] =
     {
-        (int)std::ceil(dr[0] - tl[0]),
-        (int)std::ceil(dr[1] - tl[1]),
-        (int)std::ceil(dr[0] - tl[0]),
-        (int)std::ceil(dr[1] - tl[1])
+        (int)std::ceil(dr[0] - tl[0]) + 1,
+        (int)std::ceil(dr[1] - tl[1]) + 1,
+        (int)std::ceil(dr[0] - tl[0]) + 1,
+        (int)std::ceil(dr[1] - tl[1]) + 1
     };
 
     for (int i = 0; i < 4; ++i)
@@ -240,6 +240,6 @@ void LensDistortionModelParameters::getRectMap(const Vector2dd &tl, const Vector
         auto& origin   = origins[i];
         auto& step     = steps[i];
         for (int j = 0; j < step; ++j)
-            boundary[j] = map(origin + j * shift);
+            boundary[j] = mapBackward(origin + j * shift);
     }
 }
