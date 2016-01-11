@@ -20,6 +20,7 @@
 #include "essentialMatrix.h"
 #include "ransacEstimator.h"
 #include "essentialEstimator.h"
+#include "calibrationCamera.h"
 
 using namespace std;
 using namespace corecvs;
@@ -69,6 +70,40 @@ void printMatrixInfo (const Matrix33 &matrix)
     printf("Guessed right transform:\n");
     rightTranstorm.print();
     printf("\n");*/
+}
+
+TEST(Rectification, testEssentialDecomposition)
+{
+	corecvs::CameraModel cam1(PinholeCameraIntrinsics(100.0, 100.0, 100.0, 100.0, 0.0, Vector2dd(800, 800), Vector2dd(800, 800)));
+	auto cam2 = cam1;
+	cam1.extrinsics.position = corecvs::Vector3dd(10, 0, 0);
+	EssentialDecomposition ed = cam1.essentialDecomposition(cam2);
+    std::mt19937 rng(DEFAULT_SEED);
+    std::uniform_real_distribution<double> runif(-1e3, 1e3);
+	for (int i = 0; i < RNG_RETRIES; ++i)
+	{
+		corecvs::Vector3dd pt(runif(rng), runif(rng), +1000);
+		auto ptl = cam1.project(pt);
+		auto ptr = cam2.project(pt);
+		double scaleL, scaleR, foo;
+		auto K1 = cam1.intrinsics.getKMatrix33().inv();
+		auto K2 = cam2.intrinsics.getKMatrix33().inv();
+		ed.getScaler(K1 * ptl, K2 * ptr, scaleL, scaleR, foo);
+		std::cout << scaleL << " " << scaleR << " " << foo << std::endl;
+		ASSERT_TRUE(scaleL > 0.0 && scaleR > 0.0);
+	}
+	for (int i = 0; i < RNG_RETRIES; ++i)
+	{
+		corecvs::Vector3dd pt(runif(rng), runif(rng), -1000);
+		auto ptl = cam1.project(pt);
+		auto ptr = cam2.project(pt);
+		double scaleL, scaleR, foo;
+		auto K1 = cam1.intrinsics.getKMatrix33().inv();
+		auto K2 = cam2.intrinsics.getKMatrix33().inv();
+		ed.getScaler(K1 * ptl, K2 * ptr, scaleL, scaleR, foo);
+		std::cout << scaleL << " " << scaleR << " " << foo << std::endl;
+		ASSERT_TRUE(scaleL < 0.0 && scaleR < 0.0);
+	}
 }
 
 TEST(Rectification, testFundamentalEstimator)
@@ -252,7 +287,7 @@ TEST(Rectification, test5point)
             cl.push_back(&cc);
         auto Fv = corecvs::EssentialEstimator().getEssential5point(cl);
         
-        for (int i = 0; i < cv.size(); ++i)
+        for (size_t i = 0; i < cv.size(); ++i)
         {
             corecvs::Vector3dd L(cv[i].start[0], cv[i].start[1], 1.0);
             corecvs::Vector3dd R(cv[i].end[0], cv[i].end[1], 1.0);

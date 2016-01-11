@@ -699,7 +699,7 @@ void CalibrationJob::reorient(const corecvs::Vector3dd T, const corecvs::Quatern
     reoriented.location.rotor = Q;
     reoriented.location.shift = T;
 
-    for (int i = 0; i < reoriented.cameras.size(); ++i)
+    for (size_t i = 0; i < reoriented.cameras.size(); ++i)
     {
         reoriented.cameras[i] = reoriented.getRawCamera(i);
     }
@@ -719,7 +719,7 @@ void CalibrationJob::reorient(const corecvs::Vector3dd T, const corecvs::Quatern
         photostation.setLocation(sl);
         reoriented.setLocation(CameraLocationData(csn, qsn));
 
-        for (int i = 0; i < photostation.cameras.size(); ++i)
+        for (size_t i = 0; i < photostation.cameras.size(); ++i)
         {
             auto c1 = photostation.getRawCamera(i);
             auto c2 = photostation.getRawCamera(i);
@@ -824,7 +824,7 @@ void CalibrationJob::reorient(const std::vector<int> &topLayerIdx)
                                     n[0],           n[1],           n[2]);
         CORE_ASSERT_TRUE_S(std::abs(R.det() - 1.0) < 1e-6);
 
-        for (int i = 0; i < photostation.cameras.size(); ++i)
+        for (size_t i = 0; i < photostation.cameras.size(); ++i)
             std::cout << photostation.cameras[i].nameId << ": " << !(photostation.cameras[i].extrinsics.position - finalOrigin) << std::endl;
 
         corecvs::Quaternion Q = corecvs::Quaternion::FromMatrix(R).normalised();

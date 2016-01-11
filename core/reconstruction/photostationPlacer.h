@@ -220,8 +220,8 @@ private:
     int preplaced = 0, placed = 0;
     struct ParallelEssentialFilter
     {
-        std::vector<std::tuple<int, int, int, int>> work;
         PhotostationPlacer* placer;
+        std::vector<std::tuple<int, int, int, int>> work;
         static std::atomic<int> cntr;
         ParallelEssentialFilter(PhotostationPlacer* placer, std::vector<std::tuple<int,int,int,int>> &work) : placer(placer), work(work) {cntr = 0;}
         void operator() (const corecvs::BlockedRange<int> &r) const

@@ -22,9 +22,9 @@ SparseMatrix::SparseMatrix(const Matrix &dense, double threshold) : h(dense.h), 
 
 SparseMatrix::SparseMatrix(int h, int w, const std::vector<double> &values, const std::vector<int> &columns, const std::vector<int> &rowPointers) : h(h), w(w), values(values), columns(columns), rowPointers(rowPointers)
 {
-    CORE_ASSERT_TRUE_S(h + 1 == rowPointers.size());
+    CORE_ASSERT_TRUE_S(h + 1 == (int)rowPointers.size());
     CORE_ASSERT_TRUE_S(values.size() == columns.size());
-    CORE_ASSERT_TRUE_S(*rowPointers.rbegin() == values.size());
+    CORE_ASSERT_TRUE_S(*rowPointers.rbegin() == (int)values.size());
 }
 
 SparseMatrix::SparseMatrix(int h, int w, const std::map<std::pair<int, int>, double> &data) : h(h), w(w)
@@ -360,7 +360,6 @@ SparseMatrix::SparseMatrix(const sparse_matrix_t &mklSparse)
 
     for (int i = 0; i < mh; ++i)
     {
-        int prevCol = rowB[i] - 1;
         for (int j = rowB[i]; j < rowE[i]; ++j)
         {
             values.push_back(vals[j]);

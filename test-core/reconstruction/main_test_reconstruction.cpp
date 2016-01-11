@@ -155,7 +155,6 @@ TEST(Reconstruction, testNonCentralMulticamera)
                 auto proj = cam.project(points[i]);
                 auto dir = psr.getRawCamera(j).rayFromPixel(proj).a.normalised();
                 auto pt = points[i];
-                auto diff = pt - cam.rayFromPixel(proj).p;
                 pts.push_back(pt);
                 dirs.push_back(dir);
                 offsets.push_back(psr.getRawCamera(j).rayFromPixel(proj).p);
@@ -197,18 +196,14 @@ TEST(Reconstruction, testP3P)
         auto res = corecvs::PNPSolver::solvePNP(dirs, pts);
 
         double minDiffPos   = 1e100;
-        double minDiffAngle = 1e100;
+        //double minDiffAngle = 1e100;
 
         for (auto &r: res)
         {
             double diffPos = !(r.shift - pos);
-            double diffAng = r.rotor.getAngle();
-            if (diffAng > M_PI)
-                diffAng = 2.0 * M_PI - diffAng;
             if (diffPos < minDiffPos)
             {
                 minDiffPos = diffPos;
-                minDiffAngle = diffAng;
             }
         }
         // 1mm accuracy

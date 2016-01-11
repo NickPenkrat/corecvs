@@ -24,7 +24,7 @@ struct SparseCountingFunctor : corecvs::SparseFunctionArgs
     }
     void operator() (const double *in, double *out, const std::vector<int> &idx)
     {
-        for (int i = 0; i < idx.size(); ++i)
+        for (size_t i = 0; i < idx.size(); ++i)
             out[i] = cf(in, idx[i]);
     }
     static std::vector<std::vector<int>> generateSparsityList(int inputs, int outputs)

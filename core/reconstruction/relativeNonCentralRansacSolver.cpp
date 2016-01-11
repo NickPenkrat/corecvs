@@ -75,9 +75,9 @@ void corecvs::RelativeNonCentralRansacSolver::sampleRays()
             usedQuery[camQue]++;
         }
         int cur = 0, cuq = 0;
-        for (int i = 0; i < pss[0].cameras.size(); ++i)
+        for (size_t i = 0; i < pss[0].cameras.size(); ++i)
             if (usedRef[i]) cur++;
-        for (int i = 0; i < pss[1].cameras.size(); ++i)
+        for (size_t i = 0; i < pss[1].cameras.size(); ++i)
             if (usedQuery[i]) cuq++;
         multiCam = cur > 4 && cuq > 4;
     } while(!multiCam);
@@ -135,7 +135,7 @@ void corecvs::RelativeNonCentralRansacSolver::scoreCurrent()
         }
     }
 
-    for (int j = 0; j < matchesAll.size(); ++j)
+    for (size_t j = 0; j < matchesAll.size(); ++j)
     {
         auto t = matchesAll[j];
         int camRef  = std::get<0>(t);
@@ -170,9 +170,9 @@ void corecvs::RelativeNonCentralRansacSolver::scoreCurrent()
 
 void corecvs::RelativeNonCentralRansacSolver::selectBest()
 {
-    int maxIdx = 0;
+    size_t maxIdx = 0;
     int maxCnt = currentScores[maxIdx];
-    for (int i = 1; i < currentScores.size(); ++i)
+    for (size_t i = 1; i < currentScores.size(); ++i)
         if (currentScores[i] > maxCnt)
         {
             maxIdx = i;
@@ -235,7 +235,7 @@ void corecvs::RelativeNonCentralRansacSolver::computeError(double out[])
     }
 
     int outIdx = 0;
-    for (int ji= 0; ji< bestInliers.size(); ++ji)
+    for (size_t ji= 0; ji< bestInliers.size(); ++ji)
     {
         int j = bestInliers[ji];
         auto t = matchesAll[j];
