@@ -228,15 +228,17 @@ TEST_F(CalibrationTest, testEstimateDistDistortion)
         }
     }
 
+    cout << "Max distortion RMSE\t" << distortionRmse << endl;
+
     //    CORE_ASSERT_DOUBLE_EQUAL_EP(job.photostation.cameras[1].distortion.koeff()[1], 2.064727135565     , 1e-12, ("Camera 5 has wrong distortion koeff 2"));
-    CORE_ASSERT_TRUE(distortionRmse < 1, "\n distortionRmse more than 1 \n");
+    CORE_ASSERT_TRUE(distortionRmse < 1, "\n maxDistortionRmse more than 1 \n");
 }
 
 TEST_F(CalibrationTest, testCalculate)
 {
     CalibrationJob job;
 
-    std::cout << "Read json esOutDist.json " << "mark \n";
+    std::cout << "Read json esOutDist.json " << "mark " << endl;
 
     JSONGetter getter(addPath("esDistOutDist.json"));
     getter.visit(job, "job");
@@ -257,7 +259,6 @@ TEST_F(CalibrationTest, testCalculate)
     }
 
     CORE_ASSERT_TRUE(calibrationRmse < 2, "\n calibrationRmse more than 2 \n");
-
 
     //    CORE_ASSERT_DOUBLE_EQUAL_EP(job.calibrationSetupLocations[0].position.x(), 993.125228460417   , 1e-12, ("Locations point position x error"));
     //    CORE_ASSERT_DOUBLE_EQUAL_EP(job.calibrationSetupLocations[0].position.z(), -727.943404402887  , 1e-12, ("Locations point position z error"));
