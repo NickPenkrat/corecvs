@@ -318,7 +318,7 @@ void LensDistortionModelParametersControlWidget::updateAdditionalData()
 
     for (int i = diagonal - 1; i >=0; i--)
     {
-        mGraphDialog.addGraphPoint(0, radialCorrection.radialScale((double)i), true);
+        mGraphDialog.addGraphPoint(0, lensParams.radialScale((double)i), true);
     }
     mGraphDialog.update();
 

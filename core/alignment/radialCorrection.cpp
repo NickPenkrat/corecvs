@@ -17,9 +17,7 @@ namespace corecvs {
 
 RadialCorrection::RadialCorrection(const LensDistortionModelParameters &params) :
         FunctionArgs(2,2),
-        mParams(params),
-        addShiftX(0.0),
-        addShiftY(0.0)
+        mParams(params)
 {
 }
 
@@ -81,8 +79,8 @@ public:
             for (int j = 0; j < mSteps; j++)
             {
                 Vector2dd point(dw * j, dh * i);
-                Vector2dd deformed = mInput.map(point); /* this could be cached */
-                Vector2dd backproject = guess.map(deformed);
+                Vector2dd deformed = mInput.mapToUndistorted(point); /* this could be cached */
+                Vector2dd backproject = guess.mapToUndistorted(deformed);
                 Vector2dd diff = backproject - point;
 
                 out[2 * (i * mSteps + j)    ] = diff.x();
@@ -215,8 +213,8 @@ EllipticalApproximation1d RadialCorrection::compareWith(const RadialCorrection &
         {
             Vector2dd point(dw * j, dh * i);
 
-            Vector2dd deformedThis  =       map(point); /* this could be cached */
-            Vector2dd deformedOther = other.map(point);
+            Vector2dd deformedThis  =       mapToUndistorted(point); /* this could be cached */
+            Vector2dd deformedOther = other.mapToUndistorted(point);
             result.addPoint((deformedOther - deformedThis).l2Metric());
         }
     }

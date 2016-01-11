@@ -355,7 +355,7 @@ void ReconstructionJob::ParallelUndistortionMapEstimator::operator() (const core
     for (int camId = r.begin(); camId < r.end(); ++camId)
     {
         auto& cam = (*photostation).cameras[camId];
-        calibrationJob->prepareUndistortionTransformation(cam.distortion, cam.intrinsics.distortedSize[0], cam.intrinsics.distortedSize[1], (*transformations)[camId], cam.intrinsics.size[0], cam.intrinsics.size[1]);
+        calibrationJob->prepareUndistortionTransformation(camId, (*transformations)[camId]);
     }
 }
     

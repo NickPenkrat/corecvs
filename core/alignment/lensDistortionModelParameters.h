@@ -11,6 +11,7 @@
 #include "reflection.h"
 #include "defaultSetter.h"
 #include "printerVisitor.h"
+#include "levenmarq.h"
 
 /*
  *  Embed includes.
@@ -75,6 +76,9 @@ public:
         ASPECT_ID,
         SCALE_ID,
         NORMALIZING_FOCAL_ID,
+        SHIFTX_ID,
+        SHIFTY_ID,
+        MAP_FORWARD_ID, // Forward = from undistorted to distorted, so for compatibility reasons defaults is false
         LENS_DISTORTION_MODEL_PARAMETERS_FIELD_ID_NUM
     };
 
@@ -128,6 +132,24 @@ public:
      */
     double mNormalizingFocal;
 
+    /** 
+     * \brief shiftX 
+     * Additional shift \f$x_s\f$ 
+     */
+    double mShiftX;
+
+    /** 
+     * \brief shiftY 
+     * Additional shift \f$y_s\f$ 
+     */
+    double mShiftY;
+
+    /** 
+     * \brief True if maps from undistorted to distorted 
+     * This one is used to identify direction of map
+     */
+    bool mMapForward;
+
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
 
@@ -176,6 +198,21 @@ public:
         return mNormalizingFocal;
     }
 
+    double shiftX() const
+    {
+        return mShiftX;
+    }
+
+    double shiftY() const
+    {
+        return mShiftY;
+    }
+
+    bool mapForward() const
+    {
+        return mMapForward;
+    }
+
     /* Section with setters */
     void setPrincipalX(double principalX)
     {
@@ -217,6 +254,131 @@ public:
         mNormalizingFocal = normalizingFocal;
     }
 
+    void setShiftX(double shiftX)
+    {
+        mShiftX = shiftX;
+    }
+
+    void setShiftY(double shiftY)
+    {
+        mShiftY = shiftY;
+    }
+
+    void setMapForward(bool mapForward)
+    {
+        mMapForward = mapForward;
+    }
+
+    corecvs::Vector2dd mapForward(const corecvs::Vector2dd &v) const
+    {
+        return mMapForward ? map(v) : invMap(v);
+    }
+
+    corecvs::Vector2dd mapBackward(const corecvs::Vector2dd &v) const
+    {
+        return mMapForward ? invMap(v) : map(v);
+    }
+
+    corecvs::Vector2dd map(const corecvs::Vector2dd &v) const
+    {
+        double x = v[0];
+        double y = v[1];
+        if (mMapForward)
+        {
+            x -= mShiftX;
+            y -= mShiftY;
+        }
+        double cx = mPrincipalX;
+        double cy = mPrincipalY;
+        double p1 = mTangentialX;
+        double p2 = mTangentialY;
+
+        double dx = (x - cx) / mNormalizingFocal * mAspect;
+        double dy = (y - cy) / mNormalizingFocal;
+
+        /*double dx = dpx / mParams.focal;
+        double dy = dpy / mParams.focal;*/
+
+        double dxsq = dx * dx;
+        double dysq = dy * dy;
+        double dxdy = dx * dy;
+
+        double rsq = dxsq + dysq;
+        double r = std::sqrt(rsq);
+
+        double radialCorrection = radialScaleNormalized(r);
+//        SYNC_PRINT(("RadialCorrection::map (): [%lf %lf ] %lf %lf\n", x, y, rsq, radialCorrection));
+
+
+        double radialX = (double)dx * radialCorrection;
+        double radialY = (double)dy * radialCorrection;
+
+        double tangentX =    2 * p1 * dxdy      + p2 * ( rsq + 2 * dxsq );
+        double tangentY = p1 * (rsq + 2 * dysq) +     2 * p2 * dxdy      ;
+
+        Vector2dd res(
+                cx + ((dx + radialX + tangentX) / mAspect * mScale * mNormalizingFocal),
+                cy + ((dy + radialY + tangentY)                    * mScale * mNormalizingFocal)
+               );
+        if (!mMapForward)
+            res += Vector2dd(mShiftX, mShiftY);
+        return res;
+    }
+    struct InverseFunctor : FunctionArgs
+    {
+        void operator() (const double* in, double *out)
+        {
+            Vector2dd x(in[0], in[1]);
+            auto err = params->map(x) - target;
+            out[0] = err[0];
+            out[1] = err[1];
+        }
+        InverseFunctor(Vector2dd target, const LensDistortionModelParameters* params) : FunctionArgs(2, 2), target(target), params(params)
+        {
+        }
+        Vector2dd target;
+        const LensDistortionModelParameters* params;
+    };
+    corecvs::Vector2dd invMap(const corecvs::Vector2dd &v, const corecvs::Vector2dd &guess) const
+    {
+        InverseFunctor functor(v, this);
+        LevenbergMarquardt lm(1000);
+        lm.f = &functor;
+        std::vector<double> in = {guess[0], guess[1]}, out(2);
+        auto res = lm.fit(in, out);
+        Vector2dd resV(res[0], res[1]);
+        auto foo = !(map(resV) - v);
+        std::cout << foo << std::endl;
+        CORE_ASSERT_TRUE_S(foo < 1.0);
+        return resV;
+    }
+    corecvs::Vector2dd invMap(const corecvs::Vector2dd &v) const
+    {
+        return invMap(v, v);
+    }
+    inline double radialScaleNormalized(double r) const
+    {
+        double rpow = r;
+        double radialCorrection = 0;
+
+        for (unsigned i = 0; i < mKoeff.size(); i++)
+        {
+            radialCorrection += mKoeff[i] * rpow;
+            rpow *= r;
+        }
+        return radialCorrection;
+    }
+    inline double radialScale(double r) const
+    {
+        double normalizedR = r / mNormalizingFocal;
+        return radialScaleNormalized(normalizedR);
+    }
+
+    void getInscribedImageRect(const Vector2dd &tlDistorted, const Vector2dd &drDistorted, Vector2dd &tlUndistorted, Vector2dd &drUndistorted) const;
+    void getCircumscribedImageRect(const Vector2dd &tlDistorted, const Vector2dd &drDistorted, Vector2dd &tlUndistorted, Vector2dd &drUndistorted) const;
+
+
+
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
@@ -230,6 +392,9 @@ template<class VisitorType>
         visitor.visit(mAspect,                    static_cast<const DoubleField *>  (fields()[ASPECT_ID]));
         visitor.visit(mScale,                     static_cast<const DoubleField *>  (fields()[SCALE_ID]));
         visitor.visit(mNormalizingFocal,          static_cast<const DoubleField *>  (fields()[NORMALIZING_FOCAL_ID]));
+        visitor.visit(mShiftX,                    static_cast<const DoubleField *>  (fields()[SHIFTX_ID]));
+        visitor.visit(mShiftY,                    static_cast<const DoubleField *>  (fields()[SHIFTY_ID]));
+        visitor.visit(mMapForward,                static_cast<const BoolField   *>  (fields()[MAP_FORWARD_ID]));
     }
 
     LensDistortionModelParameters()
@@ -247,6 +412,9 @@ template<class VisitorType>
         , double aspect
         , double scale
         , double normalizingFocal
+        , double shiftX
+        , double shiftY
+        , bool   mapForward = false
     )
     {
         mPrincipalX = principalX;
@@ -257,6 +425,9 @@ template<class VisitorType>
         mAspect = aspect;
         mScale = scale;
         mNormalizingFocal = normalizingFocal;
+        mShiftX = shiftX;
+        mShiftY = shiftY;
+        mMapForward = mapForward;
     }
 
     friend ostream& operator << (ostream &out, LensDistortionModelParameters &toSave)
@@ -270,5 +441,8 @@ template<class VisitorType>
     {
         cout << *this;
     }
+
+private:
+    void getRectMap(const Vector2dd &tl, const Vector2dd &dr, std::vector<Vector2dd> boundaries[4]) const;
 };
 #endif  //LENS_DISTORTION_MODEL_PARAMETERS_H_

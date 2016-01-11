@@ -7,6 +7,7 @@
 #include "line.h"
 #include "convexPolyhedron.h"
 #include "essentialMatrix.h"
+#include "distortionApplicationParameters.h"
 
 /* Future derived */
 //#include "rgb24Buffer.h"
@@ -190,9 +191,18 @@ public:
     {}
 
 
+    template <bool full=false>
     Vector2dd project(const Vector3dd &p) const
     {
-        return intrinsics.project(extrinsics.project(p));
+        auto v = intrinsics.project(extrinsics.project(p));
+        if (full)
+            return distortion.mapForward(v);
+        return v;
+    }
+
+    Vector2dd project(const Vector3dd &p, bool full) const
+    {
+        return full ? project<true>(p) : project<false>(p);
     }
 
     /**
@@ -233,6 +243,12 @@ public:
     {
         return ((pt - extrinsics.position) & forwardDirection()) > 0;
     }
+
+    /**
+     * Setups intrinsics.size and modifies distortion shift/scale
+     * in a proper way
+     */
+    void estimateUndistortedSize(const DistortionApplicationParameters &applicationParams);
 
     Ray3d               rayFromPixel(const Vector2dd &point);
     Ray3d               rayFromCenter();

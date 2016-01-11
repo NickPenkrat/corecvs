@@ -97,11 +97,6 @@ void CalibrationJob::allDetectChessBoard(bool distorted)
     std::vector<corecvs::CameraModel>::iterator psIterator = photostation.cameras.begin();
     bool estimate = !distorted && settings.openCvDetectorParameters.mEstimateUndistortedFromDistorted;
 
-    if (estimate)
-    {
-        prepareAllRadialCorrections();
-    }
-
     L_INFO_P("chessboard type: %s", this->settings.boardAlignerParams.boardMarkers.size() ? "new" : "old");
 
     int camId = 0;
@@ -124,7 +119,7 @@ void CalibrationJob::allDetectChessBoard(bool distorted)
                 for (auto&p: v.sourcePattern)
                 {
                     auto pc = p;
-                    pc.projection = corrections[camId].map(pc.projection);
+                    pc.projection = photostation.cameras[camId].distortion.mapBackward(pc.projection);
                     v.undistortedPattern.push_back(pc);
                 }
             }
@@ -208,101 +203,18 @@ void CalibrationJob::allEstimateDistortion()
     corecvs::parallelable_for(0, (int)photostation.cameras.size(), ParallelDistortionEstimator(this));
 }
 
-void CalibrationJob::prepareRadialCorrection(LensDistortionModelParameters &source, double w, double h, RadialCorrection &correction, double &newW, double &newH, Rect &output)
+
+void CalibrationJob::prepareUndistortionTransformation(int camId, corecvs::DisplacementBuffer &result)
 {
-    correction = RadialCorrection(source);
-    auto undistParams = settings.distortionApplicationParameters;
-    if (settings.distortionApplicationParameters.forceScale())
-    {
-        correction.mParams.setScale(source.scale());
-    }
-
-    Rect input = { corecvs::Vector2dd(0.0, 0.0), corecvs::Vector2dd(w, h) };
-    Rect outCir, outIns;
-
-    correction.getCircumscribedImageRect(input[0][0], input[0][1], input[1][0], input[1][1], outCir[0], outCir[1]);
-    correction.getInscribedImageRect    (input[0][0], input[0][1], input[1][0], input[1][1], outIns[0], outIns[1]);
-
-    output = input;
-    corecvs::Vector2dd shift(0.0);
-
-    switch (undistParams.resizePolicy())
-    {
-        case DistortionResizePolicy::FORCE_SIZE:
-            output = { corecvs::Vector2dd(0.0, 0.0), corecvs::Vector2dd(undistParams.newW(), undistParams.newH()) };
-            shift[0] = correction.center()[0] / w * output[1][0];
-            shift[1] = correction.center()[1] / h * output[1][1];
-            break;
-        case DistortionResizePolicy::TO_FIT_RESULT:
-            output = outCir;
-            shift = -output[0];
-            break;
-        case DistortionResizePolicy::TO_NO_GAPS:
-            output = outIns;
-            shift = -output[0];
-        case DistortionResizePolicy::NO_CHANGE:
-        default:
-            break;
-    }
-
-    corecvs::Vector2dd wh = output[1] - output[0];
-    newW = wh[0];
-    newH = wh[1];
-
-    if (newW < 10 || newH < 10)
-    {
-        L_ERROR_P("invalid undistorted output size: %dx%d", roundUp(newW), roundUp(newH));
-        newW = newH = 0;
-        return;
-    }
-
-    if (undistParams.adoptScale())
-    {
-        double aspect = std::max(newW / w, newH / h);
-        correction.mParams.setScale(1.0 / aspect);
-    }
-    else
-    {
-        correction.addShiftX = shift[0];
-        correction.addShiftY = shift[1];
-    }
-
-}
-
-void CalibrationJob::prepareAllRadialCorrections()
-{
-    double foo, boo;
-    Rect moo;
-    corrections.resize(photostation.cameras.size());
-    for (size_t i = 0; i < photostation.cameras.size(); ++i)
-    {
-        auto& cam = photostation.cameras[i];
-        prepareRadialCorrection(cam.distortion, cam.intrinsics.distortedSize[0], cam.intrinsics.distortedSize[1], corrections[i], foo, boo, moo);
-    }
-}
-
-void CalibrationJob::prepareUndistortionTransformation(LensDistortionModelParameters &source, double w, double h
-    , corecvs::DisplacementBuffer &result, double &newW, double &newH)
-{
-    RadialCorrection correction;
-    Rect output;
-    prepareRadialCorrection(source, w, h, correction, newW, newH, output);
+    auto& cam = photostation.cameras[camId];
+    cam.estimateUndistortedSize(settings.distortionApplicationParameters);
+    RadialCorrection correction(cam.distortion);
     auto* foo = DisplacementBuffer::CacheInverse(
-            &correction, newH, newW,
-            output[0][0], output[0][1],
-            output[1][0], output[1][1],
-            0.25, 0.0);
+            &correction, cam.intrinsics.size[1], cam.intrinsics.size[0],
+            0, 0, cam.intrinsics.distortedSize[0], cam.intrinsics.distortedSize[1],
+            0.25, false);
     result = *foo;
     delete foo;
-}
-
-void CalibrationJob::removeDistortion(corecvs::RGB24Buffer &src, corecvs::RGB24Buffer &dst, LensDistortionModelParameters &params)
-{
-    corecvs::DisplacementBuffer transform;
-    double newW, newH;
-    prepareUndistortionTransformation(params, src.w, src.h, transform, newW, newH);
-
-    removeDistortion(src, dst, transform, newW, newH);
 }
 
 void CalibrationJob::removeDistortion(corecvs::RGB24Buffer &src, corecvs::RGB24Buffer &dst, corecvs::DisplacementBuffer &transform, double outW, double outH)
@@ -322,14 +234,11 @@ struct ParallelDistortionRemoval
             auto& cam = job->photostation.cameras[camId];
 
             corecvs::DisplacementBuffer transform;
-            double newW, newH;
-            job->prepareUndistortionTransformation(cam.distortion, cam.intrinsics.distortedSize[0], cam.intrinsics.distortedSize[1], transform, newW, newH);
-            cam.intrinsics.size[0] = newW;
-            cam.intrinsics.size[1] = newH;
+            job->prepareUndistortionTransformation(camId, transform);
             for (auto& ob: observationsIterator)
             {
                 corecvs::RGB24Buffer source = job->LoadImage(ob.sourceFileName), dst;
-                job->removeDistortion(source, dst, transform, newW, newH);
+                job->removeDistortion(source, dst, transform, cam.intrinsics.size[0], cam.intrinsics.size[1]);
                 job->SaveImage(ob.undistortedFileName, dst);
             }
         }
@@ -553,7 +462,6 @@ void CalibrationJob::computeCalibrationErrors()
 
 void CalibrationJob::computeFullErrors()
 {
-    prepareAllRadialCorrections();
     auto setupLocsIterator = calibrationSetupLocations.begin();
     for (auto& s: calibrationSetups)
     {
@@ -574,7 +482,7 @@ void CalibrationJob::computeFullErrors()
                     auto ppp = p.point;
                     ppp[1] *= factor;
                     auto pp = photostation.project(ppp, cam);
-                    auto cp = corrections[v.cameraId].invMap(pp[1], pp[0]) - p.projection;
+                    auto cp = photostation.cameras[v.cameraId].distortion.mapForward(pp) - p.projection;
                     if (!cp > me)
                     {
                         me = !cp;
