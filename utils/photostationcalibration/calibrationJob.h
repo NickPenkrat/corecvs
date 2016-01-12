@@ -140,6 +140,10 @@ struct CalibrationJob
     std::vector<CameraLocationData>                 calibrationSetupLocations;
     std::vector<std::vector<ImageData>>             observations;
     std::vector<std::vector<CalibrationSetupEntry>> calibrationSetups;
+    double                                          totalFullErrorMax        = -1.0,
+                                                    totalFullErrorRMSE       = -1.0,
+                                                    totalCalibrationErrorMax = -1.0,
+                                                    totalCalibrationErrorRMSE= -1.0;
 
     bool                                            calibrated = false;
 
@@ -154,6 +158,10 @@ struct CalibrationJob
         visitor.visit(observations, "observations");
         visitor.visit(settings, CalibrationSettings(), "algorithmSettings");
         visitor.visit(calibrated, false, "calibrated");
+        visitor.visit(totalFullErrorMax, -1.0, "totalFullErrorMax");
+        visitor.visit(totalFullErrorRMSE, -1.0, "totalFullErrorRMSE");
+        visitor.visit(totalCalibrationErrorMax, -1.0, "totalCalibrationErrorMax");
+        visitor.visit(totalCalibrationErrorRMSE, -1.0, "totalCalibrationErrorRMSE");
     }
 
     static corecvs::RGB24Buffer LoadImage(const std::string& path);
@@ -181,7 +189,7 @@ struct CalibrationJob
     void    computeCalibrationErrors();
     void    computeFullErrors();
     void    calibratePhotostation();
-    void    calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<PinholeCameraIntrinsics> &intrinsics, std::vector<std::vector<CameraLocationData>> &locations, bool runBFS, bool runLM);
+    void    calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<PinholeCameraIntrinsics> &intrinsics, std::vector<LensDistortionModelParameters> &distortions, std::vector<std::vector<CameraLocationData>> &locations, bool runBFS, bool runLM);
     void    calibrate();
 
     ///

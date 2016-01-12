@@ -127,6 +127,8 @@ void CalibrationJob::allDetectChessBoard(bool distorted)
         ++psIterator;
         ++camId;
     }
+    if (!distorted && calibrated)
+        computeCalibrationErrors();
 }
 
 void CalibrationJob::computeDistortionError(corecvs::ObservationList &list, LensDistortionModelParameters &params, double &rmse, double &maxError)
@@ -208,13 +210,9 @@ void CalibrationJob::prepareUndistortionTransformation(int camId, corecvs::Displ
 {
     auto& cam = photostation.cameras[camId];
     cam.estimateUndistortedSize(settings.distortionApplicationParameters);
-    RadialCorrection correction(cam.distortion);
-    auto* foo = DisplacementBuffer::CacheInverse(
-            &correction, cam.intrinsics.size[1], cam.intrinsics.size[0],
-            0, 0, cam.intrinsics.distortedSize[0], cam.intrinsics.distortedSize[1],
+   result = RadialCorrection(cam.distortion).getUndistortionTransformation(
+            cam.intrinsics.size, cam.intrinsics.distortedSize,
             0.25, false);
-    result = *foo;
-    delete foo;
 }
 
 void CalibrationJob::removeDistortion(corecvs::RGB24Buffer &src, corecvs::RGB24Buffer &dst, corecvs::DisplacementBuffer &transform, double outW, double outH)
@@ -277,12 +275,13 @@ bool CalibrationJob::calibrateSingleCamera(int cameraId)
     std::vector<CameraLocationData> locations;
     int valid_locations = 0;
 
-    FlatPatternCalibrator calibrator(settings.singleCameraCalibratorConstraints, photostation.cameras[cameraId].intrinsics);
+    FlatPatternCalibrator calibrator(settings.singleCameraCalibratorConstraints, photostation.cameras[cameraId].intrinsics, settings.distortionEstimationParameters);
+    bool usingUndistorted = !(settings.singleCameraCalibratorConstraints & CameraConstraints::UNLOCK_DISTORTION);
 
     for (auto& o: observations[cameraId])
     {
         PatternPoints3d patternPoints;
-        for (auto& p: o.undistortedPattern)
+        for (auto& p: usingUndistorted ? o.undistortedPattern : o.sourcePattern)
             patternPoints.emplace_back(p.projection, p.point);
 
         if (patternPoints.size())
@@ -299,11 +298,15 @@ bool CalibrationJob::calibrateSingleCamera(int cameraId)
         calibrator.solve(settings.singleCameraCalibratorUseZhangPresolver, settings.singleCameraCalibratorUseLMSolver, settings.singleCameraLMiterations);
 
         photostation.cameras[cameraId].intrinsics = calibrator.getIntrinsics();
+        if (!!(settings.singleCameraCalibratorConstraints & CameraConstraints::UNLOCK_DISTORTION))
+        {
+            photostation.cameras[cameraId].distortion = calibrator.getDistortion();
+        }
         locations = calibrator.getExtrinsics();
 
         for (auto& o: observations[cameraId])
         {
-            if (o.undistortedPattern.size())
+            if ((usingUndistorted ? o.undistortedPattern : o.sourcePattern).size())
                 o.location = locations[valid_locations++];
         }
         factors[cameraId] = calibrator.factor;
@@ -338,10 +341,14 @@ void CalibrationJob::allCalibrateSingleCamera()
     std::cout << "OPTFAC_MEAN: " << factor << std::endl;
 }
 
-void CalibrationJob::calibratePhotostation(int N, int /*M*/, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<PinholeCameraIntrinsics> &intrinsics, std::vector<std::vector<CameraLocationData>> &locations, bool runBFS, bool runLM)
+void CalibrationJob::calibratePhotostation(int N, int /*M*/, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<PinholeCameraIntrinsics> &intrinsics, std::vector<LensDistortionModelParameters> &distortions, std::vector<std::vector<CameraLocationData>> &locations, bool runBFS, bool runLM)
 {
-    for (auto& ci : intrinsics) {
-        calibrator.addCamera(ci);
+    for (int i = 0; i < N; ++i)
+    {
+        if (!!(settings.photostationCalibratorConstraints & CameraConstraints::UNLOCK_DISTORTION))
+            calibrator.addCamera(intrinsics[i], distortions[i]);
+        else
+            calibrator.addCamera(intrinsics[i]);
     }
     calibrator.factor = factor;
     std::vector<int> cnt(N);
@@ -377,20 +384,26 @@ void CalibrationJob::calibratePhotostation()
     int M = (int)calibrationSetups.size();
     int N = (int)photostation.cameras.size();
     std::vector<MultiCameraPatternPoints> points(M);
+    bool usingUndistorted = !(settings.photostationCalibratorConstraints & CameraConstraints::UNLOCK_DISTORTION);
+
     for (int i = 0; i < M; ++i)
     {
         points[i].resize(N);
         for (auto& s: calibrationSetups[i])
         {
             points[i][s.cameraId].clear();
-            for (auto& p: observations[s.cameraId][s.imageId].undistortedPattern)
+            for (auto& p: usingUndistorted ? observations[s.cameraId][s.imageId].undistortedPattern : observations[s.cameraId][s.imageId].sourcePattern)
                 points[i][s.cameraId].emplace_back(p.projection, p.point);
         }
     }
 
     std::vector<PinholeCameraIntrinsics> intrinsics;
+    std::vector<LensDistortionModelParameters> distortions;
     for (auto& c: photostation.cameras)
+    {
         intrinsics.push_back(c.intrinsics);
+        distortions.push_back(c.distortion);
+    }
     std::vector<std::vector<CameraLocationData>> locations(M);
     for (int i = 0; i < M; ++i)
     {
@@ -401,8 +414,8 @@ void CalibrationJob::calibratePhotostation()
         }
     }
 
-    PhotoStationCalibrator calibrator(settings.photostationCalibratorConstraints);
-    calibratePhotostation(N, M, calibrator, points, intrinsics, locations
+    PhotoStationCalibrator calibrator(settings.photostationCalibratorConstraints, settings.distortionEstimationParameters);
+    calibratePhotostation(N, M, calibrator, points, intrinsics, distortions, locations
         , settings.photostationCalibratorUseBFSPresolver
         , settings.photostationCalibratorUseLMSolver);
 
@@ -411,6 +424,8 @@ void CalibrationJob::calibratePhotostation()
     {
         photostation.cameras[i].intrinsics = ps.cameras[i].intrinsics;
         photostation.cameras[i].extrinsics = ps.cameras[i].extrinsics;
+        if (!!(settings.photostationCalibratorConstraints & CameraConstraints::UNLOCK_DISTORTION))
+            photostation.cameras[i].distortion = ps.cameras[i].distortion;
     }
 
     calibrationSetupLocations = calibrator.getCalibrationSetups();
@@ -419,6 +434,8 @@ void CalibrationJob::calibratePhotostation()
 
 void CalibrationJob::computeCalibrationErrors()
 {
+    double rmseTotal = 0.0, maxTotal = 0.0;
+    int cntTotal = 0;
     auto setupLocsIterator = calibrationSetupLocations.begin();
     for (auto& s: calibrationSetups)
     {
@@ -443,8 +460,14 @@ void CalibrationJob::computeCalibrationErrors()
                     {
                         me = !pp;
                     }
+                    if (!pp > maxTotal)
+                    {
+                        maxTotal = !pp;
+                    }
                     rmse += pp & pp;
+                    rmseTotal += pp & pp;
                     cnt++;
+                    cntTotal++;
                 }
                 rmse = cnt ? std::sqrt(rmse / cnt) : -1.0;
                 view.calibrationRmse =  rmse;
@@ -458,10 +481,14 @@ void CalibrationJob::computeCalibrationErrors()
         }
         setupLocsIterator++;
     }
+    totalCalibrationErrorMax = maxTotal;
+    totalCalibrationErrorRMSE = cntTotal ? std::sqrt(rmseTotal / cntTotal) : -1.0;
 }
 
 void CalibrationJob::computeFullErrors()
 {
+    double rmseTotal = 0.0, maxTotal = 0.0;
+    int cntTotal = 0;
     auto setupLocsIterator = calibrationSetupLocations.begin();
     for (auto& s: calibrationSetups)
     {
@@ -487,8 +514,14 @@ void CalibrationJob::computeFullErrors()
                     {
                         me = !cp;
                     }
+                    if (!cp > maxTotal)
+                    {
+                        maxTotal = !cp;
+                    }
                     rmse += cp & cp;
+                    rmseTotal += cp & cp;
                     cnt++;
+                    cntTotal++;
                 }
                 rmse = cnt ? std::sqrt(rmse / cnt) : -1.0;
                 view.fullCameraRmse = rmse;
@@ -502,6 +535,8 @@ void CalibrationJob::computeFullErrors()
         }
         setupLocsIterator++;
     }
+    totalFullErrorMax = maxTotal;
+    totalFullErrorRMSE = cntTotal ? std::sqrt(rmseTotal / cntTotal) : -1.0;
 }
 
 
@@ -702,7 +737,7 @@ void CalibrationJob::reorient(const corecvs::Vector3dd T, const corecvs::Quatern
     reoriented.location.rotor = Q;
     reoriented.location.shift = T;
 
-    for (int i = 0; i < reoriented.cameras.size(); ++i)
+    for (size_t i = 0; i < reoriented.cameras.size(); ++i)
     {
         reoriented.cameras[i] = reoriented.getRawCamera(i);
     }
@@ -722,7 +757,7 @@ void CalibrationJob::reorient(const corecvs::Vector3dd T, const corecvs::Quatern
         photostation.setLocation(sl);
         reoriented.setLocation(CameraLocationData(csn, qsn));
 
-        for (int i = 0; i < photostation.cameras.size(); ++i)
+        for (size_t i = 0; i < photostation.cameras.size(); ++i)
         {
             auto c1 = photostation.getRawCamera(i);
             auto c2 = photostation.getRawCamera(i);
@@ -827,7 +862,7 @@ void CalibrationJob::reorient(const std::vector<int> &topLayerIdx)
                                     n[0],           n[1],           n[2]);
         CORE_ASSERT_TRUE_S(std::abs(R.det() - 1.0) < 1e-6);
 
-        for (int i = 0; i < photostation.cameras.size(); ++i)
+        for (size_t i = 0; i < photostation.cameras.size(); ++i)
             std::cout << photostation.cameras[i].nameId << ": " << !(photostation.cameras[i].extrinsics.position - finalOrigin) << std::endl;
 
         corecvs::Quaternion Q = corecvs::Quaternion::FromMatrix(R).normalised();

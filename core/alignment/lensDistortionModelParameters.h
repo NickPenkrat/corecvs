@@ -287,6 +287,8 @@ public:
         {
             x -= mShiftX;
             y -= mShiftY;
+            x /= mScale;
+            y /= mScale;
         }
         double cx = mPrincipalX;
         double cy = mPrincipalY;
@@ -316,13 +318,16 @@ public:
         double tangentX =    2 * p1 * dxdy      + p2 * ( rsq + 2 * dxsq );
         double tangentY = p1 * (rsq + 2 * dysq) +     2 * p2 * dxdy      ;
 
-        Vector2dd res(
-                cx + ((dx + radialX + tangentX) / mAspect * mScale * mNormalizingFocal),
-                cy + ((dy + radialY + tangentY)                    * mScale * mNormalizingFocal)
-               );
+        auto res = Vector2dd(
+               ((dx + radialX + tangentX) / mAspect),
+                ((dy + radialY + tangentY))
+               ) * mNormalizingFocal;
         if (!mMapForward)
+        {
+            res *= mScale;
             res += Vector2dd(mShiftX, mShiftY);
-        return res;
+        }
+        return res + Vector2dd(cx, cy);
     }
     struct InverseFunctor : FunctionArgs
     {
@@ -344,12 +349,10 @@ public:
         InverseFunctor functor(v, this);
         LevenbergMarquardt lm(1000);
         lm.f = &functor;
+        lm.traceProgress = false;
         std::vector<double> in = {guess[0], guess[1]}, out(2);
         auto res = lm.fit(in, out);
         Vector2dd resV(res[0], res[1]);
-        auto foo = !(map(resV) - v);
-        std::cout << foo << std::endl;
-        CORE_ASSERT_TRUE_S(foo < 1.0);
         return resV;
     }
     corecvs::Vector2dd invMap(const corecvs::Vector2dd &v) const

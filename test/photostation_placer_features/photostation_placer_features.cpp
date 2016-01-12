@@ -214,7 +214,7 @@ int main()
 	}
 
     photostation = job.photostation;
-    for (int i = 0; i < photostation.cameras.size(); ++i)
+    for (size_t i = 0; i < photostation.cameras.size(); ++i)
     {
         photostation.cameras[i].extrinsics.position /= 1e3;
     }
@@ -242,7 +242,7 @@ int main()
     for (int i = 0; i < PSN; ++i)
     {
         corecvs::Photostation ps = pp.calibratedPhotostations[i];
-        for (int j = 0; j < ps.cameras.size(); ++j)
+        for (size_t j = 0; j < ps.cameras.size(); ++j)
             ps.cameras[j].extrinsics.position *= 1e3;
         ps.location.shift -= meanpos;
         ps.location.shift *= 1e3;
@@ -267,7 +267,7 @@ int main()
     for (int i = 0; i < PSN; ++i)
     {
         corecvs::Photostation ps = pp.calibratedPhotostations[i];
-        for (int j = 0; j < ps.cameras.size(); ++j)
+        for (size_t j = 0; j < ps.cameras.size(); ++j)
             ps.cameras[j].extrinsics.position *= 1e3;
         ps.location.shift -= meanpos;
         ps.location.shift *= 1e3;
@@ -300,7 +300,7 @@ int main()
     for (int i = 0; i < PSN; ++i)
     {
         corecvs::Photostation ps = pp.calibratedPhotostations[i];
-        for (int j = 0; j < ps.cameras.size(); ++j)
+        for (size_t j = 0; j < ps.cameras.size(); ++j)
             ps.cameras[j].extrinsics.position *= 1e3;
         ps.location.shift -= meanpos;
         ps.location.shift *= 1e3;
@@ -326,10 +326,10 @@ int main()
     meshres4.dumpPLY("triples_app.ply");
 
     auto res = pp.verify(pois);
-    for (int i = 0; i < pois.size(); ++i)
+    for (size_t i = 0; i < pois.size(); ++i)
 	{
 		std::cout << pois[i].label << pois[i].worldPoint << " | " << res[0][i].worldPoint << " | " << res[1][i].worldPoint << ":" << (pois[i].worldPoint - res[1][i].worldPoint) << " / " << ((!(pois[i].worldPoint - res[1][i].worldPoint) / !(pois[i].worldPoint - meanpos))) * 100.0 << "%  ~ " << !(pois[i].worldPoint - meanpos) << "m" << std::endl;
-		for (int j = 0; j < pois[i].projections.size(); ++j)
+		for (size_t j = 0; j < pois[i].projections.size(); ++j)
 		{
 			std::cout << "\t\t" << ((char)('A' + pois[i].projections[j].photostationId)) << pois[i].projections[j].cameraId << ": " << pois[i].projections[j].projection << " : " << res[0][i].projections[j].projection << " (" << !(pois[i].projections[j].projection - res[0][i].projections[j].projection) << ") | " << res[1][i].projections[j].projection << " (" << !(pois[i].projections[j].projection - res[1][i].projections[j].projection) << ")" << "" << std::endl;
 		}

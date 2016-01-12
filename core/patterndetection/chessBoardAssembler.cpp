@@ -468,9 +468,9 @@ bool ChessBoardAssembler::BoardExpander::assignNearest(std::vector<corecvs::Vect
         }
     }
 
-    size_t total_assigned = 0;
+    int total_assigned = 0;
     int sort_by = M * 3;
-#if 1
+
     for (int ii = 0; ii < N; ++ii)
     {
         if (ii % sort_by == 0)
@@ -494,23 +494,6 @@ bool ChessBoardAssembler::BoardExpander::assignNearest(std::vector<corecvs::Vect
             break;
 
     }
-#else
-    std::sort(queue.begin(), queue.end(), [](const std::tuple<double, int, int> &a, const std::tuple<double, int, int> &b) { return a < b; });
-    for (auto &T: queue)
-    {
-        int i = unused[std::get<1>(T)], j = std::get<2>(T);
-        if (usedCorners[i])
-            continue;
-        if (assigned[j])
-            continue;
-        assignment[j] = i;
-        usedCorners[i] = 1;
-        assigned[j] = 1;
-        total_assigned++;
-        if (M == total_assigned)
-            break;
-    }
-#endif
     return true;
 }
 

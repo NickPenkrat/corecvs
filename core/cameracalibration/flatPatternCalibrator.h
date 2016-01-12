@@ -5,6 +5,7 @@
 
 #include "homographyReconstructor.h"
 #include "levenmarq.h"
+#include "lineDistortionEstimatorParameters.h"
 
 #include "calibrationPhotostation.h"
 
@@ -20,7 +21,7 @@
 struct FlatPatternCalibrator
 {
 public:
-    FlatPatternCalibrator(const CameraConstraints constraints = CameraConstraints::NONE, const PinholeCameraIntrinsics lockParams = PinholeCameraIntrinsics(), const double lockFactor = 1.0);
+    FlatPatternCalibrator(const CameraConstraints constraints = CameraConstraints::NONE, const PinholeCameraIntrinsics lockParams = PinholeCameraIntrinsics(), const LineDistortionEstimatorParameters distortionEstimatorParams = LineDistortionEstimatorParameters(), const double lockFactor = 1.0);
 
     // Add 2d-3d correspondences and initial guess for camera location
     // TODO: add check for pattern planarity and [maybe] support of other planes than z=0
@@ -30,6 +31,7 @@ public:
 	void solve(bool runPresolver = true,bool runLM = false, int LMiterations = 1000);
 
     PinholeCameraIntrinsics getIntrinsics();
+    LensDistortionModelParameters getDistortion();
 
     std::vector<CameraLocationData> getExtrinsics();
     
@@ -76,6 +78,8 @@ private:
 	std::vector<PatternPoints3d> points;
 	std::vector<CameraLocationData> locationData;
     PinholeCameraIntrinsics intrinsics, lockParams;
+    LineDistortionEstimatorParameters distortionEstimationParams;
+    LensDistortionModelParameters distortionParams;
 	CameraConstraints constraints;
     bool forceZeroSkew;
 };

@@ -1,5 +1,7 @@
 #include "calibrationCamera.h"
 
+#include <array>
+
 namespace corecvs {
 
 int ScenePart::OBJECT_COUNT = 0;
@@ -218,8 +220,8 @@ void corecvs::CameraModel::estimateUndistortedSize(const DistortionApplicationPa
             break;
     }
 
-    double w = intrinsics.size[0];
-    double h = intrinsics.size[1];
+    double w = intrinsics.distortedSize[0];
+    double h = intrinsics.distortedSize[1];
     intrinsics.size = output[1] - output[0];
     double newW = intrinsics.size[0];
     double newH = intrinsics.size[1];
@@ -231,8 +233,9 @@ void corecvs::CameraModel::estimateUndistortedSize(const DistortionApplicationPa
     }
     else
     {
-        distortion.mShiftX = shift[0];
-        distortion.mShiftY = shift[1];
+        intrinsics.principal += shift - Vector2dd(distortion.mShiftX, distortion.mShiftY);
+        distortion.mShiftX += shift[0];
+        distortion.mShiftY += shift[1];
     }
 }
 

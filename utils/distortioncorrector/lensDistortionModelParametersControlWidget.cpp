@@ -31,6 +31,9 @@ LensDistortionModelParametersControlWidget::LensDistortionModelParametersControl
     QObject::connect(ui->scaleSpinBox,       SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(ui->aspectSpinBox,      SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(ui->normalizerSpinBox,  SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->shiftXSpinBox,      SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->shiftYSpinBox,      SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->forwardMapCheckBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
 
     QObject::connect(ui->koefTableWidget, SIGNAL(itemChanged(QTableWidgetItem*)), this, SIGNAL(paramsChanged()));
 
@@ -72,6 +75,8 @@ void LensDistortionModelParametersControlWidget::getParameters(LensDistortionMod
 {
     params.setPrincipalX(ui->centerXSpinBox->value());
     params.setPrincipalY(ui->centerYSpinBox->value());
+    params.setShiftX(ui->shiftXSpinBox->value());
+    params.setShiftY(ui->shiftYSpinBox->value());
 
     params.setTangentialX(ui->tangential1SpinBox->value());
     params.setTangentialY(ui->tangential2SpinBox->value());
@@ -79,6 +84,8 @@ void LensDistortionModelParametersControlWidget::getParameters(LensDistortionMod
     params.setAspect(ui->aspectSpinBox->value());
     params.setScale (ui->scaleSpinBox->value());
     params.setNormalizingFocal(ui->normalizerSpinBox->value());
+
+    params.setMapForward(ui->forwardMapCheckBox->isChecked());
 
     params.mKoeff.empty();
     for (int i = 0; i < ui->koefTableWidget->rowCount(); i++)
@@ -119,6 +126,8 @@ void LensDistortionModelParametersControlWidget::setParameters(const LensDistort
 
     ui->centerXSpinBox->setValue(input.principalX());
     ui->centerYSpinBox->setValue(input.principalY());
+    ui->shiftXSpinBox->setValue(input.shiftX());
+    ui->shiftYSpinBox->setValue(input.shiftY());
 
     ui->tangential1SpinBox->setValue(input.tangentialX());
     ui->tangential2SpinBox->setValue(input.tangentialY());
@@ -126,6 +135,8 @@ void LensDistortionModelParametersControlWidget::setParameters(const LensDistort
     ui->scaleSpinBox->setValue(input.scale());
     ui->aspectSpinBox->setValue(input.aspect());
     ui->normalizerSpinBox->setValue(input.normalizingFocal());
+
+    ui->forwardMapCheckBox->setChecked(input.mapForward());
 
     ui->koefTableWidget->setRowCount(0);
     for (unsigned i = 0; i < input.mKoeff.size(); i++)
@@ -203,6 +214,17 @@ void LensDistortionModelParametersControlWidget::resetCy()
     } else {
         ui->centerYSpinBox->setValue(100);
     }
+}
+
+void LensDistortionModelParametersControlWidget::resetSx()
+{
+    ui->shiftXSpinBox->setValue(0);
+}
+
+
+void LensDistortionModelParametersControlWidget::resetSy()
+{
+    ui->shiftYSpinBox->setValue(0);
 }
 
 void LensDistortionModelParametersControlWidget::resetP1()

@@ -7,6 +7,7 @@
 
 #include "calibrationJob.h"
 #include "jsonGetter.h"
+#include "utils.h"
 
 #include <QFile>
 #include <QDir>
@@ -39,22 +40,11 @@ protected:
 
     virtual void SetUp()
     {
-        const char* envDir = std::getenv("TOPCON_DIR");
-        if (envDir == NULL) {
-            cout << "The env.var. TOPCON_DIR is missed" << endl;
-            FAIL();
-        }
-        QString path(envDir);
-        if (!QSTR_HAS_SLASH_AT_END(path)) {
-            path += PATH_SEPARATOR;
-        }
-        path += CALIBRATION_TEST_DIR_SRC;
+        string pathSrcDir = corecvs::HelperUtils::getFullPath("TOPCON_DIR", CALIBRATION_TEST_DIR_SRC, "");
 
-        path = QDir::toNativeSeparators(path);
-        QDir source_dir(path);
+        QDir source_dir(pathSrcDir.c_str());
 
-        path = wrkPath();
-
+        QString path = wrkPath();
         QDir dir(path);
         if (!dir.exists())
         {
@@ -238,15 +228,17 @@ TEST_F(CalibrationTest, testEstimateDistDistortion)
         }
     }
 
+    cout << "Max distortion RMSE\t" << distortionRmse << endl;
+
     //    CORE_ASSERT_DOUBLE_EQUAL_EP(job.photostation.cameras[1].distortion.koeff()[1], 2.064727135565     , 1e-12, ("Camera 5 has wrong distortion koeff 2"));
-    CORE_ASSERT_TRUE(distortionRmse < 1, "\n distortionRmse more than 1 \n");
+    CORE_ASSERT_TRUE(distortionRmse < 1, "\n maxDistortionRmse more than 1 \n");
 }
 
 TEST_F(CalibrationTest, testCalculate)
 {
     CalibrationJob job;
 
-    std::cout << "Read json esOutDist.json " << "mark \n";
+    std::cout << "Read json esOutDist.json " << "mark " << endl;
 
     JSONGetter getter(addPath("esDistOutDist.json"));
     getter.visit(job, "job");
@@ -267,7 +259,6 @@ TEST_F(CalibrationTest, testCalculate)
     }
 
     CORE_ASSERT_TRUE(calibrationRmse < 2, "\n calibrationRmse more than 2 \n");
-
 
     //    CORE_ASSERT_DOUBLE_EQUAL_EP(job.calibrationSetupLocations[0].position.x(), 993.125228460417   , 1e-12, ("Locations point position x error"));
     //    CORE_ASSERT_DOUBLE_EQUAL_EP(job.calibrationSetupLocations[0].position.z(), -727.943404402887  , 1e-12, ("Locations point position z error"));

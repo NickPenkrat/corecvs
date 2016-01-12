@@ -226,10 +226,10 @@ void LensDistortionModelParameters::getRectMap(const Vector2dd &tl, const Vector
     };
     int steps[] =
     {
-        (int)std::ceil(dr[0] - tl[0]),
-        (int)std::ceil(dr[1] - tl[1]),
-        (int)std::ceil(dr[0] - tl[0]),
-        (int)std::ceil(dr[1] - tl[1])
+        (int)std::ceil(dr[0] - tl[0]) + 1,
+        (int)std::ceil(dr[1] - tl[1]) + 1,
+        (int)std::ceil(dr[0] - tl[0]) + 1,
+        (int)std::ceil(dr[1] - tl[1]) + 1
     };
 
     for (int i = 0; i < 4; ++i)
@@ -239,28 +239,7 @@ void LensDistortionModelParameters::getRectMap(const Vector2dd &tl, const Vector
         auto& shift    = shifts[i];
         auto& origin   = origins[i];
         auto& step     = steps[i];
-        if (!mMapForward)
-        {
-            for (int j = 0; j < step; ++j)
-                boundary[j] = map(origin + j * shift);
-        }
-        else
-        {
-            boundary[0] = invMap(origin);
-            *boundary.rbegin() = invMap(origin + (step - 1) * shift);
-            int cstep = step / 2;
-            while (cstep >= 1)
-            {
-                int curr = cstep;
-                for (; curr < step; curr += 2 * cstep)
-                {
-                    int left = curr - cstep;
-                    int right = std::min(step - 1, curr + cstep);
-                    auto mid = (boundary[left] + boundary[right]) / 2.0;
-                    boundary[curr] = invMap(origin + curr * shift, mid);
-                }
-                cstep /= 2;
-            }
-        }
+        for (int j = 0; j < step; ++j)
+            boundary[j] = mapBackward(origin + j * shift);
     }
 }
