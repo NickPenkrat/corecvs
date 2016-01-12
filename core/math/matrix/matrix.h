@@ -156,6 +156,7 @@ public:
     Matrix *transposed() const;
     Matrix t() const;
     void transpose();
+    Matrix ata() const;
 
 #ifdef WITH_BLAS
     double det(void) const;
@@ -173,6 +174,9 @@ public:
     static int jacobi(Matrix *a, DiagonalMatrix *d, Matrix *v, int *nrotpt);
 
     static bool matrixSolveGaussian(Matrix *A, Matrix *B);
+
+    corecvs::Vector linSolve(const corecvs::Vector &B, bool symmetric = false, bool posDef = false) const;
+    static corecvs::Vector LinSolve(const corecvs::Matrix &A, const corecvs::Vector &B, bool symmetric = false, bool posDef = false);
 
     inline Matrix& operator +=(const Matrix& V)
     {
@@ -217,8 +221,6 @@ public:
     }
 
     operator Matrix33() const;
-
-
 
     /**
      *  All elements are negated

@@ -39,6 +39,8 @@ struct ImageData
     double calibrationMaxError;
     double singleCameraRmse;
     double singleCameraMaxError;
+    double fullCameraRmse;
+    double fullCameraMaxError;
 
     ImageData()
     {
@@ -49,18 +51,19 @@ struct ImageData
     template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(sourceFileName,      string(""), "sourceFileName");
-        visitor.visit(undistortedFileName, string(""), "undistortedFileName");
-        visitor.visit((vector<PointObservation>&)sourcePattern, "sourcePattern");
-        visitor.visit((vector<PointObservation>&)undistortedPattern, "undistortedPattern");
-        visitor.visit(location,           CameraLocationData(), "viewLocation");
-
-        visitor.visit(distortionRmse,      -1.0, "distortionRmse"      );
-        visitor.visit(distortionMaxError,  -1.0, "distortionMaxError"  );
-        visitor.visit(calibrationRmse,     -1.0, "calibrationRmse"     );
-        visitor.visit(calibrationMaxError, -1.0, "calibrationMaxError" );
-        visitor.visit(calibrationRmse,     -1.0, "singleCameraRmse"    );
+        visitor.visit(sourceFileName, std::string(""), "sourceFileName");
+        visitor.visit(undistortedFileName, std::string(""), "undistortedFileName");
+        visitor.visit((std::vector<PointObservation>&)sourcePattern, "sourcePattern");
+        visitor.visit((std::vector<PointObservation>&)undistortedPattern, "undistortedPattern");
+        visitor.visit(location, CameraLocationData(), "viewLocation");
+        visitor.visit(distortionRmse, -1.0, "distortionRmse");
+        visitor.visit(distortionMaxError, -1.0, "distortionMaxError");
+        visitor.visit(calibrationRmse, -1.0, "calibrationRmse");
+        visitor.visit(calibrationMaxError, -1.0, "calibrationMaxError");
+        visitor.visit(calibrationRmse, -1.0, "singleCameraRmse");
         visitor.visit(calibrationMaxError, -1.0, "singleCameraMaxError");
+        visitor.visit(fullCameraRmse, -1.0, "fullCameraRmse");
+        visitor.visit(fullCameraMaxError, -1.0, "fullCameraMaxError");
     }
 };
 
@@ -146,7 +149,10 @@ struct CalibrationJob
     std::vector<CameraLocationData>                 calibrationSetupLocations;
     std::vector<std::vector<ImageData>>             observations;
     std::vector<std::vector<CalibrationSetupEntry>> calibrationSetups;
-    std::vector<RadialCorrection>                   corrections;
+    double                                          totalFullErrorMax        = -1.0,
+                                                    totalFullErrorRMSE       = -1.0,
+                                                    totalCalibrationErrorMax = -1.0,
+                                                    totalCalibrationErrorRMSE= -1.0;
 
     bool                                            calibrated = false;
 
@@ -157,30 +163,31 @@ struct CalibrationJob
     {
         visitor.visit(photostation, Photostation(), "photostation");
         visitor.visit(calibrationSetupLocations, "calibrationSetupLocations");
-        visitor.visit(calibrationSetups,         "calibrationSetups");
-        visitor.visit(observations,              "observations");
+        visitor.visit(calibrationSetups, "calibrationSetups");
+        visitor.visit(observations, "observations");
         visitor.visit(settings, CalibrationSettings(), "algorithmSettings");
         visitor.visit(calibrated, false, "calibrated");
+        visitor.visit(totalFullErrorMax, -1.0, "totalFullErrorMax");
+        visitor.visit(totalFullErrorRMSE, -1.0, "totalFullErrorRMSE");
+        visitor.visit(totalCalibrationErrorMax, -1.0, "totalCalibrationErrorMax");
+        visitor.visit(totalCalibrationErrorRMSE, -1.0, "totalCalibrationErrorRMSE");
     }
 
     static corecvs::RGB24Buffer LoadImage(const std::string& path);
     static void                 SaveImage(const std::string& path, corecvs::RGB24Buffer &buffer);
-
+    
     bool    detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::ObservationList &list);
     bool    detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::SelectableGeometryFeatures &features);
     bool    detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::SelectableGeometryFeatures *features = nullptr, corecvs::ObservationList *list = nullptr);
     void    allDetectChessBoard(bool distorted = true);
-
+   
     bool    estimateDistortion(corecvs::SelectableGeometryFeatures &features, double w, double h, LensDistortionModelParameters &params);
     bool    estimateDistortion(corecvs::ObservationList &list, double w, double h, LensDistortionModelParameters &params);
     void    computeDistortionError(corecvs::ObservationList &list, LensDistortionModelParameters &params, double &rmse, double &maxError);
     void    computeDistortionError(corecvs::SelectableGeometryFeatures &sgf, LensDistortionModelParameters &params, double &rmse, double &maxError);
     void    allEstimateDistortion();
 
-    void    prepareRadialCorrection(LensDistortionModelParameters &source, double w, double h, RadialCorrection &correction, double &newW, double &newH, Rect &output);
-    void    prepareAllRadialCorrections();
-    void    prepareUndistortionTransformation(LensDistortionModelParameters &source, double w, double h, corecvs::DisplacementBuffer &dest, double &newW, double &newH);
-    void    removeDistortion(corecvs::RGB24Buffer &src, corecvs::RGB24Buffer &dst, LensDistortionModelParameters &params);
+    void    prepareUndistortionTransformation(int camId, corecvs::DisplacementBuffer &dest);
     void    removeDistortion(corecvs::RGB24Buffer &src, corecvs::RGB24Buffer &dst, corecvs::DisplacementBuffer &transform, double outW, double outH);
     void    allRemoveDistortion();
 
@@ -189,11 +196,22 @@ struct CalibrationJob
 
     void    computeSingleCameraErrors();
     void    computeCalibrationErrors();
+    void    computeFullErrors();
     void    calibratePhotostation();
-    void    calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<PinholeCameraIntrinsics> &intrinsics, std::vector<std::vector<CameraLocationData>> &locations, bool runBFS, bool runLM);
+    void    calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<PinholeCameraIntrinsics> &intrinsics, std::vector<LensDistortionModelParameters> &distortions, std::vector<std::vector<CameraLocationData>> &locations, bool runBFS, bool runLM);
     void    calibrate();
 
+    ///
+    /// \brief fit
+    /// Repositioning camera into E-N plane by first 6 cameras
+    /// \param referenceLayerCamerasCount
+    ///
+    void    fit(int referenceLayerCamerasCount);
+
     void    calculateRedundancy(std::vector<int> &cameraImagesCount, std::vector<std::vector<int>> &cameraCameraRelationships, std::vector<int> &redundantSingleCamera, int &redundancyPhotostation);
+
+    void    reorient(const std::vector<int> &topLayerIdx);
+    void    reorient(const corecvs::Vector3dd T, const corecvs::Quaternion Q);
 
     double  factor = 1.0;
     std::vector<double> factors;

@@ -4,6 +4,8 @@
 #include <vector>
 
 #include "calibrationPhotostation.h"
+#include "lensDistortionModelParameters.h"
+#include "lineDistortionEstimatorParameters.h"
 #include "levenmarq.h"
 
 
@@ -14,10 +16,10 @@
 struct PhotoStationCalibrator
 {
 public:
-    PhotoStationCalibrator(CameraConstraints constraints = CameraConstraints::NONE, const double lockFactor = 1.0);
+    PhotoStationCalibrator(CameraConstraints constraints = CameraConstraints::NONE, const LineDistortionEstimatorParameters &distortionEstimationParameters = LineDistortionEstimatorParameters(), const double lockFactor = 1.0);
 
     // Add camera
-    void addCamera(PinholeCameraIntrinsics &intrinsics);
+    void addCamera(PinholeCameraIntrinsics &intrinsics, const LensDistortionModelParameters &params = LensDistortionModelParameters());
 
     // Add calibration setup and corespondences for specified cameras
     void addCalibrationSetup(std::vector<int> &cameraIds, std::vector<CameraLocationData> &cameraLocations, MultiCameraPatternPoints &points);
@@ -68,6 +70,7 @@ private:
             auto& patternPoints = calibrator->patternPoints;
             auto& relativeCameraPositions = calibrator->relativeCameraPositions;
             int N = calibrator->N;
+            bool shouldDistort = !!(calibrator->constraints & CameraConstraints::UNLOCK_DISTORTION);
 
             for (int j = r.begin(); j != r.end(); ++j)
             {
@@ -80,13 +83,19 @@ private:
                     if (patternPoints[j][i].empty())
                         continue;
 
-                    for (auto& pt: patternPoints[j][i])
+                    for (PointObservation& pt: patternPoints[j][i])
                     {
                         Vector3dd p = pt.point;
 
                         p[1] *= calibrator->factor;
 
-                        Vector2dd diff = relativeCameraPositions[i].project(Qs * (p - Cs)) - pt.projection;
+                        Vector2dd res = relativeCameraPositions[i].project(Qs * (p - Cs));
+                        if (shouldDistort) {
+                            res = relativeCameraPositions[i].distortion.mapForward(res);
+                        }
+
+                        Vector2dd diff = res - pt.projection;
+
                         out[idx++] = diff.x();
                         out[idx++] = diff.y();
                     }
@@ -162,6 +171,7 @@ private:
     std::vector<MultiCameraPatternPoints> patternPoints;
 
     CameraConstraints constraints;
+    LineDistortionEstimatorParameters distortionEstimationParams;
 };
 
 

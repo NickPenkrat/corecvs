@@ -11,15 +11,14 @@
 #include "radialCorrection.h"
 #include "levenmarq.h"
 #include "ellipticalApproximation.h"
+#include "displacementBuffer.h"
 
 namespace corecvs {
 
 
 RadialCorrection::RadialCorrection(const LensDistortionModelParameters &params) :
         FunctionArgs(2,2),
-        mParams(params),
-        addShiftX(0.0),
-        addShiftY(0.0)
+        mParams(params)
 {
 }
 
@@ -81,8 +80,8 @@ public:
             for (int j = 0; j < mSteps; j++)
             {
                 Vector2dd point(dw * j, dh * i);
-                Vector2dd deformed = mInput.map(point); /* this could be cached */
-                Vector2dd backproject = guess.map(deformed);
+                Vector2dd deformed = mInput.mapToUndistorted(point); /* this could be cached */
+                Vector2dd backproject = guess.mapToUndistorted(deformed);
                 Vector2dd diff = backproject - point;
 
                 out[2 * (i * mSteps + j)    ] = diff.x();
@@ -133,7 +132,6 @@ private:
         return 2 * steps * steps;
     }
 
-
 };
 
 
@@ -151,8 +149,7 @@ RadialCorrection RadialCorrection::invertCorrection(int h, int w, int step)
     result.setTangentialX(-input.tangentialX());
     result.setTangentialY(-input.tangentialY());
 
-    result.setScale(1.0 / input.scale());
-
+    result.setScale (1.0 / input.scale());
     result.setAspect(1.0 / input.scale()); /*< bad guess I believe */
 
     result.mKoeff.resize(RadialCorrectionInversionCostFunction::MODEL_POWER);
@@ -174,9 +171,9 @@ RadialCorrection RadialCorrection::invertCorrection(int h, int w, int step)
     lmFit.maxLambda = 10e8;
     lmFit.lambdaFactor = 8;
     lmFit.f = &cost;
-    lmFit.traceCrucial  = true;
-    lmFit.traceProgress = true;
-    lmFit.traceMatrix   = true;
+  //lmFit.traceCrucial  = true;
+  //lmFit.traceProgress = true;
+  //lmFit.traceMatrix   = true;
 
     vector<double> initialGuess(cost.inputs);
     RadialCorrectionInversionCostFunction::fillWithRadial(guess, &(initialGuess[0]));
@@ -199,7 +196,6 @@ RadialCorrection RadialCorrection::invertCorrection(int h, int w, int step)
     SYNC_PRINT(("Final Mean Error: %f px\n", stats.getRadiusAround0()));
     SYNC_PRINT(("Final Max  Error: %f px\n", stats.getMax()));
 
-
     return guess;
 }
 
@@ -218,8 +214,8 @@ EllipticalApproximation1d RadialCorrection::compareWith(const RadialCorrection &
         {
             Vector2dd point(dw * j, dh * i);
 
-            Vector2dd deformedThis  =       map(point); /* this could be cached */
-            Vector2dd deformedOther = other.map(point);
+            Vector2dd deformedThis  =       mapToUndistorted(point); /* this could be cached */
+            Vector2dd deformedOther = other.mapToUndistorted(point);
             result.addPoint((deformedOther - deformedThis).l2Metric());
         }
     }
@@ -227,7 +223,23 @@ EllipticalApproximation1d RadialCorrection::compareWith(const RadialCorrection &
     return result;
 }
 
-
+DisplacementBuffer RadialCorrection::getUndistortionTransformation(const Vector2dd &undistortedSize, const Vector2dd &distortedSize, const double step, bool useLM)
+{
+    if (mParams.mMapForward)
+    {
+        //TODO: clarify if this stuff is correct
+        return DisplacementBuffer(mParams, undistortedSize[1], undistortedSize[0]);
+    }
+    else
+    {
+        auto* foo = DisplacementBuffer::CacheInverse(
+            this, undistortedSize[1], undistortedSize[0],
+            0, 0, distortedSize[0], distortedSize[1], step, useLM);
+        DisplacementBuffer result = *foo;
+        delete foo;
+        return result;
+    }
+}
 
 
 

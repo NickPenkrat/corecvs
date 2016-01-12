@@ -11,9 +11,9 @@ exists(../../../../config.pri) {
 ROOT_DIR=$$PWD/$$ROOT_DIR
 
 TEMPLATE = app
-TARGET   = test_photostation_placer
+TARGET   = test_photostation_placer_features
 CONFIG  += console
 
 include($$ROOT_DIR/src/open/utils/utils.pri)                        # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
 
-SOURCES += photostation_placer.cpp
+SOURCES += photostation_placer_features.cpp

@@ -8,7 +8,7 @@
  * \ingroup autotest  
  */
 #ifndef TRACE
-#define TRACE
+//#define TRACE
 #endif
 
 #include <vector>

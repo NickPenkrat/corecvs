@@ -164,7 +164,7 @@ TEST(Deform, testRadialApplication)  // TODO: move to perf-tests!
     testRadialApplication(1);
 }
 
-TEST(Deform, testRadialInversion)  // TODO: move to perf-tests!
+TEST(Deform, testRadialInversion)
 {
     testRadialInversion(1);
 }

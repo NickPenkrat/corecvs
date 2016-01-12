@@ -11,6 +11,8 @@
 #include <sstream>
 #include <iostream>
 #include <limits>
+#include <random>
+#include <chrono>
 #include "gtest/gtest.h"
 
 #include "global.h"
@@ -18,6 +20,7 @@
 #include "mathUtils.h"
 #include "matrix33.h"
 #include "matrix.h"
+#include "sparseMatrix.h"
 #include "preciseTimer.h"
 
 using namespace std;
@@ -469,6 +472,26 @@ TEST(MatrixTest, testMatrixOperations)
     CORE_ASSERT_TRUE(invA.notTooFar(&invAr, 1e-7), "Invalid inversion");
     CORE_ASSERT_TRUE(A.notTooFar(&Aorig, 1e-7), "inversion was not const");
     cout << "Inv" << endl << invA << endl;
+    double Adata2[] = {
+        1.0, 1.0, 1.0,
+        0.0, 0.0, 1.0,
+        0.0, 1.0, 1.0
+    };
+
+    double invAdata2[] = {
+          1.0,   0.0,  -1.0,
+          0.0,  -1.0,   1.0,
+          0.0,   1.0,   0.0
+    };
+
+    Matrix A2(3,3, Adata2);
+    Matrix Aorig2(3,3, Adata2);
+    cout << "Org" << endl << A2 << endl;
+
+    Matrix invA2 = A2.inv();
+    Matrix invAr2(3,3, invAdata2);
+    CORE_ASSERT_TRUE(invA2.notTooFar(&invAr2, 1e-7), "Invalid inversion");
+    CORE_ASSERT_TRUE(A2.notTooFar(&Aorig2, 1e-7), "inversion was not const");
 
     Matrix invSVDA = A.invSVD();
     CORE_ASSERT_TRUE(invSVDA.notTooFar(&invAr, 1e-7), "Invalid inversion");
@@ -616,4 +639,385 @@ TEST(MatrixTest, test10MatrixMultiply)
      Matrix AATH  = Matrix::multiplyHomebrew(A, AT, false, false);
      ASSERT_TRUE(AATH. notTooFar(&result, 1e-8, true));
 
+}
+
+
+TEST(SparseMatrix, FromDense)
+{
+    corecvs::Matrix m(3, 3);
+    m.a(0, 0) = 1.0; m.a(0, 1) = 0.0; m.a(0, 2) = 1.0;
+    m.a(1, 0) = 0.0; m.a(1, 1) = 4.0; m.a(1, 2) = 0.0;
+    m.a(2, 0) =-2.0; m.a(2, 1) = 0.1; m.a(2, 2) = 0.0;
+
+    corecvs::SparseMatrix sm(m), sm1(m, 1.0);
+
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            ASSERT_TRUE(m.a(i, j) == sm.a(i, j));
+            ASSERT_TRUE(m.a(i, j) == sm1.a(i, j) || std::abs(m.a(i, j)) <= 1.0);
+        }
+    }
+}
+
+TEST(SparseMatrix, FromMap)
+{
+    std::map<std::pair<int, int>, double> matrix =
+    {
+        std::make_pair(std::make_pair(0, 0), 1.0),
+        std::make_pair(std::make_pair(0, 1), 1.0),
+        std::make_pair(std::make_pair(0, 99), 1.0)
+    };
+    corecvs::SparseMatrix sm(100, 100, matrix);
+
+    int nonZero = 0;
+    for (int i = 0; i < 100; ++i)
+    {
+        for (int j = 0; j < 100; ++j)
+        {
+            if (sm.a(i, j) != 0.0)
+            {
+                nonZero++;
+            }
+        }
+    }
+    ASSERT_TRUE(nonZero == 3);
+    ASSERT_EQ(1.0, sm.a(0, 0));
+    ASSERT_EQ(1.0, sm.a(0, 1));
+    ASSERT_EQ(1.0, sm.a(0, 99));
+}
+
+TEST(SparseMatrix, ToFromDense)
+{
+    corecvs::Matrix m(10, 10);
+
+    int id = 0;
+    for (int i = 0; i < 10; ++i)
+    {
+        for (int j = 0; j < 10; ++j)
+        {
+            if ((i + j) % 7 == 3 || (10 + i - j) % 5 == 2)
+            {
+                m.a(i, j) = id++;
+            }
+        }
+    }
+
+    corecvs::SparseMatrix sm(m);
+    corecvs::Matrix m2 = (Matrix)sm;
+
+    ASSERT_EQ(0.0, (m2 - m).frobeniusNorm());
+}
+
+corecvs::SparseMatrix randomSparse(int h = 100, int w = 100, double sparsity = 0.1)
+{
+    static std::mt19937 rng(1337);
+    std::uniform_real_distribution<double> runif(0, 1), runif_el(-1e0, 1e0);
+    std::map<std::pair<int, int>, double> map;
+    for (int i = 0; i < h; ++i)
+    {
+        for (int j = 0; j < w; ++j)
+        {
+            if (runif(rng) < sparsity)
+            {
+                map[std::make_pair(i, j)] = runif_el(rng);
+            }
+        }
+    }
+    return corecvs::SparseMatrix(h, w, map);
+}
+
+TEST(SparseMatrix, UnaryMinus)
+{
+    auto sm = -randomSparse();
+    auto dm = -(corecvs::Matrix)sm;
+    ASSERT_EQ(0.0, ((corecvs::Matrix)sm + dm).frobeniusNorm());
+}
+
+TEST(SparseMatrix, MulDouble)
+{
+    auto sm = randomSparse();
+    auto smd= sm * 0.123;
+    auto dsm= 0.123 * sm;
+    auto sm2 = smd / 0.123;
+    auto dm = (corecvs::Matrix)sm;
+
+    ASSERT_EQ(dm * 0.123, (corecvs::Matrix)smd);
+    ASSERT_EQ(0.123 * dm, (corecvs::Matrix)dsm);
+    ASSERT_NEAR((dm - (corecvs::Matrix)sm2).frobeniusNorm(), 0.0, 1e-9);
+}
+
+TEST(SparseMatrix, PlusSparse)
+{
+    for (int i = 0; i < 100; ++i)
+    {
+        auto sm1 = randomSparse();
+        auto sm2 = randomSparse();
+        auto diff = sm1 + sm2;
+        auto diff2= (corecvs::Matrix)sm1 + (corecvs::Matrix)sm2;
+
+        ASSERT_NEAR(((corecvs::Matrix)diff - diff2).frobeniusNorm(), 0.0, 1e-9);
+    }
+}
+
+TEST(SparseMatrix, MinusSparse)
+{
+    for (int i = 0; i < 100; ++i)
+    {
+        auto sm1 = randomSparse();
+        auto sm2 = randomSparse();
+        auto diff = sm1 - sm2;
+        auto diff2= (corecvs::Matrix)sm1 - (corecvs::Matrix)sm2;
+
+        ASSERT_NEAR(((corecvs::Matrix)diff - diff2).frobeniusNorm(), 0.0, 1e-9);
+    }
+}
+
+TEST(SparseMatrix, TransposeSparse)
+{
+    for (int i = 0; i < 100; ++i)
+    {
+        auto sm = randomSparse();
+        auto dense = (corecvs::Matrix)sm;
+        auto denseT = dense.t();
+
+        ASSERT_EQ(0.0, ((corecvs::Matrix)sm.t() - denseT).frobeniusNorm());
+    }
+
+}
+
+TEST(SparseMatrix, MulVectorLhs)
+{
+    corecvs::Vector rhs(100);
+    for (int i = 0; i < 100; ++i)
+        rhs[i] = i - 50;
+
+    for (int i = 0; i < 100; ++i)
+    {
+        auto sm = randomSparse();
+        auto dense = (corecvs::Matrix)sm;
+        auto smv = rhs * sm;
+        auto dmv = rhs * dense;
+
+        ASSERT_NEAR(!(smv - dmv), 0.0, 1e-9);
+    }
+}
+
+TEST(SparseMatrix, MulVectorRhs)
+{
+    corecvs::Vector rhs(100);
+    for (int i = 0; i < 100; ++i)
+        rhs[i] = i - 50;
+
+    for (int i = 0; i < 100; ++i)
+    {
+        auto sm = randomSparse();
+        auto dense = (corecvs::Matrix)sm;
+        auto smv = sm * rhs;
+        auto dmv = dense * rhs;
+
+        ASSERT_NEAR(!(smv - dmv), 0.0, 1e-9);
+    }
+}
+
+TEST(SparseMatrix, MulMM)
+{
+    for (int i = 0; i < 100; ++i)
+    {
+        auto l = randomSparse();
+        auto r = randomSparse();
+        auto dl= (corecvs::Matrix)l;
+        auto dr= (corecvs::Matrix)r;
+
+        auto ps = l * r;
+        auto pd = dl*dr;
+
+        ASSERT_NEAR(((corecvs::Matrix)ps - pd).frobeniusNorm(), 0.0, 1e-9);
+    }
+}
+
+#ifdef WITH_MKL
+#include <mkl.h>
+#endif
+
+TEST(SparseMatrix, MulTimer)
+{
+    auto sl= randomSparse(8000, 8000, 0.001);
+    auto dl= (corecvs::Matrix)sl;
+    auto sr= randomSparse(8000, 8000, 0.001);
+    auto dr= (corecvs::Matrix)sr;
+
+    auto startSparse = std::chrono::high_resolution_clock::now();
+    auto s = sl * sr;
+    auto endSparse = std::chrono::high_resolution_clock::now();
+
+    auto startDense = std::chrono::high_resolution_clock::now();
+    auto d = dl * dr;
+    auto endDense = std::chrono::high_resolution_clock::now();
+
+#ifdef WITH_MKL
+    auto startMKL = std::chrono::high_resolution_clock::now();
+    auto mkll = (sparse_matrix_t)sl;
+    auto mklr = (sparse_matrix_t)sr;
+    sparse_matrix_t res;
+    mkl_sparse_spmm(SPARSE_OPERATION_NON_TRANSPOSE, mkll, mklr, &res);
+    auto endMKL = std::chrono::high_resolution_clock::now();
+    mkl_sparse_destroy(mkll);
+    mkl_sparse_destroy(mklr);
+    mkl_sparse_destroy(res);
+#endif
+
+    ASSERT_NEAR(((corecvs::Matrix)s - d).frobeniusNorm(), 0.0, 1e-9);
+    double timeSparse = (endSparse - startSparse).count();
+    double timeDense  = (endDense  - startDense ).count();
+#ifdef WITH_MKL
+    double timeMKL = (endMKL - startMKL).count();
+#endif
+
+    std::cout << "Sparse: " << timeSparse << " Dense: " << timeDense <<
+#ifdef WITH_MKL
+        "MKL: " << timeMKL <<
+#endif
+        std::endl;
+    ASSERT_LE(timeSparse, timeDense);
+}
+
+#ifdef WITH_MKL
+// XXX: testing mkl sparse casting
+TEST(SparseMatrix, MKLCasts)
+{
+    auto sm = randomSparse(1000, 100, 0.01);
+    auto mkl_sm = (sparse_matrix_t)sm;
+    auto sm2= (corecvs::SparseMatrix)mkl_sm;
+
+    ASSERT_NEAR(((corecvs::Matrix)sm - (corecvs::Matrix)sm2).frobeniusNorm(), 0.0, 1e-9);
+    mkl_sparse_destroy(mkl_sm);
+}
+#endif
+
+SparseMatrix generateTri(int n = 1000, double fill = 1.0)
+{
+    Matrix m(n, n);
+    for (int i = 0; i < n; ++i)
+        m.a(i, i) = fill;
+    for (int i = 0; i < n; ++i)
+    {
+        if (i + 3 < n)
+        {
+        m.a(i, i + 3) = fill;
+        m.a(i + 3, i) = fill;
+        }
+    }
+    return SparseMatrix(m);
+}
+
+TEST(SparseMatrix, LinSolve)
+{
+    auto sm = generateTri(10000, 0.1);
+    corecvs::Vector v(10000);
+    for (int i = 0; i < 10000; ++i)
+        v[i] = (i - 5000.0) / 5000.0;
+    auto vm = sm * v;
+
+#if 0
+    auto res = Matrix::linSolve((Matrix)sm, vm);
+#else
+    auto res = sm.linSolve(vm);
+#endif
+    ASSERT_NEAR(!(res - v), 0.0, 1e-6);
+}
+
+TEST(SparseMatrix, ATA)
+{
+    auto sm = randomSparse(1000, 100, 0.01);
+    auto res = sm.ata();
+    auto dres= ((Matrix)sm).t() * ((Matrix)sm);
+    ASSERT_NEAR(((Matrix)res - dres).frobeniusNorm(), 0.0, 1e-9);
+}
+
+TEST(MatrixTest, ATA)
+{
+    auto m = (Matrix)randomSparse(1000, 100, 0.01);
+    auto res = m.ata();
+    auto res2 = m.t() * m;
+    ASSERT_NEAR(((Matrix)res - res2).frobeniusNorm(), 0.0, 1e-9);
+}
+
+Vector randomVector(int N)
+{
+    Vector v(N);
+    std::mt19937 rng;
+    std::uniform_real_distribution<double> runif(-1.0, 1.0);
+    for (int i = 0; i < N; ++i)
+        v[i] = runif(rng);
+    return v;
+}
+
+Matrix randomMatrix(int N, int M)
+{
+    Matrix m(N, M);
+    std::mt19937 rng;
+    std::uniform_real_distribution<double> runif(-1.0, 1.0);
+    for (int i = 0; i < N; ++i)
+        for (int j = 0; j < M; ++j)
+            m.a(i, j) = runif(rng);
+    return m;
+}
+
+TEST(MatrixTest, LinSolve)
+{
+    auto a = randomMatrix(100, 100);
+    auto v = randomVector(100);
+    auto vm = a * v;
+    ASSERT_NEAR(!(v - a.linSolve(vm)), 0.0, 1e-6);
+}
+
+
+TEST(MatrixTest, LinSolveSymmetric)
+{
+    auto a = randomMatrix(10000, 1000).ata();
+    auto v = randomVector(1000);
+    auto vm = a * v;
+    ASSERT_NEAR(!(v - a.linSolve(vm, true, true)), 0.0, 1e-6);
+}
+
+TEST(SparseMatrix, LinSolveSymmetric)
+{
+    Matrix M(4,4);
+    M.a(0, 0) = 1.0; M.a(0, 1) = 0.0; M.a(0, 2) = 0.0; M.a(0, 3) = 0.0;
+    M.a(1, 0) = 0.0; M.a(1, 1) = 1.0; M.a(1, 2) = 0.0; M.a(1, 3) = 0.0;
+    M.a(2, 0) = 0.0; M.a(2, 1) = 0.0; M.a(2, 2) = 1.0; M.a(2, 3) = 0.0;
+    M.a(3, 0) = 0.0; M.a(3, 1) = 0.0; M.a(3, 2) = 0.0; M.a(3, 3) = 1.0;
+    auto v = randomVector(4);
+    auto a = SparseMatrix(M);
+    auto vm = a * v;
+    ASSERT_NEAR(!(v - a.linSolve(vm, true)), 0.0, 1e-6);
+}
+
+TEST(SparseMatrix, LinSolveSymmetricNonPos)
+{
+    Matrix M(4,4);
+    M.a(0, 0) =-1.0; M.a(0, 1) = 0.0; M.a(0, 2) = 0.0; M.a(0, 3) = 0.0;
+    M.a(1, 0) = 0.0; M.a(1, 1) = 1.0; M.a(1, 2) = 2.0; M.a(1, 3) = 0.0;
+    M.a(2, 0) = 0.0; M.a(2, 1) = 2.0; M.a(2, 2) = 1.0; M.a(2, 3) = 0.0;
+    M.a(3, 0) = 0.0; M.a(3, 1) = 0.0; M.a(3, 2) = 0.0; M.a(3, 3) = 1.0;
+    auto a = (SparseMatrix)M;//
+//    auto a = randomSparse(100000, 1000, 0.005).ata();
+    std::cout << "ATA" << std::endl;
+    auto v = randomVector(4);
+    auto vm = a * v;
+    std::cout << a << std::endl;
+    std::cout << vm << std::endl;
+    ASSERT_NEAR(!(v - a.linSolve(vm,  true, false)), 0.0, 1e-6);
+
+}
+
+TEST(SparseMatrix, ReferenceA)
+{
+    std::vector<int> zeros(11);
+    SparseMatrix sm(10, 10, {}, {}, zeros);
+    ASSERT_EQ(sm.a(5, 5), 0.0);
+    sm.a(5, 5) = 10.0;
+    ASSERT_EQ(sm.a(5, 5), 10.0);
 }

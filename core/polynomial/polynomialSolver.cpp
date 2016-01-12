@@ -4,17 +4,7 @@
 #include "matrix.h"
 #include "vector.h"
 
-#ifdef WITH_BLAS
-# ifdef WITH_MKL
-#  include <mkl.h>
-#  include <mkl_lapacke.h>
-# else
-#  include <cblas.h>
-#  include <lapacke.h>
-# endif
-#else
-# error Cannot build polynomial solver without BLAS/LAPACK/MKL
-#endif
+#include "cblasLapackeWrapper.h"
 
 const double corecvs::PolynomialSolver::RELATIVE_TOLERANCE = 1e-9;
 
@@ -107,7 +97,7 @@ size_t corecvs::PolynomialSolver::solve_companion(const double* coeff, double* r
      * For further reading you may consider 
      * Fernando De Teran Backward stability of polynomial root-finding using Fiedler companion matrices [IMA Journal of Numerical Analysis (2014)]
      */
-    corecvs::Matrix companion(degree, degree);
+    corecvs::Matrix companion((int)degree, (int)degree);
     double max_coeff = coeff[degree];
 #ifndef FIEDLER
     companion.a(0, degree - 1) = -coeff[0] / max_coeff;
@@ -128,7 +118,7 @@ size_t corecvs::PolynomialSolver::solve_companion(const double* coeff, double* r
             }
             else
             {
-                companion.a(i, i - 2) = 1.0;
+                companion.a((int)i, (int)i - 2) = 1.0;
             }
         }
         else
@@ -141,12 +131,12 @@ size_t corecvs::PolynomialSolver::solve_companion(const double* coeff, double* r
             }
             else
             {
-                companion.a(i, i - 1) = -coeff[curr_degree--] / max_coeff;
+                companion.a((int)i, (int)i - 1) = -coeff[curr_degree--] / max_coeff;
                 if (i != degree - 1)
                 {
-                    companion.a(i, i + 1) = -coeff[curr_degree--] / max_coeff;
+                    companion.a((int)i, (int)i + 1) = -coeff[curr_degree--] / max_coeff;
                     if (i != degree - 2)
-                        companion.a(i, i + 2) = 1.0;
+                        companion.a((int)i, (int)i + 2) = 1.0;
                 }
             }
         }
@@ -154,16 +144,16 @@ size_t corecvs::PolynomialSolver::solve_companion(const double* coeff, double* r
 #endif
 
     // evd
-    corecvs::Vector wr(degree), wi(degree);
-    LAPACKE_dgeev(LAPACK_ROW_MAJOR, 'N', 'N', degree, companion.data, companion.stride, &wr[0], &wi[0], 0, degree, 0, degree);
+    corecvs::Vector wr((int)degree), wi((int)degree);
+    LAPACKE_dgeev(LAPACK_ROW_MAJOR, 'N', 'N', (int)degree, companion.data, companion.stride, &wr[0], &wi[0], 0, (int)degree, 0, (int)degree);
 
     // find non-complex and return
     size_t cnt = 0;
     for (size_t i = 0; i < degree; ++i)
     {
-        if (std::abs(wi[i]) <= std::abs(wr[i]) * RELATIVE_TOLERANCE)
+        if (std::abs(wi[(int)i]) <= std::abs(wr[(int)i]) * RELATIVE_TOLERANCE)
         {
-            roots[cnt++] = wr[i];
+            roots[cnt++] = wr[(int)i];
         }
     }
     return cnt;

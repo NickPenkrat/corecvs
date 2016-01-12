@@ -9,7 +9,8 @@ HEADERS += \
     alignment/distPointsFunction.h \
     alignment/selectableGeometryFeatures.h \
     alignment/lmDistortionSolver.h \
-    $$PWD/pointObservation.h
+    alignment/lensDistortionModelParameters.h
+    alignment/pointObservation.h
 
 
 SOURCES += \
@@ -22,6 +23,7 @@ SOURCES += \
     alignment/distPointsFunction.cpp \
     alignment/selectableGeometryFeatures.cpp \
     alignment/lmDistortionSolver.cpp \
-    $$PWD/pointObservation.cpp
+    alignment/lensDistortionModelParameters.cpp
+    alignment/pointObservation.cpp
 
 

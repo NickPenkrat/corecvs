@@ -26,8 +26,14 @@ public:
     {
         Nearest  = 0,
         Bilinear = 1,
-        Fourier  = 2,
-        AHD      = 3
+        AHD      = 2,
+        Fourier  = 3
+    };
+
+    enum CompareMethod
+    {
+        PSNR = 0,
+        RMSD = 1
     };
 
     /**

@@ -325,7 +325,8 @@ void CloudViewDialog::resetCamera()
         case ORTHO_FRONT:
         case ORTHO_LEFT:
             glLoadIdentity();
-            glOrtho(-width / 2.0, width / 2.0, height / 2.0, -height / 2.0, farPlane, -farPlane);
+            // TODO: Check if it is changed correctly (e.g. it is the RH projection)
+            glOrtho(width / 2.0, -width / 2.0, height / 2.0, -height / 2.0, farPlane, -farPlane);
             glScaled(mCameraZoom, mCameraZoom, mCameraZoom);
          //   glRotated(90, 1.0, 0.0, 0.0);
             break;

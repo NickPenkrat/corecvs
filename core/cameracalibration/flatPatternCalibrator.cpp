@@ -1,7 +1,8 @@
 #include "flatPatternCalibrator.h"
 
-FlatPatternCalibrator::FlatPatternCalibrator(const CameraConstraints constraints, const PinholeCameraIntrinsics lockParams, const double lockFactor) : factor(lockFactor), K(0), N(0), absoluteConic(6), intrinsics(lockParams), lockParams(lockParams), constraints(constraints), forceZeroSkew(!!(constraints & CameraConstraints::ZERO_SKEW))
+FlatPatternCalibrator::FlatPatternCalibrator(const CameraConstraints constraints, const PinholeCameraIntrinsics lockParams, const LineDistortionEstimatorParameters distortionEstimatorParams, const double lockFactor) : factor(lockFactor), K(0), N(0), absoluteConic(6), intrinsics(lockParams), lockParams(lockParams), distortionEstimationParams(distortionEstimatorParams), constraints(constraints), forceZeroSkew(!!(constraints & CameraConstraints::ZERO_SKEW))
 {
+    distortionParams.mMapForward = true;
 }
 
 void FlatPatternCalibrator::addPattern(const ObservationList &patternPoints, const CameraLocationData &position)
@@ -38,6 +39,12 @@ std::vector<CameraLocationData> FlatPatternCalibrator::getExtrinsics()
     return locationData;
 }
 
+LensDistortionModelParameters FlatPatternCalibrator::getDistortion()
+{
+    CORE_ASSERT_TRUE_S(!!(constraints & CameraConstraints::UNLOCK_DISTORTION));
+    return distortionParams;
+}
+
 double FlatPatternCalibrator::getRmseReprojectionError()
 {
     std::vector<double> err(K * 2);
@@ -66,7 +73,12 @@ void FlatPatternCalibrator::getFullReprojectionError(double out[])
 
             pp[1] *= factor;
 
-            Vector2dd res  = intrinsics.project(R * (pp - C));
+            Vector2dd res = intrinsics.project(R * (pp - C));
+            if (!!(constraints & CameraConstraints::UNLOCK_DISTORTION))
+            {
+                CORE_ASSERT_TRUE_S(distortionParams.mMapForward);
+                res = distortionParams.mapForward(res);
+            }
             Vector2dd diff = res - ptp.projection;
 
             out[idx++] = diff.x();
@@ -98,6 +110,19 @@ int FlatPatternCalibrator::getInputNum() const
 
     input += 7 * (int)N;
     input++;
+
+    if (!!(constraints & CameraConstraints::UNLOCK_DISTORTION))
+    {
+        int polyDeg = distortionEstimationParams.mPolinomDegree;
+        if (distortionEstimationParams.mEvenPowersOnly)
+            polyDeg /= 2;
+        input += polyDeg;
+        if (distortionEstimationParams.mEstimateTangent)
+            input += 2;
+        if (distortionEstimationParams.mEstimateCenter)
+            input += 2;
+    }
+
     IFNOT(UNLOCK_YSCALE, input--);
     return input;
 }
@@ -206,10 +231,40 @@ void FlatPatternCalibrator::readParams(const double in[])
         for (int j = 0; j < 4; ++j)
         {
             GET_PARAM(locationData[i].orientation[j]);
+        }
             locationData[i].orientation.normalise();
         }
-    }
     IF_GET_PARAM(UNLOCK_YSCALE, factor);
+    if (!!(constraints & CameraConstraints::UNLOCK_DISTORTION))
+    {
+        distortionParams.mMapForward = true;
+        int polyDeg = distortionEstimationParams.mPolinomDegree;
+        distortionParams.mKoeff.resize(polyDeg);
+        for (auto& k: distortionParams.mKoeff)
+            k = 0.0;
+        int degStart = 0, degIncrement = 1;
+        if (distortionEstimationParams.mEvenPowersOnly)
+        {
+            polyDeg /= 2;
+            degStart = 1;
+            degIncrement = 2;
+    }
+        for (int i = 0; i < polyDeg; ++i, degStart += degIncrement)
+        {
+            GET_PARAM(distortionParams.mKoeff[degStart]);
+        }
+        if (distortionEstimationParams.mEstimateTangent)
+        {
+            GET_PARAM(distortionParams.mTangentialX);
+            GET_PARAM(distortionParams.mTangentialY);
+        }
+        if (distortionEstimationParams.mEstimateCenter)
+        {
+            GET_PARAM(distortionParams.mPrincipalX);
+            GET_PARAM(distortionParams.mPrincipalY);
+        }
+
+    }
     CORE_ASSERT_TRUE_S(argin == getInputNum());
 #undef GET_PARAM
 #undef IF_GET_PARAM
@@ -247,6 +302,34 @@ void FlatPatternCalibrator::writeParams(double out[])
         }
     }
     IF_SET_PARAM(UNLOCK_YSCALE, factor);
+    if (!!(constraints & CameraConstraints::UNLOCK_DISTORTION))
+    {
+        distortionParams.mMapForward = true;
+        int polyDeg = distortionEstimationParams.mPolinomDegree;
+        distortionParams.mKoeff.resize(polyDeg);
+        int degStart = 0, degIncrement = 1;
+        if (distortionEstimationParams.mEvenPowersOnly)
+        {
+            polyDeg /= 2;
+            degStart = 1;
+            degIncrement = 2;
+        }
+        for (int i = 0; i < polyDeg; ++i, degStart += degIncrement)
+        {
+            SET_PARAM(distortionParams.mKoeff[degStart]);
+        }
+        if (distortionEstimationParams.mEstimateTangent)
+        {
+            SET_PARAM(distortionParams.mTangentialX);
+            SET_PARAM(distortionParams.mTangentialY);
+        }
+        if (distortionEstimationParams.mEstimateCenter)
+        {
+            SET_PARAM(distortionParams.mPrincipalX);
+            SET_PARAM(distortionParams.mPrincipalY);
+        }
+
+    }
     CORE_ASSERT_TRUE_S(argout == getInputNum());
 }
 
@@ -271,6 +354,9 @@ void FlatPatternCalibrator::LMCostFunction::operator() (const double in[], doubl
 void FlatPatternCalibrator::refineGuess(int LMiterations)
 {
     std::vector<double> in(getInputNum()), out(getOutputNum());
+    distortionParams.mPrincipalX = intrinsics.cx();
+    distortionParams.mPrincipalY = intrinsics.cy();
+    distortionParams.mNormalizingFocal = !intrinsics.principal;
     writeParams(&in[0]);
 
     LevenbergMarquardt levmar(LMiterations);

@@ -9,6 +9,8 @@
 #include "convexPolyhedron.h"
 #include "pointObservation.h"
 #include "selectableGeometryFeatures.h"
+#include "essentialMatrix.h"
+#include "distortionApplicationParameters.h"
 
 /* Future derived */
 //#include "rgb24Buffer.h"
@@ -191,9 +193,18 @@ public:
     {}
 
 
+    template <bool full=false>
     Vector2dd project(const Vector3dd &p) const
     {
-        return intrinsics.project(extrinsics.project(p));
+        auto v = intrinsics.project(extrinsics.project(p));
+        if (full)
+            return distortion.mapForward(v);
+        return v;
+    }
+
+    Vector2dd project(const Vector3dd &p, bool full) const
+    {
+        return full ? project<true>(p) : project<false>(p);
     }
 
     Vector2dd reprojectionError(PointObservation &observation)
@@ -213,6 +224,10 @@ public:
     {
         return extrinsics.project(p);
     }
+
+    Matrix33 fundamentalTo(const CameraModel &right) const;
+    Matrix33 essentialTo  (const CameraModel &right) const;
+    EssentialDecomposition essentialDecomposition(const CameraModel &right) const;
 
     /**
      * Only checks for the fact that point belongs to viewport.
@@ -235,6 +250,12 @@ public:
     {
         return ((pt - extrinsics.position) & forwardDirection()) > 0;
     }
+
+    /**
+     * Setups intrinsics.size and modifies distortion shift/scale
+     * in a proper way
+     */
+    void estimateUndistortedSize(const DistortionApplicationParameters &applicationParams);
 
     Ray3d               rayFromPixel(const Vector2dd &point);
     Ray3d               rayFromCenter();

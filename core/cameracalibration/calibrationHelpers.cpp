@@ -104,7 +104,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const Photostation &ps, double sc
         AbstractPainter<Mesh3D> p(&mesh);
         mesh.mulTransform(Matrix44::Shift(ps.location.shift) * Matrix44::Scale(scale / 22.0));
         mesh.setColor(RGBColor::Blue());
-        p.drawFormatVector(1.0, 1.0, 0, 1.0, "%s", ps.name.c_str());
+    p.drawFormatVector(scale / 5.0, scale / 5.0, 0, scale / 3.0, "%s", ps.name.c_str());
         mesh.popTransform();
     }
 }
@@ -191,7 +191,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const SceneFeaturePoint &fp, doub
                 mesh.addLine(rawCam.extrinsics.position, fp.position);
             } else {
 
-            }
+}
 
             Ray3d ray = rawCam.rayFromPixel(observ.observation);
             Vector3dd p2 = ray.getPoint(scale);

@@ -5,9 +5,7 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 
-#include "jsonGetter.h"
-
-JSONGetter::JSONGetter(const QString &fileName)
+void JSONGetter::init(const char *fileName)
 {
     mFileName = fileName;
     QFile file(mFileName);
@@ -26,7 +24,7 @@ JSONGetter::JSONGetter(const QString &fileName)
         file.close();
     }
     else {
-        qDebug() << "Can't open file <" << mFileName << ">";
+        qDebug() << "Can't open file <" << QSTR_DATA_PTR(mFileName) << ">";
     }
 
     mNodePath.push_back(object);

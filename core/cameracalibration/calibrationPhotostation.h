@@ -17,13 +17,16 @@ namespace corecvs {
 
 enum class CameraConstraints
 {
-    NONE           =  0x00,
-    ZERO_SKEW      =  0x01, // This forces skew to zero, but not locks it to zero during non-linear optimization
-    LOCK_SKEW      =  0x02, // This one locks skew, but not forces it to zero
-    EQUAL_FOCAL    =  0x04, // Makes fx = fy in non-linear phase
-    LOCK_FOCAL     =  0x08, // Locks fx and fy
-    LOCK_PRINCIPAL =  0x10, // Locks cx and cy
-    UNLOCK_YSCALE  =  0x20  // Unlock Y scale of pattern. This is dangerous if you are not sure what are you doing
+    NONE              =  0x00,
+    ZERO_SKEW         =  0x01, // This forces skew to zero, but not locks it to zero during non-linear optimization
+    LOCK_SKEW         =  0x02, // This one locks skew, but not forces it to zero
+    EQUAL_FOCAL       =  0x04, // Makes fx = fy in non-linear phase
+    LOCK_FOCAL        =  0x08, // Locks fx and fy
+    LOCK_PRINCIPAL    =  0x10, // Locks cx and cy
+    UNLOCK_YSCALE     =  0x20, // Unlock Y scale of pattern. This is dangerous if you are not sure what are you doing
+    UNLOCK_DISTORTION =  0x40, // Allow estimation of distortion parameters
+    // Not used now
+    LOCK_PRINCIPALS   =  0x80  // Force equivalence of distortion and projective principal points (works only with UNLOCK_DISTORTION)
 };
 
 } // namespace corecvs
@@ -125,6 +128,14 @@ public:
             if (isVisible(pt, i))
                 return true;
         return false;
+    }
+
+    std::pair<corecvs::Vector3dd, corecvs::Vector3dd>
+    createNonCentralReference(int cameraId, corecvs::Vector2dd &projection)
+    {
+        auto c = getRawCamera(cameraId);
+        auto d = c.rayFromPixel(projection).a.normalised();
+        return std::make_pair(c.extrinsics.position, d);
     }
 
 

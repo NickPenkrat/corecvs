@@ -18,7 +18,7 @@ class Polynomial : protected std::vector<double>
 {
 public:
     double&  operator[](const size_t &power);
-    double operator[](const size_t &power) const;
+    double   operator[](const size_t &power) const;
     const double* data() const;
     /*
      * Horner-scheme evaluator

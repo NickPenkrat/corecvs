@@ -126,9 +126,120 @@ int LensDistortionModelParameters::staticInit()
           "Normalizing Focal"
         )
     );
+    fields().push_back(
+        new DoubleField
+        (
+          LensDistortionModelParameters::SHIFTX_ID,
+          offsetof(LensDistortionModelParameters, mShiftX),
+          0,
+          "Shift X",
+          "Shift X",
+          "Shift X"
+        )
+    );
+    fields().push_back(
+        new DoubleField
+        (
+          LensDistortionModelParameters::SHIFTY_ID,
+          offsetof(LensDistortionModelParameters, mShiftY),
+          0,
+          "Shift Y",
+          "Shift Y",
+          "Shift Y"
+        )
+    );
+    fields().push_back(
+        new BoolField
+        (
+          LensDistortionModelParameters::MAP_FORWARD_ID,
+          offsetof(LensDistortionModelParameters, mMapForward),
+          false,
+          "Map forward",
+          "Map forward",
+          "True if maps from undistorted to distorted"
+        )
+    );
    return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END
 
+void LensDistortionModelParameters::getInscribedImageRect(const Vector2dd &tlDistorted, const Vector2dd &drDistorted, Vector2dd &tlUndistorted, Vector2dd &drUndistorted) const
+{
+    std::vector<corecvs::Vector2dd> boundaries[4];
+    getRectMap(tlDistorted, drDistorted, boundaries);
 
+    tlUndistorted = mapBackward(tlDistorted);
+    drUndistorted = mapBackward(drDistorted);
+
+    for (auto& v: boundaries[0])
+        if (v[1] > tlUndistorted[1])
+            tlUndistorted[1] = v[1];
+    for (auto& v: boundaries[2])
+        if (v[1] < drUndistorted[1])
+            drUndistorted[1] = v[1];
+    for (auto& v: boundaries[1])
+        if (v[0] > tlUndistorted[0])
+            tlUndistorted[0] = v[0];
+    for (auto& v: boundaries[3])
+        if (v[0] < drUndistorted[0])
+            drUndistorted[0] = v[0];
+}
+
+void LensDistortionModelParameters::getCircumscribedImageRect(const Vector2dd &tlDistorted, const Vector2dd &drDistorted, Vector2dd &tlUndistorted, Vector2dd &drUndistorted) const
+{
+    std::vector<corecvs::Vector2dd> boundaries[4];
+    getRectMap(tlDistorted, drDistorted, boundaries);
+
+    tlUndistorted = mapBackward(tlDistorted);
+    drUndistorted = mapBackward(drDistorted);
+
+    for (auto& v: boundaries[0])
+        if (v[1] < tlUndistorted[1])
+            tlUndistorted[1] = v[1];
+    for (auto& v: boundaries[2])
+        if (v[1] > drUndistorted[1])
+            drUndistorted[1] = v[1];
+    for (auto& v: boundaries[1])
+        if (v[0] < tlUndistorted[0])
+            tlUndistorted[0] = v[0];
+    for (auto& v: boundaries[3])
+        if (v[0] > drUndistorted[0])
+            drUndistorted[0] = v[0];
+}
+
+void LensDistortionModelParameters::getRectMap(const Vector2dd &tl, const Vector2dd &dr, std::vector<Vector2dd> boundaries[4]) const
+{
+    Vector2dd shifts[] =
+    {
+        Vector2dd(1, 0),
+        Vector2dd(0, 1),
+        Vector2dd(1, 0),
+        Vector2dd(0, 1)
+    };
+    Vector2dd origins[] =
+    {
+        tl,
+        tl,
+        Vector2dd(tl[0], dr[1]),
+        Vector2dd(dr[0], tl[1])
+    };
+    int steps[] =
+    {
+        (int)std::ceil(dr[0] - tl[0]) + 1,
+        (int)std::ceil(dr[1] - tl[1]) + 1,
+        (int)std::ceil(dr[0] - tl[0]) + 1,
+        (int)std::ceil(dr[1] - tl[1]) + 1
+    };
+
+    for (int i = 0; i < 4; ++i)
+    {
+        boundaries[i].resize(steps[i]);
+        auto& boundary = boundaries[i];
+        auto& shift    = shifts[i];
+        auto& origin   = origins[i];
+        auto& step     = steps[i];
+        for (int j = 0; j < step; ++j)
+            boundary[j] = mapBackward(origin + j * shift);
+    }
+}

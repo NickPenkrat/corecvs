@@ -6,14 +6,14 @@
 #include <queue>
 #include <algorithm>
 
-PhotoStationCalibrator::PhotoStationCalibrator(CameraConstraints constraints, const double lockFactor) : factor(lockFactor), N(0), M(0), K(0), L(0), constraints(constraints)
+PhotoStationCalibrator::PhotoStationCalibrator(CameraConstraints constraints, const LineDistortionEstimatorParameters &distortionParameters, const double lockFactor) : factor(lockFactor), N(0), M(0), K(0), L(0), constraints(constraints), distortionEstimationParams(distortionParameters)
 {
 }
 
-void PhotoStationCalibrator::addCamera(PinholeCameraIntrinsics &intrinsics)
+void PhotoStationCalibrator::addCamera(PinholeCameraIntrinsics &intrinsics, const LensDistortionModelParameters &distortion)
 {
     N++;
-    relativeCameraPositions.push_back({intrinsics, CameraLocationData()});
+    relativeCameraPositions.emplace_back(intrinsics, CameraLocationData(), distortion);
 }
 
 
@@ -133,6 +133,17 @@ int PhotoStationCalibrator::getInputNum() const
                 input++));
     IFNOT(LOCK_PRINCIPAL, input += 2);
     IFNOT(LOCK_SKEW, IFNOT(ZERO_SKEW, input++));
+    if (!!(constraints & CameraConstraints::UNLOCK_DISTORTION))
+    {
+        int polyDeg = distortionEstimationParams.mPolinomDegree;
+        if (distortionEstimationParams.mEvenPowersOnly)
+            polyDeg /= 2;
+        input += polyDeg;
+        if (distortionEstimationParams.mEstimateTangent)
+            input += 2;
+        if (distortionEstimationParams.mEstimateCenter)
+            input += 2;
+    }
     input = input * N;
     input += M * 7;
     input += (N - 1) * 7;
@@ -189,6 +200,36 @@ void PhotoStationCalibrator::readParams(const double in[])
             }
             toFill.extrinsics.orientation.normalise();
         }
+        if (!!(constraints & CameraConstraints::UNLOCK_DISTORTION))
+        {
+            toFill.distortion.mMapForward = true;
+            int polyDeg = distortionEstimationParams.mPolinomDegree;
+            toFill.distortion.mKoeff.resize(polyDeg);
+            for (auto& k: toFill.distortion.mKoeff)
+                k = 0.0;
+            int degStart = 0, degIncrement = 1;
+            if (distortionEstimationParams.mEvenPowersOnly)
+            {
+                polyDeg /= 2;
+                degStart = 1;
+                degIncrement = 2;
+            }
+            for (int i = 0; i < polyDeg; ++i, degStart += degIncrement)
+            {
+                GET_PARAM(toFill.distortion.mKoeff[degStart]);
+            }
+            if (distortionEstimationParams.mEstimateTangent)
+            {
+                GET_PARAM(toFill.distortion.mTangentialX);
+                GET_PARAM(toFill.distortion.mTangentialY);
+            }
+            if (distortionEstimationParams.mEstimateCenter)
+            {
+                GET_PARAM(toFill.distortion.mPrincipalX);
+                GET_PARAM(toFill.distortion.mPrincipalY);
+            }
+
+        }
     }
     for (int i = 0; i < M; ++i)
     {
@@ -231,6 +272,34 @@ void PhotoStationCalibrator::writeParams(double out[])
             {
                 SET_PARAM(toWrite.extrinsics.orientation[j]);
             }
+        }
+        if (!!(constraints & CameraConstraints::UNLOCK_DISTORTION))
+        {
+            toWrite.distortion.mMapForward = true;
+            int polyDeg = distortionEstimationParams.mPolinomDegree;
+            toWrite.distortion.mKoeff.resize(polyDeg);
+            int degStart = 0, degIncrement = 1;
+            if (distortionEstimationParams.mEvenPowersOnly)
+            {
+                polyDeg /= 2;
+                degStart = 1;
+                degIncrement = 2;
+            }
+            for (int i = 0; i < polyDeg; ++i, degStart += degIncrement)
+            {
+                SET_PARAM(toWrite.distortion.mKoeff[degStart]);
+            }
+            if (distortionEstimationParams.mEstimateTangent)
+            {
+                SET_PARAM(toWrite.distortion.mTangentialX);
+                SET_PARAM(toWrite.distortion.mTangentialY);
+            }
+            if (distortionEstimationParams.mEstimateCenter)
+            {
+                SET_PARAM(toWrite.distortion.mPrincipalX);
+                SET_PARAM(toWrite.distortion.mPrincipalY);
+            }
+
         }
     }
 
