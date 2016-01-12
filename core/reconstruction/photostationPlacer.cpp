@@ -856,9 +856,9 @@ void corecvs::PhotostationPlacer::backprojectAll()
 
 void corecvs::PhotostationPlacer::selectEpipolarInliers(int psA, int psB)
 {
-    for (size_t camA = 0; camA < calibratedPhotostations[psA].cameras.size(); ++camA)
+    for (int camA = 0; camA < (int)calibratedPhotostations[psA].cameras.size(); ++camA)
     {
-        for (size_t camB = 0; camB < calibratedPhotostations[psB].cameras.size(); ++camB)
+        for (int camB = 0; camB < (int)calibratedPhotostations[psB].cameras.size(); ++camB)
         {
             corecvs::Matrix33 F = calibratedPhotostations[psA].getRawCamera(camA).fundamentalTo(calibratedPhotostations[psB].getRawCamera(camB));
             corecvs::EssentialDecomposition E = calibratedPhotostations[psA].getRawCamera(camA).essentialDecomposition(calibratedPhotostations[psB].getRawCamera(camB));
@@ -875,7 +875,6 @@ void corecvs::PhotostationPlacer::selectEpipolarInliers(int psA, int psB)
                 auto pE1 = K1 * p1;
                 auto pE2 = K2 * p2;
 
-
                 corecvs::Line2d lineLeft(F.mulBy2dRight(p2));
                 corecvs::Line2d lineRight(F.mulBy2dLeft(p1));
                 double left = lineLeft.distanceTo(p1);
@@ -883,8 +882,7 @@ void corecvs::PhotostationPlacer::selectEpipolarInliers(int psA, int psB)
                 double sL, sR, foo;
                 E.getScaler(pE1, pE2, sL, sR, foo);
                 if (sL < 0 || sR < 0 || std::max(left, right) > inlierThreshold)
-                    outliers.push_back(i);
-
+                    outliers.push_back((int)i);
             }
 
             remove(psA, camA, psB, camB, outliers);
@@ -1215,7 +1213,7 @@ void corecvs::PhotostationPlacer::remove(int psA, int camA, int psB, int camB, s
         if (idxSkip < (int)idx.size() && idx[idxSkip] == idxCams)
         {
             idxSkip++;
-            skipGlobal.push_back(i);
+            skipGlobal.push_back((int)i);
             idxCams++;
             continue;
         }
