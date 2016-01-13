@@ -5,7 +5,7 @@ FlatPatternCalibrator::FlatPatternCalibrator(const CameraConstraints constraints
     distortionParams.mMapForward = true;
 }
 
-void FlatPatternCalibrator::addPattern(const PatternPoints3d &patternPoints, const CameraLocationData &position)
+void FlatPatternCalibrator::addPattern(const ObservationList &patternPoints, const CameraLocationData &position)
 {
     ++N;
     locationData.push_back(position);
@@ -63,26 +63,26 @@ void FlatPatternCalibrator::getFullReprojectionError(double out[])
 
     for (size_t i = 0; i < N; ++i)
     {
-        auto& R = locationData[i].orientation;
-        R /= R.l2Metric();
-        auto& C = locationData[i].position;
-        auto& pt = points[i];
-        for (auto& ptp: pt)
+        Quaternion& R = locationData[i].orientation;
+        R.normalise();
+        Vector3dd& C = locationData[i].position;
+        ObservationList& pt = points[i];
+        for (PointObservation& ptp: pt)
         {
-            auto pp = ptp.second;
+            Vector3dd pp = ptp.point;
 
             pp[1] *= factor;
 
-            auto res = intrinsics.project(R * (pp - C));
+            Vector2dd res = intrinsics.project(R * (pp - C));
             if (!!(constraints & CameraConstraints::UNLOCK_DISTORTION))
             {
                 CORE_ASSERT_TRUE_S(distortionParams.mMapForward);
                 res = distortionParams.mapForward(res);
             }
-            auto diff = res - ptp.first;
+            Vector2dd diff = res - ptp.projection;
 
-            out[idx++] = diff[0];
-            out[idx++] = diff[1];
+            out[idx++] = diff.x();
+            out[idx++] = diff.y();
         }
     }
 #ifdef PENALIZE_QNORM
@@ -232,8 +232,8 @@ void FlatPatternCalibrator::readParams(const double in[])
         {
             GET_PARAM(locationData[i].orientation[j]);
         }
-        locationData[i].orientation.normalise();
-    }
+            locationData[i].orientation.normalise();
+        }
     IF_GET_PARAM(UNLOCK_YSCALE, factor);
     if (!!(constraints & CameraConstraints::UNLOCK_DISTORTION))
     {
@@ -248,7 +248,7 @@ void FlatPatternCalibrator::readParams(const double in[])
             polyDeg /= 2;
             degStart = 1;
             degIncrement = 2;
-        }
+    }
         for (int i = 0; i < polyDeg; ++i, degStart += degIncrement)
         {
             GET_PARAM(distortionParams.mKoeff[degStart]);
@@ -377,8 +377,8 @@ void FlatPatternCalibrator::computeHomographies()
 
         for (auto& ptp: pts)
         {
-            ptsI.push_back(ptp.first);
-            ptsP.push_back(Vector2dd(ptp.second[0], ptp.second[1]));
+            ptsI.push_back(ptp.projection);
+            ptsP.push_back(ptp.point.xy());
 
         }
 

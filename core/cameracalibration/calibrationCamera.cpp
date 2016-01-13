@@ -240,4 +240,12 @@ void corecvs::CameraModel::estimateUndistortedSize(const DistortionApplicationPa
 }
 
 
+void CameraModel::prettyPrint(std::ostream &out)
+{
+    PrinterVisitor visitor(3, 3, out);
+    cout << "Camera:" << nameId << std::endl;
+    accept(visitor);
+}
+
+
 } // namespace corecvs

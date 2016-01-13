@@ -839,6 +839,15 @@ public:
     }
 
     /**
+     *  This is a helper method that returns the normal of the points
+     *
+     **/
+    static Vector3dd NormalFromPoints(const Vector3dd &p, const Vector3dd &q, const Vector3dd &r)
+    {
+        return (p - q) ^ (p - r);
+    }
+
+    /**
      *  Construct the Plane from 3 points
      *
      *  \f[
@@ -847,7 +856,7 @@ public:
      **/
     static Plane3d FromPoints(const Vector3dd &p, const Vector3dd &q, const Vector3dd &r)
     {
-        return FormNormalAndPoint( (p - q) ^ (p - r), p);
+        return FormNormalAndPoint( NormalFromPoints(p, q, r), p);
     }
 
     /**

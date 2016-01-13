@@ -21,23 +21,32 @@
 #endif
 
 typedef std::array<corecvs::Vector2dd, 2> Rect;
+using std::string;
+using corecvs::ObservationList;
+
 
 struct ImageData
 {
-    std::string              sourceFileName;
-    std::string              undistortedFileName;
-    corecvs::ObservationList sourcePattern;
-    corecvs::ObservationList undistortedPattern;
-    CameraLocationData       location;
+    string              sourceFileName;
+    string              undistortedFileName;
+    ObservationList sourcePattern;
+    ObservationList undistortedPattern;
+    CameraLocationData location;
 
-    double distortionRmse       = -1.0
-         , distortionMaxError   = -1.0
-         , calibrationRmse      = -1.0
-         , calibrationMaxError  = -1.0
-         , singleCameraRmse     = -1.0
-         , singleCameraMaxError = -1.0
-         , fullCameraRmse       = -1.0
-         , fullCameraMaxError   = -1.0;
+    double distortionRmse;
+    double distortionMaxError;
+    double calibrationRmse;
+    double calibrationMaxError;
+    double singleCameraRmse;
+    double singleCameraMaxError;
+    double fullCameraRmse;
+    double fullCameraMaxError;
+
+    ImageData()
+    {
+        DefaultSetter setter;
+        accept(setter);
+    }
 
     template<class VisitorType>
     void accept(VisitorType &visitor)
@@ -67,7 +76,7 @@ struct CalibrationSetupEntry
     void accept(VisitorType &visitor)
     {
         visitor.visit(cameraId, 0, "cameraId");
-        visitor.visit(imageId, 0, "imageId");
+        visitor.visit(imageId , 0, "imageId" );
     }
 };
 
