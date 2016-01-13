@@ -145,6 +145,8 @@ struct ChessBoardCornerDetectorParams
     int nRounds = 3;
     // Meanshift smoothing stdev
     double meanshiftBandwidth = 1.0;
+    // NMS locality threshold
+    int nmsLocality = 20;
 
     template<typename VisitorType>
     void accept(VisitorType &visitor)
@@ -167,6 +169,7 @@ struct ChessBoardCornerDetectorParams
         visitor.visit(patternRadius, &dvf2);
         corecvs::DoubleVectorField dvf3(0, 0, 0, "cornerScores");
         visitor.visit(cornerScores, &dvf3);
+        visitor.visit(nmsLocality, 20, "nmsLocality");
     }
 };
 
