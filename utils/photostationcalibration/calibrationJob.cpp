@@ -27,7 +27,7 @@ bool CalibrationJob::detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::Sel
 void CalibrationJob::fit(int referenceLayerCamerasCount)
 {
     std::vector<int> perm;
-    for (size_t i = 0; i < photostation.cameras.size(); ++i) {
+    for (int i = 0; i < (int)photostation.cameras.size(); ++i) {
         perm.push_back(i);
     }
 
@@ -689,8 +689,7 @@ struct CommonPlaneNormalizer : FunctionArgs
             out[i] = in[i] /  denom;
     }
     CommonPlaneNormalizer() : FunctionArgs(4, 4)
-    {
-    }
+    {}
 };
 
 struct CommonPlaneFunctor : FunctionArgs
@@ -709,9 +708,8 @@ struct CommonPlaneFunctor : FunctionArgs
     corecvs::Photostation* ps;
     std::vector<int> topLayerIdx;
 
-    CommonPlaneFunctor(corecvs::Photostation *ps, std::vector<int> topLayerIdx) : FunctionArgs(4, topLayerIdx.size()), ps(ps), topLayerIdx(topLayerIdx)
-    {
-    }
+    CommonPlaneFunctor(corecvs::Photostation *ps, std::vector<int> topLayerIdx) : FunctionArgs(4, (int)topLayerIdx.size()), ps(ps), topLayerIdx(topLayerIdx)
+    {}
 };
 
 struct CircleFunctor : FunctionArgs
@@ -728,9 +726,8 @@ struct CircleFunctor : FunctionArgs
     }
     std::vector<corecvs::Vector2dd> projections;
 
-    CircleFunctor(std::vector<corecvs::Vector2dd> &topLayerProjections) : FunctionArgs(3, topLayerProjections.size()), projections(topLayerProjections)
-    {
-    }
+    CircleFunctor(std::vector<corecvs::Vector2dd> &topLayerProjections) : FunctionArgs(3, (int)topLayerProjections.size()), projections(topLayerProjections)
+    {}
 };
 
 void CalibrationJob::reorient(const corecvs::Vector3dd T, const corecvs::Quaternion Q)
@@ -742,7 +739,7 @@ void CalibrationJob::reorient(const corecvs::Vector3dd T, const corecvs::Quatern
 
     for (size_t i = 0; i < reoriented.cameras.size(); ++i)
     {
-        reoriented.cameras[i] = reoriented.getRawCamera(i);
+        reoriented.cameras[i] = reoriented.getRawCamera((int)i);
     }
     reoriented.location.rotor = corecvs::Quaternion(0, 0, 0, 1);
     reoriented.location.shift = corecvs::Vector3dd(0, 0, 0);
@@ -762,8 +759,8 @@ void CalibrationJob::reorient(const corecvs::Vector3dd T, const corecvs::Quatern
 
         for (size_t i = 0; i < photostation.cameras.size(); ++i)
         {
-            auto c1 = photostation.getRawCamera(i);
-            auto c2 = photostation.getRawCamera(i);
+            auto c1 = photostation.getRawCamera((int)i);
+            auto c2 = photostation.getRawCamera((int)i);
             CORE_ASSERT_TRUE_S(!(c1.extrinsics.position - c2.extrinsics.position) < 1e-6);
             double df = (c1.extrinsics.orientation ^ c2.extrinsics.orientation.conjugated())[3];
             double ang = std::acos(std::min(1.0, df)) * 2.0;
