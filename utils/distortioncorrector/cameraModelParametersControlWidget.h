@@ -5,6 +5,8 @@
 #include "parametersControlWidgetBase.h"
 #include "lensDistortionModelParameters.h"
 
+#include "calibrationCamera.h"
+
 #include "quaternion.h"
 #include "vector3d.h"
 
@@ -26,8 +28,21 @@ public:
     void getCameraParameters(double &fx, double &fy, double &cx, double &cy, double &skew, corecvs::Vector3dd &pos, corecvs::Quaternion &dir, corecvs::Vector2dd &size, corecvs::Vector2dd &distortedSize);
     void setCameraParameters(double &fx, double &fy, double &cx, double &cy, double &skew, corecvs::Vector3dd &pos, corecvs::Quaternion &dir, corecvs::Vector2dd &size, corecvs::Vector2dd &distortedSize);
 
+
+
+    CameraModel* createParameters() const;
+    void getParameters(CameraModel &params) const;
+    void setParameters(const CameraModel &input);
+    virtual void setParametersVirtual(void *input);
+
+
     virtual void loadParamWidget(WidgetLoader &/*loader*/);
     virtual void saveParamWidget(WidgetSaver  &/*saver*/ );
+
+signals:
+    void valueChanged();
+    void paramsChanged();
+
 
 private:
     void writeUi();

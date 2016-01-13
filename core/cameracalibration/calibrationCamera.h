@@ -155,6 +155,9 @@ struct PinholeCameraIntrinsics
     double  w() const    { return size.x();      }
     double cx() const    { return principal.x(); }
     double cy() const    { return principal.y(); }
+    double fx() const    { return focal.x(); }
+    double fy() const    { return focal.y(); }
+
 };
 
 

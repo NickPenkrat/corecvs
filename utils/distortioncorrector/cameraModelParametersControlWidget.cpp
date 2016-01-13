@@ -111,3 +111,57 @@ void CameraModelParametersControlWidget::saveParamWidget(WidgetSaver &saver)
 
 
 }
+
+/**/
+
+void CameraModelParametersControlWidget::getParameters(CameraModel& params) const
+{
+
+
+
+}
+
+CameraModel *CameraModelParametersControlWidget::createParameters() const
+{
+
+    /**
+     * We should think of returning parameters by value or saving them in a preallocated place
+     **/
+
+
+    CameraModel *result = new CameraModel(
+
+    );
+    return result;
+}
+
+void CameraModelParametersControlWidget::setParameters(const CameraModel &input)
+{
+    // Block signals to send them all at once
+    bool wasBlocked = blockSignals(true);
+    ui->lensDistortionWidget->setParameters(input.distortion);
+
+    ui->spinBoxFocalX->setValue(input.intrinsics.fx());
+    ui->spinBoxFocalY->setValue(input.intrinsics.fy());
+
+    ui->spinBoxCx->setValue(input.intrinsics.cx());
+    ui->spinBoxCy->setValue(input.intrinsics.cy());
+
+    ui->spinBoxSkew->setValue(input.intrinsics.skew);
+
+    ui->spinBoxX->setValue(input.extrinsics.position.x());
+    ui->spinBoxY->setValue(input.extrinsics.position.y());
+    ui->spinBoxZ->setValue(input.extrinsics.position.z());
+
+
+    blockSignals(wasBlocked);
+    emit paramsChanged();
+}
+
+void CameraModelParametersControlWidget::setParametersVirtual(void *input)
+{
+    // Modify widget parameters from outside
+    CameraModel *inputCasted = static_cast<CameraModel *>(input);
+    setParameters(*inputCasted);
+}
+
