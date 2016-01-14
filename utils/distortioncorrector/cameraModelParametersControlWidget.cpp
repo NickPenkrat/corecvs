@@ -129,6 +129,7 @@ CameraModel *CameraModelParametersControlWidget::createParameters() const
      **/
 
 
+
     CameraModel *result = new CameraModel(
 
     );
@@ -153,6 +154,11 @@ void CameraModelParametersControlWidget::setParameters(const CameraModel &input)
     ui->spinBoxY->setValue(input.extrinsics.position.y());
     ui->spinBoxZ->setValue(input.extrinsics.position.z());
 
+    CameraLocationAngles angles = input.extrinsics.getAngles();
+
+    ui->widgetYaw  ->setValue(angles.yaw  ());
+    ui->widgetPitch->setValue(angles.pitch());
+    ui->widgetRoll ->setValue(angles.roll ());
 
     blockSignals(wasBlocked);
     emit paramsChanged();
