@@ -203,7 +203,8 @@ TEST_F(CalibrationTest, testDetectDistChessBoard)
     CORE_ASSERT_TRUE(job.observations[0][0].sourcePattern[0].y() == 0, "Point 0 has wrong position Y");
     CORE_ASSERT_TRUE(job.observations[0][0].sourcePattern[0].z() == 0, "Point 0 has wrong position Z");
 
-    CORE_ASSERT_DOUBLE_EQUAL_EP(job.observations[0][1].sourcePattern[0].v(), 164.79241529168607, 1e-12, ("Point 0 has wrong position V"));
+    std::cout << job.observations[0][1].sourcePattern[0].v() << ", " << job.observations[0][1].sourcePattern[0].u() << std::endl;
+    CORE_ASSERT_DOUBLE_EQUAL_EP(job.observations[0][1].sourcePattern[0].v(), 164.79241529168607, 1e-6, ("Point 0 has wrong position V"));
 }
 
 TEST_F(CalibrationTest, testEstimateDistDistortion)
