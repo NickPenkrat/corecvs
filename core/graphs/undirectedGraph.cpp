@@ -92,7 +92,7 @@ std::vector<std::vector<int>> UndirectedGraph::maximalCliques()
     for (size_t i = 1; i < first.size(); ++i)
         if (!used[i])
         {
-            auto P = getConnectedComponent(i);
+            auto P = getConnectedComponent((int)i);
             if (P.size() < 2)
                 continue;
             std::vector<int> R, X;

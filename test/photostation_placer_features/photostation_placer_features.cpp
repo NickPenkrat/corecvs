@@ -311,10 +311,10 @@ int main()
 	std::cout << "TRACKS: " << pp.tracks.size() << std::endl;
 	int projs = 0;
 	std::unordered_map<int, int> cntp;
-    for(auto&p : pp.tracks)
+    for (auto&p : pp.tracks)
 	{
-		cntp[p.projections.size()]++;
-		projs += p.projections.size();
+        cntp[(int)p.projections.size()]++;
+        projs += (int)p.projections.size();
 		auto proj = p.projections[0];
 		auto col = pp.keyPointColors[proj.photostationId][proj.cameraId][proj.featureId];
 		meshres4.setColor(col);

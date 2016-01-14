@@ -475,8 +475,9 @@ void ChessBoardCornerDetector::computeCost()
 void ChessBoardCornerDetector::runNms()
 {
     std::vector<std::pair<int, int>> cornerCandidates;
-    cost.nonMaximumSupression(5, 0.025, cornerCandidates, 5);
-    for (auto& cc: cornerCandidates) {
+    cost.nonMaximumSupression(nmsLocality, 0.025, cornerCandidates, nmsLocality);
+    for (auto& cc: cornerCandidates)
+    {
         corners.emplace_back(corecvs::Vector2dd(cc.first, cc.second));
     }
 }
