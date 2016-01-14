@@ -9,7 +9,11 @@
 #include "calibrationPhotostation.h"
 #include "reconstructionStructs.h"
 #include "levenmarq.h"
+
+#ifdef WITH_TBB
 #include "tbb/mutex.h"
+#endif
+
 #include "typesafeBitmaskEnums.h"
 
 namespace std
@@ -241,7 +245,9 @@ private:
     std::vector<std::tuple<corecvs::Vector2dd, corecvs::Vector2dd, double>> getCameraMatches(int psA, int camA, int psB, int camB);
     void remove(int psA, int psB, std::vector<int> idx);
     void remove(int psA, int camA, int psB, int camB, std::vector<int> idx);
+#ifdef WITH_TBB
     tbb::mutex mutex;
+#endif
 };
 }
 

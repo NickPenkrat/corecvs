@@ -12,7 +12,9 @@
 #include "pnpSolver.h"
 #include "abstractPainter.h"
 
+#ifdef WITH_TBB
 #include <tbb/task_group.h>
+#endif
 
 #define IFNOT(cond, expr) \
     if (!(optimizationParams & PhotostationPlacerOptimizationType::cond)) \
@@ -923,10 +925,15 @@ void corecvs::PhotostationPlacer::selectEpipolarInliers()
 std::atomic<int> corecvs::PhotostationPlacer::ParallelEssentialFilter::cntr;
 void corecvs::PhotostationPlacer::estimateFirstPair()
 {
+#ifdef WITH_TBB
     tbb::task_group g;
     g.run([=]() { estimatePair(0, 1); });
     g.run([=]() { estimatePair(0, 2); });
     g.wait();
+#else
+    estimatePair(0, 1);
+    estimatePair(0, 2);
+#endif
 
 
     corecvs::Mesh3D meshres;
@@ -1152,7 +1159,9 @@ void corecvs::PhotostationPlacer::filterEssentialRansac(int psA, int camA, int p
         }
         delIdx.push_back(i);
     }
+#ifdef WITH_TBB
     tbb::mutex::scoped_lock(mutex);
+#endif
     remove(psA, camA, psB, camB, delIdx);
 }
 
