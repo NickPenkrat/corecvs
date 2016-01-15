@@ -399,7 +399,7 @@ void ChessBoardCornerDetector::prepareAngleWeight()
 #undef SQR
 
 // XXX: due to distortion removal we can get some black areas.
-// Let us scale image based on 0.05 and 0.95 percentiles
+// Let us scale image based on 0.002 and 0.998 percentiles
 void ChessBoardCornerDetector::scaleImage()
 {
     std::vector<double> values;
@@ -413,8 +413,8 @@ void ChessBoardCornerDetector::scaleImage()
 
     std::sort(values.begin(), values.end());
 
-    double p05 = values[0.05 * values.size()];
-    double p95 = values[0.95 * values.size()];
+    double p05 = values[0.002 * values.size()];
+    double p95 = values[0.998 * values.size()];
     double dp = p95 - p05;
 
     for (int i = 0; i < img.h; ++i)

@@ -182,7 +182,7 @@ private:
     // initalizes kernels for corner detection
     void prepareKernels();
 
-    // scales image to 0.05 .. 0.95 quantiles
+    // scales image to 0.002 .. 0.998 quantiles
     void scaleImage();
     // first order derivative
     void prepareDiff(DpImage &diff, bool du);
