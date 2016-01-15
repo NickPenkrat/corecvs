@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include <random>
+#include <sstream>
 
 #include "featureMatchingPipeline.h"
 #include "essentialEstimator.h"
@@ -11,6 +12,9 @@
 #include "multicameraTriangulator.h"
 #include "pnpSolver.h"
 #include "abstractPainter.h"
+#include "calibrationHelpers.h"
+#include "calibrationLocation.h"
+
 
 #ifdef WITH_TBB
 #include <tbb/task_group.h>
@@ -917,11 +921,6 @@ void corecvs::PhotostationPlacer::selectEpipolarInliers()
     }
 }
 
-#include "calibrationHelpers.h"
-#include "calibrationLocation.h"
-#include "mesh3d.h"
-#include <sstream>
-
 std::atomic<int> corecvs::PhotostationPlacer::ParallelEssentialFilter::cntr;
 void corecvs::PhotostationPlacer::estimateFirstPair()
 {
@@ -935,30 +934,7 @@ void corecvs::PhotostationPlacer::estimateFirstPair()
     estimatePair(0, 2);
 #endif
 
-
-    corecvs::Mesh3D meshres;
-    meshres.switchColor(true);
-    corecvs::Vector3dd meanpos(0, 0, 0);
-    for (int i = 0; i < 3; ++i)
-    {
-        meanpos += calibratedPhotostations[i].location.shift * (1.0 / 3);
-    }
-    for (int i = 0; i < 3; ++i)
-    {
-        std::stringstream ss;
-        ss << "SP" << ((char)('A' + i));
-        corecvs::Photostation ps = calibratedPhotostations[i];
-        ps.location.shift -= meanpos;
-        ps.location.shift *= 1e3;
-        for (size_t j = 0; j < ps.cameras.size(); ++j)
-            ps.cameras[j].extrinsics.position *= 1e3;
-        ps.name = ss.str();
-
-        CalibrationHelpers().drawPly(meshres, ps, 50.0);
-    }
-    meshres.dumpPLY("triples_before_reorient.ply");
-
-
+    dumpMesh("triples_before_reorient.ply");
 
     auto q = detectOrientationFirst();
     for (int psA = 0; psA < 3; ++psA)
@@ -1450,4 +1426,67 @@ std::vector<PointObservation__> corecvs::PhotostationPlacer::projectToAll(const 
         }
     }
     return ret;
+}
+
+void corecvs::PhotostationPlacer::fullRun()
+{
+    detectAll();
+    filterEssentialRansac();
+    estimateFirstPair();
+
+    buildTracks(0, 1, 2);
+	fit();
+	buildTracks(0, 1, 2);
+
+	for (int i = 3; i < (int)calibratedPhotostations.size(); ++i)
+	{
+        appendPs();
+        for (int j = 0; j < i; ++j)
+            for (int k = j + 1; k < i; ++k)
+                buildTracks(j, k, i);
+	}
+	fit(PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS, 10000);
+}
+
+corecvs::Mesh3D corecvs::PhotostationPlacer::dumpMesh(const std::string &filename, bool drawTracks, bool center)
+{
+    corecvs::Mesh3D meshres;
+    meshres.switchColor(true);
+    corecvs::Vector3dd meanpos(0, 0, 0);
+    if (center)
+    {
+        for (int i = 0; i < placed; ++i)
+        {
+            meanpos += calibratedPhotostations[i].location.shift * (1.0 / placed);
+        }
+    }
+    for (int i = 0; i < placed; ++i)
+    {
+        corecvs::Photostation ps = calibratedPhotostations[i];
+        for (size_t j = 0; j < ps.cameras.size(); ++j)
+            ps.cameras[j].extrinsics.position *= 1e3;
+        ps.location.shift -= meanpos;
+        ps.location.shift *= 1e3;
+
+        CalibrationHelpers().drawPly(meshres, ps, 50.0);
+    }
+    if (drawTracks)
+    {
+        size_t projs = 0;
+        std::map<int, int> cntp;
+        std::cout << "TRACKS: " << tracks.size() << std::endl;
+        for(auto&p : tracks)
+        {
+            cntp[p.projections.size()]++;
+            projs += p.projections.size();
+            auto proj = p.projections[0];
+            auto col = keyPointColors[proj.photostationId][proj.cameraId][proj.featureId];
+            meshres.setColor(col);
+            meshres.addPoint((p.worldPoint-meanpos) * 1e3);
+        }
+        std::cout << "Total " << projs << " projections" << std::endl;
+        for (auto& p : cntp)
+            std::cout << p.first << ": " << p.second << std::endl;
+    }
+    meshres.dumpPLY(filename);
 }

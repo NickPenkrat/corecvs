@@ -9,6 +9,7 @@
 #include "calibrationPhotostation.h"
 #include "reconstructionStructs.h"
 #include "levenmarq.h"
+#include "mesh3d.h"
 
 #ifdef WITH_TBB
 #include "tbb/mutex.h"
@@ -142,6 +143,8 @@ struct PhotostationPlacerParams
 class PhotostationPlacer : PhotostationPlacerFeatureParams, PhotostationPlacerEssentialFilterParams, PhotostationPlacerFeatureSelectionParams, PhotostationPlacerParams
 {
 public:
+    void fullRun();
+    corecvs::Mesh3D dumpMesh(const std::string &filename, bool drawTracks = false, bool center = true);
     void detectAll();
     void filterEssentialRansac();
     void estimateFirstPair();
