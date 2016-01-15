@@ -21,7 +21,9 @@ include($$UTILSDIR/utils.pri)                      # it uses UTILSDIR, TARGET an
 
 QT += gui
 
-CONFIG +=  with_filters with_widgets
+# TODO: split this huge project into parts by these keys: utils, utils_gui?
+CONFIG += with_filters
+CONFIG += with_widgets
 
 HEADERS += \    
     frames.h \
@@ -138,12 +140,45 @@ SOURCES += \
 
 
 # =============================================================
-
 with_filters {
+include($$UTILSDIR/filters/ui/filterWidgets.pri)
+    CONFIG += with_widgets
+
+
+HEADERS += \
+    filters/filterSelector.h \
+    filters/filterExecuter.h \
+    filters/filterParametersControlWidgetBase.h \
+    filters/openCVFilter.h \
+    \
+    filters/graph/filterBlockPresentation.h \
+    filters/graph/diagramitem.h \
+    filters/graph/diagramscene.h \
+    filters/graph/arrow.h \
+    filters/graph/diagramtextitem.h \
+    \
+    filters/graph/filterGraphPresentation.h \
+
+SOURCES += \
+    filters/filterSelector.cpp \
+    filters/filterExecuter.cpp \
+    filters/openCVFilter.cpp \
+    \
+    filters/graph/filterBlockPresentation.cpp \
+    filters/graph/diagramitem.cpp \
+    filters/graph/arrow.cpp \
+    filters/graph/diagramtextitem.cpp \
+    filters/graph/diagramscene.cpp \
+    \
+    filters/graph/filterGraphPresentation.cpp \
+
+FORMS += \
+    filters/filterSelector.ui \
+    \
+    filters/graph/filterGraphPresentation.ui \
 
 HEADERS += \
     filters/graph/filterPinPresentation.h \
-    filters/graph/filterGraphPresentation.h \
     filters/graph/filterPresentationsCollection.h \
     filters/graph/inputBlockPresentation.h \
     filters/graph/outputBlockPresentation.h \
@@ -154,7 +189,6 @@ HEADERS += \
 
 SOURCES += \
     filters/graph/filterPinPresentation.cpp \
-    filters/graph/filterGraphPresentation.cpp \
     filters/graph/filterPresentationsCollection.cpp \
     filters/graph/inputBlockPresentation.cpp \
     filters/graph/outputBlockPresentation.cpp \
@@ -164,9 +198,9 @@ SOURCES += \
 
 }
 
+
 with_widgets {
 
-include($$UTILSDIR/filters/ui/filterWidgets.pri)
 include($$UTILSDIR/corestructs/coreWidgets/coreWidgets.pri)
 
 
@@ -183,16 +217,16 @@ HEADERS += \
     matrixwidget.h \
     distortioncorrector/distortionWidget.h \
     \
-    filters/filterSelector.h \
-    filters/filterExecuter.h \
-    filters/filterParametersControlWidgetBase.h \
-    filters/openCVFilter.h \
+#    filters/filterSelector.h \
+#    filters/filterExecuter.h \
+#    filters/filterParametersControlWidgetBase.h \
+#    filters/openCVFilter.h \
     \
-    filters/graph/filterBlockPresentation.h \
-    filters/graph/diagramitem.h \
-    filters/graph/diagramscene.h \
-    filters/graph/arrow.h \
-    filters/graph/diagramtextitem.h \
+#    filters/graph/filterBlockPresentation.h \
+#    filters/graph/diagramitem.h \
+#    filters/graph/diagramscene.h \
+#    filters/graph/arrow.h \
+#    filters/graph/diagramtextitem.h \
     \
     corestructs/libWidgets/openCVBMParameters.h \
     corestructs/libWidgets/openCVSGMParameters.h \
@@ -242,15 +276,15 @@ SOURCES += \
     matrixwidget.cpp \
     distortioncorrector/distortionWidget.cpp \
     \
-    filters/filterSelector.cpp \
-    filters/filterExecuter.cpp \
-    filters/openCVFilter.cpp \
+#    filters/filterSelector.cpp \
+#    filters/filterExecuter.cpp \
+#    filters/openCVFilter.cpp \
     \
-    filters/graph/filterBlockPresentation.cpp \
-    filters/graph/diagramitem.cpp \
-    filters/graph/arrow.cpp \
-    filters/graph/diagramtextitem.cpp \
-    filters/graph/diagramscene.cpp \
+#    filters/graph/filterBlockPresentation.cpp \
+#    filters/graph/diagramitem.cpp \
+#    filters/graph/arrow.cpp \
+#    filters/graph/diagramtextitem.cpp \
+#    filters/graph/diagramscene.cpp \
     \
     corestructs/libWidgets/openCVBMParameters.cpp \
     corestructs/libWidgets/openCVSGMParameters.cpp \
@@ -304,7 +338,7 @@ FORMS += \
     corestructs/libWidgets/openCVBMParametersControlWidget.ui \
     corestructs/libWidgets/openCVSGMParametersControlWidget.ui \
     \
-    filters/filterSelector.ui \
+#    filters/filterSelector.ui \
     \
     \
     camcalc/cameraCalculatorWidget.ui \
@@ -343,42 +377,12 @@ unix:!macx:!win32 {
 
 }
 
-with_graphs {
 
-HEADERS += \
-    filters/filterSelector.h \
-    filters/filterExecuter.h \
-    filters/filterParametersControlWidgetBase.h \
-    filters/openCVFilter.h \
-    \
-    filters/graph/filterBlockPresentation.h \
-    filters/graph/diagramitem.h \
-    filters/graph/diagramscene.h \
-    filters/graph/arrow.h \
-    filters/graph/diagramtextitem.h \
-
-SOURCES += \
-    filters/filterSelector.cpp \
-    filters/filterExecuter.cpp \
-    filters/openCVFilter.cpp \
-    \
-    filters/graph/filterBlockPresentation.cpp \
-    filters/graph/diagramitem.cpp \
-    filters/graph/arrow.cpp \
-    filters/graph/diagramtextitem.cpp \
-    filters/graph/diagramscene.cpp \
-
-FORMS += \
-    filters/filterSelector.ui \
-    filters/graph/filterGraphPresentation.ui \
-
-}
 
 with_opengl {
     DEPENDPATH  += opengl
     DEPENDPATH  += uis/cloudview
     INCLUDEPATH += uis/cloudview
-
 
     HEADERS     += opengl/openGLTools.h
     SOURCES     += opengl/openGLTools.cpp
@@ -402,6 +406,8 @@ with_opengl {
          3d/generated/draw3dViMouseParameters.h \
          3d/mesh3DScene.h \
          3d/coordinateFrame.h \
+         \
+
 
     SOURCES     += \
         3d/scene3D.cpp \
@@ -488,7 +494,6 @@ with_avcodec {
 with_synccam {
     HEADERS += \
         framesources/syncCam/syncCamerasCaptureInterface.h \
-
 
     SOURCES += \
         framesources/syncCam/syncCamerasCaptureInterface.cpp \
