@@ -1434,12 +1434,17 @@ void corecvs::PhotostationPlacer::fullRun()
     filterEssentialRansac();
     estimateFirstPair();
 
+    std::cout << "PRETRACK" << std::endl;
     buildTracks(0, 1, 2);
+    std::cout << "POSTTRACK1" << std::endl;
 	fit();
+    std::cout << "POSTFIT1" << std::endl;
 	buildTracks(0, 1, 2);
+    std::cout << "POSTTRACK2" << std::endl;
 
 	for (int i = 3; i < (int)calibratedPhotostations.size(); ++i)
 	{
+
         appendPs();
         for (int j = 0; j < i; ++j)
             for (int k = j + 1; k < i; ++k)
@@ -1489,4 +1494,5 @@ corecvs::Mesh3D corecvs::PhotostationPlacer::dumpMesh(const std::string &filenam
             std::cout << p.first << ": " << p.second << std::endl;
     }
     meshres.dumpPLY(filename);
+    return meshres;
 }
