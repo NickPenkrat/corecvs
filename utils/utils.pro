@@ -79,9 +79,11 @@ HEADERS += \
     widgets/generated/graphStyle.h \
     \
     configManager.h \
+    \
     corestructs/lockableObject.h \
-    statistics/graphData.h \
     corestructs/g12Image.h \
+    \
+    statistics/graphData.h \
     visitors/jsonGetter.h \
     visitors/jsonSetter.h \
     widgets/vectorWidget.h \
@@ -95,7 +97,9 @@ HEADERS += \
     tablecontrol/rotaryTableMeshModel.h \
     tablecontrol/rotationPlanGenerator.h \
     capture/abstractImageNamer.h \
-    reconstruction/reconstructionSolver.h
+    reconstruction/reconstructionSolver.h \
+    corestructs/cameraModel/affine3dControlWidget.h \
+    corestructs/cameraModel/fixtureControlWidget.h
 
 SOURCES += \
     frames.cpp \
@@ -149,9 +153,11 @@ SOURCES += \
     widgets/generated/graphPlotParameters.cpp \
     \
     configManager.cpp \
+    \
     corestructs/lockableObject.cpp \
-    statistics/graphData.cpp \
     corestructs/g12Image.cpp \
+    \
+    statistics/graphData.cpp \
     visitors/jsonGetter.cpp \
     visitors/jsonSetter.cpp \
     widgets/vectorWidget.cpp \
@@ -165,7 +171,9 @@ SOURCES += \
     tablecontrol/rotaryTableMeshModel.cpp \
     tablecontrol/rotationPlanGenerator.cpp \
     capture/abstractImageNamer.cpp \
-    reconstruction/reconstructionSolver.cpp
+    reconstruction/reconstructionSolver.cpp \
+    corestructs/cameraModel/affine3dControlWidget.cpp \
+    corestructs/cameraModel/fixtureControlWidget.cpp
 
 
 FORMS += \
@@ -174,7 +182,9 @@ FORMS += \
     distortioncorrector/lensDistortionModelParametersControlWidget.ui \
     distortioncorrector/calibrationFeaturesWidget.ui \
     tablecontrol/rotaryTableControlWidget.ui \
-    tablecontrol/rotationPlanGenerator.ui
+    tablecontrol/rotationPlanGenerator.ui \
+    corestructs/cameraModel/affine3dControlWidget.ui \
+    corestructs/cameraModel/fixtureControlWidget.ui
 
 
 # =============================================================
@@ -258,16 +268,6 @@ HEADERS += \
     matrixwidget.h \
     distortioncorrector/distortionWidget.h \
     \
-#    filters/filterSelector.h \
-#    filters/filterExecuter.h \
-#    filters/filterParametersControlWidgetBase.h \
-#    filters/openCVFilter.h \
-    \
-#    filters/graph/filterBlockPresentation.h \
-#    filters/graph/diagramitem.h \
-#    filters/graph/diagramscene.h \
-#    filters/graph/arrow.h \
-#    filters/graph/diagramtextitem.h \
     \
     corestructs/libWidgets/openCVBMParameters.h \
     corestructs/libWidgets/openCVSGMParameters.h \
@@ -275,6 +275,7 @@ HEADERS += \
     corestructs/libWidgets/openCVSGMParametersControlWidget.h \
     \
     corestructs/histogramdialog.h \
+    \
     \
     rectifier/rectifyParametersControlWidget.h \
     \

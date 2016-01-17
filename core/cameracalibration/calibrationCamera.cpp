@@ -8,8 +8,8 @@ int ScenePart::OBJECT_COUNT = 0;
 
 Matrix33 CameraModel::fundamentalTo(const CameraModel &right) const
 {
-    auto K1 = intrinsics.getKMatrix33();
-    auto K2 = right.intrinsics.getKMatrix33();
+    Matrix33 K1 = intrinsics.getKMatrix33();
+    Matrix33 K2 = right.intrinsics.getKMatrix33();
     return K1.inv().transposed() * essentialTo(right) * K2.inv();
 }
 Matrix33 CameraModel::essentialTo  (const CameraModel &right) const
@@ -19,8 +19,8 @@ Matrix33 CameraModel::essentialTo  (const CameraModel &right) const
 
 EssentialDecomposition CameraModel::essentialDecomposition(const CameraModel &right) const
 {
-    auto R =  extrinsics.orientation ^ right.extrinsics.orientation.conjugated();
-    auto T =  extrinsics.orientation * (-extrinsics.position + right.extrinsics.position);
+    Quaternion R =  extrinsics.orientation ^ right.extrinsics.orientation.conjugated();
+    Vector3dd  T =  extrinsics.orientation * (-extrinsics.position + right.extrinsics.position);
     return EssentialDecomposition(R.toMatrix(), T);
 }
 

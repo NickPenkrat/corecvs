@@ -150,7 +150,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const CameraFixture &ps, double s
 void CalibrationHelpers::drawPly(Mesh3D &mesh, const ObservationList &list)
 {
     mesh.currentColor = RGBColor(~0u);
-    for (auto& pt: list)
+    for (const PointObservation& pt: list)
     {
         mesh.addPoint(pt.point);
     }

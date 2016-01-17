@@ -17,6 +17,7 @@ UTILS_INCLUDEPATH = \
     $$UTILSDIR/corestructs/coreWidgets \
     $$UTILSDIR/corestructs/libWidgets \
     $$UTILSDIR/corestructs/parametersMapper \
+    $$UTILSDIR/corestructs/cameraModel \
     $$UTILSDIR/distortioncorrector \                # include isn't used, but need for DEPENDPATH!
     $$UTILSDIR/fileformats \
     $$UTILSDIR/filters \

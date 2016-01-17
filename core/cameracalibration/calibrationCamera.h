@@ -199,7 +199,7 @@ public:
     template <bool full=false>
     Vector2dd project(const Vector3dd &p) const
     {
-        auto v = intrinsics.project(extrinsics.project(p));
+        Vector2dd v = intrinsics.project(extrinsics.project(p));
         if (full)
             return distortion.mapForward(v);
         return v;
@@ -280,6 +280,16 @@ public:
         extrinsics = other.extrinsics;
     }
 
+    void setLocation(const Affine3DQ &location)
+    {
+        extrinsics = CameraLocationData(location);
+    }
+
+    Affine3DQ getAffine() const
+    {
+        return extrinsics.toAffine3D();
+    }
+
     template<class VisitorType>
     void accept(VisitorType &visitor)
     {
@@ -287,6 +297,14 @@ public:
         visitor.visit(extrinsics, CameraLocationData()           , "extrinsics");
         visitor.visit(distortion, LensDistortionModelParameters(), "distortion");
         visitor.visit(nameId,     std::string("")                , "nameId"    );
+    }
+
+
+    friend ostream& operator << (ostream &out, CameraModel &toSave)
+    {
+        PrinterVisitor printer(out);
+        toSave.accept<PrinterVisitor>(printer);
+        return out;
     }
 
     void prettyPrint(std::ostream &out = cout);

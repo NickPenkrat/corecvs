@@ -74,8 +74,8 @@ public:
     Quaternion toQuaternion() const
     {
         return
-            Quaternion::RotationZ(roll()) *
-            Quaternion::RotationY(yaw()) *
+            Quaternion::RotationZ(roll()) ^
+            Quaternion::RotationY(yaw()) ^
             Quaternion::RotationX(pitch());
     }
 
@@ -217,6 +217,8 @@ public:
      *  X' = CR * (X - CT)
      *
      *  X' = CR * X  + (- CR * CT)
+     *
+     *  \attention Generally you don't need to use this function, untill you know exactly that you need it
      *
      **/
     Affine3DQ toMockAffine3D() const
