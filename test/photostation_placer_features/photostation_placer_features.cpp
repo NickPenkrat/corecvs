@@ -168,6 +168,11 @@ int main()
         corecvs::Vector3dd(124.671, 567.081, 164.121),
         corecvs::Vector3dd(146.231, 575.418, 164.191),
     };
+    
+    for (auto& pos: positions)
+        std::cout << pos << " ";
+    std::cout << std::endl;
+
 	corecvs::Vector3dd mp(0, 0, 0);
 	for (int i = 0; i < 9; ++i)
 	{
@@ -179,7 +184,8 @@ int main()
     const int CP = 6;
     char psPrefixes[9] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'};
     
-    std::string prefix = "/hdd_4t/data/roof_v1/roof_1_SP";
+    std::string topconBase(std::getenv("TOPCON_DIR"));
+    std::string prefix = topconBase + "data/tests/reconstruction/GGGGGGGGG/roof_1_SP";
     std::string postfix= "_0deg_undist.jpg";
 
     pp.images.resize(PSN);
@@ -205,7 +211,13 @@ int main()
     CalibrationJob job;
     getter.visit(job, "job");
     auto pois = parsePois(job, "pois_m15.txt",10, true, true);
-    auto pois_proj = parsePois(job, "pois_all.txt",10, true, true);
+    for (auto &p: pois)
+    {
+        std::cout << p.label << " " << p.worldPoint << " ";
+        for (auto &pp: p.projections)
+            std::cout << pp.cameraId << " " << pp.photostationId << " " << pp.projection << " ";
+        std::cout << std::endl;
+    }
 
 	for (auto &o: pois)
 	{
@@ -237,12 +249,18 @@ int main()
     {
         meanpos += pp.calibratedPhotostations[i].location.shift * (1.0 / PSN);
     }
+    double err = 0.0, cnt = 0.0;
     for (size_t i = 0; i < pois.size(); ++i)
 	{
 	    double mindist = 1e100;
 	    for (int j = 0; j < PSN; ++j)
 	        mindist = std::min(mindist, !(pois[i].worldPoint - pp.calibratedPhotostations[j].location.shift));
-	            
+	    if (mindist < 30.0)
+        {
+            auto diff = !(pois[i].worldPoint - res[1][i].worldPoint);
+            err += diff * diff;
+            cnt += 1.0;
+        }
 		std::cout << pois[i].label << pois[i].worldPoint << " | " << res[0][i].worldPoint << " | " << res[1][i].worldPoint << ":" << (pois[i].worldPoint - res[1][i].worldPoint) << " /" << !(pois[i].worldPoint - res[1][i].worldPoint) << "\\ " << " / " << ((!(pois[i].worldPoint - res[1][i].worldPoint) / !(pois[i].worldPoint - meanpos))) * 100.0 << "%  ~ " << !(pois[i].worldPoint - meanpos) << "m //" << mindist << "m" << std::endl;
 		for (size_t j = 0; j < pois[i].projections.size(); ++j)
 		{
@@ -250,6 +268,7 @@ int main()
 		}
 		std::cout << std::endl;
 	}
+    std::cout << "30m new-style rmse error: " << std::sqrt(err / cnt) << std::endl;
     
     for (int i = 0; i < 6; ++i)
     {
@@ -261,8 +280,9 @@ int main()
                                << "(" << !(job.photostation.cameras[i].intrinsics.principal - pp.calibratedPhotostations[0].cameras[i].intrinsics.principal) << "px)"
                                << std::endl;
     }
-
+#if 0
     auto reproj = pp.projectToAll(pois_proj);
     storePois(reproj, "pois_all_proj.txt", "roof_1_", job);
+#endif
     return 0;
 }
