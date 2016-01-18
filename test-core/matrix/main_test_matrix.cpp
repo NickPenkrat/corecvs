@@ -837,6 +837,15 @@ TEST(SparseMatrix, MulMM)
     }
 }
 
+TEST(SparseMatrix, TT)
+{
+    std::vector<double> values = {1.0, 2.0, 3.0, 4.0, 5.0};
+    std::vector<int> columns = {1, 2, 1, 2, 0};
+    std::vector<int> rowPointers = {0, 1, 2, 4, 5};
+    SparseMatrix sm(4, 3, values, columns, rowPointers);
+    std::cout << sm << std::endl << sm.t() << std::endl;
+}
+
 #ifdef WITH_MKL
 #include <mkl.h>
 #endif
@@ -941,6 +950,8 @@ TEST(MatrixTest, ATA)
     auto m = (Matrix)randomSparse(1000, 100, 0.01);
     auto res = m.ata();
     auto res2 = m.t() * m;
+    ASSERT_EQ(res.h, res.w);
+    ASSERT_EQ(res.h, m.h);
     ASSERT_NEAR(((Matrix)res - res2).frobeniusNorm(), 0.0, 1e-9);
 }
 

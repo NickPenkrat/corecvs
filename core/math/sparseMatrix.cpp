@@ -322,6 +322,7 @@ SparseMatrix SparseMatrix::ata() const
 
 SparseMatrix SparseMatrix::t() const
 {
+#if 0
     std::map<std::pair<int, int>, double> map;
     for (int i = 0; i < h; ++i)
     {
@@ -331,6 +332,34 @@ SparseMatrix SparseMatrix::t() const
         }
     }
     return SparseMatrix(w, h, map);
+#else
+    std::vector<int> tRowPointers(w + 1);
+    std::vector<double> tValues(values.size());
+    std::vector<int> tColumns(values.size());
+
+    for (auto& id: tRowPointers)
+        id = 0;
+    tRowPointers[0] = 0;
+    for (int i = 0; i < h; ++i)
+        for (int j = rowPointers[i]; j < rowPointers[i + 1]; ++j)
+            tRowPointers[columns[j]+1]++;
+    for (int i = 0; i < w; ++i)
+        tRowPointers[i + 1] += tRowPointers[i];
+    for (int i = 0; i < h; ++i)
+        for (int j = rowPointers[i]; j < rowPointers[i + 1]; ++j)
+        {
+            int idx = columns[j];
+            tColumns[tRowPointers[idx]] = i;
+            tValues[tRowPointers[idx]] = values[j];
+            tRowPointers[idx]++;
+        }
+    for (int i = w - 1; i >= 1; --i)
+        tRowPointers[i] = tRowPointers[i - 1];
+    tRowPointers[0] = 0;
+    *tRowPointers.rbegin() = tValues.size();
+
+    return SparseMatrix(w, h, tValues, tColumns, tRowPointers);
+#endif
 }
 
 #ifdef WITH_MKL
