@@ -93,6 +93,8 @@
         <file>tractor.png</file>
         <file>radioactivity_drum.png</file>
         <file>transform_rotate.png</file>
+        <file>tree_list.png</file>
+        <file>photostation_save.png</file>
     </qresource>
     <qresource prefix="/new/colors">
         <file>colors/color_blue.png</file>

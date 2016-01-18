@@ -10,13 +10,15 @@
 #include "vector2d.h"
 #include "matrix.h"
 #include "reflection.h"
+#include "convolver/convolver.h"
 
-typedef corecvs::AbstractBuffer<double> DpImage;
-typedef corecvs::AbstractKernel<double> DpKernel;
+using corecvs::DpImage;
+using corecvs::DpKernel;
 
 // Structure that holds oriented corner
 struct OrientedCorner
 {
+
     OrientedCorner(corecvs::Vector2dd pos = corecvs::Vector2dd(0, 0), corecvs::Vector2dd v1 = corecvs::Vector2dd(0, 0), corecvs::Vector2dd v2 = corecvs::Vector2dd(0, 0))
         : pos(pos), v1(v1), v2(v2), score(0.0)
     {
@@ -24,6 +26,7 @@ struct OrientedCorner
 
     corecvs::Vector2dd pos;
     corecvs::Vector2dd v1, v2;
+
     double score;
 
     /*

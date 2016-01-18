@@ -18,8 +18,10 @@ public:
 
     /* Oldstyle */
     template <class Type>
-        void visit(Type &field, Type defaultValue, const char *fieldName);
-
+        void visit(Type &field, Type defaultValue, const char * /*fieldName*/)
+    {
+        field = defaultValue;
+    }
 
     template <typename inputType, typename reflectionType>
         void visit(std::vector<inputType> &/*field*/, const reflectionType * /*fieldDescriptor*/)

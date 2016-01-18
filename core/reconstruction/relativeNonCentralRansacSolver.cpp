@@ -162,7 +162,7 @@ void corecvs::RelativeNonCentralRansacSolver::scoreCurrent()
             if (sL >= 0.0 && sR >= 0.0)
             {
                 currentScores[i]++;
-                currentInliers[i].push_back(j);
+                currentInliers[i].push_back((int)j);
             }
         }
     }

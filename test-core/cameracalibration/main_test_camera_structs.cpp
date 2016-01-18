@@ -258,14 +258,28 @@ TEST(CalibrationStructsTest, testIntrinsicsStructisVisible)
 TEST(CalibrationStructsTest, testStructConversion)
 {
     CameraLocationAngles angles = CameraLocationAngles::FromAngles(45, 10, 2);
-    Quaternion q = Quaternion::FromMatrix(angles.toMatrix());
+    Quaternion q  = Quaternion::FromMatrix(angles.toMatrix());
+    Quaternion q1 = angles.toQuaternion();
+
+
+
     CameraLocationAngles anglesR = CameraLocationAngles::FromQuaternion(q);
     Quaternion qR = Quaternion::FromMatrix(anglesR.toMatrix());
 
     cout << "Original:" << std::endl;
     cout << angles << std::endl;
+    cout << "Quaternion form1:" << std::endl;
     q.printAxisAndAngle();
+
+    cout << "Quaternion form2:" << std::endl;
+    q1.printAxisAndAngle();
     cout << "Restored:" << std::endl;
     cout << anglesR << std::endl;
     qR.printAxisAndAngle();
+
+    ASSERT_TRUE(q.notTooFar(q1, 1e-6));
+    ASSERT_TRUE(q.notTooFar(qR, 1e-6));
+
+
+
 }

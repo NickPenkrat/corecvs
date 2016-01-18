@@ -165,6 +165,13 @@ public:
         this->mapToHypercube(low, high);
     }
 
+    Vector2d mappedToRect(const Vector2d<ElementType> &low, const Vector2d<ElementType> &high)
+    {
+        Vector2d toReturn = *this;
+        toReturn.mapToRect(low, high);
+        return toReturn;
+    }
+
     bool isInRect(const Vector2d<ElementType> &low, const Vector2d<ElementType> &high) const
     {
         return this->isInHypercube(low, high);

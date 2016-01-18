@@ -90,3 +90,20 @@ QString printWindowFlags(const Qt::WindowFlags &flags)
 
     return text;
 }
+
+QString printWindowState(const Qt::WindowStates &state)
+{
+    QString text;
+    if (state == Qt::WindowNoState)
+        text +=" Qt::WindowNoState";	//The window has no state set (in normal state).
+    if (state & Qt::WindowMinimized)
+        text +=" Qt::WindowMinimized";	//The window is minimized (i.e. iconified).
+    if (state & Qt::WindowMaximized)
+        text +=" Qt::WindowMaximized";	//The window is maximized with a frame around it.
+    if (state & Qt::WindowFullScreen)
+        text +=" Qt::WindowFullScreen";	//The window fills the entire screen without any frame around it.
+    if (state & Qt::WindowActive)
+        text +=" Qt::WindowActive";	//The window is the active window, i.e. it has keyboard focus.
+
+    return text;
+}

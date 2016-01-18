@@ -17,6 +17,9 @@ using corecvs::PointerField;
 using corecvs::EnumField;
 using corecvs::DoubleVectorField;
 
+/**
+ *    This class allows to read form JSON file
+ **/
 class JSONGetter
 {
 public:
@@ -53,7 +56,7 @@ public:
     }
 
     /**
-     *  Visitor method that will traverse xml and object tree and fill object with data form xml
+     *  Visitor method that will traverse json and object tree and fill object with data form xml
      *
      **/
     template <class Type>

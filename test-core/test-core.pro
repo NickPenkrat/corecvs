@@ -87,3 +87,5 @@ SOURCES += \
     reconstruction/main_test_reconstruction.cpp \
     meta/main_test_meta.cpp \
     function/main_test_function.cpp \
+    deform/test_deform.cpp \
+    camerafixture/main_test_camerafixture.cpp \

@@ -77,5 +77,6 @@ QDebug & operator<< (QDebug & stream, const Vector2d<int> & vector);
 void setValueBlocking(QDoubleSpinBox *box, double value);
 
 QString printWindowFlags(const Qt::WindowFlags &flags);
+QString printWindowState(const Qt::WindowStates &state);
 
 /* EOF */

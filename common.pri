@@ -236,7 +236,8 @@ isEmpty(CCACHE_TOOLCHAIN_ON) {
   }
 }
 
-!win32-msvc* {
+!win32-msvc* {    
+
     QMAKE_CFLAGS_DEBUG     -= -g
     QMAKE_CXXFLAGS_DEBUG   -= -g
     QMAKE_LFLAGS           -= -g
@@ -246,8 +247,8 @@ isEmpty(CCACHE_TOOLCHAIN_ON) {
 
     QMAKE_CFLAGS_RELEASE   += -O3
     QMAKE_CXXFLAGS_RELEASE += -O3
-#   QMAKE_CFLAGS_RELEASE   += -g3
-#   QMAKE_CXXFLAGS_RELEASE += -g3
+    QMAKE_CFLAGS_RELEASE   += -g3
+    QMAKE_CXXFLAGS_RELEASE += -g3
 #   QMAKE_CFLAGS_RELEASE   += -mtune=native     # TODO: native doesn't work while we could use (SSE & !AVX)
 #   QMAKE_CXXFLAGS_RELEASE += -mtune=native     # TODO: native doesn't work while we could use (SSE & !AVX)
 
