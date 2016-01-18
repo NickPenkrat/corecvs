@@ -342,7 +342,6 @@ void corecvs::PhotostationPlacer::getErrorSummary(PhotostationPlacerOptimization
     Vector3dd rE, rO, errV;
     double a;
     Vector2dd errP;
-    CameraModel cam;
     for (auto& t: tracks)
         for (auto &p : t.projections)
         {
@@ -354,23 +353,20 @@ void corecvs::PhotostationPlacer::getErrorSummary(PhotostationPlacerOptimization
                     totalsqr += (!errP) * (!errP);
                     break;
                 case PhotostationPlacerOptimizationErrorType::CROSS_PRODUCT:
-                    cam = calibratedPhotostations[p.photostationId].getRawCamera(p.cameraId);
-                    rE = cam.rayFromPixel(p.projection).a.normalised();
-                    rO = cam.rayFromPixel(calibratedPhotostations[p.photostationId].project(t.worldPoint, p.cameraId)).a.normalised();
+                    rE = calibratedPhotostations[p.photostationId].rayFromPixel(p.projection, p.cameraId).a.normalised();
+                    rO = calibratedPhotostations[p.photostationId].rayFromPixel(calibratedPhotostations[p.photostationId].project(t.worldPoint, p.cameraId), p.cameraId).a.normalised();
                     errV = rE ^ rO;
                     totalsqr += !errV * !errV;
                     break;
                 case PhotostationPlacerOptimizationErrorType::ANGULAR:
-                    cam = calibratedPhotostations[p.photostationId].getRawCamera(p.cameraId);
-                    rE = cam.rayFromPixel(p.projection).a.normalised();
-                    rO = cam.rayFromPixel(calibratedPhotostations[p.photostationId].project(t.worldPoint, p.cameraId)).a.normalised();
+                    rE = calibratedPhotostations[p.photostationId].rayFromPixel(p.projection, p.cameraId).a.normalised();
+                    rO = calibratedPhotostations[p.photostationId].rayFromPixel(calibratedPhotostations[p.photostationId].project(t.worldPoint, p.cameraId), p.cameraId).a.normalised();
                     a = rE.angleTo(rO) * 180.0 / M_PI;
                     totalsqr += a * a;
                     break;
                 case PhotostationPlacerOptimizationErrorType::RAY_DIFF:
-                    cam = calibratedPhotostations[p.photostationId].getRawCamera(p.cameraId);
-                    rE = cam.rayFromPixel(p.projection).a.normalised();
-                    rO = cam.rayFromPixel(calibratedPhotostations[p.photostationId].project(t.worldPoint, p.cameraId)).a.normalised();
+                    rE = calibratedPhotostations[p.photostationId].rayFromPixel(p.projection, p.cameraId).a.normalised();
+                    rO = calibratedPhotostations[p.photostationId].rayFromPixel(calibratedPhotostations[p.photostationId].project(t.worldPoint, p.cameraId), p.cameraId).a.normalised();
                     errV = rE - rO;
                     totalsqr += !errV * !errV;
                     break;
