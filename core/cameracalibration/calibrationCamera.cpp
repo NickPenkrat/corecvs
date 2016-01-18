@@ -114,7 +114,7 @@ double PinholeCameraIntrinsics::getHFov() const
  *  \param point - a point in image coorinates
  *
  **/
-Ray3d CameraModel::rayFromPixel(const Vector2dd &point)
+Ray3d CameraModel::rayFromPixel(const Vector2dd &point) const
 {
     Vector3dd direction = intrinsics.reverse(point);
     Ray3d ray(extrinsics.orientation.conjugated() * direction, extrinsics.position);

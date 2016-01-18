@@ -110,6 +110,14 @@ public:
         return cameras[cam].project(location.inverted().apply(pt));
     }
 
+    Ray3d rayFromPixel(const Vector2dd &point, int cam) const
+    {
+        auto r = cameras[cam].rayFromPixel(point);
+        r.a = location.rotor * r.a;
+        r.p = location * r.p;
+        return r;
+    }
+
     bool isVisible(const Vector3dd &pt, int cam) const
     {
         return cameras[cam].isVisible(location.inverted().apply(pt));

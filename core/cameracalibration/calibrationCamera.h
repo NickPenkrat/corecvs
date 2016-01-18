@@ -250,7 +250,7 @@ public:
      */
     void estimateUndistortedSize(const DistortionApplicationParameters &applicationParams);
 
-    Ray3d               rayFromPixel(const Vector2dd &point);
+    Ray3d               rayFromPixel(const Vector2dd &point) const;
     Ray3d               rayFromCenter();
 
     Vector3dd           forwardDirection() const;
