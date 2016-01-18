@@ -242,7 +242,7 @@ void AdvancedImageWidget::childRepaint(QPaintEvent* /*event*/, QWidget* childWid
 
     if (mResizeCache != NULL)
     {
-        p.drawImage(mOutputRect.topLeft(), *mResizeCache);      
+        p.drawImage(mOutputRect.topLeft(), *mResizeCache);
     }
     else
     {
@@ -633,6 +633,12 @@ void AdvancedImageWidget::fitToggled()
 void AdvancedImageWidget::setFitWindow(bool flag)
 {
     mUi->fitToWindowCheckBox->setChecked(flag);
+}
+
+void AdvancedImageWidget::setCompactStyle(bool flag)
+{
+    mUi->fitToWindowCheckBox->setIcon(QIcon(":/prefix/new/zoom_extend.png"));
+    mUi->fitToWindowCheckBox->setText("");
 }
 
 void AdvancedImageWidget::childResized (QResizeEvent * /*event*/)

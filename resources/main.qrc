@@ -136,4 +136,8 @@
         <file>our/hyst.png</file>
         <file>our/top.png</file>
     </qresource>
+    <qresource prefix="/new/images">
+        <file>zoom_actual_equal.png</file>
+        <file>zoom_extend.png</file>
+    </qresource>
 </RCC>
