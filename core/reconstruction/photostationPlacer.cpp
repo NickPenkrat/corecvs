@@ -825,7 +825,7 @@ double corecvs::PhotostationPlacer::scoreFundamental(int psA, int camA, corecvs:
 }
 
 
-
+#if 0
 void corecvs::PhotostationPlacer::backprojectAll()
 {
     int idx = 0;
@@ -855,6 +855,7 @@ void corecvs::PhotostationPlacer::backprojectAll()
         }
     }
 }
+#endif
 
 void corecvs::PhotostationPlacer::selectEpipolarInliers(int psA, int psB)
 {
@@ -1021,7 +1022,9 @@ void corecvs::PhotostationPlacer::estimatePair(int psA, int psB)
     best = solver.getBestHypothesis();
     std::cout << psA << "::" << psB << " " << best.shift << " " << best.rotor << std::endl;
     calibratedPhotostations[psB].location = best;
+#if 0
     pairInliers.emplace_back(psA, psB, solver.getBestInliers());
+#endif
 }
 
 void corecvs::PhotostationPlacer::filterEssentialRansac(int psA, int camA, int psB, int camB)
