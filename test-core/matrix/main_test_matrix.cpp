@@ -951,7 +951,7 @@ TEST(MatrixTest, ATA)
     auto res = m.ata();
     auto res2 = m.t() * m;
     ASSERT_EQ(res.h, res.w);
-    ASSERT_EQ(res.h, m.h);
+    ASSERT_EQ(res.h, m.w);
     ASSERT_NEAR(((Matrix)res - res2).frobeniusNorm(), 0.0, 1e-9);
 }
 
