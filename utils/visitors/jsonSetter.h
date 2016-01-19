@@ -90,6 +90,25 @@ public:
         mNodePath.back().insert(arrayName, arrayOuter);
     }
 
+    template <typename innerType>
+    void visit(std::vector<std::vector<innerType>> &fields, QJsonArray &array)
+    {
+        for (size_t i = 0; i < fields.size(); ++i)
+        {
+            QJsonArray arrayInner;
+            visit(fields[i], arrayInner);
+            array.append(arrayInner);
+        }
+    }
+
+    void visit(std::vector<std::string> &fields, QJsonArray &array)
+    {
+        for (size_t i = 0; i < fields.size(); ++i)
+        {
+           array.append(QString::fromStdString(fields[i]));
+        }
+    }
+
     // XXX: Here we hope that either stack is unwinded automatically or it is not too big
     template <typename innerType, typename std::enable_if<!std::is_arithmetic<innerType>::value,int>::type foo = 0>
     void visit(std::vector<innerType> &fields, QJsonArray &array)
@@ -159,6 +178,9 @@ void JSONSetter::visit<std::string>(std::string &stringField, std::string defaul
 
 
 /* New style visitor */
+
+template <>
+void JSONSetter::visit<unsigned char, IntField>(unsigned char &field, const IntField *fieldDescriptor);
 
 template <>
 void JSONSetter::visit<int, IntField>(int &field, const IntField *fieldDescriptor);
