@@ -42,7 +42,7 @@ struct PointObservation__
         visitor.visit(worldPoint,  corecvs::Vector3dd(0.0, 0.0, 0.0), "worldPoint");
         visitor.visit(projections, "projections");
         visitor.visit(updateable,  true, "updateable");
-        visitor.visit(label, std::string(""), std::string("label"));
+        visitor.visit(label, std::string(""), "label");
     }
 };
 struct CameraObservation
