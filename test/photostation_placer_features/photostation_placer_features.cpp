@@ -51,6 +51,12 @@ corecvs::Vector3dd convertVector(const corecvs::Vector3dd& geodesic)
     return vec;
 }
 
+// For easy control over ps number
+const int PSN = 9;
+const int CP = 6;
+corecvs::Vector3dd mp(0, 0, 0);
+
+// Obsolete
 std::vector<PointObservation__> parsePois(CalibrationJob &calibration, const std::string &filename, int camIdOffset = 3, bool distorted = false, bool less10Cams = true)
 {
     std::ifstream ifs;
@@ -115,14 +121,12 @@ std::vector<PointObservation__> parsePois(CalibrationJob &calibration, const std
             }
             proj.cameraId = camId;
             proj.photostationId = psId;
-//    if (psId < 5)
-            projections.push_back(proj);
-             std::cout << "POI: LABEL: " << label << ": CAM: " << filename << " (" << camId << "|" << psId << ")" << proj.projection << std::endl;
+            if (psId < PSN)
+                projections.push_back(proj);
+            std::cout << "POI: LABEL: " << label << ": CAM: " << filename << " (" << camId << "|" << psId << ")" << proj.projection << std::endl;
 
         }
         observation.projections = projections;
-//      if (projections.size())
-//        if (!observation.updateable)
         res.push_back(observation);
     }
 
@@ -148,14 +152,8 @@ void storePois(const std::vector<PointObservation__> &observations, const std::s
     }
 }
 
-int main()
+void setup()
 {
-    init_opencv_detectors_provider();
-    init_opencv_matchers_provider();
-    init_opencv_reader_provider();
-    init_opencv_descriptors_provider();
-    init_opencv_reader_provider();
-
     corecvs::Vector3dd positions[] =
     {
         corecvs::Vector3dd(140.617, 576.200, 164.136),
@@ -168,22 +166,19 @@ int main()
         corecvs::Vector3dd(124.671, 567.081, 164.121),
         corecvs::Vector3dd(146.231, 575.418, 164.191),
     };
-    
+
     for (auto& pos: positions)
         std::cout << pos << " ";
     std::cout << std::endl;
 
-	corecvs::Vector3dd mp(0, 0, 0);
 	for (int i = 0; i < 9; ++i)
 	{
 		mp += positions[i] * (1.0 / 9.0);
 	}
 
     PhotostationPlacer pp;
-   const int PSN = 9;
-    const int CP = 6;
     char psPrefixes[9] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'};
-    
+
     std::string topconBase(std::getenv("TOPCON_DIR"));
     std::string prefix = topconBase + "data/tests/reconstruction/GGGGGGGGG/roof_1_SP";
     std::string postfix= "_0deg_undist.jpg";
@@ -210,19 +205,6 @@ int main()
     JSONGetter getter("calibration.json");
     CalibrationJob job;
     getter.visit(job, "job");
-    auto pois = parsePois(job, "pois_m15.txt",10, true, true);
-    for (auto &p: pois)
-    {
-        std::cout << p.label << " " << p.worldPoint << " ";
-        for (auto &pp: p.projections)
-            std::cout << pp.cameraId << " " << pp.photostationId << " " << pp.projection << " ";
-        std::cout << std::endl;
-    }
-
-	for (auto &o: pois)
-	{
-		std::cout << o.label << " " << o.worldPoint << " " << o.worldPoint - mp << " " << !(o.worldPoint - mp) << std::endl;
-	}
 
     photostation = job.photostation;
     for (size_t i = 0; i < photostation.cameras.size(); ++i)
@@ -238,6 +220,44 @@ int main()
         ss << "SP" << ((char)('A' + i));
         ps.name = ss.str();
     }
+
+    JSONSetter *setter = new JSONSetter("pp.json");
+    setter->visit(pp, "reconstruction data");
+    delete setter;
+}
+
+int main()
+{
+    init_opencv_detectors_provider();
+    init_opencv_matchers_provider();
+    init_opencv_reader_provider();
+    init_opencv_descriptors_provider();
+    init_opencv_reader_provider();
+
+    setup();
+
+    // actually we need only PS
+    JSONGetter ggetter("calibration.json");
+    CalibrationJob job;
+    ggetter.visit(job, "job");
+    auto pois = parsePois(job, "pois_m15.txt",10, true, true);
+    for (auto &p: pois)
+    {
+        std::cout << p.label << " " << p.worldPoint << " ";
+        for (auto &pp: p.projections)
+            std::cout << pp.cameraId << " " << pp.photostationId << " " << pp.projection << " ";
+        std::cout << std::endl;
+    }
+
+	for (auto &o: pois)
+	{
+		std::cout << o.label << " " << o.worldPoint << " " << o.worldPoint - mp << " " << !(o.worldPoint - mp) << std::endl;
+	}
+
+
+    PhotostationPlacer pp;
+    JSONGetter getter("pp.json");
+    getter.visit(pp, "reconstruction data");
 
     pp.fullRun();
 
@@ -269,7 +289,7 @@ int main()
 		std::cout << std::endl;
 	}
     std::cout << "30m new-style rmse error: " << std::sqrt(err / cnt) << std::endl;
-    
+
     for (int i = 0; i < 6; ++i)
     {
         std::cout << i << ": FOCAL:" << job.photostation.cameras[i].intrinsics.focal
@@ -280,6 +300,10 @@ int main()
                                << "(" << !(job.photostation.cameras[i].intrinsics.principal - pp.calibratedPhotostations[0].cameras[i].intrinsics.principal) << "px)"
                                << std::endl;
     }
+
+    JSONSetter *setter2 = new JSONSetter("pp_final.json");
+    setter2->visit(pp, "reconstruction data");
+    delete setter2;
 #if 0
     auto reproj = pp.projectToAll(pois_proj);
     storePois(reproj, "pois_all_proj.txt", "roof_1_", job);
