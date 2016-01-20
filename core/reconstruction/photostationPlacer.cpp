@@ -1137,7 +1137,9 @@ void corecvs::PhotostationPlacer::filterEssentialRansac(int psA, int camA, int p
 #endif
     remove(psA, camA, psB, camB, delIdx);
 }
+#endif
 
+#if 0
 void corecvs::PhotostationPlacer::filterEssentialRansac()
 {
     CORE_ASSERT_TRUE_S(calibratedPhotostations.size() >= 3);
@@ -1159,7 +1161,58 @@ void corecvs::PhotostationPlacer::filterEssentialRansac()
     }
     corecvs::parallelable_for(0, (int)work.size(), ParallelEssentialFilter(this, work));
 }
+#endif
 
+bool corecvs::PhotostationPlacer::initalize()
+{
+    if (scene->state != ReconstructionState::MATCHED)
+        return false;
+    CORE_ASSERT_TRUE_S(scene->placingQueue.size() >= 2);
+    std::unordered_map<PhotostationInitializationType, int> cnt;
+    for (size_t i = 0; i < std::min((size_t)3, scene->placingQueue.size()); ++i)
+        cnt[scene->initializationData[scene->placingQueue[i]].initializationType]++;
+
+    // Gives 6-DoF initialization + 3-view cloud (1)
+    if (cnt[PhotostationInitializationType::GPS] == 3)
+        return initGPS();
+    // Gives 6-DoF initialization + 2-view cloud (16)
+    if (cnt[PhotostationInitializationType::FIXED] >= 1 || cnt[PhotostationInitializationType::STATIC] >= 1)
+    {
+        return cnt[PhotostationInitializationType::FIXED] > cnt[PhotostationInitializationType::STATIC] ? initFIXED() : initSTATIC();
+    }
+    if (cnt[PhotostationInitializationType::GPS] > 0)
+    {
+        // requires DoF estimation on the fly, NIY
+        CORE_ASSERT_TRUE_S(false);
+    }
+    // Gives 0-DoF initialization + 2-view cloud
+    return initNONE();
+}
+
+bool corecvs::PhotostationPlacer::initGPS()
+{
+    return true;
+}
+
+bool corecvs::PhotostationPlacer::initNONE()
+{
+    CORE_ASSERT_TRUE_S(false);
+    return true;
+}
+
+bool corecvs::PhotostationPlacer::initSTATIC()
+{
+    CORE_ASSERT_TRUE_S(false);
+    return true;
+}
+
+bool corecvs::PhotostationPlacer::initFIXED()
+{
+    CORE_ASSERT_TRUE_S(false);
+    return true;
+}
+
+#if 0
 void corecvs::PhotostationPlacer::remove(int psA, int psB, std::vector<int> idx)
 {
     bool swap = psA > psB;
@@ -1335,75 +1388,21 @@ std::vector<std::vector<PointObservation__>> corecvs::PhotostationPlacer::verify
 #endif
 void corecvs::PhotostationPlacer::detectAll()
 {
-#if 0
-    std::vector<std::string> filenames;
-    std::unordered_map<int, std::pair<int, int>> img_map;
-    for (int i = 0; i < (int)images.size(); ++i)
-    {
-        for (int j = 0; j < (int)images[i].size(); ++j)
-        {
-            filenames.push_back(images[i][j]);
-            img_map[(int)filenames.size() - 1] = std::make_pair(i, j);
-        }
-    }
-
-    FeatureMatchingPipeline pipeline(filenames);
-    pipeline.add(new KeyPointDetectionStage(detector), true);
-    pipeline.add(new DescriptorExtractionStage(descriptor), true);
-    pipeline.add(new MatchingPlanComputationStage(), true);
-    pipeline.add(new MatchAndRefineStage(descriptor, matcher, b2bThreshold), true);
-    pipeline.run();
-
-    keyPoints.clear();
-    keyPointColors.clear();
-    keyPoints.resize(calibratedPhotostations.size());
-    keyPointColors.resize(calibratedPhotostations.size());
-
-    for (size_t i = 0; i < keyPoints.size(); ++i)
-    {
-        keyPoints[i].resize(calibratedPhotostations[i].cameras.size());
-        keyPointColors[i].resize(calibratedPhotostations[i].cameras.size());
-    }
-    int N = (int)filenames.size();
-    for (int i = 0; i < N; ++i)
-    {
-        auto& kps = pipeline.images[i].keyPoints.keyPoints;
-        auto id = img_map[i];
-        for (auto& kp: kps)
-        {
-            keyPoints[id.first][id.second].emplace_back(kp.x, kp.y);
-            keyPointColors[id.first][id.second].push_back(kp.color);
-//                std::cout << "R = " << (int)kp.color.r() << " G = " << (int)kp.color.g() << " B = " << (int)kp.color.b() << std::endl;
-        }
-    }
-
-    matches.clear();
-
-    matches.resize(calibratedPhotostations.size());
-    for (size_t i = 0; i < calibratedPhotostations.size(); ++i)
-        matches[i].resize(calibratedPhotostations.size() - i);
-
-    auto& ref = pipeline.refinedMatches.matchSets;
-    for (auto& ms: ref)
-    {
-        auto id1 = img_map[(int)ms.imgA];
-        auto id2 = img_map[(int)ms.imgB];
-        bool swap = id1.first > id2.first;
-        int psIdA = swap ? id2.first : id1.first;
-        int psIdB = swap ? id1.first : id2.first;
-        int camIdA = swap ? id2.second : id1.second;
-        int camIdB = swap ? id1.second : id2.second;
-
-        for(auto& m:ms.matches)
-        {
-            int featureA = swap ? m.featureB : m.featureA;
-            int featureB = swap ? m.featureA : m.featureB;
-            matches[psIdA][psIdB - psIdA].emplace_back(camIdA, featureA, camIdB, featureB, m.best2ndBest);
-        }
-    }
-#else
     scene->detectAllFeatures(FeatureDetectionParams());
-#endif
+    switch(scene->state)
+    {
+        // It's Ok
+        case ReconstructionState::NONE:
+        case ReconstructionState::MATCHED:
+            scene->state = ReconstructionState::MATCHED;
+            break;
+        // Someone is playing around, so left state untouched
+        case ReconstructionState::INITALIZED:
+        case ReconstructionState::TWOPOINTCLOUD:
+        case ReconstructionState::APPENDABLE:
+        case ReconstructionState::FINISHED:
+            break;
+    }
 }
 
 #if 0

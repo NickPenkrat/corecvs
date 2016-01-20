@@ -18,31 +18,6 @@
 
 #include "typesafeBitmaskEnums.h"
 
-namespace std
-{
-template<>
-struct hash<std::tuple<int, int, int>>
-{
-	size_t operator() (const std::tuple<int, int, int>& t) const
-	{
-		return std::hash<int>()(std::get<0>(t)) ^
-			  (std::hash<int>()(std::get<1>(t)) * 7) ^
-			  (std::hash<int>()(std::get<2>(t)) * 31);
-	}
-};
-template<>
-struct hash<std::tuple<int, int, int, int>>
-{
-	size_t operator() (const std::tuple<int, int, int, int>& t) const
-	{
-		return std::hash<int>()(std::get<0>(t)) ^
-			  (std::hash<int>()(std::get<1>(t)) * 7) ^
-			  (std::hash<int>()(std::get<2>(t)) * 31) ^
-			  (std::hash<int>()(std::get<3>(t) * 127));
-	}
-};
-}
-
 enum class PhotostationPlacerOptimizationType
 {
     NON_DEGENERATE_ORIENTATIONS = 1, // Orientations of all cameras except first
@@ -89,30 +64,6 @@ struct is_bitmask<PhotostationPlacerOptimizationType> : std::true_type {};
 
 namespace corecvs
 {
-
-enum class PhotostationInitializationType
-{
-    NONE,
-    GPS,
-    STATIC_POINTS
-};
-
-struct PhotostationInitialization
-{
-    PhotostationInitializationType initializationType;
-    std::vector<PointObservation__> staticPoints;
-    corecvs::Vector3dd gpsData;
-
-    template<typename V>
-    void accept(V &v)
-    {
-        auto val = static_cast<typename std::underlying_type<PhotostationInitializationType>::type>(initializationType);
-        v.visit(val, 0, "Initialization type");
-        initializationType = static_cast<PhotostationInitializationType>(val);
-        v.visit(staticPoints, "Static points");
-        v.visit(gpsData, "GPS data");
-    }
-};
 
 struct PhotostationPlacerFeatureParams
 {
@@ -193,14 +144,20 @@ struct PhotostationPlacerParams
 class PhotostationPlacer : PhotostationPlacerFeatureParams, PhotostationPlacerEssentialFilterParams, PhotostationPlacerFeatureSelectionParams, PhotostationPlacerParams
 {
 public:
+	std::unordered_map<std::tuple<int, int, int>, int> trackMap;
     ReconstructionFixtureScene* scene;
 #if 0
     void fullRun();
     corecvs::Mesh3D dumpMesh(const std::string &filename, bool drawTracks = false, bool center = true);
 #endif
     void detectAll();
+    bool initalize();
+    bool initGPS();
+    bool initNONE();
+    bool initSTATIC();
+    bool initFIXED();
+    //void filterEssentialRansac();
 #if 0
-    void filterEssentialRansac();
     void estimateFirstPair();
     void estimatePair(int psA, int psB);
     corecvs::Quaternion detectOrientationFirst();

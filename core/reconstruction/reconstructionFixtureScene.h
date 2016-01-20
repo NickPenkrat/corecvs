@@ -26,6 +26,22 @@ enum class ReconstructionState
     FINISHED
 };
 
+enum class PhotostationInitializationType
+{
+    NONE,
+    GPS,
+    STATIC,
+    FIXED
+};
+
+struct PhotostationInitialization
+{
+    PhotostationInitializationType initializationType;
+    std::vector<SceneFeaturePoint*> staticPoints;
+    Affine3DQ initData;
+};
+
+
 class ReconstructionFixtureScene : public FixtureScene
 {
 public:
@@ -49,7 +65,7 @@ public:
     umwppv<std::pair<corecvs::Vector2dd, corecvs::RGBColor>> keyPoints;
     umwpp<umwppv<std::tuple<int, int, double>>> matches;
     umwpp<std::unordered_map<int, int>> trackMap;
-    std::unordered_map<CameraFixture*, int> initializationData;
+    std::unordered_map<CameraFixture*, PhotostationInitialization> initializationData;
     std::vector<CameraFixture*> placedFixtures;
     std::vector<CameraFixture*> placingQueue;
 
