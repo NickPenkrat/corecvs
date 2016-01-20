@@ -93,6 +93,11 @@ protected:
         for (auto& it: uwpp)
             deletePairUMWPP(it.second, cf, fc);
     }
+    template<typename T>
+    void vectorErase(std::vector<T> &v, const T &t)
+    {
+        v.erase(std::remove(v.begin(), v.end(), t), v.end());
+    }
 
     virtual FixtureCamera      *fabricateCamera();
     virtual CameraFixture      *fabricateCameraFixture();

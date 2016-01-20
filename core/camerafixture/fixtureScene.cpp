@@ -110,13 +110,13 @@ SceneFeaturePoint *FixtureScene::createFeaturePoint()
 /* This method assumes the scene is well formed */
 void FixtureScene::deleteCamera(FixtureCamera *camera)
 {
-    orphanCameras.erase( std::remove( orphanCameras.begin(), orphanCameras.end(), camera ), orphanCameras.end() );
+    vectorErase(orphanCameras, camera);
 
     for(size_t i = 0; i < fixtures.size(); i++)
     {
         CameraFixture *station = fixtures[i];
         if (station == NULL) continue;
-        station->cameras.erase( std::remove( station->cameras.begin(), station->cameras.end(), camera ), station->cameras.end() );
+        vectorErase(station->cameras, camera);
     }
 
     for(size_t i = 0; i < points.size(); i++)
@@ -155,12 +155,12 @@ void FixtureScene::deleteCameraFixture(CameraFixture *fixture, bool recursive)
         orphanCameras.insert(orphanCameras.end(), fixture->cameras.begin(), fixture->cameras.end());
     }
 
-    fixtures.erase( std::remove( fixtures.begin(), fixtures.end(), fixture ), fixtures.end() );
+    vectorErase(fixtures, fixture);
 }
 
 void FixtureScene::deleteFeaturePoint(SceneFeaturePoint *point)
 {
-    points.erase( std::remove( points.begin(), points.end(), point ), points.end() );
+    vectorErase(points, point);
 }
 
 void FixtureScene::deleteFixturePair(CameraFixture *fixture, FixtureCamera *camera)

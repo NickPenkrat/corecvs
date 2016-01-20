@@ -23,7 +23,7 @@ void ReconstructionFixtureScene::deleteCameraFixture(CameraFixture *fixture, boo
     deleteCameraFixtureUMWPP(matches,   fixture);
     deleteCameraFixtureUMWPP(trackMap,  fixture);
     initializationData.erase(fixture);
-    placedFixtures.erase(std::remove(placedFixtures.begin(), placedFixtures.end(), fixture), placedFixtures.end());
+    vectorErase(placedFixtures, fixture);
 }
 
 void ReconstructionFixtureScene::deleteFixturePair(CameraFixture *fixture, FixtureCamera *camera)
