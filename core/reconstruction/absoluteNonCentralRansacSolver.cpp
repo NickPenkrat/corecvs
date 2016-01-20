@@ -28,7 +28,7 @@ void corecvs::AbsoluteNonCentralRansacSolver::run()
 		for (auto& h: hypothesis)
 		{
 			auto ih = selectInliers(h);
-			if (ih.size() < currentBest)
+			if ((int)ih.size() < currentBest)
 				continue;
             currentBest = (int)ih.size();
 			currentInliers = ih;
@@ -150,7 +150,7 @@ void corecvs::AbsoluteNonCentralRansacSolver::runInliersPNP()
 	for (auto& h: hypothesis)
 	{
 		auto ih = selectInliers(h);
-		if (ih.size() < currentBest)
+		if ((int)ih.size() < currentBest)
 			continue;
         currentBest    = (int)ih.size();
 		currentInliers = ih;

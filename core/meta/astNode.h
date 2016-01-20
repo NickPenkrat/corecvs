@@ -26,7 +26,7 @@ public:
 
     ~ASTContext()
     {
-        SYNC_PRINT(("ASTContext::~ASTContext(): there is %d garbage remaining\n", nodes.size()));
+        SYNC_PRINT(("ASTContext::~ASTContext(): there is %d garbage remaining\n", (int)nodes.size()));
         for (auto it = nodes.begin(); it != nodes.end(); ++it)
         {
             delete_safe(*it);

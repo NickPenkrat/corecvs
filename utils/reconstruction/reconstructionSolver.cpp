@@ -82,7 +82,7 @@ void ReconstructionJob::writeParams(double out[], corecvs::Vector3dd mean, corec
             out[argout++] = loc.rotor[j];
     }
 #ifdef POI_ONLY
-    for (int i = 0; i < scene.photostations[0].cameras.size(); ++i)
+    for (size_t i = 0; i < scene.photostations[0].cameras.size(); ++i)
     {
 #ifdef ESTIMATE_FC
 #ifdef ESTIMATE_F
@@ -153,7 +153,7 @@ void ReconstructionJob::readParams(const double in[], corecvs::Vector3dd mean, c
         loc.rotor = loc.rotor.normalised();
     }
 #ifdef POI_ONLY
-    for (int kk = 0; kk < scene.photostations[0].cameras.size(); ++kk)
+    for (size_t kk = 0; kk < scene.photostations[0].cameras.size(); ++kk)
     {
 #ifdef ESTIMATE_FC
 #ifdef ESTIMATE_F
@@ -354,8 +354,7 @@ void ReconstructionJob::ParallelUndistortionMapEstimator::operator() (const core
 {
     for (int camId = r.begin(); camId < r.end(); ++camId)
     {
-        auto& cam = (*photostation).cameras[camId];
-        calibrationJob->prepareUndistortionTransformation(cam.distortion, cam.intrinsics.distortedSize[0], cam.intrinsics.distortedSize[1], (*transformations)[camId], cam.intrinsics.size[0], cam.intrinsics.size[1]);
+        calibrationJob->prepareUndistortionTransformation(camId, (*transformations)[camId]);
     }
 }
     
@@ -374,7 +373,7 @@ void ReconstructionJob::fill(std::unordered_map<std::string, corecvs::Affine3DQ>
  //       scene.photostations.rbegin()->location.orientation = scene.photostations.rbegin()->location.orientation;
 
         std::vector<CameraObservation> observations;
-        for (int i = 0; i < (int)scene.photostations[id].cameras.size(); ++i)
+        for (size_t i = 0; i < scene.photostations[id].cameras.size(); ++i)
         {
             CameraObservation observation;
             std::stringstream ss;

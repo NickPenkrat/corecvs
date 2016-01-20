@@ -61,7 +61,6 @@ std::vector<Affine3DQ> PNPSolver::solvePNP_(
         // "design considerations") in corecvs we cannot multiply Matrix*Matrix33
         // and Matrix * Vector3dd
         // so here we cast!
-        Vector3dd vv = centers[i];
         Matrix Vk(H * (Matrix33::VectorByVector(f, f) - Matrix33::Identity())); 
         auto p = points3d[i];
         Vector v(centers[i]);

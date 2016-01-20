@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CALIBRATION_CAMERA_H
+#define CALIBRATION_CAMERA_H
 
 #include <unordered_map>
 
@@ -6,7 +7,10 @@
 #include "lensDistortionModelParameters.h"
 #include "line.h"
 #include "convexPolyhedron.h"
+#include "pointObservation.h"
+#include "selectableGeometryFeatures.h"
 #include "essentialMatrix.h"
+#include "distortionApplicationParameters.h"
 
 /* Future derived */
 //#include "rgb24Buffer.h"
@@ -14,7 +18,7 @@
 namespace corecvs {
 
 /*class RGB24Buffer;*/
-class CalibrationScene;
+class FixtureScene;
 
 /**
  * This class is so far just a common base for all objects in scene heap.
@@ -25,10 +29,10 @@ public:
     /* No particular reason for this, except to encourage leak checks */
     static int OBJECT_COUNT;
 
-    CalibrationScene *ownerScene;
+    FixtureScene *ownerScene;
 
     /* We could have copy constructors and stuff... but so far this is enough */
-    ScenePart(CalibrationScene * owner = NULL) :
+    ScenePart(FixtureScene * owner = NULL) :
         ownerScene(owner)
     {
         OBJECT_COUNT++;
@@ -151,11 +155,13 @@ struct PinholeCameraIntrinsics
     double  w() const    { return size.x();      }
     double cx() const    { return principal.x(); }
     double cy() const    { return principal.y(); }
+    double fx() const    { return focal.x(); }
+    double fy() const    { return focal.y(); }
+
 };
 
-class Photostation;
 
-class CameraModel : public ScenePart
+class CameraModel /*: public ScenePart*/
 {
 public:
     /**/
@@ -169,15 +175,15 @@ public:
     //Matrix33 rotMatrix;
 
 public:
-    Photostation   *station;
+  /*  Photostation   *station;*/
 
     /* This should be moved to the derived class */
     /*RGB24Buffer    *image;*/
     std::string     nameId;
 
 public:
-    CameraModel(CalibrationScene * owner = NULL) :
-        ScenePart(owner)
+    CameraModel(/*FixtureScene * owner = NULL*/) /*:
+        ScenePart(owner)*/
     {}
 
     CameraModel(
@@ -190,9 +196,23 @@ public:
     {}
 
 
+    template <bool full=false>
     Vector2dd project(const Vector3dd &p) const
     {
-        return intrinsics.project(extrinsics.project(p));
+        auto v = intrinsics.project(extrinsics.project(p));
+        if (full)
+            return distortion.mapForward(v);
+        return v;
+    }
+
+    Vector2dd project(const Vector3dd &p, bool full) const
+    {
+        return full ? project<true>(p) : project<false>(p);
+    }
+
+    Vector2dd reprojectionError(PointObservation &observation)
+    {
+        return observation.projection - project(observation.point);
     }
 
     /**
@@ -234,6 +254,12 @@ public:
         return ((pt - extrinsics.position) & forwardDirection()) > 0;
     }
 
+    /**
+     * Setups intrinsics.size and modifies distortion shift/scale
+     * in a proper way
+     */
+    void estimateUndistortedSize(const DistortionApplicationParameters &applicationParams);
+
     Ray3d               rayFromPixel(const Vector2dd &point);
     Ray3d               rayFromCenter();
 
@@ -248,6 +274,12 @@ public:
     ConvexPolyhedron    getViewport(const Vector2dd &p1, const Vector2dd &p2);
 
 
+    void copyModelFrom(const CameraModel &other) {
+        intrinsics = other.intrinsics;
+        distortion = other.distortion;
+        extrinsics = other.extrinsics;
+    }
+
     template<class VisitorType>
     void accept(VisitorType &visitor)
     {
@@ -256,7 +288,14 @@ public:
         visitor.visit(distortion, LensDistortionModelParameters(), "distortion");
         visitor.visit(nameId,     std::string("")                , "nameId"    );
     }
+
+    void prettyPrint(std::ostream &out = cout);
 };
+
+//typedef std::vector<PointObservation> PatternPoints3d;
+typedef std::vector<ObservationList>  MultiCameraPatternPoints;
 
 
 } // namespace corecvs
+
+#endif // CALIBRATION_CAMERA_H

@@ -2,6 +2,7 @@
 #define ABSTRACTIMAGENAMER_H
 
 #include <string>
+using std::string;
 
 class AbstractImageNamer
 {
@@ -16,7 +17,7 @@ public:
         TYPE_UNKNOWN
     };
 
-    static std::string getResolution(FileType type)
+    static string getResolution(FileType type)
     {
         switch (type)
         {
@@ -36,7 +37,9 @@ public:
         return "";
     }
 
-    virtual std::string nameForImage(const std::string &stName, int camId, std::string metaInfo, FileType type, std::string *path = NULL, std::string prefix = "", bool unique = true) = 0;
+    virtual string nameForImage(const string &stName
+        , int camId, string metaInfo, FileType type
+        , string *path = NULL, string prefix = "", bool unique = true) = 0;
 };
 
 #endif // ABSTRACTIMAGENAMER_H

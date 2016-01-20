@@ -111,7 +111,7 @@ std::vector<PointObservation__> parsePois(CalibrationJob &calibration, const std
             proj.projection = corecvs::Vector2dd(x, y);
             if (distorted)
             {
-                proj.projection = calibration.corrections[camId].map(proj.projection[1], proj.projection[0]);
+                proj.projection = calibration.photostation.cameras[camId].distortion.mapBackward(proj.projection);
             }
             proj.cameraId = camId;
             proj.photostationId = psId;
@@ -142,8 +142,7 @@ void storePois(const std::vector<PointObservation__> &observations, const std::s
         ofs << o.projections.size() << std::endl;
         for (auto& p: o.projections)
         {
-            auto correction = calibration.corrections[p.cameraId];
-            auto projection = correction.invMap(p.projection[1], p.projection[0]);
+            auto projection = calibration.photostation.cameras[p.cameraId].distortion.mapForward(p.projection);
             ofs << "roof_v1_SP" << ((char)('A' + p.photostationId)) << p.cameraId << "_0deg.jpg" << " " << projection[0] << " " << projection[1] << std::endl;
         }
     }
@@ -206,7 +205,6 @@ int main()
     JSONGetter getter("calibration.json");
     CalibrationJob job;
     getter.visit(job, "job");
-    job.prepareAllRadialCorrections();
     auto pois = parsePois(job, "pois_m15.txt",10, true, true);
     auto pois_proj = parsePois(job, "pois_all.txt",10, true, true);
 
@@ -216,7 +214,7 @@ int main()
 	}
 
     photostation = job.photostation;
-    for (int i = 0; i < photostation.cameras.size(); ++i)
+    for (size_t i = 0; i < photostation.cameras.size(); ++i)
     {
         photostation.cameras[i].extrinsics.position /= 1e3;
     }
@@ -244,7 +242,7 @@ int main()
     for (int i = 0; i < PSN; ++i)
     {
         corecvs::Photostation ps = pp.calibratedPhotostations[i];
-        for (int j = 0; j < ps.cameras.size(); ++j)
+        for (size_t j = 0; j < ps.cameras.size(); ++j)
             ps.cameras[j].extrinsics.position *= 1e3;
         ps.location.shift -= meanpos;
         ps.location.shift *= 1e3;
@@ -269,7 +267,7 @@ int main()
     for (int i = 0; i < PSN; ++i)
     {
         corecvs::Photostation ps = pp.calibratedPhotostations[i];
-        for (int j = 0; j < ps.cameras.size(); ++j)
+        for (size_t j = 0; j < ps.cameras.size(); ++j)
             ps.cameras[j].extrinsics.position *= 1e3;
         ps.location.shift -= meanpos;
         ps.location.shift *= 1e3;
@@ -302,7 +300,7 @@ int main()
     for (int i = 0; i < PSN; ++i)
     {
         corecvs::Photostation ps = pp.calibratedPhotostations[i];
-        for (int j = 0; j < ps.cameras.size(); ++j)
+        for (size_t j = 0; j < ps.cameras.size(); ++j)
             ps.cameras[j].extrinsics.position *= 1e3;
         ps.location.shift -= meanpos;
         ps.location.shift *= 1e3;
@@ -313,10 +311,10 @@ int main()
 	std::cout << "TRACKS: " << pp.tracks.size() << std::endl;
 	int projs = 0;
 	std::unordered_map<int, int> cntp;
-    for(auto&p : pp.tracks)
+    for (auto&p : pp.tracks)
 	{
-		cntp[p.projections.size()]++;
-		projs += p.projections.size();
+        cntp[(int)p.projections.size()]++;
+        projs += (int)p.projections.size();
 		auto proj = p.projections[0];
 		auto col = pp.keyPointColors[proj.photostationId][proj.cameraId][proj.featureId];
 		meshres4.setColor(col);
@@ -328,10 +326,10 @@ int main()
     meshres4.dumpPLY("triples_app.ply");
 
     auto res = pp.verify(pois);
-    for (int i = 0; i < pois.size(); ++i)
+    for (size_t i = 0; i < pois.size(); ++i)
 	{
 		std::cout << pois[i].label << pois[i].worldPoint << " | " << res[0][i].worldPoint << " | " << res[1][i].worldPoint << ":" << (pois[i].worldPoint - res[1][i].worldPoint) << " / " << ((!(pois[i].worldPoint - res[1][i].worldPoint) / !(pois[i].worldPoint - meanpos))) * 100.0 << "%  ~ " << !(pois[i].worldPoint - meanpos) << "m" << std::endl;
-		for (int j = 0; j < pois[i].projections.size(); ++j)
+		for (size_t j = 0; j < pois[i].projections.size(); ++j)
 		{
 			std::cout << "\t\t" << ((char)('A' + pois[i].projections[j].photostationId)) << pois[i].projections[j].cameraId << ": " << pois[i].projections[j].projection << " : " << res[0][i].projections[j].projection << " (" << !(pois[i].projections[j].projection - res[0][i].projections[j].projection) << ") | " << res[1][i].projections[j].projection << " (" << !(pois[i].projections[j].projection - res[1][i].projections[j].projection) << ")" << "" << std::endl;
 		}

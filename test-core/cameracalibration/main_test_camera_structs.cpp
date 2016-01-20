@@ -35,8 +35,6 @@ TEST(CalibrationStructsTest, testFundamentalProvider)
             CameraLocationData(
                 Vector3dd(unif(rng), unif(rng), unif(rng)),
                 Quaternion(unif(rng), unif(rng), unif(rng), unif(rng)).normalised()));
-        auto K1 = camera1.intrinsics.getKMatrix33();
-        auto K2 = camera2.intrinsics.getKMatrix33();
         auto E  = camera1.fundamentalTo(camera2);
         for (int j = 0; j < RNG_RETRIES; ++j)
         {

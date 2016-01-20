@@ -2,6 +2,7 @@
   <include name="parameters.xml"/>
 
 
+  <!--
   <class name="Lens Distortion Model Parameters" description="Lens Distortion Model Parameters">
     <comment>
  * \ingroup distcorrect
@@ -47,8 +48,8 @@
     <field type="double"    name="Normalizing Focal" defaultValue="1"/>
 
 
-    <!-- <field type="double"    name="Normalize Focal" defaultValue="1.0"/> -->
-  </class>
+</class>
+-->
 
 <!-- class name="Camera Extirinsic Parameteres" description="">
     <field type="double" name="yaw"            defaultValue="0.0"    />

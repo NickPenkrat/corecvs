@@ -1,10 +1,10 @@
-#ifndef CALIBRATIONFEATUREPOINT_H
-#define CALIBRATIONFEATUREPOINT_H
+#ifndef SCENE_FEATURE_POINT_H
+#define SCENE_FEATURE_POINT_H
 
 #include <string>
 #include <unordered_map>
 
-#include "calibrationCamera.h"
+#include "fixtureCamera.h"
 
 
 /* Presentation related */
@@ -12,14 +12,14 @@
 
 namespace corecvs {
 
-class CalibrationFeaturePoint;
+class SceneFeaturePoint;
 
-class CalibrationObservation {
+class SceneObservation {
 public:
-    CalibrationObservation() {}
+    SceneObservation() {}
 
-    CameraModel *             camera;
-    CalibrationFeaturePoint * featurePoint;
+    FixtureCamera *     camera;
+    SceneFeaturePoint * featurePoint;
 
     Vector2dd                 observation;
     Vector2dd                 accuracy;
@@ -31,7 +31,7 @@ public:
 };
 
 
-class CalibrationFeaturePoint : public ScenePart
+class SceneFeaturePoint : public FixtureScenePart
 {
 public:
     std::string name;
@@ -55,7 +55,7 @@ public:
     PointType type;
 
     /** Observation related block */
-    typedef std::unordered_map<CameraModel *, CalibrationObservation> ObservContainer;
+    typedef std::unordered_map<FixtureCamera *, SceneObservation> ObservContainer;
     ObservContainer observations;
 
 
@@ -65,14 +65,14 @@ public:
     RGBColor color;
 /**/
 
-    CalibrationFeaturePoint(CalibrationScene * owner = NULL) :
-        ScenePart(owner),
+    SceneFeaturePoint(FixtureScene * owner = NULL) :
+        FixtureScenePart(owner),
         hasKnownPosition(false)
     {}
 
 
-    CalibrationFeaturePoint(Vector3dd _position, const std::string &_name = std::string(), CalibrationScene * owner = NULL) :
-        ScenePart(owner),
+    SceneFeaturePoint(Vector3dd _position, const std::string &_name = std::string(), FixtureScene * owner = NULL) :
+        FixtureScenePart(owner),
         name(_name),
         position(_position),
         hasKnownPosition(true)
@@ -88,4 +88,4 @@ public:
 
 }
 
-#endif // CALIBRATIONFEATUREPOINT_H
+#endif // SCENE_FEATURE_POINT_H

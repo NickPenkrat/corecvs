@@ -17,13 +17,16 @@ namespace corecvs {
 
 enum class CameraConstraints
 {
-    NONE           =  0x00,
-    ZERO_SKEW      =  0x01, // This forces skew to zero, but not locks it to zero during non-linear optimization
-    LOCK_SKEW      =  0x02, // This one locks skew, but not forces it to zero
-    EQUAL_FOCAL    =  0x04, // Makes fx = fy in non-linear phase
-    LOCK_FOCAL     =  0x08, // Locks fx and fy
-    LOCK_PRINCIPAL =  0x10, // Locks cx and cy
-    UNLOCK_YSCALE  =  0x20  // Unlock Y scale of pattern. This is dangerous if you are not sure what are you doing
+    NONE              =  0x00,
+    ZERO_SKEW         =  0x01, // This forces skew to zero, but not locks it to zero during non-linear optimization
+    LOCK_SKEW         =  0x02, // This one locks skew, but not forces it to zero
+    EQUAL_FOCAL       =  0x04, // Makes fx = fy in non-linear phase
+    LOCK_FOCAL        =  0x08, // Locks fx and fy
+    LOCK_PRINCIPAL    =  0x10, // Locks cx and cy
+    UNLOCK_YSCALE     =  0x20, // Unlock Y scale of pattern. This is dangerous if you are not sure what are you doing
+    UNLOCK_DISTORTION =  0x40, // Allow estimation of distortion parameters
+    // Not used now
+    LOCK_PRINCIPALS   =  0x80  // Force equivalence of distortion and projective principal points (works only with UNLOCK_DISTORTION)
 };
 
 } // namespace corecvs
@@ -35,7 +38,7 @@ namespace corecvs {
 
 
 /**
- *   See CalibrationScene for more data on ownership of the objectes in structure
+ *   See FixtureScene for more data on ownership of the objectes in structure
  **/
 class Photostation : public ScenePart
 {
@@ -44,7 +47,7 @@ public:
     Affine3DQ                location;
     std::string              name;
 
-    Photostation(CalibrationScene * owner = NULL) :
+    Photostation(FixtureScene * owner = NULL) :
         ScenePart(owner)
     {}
 
@@ -80,6 +83,13 @@ public:
         location = _location;
     }
 
+    CameraModel getWorldCamera(const CameraModel &camPtr) const
+    {
+        CameraModel toReturn = camPtr;
+        toReturn.extrinsics.transform(location);
+        return toReturn;
+    }
+
 
     CameraModel getWorldCamera(int cam) const
     {
@@ -96,7 +106,7 @@ public:
         return c;*/
         return getWorldCamera(cam);
     }
-    
+
     Matrix44 getMMatrix(int cam) const
     {
         return getRawCamera(cam).getCameraMatrix();
@@ -145,8 +155,5 @@ public:
         setLocation(loc);
     }
 };
-
-typedef std::vector<std::pair<Vector2dd, Vector3dd>> PatternPoints3d;
-typedef std::vector<PatternPoints3d>                 MultiCameraPatternPoints;
 
 } // namespace corecvs

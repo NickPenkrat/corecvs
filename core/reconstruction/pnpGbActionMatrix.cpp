@@ -4,7 +4,7 @@
 
 using namespace corecvs;
 
-void PNPSolver::setupPNPgbActionMatrix(corecvs::Matrix &M, corecvs::Matrix &C, double gamma, corecvs::Matrix &action)
+void PNPSolver::setupPNPgbActionMatrix(corecvs::Matrix &M, corecvs::Matrix &C, double /*gamma*/, corecvs::Matrix &action)
 {
     Matrix T1(8, 24);
   T1.a(0,0) = 4*M.a(0,0); T1.a(0,1) = 4*M.a(4,0)+2*M.a(0,4); T1.a(0,2) = 2*M.a(4,4)+4*M.a(1,0); T1.a(0,3) = 2*M.a(1,4); T1.a(0,4) = 4*M.a(5,0)+2*M.a(0,5); T1.a(0,5) = 4*M.a(7,0)+2*M.a(5,4)+2*M.a(4,5); T1.a(0,6) = 2*M.a(7,4)+2*M.a(1,5); T1.a(0,7) = 2*M.a(5,5)+4*M.a(2,0); T1.a(0,8) = 2*M.a(7,5)+2*M.a(2,4); T1.a(0,9) = 2*M.a(2,5); T1.a(0,10) = 4*M.a(6,0)+2*M.a(0,6); T1.a(0,11) = 4*M.a(8,0)+2*M.a(6,4)+2*M.a(4,6); T1.a(0,12) = 2*M.a(8,4)+2*M.a(1,6); T1.a(0,13) = 4*M.a(9,0)+2*M.a(6,5)+2*M.a(5,6); T1.a(0,14) = 2*M.a(9,4)+2*M.a(8,5)+2*M.a(7,6); T1.a(0,15) = 2*M.a(9,5)+2*M.a(2,6); T1.a(0,16) = 2*M.a(6,6)+4*M.a(3,0); T1.a(0,17) = 2*M.a(8,6)+2*M.a(3,4); T1.a(0,18) = 2*M.a(9,6)+2*M.a(3,5); T1.a(0,19) = 2*M.a(3,6); T1.a(0,20) = 4*C.a(0,0); T1.a(0,21) = 2*C.a(0,4); T1.a(0,22) = 2*C.a(0,5); T1.a(0,23) = 2*C.a(0,6); 
