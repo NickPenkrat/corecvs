@@ -10,7 +10,22 @@ namespace corecvs
 {
 struct FeatureDetectionParams
 {
+    std::string detector   = "SURF";
+    std::string descriptor = "SURF";
+    std::string matcher    = "ANN";
+    double b2bThreshold = 0.9;
 };
+
+enum class ReconstructionState
+{
+    NONE,          // Before any manipulations
+    MATCHED,       // Image matches are computed
+    INITALIZED,    // Either inital positions of two fixtures are calculated (static point/none initialization), or 3 fixtures are positioned and oriented (gps initialization)
+    TWOPOINTCLOUD, // Pointcloud created by 2-view matches. It will be pruned after appending next fixture
+    APPENDABLE,     // >= 3 fixtures are positioned, pointcloud consists from 3+ view matches
+    FINISHED
+};
+
 class ReconstructionFixtureScene : public FixtureScene
 {
 public:
@@ -27,7 +42,8 @@ public:
     //\brief Returns number of FixtureCamera's in placedFixtures fixtures
     int getDistinctCameraCount() const;
 
-
+    // ==================================================================================
+    // SERIALIZEABLE STATE
     std::vector<SceneFeaturePoint*> trackedFeatures;
     umwpp<std::string> images;
     umwppv<std::pair<corecvs::Vector2dd, corecvs::RGBColor>> keyPoints;
@@ -37,6 +53,9 @@ public:
     std::vector<CameraFixture*> placedFixtures;
     std::vector<CameraFixture*> placingQueue;
 
+    bool is3DAligned = false;
+    ReconstructionState state = ReconstructionState::NONE;
+    // ==================================================================================
 };
 }
 

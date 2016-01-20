@@ -19,7 +19,7 @@
 #ifdef WITH_TBB
 #include <tbb/task_group.h>
 #endif
-
+#if 0
 #define IFNOT(cond, expr) \
     if (!(optimizationParams & PhotostationPlacerOptimizationType::cond)) \
     { \
@@ -353,20 +353,20 @@ void corecvs::PhotostationPlacer::getErrorSummary(PhotostationPlacerOptimization
                     totalsqr += (!errP) * (!errP);
                     break;
                 case PhotostationPlacerOptimizationErrorType::CROSS_PRODUCT:
-                    rE = calibratedPhotostations[p.photostationId].rayFromPixel(p.projection, p.cameraId).a.normalised();
-                    rO = calibratedPhotostations[p.photostationId].rayFromPixel(calibratedPhotostations[p.photostationId].project(t.worldPoint, p.cameraId), p.cameraId).a.normalised();
+                    rE = calibratedPhotostations[p.photostationId].dirFromPixel(p.projection, p.cameraId);
+                    rO = calibratedPhotostations[p.photostationId].dirFromPixel(calibratedPhotostations[p.photostationId].project(t.worldPoint, p.cameraId), p.cameraId);
                     errV = rE ^ rO;
                     totalsqr += !errV * !errV;
                     break;
                 case PhotostationPlacerOptimizationErrorType::ANGULAR:
-                    rE = calibratedPhotostations[p.photostationId].rayFromPixel(p.projection, p.cameraId).a.normalised();
-                    rO = calibratedPhotostations[p.photostationId].rayFromPixel(calibratedPhotostations[p.photostationId].project(t.worldPoint, p.cameraId), p.cameraId).a.normalised();
+                    rE = calibratedPhotostations[p.photostationId].dirFromPixel(p.projection, p.cameraId);
+                    rO = calibratedPhotostations[p.photostationId].dirFromPixel(calibratedPhotostations[p.photostationId].project(t.worldPoint, p.cameraId), p.cameraId);
                     a = rE.angleTo(rO) * 180.0 / M_PI;
                     totalsqr += a * a;
                     break;
                 case PhotostationPlacerOptimizationErrorType::RAY_DIFF:
-                    rE = calibratedPhotostations[p.photostationId].rayFromPixel(p.projection, p.cameraId).a.normalised();
-                    rO = calibratedPhotostations[p.photostationId].rayFromPixel(calibratedPhotostations[p.photostationId].project(t.worldPoint, p.cameraId), p.cameraId).a.normalised();
+                    rE = calibratedPhotostations[p.photostationId].dirFromPixel(p.projection, p.cameraId);
+                    rO = calibratedPhotostations[p.photostationId].dirFromPixel(calibratedPhotostations[p.photostationId].project(t.worldPoint, p.cameraId), p.cameraId);
                     errV = rE - rO;
                     totalsqr += !errV * !errV;
                     break;
@@ -1332,9 +1332,10 @@ std::vector<std::vector<PointObservation__>> corecvs::PhotostationPlacer::verify
 	}
 	return res;
 }
-
+#endif
 void corecvs::PhotostationPlacer::detectAll()
 {
+#if 0
     std::vector<std::string> filenames;
     std::unordered_map<int, std::pair<int, int>> img_map;
     for (int i = 0; i < (int)images.size(); ++i)
@@ -1400,8 +1401,12 @@ void corecvs::PhotostationPlacer::detectAll()
             matches[psIdA][psIdB - psIdA].emplace_back(camIdA, featureA, camIdB, featureB, m.best2ndBest);
         }
     }
+#else
+    scene->detectAllFeatures(FeatureDetectionParams());
+#endif
 }
 
+#if 0
 std::vector<PointObservation__> corecvs::PhotostationPlacer::projectToAll(const std::vector<PointObservation__> &pois)
 {
     auto ret = pois;
@@ -1493,3 +1498,4 @@ corecvs::Mesh3D corecvs::PhotostationPlacer::dumpMesh(const std::string &filenam
     meshres.dumpPLY(filename);
     return meshres;
 }
+#endif

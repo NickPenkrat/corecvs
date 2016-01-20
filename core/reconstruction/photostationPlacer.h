@@ -8,6 +8,7 @@
 #include "vector3d.h"
 #include "calibrationPhotostation.h"
 #include "reconstructionStructs.h"
+#include "reconstructionFixtureScene.h"
 #include "levenmarq.h"
 #include "mesh3d.h"
 
@@ -192,9 +193,13 @@ struct PhotostationPlacerParams
 class PhotostationPlacer : PhotostationPlacerFeatureParams, PhotostationPlacerEssentialFilterParams, PhotostationPlacerFeatureSelectionParams, PhotostationPlacerParams
 {
 public:
+    ReconstructionFixtureScene* scene;
+#if 0
     void fullRun();
     corecvs::Mesh3D dumpMesh(const std::string &filename, bool drawTracks = false, bool center = true);
+#endif
     void detectAll();
+#if 0
     void filterEssentialRansac();
     void estimateFirstPair();
     void estimatePair(int psA, int psB);
@@ -210,7 +215,8 @@ public:
     std::vector<PointObservation__> projectToAll(const std::vector<PointObservation__> &pois);
 
     std::vector<std::tuple<int, corecvs::Vector2dd, int, corecvs::Vector3dd>> getPossibleTracks(int ps);
-
+#endif
+#if 0
     std::vector<corecvs::Photostation> calibratedPhotostations;
     std::vector<std::vector<std::string>> images;
     std::vector<std::vector<std::vector<corecvs::Vector2dd>>> keyPoints;
@@ -225,13 +231,17 @@ public:
 #endif
 	std::vector<PointObservation__> tracks;
 	std::unordered_map<std::tuple<int, int, int>, int> trackMap;
+#endif
+#if 0
 	int getMovablePointCount();
 	int getReprojectionCnt();
 	int getOrientationInputNum();
 	int getErrorComponentsPerPoint();
 	void getErrorSummary(PhotostationPlacerOptimizationErrorType errorType);
 	void getErrorSummaryAll();
+#endif
 protected:
+#if 0
 	void readOrientationParams(const double in[]);
 	void writeOrientationParams(double out[]);
 	void computeMedianErrors(double out[], const std::vector<int> &idxs);
@@ -273,6 +283,7 @@ protected:
 		PhotostationPlacer* placer;
 	};
 public:
+#if 0
 	template<typename V>
 	void accept(V &v)
     {
@@ -343,7 +354,7 @@ public:
         for (auto& el: trackmap)
             trackMap[std::make_tuple(el[0], el[1], el[2])] = el[3];
     }
-
+#endif
 private:
 
 	double scoreFundamental(int psA, int camA, corecvs::Vector2dd ptA,
@@ -372,6 +383,7 @@ private:
     std::vector<std::tuple<corecvs::Vector2dd, corecvs::Vector2dd, double>> getCameraMatches(int psA, int camA, int psB, int camB);
     void remove(int psA, int psB, std::vector<int> idx);
     void remove(int psA, int camA, int psB, int camB, std::vector<int> idx);
+#endif
 #ifdef WITH_TBB
     tbb::mutex mutex;
 #endif
