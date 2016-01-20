@@ -51,6 +51,12 @@ corecvs::Vector3dd convertVector(const corecvs::Vector3dd& geodesic)
     return vec;
 }
 
+// For easy control over ps number
+const int PSN = 9;
+const int CP = 6;
+corecvs::Vector3dd mp(0, 0, 0);
+
+// Obsolete
 std::vector<PointObservation__> parsePois(CalibrationJob &calibration, const std::string &filename, int camIdOffset = 3, bool distorted = false, bool less10Cams = true)
 {
     std::ifstream ifs;
@@ -115,14 +121,12 @@ std::vector<PointObservation__> parsePois(CalibrationJob &calibration, const std
             }
             proj.cameraId = camId;
             proj.photostationId = psId;
-//    if (psId < 5)
-            projections.push_back(proj);
-             std::cout << "POI: LABEL: " << label << ": CAM: " << filename << " (" << camId << "|" << psId << ")" << proj.projection << std::endl;
+            if (psId < PSN)
+                projections.push_back(proj);
+            std::cout << "POI: LABEL: " << label << ": CAM: " << filename << " (" << camId << "|" << psId << ")" << proj.projection << std::endl;
 
         }
         observation.projections = projections;
-//      if (projections.size())
-//        if (!observation.updateable)
         res.push_back(observation);
     }
 
@@ -148,14 +152,8 @@ void storePois(const std::vector<PointObservation__> &observations, const std::s
     }
 }
 
-int main()
+void setup()
 {
-    init_opencv_detectors_provider();
-    init_opencv_matchers_provider();
-    init_opencv_reader_provider();
-    init_opencv_descriptors_provider();
-    init_opencv_reader_provider();
-
     corecvs::Vector3dd positions[] =
     {
         corecvs::Vector3dd(140.617, 576.200, 164.136),
@@ -168,19 +166,21 @@ int main()
         corecvs::Vector3dd(124.671, 567.081, 164.121),
         corecvs::Vector3dd(146.231, 575.418, 164.191),
     };
-	corecvs::Vector3dd mp(0, 0, 0);
+
+    for (auto& pos: positions)
+        std::cout << pos << " ";
+    std::cout << std::endl;
+
 	for (int i = 0; i < 9; ++i)
 	{
 		mp += positions[i] * (1.0 / 9.0);
-//positions[i][2] = 0;
 	}
 
     PhotostationPlacer pp;
-   const int PSN = 9;
-    const int CP = 6;
     char psPrefixes[9] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'};
-    
-    std::string prefix = "/hdd_4t/data/roof_v1/roof_1_SP";
+
+    std::string topconBase(std::getenv("TOPCON_DIR"));
+    std::string prefix = topconBase + "data/tests/reconstruction/GGGGGGGGG/roof_1_SP";
     std::string postfix= "_0deg_undist.jpg";
 
     pp.images.resize(PSN);
@@ -205,13 +205,6 @@ int main()
     JSONGetter getter("calibration.json");
     CalibrationJob job;
     getter.visit(job, "job");
-    auto pois = parsePois(job, "pois_m15.txt",10, true, true);
-    auto pois_proj = parsePois(job, "pois_all.txt",10, true, true);
-
-	for (auto &o: pois)
-	{
-		std::cout << o.label << " " << o.worldPoint << " " << o.worldPoint - mp << " " << !(o.worldPoint - mp) << std::endl;
-	}
 
     photostation = job.photostation;
     for (size_t i = 0; i < photostation.cameras.size(); ++i)
@@ -228,114 +221,75 @@ int main()
         ps.name = ss.str();
     }
 
-    pp.detectAll();
-    pp.filterEssentialRansac();
-    pp.estimateFirstPair();
-    
-    Mesh3D meshres;
-    meshres.switchColor(true);
+    JSONSetter *setter = new JSONSetter("pp.json");
+    setter->visit(pp, "reconstruction data");
+    delete setter;
+}
+
+int main()
+{
+    init_opencv_detectors_provider();
+    init_opencv_matchers_provider();
+    init_opencv_reader_provider();
+    init_opencv_descriptors_provider();
+    init_opencv_reader_provider();
+
+    setup();
+
+    // actually we need only PS
+    JSONGetter ggetter("calibration.json");
+    CalibrationJob job;
+    ggetter.visit(job, "job");
+    auto pois = parsePois(job, "pois_m15.txt",10, true, true);
+    for (auto &p: pois)
+    {
+        std::cout << p.label << " " << p.worldPoint << " ";
+        for (auto &pp: p.projections)
+            std::cout << pp.cameraId << " " << pp.photostationId << " " << pp.projection << " ";
+        std::cout << std::endl;
+    }
+
+	for (auto &o: pois)
+	{
+		std::cout << o.label << " " << o.worldPoint << " " << o.worldPoint - mp << " " << !(o.worldPoint - mp) << std::endl;
+	}
+
+
+    PhotostationPlacer pp;
+    JSONGetter getter("pp.json");
+    getter.visit(pp, "reconstruction data");
+
+    pp.fullRun();
+
+    pp.dumpMesh("reconstruction.res.ply", true);
+
+    auto res = pp.verify(pois);
     corecvs::Vector3dd meanpos(0, 0, 0);
     for (int i = 0; i < PSN; ++i)
     {
         meanpos += pp.calibratedPhotostations[i].location.shift * (1.0 / PSN);
     }
-    for (int i = 0; i < PSN; ++i)
-    {
-        corecvs::Photostation ps = pp.calibratedPhotostations[i];
-        for (size_t j = 0; j < ps.cameras.size(); ++j)
-            ps.cameras[j].extrinsics.position *= 1e3;
-        ps.location.shift -= meanpos;
-        ps.location.shift *= 1e3;
-
-        CalibrationHelpers().drawPly(meshres, ps, 50.0);
-    }
-
-    pp.buildTracks(0, 1, 2);
-	std::cout << "TR: " << pp.tracks.size() << " " << pp.getReprojectionCnt() / 2 << std::endl;
-	pp.fit();
-	pp.buildTracks(0, 1, 2);
-	std::cout << "TR: " << pp.tracks.size() << " " << pp.getReprojectionCnt() / 2 << std::endl;
-
-    meshres.dumpPLY("triples_tri.ply");
-    Mesh3D meshres3;
-    meshres3.switchColor(true);
-    meanpos = corecvs::Vector3dd(0, 0, 0);
-    for (int i = 0; i < PSN; ++i)
-    {
-        meanpos += pp.calibratedPhotostations[i].location.shift * (1.0 / PSN);
-    }
-    for (int i = 0; i < PSN; ++i)
-    {
-        corecvs::Photostation ps = pp.calibratedPhotostations[i];
-        for (size_t j = 0; j < ps.cameras.size(); ++j)
-            ps.cameras[j].extrinsics.position *= 1e3;
-        ps.location.shift -= meanpos;
-        ps.location.shift *= 1e3;
-		std::cout << ps.location.shift << std::endl;
-        
-        CalibrationHelpers().drawPly(meshres3, ps, 50.0);
-    }
-	std::cout << "TRACKS: " << pp.tracks.size() << std::endl;
-    for(auto&p : pp.tracks)
-        meshres3.addPoint((p.worldPoint-meanpos) * 1e3);
-    meshres3.dumpPLY("triples_tri.ply");
-
-	for (int i = 3; i < PSN; ++i)
-	{
-//        pp.fit();
-        pp.appendPs();
-        for (int j = 0; j < i; ++j)
-            for (int k = j + 1; k < i; ++k)
-                pp.buildTracks(j, k, i);
-	}
-	pp.fit(PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS);
-
-    Mesh3D meshres4;
-    meshres4.switchColor(true);
-    meanpos = corecvs::Vector3dd(0, 0, 0);
-    for (int i = 0; i < PSN; ++i)
-    {
-        meanpos += pp.calibratedPhotostations[i].location.shift * (1.0 / PSN);
-    }
-    for (int i = 0; i < PSN; ++i)
-    {
-        corecvs::Photostation ps = pp.calibratedPhotostations[i];
-        for (size_t j = 0; j < ps.cameras.size(); ++j)
-            ps.cameras[j].extrinsics.position *= 1e3;
-        ps.location.shift -= meanpos;
-        ps.location.shift *= 1e3;
-		std::cout << ps.location.shift << std::endl;
-
-        CalibrationHelpers().drawPly(meshres4, ps, 50.0);
-    }
-	std::cout << "TRACKS: " << pp.tracks.size() << std::endl;
-	int projs = 0;
-	std::unordered_map<int, int> cntp;
-    for (auto&p : pp.tracks)
-	{
-        cntp[(int)p.projections.size()]++;
-        projs += (int)p.projections.size();
-		auto proj = p.projections[0];
-		auto col = pp.keyPointColors[proj.photostationId][proj.cameraId][proj.featureId];
-		meshres4.setColor(col);
-        meshres4.addPoint((p.worldPoint-meanpos) * 1e3);
-	}
-	std::cout << "Total " << projs << " projections" << std::endl;
-	for (auto& p : cntp)
-		std::cout << p.first << ": " << p.second << std::endl;
-    meshres4.dumpPLY("triples_app.ply");
-
-    auto res = pp.verify(pois);
+    double err = 0.0, cnt = 0.0;
     for (size_t i = 0; i < pois.size(); ++i)
 	{
-		std::cout << pois[i].label << pois[i].worldPoint << " | " << res[0][i].worldPoint << " | " << res[1][i].worldPoint << ":" << (pois[i].worldPoint - res[1][i].worldPoint) << " / " << ((!(pois[i].worldPoint - res[1][i].worldPoint) / !(pois[i].worldPoint - meanpos))) * 100.0 << "%  ~ " << !(pois[i].worldPoint - meanpos) << "m" << std::endl;
+	    double mindist = 1e100;
+	    for (int j = 0; j < PSN; ++j)
+	        mindist = std::min(mindist, !(pois[i].worldPoint - pp.calibratedPhotostations[j].location.shift));
+	    if (mindist < 30.0)
+        {
+            auto diff = !(pois[i].worldPoint - res[1][i].worldPoint);
+            err += diff * diff;
+            cnt += 1.0;
+        }
+		std::cout << pois[i].label << pois[i].worldPoint << " | " << res[0][i].worldPoint << " | " << res[1][i].worldPoint << ":" << (pois[i].worldPoint - res[1][i].worldPoint) << " /" << !(pois[i].worldPoint - res[1][i].worldPoint) << "\\ " << " / " << ((!(pois[i].worldPoint - res[1][i].worldPoint) / !(pois[i].worldPoint - meanpos))) * 100.0 << "%  ~ " << !(pois[i].worldPoint - meanpos) << "m //" << mindist << "m" << std::endl;
 		for (size_t j = 0; j < pois[i].projections.size(); ++j)
 		{
 			std::cout << "\t\t" << ((char)('A' + pois[i].projections[j].photostationId)) << pois[i].projections[j].cameraId << ": " << pois[i].projections[j].projection << " : " << res[0][i].projections[j].projection << " (" << !(pois[i].projections[j].projection - res[0][i].projections[j].projection) << ") | " << res[1][i].projections[j].projection << " (" << !(pois[i].projections[j].projection - res[1][i].projections[j].projection) << ")" << "" << std::endl;
 		}
 		std::cout << std::endl;
 	}
-    
+    std::cout << "30m new-style rmse error: " << std::sqrt(err / cnt) << std::endl;
+
     for (int i = 0; i < 6; ++i)
     {
         std::cout << i << ": FOCAL:" << job.photostation.cameras[i].intrinsics.focal
@@ -347,7 +301,12 @@ int main()
                                << std::endl;
     }
 
+    JSONSetter *setter2 = new JSONSetter("pp_final.json");
+    setter2->visit(pp, "reconstruction data");
+    delete setter2;
+#if 0
     auto reproj = pp.projectToAll(pois_proj);
     storePois(reproj, "pois_all_proj.txt", "roof_1_", job);
+#endif
     return 0;
 }

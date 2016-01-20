@@ -72,6 +72,14 @@ void JSONSetter::visit<int, IntField>(int &intField, const IntField *fieldDescri
 }
 
 template <>
+void JSONSetter::visit<unsigned char, IntField>(unsigned char &intField, const IntField *fieldDescriptor)
+{
+    int foo = intField;
+    visit<int>(foo, fieldDescriptor->defaultValue, fieldDescriptor->name.name);
+    intField = foo;
+}
+
+template <>
 void JSONSetter::visit<double, DoubleField>(double &doubleField, const DoubleField *fieldDescriptor)
 {
     visit<double>(doubleField, fieldDescriptor->defaultValue, fieldDescriptor->name.name);

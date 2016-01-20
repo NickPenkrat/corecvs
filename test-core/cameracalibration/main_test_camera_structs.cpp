@@ -203,11 +203,14 @@ TEST(CalibrationStructsTest, testPhotostationStruct)
     {
         Vector4dd src1;
         Vector3dd src2;
+        Vector2dd pt;
 
         for (int j = 0; j < Vector3dd::LENGTH; j++) {
             src2[j] = unif(rng);
             src1[j] = src2[j];
         }
+        pt[0] = unif(rng);
+        pt[1] = unif(rng);
 
         src1[3] = 1.0;
 
@@ -235,6 +238,9 @@ TEST(CalibrationStructsTest, testPhotostationStruct)
         CORE_ASSERT_TRUE_P(dst1.notTooFar(ref, 1e-6), (" "));
         CORE_ASSERT_TRUE_P(dst2.notTooFar(ref, 1e-6), (" "));
         CORE_ASSERT_TRUE_P(dst4.notTooFar(ref, 1e-6), (" "));
+
+        ASSERT_NEAR(!(C.rayFromPixel(pt).a - ps.rayFromPixel(pt, 0).a), 0.0, 1e-9);
+        ASSERT_NEAR(!(C.rayFromPixel(pt).p - ps.rayFromPixel(pt, 0).p), 0.0, 1e-9);
     }
 }
 
