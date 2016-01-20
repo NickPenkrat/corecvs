@@ -5,7 +5,8 @@ HEADERS += \
 	reconstruction/relativeNonCentralP6PSolver.h \
 	reconstruction/relativeNonCentralRansacSolver.h \
 	reconstruction/photostationPlacer.h \
-	reconstruction/absoluteNonCentralRansacSolver.h
+	reconstruction/absoluteNonCentralRansacSolver.h \
+	reconstruction/reconstructionFixtureScene.h
 
 
 SOURCES += \
@@ -20,7 +21,8 @@ SOURCES += \
     reconstruction/setupActionMatrixNCP6P.cpp \
     reconstruction/relativeNonCentralRansacSolver.cpp \
     reconstruction/photostationPlacer.cpp \
-    reconstruction/absoluteNonCentralRansacSolver.cpp
+    reconstruction/absoluteNonCentralRansacSolver.cpp \
+    reconstruction/reconstructionFixtureScene.cpp
 
 
 

@@ -76,7 +76,7 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
                 }*/
 
                 point->observations[camera] = observation;
-                point->observations__[SceneFeaturePoint::WPP(fixtures[stationId], camera)] = observation;
+                point->observations__[WPP(fixtures[stationId], camera)] = observation;
                 //cout << "Camera:" << camera->fileName << " = " << projection << endl;
             }
         }
@@ -129,8 +129,7 @@ void FixtureScene::deleteCamera(FixtureCamera *camera)
             point->observations.erase(it);
         }
 
-        SceneFeaturePoint::WPP wpp(SceneFeaturePoint::WPP::UWILDCARD, camera);
-        for (auto it = point->observations__.begin(); it != point->observations__.end(); it = it->first == wpp ? it = point->observations__.erase(it) : it++);
+        deleteFixtureCameraUMWPP(point->observations__, camera);
     }
 
 
@@ -145,8 +144,7 @@ void FixtureScene::deleteCameraFixture(CameraFixture *fixture, bool recursive)
         SceneFeaturePoint *point = points[i];
         if (point == NULL) continue;
 
-        SceneFeaturePoint::WPP wpp(fixture, SceneFeaturePoint::WPP::VWILDCARD);
-        for (auto it = point->observations__.begin(); it != point->observations__.end(); it = it->first == wpp ? it = point->observations__.erase(it) : it++);
+        deleteCameraFixtureUMWPP(point->observations__, fixture);
     }
     if (recursive)
     {
@@ -163,6 +161,14 @@ void FixtureScene::deleteCameraFixture(CameraFixture *fixture, bool recursive)
 void FixtureScene::deleteFeaturePoint(SceneFeaturePoint *point)
 {
     points.erase( std::remove( points.begin(), points.end(), point ), points.end() );
+}
+
+void FixtureScene::deleteFixturePair(CameraFixture *fixture, FixtureCamera *camera)
+{
+    for (auto&p : points)
+    {
+        deletePairUMWPP(p->observations__, fixture, camera);
+    }
 }
 
 /**
@@ -265,11 +271,11 @@ bool FixtureScene::checkIntegrity()
             {
                 ok = false; SYNC_PRINT(("observation__ has null camera fixture"));
             }
-            if (fixtureCamera == SceneFeaturePoint::WPP::VWILDCARD)
+            if (fixtureCamera == WPP::VWILDCARD)
             {
                 ok = false; SYNC_PRINT(("there is a wild-card entry in observation__"));
             }
-            if (cameraFixture == SceneFeaturePoint::WPP::UWILDCARD)
+            if (cameraFixture == WPP::UWILDCARD)
             {
                 ok = false; SYNC_PRINT(("there is a wild-card entry in observation__"));
             }

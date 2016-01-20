@@ -51,6 +51,49 @@ public:
     void projectForward(SceneFeaturePoint::PointType mask, bool round = false);
 
 protected:
+    template<typename T>
+    using umwpp = std::unordered_map<WPP, T>;
+    template<typename T>
+    using umwppv= umwpp<std::vector<T>>;
+
+    template<typename T>
+    void deleteFixtureCameraUMWPP(umwpp<T> &uwpp, FixtureCamera* fc)
+    {
+        WPP wpp(WPP::UWILDCARD, fc);
+        for (auto it = uwpp.begin(); it != uwpp.end(); it = it->first == wpp ? uwpp.erase(it) : it++);
+    }
+    template<typename T>
+    void deleteFixtureCameraUMWPP(umwpp<umwpp<T>> &uwpp, FixtureCamera* fc)
+    {
+        WPP wpp(WPP::UWILDCARD, fc);
+        for (auto& it: uwpp)
+            deleteFixtureCameraUMWPP(it.second, fc);
+    }
+    template<typename T>
+    void deleteCameraFixtureUMWPP(umwpp<T> &uwpp, CameraFixture* fc)
+    {
+        WPP wpp(fc, WPP::VWILDCARD);
+        for (auto it = uwpp.begin(); it != uwpp.end(); it = it->first == wpp ? uwpp.erase(it) : it++);
+    }
+    template<typename T>
+    void deleteCameraFixtureUMWPP(umwpp<umwpp<T>> &uwpp, CameraFixture* fc)
+    {
+        WPP wpp(fc, WPP::VWILDCARD);
+        for (auto& it: uwpp)
+            deleteCameraFixtureUMWPP(it.second, fc);
+    }
+    template<typename T>
+    void deletePairUMWPP(umwpp<T> &uwpp, CameraFixture* cf, FixtureCamera* fc)
+    {
+        uwpp.erase(uwpp.find(WPP(cf, fc)));
+    }
+    template<typename T>
+    void deletePairUMWPP(umwpp<umwpp<T>> &uwpp, CameraFixture* cf, FixtureCamera* fc)
+    {
+        for (auto& it: uwpp)
+            deletePairUMWPP(it.second, cf, fc);
+    }
+
     virtual FixtureCamera      *fabricateCamera();
     virtual CameraFixture      *fabricateCameraFixture();
     virtual SceneFeaturePoint  *fabricateFeaturePoint();
@@ -68,6 +111,7 @@ public:
     /* These methods  compleatly purge camera from scene */
     virtual void deleteCamera        (FixtureCamera *camera);
     virtual void deleteCameraFixture (CameraFixture *fixture, bool recursive = true);
+    virtual void deleteFixturePair   (CameraFixture *fixture, FixtureCamera *camera);
     virtual void deleteFeaturePoint  (SceneFeaturePoint *camera);
 
 
