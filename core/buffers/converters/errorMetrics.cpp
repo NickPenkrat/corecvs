@@ -91,7 +91,7 @@ double ErrorMetrics::Ymse(G12Buffer *bayer, RGB48Buffer *debayer, int border)
     {
         for (int j = border; j < bayer->w - border; j++)
         {
-            err += pow((int32_t)y->element(i, j) - debayer->element(i, j).Y(), 2);
+            err += pow((int32_t)y->element(i, j) - debayer->element(i, j).yh(), 2);
         }
     }
 
