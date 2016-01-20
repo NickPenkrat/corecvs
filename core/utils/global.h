@@ -296,6 +296,14 @@ inline int snprintf2buf(char (&d)[size], cchar* fmt, ...)
 #include <tuple>
 namespace std
 {
+    template<typename T>
+    struct hash
+    {
+        size_t operator() (const T &t) const
+        {
+            return hash<typename underlying_type<T>::type>()(static_cast<typename underlying_type<T>::type>(t));
+        }
+    };
     template<typename U, typename V>
     struct hash<pair<U, V>>
     {
@@ -304,10 +312,6 @@ namespace std
             return std::hash<U>()(p.first) ^ std::hash<V>()(p.second);
         }
     };
-};
-
-namespace std
-{
     // Numbers were stolen from boost (actually it very similar to LFG ideas)
     template<typename T>
     size_t hash_append(size_t seed, const T &t)
