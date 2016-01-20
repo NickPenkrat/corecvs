@@ -293,6 +293,7 @@ inline int snprintf2buf(char (&d)[size], cchar* fmt, ...)
 }
 
 #include <algorithm>
+#include <tuple>
 namespace std
 {
     template<typename U, typename V>
@@ -303,6 +304,41 @@ namespace std
             return std::hash<U>()(p.first) ^ std::hash<V>()(p.second);
         }
     };
+};
+
+namespace std
+{
+    // Numbers were stolen from boost (actually it very similar to LFG ideas)
+    template<typename T>
+    size_t hash_append(size_t seed, const T &t)
+    {
+        return std::hash<T>()(t) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
+    template<typename T, size_t n = tuple_size<T>::value - 1>
+    struct hash_calc
+    {
+        size_t operator() (const T &t, size_t seed) const
+        {
+            auto foo = hash_calc<T, n - 1>()(t, seed);
+            return hash_append(foo, std::get<n>(t));
+        }
+    };
+    template<typename T>
+    struct hash_calc<T, 0>
+    {
+        size_t operator() (const T &t, size_t seed) const
+        {
+            return hash_append(seed, std::get<0>(t));
+        }
+    };
+    template<typename ... T>
+    struct hash<std::tuple<T...>>
+    {
+        size_t operator() (const std::tuple<T...> &t) const
+        {
+            return hash_calc<std::tuple<T...>>()(t, 0);
+        }
+   };
 };
 
 
