@@ -248,7 +248,7 @@ bool FixtureScene::checkIntegrity()
 
 
 
-void FixtureScene::positionCameraInFixture(CameraFixture *fixture, FixtureCamera *camera, const Affine3DQ &location)
+void FixtureScene::positionCameraInFixture(CameraFixture * /*fixture */, FixtureCamera *camera, const Affine3DQ &location)
 {
 
 
@@ -292,6 +292,32 @@ void FixtureScene::dumpInfo(ostream &out)
         }
     }
 
+}
+
+void FixtureScene::setFixtureCount(int count)
+{
+    while  (fixtures.size() > (size_t)count) {
+        CameraFixture *fixture = fixtures.back();
+        fixtures.pop_back(); /* delete camera will generally do it, but only in owner scene.*/
+        deleteCameraFixture(fixture);
+    }
+
+    while  (fixtures.size() < (size_t)fixtures) {
+        createCameraFixture();
+    }
+}
+
+void FixtureScene::setOrphanCameraCount(int count)
+{
+    while  (orphanCameras.size() > (size_t)count) {
+        FixtureCamera *model = orphanCameras.back();
+        cameras.pop_back(); /* delete camera will generally do it, but only in owner scene.*/
+        deleteCamera(model);
+    }
+
+    while  (orphanCameras.size() < (size_t)count) {
+        createCamera();
+    }
 }
 
 FixtureScene::~FixtureScene()

@@ -637,8 +637,9 @@ void AdvancedImageWidget::setFitWindow(bool flag)
 
 void AdvancedImageWidget::setCompactStyle(bool flag)
 {
-    mUi->fitToWindowCheckBox->setIcon(QIcon(":/prefix/new/zoom_extend.png"));
-    mUi->fitToWindowCheckBox->setText("");
+    mUi->zoomInButton ->setHidden(flag);
+    mUi->zoomOutButton->setHidden(flag);
+    mUi->expSpinBox->setHidden(flag);
 }
 
 void AdvancedImageWidget::childResized (QResizeEvent * /*event*/)

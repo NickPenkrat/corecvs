@@ -139,5 +139,7 @@
     <qresource prefix="/new/images">
         <file>zoom_actual_equal.png</file>
         <file>zoom_extend.png</file>
+        <file>layer_resize_actual.png</file>
+        <file>layer_resize.png</file>
     </qresource>
 </RCC>

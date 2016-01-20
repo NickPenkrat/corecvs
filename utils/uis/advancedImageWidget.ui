@@ -372,22 +372,56 @@
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="fitToWindowCheckBox">
+           <widget class="QPushButton" name="fitToWindowCheckBox">
+            <property name="toolTip">
+             <string>Fit To View Area</string>
+            </property>
             <property name="text">
-             <string>Fit</string>
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="../../resources/main.qrc">
+              <normaloff>:/new/images/layer_resize.png</normaloff>
+              <normalon>:/new/images/layer_resize_actual.png</normalon>:/new/images/layer_resize.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>24</width>
+              <height>24</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="aspectCheckBox">
+           <widget class="QPushButton" name="aspectCheckBox">
             <property name="enabled">
              <bool>false</bool>
             </property>
-            <property name="text">
+            <property name="toolTip">
              <string>Keep Aspect</string>
             </property>
-            <property name="checked">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="../../resources/main.qrc">
+              <normaloff>:/new/images/zoom_actual_equal.png</normaloff>
+              <normalon>:/new/images/zoom_extend.png</normalon>:/new/images/zoom_actual_equal.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>24</width>
+              <height>24</height>
+             </size>
+            </property>
+            <property name="checkable">
              <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
             </property>
            </widget>
           </item>
@@ -488,7 +522,7 @@
              <bool>true</bool>
             </property>
             <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -500,7 +534,7 @@
             </item>
             <item>
              <property name="text">
-              <string>90deg</string>
+              <string>90°</string>
              </property>
              <property name="icon">
               <iconset resource="../../resources/main.qrc">
@@ -509,7 +543,7 @@
             </item>
             <item>
              <property name="text">
-              <string>180deg</string>
+              <string>180°</string>
              </property>
              <property name="icon">
               <iconset resource="../../resources/main.qrc">
@@ -518,7 +552,7 @@
             </item>
             <item>
              <property name="text">
-              <string>270deg</string>
+              <string>270°</string>
              </property>
              <property name="icon">
               <iconset resource="../../resources/main.qrc">
@@ -641,8 +675,8 @@
    <slot>freezeImage()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>38</x>
-     <y>49</y>
+     <x>37</x>
+     <y>59</y>
     </hint>
     <hint type="destinationlabel">
      <x>100</x>
@@ -657,8 +691,8 @@
    <slot>saveImageToFile()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>521</x>
-     <y>49</y>
+     <x>1043</x>
+     <y>59</y>
     </hint>
     <hint type="destinationlabel">
      <x>748</x>
@@ -673,8 +707,8 @@
    <slot>stopSaveFlow()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>572</x>
-     <y>49</y>
+     <x>1082</x>
+     <y>59</y>
     </hint>
     <hint type="destinationlabel">
      <x>780</x>
@@ -689,8 +723,8 @@
    <slot>zoomIn()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>435</x>
-     <y>49</y>
+     <x>345</x>
+     <y>59</y>
     </hint>
     <hint type="destinationlabel">
      <x>780</x>
@@ -705,44 +739,12 @@
    <slot>zoomOut()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>395</x>
-     <y>49</y>
+     <x>311</x>
+     <y>59</y>
     </hint>
     <hint type="destinationlabel">
      <x>780</x>
      <y>204</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>fitToWindowCheckBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>advancedImageWidget</receiver>
-   <slot>fitToggled()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>212</x>
-     <y>44</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>780</x>
-     <y>263</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>aspectCheckBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>advancedImageWidget</receiver>
-   <slot>fitToggled()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>309</x>
-     <y>44</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>780</x>
-     <y>236</y>
     </hint>
    </hints>
   </connection>
@@ -753,28 +755,12 @@
    <slot>zoomReset()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>475</x>
-     <y>49</y>
+     <x>379</x>
+     <y>59</y>
     </hint>
     <hint type="destinationlabel">
      <x>780</x>
      <y>123</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>fitToWindowCheckBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>aspectCheckBox</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>212</x>
-     <y>44</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>309</x>
-     <y>44</y>
     </hint>
    </hints>
   </connection>
@@ -785,8 +771,8 @@
    <slot>zoomChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>355</x>
-     <y>27</y>
+     <x>277</x>
+     <y>54</y>
     </hint>
     <hint type="destinationlabel">
      <x>741</x>
@@ -807,6 +793,54 @@
     <hint type="destinationlabel">
      <x>544</x>
      <y>405</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>aspectCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>advancedImageWidget</receiver>
+   <slot>fitToggled()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>218</x>
+     <y>46</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1087</x>
+     <y>114</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fitToWindowCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>advancedImageWidget</receiver>
+   <slot>fitToggled()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>171</x>
+     <y>42</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1089</x>
+     <y>92</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fitToWindowCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>aspectCheckBox</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>185</x>
+     <y>43</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>208</x>
+     <y>42</y>
     </hint>
    </hints>
   </connection>

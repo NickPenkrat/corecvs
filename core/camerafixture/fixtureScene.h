@@ -97,6 +97,30 @@ public:
         return toReturn;
     }
 
+    /**
+     *
+     **/
+    void setFixtureCount(int count);
+    void setOrphanCameraCount(int count);
+
+
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        /* So far compatibilty is on */
+        int ocamsize = orphanCameras.size();
+        visitor.visit(camsize, 0, "orphancameras.size");
+
+        setOrphanCameraCount(camsize);
+
+        for (size_t i = 0; i < (size_t)camsize; i++)
+        {
+            visitor.visit(*cameras[i], "orphancameras");
+        }
+
+
+    }
+
     virtual ~FixtureScene();
 };
 
