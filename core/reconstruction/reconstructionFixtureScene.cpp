@@ -1,5 +1,7 @@
 #include "reconstructionFixtureScene.h"
 
+#include <set>
+
 using namespace corecvs;
 
 ReconstructionFixtureScene::ReconstructionFixtureScene()
@@ -24,6 +26,7 @@ void ReconstructionFixtureScene::deleteCameraFixture(CameraFixture *fixture, boo
     deleteCameraFixtureUMWPP(trackMap,  fixture);
     initializationData.erase(fixture);
     vectorErase(placedFixtures, fixture);
+    vectorErase(placingQueue, fixture);
 }
 
 void ReconstructionFixtureScene::deleteFixturePair(CameraFixture *fixture, FixtureCamera *camera)
@@ -33,4 +36,21 @@ void ReconstructionFixtureScene::deleteFixturePair(CameraFixture *fixture, Fixtu
     deletePairUMWPP(keyPoints, fixture, camera);
     deletePairUMWPP(matches,   fixture, camera);
     deletePairUMWPP(trackMap,  fixture, camera);
+}
+
+void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams &params)
+{
+}
+
+int ReconstructionFixtureScene::getDistinctCameraCount() const
+{
+    std::set<FixtureCamera*> cameras;
+    for (auto& f: placedFixtures)
+    {
+        for (auto& c: f->cameras)
+        {
+            cameras.insert(c);
+        }
+    }
+    return cameras.size();
 }

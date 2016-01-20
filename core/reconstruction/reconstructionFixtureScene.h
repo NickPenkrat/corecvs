@@ -8,6 +8,9 @@
 
 namespace corecvs
 {
+struct FeatureDetectionParams
+{
+};
 class ReconstructionFixtureScene : public FixtureScene
 {
 public:
@@ -18,6 +21,12 @@ public:
     virtual void deleteFixturePair   (CameraFixture *fixture, FixtureCamera *camera);
     virtual void deleteFeaturePoint  (SceneFeaturePoint *camera);
 
+    //\brief Detect and match features between all images
+    void detectAllFeatures(const FeatureDetectionParams &params);
+
+    //\brief Returns number of FixtureCamera's in placedFixtures fixtures
+    int getDistinctCameraCount() const;
+
 
     std::vector<SceneFeaturePoint*> trackedFeatures;
     umwpp<std::string> images;
@@ -26,6 +35,7 @@ public:
     umwpp<std::unordered_map<int, int>> trackMap;
     std::unordered_map<CameraFixture*, int> initializationData;
     std::vector<CameraFixture*> placedFixtures;
+    std::vector<CameraFixture*> placingQueue;
 
 };
 }
