@@ -71,6 +71,7 @@ public:
     U* u;
     V* v;
 };
+typedef WildcardablePointerPair<CameraFixture, FixtureCamera> WPP;
 
 
 class SceneFeaturePoint : public FixtureScenePart
@@ -98,7 +99,6 @@ public:
 
     /** Observation related block */
     typedef std::unordered_map<FixtureCamera *, SceneObservation> ObservContainer;
-    typedef WildcardablePointerPair<CameraFixture, FixtureCamera> WPP;
     ObservContainer observations;
     std::unordered_map<WildcardablePointerPair<CameraFixture, FixtureCamera>, SceneObservation> observations__;
 
