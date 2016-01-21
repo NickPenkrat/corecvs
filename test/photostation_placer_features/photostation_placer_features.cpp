@@ -52,9 +52,10 @@ corecvs::Vector3dd convertVector(const corecvs::Vector3dd& geodesic)
 }
 
 // For easy control over ps number
-const int PSN = 9;
+const int PSN = 3;
 const int CP = 6;
 corecvs::Vector3dd mp(0, 0, 0);
+#if 0
 
 // Obsolete
 std::vector<PointObservation__> parsePois(CalibrationJob &calibration, const std::string &filename, int camIdOffset = 3, bool distorted = false, bool less10Cams = true)
@@ -310,3 +311,100 @@ int main()
 #endif
     return 0;
 }
+#else
+int main()
+{
+    init_opencv_detectors_provider();
+    init_opencv_matchers_provider();
+    init_opencv_reader_provider();
+    init_opencv_descriptors_provider();
+    init_opencv_reader_provider();
+
+    corecvs::Vector3dd positions[] =
+    {
+        corecvs::Vector3dd(140.617, 576.200, 164.136),
+        corecvs::Vector3dd(134.637, 575.080, 164.099),
+        corecvs::Vector3dd(139.161, 572.191, 164.056),
+        corecvs::Vector3dd(132.418, 571.214, 164.020),
+        corecvs::Vector3dd(138.423, 567.795, 164.064),
+        corecvs::Vector3dd(129.873, 567.804, 164.097),
+        corecvs::Vector3dd(134.916, 563.506, 164.114),
+        corecvs::Vector3dd(124.671, 567.081, 164.121),
+        corecvs::Vector3dd(146.231, 575.418, 164.191),
+    };
+
+
+    char psPrefixes[9] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'};
+
+    std::string topconBase(std::getenv("TOPCON_DIR"));
+    std::string prefix = topconBase + "data/tests/reconstruction/GGGGGGGGG/roof_1_SP";
+    std::string postfix= "_0deg_undist.jpg";
+
+    std::vector<std::vector<std::string>> images;
+    images.resize(PSN);
+    for (int i = 0; i < PSN; ++i)
+    {
+        images[i].resize(CP);
+        for (int j = 0; j < CP; ++j)
+        {
+            std::stringstream ss;
+            ss << prefix << psPrefixes[i] << j << postfix;
+            images[i][j] = ss.str();
+        }
+    }
+
+    corecvs::Photostation photostation;
+    JSONGetter getter("calibration.json");
+    CalibrationJob job;
+    getter.visit(job, "job");
+
+    photostation = job.photostation;
+    for (size_t i = 0; i < CP; ++i)
+    {
+        photostation.cameras[i].extrinsics.position /= 1e3;
+    }
+
+#if 0
+    for (int i = 0; i < PSN; ++i)
+    {
+        auto& ps = pp.calibratedPhotostations[i] = photostation;
+        std::stringstream ss;
+        ss << "SP" << ((char)('A' + i));
+        ps.name = ss.str();
+    }
+#endif
+
+    ReconstructionFixtureScene rfs;
+    std::vector<FixtureCamera*> cameras;
+    std::vector<CameraFixture*> photostations;
+    for (int i = 0; i < CP; ++i)
+    {
+        cameras.push_back(rfs.createCamera());
+        cameras.rbegin()[0]->intrinsics = photostation.cameras[i].intrinsics;
+        cameras.rbegin()[0]->extrinsics = photostation.cameras[i].extrinsics;
+        cameras.rbegin()[0]->distortion = photostation.cameras[i].distortion;
+        cameras.rbegin()[0]->nameId = photostation.cameras[i].nameId;
+    }
+    for (int i = 0; i < PSN; ++i)
+    {
+        photostations.push_back(rfs.createCameraFixture());
+        for (int j = 0; j < CP; ++j)
+        {
+            rfs.addCameraToFixture(cameras[j], photostations[i]);
+            rfs.images[WPP(photostations[i], cameras[j])] = images[i][j];
+        }
+        rfs.initializationData[photostations[i]].initializationType = PhotostationInitializationType::GPS;
+        rfs.initializationData[photostations[i]].initData.shift = positions[psPrefixes[i] - 'A'];
+        std::stringstream ss;
+        ss << "SP" << ((char)('A' + i));
+        rfs.fixtures[i]->name = ss.str();
+    }
+    rfs.placingQueue = photostations;
+
+    PhotostationPlacer pp;
+    pp.scene = &rfs;
+    pp.detectAll();
+    pp.initialize();
+    return 0;
+}
+#endif
