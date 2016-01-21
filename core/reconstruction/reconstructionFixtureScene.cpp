@@ -40,6 +40,12 @@ void ReconstructionFixtureScene::deleteFixturePair(CameraFixture *fixture, Fixtu
     deletePairUMWPP(trackMap,  fixture, camera);
 }
 
+void ReconstructionFixtureScene::deleteFeaturePoint(SceneFeaturePoint *point)
+{
+    FixtureScene::deleteFeaturePoint(point);
+    vectorErase(trackedFeatures, point);    
+}
+
 void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams &params)
 {
     // Mapping from indexes to fixture,camera pairs
