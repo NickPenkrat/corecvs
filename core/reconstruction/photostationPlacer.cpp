@@ -3,9 +3,11 @@
 #include <unordered_map>
 #include <random>
 #include <sstream>
+#include <tuple>
 
 #include "featureMatchingPipeline.h"
 #include "essentialEstimator.h"
+#include "essentialFeatureFilter.h"
 #include "relativeNonCentralRansacSolver.h"
 #include "absoluteNonCentralRansacSolver.h"
 #include "bufferReaderProvider.h"
@@ -915,8 +917,11 @@ void corecvs::PhotostationPlacer::selectEpipolarInliers()
         }
     }
 }
+#endif
 
-std::atomic<int> corecvs::PhotostationPlacer::ParallelEssentialFilter::cntr;
+//std::atomic<int> corecvs::PhotostationPlacer::ParallelEssentialFilter::cntr;
+
+#if 0
 void corecvs::PhotostationPlacer::estimateFirstPair()
 {
 #ifdef WITH_TBB
@@ -1026,104 +1031,45 @@ void corecvs::PhotostationPlacer::estimatePair(int psA, int psB)
     pairInliers.emplace_back(psA, psB, solver.getBestInliers());
 #endif
 }
+#endif
 
-void corecvs::PhotostationPlacer::filterEssentialRansac(int psA, int camA, int psB, int camB)
+void corecvs::PhotostationPlacer::filterEssentialRansac(WPP a, WPP b)
 {
-    auto matches = getCameraMatches(psA, camA, psB, camB);
-    std::vector<int> ransacableIdx;
-    for (auto&t: matches)
-        if (std::get<2>(t) < b2bRansacP5RPThreshold)
-            ransacableIdx.push_back(&t - &matches[0]);
+    bool swap = !(a < b);
+    WPP idA = swap ? b : a;
+    WPP idB = swap ? a : b;
 
-    int bestInlierCnt = 0;
-    std::vector<int> bestInliers;
+    std::vector<std::array<corecvs::Vector2dd, 2>> features, featuresInlier;
+    auto K1 = idA.v->intrinsics.getKMatrix33();
+    auto K2 = idB.v->intrinsics.getKMatrix33();
 
-    std::mt19937 rng;
-    int N = (int)ransacableIdx.size();
-    std::cout << psA << ":" << camA << "<>" << psB << ":" << camB << ": " << ransacableIdx.size() << std::endl;
-    if (N == 0)
-        return;
-    auto K1 = calibratedPhotostations[psA].getRawCamera(camA).intrinsics.getKMatrix33().inv();
-    auto K2 = calibratedPhotostations[psB].getRawCamera(camB).intrinsics.getKMatrix33().inv();
-
-    for (int it = 0; it < maxEssentialRansacIterations; ++it)
+    auto& mm = scene->matches[idA][idB];
+    auto& kpA= scene->keyPoints[idA];
+    auto& kpB= scene->keyPoints[idB];
+    features.reserve(mm.size());
+    featuresInlier.resize(mm.size());
+    int idf = 0;
+    for (auto& m: mm)
     {
-        const int NSEL = 5;
-        int idxs[NSEL];
-        int rdy = 0;
-        for (; rdy < NSEL;)
-        {
-            int idx = ransacableIdx[rng() % N];
-            bool ok = true;
-            for (int i = 0; i < rdy && ok; ++i)
-                if (idxs[i] == idx)
-                    ok = false;
-            if (!ok) continue;
-            idxs[rdy++] = idx;
-        }
-
-        std::vector<corecvs::Correspondence> cv;
-        cv.reserve(NSEL);
-        for (auto& id: idxs)
-        {
-            corecvs::Correspondence corr;
-            corr.start = K1 * std::get<0>(matches[id]);
-            corr.end   = K2 * std::get<1>(matches[id]);
-            cv.push_back(corr);
-        }
-        std::vector<Correspondence*> cl;
-        for (auto& cc: cv)
-            cl.push_back(&cc);
-
-        auto Fv = corecvs::EssentialEstimator().getEssential5point(cl);
-
-        for (auto& F: Fv)
-        {
-            EssentialDecomposition decompositions[4];
-            F.decompose(decompositions);
-            int inlierCnt[4] = {0};
-            corecvs::Matrix33 FM = K1.transposed() * F * K2;
-            std::vector<int> inliers[4];
-            for (auto &m: matches)
-            {
-                corecvs::Vector2dd L = std::get<0>(m);
-                corecvs::Vector2dd R = std::get<1>(m);
-                corecvs::Line2d lineL = FM.mulBy2dRight(R);
-                corecvs::Line2d lineR = FM.mulBy2dLeft(L);
-                double diff = std::max(lineL.distanceTo(L), lineR.distanceTo(R));
-
-                if (diff < inlierP5RPThreshold)
-                {
-                    for (int i = 0; i < 4; ++i)
-                    {
-                        double scaleL, scaleR, foo;
-                        auto R1 = K2 * R;
-                        auto L1 = K1 * L;
-
-                        decompositions[i].getScaler(L1, R1, scaleL, scaleR, foo);
-                        if (scaleL > 0.0 && scaleR > 0.0)
-                        {
-                            ++inlierCnt[i];
-                            inliers[i].push_back(&m - &matches[0]);
-                        }
-                    }
-                }
-            }
-            for (int i = 0; i < 4; ++i)
-            {
-                if (inlierCnt[i] > bestInlierCnt)
-                {
-                    bestInlierCnt = inlierCnt[i];
-                    bestInliers = std::move(inliers[i]);
-                }
-            }
-        }
+        int idA = std::get<0>(m);
+        int idB = std::get<1>(m);
+        auto fA = kpA[idA].first;
+        auto fB = kpB[idB].first;
+        int id = &m - &mm[0];
+        featuresInlier[id][0] = fA;
+        featuresInlier[id][1] = fB;
+        if (std::get<2>(m) < b2bRansacP5RPThreshold)
+           features.push_back(featuresInlier[id]);
     }
-    std::cout << "ESSF: " << psA << "|" << camA << " <> " << psB << "|" << camB << " " << bestInliers.size() << " (" << matches.size() << ") " << ((double)bestInliers.size())/(double)matches.size() << std::endl;
+
+    EssentialFeatureFilter filter(K1, K2, features, featuresInlier, inlierP5RPThreshold, 0.001, maxEssentialRansacIterations);
+    filter.estimate();
+    auto bestInliers = filter.inlierIdx;
+
     std::vector<int> delIdx;
     std::sort(bestInliers.begin(), bestInliers.end());
     int inlierId = 0;
-    for (int i = 0; i < (int)matches.size(); ++i)
+    for (int i = 0; i < (int)mm.size(); ++i)
     {
         if (inlierId < (int)bestInliers.size() && bestInliers[inlierId] == i)
         {
@@ -1132,38 +1078,34 @@ void corecvs::PhotostationPlacer::filterEssentialRansac(int psA, int camA, int p
         }
         delIdx.push_back(i);
     }
+    std::cout << "Total: " << featuresInlier.size() << " good: " << features.size() << " del: " << delIdx.size() << " rem: " << bestInliers.size() << " (" << ((double)bestInliers.size()) / featuresInlier.size() * 100.0 << "%)" << idA.u->name << idA.v->nameId << "<>" << idB.u->name << idB.v->nameId << std::endl;
 #ifdef WITH_TBB
     tbb::mutex::scoped_lock(mutex);
 #endif
-    remove(psA, camA, psB, camB, delIdx);
+    remove(a, b, delIdx);
 }
-#endif
 
-#if 0
-void corecvs::PhotostationPlacer::filterEssentialRansac()
+void corecvs::PhotostationPlacer::filterEssentialRansac(int cnt)
 {
-    CORE_ASSERT_TRUE_S(calibratedPhotostations.size() >= 3);
-    matchesCopy = matches;
-    std::vector<std::tuple<int, int, int, int>> work;
-    for (int psA = 0; psA < 3; ++psA)
+    scene->matchesCopy = scene->matches;
+    std::vector<std::pair<WPP, WPP>> work;
+    for (int psA = 0; psA < cnt; ++psA)
     {
-        for (int psB = psA; psB < 3; ++psB)
+        for (int psB = psA; psB < cnt; ++psB)
         {
-            for (int camA = 0; camA < (int)calibratedPhotostations[psA].cameras.size(); ++camA)
+            for (int camA = 0; camA < (int)scene->placingQueue[psA]->cameras.size(); ++camA)
             {
-                for (int camB = 0; camB < (int)calibratedPhotostations[psB].cameras.size(); ++camB)
+                for (int camB = 0; camB < (int)scene->placingQueue[psB]->cameras.size(); ++camB)
                 {
-                    work.emplace_back(psA, camA, psB, camB);
-//                    filterEssentialRansac(psA, camA, psB, camB);
+                    work.emplace_back(WPP(scene->placingQueue[psA], scene->placingQueue[psA]->cameras[camA]), WPP(scene->placingQueue[psB], scene->placingQueue[psB]->cameras[camB]));
                 }
             }
         }
     }
     corecvs::parallelable_for(0, (int)work.size(), ParallelEssentialFilter(this, work));
 }
-#endif
 
-bool corecvs::PhotostationPlacer::initalize()
+bool corecvs::PhotostationPlacer::initialize()
 {
     if (scene->state != ReconstructionState::MATCHED)
         return false;
@@ -1191,6 +1133,7 @@ bool corecvs::PhotostationPlacer::initalize()
 
 bool corecvs::PhotostationPlacer::initGPS()
 {
+    filterEssentialRansac(3);
     return true;
 }
 
@@ -1212,27 +1155,27 @@ bool corecvs::PhotostationPlacer::initFIXED()
     return true;
 }
 
-#if 0
-void corecvs::PhotostationPlacer::remove(int psA, int psB, std::vector<int> idx)
+void corecvs::PhotostationPlacer::remove(WPP a, WPP b, std::vector<int> idx)
 {
-    bool swap = psA > psB;
-    int id1 = swap ? psB : psA;
-    int id2 = swap ? psA : psB;
-    int okay = 0;
+    bool swap = !(a < b);
+    auto& ref = scene->matches[swap ? b : a][swap ? a : b];
+    CORE_ASSERT_TRUE_S(idx.size() <= ref.size());
+    int ok = 0;
     std::sort(idx.begin(), idx.end());
     int idxSkip = 0;
-    for (int i = 0; i < (int)matches[id1][id2 - id1].size(); ++i)
+    for (int i = 0; i < (int)ref.size(); ++i)
     {
         if (idxSkip < (int)idx.size() && i == idx[idxSkip])
         {
             idxSkip++;
             continue;
         }
-        matches[id1][id2 - id1][okay++] = matches[id1][id2 - id1][i];
+        ref[ok++] = ref[i];
     }
-    matches[id1][id2 - id1].resize(okay);
+    ref.resize(ok);
 }
 
+#if 0
 void corecvs::PhotostationPlacer::remove(int psA, int camA, int psB, int camB, std::vector<int> idx)
 {
     auto psps = getPhotostationMatches(psA, psB);

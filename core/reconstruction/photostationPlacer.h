@@ -86,7 +86,7 @@ struct PhotostationPlacerEssentialFilterParams
 {
     double b2bRansacP5RPThreshold = 0.8;
     double inlierP5RPThreshold = 5.0;
-    int maxEssentialRansacIterations = 1000;
+    int maxEssentialRansacIterations = 16000;
     double b2bRansacP6RPThreshold = 0.8;
 
     template<typename V>
@@ -151,12 +151,12 @@ public:
     corecvs::Mesh3D dumpMesh(const std::string &filename, bool drawTracks = false, bool center = true);
 #endif
     void detectAll();
-    bool initalize();
+    bool initialize();
     bool initGPS();
     bool initNONE();
     bool initSTATIC();
     bool initFIXED();
-    //void filterEssentialRansac();
+    void filterEssentialRansac(int cnt);
 #if 0
     void estimateFirstPair();
     void estimatePair(int psA, int psB);
@@ -317,30 +317,37 @@ private:
 	double scoreFundamental(int psA, int camA, corecvs::Vector2dd ptA,
 			                int psB, int camB, corecvs::Vector2dd ptB);
     int preplaced = 0, placed = 0;
+#endif
     struct ParallelEssentialFilter
     {
         PhotostationPlacer* placer;
-        std::vector<std::tuple<int, int, int, int>> work;
-        static std::atomic<int> cntr;
-        ParallelEssentialFilter(PhotostationPlacer* placer, std::vector<std::tuple<int,int,int,int>> &work) : placer(placer), work(work) {cntr = 0;}
+        std::vector<std::pair<WPP, WPP>> work;
+//        static std::atomic<int> cntr;
+        ParallelEssentialFilter(PhotostationPlacer* placer, std::vector<std::pair<WPP, WPP>> &work) : placer(placer), work(work)
+        {
+        //    cntr = 0;
+        }
         void operator() (const corecvs::BlockedRange<int> &r) const
         {
             for (int i = r.begin(); i < r.end(); ++i)
             {
                 auto w = work[i];
-                placer->filterEssentialRansac(std::get<0>(w), std::get<1>(w), std::get<2>(w), std::get<3>(w));
-                cntr++;
-                std::cout << ((double)cntr) / work.size() * 100.0 << "% complete" << std::endl;
+                placer->filterEssentialRansac(w.first, w.second);
+//                cntr++;
+//                std::cout << ((double)cntr) / work.size() * 100.0 << "% complete" << std::endl;
             }
         }
     };
+#if 0
     void selectEpipolarInliers(int psA, int psB);
-    void filterEssentialRansac(int psA, int camA, int psB, int camB);
+#endif
+    void filterEssentialRansac(WPP a, WPP b);
+#if 0
     std::vector<std::tuple<int, corecvs::Vector2dd, int, corecvs::Vector2dd, double>> getPhotostationMatches(int psA, int psB);
     std::vector<std::tuple<corecvs::Vector2dd, corecvs::Vector2dd, double>> getCameraMatches(int psA, int camA, int psB, int camB);
     void remove(int psA, int psB, std::vector<int> idx);
-    void remove(int psA, int camA, int psB, int camB, std::vector<int> idx);
 #endif
+    void remove(WPP a, WPP b, std::vector<int> idx);
 #ifdef WITH_TBB
     tbb::mutex mutex;
 #endif

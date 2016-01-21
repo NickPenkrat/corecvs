@@ -58,6 +58,9 @@ public:
     //\brief Returns number of FixtureCamera's in placedFixtures fixtures
     int getDistinctCameraCount() const;
 
+    void printMatchStats() const;
+    void printMatchStats(const umwpp<umwppv<std::tuple<int, int, double>>> &m);
+
     // ==================================================================================
     // SERIALIZEABLE STATE
     std::vector<SceneFeaturePoint*> trackedFeatures;
@@ -72,6 +75,7 @@ public:
     bool is3DAligned = false;
     ReconstructionState state = ReconstructionState::NONE;
     // ==================================================================================
+    umwpp<umwppv<std::tuple<int, int, double>>> matchesCopy;
 };
 }
 
