@@ -84,6 +84,14 @@ public:
         return getWorldCamera(cam);
     }
 
+    int getCameraId(FixtureCamera* ptr) const
+    {
+        for (auto& i: cameras)
+            if (i == ptr)
+                return &i - &cameras[0];
+        return -1;
+    }
+
     void setCameraCount(int count);
 
     Matrix44 getMMatrix(int cam) const
