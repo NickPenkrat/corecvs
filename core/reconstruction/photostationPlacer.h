@@ -148,8 +148,8 @@ public:
     ReconstructionFixtureScene* scene;
 #if 0
     void fullRun();
-    corecvs::Mesh3D dumpMesh(const std::string &filename, bool drawTracks = false, bool center = true);
 #endif
+    corecvs::Mesh3D dumpMesh(const std::string &filename);
     void detectAll();
     bool initialize();
     bool initGPS();
@@ -157,10 +157,10 @@ public:
     bool initSTATIC();
     bool initFIXED();
     void filterEssentialRansac(int cnt);
-#if 0
     void estimateFirstPair();
-    void estimatePair(int psA, int psB);
+    void estimatePair(CameraFixture *psA, CameraFixture *psB);
     corecvs::Quaternion detectOrientationFirst();
+#if 0
     void selectEpipolarInliers();
     void backprojectAll();
     void buildTracks(int psA, int psB, int psC);
@@ -318,6 +318,7 @@ private:
 			                int psB, int camB, corecvs::Vector2dd ptB);
     int preplaced = 0, placed = 0;
 #endif
+    std::atomic<int> cntUsed, cntTotal;
     struct ParallelEssentialFilter
     {
         PhotostationPlacer* placer;
@@ -342,8 +343,8 @@ private:
     void selectEpipolarInliers(int psA, int psB);
 #endif
     void filterEssentialRansac(WPP a, WPP b);
+    std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd, double>> getPhotostationMatches(CameraFixture* psA, CameraFixture* psB);
 #if 0
-    std::vector<std::tuple<int, corecvs::Vector2dd, int, corecvs::Vector2dd, double>> getPhotostationMatches(int psA, int psB);
     std::vector<std::tuple<corecvs::Vector2dd, corecvs::Vector2dd, double>> getCameraMatches(int psA, int camA, int psB, int camB);
     void remove(int psA, int psB, std::vector<int> idx);
 #endif
