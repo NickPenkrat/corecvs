@@ -362,7 +362,7 @@ void ReconstructionJob::fill(std::unordered_map<std::string, corecvs::Affine3DQ>
 {
     std::cout << "psLocationCnt: " << psLocationCnt << std::endl;
 
-    for (int id = 0; id < psLocationCnt; ++id)
+    for (int id = 0; id < (int)psLocationCnt; id++)
     {
         std::stringstream ss;
         ss << "SP" << (char)('A' + id);

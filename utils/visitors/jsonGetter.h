@@ -17,6 +17,9 @@ using corecvs::PointerField;
 using corecvs::EnumField;
 using corecvs::DoubleVectorField;
 
+/**
+ *    This class allows to read form JSON file
+ **/
 class JSONGetter
 {
 public:
@@ -53,7 +56,7 @@ public:
     }
 
     /**
-     *  Visitor method that will traverse xml and object tree and fill object with data form xml
+     *  Visitor method that will traverse json and object tree and fill object with data form xml
      *
      **/
     template <class Type>
@@ -110,6 +113,16 @@ public:
             }
         }
     }
+
+    void visit(std::vector<std::string> &fields, QJsonArray &array)
+    {
+        fields.clear();
+        foreach (QJsonValue v, array)
+        {
+            fields.push_back(v.toString().toStdString());
+        }
+    }
+
     template <typename innerType>
     void visit(std::vector<std::vector<innerType>> &fields, const char* arrayName)
     {
@@ -130,6 +143,23 @@ public:
             }
         }
     }
+
+    template <typename innerType>
+    void visit(std::vector<std::vector<innerType>> &fields, QJsonArray &array)
+    {
+        fields.clear();
+        foreach (QJsonValue v, array)
+        {
+            if (!v.isArray())
+                continue;
+            std::vector<innerType> inner;
+            QJsonArray array = v.toArray();
+            visit(inner, array);
+            fields.push_back(inner);
+        }
+    }
+
+
 
     template <typename innerType, typename std::enable_if<!std::is_arithmetic<innerType>::value,int>::type foo = 0>
     void visit(std::vector<innerType> &fields, QJsonArray &array)
@@ -192,6 +222,9 @@ template <>
 void JSONGetter::visit<std::string>(std::string &stringField, std::string defaultValue, const char* fieldName);
 
 /* New style visitor */
+
+template <>
+void JSONGetter::visit<unsigned char, IntField>(unsigned char &field, const IntField *fieldDescriptor);
 
 template <>
 void JSONGetter::visit<int, IntField>(int &field, const IntField *fieldDescriptor);

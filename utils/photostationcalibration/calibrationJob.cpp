@@ -27,8 +27,10 @@ bool CalibrationJob::detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::Sel
 void CalibrationJob::fit(int referenceLayerCamerasCount)
 {
     std::vector<int> perm;
-    for (int i = 0; i < photostation.cameras.size(); ++i)
+    for (int i = 0; i < (int)photostation.cameras.size(); ++i) {
         perm.push_back(i);
+    }
+
     std::sort(perm.begin(), perm.end(), [&](const int &a, const int &b) { return photostation.cameras[a].nameId < photostation.cameras[b].nameId; });
 
     auto cameras = photostation.cameras;
@@ -37,7 +39,7 @@ void CalibrationJob::fit(int referenceLayerCamerasCount)
     for (auto& s: calibrationSetups)
         for (auto& v: s)
             v.cameraId = perm[v.cameraId];
-    for (int i = 0; i < cameras.size(); ++i)
+    for (size_t i = 0; i < cameras.size(); ++i)
     {
         observations[i] = observations[perm[i]];
         photostation.cameras[i] = cameras[perm[i]];
@@ -207,7 +209,7 @@ void CalibrationJob::allEstimateDistortion()
 
 
 void CalibrationJob::prepareUndistortionTransformation(int camId, corecvs::DisplacementBuffer &result)
-{
+    {
     auto& cam = photostation.cameras[camId];
     cam.estimateUndistortedSize(settings.distortionApplicationParameters);
    result = RadialCorrection(cam.distortion).getUndistortionTransformation(
@@ -280,9 +282,9 @@ bool CalibrationJob::calibrateSingleCamera(int cameraId)
 
     for (auto& o: observations[cameraId])
     {
-        PatternPoints3d patternPoints;
-        for (auto& p: usingUndistorted ? o.undistortedPattern : o.sourcePattern)
-            patternPoints.emplace_back(p.projection, p.point);
+        ObservationList patternPoints;
+        for (PointObservation& p: usingUndistorted ? o.undistortedPattern : o.sourcePattern)
+            patternPoints.emplace_back(PointObservation(p.point, p.projection));
 
         if (patternPoints.size())
         {
@@ -333,7 +335,7 @@ void CalibrationJob::allCalibrateSingleCamera()
     factors.resize(photostation.cameras.size(), 1.0);
     corecvs::parallelable_for(0, (int)photostation.cameras.size(), ParallelSingleCalibrator(this));
     double fac = 0.0;
-    for (auto& f : factors) {
+    for (double& f: factors) {
         fac += f;
     }
     fac /= factors.size();
@@ -392,8 +394,8 @@ void CalibrationJob::calibratePhotostation()
         for (auto& s: calibrationSetups[i])
         {
             points[i][s.cameraId].clear();
-            for (auto& p: usingUndistorted ? observations[s.cameraId][s.imageId].undistortedPattern : observations[s.cameraId][s.imageId].sourcePattern)
-                points[i][s.cameraId].emplace_back(p.projection, p.point);
+            for (PointObservation& p: usingUndistorted ? observations[s.cameraId][s.imageId].undistortedPattern : observations[s.cameraId][s.imageId].sourcePattern)
+                points[i][s.cameraId].emplace_back(PointObservation(p.point, p.projection));
         }
     }
 
@@ -439,23 +441,24 @@ void CalibrationJob::computeCalibrationErrors()
     auto setupLocsIterator = calibrationSetupLocations.begin();
     for (auto& s: calibrationSetups)
     {
-        auto loc = *setupLocsIterator;
+        CameraLocationData loc = *setupLocsIterator;
         photostation.setLocation(loc);
-        for (auto& v: s)
+        for (CalibrationSetupEntry& v: s)
         {
-            auto& view = observations[v.cameraId][v.imageId];
+            ImageData& view = observations[v.cameraId][v.imageId];
             int cam = v.cameraId;
 
             if (view.undistortedPattern.size())
             {
                 int cnt = 0;
-                double me = -1.0, rmse = 0.0;
+                double me = -1.0;
+                double rmse = 0.0;
 
-                for (auto &p: view.undistortedPattern)
+                for (PointObservation &p: view.undistortedPattern)
                 {
-                    auto ppp = p.point;
-                    ppp[1] *= factor;
-                    auto pp = photostation.project(ppp, cam) - p.projection;
+                    Vector3dd ppp = p.point;
+                    ppp.y() *= factor;
+                    Vector2dd pp = photostation.project(ppp, cam) - p.projection;
                     if (!pp > me)
                     {
                         me = !pp;
@@ -546,8 +549,8 @@ void CalibrationJob::computeSingleCameraErrors()
     {
         for (auto& c: s)
         {
-            auto cam = photostation.cameras[c.cameraId];
-            auto&view= observations[c.cameraId][c.imageId];
+            CameraModel cam = photostation.cameras[c.cameraId];
+            ImageData &view= observations[c.cameraId][c.imageId];
 
             if (view.undistortedPattern.size())
             {
@@ -555,11 +558,11 @@ void CalibrationJob::computeSingleCameraErrors()
                 double me = -1.0, rmse = 0.0;
                 cam.extrinsics = view.location;
 
-                for (auto &p: view.undistortedPattern)
+                for (PointObservation &p: view.undistortedPattern)
                 {
-                    auto ppp = p.point;
-                    ppp[1] *= factor;
-                    auto pp = cam.project(ppp) - p.projection;
+                    Vector3dd ppp = p.point;
+                    ppp.y() *= factor;
+                    Vector2dd pp = cam.project(ppp) - p.projection;
                     if (!pp > me)
                     {
                         me = !pp;
@@ -686,8 +689,7 @@ struct CommonPlaneNormalizer : FunctionArgs
             out[i] = in[i] /  denom;
     }
     CommonPlaneNormalizer() : FunctionArgs(4, 4)
-    {
-    }
+    {}
 };
 
 struct CommonPlaneFunctor : FunctionArgs
@@ -706,9 +708,8 @@ struct CommonPlaneFunctor : FunctionArgs
     corecvs::Photostation* ps;
     std::vector<int> topLayerIdx;
 
-    CommonPlaneFunctor(corecvs::Photostation *ps, std::vector<int> topLayerIdx) : FunctionArgs(4, topLayerIdx.size()), ps(ps), topLayerIdx(topLayerIdx)
-    {
-    }
+    CommonPlaneFunctor(corecvs::Photostation *ps, std::vector<int> topLayerIdx) : FunctionArgs(4, (int)topLayerIdx.size()), ps(ps), topLayerIdx(topLayerIdx)
+    {}
 };
 
 struct CircleFunctor : FunctionArgs
@@ -725,9 +726,8 @@ struct CircleFunctor : FunctionArgs
     }
     std::vector<corecvs::Vector2dd> projections;
 
-    CircleFunctor(std::vector<corecvs::Vector2dd> &topLayerProjections) : FunctionArgs(3, topLayerProjections.size()), projections(topLayerProjections)
-    {
-    }
+    CircleFunctor(std::vector<corecvs::Vector2dd> &topLayerProjections) : FunctionArgs(3, (int)topLayerProjections.size()), projections(topLayerProjections)
+    {}
 };
 
 void CalibrationJob::reorient(const corecvs::Vector3dd T, const corecvs::Quaternion Q)
@@ -739,7 +739,7 @@ void CalibrationJob::reorient(const corecvs::Vector3dd T, const corecvs::Quatern
 
     for (size_t i = 0; i < reoriented.cameras.size(); ++i)
     {
-        reoriented.cameras[i] = reoriented.getRawCamera(i);
+        reoriented.cameras[i] = reoriented.getRawCamera((int)i);
     }
     reoriented.location.rotor = corecvs::Quaternion(0, 0, 0, 1);
     reoriented.location.shift = corecvs::Vector3dd(0, 0, 0);
@@ -759,8 +759,8 @@ void CalibrationJob::reorient(const corecvs::Vector3dd T, const corecvs::Quatern
 
         for (size_t i = 0; i < photostation.cameras.size(); ++i)
         {
-            auto c1 = photostation.getRawCamera(i);
-            auto c2 = photostation.getRawCamera(i);
+            auto c1 = photostation.getRawCamera((int)i);
+            auto c2 = photostation.getRawCamera((int)i);
             CORE_ASSERT_TRUE_S(!(c1.extrinsics.position - c2.extrinsics.position) < 1e-6);
             double df = (c1.extrinsics.orientation ^ c2.extrinsics.orientation.conjugated())[3];
             double ang = std::acos(std::min(1.0, df)) * 2.0;

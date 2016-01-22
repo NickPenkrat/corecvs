@@ -820,10 +820,16 @@ void Debayer::gammaCurve(uint16_t *curve, int imax)
     MetaData &metadata = *mMetadata;
 
     // if no gamma coefficients are present (or valid), return no transform
-    auto& gammData = metadata["gamm"];
+    MetaValue& gammData = metadata["gamm"];
     if (gammData.empty() ||
-        ((gammData.size() == 5) && !(gammData[0] || gammData[1] || gammData[2] || gammData[3] || gammData[4])))
+        ((gammData.size() == 5) &&
+            !(gammData[0] == 0.0 ||
+              gammData[1] == 0.0 ||
+              gammData[2] == 0.0 ||
+              gammData[3] == 0.0 ||
+              gammData[4] == 0.0 ))) {
         return;
+    }
 
     int i;
     double r, g[6], bnd[2] = { 0, 0 };

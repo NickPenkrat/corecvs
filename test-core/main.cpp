@@ -44,7 +44,7 @@ TEST(EnvTest, CheckCurrentDirTest)
     CORE_ASSERT_TRUE(checkFileExist(string("."), filePath), "Missed expected repo DB at the current folder");
 }
 
-// Check existance for the "<TOPCON_DIR>data/dataMeasure_12_Roof/mosk_test_001_good/_DSC8173.jpg"
+// Check existance for the "<TOPCON_DIR>data/Measure_12_Roof/mosk_test_001_good/_DSC8173.jpg"
 TEST(EnvTest, CheckTopconDirTest)
 {
     string filePath = string("data")

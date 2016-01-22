@@ -203,11 +203,14 @@ TEST(CalibrationStructsTest, testPhotostationStruct)
     {
         Vector4dd src1;
         Vector3dd src2;
+        Vector2dd pt;
 
         for (int j = 0; j < Vector3dd::LENGTH; j++) {
             src2[j] = unif(rng);
             src1[j] = src2[j];
         }
+        pt[0] = unif(rng);
+        pt[1] = unif(rng);
 
         src1[3] = 1.0;
 
@@ -235,6 +238,9 @@ TEST(CalibrationStructsTest, testPhotostationStruct)
         CORE_ASSERT_TRUE_P(dst1.notTooFar(ref, 1e-6), (" "));
         CORE_ASSERT_TRUE_P(dst2.notTooFar(ref, 1e-6), (" "));
         CORE_ASSERT_TRUE_P(dst4.notTooFar(ref, 1e-6), (" "));
+
+        ASSERT_NEAR(!(C.rayFromPixel(pt).a - ps.rayFromPixel(pt, 0).a), 0.0, 1e-9);
+        ASSERT_NEAR(!(C.rayFromPixel(pt).p - ps.rayFromPixel(pt, 0).p), 0.0, 1e-9);
     }
 }
 
@@ -252,14 +258,28 @@ TEST(CalibrationStructsTest, testIntrinsicsStructisVisible)
 TEST(CalibrationStructsTest, testStructConversion)
 {
     CameraLocationAngles angles = CameraLocationAngles::FromAngles(45, 10, 2);
-    Quaternion q = Quaternion::FromMatrix(angles.toMatrix());
+    Quaternion q  = Quaternion::FromMatrix(angles.toMatrix());
+    Quaternion q1 = angles.toQuaternion();
+
+
+
     CameraLocationAngles anglesR = CameraLocationAngles::FromQuaternion(q);
     Quaternion qR = Quaternion::FromMatrix(anglesR.toMatrix());
 
     cout << "Original:" << std::endl;
     cout << angles << std::endl;
+    cout << "Quaternion form1:" << std::endl;
     q.printAxisAndAngle();
+
+    cout << "Quaternion form2:" << std::endl;
+    q1.printAxisAndAngle();
     cout << "Restored:" << std::endl;
     cout << anglesR << std::endl;
     qR.printAxisAndAngle();
+
+    ASSERT_TRUE(q.notTooFar(q1, 1e-6));
+    ASSERT_TRUE(q.notTooFar(qR, 1e-6));
+
+
+
 }

@@ -38,7 +38,7 @@ namespace corecvs {
 
 
 /**
- *   See CalibrationScene for more data on ownership of the objectes in structure
+ *   See FixtureScene for more data on ownership of the objectes in structure
  **/
 class Photostation : public ScenePart
 {
@@ -47,7 +47,7 @@ public:
     Affine3DQ                location;
     std::string              name;
 
-    Photostation(CalibrationScene * owner = NULL) :
+    Photostation(FixtureScene * owner = NULL) :
         ScenePart(owner)
     {}
 
@@ -83,6 +83,13 @@ public:
         location = _location;
     }
 
+    CameraModel getWorldCamera(const CameraModel &camPtr) const
+    {
+        CameraModel toReturn = camPtr;
+        toReturn.extrinsics.transform(location);
+        return toReturn;
+    }
+
 
     CameraModel getWorldCamera(int cam) const
     {
@@ -99,7 +106,7 @@ public:
         return c;*/
         return getWorldCamera(cam);
     }
-    
+
     Matrix44 getMMatrix(int cam) const
     {
         return getRawCamera(cam).getCameraMatrix();
@@ -108,6 +115,14 @@ public:
     Vector2dd project(const Vector3dd &pt, int cam) const
     {
         return cameras[cam].project(location.inverted().apply(pt));
+    }
+
+    Ray3d rayFromPixel(const Vector2dd &point, int cam) const
+    {
+        auto r = cameras[cam].rayFromPixel(point);
+        r.a = location.rotor * r.a;
+        r.p = location * r.p;
+        return r;
     }
 
     bool isVisible(const Vector3dd &pt, int cam) const
@@ -148,8 +163,5 @@ public:
         setLocation(loc);
     }
 };
-
-typedef std::vector<std::pair<Vector2dd, Vector3dd>> PatternPoints3d;
-typedef std::vector<PatternPoints3d>                 MultiCameraPatternPoints;
 
 } // namespace corecvs

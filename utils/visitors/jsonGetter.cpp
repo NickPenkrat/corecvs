@@ -93,6 +93,14 @@ void JSONGetter::visit<std::string>(std::string &stringField, std::string defaul
 /* And new style visitor method */
 
 template <>
+void JSONGetter::visit<unsigned char, IntField>(unsigned char &intField, const IntField * fieldDescriptor)
+{
+    int foo = intField;
+    visit<int>(foo, fieldDescriptor->defaultValue, fieldDescriptor->name.name);
+    intField = foo;
+}
+
+template <>
 void JSONGetter::visit<int, IntField>(int &intField, const IntField * fieldDescriptor)
 {
     visit<int>(intField, fieldDescriptor->defaultValue, fieldDescriptor->name.name);

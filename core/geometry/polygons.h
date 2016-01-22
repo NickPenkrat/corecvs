@@ -21,16 +21,35 @@ namespace corecvs {
 
 using std::vector;
 
-template<typename ElementType>
+template<typename PointType>
 class GenericTriangle
 {
 public:
-    Vector3d<ElementType> p1;
-    Vector3d<ElementType> p2;
-    Vector3d<ElementType> p3;
+    PointType p1;
+    PointType p2;
+    PointType p3;
+
+    GenericTriangle(const PointType p1, const PointType p2, const PointType p3) :
+        p1(p1),
+        p2(p2),
+        p3(p3)
+    {}
+
+
+    Plane3d getPlane() const
+    {
+        return Plane3d::FromPoints(p1, p2, p3);
+    }
+
+    Vector3dd getNormal() const
+    {
+        return Plane3d::NormalFromPoints(p1, p2, p3);
+    }
+
 };
 
-typedef GenericTriangle<int32_t> Triangle;
+typedef GenericTriangle<Vector3d<int32_t> > Triangle32;
+typedef GenericTriangle<Vector3d<double> > Triangled;
 
 
 class PointPath : public vector<Vector2dd>

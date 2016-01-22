@@ -236,7 +236,8 @@ isEmpty(CCACHE_TOOLCHAIN_ON) {
   }
 }
 
-!win32-msvc* {
+!win32-msvc* {    
+
     QMAKE_CFLAGS_DEBUG     -= -g
     QMAKE_CXXFLAGS_DEBUG   -= -g
     QMAKE_LFLAGS           -= -g
@@ -246,8 +247,8 @@ isEmpty(CCACHE_TOOLCHAIN_ON) {
 
     QMAKE_CFLAGS_RELEASE   += -O3
     QMAKE_CXXFLAGS_RELEASE += -O3
-#   QMAKE_CFLAGS_RELEASE   += -g3
-#   QMAKE_CXXFLAGS_RELEASE += -g3
+    QMAKE_CFLAGS_RELEASE   += -g3
+    QMAKE_CXXFLAGS_RELEASE += -g3
 #   QMAKE_CFLAGS_RELEASE   += -mtune=native     # TODO: native doesn't work while we could use (SSE & !AVX)
 #   QMAKE_CXXFLAGS_RELEASE += -mtune=native     # TODO: native doesn't work while we could use (SSE & !AVX)
 
@@ -463,7 +464,10 @@ with_mkl {
             with_tbb {
                 LIBS    += -lmkl_tbb_thread -lstdc++ -lpthread -lm      # -ltbb was already included above
             } else {
-                LIBS    += -lmkl_gnu_thread -ldl -lpthread -lm          # with OpenMP's threading layer, GNU's OpenMP library (libgomp)
+                QMAKE_CXXFLAGS += -fopenmp
+                QMAKE_CFLAGS   += -fopenmp
+                QMAKE_LFLAGS   += -fopenmp
+                LIBS    += -lmkl_gnu_thread -ldl -lpthread -lm -lgomp   # with OpenMP's threading layer, GNU's OpenMP library (libgomp)
             }
         } else {
             LIBS        += -L"$$MKLROOT"/lib/intel64 -lmkl_intel_lp64_dll -lmkl_core_dll
