@@ -39,7 +39,7 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
             for (size_t camId = 0; camId < station.cameras.size(); camId++)
             {
                 FixtureCamera *camera = station.cameras[camId];
-                CameraModel worldCam = station.getWorldCamera((int)camId);
+                CameraModel worldCam = station.getWorldCamera(camera);
 
 
                 Vector2dd projection = worldCam.project(point->position);
@@ -76,7 +76,7 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
                 }*/
 
                 point->observations[camera] = observation;
-
+                point->observations__[WPP(fixtures[stationId], camera)] = observation;
                 //cout << "Camera:" << camera->fileName << " = " << projection << endl;
             }
         }
@@ -110,13 +110,13 @@ SceneFeaturePoint *FixtureScene::createFeaturePoint()
 /* This method assumes the scene is well formed */
 void FixtureScene::deleteCamera(FixtureCamera *camera)
 {
-    orphanCameras.erase( std::remove( orphanCameras.begin(), orphanCameras.end(), camera ), orphanCameras.end() );
+    vectorErase(orphanCameras, camera);
 
     for(size_t i = 0; i < fixtures.size(); i++)
     {
         CameraFixture *station = fixtures[i];
         if (station == NULL) continue;
-        station->cameras.erase( std::remove( station->cameras.begin(), station->cameras.end(), camera ), station->cameras.end() );
+        vectorErase(station->cameras, camera);
     }
 
     for(size_t i = 0; i < points.size(); i++)
@@ -128,6 +128,8 @@ void FixtureScene::deleteCamera(FixtureCamera *camera)
         if ( it != point->observations.end() ) {
             point->observations.erase(it);
         }
+
+        deleteFixtureCameraUMWPP(point->observations__, camera);
     }
 
 
@@ -137,6 +139,13 @@ void FixtureScene::deleteCamera(FixtureCamera *camera)
 
 void FixtureScene::deleteCameraFixture(CameraFixture *fixture, bool recursive)
 {
+    for(size_t i = 0; i < points.size(); i++)
+    {
+        SceneFeaturePoint *point = points[i];
+        if (point == NULL) continue;
+
+        deleteCameraFixtureUMWPP(point->observations__, fixture);
+    }
     if (recursive)
     {
         while (!fixture->cameras.empty()) {
@@ -146,12 +155,20 @@ void FixtureScene::deleteCameraFixture(CameraFixture *fixture, bool recursive)
         orphanCameras.insert(orphanCameras.end(), fixture->cameras.begin(), fixture->cameras.end());
     }
 
-    fixtures.erase( std::remove( fixtures.begin(), fixtures.end(), fixture ), fixtures.end() );
+    vectorErase(fixtures, fixture);
 }
 
 void FixtureScene::deleteFeaturePoint(SceneFeaturePoint *point)
 {
-    points.erase( std::remove( points.begin(), points.end(), point ), points.end() );
+    vectorErase(points, point);
+}
+
+void FixtureScene::deleteFixturePair(CameraFixture *fixture, FixtureCamera *camera)
+{
+    for (auto&p : points)
+    {
+        deletePairUMWPP(p->observations__, fixture, camera);
+    }
 }
 
 /**
@@ -196,7 +213,7 @@ bool FixtureScene::checkIntegrity()
             if (cam->ownerScene != this) {
                 ok = false; SYNC_PRINT(("Station Camera form other scene: cam:<%s> station:<%s> scene:<%s>\n", cam->nameId.c_str(), fixture->name.c_str(), this->nameId.c_str()));
             }
-
+#if 0
             if (cam->cameraFixture != fixture) {
                 if (cam->cameraFixture) {
                     ok = false; SYNC_PRINT(("Station Camera has NULL station: cam:<%s> station:<%s> scene:<%s>\n", cam->nameId.c_str(), fixture->name.c_str(), this->nameId.c_str()));
@@ -204,6 +221,7 @@ bool FixtureScene::checkIntegrity()
                     ok = false;SYNC_PRINT(("Station Camera form other station: cam:<%s> station:<%s> cam->station:<%s> scene:<%s>\n", cam->nameId.c_str(), fixture->name.c_str(), cam->cameraFixture->name.c_str(), this->nameId.c_str()));
                 }
             }
+#endif
 
         }
 
@@ -238,6 +256,42 @@ bool FixtureScene::checkIntegrity()
             if (observ.featurePoint != point) {
                 ok = false; SYNC_PRINT(("Point observation has wrong point pointer"));
             }
+        }
+        for (auto& it: point->observations__)
+        {
+            FixtureCamera* fixtureCamera = it.first.v;
+            CameraFixture* cameraFixture = it.first.u;
+            const SceneObservation &observ = it.second;
+
+            if (observ.camera == NULL)
+            {
+                ok = false; SYNC_PRINT(("observation__ has null camera"));
+            }
+            if (observ.cameraFixture == NULL)
+            {
+                ok = false; SYNC_PRINT(("observation__ has null camera fixture"));
+            }
+            if (fixtureCamera == WPP::VWILDCARD)
+            {
+                ok = false; SYNC_PRINT(("there is a wild-card entry in observation__"));
+            }
+            if (cameraFixture == WPP::UWILDCARD)
+            {
+                ok = false; SYNC_PRINT(("there is a wild-card entry in observation__"));
+            }
+            if (observ.camera != fixtureCamera)
+            {
+                ok = false; SYNC_PRINT(("Point observation__ list malformed"));
+            }
+            if (observ.cameraFixture != cameraFixture)
+            {
+                ok = false; SYNC_PRINT(("Point observation__ list malformed"));
+            }
+            if (observ.featurePoint != point)
+            {
+                ok = false; SYNC_PRINT(("Point observation__ has wrong point pointer"));
+            }
+
         }
     }
 
