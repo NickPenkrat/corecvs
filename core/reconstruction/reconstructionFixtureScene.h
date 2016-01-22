@@ -67,7 +67,7 @@ public:
     umwpp<std::string> images;
     umwppv<std::pair<corecvs::Vector2dd, corecvs::RGBColor>> keyPoints;
     umwpp<umwppv<std::tuple<int, int, double>>> matches;
-    umwpp<std::unordered_map<int, int>> trackMap;
+    umwpp<std::unordered_map<int, SceneFeaturePoint*>> trackMap;
     std::unordered_map<CameraFixture*, PhotostationInitialization> initializationData;
     std::vector<CameraFixture*> placedFixtures;
     std::vector<CameraFixture*> placingQueue;

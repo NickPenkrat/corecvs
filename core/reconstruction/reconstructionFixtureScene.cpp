@@ -43,7 +43,9 @@ void ReconstructionFixtureScene::deleteFixturePair(CameraFixture *fixture, Fixtu
 void ReconstructionFixtureScene::deleteFeaturePoint(SceneFeaturePoint *point)
 {
     FixtureScene::deleteFeaturePoint(point);
-    vectorErase(trackedFeatures, point);    
+    vectorErase(trackedFeatures, point);
+    for (auto& foo: trackMap)
+        for (auto boo = foo.second.begin(); boo != foo.second.end(); boo = boo->second == point ? foo.second.erase(boo) : boo++);
 }
 
 void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams &params)
