@@ -2,7 +2,7 @@
 
 using namespace corecvs;
 
-EssentialFeatureFilter::EssentialFeatureFilter(const Matrix33 &K1, const Matrix33 &K2, std::vector<std::array<corecvs::Vector2dd, 2>> &features, std::vector<std::array<corecvs::Vector2dd, 2>> &featuresInlierCheck, double inlierRadius, double targetGamma, int maxIter, int batch, int batches) : K1(K1.inv()), K2(K2.inv()), features(features), inlierRadius(inlierRadius), targetGamma(targetGamma), maxIter(maxIter), batch(batch), batches(batches), featuresInlierCheck(featuresInlierCheck)
+EssentialFeatureFilter::EssentialFeatureFilter(const Matrix33 &K1, const Matrix33 &K2, std::vector<std::array<corecvs::Vector2dd, 2>> &features, std::vector<std::array<corecvs::Vector2dd, 2>> &featuresInlierCheck, double inlierRadius, double targetGamma, int maxIter, int batch, int batches) : K1(K1.inv()), K2(K2.inv()), features(features), inlierRadius(inlierRadius), targetGamma(targetGamma), maxIter(maxIter), batch(batch), batches(batches), featuresInlierCheck(featuresInlierCheck), usedIter(0)
 {
 }
 
@@ -19,12 +19,12 @@ void EssentialFeatureFilter::estimate()
 {
     if (!features.size())
         return;
-    int iter = 1;
-    while (iter < nForGamma() && iter < maxIter)
+    usedIter = 0;
+    do 
     {
         parallelable_for(0, batches, ParallelEstimator(this, inlierRadius, batch));
-        iter += batch * batches;
-    }
+        usedIter += batch * batches;
+    } while(usedIter < nForGamma() && usedIter < maxIter);
 }
 
 double EssentialFeatureFilter::nForGamma()
@@ -32,7 +32,7 @@ double EssentialFeatureFilter::nForGamma()
     double inl = std::max(1.0, (double)inlierIdx.size());
     double total = featuresInlierCheck.size();
     double alpha = inl / total;
-    double N = std::log(targetGamma) / std::log(1.0 - std::pow(alpha, 5));
+    double N = std::log(targetGamma) / std::log(1.0 - std::pow(alpha, FEATURE_POINTS_FOR_MODEL));
     return N;
 }
 
@@ -61,8 +61,8 @@ void EssentialFeatureFilter::Estimator::makeHypo()
     int N = features.size();
     if (N == 0)
         return;
-    int idx[5];
-    for (int i = 0; i < 5;)
+    int idx[FEATURE_POINTS_FOR_MODEL];
+    for (int i = 0; i < FEATURE_POINTS_FOR_MODEL;)
     {
         idx[i] = rng() % N;
         bool ok = true;
@@ -72,9 +72,9 @@ void EssentialFeatureFilter::Estimator::makeHypo()
         if (ok)
             i++;
     }
-    hypoBase.resize(5);
-    hypo.resize(5);
-    for (int i = 0; i < 5; ++i)
+    hypoBase.resize(FEATURE_POINTS_FOR_MODEL);
+    hypo.resize(FEATURE_POINTS_FOR_MODEL);
+    for (int i = 0; i < FEATURE_POINTS_FOR_MODEL; ++i)
     {
         hypoBase[i].start = K1 * features[idx[i]][0];
         hypoBase[i].end   = K2 * features[idx[i]][1];
