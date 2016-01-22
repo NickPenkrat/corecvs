@@ -59,7 +59,8 @@ void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams 
             if (!images.count(idx))
                 continue;
             filenames.push_back(images[idx]);
-            map[filenames.size()] = idx;
+            map[filenames.size() - 1] = idx;
+            CORE_ASSERT_TRUE_S(idx.u != WPP::UWILDCARD && idx.v != WPP::VWILDCARD);
         }
     }
     size_t N = filenames.size();
@@ -91,6 +92,7 @@ void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams 
     for (size_t i = 0; i < N; ++i)
     {
         auto& kps = pipeline.images[i].keyPoints.keyPoints;
+        CORE_ASSERT_TRUE_S(map.count(i));
         auto id = map[i];
 
         auto& kpp = keyPoints[id];
@@ -103,12 +105,16 @@ void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams 
     auto& ref = pipeline.refinedMatches.matchSets;
     for (auto& ms: ref)
     {
+        CORE_ASSERT_TRUE_S(map.count(ms.imgA));
+        CORE_ASSERT_TRUE_S(map.count(ms.imgB));
         auto id1 = map[ms.imgA];
         auto id2 = map[ms.imgB];
         bool swap = !(id1 < id2);
 
         auto idA = swap ? id2 : id1;
         auto idB = swap ? id1 : id2;
+        CORE_ASSERT_TRUE_S(idA.u != WPP::UWILDCARD && idA.v != WPP::VWILDCARD);
+        CORE_ASSERT_TRUE_S(idB.u != WPP::UWILDCARD && idB.v != WPP::VWILDCARD);
 
         auto& mset = matches[idA][idB];
         for (auto& m: ms.matches)
