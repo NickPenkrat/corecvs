@@ -302,7 +302,7 @@ void FixtureScene::setFixtureCount(int count)
         deleteCameraFixture(fixture);
     }
 
-    while  (fixtures.size() < (size_t)fixtures) {
+    while  (fixtures.size() < (size_t)count) {
         createCameraFixture();
     }
 }
@@ -311,13 +311,18 @@ void FixtureScene::setOrphanCameraCount(int count)
 {
     while  (orphanCameras.size() > (size_t)count) {
         FixtureCamera *model = orphanCameras.back();
-        cameras.pop_back(); /* delete camera will generally do it, but only in owner scene.*/
+        orphanCameras.pop_back(); /* delete camera will generally do it, but only in owner scene.*/
         deleteCamera(model);
     }
 
     while  (orphanCameras.size() < (size_t)count) {
         createCamera();
     }
+}
+
+void FixtureScene::setFeaturePointCount(int count)
+{
+
 }
 
 FixtureScene::~FixtureScene()

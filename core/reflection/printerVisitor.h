@@ -64,14 +64,20 @@ template <typename inputType, typename reflectionType>
     }
 
 template <class Type>
-    void visit(Type &field, Type /*defaultValue*/, const char * fieldName)
-	{
+    void visit(Type &field, const char * fieldName)
+    {
         if (stream != NULL) {
             *stream << indent() << fieldName << ":" << std::endl;
         }
         indentation += dIndent;
-		field.accept(*this);
+        field.accept(*this);
         indentation -= dIndent;
+    }
+
+template <class Type>
+    void visit(Type &field, Type /*defaultValue*/, const char * fieldName)
+	{
+        visit<Type>(field, fieldName);
 	}
 
 };

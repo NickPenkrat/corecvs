@@ -122,7 +122,9 @@ public:
 
         for (size_t i = 0; i < (size_t)camsize; i++)
         {
-            visitor.visit(*cameras[i], "cameras");
+            char buffer[100];
+            snprintf2buf(buffer, "cameras[%d]", i);
+            visitor.visit(*cameras[i], buffer);
         }
 
         CameraLocationData loc = getLocation();

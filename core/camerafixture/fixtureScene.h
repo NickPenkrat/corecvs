@@ -102,22 +102,41 @@ public:
      **/
     void setFixtureCount(int count);
     void setOrphanCameraCount(int count);
+    void setFeaturePointCount(int count);
 
 
     template<class VisitorType>
     void accept(VisitorType &visitor)
     {
         /* So far compatibilty is on */
-        int ocamsize = orphanCameras.size();
-        visitor.visit(camsize, 0, "orphancameras.size");
+        /* Orphan cameras */
+        int ocamSize = orphanCameras.size();
+        visitor.visit(ocamSize, 0, "orphancameras.size");
 
-        setOrphanCameraCount(camsize);
+        setOrphanCameraCount(ocamSize);
 
-        for (size_t i = 0; i < (size_t)camsize; i++)
+        for (size_t i = 0; i < (size_t)ocamSize; i++)
         {
-            visitor.visit(*cameras[i], "orphancameras");
+            char buffer[100];
+            snprintf2buf(buffer, "orphancameras[%d]", i);
+            visitor.visit(*orphanCameras[i], buffer);
         }
 
+        /* Fixtures*/
+
+        int stationSize = orphanCameras.size();
+        visitor.visit(stationSize, 0, "stations.size");
+
+        setOrphanCameraCount(stationSize);
+
+        for (size_t i = 0; i < (size_t)stationSize; i++)
+        {
+            char buffer[100];
+            snprintf2buf(buffer, "stations[%d]", i);
+            visitor.visit(*fixtures[i], buffer);
+        }
+
+        /* Points */
 
     }
 
