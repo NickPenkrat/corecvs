@@ -162,18 +162,18 @@ public:
     corecvs::Quaternion detectOrientationFirst();
     std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> getUnusedFeatures(CameraFixture *psA, CameraFixture *psB);
     void buildTracks(CameraFixture *psA, CameraFixture *psB, CameraFixture *psC);
+    void appendPs();
 #if 0
     void selectEpipolarInliers();
     void backprojectAll();
     void fit(bool tuneFocal);
     void fit(const PhotostationPlacerOptimizationType& optimizationSet = PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS, int num = 100);
-    void appendPs();
 	void appendTracks(const std::vector<int> &inlierIds, int ps);
 	std::vector<std::vector<PointObservation__>> verify(const std::vector<PointObservation__> &pois);
     std::vector<PointObservation__> projectToAll(const std::vector<PointObservation__> &pois);
 
-    std::vector<std::tuple<int, corecvs::Vector2dd, int, corecvs::Vector3dd>> getPossibleTracks(int ps);
 #endif
+    std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*>> getPossibleTracks(CameraFixture* ps);
 #if 0
     std::vector<corecvs::Photostation> calibratedPhotostations;
     std::vector<std::vector<std::string>> images;

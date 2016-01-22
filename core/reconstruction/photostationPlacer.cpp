@@ -498,30 +498,59 @@ void corecvs::PhotostationPlacer::computeMedianErrors(double out[], const std::v
     corecvs::parallelable_for(0, (int)idxs.size() / getErrorComponentsPerPoint(), 16, computator);
 #endif
 }
+#endif
 
-std::vector<std::tuple<int, corecvs::Vector2dd, int, corecvs::Vector3dd>> corecvs::PhotostationPlacer::getPossibleTracks(int ps)
+std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*>> corecvs::PhotostationPlacer::getPossibleTracks(CameraFixture *psA)
 {
-    std::vector<std::tuple<int, corecvs::Vector2dd, int, corecvs::Vector3dd>> res;
-    CORE_ASSERT_TRUE_S(ps >= placed);
-    for (int psA = 0; psA < placed; ++psA)
-    {
-        int id2 = ps - psA;
-        auto& mm = matches[psA][id2];
-        for (auto& m: mm)
-        {
-            int camA = std::get<0>(m);
-            int  ptA = std::get<1>(m);
-            int camB = std::get<2>(m);
-            int  ptB = std::get<3>(m);
-            if (!trackMap.count(std::make_tuple(psA, camA, ptA)))
-                continue;
-            int track = trackMap[std::make_tuple(psA, camA, ptA)];
-            res.emplace_back(camB, keyPoints[ps][camB][ptB], track, tracks[track].worldPoint);
+    CORE_ASSERT_TRUE_S(scene->state == ReconstructionState::APPENDABLE || scene->state == ReconstructionState::TWOPOINTCLOUD || scene->state == ReconstructionState::FINISHED);
 
+    std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*>> res;
+
+    auto& trackMap = scene->trackMap;
+
+    for (auto& psB: scene->placedFixtures)
+    {
+        for (auto& camB: psB->cameras)
+        {
+            for (auto& camA: psA->cameras)
+            {
+                WPP idB(psB, camB), idA(psA, camA);
+                auto& keyPoints = scene->keyPoints[idA];
+                bool swap = idB < idA;
+                auto id1 = swap ? idB : idA;
+                auto id2 = swap ? idA : idB;
+
+                if (!scene->matches.count(id1))
+                    continue;
+                auto& mmv = scene->matches[id1];
+                if (!mmv.count(id2))
+                    continue;
+
+                auto& mm = mmv[id2];
+                for (auto& m: mm)
+                {
+                    int pt1 = std::get<0>(m),
+                        pt2 = std::get<1>(m);
+                    int ptA = swap ? pt2 : pt1;
+                    int ptB = swap ? pt1 : pt2;
+                    if (!trackMap.count(idB) ||
+                        !trackMap[idB].count(ptB))
+                        continue;
+                    auto track = trackMap[idB][ptB];
+                    res.emplace_back(
+                        camA,
+                        keyPoints[ptA].first,
+                        track->reprojectedPosition,
+                        track);
+
+
+                }
+            }
         }
     }
     return res;
 }
+#if 0
 #if 0
 void corecvs::PhotostationPlacer::pruneTrachs()
 {
@@ -576,13 +605,21 @@ void corecvs::PhotostationPlacer::appendTracks(const std::vector<int> &inlierIds
 #if 0
 corecvs::Vector3dd corecvs::PhotostationPlacer::comp
 #endif
+#endif
 void corecvs::PhotostationPlacer::appendPs()
 {
-    int psApp = placed;
-    std::cout << "Placing #" << placed << std::endl;
+    CameraFixture* psApp = scene->placingQueue[0];
+    std::cout << "Placing #" << psApp->name << std::endl;
     auto hypos = getPossibleTracks(psApp);
     std::cout << "Total " << hypos.size() << " possible tracks" << std::endl;
 
+    corecvs::AbsoluteNonCentralRansacSolverParams params;
+                params.forcePosition = true;
+                params.forcedPosition = scene->initializationData[psApp].initData.shift;
+                AbsoluteNonCentralRansacSolver solver(psApp, hypos, params);
+                solver.run();
+                solver.runInliersRE();
+#if 0
 //    AbsoluteNonCentralRansacSolver solver(calibratedPhotostations[psApp], hypos);
     corecvs::AbsoluteNonCentralRansacSolverParams params;
     switch(psInitData[psApp].initializationType)
@@ -669,17 +706,11 @@ void corecvs::PhotostationPlacer::appendPs()
         default:
             CORE_ASSERT_TRUE_S(false);
     }
+#endif
+    scene->placedFixtures.push_back(psApp);
+    scene->placingQueue.erase(scene->placingQueue.begin());
     return;
 }
-
-#if 0
-void corecvs::PhotostationPlacer::placeWithStaticPoints(int psId)
-{
-    auto& sp = psInitData[psId].staticPoints;
-    CORE_ASSERT_TRUE_S(sp.size() >= 3);
-}
-#endif
-#endif
 
 std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> corecvs::PhotostationPlacer::getUnusedFeatures(CameraFixture *psA, CameraFixture *psB)
 {
@@ -716,28 +747,45 @@ std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> corecvs
 
 void corecvs::PhotostationPlacer::buildTracks(CameraFixture *psA, CameraFixture *psB, CameraFixture *psC)
 {
-    auto freeAB = getUnusedFeatures(psA, psB),
-         freeBC = getUnusedFeatures(psB, psC),
-         freeAC = getUnusedFeatures(psA, psC);
+    const int NPS = 3;
+    const int NPAIRS = 3;
+    int pairIdx[NPAIRS][2] = {{0, 1}, {1, 2}, {0, 2}};
+
+    CameraFixture*        ps[NPS] = {psA, psB, psC};
+    FixtureCamera*       cam[NPS] = {  0,   0,   0};
+    int                   pt[NPS] = {  0,   0,   0};
+    FixtureCamera* &camA = cam[0], *&camB = cam[1], *&camC = cam[2];
+    int &ptA = pt[0], &ptB = pt[1], &ptC = pt[2];
+    WPP                  wpp[NPS];
+    corecvs::Vector2dd    kp[NPS];
+    corecvs::Vector2dd &kpA = kp[0], &kpB = kp[1], &kpC = kp[2];
+
+    std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> free[NPAIRS];
+    auto &freeAB = free[0], &freeBC = free[1], &freeAC = free[2];
+
+    for (int i = 0; i < NPAIRS; ++i)
+        free[i] = getUnusedFeatures(ps[pairIdx[i][0]], ps[pairIdx[i][1]]);
 
     std::vector<std::tuple<FixtureCamera*, int, FixtureCamera*, int, FixtureCamera*, int>> trackCandidates;
 
-    for (auto& mAC: freeAC)
+    for (auto& mAC: free[2])
     {
-        auto camA = std::get<0>(mAC.first),
-             camC = std::get<1>(mAC.first);
-        int   ptA = std::get<2>(mAC.first),
-              ptC = mAC.second;
+        camA = std::get<0>(mAC.first);
+        camC = std::get<1>(mAC.first);
+        ptA = std::get<2>(mAC.first);
+        ptC = mAC.second;
 
         for (auto& camB: psB->cameras)
         {
-            if (!freeAB.count(std::make_tuple(camA, camB, ptA)))
+            auto idAB = std::make_tuple(camA, camB, ptA);
+            if (!free[0].count(idAB))
                 continue;
 
-            int ptB = freeAB[std::make_tuple(camA, camB, ptA)];
-            if (!freeBC.count(std::make_tuple(camB, camC, ptB)))
+            ptB = freeAB[idAB];
+            auto idBC = std::make_tuple(camB, camC, ptB);
+            if (!freeBC.count(idBC))
                 continue;
-            int ptC2 = freeBC[std::make_tuple(camB, camC, ptB)];
+            int ptC2 = freeBC[idBC];
             if (ptC == ptC2)
                 trackCandidates.emplace_back(camA, ptA, camB, ptB, camC, ptC);
         }
@@ -745,104 +793,65 @@ void corecvs::PhotostationPlacer::buildTracks(CameraFixture *psA, CameraFixture 
 
     for (auto& c: trackCandidates)
     {
-        auto camA = std::get<0>(c),
-             camB = std::get<2>(c),
-             camC = std::get<4>(c);
-        int  ptA = std::get<1>(c),
-             ptB = std::get<3>(c),
-             ptC = std::get<5>(c);
+        camA = std::get<0>(c);
+        camB = std::get<2>(c);
+        camC = std::get<4>(c);
+        ptA = std::get<1>(c);
+        ptB = std::get<3>(c);
+        ptC = std::get<5>(c);
 
-        auto kpA = scene->keyPoints[WPP(psA, camA)][ptA].first;
-        auto kpB = scene->keyPoints[WPP(psB, camB)][ptB].first;
-        auto kpC = scene->keyPoints[WPP(psC, camC)][ptC].first;
-        if (scene->trackMap[WPP(psA, camA)].count(ptA) ||
-            scene->trackMap[WPP(psB, camB)].count(ptB) ||
-            scene->trackMap[WPP(psC, camC)].count(ptC))
+        bool alreadyIn = false;
+        for(int i = 0; i < NPS; ++i)
+        {
+            wpp[i] = WPP(ps[i], cam[i]);
+            kp[i] = scene->keyPoints[wpp[i]][pt[i]].first;
+            if (scene->trackMap[wpp[i]].count(pt[i]))
+                alreadyIn = true;
+        }
+        if (alreadyIn)
             continue;
 
-        double FAB = scoreFundamental(psA, camA, kpA, psB, camB, kpB);
-        double FBC = scoreFundamental(psB, camB, kpB, psC, camC, kpC);
-        double FAC = scoreFundamental(psA, camA, kpA, psC, camB, kpC);
-        if (std::max(FAB, std::max(FBC, FAC)) < trackInlierThreshold)
+        double fscore = 0.0;
+        for (int i = 0; i < NPAIRS; ++i)
         {
-            corecvs::MulticameraTriangulator mct;
-            mct.addCamera(psA->getMMatrix(camA), kpA);
-            mct.addCamera(psB->getMMatrix(camB), kpB);
-            mct.addCamera(psC->getMMatrix(camC), kpC);
-            auto res = mct.triangulateLM(mct.triangulate());
-#if 0
-            if (!(res - calibratedPhotostations[psA].location.shift) > 500 ||
-            	!(res - calibratedPhotostations[psB].location.shift) > 500 ||
-            	!(res - calibratedPhotostations[psC].location.shift) > 500)
-            	continue;
-#endif
-            if (!psA->isVisible(res, camA)
-             || !psB->isVisible(res, camB)
-             || !psC->isVisible(res, camC))
-                 continue;
-            if (!(kpA - psA->project(res, camA)) > trackInlierThreshold ||
-                !(kpB - psB->project(res, camB)) > trackInlierThreshold ||
-                !(kpC - psC->project(res, camC)) > trackInlierThreshold)
-                continue;
-            if (
-                    !(res - psA->getWorldCamera(camA).extrinsics.position) > distanceLimit ||
-                    !(res - psB->getWorldCamera(camB).extrinsics.position) > distanceLimit ||
-                    !(res - psC->getWorldCamera(camC).extrinsics.position) > distanceLimit)
-                continue;
-
-            auto track = scene->createFeaturePoint();
-            track->position = res;
-            track->hasKnownPosition = false;
-            track->type = SceneFeaturePoint::POINT_RECONSTRUCTED;
-            SceneObservation soA, soB, soC;
-
-            soA.camera = camA;
-            soB.camera = camB;
-            soC.camera = camC;
-
-            soA.cameraFixture = psA;
-            soB.cameraFixture = psB;
-            soC.cameraFixture = psC;
-
-            soA.featurePoint = track;
-            soB.featurePoint = track;
-            soC.featurePoint = track;
-
-            soA.observation = kpA;
-            soB.observation = kpB;
-            soC.observation = kpC;
-
-            track->observations[camA] = soA;
-            track->observations[camA] = soB;
-            track->observations[camA] = soC;
-
-            track->observations__[WPP(psA, camA)] = soA;
-            track->observations__[WPP(psB, camB)] = soB;
-            track->observations__[WPP(psC, camC)] = soC;
-
-            track->color = scene->keyPoints[WPP(psA, camA)][ptA].second;
-
-            scene->trackedFeatures.push_back(track);
-            scene->trackMap[WPP(psA, camA)][ptA] = track;
-            scene->trackMap[WPP(psB, camB)][ptB] = track;
-            scene->trackMap[WPP(psC, camC)][ptC] = track;
-#if 0
-            PointObservation__ po;
-            PointProjection pa = { kpA, psA, camA, ptA },
-                            pb = { kpB, psB, camB, ptB },
-                            pc = { kpC, psC, camC, ptC };
-
-            po.projections.push_back(pa);
-            po.projections.push_back(pb);
-            po.projections.push_back(pc);
-            po.worldPoint = res;
-            int id = (int)tracks.size();
-            tracks.push_back(po);
-            trackMap[std::make_tuple(psA, camA, ptA)] = id;
-            trackMap[std::make_tuple(psB, camB, ptB)] = id;
-            trackMap[std::make_tuple(psC, camC, ptC)] = id;
-#endif
+            int id1 = pairIdx[i][0];
+            int id2 = pairIdx[i][1];
+            fscore = std::max(fscore, scoreFundamental(ps[id1], cam[id1], kp[id1], ps[id2], cam[id2], kp[id2]));
         }
+        if (fscore > trackInlierThreshold)
+            continue;
+
+        corecvs::MulticameraTriangulator mct;
+        for (int i = 0; i < NPS; ++i)
+            mct.addCamera(ps[i]->getMMatrix(cam[i]), kp[i]);
+        auto res = mct.triangulateLM(mct.triangulate());
+
+        bool isVisibleInlierNotTooFar = true;
+        for (int i = 0; i < NPS; ++i)
+        {
+            isVisibleInlierNotTooFar &= ps[i]->isVisible(res, cam[i]);
+            isVisibleInlierNotTooFar &= !(kp[i] - ps[i]->project(res, cam[i])) < trackInlierThreshold;
+            isVisibleInlierNotTooFar &= !(res - ps[i]->getWorldCamera(cam[i]).extrinsics.position) < distanceLimit;
+        }
+
+        auto track = scene->createFeaturePoint();
+        track->reprojectedPosition = res;
+        track->hasKnownPosition = false;
+        track->type = SceneFeaturePoint::POINT_RECONSTRUCTED;
+
+        for (int i = 0; i < NPS; ++i)
+        {
+            SceneObservation so;
+            so.camera = cam[i];
+            so.cameraFixture = ps[i];
+            so.featurePoint = track;
+            so.observation = kp[i];
+            track->observations[cam[i]] = so;
+            track->observations__[wpp[i]] = so;
+            track->color = scene->keyPoints[wpp[i]][pt[i]].second;
+            scene->trackMap[wpp[i]][pt[i]] = track;
+        }
+        scene->trackedFeatures.push_back(track);
     }
 }
 
@@ -1183,8 +1192,8 @@ bool corecvs::PhotostationPlacer::initGPS()
     buildTracks(scene->placingQueue[0], scene->placingQueue[1], scene->placingQueue[2]);
     for (int i = 0; i < 3; ++i)
     {
-        placedFixtures.push_back(placingQueue[0]);
-        placingQueue.remove(placingQueue.begin());
+        scene->placedFixtures.push_back(scene->placingQueue[0]);
+        scene->placingQueue.erase(scene->placingQueue.begin());
     }
     scene->is3DAligned = true;
     scene->state = ReconstructionState::APPENDABLE;

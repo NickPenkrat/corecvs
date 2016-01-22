@@ -52,7 +52,7 @@ corecvs::Vector3dd convertVector(const corecvs::Vector3dd& geodesic)
 }
 
 // For easy control over ps number
-const int PSN = 3;
+const int PSN = 4;
 const int CP = 6;
 corecvs::Vector3dd mp(0, 0, 0);
 #if 0
@@ -405,6 +405,7 @@ int main()
     pp.scene = &rfs;
     pp.detectAll();
     pp.initialize();
+    pp.appendPs();
     return 0;
 }
 #endif
