@@ -128,7 +128,7 @@ void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams 
     }
 }
 
-int ReconstructionFixtureScene::getDistinctCameraCount() const
+std::vector<FixtureCamera*> ReconstructionFixtureScene::getDistinctCameras() const
 {
     std::set<FixtureCamera*> cameras;
     for (auto& f: placedFixtures)
@@ -138,5 +138,10 @@ int ReconstructionFixtureScene::getDistinctCameraCount() const
             cameras.insert(c);
         }
     }
-    return cameras.size();
+    return std::vector<FixtureCamera*>(cameras.begin(), cameras.end());
+}
+
+int ReconstructionFixtureScene::getDistinctCameraCount() const
+{
+    return getDistinctCameras().size();
 }

@@ -57,6 +57,7 @@ public:
 
     //\brief Returns number of FixtureCamera's in placedFixtures fixtures
     int getDistinctCameraCount() const;
+    std::vector<FixtureCamera*> getDistinctCameras() const;
 
     void printMatchStats() const;
     void printMatchStats(const umwpp<umwppv<std::tuple<int, int, double>>> &m);

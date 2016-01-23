@@ -163,11 +163,13 @@ public:
     std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> getUnusedFeatures(CameraFixture *psA, CameraFixture *psB);
     void buildTracks(CameraFixture *psA, CameraFixture *psB, CameraFixture *psC);
     void appendPs();
+#if 1
+    void fit(const PhotostationPlacerOptimizationType& optimizationSet = PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS, int num = 100);
+    void fit(bool tuneFocal);
+#endif
 #if 0
     void selectEpipolarInliers();
     void backprojectAll();
-    void fit(bool tuneFocal);
-    void fit(const PhotostationPlacerOptimizationType& optimizationSet = PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS, int num = 100);
 	void appendTracks(const std::vector<int> &inlierIds, int ps);
 	std::vector<std::vector<PointObservation__>> verify(const std::vector<PointObservation__> &pois);
     std::vector<PointObservation__> projectToAll(const std::vector<PointObservation__> &pois);
@@ -190,7 +192,7 @@ public:
 	std::vector<PointObservation__> tracks;
 	std::unordered_map<std::tuple<int, int, int>, int> trackMap;
 #endif
-#if 0
+#if 1
 	int getMovablePointCount();
 	int getReprojectionCnt();
 	int getOrientationInputNum();
@@ -199,12 +201,17 @@ public:
 	void getErrorSummaryAll();
 #endif
 protected:
-#if 0
+#if 1
+/* These are valid only in non-linear fit time
+ */
+    std::vector<FixtureCamera*> activeCameras;
+
+
 	void readOrientationParams(const double in[]);
 	void writeOrientationParams(double out[]);
 	void computeMedianErrors(double out[], const std::vector<int> &idxs);
     std::vector<std::vector<int>> getDependencyList();
-    std::vector<std::pair<int, int>> revDependency; // track, projection
+    std::vector<SceneObservation*> revDependency; // track, projection
 
     struct ParallelErrorComputator
     {

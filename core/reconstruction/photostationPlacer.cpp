@@ -22,7 +22,6 @@
 #ifdef WITH_TBB
 #include <tbb/task_group.h>
 #endif
-#if 0
 #define IFNOT(cond, expr) \
     if (!(optimizationParams & PhotostationPlacerOptimizationType::cond)) \
     { \
@@ -37,7 +36,7 @@
     ref = in[argin++];
 #define IF_GETPARAM(cond, ref) \
     if (!!(optimizationParams & PhotostationPlacerOptimizationType::cond)) ref = in[argin++];
-#def0ine IFNOT_GETPARAM(cond, ref) \
+#define IFNOT_GETPARAM(cond, ref) \
     if ( !(optimizationParams & PhotostationPlacerOptimizationType::cond)) ref = in[argin++];
 #define SETPARAM(ref) \
     out[argout++] = ref;
@@ -81,18 +80,22 @@ int corecvs::PhotostationPlacer::getErrorComponentsPerPoint()
 int corecvs::PhotostationPlacer::getReprojectionCnt()
 {
     int total = 0;
-    for (auto& o: tracks)
-        total += (int)o.projections.size();
+    for (auto& o: scene->trackedFeatures)
+        total += (int)o->observations__.size();
     return total * getErrorComponentsPerPoint();
 }
 
 int corecvs::PhotostationPlacer::getMovablePointCount()
 {
+    // TODO: clarify which points are inmovable
+    return getReprojectionCnt() / getErrorComponentsPerPoint();
+#if 0
     int movables = 0;
     for (auto& o: tracks)
         if (o.updateable)
             movables++;
     return movables;
+#endif
 }
 
 int corecvs::PhotostationPlacer::getOrientationInputNum()
@@ -107,9 +110,9 @@ int corecvs::PhotostationPlacer::getOrientationInputNum()
     IF(NON_DEGENERATE_TRANSLATIONS,
         inputNum += (preplaced - 1) * 3);
     IF(FOCALS,
-        inputNum += (int)calibratedPhotostations[0].cameras.size());
+        inputNum += (int)activeCameras.size());
     IF(PRINCIPALS,
-        inputNum += (int)calibratedPhotostations[0].cameras.size() * 2);
+        inputNum += (int)activeCameras.size() * 2);
     IF(POINTS,
         inputNum += getMovablePointCount() * 3);
     return inputNum;
@@ -122,55 +125,59 @@ std::vector<std::vector<int>> corecvs::PhotostationPlacer::getDependencyList()
     revDependency.resize(cnt);
     int argin = 0, id = 0;
 
+    auto& placedFixtures = scene->placedFixtures;
     int errSize = getErrorComponentsPerPoint();
+    int fixtureCnt = placedFixtures.size();
+    int camCnt = activeCameras.size();
 
-    for (int i = 0; i < (int)tracks.size(); ++i)
+    // revdependency = map from error component id
+    // to projection
+    for (auto& track: scene->trackedFeatures)
     {
-        auto& t = tracks[i];
-        for (int j = 0; j < (int)t.projections.size(); ++j)
+        for(auto& proj: track->observations__)
         {
-            for (int k = 0; k < errSize; ++k)
-            {
-                revDependency[id++] = std::make_pair(i, j);
-            }
+            revDependency[id++] = &proj.second;
         }
     }
     CORE_ASSERT_TRUE_S(cnt == id);
     std::vector<std::vector<int>> sparsity(getOrientationInputNum());
 
     IF(DEGENERATE_ORIENTATIONS,
+        auto firstFixture = placedFixtures[0];
         for (int i = 0; i < 4; ++i)
         {
             for (int j = 0; j < cnt; ++j)
             {
-                auto p = revDependency[j];
-                if (tracks[p.first].projections[p.second].photostationId == 0)
+                auto observation = revDependency[j];
+                if (observation->cameraFixture == firstFixture)
                     sparsity[argin].push_back(j);
             }
             ++argin;
         }
     );
     IF(NON_DEGENERATE_ORIENTATIONS,
-        for (int i = 1; i < preplaced; ++i)
+        for (int i = 1; i < fixtureCnt; ++i)
         {
+            auto fixture = placedFixtures[i];
             for (int jj = 0; jj < 4; ++jj)
             {
                 for (int j = 0; j < cnt; ++j)
                 {
-                    auto p = revDependency[j];
-                    if (tracks[p.first].projections[p.second].photostationId == i)
+                    auto observation = revDependency[j];
+                    if (observation->cameraFixture == fixture)
                         sparsity[argin].push_back(j);
                 }
                 ++argin;
             }
         });
     IF(DEGENERATE_TRANSLATIONS,
+        auto firstFixture = placedFixtures[0];
         for (int i = 0; i < 3; ++i)
         {
             for (int j = 0; j < cnt; ++j)
             {
                 auto p = revDependency[j];
-                if (tracks[p.first].projections[p.second].photostationId == 0)
+                if (p->cameraFixture == firstFixture)
                     sparsity[argin].push_back(j);
             }
             ++argin;
@@ -178,51 +185,55 @@ std::vector<std::vector<int>> corecvs::PhotostationPlacer::getDependencyList()
     IF(NON_DEGENERATE_TRANSLATIONS,
         for (int i = 1; i < preplaced; ++i)
         {
+            auto fixture = placedFixtures[i];
             for (int jj = 0; jj < 3; ++jj)
             {
                 for (int j = 0; j < cnt; ++j)
                 {
                     auto p = revDependency[j];
-                    if (tracks[p.first].projections[p.second].photostationId == i)
+                    if (p->cameraFixture == fixture)
                         sparsity[argin].push_back(j);
                 }
                 ++argin;
             }
         });
     IF(FOCALS,
-        for (int i = 0; i < (int)calibratedPhotostations[0].cameras.size(); ++i)
+        for (int i = 0; i < camCnt; ++i)
         {
+            auto camera = activeCameras[i];
             for (int j = 0; j < cnt; ++j)
             {
                 auto p = revDependency[j];
-                if (tracks[p.first].projections[p.second].cameraId == i)
+                if (p->camera == camera)
                     sparsity[argin].push_back(j);
             }
             ++argin;
         });
     IF(PRINCIPALS,
-        for (int i = 0; i < (int)calibratedPhotostations[0].cameras.size(); ++i)
+        for (int i = 0; i < camCnt; ++i)
         {
+            auto camera = activeCameras[i];
             for (int jj = 0; jj < 2; ++jj)
             {
                 for (int j = 0; j < cnt; ++j)
                 {
                     auto p = revDependency[j];
-                    if (tracks[p.first].projections[p.second].cameraId == i)
+                    if (p->camera == camera)
                         sparsity[argin].push_back(j);
                 }
                 ++argin;
             }
         });
     IF(POINTS,
-        for (int i = 0; i < (int)tracks.size(); ++i)
+        for (int i = 0; i < (int)scene->trackedFeatures.size(); ++i)
         {
+            auto feature = scene->trackedFeatures[i];
             for (int jj = 0; jj < 3; ++jj)
             {
                 for (int j = 0; j < cnt; ++j)
                 {
                     auto p = revDependency[j];
-                    if (p.first == i)//].projections[p.second].cameraId == i)
+                    if (p->featurePoint == feature)
                         sparsity[argin].push_back(j);
                 }
                 ++argin;
@@ -235,51 +246,57 @@ std::vector<std::vector<int>> corecvs::PhotostationPlacer::getDependencyList()
 void corecvs::PhotostationPlacer::readOrientationParams(const double in[])
 {
     int argin = 0;
+    auto& placedFixtures = scene->placedFixtures;
+    int errSize = getErrorComponentsPerPoint();
+    int fixtureCnt = placedFixtures.size();
+    int camCnt = activeCameras.size();
+
     IF(DEGENERATE_ORIENTATIONS,
+        auto firstFixture = placedFixtures[0];
         for (int i = 0; i < 4; ++i)
-            GETPARAM(calibratedPhotostations[0].location.rotor[i])
-        calibratedPhotostations[0].location.rotor.normalise();
+            GETPARAM(firstFixture->location.rotor[i])
+        firstFixture->location.rotor.normalise();
     );
     IF(NON_DEGENERATE_ORIENTATIONS,
-        for (int i = 1; i < preplaced; ++i)
+        for (int i = 1; i < fixtureCnt; ++i)
         {
+            auto fixture = placedFixtures[i];
             for (int j = 0; j < 4; ++j)
-                GETPARAM(calibratedPhotostations[i].location.rotor[j]);
-            calibratedPhotostations[i].location.rotor.normalise();
+                GETPARAM(fixture->location.rotor[j]);
+            fixture->location.rotor.normalise();
         });
     IF(DEGENERATE_TRANSLATIONS,
+        auto firstFixture = placedFixtures[0];
         for (int i = 0; i < 3; ++i)
-            GETPARAM(calibratedPhotostations[0].location.shift[i]));
+            GETPARAM(firstFixture->location.shift[i]));
     IF(NON_DEGENERATE_TRANSLATIONS,
-        for (int i = 1; i < preplaced; ++i)
+        for (int i = 1; i < fixtureCnt; ++i)
         {
+            auto fixture = placedFixtures[i];
             for (int j = 0; j < 3; ++j)
-                GETPARAM(calibratedPhotostations[i].location.shift[j]);
+                GETPARAM(fixture->location.shift[j]);
         });
     IF(FOCALS,
-        for (size_t i = 0; i < calibratedPhotostations[0].cameras.size(); ++i)
+        for (size_t i = 0; i < camCnt; ++i)
         {
             double f;
             GETPARAM(f);
-            for (size_t j = 0; j < calibratedPhotostations.size(); ++j)
-                calibratedPhotostations[j].cameras[i].intrinsics.focal = corecvs::Vector2dd(f, f);
-
+            activeCameras[i]->intrinsics.focal = Vector2dd(f, f);
         });
     IF(PRINCIPALS,
-        for (size_t i = 0; i < calibratedPhotostations[0].cameras.size(); ++i)
+        for (size_t i = 0; i < camCnt; ++i)
         {
             double cx;
             double cy;
             GETPARAM(cx);
             GETPARAM(cy);
-            for (size_t j = 0; j < calibratedPhotostations.size(); ++j)
-                calibratedPhotostations[j].cameras[i].intrinsics.principal = corecvs::Vector2dd(cx, cy);
+            activeCameras[i]->intrinsics.principal = Vector2dd(cx, cy);
         });
     IF(POINTS,
-        for (size_t j = 0; j < tracks.size(); ++j)
+        for (size_t j = 0; j < scene->trackedFeatures.size(); ++j)
         {
             for (int i = 0; i < 3; ++i)
-                GETPARAM(tracks[j].worldPoint[i]);
+                GETPARAM(scene->trackedFeatures[j]->reprojectedPosition[i]);
         });
 //    CORE_ASSERT_TRUE_S(getOrientationInputNum() == argin);
 }
@@ -287,40 +304,50 @@ void corecvs::PhotostationPlacer::readOrientationParams(const double in[])
 void corecvs::PhotostationPlacer::writeOrientationParams(double out[])
 {
     int argout = 0;
+    auto& placedFixtures = scene->placedFixtures;
+    int errSize = getErrorComponentsPerPoint();
+    int fixtureCnt = scene->placedFixtures.size();
+    int camCnt = activeCameras.size();
+
     IF(DEGENERATE_ORIENTATIONS,
+        auto firstFixture = placedFixtures[0];
         for (int i = 0; i < 4; ++i)
-            SETPARAM(calibratedPhotostations[0].location.rotor[i]));
+            SETPARAM(firstFixture->location.rotor[i])
+    );
     IF(NON_DEGENERATE_ORIENTATIONS,
-        for (int i = 1; i < preplaced; ++i)
+        for (int i = 1; i < fixtureCnt; ++i)
         {
+            auto fixture = placedFixtures[i];
             for (int j = 0; j < 4; ++j)
-                SETPARAM(calibratedPhotostations[i].location.rotor[j]);
+                SETPARAM(fixture->location.rotor[j]);
         });
     IF(DEGENERATE_TRANSLATIONS,
+        auto firstFixture = placedFixtures[0];
         for (int i = 0; i < 3; ++i)
-            SETPARAM(calibratedPhotostations[0].location.shift[i]));
+            SETPARAM(firstFixture->location.shift[i]));
     IF(NON_DEGENERATE_TRANSLATIONS,
-        for (int i = 1; i < preplaced; ++i)
+        for (int i = 1; i < fixtureCnt; ++i)
         {
+            auto fixture = placedFixtures[i];
             for (int j = 0; j < 3; ++j)
-                SETPARAM(calibratedPhotostations[i].location.shift[j]);
+                SETPARAM(fixture->location.shift[j]);
         });
     IF(FOCALS,
-        for (size_t i = 0; i < calibratedPhotostations[0].cameras.size(); ++i)
+        for (size_t i = 0; i < camCnt; ++i)
         {
-            SETPARAM(calibratedPhotostations[0].cameras[i].intrinsics.focal[0]);
+            SETPARAM(activeCameras[i]->intrinsics.focal[0]);
         });
     IF(PRINCIPALS,
-        for (size_t i = 0; i < calibratedPhotostations[0].cameras.size(); ++i)
+        for (size_t i = 0; i < camCnt; ++i)
         {
-            SETPARAM(calibratedPhotostations[0].cameras[i].intrinsics.principal[0]);
-            SETPARAM(calibratedPhotostations[0].cameras[i].intrinsics.principal[1]);
+            SETPARAM(activeCameras[i]->intrinsics.principal[0]);
+            SETPARAM(activeCameras[i]->intrinsics.principal[1]);
         });
     IF(POINTS,
-        for (size_t j = 0; j < tracks.size(); ++j)
+        for (size_t j = 0; j < scene->trackedFeatures.size(); ++j)
         {
             for (int i = 0; i < 3; ++i)
-                SETPARAM(tracks[j].worldPoint[i]);
+                SETPARAM(scene->trackedFeatures[j]->reprojectedPosition[i]);
         });
 //    CORE_ASSERT_TRUE_S(getOrientationInputNum() == argout);
 }
@@ -499,7 +526,6 @@ void corecvs::PhotostationPlacer::computeMedianErrors(double out[], const std::v
     corecvs::parallelable_for(0, (int)idxs.size() / getErrorComponentsPerPoint(), 16, computator);
 #endif
 }
-#endif
 
 std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*>> corecvs::PhotostationPlacer::getPossibleTracks(CameraFixture *psA)
 {
