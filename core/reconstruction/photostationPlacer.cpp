@@ -1,5 +1,6 @@
 #include "photostationPlacer.h"
 
+#include <unordered_set>
 #include <unordered_map>
 #include <random>
 #include <sstream>
@@ -504,6 +505,7 @@ std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, S
 {
     CORE_ASSERT_TRUE_S(scene->state == ReconstructionState::APPENDABLE || scene->state == ReconstructionState::TWOPOINTCLOUD || scene->state == ReconstructionState::FINISHED);
 
+    std::unordered_set<SceneFeaturePoint*> selectedTracks;
     std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*>> res;
 
     auto& trackMap = scene->trackMap;
@@ -537,13 +539,15 @@ std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, S
                         !trackMap[idB].count(ptB))
                         continue;
                     auto track = trackMap[idB][ptB];
+                    if (selectedTracks.count(track))
+                        continue;
                     res.emplace_back(
                         camA,
                         keyPoints[ptA].first,
                         track->reprojectedPosition,
                         track);
 
-
+                    selectedTracks.insert(track);
                 }
             }
         }
