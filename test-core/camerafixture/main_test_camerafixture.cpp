@@ -40,7 +40,7 @@ TEST(Fixture, testAllocations)
 
 TEST(Fixture, testVisitors)
 {
-    cout << "----------------Ruuning the test-------------" << std::endl;
+    cout << "----------------Running the test-------------" << std::endl;
     FixtureScene *scene = new FixtureScene();
     CameraFixture *fixture1 = scene->createCameraFixture();
     fixture1->name = "Fixture1";

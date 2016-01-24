@@ -99,6 +99,7 @@ protected:
         v.erase(std::remove(v.begin(), v.end(), t), v.end());
     }
 
+
     virtual FixtureCamera      *fabricateCamera();
     virtual CameraFixture      *fabricateCameraFixture();
     virtual SceneFeaturePoint  *fabricateFeaturePoint();
@@ -128,6 +129,11 @@ public:
      **/
     virtual bool checkIntegrity();
 
+    /**
+     *    This function takes top to bottom graph and updates all the backlinks to point correctly
+     **/
+    virtual bool integrityRelink();
+
     virtual void positionCameraInFixture(CameraFixture *station, FixtureCamera *camera, const Affine3DQ &location);
     virtual void addCameraToFixture     (FixtureCamera *cam, CameraFixture *fixture);
 
@@ -149,9 +155,14 @@ public:
     /**
      *
      **/
-    void setFixtureCount(int count);
-    void setOrphanCameraCount(int count);
-    void setFeaturePointCount(int count);
+    void setFixtureCount     (size_t count);
+    void setOrphanCameraCount(size_t count);
+    void setFeaturePointCount(size_t count);
+
+    /* This performs full search. It should not */
+    FixtureCamera *getCameraById (FixtureScenePart::IdType id);
+    CameraFixture *getFixtureById(FixtureScenePart::IdType id);
+
 
 
     template<class VisitorType>
@@ -173,10 +184,11 @@ public:
 
         /* Fixtures*/
 
-        int stationSize = orphanCameras.size();
+        int stationSize = fixtures.size();
+        cout << stationSize << endl;
         visitor.visit(stationSize, 0, "stations.size");
 
-        setOrphanCameraCount(stationSize);
+        setFixtureCount(stationSize);
 
         for (size_t i = 0; i < (size_t)stationSize; i++)
         {
@@ -186,6 +198,18 @@ public:
         }
 
         /* Points */
+
+        int pointsSize = points.size();
+        visitor.visit(pointsSize, 0, "points.size");
+
+        setFeaturePointCount(pointsSize);
+
+        for (size_t i = 0; i < (size_t)pointsSize; i++)
+        {
+            char buffer[100];
+            snprintf2buf(buffer, "points[%d]", i);
+            visitor.visit(*points[i], buffer);
+        }
 
     }
 

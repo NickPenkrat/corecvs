@@ -29,7 +29,9 @@ public:
 
     CameraFixture(FixtureScene * owner = NULL) :
         FixtureScenePart(owner)
-    {}
+    {
+        SYNC_PRINT(("CameraFixture():CameraFixture(%p)", owner));
+    }
 
     CameraFixture(
         const std::vector<FixtureCamera *> & _cameras,
@@ -84,7 +86,7 @@ public:
         return getWorldCamera(cam);
     }
 
-    void setCameraCount(int count);
+    void setCameraCount(size_t count);
 
     Matrix44 getMMatrix(int cam) const
     {
@@ -127,9 +129,13 @@ public:
             visitor.visit(*cameras[i], buffer);
         }
 
+        /*
         CameraLocationData loc = getLocation();
         visitor.visit(loc, CameraLocationData(), "location");
         setLocation(loc);
+        */
+        visitor.visit(location, Affine3DQ(), "location");
+        visitor.visit(name, std::string(""), "name");
     }
 };
 

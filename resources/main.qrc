@@ -95,6 +95,10 @@
         <file>transform_rotate.png</file>
         <file>tree_list.png</file>
         <file>photostation_save.png</file>
+        <file>matchpoints.png</file>
+        <file>photostation_reorient.png</file>
+        <file>inbox_download.png</file>
+        <file>inbox_upload.png</file>
     </qresource>
     <qresource prefix="/new/colors">
         <file>colors/color_blue.png</file>

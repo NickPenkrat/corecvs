@@ -9,6 +9,8 @@
 #include "reflection.h"
 
 using corecvs::IntField;
+using corecvs::Int64Field;
+using corecvs::UInt64Field;
 using corecvs::DoubleField;
 using corecvs::FloatField;
 using corecvs::BoolField;
@@ -22,6 +24,10 @@ using corecvs::DoubleVectorField;
  **/
 class JSONGetter
 {
+public:
+    bool isSaver () { return false;}
+    bool isLoader() { return true ;}
+
 public:
     /**
     *  Create a getter object that will use data from a file with a specified name.
@@ -60,7 +66,7 @@ public:
      *
      **/
     template <class Type>
-    void visit(Type &field, Type, const char *fieldName)
+    void visit(Type &field, const char *fieldName)
     {
         pushChild(fieldName);
             field.accept(*this);
@@ -68,12 +74,10 @@ public:
     }
 
     template <class Type>
-        void visit(Type &field, const char *fieldName)
-        {
-            pushChild(fieldName);
-                field.accept(*this);
-            popChild();
-        }
+    void visit(Type &field, Type, const char *fieldName)
+    {
+        visit<Type>(field, fieldName);
+    }
 
     template <typename inputType, typename reflectionType>
     void visit(inputType &field, const reflectionType * fieldDescriptor)
@@ -207,16 +211,19 @@ private:
 };
 
 template <>
-void JSONGetter::visit<int>(int &intField, int defaultValue, const char * /*fieldName*/);
+void JSONGetter::visit<int>   (int &intField, int defaultValue, const char * fieldName);
 
 template <>
-void JSONGetter::visit<double>(double &doubleField, double defaultValue, const char * /*fieldName*/);
+void JSONGetter::visit<uint64_t>(uint64_t &intField, uint64_t defaultValue, const char *fieldName);
 
 template <>
-void JSONGetter::visit<float>(float &floatField, float defaultValue, const char * /*fieldName*/);
+void JSONGetter::visit<double>(double &doubleField, double defaultValue, const char * fieldName);
 
 template <>
-void JSONGetter::visit<bool>(bool &boolField, bool defaultValue, const char * /*fieldName*/);
+void JSONGetter::visit<float> (float &floatField, float defaultValue, const char * fieldName);
+
+template <>
+void JSONGetter::visit<bool>  (bool &boolField, bool defaultValue, const char * fieldName);
 
 template <>
 void JSONGetter::visit<std::string>(std::string &stringField, std::string defaultValue, const char* fieldName);
@@ -228,6 +235,9 @@ void JSONGetter::visit<unsigned char, IntField>(unsigned char &field, const IntF
 
 template <>
 void JSONGetter::visit<int, IntField>(int &field, const IntField *fieldDescriptor);
+
+template <>
+void JSONGetter::visit<uint64_t, UInt64Field>(uint64_t &field, const UInt64Field *fieldDescriptor);
 
 template <>
 void JSONGetter::visit<double, DoubleField>(double &field, const DoubleField *fieldDescriptor);
