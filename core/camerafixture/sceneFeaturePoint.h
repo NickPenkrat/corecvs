@@ -61,11 +61,22 @@ public:
     {
     }
 
-    // Yes, this is not transitive (and you should use wildcarded wpps only for indexing not for insertion)
+    bool isWildcard() const
+    {
+        return u == UWILDCARD || v == VWILDCARD;
+    }
+
+    // Yes, this is NOT transitive (and you should use wildcarded wpps only for indexing not for insertion)
     bool operator== (const WildcardablePointerPair<U, V> &wpp) const
     {
         return (u == UWILDCARD || wpp.u == UWILDCARD || u == wpp.u) &&
                (v == VWILDCARD || wpp.v == VWILDCARD || v == wpp.v);
+    }
+
+    // This operator IS transitive
+    bool operator<  (const WildcardablePointerPair<U, V> &wpp) const
+    {
+        return u == wpp.u ? v < wpp.v : u < wpp.u;
     }
 
     U* u;

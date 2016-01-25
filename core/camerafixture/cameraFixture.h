@@ -84,21 +84,41 @@ public:
         return getWorldCamera(cam);
     }
 
+    int getCameraId(FixtureCamera* ptr) const
+    {
+        for (auto& i: cameras)
+            if (i == ptr)
+                return &i - &cameras[0];
+        return -1;
+    }
+
     void setCameraCount(int count);
 
     Matrix44 getMMatrix(int cam) const
     {
         return getRawCamera(cam).getCameraMatrix();
     }
+    Matrix44 getMMatrix(FixtureCamera *cam) const
+    {
+        return getWorldCamera(cam).getCameraMatrix();
+    }
 
     Vector2dd project(const Vector3dd &pt, int cam) const
     {
         return cameras[cam]->project(location.inverted().apply(pt));
     }
+    Vector2dd project(const Vector3dd &pt, FixtureCamera *cam) const
+    {
+        return cam->project(location.inverted().apply(pt));
+    }
 
     bool isVisible(const Vector3dd &pt, int cam) const
     {
         return cameras[cam]->isVisible(location.inverted().apply(pt));
+    }
+    bool isVisible(const Vector3dd &pt, FixtureCamera *cam) const
+    {
+        return cam->isVisible(location.inverted().apply(pt));
     }
 
     bool isVisible(const Vector3dd &pt) const

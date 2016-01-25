@@ -46,7 +46,7 @@ FeatureMatchingPipeline::~FeatureMatchingPipeline()
 {
     for (std::vector<FeatureMatchingPipelineStage*>::iterator ps = pipeline.begin(); ps != pipeline.end(); ++ps)
     {
-        (*ps)->~FeatureMatchingPipelineStage();
+        delete *ps;
     }
     pipeline.clear();
 }

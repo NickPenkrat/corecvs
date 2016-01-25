@@ -165,6 +165,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const Photostation &ps, const Obs
 void CalibrationHelpers::drawPly(Mesh3D &mesh, const SceneFeaturePoint &fp, double scale)
 {
 
+    mesh.setColor(fp.color);
     if (!largePoints) {
         mesh.addPoint(fp.position);
     } else {
