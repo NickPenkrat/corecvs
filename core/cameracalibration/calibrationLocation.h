@@ -1,5 +1,5 @@
-#ifndef CALIBRATIONLOCATION_H
-#define CALIBRATIONLOCATION_H
+#ifndef CALIBRATION_LOCATION_H
+#define CALIBRATION_LOCATION_H
 
 #include "vector2d.h"
 #include "vector3d.h"
@@ -322,4 +322,4 @@ public:
 
 } // namespace corecvs
 
-#endif // CALIBRATIONLOCATION_H
+#endif // CALIBRATION_LOCATION_H

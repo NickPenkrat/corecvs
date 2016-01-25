@@ -15,6 +15,11 @@ class CameraFixture;
 class FixtureScene
 {
 public:
+    typedef FixtureCamera     CameraType;
+    typedef CameraFixture     FixtureType;
+    typedef SceneFeaturePoint PointType;
+
+
     FixtureScene();
 
     /**
@@ -165,9 +170,14 @@ public:
 
 
 
-    template<class VisitorType>
+    template<class VisitorType, class SceneType = FixtureScene>
     void accept(VisitorType &visitor)
     {
+        typedef typename SceneType::CameraType   RealCameraType;
+        typedef typename SceneType::FixtureType  RealFixtureType;
+        typedef typename SceneType::PointType    RealPointType;
+
+
         /* So far compatibilty is on */
         /* Orphan cameras */
         int ocamSize = orphanCameras.size();
@@ -179,7 +189,7 @@ public:
         {
             char buffer[100];
             snprintf2buf(buffer, "orphancameras[%d]", i);
-            visitor.visit(*orphanCameras[i], buffer);
+            visitor.visit(*static_cast<RealCameraType *>(orphanCameras[i]), buffer);
         }
 
         /* Fixtures*/
@@ -194,7 +204,7 @@ public:
         {
             char buffer[100];
             snprintf2buf(buffer, "stations[%d]", i);
-            visitor.visit(*fixtures[i], buffer);
+            visitor.visit(*static_cast<RealFixtureType *>(fixtures[i]), buffer);
         }
 
         /* Points */
@@ -208,9 +218,8 @@ public:
         {
             char buffer[100];
             snprintf2buf(buffer, "points[%d]", i);
-            visitor.visit(*points[i], buffer);
+            visitor.visit(*static_cast<RealPointType *>(points[i]), buffer);
         }
-
     }
 
     virtual ~FixtureScene();

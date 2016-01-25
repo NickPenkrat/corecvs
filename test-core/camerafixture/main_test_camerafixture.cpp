@@ -54,7 +54,7 @@ TEST(Fixture, testVisitors)
 
     scene->dumpInfo(cout);
     PrinterVisitor visitor;
-    scene->accept(visitor);
+    scene->accept<PrinterVisitor, FixtureScene>(visitor);
 
 
 

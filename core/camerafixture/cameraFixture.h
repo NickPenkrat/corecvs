@@ -113,9 +113,14 @@ public:
     }
 
 
-    template<class VisitorType>
+    template<class VisitorType, class SceneType = FixtureScene>
     void accept(VisitorType &visitor)
     {
+        typedef typename SceneType::CameraType   RealCameraType;
+//        typedef typename SceneType::FixtureType  RealFixtureType;
+//        typedef typename SceneType::PointType    RealPointType;
+
+
         /* So far compatibilty is on */
         int camsize = cameras.size();
         visitor.visit(camsize, 0, "cameras.size");
@@ -126,7 +131,7 @@ public:
         {
             char buffer[100];
             snprintf2buf(buffer, "cameras[%d]", i);
-            visitor.visit(*cameras[i], buffer);
+            visitor.visit(*static_cast<RealCameraType *>(cameras[i]), buffer);
         }
 
         /*
@@ -137,6 +142,9 @@ public:
         visitor.visit(location, Affine3DQ(), "location");
         visitor.visit(name, std::string(""), "name");
     }
+
+
+
 };
 
 } // namespace corecvs

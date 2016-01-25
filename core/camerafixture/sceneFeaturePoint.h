@@ -186,8 +186,8 @@ public:
 
                 char buffer[100];
                 snprintf2buf(buffer, "obsereve[%d]", i);
-
                 visitor.visit(obseve, SceneObservation(), buffer);
+                i++;
             }
         } else {
             for (int i = 0; i < observeSize; i++)

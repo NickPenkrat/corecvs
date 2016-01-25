@@ -4,7 +4,7 @@
 namespace corecvs {
 
 void CameraFixture::setCameraCount(size_t count) {
-    SYNC_PRINT(("CameraFixture::setCameraCount(%d)", count));
+    SYNC_PRINT(("CameraFixture::setCameraCount(%d)\n", count));
 
     if (ownerScene == NULL) {
         SYNC_PRINT(("CameraFixture(%p)::setCameraCount(): ownerScene is NULL ", this));
