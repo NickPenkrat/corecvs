@@ -185,7 +185,7 @@ public:
     Quaternion orientation;
 
     explicit CameraLocationData(
-            Vector3dd position = Vector3dd(0.0, 0.0, 1.0),
+            Vector3dd     position = Vector3dd(0.0, 0.0, 1.0),
             Quaternion orientation = Quaternion::Identity()) :
         position(position),
         orientation(orientation)

@@ -196,6 +196,7 @@ public:
     {}
 
 
+
     template <bool full=false>
     Vector2dd project(const Vector3dd &p) const
     {

@@ -49,6 +49,15 @@ public:
     /* Ray to point */
     Vector3dd                 observDir;
 
+    double &x() { return observation.x(); }
+    double &y() { return observation.y(); }
+
+    std::string getPointName();
+
+private:
+    FixtureCamera *getCameraById(FixtureCamera::IdType id);
+
+public:
     template<class VisitorType>
     void accept(VisitorType &visitor)
     {
@@ -63,8 +72,14 @@ public:
             id = camera->getObjectId();
         }
         visitor.visit(id, (uint64_t)0, "camera" );
+
+        if (visitor.isLoader())
+        {
+            camera = getCameraById(id);
+        }
         //camera->setObjectId(id);
     }
+
 
 };
 
@@ -119,7 +134,7 @@ public:
     {
         this->position = position;
         this->hasKnownPosition = true;
-        type = type;
+        this->type = type;
     }
 
 
@@ -152,10 +167,10 @@ public:
     }
 
     /* Let it be so far like this */
-
     template<class VisitorType>
-    void acceptHelper(VisitorType &visitor)
+    void accept(VisitorType &visitor)
     {
+
         visitor.visit(name                       , std::string("") , "name"  );
         visitor.visit(position                   , Vector3dd(0.0)  , "position"  );
         visitor.visit(hasKnownPosition           , false           , "hasKnownPosition"  );
@@ -163,15 +178,6 @@ public:
         visitor.visit(hasKnownReprojectedPosition, false           , "hasKnownReprojectedPosition");
         visitor.visit((int &)type, 0, "type");
         visitor.visit(color, RGBColor::Black(), "color");
-    }
-
-
-    /* */
-    template<class VisitorType>
-    void accept(VisitorType &visitor)
-    {
-
-        acceptHelper(visitor);
 
 
         int observeSize = observations.size();
@@ -195,6 +201,7 @@ public:
                 char buffer[100];
                 snprintf2buf(buffer, "obsereve[%d]", i);
                 SceneObservation observe;
+                observe.featurePoint = this;
                 visitor.visit(observe, SceneObservation(), buffer);
 
                 observations[observe.camera] = observe;

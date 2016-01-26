@@ -25,13 +25,22 @@ FixtureScene::FixtureScene() :
 
 void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
 {
+    SYNC_PRINT(("FixtureScene::projectForward(0x%0X, %s):called\n", mask, round ? "true" : "false"));
+
+    SYNC_PRINT(("FixtureScene::projectForward(): points %u\n", points.size()));
+
     for (size_t pointId = 0; pointId < points.size(); pointId++)
     {
         SceneFeaturePoint *point = points[pointId];
-        if ( (point->type & mask) == 0)
-            continue;
 
-        //cout << "Projecting point:" << point->name << " (" << point->position << ")"<< endl;
+        cout << "Projecting point:" << point->name << " (" << point->position << ")"<< endl;
+
+        if ( (point->type & mask) == 0) {
+            printf("Skipping (type = %x, mask = %x)\n", point->type, mask);
+            continue;
+        }
+
+        cout << "Projecting" << endl;
 
         for (size_t stationId = 0; stationId < fixtures.size(); stationId++)
         {
@@ -403,6 +412,7 @@ void FixtureScene::dumpInfo(ostream &out)
     }
 
     out << "Points: " <<  points.size() << endl;
+    out << "   Observations: " <<  totalObservations() << endl;
 
 }
 
@@ -491,18 +501,18 @@ FixtureScene::~FixtureScene()
 
 FixtureCamera *FixtureScene::fabricateCamera()
 {
-    SYNC_PRINT(("FixtureScene::fabricateCamera(): called"));
+    SYNC_PRINT(("FixtureScene::fabricateCamera(): called\n"));
     return new FixtureCamera(this);
 }
 
 CameraFixture *FixtureScene::fabricateCameraFixture()
 {
-    SYNC_PRINT(("FixtureScene::fabricateCameraFixture(): called"));
+    SYNC_PRINT(("FixtureScene::fabricateCameraFixture(): called\n"));
     return new CameraFixture(this);
 }
 
 SceneFeaturePoint *FixtureScene::fabricateFeaturePoint()
 {
-    SYNC_PRINT(("FixtureScene::fabricateFeaturePoint(): called"));
+    SYNC_PRINT(("FixtureScene::fabricateFeaturePoint(): called\n"));
     return new SceneFeaturePoint(this);
 }

@@ -30,7 +30,7 @@ public:
     CameraFixture(FixtureScene * owner = NULL) :
         FixtureScenePart(owner)
     {
-        SYNC_PRINT(("CameraFixture():CameraFixture(%p)", owner));
+        SYNC_PRINT(("CameraFixture():CameraFixture(owner = %p): called \n", owner));
     }
 
     CameraFixture(
