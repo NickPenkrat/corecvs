@@ -94,14 +94,34 @@ public:
 
     void setCameraCount(int count);
 
+
     Matrix44 getMMatrix(int cam) const
     {
         return getRawCamera(cam).getCameraMatrix();
     }
     Matrix44 getMMatrix(FixtureCamera *cam) const
     {
-        return getWorldCamera(cam).getCameraMatrix();
+        auto M=getWorldCamera(cam).getCameraMatrix();
+        return M;
     }
+
+    Vector2dd reprojectionError(const Vector3dd &p, const Vector2dd &pp, FixtureCamera* cam)
+    {
+        return cam->reprojectionError(location.inverted().apply(p), pp);
+    }
+    Vector3dd crossProductError(const Vector3dd &p, const Vector2dd &pp, FixtureCamera* cam)
+    {
+        return cam->crossProductError(location.inverted().apply(p), pp);
+    }
+    double angleError(const Vector3dd &p, const Vector2dd &pp, FixtureCamera* cam)
+    {
+        return cam->angleError(location.inverted().apply(p), pp);
+    }
+    Vector3dd rayDiffError(const Vector3dd &p, const Vector2dd &pp, FixtureCamera* cam)
+    {
+        return cam->rayDiffError(location.inverted().apply(p), pp);
+    }
+
 
     Vector2dd project(const Vector3dd &pt, int cam) const
     {
@@ -123,7 +143,8 @@ public:
 
     bool isVisible(const Vector3dd &pt) const
     {
-        for (int i = 0; i < (int)cameras.size(); ++i) {
+        for (int i = 0; i < (int)cameras.size(); ++i)
+        {
             if (isVisible(pt, i))
                 return true;
         }
