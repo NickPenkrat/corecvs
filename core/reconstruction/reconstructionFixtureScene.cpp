@@ -3,6 +3,7 @@
 #include <set>
 
 #include "featureMatchingPipeline.h"
+#include "log.h"
 
 using namespace corecvs;
 
@@ -130,6 +131,7 @@ void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams 
 
 std::vector<FixtureCamera*> ReconstructionFixtureScene::getDistinctCameras() const
 {
+    std::cout << "GDC" << std::endl;
     std::set<FixtureCamera*> cameras;
     for (auto& f: placedFixtures)
     {
@@ -138,10 +140,108 @@ std::vector<FixtureCamera*> ReconstructionFixtureScene::getDistinctCameras() con
             cameras.insert(c);
         }
     }
+    std::cout << cameras.size() << std::endl;
     return std::vector<FixtureCamera*>(cameras.begin(), cameras.end());
 }
 
 int ReconstructionFixtureScene::getDistinctCameraCount() const
 {
     return getDistinctCameras().size();
+}
+
+bool ReconstructionFixtureScene::validateMatches()
+{
+    for (auto& mv: matches)
+    {
+        auto fixture = mv.first.u;
+        auto camera  = mv.first.v;
+        CORE_ASSERT_TRUE_S(std::find(fixtures.begin(), fixtures.end(), fixture) != fixtures.end());
+//        CORE_ASSERT_TRUE_S(std::find(cameras.begin(), cameras.end(), cameras) != cameras.end());
+
+        for (auto& mvv: mv.second)
+        {
+            auto fixtureB = mvv.first.u;
+            auto cameraB  = mvv.first.v;
+            CORE_ASSERT_TRUE_S(std::find(fixtures.begin(), fixtures.end(), fixtureB) != fixtures.end());
+  //          CORE_ASSERT_TRUE_S(std::find(cameras.begin(), cameras.end(), cameraB) != cameras.end());
+            for (auto& t: mvv.second)
+            {
+                int mA = std::get<0>(t);
+                int mB = std::get<1>(t);
+                auto itA = keyPoints.count(WPP(fixture, camera));
+                CORE_ASSERT_TRUE_S(itA > 0);
+                CORE_ASSERT_TRUE_S(keyPoints[WPP(fixture, camera)].size() > mA);
+                auto itB = keyPoints.count(WPP(fixtureB, cameraB));
+                CORE_ASSERT_TRUE_S(itB > 0);
+                CORE_ASSERT_TRUE_S(keyPoints[WPP(fixtureB, cameraB)].size() > mB);
+            }
+        }
+    }
+    return true;
+}
+
+bool ReconstructionFixtureScene::haveCamera(FixtureCamera * camera)
+{
+    for (auto& p: mOwnedObjects)
+    {
+        if (dynamic_cast<FixtureCamera*>(p) == camera)
+            return true;
+    }
+    return false;
+}
+
+bool ReconstructionFixtureScene::haveFixture(CameraFixture * camera)
+{
+    for (auto& p: mOwnedObjects)
+    {
+        if (dynamic_cast<CameraFixture*>(p) == camera)
+            return true;
+    }
+    return false;
+}
+
+bool ReconstructionFixtureScene::havePoint(SceneFeaturePoint *point)
+{
+    for (auto& p: mOwnedObjects)
+    {
+        if (dynamic_cast<SceneFeaturePoint*>(p) == point)
+            return true;
+    }
+    return false;
+}
+
+bool ReconstructionFixtureScene::validateTracks()
+{
+    for (auto pt: trackedFeatures)
+    {
+        CORE_ASSERT_TRUE_S(pt);
+        CORE_ASSERT_TRUE_S(std::find(points.begin(), points.end(), pt) != points.end());
+        for (auto wpp: pt->observations__)
+        {
+            auto fixture = wpp.first.u;
+            auto camera  = wpp.first.v;
+            CORE_ASSERT_TRUE_S(std::find(fixtures.begin(), fixtures.end(), fixture) != fixtures.end());
+            auto o       = wpp.second;
+            CORE_ASSERT_TRUE_S(std::find(fixture->cameras.begin(), fixture->cameras.end(), camera) != fixture->cameras.end());
+            CORE_ASSERT_TRUE_S(fixture == o.cameraFixture);
+            CORE_ASSERT_TRUE_S(camera  == o.camera);
+            CORE_ASSERT_TRUE_S(pt      == o.featurePoint);
+            for (int i = 0; i < 2; ++i)
+                CORE_ASSERT_TRUE_S(!std::isnan(o.observation[i]));
+        }
+        for (int i = 0; i < 3; ++i)
+            CORE_ASSERT_TRUE_S(!std::isnan(pt->reprojectedPosition[i]));
+    }
+    return true;
+}
+
+bool ReconstructionFixtureScene::validateAll()
+{
+    L_ERROR << "Validating..." ;
+    if (validateMatches() && validateTracks())
+    {
+        std::cout << "VALID!!!" << std::endl;
+        return true;
+    }
+    return false;
 }

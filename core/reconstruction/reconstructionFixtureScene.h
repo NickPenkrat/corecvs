@@ -39,6 +39,8 @@ struct PhotostationInitialization
     PhotostationInitializationType initializationType;
     std::vector<SceneFeaturePoint*> staticPoints;
     Affine3DQ initData;
+    Matrix33  positioningAccuracy;
+    double    rotationalAccuracy;
 };
 
 
@@ -77,6 +79,14 @@ public:
     ReconstructionState state = ReconstructionState::NONE;
     // ==================================================================================
     umwpp<umwppv<std::tuple<int, int, double>>> matchesCopy;
+
+    bool validateMatches();
+    bool validateTracks();
+    bool validateAll();
+
+    bool haveCamera(FixtureCamera* camera);
+    bool haveFixture(CameraFixture* camera);
+    bool havePoint(SceneFeaturePoint* point);
 };
 }
 
