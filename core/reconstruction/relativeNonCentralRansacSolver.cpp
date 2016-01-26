@@ -29,6 +29,18 @@ void corecvs::RelativeNonCentralRansacSolver::run()
         {
             std::cout << ((double)i) / ((double) maxIterations) * 100.0 << "% complete" << std::endl;
         }
+        if (maxInliers > FEATURES_FOR_MODEL)
+        {
+            double curr = maxInliers / (1.0 * matchesAll.size());
+            double N = std::log(0.001) / std::log(1.0 - std::pow(curr, FEATURES_FOR_MODEL));
+            if ((i+1)%reportBy ==0)
+            std::cout << "MI: " << maxInliers << " curr = " << curr << " N: " << N << std::endl;
+            if (i > N && N > 0)
+            {
+                std::cout << "Finished at " << i << "th iteration" << std::endl;
+                break;
+            }
+        }
     }
     pss[1]->location = bestHypothesis;
 }
