@@ -94,13 +94,6 @@ int corecvs::PhotostationPlacer::getMovablePointCount()
 {
     // TODO: clarify which points are inmovable
     return scene->trackedFeatures.size();
-#if 0
-    int movables = 0;
-    for (auto& o: tracks)
-        if (o.updateable)
-            movables++;
-    return movables;
-#endif
 }
 
 void corecvs::PhotostationPlacer::prepareNonLinearOptimizationData()
@@ -162,7 +155,6 @@ int corecvs::PhotostationPlacer::getInputNum()
         input += ptNum * 3);
     IF(TUNE_GPS,
         input += gpsConstraintNum);
- //   std::cout << "IN: " << inputNum << ">" << outputNum << " problem, " << ptNum << " points, " << psNum << " fixtures," << camNum << " cameras" << projNum << " projections" << std::endl;
     return input;
 }
 
@@ -171,9 +163,7 @@ int corecvs::PhotostationPlacer::getOutputNum()
     int output = 0;
     output += projNum;
     IF(TUNE_GPS,
-   //     std::cout << "BOO" << std::endl;
         output += gpsConstraintNum);
- //   std::cout << "OUT: " << inputNum << ">" << outputNum << " problem, " << ptNum << " points, " << psNum << " fixtures," << camNum << " cameras" << projNum << " projections" << std::endl;
     return output;
 }
 
@@ -210,15 +200,6 @@ void corecvs::PhotostationPlacer::buildDependencyList()
                 if (observation->cameraFixture == firstFixture)
                     sparsity[argin].push_back(j);
             }
-            if (!!(optimizationParams & PhotostationPlacerOptimizationType::TUNE_GPS))
-            {
-                for (int j = 0; j < gpsConstraintNum; ++j)
-                {
-                    auto ps = gpsConstrainedCameras[j];
-                    if (ps == firstFixture)
-                        sparsity[argin].push_back(j + projNum);
-                }
-            }
             for (auto& id: sparsity[argin])
                 CORE_ASSERT_TRUE_S(id < outputNum);
             argin++;
@@ -236,15 +217,6 @@ void corecvs::PhotostationPlacer::buildDependencyList()
                     auto observation = revDependency[j];
                     if (observation->cameraFixture == fixture)
                         sparsity[argin].push_back(j);
-                }
-                if (!!(optimizationParams & PhotostationPlacerOptimizationType::TUNE_GPS))
-                {
-                    for (int j = 0; j < gpsConstraintNum; ++j)
-                    {
-                        auto ps = gpsConstrainedCameras[j];
-                        if (ps == fixture)
-                            sparsity[argin].push_back(j + projNum);
-                    }
                 }
                 for (auto& id: sparsity[argin])
                     CORE_ASSERT_TRUE_S(id < outputNum);
@@ -358,137 +330,7 @@ void corecvs::PhotostationPlacer::buildDependencyList()
 
 std::vector<std::vector<int>> corecvs::PhotostationPlacer::getDependencyList()
 {
-#if 0
-    activeCameras = scene->getDistinctCameras();
-    revDependency.clear();
-    int cnt = getReprojectionCnt();
-    revDependency.resize(cnt);
-    int argin = 0, id = 0;
-
-    auto& placedFixtures = scene->placedFixtures;
-    int errSize = getErrorComponentsPerPoint();
-    int psNum = placedFixtures.size();
-    int camCnt = activeCameras.size();
-
-    std::cout << scene->trackedFeatures.size() << "/" << psNum << "/" << camCnt << std::endl;
-
-    // revdependency = map from error component id
-    // to projection
-    for (auto& track: scene->trackedFeatures)
-    {
-        for(auto& proj: track->observations__)
-        {
-            for (int k = 0; k < errSize; ++k)
-                revDependency[id++] = &proj.second;
-        }
-    }
-    std::cout << cnt << " " << id << std::endl;
-    CORE_ASSERT_TRUE_S(cnt == id);
-    std::vector<std::vector<int>> sparsity(getInputNum());
-
-    IF(DEGENERATE_ORIENTATIONS,
-        auto firstFixture = placedFixtures[0];
-        for (int i = 0; i < 4; ++i)
-        {
-            for (int j = 0; j < cnt; ++j)
-            {
-                auto observation = revDependency[j];
-                if (observation->cameraFixture == firstFixture)
-                    sparsity[argin].push_back(j);
-            }
-            ++argin;
-        }
-    );
-    IF(NON_DEGENERATE_ORIENTATIONS,
-        for (int i = 1; i < psNum; ++i)
-        {
-            auto fixture = placedFixtures[i];
-            for (int jj = 0; jj < 4; ++jj)
-            {
-                for (int j = 0; j < cnt; ++j)
-                {
-                    auto observation = revDependency[j];
-                    if (observation->cameraFixture == fixture)
-                        sparsity[argin].push_back(j);
-                }
-                ++argin;
-            }
-        });
-    IF(DEGENERATE_TRANSLATIONS,
-        auto firstFixture = placedFixtures[0];
-        for (int i = 0; i < 3; ++i)
-        {
-            for (int j = 0; j < cnt; ++j)
-            {
-                auto p = revDependency[j];
-                if (p->cameraFixture == firstFixture)
-                    sparsity[argin].push_back(j);
-            }
-            ++argin;
-        });
-    IF(NON_DEGENERATE_TRANSLATIONS,
-        for (int i = 1; i < scene->placedFixtures.size(); ++i)
-        {
-            auto fixture = placedFixtures[i];
-            for (int jj = 0; jj < 3; ++jj)
-            {
-                for (int j = 0; j < cnt; ++j)
-                {
-                    auto p = revDependency[j];
-                    if (p->cameraFixture == fixture)
-                        sparsity[argin].push_back(j);
-                }
-                ++argin;
-            }
-        });
-    IF(FOCALS,
-        for (int i = 0; i < camCnt; ++i)
-        {
-            auto camera = activeCameras[i];
-            for (int j = 0; j < cnt; ++j)
-            {
-                auto p = revDependency[j];
-                if (p->camera == camera)
-                    sparsity[argin].push_back(j);
-            }
-            ++argin;
-        });
-    IF(PRINCIPALS,
-        for (int i = 0; i < camCnt; ++i)
-        {
-            auto camera = activeCameras[i];
-            for (int jj = 0; jj < 2; ++jj)
-            {
-                for (int j = 0; j < cnt; ++j)
-                {
-                    auto p = revDependency[j];
-                    if (p->camera == camera)
-                        sparsity[argin].push_back(j);
-                }
-                ++argin;
-            }
-        });
-    IF(POINTS,
-        for (int i = 0; i < (int)scene->trackedFeatures.size(); ++i)
-        {
-            auto feature = scene->trackedFeatures[i];
-            for (int jj = 0; jj < 3; ++jj)
-            {
-                for (int j = 0; j < cnt; ++j)
-                {
-                    auto p = revDependency[j];
-                    if (p->featurePoint == feature)
-                        sparsity[argin].push_back(j);
-                }
-                ++argin;
-            }
-        });
-    std::cout << getInputNum() << " vs " << argin << std::endl;
-    CORE_ASSERT_TRUE_S(getInputNum() == argin);
     return sparsity;
-#else
-    return sparsity;
-#endif
 }
 
 void corecvs::PhotostationPlacer::readOrientationParams(const double in[])
@@ -655,7 +497,6 @@ void corecvs::PhotostationPlacer::fit(const PhotostationPlacerOptimizationType &
     optimizationParams = params;
     prepareNonLinearOptimizationData();
     scene->validateAll();
-//    activeCameras = scene->getDistinctCameras();
     getDependencyList();
     getErrorSummaryAll();
     corecvs::LevenbergMarquardtSparse lm;
@@ -674,7 +515,6 @@ void corecvs::PhotostationPlacer::fit(const PhotostationPlacerOptimizationType &
     readOrientationParams(&res[0]);
 
     getErrorSummaryAll();
-//    placed = preplaced;
     scene->validateAll();
 }
 
@@ -734,93 +574,10 @@ void corecvs::PhotostationPlacer::ParallelErrorComputator::operator() (const cor
     }
 }
 
-void corecvs::PhotostationPlacer::computeMedianErrors(double out[], const std::vector<int> &idxs)
+void corecvs::PhotostationPlacer::computeErrors(double out[], const std::vector<int> &idxs)
 {
-#if 1
-#if 0
-    std::vector<corecvs::Vector2dd> errors;
-    int total = 0;
-    for (auto& o: tracks)
-    {
-//        corecvs::MulticameraTriangulator mct;
-//        for (auto& p: o.projections)
-//        {
-//            mct.addCamera(calibratedPhotostations[p.photostationId].getMMatrix(p.cameraId), p.projection);
-//            total += 2;
-//        }
-//        o.worldPoint = mct.triangulate();
-        for (auto& p: o.projections)
-            errors.push_back(p.projection - calibratedPhotostations[p.photostationId].project(o.worldPoint, p.cameraId));
-    }
-    //std::sort(errors.begin(), errors.end(), [](const corecvs::Vector2dd &a, const corecvs::Vector2dd &b) { return !a < !b; });
-
-    int argout = 0;
-    for (int i = 0; i < errors.size(); ++i)
-    {
-        out[argout++] = errors[i][0];
-        out[argout++] = errors[i][1];
-    }
-    while(argout < total / 2)
-        out[argout++] = 0.0;
-#else
     ParallelErrorComputator computator(this, idxs, out);
     corecvs::parallelable_for(0, (int)idxs.size() / getErrorComponentsPerPoint(), 16, computator, true);
-#endif
-#else
-#if 0
-    for (int ii = 0; ii < getReprojectionCnt(); ii += 3)
-    {
-                int i = ii;
-                auto& o = *revDependency[i];
-                //std::cout << revDependency[i] << " " << o.cameraFixture << " " << o.featurePoint << " " << o.camera << " " << o.observation << " " << o.featurePoint->reprojectedPosition << std::endl;
-                CORE_ASSERT_TRUE_S(scene->haveCamera(o.camera));
-                CORE_ASSERT_TRUE_S(scene->haveFixture(o.cameraFixture));
-                CORE_ASSERT_TRUE_S(scene->havePoint(o.featurePoint));
-//                std::cout << o.ferePoint->reprojectedPosition << std::endl;
-                auto error = o.cameraFixture->rayDiffError(o.featurePoint->reprojectedPosition, o.observation, o.camera);
-                for (int j = 0; j < 3; ++j)
-                    out[ii + j] = error[j];
-                for (int jjj = 0; jjj < 3; ++jjj)
-                CORE_ASSERT_TRUE_S(!std::isnan(out[ii + jjj]));
-    }
-#else
-//    for (int i = 0; i < projNum; ++i)
-//        idxs.push_back(i);
-//    int cnt = 0;
-#if 0
-    for (auto&  pt: scene->trackedFeatures)
-    {
-        for (auto& op: pt->observations__)
-        {
-            auto& o = op.second;
-                CORE_ASSERT_TRUE_S(scene->haveCamera(o.camera));
-                CORE_ASSERT_TRUE_S(scene->haveFixture(o.cameraFixture));
-                CORE_ASSERT_TRUE_S(scene->havePoint(o.featurePoint));
-//                std::cout << o.ferePoint->reprojectedPosition << std::endl;
-                auto error = o.cameraFixture->rayDiffError(o.featurePoint->reprojectedPosition, o.observation, o.camera);
-                for (int j = 0; j < 3; ++j)
-                    out[cnt++] = error[j];
-//                for (int jjj = 0; jjj < 3; ++jjj)
-//                CORE_ASSERT_TRUE_S(!std::isnan(out[ii + jjj]));
-        }
-    }
-#else
-    for (int i = 0; i < projNum; i += 3)
-    {
-        auto& o = *revDependency[i];
-//        CORE_ASSERT_TRUE_S(scene->haveCamera(o.camera));
-//        CORE_ASSERT_TRUE_S(scene->haveFixture(o.cameraFixture));
-//        CORE_ASSERT_TRUE_S(scene->havePoint(o.featurePoint));
-//                std::cout << o.ferePoint->reprojectedPosition << std::endl;
-        auto error = o.cameraFixture->rayDiffError(o.featurePoint->reprojectedPosition, o.observation, o.camera);
-        for (int j = 0; j < 3; ++j)
-            out[i + j] = error[j];
-//                for (int jjj = 0; jjj < 3; ++jjj)
-//                CORE_ASSERT_TRUE_S(!std::isnan(out[ii + jjj]));
-    }
-#endif
-#endif
-#endif
 }
 
 std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> corecvs::PhotostationPlacer::getPossibleTracks(CameraFixture *psA)
@@ -877,13 +634,6 @@ std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, S
     }
     return res;
 }
-#if 0
-void corecvs::PhotostationPlacer::pruneTrachs()
-{
-    double targetRMSE, currentRMSE;
-
-}
-#endif
 
 void corecvs::PhotostationPlacer::appendTracks(const std::vector<int> &inlierIds, CameraFixture* fixture, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &possibleTracks)
 {
@@ -924,52 +674,9 @@ void corecvs::PhotostationPlacer::appendTracks(const std::vector<int> &inlierIds
                 found = true;
         CORE_ASSERT_TRUE_S(found);
     }
-#if 0
-    for (int psA = 0; psA < placed; ++psA)
-    {
-        int id2 = ps - psA;
-        auto& mm = matches[psA][id2];
-        for (auto& m: mm)
-        {
-            int camA = std::get<0>(m);
-            int  ptA = std::get<1>(m);
-            int camB = std::get<2>(m);
-            int  ptB = std::get<3>(m);
-            if (!trackMap.count(std::make_tuple(psA, camA, ptA)))
-                continue;
-            int track = trackMap[std::make_tuple(psA, camA, ptA)];
-            if (inlierIdx >= (int)inlierIds.size() || totalIdx++ != inlierIds[inlierIdx])
-            {
-                continue;
-            }
-            inlierIdx++;
-            if (trackMap.count(std::make_tuple(ps, camB, ptB)))
-                continue;
-            auto wp = tracks[track].worldPoint;
-            auto proj = keyPoints[ps][camB][ptB] - calibratedPhotostations[ps].project(wp, camB);
-            if ((!proj) < trackInlierThreshold && (!(wp - calibratedPhotostations[ps].getRawCamera(camB).extrinsics.position) < distanceLimit))
-            {
-                PointProjection prj;
-                prj.photostationId = ps;
-                prj.cameraId = camB;
-                prj.projection = keyPoints[ps][camB][ptB];
-                prj.featureId = ptB;
-                appended++;
-                tracks[track].projections.push_back(prj);
-                trackMap[std::make_tuple(ps, camB, ptB)] = track;
-            }
-        }
-    }
-    std::cout << appended << " tracks appended" << std::endl;
-#endif
     scene->validateAll();
 }
-#if 0
 
-#if 0
-corecvs::Vector3dd corecvs::PhotostationPlacer::comp
-#endif
-#endif
 void corecvs::PhotostationPlacer::appendPs()
 {
     scene->validateAll();
@@ -1005,94 +712,6 @@ void corecvs::PhotostationPlacer::appendPs()
         }
     }
     std::cout << "TRACKS AFTER: " << scene->trackedFeatures.size() << std::endl;
-#if 0
-//    AbsoluteNonCentralRansacSolver solver(calibratedPhotostations[psApp], hypos);
-    corecvs::AbsoluteNonCentralRansacSolverParams params;
-    switch(psInitData[psApp].initializationType)
-    {
-        case PhotostationInitializationType::GPS:
-            {
-                params.forcePosition = true;
-                params.forcedPosition = psInitData[psApp].gpsData;
-                AbsoluteNonCentralRansacSolver solver(calibratedPhotostations[psApp], hypos, params);
-                solver.run();
-                solver.runInliersRE();
-                auto res = solver.getInliers();
-                auto hypo = solver.getBestHypothesis();
-                std::cout << "PS append: " << res.size() << std::endl;
-                std::cout << hypo.shift << " " << hypo.rotor << " | " << psInitData[psApp].gpsData << std::endl;
-                calibratedPhotostations[psApp].location = hypo;
-                calibratedPhotostations[psApp].location.shift = psInitData[psApp].gpsData;
-                preplaced++;
-                fit(optimizationParams, 100);
-                appendTracks(res, psApp);
-            }
-            break;
-        case PhotostationInitializationType::NONE:
-            {
-                corecvs::AbsoluteNonCentralRansacSolverParams params;
-                params.forcePosition = false;
-                AbsoluteNonCentralRansacSolver solver(calibratedPhotostations[psApp], hypos, params);
-                solver.run();
-                solver.runInliersRE();
-                auto res = solver.getInliers();
-                auto hypo = solver.getBestHypothesis();
-                std::cout << "PS append: " << res.size() << std::endl;
-                std::cout << hypo.shift << " " << hypo.rotor << std::endl;
-                calibratedPhotostations[psApp].location = hypo;
-                appendTracks(res, psApp);
-            }
-            break;
-        case PhotostationInitializationType::STATIC_POINTS:
-            {
-                auto &ps = calibratedPhotostations[psApp];
-                ps.location.rotor = corecvs::Quaternion(0, 0, 0, 1);
-                ps.location.shift = corecvs::Vector3dd(0, 0, 0);
-	            std::vector<corecvs::Vector3dd> centers, directions, points3d;
-                for (auto& t: hypos)
-                {
-                    int cam = std::get<0>(t);
-                    auto pt = std::get<1>(t);
-                    auto ptw= std::get<3>(t);
-
-                    centers.push_back(ps.getRawCamera(cam).extrinsics.position);
-                    directions.push_back(ps.getRawCamera(cam).rayFromPixel(pt).a);
-                    points3d.push_back(ptw);
-                }
-
-                auto hypo = corecvs::PNPSolver::solvePNP(centers, directions, points3d);
-                auto bestHypo = hypo[0];
-                int bestCnt = 0;
-                std::vector<int> bestInliers = {};
-                for (auto &h: hypo)
-                {
-                    ps.location = h;
-                    int cnt = 0;
-                    std::vector<int> inliers;
-                    for (auto& cp: hypos)
-                    {
-                        auto pp = ps.project(std::get<3>(cp), std::get<0>(cp)) - std::get<1>(cp);
-                        if (!pp < 2)
-                        {
-                            cnt++;
-                            inliers.push_back(&cp - &*hypos.begin());
-                        }
-                    }
-                    if (cnt > bestCnt)
-                    {
-                        bestCnt = cnt;
-                        bestInliers = inliers;
-                        bestHypo = h;
-                    }
-                }
-                ps.location = bestHypo;
-                appendTracks(bestInliers, psApp);
-            }
-            break;
-        default:
-            CORE_ASSERT_TRUE_S(false);
-    }
-#endif
     scene->placedFixtures.push_back(psApp);
     scene->placingQueue.erase(scene->placingQueue.begin());
     scene->validateAll();
@@ -1225,11 +844,6 @@ void corecvs::PhotostationPlacer::buildTracks(CameraFixture *psA, CameraFixture 
 
         auto track = scene->createFeaturePoint();
         track->reprojectedPosition = res;
-        for (int iii = 0; iii < 3; ++iii)
-        {
-        CORE_ASSERT_TRUE_S(!isnan(res[iii]));
-//        CORE_ASSERT_TRUE_S(std::abs(res[iii]) < 1e6);
-        } 
         track->hasKnownPosition = false;
         track->type = SceneFeaturePoint::POINT_RECONSTRUCTED;
 
@@ -1260,99 +874,6 @@ double corecvs::PhotostationPlacer::scoreFundamental(CameraFixture* psA, Fixture
 
 }
 
-#if 0
-void corecvs::PhotostationPlacer::backprojectAll()
-{
-    int idx = 0;
-    for (int psA = placed; psA < preplaced; ++psA)
-    {
-        for (int psB = psA + 1; psB < preplaced; ++psB)
-        {
-            auto m = getPhotostationMatches(psA, psB);
-            for (auto &mm: m)
-            {
-                int camA = std::get<0>(mm);
-                int camB = std::get<2>(mm);
-                auto ptA = std::get<1>(mm);
-                auto ptB = std::get<3>(mm);
-                corecvs::MulticameraTriangulator mct;
-                mct.addCamera(calibratedPhotostations[psA].getMMatrix(camA), ptA);
-                mct.addCamera(calibratedPhotostations[psB].getMMatrix(camB), ptB);
-                auto res = mct.triangulate();
-                if (calibratedPhotostations[psA].isVisible(res, camA)
-                &&  calibratedPhotostations[psB].isVisible(res, camB))
-                {
-                    backprojected[idx].emplace_back(calibratedPhotostations[psA].getRawCamera(camA).extrinsics.position, res);
-//                    backprojected.emplace_back(calibratedPhotostations[psB].getRawCamera(camB).extrinsics.position, res);
-                }
-            }
-                idx++;
-        }
-    }
-}
-
-void corecvs::PhotostationPlacer::selectEpipolarInliers(int psA, int psB)
-{
-    for (int camA = 0; camA < (int)calibratedPhotostations[psA].cameras.size(); ++camA)
-    {
-        for (int camB = 0; camB < (int)calibratedPhotostations[psB].cameras.size(); ++camB)
-        {
-            corecvs::Matrix33 F = calibratedPhotostations[psA].getRawCamera(camA).fundamentalTo(calibratedPhotostations[psB].getRawCamera(camB));
-            corecvs::EssentialDecomposition E = calibratedPhotostations[psA].getRawCamera(camA).essentialDecomposition(calibratedPhotostations[psB].getRawCamera(camB));
-            auto K1 = calibratedPhotostations[psA].getRawCamera(camA).intrinsics.getKMatrix33().inv();
-            auto K2 = calibratedPhotostations[psB].getRawCamera(camB).intrinsics.getKMatrix33().inv();
-            auto mc = getCameraMatches(psA, camA, psB, camB);
-            std::vector<int> outliers;
-
-            for (size_t i = 0; i < mc.size(); ++i)
-            {
-                auto m = mc[i];
-                auto p1 = std::get<0>(m);
-                auto p2 = std::get<1>(m);
-                auto pE1 = K1 * p1;
-                auto pE2 = K2 * p2;
-
-                corecvs::Line2d lineLeft(F.mulBy2dRight(p2));
-                corecvs::Line2d lineRight(F.mulBy2dLeft(p1));
-                double left = lineLeft.distanceTo(p1);
-                double right= lineRight.distanceTo(p2);
-                double sL, sR, foo;
-                E.getScaler(pE1, pE2, sL, sR, foo);
-                if (sL < 0 || sR < 0 || std::max(left, right) > inlierThreshold)
-                    outliers.push_back((int)i);
-            }
-
-            remove(psA, camA, psB, camB, outliers);
-        }
-    }
-}
-
-#if 0
-void corecvs::PhotostationPlacer::printMatchStats()
-{
-    for (int psA = 0; psA < calibratedPhotostations.size(); ++psA)
-    {
-        for (int psB = psA + 1; psB < calibratedPhotostations.size(); ++psB)
-        {
-        }
-    }
-}
-#endif
-void corecvs::PhotostationPlacer::selectEpipolarInliers()
-{
-    matchesCopy = matches;
-    for (int psA = placed; psA < preplaced; ++psA)
-    {
-        for (int psB = psA + 1; psB < preplaced; ++psB)
-        {
-            selectEpipolarInliers(psA, psB);
-        }
-    }
-}
-#endif
-
-//std::atomic<int> corecvs::PhotostationPlacer::ParallelEssentialFilter::cntr;
-
 void corecvs::PhotostationPlacer::estimateFirstPair()
 {
 #ifdef WITH_TBB
@@ -1365,17 +886,7 @@ void corecvs::PhotostationPlacer::estimateFirstPair()
     estimatePair(scene->placingQueue[0], scene->placingQueue[2]);
 #endif
 
-#if 0
-    dumpMesh("triples_before_reorient.ply");
-#endif
-
     auto q = detectOrientationFirst();
-#if 0
-    for (int psA = 0; psA < 3; ++psA)
-        for (int psB = 0; psB < 3; ++psB)
-    std::cout << calibratedPhotostations[psA].getRawCamera(0).rayFromPixel(corecvs::Vector2dd(0, 0)).a.angleTo(calibratedPhotostations[psB].location.shift - calibratedPhotostations[psA].location.shift) << std::endl;
-#endif
-
     scene->placingQueue[0]->location.rotor = q.conjugated();
     scene->placingQueue[0]->location.shift = scene->initializationData[scene->placingQueue[0]].initData.shift;
 
@@ -1385,22 +896,11 @@ void corecvs::PhotostationPlacer::estimateFirstPair()
     scene->placingQueue[2]->location.rotor = q.conjugated() ^ scene->placingQueue[2]->location.rotor;
     scene->placingQueue[2]->location.shift = scene->initializationData[scene->placingQueue[2]].initData.shift;
 
-#if 0
-    for (int psA = 0; psA < 3; ++psA)
-        for (int psB = 0; psB < 3; ++psB)
-    std::cout << calibratedPhotostations[psA].getRawCamera(0).rayFromPixel(corecvs::Vector2dd(0, 0)).a.angleTo(calibratedPhotostations[psB].location.shift - calibratedPhotostations[psA].location.shift) << std::endl;
-
-    preplaced = 3;
-#endif
     scene->matches = scene->matchesCopy;
 }
 
 corecvs::Quaternion corecvs::PhotostationPlacer::detectOrientationFirst()
 {
-#if 0
-    std::cout << "ABC: " << (psInitData[1].gpsData - psInitData[0].gpsData).angleTo(psInitData[2].gpsData - psInitData[0].gpsData) << " | " << calibratedPhotostations[1].location.shift.angleTo(calibratedPhotostations[2].location.shift) << std::endl;
-#endif
-
     auto psA = scene->placingQueue[0];
     auto psB = scene->placingQueue[1];
     auto psC = scene->placingQueue[2];
@@ -1461,22 +961,15 @@ void corecvs::PhotostationPlacer::estimatePair(CameraFixture *psA, CameraFixture
         mm.emplace_back(std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t));
     }
 
-//  psA->location.rotor = corecvs::Quaternion(0, 0, 0, 1);
-//  psA->location.shift = corecvs::Vector3dd(0, 0, 0);
-
     RelativeNonCentralRansacSolver solver(
             psA,
             psB, rm, mm);
     solver.run();
     auto best = solver.getBestHypothesis();
     std::cout << psA->name << "::" << psB->name << " " << best.shift << " " << best.rotor << std::endl;
-//    solver.fit(!(gpsData[psA] - gpsData[psB]));
     best = solver.getBestHypothesis();
     std::cout << psA->name << "::" << psB->name << " " << best.shift << " " << best.rotor << std::endl;
     psB->location = best;
-#if 0
-    pairInliers.emplace_back(psA, psB, solver.getBestInliers());
-#endif
 }
 
 void corecvs::PhotostationPlacer::filterEssentialRansac(WPP a, WPP b)
@@ -1636,33 +1129,6 @@ void corecvs::PhotostationPlacer::remove(WPP a, WPP b, std::vector<int> idx)
     ref.resize(ok);
 }
 
-#if 0
-void corecvs::PhotostationPlacer::remove(int psA, int camA, int psB, int camB, std::vector<int> idx)
-{
-    auto psps = getPhotostationMatches(psA, psB);
-    std::sort(idx.begin(), idx.end());
-    int idxSkip = 0;
-    std::vector<int> skipGlobal;
-    int idxCams = 0;
-    for (size_t i = 0; i < psps.size(); ++i)
-    {
-        auto t = psps[i];
-        int cam1 = std::get<0>(t);
-        int cam2 = std::get<2>(t);
-        if (cam1 != camA || cam2 != camB)
-            continue;
-        if (idxSkip < (int)idx.size() && idx[idxSkip] == idxCams)
-        {
-            idxSkip++;
-            skipGlobal.push_back((int)i);
-            idxCams++;
-            continue;
-        }
-        idxCams++;
-    }
-}
-#endif
-
 std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd, double>>
 corecvs::PhotostationPlacer::getPhotostationMatches(CameraFixture *psA, CameraFixture *psB)
 {
@@ -1702,19 +1168,6 @@ corecvs::PhotostationPlacer::getPhotostationMatches(CameraFixture *psA, CameraFi
 }
 
 #if 0
-std::vector<std::tuple<corecvs::Vector2dd, corecvs::Vector2dd, double>>
-corecvs::PhotostationPlacer::getCameraMatches(int psA, int camA, int psB, int camB)
-{
-    auto psps = getPhotostationMatches(psA, psB);
-    std::vector<std::tuple<corecvs::Vector2dd, corecvs::Vector2dd, double>> res;
-    for (auto&m: psps)
-    {
-        if (std::get<0>(m) == camA && std::get<2>(m) == camB)
-            res.emplace_back(std::get<1>(m), std::get<3>(m), std::get<4>(m));
-    }
-    return res;
-}
-
 std::vector<std::vector<PointObservation__>> corecvs::PhotostationPlacer::verify(const std::vector<PointObservation__> &pois)
 {
     BufferReader* reader = BufferReaderProvider::getInstance().getBufferReader(images[0][0]);
@@ -1882,44 +1335,6 @@ corecvs::Mesh3D corecvs::PhotostationPlacer::dumpMesh(const std::string &filenam
 {
     corecvs::Mesh3D meshres;
     meshres.switchColor(true);
-#if 0
-    corecvs::Vector3dd meanpos(0, 0, 0);
-    if (center)
-    {
-        for (int i = 0; i < placed; ++i)
-        {
-            meanpos += calibratedPhotostations[i].location.shift * (1.0 / placed);
-        }
-    }
-    for (int i = 0; i < placed; ++i)
-    {
-        corecvs::Photostation ps = calibratedPhotostations[i];
-        for (size_t j = 0; j < ps.cameras.size(); ++j)
-            ps.cameras[j].extrinsics.position *= 1e3;
-        ps.location.shift -= meanpos;
-        ps.location.shift *= 1e3;
-
-        CalibrationHelpers().drawPly(meshres, ps, 50.0);
-    }
-    if (drawTracks)
-    {
-        size_t projs = 0;
-        std::map<int, int> cntp;
-        std::cout << "TRACKS: " << tracks.size() << std::endl;
-        for(auto&p : tracks)
-        {
-            cntp[p.projections.size()]++;
-            projs += p.projections.size();
-            auto proj = p.projections[0];
-            auto col = keyPointColors[proj.photostationId][proj.cameraId][proj.featureId];
-            meshres.setColor(col);
-            meshres.addPoint((p.worldPoint-meanpos) * 1e3);
-        }
-        std::cout << "Total " << projs << " projections" << std::endl;
-        for (auto& p : cntp)
-            std::cout << p.first << ": " << p.second << std::endl;
-    }
-#endif
     CalibrationHelpers().drawScene(meshres, *scene);
     meshres.dumpPLY(filename);
     return meshres;

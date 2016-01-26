@@ -145,10 +145,7 @@ struct PhotostationPlacerParams
 class PhotostationPlacer : PhotostationPlacerFeatureParams, PhotostationPlacerEssentialFilterParams, PhotostationPlacerFeatureSelectionParams, PhotostationPlacerParams
 {
 public:
-//	std::unordered_map<std::tuple<int, int, int>, int> trackMap;
     ReconstructionFixtureScene* scene;
-#if 0
-#endif
     void fullRun();
     corecvs::Mesh3D dumpMesh(const std::string &filename);
     void detectAll();
@@ -164,36 +161,10 @@ public:
     std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> getUnusedFeatures(CameraFixture *psA, CameraFixture *psB);
     void buildTracks(CameraFixture *psA, CameraFixture *psB, CameraFixture *psC);
     void appendPs();
-#if 1
     void fit(const PhotostationPlacerOptimizationType& optimizationSet = PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS, int num = 100);
     void fit(bool tuneFocal);
 	void appendTracks(const std::vector<int> &inlierIds, CameraFixture* fixture, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &possibleTracks);
-#endif
-#if 0
-    void selectEpipolarInliers();
-    void backprojectAll();
-	std::vector<std::vector<PointObservation__>> verify(const std::vector<PointObservation__> &pois);
-    std::vector<PointObservation__> projectToAll(const std::vector<PointObservation__> &pois);
-
-#endif
     std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> getPossibleTracks(CameraFixture* ps);
-#if 0
-    std::vector<corecvs::Photostation> calibratedPhotostations;
-    std::vector<std::vector<std::string>> images;
-    std::vector<std::vector<std::vector<corecvs::Vector2dd>>> keyPoints;
-	std::vector<std::vector<std::vector<corecvs::RGBColor>>> keyPointColors;
-    std::vector<std::vector<std::vector<std::tuple<int, int, int, int, double>>>> matches, matchesCopy;
-#if 0
-    std::vector<std::tuple<int, int, std::vector<int>>> pairInliers;
-#endif
-    std::vector<PhotostationInitialization> psInitData;
-#if 0
-    std::vector<std::pair<corecvs::Vector3dd,corecvs::Vector3dd>> backprojected [6];
-#endif
-	std::vector<PointObservation__> tracks;
-	std::unordered_map<std::tuple<int, int, int>, int> trackMap;
-#endif
-#if 1
 	int getMovablePointCount();
 	int getReprojectionCnt();
 	int getInputNum();
@@ -201,14 +172,10 @@ public:
 	int getErrorComponentsPerPoint();
 	void getErrorSummary(PhotostationPlacerOptimizationErrorType errorType);
 	void getErrorSummaryAll();
-#endif
 protected:
-#if 1
-
-
 	void readOrientationParams(const double in[]);
 	void writeOrientationParams(double out[]);
-	void computeMedianErrors(double out[], const std::vector<int> &idxs);
+	void computeErrors(double out[], const std::vector<int> &idxs);
     std::vector<std::vector<int>> getDependencyList();
 
     /* 
@@ -238,15 +205,7 @@ protected:
 		void operator() (const double in[], double out[], const std::vector<int> &idxs)
 		{
 			placer->readOrientationParams(in);
-#if 1
-//            std::vector<int> idxs;
-//          for (int i = 0; i < outputs; ++i)
-//              idxs.push_back(i);
-			placer->computeMedianErrors(out, idxs);
-#else
-    //        std::vector<int> idxs;
-            placer->computeMedianErrors(out, idxs);
-#endif
+			placer->computeErrors(out, idxs);
 		}
 		OrientationFunctor(PhotostationPlacer *placer) : SparseFunctionArgs(placer->getInputNum(), placer->getOutputNum(), placer->sparsity), placer(placer)
 		{
@@ -265,91 +224,15 @@ protected:
 		}
 		PhotostationPlacer* placer;
 	};
-public:
-#if 0
-	template<typename V>
-	void accept(V &v)
-    {
-        v.visit(calibratedPhotostations, "Photostations");
-        v.visit(keyPoints, "Keypoints");
-        v.visit(keyPointColors, "Keypoint colors");
-        visitTM("Matches", matches, v);
-        // Here we hope that reconstruction is not interrupted in the middle of smth requiring
-        // copy of matches
-        //visitTM("Matches copy", matchesCopy, v);
-        v.visit(psInitData, "Initialization");
-        v.visit(tracks, "Tracks");
-        v.visit(placed, 0, "Placed");
-        v.visit(preplaced, 0, "Preplaced");
-        v.visit(images, "images");
-        v.visit((PhotostationPlacerFeatureParams&)*this, "Feature detection params");
-        v.visit((PhotostationPlacerEssentialFilterParams&)*this, "Essential filtering params");
-        v.visit((PhotostationPlacerFeatureSelectionParams&)*this, "Feature selection params");
-        v.visit((PhotostationPlacerParams&)*this, "Reconstruction params");
-    }
-
-    template<typename V>
-    void visitTM(const char* name, std::vector<std::vector<std::vector<std::tuple<int, int, int, int, double>>>> &tm, V &v)
-    {
-        std::vector<std::vector<std::vector<std::vector<double>>>> moo;
-        for (auto& vvt: tm)
-        {
-            std::vector<std::vector<std::vector<double>>> foo;
-            for (auto& vt: vvt)
-            {
-                std::vector<std::vector<double>> boo;
-                for (auto& t: vt)
-                    boo.push_back(std::vector<double>(
-                        {(double)std::get<0>(t),
-                         (double)std::get<1>(t),
-                         (double)std::get<2>(t),
-                         (double)std::get<3>(t),
-                         (double)std::get<4>(t)}));
-                foo.emplace_back(boo);
-            }
-            moo.emplace_back(foo);
-        }
-        v.visit(moo, name);
-        tm.clear();
-        for (auto& vvt: moo)
-        {
-            std::vector<std::vector<std::tuple<int, int, int, int, double>>> foo;
-            for (auto& vt: vvt)
-            {
-                std::vector<std::tuple<int, int, int, int, double>> boo;
-                for (auto& t: vt)
-                {
-                    boo.emplace_back(t[0], t[1], t[2], t[3], t[4]);
-                }
-                foo.emplace_back(boo);
-            }
-            tm.emplace_back(foo);
-        }
-    }
-    template<typename V>
-    void visitTrackmap(const char* name, V &v)
-    {
-        std::vector<std::vector<int>> trackmap;
-        for (auto& el: trackMap)
-            trackmap.emplace_back(std::vector<int>({std::get<0>(el.first), std::get<1>(el.first), std::get<2>(el.first), el.second}));
-        v.visit(trackmap, "Track map");
-        trackMap.clear();
-        for (auto& el: trackmap)
-            trackMap[std::make_tuple(el[0], el[1], el[2])] = el[3];
-    }
-#endif
 private:
-#endif
 	double scoreFundamental(CameraFixture *psA, FixtureCamera *camA, corecvs::Vector2dd ptA,
 			                CameraFixture *psB, FixtureCamera *camB, corecvs::Vector2dd ptB);
     struct ParallelEssentialFilter
     {
         PhotostationPlacer* placer;
         std::vector<std::pair<WPP, WPP>> work;
-//        static std::atomic<int> cntr;
         ParallelEssentialFilter(PhotostationPlacer* placer, std::vector<std::pair<WPP, WPP>> &work) : placer(placer), work(work)
         {
-        //    cntr = 0;
         }
         void operator() (const corecvs::BlockedRange<int> &r) const
         {
@@ -357,20 +240,11 @@ private:
             {
                 auto w = work[i];
                 placer->filterEssentialRansac(w.first, w.second);
-//                cntr++;
-//                std::cout << ((double)cntr) / work.size() * 100.0 << "% complete" << std::endl;
             }
         }
     };
-#if 0
-    void selectEpipolarInliers(int psA, int psB);
-#endif
     void filterEssentialRansac(WPP a, WPP b);
     std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd, double>> getPhotostationMatches(CameraFixture* psA, CameraFixture* psB);
-#if 0
-    std::vector<std::tuple<corecvs::Vector2dd, corecvs::Vector2dd, double>> getCameraMatches(int psA, int camA, int psB, int camB);
-    void remove(int psA, int psB, std::vector<int> idx);
-#endif
     void remove(WPP a, WPP b, std::vector<int> idx);
 #ifdef WITH_TBB
     tbb::mutex mutex;
