@@ -87,7 +87,7 @@ struct PhotostationPlacerEssentialFilterParams
 {
     double b2bRansacP5RPThreshold = 0.8;
     double inlierP5RPThreshold = 5.0;
-    int maxEssentialRansacIterations = 16000;
+    int maxEssentialRansacIterations = 32000;
     double b2bRansacP6RPThreshold = 0.8;
 
     template<typename V>
@@ -154,10 +154,12 @@ public:
     bool initNONE();
     bool initSTATIC();
     bool initFIXED();
-    void filterEssentialRansac(int cnt);
+    void create2PointCloud();
+    void filterEssentialRansac(std::vector<CameraFixture*> &pss);
     void estimateFirstPair();
+    corecvs::Affine3DQ staticInit(CameraFixture* fixture, std::vector<SceneFeaturePoint*> &staticPoints);
     void estimatePair(CameraFixture *psA, CameraFixture *psB);
-    corecvs::Quaternion detectOrientationFirst();
+    corecvs::Quaternion detectOrientationFirst(CameraFixture *psA, CameraFixture* psB, CameraFixture *psC);
     std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> getUnusedFeatures(CameraFixture *psA, CameraFixture *psB);
     void buildTracks(CameraFixture *psA, CameraFixture *psB, CameraFixture *psC);
     void appendPs();
@@ -172,6 +174,10 @@ public:
 	int getErrorComponentsPerPoint();
 	void getErrorSummary(PhotostationPlacerOptimizationErrorType errorType);
 	void getErrorSummaryAll();
+
+	void addFirstPs();
+	void addSecondPs();
+	void tryAlign();
 protected:
 	void readOrientationParams(const double in[]);
 	void writeOrientationParams(double out[]);
