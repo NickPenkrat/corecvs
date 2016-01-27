@@ -22,13 +22,21 @@ void ReconstructionFixtureScene::deleteCamera(FixtureCamera *camera)
 
 void ReconstructionFixtureScene::deleteCameraFixture(CameraFixture *fixture, bool recursive)
 {
+    std::cout << "deleting from parent" << std::endl;
     FixtureScene::deleteCameraFixture(fixture, recursive);
+    std::cout << "deleting from images" << std::endl;
     deleteCameraFixtureUMWPP(images,    fixture);
+    std::cout << "deleting from keypoints" << std::endl;
     deleteCameraFixtureUMWPP(keyPoints, fixture);
+    std::cout << "deleting from matches" << std::endl;
     deleteCameraFixtureUMWPP(matches,   fixture);
+    std::cout << "deleting from trackmap" << std::endl;
     deleteCameraFixtureUMWPP(trackMap,  fixture);
+    std::cout << "deleting from init" << std::endl;
     initializationData.erase(fixture);
+    std::cout << "deleting from placed" << std::endl;
     vectorErase(placedFixtures, fixture);
+    std::cout << "deleting from queue" << std::endl;
     vectorErase(placingQueue, fixture);
 }
 
@@ -45,6 +53,7 @@ void ReconstructionFixtureScene::deleteFeaturePoint(SceneFeaturePoint *point)
 {
     FixtureScene::deleteFeaturePoint(point);
     vectorErase(trackedFeatures, point);
+    vectorErase(staticPoints, point);
     for (auto& foo: trackMap)
         for (auto boo = foo.second.begin(); boo != foo.second.end(); boo = boo->second == point ? foo.second.erase(boo) : boo++);
 }

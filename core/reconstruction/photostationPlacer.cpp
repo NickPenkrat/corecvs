@@ -128,7 +128,7 @@ void corecvs::PhotostationPlacer::tryAlign()
         L_ERROR << "NO ALIGN DATA";
         return;
     }
-    fit(PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS, 200);
+//    fit(PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS, 200);
 
     L_ERROR << "ALIGNING:";
     getErrorSummaryAll();
@@ -180,7 +180,7 @@ void corecvs::PhotostationPlacer::tryAlign()
         ptr->reprojectedPosition = (transform.rotor * ptr->reprojectedPosition) + transform.shift;
     }
     scene->is3DAligned = true;
-	fit();
+//	fit();
 
     L_ERROR << "POST-ALIGN:";
     getErrorSummaryAll();
@@ -752,6 +752,11 @@ void corecvs::PhotostationPlacer::getErrorSummary(PhotostationPlacerOptimization
 
 void corecvs::PhotostationPlacer::fit(const PhotostationPlacerOptimizationType &params, int num)
 {
+    IF(FOCALS,
+            std::cout << "focals" << std::endl;);
+    IF(PRINCIPALS,
+            std::cout << "principals" << std::endl;);
+
     if (scene->placedFixtures.size() < 2)
         return;
     optimizationParams = params;
@@ -1599,7 +1604,7 @@ void corecvs::PhotostationPlacer::fullRun()
     L_ERROR << "Initalizing";
     initialize();
     L_ERROR << "Fitting";
-	fit();
+	fit(optimizationParams, 100);
     L_ERROR << "Appending";
 
     while(scene->placingQueue.size())
@@ -1607,16 +1612,17 @@ void corecvs::PhotostationPlacer::fullRun()
         L_ERROR << "Appending" << (*scene->placingQueue.begin())->name ;
         appendPs();
         L_ERROR << "Fitting";
-        if (scene->is3DAligned)
-    	    fit(PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS, 100);
-        else
-    	    fit(PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS, 200);
+//      if (scene->is3DAligned)
+//  	    fit(PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS, 100);
+  //    else
+    //   fit(PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS, 200);
+        fit(optimizationParams, 100);
 
         std::stringstream ss;
         ss << (*scene->placedFixtures.rbegin())->name << "_app.ply";
         dumpMesh(ss.str());
 	}
-	fit(PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS, 10000);
+	fit(optimizationParams, 10000);
     dumpMesh("final.ply");
 }
 

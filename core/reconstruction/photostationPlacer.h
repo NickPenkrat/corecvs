@@ -142,7 +142,7 @@ struct PhotostationPlacerParams
     }
 };
 
-class PhotostationPlacer : PhotostationPlacerFeatureParams, PhotostationPlacerEssentialFilterParams, PhotostationPlacerFeatureSelectionParams, PhotostationPlacerParams
+class PhotostationPlacer : public PhotostationPlacerFeatureParams, public PhotostationPlacerEssentialFilterParams, public PhotostationPlacerFeatureSelectionParams, public PhotostationPlacerParams
 {
 public:
     ReconstructionFixtureScene* scene;

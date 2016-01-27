@@ -66,7 +66,7 @@ public:
 
     // ==================================================================================
     // SERIALIZEABLE STATE
-    std::vector<SceneFeaturePoint*> trackedFeatures;
+    std::vector<SceneFeaturePoint*> trackedFeatures, staticPoints;
     umwpp<std::string> images;
     umwppv<std::pair<corecvs::Vector2dd, corecvs::RGBColor>> keyPoints;
     umwpp<umwppv<std::tuple<int, int, double>>> matches;

@@ -23,6 +23,7 @@
 #include "mesh3d.h"
 #include "jsonSetter.h"
 #include "jsonGetter.h"
+#include "log.h"
 
 #include "imageKeyPoints.h"
 #include "reconstructionStructs.h"
@@ -55,10 +56,10 @@ corecvs::Vector3dd convertVector(const corecvs::Vector3dd& geodesic)
 const int PSN = 9;
 const int CP = 6;
 corecvs::Vector3dd mp(0, 0, 0);
-#if 0
+//#if 1
 
 // Obsolete
-std::vector<PointObservation__> parsePois(CalibrationJob &calibration, const std::string &filename, int camIdOffset = 3, bool distorted = false, bool less10Cams = true)
+std::vector<PointObservation__> parsePois(CalibrationJob &calibration, const std::string &filename, int camIdOffset = 10, bool distorted = true, bool less10Cams = true)
 {
     std::ifstream ifs;
     ifs.open(filename, std::ios_base::in);
@@ -152,81 +153,7 @@ void storePois(const std::vector<PointObservation__> &observations, const std::s
         }
     }
 }
-
-void setup()
-{
-    corecvs::Vector3dd positions[] =
-    {
-        corecvs::Vector3dd(140.617, 576.200, 164.136),
-        corecvs::Vector3dd(134.637, 575.080, 164.099),
-        corecvs::Vector3dd(139.161, 572.191, 164.056),
-        corecvs::Vector3dd(132.418, 571.214, 164.020),
-        corecvs::Vector3dd(138.423, 567.795, 164.064),
-        corecvs::Vector3dd(129.873, 567.804, 164.097),
-        corecvs::Vector3dd(134.916, 563.506, 164.114),
-        corecvs::Vector3dd(124.671, 567.081, 164.121),
-        corecvs::Vector3dd(146.231, 575.418, 164.191),
-    };
-
-    for (auto& pos: positions)
-        std::cout << pos << " ";
-    std::cout << std::endl;
-
-	for (int i = 0; i < 9; ++i)
-	{
-		mp += positions[i] * (1.0 / 9.0);
-	}
-
-    PhotostationPlacer pp;
-    char psPrefixes[9] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'};
-
-    std::string topconBase(std::getenv("TOPCON_DIR"));
-    std::string prefix = topconBase + "data/tests/reconstruction/GGGGGGGGG/roof_1_SP";
-    std::string postfix= "_0deg_undist.jpg";
-
-    pp.images.resize(PSN);
-    for (int i = 0; i < PSN; ++i)
-    {
-        pp.images[i].resize(CP);
-        for (int j = 0; j < CP; ++j)
-        {
-            std::stringstream ss;
-            ss << prefix << psPrefixes[i] << j << postfix;
-            pp.images[i][j] = ss.str();
-        }
-    }
-    pp.psInitData.resize(PSN);
-    for (int i = 0; i < PSN; ++i)
-    {
-        pp.psInitData[i].gpsData = positions[psPrefixes[i] - 'A'];
-        pp.psInitData[i].initializationType = PhotostationInitializationType::GPS;
-    }
-
-    corecvs::Photostation photostation;
-    JSONGetter getter("calibration.json");
-    CalibrationJob job;
-    getter.visit(job, "job");
-
-    photostation = job.photostation;
-    for (size_t i = 0; i < photostation.cameras.size(); ++i)
-    {
-        photostation.cameras[i].extrinsics.position /= 1e3;
-    }
-
-    pp.calibratedPhotostations.resize(PSN);
-    for (int i = 0; i < PSN; ++i)
-    {
-        auto& ps = pp.calibratedPhotostations[i] = photostation;
-        std::stringstream ss;
-        ss << "SP" << ((char)('A' + i));
-        ps.name = ss.str();
-    }
-
-    JSONSetter *setter = new JSONSetter("pp.json");
-    setter->visit(pp, "reconstruction data");
-    delete setter;
-}
-
+#if 0
 int main()
 {
     init_opencv_detectors_provider();
@@ -312,14 +239,146 @@ int main()
     return 0;
 }
 #else
-int main()
-{
-    init_opencv_detectors_provider();
-    init_opencv_matchers_provider();
-    init_opencv_reader_provider();
-    init_opencv_descriptors_provider();
-    init_opencv_reader_provider();
 
+struct exp_desc
+{
+    std::vector<std::string> allowedPs;
+    PhotostationPlacerOptimizationType type;
+    bool separate_cameras;
+    std::string title;
+};
+
+exp_desc experiments[] = 
+{
+    {
+        std::vector<std::string>({"SPA", "SPB", "SPC", "SPD", "SPE", "SPF", "SPG", "SPH", "SPI"}),
+      PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS,
+      false,
+      "f,cx,cy,common,all"
+    },
+    {
+        std::vector<std::string>({"SPA", "SPB", "SPC", "SPD", "SPE", "SPF", "SPG", "SPH", "SPI"}),
+      PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS,
+      false,
+      "f,common,all"
+    },
+    {
+        std::vector<std::string>({"SPA", "SPB", "SPC", "SPD", "SPE", "SPF", "SPG", "SPH", "SPI"}),
+      PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS,
+      false,
+      "common,all"
+    },
+    {
+        std::vector<std::string>({"SPA", "SPB", "SPC", "SPD", "SPE", "SPF", "SPG", "SPH", "SPI"}),
+      PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS,
+      true,
+      "f,cx,cy,separate,all"
+    },
+    {
+        std::vector<std::string>({"SPA", "SPB", "SPC", "SPD", "SPE", "SPF", "SPG", "SPH", "SPI"}),
+      PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS,
+      false,
+      "f,cx,cy,common,reduced"
+    },
+    {
+        std::vector<std::string>({"SPA", "SPB", "SPC"}),
+      PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS,
+      false,
+      "f,cx,cy,common,reduced"
+    }
+};
+
+void validate_pois(std::vector<SceneFeaturePoint*> &poiss, bool tune = false, double tuneOn = 30.0)
+{
+
+    for (auto poi: poiss)
+    {
+        if (poi->observations__.size() < 2)
+            continue;
+        corecvs::MulticameraTriangulator mct;    
+        double closest = 1e100;
+        std::vector<WPP> observations;
+        for (auto& obsp: poi->observations__)
+        {
+            auto& obs = obsp.second;
+            mct.addCamera(obs.cameraFixture->getMMatrix(obs.camera), obs.observation);
+            double dist = !(poi->position - obs.cameraFixture->location.shift);
+            observations.push_back(WPP(obs.cameraFixture, obs.camera));
+            if (dist < closest)
+                closest = dist;
+        }
+        auto res = mct.triangulateLM(mct.triangulate());
+
+        int n = observations.size();
+        for (int cnt = 2; cnt <= observations.size(); ++cnt)
+        {
+            std::vector<bool> foo(n);
+            std::fill(foo.begin() + n - cnt, foo.end(), true);
+
+            Vector3dd mean(0, 0, 0);
+            double sqrs = 0.0;
+            double pcnt = 0.0;
+            do
+            {
+                corecvs::MulticameraTriangulator mct2;
+                for (int i = 0; i < n; ++i)
+                    if (foo[i])
+                    {
+                        auto& obs = poi->observations__[observations[i]];
+                        mct2.addCamera(obs.cameraFixture->getMMatrix(obs.camera), obs.observation);
+                    }
+                auto res = mct2.triangulateLM(mct2.triangulate());
+                pcnt += 1.0;
+                sqrs += !(res - poi->position) * !(res - poi->position);
+                mean += res;
+            } while (std::next_permutation(foo.begin(), foo.end()));
+            mean /= pcnt;
+            sqrs = std::sqrt(sqrs / pcnt);
+            std::cout << poi->name << " " << cnt << "(" << pcnt << ")" << mean - poi->position << " rmse: " << sqrs << std::endl;
+        }
+    }
+}
+
+void validate_cams(std::vector<CameraFixture*> fixtures, std::vector<FixtureCamera*> cameras, std::vector<FixtureCamera*> refCameras)
+{
+    std::unordered_map<FixtureCamera*, std::vector<CameraFixture*>> mmp;
+    for (auto cf: fixtures)
+        for (auto cam: cf->cameras)
+        {
+            std::cout << "Cam " << cam->nameId << " from " << cf->name << std::endl;
+            mmp[cam].push_back(cf);
+        }
+    std::unordered_map<FixtureCamera*, int> map;
+    for (auto& cam: cameras)
+        map[cam] = &cam - &cameras[0];
+
+    for (auto camp: mmp)
+    {
+        auto cam = camp.first;
+     //   if (!camp.second.size())
+       //     continue;
+        std::cout << "Cam " << cam->nameId << "(";
+        for (auto fix: camp.second)
+        {
+            if (map[cam] && fix && cam && map[cam] < refCameras.size())
+            {
+            std::cout << fix->name << " ";
+            }
+        }
+        double focalPrev = refCameras[map[cam]]->intrinsics.focal[0];
+        double focalNew = cam->intrinsics.focal[0];
+        double relDiff = focalNew / focalPrev - 1.0;
+        Vector2dd principalPrev = refCameras[map[cam]]->intrinsics.principal;
+        Vector2dd principalNew = cam->intrinsics.principal;
+        std::cout << focalPrev << ">" << focalNew << "(" << relDiff*100 << "%) | " << principalPrev << ">" << principalNew << " (" << (!(principalPrev-principalNew)) << "px)" << std::endl;
+    }
+}
+
+void run_exp(exp_desc exp)
+{
+    std::cout << exp.title << std::endl;
+    L_ERROR << "STARTING_EXP";
+    bool separate_cameras = exp.separate_cameras;
     corecvs::Vector3dd positions[] =
     {
         corecvs::Vector3dd(140.617, 576.200, 164.136),
@@ -332,6 +391,8 @@ int main()
         corecvs::Vector3dd(124.671, 567.081, 164.121),
         corecvs::Vector3dd(146.231, 575.418, 164.191),
     };
+
+    std::vector<std::string> allowedPs = exp.allowedPs;
 
 
     char psPrefixes[9] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'};
@@ -373,25 +434,48 @@ int main()
         ps.name = ss.str();
     }
 #endif
+    auto pois = parsePois(job, "pois_m15.txt",10, true, true);
 
     ReconstructionFixtureScene rfs;
     std::vector<FixtureCamera*> cameras;
     std::vector<CameraFixture*> photostations;
-    for (int i = 0; i < CP; ++i)
+    std::vector<SceneFeaturePoint*> poiss;
+    std::vector<FixtureCamera*> refCameras;
+    if (!separate_cameras)
     {
-        cameras.push_back(rfs.createCamera());
-        cameras.rbegin()[0]->intrinsics = photostation.cameras[i].intrinsics;
-        cameras.rbegin()[0]->extrinsics = photostation.cameras[i].extrinsics;
-        cameras.rbegin()[0]->distortion = photostation.cameras[i].distortion;
-        cameras.rbegin()[0]->nameId = photostation.cameras[i].nameId;
+        for (int i = 0; i < CP; ++i)
+        {
+            cameras.push_back(rfs.createCamera());
+            refCameras.push_back(rfs.createCamera());
+            cameras.rbegin()[0]->intrinsics = photostation.cameras[i].intrinsics;
+            cameras.rbegin()[0]->extrinsics = photostation.cameras[i].extrinsics;
+            cameras.rbegin()[0]->distortion = photostation.cameras[i].distortion;
+            cameras.rbegin()[0]->nameId = photostation.cameras[i].nameId;
+            *refCameras.rbegin()[0] = **cameras.rbegin();
+        }
+    }
+    else
+    {
+        for (int j = 0; j < PSN; ++j)
+        for (int i = 0; i < CP; ++i)
+        {
+            refCameras.push_back(rfs.createCamera());
+            cameras.push_back(rfs.createCamera());
+            cameras.rbegin()[0]->intrinsics = photostation.cameras[i].intrinsics;
+            cameras.rbegin()[0]->extrinsics = photostation.cameras[i].extrinsics;
+            cameras.rbegin()[0]->distortion = photostation.cameras[i].distortion;
+            cameras.rbegin()[0]->nameId = photostation.cameras[i].nameId;
+            *refCameras.rbegin()[0] = **cameras.rbegin();
+        }
     }
     for (int i = 0; i < PSN; ++i)
     {
         photostations.push_back(rfs.createCameraFixture());
         for (int j = 0; j < CP; ++j)
         {
-            rfs.addCameraToFixture(cameras[j], photostations[i]);
-            rfs.images[WPP(photostations[i], cameras[j])] = images[i][j];
+            int camId = separate_cameras ? i * CP + j : j;
+            rfs.addCameraToFixture(cameras[camId], photostations[i]);
+            rfs.images[WPP(photostations[i], cameras[camId])] = images[i][j];
         }
         rfs.initializationData[photostations[i]].initializationType = PhotostationInitializationType::GPS;
         rfs.initializationData[photostations[i]].initData.shift = positions[psPrefixes[i] - 'A'];
@@ -399,11 +483,93 @@ int main()
         ss << "SP" << ((char)('A' + i));
         rfs.fixtures[i]->name = ss.str();
     }
+    for (auto poi: pois)
+    {
+        auto sfp = rfs.createFeaturePoint();
+        sfp->position = poi.worldPoint;
+        sfp->name = poi.label;
+        for (auto o: poi.projections)
+        {
+            int camId = separate_cameras ? o.cameraId + CP  * o.photostationId : o.cameraId;
+            SceneObservation obs;
+            obs.camera = cameras[o.cameraId];
+            obs.cameraFixture = photostations[o.photostationId];
+            obs.observation = o.projection;
+            sfp->observations[obs.camera] = obs;
+            sfp->observations__[WPP(obs.cameraFixture, obs.camera)] = obs;
+        }
+        poiss.push_back(sfp);
+    }
     rfs.placingQueue = photostations;
+    for (auto ptr: photostations)
+    {
+        std::cout << "Checking if " << ptr->name << " is allowed..." << std::endl;
+        if (std::find(allowedPs.begin(), allowedPs.end(), ptr->name) == allowedPs.end())
+        {
+            std::cout << "Deleting " << ptr->name << std::endl;
+           rfs.deleteCameraFixture(ptr, false);
+        }
+        std::cout << ptr->name << " is Ok" << std::endl;
+    }
+    std::cout << "Launching psp" << std::endl;
 
     PhotostationPlacer pp;
     pp.scene = &rfs;
-    pp.fullRun();
+    pp.optimizationParams = exp.type;
+//    pp.fullRun();
+    
+    L_ERROR << "Starting full run" ;
+    L_ERROR << "Detecting features";
+    pp.detectAll();
+    L_ERROR << "Initalizing";
+    pp.initialize();
+    L_ERROR << "Fitting";
+	pp.fit(exp.type, 100);
+    L_ERROR << "Appending";
+
+    while(pp.scene->placingQueue.size())
+	{
+        L_ERROR << "Appending" << (*pp.scene->placingQueue.begin())->name ;
+        pp.appendPs();
+        L_ERROR << "Fitting";
+//      if (scene->is3DAligned)
+//  	    fit(PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS, 100);
+  //    else
+    //   fit(PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS, 200);
+        pp.fit(exp.type, 100);
+
+        std::stringstream ss;
+        ss << (*pp.scene->placedFixtures.rbegin())->name << "_app.ply";
+        pp.dumpMesh(ss.str());
+	}
+	pp.fit(exp.type, 10000);
+    pp.dumpMesh("final.ply");
+
+    validate_pois(poiss, false, 30.0);
+    validate_cams(rfs.fixtures, cameras, refCameras);
+    L_ERROR << "FINISHING_EXP";
+}
+
+
+int main(int argc, char** argv)
+{
+    init_opencv_detectors_provider();
+    init_opencv_matchers_provider();
+    init_opencv_reader_provider();
+    init_opencv_descriptors_provider();
+    init_opencv_reader_provider();
+
+    int id = std::stoi(std::string(argv[1]));
+    std::cout << "Running " << id << std::endl;
+    run_exp(experiments[id]);
+#if 0
+    exp_desc desc;
+    desc.allowedPs = std::vector<std::string>({"SPA", "SPB", "SPC"});
+    desc.separate_cameras = false;
+    run_exp(desc);
+#endif
+
+
     return 0;
 }
 #endif
