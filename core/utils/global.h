@@ -297,6 +297,7 @@ inline int snprintf2buf(char (&d)[size], cchar* fmt, ...)
 #include <tuple>
 namespace std
 {
+#if 0
     template<typename T>
     struct hash
     {
@@ -306,6 +307,7 @@ namespace std
             return hash<typename underlying_type<boo>::type>()(static_cast<typename underlying_type<boo>::type>(t));
         }
     };
+#endif
     template<typename U, typename V>
     struct hash<pair<U, V>>
     {
