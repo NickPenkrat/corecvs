@@ -292,18 +292,22 @@ inline int snprintf2buf(char (&d)[size], cchar* fmt, ...)
     return iLen;
 }
 
+#include <type_traits>
 #include <algorithm>
 #include <tuple>
 namespace std
 {
+#if 0
     template<typename T>
     struct hash
     {
-        size_t operator() (const T &t) const
+        using boo = typename std::enable_if<std::is_enum<T>::value, T>::type;
+        size_t operator() (const boo &t) const
         {
-            return hash<typename underlying_type<T>::type>()(static_cast<typename underlying_type<T>::type>(t));
+            return hash<typename underlying_type<boo>::type>()(static_cast<typename underlying_type<boo>::type>(t));
         }
     };
+#endif
     template<typename U, typename V>
     struct hash<pair<U, V>>
     {
@@ -384,7 +388,7 @@ template<typename Type>
 inline void delete_safe (Type * &ptr)
 {
     delete ptr;
-  //ptr = (Type *)(uintptr_t(NULL) - 1);		/* We are not hiding our mistakes by zeroing the pointer */
+  //ptr = (Type *)(uintptr_t(NULL) - 1);        /* We are not hiding our mistakes by zeroing the pointer */
     ptr = NULL;
 }
 
@@ -392,7 +396,7 @@ template<typename Type>
 inline void deletearr_safe (Type * &ptr)
 {
     delete[] ptr;
-  //ptr = (Type *)(uintptr_t(NULL) - 1);		/* We are not hiding our mistakes by zeroing the pointer */
+  //ptr = (Type *)(uintptr_t(NULL) - 1);        /* We are not hiding our mistakes by zeroing the pointer */
     ptr = NULL;
 }
 

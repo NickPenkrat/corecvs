@@ -8,7 +8,9 @@ EssentialFeatureFilter::EssentialFeatureFilter(const Matrix33 &K1, const Matrix3
 
 void EssentialFeatureFilter::accept(const EssentialDecomposition &ed, const std::vector<int> &inliers)
 {
+#ifdef WITH_TBB
     tbb::mutex::scoped_lock lock(mutex);
+#endif
     if (inliers.size() <= this->inlierIdx.size())
         return;
     inlierIdx = inliers;

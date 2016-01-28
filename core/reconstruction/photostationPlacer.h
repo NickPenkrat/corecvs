@@ -27,6 +27,7 @@ enum class PhotostationPlacerOptimizationType
     FOCALS = 16,                     // Camera focals in multicamera
     PRINCIPALS = 32,                 // Camera principals in multicamera
     POINTS = 64,                     // 3D points
+    TUNE_GPS = 128                   // Allow shifting of GPS-initialized cameras
 };
 enum class PhotostationPlacerOptimizationErrorType
 {
@@ -86,7 +87,7 @@ struct PhotostationPlacerEssentialFilterParams
 {
     double b2bRansacP5RPThreshold = 0.8;
     double inlierP5RPThreshold = 5.0;
-    int maxEssentialRansacIterations = 16000;
+    int maxEssentialRansacIterations = 32000;
     double b2bRansacP6RPThreshold = 0.8;
 
     template<typename V>
@@ -141,14 +142,11 @@ struct PhotostationPlacerParams
     }
 };
 
-class PhotostationPlacer : PhotostationPlacerFeatureParams, PhotostationPlacerEssentialFilterParams, PhotostationPlacerFeatureSelectionParams, PhotostationPlacerParams
+class PhotostationPlacer : public PhotostationPlacerFeatureParams, public PhotostationPlacerEssentialFilterParams, public PhotostationPlacerFeatureSelectionParams, public PhotostationPlacerParams
 {
 public:
-	std::unordered_map<std::tuple<int, int, int>, int> trackMap;
     ReconstructionFixtureScene* scene;
-#if 0
     void fullRun();
-#endif
     corecvs::Mesh3D dumpMesh(const std::string &filename);
     void detectAll();
     bool initialize();
@@ -156,55 +154,47 @@ public:
     bool initNONE();
     bool initSTATIC();
     bool initFIXED();
-    void filterEssentialRansac(int cnt);
+    void create2PointCloud();
+    void filterEssentialRansac(std::vector<CameraFixture*> &pss);
     void estimateFirstPair();
+    corecvs::Affine3DQ staticInit(CameraFixture* fixture, std::vector<SceneFeaturePoint*> &staticPoints);
     void estimatePair(CameraFixture *psA, CameraFixture *psB);
-    corecvs::Quaternion detectOrientationFirst();
+    corecvs::Quaternion detectOrientationFirst(CameraFixture *psA, CameraFixture* psB, CameraFixture *psC);
     std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> getUnusedFeatures(CameraFixture *psA, CameraFixture *psB);
     void buildTracks(CameraFixture *psA, CameraFixture *psB, CameraFixture *psC);
     void appendPs();
-#if 0
-    void selectEpipolarInliers();
-    void backprojectAll();
-    void fit(bool tuneFocal);
     void fit(const PhotostationPlacerOptimizationType& optimizationSet = PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS, int num = 100);
-	void appendTracks(const std::vector<int> &inlierIds, int ps);
-	std::vector<std::vector<PointObservation__>> verify(const std::vector<PointObservation__> &pois);
-    std::vector<PointObservation__> projectToAll(const std::vector<PointObservation__> &pois);
-
-#endif
-    std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*>> getPossibleTracks(CameraFixture* ps);
-#if 0
-    std::vector<corecvs::Photostation> calibratedPhotostations;
-    std::vector<std::vector<std::string>> images;
-    std::vector<std::vector<std::vector<corecvs::Vector2dd>>> keyPoints;
-	std::vector<std::vector<std::vector<corecvs::RGBColor>>> keyPointColors;
-    std::vector<std::vector<std::vector<std::tuple<int, int, int, int, double>>>> matches, matchesCopy;
-#if 0
-    std::vector<std::tuple<int, int, std::vector<int>>> pairInliers;
-#endif
-    std::vector<PhotostationInitialization> psInitData;
-#if 0
-    std::vector<std::pair<corecvs::Vector3dd,corecvs::Vector3dd>> backprojected [6];
-#endif
-	std::vector<PointObservation__> tracks;
-	std::unordered_map<std::tuple<int, int, int>, int> trackMap;
-#endif
-#if 0
+    void fit(bool tuneFocal);
+	void appendTracks(const std::vector<int> &inlierIds, CameraFixture* fixture, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &possibleTracks);
+    std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> getPossibleTracks(CameraFixture* ps);
 	int getMovablePointCount();
 	int getReprojectionCnt();
-	int getOrientationInputNum();
+	int getInputNum();
+	int getOutputNum();
 	int getErrorComponentsPerPoint();
 	void getErrorSummary(PhotostationPlacerOptimizationErrorType errorType);
 	void getErrorSummaryAll();
-#endif
+
+	void addFirstPs();
+	void addSecondPs();
+	void tryAlign();
 protected:
-#if 0
 	void readOrientationParams(const double in[]);
 	void writeOrientationParams(double out[]);
-	void computeMedianErrors(double out[], const std::vector<int> &idxs);
+	void computeErrors(double out[], const std::vector<int> &idxs);
     std::vector<std::vector<int>> getDependencyList();
-    std::vector<std::pair<int, int>> revDependency; // track, projection
+
+    /* 
+     * These are valid only in non-linear fit time
+     */
+    std::vector<FixtureCamera*> activeCameras;
+    std::vector<SceneObservation*> revDependency; // track, projection
+    std::vector<CameraFixture*> gpsConstrainedCameras;
+    std::vector<std::vector<int>> sparsity;
+    void prepareNonLinearOptimizationData();
+    void buildDependencyList();
+    double scalerPoints, scalerGps;
+    int inputNum, outputNum, psNum, camNum, ptNum, projNum, gpsConstraintNum;
 
     struct ParallelErrorComputator
     {
@@ -221,16 +211,16 @@ protected:
 		void operator() (const double in[], double out[], const std::vector<int> &idxs)
 		{
 			placer->readOrientationParams(in);
-			placer->computeMedianErrors(out, idxs);
+			placer->computeErrors(out, idxs);
 		}
-		OrientationFunctor(PhotostationPlacer *placer) : SparseFunctionArgs(placer->getOrientationInputNum(), placer->getReprojectionCnt(), placer->getDependencyList()), placer(placer)
+		OrientationFunctor(PhotostationPlacer *placer) : SparseFunctionArgs(placer->getInputNum(), placer->getOutputNum(), placer->sparsity), placer(placer)
 		{
 		}
 		PhotostationPlacer* placer;
 	};
 	struct OrientationNormalizationFunctor : corecvs::FunctionArgs
 	{
-		OrientationNormalizationFunctor(PhotostationPlacer *placer) : FunctionArgs(placer->getOrientationInputNum(), placer->getOrientationInputNum()), placer(placer)
+		OrientationNormalizationFunctor(PhotostationPlacer *placer) : FunctionArgs(placer->getInputNum(), placer->getInputNum()), placer(placer)
 		{
 		}
 		void operator() (const double in[], double out[])
@@ -240,94 +230,15 @@ protected:
 		}
 		PhotostationPlacer* placer;
 	};
-public:
-#if 0
-	template<typename V>
-	void accept(V &v)
-    {
-        v.visit(calibratedPhotostations, "Photostations");
-        v.visit(keyPoints, "Keypoints");
-        v.visit(keyPointColors, "Keypoint colors");
-        visitTM("Matches", matches, v);
-        // Here we hope that reconstruction is not interrupted in the middle of smth requiring
-        // copy of matches
-        //visitTM("Matches copy", matchesCopy, v);
-        v.visit(psInitData, "Initialization");
-        v.visit(tracks, "Tracks");
-        v.visit(placed, 0, "Placed");
-        v.visit(preplaced, 0, "Preplaced");
-        v.visit(images, "images");
-        v.visit((PhotostationPlacerFeatureParams&)*this, "Feature detection params");
-        v.visit((PhotostationPlacerEssentialFilterParams&)*this, "Essential filtering params");
-        v.visit((PhotostationPlacerFeatureSelectionParams&)*this, "Feature selection params");
-        v.visit((PhotostationPlacerParams&)*this, "Reconstruction params");
-    }
-
-    template<typename V>
-    void visitTM(const char* name, std::vector<std::vector<std::vector<std::tuple<int, int, int, int, double>>>> &tm, V &v)
-    {
-        std::vector<std::vector<std::vector<std::vector<double>>>> moo;
-        for (auto& vvt: tm)
-        {
-            std::vector<std::vector<std::vector<double>>> foo;
-            for (auto& vt: vvt)
-            {
-                std::vector<std::vector<double>> boo;
-                for (auto& t: vt)
-                    boo.push_back(std::vector<double>(
-                        {(double)std::get<0>(t),
-                         (double)std::get<1>(t),
-                         (double)std::get<2>(t),
-                         (double)std::get<3>(t),
-                         (double)std::get<4>(t)}));
-                foo.emplace_back(boo);
-            }
-            moo.emplace_back(foo);
-        }
-        v.visit(moo, name);
-        tm.clear();
-        for (auto& vvt: moo)
-        {
-            std::vector<std::vector<std::tuple<int, int, int, int, double>>> foo;
-            for (auto& vt: vvt)
-            {
-                std::vector<std::tuple<int, int, int, int, double>> boo;
-                for (auto& t: vt)
-                {
-                    boo.emplace_back(t[0], t[1], t[2], t[3], t[4]);
-                }
-                foo.emplace_back(boo);
-            }
-            tm.emplace_back(foo);
-        }
-    }
-    template<typename V>
-    void visitTrackmap(const char* name, V &v)
-    {
-        std::vector<std::vector<int>> trackmap;
-        for (auto& el: trackMap)
-            trackmap.emplace_back(std::vector<int>({std::get<0>(el.first), std::get<1>(el.first), std::get<2>(el.first), el.second}));
-        v.visit(trackmap, "Track map");
-        trackMap.clear();
-        for (auto& el: trackmap)
-            trackMap[std::make_tuple(el[0], el[1], el[2])] = el[3];
-    }
-#endif
 private:
-
-    int preplaced = 0, placed = 0;
-#endif
 	double scoreFundamental(CameraFixture *psA, FixtureCamera *camA, corecvs::Vector2dd ptA,
 			                CameraFixture *psB, FixtureCamera *camB, corecvs::Vector2dd ptB);
-    std::atomic<int> cntUsed, cntTotal;
     struct ParallelEssentialFilter
     {
         PhotostationPlacer* placer;
         std::vector<std::pair<WPP, WPP>> work;
-//        static std::atomic<int> cntr;
         ParallelEssentialFilter(PhotostationPlacer* placer, std::vector<std::pair<WPP, WPP>> &work) : placer(placer), work(work)
         {
-        //    cntr = 0;
         }
         void operator() (const corecvs::BlockedRange<int> &r) const
         {
@@ -335,20 +246,11 @@ private:
             {
                 auto w = work[i];
                 placer->filterEssentialRansac(w.first, w.second);
-//                cntr++;
-//                std::cout << ((double)cntr) / work.size() * 100.0 << "% complete" << std::endl;
             }
         }
     };
-#if 0
-    void selectEpipolarInliers(int psA, int psB);
-#endif
     void filterEssentialRansac(WPP a, WPP b);
     std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd, double>> getPhotostationMatches(CameraFixture* psA, CameraFixture* psB);
-#if 0
-    std::vector<std::tuple<corecvs::Vector2dd, corecvs::Vector2dd, double>> getCameraMatches(int psA, int camA, int psB, int camB);
-    void remove(int psA, int psB, std::vector<int> idx);
-#endif
     void remove(WPP a, WPP b, std::vector<int> idx);
 #ifdef WITH_TBB
     tbb::mutex mutex;

@@ -26,7 +26,7 @@ struct AbsoluteNonCentralRansacSolverParams
 class AbsoluteNonCentralRansacSolver : AbsoluteNonCentralRansacSolverParams
 {
 public:
-    AbsoluteNonCentralRansacSolver(corecvs::CameraFixture *ps, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*>> &cloudMatches, const AbsoluteNonCentralRansacSolverParams &params = AbsoluteNonCentralRansacSolverParams()) : AbsoluteNonCentralRansacSolverParams(params), ps(ps), cloudMatches(cloudMatches)
+    AbsoluteNonCentralRansacSolver(corecvs::CameraFixture *ps, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &cloudMatches, const AbsoluteNonCentralRansacSolverParams &params = AbsoluteNonCentralRansacSolverParams()) : AbsoluteNonCentralRansacSolverParams(params), ps(ps), cloudMatches(cloudMatches)
     {
     }
     void run();
@@ -134,7 +134,7 @@ protected:
     int bestInlierCnt = 0;
     std::vector<int> inliers;
     corecvs::CameraFixture *ps;
-    std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*>> cloudMatches;
+    std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> cloudMatches;
     std::vector<corecvs::Affine3DQ> hypothesis;
     int batch = 100;
     int batches = 64;

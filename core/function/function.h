@@ -10,6 +10,7 @@
  * \author alexander
  */
 #include <vector>
+#include <chrono>
 
 #include "global.h"
 
@@ -86,9 +87,10 @@ public:
 
         for (int i = 0; i < inputs; i++)
         {
-            double xm = xc[i] = in[i] - delta;
+            double delta_loc = std::max(1.0, std::abs(in[i])) * delta;
+            double xm = xc[i] = in[i] - delta_loc;
             operator()(&xc[0], &y_minus[0]);
-            double xp = xc[i] = in[i] + delta;
+            double xp = xc[i] = in[i] + delta_loc;
             operator()(&xc[0], &y_plus[0]);
             xc[i] = in[i];
 
@@ -119,8 +121,10 @@ public:
 class SparseFunctionArgs : public FunctionArgs
 {
 public:
+    double feval = 0.0, transp = 0.0, construct = 0.0, prepare = 0.0, other = 0.0, subscale = 0.0;
     SparseFunctionArgs(int inputs, int outputs, const std::vector<std::vector<int>> &dependencyList) : FunctionArgs(inputs, outputs), dependencyList(dependencyList), fullIdx(outputs)
     {
+        std::cout << "Sparse: R^" << inputs << "->R^" << outputs << std::endl;
         for (int i = 0; i < outputs; ++i)
             fullIdx[i] = i;
         minify();
@@ -140,8 +144,13 @@ public:
     SparseMatrix getNativeJacobian(const double* in, double delta = 1e-7)
     {
         std::vector<std::vector<double>> values(inputs);
+        for (int i = 0; i < inputs; ++i)
+            values[i].reserve(dependencyList[i].size());
 
         int N = (int)groupInputs.size();
+        std::vector<double> xp(inputs), xm(inputs), deltaS(inputs);
+        double curr_eval = 0.0, curr_subscale = 0.0;
+        auto start_evals = std::chrono::high_resolution_clock::now();
         for (int i = 0; i < N; ++i)
         {
             auto& group = groupInputs[i];
@@ -150,39 +159,57 @@ public:
 
             int M = (int)group.size();
 
-            std::vector<double> xp(inputs), xm(inputs), deltaS(M);
             for (int j = 0; j < inputs; ++j)
                 xp[j] = xm[j] = in[j];
             for (int j = 0; j < M; ++j)
             {
                 double x = in[group[j]];
-                double xxm = x - delta;
-                double xxp = x + delta;
+                double delta_loc = std::max(1.0, std::abs(x)) * delta;
+                double xxm = x - delta_loc;
+                double xxp = x + delta_loc;
                 xp[group[j]] = xxp;
                 xm[group[j]] = xxm;
                 deltaS[j] = xxp - xxm;
             }
 
             std::vector<double> yp(idxs.size()), ym(idxs.size());
+            auto begin_eval = std::chrono::high_resolution_clock::now();
             operator()(&xp[0], &yp[0], idxs);
             operator()(&xm[0], &ym[0], idxs);
+            auto end_eval = std::chrono::high_resolution_clock::now();
+            curr_eval += (end_eval - begin_eval).count() / 1e9;
 
+            auto begin_subscale = std::chrono::high_resolution_clock::now();
             int K = (int)idxs.size();
+#ifdef WITH_BLAS
+            cblas_daxpy(K, -1.0, &ym[0], 1, &yp[0], 1);
+#endif
             for (int j = 0; j < K; ++j)
             {
                 int id = remap[idxs[j]];
+#ifdef WITH_BLAS
+                double v = yp[j] / deltaS[id];
+#else
                 double v = (yp[j] - ym[j]) / deltaS[id];
+#endif
                 values[group[id]].push_back(v);
             }
+            auto end_subscale = std::chrono::high_resolution_clock::now();
+            curr_subscale += (end_subscale - begin_subscale).count() / 1e9;
         }
+        auto end_evals = std::chrono::high_resolution_clock::now();
+        double eval_f = curr_eval;
+        double eval_other = (end_evals - start_evals).count() / 1e9 - eval_f - curr_subscale;
 
+
+        auto begin_prepare = std::chrono::high_resolution_clock::now();
         std::vector<double> sparseValues;
         std::vector<int> sparseColumns, sparseRowPointers(inputs + 1);
         for (int i = 0; i < inputs; ++i)
         {
-            size_t N = (int)dependencyList[i].size();
+            int N = (int)dependencyList[i].size();
             CORE_ASSERT_TRUE_S(N == values[i].size());
-            for (size_t j = 0; j < N; ++j)
+            for (int j = 0; j < N; ++j)
             {
                 int jj = dependencyList[i][j];
                 sparseColumns.push_back(jj);
@@ -190,13 +217,31 @@ public:
             }
             sparseRowPointers[i + 1] = (int)sparseValues.size();
         }
-        return SparseMatrix(inputs, outputs, sparseValues, sparseColumns, sparseRowPointers).t();
+        auto end_prepare = std::chrono::high_resolution_clock::now();
+        auto begin_construct = std::chrono::high_resolution_clock::now();
+        auto sm = SparseMatrix(inputs, outputs, std::move(sparseValues), std::move(sparseColumns), std::move(sparseRowPointers));
+        auto end_construct = std::chrono::high_resolution_clock::now();
+        auto begin_t = std::chrono::high_resolution_clock::now();
+        auto sm_t = sm.t();
+        auto end_t = std::chrono::high_resolution_clock::now();
+
+        double prepare_t = (end_prepare - begin_prepare).count() / 1e9;
+        double construct_t = (end_construct - begin_construct).count() / 1e9;
+        double t_t = (end_t - begin_t).count() / 1e9;
+        feval += eval_f;
+        transp += t_t;
+        construct += construct_t;
+        prepare += prepare_t;
+        other += eval_other;
+        subscale += curr_subscale;
+        return sm_t;
     }
 
     void minify()
     {
         std::vector<int> usedO(outputs);
         std::vector<int> usedI(inputs);
+        CORE_ASSERT_TRUE_S(dependencyList.size() == inputs);
 
         for (int i = 0; i < inputs; ++i)
         {
@@ -206,7 +251,10 @@ public:
             usedO.clear();
             usedO.resize(outputs);
             for (auto& id: dependencyList[i])
+            {
+                CORE_ASSERT_TRUE_S(id < outputs);
                 usedO[id] = 1;
+            }
             for (int j = i + 1; j < inputs; ++j)
             {
                 if (usedI[j])
@@ -225,7 +273,7 @@ public:
                 for (auto& id: dependencyList[j])
                     usedO[id] = 1;
             }
-            CORE_ASSERT_TRUE_S((int)currentRemap.size() == outputs);
+            CORE_ASSERT_TRUE_S(currentRemap.size() == outputs);
             for (auto& id: currentGroup)
                 for (auto& ido: dependencyList[id])
                 {
@@ -240,7 +288,16 @@ public:
         std::cout << "REMAPANAL: " << inputs << "->" << groupInputs.size() << std::endl;
     }
 
-    virtual ~SparseFunctionArgs() {}
+    virtual ~SparseFunctionArgs()
+    {
+        double total = (feval + transp + construct + prepare + other + subscale);
+        std::cout << "Feval: " << feval << "s " << feval / total * 100.0 << "%" << std::endl;
+        std::cout << "Trans: " << transp<< "s " << transp/ total * 100.0 << "%" << std::endl;
+        std::cout << "Prep : " <<prepare << "s " <<prepare/ total * 100.0 << "%" << std::endl;
+        std::cout << "Const: " <<construct<< "s " <<construct / total * 100.0 << "%" << std::endl;
+        std::cout << "Subscale:" << subscale << "s " << subscale / total * 100.0 << "%" << std::endl;
+        std::cout << "Other: " <<other<< "s " <<other / total * 100.0 << "%" << std::endl;
+    }
 
 private:
     std::vector<std::vector<int>> groupInputs, groupOutputs, remapIdx;

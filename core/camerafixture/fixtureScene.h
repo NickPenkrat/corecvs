@@ -60,7 +60,20 @@ protected:
     void deleteFixtureCameraUMWPP(umwpp<T> &uwpp, FixtureCamera* fc)
     {
         WPP wpp(WPP::UWILDCARD, fc);
-        for (auto it = uwpp.begin(); it != uwpp.end(); it = it->first == wpp ? uwpp.erase(it) : it++);
+        bool contains = false;
+        do
+        {
+            contains = false;
+            for (auto it = uwpp.begin(); it != uwpp.end(); ++it)
+            {
+                if (wpp == it->first)
+                {
+                    uwpp.erase(it);
+                    contains = true;
+                    break;
+                }
+            }
+        } while(contains);
     }
     template<typename T>
     void deleteFixtureCameraUMWPP(umwpp<umwpp<T>> &uwpp, FixtureCamera* fc)
@@ -73,7 +86,20 @@ protected:
     void deleteCameraFixtureUMWPP(umwpp<T> &uwpp, CameraFixture* fc)
     {
         WPP wpp(fc, WPP::VWILDCARD);
-        for (auto it = uwpp.begin(); it != uwpp.end(); it = it->first == wpp ? uwpp.erase(it) : it++);
+        bool contains = false;
+        do
+        {
+            contains = false;
+            for (auto it = uwpp.begin(); it != uwpp.end(); ++it)
+            {
+                if (wpp == it->first)
+                {
+                    uwpp.erase(it);
+                    contains = true;
+                    break;
+                }
+            }
+        } while(contains);
     }
     template<typename T>
     void deleteCameraFixtureUMWPP(umwpp<umwpp<T>> &uwpp, CameraFixture* fc)

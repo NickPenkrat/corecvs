@@ -39,6 +39,8 @@ struct PhotostationInitialization
     PhotostationInitializationType initializationType;
     std::vector<SceneFeaturePoint*> staticPoints;
     Affine3DQ initData;
+    Matrix33  positioningAccuracy;
+    double    rotationalAccuracy;
 };
 
 
@@ -57,13 +59,14 @@ public:
 
     //\brief Returns number of FixtureCamera's in placedFixtures fixtures
     int getDistinctCameraCount() const;
+    std::vector<FixtureCamera*> getDistinctCameras() const;
 
     void printMatchStats() const;
     void printMatchStats(const umwpp<umwppv<std::tuple<int, int, double>>> &m);
 
     // ==================================================================================
     // SERIALIZEABLE STATE
-    std::vector<SceneFeaturePoint*> trackedFeatures;
+    std::vector<SceneFeaturePoint*> trackedFeatures, staticPoints;
     umwpp<std::string> images;
     umwppv<std::pair<corecvs::Vector2dd, corecvs::RGBColor>> keyPoints;
     umwpp<umwppv<std::tuple<int, int, double>>> matches;
@@ -76,7 +79,29 @@ public:
     ReconstructionState state = ReconstructionState::NONE;
     // ==================================================================================
     umwpp<umwppv<std::tuple<int, int, double>>> matchesCopy;
+
+    bool validateMatches();
+    bool validateTracks();
+    bool validateAll();
+
+    bool haveCamera(FixtureCamera* camera);
+    bool haveFixture(CameraFixture* camera);
+    bool havePoint(SceneFeaturePoint* point);
 };
+}
+
+namespace std
+{
+template<>
+struct hash<PhotostationInitializationType>
+{
+	size_t operator() (const PhotostationInitializationType &t) const
+	{
+		using foo = typename std::underlying_type<PhotostationInitializationType>::type;
+		return hash<foo>()(static_cast<const foo>(t));
+	}
+};
+
 }
 
 #endif
