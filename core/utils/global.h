@@ -301,9 +301,9 @@ namespace std
     struct hash
     {
         using boo = typename std::enable_if<std::is_enum<T>::value, T>::type;
-        size_t operator() (const T &t) const
+        size_t operator() (const boo &t) const
         {
-            return hash<typename underlying_type<T>::type>()(static_cast<typename underlying_type<T>::type>(t));
+            return hash<typename underlying_type<boo>::type>()(static_cast<typename underlying_type<boo>::type>(t));
         }
     };
     template<typename U, typename V>
