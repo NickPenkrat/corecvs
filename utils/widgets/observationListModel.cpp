@@ -410,3 +410,73 @@ int CameraObserverListModel::elementCount()
 }
 
 
+
+
+PointImageEditorInterfaceAbstractItemModelWrapper::PointImageEditorInterfaceAbstractItemModelWrapper(QAbstractItemModel *wrappee, int xColumn, int yColumn) :
+    wrappee(wrappee),
+    xColumn(xColumn),
+    yColumn(yColumn)
+{
+    connect(wrappee, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
+            this, SIGNAL(updateView()));
+
+    connect(wrappee, SIGNAL(columnsInserted(QModelIndex,int,int))             , this, SIGNAL(modelInvalidated()));
+    connect(wrappee, SIGNAL(columnsMoved(QModelIndex,int,int,QModelIndex,int)), this, SIGNAL(modelInvalidated()));
+    connect(wrappee, SIGNAL(columnsRemoved(QModelIndex,int,int))              , this, SIGNAL(modelInvalidated()));
+
+    connect(wrappee, SIGNAL(rowsInserted(QModelIndex,int,int))             , this, SIGNAL(modelInvalidated()));
+    connect(wrappee, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)), this, SIGNAL(modelInvalidated()));
+    connect(wrappee, SIGNAL(rowsRemoved(QModelIndex,int,int))              , this, SIGNAL(modelInvalidated()));
+
+    connect(wrappee, SIGNAL(modelReset())                                  , this, SIGNAL(modelInvalidated()));
+
+
+}
+
+
+size_t PointImageEditorInterfaceAbstractItemModelWrapper::getPointCount()
+{
+    QModelIndex topLevel = wrappee->parent(QModelIndex());
+    return wrappee->rowCount(topLevel);
+}
+
+bool PointImageEditorInterfaceAbstractItemModelWrapper::appendPoint()
+{
+    wrappee->insertRow(wrappee->rowCount());
+    return true;
+}
+
+bool PointImageEditorInterfaceAbstractItemModelWrapper::deletePoint(size_t id)
+{
+    wrappee->removeRow(id);
+    return true;
+}
+
+QString PointImageEditorInterfaceAbstractItemModelWrapper::getMeta(size_t id)
+{
+    Vector2dd pos = getPoint(id);
+    return QString("(%1, %2)").arg(pos.x()).arg(pos.y());
+}
+
+void PointImageEditorInterfaceAbstractItemModelWrapper::setPoint(size_t id, const Vector2dd &value)
+{
+    QModelIndex topLevel = wrappee->parent(QModelIndex());
+    QModelIndex indexX = wrappee->index(id, xColumn, topLevel);
+    QModelIndex indexY = wrappee->index(id, yColumn, topLevel);
+    wrappee->setData(indexY, QVariant(value.y()), Qt::EditRole);
+    wrappee->setData(indexX, QVariant(value.x()), Qt::EditRole);
+}
+
+Vector2dd PointImageEditorInterfaceAbstractItemModelWrapper::getPoint(size_t id)
+{
+    QModelIndex topLevel = wrappee->parent(QModelIndex());
+    QModelIndex indexX   = wrappee->index(id, xColumn, topLevel);
+    QModelIndex indexY   = wrappee->index(id, yColumn, topLevel);
+
+    double x = wrappee->data(indexX).toDouble();
+    double y = wrappee->data(indexY).toDouble();
+
+    return Vector2dd(x,y);
+}
+
+

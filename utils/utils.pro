@@ -100,7 +100,8 @@ HEADERS += \
     reconstruction/reconstructionSolver.h \
     corestructs/cameraModel/affine3dControlWidget.h \
     corestructs/cameraModel/fixtureControlWidget.h \
-    widgets/observationListModel.h
+    widgets/observationListModel.h \
+    distortioncorrector/pointListEditImageWidget.h
 
 SOURCES += \
     frames.cpp \
@@ -175,7 +176,8 @@ SOURCES += \
     reconstruction/reconstructionSolver.cpp \
     corestructs/cameraModel/affine3dControlWidget.cpp \
     corestructs/cameraModel/fixtureControlWidget.cpp \
-    widgets/observationListModel.cpp
+    widgets/observationListModel.cpp \
+    distortioncorrector/pointListEditImageWidget.cpp
 
 
 FORMS += \
