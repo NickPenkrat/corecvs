@@ -2,7 +2,7 @@
 
 namespace corecvs {
 #ifdef WIN32
-const WPP::UTYPE WPP::UWILDCARD = nullptr;
-const WPP::VTYPE WPP::VWILDCARD = nullptr;
+WPP::UTYPE const WPP::UWILDCARD = nullptr;
+WPP::VTYPE const WPP::VWILDCARD = nullptr;
 #endif
 } //namespace corecvs
