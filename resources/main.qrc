@@ -95,6 +95,10 @@
         <file>transform_rotate.png</file>
         <file>tree_list.png</file>
         <file>photostation_save.png</file>
+        <file>matchpoints.png</file>
+        <file>photostation_reorient.png</file>
+        <file>inbox_download.png</file>
+        <file>inbox_upload.png</file>
     </qresource>
     <qresource prefix="/new/colors">
         <file>colors/color_blue.png</file>
@@ -135,5 +139,11 @@
         <file>our/hyst_z.png</file>
         <file>our/hyst.png</file>
         <file>our/top.png</file>
+    </qresource>
+    <qresource prefix="/new/images">
+        <file>zoom_actual_equal.png</file>
+        <file>zoom_extend.png</file>
+        <file>layer_resize_actual.png</file>
+        <file>layer_resize.png</file>
     </qresource>
 </RCC>

@@ -37,8 +37,9 @@ void CalibrationJob::fit(int referenceLayerCamerasCount)
     auto setups = calibrationSetups;
 
     for (auto& s: calibrationSetups)
-        for (auto& v: s)
+        for (CalibrationSetupEntry & v: s)
             v.cameraId = perm[v.cameraId];
+
     for (size_t i = 0; i < cameras.size(); ++i)
     {
         observations[i] = observations[perm[i]];
@@ -48,7 +49,7 @@ void CalibrationJob::fit(int referenceLayerCamerasCount)
     photostation.location.shift = corecvs::Vector3dd(0.0, 0.0, 0.0);
     photostation.location.rotor = photostation.cameras[0].extrinsics.orientation;
     corecvs::Vector3dd meanShift(0.0, 0.0, 0.0);
-    for (int i = 0; i < photostation.cameras.size(); ++i)
+    for (int i = 0; i < (int)photostation.cameras.size(); ++i)
     {
         photostation.cameras[i] = photostation.getRawCamera(i);
         if (i < referenceLayerCamerasCount)
@@ -56,7 +57,7 @@ void CalibrationJob::fit(int referenceLayerCamerasCount)
     }
     photostation.location.rotor = corecvs::Quaternion(0.0, 0.0, 0.0, 1.0);
     photostation.location.shift = -meanShift;
-    for (int i = 0; i < photostation.cameras.size(); ++i)
+    for (size_t i = 0; i < photostation.cameras.size(); ++i)
     {
         photostation.cameras[i] = photostation.getRawCamera(i);
     }

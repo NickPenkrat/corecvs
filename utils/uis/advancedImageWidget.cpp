@@ -242,7 +242,7 @@ void AdvancedImageWidget::childRepaint(QPaintEvent* /*event*/, QWidget* childWid
 
     if (mResizeCache != NULL)
     {
-        p.drawImage(mOutputRect.topLeft(), *mResizeCache);      
+        p.drawImage(mOutputRect.topLeft(), *mResizeCache);
     }
     else
     {
@@ -633,6 +633,13 @@ void AdvancedImageWidget::fitToggled()
 void AdvancedImageWidget::setFitWindow(bool flag)
 {
     mUi->fitToWindowCheckBox->setChecked(flag);
+}
+
+void AdvancedImageWidget::setCompactStyle(bool flag)
+{
+    mUi->zoomInButton ->setHidden(flag);
+    mUi->zoomOutButton->setHidden(flag);
+    mUi->expSpinBox->setHidden(flag);
 }
 
 void AdvancedImageWidget::childResized (QResizeEvent * /*event*/)

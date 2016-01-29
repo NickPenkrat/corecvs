@@ -405,12 +405,12 @@ void ReconstructionJob::solveWithBadPOI(bool filter, bool forceGps)
     if (filter)
     {
         std::mt19937 rng;
-        for (int i = 0; i < scene.photostations.size(); ++i)
+        for (int i = 0; i < (int)scene.photostations.size(); ++i)
         {
             std::vector<std::tuple<int, corecvs::Vector2dd, corecvs::Vector3dd>> pspa;
             for (auto &o: scene.pointObservations)
             {
-                for (auto&p: o.projections)
+                for (PointProjection &p: o.projections)
                 {
                     if (p.photostationId == i && !o.updateable)
                     {
@@ -521,14 +521,14 @@ void ReconstructionJob::solveWithBadPOI(bool filter, bool forceGps)
 #if 1
     std::cout << "Solve: " << scene.photostations.size() << " " << scene.pointObservations.size() << std::endl;
 
-    for (int i = 0; i < scene.photostations.size(); ++i)
+    for (size_t i = 0; i < scene.photostations.size(); ++i)
     {
         std::vector<std::tuple<int, corecvs::Vector2dd, corecvs::Vector3dd>> pspa;
         for (auto &o: scene.pointObservations)
         {
             for (auto&p: o.projections)
             {
-                if (p.photostationId == i && !o.updateable)
+                if (p.photostationId == (int)i && !o.updateable)
                 {
                     pspa.emplace_back(p.cameraId, p.projection, o.worldPoint);
                 }

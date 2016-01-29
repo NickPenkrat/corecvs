@@ -185,6 +185,7 @@ TreeSceneController * CloudViewDialog::addSubObject (QString name, QSharedPointe
 
 CloudViewDialog::~CloudViewDialog()
 {
+    qDebug("CloudViewDialog::~CloudViewDialog(): called for this=%p", this);
 }
 
 void CloudViewDialog::setCollapseTree(bool collapse)
