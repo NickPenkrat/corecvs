@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CALIBRATION_PHOTOSTATION_H
+#define CALIBRATION_PHOTOSTATION_H
 
 /**
  * \file calibrationPhotostation.h
@@ -165,3 +166,5 @@ public:
 };
 
 } // namespace corecvs
+
+#endif // CALIBRATION_PHOTOSTATION_H

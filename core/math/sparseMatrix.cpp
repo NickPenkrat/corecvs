@@ -448,6 +448,7 @@ Vector SparseMatrix::LinSolve(const SparseMatrix &m, const Vector &rhs, bool sym
 {
     CORE_ASSERT_TRUE_S(rhs.size() == m.h);
 #ifndef WITH_MKL
+    CORE_UNUSED(posDef);
     return Matrix::LinSolve((Matrix)m, rhs, symmetric);
 #else
     Vector sol(m.w);

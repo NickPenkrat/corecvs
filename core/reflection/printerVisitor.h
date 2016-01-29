@@ -1,6 +1,7 @@
 #ifndef PRINTER_VISITOR_OLD_H_
 #define PRINTER_VISITOR_OLD_H_
 
+#include <stdint.h>
 #include <iostream>
 
 #include "reflection.h"
@@ -13,6 +14,11 @@ using std::cout;
 
 class PrinterVisitor
 {
+public:
+    bool isSaver () { return false;}
+    bool isLoader() { return false;}
+
+
 public:
     std::ostream *stream;
     int indentation;
@@ -64,14 +70,20 @@ template <typename inputType, typename reflectionType>
     }
 
 template <class Type>
-    void visit(Type &field, Type /*defaultValue*/, const char * fieldName)
-	{
+    void visit(Type &field, const char * fieldName)
+    {
         if (stream != NULL) {
             *stream << indent() << fieldName << ":" << std::endl;
         }
         indentation += dIndent;
-		field.accept(*this);
+        field.accept(*this);
         indentation -= dIndent;
+    }
+
+template <class Type>
+    void visit(Type &field, Type /*defaultValue*/, const char * fieldName)
+	{
+        visit<Type>(field, fieldName);
 	}
 
 };
@@ -106,10 +118,17 @@ void PrinterVisitor::visit<std::string, StringField>(std::string &field, const S
 template <>
 void PrinterVisitor::visit<double, DoubleVectorField>(std::vector<double> &field, const DoubleVectorField *fieldDescriptor);
 
-/* Old style */
+/**
+ * Old Style
+ *
+ * this methods can be made universal, but are separated to make it a bit more controllable
+ **/
 
 template <>
-void PrinterVisitor::visit<int>(int &doubleField, int defaultValue, const char *fieldName);
+void PrinterVisitor::visit<int>(int &intField, int defaultValue, const char *fieldName);
+
+template <>
+void PrinterVisitor::visit<uint64_t>(uint64_t &intField, uint64_t defaultValue, const char *fieldName);
 
 template <>
 void PrinterVisitor::visit<double>(double &doubleField, double defaultValue, const char *fieldName);

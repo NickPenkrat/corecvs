@@ -29,7 +29,9 @@ public:
 
     CameraFixture(FixtureScene * owner = NULL) :
         FixtureScenePart(owner)
-    {}
+    {
+        //SYNC_PRINT(("CameraFixture():CameraFixture(owner = %p): called \n", owner));
+    }
 
     CameraFixture(
         const std::vector<FixtureCamera *> & _cameras,
@@ -92,7 +94,7 @@ public:
         return -1;
     }
 
-    void setCameraCount(int count);
+    void setCameraCount(size_t count);
 
 
     Matrix44 getMMatrix(int cam) const
@@ -152,9 +154,14 @@ public:
     }
 
 
-    template<class VisitorType>
+    template<class VisitorType, class SceneType = FixtureScene>
     void accept(VisitorType &visitor)
     {
+        typedef typename SceneType::CameraType   RealCameraType;
+//        typedef typename SceneType::FixtureType  RealFixtureType;
+//        typedef typename SceneType::PointType    RealPointType;
+
+
         /* So far compatibilty is on */
         int camsize = cameras.size();
         visitor.visit(camsize, 0, "cameras.size");
@@ -163,13 +170,22 @@ public:
 
         for (size_t i = 0; i < (size_t)camsize; i++)
         {
-            visitor.visit(*cameras[i], "cameras");
+            char buffer[100];
+            snprintf2buf(buffer, "cameras[%d]", i);
+            visitor.visit(*static_cast<RealCameraType *>(cameras[i]), buffer);
         }
 
+        /*
         CameraLocationData loc = getLocation();
         visitor.visit(loc, CameraLocationData(), "location");
         setLocation(loc);
+        */
+        visitor.visit(location, Affine3DQ(), "location");
+        visitor.visit(name, std::string(""), "name");
     }
+
+
+
 };
 
 } // namespace corecvs

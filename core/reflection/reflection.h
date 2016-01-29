@@ -304,8 +304,11 @@ public:
 
 };
 
+typedef SimpleScalarField<uint8_t>     ByteField;
 typedef SimpleScalarField<int>         IntField;
 typedef SimpleScalarField<int64_t>     TimestampField;
+typedef SimpleScalarField<int64_t>     Int64Field;
+typedef SimpleScalarField<int64_t>     UInt64Field;
 typedef SimpleScalarField<double>      DoubleField;
 typedef SimpleScalarField<float>       FloatField;
 typedef SimpleScalarField<bool>        BoolField;

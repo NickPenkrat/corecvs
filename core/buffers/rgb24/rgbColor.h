@@ -478,10 +478,11 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(r(), static_cast<const IntField *>(reflect.fields[FIELD_R]));
-        visitor.visit(g(), static_cast<const IntField *>(reflect.fields[FIELD_G]));
-        visitor.visit(b(), static_cast<const IntField *>(reflect.fields[FIELD_B]));
-        visitor.visit(a(), static_cast<const IntField *>(reflect.fields[FIELD_A]));
+        int byte;
+        byte = r(); visitor.visit(byte, static_cast<const IntField *>(reflect.fields[FIELD_R])); r() = byte;
+        byte = g(); visitor.visit(byte, static_cast<const IntField *>(reflect.fields[FIELD_G])); g() = byte;
+        byte = b(); visitor.visit(byte, static_cast<const IntField *>(reflect.fields[FIELD_B])); b() = byte;
+        byte = a(); visitor.visit(byte, static_cast<const IntField *>(reflect.fields[FIELD_A])); a() = byte;
     }
 
     friend ostream & operator <<(ostream &out, const RGBColor &color)
@@ -540,15 +541,15 @@ template<class VisitorType>
 
         switch (swh) {
         case 0:
-            r =  c; g = x1; b = 0; break;
+            r =  c; g = x1; b =  0; break;
         case 1:
-            r = x2; g =  c; b = 0; break;
+            r = x2; g =  c; b =  0; break;
         case 2:
             r =  0; g =  c; b = x1; break;
         case 3:
-            r =  0; g = x2; b = c; break;
+            r =  0; g = x2; b =  c; break;
         case 4:
-            r =  x1; g =  0; b = c; break;
+            r = x1; g =  0; b =  c; break;
         case 5:
         default:
             r =  c; g =  0; b = x2; break;

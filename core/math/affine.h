@@ -38,6 +38,12 @@ public:
     {
     }
 
+    explicit Affine3D(Vector3dd  _shift) :
+        rotor(LinearType::Identity()),
+        shift(_shift)
+    {
+    }
+
     static LinearType superpose(const LinearType &l1, const LinearType &l2);
 
     friend inline Vector3dd operator *(const Affine3D &affine, const Vector3dd &x)
