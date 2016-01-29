@@ -97,7 +97,7 @@ struct hash<PhotostationInitializationType>
 {
 	size_t operator() (const PhotostationInitializationType &t) const
 	{
-		using foo = typename std::underlying_type<PhotostationInitializationType>::type;
+		using foo = std::underlying_type<PhotostationInitializationType>::type;
 		return hash<foo>()(static_cast<const foo>(t));
 	}
 };
