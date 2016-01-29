@@ -12,6 +12,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <random>
 
 namespace corecvs
 {
