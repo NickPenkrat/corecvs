@@ -18,4 +18,20 @@ FixtureCamera *SceneObservation::getCameraById(FixtureCamera::IdType id)
     return featurePoint->ownerScene->getCameraById(id);
 }
 
+bool SceneFeaturePoint::hasObservation(FixtureCamera *cam)
+{
+    auto it = observations.find(cam);
+    return (it != observations.end());
+}
+
+SceneObservation *SceneFeaturePoint::getObservation(FixtureCamera *cam)
+{
+    auto it = observations.find(cam);
+    if (it == observations.end()) {
+        return NULL;
+    }
+
+    return &((*it).second);
+}
+
 } //namespace corecvs

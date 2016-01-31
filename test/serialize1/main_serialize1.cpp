@@ -352,6 +352,63 @@ void testJSON_FixtureScene()
     cout << "================================" << endl;
 }
 
+void testJSON_StereoScene()
+{
+    cout << "----------------Running the test-------------" << std::endl;
+    FixtureScene *scene = new FixtureScene();
+
+    CameraFixture *fixture = scene->createCameraFixture();
+    fixture->name = "Fixture1";
+
+    FixtureCamera *camera1 = scene->createCamera();
+    FixtureCamera *camera2 = scene->createCamera();
+
+    CameraModel model;
+    model.intrinsics.principal.x() = 320;
+    model.intrinsics.principal.y() = 240;
+    model.intrinsics.focal.x() = 589;
+    model.intrinsics.focal.y() = 589;
+    model.intrinsics.size = Vector2dd(640, 480);
+
+    camera1->nameId = "Cam1";
+    camera1->copyModelFrom(model);
+    camera2->nameId = "Cam2";
+    camera2->copyModelFrom(model);
+
+    scene->addCameraToFixture(camera1, fixture);
+    scene->addCameraToFixture(camera2, fixture);
+
+    scene->positionCameraInFixture(fixture, camera1, Affine3DQ(Vector3dd::Zero()));
+    scene->positionCameraInFixture(fixture, camera2
+                                   , Affine3DQ(Vector3dd::OrtY() * 10.0));
+
+    int count = 0;
+    for (double x = 0.0; x < 5.0; x += 1.0)
+        for (double y = 0.0; y < 5.0; y += 1.0)
+            for (double z = 0.0; z < 5.0; z += 1.0)
+            {
+                char buffer[100];
+                snprintf2buf(buffer, "Test Point %1", count++);
+                SceneFeaturePoint *point  = scene->createFeaturePoint();
+                point->name = buffer;
+                point->setPosition(Vector3dd(20.0 + x , y, z));
+            }
+
+
+
+    scene->projectForward(SceneFeaturePoint::POINT_ALL);
+    cout << "Original scene:" << endl;
+    cout << "================================" << endl;
+    scene->dumpInfo(cout);
+    cout << "================================" << endl;
+
+    {
+        JSONSetter setter("stereo.json");
+        setter.visit(*scene, "scene");
+    }
+    delete_safe(scene);
+
+}
 
 
 int main (int /*argc*/, char ** /*argv*/)
@@ -365,7 +422,7 @@ int main (int /*argc*/, char ** /*argv*/)
 //    testJSON2();
 //    testJSON_UInt64();
     testJSON_FixtureScene();
-
+    testJSON_StereoScene();
 
 	return 0;
 }
