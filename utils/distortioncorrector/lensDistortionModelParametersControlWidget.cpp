@@ -50,6 +50,8 @@ LensDistortionModelParametersControlWidget::LensDistortionModelParametersControl
     QObject::connect(ui->autoRefeshCheckBox, SIGNAL(toggled(bool)), this, SLOT(updateAdditionalDataNeeded()));
 
 
+    QObject::connect(ui->advancedButton, SIGNAL(toggled(bool)), this, SLOT(toggleAdvanced(bool)));
+
 }
 
 LensDistortionModelParametersControlWidget::~LensDistortionModelParametersControlWidget()
@@ -483,6 +485,12 @@ void LensDistortionModelParametersControlWidget::saveParams()
         WidgetSaver saver(&setter);
         saveParamWidget(saver);
     }
+}
+
+void LensDistortionModelParametersControlWidget::toggleAdvanced(bool flag)
+{
+    ui->bottomToolWidget->setHidden(!flag);
+    ui->sideToolWidget  ->setHidden(!flag);
 }
 
 void LensDistortionModelParametersControlWidget::exampleShow()

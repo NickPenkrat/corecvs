@@ -388,7 +388,7 @@ void testJSON_StereoScene()
             for (double z = 0.0; z < 5.0; z += 1.0)
             {
                 char buffer[100];
-                snprintf2buf(buffer, "Test Point %1", count++);
+                snprintf2buf(buffer, "Test Point %d", count++);
                 SceneFeaturePoint *point  = scene->createFeaturePoint();
                 point->name = buffer;
                 point->setPosition(Vector3dd(20.0 + x , y, z));

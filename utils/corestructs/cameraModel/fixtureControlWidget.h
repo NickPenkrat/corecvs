@@ -22,10 +22,11 @@ public:
     void setParameters(const CameraLocationData &input);
     virtual void setParametersVirtual(void *input);
 
+#endif
 signals:
     void valueChanged();
     void paramsChanged();
-#endif
+
 
 public slots:
     /** We should consider who is responsible for what **/
