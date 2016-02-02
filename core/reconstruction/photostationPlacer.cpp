@@ -785,9 +785,13 @@ void corecvs::PhotostationPlacer::fit(const PhotostationPlacerOptimizationType &
     getErrorSummaryAll();
     static int cnt = 0;
     cnt++;
-    if (cnt == 4)
+#if 0
+    if (cnt == 3)
 	{
-		orient(&res[0], &out[0]);
+		std::vector<int> idxs(out.size());
+		for (int i = 0; i < out.size(); ++i)
+			idxs[i] = i;
+		orient(&res[0], &out[0], idxs);
 		std::ofstream of1, of2;
 		of1.open("errors.proj.csv", std::ios_base::out);
 		for (auto ptr: scene->trackedFeatures)
@@ -800,6 +804,7 @@ void corecvs::PhotostationPlacer::fit(const PhotostationPlacerOptimizationType &
 		}
 		exit(0);
 	}
+#endif
     scene->validateAll();
 }
 
