@@ -1052,29 +1052,35 @@ TEST(SparseMatrix, MulMulMul)
 {
     std::ifstream MF;
     MF.open("matrix.txt", std::ios_base::in);
-    int lhsh, lhsw, lhsc;
-    MF >> lhsh >> lhsw >> lhsc;
-    std::vector<int> lhsRowPointers(lhsh + 1), lhsColumns(lhsc);
-    std::vector<double> lhsValues(lhsc);
-    for (auto& v: lhsValues)
-        MF >> v;
-    for (auto& c: lhsColumns)
-        MF >> c;
-    for (auto& p: lhsRowPointers)
-        MF >> p;
-    int rhsh, rhsw, rhsc;
-    MF >> rhsh >> rhsw >> rhsc;
-    std::vector<int> rhsRowPointers(rhsh + 1), rhsColumns(rhsc);
-    std::vector<double> rhsValues(rhsc);
-    for (auto& v: rhsValues)
-        MF >> v;
-    for (auto& c: rhsColumns)
-        MF >> c;
-    for (auto& p: rhsRowPointers)
-        MF >> p;
-    SparseMatrix lhs(lhsh, lhsw, lhsValues, lhsColumns, lhsRowPointers);
-    SparseMatrix rhs(rhsh, rhsw, rhsValues, rhsColumns, rhsRowPointers);
-    auto  res = lhs * rhs;
-    auto dres = ((Matrix)lhs)*((Matrix)rhs);
-    ASSERT_NEAR(((Matrix)res - dres).frobeniusNorm(), 0.0, 1e-9);
+    if (MF.is_open())
+    {
+        int lhsh, lhsw, lhsc;
+        MF >> lhsh >> lhsw >> lhsc;
+        std::vector<int> lhsRowPointers(lhsh + 1), lhsColumns(lhsc);
+        std::vector<double> lhsValues(lhsc);
+        for (auto& v: lhsValues)
+            MF >> v;
+        for (auto& c: lhsColumns)
+            MF >> c;
+        for (auto& p: lhsRowPointers)
+            MF >> p;
+        int rhsh, rhsw, rhsc;
+        MF >> rhsh >> rhsw >> rhsc;
+        std::vector<int> rhsRowPointers(rhsh + 1), rhsColumns(rhsc);
+        std::vector<double> rhsValues(rhsc);
+        for (auto& v: rhsValues)
+            MF >> v;
+        for (auto& c: rhsColumns)
+            MF >> c;
+        for (auto& p: rhsRowPointers)
+            MF >> p;
+        SparseMatrix lhs(lhsh, lhsw, lhsValues, lhsColumns, lhsRowPointers);
+        SparseMatrix rhs(rhsh, rhsw, rhsValues, rhsColumns, rhsRowPointers);
+        auto  res = lhs * rhs;
+        auto dres = ((Matrix)lhs)*((Matrix)rhs);
+        ASSERT_NEAR(((Matrix)res - dres).frobeniusNorm(), 0.0, 1e-9);
+    }
+    else {
+        std::cout << "The file <matrix.txt> is absent." << std::endl;
+    }
 }
