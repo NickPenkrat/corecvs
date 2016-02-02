@@ -448,7 +448,7 @@ bool PointImageEditorInterfaceAbstractItemModelWrapper::appendPoint()
 
 bool PointImageEditorInterfaceAbstractItemModelWrapper::deletePoint(size_t id)
 {
-    wrappee->removeRow(id);
+    wrappee->removeRow((int)id);
     return true;
 }
 
@@ -461,8 +461,8 @@ QString PointImageEditorInterfaceAbstractItemModelWrapper::getMeta(size_t id)
 void PointImageEditorInterfaceAbstractItemModelWrapper::setPoint(size_t id, const Vector2dd &value)
 {
     QModelIndex topLevel = wrappee->parent(QModelIndex());
-    QModelIndex indexX = wrappee->index(id, xColumn, topLevel);
-    QModelIndex indexY = wrappee->index(id, yColumn, topLevel);
+    QModelIndex indexX   = wrappee->index((int)id, xColumn, topLevel);
+    QModelIndex indexY   = wrappee->index((int)id, yColumn, topLevel);
     wrappee->setData(indexY, QVariant(value.y()), Qt::EditRole);
     wrappee->setData(indexX, QVariant(value.x()), Qt::EditRole);
 }
@@ -470,13 +470,11 @@ void PointImageEditorInterfaceAbstractItemModelWrapper::setPoint(size_t id, cons
 Vector2dd PointImageEditorInterfaceAbstractItemModelWrapper::getPoint(size_t id)
 {
     QModelIndex topLevel = wrappee->parent(QModelIndex());
-    QModelIndex indexX   = wrappee->index(id, xColumn, topLevel);
-    QModelIndex indexY   = wrappee->index(id, yColumn, topLevel);
+    QModelIndex indexX   = wrappee->index((int)id, xColumn, topLevel);
+    QModelIndex indexY   = wrappee->index((int)id, yColumn, topLevel);
 
     double x = wrappee->data(indexX).toDouble();
     double y = wrappee->data(indexY).toDouble();
 
     return Vector2dd(x,y);
 }
-
-

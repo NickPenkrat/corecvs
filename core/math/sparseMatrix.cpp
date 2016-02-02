@@ -356,7 +356,7 @@ SparseMatrix SparseMatrix::t() const
     for (int i = w - 1; i >= 1; --i)
         tRowPointers[i] = tRowPointers[i - 1];
     tRowPointers[0] = 0;
-    *tRowPointers.rbegin() = tValues.size();
+    *tRowPointers.rbegin() = (int)tValues.size();
 
     return SparseMatrix(w, h, tValues, tColumns, tRowPointers);
 #endif

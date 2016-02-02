@@ -77,7 +77,7 @@ protected:
             return;
         inliers = inliersNew;
         bestHypothesis = hypo;
-        bestInlierCnt = inliers.size();
+        bestInlierCnt = (int)inliers.size();
         int N = (int)cloudMatches.size();
         std::cout << "P3P: " << bestInlierCnt << " " << ((double)bestInlierCnt) / ((double)N) * 100.0 << "%" << std::endl;
     }

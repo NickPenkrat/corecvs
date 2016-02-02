@@ -303,7 +303,7 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *w
     /* Now the points */
     QPainter painter(who);
 
-    int rows = mObservationListModel->getPointCount();
+    int rows = (int)mObservationListModel->getPointCount();
 
     for (int i = 0; i < rows; i ++)
     {
@@ -355,7 +355,7 @@ void PointListEditImageWidgetUnited::toolButtonReleased(QWidget *button)
         qDebug() << "Add Button";
         //mCurrentToolClass = (ToolClass)ADD_POINT_TOOL;
         mObservationListModel->appendPoint();
-        mSelectedPoint = mObservationListModel->getPointCount() - 1;
+        mSelectedPoint = (int)mObservationListModel->getPointCount() - 1;
 
         mObservationListModel->setPoint(mSelectedPoint, Qt2Core::Vector2ddFromQPoint(mZoomCenter));
         mUi->widget->update();
@@ -377,7 +377,7 @@ void PointListEditImageWidgetUnited::toolButtonReleased(QWidget *button)
 
 int PointListEditImageWidgetUnited::findClosest(Vector2dd imagePoint, double limitDistance )
 {
-    int rows = mObservationListModel->getPointCount();
+    int rows = (int)mObservationListModel->getPointCount();
 
     double bestDistance = limitDistance;
     int bestIndex = -1;

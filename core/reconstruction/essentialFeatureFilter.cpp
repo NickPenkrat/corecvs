@@ -60,7 +60,7 @@ void EssentialFeatureFilter::Estimator::makeHypo()
     auto& features = filter->features;
     auto& K1 = filter->K1;
     auto& K2 = filter->K2;
-    int N = features.size();
+    int N = (int)features.size();
     if (N == 0)
         return;
     int idx[FEATURE_POINTS_FOR_MODEL];
@@ -87,7 +87,7 @@ void EssentialFeatureFilter::Estimator::makeHypo()
 
 void EssentialFeatureFilter::Estimator::selectInliers()
 {
-    auto& features = filter->features;
+  //auto& features = filter->features;
     auto& featuresInlierCheck = filter->featuresInlierCheck;
     auto& K1 = filter->K1;
     auto& K2 = filter->K2;
