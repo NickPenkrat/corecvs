@@ -144,7 +144,17 @@ public:
             timeEval += (Fend - Fbegin).count() / 1e9;
 
             diff = target - y;
+#if 0
+                for (int ijk = 0; ijk < diff.size(); ++ijk)
+                    CORE_ASSERT_TRUE_S(!std::isnan(diff[ijk]));
+                for (int ijk = 0; ijk < y.size(); ++ijk)
+                    CORE_ASSERT_TRUE_S(!std::isnan(y[ijk]));
+                for (int ijk = 0; ijk < beta.size(); ++ijk)
+                    CORE_ASSERT_TRUE_S(!std::isnan(beta[ijk]));
+#endif
             Vector d = diff * J;
+//                for (int ijk = 0; ijk < d.size(); ++ijk)
+//                    CORE_ASSERT_TRUE_S(!std::isnan(d[ijk]));
 
             double normOld = norm;
             norm = diff.sumAllElementsSq();
@@ -229,6 +239,9 @@ public:
                  */
 
                 auto LSbegin = std::chrono::high_resolution_clock::now();
+//                for (int ijk = 0; ijk < B.size(); ++ijk)
+//                    CORE_ASSERT_TRUE_S(!std::isnan(B[ijk]));
+//                std::cout << "A.det " << A.det() << std::endl;
                 if (!useConjugatedGradient)
                 {
                    delta = A.linSolve(B, true, true);
@@ -238,6 +251,8 @@ public:
                     delta = conjugatedGradient(A, B);
                 }
                 auto LSend = std::chrono::high_resolution_clock::now();
+//                for (int ijk = 0; ijk < delta.size(); ++ijk)
+//                    CORE_ASSERT_TRUE_S(!std::isnan(delta[ijk]));
                 timeLinSolve += (LSend - LSbegin).count() / 1e9;
 
                 auto EVbegin = std::chrono::high_resolution_clock::now();

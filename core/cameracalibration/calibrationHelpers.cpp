@@ -162,10 +162,12 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const Photostation &ps, const Obs
     drawPly(mesh, ps, scale);
 }
 
-void CalibrationHelpers::drawPly(Mesh3D &mesh, const SceneFeaturePoint &fp, double scale)
+void CalibrationHelpers::drawPly(Mesh3D &mesh, SceneFeaturePoint fp, double scale)
 {
 
     mesh.setColor(fp.color);
+    if (!fp.hasKnownPosition)
+        fp.position = fp.reprojectedPosition;
     if (!largePoints) {
         mesh.addPoint(fp.position);
     } else {

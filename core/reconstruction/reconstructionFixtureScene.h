@@ -39,7 +39,7 @@ struct PhotostationInitialization
     PhotostationInitializationType initializationType;
     std::vector<SceneFeaturePoint*> staticPoints;
     Affine3DQ initData;
-    Matrix33  positioningAccuracy;
+    Matrix33  positioningAccuracy = corecvs::Matrix33(1, 0, 0, 0, 1, 0, 0, 0, 1);
     double    rotationalAccuracy;
 };
 

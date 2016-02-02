@@ -47,7 +47,7 @@ public:
     void drawPly    (Mesh3D &mesh, const Photostation &ps, const ObservationList &list, double scale);
     void drawPly    (Mesh3D &mesh, const CameraFixture &ps, double scale);
 
-    void drawPly    (Mesh3D &mesh, const corecvs::SceneFeaturePoint &fp, double scale);
+    void drawPly    (Mesh3D &mesh, corecvs::SceneFeaturePoint fp, double scale);
 
     void drawScene  (Mesh3D &mesh, const FixtureScene &scene, double scale = 1.0);
 };

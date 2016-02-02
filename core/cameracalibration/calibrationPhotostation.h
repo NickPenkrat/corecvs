@@ -115,7 +115,7 @@ public:
 
     Vector2dd project(const Vector3dd &pt, int cam) const
     {
-        return cameras[cam].project(location.inverted().apply(pt));
+        return cameras[cam].project(location.applyInv(pt));
     }
 
     Ray3d rayFromPixel(const Vector2dd &point, int cam) const
@@ -125,10 +125,14 @@ public:
         r.p = location * r.p;
         return r;
     }
+    Vector3dd dirFromPixel(const Vector2dd &point, int cam) const
+    {
+        return location.rotor * cameras[cam].dirFromPixel(point);
+    }
 
     bool isVisible(const Vector3dd &pt, int cam) const
     {
-        return cameras[cam].isVisible(location.inverted().apply(pt));
+        return cameras[cam].isVisible(location.applyInv(pt));
     }
 
     bool isVisible(const Vector3dd &pt) const

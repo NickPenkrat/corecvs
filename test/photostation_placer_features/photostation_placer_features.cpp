@@ -14,8 +14,10 @@
 #include <cstdio>
 #include <algorithm>
 #include <iomanip>
+#include <set>
 #include <chrono>
 #include <random>
+#include <ctime>
 
 #include "calibrationHelpers.h"
 #include "calibrationJob.h"
@@ -24,6 +26,7 @@
 #include "jsonSetter.h"
 #include "jsonGetter.h"
 #include "log.h"
+#include "pnpSolver.h"
 
 #include "imageKeyPoints.h"
 #include "reconstructionStructs.h"
@@ -44,6 +47,7 @@
 #include "essentialEstimator.h"
 
 #include "photostationPlacer.h"
+
 
 corecvs::Vector3dd convertVector(const corecvs::Vector3dd& geodesic)
 {
@@ -153,92 +157,6 @@ void storePois(const std::vector<PointObservation__> &observations, const std::s
         }
     }
 }
-#if 0
-int main()
-{
-    init_opencv_detectors_provider();
-    init_opencv_matchers_provider();
-    init_opencv_reader_provider();
-    init_opencv_descriptors_provider();
-    init_opencv_reader_provider();
-
-    setup();
-
-    // actually we need only PS
-    JSONGetter ggetter("calibration.json");
-    CalibrationJob job;
-    ggetter.visit(job, "job");
-    auto pois = parsePois(job, "pois_m15.txt",10, true, true);
-    for (auto &p: pois)
-    {
-        std::cout << p.label << " " << p.worldPoint << " ";
-        for (auto &pp: p.projections)
-            std::cout << pp.cameraId << " " << pp.photostationId << " " << pp.projection << " ";
-        std::cout << std::endl;
-    }
-
-	for (auto &o: pois)
-	{
-		std::cout << o.label << " " << o.worldPoint << " " << o.worldPoint - mp << " " << !(o.worldPoint - mp) << std::endl;
-	}
-
-
-    PhotostationPlacer pp;
-    JSONGetter getter("pp.json");
-    getter.visit(pp, "reconstruction data");
-
-    pp.fullRun();
-
-    pp.dumpMesh("reconstruction.res.ply", true);
-
-    auto res = pp.verify(pois);
-    corecvs::Vector3dd meanpos(0, 0, 0);
-    for (int i = 0; i < PSN; ++i)
-    {
-        meanpos += pp.calibratedPhotostations[i].location.shift * (1.0 / PSN);
-    }
-    double err = 0.0, cnt = 0.0;
-    for (size_t i = 0; i < pois.size(); ++i)
-	{
-	    double mindist = 1e100;
-	    for (int j = 0; j < PSN; ++j)
-	        mindist = std::min(mindist, !(pois[i].worldPoint - pp.calibratedPhotostations[j].location.shift));
-	    if (mindist < 30.0)
-        {
-            auto diff = !(pois[i].worldPoint - res[1][i].worldPoint);
-            err += diff * diff;
-            cnt += 1.0;
-        }
-		std::cout << pois[i].label << pois[i].worldPoint << " | " << res[0][i].worldPoint << " | " << res[1][i].worldPoint << ":" << (pois[i].worldPoint - res[1][i].worldPoint) << " /" << !(pois[i].worldPoint - res[1][i].worldPoint) << "\\ " << " / " << ((!(pois[i].worldPoint - res[1][i].worldPoint) / !(pois[i].worldPoint - meanpos))) * 100.0 << "%  ~ " << !(pois[i].worldPoint - meanpos) << "m //" << mindist << "m" << std::endl;
-		for (size_t j = 0; j < pois[i].projections.size(); ++j)
-		{
-			std::cout << "\t\t" << ((char)('A' + pois[i].projections[j].photostationId)) << pois[i].projections[j].cameraId << ": " << pois[i].projections[j].projection << " : " << res[0][i].projections[j].projection << " (" << !(pois[i].projections[j].projection - res[0][i].projections[j].projection) << ") | " << res[1][i].projections[j].projection << " (" << !(pois[i].projections[j].projection - res[1][i].projections[j].projection) << ")" << "" << std::endl;
-		}
-		std::cout << std::endl;
-	}
-    std::cout << "30m new-style rmse error: " << std::sqrt(err / cnt) << std::endl;
-
-    for (int i = 0; i < 6; ++i)
-    {
-        std::cout << i << ": FOCAL:" << job.photostation.cameras[i].intrinsics.focal
-                               << pp.calibratedPhotostations[0].cameras[i].intrinsics.focal
-                               << "(" << (job.photostation.cameras[i].intrinsics.focal[0] / pp.calibratedPhotostations[0].cameras[i].intrinsics.focal[0] - 1.0) * 100.0 << "%)"
-                               << ": PRINCIPAL:" << job.photostation.cameras[i].intrinsics.principal
-                               << pp.calibratedPhotostations[0].cameras[i].intrinsics.principal
-                               << "(" << !(job.photostation.cameras[i].intrinsics.principal - pp.calibratedPhotostations[0].cameras[i].intrinsics.principal) << "px)"
-                               << std::endl;
-    }
-
-    JSONSetter *setter2 = new JSONSetter("pp_final.json");
-    setter2->visit(pp, "reconstruction data");
-    delete setter2;
-#if 0
-    auto reproj = pp.projectToAll(pois_proj);
-    storePois(reproj, "pois_all_proj.txt", "roof_1_", job);
-#endif
-    return 0;
-}
-#else
 
 struct exp_desc
 {
@@ -252,51 +170,241 @@ exp_desc experiments[] =
 {
     {
         std::vector<std::string>({"SPA", "SPB", "SPC", "SPD", "SPE", "SPF", "SPG", "SPH", "SPI"}),
-      PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS,
+      PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS,
       false,
       "f,cx,cy,common,all"
     },
     {
         std::vector<std::string>({"SPA", "SPB", "SPC", "SPD", "SPE", "SPF", "SPG", "SPH", "SPI"}),
-      PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS,
+      PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS,
       false,
       "f,common,all"
     },
     {
         std::vector<std::string>({"SPA", "SPB", "SPC", "SPD", "SPE", "SPF", "SPG", "SPH", "SPI"}),
-      PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS,
+      PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS,
       false,
       "common,all"
     },
     {
         std::vector<std::string>({"SPA", "SPB", "SPC", "SPD", "SPE", "SPF", "SPG", "SPH", "SPI"}),
-      PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS,
+      PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS,
       true,
       "f,cx,cy,separate,all"
     },
     {
         std::vector<std::string>({"SPA", "SPB", "SPC", "SPD", "SPE", "SPF", "SPG", "SPH", "SPI"}),
-      PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS,
+      PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS,
       false,
       "f,cx,cy,common,reduced"
     },
     {
-        std::vector<std::string>({"SPA", "SPB", "SPC"}),
-      PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS,
+        std::vector<std::string>({"SPF", "SPG", "SPH", "SPI"}),
+      PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::TUNE_GPS,
       false,
-      "f,cx,cy,common,reduced"
-    }
+      "common,reduced,trans"
+    },
+    {
+        std::vector<std::string>({"SPF", "SPG", "SPH", "SPI"}),
+      PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS  ,
+      false,
+      "common,reduced"
+    },
+    {
+        std::vector<std::string>({"SPA", "SPB", "SPC", "SPD", "SPE", "SPF", "SPG", "SPH", "SPI"}),
+      PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::TUNE_GPS,
+      false,
+      "01.02.2016,common,all,trans"
+    },
+    {
+        std::vector<std::string>({"SPA", "SPB", "SPC", "SPD", "SPE", "SPF", "SPG", "SPH", "SPI"}),
+      PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::TUNE_GPS | PhotostationPlacerOptimizationType::FOCALS,
+      false,
+      "01.02.2016,f,common,all,trans"
+    },
+    {
+        std::vector<std::string>({"SPA", "SPB", "SPC", "SPD", "SPE", "SPF", "SPG", "SPH", "SPI"}),
+      PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::TUNE_GPS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS,
+      false,
+      "01.02.2016f,principal,common,all,trans"
+    },
+    {
+        std::vector<std::string>({"SPA", "SPB", "SPC", "SPD", "SPE", "SPF", "SPG", "SPH", "SPI"}),
+      PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS ,
+      false,
+      "01.02.2016,common,all"
+    },
+    {
+        std::vector<std::string>({"SPA", "SPB", "SPC", "SPD", "SPE", "SPF", "SPG", "SPH", "SPI"}),
+      PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS,
+      false,
+      "01.02.2016,f,common,all"
+    },
+    {
+        std::vector<std::string>({"SPA", "SPB", "SPC", "SPD", "SPE", "SPF", "SPG", "SPH", "SPI"}),
+      PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS  | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS,
+      false,
+      "01.02.2016f,principal,common,all"
+    },
 };
 
-void validate_pois(std::vector<SceneFeaturePoint*> &poiss, bool tune = false, double tuneOn = 30.0)
-{
 
+struct TransformEstimationFunctor : public FunctionArgs
+{
+	std::vector<SceneFeaturePoint*> refPois;
+	TransformEstimationFunctor(std::vector<SceneFeaturePoint*> &refPois, int projCnt) : FunctionArgs(7, projCnt*2), refPois(refPois)
+	{
+	}
+	void operator() (const double *in, double *out)
+	{
+		int argout = 0;
+		corecvs::Affine3DQ foo;
+		for (int i = 0; i < 3; ++i)
+			foo.shift[i] = in[i];
+		for (int j = 0; j < 4; ++j)
+			foo.rotor[j] = in[3 + j];
+		foo.rotor.normalise();
+		for (auto spt: refPois)
+		{
+			for (auto &op: spt->observations__)
+			{
+				auto& o = op.second;
+				auto cam = o.camera;
+				auto ps  = o.cameraFixture;
+				auto pt  = o.observation;
+				auto ptw = spt->position;
+				
+				ptw = foo.applyInv(ptw);
+				auto err = (ps->reprojectionError(ptw, pt, cam));
+				out[argout++] = err[0];
+				out[argout++] = err[1];
+			}
+		}
+		CORE_ASSERT_TRUE_S(argout == outputs);
+	}
+};
+
+
+corecvs::Affine3DQ optimizeTransform(std::vector<SceneFeaturePoint*> &pois, corecvs::Affine3DQ &init, int projCnt)
+{
+	std::vector<double> in = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0}, out(projCnt*2);
+	LevenbergMarquardt lm(1000);
+	TransformEstimationFunctor tef(pois, projCnt);
+	lm.f = &tef;
+	auto res = lm.fit(in, out);
+	corecvs::Affine3DQ T;
+	for (int i = 0; i < 3; ++i)
+		T.shift[i] = res[i];
+	for (int i = 0; i < 4; ++i)
+		T.rotor[i] = res[3 + i];
+	T.rotor.normalise();
+	return T;
+}
+
+corecvs::Affine3DQ estimateTransform(std::vector<SceneFeaturePoint*> &pois)
+{
+	int pcnt = 0;
+    std::vector<corecvs::Vector3dd> centers, directions, points3d;
+    for (auto spt: pois)
+    {
+        for (auto &op: spt->observations__)
+        {
+            auto& o = op.second;
+            auto cam = o.camera;
+            auto ps  = o.cameraFixture;
+            auto pt  = o.observation;
+            auto ptw = spt->position;
+
+            centers.push_back(ps->getWorldCamera(cam).extrinsics.position);
+            directions.push_back(ps->getWorldCamera(cam).rayFromPixel(pt).a.normalised());
+            points3d.push_back(ptw);
+            pcnt++;
+        }
+    }
+
+    auto hypothesis = corecvs::PNPSolver::solvePNP(centers, directions, points3d);
+    int inliers = 0;
+    int bestHypo = 0;
+    double bestRI = 0.0;
+    for (auto& hypo: hypothesis)
+    {
+        int curInliers = 0;
+        double inlierThreshold = 3.0;
+        double sqerr = 0.0;
+        for (auto spt: pois)
+        {
+            for (auto &op: spt->observations__)
+            {
+                auto&o = op.second;
+                auto cam = o.camera;
+                auto ps  = o.cameraFixture;
+                auto pt  = o.observation;
+                auto ptw = spt->position;
+
+                ptw = hypo.applyInv(ptw);
+
+				auto err = (ps->angleError(ptw, pt, cam));
+                if (err < inlierThreshold)
+				{
+                    curInliers++;
+                    sqerr += err * err;
+				}
+            }
+        }
+        sqerr /= curInliers;
+        if (curInliers > inliers || (curInliers == inliers && sqerr < bestRI))
+        {
+            inliers = curInliers;
+            bestHypo = &hypothesis[0] - &hypo;
+            bestRI = sqerr;
+        }
+    }
+    std::cout << "Error transformation: " << inliers << " " << pois.size() << " degdiff " << std::sqrt(bestRI) << std::endl;
+	std::cout << hypothesis[bestHypo] << std::endl;
+	auto T = optimizeTransform(pois, hypothesis[bestHypo], pcnt);
+	std::cout << T << std::endl;
+    return T;
+}
+
+void validate_pois(std::vector<SceneFeaturePoint*> &poiss, bool tune = false, bool tuneOnlyChess = true, double tuneOn = 30.0)
+{
+    std::vector<SceneFeaturePoint*> pois2;
+	std::set<CameraFixture*> fixtures;
+    for (auto poi: poiss)
+    {
+        if (poi->observations__.size() < 2)
+            continue;
+        double closest = 1e100;
+        std::vector<WPP> observations;
+        for (auto& obsp: poi->observations__)
+        {
+            auto& obs = obsp.second;
+            double dist = !(poi->position - obs.cameraFixture->location.shift);
+            if (dist < closest)
+                closest = dist;
+            fixtures.insert(obs.cameraFixture);
+        }
+        if (closest < tuneOn && ((poi->name[0] == 'C' && poi->name[1] == 'H' && poi->name[2] == 'E') || !tuneOnlyChess))
+            pois2.push_back(poi);
+
+    }
+	corecvs::Vector3dd meanPoint(0.0, 0.0, 0.0);
+	for (auto &p: fixtures)
+		meanPoint += p->location.shift;
+	meanPoint /= fixtures.size();
+
+    auto tes = estimateTransform(pois2);
+    std::cout << "Estimated: "  << tes << std::endl;
+    std::cout << "POI,views,combinations,mean offset,rmse,distClosest,relClosest,distMean,relMean,group" << std::endl;
+	std::string group = tune ? tuneOnlyChess ? "tune_chess" : "tune_all" : "no_tune";
+    int ccnt = 0, acnt = 0;
+    double chessAbsSSE = 0.0, allAbsSSE = 0.0, allRelSSE = 0.0, chessRelSSE = 0.0;
     for (auto poi: poiss)
     {
         if (poi->observations__.size() < 2)
             continue;
         corecvs::MulticameraTriangulator mct;    
-        double closest = 1e100;
+        double closest = 1e100;// mean = (poi->position - meanPoint);
         std::vector<WPP> observations;
         for (auto& obsp: poi->observations__)
         {
@@ -329,38 +437,58 @@ void validate_pois(std::vector<SceneFeaturePoint*> &poiss, bool tune = false, do
                     }
                 auto res = mct2.triangulateLM(mct2.triangulate());
                 pcnt += 1.0;
+                if (tune)
+                    res = tes.apply(res);
                 sqrs += !(res - poi->position) * !(res - poi->position);
                 mean += res;
             } while (std::next_permutation(foo.begin(), foo.end()));
             mean /= pcnt;
             sqrs = std::sqrt(sqrs / pcnt);
-            std::cout << poi->name << " " << cnt << "(" << pcnt << ")" << mean - poi->position << " rmse: " << sqrs << std::endl;
+            if (pcnt == 1 && closest < 30.0)
+			{
+				double abssse = sqrs * sqrs;
+				double md = !(poi->position - meanPoint);
+				double relsse = sqrs * sqrs / md / md;
+				if (poi->name[0] == 'C' && poi->name[1] == 'H' && poi->name[2] == 'E')
+				{
+					chessAbsSSE += abssse;
+					chessRelSSE += relsse;
+					ccnt++;
+				}
+				allAbsSSE += abssse;
+				allRelSSE += relsse;
+				acnt++;
+			}
+            std::cout << poi->name << "," << cnt << "," << pcnt << ",";
+            auto v = mean - poi->position;
+            for (int iii = 0; iii < 3; ++iii)
+                std::cout << v[iii] << ", ";
+            std::cout << sqrs << ", " << closest << "," << sqrs / closest * 100.0 << "%," << !(meanPoint - poi->position) <<", " << sqrs / (!(meanPoint - poi->position)) * 100 << "%" << group << std::endl;
         }
     }
+	std::cout << "VERDICT: CHESS: " << std::sqrt(chessAbsSSE / ccnt) << "m/" << std::sqrt(chessRelSSE / ccnt) * 100.0 << "% ALL: " << std::sqrt(allAbsSSE/acnt) << "m/" << std::sqrt(allRelSSE / ccnt) * 100.0 << "%" << std::endl;
 }
 
-void validate_cams(std::vector<CameraFixture*> fixtures, std::vector<FixtureCamera*> cameras, std::vector<FixtureCamera*> refCameras)
+void validate_cams(std::vector<CameraFixture*> fixtures, std::vector<FixtureCamera*> cameras, std::vector<FixtureCamera*> refCameras, ReconstructionFixtureScene *scene)
 {
     std::unordered_map<FixtureCamera*, std::vector<CameraFixture*>> mmp;
     for (auto cf: fixtures)
         for (auto cam: cf->cameras)
         {
-            std::cout << "Cam " << cam->nameId << " from " << cf->name << std::endl;
             mmp[cam].push_back(cf);
         }
     std::unordered_map<FixtureCamera*, int> map;
     for (auto& cam: cameras)
         map[cam] = &cam - &cameras[0];
 
+    std::cout << "Cam,photostations,calib_focal,new_focal,focal_diff,calib_cx,calib_cy,new_cx,new_cy,diff_principal" << std::endl;
     for (auto camp: mmp)
     {
         auto cam = camp.first;
-     //   if (!camp.second.size())
-       //     continue;
-        std::cout << "Cam " << cam->nameId << "(";
+        std::cout << "Cam " << cam->nameId << ",";
         for (auto fix: camp.second)
         {
-            if (map[cam] && fix && cam && map[cam] < refCameras.size())
+            if (fix && cam && map[cam] < refCameras.size())
             {
             std::cout << fix->name << " ";
             }
@@ -370,7 +498,17 @@ void validate_cams(std::vector<CameraFixture*> fixtures, std::vector<FixtureCame
         double relDiff = focalNew / focalPrev - 1.0;
         Vector2dd principalPrev = refCameras[map[cam]]->intrinsics.principal;
         Vector2dd principalNew = cam->intrinsics.principal;
-        std::cout << focalPrev << ">" << focalNew << "(" << relDiff*100 << "%) | " << principalPrev << ">" << principalNew << " (" << (!(principalPrev-principalNew)) << "px)" << std::endl;
+        std::cout <<"," << focalPrev << "," << focalNew << "," << relDiff*100 << "%," << principalPrev << "," << principalNew << "," << (!(principalPrev-principalNew)) << "" << std::endl;
+		std::cout << "Ps,gps_pos,new_pos,diff,len" << std::endl;
+		for (auto& init: scene->initializationData)
+		{
+			if (init.second.initializationType != PhotostationInitializationType::GPS)
+				continue;
+			auto ps = init.first;
+			auto sh = init.second.initData.shift;
+			auto re = ps->location.shift;
+			std::cout << ps->name << ", " << sh << ", " << re << ", " << sh - re << ", " << !(sh - re) << std::endl;
+		}
     }
 }
 
@@ -535,18 +673,23 @@ void run_exp(exp_desc exp)
 //      if (scene->is3DAligned)
 //  	    fit(PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS, 100);
   //    else
-    //   fit(PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS, 200);
+    //   fit(PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS, 200);
         pp.fit(exp.type, 100);
 
         std::stringstream ss;
         ss << (*pp.scene->placedFixtures.rbegin())->name << "_app.ply";
         pp.dumpMesh(ss.str());
 	}
-	pp.fit(exp.type, 10000);
+	pp.fit(exp.type, 100000);
     pp.dumpMesh("final.ply");
+    JSONSetter setter("psp_finished.json");
+//    directory->accept<JSONSetter>(setter);
+    setter.visit(*pp.scene, "scene");
 
-    validate_pois(poiss, false, 30.0);
-    validate_cams(rfs.fixtures, cameras, refCameras);
+    validate_pois(poiss, false, false, 30.0);
+    validate_pois(poiss, true, false, 30.0);
+    validate_pois(poiss, true, true, 30.0);
+    validate_cams(rfs.fixtures, cameras, refCameras, pp.scene);
     L_ERROR << "FINISHING_EXP";
 }
 
@@ -558,6 +701,36 @@ int main(int argc, char** argv)
     init_opencv_reader_provider();
     init_opencv_descriptors_provider();
     init_opencv_reader_provider();
+
+	if (argc != 2)
+	{
+		std::cout << "Available settings:" << std::endl;
+		for (auto& exp: experiments)
+		{
+			int id = &exp - experiments;
+			std::cout << id << ": " << exp.title << std::endl;
+			std::cout << "\tAllowed ps: ";
+			for (auto& p: exp.allowedPs)
+				std::cout << p << " ";
+			std::cout << std::endl;
+			std::cout << "\tOptimization options:";
+#define IFP(cond, title) \
+			if (!!(exp.type & PhotostationPlacerOptimizationType::cond)) \
+				std::cout << title << " ";
+			IFP(FOCALS, "Focals");
+			IFP(PRINCIPALS, "Principals");
+			IFP(TUNE_GPS, "Tune_gps");
+			IFP(NON_DEGENERATE_ORIENTATIONS, "Non-degenerate_orientations");
+			IFP(DEGENERATE_ORIENTATIONS, "Degenerate_orientations");
+			IFP(NON_DEGENERATE_TRANSLATIONS, "Non-degenerate_translations");
+			IFP(DEGENERATE_TRANSLATIONS, "Degenerate translations");
+			IFP(POINTS, "Points");
+			std::cout << std::endl;
+			std::cout << "\tSeparated cameras: " << (exp.separate_cameras ? "True" : "False") << std::endl;
+			std::cout << std::endl;
+		}
+		return 0;
+	}
 
     int id = std::stoi(std::string(argv[1]));
     std::cout << "Running " << id << std::endl;
