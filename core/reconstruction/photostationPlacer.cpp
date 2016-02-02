@@ -364,7 +364,6 @@ void corecvs::PhotostationPlacer::prepareNonLinearOptimizationData()
     gpsConstraintNum = psNum = camNum = 0;
     ptNum = projNum = 0;
     scalerPoints = 1.0;
-    scalerGps = 1.0;
 
     psNum = (int)scene->placedFixtures.size();
 
@@ -389,8 +388,12 @@ void corecvs::PhotostationPlacer::prepareNonLinearOptimizationData()
 
     buildDependencyList();
     CORE_ASSERT_TRUE_S(sparsity.size() == inputNum);
+    
+    scalerGps = 6e-5/.001*projNum/psNum;
+	std::cout << "PT/PRJ: " << ((double)ptNum) / projNum << std::endl;
+	std::cout << "GPS scaler: " << scalerGps << std::endl;
 
-    std::cout << "Finally: " << inputNum << ">" << outputNum << " problem, " << ptNum << " points, " << psNum << " fixtures," << camNum << " cameras" << projNum << " projections" << std::endl;
+    std::cout << "Finally: " << inputNum << ">" << outputNum << " problem, " << ptNum << " points, " << psNum << " fixtures," << camNum << " cameras" << projNum << " projections, " << gpsConstraintNum << " gps constraints" <<  std::endl;
 }
 
 
@@ -411,8 +414,6 @@ int corecvs::PhotostationPlacer::getInputNum()
         input += camNum * 2);
     IF(POINTS,
         input += ptNum * 3);
-    IF(TUNE_GPS,
-        input += gpsConstraintNum);
     return input;
 }
 
@@ -435,7 +436,8 @@ void corecvs::PhotostationPlacer::buildDependencyList()
     sparsity.resize(inputNum);
     revDependency.resize(projNum);
 
-    // First step - build projections list for features
+    // First step - build projections list for feature
+    // CORE_ASSERT_TRUE_S(argin == getInputNum() - getErrorComponentsPerPoint() * ptNum);s
     for (auto& t: scene->trackedFeatures)
     {
         for (auto& p: t->observations__)
@@ -565,6 +567,7 @@ void corecvs::PhotostationPlacer::buildDependencyList()
                 ++argin;
             }
         });
+    CORE_ASSERT_TRUE_S(argin == getInputNum() - getErrorComponentsPerPoint() * ptNum);
     // 3d points
     IF(POINTS,
         for (int i = 0; i < ptNum; ++i)
@@ -772,7 +775,7 @@ void corecvs::PhotostationPlacer::fit(const PhotostationPlacerOptimizationType &
     lm.maxIterations = num;
     lm.trace = false;
     std::vector<double> input(getInputNum());
-    std::vector<double> out(getReprojectionCnt());
+    std::vector<double> out(getOutputNum());
     lm.useConjugatedGradient = false;
     lm.conjugatedGradientIterations = std::max(100, (int)( 0.001 * input.size()));
     writeOrientationParams(&input[0]);
@@ -780,6 +783,28 @@ void corecvs::PhotostationPlacer::fit(const PhotostationPlacerOptimizationType &
     readOrientationParams(&res[0]);
 
     getErrorSummaryAll();
+    static int cnt = 0;
+    cnt++;
+#if 0
+    if (cnt == 3)
+	{
+		std::vector<int> idxs(out.size());
+		for (int i = 0; i < out.size(); ++i)
+			idxs[i] = i;
+		orient(&res[0], &out[0], idxs);
+		std::ofstream of1, of2;
+		of1.open("errors.proj.csv", std::ios_base::out);
+		for (auto ptr: scene->trackedFeatures)
+		{
+			for (auto obs: ptr->observations__)
+			{
+				auto pd = obs.first.u->reprojectionError(ptr->reprojectedPosition, obs.second.observation, obs.first.v);
+				of1 << pd[0] << ", " << pd[1] << std::endl;
+			}
+		}
+		exit(0);
+	}
+#endif
     scene->validateAll();
 }
 
@@ -841,8 +866,28 @@ void corecvs::PhotostationPlacer::ParallelErrorComputator::operator() (const cor
 
 void corecvs::PhotostationPlacer::computeErrors(double out[], const std::vector<int> &idxs)
 {
-    ParallelErrorComputator computator(this, idxs, out);
-    corecvs::parallelable_for(0, (int)idxs.size() / getErrorComponentsPerPoint(), 16, computator, true);
+	int lastProj = 0;
+	int errSize = getErrorComponentsPerPoint();
+	std::vector<int> reprojectionIdx;
+	std::vector<int> gpsIdx;
+	for (auto& idx: idxs)
+		if (idx < projNum)
+			reprojectionIdx.push_back(idx);
+		else
+			gpsIdx.push_back(idx);
+	lastProj = reprojectionIdx.size();
+    ParallelErrorComputator computator(this, reprojectionIdx, out);
+    corecvs::parallelable_for(0, lastProj / errSize, 16, computator, true);
+    int idx = lastProj;
+    for (auto& id: gpsIdx)
+	{
+		int psId = id - projNum;
+		auto ps = scene->placedFixtures[psId];
+		CORE_ASSERT_TRUE_S(scene->initializationData[ps].initializationType == PhotostationInitializationType::GPS);
+		auto diff = ps->location.shift - scene->initializationData[ps].initData.shift;
+		auto foo = diff & (scene->initializationData[ps].positioningAccuracy.inv() * diff);
+		out[idx++] = foo * scalerGps;
+	}
 }
 
 std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> corecvs::PhotostationPlacer::getPossibleTracks(CameraFixture *psA)
