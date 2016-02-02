@@ -55,9 +55,9 @@ public:
     static double mse(RGB48Buffer *img1, RGB48Buffer *img2, int border = 0);
     static double mse(G12Buffer *img1, G12Buffer *img2, int border = 0);
 
-    static double Ymse(G12Buffer *bayer, RGB48Buffer *debayer, int border, int bits, G12Buffer*y, G12Buffer*y2, int& max, Vector2d<int>& maxpos, double& errint);
+    static double Ymse(G12Buffer *bayer, RGB48Buffer *debayer, int border, int bits);
 
-    static double Yrmsd(G12Buffer *bayer, RGB48Buffer *debayer, int border, int bits, G12Buffer*y, G12Buffer*y2, int& max, Vector2d<int>& maxpos, double& errint);
+    static double Yrmsd(G12Buffer *bayer, RGB48Buffer *debayer, int border, int bits);
 
 };
 }

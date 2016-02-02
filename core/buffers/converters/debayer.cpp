@@ -2,6 +2,7 @@
 #include "labConverter.h"
 #include "math/fftw/fftwWrapper.h"
 
+
 using std::pow;
 using std::max;
 using std::min;
@@ -413,9 +414,9 @@ void Debayer::borderInterpolate(int radius, RGB48Buffer *result)
 {
     // process border using Nearest Neighbor interpolation
     // for green color, linear interpolation was used
-    uint16_t r = 0;
-    uint16_t b = 0;
-    uint16_t g = 0;
+    uint32_t r = 0;
+    uint32_t b = 0;
+    uint32_t g = 0;
 
     // jPartial means interpolate cols [0 through R) and [W - R, W)
     int jPartial[4] = { 0, radius, mBayer->w - radius, mBayer->w };
@@ -536,35 +537,49 @@ void Debayer::borderInterpolate(int radius, RGB48Buffer *result)
 
 }
 
-void Debayer::getYChannel(G12Buffer * output)
-{
-    int F[7][7] = {
-        { 0,  0,  1,   2,   1,   0,  0 },
-        { 0, -1, -14, -25, -14, -1,  0 },
-        { 1, -14, 26,  84,  26, -14, 1 },
-        { 2, -25, 84,  224, 84, -25, 2 },
-        { 1, -14, 26,  84,  26, -14, 1 },
-        { 0, -1, -14, -25, -14, -1,  0 },
-        { 0,  0,  1,   2,   1,   0,  0 },
+double F(int i, int j) {
+    const double b = 4. / 9;
+    const double a = 1. / 4;
+    double f[4][4] = {
+        {  224 + b,  84,     -25 + b, 2     },
+        {  84,       26 + a, -14,     1 + a },
+        { -25 + b,  -14,     -1 + b,  0     },
+        {  2,        1 + a,   0,      a     },
     };
-    int64_t sum;
-    for (int i = 0; i < mBayer->h; i++)
+
+    if (i < 3)
+        i = 3 - i;
+    else
+        i = i - 3;
+
+    if (j < 3)
+        j = 3 - j;
+    else
+        j = j - 3;
+    
+    return f[i][j];
+}
+
+void Debayer::getYChannel(AbstractBuffer<double, int> * output)
+{
+    const int sz = 3;
+    const double divisor = 464.0;
+
+    double sum;
+    for (int i = 3; i < mBayer->h - 3; i++)
     {
-        for (int j = 0; j < mBayer->w; j++)
+        for (int j = 3; j < mBayer->w - 3; j++)
         {
-            // TODO: replace this with borderInterpolate()-like loop to avoid evaluating 5 conditions at each pixel
-            int sz = (i < 3 || j < 3 || i >= mBayer->h - 3 || j >= mBayer->w - 3) ? 0 : 3;
-            int divisor = sz ? 464 : 224;
             sum = 0;
             for (int k = -sz; k <= sz; k++)
             {
                 for (int l = -sz; l <= sz; l++)
                 {
-                    sum += mBayer->element(i + k, j + l) * F[k + 3][l + 3];
+                    sum += mBayer->element(i + k, j + l) * F(k + 3, l + 3);
                 }
             }
 
-            output->element(i, j) = clip(sum / divisor);
+            output->element(i, j) = sum / divisor;
         }
     }
 }

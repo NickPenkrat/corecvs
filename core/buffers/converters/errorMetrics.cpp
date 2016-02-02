@@ -74,51 +74,37 @@ double ErrorMetrics::rmsd(G12Buffer *img1, G12Buffer *img2, int border)
     return MSE == -1 ? -1 : sqrt(MSE);
 }
 
-double ErrorMetrics::Ymse(G12Buffer *bayer, RGB48Buffer *debayer, int border, int bits, G12Buffer*y, G12Buffer*y2, int& max, Vector2d<int>& maxpos, double& errint)
+double ErrorMetrics::Ymse(G12Buffer *bayer, RGB48Buffer *debayer, int border, int bits)
 {
     if (bayer->w != debayer->w || bayer->h != debayer->h)
         return -1;
 
     double err = 0;
     
-    // this could be slow
+    // this can be slow
 
     Debayer d(bayer, bits);
+    AbstractBuffer<double, int> *y = new AbstractBuffer<double, int>(bayer->getSize());
     d.getYChannel(y);
-
-    //int max = 0;
 
     for (int i = border; i < bayer->h - border; i++)
     {
         for (int j = border; j < bayer->w - border; j++)
         {
             double orig = y->element(i, j);
-            auto elem = debayer->element(i, j);
+            RGBTColor<uint16_t> elem = debayer->element(i, j);
             double deb = (116.0 * elem.r() + 232.0 * elem.g() + 116.0 * elem.b()) / 464.0;
-            double debint = debayer->element(i, j).yh();
-            double abserr = abs(orig - deb);
-            double abserrint = abs(orig - debint);
-            double localerr = pow(abserr, 2);
-            double localerrint = pow(abserrint, 2);
-            
-            if (max < abserr) {
-                max = abserr;
-                maxpos[maxpos.FIELD_Y] = i;
-                maxpos[maxpos.FIELD_X] = j;
-            }
-
-            err += localerr;
-            errint += pow(y->element(i, j) - debayer->element(i, j).yh(),2);
-
-            y2->element(i, j) = debayer->element(i, j).yh();
+            err += pow(orig - deb, 2);
         }
     }
-    errint /= ((bayer->h - 2 * border) * (bayer->w - 2 * border));
+
+    delete_safe(y);
+
     return err / ((bayer->h - 2 * border) * (bayer->w - 2 * border));
 }
 
-double ErrorMetrics::Yrmsd(G12Buffer *bayer, RGB48Buffer *debayer, int border, int bits, G12Buffer*y, G12Buffer*y2, int& max, Vector2d<int>& maxpos, double& errint)
+double ErrorMetrics::Yrmsd(G12Buffer *bayer, RGB48Buffer *debayer, int border, int bits)
 {
-    double MSE = Ymse(bayer, debayer, border, bits, y, y2, max, maxpos, errint);
+    double MSE = Ymse(bayer, debayer, border, bits);
     return sqrt(MSE);
 }
