@@ -975,7 +975,7 @@ inline int32_t Debayer::weightedBayerAvg(const vector<Vector2d32>& coords, const
     return (div == 0) ? 0 : result / div;
 }
 
-inline uint8_t Debayer::colorFromBayerPos(uint i, uint j, bool rggb)
+uint8_t Debayer::colorFromBayerPos(uint i, uint j, bool rggb)
 {
     if (rggb)   // r, g1, g2, b
         return   ((j ^ (mBayerPos & 1)) & 1) | (((i ^ ((mBayerPos & 2) >> 1)) & 1) << 1);

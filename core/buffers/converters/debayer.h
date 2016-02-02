@@ -65,7 +65,9 @@ public:
     */
     void fromRgb(RGB48Buffer *inRgb);
 
-    void        getYChannel(AbstractBuffer<double,int> *output);
+    void getYChannel(AbstractBuffer<double,int> *output);
+
+    uint8_t colorFromBayerPos(uint i, uint j, bool rggb = true);
 private:
     Vector3dd   mScaleMul   = { 1, 1, 1 };
     uint16_t    mBlack      = 0;
@@ -132,7 +134,6 @@ private:
     inline int32_t weightedBayerAvg(const vector<Vector2d32>& coords, const vector<int>& coeffs = vector<int>());
     inline int32_t weightedBayerAvg(const Vector2d32& coords);
 
-    inline uint8_t colorFromBayerPos(uint i, uint j, bool rggb = true);
 };
 
 } // namespace corecvs
