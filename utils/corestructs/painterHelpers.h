@@ -55,4 +55,6 @@ void uniteAnaglyph (const QImage *left, const QImage *right, QImage *result, uin
 
 QRect fixedAspectRescaleRect (QRect source, QRect target);
 
+QImage *checkerBoard(int h, int w, int square);
+
 #endif /* PAINTERHELPERS_H_ */

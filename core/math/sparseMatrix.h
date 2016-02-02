@@ -41,7 +41,10 @@ public:
     explicit operator sparse_matrix_t() const;
     SparseMatrix(const sparse_matrix_t &mklSparse);
 #endif
-
+#if 0
+    bool isValid(bool full = false) const;
+    void sort();
+#endif
     /**
      * \brief Accesses element.
      * Note that it does not return reference and

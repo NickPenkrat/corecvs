@@ -48,6 +48,39 @@ public:
 
     /* Ray to point */
     Vector3dd                 observDir;
+
+    double &x() { return observation.x(); }
+    double &y() { return observation.y(); }
+
+    std::string getPointName();
+
+private:
+    FixtureCamera *getCameraById(FixtureCamera::IdType id);
+
+public:
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+
+        visitor.visit(observDir   , Vector3dd(0.0) , "name"  );
+        visitor.visit(observation , Vector2dd(0.0)  , "observation"  );
+        visitor.visit(accuracy    , Vector2dd(0.0)  , "accuracy"  );
+        visitor.visit(isKnown     , false  , "isKnown" );
+
+        FixtureCamera::IdType id = 0;
+        if (camera != NULL) {
+            id = camera->getObjectId();
+        }
+        visitor.visit(id, (uint64_t)0, "camera" );
+
+        if (visitor.isLoader())
+        {
+            camera = getCameraById(id);
+        }
+        //camera->setObjectId(id);
+    }
+
+
 };
 
 template<typename U, typename V>
@@ -115,6 +148,14 @@ public:
 
     PointType type;
 
+    void setPosition(const Vector3dd &position, PointType type = POINT_USER_DEFINED)
+    {
+        this->position = position;
+        this->hasKnownPosition = true;
+        this->type = type;
+    }
+
+
     /** Observation related block */
     typedef std::unordered_map<FixtureCamera *, SceneObservation> ObservContainer;
     ObservContainer observations;
@@ -143,6 +184,48 @@ public:
         position = matrix * position + translate;
     }
 
+    /* Let it be so far like this */
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+
+        visitor.visit(name                       , std::string("") , "name"  );
+        visitor.visit(position                   , Vector3dd(0.0)  , "position"  );
+        visitor.visit(hasKnownPosition           , false           , "hasKnownPosition"  );
+        visitor.visit(reprojectedPosition        , Vector3dd(0.0)  , "reprojectedPosition"  );
+        visitor.visit(hasKnownReprojectedPosition, false           , "hasKnownReprojectedPosition");
+        visitor.visit((int &)type, 0, "type");
+        visitor.visit(color, RGBColor::Black(), "color");
+
+
+        int observeSize = observations.size();
+        visitor.visit(observeSize, 0, "observations.size");
+
+        if (! visitor.isLoader()) {
+            int i = 0;
+             /* We don't load observations here*/
+            for(auto &it : observations)
+            {
+                SceneObservation  obseve = it.second;
+
+                char buffer[100];
+                snprintf2buf(buffer, "obsereve[%d]", i);
+                visitor.visit(obseve, SceneObservation(), buffer);
+                i++;
+            }
+        } else {
+            for (int i = 0; i < observeSize; i++)
+            {
+                char buffer[100];
+                snprintf2buf(buffer, "obsereve[%d]", i);
+                SceneObservation observe;
+                observe.featurePoint = this;
+                visitor.visit(observe, SceneObservation(), buffer);
+
+                observations[observe.camera] = observe;
+            }
+        }
+    }
 
 };
 

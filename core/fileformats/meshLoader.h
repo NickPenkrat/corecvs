@@ -1,5 +1,5 @@
-#ifndef MESHLOADER_H
-#define MESHLOADER_H
+#ifndef MESH_LOADER_H
+#define MESH_LOADER_H
 /**
  * \file ppmLoader.h
  * \brief This is a header for PPM file format reader
@@ -34,4 +34,4 @@ public:
 
 } // namespace corecvs
 
-#endif // MESHLOADER_H
+#endif // MESH_LOADER_H

@@ -67,6 +67,8 @@ public slots:
 
     void            fitToggled();
     void            setFitWindow(bool flag = true);
+    void            setCompactStyle(bool flag = true);
+
 
     void            setInfoString(QString info)         { mUi->infoValueLabel->setText(info); }
 
