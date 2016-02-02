@@ -875,7 +875,7 @@ void corecvs::PhotostationPlacer::computeErrors(double out[], const std::vector<
 			reprojectionIdx.push_back(idx);
 		else
 			gpsIdx.push_back(idx);
-	lastProj = reprojectionIdx.size();
+	lastProj = (int)reprojectionIdx.size();
     ParallelErrorComputator computator(this, reprojectionIdx, out);
     corecvs::parallelable_for(0, lastProj / errSize, 16, computator, true);
     int idx = lastProj;

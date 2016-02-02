@@ -417,7 +417,7 @@ void validate_pois(std::vector<SceneFeaturePoint*> &poiss, bool tune = false, bo
         }
         auto res = mct.triangulateLM(mct.triangulate());
 
-        int n = observations.size();
+        int n = (int)observations.size();
         for (int cnt = 2; cnt <= observations.size(); ++cnt)
         {
             std::vector<bool> foo(n);
@@ -628,7 +628,7 @@ void run_exp(exp_desc exp)
         sfp->name = poi.label;
         for (auto o: poi.projections)
         {
-            int camId = separate_cameras ? o.cameraId + CP  * o.photostationId : o.cameraId;
+            //int camId = separate_cameras ? o.cameraId + CP  * o.photostationId : o.cameraId;
             SceneObservation obs;
             obs.camera = cameras[o.cameraId];
             obs.cameraFixture = photostations[o.photostationId];
@@ -745,4 +745,4 @@ int main(int argc, char** argv)
 
     return 0;
 }
-#endif
+//#endif
