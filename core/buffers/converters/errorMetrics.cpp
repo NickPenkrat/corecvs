@@ -1,6 +1,6 @@
 #include "errorMetrics.h"
 #include "debayer.h"
-
+#include "ppmLoader.h"
 using namespace corecvs;
 
 double ErrorMetrics::mse(RGB48Buffer *img1, RGB48Buffer *img2, int border)
@@ -74,34 +74,37 @@ double ErrorMetrics::rmsd(G12Buffer *img1, G12Buffer *img2, int border)
     return MSE == -1 ? -1 : sqrt(MSE);
 }
 
-double ErrorMetrics::Ymse(G12Buffer *bayer, RGB48Buffer *debayer, int border)
+double ErrorMetrics::Ymse(G12Buffer *bayer, RGB48Buffer *debayer, int border, int bits)
 {
     if (bayer->w != debayer->w || bayer->h != debayer->h)
         return -1;
 
     double err = 0;
     
-    // this could be slow
+    // this can be slow
 
-    Debayer d(bayer);
-    G12Buffer *y = new G12Buffer(bayer->h, bayer->w, false);
+    Debayer d(bayer, bits);
+    AbstractBuffer<double, int> *y = new AbstractBuffer<double, int>(bayer->getSize());
     d.getYChannel(y);
 
     for (int i = border; i < bayer->h - border; i++)
     {
         for (int j = border; j < bayer->w - border; j++)
         {
-            err += pow((int32_t)y->element(i, j) - debayer->element(i, j).yh(), 2);
+            double orig = y->element(i, j);
+            RGBTColor<uint16_t> elem = debayer->element(i, j);
+            double deb = (116.0 * elem.r() + 232.0 * elem.g() + 116.0 * elem.b()) / 464.0;
+            err += pow(orig - deb, 2);
         }
     }
 
     delete_safe(y);
-    
+
     return err / ((bayer->h - 2 * border) * (bayer->w - 2 * border));
 }
 
-double ErrorMetrics::Yrmsd(G12Buffer *bayer, RGB48Buffer *debayer, int border)
+double ErrorMetrics::Yrmsd(G12Buffer *bayer, RGB48Buffer *debayer, int border, int bits)
 {
-    double MSE = Ymse(bayer, debayer, border);
+    double MSE = Ymse(bayer, debayer, border, bits);
     return sqrt(MSE);
 }

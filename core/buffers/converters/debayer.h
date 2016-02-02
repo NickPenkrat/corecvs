@@ -65,7 +65,7 @@ public:
     */
     void fromRgb(RGB48Buffer *inRgb);
 
-    void        getYChannel(G12Buffer *output);
+    void        getYChannel(AbstractBuffer<double,int> *output);
 private:
     Vector3dd   mScaleMul   = { 1, 1, 1 };
     uint16_t    mBlack      = 0;
