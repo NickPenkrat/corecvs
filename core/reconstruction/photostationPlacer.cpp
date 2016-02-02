@@ -239,7 +239,7 @@ corecvs::Affine3DQ corecvs::PhotostationPlacer::staticInit(CameraFixture *fixtur
     auto hypothesis = corecvs::PNPSolver::solvePNP(centers, directions, points3d);
     int inliers = 0;
     int bestHypo = 0;
-    for (auto hypo: hypothesis)
+    for (auto& hypo: hypothesis)
     {
         fixture->location = hypo;
         int curInliers = 0;

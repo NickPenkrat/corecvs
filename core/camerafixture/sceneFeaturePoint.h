@@ -87,8 +87,15 @@ template<typename U, typename V>
 class WildcardablePointerPair
 {
 public:
+#ifndef WIN32 // Sometime in future (when we switch to VS2015 due to https://msdn.microsoft.com/library/hh567368.apx ) we will get constexpr on windows
     static constexpr U* UWILDCARD = nullptr;
     static constexpr V* VWILDCARD = nullptr;
+#else
+	static U* const UWILDCARD;
+	static V* const VWILDCARD;
+#endif
+	typedef U* UTYPE;
+	typedef V* VTYPE;
 
     WildcardablePointerPair(U* u = UWILDCARD, V* v = VWILDCARD) : u(u), v(v)
     {

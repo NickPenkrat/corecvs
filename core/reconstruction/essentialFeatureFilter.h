@@ -3,6 +3,7 @@
 
 #include <random>
 #include <vector>
+#include <array>
 
 #include "matrix33.h"
 #include "essentialEstimator.h"
