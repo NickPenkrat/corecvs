@@ -22,6 +22,8 @@ public:
     virtual ~PatternDetector() {}
 
     virtual void setStatistics(corecvs::Statistics * /*stats*/ = NULL) {}
+
+    virtual size_t detectPatterns(corecvs::RGB24Buffer &);
 };
 
 #endif

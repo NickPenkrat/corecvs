@@ -78,11 +78,10 @@ bool ChessboardDetector::detectPattern(corecvs::RGB24Buffer &buffer)
     return detectPattern(grayscale);
 }
 
-bool ChessboardDetector::detectPattern(DpImage &buffer)
+bool ChessboardDetector::detectPatternCandidates(DpImage &buffer, std::vector<std::vector<std::vector<corecvs::Vector2dd>>> &boards)
 {
     if (stats != NULL) stats->startInterval();
 
-    ChessBoardDetectorMode mode =  getMode(*this);
     corners.clear();
     bestPattern = RectangularGridPattern();
 
@@ -97,8 +96,6 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
 
     if (stats != NULL) stats->prefix = prefix;
     if (stats != NULL) stats->resetInterval("Corners");
-
-    std::vector<std::vector<std::vector<corecvs::Vector2dd>>> boards;
 
     if (stats != NULL) {
         prefix = stats->prefix;
@@ -115,7 +112,15 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
         return false;
 
     if (stats != NULL) stats->resetInterval("Assemble");
+    return true;
+}
 
+bool ChessboardDetector::detectPattern(DpImage &buffer)
+{
+    ChessBoardDetectorMode mode =  getMode(*this);
+    std::vector<std::vector<std::vector<corecvs::Vector2dd>>> boards;
+    if(!detectPatternCandidates(buffer, boards))
+        return false;
     bool /*transposed = false,*/ found = false;
 
     bool checkW = !!(mode & ChessBoardDetectorMode::FIT_WIDTH);
@@ -313,51 +318,21 @@ Statistics *ChessboardDetector::getStatistics()
     return stats;
 }
 
-size_t ChessboardDetector::detectPatterns(corecvs::RGB24Buffer &source)
+size_t ChessboardDetector::detectPatterns(corecvs::RGB24Buffer &buffer)
 {
-    DpImage buffer(source.h, source.w);
-    buffer.binaryOperationInPlace(source, [](const double & /*a*/, const corecvs::RGBColor &b) {
+    DpImage grayscale(buffer.h, buffer.w);
+    grayscale.binaryOperationInPlace(buffer, [](const double & /*a*/, const corecvs::RGBColor &b) {
         return b.yd() / 255.0;
     });
+    return detectPatterns(grayscale);
+}
 
-    if (stats != NULL) stats->startInterval();
-
-    ChessBoardDetectorMode mode = getMode(*this);
-    corners.clear();
-    bestPattern = RectangularGridPattern();
-
-    std::string prefix;
-    if (stats != NULL) {
-        prefix = stats->prefix;
-        stats->prefix = "Corners -> " + stats->prefix;
-        detector.setStatistics(stats);
-    }
-
-    detector.detectCorners(buffer, corners);
-
-    if (stats != NULL) stats->prefix = prefix;
-    if (stats != NULL) stats->resetInterval("Corners");
-
-    std::cout << "Found " << corners.size() << " corners" << std::endl;
-
+size_t ChessboardDetector::detectPatterns(corecvs::DpImage &buffer)
+{
+    ChessBoardDetectorMode mode =  getMode(*this);
     std::vector<std::vector<std::vector<corecvs::Vector2dd>>> boards;
-
-    if (stats != NULL) {
-        prefix = stats->prefix;
-        stats->prefix = "Assembler -> " + stats->prefix;
-        assembler.setStatistics(stats);
-    }
-    BoardAlignerParams params(*this);
-    sharedGenerator->flushCache();
-    BoardAligner aligner(params, sharedGenerator);
-    assembler.assembleBoards(corners, boards, &aligner, &buffer);
-    if (stats != NULL) stats->prefix = prefix;
-    std::cout << "Assembled " << boards.size() << " boards" << std::endl;
-
-    if (!boards.size())
+    if(!detectPatternCandidates(buffer, boards))
         return false;
-
-    if (stats != NULL) stats->resetInterval("Assemble");
 
     bool checkW = !!(mode & ChessBoardDetectorMode::FIT_WIDTH);
     bool checkH = !!(mode & ChessBoardDetectorMode::FIT_HEIGHT);
@@ -420,7 +395,6 @@ size_t ChessboardDetector::detectPatterns(corecvs::RGB24Buffer &source)
             auto detectedPattern = result;
             allPatterns.emplace_back(detectedPattern);
         }
-        drawDebugInfo(source);
     }
     return allPatterns.size();
 }

@@ -53,7 +53,9 @@ public:
     void setStatistics(Statistics *stats);
     Statistics *getStatistics();
 
-    size_t detectPatterns(corecvs::RGB24Buffer &source);
+    size_t detectPatterns(corecvs::RGB24Buffer &buffer);
+    size_t detectPatterns(corecvs::DpImage     &buffer);
+
     void getPatterns(std::vector<corecvs::ObservationList> &patterns);
 
     void drawCorners(corecvs::RGB24Buffer &image);
@@ -71,6 +73,8 @@ private:
 
 /* Some statistics */
     Statistics *stats;
+
+    bool detectPatternCandidates(DpImage &buffer, std::vector<std::vector<std::vector<corecvs::Vector2dd>>> &boards);
 
 };
 
