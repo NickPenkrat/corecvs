@@ -204,7 +204,7 @@ TEST_F(CalibrationTest, testDetectDistChessBoard)
 
     std::cout << job.observations[0][1].sourcePattern[0].v() << ", "
               << job.observations[0][1].sourcePattern[0].u() << std::endl;
-    flushall();
+    std::cout.flush();
 
     CORE_ASSERT_DOUBLE_EQUAL_EP(job.observations[0][1].sourcePattern[0].v(), 266.2, 1e-1, ("Point 0 has wrong position V"));
 }
