@@ -184,6 +184,9 @@ public:
         position = matrix * position + translate;
     }
 
+    bool hasObservation(FixtureCamera *cam);
+    SceneObservation *getObservation(FixtureCamera *cam);
+
     /* Let it be so far like this */
     template<class VisitorType>
     void accept(VisitorType &visitor)

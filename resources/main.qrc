@@ -99,6 +99,7 @@
         <file>photostation_reorient.png</file>
         <file>inbox_download.png</file>
         <file>inbox_upload.png</file>
+        <file>screwdriver.png</file>
     </qresource>
     <qresource prefix="/new/colors">
         <file>colors/color_blue.png</file>
