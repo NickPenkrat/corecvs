@@ -174,7 +174,7 @@ public:
 
     inline double yh() const
     {
-        return (116 * r() + 232 * g() + 116 * b()) / 464;
+        return (116. * r() + 232. * g() + 116. * b()) / 464.;
     }
 
     inline int32_t y() const

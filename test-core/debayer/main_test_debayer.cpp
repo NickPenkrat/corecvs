@@ -57,7 +57,7 @@ void performTest(int64_t &r_sum, int64_t &g_sum, int64_t &b_sum, RGB48Buffer *re
 TEST(Debayer, colorTestYchannel)
 {
     FILE* out = fopen("out.csv", "w");
-    fprintf(out, "#,RMSD (double),RMSD,улучшение,maxabs,коорд. maxabs\n");
+    fprintf(out, "#, RMSD (double), RMSD, improvement, maxabs, coords maxabs\n");
 
     PPMLoader *ppmLoader = new PPMLoader();
     G12Buffer *ppm = ppmLoader->load("data/testdata/test_debayer.pgm");
@@ -136,8 +136,9 @@ TEST(Debayer, colorTestAHD)
 
 TEST(Debayer, bayerShiftTest) 
 {
-    RGB48Buffer * r = PPMLoader().loadRGB("data/testdata/test_ppm.ppm", nullptr);
+    RGB48Buffer * r = PPMLoader().loadRGB("data/testdata/test_ppm.ppm");
     G12Buffer * g = new G12Buffer(r->getSize(), false);
+
     for (int k = 0; k < 4; k++) {
         for (int i = 0; i < r->h; i++) {
             for (int j = 0; j < r->w; j++) {
@@ -148,4 +149,6 @@ TEST(Debayer, bayerShiftTest)
         printf("Bayer phase %d, RMSD is: %lf\n", k, ErrorMetrics::Yrmsd(g, r, 3, 8));
     }
 
+    delete_safe(g);
+    delete_safe(r);
 }

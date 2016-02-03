@@ -27,12 +27,12 @@ bool PPMLoader::acceptsFile(string name)
 
 G12Buffer* PPMLoader::load(string name)
 {
-    return load(name, nullptr);
+    return loadMeta(name, nullptr);
 }
 
-G12Buffer* PPMLoader::load(const string& name, MetaData *metadata)
+G12Buffer* PPMLoader::loadMeta(const string& name, MetaData *metadata)
 {
-    if (metadata != NULL) {
+    if (metadata != nullptr) {
         DOTRACE(("Will load the file %s as PPM with metadata\n ", name.c_str()));
     }
     else {
@@ -51,10 +51,6 @@ RGB48Buffer* PPMLoader::loadRGB(const string& name, MetaData *metadata)
 
 G12Buffer* PPMLoader::g12BufferCreateFromPGM(const string& name, MetaData *meta)
 {
-    FILE      *fp = NULL;
-    uint8_t   *charImage = NULL;
-    G12Buffer *result = NULL;
-
     // PPM headers variable declaration
     unsigned long int i, j;
     unsigned long int h, w;
@@ -63,14 +59,12 @@ G12Buffer* PPMLoader::g12BufferCreateFromPGM(const string& name, MetaData *meta)
     int shiftCount = 0;
 
     // open file for reading in binary mode
-    fp = fopen(name.c_str(), "rb");
-
-    if (fp == nullptr)
-    {
+    FILE *fp = fopen(name.c_str(), "rb");
+    if (fp == nullptr) {
         return nullptr;
     }
 
-    if(!readHeader(fp, &h, &w, &maxval, &type, meta) || (type != 5 && type != 6))
+    if (!readHeader(fp, &h, &w, &maxval, &type, meta) || (type != 5 && type != 6))
     {
         fclose(fp);
         return nullptr;
@@ -97,13 +91,13 @@ G12Buffer* PPMLoader::g12BufferCreateFromPGM(const string& name, MetaData *meta)
             calcWhite = true;
     }
 
-    result = new G12Buffer(h, w, false);
+    G12Buffer *result = new G12Buffer(h, w, false);
 
     // image size in bytes
     uint64_t size = (maxval < 0x100 ? 1 : 2) * w * h;
 
     // for reading we don't need to account for possible system byte orders, so just use a 8bit buffer
-    charImage = new uint8_t[size];
+    uint8_t *charImage = new uint8_t[size];
 
     if (fread(charImage, 1, size, fp) == 0)
     {
@@ -152,19 +146,13 @@ G12Buffer* PPMLoader::g12BufferCreateFromPGM(const string& name, MetaData *meta)
         meta->at("white").push_back(white);
 
 done:
-    if (fp != NULL)
-        fclose(fp);
-    if (charImage != NULL)
-        deletearr_safe(charImage);
+    fclose(fp);
+    deletearr_safe(charImage);
     return result;
 }
 
 RGB48Buffer* PPMLoader::rgb48BufferCreateFromPPM(const string& name, MetaData *meta)
 {
-    FILE      *fp = NULL;
-    uint8_t   *charImage = NULL;
-    RGB48Buffer *result = NULL;
-
     // PPM headers variable declaration
     unsigned long int i, j;
     unsigned long int h, w;
@@ -173,14 +161,13 @@ RGB48Buffer* PPMLoader::rgb48BufferCreateFromPPM(const string& name, MetaData *m
     int8_t c;
 
     // open file for reading in binary mode
-    fp = fopen(name.c_str(), "rb");
-
+    FILE *fp = fopen(name.c_str(), "rb");
     if (fp == nullptr)
     {
         return nullptr;
     }
 
-    if(!readHeader(fp, &h, &w, &maxval, &type, meta) || (type != 6))
+    if (!readHeader(fp, &h, &w, &maxval, &type, meta) || (type != 6))
     {
         fclose(fp);
         return nullptr;
@@ -207,13 +194,18 @@ RGB48Buffer* PPMLoader::rgb48BufferCreateFromPPM(const string& name, MetaData *m
             metadata["white"].push_back(maxval);
     }
 
-    result = new RGB48Buffer(h, w, false);
+    RGB48Buffer *result = new RGB48Buffer(h, w, false);
 
     // image size in bytes
     uint64_t size = (maxval < 0x100 ? 1 : 2) * w * h * 3;
 
     // for reading we don't need to account for possible system byte orders, so just use a 8bit buffer
-    charImage = new uint8_t[size];
+    uint8_t *charImage = new uint8_t[size];
+    if (charImage == nullptr)
+    {
+        CORE_ASSERT_FAIL_P(("out of memory on allocate %d bytes", size));
+        goto done;
+    }
 
     if (fread(charImage, 1, size, fp) == 0)
     {
@@ -264,10 +256,8 @@ RGB48Buffer* PPMLoader::rgb48BufferCreateFromPPM(const string& name, MetaData *m
     }
 
 done:
-    if (fp != NULL)
-        fclose(fp);
-    if (charImage != NULL)
-        deletearr_safe(charImage);
+    fclose(fp);
+    deletearr_safe(charImage);
     return result;
 }
 
@@ -390,7 +380,8 @@ bool PPMLoader::writeHeader(FILE *fp, unsigned long int h, unsigned long int w, 
     fprintf(fp, "P%u\n", type);
 
     // TODO: test this!
-    if (meta)
+    if (meta != NULL)
+    {
         for (MetaData::iterator i = metadata.begin(); i != metadata.end(); i++)
         {
             fprintf(fp, "# @meta %s\t@values %i\t", i->first.c_str(), (int)i->second.size());
@@ -398,28 +389,27 @@ bool PPMLoader::writeHeader(FILE *fp, unsigned long int h, unsigned long int w, 
                 fprintf(fp, "%f ", i->second[j]);
             fprintf(fp, "\n");
         }
+    }
 
     fprintf(fp, "%lu %lu\n", w, h);
     fprintf(fp, "%hu\n", maxval);
-
     return true;
 }
 
 int PPMLoader::save(const string& name, G12Buffer *buffer, MetaData* metadata)
 {
-    int h = buffer->h;
-    int w = buffer->w;
-
     if (buffer == NULL)
         return -1;
 
     FILE *fp = fopen(name.c_str(), "wb");
-
     if (fp == NULL)
     {
         CORE_ASSERT_FAIL("Image could not be written");
         return -1;
     }
+
+    int h = buffer->h;
+    int w = buffer->w;
 
     int wordlength = 1;
     int bits = 8;
@@ -430,11 +420,10 @@ int PPMLoader::save(const string& name, G12Buffer *buffer, MetaData* metadata)
         if ((bits = meta["bits"][0]) == 0)
         {
             bits = 12;
+            wordlength = 2;
         }
-
         if (bits <= 8)
             wordlength = 1;
-
     }
 
     writeHeader(fp, h, w, 5, (1 << bits) - 1, metadata);
@@ -465,6 +454,7 @@ int PPMLoader::save(const string& name, G12Buffer *buffer, MetaData* metadata)
             }
         }
     }
+
     fwrite(charImage, wordlength, h * w, fp);
     deletearr_safe(charImage);
     fclose(fp);

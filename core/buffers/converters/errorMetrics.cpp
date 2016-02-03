@@ -1,6 +1,7 @@
 #include "errorMetrics.h"
 #include "debayer.h"
 #include "ppmLoader.h"
+
 using namespace corecvs;
 
 double ErrorMetrics::mse(RGB48Buffer *img1, RGB48Buffer *img2, int border)
@@ -80,9 +81,8 @@ double ErrorMetrics::Ymse(G12Buffer *bayer, RGB48Buffer *debayer, int border, in
         return -1;
 
     double err = 0;
-    
-    // this can be slow
 
+    // this can be slow
     Debayer d(bayer, bits);
     AbstractBuffer<double, int> *y = new AbstractBuffer<double, int>(bayer->getSize());
     d.getYChannel(y);
@@ -93,8 +93,8 @@ double ErrorMetrics::Ymse(G12Buffer *bayer, RGB48Buffer *debayer, int border, in
         {
             double orig = y->element(i, j);
             RGBTColor<uint16_t> elem = debayer->element(i, j);
-            double deb = (116.0 * elem.r() + 232.0 * elem.g() + 116.0 * elem.b()) / 464.0;
-            err += pow(orig - deb, 2);
+            double yh = elem.yh();
+            err += pow(orig - yh, 2);
         }
     }
 

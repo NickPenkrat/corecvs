@@ -1,12 +1,13 @@
 #include "fftwWrapper.h"
+
 #ifdef WITH_MKL
+
 #include <fftw/fftw3.h>
 
 using namespace corecvs;
 
 FFTW::FFTW() 
-{
-}
+{}
 
 FFTW::~FFTW()
 {
@@ -142,4 +143,5 @@ void FFTW::transformBackward2D(int sizeX, int sizeY, fftw_complex *input, double
         fftw_execute(mPlan);
     }
 }
-#endif
+
+#endif // WITH_MKL
