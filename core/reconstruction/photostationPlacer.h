@@ -103,7 +103,7 @@ struct PhotostationPlacerEssentialFilterParams
 struct PhotostationPlacerFeatureSelectionParams
 {
     double inlierThreshold = 1.0;
-    double trackInlierThreshold = 3.0;
+    double trackInlierThreshold = 3;
     double pairCorrespondenceThreshold = 0.25;
     double distanceLimit =1000.0;
 //    int nonLinearAfterAppend = 40;
@@ -162,6 +162,7 @@ public:
     corecvs::Quaternion detectOrientationFirst(CameraFixture *psA, CameraFixture* psB, CameraFixture *psC);
     std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> getUnusedFeatures(CameraFixture *psA, CameraFixture *psB);
     void buildTracks(CameraFixture *psA, CameraFixture *psB, CameraFixture *psC);
+    void pruneTracks();
     void appendPs();
     void fit(const PhotostationPlacerOptimizationType& optimizationSet = PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS, int num = 100);
     void fit(bool tuneFocal);
@@ -194,7 +195,7 @@ protected:
     void prepareNonLinearOptimizationData();
     void buildDependencyList();
     double scalerPoints, scalerGps;
-    int inputNum, outputNum, psNum, camNum, ptNum, projNum, gpsConstraintNum;
+    int inputNum, outputNum, psNum, camNum, ptNum, projNum, gpsConstraintNum, staticNum;
 
     struct ParallelErrorComputator
     {
@@ -249,6 +250,7 @@ private:
             }
         }
     };
+    static corecvs::Quaternion TransformFrom2RayCorrespondence(corecvs::Vector3dd o1, corecvs::Vector3dd o2, corecvs::Vector3dd e1, corecvs::Vector3dd e2);
     void filterEssentialRansac(WPP a, WPP b);
     std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd, double>> getPhotostationMatches(CameraFixture* psA, CameraFixture* psB);
     void remove(WPP a, WPP b, std::vector<int> idx);

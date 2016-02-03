@@ -112,7 +112,7 @@ std::vector<PointObservation__> parsePois(CalibrationJob &calibration, const std
 
             ifs >> filename >> x >> y;
             if (x < 0 || y < 0) continue;
-			std::cout << filename << std::endl;
+            std::cout << filename << std::endl;
 
             int psId = filename[camIdOffset - 1] - 'A';
 
@@ -161,149 +161,185 @@ void storePois(const std::vector<PointObservation__> &observations, const std::s
 struct exp_desc
 {
     std::vector<std::string> allowedPs;
+    std::vector<int> useAllCloseStaticPoints;
+    double staticDistanceLimit;
     PhotostationPlacerOptimizationType type;
     bool separate_cameras;
     std::string title;
 };
 
-exp_desc experiments[] = 
+exp_desc experiments[] =
 {
     {
         std::vector<std::string>({"SPA", "SPB", "SPC", "SPD", "SPE", "SPF", "SPG", "SPH", "SPI"}),
-      PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS,
-      false,
-      "f,cx,cy,common,all"
+        std::vector<int>(9),
+        -1.0,
+        PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS,
+        false,
+        "f,cx,cy,common,all"
     },
     {
         std::vector<std::string>({"SPA", "SPB", "SPC", "SPD", "SPE", "SPF", "SPG", "SPH", "SPI"}),
-      PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS,
-      false,
-      "f,common,all"
+        std::vector<int>(9),
+        -1.0,
+        PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS,
+        false,
+        "f,common,all"
     },
     {
         std::vector<std::string>({"SPA", "SPB", "SPC", "SPD", "SPE", "SPF", "SPG", "SPH", "SPI"}),
-      PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS,
-      false,
-      "common,all"
+        std::vector<int>(9),
+        -1.0,
+        PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS,
+        false,
+        "common,all"
     },
     {
         std::vector<std::string>({"SPA", "SPB", "SPC", "SPD", "SPE", "SPF", "SPG", "SPH", "SPI"}),
-      PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS,
-      true,
-      "f,cx,cy,separate,all"
+        std::vector<int>(9),
+        -1.0,
+        PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS,
+        true,
+        "f,cx,cy,separate,all"
     },
     {
         std::vector<std::string>({"SPA", "SPB", "SPC", "SPD", "SPE", "SPF", "SPG", "SPH", "SPI"}),
-      PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS,
-      false,
-      "f,cx,cy,common,reduced"
+        std::vector<int>(9),
+        -1.0,
+        PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS,
+        false,
+        "f,cx,cy,common,all"
     },
     {
         std::vector<std::string>({"SPF", "SPG", "SPH", "SPI"}),
-      PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::TUNE_GPS,
-      false,
-      "common,reduced,trans"
+        std::vector<int>(4),
+        -1.0,
+        PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::TUNE_GPS,
+        false,
+        "common,reduced,trans"
     },
     {
         std::vector<std::string>({"SPF", "SPG", "SPH", "SPI"}),
-      PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS  ,
-      false,
-      "common,reduced"
+        std::vector<int>(4),
+        -1.0,
+        PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS  ,
+        false,
+        "common,reduced"
     },
     {
         std::vector<std::string>({"SPA", "SPB", "SPC", "SPD", "SPE", "SPF", "SPG", "SPH", "SPI"}),
-      PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::TUNE_GPS,
-      false,
-      "01.02.2016,common,all,trans"
+        std::vector<int>(9),
+        -1.0,
+        PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::TUNE_GPS,
+        false,
+        "01.02.2016,common,all,trans"
     },
     {
         std::vector<std::string>({"SPA", "SPB", "SPC", "SPD", "SPE", "SPF", "SPG", "SPH", "SPI"}),
-      PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::TUNE_GPS | PhotostationPlacerOptimizationType::FOCALS,
-      false,
-      "01.02.2016,f,common,all,trans"
+        std::vector<int>(9),
+        -1.0,
+        PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::TUNE_GPS | PhotostationPlacerOptimizationType::FOCALS,
+        false,
+        "01.02.2016,f,common,all,trans"
     },
     {
         std::vector<std::string>({"SPA", "SPB", "SPC", "SPD", "SPE", "SPF", "SPG", "SPH", "SPI"}),
-      PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::TUNE_GPS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS,
-      false,
-      "01.02.2016f,principal,common,all,trans"
+        std::vector<int>(9),
+        -1.0,
+        PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::TUNE_GPS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS,
+        false,
+        "01.02.2016f,principal,common,all,trans"
     },
     {
         std::vector<std::string>({"SPA", "SPB", "SPC", "SPD", "SPE", "SPF", "SPG", "SPH", "SPI"}),
-      PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS ,
-      false,
-      "01.02.2016,common,all"
+        std::vector<int>(9),
+        -1.0,
+        PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS ,
+        false,
+        "01.02.2016,common,all"
     },
     {
         std::vector<std::string>({"SPA", "SPB", "SPC", "SPD", "SPE", "SPF", "SPG", "SPH", "SPI"}),
-      PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS,
-      false,
-      "01.02.2016,f,common,all"
+        std::vector<int>(9),
+        -1.0,
+        PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS,
+        false,
+        "01.02.2016,f,common,all"
     },
     {
         std::vector<std::string>({"SPA", "SPB", "SPC", "SPD", "SPE", "SPF", "SPG", "SPH", "SPI"}),
-      PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS  | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS,
-      false,
-      "01.02.2016f,principal,common,all"
+        std::vector<int>(9),
+        -1.0,
+        PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS  | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS,
+        false,
+        "01.02.2016f,principal,common,all"
+    },
+    {
+        std::vector<std::string>({"SPA", "SPB", "SPC", "SPD", "SPE", "SPF", "SPG", "SPH", "SPI"}),
+        std::vector<int>({1, 1, 1, 1, 1, 1, 1, 1, 1}),
+        30.0,
+        PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::DEGENERATE_TRANSLATIONS,
+        false,
+        "01.02.2016f,principal,common,all,trans,static"
     },
 };
 
 
 struct TransformEstimationFunctor : public FunctionArgs
 {
-	std::vector<SceneFeaturePoint*> refPois;
-	TransformEstimationFunctor(std::vector<SceneFeaturePoint*> &refPois, int projCnt) : FunctionArgs(7, projCnt*2), refPois(refPois)
-	{
-	}
-	void operator() (const double *in, double *out)
-	{
-		int argout = 0;
-		corecvs::Affine3DQ foo;
-		for (int i = 0; i < 3; ++i)
-			foo.shift[i] = in[i];
-		for (int j = 0; j < 4; ++j)
-			foo.rotor[j] = in[3 + j];
-		foo.rotor.normalise();
-		for (auto spt: refPois)
-		{
-			for (auto &op: spt->observations__)
-			{
-				auto& o = op.second;
-				auto cam = o.camera;
-				auto ps  = o.cameraFixture;
-				auto pt  = o.observation;
-				auto ptw = spt->position;
-				
-				ptw = foo.applyInv(ptw);
-				auto err = (ps->reprojectionError(ptw, pt, cam));
-				out[argout++] = err[0];
-				out[argout++] = err[1];
-			}
-		}
-		CORE_ASSERT_TRUE_S(argout == outputs);
-	}
+    std::vector<SceneFeaturePoint*> refPois;
+    TransformEstimationFunctor(std::vector<SceneFeaturePoint*> &refPois, int projCnt) : FunctionArgs(7, projCnt*2), refPois(refPois)
+    {
+    }
+    void operator() (const double *in, double *out)
+    {
+        int argout = 0;
+        corecvs::Affine3DQ foo;
+        for (int i = 0; i < 3; ++i)
+            foo.shift[i] = in[i];
+        for (int j = 0; j < 4; ++j)
+            foo.rotor[j] = in[3 + j];
+        foo.rotor.normalise();
+        for (auto spt: refPois)
+        {
+            for (auto &op: spt->observations__)
+            {
+                auto& o = op.second;
+                auto cam = o.camera;
+                auto ps  = o.cameraFixture;
+                auto pt  = o.observation;
+                auto ptw = spt->position;
+
+                ptw = foo.applyInv(ptw);
+                auto err = (ps->reprojectionError(ptw, pt, cam));
+                out[argout++] = err[0];
+                out[argout++] = err[1];
+            }
+        }
+        CORE_ASSERT_TRUE_S(argout == outputs);
+    }
 };
 
 
 corecvs::Affine3DQ optimizeTransform(std::vector<SceneFeaturePoint*> &pois, corecvs::Affine3DQ &init, int projCnt)
 {
-	std::vector<double> in = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0}, out(projCnt*2);
-	LevenbergMarquardt lm(1000);
-	TransformEstimationFunctor tef(pois, projCnt);
-	lm.f = &tef;
-	auto res = lm.fit(in, out);
-	corecvs::Affine3DQ T;
-	for (int i = 0; i < 3; ++i)
-		T.shift[i] = res[i];
-	for (int i = 0; i < 4; ++i)
-		T.rotor[i] = res[3 + i];
-	T.rotor.normalise();
-	return T;
+    std::vector<double> in = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0}, out(projCnt*2);
+    LevenbergMarquardt lm(1000);
+    TransformEstimationFunctor tef(pois, projCnt);
+    lm.f = &tef;
+    auto res = lm.fit(in, out);
+    corecvs::Affine3DQ T;
+    for (int i = 0; i < 3; ++i)
+        T.shift[i] = res[i];
+    for (int i = 0; i < 4; ++i)
+        T.rotor[i] = res[3 + i];
+    T.rotor.normalise();
+    return T;
 }
 
 corecvs::Affine3DQ estimateTransform(std::vector<SceneFeaturePoint*> &pois)
 {
-	int pcnt = 0;
+    int pcnt = 0;
     std::vector<corecvs::Vector3dd> centers, directions, points3d;
     for (auto spt: pois)
     {
@@ -343,12 +379,12 @@ corecvs::Affine3DQ estimateTransform(std::vector<SceneFeaturePoint*> &pois)
 
                 ptw = hypo.applyInv(ptw);
 
-				auto err = (ps->angleError(ptw, pt, cam));
+                auto err = (ps->angleError(ptw, pt, cam));
                 if (err < inlierThreshold)
-				{
+                {
                     curInliers++;
                     sqerr += err * err;
-				}
+                }
             }
         }
         sqerr /= curInliers;
@@ -360,16 +396,16 @@ corecvs::Affine3DQ estimateTransform(std::vector<SceneFeaturePoint*> &pois)
         }
     }
     std::cout << "Error transformation: " << inliers << " " << pois.size() << " degdiff " << std::sqrt(bestRI) << std::endl;
-	std::cout << hypothesis[bestHypo] << std::endl;
-	auto T = optimizeTransform(pois, hypothesis[bestHypo], pcnt);
-	std::cout << T << std::endl;
+    std::cout << hypothesis[bestHypo] << std::endl;
+    auto T = optimizeTransform(pois, hypothesis[bestHypo], pcnt);
+    std::cout << T << std::endl;
     return T;
 }
 
 void validate_pois(std::vector<SceneFeaturePoint*> &poiss, bool tune = false, bool tuneOnlyChess = true, double tuneOn = 30.0)
 {
     std::vector<SceneFeaturePoint*> pois2;
-	std::set<CameraFixture*> fixtures;
+    std::set<CameraFixture*> fixtures;
     for (auto poi: poiss)
     {
         if (poi->observations__.size() < 2)
@@ -388,22 +424,22 @@ void validate_pois(std::vector<SceneFeaturePoint*> &poiss, bool tune = false, bo
             pois2.push_back(poi);
 
     }
-	corecvs::Vector3dd meanPoint(0.0, 0.0, 0.0);
-	for (auto &p: fixtures)
-		meanPoint += p->location.shift;
-	meanPoint /= fixtures.size();
+    corecvs::Vector3dd meanPoint(0.0, 0.0, 0.0);
+    for (auto &p: fixtures)
+        meanPoint += p->location.shift;
+    meanPoint /= fixtures.size();
 
     auto tes = estimateTransform(pois2);
     std::cout << "Estimated: "  << tes << std::endl;
     std::cout << "POI,views,combinations,mean offset,rmse,distClosest,relClosest,distMean,relMean,group" << std::endl;
-	std::string group = tune ? tuneOnlyChess ? "tune_chess" : "tune_all" : "no_tune";
+    std::string group = tune ? tuneOnlyChess ? "tune_chess" : "tune_all" : "no_tune";
     int ccnt = 0, acnt = 0;
     double chessAbsSSE = 0.0, allAbsSSE = 0.0, allRelSSE = 0.0, chessRelSSE = 0.0;
     for (auto poi: poiss)
     {
         if (poi->observations__.size() < 2)
             continue;
-        corecvs::MulticameraTriangulator mct;    
+        corecvs::MulticameraTriangulator mct;
         double closest = 1e100;// mean = (poi->position - meanPoint);
         std::vector<WPP> observations;
         for (auto& obsp: poi->observations__)
@@ -445,20 +481,20 @@ void validate_pois(std::vector<SceneFeaturePoint*> &poiss, bool tune = false, bo
             mean /= pcnt;
             sqrs = std::sqrt(sqrs / pcnt);
             if (pcnt == 1 && closest < 30.0)
-			{
-				double abssse = sqrs * sqrs;
-				double md = !(poi->position - meanPoint);
-				double relsse = sqrs * sqrs / md / md;
-				if (poi->name[0] == 'C' && poi->name[1] == 'H' && poi->name[2] == 'E')
-				{
-					chessAbsSSE += abssse;
-					chessRelSSE += relsse;
-					ccnt++;
-				}
-				allAbsSSE += abssse;
-				allRelSSE += relsse;
-				acnt++;
-			}
+            {
+                double abssse = sqrs * sqrs;
+                double md = !(poi->position - meanPoint);
+                double relsse = sqrs * sqrs / md / md;
+                if (poi->name[0] == 'C' && poi->name[1] == 'H' && poi->name[2] == 'E')
+                {
+                    chessAbsSSE += abssse;
+                    chessRelSSE += relsse;
+                    ccnt++;
+                }
+                allAbsSSE += abssse;
+                allRelSSE += relsse;
+                acnt++;
+            }
             std::cout << poi->name << "," << cnt << "," << pcnt << ",";
             auto v = mean - poi->position;
             for (int iii = 0; iii < 3; ++iii)
@@ -466,7 +502,7 @@ void validate_pois(std::vector<SceneFeaturePoint*> &poiss, bool tune = false, bo
             std::cout << sqrs << ", " << closest << "," << sqrs / closest * 100.0 << "%," << !(meanPoint - poi->position) <<", " << sqrs / (!(meanPoint - poi->position)) * 100 << "%" << group << std::endl;
         }
     }
-	std::cout << "VERDICT: CHESS: " << std::sqrt(chessAbsSSE / ccnt) << "m/" << std::sqrt(chessRelSSE / ccnt) * 100.0 << "% ALL: " << std::sqrt(allAbsSSE/acnt) << "m/" << std::sqrt(allRelSSE / ccnt) * 100.0 << "%" << std::endl;
+    std::cout << "VERDICT: CHESS: " << std::sqrt(chessAbsSSE / ccnt) << "m/" << std::sqrt(chessRelSSE / ccnt) * 100.0 << "% ALL: " << std::sqrt(allAbsSSE/acnt) << "m/" << std::sqrt(allRelSSE / ccnt) * 100.0 << "%" << std::endl;
 }
 
 void validate_cams(std::vector<CameraFixture*> fixtures, std::vector<FixtureCamera*> cameras, std::vector<FixtureCamera*> refCameras, ReconstructionFixtureScene *scene)
@@ -499,23 +535,21 @@ void validate_cams(std::vector<CameraFixture*> fixtures, std::vector<FixtureCame
         Vector2dd principalPrev = refCameras[map[cam]]->intrinsics.principal;
         Vector2dd principalNew = cam->intrinsics.principal;
         std::cout <<"," << focalPrev << "," << focalNew << "," << relDiff*100 << "%," << principalPrev << "," << principalNew << "," << (!(principalPrev-principalNew)) << "" << std::endl;
-		std::cout << "Ps,gps_pos,new_pos,diff,len" << std::endl;
-		for (auto& init: scene->initializationData)
-		{
-			if (init.second.initializationType != PhotostationInitializationType::GPS)
-				continue;
-			auto ps = init.first;
-			auto sh = init.second.initData.shift;
-			auto re = ps->location.shift;
-			std::cout << ps->name << ", " << sh << ", " << re << ", " << sh - re << ", " << !(sh - re) << std::endl;
-		}
+        std::cout << "Ps,gps_pos,new_pos,diff,len" << std::endl;
+        for (auto& init: scene->initializationData)
+        {
+            if (init.second.initializationType != PhotostationInitializationType::GPS)
+                continue;
+            auto ps = init.first;
+            auto sh = init.second.initData.shift;
+            auto re = ps->location.shift;
+            std::cout << ps->name << ", " << sh << ", " << re << ", " << sh - re << ", " << !(sh - re) << std::endl;
+        }
     }
 }
 
-void run_exp(exp_desc exp)
+corecvs::ReconstructionFixtureScene* createScene(exp_desc exp, std::vector<SceneFeaturePoint*> &poiss, std::vector<FixtureCamera*> &cameras, std::vector<FixtureCamera*> &refCameras)
 {
-    std::cout << exp.title << std::endl;
-    L_ERROR << "STARTING_EXP";
     bool separate_cameras = exp.separate_cameras;
     corecvs::Vector3dd positions[] =
     {
@@ -531,10 +565,6 @@ void run_exp(exp_desc exp)
     };
 
     std::vector<std::string> allowedPs = exp.allowedPs;
-
-
-    char psPrefixes[9] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'};
-
     std::string topconBase(std::getenv("TOPCON_DIR"));
     std::string prefix = topconBase + "data/tests/reconstruction/GGGGGGGGG/roof_1_SP";
     std::string postfix= "_0deg_undist.jpg";
@@ -547,7 +577,7 @@ void run_exp(exp_desc exp)
         for (int j = 0; j < CP; ++j)
         {
             std::stringstream ss;
-            ss << prefix << psPrefixes[i] << j << postfix;
+            ss << prefix << (char)('A' + i) << j << postfix;
             images[i][j] = ss.str();
         }
     }
@@ -563,28 +593,16 @@ void run_exp(exp_desc exp)
         photostation.cameras[i].extrinsics.position /= 1e3;
     }
 
-#if 0
-    for (int i = 0; i < PSN; ++i)
-    {
-        auto& ps = pp.calibratedPhotostations[i] = photostation;
-        std::stringstream ss;
-        ss << "SP" << ((char)('A' + i));
-        ps.name = ss.str();
-    }
-#endif
     auto pois = parsePois(job, "pois_m15.txt",10, true, true);
 
-    ReconstructionFixtureScene rfs;
-    std::vector<FixtureCamera*> cameras;
+    ReconstructionFixtureScene* rfs = new ReconstructionFixtureScene();
     std::vector<CameraFixture*> photostations;
-    std::vector<SceneFeaturePoint*> poiss;
-    std::vector<FixtureCamera*> refCameras;
     if (!separate_cameras)
     {
         for (int i = 0; i < CP; ++i)
         {
-            cameras.push_back(rfs.createCamera());
-            refCameras.push_back(rfs.createCamera());
+            cameras.push_back(rfs->createCamera());
+            refCameras.push_back(rfs->createCamera());
             cameras.rbegin()[0]->intrinsics = photostation.cameras[i].intrinsics;
             cameras.rbegin()[0]->extrinsics = photostation.cameras[i].extrinsics;
             cameras.rbegin()[0]->distortion = photostation.cameras[i].distortion;
@@ -595,35 +613,35 @@ void run_exp(exp_desc exp)
     else
     {
         for (int j = 0; j < PSN; ++j)
-        for (int i = 0; i < CP; ++i)
-        {
-            refCameras.push_back(rfs.createCamera());
-            cameras.push_back(rfs.createCamera());
-            cameras.rbegin()[0]->intrinsics = photostation.cameras[i].intrinsics;
-            cameras.rbegin()[0]->extrinsics = photostation.cameras[i].extrinsics;
-            cameras.rbegin()[0]->distortion = photostation.cameras[i].distortion;
-            cameras.rbegin()[0]->nameId = photostation.cameras[i].nameId;
-            *refCameras.rbegin()[0] = **cameras.rbegin();
-        }
+            for (int i = 0; i < CP; ++i)
+            {
+                refCameras.push_back(rfs->createCamera());
+                cameras.push_back(rfs->createCamera());
+                cameras.rbegin()[0]->intrinsics = photostation.cameras[i].intrinsics;
+                cameras.rbegin()[0]->extrinsics = photostation.cameras[i].extrinsics;
+                cameras.rbegin()[0]->distortion = photostation.cameras[i].distortion;
+                cameras.rbegin()[0]->nameId = photostation.cameras[i].nameId;
+                *refCameras.rbegin()[0] = **cameras.rbegin();
+            }
     }
     for (int i = 0; i < PSN; ++i)
     {
-        photostations.push_back(rfs.createCameraFixture());
+        photostations.push_back(rfs->createCameraFixture());
         for (int j = 0; j < CP; ++j)
         {
             int camId = separate_cameras ? i * CP + j : j;
-            rfs.addCameraToFixture(cameras[camId], photostations[i]);
-            rfs.images[WPP(photostations[i], cameras[camId])] = images[i][j];
+            rfs->addCameraToFixture(cameras[camId], photostations[i]);
+            rfs->images[WPP(photostations[i], cameras[camId])] = images[i][j];
         }
-        rfs.initializationData[photostations[i]].initializationType = PhotostationInitializationType::GPS;
-        rfs.initializationData[photostations[i]].initData.shift = positions[psPrefixes[i] - 'A'];
+        rfs->initializationData[photostations[i]].initializationType = PhotostationInitializationType::GPS;
+        rfs->initializationData[photostations[i]].initData.shift = positions[i];
         std::stringstream ss;
         ss << "SP" << ((char)('A' + i));
-        rfs.fixtures[i]->name = ss.str();
+        rfs->fixtures[i]->name = ss.str();
     }
     for (auto poi: pois)
     {
-        auto sfp = rfs.createFeaturePoint();
+        auto sfp = rfs->createFeaturePoint();
         sfp->position = poi.worldPoint;
         sfp->name = poi.label;
         for (auto o: poi.projections)
@@ -638,40 +656,77 @@ void run_exp(exp_desc exp)
         }
         poiss.push_back(sfp);
     }
-    rfs.placingQueue = photostations;
+    rfs->placingQueue = photostations;
     for (auto ptr: photostations)
     {
         std::cout << "Checking if " << ptr->name << " is allowed..." << std::endl;
         if (std::find(allowedPs.begin(), allowedPs.end(), ptr->name) == allowedPs.end())
         {
             std::cout << "Deleting " << ptr->name << std::endl;
-           rfs.deleteCameraFixture(ptr, false);
+           rfs->deleteCameraFixture(ptr, false);
         }
         std::cout << ptr->name << " is Ok" << std::endl;
     }
+    CORE_ASSERT_TRUE_S(rfs->fixtures.size() == exp.useAllCloseStaticPoints.size());
+    int N = rfs->fixtures.size();
+    for (int i = 0; i < N; ++i)
+    {
+        if (!exp.useAllCloseStaticPoints[i])
+            continue;
+        auto& initData = rfs->initializationData[rfs->fixtures[i]];
+        initData.initializationType = corecvs::PhotostationInitializationType::STATIC;
+        for (auto& pt: poiss)
+        {
+            if (!(pt->position - initData.initData.shift) > exp.staticDistanceLimit)
+            {
+                std::cout << pt->name << " is too far for " << rfs->fixtures[i]->name << std::endl;
+                continue;
+            }
+            for (auto& obs: pt->observations__)
+            {
+                if (obs.first.u != rfs->fixtures[i])
+                    continue;
+                initData.staticPoints.push_back(pt);
+                break;
+            }
+        }
+    }
+    return rfs;
+}
+
+void run_exp(exp_desc exp)
+{
+    std::cout << exp.title << std::endl;
+    L_ERROR << "STARTING_EXP";
+
+    std::vector<FixtureCamera*> refCameras, cameras;
+    std::vector<SceneFeaturePoint*> poiss;
+    auto rfs = createScene(exp, poiss, cameras, refCameras);
+
+
     std::cout << "Launching psp" << std::endl;
 
     PhotostationPlacer pp;
-    pp.scene = &rfs;
+    pp.scene = rfs;
     pp.optimizationParams = exp.type;
 //    pp.fullRun();
-    
+
     L_ERROR << "Starting full run" ;
     L_ERROR << "Detecting features";
     pp.detectAll();
     L_ERROR << "Initalizing";
     pp.initialize();
     L_ERROR << "Fitting";
-	pp.fit(exp.type, 100);
+    pp.fit(exp.type, 100);
     L_ERROR << "Appending";
 
     while(pp.scene->placingQueue.size())
-	{
+    {
         L_ERROR << "Appending" << (*pp.scene->placingQueue.begin())->name ;
         pp.appendPs();
         L_ERROR << "Fitting";
 //      if (scene->is3DAligned)
-//  	    fit(PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS, 100);
+//          fit(PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS, 100);
   //    else
     //   fit(PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS, 200);
         pp.fit(exp.type, 100);
@@ -679,8 +734,8 @@ void run_exp(exp_desc exp)
         std::stringstream ss;
         ss << (*pp.scene->placedFixtures.rbegin())->name << "_app.ply";
         pp.dumpMesh(ss.str());
-	}
-	pp.fit(exp.type, 100000);
+    }
+    pp.fit(exp.type, 100000);
     pp.dumpMesh("final.ply");
     JSONSetter setter("psp_finished.json");
 //    directory->accept<JSONSetter>(setter);
@@ -689,7 +744,7 @@ void run_exp(exp_desc exp)
     validate_pois(poiss, false, false, 30.0);
     validate_pois(poiss, true, false, 30.0);
     validate_pois(poiss, true, true, 30.0);
-    validate_cams(rfs.fixtures, cameras, refCameras, pp.scene);
+    validate_cams(rfs->fixtures, cameras, refCameras, pp.scene);
     L_ERROR << "FINISHING_EXP";
 }
 
@@ -702,35 +757,37 @@ int main(int argc, char** argv)
     init_opencv_descriptors_provider();
     init_opencv_reader_provider();
 
-	if (argc != 2)
-	{
-		std::cout << "Available settings:" << std::endl;
-		for (auto& exp: experiments)
-		{
-			int id = &exp - experiments;
-			std::cout << id << ": " << exp.title << std::endl;
-			std::cout << "\tAllowed ps: ";
-			for (auto& p: exp.allowedPs)
-				std::cout << p << " ";
-			std::cout << std::endl;
-			std::cout << "\tOptimization options:";
+    if (argc != 2)
+    {
+        std::cout << "Available settings:" << std::endl;
+        for (auto& exp: experiments)
+        {
+            int id = &exp - experiments;
+            std::cout << id << ": " << exp.title << std::endl;
+            std::cout << "\tAllowed ps: ";
+            for (auto& p: exp.allowedPs)
+            {
+                std::cout << p << (exp.useAllCloseStaticPoints[&p - &exp.allowedPs[0]] ? "(S)" : "(G)") << " ";
+            }
+            std::cout << std::endl;
+            std::cout << "\tOptimization options:";
 #define IFP(cond, title) \
-			if (!!(exp.type & PhotostationPlacerOptimizationType::cond)) \
-				std::cout << title << " ";
-			IFP(FOCALS, "Focals");
-			IFP(PRINCIPALS, "Principals");
-			IFP(TUNE_GPS, "Tune_gps");
-			IFP(NON_DEGENERATE_ORIENTATIONS, "Non-degenerate_orientations");
-			IFP(DEGENERATE_ORIENTATIONS, "Degenerate_orientations");
-			IFP(NON_DEGENERATE_TRANSLATIONS, "Non-degenerate_translations");
-			IFP(DEGENERATE_TRANSLATIONS, "Degenerate translations");
-			IFP(POINTS, "Points");
-			std::cout << std::endl;
-			std::cout << "\tSeparated cameras: " << (exp.separate_cameras ? "True" : "False") << std::endl;
-			std::cout << std::endl;
-		}
-		return 0;
-	}
+            if (!!(exp.type & PhotostationPlacerOptimizationType::cond)) \
+                std::cout << title << " ";
+            IFP(FOCALS, "Focals");
+            IFP(PRINCIPALS, "Principals");
+            IFP(TUNE_GPS, "Tune_gps");
+            IFP(NON_DEGENERATE_ORIENTATIONS, "Non-degenerate_orientations");
+            IFP(DEGENERATE_ORIENTATIONS, "Degenerate_orientations");
+            IFP(NON_DEGENERATE_TRANSLATIONS, "Non-degenerate_translations");
+            IFP(DEGENERATE_TRANSLATIONS, "Degenerate translations");
+            IFP(POINTS, "Points");
+            std::cout << std::endl;
+            std::cout << "\tSeparated cameras: " << (exp.separate_cameras ? "True" : "False") << std::endl;
+            std::cout << std::endl;
+        }
+        return 0;
+    }
 
     int id = std::stoi(std::string(argv[1]));
     std::cout << "Running " << id << std::endl;
@@ -745,4 +802,3 @@ int main(int argc, char** argv)
 
     return 0;
 }
-#endif
