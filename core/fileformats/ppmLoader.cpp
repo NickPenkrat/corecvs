@@ -421,18 +421,51 @@ int PPMLoader::save(const string& name, G12Buffer *buffer, MetaData* metadata)
         return -1;
     }
 
-    writeHeader(fp, h, w, 5, G12Buffer::BUFFER_MAX_VALUE, metadata);
+    int wordlength = 1;
+    int bits = 8;
 
-    uint8_t *charImage = new uint8_t[2 * w * h];
-    int i, j;
-    for (i = 0; i < h; i++)
-        for (j = 0; j < w; j++)
+    if (metadata != nullptr)
+    {
+        MetaData &meta = *metadata;
+        if ((bits = meta["bits"][0]) == 0)
         {
-            int offset = i * w + j;
-            charImage[offset * 2] = (buffer->element(i, j) >> 8) & 0xFF;
-            charImage[offset * 2 + 1] = buffer->element(i, j) & 0xFF;
+            bits = 12;
         }
-    fwrite(charImage, 2, h * w, fp);
+
+        if (bits <= 8)
+            wordlength = 1;
+
+    }
+
+    writeHeader(fp, h, w, 5, (1 << bits) - 1, metadata);
+
+    uint8_t *charImage = new uint8_t[wordlength * w * h];
+    int i, j;
+
+    if (wordlength == 2)
+    {
+        for (i = 0; i < h; i++)
+        {
+            for (j = 0; j < w; j++)
+            {
+                int offset = i * w + j;
+                charImage[offset * 2] = (buffer->element(i, j) >> 8) & 0xFF;
+                charImage[offset * 2 + 1] = buffer->element(i, j) & 0xFF;
+            }
+        }
+    }
+    else
+    {
+        for (i = 0; i < h; i++)
+        {
+            for (j = 0; j < w; j++)
+            {
+                int offset = i * w + j;
+                charImage[offset] = buffer->element(i, j) & 0xFF;
+            }
+        }
+    }
+    fwrite(charImage, wordlength, h * w, fp);
     deletearr_safe(charImage);
     fclose(fp);
     return 0;
