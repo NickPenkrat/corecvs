@@ -62,6 +62,25 @@ const int CP = 6;
 corecvs::Vector3dd mp(0, 0, 0);
 //#if 1
 
+std::string getTempName()
+{
+	static std::mt19937 rng = std::mt19937(std::random_device()());
+	std::string prefix = 
+#ifdef WIN_32
+		std::getenv("TEMP") + "/"
+#else
+		"/tmp/"
+#endif
+		;
+
+	const int len = 128;
+	std::string randomChars;
+	randomChars.resize(len);
+	for (int i = 0; i < len; ++i)
+		randomChars[i] = 'A' + (rng() % 26) + (rng() & 1 ? 0 : 32);
+	return prefix + randomChars + ".jpg";
+}
+
 // Obsolete
 std::vector<PointObservation__> parsePois(CalibrationJob &calibration, const std::string &filename, int camIdOffset = 10, bool distorted = true, bool less10Cams = true)
 {
@@ -566,8 +585,8 @@ corecvs::ReconstructionFixtureScene* createScene(exp_desc exp, std::vector<Scene
 
     std::vector<std::string> allowedPs = exp.allowedPs;
     std::string topconBase(std::getenv("TOPCON_DIR"));
-    std::string prefix = topconBase + "data/tests/reconstruction/GGGGGGGGG/roof_1_SP";
-    std::string postfix= "_0deg_undist.jpg";
+    std::string prefix = topconBase + "data/tests/reconstruction/src_data/roof_1_SP";
+    std::string postfix= "_0deg.jpg";
 
     std::vector<std::vector<std::string>> images;
     images.resize(PSN);
@@ -581,17 +600,31 @@ corecvs::ReconstructionFixtureScene* createScene(exp_desc exp, std::vector<Scene
             images[i][j] = ss.str();
         }
     }
-
-    corecvs::Photostation photostation;
     JSONGetter getter("calibration.json");
     CalibrationJob job;
     getter.visit(job, "job");
-
-    photostation = job.photostation;
+    corecvs::Photostation& photostation = job.photostation;
     for (size_t i = 0; i < CP; ++i)
     {
         photostation.cameras[i].extrinsics.position /= 1e3;
     }
+	std::sort(photostation.cameras.begin(), photostation.cameras.end(), [](const CameraModel& a, const CameraModel& b) { return a.nameId < b.nameId; });
+    
+    for (int i = 0; i < CP; ++i)
+	{
+		corecvs::DisplacementBuffer transform;
+		job.prepareUndistortionTransformation(i, transform);
+		for (int j = 0; j < PSN; ++j)
+		{
+				auto& cam = photostation.cameras[i];
+                corecvs::RGB24Buffer source = job.LoadImage(images[j][i]), dst;
+                job.removeDistortion(source, dst, transform, cam.intrinsics.size[0], cam.intrinsics.size[1]);
+				std::string rep = getTempName();
+				std::cout << "Saving undistorted " << images[j][i] << " as " << rep << std::endl;
+                job.SaveImage(rep, dst);
+                images[j][i] = rep;
+		}
+	}
 
     auto pois = parsePois(job, "pois_m15.txt",10, true, true);
 
@@ -756,6 +789,9 @@ int main(int argc, char** argv)
     init_opencv_reader_provider();
     init_opencv_descriptors_provider();
     init_opencv_reader_provider();
+
+    for (int i = 0; i < 10; ++i)
+    	std::cout << getTempName() << std::endl;
 
     if (argc != 2)
     {
