@@ -24,7 +24,6 @@ typedef std::array<corecvs::Vector2dd, 2> Rect;
 using std::string;
 using corecvs::ObservationList;
 
-
 struct ImageData
 {
     string              sourceFileName;
