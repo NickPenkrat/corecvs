@@ -169,8 +169,9 @@ struct PinholeCameraIntrinsics
     }
 
     /* Helper pseudonim getters */
-    double  h() const    { return size.y();      }
     double  w() const    { return size.x();      }
+    double  h() const    { return size.y();      }
+
     double cx() const    { return principal.x(); }
     double cy() const    { return principal.y(); }
     double fx() const    { return focal.x(); }

@@ -9,6 +9,7 @@ CameraModelParametersControlWidget::CameraModelParametersControlWidget(QWidget *
 {
     ui->setupUi(this);
 
+    ui->lensDistortionWidget->toggleAdvanced(false);
 
     QObject::connect(ui->lensDistortionWidget, SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
     QObject::connect(ui->extrinsicWidget     , SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));

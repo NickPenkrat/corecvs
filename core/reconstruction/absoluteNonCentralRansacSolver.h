@@ -24,7 +24,7 @@ struct AbsoluteNonCentralRansacSolverParams
     bool forcePosition = false;
     corecvs::Vector3dd forcedPosition = corecvs::Vector3dd(0, 0, 0);
 };
-class AbsoluteNonCentralRansacSolver : AbsoluteNonCentralRansacSolverParams
+class AbsoluteNonCentralRansacSolver : public AbsoluteNonCentralRansacSolverParams
 {
 public:
     AbsoluteNonCentralRansacSolver(corecvs::CameraFixture *ps, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &cloudMatches, const AbsoluteNonCentralRansacSolverParams &params = AbsoluteNonCentralRansacSolverParams()) : AbsoluteNonCentralRansacSolverParams(params), ps(ps), cloudMatches(cloudMatches)
@@ -35,7 +35,7 @@ public:
     void runInliersRE();
     std::vector<int> getInliers();
     corecvs::Affine3DQ getBestHypothesis();
-protected:
+//protected:
 #ifdef WITH_TBB
     tbb::mutex mutex;
 #endif

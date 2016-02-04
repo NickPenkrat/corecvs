@@ -67,7 +67,11 @@ public slots:
 
     void            fitToggled();
     void            setFitWindow(bool flag = true);
+    void            setKeepAspect(bool flag = true);
+
     void            setCompactStyle(bool flag = true);
+
+    void            forceUpdate();
 
 
     void            setInfoString(QString info)         { mUi->infoValueLabel->setText(info); }
@@ -89,6 +93,9 @@ signals:
 
     void            notifyZoomChanged(double zoom);
     void            notifyCenterPointChanged(QPoint point);
+
+    /* This is used if you want to draw over the ImageWidget */
+    void            preUpdate();
 
 protected:
 
@@ -169,6 +176,7 @@ protected:
 
     QToolButton             *addToolButton(QString name, QIcon icon, bool checkable = true);
 
+public:
     QPointF     widgetToImageF(const QPointF &p);
     QPointF     imageToWidgetF(const QPointF &p);
     QPoint      widgetToImage(const QPoint &p);
@@ -176,6 +184,9 @@ protected:
     Vector2dd   widgetToImageF(const Vector2dd &p);
     Vector2dd   imageToWidgetF(const Vector2dd &p);
 
+    QRect       getClientArea();
+
+protected:
     QRect       computeInputRect();
 
     QSize       mImageSize;
