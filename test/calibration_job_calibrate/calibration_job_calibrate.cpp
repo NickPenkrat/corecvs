@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <fstream>
 
 #include "calibrationJob.h"
 #include "jsonSetter.h"
@@ -42,65 +43,118 @@ void draw(corecvs::ObservationList list, corecvs::RGB24Buffer &buffer)
 
 int main(int argc, char **argv)
 {
-    std::string filenameIn = "job.json";
-    std::string filenameOut= "job.json";
+    std::string filenameOut ="job.json";
+    std::string filenameList= "images.txt";
+    bool useNewPipeline = false;
 
-    if (argc >= 2)
+    if (argc < 2)
     {
-        filenameIn = std::string(argv[1]);
+        std::cout << argv[0] << " new|old [images.txt [job.json]]"    << std::endl
+                             << "\t new|old    -- pipeline type"      << std::endl
+                             << "\t images.txt -- image list"         << std::endl
+                             << "\t job.json   -- calibration output" << std::endl;
+        return 0;
     }
+    useNewPipeline = std::string(argv[1]) == "new";
     if (argc >= 3)
     {
-        filenameOut = std::string(argv[2]);
+        filenameList = std::string(argv[2]);
+    }
+    if (argc >= 4)
+    {
+        filenameOut = std::string(argv[3]);
     }
 
-    std::cout << "Reading job from " << filenameIn << std::endl <<
-                 "Saving job to " << filenameOut << std::endl;
+    std::cout << "Reading file list from "       << filenameList << std::endl <<
+                 "Saving calibration result to " << filenameOut << std::endl;
 
     CalibrationJob job;
-    JSONGetter getter(filenameIn.c_str());
-    getter.visit(job, "job");
 
+    std::ifstream files;
+    files.open(filenameList);
+    CORE_ASSERT_TRUE_S(files);
 
-    for (auto& pv: job.observations)
+    std::vector<std::vector<std::array<std::string, 2>>> filenames;
+    std::unordered_map<std::string, size_t> filenameMap;
+    int camCnt = 0;
+
+    while (files)
     {
-        for (auto&p : pv)
+        std::string filename;
+        files >> filename;
+
+        if (!filename.size())
+            continue;
+        size_t lsp = filename.rfind("SP");
+        if (lsp == std::string::npos)
+            continue;
+
+        size_t ltg = filename.find_first_of("0123456789", lsp + 2);
+        size_t ltne= filename.find_first_of("_", lsp);
+        size_t ltge= filename.find_last_of("0123456789", ltne);
+        std::string tag(filename.begin() + lsp + 2, filename.begin() + ltg);
+        int cam = std::stoi(std::string(filename.begin() + ltg, filename.begin() + ltne));
+
+        if (cam > camCnt)
         {
-            auto buff = CalibrationJob::LoadImage(p.undistortedFileName);
-            draw(p.undistortedPattern, buff);
-            std::stringstream ss;
-            ss << p.undistortedFileName << "corners.jpg";
-            CalibrationJob::SaveImage(ss.str(), buff);
+            camCnt = cam + 1;
+            for (auto& v: filenames)
+                v.resize(camCnt);
         }
+        if (!filenameMap.count(tag))
+        {
+            filenameMap[tag] = filenames.size();
+            filenames.emplace_back(camCnt);
+        }
+
+        filenames[filenameMap[tag]][cam] = {filename, tag};
     }
 
+    job.calibrationSetups.resize(filenameMap.size());
+    job.observations.resize(camCnt);
 
-    std::vector<int> cic, rsc;
-    std::vector<std::vector<int>> ccr;
-    int rps;
-    job.calculateRedundancy(cic, ccr, rsc, rps);
-    std::cout << "Intrinsics calibration redundancy:" << std::endl;
-    for (size_t i = 0; i < cic.size(); ++i)
+    for (auto& setup: filenames)
     {
-        std::cout << "Camera #" << i << " has " << cic[i] << " images and " << (rsc[i] ? " can " : " can not ") << "be calibrated" << std::endl;
-    }
-    std::cout << std::endl << "Photostation calibration: ";
-    if (rps >= 0)
-        std::cout << " has " << rps << " redundant views and can be calibrated" << std::endl;
-    else
-        std::cout << " lacks at least " << -rps << " views and can not calibrated" << std::endl;
-    std::cout << "More details: " << std::endl;
-    for (size_t i = 0; i < ccr.size(); ++i)
-    {
-        std::cout << "Camera #" << i << " has common views with: ";
-        for (auto& cc: ccr[i])
-            std::cout << cc << ", ";
-        std::cout << std::endl;
+        size_t setup_ = &setup - &filenames[0];
+        for (auto& fn: setup)
+            if (fn[0].size())
+            {
+                size_t cam = &fn - &setup[0];
+                job.calibrationSetups[setup_].emplace_back(CalibrationSetupEntry({cam, job.observations[cam].size()}));
+                ImageData img;
+                img.sourceFileName = fn[0];
+                job.observations[cam].push_back(img);
+            }
     }
 
+    job.settings.boardAlignerParams = BoardAlignerParams::GetNewBoard();
+    if (useNewPipeline)
+    {
+        job.settings.singleCameraCalibratorConstraints = job.settings.singleCameraCalibratorConstraints | CameraConstraints::UNLOCK_DISTORTION;
+        job.settings.photostationCalibratorConstraints = job.settings.photostationCalibratorConstraints | CameraConstraints::UNLOCK_DISTORTION;
+    }
+
+    job.allDetectChessBoard();
+    if (!useNewPipeline)
+    {
+        job.allEstimateDistortion();
+        job.allDetectChessBoard(false);
+    }
     job.calibrate();
+    std::vector<int> topLayer;
+    for (size_t i = 0; i < std::min(camCnt, 6); ++i)
+        topLayer.push_back(i);
+    job.reorient(topLayer);
+
+    for (int i = 0; i < camCnt; ++i)
+    {
+        std::stringstream ss;
+        ss << i;
+        job.photostation.cameras[i].nameId = ss.str();
+    }
 
     JSONSetter setter(filenameOut.c_str());
     setter.visit(job, "job");
+
     return 0;
 }
