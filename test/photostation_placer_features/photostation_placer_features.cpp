@@ -66,7 +66,7 @@ std::string getTempName()
 {
 	static std::mt19937 rng = std::mt19937(std::random_device()());
 	std::string prefix = 
-#ifdef WIN_32
+#ifdef WIN32
 		std::getenv("TEMP") + "/"
 #else
 		"/tmp/"
