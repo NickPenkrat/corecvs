@@ -852,9 +852,9 @@ void corecvs::PhotostationPlacer::getErrorSummary(PhotostationPlacerOptimization
             }
         }
 
+    std::cout << toString(errorType) << "RMSE [features]: " << std::sqrt(totalsqr / totalcnt) << std::endl;
     totalsqr = 0.0;
     totalcnt = 0.0;
-    std::cout << toString(errorType) << "RMSE [features]: " << std::sqrt(totalsqr / totalcnt) << std::endl;
     for (auto& t: scene->staticPoints)
         for (auto &pp : t->observations__)
         {
