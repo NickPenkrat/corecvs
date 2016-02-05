@@ -90,7 +90,7 @@ int main(int argc, char **argv)
             continue;
 
         size_t ltg = filename.find_first_of("0123456789", lsp + 2);
-        size_t ltne= filename.find_first_of("_", lsp);
+        size_t ltne= filename.find_first_of("_.", lsp);
         size_t ltge= filename.find_last_of("0123456789", ltne);
         std::string tag(filename.begin() + lsp + 2, filename.begin() + ltg);
         int cam = std::stoi(std::string(filename.begin() + ltg, filename.begin() + ltne));
