@@ -107,3 +107,20 @@ QString printWindowState(const Qt::WindowStates &state)
 
     return text;
 }
+
+QString printSelecionModel(const QItemSelectionModel::SelectionFlags &flag)
+{
+    QString text;
+
+    if ( flag == QItemSelectionModel::NoUpdate)	text = "No selection";
+
+    if (flag & QItemSelectionModel::Clear	 ) text += "Сleared.";
+    if (flag & QItemSelectionModel::Select	 ) text += "Select.";
+    if (flag & QItemSelectionModel::Deselect) text += "deselected.";
+    if (flag & QItemSelectionModel::Toggle  ) text += "selected or deselected depending on their current state.";
+    if (flag & QItemSelectionModel::Current ) text += "The current selection will be updated.";
+    if (flag & QItemSelectionModel::Rows    ) text += "All indexes will be expanded to span rows.";
+    if (flag & QItemSelectionModel::Columns ) text += "All indexes will be expanded to span columns.";
+    return text;
+}
+
