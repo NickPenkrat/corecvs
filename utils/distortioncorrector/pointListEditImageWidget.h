@@ -21,6 +21,13 @@ public:
     virtual bool deletePoint(size_t id) = 0;
     virtual bool appendPoint() = 0;
 
+/* You need to reimplement it only if you plan to use the selection model */
+    virtual QModelIndex index (int row, int column, const QModelIndex & parent = QModelIndex() ) const
+    {
+        return QModelIndex();
+    }
+
+
 signals:
     void updateView();
     void modelInvalidated();

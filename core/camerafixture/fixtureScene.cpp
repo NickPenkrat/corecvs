@@ -408,6 +408,8 @@ void FixtureScene::dumpInfo(ostream &out)
         {
             FixtureCamera *cam = fixture->cameras[j];
             out << "     " << "Camera <" << cam->nameId << "> "  << endl;
+            out << "        " << "Size [" << cam->intrinsics.w() << " x " << cam->intrinsics.h() << "] "  << endl;
+
         }
     }
 

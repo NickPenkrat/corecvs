@@ -298,9 +298,13 @@ void PointListEditImageWidgetUnited::invalidateModel()
 
 void PointListEditImageWidgetUnited::selectPoint(int id)
 {
+    qDebug("PointListEditImageWidgetUnited::selectPoint(%d)", id);
     mSelectedPoint = id;
     if (selectionModel != NULL && mObservationListModel != NULL) {
-        QModelIndex pos = QModelIndex().child(id, 0);
+
+        QModelIndex pos = mObservationListModel->index(id, 0);
+
+
         selectionModel->select(pos, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
     }
 }
