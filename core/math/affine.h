@@ -46,6 +46,12 @@ public:
 
     static LinearType superpose(const LinearType &l1, const LinearType &l2);
 
+    friend std::ostream& operator<< (std::ostream& os, const Affine3D &t)
+    {
+        os << t.shift << " " << t.rotor;
+        return os;
+    }
+
     friend inline Vector3dd operator *(const Affine3D &affine, const Vector3dd &x)
     {
         return affine.rotor * x + affine.shift;
@@ -55,6 +61,8 @@ public:
     {
         return (*this) * x;
     }
+
+    inline Vector3dd applyInv(const Vector3dd &x) const;
 
     /**
      *
@@ -148,6 +156,11 @@ inline Matrix33 Affine3D<Matrix33>::superpose(const Matrix33  &l1, const Matrix3
     return l1 * l2;
 }
 
+template<>
+inline Vector3dd Affine3D<Quaternion>::applyInv(const Vector3dd &x) const
+{
+    return rotor.conjugated() * (x - shift);
+}
 
 typedef Affine3D<Quaternion> Affine3DQ;
 typedef Affine3D<Matrix33>   Affine3DM;

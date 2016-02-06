@@ -852,9 +852,9 @@ TEST(SparseMatrix, TT)
 
 TEST(SparseMatrix, MulTimer)
 {
-    auto sl= randomSparse(8000, 8000, 0.001);
+    auto sl= randomSparse(4000,4000, 0.001);
     auto dl= (corecvs::Matrix)sl;
-    auto sr= randomSparse(8000, 8000, 0.001);
+    auto sr= randomSparse(4000,4000, 0.001);
     auto dr= (corecvs::Matrix)sr;
 
     auto startSparse = std::chrono::high_resolution_clock::now();
@@ -877,7 +877,6 @@ TEST(SparseMatrix, MulTimer)
     mkl_sparse_destroy(res);
 #endif
 
-    ASSERT_NEAR(((corecvs::Matrix)s - d).frobeniusNorm(), 0.0, 1e-9);
     double timeSparse = (endSparse - startSparse).count();
     double timeDense  = (endDense  - startDense ).count();
 #ifdef WITH_MKL
@@ -889,8 +888,22 @@ TEST(SparseMatrix, MulTimer)
         "MKL: " << timeMKL <<
 #endif
         std::endl;
+    ASSERT_NEAR(((corecvs::Matrix)s - d).frobeniusNorm(), 0.0, 1e-9);
     ASSERT_LE(timeSparse, timeDense);
 }
+
+TEST(SparseMatrix, multest)
+{
+    std::vector<int> IA = {0, 2, 4, 6}, JA = {1, 2, 2, 4, 0, 3};
+    std::vector<double> A = {1, 2, 3, 4, 5, 6};
+    std::vector<int> IB = {0, 1, 3, 5, 7, 10}, JB = {3, 1, 3, 0, 2, 0, 1, 0, 1, 2};
+    std::vector<double> B = {7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+    SparseMatrix a(3, 5, A, JA, IA), b(5, 4, B, JB, IB);
+    auto c = a * b;
+    std::cout << ((Matrix)a) * ((Matrix)b) << std::endl << std::endl;
+    std::cout << c << std::endl << ((Matrix)c - ((Matrix)a) * ((Matrix)b)) << std::endl;
+}
+
 
 #ifdef WITH_MKL
 // XXX: testing mkl sparse casting
@@ -1032,3 +1045,4 @@ TEST(SparseMatrix, ReferenceA)
     sm.a(5, 5) = 10.0;
     ASSERT_EQ(sm.a(5, 5), 10.0);
 }
+

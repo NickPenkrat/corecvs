@@ -37,9 +37,12 @@ enum class PhotostationInitializationType
 struct PhotostationInitialization
 {
     PhotostationInitializationType initializationType;
+    // NOTE: Static points should be appended to scene before
+    //       supplying them as initialization data
     std::vector<SceneFeaturePoint*> staticPoints;
     Affine3DQ initData;
-    Matrix33  positioningAccuracy;
+    Matrix33  positioningAccuracy = corecvs::Matrix33(1, 0, 0, 0, 1, 0, 0, 0, 1);
+    bool enforcePosition = true;
     double    rotationalAccuracy;
 };
 

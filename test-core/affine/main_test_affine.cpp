@@ -48,6 +48,12 @@ TEST(Affine, testRotations)
     CORE_ASSERT_TRUE_P(t3q.notTooFar(r1, 1e-8), (" Y rotation returned a mistake with Clean Quaternion"));
 }
 
+TEST(Affine, foo)
+{
+    auto Q = Quaternion::FromMatrix(corecvs::Matrix33(0, -1, 0, 0, 0, -1, 1, 0, 0));
+    std::cout << Q.toMatrix() << std::endl;
+}
+
 TEST(Affine, testMatrixToQuaternion)
 {
     const int TEST_SIZE = 9;
