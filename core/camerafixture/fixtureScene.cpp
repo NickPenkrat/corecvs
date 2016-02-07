@@ -390,7 +390,7 @@ void FixtureScene::addCameraToFixture(FixtureCamera *cam, CameraFixture *fixture
 
 void FixtureScene::dumpInfo(ostream &out)
 {
-    out << "FixtureScene:" << endl;
+    out << "FixtureScene::dumpInfo():" << endl;
     out << "Owned objects: " <<  mOwnedObjects.size() << endl;
 
     out << "Orphan Cameras: " <<  orphanCameras.size() << endl;

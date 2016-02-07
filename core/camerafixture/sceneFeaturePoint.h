@@ -35,7 +35,11 @@ class SceneFeaturePoint;
 
 class SceneObservation {
 public:
-    SceneObservation() {}
+    SceneObservation() :
+        camera(NULL),
+        cameraFixture(NULL),
+        featurePoint(NULL)
+    {}
 
     FixtureCamera *     camera;
     CameraFixture *     cameraFixture;
