@@ -492,7 +492,7 @@ void PhotostationCaptureDialog::capture(bool shouldAdvance)
     ui->angleSpinBox->setEnabled(!mIsCalibrationMode);
     ui->angle2SpinBox->setEnabled(!mIsCalibrationMode);
     ui->angleStepSpinBox->setEnabled(!mIsCalibrationMode);
-    L_INFO_P("CalibrationMode: %d  position: %d/%d", mIsCalibrationMode, mRotaryDialog.selected, mRotaryDialog.positions.size());
+    L_INFO_P("table calibrationMode: %d  position: %d/%d", mIsCalibrationMode, mRotaryDialog.selected, mRotaryDialog.positions.size());
 
     delete_safe(mCaptureMapper);
     mCaptureMapper = new QSignalMapper();
@@ -650,16 +650,17 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
             }
             CORE_ASSERT_TRUE_S(mCaptureInterfaces[i].isFilled());
 
-            std::string stdPath = path.toStdString();
+            std::string strPath = path.toStdString();
 
             std::string name = mNamer->nameForImage(
                 ui->stationNameLineEdit->text().toStdString()
                 , mCaptureInterfaces[i].camId
                 , metaInfo.toStdString()
                 , (AbstractImageNamer::FileType)ui->outputFormatComboBox->currentIndex()
-                , &stdPath
+                , &strPath
                 , prefix.toStdString()
                 );
+            path = strPath.c_str();
 
             bool saveOk = mCaptureInterfaces[i].result->save(path, NULL
                             , (ui->outputFormatComboBox->currentIndex() == 0) ? 85 : 100);
