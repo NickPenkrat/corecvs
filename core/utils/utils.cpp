@@ -57,7 +57,7 @@ string getEnvDirPath(cchar *envVarName)
     return toReturn;
 }
 
-string replaceSlashes(const string& str, const string& oldStr, const string& newStr)
+static string replaceSlashes(const string& str, const string& oldStr, const string& newStr)
 {
     size_t pos = 0;
     string s = str;
@@ -69,18 +69,22 @@ string replaceSlashes(const string& str, const string& oldStr, const string& new
     return s;
 }
 
+string toNativeSlashes(const string& str)
+{
+#ifdef WIN32
+    return replaceSlashes(str, "/", PATH_SEPARATOR);
+#else
+    return replaceSlashes(str, "\\", PATH_SEPARATOR);
+#endif
+}
+
 string getFullPath(string& envDirPath, cchar* path, cchar* filename)
 {
     if (envDirPath.empty())
         return filename;
 
     string toReturn = envDirPath + path + filename;
-
-#ifdef WIN32
-    return replaceSlashes(toReturn, "/", PATH_SEPARATOR);
-#else
-    return replaceSlashes(toReturn, "\\", PATH_SEPARATOR);
-#endif
+    return toNativeSlashes(toReturn);
 }
 
 string getFullPath(cchar *envVarName, cchar* path, cchar* filename)
