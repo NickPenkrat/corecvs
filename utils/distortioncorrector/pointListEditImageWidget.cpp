@@ -12,7 +12,6 @@ PointListEditImageWidget::PointListEditImageWidget(QWidget *parent, bool showHea
     mDeleteButton  = addToolButton("Delete Point",      QIcon(":/new/prefix1/vector_delete.png"  ), false);
     mAddInfoButton = addToolButton("Toggle info",       QIcon(":/new/prefix1/info_rhombus.png"   ), false);
     mAddInfoButton ->setCheckable(true);
-
 }
 
 void PointListEditImageWidget::setObservationModel(ObservationListModel *observationListModel)
@@ -260,6 +259,7 @@ void PointListEditImageWidget::childMouseMoved(QMouseEvent * event)
 PointListEditImageWidgetUnited::PointListEditImageWidgetUnited(QWidget *parent, bool showHeader) :
     AdvancedImageWidget(parent, showHeader),
     mObservationListModel(NULL),
+    selectionModel(NULL),
     mSelectedPoint(-1)
 {
     mMoveButton    = addToolButton("Select",            QIcon(":/new/prefix1/select_by_color.png"));
@@ -277,14 +277,39 @@ void PointListEditImageWidgetUnited::setObservationModel(PointImageEditorInterfa
 
     connect(mObservationListModel, SIGNAL(updateView())      , this, SLOT(update()));
     connect(mObservationListModel, SIGNAL(modelInvalidated()), this, SLOT(invalidateModel()));
-
 }
+
+void PointListEditImageWidgetUnited::setSelectionModel(QItemSelectionModel *_selectionModel)
+{
+    disconnect(selectionModel, 0, this, 0);
+    selectionModel = _selectionModel;
+
+    connect(selectionModel, SIGNAL(selectionChanged(QItemSelection,QItemSelection)), this, SLOT(update()));
+}
+
+
 
 /* This is called when model indexes are changed, and our cache is no longer valid */
 void PointListEditImageWidgetUnited::invalidateModel()
 {
     mSelectedPoint = -1;
     update();
+}
+
+void PointListEditImageWidgetUnited::selectPoint(int id)
+{
+    qDebug("PointListEditImageWidgetUnited::selectPoint(%d)", id);
+    mSelectedPoint = id;
+    if (selectionModel != NULL && mObservationListModel != NULL) {
+
+        QModelIndex pos = mObservationListModel->index(id, 0);
+
+        if (mSelectedPoint != -1) {
+            selectionModel->select(pos, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+        } else {
+            selectionModel->clear();
+        }
+    }
 }
 
 void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *who)
@@ -325,7 +350,15 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *w
             painter.drawText(pos, meta);
         }
 
-        if (i == mSelectedPoint) {
+        bool isSelected = false;
+        if (selectionModel != NULL)
+        {
+            isSelected = selectionModel->isRowSelected(i, QModelIndex());
+        } else {
+            isSelected = (i == mSelectedPoint);
+        }
+
+        if (isSelected) {
             painter.setPen(Qt::red);
             drawCircle(painter, imageCoords, 7);
 
@@ -355,7 +388,11 @@ void PointListEditImageWidgetUnited::toolButtonReleased(QWidget *button)
         qDebug() << "Add Button";
         //mCurrentToolClass = (ToolClass)ADD_POINT_TOOL;
         mObservationListModel->appendPoint();
-        mSelectedPoint = (int)mObservationListModel->getPointCount() - 1;
+        mSelectedPoint = mObservationListModel->getPointCount() - 1;
+        /*if (selectionModel != NULL) {
+            QItemSelection::Se
+            selectionModel->select(QModelIndex(mSelectedPoint, 0), QI);
+        }*/
 
         mObservationListModel->setPoint(mSelectedPoint, Qt2Core::Vector2ddFromQPoint(mZoomCenter));
         mUi->widget->update();
@@ -416,7 +453,8 @@ void PointListEditImageWidgetUnited::childMousePressed(QMouseEvent *event)
 //        bool shiftPressed = event->modifiers().testFlag(Qt::ShiftModifier);
 
         Vector2dd imagePoint = widgetToImageF(releasePoint);
-        mSelectedPoint = findClosest(imagePoint, 5);
+        int selectedPoint = findClosest(imagePoint, 5);
+        selectPoint(selectedPoint);
         mUi->widget->update();
 
     }

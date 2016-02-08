@@ -1,6 +1,8 @@
+
 #include <QPainter>
 
 #include "viAreaWidget.h"
+#include "global.h"
 
 ViAreaWidget::ViAreaWidget(QWidget *parent, bool forwardEvents)
     : QWidget(parent),
@@ -76,7 +78,7 @@ void ImageWidget::setImage(QImage *newImage)
 {
     QImage *oldImage = image;
     image = newImage;
-    delete oldImage;
+    delete_safe(oldImage);
     this->resize(image->size());
     this->update();
 

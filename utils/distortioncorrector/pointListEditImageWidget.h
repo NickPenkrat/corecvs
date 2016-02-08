@@ -21,6 +21,13 @@ public:
     virtual bool deletePoint(size_t id) = 0;
     virtual bool appendPoint() = 0;
 
+/* You need to reimplement it only if you plan to use the selection model */
+    virtual QModelIndex index (int /*row*/, int /*column*/, const QModelIndex & /*parent*/ = QModelIndex() ) const
+    {
+        return QModelIndex();
+    }
+
+
 signals:
     void updateView();
     void modelInvalidated();
@@ -42,7 +49,6 @@ public:
 
 
    ObservationListModel *mObservationListModel;
-
    QToolButton *mAddButton;
    QToolButton *mMoveButton;
    QToolButton *mDeleteButton;
@@ -86,6 +92,7 @@ public:
 
 
    PointImageEditorInterface *mObservationListModel;
+   QItemSelectionModel *selectionModel;
 
    QToolButton *mAddButton;
    QToolButton *mMoveButton;
@@ -95,8 +102,11 @@ public:
 
    PointListEditImageWidgetUnited(QWidget *parent = NULL, bool showHeader = true);
    void setObservationModel(PointImageEditorInterface *observationListModel);
+   void setSelectionModel(QItemSelectionModel *selectionModel);
 
    int mSelectedPoint;
+
+
 
    // AdvancedImageWidget interface
 public slots:
@@ -106,8 +116,12 @@ public slots:
    virtual void childMouseMoved(QMouseEvent *event) override;
    void invalidateModel();
 
+   void selectPoint(int id);
+
 protected:
    int findClosest(Vector2dd imagePoint, double limitDistance = numeric_limits<double>::max());
+
+
 };
 
 
