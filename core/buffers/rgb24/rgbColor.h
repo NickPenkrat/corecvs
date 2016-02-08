@@ -304,6 +304,55 @@ public:
         return hue;
     }
 
+    /**
+     * hue \in [0; 360)
+     * saturation \in [0; 1)
+     * value \in [0; 1)
+     */
+    static RGBColor fromHue(double hue, double saturation, double value)
+    {
+        hue        = std::min(std::max(0.0, hue), 360.0 - 1e-10);
+        saturation = std::min(std::max(0.0, saturation), 1.0);
+        value      = std::min(std::max(0.0, value), 1.0);
+
+        double chroma = value * saturation;
+        hue /= 60.0;
+        double largest = chroma * (1.0 - std::abs(hue - 2.0 * floor(hue / 2.0) - 1.0));
+        int h = floor(hue);
+        double min = value - chroma;
+        double r = min, g = min, b = min;
+
+        switch(h)
+        {
+            case 0:
+                r += chroma;
+                g += largest;
+                break;
+            case 1:
+                r += largest;
+                g += chroma;
+                break;
+            case 2:
+                g += chroma;
+                b += largest;
+                break;
+            case 3:
+                g += largest;
+                b += chroma;
+                break;
+            case 4:
+                r += largest;
+                b += chroma;
+                break;
+            case 5:
+                r += chroma;
+                b += largest;
+                break;
+        }
+
+        return RGBColor(r * 255, g * 255, b * 255);
+    }
+
     static RGBColor gray(uint8_t gray)
     {
         return RGBColor(gray, gray, gray);
