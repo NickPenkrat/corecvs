@@ -126,7 +126,7 @@ void AdvancedImageWidget::setImage(QSharedPointer<QImage> newImage)
         recalculateZoomCenter();
     }
     recomputeRects();
-    mUi->widget->update();
+    forceUpdate();
 }
 
 void AdvancedImageWidget::drawResized(QPainter &painter)
@@ -230,6 +230,11 @@ Vector2dd AdvancedImageWidget::widgetToImageF(const Vector2dd &p)
 Vector2dd AdvancedImageWidget::imageToWidgetF(const Vector2dd &p)
 {
     return Qt2Core::Vector2ddFromQPointF(AdvancedImageWidget::imageToWidgetF(Core2Qt::QPointFromVector2dd(p)));
+}
+
+QRect AdvancedImageWidget::getClientArea()
+{
+    return mUi->widget->geometry().translated(mUi->splitter->geometry().topLeft());
 }
 
 
@@ -424,7 +429,7 @@ void AdvancedImageWidget::childWheelEvent(QWheelEvent  *event)
     mZoomCenter -= QPoint(fround(shift.x()), fround(shift.y()));
     recomputeRects();
     emit notifyCenterPointChanged(mZoomCenter);
-    mUi->widget->update();
+    forceUpdate();
 }
 
 
@@ -442,7 +447,7 @@ void AdvancedImageWidget::childMousePressed(QMouseEvent * event)
         mUi->widget->setCursor(Qt::ClosedHandCursor);
     }
 
-    mUi->widget->update();
+    forceUpdate();
 }
 
 void AdvancedImageWidget::childMouseReleased(QMouseEvent * event)
@@ -509,7 +514,7 @@ void AdvancedImageWidget::childMouseReleased(QMouseEvent * event)
         emit newPointSelected(mCurrentPointButton, widgetToImage(mSelectionEnd));
     }
 
-    mUi->widget->update();
+    forceUpdate();
 }
 
 void AdvancedImageWidget::childMouseMoved(QMouseEvent * event)
@@ -567,7 +572,7 @@ void AdvancedImageWidget::childMouseMoved(QMouseEvent * event)
     }*/
 
     /* Draw tooling instruments */
-    mUi->widget->update();
+    forceUpdate();
 }
 
 void AdvancedImageWidget::zoomReset()
@@ -582,7 +587,7 @@ void AdvancedImageWidget::zoomReset()
     mUi->expSpinBox->setValue(1.0);
     recomputeRects();
     emit notifyCenterPointChanged(mZoomCenter);
-    mUi->widget->update();
+    forceUpdate();
 }
 
 void AdvancedImageWidget::zoomChanged()
@@ -591,7 +596,7 @@ void AdvancedImageWidget::zoomChanged()
     mUi->zoomOutButton->setEnabled(mUi->expSpinBox->value() != mUi->expSpinBox->minimum());
     recomputeRects();
     emit notifyZoomChanged(mUi->expSpinBox->value());
-    mUi->widget->update();
+    forceUpdate();
 }
 
 void AdvancedImageWidget::changeZoom(double zoom)
@@ -627,7 +632,7 @@ void AdvancedImageWidget::zoomOut()
 void AdvancedImageWidget::fitToggled()
 {
     recomputeRects();
-    mUi->widget->update();
+    forceUpdate();
 }
 
 void AdvancedImageWidget::setFitWindow(bool flag)
@@ -635,11 +640,25 @@ void AdvancedImageWidget::setFitWindow(bool flag)
     mUi->fitToWindowCheckBox->setChecked(flag);
 }
 
+void AdvancedImageWidget::setKeepAspect(bool flag)
+{
+    if (mUi->fitToWindowCheckBox->isChecked())
+    {
+        mUi->aspectCheckBox->setChecked(flag);
+    }
+}
+
 void AdvancedImageWidget::setCompactStyle(bool flag)
 {
     mUi->zoomInButton ->setHidden(flag);
     mUi->zoomOutButton->setHidden(flag);
     mUi->expSpinBox->setHidden(flag);
+}
+
+void AdvancedImageWidget::forceUpdate()
+{
+    emit preUpdate();
+    mUi->widget->update();
 }
 
 void AdvancedImageWidget::childResized (QResizeEvent * /*event*/)

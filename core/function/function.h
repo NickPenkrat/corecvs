@@ -14,6 +14,8 @@
 
 #include "global.h"
 
+#include "cblasLapackeWrapper.h"
+
 #include "matrix.h"
 #include "sparseMatrix.h"
 #include "vector.h"
@@ -208,7 +210,7 @@ public:
         for (int i = 0; i < inputs; ++i)
         {
             int N = (int)dependencyList[i].size();
-            CORE_ASSERT_TRUE_S(N == values[i].size());
+            CORE_ASSERT_TRUE_S(N == (int)values[i].size());
             for (int j = 0; j < N; ++j)
             {
                 int jj = dependencyList[i][j];
@@ -241,7 +243,7 @@ public:
     {
         std::vector<int> usedO(outputs);
         std::vector<int> usedI(inputs);
-        CORE_ASSERT_TRUE_S(dependencyList.size() == inputs);
+        CORE_ASSERT_TRUE_S((int)dependencyList.size() == inputs);
 
         for (int i = 0; i < inputs; ++i)
         {
@@ -273,7 +275,7 @@ public:
                 for (auto& id: dependencyList[j])
                     usedO[id] = 1;
             }
-            CORE_ASSERT_TRUE_S(currentRemap.size() == outputs);
+            CORE_ASSERT_TRUE_S((int)currentRemap.size() == outputs);
             for (auto& id: currentGroup)
                 for (auto& ido: dependencyList[id])
                 {
