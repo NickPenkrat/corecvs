@@ -163,7 +163,7 @@ public:
 
 
         /* So far compatibilty is on */
-        int camsize = cameras.size();
+        int camsize = (int)cameras.size();
         visitor.visit(camsize, 0, "cameras.size");
 
         setCameraCount(camsize);

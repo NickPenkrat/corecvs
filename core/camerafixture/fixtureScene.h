@@ -206,7 +206,7 @@ public:
 
         /* So far compatibilty is on */
         /* Orphan cameras */
-        int ocamSize = orphanCameras.size();
+        int ocamSize = (int)orphanCameras.size();
         visitor.visit(ocamSize, 0, "orphancameras.size");
 
         setOrphanCameraCount(ocamSize);
@@ -220,7 +220,7 @@ public:
 
         /* Fixtures*/
 
-        int stationSize = fixtures.size();
+        int stationSize = (int)fixtures.size();
         cout << stationSize << endl;
         visitor.visit(stationSize, 0, "stations.size");
 
@@ -235,7 +235,7 @@ public:
 
         /* Points */
 
-        int pointsSize = points.size();
+        int pointsSize = (int)points.size();
         visitor.visit(pointsSize, 0, "points.size");
 
         setFeaturePointCount(pointsSize);

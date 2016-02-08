@@ -112,7 +112,7 @@ int corecvs::PhotostationPlacer::getMovablePointCount()
 {
     // TODO: clarify which points are inmovable
     //       Immovable are scene->staticPoints
-    return scene->trackedFeatures.size();
+    return (int)scene->trackedFeatures.size();
 }
 
 void corecvs::PhotostationPlacer::tryAlign()
@@ -450,7 +450,7 @@ void corecvs::PhotostationPlacer::prepareNonLinearOptimizationData()
     ptNum = projNum = 0;
     scalerPoints = 1.0;
 
-    psNum = scene->placedFixtures.size();
+    psNum = (int)scene->placedFixtures.size();
 
     std::set<FixtureCamera*> unique;
     for (auto& f: scene->placedFixtures)
@@ -461,8 +461,8 @@ void corecvs::PhotostationPlacer::prepareNonLinearOptimizationData()
         for (auto& c: f->cameras)
             unique.insert(c);
     }
-    gpsConstraintNum = gpsConstrainedCameras.size();
-    camNum = unique.size();
+    gpsConstraintNum = (int)gpsConstrainedCameras.size();
+    camNum = (int)unique.size();
     activeCameras = std::vector<FixtureCamera*>(unique.begin(), unique.end());
 
     projNum = getReprojectionCnt();
@@ -700,9 +700,9 @@ void corecvs::PhotostationPlacer::readOrientationParams(const double in[])
 {
     int argin = 0;
     auto& placedFixtures = scene->placedFixtures;
-    int errSize = getErrorComponentsPerPoint();
-    int psNum = placedFixtures.size();
-    int camCnt = activeCameras.size();
+    //int errSize = getErrorComponentsPerPoint();
+    int psNum   = (int)placedFixtures.size();
+    int camCnt  = (int)activeCameras.size();
 
     IF(DEGENERATE_ORIENTATIONS,
         auto firstFixture = placedFixtures[0];
@@ -759,9 +759,9 @@ void corecvs::PhotostationPlacer::writeOrientationParams(double out[])
 {
     int argout = 0;
     auto& placedFixtures = scene->placedFixtures;
-    int errSize = getErrorComponentsPerPoint();
-    int psNum = scene->placedFixtures.size();
-    int camCnt = activeCameras.size();
+    //int errSize = getErrorComponentsPerPoint();
+    int psNum   = (int)scene->placedFixtures.size();
+    int camCnt  = (int)activeCameras.size();
 
     IF(DEGENERATE_ORIENTATIONS,
         auto firstFixture = placedFixtures[0];
@@ -1012,18 +1012,19 @@ void corecvs::PhotostationPlacer::ParallelErrorComputator::operator() (const cor
 
 void corecvs::PhotostationPlacer::computeErrors(double out[], const std::vector<int> &idxs)
 {
-    int lastProj = 0;
-    int errSize = getErrorComponentsPerPoint();
-    std::vector<int> reprojectionIdx;
-    std::vector<int> gpsIdx;
-    for (auto& idx: idxs)
-        if (idx < projNum)
-            reprojectionIdx.push_back(idx);
-        else
-            gpsIdx.push_back(idx);
-    lastProj = reprojectionIdx.size();
+	int lastProj = 0;
+	int errSize = getErrorComponentsPerPoint();
+	std::vector<int> reprojectionIdx, gpsIdx;
+	for (auto& idx: idxs)
+		if (idx < projNum)
+			reprojectionIdx.push_back(idx);
+		else
+			gpsIdx.push_back(idx);
+	lastProj = (int)reprojectionIdx.size();
+
     ParallelErrorComputator computator(this, reprojectionIdx, out);
     corecvs::parallelable_for(0, lastProj / errSize, 16, computator, true);
+
     int idx = lastProj;
     for (auto& id: gpsIdx)
     {
@@ -1094,9 +1095,9 @@ std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, S
 void corecvs::PhotostationPlacer::appendTracks(const std::vector<int> &inlierIds, CameraFixture* fixture, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &possibleTracks)
 {
     scene->validateAll();
-    int inlierIdx = 0;
-    int totalIdx = 0;
-    int appended = 0;
+    //int inlierIdx = 0;
+    //int totalIdx = 0;
+    //int appended = 0;
 
     for (auto& iid: inlierIds)
     {
@@ -1290,10 +1291,10 @@ void corecvs::PhotostationPlacer::buildTracks(CameraFixture *psA, CameraFixture 
     int &ptA = pt[0], &ptB = pt[1], &ptC = pt[2];
     WPP                  wpp[NPS];
     corecvs::Vector2dd    kp[NPS];
-    corecvs::Vector2dd &kpA = kp[0], &kpB = kp[1], &kpC = kp[2];
+  //corecvs::Vector2dd &kpA = kp[0], &kpB = kp[1], &kpC = kp[2];
 
     std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> free[NPAIRS];
-    auto &freeAB = free[0], &freeBC = free[1], &freeAC = free[2];
+    auto &freeAB = free[0], &freeBC = free[1]/*, &freeAC = free[2]*/;
 
     for (int i = 0; i < NPAIRS; ++i)
         free[i] = getUnusedFeatures(ps[pairIdx[i][0]], ps[pairIdx[i][1]]);
@@ -1475,7 +1476,7 @@ void corecvs::PhotostationPlacer::filterEssentialRansac(WPP a, WPP b)
     auto& kpB= scene->keyPoints[idB];
     features.reserve(mm.size());
     featuresInlier.resize(mm.size());
-    int idf = 0;
+    //int idf = 0;
     for (auto& m: mm)
     {
         int idA = std::get<0>(m);

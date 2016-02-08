@@ -56,7 +56,7 @@ void corecvs::RelativeNonCentralRansacSolver::sampleRays()
 
     int N = (int)matchesRansac.size();
 
-    bool multiCam = true;
+    //bool multiCam = true;
     int idxs[FEATURES_FOR_MODEL] = { 0 };
     for(int rdy = 0; rdy < FEATURES_FOR_MODEL;)
     {
