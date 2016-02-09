@@ -71,7 +71,7 @@ void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams 
             if (!images.count(idx))
                 continue;
             filenames.push_back(images[idx]);
-            map[filenames.size() - 1] = idx;
+            map[(int)filenames.size() - 1] = idx;
             CORE_ASSERT_TRUE_S(idx.u != WPP::UWILDCARD && idx.v != WPP::VWILDCARD);
         }
     }
@@ -104,8 +104,8 @@ void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams 
     for (size_t i = 0; i < N; ++i)
     {
         auto& kps = pipeline.images[i].keyPoints.keyPoints;
-        CORE_ASSERT_TRUE_S(map.count(i));
-        auto id = map[i];
+        CORE_ASSERT_TRUE_S(map.count((int)i));
+        auto id = map[(int)i];
 
         auto& kpp = keyPoints[id];
         for (auto& kp: kps)
@@ -117,10 +117,10 @@ void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams 
     auto& ref = pipeline.refinedMatches.matchSets;
     for (auto& ms: ref)
     {
-        CORE_ASSERT_TRUE_S(map.count(ms.imgA));
-        CORE_ASSERT_TRUE_S(map.count(ms.imgB));
-        auto id1 = map[ms.imgA];
-        auto id2 = map[ms.imgB];
+        CORE_ASSERT_TRUE_S(map.count((int)ms.imgA));
+        CORE_ASSERT_TRUE_S(map.count((int)ms.imgB));
+        auto id1 = map[(int)ms.imgA];
+        auto id2 = map[(int)ms.imgB];
         bool swap = !(id1 < id2);
 
         auto idA = swap ? id2 : id1;
@@ -155,7 +155,7 @@ std::vector<FixtureCamera*> ReconstructionFixtureScene::getDistinctCameras() con
 
 int ReconstructionFixtureScene::getDistinctCameraCount() const
 {
-    return getDistinctCameras().size();
+    return (int)getDistinctCameras().size();
 }
 
 bool ReconstructionFixtureScene::validateMatches()

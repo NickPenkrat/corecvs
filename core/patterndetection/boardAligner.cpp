@@ -1,8 +1,5 @@
 #include "boardAligner.h"
 
-#include <cassert>
-#include <fstream>
-
 #include "abstractPainter.h"
 #include "homographyReconstructor.h"
 
@@ -130,7 +127,9 @@ void BoardAligner::fixOrientation()
 
 bool BoardAligner::alignDim(DpImage &img, bool fitW, bool fitH)
 {
-    if (!fitW && !fitH) return false;
+    if (!fitW && !fitH)
+        return false;
+
     int w = (int)bestBoard[0].size(), h = (int)bestBoard.size();
 //    std::cout << "Best board: " << w << " x " << h << "; Req: " << idealWidth << " x " << idealHeight << std::endl;
     if (fitW && fitH)
@@ -161,7 +160,7 @@ bool BoardAligner::alignDim(DpImage &img, bool fitW, bool fitH)
             mean += c;
     mean /= (w * h) * 0.5;
 
-    int lb = mean[0] > img.w ? 0 : idealWidth - w;
+    int lb = mean[0] > img.w ? 0 : idealWidth  - w;
     int tb = mean[1] > img.h ? 0 : idealHeight - h;
 
     classifier.resize(h);
@@ -170,14 +169,13 @@ bool BoardAligner::alignDim(DpImage &img, bool fitW, bool fitH)
 
     for (int i = 0; i < h; ++i)
     {
-
         for (int j = 0; j < w; ++j)
         {
             classifier[i][j].first = lb + j;
             classifier[i][j].second = tb + i;
-            std::cout << "[" << lb + j << ", " << tb + i << "] ";
+            //std::cout << "[" << lb + j << ", " << tb + i << "] ";
         }
-        std::cout << std::endl;
+        //std::cout << std::endl;
     }
     return true;
 }

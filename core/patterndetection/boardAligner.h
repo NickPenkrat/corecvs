@@ -2,11 +2,14 @@
 #define BOARDALIGNER
 
 #include <memory>
+#include <vector>
 
 #include "vector2d.h"
 #include "circlePatternGenerator.h"
 #include "selectableGeometryFeatures.h"
 #include "typesafeBitmaskEnums.h"
+
+using std::vector;
 
 enum class AlignmentType
 {
@@ -27,7 +30,7 @@ enum class AlignmentType
 struct BoardMarkerDescription
 {
     int cornerX = 0, cornerY = 0;
-    std::vector<corecvs::Vector2dd> circleCenters;
+    vector<corecvs::Vector2dd> circleCenters;
     double circleRadius = 0.08;
     int boardId = 0;
 
@@ -46,7 +49,7 @@ struct BoardMarkerDescription
 struct BoardAlignerParams
 {
     AlignmentType type = AlignmentType::FIT_WIDTH;
-    std::vector<BoardMarkerDescription> boardMarkers;
+    vector<BoardMarkerDescription> boardMarkers;
     int idealWidth = 18;
     int idealHeight = 11;
 
@@ -171,17 +174,23 @@ class BoardAligner : protected BoardAlignerParams
 public:
     BoardAligner(BoardAlignerParams params = BoardAlignerParams());
     BoardAligner(BoardAlignerParams params, const std::shared_ptr<CirclePatternGenerator> &sharedGenerator);
+
     static CirclePatternGenerator* FillGenerator(const BoardAlignerParams &params);
+
     bool align(DpImage &img);
     void drawDebugInfo(corecvs::RGB24Buffer &buffer);
-    std::vector<std::vector<corecvs::Vector2dd>> bestBoard;
+
+    vector<vector<corecvs::Vector2dd>>      bestBoard;
+
 protected:
     std::shared_ptr<CirclePatternGenerator> generator;
-    bool sharedGenerator;
-    std::vector<std::vector<std::pair<int, int>>> classifier;
-    std::vector<std::vector<std::pair<int, int>>> initialClassifier;
-    corecvs::ObservationList observationList;
+    bool                                    sharedGenerator;
+    vector<vector<std::pair<int, int>>>     classifier;
+    vector<vector<std::pair<int, int>>>     initialClassifier;
+    corecvs::ObservationList                observationList;
+
     void printClassifier(bool initial);
+
 private:
     bool alignDim(DpImage &img, bool fitW, bool fitH);
     bool alignSingleMarker(DpImage &img);
@@ -193,4 +202,4 @@ private:
     bool createList();
 };
 
-#endif
+#endif // BOARDALIGNER

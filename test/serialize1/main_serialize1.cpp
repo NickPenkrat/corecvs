@@ -392,6 +392,7 @@ void testJSON_StereoScene()
                 SceneFeaturePoint *point  = scene->createFeaturePoint();
                 point->name = buffer;
                 point->setPosition(Vector3dd(20.0 + x , y, z));
+                point->color = RGBColor::Blue();
             }
 
 

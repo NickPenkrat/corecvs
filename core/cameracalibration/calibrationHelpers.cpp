@@ -84,7 +84,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const Photostation &ps, double sc
     {
         mesh.setColor(palette[colorId]);
         colorId = (colorId + 1) % CORE_COUNT_OF(palette);
-        drawCamera(mesh, ps.getRawCamera(cam), scale);
+        drawCamera(mesh, ps.getRawCamera((int)cam), scale);
     }
 
 
@@ -121,7 +121,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const CameraFixture &ps, double s
     {
         mesh.setColor(palette[colorId]);
         colorId = (colorId + 1) % CORE_COUNT_OF(palette);
-        drawCamera(mesh, ps.getRawCamera(cam), scale);
+        drawCamera(mesh, ps.getRawCamera((int)cam), scale);
     }
 
 

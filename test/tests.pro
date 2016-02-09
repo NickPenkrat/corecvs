@@ -13,7 +13,7 @@ TEMPLATE = subdirs
 SUBDIRS +=       \
 #   grab         \
 #    grab_N_captures \
-#    serialize1   \
+    serialize1   \
 #   adoptcolor   \
 #    avigrab     \
 #    decodebayer \
@@ -40,7 +40,6 @@ with_opencv {
 #        \
 #        geometry_verificator \
         photostation_placer \
-        photostation_placer_features \
 
 }
 
@@ -79,4 +78,3 @@ calibration_job_calibrate           = calibration_job_calibrate/calibration_job_
 geometry_verificator                = geometry_verificator/geometry_verificator.pro
 
 photostation_placer.file            = photostation_placer/photostation_placer.pro
-photostation_placer_features.file   = photostation_placer_features/photostation_placer_features.pro

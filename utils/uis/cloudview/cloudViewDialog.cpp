@@ -152,6 +152,9 @@ CloudViewDialog::CloudViewDialog(QWidget *parent) :
 
     addSubObject("World Frame", worldFrame);
 
+    /* Stats collection */
+    connect(mUi.statsButton, SIGNAL(released()), this, SLOT(statsOpen()));
+
 }
 
 
@@ -202,25 +205,25 @@ void CloudViewDialog::setCollapseTree(bool collapse)
 void CloudViewDialog::downRotate()
 {
     mCamera *= Matrix33::RotationX(-ROTATE_STEP);
-    mUi.widget->updateGL();
+    mUi.widget->scheduleUpdate();
 }
 
 void CloudViewDialog::upRotate()
 {
     mCamera *= Matrix33::RotationX( ROTATE_STEP);
-    mUi.widget->updateGL();
+    mUi.widget->scheduleUpdate();
 }
 
 void CloudViewDialog::leftRotate()
 {
     mCamera *= Matrix33::RotationY( ROTATE_STEP);
-    mUi.widget->updateGL();
+    mUi.widget->scheduleUpdate();
 }
 
 void CloudViewDialog::rightRotate()
 {
     mCamera *= Matrix33::RotationY(-ROTATE_STEP);
-    mUi.widget->updateGL();
+    mUi.widget->scheduleUpdate();
 }
 
 void CloudViewDialog::setZoom(double value)
@@ -233,7 +236,7 @@ void CloudViewDialog::zoom(int delta)
 {
     setZoom(mCameraZoom * exp(delta / CloudViewDialog::ZOOM_DIVISION));
     resetCamera();
-    mUi.widget->updateGL();
+    mUi.widget->scheduleUpdate();
 }
 
 void CloudViewDialog::zoomIn()
@@ -491,7 +494,7 @@ void CloudViewDialog::childMoveEvent(QMouseEvent *event)
     yRot += (event->y() - track.y()) * 3.0;*/
 
     mTrack = event->pos();
-    mUi.widget->updateGL();
+    mUi.widget->scheduleUpdate();
 }
 
 void CloudViewDialog::childPressEvent(QMouseEvent *event)
@@ -547,7 +550,7 @@ void CloudViewDialog::childKeyPressEvent( QKeyEvent * event )
     }
     mCamera = Matrix44(rotate, shift) * mCamera;
 
-    mUi.widget->updateGL();
+    mUi.widget->scheduleUpdate();
     //cout << "childKeyPressEvent" << endl;
 }
 
@@ -611,6 +614,9 @@ void CloudViewDialog::initializeGLSlot()
 
 void CloudViewDialog::repaintGLSlot()
 {
+    Statistics stats;
+    stats.startInterval();
+
     if (mUi.cameraTypeBox->currentIndex() == FACE_CAMERA)
     {
         resetCamera();
@@ -633,6 +639,13 @@ void CloudViewDialog::repaintGLSlot()
     //OpenGLTools::drawOrts(10.0, 1.0);
 
     glDisable(GL_TEXTURE_2D);
+
+
+    stats.endInterval("Redraw Time");
+    mStatsCollector.addStatistics(stats);
+    ostringstream stream;
+    mStatsCollector.printAdvanced(stream);
+    mStatisticsDialog.setText(QString::fromStdString(stream.str()));
 }
 
 
@@ -861,5 +874,11 @@ void CloudViewDialog::loadParameters()
         visitor.settings()->endGroup();
     }*/
 //    QSettings settings("cloud.ini", QSettings::IniFormat);
+}
+
+void CloudViewDialog::statsOpen()
+{
+    mStatisticsDialog.show();
+    mStatisticsDialog.raise();
 }
 

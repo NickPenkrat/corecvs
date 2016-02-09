@@ -59,7 +59,7 @@ void CalibrationJob::fit(int referenceLayerCamerasCount)
     photostation.location.shift = -meanShift;
     for (size_t i = 0; i < photostation.cameras.size(); ++i)
     {
-        photostation.cameras[i] = photostation.getRawCamera(i);
+        photostation.cameras[i] = photostation.getRawCamera((int)i);
     }
     photostation.location.rotor = corecvs::Quaternion(0, 0, 0, 1);
     photostation.location.shift = corecvs::Vector3dd(0, 0, 0);
