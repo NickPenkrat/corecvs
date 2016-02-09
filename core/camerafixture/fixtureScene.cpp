@@ -451,7 +451,7 @@ void FixtureScene::setOrphanCameraCount(size_t count)
 //  vector<SceneFeaturePoint *>   points;
 void FixtureScene::setFeaturePointCount(size_t count)
 {
-    SYNC_PRINT(("FixtureScene::setFeaturePointCount(%d):  called\n", count));
+    SYNC_PRINT(("FixtureScene::setFeaturePointCount(%d):  called\n", (int)count));
 
     while  (points.size() > count) {
         SceneFeaturePoint *point = points.back();

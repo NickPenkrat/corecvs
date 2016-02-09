@@ -221,7 +221,7 @@ QString printWidgetAttributes(QWidget *widget)
     PAIR(Qt::WA_AcceptTouchEvents),
     PAIR(Qt::WA_TouchPadAcceptSingleTouchEvents),
     PAIR(Qt::WA_X11DoNotAcceptFocus),
-    PAIR(Qt::WA_AlwaysStackOnTop)
+//    PAIR(Qt::WA_AlwaysStackOnTop)
     };
 
 #undef PAIR
