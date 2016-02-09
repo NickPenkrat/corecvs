@@ -94,6 +94,8 @@ public:
    PointImageEditorInterface *mObservationListModel;
    QItemSelectionModel *selectionModel;
 
+   vector<Vector2dd> pointList;
+
    QToolButton *mAddButton;
    QToolButton *mMoveButton;
    QToolButton *mDeleteButton;
