@@ -61,7 +61,8 @@ namespace HelperUtils {
     string      getFullPath(string& envDirPath, cchar* path, cchar* filename);
     string      getFullPath(cchar *envVarName , cchar* path, cchar* filename);
 
-    string      replaceSlashes(const string& str, const string& oldStr, const string& newStr);
+  //string      replaceSlashes(const string& str, const string& oldStr, const string& newStr);
+    string      toNativeSlashes(const string& str);
 
 } // namespace HelperUtils
 

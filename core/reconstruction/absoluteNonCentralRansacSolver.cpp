@@ -95,7 +95,7 @@ std::vector<int> corecvs::AbsoluteNonCentralRansacSolver::selectInliers(const co
 
 void corecvs::AbsoluteNonCentralRansacSolver::Estimator::sampleModel()
 {
-    int N = solver->cloudMatches.size();
+    int N = (int)solver->cloudMatches.size();
     for(int rdy = 0; rdy < SAMPLESIZE;)
     {
         idxs[rdy] = rng() % N;
@@ -165,9 +165,9 @@ void corecvs::AbsoluteNonCentralRansacSolver::Estimator::selectInliers()
     }
     if (localMax < bestInliers.size())
     {
-        localMax = bestInliers.size();
+        localMax = (int)bestInliers.size();
         solver->accept(bestHypothesis, bestInliers);
-        localMax = bestInliers.size();
+        localMax = (int)bestInliers.size();
     }
 }
 

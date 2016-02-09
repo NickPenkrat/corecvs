@@ -1045,4 +1045,3 @@ TEST(SparseMatrix, ReferenceA)
     sm.a(5, 5) = 10.0;
     ASSERT_EQ(sm.a(5, 5), 10.0);
 }
-

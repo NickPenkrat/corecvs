@@ -205,7 +205,7 @@ public:
         visitor.visit(color, RGBColor::Black(), "color");
 
 
-        int observeSize = observations.size();
+        int observeSize = (int)observations.size();
         visitor.visit(observeSize, 0, "observations.size");
 
         if (! visitor.isLoader()) {

@@ -127,7 +127,7 @@ int STLLoader::saveBinarySTL(ostream &out, Mesh3D &mesh)
         return 1;
     }
 
-    uint32_t  numberTriangles = mesh.faces.size();
+    uint32_t  numberTriangles = (int)mesh.faces.size();
     out.write((char *)&numberTriangles, sizeof(uint32_t));
 
     for (uint32_t i = 0; i < numberTriangles; i++)
