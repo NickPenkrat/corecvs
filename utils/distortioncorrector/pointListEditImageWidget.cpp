@@ -306,6 +306,7 @@ void PointListEditImageWidgetUnited::selectPoint(int id)
 
         if (mSelectedPoint != -1) {
             selectionModel->select(pos, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+            selectionModel->setCurrentIndex(pos, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
         } else {
             selectionModel->clear();
         }

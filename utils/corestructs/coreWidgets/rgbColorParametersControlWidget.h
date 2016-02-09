@@ -1,4 +1,8 @@
 #pragma once
+/**
+    rgbColorParametersControlWidget.h
+**/
+
 
 #include <QWidget>
 #include <QColorDialog>
@@ -38,6 +42,15 @@ public:
           mUi->rSpinBox->value()
         , mUi->gSpinBox->value()
         , mUi->bSpinBox->value());
+    }
+
+    void setRGBColor(const RGBColor &color)
+    {
+        RgbColorParameters params;
+        params.setR(color.r());
+        params.setG(color.g());
+        params.setB(color.b());
+        setParameters(params);
     }
 
 public slots:

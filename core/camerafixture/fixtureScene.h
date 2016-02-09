@@ -221,7 +221,6 @@ public:
         /* Fixtures*/
 
         int stationSize = (int)fixtures.size();
-        cout << stationSize << endl;
         visitor.visit(stationSize, 0, "stations.size");
 
         setFixtureCount(stationSize);

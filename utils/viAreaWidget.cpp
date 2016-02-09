@@ -1,5 +1,6 @@
 
 #include <QPainter>
+#include <QPaintEvent>
 
 #include "viAreaWidget.h"
 #include "global.h"
@@ -84,10 +85,26 @@ void ImageWidget::setImage(QImage *newImage)
 
 }
 
+void ImageWidget::setSizeToImage()
+{
+    if (image != NULL && (!image->isNull()))
+    {
+        setMinimumWidth (image->width());
+        setMinimumHeight(image->height());
+    }
+
+}
+
 void ImageWidget::paintEvent(QPaintEvent * event)
 {
     QPainter p(this);
+
+    p.setBrush(Qt::green);
+    p.drawRect(event->rect());
+
     if (image != NULL)
         p.drawImage(QPoint(0,0), *image);
+
+
     ViAreaWidget::paintEvent(event);
 }
