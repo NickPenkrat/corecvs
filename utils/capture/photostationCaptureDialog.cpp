@@ -730,6 +730,15 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
     }
 }
 
+void PhotostationCaptureDialog::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Space)
+    {
+        captureAndAdvance();
+    }
+}
+
+
 void PhotostationCaptureDialog::showEvent(QShowEvent *event)
 {
     QDialog::showEvent(event);

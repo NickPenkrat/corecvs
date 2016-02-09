@@ -35,7 +35,11 @@ class SceneFeaturePoint;
 
 class SceneObservation {
 public:
-    SceneObservation() {}
+    SceneObservation() :
+        camera(NULL),
+        cameraFixture(NULL),
+        featurePoint(NULL)
+    {}
 
     FixtureCamera *     camera;
     CameraFixture *     cameraFixture;
@@ -183,6 +187,9 @@ public:
     {
         position = matrix * position + translate;
     }
+
+    bool hasObservation(FixtureCamera *cam);
+    SceneObservation *getObservation(FixtureCamera *cam);
 
     /* Let it be so far like this */
     template<class VisitorType>

@@ -9,6 +9,7 @@ CameraModelParametersControlWidget::CameraModelParametersControlWidget(QWidget *
 {
     ui->setupUi(this);
 
+    ui->lensDistortionWidget->toggleAdvanced(false);
 
     QObject::connect(ui->lensDistortionWidget, SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
     QObject::connect(ui->extrinsicWidget     , SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
@@ -130,6 +131,8 @@ void CameraModelParametersControlWidget::setParameters(const CameraModel &input)
     ui->spinBoxCy->setValue(input.intrinsics.cy());
 
     ui->spinBoxSkew->setValue(input.intrinsics.skew);
+
+    ui->infoLabel->setText(QString("Size:[%1 x %2]").arg(input.intrinsics.size.x()).arg(input.intrinsics.size.y()));
 
     blockSignals(wasBlocked);
     emit paramsChanged();

@@ -8,6 +8,7 @@
 
 #include <QtCore/QDebug>
 #include <QDoubleSpinBox>
+#include <QItemSelectionModel>
 
 #include "vector2d.h"
 #include "vector3d.h"
@@ -78,5 +79,8 @@ void setValueBlocking(QDoubleSpinBox *box, double value);
 
 QString printWindowFlags(const Qt::WindowFlags &flags);
 QString printWindowState(const Qt::WindowStates &state);
+QString printSelecionModel(const QItemSelectionModel::SelectionFlags &flag);
+
+
 
 /* EOF */
