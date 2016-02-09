@@ -125,3 +125,115 @@ QString printSelecionModel(const QItemSelectionModel::SelectionFlags &flag)
     return text;
 }
 
+
+
+QString printWidgetAttributes(QWidget *widget)
+{
+
+    QString text;
+
+    struct AttrName {
+        Qt::WidgetAttribute attr;
+        const char *name;
+    };
+
+#define PAIR(X) { X, #X }
+
+    AttrName attrs[] = {
+
+    PAIR(Qt::WA_AcceptDrops),
+    PAIR(Qt::WA_AlwaysShowToolTips),
+    PAIR(Qt::WA_ContentsPropagated),
+    PAIR(Qt::WA_CustomWhatsThis),
+    PAIR(Qt::WA_DeleteOnClose),
+    PAIR(Qt::WA_Disabled),
+    PAIR(Qt::WA_DontShowOnScreen),
+    PAIR(Qt::WA_ForceDisabled),
+    PAIR(Qt::WA_ForceUpdatesDisabled),
+    PAIR(Qt::WA_GroupLeader),
+    PAIR(Qt::WA_Hover),
+    PAIR(Qt::WA_InputMethodEnabled),
+    PAIR(Qt::WA_KeyboardFocusChange),
+    PAIR(Qt::WA_KeyCompression),
+    PAIR(Qt::WA_LayoutOnEntireRect),
+    PAIR(Qt::WA_LayoutUsesWidgetRect),
+    PAIR(Qt::WA_MacNoClickThrough),
+    PAIR(Qt::WA_MacOpaqueSizeGrip),
+    PAIR(Qt::WA_MacShowFocusRect),
+    PAIR(Qt::WA_MacNormalSize),
+    PAIR(Qt::WA_MacSmallSize),
+    PAIR(Qt::WA_MacMiniSize),
+    PAIR(Qt::WA_MacVariableSize),
+    PAIR(Qt::WA_MacBrushedMetal),
+    PAIR(Qt::WA_Mapped),
+    PAIR(Qt::WA_MouseNoMask),
+    PAIR(Qt::WA_MouseTracking),
+    PAIR(Qt::WA_Moved),
+    PAIR(Qt::WA_MSWindowsUseDirect3D),
+    PAIR(Qt::WA_NoBackground),
+    PAIR(Qt::WA_NoChildEventsForParent),
+    PAIR(Qt::WA_NoChildEventsFromChildren),
+    PAIR(Qt::WA_NoMouseReplay),
+    PAIR(Qt::WA_NoMousePropagation),
+    PAIR(Qt::WA_TransparentForMouseEvents),
+    PAIR(Qt::WA_NoSystemBackground),
+    PAIR(Qt::WA_OpaquePaintEvent),
+    PAIR(Qt::WA_OutsideWSRange),
+    PAIR(Qt::WA_PaintOnScreen),
+    PAIR(Qt::WA_PaintUnclipped),
+    PAIR(Qt::WA_PendingMoveEvent),
+    PAIR(Qt::WA_PendingResizeEvent),
+    PAIR(Qt::WA_QuitOnClose),
+    PAIR(Qt::WA_Resized),
+    PAIR(Qt::WA_RightToLeft),
+    PAIR(Qt::WA_SetCursor),
+    PAIR(Qt::WA_SetFont),
+    PAIR(Qt::WA_SetPalette),
+    PAIR(Qt::WA_SetStyle),
+    PAIR(Qt::WA_ShowModal),
+    PAIR(Qt::WA_StaticContents),
+    PAIR(Qt::WA_StyleSheet),
+    PAIR(Qt::WA_TranslucentBackground),
+    PAIR(Qt::WA_UnderMouse),
+    PAIR(Qt::WA_UpdatesDisabled),
+    PAIR(Qt::WA_WindowModified),
+    PAIR(Qt::WA_WindowPropagation),
+    PAIR(Qt::WA_MacAlwaysShowToolWindow),
+    PAIR(Qt::WA_SetLocale),
+    PAIR(Qt::WA_StyledBackground),
+    PAIR(Qt::WA_ShowWithoutActivating),
+    PAIR(Qt::WA_NativeWindow),
+    PAIR(Qt::WA_DontCreateNativeAncestors),
+    PAIR(Qt::WA_X11NetWmWindowTypeDesktop),
+    PAIR(Qt::WA_X11NetWmWindowTypeDock),
+    PAIR(Qt::WA_X11NetWmWindowTypeToolBar),
+    PAIR(Qt::WA_X11NetWmWindowTypeMenu),
+    PAIR(Qt::WA_X11NetWmWindowTypeUtility),
+    PAIR(Qt::WA_X11NetWmWindowTypeSplash),
+    PAIR(Qt::WA_X11NetWmWindowTypeDialog),
+    PAIR(Qt::WA_X11NetWmWindowTypeDropDownMenu),
+    PAIR(Qt::WA_X11NetWmWindowTypePopupMenu),
+    PAIR(Qt::WA_X11NetWmWindowTypeToolTip),
+    PAIR(Qt::WA_X11NetWmWindowTypeNotification),
+    PAIR(Qt::WA_X11NetWmWindowTypeCombo),
+    PAIR(Qt::WA_X11NetWmWindowTypeDND),
+    PAIR(Qt::WA_MacFrameworkScaled),
+    PAIR(Qt::WA_AcceptTouchEvents),
+    PAIR(Qt::WA_TouchPadAcceptSingleTouchEvents),
+    PAIR(Qt::WA_X11DoNotAcceptFocus),
+    PAIR(Qt::WA_AlwaysStackOnTop)
+    };
+
+#undef PAIR
+
+    for (int i = 0; i < CORE_COUNT_OF(attrs); i++)
+    {
+        if (widget->testAttribute(attrs[i].attr)) {
+            text += attrs[i].name;
+            text += " ";
+        }
+    }
+
+    return text;
+}
+
