@@ -148,6 +148,7 @@ public:
     ReconstructionFixtureScene* scene;
     void fullRun();
     corecvs::Mesh3D dumpMesh(const std::string &filename);
+    void paintTracksOnImages();
     void detectAll();
     bool initialize();
     bool initGPS();
