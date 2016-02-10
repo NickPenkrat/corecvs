@@ -10,9 +10,9 @@ namespace corecvs
 {
 struct FeatureDetectionParams
 {
-    std::string detector   = "SURF";
-    std::string descriptor = "SURF";
-    std::string matcher    = "ANN";
+    std::string detector   = "ORB";
+    std::string descriptor = "ORB";
+    std::string matcher    = "BF";
     double b2bThreshold = 0.9;
 };
 

@@ -72,7 +72,7 @@ DescriptorExtractor* OpenCvDescriptorExtractorProvider::getDescriptorExtractor(c
 		SWITCH_TYPE(BRISK,
 				return new OpenCvDescriptorExtractorWrapper(new cv::BRISK(briskParams.thresh, briskParams.octaves, briskParams.patternScale));)
 		SWITCH_TYPE(ORB,
-				return new OpenCvDescriptorExtractorWrapper(new cv::ORB(2000, orbParams.scaleFactor, orbParams.nLevels, orbParams.edgeThreshold, orbParams.firstLevel, orbParams.WTA_K, orbParams.scoreType, orbParams.patchSize));)
+				return new OpenCvDescriptorExtractorWrapper(new cv::ORB(4000, orbParams.scaleFactor, orbParams.nLevels, orbParams.edgeThreshold, orbParams.firstLevel, orbParams.WTA_K, orbParams.scoreType, orbParams.patchSize));)
 		return 0;
 }
 
