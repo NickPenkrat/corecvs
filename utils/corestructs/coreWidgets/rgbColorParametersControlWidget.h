@@ -53,6 +53,15 @@ public:
         setParameters(params);
     }
 
+
+    void setEnabled(bool flag)
+    {
+        mUi->rSpinBox->setEnabled(flag);
+        mUi->gSpinBox->setEnabled(flag);
+        mUi->bSpinBox->setEnabled(flag);
+        mUi->pickerWidget->setEnabled(flag);
+    }
+
 public slots:
     void changeParameters()
     {

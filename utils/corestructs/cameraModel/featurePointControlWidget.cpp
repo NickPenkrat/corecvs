@@ -45,6 +45,7 @@ void FeaturePointControlWidget::setParameters(const SceneFeaturePoint &input)
 {
     // Block signals to send them all at once
     bool wasBlocked = blockSignals(true);
+
     ui->nameLineEdit->setText(QString::fromStdString(input.name));
 
     ui->xSpinBox->setValue(input.position.x());
@@ -54,6 +55,8 @@ void FeaturePointControlWidget::setParameters(const SceneFeaturePoint &input)
     ui->hasPositionCheckBox->setChecked(input.hasKnownPosition);
 
     ui->color->setRGBColor(input.color);
+
+    //QString str = input.
 
 
     blockSignals(wasBlocked);
@@ -65,5 +68,20 @@ void FeaturePointControlWidget::setParametersVirtual(void *input)
     // Modify widget parameters from outside
     SceneFeaturePoint *inputCasted = static_cast<SceneFeaturePoint *>(input);
     setParameters(*inputCasted);
+}
+
+void FeaturePointControlWidget::setEnabled(bool flag)
+{
+    qDebug("FeaturePointControlWidget::setEnabled(flag = %s)", flag ? "true" : "false");
+
+    ui->nameLineEdit->setEnabled(flag);
+
+    ui->xSpinBox->setEnabled(flag);
+    ui->ySpinBox->setEnabled(flag);
+    ui->zSpinBox->setEnabled(flag);
+
+    ui->hasPositionCheckBox->setEnabled(flag);
+
+    ui->color->setEnabled(flag);
 }
 

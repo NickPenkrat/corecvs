@@ -24,6 +24,8 @@ public:
     void setParameters(const SceneFeaturePoint &input);
     virtual void setParametersVirtual(void *input);
 
+    void setEnabled(bool flag);
+
 signals:
     void paramsChanged();
 

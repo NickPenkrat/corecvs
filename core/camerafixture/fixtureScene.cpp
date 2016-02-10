@@ -2,6 +2,7 @@
 
 #include "affine.h"
 
+#include "multicameraTriangulator.h"
 #include "cameraFixture.h"
 #include "fixtureScene.h"
 
@@ -90,6 +91,59 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
             }
         }
     }
+}
+
+void FixtureScene::triangulate(SceneFeaturePoint *point)
+{
+   MulticameraTriangulator triangulator;
+
+  /* for (size_t stationId = 0; stationId < fixtures.size(); stationId++)
+   {
+       CameraFixture &station = *fixtures[stationId];
+       for (size_t camId = 0; camId < station.cameras.size(); camId++)
+       {
+           FixtureCamera *camera = station.cameras[camId];
+           CameraModel worldCam = station.getWorldCamera(camera);
+
+
+
+       }
+   }*/
+
+   triangulator.trace = true;
+
+   if (point->observations.size() < 2)
+   {
+       SYNC_PRINT(("FixtureScene::triangulate(): Too few observations"));
+       return;
+   }
+
+   for (auto it = point->observations.begin(); it != point->observations.end(); it++)
+   {
+       FixtureCamera *cam = it->first;
+       const SceneObservation &observ = it->second;
+
+       if (cam->cameraFixture == NULL) {
+           continue;
+       }
+
+       FixtureCamera worldCam = cam->cameraFixture->getWorldCamera(cam);
+       triangulator.addCamera(worldCam.getCameraMatrix(), observ.observation);
+   }
+
+   Vector3dd point3d;
+   bool ok;
+
+   point3d = triangulator.triangulate(&ok);
+
+   if (!ok) {
+       SYNC_PRINT(("FixtureScene::triangulate(): MulticameraTriangulator returned false"));
+       return;
+   }
+   cout << "FixtureScene::triangulate(): Triangulated to" << point3d << std::endl;
+
+
+   point->position = point3d;
 }
 
 FixtureCamera *FixtureScene::createCamera()
