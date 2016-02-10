@@ -22,6 +22,7 @@ public:
 	virtual void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename) = 0;
 	virtual void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const = 0;
 	virtual ~FeatureMatchingPipelineStage() {}
+	static const int MAX_CORE_COUNT_ESTIMATE = 128;
 };
 
 class KeyPointDetectionStage : public FeatureMatchingPipelineStage

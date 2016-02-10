@@ -108,6 +108,50 @@ int corecvs::PhotostationPlacer::getReprojectionCnt()
     return tot;
 }
 
+void corecvs::PhotostationPlacer::paintTracksOnImages()
+{
+	std::mt19937 rng;
+	std::uniform_real_distribution<double> runif(0, 360.0);
+	std::unordered_map<SceneFeaturePoint*, RGBColor> colorizer;
+	for (auto& tf: scene->trackedFeatures)
+	{
+		std::stringstream ss;
+		ss << tf << ":";
+		size_t cnt;
+		for (auto& o: tf->observations__)
+		{
+			ss << o.first.u->name << o.first.v->nameId;
+			if (++cnt != tf->observations__.size())
+				ss << "/";
+		}
+		tf->name = ss.str();
+		colorizer[tf] = corecvs::RGBColor::fromHue(runif(rng), 1.0, 1.0);
+	}
+	for (auto& p: scene->images)
+	{
+		auto key = p.first;
+		auto name= p.second;
+		std::stringstream ss;
+		ss << name << "_tracks.png";
+
+		auto nameNew = ss.str();
+		corecvs::RGB24Buffer src = BufferReaderProvider::readRgb(name);
+
+		AbstractPainter<RGB24Buffer> painter(&src);
+		for (auto& tf: scene->trackedFeatures)
+		{
+			for (auto& obs: tf->observations__)
+				if (obs.first == key)
+				{
+					painter.drawFormat(obs.second.observation[0] + 5, obs.second.observation[1], colorizer[tf], 1,  tf->name.c_str());
+					painter.drawCircle(obs.second.observation[0], obs.second.observation[1], 3, colorizer[tf]);
+				}
+		}
+		BufferReaderProvider::writeRgb(src, nameNew);
+		std::cout << "Writing tracks image into " << nameNew << std::endl;
+	}
+}
+
 int corecvs::PhotostationPlacer::getMovablePointCount()
 {
     // TODO: clarify which points are inmovable
@@ -923,13 +967,13 @@ void corecvs::PhotostationPlacer::fit(const PhotostationPlacerOptimizationType &
     static int cnt = 0;
     cnt++;
 
-	std::map<int, int> cntr;
-	for (auto& f: scene->trackedFeatures)
-		cntr[f->observations__.size()]++;
+    std::map<int, int> cntr;
+    for (auto& f: scene->trackedFeatures)
+        cntr[f->observations__.size()]++;
 
-	std::cout << "Track sizes: " << std::endl;
-	for (auto p: cntr)
-		std::cout << p.first << "\t" << p.second << std::endl;
+    std::cout << "Track sizes: " << std::endl;
+    for (auto p: cntr)
+        std::cout << p.first << "\t" << p.second << std::endl;
 #if 0
     if (cnt == 4)
     {
@@ -1012,15 +1056,15 @@ void corecvs::PhotostationPlacer::ParallelErrorComputator::operator() (const cor
 
 void corecvs::PhotostationPlacer::computeErrors(double out[], const std::vector<int> &idxs)
 {
-	int lastProj = 0;
-	int errSize = getErrorComponentsPerPoint();
-	std::vector<int> reprojectionIdx, gpsIdx;
-	for (auto& idx: idxs)
-		if (idx < projNum)
-			reprojectionIdx.push_back(idx);
-		else
-			gpsIdx.push_back(idx);
-	lastProj = (int)reprojectionIdx.size();
+    int lastProj = 0;
+    int errSize = getErrorComponentsPerPoint();
+    std::vector<int> reprojectionIdx, gpsIdx;
+    for (auto& idx: idxs)
+        if (idx < projNum)
+            reprojectionIdx.push_back(idx);
+        else
+            gpsIdx.push_back(idx);
+    lastProj = (int)reprojectionIdx.size();
 
     ParallelErrorComputator computator(this, reprojectionIdx, out);
     corecvs::parallelable_for(0, lastProj / errSize, 16, computator, true);
@@ -1471,7 +1515,11 @@ void corecvs::PhotostationPlacer::filterEssentialRansac(WPP a, WPP b)
     auto K1 = idA.v->intrinsics.getKMatrix33();
     auto K2 = idB.v->intrinsics.getKMatrix33();
 
+    if (!scene->matches.count(idA) || !scene->matches[idA].count(idB))
+        return;
+
     auto& mm = scene->matches[idA][idB];
+    size_t szBefore = mm.size();
     auto& kpA= scene->keyPoints[idA];
     auto& kpB= scene->keyPoints[idB];
     features.reserve(mm.size());
@@ -1489,28 +1537,21 @@ void corecvs::PhotostationPlacer::filterEssentialRansac(WPP a, WPP b)
         if (std::get<2>(m) < b2bRansacP5RPThreshold)
            features.push_back(featuresInlier[id]);
     }
+    size_t szAfter1= mm.size();
+    CORE_ASSERT_TRUE_S(&mm == &scene->matches[idA][idB]);
+    CORE_ASSERT_TRUE_S(szBefore == szAfter1);
 
     EssentialFeatureFilter filter(K1, K2, features, featuresInlier, inlierP5RPThreshold, 0.001, maxEssentialRansacIterations);
     filter.estimate();
     auto bestInliers = filter.inlierIdx;
 
-    std::vector<int> delIdx;
+    size_t szAfter = mm.size();
+    CORE_ASSERT_TRUE_S(&mm == &scene->matches[idA][idB]);
+    CORE_ASSERT_TRUE_S(szBefore == szAfter);
+    CORE_ASSERT_TRUE_S(bestInliers.size() <= mm.size());
     std::sort(bestInliers.begin(), bestInliers.end());
-    int inlierId = 0;
-    for (int i = 0; i < (int)mm.size(); ++i)
-    {
-        if (inlierId < (int)bestInliers.size() && bestInliers[inlierId] == i)
-        {
-            inlierId++;
-            continue;
-        }
-        delIdx.push_back(i);
-    }
-    std::cout << "Total: " << featuresInlier.size() << " good: " << features.size() << " del: " << delIdx.size() << " rem: " << bestInliers.size() << " (" << ((double)bestInliers.size()) / featuresInlier.size() * 100.0 << "%)" << idA.u->name << idA.v->nameId << "<>" << idB.u->name << idB.v->nameId << std::endl;
-#ifdef WITH_TBB
-    tbb::mutex::scoped_lock(mutex);
-#endif
-    remove(a, b, delIdx);
+    std::cout << "Total: " << featuresInlier.size() << " good: " << features.size() << " del: " << (featuresInlier.size() - bestInliers.size()) << " rem: " << bestInliers.size() << " (" << ((double)bestInliers.size()) / featuresInlier.size() * 100.0 << "%)" << idA.u->name << idA.v->nameId << "<>" << idB.u->name << idB.v->nameId << std::endl;
+    remove(a, b, bestInliers);
 }
 
 void corecvs::PhotostationPlacer::filterEssentialRansac(std::vector<CameraFixture*> &pss)
@@ -1527,7 +1568,16 @@ void corecvs::PhotostationPlacer::filterEssentialRansac(std::vector<CameraFixtur
             {
                 for (int camB = 0; camB < psB_->cameras.size(); ++camB)
                 {
-                    work.emplace_back(WPP(psA_, psA_->cameras[camA]), WPP(psB_, psB_->cameras[camB]));
+                    WPP idFirst(psA_, psA_->cameras[camA]), idSecond(psB_, psB_->cameras[camB]);
+                    bool alreadyIn = false;
+                    for (auto& pp: work)
+                        if ((pp.first == idFirst && pp.second == idSecond) || (pp.second == idFirst && pp.first == idSecond))
+                        {
+                            alreadyIn = true;
+                            break;
+                        }
+                    if (!alreadyIn)
+                        work.emplace_back(WPP(psA_, psA_->cameras[camA]), WPP(psB_, psB_->cameras[camB]));
                 }
             }
         }
@@ -1653,18 +1703,13 @@ bool corecvs::PhotostationPlacer::initFIXED()
 void corecvs::PhotostationPlacer::remove(WPP a, WPP b, std::vector<int> idx)
 {
     bool swap = !(a < b);
+    CORE_ASSERT_TRUE_S(scene->matches.count(swap ? b : a));
+    CORE_ASSERT_TRUE_S(scene->matches[swap ? b : a].count(swap ? a : b));
     auto& ref = scene->matches[swap ? b : a][swap ? a : b];
     CORE_ASSERT_TRUE_S(idx.size() <= ref.size());
     int ok = 0;
-    std::sort(idx.begin(), idx.end());
-    int idxSkip = 0;
-    for (int i = 0; i < (int)ref.size(); ++i)
+    for (auto& i: idx)
     {
-        if (idxSkip < (int)idx.size() && i == idx[idxSkip])
-        {
-            idxSkip++;
-            continue;
-        }
         ref[ok++] = ref[i];
     }
     ref.resize(ok);

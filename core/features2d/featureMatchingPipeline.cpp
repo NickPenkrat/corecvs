@@ -142,7 +142,7 @@ void KeyPointDetectionStage::run(FeatureMatchingPipeline *pipeline)
 
     size_t N = pipeline->images.size();
 
-    corecvs::parallelable_for ((size_t)0, N, CORE_MAX(N / 16, (size_t)1), ParallelDetector(pipeline,detectorType), parallelable);
+    corecvs::parallelable_for ((size_t)0, N, CORE_MAX(N /MAX_CORE_COUNT_ESTIMATE, (size_t)1), ParallelDetector(pipeline,detectorType), parallelable);
 
     ss1 << "Detecting keypoints with " << detectorType;
     pipeline->toc(ss1.str(), ss2.str());
@@ -298,7 +298,7 @@ void DescriptorExtractionStage::run(FeatureMatchingPipeline *pipeline)
 
     size_t N = pipeline->images.size();
 
-    corecvs::parallelable_for ((size_t)0, N, CORE_MAX(N / 16,(size_t)1), ParallelExtractor(pipeline,descriptorType), parallelable);
+    corecvs::parallelable_for ((size_t)0, N, CORE_MAX(N /MAX_CORE_COUNT_ESTIMATE,(size_t)1), ParallelExtractor(pipeline,descriptorType), parallelable);
 
     ss1 << "Extracting " << descriptorType << " descriptors";
     pipeline->toc(ss1.str(), ss2.str());
@@ -515,7 +515,7 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline)
     rawMatches.matches.resize(matchPlan.plan.size());
 
     size_t S = matchPlan.plan.size();
-    corecvs::parallelable_for ((size_t)0, S, CORE_MAX(S / 16, (size_t)1), ParallelMatcher(pipeline, descriptorType, matcherType, responsesPerPoint), parallelable);
+    corecvs::parallelable_for ((size_t)0, S, CORE_MAX(S /MAX_CORE_COUNT_ESTIMATE, (size_t)1), ParallelMatcher(pipeline, descriptorType, matcherType, responsesPerPoint), parallelable);
     
     std::stringstream ss;
     pipeline->toc("Computing raw matches", ss.str());
@@ -687,7 +687,7 @@ public:
 
             refinedMatches.matchSets[J*(J-1)/2+I]=(RefinedMatchSet(I, J, final_matches));
             cnt++;
-            if (cnt % 16 == 0)
+            if (cnt % 128 == 0)
             {
                 pipeline->toc(ss1.str(), ss2.str(), S, cnt, id, false); cnt = 0;
                 ss1.str("");
@@ -767,7 +767,7 @@ void MatchAndRefineStage::run(FeatureMatchingPipeline *pipeline)
     rawMatches.matches.resize(matchPlan.plan.size());
     refinedMatches.matchSets.resize(N*(N-1)/2);
     
-    corecvs::parallelable_for ((size_t)0, P, CORE_MAX(P / 16,(size_t)1), ParallelMatcherRefiner(pipeline, descriptorType, matcherType, responsesPerPoint, &first, &next, &idx, scaleThreshold), parallelable);
+    corecvs::parallelable_for ((size_t)0, P, CORE_MAX(P /MAX_CORE_COUNT_ESTIMATE,(size_t)1), ParallelMatcherRefiner(pipeline, descriptorType, matcherType, responsesPerPoint, &first, &next, &idx, scaleThreshold), parallelable);
     
     pipeline->toc("Computing & refining matches on-the-fly", "");
 }
