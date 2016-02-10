@@ -72,7 +72,7 @@ FeatureDetector* OpenCvFeatureDetectorProvider::getFeatureDetector(const Detecto
 	SWITCH_TYPE(BRISK,
 			return new OpenCvFeatureDetectorWrapper(new cv::BRISK(briskParams.thresh, briskParams.octaves, briskParams.patternScale));)
 	SWITCH_TYPE(ORB,
-			return new OpenCvFeatureDetectorWrapper(new cv::ORB(2000, orbParams.scaleFactor, orbParams.nLevels, orbParams.edgeThreshold, orbParams.firstLevel, orbParams.WTA_K, orbParams.scoreType, orbParams.patchSize));)
+			return new OpenCvFeatureDetectorWrapper(new cv::ORB(4000, orbParams.scaleFactor, orbParams.nLevels, orbParams.edgeThreshold, orbParams.firstLevel, orbParams.WTA_K, orbParams.scoreType, orbParams.patchSize));)
 	return 0;
 }
 

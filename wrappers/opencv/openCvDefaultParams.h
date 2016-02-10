@@ -94,7 +94,7 @@ struct OrbParams
     int scoreType;
     int patchSize;
 
-    OrbParams(double scaleFactor = 1.2, int nLevels = 8, int edgeThreshold = 31,
+    OrbParams(double scaleFactor = 1.2, int nLevels =16, int edgeThreshold = 31,
             int firstLevel = 0, int WTA_K = 2, int scoreType = 0, //cv::ORB::HARRIS_SCORE,
             int patchSize = 31):
         scaleFactor(scaleFactor), nLevels(nLevels), edgeThreshold(edgeThreshold), firstLevel(firstLevel),
