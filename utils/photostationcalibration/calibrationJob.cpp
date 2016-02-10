@@ -93,6 +93,47 @@ bool CalibrationJob::detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::Sel
     return (features && features->mPoints.size()) || (list && list->size());
 }
 
+struct ParallelBoardDetector
+{
+	void operator() (const corecvs::BlockedRange<size_t> &r) const
+	{
+		for (int i = r.begin(); i != r.end(); ++i)
+		{
+			auto cam = idx[i][0];
+			auto obs = idx[i][1];
+
+			auto& v = job->observations[cam][obs];
+			auto& psIterator = job->photostation.cameras[cam];
+            if (!estimate)
+            {
+                const std::string& filename = distorted ? v.sourceFileName : v.undistortedFileName;
+                corecvs::RGB24Buffer buffer = CalibrationJob::LoadImage(filename);
+                if (buffer.h && buffer.w)
+                {
+                    (distorted ? psIterator.intrinsics.distortedSize : psIterator.intrinsics.size) = corecvs::Vector2dd(buffer.w, buffer.h);
+                }
+                job->detectChessBoard(buffer, distorted ? v.sourcePattern : v.undistortedPattern);
+            }
+            else
+            {
+                for (auto&p: v.sourcePattern)
+                {
+                    auto pc = p;
+                    pc.projection = job->photostation.cameras[cam].distortion.mapBackward(pc.projection);
+                    v.undistortedPattern.push_back(pc);
+                }
+            }
+		}
+	}
+	ParallelBoardDetector(CalibrationJob* job, std::vector<std::array<size_t, 2>> idx, bool estimate, bool distorted)
+		: job(job), idx(idx), estimate(estimate), distorted(distorted)
+	{
+	}
+	CalibrationJob* job;
+	std::vector<std::array<size_t, 2>> idx;
+	bool estimate, distorted;
+};
+
 void CalibrationJob::allDetectChessBoard(bool distorted)
 {
     int N = (int)observations.size();
@@ -102,34 +143,15 @@ void CalibrationJob::allDetectChessBoard(bool distorted)
 
     L_INFO_P("chessboard type: %s", this->settings.boardAlignerParams.boardMarkers.size() ? "new" : "old");
 
-    int camId = 0;
-    for (auto& c: observations)
-    {
-        for (auto& v: c)
-        {
-            if (!estimate)
-            {
-                const std::string& filename = distorted ? v.sourceFileName : v.undistortedFileName;
-                corecvs::RGB24Buffer buffer = LoadImage(filename);
-                if (buffer.h && buffer.w)
-                {
-                    (distorted ? psIterator->intrinsics.distortedSize : psIterator->intrinsics.size) = corecvs::Vector2dd(buffer.w, buffer.h);
-                }
-                detectChessBoard(buffer, distorted ? v.sourcePattern : v.undistortedPattern);
-            }
-            else
-            {
-                for (auto&p: v.sourcePattern)
-                {
-                    auto pc = p;
-                    pc.projection = photostation.cameras[camId].distortion.mapBackward(pc.projection);
-                    v.undistortedPattern.push_back(pc);
-                }
-            }
-        }
-        ++psIterator;
-        ++camId;
-    }
+	std::vector<std::array<size_t, 2>> idxs;
+    for (size_t i = 0; i < observations.size(); ++i)
+	{
+		for (size_t j = 0; j < observations[i].size(); ++j)
+		{
+			idxs.emplace_back(std::array<size_t, 2>({i, j}));
+		}
+	}
+	corecvs::parallelable_for((size_t)0, idxs.size(), ParallelBoardDetector(this, idxs, estimate, distorted));
     if (!distorted && calibrated)
         computeCalibrationErrors();
 }
