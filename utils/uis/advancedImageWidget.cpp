@@ -74,6 +74,8 @@ AdvancedImageWidget::AdvancedImageWidget(QWidget *parent, bool showHeader)
 
     connect(&mToolMapper, SIGNAL(mapped(QWidget *)), this, SLOT(toolButtonReleased(QWidget *)));
     mCurrentToolClass = NO_TOOL;
+
+  //  qDebug("AdvancedImageWidget::AdvancedImageWidget(%p): called", this);
 }
 
 AdvancedImageWidget::~AdvancedImageWidget()
@@ -81,6 +83,8 @@ AdvancedImageWidget::~AdvancedImageWidget()
     delete_safe(mUi);
     delete_safe(mSaveDialog);
     delete_safe(mResizeCache);
+
+   // qDebug("AdvancedImageWidget::~AdvancedImageWidget(%p): called", this);
 }
 
 void AdvancedImageWidget::setCollapseTitle(bool collapse)

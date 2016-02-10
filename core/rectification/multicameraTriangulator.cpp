@@ -13,8 +13,21 @@ namespace corecvs {
 Vector3dd MulticameraTriangulator::triangulate(bool *ok)
 {
     hasError = true;
-    if (P.size() != xy.size() || P.size() < 2) {
-        if (ok != NULL) *ok = hasError;
+    if (P.size() != xy.size()) {
+        if (trace) {
+            SYNC_PRINT(("MulticameraTriangulator::triangulate(): P.size != xy.size"));
+        }
+        if (ok != NULL) *ok = !hasError;
+        return Vector3dd(0.0);
+    }
+
+
+    if (P.size() < 2) {
+        if (trace) {
+            SYNC_PRINT(("MulticameraTriangulator::triangulate(): P.size() < 2"));
+        }
+
+        if (ok != NULL) *ok = !hasError;
         return Vector3dd(0.0);
     }
 
@@ -64,6 +77,9 @@ Vector3dd MulticameraTriangulator::triangulate(bool *ok)
     if (trace) {
         cout << result << endl;
     }
+
+    hasError = false;
+    if (ok != NULL) *ok = !hasError;
 
     return result;
 }

@@ -45,7 +45,9 @@ public:
     QImage *image;
 
     ImageWidget() : image(NULL) {}
+
     void setImage(QImage *_image);
+    void setSizeToImage();
 
     virtual void paintEvent(QPaintEvent * );
 

@@ -79,7 +79,7 @@ void PrinterVisitor::visit<int>(int &intField, int /*defaultValue*/, const char 
 }
 
 template <>
-void PrinterVisitor::visit<uint64_t>(uint64_t &intField, uint64_t defaultValue, const char *fieldName)
+void PrinterVisitor::visit<uint64_t>(uint64_t &intField, uint64_t /*defaultValue*/, const char *fieldName)
 {
     if (stream == NULL) return;
     *stream << indent() << fieldName << "=" << intField << endl;
