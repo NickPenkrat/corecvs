@@ -44,6 +44,7 @@ FixtureScene* ReconstructionFixtureScene::dumbify()
 			oo.featurePoint = pp;
 		}
 	}
+	return dumb;
 }
 
 void ReconstructionFixtureScene::deleteCamera(FixtureCamera *camera)
