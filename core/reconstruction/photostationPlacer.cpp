@@ -1615,7 +1615,10 @@ bool corecvs::PhotostationPlacer::initGPS()
 {
     L_ERROR << "Starting feature filtering" ;
     std::vector<CameraFixture*> pss = {scene->placingQueue[0], scene->placingQueue[1], scene->placingQueue[2]};
-    filterEssentialRansac(pss);
+    if (runEssentialFiltering)
+	    filterEssentialRansac(pss);
+	else
+	    scene->matchesCopy = scene->matches;
     L_ERROR << "Estimating first pair orientation" ;
     estimateFirstPair();
     L_ERROR << "Building tracks" ;
