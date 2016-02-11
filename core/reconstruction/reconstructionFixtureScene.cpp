@@ -97,8 +97,6 @@ void ReconstructionFixtureScene::deleteFeaturePoint(SceneFeaturePoint *point)
 
 void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams &params)
 {
-    L_ERROR << "detectAllFeatures...0";
-
     // Mapping from indexes to fixture,camera pairs
     std::unordered_map<int, WPP> map;
     std::vector<std::string> filenames;
@@ -130,8 +128,6 @@ void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams 
         trackMap[pp.second].clear();
     }
 
-    L_ERROR << "detectAllFeatures...1: Feature detection and matching";
-
     // Feature detection and matching
     FeatureMatchingPipeline pipeline(filenames);
     pipeline.add(new KeyPointDetectionStage(params.detector), true);
@@ -139,11 +135,7 @@ void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams 
     pipeline.add(new MatchingPlanComputationStage(), true);
     pipeline.add(new MatchAndRefineStage(params.descriptor, params.matcher, params.b2bThreshold), true);
 
-    L_ERROR << "detectAllFeatures...2: pipeline.run";
-
     pipeline.run();
-
-    L_ERROR << "detectAllFeatures...3: post.run";
 
     // Here we discard some data and store only part (w/o descriptors and etc)
     for (size_t i = 0; i < N; ++i)

@@ -60,13 +60,7 @@ FeatureDetector* OpenCvFeatureDetectorProvider::getFeatureDetector(const Detecto
 	StarParams starParams;
 	FastParams fastParams;
 	BriskParams briskParams;
-    OrbParams orbParams;
-
-    {
-        cv::SURF* detector = new cv::SURF(surfParams.hessianThreshold, surfParams.octaves, surfParams.octaveLayers, surfParams.extended, surfParams.upright);
-        delete detector;
-    }
-
+	OrbParams orbParams;
 	SWITCH_TYPE(SIFT,
 			return new OpenCvFeatureDetectorWrapper(new cv::SIFT(0, siftParams.nOctaveLayers, siftParams.contrastThreshold, siftParams.edgeThreshold, siftParams.sigma));)
 	SWITCH_TYPE(SURF,
