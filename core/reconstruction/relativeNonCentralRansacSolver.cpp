@@ -55,10 +55,14 @@ void corecvs::RelativeNonCentralRansacSolver::sampleRays()
     queryCopy.location.shift = corecvs::Vector3dd(0, 0, 0);
 
     int N = (int)matchesRansac.size();
+    if (N == 0) {
+        cout << "Error: sampleRays() there's no matches!" << endl;
+        return;
+    }
 
     //bool multiCam = true;
     int idxs[FEATURES_FOR_MODEL] = { 0 };
-    for(int rdy = 0; rdy < FEATURES_FOR_MODEL;)
+    for (int rdy = 0; rdy < FEATURES_FOR_MODEL;)
     {
         idxs[rdy] = rng() % N;
 //        auto t = matchesRansac[idxs];
@@ -72,7 +76,7 @@ void corecvs::RelativeNonCentralRansacSolver::sampleRays()
             {
                 break;
             }
-        if (isOk) ++rdy;
+        if (isOk) ++rdy;        //TODO: isOk is always true!
     }
 
     for (int i = 0; i < FEATURES_FOR_MODEL; ++i)
