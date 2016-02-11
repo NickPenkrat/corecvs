@@ -175,9 +175,14 @@ void KeyPointDetectionStage::loadResults(FeatureMatchingPipeline *pipeline, cons
 
 KeyPointDetectionStage::KeyPointDetectionStage(DetectorType type) : detectorType(type)
 {
+    cout << "KeyPointDetectionStage::KeyPointDetectionStage: " << type << endl;
+
     FeatureDetector* detector = FeatureDetectorProvider::getInstance().getDetector(detectorType);
     parallelable = detector->isParallelable();
+
+    cout << "KeyPointDetectionStage::KeyPointDetectionStage: before delete ";
     delete detector;
+    cout << "KeyPointDetectionStage::KeyPointDetectionStage: after delete ";
 }
 
 void DescriptorExtractionStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &_filename) const
