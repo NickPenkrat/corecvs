@@ -193,6 +193,22 @@ FORMS += \
     corestructs/cameraModel/fixtureControlWidget.ui \
     corestructs/cameraModel/featurePointControlWidget.ui
 
+# =============================================================
+
+HEADERS += memoryuse/memoryUsageCalculator.h
+SOURCES += memoryuse/memoryUsageCalculator.cpp
+
+win32 {
+   HEADERS += memoryuse/windowsMemoryUsageCalculator.h
+   SOURCES += memoryuse/windowsMemoryUsageCalculator.cpp
+} else:macx {
+   HEADERS += memoryuse/macMemoryUsageCalculator.h
+   SOURCES += memoryuse/macMemoryUsageCalculator.cpp
+} else {
+   HEADERS += memoryuse/linuxMemoryUsageCalculator.h
+   SOURCES += memoryuse/linuxMemoryUsageCalculator.cpp
+}
+
 
 # =============================================================
 

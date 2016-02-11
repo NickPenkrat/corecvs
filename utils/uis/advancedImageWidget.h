@@ -13,6 +13,7 @@
 #include <QtGui>
 
 #include "vector2d.h"
+#include "matrix33.h"
 #include "viAreaWidget.h"
 #include "saveFlowSettings.h"
 #include "parametersControlWidgetBase.h"
@@ -204,6 +205,7 @@ public:
     virtual void saveToQSettings  (const QString &fileName, const QString &_root);
 
     void         setSavingRoot(const QString &root) { mRootPath = root; }
+    Matrix33     currentTransformMatrix() const;
 };
 
 #endif /* ADVANCEDIMAGEWIDGET_H */

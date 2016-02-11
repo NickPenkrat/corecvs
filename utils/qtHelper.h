@@ -9,17 +9,20 @@
 #include <QtCore/QDebug>
 #include <QDoubleSpinBox>
 #include <QItemSelectionModel>
+#include <QTransform>
 #include <QWidget>
 
 #include "vector2d.h"
 #include "vector3d.h"
 #include "rectangle.h"
+#include "matrix33.h"
 
 using corecvs::Vector2d;
 using corecvs::Vector2d32;
 using corecvs::Vector2dd;
 using corecvs::Rectangle32;
 using corecvs::Vector3dd;
+using corecvs::Matrix33;
 
 
 class Core2Qt {
@@ -41,6 +44,8 @@ public:
             rect.corner.x(),  rect.corner.y(),
             rect.size.  x(),  rect.size.  y());
     }
+
+    static QTransform QTransformFromMatrix(const Matrix33 &m);
 };
 
 class Qt2Core {
@@ -82,6 +87,8 @@ QString printWindowFlags(const Qt::WindowFlags &flags);
 QString printWindowState(const Qt::WindowStates &state);
 QString printSelecionModel(const QItemSelectionModel::SelectionFlags &flag);
 QString printWidgetAttributes(QWidget *widget);
+
+
 
 
 
