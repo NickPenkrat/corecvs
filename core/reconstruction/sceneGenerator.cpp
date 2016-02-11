@@ -1,4 +1,5 @@
 #include "sceneGenerator.h"
+#include <random>
 
 
 using namespace corecvs;
