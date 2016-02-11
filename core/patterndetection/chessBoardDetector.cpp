@@ -318,20 +318,25 @@ Statistics *ChessboardDetector::getStatistics()
     return stats;
 }
 
-size_t ChessboardDetector::detectPatterns(corecvs::RGB24Buffer &buffer)
+size_t ChessboardDetector::detectPatterns(corecvs::RGB24Buffer &buffer, std::vector<ObservationList> &patterns)
 {
+    patterns.clear();
     DpImage grayscale(buffer.h, buffer.w);
     grayscale.binaryOperationInPlace(buffer, [](const double & /*a*/, const corecvs::RGBColor &b) {
         return b.yd() / 255.0;
     });
-    return detectPatterns(grayscale);
+    if(detectPatterns(grayscale))
+        getPatterns(patterns);
+    return patterns.size();
 }
 
 size_t ChessboardDetector::detectPatterns(corecvs::DpImage &buffer)
 {
     ChessBoardDetectorMode mode =  getMode(*this);
     std::vector<std::vector<std::vector<corecvs::Vector2dd>>> boards;
-    if(!detectPatternCandidates(buffer, boards))
+    auto detected = detectPatternCandidates(buffer, boards);
+    std::cout << (detected ? "[Success]" : "[Fail]")<< " Detected " << corners.size() << " corners; assembled " << boards.size() << " boards." << std::endl;
+    if(!detected)
         return false;
 
     bool checkW = !!(mode & ChessBoardDetectorMode::FIT_WIDTH);

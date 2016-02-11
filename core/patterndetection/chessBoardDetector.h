@@ -53,7 +53,7 @@ public:
     void setStatistics(Statistics *stats);
     Statistics *getStatistics();
 
-    size_t detectPatterns(corecvs::RGB24Buffer &buffer);
+    size_t detectPatterns(corecvs::RGB24Buffer &buffer, std::vector<ObservationList> &patterns);
     size_t detectPatterns(corecvs::DpImage     &buffer);
 
     void getPatterns(std::vector<corecvs::ObservationList> &patterns);
