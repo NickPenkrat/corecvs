@@ -73,10 +73,8 @@ void corecvs::RelativeNonCentralRansacSolver::sampleRays()
         bool isOk = true;
         for (int i = 0; i < rdy && isOk; ++i)
             if (idxs[i] == idxs[rdy])
-            {
-                break;
-            }
-        if (isOk) ++rdy;        //TODO: isOk is always true!
+				isOk = false;
+        if (isOk) ++rdy;
     }
 
     for (int i = 0; i < FEATURES_FOR_MODEL; ++i)
