@@ -10,9 +10,9 @@ namespace corecvs
 {
 struct FeatureDetectionParams
 {
-    std::string detector   = "SURF";
-    std::string descriptor = "SURF";
-    std::string matcher    = "ANN";
+    std::string detector   = "ORB";
+    std::string descriptor = "ORB";
+    std::string matcher    = "BF";
     double b2bThreshold = 0.9;
 };
 
@@ -56,6 +56,8 @@ public:
     virtual void deleteCameraFixture (CameraFixture *fixture, bool recursive = true);
     virtual void deleteFixturePair   (CameraFixture *fixture, FixtureCamera *camera);
     virtual void deleteFeaturePoint  (SceneFeaturePoint *camera);
+
+    FixtureScene* dumbify();
 
     //\brief Detect and match features between all images
     void detectAllFeatures(const FeatureDetectionParams &params);

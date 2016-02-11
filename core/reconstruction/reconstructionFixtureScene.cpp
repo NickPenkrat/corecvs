@@ -11,6 +11,42 @@ ReconstructionFixtureScene::ReconstructionFixtureScene()
 {
 }
 
+FixtureScene* ReconstructionFixtureScene::dumbify()
+{
+	auto dumb = new FixtureScene();
+	std::unordered_map<WPP, WPP> wppmap;
+	for (auto f: fixtures)
+	{
+		auto ff = dumb->createCameraFixture();
+		ff->location = f->location;
+		for (auto c: f->cameras)
+		{
+			auto cc = dumb->createCamera();
+			cc->intrinsics = c->intrinsics;
+			cc->extrinsics = c->extrinsics;
+			cc->distortion = c->distortion;
+			cc->nameId     = c->nameId;
+			dumb->addCameraToFixture(cc, ff);
+			wppmap[WPP(f, c)] = WPP(ff, cc);
+		}
+	}
+	for (auto p: points)
+	{
+		auto pp = dumb->createFeaturePoint();
+		pp->reprojectedPosition = p->reprojectedPosition;
+		pp->color = p->color;
+		for (auto &o: p->observations__)
+		{
+			auto& oo = pp->observations[wppmap[o.first].v] = o.second;
+			auto wpp = wppmap[o.first];
+			oo.camera = wpp.v;
+			oo.cameraFixture = wpp.u;
+			oo.featurePoint = pp;
+		}
+	}
+	return dumb;
+}
+
 void ReconstructionFixtureScene::deleteCamera(FixtureCamera *camera)
 {
     FixtureScene::deleteCamera(camera);
