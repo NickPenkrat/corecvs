@@ -19,6 +19,7 @@ FixtureScene* ReconstructionFixtureScene::dumbify()
 	{
 		auto ff = dumb->createCameraFixture();
 		ff->location = f->location;
+		ff->name = f->name;
 		for (auto c: f->cameras)
 		{
 			auto cc = dumb->createCamera();
