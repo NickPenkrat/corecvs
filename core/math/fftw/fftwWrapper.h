@@ -18,8 +18,7 @@
 struct fftw_plan_s;
 typedef double fftw_complex[2];
 
-namespace corecvs
-{
+namespace corecvs {
 
 class FFTW
 {
@@ -32,8 +31,8 @@ public:
 
 private:
     std::vector<int> mDimensions;
-    fftw_plan_s* mPlan = nullptr;
-    Direction mDirection;
+    fftw_plan_s*     mPlan = nullptr;
+    Direction        mDirection;
 
 public:
 
@@ -135,5 +134,6 @@ public:
 
 };
 
-}
-#endif
+} // namespace corecvs
+
+#endif // FFTWWRAPPER_H_

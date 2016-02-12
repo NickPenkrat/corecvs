@@ -52,7 +52,7 @@ TEST(FileFormats, testFileFormats)
     /** Test case 4 */
     PPMLoader *metappmLoader = new PPMLoader();
     MetaData *metadata = new MetaData;
-    G12Buffer *metappm = metappmLoader->load("data/testdata/test_pgm_metadata.pgm", metadata);
+    G12Buffer *metappm = metappmLoader->loadMeta("data/testdata/test_pgm_metadata.pgm", metadata);
     CORE_ASSERT_TRUE(metappm != NULL, "PGM with Metadata Image load failed");
     CORE_ASSERT_TRUE(metappm->h == metappm->w, "PGM with Metadata Image sizes corrupted");
     CORE_ASSERT_TRUE(metappm->verify(), "PGM with Metadata Image verification failed");

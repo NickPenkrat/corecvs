@@ -45,12 +45,12 @@ public:
      *
      * \return  null if it fails, else a G12Buffer*.
      */
-    G12Buffer * load(const string& name, MetaData* metadata);
+    G12Buffer *  loadMeta                (const string& name, MetaData* metadata = nullptr);
 
-    G12Buffer* g12BufferCreateFromPGM(const string& name, MetaData* metadata = nullptr);
-    G12Buffer* g16BufferCreateFromPPM(const string& name, MetaData* metadata = nullptr);
+    G12Buffer*   g12BufferCreateFromPGM  (const string& name, MetaData* metadata = nullptr);
+    G12Buffer*   g16BufferCreateFromPPM  (const string& name, MetaData* metadata = nullptr);
 
-    RGB48Buffer* loadRGB(const string& name, MetaData* metadata);
+    RGB48Buffer* loadRGB                 (const string& name, MetaData* metadata = nullptr);
     RGB48Buffer* rgb48BufferCreateFromPPM(const string& name, MetaData* metadata = nullptr);
 
     /**
@@ -66,7 +66,7 @@ public:
      *
      * \return  Error code.
      */
-    int save(const string& name, G12Buffer *buffer, MetaData* metadata = nullptr);
+    int save(const string& name, G12Buffer   *buffer, MetaData* metadata = nullptr);
     int save(const string& name, RGB24Buffer *buffer, MetaData* metadata = nullptr);
     int save(const string& name, RGB48Buffer *buffer, MetaData* metadata = nullptr);
 
@@ -76,7 +76,7 @@ public:
 private:
     static string prefix1, prefix2;
 
-    int nextLine(FILE *fp, char *buf, int sz, MetaData *metadata);
+    int  nextLine(FILE *fp, char *buf, int sz, MetaData *metadata);
     bool readHeader(FILE *fp, unsigned long int *h, unsigned long int *w, uint16_t *maxval, uint8_t *type, MetaData* metadata);
     bool writeHeader(FILE *fp, unsigned long int h, unsigned long int w, uint8_t type, uint16_t maxval, MetaData* metadata);
 };
