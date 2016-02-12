@@ -438,8 +438,9 @@ int PPMLoader::save(const string& name, G12Buffer *buffer, MetaData* metadata)
             for (j = 0; j < w; j++)
             {
                 int offset = i * w + j;
-                charImage[offset * 2] = (buffer->element(i, j) >> 8) & 0xFF;
-                charImage[offset * 2 + 1] = buffer->element(i, j) & 0xFF;
+                uint16_t pixel = buffer->element(i, j);
+                charImage[offset * 2    ] = (pixel >> 8) & 0xFF;
+                charImage[offset * 2 + 1] = pixel & 0xFF;
             }
         }
     }
@@ -449,8 +450,7 @@ int PPMLoader::save(const string& name, G12Buffer *buffer, MetaData* metadata)
         {
             for (j = 0; j < w; j++)
             {
-                int offset = i * w + j;
-                charImage[offset] = buffer->element(i, j) & 0xFF;
+                charImage[i * w + j] = buffer->element(i, j) & 0xFF;
             }
         }
     }
@@ -463,26 +463,25 @@ int PPMLoader::save(const string& name, G12Buffer *buffer, MetaData* metadata)
 
 int PPMLoader::save(const string& name, RGB24Buffer *buffer, MetaData* metadata)
 {
-    int h = buffer->h;
-    int w = buffer->w;
-
     if (buffer == NULL)
         return -1;
 
     FILE *fp = fopen(name.c_str(), "wb");
-
     if (fp == NULL)
     {
         CORE_ASSERT_FAIL("Image could not be written");
         return -1;
     }
 
+    int h = buffer->h;
+    int w = buffer->w;
+
     writeHeader(fp, h, w, 6, 0xff, metadata);
 
     uint8_t *charImage = new uint8_t[3 * w * h];
 
-    for (int i = 0; i < buffer->h; i++)
-        for (int j = 0; j < buffer->w; j++)
+    for (int i = 0; i < h; i++)
+        for (int j = 0; j < w; j++)
         {
             uint8_t elemval[3] = {
                 buffer->element(i, j).r(),
@@ -490,7 +489,7 @@ int PPMLoader::save(const string& name, RGB24Buffer *buffer, MetaData* metadata)
                 buffer->element(i, j).b()
             };
 
-            for (int offset = i*buffer->w + j, k = 0; k < 3; k++)
+            for (int offset = i * w + j, k = 0; k < 3; k++)
                 charImage[offset * 3 + k] = elemval[k];
         }
 
@@ -501,32 +500,29 @@ int PPMLoader::save(const string& name, RGB24Buffer *buffer, MetaData* metadata)
     return 0;
 }
 
-int PPMLoader::save(const string& name, RGB48Buffer *buffer, MetaData* metadata)
+int PPMLoader::save(const string& name, RGB48Buffer *buffer, MetaData* metadata, int forceTo8bitsShift)
 {
-    int h = buffer->h;
-    int w = buffer->w;
-
     if (buffer == NULL)
         return -1;
 
     FILE *fp = fopen(name.c_str(), "wb");
-
     if (fp == NULL)
     {
-        CORE_ASSERT_FAIL("Image could not be written");
+        //CORE_ASSERT_FAIL("Image could not be written");
         return -1;
     }
 
+    int h = buffer->h;
+    int w = buffer->w;
+
     int maxval = 0;
-    for (int i = 0; i < buffer->h; i++)
-        for (int j = 0; j < buffer->w; j++)
+    for (int i = 0; i < h; i++)
+        for (int j = 0; j < w; j++)
         {
-            if (buffer->element(i, j).r() > maxval)
-                maxval = buffer->element(i, j).r();
-            if (buffer->element(i, j).g() > maxval)
-                maxval = buffer->element(i, j).g();
-            if (buffer->element(i, j).b() > maxval)
-                maxval = buffer->element(i, j).b();
+            auto &pixel = buffer->element(i, j);
+            if (pixel.r() > maxval) maxval = pixel.r();
+            if (pixel.g() > maxval) maxval = pixel.g();
+            if (pixel.b() > maxval) maxval = pixel.b();
         }
 
     int bits = 1;
@@ -534,34 +530,43 @@ int PPMLoader::save(const string& name, RGB48Buffer *buffer, MetaData* metadata)
         bits++;
 
     int bytes = (bits + 7) / 8;
+    uint16_t maxVal = (1 << bits) - 1;
 
-    writeHeader(fp, h, w, 6, (1 << bits) - 1, metadata);
+    writeHeader(fp, h, w, 6, forceTo8bitsShift >= 0 ? 255 : maxVal, metadata);
 
-    uint8_t *charImage = new uint8_t[3 * bytes * w * h];
+    size_t size = 3 * (forceTo8bitsShift >= 0 ? 1 : bytes) * w * h;
+    uint8_t *charImage = new uint8_t[size];
 
-    for (int i = 0; i < buffer->h; i++)
-        for (int j = 0; j < buffer->w; j++)
+    for (int i = 0; i < h; i++)
+        for (int j = 0; j < w; j++)
         {
             uint16_t elemval[3] = {
                 buffer->element(i, j).r(),
                 buffer->element(i, j).g(),
                 buffer->element(i, j).b()
             };
+            int offset = 3 * (i * w + j);
 
-            if (bytes == 2)
-                for (int offset = i*buffer->w + j, k = 0; k < 3; k++)
+            if (bytes == 2) {
+                for (int k = 0; k < 3; k++)
                 {
-                    charImage[(offset * 3 + k) * 2] = (elemval[k] & 0xff00) >> 8;
-                    charImage[(offset * 3 + k) * 2 + 1] = (elemval[k] & 0xff);
+                    if (forceTo8bitsShift >= 0) {
+                        charImage[offset + k] = (elemval[k] >> forceTo8bitsShift) & 0xff;
+                    }
+                    else {
+                        charImage[(offset + k) * 2] = (elemval[k] & 0xff00) >> 8;
+                        charImage[(offset + k) * 2 + 1] = (elemval[k] & 0xff);
+                    }
                 }
-            else
-                for (int offset = i*buffer->w + j, k = 0; k < 3; k++)
-                {
-                    charImage[offset * 3 + k] = (elemval[k] & 0xff);
+            }
+            else {
+                for (int k = 0; k < 3; k++) {
+                    charImage[offset + k] = elemval[k] & 0xff;
                 }
+            }
         }
 
-    fwrite(charImage, 3, bytes * h * w, fp);
+    fwrite(charImage, 1, size, fp);
 
     deletearr_safe(charImage);
     fclose(fp);
@@ -571,17 +576,14 @@ int PPMLoader::save(const string& name, RGB48Buffer *buffer, MetaData* metadata)
 // TODO: get rid of G16-specific methods
 int PPMLoader::saveG16(const string& name, G12Buffer *buffer)
 {
-    int h = buffer->h;
-    int w = buffer->w;
-
     if (buffer == NULL)
         return -1;
 
-    FILE *fp;
-    fp = fopen(name.c_str(), "wb");
+    int h = buffer->h;
+    int w = buffer->w;
 
-    if (fp == NULL)
-    {
+    FILE *fp = fopen(name.c_str(), "wb");
+    if (fp == NULL) {
         return -1;
     }
 

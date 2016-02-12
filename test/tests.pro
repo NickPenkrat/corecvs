@@ -21,7 +21,7 @@ SUBDIRS +=       \
 #    aLowCodec \
 #    new_board_detector \
 #    cr2reader           \
-#    debayer             \
+    debayer             \
 
 
 with_opencv {

@@ -50,7 +50,8 @@ int main(int argc, const char **argv)
     bool   toBayer   = s.getBool  ("toBayer");
     int    bpos      = s.getInt   ("bpos", -1);      // -1 - try to extract it from Bayer's meta
     string outfile   = s.getString("ofile", "bayer.ppm");
-    bool   compare   = s.getBool  ("compare");
+    int    outBits   = s.getInt   ("obits", -1);     // -1 - try to extract it from Bayer's meta
+    bool   compare   = s.getBool("compare");
     string target    = s.getOption("target");
     int    methodCmp = s.getInt   ("methodCmp", Debayer::CompareMethod::PSNR);
 
@@ -107,10 +108,14 @@ int main(int argc, const char **argv)
         }
         RGB48Buffer *result = new RGB48Buffer(bayer->h, bayer->w, false);
 
-        Debayer d(bayer, 8, &meta, bpos);
+        Debayer d(bayer, 8, &meta, bpos);   //TODO: why 8-bits here ?
         d.toRGB48(Debayer::Method(method), result);
 
-        PPMLoader().save(outfile, result);
+        if (outBits != -1)
+            PPMLoader().save(outfile, result, nullptr, outBits);
+        else
+            PPMLoader().save(outfile, result);
+
         delete_safe(result);
     }
     else
@@ -124,7 +129,7 @@ int main(int argc, const char **argv)
 
         bayer = new G12Buffer(inRgb->h, inRgb->w, false);
 
-        Debayer d(bayer, 8, &meta, bpos);
+        Debayer d(bayer, 8, &meta, bpos);   //TODO: why 8-bits here ?
         d.fromRgb(inRgb);
 
         PPMLoader().save(outfile, bayer);
