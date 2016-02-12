@@ -101,7 +101,8 @@ HEADERS += \
     corestructs/cameraModel/affine3dControlWidget.h \
     corestructs/cameraModel/fixtureControlWidget.h \
     widgets/observationListModel.h \
-    distortioncorrector/pointListEditImageWidget.h
+    distortioncorrector/pointListEditImageWidget.h \
+    corestructs/cameraModel/featurePointControlWidget.h
 
 SOURCES += \
     frames.cpp \
@@ -177,7 +178,8 @@ SOURCES += \
     corestructs/cameraModel/affine3dControlWidget.cpp \
     corestructs/cameraModel/fixtureControlWidget.cpp \
     widgets/observationListModel.cpp \
-    distortioncorrector/pointListEditImageWidget.cpp
+    distortioncorrector/pointListEditImageWidget.cpp \
+    corestructs/cameraModel/featurePointControlWidget.cpp
 
 
 FORMS += \
@@ -188,7 +190,24 @@ FORMS += \
     tablecontrol/rotaryTableControlWidget.ui \
     tablecontrol/rotationPlanGenerator.ui \
     corestructs/cameraModel/affine3dControlWidget.ui \
-    corestructs/cameraModel/fixtureControlWidget.ui
+    corestructs/cameraModel/fixtureControlWidget.ui \
+    corestructs/cameraModel/featurePointControlWidget.ui
+
+# =============================================================
+
+HEADERS += memoryuse/memoryUsageCalculator.h
+SOURCES += memoryuse/memoryUsageCalculator.cpp
+
+win32 {
+   HEADERS += memoryuse/windowsMemoryUsageCalculator.h
+   SOURCES += memoryuse/windowsMemoryUsageCalculator.cpp
+} else:macx {
+   HEADERS += memoryuse/macMemoryUsageCalculator.h
+   SOURCES += memoryuse/macMemoryUsageCalculator.cpp
+} else {
+   HEADERS += memoryuse/linuxMemoryUsageCalculator.h
+   SOURCES += memoryuse/linuxMemoryUsageCalculator.cpp
+}
 
 
 # =============================================================

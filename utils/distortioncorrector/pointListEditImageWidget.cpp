@@ -306,6 +306,7 @@ void PointListEditImageWidgetUnited::selectPoint(int id)
 
         if (mSelectedPoint != -1) {
             selectionModel->select(pos, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+            selectionModel->setCurrentIndex(pos, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
         } else {
             selectionModel->clear();
         }
@@ -362,11 +363,21 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *w
             painter.setPen(Qt::red);
             drawCircle(painter, imageCoords, 7);
 
-            /* Test it a bit and use QSelectionModel */
             imageCoords = imageToWidgetF(widgetToImageF(imageCoords));
             painter.setPen(Qt::cyan);
             drawCircle(painter, imageCoords, 3);
         }
+    }
+
+    /* Draw additional points*/
+    for (int i = 0; i < pointList.size(); i++)
+    {
+        Vector2dd &p = pointList[i];
+        Vector2dd imageCoords = imageToWidgetF(p);
+
+        painter.setPen(Qt::green);
+        drawLine(painter, imageCoords - Vector2dd( 4.0, 4.0), imageCoords + Vector2dd(4.0,  4.0));
+        drawLine(painter, imageCoords - Vector2dd(-4.0, 4.0), imageCoords + Vector2dd(-4.0, 4.0));
     }
 }
 
@@ -453,7 +464,9 @@ void PointListEditImageWidgetUnited::childMousePressed(QMouseEvent *event)
 //        bool shiftPressed = event->modifiers().testFlag(Qt::ShiftModifier);
 
         Vector2dd imagePoint = widgetToImageF(releasePoint);
-        int selectedPoint = findClosest(imagePoint, 5);
+        Vector2dd shift = widgetToImageF(Vector2dd(5,5)) - widgetToImageF(Vector2dd(0,0));
+
+        int selectedPoint = findClosest(imagePoint, shift.l2Metric());
         selectPoint(selectedPoint);
         mUi->widget->update();
 

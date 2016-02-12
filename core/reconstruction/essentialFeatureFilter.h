@@ -43,9 +43,10 @@ public:
         corecvs::EssentialDecomposition ed;
         int localMax = 0;
         int batch;
-        double inlierRadius;
         EssentialFeatureFilter* filter;
+        double inlierRadius;
     };
+
     struct ParallelEstimator
     {
         void operator() (const corecvs::BlockedRange<int> &r) const;

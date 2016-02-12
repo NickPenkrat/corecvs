@@ -42,7 +42,9 @@ public:
     struct Estimator
     {
         void operator() (const corecvs::BlockedRange<int> &r);
-        Estimator(AbsoluteNonCentralRansacSolver *solver, double inlierThreshold) : solver(solver), inlierThreshold(inlierThreshold)
+        Estimator(AbsoluteNonCentralRansacSolver *solver, double inlierThreshold) :
+            inlierThreshold(inlierThreshold),
+            solver(solver)
         {
             rng = std::mt19937(std::random_device()());
         }
