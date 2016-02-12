@@ -74,6 +74,8 @@ AdvancedImageWidget::AdvancedImageWidget(QWidget *parent, bool showHeader)
 
     connect(&mToolMapper, SIGNAL(mapped(QWidget *)), this, SLOT(toolButtonReleased(QWidget *)));
     mCurrentToolClass = NO_TOOL;
+
+  //  qDebug("AdvancedImageWidget::AdvancedImageWidget(%p): called", this);
 }
 
 AdvancedImageWidget::~AdvancedImageWidget()
@@ -81,6 +83,8 @@ AdvancedImageWidget::~AdvancedImageWidget()
     delete_safe(mUi);
     delete_safe(mSaveDialog);
     delete_safe(mResizeCache);
+
+   // qDebug("AdvancedImageWidget::~AdvancedImageWidget(%p): called", this);
 }
 
 void AdvancedImageWidget::setCollapseTitle(bool collapse)
@@ -100,12 +104,12 @@ void AdvancedImageWidget::setImage(QSharedPointer<QImage> newImage)
     if (mIsFreezed)
         return;
 
-    if (newImage.isNull())
-        return;
+    /*if (newImage.isNull())
+        return;*/
 
     mImage = newImage;
 
-    delete_safe(mResizeCache), mResizeCache = NULL;
+    delete_safe(mResizeCache);
 
     if (mSaveProcStarted)
     {
@@ -122,7 +126,11 @@ void AdvancedImageWidget::setImage(QSharedPointer<QImage> newImage)
 
     if ((!mImage.isNull() && mImageSize != mImage->size()) || (mZoomCenter == QPoint(-1,-1)))
     {
-        mImageSize = mImage->size();
+        if (mImage.isNull()) {
+            mImageSize = QSize();
+        } else {
+            mImageSize = mImage->size();
+        }
         recalculateZoomCenter();
     }
     recomputeRects();
@@ -131,8 +139,11 @@ void AdvancedImageWidget::setImage(QSharedPointer<QImage> newImage)
 
 void AdvancedImageWidget::drawResized(QPainter &painter)
 {
+    //qDebug("AdvancedImageWidget::drawResized():called");
     if (mImage.isNull())
     {
+        qDebug("AdvancedImageWidget::drawResized():image is null");
+
         painter.drawText(0,0, this->width(), this->height(), Qt::AlignHCenter | Qt::AlignVCenter, QString("NO ACTIVE IMAGE"));
         return;
     }
@@ -143,25 +154,74 @@ void AdvancedImageWidget::drawResized(QPainter &painter)
         return;
     }
 
-    /** There is extra copy here. Should be fixed **/
-    QTransform transform;
-    QImage cropped = mImage->copy(mInputRect);
+//    qDebug() << "Input"  << mInputRect;
+//    qDebug() << "Output" << mOutputRect;
 
-    switch (mUi->rotationComboBox->currentIndex())
+
+    Matrix33 matrix = currentTransformMatrix();
+//    cout << "Transfrom Matrix:\n" << matrix << std::endl << std::flush;
+    QTransform transform = Core2Qt::QTransformFromMatrix(matrix);
+//    qDebug() << "QTransfrom" << transform;
+
+
+
+    QTransform old = painter.transform();
+    painter.setTransform(transform, false);
+
+    painter.drawImage(mOutputRect.topLeft(), *mImage, mImage->rect());
+
+#if 0
+    painter.setPen(Qt::red);
+    for (int i = 0; i < 10; i++)
     {
-        case 1 : transform.rotate( 90); break;
-        case 2 : transform.rotate(180); break;
-        case 3 : transform.rotate(270); break;
+        for (int j = 0; j < 10; j++)
+        {
+            painter.drawPoint(i * 64, j * 48);
+        }
+    }
+#endif
+
+    painter.setTransform(old);
+
+}
+
+
+Matrix33 AdvancedImageWidget::currentTransformMatrix() const
+{
+    if (mOutputRect.height() == 0 || mOutputRect.width() == 0 ||
+        mInputRect .height() == 0 || mInputRect .width() == 0)
+    {
+        return Matrix33::Identity();
     }
 
-    QImage rotated = cropped.transformed(transform);
-//    qDebug() << "Image before resize" << rotated.size();
+    Matrix33 shiftToZero = Matrix33::ShiftProj(-mInputRect.left(), -mInputRect.top());
+    Matrix33 scaleTo2    = Matrix33::Scale2(2.0 / mInputRect.width(), 2.0 / mInputRect.height());
 
-    painter.drawImage(mOutputRect, rotated);
+    Matrix33 shiftToMin1 = Matrix33::ShiftProj(-1.0,-1.0);
+
+    Matrix33 inputToOne = shiftToMin1 * scaleTo2 * shiftToZero;
+
+    Matrix33 rotation = Matrix33::Identity();
+    switch (mUi->rotationComboBox->currentIndex()) {
+        case 3: rotation = Matrix33::RotationZ90 (); break; /*  -90 */
+        case 2: rotation = Matrix33::RotationZ180(); break; /* -180 */
+        case 1: rotation = Matrix33::RotationZ270(); break; /* -270 */
+        default:
+            break;
+    }
+
+    Matrix33 shiftFromMin1 = Matrix33::ShiftProj(1.0,1.0);
+    Matrix33 scaleFrom2 = Matrix33::Scale2(mOutputRect.width() / 2.0, mOutputRect.height() / 2.0);
+    Matrix33 shiftFromZero = Matrix33::ShiftProj(mOutputRect.left(), mOutputRect.top());
+
+    Matrix33 oneToOutput =  shiftFromZero * scaleFrom2 * shiftFromMin1;
+
+    return oneToOutput * rotation * inputToOne;
 }
 
 QPointF AdvancedImageWidget::widgetToImageF(const QPointF &p)
 {
+#if 0
     if (mOutputRect.height() == 0 || mOutputRect.width() == 0 ||
         mInputRect .height() == 0 || mInputRect .width() == 0)
     {
@@ -185,10 +245,17 @@ QPointF AdvancedImageWidget::widgetToImageF(const QPointF &p)
     double y = y2 * (mInputRect.height()) + mInputRect.y();
 
     return QPointF(x,y);
+#else
+    Matrix33 m = currentTransformMatrix().inv();
+    Vector2dd out = m * Qt2Core::Vector2ddFromQPointF(p);
+    return Core2Qt::QPointFromVector2dd(out);
+#endif
+
 }
 
 QPointF AdvancedImageWidget::imageToWidgetF(const QPointF &p)
 {
+#if 0
     if (mOutputRect.height() == 0 || mOutputRect.width() == 0 ||
         mInputRect .height() == 0 || mInputRect .width() == 0)
     {
@@ -213,6 +280,11 @@ QPointF AdvancedImageWidget::imageToWidgetF(const QPointF &p)
     double resultY = y2 * (mOutputRect.height()) + mOutputRect.y();
 
     return QPointF(resultX, resultY);
+#else
+    Matrix33 m = currentTransformMatrix();
+    Vector2dd out = m * Qt2Core::Vector2ddFromQPointF(p);
+    return Core2Qt::QPointFromVector2dd(out);
+#endif
 }
 
 QPoint AdvancedImageWidget::widgetToImage(const QPoint &p)

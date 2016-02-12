@@ -7,7 +7,8 @@ HEADERS += \
 	reconstruction/photostationPlacer.h \
 	reconstruction/absoluteNonCentralRansacSolver.h \
 	reconstruction/reconstructionFixtureScene.h \
-	reconstruction/essentialFeatureFilter.h
+	reconstruction/essentialFeatureFilter.h \
+	reconstruction/sceneGenerator.h
 
 
 SOURCES += \
@@ -24,7 +25,8 @@ SOURCES += \
     reconstruction/photostationPlacer.cpp \
     reconstruction/absoluteNonCentralRansacSolver.cpp \
     reconstruction/reconstructionFixtureScene.cpp \
-    reconstruction/essentialFeatureFilter.cpp
+    reconstruction/essentialFeatureFilter.cpp \
+    reconstruction/sceneGenerator.cpp
 
 
 

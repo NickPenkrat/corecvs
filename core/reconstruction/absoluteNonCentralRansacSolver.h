@@ -42,7 +42,9 @@ public:
     struct Estimator
     {
         void operator() (const corecvs::BlockedRange<int> &r);
-        Estimator(AbsoluteNonCentralRansacSolver *solver, double inlierThreshold) : solver(solver), inlierThreshold(inlierThreshold)
+        Estimator(AbsoluteNonCentralRansacSolver *solver, double inlierThreshold) :
+            inlierThreshold(inlierThreshold),
+            solver(solver)
         {
             rng = std::mt19937(std::random_device()());
         }
@@ -68,14 +70,15 @@ public:
         int batch;
     };
 
-    void accept(const corecvs::Affine3DQ &hypo, std::vector<int> &inliersNew)
+    void accept(const corecvs::Affine3DQ &hypo, std::vector<int> &inliersNew, double inliersQuality)
     {
 #ifdef WITH_TBB
         tbb::mutex::scoped_lock lock(mutex);
 #endif
-        if (inliersNew.size() <= inliers.size())
+        if (inliersNew.size() < inliers.size() || (inliersQuality > inlierQuality && inliers.size() == inliersNew.size()))
             return;
         inliers = inliersNew;
+        inlierQuality = inliersQuality;
         bestHypothesis = hypo;
         bestInlierCnt = (int)inliers.size();
         int N = (int)cloudMatches.size();
@@ -133,6 +136,7 @@ public:
 
     corecvs::Affine3DQ bestHypothesis;
     int bestInlierCnt = 0;
+    double inlierQuality = 0.0;
     std::vector<int> inliers;
     corecvs::CameraFixture *ps;
     std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> cloudMatches;

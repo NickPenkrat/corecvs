@@ -89,6 +89,7 @@ struct PhotostationPlacerEssentialFilterParams
     double inlierP5RPThreshold = 5.0;
     int maxEssentialRansacIterations = 32000;
     double b2bRansacP6RPThreshold = 0.8;
+    bool runEssentialFiltering = false;
 
     template<typename V>
     void accept(V &v)
@@ -97,6 +98,7 @@ struct PhotostationPlacerEssentialFilterParams
         v.visit(inlierP5RPThreshold, 5.0, "Inlier threshold");
         v.visit(maxEssentialRansacIterations, 1000, "Maximal essential estimator rounds");
         v.visit(b2bRansacP6RPThreshold, 0.8, "Best-2nd best relative pose estimator threshold");
+        v.visit(runEssentialFiltering, false, "Run essential filtering prior relative pose estimation");
     }
 };
 

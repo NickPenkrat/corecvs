@@ -5,6 +5,9 @@
 #include <QtXml/QDomDocument>
 #include <vector>
 
+#include "abstractPainter.h"
+#include "bmpLoader.h"
+
 #include "fixtureScene.h"
 
 #include "vector3d.h"
@@ -358,10 +361,8 @@ void testJSON_StereoScene()
     FixtureScene *scene = new FixtureScene();
 
     CameraFixture *fixture = scene->createCameraFixture();
-    fixture->name = "Fixture1";
+    fixture->name = "Z";
 
-    FixtureCamera *camera1 = scene->createCamera();
-    FixtureCamera *camera2 = scene->createCamera();
 
     CameraModel model;
     model.intrinsics.principal.x() = 320;
@@ -370,9 +371,13 @@ void testJSON_StereoScene()
     model.intrinsics.focal.y() = 589;
     model.intrinsics.size = Vector2dd(640, 480);
 
-    camera1->nameId = "Cam1";
+
+    FixtureCamera *camera1 = scene->createCamera();
+    FixtureCamera *camera2 = scene->createCamera();
+
+    camera1->nameId = "1";
     camera1->copyModelFrom(model);
-    camera2->nameId = "Cam2";
+    camera2->nameId = "2";
     camera2->copyModelFrom(model);
 
     scene->addCameraToFixture(camera1, fixture);
@@ -382,22 +387,68 @@ void testJSON_StereoScene()
     scene->positionCameraInFixture(fixture, camera2
                                    , Affine3DQ(Vector3dd::OrtY() * 10.0));
 
+    RGB24Buffer *image1 = new RGB24Buffer(model.intrinsics.h(), model.intrinsics.w(), RGBColor::gray(39));
+    RGB24Buffer *image2 = new RGB24Buffer(model.intrinsics.h(), model.intrinsics.w(), RGBColor::gray(56));
+
+    AbstractPainter<RGB24Buffer> painter1(image1);
+    AbstractPainter<RGB24Buffer> painter2(image2);
+
+    painter1.drawCircle(10, 10, 5, RGBColor::White());
+    painter2.drawCircle(10, 10, 7, RGBColor::White());
+
+
     int count = 0;
-    for (double x = 0.0; x < 5.0; x += 1.0)
-        for (double y = 0.0; y < 5.0; y += 1.0)
-            for (double z = 0.0; z < 5.0; z += 1.0)
+
+    for (double x = 0.0; x <= 5.0; x += 2.5)
+        for (double y = 0.0; y <= 5.0; y += 2.5)
+            for (double z = 0.0; z <= 5.0; z += 2.5)
             {
                 char buffer[100];
                 snprintf2buf(buffer, "Test Point %d", count++);
                 SceneFeaturePoint *point  = scene->createFeaturePoint();
                 point->name = buffer;
                 point->setPosition(Vector3dd(20.0 + x , y, z));
-                point->color = RGBColor::Blue();
+                point->color = RGBColor::rainbow((x + y + z) / 25.0);
             }
 
 
 
     scene->projectForward(SceneFeaturePoint::POINT_ALL);
+
+    /*
+        Additional camara
+    */
+
+    FixtureCamera *camera3 = scene->createCamera();
+
+    camera3->nameId = "3";
+    camera3->copyModelFrom(model);
+
+    scene->addCameraToFixture(camera3, fixture);
+    scene->positionCameraInFixture(fixture, camera3, Affine3DQ( Quaternion::RotationZ(degToRad(-40)), Vector3dd(10, 10, 0)));
+
+
+    for (size_t i = 0; i < scene->points.size(); i++)
+    {
+        SceneFeaturePoint *point = scene->points[i];
+        if (point->getObservation(camera1) != NULL) {
+            Vector2dd p = point->getObservation(camera1)->observation;
+            painter1.drawCircle(p.x(), p.y(), 3, point->color);
+        }
+
+        if (point->getObservation(camera2) != NULL) {
+            Vector2dd p = point->getObservation(camera2)->observation;
+            painter2.drawCircle(p.x(), p.y(), 3, point->color);
+        }
+    }
+
+    std::string name1 = std::string("SP") +  fixture->name + camera1->nameId + ".bmp";
+    std::string name2 = std::string("SP") +  fixture->name + camera2->nameId + ".bmp";
+
+    BMPLoader().save(name1, image1);
+    BMPLoader().save(name2, image2);
+
+
     cout << "Original scene:" << endl;
     cout << "================================" << endl;
     scene->dumpInfo(cout);

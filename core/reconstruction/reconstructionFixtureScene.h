@@ -57,6 +57,8 @@ public:
     virtual void deleteFixturePair   (CameraFixture *fixture, FixtureCamera *camera);
     virtual void deleteFeaturePoint  (SceneFeaturePoint *camera);
 
+    FixtureScene* dumbify();
+
     //\brief Detect and match features between all images
     void detectAllFeatures(const FeatureDetectionParams &params);
 

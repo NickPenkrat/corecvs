@@ -24,16 +24,19 @@
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <property name="leftMargin">
-    <number>3</number>
+    <number>1</number>
    </property>
    <property name="topMargin">
-    <number>3</number>
+    <number>1</number>
    </property>
    <property name="rightMargin">
-    <number>3</number>
+    <number>1</number>
    </property>
    <property name="bottomMargin">
-    <number>3</number>
+    <number>1</number>
+   </property>
+   <property name="spacing">
+    <number>1</number>
    </property>
    <item row="0" column="0">
     <widget class="QSplitter" name="splitter">
@@ -46,7 +49,7 @@
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
-     <widget class="QGroupBox" name="controlsGroupBox">
+     <widget class="QWidget" name="controlsWidget" native="true">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
         <horstretch>0</horstretch>
@@ -56,17 +59,8 @@
       <property name="maximumSize">
        <size>
         <width>16777215</width>
-        <height>95</height>
+        <height>80</height>
        </size>
-      </property>
-      <property name="title">
-       <string/>
-      </property>
-      <property name="flat">
-       <bool>true</bool>
-      </property>
-      <property name="checkable">
-       <bool>false</bool>
       </property>
       <layout class="QGridLayout" name="gridLayout_2">
        <property name="leftMargin">
@@ -79,10 +73,10 @@
         <number>0</number>
        </property>
        <property name="bottomMargin">
-        <number>3</number>
+        <number>1</number>
        </property>
        <property name="spacing">
-        <number>3</number>
+        <number>1</number>
        </property>
        <item row="1" column="0" colspan="2">
         <widget class="QFrame" name="frame_2">
@@ -190,7 +184,7 @@
        <item row="0" column="0" colspan="2">
         <widget class="QWidget" name="widget_2" native="true">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+          <sizepolicy hsizetype="Ignored" vsizetype="Maximum">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -642,6 +636,7 @@
       <property name="mouseTracking">
        <bool>false</bool>
       </property>
+      <zorder>widget_3</zorder>
      </widget>
     </widget>
    </item>
@@ -667,184 +662,7 @@
  <resources>
   <include location="../../resources/main.qrc"/>
  </resources>
- <connections>
-  <connection>
-   <sender>freezeButton</sender>
-   <signal>released()</signal>
-   <receiver>advancedImageWidget</receiver>
-   <slot>freezeImage()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>37</x>
-     <y>59</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>100</x>
-     <y>78</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>saveButton</sender>
-   <signal>released()</signal>
-   <receiver>advancedImageWidget</receiver>
-   <slot>saveImageToFile()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1043</x>
-     <y>59</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>748</x>
-     <y>8</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>saveFlowButton</sender>
-   <signal>released()</signal>
-   <receiver>advancedImageWidget</receiver>
-   <slot>stopSaveFlow()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1082</x>
-     <y>59</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>780</x>
-     <y>67</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>zoomInButton</sender>
-   <signal>released()</signal>
-   <receiver>advancedImageWidget</receiver>
-   <slot>zoomIn()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>345</x>
-     <y>59</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>780</x>
-     <y>150</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>zoomOutButton</sender>
-   <signal>released()</signal>
-   <receiver>advancedImageWidget</receiver>
-   <slot>zoomOut()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>311</x>
-     <y>59</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>780</x>
-     <y>204</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>resetZoomButton</sender>
-   <signal>released()</signal>
-   <receiver>advancedImageWidget</receiver>
-   <slot>zoomReset()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>379</x>
-     <y>59</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>780</x>
-     <y>123</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>expSpinBox</sender>
-   <signal>valueChanged(double)</signal>
-   <receiver>advancedImageWidget</receiver>
-   <slot>zoomChanged()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>277</x>
-     <y>54</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>741</x>
-     <y>221</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>rotationComboBox</sender>
-   <signal>currentIndexChanged(int)</signal>
-   <receiver>advancedImageWidget</receiver>
-   <slot>zoomChanged()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>603</x>
-     <y>44</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>544</x>
-     <y>405</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>aspectCheckBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>advancedImageWidget</receiver>
-   <slot>fitToggled()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>218</x>
-     <y>46</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1087</x>
-     <y>114</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>fitToWindowCheckBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>advancedImageWidget</receiver>
-   <slot>fitToggled()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>171</x>
-     <y>42</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1089</x>
-     <y>92</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>fitToWindowCheckBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>aspectCheckBox</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>185</x>
-     <y>43</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>208</x>
-     <y>42</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
  <slots>
   <slot>freezeImage()</slot>
   <slot>saveImageToFile()</slot>
