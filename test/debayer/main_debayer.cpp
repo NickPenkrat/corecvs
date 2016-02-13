@@ -99,7 +99,7 @@ int main(int argc, const char **argv)
     G12Buffer* bayer;
     if (!toBayer)
     {
-        bayer = PPMLoader().load(filename, &meta);
+        bayer = PPMLoader().loadMeta(filename, &meta);
         if (bayer == nullptr)
         {
             std::cout << "Couldn't open file \"" << filename << "\"." << std::endl;

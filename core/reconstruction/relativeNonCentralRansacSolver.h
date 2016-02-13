@@ -14,7 +14,9 @@ namespace corecvs
 
 struct RelativeNonCentralRansacSolverSettings
 {
-    RelativeNonCentralRansacSolverSettings(size_t maxIterations =50000, double inlierThreshold = 1.0) : maxIterations(maxIterations), inlierThreshold(inlierThreshold)
+    RelativeNonCentralRansacSolverSettings(size_t maxIterations = 50000, double inlierThreshold = 1.0)
+        : maxIterations(maxIterations)
+        , inlierThreshold(inlierThreshold)
     {
     }
     size_t maxIterations = 1000000LLU;
@@ -26,37 +28,46 @@ class RelativeNonCentralRansacSolver : public RelativeNonCentralRansacSolverSett
 {
 public:
     typedef std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd>> MatchContainer;
-    RelativeNonCentralRansacSolver(CameraFixture* ref, CameraFixture* query, const MatchContainer &matchesRansac, const MatchContainer &matchesAll, const RelativeNonCentralRansacSolverSettings &settings = RelativeNonCentralRansacSolverSettings());
+
+    RelativeNonCentralRansacSolver(CameraFixture* ref
+        , CameraFixture* query
+        , const MatchContainer &matchesRansac
+        , const MatchContainer &matchesAll
+        , const RelativeNonCentralRansacSolverSettings &settings = RelativeNonCentralRansacSolverSettings());
+
     void run();
     void fit(double distanceGuess = 10.0);
     corecvs::Affine3DQ getBestHypothesis() const;
     std::vector<int> getBestInliers() const;
+
 private:
     struct FunctorCost : corecvs::FunctionArgs
     {
         RelativeNonCentralRansacSolver *solver;
         FunctorCost(RelativeNonCentralRansacSolver* solver) : FunctionArgs(7, solver->getInliersCount()), solver(solver)
-        {
-        }
+        {}
+
         void operator() (const double in[], double out[])
         {
             solver->readParams(in);
             solver->computeError(out);
         }
     };
+
     struct FunctorCostNorm : corecvs::FunctionArgs
     {
         RelativeNonCentralRansacSolver *solver;
         FunctorCostNorm(RelativeNonCentralRansacSolver* solver) : FunctionArgs(7, 7), solver(solver)
-        {
-        }
+        {}
+
         void operator() (const double in[], double out[])
         {
             solver->readParams(in);
             solver->writeParams(out);
         }
     };
-    int getInliersCount();
+
+    int  getInliersCount();
     void readParams(const double in[]);
     void writeParams(double out[]);
     void computeError(double out[]);
@@ -79,6 +90,7 @@ private:
     std::vector<int> currentScores;
     std::vector<std::vector<int>> currentInliers;
     std::vector<int> bestInliers;
+
     // Clarify if we would like to copy them
     CameraFixture* pss[2];
     MatchContainer matchesRansac, matchesAll;
@@ -86,4 +98,4 @@ private:
 
 }
 
-#endif
+#endif // RELATIVENONCENTRALRANSACSOLVER

@@ -95,7 +95,7 @@ int main(int argc, char **argv)
         std::string tag(filename.begin() + lsp + 2, filename.begin() + ltg);
         int cam = std::stoi(std::string(filename.begin() + ltg, filename.begin() + ltne));
 
-        if (cam > camCnt)
+        if (cam >= camCnt)
         {
             camCnt = cam + 1;
             for (auto& v: filenames)
