@@ -154,6 +154,7 @@ public:
     virtual void deleteFixturePair   (CameraFixture *fixture, FixtureCamera *camera);
     virtual void deleteFeaturePoint  (SceneFeaturePoint *point);
 
+    virtual void clear();
 
     /**
      *    Helper method to check data structure integrity

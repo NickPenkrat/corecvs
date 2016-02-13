@@ -15,7 +15,7 @@ FeaturePointControlWidget::FeaturePointControlWidget(QWidget *parent) :
 
     QObject::connect(ui->hasPositionCheckBox,     SIGNAL(toggled(bool)), this, SIGNAL(paramsChanged()));
 
-    QObject::connect(ui->color,     SIGNAL(paramsChanged(bool)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->color,     SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
 
 
 }

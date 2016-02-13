@@ -278,7 +278,7 @@ public:
      * Only checks for the fact that point belongs to viewport.
      * If you are projecting 3d point you should be sure that point is in front
      **/
-    bool isVisible(Vector2dd &point)
+    bool isVisible(const Vector2dd &point)
     {
         return point.isInRect(Vector2dd(0.0,0.0), intrinsics.size);
     }
@@ -291,7 +291,7 @@ public:
        return intrinsics.isVisible(extrinsics.project(pt));
     }
 
-    bool isInFront(Vector3dd &pt)
+    bool isInFront(const Vector3dd &pt)
     {
         return ((pt - extrinsics.position) & forwardDirection()) > 0;
     }
