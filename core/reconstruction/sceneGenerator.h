@@ -33,23 +33,22 @@ struct SceneGeneratorParams
         double sectorWidthPOI = M_PI,
         bool fSectorRnorm = false) :
         rIn(rIn), rOut(rOut), sigmaProj(sigmaProj), gamma(gamma), sigmaProjPOI(sigmaProjPOI), poiMeasureLimit(poiMeasureLimit), N(N), MPOI(MPOI), MPT(MPT), rInPoi(rInPoi), rOutPoi(rOutPoi), R(R), sectorWidth(sectorWidth), sectorWidthPOI(sectorWidthPOI), fSectorRnorm(fSectorRnorm)
-    {
-    }
-
+    {}
 
     friend std::ostream& operator<< (std::ostream& out, const SceneGeneratorParams &params)
     {
         out << "\t\tFeature r: (" << params.rIn << "; " << params.rOut <<") proj. stdev " << params.sigmaProj << " track.gamma = " << params.gamma << "; #:" << params.MPT << " azimuth distribution : " << (params.fSectorRnorm ? "Normal" : "Uniform") << std::endl
             << "\t\tPOI     r: (" << params.rInPoi << "; " << params.rOutPoi << ") proj. stdev " << params.sigmaProjPOI << " #:" << params.MPOI << std::endl
             << "\t\tFixtures: R: " << params.R << "; #:" << params.N << std::endl;
+        return out;
     }
 };
 
 struct SceneGenerator : public SceneGeneratorParams
 {
     SceneGenerator(SceneGeneratorParams params = SceneGeneratorParams()) : SceneGeneratorParams(params)
-    {
-    }
+    {}
+
     void generateScene();
     void generatePoints();
     void generateFixtures();
@@ -58,6 +57,7 @@ struct SceneGenerator : public SceneGeneratorParams
     CameraFixture* generatePs(corecvs::Vector3dd pos, int id);
     ReconstructionFixtureScene* rfs =  nullptr;
 };
+
 };
 
-#endif
+#endif // SCENEGENERATOR
