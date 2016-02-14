@@ -64,10 +64,10 @@ void SceneGenerator::generatePoints()
 	std::random_device rd;
 	std::mt19937 rng(rd());
 	std::uniform_real_distribution<double> r3(rIn * rIn * rIn, rOut * rOut * rOut),
-		                                  phi(0, 2.0 * M_PI),
+		                                  phi(-sectorWidthPOI, sectorWidthPOI),
 		                                  uni(0, 1.0);
 	std::normal_distribution<double> rnorm(0.0, sigmaProjPOI);
-	for (int i = 0; i < M; ++i)
+	for (int i = 0; i < MPOI; ++i)
 	{
 		double r = std::cbrt(r3(rng)),
 		      ph = phi(rng),
@@ -92,7 +92,7 @@ void SceneGenerator::generatePoints()
 		p->color = corecvs::RGBColor(255, 0, 0);
 		for (auto wpp: vis)
 		{
-			auto proj = wpp.u->project(pt, wpp.v) + Vector2dd(rnorm(rng), rnorm(rng));
+			auto proj = wpp.u->project(pt, wpp.v) + (sigmaProjPOI > 0.0 ? Vector2dd(rnorm(rng), rnorm(rng)) : Vector2dd(0.0, 0.0));
 			auto& obs = p->observations__[wpp];
 			obs.camera = wpp.v;
 			obs.cameraFixture = wpp.u;
@@ -107,14 +107,17 @@ void SceneGenerator::generateMatches()
 	std::cout << "MGEN" << std::endl;
 	std::random_device rd;
 	std::mt19937 rng(rd());
-	std::uniform_real_distribution<double> r3(rIn * rIn * rIn, rOut * rOut * rOut),
-		                                  phi(0, 2.0 * M_PI),
+	std::uniform_real_distribution<double> r3(rInPoi * rInPoi * rInPoi, rOutPoi * rOutPoi * rOutPoi),
+		                                  phi(-sectorWidth, sectorWidth),
 		                                  uni(0, 1.0);
-	std::normal_distribution<double> rnorm(0.0, sigmaProj);
-	for (int i = 0; i < M; ++i)
+	std::normal_distribution<double> rnorm(0.0, sigmaProj),
+									prnorm(0.0, sectorWidth);
+	std::map<int, int> cntr;
+	std::unordered_map<WPP, int> cntps;
+	for (int i = 0; i < MPT; ++i)
 	{
 		double r = std::cbrt(r3(rng)),
-		      ph = phi(rng),
+		      ph = fSectorRnorm ? phi(rng) : prnorm(rng),
 		       z = uni(rng) * 2  - 1.0;
 		auto pt = Vector3dd(sqrt(1.0 - z * z) * sin(ph), sqrt(1.0 - z * z) * cos(ph), z) * r;
 		int visible = 0;
@@ -132,6 +135,7 @@ void SceneGenerator::generateMatches()
 			continue;
 		}
 		int cnt = 3 + log(uni(rng))/log(1.0 - gamma);
+		CORE_ASSERT_TRUE_S(cnt >= 3);
 		if (visible > cnt)
 		{
 			int idx = 0;
@@ -140,6 +144,7 @@ void SceneGenerator::generateMatches()
 					vis[idx] = vis[j];
 		}
 		vis.resize(std::min(visible, cnt));
+		cntr[vis.size()]++;
 
 //		auto p = rfs->createFeaturePoint();
 //		p->reprojectedPosition =  p->position = pt;
@@ -147,12 +152,13 @@ void SceneGenerator::generateMatches()
 		std::unordered_map<WPP, int> idx;
 		for (auto wpp: vis)
 		{
-			auto proj = wpp.u->project(pt, wpp.v) + Vector2dd(rnorm(rng), rnorm(rng));
+			auto proj = wpp.u->project(pt, wpp.v) + (sigmaProj > 0.0 ? Vector2dd(rnorm(rng), rnorm(rng)) : Vector2dd(0.0, 0.0));
 			idx[wpp] = rfs->keyPoints[wpp].size();
 			rfs->keyPoints[wpp].emplace_back(proj, corecvs::RGBColor(0, 0, 255));
 		}
 		for (auto wpp1: vis)
 		{
+			cntps[wpp1]++;
 			for (auto wpp2: vis)
 			{
 				if (wpp1 == wpp2)
@@ -163,6 +169,12 @@ void SceneGenerator::generateMatches()
 			}
 		}
 	}
+	std::cout << "Feature track distribution:" << std::endl;
+	for (auto& foo: cntr)
+		std::cout << "\t" << foo.first << ": " << foo.second << std::endl;
+	std::cout << "PS track distribution:" << std::endl;
+	for (auto& foo: cntps)
+		std::cout << "\t" << foo.first.u->name << foo.first.v->nameId << ": " << foo.second << std::endl;
 
 }
 
@@ -201,6 +213,7 @@ CameraFixture* SceneGenerator::generatePs(corecvs::Vector3dd pos, int id)
 		rfs->addCameraToFixture(c, f);
 	}
 	f->location.shift = pos;
+	f->name = tag;
 	rfs->initializationData[f].initData = f->location;
 	rfs->initializationData[f].initializationType = PhotostationInitializationType::GPS;
 	return f;

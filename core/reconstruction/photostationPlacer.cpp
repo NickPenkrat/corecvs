@@ -655,7 +655,7 @@ void corecvs::PhotostationPlacer::buildDependencyList()
         });
     // Translation for other cameras
     IF(NON_DEGENERATE_TRANSLATIONS,
-        for (int i = 1; i < scene->placedFixtures.size(); ++i)
+        for (size_t i = 1; i < scene->placedFixtures.size(); ++i)
         {
             auto fixture = placedFixtures[i];
             for (int jj = 0; jj < 3; ++jj)
@@ -1558,13 +1558,13 @@ void corecvs::PhotostationPlacer::filterEssentialRansac(std::vector<CameraFixtur
 {
     scene->matchesCopy = scene->matches;
     std::vector<std::pair<WPP, WPP>> work;
-    for (int psA = 0; psA < pss.size(); ++psA)
+    for (size_t psA = 0; psA < pss.size(); ++psA)
     {
-        for (int psB = psA; psB < pss.size(); ++psB)
+        for (size_t psB = psA; psB < pss.size(); ++psB)
         {
             auto psA_ = pss[psA];
             auto psB_ = pss[psB];
-            for (int camA = 0; camA < psA_->cameras.size(); ++camA)
+            for (size_t camA = 0; camA < psA_->cameras.size(); ++camA)
             {
                 for (int camB = 0; camB < psB_->cameras.size(); ++camB)
                 {

@@ -21,6 +21,7 @@ protected:
     /// Platform-specific implementation
     virtual void getMemoryUsageImpl() = 0;
 
+public:
     double mVirtualSize;
     double mResidentSize;
 };

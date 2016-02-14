@@ -95,11 +95,11 @@ public:
     static constexpr U* UWILDCARD = nullptr;
     static constexpr V* VWILDCARD = nullptr;
 #else
-	static U* const UWILDCARD;
-	static V* const VWILDCARD;
+    static U* const UWILDCARD;
+    static V* const VWILDCARD;
 #endif
-	typedef U* UTYPE;
-	typedef V* VTYPE;
+    typedef U* UTYPE;
+    typedef V* VTYPE;
 
     WildcardablePointerPair(U* u = UWILDCARD, V* v = VWILDCARD) : u(u), v(v)
     {
@@ -158,6 +158,8 @@ public:
         this->hasKnownPosition = true;
         this->type = type;
     }
+
+    Vector3dd triangulate(bool use__ = false);
 
 
     /** Observation related block */

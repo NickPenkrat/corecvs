@@ -464,7 +464,9 @@ void PointListEditImageWidgetUnited::childMousePressed(QMouseEvent *event)
 //        bool shiftPressed = event->modifiers().testFlag(Qt::ShiftModifier);
 
         Vector2dd imagePoint = widgetToImageF(releasePoint);
-        int selectedPoint = findClosest(imagePoint, 5);
+        Vector2dd shift = widgetToImageF(Vector2dd(5,5)) - widgetToImageF(Vector2dd(0,0));
+
+        int selectedPoint = findClosest(imagePoint, shift.l2Metric());
         selectPoint(selectedPoint);
         mUi->widget->update();
 
