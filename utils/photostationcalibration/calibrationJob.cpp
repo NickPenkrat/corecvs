@@ -687,7 +687,7 @@ struct CommonPlaneNormalizer : FunctionArgs
         corecvs::Vector3dd n(in[0], in[1], in[2]);
         double denom = !n;
         for (int i = 0; i < 4; ++i)
-            out[i] = in[i] /  denom;
+            out[i] = in[i] / denom;
     }
     CommonPlaneNormalizer() : FunctionArgs(4, 4)
     {}
@@ -709,7 +709,10 @@ struct CommonPlaneFunctor : FunctionArgs
     corecvs::Photostation* ps;
     std::vector<int> topLayerIdx;
 
-    CommonPlaneFunctor(corecvs::Photostation *ps, std::vector<int> topLayerIdx) : FunctionArgs(4, (int)topLayerIdx.size()), ps(ps), topLayerIdx(topLayerIdx)
+    CommonPlaneFunctor(corecvs::Photostation *ps, std::vector<int> topLayerIdx)
+        : FunctionArgs(4, (int)topLayerIdx.size())
+        , ps(ps)
+        , topLayerIdx(topLayerIdx)
     {}
 };
 
@@ -727,13 +730,14 @@ struct CircleFunctor : FunctionArgs
     }
     std::vector<corecvs::Vector2dd> projections;
 
-    CircleFunctor(std::vector<corecvs::Vector2dd> &topLayerProjections) : FunctionArgs(3, (int)topLayerProjections.size()), projections(topLayerProjections)
+    CircleFunctor(std::vector<corecvs::Vector2dd> &topLayerProjections)
+        : FunctionArgs(3, (int)topLayerProjections.size())
+        , projections(topLayerProjections)
     {}
 };
 
 void CalibrationJob::reorient(const corecvs::Vector3dd T, const corecvs::Quaternion Q)
 {
-
     corecvs::Photostation reoriented = photostation;
     reoriented.location.rotor = Q;
     reoriented.location.shift = T;
@@ -784,7 +788,6 @@ void CalibrationJob::reorient(const std::vector<int> &topLayerIdx)
 
         corecvs::Vector3dd n1 = ((photostation.cameras[topLayerIdx[1]].extrinsics.position - photostation.cameras[topLayerIdx[0]].extrinsics.position) ^ (photostation.cameras[topLayerIdx[2]].extrinsics.position - photostation.cameras[topLayerIdx[0]].extrinsics.position)).normalised();
         double d1 = -(n1 & photostation.cameras[topLayerIdx[0]].extrinsics.position);
-
 
         std::vector<double> input(4), output(topLayerIdx.size());
         input[0] = n1[0];
