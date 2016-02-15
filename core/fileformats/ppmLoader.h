@@ -67,8 +67,8 @@ public:
      *
      * \return  Error code.
      */
-    int save(const string& name, G12Buffer   *buffer, MetaData* metadata = nullptr);
     int save(const string& name, RGB24Buffer *buffer, MetaData* metadata = nullptr);
+    int save(const string& name, G12Buffer   *buffer, MetaData* metadata = nullptr, int forceTo8bitsShift = -1);
     int save(const string& name, RGB48Buffer *buffer, MetaData* metadata = nullptr, int forceTo8bitsShift = -1);
 
     // TODO: remove this. 

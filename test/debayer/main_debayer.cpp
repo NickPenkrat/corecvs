@@ -29,6 +29,9 @@ void usage()
          << " --bpos=P specifies Bayer position [0-3], where P=0 - RGGB (default)"            << endl
          <<                                                                                      endl
          << " --ofile=bayer.ppm specifies output color image"                                 << endl
+         << " --obits=-1        forces 8-bits output format and sets #bits to r-shifting"     << endl
+         << " --ibits=-1        forces 8-bits input  format and sets #bits to r-shifting"     << endl
+         << " --ifile=<name>    sets output filename for the converted input Bayer image"     << endl
          <<                                                                                      endl
          << " --compare indicates that debayer should work in comparison mode, ignoring all"  << endl
          << "   demosaic options and outputting comparison result"                            << endl
@@ -50,8 +53,10 @@ int main(int argc, const char **argv)
     bool   toBayer   = s.getBool  ("toBayer");
     int    bpos      = s.getInt   ("bpos", -1);      // -1 - try to extract it from Bayer's meta
     string outfile   = s.getString("ofile", "bayer.ppm");
-    int    outBits   = s.getInt   ("obits", -1);     // -1 - try to extract it from Bayer's meta
-    bool   compare   = s.getBool("compare");
+    int    outBits   = s.getInt   ("obits", -1);     // -1 - don't force to 8-bits with some shift
+    int    inBits    = s.getInt   ("ibits", -1);     // -1 - don't force to 8-bits with some shift
+    string filename8 = s.getString("ifile", filename + "_8.pgm");
+    bool   compare   = s.getBool  ("compare");
     string target    = s.getOption("target");
     int    methodCmp = s.getInt   ("methodCmp", Debayer::CompareMethod::PSNR);
 
@@ -96,8 +101,7 @@ int main(int argc, const char **argv)
         return 0;
     }
 
-
-    G12Buffer* bayer;
+    G12Buffer* bayer = nullptr;
     if (!toBayer)
     {
         bayer = PPMLoader().loadMeta(filename, &meta);
@@ -115,6 +119,10 @@ int main(int argc, const char **argv)
             PPMLoader().save(outfile, result, nullptr, outBits);
         else
             PPMLoader().save(outfile, result);
+
+        if (inBits != -1) {
+            PPMLoader().save(filename8, bayer, nullptr, inBits);
+        }
 
         delete_safe(result);
     }

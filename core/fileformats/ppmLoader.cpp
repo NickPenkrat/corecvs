@@ -129,8 +129,7 @@ G12Buffer* PPMLoader::g12BufferCreateFromPGM(const string& name, MetaData *meta)
             for (j = 0; j < w * 2; j += 2)
             {
                 int offset = i * w * 2 + j;
-                result->element(i, j / 2) = ((charImage[offset + 0]) << 8 |
-                    (charImage[offset + 1])) >> shiftCount;
+                result->element(i, j / 2) = ((charImage[offset + 0]) << 8 | (charImage[offset + 1])) >> shiftCount;
 
                 CORE_ASSERT_FALSE((result->element(i, j / 2) >= (1 << G12Buffer::BUFFER_BITS)), "Internal error in image loader\n");
 
@@ -396,71 +395,6 @@ bool PPMLoader::writeHeader(FILE *fp, unsigned long int h, unsigned long int w, 
     return true;
 }
 
-int PPMLoader::save(const string& name, G12Buffer *buffer, MetaData* metadata)
-{
-    if (buffer == NULL)
-        return -1;
-
-    FILE *fp = fopen(name.c_str(), "wb");
-    if (fp == NULL)
-    {
-        CORE_ASSERT_FAIL("Image could not be written");
-        return -1;
-    }
-
-    int h = buffer->h;
-    int w = buffer->w;
-
-    int wordlength = 1;
-    int bits = 8;
-
-    if (metadata != nullptr)
-    {
-        MetaData &meta = *metadata;
-        if ((bits = meta["bits"][0]) == 0)
-        {
-            bits = 12;
-            wordlength = 2;
-        }
-        if (bits <= 8)
-            wordlength = 1;
-    }
-
-    writeHeader(fp, h, w, 5, (1 << bits) - 1, metadata);
-
-    uint8_t *charImage = new uint8_t[wordlength * w * h];
-    int i, j;
-
-    if (wordlength == 2)
-    {
-        for (i = 0; i < h; i++)
-        {
-            for (j = 0; j < w; j++)
-            {
-                int offset = i * w + j;
-                uint16_t pixel = buffer->element(i, j);
-                charImage[offset * 2    ] = (pixel >> 8) & 0xFF;
-                charImage[offset * 2 + 1] = pixel & 0xFF;
-            }
-        }
-    }
-    else
-    {
-        for (i = 0; i < h; i++)
-        {
-            for (j = 0; j < w; j++)
-            {
-                charImage[i * w + j] = buffer->element(i, j) & 0xFF;
-            }
-        }
-    }
-
-    fwrite(charImage, wordlength, h * w, fp);
-    deletearr_safe(charImage);
-    fclose(fp);
-    return 0;
-}
-
 int PPMLoader::save(const string& name, RGB24Buffer *buffer, MetaData* metadata)
 {
     if (buffer == NULL)
@@ -488,7 +422,6 @@ int PPMLoader::save(const string& name, RGB24Buffer *buffer, MetaData* metadata)
                 buffer->element(i, j).g(),
                 buffer->element(i, j).b()
             };
-
             for (int offset = i * w + j, k = 0; k < 3; k++)
                 charImage[offset * 3 + k] = elemval[k];
         }
@@ -497,6 +430,76 @@ int PPMLoader::save(const string& name, RGB24Buffer *buffer, MetaData* metadata)
 
     deletearr_safe(charImage);
     fclose(fp);
+    return 0;
+}
+
+int PPMLoader::save(const string& name, G12Buffer *buffer, MetaData* metadata, int forceTo8bitsShift)
+{
+    if (buffer == NULL)
+        return -1;
+
+    FILE *fp = fopen(name.c_str(), "wb");
+    if (fp == NULL)
+    {
+        CORE_ASSERT_FAIL("Image could not be written");
+        return -1;
+    }
+
+    int h = buffer->h;
+    int w = buffer->w;
+    int bytes = 2;
+    int bits = 12;
+    if (metadata != nullptr)
+    {
+        MetaData &meta = *metadata;
+        if ((bits = meta["bits"][0]) == 0)
+        {
+            bits = 12;
+            bytes = 2;
+        }
+        if (bits > 8)
+            bytes = 2;
+    }
+
+    int  maxVal =  forceTo8bitsShift >= 0 ? 0xff : (1 << bits) - 1;
+    size_t size = (forceTo8bitsShift >= 0 ? 1 : bytes) * w * h;
+
+    writeHeader(fp, h, w, 5, maxVal, metadata);
+
+    uint8_t *charImage = new uint8_t[size];
+    if (bytes == 2)
+    {
+        for (int i = 0; i < h; i++)
+        {
+            for (int j = 0; j < w; j++)
+            {
+                int offset = i * w + j;
+                uint16_t pixel = buffer->element(i, j);
+                if (forceTo8bitsShift >= 0) {
+                    uint16_t pix = pixel >> forceTo8bitsShift;
+                    charImage[offset] = pix > 0xff ? 0xff : (pix & 0xff);
+                }
+                else {
+                    charImage[offset * 2] = (pixel >> 8) & 0xFF;
+                    charImage[offset * 2 + 1] = pixel & 0xFF;
+                }
+            }
+        }
+    }
+    else
+    {
+        for (int i = 0; i < h; i++)
+        {
+            for (int j = 0; j < w; j++)
+            {
+                charImage[i * w + j] = buffer->element(i, j) & 0xFF;
+            }
+        }
+    }
+
+    fwrite(charImage, 1, size, fp);
+    fclose(fp);
+    deletearr_safe(charImage);
     return 0;
 }
 
@@ -551,7 +554,8 @@ int PPMLoader::save(const string& name, RGB48Buffer *buffer, MetaData* metadata,
                 for (int k = 0; k < 3; k++)
                 {
                     if (forceTo8bitsShift >= 0) {
-                        charImage[offset + k] = (elemval[k] >> forceTo8bitsShift) & 0xff;
+                        uint16_t pix = elemval[k] >> forceTo8bitsShift;
+                        charImage[offset + k] = pix > 0xff ? 0xff : (pix & 0xff);
                     }
                     else {
                         charImage[(offset + k) * 2] = (elemval[k] & 0xff00) >> 8;
@@ -567,9 +571,8 @@ int PPMLoader::save(const string& name, RGB48Buffer *buffer, MetaData* metadata,
         }
 
     fwrite(charImage, 1, size, fp);
-
-    deletearr_safe(charImage);
     fclose(fp);
+    deletearr_safe(charImage);
     return 0;
 }
 
@@ -655,11 +658,10 @@ G12Buffer* PPMLoader::g16BufferCreateFromPPM(const string& name, MetaData* metad
         for (i = 0; i < h; i++)
             for (j = 0; j < w; j++)
                 toReturn->element(i, j) = (charImage[i * w + j]) << 8;
-
     }
     else
     {
-        for (shiftCount = 0; (maxval >> shiftCount) >(1 << 16); shiftCount++);
+        for (shiftCount = 0; (maxval >> shiftCount) > (1 << 16); shiftCount++);
 
         charImage = new uint8_t[2 * w * h];
         if (fread(charImage, sizeof(uint8_t), (w * h) * 2, fp) == 0)
@@ -686,7 +688,6 @@ G12Buffer* PPMLoader::g16BufferCreateFromPPM(const string& name, MetaData* metad
 done:
     if (fp != NULL)
         fclose(fp);
-    if (charImage != NULL)
-        deletearr_safe(charImage);
+    deletearr_safe(charImage);
     return toReturn;
 }
