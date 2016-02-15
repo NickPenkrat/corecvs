@@ -21,6 +21,8 @@ public:
 
 public slots:
 
+    void setImage(RGB48Buffer *image);
+
     void paramsChanged(void);
 
 private:

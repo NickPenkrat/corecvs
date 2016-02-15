@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 
     Q_INIT_RESOURCE(main);
 
-    printf("Starting cloudView...\n");
+    SYNC_PRINT(("Starting cloudView...\n"));
     QApplication app(argc, argv);
     ImageViewMainWindow mainWindow;
 
@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
     QTG12Loader::registerMyself();
     QTRGB24Loader::registerMyself();
 
-    if (argc != 0) {
+    if (argc > 1) {
         std::string str = argv[1];
         qDebug("Main: %s", str.c_str());
 
@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 
             RGB48Buffer* result = new RGB48Buffer(bayer->h, bayer->w, false);
             d.toRGB48(Debayer::Bilinear, result);
-            mainWindow.input = result;
+            mainWindow.setImage(result);
         }
 
 #if 0
@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
     mainWindow.show();
     app.exec();
 
-    cout << "Exiting ImageView application  \n";
+    SYNC_PRINT(("Exiting ImageView application...\n"));
 
 }
 

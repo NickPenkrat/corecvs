@@ -11,13 +11,19 @@ ImageViewMainWindow::ImageViewMainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     connect(ui->bitSelector, SIGNAL(paramsChanged()), this, SLOT(paramsChanged()));
-    paramsChanged();
 }
 
 ImageViewMainWindow::~ImageViewMainWindow()
 {
     delete_safe(ui);
     delete_safe(input);
+}
+
+void ImageViewMainWindow::setImage(RGB48Buffer *image)
+{
+    delete_safe(input);
+    input = image;
+    paramsChanged();
 }
 
 void ImageViewMainWindow::paramsChanged()
