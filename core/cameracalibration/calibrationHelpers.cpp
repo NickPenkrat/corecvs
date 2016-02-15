@@ -113,7 +113,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const CameraFixture &ps, double s
 {
     // Colorblind-safe palette
     CameraLocationData loc = ps.getLocation();
-    Quaternion qs = loc.orientation.conjugated();
+    //Quaternion qs = loc.orientation.conjugated();
     // std::cout << qs << std::endl;
 
     int colorId = 0;

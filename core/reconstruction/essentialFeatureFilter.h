@@ -50,7 +50,10 @@ public:
     struct ParallelEstimator
     {
         void operator() (const corecvs::BlockedRange<int> &r) const;
-        ParallelEstimator(EssentialFeatureFilter* filter, double inlierRadius, int batch) : batch(batch), filter(filter), inlierRadius(inlierRadius)
+        ParallelEstimator(EssentialFeatureFilter* filter, double inlierRadius, int batch) :
+            batch(batch),
+            inlierRadius(inlierRadius),
+            filter(filter)
         {
         }
         int batch;

@@ -203,7 +203,7 @@ RGB48Buffer* PPMLoader::rgb48BufferCreateFromPPM(const string& name, MetaData *m
     uint8_t *charImage = new uint8_t[size];
     if (charImage == nullptr)
     {
-        CORE_ASSERT_FAIL_P(("out of memory on allocate %d bytes", size));
+        CORE_ASSERT_FAIL_P(("out of memory on allocate %z bytes", size));
         goto done;
     }
 

@@ -792,7 +792,7 @@ void corecvs::PhotostationPlacer::readOrientationParams(const double in[])
     IF(POINTS,
         for (size_t j = 0; j < scene->trackedFeatures.size(); ++j)
         {
-            auto& foo = scene->trackedFeatures[j]->reprojectedPosition;
+            Vector3dd& foo = scene->trackedFeatures[j]->reprojectedPosition;
             for (int i = 0; i < 3; ++i)
                 GETPARAM(scene->trackedFeatures[j]->reprojectedPosition[i]);
         });
@@ -805,7 +805,7 @@ void corecvs::PhotostationPlacer::writeOrientationParams(double out[])
     auto& placedFixtures = scene->placedFixtures;
     //int errSize = getErrorComponentsPerPoint();
     int psNum   = (int)scene->placedFixtures.size();
-    int camCnt  = (int)activeCameras.size();
+    int camCnt  = activeCameras.size();
 
     IF(DEGENERATE_ORIENTATIONS,
         auto firstFixture = placedFixtures[0];
@@ -1566,7 +1566,7 @@ void corecvs::PhotostationPlacer::filterEssentialRansac(std::vector<CameraFixtur
             auto psB_ = pss[psB];
             for (size_t camA = 0; camA < psA_->cameras.size(); ++camA)
             {
-                for (int camB = 0; camB < psB_->cameras.size(); ++camB)
+                for (size_t camB = 0; camB < psB_->cameras.size(); ++camB)
                 {
                     WPP idFirst(psA_, psA_->cameras[camA]), idSecond(psB_, psB_->cameras[camB]);
                     bool alreadyIn = false;
