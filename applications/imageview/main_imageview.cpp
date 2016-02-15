@@ -44,17 +44,19 @@ int main(int argc, char *argv[])
         std::string str = argv[1];
         qDebug("Main: %s", str.c_str());
 
-        G12Buffer *bayer = PPMLoader().g16BufferCreateFromPPM(str);
+        MetaData meta;
+
+        G12Buffer *bayer = PPMLoader().loadMeta(str, &meta);
         //G12Buffer *bayer = PPMLoader().g12BufferCreateFromPPM(str);
 
         if (bayer == NULL)
         {
             qDebug("Can't' open bayer file: %s", str.c_str());
         } else {
-            Debayer d(bayer, 8, nullptr, 0);
+            Debayer d(bayer, 8, &meta);
 
             RGB48Buffer* result = new RGB48Buffer(bayer->h, bayer->w, false);
-            d.toRGB48(Debayer::Bilinear, result);
+            d.toRGB48(Debayer::Nearest, result);
             mainWindow.input = result;
         }
 
