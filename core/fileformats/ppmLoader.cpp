@@ -164,11 +164,13 @@ RGB48Buffer* PPMLoader::rgb48BufferCreateFromPPM(const string& name, MetaData *m
     FILE *fp = fopen(name.c_str(), "rb");
     if (fp == nullptr)
     {
+        SYNC_PRINT(("PPMLoader::rgb48BufferCreateFromPPM(): can't open file <%s>\n", name.c_str()));
         return nullptr;
     }
 
     if (!readHeader(fp, &h, &w, &maxval, &type, meta) || (type != 6))
     {
+        SYNC_PRINT(("PPMLoader::rgb48BufferCreateFromPPM(): can't read header <%s>\n", name.c_str()));
         fclose(fp);
         return nullptr;
     }
@@ -203,7 +205,7 @@ RGB48Buffer* PPMLoader::rgb48BufferCreateFromPPM(const string& name, MetaData *m
     uint8_t *charImage = new uint8_t[size];
     if (charImage == nullptr)
     {
-        CORE_ASSERT_FAIL_P(("out of memory on allocate %z bytes", size));
+        CORE_ASSERT_FAIL_P(("out of memory on allocate %d bytes", (int)size));
         goto done;
     }
 
@@ -320,17 +322,17 @@ bool PPMLoader::readHeader(FILE *fp, unsigned long int *h, unsigned long int *w,
     char header[255];
 
     // check PPM type (currently only supports 5 or 6)
-    if (fgets(header, sizeof header, fp) == nullptr || (header[0] != 'P') || (header[1] < '5') || (header[1] > '6'))
+    if (fgets(header, sizeof(header), fp) == nullptr || (header[0] != 'P') || (header[1] < '5') || (header[1] > '6'))
     {
-        //printf("Image is not a supported PPM\n");
+        SYNC_PRINT(("Image is not a supported PPM\n"));
         return false;
     }
 
     // type contains a TYPE uint8_t, in our case 5 or 6
     *type = header[1] - '0';
-    
+
     // get dimensions
-    if (nextLine(fp, header, sizeof header, metadata) != 0)
+    if (nextLine(fp, header, sizeof(header), metadata) != 0)
         return false;
 
     // parse dimensions
@@ -339,7 +341,7 @@ bool PPMLoader::readHeader(FILE *fp, unsigned long int *h, unsigned long int *w,
         // try to parse dimensions in Photoshop-like format (when a newline is used instead of whitespace or tabulation)
         if (sscanf(header, "%lu", w) != 1)
         {
-            //printf("Image dimensions could not be read from line %s\n", header);
+            SYNC_PRINT(("Image dimensions could not be read from line %s\n", header));
             return false;
         }
         else
@@ -348,7 +350,7 @@ bool PPMLoader::readHeader(FILE *fp, unsigned long int *h, unsigned long int *w,
             int error = nextLine(fp, header, sizeof header, metadata);
             if (error || sscanf(&header[0], "%lu", h) != 1) // duplicate code can be gotten rid of with a goto (not sure it's worth doing)
             {
-                //printf("Image dimensions could not be read from line %s\n", header);
+                SYNC_PRINT(("Image dimensions could not be read from line %s\n", header));
                 return false;
             }
         }
@@ -360,7 +362,7 @@ bool PPMLoader::readHeader(FILE *fp, unsigned long int *h, unsigned long int *w,
 
     if (sscanf(&header[0], "%hu", maxval) != 1)
     {
-        //printf("Image metric could not be read form line %s\n", header);
+        SYNC_PRINT(("Image metric could not be read form line %s\n", header));
         return false;
     }
 

@@ -19,6 +19,7 @@
 #include "qtFileLoader.h"
 #include "g12Image.h"
 #include "ppmLoader.h"
+#include "converters/debayer.h"
 
 #include "imageViewMainWindow.h"
 
@@ -43,6 +44,21 @@ int main(int argc, char *argv[])
         std::string str = argv[1];
         qDebug("Main: %s", str.c_str());
 
+        G12Buffer *bayer = PPMLoader().g16BufferCreateFromPPM(str);
+        //G12Buffer *bayer = PPMLoader().g12BufferCreateFromPPM(str);
+
+        if (bayer == NULL)
+        {
+            qDebug("Can't' open bayer file: %s", str.c_str());
+        } else {
+            Debayer d(bayer, 8, nullptr, 0);
+
+            RGB48Buffer* result = new RGB48Buffer(bayer->h, bayer->w, false);
+            d.toRGB48(Debayer::Bilinear, result);
+            mainWindow.input = result;
+        }
+
+#if 0
         RGB48Buffer *buffer = PPMLoader().rgb48BufferCreateFromPPM(str);
         if (buffer == NULL)
         {
@@ -50,6 +66,7 @@ int main(int argc, char *argv[])
         } else {
             mainWindow.input = buffer;
         }
+#endif
     }
 
 
