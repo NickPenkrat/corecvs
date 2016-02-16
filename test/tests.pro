@@ -39,7 +39,6 @@ with_opencv {
         calibration_job_calibrate \
 #        \
         geometry_verificator \
-#        photostation_placer \
 
 }
 
@@ -76,5 +75,3 @@ calibration_job_apply_undistortion  = calibration_job_apply_undistortion/calibra
 calibration_job_calibrate           = calibration_job_calibrate/calibration_job_calibrate.pro
 
 geometry_verificator                = geometry_verificator/geometry_verificator.pro
-
-#photostation_placer.file            = photostation_placer/photostation_placer.pro

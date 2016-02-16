@@ -36,22 +36,23 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     ImageViewMainWindow mainWindow;
 
-
     QTG12Loader::registerMyself();
     QTRGB24Loader::registerMyself();
 
-    if (argc > 1) {
+    if (argc > 1)
+    {
         std::string str = argv[1];
         qDebug("Main: %s", str.c_str());
 
-        G12Buffer *bayer = PPMLoader().g16BufferCreateFromPPM(str);
-        //G12Buffer *bayer = PPMLoader().g12BufferCreateFromPPM(str);
+        MetaData meta;
+        G12Buffer *bayer = PPMLoader().g12BufferCreateFromPGM(str, &meta);
 
         if (bayer == NULL)
         {
             qDebug("Can't' open bayer file: %s", str.c_str());
-        } else {
-            Debayer d(bayer, 8, nullptr, 0);
+        }
+        else {
+            Debayer d(bayer, meta["bits"][0], &meta, 0);
 
             RGB48Buffer* result = new RGB48Buffer(bayer->h, bayer->w, false);
             d.toRGB48(Debayer::Bilinear, result);
@@ -69,11 +70,7 @@ int main(int argc, char *argv[])
 #endif
     }
 
-
     mainWindow.show();
     app.exec();
-
     SYNC_PRINT(("Exiting ImageView application...\n"));
-
 }
-
