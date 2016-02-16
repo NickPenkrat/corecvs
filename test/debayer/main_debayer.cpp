@@ -49,7 +49,7 @@ int main(int argc, const char **argv)
 {
     CommandLineSetter s(argc, argv);
     bool   help      = s.getBool  ("help");
-    int    method    = s.getInt   ("method", Debayer::Method::AHD);
+    int    method    = s.getInt   ("method", DebayerMethod::AHD);
     string filename  = s.getOption("file");
     bool   toBayer   = s.getBool  ("toBayer");
     int    bpos      = s.getInt   ("bpos", -1);      // -1 - try to extract it from Bayer's meta
@@ -114,7 +114,7 @@ int main(int argc, const char **argv)
         RGB48Buffer *result = new RGB48Buffer(bayer->h, bayer->w, false);
 
         Debayer d(bayer, meta["bits"][0], &meta, bpos);
-        d.toRGB48(Debayer::Method(method), result);
+        d.toRGB48(DebayerMethod::DebayerMethod(method), result);
 
         if (outBits != -1)
             PPMLoader().save(outfile, result, nullptr, outBits);

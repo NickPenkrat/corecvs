@@ -202,7 +202,9 @@ enums="
        interpolationType
        makePreciseAlgorithm
        preciseInterpolationType
-       imageChannel"
+       imageChannel
+       debayerMethod"
+
 ui_classes="
         rgbColorParameters
 
@@ -212,6 +214,7 @@ full_ui_classes="
         axisAlignedBoxParameters
         headSearchParameters
         makePreciseParameters
+        debayerParameters
        "
 
 

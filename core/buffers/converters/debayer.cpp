@@ -879,7 +879,7 @@ void Debayer::gammaCurve(uint16_t *curve, int imax)
     }
 }
 
-int Debayer::toRGB48(Method method, RGB48Buffer *output)
+int Debayer::toRGB48(DebayerMethod::DebayerMethod method, RGB48Buffer *output)
 {
     preprocess();
 
@@ -888,11 +888,11 @@ int Debayer::toRGB48(Method method, RGB48Buffer *output)
 
     switch (method)
     {
-    case Nearest:   nearest(output); break;
-    case Bilinear:  linear(output);  break;
-    case Fourier:   fourier(output); break;
-    case AHD:
-    default:        ahd(output);
+        case DebayerMethod::NEAREST:   nearest(output); break;
+        case DebayerMethod::BILINEAR:  linear(output);  break;
+        case DebayerMethod::FOURIER:   fourier(output); break;
+        case DebayerMethod::AHD:
+        default:        ahd(output);
     }
     return 0;
 }

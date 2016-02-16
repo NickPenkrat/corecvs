@@ -12,6 +12,8 @@
 
 #include "global.h"
 
+#include "generated/debayerMethod.h"
+
 #include "g12Buffer.h"
 #include "rgbTBuffer.h"
 #include "rgb24Buffer.h"
@@ -22,14 +24,6 @@ namespace corecvs {
 class Debayer
 {
 public:
-    enum Method
-    {
-        Nearest  = 0,
-        Bilinear = 1,
-        AHD      = 2,
-        Fourier  = 3
-    };
-
     enum CompareMethod
     {
         PSNR = 0,
@@ -56,7 +50,7 @@ public:
      *
      * \return  Error code.
      */
-    int         toRGB48(Method method, RGB48Buffer* out);
+    int         toRGB48(DebayerMethod::DebayerMethod method, RGB48Buffer* out);
 
     /**
     * Fill bayer data from RGB48 image applying Bayerian grid to it.
