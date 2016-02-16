@@ -51,19 +51,15 @@ RGB48Buffer* PPMLoader::loadRGB(const string& name, MetaData *metadata)
 
 G12Buffer* PPMLoader::g12BufferCreateFromPGM(const string& name, MetaData *meta)
 {
-    // PPM headers variable declaration
-    unsigned long int i, j;
-    unsigned long int h, w;
-    uint8_t type;
-    unsigned short int maxval;
-    int shiftCount = 0;
-
     // open file for reading in binary mode
     FILE *fp = fopen(name.c_str(), "rb");
-    if (fp == nullptr) {
+    if (fp == nullptr)
         return nullptr;
-    }
 
+    // PPM headers variable declaration
+    unsigned long h, w;
+    uint8_t type;
+    uint16_t maxval;
     if (!readHeader(fp, &h, &w, &maxval, &type, meta) || (type != 5 && type != 6))
     {
         fclose(fp);
@@ -96,53 +92,48 @@ G12Buffer* PPMLoader::g12BufferCreateFromPGM(const string& name, MetaData *meta)
     // image size in bytes
     uint64_t size = (maxval < 0x100 ? 1 : 2) * w * h;
 
-    // for reading we don't need to account for possible system byte orders, so just use a 8bit buffer
+    // for reading we don't need to account for possible system byte orders, so just use a 8-bits buffer
     uint8_t *charImage = new uint8_t[size];
 
     if (fread(charImage, 1, size, fp) == 0)
     {
-        CORE_ASSERT_FAIL("fread() call failed");
+        SYNC_PRINT(("fread() call failed on %s", name.c_str()));
         goto done;
     }
 
-    if (maxval <= 0xff)
+    if (maxval < 0x100)             // 1-byte case
     {
-        // 1-byte case
-        for (i = 0; i < h; i++)
-            for (j = 0; j < w; j++)
+        for (unsigned k = 0, i = 0; i < h; ++i)
+            for (unsigned j = 0; j < w; ++j, ++k)
             {
-                result->element(i, j) = (charImage[i * w + j]);
-
-                if (calcWhite)
-                    if (result->element(i, j) > white)
-                        white = result->element(i, j);
+                uint8_t pix = result->element(i, j) = charImage[k];
+                if (calcWhite && pix > white)
+                    white = pix;
             }
     }
-    else
+    else                            // 2-bytes case
     {
-        // 2-byte case
-        // here we need to calculate shift to compress data into a 12bit buffer
+        // here we need to calculate shift to compress data into a 12-bits buffer
+        int shiftCount;
         for (shiftCount = 0; (maxval >> shiftCount) > G12Buffer::BUFFER_MAX_VALUE; shiftCount++);
 
-        for (i = 0; i < h; i++)
+        for (unsigned k = 0, i = 0; i < h; ++i)
         {
-            for (j = 0; j < w * 2; j += 2)
+            for (unsigned j = 0; j < w; ++j, ++k)
             {
-                int offset = i * w * 2 + j;
-                result->element(i, j / 2) = ((charImage[offset + 0]) << 8 | (charImage[offset + 1])) >> shiftCount;
+                uint16_t pix = result->element(i, j) = ((charImage[2 * k + 0]) << 8 | (charImage[2 * k + 1])) >> shiftCount;
 
-                CORE_ASSERT_FALSE((result->element(i, j / 2) >= (1 << G12Buffer::BUFFER_BITS)), "Internal error in image loader\n");
-
-                if (calcWhite)
-                    if (result->element(i, j / 2) > white)
-                        white = result->element(i, j / 2);
+                CORE_ASSERT_FALSE((pix >= (1 << G12Buffer::BUFFER_BITS)), "Internal error in image loader\n");
+                if (calcWhite && pix > white)
+                    white = pix;
             }
         }
-
     }
 
-    if (calcWhite)
+    if (calcWhite) {
         meta->at("white").push_back(white);
+    }
+    //SYNC_PRINT(("g12BufferCreateFromPGM() bits:%d white:%d\n", (int)meta->at("bits")[0], (int)meta->at("white")[0]));
 
 done:
     fclose(fp);
@@ -264,7 +255,7 @@ done:
 
 int PPMLoader::nextLine(FILE *fp, char *buf, int sz, MetaData *metadata)
 {
-    // read 1st character
+    // read 1-st character
     while (fread(buf, 1, 1, fp))
     {
         if (buf[0] != '#' && buf[0] != '\n' && buf[0] != '\r')
@@ -273,7 +264,7 @@ int PPMLoader::nextLine(FILE *fp, char *buf, int sz, MetaData *metadata)
             fseek(fp, -1, SEEK_CUR);
             if (sz > 0 && fgets(buf, sz, fp) == nullptr)
             {
-                printf("fgets() call failed %s:%d\n", __FILE__, __LINE__);
+                SYNC_PRINT(("fgets() call failed on %s:%d\n", __FILE__, __LINE__));
             }
             return 0;
         }
@@ -293,7 +284,6 @@ int PPMLoader::nextLine(FILE *fp, char *buf, int sz, MetaData *metadata)
             // try to read metadata
             char param[256];
             int n = 0;
-
             // read param name
             if (metadata != nullptr && sscanf(buf, " @meta %s\t@values %d\t", param, &n) == 2)
             {
@@ -303,13 +293,18 @@ int PPMLoader::nextLine(FILE *fp, char *buf, int sz, MetaData *metadata)
                 for (int i = 0; i < n; i++)
                 {
                     double v = 0;
+                    if (numbers == nullptr) {
+                        SYNC_PRINT(("Invalid metadata format on <%s> for param <%s> values:%d\n", buf, param, n));
+                        break;
+                    }
                     sscanf(numbers, "%lf", &v);
                     numbers = strchr(numbers, ' ') + 1;
                     values.push_back(v);
                 }
                 metadata->insert(std::pair<string, MetaValue>(param, values));
             }
-            memset(buf, 0, sz);
+
+            CORE_CLEAR_MEMORY(buf, sz);
         }
     }
 
@@ -367,7 +362,7 @@ bool PPMLoader::readHeader(FILE *fp, unsigned long int *h, unsigned long int *w,
 
     // we assume that no comments exist after the colour depth header line to avoid misinterpretation of '#' first data value
 
-    DOTRACE(("Image is P6 PPM [%lu %lu] max=%u\n", *h, *w, *maxval));
+    DOTRACE(("Image is P%d PPM [%lu %lu] max=%u\n", *type, *h, *w, *maxval));
     return true;
 }
 
@@ -620,76 +615,59 @@ int PPMLoader::saveG16(const string& name, G12Buffer *buffer)
 
 G12Buffer* PPMLoader::g16BufferCreateFromPPM(const string& name, MetaData* metadata)
 {
-    FILE      *fp = NULL;
-    uint8_t   *charImage = NULL;
-    G12Buffer *toReturn = NULL;
-
-
-    // PGM Headers Variable Declaration
-    unsigned long int i, j;
-    unsigned long int h, w;
-    uint8_t type;
-    unsigned short int maxval;
-    int shiftCount = 0;
-
     //Open file for Reading in Binary Mode
-    fp = fopen(name.c_str(), "rb");
-
+    FILE *fp = fopen(name.c_str(), "rb");
     if (fp == NULL)
     {
-        printf("Image %s does not exist \n", name.c_str());
+        SYNC_PRINT(("Image %s does not exist\n", name.c_str()));
         return NULL;
     }
 
-    if (!readHeader(fp, &h, &w, &maxval, &type, metadata))
-    {
+    unsigned long h, w;
+    uint8_t type;
+    uint16_t maxval;
+    if (!readHeader(fp, &h, &w, &maxval, &type, metadata)) {
         return NULL;
     }
 
-    if (maxval <= 255)
+    G12Buffer *result = new G12Buffer(h, w, false);
+
+    // image size in bytes
+    uint64_t size = (maxval < 0x100 ? 1 : 2) * w * h;
+
+    // for reading we don't need to account for possible system byte orders, so just use a 8-bits buffer
+    uint8_t *charImage = new uint8_t[size];
+
+    if (fread(charImage, 1, size, fp) == 0)
     {
-        charImage = new uint8_t[w * h];
-        if (fread(charImage, sizeof(uint8_t), w * h, fp) == 0)
-        {
-            printf("fread() call failed %s():%d\n", __FILE__, __LINE__);
-            goto done;
-        }
+        SYNC_PRINT(("fread() call failed on %s", name.c_str()));
+        goto done;
+    }
 
-        toReturn = new G12Buffer(h, w, false);
-
-        for (i = 0; i < h; i++)
-            for (j = 0; j < w; j++)
-                toReturn->element(i, j) = (charImage[i * w + j]) << 8;
+    if (maxval < 0x100)
+    {
+        for (unsigned k = 0, i = 0; i < h; ++i)
+            for (unsigned j = 0; j < w; ++j)
+                result->element(i, j) = (charImage[k++]) << 8;
     }
     else
     {
+        int shiftCount = 0;
         for (shiftCount = 0; (maxval >> shiftCount) > (1 << 16); shiftCount++);
 
-        charImage = new uint8_t[2 * w * h];
-        if (fread(charImage, sizeof(uint8_t), (w * h) * 2, fp) == 0)
+        for (unsigned k = 0, i = 0; i < h; ++i)
         {
-            printf("fread() call failed %s:%d\n", __FILE__, __LINE__);
-            goto done;
-        }
-
-        toReturn = new G12Buffer(h, w, false);
-
-        for (i = 0; i < h; i++)
-        {
-            for (j = 0; j < w; j++)
+            for (unsigned j = 0; j < w; ++j, ++k)
             {
-                int offset = i * w + j;
-                toReturn->element(i, j) = ((charImage[offset * 2]) << 8 |
-                    (charImage[offset * 2 + 1])) >> shiftCount;
+                result->element(i, j) = ((charImage[k * 2]) << 8 | (charImage[k * 2 + 1])) >> shiftCount;
 
-                CORE_ASSERT_FALSE((toReturn->element(i, j) >= G12Buffer::BUFFER_MAX_VALUE), "Internal error in image loader\n");
+                CORE_ASSERT_FALSE((result->element(i, j) > G12Buffer::BUFFER_MAX_VALUE), "Internal error in image loader\n");
             }
         }
     }
 
 done:
-    if (fp != NULL)
-        fclose(fp);
+    fclose(fp);
     deletearr_safe(charImage);
-    return toReturn;
+    return result;
 }
