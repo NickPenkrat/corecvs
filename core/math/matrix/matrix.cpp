@@ -349,12 +349,11 @@ Matrix operator *(const Matrix &M, const DiagonalMatrix &D)
            {
                result.a(i, j) = M.a(i, j) * D.at(j);
            }
-    }
-    return result;
-    } else {
-       return Matrix::multiplyHomebrewMD(M, D);
+        }
+        return result;
     }
 
+    return Matrix::multiplyHomebrewMD(M, D);
 }
 
 Matrix operator *(DiagonalMatrix &D, const Matrix &M)

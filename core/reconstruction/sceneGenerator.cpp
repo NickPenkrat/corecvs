@@ -144,7 +144,7 @@ void SceneGenerator::generateMatches()
 					vis[idx] = vis[j];
 		}
 		vis.resize(std::min(visible, cnt));
-		cntr[vis.size()]++;
+        cntr[(int)vis.size()]++;
 
 //		auto p = rfs->createFeaturePoint();
 //		p->reprojectedPosition =  p->position = pt;
@@ -153,7 +153,7 @@ void SceneGenerator::generateMatches()
 		for (auto wpp: vis)
 		{
 			auto proj = wpp.u->project(pt, wpp.v) + (sigmaProj > 0.0 ? Vector2dd(rnorm(rng), rnorm(rng)) : Vector2dd(0.0, 0.0));
-			idx[wpp] = rfs->keyPoints[wpp].size();
+            idx[wpp]  = (int)rfs->keyPoints[wpp].size();
 			rfs->keyPoints[wpp].emplace_back(proj, corecvs::RGBColor(0, 0, 255));
 		}
 		for (auto wpp1: vis)
