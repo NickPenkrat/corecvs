@@ -22,7 +22,7 @@ void EssentialFeatureFilter::estimate()
     if (!features.size())
         return;
     usedIter = 0;
-    do 
+    do
     {
         parallelable_for(0, batches, ParallelEstimator(this, inlierRadius, batch));
         usedIter += batch * batches;
@@ -41,6 +41,8 @@ double EssentialFeatureFilter::nForGamma()
 
 void EssentialFeatureFilter::Estimator::operator() (const corecvs::BlockedRange<int> &r)
 {
+    if (filter->features.size() < FEATURE_POINTS_FOR_MODEL)
+        return;
     rng = std::mt19937(std::random_device()());
     for (int i = r.begin() * batch; i < r.end() * batch; ++i)
     {
