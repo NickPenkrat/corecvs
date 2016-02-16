@@ -59,12 +59,12 @@ void CalibrationHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, double
 
     if (printNames)
     {
-    AbstractPainter<Mesh3D> p(&mesh);
-        mesh.mulTransform(Matrix44::Shift(cam.extrinsics.position));
-        mesh.setColor(RGBColor::Blue());
-    p.drawFormatVector(0.0, 0.0, 0, scale / 50.0, "Cam: %s", cam.nameId.c_str());
-    mesh.popTransform();
-}
+        AbstractPainter<Mesh3D> p(&mesh);
+            mesh.mulTransform(Matrix44::Shift(cam.extrinsics.position));
+            mesh.setColor(RGBColor::Blue());
+        p.drawFormatVector(0.0, 0.0, 0, scale / 50.0, "Cam: %s", cam.nameId.c_str());
+        mesh.popTransform();
+    }
 
     //Vector3dd ppv = qc * (invK.mulBy2dRight(cam.intrinsics.principal) * scale) + cc;
 
@@ -104,7 +104,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const Photostation &ps, double sc
         AbstractPainter<Mesh3D> p(&mesh);
         mesh.mulTransform(Matrix44::Shift(ps.location.shift) * Matrix44::Scale(scale / 22.0));
         mesh.setColor(RGBColor::Blue());
-    p.drawFormatVector(scale / 5.0, scale / 5.0, 0, scale / 3.0, "%s", ps.name.c_str());
+        p.drawFormatVector(scale / 5.0, scale / 5.0, 0, scale / 3.0, "%s", ps.name.c_str());
         mesh.popTransform();
     }
 }
@@ -113,8 +113,8 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const CameraFixture &ps, double s
 {
     // Colorblind-safe palette
     CameraLocationData loc = ps.getLocation();
-    Quaternion qs = loc.orientation.conjugated();
-    std::cout << qs << std::endl;
+    //Quaternion qs = loc.orientation.conjugated();
+    // std::cout << qs << std::endl;
 
     int colorId = 0;
     for (size_t cam = 0; cam < ps.cameras.size(); cam++)

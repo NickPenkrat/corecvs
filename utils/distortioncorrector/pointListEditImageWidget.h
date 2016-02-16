@@ -123,7 +123,17 @@ public slots:
 protected:
    int findClosest(Vector2dd imagePoint, double limitDistance = numeric_limits<double>::max());
 
+   enum ArrowType {
+       NONE_ARROW   = 0x0,
+       TOP_ARROW    = 0x1,
+       BOTTOM_ARROW = 0x2,
+       LEFT_ARROW   = 0x4,
+       RIGHT_ARROW  = 0x8,
+       ALL_ARROW = 0xF
+   };
 
+   void paintDirectionArrows(QPainter &painter, int type);
+   void paintTarget(QPainter &painter, Vector2dd imageCoords, double len = 10);
 };
 
 

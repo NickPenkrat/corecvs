@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ImageViewMainWindow</class>
+ <widget class="QWidget" name="ImageViewMainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>685</width>
+    <height>307</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <widget class="AdvancedImageWidget" name="widget" native="true"/>
+   </item>
+   <item>
+    <widget class="BitSelectorParametersControlWidget" name="bitSelector">
+     <property name="maximumSize">
+      <size>
+       <width>250</width>
+       <height>16777215</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>AdvancedImageWidget</class>
+   <extends>QWidget</extends>
+   <header>advancedImageWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>BitSelectorParametersControlWidget</class>
+   <extends>QFrame</extends>
+   <header>bitSelectorParametersControlWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

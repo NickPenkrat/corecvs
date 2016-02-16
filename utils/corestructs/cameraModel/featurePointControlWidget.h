@@ -26,6 +26,11 @@ public:
 
     void setEnabled(bool flag);
 
+public slots:
+
+    void posToReproj();
+    void reprojToPos();
+
 signals:
     void paramsChanged();
 

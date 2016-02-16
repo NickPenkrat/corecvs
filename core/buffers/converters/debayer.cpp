@@ -587,6 +587,7 @@ void Debayer::getYChannel(AbstractBuffer<double, int> * output)
 void Debayer::fourier(RGB48Buffer *result)
 {
 #ifndef WITH_FFTW
+    CORE_UNUSED(result);
     SYNC_PRINT(("FFT-based demosaicing is not supported by this version of debayer, consider using AHD instead."));
 #else
     // this method is for research and test purposes only
