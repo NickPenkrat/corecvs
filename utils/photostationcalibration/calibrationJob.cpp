@@ -10,9 +10,71 @@
 #include "tbbWrapper.h"
 #include "log.h"
 #include "vector4d.h"
+#include "multicameraTriangulator.h"
+
 #ifdef WITH_OPENCV
 #include "openCvCheckerboardDetector.h"
 #endif
+
+void CalibrationJob::computeReconstructionError()
+{
+    L_ERROR << "Starting reconstruction error computation";
+    // I do not use std::tuple 'cause I want to simplify fancy-looking board-like output
+    std::map<double, std::map<double, std::map<double, std::vector<std::tuple<size_t, size_t, corecvs::Vector2dd>>>>> pointCollection;
+    for (size_t i = 0; i < calibrationSetups.size(); ++i)
+    {
+        auto& ss  = calibrationSetups[i];
+        for (auto& s: ss)
+        {
+            auto& obs= observations[s.cameraId][s.imageId];
+
+            for (auto& ptc: obs.sourcePattern)
+                pointCollection[ptc.z()][ptc.y()][ptc.x()].emplace_back(i, s.cameraId, ptc.projection);
+        }
+    }
+
+    int cnt = 0.0;
+    for (auto& i: pointCollection)
+        for (auto& j: i.second)
+            for (auto& k: j.second)
+                cnt++;
+    L_ERROR << "Starting reconstruction error computation: point triangulation";
+    Matrix A(cnt, 3);
+    int idx = 0;
+    double maxError = 0.0;
+    corecvs::Vector3dd mean(0, 0, 0);
+    for (auto& i: pointCollection)
+        for (auto& j: i.second)
+        {
+            for (auto& k: j.second)
+            {
+                corecvs::Vector3dd orig(k.first, j.first, i.first);
+                MulticameraTriangulator mct;
+                for (auto& pt: k.second)
+                {
+                    auto ps = photostation;
+                    ps.setLocation(calibrationSetupLocations[std::get<0>(pt)]);
+                    mct.addCamera(ps.getRawCamera(std::get<1>(pt)).getCameraMatrix(), photostation.cameras[std::get<1>(pt)].distortion.mapBackward(std::get<2>(pt)));
+                }
+                auto diff = mct.triangulateLM(mct.triangulate()) - orig;
+                std::cout << diff << " ";
+                if (!diff > maxError)
+                    maxError = !diff;
+                for (int ii = 0; ii < 3; ++ii)
+                    A.a(idx, ii) = diff[ii];
+                idx++;
+                mean += diff;
+            }
+            std::cout << std::endl;
+        }
+    mean = mean * (1.0 / cnt);
+    auto ATA = A.t() * A * (1.0 / cnt);
+    CORE_ASSERT_TRUE_S(ATA.w == ATA.h && ATA.w == 3);
+    std::cout << "Covariation [assuming zero mean] estimate: " << std::endl << ATA << std::endl;
+    std::cout << "Real mean is " << mean << std::endl;
+    totalReconstructionErrorMax = maxError;
+    totalReconstructionErrorRMSE= std::sqrt(ATA.a(0, 0) + ATA.a(1, 1) + ATA.a(2, 2));
+}
 
 bool CalibrationJob::detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::ObservationList &list)
 {
@@ -95,15 +157,15 @@ bool CalibrationJob::detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::Sel
 
 struct ParallelBoardDetector
 {
-	void operator() (const corecvs::BlockedRange<size_t> &r) const
-	{
-		for (int i = r.begin(); i != r.end(); ++i)
-		{
-			auto cam = idx[i][0];
-			auto obs = idx[i][1];
+    void operator() (const corecvs::BlockedRange<size_t> &r) const
+    {
+        for (int i = r.begin(); i != r.end(); ++i)
+        {
+            auto cam = idx[i][0];
+            auto obs = idx[i][1];
 
-			auto& v = job->observations[cam][obs];
-			auto& psIterator = job->photostation.cameras[cam];
+            auto& v = job->observations[cam][obs];
+            auto& psIterator = job->photostation.cameras[cam];
             if (!estimate)
             {
                 const std::string& filename = distorted ? v.sourceFileName : v.undistortedFileName;
@@ -123,15 +185,15 @@ struct ParallelBoardDetector
                     v.undistortedPattern.push_back(pc);
                 }
             }
-		}
-	}
-	ParallelBoardDetector(CalibrationJob* job, std::vector<std::array<size_t, 2>> idx, bool estimate, bool distorted)
-		: job(job), idx(idx), estimate(estimate), distorted(distorted)
-	{
-	}
-	CalibrationJob* job;
-	std::vector<std::array<size_t, 2>> idx;
-	bool estimate, distorted;
+        }
+    }
+    ParallelBoardDetector(CalibrationJob* job, std::vector<std::array<size_t, 2>> idx, bool estimate, bool distorted)
+        : job(job), idx(idx), estimate(estimate), distorted(distorted)
+    {
+    }
+    CalibrationJob* job;
+    std::vector<std::array<size_t, 2>> idx;
+    bool estimate, distorted;
 };
 
 void CalibrationJob::allDetectChessBoard(bool distorted)
@@ -143,15 +205,15 @@ void CalibrationJob::allDetectChessBoard(bool distorted)
 
     L_INFO_P("chessboard type: %s", this->settings.boardAlignerParams.boardMarkers.size() ? "new" : "old");
 
-	std::vector<std::array<size_t, 2>> idxs;
+    std::vector<std::array<size_t, 2>> idxs;
     for (size_t i = 0; i < observations.size(); ++i)
-	{
-		for (size_t j = 0; j < observations[i].size(); ++j)
-		{
-			idxs.emplace_back(std::array<size_t, 2>({i, j}));
-		}
-	}
-	corecvs::parallelable_for((size_t)0, idxs.size(), ParallelBoardDetector(this, idxs, estimate, distorted));
+    {
+        for (size_t j = 0; j < observations[i].size(); ++j)
+        {
+            idxs.emplace_back(std::array<size_t, 2>({i, j}));
+        }
+    }
+    corecvs::parallelable_for((size_t)0, idxs.size(), ParallelBoardDetector(this, idxs, estimate, distorted));
     if (!distorted && calibrated)
         computeCalibrationErrors();
 }
@@ -613,6 +675,7 @@ void CalibrationJob::calibrate()
     calibratePhotostation();
     computeCalibrationErrors();
     computeFullErrors();
+    computeReconstructionError();
 }
 
 void CalibrationJob::calculateRedundancy(std::vector<int> &cameraImagesCount
