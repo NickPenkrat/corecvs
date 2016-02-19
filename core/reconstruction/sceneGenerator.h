@@ -2,6 +2,7 @@
 #define SCENEGENERATOR
 
 #include "reconstructionFixtureScene.h"
+#include "random"
 
 namespace corecvs
 {
