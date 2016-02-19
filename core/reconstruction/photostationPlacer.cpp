@@ -156,7 +156,7 @@ void corecvs::PhotostationPlacer::paintTracksOnImages()
     {
         std::stringstream ss;
         ss << tf << ":";
-        size_t cnt;
+        size_t cnt = 0;
         for (auto& o: tf->observations__)
         {
             ss << o.first.u->name << o.first.v->nameId;
