@@ -149,10 +149,12 @@ struct CalibrationJob
     std::vector<CameraLocationData>                 calibrationSetupLocations;
     std::vector<std::vector<ImageData>>             observations;
     std::vector<std::vector<CalibrationSetupEntry>> calibrationSetups;
-    double                                          totalFullErrorMax        = -1.0,
-                                                    totalFullErrorRMSE       = -1.0,
-                                                    totalCalibrationErrorMax = -1.0,
-                                                    totalCalibrationErrorRMSE= -1.0;
+    double                                          totalFullErrorMax           = -1.0,
+                                                    totalFullErrorRMSE          = -1.0,
+                                                    totalCalibrationErrorMax    = -1.0,
+                                                    totalCalibrationErrorRMSE   = -1.0,
+                                                    totalReconstructionErrorMax = -1.0,
+                                                    totalReconstructionErrorRMSE= -1.0;
 
     bool                                            calibrated = false;
 
@@ -171,16 +173,18 @@ struct CalibrationJob
         visitor.visit(totalFullErrorRMSE, -1.0, "totalFullErrorRMSE");
         visitor.visit(totalCalibrationErrorMax, -1.0, "totalCalibrationErrorMax");
         visitor.visit(totalCalibrationErrorRMSE, -1.0, "totalCalibrationErrorRMSE");
+        visitor.visit(totalReconstructionErrorMax, -1.0, "totalReconstructionErrorMax");
+        visitor.visit(totalReconstructionErrorRMSE, -1.0, "totalReconstructionErrorRMSE");
     }
 
     static corecvs::RGB24Buffer LoadImage(const std::string& path);
     static void                 SaveImage(const std::string& path, corecvs::RGB24Buffer &buffer);
-    
+
     bool    detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::ObservationList &list);
     bool    detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::SelectableGeometryFeatures &features);
     bool    detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::SelectableGeometryFeatures *features = nullptr, corecvs::ObservationList *list = nullptr);
     void    allDetectChessBoard(bool distorted = true);
-   
+
     bool    estimateDistortion(corecvs::SelectableGeometryFeatures &features, double w, double h, LensDistortionModelParameters &params);
     bool    estimateDistortion(corecvs::ObservationList &list, double w, double h, LensDistortionModelParameters &params);
     void    computeDistortionError(corecvs::ObservationList &list, LensDistortionModelParameters &params, double &rmse, double &maxError);
@@ -197,6 +201,7 @@ struct CalibrationJob
     void    computeSingleCameraErrors();
     void    computeCalibrationErrors();
     void    computeFullErrors();
+    void    computeReconstructionError();
     void    calibratePhotostation();
     void    calibratePhotostation(int N, int M, PhotoStationCalibrator &calibrator, std::vector<MultiCameraPatternPoints> &points, std::vector<PinholeCameraIntrinsics> &intrinsics, std::vector<LensDistortionModelParameters> &distortions, std::vector<std::vector<CameraLocationData>> &locations, bool runBFS, bool runLM);
     void    calibrate();

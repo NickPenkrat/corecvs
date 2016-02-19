@@ -17,6 +17,9 @@ void corecvs::RelativeNonCentralRansacSolver::run()
     scoreCurrent();
     nullInliers = currentScores[0];
 
+    if (matchesRansac.size() < FEATURES_FOR_MODEL)
+        return;
+
     maxInliers = 0;
     size_t reportBy = maxIterations / 20;
     for (size_t i = 0; i < maxIterations; ++i)
@@ -49,7 +52,7 @@ void corecvs::RelativeNonCentralRansacSolver::sampleRays()
 {
     pluckerRef.resize(FEATURES_FOR_MODEL);
     pluckerQuery.resize(FEATURES_FOR_MODEL);
-    
+
     CameraFixture queryCopy = *pss[1];
     queryCopy.location.rotor = corecvs::Quaternion(0, 0, 0, 1);
     queryCopy.location.shift = corecvs::Vector3dd(0, 0, 0);
@@ -73,7 +76,7 @@ void corecvs::RelativeNonCentralRansacSolver::sampleRays()
         bool isOk = true;
         for (int i = 0; i < rdy && isOk; ++i)
             if (idxs[i] == idxs[rdy])
-				isOk = false;
+                isOk = false;
         if (isOk) ++rdy;
     }
 
@@ -219,7 +222,7 @@ void corecvs::RelativeNonCentralRansacSolver::computeError(double out[])
 #ifndef WIN32
     corecvs::Matrix33 fundamentals[N * M];
 #else
-	std::vector<corecvs::Matrix33> fundamentals(N * M);
+    std::vector<corecvs::Matrix33> fundamentals(N * M);
 #endif
 
     pss[1]->location = bestHypothesis;
@@ -285,7 +288,7 @@ void corecvs::RelativeNonCentralRansacSolver::fit(double distanceGuess)
     bestHypothesis.shift.normalise();
     bestHypothesis.shift *= distanceGuess;
     corecvs::LevenbergMarquardt lm;
-    
+
     FunctorCost cost(this);
     FunctorCostNorm norm(this);
 
