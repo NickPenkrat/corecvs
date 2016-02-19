@@ -62,7 +62,7 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
                 }
 
                 SceneObservation observation;
-                observation.accuracy     = Vector2dd(0.0);
+                observation.accuracy     = Vector2dd(0.0, 0.0);
                 observation.camera       = camera;
                 observation.featurePoint = point;
                 observation.isKnown      = true;

@@ -113,6 +113,7 @@ public:
      *
      **/
     Vector3dd triangulateLM(Vector3dd initialGuess, bool *ok = NULL);
+    corecvs::Matrix33 getCovarianceInvEstimation(const corecvs::Vector3dd &at) const;
 
     vector<Vector2dd> reprojectionError(const Vector3dd &input);
     double reprojError(const corecvs::Vector3dd &input);

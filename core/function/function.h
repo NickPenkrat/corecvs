@@ -28,6 +28,7 @@ using std::vector;
  *
  *  TODO: Think of the similar class based on static polymorphism.
  **/
+class JacobianFunctor;
 class FunctionArgs
 {
 public:
@@ -116,8 +117,27 @@ public:
         return getJacobian(in.element, delta);
     }
 
+    virtual Matrix getLSQHessian(const double* in);
+
     virtual ~FunctionArgs() {}
 
+};
+
+// This class only reshapes jacobian of another function
+class JacobianFunctor : public FunctionArgs
+{
+public:
+    JacobianFunctor(FunctionArgs *fun) : FunctionArgs(fun->inputs, fun->inputs * fun->outputs), fun(fun)
+    {
+    }
+    void operator() (const double* in, double* out)
+    {
+        auto J = fun->getJacobian(in, 1e-9);
+        for (int i = 0; i < J.h; ++i)
+            for (int j = 0; j < J.w; ++j)
+                *out++ = J.a(i, j);
+    }
+    FunctionArgs *fun;
 };
 
 class SparseFunctionArgs : public FunctionArgs
