@@ -2,6 +2,7 @@
 #define SCENEGENERATOR
 
 #include "reconstructionFixtureScene.h"
+#include "random"
 
 namespace corecvs
 {
@@ -39,8 +40,8 @@ struct SceneGeneratorParams
 
     friend std::ostream& operator<< (std::ostream& out, const SceneGeneratorParams &params)
     {
-        out << "\t\tFeature r: (" << params.rIn << "; " << params.rOut <<") proj. stdev " << params.sigmaProj << " track.gamma = " << params.gamma << "; #:" << params.MPT << " azimuth distribution : " << (params.fSectorRnorm ? "Normal" : "Uniform") << std::endl
-            << "\t\tPOI     r: (" << params.rInPoi << "; " << params.rOutPoi << ") proj. stdev " << params.sigmaProjPOI << " #:" << params.MPOI << std::endl
+        out << "\t\tFeature   r: (" << params.rIn << "; " << params.rOut <<") proj. stdev " << params.sigmaProj << " track.gamma = " << params.gamma << "; #:" << params.MPT << " azimuth distribution : " << (params.fSectorRnorm ? "Normal" : "Uniform") << std::endl
+            << "\t\tPOI       r: (" << params.rInPoi << "; " << params.rOutPoi << ") proj. stdev " << params.sigmaProjPOI << " #:" << params.MPOI << std::endl
             << "\t\tFixtures: R: " << params.R << "; #:" << params.N << std::endl;
         return out;
     }
