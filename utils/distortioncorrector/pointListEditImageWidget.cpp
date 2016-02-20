@@ -305,7 +305,7 @@ void PointListEditImageWidgetUnited::selectPoint(int id)
         QModelIndex pos = mObservationListModel->index(id, 0);
 
         if (mSelectedPoint != -1) {
-            selectionModel->select(pos, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+            selectionModel->select         (pos, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
             selectionModel->setCurrentIndex(pos, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
         } else {
             selectionModel->clear();
