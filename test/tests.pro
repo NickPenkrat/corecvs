@@ -52,9 +52,9 @@ genvectorui.file                    = genvectorui/genvectorui.pro
 aLowCodec.file                      = aLowCodec/aLowCodec.pro
 
 cr2reader.file                      = cr2reader/cr2reader.pro
-cr2reader.depends                   -= utils
+cr2reader.depends                   += core
 debayer.file                        = debayer/debayer.pro
-debayer.depends                     -= utils
+debayer.depends                     += core
 
 new_board_detector.file             = new_board_detector/new_board_detector.pro
 
