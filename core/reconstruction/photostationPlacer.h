@@ -68,17 +68,17 @@ namespace corecvs
 
 struct PhotostationPlacerFeatureParams
 {
-    std::string detector  = "SURF";
-    std::string descriptor= "SURF";
-    std::string matcher   = "ANN";
+    std::string detector  = "ORB";
+    std::string descriptor= "ORB";
+    std::string matcher   = "BF";
     double b2bThreshold = 0.9;
 
     template<typename V>
     void accept(V &v)
     {
-        v.visit(detector,  std::string("SURF"), "Feature detector");
-        v.visit(descriptor, std::string("SURF"), "Feature descriptor");
-        v.visit(matcher,   std::string("ANN"),  "Feature matcher");
+        v.visit(detector,  std::string("ORB"), "Feature detector");
+        v.visit(descriptor, std::string("ORB"), "Feature descriptor");
+        v.visit(matcher,   std::string("BF"),  "Feature matcher");
         v.visit(b2bThreshold, 0.9, "Best-2nd best ratio threshold");
     }
 };
@@ -89,7 +89,7 @@ struct PhotostationPlacerEssentialFilterParams
     double inlierP5RPThreshold = 5.0;
     int maxEssentialRansacIterations = 32000;
     double b2bRansacP6RPThreshold = 0.8;
-    bool runEssentialFiltering = false;
+    bool runEssentialFiltering = true;
 
     template<typename V>
     void accept(V &v)
@@ -126,7 +126,7 @@ struct PhotostationPlacerFeatureSelectionParams
 struct PhotostationPlacerParams
 {
     bool forceGps = true;
-    PhotostationPlacerOptimizationType optimizationParams = 
+    PhotostationPlacerOptimizationType optimizationParams =
         PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS |
         PhotostationPlacerOptimizationType::POINTS;// | PhotostationPlacerOptimizationType::FOCALS;
     PhotostationPlacerOptimizationErrorType errorType = PhotostationPlacerOptimizationErrorType::RAY_DIFF;
@@ -169,26 +169,26 @@ public:
     void appendPs();
     void fit(const PhotostationPlacerOptimizationType& optimizationSet = PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS, int num = 100);
     void fit(bool tuneFocal);
-	void appendTracks(const std::vector<int> &inlierIds, CameraFixture* fixture, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &possibleTracks);
+    void appendTracks(const std::vector<int> &inlierIds, CameraFixture* fixture, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &possibleTracks);
     std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> getPossibleTracks(CameraFixture* ps);
-	int getMovablePointCount();
-	int getReprojectionCnt();
-	int getInputNum();
-	int getOutputNum();
-	int getErrorComponentsPerPoint();
-	void getErrorSummary(PhotostationPlacerOptimizationErrorType errorType);
-	void getErrorSummaryAll();
+    int getMovablePointCount();
+    int getReprojectionCnt();
+    int getInputNum();
+    int getOutputNum();
+    int getErrorComponentsPerPoint();
+    void getErrorSummary(PhotostationPlacerOptimizationErrorType errorType);
+    void getErrorSummaryAll();
 
-	void addFirstPs();
-	void addSecondPs();
-	void tryAlign();
+    void addFirstPs();
+    void addSecondPs();
+    void tryAlign();
 protected:
-	void readOrientationParams(const double in[]);
-	void writeOrientationParams(double out[]);
-	void computeErrors(double out[], const std::vector<int> &idxs);
+    void readOrientationParams(const double in[]);
+    void writeOrientationParams(double out[]);
+    void computeErrors(double out[], const std::vector<int> &idxs);
     std::vector<std::vector<int>> getDependencyList();
 
-    /* 
+    /*
      * These are valid only in non-linear fit time
      */
     std::vector<FixtureCamera*> activeCameras;
@@ -210,33 +210,33 @@ protected:
         std::vector<int> idxs;
         double* output;
     };
-	struct OrientationFunctor : corecvs::SparseFunctionArgs
-	{
-		void operator() (const double in[], double out[], const std::vector<int> &idxs)
-		{
-			placer->readOrientationParams(in);
-			placer->computeErrors(out, idxs);
-		}
-		OrientationFunctor(PhotostationPlacer *placer) : SparseFunctionArgs(placer->getInputNum(), placer->getOutputNum(), placer->sparsity), placer(placer)
-		{
-		}
-		PhotostationPlacer* placer;
-	};
-	struct OrientationNormalizationFunctor : corecvs::FunctionArgs
-	{
-		OrientationNormalizationFunctor(PhotostationPlacer *placer) : FunctionArgs(placer->getInputNum(), placer->getInputNum()), placer(placer)
-		{
-		}
-		void operator() (const double in[], double out[])
-		{
-			placer->readOrientationParams(in);
-			placer->writeOrientationParams(out);
-		}
-		PhotostationPlacer* placer;
-	};
+    struct OrientationFunctor : corecvs::SparseFunctionArgs
+    {
+        void operator() (const double in[], double out[], const std::vector<int> &idxs)
+        {
+            placer->readOrientationParams(in);
+            placer->computeErrors(out, idxs);
+        }
+        OrientationFunctor(PhotostationPlacer *placer) : SparseFunctionArgs(placer->getInputNum(), placer->getOutputNum(), placer->sparsity), placer(placer)
+        {
+        }
+        PhotostationPlacer* placer;
+    };
+    struct OrientationNormalizationFunctor : corecvs::FunctionArgs
+    {
+        OrientationNormalizationFunctor(PhotostationPlacer *placer) : FunctionArgs(placer->getInputNum(), placer->getInputNum()), placer(placer)
+        {
+        }
+        void operator() (const double in[], double out[])
+        {
+            placer->readOrientationParams(in);
+            placer->writeOrientationParams(out);
+        }
+        PhotostationPlacer* placer;
+    };
 private:
-	double scoreFundamental(CameraFixture *psA, FixtureCamera *camA, corecvs::Vector2dd ptA,
-			                CameraFixture *psB, FixtureCamera *camB, corecvs::Vector2dd ptB);
+    double scoreFundamental(CameraFixture *psA, FixtureCamera *camA, corecvs::Vector2dd ptA,
+                            CameraFixture *psB, FixtureCamera *camB, corecvs::Vector2dd ptB);
     struct ParallelEssentialFilter
     {
         PhotostationPlacer* placer;

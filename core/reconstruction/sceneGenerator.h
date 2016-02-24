@@ -2,13 +2,14 @@
 #define SCENEGENERATOR
 
 #include "reconstructionFixtureScene.h"
+#include "random"
 
 namespace corecvs
 {
 
 struct SceneGeneratorParams
 {
-    double rIn = 8.0, rOut = 1000.0, sigmaProj = 0., gamma = 0.25, sigmaProjPOI = 1.0,
+    double rIn = 10.0, rOut = 500.0, sigmaProj = 0., gamma = 0.25, sigmaProjPOI = 1.0,
            poiMeasureLimit = 0.75;
     int N = 5, MPOI = 1000000, MPT = 5000;
     double rInPoi = 10.0, rOutPoi = 100.0;
@@ -17,14 +18,14 @@ struct SceneGeneratorParams
     bool fSectorRnorm = false;
 
     SceneGeneratorParams(
-        double rIn = 8.0,
-        double rOut = 1000.0,
+        double rIn = 10.0,
+        double rOut = 500.0,
         double sigmaProj = 0.,
         double gamma = 0.5,
         double sigmaProjPOI = 1.0,
         double poiMeasureLimit = 0.75,
-        int N = 9,
-        int MPOI = 40000,
+        int N = 5,
+        int MPOI = 100000,
         int MPT = 10000,
         double rInPoi = 10.0,
         double rOutPoi = 100.0,
@@ -53,6 +54,7 @@ struct SceneGenerator : public SceneGeneratorParams
     void generatePoints();
     void generateFixtures();
     void generateMatches();
+    Vector2dd generateError(std::mt19937 &rng, double std = 1.0, double threshold = 3.0);
     CameraModel generateCamera(int id);
     CameraFixture* generatePs(corecvs::Vector3dd pos, int id);
     ReconstructionFixtureScene* rfs =  nullptr;

@@ -11,6 +11,10 @@
 #include "jsonGetter.h"
 #include "abstractPainter.h"
 
+#ifdef WITH_TBB
+#include <tbb/tbb.h>
+#endif
+
 void draw(corecvs::ObservationList list, corecvs::RGB24Buffer &buffer)
 {
     double minh = 1e10,  minv = 1e10, maxh = 0, maxv = 0;
@@ -46,6 +50,17 @@ int main(int argc, char **argv)
     std::string filenameOut ="job.json";
     std::string filenameList= "images.txt";
     bool useNewPipeline = false;
+
+    auto thread_limit_env = std::getenv("CALIBRATION_TEST_THREAD_LIMIT");
+
+    if (thread_limit_env)
+	{
+		std::cout << "Detected thread limit env. var: " << thread_limit_env << std::endl;
+	}
+#ifdef WITH_TBB
+	decltype(tbb::task_scheduler_init::automatic) tcnt = thread_limit_env ? std::stoi(thread_limit_env) : tbb::task_scheduler_init::automatic;
+	tbb::task_scheduler_init init(tcnt);
+#endif
 
     if (argc < 2)
     {

@@ -51,7 +51,7 @@ class ReconstructionFixtureScene : public FixtureScene
 {
 public:
     ReconstructionFixtureScene();
-    
+
     virtual void deleteCamera        (FixtureCamera *camera);
     virtual void deleteCameraFixture (CameraFixture *fixture, bool recursive = true);
     virtual void deleteFixturePair   (CameraFixture *fixture, FixtureCamera *camera);
@@ -92,6 +92,30 @@ public:
     bool haveCamera(FixtureCamera* camera);
     bool haveFixture(CameraFixture* camera);
     bool havePoint(SceneFeaturePoint* point);
+
+    void printMatchStats();
+
+    friend std::ostream& operator<< (std::ostream& os, ReconstructionFixtureScene &rfs)
+    {
+        std::vector<CameraFixture*> fSorted;
+        for (auto ptr: rfs.fixtures)
+            fSorted.push_back(ptr);
+        std::sort(fSorted.begin(), fSorted.end(), [](const CameraFixture* a, const CameraFixture* b) { return a->name < b->name; });
+
+        for (auto ptr: fSorted)
+        {
+            std::vector<FixtureCamera*> cSorted;
+            for (auto ptC: ptr->cameras)
+                cSorted.push_back(ptC);
+
+            std::sort(cSorted.begin(), cSorted.end(), [](const FixtureCamera* a, const FixtureCamera* b) { return a->nameId < b->nameId; });
+
+            os << ptr->name << " " << rfs.initializationData[ptr].initData.shift << std::endl;
+            for (auto c: cSorted)
+                os << "\t" << c->nameId << " " << rfs.images[WPP(ptr, c)] << std::endl;
+        }
+        return os;
+    }
 };
 }
 
@@ -100,11 +124,11 @@ namespace std
 template<>
 struct hash<PhotostationInitializationType>
 {
-	size_t operator() (const PhotostationInitializationType &t) const
-	{
-		using foo = std::underlying_type<PhotostationInitializationType>::type;
-		return hash<foo>()(static_cast<const foo>(t));
-	}
+    size_t operator() (const PhotostationInitializationType &t) const
+    {
+        using foo = std::underlying_type<PhotostationInitializationType>::type;
+        return hash<foo>()(static_cast<const foo>(t));
+    }
 };
 
 }
