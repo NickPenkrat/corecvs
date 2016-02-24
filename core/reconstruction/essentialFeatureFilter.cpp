@@ -2,7 +2,26 @@
 
 using namespace corecvs;
 
-EssentialFeatureFilter::EssentialFeatureFilter(const Matrix33 &K1, const Matrix33 &K2, std::vector<std::array<corecvs::Vector2dd, 2>> &features, std::vector<std::array<corecvs::Vector2dd, 2>> &featuresInlierCheck, double inlierRadius, double targetGamma, int maxIter, int batch, int batches) : K1(K1.inv()), K2(K2.inv()), features(features), inlierRadius(inlierRadius), targetGamma(targetGamma), maxIter(maxIter), batch(batch), batches(batches), featuresInlierCheck(featuresInlierCheck), usedIter(0)
+EssentialFeatureFilter::EssentialFeatureFilter(
+        const Matrix33 &K1,
+        const Matrix33 &K2,
+        std::vector<std::array<corecvs::Vector2dd, 2>> &features,
+        std::vector<std::array<corecvs::Vector2dd, 2>> &featuresInlierCheck,
+        double inlierRadius,
+        double targetGamma,
+        int maxIter,
+        int batch,
+        int batches) :
+    K1(K1.inv()),
+    K2(K2.inv()),
+    features(features),
+    inlierRadius(inlierRadius),   
+    maxIter(maxIter),
+    batch(batch),
+    batches(batches),
+    usedIter(0),
+    targetGamma(targetGamma),
+    featuresInlierCheck(featuresInlierCheck)
 {
 }
 
@@ -22,7 +41,7 @@ void EssentialFeatureFilter::estimate()
     if (!features.size())
         return;
     usedIter = 0;
-    do 
+    do
     {
         parallelable_for(0, batches, ParallelEstimator(this, inlierRadius, batch));
         usedIter += batch * batches;
@@ -41,6 +60,8 @@ double EssentialFeatureFilter::nForGamma()
 
 void EssentialFeatureFilter::Estimator::operator() (const corecvs::BlockedRange<int> &r)
 {
+    if (filter->features.size() < FEATURE_POINTS_FOR_MODEL)
+        return;
     rng = std::mt19937(std::random_device()());
     for (int i = r.begin() * batch; i < r.end() * batch; ++i)
     {

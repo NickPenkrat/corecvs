@@ -65,7 +65,7 @@ TEST(Debayer, colorTestYchannel)
     Debayer d(ppm, 8, nullptr, 0);
 
     RGB48Buffer* result = new RGB48Buffer(ppm->h, ppm->w, false);
-    d.toRGB48(Debayer::Bilinear, result);
+    d.toRGB48(DebayerMethod::BILINEAR, result);
 
     double error = ErrorMetrics::Yrmsd(ppm, result, 3, 8);
 
@@ -88,7 +88,7 @@ TEST(Debayer, colorTestNearest)
     CORE_ASSERT_TRUE(ppm->verify(), "PPM Image verification failed");
     Debayer d(ppm);
     RGB48Buffer* result = new RGB48Buffer(ppm->h, ppm->w, false);
-    d.toRGB48(Debayer::Nearest, result);
+    d.toRGB48(DebayerMethod::NEAREST, result);
 
     int64_t r_sum = 0, g_sum = 0, b_sum = 0;
     performTest(r_sum, g_sum, b_sum, result);
@@ -106,7 +106,7 @@ TEST(Debayer, colorTestBilinear)
     CORE_ASSERT_TRUE(ppm->verify(), "PPM Image verification failed");
     Debayer d(ppm);
     RGB48Buffer* result = new RGB48Buffer(ppm->h, ppm->w, false);
-    d.toRGB48(Debayer::Bilinear, result);
+    d.toRGB48(DebayerMethod::BILINEAR, result);
 
     int64_t r_sum = 0, g_sum = 0, b_sum = 0;
     performTest(r_sum, g_sum, b_sum, result);
@@ -124,7 +124,7 @@ TEST(Debayer, colorTestAHD)
     CORE_ASSERT_TRUE(ppm->verify(), "PPM Image verification failed");
     Debayer d(ppm);
     RGB48Buffer* result = new RGB48Buffer(ppm->h, ppm->w, false);
-    d.toRGB48(Debayer::AHD, result);
+    d.toRGB48(DebayerMethod::AHD, result);
 
     int64_t r_sum = 0, g_sum = 0, b_sum = 0;
     performTest(r_sum, g_sum, b_sum, result);

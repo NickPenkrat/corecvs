@@ -59,16 +59,17 @@ public:
      * \author  pavel.vasilev
      * \date    Oct 21, 2015
      *
-     * \param   name            Output file name.
-     * \param [in]  buffer      Buffer to write to file. Internally writes graymap .pgm for G12 and
-     *                          RGB .ppm for RGB.
-     * \param [in]  metadata    (Optional) If non-null, writes metadata to file.
+     * \param   name                   Output file name.
+     * \param [in]  buffer             Buffer to write to file. Internally writes graymap .pgm for G12 and
+     *                                 RGB .ppm for RGB.
+     * \param [in]  metadata           (Optional) If non-null, writes metadata to file.
+     * \param [in]  forceTo8bitsShift  (Optional) If non-negative, shift given #bits to right to get writtable 8-bits for the output.
      *
      * \return  Error code.
      */
-    int save(const string& name, G12Buffer   *buffer, MetaData* metadata = nullptr);
     int save(const string& name, RGB24Buffer *buffer, MetaData* metadata = nullptr);
-    int save(const string& name, RGB48Buffer *buffer, MetaData* metadata = nullptr);
+    int save(const string& name, G12Buffer   *buffer, MetaData* metadata = nullptr, int forceTo8bitsShift = -1);
+    int save(const string& name, RGB48Buffer *buffer, MetaData* metadata = nullptr, int forceTo8bitsShift = -1);
 
     // TODO: remove this. 
     int saveG16(const string& name, G12Buffer *buffer);

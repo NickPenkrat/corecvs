@@ -233,4 +233,19 @@ Vector3dd MulticameraTriangulator::triangulateLM(Vector3dd initialGuess, bool * 
     return Vector3dd(optInput[0], optInput[1], optInput[2]);
 }
 
+/*
+ * Assuming we have an MLE-estimator it (under certain circumstances) is asympthotically-normal
+ * So if (and it is the only point that should be used for evaluation) "at" is an extreme value,
+ * than hessian is asympthotically unbiased estimate for inverse of covariance matrix
+ * For LSQ-estimator JTJ is a good enough estimation of hessian near of extremum
+ *
+ * NOTE: Due to some reasons on real-life scenes this does not work as expected
+ */
+corecvs::Matrix33 MulticameraTriangulator::getCovarianceInvEstimation(const corecvs::Vector3dd &at) const
+{
+    CostFunction f(const_cast<MulticameraTriangulator*>(this));
+    auto H = f.getLSQHessian(&at[0]);
+    return H;
+}
+
 } // namespace corecvs

@@ -13,10 +13,10 @@ void usage()
 {
     cout << "Demosaic tool"                                                                   << endl
          << "Usage:"                                                                          << endl
-         << "debayer --file=bayer.pgm [--method=N] [--bpos=P] [--ofile=bayer.ppm]"            << endl
+         << "debayer --file=name [--method=N] [--bpos=P] [--ofile=name_debayer.ppm]"          << endl
          << "       [--compare --target=target --methodCmp=N]      , where:"                  << endl
          <<                                                                                      endl
-         << " --file=bayer.pgm specifies input Bayer file, in this case \"bayer.pgm\""        << endl
+         << " --file=name specifies input Bayer file"                                         << endl
          <<                                                                                      endl
          << " --method=N specifies demosaic method, where N:"                                 << endl
          << " \t0\tNearest Neighbor"                                                          << endl
@@ -28,7 +28,11 @@ void usage()
          <<                                                                                      endl
          << " --bpos=P specifies Bayer position [0-3], where P=0 - RGGB (default)"            << endl
          <<                                                                                      endl
-         << " --ofile=bayer.ppm specifies output color image"                                 << endl
+         << " --ofile=name_debayer.ppm specifies output color image filename"                 << endl
+         << " --obits=-1  positive forces 8-bits output format and sets #bits for r-shifting" << endl
+         << endl
+         << " --ifile=<name_bayer8bpp.pgm> sets output filename for converted input Bayer image" << endl
+         << " --ibits=-1  positive forces 8-bits input  format and sets #bits for r-shifting" << endl
          <<                                                                                      endl
          << " --compare indicates that debayer should work in comparison mode, ignoring all"  << endl
          << "   demosaic options and outputting comparison result"                            << endl
@@ -45,11 +49,14 @@ int main(int argc, const char **argv)
 {
     CommandLineSetter s(argc, argv);
     bool   help      = s.getBool  ("help");
-    int    method    = s.getInt   ("method", Debayer::Method::AHD);
+    int    method    = s.getInt   ("method", DebayerMethod::AHD);
     string filename  = s.getOption("file");
     bool   toBayer   = s.getBool  ("toBayer");
     int    bpos      = s.getInt   ("bpos", -1);      // -1 - try to extract it from Bayer's meta
-    string outfile   = s.getString("ofile", "bayer.ppm");
+    string outfile   = s.getString("ofile", filename + "_debayer.ppm");
+    int    outBits   = s.getInt   ("obits", -1);     // -1 - don't force to 8-bits with some shift
+    int    inBits    = s.getInt   ("ibits", -1);     // -1 - don't force to 8-bits with some shift
+    string filename8 = s.getString("ifile", filename + "_bayer8bpp.pgm");
     bool   compare   = s.getBool  ("compare");
     string target    = s.getOption("target");
     int    methodCmp = s.getInt   ("methodCmp", Debayer::CompareMethod::PSNR);
@@ -95,8 +102,7 @@ int main(int argc, const char **argv)
         return 0;
     }
 
-
-    G12Buffer* bayer;
+    G12Buffer* bayer = nullptr;
     if (!toBayer)
     {
         bayer = PPMLoader().loadMeta(filename, &meta);
@@ -107,10 +113,18 @@ int main(int argc, const char **argv)
         }
         RGB48Buffer *result = new RGB48Buffer(bayer->h, bayer->w, false);
 
-        Debayer d(bayer, 8, &meta, bpos);
-        d.toRGB48(Debayer::Method(method), result);
+        Debayer d(bayer, meta["bits"][0], &meta, bpos);
+        d.toRGB48(DebayerMethod::DebayerMethod(method), result);
 
-        PPMLoader().save(outfile, result);
+        if (outBits != -1)
+            PPMLoader().save(outfile, result, nullptr, outBits);
+        else
+            PPMLoader().save(outfile, result);
+
+        if (inBits != -1) {
+            PPMLoader().save(filename8, bayer, nullptr, inBits);
+        }
+
         delete_safe(result);
     }
     else
@@ -124,7 +138,8 @@ int main(int argc, const char **argv)
 
         bayer = new G12Buffer(inRgb->h, inRgb->w, false);
 
-        Debayer d(bayer, 8, &meta, bpos);
+        Debayer d(bayer, meta["bits"][0], &meta, bpos);
+
         d.fromRgb(inRgb);
 
         PPMLoader().save(outfile, bayer);

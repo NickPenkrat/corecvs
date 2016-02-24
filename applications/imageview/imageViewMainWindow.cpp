@@ -1,23 +1,45 @@
+#include <QFileDialog>
+
 #include "imageViewMainWindow.h"
 #include "ui_imageViewMainWindow.h"
 #include "rgb24Buffer.h"
 #include "g12Image.h"
 
+#include "g12Image.h"
+#include "ppmLoader.h"
+#include "converters/debayer.h"
+
 ImageViewMainWindow::ImageViewMainWindow(QWidget *parent) :
     QWidget(parent),
+    bayer(NULL),
     input(NULL),
     ui(new Ui::ImageViewMainWindow)
 {
     ui->setupUi(this);
 
+    BitSelectorParameters defaultSelector;
+    defaultSelector.setShift(-2);
+    ui->bitSelector->setParameters(defaultSelector);
+
+    ui->widget->setFitWindow(true);
+    ui->widget->setKeepAspect(true);
+
     connect(ui->bitSelector, SIGNAL(paramsChanged()), this, SLOT(paramsChanged()));
-    paramsChanged();
+    connect(ui->loadButton, SIGNAL(released())      , this, SLOT(loadImageAction()));
+    connect(ui->parameters, SIGNAL(paramsChanged()) , this, SLOT(debayer()));
 }
 
 ImageViewMainWindow::~ImageViewMainWindow()
 {
     delete_safe(ui);
     delete_safe(input);
+}
+
+void ImageViewMainWindow::setImage(RGB48Buffer *image)
+{
+    delete_safe(input);
+    input = image;
+    paramsChanged();
 }
 
 void ImageViewMainWindow::paramsChanged()
@@ -73,4 +95,45 @@ void ImageViewMainWindow::paramsChanged()
     }
     ui->widget->setImage(QSharedPointer<QImage>(new RGB24Image(result)));
     delete_safe(result);
+}
+
+void ImageViewMainWindow::loadImageAction()
+{
+    QString name = QFileDialog::getOpenFileName(
+                this,
+                "Choose an file name",
+                ".",
+                "Images (*.pgm)"
+            );
+    loadImage(name);
+}
+
+void ImageViewMainWindow::loadImage(QString name)
+{
+    delete_safe(bayer);
+    ui->widget->setInfoString("Loading...");
+    bayer = PPMLoader().g12BufferCreateFromPGM(name.toStdString(), &meta);
+    ui->widget->setInfoString("---");
+
+    if (bayer == NULL) {
+        qDebug("Can't' open bayer file: %s", name.toLatin1().constData());
+    } else {
+        debayer();
+    }
+
+}
+
+void ImageViewMainWindow::debayer()
+{
+    if (bayer == NULL) {
+        return;
+    }
+
+    DebayerParameters params;
+    ui->parameters->getParameters(params);
+
+    Debayer d(bayer, meta["bits"][0], &meta, params.bayerPos());
+    RGB48Buffer* result = new RGB48Buffer(bayer->h, bayer->w, false);
+    d.toRGB48(params.method(), result);
+    setImage(result);
 }

@@ -12,7 +12,7 @@ TEMPLATE = subdirs
 
 SUBDIRS +=       \
 #   grab         \
-#    grab_N_captures \
+    grab_N_captures \
     serialize1   \
 #   adoptcolor   \
 #    avigrab     \
@@ -21,7 +21,7 @@ SUBDIRS +=       \
 #    aLowCodec \
 #    new_board_detector \
 #    cr2reader           \
-#    debayer             \
+    debayer             \
 
 
 with_opencv {
@@ -38,36 +38,36 @@ with_opencv {
 #        calibration_job_apply_undistortion \
         calibration_job_calibrate \
 #        \
-#        geometry_verificator \
-#        photostation_placer \
+        geometry_verificator \
 
 }
 
-grab.file                           = grab/grab.pro
-grab_N_captures.file                = grab_N_captures/grab_N_captures.pro
-serialize1.file                     = serialize1/serialize1.pro
-adoptcolor.file                     = adoptcolor/adoptcolor.pro
-avigrab.file                        = avigrab/avigrab.pro
-decodebayer.file                    = decodebayer/decodebayer.pro
-genvectorui.file                    = genvectorui/genvectorui.pro
-aLowCodec.file                      = aLowCodec/aLowCodec.pro
+grab                                = grab/grab.pro
+grab_N_captures                     = grab_N_captures/grab_N_captures.pro
+serialize1                          = serialize1/serialize1.pro
+adoptcolor                          = adoptcolor/adoptcolor.pro
+avigrab                             = avigrab/avigrab.pro
+decodebayer                         = decodebayer/decodebayer.pro
+genvectorui                         = genvectorui/genvectorui.pro
+aLowCodec                           = aLowCodec/aLowCodec.pro
 
 cr2reader.file                      = cr2reader/cr2reader.pro
-cr2reader.depends                   -= utils
+cr2reader.depends                  -= utils
+
 debayer.file                        = debayer/debayer.pro
-debayer.depends                     -= utils
+debayer.depends                    -= utils
 
-new_board_detector.file             = new_board_detector/new_board_detector.pro
+new_board_detector	                = new_board_detector/new_board_detector.pro
 
-distortion_corrector.file           = distortion_corrector/distortion_corrector.pro
+distortion_corrector	            = distortion_corrector/distortion_corrector.pro
 
-matcher_basic.file                  = matcher_basic/feature2d_basic.pro
-matcher_full.file                   = matcher_full/matcher_full.pro
+matcher_basic                       = matcher_basic/feature2d_basic.pro
+matcher_full                        = matcher_full/matcher_full.pro
 
-camera_calibration.file             = camera_calibration/camera_calibration.pro
-chessboard_detector.file            = chessboard_detector/chessboard_detector.pro
+camera_calibration                  = camera_calibration/camera_calibration.pro
+chessboard_detector                 = chessboard_detector/chessboard_detector.pro
 
-calibration.file                    = calibration/calibration.pro
+calibration                         = calibration/calibration.pro
 
 calibration_job_generate            = calibration_job_generate/calibration_job_generate.pro
 calibration_job_detect              = calibration_job_detect/calibration_job_detect.pro
@@ -76,5 +76,3 @@ calibration_job_apply_undistortion  = calibration_job_apply_undistortion/calibra
 calibration_job_calibrate           = calibration_job_calibrate/calibration_job_calibrate.pro
 
 geometry_verificator                = geometry_verificator/geometry_verificator.pro
-
-#photostation_placer.file            = photostation_placer/photostation_placer.pro

@@ -17,9 +17,6 @@
 #include "utils.h"
 #include "advancedImageWidget.h"
 #include "qtFileLoader.h"
-#include "g12Image.h"
-#include "ppmLoader.h"
-#include "converters/debayer.h"
 
 #include "imageViewMainWindow.h"
 
@@ -32,33 +29,17 @@ int main(int argc, char *argv[])
 
     Q_INIT_RESOURCE(main);
 
-    printf("Starting cloudView...\n");
+    SYNC_PRINT(("Starting cloudView...\n"));
     QApplication app(argc, argv);
     ImageViewMainWindow mainWindow;
-
 
     QTG12Loader::registerMyself();
     QTRGB24Loader::registerMyself();
 
-    if (argc != 0) {
-        std::string str = argv[1];
-        qDebug("Main: %s", str.c_str());
-
-        MetaData meta;
-
-        G12Buffer *bayer = PPMLoader().loadMeta(str, &meta);
-        //G12Buffer *bayer = PPMLoader().g12BufferCreateFromPPM(str);
-
-        if (bayer == NULL)
-        {
-            qDebug("Can't' open bayer file: %s", str.c_str());
-        } else {
-            Debayer d(bayer, 8, &meta);
-
-            RGB48Buffer* result = new RGB48Buffer(bayer->h, bayer->w, false);
-            d.toRGB48(Debayer::Nearest, result);
-            mainWindow.input = result;
-        }
+    if (argc > 1)
+    {
+        qDebug("Main: %s", argv[1]);
+        mainWindow.loadImage(QString(argv[1]));
 
 #if 0
         RGB48Buffer *buffer = PPMLoader().rgb48BufferCreateFromPPM(str);
@@ -71,11 +52,7 @@ int main(int argc, char *argv[])
 #endif
     }
 
-
     mainWindow.show();
     app.exec();
-
-    cout << "Exiting ImageView application  \n";
-
+    SYNC_PRINT(("Exiting ImageView application...\n"));
 }
-

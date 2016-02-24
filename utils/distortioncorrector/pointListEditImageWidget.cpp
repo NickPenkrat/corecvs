@@ -305,7 +305,7 @@ void PointListEditImageWidgetUnited::selectPoint(int id)
         QModelIndex pos = mObservationListModel->index(id, 0);
 
         if (mSelectedPoint != -1) {
-            selectionModel->select(pos, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+            selectionModel->select         (pos, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
             selectionModel->setCurrentIndex(pos, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
         } else {
             selectionModel->clear();
@@ -443,7 +443,7 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *w
     }
 
     /* Draw additional points*/
-    for (int i = 0; i < pointList.size(); i++)
+    for (size_t i = 0; i < pointList.size(); i++)
     {
         Vector2dd &p = pointList[i];
         Vector2dd imageCoords = imageToWidgetF(p);

@@ -35,8 +35,8 @@ TEST(FFTWWrapper, doublePrecisionTest)
         }
     }
 
-    fftw.transform2D(ppm->w, ppm->h, input, fft, FFTW::Forward);
-    fftw.transform2D(ppm->w, ppm->h, fft, output, FFTW::Backward);
+    fftw.transform2D(ppm->w, ppm->h, input,    fft, FFTW::Forward);
+    fftw.transform2D(ppm->w, ppm->h,   fft, output, FFTW::Backward);
 
     G12Buffer* fftResult = new G12Buffer(ppm->h, ppm->w, false);
 

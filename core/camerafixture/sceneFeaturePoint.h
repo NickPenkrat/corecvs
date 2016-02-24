@@ -46,7 +46,7 @@ public:
     SceneFeaturePoint * featurePoint;
 
     Vector2dd                 observation;
-    Vector2dd                 accuracy;
+    Vector2dd                  accuracy;
     bool                      isKnown;
     MetaContainer             meta;
 
@@ -137,6 +137,14 @@ public:
     /** This is a primary position of the FeaturePoint. The one that is know by direct measurement */
     Vector3dd position;
     bool hasKnownPosition;
+    /*
+     * Here we'll store some estimation for inverse of covariance matrix
+     * So for delta v we'll get v'Av = Mahlanobis distance (which has
+     * chi-squared distribution with 3 dof)
+     */
+    Matrix33                  accuracy;
+    // Gets p-value using covariance estimation using one-sided test
+    double                       queryPValue(const corecvs::Vector3dd &q) const;
 
     /** This is a position that is achived by reconstruction */
     Vector3dd reprojectedPosition;
@@ -192,6 +200,10 @@ public:
 
     bool hasObservation(FixtureCamera *cam);
     SceneObservation *getObservation(FixtureCamera *cam);
+
+    void removeObservation(SceneObservation *);
+
+
 
     /* Let it be so far like this */
     template<class VisitorType>

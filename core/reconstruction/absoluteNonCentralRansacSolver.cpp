@@ -28,6 +28,8 @@ void corecvs::AbsoluteNonCentralRansacSolver::ParallelEstimator::operator() (con
 
 void corecvs::AbsoluteNonCentralRansacSolver::Estimator::operator() (const corecvs::BlockedRange<int> &r)
 {
+    if (solver->cloudMatches.size() < SAMPLESIZE)
+        return;
     for (int i = r.begin(); i < r.end(); ++i)
     {
         sampleModel();
@@ -169,7 +171,7 @@ void corecvs::AbsoluteNonCentralRansacSolver::Estimator::selectInliers()
             bestHypothesis = hypo;
         }
     }
-    if (localMax < bestInliers.size())
+    if ((int)localMax < bestInliers.size())
     {
         localMax = (int)bestInliers.size();
         solver->accept(bestHypothesis, bestInliers, bestScore);

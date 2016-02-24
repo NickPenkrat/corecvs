@@ -11,41 +11,81 @@ ReconstructionFixtureScene::ReconstructionFixtureScene()
 {
 }
 
+void ReconstructionFixtureScene::printMatchStats()
+{
+    std::vector<CameraFixture*> fix;
+    for (auto ptr: fixtures) fix.push_back(ptr);
+
+    std::sort(fix.begin(), fix.end(), [](CameraFixture* a, CameraFixture* b) { return a->name < b->name; });
+
+    for (size_t i1 = 0; i1 < fix.size(); ++i1)
+    {
+        auto f1 = fix[i1];
+        std::vector<FixtureCamera*> cams1;
+        for (auto c: f1->cameras) cams1.push_back(c);
+        std::sort(cams1.begin(), cams1.end(), [](FixtureCamera* a, FixtureCamera* b) { return a->nameId < b->nameId; });
+
+        for (size_t i2 = i1; i2 < fix.size(); ++i2)
+        {
+            auto f2 = fix[i2];
+            std::vector<FixtureCamera*> cams2;
+            for (auto c: f2->cameras) cams2.push_back(c);
+            std::sort(cams2.begin(), cams2.end(), [](FixtureCamera* a, FixtureCamera* b) { return a->nameId < b->nameId; });
+
+            std::cout << f1->name << " x " << f2->name << std::endl << "\t\t";
+            for (auto c: cams2)
+                std::cout << c->nameId << "\t";
+            std::cout << std::endl;
+            for (auto c1: cams1)
+            {
+                std::cout << c1->nameId << "\t";
+                for (auto c2: cams2)
+                {
+                    WPP id1(f1, c1), id2(f2, c2);
+                    std::cout <<
+                        (matches.count(id1) && matches[id1].count(id2) ? matches[id1][id2].size() : matches.count(id2) && matches[id2].count(id1) ? matches[id2][id1].size() : 0) << "\t";
+                }
+                std::cout << std::endl;
+            }
+        }
+    }
+}
+
 FixtureScene* ReconstructionFixtureScene::dumbify()
 {
-	auto dumb = new FixtureScene();
-	std::unordered_map<WPP, WPP> wppmap;
-	for (auto f: fixtures)
-	{
-		auto ff = dumb->createCameraFixture();
-		ff->location = f->location;
-		ff->name = f->name;
-		for (auto c: f->cameras)
-		{
-			auto cc = dumb->createCamera();
-			cc->intrinsics = c->intrinsics;
-			cc->extrinsics = c->extrinsics;
-			cc->distortion = c->distortion;
-			cc->nameId     = c->nameId;
-			dumb->addCameraToFixture(cc, ff);
-			wppmap[WPP(f, c)] = WPP(ff, cc);
-		}
-	}
-	for (auto p: points)
-	{
-		auto pp = dumb->createFeaturePoint();
-		pp->reprojectedPosition = p->reprojectedPosition;
-		pp->color = p->color;
-		for (auto &o: p->observations__)
-		{
-			auto& oo = pp->observations[wppmap[o.first].v] = o.second;
-			auto wpp = wppmap[o.first];
-			oo.camera = wpp.v;
-			oo.cameraFixture = wpp.u;
-			oo.featurePoint = pp;
-		}
-	}
-	return dumb;
+    auto dumb = new FixtureScene();
+    std::unordered_map<WPP, WPP> wppmap;
+    for (auto f: fixtures)
+    {
+        auto ff = dumb->createCameraFixture();
+        ff->location = f->location;
+        ff->name = f->name;
+        for (auto c: f->cameras)
+        {
+            auto cc = dumb->createCamera();
+            cc->intrinsics = c->intrinsics;
+            cc->extrinsics = c->extrinsics;
+            cc->distortion = c->distortion;
+            cc->nameId     = c->nameId;
+            dumb->addCameraToFixture(cc, ff);
+            wppmap[WPP(f, c)] = WPP(ff, cc);
+        }
+    }
+    for (auto p: points)
+    {
+        auto pp = dumb->createFeaturePoint();
+        pp->reprojectedPosition = p->reprojectedPosition;
+        pp->color = p->color;
+        for (auto &o: p->observations__)
+        {
+            auto& oo = pp->observations[wppmap[o.first].v] = o.second;
+            auto wpp = wppmap[o.first];
+            oo.camera = wpp.v;
+            oo.cameraFixture = wpp.u;
+            oo.featurePoint = pp;
+        }
+    }
+    return dumb;
 }
 
 void ReconstructionFixtureScene::deleteCamera(FixtureCamera *camera)
@@ -173,6 +213,8 @@ void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams 
             mset.emplace_back(fA, fB, m.best2ndBest);
         }
     }
+
+    printMatchStats();
 }
 
 std::vector<FixtureCamera*> ReconstructionFixtureScene::getDistinctCameras() const
@@ -215,10 +257,10 @@ bool ReconstructionFixtureScene::validateMatches()
                 int mA = std::get<0>(t);
                 int mB = std::get<1>(t);
                 auto itA = keyPoints.count(WPP(fixture, camera));
-                CORE_ASSERT_TRUE_S(itA > 0);
+                CORE_ASSERT_TRUE_S((int)itA > 0);
                 CORE_ASSERT_TRUE_S(keyPoints[WPP(fixture, camera)].size() > mA);
                 auto itB = keyPoints.count(WPP(fixtureB, cameraB));
-                CORE_ASSERT_TRUE_S(itB > 0);
+                CORE_ASSERT_TRUE_S((int)itB > 0);
                 CORE_ASSERT_TRUE_S(keyPoints[WPP(fixtureB, cameraB)].size() > mB);
             }
         }
