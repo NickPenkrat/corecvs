@@ -201,6 +201,10 @@ public:
     bool hasObservation(FixtureCamera *cam);
     SceneObservation *getObservation(FixtureCamera *cam);
 
+    void removeObservation(SceneObservation *);
+
+
+
     /* Let it be so far like this */
     template<class VisitorType>
     void accept(VisitorType &visitor)

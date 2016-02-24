@@ -2,7 +2,26 @@
 
 using namespace corecvs;
 
-EssentialFeatureFilter::EssentialFeatureFilter(const Matrix33 &K1, const Matrix33 &K2, std::vector<std::array<corecvs::Vector2dd, 2>> &features, std::vector<std::array<corecvs::Vector2dd, 2>> &featuresInlierCheck, double inlierRadius, double targetGamma, int maxIter, int batch, int batches) : K1(K1.inv()), K2(K2.inv()), features(features), inlierRadius(inlierRadius), targetGamma(targetGamma), maxIter(maxIter), batch(batch), batches(batches), featuresInlierCheck(featuresInlierCheck), usedIter(0)
+EssentialFeatureFilter::EssentialFeatureFilter(
+        const Matrix33 &K1,
+        const Matrix33 &K2,
+        std::vector<std::array<corecvs::Vector2dd, 2>> &features,
+        std::vector<std::array<corecvs::Vector2dd, 2>> &featuresInlierCheck,
+        double inlierRadius,
+        double targetGamma,
+        int maxIter,
+        int batch,
+        int batches) :
+    K1(K1.inv()),
+    K2(K2.inv()),
+    features(features),
+    inlierRadius(inlierRadius),   
+    maxIter(maxIter),
+    batch(batch),
+    batches(batches),
+    usedIter(0),
+    targetGamma(targetGamma),
+    featuresInlierCheck(featuresInlierCheck)
 {
 }
 

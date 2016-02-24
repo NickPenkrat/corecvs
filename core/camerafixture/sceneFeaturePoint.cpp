@@ -40,6 +40,27 @@ SceneObservation *SceneFeaturePoint::getObservation(FixtureCamera *cam)
     return &((*it).second);
 }
 
+void SceneFeaturePoint::removeObservation(SceneObservation *in)
+{
+    auto it = observations.begin();
+
+    for (; it != observations.end(); it++)
+    {
+        //FixtureCamera *cam = it->first;
+        const SceneObservation &observ = it->second;
+
+        if (in == &observ) {
+            break;
+        }
+    }
+
+    if (it == observations.end()) {
+        return;
+    }
+
+    observations.erase(it);
+}
+
 Vector3dd SceneFeaturePoint::triangulate(bool use__)
 {
     MulticameraTriangulator mct;
@@ -77,6 +98,7 @@ double SceneFeaturePoint::queryPValue(const corecvs::Vector3dd &query) const
     auto q = query - reprojectedPosition;
     return boost::math::gamma_p(3.0 / 2.0, std::max(0.0, q & (accuracy * q)));
 #else
+    CORE_UNUSED(query);
     return -1.0;
 #endif
 }

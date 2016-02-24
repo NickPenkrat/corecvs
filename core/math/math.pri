@@ -72,7 +72,9 @@ SOURCES += \
     math/matrix/matrixspeed.cpp
 
 
-contains(DEFINES, WITH_FFTW) {
+contains(DEFINES, "WITH_FFTW") {
+  message(Adding fftw wrapper)
+
 HEADERS += \
     math/fftw/fftwWrapper.h \
 

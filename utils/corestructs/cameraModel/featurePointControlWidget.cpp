@@ -72,8 +72,8 @@ void FeaturePointControlWidget::setParameters(const SceneFeaturePoint &input)
 
     ui->color->setRGBColor(input.color);
 
-    //QString str = input.
-
+    QString str = QString("Observations: %1").arg(input.observations.size());
+    ui->errLabel->setText(str);
 
     blockSignals(wasBlocked);
     emit paramsChanged();

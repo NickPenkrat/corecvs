@@ -110,7 +110,13 @@ int corecvs::PhotostationPlacer::getReprojectionCnt()
 
 struct ParallelTrackPainter
 {
-    ParallelTrackPainter(std::vector<std::pair<WPP, std::string>> &images, ReconstructionFixtureScene* scene, std::unordered_map<SceneFeaturePoint*, RGBColor> colorizer) : images(images), scene(scene), colorizer(&colorizer)
+    ParallelTrackPainter(
+            std::vector<std::pair<WPP, std::string>> &images,
+            ReconstructionFixtureScene* scene,
+            std::unordered_map<SceneFeaturePoint*, RGBColor> colorizer) :
+            images(images)
+          , colorizer(&colorizer)
+          , scene(scene)
     {
     }
 
@@ -538,7 +544,7 @@ void corecvs::PhotostationPlacer::prepareNonLinearOptimizationData()
     outputNum = getOutputNum();
 
     buildDependencyList();
-    CORE_ASSERT_TRUE_S(sparsity.size() == inputNum);
+    CORE_ASSERT_TRUE_S((int)sparsity.size() == inputNum);
 
     scalerGps = 6e-5/.001*projNum/psNum;
     std::cout << "PT/PRJ: " << ((double)ptNum) / projNum << std::endl;
@@ -827,7 +833,7 @@ void corecvs::PhotostationPlacer::writeOrientationParams(double out[])
     auto& placedFixtures = scene->placedFixtures;
     //int errSize = getErrorComponentsPerPoint();
     int psNum   = (int)scene->placedFixtures.size();
-    int camCnt  = activeCameras.size();
+    size_t camCnt  = activeCameras.size();
 
     IF(DEGENERATE_ORIENTATIONS,
         auto firstFixture = placedFixtures[0];
@@ -1229,6 +1235,7 @@ void corecvs::PhotostationPlacer::appendPs()
     AbsoluteNonCentralRansacSolver solver(psApp, hypos, params);
     switch(scene->initializationData[psApp].initializationType)
     {
+        default:
         case PhotostationInitializationType::GPS:
         {
             if (scene->is3DAligned)
