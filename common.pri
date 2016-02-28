@@ -236,7 +236,7 @@ isEmpty(CCACHE_TOOLCHAIN_ON) {
   }
 }
 
-!win32-msvc* {    
+!win32-msvc* {
 
     QMAKE_CFLAGS_DEBUG     -= -g
     QMAKE_CXXFLAGS_DEBUG   -= -g
@@ -447,6 +447,22 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
     }
 }
 
+# Boost is yet another fancy and cool library that contains
+# many features that we will definitely see in upcoming
+# STL implemenations
+with_boost {
+    BOOST_PATH=$$(BOOST_PATH)
+    DEFINES += WITH_BOOST
+    !win32 {
+        # Since we are not (yet?) using any binary boost components,
+        # we can think about it as header-only lib
+        !isEmpty(BOOST_PATH) {
+            INCLUDEPATH += $$BOOST_PATH
+        }
+    } else {
+    }
+}
+
 #
 # MKL is more preferable as it uses "tbb" internally, which we use too anyway.
 # But openBLAS uses an "OpenMP" that is bad to use with tbb simultaneously, nevertheless you can switch off tbb as well.
@@ -474,7 +490,7 @@ with_mkl {
             with_tbb {
                 LIBS    += -lmkl_tbb_thread_dll                         # -ltbb was already included above
             } else {
-                LIBS    += -lmkl_intel_thread_dll -llibiomp5md          # with OpenMP's threading layer, Intel's OpenMP library (libiomp5)
+                LIBS    += -L"$$MKLROOT"/../compiler/lib/intel64_win -lmkl_intel_thread_dll -llibiomp5md          # with OpenMP's threading layer, Intel's OpenMP library (libiomp5)
             }
         }
         INCLUDEPATH += "$$MKLROOT"/include
