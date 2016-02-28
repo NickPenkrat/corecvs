@@ -83,7 +83,8 @@ void Debayer::linear(RGB48Buffer *result)
     for (; i < mBayer->h - 2 + swapRows; i += 2)
     {
         // TODO: SSE-ify this part!
-#ifdef WITH_SSE
+// XXX: What's happening here? Why would you ever wrap non-sse related code into WITH_SSE?!
+//#ifdef WITH_SSE
         for (int j = 2 - swapCols; j < mBayer->w - 2 + swapCols; j += 2)
         {
             // R pixel
@@ -117,7 +118,7 @@ void Debayer::linear(RGB48Buffer *result)
 
             result->element(i + 1, j + 1) = { outR(r), outG(g), outB(b) };
         }
-#endif
+//#endif
     }
 }
 
