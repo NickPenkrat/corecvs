@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <atomic>
 
 #include "calculationStats.h"
 #include "rgb24Buffer.h"
@@ -142,6 +143,37 @@ struct CalibrationSettings
     }
 };
 
+enum class CalibrationAction
+{
+    NONE,
+    PATTERN_DETECTION,
+    DISTORTION_ESTIMATION,
+    CALIBRATION,
+    IMAGE_UNDISTORTION
+};
+
+struct CalibrationState
+{
+    CalibrationAction currentAction;
+    std::atomic_int  totalActions, startedActions, finishedActions;
+    bool isFinished;
+    CalibrationState() : currentAction(CalibrationAction::NONE), totalActions(0), startedActions(0), finishedActions(0), isFinished(true) {}
+    CalibrationState(const CalibrationState& cs) : currentAction(cs.currentAction), isFinished(cs.isFinished)
+    {
+        totalActions = cs.totalActions.load();
+        startedActions = cs.startedActions.load();
+        finishedActions = cs.finishedActions.load();
+    }
+    CalibrationState& operator=(const CalibrationState &cs)
+    {
+        currentAction = cs.currentAction;
+        isFinished = cs.isFinished;
+        totalActions = cs.totalActions.load();
+        startedActions = cs.startedActions.load();
+        finishedActions = cs.finishedActions.load();
+    }
+};
+
 struct CalibrationJob
 {
     Photostation                                    photostation;
@@ -158,6 +190,8 @@ struct CalibrationJob
     bool                                            calibrated = false;
 
     CalibrationSettings                             settings;
+    // TODO: Should we serialize it?!
+    CalibrationState                                state;
 
     template<class VisitorType>
     void accept(VisitorType &visitor)
