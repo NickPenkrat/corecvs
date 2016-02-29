@@ -157,7 +157,12 @@ struct CalibrationState
     CalibrationAction currentAction;
     std::atomic_int  totalActions, startedActions, finishedActions;
     bool isFinished;
-    CalibrationState() : currentAction(CalibrationAction::NONE), totalActions(0), startedActions(0), finishedActions(0), isFinished(true) {}
+    CalibrationState() : currentAction(CalibrationAction::NONE), isFinished(true)
+    {
+    	totalActions = 0;
+    	startedActions = 0;
+    	finishedActions = 0;
+	}
     CalibrationState(const CalibrationState& cs) : currentAction(cs.currentAction), isFinished(cs.isFinished)
     {
         totalActions = cs.totalActions.load();
