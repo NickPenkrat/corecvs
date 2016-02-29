@@ -10,9 +10,9 @@ namespace corecvs
 {
 struct FeatureDetectionParams
 {
-    std::string detector   = "ORB";
-    std::string descriptor = "ORB";
-    std::string matcher    = "BF";
+    std::string detector   = "SURF";
+    std::string descriptor = "SURF";
+    std::string matcher    = "ANN";
     double b2bThreshold = 0.9;
 };
 
@@ -41,7 +41,7 @@ struct PhotostationInitialization
     //       supplying them as initialization data
     std::vector<SceneFeaturePoint*> staticPoints;
     Affine3DQ initData;
-    Matrix33  positioningAccuracy = corecvs::Matrix33(1, 0, 0, 0, 1, 0, 0, 0, 1);
+    Matrix33  positioningAccuracy = corecvs::Matrix33(0.005, 0, 0, 0, 0.005, 0, 0, 0, 0.005).inv();
     bool enforcePosition = true;
     double    rotationalAccuracy;
 };

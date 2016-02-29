@@ -540,7 +540,7 @@ void corecvs::PhotostationPlacer::prepareNonLinearOptimizationData()
     buildDependencyList();
     CORE_ASSERT_TRUE_S(sparsity.size() == inputNum);
 
-    scalerGps = 6e-5/.001*projNum/psNum;
+    scalerGps = projNum / psNum * 3e-4  / 3.0;
     std::cout << "PT/PRJ: " << ((double)ptNum) / projNum << std::endl;
     std::cout << "GPS scaler: " << scalerGps << std::endl;
 
@@ -573,7 +573,7 @@ int corecvs::PhotostationPlacer::getOutputNum()
     int output = 0;
     output += projNum;
     IF(TUNE_GPS,
-        output += gpsConstraintNum);
+        output += gpsConstraintNum * 3);
     return output;
 }
 
@@ -664,9 +664,9 @@ void corecvs::PhotostationPlacer::buildDependencyList()
             }
             if (!!(optimizationParams & PhotostationPlacerOptimizationType::TUNE_GPS))
             {
-                for (int j = 0; j < gpsConstraintNum; ++j)
+                for (int j = 0; j < gpsConstraintNum * 3; ++j)
                 {
-                    auto ps = gpsConstrainedCameras[j];
+                    auto ps = gpsConstrainedCameras[j / 3];
                     if (ps == firstFixture)
                         sparsity[argin].push_back(j + projNum);
                 }
@@ -690,9 +690,9 @@ void corecvs::PhotostationPlacer::buildDependencyList()
                 }
                 if (!!(optimizationParams & PhotostationPlacerOptimizationType::TUNE_GPS))
                 {
-                    for (int j = 0; j < gpsConstraintNum; ++j)
+                    for (int j = 0; j < gpsConstraintNum * 3; ++j)
                     {
-                        auto ps = gpsConstrainedCameras[j];
+                        auto ps = gpsConstrainedCameras[j / 3];
                         if (ps == fixture)
                             sparsity[argin].push_back(j + projNum);
                     }
@@ -1092,14 +1092,18 @@ void corecvs::PhotostationPlacer::computeErrors(double out[], const std::vector<
     corecvs::parallelable_for(0, lastProj / errSize, 16, computator, true);
 
     int idx = lastProj;
-    for (auto& id: gpsIdx)
+    for (int i = 0; i < gpsIdx.size(); i += 3)
     {
-        int psId = id - projNum;
+        CORE_ASSERT_TRUE_S(gpsIdx[i] == gpsIdx[i + 1] - 1);
+        CORE_ASSERT_TRUE_S(gpsIdx[i + 2] == gpsIdx[i + 1] + 1);
+        int id = gpsIdx[i];
+        int psId = (id - projNum) / 3;
         auto ps = scene->placedFixtures[psId];
         CORE_ASSERT_TRUE_S(scene->initializationData[ps].enforcePosition);
         auto diff = ps->location.shift - scene->initializationData[ps].initData.shift;
-        auto foo = diff & (scene->initializationData[ps].positioningAccuracy.inv() * diff);
-        out[idx++] = foo * scalerGps;
+        auto foo = scene->initializationData[ps].positioningAccuracy * diff * scalerGps;
+        for (int i = 0; i < 3; ++i)
+            out[idx++] = foo[i];
     }
 }
 
