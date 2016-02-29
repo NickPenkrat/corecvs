@@ -176,6 +176,7 @@ struct CalibrationState
         totalActions = cs.totalActions.load();
         startedActions = cs.startedActions.load();
         finishedActions = cs.finishedActions.load();
+        return *this;
     }
 };
 
