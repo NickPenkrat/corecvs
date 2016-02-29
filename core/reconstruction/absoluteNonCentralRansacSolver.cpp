@@ -171,11 +171,11 @@ void corecvs::AbsoluteNonCentralRansacSolver::Estimator::selectInliers()
             bestHypothesis = hypo;
         }
     }
-    if ((int)localMax < bestInliers.size())
+    if (localMax < bestInliers.size())
     {
-        localMax = (int)bestInliers.size();
+        localMax = bestInliers.size();
         solver->accept(bestHypothesis, bestInliers, bestScore);
-        localMax = (int)bestInliers.size();
+        localMax = bestInliers.size();
     }
 }
 

@@ -150,13 +150,25 @@ public:
     Vector3dd reprojectedPosition;
     bool hasKnownReprojectedPosition;
 
-    enum PointType{
+    enum PointType {
         POINT_USER_DEFINED  = 0x01,  /**< Point that comes from a file */
         POINT_RECONSTRUCTED = 0x02,
         POINT_TEMPORARY     = 0x04,
 
         POINT_ALL           = 0xFF
     };
+
+    static inline const char *getTypeName(const PointType &value)
+    {
+        switch (value)
+        {
+         case POINT_USER_DEFINED  : return "USER_DEFINED" ; break ;
+         case POINT_RECONSTRUCTED : return "RECONSTRUCTED"; break ;
+         case POINT_TEMPORARY     : return "TEMPORARY"    ; break ;
+         default : return "Not in range"; break ;
+        }
+        return "Not in range";
+    }
 
     PointType type;
 

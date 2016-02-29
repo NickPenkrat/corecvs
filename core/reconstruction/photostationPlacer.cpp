@@ -114,8 +114,8 @@ struct ParallelTrackPainter
             std::vector<std::pair<WPP, std::string>> &images,
             ReconstructionFixtureScene* scene,
             std::unordered_map<SceneFeaturePoint*, RGBColor> colorizer) :
-            images(images)
-          , colorizer(&colorizer)
+            colorizer(&colorizer)
+          , images(images)
           , scene(scene)
     {
     }
@@ -202,6 +202,7 @@ void corecvs::PhotostationPlacer::tryAlign()
     {
         switch(scene->initializationData[ptr].initializationType)
         {
+            default:
             case PhotostationInitializationType::GPS:
                 gps[cntGps++] = ptr;
                 break;
@@ -774,7 +775,7 @@ void corecvs::PhotostationPlacer::readOrientationParams(const double in[])
     auto& placedFixtures = scene->placedFixtures;
     //int errSize = getErrorComponentsPerPoint();
     int psNum   = (int)placedFixtures.size();
-    int camCnt  = (int)activeCameras.size();
+    size_t camCnt  = activeCameras.size();
 
     IF(DEGENERATE_ORIENTATIONS,
         auto firstFixture = placedFixtures[0];
@@ -822,7 +823,7 @@ void corecvs::PhotostationPlacer::readOrientationParams(const double in[])
         {
             Vector3dd& foo = scene->trackedFeatures[j]->reprojectedPosition;
             for (int i = 0; i < 3; ++i)
-                GETPARAM(scene->trackedFeatures[j]->reprojectedPosition[i]);
+                GETPARAM(foo[i]);
         });
     CORE_ASSERT_TRUE_S(getInputNum() == argin);
 }

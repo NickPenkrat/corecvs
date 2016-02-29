@@ -15,13 +15,13 @@ EssentialFeatureFilter::EssentialFeatureFilter(
     K1(K1.inv()),
     K2(K2.inv()),
     features(features),
-    inlierRadius(inlierRadius),   
+    featuresInlierCheck(featuresInlierCheck),
     maxIter(maxIter),
     batch(batch),
     batches(batches),
     usedIter(0),
     targetGamma(targetGamma),
-    featuresInlierCheck(featuresInlierCheck)
+    inlierRadius(inlierRadius)
 {
 }
 
@@ -118,7 +118,7 @@ void EssentialFeatureFilter::Estimator::selectInliers()
 
     EssentialDecomposition decompositions[4];
     std::vector<int> inliers[4];
-    int inlierCnt[4] = {0};
+    size_t inlierCnt[4] = {0};
 
     for (auto& F: model)
     {
