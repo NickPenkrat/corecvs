@@ -52,7 +52,7 @@ public:
         void sampleModel();
         void makeHypo();
         void selectInliers();
-        int localMax = 0;
+        size_t localMax = 0;         /*< this probably needs to be size_t */
         static const int SAMPLESIZE = 3;
         int idxs[SAMPLESIZE];
         double inlierThreshold;

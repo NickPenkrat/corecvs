@@ -305,12 +305,70 @@ void PointListEditImageWidgetUnited::selectPoint(int id)
         QModelIndex pos = mObservationListModel->index(id, 0);
 
         if (mSelectedPoint != -1) {
-            selectionModel->select(pos, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+            selectionModel->select         (pos, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
             selectionModel->setCurrentIndex(pos, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
         } else {
             selectionModel->clear();
         }
     }
+}
+
+void PointListEditImageWidgetUnited::paintDirectionArrows(QPainter &painter, int type)
+{
+    if (type & TOP_ARROW)
+        painter.drawRect(QRect(
+                         mOutputRect.left() + mOutputRect.width() / 2 - 5,
+                         mOutputRect.top() + 5,
+                         10, 5));
+
+    if (type & BOTTOM_ARROW)
+        painter.drawRect(QRect(
+                         mOutputRect.left() + mOutputRect.width() / 2 - 5,
+                         mOutputRect.bottom() - 15,
+                         10, 5));
+
+    if (type & LEFT_ARROW)
+        painter.drawRect(QRect(
+                         mOutputRect.left() + 5,
+                         mOutputRect.top() + mOutputRect.height() / 2 - 10,
+                         5, 10));
+
+    if (type & RIGHT_ARROW)
+        painter.drawRect(QRect(
+                         mOutputRect.right() - 15,
+                         mOutputRect.top() + mOutputRect.height() / 2 - 10,
+                         5, 10));
+}
+
+/**
+ *      *
+ *    *  *
+ *     *  *
+ *      *  *  *
+ *       *     *
+ *          0
+ *       *     *
+ *         * *
+ *
+ **/
+void PointListEditImageWidgetUnited::paintTarget(QPainter &painter, Vector2dd imageCoords, double len)
+{
+    painter.setPen(Qt::red);
+
+    drawLine(painter, imageCoords + Vector2dd( len + 2, len + 1), imageCoords + Vector2dd( 2.0, 1.0));
+    drawLine(painter, imageCoords + Vector2dd( len + 1, len + 2), imageCoords + Vector2dd( 1.0, 2.0));
+
+    drawLine(painter, imageCoords - Vector2dd( len + 2, len + 1), imageCoords - Vector2dd( 2.0, 1.0));
+    drawLine(painter, imageCoords - Vector2dd( len + 1, len + 2), imageCoords - Vector2dd( 1.0, 2.0));
+
+    /*--*/
+
+    drawLine(painter, imageCoords + Vector2dd( len + 2, -len - 1), imageCoords + Vector2dd( 2.0, -1.0));
+    drawLine(painter, imageCoords + Vector2dd( len + 1, -len - 2), imageCoords + Vector2dd( 1.0, -2.0));
+
+    drawLine(painter, imageCoords - Vector2dd( len + 2, -len - 1), imageCoords - Vector2dd( 2.0, -1.0));
+    drawLine(painter, imageCoords - Vector2dd( len + 1, -len - 2), imageCoords - Vector2dd( 1.0, -2.0));
+
 }
 
 void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *who)
@@ -359,6 +417,8 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *w
             isSelected = (i == mSelectedPoint);
         }
 
+        int flags = NONE_ARROW;
+
         if (isSelected) {
             painter.setPen(Qt::red);
             drawCircle(painter, imageCoords, 7);
@@ -366,18 +426,32 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *w
             imageCoords = imageToWidgetF(widgetToImageF(imageCoords));
             painter.setPen(Qt::cyan);
             drawCircle(painter, imageCoords, 3);
+
+            if (imageCoords.x() < mOutputRect.left ()) flags |= LEFT_ARROW;
+            if (imageCoords.x() > mOutputRect.right()) flags |= RIGHT_ARROW;
+
+            if (imageCoords.y() < mOutputRect.top   ()) flags |= TOP_ARROW;
+            if (imageCoords.y() > mOutputRect.bottom()) flags |= BOTTOM_ARROW;
+
         }
+
+        painter.setBrush(Qt::red);
+        painter.setPen(Qt::blue);
+        paintDirectionArrows(painter, flags);
+        painter.setBrush(Qt::NoBrush);
+
     }
 
     /* Draw additional points*/
-    for (int i = 0; i < pointList.size(); i++)
+    for (size_t i = 0; i < pointList.size(); i++)
     {
         Vector2dd &p = pointList[i];
         Vector2dd imageCoords = imageToWidgetF(p);
 
-        painter.setPen(Qt::green);
+        /*painter.setPen(Qt::green);
         drawLine(painter, imageCoords - Vector2dd( 4.0, 4.0), imageCoords + Vector2dd(4.0,  4.0));
-        drawLine(painter, imageCoords - Vector2dd(-4.0, 4.0), imageCoords + Vector2dd(-4.0, 4.0));
+        drawLine(painter, imageCoords - Vector2dd(-4.0, 4.0), imageCoords + Vector2dd(-4.0, 4.0));*/
+        paintTarget( painter, imageCoords, 10);
     }
 }
 

@@ -226,9 +226,22 @@ void FixtureScene::deleteFeaturePoint(SceneFeaturePoint *point)
     vectorErase(points, point);
 }
 
+void FixtureScene::clear()
+{
+    for(size_t i = 0; i < mOwnedObjects.size(); i++)
+    {
+        delete_safe(mOwnedObjects[i]);
+    }
+
+    fixtures.clear();
+    orphanCameras.clear();
+    points.clear();
+
+}
+
 void FixtureScene::deleteFixturePair(CameraFixture *fixture, FixtureCamera *camera)
 {
-    for (auto&p : points)
+    for (SceneFeaturePoint *p : points)
     {
         deletePairUMWPP(p->observations__, fixture, camera);
     }
@@ -547,12 +560,11 @@ CameraFixture *FixtureScene::getFixtureById(FixtureScenePart::IdType id)
     return NULL;
 }
 
+
+
 FixtureScene::~FixtureScene()
 {
-    for(size_t i = 0; i < mOwnedObjects.size(); i++)
-    {
-        delete_safe(mOwnedObjects[i]);
-    }
+    clear();
 }
 
 FixtureCamera *FixtureScene::fabricateCamera()

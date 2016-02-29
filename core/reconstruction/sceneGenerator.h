@@ -34,9 +34,7 @@ struct SceneGeneratorParams
         double sectorWidthPOI = M_PI,
         bool fSectorRnorm = false) :
         rIn(rIn), rOut(rOut), sigmaProj(sigmaProj), gamma(gamma), sigmaProjPOI(sigmaProjPOI), poiMeasureLimit(poiMeasureLimit), N(N), MPOI(MPOI), MPT(MPT), rInPoi(rInPoi), rOutPoi(rOutPoi), R(R), sectorWidth(sectorWidth), sectorWidthPOI(sectorWidthPOI), fSectorRnorm(fSectorRnorm)
-    {
-    }
-
+    {}
 
     friend std::ostream& operator<< (std::ostream& out, const SceneGeneratorParams &params)
     {
@@ -50,8 +48,8 @@ struct SceneGeneratorParams
 struct SceneGenerator : public SceneGeneratorParams
 {
     SceneGenerator(SceneGeneratorParams params = SceneGeneratorParams()) : SceneGeneratorParams(params)
-    {
-    }
+    {}
+
     void generateScene();
     void generatePoints();
     void generateFixtures();
@@ -61,6 +59,7 @@ struct SceneGenerator : public SceneGeneratorParams
     CameraFixture* generatePs(corecvs::Vector3dd pos, int id);
     ReconstructionFixtureScene* rfs =  nullptr;
 };
+
 };
 
-#endif
+#endif // SCENEGENERATOR

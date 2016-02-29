@@ -173,9 +173,9 @@ void corecvs::AbsoluteNonCentralRansacSolver::Estimator::selectInliers()
     }
     if (localMax < bestInliers.size())
     {
-        localMax = (int)bestInliers.size();
+        localMax = bestInliers.size();
         solver->accept(bestHypothesis, bestInliers, bestScore);
-        localMax = (int)bestInliers.size();
+        localMax = bestInliers.size();
     }
 }
 

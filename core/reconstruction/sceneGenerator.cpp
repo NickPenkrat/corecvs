@@ -32,10 +32,11 @@ void SceneGenerator::generateFixtures()
                 if (x * x + y * y < m * m)
                     cnt++;
             }
-        if (cnt <= N)
+        if (cnt <= N) {
             l = m;
-        else
+        } else {
             r = m;
+        }
     }
 
     std::vector<corecvs::Vector2dd> fixtures;

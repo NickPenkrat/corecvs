@@ -536,7 +536,7 @@ void PhotostationCaptureDialog::capture(bool shouldAdvance)
 ImageCaptureInterface* PhotostationCaptureDialog::createCameraCapture(const string &devname, bool processError)
 {
     const bool isRgb = true;
-    bool compressed = ui->codecComboBox->currentIndex() == 0;
+    ///bool compressed = ui->codecComboBox->currentIndex() == 0;
 
     int  h   = ui->heightSpinBox->value();
     int  w   = ui->widthSpinBox->value();

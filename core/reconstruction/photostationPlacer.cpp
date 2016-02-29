@@ -110,7 +110,13 @@ int corecvs::PhotostationPlacer::getReprojectionCnt()
 
 struct ParallelTrackPainter
 {
-    ParallelTrackPainter(std::vector<std::pair<WPP, std::string>> &images, ReconstructionFixtureScene* scene, std::unordered_map<SceneFeaturePoint*, RGBColor> colorizer) : images(images), scene(scene), colorizer(&colorizer)
+    ParallelTrackPainter(
+            std::vector<std::pair<WPP, std::string>> &images,
+            ReconstructionFixtureScene* scene,
+            std::unordered_map<SceneFeaturePoint*, RGBColor> colorizer) :
+            colorizer(&colorizer)
+          , images(images)
+          , scene(scene)
     {
     }
 
@@ -196,6 +202,7 @@ void corecvs::PhotostationPlacer::tryAlign()
     {
         switch(scene->initializationData[ptr].initializationType)
         {
+            default:
             case PhotostationInitializationType::GPS:
                 gps[cntGps++] = ptr;
                 break;
@@ -538,7 +545,7 @@ void corecvs::PhotostationPlacer::prepareNonLinearOptimizationData()
     outputNum = getOutputNum();
 
     buildDependencyList();
-    CORE_ASSERT_TRUE_S(sparsity.size() == inputNum);
+    CORE_ASSERT_TRUE_S((int)sparsity.size() == inputNum);
 
     scalerGps = projNum / psNum * 3e-4  / 3.0;
     std::cout << "PT/PRJ: " << ((double)ptNum) / projNum << std::endl;
@@ -768,7 +775,7 @@ void corecvs::PhotostationPlacer::readOrientationParams(const double in[])
     auto& placedFixtures = scene->placedFixtures;
     //int errSize = getErrorComponentsPerPoint();
     int psNum   = (int)placedFixtures.size();
-    int camCnt  = (int)activeCameras.size();
+    size_t camCnt  = activeCameras.size();
 
     IF(DEGENERATE_ORIENTATIONS,
         auto firstFixture = placedFixtures[0];
@@ -814,9 +821,9 @@ void corecvs::PhotostationPlacer::readOrientationParams(const double in[])
     IF(POINTS,
         for (size_t j = 0; j < scene->trackedFeatures.size(); ++j)
         {
-            auto& foo = scene->trackedFeatures[j]->reprojectedPosition;
+            Vector3dd& foo = scene->trackedFeatures[j]->reprojectedPosition;
             for (int i = 0; i < 3; ++i)
-                GETPARAM(scene->trackedFeatures[j]->reprojectedPosition[i]);
+                GETPARAM(foo[i]);
         });
     CORE_ASSERT_TRUE_S(getInputNum() == argin);
 }
@@ -827,7 +834,7 @@ void corecvs::PhotostationPlacer::writeOrientationParams(double out[])
     auto& placedFixtures = scene->placedFixtures;
     //int errSize = getErrorComponentsPerPoint();
     int psNum   = (int)scene->placedFixtures.size();
-    int camCnt  = (int)activeCameras.size();
+    size_t camCnt  = activeCameras.size();
 
     IF(DEGENERATE_ORIENTATIONS,
         auto firstFixture = placedFixtures[0];
@@ -1233,6 +1240,7 @@ void corecvs::PhotostationPlacer::appendPs()
     AbsoluteNonCentralRansacSolver solver(psApp, hypos, params);
     switch(scene->initializationData[psApp].initializationType)
     {
+        default:
         case PhotostationInitializationType::GPS:
         {
             if (scene->is3DAligned)
@@ -1592,7 +1600,7 @@ void corecvs::PhotostationPlacer::filterEssentialRansac(std::vector<CameraFixtur
             auto psB_ = pss[psB];
             for (size_t camA = 0; camA < psA_->cameras.size(); ++camA)
             {
-                for (int camB = 0; camB < psB_->cameras.size(); ++camB)
+                for (size_t camB = 0; camB < psB_->cameras.size(); ++camB)
                 {
                     WPP idFirst(psA_, psA_->cameras[camA]), idSecond(psB_, psB_->cameras[camB]);
                     bool alreadyIn = false;

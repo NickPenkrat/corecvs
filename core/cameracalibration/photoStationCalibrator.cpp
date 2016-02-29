@@ -513,14 +513,20 @@ void PhotoStationCalibrator::recenter()
     }
     sum /= N;
 
-    std::vector<double> in(3), out(c.size()*(c.size()-1) * 3);
+    std::vector<double> in(3), out(c.size()*(c.size() - 1) * 3), res(3);
     for (int i = 0; i < 3; ++i)
         in[i] = sum[i];
 
     corecvs::LevenbergMarquardt levmar(50);
     levmar.f = new LSQCenter(c, q);
 
-    auto res = levmar.fit(in, out);
+    if (c.size() == 1) {
+        res = { 0, 0, 0 };
+    }
+    else {
+        res = levmar.fit(in, out);
+        delete levmar.f;
+    }
     corecvs::Vector3dd ctr(res[0], res[1], res[2]);
     std::cout << ctr << std::endl;
 
