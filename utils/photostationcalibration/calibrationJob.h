@@ -27,10 +27,10 @@ using corecvs::ObservationList;
 
 struct ImageData
 {
-    string              sourceFileName;
-    string              undistortedFileName;
-    ObservationList sourcePattern;
-    ObservationList undistortedPattern;
+    string             sourceFileName;
+    string             undistortedFileName;
+    ObservationList    sourcePattern;
+    ObservationList    undistortedPattern;
     CameraLocationData location;
 
     double distortionRmse;

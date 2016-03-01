@@ -135,7 +135,8 @@ int main(int argc, char **argv)
             if (fn[0].size())
             {
                 size_t cam = &fn - &setup[0];
-                job.calibrationSetups[setup_].emplace_back(CalibrationSetupEntry({cam, job.observations[cam].size()}));
+                CalibrationSetupEntry entry = { cam, (int)job.observations[cam].size() };
+                job.calibrationSetups[setup_].emplace_back(entry);
                 ImageData img;
                 img.sourceFileName = fn[0];
                 job.observations[cam].push_back(img);
@@ -157,7 +158,7 @@ int main(int argc, char **argv)
     }
     job.calibrate();
     std::vector<int> topLayer;
-    for (size_t i = 0; i < std::min(camCnt, 6); ++i)
+    for (uint i = 0; i < std::min(camCnt, 6); ++i)
         topLayer.push_back(i);
     job.reorient(topLayer);
 

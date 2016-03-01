@@ -54,7 +54,8 @@ void CalibrationJob::computeReconstructionError()
                 {
                     auto ps = photostation;
                     ps.setLocation(calibrationSetupLocations[std::get<0>(pt)]);
-                    mct.addCamera(ps.getRawCamera(std::get<1>(pt)).getCameraMatrix(), photostation.cameras[std::get<1>(pt)].distortion.mapBackward(std::get<2>(pt)));
+                    mct.addCamera(ps.getRawCamera(std::get<1>(pt)).getCameraMatrix()
+                        , photostation.cameras[std::get<1>(pt)].distortion.mapBackward(std::get<2>(pt)));
                 }
                 auto diff = mct.triangulateLM(mct.triangulate()) - orig;
                 std::cout << diff << " ";
@@ -159,7 +160,7 @@ struct ParallelBoardDetector
 {
     void operator() (const corecvs::BlockedRange<size_t> &r) const
     {
-        for (int i = r.begin(); i != r.end(); ++i)
+        for (size_t i = r.begin(); i != r.end(); ++i)
         {
             ++job->state.startedActions;
             auto cam = idx[i][0];
@@ -222,7 +223,7 @@ void CalibrationJob::allDetectChessBoard(bool distorted)
         }
     }
 
-    state.totalActions = idxs.size();
+    state.totalActions = (int)idxs.size();
     corecvs::parallelable_for((size_t)0, idxs.size(), ParallelBoardDetector(this, idxs, estimate, distorted));
     if (!distorted && calibrated)
         computeCalibrationErrors();
@@ -306,7 +307,7 @@ struct ParallelDistortionEstimator
 void CalibrationJob::allEstimateDistortion()
 {
     state.currentAction = CalibrationAction::DISTORTION_ESTIMATION;
-    state.totalActions = photostation.cameras.size();
+    state.totalActions = (int)photostation.cameras.size();
     state.startedActions = 0;
     state.finishedActions = 0;
     state.isFinished = false;
@@ -364,7 +365,7 @@ struct ParallelDistortionRemoval
 void CalibrationJob::allRemoveDistortion()
 {
     state.currentAction = CalibrationAction::IMAGE_UNDISTORTION;
-    state.totalActions = photostation.cameras.size();
+    state.totalActions = (int)photostation.cameras.size();
     state.startedActions = 0;
     state.finishedActions = 0;
     state.isFinished = false;
