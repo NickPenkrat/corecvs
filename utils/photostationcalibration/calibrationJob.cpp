@@ -224,6 +224,7 @@ void CalibrationJob::allDetectChessBoard(bool distorted)
     }
 
     state.totalActions = (int)idxs.size();
+    // If you do not have tons of ram, then you should probably make this loop sequential
     corecvs::parallelable_for((size_t)0, idxs.size(), ParallelBoardDetector(this, idxs, estimate, distorted));
     if (!distorted && calibrated)
         computeCalibrationErrors();
