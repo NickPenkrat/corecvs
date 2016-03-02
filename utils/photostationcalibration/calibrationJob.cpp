@@ -38,6 +38,7 @@ void CalibrationJob::computeReconstructionError()
         for (auto& j: i.second)
             for (auto& k: j.second)
                 cnt++;
+
     L_ERROR << "Starting reconstruction error computation: point triangulation";
     Matrix A(cnt, 3);
     int idx = 0;
