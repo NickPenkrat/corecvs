@@ -19,6 +19,17 @@ TARGET = qtScriptConsole
 TEMPLATE = app
 
 
+TARGET_ORIG = $$TARGET
+TARGET      = $$join(TARGET,,,$$BUILD_CFG_SFX)  # add 'd' at the end for debug versions
+
+OBJECTS_DIR = $$ROOT_DIR/.obj/$$TARGET_ORIG$$BUILD_CFG_NAME
+MOC_DIR  = $$OBJECTS_DIR
+UI_DIR   = $$OBJECTS_DIR
+RCC_DIR  = $$OBJECTS_DIR
+
+DESTDIR  = $$ROOT_DIR/bin
+
+
 SOURCES += main.cpp\
         mainQScriptWindow.cpp
 
