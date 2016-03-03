@@ -998,7 +998,7 @@ void corecvs::PhotostationPlacer::fit(const PhotostationPlacerOptimizationType &
 
     std::map<int, int> cntr;
     for (auto& f: scene->trackedFeatures)
-        cntr[f->observations__.size()]++;
+        cntr[(int)f->observations__.size()]++;
 
     std::cout << "Track sizes: " << std::endl;
     for (auto p: cntr)
