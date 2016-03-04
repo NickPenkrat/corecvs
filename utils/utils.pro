@@ -102,7 +102,8 @@ HEADERS += \
     corestructs/cameraModel/fixtureControlWidget.h \
     widgets/observationListModel.h \
     distortioncorrector/pointListEditImageWidget.h \
-    corestructs/cameraModel/featurePointControlWidget.h
+    corestructs/cameraModel/featurePointControlWidget.h \
+    uis/aboutPropsTableWidget.h
 
 SOURCES += \
     frames.cpp \
@@ -179,7 +180,8 @@ SOURCES += \
     corestructs/cameraModel/fixtureControlWidget.cpp \
     widgets/observationListModel.cpp \
     distortioncorrector/pointListEditImageWidget.cpp \
-    corestructs/cameraModel/featurePointControlWidget.cpp
+    corestructs/cameraModel/featurePointControlWidget.cpp \
+    uis/aboutPropsTableWidget.cpp
 
 
 FORMS += \
