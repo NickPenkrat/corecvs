@@ -117,6 +117,111 @@ public:
         return getJacobian(in.element, delta);
     }
 
+    /*
+     * This function returns hessian matrices for all output functions
+     * Output is outputs x (inputs x inputs matrix) vector
+     * We use a second-order finite differences in order to get this,
+     * for example, for f(x,y) we will evaluate f at the following points:
+     *       +
+     *    *  +  *
+     * +  +  +  +  +
+     *    *  +  *
+     *       +
+     *  Where '+' points are used for f^{(2)}_{xx} or f^{(2)}_{yy} computations,
+     *  while '*' points are used for f^({2})_{xy} computations
+     */
+    virtual std::vector<Matrix> getHessians(const Vector &in, double delta = 1e-5)
+    {
+        // actual values of x_i+-\Delta x_i and x_i+-2\Delta x_i
+        Vector dxp(inputs), dxm(inputs), dxp2(inputs), dxm2(inputs);
+        for (int i = 0; i < inputs; ++i)
+        {
+            auto delta_xi = std::max(1.0, std::abs(in[i])) * delta;
+            dxp[i] =  in[i] + delta_xi;
+            dxm[i] =  in[i] - delta_xi;
+            dxp2[i] = in[i] + 2.0 * delta_xi;
+            dxm2[i] = in[i] - 2.0 * delta_xi;
+        }
+
+        Matrix f0(inputs, outputs),
+               fp(inputs, outputs),
+               fm(inputs, outputs),
+               fp2(inputs, outputs),
+               fm2(inputs, outputs);
+        for (int i = 0; i < inputs; ++i)
+        {
+            Vector input = in;
+            (*this)(&input[0], &f0.a(i, 0));
+#define FILL(s) \
+            input[i] = dx ## s[i]; \
+            (*this)(&input[0], &f ## s.a(i, 0));
+            FILL(p);
+            FILL(m);
+            FILL(p2);
+            FILL(m2);
+#undef FILL
+        }
+        std::vector<Matrix> dpp, dpm, dmp, dmm;
+        for (int i = 0; i < inputs; ++i)
+        {
+            Matrix mpp(inputs, outputs), mpm(inputs, outputs), mmp(inputs, outputs), mmm(inputs, outputs);
+            for (int j = 0; j < inputs; ++j)
+            {
+                if (i > j)
+                {
+#define FILL_PM(MACRO) \
+                    MACRO(p, p); \
+                    MACRO(p, m); \
+                    MACRO(m, p); \
+                    MACRO(m, m);
+#define FILL_SWAP(sA, sB) \
+                    Matrix& m ## sA ## sB ## _ = d ## sA ## sB [j]; \
+                    for (int k = 0; k < outputs; ++k) \
+                        m ## sB ## sA.a(j, k) = m ## sA ## sB ## _.a(i, k);
+                    FILL_PM(FILL_SWAP);
+#undef FILL_SWAP
+                    continue;
+                }
+                if (i == j) continue;
+
+                Vector input(in);
+#define FILL_IJ(sI, sJ) \
+                input[i] = dx ## sI [i]; \
+                input[j] = dx ## sJ [j]; \
+                (*this)(&input[0], &m ## sI ## sJ.a(j, 0));
+                FILL_PM(FILL_IJ);
+#undef FILL_IJ
+            }
+#define EMPLACE_PM(sP, sM) \
+            d##sP##sM.emplace_back(m##sP##sM);
+            FILL_PM(EMPLACE_PM);
+#undef FILL_PM
+#undef EMPLACE_PM
+        }
+        // Now we've computed all desired data and it's the time to compute hessians
+        std::vector<Matrix> hessians;
+        for (int ii = 0; ii < outputs; ++ii)
+        {
+            Matrix hessian(inputs, inputs);
+            for (int i = 0; i < inputs; ++i)
+            {
+                for (int j = 0; j < inputs; ++j)
+                {
+                    if (i == j)
+                    {
+                        // too hard to use exact delta values
+                        double di = (dxp[i] - dxm[i]) / 2.0;
+                        hessian.a(i, j) = (-fp2.a(i, ii) - fm2.a(i, ii) + 16.0 * (fp.a(i, ii) + fm.a(i, ii)) - 30.0 * f0.a(i, ii)) / 12.0 / di / di;
+                        continue;
+                    }
+                    hessian.a(i, j) = (dpp[i].a(j, ii) + dmm[i].a(j, ii) - dpm[i].a(j, ii) - dmp[i].a(j, ii)) / (dxp[i] - dxm[i]) / (dxp[j] - dxm[j]);
+                }
+            }
+            hessians.push_back(hessian);
+        }
+        return hessians;
+    }
+
     virtual Matrix getLSQHessian(const double* in);
 
     virtual ~FunctionArgs() {}
