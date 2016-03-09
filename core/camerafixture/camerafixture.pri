@@ -6,7 +6,8 @@ HEADERS += \
 #	camerafixture/calibrationLocation.h      \
         camerafixture/fixtureScene.h             \
 #	camerafixture/photoStationCalibrator.h   \
-    camerafixture/sceneFeaturePoint.h
+        camerafixture/sceneFeaturePoint.h \
+        camerafixture/cameraPrototype.h   \
 
 
 SOURCES += \
@@ -16,8 +17,9 @@ SOURCES += \
 #	camerafixture/photoStationCalibrator.cpp  \
 #	camerafixture/calibrationLocation.cpp     \
 #	camerafixture/flatPatternCalibrator.cpp   \
-    camerafixture/sceneFeaturePoint.cpp \
-    camerafixture/cameraFixture.cpp
+        camerafixture/sceneFeaturePoint.cpp \
+        camerafixture/cameraFixture.cpp \
+        camerafixture/cameraPrototype.cpp \
 
 
 CONFIG += c++11
