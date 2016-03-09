@@ -16,6 +16,7 @@
 #include "chessBoardDetector.h"
 #include "calibrationPhotostation.h"
 #include "photoStationCalibrator.h"
+#include "statusTracker.h"
 
 #ifdef  LoadImage
 # undef LoadImage
@@ -197,7 +198,7 @@ struct CalibrationJob
 
     CalibrationSettings                             settings;
     // TODO: Should we serialize it?!
-    CalibrationState                                state;
+    StatusTracker*                                  state = nullptr;
 
     template<class VisitorType>
     void accept(VisitorType &visitor)
