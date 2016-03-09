@@ -22,6 +22,7 @@ SUBDIRS +=       \
 #    new_board_detector \
 #    cr2reader           \
     debayer             \
+    qtScriptConsole     \
 
 
 with_opencv {
@@ -57,7 +58,7 @@ cr2reader.depends                  -= utils
 debayer.file                        = debayer/debayer.pro
 debayer.depends                    -= utils
 
-new_board_detector	                = new_board_detector/new_board_detector.pro
+new_board_detector	            = new_board_detector/new_board_detector.pro
 
 distortion_corrector	            = distortion_corrector/distortion_corrector.pro
 
@@ -76,3 +77,5 @@ calibration_job_apply_undistortion  = calibration_job_apply_undistortion/calibra
 calibration_job_calibrate           = calibration_job_calibrate/calibration_job_calibrate.pro
 
 geometry_verificator                = geometry_verificator/geometry_verificator.pro
+
+qtScriptConsole                     = qtScriptConsole/qtScriptConsole.pro

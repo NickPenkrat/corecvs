@@ -43,13 +43,13 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
 
         //cout << "Projecting" << endl;
 
-        for (size_t stationId = 0; stationId < fixtures.size(); stationId++)
+        for (size_t fixtureId = 0; fixtureId < fixtures.size(); fixtureId++)
         {
-            CameraFixture &station = *fixtures[stationId];
-            for (size_t camId = 0; camId < station.cameras.size(); camId++)
+            CameraFixture &fixture = *fixtures[fixtureId];
+            for (size_t camId = 0; camId < fixture.cameras.size(); camId++)
             {
-                FixtureCamera *camera = station.cameras[camId];
-                CameraModel worldCam = station.getWorldCamera(camera);
+                FixtureCamera *camera = fixture.cameras[camId];
+                CameraModel worldCam = fixture.getWorldCamera(camera);
 
 
                 Vector2dd projection = worldCam.project(point->position);
@@ -86,7 +86,7 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
                 }*/
 
                 point->observations[camera] = observation;
-                point->observations__[WPP(fixtures[stationId], camera)] = observation;
+                point->observations__[WPP(fixtures[fixtureId], camera)] = observation;
                 //cout << "Camera:" << camera->fileName << " = " << projection << endl;
             }
         }
