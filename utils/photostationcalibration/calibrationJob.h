@@ -144,43 +144,6 @@ struct CalibrationSettings
     }
 };
 
-enum class CalibrationAction
-{
-    NONE,
-    PATTERN_DETECTION,
-    DISTORTION_ESTIMATION,
-    CALIBRATION,
-    IMAGE_UNDISTORTION
-};
-
-struct CalibrationState
-{
-    CalibrationAction currentAction;
-    std::atomic_int  totalActions, startedActions, finishedActions;
-    bool isFinished;
-    CalibrationState() : currentAction(CalibrationAction::NONE), isFinished(true)
-    {
-    	totalActions = 0;
-    	startedActions = 0;
-    	finishedActions = 0;
-	}
-    CalibrationState(const CalibrationState& cs) : currentAction(cs.currentAction), isFinished(cs.isFinished)
-    {
-        totalActions = cs.totalActions.load();
-        startedActions = cs.startedActions.load();
-        finishedActions = cs.finishedActions.load();
-    }
-    CalibrationState& operator=(const CalibrationState &cs)
-    {
-        currentAction = cs.currentAction;
-        isFinished = cs.isFinished;
-        totalActions = cs.totalActions.load();
-        startedActions = cs.startedActions.load();
-        finishedActions = cs.finishedActions.load();
-        return *this;
-    }
-};
-
 struct CalibrationJob
 {
     Photostation                                    photostation;

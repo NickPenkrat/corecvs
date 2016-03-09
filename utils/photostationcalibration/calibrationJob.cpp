@@ -201,7 +201,7 @@ struct ParallelBoardDetector
 
 void CalibrationJob::allDetectChessBoard(bool distorted)
 {
-	state->reset("Pattern detection", 0);
+    state->reset("Pattern detection", 0);
     int N = (int)observations.size();
 
     photostation.cameras.resize(N);
@@ -352,7 +352,7 @@ struct ParallelDistortionRemoval
 
 void CalibrationJob::allRemoveDistortion()
 {
-	state->reset("Image undistortion", photostation.cameras.size());
+    state->reset("Image undistortion", photostation.cameras.size());
 
     corecvs::parallelable_for (0, (int)photostation.cameras.size(), ParallelDistortionRemoval(this));
 }
@@ -687,9 +687,9 @@ void CalibrationJob::computeSingleCameraErrors()
 
 void CalibrationJob::calibrate()
 {
-	state->reset("Calibration", 6);
+    state->reset("Calibration", 6);
 
-	
+
     allCalibrateSingleCamera();
     state->incrementCompleted();
     state->incrementStarted();
