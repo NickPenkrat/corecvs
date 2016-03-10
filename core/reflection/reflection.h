@@ -543,7 +543,7 @@ public:
         FOREACH(const BaseField * el, fields) {
             // crash silly workaround // TODO: review this and fix the problem!
             if (el->id < 0) {
-                SYNC_PRINT(("~Reflection: bad id in the reflection object: id:%d size:%d\n", el->id, fields.size()));
+                SYNC_PRINT(("~Reflection: bad id in the reflection object: id:%d size:%d\n", el->id, (int)fields.size()));
             }
             else {
                 delete el;
