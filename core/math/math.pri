@@ -1,4 +1,4 @@
-HEADERS += \ 
+HEADERS += \
     math/eulerAngles.h \
     math/matrix/matrix.h \
     math/matrix/matrix22.h \
@@ -20,7 +20,8 @@ HEADERS += \
     math/projectiveTransform.h \
     math/quaternion.h \
     math/affine.h \
-    math/levenmarq.h \    
+    math/levenmarq.h \
+    math/dogleg.h \
     math/gradientDescent.h \
     math/helperFunctions.h \
     math/generic/genericMath.h \

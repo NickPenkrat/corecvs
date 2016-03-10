@@ -68,3 +68,31 @@ TEST(SparseFunction, JacobianComputation)
     ASSERT_TRUE(cntNonSparse > 2 * cntSparse);
     ASSERT_LE((J - J2).frobeniusNorm(), 1e-9);
 }
+
+struct TestFunctor : public corecvs::FunctionArgs
+{
+	TestFunctor() : FunctionArgs(2, 1) {}
+	void operator() (const double* in, double* out)
+	{
+		double x = in[0], y = in[1];
+		out[0] = 2.0 * x * x + 1.0 * y + 10 * x * y;
+	}
+};
+
+TEST(Function, HessianTest)
+{
+	corecvs::Vector in(2);
+	in[0] = 3;
+	in[1] = 5;
+	auto H = TestFunctor().getHessians(in)[0];
+	/*
+	 * f(x, y) = 2x^2+y+10xy
+	 * f_xx = 4
+	 * f_xy = 10
+	 * f_yy = 0
+	 */
+	ASSERT_NEAR(H.a(0, 0),  4.0, 1e-4);
+	ASSERT_NEAR(H.a(0, 1), 10.0, 1e-4);
+	ASSERT_NEAR(H.a(1, 1),  0.0, 1e-4);
+	ASSERT_NEAR(H.a(1, 0), 10.0, 1e-4);
+}
