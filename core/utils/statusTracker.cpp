@@ -45,6 +45,7 @@ void corecvs::StatusTracker::reset(const std::string &action, size_t totalAction
     if (this == nullptr)
         return;
     writeLock();
+        currentStatus.currentAction = action;
         currentStatus.completedActions = currentStatus.startedActions = 0;
         currentStatus.totalActions = totalActions;
     unlock();
