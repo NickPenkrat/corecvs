@@ -102,3 +102,8 @@ contains(TARGET, cvs_core): !contains(TARGET, cvs_core_restricted) {
     }
     PRE_TARGETDEPS += $$COREBINDIR/$$CORE_TARGET_NAME
 }
+
+# The filesystem module needs this
+!win32 {
+    LIBS += -lstdc++fs
+}
