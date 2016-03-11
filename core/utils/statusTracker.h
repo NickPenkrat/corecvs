@@ -8,31 +8,29 @@
 
 #include <global.h>
 
-namespace corecvs
-{
+namespace corecvs {
 
 struct Status
 {
     std::string currentAction;
-    size_t      completedActions,
-                totalActions,
-                startedActions;
-    Status() : currentAction("NONE"),
-               completedActions(0),
-               totalActions(0),
-               startedActions(0)
+    size_t      completedActions, totalActions, startedActions;
+
+    Status() : currentAction("NONE"), completedActions(0), totalActions(0), startedActions(0)
     {}
 };
 
 class StatusTracker
 {
 public:
-    void incrementStarted();
-    void incrementCompleted();
-    void reset(const std::string &action, size_t totalActions);
-    Status getStatus() const;
+    void    incrementStarted();
+    void    incrementCompleted();
+    void    reset(const std::string &action, size_t totalActions);
+
+    Status  getStatus() const;
+
 private:
-    Status currentStatus;
+    Status  currentStatus;
+
 #ifdef WITH_TBB
     tbb::reader_writer_lock lock;
 #endif
@@ -41,6 +39,6 @@ private:
     void unlock() const;
 };
 
-};
+} // namespace corecvs
 
-#endif
+#endif // STATUS_TRACKER
