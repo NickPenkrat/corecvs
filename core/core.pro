@@ -36,13 +36,12 @@ win32 {
 # include sources and headers for each subdir
 #
 for (MODULE, CORE_SUBMODULES) {
-    message (Adding module $${MODULE} )
+    !build_pass: message (Adding core submodule $${MODULE})
     include($${MODULE}/$${MODULE}.pri)
 }
 
+
 include(xml/generated/generated.pri)
-
-
 
 OTHER_FILES +=            \
     xml/parameters.xml    \
@@ -55,5 +54,4 @@ OTHER_FILES +=            \
 OTHER_FILES +=            \
     ../tools/generator/regen-core.sh \
     ../tools/generator/h_stub.sh \
-
 
