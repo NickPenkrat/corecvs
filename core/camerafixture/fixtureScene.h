@@ -54,6 +54,9 @@ public:
      *
      **/
     void projectForward(SceneFeaturePoint::PointType mask, bool round = false);
+    void triangulate   (SceneFeaturePoint * point);
+
+
 
 protected:
     template<typename T>
@@ -149,8 +152,9 @@ public:
     virtual void deleteCamera        (FixtureCamera *camera);
     virtual void deleteCameraFixture (CameraFixture *fixture, bool recursive = true);
     virtual void deleteFixturePair   (CameraFixture *fixture, FixtureCamera *camera);
-    virtual void deleteFeaturePoint  (SceneFeaturePoint *camera);
+    virtual void deleteFeaturePoint  (SceneFeaturePoint *point);
 
+    virtual void clear();
 
     /**
      *    Helper method to check data structure integrity
@@ -221,7 +225,6 @@ public:
         /* Fixtures*/
 
         int stationSize = (int)fixtures.size();
-        cout << stationSize << endl;
         visitor.visit(stationSize, 0, "stations.size");
 
         setFixtureCount(stationSize);

@@ -254,7 +254,7 @@ Vector corecvs::operator *(const Vector &lhs, const SparseMatrix &rhs)
 SparseMatrix corecvs::operator *(const SparseMatrix &lhs, const SparseMatrix &rhst)
 {
     CORE_ASSERT_TRUE_S(lhs.w == rhst.h);
-#if 0
+#ifndef WITH_MKL
     auto& rhs = rhst;
     int N = std::max(std::max(lhs.h, lhs.w), std::max(rhs.h, rhs.w));
     std::vector<double> values, acc(N);

@@ -24,7 +24,7 @@ struct AbsoluteNonCentralRansacSolverParams
     bool forcePosition = false;
     corecvs::Vector3dd forcedPosition = corecvs::Vector3dd(0, 0, 0);
 };
-class AbsoluteNonCentralRansacSolver : AbsoluteNonCentralRansacSolverParams
+class AbsoluteNonCentralRansacSolver : public AbsoluteNonCentralRansacSolverParams
 {
 public:
     AbsoluteNonCentralRansacSolver(corecvs::CameraFixture *ps, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &cloudMatches, const AbsoluteNonCentralRansacSolverParams &params = AbsoluteNonCentralRansacSolverParams()) : AbsoluteNonCentralRansacSolverParams(params), ps(ps), cloudMatches(cloudMatches)
@@ -35,14 +35,16 @@ public:
     void runInliersRE();
     std::vector<int> getInliers();
     corecvs::Affine3DQ getBestHypothesis();
-protected:
+//protected:
 #ifdef WITH_TBB
     tbb::mutex mutex;
 #endif
     struct Estimator
     {
         void operator() (const corecvs::BlockedRange<int> &r);
-        Estimator(AbsoluteNonCentralRansacSolver *solver, double inlierThreshold) : solver(solver), inlierThreshold(inlierThreshold)
+        Estimator(AbsoluteNonCentralRansacSolver *solver, double inlierThreshold) :
+            inlierThreshold(inlierThreshold),
+            solver(solver)
         {
             rng = std::mt19937(std::random_device()());
         }
@@ -50,7 +52,7 @@ protected:
         void sampleModel();
         void makeHypo();
         void selectInliers();
-        int localMax = 0;
+        size_t localMax = 0;         /*< this probably needs to be size_t */
         static const int SAMPLESIZE = 3;
         int idxs[SAMPLESIZE];
         double inlierThreshold;
@@ -68,14 +70,15 @@ protected:
         int batch;
     };
 
-    void accept(const corecvs::Affine3DQ &hypo, std::vector<int> &inliersNew)
+    void accept(const corecvs::Affine3DQ &hypo, std::vector<int> &inliersNew, double inliersQuality)
     {
 #ifdef WITH_TBB
         tbb::mutex::scoped_lock lock(mutex);
 #endif
-        if (inliersNew.size() <= inliers.size())
+        if (inliersNew.size() < inliers.size() || (inliersQuality > inlierQuality && inliers.size() == inliersNew.size()))
             return;
         inliers = inliersNew;
+        inlierQuality = inliersQuality;
         bestHypothesis = hypo;
         bestInlierCnt = (int)inliers.size();
         int N = (int)cloudMatches.size();
@@ -133,6 +136,7 @@ protected:
 
     corecvs::Affine3DQ bestHypothesis;
     int bestInlierCnt = 0;
+    double inlierQuality = 0.0;
     std::vector<int> inliers;
     corecvs::CameraFixture *ps;
     std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> cloudMatches;

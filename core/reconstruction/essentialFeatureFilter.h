@@ -17,7 +17,17 @@ namespace corecvs
 class EssentialFeatureFilter
 {
 public:
-    EssentialFeatureFilter(const Matrix33 &K1, const Matrix33 &K2, std::vector<std::array<corecvs::Vector2dd, 2>> &features, std::vector<std::array<corecvs::Vector2dd, 2>> &featuresInlierCheck, double inlierRadius = 2, double targetGamma = 1e-2, int maxIter = 16000, int batch = 200, int batches = 4);
+    EssentialFeatureFilter(
+            const Matrix33 &K1,
+            const Matrix33 &K2,
+            std::vector<std::array<corecvs::Vector2dd, 2>> &features,
+            std::vector<std::array<corecvs::Vector2dd, 2>> &featuresInlierCheck,
+            double inlierRadius = 2,
+            double targetGamma = 1e-2,
+            int maxIter = 16000,
+            int batch = 200,
+            int batches = 4
+    );
 
     void estimate();
 
@@ -43,13 +53,17 @@ public:
         corecvs::EssentialDecomposition ed;
         int localMax = 0;
         int batch;
-        double inlierRadius;
         EssentialFeatureFilter* filter;
+        double inlierRadius;
     };
+
     struct ParallelEstimator
     {
         void operator() (const corecvs::BlockedRange<int> &r) const;
-        ParallelEstimator(EssentialFeatureFilter* filter, double inlierRadius, int batch) : batch(batch), filter(filter), inlierRadius(inlierRadius)
+        ParallelEstimator(EssentialFeatureFilter* filter, double inlierRadius, int batch) :
+            batch(batch),
+            inlierRadius(inlierRadius),
+            filter(filter)
         {
         }
         int batch;
@@ -64,7 +78,8 @@ public:
     std::vector<std::array<corecvs::Vector2dd, 2>> features;
     std::vector<std::array<corecvs::Vector2dd, 2>> featuresInlierCheck;
     int maxIter, batch, batches, usedIter;
-    double targetGamma, inlierRadius;
+    double targetGamma;
+    double inlierRadius;
     static const int FEATURE_POINTS_FOR_MODEL = 5;
 #ifdef WITH_TBB
     tbb::mutex mutex;

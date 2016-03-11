@@ -16,8 +16,8 @@ namespace corecvs
     class WildcardablePointerPair;
 }
 
-namespace std
-{
+namespace std {
+
 template<typename U, typename V>
 struct hash<corecvs::WildcardablePointerPair<U, V>>
 {
@@ -26,52 +26,57 @@ struct hash<corecvs::WildcardablePointerPair<U, V>>
         return std::hash<U*>()(wpp.u) ^ (31 * std::hash<V*>()(wpp.v));
     }
 };
-}
+
+} // namespace std
 
 
 namespace corecvs {
 
 class SceneFeaturePoint;
 
-class SceneObservation {
+class SceneObservation
+{
 public:
-    SceneObservation() {}
+    SceneObservation() :
+        camera(NULL),
+        cameraFixture(NULL),
+        featurePoint(NULL)
+    {}
 
     FixtureCamera *     camera;
     CameraFixture *     cameraFixture;
     SceneFeaturePoint * featurePoint;
 
-    Vector2dd                 observation;
-    Vector2dd                 accuracy;
-    bool                      isKnown;
-    MetaContainer             meta;
+    Vector2dd           observation;
+    Vector2dd           accuracy;
+    bool                isKnown;
+    MetaContainer       meta;
 
     /* Ray to point */
-    Vector3dd                 observDir;
+    Vector3dd           observDir;
 
     double &x() { return observation.x(); }
     double &y() { return observation.y(); }
 
-    std::string getPointName();
+    std::string     getPointName();
 
 private:
-    FixtureCamera *getCameraById(FixtureCamera::IdType id);
+    FixtureCamera  *getCameraById(FixtureCamera::IdType id);
 
 public:
     template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-
-        visitor.visit(observDir   , Vector3dd(0.0) , "name"  );
-        visitor.visit(observation , Vector2dd(0.0)  , "observation"  );
-        visitor.visit(accuracy    , Vector2dd(0.0)  , "accuracy"  );
-        visitor.visit(isKnown     , false  , "isKnown" );
+        visitor.visit(observDir   , Vector3dd(0.0) , "name");
+        visitor.visit(observation , Vector2dd(0.0) , "observation");
+        visitor.visit(accuracy    , Vector2dd(0.0) , "accuracy");
+        visitor.visit(isKnown     , false          , "isKnown");
 
         FixtureCamera::IdType id = 0;
         if (camera != NULL) {
             id = camera->getObjectId();
         }
-        visitor.visit(id, (uint64_t)0, "camera" );
+        visitor.visit(id, (uint64_t)0, "camera");
 
         if (visitor.isLoader())
         {
@@ -79,7 +84,6 @@ public:
         }
         //camera->setObjectId(id);
     }
-
 
 };
 
@@ -91,11 +95,11 @@ public:
     static constexpr U* UWILDCARD = nullptr;
     static constexpr V* VWILDCARD = nullptr;
 #else
-	static U* const UWILDCARD;
-	static V* const VWILDCARD;
+    static U* const UWILDCARD;
+    static V* const VWILDCARD;
 #endif
-	typedef U* UTYPE;
-	typedef V* VTYPE;
+    typedef U* UTYPE;
+    typedef V* VTYPE;
 
     WildcardablePointerPair(U* u = UWILDCARD, V* v = VWILDCARD) : u(u), v(v)
     {
@@ -114,7 +118,7 @@ public:
     }
 
     // This operator IS transitive
-    bool operator<  (const WildcardablePointerPair<U, V> &wpp) const
+    bool operator< (const WildcardablePointerPair<U, V> &wpp) const
     {
         return u == wpp.u ? v < wpp.v : u < wpp.u;
     }
@@ -128,17 +132,26 @@ typedef WildcardablePointerPair<CameraFixture, FixtureCamera> WPP;
 class SceneFeaturePoint : public FixtureScenePart
 {
 public:
-    std::string name;
+    std::string                 name;
 
     /** This is a primary position of the FeaturePoint. The one that is know by direct measurement */
-    Vector3dd position;
-    bool hasKnownPosition;
+    Vector3dd                   position;
+    bool                        hasKnownPosition;
+    /*
+     * Here we'll store some estimation for inverse of covariance matrix
+     * So for delta v we'll get v'Av = Mahlanobis distance (which has
+     * chi-squared distribution with 3 dof)
+     */
+    Matrix33                    accuracy;
+    // Gets p-value using covariance estimation using one-sided test
+    double                      queryPValue(const corecvs::Vector3dd &q) const;
 
     /** This is a position that is achived by reconstruction */
-    Vector3dd reprojectedPosition;
-    bool hasKnownReprojectedPosition;
+    Vector3dd                   reprojectedPosition;
+    bool                        hasKnownReprojectedPosition;
 
-    enum PointType{
+    enum PointType {
+        POINT_UNKNOWN       = 0x00,
         POINT_USER_DEFINED  = 0x01,  /**< Point that comes from a file */
         POINT_RECONSTRUCTED = 0x02,
         POINT_TEMPORARY     = 0x04,
@@ -148,12 +161,25 @@ public:
 
     PointType type;
 
+    static inline const char *getTypeName(const PointType &value)
+    {
+        switch (value)
+        {
+            case POINT_USER_DEFINED  : return "USER_DEFINED" ;
+            case POINT_RECONSTRUCTED : return "RECONSTRUCTED";
+            case POINT_TEMPORARY     : return "TEMPORARY"    ;
+            default                  : return "Not in range" ;
+        }
+    }
+
     void setPosition(const Vector3dd &position, PointType type = POINT_USER_DEFINED)
     {
         this->position = position;
         this->hasKnownPosition = true;
         this->type = type;
     }
+
+    Vector3dd triangulate(bool use__ = false);
 
 
     /** Observation related block */
@@ -184,36 +210,40 @@ public:
         position = matrix * position + translate;
     }
 
+    bool hasObservation(FixtureCamera *cam);
+    SceneObservation *getObservation(FixtureCamera *cam);
+
+    void removeObservation(SceneObservation *);
+
+
     /* Let it be so far like this */
     template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-
-        visitor.visit(name                       , std::string("") , "name"  );
-        visitor.visit(position                   , Vector3dd(0.0)  , "position"  );
-        visitor.visit(hasKnownPosition           , false           , "hasKnownPosition"  );
-        visitor.visit(reprojectedPosition        , Vector3dd(0.0)  , "reprojectedPosition"  );
-        visitor.visit(hasKnownReprojectedPosition, false           , "hasKnownReprojectedPosition");
-        visitor.visit((int &)type, 0, "type");
-        visitor.visit(color, RGBColor::Black(), "color");
-
+        visitor.visit(name                       , std::string("")   , "name");
+        visitor.visit(position                   , Vector3dd(0.0)    , "position");
+        visitor.visit(hasKnownPosition           , false             , "hasKnownPosition");
+        visitor.visit(reprojectedPosition        , Vector3dd(0.0)    , "reprojectedPosition");
+        visitor.visit(hasKnownReprojectedPosition, false             , "hasKnownReprojectedPosition");
+        visitor.visit((int &)type                , (int)POINT_UNKNOWN, "type");
+        visitor.visit(color                      , RGBColor::Black() , "color");
 
         int observeSize = (int)observations.size();
         visitor.visit(observeSize, 0, "observations.size");
 
-        if (! visitor.isLoader()) {
+        if (!visitor.isLoader()) {
             int i = 0;
-             /* We don't load observations here*/
-            for(auto &it : observations)
+            /* We don't load observations here*/
+            for (auto &it : observations)
             {
-                SceneObservation  obseve = it.second;
-
+                SceneObservation obseve = it.second;
                 char buffer[100];
                 snprintf2buf(buffer, "obsereve[%d]", i);
                 visitor.visit(obseve, SceneObservation(), buffer);
                 i++;
             }
-        } else {
+        }
+        else {
             for (int i = 0; i < observeSize; i++)
             {
                 char buffer[100];
@@ -229,6 +259,6 @@ public:
 
 };
 
-}
+} // namespace corecvs
 
 #endif // SCENE_FEATURE_POINT_H

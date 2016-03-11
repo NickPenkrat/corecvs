@@ -12,6 +12,8 @@
 
 #include "global.h"
 
+#include "generated/debayerMethod.h"
+
 #include "g12Buffer.h"
 #include "rgbTBuffer.h"
 #include "rgb24Buffer.h"
@@ -22,14 +24,6 @@ namespace corecvs {
 class Debayer
 {
 public:
-    enum Method
-    {
-        Nearest  = 0,
-        Bilinear = 1,
-        AHD      = 2,
-        Fourier  = 3
-    };
-
     enum CompareMethod
     {
         PSNR = 0,
@@ -56,16 +50,19 @@ public:
      *
      * \return  Error code.
      */
-    int toRGB48(Method method, RGB48Buffer* out);
+    int         toRGB48(DebayerMethod::DebayerMethod method, RGB48Buffer* out);
 
     /**
     * Fill bayer data from RGB48 image applying Bayerian grid to it.
     *
     * \param   inRGB Image to get pixel data from.
     */
-    void fromRgb(RGB48Buffer *inRgb);
+    void        fromRgb(RGB48Buffer *inRgb);
 
-    void        getYChannel(G12Buffer *output);
+    void        getYChannel(AbstractBuffer<double,int> *output);
+
+    uint8_t     colorFromBayerPos(uint i, uint j, bool rggb = true);
+
 private:
     Vector3dd   mScaleMul   = { 1, 1, 1 };
     uint16_t    mBlack      = 0;
@@ -132,7 +129,6 @@ private:
     inline int32_t weightedBayerAvg(const vector<Vector2d32>& coords, const vector<int>& coeffs = vector<int>());
     inline int32_t weightedBayerAvg(const Vector2d32& coords);
 
-    inline uint8_t colorFromBayerPos(uint i, uint j, bool rggb = true);
 };
 
 } // namespace corecvs

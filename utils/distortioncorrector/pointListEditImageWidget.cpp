@@ -12,7 +12,6 @@ PointListEditImageWidget::PointListEditImageWidget(QWidget *parent, bool showHea
     mDeleteButton  = addToolButton("Delete Point",      QIcon(":/new/prefix1/vector_delete.png"  ), false);
     mAddInfoButton = addToolButton("Toggle info",       QIcon(":/new/prefix1/info_rhombus.png"   ), false);
     mAddInfoButton ->setCheckable(true);
-
 }
 
 void PointListEditImageWidget::setObservationModel(ObservationListModel *observationListModel)
@@ -260,6 +259,7 @@ void PointListEditImageWidget::childMouseMoved(QMouseEvent * event)
 PointListEditImageWidgetUnited::PointListEditImageWidgetUnited(QWidget *parent, bool showHeader) :
     AdvancedImageWidget(parent, showHeader),
     mObservationListModel(NULL),
+    selectionModel(NULL),
     mSelectedPoint(-1)
 {
     mMoveButton    = addToolButton("Select",            QIcon(":/new/prefix1/select_by_color.png"));
@@ -277,14 +277,98 @@ void PointListEditImageWidgetUnited::setObservationModel(PointImageEditorInterfa
 
     connect(mObservationListModel, SIGNAL(updateView())      , this, SLOT(update()));
     connect(mObservationListModel, SIGNAL(modelInvalidated()), this, SLOT(invalidateModel()));
-
 }
+
+void PointListEditImageWidgetUnited::setSelectionModel(QItemSelectionModel *_selectionModel)
+{
+    disconnect(selectionModel, 0, this, 0);
+    selectionModel = _selectionModel;
+
+    connect(selectionModel, SIGNAL(selectionChanged(QItemSelection,QItemSelection)), this, SLOT(update()));
+}
+
+
 
 /* This is called when model indexes are changed, and our cache is no longer valid */
 void PointListEditImageWidgetUnited::invalidateModel()
 {
     mSelectedPoint = -1;
     update();
+}
+
+void PointListEditImageWidgetUnited::selectPoint(int id)
+{
+    qDebug("PointListEditImageWidgetUnited::selectPoint(%d)", id);
+    mSelectedPoint = id;
+    if (selectionModel != NULL && mObservationListModel != NULL) {
+
+        QModelIndex pos = mObservationListModel->index(id, 0);
+
+        if (mSelectedPoint != -1) {
+            selectionModel->select         (pos, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+            selectionModel->setCurrentIndex(pos, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+        } else {
+            selectionModel->clear();
+        }
+    }
+}
+
+void PointListEditImageWidgetUnited::paintDirectionArrows(QPainter &painter, int type)
+{
+    if (type & TOP_ARROW)
+        painter.drawRect(QRect(
+                         mOutputRect.left() + mOutputRect.width() / 2 - 5,
+                         mOutputRect.top() + 5,
+                         10, 5));
+
+    if (type & BOTTOM_ARROW)
+        painter.drawRect(QRect(
+                         mOutputRect.left() + mOutputRect.width() / 2 - 5,
+                         mOutputRect.bottom() - 15,
+                         10, 5));
+
+    if (type & LEFT_ARROW)
+        painter.drawRect(QRect(
+                         mOutputRect.left() + 5,
+                         mOutputRect.top() + mOutputRect.height() / 2 - 10,
+                         5, 10));
+
+    if (type & RIGHT_ARROW)
+        painter.drawRect(QRect(
+                         mOutputRect.right() - 15,
+                         mOutputRect.top() + mOutputRect.height() / 2 - 10,
+                         5, 10));
+}
+
+/**
+ *      *
+ *    *  *
+ *     *  *
+ *      *  *  *
+ *       *     *
+ *          0
+ *       *     *
+ *         * *
+ *
+ **/
+void PointListEditImageWidgetUnited::paintTarget(QPainter &painter, Vector2dd imageCoords, double len)
+{
+    painter.setPen(Qt::red);
+
+    drawLine(painter, imageCoords + Vector2dd( len + 2, len + 1), imageCoords + Vector2dd( 2.0, 1.0));
+    drawLine(painter, imageCoords + Vector2dd( len + 1, len + 2), imageCoords + Vector2dd( 1.0, 2.0));
+
+    drawLine(painter, imageCoords - Vector2dd( len + 2, len + 1), imageCoords - Vector2dd( 2.0, 1.0));
+    drawLine(painter, imageCoords - Vector2dd( len + 1, len + 2), imageCoords - Vector2dd( 1.0, 2.0));
+
+    /*--*/
+
+    drawLine(painter, imageCoords + Vector2dd( len + 2, -len - 1), imageCoords + Vector2dd( 2.0, -1.0));
+    drawLine(painter, imageCoords + Vector2dd( len + 1, -len - 2), imageCoords + Vector2dd( 1.0, -2.0));
+
+    drawLine(painter, imageCoords - Vector2dd( len + 2, -len - 1), imageCoords - Vector2dd( 2.0, -1.0));
+    drawLine(painter, imageCoords - Vector2dd( len + 1, -len - 2), imageCoords - Vector2dd( 1.0, -2.0));
+
 }
 
 void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *who)
@@ -325,15 +409,49 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *w
             painter.drawText(pos, meta);
         }
 
-        if (i == mSelectedPoint) {
+        bool isSelected = false;
+        if (selectionModel != NULL)
+        {
+            isSelected = selectionModel->isRowSelected(i, QModelIndex());
+        } else {
+            isSelected = (i == mSelectedPoint);
+        }
+
+        int flags = NONE_ARROW;
+
+        if (isSelected) {
             painter.setPen(Qt::red);
             drawCircle(painter, imageCoords, 7);
 
-            /* Test it a bit and use QSelectionModel */
             imageCoords = imageToWidgetF(widgetToImageF(imageCoords));
             painter.setPen(Qt::cyan);
             drawCircle(painter, imageCoords, 3);
+
+            if (imageCoords.x() < mOutputRect.left ()) flags |= LEFT_ARROW;
+            if (imageCoords.x() > mOutputRect.right()) flags |= RIGHT_ARROW;
+
+            if (imageCoords.y() < mOutputRect.top   ()) flags |= TOP_ARROW;
+            if (imageCoords.y() > mOutputRect.bottom()) flags |= BOTTOM_ARROW;
+
         }
+
+        painter.setBrush(Qt::red);
+        painter.setPen(Qt::blue);
+        paintDirectionArrows(painter, flags);
+        painter.setBrush(Qt::NoBrush);
+
+    }
+
+    /* Draw additional points*/
+    for (size_t i = 0; i < pointList.size(); i++)
+    {
+        Vector2dd &p = pointList[i];
+        Vector2dd imageCoords = imageToWidgetF(p);
+
+        /*painter.setPen(Qt::green);
+        drawLine(painter, imageCoords - Vector2dd( 4.0, 4.0), imageCoords + Vector2dd(4.0,  4.0));
+        drawLine(painter, imageCoords - Vector2dd(-4.0, 4.0), imageCoords + Vector2dd(-4.0, 4.0));*/
+        paintTarget( painter, imageCoords, 10);
     }
 }
 
@@ -355,7 +473,11 @@ void PointListEditImageWidgetUnited::toolButtonReleased(QWidget *button)
         qDebug() << "Add Button";
         //mCurrentToolClass = (ToolClass)ADD_POINT_TOOL;
         mObservationListModel->appendPoint();
-        mSelectedPoint = (int)mObservationListModel->getPointCount() - 1;
+        mSelectedPoint = mObservationListModel->getPointCount() - 1;
+        /*if (selectionModel != NULL) {
+            QItemSelection::Se
+            selectionModel->select(QModelIndex(mSelectedPoint, 0), QI);
+        }*/
 
         mObservationListModel->setPoint(mSelectedPoint, Qt2Core::Vector2ddFromQPoint(mZoomCenter));
         mUi->widget->update();
@@ -416,7 +538,10 @@ void PointListEditImageWidgetUnited::childMousePressed(QMouseEvent *event)
 //        bool shiftPressed = event->modifiers().testFlag(Qt::ShiftModifier);
 
         Vector2dd imagePoint = widgetToImageF(releasePoint);
-        mSelectedPoint = findClosest(imagePoint, 5);
+        Vector2dd shift = widgetToImageF(Vector2dd(5,5)) - widgetToImageF(Vector2dd(0,0));
+
+        int selectedPoint = findClosest(imagePoint, shift.l2Metric());
+        selectPoint(selectedPoint);
         mUi->widget->update();
 
     }

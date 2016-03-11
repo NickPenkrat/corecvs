@@ -12,6 +12,8 @@ FixtureControlWidget::FixtureControlWidget(QWidget *parent) :
     QObject::connect(ui->loadPushButton, SIGNAL(released()), this, SLOT(loadPressed()));
     QObject::connect(ui->savePushButton, SIGNAL(released()), this, SLOT(savePressed()));
 
+
+    QObject::connect(ui->locationWidget, SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
 }
 
 FixtureControlWidget::~FixtureControlWidget()

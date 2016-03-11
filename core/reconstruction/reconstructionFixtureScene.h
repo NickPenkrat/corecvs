@@ -6,8 +6,8 @@
 #include "rgbColor.h"
 
 
-namespace corecvs
-{
+namespace corecvs {
+
 struct FeatureDetectionParams
 {
     std::string detector   = "SURF";
@@ -37,9 +37,12 @@ enum class PhotostationInitializationType
 struct PhotostationInitialization
 {
     PhotostationInitializationType initializationType;
+    // NOTE: Static points should be appended to scene before
+    //       supplying them as initialization data
     std::vector<SceneFeaturePoint*> staticPoints;
     Affine3DQ initData;
-    Matrix33  positioningAccuracy = corecvs::Matrix33(1, 0, 0, 0, 1, 0, 0, 0, 1);
+    Matrix33  positioningAccuracy = corecvs::Matrix33(0.005, 0, 0, 0, 0.005, 0, 0, 0, 0.005).inv();
+    bool enforcePosition = true;
     double    rotationalAccuracy;
 };
 
@@ -48,11 +51,13 @@ class ReconstructionFixtureScene : public FixtureScene
 {
 public:
     ReconstructionFixtureScene();
-    
+
     virtual void deleteCamera        (FixtureCamera *camera);
     virtual void deleteCameraFixture (CameraFixture *fixture, bool recursive = true);
     virtual void deleteFixturePair   (CameraFixture *fixture, FixtureCamera *camera);
     virtual void deleteFeaturePoint  (SceneFeaturePoint *camera);
+
+    FixtureScene* dumbify();
 
     //\brief Detect and match features between all images
     void detectAllFeatures(const FeatureDetectionParams &params);
@@ -87,22 +92,46 @@ public:
     bool haveCamera(FixtureCamera* camera);
     bool haveFixture(CameraFixture* camera);
     bool havePoint(SceneFeaturePoint* point);
+
+    void printMatchStats();
+
+    friend std::ostream& operator<< (std::ostream& os, ReconstructionFixtureScene &rfs)
+    {
+        std::vector<CameraFixture*> fSorted;
+        for (auto ptr: rfs.fixtures)
+            fSorted.push_back(ptr);
+        std::sort(fSorted.begin(), fSorted.end(), [](const CameraFixture* a, const CameraFixture* b) { return a->name < b->name; });
+
+        for (auto ptr: fSorted)
+        {
+            std::vector<FixtureCamera*> cSorted;
+            for (auto ptC: ptr->cameras)
+                cSorted.push_back(ptC);
+
+            std::sort(cSorted.begin(), cSorted.end(), [](const FixtureCamera* a, const FixtureCamera* b) { return a->nameId < b->nameId; });
+
+            os << ptr->name << " " << rfs.initializationData[ptr].initData.shift << std::endl;
+            for (auto c: cSorted)
+                os << "\t" << c->nameId << " " << rfs.images[WPP(ptr, c)] << std::endl;
+        }
+        return os;
+    }
 };
-}
+
+} // namespace corecvs
 
 namespace std
 {
 template<>
 struct hash<PhotostationInitializationType>
 {
-	size_t operator() (const PhotostationInitializationType &t) const
-	{
-		using foo = std::underlying_type<PhotostationInitializationType>::type;
-		return hash<foo>()(static_cast<const foo>(t));
-	}
+    size_t operator() (const PhotostationInitializationType &t) const
+    {
+        using foo = std::underlying_type<PhotostationInitializationType>::type;
+        return hash<foo>()(static_cast<const foo>(t));
+    }
 };
 
 }
 
-#endif
-
+#endif // RECONSTRUCTIONFIXTURESCENE

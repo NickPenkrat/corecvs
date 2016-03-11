@@ -14,6 +14,8 @@
 
 #include "global.h"
 
+#include "cblasLapackeWrapper.h"
+
 #include "matrix.h"
 #include "sparseMatrix.h"
 #include "vector.h"
@@ -26,6 +28,7 @@ using std::vector;
  *
  *  TODO: Think of the similar class based on static polymorphism.
  **/
+class JacobianFunctor;
 class FunctionArgs
 {
 public:
@@ -73,36 +76,7 @@ public:
      *   TODO: Bring differencing out and use following information
      *   http://en.wikipedia.org/wiki/Numerical_differentiation#Practical_considerations_using_floating_point_arithmetic
      **/
-    virtual Matrix getJacobian(const double in[], double delta = 1e-7)
-    {
-        Matrix result(outputs, inputs);
-        vector<double> xc(inputs);
-        vector<double> y_minus(outputs);
-        vector<double> y_plus (outputs);
-
-        for (int i = 0; i < inputs; i++)
-        {
-            xc[i] = in[i];
-        }
-
-        for (int i = 0; i < inputs; i++)
-        {
-            double delta_loc = std::max(1.0, std::abs(in[i])) * delta;
-            double xm = xc[i] = in[i] - delta_loc;
-            operator()(&xc[0], &y_minus[0]);
-            double xp = xc[i] = in[i] + delta_loc;
-            operator()(&xc[0], &y_plus[0]);
-            xc[i] = in[i];
-
-            // Note: this stuff is not equal to 2 * delta
-            double dx = xp - xm;
-            for (int j = 0; j < outputs; j++)
-            {
-                result.element(j,i) = (y_plus[j] - y_minus[j]) / dx;
-            }
-        }
-        return result;
-    }
+    virtual Matrix getJacobian(const double in[], double delta = 1e-7);
 
     Matrix getNativeJacobian(const double in[], double delta = 1e-7)
     {
@@ -114,8 +88,43 @@ public:
         return getJacobian(in.element, delta);
     }
 
+    /*
+     * This function returns hessian matrices for all output functions
+     * Output is outputs x (inputs x inputs matrix) vector
+     * We use a second-order finite differences in order to get this,
+     * for example, for f(x,y) we will evaluate f at the following points:
+     *       +
+     *    *  +  *
+     * +  +  +  +  +
+     *    *  +  *
+     *       +
+     *  Where '+' points are used for f^{(2)}_{xx} or f^{(2)}_{yy} computations,
+     *  while '*' points are used for f^({2})_{xy} computations
+     */
+    virtual std::vector<Matrix> getHessians(const Vector &in, double delta = 1e-5);
+
+    // Gets Hessian for \frac{1}{2}\sum f_k(x_1,...,x_n)^2
+    virtual Matrix getLSQHessian(const double* in, double delta = 1e-5);
+
     virtual ~FunctionArgs() {}
 
+};
+
+// This class only reshapes jacobian of another function
+class JacobianFunctor : public FunctionArgs
+{
+public:
+    JacobianFunctor(FunctionArgs *fun) : FunctionArgs(fun->inputs, fun->inputs * fun->outputs), fun(fun)
+    {
+    }
+    void operator() (const double* in, double* out)
+    {
+        auto J = fun->getJacobian(in, 1e-9);
+        for (int i = 0; i < J.h; ++i)
+            for (int j = 0; j < J.w; ++j)
+                *out++ = J.a(i, j);
+    }
+    FunctionArgs *fun;
 };
 
 class SparseFunctionArgs : public FunctionArgs
@@ -141,152 +150,13 @@ public:
         return (Matrix)getNativeJacobian(in, delta);
     }
 
-    SparseMatrix getNativeJacobian(const double* in, double delta = 1e-7)
-    {
-        std::vector<std::vector<double>> values(inputs);
-        for (int i = 0; i < inputs; ++i)
-            values[i].reserve(dependencyList[i].size());
+    SparseMatrix getNativeJacobian(const double* in, double delta = 1e-7);
 
-        int N = (int)groupInputs.size();
-        std::vector<double> xp(inputs), xm(inputs), deltaS(inputs);
-        double curr_eval = 0.0, curr_subscale = 0.0;
-        auto start_evals = std::chrono::high_resolution_clock::now();
-        for (int i = 0; i < N; ++i)
-        {
-            auto& group = groupInputs[i];
-            auto& idxs = groupOutputs[i];
-            auto& remap = remapIdx[i];
-
-            int M = (int)group.size();
-
-            for (int j = 0; j < inputs; ++j)
-                xp[j] = xm[j] = in[j];
-            for (int j = 0; j < M; ++j)
-            {
-                double x = in[group[j]];
-                double delta_loc = std::max(1.0, std::abs(x)) * delta;
-                double xxm = x - delta_loc;
-                double xxp = x + delta_loc;
-                xp[group[j]] = xxp;
-                xm[group[j]] = xxm;
-                deltaS[j] = xxp - xxm;
-            }
-
-            std::vector<double> yp(idxs.size()), ym(idxs.size());
-            auto begin_eval = std::chrono::high_resolution_clock::now();
-            operator()(&xp[0], &yp[0], idxs);
-            operator()(&xm[0], &ym[0], idxs);
-            auto end_eval = std::chrono::high_resolution_clock::now();
-            curr_eval += (end_eval - begin_eval).count() / 1e9;
-
-            auto begin_subscale = std::chrono::high_resolution_clock::now();
-            int K = (int)idxs.size();
-#ifdef WITH_BLAS
-            cblas_daxpy(K, -1.0, &ym[0], 1, &yp[0], 1);
-#endif
-            for (int j = 0; j < K; ++j)
-            {
-                int id = remap[idxs[j]];
-#ifdef WITH_BLAS
-                double v = yp[j] / deltaS[id];
-#else
-                double v = (yp[j] - ym[j]) / deltaS[id];
-#endif
-                values[group[id]].push_back(v);
-            }
-            auto end_subscale = std::chrono::high_resolution_clock::now();
-            curr_subscale += (end_subscale - begin_subscale).count() / 1e9;
-        }
-        auto end_evals = std::chrono::high_resolution_clock::now();
-        double eval_f = curr_eval;
-        double eval_other = (end_evals - start_evals).count() / 1e9 - eval_f - curr_subscale;
-
-
-        auto begin_prepare = std::chrono::high_resolution_clock::now();
-        std::vector<double> sparseValues;
-        std::vector<int> sparseColumns, sparseRowPointers(inputs + 1);
-        for (int i = 0; i < inputs; ++i)
-        {
-            int N = (int)dependencyList[i].size();
-            CORE_ASSERT_TRUE_S(N == values[i].size());
-            for (int j = 0; j < N; ++j)
-            {
-                int jj = dependencyList[i][j];
-                sparseColumns.push_back(jj);
-                sparseValues.push_back(values[i][j]);
-            }
-            sparseRowPointers[i + 1] = (int)sparseValues.size();
-        }
-        auto end_prepare = std::chrono::high_resolution_clock::now();
-        auto begin_construct = std::chrono::high_resolution_clock::now();
-        auto sm = SparseMatrix(inputs, outputs, std::move(sparseValues), std::move(sparseColumns), std::move(sparseRowPointers));
-        auto end_construct = std::chrono::high_resolution_clock::now();
-        auto begin_t = std::chrono::high_resolution_clock::now();
-        auto sm_t = sm.t();
-        auto end_t = std::chrono::high_resolution_clock::now();
-
-        double prepare_t = (end_prepare - begin_prepare).count() / 1e9;
-        double construct_t = (end_construct - begin_construct).count() / 1e9;
-        double t_t = (end_t - begin_t).count() / 1e9;
-        feval += eval_f;
-        transp += t_t;
-        construct += construct_t;
-        prepare += prepare_t;
-        other += eval_other;
-        subscale += curr_subscale;
-        return sm_t;
-    }
-
-    void minify()
-    {
-        std::vector<int> usedO(outputs);
-        std::vector<int> usedI(inputs);
-        CORE_ASSERT_TRUE_S(dependencyList.size() == inputs);
-
-        for (int i = 0; i < inputs; ++i)
-        {
-            if (usedI[i])
-                continue;
-            std::vector<int> currentGroup = {i}, currentRemap(outputs, -1), currentOutputs = {};
-            usedO.clear();
-            usedO.resize(outputs);
-            for (auto& id: dependencyList[i])
-            {
-                CORE_ASSERT_TRUE_S(id < outputs);
-                usedO[id] = 1;
-            }
-            for (int j = i + 1; j < inputs; ++j)
-            {
-                if (usedI[j])
-                    continue;
-                bool isOk = true;
-                for (auto& id: dependencyList[j])
-                    if (usedO[id])
-                    {
-                        isOk = false;
-                        break;
-                    }
-                if (!isOk)
-                    continue;
-                currentGroup.push_back(j);
-                usedI[j] = 1;
-                for (auto& id: dependencyList[j])
-                    usedO[id] = 1;
-            }
-            CORE_ASSERT_TRUE_S(currentRemap.size() == outputs);
-            for (auto& id: currentGroup)
-                for (auto& ido: dependencyList[id])
-                {
-                    currentOutputs.push_back(ido);
-                    currentRemap[ido] = &id - &*currentGroup.begin();
-                }
-            groupInputs.push_back(currentGroup);
-            groupOutputs.push_back(currentOutputs);
-            remapIdx.push_back(currentRemap);
-
-        }
-        std::cout << "REMAPANAL: " << inputs << "->" << groupInputs.size() << std::endl;
-    }
+    /*
+     * This function groups input variables using provided output dependency lists
+     * in order to minimize number of function calls during jacobian computation
+     */
+    void minify();
 
     virtual ~SparseFunctionArgs()
     {
@@ -422,108 +292,7 @@ public:
         return result;
     }
 
-#if 0
-    /**
-     *   \f[
-     *
-     *   J= \pmatrix{
-     *      \frac{\partial y_1}{\partial x_1} & \cdots & \frac{\partial y_1}{\partial x_n} \cr
-     *              \vdots                    & \ddots &                   \vdots          \cr
-     *      \frac{\partial y_m}{\partial x_1} & \cdots & \frac{\partial y_m}{\partial x_n}
-     *      }
-     *
-     *   \f]
-     *
-     *
-     *   TODO: Bring differencing out and use following information
-     *   http://en.wikipedia.org/wiki/Numerical_differentiation#Practical_considerations_using_floating_point_arithmetic
-     **/
-    Matrix getJacobian(const InputType &x, double delta = 1e-7)
-    {
-        Matrix result(outputDim, inputDim);
-        for (int i = 0; i < inputDim; i++)
-        {
-           Function::InputType xc = x;
-           xc[i] -= delta;
-           Function::InputType y_minus;
-           Function::InputType y_plus;
-           F(xc, y_minus);
-           xc[i] = x[i] + delta;
-           F(xc, y_plus);
-
-           for (int j = 0; j < Function::outputDim; j++)
-           {
-               result.element(j,i) = (y_plus[j] - y_minus[j]) / (2.0 * delta);
-           }
-        }
-        return result;
-    }
-#endif
 };
-
-#if 0
-double const delta = 0.1;
-
-class Function
-{
-public:
-    Function()
-    {
-        memset(args, '\0', sizeof(float) * dimension);
-    }
-
-    static const int dimension = 3;
-
-    float operator ()(float a, float b, float c)
-    {
-        return a + b*b + c*c*c;
-    }
-
-    float operator()()
-    {
-        return args[0] + args[1]*args[1] + args[2] * args[2] * args[2];
-    }
-
-    void setArg(int argNum, double arg)
-    {
-        args[argNum] = arg;
-    }
-
-    void modifyArg(int argNum, double delta)
-    {
-        args[argNum] += delta;
-    }
-
-private:
-    double args[dimension];
-
-};
-
-template <typename T>
-class Derivative
-{
-public:
-    float operator ()(int number, ...)
-    {
-        T f;
-        number--;
-        double val = 0.0;
-        va_list vl;
-        va_start(vl, number);
-        for (int i=0; i < Function::dimension; i++)
-        {
-            val = va_arg(vl, double);
-            f.setArg(i, val);
-        }
-        va_end(vl);
-        f.modifyArg(number, -delta);
-        double f1 = f();
-        f.modifyArg(number, 2 * delta);
-        double f2 = f();
-        return (f2 - f1) / (2 * delta);
-    }
-};
-#endif
 
 } //namespace corecvs
 

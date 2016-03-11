@@ -28,6 +28,8 @@ void corecvs::AbsoluteNonCentralRansacSolver::ParallelEstimator::operator() (con
 
 void corecvs::AbsoluteNonCentralRansacSolver::Estimator::operator() (const corecvs::BlockedRange<int> &r)
 {
+    if (solver->cloudMatches.size() < SAMPLESIZE)
+        return;
     for (int i = r.begin(); i < r.end(); ++i)
     {
         sampleModel();
@@ -135,6 +137,7 @@ void corecvs::AbsoluteNonCentralRansacSolver::Estimator::selectInliers()
 {
     std::vector<int> bestInliers;
     corecvs::Affine3DQ bestHypothesis;
+    double bestScore = 0.0;
 
     CameraFixture ps = *solver->ps;
 
@@ -144,6 +147,7 @@ void corecvs::AbsoluteNonCentralRansacSolver::Estimator::selectInliers()
         auto& cloudMatches = solver->cloudMatches;
         int M = (int)cloudMatches.size();
         std::vector<int> inliers;
+        double score = 0.0;
         if (solver->forcePosition)
             ps.location.shift = solver->forcedPosition;
         for (int i = 0; i < M; ++i)
@@ -155,19 +159,23 @@ void corecvs::AbsoluteNonCentralRansacSolver::Estimator::selectInliers()
 
             double diff = !(pt - ps.project(ptw, cam));
             if (diff < inlierThreshold && ps.isVisible(ptw, cam))
+            {
                 inliers.push_back(i);
+                score += diff * diff;
+            }
         }
-        if (bestInliers.size() < inliers.size())
+        if (bestInliers.size() < inliers.size() || (bestInliers.size() == inliers.size() && score < bestScore))
         {
+            bestScore = score;
             bestInliers = inliers;
             bestHypothesis = hypo;
         }
     }
     if (localMax < bestInliers.size())
     {
-        localMax = (int)bestInliers.size();
-        solver->accept(bestHypothesis, bestInliers);
-        localMax = (int)bestInliers.size();
+        localMax = bestInliers.size();
+        solver->accept(bestHypothesis, bestInliers, bestScore);
+        localMax = bestInliers.size();
     }
 }
 

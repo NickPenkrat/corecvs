@@ -1,4 +1,4 @@
-HEADERS += \ 
+HEADERS += \
     math/eulerAngles.h \
     math/matrix/matrix.h \
     math/matrix/matrix22.h \
@@ -20,7 +20,8 @@ HEADERS += \
     math/projectiveTransform.h \
     math/quaternion.h \
     math/affine.h \
-    math/levenmarq.h \    
+    math/levenmarq.h \
+    math/dogleg.h \
     math/gradientDescent.h \
     math/helperFunctions.h \
     math/generic/genericMath.h \
@@ -72,7 +73,9 @@ SOURCES += \
     math/matrix/matrixspeed.cpp
 
 
-contains(DEFINES, WITH_FFTW) {
+contains(DEFINES, "WITH_FFTW") {
+  message(Adding fftw wrapper)
+
 HEADERS += \
     math/fftw/fftwWrapper.h \
 

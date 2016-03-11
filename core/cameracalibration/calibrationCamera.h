@@ -169,8 +169,9 @@ struct PinholeCameraIntrinsics
     }
 
     /* Helper pseudonim getters */
-    double  h() const    { return size.y();      }
     double  w() const    { return size.x();      }
+    double  h() const    { return size.y();      }
+
     double cx() const    { return principal.x(); }
     double cy() const    { return principal.y(); }
     double fx() const    { return focal.x(); }
@@ -193,7 +194,6 @@ public:
     //Matrix33 rotMatrix;
 
 public:
-  /*  Photostation   *station;*/
 
     /* This should be moved to the derived class */
     /*RGB24Buffer    *image;*/
@@ -277,7 +277,7 @@ public:
      * Only checks for the fact that point belongs to viewport.
      * If you are projecting 3d point you should be sure that point is in front
      **/
-    bool isVisible(Vector2dd &point)
+    bool isVisible(const Vector2dd &point)
     {
         return point.isInRect(Vector2dd(0.0,0.0), intrinsics.size);
     }
@@ -290,7 +290,7 @@ public:
        return intrinsics.isVisible(extrinsics.project(pt));
     }
 
-    bool isInFront(Vector3dd &pt)
+    bool isInFront(const Vector3dd &pt)
     {
         return ((pt - extrinsics.position) & forwardDirection()) > 0;
     }

@@ -19,6 +19,7 @@
 using namespace std;
 using namespace corecvs;
 
+#ifdef WITH_SSE
 TEST(Readers, testRGBReaders)  // TODO: add some checks...
 {
     cout << "testRGBReaders()" << endl;
@@ -37,3 +38,4 @@ TEST(Readers, testRGBReaders)  // TODO: add some checks...
 
     cout << data[0] << " " << data[1] << endl;
 }
+#endif

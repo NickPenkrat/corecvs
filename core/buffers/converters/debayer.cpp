@@ -24,8 +24,9 @@ Debayer::Debayer(G12Buffer *bayer, int depth, MetaData *metadata, int bayerPos)
             mBayerPos = meta["b_pos"].empty() ? 0 : meta["b_pos"][0];
         }
     }
-    else
+    else {
         mBayerPos = bayerPos;
+    }
 }
 
 Debayer::~Debayer()
@@ -35,14 +36,13 @@ Debayer::~Debayer()
 
 void Debayer::nearest(RGB48Buffer *result)
 {
-    uint32_t r, g, b;
+    RGBColor48 pixel;
+
     // swapCols inverts least significant bit for cols when set so RG/GB becomes GR/BG, etc.
     // swapRows does the same for rows
     //
     int swapCols =  mBayerPos & 1;
     int swapRows = (mBayerPos & 2) >> 1;
-
-    RGBColor48 pixel;
 
     // for now, don't handle first and last rows/columns if swapRows/swapCols is set
     //
@@ -53,11 +53,11 @@ void Debayer::nearest(RGB48Buffer *result)
         //
         for (int j = swapCols; j < mBayer->w - swapCols; j += 2)
         {
-            r =  mBayer->element(i, j);
-            g = (mBayer->element(i, j + 1) + mBayer->element(i + 1, j)) / 2;
-            b =  mBayer->element(i + 1, j + 1);
+            uint32_t r =  mBayer->element(i, j);
+            uint32_t g = (mBayer->element(i, j + 1) + mBayer->element(i + 1, j)) / 2;
+            uint32_t b =  mBayer->element(i + 1, j + 1);
 
-            pixel[2] = mCurve[outR(r)];
+            pixel[2] = mCurve[outR(r)];     // in the b,g,r order
             pixel[1] = mCurve[outG(g)];
             pixel[0] = mCurve[outB(b)];
 
@@ -82,7 +82,8 @@ void Debayer::linear(RGB48Buffer *result)
     for (; i < mBayer->h - 2 + swapRows; i += 2)
     {
         // TODO: SSE-ify this part!
-#ifdef WITH_SSE
+// XXX: What's happening here? Why would you ever wrap non-sse related code into WITH_SSE?!
+//#ifdef WITH_SSE
         for (int j = 2 - swapCols; j < mBayer->w - 2 + swapCols; j += 2)
         {
             // R pixel
@@ -116,7 +117,7 @@ void Debayer::linear(RGB48Buffer *result)
 
             result->element(i + 1, j + 1) = { outR(r), outG(g), outB(b) };
         }
-#endif
+//#endif
     }
 }
 
@@ -413,9 +414,9 @@ void Debayer::borderInterpolate(int radius, RGB48Buffer *result)
 {
     // process border using Nearest Neighbor interpolation
     // for green color, linear interpolation was used
-    uint16_t r = 0;
-    uint16_t b = 0;
-    uint16_t g = 0;
+    uint32_t r = 0;
+    uint32_t b = 0;
+    uint32_t g = 0;
 
     // jPartial means interpolate cols [0 through R) and [W - R, W)
     int jPartial[4] = { 0, radius, mBayer->w - radius, mBayer->w };
@@ -536,35 +537,49 @@ void Debayer::borderInterpolate(int radius, RGB48Buffer *result)
 
 }
 
-void Debayer::getYChannel(G12Buffer * output)
-{
-    int F[7][7] = {
-        { 0,  0,  1,   2,   1,   0,  0 },
-        { 0, -1, -14, -25, -14, -1,  0 },
-        { 1, -14, 26,  84,  26, -14, 1 },
-        { 2, -25, 84,  224, 84, -25, 2 },
-        { 1, -14, 26,  84,  26, -14, 1 },
-        { 0, -1, -14, -25, -14, -1,  0 },
-        { 0,  0,  1,   2,   1,   0,  0 },
+double F(int i, int j) {
+    const double b = 4. / 9;
+    const double a = 1. / 4;
+    double f[4][4] = {
+        {  224 + b,  84,     -25 + b, 2     },
+        {  84,       26 + a, -14,     1 + a },
+        { -25 + b,  -14,     -1 + b,  0     },
+        {  2,        1 + a,   0,      a     },
     };
-    int64_t sum;
-    for (int i = 0; i < mBayer->h; i++)
+
+    if (i < 3)
+        i = 3 - i;
+    else
+        i = i - 3;
+
+    if (j < 3)
+        j = 3 - j;
+    else
+        j = j - 3;
+    
+    return f[i][j];
+}
+
+void Debayer::getYChannel(AbstractBuffer<double, int> * output)
+{
+    const int sz = 3;
+    const double divisor = 464.0;
+
+    double sum;
+    for (int i = 3; i < mBayer->h - 3; i++)
     {
-        for (int j = 0; j < mBayer->w; j++)
+        for (int j = 3; j < mBayer->w - 3; j++)
         {
-            // TODO: replace this with borderInterpolate()-like loop to avoid evaluating 5 conditions at each pixel
-            int sz = (i < 3 || j < 3 || i >= mBayer->h - 3 || j >= mBayer->w - 3) ? 0 : 3;
-            int divisor = sz ? 464 : 224;
             sum = 0;
             for (int k = -sz; k <= sz; k++)
             {
                 for (int l = -sz; l <= sz; l++)
                 {
-                    sum += mBayer->element(i + k, j + l) * F[k + 3][l + 3];
+                    sum += mBayer->element(i + k, j + l) * F(k + 3, l + 3);
                 }
             }
 
-            output->element(i, j) = clip(sum / divisor);
+            output->element(i, j) = sum / divisor;
         }
     }
 }
@@ -572,7 +587,8 @@ void Debayer::getYChannel(G12Buffer * output)
 void Debayer::fourier(RGB48Buffer *result)
 {
 #ifndef WITH_FFTW
-    SYNC_PRINT(("FFT-based demosaicing is not supported by this version of debayer, using AHD instead."));
+    CORE_UNUSED(result);
+    SYNC_PRINT(("FFT-based demosaicing is not supported by this version of debayer, consider using AHD instead."));
 #else
     // this method is for research and test purposes only
     uint h = mBayer->h;
@@ -816,11 +832,9 @@ void Debayer::gammaCurve(uint16_t *curve, int imax)
 
     if (mMetadata == nullptr)
         return;
-    // alias
-    MetaData &metadata = *mMetadata;
 
     // if no gamma coefficients are present (or valid), return no transform
-    MetaValue& gammData = metadata["gamm"];
+    MetaValue& gammData = (*mMetadata)["gamm"];
     if (gammData.empty() ||
         ((gammData.size() == 5) &&
             !(gammData[0] == 0.0 ||
@@ -844,16 +858,19 @@ void Debayer::gammaCurve(uint16_t *curve, int imax)
         for (i = 0; i < 48; i++)
         {
             g[2] = (bnd[0] + bnd[1]) / 2;
-            if (g[0]) bnd[(pow(g[2] / g[1], -g[0]) - 1) / g[0] - 1 / g[2] > -1] = g[2];
-            else	bnd[g[2] / exp(1 - 1 / g[2]) < g[1]] = g[2];
+            if (g[0])
+                bnd[(pow(g[2] / g[1], -g[0]) - 1) / g[0] - 1 / g[2] > -1] = g[2];
+            else
+                bnd[g[2] / exp(1 - 1 / g[2]) < g[1]] = g[2];
         }
         g[3] = g[2] / g[1];
-        if (g[0]) g[4] = g[2] * (1 / g[0] - 1);
+        if (g[0])
+            g[4] = g[2] * (1 / g[0] - 1);
     }
-    if (g[0]) g[5] = 1 / (g[1] * (g[3] * g[3]) / 2 - g[4] * (1 - g[3]) +
-        (1 - pow(g[3], 1 + g[0]))*(1 + g[4]) / (1 + g[0])) - 1;
-    else      g[5] = 1 / (g[1] * (g[3] * g[3]) / 2 + 1
-        - g[2] - g[3] - g[2] * g[3] * (log(g[3]) - 1)) - 1;
+    if (g[0])
+        g[5] = 1 / (g[1] * (g[3] * g[3]) / 2 - g[4] * (1 - g[3]) + (1 - pow(g[3], 1 + g[0]))*(1 + g[4]) / (1 + g[0])) - 1;
+    else
+        g[5] = 1 / (g[1] * (g[3] * g[3]) / 2 + 1 - g[2] - g[3] - g[2] * g[3] * (log(g[3]) - 1)) - 1;
 
     for (i = 0; i < 0x10000; i++)
     {
@@ -863,7 +880,7 @@ void Debayer::gammaCurve(uint16_t *curve, int imax)
     }
 }
 
-int Debayer::toRGB48(Method method, RGB48Buffer *output)
+int Debayer::toRGB48(DebayerMethod::DebayerMethod method, RGB48Buffer *output)
 {
     preprocess();
 
@@ -872,21 +889,12 @@ int Debayer::toRGB48(Method method, RGB48Buffer *output)
 
     switch (method)
     {
-    case Nearest:
-        nearest(output);
-        break;
-    case Bilinear:
-        linear(output);
-        break;
-    case Fourier:
-        fourier(output);
-        break;
-    default:
-    case AHD:
-        ahd(output);
-        break;
+        case DebayerMethod::NEAREST:   nearest(output); break;
+        case DebayerMethod::BILINEAR:  linear(output);  break;
+        case DebayerMethod::FOURIER:   fourier(output); break;
+        case DebayerMethod::AHD:
+        default:        ahd(output);
     }
-
     return 0;
 }
 
@@ -895,26 +903,26 @@ void Debayer::preprocess(bool overwrite)
     // recalculate white balance coefficients
     scaleCoeffs();
 
-    int t_white = 0;
+    int white = 0;
 
     if (mMetadata != nullptr && !mMetadata->empty() && (overwrite || mCurve == nullptr))
     {
         // alias for ease of use
-        MetaData &metadata = *this->mMetadata;
-        int m_bits = this->mMetadata != nullptr &&  metadata["bits"][0] ? metadata["bits"][0] : mDepth;
-        int shift = m_bits - mDepth;
+        MetaData &metadata = *mMetadata;
+        int bits  = metadata["bits"][0] ? metadata["bits"][0] : mDepth;
+        int shift = bits - mDepth;
 
-        mBlack       = !metadata["black"  ].empty() && metadata["black"  ][0] ?      metadata["black"  ][0] : 0;
-        int m_white  = !metadata["white"  ].empty() && metadata["white"  ][0] ?      metadata["white"  ][0] : (1 << mDepth) - 1;
-        int m_twhite = !metadata["t_white"].empty() && metadata["t_white"][0] ? (int)metadata["t_white"][0] : m_white;
-        t_white = (shift < 0 ? m_twhite << -shift : m_twhite >> shift);
+        mBlack = !metadata["black"  ].empty() && metadata["black"  ][0] ?      metadata["black"  ][0] : 0;
+        white  = !metadata["white"  ].empty() && metadata["white"  ][0] ?      metadata["white"  ][0] : (1 << mDepth) - 1;
+        white  = !metadata["t_white"].empty() && metadata["t_white"][0] ? (int)metadata["t_white"][0] : white;
+        white  = (shift < 0 ? white << -shift : white >> shift);
     }
 
     // (re)calculate gamma correction
     if (overwrite || mCurve == nullptr) {
         deletearr_safe(mCurve);
         mCurve = new uint16_t[0x10000];
-        gammaCurve(mCurve, t_white);
+        gammaCurve(mCurve, white);
     }
 }
 
@@ -966,7 +974,7 @@ inline int32_t Debayer::weightedBayerAvg(const vector<Vector2d32>& coords, const
     return (div == 0) ? 0 : result / div;
 }
 
-inline uint8_t Debayer::colorFromBayerPos(uint i, uint j, bool rggb)
+uint8_t Debayer::colorFromBayerPos(uint i, uint j, bool rggb)
 {
     if (rggb)   // r, g1, g2, b
         return   ((j ^ (mBayerPos & 1)) & 1) | (((i ^ ((mBayerPos & 2) >> 1)) & 1) << 1);

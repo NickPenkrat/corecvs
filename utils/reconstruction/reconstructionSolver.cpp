@@ -418,6 +418,7 @@ void ReconstructionJob::solveWithBadPOI(bool filter, bool forceGps)
                     }
                 }
             }
+            CORE_ASSERT_TRUE(pspa.size() >= 3, "Unfortunately you've supplied less than 3 valid points");
 
             double bhScore = 1e100;
             corecvs::Affine3DQ bh;
