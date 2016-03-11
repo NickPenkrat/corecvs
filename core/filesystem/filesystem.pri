@@ -4,3 +4,6 @@ HEADERS += \
 SOURCES += \
     filesystem/folderScanner.cpp
 
+!win32 {
+    LIBS += -lstdc++fs
+}
