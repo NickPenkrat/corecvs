@@ -540,8 +540,14 @@ public:
     /*virtual*/ ~Reflection()   // it may be non virtual
     {
 //#ifndef REFLECTION_STATIC_ALLOCATION
-        FOREACH (const BaseField * el, fields) {
-            delete el;
+        FOREACH(const BaseField * el, fields) {
+            // crash silly workaround // TODO: review this and fix the problem!
+            if (el->id < 0) {
+                SYNC_PRINT(("~Reflection: bad id in the reflection object: id:%d size:%d\n", el->id, (int)fields.size()));
+            }
+            else {
+                delete el;
+            }
         }
         fields.clear();
         FOREACH (const EmbedSubclass * el, embeds) {

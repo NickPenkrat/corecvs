@@ -194,7 +194,6 @@ public:
     //Matrix33 rotMatrix;
 
 public:
-  /*  Photostation   *station;*/
 
     /* This should be moved to the derived class */
     /*RGB24Buffer    *image;*/
