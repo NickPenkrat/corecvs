@@ -17,6 +17,7 @@ CORE_SUBMODULES= \
     buffers       \
     cammodel      \
     fileformats   \
+    filesystem    \
     filters       \
     function      \
     geometry      \
