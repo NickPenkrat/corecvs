@@ -752,18 +752,18 @@ Matrix Matrix::inv() const
 #endif
 }
 
-corecvs::Vector corecvs::Matrix::linSolve(const corecvs::Vector &B, bool symmetric, bool posDef) const
+bool corecvs::Matrix::linSolve(const corecvs::Vector &B, corecvs::Vector &res, bool symmetric, bool posDef) const
 {
-    return LinSolve(*this, B, symmetric, posDef);
+    return LinSolve(*this, B, res, symmetric, posDef);
 }
 
-corecvs::Vector corecvs::Matrix::LinSolve(const corecvs::Matrix &A, const corecvs::Vector &B, bool symmetric, bool posDef)
+bool corecvs::Matrix::LinSolve(const corecvs::Matrix &A, const corecvs::Vector &B, corecvs::Vector &res, bool symmetric, bool posDef)
 {
     CORE_ASSERT_TRUE_S(A.h == B.size());
     CORE_ASSERT_TRUE_S(A.h == A.w);
 #ifdef WITH_BLAS
     corecvs::Matrix copy(A);
-    corecvs::Vector res(B);
+    res = B;
     if (!posDef)
     {
 #ifndef WIN32
@@ -788,9 +788,10 @@ corecvs::Vector corecvs::Matrix::LinSolve(const corecvs::Matrix &A, const corecv
         LAPACKE_dpotrf(LAPACK_ROW_MAJOR, 'U', copy.w, &copy.a(0, 0), copy.stride);
         LAPACKE_dpotrs(LAPACK_ROW_MAJOR, 'U', copy.w, 1, &copy.a(0, 0), copy.stride, &res[0], 1);
     }
-    return res;
+    return true;
 #else
-    return A.inv() * B;
+    res = A.inv() * B;
+    return true;
 #endif
 }
 

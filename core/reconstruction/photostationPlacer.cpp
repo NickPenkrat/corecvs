@@ -408,7 +408,8 @@ corecvs::Quaternion corecvs::PhotostationPlacer::TransformFrom2RayCorrespondence
         B[i + 3] = o2[i];
         B[i + 6] = o3[i];
     }
-    auto Rv = corecvs::Matrix::LinSolve(A, B);
+	corecvs::Vector Rv;
+    corecvs::Matrix::LinSolve(A, B, Rv);
     int id = 0;
     for (int i = 0; i < 3; ++i)
     {

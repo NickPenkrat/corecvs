@@ -945,7 +945,8 @@ TEST(SparseMatrix, LinSolve)
 #if 0
     auto res = Matrix::linSolve((Matrix)sm, vm);
 #else
-    auto res = sm.linSolve(vm);
+    corecvs::Vector res;
+    CORE_ASSERT_TRUE_S(sm.linSolve(vm, res));
 #endif
     ASSERT_NEAR(!(res - v), 0.0, 1e-6);
 }
@@ -994,7 +995,9 @@ TEST(MatrixTest, LinSolve)
     auto a = randomMatrix(100, 100);
     auto v = randomVector(100);
     auto vm = a * v;
-    ASSERT_NEAR(!(v - a.linSolve(vm)), 0.0, 1e-6);
+    corecvs::Vector res;
+    CORE_ASSERT_TRUE_S(a.linSolve(vm, res));
+    ASSERT_NEAR(!(v - res), 0.0, 1e-6);
 }
 
 
@@ -1003,7 +1006,9 @@ TEST(MatrixTest, LinSolveSymmetric)
     auto a = randomMatrix(10000, 1000).ata();
     auto v = randomVector(1000);
     auto vm = a * v;
-    ASSERT_NEAR(!(v - a.linSolve(vm, true, true)), 0.0, 1e-6);
+    corecvs::Vector res;
+    CORE_ASSERT_TRUE_S(a.linSolve(vm, res, true, true));
+    ASSERT_NEAR(!(v - res), 0.0, 1e-6);
 }
 
 TEST(SparseMatrix, LinSolveSymmetric)
@@ -1016,7 +1021,9 @@ TEST(SparseMatrix, LinSolveSymmetric)
     auto v = randomVector(4);
     auto a = SparseMatrix(M);
     auto vm = a * v;
-    ASSERT_NEAR(!(v - a.linSolve(vm, true)), 0.0, 1e-6);
+    corecvs::Vector res;
+    CORE_ASSERT_TRUE_S(a.linSolve(vm, res, true));
+    ASSERT_NEAR(!(v - res), 0.0, 1e-6);
 }
 
 TEST(SparseMatrix, LinSolveSymmetricNonPos)
@@ -1033,7 +1040,9 @@ TEST(SparseMatrix, LinSolveSymmetricNonPos)
     auto vm = a * v;
     std::cout << a << std::endl;
     std::cout << vm << std::endl;
-    ASSERT_NEAR(!(v - a.linSolve(vm,  true, false)), 0.0, 1e-6);
+    corecvs::Vector res;
+    CORE_ASSERT_TRUE_S(a.linSolve(vm, res, true));
+    ASSERT_NEAR(!(v - res), 0.0, 1e-6);
 
 }
 
