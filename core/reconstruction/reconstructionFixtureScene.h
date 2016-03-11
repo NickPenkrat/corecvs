@@ -6,8 +6,8 @@
 #include "rgbColor.h"
 
 
-namespace corecvs
-{
+namespace corecvs {
+
 struct FeatureDetectionParams
 {
     std::string detector   = "SURF";
@@ -117,7 +117,8 @@ public:
         return os;
     }
 };
-}
+
+} // namespace corecvs
 
 namespace std
 {
@@ -133,5 +134,4 @@ struct hash<PhotostationInitializationType>
 
 }
 
-#endif
-
+#endif // RECONSTRUCTIONFIXTURESCENE
