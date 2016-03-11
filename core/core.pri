@@ -104,6 +104,9 @@ contains(TARGET, cvs_core): !contains(TARGET, cvs_core_restricted) {
 }
 
 # The filesystem module needs this
-!win32 {
+with_unorthodox {
+!win32  {
     LIBS += -lstdc++fs
+}
+    DEFINES+=CORE_UNSAFE_DEPS
 }
