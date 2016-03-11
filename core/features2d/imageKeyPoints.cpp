@@ -129,4 +129,3 @@ void ImageDescriptors::save(const std::string &filename) const
 
 	save(os);
 }
-
