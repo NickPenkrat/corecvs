@@ -99,7 +99,7 @@ public:
                 {
                     if (!gnReady)
                     {
-                        hgn = JTJ.linSolve(g, true);
+                        JTJ.linSolve(g, hgn, true);
                         gnReady = true;
                     }
                     if (!hgn < trustRegion)
