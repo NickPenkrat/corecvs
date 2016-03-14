@@ -2,6 +2,8 @@
 #define STATUS_TRACKER
 
 #include <string>
+#include <iostream>
+
 #ifdef WITH_TBB
 #include <tbb/tbb.h>
 #endif
