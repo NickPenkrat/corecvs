@@ -49,7 +49,7 @@ void corecvs::StatusTracker::reset(const std::string &action, size_t totalAction
         currentStatus.currentAction = action;
         currentStatus.completedActions = currentStatus.startedActions = 0;
         currentStatus.totalActions = totalActions;
-        std::cout << "Action: " << currentStatus.action
+        std::cout << "Action: " << currentStatus.currentAction
                   << " started: " << currentStatus.startedActions
                   << ", completed " << currentStatus.completedActions
                   << ", total " << currentStatus.totalActions << std::endl;
