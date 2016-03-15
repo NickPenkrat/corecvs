@@ -8,7 +8,8 @@ HEADERS += \
 	reconstruction/absoluteNonCentralRansacSolver.h \
 	reconstruction/reconstructionFixtureScene.h \
 	reconstruction/essentialFeatureFilter.h \
-	reconstruction/sceneGenerator.h
+	reconstruction/sceneGenerator.h \
+	reconstruction/reconstructionInitializer.h
 
 
 SOURCES += \
@@ -26,8 +27,5 @@ SOURCES += \
     reconstruction/absoluteNonCentralRansacSolver.cpp \
     reconstruction/reconstructionFixtureScene.cpp \
     reconstruction/essentialFeatureFilter.cpp \
-    reconstruction/sceneGenerator.cpp
-
-
-
-CONFIG += c++11
+    reconstruction/sceneGenerator.cpp \
+    reconstruction/reconstructionInitializer.cpp
