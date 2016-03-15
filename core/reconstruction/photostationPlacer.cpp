@@ -1004,27 +1004,6 @@ void corecvs::PhotostationPlacer::fit(const PhotostationPlacerOptimizationType &
     std::cout << "Track sizes: " << std::endl;
     for (auto p: cntr)
         std::cout << p.first << "\t" << p.second << std::endl;
-#if 0
-    if (cnt == 4)
-    {
-        std::vector<int> idxs(out.size());
-        for (int i = 0; i < out.size(); ++i)
-            idxs[i] = i;
-        orient(&res[0], &out[0], idxs);
-        std::ofstream of1, of2;
-        of1.open("errors.proj.csv", std::ios_base::out);
-        for (auto ptr: scene->trackedFeatures)
-        {
-            for (auto obs: ptr->observations__)
-            {
-                auto pd = obs.first.u->angleError(ptr->reprojectedPosition, obs.second.observation, obs.first.v);
-                auto pe = obs.first.u->reprojectionError(ptr->reprojectedPosition, obs.second.observation, obs.first.v);
-                of1 << pd << "," << pe[0] << "," << pe[1] << std::endl;
-            }
-        }
-        exit(0);
-    }
-#endif
     scene->validateAll();
 }
 
@@ -1710,9 +1689,6 @@ bool corecvs::PhotostationPlacer::initSTATIC()
         }
         AbsoluteNonCentralRansacSolver solver(psApp, foo, params);
         solver.cloudMatches = foo;
-//        for (int ii = 0; ii < foo.size(); ++ii)
-//            solver.inliers.push_back(ii);
-//        solver.runInliersPNP();
         solver.run();
         solver.runInliersRE();
         auto hypo = solver.getBestHypothesis();
@@ -1791,98 +1767,6 @@ corecvs::PhotostationPlacer::getPhotostationMatches(CameraFixture *psA, CameraFi
     return res;
 }
 
-#if 0
-std::vector<std::vector<PointObservation__>> corecvs::PhotostationPlacer::verify(const std::vector<PointObservation__> &pois)
-{
-    BufferReader* reader = BufferReaderProvider::getInstance().getBufferReader(images[0][0]);
-                        corecvs::RGBColor
-                            poi(0x00ff0000),
-                            ppo(0x0000ff00),
-                            ppt(0x000000ff);
-                        std::cout << "Marking POI projection on cameras as " << poi << std::endl << "Marking POI observed projection as " << ppo << std::endl << "Marking POI triangulated projection as " << ppt << std::endl;
-                        std::cout << "R=" << (int)poi.r() << " G=" << (int)poi.g() << " B= " << (int)poi.b() << std::endl;
-                        std::cout << "R=" << (int)ppo.r() << " G=" << (int)ppo.g() << " B= " << (int)ppo.b() << std::endl;
-                        std::cout << "R=" << (int)ppt.r() << " G=" << (int)ppt.g() << " B= " << (int)ppt.b() << std::endl;
-    for (int i = 0; i < (int)calibratedPhotostations.size(); ++i)
-    {
-        for (int j = 0; j < (int)images[i].size(); ++j)
-        {
-            corecvs::RGB24Buffer buffer = reader->readRgb(images[i][j]);
-            for (auto& o: pois)
-            {
-                corecvs::MulticameraTriangulator mct;
-                for (auto& p: o.projections)
-                {
-                    mct.addCamera(calibratedPhotostations[p.photostationId].getMMatrix(p.cameraId), p.projection);
-                }
-                auto pptt = mct.triangulateLM(mct.triangulate());
-                for (auto& p: o.projections)
-                {
-                    if (p.photostationId == i && p.cameraId == j)
-                    {
-                        auto proj = p.projection;
-                        auto wpt  = o.worldPoint;
-                        auto proj2= calibratedPhotostations[i].project(wpt, p.cameraId);
-                        auto projt= calibratedPhotostations[i].project(pptt,p.cameraId);
-                        for (int xx = -15; xx <= 15; ++xx)
-                            for (int yy = -15; yy <= 15; ++yy)
-                            {
-                                if (xx != 0 && yy != 0)
-                                    continue;
-                                int x, y;
-                                x = proj[0] - xx; y = proj[1] - yy;
-                                if (x >= 0 && y >= 0 && x < buffer.w && y < buffer.h)
-                                    buffer.element(y, x) = poi;
-                                x = proj2[0] - xx; y = proj2[1] - yy;
-                                if (x >= 0 && y >= 0 && x < buffer.w && y < buffer.h)
-                                    buffer.element(y, x) = ppo;
-                                x = projt[0] - xx; y = projt[1] - yy;
-                                if (x >= 0 && y >= 0 && x < buffer.w && y < buffer.h)
-                                    buffer.element(y, x) = ppt;
-
-                            }
-                        corecvs::AbstractPainter<corecvs::RGB24Buffer> painter(&buffer);
-                        painter.drawFormat(proj[0] + 10, proj[1] + 10, poi, 6, "%s (marked poi)", o.label.c_str());
-                        painter.drawFormat(proj2[0] + 10, proj2[1] + 10, ppo, 6, "%s (wp-projection)", o.label.c_str());
-                        painter.drawFormat(projt[0] + 10, projt[1] + 10, ppt, 6, "%s (tri-projection)", o.label.c_str());
-                    }
-                }
-            }
-            std::string filename = images[i][j];
-            filename.resize(filename.size() - 3);
-            filename = filename + "_pois.jpg";
-            reader->writeRgb(buffer, filename);
-        }
-    }
-    std::vector<std::vector<PointObservation__>> res(2);
-    for (auto& obs: pois)
-    {
-        auto wp = obs.worldPoint;
-        auto obs1 = obs;
-        auto obs2 = obs;
-        corecvs::MulticameraTriangulator mct2;
-        for (auto& p: obs1.projections)
-        {
-            p.projection = calibratedPhotostations[p.photostationId].project(wp, p.cameraId);
-            mct2.addCamera(calibratedPhotostations[p.photostationId].getMMatrix(p.cameraId), p.projection);
-        }
-        obs1.worldPoint = mct2.triangulateLM(mct2.triangulate());
-        corecvs::MulticameraTriangulator mct;
-        for (auto& p: obs2.projections)
-        {
-            mct.addCamera(calibratedPhotostations[p.photostationId].getMMatrix(p.cameraId), p.projection);
-        }
-        obs2.worldPoint = mct.triangulateLM(mct.triangulate());
-        for (auto& p: obs2.projections)
-        {
-            p.projection = calibratedPhotostations[p.photostationId].project(obs2.worldPoint, p.cameraId);
-        }
-        res[0].push_back(obs1);
-        res[1].push_back(obs2);
-    }
-    return res;
-}
-#endif
 void corecvs::PhotostationPlacer::detectAll()
 {
     scene->validateAll();
@@ -1903,32 +1787,6 @@ void corecvs::PhotostationPlacer::detectAll()
     }
     scene->validateAll();
 }
-
-#if 0
-std::vector<PointObservation__> corecvs::PhotostationPlacer::projectToAll(const std::vector<PointObservation__> &pois)
-{
-    auto ret = pois;
-    for (auto& o: ret)
-    {
-        for (int ps = 0; ps < (int)calibratedPhotostations.size(); ++ps)
-        {
-            for (int cam = 0; cam < (int)calibratedPhotostations[ps].cameras.size(); ++cam)
-            {
-                if (calibratedPhotostations[ps].isVisible(o.worldPoint, cam))
-                {
-                    PointProjection proj;
-                    proj.photostationId = ps;
-                    proj.cameraId = cam;
-                    proj.projection = calibratedPhotostations[ps].project(o.worldPoint, cam);
-                    o.projections.push_back(proj);
-                }
-            }
-        }
-    }
-    return ret;
-}
-
-#endif
 
 void corecvs::PhotostationPlacer::fullRun()
 {
