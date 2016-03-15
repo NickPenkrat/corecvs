@@ -752,18 +752,19 @@ Matrix Matrix::inv() const
 #endif
 }
 
-corecvs::Vector corecvs::Matrix::linSolve(const corecvs::Vector &B, bool symmetric, bool posDef) const
+bool corecvs::Matrix::linSolve(const corecvs::Vector &B, corecvs::Vector &res, bool symmetric, bool posDef) const
 {
-    return LinSolve(*this, B, symmetric, posDef);
+    return LinSolve(*this, B, res, symmetric, posDef);
 }
 
-corecvs::Vector corecvs::Matrix::LinSolve(const corecvs::Matrix &A, const corecvs::Vector &B, bool symmetric, bool posDef)
+bool corecvs::Matrix::LinSolve(const corecvs::Matrix &A, const corecvs::Vector &B, corecvs::Vector &res, bool symmetric, bool posDef)
 {
     CORE_ASSERT_TRUE_S(A.h == B.size());
     CORE_ASSERT_TRUE_S(A.h == A.w);
 #ifdef WITH_BLAS
     corecvs::Matrix copy(A);
-    corecvs::Vector res(B);
+    res = B;
+    decltype(LAPACKE_dgetrf(0, 0, 0, 0, 0, 0)) info;
     if (!posDef)
     {
 #ifndef WIN32
@@ -774,23 +775,24 @@ corecvs::Vector corecvs::Matrix::LinSolve(const corecvs::Matrix &A, const corecv
 #endif
         if (!symmetric)
         {
-            LAPACKE_dgetrf(LAPACK_ROW_MAJOR, copy.h, copy.w, &copy.a(0, 0), copy.stride, pivot);
-            LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', res.size(), 1, &copy.a(0, 0), copy.stride, pivot, &res[0], 1);
+            info = LAPACKE_dgetrf(LAPACK_ROW_MAJOR, copy.h, copy.w, &copy.a(0, 0), copy.stride, pivot);
+            if (!info) LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', res.size(), 1, &copy.a(0, 0), copy.stride, pivot, &res[0], 1);
         }
         else
         {
-            LAPACKE_dsytrf(LAPACK_ROW_MAJOR, 'U', copy.h, &copy.a(0, 0), copy.stride, pivot);
-            LAPACKE_dsytrs(LAPACK_ROW_MAJOR, 'U', res.size(), 1, &copy.a(0, 0), copy.stride, pivot, &res[0], 1);
+            info = LAPACKE_dsytrf(LAPACK_ROW_MAJOR, 'U', copy.h, &copy.a(0, 0), copy.stride, pivot);
+            if (!info) LAPACKE_dsytrs(LAPACK_ROW_MAJOR, 'U', res.size(), 1, &copy.a(0, 0), copy.stride, pivot, &res[0], 1);
         }
     }
     else
     {
-        LAPACKE_dpotrf(LAPACK_ROW_MAJOR, 'U', copy.w, &copy.a(0, 0), copy.stride);
-        LAPACKE_dpotrs(LAPACK_ROW_MAJOR, 'U', copy.w, 1, &copy.a(0, 0), copy.stride, &res[0], 1);
+        info = LAPACKE_dpotrf(LAPACK_ROW_MAJOR, 'U', copy.w, &copy.a(0, 0), copy.stride);
+        if (!info) LAPACKE_dpotrs(LAPACK_ROW_MAJOR, 'U', copy.w, 1, &copy.a(0, 0), copy.stride, &res[0], 1);
     }
-    return res;
+    return info == 0;
 #else
-    return A.inv() * B;
+    res = A.inv() * B;
+    return true;
 #endif
 }
 

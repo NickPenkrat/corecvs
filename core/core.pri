@@ -45,7 +45,7 @@ for (MODULE, CORE_SUBMODULES) {
     CORE_INCLUDEPATH += $${COREDIR}/$${MODULE}
 }
 
-# Some modules want to export more then one directory with inculdes. Add them here
+# Some modules want to export more then one directory with includes. Add them here
 CORE_INCLUDEPATH += \
     $$COREDIR/buffers/fixeddisp \
     $$COREDIR/buffers/flow \
@@ -65,7 +65,7 @@ CORE_INCLUDEPATH += \
     $$COREDIR/xml \
     $$COREDIR/xml/generated \
     $$COREDIR/tinyxml \
-    $$COREDIR/cblasLapackeWrapper \
+    $$COREDIR/../wrappers/cblasLapack \		# some of core's math algorithms use it
 
 
 INCLUDEPATH += $$CORE_INCLUDEPATH

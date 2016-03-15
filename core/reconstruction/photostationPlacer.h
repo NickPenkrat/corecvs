@@ -57,6 +57,8 @@ enum class PhotostationPlacerOptimizationErrorType
  * 1 x M'       Angles between rays                    REPROJECTION
  * 3 x M'       Ray cross products                     CROSS_PRODUCT
  * 2 x M'       Ray differences                        RAY_DIFF
+ * If TUNE_GPS is present then position differences are also being calculated and stored as
+ * 3 x N		Normalised (using covariance 'square root') difference
  */
 
 template<>
@@ -65,23 +67,6 @@ struct is_bitmask<PhotostationPlacerOptimizationType> : std::true_type {};
 
 namespace corecvs
 {
-
-struct PhotostationPlacerFeatureParams
-{
-    std::string detector  = "ORB";
-    std::string descriptor= "ORB";
-    std::string matcher   = "BF";
-    double b2bThreshold = 0.9;
-
-    template<typename V>
-    void accept(V &v)
-    {
-        v.visit(detector,  std::string("ORB"), "Feature detector");
-        v.visit(descriptor, std::string("ORB"), "Feature descriptor");
-        v.visit(matcher,   std::string("BF"),  "Feature matcher");
-        v.visit(b2bThreshold, 0.9, "Best-2nd best ratio threshold");
-    }
-};
 
 struct PhotostationPlacerEssentialFilterParams
 {
@@ -144,7 +129,7 @@ struct PhotostationPlacerParams
     }
 };
 
-class PhotostationPlacer : public PhotostationPlacerFeatureParams, public PhotostationPlacerEssentialFilterParams, public PhotostationPlacerFeatureSelectionParams, public PhotostationPlacerParams
+class PhotostationPlacer :	public PhotostationPlacerEssentialFilterParams, public PhotostationPlacerFeatureSelectionParams, public PhotostationPlacerParams
 {
 public:
     ReconstructionFixtureScene* scene;

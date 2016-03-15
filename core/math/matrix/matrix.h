@@ -175,8 +175,8 @@ public:
 
     static bool matrixSolveGaussian(Matrix *A, Matrix *B);
 
-    corecvs::Vector linSolve(const corecvs::Vector &B, bool symmetric = false, bool posDef = false) const;
-    static corecvs::Vector LinSolve(const corecvs::Matrix &A, const corecvs::Vector &B, bool symmetric = false, bool posDef = false);
+    bool        linSolve(const corecvs::Vector &B, corecvs::Vector &res, bool symmetric = false, bool posDef = false) const;
+    static bool LinSolve(const corecvs::Matrix &A, const corecvs::Vector &B, corecvs::Vector &res, bool symmetric = false, bool posDef = false);
 
     inline Matrix& operator +=(const Matrix& V)
     {
