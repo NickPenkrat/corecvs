@@ -37,7 +37,7 @@ void corecvs::StatusTracker::incrementCompleted()
     writeLock();
         currentStatus.completedActions++;
         CORE_ASSERT_TRUE_S(currentStatus.completedActions <= currentStatus.totalActions);
-        CORE_ASSERT_TRUE_S(currentStatus.completedActions >= currentStatus.startedActions);
+        CORE_ASSERT_TRUE_S(currentStatus.completedActions <= currentStatus.startedActions);
     unlock();
 }
 
