@@ -12,10 +12,8 @@
 #include "essentialFeatureFilter.h"
 #include "relativeNonCentralRansacSolver.h"
 #include "absoluteNonCentralRansacSolver.h"
-#include "bufferReaderProvider.h"
 #include "multicameraTriangulator.h"
 #include "pnpSolver.h"
-#include "abstractPainter.h"
 #include "calibrationHelpers.h"
 #include "calibrationLocation.h"
 #include "log.h"
@@ -107,51 +105,6 @@ int corecvs::PhotostationPlacer::getReprojectionCnt()
 
     return tot;
 }
-
-struct ParallelTrackPainter
-{
-    ParallelTrackPainter(
-            std::vector<std::pair<WPP, std::string>> &images,
-            ReconstructionFixtureScene* scene,
-            std::unordered_map<SceneFeaturePoint*, RGBColor> colorizer) :
-            colorizer(&colorizer)
-          , images(images)
-          , scene(scene)
-    {
-    }
-
-    void operator() (const corecvs::BlockedRange<int> &r) const
-    {
-        for (int i = r.begin(); i < r.end(); ++i)
-        {
-            auto& p = images[i];
-            auto key = p.first;
-            auto name= p.second;
-            std::stringstream ss;
-            ss << name << "_tracks.png";
-
-            auto nameNew = ss.str();
-            corecvs::RGB24Buffer src = BufferReaderProvider::readRgb(name);
-
-            AbstractPainter<RGB24Buffer> painter(&src);
-            for (auto& tf: scene->trackedFeatures)
-            {
-                for (auto& obs: tf->observations__)
-                    if (obs.first == key)
-                    {
-                        painter.drawFormat(obs.second.observation[0] + 5, obs.second.observation[1], colorizer[0][tf], 1,  tf->name.c_str());
-                        painter.drawCircle(obs.second.observation[0], obs.second.observation[1], 3, colorizer[0][tf]);
-                    }
-            }
-            BufferReaderProvider::writeRgb(src, nameNew);
-            std::cout << "Writing tracks image into " << nameNew << std::endl;
-        }
-    }
-
-    std::unordered_map<SceneFeaturePoint*, RGBColor> *colorizer;
-    std::vector<std::pair<WPP, std::string>> images;
-    ReconstructionFixtureScene* scene;
-};
 
 void corecvs::PhotostationPlacer::paintTracksOnImages()
 {

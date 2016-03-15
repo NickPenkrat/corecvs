@@ -118,6 +118,25 @@ public:
     }
 };
 
+struct ParallelTrackPainter
+{
+    ParallelTrackPainter(
+            std::vector<std::pair<WPP, std::string>> &images,
+            ReconstructionFixtureScene* scene,
+            std::unordered_map<SceneFeaturePoint*, RGBColor> colorizer) :
+            colorizer(&colorizer)
+          , images(images)
+          , scene(scene)
+    {
+    }
+
+    void operator() (const corecvs::BlockedRange<int> &r) const;
+
+    std::unordered_map<SceneFeaturePoint*, RGBColor> *colorizer;
+    std::vector<std::pair<WPP, std::string>> images;
+    ReconstructionFixtureScene* scene;
+};
+
 } // namespace corecvs
 
 namespace std
