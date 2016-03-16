@@ -1,6 +1,5 @@
 HEADERS += \
 	reconstruction/reconstructionStructs.h \
-	reconstruction/multiPhotostationScene.h \
 	reconstruction/pnpSolver.h \
 	reconstruction/relativeNonCentralP6PSolver.h \
 	reconstruction/relativeNonCentralRansacSolver.h \
@@ -13,7 +12,6 @@ HEADERS += \
 
 
 SOURCES += \
-    reconstruction/multiPhotostationScene.cpp \
     reconstruction/pnpSolver.cpp \
     reconstruction/pnpGbActionMatrix.cpp \
     reconstruction/p34pGbActionMatrix.cpp \
