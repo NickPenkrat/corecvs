@@ -4,6 +4,7 @@
 #include "fixtureCamera.h"
 #include "cameraFixture.h"
 #include "sceneFeaturePoint.h"
+#include "statusTracker.h"
 
 namespace corecvs {
 
@@ -18,7 +19,7 @@ public:
     typedef FixtureCamera     CameraType;
     typedef CameraFixture     FixtureType;
     typedef SceneFeaturePoint PointType;
-
+    StatusTracker*            ProcessState = nullptr;
 
     FixtureScene();
 
@@ -56,7 +57,7 @@ public:
     void projectForward(SceneFeaturePoint::PointType mask, bool round = false);
     void triangulate   (SceneFeaturePoint * point);
 
-
+    StatusTracker*                state = nullptr;
 
 protected:
     template<typename T>

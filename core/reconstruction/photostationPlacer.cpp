@@ -1601,6 +1601,9 @@ void corecvs::PhotostationPlacer::filterEssentialRansac(std::vector<CameraFixtur
 
 bool corecvs::PhotostationPlacer::initialize()
 {
+    scene->ProcessState->reset("Initialize", 1);
+    scene->ProcessState->incrementStarted();
+
     if (scene->state != ReconstructionState::MATCHED)
         return false;
     CORE_ASSERT_TRUE_S(scene->placingQueue.size() >= 2);
@@ -1622,6 +1625,7 @@ bool corecvs::PhotostationPlacer::initialize()
         CORE_ASSERT_TRUE_S(false);
     }
     // Gives 0-DoF initialization + 2-view cloud
+    scene->ProcessState->incrementCompleted();
     return initNONE();
 }
 
@@ -1785,18 +1789,32 @@ void corecvs::PhotostationPlacer::detectAll()
         case ReconstructionState::FINISHED:
             break;
     }
-    scene->validateAll();
 }
 
 void corecvs::PhotostationPlacer::fullRun()
 {
+    scene->ProcessState->reset("Detecting", 1);
+    scene->ProcessState->incrementStarted();
+
     L_ERROR << "Starting full run" ;
     L_ERROR << "Detecting features";
     detectAll();
+    scene->ProcessState->incrementCompleted();
+
+    scene->ProcessState->reset("Initializing", 1);
+    scene->ProcessState->incrementStarted();
     L_ERROR << "Initalizing";
     initialize();
+    scene->ProcessState->incrementCompleted();
+
+    scene->ProcessState->reset("First fitting", 1);
+    scene->ProcessState->incrementStarted();
     L_ERROR << "Fitting";
     fit(optimizationParams, 100);
+    scene->ProcessState->incrementCompleted();
+
+    scene->ProcessState->reset("Appending", 1);
+    scene->ProcessState->incrementStarted();
     L_ERROR << "Appending";
 
     while(scene->placingQueue.size())
@@ -1814,8 +1832,18 @@ void corecvs::PhotostationPlacer::fullRun()
         ss << (*scene->placedFixtures.rbegin())->name << "_app.ply";
         dumpMesh(ss.str());
     }
+    scene->ProcessState->incrementCompleted();
+
+    scene->ProcessState->reset("Finale fitting", 1);
+    scene->ProcessState->incrementStarted();
+
     fit(optimizationParams, 10000);
+    scene->ProcessState->incrementCompleted();
+
+    scene->ProcessState->reset("Dumping", 1);
+    scene->ProcessState->incrementStarted();
     dumpMesh("final.ply");
+    scene->ProcessState->incrementCompleted();
 }
 
 corecvs::Mesh3D corecvs::PhotostationPlacer::dumpMesh(const std::string &filename)
