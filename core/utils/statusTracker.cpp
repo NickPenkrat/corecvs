@@ -56,7 +56,7 @@ void corecvs::StatusTracker::reset(const std::string &action, size_t totalAction
     unlock();
 }
 
-corecvs::Status  corecvs::StatusTracker::getStatus() const
+corecvs::Status corecvs::StatusTracker::getStatus() const
 {
     if (this == nullptr)
         return corecvs::Status();
