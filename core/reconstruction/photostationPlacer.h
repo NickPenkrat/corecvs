@@ -148,14 +148,11 @@ public:
     corecvs::Affine3DQ staticInit(CameraFixture* fixture, std::vector<SceneFeaturePoint*> &staticPoints);
     void estimatePair(CameraFixture *psA, CameraFixture *psB);
     corecvs::Quaternion detectOrientationFirst(CameraFixture *psA, CameraFixture* psB, CameraFixture *psC);
-    std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> getUnusedFeatures(CameraFixture *psA, CameraFixture *psB);
-    void buildTracks(CameraFixture *psA, CameraFixture *psB, CameraFixture *psC);
     void pruneTracks();
     void appendPs();
     void fit(const PhotostationPlacerOptimizationType& optimizationSet = PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS, int num = 100);
     void fit(bool tuneFocal);
     void appendTracks(const std::vector<int> &inlierIds, CameraFixture* fixture, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &possibleTracks);
-    std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> getPossibleTracks(CameraFixture* ps);
     int getMovablePointCount();
     int getReprojectionCnt();
     int getInputNum();
@@ -220,8 +217,6 @@ protected:
         PhotostationPlacer* placer;
     };
 private:
-    double scoreFundamental(CameraFixture *psA, FixtureCamera *camA, corecvs::Vector2dd ptA,
-                            CameraFixture *psB, FixtureCamera *camB, corecvs::Vector2dd ptB);
     struct ParallelEssentialFilter
     {
         PhotostationPlacer* placer;
@@ -240,7 +235,6 @@ private:
     };
     static corecvs::Quaternion TransformFrom2RayCorrespondence(corecvs::Vector3dd o1, corecvs::Vector3dd o2, corecvs::Vector3dd e1, corecvs::Vector3dd e2);
     void filterEssentialRansac(WPP a, WPP b);
-    std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd, double>> getPhotostationMatches(CameraFixture* psA, CameraFixture* psB);
     void remove(WPP a, WPP b, std::vector<int> idx);
 #ifdef WITH_TBB
     tbb::mutex mutex;
