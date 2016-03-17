@@ -71,8 +71,11 @@ bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFi
        /*Ok there are devices, pipes, links... I don't know... */
        bool isDir = (ep->d_type != DT_REG) && (ep->d_type != DT_LNK);
        if (isDir ^ findFiles) {
-           puts (ep->d_name);
-           childs.push_back(ep->d_name);
+           //SYNC_PRINT(("found path: %s\n", ep->d_name));
+
+           /*Do we need to form path? */
+           string result = path + PATH_SEPARATOR + ep->d_name;
+           childs.push_back(result);
        }
      }
 
