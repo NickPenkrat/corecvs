@@ -238,9 +238,6 @@ private:
     void filterEssentialRansac(WPP a, WPP b);
     std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd, double>> getPhotostationMatches(CameraFixture* psA, CameraFixture* psB);
     void remove(WPP a, WPP b, std::vector<int> idx);
-#ifdef WITH_TBB
-    tbb::mutex mutex;
-#endif
 };
 }
 
