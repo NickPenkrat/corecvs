@@ -7,6 +7,7 @@
 #include "bufferReaderProvider.h"
 #include "abstractPainter.h"
 #include "multicameraTriangulator.h"
+#include "essentialFeatureFilter.h"
 #include "log.h"
 
 using namespace corecvs;
@@ -340,30 +341,94 @@ bool ReconstructionFixtureScene::validateAll()
 
 void ParallelTrackPainter::operator() (const corecvs::BlockedRange<int> &r) const
 {
-	for (int i = r.begin(); i < r.end(); ++i)
-	{
-		auto& p = images[i];
-		auto key = p.first;
-		auto name= p.second;
-		std::stringstream ss;
-		ss << name << "_tracks.png";
+    if (!pairs)
+    {
+        for (int i = r.begin(); i < r.end(); ++i)
+        {
+            auto& p = images[i];
+            auto key = p.first;
+            auto name= p.second;
+            std::stringstream ss;
+            ss << name << "_tracks.png";
 
-		auto nameNew = ss.str();
-		corecvs::RGB24Buffer src = BufferReaderProvider::readRgb(name);
+            auto nameNew = ss.str();
+            corecvs::RGB24Buffer src = BufferReaderProvider::readRgb(name);
 
-		AbstractPainter<RGB24Buffer> painter(&src);
-		for (auto& tf: scene->trackedFeatures)
-		{
-			for (auto& obs: tf->observations__)
-				if (obs.first == key)
-				{
-					painter.drawFormat(obs.second.observation[0] + 5, obs.second.observation[1], colorizer[0][tf], 1,  tf->name.c_str());
-					painter.drawCircle(obs.second.observation[0], obs.second.observation[1], 3, colorizer[0][tf]);
-				}
-		}
-		BufferReaderProvider::writeRgb(src, nameNew);
-		std::cout << "Writing tracks image into " << nameNew << std::endl;
-	}
+            AbstractPainter<RGB24Buffer> painter(&src);
+            for (auto& tf: scene->trackedFeatures)
+            {
+                for (auto& obs: tf->observations__)
+                    if (obs.first == key)
+                    {
+                        painter.drawFormat(obs.second.observation[0] + 5, obs.second.observation[1], colorizer[0][tf], 1,  tf->name.c_str());
+                        painter.drawCircle(obs.second.observation[0], obs.second.observation[1], 3, colorizer[0][tf]);
+                    }
+            }
+            BufferReaderProvider::writeRgb(src, nameNew);
+            std::cout << "Writing tracks image into " << nameNew << std::endl;
+        }
+    }
+    else
+    {
+        for (int ii = r.begin(); ii < r.end(); ++ii)
+        {
+            int i = ii % images.size(),
+                j = ii / images.size();
+            if (i > j)
+                continue;
+
+            auto& imgA = images[i],
+                & imgB = images[j];
+            auto& keyA = imgA.first,
+                & keyB = imgB.first;
+            auto& nameA= imgA.second,
+                & nameB= imgB.second;
+            std::stringstream ss;
+            ss << keyA.u->name << keyA.v->nameId << keyB.u->name << keyB.v->nameId << "_tracks.jpg";
+
+            auto srcA = BufferReaderProvider::readRgb(nameA),
+                 srcB = BufferReaderProvider::readRgb(nameB);
+
+            int newW = std::max(srcA.w, srcB.w);
+            int newH = srcA.h + srcB.h;
+            int offH = srcA.h;
+            corecvs::RGB24Buffer dst(newH, newW);
+            AbstractPainter<RGB24Buffer> painter(&dst);
+
+            for (int y = 0; y < srcA.h; ++y)
+                for (int x = 0; x < srcA.w; ++x)
+                    dst.element(y, x) = srcA.element(y, x);
+            for (int y = 0; y < srcB.h; ++y)
+                for (int x = 0; x < srcB.w; ++x)
+                    dst.element(y + offH, x) = srcB.element(y, x);
+
+            bool painted = false;
+            for (auto& tf: scene->trackedFeatures)
+            {
+                std::remove_reference<decltype(tf->observations__[0])>::type* obsA = 0, *obsB = 0;
+                for (auto& obs: tf->observations__)
+                {
+                    if (obs.first == keyA)
+                        obsA = &obs.second;
+                    if (obs.first == keyB)
+                        obsB = &obs.second;
+                }
+                if (!obsA || !obsB)
+                    continue;
+
+                painter.drawFormat(obsA->observation[0] + 5, obsA->observation[1], colorizer[0][tf], 1,  tf->name.c_str());
+                painter.drawCircle(obsA->observation[0], obsA->observation[1], 3, colorizer[0][tf]);
+                painter.drawFormat(obsB->observation[0] + 5, obsB->observation[1], colorizer[0][tf], 1,  tf->name.c_str());
+                painter.drawCircle(obsB->observation[0], obsB->observation[1], 3, colorizer[0][tf]);
+                painted = true;
+            }
+            if (!painted)
+                continue;
+
+            BufferReaderProvider::writeRgb(dst, ss.str());
+            std::cout << "Written to " << ss.str() << std::endl;
+        }
+    }
 }
 
 std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> corecvs::ReconstructionFixtureScene::getPossibleTracks(CameraFixture *psA)
@@ -464,6 +529,11 @@ void corecvs::ReconstructionFixtureScene::buildTracks(CameraFixture *psA, Camera
                 trackCandidates.emplace_back(camA, ptA, camB, ptB, camC, ptC);
         }
     }
+    L_ERROR << trackCandidates.size() << " candidate tracks";
+    L_ERROR << "Inlier threshold: " << trackInlierThreshold;
+    L_ERROR << "Distance threshold: " << distanceLimit;
+
+    int failInlier = 0, failDistance = 0;
 
     for (auto& c: trackCandidates)
     {
@@ -493,7 +563,10 @@ void corecvs::ReconstructionFixtureScene::buildTracks(CameraFixture *psA, Camera
             fscore = std::max(fscore, ps[id1]->scoreFundamental(cam[id1], kp[id1], ps[id2], cam[id2], kp[id2]));
         }
         if (fscore > trackInlierThreshold)
+        {
+            failInlier++;
             continue;
+        }
 
         corecvs::MulticameraTriangulator mct;
         for (int i = 0; i < NPS; ++i)
@@ -508,7 +581,10 @@ void corecvs::ReconstructionFixtureScene::buildTracks(CameraFixture *psA, Camera
             isVisibleInlierNotTooFar &= !(res - ps[i]->getWorldCamera(cam[i]).extrinsics.position) < distanceLimit;
         }
         if (!isVisibleInlierNotTooFar)
+        {
+            failDistance++;
             continue;
+        }
 
         auto track = createFeaturePoint();
         track->reprojectedPosition = res;
@@ -529,6 +605,7 @@ void corecvs::ReconstructionFixtureScene::buildTracks(CameraFixture *psA, Camera
         }
         trackedFeatures.push_back(track);
     }
+    L_ERROR << "FAIL:IT " << failInlier << " / FAIL:DI " << failDistance;
 }
 
 std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> corecvs::ReconstructionFixtureScene::getUnusedFeatures(CameraFixture *psA, CameraFixture *psB)
@@ -599,4 +676,102 @@ corecvs::ReconstructionFixtureScene::getPhotostationMatches(CameraFixture *psA, 
         }
     }
     return res;
+}
+
+void corecvs::ReconstructionFixtureScene::filterEssentialRansac(std::vector<CameraFixture*> &pss, EssentialFilterParams params)
+{
+    matchesCopy = matches;
+    std::vector<std::pair<WPP, WPP>> work;
+    for (size_t psA = 0; psA < pss.size(); ++psA)
+    {
+        for (size_t psB = psA; psB < pss.size(); ++psB)
+        {
+            auto psA_ = pss[psA];
+            auto psB_ = pss[psB];
+            for (size_t camA = 0; camA < psA_->cameras.size(); ++camA)
+            {
+                for (size_t camB = 0; camB < psB_->cameras.size(); ++camB)
+                {
+                    WPP idFirst(psA_, psA_->cameras[camA]), idSecond(psB_, psB_->cameras[camB]);
+                    bool alreadyIn = false;
+                    for (auto& pp: work)
+                        if ((pp.first == idFirst && pp.second == idSecond) || (pp.second == idFirst && pp.first == idSecond))
+                        {
+                            alreadyIn = true;
+                            break;
+                        }
+                    if (!alreadyIn)
+                        work.emplace_back(WPP(psA_, psA_->cameras[camA]), WPP(psB_, psB_->cameras[camB]));
+                }
+            }
+        }
+    }
+    corecvs::parallelable_for(0, (int)work.size(), ParallelEssentialFilter(this, work, params));
+}
+
+
+void corecvs::ReconstructionFixtureScene::remove(WPP a, WPP b, std::vector<int> idx)
+{
+    bool swap = !(a < b);
+    CORE_ASSERT_TRUE_S(matches.count(swap ? b : a));
+    CORE_ASSERT_TRUE_S(matches[swap ? b : a].count(swap ? a : b));
+    auto& ref = matches[swap ? b : a][swap ? a : b];
+    CORE_ASSERT_TRUE_S(idx.size() <= ref.size());
+    int ok = 0;
+    for (auto& i: idx)
+    {
+        ref[ok++] = ref[i];
+    }
+    ref.resize(ok);
+}
+
+void corecvs::ReconstructionFixtureScene::filterEssentialRansac(WPP a, WPP b, EssentialFilterParams params)
+{
+    bool swap = !(a < b);
+    WPP idA = swap ? b : a;
+    WPP idB = swap ? a : b;
+
+    std::cout << "Starting: " << idA.u->name << idA.v->nameId << "<>" << idB.u->name << idB.v->nameId << std::endl;
+
+    std::vector<std::array<corecvs::Vector2dd, 2>> features, featuresInlier;
+    auto K1 = idA.v->intrinsics.getKMatrix33();
+    auto K2 = idB.v->intrinsics.getKMatrix33();
+
+    if (!matches.count(idA) || !matches[idA].count(idB))
+        return;
+
+    auto& mm = matches[idA][idB];
+    size_t szBefore = mm.size();
+    auto& kpA= keyPoints[idA];
+    auto& kpB= keyPoints[idB];
+    features.reserve(mm.size());
+    featuresInlier.resize(mm.size());
+
+    for (auto& m: mm)
+    {
+        int idA = std::get<0>(m);
+        int idB = std::get<1>(m);
+        auto fA = kpA[idA].first;
+        auto fB = kpB[idB].first;
+        int id = &m - &mm[0];
+        featuresInlier[id][0] = fA;
+        featuresInlier[id][1] = fB;
+        if (std::get<2>(m) < params.b2bThreshold)
+           features.push_back(featuresInlier[id]);
+    }
+    size_t szAfter1= mm.size();
+    CORE_ASSERT_TRUE_S(&mm == &matches[idA][idB]);
+    CORE_ASSERT_TRUE_S(szBefore == szAfter1);
+
+    EssentialFeatureFilter filter(K1, K2, features, featuresInlier, params);
+    filter.estimate();
+    auto bestInliers = filter.inlierIdx;
+
+    size_t szAfter = mm.size();
+    CORE_ASSERT_TRUE_S(&mm == &matches[idA][idB]);
+    CORE_ASSERT_TRUE_S(szBefore == szAfter);
+    CORE_ASSERT_TRUE_S(bestInliers.size() <= mm.size());
+    std::sort(bestInliers.begin(), bestInliers.end());
+    std::cout << "Total: " << featuresInlier.size() << " good: " << features.size() << " del: " << (featuresInlier.size() - bestInliers.size()) << " rem: " << bestInliers.size() << " (" << ((double)bestInliers.size()) / featuresInlier.size() * 100.0 << "%)" << idA.u->name << idA.v->nameId << "<>" << idB.u->name << idB.v->nameId << std::endl;
+    remove(a, b, bestInliers);
 }

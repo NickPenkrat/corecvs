@@ -58,7 +58,7 @@ enum class PhotostationPlacerOptimizationErrorType
  * 3 x M'       Ray cross products                     CROSS_PRODUCT
  * 2 x M'       Ray differences                        RAY_DIFF
  * If TUNE_GPS is present then position differences are also being calculated and stored as
- * 3 x N		Normalised (using covariance 'square root') difference
+ * 3 x N        Normalised (using covariance 'square root') difference
  */
 
 template<>
@@ -72,9 +72,10 @@ struct PhotostationPlacerEssentialFilterParams
 {
     double b2bRansacP5RPThreshold = 0.8;
     double inlierP5RPThreshold = 5.0;
-    int maxEssentialRansacIterations = 32000;
+    int maxEssentialRansacIterations = 1000000;
     double b2bRansacP6RPThreshold = 0.8;
     bool runEssentialFiltering = true;
+    double essentialTargetGamma = 0.001;
 
     template<typename V>
     void accept(V &v)
@@ -115,6 +116,8 @@ struct PhotostationPlacerParams
         PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS |
         PhotostationPlacerOptimizationType::POINTS;// | PhotostationPlacerOptimizationType::FOCALS;
     PhotostationPlacerOptimizationErrorType errorType = PhotostationPlacerOptimizationErrorType::RAY_DIFF;
+    // This defines how many multicameras are subject for P3P evaluation at each iteration
+    int speculativity = 1;
 
     template<typename V>
     void accept(V &v)
@@ -129,25 +132,17 @@ struct PhotostationPlacerParams
     }
 };
 
-class PhotostationPlacer :	public PhotostationPlacerEssentialFilterParams, public PhotostationPlacerFeatureSelectionParams, public PhotostationPlacerParams
+class PhotostationPlacer :    public PhotostationPlacerEssentialFilterParams, public PhotostationPlacerFeatureSelectionParams, public PhotostationPlacerParams
 {
 public:
     ReconstructionFixtureScene* scene;
     void fullRun();
     corecvs::Mesh3D dumpMesh(const std::string &filename);
-    void paintTracksOnImages();
+    void paintTracksOnImages(bool pairs = false);
     void detectAll();
     bool initialize();
-    bool initGPS();
-    bool initNONE();
-    bool initSTATIC();
-    bool initFIXED();
     void create2PointCloud();
-    void filterEssentialRansac(std::vector<CameraFixture*> &pss);
-    void estimateFirstPair();
     corecvs::Affine3DQ staticInit(CameraFixture* fixture, std::vector<SceneFeaturePoint*> &staticPoints);
-    void estimatePair(CameraFixture *psA, CameraFixture *psB);
-    corecvs::Quaternion detectOrientationFirst(CameraFixture *psA, CameraFixture* psB, CameraFixture *psC);
     void pruneTracks();
     void appendPs();
     void fit(const PhotostationPlacerOptimizationType& optimizationSet = PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS, int num = 100);
@@ -181,6 +176,10 @@ protected:
     void buildDependencyList();
     double scalerPoints, scalerGps;
     int inputNum, outputNum, psNum, camNum, ptNum, projNum, gpsConstraintNum, staticNum;
+
+    std::unordered_map<corecvs::CameraFixture*, corecvs::Affine3DQ> activeEstimates;
+    std::unordered_map<corecvs::CameraFixture*, std::vector<int>> activeInlierCount;
+    void updateTrackables();
 
     struct ParallelErrorComputator
     {
@@ -216,26 +215,6 @@ protected:
         }
         PhotostationPlacer* placer;
     };
-private:
-    struct ParallelEssentialFilter
-    {
-        PhotostationPlacer* placer;
-        std::vector<std::pair<WPP, WPP>> work;
-        ParallelEssentialFilter(PhotostationPlacer* placer, std::vector<std::pair<WPP, WPP>> &work) : placer(placer), work(work)
-        {
-        }
-        void operator() (const corecvs::BlockedRange<int> &r) const
-        {
-            for (int i = r.begin(); i < r.end(); ++i)
-            {
-                auto w = work[i];
-                placer->filterEssentialRansac(w.first, w.second);
-            }
-        }
-    };
-    static corecvs::Quaternion TransformFrom2RayCorrespondence(corecvs::Vector3dd o1, corecvs::Vector3dd o2, corecvs::Vector3dd e1, corecvs::Vector3dd e2);
-    void filterEssentialRansac(WPP a, WPP b);
-    void remove(WPP a, WPP b, std::vector<int> idx);
 #ifdef WITH_TBB
     tbb::mutex mutex;
 #endif

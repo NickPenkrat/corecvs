@@ -2,9 +2,16 @@
 #define RECONSTRUCTIONINITIALIZER_H
 
 #include "reconstructionFixtureScene.h"
+#include "essentialFeatureFilter.h"
 
 namespace corecvs
 {
+struct ReconstructionInitializerParams
+{
+    EssentialFilterParams essentialFilterParams;
+    double b2bThreshold = 0.9;
+    bool runEssentialFiltering = true;
+};
 /*
  * This class is responsible for reconstruction initialization.
  *
@@ -13,9 +20,18 @@ namespace corecvs
  * we are trying to detect relative orientation/position using
  * more correspondences.
  */
-struct ReconstructionInitializer
+struct ReconstructionInitializer : ReconstructionInitializerParams
 {
-	ReconstructionFixtureScene *rfs;
+    bool initialize();
+    bool initGPS();
+    bool initNONE();
+    bool initSTATIC();
+    bool initFIXED();
+    void estimateFirstPair();
+    void estimatePair(CameraFixture *psA, CameraFixture *psB);
+    corecvs::Quaternion detectOrientationFirst(CameraFixture *psA, CameraFixture* psB, CameraFixture *psC);
+    ReconstructionFixtureScene *scene;
+    static corecvs::Quaternion TransformFrom2RayCorrespondence(corecvs::Vector3dd o1, corecvs::Vector3dd o2, corecvs::Vector3dd e1, corecvs::Vector3dd e2);
 };
 };
 

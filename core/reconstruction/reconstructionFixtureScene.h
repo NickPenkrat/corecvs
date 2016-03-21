@@ -4,15 +4,16 @@
 #include "fixtureScene.h"
 
 #include "rgbColor.h"
+#include "essentialFeatureFilter.h"
 
 
 namespace corecvs {
 
 struct FeatureDetectionParams
 {
-    std::string detector   = "SURF";
-    std::string descriptor = "SURF";
-    std::string matcher    = "ANN";
+    std::string detector   = "ORB";
+    std::string descriptor = "ORB";
+    std::string matcher    = "BF";
     double b2bThreshold = 0.9;
 };
 
@@ -65,6 +66,10 @@ public:
     void buildTracks(CameraFixture *psA, CameraFixture *psB, CameraFixture *psC, double trackInlierThreshold, double distanceLimit);
     std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> getUnusedFeatures(CameraFixture *psA, CameraFixture *psB);
     std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd, double>> getPhotostationMatches(CameraFixture* psA, CameraFixture* psB);
+    void filterEssentialRansac(WPP a, WPP b, EssentialFilterParams params);
+    void filterEssentialRansac(std::vector<CameraFixture*> &pss, EssentialFilterParams params);
+    void remove(WPP a, WPP b, std::vector<int> idx);
+
 
     //\brief Returns number of FixtureCamera's in placedFixtures fixtures
     int getDistinctCameraCount() const;
@@ -120,6 +125,26 @@ public:
         }
         return os;
     }
+
+private:
+    struct ParallelEssentialFilter
+    {
+        ReconstructionFixtureScene* scene;
+        std::vector<std::pair<WPP, WPP>> work;
+        EssentialFilterParams params;
+        ParallelEssentialFilter(ReconstructionFixtureScene* scene, std::vector<std::pair<WPP, WPP>> &work, EssentialFilterParams params) : scene(scene), work(work), params(params)
+        {
+        }
+        void operator() (const corecvs::BlockedRange<int> &r) const
+        {
+            for (int i = r.begin(); i < r.end(); ++i)
+            {
+                auto w = work[i];
+                scene->filterEssentialRansac(w.first, w.second, params);
+            }
+        }
+    };
+
 };
 
 struct ParallelTrackPainter
@@ -127,10 +152,10 @@ struct ParallelTrackPainter
     ParallelTrackPainter(
             std::vector<std::pair<WPP, std::string>> &images,
             ReconstructionFixtureScene* scene,
-            std::unordered_map<SceneFeaturePoint*, RGBColor> colorizer) :
+            std::unordered_map<SceneFeaturePoint*, RGBColor> colorizer, bool pairs = false) :
             colorizer(&colorizer)
           , images(images)
-          , scene(scene)
+          , scene(scene), pairs(pairs)
     {
     }
 
@@ -139,6 +164,7 @@ struct ParallelTrackPainter
     std::unordered_map<SceneFeaturePoint*, RGBColor> *colorizer;
     std::vector<std::pair<WPP, std::string>> images;
     ReconstructionFixtureScene* scene;
+    bool pairs;
 };
 
 } // namespace corecvs
