@@ -12,10 +12,6 @@
 #include "levenmarq.h"
 #include "mesh3d.h"
 
-#ifdef WITH_TBB
-#include "tbb/mutex.h"
-#endif
-
 #include "typesafeBitmaskEnums.h"
 
 enum class PhotostationPlacerOptimizationType
