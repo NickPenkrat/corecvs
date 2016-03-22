@@ -14,9 +14,7 @@
 #include "tbbWrapper.h"
 #include "sseWrapper.h"
 
-#ifndef WITH_BLAS
 #include "blasReplacement.h"
-#endif
 
 namespace corecvs {
 
