@@ -36,10 +36,12 @@ CORE_SUBMODULES= \
     patterndetection \
     cameracalibration \
     graphs        \
-    reconstruction \
     polynomial    \
     camerafixture \
 
+with_blas {
+    CORE_SUBMODULES += reconstruction
+}
 
 for (MODULE, CORE_SUBMODULES) {
     CORE_INCLUDEPATH += $${COREDIR}/$${MODULE}

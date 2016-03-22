@@ -2,6 +2,7 @@
 
 #include "global.h"
 
+#ifdef WITH_BLAS
 #include "pnpSolver.h"
 #include "relativeNonCentralP6PSolver.h"
 #include "calibrationCamera.h"
@@ -338,3 +339,4 @@ TEST(Reconstruction, testPNP)
     std::cout << "Invalid: " << (((double)cntInValid)/RNG_RETRIES) << std::endl;
     ASSERT_LE(cntInValid, 0.01 * RNG_RETRIES);
 }
+#endif
