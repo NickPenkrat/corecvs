@@ -14,6 +14,10 @@
 #include "tbbWrapper.h"
 #include "sseWrapper.h"
 
+#ifndef WITH_BLAS
+#include "blasReplacement.h"
+#endif
+
 namespace corecvs {
 
 /* The constructor is not in single cycle due to possible stride of the matrix */
