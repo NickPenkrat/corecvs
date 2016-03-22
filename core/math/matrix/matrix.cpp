@@ -256,7 +256,7 @@ Matrix operator *(const Matrix &A, const Matrix &B)
 
 #ifdef WITH_MKL
 	parallelable_for(0, result.h, 8, ParallelMM<>(&A, &B, &result), !(A.h < 64));
-#ifdef WITH_BLAS
+#elif defined(WITH_BLAS)
 	cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, A.h, B.w, A.w, 1.0, A.data, A.stride, B.data, B.stride, 0.0, result.data, result.stride);
 #else // !WITH_BLAS
 	CORE_ASSERT_TRUE(0, "There're no instaled MKL/openBLAS! Stop!");
