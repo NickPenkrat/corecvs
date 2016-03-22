@@ -254,10 +254,13 @@ Matrix operator *(const Matrix &A, const Matrix &B)
     CORE_ASSERT_TRUE(A.w == B.h, "Matrices have wrong sizes");
     Matrix result(A.h, B.w, false);
 
-#ifndef WITH_BLAS
-    parallelable_for (0, result.h, 8, ParallelMM<>(&A, &B, &result), !(A.h < 64));
+#ifdef WITH_MKL
+	//parallelable_for(0, result.h, 8, ParallelMM<>(&A, &B, &result), !(A.h < 64));
+    Matrix::multiplyHomebrew(A, B, true, !(A.h < 64));
+#elif defined(WITH_BLAS)
+	cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, A.h, B.w, A.w, 1.0, A.data, A.stride, B.data, B.stride, 0.0, result.data, result.stride);
 #else // !WITH_BLAS
-    cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, A.h, B.w, A.w, 1.0, A.data, A.stride, B.data, B.stride, 0.0, result.data, result.stride);
+	CORE_ASSERT_TRUE(0, "There're no instaled MKL/openBLAS! Stop!");
 #endif // WITH_BLAS
 
     return result;
@@ -283,10 +286,12 @@ Vector operator *(const Matrix &M, const Vector &V)
     }
     else
     {
-#ifndef  WITH_BLAS
-        corecvs::parallelable_for (0, M.h, 8, ParallelMV(&M, &V, &result));
-#else
+#if defined(WITH_MKL)
+		corecvs::parallelable_for (0, M.h, 8, ParallelMV(&M, &V, &result)); //TODO:
+#elif defined(WITH_BLAS)
         cblas_dgemv (CblasRowMajor, CblasNoTrans, M.h, M.w, 1.0, &M.element(0, 0), M.stride, &V[0], 1, 0.0, &result[0], 1);
+#else
+		CORE_ASSERT_TRUE(0, "There're no instaled MKL/openBLAS! Stop!");
 #endif
     }
     return result;
