@@ -504,7 +504,11 @@ SparseMatrix SparseMatrix::upper() const
 bool SparseMatrix::linSolve(const Vector &rhs, Vector &res, bool symmetric, bool posDef) const
 {
     if (symmetric)
+#ifdef WITH_MKL
         return LinSolve(symmetric ? upper() : (*this), rhs, res, true, posDef);
+#else
+		return LinSolve(*this, rhs, res, true, posDef);
+#endif
     return LinSolve(*this, rhs, res, false, posDef);
 }
 
