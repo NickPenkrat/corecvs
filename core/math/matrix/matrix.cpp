@@ -255,7 +255,8 @@ Matrix operator *(const Matrix &A, const Matrix &B)
     Matrix result(A.h, B.w, false);
 
 #ifdef WITH_MKL
-	parallelable_for(0, result.h, 8, ParallelMM<>(&A, &B, &result), !(A.h < 64));
+	//parallelable_for(0, result.h, 8, ParallelMM<>(&A, &B, &result), !(A.h < 64));
+    Matrix::multiplyHomebrew(A, B, true, !(A.h < 64));
 #elif defined(WITH_BLAS)
 	cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, A.h, B.w, A.w, 1.0, A.data, A.stride, B.data, B.stride, 0.0, result.data, result.stride);
 #else // !WITH_BLAS
@@ -286,7 +287,7 @@ Vector operator *(const Matrix &M, const Vector &V)
     else
     {
 #if defined(WITH_MKL)
-		corecvs::parallelable_for (0, M.h, 8, ParallelMV(&M, &V, &result));
+		corecvs::parallelable_for (0, M.h, 8, ParallelMV(&M, &V, &result)); //TODO:
 #elif defined(WITH_BLAS)
         cblas_dgemv (CblasRowMajor, CblasNoTrans, M.h, M.w, 1.0, &M.element(0, 0), M.stride, &V[0], 1, 0.0, &result[0], 1);
 #else
