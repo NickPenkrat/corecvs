@@ -95,7 +95,8 @@ HEADERS += \
     tablecontrol/rotaryTableMeshModel.h \
     tablecontrol/rotationPlanGenerator.h \
     capture/abstractImageNamer.h \
-    reconstruction/reconstructionSolver.h
+    reconstruction/reconstructionSolver.h \
+    capture/manipulatorCaptureDialog.h
 
 SOURCES += \
     frames.cpp \
@@ -165,7 +166,8 @@ SOURCES += \
     tablecontrol/rotaryTableMeshModel.cpp \
     tablecontrol/rotationPlanGenerator.cpp \
     capture/abstractImageNamer.cpp \
-    reconstruction/reconstructionSolver.cpp
+    reconstruction/reconstructionSolver.cpp \
+    capture/manipulatorCaptureDialog.cpp
 
 
 FORMS += \
@@ -174,7 +176,8 @@ FORMS += \
     distortioncorrector/lensDistortionModelParametersControlWidget.ui \
     distortioncorrector/calibrationFeaturesWidget.ui \
     tablecontrol/rotaryTableControlWidget.ui \
-    tablecontrol/rotationPlanGenerator.ui
+    tablecontrol/rotationPlanGenerator.ui \
+    capture/manipulatorCaptureDialog.ui
 
 
 # =============================================================

@@ -50,6 +50,12 @@ PhotostationCaptureDialog::PhotostationCaptureDialog(QWidget *parent)
     /* OK need to check if it gets deleted on table cleanup */
     connect(ui->cameraTableWidget, SIGNAL(cellClicked(int,int)), this, SLOT(tableClick(int, int)));
 
+    connect(ui->maipulatorCaptureButton, SIGNAL(released()), &mManupulatorCapturer, SLOT(show()));
+    connect(ui->maipulatorCaptureButton, SIGNAL(released()), &mManupulatorCapturer, SLOT(raise()));
+
+    connect(&mManupulatorCapturer, SIGNAL(captureAtPosition(int)), this, SLOT(captureWithManipulator(int)));
+    connect(&mManupulatorCapturer, SIGNAL(manipulatorCaptureFinalise(bool)), this, SLOT(finaliseManipulatorCapture(bool)));
+
     mCapSettingsDialog = new CapSettingsDialog();
 }
 
@@ -473,7 +479,7 @@ void PhotostationCaptureDialog::initateNewFrame()
     }
 }
 
-void PhotostationCaptureDialog::capture(bool shouldAdvance)
+void PhotostationCaptureDialog::capture(bool shouldAdvance, int positionShift)
 {
     mAdvanceAfterSave = shouldAdvance;
 
@@ -484,6 +490,7 @@ void PhotostationCaptureDialog::capture(bool shouldAdvance)
     ui->captureAdvancePushButton->setEnabled(false);
     ui->stopPushButton          ->setEnabled(true);
     ui->refreshButton           ->setEnabled(false);
+    ui->maipulatorCaptureButton ->setEnabled(false);
 
     ui->progressBar->setHidden(false);
     ui->progressBar->setValue(0);
@@ -522,6 +529,12 @@ void PhotostationCaptureDialog::capture(bool shouldAdvance)
         mCaptureInterfaces.append(camDesc);
         connect(camDesc.camInterface, SIGNAL(newFrameReady(frame_data_t)), mCaptureMapper, SLOT(map()));
         mCaptureMapper->setMapping(camDesc.camInterface, mCaptureInterfaces.count() - 1);
+    }
+    if(positionShift > 0)
+    {
+        int shift = mCaptureInterfaces.size() * positionShift;
+        for(auto&camDesc:mCaptureInterfaces)
+            camDesc.camId += shift;
     }
 
     if (!mCaptureInterfaces.empty())
@@ -598,12 +611,6 @@ void PhotostationCaptureDialog::stopCapture()
 
 void PhotostationCaptureDialog::finalizeCapture(bool isOk)
 {
-    ui->capturePushButton       ->setEnabled(true);
-    ui->captureAdvancePushButton->setEnabled(true);
-
-    ui->progressBar->setHidden(true);
-    ui->progressBar->setValue(0);
-
     if (mIsCalibrationMode)
     {
         if (ui->stationNameLineEdit->text() == "A") {
@@ -728,6 +735,18 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
     if (!failedSaves.isEmpty()) {
         QMessageBox::warning(this, "Error saving following files:", failedSaves.join(" "));
     }
+
+    if(!mRuningManipulator)
+    {
+        ui->capturePushButton       ->setEnabled(true);
+        ui->captureAdvancePushButton->setEnabled(true);
+        ui->maipulatorCaptureButton ->setEnabled(true);
+
+        ui->progressBar->setHidden(true);
+        ui->progressBar->setValue(0);
+    }
+    else
+        mManupulatorCapturer.captureNextPosition();
 }
 
 void PhotostationCaptureDialog::showEvent(QShowEvent *event)
@@ -741,6 +760,23 @@ void PhotostationCaptureDialog::showEvent(QShowEvent *event)
 void PhotostationCaptureDialog::captureAndAdvance()
 {
     capture(true);
+}
+
+void PhotostationCaptureDialog::captureWithManipulator(int manipulatorPosition)
+{
+    mAdvanceAfterSave = false;
+    mRuningManipulator = true;
+
+    capture(false, manipulatorPosition);
+}
+
+void PhotostationCaptureDialog::finaliseManipulatorCapture(bool advance)
+{
+    std::cout << advance << std::endl;
+    mAdvanceAfterSave = advance;
+    mRuningManipulator = false;
+
+    finalizeCapture(false);
 }
 
 void PhotostationCaptureDialog::outputDir()
