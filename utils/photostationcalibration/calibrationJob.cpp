@@ -172,16 +172,16 @@ struct ParallelBoardDetector
         for (size_t i = r.begin(); i != r.end(); ++i)
         {
             job->state->incrementStarted();
-            auto cam = idx[i][0];
-            auto obs = idx[i][1];
+            size_t cam = idx[i][0];
+            size_t obs = idx[i][1];
 
-            auto& v = job->observations[cam][obs];
+            ImageData& v = job->observations[cam][obs];
             auto& psIterator = job->photostation.cameras[cam];
             if (!estimate)
             {
                 const std::string& filename = distorted ? v.sourceFileName : v.undistortedFileName;
                 corecvs::RGB24Buffer buffer = CalibrationJob::LoadImage(filename);
-                if (buffer.h && buffer.w)
+                if (!buffer.hasZeroSize())
                 {
                     (distorted ? psIterator.intrinsics.distortedSize : psIterator.intrinsics.size) = corecvs::Vector2dd(buffer.w, buffer.h);
                 }

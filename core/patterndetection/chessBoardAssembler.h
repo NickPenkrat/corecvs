@@ -10,6 +10,9 @@
 #include <tbb/mutex.h>
 #endif
 
+#include "generated/chessBoardAssemblerParamsBase.h"
+
+
 /*
  * Here we implement second part (= assembling chessboard from oriented corners)
  * of algo presented in A. Geiger et. al Automatic Camera and Range Sensor Calibration using a single Shot http://www.cvlibs.net/publications/Geiger2012ICRA.pdf
@@ -66,49 +69,29 @@ struct RectangularGridPattern
         return w() * h() * e_struct;
     }
 
-    std::vector<std::vector<int>> cornerIdx;
+    std::vector<std::vector<int> > cornerIdx;
     mutable double score = 0.0;
 
     int w() const { return      cornerIdx.size() ? (int)cornerIdx[0].size() : 0; }
     int h() const { return (int)cornerIdx.size(); }
 };
 
-struct ChessBoardAssemblerParams
+class ChessBoardAssemblerParams : public ChessBoardAssemblerParamsBase
 {
-    // Threshold for seed grid "non-regularity"
-    double seedThreshold = 0.3;
-    // Factor for orthogonal error in seed estimation
-    double seedTgPenalty = 5.0;
-    // Factor of "conservativity" in next row prediction (should be lower to high-distorted boards
-    double conservativity = 0.9;
-    // Maximal cost for "real" board
-    double costThreshold = -10.0;
-    // Minimal seed distance
-    double minSeedDistance = 15.0;
-    // Hypothesis type: consider only hypothesis that fits specified number of dims
-    int hypothesisDimensions = 1;
-#if __cplusplus >= 201103L // Our compiler is cool enough to support brace-initalizer-list for structure members
-    int hypothesisDim[2] = {18, 11};
-#else
-    int hypothesisDim[2];
-    ChessBoardAssemblerParams()
-    {
-        hypothesisDim[0] = 18;
-        hypothesisDim[1] = 11;
-    }
-#endif
+public:
+    ChessBoardAssemblerParams() {}
 
-    template<typename VisitorType>
-    void accept(VisitorType &visitor)
+    ChessBoardAssemblerParams(const ChessBoardAssemblerParamsBase &base) :
+        ChessBoardAssemblerParamsBase(base)
+    {}
+
+    int hypothesisDim(int id)
     {
-        visitor.visit(seedThreshold, 0.3, "seedThreshold");
-        visitor.visit(seedTgPenalty, 5.0, "seedTgPenalty");
-        visitor.visit(conservativity, 0.9, "conservativity");
-        visitor.visit(costThreshold, -10.0, "costThreshold");
-        visitor.visit(hypothesisDimensions, 1, "hypothesisDimensions");
-        visitor.visit(hypothesisDim[0], 18, "hypothesisDim[0]");
-        visitor.visit(hypothesisDim[1], 11, "hypothesisDim[0]");
-        visitor.visit(minSeedDistance, 15.0, "minSeedDistance");
+        if (id == 0) {
+            return hypothesisDimFirst();
+        }
+
+        return hypothesisDimSecond();
     }
 };
 

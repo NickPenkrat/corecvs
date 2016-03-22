@@ -4,6 +4,8 @@
 #include <unordered_set>
 #include <queue>
 
+using corecvs::Vector2dd;
+
 ChessBoardAssembler::ChessBoardAssembler(ChessBoardAssemblerParams params) : ChessBoardAssemblerParams(params)
 {
 }
@@ -61,37 +63,37 @@ void ChessBoardAssembler::acceptHypothesis(RectangularGridPattern &board)
     for (auto& v: board.cornerIdx)
         for (auto& c: v)
             cset.insert(c);
-    if (board.score > costThreshold)
+    if (board.score > costThreshold())
         return;
     int w = board.w();
     int h = board.h();
-    if (hypothesisDimensions)
+    if (hypothesisDimensions())
     {
         int maxfit = 0;
         for (int i = 0; i < 2; ++i)
         {
             int fit = 0;
-            if (w == hypothesisDim[i & 1])
+            if (w == hypothesisDim(i & 1))
                 fit++;
-            if (h == hypothesisDim[i ^ 1])
+            if (h == hypothesisDim(i ^ 1))
                 fit++;
             if (fit > maxfit) maxfit = fit;
         }
-        if (maxfit < hypothesisDimensions)
+        if (maxfit < hypothesisDimensions())
             return;
     }
     for (int i = 0; i < w; ++i)
         for (int j = 0; j + 1 < h; ++j)
         {
             auto a = !(corners[board.cornerIdx[j][i]].pos - corners[board.cornerIdx[j + 1][i]].pos);
-            if (a < minSeedDistance)
+            if (a < minSeedDistance())
                 return;
         }
     for (int i = 0; i < h; ++i)
         for (int j = 0; j + 1 < w; ++j)
         {
             auto a = !(corners[board.cornerIdx[i][j]].pos - corners[board.cornerIdx[i][j + 1]].pos);
-            if (a < minSeedDistance)
+            if (a < minSeedDistance())
                 return;
         }
 
@@ -182,7 +184,7 @@ ChessBoardAssembler::BoardExpander::BoardExpander(ChessBoardAssembler *assembler
 bool ChessBoardAssembler::BoardExpander::initBoard(int seed)
 {
     auto& corners = assembler->corners;
-    auto varThreshold = assembler->seedThreshold;
+    double varThreshold = assembler->seedThreshold();
     // Find closest corners
     // Mark'em as used
     // Init board
@@ -198,7 +200,7 @@ bool ChessBoardAssembler::BoardExpander::initBoard(int seed)
     board.cornerIdx[1][1] = seed;
     usedCorners[seed] = 1;
 
-    auto& from = corners[seed];
+    OrientedCorner& from = corners[seed];
 
     // North neighb
     int nwse[4], corn[4];
@@ -236,11 +238,12 @@ bool ChessBoardAssembler::BoardExpander::initBoard(int seed)
                 continue;
             mindist = std::min(mindist, !(corners[board.cornerIdx[i][j]].pos - corners[board.cornerIdx[1][1]].pos));
         }
-    if (mindist < assembler->minSeedDistance)
+    if (mindist < assembler->minSeedDistance())
         return false;
 
     std::vector<double> dv[2] = {{ d_nwse[0], d_nwse[1] }, { d_nwse[2], d_nwse[3], d_corn[0], d_corn[1], d_corn[2], d_corn[3]}};
-    double s[2] = {0.0}, ssq[2] = {0.0};
+    double s[2]   = {0.0, 0.0};
+    double ssq[2] = {0.0, 0.0};
     for (int i = 0; i < 2; ++i)
     {
         for (auto& v: dv[i])
@@ -263,8 +266,8 @@ bool ChessBoardAssembler::BoardExpander::initBoard(int seed)
 bool ChessBoardAssembler::BoardExpander::getNearest(int from_id, corecvs::Vector2dd dir, int& id, double &score)
 {
     auto& corners = assembler->corners;
-    auto tgPenalty = assembler->seedTgPenalty;
-    auto& from = corners[from_id];
+    double tgPenalty = assembler->seedTgPenalty();
+    OrientedCorner& from = corners[from_id];
 
     double best_dist = 1e100;
     int best_id = -1, N = (int)corners.size();
@@ -374,14 +377,16 @@ bool ChessBoardAssembler::BoardExpander::growDir(Direction dir, RectangularGridP
 
 corecvs::Vector2dd ChessBoardAssembler::BoardExpander::predict(corecvs::Vector2dd a, corecvs::Vector2dd b, corecvs::Vector2dd c)
 {
-    auto conservativity = assembler->conservativity;
+    double conservativity = assembler->conservativity();
     auto d1 = b - a, d2 = c - b;
     auto alpha1 = atan2(d1[1], d1[0]),
          alpha2 = atan2(d2[1], d2[0]);
     auto alpha = 2.0 * alpha2 - alpha1;
-    auto l1 = d1.l2Metric(), l2 = d2.l2Metric();
 
-    auto res = c + conservativity * (2.0 * l2 - l1) * corecvs::Vector2dd(cos(alpha), sin(alpha));
+    double l1 = d1.l2Metric();
+    double l2 = d2.l2Metric();
+
+    auto res = c + Vector2dd::FromPolar(alpha, conservativity * (2.0 * l2 - l1));
     return res;
 }
 

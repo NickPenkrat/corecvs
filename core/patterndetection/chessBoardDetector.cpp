@@ -13,24 +13,24 @@ ChessboardDetector::ChessboardDetector (
       detector(detectorParams),
       stats(NULL)
 {
-    assemblerParams.hypothesisDimensions = 0;
+    assemblerParams.setHypothesisDimensions(0);
     switch (type)
     {
         case AlignmentType::FIT_MARKER_ORIENTATION:
         case AlignmentType::FIT_MARKERS:
             break;
         case AlignmentType::FIT_WIDTH:
-            assemblerParams.hypothesisDimensions = 1;
-            assemblerParams.hypothesisDim[0] = idealWidth;
+            assemblerParams.setHypothesisDimensions(1);
+            assemblerParams.setHypothesisDimFirst(idealWidth);
             break;
         case AlignmentType::FIT_HEIGHT:
-            assemblerParams.hypothesisDimensions = 1;
-            assemblerParams.hypothesisDim[0] = idealHeight;
+            assemblerParams.setHypothesisDimensions(1);
+            assemblerParams.setHypothesisDimFirst(idealHeight);
             break;
         case AlignmentType::FIT_ALL:
-            assemblerParams.hypothesisDimensions = 2;
-            assemblerParams.hypothesisDim[0] = idealWidth;
-            assemblerParams.hypothesisDim[1] = idealHeight;
+            assemblerParams.setHypothesisDimensions(2);
+            assemblerParams.setHypothesisDimFirst(idealWidth);
+            assemblerParams.setHypothesisDimSecond(idealHeight);
             break;
     }
     assembler = ChessBoardAssembler(assemblerParams);
