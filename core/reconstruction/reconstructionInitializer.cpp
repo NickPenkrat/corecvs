@@ -5,7 +5,9 @@
 #include "reconstructionStructs.h"
 #include "log.h"
 
-#include "tbb/tbb.h"
+#ifdef WITH_TBB
+#include <tbb/tbb.h>
+#endif
 
 bool corecvs::ReconstructionInitializer::initialize()
 {
