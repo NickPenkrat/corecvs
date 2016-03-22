@@ -8,7 +8,8 @@ HEADERS += \
 	reconstruction/reconstructionFixtureScene.h \
 	reconstruction/essentialFeatureFilter.h \
 	reconstruction/sceneGenerator.h \
-	reconstruction/reconstructionInitializer.h
+	reconstruction/reconstructionInitializer.h \
+	reconstruction/sceneAligner.h
 
 
 SOURCES += \
@@ -26,4 +27,5 @@ SOURCES += \
     reconstruction/reconstructionFixtureScene.cpp \
     reconstruction/essentialFeatureFilter.cpp \
     reconstruction/sceneGenerator.cpp \
-    reconstruction/reconstructionInitializer.cpp
+    reconstruction/reconstructionInitializer.cpp \
+    reconstruction/sceneAligner.cpp
