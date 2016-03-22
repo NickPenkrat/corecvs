@@ -270,31 +270,30 @@ Matrix operator *(const Matrix &A, const Matrix &B)
 Vector operator *(const Matrix &M, const Vector &V)
 {
     CORE_ASSERT_TRUE(M.w == V.size(), "Matrix and vector have wrong sizes");
-    Vector result(M.h);
-    int row, column;
-    if (M.h < 64)
+    if (M.h >= 64)
     {
-       for (row = 0; row < M.h; row++)
-       {
-           double sum = 0.0;
-           for (column = 0; column < M.w; column++)
-           {
-               sum += V.at(column) * M.a(row, column);
-           }
-           result.at(row) = sum;
-       }
-    }
-    else
-    {
-#if defined(WITH_MKL)
-		corecvs::parallelable_for (0, M.h, 8, ParallelMV(&M, &V, &result)); //TODO:
-#elif defined(WITH_BLAS)
-        cblas_dgemv (CblasRowMajor, CblasNoTrans, M.h, M.w, 1.0, &M.element(0, 0), M.stride, &V[0], 1, 0.0, &result[0], 1);
+#if !defined(WITH_BLAS)
+        return Matrix::multiplyHomebrewMV(M, V);
 #else
-		CORE_ASSERT_TRUE(0, "There're no instaled MKL/openBLAS! Stop!");
+        Vector result(M.h);
+        cblas_dgemv (CblasRowMajor, CblasNoTrans, M.h, M.w, 1.0, &M.element(0, 0), M.stride, &V[0], 1, 0.0, &result[0], 1);
+        return result;
 #endif
+    } else {
+        Vector result(M.h);
+        int row, column;
+        for (row = 0; row < M.h; row++)
+        {
+            double sum = 0.0;
+            for (column = 0; column < M.w; column++)
+            {
+               sum += V.at(column) * M.a(row, column);
+            }
+            result.at(row) = sum;
+        }
+        return result;
     }
-    return result;
+    return Vector(0);
 }
 
 Vector operator *(const Vector &V, const Matrix &M)
@@ -693,9 +692,9 @@ Matrix Matrix::inv() const
 
     for (i = 0; i < rank; ++i)
     {
-        int pivotRow = i;
+        uint pivotRow = i;
         double pivotValue = std::abs(copy.a(i, i));
-        for (int j = i + 1; j < rank; ++j)
+        for (uint j = i + 1; j < rank; ++j)
         {
             double abs = std::abs(copy.a(j, i));
             if (abs > pivotValue)
@@ -706,11 +705,11 @@ Matrix Matrix::inv() const
         }
         if (pivotRow != i)
         {
-            for (int j = i; j < rank; ++j)
+            for (uint j = i; j < rank; ++j)
             {
                 std::swap(copy.a(pivotRow, j), copy.a(i, j));
             }
-            for (int j = 0; j < rank; ++j)
+            for (uint j = 0; j < rank; ++j)
             {
                 std::swap(result.a(pivotRow, j), result.a(i, j));
             }

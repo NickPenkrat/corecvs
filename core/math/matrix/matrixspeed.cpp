@@ -477,4 +477,13 @@ Matrix Matrix::multiplyHomebrewMD(const Matrix &M, const DiagonalMatrix &D)
 }
 
 
+Vector Matrix::multiplyHomebrewMV(const Matrix &M, const Vector &V)
+{
+    CORE_ASSERT_TRUE(M.w == V.size(), "Matrix and Vector have wrong sizes");
+    Vector result(M.h);
+    parallelable_for (0, M.h, 8, ParallelMV(&M, &V, &result));
+    return result;
+}
+
+
 } //namespace corecvs
