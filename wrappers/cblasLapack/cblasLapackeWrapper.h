@@ -1,11 +1,18 @@
 #ifndef CBLASLAPACKEWRAPPER
+#define CBLASLAPACKEWRAPPER
+
+#ifdef WITH_BLAS
+
 #ifdef WITH_MKL
     #include <mkl.h>
-#elif defined(WITH_BLAS)
+#else
     #include <complex>
     #define lapack_complex_float std::complex<float>
     #define lapack_complex_double std::complex<double>
     #include <cblas.h>
     #include <lapacke.h>
 #endif
-#endif
+
+#endif // WITH_BLAS
+
+#endif // CBLASLAPACKEWRAPPER

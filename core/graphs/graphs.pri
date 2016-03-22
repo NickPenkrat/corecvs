@@ -5,4 +5,3 @@ HEADERS += \
 SOURCES += \
 	graphs/undirectedGraph.cpp
 
-CONFIG += c++11

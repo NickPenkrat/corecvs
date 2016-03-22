@@ -36,7 +36,9 @@ private:
     /*
      * Degree-unspecific solver based on apropriate EV-problem
      */
+#ifdef WITH_BLAS
     static size_t solve_companion(const double* coeff, double* roots, const size_t &degree);
+#endif
 };
 
 template<>

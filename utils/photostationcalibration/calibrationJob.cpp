@@ -716,26 +716,27 @@ void CalibrationJob::calibrate()
 {
     state->reset("Calibration", 6);
 
+    state->incrementStarted();
     allCalibrateSingleCamera();
     state->incrementCompleted();
-    state->incrementStarted();
 
+    state->incrementStarted();
     computeSingleCameraErrors();
     state->incrementCompleted();
-    state->incrementStarted();
 
+    state->incrementStarted();
     calibratePhotostation();
     state->incrementCompleted();
-    state->incrementStarted();
 
+    state->incrementStarted();
     computeCalibrationErrors();
     state->incrementCompleted();
-    state->incrementStarted();
 
+    state->incrementStarted();
     computeFullErrors();
     state->incrementCompleted();
-    state->incrementStarted();
 
+    state->incrementStarted();
     computeReconstructionError();
     state->incrementCompleted();
 }

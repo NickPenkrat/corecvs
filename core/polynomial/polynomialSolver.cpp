@@ -75,7 +75,12 @@ size_t corecvs::PolynomialSolver::solve(const double* coeff, double* roots, size
         return solve_imp<2>(coeff, roots, degree);
     if (degree == 1)
         return solve_imp<1>(coeff, roots, degree);
+#ifdef WITH_BLAS
     return solve_companion(coeff, roots, degree);
+#else
+	CORE_ASSERT_TRUE_S(false);
+	return 0;
+#endif
 }
 
 void corecvs::PolynomialSolver::solve(const corecvs::Polynomial &poly, std::vector<double> &roots)
@@ -84,6 +89,7 @@ void corecvs::PolynomialSolver::solve(const corecvs::Polynomial &poly, std::vect
     roots.resize(solve(poly.data(), &roots[0], poly.degree()));
 }
 
+#ifdef WITH_BLAS
 /** Unfortunately I do not know any super-stable closed-form methods for solving
  *  3+-order polynomial equations and do not want to bother with Cardano/Ferrari-like stuff.
  */
@@ -141,7 +147,7 @@ size_t corecvs::PolynomialSolver::solve_companion(const double* coeff, double* r
             }
         }
     }
-#endif
+#endif // FIEDLER
 
     // evd
     corecvs::Vector wr((int)degree), wi((int)degree);
@@ -157,4 +163,5 @@ size_t corecvs::PolynomialSolver::solve_companion(const double* coeff, double* r
         }
     }
     return cnt;
-}   
+}
+#endif // WITH_BLAS
