@@ -8,6 +8,7 @@
 #include "calibrationCamera.h"
 #include "calibrationPhotostation.h"
 #include "affine.h"
+#include "sceneAligner.h"
 
 #include <random>
 
@@ -17,9 +18,39 @@ using namespace corecvs;
 const int DEFAULT_SEED = 777;
 const int RNG_RETRIES = 16384;
 
+TEST(Reconstruction, alignerPoseFromVectors)
+{
+    std::mt19937 rng(DEFAULT_SEED);
+    std::uniform_real_distribution<double> runif(-1e3, 1e3);
+
+    for (int i = 0; i < RNG_RETRIES; ++i)
+    {
+        corecvs::Vector3dd A, B, qA, qB;
+        corecvs::Quaternion Q;
+
+        for (int j = 0; j < 3; ++j)
+        {
+            A[j] = runif(rng);
+            B[j] = runif(rng);
+            Q[j] = runif(rng);
+        }
+        Q[3] = runif(rng);
+        Q.normalise();
+        qA = Q * A;
+        qB = Q * B;
+
+        auto Qe = SceneAligner::EstimateOrientationTransformation(qA, qB, A, B);
+        Qe = Qe ^ Q.conjugated();
+        if (Qe[3] < 0.0) Qe = -Qe;
+        for (int j = 0; j < 3; ++j)
+            ASSERT_NEAR(0.0, Qe[j], 1e-6);
+        ASSERT_NEAR(1.0, Qe[3], 1e-6);
+    }
+}
+
 TEST(Reconstruction, nonCentralRelative6P)
 {
-	double angleThreshold = 0.5;
+    double angleThreshold = 0.5;
     corecvs::CameraModel cam(PinholeCameraIntrinsics(100.0, 100.0, 100.0, 100.0, 0.0, Vector2dd(800, 800), Vector2dd(800, 800)));
     corecvs::Photostation ps;
     for (int i = 0; i < 6; ++i)
@@ -27,7 +58,7 @@ TEST(Reconstruction, nonCentralRelative6P)
         ps.cameras.push_back(cam);
         ps.cameras[i].extrinsics.orientation = corecvs::Quaternion(0, sin(M_PI / 6.0 * i), 0, cos(M_PI / 6.0 * i));
         ps.cameras[i].extrinsics.position = corecvs::Vector3dd(sin(M_PI / 3.0 * i), 0, cos(M_PI / 3.0 * i));
-        
+
     }
     ps.location.rotor = corecvs::Quaternion(0, 0, 0, 1);
     ps.location.shift = corecvs::Vector3dd(0, 0, 0);
@@ -93,7 +124,7 @@ TEST(Reconstruction, nonCentralRelative6P)
         double diff = std::acos((hypo.rotor.conjugated() ^ ps2.location.rotor)[3]) * 2.0;
         diff = std::min(std::abs(diff), std::abs(2*M_PI - diff)) * 180.0 / M_PI;
         if (hypo.shift.angleTo(ps2.location.shift) * 180.0 / M_PI < angleThreshold * !(ps2.location.shift) && diff < angleThreshold)
-        	closeCnt++;
+            closeCnt++;
     }
     ASSERT_TRUE(closeCnt > 0);
 }
@@ -162,7 +193,7 @@ TEST(Reconstruction, testNonCentralMulticamera)
             }
         }
     }
-    
+
     std::cout << std::endl << std::endl;
     auto res = corecvs::PNPSolver::solvePNP(offsets, dirs, pts);
     int nearEnough = 0;
