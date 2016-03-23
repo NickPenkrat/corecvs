@@ -72,6 +72,7 @@ bool corecvs::SceneAligner::TryAlignGPS(ReconstructionFixtureScene* scene, corec
 {
     scale = 1.0;
     transformation = corecvs::Affine3DQ();
+    return false;
 }
 
 bool corecvs::SceneAligner::TryAlignStatic(ReconstructionFixtureScene* scene, corecvs::Affine3DQ &transformation, double &scale)
