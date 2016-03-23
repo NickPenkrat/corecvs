@@ -28,12 +28,16 @@ TEST(Reconstruction, alignerPoseFromVectors)
         corecvs::Vector3dd A, B, qA, qB;
         corecvs::Quaternion Q;
 
-        for (int j = 0; j < 3; ++j)
-        {
-            A[j] = runif(rng);
-            B[j] = runif(rng);
-            Q[j] = runif(rng);
-        }
+
+		do
+		{
+			for (int j = 0; j < 3; ++j)
+			{
+				A[j] = runif(rng);
+				B[j] = runif(rng);
+				Q[j] = runif(rng);
+			}
+		} while (std::abs(A & B) >= 0.95);
         Q[3] = runif(rng);
         Q.normalise();
         qA = Q * A;
