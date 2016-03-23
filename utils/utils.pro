@@ -97,7 +97,6 @@ HEADERS += \
     tablecontrol/rotaryTableMeshModel.h \
     tablecontrol/rotationPlanGenerator.h \
     capture/abstractImageNamer.h \
-    reconstruction/reconstructionSolver.h \
     corestructs/cameraModel/affine3dControlWidget.h \
     corestructs/cameraModel/fixtureControlWidget.h \
     widgets/observationListModel.h \
@@ -175,7 +174,6 @@ SOURCES += \
     tablecontrol/rotaryTableMeshModel.cpp \
     tablecontrol/rotationPlanGenerator.cpp \
     capture/abstractImageNamer.cpp \
-    reconstruction/reconstructionSolver.cpp \
     corestructs/cameraModel/affine3dControlWidget.cpp \
     corestructs/cameraModel/fixtureControlWidget.cpp \
     widgets/observationListModel.cpp \

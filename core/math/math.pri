@@ -5,6 +5,7 @@ HEADERS += \
     math/matrix/matrix33.h \
     math/matrix/matrix44.h \
     math/matrix/diagonalMatrix.h \
+    math/matrix/blasReplacement.h \
     math/sparseMatrix.h \
     math/matrix/homographyReconstructor.h \
     math/matrix/matrixOperations.h \
@@ -70,7 +71,7 @@ SOURCES += \
     math/generic/genericMath.cpp \
     math/sse/sseWrapper.cpp \
     math/matrix/similarityReconstructor.cpp \
-    math/matrix/matrixspeed.cpp
+#    math/matrix/matrixspeed.cpp
 
 
 contains(DEFINES, "WITH_FFTW") {

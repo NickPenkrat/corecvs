@@ -40,7 +40,6 @@ UTILS_INCLUDEPATH = \
     $$UTILSDIR/photostationcalibration \
     $$UTILSDIR/tablecontrol \
     $$UTILSDIR/capture     \
-    $$UTILSDIR/reconstruction \
     $$UTILSDIR/memoryuse
 
 

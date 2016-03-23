@@ -14,6 +14,8 @@
 #include "tbbWrapper.h"
 #include "sseWrapper.h"
 
+#include "blasReplacement.h"
+
 namespace corecvs {
 
 /* The constructor is not in single cycle due to possible stride of the matrix */
@@ -254,15 +256,12 @@ Matrix operator *(const Matrix &A, const Matrix &B)
     CORE_ASSERT_TRUE(A.w == B.h, "Matrices have wrong sizes");
     Matrix result(A.h, B.w, false);
 
-#ifdef WITH_MKL
-	//parallelable_for(0, result.h, 8, ParallelMM<>(&A, &B, &result), !(A.h < 64));
-    Matrix::multiplyHomebrew(A, B, true, !(A.h < 64));
-#elif defined(WITH_BLAS)
-	cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, A.h, B.w, A.w, 1.0, A.data, A.stride, B.data, B.stride, 0.0, result.data, result.stride);
-#else // !WITH_BLAS
-	CORE_ASSERT_TRUE(0, "There're no instaled MKL/openBLAS! Stop!");
-#endif // WITH_BLAS
-
+#ifndef WITH_BLAS
+    corecvs::parallelable_for(0, result.h, 8, ParallelMM<>(&A, &B, &result), !(A.h < 64));
+    //Matrix::multiplyHomebrew(A, B, true, !(A.h < 64)); // TODO: it has a bug, see testMatrixOperations!!!
+#else
+    cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, A.h, B.w, A.w, 1.0, A.data, A.stride, B.data, B.stride, 0.0, result.data, result.stride);
+#endif
     return result;
 }
 
@@ -270,29 +269,26 @@ Matrix operator *(const Matrix &A, const Matrix &B)
 Vector operator *(const Matrix &M, const Vector &V)
 {
     CORE_ASSERT_TRUE(M.w == V.size(), "Matrix and vector have wrong sizes");
-    Vector result(M.h);
-    int row, column;
-    if (M.h < 64)
+    if (M.h >= 64)
     {
-       for (row = 0; row < M.h; row++)
-       {
-           double sum = 0.0;
-           for (column = 0; column < M.w; column++)
-           {
-               sum += V.at(column) * M.a(row, column);
-           }
-           result.at(row) = sum;
-       }
-    }
-    else
-    {
-#if defined(WITH_MKL)
-        return Matrix::multiplyHomebrewMV(M, V); //TODO:
-#elif defined(WITH_BLAS)
-        cblas_dgemv (CblasRowMajor, CblasNoTrans, M.h, M.w, 1.0, &M.element(0, 0), M.stride, &V[0], 1, 0.0, &result[0], 1);
+#if !defined(WITH_BLAS)
+        return Matrix::multiplyHomebrewMV(M, V);
 #else
-		CORE_ASSERT_TRUE(0, "There're no instaled MKL/openBLAS! Stop!");
+        Vector result(M.h);
+        cblas_dgemv (CblasRowMajor, CblasNoTrans, M.h, M.w, 1.0, &M.element(0, 0), M.stride, &V[0], 1, 0.0, &result[0], 1);
+        return result;
 #endif
+    }
+
+    Vector result(M.h);
+    for (int row = 0; row < M.h; row++)
+    {
+        double sum = 0.0;
+        for (int column = 0; column < M.w; column++)
+        {
+            sum += V.at(column) * M.a(row, column);
+        }
+        result.at(row) = sum;
     }
     return result;
 }
@@ -446,7 +442,7 @@ void Matrix::print(ostream &out)
 }
 
 
-/* Merge three functions below*/
+/* Merge three functions below */
 Matrix *Matrix::transposed() const
 {
     Matrix* result = new Matrix(this->w, this->h, false);
@@ -693,9 +689,9 @@ Matrix Matrix::inv() const
 
     for (i = 0; i < rank; ++i)
     {
-        int pivotRow = i;
+        uint pivotRow = i;
         double pivotValue = std::abs(copy.a(i, i));
-        for (int j = i + 1; j < rank; ++j)
+        for (uint j = i + 1; j < rank; ++j)
         {
             double abs = std::abs(copy.a(j, i));
             if (abs > pivotValue)
@@ -706,11 +702,11 @@ Matrix Matrix::inv() const
         }
         if (pivotRow != i)
         {
-            for (int j = i; j < rank; ++j)
+            for (uint j = i; j < rank; ++j)
             {
                 std::swap(copy.a(pivotRow, j), copy.a(i, j));
             }
-            for (int j = 0; j < rank; ++j)
+            for (uint j = 0; j < rank; ++j)
             {
                 std::swap(result.a(pivotRow, j), result.a(i, j));
             }
@@ -757,18 +753,19 @@ Matrix Matrix::inv() const
 #endif
 }
 
-corecvs::Vector corecvs::Matrix::linSolve(const corecvs::Vector &B, bool symmetric, bool posDef) const
+bool corecvs::Matrix::linSolve(const corecvs::Vector &B, corecvs::Vector &res, bool symmetric, bool posDef) const
 {
-    return LinSolve(*this, B, symmetric, posDef);
+    return LinSolve(*this, B, res, symmetric, posDef);
 }
 
-corecvs::Vector corecvs::Matrix::LinSolve(const corecvs::Matrix &A, const corecvs::Vector &B, bool symmetric, bool posDef)
+bool corecvs::Matrix::LinSolve(const corecvs::Matrix &A, const corecvs::Vector &B, corecvs::Vector &res, bool symmetric, bool posDef)
 {
     CORE_ASSERT_TRUE_S(A.h == B.size());
     CORE_ASSERT_TRUE_S(A.h == A.w);
 #ifdef WITH_BLAS
     corecvs::Matrix copy(A);
-    corecvs::Vector res(B);
+    res = B;
+    decltype(LAPACKE_dgetrf(0, 0, 0, 0, 0, 0)) info;
     if (!posDef)
     {
 #ifndef WIN32
@@ -779,23 +776,24 @@ corecvs::Vector corecvs::Matrix::LinSolve(const corecvs::Matrix &A, const corecv
 #endif
         if (!symmetric)
         {
-            LAPACKE_dgetrf(LAPACK_ROW_MAJOR, copy.h, copy.w, &copy.a(0, 0), copy.stride, pivot);
-            LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', res.size(), 1, &copy.a(0, 0), copy.stride, pivot, &res[0], 1);
+            info = LAPACKE_dgetrf(LAPACK_ROW_MAJOR, copy.h, copy.w, &copy.a(0, 0), copy.stride, pivot);
+            if (!info) LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', res.size(), 1, &copy.a(0, 0), copy.stride, pivot, &res[0], 1);
         }
         else
         {
-            LAPACKE_dsytrf(LAPACK_ROW_MAJOR, 'U', copy.h, &copy.a(0, 0), copy.stride, pivot);
-            LAPACKE_dsytrs(LAPACK_ROW_MAJOR, 'U', res.size(), 1, &copy.a(0, 0), copy.stride, pivot, &res[0], 1);
+            info = LAPACKE_dsytrf(LAPACK_ROW_MAJOR, 'U', copy.h, &copy.a(0, 0), copy.stride, pivot);
+            if (!info) LAPACKE_dsytrs(LAPACK_ROW_MAJOR, 'U', res.size(), 1, &copy.a(0, 0), copy.stride, pivot, &res[0], 1);
         }
     }
     else
     {
-        LAPACKE_dpotrf(LAPACK_ROW_MAJOR, 'U', copy.w, &copy.a(0, 0), copy.stride);
-        LAPACKE_dpotrs(LAPACK_ROW_MAJOR, 'U', copy.w, 1, &copy.a(0, 0), copy.stride, &res[0], 1);
+        info = LAPACKE_dpotrf(LAPACK_ROW_MAJOR, 'U', copy.w, &copy.a(0, 0), copy.stride);
+        if (!info) LAPACKE_dpotrs(LAPACK_ROW_MAJOR, 'U', copy.w, 1, &copy.a(0, 0), copy.stride, &res[0], 1);
     }
-    return res;
+    return info == 0;
 #else
-    return A.inv() * B;
+    res = A.inv() * B;
+    return true;
 #endif
 }
 

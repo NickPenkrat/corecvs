@@ -27,7 +27,7 @@ TEST(Filesystem, test1)
     bool isOk = false;
 
     std::cout << "testFilesystem:: current folder has " << childs.size() << " files:" << std::endl;
-    for (auto& child : childs)
+    for (string& child : childs)
     {
         std::cout << child << std::endl;
 

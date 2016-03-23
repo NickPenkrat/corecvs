@@ -7,21 +7,19 @@ EssentialFeatureFilter::EssentialFeatureFilter(
         const Matrix33 &K2,
         std::vector<std::array<corecvs::Vector2dd, 2>> &features,
         std::vector<std::array<corecvs::Vector2dd, 2>> &featuresInlierCheck,
-        double inlierRadius,
-        double targetGamma,
-        int maxIter,
+        EssentialFilterParams params,
         int batch,
         int batches) :
     K1(K1.inv()),
     K2(K2.inv()),
     features(features),
     featuresInlierCheck(featuresInlierCheck),
-    maxIter(maxIter),
+    maxIter(params.maxIterations),
     batch(batch),
     batches(batches),
     usedIter(0),
-    targetGamma(targetGamma),
-    inlierRadius(inlierRadius)
+    targetGamma(params.targetGamma),
+    inlierRadius(params.inlierRadius)
 {
 }
 
@@ -46,6 +44,7 @@ void EssentialFeatureFilter::estimate()
         parallelable_for(0, batches, ParallelEstimator(this, inlierRadius, batch));
         usedIter += batch * batches;
     } while(usedIter < nForGamma() && usedIter < maxIter);
+    std::cout << "Stopping at gamma " << std::pow((1.0 - std::pow(inlierIdx.size() * 1.0 / featuresInlierCheck.size(), FEATURE_POINTS_FOR_MODEL)), usedIter) << " instead of " << targetGamma << std::endl;
 }
 
 double EssentialFeatureFilter::nForGamma()

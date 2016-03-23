@@ -501,21 +501,26 @@ SparseMatrix SparseMatrix::upper() const
     return copy;
 }
 
-Vector SparseMatrix::linSolve(const Vector &rhs, bool symmetric, bool posDef) const
+bool SparseMatrix::linSolve(const Vector &rhs, Vector &res, bool symmetric, bool posDef) const
 {
     if (symmetric)
-        return LinSolve(symmetric ? upper() : (*this), rhs, true, posDef);
-    return LinSolve(*this, rhs, false, posDef);
+#ifdef WITH_MKL
+        return LinSolve(symmetric ? upper() : (*this), rhs, res, true, posDef);
+#else
+		return LinSolve(*this, rhs, res, true, posDef);
+#endif
+    return LinSolve(*this, rhs, res, false, posDef);
 }
 
-Vector SparseMatrix::LinSolve(const SparseMatrix &m, const Vector &rhs, bool symmetric, bool posDef)
+bool SparseMatrix::LinSolve(const SparseMatrix &m, const Vector &rhs, Vector &res, bool symmetric, bool posDef)
 {
     CORE_ASSERT_TRUE_S(rhs.size() == m.h);
 #ifndef WITH_MKL
     CORE_UNUSED(posDef);
-    return Matrix::LinSolve((Matrix)m, rhs, symmetric);
+    return Matrix::LinSolve((Matrix)m, rhs, res, symmetric);
 #else
-    Vector sol(m.w);
+    res = Vector(m.w);
+    auto& sol = res;
     for (int i = 0; i < m.w; ++i)
         sol[i] = 0.0;
     _MKL_DSS_HANDLE_t dss_handle;
@@ -542,7 +547,7 @@ Vector SparseMatrix::LinSolve(const SparseMatrix &m, const Vector &rhs, bool sym
     if (retval != MKL_DSS_SUCCESS)
     {
        dss_delete(dss_handle, delOptions);
-       return sol;
+       return false;
     }
 
 
@@ -550,12 +555,12 @@ Vector SparseMatrix::LinSolve(const SparseMatrix &m, const Vector &rhs, bool sym
     if (retval != MKL_DSS_SUCCESS)
     {
        dss_delete(dss_handle, delOptions);
-       return sol;
+       return false;
     }
 
     dss_delete(dss_handle, delOptions);
-    return sol;
-#endif
+    return true;
+#endif // WITH_MKL
 }
 
 std::ostream& corecvs::operator<< (std::ostream &out, const SparseMatrix &sm)

@@ -5,4 +5,3 @@ HEADERS += \
 SOURCES += \
 	patterndetection/*.cpp
 
-CONFIG += c++11

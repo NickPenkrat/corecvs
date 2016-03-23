@@ -3,15 +3,25 @@
 #include <iostream>
 
 #ifdef __GNUC__
+#ifdef CORE_UNSAFE_DEPS
 # include <experimental/filesystem>
-  namespace fs = std::experimental::filesystem;
+  namespace fs = std::experimental::filesystem;  
+#else
+    #include <sys/types.h>
+    #include <dirent.h>
 #endif
+#endif
+
+
 #ifdef _MSC_VER
 # include <filesystem>
   namespace fs = std::tr2::sys;
 #endif
 
 namespace corecvs {
+
+
+#if defined(CORE_UNSAFE_DEPS) || defined (_MSC_VER)
 
 bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFiles)
 {
@@ -42,6 +52,38 @@ bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFi
 
     return true;
 }
+
+#else
+
+bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFiles)
+{
+     DIR *dp;
+     struct dirent *ep;
+
+     dp = opendir (path.c_str());
+     if (dp == NULL) {
+         return false;
+     }
+
+
+     while ((ep = readdir (dp)) != NULL) {
+
+       /*Ok there are devices, pipes, links... I don't know... */
+       bool isDir = (ep->d_type != DT_REG) && (ep->d_type != DT_LNK);
+       if (isDir ^ findFiles) {
+           //SYNC_PRINT(("found path: %s\n", ep->d_name));
+
+           /*Do we need to form path? */
+           string result = path + PATH_SEPARATOR + ep->d_name;
+           childs.push_back(result);
+       }
+     }
+
+     closedir (dp);
+     return true;
+}
+#endif
+
 
 } // namespace corecvs
 
