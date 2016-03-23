@@ -1,15 +1,18 @@
 HEADERS += \
 	reconstruction/reconstructionStructs.h \
-	reconstruction/multiPhotostationScene.h \
 	reconstruction/pnpSolver.h \
 	reconstruction/relativeNonCentralP6PSolver.h \
 	reconstruction/relativeNonCentralRansacSolver.h \
 	reconstruction/photostationPlacer.h \
-	reconstruction/absoluteNonCentralRansacSolver.h
+	reconstruction/absoluteNonCentralRansacSolver.h \
+	reconstruction/reconstructionFixtureScene.h \
+	reconstruction/essentialFeatureFilter.h \
+	reconstruction/sceneGenerator.h \
+	reconstruction/reconstructionInitializer.h \
+	reconstruction/sceneAligner.h
 
 
 SOURCES += \
-    reconstruction/multiPhotostationScene.cpp \
     reconstruction/pnpSolver.cpp \
     reconstruction/pnpGbActionMatrix.cpp \
     reconstruction/p34pGbActionMatrix.cpp \
@@ -20,8 +23,9 @@ SOURCES += \
     reconstruction/setupActionMatrixNCP6P.cpp \
     reconstruction/relativeNonCentralRansacSolver.cpp \
     reconstruction/photostationPlacer.cpp \
-    reconstruction/absoluteNonCentralRansacSolver.cpp
-
-
-
-CONFIG += c++11
+    reconstruction/absoluteNonCentralRansacSolver.cpp \
+    reconstruction/reconstructionFixtureScene.cpp \
+    reconstruction/essentialFeatureFilter.cpp \
+    reconstruction/sceneGenerator.cpp \
+    reconstruction/reconstructionInitializer.cpp \
+    reconstruction/sceneAligner.cpp

@@ -250,48 +250,67 @@ Vector corecvs::operator *(const Vector &lhs, const SparseMatrix &rhs)
     return ans;
 }
 
+#include <fstream>
 SparseMatrix corecvs::operator *(const SparseMatrix &lhs, const SparseMatrix &rhst)
 {
     CORE_ASSERT_TRUE_S(lhs.w == rhst.h);
 #ifndef WITH_MKL
-    auto rhs = rhst.t();
-    std::vector<double> values;
-    std::vector<int> columns, rowPointers(lhs.h + 1);
-    for (int i = 0; i < lhs.h; ++i)
+    auto& rhs = rhst;
+    int N = std::max(std::max(lhs.h, lhs.w), std::max(rhs.h, rhs.w));
+    std::vector<double> values, acc(N);
+    std::vector<int> columns, rowPointers(lhs.h + 1), index(N, -10);
+    int h = lhs.h;
+    int w = rhs.w;
+   
+    for (int i = 0; i < h; ++i)
     {
-        for (int j = 0; j < rhst.w; ++j)
+        int ii = -1, l = 0;
+        for (int jj = lhs.rowPointers[i]; jj < lhs.rowPointers[i + 1]; ++jj)
         {
-            double total = 0.0;
-            int cnt = 0;
-            int lhs_l = lhs.rowPointers[i], lhs_r = lhs.rowPointers[i + 1];
-            int rhs_l = rhs.rowPointers[j], rhs_r = rhs.rowPointers[j + 1];
-            while (lhs_l < lhs_r && rhs_l < rhs_r)
+            int j = lhs.columns[jj];
+            for (int k = rhs.rowPointers[j]; k < rhs.rowPointers[j + 1]; ++k)
             {
-                int cl = lhs.columns[lhs_l], cr = rhs.columns[rhs_l];
-                if (cl < cr)
+                if (index[rhs.columns[k]] == -10)
                 {
-                    ++lhs_l;
-                    continue;
+                    index[rhs.columns[k]] = ii;
+                    ii = rhs.columns[k];
+                    ++l;
                 }
-                if (cr < cl)
-                {
-                    ++rhs_l;
-                    continue;
-                }
-                total += lhs.values[lhs_l] * rhs.values[rhs_l];
-                lhs_l++;
-                rhs_l++;
-                cnt++;
-            }
-            if (cnt > 0 && total != 0.0)
-            {
-                values.push_back(total);
-                columns.push_back(j);
             }
         }
-        rowPointers[i + 1] = values.size();
+        rowPointers[i + 1] = rowPointers[i] + l;
+        columns.resize(rowPointers[i + 1]);
+        values.resize(rowPointers[i + 1]);
+        for (int j = rowPointers[i]; j < rowPointers[i + 1]; ++j)
+        {
+            columns[j] = ii;
+            ii = index[ii];
+            index[columns[j]] = -10;
+        }
+        index.clear();
+        index.resize(N, -10);
     }
-    return SparseMatrix(lhs.h, rhst.w, values, columns, rowPointers);
+    rowPointers[0] = 0;
+
+    for (int i = 0; i < h; ++i)
+    {
+        std::sort(&columns[rowPointers[i]], &columns[rowPointers[i + 1]]);
+        for (int jj = lhs.rowPointers[i]; jj < lhs.rowPointers[i + 1]; ++jj)
+        {
+            int j = lhs.columns[jj];
+            double val = lhs.values[jj];
+            for (int k = rhs.rowPointers[j]; k < rhs.rowPointers[j + 1]; ++k)
+            {
+                acc[rhs.columns[k]] += val * rhs.values[k];
+            }
+        }
+        for (int j = rowPointers[i]; j < rowPointers[i + 1]; ++j)
+        {
+            values[j] = acc[columns[j]];
+            acc[columns[j]] = 0.0;
+        }
+    }
+    return SparseMatrix(h, w, values, columns, rowPointers);
 #else
     auto lhs_mkl = (sparse_matrix_t)lhs;
     auto rhs_mkl = (sparse_matrix_t)rhst;
@@ -307,6 +326,7 @@ SparseMatrix corecvs::operator *(const SparseMatrix &lhs, const SparseMatrix &rh
 
 SparseMatrix SparseMatrix::ata() const
 {
+#if 1
 #ifndef WITH_MKL
     return t() * (*this);
 #else
@@ -318,10 +338,55 @@ SparseMatrix SparseMatrix::ata() const
     mkl_sparse_destroy(res);
     return ress;
 #endif
+#else
+#if 0
+//    const auto& rhs = *this;
+    std::vector<double> values;
+    std::vector<int> columns, rowPointers(h + 1);
+    for (int i = 0; i < h; ++i)
+    {
+        for (int j = 0; j < h; ++j)
+        {
+            double total = 0.0;
+            int cnt = 0;
+            int lhs_l = rowPointers[i], lhs_r = rowPointers[i + 1];
+            int rhs_l = rowPointers[j], rhs_r = rowPointers[j + 1];
+            while (lhs_l < lhs_r && rhs_l < rhs_r)
+            {
+                int cl = columns[lhs_l], cr = columns[rhs_l];
+                if (cl < cr)
+                {
+                    ++lhs_l;
+                    continue;
+                }
+                if (cr < cl)
+                {
+                    ++rhs_l;
+                    continue;
+                }
+                total += values[lhs_l] * values[rhs_l];
+                lhs_l++;
+                rhs_l++;
+                cnt++;
+            }
+            if (cnt > 0 && total != 0.0)
+            {
+                values.push_back(total);
+                columns.push_back(j);
+            }
+        }
+        rowPointers[i + 1] = values.size();
+    }
+    return SparseMatrix(h, h, values, columns, rowPointers);
+#else
+    return t() * (*this);
+#endif
+#endif
 }
 
 SparseMatrix SparseMatrix::t() const
 {
+#if 0
     std::map<std::pair<int, int>, double> map;
     for (int i = 0; i < h; ++i)
     {
@@ -331,6 +396,34 @@ SparseMatrix SparseMatrix::t() const
         }
     }
     return SparseMatrix(w, h, map);
+#else
+    std::vector<int> tRowPointers(w + 1);
+    std::vector<double> tValues(values.size());
+    std::vector<int> tColumns(values.size());
+
+    for (auto& id: tRowPointers)
+        id = 0;
+    tRowPointers[0] = 0;
+    for (int i = 0; i < h; ++i)
+        for (int j = rowPointers[i]; j < rowPointers[i + 1]; ++j)
+            tRowPointers[columns[j]+1]++;
+    for (int i = 0; i < w; ++i)
+        tRowPointers[i + 1] += tRowPointers[i];
+    for (int i = 0; i < h; ++i)
+        for (int j = rowPointers[i]; j < rowPointers[i + 1]; ++j)
+        {
+            int idx = columns[j];
+            tColumns[tRowPointers[idx]] = i;
+            tValues[tRowPointers[idx]] = values[j];
+            tRowPointers[idx]++;
+        }
+    for (int i = w - 1; i >= 1; --i)
+        tRowPointers[i] = tRowPointers[i - 1];
+    tRowPointers[0] = 0;
+    *tRowPointers.rbegin() = (int)tValues.size();
+
+    return SparseMatrix(w, h, tValues, tColumns, tRowPointers);
+#endif
 }
 
 #ifdef WITH_MKL
@@ -408,20 +501,26 @@ SparseMatrix SparseMatrix::upper() const
     return copy;
 }
 
-Vector SparseMatrix::linSolve(const Vector &rhs, bool symmetric, bool posDef) const
+bool SparseMatrix::linSolve(const Vector &rhs, Vector &res, bool symmetric, bool posDef) const
 {
     if (symmetric)
-        return LinSolve(symmetric ? upper() : (*this), rhs, true, posDef);
-    return LinSolve(*this, rhs, false, posDef);
+#ifdef WITH_MKL
+        return LinSolve(symmetric ? upper() : (*this), rhs, res, true, posDef);
+#else
+		return LinSolve(*this, rhs, res, true, posDef);
+#endif
+    return LinSolve(*this, rhs, res, false, posDef);
 }
 
-Vector SparseMatrix::LinSolve(const SparseMatrix &m, const Vector &rhs, bool symmetric, bool posDef)
+bool SparseMatrix::LinSolve(const SparseMatrix &m, const Vector &rhs, Vector &res, bool symmetric, bool posDef)
 {
     CORE_ASSERT_TRUE_S(rhs.size() == m.h);
 #ifndef WITH_MKL
-    return Matrix::LinSolve((Matrix)m, rhs, symmetric);
+    CORE_UNUSED(posDef);
+    return Matrix::LinSolve((Matrix)m, rhs, res, symmetric);
 #else
-    Vector sol(m.w);
+    res = Vector(m.w);
+    auto& sol = res;
     for (int i = 0; i < m.w; ++i)
         sol[i] = 0.0;
     _MKL_DSS_HANDLE_t dss_handle;
@@ -448,7 +547,7 @@ Vector SparseMatrix::LinSolve(const SparseMatrix &m, const Vector &rhs, bool sym
     if (retval != MKL_DSS_SUCCESS)
     {
        dss_delete(dss_handle, delOptions);
-       return sol;
+       return false;
     }
 
 
@@ -456,12 +555,12 @@ Vector SparseMatrix::LinSolve(const SparseMatrix &m, const Vector &rhs, bool sym
     if (retval != MKL_DSS_SUCCESS)
     {
        dss_delete(dss_handle, delOptions);
-       return sol;
+       return false;
     }
 
     dss_delete(dss_handle, delOptions);
-    return sol;
-#endif
+    return true;
+#endif // WITH_MKL
 }
 
 std::ostream& corecvs::operator<< (std::ostream &out, const SparseMatrix &sm)

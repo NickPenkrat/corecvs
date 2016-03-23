@@ -217,6 +217,7 @@ corecvs::Matrix corecvs::PolynomialMatrix::operator() (const double &x) const
     return result;
 }
 
+#ifdef WITH_BLAS
 corecvs::Polynomial corecvs::PolynomialMatrix::det(const size_t requiredPower) const
 {
     std::vector<double> evaluationPoints(requiredPower + 1);
@@ -236,3 +237,4 @@ corecvs::Polynomial corecvs::PolynomialMatrix::det(const size_t requiredPower) c
 
     return corecvs::Polynomial::Interpolate(evaluationPoints, evaluatedValues);
 }
+#endif

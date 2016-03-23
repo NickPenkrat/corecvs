@@ -24,10 +24,7 @@
 #include "matrix.h"
 #include "function.h"
 #include "sparseMatrix.h"
-
 #include "vector.h"
-#include "sparseMatrix.h"
-#include "cblasLapackeWrapper.h"
 
 
 namespace corecvs {
@@ -144,7 +141,17 @@ public:
             timeEval += (Fend - Fbegin).count() / 1e9;
 
             diff = target - y;
+#if 0
+                for (int ijk = 0; ijk < diff.size(); ++ijk)
+                    CORE_ASSERT_TRUE_S(!std::isnan(diff[ijk]));
+                for (int ijk = 0; ijk < y.size(); ++ijk)
+                    CORE_ASSERT_TRUE_S(!std::isnan(y[ijk]));
+                for (int ijk = 0; ijk < beta.size(); ++ijk)
+                    CORE_ASSERT_TRUE_S(!std::isnan(beta[ijk]));
+#endif
             Vector d = diff * J;
+//                for (int ijk = 0; ijk < d.size(); ++ijk)
+//                    CORE_ASSERT_TRUE_S(!std::isnan(d[ijk]));
 
             double normOld = norm;
             norm = diff.sumAllElementsSq();
@@ -229,15 +236,20 @@ public:
                  */
 
                 auto LSbegin = std::chrono::high_resolution_clock::now();
+//                for (int ijk = 0; ijk < B.size(); ++ijk)
+//                    CORE_ASSERT_TRUE_S(!std::isnan(B[ijk]));
+//                std::cout << "A.det " << A.det() << std::endl;
                 if (!useConjugatedGradient)
                 {
-                   delta = A.linSolve(B, true, true);
+                   A.linSolve(B, delta, true, true);
                 }
                 else
                 {
                     delta = conjugatedGradient(A, B);
                 }
                 auto LSend = std::chrono::high_resolution_clock::now();
+//                for (int ijk = 0; ijk < delta.size(); ++ijk)
+//                    CORE_ASSERT_TRUE_S(!std::isnan(delta[ijk]));
                 timeLinSolve += (LSend - LSbegin).count() / 1e9;
 
                 auto EVbegin = std::chrono::high_resolution_clock::now();
@@ -336,9 +348,9 @@ public:
         corecvs::Vector X(A.w), R = B, p = B;
         double rho0 = B.sumAllElementsSq(), rho1 = 0.0;
         for (int i = 0; i < A.w; ++i) X[i] = 0.0;
-    
+
         static int cgf = 0, cgo = 0;
-    
+
         std::cout << "PRECG: " << !(A*X-B) << std::endl;
         double eps = 1e-9 * rho0;
         for (int i = 0; i < conjugatedGradientIterations; ++i)
@@ -362,7 +374,11 @@ public:
                 cgo++;
         }
         if ((A*X-B).sumAllElementsSq() > B.sumAllElementsSq())
-            return A.linSolve(B);
+        {
+            corecvs::Vector v;
+            A.linSolve(B, v);
+            return v;
+        }
         std::cout << "POST-CG: " << !(A*X-B) << " cg failures: " << ((double)cgf) / (double)((cgf + cgo + 1.0)) * 100.0 << "%" << std::endl;
         return X;
     }

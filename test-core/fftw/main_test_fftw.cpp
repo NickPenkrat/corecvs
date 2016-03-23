@@ -28,24 +28,20 @@ TEST(FFTWWrapper, doublePrecisionTest)
     fftw_complex *fft = new fftw_complex[ppm->h * ppm->w];
     fftw_complex *output = new fftw_complex[ppm->h * ppm->w];
 
-    for (int i = 0; i < ppm->h; i++)
-    {
-        for (int j = 0; j < ppm->w; j++)
-        {
+    for (int i = 0; i < ppm->h; i++) {
+        for (int j = 0; j < ppm->w; j++) {
             input[i*ppm->w + j][0] = ppm->element(i, j);
             input[i*ppm->w + j][1] = 0;
         }
     }
 
-    fftw.transform2D(ppm->w, ppm->h, input, fft, FFTW::Forward);
-    fftw.transform2D(ppm->w, ppm->h, fft, output, FFTW::Backward);
+    fftw.transform2D(ppm->w, ppm->h, input,    fft, FFTW::Forward);
+    fftw.transform2D(ppm->w, ppm->h,   fft, output, FFTW::Backward);
 
     G12Buffer* fftResult = new G12Buffer(ppm->h, ppm->w, false);
 
-    for (int i = 0; i < ppm->h; i++)
-    {
-        for (int j = 0; j < ppm->w; j++)
-        {
+    for (int i = 0; i < ppm->h; i++) {
+        for (int j = 0; j < ppm->w; j++) {
             fftResult->element(i, j) = sqrt(pow(output[i * ppm->w + j][0], 2) + pow(output[i * ppm->w + j][1], 2)) / (ppm->h * ppm->w);
         }
     }

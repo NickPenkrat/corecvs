@@ -17,6 +17,7 @@ CORE_SUBMODULES= \
     buffers       \
     cammodel      \
     fileformats   \
+    filesystem    \
     filters       \
     function      \
     geometry      \
@@ -36,16 +37,18 @@ CORE_SUBMODULES= \
     patterndetection \
     cameracalibration \
     graphs        \
-    reconstruction \
     polynomial    \
     camerafixture \
 
+with_blas {
+    CORE_SUBMODULES += reconstruction
+}
 
 for (MODULE, CORE_SUBMODULES) {
     CORE_INCLUDEPATH += $${COREDIR}/$${MODULE}
 }
 
-# Some modules want to export more then one directory with inculdes. Add them here
+# Some modules want to export more then one directory with includes. Add them here
 CORE_INCLUDEPATH += \
     $$COREDIR/buffers/fixeddisp \
     $$COREDIR/buffers/flow \
@@ -65,7 +68,7 @@ CORE_INCLUDEPATH += \
     $$COREDIR/xml \
     $$COREDIR/xml/generated \
     $$COREDIR/tinyxml \
-    $$COREDIR/cblasLapackeWrapper \
+    $$COREDIR/../wrappers/cblasLapack \		# some of core's math algorithms use it
 
 
 INCLUDEPATH += $$CORE_INCLUDEPATH
@@ -101,3 +104,12 @@ contains(TARGET, cvs_core): !contains(TARGET, cvs_core_restricted) {
     }
     PRE_TARGETDEPS += $$COREBINDIR/$$CORE_TARGET_NAME
 }
+
+# The filesystem module needs this
+with_unorthodox {
+    !win32  {
+        LIBS += -lstdc++fs
+    }
+    DEFINES += CORE_UNSAFE_DEPS
+}
+

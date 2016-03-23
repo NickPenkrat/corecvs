@@ -29,7 +29,9 @@ public:
 
     CameraFixture(FixtureScene * owner = NULL) :
         FixtureScenePart(owner)
-    {}
+    {
+        //SYNC_PRINT(("CameraFixture():CameraFixture(owner = %p): called \n", owner));
+    }
 
     CameraFixture(
         const std::vector<FixtureCamera *> & _cameras,
@@ -84,26 +86,76 @@ public:
         return getWorldCamera(cam);
     }
 
-    void setCameraCount(int count);
+	double scoreFundamental(FixtureCamera *thisCamera, Vector2dd thisPoint, CameraFixture *otherFixture, FixtureCamera *otherCamera, Vector2dd otherPoint)
+	{
+		auto FAB = getWorldCamera(thisCamera).fundamentalTo(
+				otherFixture->getWorldCamera(otherCamera));
+		corecvs::Line2d left = FAB.mulBy2dRight(otherPoint);
+		corecvs::Line2d right= FAB.mulBy2dLeft (thisPoint);
+		return std::max(left.distanceTo(thisPoint), right.distanceTo(otherPoint));
+	}
+
+    int getCameraId(FixtureCamera* ptr) const
+    {
+        for (auto& i: cameras)
+            if (i == ptr)
+                return &i - &cameras[0];
+        return -1;
+    }
+
+    void setCameraCount(size_t count);
+
 
     Matrix44 getMMatrix(int cam) const
     {
         return getRawCamera(cam).getCameraMatrix();
     }
+    Matrix44 getMMatrix(FixtureCamera *cam) const
+    {
+        auto M=getWorldCamera(cam).getCameraMatrix();
+        return M;
+    }
+
+    Vector2dd reprojectionError(const Vector3dd &p, const Vector2dd &pp, FixtureCamera* cam)
+    {
+        return cam->reprojectionError(location.inverted().apply(p), pp);
+    }
+    Vector3dd crossProductError(const Vector3dd &p, const Vector2dd &pp, FixtureCamera* cam)
+    {
+        return cam->crossProductError(location.inverted().apply(p), pp);
+    }
+    double angleError(const Vector3dd &p, const Vector2dd &pp, FixtureCamera* cam)
+    {
+        return cam->angleError(location.inverted().apply(p), pp);
+    }
+    Vector3dd rayDiffError(const Vector3dd &p, const Vector2dd &pp, FixtureCamera* cam)
+    {
+        return cam->rayDiffError(location.inverted().apply(p), pp);
+    }
+
 
     Vector2dd project(const Vector3dd &pt, int cam) const
     {
         return cameras[cam]->project(location.inverted().apply(pt));
+    }
+    Vector2dd project(const Vector3dd &pt, FixtureCamera *cam) const
+    {
+        return cam->project(location.inverted().apply(pt));
     }
 
     bool isVisible(const Vector3dd &pt, int cam) const
     {
         return cameras[cam]->isVisible(location.inverted().apply(pt));
     }
+    bool isVisible(const Vector3dd &pt, FixtureCamera *cam) const
+    {
+        return cam->isVisible(location.inverted().apply(pt));
+    }
 
     bool isVisible(const Vector3dd &pt) const
     {
-        for (int i = 0; i < (int)cameras.size(); ++i) {
+        for (int i = 0; i < (int)cameras.size(); ++i)
+        {
             if (isVisible(pt, i))
                 return true;
         }
@@ -111,24 +163,38 @@ public:
     }
 
 
-    template<class VisitorType>
+    template<class VisitorType, class SceneType = FixtureScene>
     void accept(VisitorType &visitor)
     {
+        typedef typename SceneType::CameraType   RealCameraType;
+//        typedef typename SceneType::FixtureType  RealFixtureType;
+//        typedef typename SceneType::PointType    RealPointType;
+
+
         /* So far compatibilty is on */
-        int camsize = cameras.size();
+        int camsize = (int)cameras.size();
         visitor.visit(camsize, 0, "cameras.size");
 
         setCameraCount(camsize);
 
         for (size_t i = 0; i < (size_t)camsize; i++)
         {
-            visitor.visit(*cameras[i], "cameras");
+            char buffer[100];
+            snprintf2buf(buffer, "cameras[%d]", i);
+            visitor.visit(*static_cast<RealCameraType *>(cameras[i]), buffer);
         }
 
+        /*
         CameraLocationData loc = getLocation();
         visitor.visit(loc, CameraLocationData(), "location");
         setLocation(loc);
+        */
+        visitor.visit(location, Affine3DQ(), "location");
+        visitor.visit(name, std::string(""), "name");
     }
+
+
+
 };
 
 } // namespace corecvs

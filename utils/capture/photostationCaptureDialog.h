@@ -58,7 +58,8 @@ public slots:
     void finalizeCapture(bool isOk = true);
 
 protected:
-    void showEvent ( QShowEvent * event );
+    virtual void showEvent    (QShowEvent * event) override;
+    virtual void keyPressEvent(QKeyEvent  * event) override;
 
 private:
     bool                     mCamsScanned = false;

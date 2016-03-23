@@ -101,11 +101,29 @@ struct PinholeCameraIntrinsics
         return result;
     }
 
+    Vector2dd reprojectionError(const Vector3dd &p, const Vector2dd &pp) const
+    {
+        return project(p) - pp;
+    }
+    Vector3dd crossProductError(const Vector3dd &p, const Vector2dd &pp)
+    {
+        return p.normalised() ^ reverse(pp).normalised();
+    }
+    double angleError(const Vector3dd &p, const Vector2dd &pp)
+    {
+        return reverse(pp).normalised().angleTo(p.normalised()) * 180.0 / M_PI;
+    }
+    Vector3dd rayDiffError(const Vector3dd &p, const Vector2dd &pp)
+    {
+        return reverse(pp).normalised() - p.normalised();
+    }
+
+
     Vector3dd reverse(const Vector2dd &p) const
     {
         Vector2dd result;
-        result.x() = p.x() / focal.x() + skew / (focal.x() * focal.y()) * p.y() + ( principal.y() * skew / focal.y() - principal.x()) / focal.x();
-        result.y() = p.y() / focal.y() - principal.y() / focal.y();
+        result[1] = (p[1] - principal[1]) / focal[1];
+        result[0] = (p[0] - skew * result[1] - principal[0]) / focal[0];
         return Vector3dd(result.x(), result.y(), 1.0);
     }
 
@@ -151,8 +169,9 @@ struct PinholeCameraIntrinsics
     }
 
     /* Helper pseudonim getters */
-    double  h() const    { return size.y();      }
     double  w() const    { return size.x();      }
+    double  h() const    { return size.y();      }
+
     double cx() const    { return principal.x(); }
     double cy() const    { return principal.y(); }
     double fx() const    { return focal.x(); }
@@ -175,7 +194,6 @@ public:
     //Matrix33 rotMatrix;
 
 public:
-  /*  Photostation   *station;*/
 
     /* This should be moved to the derived class */
     /*RGB24Buffer    *image;*/
@@ -196,10 +214,11 @@ public:
     {}
 
 
+
     template <bool full=false>
     Vector2dd project(const Vector3dd &p) const
     {
-        auto v = intrinsics.project(extrinsics.project(p));
+        Vector2dd v = intrinsics.project(extrinsics.project(p));
         if (full)
             return distortion.mapForward(v);
         return v;
@@ -213,6 +232,28 @@ public:
     Vector2dd reprojectionError(PointObservation &observation)
     {
         return observation.projection - project(observation.point);
+    }
+
+    Vector2dd reprojectionError(const Vector3dd &p, const Vector2dd &pp) const
+    {
+        return intrinsics.reprojectionError(extrinsics.project(p), pp);
+    }
+    Vector3dd crossProductError(const Vector3dd &p, const Vector2dd &pp)
+    {
+        return intrinsics.crossProductError(extrinsics.project(p), pp);
+    }
+    double angleError(const Vector3dd &p, const Vector2dd &pp)
+    {
+        return intrinsics.angleError(extrinsics.project(p), pp);
+    }
+    Vector3dd rayDiffError(const Vector3dd &p, const Vector2dd &pp)
+    {
+        bool fail = std::isnan(p[2]);
+        for (int i = 0; i < 2; ++i)
+            fail |= std::isnan(p[i]) || std::isnan(pp[i]);
+        if (fail)
+            std::cout << "CAM:" << p << " " << pp << std::endl;
+        return intrinsics.rayDiffError(extrinsics.project(p), pp);
     }
 
     /**
@@ -236,7 +277,7 @@ public:
      * Only checks for the fact that point belongs to viewport.
      * If you are projecting 3d point you should be sure that point is in front
      **/
-    bool isVisible(Vector2dd &point)
+    bool isVisible(const Vector2dd &point)
     {
         return point.isInRect(Vector2dd(0.0,0.0), intrinsics.size);
     }
@@ -246,10 +287,10 @@ public:
      **/
     bool isVisible(const Vector3dd &pt) const
     {
-        return intrinsics.isVisible(extrinsics.project(pt));
+       return intrinsics.isVisible(extrinsics.project(pt));
     }
 
-    bool isInFront(Vector3dd &pt)
+    bool isInFront(const Vector3dd &pt)
     {
         return ((pt - extrinsics.position) & forwardDirection()) > 0;
     }
@@ -260,7 +301,11 @@ public:
      */
     void estimateUndistortedSize(const DistortionApplicationParameters &applicationParams);
 
-    Ray3d               rayFromPixel(const Vector2dd &point);
+    Ray3d               rayFromPixel(const Vector2dd &point) const;
+    Vector3dd           dirFromPixel(const Vector2dd &point) const
+    {
+        return (extrinsics.orientation.conjugated() * intrinsics.reverse(point)).normalised();
+    }
     Ray3d               rayFromCenter();
 
     Vector3dd           forwardDirection() const;
@@ -280,6 +325,16 @@ public:
         extrinsics = other.extrinsics;
     }
 
+    void setLocation(const Affine3DQ &location)
+    {
+        extrinsics = CameraLocationData(location);
+    }
+
+    Affine3DQ getAffine() const
+    {
+        return extrinsics.toAffine3D();
+    }
+
     template<class VisitorType>
     void accept(VisitorType &visitor)
     {
@@ -287,6 +342,14 @@ public:
         visitor.visit(extrinsics, CameraLocationData()           , "extrinsics");
         visitor.visit(distortion, LensDistortionModelParameters(), "distortion");
         visitor.visit(nameId,     std::string("")                , "nameId"    );
+    }
+
+
+    friend ostream& operator << (ostream &out, CameraModel &toSave)
+    {
+        PrinterVisitor printer(out);
+        toSave.accept<PrinterVisitor>(printer);
+        return out;
     }
 
     void prettyPrint(std::ostream &out = cout);

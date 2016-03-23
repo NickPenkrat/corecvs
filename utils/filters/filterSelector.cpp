@@ -16,7 +16,7 @@
 #include "ui/openCVFilterParametersControlWidget.h"
 #include "ui/backgroundFilterParametersControlWidget.h"
 
-FilterSelector::FilterSelector(QString name, QWidget *parent)
+FilterSelector::FilterSelector(QWidget *parent, QString name)
     : QWidget(parent)
 {
     ui.setupUi(this);
@@ -222,7 +222,7 @@ QVector<const char *> FilterSelector::getFilterNames()
 {
     QVector<const char *> list;
 //    list.append(GainOffsetFilter::getName());
-//    list.append(BitSelectorFilter::getName());
+    //list.append(BitSelectorFilter::getTypeName());
 //    list.append(SobelFilter::getTypeName());
 //    list.append(CannyFilter::getName());
 //#ifdef WITH_OPENCV

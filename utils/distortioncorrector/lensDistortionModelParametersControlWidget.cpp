@@ -33,7 +33,8 @@ LensDistortionModelParametersControlWidget::LensDistortionModelParametersControl
     QObject::connect(ui->normalizerSpinBox,  SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(ui->shiftXSpinBox,      SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(ui->shiftYSpinBox,      SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
-    QObject::connect(ui->forwardMapCheckBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+
+    QObject::connect(ui->forwardMapCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(paramsChanged()));
 
     QObject::connect(ui->koefTableWidget, SIGNAL(itemChanged(QTableWidgetItem*)), this, SIGNAL(paramsChanged()));
 
@@ -48,6 +49,8 @@ LensDistortionModelParametersControlWidget::LensDistortionModelParametersControl
     QObject::connect(ui->refreshButton, SIGNAL(released()), this, SLOT(updateAdditionalData()));
     QObject::connect(ui->autoRefeshCheckBox, SIGNAL(toggled(bool)), this, SLOT(updateAdditionalDataNeeded()));
 
+
+    QObject::connect(ui->advancedButton, SIGNAL(toggled(bool)), this, SLOT(toggleAdvanced(bool)));
 
 }
 
@@ -482,6 +485,12 @@ void LensDistortionModelParametersControlWidget::saveParams()
         WidgetSaver saver(&setter);
         saveParamWidget(saver);
     }
+}
+
+void LensDistortionModelParametersControlWidget::toggleAdvanced(bool flag)
+{
+    ui->bottomToolWidget->setHidden(!flag);
+    ui->sideToolWidget  ->setHidden(!flag);
 }
 
 void LensDistortionModelParametersControlWidget::exampleShow()

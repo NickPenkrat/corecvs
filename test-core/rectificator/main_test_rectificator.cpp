@@ -199,6 +199,7 @@ TEST(Rectification, DISABLED_testComposeDecompose)
 
 }
 
+#ifdef WITH_BLAS
 TEST(Rectification, test7point)
 {
     corecvs::Matrix33 P1(4000.0, 0.0, 2000.0, 0.0, 4000.0, 2000.0, 0.0, 0.0, 1.0);
@@ -302,7 +303,7 @@ TEST(Rectification, test5point)
     }
 
 }
-
+#endif
 TEST(Rectification, testEssentialEstimator)
 {
     using corecvs::Matrix33;

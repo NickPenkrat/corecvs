@@ -115,6 +115,7 @@ TEST(PolynomialMatrixTest, testEvaluate)
     }
 }
 
+#ifdef WITH_BLAS
 TEST(PolynomialMatrixTest, testDet)
 {
     corecvs::PolynomialMatrix m(3, 3, corecvs::Polynomial::X());
@@ -162,6 +163,7 @@ TEST(PolynomialMatrixTest, testDet)
     ASSERT_NEAR(P[4],-5.0, 1e-9);
     ASSERT_NEAR(P[5], 2.0, 1e-9);
 }
+#endif
 
 
 TEST(PolynomialTest, testInterpolation)
@@ -290,6 +292,7 @@ void coeffByRoots(std::vector<double> &coeff, std::vector<double> &roots)
     }
 }
 
+#ifdef WITH_BLAS
 TEST(PolynomialSolversTest, testPowN)
 {
     // (x - 1)(x - 2)(x - 3)
@@ -358,3 +361,4 @@ TEST(PolynomialSolversTest, testPowN2)
             ASSERT_NEAR(roots[i], roots2[i], REL_SOL_TOLERANCE * std::abs(roots[i]));
     }
 }
+#endif

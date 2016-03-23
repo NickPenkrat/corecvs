@@ -549,7 +549,7 @@ void PhotostationCaptureDialog::capture(bool shouldAdvance, int positionShift)
 ImageCaptureInterface* PhotostationCaptureDialog::createCameraCapture(const string &devname, bool processError)
 {
     const bool isRgb = true;
-    bool compressed = ui->codecComboBox->currentIndex() == 0;
+    ///bool compressed = ui->codecComboBox->currentIndex() == 0;
 
     int  h   = ui->heightSpinBox->value();
     int  w   = ui->widthSpinBox->value();
@@ -748,6 +748,15 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
     else
         mManupulatorCapturer.captureNextPosition();
 }
+
+void PhotostationCaptureDialog::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Space)
+    {
+        captureAndAdvance();
+    }
+}
+
 
 void PhotostationCaptureDialog::showEvent(QShowEvent *event)
 {

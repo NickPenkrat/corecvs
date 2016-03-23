@@ -808,7 +808,7 @@ void Mesh3D::fillTestScene()
 
 void Mesh3D::dumpInfo(ostream &out)
 {
-    out << "Loaded mesh:" << endl;
+    out << "Mesh3D::dumpInfo():" << endl;
     out << " Edges   :" << edges.size() << endl;
     out << " Vertexes:" << vertexes.size() << endl;
     out << " Faces   :" << faces.size() << endl;

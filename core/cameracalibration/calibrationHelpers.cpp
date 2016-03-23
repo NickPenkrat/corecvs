@@ -59,12 +59,12 @@ void CalibrationHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, double
 
     if (printNames)
     {
-    AbstractPainter<Mesh3D> p(&mesh);
-        mesh.mulTransform(Matrix44::Shift(cam.extrinsics.position));
-        mesh.setColor(RGBColor::Blue());
-    p.drawFormatVector(0.0, 0.0, 0, scale / 50.0, "Cam: %s", cam.nameId.c_str());
-    mesh.popTransform();
-}
+        AbstractPainter<Mesh3D> p(&mesh);
+            mesh.mulTransform(Matrix44::Shift(cam.extrinsics.position));
+            mesh.setColor(RGBColor::Blue());
+        p.drawFormatVector(0.0, 0.0, 0, scale / 50.0, "Cam: %s", cam.nameId.c_str());
+        mesh.popTransform();
+    }
 
     //Vector3dd ppv = qc * (invK.mulBy2dRight(cam.intrinsics.principal) * scale) + cc;
 
@@ -84,7 +84,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const Photostation &ps, double sc
     {
         mesh.setColor(palette[colorId]);
         colorId = (colorId + 1) % CORE_COUNT_OF(palette);
-        drawCamera(mesh, ps.getRawCamera(cam), scale);
+        drawCamera(mesh, ps.getRawCamera((int)cam), scale);
     }
 
 
@@ -104,7 +104,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const Photostation &ps, double sc
         AbstractPainter<Mesh3D> p(&mesh);
         mesh.mulTransform(Matrix44::Shift(ps.location.shift) * Matrix44::Scale(scale / 22.0));
         mesh.setColor(RGBColor::Blue());
-    p.drawFormatVector(scale / 5.0, scale / 5.0, 0, scale / 3.0, "%s", ps.name.c_str());
+        p.drawFormatVector(scale / 5.0, scale / 5.0, 0, scale / 3.0, "%s", ps.name.c_str());
         mesh.popTransform();
     }
 }
@@ -112,16 +112,16 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const Photostation &ps, double sc
 void CalibrationHelpers::drawPly(Mesh3D &mesh, const CameraFixture &ps, double scale)
 {
     // Colorblind-safe palette
-    CameraLocationData loc = ps.getLocation();
-    Quaternion qs = loc.orientation.conjugated();
-    std::cout << qs << std::endl;
+    // CameraLocationData loc = ps.getLocation();
+    // Quaternion qs = loc.orientation.conjugated();
+    // std::cout << qs << std::endl;
 
     int colorId = 0;
     for (size_t cam = 0; cam < ps.cameras.size(); cam++)
     {
         mesh.setColor(palette[colorId]);
         colorId = (colorId + 1) % CORE_COUNT_OF(palette);
-        drawCamera(mesh, ps.getRawCamera(cam), scale);
+        drawCamera(mesh, ps.getRawCamera((int)cam), scale);
     }
 
 
@@ -150,7 +150,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const CameraFixture &ps, double s
 void CalibrationHelpers::drawPly(Mesh3D &mesh, const ObservationList &list)
 {
     mesh.currentColor = RGBColor(~0u);
-    for (auto& pt: list)
+    for (const PointObservation& pt: list)
     {
         mesh.addPoint(pt.point);
     }
@@ -162,9 +162,12 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const Photostation &ps, const Obs
     drawPly(mesh, ps, scale);
 }
 
-void CalibrationHelpers::drawPly(Mesh3D &mesh, const SceneFeaturePoint &fp, double scale)
+void CalibrationHelpers::drawPly(Mesh3D &mesh, SceneFeaturePoint fp, double scale)
 {
 
+    mesh.setColor(fp.color);
+    if (!fp.hasKnownPosition)
+        fp.position = fp.reprojectedPosition;
     if (!largePoints) {
         mesh.addPoint(fp.position);
     } else {

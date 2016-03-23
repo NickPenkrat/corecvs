@@ -41,6 +41,7 @@ class RGBTBuffer : public AbstractContiniousBuffer<RGBTColor<T>, int32_t>
                  , public           BlMapper<RGBTBuffer<T>, RGBTBuffer<T>, int32_t, RGBTColor<T>>
 {
     typedef AbstractContiniousBuffer<RGBTColor<T>, int32_t> RGBTBufferBase;
+public:
     typedef RGBTColor<T> InternalElementType;
     typedef int32_t      InternalIndexType;
 

@@ -15,6 +15,11 @@ class CameraFixture;
 class FixtureScene
 {
 public:
+    typedef FixtureCamera     CameraType;
+    typedef CameraFixture     FixtureType;
+    typedef SceneFeaturePoint PointType;
+
+
     FixtureScene();
 
     /**
@@ -49,8 +54,86 @@ public:
      *
      **/
     void projectForward(SceneFeaturePoint::PointType mask, bool round = false);
+    void triangulate   (SceneFeaturePoint * point);
+
+
 
 protected:
+    template<typename T>
+    using umwpp = std::unordered_map<WPP, T>;
+    template<typename T>
+    using umwppv= umwpp<std::vector<T>>;
+
+    template<typename T>
+    void deleteFixtureCameraUMWPP(umwpp<T> &uwpp, FixtureCamera* fc)
+    {
+        WPP wpp(WPP::UWILDCARD, fc);
+        bool contains = false;
+        do
+        {
+            contains = false;
+            for (auto it = uwpp.begin(); it != uwpp.end(); ++it)
+            {
+                if (wpp == it->first)
+                {
+                    uwpp.erase(it);
+                    contains = true;
+                    break;
+                }
+            }
+        } while(contains);
+    }
+    template<typename T>
+    void deleteFixtureCameraUMWPP(umwpp<umwpp<T>> &uwpp, FixtureCamera* fc)
+    {
+        WPP wpp(WPP::UWILDCARD, fc);
+        for (auto& it: uwpp)
+            deleteFixtureCameraUMWPP(it.second, fc);
+    }
+    template<typename T>
+    void deleteCameraFixtureUMWPP(umwpp<T> &uwpp, CameraFixture* fc)
+    {
+        WPP wpp(fc, WPP::VWILDCARD);
+        bool contains = false;
+        do
+        {
+            contains = false;
+            for (auto it = uwpp.begin(); it != uwpp.end(); ++it)
+            {
+                if (wpp == it->first)
+                {
+                    uwpp.erase(it);
+                    contains = true;
+                    break;
+                }
+            }
+        } while(contains);
+    }
+    template<typename T>
+    void deleteCameraFixtureUMWPP(umwpp<umwpp<T>> &uwpp, CameraFixture* fc)
+    {
+        WPP wpp(fc, WPP::VWILDCARD);
+        for (auto& it: uwpp)
+            deleteCameraFixtureUMWPP(it.second, fc);
+    }
+    template<typename T>
+    void deletePairUMWPP(umwpp<T> &uwpp, CameraFixture* cf, FixtureCamera* fc)
+    {
+        uwpp.erase(uwpp.find(WPP(cf, fc)));
+    }
+    template<typename T>
+    void deletePairUMWPP(umwpp<umwpp<T>> &uwpp, CameraFixture* cf, FixtureCamera* fc)
+    {
+        for (auto& it: uwpp)
+            deletePairUMWPP(it.second, cf, fc);
+    }
+    template<typename T>
+    void vectorErase(std::vector<T> &v, const T &t)
+    {
+        v.erase(std::remove(v.begin(), v.end(), t), v.end());
+    }
+
+
     virtual FixtureCamera      *fabricateCamera();
     virtual CameraFixture      *fabricateCameraFixture();
     virtual SceneFeaturePoint  *fabricateFeaturePoint();
@@ -68,8 +151,10 @@ public:
     /* These methods  compleatly purge camera from scene */
     virtual void deleteCamera        (FixtureCamera *camera);
     virtual void deleteCameraFixture (CameraFixture *fixture, bool recursive = true);
-    virtual void deleteFeaturePoint  (SceneFeaturePoint *camera);
+    virtual void deleteFixturePair   (CameraFixture *fixture, FixtureCamera *camera);
+    virtual void deleteFeaturePoint  (SceneFeaturePoint *point);
 
+    virtual void clear();
 
     /**
      *    Helper method to check data structure integrity
@@ -78,6 +163,11 @@ public:
      *
      **/
     virtual bool checkIntegrity();
+
+    /**
+     *    This function takes top to bottom graph and updates all the backlinks to point correctly
+     **/
+    virtual bool integrityRelink();
 
     virtual void positionCameraInFixture(CameraFixture *station, FixtureCamera *camera, const Affine3DQ &location);
     virtual void addCameraToFixture     (FixtureCamera *cam, CameraFixture *fixture);
@@ -95,6 +185,70 @@ public:
             toReturn += point->observations.size();
         }
         return toReturn;
+    }
+
+    /**
+     *
+     **/
+    void setFixtureCount     (size_t count);
+    void setOrphanCameraCount(size_t count);
+    void setFeaturePointCount(size_t count);
+
+    /* This performs full search. It should not */
+    FixtureCamera *getCameraById (FixtureScenePart::IdType id);
+    CameraFixture *getFixtureById(FixtureScenePart::IdType id);
+
+
+
+    template<class VisitorType, class SceneType = FixtureScene>
+    void accept(VisitorType &visitor)
+    {
+        typedef typename SceneType::CameraType   RealCameraType;
+        typedef typename SceneType::FixtureType  RealFixtureType;
+        typedef typename SceneType::PointType    RealPointType;
+
+
+        /* So far compatibilty is on */
+        /* Orphan cameras */
+        int ocamSize = (int)orphanCameras.size();
+        visitor.visit(ocamSize, 0, "orphancameras.size");
+
+        setOrphanCameraCount(ocamSize);
+
+        for (size_t i = 0; i < (size_t)ocamSize; i++)
+        {
+            char buffer[100];
+            snprintf2buf(buffer, "orphancameras[%d]", i);
+            visitor.visit(*static_cast<RealCameraType *>(orphanCameras[i]), buffer);
+        }
+
+        /* Fixtures*/
+
+        int stationSize = (int)fixtures.size();
+        visitor.visit(stationSize, 0, "stations.size");
+
+        setFixtureCount(stationSize);
+
+        for (size_t i = 0; i < (size_t)stationSize; i++)
+        {
+            char buffer[100];
+            snprintf2buf(buffer, "stations[%d]", i);
+            visitor.visit(*static_cast<RealFixtureType *>(fixtures[i]), buffer);
+        }
+
+        /* Points */
+
+        int pointsSize = (int)points.size();
+        visitor.visit(pointsSize, 0, "points.size");
+
+        setFeaturePointCount(pointsSize);
+
+        for (size_t i = 0; i < (size_t)pointsSize; i++)
+        {
+            char buffer[100];
+            snprintf2buf(buffer, "points[%d]", i);
+            visitor.visit(*static_cast<RealPointType *>(points[i]), buffer);
+        }
     }
 
     virtual ~FixtureScene();

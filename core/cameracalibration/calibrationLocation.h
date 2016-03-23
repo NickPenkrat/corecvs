@@ -1,5 +1,5 @@
-#ifndef CALIBRATIONLOCATION_H
-#define CALIBRATIONLOCATION_H
+#ifndef CALIBRATION_LOCATION_H
+#define CALIBRATION_LOCATION_H
 
 #include "vector2d.h"
 #include "vector3d.h"
@@ -74,8 +74,8 @@ public:
     Quaternion toQuaternion() const
     {
         return
-            Quaternion::RotationZ(roll()) *
-            Quaternion::RotationY(yaw()) *
+            Quaternion::RotationZ(roll()) ^
+            Quaternion::RotationY(yaw()) ^
             Quaternion::RotationX(pitch());
     }
 
@@ -185,7 +185,7 @@ public:
     Quaternion orientation;
 
     explicit CameraLocationData(
-            Vector3dd position = Vector3dd(0.0, 0.0, 1.0),
+            Vector3dd     position = Vector3dd(0.0, 0.0, 1.0),
             Quaternion orientation = Quaternion::Identity()) :
         position(position),
         orientation(orientation)
@@ -217,6 +217,8 @@ public:
      *  X' = CR * (X - CT)
      *
      *  X' = CR * X  + (- CR * CT)
+     *
+     *  \attention Generally you don't need to use this function, untill you know exactly that you need it
      *
      **/
     Affine3DQ toMockAffine3D() const
@@ -320,4 +322,4 @@ public:
 
 } // namespace corecvs
 
-#endif // CALIBRATIONLOCATION_H
+#endif // CALIBRATION_LOCATION_H

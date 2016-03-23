@@ -4,10 +4,8 @@
 #include "vector2d.h"
 #include "vector3d.h"
 
-
 namespace corecvs {
 
-/* Move this to separate class */
 struct PointObservation
 {
     Vector3dd point;
@@ -52,9 +50,7 @@ struct PointObservation
             visitor.visit(point, Vector3dd(), "point3d");
             visitor.visit(projection, Vector2dd(), "projection");
         }
-
 };
-
 
 } // namespace corecvs
 

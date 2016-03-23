@@ -446,7 +446,14 @@ std::vector<EssentialMatrix> EssentialEstimator::getEssential5point(const vector
         corecvs::Matrix33 E(EE[0], EE[1], EE[2],
                             EE[3], EE[4], EE[5],
                             EE[6], EE[7], EE[8]);
-        hypothesis.emplace_back(E);
+        bool isOk = true;
+        for (int iii = 0; iii < 9 && isOk; ++iii)
+            if (std::isnan(EE[iii]) || std::isinf(EE[iii]))
+            {
+                isOk = false;
+            }
+        if (isOk)
+            hypothesis.emplace_back(E);
     }
     return hypothesis;
 }

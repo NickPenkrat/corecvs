@@ -1,10 +1,11 @@
-HEADERS += \ 
+HEADERS += \
     math/eulerAngles.h \
     math/matrix/matrix.h \
     math/matrix/matrix22.h \
     math/matrix/matrix33.h \
     math/matrix/matrix44.h \
     math/matrix/diagonalMatrix.h \
+    math/matrix/blasReplacement.h \
     math/sparseMatrix.h \
     math/matrix/homographyReconstructor.h \
     math/matrix/matrixOperations.h \
@@ -20,7 +21,8 @@ HEADERS += \
     math/projectiveTransform.h \
     math/quaternion.h \
     math/affine.h \
-    math/levenmarq.h \    
+    math/levenmarq.h \
+    math/dogleg.h \
     math/gradientDescent.h \
     math/helperFunctions.h \
     math/generic/genericMath.h \
@@ -69,14 +71,16 @@ SOURCES += \
     math/generic/genericMath.cpp \
     math/sse/sseWrapper.cpp \
     math/matrix/similarityReconstructor.cpp \
-    math/matrix/matrixspeed.cpp
+#    math/matrix/matrixspeed.cpp
 
 
-contains(DEFINES, WITH_FFTW) {
-HEADERS += \
-    math/fftw/fftwWrapper.h \
+contains(DEFINES, "WITH_FFTW") {
+    !build_pass: message(Adding core submodule math : fftw wrapper)
 
-SOURCES += \
-    math/fftw/fftwWrapper.cpp \
+    HEADERS += \
+        math/fftw/fftwWrapper.h \
+
+    SOURCES += \
+        math/fftw/fftwWrapper.cpp \
 
 }

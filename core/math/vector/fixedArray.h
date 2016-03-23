@@ -34,7 +34,7 @@ public:
     ElementType *element;
     int length;
 
-    explicit inline FixedArrayBase(int _length) {
+    explicit inline FixedArrayBase(int _length = 0) {
         _init(_length);
     }
 
@@ -109,7 +109,7 @@ class FixedArray : public FixedArrayBase<FixedArray<ElementType>, ElementType>
 public:
     typedef FixedArrayBase<FixedArray<ElementType>, ElementType> BaseClass;
 
-    explicit inline FixedArray(int _length) :
+    explicit inline FixedArray(int _length = 0) :
         BaseClass(_length) {}
     explicit inline FixedArray(int _length, const ElementType* _x) :
         BaseClass(_length, _x) {}

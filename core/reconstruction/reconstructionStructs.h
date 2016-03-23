@@ -1,5 +1,5 @@
-#ifndef RECONSTRUCTIONSTRUCTS
-#define RECONSTRUCTIONSTRUCTS
+#ifndef RECONSTRUCTIONSTRUCTS_H
+#define RECONSTRUCTIONSTRUCTS_H
 
 #include <vector>
 #include <string>
@@ -28,30 +28,27 @@ struct PointProjection
 // TODO: Fix underscored names
 struct PointObservation__
 {
-    corecvs::Vector3dd worldPoint;
-
+    corecvs::Vector3dd           worldPoint;
     std::vector<PointProjection> projections;
-
-    bool updateable = true;
-
-    std::string label;
+    bool                         updateable = true;
+    std::string                  label;
 
     template<typename V>
     void accept(V &visitor)
     {
         visitor.visit(worldPoint,  corecvs::Vector3dd(0.0, 0.0, 0.0), "worldPoint");
-        visitor.visit(projections, "projections");
-        visitor.visit(updateable,  true, "updateable");
-        visitor.visit(label, std::string(""), std::string("label"));
+        visitor.visit(projections                                   , "projections");
+        visitor.visit(updateable , true                             , "updateable");
+        visitor.visit(label      , std::string("")                  , "label");
     }
 };
+
 struct CameraObservation
 {
-    std::string sourceFileName;
-    std::string undistortedFileName;
-    std::string descriptorFileName;
-
-    std::vector<KeyPoint> keyPoints;
+    std::string             sourceFileName;
+    std::string             undistortedFileName;
+    std::string             descriptorFileName;
+    std::vector<KeyPoint>   keyPoints;
 
     template<typename V>
     void accept(V &visitor)
@@ -59,10 +56,9 @@ struct CameraObservation
         visitor.visit(sourceFileName,      std::string(""), "sourceFileName");
         visitor.visit(undistortedFileName, std::string(""), "undistortedFileName");
         visitor.visit(descriptorFileName,  std::string(""), "descriptorFileName");
-
-        visitor.visit(keyPoints, "keyPoints");
+        visitor.visit(keyPoints                           , "keyPoints");
     }
 };
 
 
-#endif
+#endif // RECONSTRUCTIONSTRUCTS_H

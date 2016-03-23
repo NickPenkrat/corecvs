@@ -1,3 +1,5 @@
+#include <QFileDialog>
+
 #include "cameraModelParametersControlWidget.h"
 #include "ui_cameraModelParametersControlWidget.h"
 
@@ -6,7 +8,26 @@ CameraModelParametersControlWidget::CameraModelParametersControlWidget(QWidget *
     ui(new Ui::CameraModelParametersControlWidget)
 {
     ui->setupUi(this);
-    writeUi();
+
+    ui->lensDistortionWidget->toggleAdvanced(false);
+
+    QObject::connect(ui->lensDistortionWidget, SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->extrinsicWidget     , SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
+
+
+    QObject::connect(ui->spinBoxFocalX, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->spinBoxFocalY, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+
+    QObject::connect(ui->spinBoxCx, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->spinBoxCy, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+
+    QObject::connect(ui->spinBoxSkew, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+//    writeUi();
+    /* Addintional buttons */
+
+    QObject::connect(ui->loadPushButton, SIGNAL(released()), this, SLOT(loadPressed()));
+    QObject::connect(ui->savePushButton, SIGNAL(released()), this, SLOT(savePressed()));
+
 }
 
 CameraModelParametersControlWidget::~CameraModelParametersControlWidget()
@@ -29,9 +50,102 @@ void CameraModelParametersControlWidget::setLensDistortionParameters(const LensD
 void CameraModelParametersControlWidget::loadParamWidget(WidgetLoader &loader)
 {
     ui->lensDistortionWidget->loadParamWidget(loader);
-
-
+   /**/
 }
+
+
+void CameraModelParametersControlWidget::saveParamWidget(WidgetSaver &saver)
+{
+    ui->lensDistortionWidget->saveParamWidget(saver);
+    /**/
+}
+
+void CameraModelParametersControlWidget::loadPressed()
+{
+    QString filename = QFileDialog::getOpenFileName(
+        this,
+        "LOAD: Choose an camera config name",
+        ".",
+        "Text (*.json)"
+    );
+    if (!filename.isEmpty()) {
+        emit loadRequest(filename);
+    }
+}
+
+void CameraModelParametersControlWidget::savePressed()
+{
+    QString filename = QFileDialog::getSaveFileName(
+        this,
+        "SAVE: Choose an camera config name",
+        ".",
+        "Text (*.json)"
+    );
+    if (!filename.isEmpty()) {
+        emit saveRequest(filename);
+    }
+}
+
+/**/
+
+void CameraModelParametersControlWidget::getParameters(CameraModel& params) const
+{    
+    ui->lensDistortionWidget->getParameters(params.distortion);
+
+    Affine3DQ location;
+    ui->extrinsicWidget->getParameters(location);
+    params.setLocation(location);
+
+    params.intrinsics.focal.x() = ui->spinBoxFocalX->value();
+    params.intrinsics.focal.y() = ui->spinBoxFocalY->value();
+
+    params.intrinsics.principal.x() = ui->spinBoxCx->value();
+    params.intrinsics.principal.y() = ui->spinBoxCy->value();
+
+    params.intrinsics.skew = ui->spinBoxSkew->value();
+}
+
+CameraModel *CameraModelParametersControlWidget::createParameters() const
+{
+
+    /**
+     * We should think of returning parameters by value or saving them in a preallocated place
+     **/
+    CameraModel *result = new CameraModel();
+    getParameters(*result);
+    return result;
+}
+
+void CameraModelParametersControlWidget::setParameters(const CameraModel &input)
+{
+    // Block signals to send them all at once
+    bool wasBlocked = blockSignals(true);
+    ui->lensDistortionWidget->setParameters(input.distortion);
+
+    ui->extrinsicWidget->setParameters(input.getAffine());
+
+    ui->spinBoxFocalX->setValue(input.intrinsics.fx());
+    ui->spinBoxFocalY->setValue(input.intrinsics.fy());
+
+    ui->spinBoxCx->setValue(input.intrinsics.cx());
+    ui->spinBoxCy->setValue(input.intrinsics.cy());
+
+    ui->spinBoxSkew->setValue(input.intrinsics.skew);
+
+    ui->infoLabel->setText(QString("Size:[%1 x %2]").arg(input.intrinsics.size.x()).arg(input.intrinsics.size.y()));
+
+    blockSignals(wasBlocked);
+    emit paramsChanged();
+}
+
+void CameraModelParametersControlWidget::setParametersVirtual(void *input)
+{
+    // Modify widget parameters from outside
+    CameraModel *inputCasted = static_cast<CameraModel *>(input);
+    setParameters(*inputCasted);
+}
+
+#if 0
 
 void CameraModelParametersControlWidget::getCameraParameters(double &fx, double &fy, double &cx, double &cy, double &skew, corecvs::Vector3dd &_pos, corecvs::Quaternion &_orientation, corecvs::Vector2dd &size, corecvs::Vector2dd &distortedSize)
 {
@@ -105,63 +219,7 @@ void CameraModelParametersControlWidget::writeUi()
 }
 
 
-void CameraModelParametersControlWidget::saveParamWidget(WidgetSaver &saver)
-{
-    ui->lensDistortionWidget->saveParamWidget(saver);
 
+#endif
 
-}
-
-/**/
-
-void CameraModelParametersControlWidget::getParameters(CameraModel& params) const
-{
-
-
-
-}
-
-CameraModel *CameraModelParametersControlWidget::createParameters() const
-{
-
-    /**
-     * We should think of returning parameters by value or saving them in a preallocated place
-     **/
-
-
-    CameraModel *result = new CameraModel(
-
-    );
-    return result;
-}
-
-void CameraModelParametersControlWidget::setParameters(const CameraModel &input)
-{
-    // Block signals to send them all at once
-    bool wasBlocked = blockSignals(true);
-    ui->lensDistortionWidget->setParameters(input.distortion);
-
-    ui->spinBoxFocalX->setValue(input.intrinsics.fx());
-    ui->spinBoxFocalY->setValue(input.intrinsics.fy());
-
-    ui->spinBoxCx->setValue(input.intrinsics.cx());
-    ui->spinBoxCy->setValue(input.intrinsics.cy());
-
-    ui->spinBoxSkew->setValue(input.intrinsics.skew);
-
-    ui->spinBoxX->setValue(input.extrinsics.position.x());
-    ui->spinBoxY->setValue(input.extrinsics.position.y());
-    ui->spinBoxZ->setValue(input.extrinsics.position.z());
-
-
-    blockSignals(wasBlocked);
-    emit paramsChanged();
-}
-
-void CameraModelParametersControlWidget::setParametersVirtual(void *input)
-{
-    // Modify widget parameters from outside
-    CameraModel *inputCasted = static_cast<CameraModel *>(input);
-    setParameters(*inputCasted);
-}
 

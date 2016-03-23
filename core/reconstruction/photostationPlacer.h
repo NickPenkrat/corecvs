@@ -8,34 +8,15 @@
 #include "vector3d.h"
 #include "calibrationPhotostation.h"
 #include "reconstructionStructs.h"
+#include "reconstructionFixtureScene.h"
 #include "levenmarq.h"
-#include "tbb/mutex.h"
-#include "typesafeBitmaskEnums.h"
+#include "mesh3d.h"
 
-namespace std
-{
-template<>
-struct hash<std::tuple<int, int, int>>
-{
-	size_t operator() (const std::tuple<int, int, int>& t) const
-	{
-		return std::hash<int>()(std::get<0>(t)) ^
-			  (std::hash<int>()(std::get<1>(t)) * 7) ^
-			  (std::hash<int>()(std::get<2>(t)) * 31);
-	}
-};
-template<>
-struct hash<std::tuple<int, int, int, int>>
-{
-	size_t operator() (const std::tuple<int, int, int, int>& t) const
-	{
-		return std::hash<int>()(std::get<0>(t)) ^
-			  (std::hash<int>()(std::get<1>(t)) * 7) ^
-			  (std::hash<int>()(std::get<2>(t)) * 31) ^
-			  (std::hash<int>()(std::get<3>(t) * 127));
-	}
-};
-}
+#ifdef WITH_TBB
+#include "tbb/mutex.h"
+#endif
+
+#include "typesafeBitmaskEnums.h"
 
 enum class PhotostationPlacerOptimizationType
 {
@@ -46,6 +27,7 @@ enum class PhotostationPlacerOptimizationType
     FOCALS = 16,                     // Camera focals in multicamera
     PRINCIPALS = 32,                 // Camera principals in multicamera
     POINTS = 64,                     // 3D points
+    TUNE_GPS = 128                   // Allow shifting of GPS-initialized cameras
 };
 enum class PhotostationPlacerOptimizationErrorType
 {
@@ -75,6 +57,8 @@ enum class PhotostationPlacerOptimizationErrorType
  * 1 x M'       Angles between rays                    REPROJECTION
  * 3 x M'       Ray cross products                     CROSS_PRODUCT
  * 2 x M'       Ray differences                        RAY_DIFF
+ * If TUNE_GPS is present then position differences are also being calculated and stored as
+ * 3 x N        Normalised (using covariance 'square root') difference
  */
 
 template<>
@@ -84,100 +68,118 @@ struct is_bitmask<PhotostationPlacerOptimizationType> : std::true_type {};
 namespace corecvs
 {
 
-enum class PhotostationInitializationType
-{
-    NONE,
-    GPS,
-    STATIC_POINTS
-};
-
-struct PhotostationInitialization
-{
-    PhotostationInitializationType initializationType;
-    std::vector<PointObservation__> staticPoints;
-    corecvs::Vector3dd gpsData;
-};
-
-struct PhotostationPlacerFeatureParams
-{
-    std::string detector  = "SURF";
-    std::string descriptor= "SURF";
-    std::string matcher   = "ANN";
-    double b2bThreshold = 0.9;
-};
-
 struct PhotostationPlacerEssentialFilterParams
 {
     double b2bRansacP5RPThreshold = 0.8;
     double inlierP5RPThreshold = 5.0;
-    int maxEssentialRansacIterations = 1000;
+    int maxEssentialRansacIterations = 1000000;
     double b2bRansacP6RPThreshold = 0.8;
+    bool runEssentialFiltering = true;
+    double essentialTargetGamma = 0.001;
+
+    template<typename V>
+    void accept(V &v)
+    {
+        v.visit(b2bRansacP5RPThreshold, 0.8, "Best-2nd best essential estimator threshold");
+        v.visit(inlierP5RPThreshold, 5.0, "Inlier threshold");
+        v.visit(maxEssentialRansacIterations, 1000, "Maximal essential estimator rounds");
+        v.visit(b2bRansacP6RPThreshold, 0.8, "Best-2nd best relative pose estimator threshold");
+        v.visit(runEssentialFiltering, false, "Run essential filtering prior relative pose estimation");
+    }
 };
 
 struct PhotostationPlacerFeatureSelectionParams
 {
     double inlierThreshold = 1.0;
-    double trackInlierThreshold = 3.0;
+    double trackInlierThreshold = 3;
     double pairCorrespondenceThreshold = 0.25;
     double distanceLimit =1000.0;
-    int nonLinearAfterAppend = 40;
-    int nonLinearAfterAdd    = 40;
-    int nonLinearFinal       =100;
-    bool tuneFocal = false;
+//    int nonLinearAfterAppend = 40;
+//    int nonLinearAfterAdd    = 40;
+//    int nonLinearFinal       =100;
+//    bool tuneFocal = false;
+
+    template<typename V>
+    void accept(V &v)
+    {
+        v.visit(inlierThreshold, 1.0, "Inlier threshold");
+        v.visit(trackInlierThreshold, 3.0, "Track append threshold");
+        v.visit(pairCorrespondenceThreshold, 0.25, "Correspondence threshold");
+        v.visit(distanceLimit, 1000.0, "Track distance limit");
+    }
 };
 
 struct PhotostationPlacerParams
 {
     bool forceGps = true;
-    PhotostationPlacerOptimizationType optimizationParams = 
+    PhotostationPlacerOptimizationType optimizationParams =
         PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS |
         PhotostationPlacerOptimizationType::POINTS;// | PhotostationPlacerOptimizationType::FOCALS;
     PhotostationPlacerOptimizationErrorType errorType = PhotostationPlacerOptimizationErrorType::RAY_DIFF;
+    // This defines how many multicameras are subject for P3P evaluation at each iteration
+    int speculativity = 1;
+
+    template<typename V>
+    void accept(V &v)
+    {
+        v.visit(forceGps, true, "Enforce gps locations");
+        auto vv = static_cast<typename std::underlying_type<PhotostationPlacerOptimizationType>::type>(optimizationParams);
+        v.visit(vv, 0, "Optimization type");
+        optimizationParams = static_cast<PhotostationPlacerOptimizationType>(vv);
+        auto vvv = static_cast<typename std::underlying_type<PhotostationPlacerOptimizationErrorType>::type>(errorType);
+        v.visit(vvv, 0, "Error type");
+        errorType = static_cast<PhotostationPlacerOptimizationErrorType>(vvv);
+    }
 };
 
-class PhotostationPlacer : PhotostationPlacerFeatureParams, PhotostationPlacerEssentialFilterParams, PhotostationPlacerFeatureSelectionParams, PhotostationPlacerParams
+class PhotostationPlacer :    public PhotostationPlacerEssentialFilterParams, public PhotostationPlacerFeatureSelectionParams, public PhotostationPlacerParams
 {
 public:
+    ReconstructionFixtureScene* scene;
+    void fullRun();
+    corecvs::Mesh3D dumpMesh(const std::string &filename);
+    void paintTracksOnImages(bool pairs = false);
     void detectAll();
-    void filterEssentialRansac();
-    void estimateFirstPair();
-    void estimatePair(int psA, int psB);
-    corecvs::Quaternion detectOrientationFirst();
-    void selectEpipolarInliers();
-    void backprojectAll();
-    void buildTracks(int psA, int psB, int psC);
-    void fit(bool tuneFocal);
-    void fit(const PhotostationPlacerOptimizationType& optimizationSet = PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS, int num = 100);
+    bool initialize();
+    void create2PointCloud();
+    corecvs::Affine3DQ staticInit(CameraFixture* fixture, std::vector<SceneFeaturePoint*> &staticPoints);
+    void pruneTracks();
     void appendPs();
-	void appendTracks(const std::vector<int> &inlierIds, int ps);
-	std::vector<std::vector<PointObservation__>> verify(const std::vector<PointObservation__> &pois);
-    std::vector<PointObservation__> projectToAll(const std::vector<PointObservation__> &pois);
+    void fit(const PhotostationPlacerOptimizationType& optimizationSet = PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS, int num = 100);
+    void fit(bool tuneFocal);
+    void appendTracks(const std::vector<int> &inlierIds, CameraFixture* fixture, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &possibleTracks);
+    int getMovablePointCount();
+    int getReprojectionCnt();
+    int getInputNum();
+    int getOutputNum();
+    int getErrorComponentsPerPoint();
+    void getErrorSummary(PhotostationPlacerOptimizationErrorType errorType);
+    void getErrorSummaryAll();
 
-    std::vector<std::tuple<int, corecvs::Vector2dd, int, corecvs::Vector3dd>> getPossibleTracks(int ps);
-
-    std::vector<corecvs::Photostation> calibratedPhotostations;
-    std::vector<std::vector<std::string>> images;
-    std::vector<std::vector<std::vector<corecvs::Vector2dd>>> keyPoints;
-	std::vector<std::vector<std::vector<corecvs::RGBColor>>> keyPointColors;
-    std::vector<std::vector<std::vector<std::tuple<int, int, int, int, double>>>> matches, matchesCopy;
-    std::vector<std::tuple<int, int, std::vector<int>>> pairInliers;
-    std::vector<PhotostationInitialization> psInitData;
-    std::vector<std::pair<corecvs::Vector3dd,corecvs::Vector3dd>> backprojected [6];
-
-	std::vector<PointObservation__> tracks;
-	std::unordered_map<std::tuple<int, int, int>, int> trackMap;
-	int getMovablePointCount();
-	int getReprojectionCnt();
-	int getOrientationInputNum();
-	int getErrorComponentsPerPoint();
-	void getErrorSummary(PhotostationPlacerOptimizationErrorType errorType);
-	void getErrorSummaryAll();
+    void addFirstPs();
+    void addSecondPs();
+    void tryAlign();
 protected:
-	void readOrientationParams(const double in[]);
-	void writeOrientationParams(double out[]);
-	void computeMedianErrors(double out[], const std::vector<int> &idxs);
+    void readOrientationParams(const double in[]);
+    void writeOrientationParams(double out[]);
+    void computeErrors(double out[], const std::vector<int> &idxs);
     std::vector<std::vector<int>> getDependencyList();
-    std::vector<std::pair<int, int>> revDependency; // track, projection
+
+    /*
+     * These are valid only in non-linear fit time
+     */
+    std::vector<FixtureCamera*> activeCameras;
+    std::vector<SceneObservation*> revDependency; // track, projection
+    std::vector<CameraFixture*> gpsConstrainedCameras;
+    std::vector<std::vector<int>> sparsity;
+    void prepareNonLinearOptimizationData();
+    void buildDependencyList();
+    double scalerPoints, scalerGps;
+    int inputNum, outputNum, psNum, camNum, ptNum, projNum, gpsConstraintNum, staticNum;
+
+    std::unordered_map<corecvs::CameraFixture*, corecvs::Affine3DQ> activeEstimates;
+    std::unordered_map<corecvs::CameraFixture*, std::vector<int>> activeInlierCount;
+    void updateTrackables();
 
     struct ParallelErrorComputator
     {
@@ -189,59 +191,33 @@ protected:
         std::vector<int> idxs;
         double* output;
     };
-	struct OrientationFunctor : corecvs::SparseFunctionArgs
-	{
-		void operator() (const double in[], double out[], const std::vector<int> &idxs)
-		{
-			placer->readOrientationParams(in);
-			placer->computeMedianErrors(out, idxs);
-		}
-		OrientationFunctor(PhotostationPlacer *placer) : SparseFunctionArgs(placer->getOrientationInputNum(), placer->getReprojectionCnt(), placer->getDependencyList()), placer(placer)
-		{
-		}
-		PhotostationPlacer* placer;
-	};
-	struct OrientationNormalizationFunctor : corecvs::FunctionArgs
-	{
-		OrientationNormalizationFunctor(PhotostationPlacer *placer) : FunctionArgs(placer->getOrientationInputNum(), placer->getOrientationInputNum()), placer(placer)
-		{
-		}
-		void operator() (const double in[], double out[])
-		{
-			placer->readOrientationParams(in);
-			placer->writeOrientationParams(out);
-		}
-		PhotostationPlacer* placer;
-	};
-private:
-
-	double scoreFundamental(int psA, int camA, corecvs::Vector2dd ptA,
-			                int psB, int camB, corecvs::Vector2dd ptB);
-    int preplaced = 0, placed = 0;
-    struct ParallelEssentialFilter
+    struct OrientationFunctor : corecvs::SparseFunctionArgs
     {
-        PhotostationPlacer* placer;
-        std::vector<std::tuple<int, int, int, int>> work;
-        static std::atomic<int> cntr;
-        ParallelEssentialFilter(PhotostationPlacer* placer, std::vector<std::tuple<int,int,int,int>> &work) : placer(placer), work(work) {cntr = 0;}
-        void operator() (const corecvs::BlockedRange<int> &r) const
+        void operator() (const double in[], double out[], const std::vector<int> &idxs)
         {
-            for (int i = r.begin(); i < r.end(); ++i)
-            {
-                auto w = work[i];
-                placer->filterEssentialRansac(std::get<0>(w), std::get<1>(w), std::get<2>(w), std::get<3>(w));
-                cntr++;
-                std::cout << ((double)cntr) / work.size() * 100.0 << "% complete" << std::endl;
-            }
+            placer->readOrientationParams(in);
+            placer->computeErrors(out, idxs);
         }
+        OrientationFunctor(PhotostationPlacer *placer) : SparseFunctionArgs(placer->getInputNum(), placer->getOutputNum(), placer->sparsity), placer(placer)
+        {
+        }
+        PhotostationPlacer* placer;
     };
-    void selectEpipolarInliers(int psA, int psB);
-    void filterEssentialRansac(int psA, int camA, int psB, int camB);
-    std::vector<std::tuple<int, corecvs::Vector2dd, int, corecvs::Vector2dd, double>> getPhotostationMatches(int psA, int psB);
-    std::vector<std::tuple<corecvs::Vector2dd, corecvs::Vector2dd, double>> getCameraMatches(int psA, int camA, int psB, int camB);
-    void remove(int psA, int psB, std::vector<int> idx);
-    void remove(int psA, int camA, int psB, int camB, std::vector<int> idx);
+    struct OrientationNormalizationFunctor : corecvs::FunctionArgs
+    {
+        OrientationNormalizationFunctor(PhotostationPlacer *placer) : FunctionArgs(placer->getInputNum(), placer->getInputNum()), placer(placer)
+        {
+        }
+        void operator() (const double in[], double out[])
+        {
+            placer->readOrientationParams(in);
+            placer->writeOrientationParams(out);
+        }
+        PhotostationPlacer* placer;
+    };
+#ifdef WITH_TBB
     tbb::mutex mutex;
+#endif
 };
 }
 

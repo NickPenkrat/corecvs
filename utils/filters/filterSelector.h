@@ -91,7 +91,7 @@ public slots:
 signals:
     void parametersChanged( void );
 public:
-    FilterSelector(QString name = QString("FilterSelector"), QWidget *parent = 0);
+    FilterSelector(QWidget *parent = NULL, QString name = QString("FilterSelector"));
     ~FilterSelector(){}
 
     FilterSelectorParameters *getParameters ();
