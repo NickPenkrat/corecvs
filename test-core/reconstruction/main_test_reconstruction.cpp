@@ -40,6 +40,7 @@ TEST(Reconstruction, alignerPoseFromVectors)
         qB = Q * B;
 
         auto Qe = SceneAligner::EstimateOrientationTransformation(qA, qB, A, B);
+		std::cout << "Exp: " << Q << " got: " << Qe << std::endl;
         Qe = Qe ^ Q.conjugated();
         if (Qe[3] < 0.0) Qe = -Qe;
         for (int j = 0; j < 3; ++j)
