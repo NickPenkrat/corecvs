@@ -22,34 +22,39 @@ TEST(Reconstruction, alignerPoseFromVectors)
 {
     std::mt19937 rng(DEFAULT_SEED);
     std::uniform_real_distribution<double> runif(-1e3, 1e3);
+    int failureCntr = 0;
 
     for (int i = 0; i < RNG_RETRIES; ++i)
     {
         corecvs::Vector3dd A, B, qA, qB;
         corecvs::Quaternion Q;
 
-		do
+		for (int j = 0; j < 3; ++j)
 		{
-			for (int j = 0; j < 3; ++j)
-			{
-				A[j] = runif(rng);
-				B[j] = runif(rng);
-				Q[j] = runif(rng);
-			}
-		} while (std::abs(A & B) >= 0.9);
+			A[j] = runif(rng);
+			B[j] = runif(rng);
+			Q[j] = runif(rng);
+		}
         Q[3] = runif(rng);
+        A.normalise();
+        B.normalise();
         Q.normalise();
         qA = Q * A;
         qB = Q * B;
 
         auto Qe = SceneAligner::EstimateOrientationTransformation(qA, qB, A, B);
-		std::cout << "Exp: " << Q << " got: " << Qe << std::endl;
         Qe = Qe ^ Q.conjugated();
         if (Qe[3] < 0.0) Qe = -Qe;
+        bool failed = false;
         for (int j = 0; j < 3; ++j)
-            ASSERT_NEAR(0.0, Qe[j], 1e-1);
-        ASSERT_NEAR(1.0, Qe[3], 1e-1);
+            if (std::abs(Qe[j]) > 1e-6)
+            	failed |= true;
+        if (std::abs(1.0 - Qe[3]) > 1e-6)
+        	failed |= true;
+        if (failed) failureCntr++;
     }
+	std::cout << ((double)failureCntr) / RNG_RETRIES * 100.0 << "% failures" << std::endl;
+    ASSERT_LE(failureCntr, 1e-4 * RNG_RETRIES);
 }
 
 TEST(Reconstruction, nonCentralRelative6P)
