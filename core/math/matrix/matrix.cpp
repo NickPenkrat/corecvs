@@ -257,7 +257,7 @@ Matrix operator *(const Matrix &A, const Matrix &B)
     Matrix result(A.h, B.w, false);
 
 #ifndef WITH_BLAS
-    parallelable_for(0, result.h, 8, ParallelMM<>(&A, &B, &result), !(A.h < 64));
+    corecvs::parallelable_for(0, result.h, 8, ParallelMM<>(&A, &B, &result), !(A.h < 64));
     //Matrix::multiplyHomebrew(A, B, true, !(A.h < 64)); // TODO: it has a bug, see testMatrixOperations!!!
 #else
     cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, A.h, B.w, A.w, 1.0, A.data, A.stride, B.data, B.stride, 0.0, result.data, result.stride);
@@ -273,30 +273,24 @@ Vector operator *(const Matrix &M, const Vector &V)
     {
 #if !defined(WITH_BLAS)
         return Matrix::multiplyHomebrewMV(M, V);
-#elif defined(WITH_MKL)
-		//corecvs::parallelable_for (0, M.h, 8, ParallelMV(&M, &V, &result)); //TODO:
-        return Matrix::multiplyHomebrewMV(M, V);
 #else
         Vector result(M.h);
         cblas_dgemv (CblasRowMajor, CblasNoTrans, M.h, M.w, 1.0, &M.element(0, 0), M.stride, &V[0], 1, 0.0, &result[0], 1);
         return result;
 #endif
     }
-	else {
-        Vector result(M.h);
-        int row, column;
-        for (row = 0; row < M.h; row++)
+
+    Vector result(M.h);
+    for (int row = 0; row < M.h; row++)
+    {
+        double sum = 0.0;
+        for (int column = 0; column < M.w; column++)
         {
-            double sum = 0.0;
-            for (column = 0; column < M.w; column++)
-            {
-               sum += V.at(column) * M.a(row, column);
-            }
-            result.at(row) = sum;
+            sum += V.at(column) * M.a(row, column);
         }
-        return result;
+        result.at(row) = sum;
     }
-    return Vector(0);
+    return result;
 }
 
 Vector operator *(const Vector &V, const Matrix &M)
