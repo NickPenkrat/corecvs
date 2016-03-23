@@ -287,7 +287,7 @@ Vector operator *(const Matrix &M, const Vector &V)
     else
     {
 #if defined(WITH_MKL)
-		corecvs::parallelable_for (0, M.h, 8, ParallelMV(&M, &V, &result)); //TODO:
+        return Matrix::multiplyHomebrewMV(M, V); //TODO:
 #elif defined(WITH_BLAS)
         cblas_dgemv (CblasRowMajor, CblasNoTrans, M.h, M.w, 1.0, &M.element(0, 0), M.stride, &V[0], 1, 0.0, &result[0], 1);
 #else
