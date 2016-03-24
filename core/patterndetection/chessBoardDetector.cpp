@@ -84,30 +84,23 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
     corners.clear();
     bestPattern = RectangularGridPattern();
 
-    std::string prefix;
-    if (stats != NULL) {
-        prefix = stats->prefix;
-        stats->prefix = "Corners -> " + stats->prefix;
-        detector.setStatistics(stats);
-    }
+    if (stats != NULL) detector.setStatistics(stats->enterContext("Corners->"));
 
     detector.detectCorners(buffer, corners);
 
-    if (stats != NULL) stats->prefix = prefix;
+    if (stats != NULL) stats->leaveContext();
     if (stats != NULL) stats->resetInterval("Corners");
 
     std::vector<std::vector<std::vector<corecvs::Vector2dd>>> boards;
 
-    if (stats != NULL) {
-        prefix = stats->prefix;
-        stats->prefix = "Assembler -> " + stats->prefix;
-        assembler.setStatistics(stats);
-    }
+    if (stats != NULL) assembler.setStatistics(stats->enterContext("Assembler -> "));
+
     BoardAlignerParams params(*this);
     sharedGenerator->flushCache();
     BoardAligner aligner(params, sharedGenerator);
+
     assembler.assembleBoards(corners, boards, &aligner, &buffer);
-    if (stats != NULL) stats->prefix = prefix;
+    if (stats != NULL) stats->leaveContext();
 
     if (!boards.size())
         return false;
