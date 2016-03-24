@@ -54,7 +54,7 @@ TEST(Reconstruction, alignerPoseFromVectors)
         if (failed) failureCntr++;
     }
 	std::cout << ((double)failureCntr) / RNG_RETRIES * 100.0 << "% failures" << std::endl;
-    ASSERT_LE(failureCntr, 1e-4 * RNG_RETRIES);
+    ASSERT_LE(failureCntr, 1e-3 * RNG_RETRIES);
 }
 
 TEST(Reconstruction, nonCentralRelative6P)
