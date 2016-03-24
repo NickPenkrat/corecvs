@@ -32,7 +32,7 @@ with_opencv {
 #        matcher_full \
 #        camera_calibration \
 #        chessboard_detector \
-#        calibration \
+        calibration \
 #        calibration_job_generate \
 #        calibration_job_detect \
 #        calibration_job_estimate_distortion \

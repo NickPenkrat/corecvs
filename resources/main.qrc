@@ -101,6 +101,11 @@
         <file>inbox_upload.png</file>
         <file>screwdriver.png</file>
         <file>report_images.png</file>
+        <file>connect.png</file>
+        <file>disconnect.png</file>
+        <file>gear_in.png</file>
+        <file>arrow_rotate_anticlockwise.png</file>
+        <file>arrow_rotate_clockwise.png</file>
     </qresource>
     <qresource prefix="/new/colors">
         <file>colors/color_blue.png</file>

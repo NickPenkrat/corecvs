@@ -147,7 +147,7 @@ size_t corecvs::PolynomialSolver::solve_companion(const double* coeff, double* r
             }
         }
     }
-#endif
+#endif // FIEDLER
 
     // evd
     corecvs::Vector wr((int)degree), wi((int)degree);
@@ -164,4 +164,4 @@ size_t corecvs::PolynomialSolver::solve_companion(const double* coeff, double* r
     }
     return cnt;
 }
-#endif
+#endif // WITH_BLAS
