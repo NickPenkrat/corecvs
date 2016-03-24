@@ -1,4 +1,5 @@
 #ifndef CBLASLAPACKEWRAPPER
+#ifdef WITH_BLAS
 #ifdef WITH_MKL
     #include <mkl.h>
 #elif defined(WITH_BLAS)
@@ -7,5 +8,6 @@
     #define lapack_complex_double std::complex<double>
     #include <cblas.h>
     #include <lapacke.h>
+#endif
 #endif
 #endif

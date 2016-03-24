@@ -91,7 +91,8 @@ std::vector<corecvs::Affine3DQ> corecvs::RelativeNonCentralP6PSolver::SolveRelat
                 MM.a(j, 2) = cz;
                 V[j] =-c1;
             }
-            corecvs::Vector VV = corecvs::Matrix::LinSolve(MM.t() * MM, MM.t() * V);
+            corecvs::Vector VV;
+            corecvs::Matrix::LinSolve(MM.t() * MM, MM.t() * V, VV, true);
             corecvs::Vector3dd vv(VV);
             res.emplace_back(q, vv);
         }

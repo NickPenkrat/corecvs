@@ -128,7 +128,7 @@ void BoardAligner::fixOrientation()
 bool BoardAligner::alignDim(DpImage &img, bool fitW, bool fitH)
 {
     if (!fitW && !fitH)
-        return false;
+        return true;
 
     int w = (int)bestBoard[0].size(), h = (int)bestBoard.size();
 //    std::cout << "Best board: " << w << " x " << h << "; Req: " << idealWidth << " x " << idealHeight << std::endl;

@@ -70,8 +70,8 @@ public:
     SparseMatrix t() const;
     SparseMatrix upper() const;
     SparseMatrix ata() const;
-    Vector linSolve(const Vector &rhs, bool symmetric = false, bool posDef = false) const;
-    static Vector LinSolve(const SparseMatrix &m, const Vector &rhs, bool symmetric = false, bool posDef = false);
+    bool linSolve(const Vector &rhs, Vector &res, bool symmetric = false, bool posDef = false) const;
+    static bool LinSolve(const SparseMatrix &m, const Vector &rhs, Vector &res, bool symmetric = false, bool posDef = false);
 
     void print(std::ostream& out = std::cout) const;
     friend std::ostream& operator<< (std::ostream &out, const SparseMatrix &sm);

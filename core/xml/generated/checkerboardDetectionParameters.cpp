@@ -100,10 +100,13 @@ int CheckerboardDetectionParameters::staticInit()
         (
           CheckerboardDetectionParameters::CELL_SIZE_HOR_ID,
           offsetof(CheckerboardDetectionParameters, mCellSizeHor),
-          50,
+          0.05,
           "Cell Size Hor",
           "Cell Size Hor",
-          "Cell Size Hor"
+          "Cell Size Hor",
+          true,
+         0,
+         100
         )
     );
     fields().push_back(
@@ -111,10 +114,13 @@ int CheckerboardDetectionParameters::staticInit()
         (
           CheckerboardDetectionParameters::CELL_SIZE_VERT_ID,
           offsetof(CheckerboardDetectionParameters, mCellSizeVert),
-          50,
+          0.05,
           "Cell Size Vert",
           "Cell Size Vert",
-          "Cell Size Vert"
+          "Cell Size Vert",
+          true,
+         0,
+         100
         )
     );
     fields().push_back(

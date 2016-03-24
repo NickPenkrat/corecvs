@@ -56,7 +56,7 @@ void readImage(const std::string &filename, DpImage &img)
 {
     cv::Mat im = cv::imread(filename);
     im.convertTo(im, CV_64FC1, 1.0 / 255.0);
-    // XXX:  OPENCV DOES NOT SUPPORTS FP64 RGB->GRAY 
+    // XXX:  OPENCV DOES NOT SUPPORTS FP64 RGB->GRAY
     // TODO: BTW, I hope that it is always BGR order, is it correct?!
     img = DpImage(im.rows, im.cols);
     for (int i = 0; i < im.rows; ++i)
@@ -101,7 +101,14 @@ int main(int argc, char **argv)
     readImage(filename , img);
     CheckerboardDetectionParameters params;
     BoardAlignerParams alignerParams = BoardAlignerParams::GetOldBoard();
-    ChessboardDetector detector(params, alignerParams);
+    alignerParams.idealWidth = W;
+    alignerParams.idealHeight = H;
+    ChessBoardCornerDetectorParams cbparams;
+    ChessBoardAssemblerParams cbap;
+    cbap.setHypothesisDimFirst(W);
+    cbap.setHypothesisDimSecond(H);
+
+    ChessboardDetector detector(params, alignerParams, cbparams, cbap);
     detector.detectPattern(img);
 
     corecvs::ObservationList observations;

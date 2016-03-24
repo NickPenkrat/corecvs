@@ -24,10 +24,7 @@
 #include "matrix.h"
 #include "function.h"
 #include "sparseMatrix.h"
-
 #include "vector.h"
-#include "sparseMatrix.h"
-#include "cblasLapackeWrapper.h"
 
 
 namespace corecvs {
@@ -244,7 +241,7 @@ public:
 //                std::cout << "A.det " << A.det() << std::endl;
                 if (!useConjugatedGradient)
                 {
-                   delta = A.linSolve(B, true, true);
+                   A.linSolve(B, delta, true, true);
                 }
                 else
                 {
@@ -351,9 +348,9 @@ public:
         corecvs::Vector X(A.w), R = B, p = B;
         double rho0 = B.sumAllElementsSq(), rho1 = 0.0;
         for (int i = 0; i < A.w; ++i) X[i] = 0.0;
-    
+
         static int cgf = 0, cgo = 0;
-    
+
         std::cout << "PRECG: " << !(A*X-B) << std::endl;
         double eps = 1e-9 * rho0;
         for (int i = 0; i < conjugatedGradientIterations; ++i)
@@ -377,7 +374,11 @@ public:
                 cgo++;
         }
         if ((A*X-B).sumAllElementsSq() > B.sumAllElementsSq())
-            return A.linSolve(B);
+        {
+            corecvs::Vector v;
+            A.linSolve(B, v);
+            return v;
+        }
         std::cout << "POST-CG: " << !(A*X-B) << " cg failures: " << ((double)cgf) / (double)((cgf + cgo + 1.0)) * 100.0 << "%" << std::endl;
         return X;
     }

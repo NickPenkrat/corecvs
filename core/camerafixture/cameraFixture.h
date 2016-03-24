@@ -86,6 +86,15 @@ public:
         return getWorldCamera(cam);
     }
 
+	double scoreFundamental(FixtureCamera *thisCamera, Vector2dd thisPoint, CameraFixture *otherFixture, FixtureCamera *otherCamera, Vector2dd otherPoint)
+	{
+		auto FAB = getWorldCamera(thisCamera).fundamentalTo(
+				otherFixture->getWorldCamera(otherCamera));
+		corecvs::Line2d left = FAB.mulBy2dRight(otherPoint);
+		corecvs::Line2d right= FAB.mulBy2dLeft (thisPoint);
+		return std::max(left.distanceTo(thisPoint), right.distanceTo(otherPoint));
+	}
+
     int getCameraId(FixtureCamera* ptr) const
     {
         for (auto& i: cameras)
