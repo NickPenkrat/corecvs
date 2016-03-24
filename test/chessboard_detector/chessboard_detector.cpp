@@ -109,11 +109,12 @@ int main(int argc, char **argv)
     cbap.setHypothesisDimSecond(H);
 
     ChessboardDetector detector(params, alignerParams, cbparams, cbap);
-    detector.detectPattern(img);
+    bool result = detector.detectPattern(img);
 
     corecvs::ObservationList observations;
     detector.getPointData(observations);
 
+    std::cout << "result = " << result << ";";
     std::cout << "board = [";
     for (auto o: observations)
     {

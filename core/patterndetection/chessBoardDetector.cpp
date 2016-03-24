@@ -78,12 +78,12 @@ bool ChessboardDetector::detectPattern(corecvs::RGB24Buffer &buffer)
 
 bool ChessboardDetector::detectPattern(DpImage &buffer)
 {
-    if (stats != NULL) stats->startInterval();
 
     ChessBoardDetectorMode mode =  getMode(*this);
     corners.clear();
     bestPattern = RectangularGridPattern();
 
+    if (stats != NULL) stats->startInterval();
     if (stats != NULL) detector.setStatistics(stats->enterContext("Corners->"));
 
     detector.detectCorners(buffer, corners);
@@ -100,11 +100,11 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
     BoardAligner aligner(params, sharedGenerator);
 
     assembler.assembleBoards(corners, boards, &aligner, &buffer);
-    if (stats != NULL) stats->leaveContext();
 
-    if (!boards.size())
+    if (boards.empty())
         return false;
 
+    if (stats != NULL) stats->leaveContext();
     if (stats != NULL) stats->resetInterval("Assemble");
 
     bool /*transposed = false,*/ found = false;
