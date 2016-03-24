@@ -35,6 +35,7 @@ public:
         , const MatchContainer &matchesAll
         , const RelativeNonCentralRansacSolverSettings &settings = RelativeNonCentralRansacSolverSettings());
 
+    int  getInliersCount();
     void run();
     void fit(double distanceGuess = 10.0);
     corecvs::Affine3DQ getBestHypothesis() const;
@@ -67,7 +68,6 @@ private:
         }
     };
 
-    int  getInliersCount();
     void readParams(const double in[]);
     void writeParams(double out[]);
     void computeError(double out[]);

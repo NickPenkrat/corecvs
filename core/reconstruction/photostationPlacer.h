@@ -72,7 +72,7 @@ struct PhotostationPlacerEssentialFilterParams
 {
     double b2bRansacP5RPThreshold = 0.8;
     double inlierP5RPThreshold = 5.0;
-    int maxEssentialRansacIterations = 1000000;
+    int maxEssentialRansacIterations = 100000;
     double b2bRansacP6RPThreshold = 0.8;
     bool runEssentialFiltering = true;
     double essentialTargetGamma = 0.001;
@@ -117,7 +117,7 @@ struct PhotostationPlacerParams
         PhotostationPlacerOptimizationType::POINTS;// | PhotostationPlacerOptimizationType::FOCALS;
     PhotostationPlacerOptimizationErrorType errorType = PhotostationPlacerOptimizationErrorType::RAY_DIFF;
     // This defines how many multicameras are subject for P3P evaluation at each iteration
-    int speculativity = 1;
+    int speculativity = 1000;
 
     template<typename V>
     void accept(V &v)
@@ -136,6 +136,7 @@ class PhotostationPlacer :    public PhotostationPlacerEssentialFilterParams, pu
 {
 public:
     ReconstructionFixtureScene* scene;
+    void testNewPipeline();
     void fullRun();
     corecvs::Mesh3D dumpMesh(const std::string &filename);
     void paintTracksOnImages(bool pairs = false);

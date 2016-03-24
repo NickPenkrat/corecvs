@@ -68,14 +68,14 @@ corecvs::Quaternion corecvs::SceneAligner::EstimateOrientationTransformation(con
     return corecvs::Quaternion::FromMatrix(R);
 }
 
-bool corecvs::SceneAligner::TryAlignGPS(ReconstructionFixtureScene* scene, corecvs::Affine3DQ &transformation, double &scale)
+bool corecvs::SceneAligner::TryAlignStatic(ReconstructionFixtureScene* scene, corecvs::Affine3DQ &transformation, double &scale)
 {
     scale = 1.0;
     transformation = corecvs::Affine3DQ();
     return false;
 }
 
-bool corecvs::SceneAligner::TryAlignStatic(ReconstructionFixtureScene* scene, corecvs::Affine3DQ &transformation, double &scale)
+bool corecvs::SceneAligner::TryAlignGPS(ReconstructionFixtureScene* scene, corecvs::Affine3DQ &transformation, double &scale)
 {
 #if 1
     scale = 1.0;
