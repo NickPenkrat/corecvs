@@ -584,3 +584,18 @@ SceneFeaturePoint *FixtureScene::fabricateFeaturePoint()
     //SYNC_PRINT(("FixtureScene::fabricateFeaturePoint(): called\n"));
     return new SceneFeaturePoint(this);
 }
+
+void corecvs::FixtureScene::transform(const corecvs::Affine3DQ &transformation, const double scale)
+{
+    for (auto& pt: points)
+    {
+        pt->position = scale * (transformation * pt->position);
+        pt->reprojectedPosition = scale * (transformation * pt->reprojectedPosition);
+    }
+
+    for (auto& cf: fixtures)
+    {
+        cf->location.shift = scale * (transformation * cf->location.shift);
+        cf->location.rotor = transformation.rotor ^ cf->location.rotor;
+    }
+}

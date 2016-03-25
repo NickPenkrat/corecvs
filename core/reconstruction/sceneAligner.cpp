@@ -179,21 +179,13 @@ corecvs::Vector3dd corecvs::SceneAligner::ShiftFromRotation(const corecvs::Quate
 
 void corecvs::SceneAligner::ApplyTransformation(ReconstructionFixtureScene* scene, const corecvs::Affine3DQ &transform, const double scale)
 {
+    scene->transform(transform, scale);
     //TODO: Check how all stuff should change with scale ~= 0.0
-    auto& Q = transform.rotor;
-    auto& T = transform.shift;
     for (auto& cf: scene->placedFixtures)
     {
-        cf->location.shift = (Q * cf->location.shift) + T;
-        cf->location.rotor = Q ^ cf->location.rotor;
         if (scene->initializationData[cf].initializationType == PhotostationInitializationType::GPS)
             cf->location.shift = scene->initializationData[cf].initData.shift;
         if (scene->initializationData[cf].initializationType == PhotostationInitializationType::FIXED)
             cf->location = scene->initializationData[cf].initData;
-    }
-    for (auto& pt: scene->points)
-    {
-        pt->position = scale * ((Q * pt->position) + T);
-        pt->reprojectedPosition = scale * ((Q * pt->reprojectedPosition) + T);
     }
 }
