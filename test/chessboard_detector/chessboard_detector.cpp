@@ -83,6 +83,8 @@ void readImage(const std::string &filename, corecvs::RGB24Buffer &img)
     }
 }
 
+#define TRACE
+
 int main(int argc, char **argv)
 {
     int W, H;
@@ -109,12 +111,37 @@ int main(int argc, char **argv)
     cbap.setHypothesisDimSecond(H);
 
     ChessboardDetector detector(params, alignerParams, cbparams, cbap);
+
+#ifdef TRACE
+    cout << "We are using following configs" << endl;
+
+    PrinterVisitor printer(2,2);
+    cout << "CheckerboardDetectionParameters:"  << endl;
+    params.accept(printer);
+    cout << "BoardAlignerParams:"  << endl;
+    alignerParams.accept(printer);
+    cout << "ChessBoardAssemblerParams:"  << endl;
+    cbap.accept(printer);
+    cout << "ChessBoardCornerDetectorParams:"  << endl;
+    cbparams.accept(printer);
+    cout << std::fflush;
+
+    Statistics stats;
+    detector.setStatistics(&stats);
+#endif
+
     bool result = detector.detectPattern(img);
 
     corecvs::ObservationList observations;
     detector.getPointData(observations);
 
-    std::cout << "result = " << result << ";";
+#ifdef TRACE
+    BaseTimeStatisticsCollector collector;
+    collector.addStatistics(stats);
+    collector.printAdvanced();
+    std::cout << "result = " << result << ";" << endl;
+#endif
+
     std::cout << "board = [";
     for (auto o: observations)
     {

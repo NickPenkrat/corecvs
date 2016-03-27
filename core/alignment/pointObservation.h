@@ -50,6 +50,14 @@ struct PointObservation
             visitor.visit(point, Vector3dd(), "point3d");
             visitor.visit(projection, Vector2dd(), "projection");
         }
+
+
+    friend ostream & operator <<(ostream &out, const PointObservation &observation)
+    {
+        out << "(" << observation.point << " -> " << observation.projection << ")";
+        return out;
+    }
+
 };
 
 } // namespace corecvs

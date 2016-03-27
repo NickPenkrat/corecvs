@@ -12,10 +12,12 @@
 
 
 #include <vector>
+#include <algorithm>
 
 #include "vector3d.h"
 #include "generated/axisAlignedBoxParameters.h"
 #include "line.h"
+#include "simpleRenderer.h"
 
 namespace corecvs {
 
@@ -61,6 +63,9 @@ public:
     {}
 };
 
+/**
+ *  Polygon
+ **/
 class Polygon : public PointPath
 {
 public:
@@ -90,6 +95,55 @@ public:
     }
 
     //bool clipRay(const Ray2d &ray, double &t1, double &t2);
+
+};
+
+/* So far we only support convex polygon*/
+class PolygonSpanIterator
+{
+public:
+    const Polygon &polygon;
+
+    double currentY;
+    double startX;
+    double endX;
+
+
+    vector<int> sortedIndex;
+    unsigned currentIndex;
+
+    PolygonSpanIterator(const Polygon &polygon) : polygon(polygon)
+    {
+        sortedIndex.reserve(polygon.size());
+        for (unsigned i = 0; i < polygon.size(); i++)
+            sortedIndex.push_back(i);
+
+        std::sort(sortedIndex.begin(), sortedIndex.end(), [=](int a, int b) { return polygon[a].y() > polygon[b].y(); });
+        currentIndex = 0;
+        currentY = polygon[sortedIndex[0]].y();
+        startX   = polygon[sortedIndex[0]].x();
+        endX    =  polygon[sortedIndex[0]].x();
+
+    }
+
+    bool step()
+    {
+        SYNC_PRINT(("PolygonSpanIterator::step(): called\n"));
+        if (currentIndex >= sortedIndex.size())
+            return false;
+    }
+
+    void getSpan(double &y, double &x1, double &x2)
+    {
+        y = currentY;
+        x1 = 0;
+        x2 = 0;
+    }
+
+
+
+
+
 };
 
 

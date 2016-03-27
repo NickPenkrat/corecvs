@@ -46,9 +46,9 @@ struct RectangularGridPattern
         {
             for (int j = 0; j + 2 < h(); ++j)
             {
-                auto c1 = corners[cornerIdx[j + 0][i]].pos;
-                auto c2 = corners[cornerIdx[j + 1][i]].pos;
-                auto c3 = corners[cornerIdx[j + 2][i]].pos;
+                Vector2dd c1 = corners[cornerIdx[j + 0][i]].pos;
+                Vector2dd c2 = corners[cornerIdx[j + 1][i]].pos;
+                Vector2dd c3 = corners[cornerIdx[j + 2][i]].pos;
                 double err = (c1 + c3 - 2.0 * c2).l2Metric() / (c1 - c3).l2Metric();
                 if (err > e_struct)
                     e_struct = err;
@@ -58,9 +58,9 @@ struct RectangularGridPattern
         {
             for (int j = 0; j + 2 < w(); ++j)
             {
-                auto c1 = corners[cornerIdx[i][j + 0]].pos;
-                auto c2 = corners[cornerIdx[i][j + 1]].pos;
-                auto c3 = corners[cornerIdx[i][j + 2]].pos;
+                Vector2dd c1 = corners[cornerIdx[i][j + 0]].pos;
+                Vector2dd c2 = corners[cornerIdx[i][j + 1]].pos;
+                Vector2dd c3 = corners[cornerIdx[i][j + 2]].pos;
                 double err = (c1 + c3 - 2.0 * c2).l2Metric() / (c1 - c3).l2Metric();
                 if (err > e_struct)
                     e_struct = err;
@@ -102,10 +102,13 @@ public:
     ChessBoardAssembler(ChessBoardAssemblerParams params = ChessBoardAssemblerParams());
     ChessBoardAssembler(const ChessBoardAssembler &other);
     ChessBoardAssembler& operator=(const ChessBoardAssembler &other);
-    void assembleBoards(std::vector<OrientedCorner> &corners_, std::vector<std::vector<std::vector<corecvs::Vector2dd>>> &boards, BoardAligner* aligner = 0, DpImage* buffer = 0);
+    void assembleBoards(std::vector<OrientedCorner> &corners_,
+                        std::vector<std::vector<std::vector<corecvs::Vector2dd>>> &boards,
+                        BoardAligner* aligner = 0, DpImage* buffer = 0);
 
 protected://iivate:
     enum class Direction {UP, DOWN, LEFT, RIGHT};
+
     class BoardExpander
     {
         public:
@@ -125,6 +128,7 @@ protected://iivate:
 //            std::vector<corecvs::Vector2dd> prediction;
             RectangularGridPattern board;
     };
+
     class ParallelBoardExpander
     {
         public:
@@ -139,6 +143,7 @@ protected://iivate:
     std::vector<OrientedCorner> corners;
     BoardAligner *aligner;
     DpImage* buffer;
+
 #ifdef WITH_TBB
     tbb::mutex mutex;
 #endif

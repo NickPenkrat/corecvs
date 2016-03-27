@@ -38,11 +38,11 @@
      <!-- Insert vectors here -->
 
      <field type="double" name="sectorSizeDeg"  suffix="deg" defaultValue="90"    comment="Sector size in deg" />
-     <field type="int"    name="histogramBins"             defaultValue="50"    comment="Number of bins for computing edge direction histogram" min="0"   max="999999"  />
+     <field type="int"    name="histogramBins"               defaultValue="50"    comment="Number of bins for computing edge direction histogram" min="0"   max="999999"  />
 
      <field type="double" name="minAngleDeg"  suffix="deg" defaultValue="30"      comment="Minimal angle between edges in deg" />
-     <field type="int"    name="neighborhood"            defaultValue="25"      comment="Typical radius for estimating edge-related data and refinig corner positions" min="0"   max="999999"  />
-     <field type="double" name="gradThreshold"           defaultValue="0.1"     comment="Gradient magnitude threshold" />
+     <field type="int"    name="neighborhood"              defaultValue="25"      comment="Typical radius for estimating edge-related data and refinig corner positions" min="0"   max="999999"  />
+     <field type="double" name="gradThreshold"             defaultValue="0.1"     comment="Gradient magnitude threshold" />
 
      <field type="double" name="orientationInlierThreshold" defaultValue="0.25" comment="Gradient orientation inlier threshold" />
      <field type="double" name="inlierDistanceThreshold"    defaultValue="5.0"  comment="Threshold for distance to edge" />

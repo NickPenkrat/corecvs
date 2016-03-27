@@ -97,6 +97,42 @@ public:
     }
 };
 
+
+/* Circle 2d iterator */
+class CircleSpanIterator
+{
+public:
+    const Circle2d &circle;
+
+    double radSQ;
+    int currentY;
+    int currentDX;
+
+    CircleSpanIterator(const Circle2d &circle) : circle(circle)
+    {
+        radSQ = circle.r * circle.r;
+        currentY  = -circle.r + circle.c.y();
+        currentDX = 0;
+    }
+
+    bool step()
+    {
+        SYNC_PRINT(("CircleSpanIterator::step(): called\n"));
+        currentDX = (int)sqrt((float)(radSQ - (currentY - 0.5) * (currentY - 0.5)));
+        currentY++;
+        return false;
+    }
+
+    void getSpan(double &y, double &x1, double &x2)
+    {
+        y = currentY;
+        x1 = circle.c.x() - currentDX;
+        x2 = circle.c.x() + currentDX;
+    }
+};
+
+
+
 } // namespace corecvs
 
 #endif // CONIC_H

@@ -18,8 +18,9 @@
 /* TODO: Time to add this file to corecvs namespace. So far just some relaxed usings */
 using corecvs::DpImage;
 using corecvs::DpKernel;
-
 using corecvs::Vector2dd;
+
+using std::vector;
 
 /**
  * Structure that holds oriented corner
@@ -35,8 +36,8 @@ struct OrientedCorner
     {}
 
     Vector2dd pos;
-    Vector2dd v1, v2;
-
+    Vector2dd v1;
+    Vector2dd v2;
     double score;
 
     /**
@@ -52,6 +53,7 @@ struct OrientedCorner
      **/
     double scoreCorner(DpImage &img, DpImage &w, int r, double bandwidth = 3.0);
 
+
 private:
     /**
      * Computes gradient magnitude correlation
@@ -64,7 +66,7 @@ private:
     double scoreIntensity(DpImage &img, int r);
 };
 
-/*
+/**
  * Here we implement first part (= oriented chessboard corner detection)
  * of algo presented in A. Geiger et. al Automatic Camera and Range Sensor Calibration using a single Shot http://www.cvlibs.net/publications/Geiger2012ICRA.pdf
  *
@@ -75,7 +77,7 @@ private:
  * 2. Estimate orientation of detected corners using meanshift algo for
  *    finding modes in gradient distribution near the corner
  * 3. Refine position and orientation solving LSQ-like problems
- */
+ **/
 
 
 /*
@@ -97,12 +99,6 @@ struct CornerKernelSet
     void computeCost(DpImage &img, DpImage &c, bool parallelable = true, bool new_style = true);
 
 private:
-    // One-dimension normal distribution PDF
-    // TODO: find if we already have it somewhere
-    static double pdf(double x, double sigma)
-    {
-        return exp(-x * x / (2.0 * sigma * sigma)) / (sigma * sqrt(2.0 * M_PI));
-    }
     // Initialization routine
     void computeKernels(double r, double alpha, double psi, int w, int c, double threshold = 0.05);
     static void MinifyKernel(DpKernel &k);
@@ -120,15 +116,15 @@ public:
 
 #if __cplusplus >= 201103L // Our compiler is cool enough to support brace-initalizer-list for structure members
     // Radius for multi-scale pattern detection
-    std::vector<double> patternRadius = {4.0, 8.0, 12.0};
+    vector<double> patternRadius = {4.0, 8.0, 12.0};
     // Radius for corner-scoring
-    std::vector<double> cornerScores = {4.0, 8.0, 12.0};
+    vector<double> cornerScores = {4.0, 8.0, 12.0};
     // Angle for rotation-variant detection
-    std::vector<double> patternStartAngle = { 0.0, M_PI / 4.0 };
+    vector<double> patternStartAngle = { 0.0, M_PI / 4.0 };
 #else
-    std::vector<double> patternRadius;
-    std::vector<double> cornerScores;
-    std::vector<double> patternStartAngle;
+    vector<double> patternRadius;
+    vector<double> cornerScores;
+    vector<double> patternStartAngle;
 
     ChessBoardCornerDetectorParams()
     {
@@ -162,8 +158,6 @@ public:
     double sectorSize() {
         return degToRad(sectorSizeDeg());
     }
-
-
 
     template<typename VisitorType>
     void accept(VisitorType &visitor)

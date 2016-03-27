@@ -4,10 +4,13 @@
 #include <algorithm>
 #include <set>
 
+#include "mathUtils.h"
+
 #include "vectorTraits.h"
 #include "fastKernel.h"
 #include "arithmetic.h"
 #include "matrix22.h"
+
 
 using corecvs::Vector2dd;
 using corecvs::Matrix22;
@@ -291,6 +294,7 @@ void CornerKernelSet::computeCost(DpImage &img, DpImage &c, bool parallelable, b
 
 void CornerKernelSet::computeKernels(double r, double alpha, double psi, int w, int c, double threshold)
 {
+    double sigma = r / 2.0;
     Vector2dd v1 = Vector2dd::FromPolar(alpha      ).rightNormal();
     Vector2dd v2 = Vector2dd::FromPolar(alpha + psi).rightNormal();
     Vector2dd cc(c, c);
@@ -301,27 +305,29 @@ void CornerKernelSet::computeKernels(double r, double alpha, double psi, int w, 
         for (int j = 0; j < w; ++j)
         {
             Vector2dd p(i, j);
-            auto v = p - cc;
+            Vector2dd v = p - cc;
             // Now we check if it is inside => cross product changes sign
-            auto p1 = v & v1, p2 = v &v2;
-            double lr = !v, sigma = r / 2.0;
+            double p1 = v & v1;
+            double p2 = v & v2;
+            double lr = !v;
+
 
             A.element(i, j) = B.element(i, j) = C.element(i, j) = D.element(i, j) = 0.0;
             if (p1 > threshold && p2 < -threshold)
             {
-                A.element(i, j) = pdf(lr, sigma);
+                A.element(i, j) = normalPDF(lr, sigma);
             }
             if (p1 < -threshold && p2 > threshold)
             {
-                B.element(i, j) = pdf(lr, sigma);
+                B.element(i, j) = normalPDF(lr, sigma);
             }
             if (p1 < -threshold && p2 < -threshold)
             {
-                C.element(i, j) = pdf(lr, sigma);
+                C.element(i, j) = normalPDF(lr, sigma);
             }
             if (p1 > threshold && p2 > threshold)
             {
-                D.element(i, j) = pdf(lr, sigma);
+                D.element(i, j) = normalPDF(lr, sigma);
             }
         }
     }

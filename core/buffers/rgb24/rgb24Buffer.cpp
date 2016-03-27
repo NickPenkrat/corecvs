@@ -354,39 +354,56 @@ void RGB24Buffer::drawCorrespondenceList(CorrespondenceList *src, double colorSc
 }
 
 
-
-
-#if 0
-void RGB24Buffer::drawRectangle(const Rectangle<int32_t> &rect, RGBColor color, int style)
+void RGB24Buffer::drawRectangle(int x, int y, int h, int w, RGBColor color, int style)
 {
+    w--;
+    h--;
+
     if (style == 1)
     {
-        this->drawCrosshare3(rect.corner.y()                ,rect.corner.x(), color);
-        this->drawCrosshare3(rect.corner.y() + rect.size.y(),rect.corner.x(), color);
-        this->drawCrosshare3(rect.corner.y()                ,rect.corner.x() + rect.size.x(), color);
-        this->drawCrosshare3(rect.corner.y() + rect.size.y(),rect.corner.x() + rect.size.x(), color);
+        this->drawCrosshare3(x    , y    , color);
+        this->drawCrosshare3(x + w, y    , color);
+        this->drawCrosshare3(x    , y + h, color);
+        this->drawCrosshare3(x + w, y + h, color);
         return;
     }
 
     if (style == 0)
     {
-        for (int i = 0; i < rect.size.y(); i++)
+        for (int i = 0; i <= h; i++)
         {
-            this->element(rect.corner.y() + i, rect.corner.x()) = color;
-            this->element(rect.corner.y() + i, rect.corner.x() + rect.size.x()) = color;
+            this->element(y + i, x    ) = color;
+            this->element(y + i, x + w) = color;
         }
 
-        for (int j = 1; j < rect.size.x() - 1; j++)
+        for (int j = 1; j <= w; j++)
         {
-            this->element(rect.corner.y(), rect.corner.x() + j) = color;
-            this->element(rect.corner.y() + rect.size.y(), rect.corner.x() +  j) = color;
+            this->element(y    , x + j) = color;
+            this->element(y + h, x + j) = color;
         }
     }
 
+    if (style == 2) {
+        for (int i = 0; i <= h; i++)
+        {
+            RGBColor *line = &element(i + y, x);
+            for (int j = 0; j <= w; j++)
+            {
+                *line = color;
+                line++;
+            }
+        }
 
-
+    }
 }
-#endif
+
+void RGB24Buffer::drawRectangle(const Rectangle<int32_t> &rect, RGBColor color, int style)
+{
+    drawRectangle(rect.corner.x(), rect.corner.y(), rect.size.x(), rect.size.y(), color, style);
+}
+
+
+
 
 #if 0
 void RGB24Buffer::rgb24DrawDisplacementBuffer(RGB24Buffer *dst, DisplacementBuffer *src, double step)

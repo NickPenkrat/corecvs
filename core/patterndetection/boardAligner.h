@@ -11,6 +11,7 @@
 
 using std::vector;
 using corecvs::Vector2dd;
+using corecvs::RGB24Buffer;
 
 enum class AlignmentType
 {
@@ -66,29 +67,37 @@ struct BoardAlignerParams
         visitor.visit(boardMarkers, "boardMarkers");
     }
 
+    static BoardAlignerParams GetIndoorsBoard();
     static BoardAlignerParams GetOldBoard();
     static BoardAlignerParams GetNewBoard();
 };
 
 
-class BoardAligner : protected BoardAlignerParams
+class BoardAligner : public BoardAlignerParams
 {
 public:
     BoardAligner(BoardAlignerParams params = BoardAlignerParams());
     BoardAligner(BoardAlignerParams params, const std::shared_ptr<CirclePatternGenerator> &sharedGenerator);
 
-    static CirclePatternGenerator* FillGenerator(const BoardAlignerParams &params);
+
+    void setAlignerParams(const BoardAlignerParams &params);
+    BoardAlignerParams getAlignerParams(void);
+
 
     bool align(DpImage &img);
-    void drawDebugInfo(corecvs::RGB24Buffer &buffer);
+    void drawDebugInfo(RGB24Buffer &buffer);
 
-    vector<vector<corecvs::Vector2dd>>      bestBoard;
+    vector<vector<Vector2dd>>      bestBoard;
+
+    static CirclePatternGenerator* FillGenerator(const BoardAlignerParams &params);
 
 protected:
     std::shared_ptr<CirclePatternGenerator> generator;
     bool                                    sharedGenerator;
     vector<vector<std::pair<int, int>>>     classifier;
     vector<vector<std::pair<int, int>>>     initialClassifier;
+
+public:
     corecvs::ObservationList                observationList;
 
     void printClassifier(bool initial);

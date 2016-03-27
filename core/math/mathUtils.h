@@ -188,4 +188,20 @@ inline double lerpLimit(double outStart, double outEnd, double value, double int
     return lerp<double>(outStart, outEnd, value, intervalStart, intervalEnd);
 }
 
+/** Common functions **/
+
+/**
+ *  Probability density function for one-dimention normal distribution
+ *
+ *  \f[
+ *       f(x;\mu,\sigma^2) = \frac{1}{\sigma\sqrt{2\pi}} e^{ -\frac{1}{2}\left(\frac{x-\mu}{\sigma}\right)^2 }.
+ *  \f]
+ *
+ **/
+inline double normalPDF(double x, double sigma)
+{
+    return exp(-x * x / (2.0 * sigma * sigma)) / (sigma * sqrt(2.0 * M_PI));
+}
+
+
 } //namespace corecvs

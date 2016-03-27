@@ -6,6 +6,14 @@
 
 namespace corecvs {
 
+class LineSpanInt {
+public:
+    int y;
+    int x1;
+    int x2;
+};
+
+
 class SimpleRenderer
 {
 public:

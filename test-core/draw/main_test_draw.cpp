@@ -63,6 +63,28 @@ TEST(Draw, testCircles1)
     delete_safe(buffer);
 }
 
+TEST(Draw, testRectangles)
+{
+    int h = 100;
+    int w = 100;
+
+    RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
+
+    for (int i = 1; i < 8; i++) {
+        int pos = (i* (i - 1)) / 2 + 1;
+
+        buffer->drawRectangle( pos,  pos, i, i, RGBColor::Red()  , 0);
+
+        buffer->drawRectangle(50 + pos,  pos, i, i, RGBColor::Green(), 1);
+        buffer->drawRectangle( pos, 50 + pos, i, i, RGBColor::Blue() , 2);
+
+    }
+
+
+
+    BMPLoader().save("rects.bmp", buffer);
+}
+
 
 TEST(Draw, testFloodFill)
 {
