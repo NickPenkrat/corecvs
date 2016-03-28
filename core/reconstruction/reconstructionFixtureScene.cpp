@@ -693,6 +693,8 @@ void corecvs::ReconstructionFixtureScene::filterEssentialRansac(std::vector<Came
                 for (size_t camB = 0; camB < psB_->cameras.size(); ++camB)
                 {
                     WPP idFirst(psA_, psA_->cameras[camA]), idSecond(psB_, psB_->cameras[camB]);
+                    if (psA == psB)
+                        continue;
                     bool alreadyIn = false;
                     for (auto& pp: work)
                         if ((pp.first == idFirst && pp.second == idSecond) || (pp.second == idFirst && pp.first == idSecond))
