@@ -157,6 +157,11 @@ public:
     void getErrorSummary(PhotostationPlacerOptimizationErrorType errorType);
     void getErrorSummaryAll();
 
+    // Tries to append f using P6P (with 2d<->2d correspondences)
+    bool appendP6P(CameraFixture* f);
+    // Tries to append f using P3P (with 3d<->2d correspondences
+    bool appendP3P(CameraFixture* f);
+
     void addFirstPs();
     void addSecondPs();
     void tryAlign();
