@@ -1185,11 +1185,10 @@ void corecvs::PhotostationPlacer::testNewPipeline()
         std::cout << solver.getInliersCount() << " inliers" << std::endl;
         if (solver.getInliersCount() < 100)
         {
+			scene->matches = scene->matchesCopy;
             std::cout << "Seems that " << A->name << "<>" << B->name << " is a bad initialization pair" << std::endl;
             continue;
         }
-
-        scene->matches = scene->matchesCopy;
 
         scene->placedFixtures.push_back(psA);
         scene->placedFixtures.push_back(psB);
@@ -1213,6 +1212,14 @@ void corecvs::PhotostationPlacer::testNewPipeline()
     fit(optimizationParams & ~(PhotostationPlacerOptimizationType::DEGENERATE_TRANSLATIONS | (PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::TUNE_GPS)), 100);
     for (auto& cf: scene->placedFixtures)
         std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ scene->placedFixtures[0]->location.rotor.conjugated()) << std::endl;
+    SceneAligner::TryAlign(scene, tform, scale);
+    for (auto& cf: scene->placedFixtures)
+        std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ scene->placedFixtures[0]->location.rotor.conjugated()) << std::endl;
+    fit(optimizationParams & ~(PhotostationPlacerOptimizationType::DEGENERATE_TRANSLATIONS | (PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::TUNE_GPS)), 100);
+    for (auto& cf: scene->placedFixtures)
+        std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ scene->placedFixtures[0]->location.rotor.conjugated()) << std::endl;
+    create2PointCloud();
+    std::cout << scene->trackedFeatures.size() << " reconstructed points after fit and align" << std::endl;
     /*
      * 4. Append pss iteratively
      *       a) update all P3Ps
@@ -1225,14 +1232,6 @@ void corecvs::PhotostationPlacer::testNewPipeline()
      *       d) Possibly we need some storage for reconstructed scenes (?!) - this will
      *          be adressend in future (when we add non-iterative reconstruction)
      */
-    SceneAligner::TryAlign(scene, tform, scale);
-    for (auto& cf: scene->placedFixtures)
-        std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ scene->placedFixtures[0]->location.rotor.conjugated()) << std::endl;
-    fit(optimizationParams & ~(PhotostationPlacerOptimizationType::DEGENERATE_TRANSLATIONS | (PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::TUNE_GPS)), 100);
-    for (auto& cf: scene->placedFixtures)
-        std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ scene->placedFixtures[0]->location.rotor.conjugated()) << std::endl;
-    create2PointCloud();
-    std::cout << scene->trackedFeatures.size() << " reconstructed points after fit and align" << std::endl;
     scene->state = ReconstructionState::APPENDABLE;
     appendPs();
     for (auto& cf: scene->placedFixtures)
