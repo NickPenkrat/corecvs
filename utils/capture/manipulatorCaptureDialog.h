@@ -3,6 +3,8 @@
 
 #include <QDialog>
 
+#include "abstractManipulatorInterface.h"
+
 namespace Ui {
 class ManipulatorCaptureDialog;
 }
@@ -16,6 +18,7 @@ public:
     ~ManipulatorCaptureDialog();
 
     void captureNextPosition();
+    void setManipulator(AbstractManipulatorInterface *manipulator);
 
 signals:
     void captureAtPosition(int);
@@ -24,12 +27,13 @@ signals:
 private:
     Ui::ManipulatorCaptureDialog *ui;
     int mPosition;
+    AbstractManipulatorInterface *mManipulator;
 
-    void setupManipulator(int position);
     void toggleUIEnabled(bool enable);
 
 private slots:
     void captureWithManipulator();
+    void configureInterface();
 };
 
 #endif // MANIPULATORCAPTUREDIALOG_H

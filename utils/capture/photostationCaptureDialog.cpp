@@ -50,11 +50,14 @@ PhotostationCaptureDialog::PhotostationCaptureDialog(QWidget *parent)
     /* OK need to check if it gets deleted on table cleanup */
     connect(ui->cameraTableWidget, SIGNAL(cellClicked(int,int)), this, SLOT(tableClick(int, int)));
 
-    connect(ui->maipulatorCaptureButton, SIGNAL(released()), &mManupulatorCapturer, SLOT(show()));
-    connect(ui->maipulatorCaptureButton, SIGNAL(released()), &mManupulatorCapturer, SLOT(raise()));
+    connect(ui->manipulatorCaptureButton, SIGNAL(released()), &mManupulatorCapturer, SLOT(show()));
+    connect(ui->manipulatorCaptureButton, SIGNAL(released()), &mManupulatorCapturer, SLOT(raise()));
 
     connect(&mManupulatorCapturer, SIGNAL(captureAtPosition(int)), this, SLOT(captureWithManipulator(int)));
     connect(&mManupulatorCapturer, SIGNAL(manipulatorCaptureFinalise(bool)), this, SLOT(finaliseManipulatorCapture(bool)));
+
+    ui->manipulatorCaptureButton->setVisible(false);
+    mRuningManipulator = false;
 
     mCapSettingsDialog = new CapSettingsDialog();
 }
@@ -287,6 +290,13 @@ void PhotostationCaptureDialog::setNamer(AbstractImageNamer *namer)
     mNamer = namer;
 }
 
+void PhotostationCaptureDialog::setManipulator(AbstractManipulatorInterface *manipulator)
+{
+    mManipulator = manipulator;
+    mManupulatorCapturer.setManipulator(manipulator);
+    ui->manipulatorCaptureButton->setVisible(mManipulator != nullptr);
+}
+
 void PhotostationCaptureDialog::tableClick(int lineid, int colid)
 {
     switch (colid) {
@@ -490,7 +500,7 @@ void PhotostationCaptureDialog::capture(bool shouldAdvance, int positionShift)
     ui->captureAdvancePushButton->setEnabled(false);
     ui->stopPushButton          ->setEnabled(true);
     ui->refreshButton           ->setEnabled(false);
-    ui->maipulatorCaptureButton ->setEnabled(false);
+    ui->manipulatorCaptureButton->setEnabled(false);
 
     ui->progressBar->setHidden(false);
     ui->progressBar->setValue(0);
@@ -740,7 +750,7 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
     {
         ui->capturePushButton       ->setEnabled(true);
         ui->captureAdvancePushButton->setEnabled(true);
-        ui->maipulatorCaptureButton ->setEnabled(true);
+        ui->manipulatorCaptureButton->setEnabled(true);
 
         ui->progressBar->setHidden(true);
         ui->progressBar->setValue(0);

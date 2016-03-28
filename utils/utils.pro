@@ -103,7 +103,8 @@ HEADERS += \
     distortioncorrector/pointListEditImageWidget.h \
     corestructs/cameraModel/featurePointControlWidget.h \
     uis/aboutPropsTableWidget.h \
-    capture/manipulatorCaptureDialog.h
+    capture/manipulatorCaptureDialog.h \
+    capture/abstractManipulatorInterface.h
 
 SOURCES += \
     frames.cpp \

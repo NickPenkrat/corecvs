@@ -1,6 +1,8 @@
 #include "manipulatorCaptureDialog.h"
 #include "ui_manipulatorCaptureDialog.h"
 
+#include <QMessageBox>
+
 ManipulatorCaptureDialog::ManipulatorCaptureDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::ManipulatorCaptureDialog)
@@ -8,6 +10,7 @@ ManipulatorCaptureDialog::ManipulatorCaptureDialog(QWidget *parent) :
     ui->setupUi(this);
 
     connect(ui->captureButton, SIGNAL(released()), this, SLOT(captureWithManipulator()));
+    connect(ui->configureButton, SIGNAL(released()), this, SLOT(configureInterface()));
 }
 
 ManipulatorCaptureDialog::~ManipulatorCaptureDialog()
@@ -17,22 +20,39 @@ ManipulatorCaptureDialog::~ManipulatorCaptureDialog()
 
 void ManipulatorCaptureDialog::captureNextPosition()
 {
+    if(!mManipulator)
+    {
+        QMessageBox::critical(this, tr("Error"), tr("Manipulator failure"));
+        return;
+    }
     if(mPosition <=  ui->finalPositionBox->value())
     {
-        setupManipulator(mPosition);
-        emit captureAtPosition(mPosition);
-        mPosition++;
+        if(mManipulator->moveToPosition(1))
+        {
+            emit captureAtPosition(mPosition);
+            mPosition++;
+        }
+        else
+        {
+            toggleUIEnabled(true);
+            mManipulator->moveToInitialPosition();
+            mManipulator->disableManipulator();
+            emit manipulatorCaptureFinalise(ui->advanceCheckBox->isChecked());
+            QMessageBox::critical(this, tr("Error"), tr("Manipulator failure"));
+        }
     }
     else
     {
         toggleUIEnabled(true);
+        mManipulator->moveToInitialPosition();
+        mManipulator->disableManipulator();
         emit manipulatorCaptureFinalise(ui->advanceCheckBox->isChecked());
     }
 }
 
-void ManipulatorCaptureDialog::setupManipulator(int position)
+void ManipulatorCaptureDialog::setManipulator(AbstractManipulatorInterface *manipulator)
 {
-    //TODO implement manipulator setup here - wiil be called befor capturing farame
+    mManipulator = manipulator;
 }
 
 void ManipulatorCaptureDialog::toggleUIEnabled(bool enable)
@@ -46,7 +66,20 @@ void ManipulatorCaptureDialog::toggleUIEnabled(bool enable)
 
 void ManipulatorCaptureDialog::captureWithManipulator()
 {
-    toggleUIEnabled(false);
-    mPosition = ui->initialPositionBox->value();
-    captureNextPosition();
+    if(mManipulator && mManipulator->enableManipulator())
+    {
+        toggleUIEnabled(false);
+        mPosition = ui->initialPositionBox->value();
+        captureNextPosition();
+    }
+    else
+    {
+        QMessageBox::critical(this, tr("Error"), tr("Manipulator failure"));
+    }
+}
+
+void ManipulatorCaptureDialog::configureInterface()
+{
+    if(mManipulator != nullptr)
+        mManipulator->configureManipulator();
 }
