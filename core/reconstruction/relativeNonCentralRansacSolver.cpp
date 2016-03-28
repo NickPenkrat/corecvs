@@ -37,7 +37,7 @@ void corecvs::RelativeNonCentralRansacSolver::run()
             double curr = maxInliers / (1.0 * matchesAll.size());
             double N = std::log(0.001) / std::log(1.0 - std::pow(curr, FEATURES_FOR_MODEL));
             if ((i+1)%reportBy ==0)
-            std::cout << "MI: " << maxInliers << " curr = " << curr << " N: " << N << std::endl;
+            std::cout << "MI: " << maxInliers << " curr = " << curr << " N: " << N << " P: " << std::pow(1.0 - std::pow(curr, FEATURES_FOR_MODEL), i) << std::endl;
             if (i > N && N > 0)
             {
                 std::cout << "Finished at " << i << "th iteration" << std::endl;
