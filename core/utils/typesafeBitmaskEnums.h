@@ -15,6 +15,14 @@ typename std::enable_if<is_bitmask<E>::value, E>::type operator & (const E &lhs,
 }
 
 template<typename E>
+typename std::enable_if<is_bitmask<E>::value, E>::type operator ~ (const E &lhs)
+{
+    typedef typename std::underlying_type<E>::type U;
+    return static_cast<E>(~static_cast<U>(lhs));
+}
+
+
+template<typename E>
 typename std::enable_if<is_bitmask<E>::value, E>::type operator | (const E &lhs, const E &rhs)
 {
     typedef typename std::underlying_type<E>::type U;
