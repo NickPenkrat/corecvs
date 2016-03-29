@@ -74,6 +74,18 @@
        <property name="toolTip">
          <string> Maximal cost for real board</string>
        </property>
+       <property name="minimum">
+        <double>-999999</double>
+       </property>
+       <property name="maximum">
+        <double>999999</double>
+       </property>
+       <property name="singleStep">
+        <double>1</double>
+       </property>
+       <property name="value">
+        <double>-10</double>
+       </property>
      </widget>
     </item>
     <item row="4" column="0">

@@ -107,11 +107,6 @@ private:
 class ChessBoardCornerDetectorParams : public ChessBoardCornerDetectorParamsBase
 {
 public:
-    ChessBoardCornerDetectorParams(const ChessBoardCornerDetectorParamsBase &base) :
-        ChessBoardCornerDetectorParamsBase(base)
-    {
-    }
-
     // Radius for multi-scale pattern detection
     vector<double> patternRadius;
     // Radius for corner-scoring
@@ -119,7 +114,8 @@ public:
     // Angle for rotation-variant detection
     vector<double> patternStartAngle;
 
-    ChessBoardCornerDetectorParams()
+    ChessBoardCornerDetectorParams(const ChessBoardCornerDetectorParamsBase &base = ChessBoardCornerDetectorParamsBase()) :
+        ChessBoardCornerDetectorParamsBase(base)
     {
         patternStartAngle.push_back(0.0);
         patternStartAngle.push_back(degToRad(45));

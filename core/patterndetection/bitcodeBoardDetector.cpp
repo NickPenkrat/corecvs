@@ -101,7 +101,7 @@ bool BitcodeBoardDetector::operator ()()
     for (unsigned o = 0; o < CORE_COUNT_OF(orients); o++)
     {
 
-        SYNC_PRINT(("Marks4x4Detector::(): checking orientation %d...\n", o ));
+        SYNC_PRINT(("BitcodeBoardDetector::(): checking orientation %d...\n", o ));
         marker[o] = detectMarker(transform, Matrix33::Scale2(cellToMM) * orients[o]);
         if (marker[o].detected && marker[o].score > bestScore) {
             bestScore = marker[o].score;
@@ -141,7 +141,7 @@ bool BitcodeBoardDetector::operator ()()
         for (bool b : bits) {
             SYNC_PRINT(("%s ", b ? "1" : "0"));
         }
-        SYNC_PRINT(("/n"));
+        SYNC_PRINT(("\n"));
     }
     return result;
 }
@@ -198,7 +198,7 @@ BitcodeBoardDetector::MarkerData BitcodeBoardDetector::detectMarker(Matrix33 hom
     overallVariance = overallVariance - overallMean * overallMean;
 
 
-    SYNC_PRINT((" Marks4x4Detector::detectMarker(): mean %lf\n", overallMean ));
+    SYNC_PRINT((" BitcodeBoardDetector::detectMarker(): mean %lf\n", overallMean ));
     /* Second pass */
 
     for (int i = 0; i < codeHeight; i++)
@@ -226,7 +226,7 @@ BitcodeBoardDetector::MarkerData BitcodeBoardDetector::detectMarker(Matrix33 hom
             valuesq /= samples;
             valuesq = valuesq - valuesum * valuesum;
 
-            SYNC_PRINT(("    Marks4x4Detector::detectMarker(): value %lf -> (%s)\n", valuesum, (valuesum > overallMean) ? "1" : "0"));
+            SYNC_PRINT(("    BitcodeBoardDetector::detectMarker(): value %lf -> (%s)\n", valuesum, (valuesum > overallMean) ? "1" : "0"));
 
             if (valuesum > overallMean) {
                 toReturn.bits.push_back(true);
@@ -236,7 +236,7 @@ BitcodeBoardDetector::MarkerData BitcodeBoardDetector::detectMarker(Matrix33 hom
         }
     }
 
-    SYNC_PRINT(("    Marks4x4Detector::detectMarker(): score %lf\n", overallVariance));
+    SYNC_PRINT(("    BitcodeBoardDetector::detectMarker(): score %lf\n", overallVariance));
 
     toReturn.detected = true;
     toReturn.score = overallVariance;

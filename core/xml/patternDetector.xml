@@ -62,7 +62,7 @@
     <field type="double" name="seedThreshold"        defaultValue="0.3"    comment="Threshold for seed grid non-regularity" />
     <field type="double" name="seedTgPenalty"        defaultValue="5.0"    comment="Factor for orthogonal error in seed estimation" />
     <field type="double" name="conservativity"       defaultValue="0.9"    comment="Factor of conservativity in next row prediction (should be lower to high-distorted boards)" />
-    <field type="double" name="costThreshold"        defaultValue="-10.0"  comment=" Maximal cost for real board" />
+    <field type="double" name="costThreshold"        defaultValue="-10.0"  min="-999999"   max="999999"  comment=" Maximal cost for real board" />
     <field type="double" name="minSeedDistance"      defaultValue="15.0"   comment="Minimal seed distance" />
     <field type="int"    name="hypothesisDimensions" defaultValue="1"      comment="Hypothesis type: consider only hypothesis that fits specified number of dims" />
 
