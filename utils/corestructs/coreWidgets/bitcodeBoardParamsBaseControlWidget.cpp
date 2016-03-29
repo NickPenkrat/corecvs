@@ -24,12 +24,12 @@ BitcodeBoardParamsBaseControlWidget::BitcodeBoardParamsBaseControlWidget(QWidget
     QObject::connect(mUi->cellSizeSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->blackColorSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->whiteColorSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->identSizeSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->identSizeSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->boardHeightSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->boardWidthSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->codeWidthSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->codeHeightSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->bitcodeIdentSizeSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->bitcodeIdentSizeSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
 }
 
 BitcodeBoardParamsBaseControlWidget::~BitcodeBoardParamsBaseControlWidget()

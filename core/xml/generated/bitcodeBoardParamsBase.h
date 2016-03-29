@@ -82,7 +82,7 @@ public:
      * \brief identSize 
      * white ident size around chessboard in chesses 
      */
-    int mIdentSize;
+    double mIdentSize;
 
     /** 
      * \brief boardHeight 
@@ -112,7 +112,7 @@ public:
      * \brief bitcodeIdentSize 
      * ident between chessboard and bitcode in chesses 
      */
-    int mBitcodeIdentSize;
+    double mBitcodeIdentSize;
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
@@ -142,7 +142,7 @@ public:
         return mWhiteColor;
     }
 
-    int identSize() const
+    double identSize() const
     {
         return mIdentSize;
     }
@@ -167,7 +167,7 @@ public:
         return mCodeHeight;
     }
 
-    int bitcodeIdentSize() const
+    double bitcodeIdentSize() const
     {
         return mBitcodeIdentSize;
     }
@@ -193,7 +193,7 @@ public:
         mWhiteColor = whiteColor;
     }
 
-    void setIdentSize(int identSize)
+    void setIdentSize(double identSize)
     {
         mIdentSize = identSize;
     }
@@ -218,7 +218,7 @@ public:
         mCodeHeight = codeHeight;
     }
 
-    void setBitcodeIdentSize(int bitcodeIdentSize)
+    void setBitcodeIdentSize(double bitcodeIdentSize)
     {
         mBitcodeIdentSize = bitcodeIdentSize;
     }
@@ -232,12 +232,12 @@ template<class VisitorType>
         visitor.visit(mCellSize,                  static_cast<const IntField *>     (fields()[CELLSIZE_ID]));
         visitor.visit(mBlackColor,                static_cast<const IntField *>     (fields()[BLACKCOLOR_ID]));
         visitor.visit(mWhiteColor,                static_cast<const IntField *>     (fields()[WHITECOLOR_ID]));
-        visitor.visit(mIdentSize,                 static_cast<const IntField *>     (fields()[IDENTSIZE_ID]));
+        visitor.visit(mIdentSize,                 static_cast<const DoubleField *>  (fields()[IDENTSIZE_ID]));
         visitor.visit(mBoardHeight,               static_cast<const IntField *>     (fields()[BOARDHEIGHT_ID]));
         visitor.visit(mBoardWidth,                static_cast<const IntField *>     (fields()[BOARDWIDTH_ID]));
         visitor.visit(mCodeWidth,                 static_cast<const IntField *>     (fields()[CODEWIDTH_ID]));
         visitor.visit(mCodeHeight,                static_cast<const IntField *>     (fields()[CODEHEIGHT_ID]));
-        visitor.visit(mBitcodeIdentSize,          static_cast<const IntField *>     (fields()[BITCODEIDENTSIZE_ID]));
+        visitor.visit(mBitcodeIdentSize,          static_cast<const DoubleField *>  (fields()[BITCODEIDENTSIZE_ID]));
     }
 
     BitcodeBoardParamsBase()
@@ -251,12 +251,12 @@ template<class VisitorType>
         , int cellSize
         , int blackColor
         , int whiteColor
-        , int identSize
+        , double identSize
         , int boardHeight
         , int boardWidth
         , int codeWidth
         , int codeHeight
-        , int bitcodeIdentSize
+        , double bitcodeIdentSize
     )
     {
         mVertical = vertical;

@@ -84,6 +84,29 @@ TEST(Draw, testRectangles)
     delete_safe(buffer);
 }
 
+/*
+class TriangleSpanIterator
+{
+public:
+    TrapezoidSpanIterator part;
+    TriangleSpanIterator(const Triangle2dd &triangle)
+    {
+
+    }
+
+    bool step()
+    {
+    }
+
+    void getSpan(int &y, int &x1, int &x2)
+    {
+    }
+
+    LineSpanInt getSpan()
+    {
+    }
+};
+*/
 
 TEST(Draw, testSpanDraw)
 {

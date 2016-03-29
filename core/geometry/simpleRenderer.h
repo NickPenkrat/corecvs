@@ -35,6 +35,8 @@ public:
     double dx1;
     double dx2;
 
+    TrapezoidSpanIterator() {}
+
     TrapezoidSpanIterator(int y1, int y2, int x11, int x12, int x21, int x22) :
         y1(y1) , y2(y2), x11(x11), x12(x12), x21(x21), x22(x22)
     {
@@ -69,16 +71,7 @@ public:
     }
 };
 
-/*
-class TriangleSpanIterator : TrapezoidSpanIterator
-{
-public:
-    TriangleSpanIterator(const Triangle2dd &triangle) :
 
-    {
-    }
-};
-*/
 
 class SimpleRenderer
 {

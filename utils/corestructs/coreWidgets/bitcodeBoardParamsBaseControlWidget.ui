@@ -49,6 +49,18 @@
        <property name="toolTip">
          <string>Chess cells size in pixels</string>
        </property>
+       <property name="minimum">
+        <number>0</number>
+       </property>
+       <property name="maximum">
+        <number>999999</number>
+       </property>
+       <property name="singleStep">
+        <number>1</number>
+       </property>
+       <property name="value">
+        <number>256</number>
+       </property>
      </widget>
     </item>
     <item row="2" column="0">
@@ -62,6 +74,18 @@
      <widget class="QSpinBox" name="blackColorSpinBox">
        <property name="toolTip">
          <string>shades of gray for black chesses</string>
+       </property>
+       <property name="minimum">
+        <number>0</number>
+       </property>
+       <property name="maximum">
+        <number>255</number>
+       </property>
+       <property name="singleStep">
+        <number>1</number>
+       </property>
+       <property name="value">
+        <number>0</number>
        </property>
      </widget>
     </item>
@@ -77,6 +101,18 @@
        <property name="toolTip">
          <string>shades of gray for white chesses</string>
        </property>
+       <property name="minimum">
+        <number>0</number>
+       </property>
+       <property name="maximum">
+        <number>255</number>
+       </property>
+       <property name="singleStep">
+        <number>1</number>
+       </property>
+       <property name="value">
+        <number>255</number>
+       </property>
      </widget>
     </item>
     <item row="4" column="0">
@@ -87,9 +123,12 @@
      </widget>
     </item>
     <item row="4" column="1">
-     <widget class="QSpinBox" name="identSizeSpinBox">
+     <widget class="QDoubleSpinBox" name="identSizeSpinBox">
        <property name="toolTip">
          <string>white ident size around chessboard in chesses</string>
+       </property>
+       <property name="suffix">
+        <string>cells</string>
        </property>
      </widget>
     </item>
@@ -157,9 +196,12 @@
      </widget>
     </item>
     <item row="9" column="1">
-     <widget class="QSpinBox" name="bitcodeIdentSizeSpinBox">
+     <widget class="QDoubleSpinBox" name="bitcodeIdentSizeSpinBox">
        <property name="toolTip">
          <string>ident between chessboard and bitcode in chesses</string>
+       </property>
+       <property name="suffix">
+        <string>cells</string>
        </property>
      </widget>
     </item>
@@ -220,7 +262,7 @@
   </connection>
   <connection>
    <sender>identSizeSpinBox</sender>
-   <signal>valueChanged(int)</signal>
+   <signal>valueChanged(double)</signal>
    <receiver>BitcodeBoardParamsBaseControlWidget</receiver>
    <slot>changeParameters()</slot>
   </connection>
@@ -250,7 +292,7 @@
   </connection>
   <connection>
    <sender>bitcodeIdentSizeSpinBox</sender>
-   <signal>valueChanged(int)</signal>
+   <signal>valueChanged(double)</signal>
    <receiver>BitcodeBoardParamsBaseControlWidget</receiver>
    <slot>changeParameters()</slot>
   </connection>

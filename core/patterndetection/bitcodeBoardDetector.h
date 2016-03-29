@@ -9,10 +9,11 @@
 
 namespace corecvs {
 
-class Marks4x4DetectorParameters : public BitcodeBoardParamsBase {
+class BitcodeBoardDetectorParameters {
 public:
     bool produceDebug;
     CheckerboardDetectionParameters checkerboardParams;
+    BitcodeBoardParamsBase bitcodeParams;
 };
 
 class BitcodeBoardDetector
@@ -35,7 +36,7 @@ public:
     ObservationList *observations;
 
     /** Parameters. Owned **/
-    Marks4x4DetectorParameters parameters;
+    BitcodeBoardDetectorParameters parameters;
 
 
     /* Outputs */
@@ -50,8 +51,8 @@ public:
     void setInput(RGB24Buffer *input);
     void setObservations(ObservationList *input);
 
-    void setAlignerParams(const Marks4x4DetectorParameters &params);
-    Marks4x4DetectorParameters getAlignerParams(void);
+    void setParameters(const BitcodeBoardDetectorParameters &params);
+    BitcodeBoardDetectorParameters getParameters(void);
 
 
     bool operator ()();

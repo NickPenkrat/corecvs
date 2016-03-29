@@ -498,8 +498,8 @@ BoardAlignerParams BoardAlignerParams::GetIndoorsBoard()
 {
     // May be we'll change default c'tor, so explicitly...
     BoardAlignerParams params;
-    params.idealWidth = 4;
-    params.idealHeight = 4;
+    params.idealWidth = 3;
+    params.idealHeight = 3;
     params.boardMarkers.clear();
     params.type = AlignmentType::FIT_WIDTH;
     return params;

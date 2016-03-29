@@ -56,7 +56,10 @@ int BitcodeBoardParamsBase::staticInit()
           256,
           "cellSize",
           "cellSize",
-          "Chess cells size in pixels"
+          "Chess cells size in pixels",
+          true,
+         0,
+         999999
         )
     );
     fields().push_back(
@@ -67,7 +70,10 @@ int BitcodeBoardParamsBase::staticInit()
           0,
           "blackColor",
           "blackColor",
-          "shades of gray for black chesses"
+          "shades of gray for black chesses",
+          true,
+         0,
+         255
         )
     );
     fields().push_back(
@@ -78,11 +84,14 @@ int BitcodeBoardParamsBase::staticInit()
           255,
           "whiteColor",
           "whiteColor",
-          "shades of gray for white chesses"
+          "shades of gray for white chesses",
+          true,
+         0,
+         255
         )
     );
     fields().push_back(
-        new IntField
+        new DoubleField
         (
           BitcodeBoardParamsBase::IDENTSIZE_ID,
           offsetof(BitcodeBoardParamsBase, mIdentSize),
@@ -137,7 +146,7 @@ int BitcodeBoardParamsBase::staticInit()
         )
     );
     fields().push_back(
-        new IntField
+        new DoubleField
         (
           BitcodeBoardParamsBase::BITCODEIDENTSIZE_ID,
           offsetof(BitcodeBoardParamsBase, mBitcodeIdentSize),

@@ -18,12 +18,12 @@ void BitcodeBoardDetector::setObservations(ObservationList *observations)
     this->observations = observations;
 }
 
-void BitcodeBoardDetector::setAlignerParams(const Marks4x4DetectorParameters &params)
+void BitcodeBoardDetector::setParameters(const BitcodeBoardDetectorParameters &params)
 {
     this->parameters = params;
 }
 
-Marks4x4DetectorParameters BitcodeBoardDetector::getAlignerParams()
+BitcodeBoardDetectorParameters BitcodeBoardDetector::getParameters()
 {
     return parameters;
 }
@@ -52,19 +52,24 @@ bool BitcodeBoardDetector::operator ()()
     Matrix33 transform = homography.getBestHomographyLSE();
 
 
-    /* Code Translation */
-    Matrix33 toCenter = Matrix33::ShiftProj(1.5, 1.5);
+    /* Code Translation */    
+    Matrix33 toCenter = Matrix33::ShiftProj(Vector2dd (
+                            parameters.bitcodeParams.boardWidth () - 2,
+                            parameters.bitcodeParams.boardHeight() - 2) / 2.0);
     Matrix33 orients[4];
-    orients[0] = toCenter *                            Matrix33::ShiftProj(-2.5, 3.0) ;
-    orients[1] = toCenter * Matrix33::RotationZ90()  * Matrix33::ShiftProj(-2.5, 3.0) ;
-    orients[2] = toCenter * Matrix33::RotationZ180() * Matrix33::ShiftProj(-2.5, 3.0) ;
-    orients[3] = toCenter * Matrix33::RotationZ270() * Matrix33::ShiftProj(-2.5, 3.0) ;
+
+    Matrix33 centerToBitcode = Matrix33::ShiftProj(-parameters.bitcodeParams.boardWidth() / 2.0, parameters.bitcodeParams.boardHeight() / 2.0 + parameters.bitcodeParams.bitcodeIdentSize());
+
+    orients[0] = toCenter *                            centerToBitcode;
+    orients[1] = toCenter * Matrix33::RotationZ90()  * centerToBitcode;
+    orients[2] = toCenter * Matrix33::RotationZ180() * centerToBitcode;
+    orients[3] = toCenter * Matrix33::RotationZ270() * centerToBitcode;
 
 
     if (debug != NULL) {
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < parameters.bitcodeParams.boardHeight() - 1; i++)
         {
-            for (int j = 0; j < 4; j++)
+            for (int j = 0; j < parameters.bitcodeParams.boardWidth() - 1; j++)
             {
                 Vector2dd pos(j, i);
                 pos = cellToMM *  pos;
@@ -90,8 +95,8 @@ bool BitcodeBoardDetector::operator ()()
     double bestScore = 0.0;
     int bestMarker = -1;
 
-    int codeHeight = parameters.codeWidth();
-    int codeWidth  = parameters.boardHeight();
+    int codeHeight = parameters.bitcodeParams.codeHeight();
+    int codeWidth  = parameters.bitcodeParams.codeWidth ();
 
     for (unsigned o = 0; o < CORE_COUNT_OF(orients); o++)
     {
@@ -150,8 +155,8 @@ BitcodeBoardDetector::MarkerData BitcodeBoardDetector::detectMarker(Matrix33 hom
     double overallVariance = 0.0;
     int overallSamples     = 0;
 
-    int codeHeight = parameters.codeWidth();
-    int codeWidth  = parameters.boardHeight();
+    int codeHeight = parameters.bitcodeParams.codeHeight();
+    int codeWidth  = parameters.bitcodeParams.codeWidth ();
 
     /* First pass. Compute statistics */
 
