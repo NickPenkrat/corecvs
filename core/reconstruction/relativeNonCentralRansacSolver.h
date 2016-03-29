@@ -29,8 +29,8 @@ class RelativeNonCentralRansacSolver : public RelativeNonCentralRansacSolverSett
 public:
     typedef std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd>> MatchContainer;
 
-    RelativeNonCentralRansacSolver(CameraFixture* ref
-        , CameraFixture* query
+    RelativeNonCentralRansacSolver(
+          CameraFixture* query
         , const MatchContainer &matchesRansac
         , const MatchContainer &matchesAll
         , const RelativeNonCentralRansacSolverSettings &settings = RelativeNonCentralRansacSolverSettings());
@@ -40,6 +40,7 @@ public:
     void fit(double distanceGuess = 10.0);
     corecvs::Affine3DQ getBestHypothesis() const;
     std::vector<int> getBestInliers() const;
+    double getGamma();
 
 private:
     struct FunctorCost : corecvs::FunctionArgs
@@ -91,8 +92,7 @@ private:
     std::vector<std::vector<int>> currentInliers;
     std::vector<int> bestInliers;
 
-    // Clarify if we would like to copy them
-    CameraFixture* pss[2];
+    CameraFixture* query;
     MatchContainer matchesRansac, matchesAll;
 };
 

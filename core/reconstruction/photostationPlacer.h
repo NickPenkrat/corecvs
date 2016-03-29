@@ -118,6 +118,8 @@ struct PhotostationPlacerParams
     PhotostationPlacerOptimizationErrorType errorType = PhotostationPlacerOptimizationErrorType::RAY_DIFF;
     // This defines how many multicameras are subject for P3P evaluation at each iteration
     int speculativity = 1000;
+    int minimalInlierCount = 50;
+    double maximalFailureProbability = 0.1;
 
     template<typename V>
     void accept(V &v)
@@ -145,7 +147,7 @@ public:
     void create2PointCloud();
     corecvs::Affine3DQ staticInit(CameraFixture* fixture, std::vector<SceneFeaturePoint*> &staticPoints);
     void pruneTracks();
-    void appendPs();
+    bool appendPs();
     void fit(const PhotostationPlacerOptimizationType& optimizationSet = PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS, int num = 100);
     void fit(bool tuneFocal);
     void appendTracks(const std::vector<int> &inlierIds, CameraFixture* fixture, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &possibleTracks);
@@ -158,7 +160,7 @@ public:
     void getErrorSummaryAll();
 
     // Tries to append f using P6P (with 2d<->2d correspondences)
-    bool appendP6P(CameraFixture* f);
+    bool appendP6P();
     // Tries to append f using P3P (with 3d<->2d correspondences
     bool appendP3P(CameraFixture* f);
 

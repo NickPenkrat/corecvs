@@ -641,22 +641,24 @@ std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> corecvs
 }
 
 std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd, double>>
-corecvs::ReconstructionFixtureScene::getPhotostationMatches(CameraFixture *psA, CameraFixture *psB)
+corecvs::ReconstructionFixtureScene::getPhotostationMatches(const std::vector<CameraFixture*> &train, CameraFixture *query)
 {
-    WPP wcA = WPP(psA, WPP::VWILDCARD), wcB = WPP(psB, WPP::VWILDCARD);
-    bool swap = psA > psB;
+    WPP wcQuery = WPP(query, WPP::VWILDCARD), wcTarget;
     std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd, double>> res;
-    auto id1 = swap ? wcB : wcA;
-    auto id2 = swap ? wcA : wcB;
 
     for (auto& ref1: matches)
     {
-        if (!(ref1.first == id1))
+        bool swap = ref1.first == wcQuery;
+        if (!swap && train.end() == std::find(train.begin(), train.end(), ref1.first.u))
             continue;
+
         for (auto& ref2: ref1.second)
         {
-            if (!(ref2.first == id2))
+            if (!swap && !(ref2.first == wcQuery))
                 continue;
+            if (swap && train.end() == std::find(train.begin(), train.end(), ref2.first.u))
+                continue;
+
             auto  idA  = swap ? ref2.first : ref1.first;
             auto  idB  = swap ? ref1.first : ref2.first;
             CORE_ASSERT_TRUE_S(idA.u != WPP::UWILDCARD && idA.v != WPP::VWILDCARD);
@@ -775,5 +777,10 @@ void corecvs::ReconstructionFixtureScene::filterEssentialRansac(WPP a, WPP b, Es
     CORE_ASSERT_TRUE_S(bestInliers.size() <= mm.size());
     std::sort(bestInliers.begin(), bestInliers.end());
     std::cout << "Total: " << featuresInlier.size() << " good: " << features.size() << " del: " << (featuresInlier.size() - bestInliers.size()) << " rem: " << bestInliers.size() << " (" << ((double)bestInliers.size()) / featuresInlier.size() * 100.0 << "%)" << idA.u->name << idA.v->nameId << "<>" << idB.u->name << idB.v->nameId << std::endl;
+    if (filter.getGamma() > 0.1)
+    {
+        std::cout << "Too low gamma-value, rejecting all features" << std::endl;
+        bestInliers.clear();
+    }
     remove(a, b, bestInliers);
 }

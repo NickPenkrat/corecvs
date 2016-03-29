@@ -2,11 +2,9 @@
 #include "relativeNonCentralP6PSolver.h"
 #include "levenmarq.h"
 
-corecvs::RelativeNonCentralRansacSolver::RelativeNonCentralRansacSolver(CameraFixture *ref, CameraFixture *query, const MatchContainer &matchesRansac, const MatchContainer &matchesAll, const RelativeNonCentralRansacSolverSettings &settings)
-    : RelativeNonCentralRansacSolverSettings(settings), matchesRansac(matchesRansac), matchesAll(matchesAll)
+corecvs::RelativeNonCentralRansacSolver::RelativeNonCentralRansacSolver(CameraFixture *query, const MatchContainer &matchesRansac, const MatchContainer &matchesAll, const RelativeNonCentralRansacSolverSettings &settings)
+    : RelativeNonCentralRansacSolverSettings(settings), matchesRansac(matchesRansac), matchesAll(matchesAll), query(query)
 {
-    pss[0] = ref;
-    pss[1] = query;
 }
 void corecvs::RelativeNonCentralRansacSolver::run()
 {
@@ -45,7 +43,12 @@ void corecvs::RelativeNonCentralRansacSolver::run()
             }
         }
     }
-    pss[1]->location = bestHypothesis;
+    query->location = bestHypothesis;
+}
+
+double corecvs::RelativeNonCentralRansacSolver::getGamma()
+{
+    return std::pow((1.0 - std::pow(maxInliers * 1.0 / matchesAll.size(), FEATURES_FOR_MODEL)), maxIterations);
 }
 
 void corecvs::RelativeNonCentralRansacSolver::sampleRays()
@@ -53,7 +56,7 @@ void corecvs::RelativeNonCentralRansacSolver::sampleRays()
     pluckerRef.resize(FEATURES_FOR_MODEL);
     pluckerQuery.resize(FEATURES_FOR_MODEL);
 
-    CameraFixture queryCopy = *pss[1];
+    CameraFixture queryCopy = *query;
     queryCopy.location.rotor = corecvs::Quaternion(0, 0, 0, 1);
     queryCopy.location.shift = corecvs::Vector3dd(0, 0, 0);
 
@@ -63,16 +66,10 @@ void corecvs::RelativeNonCentralRansacSolver::sampleRays()
         return;
     }
 
-    //bool multiCam = true;
     int idxs[FEATURES_FOR_MODEL] = { 0 };
     for (int rdy = 0; rdy < FEATURES_FOR_MODEL;)
     {
         idxs[rdy] = rng() % N;
-//        auto t = matchesRansac[idxs];
-//      int df = (6+std::get<0>(t) - std::get<2>(t)) % 6;
-//      df = std::min(df, 6 - df);
-//      if (df > 1)
-//          continue;
         bool isOk = true;
         for (int i = 0; i < rdy && isOk; ++i)
             if (idxs[i] == idxs[rdy])
@@ -83,8 +80,8 @@ void corecvs::RelativeNonCentralRansacSolver::sampleRays()
     for (int i = 0; i < FEATURES_FOR_MODEL; ++i)
     {
         auto t = matchesRansac[idxs[i]];
-        auto cam1 = pss[0]->getWorldCamera(std::get<0>(t).v);
-        auto cam2 = pss[1]->getWorldCamera(std::get<2>(t).v);
+        auto cam1 = std::get<0>(t).u->getWorldCamera(std::get<0>(t).v);
+        auto cam2 = query->getWorldCamera(std::get<2>(t).v);
         auto r1 = cam1.rayFromPixel(std::get<1>(t));
         auto r2 = cam2.rayFromPixel(std::get<3>(t));
         pluckerRef[i] = r1.pluckerize();
@@ -106,41 +103,23 @@ void corecvs::RelativeNonCentralRansacSolver::estimatePose()
 
 void corecvs::RelativeNonCentralRansacSolver::scoreCurrent()
 {
-    int N = (int)pss[0]->cameras.size();
-    int M = (int)pss[1]->cameras.size();
+    int M = (int)query->cameras.size();
     int K = (int)currentHypothesis.size();
 
-    fundamentals.resize(K);
-    essentials.resize(K);
     currentInliers.resize(K);
 
     for (int i = 0; i < K; ++i)
     {
-        CameraFixture queryCopy = *pss[1];
-        queryCopy.location = currentHypothesis[i];
-        fundamentals[i].resize(N * M);
-        essentials[i].resize(N * M);
         currentInliers[i].clear();
-
-        for (int j = 0; j < N; ++j)
-        {
-            for (int k = 0; k < M; ++k)
-            {
-                auto cam1 = pss[0]->getRawCamera(j);
-                auto cam2 = queryCopy.getRawCamera(k);
-                fundamentals[i][j * M + k] = cam1.fundamentalTo(cam2);
-                essentials  [i][j * M + k] = cam1.essentialDecomposition(cam2);
-            }
-        }
     }
 
     for (size_t j = 0; j < matchesAll.size(); ++j)
     {
         auto t = matchesAll[j];
-        auto camRef  = std::get<0>(t).v;
-        int  camRefId = pss[0]->getCameraId(camRef);
-        auto camQuery= std::get<2>(t).v;
-        int  camQueryId = pss[1]->getCameraId(camQuery);
+        auto fixtureRef  = std::get<0>(t).u,
+             fixtureQuery= query;
+        auto camRef  = std::get<0>(t).v,
+             camQuery= std::get<2>(t).v;
         auto ptRef  = std::get<1>(t);
         auto ptQuery= std::get<3>(t);
         auto K1 = camRef->intrinsics.getKMatrix33().inv();
@@ -150,14 +129,11 @@ void corecvs::RelativeNonCentralRansacSolver::scoreCurrent()
 
         for (int i = 0; i < K; ++i)
         {
-            auto F = fundamentals[i][camRefId * M + camQueryId];
-            corecvs::Line2d lineLeft(F.mulBy2dRight(ptQuery));
-            corecvs::Line2d lineRight(F.mulBy2dLeft(ptRef));
-            double left = lineLeft.distanceTo(ptRef);
-            double right= lineRight.distanceTo(ptQuery);
-            if (std::max(left, right) > inlierThreshold)
+            query->location = currentHypothesis[i];
+            auto score = fixtureRef->scoreFundamental(camRef, ptRef, fixtureQuery, camQuery, ptQuery);
+            if (score > inlierThreshold)
                 continue;
-            auto E = essentials[i][camRefId * M + camQueryId];
+            auto E = fixtureRef->essentialTo(camRef, fixtureQuery, camQuery);
             double sL, sR, foo;
             E.getScaler(ptER, ptEQ, sL, sR, foo);
             if (sL >= 0.0 && sR >= 0.0)
@@ -183,28 +159,9 @@ void corecvs::RelativeNonCentralRansacSolver::selectBest()
         return;
     if (maxCnt > maxInliers)
     {
-        int N = (int)pss[0]->cameras.size();
-        int M = (int)pss[1]->cameras.size();
-        std::vector<int> inlierStats(N * M);
         maxInliers = maxCnt;
         bestHypothesis = currentHypothesis[maxIdx];
         bestInliers = currentInliers[maxIdx];
-#if 0
-        for (auto& id: bestInliers)
-        {
-            auto t = matchesAll[id];
-            int idRef = std::get<0>(t);
-            int idQue = std::get<2>(t);
-            inlierStats[idRef * M + idQue]++;
-        }
-        for (int i = 0; i < N; ++i)
-        {
-            for (int j = 0; j < M; ++j)
-                std::cout << inlierStats[i * M + j] << " ";
-            std::cout << std::endl;
-        }
-        std::cout << "Best L: " << (!bestHypothesis.shift) << " (" << maxInliers << ") [" << nullInliers << "] {" << matchesAll.size() << " / " << matchesRansac.size() << "}" <<  std::endl;
-#endif
     }
 }
 
@@ -216,45 +173,23 @@ corecvs::Affine3DQ corecvs::RelativeNonCentralRansacSolver::getBestHypothesis() 
 
 void corecvs::RelativeNonCentralRansacSolver::computeError(double out[])
 {
-    int N = (int)pss[0]->cameras.size();
-    int M = (int)pss[1]->cameras.size();
+    int M = (int)query->cameras.size();
 
-#ifndef WIN32
-    corecvs::Matrix33 fundamentals[N * M];
-#else
-    std::vector<corecvs::Matrix33> fundamentals(N * M);
-#endif
 
-    pss[1]->location = bestHypothesis;
-
-    for (int j = 0; j < N; ++j)
-    {
-        for (int k = 0; k < M; ++k)
-        {
-            auto cam1 = pss[0]->getRawCamera(j);
-            auto cam2 = pss[1]->getRawCamera(k);
-            fundamentals[j * M + k] = cam1.fundamentalTo(cam2);
-        }
-    }
+    query->location = bestHypothesis;
 
     int outIdx = 0;
     for (size_t ji= 0; ji< bestInliers.size(); ++ji)
     {
         int j = bestInliers[ji];
         auto t = matchesAll[j];
-        auto camRef  = std::get<0>(t).v;
-        auto camQuery= std::get<2>(t).v;
+        auto fixtureRef = std::get<0>(t).u;
+        auto camRef  = std::get<0>(t).v,
+             camQuery= std::get<2>(t).v;
         auto ptRef  = std::get<1>(t);
         auto ptQuery= std::get<3>(t);
-        int  camRefId = pss[0]->getCameraId(camRef);
-        int  camQueryId = pss[1]->getCameraId(camQuery);
 
-        auto F = fundamentals[camRefId * M + camQueryId];
-        corecvs::Line2d lineLeft(F.mulBy2dRight(ptQuery));
-        corecvs::Line2d lineRight(F.mulBy2dLeft(ptRef));
-        double left = lineLeft.distanceTo(ptRef);
-        double right= lineRight.distanceTo(ptQuery);
-        out[outIdx++] = std::max(left, right);
+        out[outIdx++] = fixtureRef->scoreFundamental(camRef, ptRef, query, camQuery, ptQuery);
     }
 }
 
