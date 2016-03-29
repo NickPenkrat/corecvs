@@ -1,30 +1,24 @@
-#ifndef MARKS4X4DETECTOR_H
-#define MARKS4X4DETECTOR_H
+#ifndef BITCODE_BOARD_DETECTOR_H
+#define BITCODE_BOARD_DETECTOR_H
 
 #include "rgb24Buffer.h"
 #include "calculationStats.h"
 #include "selectableGeometryFeatures.h"
 #include "checkerboardDetectionParameters.h"
+#include "generated/bitcodeBoardParamsBase.h"
 
 namespace corecvs {
 
-class Marks4x4Aligner
-{
-
-};
-
-struct Marks4x4DetectorParameters {
-
+class Marks4x4DetectorParameters : public BitcodeBoardParamsBase {
+public:
     bool produceDebug;
-    int horBits = 5;
-    int vertBits = 2;
     CheckerboardDetectionParameters checkerboardParams;
 };
 
-class Marks4x4Detector
+class BitcodeBoardDetector
 {
 public:
-    Marks4x4Detector();
+    BitcodeBoardDetector();
 
 
     struct MarkerData {
@@ -74,4 +68,4 @@ private:
 }
 
 
-#endif // MARKS4X4DETECTOR_H
+#endif // BITCODE_BOARD_DETECTOR_H

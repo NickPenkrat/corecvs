@@ -1,6 +1,7 @@
 #ifndef CONIC_H
 #define CONIC_H
 
+#include "simpleRenderer.h"
 #include "line.h"
 
 namespace corecvs {
@@ -111,23 +112,30 @@ public:
     CircleSpanIterator(const Circle2d &circle) : circle(circle)
     {
         radSQ = circle.r * circle.r;
-        currentY  = -circle.r + circle.c.y();
+        currentY  = -circle.r + circle.c.y() - 1;
         currentDX = 0;
     }
 
     bool step()
     {
         SYNC_PRINT(("CircleSpanIterator::step(): called\n"));
-        currentDX = (int)sqrt((float)(radSQ - (currentY - 0.5) * (currentY - 0.5)));
         currentY++;
+        currentDX = (int)sqrt((float)(radSQ - (currentY - 0.5) * (currentY - 0.5)));
         return false;
     }
 
-    void getSpan(double &y, double &x1, double &x2)
+    void getSpan(int &y, int &x1, int &x2)
     {
         y = currentY;
         x1 = circle.c.x() - currentDX;
         x2 = circle.c.x() + currentDX;
+    }
+
+    LineSpanInt getSpan()
+    {
+        LineSpanInt span;
+        getSpan(span.y, span.x1, span.x2);
+        return span;
     }
 };
 

@@ -1,34 +1,34 @@
-#include "marks4x4Detector.h"
+#include "bitcodeBoardDetector.h"
 #include "homographyReconstructor.h"
 
-Marks4x4Detector::Marks4x4Detector() :
+BitcodeBoardDetector::BitcodeBoardDetector() :
     input(NULL),
     stats(NULL)
 {
     result = false;
 }
 
-void Marks4x4Detector::setInput(RGB24Buffer *input)
+void BitcodeBoardDetector::setInput(RGB24Buffer *input)
 {
     this->input = input;
 }
 
-void Marks4x4Detector::setObservations(ObservationList *observations)
+void BitcodeBoardDetector::setObservations(ObservationList *observations)
 {
     this->observations = observations;
 }
 
-void Marks4x4Detector::setAlignerParams(const Marks4x4DetectorParameters &params)
+void BitcodeBoardDetector::setAlignerParams(const Marks4x4DetectorParameters &params)
 {
     this->parameters = params;
 }
 
-Marks4x4DetectorParameters Marks4x4Detector::getAlignerParams()
+Marks4x4DetectorParameters BitcodeBoardDetector::getAlignerParams()
 {
     return parameters;
 }
 
-bool Marks4x4Detector::operator ()()
+bool BitcodeBoardDetector::operator ()()
 {
     result = false;
     if (input == NULL || observations == NULL) {
@@ -90,6 +90,9 @@ bool Marks4x4Detector::operator ()()
     double bestScore = 0.0;
     int bestMarker = -1;
 
+    int codeHeight = parameters.codeWidth();
+    int codeWidth  = parameters.boardHeight();
+
     for (unsigned o = 0; o < CORE_COUNT_OF(orients); o++)
     {
 
@@ -102,9 +105,11 @@ bool Marks4x4Detector::operator ()()
 
         if (debug != NULL)
         {
-            for (int i = 0; i < parameters.vertBits; i++)
+
+
+            for (int i = 0; i < codeHeight; i++)
             {
-                for (int j = 0; j < parameters.horBits; j++)
+                for (int j = 0; j < codeWidth; j++)
                 {
                     Vector2dd pos(j + 0.5, i + 0.5);
                     pos = orients[o] * pos;
@@ -114,7 +119,7 @@ bool Marks4x4Detector::operator ()()
                     RGBColor color = (i == 0 && j == 0) ? RGBColor::Blue() : RGBColor::Green();
 
                     if (marker[o].detected) {
-                        color = marker[o].bits[i * parameters.horBits + j] ? RGBColor::Cyan() : RGBColor::Yellow();
+                        color = marker[o].bits[i * codeWidth + j] ? RGBColor::Cyan() : RGBColor::Yellow();
                     }
                     debug->drawCrosshare1(output.x(), output.y(), color);
                 }
@@ -136,7 +141,7 @@ bool Marks4x4Detector::operator ()()
     return result;
 }
 
-Marks4x4Detector::MarkerData Marks4x4Detector::detectMarker(Matrix33 homography, Matrix33 translation)
+BitcodeBoardDetector::MarkerData BitcodeBoardDetector::detectMarker(Matrix33 homography, Matrix33 translation)
 {
     MarkerData toReturn;
     toReturn.detected = false;
@@ -145,12 +150,14 @@ Marks4x4Detector::MarkerData Marks4x4Detector::detectMarker(Matrix33 homography,
     double overallVariance = 0.0;
     int overallSamples     = 0;
 
+    int codeHeight = parameters.codeWidth();
+    int codeWidth  = parameters.boardHeight();
 
     /* First pass. Compute statistics */
 
-    for (int i = 0; i < parameters.vertBits; i++)
+    for (int i = 0; i < codeHeight; i++)
     {
-        for (int j = 0; j < parameters.horBits; j++)
+        for (int j = 0; j < codeWidth; j++)
         {
 
             double valuesum = 0.0;
@@ -189,9 +196,9 @@ Marks4x4Detector::MarkerData Marks4x4Detector::detectMarker(Matrix33 homography,
     SYNC_PRINT((" Marks4x4Detector::detectMarker(): mean %lf\n", overallMean ));
     /* Second pass */
 
-    for (int i = 0; i < parameters.vertBits; i++)
+    for (int i = 0; i < codeHeight; i++)
     {
-        for (int j = 0; j < parameters.horBits; j++)
+        for (int j = 0; j < codeWidth; j++)
         {
             double valuesum = 0.0;
             double valuesq  = 0.0;

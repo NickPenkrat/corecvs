@@ -132,8 +132,9 @@ inline Type randRanged(Type valMax, Type valMin = Type(0))
     return (Type)(valMin + ((double)rand() / RAND_MAX * (valMax - valMin)));   // no round for int to fit into [min, max] range
 }
 
-/** Useful function that finds nearest value equals to power of 2 that is not less of the given value
- */
+/**
+ * Useful function that finds nearest value equals to power of 2 that is not less of the given value
+ **/
 inline unsigned getNearUpperPowerOf2(unsigned value)
 {
     if (CORE_IS_POW2N(value))

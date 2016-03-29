@@ -180,23 +180,8 @@
        <property name="toolTip">
          <string>Cell Size Hor</string>
        </property>
-       <property name="minimum">
-        <double>0</double>
-       </property>
-       <property name="maximum">
-        <double>100</double>
-       </property>
-       <property name="singleStep">
-        <double>1</double>
-       </property>
-       <property name="value">
-        <double>0.05</double>
-       </property>
        <property name="suffix">
-        <string>m</string>
-       </property>
-       <property name="decimals">
-        <number>4</number>
+        <string>mm</string>
        </property>
      </widget>
     </item>
@@ -212,23 +197,8 @@
        <property name="toolTip">
          <string>Cell Size Vert</string>
        </property>
-       <property name="minimum">
-        <double>0</double>
-       </property>
-       <property name="maximum">
-        <double>100</double>
-       </property>
-       <property name="singleStep">
-        <double>1</double>
-       </property>
-       <property name="value">
-        <double>0.05</double>
-       </property>
        <property name="suffix">
-        <string>m</string>
-       </property>
-       <property name="decimals">
-        <number>4</number>
+        <string>mm</string>
        </property>
      </widget>
     </item>
