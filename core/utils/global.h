@@ -188,7 +188,7 @@ typedef int                bool_t;                          // fast Boolean type
      _Pragma("GCC diagnostic pop")
 
 #else
-   #define STATIC_ASSERT(CONDITION, VALUE) typedef int foo_##VALUE[(CONDITION) ? 1 : -1]
+   #define STATIC_ASSERT(CONDITION, VALUE) typedef int foo_##VALUE[(CONDITION) ? 1 : -1];
 #endif
 
 #define SYNC_PRINT(X) \
