@@ -347,7 +347,7 @@ namespace std
             return hash_calc<std::tuple<T...>>()(t, 0);
         }
    };
-};
+}
 
 
 #ifdef USE_SAFE_RUNTIME_FUNCS

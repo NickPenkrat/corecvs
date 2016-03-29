@@ -117,8 +117,8 @@ struct PhotostationPlacerParams
         PhotostationPlacerOptimizationType::POINTS;// | PhotostationPlacerOptimizationType::FOCALS;
     PhotostationPlacerOptimizationErrorType errorType = PhotostationPlacerOptimizationErrorType::RAY_DIFF;
     // This defines how many multicameras are subject for P3P evaluation at each iteration
-    int speculativity = 1000;
-    int minimalInlierCount = 50;
+    size_t speculativity = 1000;
+    size_t minimalInlierCount = 50;
     double maximalFailureProbability = 0.1;
 
     template<typename V>

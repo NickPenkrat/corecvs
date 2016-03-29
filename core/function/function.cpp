@@ -293,4 +293,4 @@ void SparseFunctionArgs::minify()
     }
     std::cout << "REMAPANAL: " << inputs << "->" << groupInputs.size() << std::endl;
 }
-};
+}

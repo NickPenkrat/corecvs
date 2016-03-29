@@ -72,6 +72,7 @@ bool corecvs::SceneAligner::TryAlignStatic(ReconstructionFixtureScene* scene, co
 {
     scale = 1.0;
     transformation = corecvs::Affine3DQ();
+    scene->is3DAligned = true;
     return false;
 }
 
@@ -168,7 +169,7 @@ bool corecvs::SceneAligner::TryAlignGPS(ReconstructionFixtureScene* scene, corec
             CORE_ASSERT_TRUE_S(false);
     }
     ApplyTransformation(scene, transformation, scale);
-    return scale != 1.0 || !transformation.shift > 0.0 || !(transformation.rotor - transformation.rotor.conjugated()) > 0.0;
+    return scale != 1.0 || (!transformation.shift) > 0.0 || (!(transformation.rotor - transformation.rotor.conjugated())) > 0.0;
 #endif
 }
 

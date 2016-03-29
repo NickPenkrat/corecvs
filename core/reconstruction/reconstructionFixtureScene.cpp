@@ -249,24 +249,22 @@ bool ReconstructionFixtureScene::validateMatches()
         auto fixture = mv.first.u;
         auto camera  = mv.first.v;
         CORE_ASSERT_TRUE_S(std::find(fixtures.begin(), fixtures.end(), fixture) != fixtures.end());
-//        CORE_ASSERT_TRUE_S(std::find(cameras.begin(), cameras.end(), cameras) != cameras.end());
 
         for (auto& mvv: mv.second)
         {
             auto fixtureB = mvv.first.u;
             auto cameraB  = mvv.first.v;
             CORE_ASSERT_TRUE_S(std::find(fixtures.begin(), fixtures.end(), fixtureB) != fixtures.end());
-  //          CORE_ASSERT_TRUE_S(std::find(cameras.begin(), cameras.end(), cameraB) != cameras.end());
             for (auto& t: mvv.second)
             {
-                int mA = std::get<0>(t);
-                int mB = std::get<1>(t);
+                auto mA = std::get<0>(t),
+                     mB = std::get<1>(t);
                 auto itA = keyPoints.count(WPP(fixture, camera));
                 CORE_ASSERT_TRUE_S((int)itA > 0);
-                CORE_ASSERT_TRUE_S(keyPoints[WPP(fixture, camera)].size() > mA);
+                CORE_ASSERT_TRUE_S(keyPoints[WPP(fixture, camera)].size() > (size_t)mA);
                 auto itB = keyPoints.count(WPP(fixtureB, cameraB));
                 CORE_ASSERT_TRUE_S((int)itB > 0);
-                CORE_ASSERT_TRUE_S(keyPoints[WPP(fixtureB, cameraB)].size() > mB);
+                CORE_ASSERT_TRUE_S(keyPoints[WPP(fixtureB, cameraB)].size() > (size_t)mB);
             }
         }
     }
@@ -577,8 +575,8 @@ void corecvs::ReconstructionFixtureScene::buildTracks(CameraFixture *psA, Camera
         for (int i = 0; i < NPS; ++i)
         {
             isVisibleInlierNotTooFar &= ps[i]->isVisible(res, cam[i]);
-            isVisibleInlierNotTooFar &= !(kp[i] - ps[i]->project(res, cam[i])) < trackInlierThreshold;
-            isVisibleInlierNotTooFar &= !(res - ps[i]->getWorldCamera(cam[i]).extrinsics.position) < distanceLimit;
+            isVisibleInlierNotTooFar &= (!(kp[i] - ps[i]->project(res, cam[i]))) < trackInlierThreshold;
+            isVisibleInlierNotTooFar &= (!(res - ps[i]->getWorldCamera(cam[i]).extrinsics.position)) < distanceLimit;
         }
         if (!isVisibleInlierNotTooFar)
         {
@@ -680,21 +678,19 @@ corecvs::ReconstructionFixtureScene::getPhotostationMatches(const std::vector<Ca
     return res;
 }
 
-void corecvs::ReconstructionFixtureScene::filterEssentialRansac(std::vector<CameraFixture*> &pss, EssentialFilterParams params)
+void corecvs::ReconstructionFixtureScene::filterEssentialRansac(const std::vector<CameraFixture*> &lhs, const std::vector<CameraFixture*> &rhs, EssentialFilterParams params)
 {
     matchesCopy = matches;
     std::vector<std::pair<WPP, WPP>> work;
-    for (size_t psA = 0; psA < pss.size(); ++psA)
+    for (auto& psA: lhs)
     {
-        for (size_t psB = psA; psB < pss.size(); ++psB)
+        for (auto& psB: rhs)
         {
-            auto psA_ = pss[psA];
-            auto psB_ = pss[psB];
-            for (size_t camA = 0; camA < psA_->cameras.size(); ++camA)
+            for (auto& camA: psA->cameras)
             {
-                for (size_t camB = 0; camB < psB_->cameras.size(); ++camB)
+                for (auto& camB: psB->cameras)
                 {
-                    WPP idFirst(psA_, psA_->cameras[camA]), idSecond(psB_, psB_->cameras[camB]);
+                    WPP idFirst(psA, camA), idSecond(psB, camB);
                     if (psA == psB)
                         continue;
                     bool alreadyIn = false;
@@ -705,7 +701,7 @@ void corecvs::ReconstructionFixtureScene::filterEssentialRansac(std::vector<Came
                             break;
                         }
                     if (!alreadyIn)
-                        work.emplace_back(WPP(psA_, psA_->cameras[camA]), WPP(psB_, psB_->cameras[camB]));
+                        work.emplace_back(idFirst, idSecond);
                 }
             }
         }

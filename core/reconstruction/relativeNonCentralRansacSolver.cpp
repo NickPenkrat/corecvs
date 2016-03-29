@@ -3,7 +3,7 @@
 #include "levenmarq.h"
 
 corecvs::RelativeNonCentralRansacSolver::RelativeNonCentralRansacSolver(CameraFixture *query, const MatchContainer &matchesRansac, const MatchContainer &matchesAll, const RelativeNonCentralRansacSolverSettings &settings)
-    : RelativeNonCentralRansacSolverSettings(settings), matchesRansac(matchesRansac), matchesAll(matchesAll), query(query)
+    : RelativeNonCentralRansacSolverSettings(settings), query(query), matchesRansac(matchesRansac), matchesAll(matchesAll)
 {
 }
 void corecvs::RelativeNonCentralRansacSolver::run()
@@ -103,7 +103,6 @@ void corecvs::RelativeNonCentralRansacSolver::estimatePose()
 
 void corecvs::RelativeNonCentralRansacSolver::scoreCurrent()
 {
-    int M = (int)query->cameras.size();
     int K = (int)currentHypothesis.size();
 
     currentInliers.resize(K);
@@ -173,9 +172,6 @@ corecvs::Affine3DQ corecvs::RelativeNonCentralRansacSolver::getBestHypothesis() 
 
 void corecvs::RelativeNonCentralRansacSolver::computeError(double out[])
 {
-    int M = (int)query->cameras.size();
-
-
     query->location = bestHypothesis;
 
     int outIdx = 0;
@@ -193,9 +189,9 @@ void corecvs::RelativeNonCentralRansacSolver::computeError(double out[])
     }
 }
 
-int corecvs::RelativeNonCentralRansacSolver::getInliersCount()
+size_t corecvs::RelativeNonCentralRansacSolver::getInliersCount()
 {
-    return (int)bestInliers.size();
+    return bestInliers.size();
 }
 
 void corecvs::RelativeNonCentralRansacSolver::readParams(const double in[])

@@ -41,7 +41,7 @@ bool corecvs::ReconstructionInitializer::initGPS()
     L_ERROR << "Starting feature filtering" ;
     std::vector<CameraFixture*> pss = {scene->placingQueue[0], scene->placingQueue[1], scene->placingQueue[2]};
     if (runEssentialFiltering)
-        scene->filterEssentialRansac(pss, essentialFilterParams);
+        scene->filterEssentialRansac(pss, pss, essentialFilterParams);
     else
         scene->matchesCopy = scene->matches;
     L_ERROR << "Estimating first pair orientation" ;

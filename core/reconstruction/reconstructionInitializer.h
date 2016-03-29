@@ -33,6 +33,6 @@ struct ReconstructionInitializer : ReconstructionInitializerParams
     ReconstructionFixtureScene *scene;
     static corecvs::Quaternion TransformFrom2RayCorrespondence(corecvs::Vector3dd o1, corecvs::Vector3dd o2, corecvs::Vector3dd e1, corecvs::Vector3dd e2);
 };
-};
+}
 
 #endif

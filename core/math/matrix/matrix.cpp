@@ -666,12 +666,8 @@ Matrix Matrix::inv() const
      */
 #ifdef WITH_BLAS
     corecvs::Matrix copy(*this);
-#ifndef WIN32
-    int pivot[h];
-#else
     std::unique_ptr<int[]> pivot_(new int[h]);
     int* pivot = pivot_.get();
-#endif
     CORE_ASSERT_TRUE_S(h == w);
     LAPACKE_dgetrf(LAPACK_ROW_MAJOR, copy.h, copy.w, &copy.a(0, 0), copy.stride, pivot);
     LAPACKE_dgetri(LAPACK_ROW_MAJOR, copy.h, &copy.a(0, 0), copy.stride, pivot);
@@ -768,12 +764,8 @@ bool corecvs::Matrix::LinSolve(const corecvs::Matrix &A, const corecvs::Vector &
     decltype(LAPACKE_dgetrf(0, 0, 0, 0, 0, 0)) info;
     if (!posDef)
     {
-#ifndef WIN32
-        int pivot[std::min(A.h, A.w)];
-#else
         std::unique_ptr<int[]> pivot_(new int[std::min(A.h, A.w)]);
         int *pivot = pivot_.get();
-#endif
         if (!symmetric)
         {
             info = LAPACKE_dgetrf(LAPACK_ROW_MAJOR, copy.h, copy.w, &copy.a(0, 0), copy.stride, pivot);

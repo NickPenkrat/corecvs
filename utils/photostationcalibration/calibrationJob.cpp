@@ -36,8 +36,7 @@ void CalibrationJob::computeReconstructionError()
     int cnt = 0.0;
     for (auto& i: pointCollection)
         for (auto& j: i.second)
-            for (auto& k: j.second)
-                cnt++;
+            cnt += j.second.size();
 
     L_INFO << "Starting reconstruction error computation: point triangulation";
     Matrix A(cnt, 3);
@@ -61,7 +60,7 @@ void CalibrationJob::computeReconstructionError()
                 }
                 auto diff = mct.triangulateLM(mct.triangulate()) - orig;
                 std::cout << diff << " ";
-                if (!diff > maxError)
+                if ((!diff) > maxError)
                     maxError = !diff;
                 for (int ii = 0; ii < 3; ++ii)
                     A.a(idx, ii) = diff[ii];
@@ -588,11 +587,11 @@ void CalibrationJob::computeCalibrationErrors()
                     Vector3dd ppp = p.point;
                     ppp.y() *= factor;
                     Vector2dd pp = photostation.project(ppp, cam) - p.projection;
-                    if (!pp > me)
+                    if ((!pp) > me)
                     {
                         me = !pp;
                     }
-                    if (!pp > maxTotal)
+                    if ((!pp) > maxTotal)
                     {
                         maxTotal = !pp;
                     }
@@ -642,11 +641,11 @@ void CalibrationJob::computeFullErrors()
                     ppp[1] *= factor;
                     auto pp = photostation.project(ppp, cam);
                     auto cp = photostation.cameras[v.cameraId].distortion.mapForward(pp) - p.projection;
-                    if (!cp > me)
+                    if ((!cp) > me)
                     {
                         me = !cp;
                     }
-                    if (!cp > maxTotal)
+                    if ((!cp) > maxTotal)
                     {
                         maxTotal = !cp;
                     }
@@ -692,7 +691,7 @@ void CalibrationJob::computeSingleCameraErrors()
                     Vector3dd ppp = p.point;
                     ppp.y() *= factor;
                     Vector2dd pp = cam.project(ppp) - p.projection;
-                    if (!pp > me)
+                    if ((!pp) > me)
                     {
                         me = !pp;
                     }
@@ -914,7 +913,7 @@ void CalibrationJob::reorient(const corecvs::Vector3dd T, const corecvs::Quatern
         {
             auto c1 = photostation.getRawCamera((int)i);
             auto c2 = reoriented.getRawCamera((int)i);
-            CORE_ASSERT_TRUE_S(!(c1.extrinsics.position - c2.extrinsics.position) < 1e-6);
+            CORE_ASSERT_TRUE_S((!(c1.extrinsics.position - c2.extrinsics.position)) < 1e-6);
             double df = (c1.extrinsics.orientation ^ c2.extrinsics.orientation.conjugated())[3];
             double ang = std::acos(std::min(1.0, df)) * 2.0;
             ang = std::min(ang, 2.0 * M_PI - ang);
@@ -976,7 +975,7 @@ void CalibrationJob::reorient(const std::vector<int> &topLayerIdx)
         for (int i = 0; i < 3; ++i)
             orths[i] = n ^ (orths[i] ^ n);
 
-        std::sort(orths.begin(), orths.end(), [](const corecvs::Vector3dd &a, const corecvs::Vector3dd &b) { return !a > !b; });
+        std::sort(orths.begin(), orths.end(), [](const corecvs::Vector3dd &a, const corecvs::Vector3dd &b) { return (!a) > (!b); });
 
         corecvs::Vector3dd plane1 = (n ^ orths[0]).normalised();
         corecvs::Vector3dd plane2 = (n ^ plane1).normalised();

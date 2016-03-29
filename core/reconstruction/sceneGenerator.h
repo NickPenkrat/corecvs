@@ -60,6 +60,6 @@ struct SceneGenerator : public SceneGeneratorParams
     ReconstructionFixtureScene* rfs =  nullptr;
 };
 
-};
+}
 
 #endif // SCENEGENERATOR

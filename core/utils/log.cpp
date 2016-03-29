@@ -13,7 +13,7 @@ const char *Log::level_names[] =
                    // LEVEL_LAST            /**< Last enum value for iterating*/
 };
 
-STATIC_ASSERT(CORE_COUNT_OF(Log::level_names) == Log::LEVEL_LAST, wrong_number_of_log_levels);
+STATIC_ASSERT(CORE_COUNT_OF(Log::level_names) == Log::LEVEL_LAST, wrong_number_of_log_levels)
 
 /**
  * It is impossible to tell when this function will be executed, so you should not log from

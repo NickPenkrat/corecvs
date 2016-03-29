@@ -24,7 +24,7 @@ const char * FaceDetectorOpenCV::cascadeNames[] = {
 CascadeClassifier *FaceDetectorOpenCV::cascades[] = {NULL, NULL, NULL, NULL, NULL};
 
 STATIC_ASSERT(CORE_COUNT_OF(FaceDetectorOpenCV::cascadeNames) ==
-              CORE_COUNT_OF(FaceDetectorOpenCV::cascades), open_cv_cascades_data);
+              CORE_COUNT_OF(FaceDetectorOpenCV::cascades), open_cv_cascades_data)
 
 const int FaceDetectorOpenCV::MAX_ID = CORE_COUNT_OF(FaceDetectorOpenCV::cascadeNames);
 
