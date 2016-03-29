@@ -147,7 +147,7 @@ corecvs::Quaternion corecvs::ReconstructionInitializer::detectOrientationFirst(C
 
 void corecvs::ReconstructionInitializer::estimatePair(CameraFixture *psA, CameraFixture *psB)
 {
-    auto matches = scene->getPhotostationMatches(psA, psB);
+    auto matches = scene->getPhotostationMatches({psA}, psB);
     RelativeNonCentralRansacSolver::MatchContainer rm, mm;
     for (auto&t : matches)
     {
@@ -157,7 +157,6 @@ void corecvs::ReconstructionInitializer::estimatePair(CameraFixture *psA, Camera
     }
 
     RelativeNonCentralRansacSolver solver(
-            psA,
             psB, rm, mm);
     solver.run();
     auto best = solver.getBestHypothesis();
