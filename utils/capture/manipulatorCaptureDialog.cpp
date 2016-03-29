@@ -66,7 +66,7 @@ void ManipulatorCaptureDialog::toggleUIEnabled(bool enable)
 
 void ManipulatorCaptureDialog::captureWithManipulator()
 {
-    if(mManipulator && mManipulator->enableManipulator())
+    if(mManipulator && mManipulator->manipulatorGetReady())
     {
         toggleUIEnabled(false);
         mPosition = ui->initialPositionBox->value();
