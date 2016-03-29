@@ -107,14 +107,14 @@ private:
 class ChessBoardCornerDetectorParams : public ChessBoardCornerDetectorParamsBase
 {
 public:
-    ChessBoardCornerDetectorParams() {}
-
     ChessBoardCornerDetectorParams(const ChessBoardCornerDetectorParamsBase &base) :
         ChessBoardCornerDetectorParamsBase(base)
     {
     }
 
 #if __cplusplus >= 201103L // Our compiler is cool enough to support brace-initalizer-list for structure members
+	ChessBoardCornerDetectorParams() {}
+
     // Radius for multi-scale pattern detection
     vector<double> patternRadius = {4.0, 8.0, 12.0};
     // Radius for corner-scoring

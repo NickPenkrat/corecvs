@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#include "global.h"
+
 namespace corecvs {
 
 
