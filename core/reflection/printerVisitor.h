@@ -80,12 +80,27 @@ template <class Type>
         indentation -= dIndent;
     }
 
-template <class Type>
+    template <typename Type, typename std::enable_if<!(std::is_enum<Type>::value || (std::is_arithmetic<Type>::value && !std::is_same<bool, Type>::value)), int>::type foo = 0>
     void visit(Type &field, Type /*defaultValue*/, const char * fieldName)
-	{
+    {
         visit<Type>(field, fieldName);
-	}
+    }
 
+    template <typename type, typename std::enable_if<std::is_arithmetic<type>::value && !std::is_same<bool, type>::value, int>::type foo = 0>
+    void visit(type &field, type, const char *fieldName)
+    {
+        if (stream == NULL) return;
+        *stream << indent() << fieldName << "=" << field << std::endl;
+    }
+
+    template <typename type, typename std::enable_if<std::is_enum<type>::value, int>::type foo = 0>
+    void visit(type &field, type defaultValue, const char *fieldName)
+    {
+        using U = typename std::underlying_type<type>::type;
+        U u = static_cast<U>(field);
+        visit(u, static_cast<U>(defaultValue), fieldName);
+        field = static_cast<type>(u);
+    }
 };
 
 
@@ -123,18 +138,6 @@ void PrinterVisitor::visit<double, DoubleVectorField>(std::vector<double> &field
  *
  * this methods can be made universal, but are separated to make it a bit more controllable
  **/
-
-template <>
-void PrinterVisitor::visit<int>(int &intField, int defaultValue, const char *fieldName);
-
-template <>
-void PrinterVisitor::visit<uint64_t>(uint64_t &intField, uint64_t defaultValue, const char *fieldName);
-
-template <>
-void PrinterVisitor::visit<double>(double &doubleField, double defaultValue, const char *fieldName);
-
-template <>
-void PrinterVisitor::visit<float>(float &floatField, float defaultValue, const char *fieldName);
 
 template <>
 void PrinterVisitor::visit<bool>(bool &boolField, bool defaultValue, const char *fieldName);
