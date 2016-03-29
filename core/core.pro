@@ -55,3 +55,7 @@ OTHER_FILES +=            \
     ../tools/generator/regen-core.sh \
     ../tools/generator/h_stub.sh \
 
+win32-msvc* {
+    QMAKE_CFLAGS   += /fp:strict
+    QMAKE_CXXFLAGS += /fp:strict
+}
