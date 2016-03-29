@@ -51,7 +51,8 @@ public:
 };
 
 typedef GenericTriangle<Vector3d<int32_t> > Triangle32;
-typedef GenericTriangle<Vector3d<double> > Triangled;
+typedef GenericTriangle<Vector3d<double> > Triangle3dd;
+typedef GenericTriangle<Vector2d<double> > Triangle2dd;
 
 
 class PointPath : public vector<Vector2dd>

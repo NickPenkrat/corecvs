@@ -94,7 +94,7 @@ TEST(Draw, testSpanDraw)
     TrapezoidSpanIterator it(10, 40, 10, 30, 40, 90);
     while (it.step())
     {
-        LineSpanInt span;
+        LineSpanInt span = it.getSpan();
         buffer->drawHLine(span.x1, span.y, span.x2, RGBColor::Red());
     }
 

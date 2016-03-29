@@ -94,7 +94,7 @@ int STLLoader::saveAsciiSTL(ostream &out, Mesh3D &mesh)
     out << "solid test" << endl;
     for (size_t f = 0; f < mesh.faces.size(); f++)
     {
-        Triangled face = mesh.getFaceAsTrinagle(f);
+        Triangle3dd face = mesh.getFaceAsTrinagle(f);
         Vector3dd normal = face.getNormal();
 
         out << "  facet normal " << normal.x() << " " << normal.y() << " " << normal.z() << endl;
@@ -133,7 +133,7 @@ int STLLoader::saveBinarySTL(ostream &out, Mesh3D &mesh)
     for (uint32_t i = 0; i < numberTriangles; i++)
     {
 
-        Triangled face = mesh.getFaceAsTrinagle(i);
+        Triangle3dd face = mesh.getFaceAsTrinagle(i);
         Vector3dd normal = face.getNormal();
 
         writeFloatVector(out, normal);

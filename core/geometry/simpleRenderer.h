@@ -3,6 +3,7 @@
 
 #include "mathUtils.h"
 #include "matrix44.h"
+#include "polygons.h"
 
 
 namespace corecvs {
@@ -14,7 +15,9 @@ public:
     int x2;
 };
 
-/* trapezoid 2d iterator */
+/**
+ * trapezoid 2d iterator
+ **/
 class TrapezoidSpanIterator
 {
 public:
@@ -39,8 +42,8 @@ public:
         double dy = y2 - y1;
         dx1 = (x12 - x11) / dy;
         dx2 = (x22 - x21) / dy;
-        x1 = x11;
-        x2 = x12;
+        x1 = x11 - dx1;
+        x2 = x12 - dx2;
     }
 
     bool step()
@@ -48,7 +51,7 @@ public:
         currentY++;
         x1 += dx1;
         x2 += dx2;
-        return (currentY != y2);
+        return (currentY <= y2);
     }
 
     void getSpan(int &y, int &x1, int &x2)
@@ -66,6 +69,16 @@ public:
     }
 };
 
+/*
+class TriangleSpanIterator : TrapezoidSpanIterator
+{
+public:
+    TriangleSpanIterator(const Triangle2dd &triangle) :
+
+    {
+    }
+};
+*/
 
 class SimpleRenderer
 {

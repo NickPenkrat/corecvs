@@ -354,7 +354,7 @@ void RGB24Buffer::drawCorrespondenceList(CorrespondenceList *src, double colorSc
 }
 
 
-void RGB24Buffer::drawRectangle(int x, int y, int h, int w, RGBColor color, int style)
+void RGB24Buffer::drawRectangle(int x, int y, int w, int h, RGBColor color, int style)
 {
     w--;
     h--;
