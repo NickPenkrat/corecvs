@@ -177,6 +177,10 @@ public:
         return this->isInHypercube(low, high);
     }
 
+    static Vector2d<ElementType> Zero() {
+        return Vector2d<ElementType>(0.0, 0.0);
+    }
+
 //#ifdef REFLECTION_IN_CORE
     static Reflection reflection;
     static int        dummy;
@@ -201,7 +205,7 @@ template<class VisitorType>
 };
 
 
-typedef Vector2d<double> Vector2dd;
+typedef Vector2d<double>   Vector2dd;
 typedef Vector2d<uint32_t> Vector2du32;
 typedef Vector2d<uint16_t> Vector2du16;
 

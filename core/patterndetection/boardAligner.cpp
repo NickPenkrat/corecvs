@@ -3,6 +3,12 @@
 #include "abstractPainter.h"
 #include "homographyReconstructor.h"
 
+using corecvs::RGBColor;
+using corecvs::Matrix33;
+using corecvs::Vector3dd;
+using corecvs::HomographyReconstructor;
+
+
 BoardAligner::BoardAligner(BoardAlignerParams params) : BoardAlignerParams(params), generator(FillGenerator(params))
 {
 }
@@ -11,6 +17,16 @@ BoardAligner::BoardAligner(BoardAlignerParams params, const std::shared_ptr<Circ
     : BoardAlignerParams(params), generator(sharedGenerator)
 {
     CORE_ASSERT_TRUE_S(sharedGenerator);
+}
+
+void BoardAligner::setAlignerParams(const BoardAlignerParams &params)
+{
+    *static_cast<BoardAlignerParams *>(this) = params;
+}
+
+BoardAlignerParams BoardAligner::getAlignerParams()
+{
+    return BoardAlignerParams(*this);
 }
 
 CirclePatternGenerator* BoardAligner::FillGenerator(const BoardAlignerParams &params)
@@ -128,7 +144,7 @@ void BoardAligner::fixOrientation()
 bool BoardAligner::alignDim(DpImage &img, bool fitW, bool fitH)
 {
     if (!fitW && !fitH)
-        return false;
+        return true;
 
     int w = (int)bestBoard[0].size(), h = (int)bestBoard.size();
 //    std::cout << "Best board: " << w << " x " << h << "; Req: " << idealWidth << " x " << idealHeight << std::endl;
@@ -298,7 +314,7 @@ bool BoardAligner::createList()
         for (int x = 0; x < w; ++x)
         {
             observationList.emplace_back(
-                    corecvs::Vector3dd(
+                    Vector3dd(
                         classifier[y][x].first * 1.0,
                         classifier[y][x].second * 1.0, 
                         0.0),
@@ -339,26 +355,26 @@ void BoardAligner::drawDebugInfo(corecvs::RGB24Buffer &buffer)
     int h = (int)bestBoard.size();
     // A: draw board
     DpImage mask(buffer.h, buffer.w);
-    corecvs::RGBColor board_col = corecvs::RGBColor(0x7f0000);
+    RGBColor board_col = corecvs::RGBColor(0x7f0000);
     for (int i = 0; i + 1 < h; ++i)
     {
         for (int j = 0; j + 1 < w; ++j)
         {
-            corecvs::Vector2dd A, B, C, D;
+            Vector2dd A, B, C, D;
             A = bestBoard[i + 0][j + 0];
             B = bestBoard[i + 1][j + 0];
             C = bestBoard[i + 0][j + 1];
             D = bestBoard[i + 1][j + 1];
 
-            corecvs::Matrix33 res, orientation, homography;
+            Matrix33 res, orientation, homography;
 
-            corecvs::HomographyReconstructor c2i;
-            c2i.addPoint2PointConstraint(corecvs::Vector2dd(0.0, 0.0), A);
-            c2i.addPoint2PointConstraint(corecvs::Vector2dd(1.0, 0.0), B);
-            c2i.addPoint2PointConstraint(corecvs::Vector2dd(0.0, 1.0), C);
-            c2i.addPoint2PointConstraint(corecvs::Vector2dd(1.0, 1.0), D);
+            HomographyReconstructor c2i;
+            c2i.addPoint2PointConstraint(Vector2dd(0.0, 0.0), A);
+            c2i.addPoint2PointConstraint(Vector2dd(1.0, 0.0), B);
+            c2i.addPoint2PointConstraint(Vector2dd(0.0, 1.0), C);
+            c2i.addPoint2PointConstraint(Vector2dd(1.0, 1.0), D);
 
-            corecvs::Matrix33 AA, BB;
+            Matrix33 AA, BB;
             c2i.normalisePoints(AA, BB);
 
             homography = c2i.getBestHomographyLSE();
@@ -366,15 +382,17 @@ void BoardAligner::drawDebugInfo(corecvs::RGB24Buffer &buffer)
             res = BB.inv() * homography * AA;
             //double score;
 
-            for (int i = 0; i < 1000; ++i)
+            double STEP = 1000;
+            for (int i = 0; i < STEP; ++i)
             {
-                for (int j = 0; j < 1000; ++j)
+                for (int j = 0; j < STEP; ++j)
                 {
-                    corecvs::Vector3dd pt = res * Vector3dd(j * (1e-3), i * (1e-3), 1.0);
-                    pt /= pt[2];
+                    Vector3dd pt = res * Vector3dd(j / STEP, i / STEP, 1.0);
+                    pt /= pt.z();
 
-                    int xx = pt[0], yy = pt[1];
-                    if (xx >= 0 && xx < buffer.w && yy >= 0 && yy < buffer.h)
+                    int xx = pt.x();
+                    int yy = pt.y();
+                    if (mask.isValidCoord(yy, xx))
                     {
                         mask.element(yy, xx) = 1.0;
                     }
@@ -386,8 +404,8 @@ void BoardAligner::drawDebugInfo(corecvs::RGB24Buffer &buffer)
     {
         for (int j = 0; j < buffer.w; ++j)
         {
-            auto A = buffer.element(i, j);
-            auto B = board_col;
+            RGBColor A = buffer.element(i, j);
+            RGBColor B = board_col;
             if (mask.element(i, j) > 0.0)
             {
                 buffer.element(i, j) = RGBColor::lerpColor(A, B, 0.3);
@@ -435,20 +453,19 @@ void BoardAligner::classify(bool trackOrientation, DpImage &img)
     {
         for (int j = 0; j + 1 < w; ++j)
         {
-            corecvs::Vector2dd A, B, C, D;
+            Vector2dd A, B, C, D;
             A = bestBoard[i + 0][j + 0];
             B = bestBoard[i + 0][j + 1];
             C = bestBoard[i + 1][j + 0];
             D = bestBoard[i + 1][j + 1];
             
             double score;
-            corecvs::Matrix33 orientation, res;
-            DpImage query;
+            Matrix33 orientation, res;
             int cl =  generator->getBestToken(img, {A, B, C, D}, score, orientation, res);//, query);
 
             if (!trackOrientation)
             {
-                orientation = corecvs::Matrix33(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
+                orientation = Matrix33::Identity();
             }
 
             int order[][2] = {{0, 0}, {1, 0}, {0, 1}, {1, 1}};
@@ -459,7 +476,7 @@ void BoardAligner::classify(bool trackOrientation, DpImage &img)
                 // Take sq. orientation and place classifier
                 for (int k = 0; k < 4; ++k)
                 {
-                    auto P = (orientation * corecvs::Vector3dd(order[k][0], order[k][1], 1.0).project()) + corecvs::Vector2dd(0.5, 0.5);
+                    auto P = (orientation * Vector3dd(order[k][0], order[k][1], 1.0).project()) + Vector2dd(0.5, 0.5);
                     CORE_ASSERT_TRUE_S(P[0] > 0.0 && P[1] > 0.0);
                     CORE_ASSERT_TRUE_S(P[0] < 2.0 && P[1] < 2.0);
                     classifier[i + P[1]][j + P[0]] = std::make_pair(boardMarkers[cl].cornerX + order[k][0], boardMarkers[cl].cornerY + order[k][1]);
@@ -475,4 +492,118 @@ void BoardAligner::classify(bool trackOrientation, DpImage &img)
     }
     printClassifier(false);
 #endif
+}
+
+BoardAlignerParams BoardAlignerParams::GetIndoorsBoard()
+{
+    // May be we'll change default c'tor, so explicitly...
+    BoardAlignerParams params;
+    params.idealWidth = 4;
+    params.idealHeight = 4;
+    params.boardMarkers.clear();
+    params.type = AlignmentType::FIT_WIDTH;
+    return params;
+}
+
+BoardAlignerParams BoardAlignerParams::GetOldBoard()
+{
+    // May be we'll change default c'tor, so explicitly...
+    BoardAlignerParams params;
+    params.idealWidth = 18;
+    params.idealHeight = 11;
+    params.boardMarkers.clear();
+    params.type = AlignmentType::FIT_WIDTH;
+    return params;
+}
+
+BoardAlignerParams BoardAlignerParams::GetNewBoard()
+{
+    BoardAlignerParams params;
+    params.idealWidth = 26;
+    params.idealHeight = 18;
+    params.type = AlignmentType::FIT_MARKERS;
+    params.boardMarkers.clear();
+
+    BoardMarkerDescription bmd;
+    bmd.cornerX = 3;
+    bmd.cornerY = 1;
+    bmd.circleRadius = 0.08;
+    bmd.circleCenters =
+    {
+        Vector2dd(0.823379, 0.421373),
+        Vector2dd(0.441718, 0.370170),
+        Vector2dd(0.269471, 0.166728)
+    };
+    params.boardMarkers.push_back(bmd);
+
+    bmd.cornerX = 2;
+    bmd.cornerY = 8;
+    bmd.circleCenters =
+    {
+        Vector2dd(0.589928, 0.166732),
+        Vector2dd(0.269854, 0.833333),
+        Vector2dd(0.692244, 0.589654)
+    };
+    params.boardMarkers.push_back(bmd);
+
+    bmd.cornerX = 12;
+    bmd.cornerY = 2;
+    bmd.circleCenters =
+    {
+        Vector2dd(0.585422, 0.680195),
+        Vector2dd(0.287252, 0.833178),
+        Vector2dd(0.166910, 0.441706)
+    };
+    params.boardMarkers.push_back(bmd);
+
+    bmd.cornerX = 21;
+    bmd.cornerY = 1;
+    bmd.circleCenters =
+    {
+        Vector2dd(0.166911, 0.285371),
+        Vector2dd(0.421789, 0.675665),
+        Vector2dd(0.579427, 0.174676)
+    };
+    params.boardMarkers.push_back(bmd);
+
+    bmd.cornerX = 22;
+    bmd.cornerY = 8;
+    bmd.circleCenters =
+    {
+        Vector2dd(0.705211, 0.425448),
+        Vector2dd(0.167029, 0.781583),
+        Vector2dd(0.170480, 0.403242)
+    };
+    params.boardMarkers.push_back(bmd);
+
+    bmd.cornerX = 21;
+    bmd.cornerY = 15;
+    bmd.circleCenters =
+    {
+        Vector2dd(0.166779, 0.582670),
+        Vector2dd(0.422544, 0.689812),
+        Vector2dd(0.733317, 0.828926)
+    };
+    params.boardMarkers.push_back(bmd);
+
+    bmd.cornerX = 12;
+    bmd.cornerY = 14;
+    bmd.circleCenters =
+    {
+        Vector2dd(0.167587, 0.433621),
+        Vector2dd(0.686839, 0.425617),
+        Vector2dd(0.833333, 0.746159)
+    };
+    params.boardMarkers.push_back(bmd);
+
+    bmd.cornerX = 3;
+    bmd.cornerY = 15;
+    bmd.circleCenters =
+    {
+        Vector2dd(0.751807, 0.833313),
+        Vector2dd(0.441399, 0.687871),
+        Vector2dd(0.596547, 0.166670)
+    };
+    params.boardMarkers.push_back(bmd);
+    return params;
 }

@@ -15,6 +15,7 @@
 
 #include <map>
 #include <string>
+#include <deque>
 
 #include "global.h"
 
@@ -26,6 +27,7 @@ namespace corecvs {
 
 using std::map;
 using std::string;
+using std::deque;
 
 /**
  *  Single statistics entry
@@ -97,6 +99,30 @@ struct UnitedStat {
 class Statistics
 {
 public:
+    struct State {
+        State(string prefix, PreciseTimer helperTimer) :
+            prefix(prefix), helperTimer(helperTimer)
+        {}
+
+        string prefix;
+        PreciseTimer helperTimer;
+    };
+
+    std::deque<State> stack;
+
+    Statistics* enterContext(string prefix) {
+        stack.push_back(State(this->prefix, this->helperTimer));
+        this->prefix = prefix + this->prefix;
+        return this;
+    }
+
+    void leaveContext() {
+        State state = stack.back();
+        stack.pop_back();
+        this->prefix = state.prefix;
+        this->helperTimer = state.helperTimer;
+    }
+
     /* New interface */
     map<string, SingleStat> values;
     string prefix;
@@ -260,7 +286,7 @@ template <class StreamType>
 
             stream.printUnitedStat(uit->first, maxCaptionLen, uit->second, printCount);
             printCount++;
-        }        
+        }
     }
 
     class SimplePrinter {
