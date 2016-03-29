@@ -86,14 +86,13 @@ public:
         return getWorldCamera(cam);
     }
 
-	double scoreFundamental(FixtureCamera *thisCamera, Vector2dd thisPoint, CameraFixture *otherFixture, FixtureCamera *otherCamera, Vector2dd otherPoint)
-	{
-		auto FAB = getWorldCamera(thisCamera).fundamentalTo(
-				otherFixture->getWorldCamera(otherCamera));
-		corecvs::Line2d left = FAB.mulBy2dRight(otherPoint);
-		corecvs::Line2d right= FAB.mulBy2dLeft (thisPoint);
-		return std::max(left.distanceTo(thisPoint), right.distanceTo(otherPoint));
-	}
+    double scoreFundamental(FixtureCamera *thisCamera, Vector2dd thisPoint, CameraFixture *otherFixture, FixtureCamera *otherCamera, Vector2dd otherPoint)
+    {
+        auto FAB = fundamentalTo(thisCamera, otherFixture, otherCamera);
+        corecvs::Line2d left = FAB.mulBy2dRight(otherPoint);
+        corecvs::Line2d right= FAB.mulBy2dLeft (thisPoint);
+        return std::max(left.distanceTo(thisPoint), right.distanceTo(otherPoint));
+    }
 
     int getCameraId(FixtureCamera* ptr) const
     {
@@ -162,6 +161,21 @@ public:
         return false;
     }
 
+    Matrix33 fundamentalTo(FixtureCamera *thisCam, CameraFixture *other, FixtureCamera *otherCam)
+    {
+        Matrix33 K1 = thisCam->intrinsics.getKMatrix33();
+        Matrix33 K2 = otherCam->intrinsics.getKMatrix33();
+        return K1.inv().transposed() * essentialTo(thisCam, other, otherCam) * K2.inv();
+    }
+
+    EssentialDecomposition essentialTo(FixtureCamera *thisCam, CameraFixture *other, FixtureCamera *otherCam)
+    {
+        auto thisExtrinsics = thisCam->extrinsics,
+             otherExtrinsics = otherCam->extrinsics;
+        thisExtrinsics.transform(location);
+        otherExtrinsics.transform(other->location);
+        return CameraModel::ComputeEssentialDecomposition(thisExtrinsics, otherExtrinsics);
+    }
 
     template<class VisitorType, class SceneType = FixtureScene>
     void accept(VisitorType &visitor)
