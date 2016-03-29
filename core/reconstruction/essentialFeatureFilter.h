@@ -80,6 +80,7 @@ public:
 
     void accept(const EssentialDecomposition &ed, const std::vector<int> &inlierIdx);
     double nForGamma();
+    double getGamma();
 
     corecvs::Matrix33 K1, K2;
     std::vector<std::array<corecvs::Vector2dd, 2>> features;
