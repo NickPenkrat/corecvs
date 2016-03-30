@@ -211,8 +211,8 @@ TEST(MatrixProfile, testMulSize3)
                 AB = Matrix::multiplyBlas(A, B);
             }
             uint64_t delayBlas = start.usecsToNow();
-           printResult(gflop, delayBlas, LIMIT);
-#endif
+            printResult(gflop, delayBlas, LIMIT);
+#endif // WITH_BLAS
         }
 
         for (unsigned i = 0; i < POLUTING_INPUTS; i++) {

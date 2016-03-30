@@ -846,10 +846,6 @@ TEST(SparseMatrix, TT)
     std::cout << sm << std::endl << sm.t() << std::endl;
 }
 
-#ifdef WITH_MKL
-#include <mkl.h>
-#endif
-
 TEST(SparseMatrix, MulTimer)
 {
     auto sl= randomSparse(4000,4000, 0.001);

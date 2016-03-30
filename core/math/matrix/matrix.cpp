@@ -10,10 +10,10 @@
 #include "matrix.h"
 #include "matrix33.h"
 
-#include "cblasLapackeWrapper.h"
 #include "tbbWrapper.h"
 #include "sseWrapper.h"
 
+#include "cblasLapackeWrapper.h"
 #include "blasReplacement.h"
 
 namespace corecvs {
@@ -253,30 +253,31 @@ Matrix Matrix::multiplyBlas(const Matrix &A, const Matrix &B)
 
 Matrix operator *(const Matrix &A, const Matrix &B)
 {
+#ifdef WITH_BLAS
+    return Matrix::multiplyBlas(A, B);
+#else
     CORE_ASSERT_TRUE(A.w == B.h, "Matrices have wrong sizes");
     Matrix result(A.h, B.w, false);
 
-#ifndef WITH_BLAS
     corecvs::parallelable_for(0, result.h, 8, ParallelMM<>(&A, &B, &result), !(A.h < 64));
-    //Matrix::multiplyHomebrew(A, B, true, !(A.h < 64)); // TODO: it has a bug, see testMatrixOperations!!!
-#else
-    cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, A.h, B.w, A.w, 1.0, A.data, A.stride, B.data, B.stride, 0.0, result.data, result.stride);
-#endif
-    return result;
-}
 
+    //Matrix::multiplyHomebrew(A, B, true, !(A.h < 64)); // TODO: it has a bug, see testMatrixOperations!!!
+
+    return result;
+#endif
+}
 
 Vector operator *(const Matrix &M, const Vector &V)
 {
     CORE_ASSERT_TRUE(M.w == V.size(), "Matrix and vector have wrong sizes");
     if (M.h >= 64)
     {
-#if !defined(WITH_BLAS)
-        return Matrix::multiplyHomebrewMV(M, V);
-#else
+#ifdef WITH_BLAS
         Vector result(M.h);
         cblas_dgemv (CblasRowMajor, CblasNoTrans, M.h, M.w, 1.0, &M.element(0, 0), M.stride, &V[0], 1, 0.0, &result[0], 1);
         return result;
+#else
+        return Matrix::multiplyHomebrewMV(M, V);
 #endif
     }
 
@@ -297,15 +298,15 @@ Vector operator *(const Vector &V, const Matrix &M)
 {
     CORE_ASSERT_TRUE(M.h == V.size(), "Matrix and vector have wrong sizes");
     Vector result(M.w);
-    int row, column;
+
 #ifdef WITH_BLAS
     if (M.h < 32)
     {
 #endif
-       for (column = 0; column < M.w; column++)
+       for (int column = 0; column < M.w; ++column)
        {
            double sum = 0.0;
-           for (row = 0; row < M.h; row++)
+           for (int row = 0; row < M.h; ++row)
            {
                sum += V.at(row) * M.a(row, column);
            }
@@ -325,7 +326,7 @@ Vector operator *(const Vector &V, const Matrix &M)
 Matrix operator *=(Matrix &M, const DiagonalMatrix &D)
 {
     CORE_ASSERT_TRUE(false, "TODO: Matrix operator *=(Matrix &M, const DiagonalMatrix &D) is implemented badly");       // TODO: check the implementation: result is squared matrix!
-    int32_t minDim = CORE_MIN(M.h,M.w);
+    int32_t minDim = CORE_MIN(M.h, M.w);
     minDim = CORE_MIN(minDim, D.size());
     for (int i = 0; i < minDim; i++)
     {
@@ -676,7 +677,9 @@ Matrix Matrix::inv() const
     LAPACKE_dgetrf(LAPACK_ROW_MAJOR, copy.h, copy.w, &copy.a(0, 0), copy.stride, pivot);
     LAPACKE_dgetri(LAPACK_ROW_MAJOR, copy.h, &copy.a(0, 0), copy.stride, pivot);
     return copy;
-#else
+
+#else // WITH_BLAS
+
     unsigned i, j, k;
     double multiplier;
 
@@ -750,7 +753,8 @@ Matrix Matrix::inv() const
     }
 
     return result;
-#endif
+
+#endif // !WITH_BLAS
 }
 
 bool corecvs::Matrix::linSolve(const corecvs::Vector &B, corecvs::Vector &res, bool symmetric, bool posDef) const
@@ -758,7 +762,10 @@ bool corecvs::Matrix::linSolve(const corecvs::Vector &B, corecvs::Vector &res, b
     return LinSolve(*this, B, res, symmetric, posDef);
 }
 
-bool corecvs::Matrix::LinSolve(const corecvs::Matrix &A, const corecvs::Vector &B, corecvs::Vector &res, bool symmetric, bool posDef)
+bool corecvs::Matrix::LinSolve(const corecvs::Matrix &A, const corecvs::Vector &B
+    , corecvs::Vector &res
+    , bool symmetric
+    , bool posDef)
 {
     CORE_ASSERT_TRUE_S(A.h == B.size());
     CORE_ASSERT_TRUE_S(A.h == A.w);
@@ -791,10 +798,13 @@ bool corecvs::Matrix::LinSolve(const corecvs::Matrix &A, const corecvs::Vector &
         if (!info) LAPACKE_dpotrs(LAPACK_ROW_MAJOR, 'U', copy.w, 1, &copy.a(0, 0), copy.stride, &res[0], 1);
     }
     return info == 0;
-#else
+
+#else // WITH_BLAS
+
     res = A.inv() * B;
     return true;
-#endif
+
+#endif // !WITH_BLAS
 }
 
 Matrix Matrix::invSVD() const
@@ -861,7 +871,7 @@ double corecvs::Matrix::det() const
             tauM *= -1.0;
     return det * tauM;
 }
-#endif
+#endif // WITH_BLAS
 
 Vector2d32 Matrix::getMinCoord() const
 {
@@ -1222,9 +1232,6 @@ void Matrix::svd(Matrix *A, DiagonalMatrix *W, Matrix *V)
   *   Computes all eigenvalues and eigenvectors of a real symmetric matrix a[1..n][1..n].
   *   On output, elements of a above the diagonal are destroyed. d[1..n] returns the eigenvalues of a v[1..n][1..n]
   *   is a matrix whose columns contain, on output, the normalized eigenvectors of a nrot returns the number of Jacobi rotations that were required.
-  *
-  *
-  *
   **/
 
 #define ROTATE(mat,i,j,k,l) g = mat->a(i,j); h = mat->a(k,l); mat->a(i,j) = g - s * ( h + g * tau); mat->a(k,l) = h + s * ( g - h * tau);
