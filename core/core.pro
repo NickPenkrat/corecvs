@@ -55,6 +55,9 @@ OTHER_FILES +=            \
     ../tools/generator/regen-core.sh \
     ../tools/generator/h_stub.sh \
 
+# msvc floating point model: "strict" helped to unify results on different compiler versions
+# For more info look at: https://msdn.microsoft.com/en-us/library/e7s85ffb%28v=vs.120%29.aspx
+#
 win32-msvc* {
     QMAKE_CFLAGS   += /fp:strict
     QMAKE_CXXFLAGS += /fp:strict
