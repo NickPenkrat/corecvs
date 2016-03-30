@@ -302,7 +302,7 @@ corecvs::Affine3DQ corecvs::PhotostationPlacer::staticInit(CameraFixture *fixtur
             auto ptw = spt->position;
 
             centers.push_back(ps->getWorldCamera(cam).extrinsics.position);
-            directions.push_back(ps->getWorldCamera(cam).rayFromPixel(pt).a);
+            directions.push_back(ps->rayFromPixel(cam, pt).a);
             points3d.push_back(ptw);
         }
     }
@@ -1119,7 +1119,7 @@ bool corecvs::PhotostationPlacer::appendP6P()
             mm.emplace_back(std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t));
         }
 
-        if (rm.size() < 100)
+        if (rm.size() < minimalInlierCount)
         {
             std::cout << "Too few matches (" << rm.size() << "), rejecting ";
             for (auto &A: scene->placedFixtures)
@@ -1134,6 +1134,19 @@ bool corecvs::PhotostationPlacer::appendP6P()
         RelativeNonCentralRansacSolver solver(
         //        psA,
                 psB, rm, mm);
+        if (scene->initializationData[psB].initializationType == PhotostationInitializationType::GPS)
+        {
+            if (scene->is3DAligned)
+            {
+                solver.restrictions = decltype(solver.restrictions)::SHIFT;
+                solver.shift = scene->initializationData[psB].initData.shift;
+            }
+            else
+            {
+                solver.restrictions = decltype(solver.restrictions)::SCALE;
+                solver.scale = !scene->initializationData[psB].initData.shift;
+            }
+        }
         solver.run();
         auto best = solver.getBestHypothesis();
         for (auto &A: scene->placedFixtures)
@@ -1237,7 +1250,7 @@ void corecvs::PhotostationPlacer::testNewPipeline()
             mm.emplace_back(std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t));
         }
 
-        if (rm.size() < 100)
+        if (rm.size() < minimalInlierCount)
         {
             std::cout << "Too few matches (" << rm.size() << "), rejecting " << A->name << "<>" << B->name << std::endl;
             scene->matches = scene->matchesCopy;
@@ -1251,6 +1264,11 @@ void corecvs::PhotostationPlacer::testNewPipeline()
         RelativeNonCentralRansacSolver solver(
         //        psA,
                 psB, rm, mm);
+        if (scene->initializationData[psA].initializationType == PhotostationInitializationType::GPS && scene->initializationData[psB].initializationType == PhotostationInitializationType::GPS)
+        {
+            solver.restrictions = RelativeNonCentralRansacSolverSettings::Restrictions::SCALE;
+            solver.scale = !(scene->initializationData[psA].initData.shift - scene->initializationData[psB].initData.shift);
+        }
         solver.run();
         auto best = solver.getBestHypothesis();
         std::cout << psA->name << "::" << psB->name << " " << best.shift << " " << best.rotor << std::endl;

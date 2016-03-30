@@ -21,6 +21,17 @@ struct RelativeNonCentralRansacSolverSettings
     }
     size_t maxIterations = 1000000LLU;
     double inlierThreshold = 1.0;
+
+    enum class Restrictions
+    {
+        NONE,
+        SCALE,
+        SHIFT
+    };
+
+    Restrictions restrictions;
+    corecvs::Vector3dd shift;
+    double scale = 1.0;
 };
 
 
@@ -34,7 +45,11 @@ public:
         , const MatchContainer &matchesRansac
         , const MatchContainer &matchesAll
         , const RelativeNonCentralRansacSolverSettings &settings = RelativeNonCentralRansacSolverSettings());
-
+    ~RelativeNonCentralRansacSolver()
+    {
+        double total = totalEstiamte + totalSample + totalCheck;
+        std::cout << "RNCRS timings: [Sample: " << totalSample / total * 100.0 << "% ][Estimate: " << totalEstiamte / total * 100.0 << "%][Check: " << totalCheck / total * 100.0 << "]" << std::endl;
+    }
     size_t getInliersCount();
     void run();
     void fit(double distanceGuess = 10.0);
@@ -79,6 +94,10 @@ private:
     void scoreCurrent();
     void selectBest();
 
+#if 1
+    void buildDependencies();
+#endif
+
     std::mt19937 rng;
     static const int FEATURES_FOR_MODEL = 6;
     int maxInliers = 0;
@@ -92,8 +111,16 @@ private:
     std::vector<std::vector<int>> currentInliers;
     std::vector<int> bestInliers;
 
+#if 1
+    std::vector<int> dependencyList;
+    std::vector<corecvs::Matrix33> fundamentalsCache;
+    std::vector<corecvs::EssentialDecomposition> essentialsCache;
+    std::vector<std::pair<WPP, WPP>> fundamentalsCacheId;
+#endif
     CameraFixture* query;
     MatchContainer matchesRansac, matchesAll;
+
+    double totalSample = 0.0, totalEstiamte = 0.0, totalCheck = 0.0;
 };
 
 }

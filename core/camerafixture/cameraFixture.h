@@ -177,6 +177,11 @@ public:
         return CameraModel::ComputeEssentialDecomposition(thisExtrinsics, otherExtrinsics);
     }
 
+    inline Ray3d rayFromPixel(FixtureCamera *cam, const Vector2dd &point) const
+    {
+        return location * cam->rayFromPixel(point);
+    }
+
     template<class VisitorType, class SceneType = FixtureScene>
     void accept(VisitorType &visitor)
     {
