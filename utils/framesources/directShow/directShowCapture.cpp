@@ -51,13 +51,13 @@ void DirectShowCaptureInterface::init(const string &devname, int h, int w, int f
 DirectShowCaptureInterface::DirectShowCaptureInterface(const string &devname, int h, int w, int fps, bool isRgb)
 {
     init(devname, h, w, fps, isRgb
-        , DirectShowCameraDescriptor::UNCOMPRESSED_YUV);
+        , DirectShowCameraDescriptor::UNCOMPRESSED_RGB);
 }
 
 DirectShowCaptureInterface::DirectShowCaptureInterface(const string &devname, ImageCaptureInterface::CameraFormat inFormat, bool isRgb)
 {
     init(devname, inFormat.height, inFormat.width, inFormat.fps, isRgb
-        , DirectShowCameraDescriptor::UNCOMPRESSED_YUV);
+        , DirectShowCameraDescriptor::UNCOMPRESSED_RGB);
 }
 
 DirectShowCaptureInterface::DirectShowCaptureInterface(const string &devname, bool isRgb)
