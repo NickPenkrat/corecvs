@@ -44,7 +44,7 @@ with_blas {
     CORE_SUBMODULES += reconstruction
 }
 else {
-    !build_pass: message (there's no activated BLAS! The module core/reconstruction is disabled)
+    !build_pass: message (There is no activated BLAS! The module core/reconstruction is disabled)
 }
 
 
