@@ -52,7 +52,7 @@ bool BitcodeBoardDetector::operator ()()
     Matrix33 transform = homography.getBestHomographyLSE();
 
 
-    /* Code Translation */    
+    /* Code Translation */
     Matrix33 toCenter = Matrix33::ShiftProj(Vector2dd (
                             parameters.bitcodeParams.boardWidth () - 2,
                             parameters.bitcodeParams.boardHeight() - 2) / 2.0);
@@ -110,8 +110,6 @@ bool BitcodeBoardDetector::operator ()()
 
         if (debug != NULL)
         {
-
-
             for (int i = 0; i < codeHeight; i++)
             {
                 for (int j = 0; j < codeWidth; j++)
@@ -132,9 +130,32 @@ bool BitcodeBoardDetector::operator ()()
         }
     }
 
-
-
     if (bestMarker != -1) {
+        /** Debug draw **/
+
+        Vector2dd corners[4] = {
+            Vector2dd(          0.0,            0.0),
+            Vector2dd(codeWidth + 1,            0.0),
+            Vector2dd(codeWidth + 1, codeHeight + 1),
+            Vector2dd(          0.0, codeHeight + 1)
+        };
+
+        Vector2dd projected[4];
+
+        for (int i = 0; i < CORE_COUNT_OF(corners); i++)
+        {
+            Vector2dd pos = toCenter * corners[i];
+            pos = cellToMM * pos;
+            projected[i] = transform * pos;
+        }
+
+        for (int i = 0; i < CORE_COUNT_OF(corners); i++)
+        {
+            Vector2dd s = projected[i];
+            Vector2dd e = projected[(i + 1) % CORE_COUNT_OF(corners)];
+            debug->drawLine(s.x(), s.y(), e.x(), e.y(), RGBColor::Red());
+        }
+
         result = true;
         bits = marker[bestMarker].bits;
 

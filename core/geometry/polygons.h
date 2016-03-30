@@ -31,6 +31,8 @@ public:
     PointType p2;
     PointType p3;
 
+    GenericTriangle() {}
+
     GenericTriangle(const PointType p1, const PointType p2, const PointType p3) :
         p1(p1),
         p2(p2),

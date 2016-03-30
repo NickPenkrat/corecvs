@@ -76,37 +76,59 @@ TEST(Draw, testRectangles)
 
         buffer->drawRectangle( pos,  pos, i, i, RGBColor::Red()  , 0);
 
-        buffer->drawRectangle(50 + pos,  pos, i, i, RGBColor::Green(), 1);
-        buffer->drawRectangle( pos, 50 + pos, i, i, RGBColor::Blue() , 2);
+        buffer->drawRectangle(50 + pos,      pos, i, i, RGBColor::Green(), 1);
+        buffer->drawRectangle(     pos, 50 + pos, i, i, RGBColor::Blue() , 2);
     }
 
     BMPLoader().save("rects.bmp", buffer);
     delete_safe(buffer);
 }
 
-/*
+
 class TriangleSpanIterator
 {
 public:
+    Triangle2dd sortedt;
     TrapezoidSpanIterator part;
+
+
     TriangleSpanIterator(const Triangle2dd &triangle)
     {
+        sortedt = triangle;
+        if (sortedt.p1.y() > sortedt.p2.y()) swap(sorted.p1, sorted.p2);
+        if (sortedt.p2.y() > sortedt.p3.y()) swap(sorted.p2, sorted.p3);
+        if (sortedt.p1.y() > sortedt.p2.y()) swap(sorted.p1, sorted.p2);
+
+        part = TrapezoidSpanIterator
+
+
 
     }
 
     bool step()
     {
+        if (!part.step())
+        {
+
+            return false;
+        }
+        else
+        {
+            return true;
+        }
     }
 
     void getSpan(int &y, int &x1, int &x2)
     {
+        part.getSpan(y, x1, x2);
     }
 
     LineSpanInt getSpan()
     {
+        return part.getSpan();
     }
 };
-*/
+
 
 TEST(Draw, testSpanDraw)
 {
