@@ -5,9 +5,8 @@
 #include "stlLoader.h"
 
 namespace corecvs {
-using namespace std;
 
-bool MeshLoader::endsWith(const string &fileName, const char *extention)
+bool MeshLoader::endsWith(const std::string &fileName, const char *extention)
 {
     size_t extLen = strlen(extention);
     if (fileName.compare(fileName.length() - extLen, extLen, extention) == 0)
@@ -16,17 +15,15 @@ bool MeshLoader::endsWith(const string &fileName, const char *extention)
 }
 
 MeshLoader::MeshLoader()
-{
-
-}
+{}
 
 static const char *PLY_RES = ".ply";
 static const char *STL_RES = ".stl";
 
-bool MeshLoader::load(Mesh3D *mesh, const string &fileName)
+bool MeshLoader::load(Mesh3D *mesh, const std::string &fileName)
 {
-    ifstream file;
-    file.open(fileName, ios::in);
+    std::ifstream file;
+    file.open(fileName, std::ios::in);
     if (file.fail())
     {
         SYNC_PRINT(("MeshLoader::load(): Can't open mesh file <%s>/n", fileName.c_str()));
@@ -61,10 +58,10 @@ bool MeshLoader::load(Mesh3D *mesh, const string &fileName)
     return true;
 }
 
-bool MeshLoader::save(Mesh3D *mesh, const string &fileName)
+bool MeshLoader::save(Mesh3D *mesh, const std::string &fileName)
 {
-    ofstream file;
-    file.open(fileName, ios::out);
+    std::ofstream file;
+    file.open(fileName, std::ios::out);
     if (file.fail())
     {
         SYNC_PRINT(("MeshLoader::save(): Can't open mesh file <%s> for writing/n", fileName.c_str()));
@@ -101,7 +98,7 @@ bool MeshLoader::save(Mesh3D *mesh, const string &fileName)
 
 std::string MeshLoader::extentionList()
 {
-    return string("*") + string(PLY_RES) + " *" + string(STL_RES);
+    return std::string("*") + std::string(PLY_RES) + " *" + std::string(STL_RES);
 }
 
 } //namespace corecvs

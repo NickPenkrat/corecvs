@@ -13,7 +13,6 @@
 
 #include "folderScanner.h"
 
-using namespace std;
 using namespace corecvs;
 
 TEST(Filesystem, test1)

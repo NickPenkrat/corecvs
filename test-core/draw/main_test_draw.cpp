@@ -17,8 +17,6 @@
 #include "bmpLoader.h"
 #include "abstractPainter.h"
 
-
-using namespace std;
 using namespace corecvs;
 
 TEST(Draw, testCircles)

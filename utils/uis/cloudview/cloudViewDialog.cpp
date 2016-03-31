@@ -15,11 +15,6 @@
 // FIXIT: GOOPEN
 //#include "../../../restricted/applications/vimouse/faceDetection/faceMesh.h"
 
-
-using namespace std;
-
-
-
 const double CloudViewDialog::ROTATE_STEP   = 0.05;
 const double CloudViewDialog::ZOOM_DIVISION = 1000.0;
 const double CloudViewDialog::SHIFT_STEP    = 10.0;
@@ -29,9 +24,8 @@ const double CloudViewDialog::START_Y = 0;
 const double CloudViewDialog::START_Z = 1 * Grid3DScene::GRID_SIZE * Grid3DScene::GRID_STEP;
 
 
-
-CloudViewDialog::CloudViewDialog(QWidget *parent) :
-      ViAreaWidget(parent)
+CloudViewDialog::CloudViewDialog(QWidget *parent)
+    : ViAreaWidget(parent)
     , mCameraZoom(1.0)
     , mIsTracking(false)
 {
@@ -644,10 +638,10 @@ void CloudViewDialog::repaintGLSlot()
 
     glDisable(GL_TEXTURE_2D);
 
-
     stats.endInterval("Redraw Time");
     mStatsCollector.addStatistics(stats);
-    ostringstream stream;
+
+    std::ostringstream stream;
     mStatsCollector.printAdvanced(stream);
     mStatisticsDialog.setText(QString::fromStdString(stream.str()));
 }
@@ -773,7 +767,8 @@ void CloudViewDialog::savePointsPCD()
 
     count++;
     qDebug("Dumping current scene to <%s>...", name);
-    fstream file(name, fstream::out);
+
+    std::fstream file(name, std::fstream::out);
     mScenes[MAIN_SCENE]->dumpPCD(file);
     file.close();
     qDebug("done\n");
@@ -785,16 +780,14 @@ void CloudViewDialog::savePointsPLY()
 
     qDebug("Dump slot called...\n");
     if (mScenes[MAIN_SCENE].isNull())
-    {
         return;
-    }
 
     char name[100];
     snprintf2buf(name, "exported%d.ply", count);
 
     count++;
     qDebug("Dumping current scene to <%s>...", name);
-    fstream file(name, fstream::out);
+    std::fstream file(name, std::fstream::out);
     mScenes[MAIN_SCENE]->dumpPLY(file);
     file.close();
     qDebug("done\n");

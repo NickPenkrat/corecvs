@@ -22,7 +22,6 @@
 #include "essentialEstimator.h"
 #include "calibrationCamera.h"
 
-using namespace std;
 using namespace corecvs;
 
 

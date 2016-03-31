@@ -17,9 +17,7 @@
 #include "fixtureScene.h"
 #include "calibrationHelpers.h"
 
-using namespace std;
 using namespace corecvs;
-
 
 /**
  *

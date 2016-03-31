@@ -20,9 +20,7 @@
 #include "matrix.h"
 #include "preciseTimer.h"
 
-using namespace std;
 using namespace corecvs;
-
 
 const static unsigned POLUTING_INPUTS = 20;
 const static unsigned LIMIT = 5;

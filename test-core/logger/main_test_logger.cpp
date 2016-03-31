@@ -19,9 +19,6 @@
 
 #include "log.h"
 
-
-using namespace std;
-
 TEST(Logger, testDummy)  // TODO: add log to file and then check its content!
 {
  //   L_ERROR("Test with place");
@@ -31,7 +28,7 @@ TEST(Logger, testDummy)  // TODO: add log to file and then check its content!
     Log logger;
     Log::MessageScoped(&logger, Log::LEVEL_ERROR, "A", 0, "F");
 
-    cout << Log::formatted("Here we go %d\n", 1, 2, "three");
+    std::cout << Log::formatted("Here we go %d\n", 1, 2, "three");
 }
 
 class Foo {
@@ -40,14 +37,14 @@ public:
     int data;
 };
 
-inline ostream & operator<<(ostream &os, const Foo &o) {
+inline std::ostream & operator<<(std::ostream &os, const Foo &o) {
     os << "foo data=" << o.data;
     return os;
 }
 
 TEST(Logger, testObjectLog)
 {
-    ostringstream os;
+    std::ostringstream os;
     {
         //auto &prev = Log::mLogDrains[0];
         {
@@ -63,8 +60,8 @@ TEST(Logger, testObjectLog)
         Log::staticInit();
     }
 
-    string out(os.str());
-    string checkStr("test: foo1:foo data=123 foo2:foo data=456");
+    std::string out(os.str());
+    std::string checkStr("test: foo1:foo data=123 foo2:foo data=456");
 
     size_t pos = out.find(checkStr);
     //cout << "pos=" << pos << " len:" << checkStr.length() << " len:" << out.length() << endl;

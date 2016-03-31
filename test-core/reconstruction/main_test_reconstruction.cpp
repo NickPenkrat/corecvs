@@ -11,7 +11,6 @@
 
 #include <random>
 
-using namespace std;
 using namespace corecvs;
 
 const int DEFAULT_SEED = 777;
