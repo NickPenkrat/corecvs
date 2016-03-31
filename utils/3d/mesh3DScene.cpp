@@ -23,7 +23,6 @@ void Mesh3DScene::drawMyself(CloudViewDialog *dialog)
     //qDebug("Mesh3DScene::drawMyself() : called" );
     //qDebug("V: %d E: %d F: %d ", );
 
-
     bool withTexture = false;
     withTexture |= (mParameters.style() == Draw3dStyle::TEXTURED) && (dialog->mFancyTexture != GLuint(-1));
     bool withTexCoords = withTexture && !textureCoords.empty();
@@ -84,8 +83,6 @@ void Mesh3DScene::drawMyself(CloudViewDialog *dialog)
 */
             Vector3dd labelPos = glMatrix * centralPoint;
             glTranslated(labelPos[0] * width / 2.0, labelPos[1] * height / 2.0, 0.0);
-
-
 
 
             double size = mParameters.fontSize() / 25.0;
@@ -268,7 +265,7 @@ void Grid3DScene::prepareMesh(CloudViewDialog* /*dialog*/)
         return;
     }
 
-    glNewList(mGridId,GL_COMPILE);
+    glNewList(mGridId, GL_COMPILE);
 
     glPointSize(2);
     glBegin(GL_POINTS);
@@ -305,8 +302,8 @@ void Grid3DScene::drawMyself(CloudViewDialog* /*dialog*/ /*, const Draw3dParamet
 }
 
 
-void Plane3DScene::prepareMesh(CloudViewDialog* /*dialog*/) {
-
+void Plane3DScene::prepareMesh(CloudViewDialog* /*dialog*/)
+{
     //qDebug() << "Calling Plane3DScene::prepareMesh() for" << name;
 
     mPlaneListId = glGenLists(1);
@@ -378,9 +375,7 @@ void Plane3DScene::drawMyself(CloudViewDialog* /*dialog*/)
 }
 
 void CameraScene::prepareMesh(CloudViewDialog * /*dialog*/)
-{
-}
-
+{}
 
 void CameraScene::drawMyself(CloudViewDialog * /*dialog*/ )
 {
@@ -452,12 +447,9 @@ void CameraScene::drawMyself(CloudViewDialog * /*dialog*/ )
 
 }
 
-StereoCameraScene::StereoCameraScene(const RectificationResult &result) :
-    mStereoPair(result)
-{
-
-
-}
+StereoCameraScene::StereoCameraScene(const RectificationResult &result)
+    : mStereoPair(result)
+{}
 
 void StereoCameraScene::prepareMesh(CloudViewDialog *dialog)
 {
@@ -495,5 +487,3 @@ void StereoCameraScene::drawMyself(CloudViewDialog *dialog)
     painter.drawFormatVector(0, 0, RGBColor(20,20,200), 1, "Left");
     glPopMatrix();
 }
-
-
