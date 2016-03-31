@@ -19,7 +19,7 @@ ReconstructionFixtureScene::ReconstructionFixtureScene()
 void ReconstructionFixtureScene::printMatchStats()
 {
     std::vector<CameraFixture*> fix;
-    for (auto ptr: fixtures) fix.push_back(ptr);
+    for (auto ptr: fixtures()) fix.push_back(ptr);
 
     std::sort(fix.begin(), fix.end(), [](CameraFixture* a, CameraFixture* b) { return a->name < b->name; });
 
@@ -60,7 +60,7 @@ FixtureScene* ReconstructionFixtureScene::dumbify()
 {
     auto dumb = new FixtureScene();
     std::unordered_map<WPP, WPP> wppmap;
-    for (auto f: fixtures)
+    for (auto f: fixtures())
     {
         auto ff = dumb->createCameraFixture();
         ff->location = f->location;
@@ -76,7 +76,7 @@ FixtureScene* ReconstructionFixtureScene::dumbify()
             wppmap[WPP(f, c)] = WPP(ff, cc);
         }
     }
-    for (auto p: points)
+    for (auto p : featurePoints())
     {
         auto pp = dumb->createFeaturePoint();
         pp->reprojectedPosition = p->reprojectedPosition;
@@ -248,14 +248,14 @@ bool ReconstructionFixtureScene::validateMatches()
     {
         auto fixture = mv.first.u;
         auto camera  = mv.first.v;
-        CORE_ASSERT_TRUE_S(std::find(fixtures.begin(), fixtures.end(), fixture) != fixtures.end());
+        CORE_ASSERT_TRUE_S(std::find(fixtures().begin(), fixtures().end(), fixture) != fixtures().end());
 //        CORE_ASSERT_TRUE_S(std::find(cameras.begin(), cameras.end(), cameras) != cameras.end());
 
         for (auto& mvv: mv.second)
         {
             auto fixtureB = mvv.first.u;
             auto cameraB  = mvv.first.v;
-            CORE_ASSERT_TRUE_S(std::find(fixtures.begin(), fixtures.end(), fixtureB) != fixtures.end());
+            CORE_ASSERT_TRUE_S(std::find(fixtures().begin(), fixtures().end(), fixtureB) != fixtures().end());
   //          CORE_ASSERT_TRUE_S(std::find(cameras.begin(), cameras.end(), cameraB) != cameras.end());
             for (auto& t: mvv.second)
             {
@@ -308,12 +308,12 @@ bool ReconstructionFixtureScene::validateTracks()
     for (auto pt: trackedFeatures)
     {
         CORE_ASSERT_TRUE_S(pt);
-        CORE_ASSERT_TRUE_S(std::find(points.begin(), points.end(), pt) != points.end());
+        CORE_ASSERT_TRUE_S(std::find(featurePoints().begin(), featurePoints().end(), pt) != featurePoints().end());
         for (auto wpp: pt->observations__)
         {
             auto fixture = wpp.first.u;
             auto camera  = wpp.first.v;
-            CORE_ASSERT_TRUE_S(std::find(fixtures.begin(), fixtures.end(), fixture) != fixtures.end());
+            CORE_ASSERT_TRUE_S(std::find(fixtures().begin(), fixtures().end(), fixture) != fixtures().end());
             auto o       = wpp.second;
             CORE_ASSERT_TRUE_S(std::find(fixture->cameras.begin(), fixture->cameras.end(), camera) != fixture->cameras.end());
             CORE_ASSERT_TRUE_S(fixture == o.cameraFixture);
@@ -372,8 +372,8 @@ void ParallelTrackPainter::operator() (const corecvs::BlockedRange<int> &r) cons
     {
         for (int ii = r.begin(); ii < r.end(); ++ii)
         {
-            int i = ii % images.size(),
-                j = ii / images.size();
+            int i = ii % (int)images.size(),
+                j = ii / (int)images.size();
             if (i > j)
                 continue;
 
