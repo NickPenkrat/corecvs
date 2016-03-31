@@ -322,10 +322,11 @@ template<typename Type>
 class SimpleVectorField : public BaseField
 {
 public:
+    /* Ok... lets try it...*/
     typedef vector<Type> CPPType;
     typedef Type CPPBaseType;
 
-    const Type  defaultValue;
+    const CPPType defaultValue;
     unsigned    defaultSize;
     bool        hasAdditionalValues;
     Type        min;
@@ -335,7 +336,7 @@ public:
     SimpleVectorField (
             int _id,
             int _offset,
-            const Type _defaultValue,
+            const CPPType _defaultValue,
             int _defaultSize,
             const char *_name,
             const char *_decription   = NULL,
@@ -357,7 +358,29 @@ public:
     SimpleVectorField (
             int _id,
             int _offset,
-            Type _defaultValue,
+            const Type & /*_defaultValue*/,
+            int _defaultSize,
+            const char *_name,
+            const char *_decription   = NULL,
+            const char *_comment      = NULL,
+            bool _hasAdditionalValues = false,
+            Type _min = 0,
+            Type _max = 0,
+            Type _step = 0
+    ) :
+        BaseField(_id, BaseField::getType<vector<Type> >(), ReflectionNaming(_name, _decription, _comment) , _offset),
+        /*defaultValue(),*/
+        defaultSize(_defaultSize),
+        hasAdditionalValues(_hasAdditionalValues),
+        min (_min),
+        max (_max),
+        step(_step)
+    {}
+
+    SimpleVectorField (
+            int _id,
+            int _offset,
+            CPPType _defaultValue,
             int _defaultSize,
             const ReflectionNaming &_naming,
             bool _hasAdditionalValues = false,
@@ -374,8 +397,17 @@ public:
         step(_step)
     {}
 
-    SimpleVectorField (int _id, Type _defaultValue, int _defaultSize, const char *_name) :
-        BaseField(_id, BaseField::getType<vector<Type> >(), _name, NULL, NULL, BaseField::UNKNOWN_OFFSET),
+    SimpleVectorField (int _id, int _defaultSize, const char *_name) :
+        BaseField(_id, BaseField::getType<CPPType >(), _name, NULL, NULL, BaseField::UNKNOWN_OFFSET),
+        defaultSize (_defaultSize),
+        hasAdditionalValues(false),
+        min (0),
+        max (0),
+        step(0)
+    {}
+
+    SimpleVectorField (int _id, CPPType _defaultValue, int _defaultSize, const char *_name) :
+        BaseField(_id, BaseField::getType<CPPType >(), _name, NULL, NULL, BaseField::UNKNOWN_OFFSET),
         defaultValue (_defaultValue),
         defaultSize (_defaultSize),
         hasAdditionalValues(false),
@@ -383,6 +415,15 @@ public:
         max (0),
         step(0)
     {}
+
+    Type getDefaultElement(size_t index) const
+    {
+        if (index < defaultValue.size())
+            return defaultValue[index];
+        if (!defaultValue.empty())
+            return defaultValue.back();
+        return Type(0);
+    }
 
 #ifdef REFLECTION_WITH_VIRTUAL_SUPPORT
     /**

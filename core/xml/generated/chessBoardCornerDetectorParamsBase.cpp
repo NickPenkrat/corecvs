@@ -186,10 +186,49 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           20,
           "nmsLocality",
           "nmsLocality",
-          " // NMS locality threshold",
+          "Non Minimal Supresstion locality threshold",
           true,
          0,
          999999
+        )
+    );
+    double mPatternRadius_dv[] = {4,8,12};
+    fields().push_back(
+        new DoubleVectorField
+        (
+          ChessBoardCornerDetectorParamsBase::PATTERN_RADIUS_ID,
+          offsetof(ChessBoardCornerDetectorParamsBase, mPatternRadius),
+          vector<double>(mPatternRadius_dv, mPatternRadius_dv + 3),
+          3,
+          "Pattern Radius",
+          "Pattern Radius",
+          "Pattern Radius"
+        )
+    );
+    double mPatternStartAngleDeg_dv[] = {0,45};
+    fields().push_back(
+        new DoubleVectorField
+        (
+          ChessBoardCornerDetectorParamsBase::PATTERNSTARTANGLEDEG_ID,
+          offsetof(ChessBoardCornerDetectorParamsBase, mPatternStartAngleDeg),
+          vector<double>(mPatternStartAngleDeg_dv, mPatternStartAngleDeg_dv + 2),
+          2,
+          "patternStartAngleDeg",
+          "patternStartAngleDeg",
+          "patternStartAngleDeg"
+        )
+    );
+    double mCornerScores_dv[] = {4,8,12};
+    fields().push_back(
+        new DoubleVectorField
+        (
+          ChessBoardCornerDetectorParamsBase::CORNERSCORES_ID,
+          offsetof(ChessBoardCornerDetectorParamsBase, mCornerScores),
+          vector<double>(mCornerScores_dv, mCornerScores_dv + 3),
+          3,
+          "cornerScores",
+          "cornerScores",
+          "cornerScores"
         )
     );
    return 0;

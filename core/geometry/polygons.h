@@ -17,7 +17,6 @@
 #include "vector3d.h"
 #include "generated/axisAlignedBoxParameters.h"
 #include "line.h"
-#include "simpleRenderer.h"
 
 namespace corecvs {
 

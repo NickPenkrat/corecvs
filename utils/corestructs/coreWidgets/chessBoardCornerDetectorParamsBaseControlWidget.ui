@@ -240,7 +240,7 @@
     <item row="12" column="1">
      <widget class="QSpinBox" name="nmsLocalitySpinBox">
        <property name="toolTip">
-         <string> // NMS locality threshold</string>
+         <string>Non Minimal Supresstion locality threshold</string>
        </property>
        <property name="minimum">
         <number>0</number>
@@ -256,7 +256,67 @@
        </property>
      </widget>
     </item>
-   <item row="13" column="0">
+    <item row="13" column="0">
+     <widget class="QLabel" name="label_13">
+       <property name="text">
+         <string>Pattern Radius</string>
+       </property>
+     </widget>
+    </item>
+    <item row="13" column="1">
+     <widget class="DoubleVectorWidget" name="patternRadius">
+       <property name="toolTip">
+         <string>Pattern Radius</string>
+       </property>
+       <property name="minimum">
+        <double>0</double>
+       </property>
+       <property name="maximum">
+        <double>999999</double>
+       </property>
+     </widget>
+    </item>
+    <item row="14" column="0">
+     <widget class="QLabel" name="label_14">
+       <property name="text">
+         <string>patternStartAngleDeg</string>
+       </property>
+     </widget>
+    </item>
+    <item row="14" column="1">
+     <widget class="DoubleVectorWidget" name="patternStartAngleDeg">
+       <property name="toolTip">
+         <string>patternStartAngleDeg</string>
+       </property>
+       <property name="minimum">
+        <double>0</double>
+       </property>
+       <property name="maximum">
+        <double>999999</double>
+       </property>
+     </widget>
+    </item>
+    <item row="15" column="0">
+     <widget class="QLabel" name="label_15">
+       <property name="text">
+         <string>cornerScores</string>
+       </property>
+     </widget>
+    </item>
+    <item row="15" column="1">
+     <widget class="DoubleVectorWidget" name="cornerScores">
+       <property name="toolTip">
+         <string>cornerScores</string>
+       </property>
+       <property name="minimum">
+        <double>0</double>
+       </property>
+       <property name="maximum">
+        <double>999999</double>
+       </property>
+     </widget>
+    </item>
+   <item row="16" column="0">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -269,7 +329,7 @@
      </property>
     </spacer>
    </item>
-   <item row="13" column="2">
+   <item row="16" column="2">
     <spacer name="horizontalSpacer">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -365,10 +425,34 @@
    <receiver>ChessBoardCornerDetectorParamsBaseControlWidget</receiver>
    <slot>changeParameters()</slot>
   </connection>
+  <connection>
+   <sender>patternRadius</sender>
+   <signal>valueChanged()</signal>
+   <receiver>ChessBoardCornerDetectorParamsBaseControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>patternStartAngleDeg</sender>
+   <signal>valueChanged()</signal>
+   <receiver>ChessBoardCornerDetectorParamsBaseControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>cornerScores</sender>
+   <signal>valueChanged()</signal>
+   <receiver>ChessBoardCornerDetectorParamsBaseControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
  </connections>
  <slots>
   <slot>changeParameters()</slot>
  </slots>
  <customwidgets>
+  <customwidget>
+   <class>DoubleVectorWidget</class>
+   <extends>QWidget</extends>
+   <header>vectorWidget.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
 </ui>

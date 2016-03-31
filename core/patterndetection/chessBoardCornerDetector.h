@@ -108,21 +108,21 @@ class ChessBoardCornerDetectorParams : public ChessBoardCornerDetectorParamsBase
 {
 public:
     // Radius for multi-scale pattern detection
-    vector<double> patternRadius;
+    // vector<double> patternRadius;
     // Radius for corner-scoring
     vector<double> cornerScores;
     // Angle for rotation-variant detection
-    vector<double> patternStartAngle;
+    //vector<double> patternStartAngle;
 
     ChessBoardCornerDetectorParams(const ChessBoardCornerDetectorParamsBase &base = ChessBoardCornerDetectorParamsBase()) :
         ChessBoardCornerDetectorParamsBase(base)
     {
-        patternStartAngle.push_back(0.0);
-        patternStartAngle.push_back(degToRad(45));
+/*        patternStartAngle.push_back(0.0);
+        patternStartAngle.push_back(degToRad(45));*/
 
-        patternRadius.push_back(4.0);
-        patternRadius.push_back(8.0);
-        patternRadius.push_back(12.0);
+/*        mPatternRadius.push_back(4.0);
+        mPatternRadius.push_back(8.0);
+        mPatternRadius.push_back(12.0);*/
 
         cornerScores.push_back(4.0);
         cornerScores.push_back(8.0);
@@ -147,16 +147,32 @@ public:
         return degToRad(sectorSizeDeg());
     }
 
+    double patternStartAngle(int index)
+    {
+        return degToRad(mPatternRadius[index]);
+    }
+
+    vector<double> patternStartAngle()
+    {
+        vector<double> toReturn;
+
+        for (size_t i = 0; i < mPatternRadius.size(); i++)
+        {
+            toReturn.push_back(degToRad(mPatternRadius[i]));
+        }
+        return toReturn;
+    }
+
     template<typename VisitorType>
     void accept(VisitorType &visitor)
     {
         ChessBoardCornerDetectorParamsBase::accept(visitor);
-        corecvs::DoubleVectorField dvf(0, 0, 0, "patternStartAngle");
-        visitor.visit(patternStartAngle, &dvf);
-        corecvs::DoubleVectorField dvf2(0, 0, 0, "patternRadius");
-        visitor.visit(patternRadius, &dvf2);
-        corecvs::DoubleVectorField dvf3(0, 0, 0, "cornerScores");
-        visitor.visit(cornerScores, &dvf3);
+//        corecvs::DoubleVectorField dvf(0, 0, "patternStartAngle");
+//        visitor.visit(patternStartAngle, &dvf);
+//        corecvs::DoubleVectorField dvf2(0, 0, 0, "patternRadius");
+//        visitor.visit(patternRadius, &dvf2);
+//        corecvs::DoubleVectorField dvf3(0, 0, "cornerScores");
+//        visitor.visit(cornerScores, &dvf3);
 
 /*        visitor.visit(patternStartAngle, "patternStartAngle");
         visitor.visit(patternRadius    , "patternRadius");

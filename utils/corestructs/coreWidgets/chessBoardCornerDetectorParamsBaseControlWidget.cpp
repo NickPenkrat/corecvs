@@ -33,6 +33,9 @@ ChessBoardCornerDetectorParamsBaseControlWidget::ChessBoardCornerDetectorParamsB
     QObject::connect(mUi->nRoundsSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->meanshiftBandwidthSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->nmsLocalitySpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->patternRadius, SIGNAL(valueChanged()), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->patternStartAngleDeg, SIGNAL(valueChanged()), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->cornerScores, SIGNAL(valueChanged()), this, SIGNAL(paramsChanged()));
 }
 
 ChessBoardCornerDetectorParamsBaseControlWidget::~ChessBoardCornerDetectorParamsBaseControlWidget()
@@ -73,6 +76,9 @@ void ChessBoardCornerDetectorParamsBaseControlWidget::getParameters(ChessBoardCo
     params.setNRounds          (mUi->nRoundsSpinBox->value());
     params.setMeanshiftBandwidth(mUi->meanshiftBandwidthSpinBox->value());
     params.setNmsLocality      (mUi->nmsLocalitySpinBox->value());
+    params.setPatternRadius    (mUi->patternRadius->value());
+    params.setPatternStartAngleDeg(mUi->patternStartAngleDeg->value());
+    params.setCornerScores     (mUi->cornerScores->value());
 
 }
 
@@ -98,6 +104,9 @@ ChessBoardCornerDetectorParamsBase *ChessBoardCornerDetectorParamsBaseControlWid
         , mUi->nRoundsSpinBox->value()
         , mUi->meanshiftBandwidthSpinBox->value()
         , mUi->nmsLocalitySpinBox->value()
+        , mUi->patternRadius->value()
+        , mUi->patternStartAngleDeg->value()
+        , mUi->cornerScores->value()
     );
     return result;
 }
@@ -119,6 +128,9 @@ void ChessBoardCornerDetectorParamsBaseControlWidget::setParameters(const ChessB
     mUi->nRoundsSpinBox->setValue(input.nRounds());
     mUi->meanshiftBandwidthSpinBox->setValue(input.meanshiftBandwidth());
     mUi->nmsLocalitySpinBox->setValue(input.nmsLocality());
+    mUi->patternRadius->setValue(input.patternRadius());
+    mUi->patternStartAngleDeg->setValue(input.patternStartAngleDeg());
+    mUi->cornerScores->setValue(input.cornerScores());
     blockSignals(wasBlocked);
     emit paramsChanged();
 }

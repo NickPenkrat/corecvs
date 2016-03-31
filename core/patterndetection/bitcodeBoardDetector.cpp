@@ -28,8 +28,18 @@ BitcodeBoardDetectorParameters BitcodeBoardDetector::getParameters()
     return parameters;
 }
 
-bool BitcodeBoardDetector::operator ()()
+void BitcodeBoardDetector::setStatistics(Statistics *stats)
 {
+    this->stats = stats;
+}
+
+Statistics *BitcodeBoardDetector::getStatistics()
+{
+    return stats;
+}
+
+bool BitcodeBoardDetector::operator ()()
+{    
     result = false;
     if (input == NULL || observations == NULL) {
         return result;
@@ -142,14 +152,14 @@ bool BitcodeBoardDetector::operator ()()
 
         Vector2dd projected[4];
 
-        for (int i = 0; i < CORE_COUNT_OF(corners); i++)
+        for (size_t i = 0; i < CORE_COUNT_OF(corners); i++)
         {
             Vector2dd pos = toCenter * corners[i];
             pos = cellToMM * pos;
             projected[i] = transform * pos;
         }
 
-        for (int i = 0; i < CORE_COUNT_OF(corners); i++)
+        for (size_t i = 0; i < CORE_COUNT_OF(corners); i++)
         {
             Vector2dd s = projected[i];
             Vector2dd e = projected[(i + 1) % CORE_COUNT_OF(corners)];

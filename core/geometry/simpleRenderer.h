@@ -40,10 +40,11 @@ public:
     TrapezoidSpanIterator(int y1, int y2, int x11, int x12, int x21, int x22) :
         y1(y1) , y2(y2), x11(x11), x12(x12), x21(x21), x22(x22)
     {
+        SYNC_PRINT(("TrapezoidSpanIterator::TrapezoidSpanIterator(%d %d %d %d %d %d): called\n", y1, y2, x11, x12, x21, x22 ));
         currentY = y1;
         double dy = y2 - y1;
-        dx1 = (x12 - x11) / dy;
-        dx2 = (x22 - x21) / dy;
+        dx1 = (x21 - x11) / dy;
+        dx2 = (x22 - x12) / dy;
         x1 = x11 - dx1;
         x2 = x12 - dx2;
     }
@@ -71,7 +72,58 @@ public:
     }
 };
 
+class TriangleSpanIterator
+{
+public:
+    Triangle2dd sortedt;
+    TrapezoidSpanIterator part;
 
+
+    TriangleSpanIterator(const Triangle2dd &triangle)
+    {
+        sortedt = triangle;
+        if (sortedt.p1.y() > sortedt.p2.y()) std::swap(sortedt.p1, sortedt.p2);
+        if (sortedt.p2.y() > sortedt.p3.y()) std::swap(sortedt.p2, sortedt.p3);
+        if (sortedt.p1.y() > sortedt.p2.y()) std::swap(sortedt.p1, sortedt.p2);
+
+/*        cout << "Sorted by Y" << endl;
+        cout << "  " << sortedt.p1 << endl;
+        cout << "  " << sortedt.p2 << endl;
+        cout << "  " << sortedt.p3 << endl;*/
+
+        double longslope = (sortedt.p3.x() - sortedt.p1.x()) / (sortedt.p3.y() - sortedt.p1.y());
+        double centerx1 = sortedt.p1.x() + longslope * (sortedt.p2.y() - sortedt.p1.y());
+        double centerx2 = sortedt.p2.x();
+
+        if (centerx1 > centerx2)
+            std::swap(centerx1, centerx2);
+        part = TrapezoidSpanIterator(sortedt.p1.y(), sortedt.p2.y(), sortedt.p1.x(), sortedt.p1.x(), centerx1, centerx2);
+    }
+
+    bool step()
+    {
+        if (!part.step())
+        {
+//            SYNC_PRINT(("Changing iterator: %d %d\n", part.currentY >= sortedt.p3.y()));
+            if (part.currentY >= sortedt.p3.y()) {
+                return false;
+            }
+            part = TrapezoidSpanIterator(sortedt.p2.y(), sortedt.p3.y(), part.x21, part.x22, sortedt.p3.x(), sortedt.p3.x());
+            return part.step();
+        }
+        return true;
+    }
+
+    void getSpan(int &y, int &x1, int &x2)
+    {
+        part.getSpan(y, x1, x2);
+    }
+
+    LineSpanInt getSpan()
+    {
+        return part.getSpan();
+    }
+};
 
 class SimpleRenderer
 {

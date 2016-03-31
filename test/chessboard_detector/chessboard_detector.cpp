@@ -124,7 +124,7 @@ int main(int argc, char **argv)
     cbap.accept(printer);
     cout << "ChessBoardCornerDetectorParams:"  << endl;
     cbparams.accept(printer);
-    cout << std::fflush;
+    cout << std::flush;
 
     Statistics stats;
     detector.setStatistics(&stats);

@@ -54,6 +54,8 @@ public:
     void setParameters(const BitcodeBoardDetectorParameters &params);
     BitcodeBoardDetectorParameters getParameters(void);
 
+    void setStatistics(Statistics *stats);
+    Statistics *getStatistics();
 
     bool operator ()();
 

@@ -54,7 +54,21 @@
 
 
      <field type="double" name="meanshiftBandwidth"        defaultValue="1.0"   comment="Meanshift smoothing stdev" />
-     <field type="int"    name="nmsLocality"               defaultValue="20"    comment=" // NMS locality threshold" min="0"   max="999999"  />
+     <field type="int"    name="nmsLocality"               defaultValue="20"    comment="Non Minimal Supresstion locality threshold" min="0"   max="999999"  />
+     <field type="double" name="Pattern Radius"            size="3" min="0" max="999999" defaultValue="0">
+          <def0>4</def0>
+          <def1>8</def1>
+          <def2>12</def2>
+     </field>
+     <field type="double" name="patternStartAngleDeg"      size="2" min="0" max="999999" defaultValue="0">
+         <def0>0</def0>
+         <def1>45</def1>
+     </field>
+     <field type="double" name="cornerScores"              size="3" min="0" max="999999" defaultValue="0">
+         <def0>4</def0>
+         <def1>8</def1>
+         <def2>12</def2>
+     </field>
 
   </class>
 

@@ -85,67 +85,76 @@ TEST(Draw, testRectangles)
 }
 
 
-class TriangleSpanIterator
-{
-public:
-    Triangle2dd sortedt;
-    TrapezoidSpanIterator part;
-
-
-    TriangleSpanIterator(const Triangle2dd &triangle)
-    {
-        sortedt = triangle;
-        if (sortedt.p1.y() > sortedt.p2.y()) swap(sorted.p1, sorted.p2);
-        if (sortedt.p2.y() > sortedt.p3.y()) swap(sorted.p2, sorted.p3);
-        if (sortedt.p1.y() > sortedt.p2.y()) swap(sorted.p1, sorted.p2);
-
-        part = TrapezoidSpanIterator
-
-
-
-    }
-
-    bool step()
-    {
-        if (!part.step())
-        {
-
-            return false;
-        }
-        else
-        {
-            return true;
-        }
-    }
-
-    void getSpan(int &y, int &x1, int &x2)
-    {
-        part.getSpan(y, x1, x2);
-    }
-
-    LineSpanInt getSpan()
-    {
-        return part.getSpan();
-    }
-};
 
 
 TEST(Draw, testSpanDraw)
 {
-    int h = 100;
-    int w = 100;
+    int h = 200;
+    int w = 200;
 
     RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
-    TrapezoidSpanIterator it(10, 40, 10, 30, 40, 90);
-    while (it.step())
     {
-        LineSpanInt span = it.getSpan();
-        buffer->drawHLine(span.x1, span.y, span.x2, RGBColor::Red());
+        TrapezoidSpanIterator it(10, 40, 10, 30, 40, 90);
+        while (it.step())
+        {
+            LineSpanInt span = it.getSpan();
+            buffer->drawHLine(span.x1, span.y, span.x2, RGBColor::Red());
+        }
+    }
+
+    {
+        TrapezoidSpanIterator it(110, 170, 10, 30, 5, 35);
+        while (it.step())
+        {
+            LineSpanInt span = it.getSpan();
+            buffer->drawHLine(span.x1, span.y, span.x2, RGBColor::Green());
+        }
+    }
+
+    {
+        Triangle2dd t(Vector2dd(120, 30), Vector2dd(170, 80), Vector2dd(140, 10));
+        TriangleSpanIterator it(t);
+        while (it.step())
+        {
+            LineSpanInt span = it.getSpan();
+            buffer->drawHLine(span.x1, span.y, span.x2, RGBColor::Pink());
+        }
     }
 
     BMPLoader().save("spandraw.bmp", buffer);
-
     delete_safe(buffer);
+}
+
+TEST(Draw, testSpanDrawTriangle)
+{
+    int h = 200;
+    int w = 200;
+
+    RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
+
+    Triangle2dd t[] = {
+        Triangle2dd(Vector2dd(10, 10), Vector2dd( 70, 10), Vector2dd(10, 90)),
+        Triangle2dd(Vector2dd(70, 90), Vector2dd( 70, 10), Vector2dd(10, 90)),
+
+        Triangle2dd(Vector2dd(110, 10), Vector2dd( 170, 10), Vector2dd(110, 90)),
+        Triangle2dd(Vector2dd(171, 90), Vector2dd( 171, 10), Vector2dd(111, 90))
+    };
+
+    RGBColor c[] = {RGBColor::Pink(), RGBColor::Cyan(), RGBColor::Pink(), RGBColor::Cyan()};
+
+    for (size_t i = 0; i < CORE_COUNT_OF(t); i++) {
+
+        TriangleSpanIterator it(t[i]);
+        while (it.step())
+        {
+            LineSpanInt span = it.getSpan();
+            buffer->drawHLine(span.x1, span.y, span.x2, c[i]);
+        }
+    }
+
+    BMPLoader().save("triangledraw.bmp", buffer);
+    delete_safe(buffer);
+
 }
 
 TEST(Draw, testFloodFill)

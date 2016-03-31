@@ -76,8 +76,10 @@ template<typename Type>
 class SimpleVectorFieldGen : public SimpleVectorField<Type>
 {
 public:
+    typedef typename SimpleVectorField<Type>::CPPType CPPType;
+
     SimpleVectorFieldGen (
-            const Type _defaultValue,
+            const CPPType _defaultValue,
             int _defaultSize,
             const ReflectionNaming &_nameing,
             bool _hasAdditionalValues = false,
