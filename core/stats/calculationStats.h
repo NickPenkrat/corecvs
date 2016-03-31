@@ -215,10 +215,10 @@ public:
     }
 
 
-    virtual void addStatistics(Statistics &stats)
+    virtual void addStatistics(const Statistics &stats)
     {
         /* New style */
-        map<string, SingleStat>::iterator it;
+        map<string, SingleStat>::const_iterator it;
         for (it = stats.values.begin(); it != stats.values.end(); ++it )
         {
             string name = it->first;
