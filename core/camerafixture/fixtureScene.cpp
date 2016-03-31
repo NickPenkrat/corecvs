@@ -232,6 +232,7 @@ void FixtureScene::clear()
     {
         delete_safe(mOwnedObjects[i]);
     }
+    mOwnedObjects.clear();
 
     fixtures.clear();
     orphanCameras.clear();
