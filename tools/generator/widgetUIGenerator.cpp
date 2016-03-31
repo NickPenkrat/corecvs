@@ -143,7 +143,7 @@ void WidgetUiGenerator::generateWidgetUi()
     /* Merge two if blocks below */
     if (type == BaseField::TYPE_INT)
     {
-        const IntField *ifield = static_cast<const IntField *>(field);
+        const IntFieldGen *ifield = static_cast<const IntFieldGen *>(field);
         if (ifield->hasAdditionalValues)
             result +=
     "       <property name=\"minimum\">\n"
@@ -157,6 +157,18 @@ void WidgetUiGenerator::generateWidgetUi()
     "       </property>\n"
     "       <property name=\"value\">\n"
     "        <number>" + QString::number(ifield->defaultValue) + "</number>\n"
+    "       </property>\n";
+
+        if (!ifield->prefix.isEmpty())
+            result +=
+    "       <property name=\"prefix\">\n"
+    "        <string>" + ifield->prefix + "</string>\n"
+    "       </property>\n";
+
+        if (!ifield->suffix.isEmpty())
+            result +=
+    "       <property name=\"suffix\">\n"
+    "        <string>" + ifield->suffix + "</string>\n"
     "       </property>\n";
     }
 

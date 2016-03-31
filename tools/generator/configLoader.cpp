@@ -147,8 +147,13 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
             {
                 if (type == "int")
                 {
+                    QString prefix = fieldElement.attribute("prefix");
+                    QString suffix = fieldElement.attribute("suffix");
+
                     field = new IntFieldGen(
                               defaultValue.toInt()
+                            , prefix
+                            , suffix
                             , fieldNameing
                             , hasAdditionalParameters
                             , minValue.toInt()

@@ -61,6 +61,9 @@
        <property name="value">
         <number>256</number>
        </property>
+       <property name="suffix">
+        <string>px</string>
+       </property>
      </widget>
     </item>
     <item row="2" column="0">
@@ -144,6 +147,9 @@
        <property name="toolTip">
          <string>size of the chessboard in chesses</string>
        </property>
+       <property name="suffix">
+        <string>cells</string>
+       </property>
      </widget>
     </item>
     <item row="6" column="0">
@@ -157,6 +163,9 @@
      <widget class="QSpinBox" name="boardWidthSpinBox">
        <property name="toolTip">
          <string>size of the chessboard in chesses</string>
+       </property>
+       <property name="suffix">
+        <string>cells</string>
        </property>
      </widget>
     </item>
@@ -172,6 +181,9 @@
        <property name="toolTip">
          <string>width and height of the bitcode in chesses</string>
        </property>
+       <property name="suffix">
+        <string>cells</string>
+       </property>
      </widget>
     </item>
     <item row="8" column="0">
@@ -185,6 +197,9 @@
      <widget class="QSpinBox" name="codeHeightSpinBox">
        <property name="toolTip">
          <string>width and height of the bitcode in chesses</string>
+       </property>
+       <property name="suffix">
+        <string>cells</string>
        </property>
      </widget>
     </item>

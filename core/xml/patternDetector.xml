@@ -33,6 +33,7 @@
 
 
   <class name="Chess Board Corner Detector Params Base">
+     <field type="bool"   name="produceDebug"        defaultValue="false"/>
      <field type="double" name="gradientCrossWidth"  defaultValue="3.0" comment="Width of cross for corner gradient-score" />
 
      <!-- Insert vectors here -->

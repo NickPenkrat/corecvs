@@ -174,7 +174,10 @@ public:
             double zh, double zw,
             double steps,
             FunctionArgs &f);
-
+    /**
+     * Draw Double Buffer
+     **/
+    void drawDoubleBuffer(const AbstractBuffer<double> &in);
 
     void fillWithYUYV (uint8_t *yuyv);
     //void fillWith420P (uint8_t *y, uint8_t *u, uint8_t *v, int ly, int lu, int lv);

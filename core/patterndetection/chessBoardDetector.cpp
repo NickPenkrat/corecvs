@@ -1,6 +1,9 @@
 #include "chessBoardDetector.h"
+#include "abstractPainter.h"
 #include "homographyReconstructor.h"
 #include <fstream>
+
+
 
 ChessboardDetector::ChessboardDetector (
         CheckerboardDetectionParameters params,
@@ -78,6 +81,44 @@ bool ChessboardDetector::detectPattern(corecvs::RGB24Buffer &buffer)
         return b.yd() / 255.0;
     });
     return detectPattern(grayscale);
+}
+
+bool ChessboardDetector::detectPatternCandidates(DpImage &buffer, std::vector<std::vector<std::vector<corecvs::Vector2dd>>> &boards)
+{
+    if (stats != NULL) stats->startInterval();
+
+    corners.clear();
+    bestPattern = RectangularGridPattern();
+
+    std::string prefix;
+    if (stats != NULL) {
+        prefix = stats->prefix;
+        stats->prefix = "Corners -> " + stats->prefix;
+        detector.setStatistics(stats);
+    }
+
+    detector.detectCorners(buffer, corners);
+
+    if (stats != NULL) stats->prefix = prefix;
+    if (stats != NULL) stats->resetInterval("Corners");
+
+    if (stats != NULL) {
+        prefix = stats->prefix;
+        stats->prefix = "Assembler -> " + stats->prefix;
+        assembler.setStatistics(stats);
+    }
+
+    BoardAlignerParams activeAlignerParams = aligner->getAlignerParams();
+    sharedGenerator->flushCache();
+    BoardAligner aligner(activeAlignerParams, sharedGenerator);
+    assembler.assembleBoards(corners, boards, &aligner, &buffer);
+    if (stats != NULL) stats->prefix = prefix;
+
+    if (!boards.size())
+        return false;
+
+    if (stats != NULL) stats->resetInterval("Assemble");
+    return true;
 }
 
 bool ChessboardDetector::detectPattern(DpImage &buffer)
@@ -311,6 +352,114 @@ void ChessboardDetector::setStatistics(Statistics *stats)
 Statistics *ChessboardDetector::getStatistics()
 {
     return stats;
+}
+
+size_t ChessboardDetector::detectPatterns(corecvs::RGB24Buffer &buffer, std::vector<ObservationList> &patterns)
+{
+    patterns.clear();
+    DpImage grayscale(buffer.h, buffer.w);
+    grayscale.binaryOperationInPlace(buffer, [](const double & /*a*/, const corecvs::RGBColor &b) {
+        return b.yd() / 255.0;
+    });
+    if(detectPatterns(grayscale))
+        getPatterns(patterns);
+    return patterns.size();
+}
+
+size_t ChessboardDetector::detectPatterns(corecvs::DpImage &buffer)
+{
+    BoardAlignerParams activeAlignerParams = aligner->getAlignerParams();
+
+    ChessBoardDetectorMode mode =  getMode(activeAlignerParams);
+    std::vector<std::vector<std::vector<corecvs::Vector2dd>>> boards;
+    auto detected = detectPatternCandidates(buffer, boards);
+    std::cout << (detected ? "[Success]" : "[Fail]")<< " Detected " << corners.size() << " corners; assembled " << boards.size() << " boards." << std::endl;
+    if(!detected)
+        return false;
+
+    bool checkW = !!(mode & ChessBoardDetectorMode::FIT_WIDTH);
+    bool checkH = !!(mode & ChessBoardDetectorMode::FIT_HEIGHT);
+
+    allPatterns.clear();
+
+    for (auto& b : boards)
+    {
+        bool found = false;
+        int bw = (int)b[0].size();
+        int bh = (int)b.size();
+        std::vector<std::vector<corecvs::Vector2dd>> best;
+
+        bool fitw = (bw == aligner->idealWidth);
+        bool fith = (bh == aligner->idealHeight);
+
+
+        if ((!checkW || fitw) && (!checkH || fith))
+        {
+            best = b;
+            found = true;
+        }
+        fitw = (bw == aligner->idealHeight);
+        fith = (bh == aligner->idealWidth);
+        if ((!checkW || fitw) && (!checkH || fith))
+        {
+            best = b;
+            found = true;
+            decltype(best) best_t;
+            int bw = (int)best[0].size(), bh = (int)best.size();
+            best_t.resize(bw);
+            for (auto& r : best_t)
+                r.resize(bh);
+
+            for (int i = 0; i < bh; ++i)
+            {
+                for (int j = 0; j < bw; ++j)
+                {
+                    best_t[j][i] = best[i][j];
+                }
+            }
+            best = best_t;
+        }
+        if (!found)
+            continue;
+
+        aligner->bestBoard = best;
+        bool aligned = aligner->align(buffer);
+        std::cout << (aligned ? "ALIGN OK" : "ALIGN FAILED") << std::endl;
+        if (aligned)
+        {
+            result = aligner->observationList;
+            for (auto& p : result)
+            {
+                p.point.x() *= cellSizeHor();
+                p.point.y() *= cellSizeVert();
+            }
+            std::cout << result.size() << " features" << std::endl;
+            std::cout << "found marker #" << result.patternIdentity << std::endl;
+
+            auto detectedPattern = result;
+            allPatterns.emplace_back(detectedPattern);
+        }
+    }
+    return allPatterns.size();
+}
+
+void ChessboardDetector::getPatterns(std::vector<corecvs::ObservationList>& patterns)
+{
+    patterns = allPatterns;
+}
+
+void ChessboardDetector::drawCorners(corecvs::RGB24Buffer & image)
+{
+    if (corners.size() > 0)
+    {
+        AbstractPainter<RGB24Buffer> p(&image);
+        for (size_t i = 0; i < corners.size(); i++)
+        {
+            p.drawCircle(corners[i].pos.x()    , corners[i].pos.y()    , 1, corecvs::RGBColor(0xffff00));
+            p.drawFormat(corners[i].pos.x() + 1, corners[i].pos.y() + 1,    corecvs::RGBColor(0xffff00), 2, "%d", i);
+        }
+    }
+
 }
 
 #if 0

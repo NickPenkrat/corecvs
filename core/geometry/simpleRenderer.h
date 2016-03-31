@@ -1,19 +1,17 @@
 #ifndef SIMPLERENDERER_H
 #define SIMPLERENDERER_H
 
+/**
+ *  \file  simpleRenderer.h
+ **/
+
 #include "mathUtils.h"
 #include "matrix44.h"
 #include "polygons.h"
+#include "abstractPainter.h"
 
 
 namespace corecvs {
-
-class LineSpanInt {
-public:
-    int y;
-    int x1;
-    int x2;
-};
 
 /**
  * trapezoid 2d iterator
@@ -125,13 +123,18 @@ public:
     }
 };
 
+class Mesh3D;
+class RGB24Buffer;
+
+
 class SimpleRenderer
 {
 public:
     SimpleRenderer();
-
-
     Matrix44 modelviewMatrix;
+
+    void render (Mesh3D *mesh, RGB24Buffer *buffer);
+
 
 };
 

@@ -39,6 +39,7 @@ class ChessBoardCornerDetectorParamsBase : public BaseReflection<ChessBoardCorne
 {
 public:
     enum FieldId {
+        PRODUCEDEBUG_ID,
         GRADIENTCROSSWIDTH_ID,
         SECTORSIZEDEG_ID,
         HISTOGRAMBINS_ID,
@@ -59,6 +60,12 @@ public:
     };
 
     /** Section with variables */
+
+    /** 
+     * \brief produceDebug 
+     * produceDebug 
+     */
+    bool mProduceDebug;
 
     /** 
      * \brief gradientCrossWidth 
@@ -164,6 +171,11 @@ public:
     {
         return (const unsigned char *)(this) + fields()[fieldId]->offset;
     }
+    bool produceDebug() const
+    {
+        return mProduceDebug;
+    }
+
     double gradientCrossWidth() const
     {
         return mGradientCrossWidth;
@@ -245,6 +257,11 @@ public:
     }
 
     /* Section with setters */
+    void setProduceDebug(bool produceDebug)
+    {
+        mProduceDebug = produceDebug;
+    }
+
     void setGradientCrossWidth(double gradientCrossWidth)
     {
         mGradientCrossWidth = gradientCrossWidth;
@@ -330,6 +347,7 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
+        visitor.visit(mProduceDebug,              static_cast<const BoolField *>    (fields()[PRODUCEDEBUG_ID]));
         visitor.visit(mGradientCrossWidth,        static_cast<const DoubleField *>  (fields()[GRADIENTCROSSWIDTH_ID]));
         visitor.visit(mSectorSizeDeg,             static_cast<const DoubleField *>  (fields()[SECTORSIZEDEG_ID]));
         visitor.visit(mHistogramBins,             static_cast<const IntField *>     (fields()[HISTOGRAMBINS_ID]));
@@ -355,7 +373,8 @@ template<class VisitorType>
     }
 
     ChessBoardCornerDetectorParamsBase(
-          double gradientCrossWidth
+          bool produceDebug
+        , double gradientCrossWidth
         , double sectorSizeDeg
         , int histogramBins
         , double minAngleDeg
@@ -373,6 +392,7 @@ template<class VisitorType>
         , vector<double> cornerScores
     )
     {
+        mProduceDebug = produceDebug;
         mGradientCrossWidth = gradientCrossWidth;
         mSectorSizeDeg = sectorSizeDeg;
         mHistogramBins = histogramBins;

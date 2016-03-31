@@ -144,17 +144,17 @@ bool BitcodeBoardDetector::operator ()()
         /** Debug draw **/
 
         Vector2dd corners[4] = {
-            Vector2dd(          0.0,            0.0),
-            Vector2dd(codeWidth + 1,            0.0),
-            Vector2dd(codeWidth + 1, codeHeight + 1),
-            Vector2dd(          0.0, codeHeight + 1)
+            Vector2dd(      0.0,        0.0),
+            Vector2dd(codeWidth,        0.0),
+            Vector2dd(codeWidth, codeHeight),
+            Vector2dd(      0.0, codeHeight)
         };
 
         Vector2dd projected[4];
 
         for (size_t i = 0; i < CORE_COUNT_OF(corners); i++)
         {
-            Vector2dd pos = toCenter * corners[i];
+            Vector2dd pos = orients[bestMarker] * corners[i];
             pos = cellToMM * pos;
             projected[i] = transform * pos;
         }

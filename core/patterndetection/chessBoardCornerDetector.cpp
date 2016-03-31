@@ -3,6 +3,7 @@
 #include <cmath>
 #include <algorithm>
 #include <set>
+#include <regex>
 
 #include "mathUtils.h"
 
@@ -565,6 +566,89 @@ corecvs::Statistics *ChessBoardCornerDetector::getStatistics()
     return stats;
 }
 
+/**
+ *   DpImage du, dv, w, phi, cost, img;
+ *   std::vector<CornerKernelSet> kernels;
+ **/
+vector<std::string> ChessBoardCornerDetector::debugBuffers()
+{
+    vector<std::string> result;
+    result.push_back("du");
+    result.push_back("dv");
+
+    result.push_back("w");
+
+    result.push_back("phi");
+    result.push_back("cost");
+    result.push_back("img");
+
+    for (size_t i = 0; i < kernels.size(); i++)
+    {
+        result.push_back(string("kernelA") +  std::to_string(i));
+        result.push_back(string("kernelB") +  std::to_string(i));
+        result.push_back(string("kernelC") +  std::to_string(i));
+        result.push_back(string("kernelD") +  std::to_string(i));
+    }
+    return result;
+}
+
+RGB24Buffer *ChessBoardCornerDetector::getDebugBuffer(std::string name)
+{
+    RGB24Buffer *result = NULL;
+    if (name == "du") {
+        result = new RGB24Buffer(du.h, du.w);
+        result->drawDoubleBuffer(du);
+    }
+    if (name == "dv") {
+        result = new RGB24Buffer(dv.h, dv.w);
+        result->drawDoubleBuffer(dv);
+    }
+    if (name == "w") {
+        result = new RGB24Buffer(w.h, w.w);
+        result->drawDoubleBuffer(w);
+    }
+    if (name == "phi") {
+        result = new RGB24Buffer(phi.h, phi.w);
+        result->drawDoubleBuffer(phi);
+    }
+    if (name == "cost") {
+        result = new RGB24Buffer(cost.h, cost.w);
+        result->drawDoubleBuffer(cost);
+    }
+    if (name == "img") {
+        result = new RGB24Buffer(img.h, img.w);
+        result->drawDoubleBuffer(img);
+    }
+
+    std::regex regexp("^kernel([A-D])([0-9]*)$");
+    std::smatch m;
+    bool res = std::regex_search(name, m, regexp);
+    if (res) {
+        SYNC_PRINT(("ChessBoardCornerDetector::getDebugBuffer(): Parsed to %s %s %s", m[0].str().c_str(), m[1].str().c_str(), m[2].str().c_str()));
+
+        size_t id = std::stoi(m[2]);
+        if (id < kernels.size()) {
+            if (m[1] == "A") {
+                result = new RGB24Buffer(kernels[id].A.h, kernels[id].A.w);
+                result->drawDoubleBuffer(kernels[id].A);
+            }
+            if (m[1] == "B") {
+                result = new RGB24Buffer(kernels[id].A.h, kernels[id].A.w);
+                result->drawDoubleBuffer(kernels[id].A);
+            }
+            if (m[1] == "C") {
+                result = new RGB24Buffer(kernels[id].A.h, kernels[id].A.w);
+                result->drawDoubleBuffer(kernels[id].A);
+            }
+            if (m[1] == "D") {
+                result = new RGB24Buffer(kernels[id].A.h, kernels[id].A.w);
+                result->drawDoubleBuffer(kernels[id].A);
+            }
+        }
+    }
+    return result;
+}
+
 bool ChessBoardCornerDetector::edgeOrientationFromGradient(int top, int bottom, int left, int right, corecvs::Vector2dd &v1, corecvs::Vector2dd &v2)
 {
     std::vector<double> histogram(histogramBins());
@@ -616,7 +700,7 @@ void ChessBoardCornerDetector::filterByOrientation()
     int idx = 0, N = (int)corners.size(), iw = w.w, ih = w.h;
     for (int i = 0; i < N; ++i)
     {
-        auto& c = corners[i];
+        OrientedCorner& c = corners[i];
 
         int top    = std::max(     0.0, c.pos[1] - neighborhood());
         int bottom = std::min(ih - 1.0, c.pos[1] + neighborhood());
@@ -634,7 +718,7 @@ void ChessBoardCornerDetector::filterByOrientation()
 void ChessBoardCornerDetector::adjustCornerOrientation()
 {
     int iw = du.w, ih = du.h;
-    for (auto& c: corners)
+    for (OrientedCorner& c: corners)
     {
         Matrix22 A1(0.0);
         Matrix22 A2(0.0);

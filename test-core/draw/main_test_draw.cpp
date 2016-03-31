@@ -17,6 +17,8 @@
 #include "bmpLoader.h"
 #include "abstractPainter.h"
 #include "simpleRenderer.h"
+#include "mesh3d.h"
+#include "calibrationCamera.h"
 
 
 using namespace std;
@@ -153,6 +155,28 @@ TEST(Draw, testSpanDrawTriangle)
     }
 
     BMPLoader().save("triangledraw.bmp", buffer);
+    delete_safe(buffer);
+
+}
+
+TEST(Draw, renderMesh)
+{
+    int h = 200;
+    int w = 200;
+    RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
+
+    SimpleRenderer renderer;
+    PinholeCameraIntrinsics cam(Vector2dd(w,h), 50);
+    renderer.modelviewMatrix = cam.getKMatrix();
+
+    Mesh3D mesh;
+    mesh.addIcoSphere(Vector3dd(0, 0, -200), 20, 4);
+    //mesh.addSphere(Vector3dd(0, 0, -100), 20, 20);
+
+    renderer.render(&mesh, buffer);
+
+
+    BMPLoader().save("meshdraw.bmp", buffer);
     delete_safe(buffer);
 
 }

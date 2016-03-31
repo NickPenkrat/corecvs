@@ -124,9 +124,9 @@ public:
         mPatternRadius.push_back(8.0);
         mPatternRadius.push_back(12.0);*/
 
-        cornerScores.push_back(4.0);
+/*        cornerScores.push_back(4.0);
         cornerScores.push_back(8.0);
-        cornerScores.push_back(12.0);
+        cornerScores.push_back(12.0);*/
     }
 
     void setMinAngle(double rad)
@@ -163,6 +163,7 @@ public:
         return toReturn;
     }
 
+#if 0
     template<typename VisitorType>
     void accept(VisitorType &visitor)
     {
@@ -179,6 +180,7 @@ public:
         visitor.visit(cornerScores     , "cornerScores");*/
 
     }
+#endif
 };
 
 
@@ -246,6 +248,9 @@ private:
 public:
     void setStatistics(corecvs::Statistics *stats);
     corecvs::Statistics *getStatistics();
+
+    vector<std::string> debugBuffers();
+    RGB24Buffer *getDebugBuffer(std::string name);
 
 
 private:

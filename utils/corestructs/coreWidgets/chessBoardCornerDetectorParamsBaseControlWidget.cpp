@@ -20,6 +20,7 @@ ChessBoardCornerDetectorParamsBaseControlWidget::ChessBoardCornerDetectorParamsB
 {
     mUi->setupUi(this);
 
+    QObject::connect(mUi->produceDebugCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->gradientCrossWidthSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->sectorSizeDegSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->histogramBinsSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
@@ -63,6 +64,7 @@ void ChessBoardCornerDetectorParamsBaseControlWidget::saveParamWidget(WidgetSave
 void ChessBoardCornerDetectorParamsBaseControlWidget::getParameters(ChessBoardCornerDetectorParamsBase& params) const
 {
 
+    params.setProduceDebug     (mUi->produceDebugCheckBox->isChecked());
     params.setGradientCrossWidth(mUi->gradientCrossWidthSpinBox->value());
     params.setSectorSizeDeg    (mUi->sectorSizeDegSpinBox->value());
     params.setHistogramBins    (mUi->histogramBinsSpinBox->value());
@@ -91,7 +93,8 @@ ChessBoardCornerDetectorParamsBase *ChessBoardCornerDetectorParamsBaseControlWid
 
 
     ChessBoardCornerDetectorParamsBase *result = new ChessBoardCornerDetectorParamsBase(
-          mUi->gradientCrossWidthSpinBox->value()
+          mUi->produceDebugCheckBox->isChecked()
+        , mUi->gradientCrossWidthSpinBox->value()
         , mUi->sectorSizeDegSpinBox->value()
         , mUi->histogramBinsSpinBox->value()
         , mUi->minAngleDegSpinBox->value()
@@ -115,6 +118,7 @@ void ChessBoardCornerDetectorParamsBaseControlWidget::setParameters(const ChessB
 {
     // Block signals to send them all at once
     bool wasBlocked = blockSignals(true);
+    mUi->produceDebugCheckBox->setChecked(input.produceDebug());
     mUi->gradientCrossWidthSpinBox->setValue(input.gradientCrossWidth());
     mUi->sectorSizeDegSpinBox->setValue(input.sectorSizeDeg());
     mUi->histogramBinsSpinBox->setValue(input.histogramBins());

@@ -16,6 +16,8 @@
 #include "abstractBuffer.h"
 #include "abstractKernel.h"
 
+#include "rgb24Buffer.h"
+
 namespace corecvs {
 
 
@@ -92,6 +94,7 @@ template<int UNROLL = 5>
 template<int UNROLL = 5>
     static void unrolledWrapperExConvolutor(DpImage &src, DpKernel &kernel, DpImage &dst);
 #endif
+
 };
 
 } //namespace corecvs

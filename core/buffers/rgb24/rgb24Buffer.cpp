@@ -706,6 +706,32 @@ void RGB24Buffer::drawIsolines(
    delete_safe(values);
 }
 
+void RGB24Buffer::drawDoubleBuffer(const AbstractBuffer<double> &in)
+{
+    int mh = CORE_MIN(h, in.h);
+    int mw = CORE_MIN(w, in.w);
+
+    double min = std::numeric_limits<double>::max();
+    double max = std::numeric_limits<double>::lowest();
+    for (int i = 0; i < mh; i++)
+    {
+        for (int j = 0; j < mw; j++)
+        {
+            min = CORE_MIN(min, in.element(i,j));
+            max = CORE_MAX(max, in.element(i,j));
+        }
+    }
+
+    for (int i = 0; i < mh; i++)
+    {
+        for (int j = 0; j < mw; j++)
+        {
+            element(i, j) = RGBColor::rainbow(lerp(0.0, 1.0, in.element(i,j), min, max));
+        }
+    }
+
+}
+
 
 void RGB24Buffer::fillWithYUYV (uint8_t *yuyv)
 {

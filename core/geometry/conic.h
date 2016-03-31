@@ -1,8 +1,8 @@
 #ifndef CONIC_H
 #define CONIC_H
 
-#include "simpleRenderer.h"
 #include "line.h"
+#include "lineSpan.h"
 
 namespace corecvs {
 

@@ -38,6 +38,17 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
      
 
     fields().push_back(
+        new BoolField
+        (
+          ChessBoardCornerDetectorParamsBase::PRODUCEDEBUG_ID,
+          offsetof(ChessBoardCornerDetectorParamsBase, mProduceDebug),
+          false,
+          "produceDebug",
+          "produceDebug",
+          "produceDebug"
+        )
+    );
+    fields().push_back(
         new DoubleField
         (
           ChessBoardCornerDetectorParamsBase::GRADIENTCROSSWIDTH_ID,
