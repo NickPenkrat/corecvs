@@ -13,6 +13,9 @@
 #include "circlePatternGenerator.h"
 #include "boardAligner.h"
 
+namespace corecvs
+{
+
 enum class ChessBoardDetectorMode
 {
     BEST = 0,
@@ -67,5 +70,6 @@ private:
     Statistics *stats;
 
 };
+}
 
 #endif

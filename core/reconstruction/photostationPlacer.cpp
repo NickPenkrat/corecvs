@@ -1143,8 +1143,11 @@ bool corecvs::PhotostationPlacer::appendP6P()
             }
             else
             {
-                solver.restrictions = decltype(solver.restrictions)::SCALE;
-                solver.scale = !scene->initializationData[psB].initData.shift;
+                if (scene->placedFixtures.size() < 2)
+                {
+                    solver.restrictions = decltype(solver.restrictions)::SCALE;
+                    solver.scale = !scene->initializationData[psB].initData.shift;
+                }
             }
         }
         solver.run();
@@ -1169,12 +1172,13 @@ bool corecvs::PhotostationPlacer::appendP6P()
             std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ scene->placedFixtures[0]->location.rotor.conjugated()) << std::endl;
 
         std::remove(scene->placingQueue.begin(), scene->placingQueue.end(), psB);
-        scene->placingQueue.resize(scene->placingQueue.size() - 2);
-        SceneAligner::TryAlign(scene, tform, scale);
+        scene->placingQueue.resize(scene->placingQueue.size() - 1);
+//        SceneAligner::TryAlign(scene, tform, scale);
         std::cout << tform << scale << "<<<< tform" << std::endl;
 
         for (auto& cf: scene->placedFixtures)
             std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ scene->placedFixtures[0]->location.rotor.conjugated()) << std::endl;
+        scene->matches = scene->matchesCopy;
         return true;
     }
     return false;
@@ -1344,7 +1348,7 @@ void corecvs::PhotostationPlacer::testNewPipeline()
         {
             corecvs::Affine3DQ transform;
             double scale;
-            SceneAligner::TryAlign(scene, transform, scale);
+//            SceneAligner::TryAlign(scene, transform, scale);
         }
     }
     for (auto& cf: scene->placedFixtures)

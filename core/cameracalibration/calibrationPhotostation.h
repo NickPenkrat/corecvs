@@ -14,7 +14,8 @@
 #include "calibrationCamera.h"
 #include "calibrationLocation.h"  // LocationData
 
-namespace corecvs {
+namespace corecvs
+{
 
 enum class CameraConstraints
 {
@@ -30,13 +31,9 @@ enum class CameraConstraints
     LOCK_PRINCIPALS   =  0x80  // Force equivalence of distortion and projective principal points (works only with UNLOCK_DISTORTION)
 };
 
-} // namespace corecvs
 
 template<>
-struct is_bitmask<CameraConstraints> : std::true_type {};
-
-namespace corecvs {
-
+struct is_bitmask<corecvs::CameraConstraints> : std::true_type {};
 
 /**
  *   See FixtureScene for more data on ownership of the objectes in structure

@@ -1,9 +1,13 @@
 #ifndef TYPESAFEBITMASKENUMS
 #define TYPESAFEBITMASKENUMS
 
+#include <type_traits>
+
 /*
  * Some magic for strong-typed bit-mask enums
  */
+namespace corecvs
+{
 template<typename E>
 struct is_bitmask : std::false_type {};
 
@@ -41,6 +45,7 @@ template<typename E>
 typename std::enable_if<std::is_enum<E>::value, typename std::underlying_type<E>::type>::type asInteger(E e)
 {
     return static_cast<typename std::underlying_type<E>::type>(e);
+}
 }
 
 #endif
