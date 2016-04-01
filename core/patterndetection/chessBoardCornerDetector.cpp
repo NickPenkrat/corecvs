@@ -633,16 +633,16 @@ RGB24Buffer *ChessBoardCornerDetector::getDebugBuffer(std::string name)
                 result->drawDoubleBuffer(kernels[id].A);
             }
             if (m[1] == "B") {
-                result = new RGB24Buffer(kernels[id].A.h, kernels[id].A.w);
-                result->drawDoubleBuffer(kernels[id].A);
+                result = new RGB24Buffer(kernels[id].B.h, kernels[id].B.w);
+                result->drawDoubleBuffer(kernels[id].B);
             }
             if (m[1] == "C") {
-                result = new RGB24Buffer(kernels[id].A.h, kernels[id].A.w);
-                result->drawDoubleBuffer(kernels[id].A);
+                result = new RGB24Buffer(kernels[id].C.h, kernels[id].C.w);
+                result->drawDoubleBuffer(kernels[id].C);
             }
             if (m[1] == "D") {
-                result = new RGB24Buffer(kernels[id].A.h, kernels[id].A.w);
-                result->drawDoubleBuffer(kernels[id].A);
+                result = new RGB24Buffer(kernels[id].D.h, kernels[id].D.w);
+                result->drawDoubleBuffer(kernels[id].D);
             }
         }
     }
@@ -678,7 +678,7 @@ bool ChessBoardCornerDetector::edgeOrientationFromGradient(int top, int bottom, 
     //std::sort(modes.begin(), modes.end(), [](decltype(modes[0]) a, decltype(modes[0]) b) { return a.second == b.second ? a.first < b.first : a.second > b.second; });
 
     std::sort(modes.begin(), modes.end(), [](PairID a, PairID b) { return a.second == b.second ? a.first < b.first : a.second > b.second; });
-    
+
     auto p1 = modes[0], p2 = modes[1];
     double phi1 = p1.first * bin_size, phi2 = p2.first * bin_size;
     if (phi1 > phi2)
@@ -856,7 +856,7 @@ void ChessBoardCornerDetector::detectCorners(DpImage &image, std::vector<Oriente
     if (stats != NULL) stats->startInterval();
 
     corners.clear();
-    img = image;   
+    img = image;
     scaleImage();
 
     if (stats != NULL) stats->resetInterval("Scaling");
