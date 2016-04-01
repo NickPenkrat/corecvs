@@ -17,7 +17,6 @@
 #include "ppmLoader.h"
 #include "plyLoader.h"
 
-using namespace std;
 using namespace corecvs;
 
 TEST(FileFormats, testFileFormats)

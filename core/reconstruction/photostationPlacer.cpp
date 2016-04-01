@@ -1035,7 +1035,7 @@ void corecvs::PhotostationPlacer::appendTracks(const std::vector<int> &inlierIds
         observation.camera = cam;
         observation.cameraFixture = fixture;
         bool found = false;
-        for (auto& f: scene->fixtures)
+        for (auto& f: scene->fixtures())
             if (f == fixture)
                 found = true;
         CORE_ASSERT_TRUE_S(found);
@@ -1044,7 +1044,7 @@ void corecvs::PhotostationPlacer::appendTracks(const std::vector<int> &inlierIds
         track->observations__[wpp] = observation;
         scene->trackMap[wpp][feature] = track;
         found = false;
-        for (auto& fp: scene->points)
+        for (auto& fp: scene->featurePoints())
             if (fp == track)
                 found = true;
         CORE_ASSERT_TRUE_S(found);

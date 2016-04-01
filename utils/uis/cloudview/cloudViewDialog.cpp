@@ -15,11 +15,6 @@
 // FIXIT: GOOPEN
 //#include "../../../restricted/applications/vimouse/faceDetection/faceMesh.h"
 
-
-using namespace std;
-
-
-
 const double CloudViewDialog::ROTATE_STEP   = 0.05;
 const double CloudViewDialog::ZOOM_DIVISION = 1000.0;
 const double CloudViewDialog::SHIFT_STEP    = 10.0;
@@ -29,9 +24,8 @@ const double CloudViewDialog::START_Y = 0;
 const double CloudViewDialog::START_Z = 1 * Grid3DScene::GRID_SIZE * Grid3DScene::GRID_STEP;
 
 
-
-CloudViewDialog::CloudViewDialog(QWidget *parent) :
-      ViAreaWidget(parent)
+CloudViewDialog::CloudViewDialog(QWidget *parent)
+    : ViAreaWidget(parent)
     , mCameraZoom(1.0)
     , mIsTracking(false)
 {
@@ -259,30 +253,36 @@ void CloudViewDialog::childWheelEvent ( QWheelEvent * event )
 
 void CloudViewDialog::resetCameraPos()
 {
-    switch(mUi.cameraTypeBox->currentIndex())
+    switch (mUi.cameraTypeBox->currentIndex())
     {
         case ORTHO_TOP:
-            mCamera = Matrix44(Matrix33::RotationX(degToRad(90)), Vector3dd(0.0,0.0,0.0));
+            mCamera = Matrix44(Matrix33::RotationX(degToRad(90)), Vector3dd(0.0, 0.0, 0.0));
             break;
         case ORTHO_LEFT:
-            mCamera = Matrix44(Matrix33::RotationY(degToRad(-90)), Vector3dd(0.0,0.0,0.0));
+            mCamera = Matrix44(Matrix33::RotationY(degToRad(-90)), Vector3dd(0.0, 0.0, 0.0));
             break;
         case ORTHO_FRONT:
-            mCamera = Matrix44(Matrix33(1.0), Vector3dd(0.0,0.0,0.0));
+            mCamera = Matrix44(Matrix33(1.0), Vector3dd(0.0, 0.0, 0.0));
             break;
         default:
         case PINHOLE_AT_0:
-            mCamera = Matrix44(Matrix33(1.0), Vector3dd( START_X, START_Y, START_Z));
+            mCamera = Matrix44(Matrix33(1.0), Vector3dd(START_X, START_Y, START_Z));
             break;
+
         case LEFT_CAMERA:
-            mCamera = Matrix44(mRectificationResult->decomposition.rotation) * Matrix44::Shift(mRectificationResult->getCameraShift());
-            mCamera = mCamera.inverted();
-            break;
+            if (!mRectificationResult.isNull())
+            {
+                mCamera = Matrix44(mRectificationResult->decomposition.rotation) * Matrix44::Shift(mRectificationResult->getCameraShift());
+                mCamera = mCamera.inverted();
+                break;
+            }
+            //break; // to perform the code below
         case RIGHT_CAMERA:
-            mCamera = Matrix44(Matrix33(1.0), Vector3dd(0.0,0.0,0.0));
+            mCamera = Matrix44(Matrix33(1.0), Vector3dd(0.0, 0.0, 0.0));
             break;
+
         case FACE_CAMERA:
-        {
+            {
 #if GOOPEN
             mCamera = Matrix44(Matrix33(1.0), Vector3dd(0.0,0.0,0.0));
             FaceMesh *faceMesh = static_cast<FaceMesh *>(mScenes[DETECTED_PERSON].data());
@@ -294,13 +294,11 @@ void CloudViewDialog::resetCameraPos()
 
             /* Move to zero */
             Matrix44 shiftCamToZero = Matrix44::Shift(-cameraPos);
-
-            Matrix44 projector = shiftCamToZero;
+            Matrix44 projector      = shiftCamToZero;
             mCamera = Matrix44(Matrix33(1.0), -cameraPos);
 #endif
-        }
+            }
             break;
-
     }
     setZoom(1.0);
 }
@@ -323,7 +321,7 @@ void CloudViewDialog::resetCamera()
     glViewport(0, 0, width, height);
     glMatrixMode(GL_PROJECTION);
 
-    switch(mUi.cameraTypeBox->currentIndex())
+    switch (mUi.cameraTypeBox->currentIndex())
     {
         case ORTHO_TOP:
         case ORTHO_FRONT:
@@ -344,15 +342,15 @@ void CloudViewDialog::resetCamera()
         case LEFT_CAMERA:
         {
             glLoadIdentity();
-            double fov = mRectificationResult->leftCamera.getVFov();
-            OpenGLTools::gluPerspectivePosZ(radToDeg(fov), aspect, 1.0f, farPlane);
+            double fov = !mRectificationResult.isNull() ? radToDeg(mRectificationResult->leftCamera.getVFov()) : 60;
+            OpenGLTools::gluPerspectivePosZ(fov, aspect, 1.0f, farPlane);
             break;
         }
         case RIGHT_CAMERA:
         {
             glLoadIdentity();
-            double fov = mRectificationResult->rightCamera.getVFov();
-            OpenGLTools::gluPerspectivePosZ(radToDeg(fov), aspect, 1.0f, farPlane);
+            double fov = !mRectificationResult.isNull() ? radToDeg(mRectificationResult->rightCamera.getVFov()) : 60;
+            OpenGLTools::gluPerspectivePosZ(fov, aspect, 1.0f, farPlane);
             break;
         }
         case FACE_CAMERA:
@@ -640,10 +638,10 @@ void CloudViewDialog::repaintGLSlot()
 
     glDisable(GL_TEXTURE_2D);
 
-
     stats.endInterval("Redraw Time");
     mStatsCollector.addStatistics(stats);
-    ostringstream stream;
+
+    std::ostringstream stream;
     mStatsCollector.printAdvanced(stream);
     mStatisticsDialog.setText(QString::fromStdString(stream.str()));
 }
@@ -769,7 +767,8 @@ void CloudViewDialog::savePointsPCD()
 
     count++;
     qDebug("Dumping current scene to <%s>...", name);
-    fstream file(name, fstream::out);
+
+    std::fstream file(name, std::fstream::out);
     mScenes[MAIN_SCENE]->dumpPCD(file);
     file.close();
     qDebug("done\n");
@@ -781,16 +780,14 @@ void CloudViewDialog::savePointsPLY()
 
     qDebug("Dump slot called...\n");
     if (mScenes[MAIN_SCENE].isNull())
-    {
         return;
-    }
 
     char name[100];
     snprintf2buf(name, "exported%d.ply", count);
 
     count++;
     qDebug("Dumping current scene to <%s>...", name);
-    fstream file(name, fstream::out);
+    std::fstream file(name, std::fstream::out);
     mScenes[MAIN_SCENE]->dumpPLY(file);
     file.close();
     qDebug("done\n");

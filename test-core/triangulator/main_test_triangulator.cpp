@@ -19,7 +19,6 @@
 #include "cameraParameters.h"
 
 
-using namespace std;
 using corecvs::EssentialDecomposition;
 
 TEST(Triangulator, testDepthAndDisparity)

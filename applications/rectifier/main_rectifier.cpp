@@ -20,8 +20,6 @@
 
 #include "rectifier.h"
 
-using namespace std;
-
 RectifierApp::RectifierApp(int &argc, char **argv) :
     QApplication(argc, argv),
     mainWindow( new AutomatedRectifyControlWidget(NULL, true, "") ),

@@ -18,8 +18,6 @@
 #include "abstractPainter.h"
 #include "simpleRenderer.h"
 
-
-using namespace std;
 using namespace corecvs;
 
 TEST(Draw, testCircles)

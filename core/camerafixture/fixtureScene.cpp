@@ -28,11 +28,11 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
 {
     //SYNC_PRINT(("FixtureScene::projectForward(0x%0X, %s):called\n", mask, round ? "true" : "false"));
 
-    //SYNC_PRINT(("FixtureScene::projectForward(): points %u\n", points.size()));
+    //SYNC_PRINT(("FixtureScene::projectForward(): points %u\n", mSceneFeaturePoints.size()));
 
-    for (size_t pointId = 0; pointId < points.size(); pointId++)
+    for (size_t pointId = 0; pointId < mSceneFeaturePoints.size(); pointId++)
     {
-        SceneFeaturePoint *point = points[pointId];
+        SceneFeaturePoint *point = mSceneFeaturePoints[pointId];
 
         //cout << "Projecting point:" << point->name << " (" << point->position << ")"<< endl;
 
@@ -43,9 +43,9 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
 
         //cout << "Projecting" << endl;
 
-        for (size_t fixtureId = 0; fixtureId < fixtures.size(); fixtureId++)
+        for (size_t fixtureId = 0; fixtureId < mFixtures.size(); fixtureId++)
         {
-            CameraFixture &fixture = *fixtures[fixtureId];
+            CameraFixture &fixture = *mFixtures[fixtureId];
             for (size_t camId = 0; camId < fixture.cameras.size(); camId++)
             {
                 FixtureCamera *camera = fixture.cameras[camId];
@@ -86,7 +86,7 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
                 }*/
 
                 point->observations[camera] = observation;
-                point->observations__[WPP(fixtures[fixtureId], camera)] = observation;
+                point->observations__[WPP(mFixtures[fixtureId], camera)] = observation;
                 //cout << "Camera:" << camera->fileName << " = " << projection << endl;
             }
         }
@@ -97,9 +97,9 @@ void FixtureScene::triangulate(SceneFeaturePoint *point)
 {
    MulticameraTriangulator triangulator;
 
-  /* for (size_t stationId = 0; stationId < fixtures.size(); stationId++)
+  /* for (size_t stationId = 0; stationId < mFixtures.size(); stationId++)
    {
-       CameraFixture &station = *fixtures[stationId];
+       CameraFixture &station = *mFixtures[stationId];
        for (size_t camId = 0; camId < station.cameras.size(); camId++)
        {
            FixtureCamera *camera = station.cameras[camId];
@@ -150,7 +150,7 @@ FixtureCamera *FixtureScene::createCamera()
 {
     FixtureCamera *camera = fabricateCamera();
     mOwnedObjects.push_back(camera);
-    orphanCameras.push_back(camera);
+    mOrphanCameras.push_back(camera);
     return camera;
 }
 
@@ -158,7 +158,7 @@ CameraFixture *FixtureScene::createCameraFixture()
 {
     CameraFixture *fixture = fabricateCameraFixture();
     mOwnedObjects.push_back(fixture);
-    fixtures.push_back(fixture);
+    mFixtures.push_back(fixture);
     return fixture;
 }
 
@@ -166,29 +166,31 @@ SceneFeaturePoint *FixtureScene::createFeaturePoint()
 {
     SceneFeaturePoint *point = fabricateFeaturePoint();
     mOwnedObjects.push_back(point);
-    points.push_back(point);
+    mSceneFeaturePoints.push_back(point);
     return point;
 }
 
 /* This method assumes the scene is well formed */
 void FixtureScene::deleteCamera(FixtureCamera *camera)
 {
-    vectorErase(orphanCameras, camera);
+    vectorErase(mOrphanCameras, camera);
 
-    for(size_t i = 0; i < fixtures.size(); i++)
+    for (size_t i = 0; i < mFixtures.size(); i++)
     {
-        CameraFixture *station = fixtures[i];
-        if (station == NULL) continue;
+        CameraFixture *station = mFixtures[i];
+        if (station == NULL)
+            continue;
         vectorErase(station->cameras, camera);
     }
 
-    for(size_t i = 0; i < points.size(); i++)
+    for (size_t i = 0; i < mSceneFeaturePoints.size(); i++)
     {
-        SceneFeaturePoint *point = points[i];
-        if (point == NULL) continue;
+        SceneFeaturePoint *point = mSceneFeaturePoints[i];
+        if (point == NULL)
+            continue;
 
         auto it = point->observations.find(camera);
-        if ( it != point->observations.end() ) {
+        if (it != point->observations.end()) {
             point->observations.erase(it);
         }
 
@@ -202,46 +204,49 @@ void FixtureScene::deleteCamera(FixtureCamera *camera)
 
 void FixtureScene::deleteCameraFixture(CameraFixture *fixture, bool recursive)
 {
-    for(size_t i = 0; i < points.size(); i++)
+    for (size_t i = 0; i < mSceneFeaturePoints.size(); i++)
     {
-        SceneFeaturePoint *point = points[i];
+        SceneFeaturePoint *point = mSceneFeaturePoints[i];
         if (point == NULL) continue;
 
         deleteCameraFixtureUMWPP(point->observations__, fixture);
     }
+
     if (recursive)
     {
         while (!fixture->cameras.empty()) {
             deleteCamera(fixture->cameras.back());
         }
-    } else {
-        orphanCameras.insert(orphanCameras.end(), fixture->cameras.begin(), fixture->cameras.end());
+    }
+    else
+    {
+        mOrphanCameras.insert(mOrphanCameras.end(), fixture->cameras.begin(), fixture->cameras.end());
     }
 
-    vectorErase(fixtures, fixture);
+    vectorErase(mFixtures, fixture);
 }
 
 void FixtureScene::deleteFeaturePoint(SceneFeaturePoint *point)
 {
-    vectorErase(points, point);
+    vectorErase(mSceneFeaturePoints, point);
 }
 
 void FixtureScene::clear()
 {
-    for(size_t i = 0; i < mOwnedObjects.size(); i++)
+    for (size_t i = 0; i < mOwnedObjects.size(); i++)
     {
         delete_safe(mOwnedObjects[i]);
     }
+    mOwnedObjects.clear();
 
-    fixtures.clear();
-    orphanCameras.clear();
-    points.clear();
-
+    mFixtures.clear();
+    mOrphanCameras.clear();
+    mSceneFeaturePoints.clear();
 }
 
 void FixtureScene::deleteFixturePair(CameraFixture *fixture, FixtureCamera *camera)
 {
-    for (SceneFeaturePoint *p : points)
+    for (SceneFeaturePoint *p : mSceneFeaturePoints)
     {
         deletePairUMWPP(p->observations__, fixture, camera);
     }
@@ -256,9 +261,9 @@ bool FixtureScene::checkIntegrity()
 {
     bool ok = true;
 
-    for(size_t i = 0; i < orphanCameras.size(); i++)
+    for (size_t i = 0; i < mOrphanCameras.size(); i++)
     {
-        FixtureCamera *cam = orphanCameras[i];
+        FixtureCamera *cam = mOrphanCameras[i];
         if (cam == NULL) {
              ok = false; SYNC_PRINT(("Orphan Camera is NULL: scene:<%s> pos <%d>\n", this->nameId.c_str(), (int)i));
         }
@@ -270,9 +275,9 @@ bool FixtureScene::checkIntegrity()
         }
     }
 
-    for(size_t i = 0; i < fixtures.size(); i++)
+    for (size_t i = 0; i < mFixtures.size(); i++)
     {
-        CameraFixture *fixture = fixtures[i];
+        CameraFixture *fixture = mFixtures[i];
         if (fixture == NULL) {
             ok = false; SYNC_PRINT(("Station is NULL: scene:<%s> pos <%d>\n", this->nameId.c_str(), (int)i));
         }
@@ -303,9 +308,9 @@ bool FixtureScene::checkIntegrity()
 
     }
 
-    for(size_t i = 0; i < points.size(); i++)
+    for (size_t i = 0; i < mSceneFeaturePoints.size(); i++)
     {
-        SceneFeaturePoint *point = points[i];
+        SceneFeaturePoint *point = mSceneFeaturePoints[i];
         if (point == NULL) {
             ok = false; SYNC_PRINT(("Point is NULL: scene:<%s> pos <%d>\n", this->nameId.c_str(), (int)i));
         }
@@ -377,20 +382,20 @@ bool FixtureScene::checkIntegrity()
 
 bool FixtureScene::integrityRelink()
 {
-    vectorErase(orphanCameras, (FixtureCamera *)NULL);
+    vectorErase(mOrphanCameras, (FixtureCamera *)NULL);
 
-    for(size_t i = 0; i < orphanCameras.size(); i++)
+    for (size_t i = 0; i < mOrphanCameras.size(); i++)
     {
-        FixtureCamera *cam = orphanCameras[i];
+        FixtureCamera *cam = mOrphanCameras[i];
         cam->ownerScene = this;
         cam->cameraFixture = NULL;
     }
 
-    vectorErase(fixtures, (CameraFixture *)NULL);
+    vectorErase(mFixtures, (CameraFixture *)NULL);
 
-    for(size_t i = 0; i < fixtures.size(); i++)
+    for (size_t i = 0; i < mFixtures.size(); i++)
     {
-        CameraFixture *fixture = fixtures[i];
+        CameraFixture *fixture = mFixtures[i];
         fixture->ownerScene = this;
 
         vectorErase(fixture->cameras, (FixtureCamera *)NULL);
@@ -403,13 +408,12 @@ bool FixtureScene::integrityRelink()
         }
     }
 
-    vectorErase(points, (SceneFeaturePoint *)NULL);
+    vectorErase(mSceneFeaturePoints, (SceneFeaturePoint *)NULL);
 
-    for(size_t i = 0; i < points.size(); i++)
+    for (size_t i = 0; i < mSceneFeaturePoints.size(); i++)
     {
-        SceneFeaturePoint *point = points[i];
+        SceneFeaturePoint *point = mSceneFeaturePoints[i];
         point->ownerScene = this;
-
 
         /* TODO check for NULL */
         for (auto it = point->observations.begin(); it != point->observations.end(); ++it)
@@ -427,12 +431,8 @@ bool FixtureScene::integrityRelink()
 }
 
 
-
-
 void FixtureScene::positionCameraInFixture(CameraFixture * /*fixture */, FixtureCamera *camera, const Affine3DQ &location)
 {
-
-
 //    cout << "FixtureScene::positionCameraInStation()" << std::endl;
 //    cout << "  World Transform():" << std::endl;
 //    worldFrameToCameraFrame.prettyPrint1();
@@ -445,14 +445,12 @@ void FixtureScene::positionCameraInFixture(CameraFixture * /*fixture */, Fixture
 
 void FixtureScene::addCameraToFixture(FixtureCamera *cam, CameraFixture *fixture)
 {
-
-    auto it = std::find(orphanCameras.begin(), orphanCameras.end(), cam);
-    if (it != orphanCameras.end()) {
-        orphanCameras.erase(it);
+    auto it = std::find(mOrphanCameras.begin(), mOrphanCameras.end(), cam);
+    if (it != mOrphanCameras.end()) {
+        mOrphanCameras.erase(it);
     }
     cam->cameraFixture = fixture;
     fixture->cameras.push_back(cam);
-
 }
 
 void FixtureScene::dumpInfo(ostream &out)
@@ -460,16 +458,16 @@ void FixtureScene::dumpInfo(ostream &out)
     out << "FixtureScene::dumpInfo():" << endl;
     out << "Owned objects: " <<  mOwnedObjects.size() << endl;
 
-    out << "Orphan Cameras: " <<  orphanCameras.size() << endl;
-    for(size_t j = 0; j < orphanCameras.size(); j++)
+    out << "Orphan Cameras: " << mOrphanCameras.size() << endl;
+    for (size_t j = 0; j < mOrphanCameras.size(); j++)
     {
-        FixtureCamera *cam = orphanCameras[j];
+        FixtureCamera *cam = mOrphanCameras[j];
         out << "     " << "Camera <" << cam->nameId << "> "  << endl;
     }
-    out << "Fixtures: " <<  fixtures.size() << endl;
-    for(size_t i = 0; i < fixtures.size(); i++)
+    out << "Fixtures: " << mFixtures.size() << endl;
+    for (size_t i = 0; i < mFixtures.size(); i++)
     {
-        CameraFixture *fixture = fixtures[i];
+        CameraFixture *fixture = mFixtures[i];
         out << "  " << "Fixture <" << fixture->name << "> " << fixture->cameras.size() << endl;
         for(size_t j = 0; j < fixture->cameras.size(); j++)
         {
@@ -480,22 +478,22 @@ void FixtureScene::dumpInfo(ostream &out)
         }
     }
 
-    out << "Points: " <<  points.size() << endl;
+    out << "Points: " << mSceneFeaturePoints.size() << endl;
     out << "   Observations: " <<  totalObservations() << endl;
-
 }
 
 void FixtureScene::setFixtureCount(size_t count)
 {
     //SYNC_PRINT(("FixtureScene::setFixtureCount(%d):  called\n", count));
 
-    while  (fixtures.size() > count) {
-        CameraFixture *fixture = fixtures.back();
-        fixtures.pop_back(); /* delete camera will generally do it, but only in owner scene.*/
+    while (mFixtures.size() > count)
+    {
+        CameraFixture *fixture = mFixtures.back();
+        mFixtures.pop_back(); /* delete camera will generally do it, but only in owner scene.*/
         deleteCameraFixture(fixture);
     }
 
-    while  (fixtures.size() < count) {
+    while (mFixtures.size() < count) {
         createCameraFixture();
     }
 }
@@ -504,13 +502,13 @@ void FixtureScene::setOrphanCameraCount(size_t count)
 {
     //SYNC_PRINT(("FixtureScene::setOrphanCameraCount(%d):  called\n", count));
 
-    while  (orphanCameras.size() > count) {
-        FixtureCamera *model = orphanCameras.back();
-        orphanCameras.pop_back(); /* delete camera will generally do it, but only in owner scene.*/
+    while (mOrphanCameras.size() > count) {
+        FixtureCamera *model = mOrphanCameras.back();
+        mOrphanCameras.pop_back(); /* delete camera will generally do it, but only in owner scene.*/
         deleteCamera(model);
     }
 
-    while  (orphanCameras.size() < count) {
+    while (mOrphanCameras.size() < count) {
         createCamera();
     }
 }
@@ -520,26 +518,26 @@ void FixtureScene::setFeaturePointCount(size_t count)
 {
     //SYNC_PRINT(("FixtureScene::setFeaturePointCount(%d):  called\n", (int)count));
 
-    while  (points.size() > count) {
-        SceneFeaturePoint *point = points.back();
-        points.pop_back();
+    while (mSceneFeaturePoints.size() > count) {
+        SceneFeaturePoint *point = mSceneFeaturePoints.back();
+        mSceneFeaturePoints.pop_back();
         deleteFeaturePoint(point);
     }
 
-    while  (points.size() < count) {
+    while (mSceneFeaturePoints.size() < count) {
         createFeaturePoint();
     }
 }
 
 FixtureCamera *FixtureScene::getCameraById(FixtureScenePart::IdType id)
 {
-    for (FixtureCamera *cam: orphanCameras) {
+    for (FixtureCamera *cam : mOrphanCameras) {
         if (cam->getObjectId() == id) {
             return cam;
         }
     }
 
-    for (CameraFixture *station: fixtures) {
+    for (CameraFixture *station : mFixtures) {
         for (FixtureCamera *cam: station->cameras) {
             if (cam->getObjectId() == id) {
                 return cam;
@@ -552,15 +550,13 @@ FixtureCamera *FixtureScene::getCameraById(FixtureScenePart::IdType id)
 
 CameraFixture *FixtureScene::getFixtureById(FixtureScenePart::IdType id)
 {
-    for (CameraFixture *station: fixtures) {
+    for (CameraFixture *station : mFixtures) {
         if (station->getObjectId() == id) {
             return station;
         }
     }
     return NULL;
 }
-
-
 
 FixtureScene::~FixtureScene()
 {

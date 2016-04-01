@@ -939,6 +939,10 @@ void CalibrationJob::reorient(const std::vector<int> &topLayerIdx)
                                 ^ (photostation.cameras[topLayerIdx[2]].extrinsics.position
                                  - photostation.cameras[topLayerIdx[0]].extrinsics.position)
                                 ).normalised();
+        if (!n1 == 0.0) {
+            L_ERROR_P("Not enough information to perform operation");  // happens when calibration was absent
+            break;
+        }
         double d1 = -(n1 & photostation.cameras[topLayerIdx[0]].extrinsics.position);
 
         std::vector<double> input(4), output(topLayerIdx.size());

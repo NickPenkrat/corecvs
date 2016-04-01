@@ -21,10 +21,8 @@
 
 #include "cameraControlParameters.h"
 
-using namespace std;
-
- class DirectShowCaptureInterface : public ImageCaptureInterface
- {
+class DirectShowCaptureInterface : public ImageCaptureInterface
+{
  public:
     typedef ImageCaptureInterface::CapErrorCode CapErrorCode;
 
@@ -81,4 +79,3 @@ using namespace std;
  };
 
 #endif /* _DIRECT_SHOW_CVCAPTURE_H_ */
-

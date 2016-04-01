@@ -25,7 +25,6 @@
 #include "mathUtils.h"
 #include "abstractPainter.h"
 
-using namespace std;
 using corecvs::G12Buffer;
 using corecvs::PPMLoader;
 using corecvs::PPMLoader;

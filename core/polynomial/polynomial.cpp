@@ -237,4 +237,4 @@ corecvs::Polynomial corecvs::PolynomialMatrix::det(const size_t requiredPower) c
 
     return corecvs::Polynomial::Interpolate(evaluationPoints, evaluatedValues);
 }
-#endif
+#endif // WITH_BLAS
