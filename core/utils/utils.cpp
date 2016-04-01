@@ -93,6 +93,21 @@ string getFullPath(cchar *envVarName, cchar* path, cchar* filename)
     return getFullPath(envDirPath, path, filename);
 }
 
+string getFileNameFromFilePath(const string &filePath)
+{
+    return filePath.substr(filePath.find_last_of("/\\") + 1);
+}
+
+string getPathWithoutFilename(const string &filePath)
+{
+    return filePath.substr(0, filePath.find_last_of("/\\") + 1);
+}
+
+string getFullPathWithoutExt(const string &filePath)
+{
+    return filePath.substr(0, filePath.find_last_of("."));
+}
+
 
 } // namespace HelperUtils
 
