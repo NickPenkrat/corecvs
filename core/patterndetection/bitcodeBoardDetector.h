@@ -6,6 +6,7 @@
 #include "selectableGeometryFeatures.h"
 #include "checkerboardDetectionParameters.h"
 #include "generated/bitcodeBoardParamsBase.h"
+#include "homographyReconstructor.h"
 
 namespace corecvs {
 
@@ -58,6 +59,19 @@ public:
     Statistics *getStatistics();
 
     bool operator ()();
+
+
+    void drawMarkerData(RGB24Buffer &buffer);
+
+    /* Additionl outputs */
+    HomographyReconstructor homography;
+    Matrix33 transform;
+
+    Vector2dd  cellToMM;
+    Matrix33   toCenter;
+    Matrix33   orients[4];
+    int bestMarker;
+    MarkerData marker[4];
 
     /* Some non standart helper functions */
 private:
