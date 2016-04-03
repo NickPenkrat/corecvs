@@ -2,6 +2,9 @@
 #define RECONSTRUCTIONFUNCTOR
 
 #include "typesafeBitmaskEnums.h"
+#include "tbbWrapper.h"
+#include "function.h"
+#include "reconstructionFixtureScene.h"
 
 namespace corecvs
 {
@@ -50,6 +53,87 @@ enum class PhotostationPlacerOptimizationErrorType
 template<>
 struct is_bitmask<PhotostationPlacerOptimizationType> : std::true_type {};
 
+struct ReconstructionFunctor;
+struct ParallelErrorComputator
+{
+    void operator() (const corecvs::BlockedRange<int> &r) const;
+    ParallelErrorComputator(ReconstructionFunctor *functor, const std::vector<int> &idxs, double* output) : functor(functor), idxs(idxs), output(output)
+    {
+    }
+    ReconstructionFunctor* functor;
+    std::vector<int> idxs;
+    double* output;
+};
+struct ReconstructionFunctor : corecvs::SparseFunctionArgs
+{
+    void operator() (const double in[], double out[], const std::vector<int> &idxs)
+    {
+        readParams(in);
+        computeErrors(out, idxs);
+    }
+    ReconstructionFunctor(ReconstructionFixtureScene *scene, const PhotostationPlacerOptimizationErrorType &error, const PhotostationPlacerOptimizationType &optimization, const double pointErrorEstimate);
+
+    ReconstructionFixtureScene *scene;
+    PhotostationPlacerOptimizationErrorType error;
+    PhotostationPlacerOptimizationType optimization;
+
+    void computePointCounts();
+    void computeInputs();
+    int getInputNum();
+    void computeOutputs();
+    int getOutputNum();
+    void computeDependency();
+
+    void readParams(const double *params);
+    void writeParams(double *params);
+    void computeErrors(double *out, const std::vector<int> &idxs);
+
+    std::unordered_map<FixtureScenePart*, int> counter;
+
+    std::vector<SceneObservation*> revDependency; // track, projection
+    std::vector<CameraFixture*> positionConstrainedCameras;
+    std::vector<std::vector<int>> sparsity;
+
+    double scalerPoints, scalerPosition;
+    int lastProjection;
+    int getErrorComponentsPerPoint();
+
+    std::vector<CameraFixture*> orientableFixtures, translateableFixtures, translationConstrainedFixtures;
+    std::vector<FixtureCamera*> focalTunableCameras, principalTunableCameras;
+    /*
+     * These are DoF limits for cameras/fixtures
+     * TODO: Check if this stuff is valid
+     *
+     * A) orientable fixtures       (>= 3 3d-points)
+     * B) translatable fixtures     (>= 3 3d-points)
+     * C) focal-tunable cameras     (>= 4 3d-points)
+     * D) principal-tunable cameras (>= 6 3d-points)
+     */
+    const int    MINIMAL_TRACKED_FOR_ORIENTATION = 3,
+                 MINIMAL_TRACKED_FOR_TRANSLATION = 3,
+                 MINIMAL_TRACKED_FOR_FOCALS      = 4,
+                 MINIMAL_TRACKED_FOR_PRINCIPALS  = 6,
+    // Inputs/outputs per item
+                 INPUTS_PER_ORIENTATION          = 4,
+                   INPUTS_PER_TRANSLATION          = 3,
+                   INPUTS_PER_3D_POINT             = 3,
+                   INPUTS_PER_FOCAL                = 1,
+                   INPUTS_PER_PRINCIPAL            = 2,
+                   OUTPUTS_PER_POSITION_CONSTRAINT = 3;
+
+};
+struct ReconstructionNormalizationFunctor : corecvs::FunctionArgs
+{
+    ReconstructionNormalizationFunctor(ReconstructionFunctor *functor) : FunctionArgs(functor->getInputNum(), functor->getInputNum()), functor(functor)
+    {
+    }
+    void operator() (const double in[], double out[])
+    {
+        functor->readParams(in);
+        functor->writeParams(out);
+    }
+    ReconstructionFunctor* functor;
+};
 
 }
 

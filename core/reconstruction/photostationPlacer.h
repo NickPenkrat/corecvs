@@ -107,7 +107,6 @@ public:
     int getReprojectionCnt();
     int getInputNum();
     int getOutputNum();
-    int getErrorComponentsPerPoint();
     void getErrorSummary(PhotostationPlacerOptimizationErrorType errorType);
     void getErrorSummaryAll();
 
@@ -120,61 +119,10 @@ public:
     void addSecondPs();
     void tryAlign();
 protected:
-    void readOrientationParams(const double in[]);
-    void writeOrientationParams(double out[]);
-    void computeErrors(double out[], const std::vector<int> &idxs);
-    std::vector<std::vector<int>> getDependencyList();
-
-    /*
-     * These are valid only in non-linear fit time
-     */
-    std::vector<FixtureCamera*> activeCameras;
-    std::vector<SceneObservation*> revDependency; // track, projection
-    std::vector<CameraFixture*> gpsConstrainedCameras;
-    std::vector<std::vector<int>> sparsity;
-    void prepareNonLinearOptimizationData();
-    void buildDependencyList();
-    double scalerPoints, scalerGps;
-    int inputNum, outputNum, psNum, camNum, ptNum, projNum, gpsConstraintNum, staticNum;
-
     std::unordered_map<corecvs::CameraFixture*, corecvs::Affine3DQ> activeEstimates;
     std::unordered_map<corecvs::CameraFixture*, std::vector<int>> activeInlierCount;
     void updateTrackables();
 
-    struct ParallelErrorComputator
-    {
-        void operator() (const corecvs::BlockedRange<int> &r) const;
-        ParallelErrorComputator(PhotostationPlacer* placer, const std::vector<int> &idxs, double* output) : placer(placer), idxs(idxs), output(output)
-        {
-        }
-        PhotostationPlacer* placer;
-        std::vector<int> idxs;
-        double* output;
-    };
-    struct OrientationFunctor : corecvs::SparseFunctionArgs
-    {
-        void operator() (const double in[], double out[], const std::vector<int> &idxs)
-        {
-            placer->readOrientationParams(in);
-            placer->computeErrors(out, idxs);
-        }
-        OrientationFunctor(PhotostationPlacer *placer) : SparseFunctionArgs(placer->getInputNum(), placer->getOutputNum(), placer->sparsity), placer(placer)
-        {
-        }
-        PhotostationPlacer* placer;
-    };
-    struct OrientationNormalizationFunctor : corecvs::FunctionArgs
-    {
-        OrientationNormalizationFunctor(PhotostationPlacer *placer) : FunctionArgs(placer->getInputNum(), placer->getInputNum()), placer(placer)
-        {
-        }
-        void operator() (const double in[], double out[])
-        {
-            placer->readOrientationParams(in);
-            placer->writeOrientationParams(out);
-        }
-        PhotostationPlacer* placer;
-    };
 #ifdef WITH_TBB
     tbb::mutex mutex;
 #endif

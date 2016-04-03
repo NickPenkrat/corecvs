@@ -168,6 +168,8 @@ bool corecvs::SceneAligner::TryAlignGPS(ReconstructionFixtureScene* scene, corec
         default:
             CORE_ASSERT_TRUE_S(false);
     }
+
+    scene->is3DAligned = N >= 3;
     ApplyTransformation(scene, transformation, scale);
     return scale != 1.0 || (!transformation.shift) > 0.0 || (!(transformation.rotor - transformation.rotor.conjugated())) > 0.0;
 #endif
