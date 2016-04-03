@@ -462,6 +462,8 @@ void corecvs::PhotostationPlacer::fit(const PhotostationPlacerOptimizationType &
     lm.trace = false;
     std::vector<double> input(orient.getInputNum());
     std::vector<double> out(orient.getOutputNum());
+    if (orient.getOutputNum() <=  orient.getInputNum())
+        return;
     lm.useConjugatedGradient = false;
     lm.conjugatedGradientIterations = std::max(100, (int)( 0.001 * input.size()));
     orient.writeParams(&input[0]);

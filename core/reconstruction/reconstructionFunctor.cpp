@@ -25,6 +25,7 @@ corecvs::ReconstructionFunctor::ReconstructionFunctor(corecvs::ReconstructionFix
     // compute dependency
     computeDependency();
     // re-create base (weird, but we do not know input/output/dependency before creation)
+    init(getInputNum(), getOutputNum(), sparsity);
 }
 
 int corecvs::ReconstructionFunctor::getInputNum()
@@ -265,7 +266,7 @@ void corecvs::ReconstructionFunctor::computeErrors(double *out, const std::vecto
     CORE_ASSERT_TRUE_S(currLastProjection % getErrorComponentsPerPoint() == 0);
 
     ParallelErrorComputator computator(this, projections, out);
-    corecvs::parallelable_for(0, lastProjection / getErrorComponentsPerPoint(), 16, computator, true);
+    corecvs::parallelable_for(0, currLastProjection / getErrorComponentsPerPoint(), 16, computator, true);
 
     int idx = currLastProjection;
     for (size_t i = 0; i < positions.size(); i += 3)
