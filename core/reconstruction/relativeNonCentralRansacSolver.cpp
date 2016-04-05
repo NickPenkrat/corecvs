@@ -3,83 +3,68 @@
 #include "levenmarq.h"
 
 #include <chrono>
+#include <cmath>
 
 corecvs::RelativeNonCentralRansacSolver::RelativeNonCentralRansacSolver(CameraFixture *query, const MatchContainer &matchesRansac, const MatchContainer &matchesAll, const RelativeNonCentralRansacSolverSettings &settings)
     : RelativeNonCentralRansacSolverSettings(settings), query(query), matchesRansac(matchesRansac), matchesAll(matchesAll)
 {
     buildDependencies();
 }
+
+
 void corecvs::RelativeNonCentralRansacSolver::run()
 {
-    currentHypothesis.resize(1);
-    currentHypothesis[0].rotor = corecvs::Quaternion(0, 0, 0, 1);
-    currentHypothesis[0].shift = corecvs::Vector3dd(1, 1, 1);
-    currentScores.resize(1);
-    scoreCurrent();
-    nullInliers = currentScores[0];
-
     if (matchesRansac.size() < FEATURES_FOR_MODEL)
         return;
 
-    maxInliers = 0;
-    size_t reportBy = maxIterations / 20;
-    for (size_t i = 0; i < maxIterations; ++i)
+    do
     {
-        auto begin = std::chrono::high_resolution_clock::now();
-        sampleRays();
-        auto end = std::chrono::high_resolution_clock::now();
-        totalSample += (end - begin).count();
-        begin = std::chrono::high_resolution_clock::now();
-        estimatePose();
-        scoreCurrent();
-        end = std::chrono::high_resolution_clock::now();
-        totalEstiamte += (end - begin).count();
-        begin = std::chrono::high_resolution_clock::now();
-        selectBest();
-        end = std::chrono::high_resolution_clock::now();
-        totalCheck += (end - begin).count();
-        double curr = maxInliers / (1.0 * matchesAll.size());
-        double N = std::log(0.001) / std::log(1.0 - std::pow(curr, FEATURES_FOR_MODEL));
-        if ((i + 1) % reportBy == 0)
-        {
-            std::cout << ((double)i) / ((double) maxIterations) * 100.0 << "% complete" << std::endl;
-        }
-        if ((i+1)%reportBy ==0)
-            std::cout << "MI: " << maxInliers << " curr = " << curr << " N: " << N << " P: " << std::pow(1.0 - std::pow(curr, FEATURES_FOR_MODEL), i) << std::endl;
-        if (maxInliers > FEATURES_FOR_MODEL)
-        {
-            if (i > N && N > 0)
-            {
-                std::cout << "Finished at " << i << "th iteration" << std::endl;
-                break;
-            }
-        }
+        corecvs::parallelable_for(0, batches, ParallelEstimator(this, batch));
+        usedEvals += batches * batch;
+    } while (usedEvals < nForGamma() && usedEvals < maxIterations);
+    maxIterations = usedEvals;
+    std::cout << "Finishing after " << usedEvals << " with gamma" << getGamma() << std::endl;
+}
+
+double corecvs::RelativeNonCentralRansacSolver::nForGamma()
+{
+    double alpha = ((double)maxInliers) / matchesAll.size();
+    double N = std::log(gamma) / std::log(1.0 - std::pow(alpha, FEATURES_FOR_MODEL));
+    if (alpha == 0.0)
+        return maxIterations;
+    return N;
+}
+
+void corecvs::RelativeNonCentralRansacSolver::ParallelEstimator::operator() (const corecvs::BlockedRange<int> &r) const
+{
+    Estimator estimator(solver, solver->inlierThreshold, solver->restrictions, solver->shift, solver->scale);
+    estimator.localMax = solver->maxInliers;
+    estimator(corecvs::BlockedRange<int>(r.begin() * batch, r.end() * batch));
+}
+
+void corecvs::RelativeNonCentralRansacSolver::Estimator::operator() (const corecvs::BlockedRange<int> &r)
+{
+    if (solver->matchesRansac.size() < SAMPLESIZE)
+        return;
+    for (int i = r.begin(); i < r.end(); ++i)
+    {
+        sampleModel();
+        makeHypo();
+        selectInliers();
     }
-    query->location = bestHypothesis;
 }
 
-double corecvs::RelativeNonCentralRansacSolver::getGamma()
+void corecvs::RelativeNonCentralRansacSolver::Estimator::sampleModel()
 {
-    return std::pow((1.0 - std::pow(maxInliers * 1.0 / matchesAll.size(), FEATURES_FOR_MODEL)), maxIterations);
-}
-
-void corecvs::RelativeNonCentralRansacSolver::sampleRays()
-{
-    pluckerRef.resize(FEATURES_FOR_MODEL);
-    pluckerQuery.resize(FEATURES_FOR_MODEL);
-
-    CameraFixture queryCopy = *query;
+    CameraFixture queryCopy = *solver->query;
     queryCopy.location.rotor = corecvs::Quaternion(0, 0, 0, 1);
     queryCopy.location.shift = corecvs::Vector3dd(0, 0, 0);
 
-    int N = (int)matchesRansac.size();
-    if (N == 0) {
-        cout << "Error: sampleRays() there's no matches!" << endl;
-        return;
-    }
+    auto& matchesRansac = solver->matchesRansac;
 
-    int idxs[FEATURES_FOR_MODEL] = { 0 };
-    for (int rdy = 0; rdy < FEATURES_FOR_MODEL;)
+    int N = (int)matchesRansac.size();
+
+    for (int rdy = 0; rdy < SAMPLESIZE;)
     {
         idxs[rdy] = rng() % N;
         bool isOk = true;
@@ -89,7 +74,7 @@ void corecvs::RelativeNonCentralRansacSolver::sampleRays()
         if (isOk) ++rdy;
     }
 
-    for (int i = 0; i < FEATURES_FOR_MODEL; ++i)
+    for (int i = 0; i < SAMPLESIZE; ++i)
     {
         auto t = matchesRansac[idxs[i]];
         auto r1 = std::get<0>(t).u->rayFromPixel(std::get<0>(t).v, std::get<1>(t));
@@ -99,11 +84,12 @@ void corecvs::RelativeNonCentralRansacSolver::sampleRays()
     }
 }
 
-void corecvs::RelativeNonCentralRansacSolver::estimatePose()
+
+void corecvs::RelativeNonCentralRansacSolver::Estimator::makeHypo()
 {
-    currentHypothesis = corecvs::RelativeNonCentralP6PSolver::SolveRelativeNonCentralP6P(pluckerRef, pluckerQuery);
+    hypothesis = corecvs::RelativeNonCentralP6PSolver::SolveRelativeNonCentralP6P(pluckerRef, pluckerQuery);
     int id = 0;
-    for (auto a: currentHypothesis)
+    for (auto a: hypothesis)
     {
         if ((!a.shift) < 1e-6)
             continue;
@@ -118,78 +104,45 @@ void corecvs::RelativeNonCentralRansacSolver::estimatePose()
             default:
                 break;
         }
-        currentHypothesis[id++] = a;
+        hypothesis[id++] = a;
     }
-    currentHypothesis.resize(id);
-    currentScores.clear();
-    currentScores.resize(currentHypothesis.size());
+    hypothesis.resize(id);
 }
 
-void corecvs::RelativeNonCentralRansacSolver::scoreCurrent()
+void corecvs::RelativeNonCentralRansacSolver::Estimator::selectInliers()
 {
-#if 0
-    int K = (int)currentHypothesis.size();
+    std::vector<int> currentInliers, bestInliers;
+    CameraFixture query = *solver->query;
+    auto& fundamentalsCacheId = solver->fundamentalsCacheId;
+    auto& matchesAll = solver->matchesAll;
+    auto& dependencyList = solver->dependencyList;
+    corecvs::Affine3DQ bestHypothesis;
 
-    currentInliers.resize(K);
-
-    for (int i = 0; i < K; ++i)
+    for (size_t i = 0; i < hypothesis.size(); ++i)
     {
-        currentInliers[i].clear();
-    }
-
-    for (size_t j = 0; j < matchesAll.size(); ++j)
-    {
-        auto t = matchesAll[j];
-        auto fixtureRef  = std::get<0>(t).u,
-             fixtureQuery= query;
-        auto camRef  = std::get<0>(t).v,
-             camQuery= std::get<2>(t).v;
-        auto ptRef  = std::get<1>(t);
-        auto ptQuery= std::get<3>(t);
-        auto K1 = camRef->intrinsics.getKMatrix33().inv();
-        auto K2 = camQuery->intrinsics.getKMatrix33().inv();
-        auto ptER = K1 * ptRef;
-        auto ptEQ = K2 * ptQuery;
-
-        for (int i = 0; i < K; ++i)
-        {
-            query->location = currentHypothesis[i];
-            auto score = fixtureRef->scoreFundamental(camRef, ptRef, fixtureQuery, camQuery, ptQuery);
-            if (score > inlierThreshold)
-                continue;
-            auto E = fixtureRef->essentialTo(camRef, fixtureQuery, camQuery);
-            double sL, sR, foo;
-            E.getScaler(ptER, ptEQ, sL, sR, foo);
-            if (sL >= 0.0 && sR >= 0.0)
-            {
-                currentScores[i]++;
-                currentInliers[i].push_back((int)j);
-            }
-        }
-    }
-#else
-    currentInliers.resize(currentHypothesis.size());
-    for (size_t i = 0; i < currentHypothesis.size(); ++i)
-    {
-        currentInliers[i].clear();
-        query->location = currentHypothesis[i];
+        currentInliers.clear();
+        query.location = hypothesis[i];
         for (size_t j = 0; j < fundamentalsCacheId.size(); ++j)
         {
             auto& wpp = fundamentalsCacheId[j];
-            fundamentalsCache[j] = wpp.first.u->fundamentalTo(wpp.first.v, wpp.second.u, wpp.second.v);
-            essentialsCache[j] = wpp.first.u->essentialTo(wpp.first.v, wpp.second.u, wpp.second.v);
+            fundamentalsCache[j] = wpp.first.u->fundamentalTo(wpp.first.v, &query, wpp.second.v);
+            essentialsCache[j] = wpp.first.u->essentialTo(wpp.first.v, &query, wpp.second.v);
         }
+
         for (size_t j = 0; j < matchesAll.size(); ++j)
         {
             auto t = matchesAll[j];
             auto ptRef  = std::get<1>(t);
             auto ptQuery= std::get<3>(t);
 
+            CORE_ASSERT_TRUE_S(j < dependencyList.size());
+            CORE_ASSERT_TRUE_S(dependencyList[j] < fundamentalsCache.size());
             auto F = fundamentalsCache[dependencyList[j]];
             corecvs::Line2d l = F.mulBy2dRight(ptQuery), r = F.mulBy2dLeft(ptRef);
             double score = std::max(l.distanceTo(ptRef), r.distanceTo(ptQuery));
-            if (score > inlierThreshold)
+            if (score > inlierThreshold || std::isnan(score) || std::isinf(score))
                 continue;
+//            std::cout << score << " ";
             auto E = essentialsCache[dependencyList[j]];
             auto camRef  = std::get<0>(t).v,
                  camQuery= std::get<2>(t).v;
@@ -199,19 +152,45 @@ void corecvs::RelativeNonCentralRansacSolver::scoreCurrent()
             E.getScaler(ptER, ptEQ, sL, sR, foo);
             if (sL >= 0.0 && sR >= 0.0)
             {
-                currentScores[i]++;
-                currentInliers[i].push_back((int)j);
+                currentInliers.push_back((int)j);
             }
         }
+//            std::cout << std::endl;
+        if (currentInliers.size() > localMax && currentInliers.size() > bestInliers.size())
+        {
+            std::swap(bestInliers, currentInliers);
+            bestHypothesis = hypothesis[i];
+        }
+
     }
-#endif
+    solver->accept(bestHypothesis, bestInliers);
 }
+
+void corecvs::RelativeNonCentralRansacSolver::accept(const corecvs::Affine3DQ& hypo, const std::vector<int> &inliers)
+{
+#ifdef WITH_TBB
+    tbb::mutex::scoped_lock lock(mutex);
+#endif
+    if (inliers.size() <= bestInliers.size())
+        return;
+    std::cout << "ACCEPTING " << hypo << " cause it has " << inliers.size() << " inliers" << std::endl;
+    bestInliers = inliers;
+    bestHypothesis = hypo;
+    maxInliers = (int)inliers.size();
+    std::cout << "RP6P: " << maxInliers << " " << ((double)maxInliers) / ((double)matchesAll.size()) * 100.0 << "%" << std::endl;
+}
+
+double corecvs::RelativeNonCentralRansacSolver::getGamma()
+{
+    return std::pow((1.0 - std::pow(maxInliers * 1.0 / matchesAll.size(), FEATURES_FOR_MODEL)), maxIterations);
+}
+
 
 void corecvs::RelativeNonCentralRansacSolver::buildDependencies()
 {
     dependencyList.clear();
-    essentialsCache.clear();
-    fundamentalsCache.clear();
+//    essentialsCache.clear();
+//    fundamentalsCache.clear();
     fundamentalsCacheId.clear();
 
     for (size_t i = 0; i < matchesAll.size(); ++i)
@@ -227,28 +206,8 @@ void corecvs::RelativeNonCentralRansacSolver::buildDependencies()
             continue;
         fundamentalsCacheId.emplace_back(ref, query);
     }
-    essentialsCache.resize(fundamentalsCacheId.size());
-    fundamentalsCache.resize(fundamentalsCacheId.size());
-}
-
-void corecvs::RelativeNonCentralRansacSolver::selectBest()
-{
-    size_t maxIdx = 0;
-    int maxCnt = currentScores[maxIdx];
-    for (size_t i = 1; i < currentScores.size(); ++i)
-        if (currentScores[i] > maxCnt)
-        {
-            maxIdx = i;
-            maxCnt = currentScores[i];
-        }
-    if (maxIdx >= currentScores.size())
-        return;
-    if (maxCnt > maxInliers)
-    {
-        maxInliers = maxCnt;
-        bestHypothesis = currentHypothesis[maxIdx];
-        bestInliers = currentInliers[maxIdx];
-    }
+  //  essentialsCache.resize(fundamentalsCacheId.size());
+  //  fundamentalsCache.resize(fundamentalsCacheId.size());
 }
 
 corecvs::Affine3DQ corecvs::RelativeNonCentralRansacSolver::getBestHypothesis() const
@@ -324,11 +283,10 @@ void corecvs::RelativeNonCentralRansacSolver::fit(double distanceGuess)
 void corecvs::RelativeNonCentralRansacSolver::updateInliers()
 {
     std::cout << "Prev inliers: " << maxInliers << std::endl;
-    currentHypothesis.clear();
+    Estimator estimator(this, inlierThreshold, restrictions, shift, scale);
     maxInliers = 0;
-    currentHypothesis.emplace_back(bestHypothesis);
-    scoreCurrent();
-    selectBest();
+    estimator.hypothesis.push_back(bestHypothesis);
+    estimator.selectInliers();
     std::cout << "New inliers: " << maxInliers << std::endl;
 }
 
@@ -336,4 +294,3 @@ std::vector<int> corecvs::RelativeNonCentralRansacSolver::getBestInliers() const
 {
     return bestInliers;
 }
-

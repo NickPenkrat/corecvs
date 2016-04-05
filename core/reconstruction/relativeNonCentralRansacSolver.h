@@ -14,13 +14,13 @@ namespace corecvs
 
 struct RelativeNonCentralRansacSolverSettings
 {
-    RelativeNonCentralRansacSolverSettings(size_t maxIterations = 500000, double inlierThreshold = 1.0)
+    RelativeNonCentralRansacSolverSettings(size_t maxIterations = 1000000, double inlierThreshold = 1.0)
         : maxIterations(maxIterations)
         , inlierThreshold(inlierThreshold)
     {
     }
-    size_t maxIterations = 1000000LLU;
-    double inlierThreshold = 1.0;
+    size_t maxIterations;
+    double inlierThreshold;
 
     enum class Restrictions
     {
@@ -32,6 +32,7 @@ struct RelativeNonCentralRansacSolverSettings
     Restrictions restrictions;
     corecvs::Vector3dd shift;
     double scale = 1.0;
+    double gamma = 0.001;
 };
 
 
@@ -58,6 +59,56 @@ public:
     double getGamma();
 
 private:
+    struct Estimator
+    {
+        void operator() (const corecvs::BlockedRange<int> &r);
+        Estimator(RelativeNonCentralRansacSolver *solver, double inlierThreshold, Restrictions restrictions, Vector3dd shift, double scale) : solver(solver), inlierThreshold(inlierThreshold), restrictions(restrictions), shift(shift), scale(scale)
+        {
+            rng = std::mt19937(std::random_device()());
+            fundamentalsCache.resize(solver->fundamentalsCacheId.size());
+            essentialsCache.resize(solver->fundamentalsCacheId.size());
+            pluckerRef.resize(SAMPLESIZE);
+            pluckerQuery.resize(SAMPLESIZE);
+        }
+
+        std::mt19937 rng;
+        void sampleModel();
+        void makeHypo();
+        void selectInliers();
+
+        size_t localMax = 0;
+        static const int SAMPLESIZE = 6;
+        int idxs[SAMPLESIZE];
+        double inlierThreshold, scale;
+
+        Vector3dd shift;
+        Restrictions restrictions;
+
+        RelativeNonCentralRansacSolver* solver;
+        std::vector<corecvs::Affine3DQ> hypothesis;
+        std::vector<std::vector<corecvs::Matrix33>> fundamentals;
+        std::vector<std::vector<corecvs::EssentialDecomposition>> essentials;
+        std::vector<std::pair<corecvs::Vector3dd, corecvs::Vector3dd>> pluckerRef, pluckerQuery;
+        std::vector<corecvs::Matrix33> fundamentalsCache;
+        std::vector<corecvs::EssentialDecomposition> essentialsCache;
+    };
+    struct ParallelEstimator
+    {
+        void operator() (const corecvs::BlockedRange<int> &r) const;
+        ParallelEstimator(RelativeNonCentralRansacSolver* solver, int batch) : solver(solver), batch(batch)
+        {
+        }
+        RelativeNonCentralRansacSolver *solver;
+        int batch;
+    };
+
+#ifdef WITH_TBB
+    tbb::mutex mutex;
+#endif
+    void accept(const Affine3DQ &hypo, const std::vector<int> &inliersNew);
+
+
+
     struct FunctorCost : corecvs::FunctionArgs
     {
         RelativeNonCentralRansacSolver *solver;
@@ -94,8 +145,11 @@ private:
     void scoreCurrent();
     void selectBest();
 
+    double nForGamma();
 #if 1
     void buildDependencies();
+    std::vector<int> dependencyList;
+    std::vector<std::pair<WPP, WPP>> fundamentalsCacheId;
 #endif
 
     std::mt19937 rng;
@@ -103,22 +157,16 @@ private:
     int maxInliers = 0;
     int nullInliers = 0;
     corecvs::Affine3DQ bestHypothesis;
-    std::vector<std::vector<corecvs::Matrix33>> fundamentals;
-    std::vector<std::vector<corecvs::EssentialDecomposition>> essentials;
-    std::vector<std::pair<corecvs::Vector3dd, corecvs::Vector3dd>> pluckerRef, pluckerQuery;
-    std::vector<corecvs::Affine3DQ> currentHypothesis;
-    std::vector<int> currentScores;
-    std::vector<std::vector<int>> currentInliers;
+//    std::vector<corecvs::Affine3DQ> currentHypothesis;
+//    std::vector<int> currentScores;
+//    std::vector<std::vector<int>> currentInliers;
     std::vector<int> bestInliers;
 
 #if 1
-    std::vector<int> dependencyList;
-    std::vector<corecvs::Matrix33> fundamentalsCache;
-    std::vector<corecvs::EssentialDecomposition> essentialsCache;
-    std::vector<std::pair<WPP, WPP>> fundamentalsCacheId;
 #endif
     CameraFixture* query;
     MatchContainer matchesRansac, matchesAll;
+    int batch = 100, batches = 64, usedEvals = 0;
 
     double totalSample = 0.0, totalEstiamte = 0.0, totalCheck = 0.0;
 };
