@@ -177,7 +177,13 @@ public:
     /**
      * Draw Double Buffer
      **/
-    void drawDoubleBuffer(const AbstractBuffer<double> &in);
+    enum DoubleDrawStyle {
+        STYLE_RAINBOW,
+        STYLE_GRAY,
+        STYLE_LOG,
+    };
+
+    void drawDoubleBuffer(const AbstractBuffer<double> &in, int style = STYLE_RAINBOW);
 
     void fillWithYUYV (uint8_t *yuyv);
     //void fillWith420P (uint8_t *y, uint8_t *u, uint8_t *v, int ly, int lu, int lv);

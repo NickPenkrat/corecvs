@@ -706,7 +706,7 @@ void RGB24Buffer::drawIsolines(
    delete_safe(values);
 }
 
-void RGB24Buffer::drawDoubleBuffer(const AbstractBuffer<double> &in)
+void RGB24Buffer::drawDoubleBuffer(const AbstractBuffer<double> &in, int style)
 {
     int mh = CORE_MIN(h, in.h);
     int mw = CORE_MIN(w, in.w);
@@ -722,11 +722,27 @@ void RGB24Buffer::drawDoubleBuffer(const AbstractBuffer<double> &in)
         }
     }
 
-    for (int i = 0; i < mh; i++)
+    SYNC_PRINT(("min %lf max %lf\n", min, max));
+
+    if (style == STYLE_RAINBOW)
     {
-        for (int j = 0; j < mw; j++)
+        for (int i = 0; i < mh; i++)
         {
-            element(i, j) = RGBColor::rainbow(lerp(0.0, 1.0, in.element(i,j), min, max));
+            for (int j = 0; j < mw; j++)
+            {
+                element(i, j) = RGBColor::rainbow(lerp(0.0, 1.0, in.element(i,j), min, max));
+            }
+        }
+    }
+
+    if (style == STYLE_GRAY || style == STYLE_LOG)
+    {
+        for (int i = 0; i < mh; i++)
+        {
+            for (int j = 0; j < mw; j++)
+            {
+                element(i, j) = RGBColor::gray(lerpLimit(0.0, 255.0, in.element(i,j), min, max));
+            }
         }
     }
 

@@ -112,15 +112,19 @@ public:
     CircleSpanIterator(const Circle2d &circle) : circle(circle)
     {
         radSQ = circle.r * circle.r;
-        currentY  = -circle.r + circle.c.y() - 1;
+        currentY  = circle.c.y() - circle.r  - 1;
         currentDX = 0;
     }
 
     bool step()
     {
-        SYNC_PRINT(("CircleSpanIterator::step(): called\n"));
+        //SYNC_PRINT(("CircleSpanIterator::step(): called %d\n", currentY));
         currentY++;
-        currentDX = (int)sqrt((float)(radSQ - (currentY - 0.5) * (currentY - 0.5)));
+        double h = currentY - 0.5 - circle.c.y();
+        double hsq = h * h;
+        currentDX = (int)sqrt((float)(radSQ - hsq));
+        if (currentY <= (circle.c.y() + circle.r))
+            return true;
         return false;
     }
 

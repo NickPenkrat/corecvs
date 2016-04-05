@@ -66,6 +66,28 @@ TEST(Draw, testCircles1)
     delete_safe(buffer);
 }
 
+TEST(Draw, testCircleIterator)
+{
+    RGB24Buffer *buffer = new RGB24Buffer(100, 100);
+
+
+    CircleSpanIterator inner(Circle2d(50, 50, 30));
+    while (inner.step())
+    {
+        LineSpanInt span = inner.getSpan();
+        for (int s = span.x1; s <= span.x2; s++)
+        {
+            if (buffer->isValidCoord(span.y, s)) {
+                buffer->element(span.y, s) = RGBColor::Red();
+            }
+        }
+    }
+
+
+    BMPLoader().save("circles-it.bmp", buffer);
+    delete_safe(buffer);
+}
+
 TEST(Draw, testRectangles)
 {
     int h = 100;
@@ -202,6 +224,114 @@ TEST(Draw, testFloodFill)
     //printf("Predicate  : %d\n", predicate.countPred);
     //printf("Mark       : %d\n", predicate.countMark);
     //printf("Double Mark: %d\n", predicate.doubleMark);
+
+    delete_safe(buffer);
+}
+
+TEST(Draw, testRobot)
+{
+    int h = 300;
+    int w = 300;
+
+    RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
+    AbstractPainter<RGB24Buffer> painter(buffer);
+
+    double r = 20;
+    Circle2d center  (150,150, r);
+    Circle2d perifery[4] =
+    {
+        Circle2d(100, 110, r),
+        Circle2d(200, 110, r),
+
+        Circle2d(110, 190, r),
+        Circle2d(190, 190, r)
+    };
+
+    double l1 = 50*1.4 - r;
+    double l2 = 50*1.4 + r ;
+
+
+
+    painter.drawCircle(center, RGBColor::Blue());
+
+    painter.drawCircle( perifery[0], RGBColor::Yellow());
+    painter.drawCircle( perifery[2], RGBColor::Yellow());
+
+    painter.drawCircle( perifery[1], RGBColor::Red());
+    painter.drawCircle( perifery[3], RGBColor::Red());
+
+    BMPLoader().save("robot.bmp", buffer);
+
+    AbstractBuffer<double> acc(buffer->getSize());
+
+   /** */
+
+    CircleSpanIterator outer(center);
+    while (outer.step())
+    {
+        LineSpanInt span = outer.getSpan();
+        for (int s = span.x1; s < span.x2; s++ )
+        {
+            CircleSpanIterator inner(Circle2d(s, span.y, r/2));
+            while (inner.step())
+            {
+                LineSpanInt span = inner.getSpan();
+                for (int s1 = span.x1; s1 < span.x2; s1++ )
+                {
+                    if (acc.isValidCoord(span.y, s1))
+                    {
+                        acc.element(span.y, s1)++;
+                    }
+                }
+            }
+        }
+    }
+
+    /**/
+    for (int c = 0; c < 4; c++)
+    {
+        CircleSpanIterator outer(perifery[c]);
+        while (outer.step())
+        {
+            LineSpanInt span = outer.getSpan();
+            for (int s = span.x1; s < span.x2; s++ )
+            {
+                CircleSpanIterator inner(Circle2d(s, span.y, l2));
+                while (inner.step())
+                {
+                    LineSpanInt span = inner.getSpan();
+                    for (int s1 = span.x1; s1 < span.x2; s1++ )
+                    {
+                        //SYNC_PRINT(("#"));
+                        if (acc.isValidCoord(span.y, s1))
+                        {
+                            acc.element(span.y, s1)++;
+                        }
+                    }
+                }
+
+                CircleSpanIterator inner1(Circle2d(s, span.y, l1));
+                while (inner1.step())
+                {
+                    LineSpanInt span = inner1.getSpan();
+                    for (int s1 = span.x1; s1 < span.x2; s1++ )
+                    {
+                        //SYNC_PRINT(("#"));
+                        if (acc.isValidCoord(span.y, s1))
+                        {
+                            acc.element(span.y, s1)--;
+                        }
+                    }
+                }
+            }
+
+        }
+
+    }
+
+
+    buffer->drawDoubleBuffer(acc);
+    BMPLoader().save("robot2.bmp", buffer);
 
     delete_safe(buffer);
 }
