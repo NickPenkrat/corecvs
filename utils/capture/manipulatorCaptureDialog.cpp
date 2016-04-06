@@ -70,6 +70,7 @@ void ManipulatorCaptureDialog::captureWithManipulator()
     {
         toggleUIEnabled(false);
         mPosition = ui->initialPositionBox->value();
+        mManipulator->moveToPosition(mPosition - 1);
         captureNextPosition();
     }
     else
