@@ -689,9 +689,30 @@ void RGB24Buffer::drawIsolines(
    delete_safe(values);
 }
 
-
-void RGB24Buffer::fillWithYUYV (uint8_t *yuyv)
+void RGB24Buffer::fillWithYUYV(uint8_t *data)
 {
+    fillWithYUVFormat(data, false);
+}
+
+void RGB24Buffer::fillWithUYVU(uint8_t *data)
+{
+    fillWithYUVFormat(data, true);
+}
+
+void RGB24Buffer::fillWithYUVFormat (uint8_t *yuyv, bool fillAsUYVY)
+{
+    int iy1 = 0;
+    int iu  = 1;
+    int iy2 = 2;
+    int iv  = 3;
+    if(fillAsUYVY)
+    {
+        iu  = 0;
+        iy1 = 1;
+        iv  = 2;
+        iy2 = 3;
+    }
+
     for (int i = 0; i < h; i++)
     {
         int j = 0;
@@ -702,10 +723,10 @@ void RGB24Buffer::fillWithYUYV (uint8_t *yuyv)
         {
             FixedVector<Int16x8,4> r = SSEReader8BBBB_DDDD::read((uint32_t *)yuyv);
 
-            Int16x8 cy1 = r[0] - Int16x8((uint16_t) 16);
-            Int16x8 cu  = r[1] - Int16x8((uint16_t)128);
-            Int16x8 cy2 = r[2] - Int16x8((uint16_t) 16);
-            Int16x8 cv  = r[3] - Int16x8((uint16_t)128);
+            Int16x8 cy1 = r[iy1] - Int16x8((uint16_t) 16);
+            Int16x8 cu  = r[iu]  - Int16x8((uint16_t)128);
+            Int16x8 cy2 = r[iy2] - Int16x8((uint16_t) 16);
+            Int16x8 cv  = r[iv]  - Int16x8((uint16_t)128);
 
             Int16x8 con0  ((int16_t)0);
             Int16x8 con255((int16_t)0xFF);
@@ -783,10 +804,10 @@ void RGB24Buffer::fillWithYUYV (uint8_t *yuyv)
 
         for (; j + 2 <= w; j+=2)
         {
-            int y1 = yuyv[0];
-            int u  = yuyv[1];
-            int y2 = yuyv[2];
-            int v  = yuyv[3];
+            int y1 = yuyv[iy1];
+            int u  = yuyv[iu];
+            int y2 = yuyv[iy2];
+            int v  = yuyv[iv];
 
             int cy1 = y1 -  16;
             int cu  = u  - 128;

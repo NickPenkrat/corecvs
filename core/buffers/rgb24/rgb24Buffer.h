@@ -171,8 +171,10 @@ public:
             double steps,
             FunctionArgs &f);
 
+    void fillWithYUYV(uint8_t *data);
+    void fillWithUYVU(uint8_t *data);
+    void fillWithYUVFormat(uint8_t *yuyv, bool fillAsUYVY = false);
 
-    void fillWithYUYV (uint8_t *yuyv);
     //void fillWith420P (uint8_t *y, uint8_t *u, uint8_t *v, int ly, int lu, int lv);
 
     void dropValueAndSatuation(void);
