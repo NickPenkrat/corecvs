@@ -2,11 +2,11 @@
 #include "log.h"
 
 cchar* DirectShowCameraDescriptor::codec_names[] = {
-    "yuyv",  "rgb",   "mjpeg",   "fjpeg"
+    "yuyv",  "rgb", "bayer8", "uyvy",  "mjpeg",   "fjpeg",
 };
 
 CAPTURE_FORMAT_TYPE DirectShowCameraDescriptor::codec_types[] = {
-    CAP_YUV, CAP_RGB, CAP_MJPEG, CAP_MJPEG //, CAP_I420
+    CAP_YUV, CAP_RGB, CAP_BAYER8, CAP_UYVY, CAP_MJPEG, CAP_MJPEG,  //, CAP_I420
 };
 
 uint DirectShowCameraDescriptor::codec_size = CORE_COUNT_OF(codec_names);
