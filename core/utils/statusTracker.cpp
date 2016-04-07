@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "statusTracker.h"
 
 void corecvs::StatusTracker::readLock() const
