@@ -5,6 +5,7 @@
 #include "multicameraTriangulator.h"
 #include "cameraFixture.h"
 #include "fixtureScene.h"
+#include "statusTracker.h"
 
 using namespace corecvs;
 

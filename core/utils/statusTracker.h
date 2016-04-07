@@ -2,6 +2,8 @@
 #define STATUS_TRACKER
 
 #include <string>
+//#include <iostream>
+
 #ifdef WITH_TBB
 #include <tbb/tbb.h>
 #endif
@@ -17,6 +19,11 @@ struct Status
 
     Status() : currentAction("NONE"), completedActions(0), totalActions(0), startedActions(0)
     {}
+
+    bool IsCompleted(const std::string &action)
+    {
+        return (action == currentAction && totalActions == completedActions);
+    }
 };
 
 class StatusTracker

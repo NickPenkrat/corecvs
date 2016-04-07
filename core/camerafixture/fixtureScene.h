@@ -8,6 +8,7 @@
 namespace corecvs {
 
 class CameraFixture;
+class StatusTracker;
 
 
 /* Heap of Calibration related stuff */
@@ -18,7 +19,6 @@ public:
     typedef FixtureCamera     CameraType;
     typedef CameraFixture     FixtureType;
     typedef SceneFeaturePoint PointType;
-
 
     FixtureScene();
 
@@ -40,7 +40,10 @@ public:
      **/
     Affine3DQ worldFrameToCameraFrame;
 
-    std::string nameId;
+    std::string                   nameId;
+
+    StatusTracker *               state = nullptr;
+    StatusTracker *               ProcessState = nullptr;
 
     /* This is for future, when all the heap/memory will be completed */
     vector<FixtureScenePart *>    mOwnedObjects;
@@ -52,6 +55,8 @@ public:
     void projectForward(SceneFeaturePoint::PointType mask, bool round = false);
     void triangulate   (SceneFeaturePoint * point);
 
+    /** Accessors
+     **/
     const vector<CameraFixture *>&      fixtures() const       { return mFixtures; }
           vector<CameraFixture *>&      fixtures()             { return mFixtures; }
 
