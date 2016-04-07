@@ -335,6 +335,11 @@ void DistortionWidget::doLinesTransform()
     solver.lineList = &mUi->widget->mFeatures;
     solver.parameters = params;
 
+    if (solver.lineList->mPaths.size() == 0) {
+        L_ERROR_P("doLinesTransform(): no data to process!");
+        return;
+    }
+
     RadialCorrection correction = solver.solve();
 
     L_INFO_P("Inverting the distortion buffer");
@@ -353,6 +358,7 @@ void DistortionWidget::doLinesTransform()
 
     mUi->lensCorrectionWidget->setParameters(correction.mParams);
     L_INFO_P("Ending distortion calibration");
+
     updateScore();
 }
 

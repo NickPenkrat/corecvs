@@ -71,7 +71,9 @@ RadialCorrection LMLinesDistortionSolver::solve()
     cout << "Guess center:" << initialCenter << std::endl;
 
     vector<vector<Vector2dd> > straights = lineList->getLines();
+
     L_INFO_P("Starting distortion calibration on %d lines", straights.size());
+    CORE_ASSERT_TRUE_S(straights.size() > 0);
 
     RadialCorrection correction(LensDistortionModelParameters(
        initialCenter.x(),
@@ -111,10 +113,11 @@ RadialCorrection LMLinesDistortionSolver::solve()
     vector<double> straightParams = straightLevMarq.fit(first, value);
 
     L_INFO_P("Ending distortion calibration");
+
 //    updateScore();
     delete costFunction;
-    return modelFactory.getRadial(&straightParams[0]);
 
+    return modelFactory.getRadial(&straightParams[0]);
 }
 
 void LMLinesDistortionSolver::computeCosts(const RadialCorrection &correction, bool updatePoints)
