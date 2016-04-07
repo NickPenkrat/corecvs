@@ -1,11 +1,11 @@
 /**
  * \file main_test_draw.cpp
- * \brief This is the main file for the test draw 
+ * \brief This is the main file for the test draw
  *
  * \date Apr 19, 2011
  * \author alexander
  *
- * \ingroup autotest  
+ * \ingroup autotest
  */
 
 #include <iostream>
@@ -16,6 +16,7 @@
 #include "rgb24Buffer.h"
 #include "bmpLoader.h"
 #include "abstractPainter.h"
+#include "simpleRenderer.h"
 
 using namespace corecvs;
 
@@ -61,6 +62,44 @@ TEST(Draw, testCircles1)
     delete_safe(buffer);
 }
 
+TEST(Draw, testRectangles)
+{
+    int h = 100;
+    int w = 100;
+
+    RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
+
+    for (int i = 1; i < 8; i++) {
+        int pos = (i* (i - 1)) / 2 + 1;
+
+        buffer->drawRectangle( pos,  pos, i, i, RGBColor::Red()  , 0);
+
+        buffer->drawRectangle(50 + pos,  pos, i, i, RGBColor::Green(), 1);
+        buffer->drawRectangle( pos, 50 + pos, i, i, RGBColor::Blue() , 2);
+    }
+
+    BMPLoader().save("rects.bmp", buffer);
+    delete_safe(buffer);
+}
+
+
+TEST(Draw, testSpanDraw)
+{
+    int h = 100;
+    int w = 100;
+
+    RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
+    TrapezoidSpanIterator it(10, 40, 10, 30, 40, 90);
+    while (it.step())
+    {
+        LineSpanInt span = it.getSpan();
+        buffer->drawHLine(span.x1, span.y, span.x2, RGBColor::Red());
+    }
+
+    BMPLoader().save("spandraw.bmp", buffer);
+
+    delete_safe(buffer);
+}
 
 TEST(Draw, testFloodFill)
 {

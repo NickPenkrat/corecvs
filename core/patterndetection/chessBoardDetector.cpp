@@ -9,32 +9,36 @@ ChessboardDetector::ChessboardDetector (
         ChessBoardAssemblerParams assemblerParams
     )
     : CheckerboardDetectionParameters(params),
-      BoardAligner(alignerParams),
+      aligner(new BoardAligner(alignerParams)),
       detector(detectorParams),
       stats(NULL)
 {
-    assemblerParams.hypothesisDimensions = 0;
-    switch (type)
+
+    BoardAlignerParams activeAlignerParams = aligner->getAlignerParams();
+
+    assemblerParams.setHypothesisDimensions(0);
+
+    switch (aligner->type)
     {
         case AlignmentType::FIT_MARKER_ORIENTATION:
         case AlignmentType::FIT_MARKERS:
             break;
         case AlignmentType::FIT_WIDTH:
-            assemblerParams.hypothesisDimensions = 1;
-            assemblerParams.hypothesisDim[0] = idealWidth;
+            assemblerParams.setHypothesisDimensions(1);
+            assemblerParams.setHypothesisDimFirst(activeAlignerParams.idealWidth);
             break;
         case AlignmentType::FIT_HEIGHT:
-            assemblerParams.hypothesisDimensions = 1;
-            assemblerParams.hypothesisDim[0] = idealHeight;
+            assemblerParams.setHypothesisDimensions(1);
+            assemblerParams.setHypothesisDimFirst(activeAlignerParams.idealHeight);
             break;
         case AlignmentType::FIT_ALL:
-            assemblerParams.hypothesisDimensions = 2;
-            assemblerParams.hypothesisDim[0] = idealWidth;
-            assemblerParams.hypothesisDim[1] = idealHeight;
+            assemblerParams.setHypothesisDimensions(2);
+            assemblerParams.setHypothesisDimFirst(activeAlignerParams.idealWidth);
+            assemblerParams.setHypothesisDimSecond(activeAlignerParams.idealHeight);
             break;
     }
     assembler = ChessBoardAssembler(assemblerParams);
-    sharedGenerator = std::shared_ptr<CirclePatternGenerator>(BoardAligner::FillGenerator(*this));
+    sharedGenerator = std::shared_ptr<CirclePatternGenerator>(aligner->FillGenerator(activeAlignerParams));
 }
 
 ChessBoardDetectorMode ChessboardDetector::getMode(const BoardAlignerParams &params)
@@ -78,40 +82,33 @@ bool ChessboardDetector::detectPattern(corecvs::RGB24Buffer &buffer)
 
 bool ChessboardDetector::detectPattern(DpImage &buffer)
 {
-    if (stats != NULL) stats->startInterval();
+    BoardAlignerParams activeAlignerParams = aligner->getAlignerParams();
 
-    ChessBoardDetectorMode mode =  getMode(*this);
+    ChessBoardDetectorMode mode =  getMode(activeAlignerParams);
     corners.clear();
     bestPattern = RectangularGridPattern();
 
-    std::string prefix;
-    if (stats != NULL) {
-        prefix = stats->prefix;
-        stats->prefix = "Corners -> " + stats->prefix;
-        detector.setStatistics(stats);
-    }
+    if (stats != NULL) stats->startInterval();
+    if (stats != NULL) detector.setStatistics(stats->enterContext("Corners->"));
 
     detector.detectCorners(buffer, corners);
 
-    if (stats != NULL) stats->prefix = prefix;
+    if (stats != NULL) stats->leaveContext();
     if (stats != NULL) stats->resetInterval("Corners");
 
     std::vector<std::vector<std::vector<corecvs::Vector2dd>>> boards;
 
-    if (stats != NULL) {
-        prefix = stats->prefix;
-        stats->prefix = "Assembler -> " + stats->prefix;
-        assembler.setStatistics(stats);
-    }
-    BoardAlignerParams params(*this);
-    sharedGenerator->flushCache();
-    BoardAligner aligner(params, sharedGenerator);
-    assembler.assembleBoards(corners, boards, &aligner, &buffer);
-    if (stats != NULL) stats->prefix = prefix;
+    if (stats != NULL) assembler.setStatistics(stats->enterContext("Assembler -> "));
 
-    if (!boards.size())
+    sharedGenerator->flushCache();
+    BoardAligner activeAligner(activeAlignerParams, sharedGenerator);
+
+    assembler.assembleBoards(corners, boards, &activeAligner, &buffer);
+
+    if (boards.empty())
         return false;
 
+    if (stats != NULL) stats->leaveContext();
     if (stats != NULL) stats->resetInterval("Assemble");
 
     bool /*transposed = false,*/ found = false;
@@ -124,21 +121,21 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
         int bw = (int)b[0].size();
         int bh = (int)b.size();
 
-        bool fitw = (bw == idealWidth);
-        bool fith = (bh == idealHeight);
+        bool fitw = (bw == activeAlignerParams.idealWidth);
+        bool fith = (bh == activeAlignerParams.idealHeight);
 
 
         if ((!checkW || fitw) && (!checkH || fith))
         {
-            bestBoard = b;
+            aligner->bestBoard = b;
             found = true;
             break;
         }
-        fitw = (bh ==  idealWidth);
-        fith = (bw == idealHeight);
+        fitw = (bh == activeAlignerParams.idealWidth);
+        fith = (bw == activeAlignerParams.idealHeight);
         if ((!checkW || fitw) && (!checkH || fith))
         {
-            bestBoard = b;
+            aligner->bestBoard = b;
             found = true;
             //transposed = true;
             break;
@@ -148,11 +145,11 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
     if (!found)
         return false;
 
-    bool aligned = align(buffer);
+    bool aligned = aligner->align(buffer);
     if (aligned)
     {
         std::cout << (aligned ? "ALIGN OK" : "ALIGN FAILED") << std::endl;
-        result = observationList;
+        result = aligner->observationList;
         for (auto& p: result)
         {
             p.point.x() *= cellSizeHor();
@@ -171,12 +168,14 @@ void ChessboardDetector::getPointData(ObservationList &observations)
 
 void ChessboardDetector::drawClassifier(corecvs::RGB24Buffer &buffer)
 {
-    BoardAligner::drawDebugInfo(buffer);
+    aligner->drawDebugInfo(buffer);
 }
 
 // FIXME: Temporary code; needs serious rework
 bool ChessboardDetector::classify(DpImage &img, CirclePatternGenerator &gen, corecvs::RGB24Buffer &buffer)
 {
+    vector<vector<Vector2dd>> &bestBoard = aligner->bestBoard;
+
     int w = (int)bestBoard[0].size();
     int h = (int)bestBoard.size();
     std::vector<std::vector<int>> classifier(h - 1);
@@ -243,37 +242,40 @@ bool ChessboardDetector::classify(DpImage &img, CirclePatternGenerator &gen, cor
                     }
                 }
             }
-            if (cl >= 0){
+            if (cl >= 0)
+            {
                 DpImage maskA(buffer.h, buffer.w), maskB(buffer.h, buffer.w);
-                corecvs::Vector2dd A = (orientation * corecvs::Vector3dd(0.0, 0.0, 1.0)).project(),
-                                B = (orientation * corecvs::Vector3dd(1.0, 0.0, 1.0)).project(),
-                                C = (orientation * corecvs::Vector3dd(0.0, 1.0, 1.0)).project();
+                Vector2dd A = (orientation * Vector3dd(0.0, 0.0, 1.0)).project(),
+                          B = (orientation * Vector3dd(1.0, 0.0, 1.0)).project(),
+                          C = (orientation * Vector3dd(0.0, 1.0, 1.0)).project();
                 std::cout << "ABC: " <<  A << " " << B << " " << C << std::endl;
+
                 for (int i = 0; i < 1000; ++i)
                 {
                     double alpha = i * 1e-3;
-                    corecvs::Vector2dd AB = A * alpha + B * (1.0 - alpha);
-                    corecvs::Vector2dd AC = A * alpha + C * (1.0 - alpha);
-                    corecvs::Vector3dd ab = res * corecvs::Vector3dd(AB[0], AB[1], 1.0);
-                    corecvs::Vector3dd ac = res * corecvs::Vector3dd(AC[0], AC[1], 1.0);
-                                    ab = ab * (1.0 / ab[2]);
-                                    int xxx = ab[0], yyy = ab[1];
-                                    for (int xx = xxx; xx < xxx + 3; ++xx)
-                                        for (int yy = yyy; yy < yyy + 3; ++yy)
-                                    if (xx >= 0 && xx < img.w && yy >= 0 && yy < img.h)
-                                    {
-                                        maskA.element(yy, xx) = 1.0;
-                                        fin.element(yy, xx) = 1.0;
-                                    }
-                                    ac = ac * (1.0 / ac[2]);
-                                    xxx = ac[0], yyy = ac[1];
-                                    for (int xx = xxx; xx < xxx + 3; ++xx)
-                                        for (int yy = yyy; yy < yyy + 3; ++yy)
-                                    if (xx >= 0 && xx < img.w && yy >= 0 && yy < img.h)
-                                    {
-                                        fin.element(yy, xx) = 1.0;
-                                        maskB.element(yy, xx) = 1.0;
-                                    }
+                    Vector2dd AB = A * alpha + B * (1.0 - alpha);
+                    Vector2dd AC = A * alpha + C * (1.0 - alpha);
+                    Vector3dd ab = res * Vector3dd(AB[0], AB[1], 1.0);
+                    Vector3dd ac = res * Vector3dd(AC[0], AC[1], 1.0);
+
+                    ab = ab * (1.0 / ab[2]);
+                    int xxx = ab[0], yyy = ab[1];
+                    for (int xx = xxx; xx < xxx + 3; ++xx)
+                        for (int yy = yyy; yy < yyy + 3; ++yy)
+                    if (xx >= 0 && xx < img.w && yy >= 0 && yy < img.h)
+                    {
+                        maskA.element(yy, xx) = 1.0;
+                        fin.element(yy, xx) = 1.0;
+                    }
+                    ac = ac * (1.0 / ac[2]);
+                    xxx = ac[0], yyy = ac[1];
+                    for (int xx = xxx; xx < xxx + 3; ++xx)
+                        for (int yy = yyy; yy < yyy + 3; ++yy)
+                    if (xx >= 0 && xx < img.w && yy >= 0 && yy < img.h)
+                    {
+                        fin.element(yy, xx) = 1.0;
+                        maskB.element(yy, xx) = 1.0;
+                    }
 
                 }
                 for (int i = 0; i < buffer.h; ++i)
@@ -281,9 +283,9 @@ bool ChessboardDetector::classify(DpImage &img, CirclePatternGenerator &gen, cor
                     for (int j = 0; j < buffer.w; ++j)
                     {
                         if (maskA.element(i, j) > 0.0)
-                            buffer.element(i, j) = RGBColor(0xff0000);
+                            buffer.element(i, j) = RGBColor::Blue();
                         if (maskB.element(i, j) > 0.0)
-                            buffer.element(i, j) = RGBColor(0x00ff00);
+                            buffer.element(i, j) = RGBColor::Green();
                     }
                 }
             }
@@ -310,4 +312,21 @@ Statistics *ChessboardDetector::getStatistics()
 {
     return stats;
 }
+
+#if 0
+void ChessboardDetector::dumpState()
+{
+    PrinterVisitor printer(2,2);
+    cout << "ChessboardDetector::dumpState():We are using following configs" << endl;
+
+    cout << "CheckerboardDetectionParameters:"  << endl;
+    static_cast<CheckerboardDetectionParameters *>(this)->accept(printer);
+    /*cout << "BoardAlignerParams:"  << endl;
+    boardParams.accept(printer);*/
+    cout << "ChessBoardAssemblerParams:"  << endl;
+    static_cast<ChessBoardAssemblerParams *>(&assembler)->accept(printer);
+    cout << "ChessBoardCornerDetectorParams:"  << endl;
+    static_cast<ChessBoardCornerDetectorParams *>(&detector)->accept(printer);
+}
+#endif
 

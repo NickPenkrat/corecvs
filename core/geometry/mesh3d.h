@@ -93,9 +93,9 @@ public:
 
     void addLine(Vector3dd point1, Vector3dd point2);
     void addTriangle(Vector3dd point1, Vector3dd point2, Vector3dd point3);
-    void addTriangle(const Triangled &triangle);
+    void addTriangle(const Triangle3dd &triangle);
 
-    Triangled getFaceAsTrinagle(size_t number);
+    Triangle3dd getFaceAsTrinagle(size_t number);
 
     void addSphere    (Vector3dd center, double radius, int step);
     void addCylinder  (Vector3dd center, double radius, double height, int step = 20, double phase = 0.0);

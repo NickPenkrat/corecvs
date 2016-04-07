@@ -43,13 +43,14 @@ for (MODULE, CORE_SUBMODULES) {
 
 include(xml/generated/generated.pri)
 
-OTHER_FILES +=            \
-    xml/parameters.xml    \
-    xml/bufferFilters.xml \
-    xml/clustering1.xml   \
-    xml/filterBlock.xml   \
-    xml/precise.xml       \
-    xml/distortion.xml    \
+OTHER_FILES +=              \
+    xml/parameters.xml      \
+    xml/bufferFilters.xml   \
+    xml/clustering1.xml     \
+    xml/filterBlock.xml     \
+    xml/precise.xml         \
+    xml/distortion.xml      \
+    xml/patternDetector.xml \
 
 OTHER_FILES +=            \
     ../tools/generator/regen-core.sh \

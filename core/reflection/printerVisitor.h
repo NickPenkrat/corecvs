@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <iostream>
+#include <sstream>
 
 #include "reflection.h"
 
@@ -54,6 +55,19 @@ public:
         for (int i = 0; i < fields.size(); i++)
         {
             fields[i].accept(*this);
+        }
+        indentation -= dIndent;
+    }
+
+    template <typename innerType>
+    void visit(std::vector<innerType> &field, const char* arrayName)
+    {
+        indentation += dIndent;
+        for (size_t i = 0; i < field.size(); i++)
+        {
+            std::ostringstream ss;
+            ss << arrayName << "[" <<  i << "]";
+            visit<innerType>(field[i], ss.str().c_str());
         }
         indentation -= dIndent;
     }

@@ -5,8 +5,7 @@
  * \file gradientDescent.h
  * \brief Gradient Descent algorithms for minimizing the functions
  *
- * \date Oct 20, 2011
- * \author alexander
+ * \date Oct 20, 2011 
  */
 
 #include <limits>

@@ -227,7 +227,9 @@ enums+=" checkerboardDetectionAlgorithm"
 full_ui_classes+=" checkerboardDetectionParameters"
 full_ui_classes+=" lineDistortionEstimatorParameters"
 full_ui_classes+=" distortionApplicationParameters"
-
+full_ui_classes+=" chessBoardCornerDetectorParamsBase"
+full_ui_classes+=" chessBoardAssemblerParamsBase"
+full_ui_classes+=" bitcodeBoardParamsBase"
 
 PRIFILE="${DST_DIR}/generated.pri"
 
