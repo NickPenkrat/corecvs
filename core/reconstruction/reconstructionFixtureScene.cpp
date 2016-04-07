@@ -16,6 +16,26 @@ ReconstructionFixtureScene::ReconstructionFixtureScene()
 {
 }
 
+
+void ReconstructionFixtureScene::transform(const corecvs::Affine3DQ &transform, double scale)
+{
+    std::cout << "RFS::transform::parent" << std::endl;
+    FixtureScene::transform(transform, scale);
+    std::cout << "RFS::transform::points" << std::endl;
+    corecvs::parallelable_for(0, (int)trackedFeatures.size(), [&](const corecvs::BlockedRange<int> &r) { for (int i = r.begin(); i < r.end(); ++i)
+            { auto& pt = trackedFeatures[i];
+              pt->reprojectedPosition = pt->triangulate(true);
+              }
+              });
+    std::cout << "RFS::transform::finished" << std::endl;
+}
+
+void ReconstructionFixtureScene::printPosStats()
+{
+    for (auto ptr: placedFixtures)
+        std::cout << ptr->name << " " << ptr->location.shift << ptr->location.rotor << std::endl;
+}
+
 void ReconstructionFixtureScene::printMatchStats()
 {
     std::vector<CameraFixture*> fix;
@@ -56,6 +76,29 @@ void ReconstructionFixtureScene::printMatchStats()
     }
 }
 
+void ReconstructionFixtureScene::printTrackStats()
+{
+    std::unordered_map<std::pair<CameraFixture*, CameraFixture*>, int> cntr;
+    for (auto& pt: trackedFeatures)
+        for (auto& o1: pt->observations__)
+            for (auto &o2: pt->observations__)
+                ++cntr[std::make_pair(o1.second.cameraFixture, o2.second.cameraFixture)];
+    std::cout << "\t";
+    for (auto& cf: placedFixtures)
+        std::cout << cf->name << "\t";
+    std::cout << std::endl;
+    for (auto& A: placedFixtures)
+    {
+        std::cout << A->name << "\t";
+        for (auto& B: placedFixtures)
+        {
+            std::cout << cntr[std::make_pair(A, B)] << "\t";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+}
+
 FixtureScene* ReconstructionFixtureScene::dumbify()
 {
     auto dumb = new FixtureScene();
@@ -91,6 +134,37 @@ FixtureScene* ReconstructionFixtureScene::dumbify()
         }
     }
     return dumb;
+}
+
+void ReconstructionFixtureScene::pruneTracks(double threshold)
+{
+    int id = 0;
+    for (auto& pt: trackedFeatures)
+    {
+        auto pos = pt->reprojectedPosition;
+        double ssq = 0.0, cnt = 0.0;
+        for (auto& obs: pt->observations__)
+        {
+            auto err = obs.first.u->reprojectionError(pos, obs.second.observation, obs.first.v);
+            ssq += !err * !err;
+            cnt += 1.0;
+        }
+        if (ssq / cnt > threshold * threshold)
+        {
+            trackedFeatures[id++] = pt;
+        }
+        else
+        {
+            std::vector<std::pair<WPP, int>> removal;
+            for (auto& m: trackMap)
+                for (auto& md: m.second)
+                    if (md.second == pt)
+                        removal.emplace_back(m.first, md.first);
+            for (auto& d: removal)
+                trackMap[d.first].erase(d.second);
+        }
+    }
+    trackedFeatures.resize(id);
 }
 
 void ReconstructionFixtureScene::deleteCamera(FixtureCamera *camera)
@@ -370,10 +444,12 @@ void ParallelTrackPainter::operator() (const corecvs::BlockedRange<int> &r) cons
     {
         for (int ii = r.begin(); ii < r.end(); ++ii)
         {
+#if 1
             int i = ii % images.size(),
                 j = ii / images.size();
-            if (i > j)
+            if (i >= j)
                 continue;
+#endif
 
             auto& imgA = images[i],
                 & imgB = images[j];
@@ -416,8 +492,14 @@ void ParallelTrackPainter::operator() (const corecvs::BlockedRange<int> &r) cons
 
                 painter.drawFormat(obsA->observation[0] + 5, obsA->observation[1], colorizer[0][tf], 1,  tf->name.c_str());
                 painter.drawCircle(obsA->observation[0], obsA->observation[1], 3, colorizer[0][tf]);
-                painter.drawFormat(obsB->observation[0] + 5, obsB->observation[1], colorizer[0][tf], 1,  tf->name.c_str());
-                painter.drawCircle(obsB->observation[0], obsB->observation[1], 3, colorizer[0][tf]);
+                painter.drawFormat(obsB->observation[0] + 5, obsB->observation[1] + offH, colorizer[0][tf], 1,  tf->name.c_str());
+                painter.drawCircle(obsB->observation[0], obsB->observation[1] + offH, 3, colorizer[0][tf]);
+                dst.drawLine(
+                        obsB->observation[0],
+                        obsB->observation[1] + offH,
+                        obsA->observation[0],
+                        obsA->observation[1],
+                        colorizer[0][tf]);
                 painted = true;
             }
             if (!painted)

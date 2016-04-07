@@ -69,6 +69,7 @@ public:
     void filterEssentialRansac(WPP a, WPP b, EssentialFilterParams params);
     void filterEssentialRansac(const std::vector<CameraFixture*> &lhs, const std::vector<CameraFixture*> &rhs, EssentialFilterParams params);
     void remove(WPP a, WPP b, std::vector<int> idx);
+    void pruneTracks(double threshold);
 
 
     //\brief Returns number of FixtureCamera's in placedFixtures fixtures
@@ -103,6 +104,10 @@ public:
     bool havePoint(SceneFeaturePoint* point);
 
     void printMatchStats();
+    void printTrackStats();
+    void printPosStats();
+
+    void transform(const corecvs::Affine3DQ &transform, const double scale = 1.0);
 
     friend std::ostream& operator<< (std::ostream& os, ReconstructionFixtureScene &rfs)
     {
