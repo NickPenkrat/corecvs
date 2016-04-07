@@ -3,18 +3,14 @@
 
 namespace corecvs {
 
-ExtensiveCoding::ExtensiveCoding(int _inbits) :
-    LUT(NULL)
+ExtensiveCoding::ExtensiveCoding(int inbits)
+    : mLUT(NULL)
 {
-     inbits = _inbits;
-     int effectiveBits = getNearUpperPowerOf2(inbits , addbits);
-     outbits = inbits + addbits;
+    mInbits = inbits;
+    int effectiveBits = getNearUpperPowerOf2(inbits, mAddbits);
+    mOutbits = mInbits + mAddbits;
 
-     LUT = new uint32_t[1 << outbits];
-
-
-
-
+    mLUT = new uint32_t[1 << mOutbits];
 }
 
 uint32_t ExtensiveCoding::encode(uint32_t input)
@@ -29,7 +25,7 @@ uint32_t ExtensiveCoding::decode(uint32_t input)
 
 ExtensiveCoding::~ExtensiveCoding()
 {
-    delete_safe(LUT);
+    delete_safe(mLUT);
 }
 
 } // namespace corecvs
