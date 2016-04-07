@@ -174,9 +174,11 @@ void RotaryTableControlWidget::execute()
 void RotaryTableControlWidget::executeAndIncrement()
 {
     execute();
-    selected++;
-    selected = selected % positions.size();
-    selectedToCurrent();
+    if (positions.size() > 0)
+    {
+        selected = (++selected) % positions.size();
+        selectedToCurrent();
+    }
     updateState();
     updateTable();
 }
@@ -281,7 +283,7 @@ void RotaryTableControlWidget::tableCellDoubleClicked(int row, int /*column*/)
 
 QString RotaryTableControlWidget::getPathScriptAll()
 {
-    return mScriptsPath + PATH_SEPARATOR + "_autoplay_rot_all.txt";
+    return (mScriptsPath.isEmpty() ? "." : mScriptsPath) + PATH_SEPARATOR + "_autoplay_rot_all.txt";
 }
 
 QString RotaryTableControlWidget::getPathScript(int iy, int ir, int ip)
@@ -289,7 +291,7 @@ QString RotaryTableControlWidget::getPathScript(int iy, int ir, int ip)
     char filename[256];
     snprintf2buf(filename, "_autoplay_rot_O=%03d_I=%03d_M=%02d.txt", iy, ir, ip);
 
-    return mScriptsPath + PATH_SEPARATOR + filename;
+    return (mScriptsPath.isEmpty() ? "." : mScriptsPath) + PATH_SEPARATOR + filename;
 }
 
 void RotaryTableControlWidget::addCmdsToScriptAll(const string &s)
