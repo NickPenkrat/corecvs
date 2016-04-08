@@ -15,6 +15,7 @@ class ObservationList : public std::vector<PointObservation>
 {
 public:
     int patternIdentity = -1;
+
     template<class VisitorType>
         void accept(VisitorType &visitor)
         {
@@ -28,7 +29,7 @@ public:
                 ss << "a[" << i << "]";
                 visitor.visit(operator [](i), PointObservation(), ss.str().c_str());
             }
-        visitor.visit(patternIdentity, -1, "patternIdentity");
+            visitor.visit(patternIdentity, -1, "patternIdentity");
         }
 };
 

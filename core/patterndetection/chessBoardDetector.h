@@ -13,6 +13,10 @@
 #include "circlePatternGenerator.h"
 #include "boardAligner.h"
 
+/* Whole file should be in the namespace */
+using corecvs::ObservationList;
+using corecvs::RGB24Buffer;
+
 enum class ChessBoardDetectorMode
 {
     BEST = 0,
@@ -23,10 +27,14 @@ template<>
 struct is_bitmask<ChessBoardDetectorMode> : std::true_type {};
 
 class ChessboardDetector : CheckerboardDetectionParameters,
-                           public PatternDetector,
-                           protected BoardAligner
+                           public PatternDetector
 {
 public:
+    /**
+     *  Aligner manages the form of the checkerboard as well as positioning inside it
+     **/
+    BoardAligner *aligner;
+
     ChessboardDetector(
             CheckerboardDetectionParameters params = CheckerboardDetectionParameters(),
             BoardAlignerParams alignerParams = BoardAlignerParams(),
@@ -53,21 +61,27 @@ public:
     void setStatistics(Statistics *stats);
     Statistics *getStatistics();
 
-    size_t detectPatterns(corecvs::RGB24Buffer &buffer, std::vector<ObservationList> &patterns);
+
+    size_t detectPatterns(RGB24Buffer &buffer, std::vector<ObservationList> &patterns);
     size_t detectPatterns(corecvs::DpImage     &buffer);
 
-    void getPatterns(std::vector<corecvs::ObservationList> &patterns);
+    void getPatterns(std::vector<ObservationList> &patterns);
 
-    void drawCorners(corecvs::RGB24Buffer &image);
+    void drawCorners(RGB24Buffer &image);
+
+#if 0
+    void dumpState();
+#endif
 
 private:
 
     RectangularGridPattern bestPattern;
-    corecvs::ObservationList result;
-	std::vector<corecvs::ObservationList> allPatterns;
+    ObservationList result;
+
+    std::vector<ObservationList> allPatterns;
     std::vector<OrientedCorner> corners;
 
-    ChessBoardCornerDetector detector;
+
     ChessBoardAssembler assembler;
     std::shared_ptr<CirclePatternGenerator> sharedGenerator;
 
@@ -75,6 +89,9 @@ private:
     Statistics *stats;
 
     bool detectPatternCandidates(DpImage &buffer, std::vector<std::vector<std::vector<corecvs::Vector2dd>>> &boards);
+
+public:  /* We need generic interface for debug data. It could be hidden inside Statistics*/
+    ChessBoardCornerDetector detector;
 
 };
 

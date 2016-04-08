@@ -354,39 +354,54 @@ void RGB24Buffer::drawCorrespondenceList(CorrespondenceList *src, double colorSc
 }
 
 
-
-
-#if 0
-void RGB24Buffer::drawRectangle(const Rectangle<int32_t> &rect, RGBColor color, int style)
+void RGB24Buffer::drawRectangle(int x, int y, int w, int h, RGBColor color, int style)
 {
+    w--;
+    h--;
+
     if (style == 1)
     {
-        this->drawCrosshare3(rect.corner.y()                ,rect.corner.x(), color);
-        this->drawCrosshare3(rect.corner.y() + rect.size.y(),rect.corner.x(), color);
-        this->drawCrosshare3(rect.corner.y()                ,rect.corner.x() + rect.size.x(), color);
-        this->drawCrosshare3(rect.corner.y() + rect.size.y(),rect.corner.x() + rect.size.x(), color);
+        this->drawCrosshare3(x    , y    , color);
+        this->drawCrosshare3(x + w, y    , color);
+        this->drawCrosshare3(x    , y + h, color);
+        this->drawCrosshare3(x + w, y + h, color);
         return;
     }
 
     if (style == 0)
     {
-        for (int i = 0; i < rect.size.y(); i++)
+        for (int i = 0; i <= h; i++)
         {
-            this->element(rect.corner.y() + i, rect.corner.x()) = color;
-            this->element(rect.corner.y() + i, rect.corner.x() + rect.size.x()) = color;
+            this->element(y + i, x    ) = color;
+            this->element(y + i, x + w) = color;
         }
 
-        for (int j = 1; j < rect.size.x() - 1; j++)
+        for (int j = 1; j <= w; j++)
         {
-            this->element(rect.corner.y(), rect.corner.x() + j) = color;
-            this->element(rect.corner.y() + rect.size.y(), rect.corner.x() +  j) = color;
+            this->element(y    , x + j) = color;
+            this->element(y + h, x + j) = color;
         }
     }
 
+    if (style == 2) {
+        for (int i = 0; i <= h; i++)
+        {
+            RGBColor *line = &element(i + y, x);
+            for (int j = 0; j <= w; j++)
+            {
+                *line = color;
+                line++;
+            }
+        }
 
-
+    }
 }
-#endif
+
+void RGB24Buffer::drawRectangle(const Rectangle<int32_t> &rect, RGBColor color, int style)
+{
+    drawRectangle(rect.corner.x(), rect.corner.y(), rect.size.x(), rect.size.y(), color, style);
+}
+
 
 #if 0
 void RGB24Buffer::rgb24DrawDisplacementBuffer(RGB24Buffer *dst, DisplacementBuffer *src, double step)
@@ -689,6 +704,47 @@ void RGB24Buffer::drawIsolines(
    delete_safe(values);
 }
 
+void RGB24Buffer::drawDoubleBuffer(const AbstractBuffer<double> &in, int style)
+{
+    int mh = CORE_MIN(h, in.h);
+    int mw = CORE_MIN(w, in.w);
+
+    double min = std::numeric_limits<double>::max();
+    double max = std::numeric_limits<double>::lowest();
+    for (int i = 0; i < mh; i++)
+    {
+        for (int j = 0; j < mw; j++)
+        {
+            min = CORE_MIN(min, in.element(i,j));
+            max = CORE_MAX(max, in.element(i,j));
+        }
+    }
+
+    SYNC_PRINT(("min %lf max %lf\n", min, max));
+
+    if (style == STYLE_RAINBOW)
+    {
+        for (int i = 0; i < mh; i++)
+        {
+            for (int j = 0; j < mw; j++)
+            {
+                element(i, j) = RGBColor::rainbow(lerp(0.0, 1.0, in.element(i,j), min, max));
+            }
+        }
+    }
+
+    if (style == STYLE_GRAY || style == STYLE_LOG)
+    {
+        for (int i = 0; i < mh; i++)
+        {
+            for (int j = 0; j < mw; j++)
+            {
+                element(i, j) = RGBColor::gray(lerpLimit(0.0, 255.0, in.element(i,j), min, max));
+            }
+        }
+    }
+
+}
 void RGB24Buffer::fillWithYUYV(uint8_t *data)
 {
     fillWithYUVFormat(data, false);

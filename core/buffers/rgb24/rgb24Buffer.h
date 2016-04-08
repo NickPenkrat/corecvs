@@ -82,7 +82,11 @@ public:
     void drawFlowBuffer3(FlowBuffer *src, double colorScaler = 20.0, int32_t y = 0, int32_t x = 0);
     void drawCorrespondenceList(CorrespondenceList *src, double colorScaler = 20.0, int32_t y = 0, int32_t x = 0);
 
-    //void drawRectangle(const Rectangle<int32_t> &rect, RGBColor color, int style = 0);
+    /**
+     *  Draw a rectangle
+     **/
+    void drawRectangle(const Rectangle<int32_t> &rect, RGBColor color, int style = 0);
+    void drawRectangle(int x, int y, int w, int h, RGBColor color, int style = 0);
 
     //void drawDisplacementBuffer(DisplacementBuffer *src, double step);
 
@@ -170,6 +174,16 @@ public:
             double zh, double zw,
             double steps,
             FunctionArgs &f);
+    /**
+     * Draw Double Buffer
+     **/
+    enum DoubleDrawStyle {
+        STYLE_RAINBOW,
+        STYLE_GRAY,
+        STYLE_LOG,
+    };
+
+    void drawDoubleBuffer(const AbstractBuffer<double> &in, int style = STYLE_RAINBOW);
 
     void fillWithYUYV(uint8_t *data);
     void fillWithUYVU(uint8_t *data);

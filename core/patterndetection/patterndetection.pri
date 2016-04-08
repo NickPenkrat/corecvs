@@ -1,7 +1,7 @@
 HEADERS += \
-	patterndetection/*.h
+	patterndetection/*.h \
 
 
 SOURCES += \
-	patterndetection/*.cpp
+	patterndetection/*.cpp \
 

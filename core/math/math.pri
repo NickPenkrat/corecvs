@@ -51,7 +51,8 @@ HEADERS += \
     math/eulerAngles.h \
     math/puzzleBlock.h \
     math/matrix/similarityReconstructor.h \
-    math/sse/doublexT4.h
+    math/sse/doublexT4.h \
+    math/extensiveCoding.h
 
 SOURCES += \
     math/matrix/matrix.cpp \
@@ -72,6 +73,7 @@ SOURCES += \
     math/sse/sseWrapper.cpp \
     math/matrix/similarityReconstructor.cpp \
 #    math/matrix/matrixspeed.cpp
+    math/extensiveCoding.cpp
 
 
 contains(DEFINES, "WITH_FFTW") {

@@ -452,6 +452,16 @@ public:
         return RGBColor(143, 0, 255);
     }
 
+    static RGBColor Pink()
+    {
+        return RGBColor(255, 192, 203);
+    }
+
+    static RGBColor Navy()
+    {
+        return RGBColor(0, 0, 127);
+    }
+
     static RGBColor lerpColor(const RGBColor &first, const RGBColor &second, double alpha)
     {
         uint8_t r = (uint8_t)lerp<double>(first.r(), second.r(), alpha);
