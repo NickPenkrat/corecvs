@@ -23,10 +23,10 @@ public:
      *   Lut for every 10bits holds the 7bit of decoded data
      **/
     uint32_t *LUT;
-    uint lutsize;
-    uint inbits;
-    uint addbits;
-    uint outbits;
+    uint32_t lutsize;
+    uint32_t inbits;
+    uint32_t addbits;
+    uint32_t outbits;
 
     static uint32_t encode (uint32_t input);
     static uint32_t decode (uint32_t input);
