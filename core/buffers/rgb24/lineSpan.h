@@ -2,6 +2,7 @@
 #define LINE_SPAN_H
 
 #include <algorithm>
+#include <vector>
 
 namespace corecvs {
 
@@ -29,6 +30,13 @@ public:
         }
     }
 
+};
+
+typedef std::vector<double> FragmentAttributes;
+
+class AttributedLineSpan : public LineSpanInt {
+    public:
+    FragmentAttributes attributes;
 };
 
 } // namespace corecvs

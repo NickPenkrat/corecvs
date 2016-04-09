@@ -181,6 +181,39 @@ TEST(Draw, testSpanDrawTriangle)
 
 }
 
+TEST(Draw, testSpanRenderTriangle)
+{
+    int h = 400;
+    int w = 200;
+
+    RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
+
+    Triangle3dd t[2] = {
+        Triangle3dd(Vector3dd(-100,-100, 100), Vector3dd(-100, 100, 100), Vector3dd( 100, 0, 120)),
+        Triangle3dd(Vector3dd( 100,-100, 100), Vector3dd( 100, 100, 100), Vector3dd(-100, 0, 120)),
+    };
+
+    /*Triangle2dd p[2];
+    for (int i = 0; i < CORE_COUNT_OF())
+
+
+    RGBColor c[] = {RGBColor::Pink(), RGBColor::Cyan(), RGBColor::Pink(), RGBColor::Cyan()};
+
+    for (size_t i = 0; i < CORE_COUNT_OF(t); i++) {
+
+        TriangleSpanIterator it(t[i]);
+        while (it.step())
+        {
+            LineSpanInt span = it.getSpan();
+            buffer->drawHLine(span.x1, span.y, span.x2, c[i]);
+        }
+    }*/
+
+    BMPLoader().save("triangledraw.bmp", buffer);
+    delete_safe(buffer);
+
+}
+
 TEST(Draw, renderMesh)
 {
     int h = 200;
