@@ -713,12 +713,26 @@ void RGB24Buffer::drawDoubleBuffer(const AbstractBuffer<double> &in, int style)
 
     double min = std::numeric_limits<double>::max();
     double max = std::numeric_limits<double>::lowest();
-    for (int i = 0; i < mh; i++)
-    {
-        for (int j = 0; j < mw; j++)
+
+    if (style != STYLE_ZBUFFER) {
+        for (int i = 0; i < mh; i++)
         {
-            min = CORE_MIN(min, in.element(i,j));
-            max = CORE_MAX(max, in.element(i,j));
+            for (int j = 0; j < mw; j++)
+            {
+                min = CORE_MIN(min, in.element(i,j));
+                max = CORE_MAX(max, in.element(i,j));
+            }
+        }
+    } else {
+        for (int i = 0; i < mh; i++)
+        {
+            for (int j = 0; j < mw; j++)
+            {
+                min = CORE_MIN(min, in.element(i,j));
+                if (in.element(i,j) != std::numeric_limits<double>::max()) {
+                    max = CORE_MAX(max, in.element(i,j));
+                }
+            }
         }
     }
 
@@ -742,6 +756,21 @@ void RGB24Buffer::drawDoubleBuffer(const AbstractBuffer<double> &in, int style)
             for (int j = 0; j < mw; j++)
             {
                 element(i, j) = RGBColor::gray(lerpLimit(0.0, 255.0, in.element(i,j), min, max));
+            }
+        }
+    }
+
+    if (style == STYLE_ZBUFFER)
+    {
+        for (int i = 0; i < mh; i++)
+        {
+            for (int j = 0; j < mw; j++)
+            {
+                if (in.element(i,j) != std::numeric_limits<double>::max()) {
+                    element(i, j) = RGBColor::rainbow(lerp(0.0, 1.0, in.element(i,j), min, max));
+                } else {
+                    element(i, j) = RGBColor::Black();
+                }
             }
         }
     }

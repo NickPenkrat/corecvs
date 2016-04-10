@@ -4,7 +4,12 @@
 
 namespace corecvs {
 
-SimpleRenderer::SimpleRenderer()
+SimpleRenderer::SimpleRenderer() :
+    backfaceClip(false),
+    drawFaces(true),
+    drawEdges(true),
+    drawVertexes(true),
+    zBuffer(NULL)
 {
 }
 
@@ -15,14 +20,17 @@ void SimpleRenderer::render(Mesh3D *mesh, RGB24Buffer *buffer)
         return;
     }
 
+    delete_safe(zBuffer);
+    zBuffer = new AbstractBuffer<double>(buffer->getSize(), std::numeric_limits<double>::max());
+
     for(size_t f = 0; f < mesh->faces.size(); f++)
     {
         Vector3d32 face = mesh->faces[f];
 
         Triangle2dd triang;
-        triang.p1 = (modelviewMatrix * mesh->vertexes[face[0]]).project();
-        triang.p2 = (modelviewMatrix * mesh->vertexes[face[1]]).project();
-        triang.p3 = (modelviewMatrix * mesh->vertexes[face[2]]).project();
+        triang.p1() = (modelviewMatrix * mesh->vertexes[face[0]]).project();
+        triang.p2() = (modelviewMatrix * mesh->vertexes[face[1]]).project();
+        triang.p3() = (modelviewMatrix * mesh->vertexes[face[2]]).project();
 
         RGBColor color = RGBColor::Blue();
         if (mesh->hasColor) {
@@ -31,7 +39,7 @@ void SimpleRenderer::render(Mesh3D *mesh, RGB24Buffer *buffer)
         TriangleSpanIterator it(triang);
         while (it.step()) {
             LineSpanInt span = it.getSpan();
-            buffer->drawHLine(span.x1, span.y, span.x2, color);
+            buffer->drawHLine(span.x1, span.cy, span.x2, color);
         }
     }
 
@@ -60,7 +68,19 @@ void SimpleRenderer::render(Mesh3D *mesh, RGB24Buffer *buffer)
         }
         buffer->drawPixel(position.x(), position.y(), color);
     }
-
 }
+
+void SimpleRenderer::fragmentShader(AttributedLineSpan &span)
+{
+    /**/
+}
+
+SimpleRenderer::~SimpleRenderer()
+{
+    delete_safe(zBuffer);
+}
+
+
+
 
 } // namespace corecvs

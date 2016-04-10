@@ -8,6 +8,7 @@
 #include "mathUtils.h"
 #include "matrix44.h"
 #include "polygons.h"
+#include "abstractBuffer.h"
 #include "abstractPainter.h"
 
 
@@ -91,8 +92,30 @@ public:
             da2[i] = (a22[i] - a12[i]) / dy;
 
             a1[i] = a11[i] - da1[i];
-            a2[i] = a21[i] - da2[i];
+            a2[i] = a12[i] - da2[i];
         }
+
+        SYNC_PRINT(("Zone Attributes:\n"));
+        SYNC_PRINT(("Top Left :"));
+        for (int i = 0; i < attributes; i++) SYNC_PRINT(("%lf ", a11[i]));
+        SYNC_PRINT(("\n"));
+        SYNC_PRINT(("Top Right:"));
+        for (int i = 0; i < attributes; i++) SYNC_PRINT(("%lf ", a12[i]));
+        SYNC_PRINT(("\n"));
+        SYNC_PRINT(("Bottom Left :"));
+        for (int i = 0; i < attributes; i++) SYNC_PRINT(("%lf ", a21[i]));
+        SYNC_PRINT(("\n"));
+        SYNC_PRINT(("Bottom Right:"));
+        for (int i = 0; i < attributes; i++) SYNC_PRINT(("%lf ", a22[i]));
+        SYNC_PRINT(("\n\n"));
+
+        SYNC_PRINT(("Left Delta:"));
+        for (int i = 0; i < attributes; i++) SYNC_PRINT(("%lf ", da1[i]));
+        SYNC_PRINT(("\n"));
+        SYNC_PRINT(("Right Delta:"));
+        for (int i = 0; i < attributes; i++) SYNC_PRINT(("%lf ", da2[i]));
+        SYNC_PRINT(("\n\n"));
+
     }
 
     bool step()
@@ -120,7 +143,7 @@ public:
     LineSpanInt getSpan()
     {
         LineSpanInt span;
-        getSpan(span.y, span.x1, span.x2);
+        getSpan(span.cy, span.x1, span.x2);
         return span;
     }
 };
@@ -137,22 +160,22 @@ public:
     GenericTriangleSpanIterator(const TriangleType &triangle)
     {
         sortedt = triangle;
-        if (sortedt.p1.y() > sortedt.p2.y()) std::swap(sortedt.p1, sortedt.p2);
-        if (sortedt.p2.y() > sortedt.p3.y()) std::swap(sortedt.p2, sortedt.p3);
-        if (sortedt.p1.y() > sortedt.p2.y()) std::swap(sortedt.p1, sortedt.p2);
+        if (sortedt.p1().y() > sortedt.p2().y()) std::swap(sortedt.p1(), sortedt.p2());
+        if (sortedt.p2().y() > sortedt.p3().y()) std::swap(sortedt.p2(), sortedt.p3());
+        if (sortedt.p1().y() > sortedt.p2().y()) std::swap(sortedt.p1(), sortedt.p2());
 
 /*        cout << "Sorted by Y" << endl;
         cout << "  " << sortedt.p1 << endl;
         cout << "  " << sortedt.p2 << endl;
         cout << "  " << sortedt.p3 << endl;*/
 
-        double longslope = (sortedt.p3.x() - sortedt.p1.x()) / (sortedt.p3.y() - sortedt.p1.y());
-        double centerx1 = sortedt.p1.x() + longslope * (sortedt.p2.y() - sortedt.p1.y());
-        double centerx2 = sortedt.p2.x();
+        double longslope = (sortedt.p3().x() - sortedt.p1().x()) / (sortedt.p3().y() - sortedt.p1().y());
+        double centerx1 = sortedt.p1().x() + longslope * (sortedt.p2().y() - sortedt.p1().y());
+        double centerx2 = sortedt.p2().x();
 
         if (centerx1 > centerx2)
             std::swap(centerx1, centerx2);
-        part = TrapezoidSpanIterator(sortedt.p1.y(), sortedt.p2.y(), sortedt.p1.x(), sortedt.p1.x(), centerx1, centerx2);
+        part = TrapezoidSpanIterator(sortedt.p1().y(), sortedt.p2().y(), sortedt.p1().x(), sortedt.p1().x(), centerx1, centerx2);
     }
 
     bool step()
@@ -160,10 +183,10 @@ public:
         if (!part.step())
         {
 //            SYNC_PRINT(("Changing iterator: %d %d\n", part.currentY >= sortedt.p3.y()));
-            if (part.currentY >= sortedt.p3.y()) {
+            if (part.currentY >= sortedt.p3().y()) {
                 return false;
             }
-            part = TrapezoidSpanIterator(sortedt.p2.y(), sortedt.p3.y(), part.x21, part.x22, sortedt.p3.x(), sortedt.p3.x());
+            part = TrapezoidSpanIterator(sortedt.p2().y(), sortedt.p3().y(), part.x21, part.x22, sortedt.p3().x(), sortedt.p3().x());
             return part.step();
         }
         return true;
@@ -185,6 +208,10 @@ typedef GenericTriangleSpanIterator<Triangle2dd> TriangleSpanIterator;
 class AttributedPoint : public Vector2dd
 {
 public:
+    AttributedPoint() {}
+
+    AttributedPoint(const Vector2dd &base) : Vector2dd(base) {}
+
     FragmentAttributes attributes;
 };
 
@@ -199,42 +226,44 @@ public:
     AttributedTriangleSpanIterator(const AttributedTriangle &triangle)
     {
         sortedt = triangle;
-        if (sortedt.p1.y() > sortedt.p2.y()) std::swap(sortedt.p1, sortedt.p2);
-        if (sortedt.p2.y() > sortedt.p3.y()) std::swap(sortedt.p2, sortedt.p3);
-        if (sortedt.p1.y() > sortedt.p2.y()) std::swap(sortedt.p1, sortedt.p2);
+        if (sortedt.p1().y() > sortedt.p2().y()) std::swap(sortedt.p1(), sortedt.p2());
+        if (sortedt.p2().y() > sortedt.p3().y()) std::swap(sortedt.p2(), sortedt.p3());
+        if (sortedt.p1().y() > sortedt.p2().y()) std::swap(sortedt.p1(), sortedt.p2());
 
 /*        cout << "Sorted by Y" << endl;
         cout << "  " << sortedt.p1 << endl;
         cout << "  " << sortedt.p2 << endl;
         cout << "  " << sortedt.p3 << endl;*/
 
-        double longslope = (sortedt.p3.x() - sortedt.p1.x()) / (sortedt.p3.y() - sortedt.p1.y());
-        double centerx1 = sortedt.p1.x() + longslope * (sortedt.p2.y() - sortedt.p1.y());
-        double centerx2 = sortedt.p2.x();
+        double longslope = (sortedt.p3().x() - sortedt.p1().x()) / (sortedt.p3().y() - sortedt.p1().y());
+        double centerx1 = sortedt.p1().x() + longslope * (sortedt.p2().y() - sortedt.p1().y());
+        double centerx2 = sortedt.p2().x();
 
-        FragmentAttributes att1(sortedt.p1.attributes.size());
-        for(int i = 0; i < att1.size(); i++)
+        FragmentAttributes att1(sortedt.p1().attributes.size());
+        for(size_t i = 0; i < att1.size(); i++)
         {
-            double da = (sortedt.p3.attributes[i] - sortedt.p1.attributes[i]) / (sortedt.p3.y() - sortedt.p1.y());
-            att1[i] = sortedt.p1.attributes[i] + da * (sortedt.p2.y() - sortedt.p1.y());
+            double da = (sortedt.p3().attributes[i] - sortedt.p1().attributes[i]) / (sortedt.p3().y() - sortedt.p1().y());
+            att1[i] = sortedt.p1().attributes[i] + da * (sortedt.p2().y() - sortedt.p1().y());
         }
 
-        FragmentAttributes att2 = sortedt.p2.attributes;
+        FragmentAttributes att2 = sortedt.p2().attributes;
 
 
         if (centerx2 > centerx1) {
-            part = TrapezoidSpanIterator(sortedt.p1.y(), sortedt.p2.y(), sortedt.p1.x(), sortedt.p1.x(), centerx1, centerx2);
-            part.a11 = sortedt.p1.attributes;
+            part = TrapezoidSpanIterator(sortedt.p1().y(), sortedt.p2().y(), sortedt.p1().x(), sortedt.p1().x(), centerx1, centerx2);
+            part.a11 = sortedt.p1().attributes;
             part.a12 = part.a11;
             part.a21 = att1;
             part.a22 = att2;
         } else {
-            part = TrapezoidSpanIterator(sortedt.p1.y(), sortedt.p2.y(), sortedt.p1.x(), sortedt.p1.x(), centerx2, centerx1);
-            part.a11 = sortedt.p1.attributes;
+            part = TrapezoidSpanIterator(sortedt.p1().y(), sortedt.p2().y(), sortedt.p1().x(), sortedt.p1().x(), centerx2, centerx1);
+            part.a11 = sortedt.p1().attributes;
             part.a12 = part.a11;
             part.a21 = att2;
             part.a22 = att1;
         }
+
+        part.initAttributes();
 
     }
 
@@ -243,15 +272,16 @@ public:
         if (!part.step())
         {
 //            SYNC_PRINT(("Changing iterator: %d %d\n", part.currentY >= sortedt.p3.y()));
-            if (part.currentY >= sortedt.p3.y()) {
+            if (part.currentY >= sortedt.p3().y()) {
                 return false;
             }
-            TrapezoidSpanIterator newPart = TrapezoidSpanIterator(sortedt.p2.y(), sortedt.p3.y(), part.x21, part.x22, sortedt.p3.x(), sortedt.p3.x());
+            TrapezoidSpanIterator newPart = TrapezoidSpanIterator(sortedt.p2().y(), sortedt.p3().y(), part.x21, part.x22, sortedt.p3().x(), sortedt.p3().x());
             newPart.a11 = part.a21;
             newPart.a12 = part.a22;
-            newPart.a21 = sortedt.p3.attributes;
+            newPart.a21 = sortedt.p3().attributes;
             newPart.a22 = newPart.a21;
             part = newPart;
+            part.initAttributes();
             return part.step();
         }
         return true;
@@ -267,12 +297,36 @@ public:
         return part.getSpan();
     }
 
+    AttributedLineSpan getAttrSpan()
+    {
+        AttributedLineSpan span;
+        part.getSpan(span.cy, span.x1, span.x2);
+        span.att1 = part.a1;
+        span.att2 = part.a2;
+        span.catt = span.att1;
+        span.datt.resize(span.att1.size());
+        for (size_t i = 0; i < span.datt.size(); i++) {
+            span.datt[i] = (part.a2[i] - part.a1[i]) / (span.x2 - span.x1 + 1);
+        }
+
+#if 0
+        SYNC_PRINT(("Span Attributes:\n"));
+        SYNC_PRINT(("Left :"));
+        for (size_t i = 0; i < span.att1.size(); i++) SYNC_PRINT(("%lf ", span.att1[i]));
+        SYNC_PRINT(("\n"));
+        SYNC_PRINT(("Right:"));
+        for (size_t i = 0; i < span.att2.size(); i++) SYNC_PRINT(("%lf ", span.att2[i]));
+        SYNC_PRINT(("\n"));
+#endif
+
+        return span;
+    }
+
 
 };
 
 class Mesh3D;
 class RGB24Buffer;
-
 
 class SimpleRenderer
 {
@@ -280,9 +334,19 @@ public:
     SimpleRenderer();
     Matrix44 modelviewMatrix;
 
+    bool backfaceClip;
+    bool drawFaces;
+    bool drawEdges;
+    bool drawVertexes;
+
+
+    AbstractBuffer<double> *zBuffer;
     void render (Mesh3D *mesh, RGB24Buffer *buffer);
 
+    /* Add support for face and vertex shaders */
+    void fragmentShader(AttributedLineSpan & span);
 
+    ~SimpleRenderer();
 };
 
 } // namespace corecvs

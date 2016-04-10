@@ -75,12 +75,11 @@ TEST(Draw, testCircleIterator)
     while (inner.step())
     {
         LineSpanInt span = inner.getSpan();
-        for (int s = span.x1; s <= span.x2; s++)
-        {
-            if (buffer->isValidCoord(span.y, s)) {
-                buffer->element(span.y, s) = RGBColor::Red();
+        do {
+            if (buffer->isValidCoord(span.pos())) {
+                buffer->element(span.pos()) = RGBColor::Red();
             }
-        }
+        } while (span.step());
     }
 
 
@@ -122,7 +121,7 @@ TEST(Draw, testSpanDraw)
         while (it.step())
         {
             LineSpanInt span = it.getSpan();
-            buffer->drawHLine(span.x1, span.y, span.x2, RGBColor::Red());
+            buffer->drawHLine(span.x1, span.y(), span.x2, RGBColor::Red());
         }
     }
 
@@ -131,7 +130,7 @@ TEST(Draw, testSpanDraw)
         while (it.step())
         {
             LineSpanInt span = it.getSpan();
-            buffer->drawHLine(span.x1, span.y, span.x2, RGBColor::Green());
+            buffer->drawHLine(span.x1, span.y(), span.x2, RGBColor::Green());
         }
     }
 
@@ -141,7 +140,7 @@ TEST(Draw, testSpanDraw)
         while (it.step())
         {
             LineSpanInt span = it.getSpan();
-            buffer->drawHLine(span.x1, span.y, span.x2, RGBColor::Pink());
+            buffer->drawHLine(span.x1, span.y(), span.x2, RGBColor::Pink());
         }
     }
 
@@ -172,7 +171,7 @@ TEST(Draw, testSpanDrawTriangle)
         while (it.step())
         {
             LineSpanInt span = it.getSpan();
-            buffer->drawHLine(span.x1, span.y, span.x2, c[i]);
+            buffer->drawHLine(span.x1, span.y(), span.x2, c[i]);
         }
     }
 
@@ -181,10 +180,41 @@ TEST(Draw, testSpanDrawTriangle)
 
 }
 
+TEST(Draw, testAttributedTriangle)
+{
+    int h = 300;
+    int w = 300;
+    RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
+
+    AttributedTriangle t(Vector2dd(0,0), Vector2dd(0,300), Vector2dd(300,150));
+    RGBColor c[3] = {RGBColor::Red(), RGBColor::Green(), RGBColor::Blue()};
+
+    for (int i = 0; i < 3; i++) {
+        t.p[i].attributes.push_back(c[i].r());
+        t.p[i].attributes.push_back(c[i].g());
+        t.p[i].attributes.push_back(c[i].b());
+    }
+
+    AttributedTriangleSpanIterator it(t);
+
+    while (it.step())
+    {
+        AttributedLineSpan span = it.getAttrSpan();
+        do {
+            if (buffer->isValidCoord(span.pos()) ) {
+                Vector3dd color(span.att()[0], span.att()[1], span.att()[2]);
+                buffer->element(span.pos()) = RGBColor::FromDouble(color);
+            }
+        } while (span.step());
+    }
+
+    BMPLoader().save("attributed.bmp", buffer);
+}
+
 TEST(Draw, testSpanRenderTriangle)
 {
-    int h = 400;
-    int w = 200;
+    int h = 300;
+    int w = 300;
 
     RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
 
@@ -193,24 +223,78 @@ TEST(Draw, testSpanRenderTriangle)
         Triangle3dd(Vector3dd( 100,-100, 100), Vector3dd( 100, 100, 100), Vector3dd(-100, 0, 120)),
     };
 
-    /*Triangle2dd p[2];
-    for (int i = 0; i < CORE_COUNT_OF())
+    Triangle2dd p[CORE_COUNT_OF(t)];
+    for (size_t i = 0; i < CORE_COUNT_OF(t); i++)
+    {
+        p[i] = Triangle2dd(t[i].p1().xy() + Vector2dd(100.0, 100.0),
+                           t[i].p2().xy() + Vector2dd(100.0, 100.0),
+                           t[i].p3().xy() + Vector2dd(100.0, 100.0));
+    }
 
 
-    RGBColor c[] = {RGBColor::Pink(), RGBColor::Cyan(), RGBColor::Pink(), RGBColor::Cyan()};
+
+    RGBColor c[CORE_COUNT_OF(t)] = {RGBColor::Pink(), RGBColor::Cyan()};
 
     for (size_t i = 0; i < CORE_COUNT_OF(t); i++) {
 
-        TriangleSpanIterator it(t[i]);
+        TriangleSpanIterator it(p[i]);
         while (it.step())
         {
             LineSpanInt span = it.getSpan();
-            buffer->drawHLine(span.x1, span.y, span.x2, c[i]);
+            buffer->drawHLine(span.x1, span.y(), span.x2, c[i]);
         }
-    }*/
+    }
+    BMPLoader().save("renderdraw.bmp", buffer);
 
-    BMPLoader().save("triangledraw.bmp", buffer);
+
+    /* Z buffer */
+    AbstractBuffer<double> *zBuffer = new AbstractBuffer<double>(h,w, /*std::numeric_limits<double>::max()*/ 140.0);
+
+    AttributedTriangle a[CORE_COUNT_OF(t)];
+    for (size_t i = 0; i < CORE_COUNT_OF(t); i++)
+    {
+        a[i] = AttributedTriangle(t[i].p1().xy() + Vector2dd(100.0, 100.0),
+                                  t[i].p2().xy() + Vector2dd(100.0, 100.0),
+                                  t[i].p3().xy() + Vector2dd(100.0, 100.0));
+        a[i].p1().attributes.push_back(t[i].p1().z());
+        a[i].p2().attributes.push_back(t[i].p2().z());
+        a[i].p3().attributes.push_back(t[i].p3().z());
+    }
+
+
+    for (size_t i = 0; i < CORE_COUNT_OF(t); i++) {
+
+        AttributedTriangleSpanIterator it(a[i]);
+
+        while (it.step())
+        {
+            LineSpanInt span = it.getSpan();
+            double z1 = it.part.a1[0];
+            double z2 = it.part.a2[0];
+
+            for (int j = span.x1; j <= span.x2; j++) {
+                if (zBuffer->isValidCoord(span.y(), j) ) {
+                    double z = lerp(z1,z2, j, span.x1, span.x2 + 1);
+                    SYNC_PRINT(("Z=%lf, WAS=%lf\n", z, zBuffer->element(span.y(), j)));
+
+                    if (zBuffer->element(span.y(), j) >  z) {
+                         zBuffer->element(span.y(), j) = z;
+                         buffer->element(span.y(), j) = c[i];
+                    }
+                }
+            }
+        }
+    }
+    BMPLoader().save("renderdraw-rgb.bmp", buffer);
+
+
+
+
+
+    buffer->drawDoubleBuffer(zBuffer);
+    BMPLoader().save("renderdraw-z.bmp", buffer);
     delete_safe(buffer);
+    delete_safe(zBuffer);
 
 }
 
@@ -305,15 +389,15 @@ TEST(Draw, testRobot)
         LineSpanInt span = outer.getSpan();
         for (int s = span.x1; s < span.x2; s++ )
         {
-            CircleSpanIterator inner(Circle2d(s, span.y, r/2));
+            CircleSpanIterator inner(Circle2d(s, span.y(), r/2));
             while (inner.step())
             {
                 LineSpanInt span = inner.getSpan();
                 for (int s1 = span.x1; s1 < span.x2; s1++ )
                 {
-                    if (acc.isValidCoord(span.y, s1))
+                    if (acc.isValidCoord(span.y(), s1))
                     {
-                        acc.element(span.y, s1)++;
+                        acc.element(span.y(), s1)++;
                     }
                 }
             }
@@ -329,30 +413,30 @@ TEST(Draw, testRobot)
             LineSpanInt span = outer.getSpan();
             for (int s = span.x1; s < span.x2; s++ )
             {
-                CircleSpanIterator inner(Circle2d(s, span.y, l2));
+                CircleSpanIterator inner(Circle2d(s, span.y(), l2));
                 while (inner.step())
                 {
                     LineSpanInt span = inner.getSpan();
                     for (int s1 = span.x1; s1 < span.x2; s1++ )
                     {
                         //SYNC_PRINT(("#"));
-                        if (acc.isValidCoord(span.y, s1))
+                        if (acc.isValidCoord(span.y(), s1))
                         {
-                            acc.element(span.y, s1)++;
+                            acc.element(span.y(), s1)++;
                         }
                     }
                 }
 
-                CircleSpanIterator inner1(Circle2d(s, span.y, l1));
+                CircleSpanIterator inner1(Circle2d(s, span.y(), l1));
                 while (inner1.step())
                 {
                     LineSpanInt span = inner1.getSpan();
                     for (int s1 = span.x1; s1 < span.x2; s1++ )
                     {
                         //SYNC_PRINT(("#"));
-                        if (acc.isValidCoord(span.y, s1))
+                        if (acc.isValidCoord(span.y(), s1))
                         {
-                            acc.element(span.y, s1)--;
+                            acc.element(span.y(), s1)--;
                         }
                     }
                 }

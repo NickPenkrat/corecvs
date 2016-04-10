@@ -26,27 +26,34 @@ template<typename PointType>
 class GenericTriangle
 {
 public:
-    PointType p1;
-    PointType p2;
-    PointType p3;
+    PointType p[3];
+
+    PointType &p1() {return p[0];}
+    PointType &p2() {return p[1];}
+    PointType &p3() {return p[2];}
+
+    const PointType &p1() const {return p[0];}
+    const PointType &p2() const {return p[1];}
+    const PointType &p3() const {return p[2];}
 
     GenericTriangle() {}
 
-    GenericTriangle(const PointType p1, const PointType p2, const PointType p3) :
-        p1(p1),
-        p2(p2),
-        p3(p3)
-    {}
+    GenericTriangle(const PointType _p1, const PointType _p2, const PointType _p3)
+    {
+        p1() = _p1;
+        p2() = _p2;
+        p3() = _p3;
+    }
 
 
     Plane3d getPlane() const
     {
-        return Plane3d::FromPoints(p1, p2, p3);
+        return Plane3d::FromPoints(p1(), p2(), p3());
     }
 
     Vector3dd getNormal() const
     {
-        return Plane3d::NormalFromPoints(p1, p2, p3);
+        return Plane3d::NormalFromPoints(p1(), p2(), p3());
     }
 
 };
