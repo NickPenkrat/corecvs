@@ -789,6 +789,111 @@ bool corecvs::Matrix::LinSolve(const corecvs::Matrix &A, const corecvs::Vector &
 #endif
 }
 
+bool corecvs::Matrix::LinSolveSchurComplement(const corecvs::Matrix &M, const corecvs::Vector &Bv, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric, bool posDef)
+{
+    /*
+     * So we partition M and B into
+     * +---+---+   /   \   /   \
+     * | A | B |   | x |   | a |
+     * +---+---+ * +---+ = +---+
+     * | C | D |   | y |   | b |
+     * +---+---+   \   /   \   /
+     * Where D is block-diagonal well-conditioned matrix
+     *
+     * Then we invert D explicitly and solve
+     * x = (A-BD^{-1}C)^{-1}(a-BD^{-1}b)
+     * y = D^{-1}(b-Cx)
+     *
+     * Note that M is symmetric => D is symmetric, (A-BD^{-1}C) is symmetric
+     *           M is posdef    => D is posdef,    (A-BD^{-1}C) is symmetric (TODO: isposdef)
+     */
+
+    auto N = M.h;
+
+    auto Ah = diagBlocks[0],
+         Aw = diagBlocks[0];
+    auto Bw = M.w - Aw,
+         Bh = Ah;
+    auto Cw = Aw,
+         Ch = M.h - Ah;
+    auto Dw = Bw,
+         Dh = Ch;
+
+//#ifndef WITH_BLAS
+    std::vector<corecvs::Matrix> matrices;
+
+    for (size_t i = 0; i + 1 < diagBlocks.size(); ++i)
+    {
+        auto from = diagBlocks[i], to = diagBlocks[i + 1];
+        matrices.emplace_back(M, from, from, to, to);
+    }
+    corecvs::parallelable_for(0, (int)matrices.size(), [&](const corecvs::BlockedRange<int> &r)
+    {
+        for (int i = r.begin(); i < r.end(); ++i)
+            matrices[i] = matrices[i].inv();
+    });
+
+    auto A = const_cast<corecvs::Matrix&>(M).createView<corecvs::Matrix>(0, 0, Ah, Aw),
+         B = const_cast<corecvs::Matrix&>(M).createView<corecvs::Matrix>(0, Aw, Bh, Bw),
+         C = const_cast<corecvs::Matrix&>(M).createView<corecvs::Matrix>(Ah, 0, Ch, Cw);
+
+    corecvs::Matrix BDinv(Bh, Dw);
+    corecvs::parallelable_for(0, (int)matrices.size(), [&](const corecvs::BlockedRange<int> &r)
+    {
+        for (int i = r.begin(); i < r.end(); ++i)
+        {
+            //BLAH corecvs views are pointless
+            auto begin = diagBlocks[i], end = diagBlocks[i + 1];
+            auto len = end - begin;
+
+            auto bv  = B.createView<corecvs::Matrix>(0, begin - Aw, Bh, len);
+
+            auto foo = bv * matrices[i];
+
+            for (int k = 0; k < foo.h; ++k)
+                for (int j = begin; j < end; ++j)
+                    BDinv.a(k, j - Aw) = foo.a(k, j - begin);
+
+        }
+    });
+
+    corecvs::Vector a(Ah, &Bv[0]), b(Ch, &Bv[Ah]);
+    auto rhs = a - BDinv * b;
+    auto lhs = A - BDinv * C;
+    corecvs::Vector x(Aw), y(Bw);
+    bool foo = lhs.linSolve(rhs, x, symmetric, false);
+
+    if (!foo) return false;
+
+    rhs = b - C * x;
+    corecvs::parallelable_for(0, (int)matrices.size(), [&](const corecvs::BlockedRange<int> &r)
+    {
+        for (int i = r.begin(); i < r.end(); ++i)
+        {
+            auto begin = diagBlocks[i], end = diagBlocks[i + 1];
+            auto len = end - begin;
+            corecvs::Vector bcx(len);
+            for (int j = 0; j < len; ++j)
+                bcx[j] = rhs[j + begin - Aw];
+            auto res = matrices[i] * bcx;
+            for (int j = begin; j < end; ++j)
+                y[j - Aw] = res[j - begin];
+        }
+    });
+
+    for (int i = 0; i < Aw; ++i)
+        res[i] = x[i];
+    for (int j = 0; j < Bw; ++j)
+        res[j + Aw] = y[j];
+//#else
+//#endif
+}
+
+bool corecvs::Matrix::linSolveSchurComplement(const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric, bool posDef)
+{
+    return corecvs::Matrix::LinSolveSchurComplement(*this, B, diagBlocks, res, symmetric, posDef);
+}
+
 Matrix Matrix::invSVD() const
 {
     CORE_ASSERT_TRUE(this->h == this->w, "Matrix should be square to invert.");

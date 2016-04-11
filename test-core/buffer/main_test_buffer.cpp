@@ -210,14 +210,16 @@ TEST(Buffer, testG12Buffer)
     AbstractBuffer<TestAbstractBufferClass> *main = new AbstractBuffer<TestAbstractBufferClass>(10, 10);
     int oldCnt = TestAbstractBufferClass::counter;
     ASSERT_EQ(oldCnt, 100);
-    AbstractBuffer<TestAbstractBufferClass> *view1 = main->createView<AbstractBuffer<TestAbstractBufferClass>>();
+    {
+        AbstractBuffer<TestAbstractBufferClass> view1 = main->createView<AbstractBuffer<TestAbstractBufferClass>>();
+        ASSERT_EQ(oldCnt, TestAbstractBufferClass::counter);
+    }
     ASSERT_EQ(oldCnt, TestAbstractBufferClass::counter);
-    delete view1;
-    ASSERT_EQ(oldCnt, TestAbstractBufferClass::counter);
-    AbstractBuffer<TestAbstractBufferClass> *view2 = main->createView<AbstractBuffer<TestAbstractBufferClass>>();
-    delete main;
-    ASSERT_EQ(oldCnt, TestAbstractBufferClass::counter);
-    delete view2;
+    {
+        AbstractBuffer<TestAbstractBufferClass> view2 = main->createView<AbstractBuffer<TestAbstractBufferClass>>();
+        delete main;
+        ASSERT_EQ(oldCnt, TestAbstractBufferClass::counter);
+    }
     ASSERT_EQ(0, TestAbstractBufferClass::counter);
     ASSERT_TRUE(TestAbstractBufferClass::checkCorrectness());
 }
@@ -388,26 +390,26 @@ TEST(Buffer, testFont)
 
 bool beforeLastBit(int i)
 {
-	int r = i;
-	int k = 0;
-	for (k = 0; k < 16; k++)
-	{
-		r >>= 1;
-		if (r == 0) break;
-	}
-	return (i & (1 << (k - 1))) != 0;
+    int r = i;
+    int k = 0;
+    for (k = 0; k < 16; k++)
+    {
+        r >>= 1;
+        if (r == 0) break;
+    }
+    return (i & (1 << (k - 1))) != 0;
 }
 
 int lastBit(int i)
 {
-	int r = i;
-	int k = 0;
-	for (k = 0; k < 16; k++)
-	{
-		r >>= 1;
-		if (r == 0) break;
-	}
-	return k;
+    int r = i;
+    int k = 0;
+    for (k = 0; k < 16; k++)
+    {
+        r >>= 1;
+        if (r == 0) break;
+    }
+    return k;
 }
 
 TEST(Buffer, _testReduceChessboard)
@@ -417,20 +419,20 @@ TEST(Buffer, _testReduceChessboard)
     {
         for (int j = 0; j < buffer->w ; j++)
         {
-        	int last1 = lastBit(i);
-        	int last2 = lastBit(j);
+            int last1 = lastBit(i);
+            int last2 = lastBit(j);
 
-        	int max = std::max(last1, last2);
-        	int selector1 = max - 2;
-        	int selector2 = max - 2;
-        	if (last1 == last2)
-        	{
-        		selector1 = last1 - 1;
-				selector2 = last2 - 1;
-        	}
+            int max = std::max(last1, last2);
+            int selector1 = max - 2;
+            int selector2 = max - 2;
+            if (last1 == last2)
+            {
+                selector1 = last1 - 1;
+                selector2 = last2 - 1;
+            }
 
-        	bool isWhite = (!!(i & (1 << selector1))) ^  (!!(j & (1 << selector2)));
-        	buffer->element(buffer->h - 1 - i, buffer->w - 1 - j) = isWhite ? RGBColor(0xFFFFFF) : RGBColor(0x000000);
+            bool isWhite = (!!(i & (1 << selector1))) ^  (!!(j & (1 << selector2)));
+            buffer->element(buffer->h - 1 - i, buffer->w - 1 - j) = isWhite ? RGBColor(0xFFFFFF) : RGBColor(0x000000);
         }
     }
     (BMPLoader()).save("chess.bmp", buffer);
@@ -444,23 +446,23 @@ TEST(Buffer, _testReduceChessboard1)
     {
         for (int j = 0; j < buffer->w ; j++)
         {
-        	int last1 = lastBit(i);
-        	int last2 = lastBit(j);
+            int last1 = lastBit(i);
+            int last2 = lastBit(j);
 
-        	/*int max = std::max(last1, last2);
-        	int selector1 = max - 2;
-        	int selector2 = max - 2;
-        	if (last1 == last2)
-        	{
-        		selector1 = last1 - 1;
-				selector2 = last2 - 1;
-        	}*/
+            /*int max = std::max(last1, last2);
+            int selector1 = max - 2;
+            int selector2 = max - 2;
+            if (last1 == last2)
+            {
+                selector1 = last1 - 1;
+                selector2 = last2 - 1;
+            }*/
 
-        	int selector1 = last1 - 1;
-        	int selector2 = last2 - 1;
+            int selector1 = last1 - 1;
+            int selector2 = last2 - 1;
 
-        	bool isWhite = (!!(i & (1 << selector1))) ^  (!!(j & (1 << selector2)));
-        	buffer->element(buffer->h - 1 - i, buffer->w - 1 - j) = isWhite ? RGBColor(0xFFFFFF) : RGBColor(0x000000);
+            bool isWhite = (!!(i & (1 << selector1))) ^  (!!(j & (1 << selector2)));
+            buffer->element(buffer->h - 1 - i, buffer->w - 1 - j) = isWhite ? RGBColor(0xFFFFFF) : RGBColor(0x000000);
         }
     }
     (BMPLoader()).save("chess.bmp", buffer);
@@ -496,4 +498,26 @@ TEST(Buffer, testBoolean)
     delete_safe(image);
     delete_safe(sourceImage);
     delete_safe(buffer);
+}
+
+TEST(Buffer, SubBufferCopy)
+{
+    double foo[] =
+    {
+        0.0, 1.0, 2.0, 3.0, 4.0,
+        5.0, 6.0, 7.0, 8.0, 9.0,
+        10., 11., 12., 13., 14.
+    };
+
+    const int FROM_X = 1, FROM_Y = 1, TO_X = 3, TO_Y = 3;
+
+    AbstractBuffer<double> src(3, 5, foo);
+    AbstractBuffer<double> dst(src, FROM_Y, FROM_X, TO_X, TO_Y);
+
+    ASSERT_EQ(dst.h, TO_Y - FROM_Y);
+    ASSERT_EQ(dst.w, TO_X - FROM_X);
+
+    for (int i = FROM_X; i < TO_X; ++i)
+        for (int j = FROM_Y; j < TO_Y; ++j)
+            ASSERT_EQ(dst.element(j - FROM_Y, i - FROM_X), src.element(j, i));
 }

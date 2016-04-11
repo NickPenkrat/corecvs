@@ -1054,3 +1054,28 @@ TEST(SparseMatrix, ReferenceA)
     sm.a(5, 5) = 10.0;
     ASSERT_EQ(sm.a(5, 5), 10.0);
 }
+
+TEST(Matrix, SchurComplement)
+{
+    double foo[] =
+    {
+        4.0, 5.0, 6.0, 7.0, 0.0,
+        8.0, 9.0, 9.0, 1.0, 2.0,
+        3.0, 7.0, 0.0, 1.0, 0.0,
+        2.0, 5.0, 1.0, 0.0, 0.0,
+        9.0, 3.0, 0.0, 0.0, 5.0
+    };
+    double boo[] = { 1.0, 2.0, 3.0, 4.0, 5.0 };
+    corecvs::Matrix M(5, 5, foo);
+    std::vector<int> blocks = {2, 4, 5};
+    corecvs::Vector x(5, boo);
+
+    auto rhs = M * x;
+    corecvs::Vector xx(5);
+    M.linSolveSchurComplement(rhs, blocks, xx, false, false);
+
+
+    std::cout << M << std::endl << std::endl << x << std::endl << xx << std::endl << rhs << std::endl << M * xx << std::endl;
+
+    ASSERT_LE(!(x - xx), 1e-6);
+}

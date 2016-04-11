@@ -420,28 +420,28 @@ public:
 
 
 template<typename ResultType>
-    ResultType *createView(const IndexType y, const IndexType x, const IndexType h, const IndexType w)
+    ResultType createView(const IndexType y, const IndexType x, const IndexType h, const IndexType w)
     {
         // This is the only legitimate place to use default constructor
-        ResultType *toReturn = new ResultType();
+        ResultType toReturn;
 
-        toReturn->h          = h;
-        toReturn->w          = w;
-        toReturn->stride     = this->stride;
+        toReturn.h          = h;
+        toReturn.w          = w;
+        toReturn.stride     = this->stride;
 
-        toReturn->data       = &(this->element(y, x));
-        toReturn->flags      = VIEW_BUFFER;
+        toReturn.data       = &(this->element(y, x));
+        toReturn.flags      = VIEW_BUFFER;
         /**
          * Prevent original buffer from being deleted
          * MemoryBlock magically counts references
          **/
-        toReturn->memoryBlock = memoryBlock;
+        toReturn.memoryBlock = memoryBlock;
         return toReturn;
     }
 
 
 template<typename ResultType>
-    ResultType *createView()
+    ResultType createView()
     {
         return this->createView<ResultType>(0, 0, this->h, this->w);
     }
@@ -715,40 +715,41 @@ template<typename ResultType>
 
     /**
      * Constructor that copies an area
+     * [min(y1,y2), max(y1,y2)) x [min(x1,x2), max(x1,x2))
+     *
+     * TODO: Check if changing block position on degenerate (x1,y1<0 || x2>w || y2 > h) is desired
      */
-    AbstractBuffer(AbstractBuffer *src, IndexType x1, IndexType y1, IndexType x2, IndexType y2)
+    AbstractBuffer(const AbstractBuffer &src, IndexType x1, IndexType y1, IndexType x2, IndexType y2)
     {
-        SYNC_PRINT(("Internal error with input [%d x %d] (%d, %d) -> (%d, %d)\n", src->w, src->h, x1, y1, x2, y2));
+        // SYNC_PRINT(("Internal error with input [%d x %d] (%d, %d) -> (%d, %d)\n", src->w, src->h, x1, y1, x2, y2));
 
-        CORE_ASSERT_TRUE_P(src != NULL, ("AbstractBuffer.ctor got src == NULL"));
-        IndexType tmp;
-        if (x1 > x2) { tmp = x1; x1 = x2; x2 = tmp; }
-        if (y1 > y2) { tmp = y1; y1 = y2; y2 = tmp; }
+        if (x1 > x2) std::swap(x1, x2);
+        if (y1 > y2) std::swap(x1, x2);
         if (x1 < 0)  { x2 += (-x1); x1 = 0; }
         if (y1 < 0)  { y2 += (-y1); y1 = 0; }
 
-        if (x2 >= src->w) { x1 -= (x2 - (src->w - 1)); x2 = src->w - 1; }
-        if (y2 >= src->h) { y1 -= (y2 - (src->h - 1)); y2 = src->h - 1; }
+        if (x2 > src.w) { x1 -= x2 - src.w; x2 = src.w; }
+        if (y2 > src.h) { y1 -= y2 - src.h; y2 = src.h; }
 
         _init(y2 - y1, x2 - x1);
 
-        CORE_ASSERT_TRUE_P((x1 > 0) && (y1 > 0) && (x2 > x1) && (y2 > y1),
-            ("Internal error with input [%d x %d] (%d, %d) -> (%d, %d)", src->w, src->h, x1, y1, x2, y2));
-        CORE_ASSERT_TRUE_P((src->w > x2) && (src->h > y2),
-            ("Internal error with input [%d x %d] (%d, %d) -> (%d, %d)", src->w, src->h, x1, y1, x2, y2));
+        CORE_ASSERT_TRUE_P((x1 >= 0) && (y1 >= 0) && (x2 > x1) && (y2 > y1),
+            ("Internal error with input [%d x %d] (%d, %d) -> (%d, %d)", src.w, src.h, x1, y1, x2, y2));
+        CORE_ASSERT_TRUE_P((src.w >= x2) && (src.h >= y2),
+            ("Internal error with input [%d x %d] (%d, %d) -> (%d, %d)", src.w, src.h, x1, y1, x2, y2));
 
         if (TRIVIALLY_COPY_CONSTRUCTIBLE)
         {
             for (IndexType i = 0; i < h; i++)
             {
-                memcpy(&element(i, 0), &(src->element(y1 + i, x1)), sizeof(ElementType) * w);
+                memcpy(&element(i, 0), &(src.element(y1 + i, x1)), sizeof(ElementType) * w);
             }
         }
         else
         {
             for (IndexType i = 0; i < h; ++i)
             {
-                _copy(data + i * stride, &src->element(y1 + i, x1), w);
+                _copy(data + i * stride, &src.element(y1 + i, x1), w);
             }
         }
     }
@@ -1326,7 +1327,7 @@ private:
         return _init(h, w, _getStride(w), shouldInit, shouldAlloc);
     }
 
-    static void _copy(ElementType* dst, ElementType* src, IndexType cnt)
+    static void _copy(ElementType* dst, const ElementType* src, IndexType cnt)
     {
         /*
          * Using traits swithc to memcpy if possible
@@ -1346,7 +1347,7 @@ private:
         }
     }
 
-    static void _copy(ElementType* dst, ElementType* src, IndexType h, IndexType w, IndexType strideDst, IndexType strideSrc)
+    static void _copy(ElementType* dst, const ElementType* src, IndexType h, IndexType w, IndexType strideDst, IndexType strideSrc)
     {
         for (IndexType i = 0; i < h; ++i)
             _copy(dst + i * strideDst, src + i * strideSrc, w);
