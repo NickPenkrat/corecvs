@@ -160,10 +160,12 @@ public:
     GenericTriangleSpanIterator(const TriangleType &triangle)
     {
         sortedt = triangle;
+        sortedt.sortByY();
+/*
         if (sortedt.p1().y() > sortedt.p2().y()) std::swap(sortedt.p1(), sortedt.p2());
         if (sortedt.p2().y() > sortedt.p3().y()) std::swap(sortedt.p2(), sortedt.p3());
         if (sortedt.p1().y() > sortedt.p2().y()) std::swap(sortedt.p1(), sortedt.p2());
-
+*/
 /*        cout << "Sorted by Y" << endl;
         cout << "  " << sortedt.p1 << endl;
         cout << "  " << sortedt.p2 << endl;
@@ -226,14 +228,7 @@ public:
     AttributedTriangleSpanIterator(const AttributedTriangle &triangle)
     {
         sortedt = triangle;
-        if (sortedt.p1().y() > sortedt.p2().y()) std::swap(sortedt.p1(), sortedt.p2());
-        if (sortedt.p2().y() > sortedt.p3().y()) std::swap(sortedt.p2(), sortedt.p3());
-        if (sortedt.p1().y() > sortedt.p2().y()) std::swap(sortedt.p1(), sortedt.p2());
-
-/*        cout << "Sorted by Y" << endl;
-        cout << "  " << sortedt.p1 << endl;
-        cout << "  " << sortedt.p2 << endl;
-        cout << "  " << sortedt.p3 << endl;*/
+        sortedt.sortByY();
 
         double longslope = (sortedt.p3().x() - sortedt.p1().x()) / (sortedt.p3().y() - sortedt.p1().y());
         double centerx1 = sortedt.p1().x() + longslope * (sortedt.p2().y() - sortedt.p1().y());
@@ -248,20 +243,16 @@ public:
 
         FragmentAttributes att2 = sortedt.p2().attributes;
 
-
-        if (centerx2 > centerx1) {
-            part = TrapezoidSpanIterator(sortedt.p1().y(), sortedt.p2().y(), sortedt.p1().x(), sortedt.p1().x(), centerx1, centerx2);
-            part.a11 = sortedt.p1().attributes;
-            part.a12 = part.a11;
-            part.a21 = att1;
-            part.a22 = att2;
-        } else {
-            part = TrapezoidSpanIterator(sortedt.p1().y(), sortedt.p2().y(), sortedt.p1().x(), sortedt.p1().x(), centerx2, centerx1);
-            part.a11 = sortedt.p1().attributes;
-            part.a12 = part.a11;
-            part.a21 = att2;
-            part.a22 = att1;
+        if (centerx1 > centerx2) {
+            std::swap(centerx1, centerx2);
+            std::swap(    att1,     att2);
         }
+
+        part = TrapezoidSpanIterator(sortedt.p1().y(), sortedt.p2().y(), sortedt.p1().x(), sortedt.p1().x(), centerx1, centerx2);
+        part.a11 = sortedt.p1().attributes;
+        part.a12 = part.a11;
+        part.a21 = att1;
+        part.a22 = att2;
 
         part.initAttributes();
 
@@ -306,7 +297,7 @@ public:
         span.catt = span.att1;
         span.datt.resize(span.att1.size());
         for (size_t i = 0; i < span.datt.size(); i++) {
-            span.datt[i] = (part.a2[i] - part.a1[i]) / (span.x2 - span.x1 + 1);
+            span.datt[i] = (part.a2[i] - part.a1[i]) / (span.x2 - span.x1);
         }
 
 #if 0

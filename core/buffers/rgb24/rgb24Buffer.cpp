@@ -736,7 +736,7 @@ void RGB24Buffer::drawDoubleBuffer(const AbstractBuffer<double> &in, int style)
         }
     }
 
-    SYNC_PRINT(("min %lf max %lf\n", min, max));
+    SYNC_PRINT(("RGB24Buffer::drawDoubleBuffer(): min %lf max %lf\n", min, max));
 
     if (style == STYLE_RAINBOW)
     {

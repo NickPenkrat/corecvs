@@ -275,7 +275,7 @@ TEST(Draw, testSpanRenderTriangle)
             for (int j = span.x1; j <= span.x2; j++) {
                 if (zBuffer->isValidCoord(span.y(), j) ) {
                     double z = lerp(z1,z2, j, span.x1, span.x2 + 1);
-                    SYNC_PRINT(("Z=%lf, WAS=%lf\n", z, zBuffer->element(span.y(), j)));
+//                    SYNC_PRINT(("Z=%lf, WAS=%lf\n", z, zBuffer->element(span.y(), j)));
 
                     if (zBuffer->element(span.y(), j) >  z) {
                          zBuffer->element(span.y(), j) = z;
@@ -298,27 +298,6 @@ TEST(Draw, testSpanRenderTriangle)
 
 }
 
-TEST(Draw, renderMesh)
-{
-    int h = 200;
-    int w = 200;
-    RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
-
-    SimpleRenderer renderer;
-    PinholeCameraIntrinsics cam(Vector2dd(w,h), 50);
-    renderer.modelviewMatrix = cam.getKMatrix();
-
-    Mesh3D mesh;
-    mesh.addIcoSphere(Vector3dd(0, 0, -200), 20, 4);
-    //mesh.addSphere(Vector3dd(0, 0, -100), 20, 20);
-
-    renderer.render(&mesh, buffer);
-
-
-    BMPLoader().save("meshdraw.bmp", buffer);
-    delete_safe(buffer);
-
-}
 
 TEST(Draw, testFloodFill)
 {

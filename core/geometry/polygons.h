@@ -56,6 +56,13 @@ public:
         return Plane3d::NormalFromPoints(p1(), p2(), p3());
     }
 
+    /** NOTE: This could swap the normal **/
+    void sortByY() {
+        if (p1().y() > p2().y()) std::swap(p1(), p2());
+        if (p2().y() > p3().y()) std::swap(p2(), p3());
+        if (p1().y() > p2().y()) std::swap(p1(), p2());
+    }
+
 };
 
 typedef GenericTriangle<Vector3d<int32_t> > Triangle32;

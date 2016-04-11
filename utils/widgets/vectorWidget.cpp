@@ -113,7 +113,7 @@ void DoubleVectorWidget::setValue(const vector<double> &value)
 void DoubleVectorWidget::setMaximum(double value)
 {
     mMaximum = value;
-    for (size_t i = 0; i < ui->listWidget->count(); i++)
+    for (size_t i = 0; i < (size_t)ui->listWidget->count(); i++)
     {
         QListWidgetItem *item = ui->listWidget->item(i);
         QDoubleSpinBox *dw = static_cast<QDoubleSpinBox *>(ui->listWidget->itemWidget(item));
@@ -124,7 +124,7 @@ void DoubleVectorWidget::setMaximum(double value)
 void DoubleVectorWidget::setMinimum(double value)
 {
     mMinimum = value;
-    for (size_t i = 0; i < ui->listWidget->count(); i++)
+    for (size_t i = 0; i < (size_t)ui->listWidget->count(); i++)
     {
         QListWidgetItem *item = ui->listWidget->item(i);
         QDoubleSpinBox *dw = static_cast<QDoubleSpinBox *>(ui->listWidget->itemWidget(item));

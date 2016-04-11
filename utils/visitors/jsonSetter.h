@@ -149,8 +149,6 @@ public:
     {
         CORE_UNUSED(childName);
         mNodePath.push_back(QJsonObject());
-     //   mChildName = childName;
-        //SYNC_PRINT(("push %s. Stack size %lu\n", childName, mNodePath.size()));
     }
 
     void popChild(const char *childName)
