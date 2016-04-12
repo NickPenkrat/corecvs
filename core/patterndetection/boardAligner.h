@@ -34,7 +34,7 @@ struct BoardMarkerDescription
 
     BoardMarkerDescription() {
         DefaultSetter setter;
-         accept(setter);
+        accept(setter);
     }
 
     template<typename VisitorType>
@@ -46,25 +46,30 @@ struct BoardMarkerDescription
         visitor.visit(circleRadius, 0.08, "circleRadius");
         visitor.visit(boardId, 0, "boardId");
     }
-
 };
 
 struct BoardAlignerParams
 {
-    AlignmentType type = AlignmentType::FIT_WIDTH;
+    AlignmentType type;
+    int idealWidth;
+    int idealHeight;
     vector<BoardMarkerDescription> boardMarkers;
-    int idealWidth  = 18;
-    int idealHeight = 11;
+
+    BoardAlignerParams() {
+        DefaultSetter setter;
+        accept(setter);
+    }
 
     template<typename VisitorType>
     void accept(VisitorType &visitor)
     {
-        auto m = asInteger(type);
-        visitor.visit(m, m, "alignmentType");
+        int m = asInteger(type);
+        visitor.visit(m, asInteger(AlignmentType::FIT_WIDTH), "alignmentType");
         type = static_cast<AlignmentType>(m);
-        visitor.visit(idealWidth  , 18, "idealWidth");
-        visitor.visit(idealHeight , 11, "idealHeight");
-        visitor.visit(boardMarkers, "boardMarkers");
+
+        visitor.visit(idealWidth,  18, "idealWidth");
+        visitor.visit(idealHeight, 11, "idealHeight");
+        visitor.visit(boardMarkers,    "boardMarkers");
     }
 
     static BoardAlignerParams GetIndoorsBoard();
