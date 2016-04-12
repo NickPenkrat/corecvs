@@ -155,6 +155,7 @@ public:
         POINT_USER_DEFINED  = 0x01,  /**< Point that comes from a file */
         POINT_RECONSTRUCTED = 0x02,
         POINT_TEMPORARY     = 0x04,
+        POINT_TRIANGULATE   = 0x05,
 
         POINT_ALL           = 0xFF
     };
@@ -168,6 +169,7 @@ public:
             case POINT_USER_DEFINED  : return "USER_DEFINED" ;
             case POINT_RECONSTRUCTED : return "RECONSTRUCTED";
             case POINT_TEMPORARY     : return "TEMPORARY"    ;
+            case POINT_TRIANGULATE   : return "TRIANGULATE"  ;
             default                  : return "Not in range" ;
         }
     }
