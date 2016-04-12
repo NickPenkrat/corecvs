@@ -105,6 +105,8 @@ public:
     void addPathFrom(const SelectableGeometryFeatures &other);
     void addAllLinesFromObservationList(const ObservationList &list);
 
+    bool isEmpty() const { return mPaths.empty(); }
+
 
     /****/
     bool hasSinglePointsSelected();

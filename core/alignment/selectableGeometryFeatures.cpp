@@ -432,5 +432,5 @@ void SelectableGeometryFeatures::draw(RGB24Buffer &buffer)
             buffer.element(py, px) = corecvs::RGBColor(0x00ff00);
     }
 }
-
+        
 } // namespace corecvs
