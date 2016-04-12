@@ -95,6 +95,7 @@ public:
             a2[i] = a12[i] - da2[i];
         }
 
+#if 0
         SYNC_PRINT(("Zone Attributes:\n"));
         SYNC_PRINT(("Top Left :"));
         for (int i = 0; i < attributes; i++) SYNC_PRINT(("%lf ", a11[i]));
@@ -115,7 +116,7 @@ public:
         SYNC_PRINT(("Right Delta:"));
         for (int i = 0; i < attributes; i++) SYNC_PRINT(("%lf ", da2[i]));
         SYNC_PRINT(("\n\n"));
-
+#endif
     }
 
     bool step()
@@ -146,6 +147,22 @@ public:
         getSpan(span.cy, span.x1, span.x2);
         return span;
     }
+
+    int getY()
+    {
+        return currentY;
+    }
+
+    int getX1()
+    {
+        return fround(x1);
+    }
+
+    int getX2()
+    {
+        return fround(x2);
+    }
+
 };
 
 template<class TriangleType>
@@ -161,15 +178,6 @@ public:
     {
         sortedt = triangle;
         sortedt.sortByY();
-/*
-        if (sortedt.p1().y() > sortedt.p2().y()) std::swap(sortedt.p1(), sortedt.p2());
-        if (sortedt.p2().y() > sortedt.p3().y()) std::swap(sortedt.p2(), sortedt.p3());
-        if (sortedt.p1().y() > sortedt.p2().y()) std::swap(sortedt.p1(), sortedt.p2());
-*/
-/*        cout << "Sorted by Y" << endl;
-        cout << "  " << sortedt.p1 << endl;
-        cout << "  " << sortedt.p2 << endl;
-        cout << "  " << sortedt.p3 << endl;*/
 
         double longslope = (sortedt.p3().x() - sortedt.p1().x()) / (sortedt.p3().y() - sortedt.p1().y());
         double centerx1 = sortedt.p1().x() + longslope * (sortedt.p2().y() - sortedt.p1().y());
@@ -290,16 +298,7 @@ public:
 
     AttributedLineSpan getAttrSpan()
     {
-        AttributedLineSpan span;
-        part.getSpan(span.cy, span.x1, span.x2);
-        span.att1 = part.a1;
-        span.att2 = part.a2;
-        span.catt = span.att1;
-        span.datt.resize(span.att1.size());
-        for (size_t i = 0; i < span.datt.size(); i++) {
-            span.datt[i] = (part.a2[i] - part.a1[i]) / (span.x2 - span.x1);
-        }
-
+        AttributedLineSpan span(part.getY(), part.getX1(), part.getX2(), part.a1, part.a2 );
 #if 0
         SYNC_PRINT(("Span Attributes:\n"));
         SYNC_PRINT(("Left :"));
@@ -314,6 +313,34 @@ public:
     }
 
 
+};
+
+
+class AttributedTrianglePointIterator {
+
+    AttributedTriangleSpanIterator it;
+    AttributedLineSpan spanIt;
+
+    AttributedTrianglePointIterator(const AttributedTriangle &tr) :
+        it(tr)
+    {
+
+    }
+
+    AttributedTrianglePointIterator(const Vector2dd &p1, const Vector2dd &p2, const Vector2dd &p3) :
+        it(AttributedTriangle(p1,p2,p3))
+    {
+
+    }
+/*
+    bool step() {
+        //while(spanIt.step())
+    }
+
+    Vector2d<int> pos() {
+
+    }
+*/
 };
 
 class Mesh3D;

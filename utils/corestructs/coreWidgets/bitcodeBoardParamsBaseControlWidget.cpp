@@ -30,6 +30,7 @@ BitcodeBoardParamsBaseControlWidget::BitcodeBoardParamsBaseControlWidget(QWidget
     QObject::connect(mUi->codeWidthSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->codeHeightSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->bitcodeIdentSizeSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->bitcodeConfidenceSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
 }
 
 BitcodeBoardParamsBaseControlWidget::~BitcodeBoardParamsBaseControlWidget()
@@ -67,6 +68,7 @@ void BitcodeBoardParamsBaseControlWidget::getParameters(BitcodeBoardParamsBase& 
     params.setCodeWidth        (mUi->codeWidthSpinBox->value());
     params.setCodeHeight       (mUi->codeHeightSpinBox->value());
     params.setBitcodeIdentSize (mUi->bitcodeIdentSizeSpinBox->value());
+    params.setBitcodeConfidence(mUi->bitcodeConfidenceSpinBox->value());
 
 }
 
@@ -89,6 +91,7 @@ BitcodeBoardParamsBase *BitcodeBoardParamsBaseControlWidget::createParameters() 
         , mUi->codeWidthSpinBox->value()
         , mUi->codeHeightSpinBox->value()
         , mUi->bitcodeIdentSizeSpinBox->value()
+        , mUi->bitcodeConfidenceSpinBox->value()
     );
     return result;
 }
@@ -107,6 +110,7 @@ void BitcodeBoardParamsBaseControlWidget::setParameters(const BitcodeBoardParams
     mUi->codeWidthSpinBox->setValue(input.codeWidth());
     mUi->codeHeightSpinBox->setValue(input.codeHeight());
     mUi->bitcodeIdentSizeSpinBox->setValue(input.bitcodeIdentSize());
+    mUi->bitcodeConfidenceSpinBox->setValue(input.bitcodeConfidence());
     blockSignals(wasBlocked);
     emit paramsChanged();
 }

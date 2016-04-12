@@ -614,9 +614,9 @@ void PhotoStationCalibrator::solveCameraToSetup(const CameraLocationData &realLo
 
     absoluteSetupLocation[setup] = CameraLocationData(cs, qs);
 
+#ifdef VERBOSE_OUTPUT
     corecvs::Quaternion qf = qc ^ qs;
     corecvs::Vector3dd  cf = (qs.conjugated() * cc) + cs;//qc(qs(-cs)-cc)
-#ifdef VERBOSE_OUTPUT
     std::cout << "Solving setup " << setup << " from camera " << camera << " QR: " << qr << " QC: " << qc << " QS: " << qs << " | " << " CR: " << cr << " CC: " << cc << " CS: " << cs << std::endl;
 #endif
     CORE_ASSERT_TRUE_S(!(cr - cf) < 1e-6);

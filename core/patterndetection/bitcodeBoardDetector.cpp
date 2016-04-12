@@ -1,5 +1,6 @@
 #include "bitcodeBoardDetector.h"
 #include "homographyReconstructor.h"
+#include "simpleRenderer.h"
 
 BitcodeBoardDetector::BitcodeBoardDetector() :
     input(NULL),
@@ -193,6 +194,8 @@ BitcodeBoardDetector::MarkerData BitcodeBoardDetector::detectMarker(Matrix33 hom
     int codeHeight = parameters.bitcodeParams.codeHeight();
     int codeWidth  = parameters.bitcodeParams.codeWidth ();
 
+
+    double delta = parameters.bitcodeParams.bitcodeConfidence();
     /* First pass. Compute statistics */
 
     for (int i = 0; i < codeHeight; i++)
@@ -203,6 +206,20 @@ BitcodeBoardDetector::MarkerData BitcodeBoardDetector::detectMarker(Matrix33 hom
             double valuesum = 0.0;
             double valuesq  = 0.0;
             int samples = 0;
+
+
+            Vector2dd corners[4] = {
+                Vector2dd( j + 0.5 - delta, i + 0.5 - delta),
+                Vector2dd( j + 0.5 + delta, i + 0.5 - delta),
+                Vector2dd( j + 0.5 + delta, i + 0.5 + delta),
+                Vector2dd( j + 0.5 - delta, i + 0.5 + delta)
+            };
+
+            Triangle2dd t1(corners[0], corners[1], corners[2]);
+            Triangle2dd t2(corners[1], corners[2], corners[3]);
+
+            TriangleSpanIterator it1(t1);
+            TriangleSpanIterator it2(t2);
 
             /*loop over rectangle*/ {
                 Vector2dd pos(j + 0.5, i + 0.5);

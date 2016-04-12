@@ -56,14 +56,23 @@ typedef std::vector<double> FragmentAttributes;
 
 class AttributedLineSpan : public LineSpanInt {
 public:
-    FragmentAttributes att1;
-    FragmentAttributes att2;
     FragmentAttributes catt;
     FragmentAttributes datt;
 
+    AttributedLineSpan() : LineSpanInt(0,1,0) {}
+
+    AttributedLineSpan(int y, int x1, int x2, const FragmentAttributes &a1, const FragmentAttributes &a2) :
+        LineSpanInt(y, x1, x2),
+        catt(a1)
+    {
+        datt.resize(catt.size());
+        for (size_t i = 0; i < datt.size(); i++) {
+            datt[i] = (a2[i] - a1[i]) / (x2 - x1);
+        }
+    }
 
     bool step() {
-        for (size_t i = 0; i < att1.size(); i++) {
+        for (size_t i = 0; i < catt.size(); i++) {
             catt[i] += datt[i];
         }
         return LineSpanInt::step();

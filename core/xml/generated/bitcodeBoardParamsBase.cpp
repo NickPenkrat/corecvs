@@ -156,6 +156,17 @@ int BitcodeBoardParamsBase::staticInit()
           "ident between chessboard and bitcode in chesses"
         )
     );
+    fields().push_back(
+        new DoubleField
+        (
+          BitcodeBoardParamsBase::BITCODECONFIDENCE_ID,
+          offsetof(BitcodeBoardParamsBase, mBitcodeConfidence),
+          0.25,
+          "bitcodeConfidence",
+          "bitcodeConfidence",
+          "Area in which the stats are collected during detection"
+        )
+    );
    return 0;
 }
 
