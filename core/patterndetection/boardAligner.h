@@ -63,6 +63,7 @@ struct BoardAlignerParams
     template<typename VisitorType>
     void accept(VisitorType &visitor)
     {
+        // default ctor: old board FIT_WIDTH_18x11_noMarkers
         int m = asInteger(type);
         visitor.visit(m, asInteger(AlignmentType::FIT_WIDTH), "alignmentType");
         type = static_cast<AlignmentType>(m);
@@ -84,10 +85,8 @@ public:
     BoardAligner(BoardAlignerParams params = BoardAlignerParams());
     BoardAligner(BoardAlignerParams params, const std::shared_ptr<CirclePatternGenerator> &sharedGenerator);
 
-
     void setAlignerParams(const BoardAlignerParams &params);
     BoardAlignerParams getAlignerParams(void);
-
 
     bool align(DpImage &img);
     void drawDebugInfo(RGB24Buffer &buffer);
