@@ -145,10 +145,12 @@ struct CalibrationSettings
 
 struct CalibrationJob
 {
+    typedef std::vector<std::vector<CalibrationSetupEntry>> CalibrationSetups;
+
     Photostation                                    photostation;
     std::vector<CameraLocationData>                 calibrationSetupLocations;
     std::vector<std::vector<ImageData>>             observations;
-    std::vector<std::vector<CalibrationSetupEntry>> calibrationSetups;
+    CalibrationSetups                               calibrationSetups;
     double                                          totalFullErrorMax           = -1.0,
                                                     totalFullErrorRMSE          = -1.0,
                                                     totalCalibrationErrorMax    = -1.0,
