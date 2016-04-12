@@ -443,7 +443,39 @@ template<typename ResultType>
 template<typename ResultType>
     ResultType createView()
     {
-        return this->createView<ResultType>(0, 0, this->h, this->w);
+        return createView<ResultType>(0, 0, this->h, this->w);
+    }
+
+
+    /*
+     * For some legacy stuff where assignment operator is not consistent with abstractBuffer's one;
+     * thus limiting us too old pointer-based implementation for "sharing"
+     */
+template<typename ResultType>
+    ResultType* createViewPtr(const IndexType y, const IndexType x, const IndexType h, const IndexType w)
+    {
+        // This is the only legitimate place to use default constructor
+        ResultType* toReturn = new ResultType();
+
+        toReturn->h          = h;
+        toReturn->w          = w;
+        toReturn->stride     = this->stride;
+
+        toReturn->data       = &(this->element(y, x));
+        toReturn->flags      = VIEW_BUFFER;
+        /**
+         * Prevent original buffer from being deleted
+         * MemoryBlock magically counts references
+         **/
+        toReturn->memoryBlock = memoryBlock;
+        return toReturn;
+    }
+
+
+template<typename ResultType>
+    ResultType* createViewPtr()
+    {
+        return this->createViewPtr<ResultType>(0, 0, this->h, this->w);
     }
 
 
