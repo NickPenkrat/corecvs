@@ -22,7 +22,7 @@ class FixtureScenePart {
 
 public:
     /* No particular reason for this, except to encourage leak checks */
-    static int OBJECT_COUNT;
+    static atomic_int OBJECT_COUNT;
 
     FixtureScene *ownerScene;
 

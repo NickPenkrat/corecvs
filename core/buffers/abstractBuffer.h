@@ -1411,7 +1411,7 @@ private:
  *  Counter for memory profiling
  **/
 template<typename ElementType, typename IndexType>
-int AbstractBuffer<ElementType, IndexType>::bufferCount = 0;
+atomic_int AbstractBuffer<ElementType, IndexType>::bufferCount(0);
 
 } //namespace corecvs
 
