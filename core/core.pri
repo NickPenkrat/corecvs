@@ -17,6 +17,7 @@ CORE_SUBMODULES= \
     buffers       \
     cammodel      \
     fileformats   \
+    filesystem    \
     filters       \
     function      \
     geometry      \
@@ -36,10 +37,12 @@ CORE_SUBMODULES= \
     patterndetection \
     cameracalibration \
     graphs        \
-    reconstruction \
     polynomial    \
     camerafixture \
 
+with_blas {
+    CORE_SUBMODULES += reconstruction
+}
 
 for (MODULE, CORE_SUBMODULES) {
     CORE_INCLUDEPATH += $${COREDIR}/$${MODULE}
@@ -101,3 +104,12 @@ contains(TARGET, cvs_core): !contains(TARGET, cvs_core_restricted) {
     }
     PRE_TARGETDEPS += $$COREBINDIR/$$CORE_TARGET_NAME
 }
+
+# The filesystem module needs this
+with_unorthodox {
+    !win32  {
+        LIBS += -lstdc++fs
+    }
+    DEFINES += CORE_UNSAFE_DEPS
+}
+

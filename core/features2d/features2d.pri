@@ -5,4 +5,3 @@ HEADERS += \
 SOURCES += \
 	features2d/*.cpp
 
-CONFIG += c++11

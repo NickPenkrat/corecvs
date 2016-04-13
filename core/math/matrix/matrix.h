@@ -287,6 +287,7 @@ public:
 /* Some more specific way to call multiplication */
     static Matrix multiplyHomebrew  (const Matrix &A, const Matrix &B, bool parallel = true, bool vectorize = true);
     static Matrix multiplyHomebrewMD(const Matrix &M, const DiagonalMatrix &D);
+    static Vector multiplyHomebrewMV(const Matrix &M, const Vector &V);
 
 #ifdef WITH_BLAS
     static Matrix multiplyBlas(const Matrix &A, const Matrix &B);

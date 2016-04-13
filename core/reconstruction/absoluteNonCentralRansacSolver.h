@@ -20,14 +20,29 @@ struct AbsoluteNonCentralRansacSolverParams
 {
     double reprojectionInlierThreshold = 2.0;
     int fitIterations = 100;
-    int maxIterations = 100000; // Big enough for P3P
+    // Big enough for P3P at ~0.05 inlier ratio
+    int maxIterations = 100000;
     bool forcePosition = false;
     corecvs::Vector3dd forcedPosition = corecvs::Vector3dd(0, 0, 0);
 };
 class AbsoluteNonCentralRansacSolver : public AbsoluteNonCentralRansacSolverParams
 {
 public:
-    AbsoluteNonCentralRansacSolver(corecvs::CameraFixture *ps, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &cloudMatches, const AbsoluteNonCentralRansacSolverParams &params = AbsoluteNonCentralRansacSolverParams()) : AbsoluteNonCentralRansacSolverParams(params), ps(ps), cloudMatches(cloudMatches)
+    AbsoluteNonCentralRansacSolver(corecvs::CameraFixture *ps, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &cloudMatches, const AbsoluteNonCentralRansacSolverParams &params = AbsoluteNonCentralRansacSolverParams()) : AbsoluteNonCentralRansacSolverParams(params), ps(ps), cloudMatches(cloudMatches), shouldTestFirst(false)
+    {
+    }
+    AbsoluteNonCentralRansacSolver(corecvs::CameraFixture *ps, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &cloudMatches, corecvs::Affine3DQ firstHypothesis, const AbsoluteNonCentralRansacSolverParams &params = AbsoluteNonCentralRansacSolverParams()) : AbsoluteNonCentralRansacSolverParams(params), ps(ps), cloudMatches(cloudMatches), shouldTestFirst(true), firstHypothesis(firstHypothesis)
+    {
+        Estimator es(this, reprojectionInlierThreshold);
+        es.hypothesis.push_back(firstHypothesis);
+        es.selectInliers();
+    }
+    AbsoluteNonCentralRansacSolver(const AbsoluteNonCentralRansacSolver& ancrs) :
+        AbsoluteNonCentralRansacSolverParams(ancrs),
+        bestHypothesis(ancrs.bestHypothesis), bestInlierCnt(ancrs.bestInlierCnt), inlierQuality(ancrs.inlierQuality),
+        inliers(ancrs.inliers), ps(ancrs.ps), cloudMatches(ancrs.cloudMatches), hypothesis(ancrs.hypothesis),
+        batch(ancrs.batch), batches(ancrs.batches), usedEvals(ancrs.usedEvals), gamma(ancrs.gamma), firstHypothesis(ancrs.firstHypothesis),
+        shouldTestFirst(shouldTestFirst)
     {
     }
     void run();
@@ -35,6 +50,8 @@ public:
     void runInliersRE();
     std::vector<int> getInliers();
     corecvs::Affine3DQ getBestHypothesis();
+    corecvs::Affine3DQ firstHypothesis;
+    bool shouldTestFirst;
 //protected:
 #ifdef WITH_TBB
     tbb::mutex mutex;
