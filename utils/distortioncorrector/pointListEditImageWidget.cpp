@@ -281,12 +281,14 @@ void PointListEditImageWidgetUnited::setObservationModel(PointImageEditorInterfa
 
 void PointListEditImageWidgetUnited::setSelectionModel(QItemSelectionModel *_selectionModel)
 {
-    disconnect(selectionModel, 0, this, 0);
+    if (selectionModel != NULL)
+        disconnect(selectionModel, 0, this, 0);
+
     selectionModel = _selectionModel;
 
-    connect(selectionModel, SIGNAL(selectionChanged(QItemSelection,QItemSelection)), this, SLOT(update()));
+    if (selectionModel != NULL)
+        connect(selectionModel, SIGNAL(selectionChanged(QItemSelection, QItemSelection)), this, SLOT(update()));
 }
-
 
 
 /* This is called when model indexes are changed, and our cache is no longer valid */

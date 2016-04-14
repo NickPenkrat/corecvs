@@ -38,7 +38,7 @@ public:
      *  This transform only happens when you use ::positionCameraInStation() method. Thoough we encourage you to do so.
      *
      **/
-    Affine3DQ worldFrameToCameraFrame;
+    Affine3DQ                     worldFrameToCameraFrame;
 
     std::string                   nameId;
 
@@ -161,7 +161,7 @@ public:
     virtual CameraFixture      *createCameraFixture();
     virtual SceneFeaturePoint  *createFeaturePoint();
 
-    /* These methods  compleatly purge camera from scene */
+    /* These methods completely purge camera from scene */
     virtual void deleteCamera        (FixtureCamera *camera);
     virtual void deleteCameraFixture (CameraFixture *fixture, bool recursive = true);
     virtual void deleteFixturePair   (CameraFixture *fixture, FixtureCamera *camera);

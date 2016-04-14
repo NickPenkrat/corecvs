@@ -198,9 +198,7 @@ void FixtureScene::deleteCamera(FixtureCamera *camera)
         deleteFixtureCameraUMWPP(point->observations__, camera);
     }
 
-
     delete_safe(camera);
-
 }
 
 void FixtureScene::deleteCameraFixture(CameraFixture *fixture, bool recursive)
