@@ -16,12 +16,15 @@ PointListEditImageWidget::PointListEditImageWidget(QWidget *parent, bool showHea
 
 void PointListEditImageWidget::setObservationModel(ObservationListModel *observationListModel)
 {
-    disconnect(mObservationListModel, 0, this, 0);
+    if (mObservationListModel != NULL) {
+        disconnect(mObservationListModel, 0, this, 0);
+    }
 
     mObservationListModel = observationListModel;
 
-    connect(mObservationListModel, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
-            this, SLOT(update()));
+    if (mObservationListModel != NULL) {
+        connect(mObservationListModel, SIGNAL(dataChanged(QModelIndex, QModelIndex, QVector<int>)), this, SLOT(update()));
+    }
 
     connect(mObservationListModel, SIGNAL(columnsInserted(QModelIndex,int,int))             , this, SLOT(invalidateModel()));
     connect(mObservationListModel, SIGNAL(columnsMoved(QModelIndex,int,int,QModelIndex,int)), this, SLOT(invalidateModel()));
@@ -45,14 +48,10 @@ void PointListEditImageWidget::childRepaint(QPaintEvent *event, QWidget *who)
 {
     AdvancedImageWidget::childRepaint(event, who);
     if (mImage.isNull())
-    {
         return;
-    }
 
     if (mObservationListModel == NULL)
-    {
         return;
-    }
 
     /* Now the points */
     QPainter painter(who);
@@ -93,10 +92,8 @@ void PointListEditImageWidget::childRepaint(QPaintEvent *event, QWidget *who)
     }
 }
 
-
 void PointListEditImageWidget::toolButtonReleased(QWidget *button)
 {
-
     mUi->widget->unsetCursor();
     AdvancedImageWidget::toolButtonReleased(button);
 
@@ -129,7 +126,8 @@ void PointListEditImageWidget::toolButtonReleased(QWidget *button)
             mSelectedPoint = -1;
         }
         mUi->widget->update();
-    } else if (button == mAddInfoButton)
+    }
+    else if (button == mAddInfoButton)
     {
         mUi->widget->update();
     }
@@ -247,6 +245,7 @@ void PointListEditImageWidget::childMouseMoved(QMouseEvent * event)
     default:
         break;
     }
+
     AdvancedImageWidget::childMouseMoved(event);
 }
 
@@ -256,23 +255,25 @@ void PointListEditImageWidget::childMouseMoved(QMouseEvent * event)
  *
  *********************************************************************************************************/
 
-PointListEditImageWidgetUnited::PointListEditImageWidgetUnited(QWidget *parent, bool showHeader) :
-    AdvancedImageWidget(parent, showHeader),
-    mObservationListModel(NULL),
-    selectionModel(NULL),
-    mSelectedPoint(-1)
+PointListEditImageWidgetUnited::PointListEditImageWidgetUnited(QWidget *parent, bool showHeader)
+    : AdvancedImageWidget(parent, showHeader)
+    , mObservationListModel(NULL)
+    , selectionModel(NULL)
+    , mSelectedPoint(-1)
 {
     mMoveButton    = addToolButton("Select",            QIcon(":/new/prefix1/select_by_color.png"));
     mAddButton     = addToolButton("Add Point To Path", QIcon(":/new/prefix1/vector_add.png"     ), false);
     mDeleteButton  = addToolButton("Delete Point",      QIcon(":/new/prefix1/vector_delete.png"  ), false);
     mAddInfoButton = addToolButton("Toggle info",       QIcon(":/new/prefix1/info_rhombus.png"   ), false);
     mAddInfoButton ->setCheckable(true);
-
 }
 
 void PointListEditImageWidgetUnited::setObservationModel(PointImageEditorInterface *observationListModel)
 {
-    disconnect(mObservationListModel, 0, this, 0);
+    if (mObservationListModel != NULL) {
+        disconnect(mObservationListModel, 0, this, 0);
+    }
+
     mObservationListModel = observationListModel;
 
     connect(mObservationListModel, SIGNAL(updateView())      , this, SLOT(update()));
@@ -281,13 +282,15 @@ void PointListEditImageWidgetUnited::setObservationModel(PointImageEditorInterfa
 
 void PointListEditImageWidgetUnited::setSelectionModel(QItemSelectionModel *_selectionModel)
 {
-    if (selectionModel != NULL)
+    if (selectionModel != NULL) {
         disconnect(selectionModel, 0, this, 0);
+    }
 
     selectionModel = _selectionModel;
 
-    if (selectionModel != NULL)
+    if (selectionModel != NULL) {
         connect(selectionModel, SIGNAL(selectionChanged(QItemSelection, QItemSelection)), this, SLOT(update()));
+    }
 }
 
 
@@ -302,14 +305,15 @@ void PointListEditImageWidgetUnited::selectPoint(int id)
 {
     qDebug("PointListEditImageWidgetUnited::selectPoint(%d)", id);
     mSelectedPoint = id;
-    if (selectionModel != NULL && mObservationListModel != NULL) {
-
+    if (selectionModel != NULL && mObservationListModel != NULL)
+    {
         QModelIndex pos = mObservationListModel->index(id, 0);
 
         if (mSelectedPoint != -1) {
             selectionModel->select         (pos, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
             selectionModel->setCurrentIndex(pos, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
-        } else {
+        }
+        else {
             selectionModel->clear();
         }
     }
@@ -377,14 +381,10 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *w
 {
     AdvancedImageWidget::childRepaint(event, who);
     if (mImage.isNull())
-    {
         return;
-    }
 
     if (mObservationListModel == NULL)
-    {
         return;
-    }
 
     /* Now the points */
     QPainter painter(who);
@@ -434,14 +434,12 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *w
 
             if (imageCoords.y() < mOutputRect.top   ()) flags |= TOP_ARROW;
             if (imageCoords.y() > mOutputRect.bottom()) flags |= BOTTOM_ARROW;
-
         }
 
         painter.setBrush(Qt::red);
         painter.setPen(Qt::blue);
         paintDirectionArrows(painter, flags);
         painter.setBrush(Qt::NoBrush);
-
     }
 
     /* Draw additional points*/
@@ -457,10 +455,8 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *w
     }
 }
 
-
 void PointListEditImageWidgetUnited::toolButtonReleased(QWidget *button)
 {
-
     mUi->widget->unsetCursor();
     AdvancedImageWidget::toolButtonReleased(button);
 
@@ -475,7 +471,7 @@ void PointListEditImageWidgetUnited::toolButtonReleased(QWidget *button)
         qDebug() << "Add Button";
         //mCurrentToolClass = (ToolClass)ADD_POINT_TOOL;
         mObservationListModel->appendPoint();
-        mSelectedPoint = mObservationListModel->getPointCount() - 1;
+        mSelectedPoint = (int)mObservationListModel->getPointCount() - 1;
         /*if (selectionModel != NULL) {
             QItemSelection::Se
             selectionModel->select(QModelIndex(mSelectedPoint, 0), QI);
@@ -493,7 +489,8 @@ void PointListEditImageWidgetUnited::toolButtonReleased(QWidget *button)
             mSelectedPoint = -1;
         }
         mUi->widget->update();
-    } else if (button == mAddInfoButton)
+    }
+    else if (button == mAddInfoButton)
     {
         mUi->widget->update();
     }
@@ -535,7 +532,6 @@ void PointListEditImageWidgetUnited::childMousePressed(QMouseEvent *event)
 
     if (tool == MOVE_POINT_TOOL)
     {
-
         Vector2dd releasePoint = Vector2dd(event->x(), event->y());
 //        bool shiftPressed = event->modifiers().testFlag(Qt::ShiftModifier);
 
@@ -580,6 +576,6 @@ void PointListEditImageWidgetUnited::childMouseMoved(QMouseEvent * event)
     default:
         break;
     }
+
     AdvancedImageWidget::childMouseMoved(event);
 }
-
