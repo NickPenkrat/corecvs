@@ -12,9 +12,9 @@ ChessboardDetector::ChessboardDetector (
         ChessBoardAssemblerParams assemblerParams
     )
     : CheckerboardDetectionParameters(params),
-      aligner(new BoardAligner(alignerParams)),
-      detector(detectorParams),
-      stats(NULL)
+      aligner(new BoardAligner(alignerParams)),     
+      stats(NULL),
+      detector(detectorParams)
 {
 
     BoardAlignerParams activeAlignerParams = aligner->getAlignerParams();

@@ -995,7 +995,7 @@ void corecvs::PhotostationPlacer::computeErrors(double out[], const std::vector<
     corecvs::parallelable_for(0, lastProj / errSize, 16, computator, true);
 
     int idx = lastProj;
-    for (int i = 0; i < gpsIdx.size(); i += 3)
+    for (size_t i = 0; i < gpsIdx.size(); i += 3)
     {
         CORE_ASSERT_TRUE_S(gpsIdx[i] == gpsIdx[i + 1] - 1);
         CORE_ASSERT_TRUE_S(gpsIdx[i + 2] == gpsIdx[i + 1] + 1);
@@ -1056,7 +1056,7 @@ void corecvs::PhotostationPlacer::updateTrackables()
 {
     std::cout << "Starting speculative P3P update" << std::endl;
     activeInlierCount.clear();
-    for (int i = 0; i < speculativity && i < scene->placingQueue.size(); ++i)
+    for (size_t i = 0; i < (size_t)speculativity && i < scene->placingQueue.size(); i++)
     {
         auto cf = scene->placingQueue[i];
         std::cout << "\tRunning with " << cf->name << " ";

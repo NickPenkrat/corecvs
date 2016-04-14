@@ -8,6 +8,7 @@
  * \author autoGenerator
  */
 
+#include "lensDistortionModelParametersBase.h"
 #include "reflection.h"
 #include "defaultSetter.h"
 #include "printerVisitor.h"
@@ -27,7 +28,7 @@ using namespace corecvs;
  */
 
 namespace corecvs {
-}
+
 /*
  *  Additional includes for enum section.
  */
@@ -64,210 +65,10 @@ namespace corecvs {
  *   for more details please read the code of getCorrectionForPoint() or read the Heikkila paper
      
  **/
-class LensDistortionModelParameters : public BaseReflection<LensDistortionModelParameters>
+class LensDistortionModelParameters : public LensDistortionModelParametersBase
 {
 public:
-    enum FieldId {
-        PRINCIPALX_ID,
-        PRINCIPALY_ID,
-        TANGENTIALX_ID,
-        TANGENTIALY_ID,
-        KOEFF_ID,
-        ASPECT_ID,
-        SCALE_ID,
-        NORMALIZING_FOCAL_ID,
-        SHIFTX_ID,
-        SHIFTY_ID,
-        MAP_FORWARD_ID, // Forward = from undistorted to distorted, so for compatibility reasons defaults is false
-        LENS_DISTORTION_MODEL_PARAMETERS_FIELD_ID_NUM
-    };
-
-    /** Section with variables */
-
-    /** 
-     * \brief principalX 
-     * The center of the distortion \f$x_c\f$ 
-     */
-    double mPrincipalX;
-
-    /** 
-     * \brief principalY 
-     * The center of the distortion \f$y_c\f$ 
-     */
-    double mPrincipalY;
-
-    /** 
-     * \brief tangentialX 
-     * First tangent correction coefficient - \f$p_1\f$ 
-     */
-    double mTangentialX;
-
-    /** 
-     * \brief tangentialY 
-     * Second tangent correction coefficient - \f$p_2\f$ 
-     */
-    double mTangentialY;
-
-    /** 
-     * \brief koeff 
-     * Polynom to describe radial correction 
-     */
-    vector<double> mKoeff;
-
-    /** 
-     * \brief aspect 
-     * aspect 
-     */
-    double mAspect;
-
-    /** 
-     * \brief scale 
-     * scale 
-     */
-    double mScale;
-
-    /** 
-     * \brief Normalizing Focal 
-     * Normalizing Focal 
-     */
-    double mNormalizingFocal;
-
-    /** 
-     * \brief shiftX 
-     * Additional shift \f$x_s\f$ 
-     */
-    double mShiftX;
-
-    /** 
-     * \brief shiftY 
-     * Additional shift \f$y_s\f$ 
-     */
-    double mShiftY;
-
-    /** 
-     * \brief True if maps from undistorted to distorted 
-     * This one is used to identify direction of map
-     */
-    bool mMapForward;
-
-    /** Static fields init function, this is used for "dynamic" field initialization */ 
-    static int staticInit();
-
-    /** Section with getters */
-    const void *getPtrById(int fieldId) const
-    {
-        return (const unsigned char *)(this) + fields()[fieldId]->offset;
-    }
-    double principalX() const
-    {
-        return mPrincipalX;
-    }
-
-    double principalY() const
-    {
-        return mPrincipalY;
-    }
-
-    double tangentialX() const
-    {
-        return mTangentialX;
-    }
-
-    double tangentialY() const
-    {
-        return mTangentialY;
-    }
-
-    vector<double> koeff() const
-    {
-        return mKoeff;
-    }
-
-    double aspect() const
-    {
-        return mAspect;
-    }
-
-    double scale() const
-    {
-        return mScale;
-    }
-
-    double normalizingFocal() const
-    {
-        return mNormalizingFocal;
-    }
-
-    double shiftX() const
-    {
-        return mShiftX;
-    }
-
-    double shiftY() const
-    {
-        return mShiftY;
-    }
-
-    bool mapForward() const
-    {
-        return mMapForward;
-    }
-
-    /* Section with setters */
-    void setPrincipalX(double principalX)
-    {
-        mPrincipalX = principalX;
-    }
-
-    void setPrincipalY(double principalY)
-    {
-        mPrincipalY = principalY;
-    }
-
-    void setTangentialX(double tangentialX)
-    {
-        mTangentialX = tangentialX;
-    }
-
-    void setTangentialY(double tangentialY)
-    {
-        mTangentialY = tangentialY;
-    }
-
-    void setKoeff(vector<double> koeff)
-    {
-        mKoeff = koeff;
-    }
-
-    void setAspect(double aspect)
-    {
-        mAspect = aspect;
-    }
-
-    void setScale(double scale)
-    {
-        mScale = scale;
-    }
-
-    void setNormalizingFocal(double normalizingFocal)
-    {
-        mNormalizingFocal = normalizingFocal;
-    }
-
-    void setShiftX(double shiftX)
-    {
-        mShiftX = shiftX;
-    }
-
-    void setShiftY(double shiftY)
-    {
-        mShiftY = shiftY;
-    }
-
-    void setMapForward(bool mapForward)
-    {
-        mMapForward = mapForward;
-    }
+    using LensDistortionModelParametersBase::mapForward;
 
     corecvs::Vector2dd mapForward(const corecvs::Vector2dd &v) const
     {
@@ -387,17 +188,7 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(mPrincipalX,                static_cast<const DoubleField *>  (fields()[PRINCIPALX_ID]));
-        visitor.visit(mPrincipalY,                static_cast<const DoubleField *>  (fields()[PRINCIPALY_ID]));
-        visitor.visit(mTangentialX,               static_cast<const DoubleField *>  (fields()[TANGENTIALX_ID]));
-        visitor.visit(mTangentialY,               static_cast<const DoubleField *>  (fields()[TANGENTIALY_ID]));
-        visitor.visit(mKoeff,                     static_cast<const DoubleVectorField *>(fields()[KOEFF_ID]));
-        visitor.visit(mAspect,                    static_cast<const DoubleField *>  (fields()[ASPECT_ID]));
-        visitor.visit(mScale,                     static_cast<const DoubleField *>  (fields()[SCALE_ID]));
-        visitor.visit(mNormalizingFocal,          static_cast<const DoubleField *>  (fields()[NORMALIZING_FOCAL_ID]));
-        visitor.visit(mShiftX,                    static_cast<const DoubleField *>  (fields()[SHIFTX_ID]));
-        visitor.visit(mShiftY,                    static_cast<const DoubleField *>  (fields()[SHIFTY_ID]));
-        visitor.visit(mMapForward,                static_cast<const BoolField   *>  (fields()[MAP_FORWARD_ID]));
+       LensDistortionModelParametersBase::accept(visitor);
     }
 
     LensDistortionModelParameters()
@@ -418,20 +209,20 @@ template<class VisitorType>
         , double shiftX
         , double shiftY
         , bool   mapForward = false
-    )
-    {
-        mPrincipalX = principalX;
-        mPrincipalY = principalY;
-        mTangentialX = tangentialX;
-        mTangentialY = tangentialY;
-        mKoeff = koeff;
-        mAspect = aspect;
-        mScale = scale;
-        mNormalizingFocal = normalizingFocal;
-        mShiftX = shiftX;
-        mShiftY = shiftY;
-        mMapForward = mapForward;
-    }
+    ) : LensDistortionModelParametersBase(
+          principalX ,
+          principalY ,
+          tangentialX ,
+          tangentialY ,
+          koeff ,
+          aspect ,
+          scale ,
+          normalizingFocal ,
+          shiftX ,
+          shiftY ,
+          mapForward
+       )
+    {}
 
     friend ostream& operator << (ostream &out, LensDistortionModelParameters &toSave)
     {
@@ -448,4 +239,7 @@ template<class VisitorType>
 private:
     void getRectMap(const Vector2dd &tl, const Vector2dd &dr, std::vector<Vector2dd> boundaries[4]) const;
 };
+
+} // namespace
+
 #endif  //LENS_DISTORTION_MODEL_PARAMETERS_H_

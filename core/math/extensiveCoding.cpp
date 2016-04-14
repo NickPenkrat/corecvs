@@ -6,12 +6,12 @@ namespace corecvs {
 ExtensiveCoding::ExtensiveCoding(int _inbits) :
     LUT(NULL)
 {
-     inbits = _inbits;
-     int effectiveBits = getNearUpperPowerOf2(inbits , addbits);
-     outbits = inbits + addbits;
+    inbits = _inbits;
+    int effectiveBits = getNearUpperPowerOf2(inbits , addbits);
+    outbits = inbits + addbits;
 
-     LUT = new uint32_t[1 << outbits];
-
+    LUT = new uint32_t[1 << outbits];
+    CORE_UNUSED(effectiveBits);
 
 
 

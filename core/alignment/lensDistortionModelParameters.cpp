@@ -18,151 +18,6 @@
  **/
 
 namespace corecvs {
-template<>
-Reflection BaseReflection<LensDistortionModelParameters>::reflection = Reflection();
-template<>
-int BaseReflection<LensDistortionModelParameters>::dummy = LensDistortionModelParameters::staticInit();
-} // namespace corecvs 
-
-SUPPRESS_OFFSET_WARNING_BEGIN
-
-int LensDistortionModelParameters::staticInit()
-{
-
-    ReflectionNaming &nameing = naming();
-    nameing = ReflectionNaming(
-        "Lens Distortion Model Parameters",
-        "Lens Distortion Model Parameters",
-        ""
-    );
-     
-
-    fields().push_back(
-        new DoubleField
-        (
-          LensDistortionModelParameters::PRINCIPALX_ID,
-          offsetof(LensDistortionModelParameters, mPrincipalX),
-          240,
-          "principalX",
-          "principalX",
-          "The center of the distortion \f$x_c\f$"
-        )
-    );
-    fields().push_back(
-        new DoubleField
-        (
-          LensDistortionModelParameters::PRINCIPALY_ID,
-          offsetof(LensDistortionModelParameters, mPrincipalY),
-          320,
-          "principalY",
-          "principalY",
-          "The center of the distortion \f$y_c\f$"
-        )
-    );
-    fields().push_back(
-        new DoubleField
-        (
-          LensDistortionModelParameters::TANGENTIALX_ID,
-          offsetof(LensDistortionModelParameters, mTangentialX),
-          0,
-          "tangentialX",
-          "tangentialX",
-          "First tangent correction coefficient - \f$p_1\f$"
-        )
-    );
-    fields().push_back(
-        new DoubleField
-        (
-          LensDistortionModelParameters::TANGENTIALY_ID,
-          offsetof(LensDistortionModelParameters, mTangentialY),
-          0,
-          "tangentialY",
-          "tangentialY",
-          "Second tangent correction coefficient - \f$p_2\f$"
-        )
-    );
-    fields().push_back(
-        new DoubleVectorField
-        (
-          LensDistortionModelParameters::KOEFF_ID,
-          offsetof(LensDistortionModelParameters, mKoeff),
-          0,
-          0,
-          "koeff",
-          "koeff",
-          "Polynom to describe radial correction"
-        )
-    );
-    fields().push_back(
-        new DoubleField
-        (
-          LensDistortionModelParameters::ASPECT_ID,
-          offsetof(LensDistortionModelParameters, mAspect),
-          1,
-          "aspect",
-          "aspect",
-          "aspect"
-        )
-    );
-    fields().push_back(
-        new DoubleField
-        (
-          LensDistortionModelParameters::SCALE_ID,
-          offsetof(LensDistortionModelParameters, mScale),
-          1,
-          "scale",
-          "scale",
-          "scale"
-        )
-    );
-    fields().push_back(
-        new DoubleField
-        (
-          LensDistortionModelParameters::NORMALIZING_FOCAL_ID,
-          offsetof(LensDistortionModelParameters, mNormalizingFocal),
-          1,
-          "Normalizing Focal",
-          "Normalizing Focal",
-          "Normalizing Focal"
-        )
-    );
-    fields().push_back(
-        new DoubleField
-        (
-          LensDistortionModelParameters::SHIFTX_ID,
-          offsetof(LensDistortionModelParameters, mShiftX),
-          0,
-          "Shift X",
-          "Shift X",
-          "Shift X"
-        )
-    );
-    fields().push_back(
-        new DoubleField
-        (
-          LensDistortionModelParameters::SHIFTY_ID,
-          offsetof(LensDistortionModelParameters, mShiftY),
-          0,
-          "Shift Y",
-          "Shift Y",
-          "Shift Y"
-        )
-    );
-    fields().push_back(
-        new BoolField
-        (
-          LensDistortionModelParameters::MAP_FORWARD_ID,
-          offsetof(LensDistortionModelParameters, mMapForward),
-          false,
-          "Map forward",
-          "Map forward",
-          "True if maps from undistorted to distorted"
-        )
-    );
-   return 0;
-}
-
-SUPPRESS_OFFSET_WARNING_END
 
 void LensDistortionModelParameters::getInscribedImageRect(const Vector2dd &tlDistorted, const Vector2dd &drDistorted, Vector2dd &tlUndistorted, Vector2dd &drUndistorted) const
 {
@@ -235,11 +90,14 @@ void LensDistortionModelParameters::getRectMap(const Vector2dd &tl, const Vector
     for (int i = 0; i < 4; ++i)
     {
         boundaries[i].resize(steps[i]);
-        auto& boundary = boundaries[i];
-        auto& shift    = shifts[i];
-        auto& origin   = origins[i];
-        auto& step     = steps[i];
-        for (int j = 0; j < step; ++j)
+        std::vector<Vector2dd> boundary = boundaries[i];
+        Vector2dd shift    = shifts[i];
+        Vector2dd origin   = origins[i];
+        int step     = steps[i];
+
+        for (int j = 0; j < step; j++)
             boundary[j] = mapBackward(origin + j * shift);
     }
+}
+
 }

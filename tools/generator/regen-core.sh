@@ -222,7 +222,7 @@ enums+=" lineDistortionEstimatorCost"
 enums+=" distortionResizePolicy"
 enums+=" checkerboardDetectionAlgorithm"
 
-#classes+=" lensDistortionModelParameters"
+classes+=" lensDistortionModelParametersBase"
 
 full_ui_classes+=" checkerboardDetectionParameters"
 full_ui_classes+=" lineDistortionEstimatorParameters"

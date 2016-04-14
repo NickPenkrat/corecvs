@@ -19,7 +19,9 @@ void SceneGenerator::generateScene()
 void SceneGenerator::generateFixtures()
 {
     double R = 20.0;
-    double l = 0.0, r = N;
+    double l = 0.0;
+    double r = N;
+
     for (int i = 0; i < 64; ++i)
     {
         double m = (l + r) / 2.0;
@@ -48,7 +50,7 @@ void SceneGenerator::generateFixtures()
             if (x * x + y * y <= r * r)
                 fixtures.emplace_back(x * R, y * R);
         }
-    CORE_ASSERT_TRUE_S(fixtures.size() >= N);
+    CORE_ASSERT_TRUE_S(fixtures.size() >= (size_t)N);
     std::sort(fixtures.begin(), fixtures.end(), [](const corecvs::Vector2dd &a, const corecvs::Vector2dd &b) { return !a < !b; });
     fixtures.resize(N);
     for (auto&f: fixtures)
