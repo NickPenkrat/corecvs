@@ -63,17 +63,11 @@ CloudViewDialog::CloudViewDialog(QWidget *parent)
     connect(mUi.widget, SIGNAL(askParentInitialize()),                    this, SLOT(initializeGLSlot()));
     connect(mUi.widget, SIGNAL(askParentRepaint()),                       this, SLOT(repaintGLSlot()));
     connect(mUi.widget, SIGNAL(notifyParentResize(int, int)),             this, SLOT(resizeGLSlot(int, int)));
-
     connect(mUi.widget, SIGNAL(notifyParentMouseMove(QMouseEvent *)),     this, SLOT(childMoveEvent(QMouseEvent *)));
-
     connect(mUi.widget, SIGNAL(notifyParentMousePress(QMouseEvent *)),    this, SLOT(childPressEvent(QMouseEvent *)));
-
     connect(mUi.widget, SIGNAL(notifyParentMouseRelease(QMouseEvent *)),  this, SLOT(childReleaseEvent(QMouseEvent *)));
-
     connect(mUi.widget, SIGNAL(notifyParentKeyPressEvent(QKeyEvent *)),   this, SLOT(childKeyPressEvent(QKeyEvent *)));
-
     connect(mUi.widget, SIGNAL(notifyParentKeyReleaseEvent(QKeyEvent *)), this, SLOT(childKeyReleaseEvent(QKeyEvent *)));
-
     connect(mUi.widget, SIGNAL(notifyParentWheelEvent(QWheelEvent *)),    this, SLOT(childWheelEvent(QWheelEvent *)));
 
     mUi.frustumFarBox->setValue(fabs(START_Z * 3.0));
@@ -148,10 +142,7 @@ CloudViewDialog::CloudViewDialog(QWidget *parent)
 
     /* Stats collection */
     connect(mUi.statsButton, SIGNAL(released()), this, SLOT(statsOpen()));
-
 }
-
-
 
 void CloudViewDialog::addMesh(QString name, Mesh3D *mesh)
 {
@@ -179,7 +170,6 @@ TreeSceneController * CloudViewDialog::addSubObject (QString name, QSharedPointe
     return result;
 }
 
-
 CloudViewDialog::~CloudViewDialog()
 {
     //qDebug("CloudViewDialog::~CloudViewDialog(): called for this=%p", this);
@@ -193,7 +183,7 @@ void CloudViewDialog::setCollapseTree(bool collapse)
     } else {
         sizes << 1 << 1;
     }
-        mUi.splitter->setSizes(sizes);
+    mUi.splitter->setSizes(sizes);
 }
 
 void CloudViewDialog::downRotate()
@@ -248,8 +238,6 @@ void CloudViewDialog::childWheelEvent ( QWheelEvent * event )
     double delta = event->delta();
     zoom(delta);
 }
-
-
 
 void CloudViewDialog::resetCameraPos()
 {
@@ -435,13 +423,11 @@ void CloudViewDialog::resetCamera()
             break;
 #endif
         }
-
     }
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 }
-
 
 void CloudViewDialog::childMoveEvent(QMouseEvent *event)
 {
@@ -668,9 +654,7 @@ void CloudViewDialog::setNewScenePointer(QSharedPointer<Scene3D> newScene, int s
         return;
     }*/
     if (mUi.pauseButton->isChecked())
-    {
         return;
-    }
 
     bool isFirst = (mSceneControllers[sceneId] == NULL);
     if (isFirst && !newScene.isNull())
@@ -707,9 +691,7 @@ void CloudViewDialog::setNewScenePointer(QSharedPointer<Scene3D> newScene, int s
 void CloudViewDialog::setNewRectificationResult (QSharedPointer<RectificationResult> rectificationResult)
 {
     if (rectificationResult.isNull())
-    {
         return;
-    }
 
     mRectificationResult = rectificationResult;
 
@@ -721,12 +703,10 @@ void CloudViewDialog::setNewRectificationResult (QSharedPointer<RectificationRes
     mUi.widget->update();
 }
 
-
-void CloudViewDialog::setNewCameraImage (QSharedPointer<QImage> texture, int cameraId)
+void CloudViewDialog::setNewCameraImage(QSharedPointer<QImage> texture, int cameraId)
 {
-    if (texture.isNull()) {
+    if (texture.isNull())
         return;
-    }
 
     //SYNC_PRINT(("void CloudViewDialog::setNewCameraImage () called\n"));
 
@@ -758,9 +738,7 @@ void CloudViewDialog::savePointsPCD()
 
     qDebug("Dump slot called...\n");
     if (mScenes[MAIN_SCENE].isNull())
-    {
         return;
-    }
 
     char name[100];
     snprintf2buf(name, "exported%d.pcd", count);
@@ -799,12 +777,11 @@ void CloudViewDialog::toggledVisibility()
     QModelIndexList	list = selection->selectedRows();
     for (const QModelIndex &index : list)
     {
-        qDebug() << "Model Ids:" << index.row();
+        //qDebug() << "Model Ids:" << index.row();
         QModelIndex boxIndex = index.sibling(index.row(), TreeSceneModel::FLAG_COLUMN);
         bool isVisible = mTreeModel.data(boxIndex, Qt::CheckStateRole).toBool();
         mTreeModel.setData(boxIndex, !isVisible, Qt::CheckStateRole);
     }
-
 }
 
 void CloudViewDialog::loadMesh()
@@ -878,4 +855,3 @@ void CloudViewDialog::statsOpen()
     mStatisticsDialog.show();
     mStatisticsDialog.raise();
 }
-
