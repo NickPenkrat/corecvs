@@ -49,6 +49,7 @@ public:
         CODEWIDTH_ID,
         CODEHEIGHT_ID,
         BITCODEIDENTSIZE_ID,
+        BITCODECONFIDENCE_ID,
         BITCODE_BOARD_PARAMS_BASE_FIELD_ID_NUM
     };
 
@@ -114,6 +115,12 @@ public:
      */
     double mBitcodeIdentSize;
 
+    /** 
+     * \brief bitcodeConfidence 
+     * Area in which the stats are collected during detection 
+     */
+    double mBitcodeConfidence;
+
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
 
@@ -172,6 +179,11 @@ public:
         return mBitcodeIdentSize;
     }
 
+    double bitcodeConfidence() const
+    {
+        return mBitcodeConfidence;
+    }
+
     /* Section with setters */
     void setVertical(bool vertical)
     {
@@ -223,6 +235,11 @@ public:
         mBitcodeIdentSize = bitcodeIdentSize;
     }
 
+    void setBitcodeConfidence(double bitcodeConfidence)
+    {
+        mBitcodeConfidence = bitcodeConfidence;
+    }
+
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
@@ -238,6 +255,7 @@ template<class VisitorType>
         visitor.visit(mCodeWidth,                 static_cast<const IntField *>     (fields()[CODEWIDTH_ID]));
         visitor.visit(mCodeHeight,                static_cast<const IntField *>     (fields()[CODEHEIGHT_ID]));
         visitor.visit(mBitcodeIdentSize,          static_cast<const DoubleField *>  (fields()[BITCODEIDENTSIZE_ID]));
+        visitor.visit(mBitcodeConfidence,         static_cast<const DoubleField *>  (fields()[BITCODECONFIDENCE_ID]));
     }
 
     BitcodeBoardParamsBase()
@@ -257,6 +275,7 @@ template<class VisitorType>
         , int codeWidth
         , int codeHeight
         , double bitcodeIdentSize
+        , double bitcodeConfidence
     )
     {
         mVertical = vertical;
@@ -269,6 +288,7 @@ template<class VisitorType>
         mCodeWidth = codeWidth;
         mCodeHeight = codeHeight;
         mBitcodeIdentSize = bitcodeIdentSize;
+        mBitcodeConfidence = bitcodeConfidence;
     }
 
     friend ostream& operator << (ostream &out, BitcodeBoardParamsBase &toSave)

@@ -181,6 +181,7 @@ public:
         STYLE_RAINBOW,
         STYLE_GRAY,
         STYLE_LOG,
+        STYLE_ZBUFFER
     };
 
     void drawDoubleBuffer(const AbstractBuffer<double> &in, int style = STYLE_RAINBOW);

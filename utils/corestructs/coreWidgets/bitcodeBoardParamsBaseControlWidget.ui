@@ -220,7 +220,24 @@
        </property>
      </widget>
     </item>
-   <item row="10" column="0">
+    <item row="10" column="0">
+     <widget class="QLabel" name="label_10">
+       <property name="text">
+         <string>bitcodeConfidence</string>
+       </property>
+     </widget>
+    </item>
+    <item row="10" column="1">
+     <widget class="QDoubleSpinBox" name="bitcodeConfidenceSpinBox">
+       <property name="toolTip">
+         <string>Area in which the stats are collected during detection</string>
+       </property>
+       <property name="suffix">
+        <string>cells</string>
+       </property>
+     </widget>
+    </item>
+   <item row="11" column="0">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -233,7 +250,7 @@
      </property>
     </spacer>
    </item>
-   <item row="10" column="2">
+   <item row="11" column="2">
     <spacer name="horizontalSpacer">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -307,6 +324,12 @@
   </connection>
   <connection>
    <sender>bitcodeIdentSizeSpinBox</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>BitcodeBoardParamsBaseControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>bitcodeConfidenceSpinBox</sender>
    <signal>valueChanged(double)</signal>
    <receiver>BitcodeBoardParamsBaseControlWidget</receiver>
    <slot>changeParameters()</slot>

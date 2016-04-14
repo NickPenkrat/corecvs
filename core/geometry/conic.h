@@ -138,7 +138,7 @@ public:
     LineSpanInt getSpan()
     {
         LineSpanInt span;
-        getSpan(span.y, span.x1, span.x2);
+        getSpan(span.cy, span.x1, span.x2);
         return span;
     }
 };

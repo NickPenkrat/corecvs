@@ -213,7 +213,7 @@ void Mesh3D::addTriangle(Vector3dd point1, Vector3dd point2, Vector3dd point3)
 
 void Mesh3D::addTriangle(const Triangle3dd &triangle)
 {
-    addTriangle(triangle.p1, triangle.p2, triangle.p3);
+    addTriangle(triangle.p1(), triangle.p2(), triangle.p3());
 }
 
 Triangle3dd Mesh3D::getFaceAsTrinagle(size_t number)

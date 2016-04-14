@@ -104,6 +104,8 @@
     <field type="int"    name="codeHeight"  defaultValue="2"   suffix="cells" comment="width and height of the bitcode in chesses" />
 
     <field type="double" name="bitcodeIdentSize" defaultValue="1" suffix="cells" comment="ident between chessboard and bitcode in chesses" />
+
+    <field type="double" name="bitcodeConfidence" defaultValue="0.25" suffix="cells" comment="Area in which the stats are collected during detection" />
   </class>
 
 </poco>

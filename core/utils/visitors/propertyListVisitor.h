@@ -32,9 +32,29 @@ public:
     bool isLoader() { return false;}
 
 public:
+    bool autoInit = false;
+    string filename;
+    PropertyList *output;
+
     PropertyListWriterVisitor(PropertyList *_output) :
         output(_output)
     {}
+
+    PropertyListWriterVisitor(const std::string &filename) :
+        autoInit(true),
+        filename(filename),
+        output(new PropertyList())
+    {
+        //output->load(filename);
+    }
+
+    ~PropertyListWriterVisitor()
+    {
+        if (autoInit) {
+            output->save(filename);
+            delete_safe(output);
+        }
+    }
 
 template<class Type>
     void visit(Type &field, Type defaultValue, const char *fieldName);
@@ -59,7 +79,7 @@ template <typename inputType, typename reflectionType>
     }
 
 
-    PropertyList *output;
+
 };
 
 template<class Type>
@@ -131,6 +151,7 @@ public:
     bool isLoader() { return true; }
 
 public:
+    bool autoInit = false;
     PropertyList *input;
     bool ignoreUnknown;
 
@@ -138,6 +159,21 @@ public:
         input(_input),
         ignoreUnknown(_ignoreUnknown)
     {}
+
+    PropertyListReaderVisitor(const std::string &filename) :
+        autoInit(true),
+        input(new PropertyList()),
+        ignoreUnknown(false)
+    {
+        input->load(filename);
+    }
+
+    ~PropertyListReaderVisitor()
+    {
+        if (autoInit) {
+            delete_safe(input);
+        }
+    }
 
 template<class Type>
     void visit(Type &field, Type defaultValue, const char *fieldName);

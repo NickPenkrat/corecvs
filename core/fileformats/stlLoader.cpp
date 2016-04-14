@@ -100,9 +100,9 @@ int STLLoader::saveAsciiSTL(ostream &out, Mesh3D &mesh)
         out << "  facet normal " << normal.x() << " " << normal.y() << " " << normal.z() << endl;
         out << "     outer loop";
 
-        out << "       vertex " << face.p1.x() << " " << face.p1.y() << " " << face.p1.z() << endl;
-        out << "       vertex " << face.p2.x() << " " << face.p2.y() << " " << face.p2.z() << endl;
-        out << "       vertex " << face.p3.x() << " " << face.p3.y() << " " << face.p3.z() << endl;
+        out << "       vertex " << face.p1().x() << " " << face.p1().y() << " " << face.p1().z() << endl;
+        out << "       vertex " << face.p2().x() << " " << face.p2().y() << " " << face.p2().z() << endl;
+        out << "       vertex " << face.p3().x() << " " << face.p3().y() << " " << face.p3().z() << endl;
 
         out << "     end loop" << endl;
         out << "  endfacet" << endl;
@@ -138,9 +138,9 @@ int STLLoader::saveBinarySTL(ostream &out, Mesh3D &mesh)
 
         writeFloatVector(out, normal);
 
-        writeFloatVector(out, face.p1);
-        writeFloatVector(out, face.p2);
-        writeFloatVector(out, face.p3);
+        writeFloatVector(out, face.p1());
+        writeFloatVector(out, face.p2());
+        writeFloatVector(out, face.p3());
 
         uint16_t attribute = 0;
         out.write((char *)&attribute, sizeof(attribute));
