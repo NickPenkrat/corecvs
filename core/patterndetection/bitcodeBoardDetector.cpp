@@ -58,7 +58,7 @@ bool BitcodeBoardDetector::operator ()()
         return result;
     }
 
-    transform = homography.getBestHomographyLSE();
+    transform = homography.getBestHomographyLSE2();
 
     /* Code Translation */
     toCenter = Matrix33::ShiftProj(Vector2dd (
