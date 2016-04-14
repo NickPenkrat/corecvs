@@ -211,15 +211,15 @@ void Mesh3D::addTriangle(Vector3dd point1, Vector3dd point2, Vector3dd point3)
     addFace(startId + Vector3d32(0, 1, 2));
 }
 
-void Mesh3D::addTriangle(const Triangled &triangle)
+void Mesh3D::addTriangle(const Triangle3dd &triangle)
 {
     addTriangle(triangle.p1, triangle.p2, triangle.p3);
 }
 
-Triangled Mesh3D::getFaceAsTrinagle(size_t number)
+Triangle3dd Mesh3D::getFaceAsTrinagle(size_t number)
 {
     Vector3d32 facei = faces[number];
-    return Triangled(vertexes[facei[0]], vertexes[facei[1]], vertexes[facei[2]]);
+    return Triangle3dd(vertexes[facei[0]], vertexes[facei[1]], vertexes[facei[2]]);
 }
 
 void Mesh3D::addSphere(Vector3dd center, double radius, int step)

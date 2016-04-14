@@ -7,8 +7,6 @@
 // on image resolution, so this value shall not be a constant at all.
 int const histogramMargin = 640;
 
-using namespace std;
-
 HistogramDepthDialog::HistogramDepthDialog(QWidget *parent) :
     QDialog(parent),
     mUi(new Ui::HistogramDepthDialog),
@@ -52,7 +50,7 @@ void HistogramDepthDialog::setDepthesSlot(/*const*/ QSharedPointer<QMap<int, int
     int maxX = (qMap.end()   - 1).key();
 
     mCoreHistogram = new Histogram(-histogramMargin, histogramMargin);
-    for (int i = max(minX, mCoreHistogram->min); i < min(maxX, mCoreHistogram->max); i++)
+    for (int i = std::max(minX, mCoreHistogram->min); i < std::min(maxX, mCoreHistogram->max); i++)
     {
         mCoreHistogram->set(i, qMap[i]);
     }

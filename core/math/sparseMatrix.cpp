@@ -1,5 +1,7 @@
 #include "sparseMatrix.h"
 
+#include <chrono>
+
 using namespace corecvs;
 
 SparseMatrix::SparseMatrix(const Matrix &dense, double threshold) : h(dense.h), w(dense.w)
@@ -427,6 +429,7 @@ SparseMatrix SparseMatrix::t() const
 }
 
 #ifdef WITH_MKL
+
 SparseMatrix::operator sparse_matrix_t() const
 {
     sparse_matrix_t mkl_sparse;
@@ -463,9 +466,8 @@ SparseMatrix::SparseMatrix(const sparse_matrix_t &mklSparse)
 
     mkl_sparse_destroy(copy);
 }
-#endif
 
-#include <chrono>
+#endif // WITH_MKL
 
 SparseMatrix SparseMatrix::upper() const
 {

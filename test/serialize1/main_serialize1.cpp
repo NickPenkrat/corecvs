@@ -300,9 +300,9 @@ void testJSON_FixtureScene()
 
         //SYNC_PRINT(("Length: %d\n", scene->fixtures.size()));
 
-        for (size_t i = 0; i < scene->fixtures.size(); i++)
+        for (size_t i = 0; i < scene->fixtures().size(); i++)
         {
-            CameraFixture *fixture = scene->fixtures[i];
+            CameraFixture *fixture = scene->fixtures()[i];
             FixtureCamera *camera = scene->createCamera();
             char buffer[100];
             snprintf2buf(buffer, "camera %d(%d)", j, i);
@@ -315,9 +315,7 @@ void testJSON_FixtureScene()
             //SYNC_PRINT(("Adding camera %s to fixture %d %p\n", buffer, i, fixture));
 
             scene->addCameraToFixture(camera, fixture);
-
         }
-
     }
 
     for (int i = 0; i < 5; i++)
@@ -428,9 +426,9 @@ void testJSON_StereoScene()
     scene->positionCameraInFixture(fixture, camera3, Affine3DQ( Quaternion::RotationZ(degToRad(-40)), Vector3dd(10, 10, 0)));
 
 
-    for (size_t i = 0; i < scene->points.size(); i++)
+    for (size_t i = 0; i < scene->featurePoints().size(); i++)
     {
-        SceneFeaturePoint *point = scene->points[i];
+        SceneFeaturePoint *point = scene->featurePoints()[i];
         if (point->getObservation(camera1) != NULL) {
             Vector2dd p = point->getObservation(camera1)->observation;
             painter1.drawCircle(p.x(), p.y(), 3, point->color);

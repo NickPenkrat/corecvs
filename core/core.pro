@@ -43,15 +43,23 @@ for (MODULE, CORE_SUBMODULES) {
 
 include(xml/generated/generated.pri)
 
-OTHER_FILES +=            \
-    xml/parameters.xml    \
-    xml/bufferFilters.xml \
-    xml/clustering1.xml   \
-    xml/filterBlock.xml   \
-    xml/precise.xml       \
-    xml/distortion.xml    \
+OTHER_FILES +=              \
+    xml/parameters.xml      \
+    xml/bufferFilters.xml   \
+    xml/clustering1.xml     \
+    xml/filterBlock.xml     \
+    xml/precise.xml         \
+    xml/distortion.xml      \
+    xml/patternDetector.xml \
 
 OTHER_FILES +=            \
     ../tools/generator/regen-core.sh \
     ../tools/generator/h_stub.sh \
 
+# msvc floating point model: "strict" helped to unify results on different compiler versions
+# For more info look at: https://msdn.microsoft.com/en-us/library/e7s85ffb%28v=vs.120%29.aspx
+#
+win32-msvc* {
+    QMAKE_CFLAGS   += /fp:strict
+    QMAKE_CXXFLAGS += /fp:strict
+}

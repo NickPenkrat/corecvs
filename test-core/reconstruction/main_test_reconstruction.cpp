@@ -12,7 +12,6 @@
 
 #include <random>
 
-using namespace std;
 using namespace corecvs;
 
 const int DEFAULT_SEED = 777;
@@ -379,4 +378,4 @@ TEST(Reconstruction, testPNP)
     std::cout << "Invalid: " << (((double)cntInValid)/RNG_RETRIES) << std::endl;
     ASSERT_LE(cntInValid, 0.01 * RNG_RETRIES);
 }
-#endif
+#endif // WITH_BLAS

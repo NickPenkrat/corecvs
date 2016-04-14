@@ -43,14 +43,10 @@ class binary<0>
 
 //@}
 
-/*
-#define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
-#define MIN(X, Y) (((X) > (Y)) ? (Y) : (X))
-*/
-
-/* */
-namespace HelperUtils {
-
+/** Useful class of some tasty things
+ */
+namespace HelperUtils
+{
     using std::string;
     using std::istream;
 
@@ -63,6 +59,10 @@ namespace HelperUtils {
 
   //string      replaceSlashes(const string& str, const string& oldStr, const string& newStr);
     string      toNativeSlashes(const string& str);
+
+    string      getFileNameFromFilePath(const string &filePath);
+    string      getPathWithoutFilename (const string &filePath);
+    string      getFullPathWithoutExt  (const string &filePath);
 
 } // namespace HelperUtils
 

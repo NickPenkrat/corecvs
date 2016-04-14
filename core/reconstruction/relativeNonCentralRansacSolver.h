@@ -19,7 +19,7 @@ struct RelativeNonCentralRansacSolverSettings
         , inlierThreshold(inlierThreshold)
     {
     }
-    size_t maxIterations;
+    int maxIterations;
     double inlierThreshold;
 
     enum class Restrictions
@@ -62,7 +62,7 @@ private:
     struct Estimator
     {
         void operator() (const corecvs::BlockedRange<int> &r);
-        Estimator(RelativeNonCentralRansacSolver *solver, double inlierThreshold, Restrictions restrictions, Vector3dd shift, double scale) : solver(solver), inlierThreshold(inlierThreshold), restrictions(restrictions), shift(shift), scale(scale)
+        Estimator(RelativeNonCentralRansacSolver *solver, double inlierThreshold, Restrictions restrictions, Vector3dd shift, double scale) : inlierThreshold(inlierThreshold), scale(scale), shift(shift), restrictions(restrictions), solver(solver)
         {
             rng = std::mt19937(std::random_device()());
             fundamentalsCache.resize(solver->fundamentalsCacheId.size());

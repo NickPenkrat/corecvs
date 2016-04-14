@@ -562,6 +562,14 @@ template<typename ResultType>
     }
 
     /**
+     * Checks if this buffer has zero size
+     */
+    inline bool hasZeroSize () const
+    {
+        return (this->h == 0) || (this->w == 0);
+    }
+
+    /**
      *  Height getter
      **/
     inline IndexType getH() const

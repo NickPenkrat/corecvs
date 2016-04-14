@@ -73,8 +73,9 @@ AboutPropsTableWidget::AboutPropsTableWidget(QWidget *parent) : QTableWidget(par
 #ifdef WITH_BLAS
 #ifdef WITH_MKL
     addParameter("BLAS Support", "On (Intel MKL)");
-#else
-    addParameter("BLAS Support", "On (OpenBLAS?)");
+#endif
+#ifdef WITH_OPENBLAS
+    addParameter("BLAS Support", "On (OpenBLAS)");
 #endif
 #else
     addParameter("BLAS Support", "Off");

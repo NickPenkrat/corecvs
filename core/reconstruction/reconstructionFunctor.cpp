@@ -172,7 +172,6 @@ void corecvs::ReconstructionFunctor::computeDependency()
 
     auto errSize = getErrorComponentsPerPoint();
     int id = 0, argin = 0;
-    auto& placedFixtures = scene->placedFixtures;
 
     revDependency.resize(lastProjection);
     sparsity.resize(getInputNum());
@@ -211,7 +210,7 @@ void corecvs::ReconstructionFunctor::computeDependency()
     DEPS(translateableFixtures,   INPUTS_PER_TRANSLATION, a == p->cameraFixture, a == p);
     DEPS(focalTunableCameras,     INPUTS_PER_FOCAL,       a == p->camera, false)
     DEPS(principalTunableCameras, INPUTS_PER_PRINCIPAL,   a == p->camera, false)
-    CORE_ASSERT_TRUE_S(argin == getInputNum() - (!(optimization & PhotostationPlacerOptimizationType::POINTS) ? 0 : INPUTS_PER_3D_POINT * scene->trackedFeatures.size()));
+    CORE_ASSERT_TRUE_S(argin == getInputNum() - (!(optimization & PhotostationPlacerOptimizationType::POINTS) ? 0 : INPUTS_PER_3D_POINT * (int)scene->trackedFeatures.size()));
     IF(POINTS,
     DEPS(scene->trackedFeatures,  INPUTS_PER_3D_POINT,    a == p->featurePoint, false))
     CORE_ASSERT_TRUE_S(argin == getInputNum());

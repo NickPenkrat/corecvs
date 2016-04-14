@@ -10,7 +10,6 @@
 #include "OpenCVTools.h"
 
 
-using namespace std;
 using namespace cv;
 
 const char * FaceDetectorOpenCV::cascadeNames[] = {
@@ -44,7 +43,7 @@ void FaceDetectorOpenCV::detectFacesOpenCV(G12Buffer *input, vector<DetectedObje
         cascades[id] = new CascadeClassifier();
         if( !cascades[id]->load( cascadeNames[id] ) )
         {
-            cerr << "ERROR: Could not load classifier cascade:" << cascadeNames[id] << endl;
+            std::cerr << "ERROR: Could not load classifier cascade:" << cascadeNames[id] << std::endl;
             return;
         }
     }

@@ -136,7 +136,7 @@ void corecvs::RelativeNonCentralRansacSolver::Estimator::selectInliers()
             auto ptQuery= std::get<3>(t);
 
             CORE_ASSERT_TRUE_S(j < dependencyList.size());
-            CORE_ASSERT_TRUE_S(dependencyList[j] < fundamentalsCache.size());
+            CORE_ASSERT_TRUE_S((size_t)dependencyList[j] < fundamentalsCache.size());
             auto F = fundamentalsCache[dependencyList[j]];
             corecvs::Line2d l = F.mulBy2dRight(ptQuery), r = F.mulBy2dLeft(ptRef);
             double score = std::max(l.distanceTo(ptRef), r.distanceTo(ptQuery));

@@ -21,10 +21,7 @@
 #include "sse_trace.h"
 #include "preciseTimer.h"
 
-
-using namespace std;
 using namespace corecvs;
-
 
 #ifdef WITH_SSE
 ALIGN_STACK_SSE inline __m128i sse_div_u32_by_25(__m128i n) {

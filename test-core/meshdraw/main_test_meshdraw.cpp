@@ -15,9 +15,7 @@
 #include "mesh3d.h"
 #include "meshLoader.h"
 
-using namespace std;
 using namespace corecvs;
-
 
 TEST(meshdraw, testmeshdraw)
 {

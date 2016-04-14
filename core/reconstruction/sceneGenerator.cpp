@@ -11,7 +11,7 @@ void SceneGenerator::generateScene()
     generateFixtures();
     generatePoints();
     generateMatches();
-    rfs->placingQueue = rfs->fixtures;
+    rfs->placingQueue = rfs->fixtures();
     rfs->state = ReconstructionState::MATCHED;
     std::cout << "GENERATING: " << std::endl << (SceneGeneratorParams&)(*this) << std::endl;
 }
@@ -56,8 +56,6 @@ void SceneGenerator::generateFixtures()
         std::cout << f << std::endl;
         generatePs(Vector3dd(f[0], f[1], 0), &f - &fixtures[0]);
     }
-
-
 }
 
 void SceneGenerator::generatePoints()
@@ -77,7 +75,7 @@ void SceneGenerator::generatePoints()
         auto pt = Vector3dd(sqrt(1.0 - z * z) * sin(ph), sqrt(1.0 - z * z) * cos(ph), z) * r;
         int visible = 0;
         std::vector<WPP> vis;
-        for (auto& f: rfs->fixtures)
+        for (auto& f: rfs->fixtures())
             for (auto& c: f->cameras)
                 if (f->isVisible(pt, c))
                 {
@@ -124,7 +122,7 @@ void SceneGenerator::generateMatches()
         auto pt = Vector3dd(sqrt(1.0 - z * z) * sin(ph), sqrt(1.0 - z * z) * cos(ph), z) * r;
         int visible = 0;
         std::vector<WPP> vis;
-        for (auto& f: rfs->fixtures)
+        for (auto& f: rfs->fixtures())
             for (auto& c: f->cameras)
                 if (f->isVisible(pt, c))
                 {

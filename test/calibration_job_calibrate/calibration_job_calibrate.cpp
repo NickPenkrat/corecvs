@@ -133,8 +133,8 @@ int main(int argc, char **argv)
         for (auto& fn: setup)
             if (fn[0].size())
             {
-                int cam = &fn - &setup[0];
-                CalibrationSetupEntry entry = { cam, (int)job.observations[cam].size() };
+                size_t cam = &fn - &setup[0];
+                CalibrationSetupEntry entry = { (int)cam, (int)job.observations[cam].size() };
                 job.calibrationSetups[setup_].emplace_back(entry);
                 ImageData img;
                 img.sourceFileName = fn[0];

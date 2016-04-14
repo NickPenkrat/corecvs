@@ -1,9 +1,11 @@
-#ifndef CHESSBOARDCORNERDETECTOR
-#define CHESSBOARDCORNERDETECTOR
+#ifndef CHESSBOARD_CORNER_DETECTOR
+#define CHESSBOARD_CORNER_DETECTOR
 
 #include <vector>
 
 #include "calculationStats.h"
+
+#include "generated/chessBoardCornerDetectorParamsBase.h"
 
 #include "abstractKernel.h"
 #include "abstractBuffer.h"
@@ -12,43 +14,59 @@
 #include "reflection.h"
 #include "convolver/convolver.h"
 
+
+/* TODO: Time to add this file to corecvs namespace. So far just some relaxed usings */
 using corecvs::DpImage;
 using corecvs::DpKernel;
+using corecvs::Vector2dd;
 
-// Structure that holds oriented corner
+using std::vector;
+
+/**
+ * Structure that holds oriented corner
+ **/
+
 struct OrientedCorner
 {
-
-    OrientedCorner(corecvs::Vector2dd pos = corecvs::Vector2dd(0, 0), corecvs::Vector2dd v1 = corecvs::Vector2dd(0, 0), corecvs::Vector2dd v2 = corecvs::Vector2dd(0, 0))
+    OrientedCorner(
+            Vector2dd pos = Vector2dd::Zero(),
+            Vector2dd v1  = Vector2dd::Zero(),
+            Vector2dd v2  = Vector2dd::Zero())
         : pos(pos), v1(v1), v2(v2), score(0.0)
-    {
-    }
+    {}
 
-    corecvs::Vector2dd pos;
-    corecvs::Vector2dd v1, v2;
-
+    Vector2dd pos;
+    Vector2dd v1;
+    Vector2dd v2;
     double score;
 
-    /*
+    /**
      * Computes multi-scale score of corner based on image-intensity and gradient magnitude
      *
      * Gradient-wise score is correlation with cross of width = bandwidth oriented with corner edges
      * Intensity-wise score is correlation with corner-pattern created using edge orientations
-     */
+     **/
     double scoreCorner(DpImage &img, DpImage &w, std::vector<double> &radius, double bandwidth = 3.0);
 
-    // Computes single scale score
+    /**
+     *  Computes single scale score
+     **/
     double scoreCorner(DpImage &img, DpImage &w, int r, double bandwidth = 3.0);
 
+
 private:
-    // Computes gradient magnitude correlation
+    /**
+     * Computes gradient magnitude correlation
+     **/
     double scoreGradient(DpImage &w, int r, double bandwidth);
 
-    // Computes correlation with corner-pattern
+    /**
+     * Computes correlation with corner-pattern
+     **/
     double scoreIntensity(DpImage &img, int r);
 };
 
-/*
+/**
  * Here we implement first part (= oriented chessboard corner detection)
  * of algo presented in A. Geiger et. al Automatic Camera and Range Sensor Calibration using a single Shot http://www.cvlibs.net/publications/Geiger2012ICRA.pdf
  *
@@ -59,7 +77,7 @@ private:
  * 2. Estimate orientation of detected corners using meanshift algo for
  *    finding modes in gradient distribution near the corner
  * 3. Refine position and orientation solving LSQ-like problems
- */
+ **/
 
 
 /*
@@ -81,32 +99,32 @@ struct CornerKernelSet
     void computeCost(DpImage &img, DpImage &c, bool parallelable = true, bool new_style = true);
 
 private:
-    // One-dimension normal distribution PDF
-    // TODO: find if we already have it somewhere
-    static double pdf(double x, double sigma)
-    {
-        return exp(-x * x / (2.0 * sigma * sigma)) / (sigma * sqrt(2.0 * M_PI));
-    }
     // Initialization routine
     void computeKernels(double r, double alpha, double psi, int w, int c, double threshold = 0.05);
     static void MinifyKernel(DpKernel &k);
 };
 
-struct ChessBoardCornerDetectorParams
+class ChessBoardCornerDetectorParams : public ChessBoardCornerDetectorParamsBase
 {
-    // Width of cross for corner gradient-score
-    double gradientCrossWidth = 3.0;
+public:
+    ChessBoardCornerDetectorParams(const ChessBoardCornerDetectorParamsBase &base) :
+        ChessBoardCornerDetectorParamsBase(base)
+    {
+    }
+
 #if __cplusplus >= 201103L // Our compiler is cool enough to support brace-initalizer-list for structure members
+	ChessBoardCornerDetectorParams() {}
+
     // Radius for multi-scale pattern detection
-    std::vector<double> patternRadius = {4.0, 8.0, 12.0};
+    vector<double> patternRadius = {4.0, 8.0, 12.0};
     // Radius for corner-scoring
-    std::vector<double> cornerScores = {4.0, 8.0, 12.0};
+    vector<double> cornerScores = {4.0, 8.0, 12.0};
     // Angle for rotation-variant detection
-    std::vector<double> patternStartAngle = { 0.0, M_PI / 4.0 };
+    vector<double> patternStartAngle = { 0.0, M_PI / 4.0 };
 #else
-    std::vector<double> patternRadius;
-    std::vector<double> cornerScores;
-    std::vector<double> patternStartAngle;
+    vector<double> patternRadius;
+    vector<double> cornerScores;
+    vector<double> patternStartAngle;
 
     ChessBoardCornerDetectorParams()
     {
@@ -122,56 +140,39 @@ struct ChessBoardCornerDetectorParams
         cornerScores.push_back(12.0);
     }
 #endif
-    // Sector size
-    double sectorSize = M_PI / 2.0;
-    // Number of bins for computing edge direction histogram
-    int histogramBins = 32;
-    // Minimal angle between edges
-    double minAngle = M_PI / 6.0;
-    // Typical radius for estimating edge-related data and refinig corner positions
-    int neighborhood = 25;
-    // Gradient magnitude threshold
-    double gradThreshold = 0.1;
-    // Gradient orientation inlier threshold
-    double orientationInlierThreshold = 0.25;
-    // Threshold for distance to edge
-    double inlierDistanceThreshold = 5.0;
-    // Threshold for maximal corner-position update
-    double updateThreshold = 4.0;
-    // Threshold for final score
-    // FIXME: Check if score thresholding is usable
-    double scoreThreshold = 0.0;
-    // Number of orientation/position refinement rounds
-    int nRounds = 3;
-    // Meanshift smoothing stdev
-    double meanshiftBandwidth = 1.0;
-    // NMS locality threshold
-    int nmsLocality = 20;
+
+    void setMinAngle(double rad)
+    {
+        setMinAngleDeg(radToDeg(rad));
+    }
+
+    double minAngle() {
+        return degToRad(minAngleDeg());
+    }
+
+    void setSectorSize(double rad)
+    {
+        setSectorSizeDeg(radToDeg(rad));
+    }
+
+    double sectorSize() {
+        return degToRad(sectorSizeDeg());
+    }
 
     template<typename VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(gradientCrossWidth, 3.0, "gradientCrossWidth");
-        visitor.visit(sectorSize, M_PI / 2.0, "sectorSize");
-        visitor.visit(histogramBins, 32, "histogramBins");
-        visitor.visit(minAngle, M_PI / 10.0, "minAngle");
-        visitor.visit(neighborhood, 25, "neighborhood");
-        visitor.visit(gradThreshold, 0.1, "gradThreshold");
-        visitor.visit(orientationInlierThreshold, 0.25, "orientationInlierThreshold");
-        visitor.visit(inlierDistanceThreshold, 5.0, "inlierDistanceThreshold");
-        visitor.visit(updateThreshold, 4.0, "updateThreshold");
-        visitor.visit(scoreThreshold, 0.0, "scoreThreshold");
-        visitor.visit(nRounds, 3, "nRounds");
-        visitor.visit(meanshiftBandwidth, 1.0, "meanshiftBandwidth");
+        ChessBoardCornerDetectorParamsBase::accept(visitor);
         corecvs::DoubleVectorField dvf(0, 0, 0, "patternStartAngle");
         visitor.visit(patternStartAngle, &dvf);
         corecvs::DoubleVectorField dvf2(0, 0, 0, "patternRadius");
         visitor.visit(patternRadius, &dvf2);
         corecvs::DoubleVectorField dvf3(0, 0, 0, "cornerScores");
         visitor.visit(cornerScores, &dvf3);
-        visitor.visit(nmsLocality, 20, "nmsLocality");
     }
 };
+
+
 
 class ChessBoardCornerDetector : ChessBoardCornerDetectorParams
 {
@@ -179,13 +180,22 @@ public:
     ChessBoardCornerDetector(ChessBoardCornerDetectorParams params = ChessBoardCornerDetectorParams());
     void detectCorners(DpImage &image, std::vector<OrientedCorner> &corners);
 private:
-    // initalizes kernels for corner detection
+
+    /**
+     * Initalizes kernels for corner detection
+     **/
     void prepareKernels();
 
-    // scales image to 0.05 .. 0.95 quantiles
+    /**
+     * Scales image to 0.05 .. 0.95 quantiles
+     **/
     void scaleImage();
-    // first order derivative
+
+    /**
+     *  first order derivative
+     **/
     void prepareDiff(DpImage &diff, bool du);
+
     // computes angle and magnitude of gradients
     void prepareAngleWeight();
     // computes multi-scale corner cost function
@@ -234,4 +244,4 @@ private:
 
 };
 
-#endif
+#endif // CHESSBOARD_CORNER_DETECTOR

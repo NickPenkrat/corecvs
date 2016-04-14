@@ -171,16 +171,16 @@ struct ParallelBoardDetector
         for (size_t i = r.begin(); i != r.end(); ++i)
         {
             job->state->incrementStarted();
-            auto cam = idx[i][0];
-            auto obs = idx[i][1];
+            size_t cam = idx[i][0];
+            size_t obs = idx[i][1];
 
-            auto& v = job->observations[cam][obs];
+            ImageData& v = job->observations[cam][obs];
             auto& psIterator = job->photostation.cameras[cam];
             if (!estimate)
             {
                 const std::string& filename = distorted ? v.sourceFileName : v.undistortedFileName;
                 corecvs::RGB24Buffer buffer = CalibrationJob::LoadImage(filename);
-                if (buffer.h && buffer.w)
+                if (!buffer.hasZeroSize())
                 {
                     (distorted ? psIterator.intrinsics.distortedSize : psIterator.intrinsics.size) = corecvs::Vector2dd(buffer.w, buffer.h);
                 }
@@ -938,6 +938,10 @@ void CalibrationJob::reorient(const std::vector<int> &topLayerIdx)
                                 ^ (photostation.cameras[topLayerIdx[2]].extrinsics.position
                                  - photostation.cameras[topLayerIdx[0]].extrinsics.position)
                                 ).normalised();
+        if ((!n1) == 0.0) {
+            L_ERROR_P("Not enough information to perform operation");  // happens when calibration was absent
+            break;
+        }
         double d1 = -(n1 & photostation.cameras[topLayerIdx[0]].extrinsics.position);
 
         std::vector<double> input(4), output(topLayerIdx.size());

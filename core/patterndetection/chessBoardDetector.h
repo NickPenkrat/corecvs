@@ -26,15 +26,19 @@ template<>
 struct is_bitmask<ChessBoardDetectorMode> : std::true_type {};
 
 class ChessboardDetector : CheckerboardDetectionParameters,
-                           public PatternDetector,
-                           protected BoardAligner
+                           public PatternDetector
 {
 public:
+    /**
+     *  Aligner manages the form of the checkerboard as well as positioning inside it
+     **/
+    BoardAligner *aligner;
+
     ChessboardDetector(
-            CheckerboardDetectionParameters params = CheckerboardDetectionParameters(),
-            BoardAlignerParams alignerParams = BoardAlignerParams(),
-            ChessBoardCornerDetectorParams detectorParams = ChessBoardCornerDetectorParams(),
-            ChessBoardAssemblerParams assemblerParams = ChessBoardAssemblerParams()
+            CheckerboardDetectionParameters params          = CheckerboardDetectionParameters(),
+            BoardAlignerParams              alignerParams   = BoardAlignerParams(),
+            ChessBoardCornerDetectorParams  detectorParams  = ChessBoardCornerDetectorParams(),
+            ChessBoardAssemblerParams       assemblerParams = ChessBoardAssemblerParams()
     );
 
     static ChessBoardDetectorMode getMode(const BoardAlignerParams &params);
@@ -55,6 +59,10 @@ public:
 
     void setStatistics(Statistics *stats);
     Statistics *getStatistics();
+
+#if 0
+    void dumpState();
+#endif
 
 private:
 

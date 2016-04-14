@@ -15,8 +15,6 @@
 #include "fixtureScene.h"
 #include "printerVisitor.h"
 
-
-using namespace std;
 using namespace corecvs;
 
 TEST(Fixture, testAllocations)

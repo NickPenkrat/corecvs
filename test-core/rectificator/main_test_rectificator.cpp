@@ -22,7 +22,6 @@
 #include "essentialEstimator.h"
 #include "calibrationCamera.h"
 
-using namespace std;
 using namespace corecvs;
 
 
@@ -301,7 +300,8 @@ TEST(Rectification, test5point)
     }
 
 }
-#endif
+#endif // WITH_BLAS
+
 TEST(Rectification, testEssentialEstimator)
 {
     using corecvs::Matrix33;

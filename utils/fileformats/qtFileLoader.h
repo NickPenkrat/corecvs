@@ -22,18 +22,19 @@ using namespace corecvs;
 
 using std::string;
 
+class QTemporaryFile;
+
 class QTFileLoader
 {
 public:
     QTFileLoader() {}
     virtual ~QTFileLoader() {}
 
-/*  static G12Buffer   *G12BufferFromQImage(QImage *image);*/
-
     static RGB24Buffer *RGB24BufferFromQImage(QImage *image);
     static QImage* RGB24BufferToQImage(RGB24Buffer &buffer);
-    void save(const std::string& name, RGB24Buffer *input);
-    void save(const std::string& name, RGB24Buffer *input, int quality);
+    static void save(const std::string& name, RGB24Buffer *input);
+    static void save(const std::string& name, RGB24Buffer *input, int quality);
+    static QTemporaryFile* saveTemporary(const QImage& image);
 };
 
 class QTG12Loader : public BufferLoader<G12Buffer>

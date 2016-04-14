@@ -112,7 +112,7 @@ public:
     friend std::ostream& operator<< (std::ostream& os, ReconstructionFixtureScene &rfs)
     {
         std::vector<CameraFixture*> fSorted;
-        for (auto ptr: rfs.fixtures)
+        for (auto ptr: rfs.fixtures())
             fSorted.push_back(ptr);
         std::sort(fSorted.begin(), fSorted.end(), [](const CameraFixture* a, const CameraFixture* b) { return a->name < b->name; });
 

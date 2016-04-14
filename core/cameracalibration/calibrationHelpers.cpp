@@ -193,8 +193,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, SceneFeaturePoint fp, double scal
             if (fp.hasKnownPosition) {
                 mesh.addLine(rawCam.extrinsics.position, fp.position);
             } else {
-
-}
+            }
 
             Ray3d ray = rawCam.rayFromPixel(observ.observation);
             Vector3dd p2 = ray.getPoint(scale);
@@ -213,20 +212,18 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, SceneFeaturePoint fp, double scal
 
 void CalibrationHelpers::drawScene(Mesh3D &mesh, const FixtureScene &scene, double scale)
 {
-    for (FixtureCamera *cam: scene.orphanCameras)
+    for (FixtureCamera *cam: scene.orphanCameras())
     {
         drawCamera(mesh, *cam, scale);
     }
 
-    for (CameraFixture *ps: scene.fixtures)
+    for (CameraFixture *ps: scene.fixtures())
     {
         drawPly(mesh, *ps, scale);
     }
 
-    for (SceneFeaturePoint *fp: scene.points)
+    for (SceneFeaturePoint *fp: scene.featurePoints())
     {
         drawPly(mesh, *fp, scale);
     }
 }
-
-

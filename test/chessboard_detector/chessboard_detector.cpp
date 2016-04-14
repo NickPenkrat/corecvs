@@ -83,11 +83,13 @@ void readImage(const std::string &filename, corecvs::RGB24Buffer &img)
     }
 }
 
+#define TRACE
+
 int main(int argc, char **argv)
 {
     int W, H;
     std::string filename;
-    if(!parseArgs(argc, argv, filename, W, H))
+    if (!parseArgs(argc, argv, filename, W, H))
     {
         usage();
         return 0;
@@ -98,21 +100,47 @@ int main(int argc, char **argv)
     corecvs::RGB24Buffer img;
 #endif
 
-    readImage(filename , img);
+    readImage(filename, img);
     CheckerboardDetectionParameters params;
-    BoardAlignerParams alignerParams = BoardAlignerParams::GetOldBoard();
+    BoardAlignerParams alignerParams;
     alignerParams.idealWidth = W;
     alignerParams.idealHeight = H;
     ChessBoardCornerDetectorParams cbparams;
     ChessBoardAssemblerParams cbap;
-    cbap.hypothesisDim[0] = W;
-    cbap.hypothesisDim[1] = H;
+    cbap.setHypothesisDimFirst(W);
+    cbap.setHypothesisDimSecond(H);
 
     ChessboardDetector detector(params, alignerParams, cbparams, cbap);
-    detector.detectPattern(img);
+
+#ifdef TRACE
+    cout << "We are using following configs" << endl;
+
+    PrinterVisitor printer(2,2);
+    cout << "CheckerboardDetectionParameters:"  << endl;
+    params.accept(printer);
+    cout << "BoardAlignerParams:"  << endl;
+    alignerParams.accept(printer);
+    cout << "ChessBoardAssemblerParams:"  << endl;
+    cbap.accept(printer);
+    cout << "ChessBoardCornerDetectorParams:"  << endl;
+    cbparams.accept(printer);
+    cout << std::flush;
+
+    Statistics stats;
+    detector.setStatistics(&stats);
+#endif
+
+    bool result = detector.detectPattern(img);
 
     corecvs::ObservationList observations;
     detector.getPointData(observations);
+
+#ifdef TRACE
+    BaseTimeStatisticsCollector collector;
+    collector.addStatistics(stats);
+    collector.printAdvanced();
+    std::cout << "result = " << result << ";" << endl;
+#endif
 
     std::cout << "board = [";
     for (auto o: observations)

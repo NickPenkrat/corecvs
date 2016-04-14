@@ -36,7 +36,7 @@ template<>
 struct is_bitmask<corecvs::CameraConstraints> : std::true_type {};
 
 /**
- *   See FixtureScene for more data on ownership of the objectes in structure
+ *   See FixtureScene for more data on ownership of the objects in structure
  **/
 class Photostation : public ScenePart
 {

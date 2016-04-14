@@ -184,10 +184,10 @@
         <double>0</double>
        </property>
        <property name="maximum">
-        <double>100</double>
+        <double>1</double>
        </property>
        <property name="singleStep">
-        <double>1</double>
+        <double>0.01</double>
        </property>
        <property name="value">
         <double>0.05</double>
@@ -196,7 +196,7 @@
         <string>m</string>
        </property>
        <property name="decimals">
-        <number>4</number>
+        <number>3</number>
        </property>
      </widget>
     </item>
@@ -216,10 +216,10 @@
         <double>0</double>
        </property>
        <property name="maximum">
-        <double>100</double>
+        <double>1</double>
        </property>
        <property name="singleStep">
-        <double>1</double>
+        <double>0.01</double>
        </property>
        <property name="value">
         <double>0.05</double>
@@ -228,7 +228,7 @@
         <string>m</string>
        </property>
        <property name="decimals">
-        <number>4</number>
+        <number>3</number>
        </property>
      </widget>
     </item>

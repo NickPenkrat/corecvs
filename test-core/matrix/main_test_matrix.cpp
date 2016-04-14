@@ -23,7 +23,6 @@
 #include "sparseMatrix.h"
 #include "preciseTimer.h"
 
-using namespace std;
 using namespace corecvs;
 
 TEST(MatrixTest, testMatrix33)
@@ -383,9 +382,9 @@ TEST(MatrixTest, testMatrixSerialisation)
 {
     Matrix33 m = Matrix33::RotationX(0.1) * Matrix33::RotationY(0.1);
     Matrix33 m1;
-    ostringstream oss;
+    std::ostringstream oss;
     m.serialise(oss);
-    istringstream iss (oss.str(),istringstream::in);
+    std::istringstream iss(oss.str(), std::istringstream::in);
     iss >> m1;
     m.print();
     m1.print();
@@ -404,13 +403,13 @@ TEST(MatrixTest, testDouble)
     double vals[] = {numeric_limits<double>::min(), 1.0, numeric_limits<double>::max()};
     for (int i = 0; i < 3; i++)
     {
-        ostringstream oss;
+        std::ostringstream oss;
         //cout.precision(numeric_limits<double>::digits10 + 3);
         oss.precision(numeric_limits<double>::digits10 + 3);
         oss  << (double)vals[i];
         oss.flush();
         cout << oss.str() << endl;
-        istringstream iss (oss.str(), istringstream::in);
+        std::istringstream iss(oss.str(), std::istringstream::in);
         double result;
         iss >> result;
         CORE_ASSERT_TRUE_P(result == vals[i], ("Internal problem with double and stdout"));
@@ -546,7 +545,7 @@ TEST(MatrixTest, testMatrixOperations)
 
     cout << "Division result:"   << endl << Arg1ToDiv << endl;
     cout << "Second div result:" << endl << Arg1ToMul << endl;
-    cout << flush;
+    cout << std::flush;
     fflush(stdout);
 
     CORE_ASSERT_TRUE(Arg1ToDiv.notTooFar(&ScalarDivResult, 1e-7), "Invalid scalar Division1");
@@ -845,10 +844,6 @@ TEST(SparseMatrix, TT)
     SparseMatrix sm(4, 3, values, columns, rowPointers);
     std::cout << sm << std::endl << sm.t() << std::endl;
 }
-
-#ifdef WITH_MKL
-#include <mkl.h>
-#endif
 
 TEST(SparseMatrix, MulTimer)
 {
