@@ -8,7 +8,6 @@
  **/
 
 #include <type_traits>
-#include <cstring>
 
 #include "typesafeBitmaskEnums.h"
 #include "calibrationCamera.h"
@@ -36,7 +35,6 @@ template<>
 struct is_bitmask<CameraConstraints> : std::true_type {};
 
 namespace corecvs {
-
 
 /**
  *   See FixtureScene for more data on ownership of the objects in structure
