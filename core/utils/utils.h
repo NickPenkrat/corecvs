@@ -53,9 +53,9 @@ namespace HelperUtils
     bool        startsWith(const string &str, const string &prefix);
     istream&    getlineSafe(istream& is, string& str);
 
-    string      getEnvDirPath(cchar *envVarName);
-    string      getFullPath(string& envDirPath, cchar* path, cchar* filename);
-    string      getFullPath(cchar *envVarName , cchar* path, cchar* filename);
+    string      getEnvDirPath(  cchar    *envVarName);
+    string      getFullPath(    cchar    *envVarName, cchar* path, cchar* filename = NULL);
+    string      getFullPath(const string& envDirPath, cchar* path, cchar* filename = NULL);
 
   //string      replaceSlashes(const string& str, const string& oldStr, const string& newStr);
     string      toNativeSlashes(const string& str);

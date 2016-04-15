@@ -7,7 +7,7 @@
 #include <tbb/tbb.h>
 #endif
 
-#include <global.h>
+#include "global.h"
 
 namespace corecvs {
 

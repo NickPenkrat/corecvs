@@ -78,8 +78,13 @@ string toNativeSlashes(const string& str)
 #endif
 }
 
-string getFullPath(string& envDirPath, cchar* path, cchar* filename)
+string getFullPath(const string& envDirPath, cchar* path, cchar* filename)
 {
+    CORE_ASSERT_TRUE_S(path != NULL);
+
+    if (filename == NULL)
+        filename = "";
+
     if (envDirPath.empty())
         return filename;
 
@@ -89,8 +94,7 @@ string getFullPath(string& envDirPath, cchar* path, cchar* filename)
 
 string getFullPath(cchar *envVarName, cchar* path, cchar* filename)
 {
-    string envDirPath = getEnvDirPath(envVarName);
-    return getFullPath(envDirPath, path, filename);
+    return getFullPath(getEnvDirPath(envVarName), path, filename);
 }
 
 string getFileNameFromFilePath(const string &filePath)

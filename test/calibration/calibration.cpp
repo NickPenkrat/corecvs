@@ -40,7 +40,7 @@ protected:
 
     virtual void SetUp()
     {
-        string pathSrcDir = corecvs::HelperUtils::getFullPath("TOPCON_DIR", CALIBRATION_TEST_DIR_SRC, "");
+        string pathSrcDir = corecvs::HelperUtils::getFullPath("TOPCON_DIR", CALIBRATION_TEST_DIR_SRC);
 
         QDir source_dir(pathSrcDir.c_str());
 
@@ -89,7 +89,7 @@ inline void addUndistImageToJob(CalibrationJob* job, int camN, int imageN, const
     job->observations[camN][imageN].undistortedFileName = addPath(name).toStdString();
 }
 
-void fillJob(CalibrationJob* job)
+void fillJobByTestDataM15(CalibrationJob* job)
 {
     addImageToJob(job, 0, 4, "SPA0_15deg.jpg");
     addImageToJob(job, 0, 3, "SPA0_30deg.jpg");
@@ -190,7 +190,7 @@ TEST_F(CalibrationTest, testDetectDistChessBoard)
     JSONGetter getter(addPath("gIn.json"));
     getter.visit(job, "job");
 
-    fillJob(&job);
+    fillJobByTestDataM15(&job);
 
     job.allDetectChessBoard(!undistorted);
 
@@ -216,7 +216,7 @@ TEST_F(CalibrationTest, testEstimateDistDistortion)
     JSONGetter getter(addPath("dOutDist.json"));
     getter.visit(job, "job");
 
-    fillJob(&job);
+    fillJobByTestDataM15(&job);
     job.allEstimateDistortion();
 
     double distortionRmse = -1.0;
@@ -246,7 +246,7 @@ TEST_F(CalibrationTest, testCalculate)
     JSONGetter getter(addPath("esDistOutDist.json"));
     getter.visit(job, "job");
 
-    fillJob(&job);
+    fillJobByTestDataM15(&job);
     job.calibrate();
 
     double calibrationRmse = -1.0;
