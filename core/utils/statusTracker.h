@@ -19,7 +19,7 @@ struct Status
     Status() : currentAction("NONE"), completedActions(0), totalActions(0), startedActions(0)
     {}
 
-    bool isCompleted(const std::string &action)
+    bool isCompleted(const std::string &action) const
     {
         return (action == currentAction && totalActions == completedActions);
     }
