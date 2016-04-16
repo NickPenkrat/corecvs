@@ -81,7 +81,7 @@ namespace HelperUtils
     inline string   getFilePathWithSuffixAtName(const string& filePath, const string& suffix)
     {
         size_t extPosition = filePath.find_last_of(".");
-        return filePath.substr(0, extPosition) + suffix + filePath.substr(extPosition + 1);
+        return filePath.substr(0, extPosition) + suffix + filePath.substr(extPosition);
     }
 
     inline bool     startsWith(const string &str, const string &prefix)
