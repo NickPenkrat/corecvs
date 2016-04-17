@@ -143,10 +143,10 @@ int corecvs::PhotostationPlacer::getMovablePointCount()
 void corecvs::PhotostationPlacer::tryAlign()
 {
 #if 0
-    L_ERROR << "Trying to align";
+    L_INFO << "Trying to align";
     if (scene->is3DAligned)
     {
-        L_ERROR << "Already aligned";
+        L_INFO << "Already aligned";
         return;
     }
     CameraFixture* gps[3], *idFixed = 0, *idStatic = 0;
@@ -171,12 +171,12 @@ void corecvs::PhotostationPlacer::tryAlign()
 
     if (!idFixed && !idStatic && !cntGps)
     {
-        L_ERROR << "NO ALIGN DATA";
+        L_INFO << "NO ALIGN DATA";
         return;
     }
 //    fit(PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS, 200);
 
-    L_ERROR << "ALIGNING:";
+    L_INFO << "ALIGNING:";
     getErrorSummaryAll();
 
     corecvs::Affine3DQ transform;
@@ -192,7 +192,7 @@ void corecvs::PhotostationPlacer::tryAlign()
     {
         if (cntGps == 1)
         {
-            L_ERROR << "ALIGNING SINGLE GPS";
+            L_INFO << "ALIGNING SINGLE GPS";
             Vector3dd shift = scene->initializationData[gps[0]].initData.shift - gps[0]->location.shift;
             gps[0]->location.shift += shift;
             for (auto tp: scene->trackedFeatures)
@@ -201,7 +201,7 @@ void corecvs::PhotostationPlacer::tryAlign()
         }
         if (cntGps == 2)
         {
-            L_ERROR << "ALIGNING 2xGPS";
+            L_INFO << "ALIGNING 2xGPS";
             CORE_ASSERT_TRUE_S(!(gps[0]->location.shift - scene->initializationData[gps[0]].initData.shift) < 1e-6);
             auto o1 = gps[1]->location.shift - gps[0]->location.shift;
             auto o2 = Vector3dd(0, 0, 1);
@@ -251,7 +251,7 @@ void corecvs::PhotostationPlacer::tryAlign()
     scene->is3DAligned = true;
 //    fit();
 
-    L_ERROR << "POST-ALIGN:";
+    L_INFO << "POST-ALIGN:";
     getErrorSummaryAll();
 #endif
 }
@@ -821,7 +821,7 @@ void corecvs::PhotostationPlacer::getErrorSummary(PhotostationPlacerOptimization
         {
             auto& p = pp.second;
             totalcnt++;
-            switch(errorType)
+            switch (errorType)
             {
                 case PhotostationPlacerOptimizationErrorType::REPROJECTION:
                     errP = p.cameraFixture->reprojectionError(t->reprojectedPosition, p.observation, p.camera);
@@ -876,8 +876,8 @@ void corecvs::PhotostationPlacer::getErrorSummary(PhotostationPlacerOptimization
                     break;
             }
         }
-    std::cout << toString(errorType) << "RMSE [static points]: " << std::sqrt(totalsqr / totalcnt) << std::endl;
 
+    std::cout << toString(errorType) << "RMSE [static points]: " << std::sqrt(totalsqr / totalcnt) << std::endl;
 }
 
 void corecvs::PhotostationPlacer::fit(const PhotostationPlacerOptimizationType &params, int num)
@@ -892,6 +892,7 @@ void corecvs::PhotostationPlacer::fit(const PhotostationPlacerOptimizationType &
     optimizationParams = params;
     prepareNonLinearOptimizationData();
     scene->validateAll();
+
     getDependencyList();
     getErrorSummaryAll();
     corecvs::LevenbergMarquardtSparse lm;
@@ -917,9 +918,10 @@ void corecvs::PhotostationPlacer::fit(const PhotostationPlacerOptimizationType &
     for (auto& f: scene->trackedFeatures)
         cntr[(int)f->observations__.size()]++;
 
-    std::cout << "Track sizes: " << std::endl;
-    for (auto p: cntr)
+    std::cout << "Track sizes: " << cntr.size() << std::endl;
+    for (auto p : cntr) {
         std::cout << p.first << "\t" << p.second << std::endl;
+    }
     scene->validateAll();
 }
 
@@ -1066,7 +1068,9 @@ void corecvs::PhotostationPlacer::updateTrackables()
 
         auto hypos = scene->getPossibleTracks(cf);
         std::cout << "PRE-CTR" << std::endl;
-        corecvs::AbsoluteNonCentralRansacSolver solver = activeEstimates.count(cf) ? corecvs::AbsoluteNonCentralRansacSolver(cf, hypos, activeEstimates[cf]) : corecvs::AbsoluteNonCentralRansacSolver(cf, hypos);
+        corecvs::AbsoluteNonCentralRansacSolver solver = activeEstimates.count(cf) ?
+            corecvs::AbsoluteNonCentralRansacSolver(cf, hypos, activeEstimates[cf]) :
+            corecvs::AbsoluteNonCentralRansacSolver(cf, hypos);
         std::cout << "POST-CTR" << std::endl;
 
         solver.forcePosition = scene->initializationData[cf].initializationType == PhotostationInitializationType::GPS && scene->is3DAligned;
@@ -1076,10 +1080,12 @@ void corecvs::PhotostationPlacer::updateTrackables()
         solver.runInliersRE();
         activeEstimates[cf] = solver.getBestHypothesis();
         activeInlierCount[cf] = solver.getInliers();
+
+        std::cout << "\tStopped with " << cf->name << std::endl;
     }
 }
 
-void corecvs::PhotostationPlacer::appendPs()
+bool corecvs::PhotostationPlacer::appendPs()
 {
     CORE_ASSERT_TRUE_S(speculativity > 0);
     scene->validateAll();
@@ -1090,17 +1096,17 @@ void corecvs::PhotostationPlacer::appendPs()
             addSecondPs();
         else
             addFirstPs();
-        return;
+        return true;
     }
     CORE_ASSERT_TRUE_S(scene->state == ReconstructionState::TWOPOINTCLOUD ||
-            scene->state == ReconstructionState::APPENDABLE);
+                       scene->state == ReconstructionState::APPENDABLE);
     // Here we first update speculatively selected CameraFixtures, and then
     // add one that has the biggest count of inliers
     updateTrackables();
 
     size_t maxInliers = 0;
-    CameraFixture *psApp;
-    for (auto&cfp: activeInlierCount)
+    CameraFixture *psApp = NULL;
+    for (auto & cfp : activeInlierCount)
     {
         std::cout << cfp.first->name << " : " << cfp.second.size() << std::endl;
         if (cfp.second.size() > maxInliers)
@@ -1109,20 +1115,26 @@ void corecvs::PhotostationPlacer::appendPs()
             psApp = cfp.first;
         }
     }
+    if (psApp == NULL) {
+        L_ERROR << "Nothing to append!";
+        return false;
+    }
+
     std::cout << "Choosing to append " << psApp->name << " because it had " << maxInliers << " inliers" << std::endl;
-    for (auto ptr: scene->placedFixtures)
+
+    for (auto ptr : scene->placedFixtures)
         std::cout << ptr->name << " " << ptr->location.shift << " " << ptr->location.rotor << std::endl;
 //    CameraFixture* psApp = scene->placingQueue[0];
     std::cout << "Placing #" << psApp->name << std::endl;
-    L_ERROR << "Placing " << psApp->name ;
-    L_ERROR << "Computing tracks" ;
+    L_INFO << "Placing " << psApp->name;
+    L_INFO << "Computing tracks";
     auto hypos = scene->getPossibleTracks(psApp);
     std::cout << "Total " << hypos.size() << " possible tracks" << std::endl;
-    L_ERROR << "Computing P3P" ;
+    L_INFO << "Computing P3P";
 
  // corecvs::AbsoluteNonCentralRansacSolverParams params;
 //  AbsoluteNonCentralRansacSolver solver(psApp, hypos, params);
-    switch(scene->initializationData[psApp].initializationType)
+    switch (scene->initializationData[psApp].initializationType)
     {
         default:
         case PhotostationInitializationType::GPS:
@@ -1175,7 +1187,7 @@ void corecvs::PhotostationPlacer::appendPs()
     std::cout << "TRACKS BEFORE: " << scene->trackedFeatures.size() << std::endl;
     if (scene->state == ReconstructionState::APPENDABLE)
     {
-        L_ERROR << "Appending tracks" ;
+        L_INFO << "Appending tracks";
         appendTracks(activeInlierCount[psApp], psApp, hypos);
     }
     if (scene->state == ReconstructionState::TWOPOINTCLOUD)
@@ -1186,8 +1198,10 @@ void corecvs::PhotostationPlacer::appendPs()
             scene->deleteFeaturePoint(ptr);
         scene->state = ReconstructionState::APPENDABLE;
     }
+
     tryAlign();
-    L_ERROR << "Building tracks" ;
+
+    L_INFO << "Building tracks";
     for (size_t aId = 0; aId < scene->placedFixtures.size(); ++aId)
     {
         for (size_t bId = aId + 1; bId < scene->placedFixtures.size(); ++bId)
@@ -1199,7 +1213,7 @@ void corecvs::PhotostationPlacer::appendPs()
     scene->placedFixtures.push_back(psApp);
     scene->placingQueue.resize(std::remove(scene->placingQueue.begin(), scene->placingQueue.end(), psApp) - scene->placingQueue.begin());
     scene->validateAll();
-    return;
+    return true;
 }
 
 bool corecvs::PhotostationPlacer::initialize()
@@ -1218,7 +1232,8 @@ bool corecvs::PhotostationPlacer::initialize()
     bool initOk = initializer.initialize();
     if (!initOk)
         return false;
-    L_ERROR << "Building tracks" ;
+
+    L_INFO << "Building tracks";
     scene->buildTracks(scene->placingQueue[0], scene->placingQueue[1], scene->placingQueue[2], trackInlierThreshold, distanceLimit);
     for (int i = 0; i < 3; ++i)
     {
@@ -1254,20 +1269,26 @@ void corecvs::PhotostationPlacer::detectAll()
 
 void corecvs::PhotostationPlacer::fullRun()
 {
-    L_ERROR << "Starting full run" ;
-    L_ERROR << "Detecting features";
-    detectAll();
-    L_ERROR << "Initalizing";
-    initialize();
-    L_ERROR << "Fitting";
-    fit(optimizationParams, 100);
-    L_ERROR << "Appending";
+    L_INFO << "Starting full run";
 
-    while(scene->placingQueue.size())
+    L_INFO << "Detecting features";
+    detectAll();
+
+    L_INFO << "Initalizing";
+    initialize();
+
+    L_INFO << "Fitting";
+    fit(optimizationParams, 100);
+
+    L_INFO << "Appending";
+
+    while (scene->placingQueue.size())
     {
-        L_ERROR << "Appending" << (*scene->placingQueue.begin())->name ;
-        appendPs();
-        L_ERROR << "Fitting";
+        L_INFO << "Appending" << (*scene->placingQueue.begin())->name;
+        if (!appendPs())
+            break;
+
+        L_INFO << "Fitting";
 //      if (scene->is3DAligned)
 //          fit(PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS, 100);
   //    else
@@ -1278,6 +1299,8 @@ void corecvs::PhotostationPlacer::fullRun()
         ss << (*scene->placedFixtures.rbegin())->name << "_app.ply";
         dumpMesh(ss.str());
     }
+
+    L_INFO << "Fitting final";
     fit(optimizationParams, 10000);
     dumpMesh("final.ply");
 }

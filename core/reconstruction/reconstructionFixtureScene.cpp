@@ -330,10 +330,10 @@ bool ReconstructionFixtureScene::validateTracks()
 
 bool ReconstructionFixtureScene::validateAll()
 {
-    L_ERROR << "Validating..." ;
+    L_INFO << "Validating...";
     if (validateMatches() && validateTracks())
     {
-        std::cout << "VALID!!!" << std::endl;
+        L_INFO << "VALID!!!";
         return true;
     }
     return false;
@@ -529,9 +529,9 @@ void corecvs::ReconstructionFixtureScene::buildTracks(CameraFixture *psA, Camera
                 trackCandidates.emplace_back(camA, ptA, camB, ptB, camC, ptC);
         }
     }
-    L_ERROR << trackCandidates.size() << " candidate tracks";
-    L_ERROR << "Inlier threshold: " << trackInlierThreshold;
-    L_ERROR << "Distance threshold: " << distanceLimit;
+    L_INFO << trackCandidates.size() << " candidate tracks";
+    L_INFO << "Inlier threshold: " << trackInlierThreshold;
+    L_INFO << "Distance threshold: " << distanceLimit;
 
     int failInlier = 0, failDistance = 0;
 
@@ -605,7 +605,8 @@ void corecvs::ReconstructionFixtureScene::buildTracks(CameraFixture *psA, Camera
         }
         trackedFeatures.push_back(track);
     }
-    L_ERROR << "FAIL:IT " << failInlier << " / FAIL:DI " << failDistance;
+
+    L_INFO << "FAIL:IT " << failInlier << " / FAIL:DI " << failDistance;
 }
 
 std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> corecvs::ReconstructionFixtureScene::getUnusedFeatures(CameraFixture *psA, CameraFixture *psB)

@@ -30,6 +30,7 @@ void corecvs::AbsoluteNonCentralRansacSolver::Estimator::operator() (const corec
 {
     if (solver->cloudMatches.size() < SAMPLESIZE)
         return;
+
     for (int i = r.begin(); i < r.end(); ++i)
     {
         sampleModel();
