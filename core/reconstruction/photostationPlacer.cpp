@@ -16,6 +16,7 @@
 #include "calibrationHelpers.h"
 #include "calibrationLocation.h"
 #include "reconstructionInitializer.h"
+#include "statusTracker.h"
 #include "sceneAligner.h"
 #include "log.h"
 
@@ -1057,38 +1058,69 @@ void corecvs::PhotostationPlacer::fullRun()
 {
     L_INFO << "Starting full run";
 
-    L_INFO << "Detecting features";
-    detectAll();
-
-    L_INFO << "Initalizing";
-    initialize();
-
-    L_INFO << "Fitting";
-    fit(optimizationParams, 100);
-
-    L_INFO << "Appending";
-
-    while (scene->placingQueue.size())
+    scene->ProcessState->reset("Detecting", 1);
+    scene->ProcessState->incrementStarted();
     {
-        L_INFO << "Appending" << (*scene->placingQueue.begin())->name;
-        if (!appendPs())
-            break;
-
-        L_INFO << "Fitting";
-//      if (scene->is3DAligned)
-//          fit(PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS, 100);
-  //    else
-    //   fit(PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS, 200);
-        fit(optimizationParams, 100);
-
-        std::stringstream ss;
-        ss << (*scene->placedFixtures.rbegin())->name << "_app.ply";
-        dumpMesh(ss.str());
+        L_INFO << "Detecting features";
+        detectAll();
     }
+    scene->ProcessState->incrementCompleted();
 
-    L_INFO << "Fitting final";
-    fit(optimizationParams, 10000);
-    dumpMesh("final.ply");
+    scene->ProcessState->reset("Initializing", 1);
+    scene->ProcessState->incrementStarted();
+    {
+        L_INFO << "Initalizing";
+        initialize();
+    }
+    scene->ProcessState->incrementCompleted();
+
+    scene->ProcessState->reset("First fitting", 1);
+    scene->ProcessState->incrementStarted();
+    {
+        L_INFO << "Fitting";
+        fit(optimizationParams, 100);
+    }
+    scene->ProcessState->incrementCompleted();
+
+    scene->ProcessState->reset("Appending", 1);
+    scene->ProcessState->incrementStarted();
+    {
+        L_INFO << "Appending";
+
+        while (scene->placingQueue.size())
+        {
+            L_INFO << "Appending" << (*scene->placingQueue.begin())->name;
+            if (!appendPs())
+                break;
+
+            L_INFO << "Fitting";
+            //      if (scene->is3DAligned)
+            //          fit(PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS | PhotostationPlacerOptimizationType::FOCALS | PhotostationPlacerOptimizationType::PRINCIPALS, 100);
+            //    else
+            //   fit(PhotostationPlacerOptimizationType::NON_DEGENERATE_TRANSLATIONS | PhotostationPlacerOptimizationType::NON_DEGENERATE_ORIENTATIONS | PhotostationPlacerOptimizationType::POINTS, 200);
+            fit(optimizationParams, 100);
+
+            std::stringstream ss;
+            ss << (*scene->placedFixtures.rbegin())->name << "_app.ply";
+            dumpMesh(ss.str());
+        }
+    }
+    scene->ProcessState->incrementCompleted();
+
+    scene->ProcessState->reset("Final fitting", 1);
+    scene->ProcessState->incrementStarted();
+    {
+        L_INFO << "Fitting final";
+        fit(optimizationParams, 10000);
+    }
+    scene->ProcessState->incrementCompleted();
+
+    scene->ProcessState->reset("Dumping mesh", 1);
+    scene->ProcessState->incrementStarted();
+    {
+        dumpMesh("final.ply");
+    }
+    scene->ProcessState->incrementCompleted();
 }
 
 corecvs::Mesh3D corecvs::PhotostationPlacer::dumpMesh(const std::string &filename)
