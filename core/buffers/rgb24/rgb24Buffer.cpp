@@ -158,7 +158,7 @@ void RGB24Buffer::drawHLine(int x1, int y1, int x2, RGBColor color )
     if (x1 >= w || x2 < 0 || y1 < 0 || y1 >= h )
         return;
 
-    for (int j = x1; j < x2; j++)
+    for (int j = x1; j <= x2; j++)
     {
         this->element(y1, j) = color;
     }

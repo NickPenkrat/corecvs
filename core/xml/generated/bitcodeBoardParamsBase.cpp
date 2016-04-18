@@ -167,6 +167,24 @@ int BitcodeBoardParamsBase::staticInit()
           "Area in which the stats are collected during detection"
         )
     );
+    fields().push_back(
+        new EnumField
+        (
+          BitcodeBoardParamsBase::BITCODEORIENTATION_ID,
+          offsetof(BitcodeBoardParamsBase, mBitcodeOrientation),
+          4,
+          "bitcodeOrientation",
+          "bitcodeOrientation",
+          "bitcodeOrientation",
+          new EnumReflection(5
+          , new EnumOption(0,"Below")
+          , new EnumOption(1,"Left")
+          , new EnumOption(2,"Above")
+          , new EnumOption(3,"Right")
+          , new EnumOption(4,"Any")
+          )
+        )
+    );
    return 0;
 }
 

@@ -31,6 +31,7 @@ BitcodeBoardParamsBaseControlWidget::BitcodeBoardParamsBaseControlWidget(QWidget
     QObject::connect(mUi->codeHeightSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->bitcodeIdentSizeSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->bitcodeConfidenceSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->bitcodeOrientationComboBox, SIGNAL(currentIndexChanged(int)), this, SIGNAL(paramsChanged()));
 }
 
 BitcodeBoardParamsBaseControlWidget::~BitcodeBoardParamsBaseControlWidget()
@@ -69,6 +70,7 @@ void BitcodeBoardParamsBaseControlWidget::getParameters(BitcodeBoardParamsBase& 
     params.setCodeHeight       (mUi->codeHeightSpinBox->value());
     params.setBitcodeIdentSize (mUi->bitcodeIdentSizeSpinBox->value());
     params.setBitcodeConfidence(mUi->bitcodeConfidenceSpinBox->value());
+    params.setBitcodeOrientation(static_cast<BitcodeBoardOrientation::BitcodeBoardOrientation>(mUi->bitcodeOrientationComboBox->currentIndex()));
 
 }
 
@@ -92,6 +94,7 @@ BitcodeBoardParamsBase *BitcodeBoardParamsBaseControlWidget::createParameters() 
         , mUi->codeHeightSpinBox->value()
         , mUi->bitcodeIdentSizeSpinBox->value()
         , mUi->bitcodeConfidenceSpinBox->value()
+        , static_cast<BitcodeBoardOrientation::BitcodeBoardOrientation>(mUi->bitcodeOrientationComboBox->currentIndex())
     );
     return result;
 }
@@ -111,6 +114,7 @@ void BitcodeBoardParamsBaseControlWidget::setParameters(const BitcodeBoardParams
     mUi->codeHeightSpinBox->setValue(input.codeHeight());
     mUi->bitcodeIdentSizeSpinBox->setValue(input.bitcodeIdentSize());
     mUi->bitcodeConfidenceSpinBox->setValue(input.bitcodeConfidence());
+    mUi->bitcodeOrientationComboBox->setCurrentIndex(input.bitcodeOrientation());
     blockSignals(wasBlocked);
     emit paramsChanged();
 }

@@ -377,7 +377,8 @@ void BoardAligner::drawDebugInfo(corecvs::RGB24Buffer &buffer)
             TriangleSpanIterator ts1(Triangle2dd(C[0], C[1], C[2]));
             TriangleSpanIterator ts2(Triangle2dd(C[3], C[1], C[2]));
 
-            while (ts1.step()) {
+            while (ts1.hasValue()) {
+                ts1.step();
                 LineSpanInt span = ts1.getSpan();
                 span.clip(mask.w, mask.h);
                 for (int k = span.x1; k < span.x2; k++)
@@ -386,7 +387,8 @@ void BoardAligner::drawDebugInfo(corecvs::RGB24Buffer &buffer)
                     buffer.element(span.y(), k) = RGBColor::lerpColor(buffer.element(span.y(), k), B, 0.3);
                 }
             }
-            while (ts2.step()) {
+            while (ts2.hasValue()) {
+                ts2.step();
                 LineSpanInt span = ts2.getSpan();
                 span.clip(mask.w, mask.h);
                 for (int k = span.x1; k < span.x2; k++)

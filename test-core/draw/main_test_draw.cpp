@@ -20,6 +20,8 @@
 #include "mesh3d.h"
 #include "calibrationCamera.h"
 
+#include "polygonPointIterator.h"
+
 
 using namespace std;
 using namespace corecvs;
@@ -72,14 +74,16 @@ TEST(Draw, testCircleIterator)
 
 
     CircleSpanIterator inner(Circle2d(50, 50, 30));
-    while (inner.step())
+    while (inner.hasValue())
     {
         LineSpanInt span = inner.getSpan();
-        do {
+        while (span.hasValue()) {
             if (buffer->isValidCoord(span.pos())) {
                 buffer->element(span.pos()) = RGBColor::Red();
             }
-        } while (span.step());
+            span.step();
+        };
+        inner.step();
     }
 
 
@@ -116,35 +120,58 @@ TEST(Draw, testSpanDraw)
     int w = 200;
 
     RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
+
     {
         TrapezoidSpanIterator it(10, 40, 10, 30, 40, 90);
-        while (it.step())
+        while (it.hasValue())
         {
             LineSpanInt span = it.getSpan();
             buffer->drawHLine(span.x1, span.y(), span.x2, RGBColor::Red());
+            it.step();
         }
     }
 
     {
         TrapezoidSpanIterator it(110, 170, 10, 30, 5, 35);
-        while (it.step())
+        while (it.hasValue())
         {
             LineSpanInt span = it.getSpan();
             buffer->drawHLine(span.x1, span.y(), span.x2, RGBColor::Green());
+            it.step();
         }
     }
 
     {
         Triangle2dd t(Vector2dd(120, 30), Vector2dd(170, 80), Vector2dd(140, 10));
         TriangleSpanIterator it(t);
-        while (it.step())
+        while (it.hasValue())
         {
             LineSpanInt span = it.getSpan();
             buffer->drawHLine(span.x1, span.y(), span.x2, RGBColor::Pink());
+            it.step();
+        }
+    }
+
+    {
+        Triangle2dd t(Vector2dd(120, 130), Vector2dd(170, 180), Vector2dd(140, 110));
+        TrianglePointIterator it(t);
+        for (auto p: it) {
+            buffer->element(p) = RGBColor::Violet();
         }
     }
 
     BMPLoader().save("spandraw.bmp", buffer);
+
+
+    {
+        TrapezoidSpanIterator it(10, 40, 10, 30, 40, 90);
+        for(LineSpanInt span: it) {
+              buffer->drawHLine(span.x1, span.y(), span.x2, RGBColor::Pink());
+        }
+
+    }
+
+    BMPLoader().save("spandraw1.bmp", buffer);
     delete_safe(buffer);
 }
 
@@ -168,10 +195,11 @@ TEST(Draw, testSpanDrawTriangle)
     for (size_t i = 0; i < CORE_COUNT_OF(t); i++) {
 
         TriangleSpanIterator it(t[i]);
-        while (it.step())
-        {
+        while (it.hasValue())
+        {           
             LineSpanInt span = it.getSpan();
             buffer->drawHLine(span.x1, span.y(), span.x2, c[i]);
+            it.step();
         }
     }
 
@@ -197,15 +225,18 @@ TEST(Draw, testAttributedTriangle)
 
     AttributedTriangleSpanIterator it(t);
 
-    while (it.step())
-    {
+    while (it.hasValue())
+    {        
         AttributedLineSpan span = it.getAttrSpan();
-        do {
+        while (span.hasValue())
+        {
             if (buffer->isValidCoord(span.pos()) ) {
                 Vector3dd color(span.att()[0], span.att()[1], span.att()[2]);
                 buffer->element(span.pos()) = RGBColor::FromDouble(color);
             }
-        } while (span.step());
+            span.step();
+        }
+        it.step();
     }
 
     BMPLoader().save("attributed.bmp", buffer);
@@ -238,10 +269,11 @@ TEST(Draw, testSpanRenderTriangle)
     for (size_t i = 0; i < CORE_COUNT_OF(t); i++) {
 
         TriangleSpanIterator it(p[i]);
-        while (it.step())
-        {
+        while (it.hasValue())
+        {          
             LineSpanInt span = it.getSpan();
             buffer->drawHLine(span.x1, span.y(), span.x2, c[i]);
+            it.step();
         }
     }
     BMPLoader().save("renderdraw.bmp", buffer);
@@ -266,8 +298,8 @@ TEST(Draw, testSpanRenderTriangle)
 
         AttributedTriangleSpanIterator it(a[i]);
 
-        while (it.step())
-        {
+        while (it.hasValue())
+        {            
             LineSpanInt span = it.getSpan();
             double z1 = it.part.a1[0];
             double z2 = it.part.a2[0];
@@ -283,6 +315,7 @@ TEST(Draw, testSpanRenderTriangle)
                     }
                 }
             }
+            it.step();
         }
     }
     BMPLoader().save("renderdraw-rgb.bmp", buffer);
@@ -298,6 +331,77 @@ TEST(Draw, testSpanRenderTriangle)
 
 }
 
+TEST(Draw, polygonDraw)
+{
+    int h = 300;
+    int w = 300;
+
+    RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
+    Vector2dd center(w / 2.0, h / 2.0);
+
+    AbstractPainter<RGB24Buffer> painter(buffer);
+
+    Polygon p;
+    for (int i = 0; i < 7; i++) {
+        p.push_back(Vector2dd::FromPolar((2 * M_PI / 7.0) * i, 100.0) + center);
+    }
+
+    cout << p << std::endl;
+
+    painter.drawPolygon(p, RGBColor::Blue());
+
+    PolygonPointIterator it(p);
+    for (Vector2d<int> p: it) {
+        if (buffer->isValidCoord(p)) {
+            buffer->element(p) += RGBColor(140, 140, 0);
+        }
+    }
+
+    BMPLoader().save("polygon.bmp", buffer);
+    delete_safe(buffer);
+}
+
+
+TEST(Draw, polygonDraw1)
+{
+    int h = 600;
+    int w = 600;
+
+    RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
+    Vector2dd center(100.0, 100.0);
+
+    AbstractPainter<RGB24Buffer> painter(buffer);
+
+    for (int pi = 0; pi < 3; pi ++)
+    {
+        for (int pj = 0; pj < 3; pj ++)
+        {
+            Polygon p;
+            int count = pi * 3 + pj + 3;
+            for (int i = 0; i < count; i++) {
+                p.push_back(Vector2dd::FromPolar((2 * M_PI / count) * i, 90.0) + center * Vector2dd(pi * 2 + 1, pj * 2 + 1));
+            }
+
+            cout << p << std::endl;
+
+            painter.drawPolygon(p, RGBColor::Blue());
+
+            PolygonSpanIterator it(p);
+            for (LineSpanInt l: it)
+            {
+                cout << l << endl;
+                for (Vector2d<int> point : l) {
+                    buffer->element(point) += RGBColor(140, 140, 0);
+                }
+            }
+        }
+
+    }
+
+
+    BMPLoader().save("polygon1.bmp", buffer);
+    delete_safe(buffer);
+}
 
 TEST(Draw, testFloodFill)
 {
@@ -363,13 +467,13 @@ TEST(Draw, testRobot)
    /** */
 
     CircleSpanIterator outer(center);
-    while (outer.step())
+    while (outer.hasValue())
     {
         LineSpanInt span = outer.getSpan();
         for (int s = span.x1; s < span.x2; s++ )
         {
             CircleSpanIterator inner(Circle2d(s, span.y(), r/2));
-            while (inner.step())
+            while (inner.hasValue())
             {
                 LineSpanInt span = inner.getSpan();
                 for (int s1 = span.x1; s1 < span.x2; s1++ )
@@ -379,21 +483,23 @@ TEST(Draw, testRobot)
                         acc.element(span.y(), s1)++;
                     }
                 }
+                inner.step();
             }
         }
+        outer.step();
     }
 
     /**/
     for (int c = 0; c < 4; c++)
     {
         CircleSpanIterator outer(perifery[c]);
-        while (outer.step())
+        while (outer.hasValue())
         {
             LineSpanInt span = outer.getSpan();
             for (int s = span.x1; s < span.x2; s++ )
             {
                 CircleSpanIterator inner(Circle2d(s, span.y(), l2));
-                while (inner.step())
+                while (inner.hasValue())
                 {
                     LineSpanInt span = inner.getSpan();
                     for (int s1 = span.x1; s1 < span.x2; s1++ )
@@ -404,10 +510,11 @@ TEST(Draw, testRobot)
                             acc.element(span.y(), s1)++;
                         }
                     }
+                    inner.step();
                 }
 
                 CircleSpanIterator inner1(Circle2d(s, span.y(), l1));
-                while (inner1.step())
+                while (inner1.hasValue())
                 {
                     LineSpanInt span = inner1.getSpan();
                     for (int s1 = span.x1; s1 < span.x2; s1++ )
@@ -418,9 +525,10 @@ TEST(Draw, testRobot)
                             acc.element(span.y(), s1)--;
                         }
                     }
+                    inner1.step();
                 }
             }
-
+            outer.step();
         }
 
     }

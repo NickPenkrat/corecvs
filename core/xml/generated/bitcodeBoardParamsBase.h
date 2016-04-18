@@ -30,6 +30,7 @@ namespace corecvs {
 /*
  *  Additional includes for enum section.
  */
+#include "bitcodeBoardOrientation.h"
 
 /**
  * \brief Bitcode Board Params Base 
@@ -50,6 +51,7 @@ public:
         CODEHEIGHT_ID,
         BITCODEIDENTSIZE_ID,
         BITCODECONFIDENCE_ID,
+        BITCODEORIENTATION_ID,
         BITCODE_BOARD_PARAMS_BASE_FIELD_ID_NUM
     };
 
@@ -121,6 +123,12 @@ public:
      */
     double mBitcodeConfidence;
 
+    /** 
+     * \brief bitcodeOrientation 
+     * bitcodeOrientation 
+     */
+    int mBitcodeOrientation;
+
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
 
@@ -184,6 +192,11 @@ public:
         return mBitcodeConfidence;
     }
 
+    BitcodeBoardOrientation::BitcodeBoardOrientation bitcodeOrientation() const
+    {
+        return static_cast<BitcodeBoardOrientation::BitcodeBoardOrientation>(mBitcodeOrientation);
+    }
+
     /* Section with setters */
     void setVertical(bool vertical)
     {
@@ -240,6 +253,11 @@ public:
         mBitcodeConfidence = bitcodeConfidence;
     }
 
+    void setBitcodeOrientation(BitcodeBoardOrientation::BitcodeBoardOrientation bitcodeOrientation)
+    {
+        mBitcodeOrientation = bitcodeOrientation;
+    }
+
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
@@ -256,6 +274,7 @@ template<class VisitorType>
         visitor.visit(mCodeHeight,                static_cast<const IntField *>     (fields()[CODEHEIGHT_ID]));
         visitor.visit(mBitcodeIdentSize,          static_cast<const DoubleField *>  (fields()[BITCODEIDENTSIZE_ID]));
         visitor.visit(mBitcodeConfidence,         static_cast<const DoubleField *>  (fields()[BITCODECONFIDENCE_ID]));
+        visitor.visit((int &)mBitcodeOrientation, static_cast<const EnumField *>    (fields()[BITCODEORIENTATION_ID]));
     }
 
     BitcodeBoardParamsBase()
@@ -276,6 +295,7 @@ template<class VisitorType>
         , int codeHeight
         , double bitcodeIdentSize
         , double bitcodeConfidence
+        , BitcodeBoardOrientation::BitcodeBoardOrientation bitcodeOrientation
     )
     {
         mVertical = vertical;
@@ -289,6 +309,7 @@ template<class VisitorType>
         mCodeHeight = codeHeight;
         mBitcodeIdentSize = bitcodeIdentSize;
         mBitcodeConfidence = bitcodeConfidence;
+        mBitcodeOrientation = bitcodeOrientation;
     }
 
     friend ostream& operator << (ostream &out, BitcodeBoardParamsBase &toSave)

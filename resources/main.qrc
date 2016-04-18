@@ -107,6 +107,7 @@
         <file>arrow_rotate_anticlockwise.png</file>
         <file>arrow_rotate_clockwise.png</file>
         <file>bitboard.png</file>
+        <file>question.png</file>
     </qresource>
     <qresource prefix="/new/colors">
         <file>colors/color_blue.png</file>
