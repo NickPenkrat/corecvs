@@ -667,12 +667,8 @@ Matrix Matrix::inv() const
      */
 #ifdef WITH_BLAS
     corecvs::Matrix copy(*this);
-#ifndef WIN32
-    int pivot[h];
-#else
     std::unique_ptr<int[]> pivot_(new int[h]);
     int* pivot = pivot_.get();
-#endif
     CORE_ASSERT_TRUE_S(h == w);
     LAPACKE_dgetrf(LAPACK_ROW_MAJOR, copy.h, copy.w, &copy.a(0, 0), copy.stride, pivot);
     LAPACKE_dgetri(LAPACK_ROW_MAJOR, copy.h, &copy.a(0, 0), copy.stride, pivot);
@@ -753,7 +749,6 @@ Matrix Matrix::inv() const
     }
 
     return result;
-
 #endif // !WITH_BLAS
 }
 
@@ -775,12 +770,8 @@ bool corecvs::Matrix::LinSolve(const corecvs::Matrix &A, const corecvs::Vector &
     decltype(LAPACKE_dgetrf(0, 0, 0, 0, 0, 0)) info;
     if (!posDef)
     {
-#ifndef WIN32
-        int pivot[std::min(A.h, A.w)];
-#else
         std::unique_ptr<int[]> pivot_(new int[std::min(A.h, A.w)]);
         int *pivot = pivot_.get();
-#endif
         if (!symmetric)
         {
             info = LAPACKE_dgetrf(LAPACK_ROW_MAJOR, copy.h, copy.w, &copy.a(0, 0), copy.stride, pivot);
@@ -798,13 +789,231 @@ bool corecvs::Matrix::LinSolve(const corecvs::Matrix &A, const corecvs::Vector &
         if (!info) LAPACKE_dpotrs(LAPACK_ROW_MAJOR, 'U', copy.w, 1, &copy.a(0, 0), copy.stride, &res[0], 1);
     }
     return info == 0;
-
 #else // WITH_BLAS
 
     res = A.inv() * B;
     return true;
 
 #endif // !WITH_BLAS
+}
+
+bool corecvs::Matrix::LinSolveSchurComplement(const corecvs::Matrix &M, const corecvs::Vector &Bv, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric, bool posDef)
+{
+    /*
+     * So we partition M and B into
+     * +---+---+   /   \   /   \
+     * | A | B |   | x |   | a |
+     * +---+---+ * +---+ = +---+
+     * | C | D |   | y |   | b |
+     * +---+---+   \   /   \   /
+     * Where D is block-diagonal well-conditioned matrix
+     *
+     * Then we invert D explicitly and solve
+     * x = (A-BD^{-1}C)^{-1}(a-BD^{-1}b)
+     * y = D^{-1}(b-Cx)
+     *
+     * Note that M is symmetric => D is symmetric, (A-BD^{-1}C) is symmetric
+     *           M is posdef    => D is posdef,    (A-BD^{-1}C) is symmetric (TODO: isposdef)
+     */
+
+    auto Ah = diagBlocks[0],
+         Aw = diagBlocks[0];
+    auto Bw = M.w - Aw,
+         Bh = Ah;
+    auto Cw = Aw,
+         Ch = M.h - Ah;
+    auto Dw = Bw;
+
+#ifndef WITH_BLAS
+    auto N = M.h;
+
+    std::vector<corecvs::Matrix> matrices;
+
+    // "Factorizing"
+    for (size_t i = 0; i + 1 < diagBlocks.size(); ++i)
+    {
+        auto from = diagBlocks[i], to = diagBlocks[i + 1];
+        matrices.emplace_back(M, from, from, to, to);
+    }
+    corecvs::parallelable_for(0, (int)matrices.size(), [&](const corecvs::BlockedRange<int> &r)
+    {
+        for (int i = r.begin(); i < r.end(); ++i)
+            matrices[i] = matrices[i].inv();
+    });
+
+    auto A = const_cast<corecvs::Matrix&>(M).createView<corecvs::Matrix>(0, 0, Ah, Aw),
+         B = const_cast<corecvs::Matrix&>(M).createView<corecvs::Matrix>(0, Aw, Bh, Bw),
+         C = const_cast<corecvs::Matrix&>(M).createView<corecvs::Matrix>(Ah, 0, Ch, Cw);
+
+    // Computing BD^{-1}
+    corecvs::Matrix BDinv(Bh, Dw);
+    corecvs::parallelable_for(0, (int)matrices.size(), [&](const corecvs::BlockedRange<int> &r)
+    {
+        for (int i = r.begin(); i < r.end(); ++i)
+        {
+            auto begin = diagBlocks[i], end = diagBlocks[i + 1];
+            auto len = end - begin;
+
+            auto bv  = B.createView<corecvs::Matrix>(0, begin - Aw, Bh, len);
+
+            auto foo = bv * matrices[i];
+
+            for (int k = 0; k < foo.h; ++k)
+                for (int j = begin; j < end; ++j)
+                    BDinv.a(k, j - Aw) = foo.a(k, j - begin);
+
+        }
+    });
+
+    // Computing lhs/rhs
+    corecvs::Vector a(Ah, &Bv[0]), b(Ch, &Bv[Ah]);
+    auto rhs = a - BDinv * b;
+    auto lhs = A - BDinv * C;
+
+    // Solving for x
+    corecvs::Vector x(Aw), y(Bw);
+    bool foo = lhs.linSolve(rhs, x, symmetric, false);
+
+    if (!foo) return false;
+
+    // Solving for y
+    rhs = b - C * x;
+    corecvs::parallelable_for(0, (int)matrices.size(), [&](const corecvs::BlockedRange<int> &r)
+    {
+        for (int i = r.begin(); i < r.end(); ++i)
+        {
+            auto begin = diagBlocks[i], end = diagBlocks[i + 1];
+            auto len = end - begin;
+            corecvs::Vector bcx(len);
+            for (int j = 0; j < len; ++j)
+                bcx[j] = rhs[j + begin - Aw];
+            auto res = matrices[i] * bcx;
+            for (int j = begin; j < end; ++j)
+                y[j - Aw] = res[j - begin];
+        }
+    });
+
+    for (int i = 0; i < Aw; ++i)
+        res[i] = x[i];
+    for (int j = 0; j < Bw; ++j)
+        res[j + Aw] = y[j];
+#else
+    /*
+     * The same as above, but with fancy LAPACK
+     */
+    auto N = diagBlocks.size() - 1;
+    std::vector<int> pivots(Dw), pivotIdx(N);
+
+    std::vector<corecvs::Matrix> qrd(N);
+    for (size_t i = 0; i < N; ++i)
+    {
+        qrd[i] = corecvs::Matrix(M, diagBlocks[i], diagBlocks[i], diagBlocks[i + 1], diagBlocks[i + 1]);
+        pivotIdx[i] = diagBlocks[i] - diagBlocks[0];
+    }
+
+    // Factorizing (without "\"")
+    corecvs::parallelable_for(0, (int)N, [&](const corecvs::BlockedRange<int> &r)
+            {
+                for (int i = r.begin(); i < r.end(); ++i)
+                {
+                    auto& MM = qrd[i];
+                    if (!symmetric)
+                    {
+                        LAPACKE_dgetrf(LAPACK_ROW_MAJOR, MM.h, MM.w, MM.data, MM.stride, &pivots[pivotIdx[i]]);
+                    }
+                    else
+                    {
+                        if (posDef)
+                            LAPACKE_dpotrf(LAPACK_ROW_MAJOR, 'U', MM.h, MM.data, MM.stride);
+                        else
+                            LAPACKE_dsytrf(LAPACK_ROW_MAJOR, 'U', MM.h, MM.data, MM.stride, &pivots[pivotIdx[i]]);
+                    }
+                }
+            });
+
+    // Computing BD^{-1}
+    auto A = const_cast<corecvs::Matrix&>(M).createView<corecvs::Matrix>(0, 0, Ah, Aw),
+         B = const_cast<corecvs::Matrix&>(M).createView<corecvs::Matrix>(0, Aw, Bh, Bw),
+         C = const_cast<corecvs::Matrix&>(M).createView<corecvs::Matrix>(Ah, 0, Ch, Cw);
+
+    // Computing BD^{-1}
+    //recvs::Matrix BDinv(Bh, Dw);
+    corecvs::Matrix DinvtBt = B.t();
+    CORE_ASSERT_TRUE_S(DinvtBt.h == Dw && DinvtBt.w == Bh);
+    corecvs::parallelable_for(0, (int)qrd.size(), [&](const corecvs::BlockedRange<int> &r)
+    {
+        for (int i = r.begin(); i < r.end(); ++i)
+        {
+            auto begin = diagBlocks[i], end = diagBlocks[i + 1];
+            auto len = end - begin;
+            auto& MM = qrd[i];
+            auto ptr = &DinvtBt.a(diagBlocks[i] - diagBlocks[0], 0);
+            if (!symmetric)
+            {
+                LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'T', len, Bh, MM.data, MM.stride, &pivots[pivotIdx[i]], ptr, DinvtBt.stride);
+            }
+            else
+            {
+                if (posDef)
+                    LAPACKE_dpotrs(LAPACK_ROW_MAJOR, 'U', len, Bh, MM.data, MM.stride, ptr, DinvtBt.stride);
+                else
+                    LAPACKE_dsytrs(LAPACK_ROW_MAJOR, 'U', len, Bh, MM.data, MM.stride, &pivots[pivotIdx[i]], ptr, DinvtBt.stride);
+            }
+        }
+    });
+    // Computing lhs/rhs
+    corecvs::Vector a(Ah, &Bv[0]), b(Ch, &Bv[Ah]);
+    auto rhs = a - b * DinvtBt;
+
+    auto lhs = A;
+    cblas_dgemm(CblasRowMajor, CblasTrans, CblasNoTrans, lhs.h, lhs.w, C.h, -1.0, DinvtBt.data, DinvtBt.stride, C.data, C.stride, 1.0, lhs.data, lhs.stride);
+
+    // Solving for x
+    corecvs::Vector x(Aw), y(Bw);
+    bool foo = lhs.linSolve(rhs, x, symmetric, false);
+
+    if (!foo) return false;
+
+    // Solving for y
+    rhs = b - C * x;
+    corecvs::parallelable_for(0, (int)qrd.size(), [&](const corecvs::BlockedRange<int> &r)
+    {
+        for (int i = r.begin(); i < r.end(); ++i)
+        {
+            auto begin = diagBlocks[i], end = diagBlocks[i + 1];
+            auto len = end - begin;
+            auto& MM = qrd[i];
+            corecvs::Vector bcx(len);
+            for (int j = 0; j < len; ++j)
+                bcx[j] = rhs[j + begin - Aw];
+            if (!symmetric)
+            {
+                LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', len, 1, MM.data, MM.stride, &pivots[pivotIdx[i]], &bcx[0], 1);
+            }
+            else
+            {
+                if (posDef)
+                    LAPACKE_dpotrs(LAPACK_ROW_MAJOR, 'U', len, 1, MM.data, MM.stride, &bcx[0], 1);
+                else
+                    LAPACKE_dsytrs(LAPACK_ROW_MAJOR, 'U', len, 1, MM.data, MM.stride, &pivots[pivotIdx[i]], &bcx[0], 1);
+            }
+            auto res = bcx;
+            for (int j = begin; j < end; ++j)
+                y[j - Aw] = res[j - begin];
+        }
+    });
+
+    for (int i = 0; i < Aw; ++i)
+        res[i] = x[i];
+    for (int j = 0; j < Bw; ++j)
+        res[j + Aw] = y[j];
+    return true;
+#endif
+}
+
+bool corecvs::Matrix::linSolveSchurComplement(const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric, bool posDef)
+{
+    return corecvs::Matrix::LinSolveSchurComplement(*this, B, diagBlocks, res, symmetric, posDef);
 }
 
 Matrix Matrix::invSVD() const

@@ -51,7 +51,7 @@ public:
         popChild(fieldName);
     }
 
-    template <class Type>
+    template <typename Type, typename std::enable_if<!(std::is_enum<Type>::value || (std::is_arithmetic<Type>::value && !(std::is_same<bool, Type>::value || std::is_same<uint64_t, Type>::value))), int>::type foo = 0>
     void visit(Type &field, Type /*defaultValue*/, const char *fieldName)
     {
         visit(field, fieldName);
@@ -145,6 +145,21 @@ public:
         }
     }
 
+    template <typename type, typename std::enable_if<std::is_arithmetic<type>::value && !std::is_same<bool, type>::value && !std::is_same<uint64_t, type>::value, int>::type foo = 0>
+    void visit(type &field, type, const char *fieldName)
+    {
+        mNodePath.back().insert(fieldName, static_cast<double>(field));
+    }
+
+    template <typename type, typename std::enable_if<std::is_enum<type>::value, int>::type foo = 0>
+    void visit(type &field, type defaultValue, const char *fieldName)
+    {
+        using U = typename std::underlying_type<type>::type;
+        U u = static_cast<U>(field);
+        visit(u, static_cast<U>(defaultValue), fieldName);
+        field = static_cast<type>(u);
+    }
+
     void pushChild(const char *childName)
     {
         CORE_UNUSED(childName);
@@ -167,16 +182,7 @@ private:
 };
 
 template <>
-void JSONSetter::visit<int>(int &intField, int defaultValue, const char *fieldName);
-
-template <>
 void JSONSetter::visit<uint64_t>(uint64_t &intField, uint64_t defaultValue, const char *fieldName);
-
-template <>
-void JSONSetter::visit<double>(double &doubleField, double defaultValue, const char *fieldName);
-
-template <>
-void JSONSetter::visit<float>(float &floatField, float defaultValue, const char *fieldName);
 
 template <>
 void JSONSetter::visit<bool>(bool &boolField, bool defaultValue, const char *fieldName);

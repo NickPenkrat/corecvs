@@ -65,10 +65,11 @@ public:
     std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> getPossibleTracks(CameraFixture* ps);
     void buildTracks(CameraFixture *psA, CameraFixture *psB, CameraFixture *psC, double trackInlierThreshold, double distanceLimit);
     std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> getUnusedFeatures(CameraFixture *psA, CameraFixture *psB);
-    std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd, double>> getPhotostationMatches(CameraFixture* psA, CameraFixture* psB);
+    std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd, double>> getPhotostationMatches(const std::vector<CameraFixture*> &train, CameraFixture *query);
     void filterEssentialRansac(WPP a, WPP b, EssentialFilterParams params);
-    void filterEssentialRansac(std::vector<CameraFixture*> &pss, EssentialFilterParams params);
+    void filterEssentialRansac(const std::vector<CameraFixture*> &lhs, const std::vector<CameraFixture*> &rhs, EssentialFilterParams params);
     void remove(WPP a, WPP b, std::vector<int> idx);
+    void pruneTracks(double threshold);
 
 
     //\brief Returns number of FixtureCamera's in placedFixtures fixtures
@@ -103,6 +104,10 @@ public:
     bool havePoint(SceneFeaturePoint* point);
 
     void printMatchStats();
+    void printTrackStats();
+    void printPosStats();
+
+    void transform(const corecvs::Affine3DQ &transform, const double scale = 1.0);
 
     friend std::ostream& operator<< (std::ostream& os, ReconstructionFixtureScene &rfs)
     {

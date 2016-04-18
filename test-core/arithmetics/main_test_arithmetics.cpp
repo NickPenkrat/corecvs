@@ -38,7 +38,7 @@ ALIGN_STACK_SSE inline __m128i sse_div_u32_by_25(__m128i n) {
 }
 
 ALIGN_STACK_SSE inline __m128i sse_div_u32_by_25_fast(__m128i n) {
-    __m128i inverse = _mm_set1_epi16   (0xA3D7);
+    __m128i inverse = _mm_set1_epi16   (static_cast<short>(0xA3D7));
     __m128i shifted = _mm_srli_epi32  (n, 1);
     /* Now high 16 bits of n are empty*/
     __m128i mulhi   = _mm_mulhi_epu16(inverse, shifted);

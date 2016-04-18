@@ -1,5 +1,5 @@
-#ifndef CHESSBOARDDETECTOR
-#define CHESSBOARDDETECTOR
+#ifndef CHESSBOARDDETECTOR_H
+#define CHESSBOARDDETECTOR_H
 
 #include <memory>
 
@@ -12,6 +12,9 @@
 #include "typesafeBitmaskEnums.h"
 #include "circlePatternGenerator.h"
 #include "boardAligner.h"
+
+namespace corecvs
+{
 
 enum class ChessBoardDetectorMode
 {
@@ -76,4 +79,6 @@ private:
 
 };
 
-#endif
+} // namespace corecvs
+
+#endif // CHESSBOARDDETECTOR_H

@@ -19,6 +19,8 @@
  * using non-linear optimization with initialization via technique
  * described in Zhengyou Zhang A Flexible New Technique for Camera Calibration
  **/
+namespace corecvs {
+
 struct FlatPatternCalibrator
 {
 public:
@@ -84,5 +86,7 @@ private:
 	CameraConstraints constraints;
     bool forceZeroSkew;
 };
+
+} // namespace corecvs
 
 #endif

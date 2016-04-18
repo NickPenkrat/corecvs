@@ -41,7 +41,7 @@ bool corecvs::ReconstructionInitializer::initGPS()
     L_INFO << "Starting feature filtering";
     std::vector<CameraFixture*> pss = {scene->placingQueue[0], scene->placingQueue[1], scene->placingQueue[2]};
     if (runEssentialFiltering)
-        scene->filterEssentialRansac(pss, essentialFilterParams);
+        scene->filterEssentialRansac(pss, pss, essentialFilterParams);
     else
         scene->matchesCopy = scene->matches;
 
@@ -148,7 +148,7 @@ corecvs::Quaternion corecvs::ReconstructionInitializer::detectOrientationFirst(C
 
 void corecvs::ReconstructionInitializer::estimatePair(CameraFixture *psA, CameraFixture *psB)
 {
-    auto matches = scene->getPhotostationMatches(psA, psB);
+    auto matches = scene->getPhotostationMatches({psA}, psB);
     RelativeNonCentralRansacSolver::MatchContainer rm, mm;
     for (auto&t : matches)
     {
@@ -158,7 +158,6 @@ void corecvs::ReconstructionInitializer::estimatePair(CameraFixture *psA, Camera
     }
 
     RelativeNonCentralRansacSolver solver(
-            psA,
             psB, rm, mm);
     solver.run();
     auto best = solver.getBestHypothesis();

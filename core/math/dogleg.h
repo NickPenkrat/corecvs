@@ -50,10 +50,7 @@ public:
     double trustRegion, rho,
            diff_old;
 
-
-
-    /* The main ctor */
-    DogLegImpl(int _maxIterations = 25, double _startLambda = 10, double _lambdaFactor = 2.0) :
+    DogLegImpl(int _maxIterations = 25) :
         f(NULL),
         normalisation(NULL),
         maxIterations(_maxIterations),
@@ -103,7 +100,6 @@ public:
 
         CORE_ASSERT_TRUE(f != NULL, "Function is NULL");
         CORE_ASSERT_TRUE_P((int)output.size() == f->outputs, ("output has wrong dimension %d instead of %d\n", (int)output.size(), f->outputs));
-        double totalEval = 0.0, totalJEval = 0.0, totalLinSolve = 0.0, totalATA = 0.0, totalTotal = 0.0;
 
         p = Vector(input);
         x = Vector(output);
@@ -129,7 +125,7 @@ public:
             gnReady = false;
             do
             {
-                if (!hsd >= trustRegion)
+                if ((!hsd) >= trustRegion)
                 {
                     hdl = trustRegion / (!hsd) * hsd;
                     std::cout << "JSD" << std::endl;
@@ -141,7 +137,7 @@ public:
                         linSolveDumped(JTJ, g, hgn);
                         gnReady = true;
                     }
-                    if (!hgn < trustRegion)
+                    if ((!hgn) < trustRegion)
                     {
                         std::cout << "HGN" << std::endl;
                         hdl = hgn;
@@ -165,7 +161,6 @@ public:
                 (*f)(pn, v);
 
                 auto diff = x - v;
-                double diff_new = diff & diff;
                 rho = ((epsilon_p & epsilon_p) - (diff & diff)) / (2.0 * (epsilon_p & (J * hdl)) - (hdl & (JTJ * hdl)));
                 std::cout << trustRegion << "TR" << std::endl;
                 if (rho > 0.0)

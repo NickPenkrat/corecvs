@@ -176,7 +176,7 @@ void RotaryTableControlWidget::executeAndIncrement()
     execute();
     if (positions.size() > 0)
     {
-        selected = (++selected) % positions.size();
+        selected = (selected + 1) % positions.size();
         selectedToCurrent();
     }
     updateState();

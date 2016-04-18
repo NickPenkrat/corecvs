@@ -620,8 +620,8 @@ void PhotoStationCalibrator::solveCameraToSetup(const CameraLocationData &realLo
 #ifdef VERBOSE_OUTPUT
     std::cout << "Solving setup " << setup << " from camera " << camera << " QR: " << qr << " QC: " << qc << " QS: " << qs << " | " << " CR: " << cr << " CC: " << cc << " CS: " << cs << std::endl;
 #endif
-    CORE_ASSERT_TRUE_S(!(cr - cf) < 1e-6);
-    CORE_ASSERT_TRUE_S(!(qf - qr) < 1e-6);
+    CORE_ASSERT_TRUE_S((!(cr - cf)) < 1e-6);
+    CORE_ASSERT_TRUE_S((!(qf - qr)) < 1e-6);
     if (qs[0] > 0.0)
         qs = -qs;
 #ifdef VERBOSE_OUTPUT
@@ -651,8 +651,8 @@ void PhotoStationCalibrator::solveSetupToCamera(const CameraLocationData &realLo
 #ifdef VERBOSE_OUTPUT
     std::cout << "Solving camera " << camera<< " from setup " << setup << " QR: " << qr << " QC: " << qc << " QS: " << qs << " | " << " CR: " << cr << " CC: " << cc << " CS: " << cs << std::endl;
 #endif
-    CORE_ASSERT_TRUE_S(!(cr - cf) < 1e-6);
-    CORE_ASSERT_TRUE_S(!(qf - qr) < 1e-6);
+    CORE_ASSERT_TRUE_S((!(cr - cf)) < 1e-6);
+    CORE_ASSERT_TRUE_S((!(qf - qr)) < 1e-6);
     if (qc[0] > 0.0)
         qc = -qc;
 #ifdef VERBOSE_OUTPUT
@@ -678,7 +678,7 @@ void PhotoStationCalibrator::validate()
             std::cout << "Exp: " << v2 << " Rec: " << v1 << " diff: " << v1 - v2 << std::endl;
             std::cout << "Set: " << absoluteSetupLocation[setup].position << " " << absoluteSetupLocation[setup].orientation << std::endl;
 
-            if (max_diff < !(v2 - v1))
+            if (max_diff < (!(v2 - v1)))
                 max_diff = !(v2 - v1);
         }
     }

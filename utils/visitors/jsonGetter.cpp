@@ -42,42 +42,6 @@ void JSONGetter::visit<bool>(bool &boolField, bool defaultValue, const char *fie
     }
 }
 
-template <>
-void JSONGetter::visit<double>(double &doubleField, double defaultValue, const char *fieldName)
-{
-    QJsonValue value = mNodePath.back().value(fieldName);
-
-    if (value.isDouble()) {
-        doubleField = value.toDouble();
-    } else {
-        doubleField = defaultValue;
-    }
-}
-
-template <>
-void JSONGetter::visit<float>(float &floatField, float defaultValue, const char *fieldName)
-{
-    QJsonValue value = mNodePath.back().value(fieldName);
-
-    if (value.isDouble()) {
-        floatField = value.toDouble();
-    } else {
-        floatField = defaultValue;
-    }
-}
-
-template <>
-void JSONGetter::visit<int>(int &intField, int defaultValue, const char *fieldName)
-{
-    QJsonValue value = mNodePath.back().value(fieldName);
-
-    if (value.isDouble()) {
-        intField = value.toDouble();
-    } else {
-        intField = defaultValue;
-    }
-}
-
 /**
  *   Because uint64_t is not supported we convert the value to string manually
  **/

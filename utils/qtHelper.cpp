@@ -226,7 +226,7 @@ QString printWidgetAttributes(QWidget *widget)
 
 #undef PAIR
 
-    for (int i = 0; i < CORE_COUNT_OF(attrs); i++)
+    for (size_t i = 0; i < CORE_COUNT_OF(attrs); i++)
     {
         if (widget->testAttribute(attrs[i].attr)) {
             text += attrs[i].name;

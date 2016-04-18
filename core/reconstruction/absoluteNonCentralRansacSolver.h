@@ -30,22 +30,40 @@ struct AbsoluteNonCentralRansacSolverParams
 class AbsoluteNonCentralRansacSolver : public AbsoluteNonCentralRansacSolverParams
 {
 public:
-    AbsoluteNonCentralRansacSolver(corecvs::CameraFixture *ps, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &cloudMatches, const AbsoluteNonCentralRansacSolverParams &params = AbsoluteNonCentralRansacSolverParams()) : AbsoluteNonCentralRansacSolverParams(params), ps(ps), cloudMatches(cloudMatches), shouldTestFirst(false)
+    AbsoluteNonCentralRansacSolver(corecvs::CameraFixture *ps, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &cloudMatches, const AbsoluteNonCentralRansacSolverParams &params = AbsoluteNonCentralRansacSolverParams())
+        : AbsoluteNonCentralRansacSolverParams(params)
+        , ps(ps)
+        , cloudMatches(cloudMatches)
+        , shouldTestFirst(false)
     {}
 
-    AbsoluteNonCentralRansacSolver(corecvs::CameraFixture *ps, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &cloudMatches, corecvs::Affine3DQ firstHypothesis, const AbsoluteNonCentralRansacSolverParams &params = AbsoluteNonCentralRansacSolverParams()) : AbsoluteNonCentralRansacSolverParams(params), ps(ps), cloudMatches(cloudMatches), shouldTestFirst(true), firstHypothesis(firstHypothesis)
+    AbsoluteNonCentralRansacSolver(corecvs::CameraFixture *ps, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &cloudMatches, corecvs::Affine3DQ firstHypothesis, const AbsoluteNonCentralRansacSolverParams &params = AbsoluteNonCentralRansacSolverParams())
+        : AbsoluteNonCentralRansacSolverParams(params)
+        , ps(ps)
+        , cloudMatches(cloudMatches)
+        , shouldTestFirst(true)
+        , firstHypothesis(firstHypothesis)
     {
         Estimator es(this, reprojectionInlierThreshold);
         es.hypothesis.push_back(firstHypothesis);
         es.selectInliers();
     }
 
-    AbsoluteNonCentralRansacSolver(const AbsoluteNonCentralRansacSolver& ancrs) :
-        AbsoluteNonCentralRansacSolverParams(ancrs),
-        bestHypothesis(ancrs.bestHypothesis), bestInlierCnt(ancrs.bestInlierCnt), inlierQuality(ancrs.inlierQuality),
-        inliers(ancrs.inliers), ps(ancrs.ps), cloudMatches(ancrs.cloudMatches), hypothesis(ancrs.hypothesis),
-        batch(ancrs.batch), batches(ancrs.batches), usedEvals(ancrs.usedEvals), gamma(ancrs.gamma), firstHypothesis(ancrs.firstHypothesis),
-        shouldTestFirst(shouldTestFirst)
+    AbsoluteNonCentralRansacSolver(const AbsoluteNonCentralRansacSolver& ancrs)
+        : AbsoluteNonCentralRansacSolverParams(ancrs)
+        , bestHypothesis(ancrs.bestHypothesis)
+        , bestInlierCnt(ancrs.bestInlierCnt)
+        , inlierQuality(ancrs.inlierQuality)
+        , inliers(ancrs.inliers)
+        , ps(ancrs.ps)
+        , cloudMatches(ancrs.cloudMatches)
+        , hypothesis(ancrs.hypothesis)
+        , batch(ancrs.batch)
+        , batches(ancrs.batches)
+        , usedEvals(ancrs.usedEvals)
+        , gamma(ancrs.gamma)
+        , firstHypothesis(ancrs.firstHypothesis)
+        , shouldTestFirst(shouldTestFirst)
     {}
 
     void run();
@@ -133,6 +151,7 @@ public:
             solver->readParams(in);
             solver->computeReprojectionErrors(out);
         }
+
         ReprojectionError(AbsoluteNonCentralRansacSolver* solver)
             : FunctionArgs(solver->forcePosition ? 4 : 7, solver->bestInlierCnt * 2)
             , solver(solver)
@@ -148,6 +167,7 @@ public:
             solver->readParams(in);
             solver->writeParams(out);
         }
+
         ReprojectionErrorNormalizer(AbsoluteNonCentralRansacSolver *solver)
             : FunctionArgs(solver->forcePosition ? 4 : 7, solver->forcePosition ? 4 : 7)
             , solver(solver)

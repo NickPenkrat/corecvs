@@ -7,7 +7,7 @@ ExtensiveCoding::ExtensiveCoding(int inbits)
     : mLUT(NULL)
 {
     mInbits = inbits;
-    int effectiveBits = getNearUpperPowerOf2(inbits, mAddbits);
+    getNearUpperPowerOf2(inbits, mAddbits);
     mOutbits = mInbits + mAddbits;
 
     mLUT = new uint32_t[1 << mOutbits];

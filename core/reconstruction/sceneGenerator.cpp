@@ -48,8 +48,8 @@ void SceneGenerator::generateFixtures()
             if (x * x + y * y <= r * r)
                 fixtures.emplace_back(x * R, y * R);
         }
-    CORE_ASSERT_TRUE_S(fixtures.size() >= N);
-    std::sort(fixtures.begin(), fixtures.end(), [](const corecvs::Vector2dd &a, const corecvs::Vector2dd &b) { return !a < !b; });
+    CORE_ASSERT_TRUE_S(fixtures.size() >= (size_t)N);
+    std::sort(fixtures.begin(), fixtures.end(), [](const corecvs::Vector2dd &a, const corecvs::Vector2dd &b) { return (!a) < (!b); });
     fixtures.resize(N);
     for (auto&f: fixtures)
     {
