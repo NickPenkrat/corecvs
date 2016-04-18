@@ -185,6 +185,28 @@ int BitcodeBoardParamsBase::staticInit()
           )
         )
     );
+    fields().push_back(
+        new DoubleField
+        (
+          BitcodeBoardParamsBase::CENTERTOZEROX_ID,
+          offsetof(BitcodeBoardParamsBase, mCenterToZeroX),
+          -3,
+          "CenterToZeroX",
+          "CenterToZeroX",
+          "X Distance from grid center to Traget Point"
+        )
+    );
+    fields().push_back(
+        new DoubleField
+        (
+          BitcodeBoardParamsBase::CENTERTOZEROY_ID,
+          offsetof(BitcodeBoardParamsBase, mCenterToZeroY),
+          5,
+          "CenterToZeroY",
+          "CenterToZeroY",
+          "Y Distance from grid center to Traget Point"
+        )
+    );
    return 0;
 }
 

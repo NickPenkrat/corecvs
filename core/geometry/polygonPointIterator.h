@@ -101,7 +101,7 @@ public:
                 cand2n = (cand2n + 1) % polygon.size();
 
             }
-
+#if 0
             cand1 = cand1n;
             cand2 = cand2n;
 
@@ -110,7 +110,7 @@ public:
 
             cout << "Indexes:" << currentIndex << " " << deep << " " << shallow << endl;
             Vector2dd leftEnd  =  ;
-            Vector3dd rightEnd =  э
+            Vector3dd rightEnd =  ;s
 
             if (polygon.y(deep) < polygon.y(shallow))
                 std::swap(deep, shallow);
@@ -131,6 +131,7 @@ public:
                 part.step();
             }
             //part.currentY++;
+#endif
             return;
         }
 

@@ -304,7 +304,41 @@
        </property>
      </widget>
     </item>
-   <item row="12" column="0">
+    <item row="12" column="0">
+     <widget class="QLabel" name="label_12">
+       <property name="text">
+         <string>CenterToZeroX</string>
+       </property>
+     </widget>
+    </item>
+    <item row="12" column="1">
+     <widget class="QDoubleSpinBox" name="centerToZeroXSpinBox">
+       <property name="toolTip">
+         <string>X Distance from grid center to Traget Point</string>
+       </property>
+       <property name="suffix">
+        <string>cells</string>
+       </property>
+     </widget>
+    </item>
+    <item row="13" column="0">
+     <widget class="QLabel" name="label_13">
+       <property name="text">
+         <string>CenterToZeroY</string>
+       </property>
+     </widget>
+    </item>
+    <item row="13" column="1">
+     <widget class="QDoubleSpinBox" name="centerToZeroYSpinBox">
+       <property name="toolTip">
+         <string>Y Distance from grid center to Traget Point</string>
+       </property>
+       <property name="suffix">
+        <string>cells</string>
+       </property>
+     </widget>
+    </item>
+   <item row="14" column="0">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -317,7 +351,7 @@
      </property>
     </spacer>
    </item>
-   <item row="12" column="2">
+   <item row="14" column="2">
     <spacer name="horizontalSpacer">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -404,6 +438,18 @@
   <connection>
    <sender>bitcodeOrientationComboBox</sender>
    <signal>currentIndexChanged(int)</signal>
+   <receiver>BitcodeBoardParamsBaseControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>centerToZeroXSpinBox</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>BitcodeBoardParamsBaseControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>centerToZeroYSpinBox</sender>
+   <signal>valueChanged(double)</signal>
    <receiver>BitcodeBoardParamsBaseControlWidget</receiver>
    <slot>changeParameters()</slot>
   </connection>
