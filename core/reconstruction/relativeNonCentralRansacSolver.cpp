@@ -209,7 +209,7 @@ void corecvs::RelativeNonCentralRansacSolver::buildDependencies()
         for (; j < fundamentalsCacheId.size(); ++j)
             if (fundamentalsCacheId[j].first == ref && fundamentalsCacheId[j].second == query)
                 break;
-        dependencyList.push_back(j);
+        dependencyList.push_back((int)j);
         if (j < fundamentalsCacheId.size())
             continue;
         fundamentalsCacheId.emplace_back(ref, query);

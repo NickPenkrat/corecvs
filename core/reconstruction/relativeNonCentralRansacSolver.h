@@ -14,13 +14,13 @@ namespace corecvs
 
 struct RelativeNonCentralRansacSolverSettings
 {
-    RelativeNonCentralRansacSolverSettings(size_t maxIterations = 1000000, double inlierThreshold = 1.0)
+    RelativeNonCentralRansacSolverSettings(int maxIterations = 1000000, double inlierThreshold = 1.0)
         : maxIterations(maxIterations)
         , inlierThreshold(inlierThreshold)
-    {
-    }
-    int maxIterations;
-    double inlierThreshold;
+    {}
+
+    int     maxIterations;
+    double  inlierThreshold;
 
     enum class Restrictions
     {
@@ -114,7 +114,7 @@ private:
     struct FunctorCost : corecvs::FunctionArgs
     {
         RelativeNonCentralRansacSolver *solver;
-        FunctorCost(RelativeNonCentralRansacSolver* solver) : FunctionArgs(7, solver->getInliersCount()), solver(solver)
+        FunctorCost(RelativeNonCentralRansacSolver* solver) : FunctionArgs(7, (int)solver->getInliersCount()), solver(solver)
         {}
 
         void operator() (const double in[], double out[])

@@ -31,16 +31,16 @@ corecvs::ReconstructionFunctor::ReconstructionFunctor(corecvs::ReconstructionFix
 int corecvs::ReconstructionFunctor::getInputNum()
 {
     return
-        orientableFixtures.size()     * INPUTS_PER_ORIENTATION
-      + translateableFixtures.size()  * INPUTS_PER_TRANSLATION
-      + focalTunableCameras.size()    * INPUTS_PER_FOCAL
-      + principalTunableCameras.size()* INPUTS_PER_PRINCIPAL
-      + scene->trackedFeatures.size() * INPUTS_PER_3D_POINT;
+        (int)orientableFixtures.size()     * INPUTS_PER_ORIENTATION
+      + (int)translateableFixtures.size()  * INPUTS_PER_TRANSLATION
+      + (int)focalTunableCameras.size()    * INPUTS_PER_FOCAL
+      + (int)principalTunableCameras.size()* INPUTS_PER_PRINCIPAL
+      + (int)scene->trackedFeatures.size() * INPUTS_PER_3D_POINT;
 }
 
 int corecvs::ReconstructionFunctor::getOutputNum()
 {
-    return lastProjection + positionConstrainedCameras.size() * OUTPUTS_PER_POSITION_CONSTRAINT;
+    return lastProjection + (int)positionConstrainedCameras.size() * OUTPUTS_PER_POSITION_CONSTRAINT;
 }
 
 #define IFNOT(cond, expr) \
@@ -135,9 +135,9 @@ void corecvs::ReconstructionFunctor::computeOutputs()
     // and cameras with position constraints
 
     for (auto& pt: scene->trackedFeatures)
-        lastProjection += pt->observations__.size();
+        lastProjection += (int)pt->observations__.size();
     for (auto& pt: scene->staticPoints)
-        lastProjection += pt->observations__.size();
+        lastProjection += (int)pt->observations__.size();
 
     lastProjection *= getErrorComponentsPerPoint();
 
@@ -196,7 +196,7 @@ void corecvs::ReconstructionFunctor::computeDependency()
                 if (CPROJ) \
                     sparsity[argin].push_back(j); \
             } \
-            for (size_t j = 0; j < positionConstrainedCameras.size(); ++j) \
+            for (int j = 0; j < (int)positionConstrainedCameras.size(); ++j) \
             { \
                 auto p = positionConstrainedCameras[j]; \
                 if (CPOS) \
@@ -268,7 +268,7 @@ void corecvs::ReconstructionFunctor::computeErrors(double *out, const std::vecto
     corecvs::parallelable_for(0, currLastProjection / getErrorComponentsPerPoint(), 16, computator, true);
 
     int idx = currLastProjection;
-    for (size_t i = 0; i < positions.size(); i += 3)
+    for (int i = 0; i < (int)positions.size(); i += 3)
     {
         auto ps = translationConstrainedFixtures[i / 3];
 

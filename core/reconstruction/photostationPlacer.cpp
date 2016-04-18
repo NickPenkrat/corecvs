@@ -706,7 +706,7 @@ void corecvs::PhotostationPlacer::testNewPipeline()
             auto A = first.first.u, B = second.first.u;
             if (A > B)
                 std::swap(A, B);
-            cntr[std::make_pair(A, B)] += second.second.size();
+            cntr[std::make_pair(A, B)] += (int)second.second.size();
             for (auto& f: second.second)
                 if (std::get<2>(f) < b2bRansacP6RPThreshold)
                     cntrGood[std::make_pair(A, B)]++;
