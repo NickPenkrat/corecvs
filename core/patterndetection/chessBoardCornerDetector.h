@@ -90,11 +90,10 @@ struct CornerKernelSet
     DpKernel A, B, C, D;
 
     CornerKernelSet(double r, double alpha, double psi, bool minify = false);
-#ifdef USE_UNSAFE_CONVOLUTOR
-    void unsafeConvolutor(DpImage &image, DpKernel &kernel, DpImage &dst);
-#endif
 
-    // Computes const function for entire image
+    /**
+     * Computes const function for entire image
+     **/
     void computeCost(DpImage &img, DpImage &c, bool parallelable = true, bool new_style = true);
 
 private:
@@ -199,7 +198,9 @@ private:
     // TODO: do we need it outside detector?!
     void circularMeanShift(std::vector<double> &values, double bandwidth, std::vector<std::pair<int, double>> &modes);
 
-    DpImage du, dv, w, phi, cost, img;
+    DpImage du, dv;
+    DpImage w, phi;
+    DpImage cost, img;
     std::vector<CornerKernelSet> kernels;
     std::vector<OrientedCorner> corners;
 

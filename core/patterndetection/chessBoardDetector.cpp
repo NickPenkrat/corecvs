@@ -284,7 +284,8 @@ bool ChessboardDetector::classify(DpImage &img, CirclePatternGenerator &gen, cor
             }
             if (cl >= 0)
             {
-                DpImage maskA(buffer.h, buffer.w), maskB(buffer.h, buffer.w);
+                DpImage maskA(buffer.h, buffer.w);
+                DpImage maskB(buffer.h, buffer.w);
                 Vector2dd A = (orientation * Vector3dd(0.0, 0.0, 1.0)).project(),
                           B = (orientation * Vector3dd(1.0, 0.0, 1.0)).project(),
                           C = (orientation * Vector3dd(0.0, 1.0, 1.0)).project();
@@ -370,6 +371,7 @@ size_t ChessboardDetector::detectPatterns(corecvs::DpImage &buffer)
 
     ChessBoardDetectorMode mode =  getMode(activeAlignerParams);
     std::vector<std::vector<std::vector<corecvs::Vector2dd>>> boards;
+
     auto detected = detectPatternCandidates(buffer, boards);
     std::cout << (detected ? "[Success]" : "[Fail]")<< " Detected " << corners.size() << " corners; assembled " << boards.size() << " boards." << std::endl;
     if(!detected)

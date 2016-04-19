@@ -94,7 +94,7 @@ public:
             a2[i] = a12[i] /*- da2[i]*/;
         }
 
-#if 1
+#if 0
         SYNC_PRINT(("Zone Attributes:\n"));
         SYNC_PRINT(("Top Left :"));
         for (int i = 0; i < attributes; i++) SYNC_PRINT(("%lf ", a11[i]));

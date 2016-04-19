@@ -31,6 +31,14 @@ int main(int argc, const char **argv)
     {
         loader.load(&mesh, argv[i]);
     }
+    if (!mesh.hasColor) {
+       mesh.switchColor();
+       for (int i = 0;i < mesh.facesColor.size();i++)
+       {
+           mesh.facesColor[i] = RGBColor::rainbow1((double)i / mesh.facesColor.size());
+       }
+    }
+
     //mesh.addSphere(Vector3dd(0, 0, -100), 20, 20);
     mesh.transform(Matrix44::Shift(0, 50 , 400) * Matrix44::RotationX(degToRad(90.0)));
 
