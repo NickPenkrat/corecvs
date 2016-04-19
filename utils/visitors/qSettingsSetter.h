@@ -65,7 +65,7 @@ public:
             fields.clear();
             mSettings->beginGroup(arrayName);
             mSettings->setValue("size", QVariant((int)fields.size()));
-            for (int i = 0; i < fields.size(); i++ )
+            for (size_t i = 0; i < fields.size(); i++ )
             {
                 std::stringstream ss;
                 ss << arrayName << "[" << i << "]";

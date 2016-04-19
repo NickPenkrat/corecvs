@@ -74,11 +74,15 @@ public:
     MarkerData marker[4];
 
     /* Some non standart helper functions */
-private:
+    int startOrientaion();
+    int endOrientaion();
+
+protected:
+    Polygon getRectImage(int i, int j, Matrix33 transform);
+
     MarkerData detectMarker(Matrix33 homography, Matrix33 translation);
 
     //drawMarker(RGB24Buffer *buffer, const MarkerData &data, orientation);
-
 
 };
 

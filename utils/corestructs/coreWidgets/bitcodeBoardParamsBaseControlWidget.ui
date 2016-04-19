@@ -237,7 +237,108 @@
        </property>
      </widget>
     </item>
-   <item row="11" column="0">
+    <item row="11" column="0">
+     <widget class="QLabel" name="label_11">
+       <property name="text">
+         <string>bitcodeOrientation</string>
+       </property>
+     </widget>
+    </item>
+    <item row="11" column="1">
+     <widget class="QComboBox" name="bitcodeOrientationComboBox">
+       <property name="currentIndex">
+         <number>4</number>
+       </property>
+       <item>
+        <property name="text">
+         <string>Below</string>
+        </property>
+        <property name="icon">
+        <iconset resource="main.qrc">
+         <normaloff>:/new/prefix1/down_alt.png</normaloff>:/new/prefix1/down_alt.png
+        </iconset>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Left</string>
+        </property>
+        <property name="icon">
+        <iconset resource="main.qrc">
+         <normaloff>:/new/prefix1/back_alt.png</normaloff>:/new/prefix1/back_alt.png
+        </iconset>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Above</string>
+        </property>
+        <property name="icon">
+        <iconset resource="main.qrc">
+         <normaloff>:/new/prefix1/up_alt.png</normaloff>:/new/prefix1/up_alt.png
+        </iconset>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Right</string>
+        </property>
+        <property name="icon">
+        <iconset resource="main.qrc">
+         <normaloff>:/new/prefix1/forward_alt.png</normaloff>:/new/prefix1/forward_alt.png
+        </iconset>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Any</string>
+        </property>
+        <property name="icon">
+        <iconset resource="main.qrc">
+         <normaloff>:/new/prefix1/question.png</normaloff>:/new/prefix1/question.png
+        </iconset>
+        </property>
+       </item>
+       <property name="toolTip">
+         <string>bitcodeOrientation</string>
+       </property>
+     </widget>
+    </item>
+    <item row="12" column="0">
+     <widget class="QLabel" name="label_12">
+       <property name="text">
+         <string>CenterToZeroX</string>
+       </property>
+     </widget>
+    </item>
+    <item row="12" column="1">
+     <widget class="QDoubleSpinBox" name="centerToZeroXSpinBox">
+       <property name="toolTip">
+         <string>X Distance from grid center to Traget Point</string>
+       </property>
+       <property name="suffix">
+        <string>cells</string>
+       </property>
+     </widget>
+    </item>
+    <item row="13" column="0">
+     <widget class="QLabel" name="label_13">
+       <property name="text">
+         <string>CenterToZeroY</string>
+       </property>
+     </widget>
+    </item>
+    <item row="13" column="1">
+     <widget class="QDoubleSpinBox" name="centerToZeroYSpinBox">
+       <property name="toolTip">
+         <string>Y Distance from grid center to Traget Point</string>
+       </property>
+       <property name="suffix">
+        <string>cells</string>
+       </property>
+     </widget>
+    </item>
+   <item row="14" column="0">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -250,7 +351,7 @@
      </property>
     </spacer>
    </item>
-   <item row="11" column="2">
+   <item row="14" column="2">
     <spacer name="horizontalSpacer">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -330,6 +431,24 @@
   </connection>
   <connection>
    <sender>bitcodeConfidenceSpinBox</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>BitcodeBoardParamsBaseControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>bitcodeOrientationComboBox</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>BitcodeBoardParamsBaseControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>centerToZeroXSpinBox</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>BitcodeBoardParamsBaseControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>centerToZeroYSpinBox</sender>
    <signal>valueChanged(double)</signal>
    <receiver>BitcodeBoardParamsBaseControlWidget</receiver>
    <slot>changeParameters()</slot>

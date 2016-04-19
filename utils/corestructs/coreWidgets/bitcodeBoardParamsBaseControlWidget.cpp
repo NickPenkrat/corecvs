@@ -31,6 +31,9 @@ BitcodeBoardParamsBaseControlWidget::BitcodeBoardParamsBaseControlWidget(QWidget
     QObject::connect(mUi->codeHeightSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->bitcodeIdentSizeSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->bitcodeConfidenceSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->bitcodeOrientationComboBox, SIGNAL(currentIndexChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->centerToZeroXSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->centerToZeroYSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
 }
 
 BitcodeBoardParamsBaseControlWidget::~BitcodeBoardParamsBaseControlWidget()
@@ -69,6 +72,9 @@ void BitcodeBoardParamsBaseControlWidget::getParameters(BitcodeBoardParamsBase& 
     params.setCodeHeight       (mUi->codeHeightSpinBox->value());
     params.setBitcodeIdentSize (mUi->bitcodeIdentSizeSpinBox->value());
     params.setBitcodeConfidence(mUi->bitcodeConfidenceSpinBox->value());
+    params.setBitcodeOrientation(static_cast<BitcodeBoardOrientation::BitcodeBoardOrientation>(mUi->bitcodeOrientationComboBox->currentIndex()));
+    params.setCenterToZeroX    (mUi->centerToZeroXSpinBox->value());
+    params.setCenterToZeroY    (mUi->centerToZeroYSpinBox->value());
 
 }
 
@@ -92,6 +98,9 @@ BitcodeBoardParamsBase *BitcodeBoardParamsBaseControlWidget::createParameters() 
         , mUi->codeHeightSpinBox->value()
         , mUi->bitcodeIdentSizeSpinBox->value()
         , mUi->bitcodeConfidenceSpinBox->value()
+        , static_cast<BitcodeBoardOrientation::BitcodeBoardOrientation>(mUi->bitcodeOrientationComboBox->currentIndex())
+        , mUi->centerToZeroXSpinBox->value()
+        , mUi->centerToZeroYSpinBox->value()
     );
     return result;
 }
@@ -111,6 +120,9 @@ void BitcodeBoardParamsBaseControlWidget::setParameters(const BitcodeBoardParams
     mUi->codeHeightSpinBox->setValue(input.codeHeight());
     mUi->bitcodeIdentSizeSpinBox->setValue(input.bitcodeIdentSize());
     mUi->bitcodeConfidenceSpinBox->setValue(input.bitcodeConfidence());
+    mUi->bitcodeOrientationComboBox->setCurrentIndex(input.bitcodeOrientation());
+    mUi->centerToZeroXSpinBox->setValue(input.centerToZeroX());
+    mUi->centerToZeroYSpinBox->setValue(input.centerToZeroY());
     blockSignals(wasBlocked);
     emit paramsChanged();
 }

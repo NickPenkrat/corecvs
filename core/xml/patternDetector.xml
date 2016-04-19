@@ -86,6 +86,13 @@
     <field type="int"    name="hypothesisDimSecond"  defaultValue="11" />
   </class>
 
+  <enum name="Bitcode Board Orientation">
+    <item name="Below" id="0" icon=":/new/prefix1/down_alt.png@main.qrc"/>
+    <item name="Left"  id="1" icon=":/new/prefix1/back_alt.png@main.qrc"/>
+    <item name="Above" id="2" icon=":/new/prefix1/up_alt.png@main.qrc"/>
+    <item name="Right" id="3" icon=":/new/prefix1/forward_alt.png@main.qrc"/>
+    <item name="Any"   id="4" icon=":/new/prefix1/question.png@main.qrc"/>
+  </enum>
 
   <class name="Bitcode Board Params Base">
     <field type="bool"   name="vertical"    defaultValue="true" comment="Orientation" />
@@ -105,7 +112,14 @@
 
     <field type="double" name="bitcodeIdentSize" defaultValue="1" suffix="cells" comment="ident between chessboard and bitcode in chesses" />
 
+    <!-- Fields below are detection related only-->
+
     <field type="double" name="bitcodeConfidence" defaultValue="0.25" suffix="cells" comment="Area in which the stats are collected during detection" />
+    <field type="Bitcode Board Orientation" name="bitcodeOrientation" defaultValue="4" />
+
+    <field type="double" name="CenterToZeroX"   defaultValue="-3"   suffix="cells" comment="X Distance from grid center to Traget Point" />
+    <field type="double" name="CenterToZeroY"   defaultValue=" 5"   suffix="cells" comment="Y Distance from grid center to Traget Point" />
+
   </class>
 
 </poco>

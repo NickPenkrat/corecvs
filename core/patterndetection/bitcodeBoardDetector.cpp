@@ -1,6 +1,7 @@
 #include "bitcodeBoardDetector.h"
 #include "homographyReconstructor.h"
 #include "simpleRenderer.h"
+#include "polygonPointIterator.h"
 
 BitcodeBoardDetector::BitcodeBoardDetector() :
     input(NULL),
@@ -38,6 +39,19 @@ Statistics *BitcodeBoardDetector::getStatistics()
 {
     return stats;
 }
+
+int BitcodeBoardDetector::startOrientaion() {
+    if (parameters.bitcodeParams.bitcodeOrientation() == BitcodeBoardOrientation::ANY)
+        return 0;
+    return parameters.bitcodeParams.bitcodeOrientation();
+}
+
+int BitcodeBoardDetector::endOrientaion() {
+    if (parameters.bitcodeParams.bitcodeOrientation() == BitcodeBoardOrientation::ANY)
+        return BitcodeBoardOrientation::ANY;
+    return parameters.bitcodeParams.bitcodeOrientation() + 1;
+}
+
 
 bool BitcodeBoardDetector::operator ()()
 {
@@ -78,7 +92,7 @@ bool BitcodeBoardDetector::operator ()()
     double bestScore = 0.0;
     bestMarker = -1;
 
-    for (unsigned o = 0; o < CORE_COUNT_OF(orients); o++)
+    for (unsigned o = startOrientaion(); o < endOrientaion(); o++)
     {
 
         SYNC_PRINT(("BitcodeBoardDetector::(): checking orientation %d...\n", o ));
@@ -121,23 +135,31 @@ void BitcodeBoardDetector::drawMarkerData(RGB24Buffer &buffer)
         }
     }
 
-    for (unsigned o = 0; o < CORE_COUNT_OF(orients); o++)
+    for (unsigned o = startOrientaion(); o < endOrientaion(); o++)
     {
         for (int i = 0; i < codeHeight; i++)
         {
             for (int j = 0; j < codeWidth; j++)
             {
-                Vector2dd pos(j + 0.5, i + 0.5);
+               /* Vector2dd pos(j + 0.5, i + 0.5);
                 pos = orients[o] * pos;
                 pos = cellToMM * pos;
-                Vector2dd output = transform * pos;
+                Vector2dd output = transform * pos;*/
 
                 RGBColor color = (i == 0 && j == 0) ? RGBColor::Blue() : RGBColor::Green();
 
                 if (marker[o].detected) {
                     color = marker[o].bits[i * codeWidth + j] ? RGBColor::Cyan() : RGBColor::Yellow();
                 }
-                buffer.drawCrosshare1(output.x(), output.y(), color);
+
+                Matrix33 t = transform * Matrix33::Scale2(cellToMM) * orients[o];
+                Polygon area = getRectImage(j,i, t);
+                PolygonPointIterator it(area);
+                for (Vector2d<int> p : it) {
+                    if (buffer.isValidCoord(p)) {
+                        buffer.element(p) = RGBColor::lerpColor(buffer.element(p), color, 0.5);
+                    }
+                }
             }
         }
     }
@@ -178,8 +200,15 @@ void BitcodeBoardDetector::drawMarkerData(RGB24Buffer &buffer)
 
     }
 
+}
 
 
+/* Stat collector */
+
+Polygon BitcodeBoardDetector::getRectImage(int j, int i, Matrix33 transform)
+{
+    double delta = parameters.bitcodeParams.bitcodeConfidence();
+    return Polygon::FromRectagle(Rectangled::SquareFromCenter(Vector2dd(j + 0.5, i + 0.5), delta)).transform(transform);
 }
 
 BitcodeBoardDetector::MarkerData BitcodeBoardDetector::detectMarker(Matrix33 homography, Matrix33 translation)
@@ -193,9 +222,6 @@ BitcodeBoardDetector::MarkerData BitcodeBoardDetector::detectMarker(Matrix33 hom
 
     int codeHeight = parameters.bitcodeParams.codeHeight();
     int codeWidth  = parameters.bitcodeParams.codeWidth ();
-
-
-    double delta = parameters.bitcodeParams.bitcodeConfidence();
     /* First pass. Compute statistics */
 
     for (int i = 0; i < codeHeight; i++)
@@ -207,28 +233,14 @@ BitcodeBoardDetector::MarkerData BitcodeBoardDetector::detectMarker(Matrix33 hom
             double valuesq  = 0.0;
             int samples = 0;
 
+            Polygon area = getRectImage(j,i, homography * translation);
+            PolygonPointIterator it(area);
 
-            Vector2dd corners[4] = {
-                Vector2dd( j + 0.5 - delta, i + 0.5 - delta),
-                Vector2dd( j + 0.5 + delta, i + 0.5 - delta),
-                Vector2dd( j + 0.5 + delta, i + 0.5 + delta),
-                Vector2dd( j + 0.5 - delta, i + 0.5 + delta)
-            };
-
-            Triangle2dd t1(corners[0], corners[1], corners[2]);
-            Triangle2dd t2(corners[1], corners[2], corners[3]);
-
-            TriangleSpanIterator it1(t1);
-            TriangleSpanIterator it2(t2);
-
-            /*loop over rectangle*/ {
-                Vector2dd pos(j + 0.5, i + 0.5);
-                Vector2dd output = homography * translation * pos;
-
-                if (!input->isValidCoord(output.y(), output.x()))
+            for (Vector2d<int> p : it ) {
+                if (!input->isValidCoord(p))
                     return toReturn;
 
-                double val = input->element(output.y(), output.x()).brightness();
+                double val = input->element(p).brightness();
                 valuesum += val;
                 valuesq  += val * val;
                 samples++;
@@ -261,14 +273,13 @@ BitcodeBoardDetector::MarkerData BitcodeBoardDetector::detectMarker(Matrix33 hom
             double valuesq  = 0.0;
             int samples = 0;
 
-            /*loop over rectangle*/ {
-                Vector2dd pos(j + 0.5, i + 0.5);
-                Vector2dd output = homography * translation * pos;
-
-                if (!input->isValidCoord(output.y(), output.x()))
+            Polygon area = getRectImage(j,i, homography * translation);
+            PolygonPointIterator it(area);
+            for (Vector2d<int> p : it ) {
+                if (!input->isValidCoord(p))
                     return toReturn;
 
-                double val = input->element(output.y(), output.x()).brightness();
+                double val = input->element(p).brightness();
                 valuesum += val;
                 valuesq  += val * val;
                 samples++;

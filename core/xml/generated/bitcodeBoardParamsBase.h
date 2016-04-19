@@ -30,6 +30,7 @@ namespace corecvs {
 /*
  *  Additional includes for enum section.
  */
+#include "bitcodeBoardOrientation.h"
 
 /**
  * \brief Bitcode Board Params Base 
@@ -50,6 +51,9 @@ public:
         CODEHEIGHT_ID,
         BITCODEIDENTSIZE_ID,
         BITCODECONFIDENCE_ID,
+        BITCODEORIENTATION_ID,
+        CENTERTOZEROX_ID,
+        CENTERTOZEROY_ID,
         BITCODE_BOARD_PARAMS_BASE_FIELD_ID_NUM
     };
 
@@ -121,6 +125,24 @@ public:
      */
     double mBitcodeConfidence;
 
+    /** 
+     * \brief bitcodeOrientation 
+     * bitcodeOrientation 
+     */
+    int mBitcodeOrientation;
+
+    /** 
+     * \brief CenterToZeroX 
+     * X Distance from grid center to Traget Point 
+     */
+    double mCenterToZeroX;
+
+    /** 
+     * \brief CenterToZeroY 
+     * Y Distance from grid center to Traget Point 
+     */
+    double mCenterToZeroY;
+
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
 
@@ -184,6 +206,21 @@ public:
         return mBitcodeConfidence;
     }
 
+    BitcodeBoardOrientation::BitcodeBoardOrientation bitcodeOrientation() const
+    {
+        return static_cast<BitcodeBoardOrientation::BitcodeBoardOrientation>(mBitcodeOrientation);
+    }
+
+    double centerToZeroX() const
+    {
+        return mCenterToZeroX;
+    }
+
+    double centerToZeroY() const
+    {
+        return mCenterToZeroY;
+    }
+
     /* Section with setters */
     void setVertical(bool vertical)
     {
@@ -240,6 +277,21 @@ public:
         mBitcodeConfidence = bitcodeConfidence;
     }
 
+    void setBitcodeOrientation(BitcodeBoardOrientation::BitcodeBoardOrientation bitcodeOrientation)
+    {
+        mBitcodeOrientation = bitcodeOrientation;
+    }
+
+    void setCenterToZeroX(double centerToZeroX)
+    {
+        mCenterToZeroX = centerToZeroX;
+    }
+
+    void setCenterToZeroY(double centerToZeroY)
+    {
+        mCenterToZeroY = centerToZeroY;
+    }
+
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
@@ -256,6 +308,9 @@ template<class VisitorType>
         visitor.visit(mCodeHeight,                static_cast<const IntField *>     (fields()[CODEHEIGHT_ID]));
         visitor.visit(mBitcodeIdentSize,          static_cast<const DoubleField *>  (fields()[BITCODEIDENTSIZE_ID]));
         visitor.visit(mBitcodeConfidence,         static_cast<const DoubleField *>  (fields()[BITCODECONFIDENCE_ID]));
+        visitor.visit((int &)mBitcodeOrientation, static_cast<const EnumField *>    (fields()[BITCODEORIENTATION_ID]));
+        visitor.visit(mCenterToZeroX,             static_cast<const DoubleField *>  (fields()[CENTERTOZEROX_ID]));
+        visitor.visit(mCenterToZeroY,             static_cast<const DoubleField *>  (fields()[CENTERTOZEROY_ID]));
     }
 
     BitcodeBoardParamsBase()
@@ -276,6 +331,9 @@ template<class VisitorType>
         , int codeHeight
         , double bitcodeIdentSize
         , double bitcodeConfidence
+        , BitcodeBoardOrientation::BitcodeBoardOrientation bitcodeOrientation
+        , double centerToZeroX
+        , double centerToZeroY
     )
     {
         mVertical = vertical;
@@ -289,6 +347,9 @@ template<class VisitorType>
         mCodeHeight = codeHeight;
         mBitcodeIdentSize = bitcodeIdentSize;
         mBitcodeConfidence = bitcodeConfidence;
+        mBitcodeOrientation = bitcodeOrientation;
+        mCenterToZeroX = centerToZeroX;
+        mCenterToZeroY = centerToZeroY;
     }
 
     friend ostream& operator << (ostream &out, BitcodeBoardParamsBase &toSave)

@@ -259,8 +259,8 @@ bool ReconstructionFixtureScene::validateMatches()
   //          CORE_ASSERT_TRUE_S(std::find(cameras.begin(), cameras.end(), cameraB) != cameras.end());
             for (auto& t: mvv.second)
             {
-                int mA = std::get<0>(t);
-                int mB = std::get<1>(t);
+                size_t mA = std::get<0>(t);
+                size_t mB = std::get<1>(t);
                 auto itA = keyPoints.count(WPP(fixture, camera));
                 CORE_ASSERT_TRUE_S((int)itA > 0);
                 CORE_ASSERT_TRUE_S(keyPoints[WPP(fixture, camera)].size() > mA);

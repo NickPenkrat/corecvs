@@ -167,6 +167,46 @@ int BitcodeBoardParamsBase::staticInit()
           "Area in which the stats are collected during detection"
         )
     );
+    fields().push_back(
+        new EnumField
+        (
+          BitcodeBoardParamsBase::BITCODEORIENTATION_ID,
+          offsetof(BitcodeBoardParamsBase, mBitcodeOrientation),
+          4,
+          "bitcodeOrientation",
+          "bitcodeOrientation",
+          "bitcodeOrientation",
+          new EnumReflection(5
+          , new EnumOption(0,"Below")
+          , new EnumOption(1,"Left")
+          , new EnumOption(2,"Above")
+          , new EnumOption(3,"Right")
+          , new EnumOption(4,"Any")
+          )
+        )
+    );
+    fields().push_back(
+        new DoubleField
+        (
+          BitcodeBoardParamsBase::CENTERTOZEROX_ID,
+          offsetof(BitcodeBoardParamsBase, mCenterToZeroX),
+          -3,
+          "CenterToZeroX",
+          "CenterToZeroX",
+          "X Distance from grid center to Traget Point"
+        )
+    );
+    fields().push_back(
+        new DoubleField
+        (
+          BitcodeBoardParamsBase::CENTERTOZEROY_ID,
+          offsetof(BitcodeBoardParamsBase, mCenterToZeroY),
+          5,
+          "CenterToZeroY",
+          "CenterToZeroY",
+          "Y Distance from grid center to Traget Point"
+        )
+    );
    return 0;
 }
 

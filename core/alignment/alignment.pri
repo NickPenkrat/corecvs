@@ -9,7 +9,7 @@ HEADERS += \
     alignment/distPointsFunction.h \
     alignment/selectableGeometryFeatures.h \
     alignment/lmDistortionSolver.h \
-    alignment/lensDistortionModelParameters.h
+    alignment/lensDistortionModelParameters.h \
     alignment/pointObservation.h
 
 
@@ -23,7 +23,7 @@ SOURCES += \
     alignment/distPointsFunction.cpp \
     alignment/selectableGeometryFeatures.cpp \
     alignment/lmDistortionSolver.cpp \
-    alignment/lensDistortionModelParameters.cpp
+    alignment/lensDistortionModelParameters.cpp \
     alignment/pointObservation.cpp
 
 
