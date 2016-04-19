@@ -2,6 +2,7 @@
 #include "homographyReconstructor.h"
 #include "simpleRenderer.h"
 #include "polygonPointIterator.h"
+#include "ellipticalApproximation.h"
 
 BitcodeBoardDetector::BitcodeBoardDetector() :
     input(NULL),
@@ -40,13 +41,13 @@ Statistics *BitcodeBoardDetector::getStatistics()
     return stats;
 }
 
-int BitcodeBoardDetector::startOrientaion() {
+unsigned BitcodeBoardDetector::startOrientaion() {
     if (parameters.bitcodeParams.bitcodeOrientation() == BitcodeBoardOrientation::ANY)
         return 0;
     return parameters.bitcodeParams.bitcodeOrientation();
 }
 
-int BitcodeBoardDetector::endOrientaion() {
+unsigned BitcodeBoardDetector::endOrientaion() {
     if (parameters.bitcodeParams.bitcodeOrientation() == BitcodeBoardOrientation::ANY)
         return BitcodeBoardOrientation::ANY;
     return parameters.bitcodeParams.bitcodeOrientation() + 1;
@@ -82,12 +83,10 @@ bool BitcodeBoardDetector::operator ()()
 
     Matrix33 centerToBitcode = Matrix33::ShiftProj(-parameters.bitcodeParams.boardWidth() / 2.0, parameters.bitcodeParams.boardHeight() / 2.0 + parameters.bitcodeParams.bitcodeIdentSize());
 
-    orients[0] = toCenter *                            centerToBitcode;
-    orients[1] = toCenter * Matrix33::RotationZ90()  * centerToBitcode;
-    orients[2] = toCenter * Matrix33::RotationZ180() * centerToBitcode;
-    orients[3] = toCenter * Matrix33::RotationZ270() * centerToBitcode;
-
-
+    for (int i = 0; i < 4; i++)
+    {
+        orients[i] = toCenter * Matrix33::RotationZ(degToRad(90 * i)) * centerToBitcode;
+    }
 
     double bestScore = 0.0;
     bestMarker = -1;
@@ -115,7 +114,8 @@ bool BitcodeBoardDetector::operator ()()
             parameters.bitcodeParams.centerToZeroX(),
             parameters.bitcodeParams.centerToZeroY());
 
-        position = transform * Matrix33::Scale2(cellToMM) * toCenter * zeroPos;
+        position = transform * Matrix33::Scale2(cellToMM) * toCenter * Matrix33::RotationZ(degToRad(90 * bestMarker)) * zeroPos;
+        score = marker[bestMarker].score;
     }
     return result;
 }
@@ -148,10 +148,6 @@ void BitcodeBoardDetector::drawMarkerData(RGB24Buffer &buffer)
         {
             for (int j = 0; j < codeWidth; j++)
             {
-               /* Vector2dd pos(j + 0.5, i + 0.5);
-                pos = orients[o] * pos;
-                pos = cellToMM * pos;
-                Vector2dd output = transform * pos;*/
 
                 RGBColor color = (i == 0 && j == 0) ? RGBColor::Blue() : RGBColor::Green();
 
@@ -223,96 +219,72 @@ BitcodeBoardDetector::MarkerData BitcodeBoardDetector::detectMarker(Matrix33 hom
     MarkerData toReturn;
     toReturn.detected = false;
 
-    double overallMean     = 0.0;
-    double overallVariance = 0.0;
-    int overallSamples     = 0;
+    SDevApproximation1d interSquare;
 
     int codeHeight = parameters.bitcodeParams.codeHeight();
     int codeWidth  = parameters.bitcodeParams.codeWidth ();
-    /* First pass. Compute statistics */
 
+    vector<SDevApproximation1d> areaStats(codeHeight * codeWidth);
+
+    /* First pass. Compute statistics */
     for (int i = 0; i < codeHeight; i++)
     {
         for (int j = 0; j < codeWidth; j++)
         {
-
-            double valuesum = 0.0;
-            double valuesq  = 0.0;
-            int samples = 0;
+            SDevApproximation1d areaStat;
 
             Polygon area = getRectImage(j,i, homography * translation);
-            PolygonPointIterator it(area);
-
-            for (Vector2d<int> p : it ) {
-                if (!input->isValidCoord(p))
-                    return toReturn;
-
-                double val = input->element(p).brightness();
-                valuesum += val;
-                valuesq  += val * val;
-                samples++;
+            if (!area.isInsideBuffer(input->getSize())) {
+                SYNC_PRINT(("    BitcodeBoardDetector::detectMarker(): code not inside image\n"));
+                return toReturn;
             }
 
-            valuesum /= samples;
-            valuesq /= samples;
-            valuesq = valuesq - valuesum * valuesum;
+            PolygonPointIterator it(area);
+            for (Vector2d<int> p : it ) {
+                if (!input->isValidCoord(p))
+                {
+                    SYNC_PRINT(("Interal error:\n"));
+                    cout << area << endl;
+                    cout << p << endl;
+                    SYNC_PRINT(("\n"));
+
+                }
+                double val = input->element(p).brightness();
+                areaStat.addPoint(val);
+            }
 
             /* Add to overall stats */
-            overallMean += valuesum;
-            overallVariance += valuesum * valuesum;
-            overallSamples++;
+            double mean = areaStat.getAverage();
+            interSquare.addPoint(mean);
+
+            areaStats[i * codeWidth + j] = areaStat;
         }
     }
 
-    overallMean     /= overallSamples;
-    overallVariance /= overallSamples;
-    overallVariance = overallVariance - overallMean * overallMean;
-
+    double overallMean = interSquare.getAverage();
 
     SYNC_PRINT((" BitcodeBoardDetector::detectMarker(): mean %lf\n", overallMean ));
     /* Second pass */
 
-    for (int i = 0; i < codeHeight; i++)
+    for (const SDevApproximation1d &stat : areaStats)
     {
-        for (int j = 0; j < codeWidth; j++)
-        {
-            double valuesum = 0.0;
-            double valuesq  = 0.0;
-            int samples = 0;
-
-            Polygon area = getRectImage(j,i, homography * translation);
-            PolygonPointIterator it(area);
-            for (Vector2d<int> p : it ) {
-                if (!input->isValidCoord(p))
-                    return toReturn;
-
-                double val = input->element(p).brightness();
-                valuesum += val;
-                valuesq  += val * val;
-                samples++;
-            }
-
-            valuesum /= samples;
-            valuesq /= samples;
-            valuesq = valuesq - valuesum * valuesum;
-
-            if (parameters.produceDebug) {
-                SYNC_PRINT(("    BitcodeBoardDetector::detectMarker(): value %lf -> (%s)\n", valuesum, (valuesum > overallMean) ? "1" : "0"));
-            }
-
-            if (valuesum > overallMean) {
-                toReturn.bits.push_back(true);
-            } else {
-                toReturn.bits.push_back(false);
-            }
+        if (parameters.produceDebug) {
+            SYNC_PRINT(("    BitcodeBoardDetector::detectMarker(): value %lf -> (%s)\n", stat.getAverage(), (stat.getAverage() > overallMean) ? "1" : "0"));
         }
+
+        if (stat.getAverage() > overallMean) {
+            toReturn.bits.push_back(true);
+        } else {
+            toReturn.bits.push_back(false);
+        }
+
     }
 
     if (parameters.produceDebug) {
-        SYNC_PRINT(("    BitcodeBoardDetector::detectMarker(): score %lf\n", overallVariance));
+        SYNC_PRINT(("    BitcodeBoardDetector::detectMarker(): score %lf\n", interSquare.getSDev()));
     }
 
     toReturn.detected = true;
-    toReturn.score = overallVariance;
+    toReturn.score = interSquare.getSDev();
     return toReturn;
 }

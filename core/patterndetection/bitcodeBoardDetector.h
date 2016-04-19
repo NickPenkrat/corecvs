@@ -42,6 +42,7 @@ public:
 
     /* Outputs */
     bool result;
+    double score;
     vector<bool> bits;
     Vector2dd position;
 
@@ -75,8 +76,8 @@ public:
     MarkerData marker[4];
 
     /* Some non standart helper functions */
-    int startOrientaion();
-    int endOrientaion();
+    unsigned startOrientaion();
+    unsigned endOrientaion();
 
 protected:
     Polygon getRectImage(int i, int j, Matrix33 transform);

@@ -7,7 +7,6 @@
 namespace corecvs {
 
 /**
- * NOT YET WORKING!!!!
  * So far we only support convex polygon
  **/
 class PolygonSpanIterator
@@ -25,10 +24,8 @@ public:
     int deep  ;
     int shallow;
 
-
     vector<int>  sortedIndex;
     vector<bool> side;
-    unsigned currentIndex;
 
     Vector2dd getPoint(int i) {
         return polygon[sortedIndex[i]];
@@ -64,27 +61,25 @@ public:
 
         /**/
 
-        currentIndex = sortedIndex[0];
+        int currentIndex = sortedIndex[0];
         Vector2dd origin = polygon[currentIndex];
 
         cand1 = (currentIndex + polygon.size() + indexDelta) % polygon.size(); /* Right slope driver */
         cand2 = (currentIndex + polygon.size() - indexDelta) % polygon.size(); /* Left  slope driver */
 
+        deep    = cand1;
+        shallow = cand2;
+
+#if 0
         cout << "Polygon size:"  << polygon.size() << endl;
         cout << "Top Point:"    << origin <<  endl;
         cout << "Bottom Point:" << polygon[sortedIndex.back()] << endl;
         cout << "Left  Point:"  << polygon[cand1] <<  endl;
         cout << "Right Point:"  << polygon[cand2] <<  endl;
-
-        deep    = cand1;
-        shallow = cand2;
-
         cout << "Indexes:" << currentIndex << " " << deep << " " << shallow << endl;
+#endif
 
         if (polygon.y(deep) < polygon.y(shallow)) std::swap(deep, shallow);
-
-        cout << "Y:" << polygon.y(deep) << " " << polygon.y(shallow) << endl;
-
 
         double longslope = (polygon.x(deep) - origin.x()) / (polygon.y(deep) - origin.y());
         double centerx1 = origin.x() + longslope * (polygon.y(shallow) - origin.y());
@@ -99,11 +94,11 @@ public:
 
     void step()
     {
-        SYNC_PRINT(("PolygonSpanIterator::step(): called\n"));
+        // SYNC_PRINT(("PolygonSpanIterator::step(): called\n"));
         part.step();
 
 
-        if (!part.hasValue() && hasValue())
+        while (!part.hasValue() && hasValue())
         {
             int cand1n = cand1;
             int cand2n = cand2;
@@ -125,16 +120,25 @@ public:
             shallow = cand2n;
             Vector2dd deepBegin    = leftBegin;
             Vector2dd shallowBegin = rightBegin;
+#if 0
+            cout << "We need to advance: " << endl;
+            cout << "Left  Begin: " << leftBegin << endl;
+            cout << "Right Begin: " << rightBegin << endl;
 
-
-            cout << "Indexes:" << currentIndex << " " << deep << " " << shallow << endl;
-
+            cout << "Left  End" << polygon[cand1n] << endl;
+            cout << "Right End" << polygon[cand2n] << endl;
+#endif
             if (polygon.y(deep) < polygon.y(shallow)) {
                 std::swap(deep, shallow);
                 std::swap(deepBegin, shallowBegin);
             }
 
-            cout << "Y:" << polygon.y(deep) << " " << polygon.y(shallow) << endl;
+
+#if 0
+            if (polygon.y(deep) - deepBegin.y()) {
+                SYNC_PRINT(("We are in prefail...\n"));
+            }
+#endif
 
             double longslope = (polygon.x(deep) - deepBegin.x()) / (polygon.y(deep) - deepBegin.y());
 
@@ -150,13 +154,14 @@ public:
             cand2 = cand2n;
 
             if (part.hasValue()) {
+                // SYNC_PRINT(("Part has values. stepping to %d\n", part.currentY));
                 part.step();
+                // SYNC_PRINT(("Part has values. stepped to %d\n", part.currentY));
             } else {
+                // SYNC_PRINT(("Part is Empty. Skipping...\n"));
                 part.currentY++;
-            }
-           return;
+            }           
         }
-
 
     }
 
@@ -201,7 +206,7 @@ public:
 
 };
 
-class PolygonPointIterator
+class PolygonFanPointIterator
 {
 public:
     const Polygon &polygon;
@@ -214,7 +219,7 @@ public:
         return Triangle2dd(polygon[0], polygon[petle - 1], polygon[petle]);
     }
 
-    PolygonPointIterator(const Polygon &polygon) :
+    PolygonFanPointIterator(const Polygon &polygon) :
         polygon(polygon),
         petle(2),
         triangle(getTriangle(petle)),
@@ -244,6 +249,65 @@ public:
     /**
      * C++ style iteration
      **/
+    PolygonFanPointIterator &begin() {
+        return *this;
+    }
+
+    PolygonFanPointIterator & end() {
+        return *this;
+    }
+
+    bool operator !=(const PolygonFanPointIterator & /*other*/) {
+        return this->hasValue();
+    }
+
+    Vector2d<int> operator *() {
+        return pos();
+    }
+
+    void operator ++() {
+        step();
+    }
+
+};
+
+class PolygonPointIterator
+{
+public:
+    const Polygon &polygon;
+    PolygonSpanIterator it;
+    LineSpanInt spanIt;
+
+    PolygonPointIterator(const Polygon &polygon) :
+        polygon(polygon),
+        it(polygon),
+        spanIt(it.getSpan())
+    {}
+
+    void step() {
+        spanIt.step();
+        if (!spanIt.hasValue()) {
+            it.step();
+            if (it.hasValue()) {
+                spanIt = it.getSpan();
+            } else {
+                spanIt = LineSpanInt::Empty();
+            }
+        }
+        //while(spanIt.step())
+    }
+
+    bool hasValue() {
+        return spanIt.hasValue();
+    }
+
+    Vector2d<int> pos() {
+        return spanIt.pos();
+    }
+
+    /**
+     * C++ style iteration
+     **/
     PolygonPointIterator &begin() {
         return *this;
     }
@@ -263,7 +327,6 @@ public:
     void operator ++() {
         step();
     }
-
 };
 
 } // namespace corecvs

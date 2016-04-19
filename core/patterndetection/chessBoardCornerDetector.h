@@ -116,16 +116,6 @@ public:
     ChessBoardCornerDetectorParams(const ChessBoardCornerDetectorParamsBase &base = ChessBoardCornerDetectorParamsBase()) :
         ChessBoardCornerDetectorParamsBase(base)
     {
-/*        patternStartAngle.push_back(0.0);
-        patternStartAngle.push_back(degToRad(45));*/
-
-/*        mPatternRadius.push_back(4.0);
-        mPatternRadius.push_back(8.0);
-        mPatternRadius.push_back(12.0);*/
-
-/*        cornerScores.push_back(4.0);
-        cornerScores.push_back(8.0);
-        cornerScores.push_back(12.0);*/
     }
 
     void setMinAngle(double rad)
@@ -161,25 +151,6 @@ public:
         }
         return toReturn;
     }
-
-#if 0
-    template<typename VisitorType>
-    void accept(VisitorType &visitor)
-    {
-        ChessBoardCornerDetectorParamsBase::accept(visitor);
-//        corecvs::DoubleVectorField dvf(0, 0, "patternStartAngle");
-//        visitor.visit(patternStartAngle, &dvf);
-//        corecvs::DoubleVectorField dvf2(0, 0, 0, "patternRadius");
-//        visitor.visit(patternRadius, &dvf2);
-//        corecvs::DoubleVectorField dvf3(0, 0, "cornerScores");
-//        visitor.visit(cornerScores, &dvf3);
-
-/*        visitor.visit(patternStartAngle, "patternStartAngle");
-        visitor.visit(patternRadius    , "patternRadius");
-        visitor.visit(cornerScores     , "cornerScores");*/
-
-    }
-#endif
 };
 
 class ChessBoardCornerDetector : ChessBoardCornerDetectorParams
@@ -227,15 +198,6 @@ private:
     // mean-shift mode detector
     // TODO: do we need it outside detector?!
     void circularMeanShift(std::vector<double> &values, double bandwidth, std::vector<std::pair<int, double>> &modes);
-
-#if DEPRICATED
-    // Computes right eigen vectors and numbers for 2x2 matrix
-    void eig22(corecvs::Matrix22 &A, double &lambda1, corecvs::Vector2dd &e1, double &lambda2, corecvs::Vector2dd &e2, double EIGTOLERANCE = 1e-9);
-    // Checks if 2x2 matrix seems to be invertible
-    bool invertable22(corecvs::Matrix &A);
-    // Linear solver for 2x2 matrix
-    void solve22(corecvs::Matrix &A, corecvs::Vector2dd &B, corecvs::Vector2dd &x);
-#endif
 
     DpImage du, dv, w, phi, cost, img;
     std::vector<CornerKernelSet> kernels;

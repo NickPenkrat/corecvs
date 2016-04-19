@@ -452,8 +452,8 @@ void ChessboardDetector::drawCorners(corecvs::RGB24Buffer & image)
         AbstractPainter<RGB24Buffer> p(&image);
         for (size_t i = 0; i < corners.size(); i++)
         {
-            p.drawCircle(corners[i].pos.x(), corners[i].pos.y(), 1, corecvs::RGBColor(0xffff00));
-            p.drawFormat(corners[i].pos.x() + 1, corners[i].pos.y() + 1, corecvs::RGBColor(0xffff00), 2, "%d", i);
+            p.drawCircle(corners[i].pos.x(), corners[i].pos.y(), 1, RGBColor::Cyan());
+            p.drawFormat(corners[i].pos.x() + 1, corners[i].pos.y() + 1, RGBColor::Cyan(), 2, "%d", i);
         }
     }
 

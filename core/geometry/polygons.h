@@ -87,6 +87,20 @@ public:
         out << "]";
         return out;
     }
+
+    /* This function checks if the poligon is inside the buffer. It assumes that the poligon coorinate can be rounded to upper value  */
+    bool isInsideBuffer(const Vector2d<int> &bufferSize)
+    {
+        for (Vector2dd point : *this)
+        {
+            if (point.x() < 0 || point.y() < 0)
+                return false;
+            if (point.x() + 1 > bufferSize.x() || point.y() + 1 > bufferSize.y())
+                return false;
+
+        }
+        return true;
+    }
 };
 
 /**

@@ -364,11 +364,14 @@ TEST(Draw, polygonDraw)
 
 TEST(Draw, polygonDraw1)
 {
-    int h = 1200;
-    int w = 600;
+    int h = 240;
+    int w = 240;
+
+
 
     RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
-    Vector2dd center(100.0, 100.0);
+    Vector2dd center(buffer->h / 12, buffer->h / 12);
+    double radius = center.x() / 10.0 * 9.0;
 
     AbstractPainter<RGB24Buffer> painter(buffer);
 
@@ -379,17 +382,16 @@ TEST(Draw, polygonDraw1)
             Polygon p;
             int count = pi * 3 + pj + 3;
             for (int i = 0; i < count; i++) {
-                p.push_back(Vector2dd::FromPolar((2 * M_PI / count) * i, 90.0) + center * Vector2dd(pi * 2 + 1, pj * 2 + 1));
+                p.push_back(Vector2dd::FromPolar((2 * M_PI / count) * i, radius) + center * Vector2dd(pi * 2 + 1, pj * 2 + 1));
             }
 
-            cout << p << std::endl;
+           // cout << p << std::endl;
 
             painter.drawPolygon(p, RGBColor::Blue());
 
             PolygonSpanIterator it(p);
             for (LineSpanInt l: it)
             {
-//                cout << l << endl;
                 for (Vector2d<int> point : l) {
                     if (buffer->isValidCoord(point)) {
                         buffer->element(point) += RGBColor(90, 90, 0);
@@ -406,10 +408,10 @@ TEST(Draw, polygonDraw1)
             Polygon p;
             int count = pi * 3 + pj + 3;
             for (int i = 0; i < count; i++) {
-                p.push_back(Vector2dd::FromPolar(-(2 * M_PI / count) * i, 90.0) + center * Vector2dd(pi * 2 + 1, pj * 2 + 1) + Vector2dd(0.0, buffer->h / 2));
+                p.push_back(Vector2dd::FromPolar(-(2 * M_PI / count) * i, radius) + center * Vector2dd(pi * 2 + 1, pj * 2 + 1) + Vector2dd(0.0, buffer->h / 2));
             }
 
-            cout << p << std::endl;
+           // cout << p << std::endl;
 
             painter.drawPolygon(p, RGBColor::Green());
 
@@ -426,8 +428,57 @@ TEST(Draw, polygonDraw1)
         }
     }
 
+    for (int pi = 0; pi < 3; pi ++)
+    {
+        for (int pj = 0; pj < 3; pj ++)
+        {
+            Polygon p;
+            int count = pi * 3 + pj + 3;
+            for (int i = 0; i < count; i++) {
+                p.push_back(Vector2dd::FromPolar(-(2 * M_PI / count) * i, radius) + center * Vector2dd(pi * 2 + 1, pj * 2 + 1) + Vector2dd(buffer->w / 2, 0.0));
+            }
+
+            //cout << p << std::endl;
+
+            painter.drawPolygon(p, RGBColor::Green());
+
+            PolygonPointIterator it(p);
+            for (Vector2d<int> point : it) {
+                    buffer->element(point) += RGBColor(0, 70, 0);
+            }
+        }
+    }
+
 
     BMPLoader().save("polygon1.bmp", buffer);
+    delete_safe(buffer);
+}
+
+TEST(Draw, polygonDraw2)
+{
+    int h = 240;
+    int w = 240;
+
+    Polygon p;
+    RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
+
+    p.push_back(Vector2dd(57.439, 16.983));
+    p.push_back(Vector2dd(45.324, 28.776));
+    p.push_back(Vector2dd(37.829, 16.898));
+    p.push_back(Vector2dd(48.848, 05.05));
+
+    AbstractPainter<RGB24Buffer> painter(buffer);
+    painter.drawPolygon(p, RGBColor::Blue());
+    BMPLoader().save("polygon2.bmp", buffer);
+
+    PolygonPointIterator it(p);
+    for (Vector2d<int> point : it) {
+        //cout << point << endl;
+        ASSERT_TRUE(buffer->isValidCoord(point));
+        buffer->element(point) += RGBColor::Red();
+    }
+
+    BMPLoader().save("polygon2.bmp", buffer);
     delete_safe(buffer);
 }
 
@@ -446,7 +497,7 @@ TEST(Draw, testFloodFill)
     BMPLoader().save("flood_before.bmp", buffer);
 
     AbstractPainter<RGB24Buffer>::EqualPredicate predicate(RGBColor::Black(), RGBColor::Blue());
-    painter.floodFill(w / 2, h / 2, predicate);
+    painter.floodFill(w / 2.0, h / 2.0, predicate);
 
     BMPLoader().save("flood_after.bmp", buffer);
     //printf("Predicate  : %d\n", predicate.countPred);

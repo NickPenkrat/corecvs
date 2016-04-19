@@ -1,4 +1,5 @@
 #include "chessBoardCornerDetector.h"
+#include "nonMaximalSuperssor.h"
 
 #include <cmath>
 #include <algorithm>
@@ -483,11 +484,14 @@ void ChessBoardCornerDetector::computeCost()
 
 void ChessBoardCornerDetector::runNms()
 {
-    std::vector<std::pair<int, int>> cornerCandidates;
-    cost.nonMaximumSupression(nmsLocality(), 0.025, cornerCandidates, nmsLocality());
-    for (auto& cc: cornerCandidates)
+    typedef Vector2d<int> CoordType;
+    std::vector<CoordType> cornerCandidates;
+    NonMaximalSuperssor<DpImage> suppressor;
+
+    suppressor.nonMaximumSupression(cost, nmsLocality(), 0.025, cornerCandidates, nmsLocality());
+    for (CoordType& cc: cornerCandidates)
     {
-        corners.emplace_back(corecvs::Vector2dd(cc.first, cc.second));
+        corners.emplace_back(Vector2dd(cc.x(), cc.y()));
     }
 }
 
@@ -862,20 +866,23 @@ void ChessBoardCornerDetector::detectCorners(DpImage &image, std::vector<Oriente
     if (stats != NULL) stats->resetInterval("Scaling");
 
     prepareDiff(du, true);
-    prepareDiff(dv, false);
-    prepareAngleWeight();
+    if (stats != NULL) stats->resetInterval("U direction Diff Preparation");
 
-    if (stats != NULL) stats->resetInterval("Diff Preparation");
+    prepareDiff(dv, false);
+    if (stats != NULL) stats->resetInterval("V direction Diff Preparation");
+
+    prepareAngleWeight();
+    if (stats != NULL) stats->resetInterval("Angle weight Preparation");
 
     computeCost();
-    runNms();
+    if (stats != NULL) stats->resetInterval("Cost");
 
-    if (stats != NULL) stats->resetInterval("Cost and NMS");
+    runNms();
+    if (stats != NULL) stats->resetInterval("NMS");
 
     filterByOrientation();
     adjustCornerOrientation();
     adjustCornerPosition();
-
     if (stats != NULL) stats->resetInterval("Adjusting first round");
 
     for (int i = 0; i < nRounds(); ++i)

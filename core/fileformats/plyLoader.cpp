@@ -431,6 +431,9 @@ const char *PLYLoader::Prop::nameToStr(PLYLoader::PropName name)
 
         case PROP_NAME_VERTEX_INDEX: return  "vertex_index";
 
+        default:
+        case PROP_NAME_CORRUPT:
+            return "unknown";
     }
     return "unknown";
 }

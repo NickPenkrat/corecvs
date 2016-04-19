@@ -18,12 +18,12 @@ template<typename ElementType>
 class Rectangle
 {
 public:
-    Rectangle(){}
-    ~Rectangle(){}
+    Rectangle() {}
+    ~Rectangle() {}
 
     Vector2d<ElementType> corner;
     Vector2d<ElementType> size;
-    Rectangle(Vector2d<ElementType> _corner, Vector2d<ElementType> _size) :
+    Rectangle(const Vector2d<ElementType> &_corner, const Vector2d<ElementType> &_size) :
         corner(_corner),
         size(_size)
     {}
