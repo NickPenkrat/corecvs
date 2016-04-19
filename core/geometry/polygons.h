@@ -104,8 +104,8 @@ public:
         }
     }
 
-    int isInside(const Vector2dd &point);
-    bool isConvex(bool *direction = NULL);
+    int  isInside(const Vector2dd &point) const;
+    bool isConvex(bool *direction = NULL) const;
 
     Vector2dd getPoint (int i) const
     {
