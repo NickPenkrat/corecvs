@@ -190,7 +190,7 @@ int BitcodeBoardParamsBase::staticInit()
         (
           BitcodeBoardParamsBase::CENTERTOZEROX_ID,
           offsetof(BitcodeBoardParamsBase, mCenterToZeroX),
-          -3,
+          -3.5,
           "CenterToZeroX",
           "CenterToZeroX",
           "X Distance from grid center to Traget Point"
@@ -201,7 +201,7 @@ int BitcodeBoardParamsBase::staticInit()
         (
           BitcodeBoardParamsBase::CENTERTOZEROY_ID,
           offsetof(BitcodeBoardParamsBase, mCenterToZeroY),
-          5,
+          6.5,
           "CenterToZeroY",
           "CenterToZeroY",
           "Y Distance from grid center to Traget Point"

@@ -17,7 +17,7 @@ public:
 
     TrapezoidSpanIterator part;
 
-    int indexdelta;
+    int indexDelta;
 
     int cand1;
     int cand2;
@@ -36,6 +36,7 @@ public:
 
     PolygonSpanIterator(const Polygon &polygon) : polygon(polygon)
     {
+        /* Prepare the sorted array. We don't need is do far, we only need max and min. But non-convex polygon support */
         side.resize(polygon.size());
         sortedIndex.reserve(polygon.size());
         for (unsigned i = 0; i < polygon.size(); i++)
@@ -48,15 +49,32 @@ public:
             idx = (idx + 1) % polygon.size();
         }
 
+        /** So far only convex poligons are supported **/
+        bool orientation = true;
+        bool isConvex = polygon.isConvex(&orientation);
+        if (!isConvex) {
+           part.currentY =  polygon.y(sortedIndex.back()) + 1;
+           return;
+        }
+
+        if (orientation)
+            indexDelta = 1;
+        else
+            indexDelta = -1;
+
+        /**/
+
         currentIndex = sortedIndex[0];
         Vector2dd origin = polygon[currentIndex];
 
-        cout << "Top Point:" << origin <<  endl;
+        cand1 = (currentIndex + polygon.size() + indexDelta) % polygon.size(); /* Right slope driver */
+        cand2 = (currentIndex + polygon.size() - indexDelta) % polygon.size(); /* Left  slope driver */
 
+        cout << "Polygon size:"  << polygon.size() << endl;
+        cout << "Top Point:"    << origin <<  endl;
         cout << "Bottom Point:" << polygon[sortedIndex.back()] << endl;
-
-        cand1 = (currentIndex + polygon.size() - 1) % polygon.size(); /* Left  slope driver */
-        cand2 = (currentIndex + 1) % polygon.size();                  /* Right slope driver */
+        cout << "Left  Point:"  << polygon[cand1] <<  endl;
+        cout << "Right Point:"  << polygon[cand2] <<  endl;
 
         deep    = cand1;
         shallow = cand2;
@@ -84,55 +102,59 @@ public:
         SYNC_PRINT(("PolygonSpanIterator::step(): called\n"));
         part.step();
 
+
         if (!part.hasValue() && hasValue())
         {
             int cand1n = cand1;
             int cand2n = cand2;
+            bool leftStep = false;
 
-            bool side = 0;
-            /* First side had finished */
-            if (shallow == cand1n) {
-                cand1n = (cand1n + polygon.size() - 1) % polygon.size();
-                side = 1;
+            Vector2dd  leftBegin = Vector2dd(part.x21, part.y2);
+            Vector2dd rightBegin = Vector2dd(part.x22, part.y2);
+
+            if (cand1 == shallow) {
+                /*Left end finished */
+                leftStep = true;
+                cand1n = (cand1 + polygon.size() + indexDelta) % polygon.size(); /* Right slope driver */
+            } else {
+                /* Right end finished*/
+                cand2n = (cand2 + polygon.size() - indexDelta) % polygon.size(); /* Left  slope driver */
             }
-
-            /* Second side had finished */
-            if (shallow == cand2n) {
-                cand2n = (cand2n + 1) % polygon.size();
-
-            }
-#if 0
-            cand1 = cand1n;
-            cand2 = cand2n;
 
             deep    = cand1n;
             shallow = cand2n;
+            Vector2dd deepBegin    = leftBegin;
+            Vector2dd shallowBegin = rightBegin;
+
 
             cout << "Indexes:" << currentIndex << " " << deep << " " << shallow << endl;
-            Vector2dd leftEnd  =  ;
-            Vector3dd rightEnd =  ;s
 
-            if (polygon.y(deep) < polygon.y(shallow))
+            if (polygon.y(deep) < polygon.y(shallow)) {
                 std::swap(deep, shallow);
+                std::swap(deepBegin, shallowBegin);
+            }
 
             cout << "Y:" << polygon.y(deep) << " " << polygon.y(shallow) << endl;
 
+            double longslope = (polygon.x(deep) - deepBegin.x()) / (polygon.y(deep) - deepBegin.y());
 
-            double longslope = (polygon.x(deep) - part.x21) / (polygon.y(deep) - part.y2);
-            double centerx1 = part.x21 + longslope * (polygon.y(shallow) - part.y2);
-            double centerx2 = polygon.x(shallow);
+            double newx1 = deepBegin.x() + longslope * (polygon.y(shallow) - shallowBegin.y());
+            double newx2 = polygon.x(shallow);
 
-            if (centerx2 < centerx1) std::swap(centerx2, centerx1);
+            if (newx2 < newx1) std::swap(newx2, newx1);
 
             /**/
-            part = TrapezoidSpanIterator(part.y2, polygon.y(shallow), part.x21, part.x22, centerx1, centerx2);
+            part = TrapezoidSpanIterator(part.y2, polygon.y(shallow), part.x21, part.x22, newx1, newx2);
+
+            cand1 = cand1n;
+            cand2 = cand2n;
 
             if (part.hasValue()) {
                 part.step();
+            } else {
+                part.currentY++;
             }
-            //part.currentY++;
-#endif
-            return;
+           return;
         }
 
 

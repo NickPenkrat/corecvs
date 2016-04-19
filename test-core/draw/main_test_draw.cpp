@@ -364,7 +364,7 @@ TEST(Draw, polygonDraw)
 
 TEST(Draw, polygonDraw1)
 {
-    int h = 600;
+    int h = 1200;
     int w = 600;
 
     RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
@@ -389,13 +389,41 @@ TEST(Draw, polygonDraw1)
             PolygonSpanIterator it(p);
             for (LineSpanInt l: it)
             {
-                cout << l << endl;
+//                cout << l << endl;
                 for (Vector2d<int> point : l) {
-                    buffer->element(point) += RGBColor(140, 140, 0);
+                    if (buffer->isValidCoord(point)) {
+                        buffer->element(point) += RGBColor(90, 90, 0);
+                    }
+                }
+            }           
+        }
+    }
+
+    for (int pi = 0; pi < 3; pi ++)
+    {
+        for (int pj = 0; pj < 3; pj ++)
+        {
+            Polygon p;
+            int count = pi * 3 + pj + 3;
+            for (int i = 0; i < count; i++) {
+                p.push_back(Vector2dd::FromPolar(-(2 * M_PI / count) * i, 90.0) + center * Vector2dd(pi * 2 + 1, pj * 2 + 1) + Vector2dd(0.0, buffer->h / 2));
+            }
+
+            cout << p << std::endl;
+
+            painter.drawPolygon(p, RGBColor::Green());
+
+            PolygonSpanIterator it(p);
+            for (LineSpanInt l: it)
+            {
+//                cout << l << endl;
+                for (Vector2d<int> point : l) {
+                    if (buffer->isValidCoord(point)) {
+                        buffer->element(point) += RGBColor(0, 70, 0);
+                    }
                 }
             }
         }
-
     }
 
 
