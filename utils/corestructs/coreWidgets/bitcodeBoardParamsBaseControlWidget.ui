@@ -316,6 +316,18 @@
        <property name="toolTip">
          <string>X Distance from grid center to Traget Point</string>
        </property>
+       <property name="minimum">
+        <double>-255</double>
+       </property>
+       <property name="maximum">
+        <double>255</double>
+       </property>
+       <property name="singleStep">
+        <double>1</double>
+       </property>
+       <property name="value">
+        <double>-3</double>
+       </property>
        <property name="suffix">
         <string>cells</string>
        </property>
@@ -332,6 +344,18 @@
      <widget class="QDoubleSpinBox" name="centerToZeroYSpinBox">
        <property name="toolTip">
          <string>Y Distance from grid center to Traget Point</string>
+       </property>
+       <property name="minimum">
+        <double>-255</double>
+       </property>
+       <property name="maximum">
+        <double>255</double>
+       </property>
+       <property name="singleStep">
+        <double>1</double>
+       </property>
+       <property name="value">
+        <double>5</double>
        </property>
        <property name="suffix">
         <string>cells</string>

@@ -43,6 +43,7 @@ public:
     /* Outputs */
     bool result;
     vector<bool> bits;
+    Vector2dd position;
 
     /* Misc */
     Statistics *stats;

@@ -111,6 +111,11 @@ bool BitcodeBoardDetector::operator ()()
             SYNC_PRINT(("%s ", b ? "1" : "0"));
         }
         SYNC_PRINT(("\n"));
+        Vector2dd zeroPos = Vector2dd(
+            parameters.bitcodeParams.centerToZeroX(),
+            parameters.bitcodeParams.centerToZeroY());
+
+        position = transform * Matrix33::Scale2(cellToMM) * toCenter * zeroPos;
     }
     return result;
 }
@@ -120,6 +125,8 @@ void BitcodeBoardDetector::drawMarkerData(RGB24Buffer &buffer)
 
     int codeHeight = parameters.bitcodeParams.codeHeight();
     int codeWidth  = parameters.bitcodeParams.codeWidth ();
+
+    buffer.drawCrosshare2(position.x(), position.y(), RGBColor::Violet());
 
     for (int i = 0; i < parameters.bitcodeParams.boardHeight() - 1; i++)
     {
