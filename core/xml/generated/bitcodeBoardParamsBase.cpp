@@ -193,7 +193,10 @@ int BitcodeBoardParamsBase::staticInit()
           -3.5,
           "CenterToZeroX",
           "CenterToZeroX",
-          "X Distance from grid center to Traget Point"
+          "X Distance from grid center to Traget Point",
+          true,
+         -255,
+         255
         )
     );
     fields().push_back(
@@ -204,7 +207,10 @@ int BitcodeBoardParamsBase::staticInit()
           6.5,
           "CenterToZeroY",
           "CenterToZeroY",
-          "Y Distance from grid center to Traget Point"
+          "Y Distance from grid center to Traget Point",
+          true,
+         -255,
+         255
         )
     );
    return 0;

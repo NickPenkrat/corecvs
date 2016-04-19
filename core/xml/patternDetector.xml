@@ -118,8 +118,8 @@
     <field type="Bitcode Board Orientation" name="bitcodeOrientation" defaultValue="4" />
 
     <!-- 3cm cell and 10.5cm;  to the side -->
-    <field type="double" name="CenterToZeroX"   defaultValue="-3.5"   suffix="cells" comment="X Distance from grid center to Traget Point" />
-    <field type="double" name="CenterToZeroY"   defaultValue=" 6.5"   suffix="cells" comment="Y Distance from grid center to Traget Point" />
+    <field type="double" name="CenterToZeroX"   defaultValue="-3.5"   suffix="cells" min="-255" max="255" comment="X Distance from grid center to Traget Point" />
+    <field type="double" name="CenterToZeroY"   defaultValue=" 6.5"   suffix="cells" min="-255" max="255" comment="Y Distance from grid center to Traget Point" />
 
   </class>
 
