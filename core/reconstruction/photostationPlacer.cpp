@@ -701,15 +701,15 @@ void corecvs::PhotostationPlacer::testNewPipeline()
     // 0. Detect features
     scene->ProcessState->reset("Detecting", 1);
     scene->ProcessState->incrementStarted();
-    {
+
         L_INFO << "Detecting features";
         scene->detectAllFeatures(FeatureDetectionParams());
-    }
+
     scene->ProcessState->incrementCompleted();
     // 1. Select multicams with most matches
     scene->ProcessState->reset("Select multicams", 1);
     scene->ProcessState->incrementStarted();
-    {
+
         L_INFO << "Select multicams";
     std::unordered_map<std::pair<CameraFixture*, CameraFixture*>, int> cntr, cntrGood;
     for (auto& first: scene->matches)
@@ -819,11 +819,11 @@ void corecvs::PhotostationPlacer::testNewPipeline()
         std::cout << "FAILFAILFAILFAILFAILFAIL" << std::endl;
     }
     CORE_ASSERT_TRUE_S(initialized);
-    }
+
     scene->ProcessState->incrementCompleted();
     scene->ProcessState->reset("Appending", 1);
     scene->ProcessState->incrementStarted();
-    {
+
         L_INFO << "Appending";
 
     // 3. Create twopointcloud
@@ -882,7 +882,7 @@ void corecvs::PhotostationPlacer::testNewPipeline()
         }
         for (auto& cf: scene->placedFixtures)
             std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ scene->placedFixtures[0]->location.rotor.conjugated()) << std::endl;
-    }
+
     }
     scene->ProcessState->incrementCompleted();
 
