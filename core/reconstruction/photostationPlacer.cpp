@@ -889,9 +889,9 @@ void corecvs::PhotostationPlacer::testNewPipeline()
     scene->state = ReconstructionState::APPENDABLE;
     while (scene->placingQueue.size())
     {
-        std::cout << "PAINTING" << std::endl;
-        paintTracksOnImages(true);
-        std::cout << "PAINTED" << std::endl;
+//        std::cout << "PAINTING" << std::endl;
+//        paintTracksOnImages(true);
+//        std::cout << "PAINTED" << std::endl;
         if (!appendPs() && !appendP6P())
         {
             std::cout << "RECONSTRUCTION FAILED!!!1111" << std::endl;
