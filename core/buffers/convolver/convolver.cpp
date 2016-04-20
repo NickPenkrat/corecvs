@@ -390,7 +390,7 @@ void Convolver::unrolledWrapperExConvolutor(DpImage &src, DpKernel &kernel, DpIm
 
 void Convolver::fastkernelConvolutor(DpImage &src, DpKernel &kernel, DpImage &dst)
 {
-    ConvolveKernel<corecvs::DummyAlgebra> convKernel(&kernel, kernel.y, kernel.x);
+    ConvolveKernel<DummyAlgebra> convKernel(&kernel, kernel.y, kernel.x);
 
     DpImage *in  = &src;
     DpImage *out = &dst;
@@ -402,7 +402,7 @@ void Convolver::fastkernelConvolutor(DpImage &src, DpKernel &kernel, DpImage &ds
 #ifdef WITH_AVX
 void Convolver::fastkernelConvolutorExp(DpImage &src, DpKernel &kernel, DpImage &dst)
 {
-    ConvolveKernel<corecvs::DummyAlgebra> convKernel(&kernel, kernel.y, kernel.x);
+    ConvolveKernel<DummyAlgebra> convKernel(&kernel, kernel.y, kernel.x);
 
     DpImage *in  = &src;
     DpImage *out = &dst;
@@ -413,7 +413,7 @@ void Convolver::fastkernelConvolutorExp(DpImage &src, DpKernel &kernel, DpImage 
 
 void Convolver::fastkernelConvolutorExp5(DpImage &src, DpKernel &kernel, DpImage &dst)
 {
-    ConvolveKernel<corecvs::DummyAlgebra> convKernel(&kernel, kernel.y, kernel.x);
+    ConvolveKernel<DummyAlgebra> convKernel(&kernel, kernel.y, kernel.x);
 
     DpImage *in  = &src;
     DpImage *out = &dst;
@@ -421,6 +421,18 @@ void Convolver::fastkernelConvolutorExp5(DpImage &src, DpKernel &kernel, DpImage
     BufferProcessor<DpImage, DpImage, ConvolveKernel, VectorAlgebraDoubleEx5> proScalar;
     proScalar.process(&in, &out, convKernel);
 }
+
+void Convolver::fastkernelConvolutorExp5(FpImage &src, FpKernel &kernel, FpImage &dst)
+{
+    FloatConvolveKernel<DummyAlgebra> convKernel(&kernel, kernel.y, kernel.x);
+
+    FpImage *in  = &src;
+    FpImage *out = &dst;
+
+    BufferProcessor<FpKernel, FpKernel, ConvolveKernel, VectorAlgebraFloatEx5> proScalar;
+    proScalar.process(&in, &out, convKernel);
+}
+
 #endif
 
 Convolver::Convolver()
@@ -433,6 +445,10 @@ void Convolver::naiveConvolutor(DpImage &src, DpKernel &kernel, DpImage &dst)
     src.doConvolve<DpImage>(&dst, &kernel);
 }
 
+void Convolver::naiveConvolutor(FpImage &src, FpKernel &kernel, FpImage &dst)
+{
+    src.doConvolve<FpImage>(&dst, &kernel);
+}
 
 
 void Convolver::convolve(DpImage &src, DpKernel &kernel, DpImage &dst, Convolver::ConvolverImplementation impl)
@@ -512,6 +528,20 @@ void Convolver::convolve(DpImage &src, DpKernel &kernel, DpImage &dst, Convolver
 
 
 
+    }
+}
+
+void Convolver::convolve(FpImage &src, FpKernel &kernel, FpImage &dst, Convolver::ConvolverImplementation impl)
+{
+    switch (impl) {
+        default:
+        case ALGORITHM_NAIVE:
+                naiveConvolutor(src, kernel, dst);  return;
+
+#ifdef WITH_AVX
+        case ALGORITHM_SSE_DMITRY:
+                fastkernelConvolutorExp5(src, kernel, dst);  return;
+#endif
     }
 }
 

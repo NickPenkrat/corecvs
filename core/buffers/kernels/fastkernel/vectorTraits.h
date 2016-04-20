@@ -106,11 +106,23 @@ public:
     typedef TraitGeneric<double> FallbackTraits;
 
     typedef TraitGeneric<double>::Type InternalType;
-    static const int step = DoublexT4<3>::SIZE;
+    static const int step = DoublexT4<5>::SIZE;
 
-    typedef DoublexT4<3> Type;
-    typedef DoublexT4<3> SignedType;
-    typedef DoublexT4<3> ExtendedType;
+    typedef DoublexT4<5> Type;
+    typedef DoublexT4<5> SignedType;
+    typedef DoublexT4<5> ExtendedType;
+};
+
+class TraitFloatBufferVector8x5 {
+public:
+    typedef TraitGeneric<float> FallbackTraits;
+
+    typedef TraitGeneric<float>::Type InternalType;
+    static const int step = FloatT8<5>::SIZE;
+
+    typedef FloatT8<5> Type;
+    typedef FloatT8<5> SignedType;
+    typedef FloatT8<5> ExtendedType;
 };
 
 #elif defined( WITH_SSE )
@@ -218,6 +230,13 @@ class VectorAlgebraDoubleEx5
 {
 public:
     typedef VectorAlgebraMulti<TraitDoubleBufferVector4x5, inputNumber, outputNumber> Type;
+};
+
+template<int inputNumber = 1, int outputNumber = 1>
+class VectorAlgebraFloatEx5
+{
+public:
+    typedef VectorAlgebraMulti<TraitFloatBufferVector8x5, inputNumber, outputNumber> Type;
 };
 #endif
 
