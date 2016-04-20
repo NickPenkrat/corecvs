@@ -102,14 +102,14 @@ public:
         {
             int cand1n = cand1;
             int cand2n = cand2;
-            bool leftStep = false;
+            //bool leftStep = false;
 
             Vector2dd  leftBegin = Vector2dd(part.x21, part.y2);
             Vector2dd rightBegin = Vector2dd(part.x22, part.y2);
 
             if (cand1 == shallow) {
                 /*Left end finished */
-                leftStep = true;
+                //leftStep = true;
                 cand1n = (cand1 + polygon.size() + indexDelta) % polygon.size(); /* Right slope driver */
             } else {
                 /* Right end finished*/

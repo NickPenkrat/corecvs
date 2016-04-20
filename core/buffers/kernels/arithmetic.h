@@ -138,7 +138,7 @@ public:
         elements(_elements), x(_x), y(_y) {}
 
 template <typename OtherAlgebra>
-    GenericConvolveKernel(const GenericConvolveKernel<OtherAlgebra> & other) :
+    GenericConvolveKernel(const GenericConvolveKernel<OtherAlgebra, KernelType> & other) :
         elements(other.elements),
         x(other.x),
         y(other.y)
@@ -169,7 +169,7 @@ template <typename Algebra>
         {}
 
     template <typename OtherAlgebra>
-        ConvolveKernel(const GenericConvolveKernel<OtherAlgebra> & other) :
+        ConvolveKernel(const ConvolveKernel<OtherAlgebra> & other) :
             GenericConvolveKernel<Algebra, AbstractBuffer<double>>(other)
         {}
 
@@ -181,12 +181,12 @@ template <typename Algebra>
     {
     public:
         FloatConvolveKernel(AbstractBuffer<float> *_elements, int _y, int _x) :
-            GenericConvolveKernel<Algebra, AbstractBuffer<double>>(_elements, _y, _x)
+            GenericConvolveKernel<Algebra, AbstractBuffer<float> >(_elements, _y, _x)
         {}
 
     template <typename OtherAlgebra>
-        FloatConvolveKernel(const GenericConvolveKernel<OtherAlgebra> & other) :
-            GenericConvolveKernel<Algebra, AbstractBuffer<double>>(other)
+        FloatConvolveKernel(const FloatConvolveKernel<OtherAlgebra> & other) :
+            GenericConvolveKernel<Algebra, AbstractBuffer<float> >(other)
         {}
 
     };

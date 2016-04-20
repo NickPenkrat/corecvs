@@ -341,6 +341,7 @@ struct TestDescr {
     bool check;
 
     DpImage *result;
+    FpImage *result1;
     uint64_t delay;
 };
 
@@ -378,40 +379,40 @@ TEST(FastKernelDouble, testConvolver)
     const int kernelSize = 11;
 
     TestDescr tests[] = {
-        {Convolver::ALGORITHM_SSE_DMITRY     , 150, 5, "Dmitry"  , true, NULL, 0},
+        {Convolver::ALGORITHM_SSE_DMITRY     , 150, 5, "Dmitry"  , true, NULL, NULL, 0},
 
-        {Convolver::ALGORITHM_NAIVE          ,  20, 5, "Naive"   , true, NULL, 0},
-        {Convolver::ALGORITHM_SSE_UNROLL_1   , 150, 5, "unroll 1", true, NULL, 0},
-        {Convolver::ALGORITHM_SSE_UNROLL_2   , 150, 5, "unroll 2", true, NULL, 0},
-        {Convolver::ALGORITHM_SSE_UNROLL_3   , 150, 5, "unroll 3", true, NULL, 0},
-        {Convolver::ALGORITHM_SSE_UNROLL_4   , 150, 5, "unroll 4", true, NULL, 0},
-        {Convolver::ALGORITHM_SSE_UNROLL_5   , 150, 5, "unroll 5", true, NULL, 0},
-        {Convolver::ALGORITHM_SSE_UNROLL_6   , 150, 5, "unroll 6", false, NULL, 0},
-        {Convolver::ALGORITHM_SSE_UNROLL_7   , 150, 5, "unroll 7", false, NULL, 0},
-        {Convolver::ALGORITHM_SSE_UNROLL_8   , 150, 5, "unroll 8", false, NULL, 0},
-        {Convolver::ALGORITHM_SSE_UNROLL_9   , 150, 5, "unroll 9", false, NULL, 0},
-        {Convolver::ALGORITHM_SSE_UNROLL_10  , 150, 5, "unroll10", false, NULL, 0},
+        {Convolver::ALGORITHM_NAIVE          ,  20, 5, "Naive"   , true, NULL, NULL, 0},
+        {Convolver::ALGORITHM_SSE_UNROLL_1   , 150, 5, "unroll 1", true, NULL, NULL, 0},
+        {Convolver::ALGORITHM_SSE_UNROLL_2   , 150, 5, "unroll 2", true, NULL, NULL, 0},
+        {Convolver::ALGORITHM_SSE_UNROLL_3   , 150, 5, "unroll 3", true, NULL, NULL, 0},
+        {Convolver::ALGORITHM_SSE_UNROLL_4   , 150, 5, "unroll 4", true, NULL, NULL, 0},
+        {Convolver::ALGORITHM_SSE_UNROLL_5   , 150, 5, "unroll 5", true, NULL, NULL, 0},
+        {Convolver::ALGORITHM_SSE_UNROLL_6   , 150, 5, "unroll 6", false, NULL, NULL,0},
+        {Convolver::ALGORITHM_SSE_UNROLL_7   , 150, 5, "unroll 7", false, NULL, NULL,0},
+        {Convolver::ALGORITHM_SSE_UNROLL_8   , 150, 5, "unroll 8", false, NULL, NULL,0},
+        {Convolver::ALGORITHM_SSE_UNROLL_9   , 150, 5, "unroll 9", false, NULL, NULL,0},
+        {Convolver::ALGORITHM_SSE_UNROLL_10  , 150, 5, "unroll10", false, NULL, NULL,0},
 
-        {Convolver::ALGORITHM_SSE_UNROLL_12  , 150, 5, "unroll12", false, NULL, 0},
-        {Convolver::ALGORITHM_SSE_UNROLL_16  , 150, 5, "unroll16", false, NULL, 0},
+        {Convolver::ALGORITHM_SSE_UNROLL_12  , 150, 5, "unroll12", false, NULL, NULL,0},
+        {Convolver::ALGORITHM_SSE_UNROLL_16  , 150, 5, "unroll16", false, NULL, NULL,0},
 
 
-        {Convolver::ALGORITHM_SSE_UNROLL_20   , 150, 5, "unroll20", false, NULL, 0},
-        {Convolver::ALGORITHM_SSE_UNROLL_40   , 150, 5, "unroll40", false, NULL, 0},
-        {Convolver::ALGORITHM_SSE_UNROLL_100  , 150, 5, "unroll100", false, NULL, 0},
+        {Convolver::ALGORITHM_SSE_UNROLL_20   , 150, 5, "unroll20", false, NULL, NULL,0},
+        {Convolver::ALGORITHM_SSE_UNROLL_40   , 150, 5, "unroll40", false, NULL, NULL,0},
+        {Convolver::ALGORITHM_SSE_UNROLL_100  , 150, 5, "unroll100", false, NULL, NULL,0},
 
-        {Convolver::ALGORITHM_SSE_FASTKERNEL     ,  60, 5, "Fastkernel", true, NULL, 0},
-        {Convolver::ALGORITHM_SSE_FASTKERNEL_EXP ,  60, 5, "FastkernelE", true, NULL, 0},
-        {Convolver::ALGORITHM_SSE_FASTKERNEL_EXP5,  60, 5, "FastkernelE5", true, NULL, 0},
+        {Convolver::ALGORITHM_SSE_FASTKERNEL     ,  60, 5, "Fastkernel", true, NULL, NULL,0},
+        {Convolver::ALGORITHM_SSE_FASTKERNEL_EXP ,  60, 5, "FastkernelE", true, NULL, NULL,0},
+        {Convolver::ALGORITHM_SSE_FASTKERNEL_EXP5,  60, 5, "FastkernelE5", true, NULL, NULL,0},
 
         {Convolver::ALGORITHM_SSE_WRAPPERS   ,  60, 5, "Wrappers", true, NULL, 0},
 
-        {Convolver::ALGORITHM_SSE_WRAPPERS_UNROLL_1   , 150, 5, "Wrappers u1", true, NULL, 0},
-        {Convolver::ALGORITHM_SSE_WRAPPERS_UNROLL_5   , 150, 5, "Wrappers u5", true, NULL, 0},
-        {Convolver::ALGORITHM_SSE_WRAPPERS_UNROLL_10  , 150, 5, "Wrappers u10", false, NULL, 0},
+        {Convolver::ALGORITHM_SSE_WRAPPERS_UNROLL_1   , 150, 5, "Wrappers u1", true, NULL, NULL,0},
+        {Convolver::ALGORITHM_SSE_WRAPPERS_UNROLL_5   , 150, 5, "Wrappers u5", true, NULL, NULL,0},
+        {Convolver::ALGORITHM_SSE_WRAPPERS_UNROLL_10  , 150, 5, "Wrappers u10", false, NULL, NULL, 0},
 
-        {Convolver::ALGORITHM_SSE_WRAPPERS_EX_UNROLL_1, 150, 5, "Wrap Ex u1", true, NULL, 0},
-        {Convolver::ALGORITHM_SSE_WRAPPERS_EX_UNROLL_2, 150, 5, "Wrap Ex u2", true, NULL, 0},
+        {Convolver::ALGORITHM_SSE_WRAPPERS_EX_UNROLL_1, 150, 5, "Wrap Ex u1", true, NULL, NULL,0},
+        {Convolver::ALGORITHM_SSE_WRAPPERS_EX_UNROLL_2, 150, 5, "Wrap Ex u2", true, NULL, NULL, 0},
 
 
     };
@@ -542,7 +543,8 @@ TEST(FastKernelFloat, testConvolver)
  //       {Convolver::ALGORITHM_SSE_DMITRY     , 150, 5, "Dmitry"  , true, NULL, 0},
 
         {Convolver::ALGORITHM_NAIVE          ,  20, 5, "Naive"   , true, NULL, 0},
- /*       {Convolver::ALGORITHM_SSE_UNROLL_1   , 150, 5, "unroll 1", true, NULL, 0},
+
+        {Convolver::ALGORITHM_SSE_UNROLL_1   , 150, 5, "unroll 1", true, NULL, 0},
         {Convolver::ALGORITHM_SSE_UNROLL_2   , 150, 5, "unroll 2", true, NULL, 0},
         {Convolver::ALGORITHM_SSE_UNROLL_3   , 150, 5, "unroll 3", true, NULL, 0},
         {Convolver::ALGORITHM_SSE_UNROLL_4   , 150, 5, "unroll 4", true, NULL, 0},
@@ -557,21 +559,21 @@ TEST(FastKernelFloat, testConvolver)
         {Convolver::ALGORITHM_SSE_UNROLL_16  , 150, 5, "unroll16", false, NULL, 0},
 
 
-        {Convolver::ALGORITHM_SSE_UNROLL_20   , 150, 5, "unroll20", false, NULL, 0},
+/*        {Convolver::ALGORITHM_SSE_UNROLL_20   , 150, 5, "unroll20", false, NULL, 0},
         {Convolver::ALGORITHM_SSE_UNROLL_40   , 150, 5, "unroll40", false, NULL, 0},
         {Convolver::ALGORITHM_SSE_UNROLL_100  , 150, 5, "unroll100", false, NULL, 0},
 
         {Convolver::ALGORITHM_SSE_FASTKERNEL     ,  60, 5, "Fastkernel", true, NULL, 0},
-        {Convolver::ALGORITHM_SSE_FASTKERNEL_EXP ,  60, 5, "FastkernelE", true, NULL, 0},
-        {Convolver::ALGORITHM_SSE_FASTKERNEL_EXP5,  60, 5, "FastkernelE5", true, NULL, 0},
+        {Convolver::ALGORITHM_SSE_FASTKERNEL_EXP ,  60, 5, "FastkernelE", true, NULL, 0},*/
+        /*{Convolver::ALGORITHM_SSE_FASTKERNEL_EXP5,  60, 5, "FastkernelE5", true, NULL, 0},*/
 
-        {Convolver::ALGORITHM_SSE_WRAPPERS   ,  60, 5, "Wrappers", true, NULL, 0},
+        /*{Convolver::ALGORITHM_SSE_WRAPPERS   ,  60, 5, "Wrappers", true, NULL, 0},*/
 
-        {Convolver::ALGORITHM_SSE_WRAPPERS_UNROLL_1   , 150, 5, "Wrappers u1", true, NULL, 0},
+/*        {Convolver::ALGORITHM_SSE_WRAPPERS_UNROLL_1   , 150, 5, "Wrappers u1", true, NULL, 0},
         {Convolver::ALGORITHM_SSE_WRAPPERS_UNROLL_5   , 150, 5, "Wrappers u5", true, NULL, 0},
-        {Convolver::ALGORITHM_SSE_WRAPPERS_UNROLL_10  , 150, 5, "Wrappers u10", false, NULL, 0},
+        {Convolver::ALGORITHM_SSE_WRAPPERS_UNROLL_10  , 150, 5, "Wrappers u10", false, NULL, 0},*/
 
-        {Convolver::ALGORITHM_SSE_WRAPPERS_EX_UNROLL_1, 150, 5, "Wrap Ex u1", true, NULL, 0},
+/*        {Convolver::ALGORITHM_SSE_WRAPPERS_EX_UNROLL_1, 150, 5, "Wrap Ex u1", true, NULL, 0},
         {Convolver::ALGORITHM_SSE_WRAPPERS_EX_UNROLL_2, 150, 5, "Wrap Ex u2", true, NULL, 0},*/
 
 
@@ -595,7 +597,7 @@ TEST(FastKernelFloat, testConvolver)
     for (size_t t = 0; t < CORE_COUNT_OF(tests); t++)
     {
         TestDescr &test = tests[t];
-        FpKernel *kernel = new DpKernel(kernelSize, kernelSize);
+        FpKernel *kernel = new FpKernel(kernelSize, kernelSize);
 
         /* flops */
         double flop   = 2.0 * (double)TEST_H_SIZE * TEST_W_SIZE * kernelSize * kernelSize;
@@ -623,7 +625,7 @@ TEST(FastKernelFloat, testConvolver)
         double runss = 1000000.0 / ((double)delay / test.runs);
         double gflopss = runss * gflops;
 
-        test.result = new FpImage(output[0]);
+        test.result1 = new FpImage(output[0]);
 
         SYNC_PRINT(("%8" PRIu64 "us %8" PRIu64 "ms SP: %8" PRIu64 "us %3.2lf%% | % 7.3lf Gflops/s |\n",
                     delay, delay / 1000, delay / test.runs, odelay * 100.0 / sodelay, gflopss));
@@ -634,11 +636,11 @@ TEST(FastKernelFloat, testConvolver)
     /*Check the results */
     SYNC_PRINT(("Checking equality... \n"));
 
-    int stepoff = 20;
+    int stepoff = 40;
     for (size_t t = 1; t < CORE_COUNT_OF(tests); t++)
     {
-        FpImage *b1 = tests[0].result;
-        FpImage *b2 = tests[t].result;
+        FpImage *b1 = tests[0].result1;
+        FpImage *b2 = tests[t].result1;
 
         if (!tests[t].check) {
             continue;

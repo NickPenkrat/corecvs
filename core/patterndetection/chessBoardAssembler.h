@@ -95,15 +95,18 @@ public:
     }
 };
 
+typedef std::vector<std::vector<corecvs::Vector2dd>> BoardCornersType;
 
 class ChessBoardAssembler : ChessBoardAssemblerParams
 {
+
+
 public:
     ChessBoardAssembler(ChessBoardAssemblerParams params = ChessBoardAssemblerParams());
     ChessBoardAssembler(const ChessBoardAssembler &other);
     ChessBoardAssembler& operator=(const ChessBoardAssembler &other);
     void assembleBoards(std::vector<OrientedCorner> &corners_,
-                        std::vector<std::vector<std::vector<corecvs::Vector2dd>>> &boards,
+                        std::vector<BoardCornersType> &boards,
                         BoardAligner* aligner = 0, DpImage* buffer = 0);
 
 protected://iivate:

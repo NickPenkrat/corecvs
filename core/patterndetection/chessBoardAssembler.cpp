@@ -22,7 +22,7 @@ ChessBoardAssembler& ChessBoardAssembler::operator=(const ChessBoardAssembler& o
     return *this;
 }
 
-void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, std::vector<std::vector<std::vector<corecvs::Vector2dd>>> &boards_, BoardAligner* aligner_, DpImage *buffer_)
+void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, std::vector<BoardCornersType> &boards_, BoardAligner* aligner_, DpImage *buffer_)
 {
     aligner = aligner_;
     buffer = buffer_;
@@ -37,9 +37,9 @@ void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, 
 
     boards_.clear();
     std::sort(boards.begin(), boards.end(), [](const RectangularGridPattern &a, const RectangularGridPattern &b) { return a.score < b.score; });
-    for (auto& b: boards)
+    for (RectangularGridPattern& b: boards)
     {
-        std::vector<std::vector<corecvs::Vector2dd>> board;
+        BoardCornersType board;
         for (auto& v: b.cornerIdx)
         {
             std::vector<corecvs::Vector2dd> row;

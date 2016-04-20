@@ -37,12 +37,28 @@ public:
         this->data = _data;
     }
 
+
+    explicit Float32x8(const float * const data_ptr)
+    {
+        this->data = _mm256_loadu_ps(data_ptr);
+    }
+
     /**
     *  Constructor from integer type
     **/
     /*explicit Float32x8(const Int32x4 &other) {
         this->data = _mm_cvtepi32_ps(other.data);
     }*/
+
+    inline static Float32x8 Zero()
+    {
+        return Float32x8(_mm256_setzero_ps());
+    }
+
+    inline static Float32x8 Broadcast(const float *data_ptr)
+    {
+        return Float32x8(_mm256_broadcast_ss(data_ptr));
+    }
 
     /**
     *  Fills the vector with 4 same float values
@@ -79,6 +95,25 @@ public:
     {
         return Int32x4(_mm256_cvttps_epi32(this->data));
     }*/
+
+
+    void load(float * const data)
+    {
+        this->data = _mm256_loadu_ps(data);
+    }
+
+    void save(float * const data) const
+    {
+        _mm256_storeu_ps(data, this->data);
+    }
+
+    /** Save aligned.
+     * \remark Not safe to use until you exactly know what you are doing
+     **/
+    void saveAligned(float * const data) const
+    {
+        _mm256_store_ps(data, this->data);
+    }
 
     /* Arithmetics operations */
     friend Float32x8 operator +(const Float32x8 &left, const Float32x8 &right);
@@ -131,6 +166,14 @@ FORCE_INLINE Float32x8 operator *=(Float32x8 &left, const Float32x8 &right) {
 FORCE_INLINE Float32x8 operator /=(Float32x8 &left, const Float32x8 &right) {
     left.data = _mm256_div_ps(left.data, right.data);
     return left;
+}
+
+FORCE_INLINE Float32x8 multiplyAdd(const Float32x8 &mul1, const Float32x8 &mul2, const Float32x8 &add1) {
+#ifdef WITH_FMA
+    return Float32x8(_mm256_fmadd_ps(mul1.data, mul2.data, add1.data));
+#else
+    return mul1 * mul2 + add1;
+#endif
 }
 
 /* Some functions working with integer operations */

@@ -106,11 +106,11 @@ public:
     typedef TraitGeneric<double> FallbackTraits;
 
     typedef TraitGeneric<double>::Type InternalType;
-    static const int step = DoublexT4<5>::SIZE;
+    static const int step = DoublexT4<3>::SIZE;
 
-    typedef DoublexT4<5> Type;
-    typedef DoublexT4<5> SignedType;
-    typedef DoublexT4<5> ExtendedType;
+    typedef DoublexT4<3> Type;
+    typedef DoublexT4<3> SignedType;
+    typedef DoublexT4<3> ExtendedType;
 };
 
 class TraitFloatBufferVector8x5 {
@@ -120,9 +120,9 @@ public:
     typedef TraitGeneric<float>::Type InternalType;
     static const int step = FloatT8<5>::SIZE;
 
-    typedef FloatT8<5> Type;
-    typedef FloatT8<5> SignedType;
-    typedef FloatT8<5> ExtendedType;
+    typedef FloatT8<3> Type;
+    typedef FloatT8<3> SignedType;
+    typedef FloatT8<3> ExtendedType;
 };
 
 #elif defined( WITH_SSE )
