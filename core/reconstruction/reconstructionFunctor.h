@@ -98,7 +98,7 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
     int lastProjection;
     int getErrorComponentsPerPoint();
 
-    std::vector<CameraFixture*> orientableFixtures, translateableFixtures, translationConstrainedFixtures;
+    std::vector<CameraFixture*> orientableFixtures, translateableFixtures;// translationConstrainedFixtures;
     std::vector<FixtureCamera*> focalTunableCameras, principalTunableCameras;
     /*
      * These are DoF limits for cameras/fixtures
@@ -110,9 +110,9 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
      * D) principal-tunable cameras (>= 6 3d-points)
      */
     const int    MINIMAL_TRACKED_FOR_ORIENTATION = 3,
-                 MINIMAL_TRACKED_FOR_TRANSLATION = 3,
-                 MINIMAL_TRACKED_FOR_FOCALS      = 4,
-                 MINIMAL_TRACKED_FOR_PRINCIPALS  = 6,
+                 MINIMAL_TRACKED_FOR_TRANSLATION = 6,
+                 MINIMAL_TRACKED_FOR_FOCALS      = 7,
+                 MINIMAL_TRACKED_FOR_PRINCIPALS  = 9,
     // Inputs/outputs per item
                  INPUTS_PER_ORIENTATION          = 4,
                    INPUTS_PER_TRANSLATION          = 3,
