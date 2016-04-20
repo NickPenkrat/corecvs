@@ -270,29 +270,102 @@ void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams 
         }
     }
     // Since our matches are reflective, we can store them only once
-    auto& ref = pipeline.refinedMatches.matchSets;
-    for (auto& ms: ref)
+    /*
+     * XXX: I've added flag for merging matches from all cameras.
+     *         This works almost as if we were merging all pictures from
+     *         all cameras of photostation into a single image
+     */
+    if (!params.matchF2F)
     {
-        CORE_ASSERT_TRUE_S(map.count((int)ms.imgA));
-        CORE_ASSERT_TRUE_S(map.count((int)ms.imgB));
-        auto id1 = map[(int)ms.imgA];
-        auto id2 = map[(int)ms.imgB];
-        bool swap = !(id1 < id2);
-
-        auto idA = swap ? id2 : id1;
-        auto idB = swap ? id1 : id2;
-        CORE_ASSERT_TRUE_S(idA.u != WPP::UWILDCARD && idA.v != WPP::VWILDCARD);
-        CORE_ASSERT_TRUE_S(idB.u != WPP::UWILDCARD && idB.v != WPP::VWILDCARD);
-
-        auto& mset = matches[idA][idB];
-        for (auto& m: ms.matches)
+        auto& ref = pipeline.refinedMatches.matchSets;
+        for (auto& ms: ref)
         {
-            int fA = swap ? m.featureB : m.featureA;
-            int fB = swap ? m.featureA : m.featureB;
-            mset.emplace_back(fA, fB, m.best2ndBest);
+            CORE_ASSERT_TRUE_S(map.count((int)ms.imgA));
+            CORE_ASSERT_TRUE_S(map.count((int)ms.imgB));
+            auto id1 = map[(int)ms.imgA];
+            auto id2 = map[(int)ms.imgB];
+            bool swap = !(id1 < id2);
+
+            auto idA = swap ? id2 : id1;
+            auto idB = swap ? id1 : id2;
+            CORE_ASSERT_TRUE_S(idA.u != WPP::UWILDCARD && idA.v != WPP::VWILDCARD);
+            CORE_ASSERT_TRUE_S(idB.u != WPP::UWILDCARD && idB.v != WPP::VWILDCARD);
+
+            auto& mset = matches[idA][idB];
+            for (auto& m: ms.matches)
+            {
+                int fA = swap ? m.featureB : m.featureA;
+                int fB = swap ? m.featureA : m.featureB;
+                mset.emplace_back(fA, fB, m.best2ndBest);
+            }
         }
     }
+    else
+    {
+        auto &ref = pipeline.refinedMatches.matchSets;
+        std::unordered_map<std::pair<WPP, int>, std::vector<std::tuple<WPP, int, double, double>>> matchMap;
+        for (auto& ms: ref)
+        {
+            CORE_ASSERT_TRUE_S(map.count((int)ms.imgA));
+            CORE_ASSERT_TRUE_S(map.count((int)ms.imgB));
+            auto id1 = map[(int)ms.imgA];
+            auto id2 = map[(int)ms.imgB];
+            bool swap = !(id1 < id2);
 
+            auto idA = swap ? id2 : id1;
+            auto idB = swap ? id1 : id2;
+            CORE_ASSERT_TRUE_S(idA.u != WPP::UWILDCARD && idA.v != WPP::VWILDCARD);
+            CORE_ASSERT_TRUE_S(idB.u != WPP::UWILDCARD && idB.v != WPP::VWILDCARD);
+
+#if 0
+            auto& mset = matches[idA][idB];
+            for (auto& m: ms.matches)
+            {
+                int fA = swap ? m.featureB : m.featureA;
+                int fB = swap ? m.featureA : m.featureB;
+                mset.emplace_back(fA, fB, m.best2ndBest);
+            }
+#else
+            for (auto& m: ms.matches)
+            {
+                int fA = swap ? m.featureB : m.featureA;
+                int fB = swap ? m.featureA : m.featureB;
+                matchMap[std::make_pair(idA, fA)].emplace_back(idB, fB, m.distance, m.best2ndBest);
+            }
+
+#endif
+        }
+        for (auto& p: matchMap)
+        {
+            auto& vp = p.second;
+            std::sort(vp.begin(), vp.end(), [&](const decltype(vp[0]) &a, const decltype(vp[0]) &b) { return std::get<2>(a) < std::get<2>(b); });
+            if (vp.size() > 1)
+            {
+                double dA1 = std::get<2>(vp[0]),
+                       dB1 = std::get<2>(vp[1]);
+                double dA2 = dA1 / std::get<3>(vp[0]),
+                       dB2 = dB1 / std::get<3>(vp[1]);
+                double best2ndBest = dA1 / std::max(dA2, std::max(dB1, dB2));
+                std::get<3>(vp[0]) = best2ndBest;
+                vp.resize(1);
+            }
+        }
+        for (auto& vp: matchMap)
+        {
+            if (!(vp.first.first < std::get<0>(vp.second[0])))
+                continue;
+            auto& v = matchMap[std::make_pair(std::get<0>(vp.second[0]), std::get<1>(vp.second[0]))];
+            if (!v.size())
+                continue;
+            auto wpp = std::get<0>(v[0]);
+            auto fea = std::get<1>(v[0]);
+            if (!(wpp == vp.first.first))
+                continue;
+            if (fea != vp.first.second)
+                continue;
+            matchMap[std::make_pair(vp.first.first, vp.first.second)].emplace_back(wpp, std::get<1>(vp.second[0]), std::get<2>(vp.second[0]), std::get<3>(vp.second[0]));
+        }
+    }
     printMatchStats();
 }
 

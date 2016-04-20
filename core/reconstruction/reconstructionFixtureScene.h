@@ -15,6 +15,7 @@ struct FeatureDetectionParams
     std::string descriptor = "ORB";
     std::string matcher    = "BF";
     double b2bThreshold = 0.9;
+    bool matchF2F = false;
 };
 
 enum class ReconstructionState
@@ -42,6 +43,16 @@ struct PhotostationInitialization
     //       supplying them as initialization data
     std::vector<SceneFeaturePoint*> staticPoints;
     Affine3DQ initData;
+    /*
+     * NOTE: This values seems to be accurate only if we are dealing
+     *       with measured fixtures.
+     *       If we perform picture collection and measurements in different
+     *       moments (and do it crudely), then we should use less modest
+     *       error estimates.
+     *       This matrix represents "invers square root" from covariance estimate
+     *       for position accuracy (if your covariance matrix decomposes into
+     *       V'DV, then we are looking for (1/sqrt(D))*V
+     */
     Matrix33  positioningAccuracy = corecvs::Matrix33(0.005, 0, 0, 0, 0.005, 0, 0, 0, 0.005).inv();
     bool enforcePosition = true;
     double    rotationalAccuracy;

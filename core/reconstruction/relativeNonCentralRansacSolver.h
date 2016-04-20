@@ -14,7 +14,7 @@ namespace corecvs
 
 struct RelativeNonCentralRansacSolverSettings
 {
-    RelativeNonCentralRansacSolverSettings(size_t maxIterations = 1000000, double inlierThreshold = 1.0)
+    RelativeNonCentralRansacSolverSettings(size_t maxIterations = 400000, double inlierThreshold = 1.0)
         : maxIterations(maxIterations)
         , inlierThreshold(inlierThreshold)
     {
@@ -46,6 +46,12 @@ public:
         , const MatchContainer &matchesRansac
         , const MatchContainer &matchesAll
         , const RelativeNonCentralRansacSolverSettings &settings = RelativeNonCentralRansacSolverSettings());
+    RelativeNonCentralRansacSolver(
+          CameraFixture* query,
+          const Affine3DQ firstTry
+        , const MatchContainer &matchesRansac
+        , const MatchContainer &matchesAll
+        , const RelativeNonCentralRansacSolverSettings &settings = RelativeNonCentralRansacSolverSettings());
     ~RelativeNonCentralRansacSolver()
     {
         double total = totalEstiamte + totalSample + totalCheck;
@@ -53,6 +59,7 @@ public:
     }
     size_t getInliersCount();
     void run();
+    void makeTry(const Affine3DQ &hypo);
     void fit(double distanceGuess = 10.0);
     corecvs::Affine3DQ getBestHypothesis() const;
     std::vector<int> getBestInliers() const;

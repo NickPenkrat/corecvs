@@ -62,9 +62,16 @@ void corecvs::PhotostationPlacer::paintTracksOnImages(bool pairs)
     std::vector<std::pair<WPP, std::string>> images;
     for (auto& p: scene->images)
     {
+        bool isPlaced = false;
+        for (auto& cf: scene->placedFixtures)
+            if (cf == p.first.u)
+                isPlaced = true;
+        if (!isPlaced)
+            continue;
         images.push_back(std::make_pair(p.first, p.second));
     }
-    corecvs::parallelable_for(0, (int)images.size(), ParallelTrackPainter(images, scene, colorizer, pairs));
+    int N = (int)images.size();
+    corecvs::parallelable_for(0, pairs ? N * N : N, ParallelTrackPainter(images, scene, colorizer, pairs));
 }
 
 int corecvs::PhotostationPlacer::getMovablePointCount()
@@ -299,10 +306,15 @@ void corecvs::PhotostationPlacer::addSecondPs()
 
 void corecvs::PhotostationPlacer::create2PointCloud()
 {
-    CORE_ASSERT_TRUE_S(scene->placedFixtures.size() == 2);
-    auto psA = scene->placedFixtures[0];
-    auto psB = scene->placedFixtures[1];
+    auto& placedFixtures = scene->placedFixtures;
+    for (size_t A = 0; A < placedFixtures.size(); ++A)
+        for (size_t B = A + 1; B < placedFixtures.size(); ++B)
+            create2PointCloud(placedFixtures[A], placedFixtures[B]);
+}
 
+void corecvs::PhotostationPlacer::create2PointCloud(CameraFixture* psA, CameraFixture* psB)
+{
+    std::cout << "Creating 2-point tracks from " << psA->name << psB->name << std::endl;
     auto freeFeatures = scene->getUnusedFeatures(psA, psB);
 
     std::vector<std::tuple<FixtureCamera*, int, FixtureCamera*, int, FixtureCamera*, int>> trackCandidates;
@@ -451,15 +463,17 @@ void corecvs::PhotostationPlacer::fit(const PhotostationPlacerOptimizationType &
 {
     if (scene->placedFixtures.size() < 2)
         return;
+    auto oldParams = optimizationParams;
     optimizationParams = params;
     getErrorSummaryAll();
-    corecvs::LevenbergMarquardtSparse lm;
+    corecvs::LevenbergMarquardt lm;//Sparse lm;
     ReconstructionFunctor orient(scene, errorType, optimizationParams, 1.0);
     ReconstructionNormalizationFunctor orientNorm(&orient);
     lm.f = &orient;
     lm.normalisation = &orientNorm;
     lm.maxIterations = num;
     lm.trace = false;
+//    lm.traceMatrix = true;
     std::vector<double> input(orient.getInputNum());
     std::vector<double> out(orient.getOutputNum());
     if (orient.getOutputNum() <=  orient.getInputNum())
@@ -482,6 +496,7 @@ void corecvs::PhotostationPlacer::fit(const PhotostationPlacerOptimizationType &
     for (auto p: cntr)
         std::cout << p.first << "\t" << p.second << std::endl;
     scene->validateAll();
+    optimizationParams = oldParams;
 }
 
 void corecvs::PhotostationPlacer::appendTracks(const std::vector<int> &inlierIds, CameraFixture* fixture, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &possibleTracks)
@@ -562,6 +577,7 @@ bool corecvs::PhotostationPlacer::appendP6P()
     // 2. Get all 2d<->2d correspondeces with already aligned fixtures
     // 3. Run solver
     // 4. Return true if solution meets inlier threshold and gives enough confidence
+    std::cout << "ENTERING P6P" << std::endl;
     corecvs::Affine3DQ tform;
     double scale = 1.0;
 
@@ -577,9 +593,16 @@ bool corecvs::PhotostationPlacer::appendP6P()
     tform.shift = -mean;
     scene->transform(tform);
 
+    std::cout << "MEANSHIFTED" << std::endl;
+
     std::vector<std::pair<corecvs::CameraFixture*, decltype(scene->getPhotostationMatches({}, 0))>> matches;
-    for (auto& fixture: scene->placingQueue)
+    for (size_t iii = 0; iii < speculativity && iii < scene->placingQueue.size(); ++iii)
+    {
+        auto fixture = scene->placingQueue[iii];
         matches.emplace_back(fixture, scene->getPhotostationMatches(scene->placedFixtures, fixture));
+    }
+
+    std::vector<std::tuple<double, double, corecvs::CameraFixture*, corecvs::Affine3DQ>> log;
 
     std::sort(matches.begin(), matches.end(), [](const decltype(matches)::value_type &a, const decltype(matches)::value_type &b) { return a.second.size() > b.second.size(); });
 
@@ -595,6 +618,8 @@ bool corecvs::PhotostationPlacer::appendP6P()
         scene->filterEssentialRansac(scene->placedFixtures, {p.first}, params.essentialFilterParams);
         auto psB = p.first;
         auto B = psB;
+
+        std::cout << "STARTING WITH " << B->name << std::endl;
 
         auto matches = scene->getPhotostationMatches(scene->placedFixtures, psB);
         RelativeNonCentralRansacSolver::MatchContainer rm, mm;
@@ -636,6 +661,12 @@ bool corecvs::PhotostationPlacer::appendP6P()
                 }
             }
         }
+        if (activeP6PEstimates.count(psB))
+        {
+            auto h = activeP6PEstimates[psB];
+            h.shift -= mean;
+            solver.makeTry(h);
+        }
         solver.run();
         auto best = solver.getBestHypothesis();
         for (auto &A: scene->placedFixtures)
@@ -643,38 +674,46 @@ bool corecvs::PhotostationPlacer::appendP6P()
         std::cout << "::" << psB->name << " " << best.shift << " " << best.rotor << std::endl;
         psB->location = best;
         std::cout << solver.getInliersCount() << " inliers" << std::endl;
-        if (solver.getInliersCount() < minimalInlierCount || solver.getGamma() > maximalFailureProbability )
-        {
-            scene->matches = scene->matchesCopy;
-            std::cout << "Seems that ";
-            for (auto &A: scene->placedFixtures)
-                std::cout << A->name;
-            std::cout << "<>" << B->name << " does not match in P6P sense: inliers: " << solver.getInliersCount() << " P: " << solver.getGamma() << std::endl;
-            continue;
-        }
-
-        scene->placedFixtures.push_back(psB);
-        for (auto& cf: scene->placedFixtures)
-            std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ scene->placedFixtures[0]->location.rotor.conjugated()) << std::endl;
-
-        std::remove(scene->placingQueue.begin(), scene->placingQueue.end(), psB);
-        scene->placingQueue.resize(scene->placingQueue.size() - 1);
-        if (!scene->is3DAligned)
-        {
-           SceneAligner::TryAlign(scene, tform, scale);
-           std::cout << tform << scale << "<<<< tform" << std::endl;
-        }
-        else
-        {
-            tform.shift = mean;
-            scene->transform(tform);
-        }
-        for (auto& cf: scene->placedFixtures)
-            std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ scene->placedFixtures[0]->location.rotor.conjugated()) << std::endl;
         scene->matches = scene->matchesCopy;
-        return true;
+        std::cout << "P6P: ";
+        for (auto &A: scene->placedFixtures)
+            std::cout << A->name;
+        std::cout << "<>" << B->name << " in P6P sense: inliers: " << solver.getInliersCount() << " P: " << solver.getGamma() << std::endl;
+        log.emplace_back(solver.getInliersCount(), 1.0 - solver.getGamma(), B, best);
+        activeP6PEstimates[B].rotor = best.rotor;
+        activeP6PEstimates[B].shift = best.shift + mean;
     }
-    return false;
+    std::sort(log.begin(), log.end(), [](const decltype(log)::value_type &a, const decltype(log)::value_type &b) { return std::get<0>(a) == std::get<0>(b) ? std::get<1>(a) > std::get<1>(b) : std::get<0>(a) > std::get<0>(b); });
+
+    if (std::get<0>(log[0]) < 20)
+        return false;
+
+    auto B = std::get<2>(log[0]);
+    auto psB = B;
+    auto best = std::get<3>(log[0]);
+    for (auto &A: scene->placedFixtures)
+        std::cout << A->name;
+    std::cout << "::" << psB->name << " " << best.shift << " " << best.rotor << std::endl;
+    psB->location = best;
+    std::cout << std::get<0>(log[0]) << " inliers" << std::endl;
+
+    scene->placedFixtures.push_back(psB);
+    for (auto& cf: scene->placedFixtures)
+        std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ scene->placedFixtures[0]->location.rotor.conjugated()) << std::endl;
+
+    std::remove(scene->placingQueue.begin(), scene->placingQueue.end(), psB);
+    scene->placingQueue.resize(scene->placingQueue.size() - 1);
+    tform.shift = mean;
+    scene->transform(tform);
+
+    if (!scene->is3DAligned)
+    {
+        SceneAligner::TryAlign(scene, tform, scale);
+        std::cout << tform << scale << "<<<< tform" << std::endl;
+    }
+    for (auto& cf: scene->placedFixtures)
+        std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ scene->placedFixtures[0]->location.rotor.conjugated()) << std::endl;
+    return true;
 }
 
 bool corecvs::PhotostationPlacer::appendP3P(CameraFixture *f)
@@ -832,18 +871,14 @@ void corecvs::PhotostationPlacer::testNewPipeline()
     scene->state = ReconstructionState::APPENDABLE;
     while (scene->placingQueue.size())
     {
+        std::cout << "PAINTING" << std::endl;
+        paintTracksOnImages(true);
+        std::cout << "PAINTED" << std::endl;
         if (!appendPs() && !appendP6P())
         {
             std::cout << "RECONSTRUCTION FAILED!!!1111" << std::endl;
-            CORE_ASSERT_TRUE_S(false);
-        }
-        create2PointCloud();
-        for (size_t aId = 0; aId + 1 < scene->placedFixtures.size(); ++aId)
-        {
-            for (size_t bId = aId + 1; bId + 1 < scene->placedFixtures.size(); ++bId)
-            {
-                scene->buildTracks(*scene->placedFixtures.rbegin(), scene->placedFixtures[aId], scene->placedFixtures[bId], trackInlierThreshold, distanceLimit);
-            }
+//            CORE_ASSERT_TRUE_S(false);
+            return;
         }
         if (!scene->is3DAligned)
         {
@@ -856,8 +891,18 @@ void corecvs::PhotostationPlacer::testNewPipeline()
         {
             fit(optimizationParams, 100);
         }
+        create2PointCloud();
+        std::cout << scene->trackedFeatures.size() << " reconstructed points" << std::endl;
+        for (size_t aId = 0; aId + 1 < scene->placedFixtures.size(); ++aId)
+        {
+            for (size_t bId = aId + 1; bId + 1 < scene->placedFixtures.size(); ++bId)
+            {
+                scene->buildTracks(*scene->placedFixtures.rbegin(), scene->placedFixtures[aId], scene->placedFixtures[bId], trackInlierThreshold, distanceLimit);
+            }
+        }
         for (auto& cf: scene->placedFixtures)
             std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ scene->placedFixtures[0]->location.rotor.conjugated()) << std::endl;
+        scene->printTrackStats();
     }
 }
 
