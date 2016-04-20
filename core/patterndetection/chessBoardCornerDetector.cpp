@@ -473,21 +473,21 @@ void ChessBoardCornerDetector::computeCost()
             });
 #endif
 #if 10
-    stats->enterContext("Cost->");
+    if (stats != NULL) stats->enterContext("Cost->");
 
     for (size_t i = 0; i <  kernels.size(); i++)
     {
-        stats->startInterval();
+        if (stats != NULL) stats->startInterval();
 
         CornerKernelSet &cks = kernels[i];
         DpImage kc;
         cks.computeCost(img, kc);
         cost.binaryOperationInPlace(kc, [](const double &a, const double &b) { return std::max(a, b); });
 
-        stats->endInterval("kernel" +  std::to_string(i));
+        if (stats != NULL) stats->endInterval("kernel" +  std::to_string(i));
     }
 
-    stats->leaveContext();
+    if (stats != NULL) stats->leaveContext();
 #else
     for (int i = 0; i < kernels.size(); ++i)
     {
