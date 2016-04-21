@@ -460,6 +460,9 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *w
 
 void PointListEditImageWidgetUnited::toolButtonReleased(QWidget *button)
 {
+    if (mObservationListModel == nullptr)
+        return;
+
     mUi->widget->unsetCursor();
     AdvancedImageWidget::toolButtonReleased(button);
 
