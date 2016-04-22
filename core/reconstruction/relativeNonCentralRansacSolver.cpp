@@ -18,6 +18,25 @@ corecvs::RelativeNonCentralRansacSolver::RelativeNonCentralRansacSolver(CameraFi
 }
 
 
+corecvs::RelativeNonCentralRansacSolver::RelativeNonCentralRansacSolver(CameraFixture *query, const Affine3DQ firstTry, const MatchContainer &matchesRansac, const MatchContainer &matchesAll, const RelativeNonCentralRansacSolverSettings &settings)
+    : RelativeNonCentralRansacSolverSettings(settings), query(query), matchesRansac(matchesRansac), matchesAll(matchesAll)
+{
+    buildDependencies();
+    makeTry(firstTry);
+}
+
+
+void corecvs::RelativeNonCentralRansacSolver::makeTry(const corecvs::Affine3DQ &hypo)
+{
+
+    std::cout << "RNCRS::makeTry()" << std::endl;
+    Estimator es(this, inlierThreshold, restrictions, shift, scale);
+    es.hypothesis.push_back(hypo);
+    es.selectInliers();
+    std::cout << "RNCRS::makeTry()" << std::endl;
+}
+
+
 void corecvs::RelativeNonCentralRansacSolver::run()
 {
     if (matchesRansac.size() < FEATURES_FOR_MODEL)
@@ -96,6 +115,11 @@ void corecvs::RelativeNonCentralRansacSolver::Estimator::sampleModel()
 void corecvs::RelativeNonCentralRansacSolver::Estimator::makeHypo()
 {
     hypothesis = corecvs::RelativeNonCentralP6PSolver::SolveRelativeNonCentralP6P(pluckerRef, pluckerQuery);
+}
+
+void corecvs::RelativeNonCentralRansacSolver::Estimator::selectInliers()
+{
+    std::vector<int> currentInliers, bestInliers;
     int id = 0;
     for (auto a: hypothesis)
     {
@@ -115,11 +139,6 @@ void corecvs::RelativeNonCentralRansacSolver::Estimator::makeHypo()
         hypothesis[id++] = a;
     }
     hypothesis.resize(id);
-}
-
-void corecvs::RelativeNonCentralRansacSolver::Estimator::selectInliers()
-{
-    std::vector<int> currentInliers, bestInliers;
     CameraFixture query = *solver->query;
     auto& fundamentalsCacheId = solver->fundamentalsCacheId;
     auto& matchesAll = solver->matchesAll;

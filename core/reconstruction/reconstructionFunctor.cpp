@@ -96,20 +96,28 @@ void corecvs::ReconstructionFunctor::computeInputs()
     CORE_ASSERT_TRUE_S(scene->placedFixtures.size());
     IF(DEGENERATE_ORIENTATIONS,
         if (counter[scene->placedFixtures[0]] >= MINIMAL_TRACKED_FOR_ORIENTATION)
-            orientableFixtures.push_back(scene->placedFixtures[0]);)
+        {
+            orientableFixtures.push_back(scene->placedFixtures[0]);
+            std::cout << "DEGENERATE_ORIENTATIONS" << std::endl;
+        })
     IF(NON_DEGENERATE_ORIENTATIONS,
         for (size_t i = 1; i < scene->placedFixtures.size(); ++i)
             if (counter[scene->placedFixtures[i]] >= MINIMAL_TRACKED_FOR_ORIENTATION)
-                orientableFixtures.push_back(scene->placedFixtures[i]);)
+                orientableFixtures.push_back(scene->placedFixtures[i]);
+        std::cout << "NON_DEGENERATE_ORIENTATIONS: " << orientableFixtures.size() << std::endl;)
 
     IF(DEGENERATE_TRANSLATIONS,
         if (counter[scene->placedFixtures[0]] > MINIMAL_TRACKED_FOR_TRANSLATION)
-            translateableFixtures.push_back(scene->placedFixtures[0]);)
+        {
+            translateableFixtures.push_back(scene->placedFixtures[0]);
+            std::cout << "DEGENERATE_TRANSLATIONS" << std::endl;
+        })
 
     IF(NON_DEGENERATE_TRANSLATIONS,
         for (size_t i = 1; i < scene->placedFixtures.size(); ++i)
             if (counter[scene->placedFixtures[i]] >= MINIMAL_TRACKED_FOR_TRANSLATION)
-                translateableFixtures.push_back(scene->placedFixtures[i]);)
+                translateableFixtures.push_back(scene->placedFixtures[i]);
+        std::cout << "NON_DEGENERATE_TRANSLATIONS: " << translateableFixtures.size() << std::endl;)
 
     std::set<FixtureCamera*> distinctCameras;
     for (auto& fixture: scene->placedFixtures)
@@ -119,12 +127,14 @@ void corecvs::ReconstructionFunctor::computeInputs()
     IF(FOCALS,
         for (auto& cam: distinctCameras)
             if (counter[cam] > MINIMAL_TRACKED_FOR_FOCALS)
-                focalTunableCameras.push_back(cam);)
+                focalTunableCameras.push_back(cam);
+        std::cout << "FOCALS: " << focalTunableCameras.size() << std::endl;)
 
     IF(PRINCIPALS,
         for (auto& cam: distinctCameras)
             if (counter[cam] > MINIMAL_TRACKED_FOR_PRINCIPALS)
-                principalTunableCameras.push_back(cam);)
+                principalTunableCameras.push_back(cam);
+        std::cout << "PRINCIPALS: " << focalTunableCameras.size() << std::endl;)
 }
 
 void corecvs::ReconstructionFunctor::computeOutputs()
@@ -270,12 +280,12 @@ void corecvs::ReconstructionFunctor::computeErrors(double *out, const std::vecto
     int idx = currLastProjection;
     for (int i = 0; i < (int)positions.size(); i += 3)
     {
-        auto ps = translationConstrainedFixtures[i / 3];
+        auto ps = positionConstrainedCameras[i / 3];
 
         auto diff = ps->location.shift - scene->initializationData[ps].initData.shift;
         auto foo = scene->initializationData[ps].positioningAccuracy * diff * scalerPosition;
         for (int j = 0; j < 3; ++j)
-            out[idx++] = foo[i];
+            out[idx++] = foo[j];
     }
 }
 
