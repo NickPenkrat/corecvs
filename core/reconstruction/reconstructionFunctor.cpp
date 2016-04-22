@@ -285,7 +285,7 @@ void corecvs::ReconstructionFunctor::computeErrors(double *out, const std::vecto
         auto diff = ps->location.shift - scene->initializationData[ps].initData.shift;
         auto foo = scene->initializationData[ps].positioningAccuracy * diff * scalerPosition;
         for (int j = 0; j < 3; ++j)
-            out[idx++] = foo[i];
+            out[idx++] = foo[j];
     }
 }
 
