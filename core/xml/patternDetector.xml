@@ -8,24 +8,24 @@
 
   <class name="Checkerboard Detection Parameters">
     <field type="bool"         name="Estimate undistorted from distorted" defaultValue="true"/>
-    <field type="bool"         name="Use Undistortion"      defaultValue="true"/>
+    <field type="bool"         name="useUndistortion"      defaultValue="true"/>
 
     <field type="Checkerboard Detection Algorithm" name="Algorithm" defaultValue="0" />
 
 
-    <field type="ImageChannel" name="Channel"            defaultValue="3"   />
-    <field type="double"       name="Cell Size Hor"      defaultValue="50"   suffix="mm" />
-    <field type="double"       name="Cell Size Vert"     defaultValue="50"   suffix="mm" />
+    <field type="ImageChannel" name="Channel"          defaultValue="3"   />
+    <field type="double"       name="cellSizeHor"      defaultValue="50"   suffix="mm" />
+    <field type="double"       name="cellSizeVert"     defaultValue="50"   suffix="mm" />
 
-    <field type="bool"         name="Clean existing"     defaultValue="true" />
+    <field type="bool"         name="cleanExisting"     defaultValue="true" />
 
-    <field type="int"          name="Precise Diameter"   defaultValue="50"      min="0"   max="999999"  />
-    <field type="int"          name="Iteration count"    defaultValue="50"      min="1"   max="999999"  />
-    <field type="double"       name="Min accuracy"       defaultValue="0.01"    min="0.0" max="999999" suffix="px" decimals="4"/>
+    <field type="int"          name="preciseDiameter"   defaultValue="50"      min="0"   max="999999"  />
+    <field type="int"          name="iterationCount"    defaultValue="50"      min="1"   max="999999"  />
+    <field type="double"       name="minAccuracy"       defaultValue="0.01"    min="0.0" max="999999" suffix="px" decimals="4"/>
 
 
-    <field type="bool"         name="Partial Board"       defaultValue="true"/>
-    <field type="bool"         name="Fast board Speedup"  defaultValue="true"/>
+    <field type="bool"         name="partialBoard"      defaultValue="true"/>
+    <field type="bool"         name="fastBoardSpeedup"  defaultValue="true"/>
     <field type="bool"         name="Draw SGFs on boards" defaultValue="true"/>
     <field type="bool"         name="Skip undistorted with no distorted board" defaultValue="false"/>
 
@@ -34,20 +34,22 @@
 
   <class name="Chess Board Corner Detector Params Base">
      <field type="bool"   name="produceDebug"        defaultValue="false"/>
-     <field type="double" name="gradientCrossWidth"  defaultValue="3.0" comment="Width of cross for corner gradient-score" />
+     <field type="bool"   name="floatSpeedup"        defaultValue="false"/>
 
-     <!-- Insert vectors here -->
+     <!--
+     <field type="double" name="gradientCrossWidth"  defaultValue="3.0" comment="Width of cross for corner gradient-score" />
+     -->
 
      <field type="double" name="sectorSizeDeg"  suffix="deg" defaultValue="90"    comment="Sector size in deg" />
      <field type="int"    name="histogramBins"               defaultValue="50"    comment="Number of bins for computing edge direction histogram" min="0"   max="999999"  />
 
-     <field type="double" name="minAngleDeg"  suffix="deg" defaultValue="30"      comment="Minimal angle between edges in deg" />
-     <field type="int"    name="neighborhood"              defaultValue="25"      comment="Typical radius for estimating edge-related data and refinig corner positions" min="0"   max="999999"  />
-     <field type="double" name="gradThreshold"             defaultValue="0.1"     comment="Gradient magnitude threshold" />
+     <field type="double" name="minAngleDeg"    suffix="deg" defaultValue="30"      comment="Minimal angle between edges in deg" />
+     <field type="int"    name="neighborhood"                defaultValue="25"      comment="Typical radius for estimating edge-related data and refinig corner positions" min="0"   max="999999"  />
+     <field type="double" name="gradThreshold"               defaultValue="0.1"     comment="Gradient magnitude threshold" />
 
-     <field type="double" name="orientationInlierThreshold" defaultValue="0.25" comment="Gradient orientation inlier threshold" />
-     <field type="double" name="inlierDistanceThreshold"    defaultValue="5.0"  comment="Threshold for distance to edge" />
-     <field type="double" name="updateThreshold"            defaultValue="4.0"  comment="Threshold for maximal corner-position update" />
+     <field type="double" name="orientationInlierThreshold"  defaultValue="0.25" comment="Gradient orientation inlier threshold" />
+     <field type="double" name="inlierDistanceThreshold"     defaultValue="5.0"  comment="Threshold for distance to edge" />
+     <field type="double" name="updateThreshold"             defaultValue="4.0"  comment="Threshold for maximal corner-position update" />
 
 
      <field type="double" name="scoreThreshold"            defaultValue="0.0"   comment="Threshold for final score" />
@@ -55,8 +57,10 @@
 
 
      <field type="double" name="meanshiftBandwidth"        defaultValue="1.0"   comment="Meanshift smoothing stdev" />
-     <field type="int"    name="nmsLocality"               defaultValue="20"    comment="Non Minimal Supresstion locality threshold" min="0"   max="999999"  />
-     <field type="double" name="Pattern Radius"            size="3" min="0" max="999999" defaultValue="0">
+     <field type="int"    name="nmsLocality"               defaultValue="20"    comment="Non Minimal Supresstion locality area" min="0"   max="999999" />
+     <field type="double" name="nmsThreshold"              defaultValue="0.025" comment="Non Minimal Supresstion threshold"     min="0"   max="99"     decimals="3" />
+
+     <field type="double" name="patternRadius"             size="3" min="0" max="999999" defaultValue="0">
           <def0>4</def0>
           <def1>8</def1>
           <def2>12</def2>

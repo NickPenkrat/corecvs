@@ -21,7 +21,7 @@ ChessBoardCornerDetectorParamsBaseControlWidget::ChessBoardCornerDetectorParamsB
     mUi->setupUi(this);
 
     QObject::connect(mUi->produceDebugCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->gradientCrossWidthSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->floatSpeedupCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->sectorSizeDegSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->histogramBinsSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->minAngleDegSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
@@ -34,6 +34,7 @@ ChessBoardCornerDetectorParamsBaseControlWidget::ChessBoardCornerDetectorParamsB
     QObject::connect(mUi->nRoundsSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->meanshiftBandwidthSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->nmsLocalitySpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->nmsThresholdSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->patternRadius, SIGNAL(valueChanged()), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->patternStartAngleDeg, SIGNAL(valueChanged()), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->cornerScores, SIGNAL(valueChanged()), this, SIGNAL(paramsChanged()));
@@ -65,7 +66,7 @@ void ChessBoardCornerDetectorParamsBaseControlWidget::getParameters(ChessBoardCo
 {
 
     params.setProduceDebug     (mUi->produceDebugCheckBox->isChecked());
-    params.setGradientCrossWidth(mUi->gradientCrossWidthSpinBox->value());
+    params.setFloatSpeedup     (mUi->floatSpeedupCheckBox->isChecked());
     params.setSectorSizeDeg    (mUi->sectorSizeDegSpinBox->value());
     params.setHistogramBins    (mUi->histogramBinsSpinBox->value());
     params.setMinAngleDeg      (mUi->minAngleDegSpinBox->value());
@@ -78,6 +79,7 @@ void ChessBoardCornerDetectorParamsBaseControlWidget::getParameters(ChessBoardCo
     params.setNRounds          (mUi->nRoundsSpinBox->value());
     params.setMeanshiftBandwidth(mUi->meanshiftBandwidthSpinBox->value());
     params.setNmsLocality      (mUi->nmsLocalitySpinBox->value());
+    params.setNmsThreshold     (mUi->nmsThresholdSpinBox->value());
     params.setPatternRadius    (mUi->patternRadius->value());
     params.setPatternStartAngleDeg(mUi->patternStartAngleDeg->value());
     params.setCornerScores     (mUi->cornerScores->value());
@@ -94,7 +96,7 @@ ChessBoardCornerDetectorParamsBase *ChessBoardCornerDetectorParamsBaseControlWid
 
     ChessBoardCornerDetectorParamsBase *result = new ChessBoardCornerDetectorParamsBase(
           mUi->produceDebugCheckBox->isChecked()
-        , mUi->gradientCrossWidthSpinBox->value()
+        , mUi->floatSpeedupCheckBox->isChecked()
         , mUi->sectorSizeDegSpinBox->value()
         , mUi->histogramBinsSpinBox->value()
         , mUi->minAngleDegSpinBox->value()
@@ -107,6 +109,7 @@ ChessBoardCornerDetectorParamsBase *ChessBoardCornerDetectorParamsBaseControlWid
         , mUi->nRoundsSpinBox->value()
         , mUi->meanshiftBandwidthSpinBox->value()
         , mUi->nmsLocalitySpinBox->value()
+        , mUi->nmsThresholdSpinBox->value()
         , mUi->patternRadius->value()
         , mUi->patternStartAngleDeg->value()
         , mUi->cornerScores->value()
@@ -119,7 +122,7 @@ void ChessBoardCornerDetectorParamsBaseControlWidget::setParameters(const ChessB
     // Block signals to send them all at once
     bool wasBlocked = blockSignals(true);
     mUi->produceDebugCheckBox->setChecked(input.produceDebug());
-    mUi->gradientCrossWidthSpinBox->setValue(input.gradientCrossWidth());
+    mUi->floatSpeedupCheckBox->setChecked(input.floatSpeedup());
     mUi->sectorSizeDegSpinBox->setValue(input.sectorSizeDeg());
     mUi->histogramBinsSpinBox->setValue(input.histogramBins());
     mUi->minAngleDegSpinBox->setValue(input.minAngleDeg());
@@ -132,6 +135,7 @@ void ChessBoardCornerDetectorParamsBaseControlWidget::setParameters(const ChessB
     mUi->nRoundsSpinBox->setValue(input.nRounds());
     mUi->meanshiftBandwidthSpinBox->setValue(input.meanshiftBandwidth());
     mUi->nmsLocalitySpinBox->setValue(input.nmsLocality());
+    mUi->nmsThresholdSpinBox->setValue(input.nmsThreshold());
     mUi->patternRadius->setValue(input.patternRadius());
     mUi->patternStartAngleDeg->setValue(input.patternStartAngleDeg());
     mUi->cornerScores->setValue(input.cornerScores());

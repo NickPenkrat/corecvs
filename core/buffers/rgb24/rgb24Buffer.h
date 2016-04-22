@@ -135,7 +135,7 @@ public:
 
     //void drawHistogram(Histogram* hist, int x, int y, int h, int w, uint16_t flags = FLAGS_INCLUDE_MARGIN);
 
-    void drawHistogram1024x512(Histogram *hist, int x, int y, uint16_t flags = FLAGS_INCLUDE_MARGIN);
+    void drawHistogram1024x512(Histogram *hist, int x, int y, uint16_t flags = FLAGS_INCLUDE_MARGIN, int hw = 1024, int hh = 512);
 
     void drawLineSimple (int x1, int y1, int x2, int y2, RGBColor color );
     void drawLine(int x1, int y1, int x2, int y2, RGBColor color );

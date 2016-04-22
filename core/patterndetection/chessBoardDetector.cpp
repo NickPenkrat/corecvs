@@ -82,7 +82,7 @@ bool ChessboardDetector::detectPattern(corecvs::RGB24Buffer &buffer)
     return detectPattern(grayscale);
 }
 
-bool ChessboardDetector::detectPatternCandidates(DpImage &buffer, std::vector<std::vector<std::vector<corecvs::Vector2dd>>> &boards)
+bool ChessboardDetector::detectPatternCandidates(DpImage &buffer, std::vector<BoardCornersType> &boards)
 {
     if (stats != NULL) stats->startInterval();
 
@@ -219,7 +219,9 @@ bool ChessboardDetector::classify(DpImage &img, CirclePatternGenerator &gen, cor
     int w = (int)bestBoard[0].size();
     int h = (int)bestBoard.size();
     std::vector<std::vector<int>> classifier(h - 1);
-    for (auto& cv: classifier) cv.resize(w - 1);
+    for (auto& cv: classifier)
+        cv.resize(w - 1);
+
     std::cout << w << " x " << h << std::endl;
 
     DpImage fin(buffer.h, buffer.w);
@@ -246,7 +248,7 @@ bool ChessboardDetector::classify(DpImage &img, CirclePatternGenerator &gen, cor
             C = bestBoard[i + 0][j + 1];
             D = bestBoard[i + 1][j + 1];
 
-            corecvs::Matrix33 res, orientation;
+            Matrix33 res, orientation;
             double score;
             int cl = classifier[i][j] = gen.getBestToken(img, {A, B, C, D}, score, orientation, res);
             if (cl >= 0)
@@ -257,10 +259,10 @@ bool ChessboardDetector::classify(DpImage &img, CirclePatternGenerator &gen, cor
             {
                 for (int j = 0; j < 1000; ++j)
                 {
-                    corecvs::Vector3dd pt = res * Vector3dd(j * (1e-3), i * (1e-3), 1.0);
+                    Vector3dd pt = res * Vector3dd(j * (1e-3), i * (1e-3), 1.0);
 
-                    int xx = pt[0], yy = pt[1];
-                    if (xx >= 0 && xx < img.w && yy >= 0 && yy < img.h)
+                    int xx = pt.x(), yy = pt.y();
+                    if (mask.isValidCoord(yy, xx))
                     {
                         mask.element(yy, xx) = 1.0;
                     }
@@ -293,29 +295,30 @@ bool ChessboardDetector::classify(DpImage &img, CirclePatternGenerator &gen, cor
                 for (int i = 0; i < 1000; ++i)
                 {
                     double alpha = i * 1e-3;
-                    Vector2dd AB = A * alpha + B * (1.0 - alpha);
-                    Vector2dd AC = A * alpha + C * (1.0 - alpha);
+                    Vector2dd AB = lerp(A, B, alpha);
+                    Vector2dd AC = lerp(A, C, alpha);
+
                     Vector3dd ab = res * Vector3dd(AB[0], AB[1], 1.0);
                     Vector3dd ac = res * Vector3dd(AC[0], AC[1], 1.0);
 
-                                    ab = ab * (1.0 / ab[2]);
-                                    int xxx = ab[0], yyy = ab[1];
-                                    for (int xx = xxx; xx < xxx + 3; ++xx)
-                                        for (int yy = yyy; yy < yyy + 3; ++yy)
-                                    if (xx >= 0 && xx < img.w && yy >= 0 && yy < img.h)
-                                    {
-                                        maskA.element(yy, xx) = 1.0;
-                                        fin.element(yy, xx) = 1.0;
-                                    }
-                                    ac = ac * (1.0 / ac[2]);
-                                    xxx = ac[0], yyy = ac[1];
-                                    for (int xx = xxx; xx < xxx + 3; ++xx)
-                                        for (int yy = yyy; yy < yyy + 3; ++yy)
-                                    if (xx >= 0 && xx < img.w && yy >= 0 && yy < img.h)
-                                    {
-                                        fin.element(yy, xx) = 1.0;
-                                        maskB.element(yy, xx) = 1.0;
-                                    }
+                            ab = ab * (1.0 / ab[2]);
+                            int xxx = ab[0], yyy = ab[1];
+                            for (int xx = xxx; xx < xxx + 3; ++xx)
+                                for (int yy = yyy; yy < yyy + 3; ++yy)
+                            if (xx >= 0 && xx < img.w && yy >= 0 && yy < img.h)
+                            {
+                                maskA.element(yy, xx) = 1.0;
+                                fin.element(yy, xx) = 1.0;
+                            }
+                            ac = ac * (1.0 / ac[2]);
+                            xxx = ac[0], yyy = ac[1];
+                            for (int xx = xxx; xx < xxx + 3; ++xx)
+                                for (int yy = yyy; yy < yyy + 3; ++yy)
+                            if (xx >= 0 && xx < img.w && yy >= 0 && yy < img.h)
+                            {
+                                fin.element(yy, xx) = 1.0;
+                                maskB.element(yy, xx) = 1.0;
+                            }
 
                 }
                 for (int i = 0; i < buffer.h; ++i)
@@ -370,7 +373,7 @@ size_t ChessboardDetector::detectPatterns(corecvs::DpImage &buffer)
     BoardAlignerParams activeAlignerParams = aligner->getAlignerParams();
 
     ChessBoardDetectorMode mode =  getMode(activeAlignerParams);
-    std::vector<std::vector<std::vector<corecvs::Vector2dd>>> boards;
+    std::vector<BoardCornersType> boards;
 
     auto detected = detectPatternCandidates(buffer, boards);
     std::cout << (detected ? "[Success]" : "[Fail]")<< " Detected " << corners.size() << " corners; assembled " << boards.size() << " boards." << std::endl;
@@ -387,7 +390,7 @@ size_t ChessboardDetector::detectPatterns(corecvs::DpImage &buffer)
         bool found = false;
         int bw = (int)b[0].size();
         int bh = (int)b.size();
-        std::vector<std::vector<corecvs::Vector2dd>> best;
+        BoardCornersType best;
 
         bool fitw = (bw == aligner->idealWidth);
         bool fith = (bh == aligner->idealHeight);
@@ -447,19 +450,32 @@ void ChessboardDetector::getPatterns(std::vector<corecvs::ObservationList>& patt
     patterns = allPatterns;
 }
 
-void ChessboardDetector::drawCorners(corecvs::RGB24Buffer & image)
+void ChessboardDetector::drawCorners(RGB24Buffer &image, bool details)
 {
+
     if (corners.size() > 0)
     {
         AbstractPainter<RGB24Buffer> p(&image);
         for (size_t i = 0; i < corners.size(); i++)
         {
-            p.drawCircle(corners[i].pos.x(), corners[i].pos.y(), 1, RGBColor::Cyan());
-            p.drawFormat(corners[i].pos.x() + 1, corners[i].pos.y() + 1, RGBColor::Cyan(), 2, "%d", i);
+            OrientedCorner &corner = corners[i];
+            if (details) {
+               image.drawLine(corner.pos, corner.pos + corner.v1 * 10.0, RGBColor::Red());
+               image.drawLine(corner.pos, corner.pos + corner.v2 * 10.0, RGBColor::Green());
+
+               p.drawCircle(corners[i].pos, 1, RGBColor::Cyan());
+               p.drawFormat(corners[i].pos.x() + 1, corners[i].pos.y() + 1, RGBColor::Cyan(), 2, "%d (%2.2lf)", i, corner.score);
+
+            } else {
+                p.drawCircle(corners[i].pos, 1, RGBColor::Cyan());
+                p.drawFormat(corners[i].pos.x() + 1, corners[i].pos.y() + 1, RGBColor::Cyan(), 2, "%d", i);
+            }
         }
     }
 
 }
+
+
 
 #if 0
 void ChessboardDetector::dumpState()

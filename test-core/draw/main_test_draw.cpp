@@ -26,6 +26,28 @@
 using namespace std;
 using namespace corecvs;
 
+
+TEST(Draw, testHistogram)
+{
+    RGB24Buffer *buffer = new RGB24Buffer(512, 512);
+
+    Histogram hist(0, 255);
+    for (size_t p = 0; p < hist.data.size(); p++) {
+        hist.data[p] = sin(p / 100.0) * 255.0;
+    }
+
+    buffer->drawHistogram1024x512(&hist,   0,   0, 0x1, 256, 256);
+
+    buffer->drawHistogram1024x512(&hist,   0, 256, 0x1, 256, 128);
+    buffer->drawHistogram1024x512(&hist, 256,   0, 0x1, 128, 256);
+
+
+
+    BMPLoader().save("hists.bmp", buffer);
+    delete_safe(buffer);
+}
+
+
 TEST(Draw, testCircles)
 {
     RGB24Buffer *buffer = new RGB24Buffer(21, 52);

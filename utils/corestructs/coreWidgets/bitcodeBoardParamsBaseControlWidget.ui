@@ -326,7 +326,7 @@
         <double>1</double>
        </property>
        <property name="value">
-        <double>-3</double>
+        <double>-3.5</double>
        </property>
        <property name="suffix">
         <string>cells</string>
@@ -355,7 +355,7 @@
         <double>1</double>
        </property>
        <property name="value">
-        <double>5</double>
+        <double>6.5</double>
        </property>
        <property name="suffix">
         <string>cells</string>

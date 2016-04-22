@@ -63,6 +63,7 @@ public:
     bool operator ()();
 
 
+    void drawBoardData(RGB24Buffer &buffer);
     void drawMarkerData(RGB24Buffer &buffer);
 
     /* Additionl outputs */
@@ -80,6 +81,8 @@ public:
     unsigned endOrientaion();
 
 protected:
+    double getChessBoardScore();
+
     Polygon getRectImage(int i, int j, Matrix33 transform);
 
     MarkerData detectMarker(Matrix33 homography, Matrix33 translation);
