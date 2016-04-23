@@ -31,9 +31,6 @@
 
 namespace corecvs {
 
-#define FLAGS_INCLUDE_MARGIN 0x1
-
-
 typedef AbstractContiniousBuffer<RGBColor, int32_t> RGB24BufferBase;
 
 class RGB24Buffer : public RGB24BufferBase,
@@ -135,6 +132,12 @@ public:
 
     //void drawHistogram(Histogram* hist, int x, int y, int h, int w, uint16_t flags = FLAGS_INCLUDE_MARGIN);
 
+    enum {
+        FLAGS_INCLUDE_MARGIN  = 0x1,
+        FLAGS_LIMIT_DOWNSCALE = 0x2
+
+
+    };
     void drawHistogram1024x512(Histogram *hist, int x, int y, uint16_t flags = FLAGS_INCLUDE_MARGIN, int hw = 1024, int hh = 512);
 
     void drawLineSimple (int x1, int y1, int x2, int y2, RGBColor color );

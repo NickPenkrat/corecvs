@@ -532,6 +532,12 @@ void RGB24Buffer::drawHistogram1024x512(Histogram *hist, int x, int y, uint16_t 
         SYNC_PRINT(("Scale    : %lf\n", scale));
     }
 
+    if (flags & FLAGS_LIMIT_DOWNSCALE) {
+        if (scale > 1.0) {
+            scale = 1.0;
+        }
+    }
+
     double pos = 0;
     double dpos = (double)hist->data.size() / hw;
 

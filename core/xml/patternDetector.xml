@@ -34,7 +34,7 @@
 
   <class name="Chess Board Corner Detector Params Base">
      <field type="bool"   name="produceDebug"        defaultValue="false"/>
-     <field type="bool"   name="floatSpeedup"        defaultValue="false"/>
+     <field type="bool"   name="floatSpeedup"        defaultValue="true"/>
 
      <!--
      <field type="double" name="gradientCrossWidth"  defaultValue="3.0" comment="Width of cross for corner gradient-score" />
@@ -122,8 +122,8 @@
     <field type="Bitcode Board Orientation" name="bitcodeOrientation" defaultValue="4" />
 
     <!-- 3cm cell and 10.5cm;  to the side -->
-    <field type="double" name="CenterToZeroX"   defaultValue="-3.5"   suffix="cells" min="-255" max="255" comment="X Distance from grid center to Traget Point" />
-    <field type="double" name="CenterToZeroY"   defaultValue=" 6.5"   suffix="cells" min="-255" max="255" comment="Y Distance from grid center to Traget Point" />
+    <field type="double" name="CenterToZeroX"   defaultValue="-3.3"   suffix="cells" min="-255" max="255" comment="X Distance from grid center to Traget Point" />
+    <field type="double" name="CenterToZeroY"   defaultValue=" 6.0"   suffix="cells" min="-255" max="255" comment="Y Distance from grid center to Traget Point" />
 
   </class>
 

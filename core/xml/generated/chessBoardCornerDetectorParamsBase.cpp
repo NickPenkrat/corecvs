@@ -53,7 +53,7 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
         (
           ChessBoardCornerDetectorParamsBase::FLOATSPEEDUP_ID,
           offsetof(ChessBoardCornerDetectorParamsBase, mFloatSpeedup),
-          false,
+          true,
           "floatSpeedup",
           "floatSpeedup",
           "floatSpeedup"
