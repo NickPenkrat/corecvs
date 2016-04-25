@@ -27,6 +27,8 @@ public:
         bool detected = false;
         vector<bool> bits;
         double score = 0.0;
+        Vector2dd position = Vector2dd::Zero();
+        Histogram h = Histogram(0,255);
     };
 
 
@@ -67,6 +69,10 @@ public:
     void drawMarkerData(RGB24Buffer &buffer);
 
     /* Additionl outputs */
+    /* Board analisys */
+    int bwThreshold;
+
+    /* Bitcode analisys*/
     HomographyReconstructor homography;
     Matrix33 transform;
 
@@ -80,11 +86,13 @@ public:
     unsigned startOrientaion();
     unsigned endOrientaion();
 
+    ~BitcodeBoardDetector();
 protected:
     double getChessBoardScore();
 
     Polygon getRectImage(int i, int j, Matrix33 transform);
 
+    void analyseChessboard();
     MarkerData detectMarker(Matrix33 homography, Matrix33 translation);
 
     //drawMarker(RGB24Buffer *buffer, const MarkerData &data, orientation);

@@ -11,6 +11,11 @@ BitcodeBoardDetector::BitcodeBoardDetector() :
     result = false;
 }
 
+BitcodeBoardDetector::~BitcodeBoardDetector()
+{
+
+}
+
 void BitcodeBoardDetector::setInput(RGB24Buffer *input)
 {
     this->input = input;
@@ -194,6 +199,7 @@ void BitcodeBoardDetector::drawMarkerData(RGB24Buffer &buffer)
 
     for (unsigned o = startOrientaion(); o < endOrientaion(); o++)
     {
+        Matrix33 t = transform * Matrix33::Scale2(cellToMM) * orients[o];
         for (int i = 0; i < codeHeight; i++)
         {
             for (int j = 0; j < codeWidth; j++)
@@ -205,7 +211,7 @@ void BitcodeBoardDetector::drawMarkerData(RGB24Buffer &buffer)
                     color = marker[o].bits[i * codeWidth + j] ? RGBColor::Cyan() : RGBColor::Yellow();
                 }
 
-                Matrix33 t = transform * Matrix33::Scale2(cellToMM) * orients[o];
+
                 Polygon area = getRectImage(j,i, t);
                 PolygonPointIterator it(area);
                 for (Vector2d<int> p : it) {
@@ -215,6 +221,9 @@ void BitcodeBoardDetector::drawMarkerData(RGB24Buffer &buffer)
                 }
             }
         }
+        Vector2dd pos = t * Vector2dd(0.0, 0.0);
+        buffer.drawHistogram1024x512(&marker[o].h, pos.x() - 200, pos.y() + o * 200, 0x1, 200, 200);
+
     }
 
     /* Draw center*/
@@ -300,6 +309,7 @@ BitcodeBoardDetector::MarkerData BitcodeBoardDetector::detectMarker(Matrix33 hom
                 }
                 double val = input->element(p).brightness();
                 areaStat.addPoint(val);
+                toReturn.h.inc(val);
             }
 
             /* Add to overall stats */
@@ -312,8 +322,10 @@ BitcodeBoardDetector::MarkerData BitcodeBoardDetector::detectMarker(Matrix33 hom
 
     double overallMean = interSquare.getAverage();
 
-    //SYNC_PRINT((" BitcodeBoardDetector::detectMarker(): mean %lf\n", overallMean ));
+    SYNC_PRINT((" BitcodeBoardDetector::detectMarker(): mean %lf\n", overallMean ));
     /* Second pass */
+
+    double otsu = toReturn.h.getOtsuThreshold();
 
     for (const SDevApproximation1d &stat : areaStats)
     {
@@ -321,7 +333,7 @@ BitcodeBoardDetector::MarkerData BitcodeBoardDetector::detectMarker(Matrix33 hom
             // SYNC_PRINT(("    BitcodeBoardDetector::detectMarker(): value %lf -> (%s)\n", stat.getAverage(), (stat.getAverage() > overallMean) ? "1" : "0"));
         }
 
-        if (stat.getAverage() > overallMean) {
+        if (stat.getAverage() > otsu) {
             toReturn.bits.push_back(true);
         } else {
             toReturn.bits.push_back(false);
