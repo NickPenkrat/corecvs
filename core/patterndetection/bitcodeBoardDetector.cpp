@@ -333,7 +333,9 @@ BitcodeBoardDetector::MarkerData BitcodeBoardDetector::detectMarker(Matrix33 hom
 
         SYNC_PRINT(("    BitcodeBoardDetector::detectMarker():"));
         for (bool bit: toReturn.bits)
+        {
             SYNC_PRINT(("%s", bit ? "1" : "0"));
+        }
         SYNC_PRINT(("\n"));
         SYNC_PRINT(("    BitcodeBoardDetector::detectMarker(): score %lf\n", interSquare.getSDev()));
     }
