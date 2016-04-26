@@ -41,6 +41,8 @@ using namespace std;
     int                         skippedCount;
     int                         isRunning;
 
+    bool                        mAutoFormat;
+
     /* Maximum allowed desync */
     //unsigned int                delay;
 
@@ -76,8 +78,12 @@ using namespace std;
 
  private:
     void init(const string &devname, int h, int w, int fps, bool isRgb, int compressed);
+    void initForAutoFormat(const string &devname, int h, int w, int fps, bool isRgb);
 
     bool isCorrectDeviceHandle(int cameraNum);
+    CapErrorCode getCaptureFormats(int &number, CaptureTypeFormat *&list);
+    CapErrorCode getCameraFormatsForResolution(int h, int w, std::vector<CAPTURE_FORMAT_TYPE> &formats);
+    int selectCameraFormat(int h, int w);
  };
 
 #endif /* _DIRECT_SHOW_CVCAPTURE_H_ */

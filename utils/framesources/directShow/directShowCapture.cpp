@@ -23,6 +23,7 @@ void DirectShowCaptureInterface::init(const string &devname, int h, int w, int f
 {
     CORE_ASSERT_TRUE_P((uint)compressed < DirectShowCameraDescriptor::codec_size, ("invalid 'compressed' in DirectShowCaptureInterface::init()"));
 
+    mAutoFormat = false;
     mDevname = QString("%1:1/%2:%3:%4x%5")
         .arg(devname.c_str())
         .arg(fps)
@@ -48,22 +49,42 @@ void DirectShowCaptureInterface::init(const string &devname, int h, int w, int f
     isRunning    = false;
 }
 
+void DirectShowCaptureInterface::initForAutoFormat(const string &devname, int h, int w, int fps, bool isRgb)
+{
+    mAutoFormat = true;
+    mDevname = devname;
+
+    mDeviceIDs[LEFT_FRAME] = atoi(devname.c_str());
+    mDeviceIDs[RIGHT_FRAME] = -1;
+
+    for (int i = 0; i < MAX_INPUTS_NUMBER; i++)
+    {
+        mFormats[i].type   = -255;
+        mFormats[i].height = h;
+        mFormats[i].width  = w;
+        mFormats[i].fps    = fps;
+    }
+
+    mIsRgb       = isRgb;
+    skippedCount = 0;
+    isRunning    = false;
+}
+
 DirectShowCaptureInterface::DirectShowCaptureInterface(const string &devname, int h, int w, int fps, bool isRgb)
 {
-    init(devname, h, w, fps, isRgb
-        , DirectShowCameraDescriptor::UNCOMPRESSED_UYVY);
+    initForAutoFormat(devname, h, w, fps, isRgb);
 }
 
 DirectShowCaptureInterface::DirectShowCaptureInterface(const string &devname, ImageCaptureInterface::CameraFormat inFormat, bool isRgb)
 {
-    init(devname, inFormat.height, inFormat.width, inFormat.fps, isRgb
-        , DirectShowCameraDescriptor::UNCOMPRESSED_UYVY);
+    initForAutoFormat(devname, inFormat.height, inFormat.width, inFormat.fps, isRgb);
 }
 
 DirectShowCaptureInterface::DirectShowCaptureInterface(const string &devname, bool isRgb)
 {
     mDevname = devname;
     mIsRgb   = isRgb;
+    mAutoFormat = false;
 
     //     Group Number                   1       2 3        4 5      6       7 8       9       10     11        1213     14
     QRegExp deviceStringPattern(QString("^([^,:]*)(,([^:]*))?(:(\\d*)/(\\d*))?((:mjpeg)|(:yuyv)|(:rgb)|(:fjpeg))?(:(\\d*)x(\\d*))?$"));
@@ -161,6 +182,12 @@ ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::initCapture()
     {
         if (!isCorrectDeviceHandle(i))
             continue;
+
+        if(mAutoFormat)
+        {
+            string devname = mDevname;
+            init(devname, mFormats[i].height, mFormats[i].width, mFormats[i].fps, mIsRgb, selectCameraFormat(mFormats[i].height, mFormats[i].width));
+        }
 
         if (DirectShowCapDll_setFormat(mCameras[i].deviceHandle, &mFormats[i]) != 0)
         {
@@ -460,7 +487,7 @@ ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::getCaptureName(Q
 
 ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::getFormats(int *num, CameraFormat *&formats)
 {
-    if (!isCorrectDeviceHandle(0))
+    /*if (!isCorrectDeviceHandle(0))
         return ImageCaptureInterface::FAILURE;
 
     if (0 != DirectShowCapDll_getFormatNumber(mCameras[0].deviceHandle, num))
@@ -480,7 +507,16 @@ ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::getFormats(int *
         delete[] captureTypeFormats;
         L_ERROR_P("Error to get supported formats for cameraId: %d", (int)mCameras[0].deviceHandle);
         return ImageCaptureInterface::FAILURE;
+    }*/
+    int number;
+    CaptureTypeFormat* captureTypeFormats;
+    if(getCaptureFormats(number, captureTypeFormats) == ImageCaptureInterface::FAILURE)
+    {
+        return ImageCaptureInterface::FAILURE;
     }
+    *num = number;
+    delete formats;
+    formats = new CameraFormat[number];
 
     for (int i = 0; i < number; i++)
     {
@@ -567,4 +603,82 @@ void DirectShowCaptureInterface::getAllCameras(vector<string> &cameras)
 bool DirectShowCaptureInterface::isCorrectDeviceHandle(int cameraNum)
 {
     return mCameras[cameraNum].deviceHandle >= 0;
+}
+
+ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::getCaptureFormats(int &number, CaptureTypeFormat *&list)
+{
+    if(list != nullptr)
+        delete_safe(list);
+    number = 0;
+    if (!isCorrectDeviceHandle(0))
+        return ImageCaptureInterface::FAILURE;
+
+    if (0 != DirectShowCapDll_getFormatNumber(mCameras[0].deviceHandle, &number))
+    {
+        L_ERROR_P("Error to get number of supported formats for cameraId: %d", (int)mCameras[0].deviceHandle);
+        return ImageCaptureInterface::FAILURE;
+    }
+
+    CaptureTypeFormat* captureTypeFormats = new CaptureTypeFormat[number];
+
+    if (0 != DirectShowCapDll_getFormats(mCameras[0].deviceHandle, number, captureTypeFormats))
+    {
+        delete[] captureTypeFormats;
+        L_ERROR_P("Error to get supported formats for cameraId: %d", (int)mCameras[0].deviceHandle);
+        return ImageCaptureInterface::FAILURE;
+    }
+    list = captureTypeFormats;
+    return ImageCaptureInterface::SUCCESS;
+}
+
+DirectShowCaptureInterface::CapErrorCode DirectShowCaptureInterface::getCameraFormatsForResolution(int h, int w, std::vector<CAPTURE_FORMAT_TYPE> &formats)
+{
+    int number;
+    CaptureTypeFormat* captureTypeFormats = nullptr;
+    formats.clear();
+    if(getCaptureFormats(number, captureTypeFormats)  == ImageCaptureInterface::FAILURE)
+    {
+        return ImageCaptureInterface::FAILURE;
+    }
+    for (int i = 0; i < number; i++)
+    {
+        if(captureTypeFormats[i].height == h
+                && captureTypeFormats[i].width == w)
+        {
+            formats.push_back((CAPTURE_FORMAT_TYPE)captureTypeFormats[i].type);
+        }
+    }
+    return formats.size() ? ImageCaptureInterface::SUCCESS : ImageCaptureInterface::FAILURE;
+}
+
+int DirectShowCaptureInterface::selectCameraFormat(int h, int w)
+{
+    std::vector<CAPTURE_FORMAT_TYPE> formats;
+    bool canRGB = false;
+    bool canYUV = false;
+    bool canUYVY = false;
+    getCameraFormatsForResolution(h, w, formats);
+    for(CAPTURE_FORMAT_TYPE &format: formats)
+    {
+        switch(format)
+        {
+        case CAP_RGB:
+            canRGB = true;
+            break;
+        case CAP_YUV:
+            canYUV = true;
+            break;
+        case CAP_UYVY:
+            canUYVY = true;
+        }
+    }
+    if(canRGB)
+        return DirectShowCameraDescriptor::UNCOMPRESSED_RGB;
+    if(canYUV)
+        return DirectShowCameraDescriptor::UNCOMPRESSED_YUV;
+    if(canUYVY)
+        return DirectShowCameraDescriptor::UNCOMPRESSED_UYVY;
+
+    L_ERROR_P("Error to get supported formats for cameraId: %d", (int)mCameras[0].deviceHandle);
+    return DirectShowCameraDescriptor::UNCOMPRESSED_RGB;
 }
