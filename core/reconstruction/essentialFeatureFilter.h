@@ -20,7 +20,7 @@ struct EssentialFilterParams
     double b2bThreshold  = 0.9,
            inlierRadius  = 2.0,
            targetGamma   = 1e-2;
-    int    maxIterations = 32000;
+    int    maxIterations = 200000;
 };
 
 class EssentialFeatureFilter

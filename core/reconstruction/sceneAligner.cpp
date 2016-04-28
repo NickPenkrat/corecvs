@@ -88,6 +88,7 @@ bool corecvs::SceneAligner::TryAlignGPS(ReconstructionFixtureScene* scene
     , corecvs::Affine3DQ &transformation
     , double &scale)
 {
+    scene->printPosStats();
 #if 1
     scale = 1.0;
     transformation = corecvs::Affine3DQ();
@@ -192,7 +193,9 @@ corecvs::Vector3dd corecvs::SceneAligner::ShiftFromRotation(const corecvs::Quate
 
 void corecvs::SceneAligner::ApplyTransformation(ReconstructionFixtureScene* scene, const corecvs::Affine3DQ &transform, const double scale)
 {
+    scene->printPosStats();
     scene->transform(transform, scale);
+    scene->printPosStats();
     //TODO: Check how all stuff should change with scale ~= 0.0
     for (auto& cf: scene->placedFixtures)
     {
@@ -201,4 +204,5 @@ void corecvs::SceneAligner::ApplyTransformation(ReconstructionFixtureScene* scen
         if (scene->initializationData[cf].initializationType == PhotostationInitializationType::FIXED)
             cf->location = scene->initializationData[cf].initData;
     }
+    scene->printPosStats();
 }
