@@ -502,7 +502,7 @@ ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::getCaptureName(Q
 ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::getFormats(int *num, CameraFormat *&formats)
 {
     int number;
-    CaptureTypeFormat* captureTypeFormats;
+    CaptureTypeFormat* captureTypeFormats = nullptr;
     if(getCaptureFormats(number, captureTypeFormats) == ImageCaptureInterface::FAILURE)
     {
         return ImageCaptureInterface::FAILURE;
