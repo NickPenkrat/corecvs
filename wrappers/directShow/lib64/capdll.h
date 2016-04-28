@@ -79,6 +79,7 @@ struct CaptureTypeFormat
     int height;
     int width;
     int fps;
+    int bpp;                        // for raw RGB data presentation
 };
 
 struct FrameData
