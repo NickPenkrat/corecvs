@@ -21,6 +21,9 @@
 
 #include "cameraControlParameters.h"
 
+#define PREFFERED_RGB_BPP 24
+#define AUTUSELECT_FORMAT_FEATURE -255
+
 using namespace std;
 
  class DirectShowCaptureInterface : public ImageCaptureInterface
@@ -77,7 +80,7 @@ using namespace std;
     virtual ~DirectShowCaptureInterface();
 
  private:
-    void init(const string &devname, int h, int w, int fps, bool isRgb, int compressed);
+    void init(const string &devname, int h, int w, int fps, bool isRgb, int bpp, int compressed);
     void initForAutoFormat(const string &devname, int h, int w, int fps, bool isRgb);
 
     bool isCorrectDeviceHandle(int cameraNum);

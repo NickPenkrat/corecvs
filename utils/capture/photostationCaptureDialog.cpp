@@ -595,12 +595,20 @@ ImageCaptureInterface* PhotostationCaptureDialog::createCameraCapture(const stri
             if (actualFormat == ImageCaptureInterface::CameraFormat(format[1].toInt(), format[0].toInt(), format[2].toInt()))
                 break;
         }
-        ui->formatsComboBox->setCurrentIndex(formatIdx);
+
+        w = actualFormat.width;
+        h = actualFormat.height;
+        fps = actualFormat.fps;
 
         QVariantList format = ui->formatsComboBox->itemData(formatIdx).toList();
-        h   = format[1].toInt();
-        w   = format[0].toInt();
-        fps = format[2].toInt();
+        if(format.length() == 3)
+        {
+            ui->formatsComboBox->setCurrentIndex(formatIdx);
+        }
+        else
+        {
+            L_INFO_P("Camera <%s> format set to unexpected value.", QSTR_DATA_PTR(camera->getInterfaceName()));
+        }
         L_INFO_P("camera <%s>: new format is: %dx%d @%d", QSTR_DATA_PTR(camera->getInterfaceName()), w, h, fps);
     }
 
