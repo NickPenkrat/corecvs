@@ -2,21 +2,21 @@
 exists(../../../../config.pri) {
     ROOT_DIR=../../../..
     #message(Using global config)
+    include($$ROOT_DIR/config.pri)
 } else { 
     message(Using local config)
     ROOT_DIR=../../
+    include($$ROOT_DIR/cvs-config.pri)
 }
-!win32 {                                            # it dues to the "mocinclude.tmp" bug on win32!
-    ROOT_DIR=$$PWD/$$ROOT_DIR
-}
-include($$ROOT_DIR/config.pri)
+ROOT_DIR=$$PWD/$$ROOT_DIR
 
-QT     -= gui
-CONFIG += console
+TEMPLATE = app
+TARGET   = test_directshow
+CONFIG  += console
+QT      -= gui
 
-TARGET  = test_directshow
 
-OBJECTS_DIR = $$ROOT_DIR/.obj/tests/directshow$$BUILD_CFG_NAME
+OBJECTS_DIR = $$ROOT_DIR/.obj/directshow$$BUILD_CFG_NAME
 
 MOC_DIR = $$OBJECTS_DIR			                    # we have to set this to omit creating dummy dirs: debug,release
 
@@ -40,7 +40,6 @@ win32-msvc*:!contains(QMAKE_HOST.arch, x86_64) {
 } else {
         QMAKE_POST_LINK = "echo Nothing to do on Unix with capdll!"
 }
-
 
 DIRECT_SHOW_WRAPPER_DIR = .
 include($$DIRECT_SHOW_WRAPPER_DIR/directShowLibs.pri)

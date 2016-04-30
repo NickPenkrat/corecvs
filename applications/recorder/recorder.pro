@@ -2,22 +2,19 @@
 exists(../../../../config.pri) {
     ROOT_DIR=../../../..
     #message(Using global config)
+    include($$ROOT_DIR/config.pri)
 } else { 
     message(Using local config)
     ROOT_DIR=../..
+    include($$ROOT_DIR/cvs-config.pri)
 }
-!win32 {                                        # it dues to the "mocinclude.tmp" bug on win32!
-    ROOT_DIR=$$PWD/$$ROOT_DIR
-}
-include($$ROOT_DIR/config.pri)
+ROOT_DIR=$$PWD/$$ROOT_DIR
 
-
-TARGET   = recorder
 TEMPLATE = app
+TARGET   = recorder
 
 HOSTBASE_DIR=../base
-include ($$HOSTBASE_DIR/baseApplication.pri)                   # it uses HOSTBASE_DIR, detects HOSTBASE_BINDIR, OBJECTS_DIR, ...
-
+include ($$HOSTBASE_DIR/baseApplication.pri)            # it uses HOSTBASE_DIR, detects HOSTBASE_BINDIR, OBJECTS_DIR, ...
 
 INCLUDEPATH += .
 

@@ -1,46 +1,51 @@
-# This file is used internally for each UnitTest
 #
-# input1 parameter: $$OBJ_TESTS_DIR        - name of common intermediate dir for all UnitTests of the current project
-# input2 parameter: $$USE_CORE_PRI_FILE    - required core|rescore project file to include
+# Each Test/Tool uses this internal file
+#
+# Input parameter: OBJECTS_DIRNAME_TESTS - name of the common intermediate dir for all Tests of the current project
+#
+# Note:  $$PWD - returns the folder, where this file is placed,
+#                despite on how it was included (e.g. include "../test.pri").
 #
 
 # try use global config 
 exists(../../../config.pri) {
     ROOT_DIR=../../..
-    #message(Using global config)
-} else { 
-    message(Using local config)
+    include($$ROOT_DIR/config.pri)
+} else {
+    message(Using local config at test.pri for the $$TARGET)
     ROOT_DIR=..
+    include($$ROOT_DIR/cvs-config.pri)
 }
-!win32 {                                            # it dues to the "mocinclude.tmp" bug on win32!
-    ROOT_DIR=$$PWD/$$ROOT_DIR
-}
-!build_pass: message(Tests root dir is $$ROOT_DIR)
-include($$ROOT_DIR/config.pri)
+ROOT_DIR=$$PWD/$$ROOT_DIR
 
-CONFIG += console
-
-win32-msvc* {
-    # Sometimes mt.exe fails on embedding action in parallel making...
-    #CONFIG -= embed_manifest_exe
-}
+TEMPLATE = app
+CONFIG  += console
+CONFIG  -= app_bundle
+QT      -= core
+QT      -= gui
+QT      -= xml
+QT      -= widgets
+QT      -= opengl
 
 DESTDIR = $$ROOT_DIR/bin
-#COREDIR = $$ROOT_DIR/$$COREDIR
-#RES_COREDIR = $$ROOT_DIR/$$RES_COREDIR
 
-message(We Using core $$USE_CORE_PRI_FILE)
-message(  With    coredir $$COREDIR)
-message(  With rescoredir $$RES_COREDIR)
-include($$USE_CORE_PRI_FILE)
+include(../core/core.pri)
+include(../wrappers/gtest/gtest.pri)
 
-!contains(OBJ_TESTS_DIR, tests_restricted) {        # first include file is "testsCommon.pri", second - "testsRestricted.pri"
-    TARGET_ORIG = $$TARGET                          # store original target name for proper detection of the obj.dir
-    TARGET = $$join(TARGET,,test_,)                 # use target name common format for all tests as  "test_<name of the test>"
-
-    TARGET = $$join(TARGET,,,$$BUILD_CFG_SFX)       # add 'd' at the end for debug versions
+isEmpty(TARGET_ORIG) {                                      # be careful of multiple including of this file
+    TARGET_ORIG = $$TARGET                                  # store original target name for proper detection of the obj.dir
+    !contains(OBJECTS_DIRNAME_TESTS, cvs_tests_restricted) {# first include file is "testsCommon.pri" (open tests), second - "testsRestricted.pri" (restricted tests)
+        TARGET = $$join(TARGET,,test_,)                     # use target name common format for all open tests as  "test_<name of the test>"
+    } else {
+        TARGET = $$join(TARGET,,cvs_test_res_,)             # use target name common format for all restricted tests as  "test_res_<name of the test>"
+    }
+    TARGET = $$join(TARGET,,,$$BUILD_CFG_SFX)               # add 'd' at the end for debug versions
 }
+isEmpty(OBJECTS_DIRNAME_TESTS) {
+    OBJECTS_DIRNAME_TESTS = test_core                       # by default put current project's obj-files to this subfolder
+}
+OBJECTS_DIR = $$ROOT_DIR/.obj/$$OBJECTS_DIRNAME_TESTS/$$TARGET_ORIG$$BUILD_CFG_NAME
 
-OBJECTS_DIR = $$ROOT_DIR/.obj/$$OBJ_TESTS_DIR/$$TARGET_ORIG$$BUILD_CFG_NAME
-
-MOC_DIR = $$OBJECTS_DIR                             # we have to set it to omit creating dummy dirs: debug,release
+MOC_DIR = $$OBJECTS_DIR                                     # we have to set it to omit creating dummy dirs: debug,release
+UI_DIR  = $$OBJECTS_DIR
+RCC_DIR = $$OBJECTS_DIR

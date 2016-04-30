@@ -76,6 +76,57 @@ public:
 */
 #endif
 
+#if defined ( WITH_AVX )
+class TraitDoubleBufferVector {
+public:
+    typedef TraitGeneric<double> FallbackTraits;
+
+    typedef TraitGeneric<double>::Type InternalType;
+    static const int step = Doublex4::SIZE;
+
+    typedef Doublex4 Type;
+    typedef Doublex4 SignedType;
+    typedef Doublex4 ExtendedType;
+};
+
+class TraitDoubleBufferVector8 {
+public:
+    typedef TraitGeneric<double> FallbackTraits;
+
+    typedef TraitGeneric<double>::Type InternalType;
+    static const int step = Doublex8::SIZE;
+
+    typedef Doublex8 Type;
+    typedef Doublex8 SignedType;
+    typedef Doublex8 ExtendedType;
+};
+
+class TraitDoubleBufferVector4x5 {
+public:
+    typedef TraitGeneric<double> FallbackTraits;
+
+    typedef TraitGeneric<double>::Type InternalType;
+    static const int step = DoublexT4<3>::SIZE;
+
+    typedef DoublexT4<3> Type;
+    typedef DoublexT4<3> SignedType;
+    typedef DoublexT4<3> ExtendedType;
+};
+
+#elif defined( WITH_SSE )
+class TraitDoubleBufferVector {
+public:
+    typedef TraitGeneric<double> FallbackTraits;
+
+    typedef TraitGeneric<double>::Type InternalType;
+    static const int step = Doublex2::SIZE;
+
+    typedef Doublex2 Type;
+    typedef Doublex2 SignedType;
+    typedef Doublex2 ExtendedType;
+};
+#endif
+
 
 
 
@@ -138,6 +189,48 @@ public:
     typedef TraitGeneric<double> TraitDouble;
     typedef ScalarAlgebraMulti<TraitDouble, TraitDouble, inputNumber, outputNumber> Type;
 };
+
+#if defined(WITH_SSE) || defined(WITH_AVX)
+template<int inputNumber = 1, int outputNumber = 1>
+class AlgebraDouble
+{
+public:
+    typedef VectorAlgebraMulti<TraitDoubleBufferVector, inputNumber, outputNumber> Type;
+};
+
+template<int inputNumber = 1, int outputNumber = 1>
+class VectorAlgebraDouble
+{
+public:
+    typedef VectorAlgebraMulti<TraitDoubleBufferVector, inputNumber, outputNumber> Type;
+};
+
+#if defined(WITH_AVX)
+template<int inputNumber = 1, int outputNumber = 1>
+class VectorAlgebraDoubleEx
+{
+public:
+    typedef VectorAlgebraMulti<TraitDoubleBufferVector8, inputNumber, outputNumber> Type;
+};
+
+template<int inputNumber = 1, int outputNumber = 1>
+class VectorAlgebraDoubleEx5
+{
+public:
+    typedef VectorAlgebraMulti<TraitDoubleBufferVector4x5, inputNumber, outputNumber> Type;
+};
+#endif
+
+#else
+template<int inputNumber = 1, int outputNumber = 1>
+class AlgebraDouble
+{
+public:
+    typedef TraitGeneric<double> TraitDouble;
+    typedef ScalarAlgebraMulti<TraitDouble, TraitDouble, inputNumber, outputNumber> Type;
+
+};
+#endif
 
 template<int inputNumber, int outputNumber>
 class ScalarAlgebraFloat

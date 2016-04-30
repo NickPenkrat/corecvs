@@ -1,5 +1,4 @@
-#ifndef RGBCOLOR_H_
-#define RGBCOLOR_H_
+#pragma once
 /**
  * \file rgbColor.h
  * \brief a header for rgbColor.c
@@ -143,14 +142,12 @@ public:
 
     inline uint8_t brightness() const
     {
-        /**
-         * TODO: Should I add ~1.5 = 2 to the sum?
-         * because
+        /** We add 1 to the sum, because
+         *     0,  1,  0 -> 0
          *     0,  1,  1 -> 1
-         *   255,255,254 -> 255;
-         *
-         * */
-        return ((uint16_t)r() + (uint16_t)g() + (uint16_t)b()) / 3;
+         *   255,255,254 -> 255
+         */
+        return (sum() + 1) / 3;
     }
 
     inline uint16_t sum() const
@@ -172,9 +169,14 @@ public:
     }
 
 
+    inline double yd() const
+    {
+        return 0.299 * r() + 0.587 * g() + 0.114 * b();
+    }
+
     inline int16_t y() const
     {
-        return (int)( 0.299   * r() + 0.587   * g() + 0.114   * b());
+        return fround(yd());
     }
 
     inline int16_t cb() const
@@ -186,6 +188,28 @@ public:
     {
         return (int)( 0.50000 * r() - 0.41869 * g() - 0.08131 * b());
     }
+
+
+    /**
+     *  TODO: I should test the consitency of conversions
+     *
+     * Y = ( (  66 * R + 129 * G +  25 * B + 128) >> 8) +  16
+     * U = ( ( -38 * R -  74 * G + 112 * B + 128) >> 8) + 128
+     * V = ( ( 112 * R -  94 * G -  18 * B + 128) >> 8) + 128
+     *
+     *
+     **/
+
+    inline int16_t u() const
+    {
+        return ( ( -38 * r() -  74 * g() + 112 * b() + 128) >> 8) + 128;
+    }
+
+    inline int16_t v() const
+    {
+        return ( ( 112 * r() -  94 * g() -  18 * b() + 128) >> 8) + 128;
+    }
+
 
     /*TODO: Move out common code */
 
@@ -280,6 +304,55 @@ public:
         return hue;
     }
 
+    /**
+     * hue \in [0; 360)
+     * saturation \in [0; 1)
+     * value \in [0; 1)
+     */
+    static RGBColor fromHue(double hue, double saturation, double value)
+    {
+        hue        = std::min(std::max(0.0, hue), 360.0 - 1e-10);
+        saturation = std::min(std::max(0.0, saturation), 1.0);
+        value      = std::min(std::max(0.0, value), 1.0);
+
+        double chroma = value * saturation;
+        hue /= 60.0;
+        double largest = chroma * (1.0 - std::abs(hue - 2.0 * floor(hue / 2.0) - 1.0));
+        int h = floor(hue);
+        double min = value - chroma;
+        double r = min, g = min, b = min;
+
+        switch(h)
+        {
+            case 0:
+                r += chroma;
+                g += largest;
+                break;
+            case 1:
+                r += largest;
+                g += chroma;
+                break;
+            case 2:
+                g += chroma;
+                b += largest;
+                break;
+            case 3:
+                g += largest;
+                b += chroma;
+                break;
+            case 4:
+                r += largest;
+                b += chroma;
+                break;
+            case 5:
+                r += chroma;
+                b += largest;
+                break;
+        }
+
+        return RGBColor(r * 255, g * 255, b * 255);
+    }
+
     static RGBColor gray(uint8_t gray)
     {
         return RGBColor(gray, gray, gray);
@@ -359,6 +432,11 @@ public:
         return RGBColor(0, 255, 255);
     }
 
+    static RGBColor Magenta()
+    {
+        return RGBColor(255, 0, 255);
+    }
+
     static RGBColor Blue()
     {
         return RGBColor(0, 0, 255);
@@ -376,9 +454,9 @@ public:
 
     static RGBColor lerpColor(const RGBColor &first, const RGBColor &second, double alpha)
     {
-        uint8_t r = (uint8_t)lerp<double>(first.r(), second.r(),alpha);
-        uint8_t g = (uint8_t)lerp<double>(first.g(), second.g(),alpha);
-        uint8_t b = (uint8_t)lerp<double>(first.b(), second.b(),alpha);
+        uint8_t r = (uint8_t)lerp<double>(first.r(), second.r(), alpha);
+        uint8_t g = (uint8_t)lerp<double>(first.g(), second.g(), alpha);
+        uint8_t b = (uint8_t)lerp<double>(first.b(), second.b(), alpha);
         return RGBColor(r, g, b);
     }
 
@@ -388,7 +466,7 @@ public:
         int16_t g = (int16_t)first.g() - (int16_t)second.g();
         int16_t b = (int16_t)first.b() - (int16_t)second.b();
 
-        return RGBColor(r > 0 ? r : -r , g > 0 ? g : -g, b > 0 ? b : -b);
+        return RGBColor(CORE_ABS(r), CORE_ABS(g), CORE_ABS(b));
     }
 
     /**
@@ -423,32 +501,37 @@ public:
 
         if (x < 1.0)
         {
-            return RGBColor(0, fround(x * 255) , fround((1.0 - x) * 255));
+            return RGBColor(0, fround(x * 255), fround((1.0 - x) * 255));
         }
         x -= 1.0;
-        return RGBColor(fround(x * 255) , fround((1.0 - x) * 255), 0 );
+        return RGBColor(fround(x * 255), fround((1.0 - x) * 255), 0);
     }
 
-
+    //#ifdef REFLECTION_IN_CORE
+    //    Reflection reflect = staticInit();
+    //#else
+    //    Reflection reflect;
+    //#endif
     static Reflection reflect;
 
     static Reflection staticInit()
     {
         Reflection reflection;
-        reflection.fields.push_back( new IntField(FIELD_R, 0, "r") );
-        reflection.fields.push_back( new IntField(FIELD_G, 0, "g") );
-        reflection.fields.push_back( new IntField(FIELD_B, 0, "b") );
-        reflection.fields.push_back( new IntField(FIELD_A, 0, "a") );
+        reflection.fields.push_back(new IntField(FIELD_R, 0, "r"));
+        reflection.fields.push_back(new IntField(FIELD_G, 0, "g"));
+        reflection.fields.push_back(new IntField(FIELD_B, 0, "b"));
+        reflection.fields.push_back(new IntField(FIELD_A, 0, "a"));
         return reflection;
     }
 
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(r(), static_cast<const IntField *>(reflect.fields[FIELD_R]));
-        visitor.visit(g(), static_cast<const IntField *>(reflect.fields[FIELD_G]));
-        visitor.visit(b(), static_cast<const IntField *>(reflect.fields[FIELD_B]));
-        visitor.visit(a(), static_cast<const IntField *>(reflect.fields[FIELD_A]));
+        int byte;
+        byte = r(); visitor.visit(byte, static_cast<const IntField *>(reflect.fields[FIELD_R])); r() = byte;
+        byte = g(); visitor.visit(byte, static_cast<const IntField *>(reflect.fields[FIELD_G])); g() = byte;
+        byte = b(); visitor.visit(byte, static_cast<const IntField *>(reflect.fields[FIELD_B])); b() = byte;
+        byte = a(); visitor.visit(byte, static_cast<const IntField *>(reflect.fields[FIELD_A])); a() = byte;
     }
 
     friend ostream & operator <<(ostream &out, const RGBColor &color)
@@ -507,15 +590,15 @@ template<class VisitorType>
 
         switch (swh) {
         case 0:
-            r =  c; g = x1; b = 0; break;
+            r =  c; g = x1; b =  0; break;
         case 1:
-            r = x2; g =  c; b = 0; break;
+            r = x2; g =  c; b =  0; break;
         case 2:
             r =  0; g =  c; b = x1; break;
         case 3:
-            r =  0; g = x2; b = c; break;
+            r =  0; g = x2; b =  c; break;
         case 4:
-            r =  x1; g =  0; b = c; break;
+            r = x1; g =  0; b =  c; break;
         case 5:
         default:
             r =  c; g =  0; b = x2; break;
@@ -526,7 +609,4 @@ template<class VisitorType>
 
 };
 
-
 } //namespace corecvs
-#endif  //RGBCOLOR_H_
-

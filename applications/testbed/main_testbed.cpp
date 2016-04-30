@@ -23,7 +23,9 @@ using namespace corecvs;
 
 int main(int argc, char *argv[])
 {
-    QTFileLoader::registerMyself();
+    QTG12Loader::registerMyself();
+    QTRGB24Loader::registerMyself();
+
     setSegVHandler();
     setStdTerminateHandler();
 

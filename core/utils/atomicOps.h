@@ -5,6 +5,25 @@
  * \date Sep 27, 2012
  **/
 
+#if 0   // disable for a while using std atomic type and its opers
+
+#include <atomic>
+using std::atomic_int;
+
+inline int atomic_dec_and_fetch(atomic_int *ptr)
+{
+    return --(*ptr);
+}
+
+inline int atomic_inc_and_fetch(atomic_int *ptr)
+{
+    return ++(*ptr);
+}
+
+#else
+
+//namespace corecvs {
+
 typedef int atomic_int;
 
 
@@ -34,7 +53,7 @@ typedef int atomic_int;
     inline int atomic_dec_and_fetch(atomic_int *ptr)
     {
         if ((int)ptr & 3) {
-            printf("Stop: unsupported pointer value %X in the function atomic_dec_and_fetch!\n", ptr);
+            printf("Stop: unsupported pointer value %p in the function atomic_dec_and_fetch!\n", ptr);
             exit(-1);
         }
         return (int)InterlockedDecrement((LONG *)ptr);
@@ -43,7 +62,7 @@ typedef int atomic_int;
     inline int atomic_inc_and_fetch(atomic_int *ptr)
     {
         if ((int)ptr & 3) {
-            printf("Stop: unsupported pointer value %X in the function atomic_inc_and_fetch!\n", ptr);
+            printf("Stop: unsupported pointer value %p in the function atomic_inc_and_fetch!\n", ptr);
             exit(-1);
         }
         return (int)InterlockedIncrement((LONG *)ptr);
@@ -64,3 +83,7 @@ typedef int atomic_int;
     }
 
 #endif // !_MSC_VER && !__GNUC__
+
+//} //namespace corecvs
+
+#endif

@@ -5,7 +5,7 @@
 
 #include "paintImageWidget.h"
 #include "frames.h"
-#include "correspondanceList.h"
+#include "correspondenceList.h"
 
 namespace Ui {
 class PointsRectificationWidget;
@@ -18,7 +18,7 @@ class PointsRectificationWidget : public QWidget
 public:
     explicit PointsRectificationWidget(QWidget *parent = 0);
     ~PointsRectificationWidget();
-    void setImage(G12Buffer *buffer, Frames::FrameSourceId id);
+    void setImage(RGB24Buffer *buffer, Frames::FrameSourceId id);
     void addPointPair(QPointF const &leftPoint, QPointF const &rightPoint);
 
 private:
@@ -27,9 +27,9 @@ private:
     static bool isNextRow(QModelIndex const &index1, QModelIndex const &index2);
     void initModel();
     void setNewPointsCoord(QPointF const &prevPoint, QPointF const &newPoint, bool isLeftImage);
-    CorrespondanceList *mCorrespondancePoints;
-    G12Buffer *mLeftBuffer;
-    G12Buffer *mRightBuffer;
+    CorrespondenceList *mCorrespondencePoints;
+    RGB24Buffer *mLeftBuffer;
+    RGB24Buffer *mRightBuffer;
 
 private slots:
     void deletePairs();
@@ -37,7 +37,7 @@ private slots:
     void editPointLeftImage (QPointF const &prevPoint, QPointF const &newPoint);
     void editPointRightImage(QPointF const &prevPoint, QPointF const &newPoint);
     void selectionChanged(QItemSelection const &selected, QItemSelection const &deselected);
-    void initCorrespondancePoints();
+    void initCorrespondencePoints();
 
     /* New style */
     //void addPoint();
@@ -49,6 +49,6 @@ private slots:
 
 
 signals:
-    void readyCorrespondancePoints(CorrespondanceList *correspondancePoints, G12Buffer *leftBuffer, G12Buffer *rightBuffer);
+    void readyCorrespondencePoints(CorrespondenceList *correspondencePoints, RGB24Buffer *leftBuffer, RGB24Buffer *rightBuffer);
 };
 

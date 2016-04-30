@@ -19,10 +19,10 @@ class Frames
 {
 public:
     enum FrameSourceId {
-        LEFT_FRAME,
-        DEFAULT_FRAME = LEFT_FRAME,
-        RIGHT_FRAME,
-        MAX_INPUTS_NUMBER
+        LEFT_FRAME        = ImageCaptureInterface::LEFT_FRAME,
+        DEFAULT_FRAME     = LEFT_FRAME,
+        RIGHT_FRAME       = ImageCaptureInterface::RIGHT_FRAME,
+        MAX_INPUTS_NUMBER = ImageCaptureInterface::MAX_INPUTS_NUMBER
     };
 
     G12Buffer   *currentFrames   [MAX_INPUTS_NUMBER];
@@ -51,9 +51,9 @@ public:
     {
         switch (value)
         {
-            case LEFT_FRAME  : return "LEFT_FRAME" ; break ;
-            case RIGHT_FRAME : return "RIGHT_FRAME"; break ;
-            default : return "Not in range"; break ;
+            case LEFT_FRAME :   return "LEFT_FRAME";
+            case RIGHT_FRAME:   return "RIGHT_FRAME";
+            default:            break;
         }
         return "Not in range";
     }

@@ -6,16 +6,20 @@
  * \date Mar 24, 2010
  * \author alexander
  */
-#include <algorithm>
-
 #include "global.h"
 #include "matrix.h"
 #include "matrix33.h"
 
+#include "tbbWrapper.h"
+#include "sseWrapper.h"
+
+#include "cblasLapackeWrapper.h"
+#include "blasReplacement.h"
+
 namespace corecvs {
 
 /* The constructor is not in single cycle due to possible stride of the matrix */
-Matrix::Matrix(Matrix33 &in) : MatrixBase(3, 3, false)
+Matrix::Matrix(const Matrix33 &in) : MatrixBase(3, 3, false)
 {
     a(0,0) = in.a(0,0);
     a(0,1) = in.a(0,1);
@@ -31,7 +35,7 @@ Matrix::Matrix(Matrix33 &in) : MatrixBase(3, 3, false)
 }
 
 /* TODO: Make this inline */
-Matrix::Matrix(Matrix44 &in) : MatrixBase(4, 4, false)
+Matrix::Matrix(const Matrix44 &in) : MatrixBase(4, 4, false)
 {
     for (int i = 0; i < in.H; i++)
         for (int j = 0; j < in.W; j++)
@@ -69,13 +73,26 @@ Matrix::operator Matrix33() const
     );
 }
 
+Matrix operator -(const Matrix &A)
+{
+    Matrix result(A);
+    for (int i = 0; i < A.h; ++i)
+    {
+        for (int j = 0; j < A.w; ++j)
+        {
+            result.a(i, j) *= -1.0;
+        }
+    }
+    return result;
+}
+
 Matrix operator *(const double &a, const Matrix &B)
 {
     Matrix result(B.h, B.w, false);
     int row, column;
-    for (row = 0; row < result.h ; row++)
+    for (row = 0; row < result.h; row++)
     {
-        for (column = 0; column < result.w ; column++)
+        for (column = 0; column < result.w; column++)
         {
              result.a(row, column) = B.a(row, column) * a;
         }
@@ -92,12 +109,12 @@ Matrix operator *(const Matrix &B, const double &a)
 /* TODO: Merge functions below */
 Matrix *Matrix::mul(const Matrix& V)
 {
-    ASSERT_TRUE (this->w == V.h, "Matrices have wrong sizes");
+    CORE_ASSERT_TRUE(this->w == V.h, "Matrices have wrong sizes");
     Matrix *result = new Matrix(this->h, V.w, false);
 
     int row, column, runner;
-    for (row = 0; row < result->h ; row++)
-        for (column = 0; column < result->w ; column++)
+    for (row = 0; row < result->h; row++)
+        for (column = 0; column < result->w; column++)
         {
             double sum = 0;
             for (runner = 0; runner < this->w; runner++)
@@ -110,15 +127,30 @@ Matrix *Matrix::mul(const Matrix& V)
     return result;
 }
 
+#define WITH_DIRTY_GEMM_HACKS
+
+// I've prepared dirty implementation of GEMM/GEMV-like functions with fma-intrinsics and tbb stuff.
+// GEMM is also can be optimized with any BLAS-like library providing
+// cblas interface (build with WITH_BLAS and appropriate linker flags)
+//
+// USE IT ON YOUR OUR RISK
+//
+// Note, that it can be further improved with aligned reading,
+// block-matrix multiplication, etc; but adding BLAS-library seems to be better alternative.
+//
+// TODO: You'll need to modify cvs.pro, config.pri to make it buildable.
+// Easiest way is to comment out all -msse -mavx ... compiler keys, add -march=native (and -Ofast).
+//
+#ifndef WITH_DIRTY_GEMM_HACKS
 
 Matrix operator *(const Matrix &A, const Matrix &B)
 {
-    ASSERT_TRUE (A.w == B.h, "Matrices have wrong sizes");
+    CORE_ASSERT_TRUE(A.w == B.h, "Matrices have wrong sizes");
     Matrix result(A.h, B.w, false);
 
     int row, column, runner;
-    for (row = 0; row < result.h ; row++)
-        for (column = 0; column < result.w ; column++)
+    for (row = 0; row < result.h; row++)
+        for (column = 0; column < result.w; column++)
         {
             double sum = 0;
             for (runner = 0; runner < A.w; runner++)
@@ -131,16 +163,15 @@ Matrix operator *(const Matrix &A, const Matrix &B)
     return result;
 }
 
-
 Vector operator *(const Matrix &M, const Vector &V)
 {
-    ASSERT_TRUE (M.w == V.size(), "Matrix and vector have wrong sizes");
+    CORE_ASSERT_TRUE(M.w == V.size(), "Matrix and vector have wrong sizes");
     Vector result(M.h);
     int row, column;
     for (row = 0; row < M.h; row++)
     {
         double sum = 0.0;
-        for (column = 0; column < M.w ; column++)
+        for (column = 0; column < M.w; column++)
         {
             sum += V.at(column) * M.a(row, column);
         }
@@ -151,10 +182,10 @@ Vector operator *(const Matrix &M, const Vector &V)
 
 Vector operator *(const Vector &V, const Matrix &M)
 {
-    ASSERT_TRUE (M.h == V.size(), "Matrix and vector have wrong sizes");
+    CORE_ASSERT_TRUE(M.h == V.size(), "Matrix and vector have wrong sizes");
     Vector result(M.w);
     int row, column;
-    for (column = 0; column < M.w ; column++)
+    for (column = 0; column < M.w; column++)
     {
         double sum = 0.0;
         for (row = 0; row < M.h; row++)
@@ -166,14 +197,12 @@ Vector operator *(const Vector &V, const Matrix &M)
     return result;
 }
 
-
 Matrix operator *=(Matrix &M, const DiagonalMatrix &D)
 {
-    int32_t minDim = CORE_MIN(M.h,M.w);
-    minDim = CORE_MIN(minDim, D.size());
-    for (int i = 0; i < minDim ; i++)
+    CORE_ASSERT_TRUE(M.w == D.size(), "Matrices have wrong sizes");
+    for (int i = 0; i < M.h; i++)
     {
-         for (int j = 0; j < minDim ; j++)
+         for (int j = 0; j < M.w; j++)
          {
             M.a(i,j) *= D.at(i);
          }
@@ -183,44 +212,177 @@ Matrix operator *=(Matrix &M, const DiagonalMatrix &D)
 
 Matrix operator *(const Matrix &M, const DiagonalMatrix &D)
 {
-    int32_t minDim = CORE_MIN(M.h,M.w);
-    minDim = CORE_MIN(minDim, D.size());
-    Matrix result(minDim, minDim, false);
-    for (int i = 0; i < minDim ; i++)
+    CORE_ASSERT_TRUE(M.w == D.size(), "Matrices have wrong sizes");
+    Matrix result(M.h, M.w);
+    for (int i = 0; i < M.h; ++i)
     {
-         for (int j = 0; j < minDim ; j++)
-         {
-             result.a(i,j) = M.a(i,j) * D.at(i);
-         }
+        for (int j = 0; j < M.w; ++j)
+        {
+            result.a(i, j) = M.a(i, j) * D.at(j);
+        }
     }
     return result;
 }
 
 Matrix operator *(DiagonalMatrix &D, const Matrix &M)
 {
-    int32_t minDim = CORE_MIN(M.h,M.w);
-    minDim = CORE_MIN(minDim, D.size());
-    Matrix result(minDim, minDim, false);
-    for (int i = 0; i < minDim ; i++)
+    CORE_ASSERT_TRUE(M.h == D.size(), "Matrices have wrong sizes");
+    Matrix result(M.h, M.w);
+    for (int i = 0; i < M.h; ++i)
     {
-        for (int j = 0; j < minDim ; j++)
+        for (int j = 0; j < M.w; ++j)
         {
-            result.a(i,j) = M.a(i,j) * D.at(j);
+            result.a(i, j) = M.a(i, j) * D.at(i);
         }
     }
     return result;
 }
 
+#else // !WITH_DIRTY_GEMM_HACKS
+
+#ifdef WITH_BLAS
+Matrix Matrix::multiplyBlas(const Matrix &A, const Matrix &B)
+{
+    CORE_ASSERT_TRUE(A.w == B.h, "Matrices have wrong sizes");
+    Matrix result(A.h, B.w, false);
+    cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, A.h, B.w, A.w, 1.0, A.data, A.stride, B.data, B.stride, 0.0, result.data, result.stride);
+    return result;
+}
+#endif
+
+
+Matrix operator *(const Matrix &A, const Matrix &B)
+{
+#ifdef WITH_BLAS
+    return Matrix::multiplyBlas(A, B);
+#else
+    CORE_ASSERT_TRUE(A.w == B.h, "Matrices have wrong sizes");
+    Matrix result(A.h, B.w, false);
+
+    corecvs::parallelable_for(0, result.h, 8, ParallelMM<>(&A, &B, &result), !(A.h < 64));
+
+    //Matrix::multiplyHomebrew(A, B, true, !(A.h < 64)); // TODO: it has a bug, see testMatrixOperations!!!
+
+    return result;
+#endif
+}
+
+Vector operator *(const Matrix &M, const Vector &V)
+{
+    CORE_ASSERT_TRUE(M.w == V.size(), "Matrix and vector have wrong sizes");
+    if (M.h >= 64)
+    {
+#ifdef WITH_BLAS
+        Vector result(M.h);
+        cblas_dgemv (CblasRowMajor, CblasNoTrans, M.h, M.w, 1.0, &M.element(0, 0), M.stride, &V[0], 1, 0.0, &result[0], 1);
+        return result;
+#else
+        return Matrix::multiplyHomebrewMV(M, V);
+#endif
+    }
+
+    Vector result(M.h);
+    for (int row = 0; row < M.h; row++)
+    {
+        double sum = 0.0;
+        for (int column = 0; column < M.w; column++)
+        {
+            sum += V.at(column) * M.a(row, column);
+        }
+        result.at(row) = sum;
+    }
+    return result;
+}
+
+Vector operator *(const Vector &V, const Matrix &M)
+{
+    CORE_ASSERT_TRUE(M.h == V.size(), "Matrix and vector have wrong sizes");
+    Vector result(M.w);
+
+#ifdef WITH_BLAS
+    if (M.h < 32)
+    {
+#endif
+       for (int column = 0; column < M.w; ++column)
+       {
+           double sum = 0.0;
+           for (int row = 0; row < M.h; ++row)
+           {
+               sum += V.at(row) * M.a(row, column);
+           }
+           result.at(column) = sum;
+       }
+#ifdef WITH_BLAS
+    }
+    else
+    {
+        cblas_dgemv (CblasRowMajor, CblasTrans, M.h, M.w, 1.0, &M.element(0, 0), M.stride, &V[0], 1, 0.0, &result[0], 1);
+    }
+#endif
+    return result;
+}
+
+
+Matrix operator *=(Matrix &M, const DiagonalMatrix &D)
+{
+    CORE_ASSERT_TRUE(false, "TODO: Matrix operator *=(Matrix &M, const DiagonalMatrix &D) is implemented badly");       // TODO: check the implementation: result is squared matrix!
+    int32_t minDim = CORE_MIN(M.h, M.w);
+    minDim = CORE_MIN(minDim, D.size());
+    for (int i = 0; i < minDim; i++)
+    {
+         for (int j = 0; j < minDim; j++)
+         {
+            M.a(i,j) *= D.at(i);
+         }
+    }
+    return M;
+}
+
+
+Matrix operator *(const Matrix &M, const DiagonalMatrix &D)
+{
+    CORE_ASSERT_TRUE(M.w == D.size(), "Matrix and DiagonalMatrix have wrong sizes");
+    if (M.h < 16)
+    {
+       Matrix result(M.h, M.w);
+       for (int i = 0; i < M.h; ++i)
+       {
+           for (int j = 0; j < M.w; ++j)
+           {
+               result.a(i, j) = M.a(i, j) * D.at(j);
+           }
+        }
+        return result;
+    }
+
+    return Matrix::multiplyHomebrewMD(M, D);
+}
+
+Matrix operator *(DiagonalMatrix &D, const Matrix &M)
+{
+    CORE_ASSERT_TRUE(M.h == D.size(), "DiagonalMatrix and Matrix have wrong sizes");
+    Matrix result(M.h, M.w);
+    for (int i = 0; i < M.h; ++i)
+    {
+        for (int j = 0; j < M.w; ++j)
+        {
+            result.a(i, j) = M.a(i, j) * D.at(i);
+        }
+    }
+    return result;
+}
+
+#endif // WITH_DIRTY_GEMM_HACKS
 
 /* TODO: Use abstract buffer binaryOperation elementWize */
 Matrix operator +(const Matrix &A, const Matrix &B)
 {
-    ASSERT_TRUE (A.w == B.w && A.h == B.h, "Matrices have wrong sizes");
+    CORE_ASSERT_TRUE(A.w == B.w && A.h == B.h, "Matrices have wrong sizes");
     Matrix result(A.h, A.w, false);
 
-    for (int row = 0; row < result.h ; row++)
+    for (int row = 0; row < result.h; row++)
     {
-        for (int column = 0; column < result.w ; column++)
+        for (int column = 0; column < result.w; column++)
         {
             result.a(row, column) = A.a(row, column) + B.a(row, column);
         }
@@ -232,12 +394,12 @@ Matrix operator +(const Matrix &A, const Matrix &B)
 
 Matrix operator -(const Matrix &A, const Matrix &B)
 {
-    ASSERT_TRUE (A.w == B.w && A.h == B.h, "Matrices have wrong sizes");
+    CORE_ASSERT_TRUE(A.w == B.w && A.h == B.h, "Matrices have wrong sizes");
     Matrix result(A.h, A.w, false);
 
-    for (int row = 0; row < result.h ; row++)
+    for (int row = 0; row < result.h; row++)
     {
-        for (int column = 0; column < result.w ; column++)
+        for (int column = 0; column < result.w; column++)
         {
             result.a(row, column) = A.a(row, column) - B.a(row, column);
         }
@@ -248,17 +410,19 @@ Matrix operator -(const Matrix &A, const Matrix &B)
 
 ostream & operator <<(ostream &out, const Matrix &matrix)
 {
-    streamsize wasPrecision = out.precision(6);
+    streamsize wasPrecision = out.precision(15);
+    out << "[";
     for (int i = 0; i < matrix.h; i++)
     {
-        out << "[";
         for (int j = 0; j < matrix.w; j++)
         {
-            out.width(9);
-            out << matrix.a(i, j) << " ";
+            out.width(20);
+            out << std::scientific << matrix.a(i, j) << " ";
         }
-        out << "]\n";
+        if (i + 1 < matrix.h)
+            out << ";\n";
     }
+    out << "]" << std::endl;
     out.precision(wasPrecision);
     return out;
 }
@@ -279,13 +443,13 @@ void Matrix::print(ostream &out)
 }
 
 
-/* Merge three functions below*/
+/* Merge three functions below */
 Matrix *Matrix::transposed() const
 {
     Matrix* result = new Matrix(this->w, this->h, false);
-    for (int row = 0; row < result->h ; row++)
+    for (int row = 0; row < result->h; row++)
     {
-        for (int column = 0; column < result->w ; column++)
+        for (int column = 0; column < result->w; column++)
         {
             result->a(column, row) = this->a(row, column);
         }
@@ -296,11 +460,11 @@ Matrix *Matrix::transposed() const
 
 void Matrix::transpose()
 {
-    ASSERT_TRUE(this->h == this->w, "Matrix should be square to transpose.");
+    CORE_ASSERT_TRUE(this->h == this->w, "Matrix should be square to transpose.");
 
-    for (int row = 0; row < this->h ; row++)
+    for (int row = 0; row < this->h; row++)
     {
-        for (int column = row + 1; column < this->w ; column++)
+        for (int column = row + 1; column < this->w; column++)
         {
             double tmp;
             tmp = this->a(column, row);
@@ -313,9 +477,9 @@ void Matrix::transpose()
 Matrix Matrix::t() const
 {
     Matrix result(this->w, this->h, false);
-    for (int row = 0; row < result.h ; row++)
+    for (int row = 0; row < result.h; row++)
     {
-        for (int column = 0; column < result.w ; column++)
+        for (int column = 0; column < result.w; column++)
         {
             result.a(row, column) = this->a(column, row);
         }
@@ -327,9 +491,9 @@ Matrix Matrix::t() const
 Matrix Matrix::negative() const
 {
    Matrix result(this->w, this->h, false);
-   for (int row = 0; row < result.h ; row++)
+   for (int row = 0; row < result.h; row++)
    {
-       for (int column = 0; column < result.w ; column++)
+       for (int column = 0; column < result.w; column++)
        {
            result.a(row, column) = -this->a(row, column);
        }
@@ -349,9 +513,9 @@ double Matrix::trace() const
 double Matrix::frobeniusNorm() const
 {
     double norm = 0.0;
-    for (int row = 0; row < h ; row++)
+    for (int row = 0; row < h; row++)
     {
-        for (int column = 0; column < w ; column++)
+        for (int column = 0; column < w; column++)
         {
             double val = a(row, column);
             norm += val * val;
@@ -379,12 +543,12 @@ void Matrix::svdDesc (Matrix33 *A, Vector3dd *W, Matrix33 *V)
 void Matrix::svd (Matrix33 *A, Vector3dd *W, Matrix33 *V)
 {
     Matrix mA(*A);
-    Matrix mW(1,3);
-    Matrix mV(3,3);
+    Matrix mW(1, 3);
+    Matrix mV(3, 3);
     svd (&mA, &mW, &mV);
 
     *A = (Matrix33)mA;
-    *W = Vector3dd(mW.a(0,0),mW.a(0,1),mW.a(0,2));
+    *W = Vector3dd(mW.a(0,0), mW.a(0,1), mW.a(0,2));
     *V = (Matrix33)mV;
 }
 
@@ -401,7 +565,7 @@ void Matrix::svd (Matrix33 *A, Vector3dd *W, Matrix33 *V)
  */
 bool Matrix::matrixSolveGaussian(Matrix *A, Matrix *B)
 {
-    ASSERT_FALSE(A->h != A->w || A->w != B->h || B->w != 1, "Matrix has wrong sizes");
+    CORE_ASSERT_FALSE(A->h != A->w || A->w != B->h || B->w != 1, "Matrix has wrong sizes");
 
     int row, column, rowRunner, runner;
     int n = A->w;
@@ -488,11 +652,38 @@ bool Matrix::matrixSolveGaussian(Matrix *A, Matrix *B)
  * */
 Matrix Matrix::inv() const
 {
-    unsigned i, j, k;
+    /*
+     * Old implementation has bug:
+     *  1  1  1                                                 1 0 0
+     * (0  0  1).inv() = (sky falls and the earth collapses) = (0 1 0)
+     *  0  1  1                                                 0 0 1
+     *
+     *  It is not funny to discover this bug after some hours spent
+     *  debugging my code, so I commented it out and replaced with LAPACK calls (I've also fixed old code, if you care)
+     *
+     *  Note, however, that you should never invert matrix.
+     *  Even if it comes at zero cost (and even if someone
+     *  pay you each time you invert matrix)
+     */
+#ifdef WITH_BLAS
+    corecvs::Matrix copy(*this);
+#ifndef WIN32
+    int pivot[h];
+#else
+    std::unique_ptr<int[]> pivot_(new int[h]);
+    int* pivot = pivot_.get();
+#endif
+    CORE_ASSERT_TRUE_S(h == w);
+    LAPACKE_dgetrf(LAPACK_ROW_MAJOR, copy.h, copy.w, &copy.a(0, 0), copy.stride, pivot);
+    LAPACKE_dgetri(LAPACK_ROW_MAJOR, copy.h, &copy.a(0, 0), copy.stride, pivot);
+    return copy;
 
+#else // WITH_BLAS
+
+    unsigned i, j, k;
     double multiplier;
 
-    ASSERT_TRUE(this->h == this->w, "Matrix should be square to invert.");
+    CORE_ASSERT_TRUE(this->h == this->w, "Matrix should be square to invert.");
 
     unsigned rank = this->h;
     // Start with identity matrix
@@ -501,6 +692,28 @@ Matrix Matrix::inv() const
 
     for (i = 0; i < rank; ++i)
     {
+        uint pivotRow = i;
+        double pivotValue = std::abs(copy.a(i, i));
+        for (uint j = i + 1; j < rank; ++j)
+        {
+            double abs = std::abs(copy.a(j, i));
+            if (abs > pivotValue)
+            {
+                pivotValue = abs;
+                pivotRow = j;
+            }
+        }
+        if (pivotRow != i)
+        {
+            for (uint j = i; j < rank; ++j)
+            {
+                std::swap(copy.a(pivotRow, j), copy.a(i, j));
+            }
+            for (uint j = 0; j < rank; ++j)
+            {
+                std::swap(result.a(pivotRow, j), result.a(i, j));
+            }
+        }
         double divider = copy.a(i,i);
         if (fabs(divider) == 0)
         {
@@ -540,13 +753,63 @@ Matrix Matrix::inv() const
     }
 
     return result;
+
+#endif // !WITH_BLAS
 }
 
+bool corecvs::Matrix::linSolve(const corecvs::Vector &B, corecvs::Vector &res, bool symmetric, bool posDef) const
+{
+    return LinSolve(*this, B, res, symmetric, posDef);
+}
 
+bool corecvs::Matrix::LinSolve(const corecvs::Matrix &A, const corecvs::Vector &B
+    , corecvs::Vector &res
+    , bool symmetric
+    , bool posDef)
+{
+    CORE_ASSERT_TRUE_S(A.h == B.size());
+    CORE_ASSERT_TRUE_S(A.h == A.w);
+#ifdef WITH_BLAS
+    corecvs::Matrix copy(A);
+    res = B;
+    decltype(LAPACKE_dgetrf(0, 0, 0, 0, 0, 0)) info;
+    if (!posDef)
+    {
+#ifndef WIN32
+        int pivot[std::min(A.h, A.w)];
+#else
+        std::unique_ptr<int[]> pivot_(new int[std::min(A.h, A.w)]);
+        int *pivot = pivot_.get();
+#endif
+        if (!symmetric)
+        {
+            info = LAPACKE_dgetrf(LAPACK_ROW_MAJOR, copy.h, copy.w, &copy.a(0, 0), copy.stride, pivot);
+            if (!info) LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', res.size(), 1, &copy.a(0, 0), copy.stride, pivot, &res[0], 1);
+        }
+        else
+        {
+            info = LAPACKE_dsytrf(LAPACK_ROW_MAJOR, 'U', copy.h, &copy.a(0, 0), copy.stride, pivot);
+            if (!info) LAPACKE_dsytrs(LAPACK_ROW_MAJOR, 'U', res.size(), 1, &copy.a(0, 0), copy.stride, pivot, &res[0], 1);
+        }
+    }
+    else
+    {
+        info = LAPACKE_dpotrf(LAPACK_ROW_MAJOR, 'U', copy.w, &copy.a(0, 0), copy.stride);
+        if (!info) LAPACKE_dpotrs(LAPACK_ROW_MAJOR, 'U', copy.w, 1, &copy.a(0, 0), copy.stride, &res[0], 1);
+    }
+    return info == 0;
+
+#else // WITH_BLAS
+
+    res = A.inv() * B;
+    return true;
+
+#endif // !WITH_BLAS
+}
 
 Matrix Matrix::invSVD() const
 {
-    ASSERT_TRUE(this->h == this->w, "Matrix should be square to invert.");
+    CORE_ASSERT_TRUE(this->h == this->w, "Matrix should be square to invert.");
     int rank = this->h;
     Matrix X(this);
     Matrix result(rank, rank, 1.0);
@@ -558,9 +821,9 @@ Matrix Matrix::invSVD() const
     X.transpose();
   //  cout << "Singular:" << W << endl;
 
-    for (int i = 0; i < rank ; i++)
+    for (int i = 0; i < rank; i++)
     {
-        for (int j = 0; j < rank ; j++)
+        for (int j = 0; j < rank; j++)
         {
             if (W.a(0,i) > 1e-5)
                 X.a(i,j) /= W.a(0,i);
@@ -569,9 +832,13 @@ Matrix Matrix::invSVD() const
     return V * X;
 }
 
+/*
+ * FIXME: This is obviously incorrect, since determinant computed with this
+ * routine will always be >= 0
+ */
 double Matrix::detSVD() const
 {
-    ASSERT_TRUE(this->h == this->w, "Matrix should be square to invert.");
+    CORE_ASSERT_TRUE(this->h == this->w, "Matrix should be square to invert.");
     int rank = this->h;
     Matrix X(this);
     Matrix result(rank, rank, 1.0);
@@ -581,21 +848,39 @@ double Matrix::detSVD() const
     Matrix::svd (&X, &W, &V);
 
     double det = 1.0;
-    for (int i = 0; i < rank ; i++)
+    for (int i = 0; i < rank; i++)
     {
        det *= W.a(0,i);
     }
     return det;
 }
 
+#ifdef WITH_BLAS
+double corecvs::Matrix::det() const
+{
+    CORE_ASSERT_TRUE(w == h, "Determinant of square matrices can be computed");
+    corecvs::Vector tau(w);
+    corecvs::Matrix R = *this;
+    LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, h, w, &R.a(0, 0), stride, &tau[0]);
+    double det = 1.0;
+    for (int i = 0; i < w; ++i)
+        det *= R.a(i, i);
+    double tauM = 1.0;
+    for (int i = 0; i < w; ++i)
+        if (tau[i] != 0.0)
+            tauM *= -1.0;
+    return det * tauM;
+}
+#endif // WITH_BLAS
+
 Vector2d32 Matrix::getMinCoord() const
 {
     Vector2d32 result(0, 0);
     double value = numeric_limits<double>::max();
 
-    for (int row = 0; row < h ; row++)
+    for (int row = 0; row < h; row++)
     {
-        for (int column = 0; column < w ; column++)
+        for (int column = 0; column < w; column++)
         {
             if (this->a(row, column) < value)
             {
@@ -612,9 +897,9 @@ Vector2d32 Matrix::getMaxCoord() const
     Vector2d32 result(0, 0);
     double value = -numeric_limits<double>::max();
 
-    for (int row = 0; row < h ; row++)
+    for (int row = 0; row < h; row++)
     {
-        for (int column = 0; column < w ; column++)
+        for (int column = 0; column < w; column++)
         {
             if (this->a(row, column) > value)
             {
@@ -629,7 +914,7 @@ Vector2d32 Matrix::getMaxCoord() const
 Matrix Matrix::column(int column)
 {
     Matrix toReturn(h, 1);
-    for (int row = 0; row < h ; row++)
+    for (int row = 0; row < h; row++)
     {
         toReturn.a(row, 0) = this->a(row, column);
     }
@@ -639,7 +924,7 @@ Matrix Matrix::column(int column)
 Matrix Matrix::row(int row)
 {
     Matrix toReturn(1, w);
-    for (int column = 0; column < w ; column++)
+    for (int column = 0; column < w; column++)
     {
         toReturn.a(0, column) = toReturn.a(row, column);
     }
@@ -670,10 +955,10 @@ Matrix Matrix::row(int row)
  */
 void Matrix::svd (Matrix *A, Matrix *W, Matrix *V)
 {
-    ASSERT_TRUE((A != NULL && W != NULL && V != NULL), "NULL input Matrix\n");
+    CORE_ASSERT_TRUE((A != NULL && W != NULL && V != NULL), "NULL input Matrix\n");
 
-    ASSERT_TRUE((W->h ==    1 && W->w == A->w), "Matrix W has wrong size\n" );
-    ASSERT_TRUE((A->w == V->h && A->w == V->w),"Matrix V has wrong size\n");
+    CORE_ASSERT_TRUE((W->h ==    1 && W->w == A->w), "Matrix W has wrong size\n");
+    CORE_ASSERT_TRUE((A->w == V->h && A->w == V->w), "Matrix V has wrong size\n");
 
     int n = A->w;
     int m = A->h;
@@ -686,8 +971,8 @@ void Matrix::svd (Matrix *A, Matrix *W, Matrix *V)
     double scale = 0.0;
     double *rv1;
 
-    ASSERT_FALSE((m < n), "SVDCMP: You must augment A with extra zero rows");
-    ASSERT_TRUE(n > 0 , "A width should not be zero");
+    CORE_ASSERT_FALSE((m < n), "SVDCMP: You must augment A with extra zero rows");
+    CORE_ASSERT_TRUE(n > 0, "A width should not be zero");
 
     rv1 = new double[n];
 
@@ -932,7 +1217,7 @@ void Matrix::svd (Matrix *A, Matrix *W, Matrix *V)
 
 void Matrix::svd(Matrix *A, DiagonalMatrix *W, Matrix *V)
 {
-    ASSERT_TRUE((W->size() == A->w), "Matrix W has wrong size\n" );
+    CORE_ASSERT_TRUE((W->size() == A->w), "Matrix W has wrong size\n");
     Matrix WVec(1, W->size());
     svd(A, &WVec, V);
     for (int i = 0; i < W->size(); i++)
@@ -947,20 +1232,16 @@ void Matrix::svd(Matrix *A, DiagonalMatrix *W, Matrix *V)
   *   Computes all eigenvalues and eigenvectors of a real symmetric matrix a[1..n][1..n].
   *   On output, elements of a above the diagonal are destroyed. d[1..n] returns the eigenvalues of a v[1..n][1..n]
   *   is a matrix whose columns contain, on output, the normalized eigenvectors of a nrot returns the number of Jacobi rotations that were required.
-  *
-  *
-  *
   **/
 
 #define ROTATE(mat,i,j,k,l) g = mat->a(i,j); h = mat->a(k,l); mat->a(i,j) = g - s * ( h + g * tau); mat->a(k,l) = h + s * ( g - h * tau);
 
 int Matrix::jacobi(Matrix *a, DiagonalMatrix *d, Matrix *v, int *nrotpt)
 {
-
-    ASSERT_TRUE((a != NULL && d != NULL && v != NULL), "NULL input Matrix\n");
-    ASSERT_TRUE((a->h == a->w), "Matrix A is not square\n" );
-    ASSERT_TRUE((v->h == a->h && v->w == a->w), "Matrix V has wrong size\n" );
-    ASSERT_TRUE((a->w == d->size()),"Matrix D has wrong size\n");
+    CORE_ASSERT_TRUE((a != NULL && d != NULL && v != NULL), "NULL input Matrix\n");
+    CORE_ASSERT_TRUE((a->h == a->w), "Matrix A is not square\n");
+    CORE_ASSERT_TRUE((v->h == a->h && v->w == a->w), "Matrix V has wrong size\n");
+    CORE_ASSERT_TRUE((a->w == d->size()), "Matrix D has wrong size\n");
 
     int j,iq,ip,i;
     double tresh,theta,tau,t,sm,s,h,g,c,*b,*z;
@@ -1065,11 +1346,22 @@ int Matrix::jacobi(Matrix *a, DiagonalMatrix *d, Matrix *v, int *nrotpt)
             z[ip] = 0.0;
         }
     }
+    delete b;
+    delete z;
     SYNC_PRINT(("Too many iterations in routine jacobi"));
     return 1;
 }
 #undef ROTATE
 
+Matrix Matrix::ata() const
+{
+#ifndef WITH_BLAS
+    return t() * *this;
+#else
+    Matrix res(w, w);
+    cblas_dgemm(CblasRowMajor, CblasTrans, CblasNoTrans, w, w, h, 1.0, data, stride, data, stride, 0.0, res.data, res.stride);
+    return res;
+#endif
+}
 
 } //namespace corecvs
-

@@ -113,6 +113,7 @@ public:
      *
      **/
     Vector3dd triangulateLM(Vector3dd initialGuess, bool *ok = NULL);
+    corecvs::Matrix33 getCovarianceInvEstimation(const corecvs::Vector3dd &at) const;
 
     vector<Vector2dd> reprojectionError(const Vector3dd &input);
     double reprojError(const corecvs::Vector3dd &input);
@@ -122,9 +123,9 @@ public:
     public:
         MulticameraTriangulator *mTriangulator;
 
-        CostFunction(MulticameraTriangulator *triang) :
-            FunctionArgs(Vector3dd::LENGTH, triang->P.size() * 2),
-            mTriangulator(triang)
+        CostFunction(MulticameraTriangulator *triang)
+            : FunctionArgs(Vector3dd::LENGTH, (int)triang->P.size() * 2)
+            , mTriangulator(triang)
         {}
 
         virtual void operator()(const double in[], double out[]);

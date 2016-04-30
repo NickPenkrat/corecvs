@@ -198,12 +198,12 @@ FORCE_INLINE Int16x8 productHigherPart (const Int16x8 &left, const Int16x8 &righ
     return Int16x8(_mm_mulhi_epi16(left.data, right.data));
 }
 
-FORCE_INLINE Int32x8 productExtending (const Int16x8 &left, const Int16x8 &right)
+FORCE_INLINE Int32x8v productExtending (const Int16x8 &left, const Int16x8 &right)
 {
     Int16x8  lowParts(productLowerPart (left, right));
     Int16x8 highParts(productHigherPart(left, right));
 
-    return Int32x8(Int16x8::unpackLower (lowParts, highParts)
+    return Int32x8v(Int16x8::unpackLower (lowParts, highParts)
                  , Int16x8::unpackHigher(lowParts, highParts));
 }
 

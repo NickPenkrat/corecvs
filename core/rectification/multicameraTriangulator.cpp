@@ -13,8 +13,21 @@ namespace corecvs {
 Vector3dd MulticameraTriangulator::triangulate(bool *ok)
 {
     hasError = true;
-    if (P.size() != xy.size() || P.size() < 2) {
-        if (ok != NULL) *ok = hasError;
+    if (P.size() != xy.size()) {
+        if (trace) {
+            SYNC_PRINT(("MulticameraTriangulator::triangulate(): P.size != xy.size"));
+        }
+        if (ok != NULL) *ok = !hasError;
+        return Vector3dd(0.0);
+    }
+
+
+    if (P.size() < 2) {
+        if (trace) {
+            SYNC_PRINT(("MulticameraTriangulator::triangulate(): P.size() < 2"));
+        }
+
+        if (ok != NULL) *ok = !hasError;
         return Vector3dd(0.0);
     }
 
@@ -64,6 +77,9 @@ Vector3dd MulticameraTriangulator::triangulate(bool *ok)
     if (trace) {
         cout << result << endl;
     }
+
+    hasError = false;
+    if (ok != NULL) *ok = !hasError;
 
     return result;
 }
@@ -198,12 +214,13 @@ void MulticameraTriangulator::CostFunction::operator()(const double in[], double
 
 
 
-Vector3dd MulticameraTriangulator::triangulateLM(Vector3dd initialGuess, bool */*ok*/)
+Vector3dd MulticameraTriangulator::triangulateLM(Vector3dd initialGuess, bool * /*ok*/)
 {
     LevenbergMarquardt LMfit;
     CostFunction F(this);
     LMfit.f = &F;
     LMfit.maxIterations = 1000;
+    LMfit.traceProgress = false;
 
     vector<double> guess(3);
     guess[0] = initialGuess.x();
@@ -214,6 +231,21 @@ Vector3dd MulticameraTriangulator::triangulateLM(Vector3dd initialGuess, bool */
     vector<double> optInput = LMfit.fit(guess, output);
 
     return Vector3dd(optInput[0], optInput[1], optInput[2]);
+}
+
+/*
+ * Assuming we have an MLE-estimator it (under certain circumstances) is asympthotically-normal
+ * So if (and it is the only point that should be used for evaluation) "at" is an extreme value,
+ * than hessian is asympthotically unbiased estimate for inverse of covariance matrix
+ * For LSQ-estimator JTJ is a good enough estimation of hessian near of extremum
+ *
+ * NOTE: Due to some reasons on real-life scenes this does not work as expected
+ */
+corecvs::Matrix33 MulticameraTriangulator::getCovarianceInvEstimation(const corecvs::Vector3dd &at) const
+{
+    CostFunction f(const_cast<MulticameraTriangulator*>(this));
+    auto H = f.getLSQHessian(&at[0]);
+    return H;
 }
 
 } // namespace corecvs

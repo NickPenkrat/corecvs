@@ -9,6 +9,7 @@
  */
 
 #include <iostream>
+#include "gtest/gtest.h"
 
 #include "global.h"
 
@@ -57,6 +58,7 @@ public:
        }
     }
 };
+
 class GradientRnToRm2Test : FunctionArgs {
 public:
     GradientRnToRm2Test() : FunctionArgs(3,3) {};
@@ -78,8 +80,7 @@ public:
     }
 };
 
-
-void testGradientDescent( void )
+TEST(Gradient, testGradientDescent)
 {
     Vector3dd min(1.0, -1.5, 2.0);
     GradientTest function(min);
@@ -110,12 +111,11 @@ void testGradientDescent( void )
     cout << "Minimum Answer:" << resMin << endl;
     cout << "        Answer:" << res    << endl;
 
-    ASSERT_TRUE(resMin.notTooFar(min, 1e-2), "Minimum search failed");
-    ASSERT_TRUE(res   .notTooFar(min, 1e-2), "GD opt failed");
+    CORE_ASSERT_TRUE(resMin.notTooFar(min, 1e-2), "Minimum search failed");
+    CORE_ASSERT_TRUE(res.notTooFar(min, 1e-2), "GD opt failed");
 }
 
-
-void testGradientDescentRnToRm( void )
+TEST(Gradient, DISABLED_testGradientDescentRnToRm)
 {
     GradientRnToRmTest function;
 
@@ -148,12 +148,11 @@ void testGradientDescentRnToRm( void )
         cout << target[i] << ",";
     cout << endl;
 
-
-    ASSERT_DOUBLE_EQUAL_E(result[0],toguess[0], 1e-7, "Wrong result");
-    ASSERT_DOUBLE_EQUAL_E(result[1],toguess[1], 1e-7, "Wrong result");
+    CORE_ASSERT_DOUBLE_EQUAL_E(result[0], toguess[0], 1e-7, "Wrong result");
+    CORE_ASSERT_DOUBLE_EQUAL_E(result[1], toguess[1], 1e-7, "Wrong result");
 }
 
-void testGradientDescentRnToRm2( void )
+TEST(Gradient, testGradientDescentRnToRm2)
 {
     GradientRnToRm2Test function;
 
@@ -192,11 +191,11 @@ void testGradientDescentRnToRm2( void )
 
 }
 
-int main (int /*argC*/, char ** /*argV*/)
-{
-//    testGradientDescent();
-    testGradientDescentRnToRm();
-//    testGradientDescentRnToRm2();
-        cout << "PASSED" << endl;
-        return 0;
-}
+//int main (int /*argC*/, char ** /*argV*/)
+//{
+////    testGradientDescent();
+//    testGradientDescentRnToRm();
+////    testGradientDescentRnToRm2();
+//        cout << "PASSED" << endl;
+//        return 0;
+//}

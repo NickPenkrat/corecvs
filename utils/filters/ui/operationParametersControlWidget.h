@@ -19,6 +19,7 @@ public:
     ~OperationParametersControlWidget();
 
     OperationParameters* createParameters() const;
+    void getParameters(OperationParameters &params) const;
     void setParameters(const OperationParameters &input);
     virtual void setParametersVirtual(void *input);
 

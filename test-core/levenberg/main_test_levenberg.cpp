@@ -1,24 +1,21 @@
 /**
  * \file main_test_levenberg.cpp
- * \brief This is the main file for the test levenberg 
+ * \brief This is the main file for the test levenberg
  *
  * \date Jul 05, 2011
  * \author alexander
  *
- * \ingroup autotest  
+ * \ingroup autotest
  */
 
-#ifndef ASSERTS
-#define ASSERTS
-#endif
-
-
 #include <iostream>
+#include "gtest/gtest.h"
 
 #include "global.h"
 
 #include "function.h"
 #include "levenmarq.h"
+#include "dogleg.h"
 #include "helperFunctions.h"
 #include "bmpLoader.h"
 
@@ -43,7 +40,7 @@ public:
     }
 };
 
-void testMarquardtLevenberg( void )
+TEST(Levenberg, testMarquardtLevenberg)
 {
     LevenbergTest function;
 
@@ -72,13 +69,44 @@ void testMarquardtLevenberg( void )
         cout << target[i] << ",";
     cout << endl;
 
-
-    ASSERT_DOUBLE_EQUAL_E(result[0],toguess[0], 1e-7, "Wrong result");
-    ASSERT_DOUBLE_EQUAL_E(result[1],toguess[1], 1e-7, "Wrong result");
+    CORE_ASSERT_DOUBLE_EQUAL_E(result[0], toguess[0], 1e-7, "Wrong result");
+    CORE_ASSERT_DOUBLE_EQUAL_E(result[1], toguess[1], 1e-7, "Wrong result");
 }
 
+TEST(Levenberg, testDogLeg)
+{
+    LevenbergTest function;
 
-void plotRosenberg ( void )
+    corecvs::DogLeg optimiser;
+
+    optimiser.f = (FunctionArgs *)&function;
+    optimiser.maxIterations = 20000000;
+
+    double toguess[2] = {100.2, 105.1};
+    vector<double> target(10);
+
+    function(toguess, &(target[0]));
+
+    vector<double> startguess(2);
+    startguess[0] = 100.1;
+    startguess[1] = 105.8;
+
+    vector<double> result = optimiser.fit(startguess, target);
+
+    cout << "Answer:" << endl;
+    for (int i = 0; i < 2; i++)
+        cout << result[i] << ",";
+    cout << endl;
+
+    for (int i = 0; i < 10; i++)
+        cout << target[i] << ",";
+    cout << endl;
+
+    CORE_ASSERT_DOUBLE_EQUAL_E(result[0], toguess[0], 1e-7, "Wrong result");
+    CORE_ASSERT_DOUBLE_EQUAL_E(result[1], toguess[1], 1e-7, "Wrong result");
+}
+
+TEST(Levenberg, DISABLED_plotRosenberg)
 {
     const int STEPS = 40;
     FILE *Out = fopen("rosenberg.txt", "wt");
@@ -106,14 +134,4 @@ void plotRosenberg ( void )
     delete image;
 
     fclose(Out);
-}
-
-int main (int /*argC*/, char ** /*argV*/)
-{
-    plotRosenberg();
- //   testMarquardtLevenberg();
-
-
-        cout << "PASSED" << endl;
-        return 0;
 }

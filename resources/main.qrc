@@ -80,6 +80,40 @@
         <file>select_by_color.png</file>
         <file>draw_eraser.png</file>
         <file>color_adjustment.png</file>
+        <file>checkerboard.png</file>
+        <file>table_lightning.png</file>
+        <file>price_comparison.png</file>
+        <file>picture.png</file>
+        <file>photostation.png</file>
+        <file>script_add.png</file>
+        <file>script_save.png</file>
+        <file>info_rhombus.png</file>
+        <file>sharpen.png</file>
+        <file>tipper.png</file>
+        <file>tractor.png</file>
+        <file>radioactivity_drum.png</file>
+        <file>transform_rotate.png</file>
+        <file>tree_list.png</file>
+        <file>photostation_save.png</file>
+        <file>matchpoints.png</file>
+        <file>photostation_reorient.png</file>
+        <file>inbox_download.png</file>
+        <file>inbox_upload.png</file>
+        <file>screwdriver.png</file>
+        <file>report_images.png</file>
+        <file>connect.png</file>
+        <file>disconnect.png</file>
+        <file>gear_in.png</file>
+        <file>arrow_rotate_anticlockwise.png</file>
+        <file>arrow_rotate_clockwise.png</file>
+    </qresource>
+    <qresource prefix="/new/colors">
+        <file>colors/color_blue.png</file>
+        <file>colors/color_green.png</file>
+        <file>colors/color_red.png</file>
+        <file>colors/color_gray.png</file>
+        <file>colors/color_wheel.png</file>
+        <file>colors/contrast.png</file>
     </qresource>
     <qresource prefix="/new/graph">
         <file>draw_line.png</file>
@@ -112,5 +146,11 @@
         <file>our/hyst_z.png</file>
         <file>our/hyst.png</file>
         <file>our/top.png</file>
+    </qresource>
+    <qresource prefix="/new/images">
+        <file>zoom_actual_equal.png</file>
+        <file>zoom_extend.png</file>
+        <file>layer_resize_actual.png</file>
+        <file>layer_resize.png</file>
     </qresource>
 </RCC>

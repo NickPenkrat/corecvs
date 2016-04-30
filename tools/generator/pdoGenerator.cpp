@@ -274,7 +274,7 @@ void PDOGenerator::generatePDOH()
             continue;
     result +=
     "class " + target + ";\n";
-    pointedTypes.push_back(target);
+        pointedTypes.push_back(target);
     }
 
     result +=
@@ -294,10 +294,6 @@ void PDOGenerator::generatePDOH()
         const EnumReflection *eref = efield->enumReflection;
 
         QString fileName = toCamelCase(eref->name.name) + ".h";
-
-        /* This is done elsewhere now */
-        /*PDOGenerator generator(NULL);
-        generator.generatePDOEnumSubH(eref);*/
 
     result+=
     "#include \"" + fileName + "\"\n";
@@ -603,14 +599,23 @@ void PDOGenerator::generatePDOCpp()
 
     if (type != BaseField::TYPE_COMPOSITE && type != BaseField::TYPE_COMPOSITE_ARRAY) {
     result+=
-    "          "+defaultValue+",\n"
+    "          "+defaultValue+",\n";
+        if (type & BaseField::TYPE_VECTOR_BIT)
+        {
+            QString defaultSize = "0";
+    result+=
+    "          "+defaultSize+",\n";
+
+        }
+
+    result+=
     "          \""+name+"\",\n"
     "          \""+descr+"\",\n"
     "          \""+comment+"\"";
 
         if (type == BaseField::TYPE_INT) {
             const IntField *ifield = static_cast<const IntField *>(field);
-            if (ifield->max != 0 || ifield->min != 0)
+            if (ifield->hasAdditionalValues)
             {
     result+=
     ",\n"
@@ -622,7 +627,7 @@ void PDOGenerator::generatePDOCpp()
         }
         if (type == BaseField::TYPE_DOUBLE) {
             const DoubleField *dfield = static_cast<const DoubleField *>(field);
-            if (dfield->max != 0 || dfield->min != 0)
+            if (dfield->hasAdditionalValues)
             {
     result+=
     ",\n"
@@ -830,6 +835,25 @@ void PDOGenerator::generateControlWidgetCpp()
     "    delete params;\n"
     "}\n"
     "\n"
+    " /* Composite fields are NOT supported so far */\n"
+    "void "+className+"::getParameters("+parametersName+"& params) const\n"
+    "{\n"
+    "\n";
+
+    for (int i = 0; i < fieldNumber; i++ )
+    {
+        enterFieldContext(i);
+        if (type == BaseField::TYPE_COMPOSITE) {
+            result += "//";
+        }
+
+        result+=
+    "    params."+j(setterName,20)+"("+prefix+"mUi->"+boxName+"->"+getWidgetGetterMethodForType(type)+suffix+");\n";
+    }
+
+    result+=
+    "\n"
+    "}\n"
     "\n"
     ""+parametersName+" *"+className+"::createParameters() const\n"
     "{\n"

@@ -60,7 +60,7 @@ public:
                       int8_t  c8, int8_t  c9, int8_t c10, int8_t c11,
                       int8_t c12, int8_t c13, int8_t c14, int8_t c15 ) :
         BaseClass (c0, c1,  c2,  c3,  c4,  c5,  c6,  c7,
-                   c8, c9, c10, c11, c12, c13, c14, c15) {};
+                   c8, c9, c10, c11, c12, c13, c14, c15) {}
 
     explicit Int8x16(const int8_t data[16]) :
         BaseClass(data) {}
@@ -82,7 +82,7 @@ public:
         this->data = value.data;
     }
 
-    explicit inline Int8x16(const Int32x8 &value)
+    explicit inline Int8x16(const Int32x8v &value)
     {
         this->data =  _mm_packs_epi32(value.element[0].data, value.element[1].data);
     }
@@ -224,7 +224,7 @@ template<int idx>
     }
 
 #ifdef NYI
-    inline Int32x8 expand() const
+    inline Int32x8v expand() const
     {
         return Int32x8(
                 unpackLower4 (*this, Int8x16((uint16_t)0)),
@@ -233,12 +233,9 @@ template<int idx>
     }
 #endif
 
-    /* Arithmetics operations */
-    friend Int8x16 operator + (const Int8x16 &left, const Int8x16 &right);
-    friend Int8x16 operator - (const Int8x16 &left, const Int8x16 &right);
-
-    friend Int8x16 operator += (Int8x16 &left, const Int8x16 &right);
-    friend Int8x16 operator -= (Int8x16 &left, const Int8x16 &right);
+    /* Saturated arithmetics operations */
+    friend Int8x16 adds(const Int8x16 &left, const Int8x16 &right);
+    friend Int8x16 subs(const Int8x16 &left, const Int8x16 &right);
 
     Int8x16 operator -( ) {
         return (Int8x16((int8_t)0) - *this);
@@ -271,7 +268,7 @@ template<int idx>
 
     friend Int8x16 productLowerPart (const Int8x16 &left, const Int8x16 &right);
     friend Int8x16 productHigherPart(const Int8x16 &left, const Int8x16 &right);
-    friend Int32x8 productExtending (const Int8x16 &left, const Int8x16 &right);
+    friend Int32x8v productExtending (const Int8x16 &left, const Int8x16 &right);
 
     /* Slow but helpful */
     friend Int8x16 operator *  (      int16_t right, Int8x16 &left);
@@ -287,8 +284,7 @@ template<int idx>
         return Int16x8(_mm_unpackhi_epi8(left.data, right.data));
     }
 
-
-    /*Print to stream helper */
+    /* Print to stream helper */
 
     friend ostream & operator << (ostream &out, const Int8x16 &vector);
 
@@ -341,6 +337,16 @@ FORCE_INLINE Int8x16 operator >>= (Int8x16 &left, const Int8x16 &right) {
     return left;
 }
 #endif
+
+FORCE_INLINE Int8x16 adds(const Int8x16 &left, const Int8x16 &right) {
+    return Int8x16(_mm_adds_epi8(left.data, right.data));
+}
+
+FORCE_INLINE Int8x16 subs(const Int8x16 &left, const Int8x16 &right) {
+    return Int8x16(_mm_subs_epi8(left.data, right.data));
+}
+
+
 
 FORCE_INLINE Int8x16 operator < (const Int8x16 &left, const Int8x16 &right) {
     return Int8x16(_mm_cmplt_epi8(left.data, right.data));

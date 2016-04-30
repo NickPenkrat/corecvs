@@ -47,10 +47,13 @@ void CapSettingsDialog::clearDialog()
 
 void CapSettingsDialog::refreshDialog()
 {
+   clearDialog();
    if (mCaptureInterface == NULL)
    {
        return;
    }
+
+   //clearDialog();
 
     //ImageCaptureInterface::CapErrorCode resLeft =
    mCaptureInterface->queryCameraParameters(mLeftCameraParameters);

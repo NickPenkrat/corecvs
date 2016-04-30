@@ -11,6 +11,7 @@
 #include "levenmarq.h"
 #include "gradientDescent.h"
 #include "classicKalman.h"
+#include "polynomialSolver.h"
 //#include "kalman.h"
 
 namespace corecvs {
@@ -67,28 +68,78 @@ EssentialEstimator::EssentialEstimator()
  *    = \vec 0
  * \f]
  **/
-EssentialMatrix EssentialEstimator::getEssentialLSE(const vector<Correspondance*> & samples)
+EssentialMatrix EssentialEstimator::getEssentialLSE(const vector<Correspondence*> & samples)
 {
-    Matrix X((int)samples.size(), 9);
+    Matrix X(std::max(9, (int)samples.size()), 9, 0.0);
     Matrix W(1,9);
     Matrix V(9,9);
     Matrix33 F(0.0);
 
+#if 1
+    corecvs::Vector2dd meanL(0.0, 0.0), meanR(0.0, 0.0);
+    corecvs::Vector2dd stdevL(0.0, 0.0), stdevR(0.0, 0.0);
+    for (size_t i = 0; i < samples.size(); ++i)
+    {
+        auto L = samples[i]->start;
+        auto R = samples[i]->end;
+        meanL += L;
+        meanR += R;
+
+        stdevL += L * L;
+        stdevR += R * R;
+    }
+    double N = 1.0 / samples.size();
+    meanL *= N;
+    meanR *= N;
+    stdevL = stdevL * N - meanL * meanL;
+    stdevR = stdevR * N - meanR * meanR;
+    for (int i = 0; i < 2; ++i)
+    {
+        stdevL[i] = std::sqrt(stdevL[i]);       // TODO: this must be present in statistics/approx blocks...
+        stdevR[i] = std::sqrt(stdevR[i]);
+    }
+#if 1
+    corecvs::Matrix33 TL = corecvs::Matrix33(
+            stdevL[0],       0.0, meanL[0],
+                  0.0, stdevL[1], meanL[1],
+                  0.0,       0.0,      1.0).inv();
+    corecvs::Matrix33 TR = corecvs::Matrix33(
+            stdevR[0],       0.0, meanR[0],
+                  0.0, stdevR[1], meanR[1],
+                  0.0,       0.0,      1.0).inv();
+#else
+    corecvs::Matrix33 TL(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
+    corecvs::Matrix33 TR(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
+#endif
+#endif
+
+    corecvs::Vector2dd ml(0.0, 0.0), mr(0.0, 0.0);
     for (unsigned i = 0; i < samples.size(); i++)
     {
         Vector2dd first  = samples[i]->start;
         Vector2dd second = samples[i]->end;
-
+#if 1
+        auto firstP = TL * corecvs::Vector3dd(first.x(), first.y(), 1.0);
+        auto secondP = TR * corecvs::Vector3dd(second.x(), second.y(), 1.0);
+        firstP /= firstP[2];
+        secondP /= secondP[2];
+        first = corecvs::Vector2dd(firstP[0], firstP[1]);
+        second = corecvs::Vector2dd(secondP[0], secondP[1]);
+        ml += first;
+        mr += second;
+#endif
         X.fillLineWithArgs(i,
         first.x() * second.x(), first.x() * second.y(), first.x(),
         first.y() * second.x(), first.y() * second.y(), first.y(),
         second.x(), second.y(),  1.0);
     }
+//    X.a(samples.size(), 0) = 1.0;
+//    std::cout << ml << std::endl << mr << std::endl;
 
 #ifdef DEEP_TRACE
-        X.print();
-        cout << endl;
-        fflush(stdout);
+//        X.print();
+//        cout << endl;
+//        fflush(stdout);
 #endif
 
     /** \todo TODO Here the transform should be done to increase the precision.
@@ -97,9 +148,13 @@ EssentialMatrix EssentialEstimator::getEssentialLSE(const vector<Correspondance*
     Matrix::svd(&X, &W, &V);
 
 #ifdef DEEP_TRACE
-    printf("The singular values:\n");
-    W.print();
-    printf("\n");
+//    printf("The singular values:\n");
+//    W.print();
+//    printf("\n");
+//    X.print();
+//    printf("\n");
+//    V.print();
+//    printf("\n");
 #endif
 
 
@@ -120,6 +175,7 @@ EssentialMatrix EssentialEstimator::getEssentialLSE(const vector<Correspondance*
         V.a(6,min), V.a(7,min), V.a(8,min)
     );
 
+    F = TL.transposed() * F * TR;
     if (F.a(2,1) < 0) {
         F = -F;
     }
@@ -127,8 +183,283 @@ EssentialMatrix EssentialEstimator::getEssentialLSE(const vector<Correspondance*
     return EssentialMatrix(F);
 }
 
+// Note that in case of 7 point-point correspondences we can get up to 3 models
+std::vector<EssentialMatrix> EssentialEstimator::getEssential7point(const vector<Correspondence*> &samples)
+{
+    /*
+     * Here we go:
+     *  + creating standard LSE matrix
+     *  + get 2d null-space
+     *  + solve polynomial equation
+     */
+    Matrix X(std::max(9, (int)samples.size()), 9, 0.0);
+    Matrix W(1,9);
+    Matrix V(9,9);
 
-EssentialMatrix EssentialEstimator::getEssentialLM(const vector<Correspondance*> & samples)
+    corecvs::Vector2dd meanL(0.0, 0.0), meanR(0.0, 0.0);
+    corecvs::Vector2dd stdevL(0.0, 0.0), stdevR(0.0, 0.0);
+    for (size_t i = 0; i < samples.size(); ++i)
+    {
+        auto L = samples[i]->start;
+        auto R = samples[i]->end;
+        meanL += L;
+        meanR += R;
+
+        stdevL += L * L;
+        stdevR += R * R;
+    }
+    double N = 1.0 / samples.size();
+    meanL *= N;
+    meanR *= N;
+    stdevL = stdevL * N - meanL * meanL;
+    stdevR = stdevR * N - meanR * meanR;
+    for (int i = 0; i < 2; ++i)
+    {
+        stdevL[i] = std::sqrt(stdevL[i]);
+        stdevR[i] = std::sqrt(stdevR[i]);
+    }
+    corecvs::Matrix33 TL = corecvs::Matrix33(
+            stdevL[0],       0.0, meanL[0],
+                  0.0, stdevL[1], meanL[1],
+                  0.0,       0.0,      1.0).inv();
+    corecvs::Matrix33 TR = corecvs::Matrix33(
+            stdevR[0],       0.0, meanR[0],
+                  0.0, stdevR[1], meanR[1],
+                  0.0,       0.0,      1.0).inv();
+
+    corecvs::Vector2dd ml(0.0, 0.0), mr(0.0, 0.0);
+    for (unsigned i = 0; i < samples.size(); i++)
+    {
+        Vector2dd first  = samples[i]->start;
+        Vector2dd second = samples[i]->end;
+        auto firstP = TL * corecvs::Vector3dd(first.x(), first.y(), 1.0);
+        auto secondP = TR * corecvs::Vector3dd(second.x(), second.y(), 1.0);
+        firstP /= firstP[2];
+        secondP /= secondP[2];
+        first = corecvs::Vector2dd(firstP[0], firstP[1]);
+        second = corecvs::Vector2dd(secondP[0], secondP[1]);
+        ml += first;
+        mr += second;
+
+        X.fillLineWithArgs(i,
+        first.x() * second.x(), first.x() * second.y(), first.x(),
+        first.y() * second.x(), first.y() * second.y(), first.y(),
+        second.x(), second.y(),  1.0);
+    }
+
+    Matrix::svd(&X, &W, &V);
+
+    int minIdx[] = {0, 1};
+    double minval[] = { W.a(0, 0), W.a(0, 1) };
+    for (unsigned i = 2; i < 9; i ++)
+    {
+        if (W.a(0, i) < minval[1])
+        {
+            minIdx[1] = i;
+            minval[1] = W.a(0, i);
+        }
+        if (minval[0] > minval[1])
+        {
+            std::swap(minIdx[0], minIdx[1]);
+            std::swap(minval[0], minval[1]);
+        }
+    }
+
+    corecvs::Matrix33 F1(
+            V.a(0, minIdx[0]), V.a(1, minIdx[0]), V.a(2, minIdx[0]),
+            V.a(3, minIdx[0]), V.a(4, minIdx[0]), V.a(5, minIdx[0]),
+            V.a(6, minIdx[0]), V.a(7, minIdx[0]), V.a(8, minIdx[0]));
+    corecvs::Matrix33 F2(
+            V.a(0, minIdx[1]), V.a(1, minIdx[1]), V.a(2, minIdx[1]),
+            V.a(3, minIdx[1]), V.a(4, minIdx[1]), V.a(5, minIdx[1]),
+            V.a(6, minIdx[1]), V.a(7, minIdx[1]), V.a(8, minIdx[1]));
+    double f111 = F1(0, 0),
+           f112 = F1(0, 1),
+           f113 = F1(0, 2),
+           f121 = F1(1, 0),
+           f122 = F1(1, 1),
+           f123 = F1(1, 2),
+           f131 = F1(2, 0),
+           f132 = F1(2, 1),
+           f133 = F1(2, 2);
+    double f211 = F2(0, 0),
+           f212 = F2(0, 1),
+           f213 = F2(0, 2),
+           f221 = F2(1, 0),
+           f222 = F2(1, 1),
+           f223 = F2(1, 2),
+           f231 = F2(2, 0),
+           f232 = F2(2, 1),
+           f233 = F2(2, 2);
+    /*
+     * Auto-generated stub. Do not touch or it will explode.
+     * Here we just enforce 2-rank constraint in form of
+     * det(alpha * F1 + (1-alpha) * F2) = 0
+     */
+    double alpha_0 = f211*f222*f233 - f211*f223*f232 - f212*f221*f233 + f212*f223*f231 + f213*f221*f232 - f213*f222*f231;
+    double alpha_3 = f111*f122*f133 - f111*f123*f132 - f112*f121*f133 + f112*f123*f131 + f113*f121*f132 - f113*f122*f131 - f111*f122*f233 + f111*f123*f232 + f111*f132*f223 - f111*f133*f222 + f112*f121*f233 - f112*f123*f231 - f112*f131*f223 + f112*f133*f221 - f113*f121*f232 + f113*f122*f231 + f113*f131*f222 - f113*f132*f221 - f121*f132*f213 + f121*f133*f212 + f122*f131*f213 - f122*f133*f211 - f123*f131*f212 + f123*f132*f211 + f111*f222*f233 - f111*f223*f232 - f112*f221*f233 + f112*f223*f231 + f113*f221*f232 - f113*f222*f231 - f121*f212*f233 + f121*f213*f232 + f122*f211*f233 - f122*f213*f231 - f123*f211*f232 + f123*f212*f231 + f131*f212*f223 - f131*f213*f222 - f132*f211*f223 + f132*f213*f221 + f133*f211*f222 - f133*f212*f221 - f211*f222*f233 + f211*f223*f232 + f212*f221*f233 - f212*f223*f231 - f213*f221*f232 + f213*f222*f231;
+    double alpha_2 = f111*f122*f233 - f111*f123*f232 - f111*f132*f223 + f111*f133*f222 - f112*f121*f233 + f112*f123*f231 + f112*f131*f223 - f112*f133*f221 + f113*f121*f232 - f113*f122*f231 - f113*f131*f222 + f113*f132*f221 + f121*f132*f213 - f121*f133*f212 - f122*f131*f213 + f122*f133*f211 + f123*f131*f212 - f123*f132*f211 - 2*f111*f222*f233 + 2*f111*f223*f232 + 2*f112*f221*f233 - 2*f112*f223*f231 - 2*f113*f221*f232 + 2*f113*f222*f231 + 2*f121*f212*f233 - 2*f121*f213*f232 - 2*f122*f211*f233 + 2*f122*f213*f231 + 2*f123*f211*f232 - 2*f123*f212*f231 - 2*f131*f212*f223 + 2*f131*f213*f222 + 2*f132*f211*f223 - 2*f132*f213*f221 - 2*f133*f211*f222 + 2*f133*f212*f221 + 3*f211*f222*f233 - 3*f211*f223*f232 - 3*f212*f221*f233 + 3*f212*f223*f231 + 3*f213*f221*f232 - 3*f213*f222*f231;
+    double alpha_1 = f111*f222*f233 - f111*f223*f232 - f112*f221*f233 + f112*f223*f231 + f113*f221*f232 - f113*f222*f231 - f121*f212*f233 + f121*f213*f232 + f122*f211*f233 - f122*f213*f231 - f123*f211*f232 + f123*f212*f231 + f131*f212*f223 - f131*f213*f222 - f132*f211*f223 + f132*f213*f221 + f133*f211*f222 - f133*f212*f221 - 3*f211*f222*f233 + 3*f211*f223*f232 + 3*f212*f221*f233 - 3*f212*f223*f231 - 3*f213*f221*f232 + 3*f213*f222*f231;
+    double coeff[] = { alpha_0, alpha_1, alpha_2, alpha_3 };
+    double roots[3];
+    int realRoots = (int)PolynomialSolver::solve(coeff, roots, 3);
+
+    std::vector<EssentialMatrix> hypothesis;
+    for (int i = 0; i < realRoots; ++i)
+    {
+        hypothesis.emplace_back(TL.transposed() * (F1 * roots[i] + (1.0 - roots[i]) * F2) * TR);
+    }
+
+    return hypothesis;
+}
+
+std::vector<EssentialMatrix> EssentialEstimator::getEssential5point(const vector<Correspondence*> &samples)
+{
+    Matrix XLSE(std::max(9, (int)samples.size()), 9, 0.0);
+    Matrix WLSE(1,9);
+    Matrix V(9,9);
+    
+    for (unsigned i = 0; i < samples.size(); i++)
+    {
+        Vector2dd first  = samples[i]->start;
+        Vector2dd second = samples[i]->end;
+
+        XLSE.fillLineWithArgs(i,
+        first.x() * second.x(), first.x() * second.y(), first.x(),
+        first.y() * second.x(), first.y() * second.y(), first.y(),
+        second.x(), second.y(),  1.0);
+    }
+
+    Matrix::svd(&XLSE, &WLSE, &V);
+
+    std::vector<int> ids;
+    for (int i = 0; i < 9; ++i)
+        ids.push_back(i);
+    std::sort(ids.begin(), ids.end(), [&](const int &a, const int &b) { return WLSE.a(0, a) < WLSE.a(0, b); });
+
+    corecvs::Vector X(9), Y(9), Z(9), W(9);
+    for (int i = 0; i < 9; ++i)
+    {
+        X[i] = V.a(i, ids[0]);
+        Y[i] = V.a(i, ids[1]);
+        Z[i] = V.a(i, ids[2]);
+        W[i] = V.a(i, ids[3]);
+    }
+
+    /*
+     * And here goes black magick. We know that X,Y,Z,W form nullspace of XLSE.
+     * So Essential matrix (up to some scale factor) has form x*X+y*Y+z*Z+W and we would like to get x, y, z
+     * Now we enforce constraints: det(E)=0 and 2EE'E-trace(EE')E=0 and use
+     * monomial bases {x^3 y^3 x^2y x^2z x^2 y^2z y^2 xyz xy | x y 1} where for first 10 bases we get
+     * 10 numerical elements and for last 3 we get 10 polynomial (w.r.t z) elements from each equaion
+     *
+     * Then we eliminate left 10x10 (numerical part) to diagonal matrix and apply this transformation
+     * to the right 10x3 part of matrix.
+     *
+     * Then we enforce xy*z=xyz y^2*z=y^2z and x^2*z=x^2z and get 3x3 polynomial (w.r.t z) matrix which has
+     * eigen-value 0 and thus it's determinant (10th degree polynomial) gives us z (and from z we get x and y)
+     *
+     * This gives us up to ten hypotheses
+     */
+    //Let's construct numerical part of matrix (2EE'E... goes first 9 eqs, then det(E) = 0).
+    const double x1 = X[0], x2 = X[1], x3 = X[2], x4 = X[3], x5 = X[4], x6 = X[5], x7 = X[6], x8 = X[7], x9 = X[8];
+    const double y1 = Y[0], y2 = Y[1], y3 = Y[2], y4 = Y[3], y5 = Y[4], y6 = Y[5], y7 = Y[6], y8 = Y[7], y9 = Y[8];
+    const double z1 = Z[0], z2 = Z[1], z3 = Z[2], z4 = Z[3], z5 = Z[4], z6 = Z[5], z7 = Z[6], z8 = Z[7], z9 = Z[8];
+    const double w1 = W[0], w2 = W[1], w3 = W[2], w4 = W[3], w5 = W[4], w6 = W[5], w7 = W[6], w8 = W[7], w9 = W[8];
+    // Please, do not touch unused variables for the sake of readability
+    const double x12 = x1 * x1, x22 = x2 * x2, x32 = x3 * x3, x42 = x4 * x4, x52 = x5 * x5, x62 = x6 * x6, x72 = x7 * x7, x82 = x8 * x8, x92 = x9 * x9;
+    const double y12 = y1 * y1, y22 = y2 * y2, y32 = y3 * y3, y42 = y4 * y4, y52 = y5 * y5, y62 = y6 * y6, y72 = y7 * y7, y82 = y8 * y8, y92 = y9 * y9;
+    const double z12 = z1 * z1, z22 = z2 * z2, z32 = z3 * z3, z42 = z4 * z4, z52 = z5 * z5, z62 = z6 * z6, z72 = z7 * z7, z82 = z8 * z8, z92 = z9 * z9;
+    const double w12 = w1 * w1, w22 = w2 * w2, w32 = w3 * w3, w42 = w4 * w4, w52 = w5 * w5, w62 = w6 * w6, w72 = w7 * w7, w82 = w8 * w8, w92 = w9 * w9;
+
+    corecvs::Matrix A(10, 10);
+#include "p5pNumericPart.h"
+// Now we fill polynomial part of matrix
+    corecvs::PolynomialMatrix B(10, 3);
+#include "p5pPolynomialPart.h"
+
+    A = A.inv();
+
+    /*
+     * Actually, we need only x^2z, x^2, y^2z, y^2, xyz, xy rows of A^{-1}*B
+     */
+    A.data = &A.element(4, 0);
+    A.h = 6;
+
+    auto BB = A * B;
+    corecvs::PolynomialMatrix Bf(3, 3);
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            Bf.a(i, j) = BB.a(2 * i, j)  - corecvs::Polynomial::X() * BB.a(2 * i + 1, j);
+        }
+    }
+
+    // Now Bf is a final polynomial-matrix and we can start solving z, x, y
+    auto P1 = Bf.a(0, 1) * Bf.a(1, 2) - Bf.a(0, 2) * Bf.a(1, 1);
+    auto P2 = Bf.a(0, 2) * Bf.a(1, 0) - Bf.a(0, 0) * Bf.a(1, 2);
+    auto P3 = Bf.a(0, 0) * Bf.a(1, 1) - Bf.a(0, 1) * Bf.a(1, 0);
+    auto P = P1 * Bf.a(2, 0) + P2 * Bf.a(2, 1) + P3 * Bf.a(2, 2);
+    std::vector<double> roots;
+    corecvs::PolynomialSolver::solve(P, roots);
+
+    std::vector<corecvs::EssentialMatrix> hypothesis;
+    for (auto& z: roots)
+    {
+        auto A = Bf(z);
+        double a = A.a(0, 0), b = A.a(0, 1), c = A.a(0, 2), 
+               d = A.a(1, 0), e = A.a(1, 1), f = A.a(1, 2),
+               g = A.a(2, 0), h = A.a(2, 1), i = A.a(2, 2),
+               x, y;
+        double d1 = b * g - a * h,
+               d2 = e * g - d * h,
+               d3 = b * d - a * e;
+        double md = std::abs(d1), ab;
+        int idd = 1;
+        if ((ab = std::abs(d2)) > md) { md = ab; idd = 2; }
+        if ((ab = std::abs(d3)) > md) { md = ab; idd = 3; }
+//        CORE_ASSERT_TRUE_S(md > 1e-9);
+        switch (idd)
+        {
+            case 1:
+                x = (c * h - i * b) / d1;
+                y = (a * i - c * g) / d1;
+                break;
+            case 2:
+                x = (f * h - i * e) / d2;
+                y = (d * i - f * g) / d2;
+                break;
+            case 3:
+                x = (c * e - f * b) / d3;
+                y = (f * a - c * d) / d3;
+                break;
+            default:
+                CORE_ASSERT_TRUE_S(false);
+        }
+        corecvs::Vector v(3);
+        v[0] = x;
+        v[1] = y;
+        v[2] = 1.0;
+        auto Av = A*v;
+        auto EE = x * X + y * Y + z * Z + W;
+        corecvs::Matrix33 E(EE[0], EE[1], EE[2],
+                            EE[3], EE[4], EE[5],
+                            EE[6], EE[7], EE[8]);
+        bool isOk = true;
+        for (int iii = 0; iii < 9 && isOk; ++iii)
+            if (std::isnan(EE[iii]) || std::isinf(EE[iii]))
+            {
+                isOk = false;
+            }
+        if (isOk)
+            hypothesis.emplace_back(E);
+    }
+    return hypothesis;
+}
+
+
+EssentialMatrix EssentialEstimator::getEssentialLM(const vector<Correspondence*> & samples, const Quaternion &rotation, const Vector3dd &translation)
 {
     CostFunction7toN costFunction(&samples);
     NormalizeFunction normalise;
@@ -142,8 +473,8 @@ EssentialMatrix EssentialEstimator::getEssentialLM(const vector<Correspondance*>
 
     vector<double> input(CostFunctionBase::VECTOR_SIZE);
     /* Left camera is in the negative direction of right camera */
-    Quaternion rotation    = Quaternion::RotationIdentity();
-    Vector3dd  translation = Vector3dd(-1.0, 0.0, 0.0);
+ // Quaternion rotation    = Quaternion::RotationIdentity();
+ //// Vector3dd  translation = Vector3dd(-1.0, 0.0, 0.0);
     CostFunctionBase::packState(&input[0], rotation, translation);
 
     vector<double> output(samples.size());
@@ -165,7 +496,7 @@ EssentialMatrix EssentialEstimator::getEssentialLM(const vector<Correspondance*>
     return CostFunctionBase::getEssential(&optInput[0]);
 }
 
-EssentialMatrix EssentialEstimator::getEssentialGrad(const vector<Correspondance*> & samples)
+EssentialMatrix EssentialEstimator::getEssentialGrad(const vector<Correspondence*> & samples)
 {
     CostFunction7to1 costFunction(&samples);
     NormalizeFunction normalise;
@@ -185,7 +516,7 @@ EssentialMatrix EssentialEstimator::getEssentialGrad(const vector<Correspondance
     return CostFunctionBase::getEssential(&optInput[0]);
 }
 
-EssentialMatrix EssentialEstimator::getEssentialGradToRm(const vector<Correspondance*> & samples)
+EssentialMatrix EssentialEstimator::getEssentialGradToRm(const vector<Correspondence*> & samples)
 {
     CostFunction7toN costFunction(&samples);
     NormalizeFunction normalise;
@@ -209,7 +540,7 @@ EssentialMatrix EssentialEstimator::getEssentialGradToRm(const vector<Correspond
     return CostFunctionBase::getEssential(&optInput[0]);
 }
 
-EssentialMatrix EssentialEstimator::getEssentialSimpleKalman (const vector<Correspondance *> &samples)
+EssentialMatrix EssentialEstimator::getEssentialSimpleKalman (const vector<Correspondence *> &samples)
 {
     IdentityFunction F(CostFunctionBase::VECTOR_SIZE);
     CostFunction7to1 H(&samples);
@@ -263,7 +594,7 @@ EssentialMatrix EssentialEstimator::getEssentialSimpleKalman (const vector<Corre
 }
 
 #if 0
-EssentialMatrix EssentialEstimator::getEssentialKalman(const vector<Correspondance *> &samples)
+EssentialMatrix EssentialEstimator::getEssentialKalman(const vector<Correspondence *> &samples)
 {
     /* Setting up P, Q, R */
     CostFunction7to1 F(&samples);
@@ -319,7 +650,7 @@ EssentialMatrix EssentialEstimator::getEssentialKalman(const vector<Correspondan
 }
 
 
-EssentialMatrix EssentialEstimator::getEssentialMultiKalman(const vector<Correspondance *> &samples)
+EssentialMatrix EssentialEstimator::getEssentialMultiKalman(const vector<Correspondence *> &samples)
 {
     /* Setting up P, Q, R */
     CostFunction7toN F(&samples);
@@ -375,7 +706,7 @@ EssentialMatrix EssentialEstimator::getEssentialMultiKalman(const vector<Corresp
 #endif
 
 EssentialMatrix EssentialEstimator::getEssential             (
-        const vector<Correspondance *> &samples,
+        const vector<Correspondence *> &samples,
         OptimisationMethod method)
 {
     switch (method)
@@ -490,7 +821,7 @@ Matrix EssentialEstimator::CostFunction7to1::getJacobian(const double in[], doub
 
        for (unsigned j = 0; j < samples->size(); j++)
        {
-           Correspondance *corr = samples->at(j);
+           Correspondence *corr = samples->at(j);
            double value_plus  = m_plus .epipolarDistance(*corr);
            double value_minus = m_minus.epipolarDistance(*corr);
            sum_plus  += value_plus  * value_plus ;
@@ -503,7 +834,7 @@ Matrix EssentialEstimator::CostFunction7to1::getJacobian(const double in[], doub
 
        for (unsigned j = 0; j < samples->size(); j++)
        {
-           Correspondance *corr = samples->at(j);
+           Correspondence *corr = samples->at(j);
            double value_plus  = m_plus .epipolarDistance(*corr);
            double value_minus = m_minus.epipolarDistance(*corr);
            double value       = m.      epipolarDistance(*corr);
@@ -518,7 +849,7 @@ Matrix EssentialEstimator::CostFunction7to1::getJacobian(const double in[], doub
 
        for (unsigned j = 0; j < samples->size(); j++)
        {
-           Correspondance *corr = samples->at(j);
+           Correspondence *corr = samples->at(j);
            double value_plus  = m_plus .epipolarDistance(*corr);
            double value_minus = m_minus.epipolarDistance(*corr);
            double value       = m.      epipolarDistance(*corr);
@@ -533,7 +864,7 @@ Matrix EssentialEstimator::CostFunction7to1::getJacobian(const double in[], doub
 
        for (unsigned j = 0; j < samples->size(); j++)
        {
-           Correspondance *corr = samples->at(j);
+           Correspondence *corr = samples->at(j);
            double value_plus  = m_plus .epipolarDistance(*corr);
            double value_minus = m_minus.epipolarDistance(*corr);
            double value       = m.      epipolarDistance(*corr);

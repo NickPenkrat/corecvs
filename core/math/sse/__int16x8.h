@@ -67,7 +67,7 @@ public:
             SSEBase(value.data) {}
 
 
-    explicit inline Int16x8(const Int32x8 &value) :
+    explicit inline Int16x8(const Int32x8v &value) :
             SSEBase(
                 _mm_packs_epi32(
                     value.element[0].data,
@@ -159,7 +159,7 @@ template<int idx>
         return _mm_movemask_epi8(this->data);
     }
 
-    inline Int32x8 expand() const
+    inline Int32x8v expand() const
     {
         return Int32x8(
                 Int16x8::unpackLower (*this, Int16x8((uint16_t)0)),
@@ -209,7 +209,7 @@ template<int idx>
     friend Int16x8 productLowerPart  (const Int16x8 &left, const Int16x8 &right);
     friend Int16x8 productHigherPart (const Int16x8 &left, const Int16x8 &right);
 
-    friend Int32x8 productExtending (const Int16x8 &left, const Int16x8 &right);
+    friend Int32x8v productExtending (const Int16x8 &left, const Int16x8 &right);
 
     /* Slow but helpful */
     friend Int16x8 operator *    (      int16_t right, const Int16x8 &left);
@@ -355,7 +355,7 @@ FORCE_INLINE Int16x8 operator *=   (Int16x8 &left, const Int16x8 &right) {
     return left;
 }
 
-FORCE_INLINE Int32x8 productExtending (const Int16x8 &left, const Int16x8 &right)
+FORCE_INLINE Int32x8v productExtending (const Int16x8 &left, const Int16x8 &right)
 {
     Int16x8  lowParts;
     Int16x8 highParts;

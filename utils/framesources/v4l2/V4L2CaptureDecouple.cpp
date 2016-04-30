@@ -17,7 +17,7 @@ V4L2CaptureDecoupleInterface::V4L2CaptureDecoupleInterface(string _devname)
 
     //     Group Number                   1       2 3      4       56        7       8         9 10     11     1213    14
     QRegExp deviceStringPattern(QString("^([^,:]*)(:(\\d*)/(\\d*))?((:mjpeg)|(:yuyv)|(:fjpeg))?(:(\\d*)x(\\d*))?((:rc)|(:rc2)|(:sbs)|(:rcf)|(:sc1))?$"));
-    static const int DeviceGroup     = 1;
+    static const int DeviceGroup      = 1;
     static const int FpsNumGroup      = 3;
     static const int FpsDenumGroup    = 4;
     static const int CompressionGroup = 5;
@@ -101,7 +101,7 @@ V4L2CaptureDecoupleInterface::FramePair V4L2CaptureDecoupleInterface::getFrame()
     CaptureStatistics  stats;
 
     PreciseTimer start = PreciseTimer::currentTime();
-    FramePair result( NULL, NULL);
+    FramePair result;
 
     protectFrame.lock();
         uint8_t *ptr = (uint8_t*)(camera.buffers[current.index].start);
@@ -109,8 +109,7 @@ V4L2CaptureDecoupleInterface::FramePair V4L2CaptureDecoupleInterface::getFrame()
         DecoupleYUYV::decouple(formatH, formatW, ptr, coupling, result);
 
         if (current.isFilled) {
-            result.leftTimeStamp  = current.usecsTimeStamp();
-            result.rightTimeStamp = current.usecsTimeStamp();
+            result.timeStampLeft = result.timeStampRight = current.usecsTimeStamp();
         }
 
         if (skippedCount == 0) {
@@ -121,11 +120,11 @@ V4L2CaptureDecoupleInterface::FramePair V4L2CaptureDecoupleInterface::getFrame()
         skippedCount = 0;
     protectFrame.unlock();
 
-    stats.values[CaptureStatistics::DECODING_TIME] = start.usecsToNow();
+    stats.values[CaptureStatistics::DECODING_TIME]    = start.usecsToNow();
     stats.values[CaptureStatistics::INTERFRAME_DELAY] = frameDelay;
 
     stats.values[CaptureStatistics::DESYNC_TIME] = 0;
-    stats.values[CaptureStatistics::DATA_SIZE] = current.bytesused;
+    stats.values[CaptureStatistics::DATA_SIZE]   = current.bytesused;
 
     emit newStatisticsReady(stats);
 
@@ -166,13 +165,13 @@ ImageCaptureInterface::CapErrorCode V4L2CaptureDecoupleInterface::startCapture()
 /* TODO: Process errors of queue/dequeue */
 void V4L2CaptureDecoupleInterface::SpinThread::run()
 {
-    while (interface->spinRunning.tryLock())
+    while (mInterface->spinRunning.tryLock())
     {
         V4L2BufferDescriptor newBuffer;
 
-        V4L2CameraDescriptor* camera = &(interface->camera);
+        V4L2CameraDescriptor* camera = &(mInterface->camera);
 
-        V4L2BufferDescriptor* current = &(interface->current);
+        V4L2BufferDescriptor* current = &(mInterface->current);
 
         /* First we block till we will get a new frame */
         /*TODO: Wonder if dequeue should be static */
@@ -184,27 +183,27 @@ void V4L2CaptureDecoupleInterface::SpinThread::run()
          *  1. Enqueue the previously used buffers
          *  2. Replace them with the new ones
          **/
-        interface->protectFrame.lock();
+        mInterface->protectFrame.lock();
         {
             camera->enqueue(*current);
             *current = newBuffer;
-            interface->skippedCount++;
+            mInterface->skippedCount++;
         }
-        interface->protectFrame.unlock();
+        mInterface->protectFrame.unlock();
 
         /* For statistics */
-        if (interface->lastFrameTime.usecsTo(PreciseTimer()) != 0)
+        if (mInterface->lastFrameTime.usecsTo(PreciseTimer()) != 0)
         {
-            interface->frameDelay = interface->lastFrameTime.usecsToNow();
+            mInterface->frameDelay = mInterface->lastFrameTime.usecsToNow();
         }
-        interface->lastFrameTime = PreciseTimer::currentTime();
+        mInterface->lastFrameTime = PreciseTimer::currentTime();
 
         frame_data_t frameData;
         frameData.timestamp = current->usecsTimeStamp();
-        interface->notifyAboutNewFrame(frameData);
+        mInterface->notifyAboutNewFrame(frameData);
 
-        interface->spinRunning.unlock();
-        if (interface->shouldStopSpinThread)
+        mInterface->spinRunning.unlock();
+        if (mInterface->shouldStopSpinThread)
         {
             break;
         }

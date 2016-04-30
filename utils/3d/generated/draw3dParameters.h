@@ -43,8 +43,14 @@ class Draw3dParameters : public BaseReflection<Draw3dParameters>
 public:
     enum FieldId {
         STYLE_ID,
-        COLOR_ID,
-        SECONDARY_COLOR_ID,
+        POINT_COLOR_ID,
+        POINT_COLOR_OVERRIDE_ID,
+        POINT_SIZE_ID,
+        EDGE_COLOR_ID,
+        EDGE_COLOR_OVERRIDE_ID,
+        EDGE_WIDTH_ID,
+        FACE_COLOR_ID,
+        FACE_COLOR_OVERRIDE_ID,
         SHOW_CAPTION_ID,
         FONT_SIZE_ID,
         FONT_WIDTH_ID,
@@ -69,16 +75,52 @@ public:
     int mStyle;
 
     /** 
-     * \brief Color 
-     * Color 
+     * \brief Point Color 
+     * Point Color 
      */
-    RgbColorParameters mColor;
+    RgbColorParameters mPointColor;
 
     /** 
-     * \brief Secondary Color 
-     * Secondary Color 
+     * \brief Point Color Override 
+     * Point Color Override 
      */
-    RgbColorParameters mSecondaryColor;
+    bool mPointColorOverride;
+
+    /** 
+     * \brief Point Size 
+     * Point Size 
+     */
+    int mPointSize;
+
+    /** 
+     * \brief Edge Color 
+     * Edge Color 
+     */
+    RgbColorParameters mEdgeColor;
+
+    /** 
+     * \brief Edge Color Override 
+     * Edge Color Override 
+     */
+    bool mEdgeColorOverride;
+
+    /** 
+     * \brief Edge Width 
+     * Edge Width 
+     */
+    int mEdgeWidth;
+
+    /** 
+     * \brief Face Color 
+     * Face Color 
+     */
+    RgbColorParameters mFaceColor;
+
+    /** 
+     * \brief Face Color Override 
+     * Face Color Override 
+     */
+    bool mFaceColorOverride;
 
     /** 
      * \brief Show caption 
@@ -165,14 +207,44 @@ public:
         return static_cast<Draw3dStyle::Draw3dStyle>(mStyle);
     }
 
-    RgbColorParameters color() const
+    RgbColorParameters pointColor() const
     {
-        return mColor;
+        return mPointColor;
     }
 
-    RgbColorParameters secondaryColor() const
+    bool pointColorOverride() const
     {
-        return mSecondaryColor;
+        return mPointColorOverride;
+    }
+
+    int pointSize() const
+    {
+        return mPointSize;
+    }
+
+    RgbColorParameters edgeColor() const
+    {
+        return mEdgeColor;
+    }
+
+    bool edgeColorOverride() const
+    {
+        return mEdgeColorOverride;
+    }
+
+    int edgeWidth() const
+    {
+        return mEdgeWidth;
+    }
+
+    RgbColorParameters faceColor() const
+    {
+        return mFaceColor;
+    }
+
+    bool faceColorOverride() const
+    {
+        return mFaceColorOverride;
     }
 
     bool showCaption() const
@@ -241,14 +313,44 @@ public:
         mStyle = style;
     }
 
-    void setColor(RgbColorParameters const &color)
+    void setPointColor(RgbColorParameters const &pointColor)
     {
-        mColor = color;
+        mPointColor = pointColor;
     }
 
-    void setSecondaryColor(RgbColorParameters const &secondaryColor)
+    void setPointColorOverride(bool pointColorOverride)
     {
-        mSecondaryColor = secondaryColor;
+        mPointColorOverride = pointColorOverride;
+    }
+
+    void setPointSize(int pointSize)
+    {
+        mPointSize = pointSize;
+    }
+
+    void setEdgeColor(RgbColorParameters const &edgeColor)
+    {
+        mEdgeColor = edgeColor;
+    }
+
+    void setEdgeColorOverride(bool edgeColorOverride)
+    {
+        mEdgeColorOverride = edgeColorOverride;
+    }
+
+    void setEdgeWidth(int edgeWidth)
+    {
+        mEdgeWidth = edgeWidth;
+    }
+
+    void setFaceColor(RgbColorParameters const &faceColor)
+    {
+        mFaceColor = faceColor;
+    }
+
+    void setFaceColorOverride(bool faceColorOverride)
+    {
+        mFaceColorOverride = faceColorOverride;
     }
 
     void setShowCaption(bool showCaption)
@@ -317,8 +419,14 @@ template<class VisitorType>
     void accept(VisitorType &visitor)
     {
         visitor.visit((int &)mStyle,              static_cast<const EnumField *>    (fields()[STYLE_ID]));
-        visitor.visit(mColor,                     static_cast<const CompositeField *>(fields()[COLOR_ID]));
-        visitor.visit(mSecondaryColor,            static_cast<const CompositeField *>(fields()[SECONDARY_COLOR_ID]));
+        visitor.visit(mPointColor,                static_cast<const CompositeField *>(fields()[POINT_COLOR_ID]));
+        visitor.visit(mPointColorOverride,        static_cast<const BoolField *>    (fields()[POINT_COLOR_OVERRIDE_ID]));
+        visitor.visit(mPointSize,                 static_cast<const IntField *>     (fields()[POINT_SIZE_ID]));
+        visitor.visit(mEdgeColor,                 static_cast<const CompositeField *>(fields()[EDGE_COLOR_ID]));
+        visitor.visit(mEdgeColorOverride,         static_cast<const BoolField *>    (fields()[EDGE_COLOR_OVERRIDE_ID]));
+        visitor.visit(mEdgeWidth,                 static_cast<const IntField *>     (fields()[EDGE_WIDTH_ID]));
+        visitor.visit(mFaceColor,                 static_cast<const CompositeField *>(fields()[FACE_COLOR_ID]));
+        visitor.visit(mFaceColorOverride,         static_cast<const BoolField *>    (fields()[FACE_COLOR_OVERRIDE_ID]));
         visitor.visit(mShowCaption,               static_cast<const BoolField *>    (fields()[SHOW_CAPTION_ID]));
         visitor.visit(mFontSize,                  static_cast<const IntField *>     (fields()[FONT_SIZE_ID]));
         visitor.visit(mFontWidth,                 static_cast<const IntField *>     (fields()[FONT_WIDTH_ID]));
@@ -341,8 +449,14 @@ template<class VisitorType>
 
     Draw3dParameters(
           Draw3dStyle::Draw3dStyle style
-        , RgbColorParameters color
-        , RgbColorParameters secondaryColor
+        , RgbColorParameters pointColor
+        , bool pointColorOverride
+        , int pointSize
+        , RgbColorParameters edgeColor
+        , bool edgeColorOverride
+        , int edgeWidth
+        , RgbColorParameters faceColor
+        , bool faceColorOverride
         , bool showCaption
         , int fontSize
         , int fontWidth
@@ -358,8 +472,14 @@ template<class VisitorType>
     )
     {
         mStyle = style;
-        mColor = color;
-        mSecondaryColor = secondaryColor;
+        mPointColor = pointColor;
+        mPointColorOverride = pointColorOverride;
+        mPointSize = pointSize;
+        mEdgeColor = edgeColor;
+        mEdgeColorOverride = edgeColorOverride;
+        mEdgeWidth = edgeWidth;
+        mFaceColor = faceColor;
+        mFaceColorOverride = faceColorOverride;
         mShowCaption = showCaption;
         mFontSize = fontSize;
         mFontWidth = fontWidth;

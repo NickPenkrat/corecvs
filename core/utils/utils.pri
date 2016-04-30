@@ -1,4 +1,4 @@
-HEADERS += \    
+HEADERS += \
     utils/global.h \
     utils/stdint_win.h \
     utils/preciseTimer.h \
@@ -9,6 +9,8 @@ HEADERS += \
     utils/log.h \
     utils/countedPtr.h \
     utils/atomicOps.h \
+    utils/typesafeBitmaskEnums.h \
+    utils/statusTracker.h
 
 
 SOURCES += \
@@ -20,4 +22,5 @@ SOURCES += \
     utils/visitors/basePathVisitor.cpp \
     utils/utils.cpp \
     utils/log.cpp \
+    utils/statusTracker.cpp
 

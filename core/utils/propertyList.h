@@ -1,3 +1,6 @@
+#ifndef PROPERTY_LIST_H_
+#define PROPERTY_LIST_H_
+
 /**
  * \file propertyList.h
  * \brief Add Comment Here
@@ -6,9 +9,6 @@
  * \date May 24, 2010
  * \author alexander
  */
-
-#ifndef PROPERTY_LIST_H_
-#define PROPERTY_LIST_H_
 
 #include <vector>
 #include <map>
@@ -20,14 +20,35 @@
 #include <limits>
 
 #include "global.h"
-namespace corecvs {
+#include "utils.h"
 
+namespace corecvs {
 
 using namespace std;
 
+class PropertyListVectorContainer : public vector< pair <string, string> >
+{
+protected:
+    PropertyListVectorContainer::iterator find (string name)
+    {
+        PropertyListVectorContainer::iterator it;
+        for(it = begin(); it != end(); ++it)
+        {
+            if ((*it).first == name)
+            {
+                break;
+            }
+        }
+        return it;
+    }
 
+    void insert(pair <string, string> pair)
+    {
+        push_back(pair);
+    }
+};
 
-class PropertyList : public map<string, string>
+class PropertyList : public PropertyListVectorContainer
 {
 private:
 template<typename ValueType>
@@ -104,21 +125,30 @@ public:
     /* Fix the limited line length */
     int load(istream &inStream)
     {
+        string line;
 
-        char buffer[500];
-        while (inStream.getline(buffer, sizeof(buffer)))
+        while (!inStream.eof())
         {
-            char value[500];
-            char name[500];
-            /* TODO: Make this safe */
-            if (buffer[0] == '#')
-                continue;
-            int result = sscanf(buffer," %s = %s ", name, value);
-            if (result != 2)
-                continue;
+            corecvs::HelperUtils::getlineSafe(inStream, line);
+            std::istringstream streamLine(line);
+            //cout << "Parsing:" << line << endl;
 
-            DOTRACE(("Property: %s = %s \n", name, value));
-            setStringProperty(name, value);
+            string name;
+            string dummy;
+            string value;
+            streamLine >> name;
+            streamLine >> dummy;
+
+            if (streamLine.fail() || dummy != "=") {
+                continue;
+            }
+
+            getline(streamLine, value);
+
+            //cout << name << ":" << dummy << ":" << value << endl;
+
+            DOTRACE(("Property: %s = %s \n", name.c_str(), value.c_str()));
+            setStringProperty(name.c_str(), value.c_str());
         }
         return true;
     }

@@ -22,6 +22,7 @@ build_pass:CONFIG(debug, debug|release) {
     }
 }
 build_pass:CONFIG(release, debug|release) {
+                 DEFINES +=  NDEBUG
     win32-msvc* {
         BUILD_CFG_NAME = /release
     } else:win32 {
@@ -30,6 +31,16 @@ build_pass:CONFIG(release, debug|release) {
         BUILD_CFG_NAME = ""                         # debug and release objs will be overwritten on !win32 config!
     }
 }
+
+CONFIG += c++11
+
+# TODO: this info is needed before - at config.pri!
+#contains(QMAKE_HOST.arch, "armv7l") {
+#    message(Odroid platform with ARM detected)
+#    CONFIG += odroid
+#} else {
+#    #message(standard x86/64 platform detected)
+#}
 
 trace {
     DEFINES += TRACE
@@ -40,50 +51,67 @@ asserts {
 }
 
 with_avx {
-    QMAKE_CFLAGS   += -mavx
-    QMAKE_CXXFLAGS += -mavx
-    DEFINES        += WITH_AVX
+    DEFINES += WITH_AVX
+    !win32-msvc* {
+        QMAKE_CFLAGS   += -mavx
+        QMAKE_CXXFLAGS += -mavx
+    } else {
+        QMAKE_CFLAGS   += $$QMAKE_CFLAGS_AVX        # Qmake uses it as "-arch:AVX" for msvc >= VS-2010
+        QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_AVX
+
+        #!build_pass: message(DEFINES = $$DEFINES)
+    }
+}
+
+with_avx2 {
+    DEFINES += WITH_AVX2
+    !win32-msvc* {
+        QMAKE_CFLAGS   += -mavx2
+        QMAKE_CXXFLAGS += -mavx2
+    } else {
+        QMAKE_CFLAGS   += $$QMAKE_CFLAGS_AVX2        # Qmake uses it as "-arch:AVX2" for msvc >= VS-2015
+        QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_AVX2
+    }
+}
+
+with_fma {
+    DEFINES += WITH_FMA
+    !win32-msvc* {
+        QMAKE_CFLAGS   += -mfma
+        QMAKE_CXXFLAGS += -mfma
+    } else {
+        QMAKE_CFLAGS   += /arch:FMA
+        QMAKE_CXXFLAGS += /arch:FMA
+    }
 }
 
 with_sse {
     DEFINES += WITH_SSE
-
     !win32-msvc* {
         QMAKE_CFLAGS   += -msse2
         QMAKE_CXXFLAGS += -msse2
     } else {
-        QMAKE_CFLAGS   += /arch:SSE2
-        QMAKE_CXXFLAGS += /arch:SSE2
+#       QMAKE_CFLAGS   += -arch:SSE2     # actual only for x86 mode
+#       QMAKE_CXXFLAGS += -arch:SSE2
     }
 }
 with_sse3 {
     DEFINES += WITH_SSE3
-
     !win32-msvc* {
-        QMAKE_CFLAGS   += -msse3
-        QMAKE_CXXFLAGS += -msse3
+        QMAKE_CFLAGS   += -msse3 -mssse3
+        QMAKE_CXXFLAGS += -msse3 -mssse3
     } else {
-        !win32-msvc2008 {
-            QMAKE_CFLAGS   += /arch:SSE3
-            QMAKE_CXXFLAGS += /arch:SSE3
-        } else {
-            DEFINES -= WITH_SSE3
-        }
+#       DEFINES -= WITH_SSE3
     }
 }
+
 with_sse4 {
     DEFINES += WITH_SSE4
-
     !win32-msvc* {
         QMAKE_CFLAGS   += -msse4.1
         QMAKE_CXXFLAGS += -msse4.1
     } else {
-        !win32-msvc2008 {
-            QMAKE_CFLAGS   += /arch:SSE4.1
-            QMAKE_CXXFLAGS += /arch:SSE4.1
-        } else {
-            DEFINES -= WITH_SSE4
-        }
+#       DEFINES -= WITH_SSE4
     }
 }
 
@@ -112,38 +140,30 @@ gcc_env_toolchain {
   QMAKE_LINK_C_SHLIB = gcc-$$GCC_POSTFIX
 }
 
-gcc45_toolchain {
-  QMAKE_CC = gcc-4.5
-  QMAKE_CXX = g++-4.5
-  QMAKE_LINK =  g++-4.5
-  QMAKE_LINK_SHLIB =  g++-4.5
-  QMAKE_LINK_C = gcc-4.5
-  QMAKE_LINK_C_SHLIB = gcc-4.5
-}
-
 clang_toolchain {
-  QMAKE_CC = clang
-  QMAKE_CXX = clang++
-  QMAKE_LINK =  clang++
+  CLANG_POSTFIX="-3.6"
+
+  CONFIG -= warn_on
+
+  QMAKE_CC = clang$$CLANG_POSTFIX
+  QMAKE_CXX = clang++$$CLANG_POSTFIX
+  QMAKE_LINK =  clang++$$CLANG_POSTFIX
   QMAKE_LINK_SHLIB =  clang
   QMAKE_LINK_C = clang
   QMAKE_LINK_C_SHLIB = clang
-}
 
-gcc47_toolchain {
-  QMAKE_CC = gcc-4.7
-  QMAKE_CXX = g++-4.7
-  QMAKE_LINK =  g++-4.7
-  QMAKE_LINK_SHLIB =  g++-4.7
-  QMAKE_LINK_C = gcc-4.7
-  QMAKE_LINK_C_SHLIB = gcc-4.7
-  gcc_lto {
-     QMAKE_CFLAGS_RELEASE += -flto
-     QMAKE_CXXFLAGS_RELEASE += -flto
-     QMAKE_LFLAGS += -flto
-  }
-}
+#  QMAKE_CFLAGS += -stdlib=libc++
+#  QMAKE_CXXFLAGS += -stdlib=libc++
 
+
+   QMAKE_CFLAGS += -Wall -Wno-inconsistent-missing-override
+   QMAKE_CFLAGS += -Wall -Wno-overloaded-virtual
+   QMAKE_CXXFLAGS += -Wall -Wno-inconsistent-missing-override
+   QMAKE_CXXFLAGS += -Wall -Wno-overloaded-virtual
+
+#   QMAKE_CFLAGS_WARN_OFF   -=  -Wall
+#   QMAKE_CXXFLAGS_WARN_OFF -=  -Wall
+}
 gcc48_toolchain {
   QMAKE_CC = gcc-4.8
   QMAKE_CXX = g++-4.8
@@ -151,11 +171,11 @@ gcc48_toolchain {
   QMAKE_LINK_SHLIB =  g++-4.8
   QMAKE_LINK_C = gcc-4.8
   QMAKE_LINK_C_SHLIB = gcc-4.8
-  
+
   # Uncomment this when qt headers are fixed
   QMAKE_CFLAGS += -Wno-unused-local-typedefs
   QMAKE_CXXFLAGS += -Wno-unused-local-typedefs
-  
+
   gcc_lto {
      QMAKE_CFLAGS_RELEASE += -flto
      QMAKE_CXXFLAGS_RELEASE += -flto
@@ -204,7 +224,7 @@ icc_toolchain {
 
 }
 
-isEmpty(CCACHE_TOOLCHAIN_ON) { 
+isEmpty(CCACHE_TOOLCHAIN_ON) {
   ccache_toolchain {
     QMAKE_CC = ccache $$QMAKE_CC
     QMAKE_CXX = ccache $$QMAKE_CXX
@@ -217,6 +237,7 @@ isEmpty(CCACHE_TOOLCHAIN_ON) {
 }
 
 !win32-msvc* {
+
     QMAKE_CFLAGS_DEBUG     -= -g
     QMAKE_CXXFLAGS_DEBUG   -= -g
     QMAKE_LFLAGS           -= -g
@@ -224,15 +245,21 @@ isEmpty(CCACHE_TOOLCHAIN_ON) {
     QMAKE_CXXFLAGS_DEBUG   += -O0 -g3
     QMAKE_LFLAGS           +=     -g3
 
-    QMAKE_CFLAGS_RELEASE   += -O3 -g3 -mtune=native
-    QMAKE_CXXFLAGS_RELEASE += -O3 -g3 -mtune=native
+    QMAKE_CFLAGS_RELEASE   += -O3
+    QMAKE_CXXFLAGS_RELEASE += -O3
+    QMAKE_CFLAGS_RELEASE   += -g3
+    QMAKE_CXXFLAGS_RELEASE += -g3
+#   QMAKE_CFLAGS_RELEASE   += -mtune=native     # TODO: native doesn't work while we could use (SSE & !AVX)
+#   QMAKE_CXXFLAGS_RELEASE += -mtune=native     # TODO: native doesn't work while we could use (SSE & !AVX)
 
     # Workaround for -fPIC bug
     QMAKE_CFLAGS_STATIC_LIB=
     QMAKE_CXXFLAGS_STATIC_LIB=
 
-    QMAKE_CFLAGS +=-fPIC
-    QMAKE_CXXFLAGS +=-fPIC
+    !win32 {
+        QMAKE_CFLAGS   +=-fPIC
+        QMAKE_CXXFLAGS +=-fPIC
+    }
 } else {
    #QMAKE_CXXFLAGS_DEBUG   += /showIncludes
 
@@ -256,12 +283,16 @@ isEmpty(CCACHE_TOOLCHAIN_ON) {
 
     # We keep all pdb files at intermediate directories
     #
-    gen_vsproj {
-        QMAKE_CXXFLAGS += -Fd"$(IntDir)"
-        QMAKE_LFLAGS   += /PDB:"$(IntDir)\\$(TargetName).pdb"
+    win32-msvc2013 {
+        # Since [Qt5.5.0 + msvc2013] pdb management is added automatically into bin folder
     } else {
-        QMAKE_CXXFLAGS += -Fd"$(OBJECTS_DIR)"
-        QMAKE_LFLAGS   += /PDB:"$(OBJECTS_DIR)\\$(QMAKE_TARGET).pdb"
+        gen_vsproj {
+            QMAKE_CXXFLAGS += -Fd"$(IntDir)"
+            QMAKE_LFLAGS   += /PDB:"$(IntDir)\\$(TargetName).pdb"
+        } else {
+            QMAKE_CXXFLAGS += -Fd"$(OBJECTS_DIR)"
+            QMAKE_LFLAGS   += /PDB:"$(OBJECTS_DIR)\\$(QMAKE_TARGET).pdb"
+        }
     }
 }
 
@@ -270,19 +301,19 @@ isEmpty(CCACHE_TOOLCHAIN_ON) {
 # On the 'distclean' command tree recursively generated makefiles (and object_script as well) haven't been deleted.
 # It happens when a project has the same name as its directory.
 #
-build_pass :                          # must clean only for the concrete configuration
-!gen_vsproj {                                       # QMake doesn't support clean command for generated VS projects
+build_pass {                                      # must clean only for the concrete configuration
+  !gen_vsproj {                                   # QMake doesn't support clean command for generated VS projects
     CONFIG(debug, debug|release) {
         QMAKE_DISTCLEAN += object_script.*        # delete these files always for each project even if they are absent
     }
     CONFIG(release, debug|release) {
         QMAKE_DISTCLEAN += object_script.*        # delete these files always for each project even if they are absent
     }
-#   QMAKE_DISTCLEAN += object_script.*        # commented as it's repeated twice when open (common|release)
+#   QMAKE_DISTCLEAN += object_script.*            # commented as it's repeated twice when open (common|release)
 
 #   QMAKE_DISTCLEAN += Makefile.$(QMAKE_TARGET)*  # doesn't work as we make different target name with the project name
-#   QMAKE_DISTCLEAN += Makefile.$(TARGET)*      # doesn't work as make's target has an output filename, not the project name!
-#   QMAKE_DISTCLEAN += Makefile.*         # doesn't work as it kills both makefiles and the cleaning is stopped!
+#   QMAKE_DISTCLEAN += Makefile.$(TARGET)*        # doesn't work as make's target has an output filename, not the project name!
+#   QMAKE_DISTCLEAN += Makefile.*                 # doesn't work as it kills both makefiles and the cleaning is stopped!
 
     # We have to check those projects, which have the same name as their folders!!!
     #
@@ -301,10 +332,13 @@ build_pass :                          # must clean only for the concrete configu
     contains(TARGET, test_opencl) {
         QMAKE_DISTCLEAN += Makefile.opencl*
     }
-    contains(OBJ_TESTS_DIR, tests) {        # TARGET doesn't work as it has a name of each test!
+    contains(OBJ_TESTS_DIRNAME, tests) {    # TARGET doesn't work as it has a name of each test!
        #QMAKE_DISTCLEAN += Makefile*        # doesn't work as it tries to delete Makefile.unitTests.Debug/Release that are really used on distclean cmd!
         QMAKE_DISTCLEAN += Makefile Makefile.Debug Makefile.Release     # these files are generated indeed!
     }
+  } else {
+    # unfortunately QMake doesn't support clean command inside generated VS projects
+  }
 }
 
 msvc_analyser {
@@ -372,14 +406,16 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
         !isEmpty(TBB_PATH) {
             DEFINES += WITH_TBB
 
-            win32-msvc*:!contains(QMAKE_HOST.arch, x86_64) {                
+            win32-msvc*:!contains(QMAKE_HOST.arch, x86_64) {
                 TBB_LIBDIR = $(TBB_PATH)/lib/ia32/vc10
-            } else:win32-msvc* {
+            } else:win32-msvc2010 {
                 TBB_LIBDIR = $(TBB_PATH)/lib/intel64/vc10
+            } else:win32-msvc* {
+                TBB_LIBDIR = $(TBB_PATH)/lib/intel64/vc12
             } else:exists($(TBB_PATH)/lib/tbb.dll) {
                 # old config when TBB's bins&libs were placed at TBB's lib dir
                 TBB_LIBDIR = $(TBB_PATH)/lib
-            } else {              
+            } else {
                 GCC_VER    = $$system(gcc -dumpversion)
                 TBB_LIBDIR = $(TBB_PATH)/lib/intel64/mingw$$GCC_VER
                 # the "script/windows/.tbb_build_mingw.bat" places libs there
@@ -388,7 +424,7 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
             LIBS        += -L"$$TBB_LIBDIR" -ltbb
             !build_pass: contains(TARGET, cvs_core): message(Using <$$TBB_LIBDIR>)
         } else {
-           !build_pass: message(TBB not found. Please set TBB_PATH system variable to a root folder of TBB)
+           !build_pass: message(TBB not found. Please set TBB_PATH system variable to a root folder of TBB to use it)
         }
     } else:macx {
         #message (Using TBB at $$TBB_PATH)
@@ -398,13 +434,137 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
 
         DEPENDPATH  += $$TBB_PATH/include
     } else {
-        #message (Using TBB at $$TBB_PATH)
+        !isEmpty(TBB_PATH) {
+            #message (Using TBB at $$TBB_PATH)
+            INCLUDEPATH += $$TBB_PATH/include
+            LIBS        += -L$$TBB_PATH/lib/
+        }
+        else {
+            !build_pass: message (Using System TBB)
+        }
         DEFINES     += WITH_TBB
-        INCLUDEPATH += $$TBB_PATH/include
         LIBS        += -ltbb
-   }
+    }
 }
 
+# Boost is yet another fancy and cool library that contains
+# many features that we will definitely see in upcoming
+# STL implemenations
+with_boost {
+    BOOST_PATH=$$(BOOST_PATH)
+    DEFINES += WITH_BOOST
+    !win32 {
+        # Since we are not (yet?) using any binary boost components,
+        # we can think about it as header-only lib
+        !isEmpty(BOOST_PATH) {
+            INCLUDEPATH += $$BOOST_PATH
+        }
+    } else {
+    }
+}
+
+#
+# MKL is more preferable as it uses "tbb" internally, which we use too anyway.
+# But openBLAS uses an "OpenMP" that is bad to use with tbb simultaneously, nevertheless you can switch off tbb as well.
+# Therefore we support MKL with tbb threading and also MKL with openMP threading model on Windows/Linux platforms.
+# For more detailed MKL's linker options, see "https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor".
+#
+with_mkl {
+    MKLROOT = $$(MKLROOT)
+    !win32: isEmpty(MKLROOT) {
+        MKLROOT = /opt/intel/mkl
+    }
+    exists("$$MKLROOT"/include/mkl.h) {
+        !win32 {
+            LIBS        += -L"$$MKLROOT"/lib/intel64 -lmkl_intel_lp64 -lmkl_core
+            with_tbb {
+                LIBS    += -lmkl_tbb_thread -lstdc++ -lpthread -lm      # -ltbb was already included above
+            } else {
+                QMAKE_CXXFLAGS += -fopenmp
+                QMAKE_CFLAGS   += -fopenmp
+                QMAKE_LFLAGS   += -fopenmp
+                LIBS    += -lmkl_gnu_thread -ldl -lpthread -lm -lgomp   # with OpenMP's threading layer, GNU's OpenMP library (libgomp)
+            }
+        } else {
+            LIBS        += -L"$$MKLROOT"/lib/intel64 -lmkl_intel_lp64_dll -lmkl_core_dll
+            with_tbb {
+                LIBS    += -lmkl_tbb_thread_dll                         # -ltbb was already included above
+            } else {
+                LIBS    += -L"$$MKLROOT"/../compiler/lib/intel64_win -lmkl_intel_thread_dll -llibiomp5md          # with OpenMP's threading layer, Intel's OpenMP library (libiomp5)
+            }
+        }
+        INCLUDEPATH += "$$MKLROOT"/include
+        DEFINES     += WITH_MKL
+        DEFINES     += WITH_BLAS
+        CONFIG      += with_blas
+    }
+    else {
+        !build_pass: message (requested MKL is not installed and is deactivated)
+    }
+}
+
+with_openblas {
+    contains(DEFINES, WITH_MKL) {
+        !build_pass: contains(TARGET, core): message(openBLAS is deactivated as detected MKL was activated)
+    }
+    else:!win32 {
+        BLAS_PATH = $$(BLAS_PATH)
+        !isEmpty(BLAS_PATH) {
+            exists("$$BLAS_PATH"/include/cblas.h) {
+                !build_pass: message(Using BLAS from <$$BLAS_PATH>)
+                INCLUDEPATH += $(BLAS_PATH)/include
+                LIBS        += -lopenblas
+                DEFINES     += WITH_OPENBLAS
+                DEFINES     += WITH_BLAS
+                CONFIG      += with_blas
+            }
+            else {
+                !build_pass: message(requested openBLAS via BLAS_PATH is not found and is deactivated)
+            }
+        } else {
+            exists(/usr/include/cblas.h) {
+                !build_pass: message (Using System BLAS)
+                LIBS        += -lopenblas -llapacke
+                DEFINES     += WITH_OPENBLAS
+                DEFINES     += WITH_BLAS
+                CONFIG      += with_blas
+            }
+            else {
+                !build_pass: message(requested system BLAS is not found and is deactivated)
+            }
+        }
+    } else {
+        !build_pass: message(requested openBLAS is not supported for Win and is deactivated)
+    }
+}
+
+with_fftw {
+    contains(DEFINES, WITH_MKL) {
+        !build_pass: contains(TARGET, core): message(Using FFTW from MKL)
+        INCLUDEPATH += "$$MKLROOT"/include/fftw
+        DEFINES     += WITH_FFTW
+    }
+    else:!win32 {
+        FFTW_PATH = $$(FFTW_PATH)
+        isEmpty(FFTW_PATH) {
+            FFTW_PREFIX=/usr
+        } else {
+            FFTW_PREFIX=$(FFTW_PATH)
+        }
+        exists("$$FFTW_PREFIX"/include/fftw3.h) {
+            !build_pass: message(Using FFTW from <$$FFTW_PREFIX>)
+            INCLUDEPATH += $(FFTW_PREFIX)/include
+            LIBS        += -lfftw3
+            DEFINES     += WITH_FFTW
+        }
+        else {
+            !build_pass: message(requested FFTW is not found and is deactivated)
+        }
+    }
+    else {
+        !build_pass: message(requested separated FFTW is not supported for Win and is deactivated)
+    }
+}
 
 # More static analysis warnings
 # QMAKE_CXXFLAGS += -Wextra
@@ -415,4 +575,3 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
 # QMAKE_CXXFLAGS += -Wsign-conversion
 # QMAKE_CXXFLAGS += -Winit-self
 # QMAKE_CXXFLAGS += -Wunreachable-code
-

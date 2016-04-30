@@ -75,6 +75,13 @@ template <int multiplier>
     inline static Type andNot(const Type &left, const Type &right) {
         return (left & (~right));
     }
+
+    template<class InputType>
+    inline static void fillOnes(InputType &var)
+    {
+        var = 0;
+        var = ~var;
+    }
 };
 
 template<>
@@ -87,6 +94,10 @@ template<>
 int16_t inline GenericMath<int16_t>::branchlessMask(const int16_t &val)
 {
     return -(val);
+}
+
+inline double multiplyAdd(const double &mul1, const double &mul2, const double &add1) {
+    return mul1 * mul2 + add1;
 }
 
 } /* namespace corecvs */

@@ -18,6 +18,7 @@ public:
     ~OpenCVBMParametersControlWidget();
 
     OpenCVBMParameters* createParameters() const;
+    void getParameters(OpenCVBMParameters &params) const;
     void setParameters(const OpenCVBMParameters &input);
     virtual void setParametersVirtual(void *input);
 

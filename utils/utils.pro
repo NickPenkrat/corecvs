@@ -2,22 +2,19 @@
 exists(../../../config.pri) {
     ROOT_DIR=../../..
     #message(Using global config)
+    include($$ROOT_DIR/config.pri)
 } else {
     message(Using local config)
     ROOT_DIR=..
+    include($$ROOT_DIR/cvs-config.pri)
 }
-!win32 {                                        # it dues to the "mocinclude.tmp" bug on win32!
     ROOT_DIR=$$PWD/$$ROOT_DIR
-}
-include($$ROOT_DIR/config.pri)
 
-
-CONFIG  += staticlib
-TARGET   = cvs_utils
 TEMPLATE = lib
+TARGET   = cvs_utils
+CONFIG  += staticlib
 
-UTILSDIR = $$PWD
-include($$UTILSDIR/utils.pri)                      # it uses UTILSDIR, TARGET and detects UTILS_BINDIR, OBJECTS_DIR,...!
+include(utils.pri)                      # it uses TARGET and detects UTILS_BINDIR, OBJECTS_DIR,...!
 
 QT += gui
 
@@ -25,13 +22,17 @@ QT += gui
 CONFIG += with_filters
 CONFIG += with_widgets
 
-HEADERS += \    
+#
+# In global scope we have non UI classes
+#
+HEADERS += \
     frames.h \
     framesources/imageCaptureInterface.h \
     framesources/cameraControlParameters.h \
     framesources/decoders/mjpegDecoder.h \
     framesources/decoders/mjpegDecoderLazy.h \
     framesources/decoders/decoupleYUYV.h \
+    framesources/decoders/aLowCodec.h \
     \
     framesources/file/imageFileCaptureInterface.h \
     framesources/file/fileCapture.h \
@@ -78,9 +79,30 @@ HEADERS += \
     widgets/generated/graphStyle.h \
     \
     configManager.h \
+    \
     corestructs/lockableObject.h \
-    statistics/graphData.h \
     corestructs/g12Image.h \
+    \
+    statistics/graphData.h \
+    visitors/jsonGetter.h \
+    visitors/jsonSetter.h \
+    widgets/vectorWidget.h \
+    distortioncorrector/cameraModelParametersControlWidget.h \
+    distortioncorrector/lensDistortionModelParametersControlWidget.h \
+    distortioncorrector/calibrationFeaturesWidget.h \
+    os/UsbBusResetter.h \
+    photostationcalibration/calibrationJob.h \
+    uis/cloudview/scene3dTreeView.h \
+    tablecontrol/rotaryTableControlWidget.h \
+    tablecontrol/rotaryTableMeshModel.h \
+    tablecontrol/rotationPlanGenerator.h \
+    capture/abstractImageNamer.h \
+    corestructs/cameraModel/affine3dControlWidget.h \
+    corestructs/cameraModel/fixtureControlWidget.h \
+    widgets/observationListModel.h \
+    distortioncorrector/pointListEditImageWidget.h \
+    corestructs/cameraModel/featurePointControlWidget.h \
+    uis/aboutPropsTableWidget.h
 
 SOURCES += \
     frames.cpp \
@@ -89,6 +111,7 @@ SOURCES += \
     framesources/decoders/mjpegDecoder.cpp \
     framesources/decoders/mjpegDecoderLazy.cpp \
     framesources/decoders/decoupleYUYV.cpp \
+    framesources/decoders/aLowCodec.cpp \
     \
     framesources/file/imageFileCaptureInterface.cpp \
     framesources/file/fileCapture.cpp \
@@ -133,15 +156,66 @@ SOURCES += \
     widgets/generated/graphPlotParameters.cpp \
     \
     configManager.cpp \
+    \
     corestructs/lockableObject.cpp \
-    statistics/graphData.cpp \
     corestructs/g12Image.cpp \
+    \
+    statistics/graphData.cpp \
+    visitors/jsonGetter.cpp \
+    visitors/jsonSetter.cpp \
+    widgets/vectorWidget.cpp \
+    distortioncorrector/cameraModelParametersControlWidget.cpp \
+    distortioncorrector/lensDistortionModelParametersControlWidget.cpp \
+    distortioncorrector/calibrationFeaturesWidget.cpp \
+    os/UsbBusResetter.cpp \
+    photostationcalibration/calibrationJob.cpp \
+    uis/cloudview/scene3dTreeView.cpp \
+    tablecontrol/rotaryTableControlWidget.cpp \
+    tablecontrol/rotaryTableMeshModel.cpp \
+    tablecontrol/rotationPlanGenerator.cpp \
+    capture/abstractImageNamer.cpp \
+    corestructs/cameraModel/affine3dControlWidget.cpp \
+    corestructs/cameraModel/fixtureControlWidget.cpp \
+    widgets/observationListModel.cpp \
+    distortioncorrector/pointListEditImageWidget.cpp \
+    corestructs/cameraModel/featurePointControlWidget.cpp \
+    uis/aboutPropsTableWidget.cpp
 
+
+FORMS += \
+    widgets/vectorWidget.ui \
+    distortioncorrector/cameraModelParametersControlWidget.ui \
+    distortioncorrector/lensDistortionModelParametersControlWidget.ui \
+    distortioncorrector/calibrationFeaturesWidget.ui \
+    tablecontrol/rotaryTableControlWidget.ui \
+    tablecontrol/rotationPlanGenerator.ui \
+    corestructs/cameraModel/affine3dControlWidget.ui \
+    corestructs/cameraModel/fixtureControlWidget.ui \
+    corestructs/cameraModel/featurePointControlWidget.ui
+
+# =============================================================
+
+HEADERS += memoryuse/memoryUsageCalculator.h
+SOURCES += memoryuse/memoryUsageCalculator.cpp
+
+win32 {
+   HEADERS += memoryuse/windowsMemoryUsageCalculator.h
+   SOURCES += memoryuse/windowsMemoryUsageCalculator.cpp
+} else:macx {
+   HEADERS += memoryuse/macMemoryUsageCalculator.h
+   SOURCES += memoryuse/macMemoryUsageCalculator.cpp
+} else {
+   HEADERS += memoryuse/linuxMemoryUsageCalculator.h
+   SOURCES += memoryuse/linuxMemoryUsageCalculator.cpp
+}
 
 
 # =============================================================
+
+
+
 with_filters {
-include($$UTILSDIR/filters/ui/filterWidgets.pri)
+    include($$UTILSDIR/filters/ui/filterWidgets.pri)
     CONFIG += with_widgets
 
 
@@ -217,16 +291,6 @@ HEADERS += \
     matrixwidget.h \
     distortioncorrector/distortionWidget.h \
     \
-#    filters/filterSelector.h \
-#    filters/filterExecuter.h \
-#    filters/filterParametersControlWidgetBase.h \
-#    filters/openCVFilter.h \
-    \
-#    filters/graph/filterBlockPresentation.h \
-#    filters/graph/diagramitem.h \
-#    filters/graph/diagramscene.h \
-#    filters/graph/arrow.h \
-#    filters/graph/diagramtextitem.h \
     \
     corestructs/libWidgets/openCVBMParameters.h \
     corestructs/libWidgets/openCVSGMParameters.h \
@@ -234,6 +298,7 @@ HEADERS += \
     corestructs/libWidgets/openCVSGMParametersControlWidget.h \
     \
     corestructs/histogramdialog.h \
+    \
     \
     rectifier/rectifyParametersControlWidget.h \
     \
@@ -259,6 +324,7 @@ HEADERS += \
     uis/textLabelWidget.h \
     uis/pointsRectificationWidget.h \
     \
+    capture/photostationCaptureDialog.h \
 
 SOURCES += \
     widgets/generated/graphPlotParametersControlWidget.cpp \
@@ -313,6 +379,9 @@ SOURCES += \
     uis/aboutDialog.cpp \
     uis/textLabelWidget.cpp \
     uis/pointsRectificationWidget.cpp \
+    \
+    capture/photostationCaptureDialog.cpp \
+
 
 FORMS += \
     \
@@ -355,6 +424,7 @@ FORMS += \
     rectifier/rectifyParametersControlWidget.ui \
     distortioncorrector/distortionWidget.ui \
     \
+    capture/photostationCaptureDialog.ui \
 
 }
 
@@ -364,7 +434,6 @@ RESOURCES += \
 unix:!macx:!win32 {
     message (Switching on V4L2 support)
   
-
     HEADERS += \
         framesources/v4l2/V4L2.h \
         framesources/v4l2/V4L2Capture.h \
@@ -462,6 +531,12 @@ with_opencv {
             framesources/opencv/openCVHelper.cpp \
 
     }
+}
+
+with_siftgpu {
+        DEFINES += WITH_SIFTGPU
+        SIFTGPU_WRAPPER_DIR = $$UTILSDIR/../wrappers/siftgpu
+        include($$SIFTGPU_WRAPPER_DIR/siftgpu.pri)
 }
 
 

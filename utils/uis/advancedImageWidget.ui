@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>578</width>
-    <height>401</height>
+    <width>1089</width>
+    <height>812</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -24,16 +24,19 @@
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <property name="leftMargin">
-    <number>3</number>
+    <number>1</number>
    </property>
    <property name="topMargin">
-    <number>3</number>
+    <number>1</number>
    </property>
    <property name="rightMargin">
-    <number>3</number>
+    <number>1</number>
    </property>
    <property name="bottomMargin">
-    <number>3</number>
+    <number>1</number>
+   </property>
+   <property name="spacing">
+    <number>1</number>
    </property>
    <item row="0" column="0">
     <widget class="QSplitter" name="splitter">
@@ -46,7 +49,7 @@
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
-     <widget class="QGroupBox" name="controlsGroupBox">
+     <widget class="QWidget" name="controlsWidget" native="true">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
         <horstretch>0</horstretch>
@@ -56,17 +59,8 @@
       <property name="maximumSize">
        <size>
         <width>16777215</width>
-        <height>95</height>
+        <height>80</height>
        </size>
-      </property>
-      <property name="title">
-       <string/>
-      </property>
-      <property name="flat">
-       <bool>true</bool>
-      </property>
-      <property name="checkable">
-       <bool>false</bool>
       </property>
       <layout class="QGridLayout" name="gridLayout_2">
        <property name="leftMargin">
@@ -79,10 +73,10 @@
         <number>0</number>
        </property>
        <property name="bottomMargin">
-        <number>3</number>
+        <number>1</number>
        </property>
        <property name="spacing">
-        <number>3</number>
+        <number>1</number>
        </property>
        <item row="1" column="0" colspan="2">
         <widget class="QFrame" name="frame_2">
@@ -190,7 +184,7 @@
        <item row="0" column="0" colspan="2">
         <widget class="QWidget" name="widget_2" native="true">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+          <sizepolicy hsizetype="Ignored" vsizetype="Maximum">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -201,7 +195,10 @@
            <height>20</height>
           </size>
          </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <property name="spacing">
+           <number>2</number>
+          </property>
           <property name="leftMargin">
            <number>0</number>
           </property>
@@ -223,7 +220,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset resource="../../../../resources/main.qrc">
+             <iconset resource="../../resources/main.qrc">
               <normaloff>:/new/prefix1/pause.png</normaloff>:/new/prefix1/pause.png</iconset>
             </property>
             <property name="iconSize">
@@ -277,7 +274,7 @@
                 <string/>
                </property>
                <property name="icon">
-                <iconset resource="../../../../resources/main.qrc">
+                <iconset resource="../../resources/main.qrc">
                  <normaloff>:/new/prefix1/zoom_layer.png</normaloff>:/new/prefix1/zoom_layer.png</iconset>
                </property>
                <property name="iconSize">
@@ -306,7 +303,7 @@
                 <string/>
                </property>
                <property name="icon">
-                <iconset resource="../../../../resources/main.qrc">
+                <iconset resource="../../resources/main.qrc">
                  <normaloff>:/new/prefix1/hand.png</normaloff>:/new/prefix1/hand.png</iconset>
                </property>
                <property name="iconSize">
@@ -338,7 +335,7 @@
                 <string/>
                </property>
                <property name="icon">
-                <iconset resource="../../../../resources/main.qrc">
+                <iconset resource="../../resources/main.qrc">
                  <normaloff>:/new/prefix1/info.png</normaloff>:/new/prefix1/info.png</iconset>
                </property>
                <property name="iconSize">
@@ -369,22 +366,56 @@
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="fitToWindowCheckBox">
+           <widget class="QPushButton" name="fitToWindowCheckBox">
+            <property name="toolTip">
+             <string>Fit To View Area</string>
+            </property>
             <property name="text">
-             <string>Fit</string>
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="../../resources/main.qrc">
+              <normaloff>:/new/images/layer_resize.png</normaloff>
+              <normalon>:/new/images/layer_resize_actual.png</normalon>:/new/images/layer_resize.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>24</width>
+              <height>24</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="aspectCheckBox">
+           <widget class="QPushButton" name="aspectCheckBox">
             <property name="enabled">
              <bool>false</bool>
             </property>
-            <property name="text">
+            <property name="toolTip">
              <string>Keep Aspect</string>
             </property>
-            <property name="checked">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="../../resources/main.qrc">
+              <normaloff>:/new/images/zoom_actual_equal.png</normaloff>
+              <normalon>:/new/images/zoom_extend.png</normalon>:/new/images/zoom_actual_equal.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>24</width>
+              <height>24</height>
+             </size>
+            </property>
+            <property name="checkable">
              <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
             </property>
            </widget>
           </item>
@@ -413,7 +444,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset resource="../../../../resources/main.qrc">
+             <iconset resource="../../resources/main.qrc">
               <normaloff>:/new/prefix1/zoom_out.png</normaloff>:/new/prefix1/zoom_out.png</iconset>
             </property>
             <property name="iconSize">
@@ -442,7 +473,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset resource="../../../../resources/main.qrc">
+             <iconset resource="../../resources/main.qrc">
               <normaloff>:/new/prefix1/zoom_in.png</normaloff>:/new/prefix1/zoom_in.png</iconset>
             </property>
             <property name="iconSize">
@@ -465,7 +496,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset resource="../../../../resources/main.qrc">
+             <iconset resource="../../resources/main.qrc">
               <normaloff>:/new/prefix1/refresh.png</normaloff>:/new/prefix1/refresh.png</iconset>
             </property>
             <property name="iconSize">
@@ -477,6 +508,51 @@
             <property name="autoRaise">
              <bool>true</bool>
             </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="rotationComboBox">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <item>
+             <property name="text">
+              <string>Original</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>90°</string>
+             </property>
+             <property name="icon">
+              <iconset resource="../../resources/main.qrc">
+               <normaloff>:/new/prefix1/transform_rotate_90.png</normaloff>:/new/prefix1/transform_rotate_90.png</iconset>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>180°</string>
+             </property>
+             <property name="icon">
+              <iconset resource="../../resources/main.qrc">
+               <normaloff>:/new/prefix1/transform_rotate_180.png</normaloff>:/new/prefix1/transform_rotate_180.png</iconset>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>270°</string>
+             </property>
+             <property name="icon">
+              <iconset resource="../../resources/main.qrc">
+               <normaloff>:/new/prefix1/transform_rotate_270.png</normaloff>:/new/prefix1/transform_rotate_270.png</iconset>
+             </property>
+            </item>
            </widget>
           </item>
           <item>
@@ -501,7 +577,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset resource="../../../../resources/main.qrc">
+             <iconset resource="../../resources/main.qrc">
               <normaloff>:/new/prefix1/picture_save.png</normaloff>:/new/prefix1/picture_save.png</iconset>
             </property>
             <property name="iconSize">
@@ -531,7 +607,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset resource="../../../../resources/main.qrc">
+             <iconset resource="../../resources/main.qrc">
               <normaloff>:/new/prefix1/film_save.png</normaloff>:/new/prefix1/film_save.png</iconset>
             </property>
             <property name="iconSize">
@@ -560,6 +636,7 @@
       <property name="mouseTracking">
        <bool>false</bool>
       </property>
+      <zorder>widget_3</zorder>
      </widget>
     </widget>
    </item>
@@ -583,9 +660,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../../../resources/main.qrc"/>
-  <include location="../../../../resources/main.qrc"/>
-  <include location="../../../../resources/main.qrc"/>
+  <include location="../../resources/main.qrc"/>
  </resources>
  <connections>
   <connection>
@@ -595,8 +670,8 @@
    <slot>freezeImage()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>38</x>
-     <y>49</y>
+     <x>37</x>
+     <y>59</y>
     </hint>
     <hint type="destinationlabel">
      <x>100</x>
@@ -611,8 +686,8 @@
    <slot>saveImageToFile()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>521</x>
-     <y>49</y>
+     <x>1043</x>
+     <y>59</y>
     </hint>
     <hint type="destinationlabel">
      <x>748</x>
@@ -627,8 +702,8 @@
    <slot>stopSaveFlow()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>572</x>
-     <y>49</y>
+     <x>1082</x>
+     <y>59</y>
     </hint>
     <hint type="destinationlabel">
      <x>780</x>
@@ -643,8 +718,8 @@
    <slot>zoomIn()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>435</x>
-     <y>49</y>
+     <x>345</x>
+     <y>59</y>
     </hint>
     <hint type="destinationlabel">
      <x>780</x>
@@ -659,44 +734,12 @@
    <slot>zoomOut()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>395</x>
-     <y>49</y>
+     <x>311</x>
+     <y>59</y>
     </hint>
     <hint type="destinationlabel">
      <x>780</x>
      <y>204</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>fitToWindowCheckBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>advancedImageWidget</receiver>
-   <slot>fitToggled()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>212</x>
-     <y>44</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>780</x>
-     <y>263</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>aspectCheckBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>advancedImageWidget</receiver>
-   <slot>fitToggled()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>309</x>
-     <y>44</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>780</x>
-     <y>236</y>
     </hint>
    </hints>
   </connection>
@@ -707,28 +750,12 @@
    <slot>zoomReset()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>475</x>
-     <y>49</y>
+     <x>379</x>
+     <y>59</y>
     </hint>
     <hint type="destinationlabel">
      <x>780</x>
      <y>123</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>fitToWindowCheckBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>aspectCheckBox</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>212</x>
-     <y>44</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>309</x>
-     <y>44</y>
     </hint>
    </hints>
   </connection>
@@ -739,12 +766,76 @@
    <slot>zoomChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>355</x>
-     <y>27</y>
+     <x>277</x>
+     <y>54</y>
     </hint>
     <hint type="destinationlabel">
      <x>741</x>
      <y>221</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rotationComboBox</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>advancedImageWidget</receiver>
+   <slot>zoomChanged()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>603</x>
+     <y>44</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>544</x>
+     <y>405</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>aspectCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>advancedImageWidget</receiver>
+   <slot>fitToggled()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>218</x>
+     <y>46</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1087</x>
+     <y>114</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fitToWindowCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>advancedImageWidget</receiver>
+   <slot>fitToggled()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>171</x>
+     <y>42</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1089</x>
+     <y>92</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fitToWindowCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>aspectCheckBox</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>185</x>
+     <y>43</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>208</x>
+     <y>42</y>
     </hint>
    </hints>
   </connection>

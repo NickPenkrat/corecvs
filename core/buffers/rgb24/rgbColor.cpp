@@ -11,11 +11,7 @@
 
 namespace corecvs {
 
-
-#ifdef REFLECTION_IN_CORE
 Reflection RGBColor::reflect = RGBColor::staticInit();
-#endif
-
 
 RGBColor RGBColor::rainbow(double x)
 {
@@ -41,8 +37,4 @@ RGBColor RGBColor::rainbow(double x)
     }
 }
 
-
-
-
 } //namespace corecvs
-

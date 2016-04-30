@@ -19,6 +19,7 @@ public:
     ~HeadSearchParametersControlWidget();
 
     HeadSearchParameters* createParameters() const;
+    void getParameters(HeadSearchParameters &params) const;
     void setParameters(const HeadSearchParameters &input);
 
     void setParametersVirtual(void *input);

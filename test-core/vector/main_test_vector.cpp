@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 #include <iostream>
+#include "gtest/gtest.h"
 
 #include "global.h"
 
@@ -25,8 +26,8 @@ template<int length>
 class TestVector : public VectorOperationsBase< TestVector<length>, int>
 {
 public:
-    TestVector(){};
-    TestVector(int /*i*/){};
+    TestVector(){}
+    TestVector(int /*i*/){}
 
     typedef int InnerElementType;
     int elements[length];
@@ -49,7 +50,7 @@ public:
 
 };
 
-void profileVectorOperations (void)
+TEST(Vector, profileVectorOperations)
 {
     PreciseTimer start;
     uint64_t delay;
@@ -128,7 +129,14 @@ void profileVectorOperations (void)
     delete[] vec2f;
 }
 
-void testFixedArray (void)
+TEST(Vector, testFixedArray)
+{
+    const int LENGTH = 8;
+    FixedArray<int> arr(LENGTH);
+    ASSERT_EQ(arr.size(), LENGTH);
+}
+
+TEST(Vector, MulAllElements)
 {
     const int LENGTH = 8;
     FixedArray<int> arr(LENGTH);
@@ -137,12 +145,13 @@ void testFixedArray (void)
         arr[i] = i + 1;
     }
     cout << arr.mulAllElements() << endl;
+    ASSERT_EQ(arr.mulAllElements(), 40320);
 }
 
-int main (int /*argC*/, char ** /*argV*/)
-{
-    profileVectorOperations ();
-    testFixedArray ();
-        cout << "PASSED" << endl;
-        return 0;
-}
+//int main (int /*argC*/, char ** /*argV*/)
+//{
+//    profileVectorOperations ();
+//    testFixedArray ();
+//        cout << "PASSED" << endl;
+//        return 0;
+//}

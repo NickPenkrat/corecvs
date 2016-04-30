@@ -166,7 +166,7 @@ template<int idx>
         return _mm_movemask_epi8(this->data);
     }
 
-    //inline Int32x8 expand() const
+    //inline Int32x8v expand() const
 
     /* Shuffle */
     template<int imm>

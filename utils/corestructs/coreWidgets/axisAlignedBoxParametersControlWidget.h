@@ -18,6 +18,7 @@ public:
     ~AxisAlignedBoxParametersControlWidget();
 
     AxisAlignedBoxParameters* createParameters() const;
+    void getParameters(AxisAlignedBoxParameters &params) const;
     void setParameters(const AxisAlignedBoxParameters &input);
     virtual void setParametersVirtual(void *input);
 

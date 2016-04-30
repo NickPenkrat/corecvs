@@ -1,11 +1,7 @@
-##################################################################
-# matching.pro created on Feb 25, 2011
-# This is a file for QMAKE that allows to build the test matching
-#
-##################################################################
-include(../testsCommon.pri)
-
 TARGET = cppunit
+
+include(../test.pri)
+
 
 SOURCES += \
         cppunit_test.cpp \
@@ -13,6 +9,4 @@ SOURCES += \
 
 HEADERS += MatcherTest.h
 
-LIBS += -L/usr/lib/ \
-        -lcppunit
-
+LIBS += -L/usr/lib/ -lcppunit
