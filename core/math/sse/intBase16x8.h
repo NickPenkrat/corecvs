@@ -74,7 +74,7 @@ public:
 #endif
 
 
-    explicit inline IntBase16x8(const Int32x8 &value) :
+    explicit inline IntBase16x8(const Int32x8v &value) :
             SSEBase(
                 _mm_packs_epi32(
                     value.element[0].data,

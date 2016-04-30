@@ -21,6 +21,7 @@ HEADERS += \
     math/gradientDescent.h \
     math/helperFunctions.h \
     math/generic/genericMath.h \
+    \
     math/sse/sseWrapper.h \
     math/sse/sseInteger.h \
     math/sse/int8x16.h \
@@ -33,6 +34,9 @@ HEADERS += \
     math/sse/uInt16x8.h \
     math/sse/__int16x8.h \
     math/sse/int16x8.h \
+    \
+    math/avx/int16x16.h \
+    \
     math/mathUtils.h \
     math/eulerAngles.h \
     math/puzzleBlock.h \

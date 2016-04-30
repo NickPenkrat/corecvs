@@ -79,14 +79,14 @@ public:
             BaseClass(value) {}
 
 
-    explicit inline Int16x8(const Int32x8 &value) :
+    explicit inline Int16x8(const Int32x8v &value) :
             BaseClass(value) {}
 
 
     /* Static fabrics */
-    inline Int32x8 expand() const
+    inline Int32x8v expand() const
     {
-        return Int32x8(
+        return Int32x8v(
                 Int16x8::unpackLower (*this, Int16x8((int16_t)0)),
                 Int16x8::unpackHigher(*this, Int16x8((int16_t)0))
                 );
@@ -118,7 +118,7 @@ public:
     /* Multiplication beware - overrun is possible*/
     friend Int16x8 productHigherPart (const Int16x8 &left, const Int16x8 &right);
 
-    friend Int32x8 productExtending (const Int16x8 &left, const Int16x8 &right);
+    friend Int32x8v productExtending (const Int16x8 &left, const Int16x8 &right);
 
     /**
      *   Create a 32bit word mixing and interleaving even parts of the input

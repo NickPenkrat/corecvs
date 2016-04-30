@@ -50,7 +50,7 @@ Frames::~Frames()
 
 void Frames::fetchNewFrames(ImageCaptureInterface *input)
 {
-    SYNC_PRINT(("Frames::fetchNewFrames():Swapped is %d\n", mSwapped));
+//    SYNC_PRINT(("Frames::fetchNewFrames():Swapped is %d\n", mSwapped));
 
     ImageCaptureInterface::FramePair pair = input->isRgb ? input->getFrameRGB24() : input->getFrame();
     if (pair.bufferLeft == NULL || pair.bufferRight == NULL)
