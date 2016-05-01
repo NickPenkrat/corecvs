@@ -14,8 +14,8 @@
 #include <algorithm>
 #include <random>
 
-namespace corecvs
-{
+namespace corecvs {
+
 struct AbsoluteNonCentralRansacSolverParams
 {
     double reprojectionInlierThreshold = 2.0;
@@ -23,12 +23,17 @@ struct AbsoluteNonCentralRansacSolverParams
     // Big enough for P3P at ~0.05 inlier ratio
     int maxIterations = 100000;
     bool forcePosition = false;
-    corecvs::Vector3dd forcedPosition = corecvs::Vector3dd(0, 0, 0);
+    Vector3dd forcedPosition = Vector3dd::Zero();
 };
+
 class AbsoluteNonCentralRansacSolver : public AbsoluteNonCentralRansacSolverParams
 {
 public:
-    AbsoluteNonCentralRansacSolver(corecvs::CameraFixture *ps, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &cloudMatches, const AbsoluteNonCentralRansacSolverParams &params = AbsoluteNonCentralRansacSolverParams()) : AbsoluteNonCentralRansacSolverParams(params), ps(ps), cloudMatches(cloudMatches), shouldTestFirst(false)
+    AbsoluteNonCentralRansacSolver(
+            CameraFixture *ps,
+            const std::vector<std::tuple<FixtureCamera*, Vector2dd, Vector3dd, SceneFeaturePoint*, int>> &cloudMatches,
+            const AbsoluteNonCentralRansacSolverParams &params = AbsoluteNonCentralRansacSolverParams()
+        ) : AbsoluteNonCentralRansacSolverParams(params), ps(ps), cloudMatches(cloudMatches), shouldTestFirst(false)
     {
     }
     AbsoluteNonCentralRansacSolver(corecvs::CameraFixture *ps, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &cloudMatches, corecvs::Affine3DQ firstHypothesis, const AbsoluteNonCentralRansacSolverParams &params = AbsoluteNonCentralRansacSolverParams()) : AbsoluteNonCentralRansacSolverParams(params), ps(ps), cloudMatches(cloudMatches), shouldTestFirst(true), firstHypothesis(firstHypothesis)
@@ -39,7 +44,9 @@ public:
     }
     AbsoluteNonCentralRansacSolver(const AbsoluteNonCentralRansacSolver& ancrs) :
         AbsoluteNonCentralRansacSolverParams(ancrs),
-        bestHypothesis(ancrs.bestHypothesis), bestInlierCnt(ancrs.bestInlierCnt), inlierQuality(ancrs.inlierQuality),
+        bestHypothesis(ancrs.bestHypothesis),
+        bestInlierCnt (ancrs.bestInlierCnt),
+        inlierQuality (ancrs.inlierQuality),
         inliers(ancrs.inliers), ps(ancrs.ps), cloudMatches(ancrs.cloudMatches), hypothesis(ancrs.hypothesis),
         batch(ancrs.batch), batches(ancrs.batches), usedEvals(ancrs.usedEvals), gamma(ancrs.gamma), firstHypothesis(ancrs.firstHypothesis),
         shouldTestFirst(shouldTestFirst)
@@ -49,8 +56,10 @@ public:
     void runInliersPNP();
     void runInliersRE();
     std::vector<int> getInliers();
-    corecvs::Affine3DQ getBestHypothesis();
-    corecvs::Affine3DQ firstHypothesis;
+
+    Affine3DQ getBestHypothesis();
+    Affine3DQ firstHypothesis;
+
     bool shouldTestFirst;
 //protected:
 #ifdef WITH_TBB
@@ -148,7 +157,7 @@ public:
     };
     void computeReprojectionErrors(double *out);
 
-    std::vector<int> selectInliers(const corecvs::Affine3DQ &hypothesis);
+    std::vector<int> selectInliers(const Affine3DQ &hypothesis);
     void getHypothesis();
 
     corecvs::Affine3DQ bestHypothesis;
@@ -156,7 +165,7 @@ public:
     double inlierQuality = 0.0;
     std::vector<int> inliers;
     corecvs::CameraFixture *ps;
-    std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> cloudMatches;
+    std::vector<std::tuple<FixtureCamera*, Vector2dd, Vector3dd, SceneFeaturePoint*, int>> cloudMatches;
     std::vector<corecvs::Affine3DQ> hypothesis;
     int batch = 100;
     int batches = 64;
@@ -169,6 +178,7 @@ public:
         std::cout << "P3P: allowed: " << maxIterations << " used: " << usedEvals << std::endl;
     }
 };
-}
+
+} // namespace corecvs
 
 #endif

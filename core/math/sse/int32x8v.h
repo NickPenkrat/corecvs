@@ -1,8 +1,8 @@
-#ifndef INT32X8_H_
-#define INT32X8_H_
+#ifndef INT32X8V_H_
+#define INT32X8V_H_
 /**
- * \file int32x8.h
- * \brief a header for Int32x8.c
+ * \file int32x8v.h
+ * \brief a header for Int32x8v.cpp
  *
  * \ingroup cppcorefiles
  * \date Sep 25, 2010
@@ -60,4 +60,4 @@ FORCE_INLINE Int32x8v operator >>= (Int32x8v &left, uint32_t count) {
 
 } //namespace corecvs
 
-#endif  //INT32X8_H_
+#endif  //INT32X8V_H_

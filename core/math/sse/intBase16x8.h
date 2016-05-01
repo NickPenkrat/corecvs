@@ -16,7 +16,7 @@
 #include "fixedVector.h"
 #include "sseInteger.h"
 #include "int32x4.h"
-#include "int32x8.h"
+#include "int32x8v.h"
 
 namespace corecvs {
 
