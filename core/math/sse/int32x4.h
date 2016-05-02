@@ -23,6 +23,7 @@ class ALIGN_DATA(16) Int32x4 : public SSEInteger<Int32x4>
 {
 public:
     static const int SIZE = 4;
+    static const uint16_t ALL_TOP_BITS = 0xFFFF;
 
     typedef SSEInteger<Int32x4> SSEBase;
 

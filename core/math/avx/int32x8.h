@@ -26,6 +26,8 @@ class ALIGN_DATA(16) Int32x8 : public AVXInteger<Int32x8>
 public:
     static const int SIZE = 8;
 
+    static const uint32_t ALL_TOP_BITS = 0xFFFFFFFF;
+
     typedef AVXInteger<Int32x8> SSEBase;
 
     /* Constructors */
@@ -128,7 +130,7 @@ public:
         return (idx < SIZE) ? getInt(idx) : 0;
     }
 
-    inline uint16_t maskToInt2bit() const
+    inline uint32_t maskToInt2bit() const
     {
         return _mm256_movemask_epi8(this->data);
     }
