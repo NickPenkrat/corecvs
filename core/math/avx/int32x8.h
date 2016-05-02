@@ -206,14 +206,14 @@ public:
 
     /* Formated hex helper */
     void hexDump (ostream &out);
-#if 0
+#if 1
     // Producers
-    inline static Int64x2 unpackLower(const Int32x8 &left, const Int32x8 &right) {
-        return Int64x2(_mm256_unpacklo_epi32(left.data, right.data));
+    inline static Int64x4 unpackLower(const Int32x8 &left, const Int32x8 &right) {
+        return Int64x4(_mm256_unpacklo_epi32(left.data, right.data));
     }
 
-    inline static Int64x2 unpackHigher(const Int32x8 &left, const Int32x8 &right) {
-        return Int64x2(_mm256_unpackhi_epi32(left.data, right.data));
+    inline static Int64x4 unpackHigher(const Int32x8 &left, const Int32x8 &right) {
+        return Int64x4(_mm256_unpackhi_epi32(left.data, right.data));
     }
 #endif
 
@@ -302,11 +302,11 @@ FORCE_INLINE Int32x8 operator >>= (Int32x8 &left, const Int32x8 &right) {
     left.data = _mm256_sra_epi32(left.data, right.data);
     return left;
 }
+#endif
 
 FORCE_INLINE Int32x8 operator < (const Int32x8 &left, const Int32x8 &right) {
-    return Int32x8(_mm256_cmplt_epi32(left.data, right.data));
+    return Int32x8(_mm256_cmpgt_epi32(right.data, left.data));
 }
-#endif
 
 FORCE_INLINE Int32x8 operator > (const Int32x8 &left, const Int32x8 &right) {
     return Int32x8(_mm256_cmpgt_epi32(left.data, right.data));

@@ -24,6 +24,8 @@ class ALIGN_DATA(16) Int16x8 : public IntBase16x8<Int16x8>
 public:
     typedef IntBase16x8<Int16x8> BaseClass;
 
+    static const int SIZE = 8;
+
     /**
      * Constructors
      **/

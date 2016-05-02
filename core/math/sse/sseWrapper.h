@@ -27,8 +27,10 @@
 
 #ifdef WITH_AVX
 #include "avxInteger.h"
+#include "int64x4.h"
 #include "int32x8.h"
 #include "int16x16.h"
+
 
 #include "doublex4.h"
 #include "doublex8.h"
