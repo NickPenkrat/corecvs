@@ -74,8 +74,8 @@ private:
             rng = std::mt19937(std::random_device()());
             fundamentalsCache.resize(solver->fundamentalsCacheId.size());
             essentialsCache.resize(solver->fundamentalsCacheId.size());
-            pluckerRef.resize(SAMPLESIZE);
-            pluckerQuery.resize(SAMPLESIZE);
+            pluckerRef.resize(solver->sampleSize());
+            pluckerQuery.resize(solver->sampleSize());
         }
 
         std::mt19937 rng;
@@ -84,8 +84,8 @@ private:
         void selectInliers();
 
         size_t localMax = 0;
-        static const int SAMPLESIZE = 6;
-        int idxs[SAMPLESIZE];
+        int sampleSize() const { return restrictions == RelativeNonCentralRansacSolverSettings::Restrictions::SHIFT ? 3 : 6; }
+        int idxs[6];
         double inlierThreshold, scale;
 
         Vector3dd shift;

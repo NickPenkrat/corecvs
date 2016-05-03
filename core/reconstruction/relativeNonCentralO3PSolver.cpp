@@ -29,7 +29,7 @@ std::vector<corecvs::Affine3DQ> corecvs::RelativeNonCentralO3PSolver::SolveRelat
         for (int j = 0; j < 4; ++j)
             q[j] = vc[j].real();
 //        if (isReal)
-        res.emplace_back(q.normalised(), shift);
+        res.emplace_back(q.conjugated().normalised(), shift);
         if (!isReal)
             i++;
     }

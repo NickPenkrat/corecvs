@@ -63,7 +63,7 @@ void corecvs::RelativeNonCentralRansacSolver::ParallelEstimator::operator() (con
 
 void corecvs::RelativeNonCentralRansacSolver::Estimator::operator() (const corecvs::BlockedRange<int> &r)
 {
-    if (solver->matchesRansac.size() < SAMPLESIZE)
+    if (solver->matchesRansac.size() < solver->sampleSize())
         return;
     for (int i = r.begin(); i < r.end(); ++i)
     {
@@ -75,6 +75,7 @@ void corecvs::RelativeNonCentralRansacSolver::Estimator::operator() (const corec
 
 void corecvs::RelativeNonCentralRansacSolver::Estimator::sampleModel()
 {
+    int ss = solver->sampleSize();
     CameraFixture queryCopy = *solver->query;
     queryCopy.location.rotor = corecvs::Quaternion(0, 0, 0, 1);
     queryCopy.location.shift = corecvs::Vector3dd(0, 0, 0);
@@ -83,7 +84,7 @@ void corecvs::RelativeNonCentralRansacSolver::Estimator::sampleModel()
 
     int N = (int)matchesRansac.size();
 
-    for (int rdy = 0; rdy < SAMPLESIZE;)
+    for (int rdy = 0; rdy < ss;)
     {
         idxs[rdy] = rng() % N;
         bool isOk = true;
@@ -93,7 +94,7 @@ void corecvs::RelativeNonCentralRansacSolver::Estimator::sampleModel()
         if (isOk) ++rdy;
     }
 
-    for (int i = 0; i < SAMPLESIZE; ++i)
+    for (int i = 0; i < ss; ++i)
     {
         auto t = matchesRansac[idxs[i]];
         auto r1 = std::get<0>(t).u->rayFromPixel(std::get<0>(t).v, std::get<1>(t));
@@ -106,7 +107,10 @@ void corecvs::RelativeNonCentralRansacSolver::Estimator::sampleModel()
 
 void corecvs::RelativeNonCentralRansacSolver::Estimator::makeHypo()
 {
-    hypothesis = corecvs::RelativeNonCentralP6PSolver::SolveRelativeNonCentralP6P(pluckerRef, pluckerQuery);
+    if (restrictions == RelativeNonCentralRansacSolverSettings::Restrictions::SHIFT)
+        hypothesis = corecvs::RelativeNonCentralO3PSolver::SolveRelativeNonCentralO3P(pluckerRef, pluckerQuery, shift);
+    else
+        hypothesis = corecvs::RelativeNonCentralP6PSolver::SolveRelativeNonCentralP6P(pluckerRef, pluckerQuery);
 }
 
 void corecvs::RelativeNonCentralRansacSolver::Estimator::selectInliers()
