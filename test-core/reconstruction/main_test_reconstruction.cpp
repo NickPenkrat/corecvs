@@ -5,17 +5,175 @@
 #ifdef WITH_BLAS
 #include "pnpSolver.h"
 #include "relativeNonCentralP6PSolver.h"
+#include "relativeNonCentralO3PSolver.h"
 #include "calibrationCamera.h"
 #include "calibrationPhotostation.h"
 #include "affine.h"
 #include "sceneAligner.h"
+#include "fixtureScene.h"
 
 #include <random>
+#include <map>
+#include <iomanip>
 
 using namespace corecvs;
 
 const int DEFAULT_SEED = 777;
-const int RNG_RETRIES = 16384;
+const int RNG_RETRIES = 8192;
+
+TEST(Reconstruction, basicO3P)
+{
+    double angleThreshold = 1.0;
+    std::mt19937 rng = std::mt19937(std::random_device()());
+    std::uniform_real_distribution<double> runif(-1, 1);
+    std::vector<corecvs::Vector3dd> originRef(3), originQuery(3), ptRef(3), ptQuery(3);
+    corecvs::Vector3dd shift;
+    corecvs::Quaternion rotor;
+
+    std::cout << std::setprecision(22);
+    int failed = 0;
+    for (int ii = 0; ii < RNG_RETRIES; ++ii)
+    {
+    for (int i = 0; i < 3; ++i)
+    {
+        shift[i] = runif(rng) * 10.0;
+        rotor[i] = runif(rng);
+
+        for (int j = 0; j < 3; ++j)
+        {
+            originRef[i][j] = runif(rng) * 0.1;
+            originQuery[i][j] = runif(rng) * 0.1;
+            ptRef[i][j] = runif(rng) * 1000;
+            rotor[3] = runif(rng);
+        }
+    }
+//    shift = corecvs::Vector3dd(1, 1, 1);
+    rotor.normalise();
+    for (int i = 0; i < 3; ++i)
+        ptQuery[i] = rotor.conjugated() * (ptRef[i] - shift);
+
+    std::vector<std::pair<corecvs::Vector3dd, corecvs::Vector3dd>> l, r;
+    for (int i = 0; i < 3; ++i)
+    {
+        l.emplace_back(corecvs::Ray3d(ptRef[i] - originRef[i], originRef[i]).normalised().pluckerize());
+        r.emplace_back(corecvs::Ray3d(ptQuery[i] - originQuery[i], originQuery[i]).normalised().pluckerize());
+    }
+#if 0
+        std::cout << "W = [" << rotor[0] << "; " << rotor[1] << "; " << rotor[2] << "; " << rotor[3] << "];" << std::endl;
+        std::cout << "origins_ref = [";
+        for (int i = 0; i < 3; ++i)
+            for (int j = 0; j < 3; ++j)
+                std::cout << originRef[j][i] << (j == 2 ? "; " : ", ");
+        std::cout << "];" << std::endl;
+        std::cout << "origins_query = [";
+        for (int i = 0; i < 3; ++i)
+            for (int j = 0; j < 3; ++j)
+                std::cout << originQuery[j][i] << (j == 2 ? "; " : ", ");
+        std::cout << "];" << std::endl;
+        std::cout << "points_ref = [";
+        for (int i = 0; i < 3; ++i)
+            for (int j = 0; j < 3; ++j)
+                std::cout << ptRef[j][i] << (j == 2 ? "; " : ", ");
+        std::cout << "];" << std::endl;
+        std::cout << "points_query = [";
+        for (int i = 0; i < 3; ++i)
+            for (int j = 0; j < 3; ++j)
+                std::cout << ptQuery[j][i] << (j == 2 ? "; " : ", ");
+        std::cout << "];" << std::endl;
+        std::cout << "T=[" << shift[0] << "; " << shift[1] << "; " << shift[2] << "];" << std::endl;
+#endif
+    auto h = corecvs::RelativeNonCentralO3PSolver::SolveRelativeNonCentralO3P(l, r, shift);
+    double best = 1e1000;
+    for (auto& hh: h)
+    {
+        double foo = std::acos(std::abs((hh.rotor^rotor)[3]))*360.0/M_PI;
+        if (foo < best)
+            best = foo;
+    }
+        if (best > angleThreshold)
+            failed++;
+    }
+    std::cout << ((double)failed) / RNG_RETRIES << std::endl;
+    ASSERT_LE(failed, 0.1 * RNG_RETRIES);
+}
+
+
+TEST(Reconstruction, nonCentralO3P)
+{
+    std::mt19937 rng(DEFAULT_SEED);
+    std::uniform_real_distribution<double> runif(-1, 1);
+    std::map<int, int> boo;
+    FixtureScene scene;
+    auto fr = scene.createCameraFixture(),
+         fq = scene.createCameraFixture(),
+         fqq= scene.createCameraFixture();
+    fr->location.shift = corecvs::Vector3dd(0.0, 0.0, 0.0);
+    fr->location.rotor = corecvs::Quaternion(0.0, 0.0, 0.0, 1.0);
+    fqq->location.shift = corecvs::Vector3dd(0, 0, 0);
+    fqq->location.rotor = corecvs::Quaternion(0.0, 0.0, 0.0, 1.0);
+
+    for (int i = 0; i < 6; ++i)
+    {
+        auto c = scene.createCamera();
+        scene.addCameraToFixture(c, fq);
+        scene.addCameraToFixture(c, fr);
+        scene.addCameraToFixture(c, fqq);
+
+        c->extrinsics.orientation = corecvs::Quaternion(0, sin(M_PI / 6.0 * i), 0, cos(M_PI / 6.0 * i));
+        c->extrinsics.position = corecvs::Vector3dd(sin(M_PI / 3.0 * i), 0, cos(M_PI / 3.0 * i));
+        c->intrinsics = PinholeCameraIntrinsics(17.0, 17.0, 100.0, 100.0, 0.0, Vector2dd(200, 200), Vector2dd(200, 200));
+    }
+
+    int failed = 0;
+    double angularThreshold = 1.0;
+
+    for (int i = 0; i < RNG_RETRIES; ++i)
+    {
+        auto &loc = fq->location;
+        for (int i = 0; i < 3; ++i)
+        {
+            loc.shift[i] = runif(rng)*10;
+            loc.rotor[i] = runif(rng);
+        }
+        loc.rotor.normalise();
+        std::vector<std::pair<corecvs::Vector3dd, corecvs::Vector3dd>> LRays, RRays;
+        for (int rdy = 0; rdy < 3; )
+        {
+            corecvs::Vector3dd pt(runif(rng), runif(rng), runif(rng));
+            pt *= 2000;
+            for (int j = 0; j < 6; ++j)
+                for (int k = 0; k < 6; ++k)
+                {
+                    if (!fr->isVisible(pt, j) || !fq->isVisible(pt, k))
+                        continue;
+                    LRays.emplace_back(fr->rayFromPixel(fr->cameras[j], fr->project(pt, j)).normalised().pluckerize());
+                    RRays.emplace_back(fqq->rayFromPixel(fqq->cameras[k], fq->project(pt, k)).normalised().pluckerize());
+                    rdy++;
+                    goto lexit;
+                }
+            lexit:;
+        }
+
+        auto h = corecvs::RelativeNonCentralO3PSolver::SolveRelativeNonCentralO3P(LRays, RRays, fq->location.shift);
+
+        ASSERT_GE(h.size(), 1);
+        std::sort(h.begin(), h.end(), [&](const corecvs::Affine3DQ &a, const corecvs::Affine3DQ &b)
+                {
+                    auto diffA = a.rotor ^ fq->location.rotor,
+                         diffB = b.rotor ^ fq->location.rotor;
+                    return    (1.0-std::abs(diffA[3])) < (1.0-std::abs(diffB[3]));
+                });
+        auto diffBest = h[0].rotor ^ fq->location.rotor;
+        double angBest = acos(diffBest[3])*360.0/M_PI;
+        angBest = angBest > 180.0 ? 360.0 - angBest : angBest;
+        boo[angBest]++;
+        if (angBest > angularThreshold)
+            failed++;
+    }
+    for (auto& d: boo)
+        std::cout << d.first << " : " << d.second << std::endl;
+    ASSERT_LE(failed, 0.2 * RNG_RETRIES);
+}
 
 TEST(Reconstruction, alignerPoseFromVectors)
 {
@@ -28,12 +186,12 @@ TEST(Reconstruction, alignerPoseFromVectors)
         corecvs::Vector3dd A, B, qA, qB;
         corecvs::Quaternion Q;
 
-		for (int j = 0; j < 3; ++j)
-		{
-			A[j] = runif(rng);
-			B[j] = runif(rng);
-			Q[j] = runif(rng);
-		}
+        for (int j = 0; j < 3; ++j)
+        {
+            A[j] = runif(rng);
+            B[j] = runif(rng);
+            Q[j] = runif(rng);
+        }
         Q[3] = runif(rng);
         A.normalise();
         B.normalise();
@@ -47,12 +205,12 @@ TEST(Reconstruction, alignerPoseFromVectors)
         bool failed = false;
         for (int j = 0; j < 3; ++j)
             if (std::abs(Qe[j]) > 1e-6)
-            	failed |= true;
+                failed |= true;
         if (std::abs(1.0 - Qe[3]) > 1e-6)
-        	failed |= true;
+            failed |= true;
         if (failed) failureCntr++;
     }
-	std::cout << ((double)failureCntr) / RNG_RETRIES * 100.0 << "% failures" << std::endl;
+    std::cout << ((double)failureCntr) / RNG_RETRIES * 100.0 << "% failures" << std::endl;
     ASSERT_LE(failureCntr, 1e-3 * RNG_RETRIES);
 }
 
