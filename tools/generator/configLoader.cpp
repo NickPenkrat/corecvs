@@ -116,7 +116,7 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
         QString uibase = classElement.attribute("uibase");
         result->uiBaseClass = toCString(uibase);
 
-        qDebug() << "Class" << result->name.name << " (" << i << "/" << classes.length() << ")";
+        // qDebug() << "Class" << result->name.name << " (" << i << "/" << classes.length() << ")";
 
         QDomNodeList fields = classElement.elementsByTagName("field");
         for (int j = 0; j < fields.length(); j++)
@@ -127,7 +127,7 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
             QDomAttr typeAttribute = fieldElement.attributeNode("type");
             QString type = typeAttribute.value();
 
-            qDebug() << "  Field" << fieldNameing.name << " type " << type;
+            // qDebug() << "  Field" << fieldNameing.name << " type " << type;
 
             QString defaultValue = fieldElement.attribute("defaultValue");
             QString minValue     = fieldElement.attribute("min");
@@ -169,7 +169,7 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
                     if (ok) {
                         decimals = parsed;
                     }
-                    qDebug()  << "Decimals " << decimals;
+                    // qDebug()  << "Decimals " << decimals;
 
                     field = new DoubleFieldGen(
                               defaultValue.toDouble()
