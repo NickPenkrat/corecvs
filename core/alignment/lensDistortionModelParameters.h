@@ -13,8 +13,6 @@
 #include "printerVisitor.h"
 #include "levenmarq.h"
 
-#include <math.h>
-
 /*
  *  Embed includes.
  */
@@ -308,7 +306,7 @@ public:
         double dxdy = dx * dy;
 
         double rsq = dxsq + dysq;
-        double r = std::sqrt(rsq);
+        double r = sqrt(rsq);
 
         double radialCorrection = radialScaleNormalized(r);
 //        SYNC_PRINT(("RadialCorrection::map (): [%lf %lf ] %lf %lf\n", x, y, rsq, radialCorrection));
