@@ -466,9 +466,10 @@ void corecvs::PhotostationPlacer::fit(const PhotostationPlacerOptimizationType &
     auto oldParams = optimizationParams;
     optimizationParams = params;
     getErrorSummaryAll();
-    corecvs::LevenbergMarquardt lm;//Sparse lm;
+    corecvs::LevenbergMarquardtSparse lm(num);
     ReconstructionFunctor orient(scene, errorType, optimizationParams, 1.0);
     ReconstructionNormalizationFunctor orientNorm(&orient);
+    lm.useSchurComplement = true;
     lm.f = &orient;
     lm.normalisation = &orientNorm;
     lm.maxIterations = num;

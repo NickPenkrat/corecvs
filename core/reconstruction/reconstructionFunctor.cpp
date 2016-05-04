@@ -221,9 +221,14 @@ void corecvs::ReconstructionFunctor::computeDependency()
     DEPS(focalTunableCameras,     INPUTS_PER_FOCAL,       a == p->camera, false)
     DEPS(principalTunableCameras, INPUTS_PER_PRINCIPAL,   a == p->camera, false)
     CORE_ASSERT_TRUE_S(argin == getInputNum() - (!(optimization & PhotostationPlacerOptimizationType::POINTS) ? 0 : INPUTS_PER_3D_POINT * (int)scene->trackedFeatures.size()));
+    int argin_prepoint = argin;
     IF(POINTS,
     DEPS(scene->trackedFeatures,  INPUTS_PER_3D_POINT,    a == p->featurePoint, false))
     CORE_ASSERT_TRUE_S(argin == getInputNum());
+    schurBlocks.clear();
+    for (int i = argin_prepoint; i < argin; i += INPUTS_PER_3D_POINT)
+    	schurBlocks.push_back(i);
+    schurBlocks.push_back(argin);
 }
 
 void corecvs::ReconstructionFunctor::readParams(const double* params)
