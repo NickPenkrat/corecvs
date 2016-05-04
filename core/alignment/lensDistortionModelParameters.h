@@ -13,6 +13,8 @@
 #include "printerVisitor.h"
 #include "levenmarq.h"
 
+#include <math.h>
+
 /*
  *  Embed includes.
  */
