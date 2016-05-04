@@ -64,6 +64,7 @@ public:
     corecvs::Affine3DQ getBestHypothesis() const;
     std::vector<int> getBestInliers() const;
     double getGamma();
+    int sampleSize() const { return restrictions == RelativeNonCentralRansacSolverSettings::Restrictions::SHIFT ? 3 : 6; }
 
 private:
     struct Estimator
@@ -84,7 +85,6 @@ private:
         void selectInliers();
 
         size_t localMax = 0;
-        int sampleSize() const { return restrictions == RelativeNonCentralRansacSolverSettings::Restrictions::SHIFT ? 3 : 6; }
         int idxs[6];
         double inlierThreshold, scale;
 

@@ -1,5 +1,6 @@
 #include "relativeNonCentralRansacSolver.h"
 #include "relativeNonCentralP6PSolver.h"
+#include "relativeNonCentralO3PSolver.h"
 #include "levenmarq.h"
 
 #include <chrono>

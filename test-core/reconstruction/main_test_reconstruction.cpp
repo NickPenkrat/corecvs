@@ -86,7 +86,7 @@ TEST(Reconstruction, basicO3P)
     double best = 1e1000;
     for (auto& hh: h)
     {
-        double foo = std::acos(std::abs((hh.rotor^rotor)[3]))*360.0/M_PI;
+        double foo = std::acos(std::abs((hh.rotor^rotor.conjugated())[3]))*360.0/M_PI;
         if (foo < best)
             best = foo;
     }
@@ -159,11 +159,11 @@ TEST(Reconstruction, nonCentralO3P)
         ASSERT_GE(h.size(), 1);
         std::sort(h.begin(), h.end(), [&](const corecvs::Affine3DQ &a, const corecvs::Affine3DQ &b)
                 {
-                    auto diffA = a.rotor ^ fq->location.rotor,
-                         diffB = b.rotor ^ fq->location.rotor;
+                    auto diffA = a.rotor ^ fq->location.rotor.conjugated(),
+                         diffB = b.rotor ^ fq->location.rotor.conjugated();
                     return    (1.0-std::abs(diffA[3])) < (1.0-std::abs(diffB[3]));
                 });
-        auto diffBest = h[0].rotor ^ fq->location.rotor;
+        auto diffBest = h[0].rotor ^ fq->location.rotor.conjugated();
         double angBest = acos(diffBest[3])*360.0/M_PI;
         angBest = angBest > 180.0 ? 360.0 - angBest : angBest;
         boo[angBest]++;
