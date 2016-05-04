@@ -9,7 +9,7 @@
  */
 #include <algorithm>
 #include <vector>
-
+#include <cmath>
 #include <functional>
 
 #include "global.h"
