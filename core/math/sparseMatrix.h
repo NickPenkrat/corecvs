@@ -36,6 +36,8 @@ public:
     SparseMatrix(int h, int w, const std::map<std::pair<int, int>, double> &data);
     //! \brief Cast to dense matrix
     explicit operator Matrix() const;
+    SparseMatrix(const SparseMatrix &src, int x1, int y1, int x2, int y2);
+    corecvs::Matrix denseSubMatrix(int x1, int y1, int x2, int y2) const;
 #ifdef WITH_MKL
     //! \brief Note: deletion of MKL's deletions is your problem
     explicit operator sparse_matrix_t() const;
@@ -72,6 +74,12 @@ public:
     SparseMatrix ata() const;
     bool linSolve(const Vector &rhs, Vector &res, bool symmetric = false, bool posDef = false) const;
     static bool LinSolve(const SparseMatrix &m, const Vector &rhs, Vector &res, bool symmetric = false, bool posDef = false);
+    /*
+     * Linear system solving with use of schur-complement structure (only with block-diagonal lower-right part)
+     * Note that you shoul use it only when you are sure that lower (block-diagonal) part is well-conditioned
+     */
+    static bool LinSolveSchurComplement(const corecvs::SparseMatrix &A, const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric = false, bool posDef = false);
+    bool        linSolveSchurComplement(const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric = false, bool posDef = false);
 
     void print(std::ostream& out = std::cout) const;
     friend std::ostream& operator<< (std::ostream &out, const SparseMatrix &sm);
