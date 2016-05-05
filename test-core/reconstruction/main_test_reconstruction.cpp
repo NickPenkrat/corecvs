@@ -83,7 +83,7 @@ TEST(Reconstruction, basicO3P)
         std::cout << "T=[" << shift[0] << "; " << shift[1] << "; " << shift[2] << "];" << std::endl;
 #endif
     auto h = corecvs::RelativeNonCentralO3PSolver::SolveRelativeNonCentralO3P(l, r, shift);
-    double best = 1e1000;
+    double best = std::numeric_limits<double>::max();
     for (auto& hh: h)
     {
         double foo = std::acos(std::abs((hh.rotor^rotor.conjugated())[3]))*360.0/M_PI;
