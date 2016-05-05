@@ -11,7 +11,8 @@ HEADERS += \
     reconstruction/sceneGenerator.h \
     reconstruction/reconstructionInitializer.h \
     reconstruction/sceneAligner.h \
-    reconstruction/reconstructionFunctor.h
+    reconstruction/reconstructionFunctor.h \
+    reconstruction/iterativeReconstructionSettings.h
 
 
 SOURCES += \
