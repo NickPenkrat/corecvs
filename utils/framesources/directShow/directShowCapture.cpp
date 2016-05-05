@@ -229,8 +229,8 @@ ALIGN_STACK_SSE void DirectShowCaptureInterface::memberCallback(DSCapDeviceId de
             else {
                 if(!uyvy)
                 {
-                    camera->buffer = new G12Buffer(data.format.height, data.format.width, false);
-                    camera->buffer->fillWithYUYV((uint16_t *)data.data);
+                camera->buffer = new G12Buffer(data.format.height, data.format.width, false);
+                camera->buffer->fillWithYUYV((uint16_t *)data.data);
                 }
                 else
                 {

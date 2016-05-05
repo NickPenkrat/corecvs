@@ -79,10 +79,6 @@ SOURCES += \
 contains(DEFINES, "WITH_FFTW") {
     !build_pass: message(Adding core submodule math : fftw wrapper)
 
-    HEADERS += \
-        math/fftw/fftwWrapper.h \
-
-    SOURCES += \
-        math/fftw/fftwWrapper.cpp \
-
+    HEADERS += math/fftw/fftwWrapper.h
+    SOURCES += math/fftw/fftwWrapper.cpp
 }

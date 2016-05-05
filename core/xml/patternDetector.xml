@@ -14,8 +14,8 @@
 
 
     <field type="ImageChannel" name="Channel"            defaultValue="3"   />
-    <field type="double"       name="Cell Size Hor"      defaultValue="50"   suffix="mm" />
-    <field type="double"       name="Cell Size Vert"     defaultValue="50"   suffix="mm" />
+    <field type="double"       name="Cell Size Hor"      defaultValue="0.05"   min="0.0" max="1.0" suffix="m" decimals="3" />
+    <field type="double"       name="Cell Size Vert"     defaultValue="0.05"   min="0.0" max="1.0" suffix="m" decimals="3" />
 
     <field type="bool"         name="Clean existing"     defaultValue="true" />
 

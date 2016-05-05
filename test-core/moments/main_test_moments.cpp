@@ -15,8 +15,6 @@
 #include "mathUtils.h"
 #include "ellipticalApproximation.h"
 
-
-using namespace std;
 using namespace corecvs;
 
 TEST(Moments, testRotations)

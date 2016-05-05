@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "statusTracker.h"
 
 
@@ -28,6 +30,7 @@ void StatusTracker::incrementStarted()
         return;
     writeLock();
         currentStatus.startedActions++;
+        std::cout << "Started: " << currentStatus.startedActions << std::endl;
         CORE_ASSERT_TRUE_S(currentStatus.startedActions <= currentStatus.totalActions);
     unlock();
 }
@@ -39,17 +42,22 @@ void StatusTracker::incrementCompleted()
     writeLock();
         currentStatus.completedActions++;
         CORE_ASSERT_TRUE_S(currentStatus.completedActions <= currentStatus.totalActions);
-        CORE_ASSERT_TRUE_S(currentStatus.completedActions >= currentStatus.startedActions);
+        CORE_ASSERT_TRUE_S(currentStatus.completedActions <= currentStatus.startedActions);
     unlock();
 }
 
-void StatusTracker::reset(const std::string & /*action*/, size_t totalActions)
+void StatusTracker::reset(const std::string & action, size_t totalActions)
 {
     if (this == nullptr)
         return;
     writeLock();
+        currentStatus.currentAction = action;
         currentStatus.completedActions = currentStatus.startedActions = 0;
         currentStatus.totalActions = totalActions;
+        std::cout << "Action: " << currentStatus.currentAction
+                  << " started: " << currentStatus.startedActions
+                  << ", completed " << currentStatus.completedActions
+                  << ", total " << currentStatus.totalActions << std::endl;
     unlock();
 }
 
@@ -64,4 +72,4 @@ Status  StatusTracker::getStatus() const
     return status;
 }
 
-}
+} // namespace corecvs 

@@ -22,8 +22,6 @@
 
 #include "polygonPointIterator.h"
 
-
-using namespace std;
 using namespace corecvs;
 
 TEST(Draw, testCircles)

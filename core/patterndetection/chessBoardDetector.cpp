@@ -91,19 +91,17 @@ bool ChessboardDetector::detectPatternCandidates(DpImage &buffer, std::vector<st
 
     std::string prefix;
     if (stats != NULL) {
-        prefix = stats->prefix;
-        stats->prefix = "Corners -> " + stats->prefix;
+        stats->enterContext("Corners ->");
         detector.setStatistics(stats);
     }
 
     detector.detectCorners(buffer, corners);
 
-    if (stats != NULL) stats->prefix = prefix;
+    if (stats != NULL) stats->leaveContext();
     if (stats != NULL) stats->resetInterval("Corners");
 
     if (stats != NULL) {
-        prefix = stats->prefix;
-        stats->prefix = "Assembler -> " + stats->prefix;
+        stats->enterContext("Assembler ->");
         assembler.setStatistics(stats);
     }
 
@@ -111,7 +109,7 @@ bool ChessboardDetector::detectPatternCandidates(DpImage &buffer, std::vector<st
     sharedGenerator->flushCache();
     BoardAligner aligner(activeAlignerParams, sharedGenerator);
     assembler.assembleBoards(corners, boards, &aligner, &buffer);
-    if (stats != NULL) stats->prefix = prefix;
+    if (stats != NULL) stats->leaveContext();
 
     if (!boards.size())
         return false;

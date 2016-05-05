@@ -21,9 +21,7 @@
 #include <tbb/task.h>
 #endif
 
-using namespace std;
 using namespace corecvs;
-
 
 class ParallelTestTBBWrapper
 {

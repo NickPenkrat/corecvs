@@ -33,12 +33,6 @@ JSONSetter::~JSONSetter()
 /*=================*/
 
 template <>
-void JSONSetter::visit<int>(int &intField, int /*defaultValue*/, const char *fieldName)
-{
-    mNodePath.back().insert(fieldName, intField);
-}
-
-template <>
 void JSONSetter::visit<uint64_t>(uint64_t &intField, uint64_t /*defaultValue*/, const char *fieldName)
 {
     QString packed = QString::number(intField) + "u64";
@@ -49,18 +43,6 @@ template <>
 void JSONSetter::visit<bool>(bool &boolField, bool /*defaultValue*/, const char *fieldName)
 {
     mNodePath.back().insert(fieldName, boolField);
-}
-
-template <>
-void JSONSetter::visit<double>(double &doubleField, double /*defaultValue*/, const char *fieldName)
-{
-    mNodePath.back().insert(fieldName, doubleField);
-}
-
-template <>
-void JSONSetter::visit<float>(float &floatField, float /*defaultValue*/, const char *fieldName)
-{
-    mNodePath.back().insert(fieldName, floatField);
 }
 
 template <>

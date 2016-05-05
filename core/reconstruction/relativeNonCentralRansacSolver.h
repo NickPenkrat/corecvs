@@ -14,13 +14,25 @@ namespace corecvs
 
 struct RelativeNonCentralRansacSolverSettings
 {
-    RelativeNonCentralRansacSolverSettings(size_t maxIterations = 500000, double inlierThreshold = 1.0)
+    RelativeNonCentralRansacSolverSettings(int maxIterations = 1000000, double inlierThreshold = 1.0)
         : maxIterations(maxIterations)
         , inlierThreshold(inlierThreshold)
+    {}
+
+    int     maxIterations;
+    double  inlierThreshold;
+
+    enum class Restrictions
     {
-    }
-    size_t maxIterations = 1000000LLU;
-    double inlierThreshold = 1.0;
+        NONE,
+        SCALE,
+        SHIFT
+    };
+
+    Restrictions restrictions;
+    corecvs::Vector3dd shift;
+    double scale = 1.0;
+    double gamma = 0.001;
 };
 
 
@@ -29,22 +41,80 @@ class RelativeNonCentralRansacSolver : public RelativeNonCentralRansacSolverSett
 public:
     typedef std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd>> MatchContainer;
 
-    RelativeNonCentralRansacSolver(CameraFixture* ref
-        , CameraFixture* query
+    RelativeNonCentralRansacSolver(
+          CameraFixture* query
         , const MatchContainer &matchesRansac
         , const MatchContainer &matchesAll
         , const RelativeNonCentralRansacSolverSettings &settings = RelativeNonCentralRansacSolverSettings());
 
+    ~RelativeNonCentralRansacSolver()
+    {
+        double total = totalEstiamte + totalSample + totalCheck;
+        std::cout << "RNCRS timings: [Sample: " << totalSample / total * 100.0 << "% ][Estimate: " << totalEstiamte / total * 100.0 << "%][Check: " << totalCheck / total * 100.0 << "]" << std::endl;
+    }
+
+    size_t getInliersCount();
     void run();
     void fit(double distanceGuess = 10.0);
     corecvs::Affine3DQ getBestHypothesis() const;
     std::vector<int> getBestInliers() const;
+    double getGamma();
 
 private:
+    struct Estimator
+    {
+        void operator() (const corecvs::BlockedRange<int> &r);
+        Estimator(RelativeNonCentralRansacSolver *solver, double inlierThreshold, Restrictions restrictions, Vector3dd shift, double scale) : inlierThreshold(inlierThreshold), scale(scale), shift(shift), restrictions(restrictions), solver(solver)
+        {
+            rng = std::mt19937(std::random_device()());
+            fundamentalsCache.resize(solver->fundamentalsCacheId.size());
+            essentialsCache.resize(solver->fundamentalsCacheId.size());
+            pluckerRef.resize(SAMPLESIZE);
+            pluckerQuery.resize(SAMPLESIZE);
+        }
+
+        std::mt19937 rng;
+        void sampleModel();
+        void makeHypo();
+        void selectInliers();
+
+        size_t localMax = 0;
+        static const int SAMPLESIZE = 6;
+        int idxs[SAMPLESIZE];
+        double inlierThreshold, scale;
+
+        Vector3dd shift;
+        Restrictions restrictions;
+
+        RelativeNonCentralRansacSolver* solver;
+        std::vector<corecvs::Affine3DQ> hypothesis;
+        std::vector<std::vector<corecvs::Matrix33>> fundamentals;
+        std::vector<std::vector<corecvs::EssentialDecomposition>> essentials;
+        std::vector<std::pair<corecvs::Vector3dd, corecvs::Vector3dd>> pluckerRef, pluckerQuery;
+        std::vector<corecvs::Matrix33> fundamentalsCache;
+        std::vector<corecvs::EssentialDecomposition> essentialsCache;
+    };
+
+    struct ParallelEstimator
+    {
+        void operator() (const corecvs::BlockedRange<int> &r) const;
+        ParallelEstimator(RelativeNonCentralRansacSolver* solver, int batch) : solver(solver), batch(batch)
+        {
+        }
+        RelativeNonCentralRansacSolver *solver;
+        int batch;
+    };
+
+#ifdef WITH_TBB
+    tbb::mutex mutex;
+#endif
+    void accept(const Affine3DQ &hypo, const std::vector<int> &inliersNew);
+
+
     struct FunctorCost : corecvs::FunctionArgs
     {
         RelativeNonCentralRansacSolver *solver;
-        FunctorCost(RelativeNonCentralRansacSolver* solver) : FunctionArgs(7, solver->getInliersCount()), solver(solver)
+        FunctorCost(RelativeNonCentralRansacSolver* solver) : FunctionArgs(7, (int)solver->getInliersCount()), solver(solver)
         {}
 
         void operator() (const double in[], double out[])
@@ -67,7 +137,6 @@ private:
         }
     };
 
-    int  getInliersCount();
     void readParams(const double in[]);
     void writeParams(double out[]);
     void computeError(double out[]);
@@ -78,22 +147,30 @@ private:
     void scoreCurrent();
     void selectBest();
 
+    double nForGamma();
+#if 1
+    void buildDependencies();
+    std::vector<int> dependencyList;
+    std::vector<std::pair<WPP, WPP>> fundamentalsCacheId;
+#endif
+
     std::mt19937 rng;
     static const int FEATURES_FOR_MODEL = 6;
     int maxInliers = 0;
     int nullInliers = 0;
     corecvs::Affine3DQ bestHypothesis;
-    std::vector<std::vector<corecvs::Matrix33>> fundamentals;
-    std::vector<std::vector<corecvs::EssentialDecomposition>> essentials;
-    std::vector<std::pair<corecvs::Vector3dd, corecvs::Vector3dd>> pluckerRef, pluckerQuery;
-    std::vector<corecvs::Affine3DQ> currentHypothesis;
-    std::vector<int> currentScores;
-    std::vector<std::vector<int>> currentInliers;
+//    std::vector<corecvs::Affine3DQ> currentHypothesis;
+//    std::vector<int> currentScores;
+//    std::vector<std::vector<int>> currentInliers;
     std::vector<int> bestInliers;
 
-    // Clarify if we would like to copy them
-    CameraFixture* pss[2];
+#if 1
+#endif
+    CameraFixture* query;
     MatchContainer matchesRansac, matchesAll;
+    int batch = 100, batches = 64, usedEvals = 0;
+
+    double totalSample = 0.0, totalEstiamte = 0.0, totalCheck = 0.0;
 };
 
 }

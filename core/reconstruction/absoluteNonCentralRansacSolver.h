@@ -14,8 +14,9 @@
 #include <algorithm>
 #include <random>
 
-namespace corecvs
-{
+namespace corecvs {
+
+
 struct AbsoluteNonCentralRansacSolverParams
 {
     double reprojectionInlierThreshold = 2.0;
@@ -48,7 +49,6 @@ public:
         es.hypothesis.push_back(firstHypothesis);
         es.selectInliers();
     }
-
     AbsoluteNonCentralRansacSolver(const AbsoluteNonCentralRansacSolver& ancrs) :
         AbsoluteNonCentralRansacSolverParams(ancrs),
         firstHypothesis(ancrs.firstHypothesis),
@@ -106,8 +106,8 @@ public:
     {
         void operator() (const corecvs::BlockedRange<int> &r) const;
         ParallelEstimator(AbsoluteNonCentralRansacSolver *solver, int batch) : solver(solver), batch(batch)
-        {
-        }
+        {}
+
         AbsoluteNonCentralRansacSolver *solver;
         int batch;
     };
@@ -153,9 +153,12 @@ public:
             solver->readParams(in);
             solver->computeReprojectionErrors(out);
         }
-        ReprojectionError(AbsoluteNonCentralRansacSolver* solver) : FunctionArgs(solver->forcePosition ? 4 : 7, solver->bestInlierCnt * 2), solver(solver)
-        {
-        }
+
+        ReprojectionError(AbsoluteNonCentralRansacSolver* solver)
+            : FunctionArgs(solver->forcePosition ? 4 : 7, solver->bestInlierCnt * 2)
+            , solver(solver)
+        {}
+
         AbsoluteNonCentralRansacSolver *solver;
     };
 
@@ -166,16 +169,18 @@ public:
             solver->readParams(in);
             solver->writeParams(out);
         }
-        ReprojectionErrorNormalizer(AbsoluteNonCentralRansacSolver *solver): FunctionArgs(solver->forcePosition ? 4 : 7, solver->forcePosition ? 4 : 7), solver(solver)
-        {
-        }
+
+        ReprojectionErrorNormalizer(AbsoluteNonCentralRansacSolver *solver)
+            : FunctionArgs(solver->forcePosition ? 4 : 7, solver->forcePosition ? 4 : 7)
+            , solver(solver)
+        {}
+
         AbsoluteNonCentralRansacSolver *solver;
     };
     void computeReprojectionErrors(double *out);
 
     std::vector<int> selectInliers(const corecvs::Affine3DQ &hypothesis);
     void getHypothesis();
-    double nForGamma();
 
     corecvs::Affine3DQ bestHypothesis;
     int bestInlierCnt = 0;
@@ -188,14 +193,14 @@ public:
     int batches = 64;
     int usedEvals = 0;
     double gamma = 0.001;
-
-
+    double nForGamma();
 public:
     ~AbsoluteNonCentralRansacSolver()
     {
         std::cout << "P3P: allowed: " << maxIterations << " used: " << usedEvals << std::endl;
     }
 };
-}
 
-#endif
+} // namespace corecvs
+
+#endif // ABSOLUTENONCENTRALRANSACSOLVER

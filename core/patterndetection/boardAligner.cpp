@@ -382,7 +382,7 @@ void BoardAligner::drawDebugInfo(corecvs::RGB24Buffer &buffer)
                 LineSpanInt span = ts1.getSpan();
                 span.clip(mask.w, mask.h);
                 for (int k = span.x1; k < span.x2; k++)
-                {
+            {
                     mask.element(span.y(), k) = 1.0;
                     buffer.element(span.y(), k) = RGBColor::lerpColor(buffer.element(span.y(), k), B, 0.3);
                 }
@@ -395,11 +395,11 @@ void BoardAligner::drawDebugInfo(corecvs::RGB24Buffer &buffer)
                 {
                     mask.element(span.y(), k) = 1.0;
                     buffer.element(span.y(), k) = RGBColor::lerpColor(buffer.element(span.y(), k), B, 0.3);
+                    }
                 }
-            }
 
+            }
         }
-    }
     /*for (int i = 0; i < buffer.h; ++i)
     {
         for (int j = 0; j < buffer.w; ++j)

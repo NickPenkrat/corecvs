@@ -1,5 +1,5 @@
-#ifndef CHESSBOARDDETECTOR
-#define CHESSBOARDDETECTOR
+#ifndef CHESSBOARDDETECTOR_H
+#define CHESSBOARDDETECTOR_H
 
 #include <memory>
 
@@ -13,9 +13,8 @@
 #include "circlePatternGenerator.h"
 #include "boardAligner.h"
 
-/* Whole file should be in the namespace */
-using corecvs::ObservationList;
-using corecvs::RGB24Buffer;
+namespace corecvs
+{
 
 enum class ChessBoardDetectorMode
 {
@@ -36,10 +35,10 @@ public:
     BoardAligner *aligner;
 
     ChessboardDetector(
-            CheckerboardDetectionParameters params = CheckerboardDetectionParameters(),
-            BoardAlignerParams alignerParams = BoardAlignerParams(),
-            ChessBoardCornerDetectorParams detectorParams = ChessBoardCornerDetectorParams(),
-            ChessBoardAssemblerParams assemblerParams = ChessBoardAssemblerParams()
+            CheckerboardDetectionParameters params          = CheckerboardDetectionParameters(),
+            BoardAlignerParams              alignerParams   = BoardAlignerParams(),
+            ChessBoardCornerDetectorParams  detectorParams  = ChessBoardCornerDetectorParams(),
+            ChessBoardAssemblerParams       assemblerParams = ChessBoardAssemblerParams()
     );
 
     static ChessBoardDetectorMode getMode(const BoardAlignerParams &params);
@@ -81,7 +80,6 @@ private:
     std::vector<ObservationList> allPatterns;
     std::vector<OrientedCorner> corners;
 
-
     ChessBoardAssembler assembler;
     std::shared_ptr<CirclePatternGenerator> sharedGenerator;
 
@@ -95,4 +93,6 @@ public:  /* We need generic interface for debug data. It could be hidden inside 
 
 };
 
-#endif
+} // namespace corecvs
+
+#endif // CHESSBOARDDETECTOR_H

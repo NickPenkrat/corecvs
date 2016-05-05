@@ -11,7 +11,7 @@ void SceneGenerator::generateScene()
     generateFixtures();
     generatePoints();
     generateMatches();
-    rfs->placingQueue = rfs->fixtures;
+    rfs->placingQueue = rfs->fixtures();
     rfs->state = ReconstructionState::MATCHED;
     std::cout << "GENERATING: " << std::endl << (SceneGeneratorParams&)(*this) << std::endl;
 }
@@ -19,9 +19,7 @@ void SceneGenerator::generateScene()
 void SceneGenerator::generateFixtures()
 {
     double R = 20.0;
-    double l = 0.0;
-    double r = N;
-
+    double l = 0.0, r = N;
     for (int i = 0; i < 64; ++i)
     {
         double m = (l + r) / 2.0;
@@ -51,15 +49,13 @@ void SceneGenerator::generateFixtures()
                 fixtures.emplace_back(x * R, y * R);
         }
     CORE_ASSERT_TRUE_S(fixtures.size() >= (size_t)N);
-    std::sort(fixtures.begin(), fixtures.end(), [](const corecvs::Vector2dd &a, const corecvs::Vector2dd &b) { return !a < !b; });
+    std::sort(fixtures.begin(), fixtures.end(), [](const corecvs::Vector2dd &a, const corecvs::Vector2dd &b) { return (!a) < (!b); });
     fixtures.resize(N);
     for (auto&f: fixtures)
     {
         std::cout << f << std::endl;
         generatePs(Vector3dd(f[0], f[1], 0), &f - &fixtures[0]);
     }
-
-
 }
 
 void SceneGenerator::generatePoints()
@@ -79,7 +75,7 @@ void SceneGenerator::generatePoints()
         auto pt = Vector3dd(sqrt(1.0 - z * z) * sin(ph), sqrt(1.0 - z * z) * cos(ph), z) * r;
         int visible = 0;
         std::vector<WPP> vis;
-        for (auto& f: rfs->fixtures)
+        for (auto& f: rfs->fixtures())
             for (auto& c: f->cameras)
                 if (f->isVisible(pt, c))
                 {
@@ -126,7 +122,7 @@ void SceneGenerator::generateMatches()
         auto pt = Vector3dd(sqrt(1.0 - z * z) * sin(ph), sqrt(1.0 - z * z) * cos(ph), z) * r;
         int visible = 0;
         std::vector<WPP> vis;
-        for (auto& f: rfs->fixtures)
+        for (auto& f: rfs->fixtures())
             for (auto& c: f->cameras)
                 if (f->isVisible(pt, c))
                 {

@@ -4,7 +4,7 @@
 
 namespace cv {
     class DescriptorMatcher;
-};
+}
 
 class OpenCvDescriptorMatcherWrapper : public DescriptorMatcher
 {

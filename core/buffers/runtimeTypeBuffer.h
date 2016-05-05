@@ -7,7 +7,7 @@
 #include <string>
 #include <iostream>
 #include <cassert>
-#include <stdint.h> 
+#include <stdint.h>
 
 #ifndef CV_8U
 #define CV_8U 0
@@ -17,36 +17,59 @@
 #define CV_32F 5
 #endif
 
-namespace BufferType {
-	enum RuntimeBufferDataType {
+namespace corecvs
+{
+    class RuntimeTypeBuffer;
+}
+
+std::ostream& operator<<(std::ostream &os, const corecvs::RuntimeTypeBuffer &b);
+std::istream& operator>>(std::istream &is, corecvs::RuntimeTypeBuffer &b);
+
+
+namespace corecvs
+{
+namespace BufferType
+{
+    enum RuntimeBufferDataType
+    {
 		U8,
 		F32
 	};
 }
 
 
-// TODO: add row-aligned allocation & getters
-class RuntimeTypeBuffer {
+/*
+ * XXX: This is a small wrapper simplifying interfacing with different result type
+ *      from different keypoint descriptors;
+ *      This does not use AbstractBuffer 'cause I hate^W think this is too much
+ */
+class RuntimeTypeBuffer
+{
 public:
 	RuntimeTypeBuffer() : data(0), rows(0), cols(0), sz(0), type(BufferType::U8) {}
-	RuntimeTypeBuffer(const size_t &rows, const size_t &cols, const int &type =BufferType::U8) : rows(rows), cols(cols), sz(getTypeSize(type)), type(type) {
+    RuntimeTypeBuffer(const size_t &rows, const size_t &cols, const int &type =BufferType::U8) : rows(rows), cols(cols), sz(getTypeSize(type)), type(type)
+    {
 		allocate();
 	}
-	RuntimeTypeBuffer(const size_t &rows, const size_t &cols, const void* data, const int &type = BufferType::U8) : rows(rows), cols(cols), sz(getTypeSize(type)), type(type) {
+    RuntimeTypeBuffer(const size_t &rows, const size_t &cols, const void* data, const int &type = BufferType::U8) : rows(rows), cols(cols), sz(getTypeSize(type)), type(type)
+    {
 		allocate();
 		copy((uint8_t*)data);
 	}
 
-	~RuntimeTypeBuffer() {
+    ~RuntimeTypeBuffer()
+    {
 		free(data);
 	}
 
-	RuntimeTypeBuffer(const RuntimeTypeBuffer &b) : rows(b.rows), cols(b.cols), sz(b.sz), type(b.type) {
+    RuntimeTypeBuffer(const RuntimeTypeBuffer &b) : rows(b.rows), cols(b.cols), sz(b.sz), type(b.type)
+    {
 		allocate();
 		copy(b.data);
 	}
 
-	RuntimeTypeBuffer& operator=(const RuntimeTypeBuffer &b) {
+    RuntimeTypeBuffer& operator=(const RuntimeTypeBuffer &b)
+    {
 		if(this == &b)
 			return *this;
 		free(data);
@@ -60,15 +83,19 @@ public:
 		return *this;
 	}
 
-	bool isValid() const {
+    bool isValid() const
+    {
 		return data != 0;
 	}
 
-	size_t getRowSize() const {
+    size_t getRowSize() const
+    {
 		return sz * cols;
 	}
-	static size_t getTypeSize(int type) {
-		switch(type) {
+    static size_t getTypeSize(int type)
+    {
+        switch(type)
+        {
 			case BufferType::U8:
 				return 1;
 			case BufferType::F32:
@@ -78,8 +105,10 @@ public:
                 return 0;
 		}
 	}
-	static size_t getTypeFromCvType(int type) {
-		switch(type) {
+    static size_t getTypeFromCvType(int type)
+    {
+        switch(type)
+        {
 			case CV_8U:
 				return BufferType::U8;
 			case CV_32F:
@@ -89,8 +118,10 @@ public:
                 return 0;
 		}
 	}
-	size_t getCvType() const {
-		switch(type) {
+    size_t getCvType() const
+    {
+        switch(type)
+        {
 			case BufferType::U8:
 				return CV_8U;
 			case BufferType::F32:
@@ -100,38 +131,47 @@ public:
                 return 0;
 		}
 	}
-	size_t getElSize() const {
+    size_t getElSize() const
+    {
 		return sz;
 	}
 
-	size_t getDataSize() const {
+    size_t getDataSize() const
+    {
 		return rows * getRowSize();
 	}
 
 	template<typename T>
-	T& at(const size_t &i, const size_t &j) {
+    T& at(const size_t &i, const size_t &j)
+    {
 		return *(T*)(data + sz * (i * cols + j));
 	}
 	template<typename T>
-	const T& at(const size_t &i, const size_t &j) const {
+    const T& at(const size_t &i, const size_t &j) const
+    {
 		return *(T*)(data + sz * (i * cols + j));
 	}
 	template<typename T>
-	T* row(const size_t &i) {
+    T* row(const size_t &i)
+    {
 		return (T*)(data + sz * (i * cols ));
 	}
 	// FIXME
 	template<typename T>
-	T* row(const size_t &i) const {
+    T* row(const size_t &i) const
+    {
 		return (T*)(data + sz * (i * cols));
 	}
-	inline size_t getRows() const {
+    inline size_t getRows() const
+    {
 		return rows;
 	}
-	inline size_t getCols() const {
+    inline size_t getCols() const
+    {
 		return cols;
 	}
-	int getType() const {
+    int getType() const
+    {
 		return type;
 	}
 
@@ -139,14 +179,16 @@ public:
 	void save(std::ostream &os) const;
 	void load(const std::string &filename);
 	void save(const std::string &filename) const;
-	friend std::ostream& operator<<(std::ostream &os, const RuntimeTypeBuffer &b);
-	friend std::istream& operator>>(std::istream &is, RuntimeTypeBuffer &b);
+    friend std::ostream& ::operator<<(std::ostream &os, const corecvs::RuntimeTypeBuffer &b);
+    friend std::istream& ::operator>>(std::istream &is, corecvs::RuntimeTypeBuffer &b);
 private:
-	void allocate() {
+    void allocate()
+    {
 		size_t bytes = getDataSize();
 		data = (uint8_t*)malloc(bytes);
 	}
-	void copy(uint8_t *src) {
+    void copy(uint8_t *src)
+    {
 		memcpy(data, src, getDataSize());
 	}
 	uint8_t *data;
@@ -155,8 +197,6 @@ private:
 	size_t sz;
 	int type;
 };
-
-std::ostream& operator<<(std::ostream &os, const RuntimeTypeBuffer &b);
-std::istream& operator>>(std::istream &is, RuntimeTypeBuffer &b);
+}
 
 #endif

@@ -2,11 +2,12 @@
 #define STATUS_TRACKER
 
 #include <string>
+
 #ifdef WITH_TBB
 #include <tbb/tbb.h>
 #endif
 
-#include <global.h>
+#include "global.h"
 
 namespace corecvs {
 
@@ -17,6 +18,11 @@ struct Status
 
     Status() : currentAction("NONE"), completedActions(0), totalActions(0), startedActions(0)
     {}
+
+    bool isCompleted(const std::string &action) const
+    {
+        return (action == currentAction && totalActions == completedActions);
+    }
 };
 
 class StatusTracker

@@ -37,7 +37,7 @@ const char* V4L2CaptureInterface::CODEC_NAMES[] =
     "mjpeg fast decoder"
 };
 
-STATIC_ASSERT(CORE_COUNT_OF(V4L2CaptureInterface::CODEC_NAMES) == V4L2CaptureInterface::CODEC_NUMBER, wrong_codec_names_number);
+STATIC_ASSERT(CORE_COUNT_OF(V4L2CaptureInterface::CODEC_NAMES) == V4L2CaptureInterface::CODEC_NUMBER, wrong_codec_names_number)
 
 V4L2CaptureInterface::V4L2CaptureInterface(string _devname, bool isRgb)
     : spin(this)

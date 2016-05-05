@@ -52,7 +52,7 @@ typedef int atomic_int;
 #   undef small
 #   undef DIFFERENCE
 
-    STATIC_ASSERT(sizeof(int) == sizeof(LONG), wrongUsageOfAtomicOperationsOnMSVC);
+    STATIC_ASSERT(sizeof(int) == sizeof(LONG), wrongUsageOfAtomicOperationsOnMSVC)
 
     inline int atomic_dec_and_fetch(atomic_int *ptr)
     {

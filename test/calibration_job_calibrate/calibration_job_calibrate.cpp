@@ -106,7 +106,6 @@ int main(int argc, char **argv)
 
         size_t ltg = filename.find_first_of("0123456789", lsp + 2);
         size_t ltne= filename.find_first_of("_.", lsp);
-        size_t ltge= filename.find_last_of("0123456789", ltne);
         std::string tag(filename.begin() + lsp + 2, filename.begin() + ltg);
         int cam = std::stoi(std::string(filename.begin() + ltg, filename.begin() + ltne));
 
@@ -135,7 +134,7 @@ int main(int argc, char **argv)
             if (fn[0].size())
             {
                 size_t cam = &fn - &setup[0];
-                CalibrationSetupEntry entry = { cam, (int)job.observations[cam].size() };
+                CalibrationSetupEntry entry = { (int)cam, (int)job.observations[cam].size() };
                 job.calibrationSetups[setup_].emplace_back(entry);
                 ImageData img;
                 img.sourceFileName = fn[0];
@@ -158,7 +157,7 @@ int main(int argc, char **argv)
     }
     job.calibrate();
     std::vector<int> topLayer;
-    for (uint i = 0; i < std::min(camCnt, 6); ++i)
+    for (int i = 0; i < std::min(camCnt, 6); ++i)
         topLayer.push_back(i);
     job.reorient(topLayer);
 

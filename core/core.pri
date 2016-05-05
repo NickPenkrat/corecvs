@@ -7,42 +7,46 @@
 COREDIR=$$PWD
 
 #
-# Switching submodules on and off it not supported. However with some you can try. Risk is yours
+# Switching submodules on and off is not supported. However with some you can try. Risk is yours
 #
-CORE_SUBMODULES= \
-    alignment     \
-    assignment    \
-    automotive    \
-    boosting      \
-    buffers       \
-    cammodel      \
-    fileformats   \
-    filesystem    \
-    filters       \
-    function      \
-    geometry      \
-    kalman        \
-    kltflow       \
-    math          \
-    meta          \
-    meanshift     \
-    rectification \
-    reflection    \
-    segmentation  \
-    stats         \
-    tbbwrapper    \
-    utils         \
-    clustering3d  \
-    features2d    \
-    patterndetection \
-    cameracalibration \
-    graphs        \
-    polynomial    \
-    camerafixture \
+CORE_SUBMODULES =       \
+    alignment           \
+    assignment          \
+    automotive          \
+    boosting            \
+    buffers             \
+    cammodel            \
+    fileformats         \
+    filesystem          \
+    filters             \
+    function            \
+    geometry            \
+    kalman              \
+    kltflow             \
+    math                \
+    meta                \
+    meanshift           \
+    rectification       \
+    reflection          \
+    segmentation        \
+    stats               \
+    tbbwrapper          \
+    utils               \
+    clustering3d        \
+    features2d          \
+    patterndetection    \
+    cameracalibration   \
+    graphs              \
+    polynomial          \
+    camerafixture       \
 
 with_blas {
     CORE_SUBMODULES += reconstruction
 }
+else {
+    !build_pass: message (There is no activated BLAS! The module core/reconstruction is disabled)
+}
+
 
 for (MODULE, CORE_SUBMODULES) {
     CORE_INCLUDEPATH += $${COREDIR}/$${MODULE}
@@ -107,8 +111,9 @@ contains(TARGET, cvs_core): !contains(TARGET, cvs_core_restricted) {
 
 # The filesystem module needs this
 with_unorthodox {
-!win32  {
-    LIBS += -lstdc++fs
+    !win32  {
+        LIBS += -lstdc++fs
+    }
+    DEFINES += CORE_UNSAFE_DEPS
 }
-    DEFINES+=CORE_UNSAFE_DEPS
-}
+
