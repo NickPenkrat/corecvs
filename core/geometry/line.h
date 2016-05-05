@@ -203,10 +203,11 @@ public:
 class Ray3d : public BaseRay<Ray3d, Vector3dd>
 {
 public:
-    Ray3d() {}
-
     Ray3d(const Vector3dd &_a, const Vector3dd & _p) :
         BaseRay<Ray3d, Vector3dd>(_a, _p)
+    {}
+
+    Ray3d(const BaseRay<Ray3d, Vector3dd> &base) : BaseRay<Ray3d, Vector3dd>(base)
     {}
 
     double distanceTo(const Ray3d &other ) const
@@ -247,10 +248,11 @@ public:
         Vector3dd coef = intersectCoef(other);
         return (getPoint(coef.x()) + other.getPoint(coef.y())) / 2.0;
     }
-    
-    std::pair<corecvs::Vector3dd, corecvs::Vector3dd> pluckerize()
+
+    std::pair<corecvs::Vector3dd, corecvs::Vector3dd> pluckerize() const
     {
-        return std::make_pair(a.normalised(), p ^ a.normalised());
+        auto an = a.normalised();
+        return std::make_pair(an, p ^ an);
     }
 
     void transform(const Matrix44 &M)
