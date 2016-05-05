@@ -28,7 +28,7 @@ enum class ReconstructionState
     FINISHED
 };
 
-enum class PhotostationInitializationType
+enum class FixtureInitializationType
 {
     NONE,
     GPS,
@@ -36,9 +36,9 @@ enum class PhotostationInitializationType
     FIXED
 };
 
-struct PhotostationInitialization
+struct FixtureInitialization
 {
-    PhotostationInitializationType initializationType;
+    FixtureInitializationType initializationType;
     // NOTE: Static points should be appended to scene before
     //       supplying them as initialization data
     std::vector<SceneFeaturePoint*> staticPoints;
@@ -97,7 +97,7 @@ public:
     umwppv<std::pair<corecvs::Vector2dd, corecvs::RGBColor>> keyPoints;
     umwpp<umwppv<std::tuple<int, int, double>>> matches;
     umwpp<std::unordered_map<int, SceneFeaturePoint*>> trackMap;
-    std::unordered_map<CameraFixture*, PhotostationInitialization> initializationData;
+    std::unordered_map<CameraFixture*, FixtureInitialization> initializationData;
     std::vector<CameraFixture*> placedFixtures;
     std::vector<CameraFixture*> placingQueue;
 
@@ -188,11 +188,11 @@ struct ParallelTrackPainter
 namespace std
 {
 template<>
-struct hash<PhotostationInitializationType>
+struct hash<FixtureInitializationType>
 {
-    size_t operator() (const PhotostationInitializationType &t) const
+    size_t operator() (const FixtureInitializationType &t) const
     {
-        using foo = std::underlying_type<PhotostationInitializationType>::type;
+        using foo = std::underlying_type<FixtureInitializationType>::type;
         return hash<foo>()(static_cast<const foo>(t));
     }
 };

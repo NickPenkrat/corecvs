@@ -2,7 +2,7 @@
 
 #include <set>
 
-corecvs::ReconstructionFunctor::ReconstructionFunctor(corecvs::ReconstructionFixtureScene *scene, const corecvs::PhotostationPlacerOptimizationErrorType &error, const corecvs::PhotostationPlacerOptimizationType &optimization, const double pointErrorEstimate) : corecvs::SparseFunctionArgs(), scene(scene), error(error), optimization(optimization), scalerPoints(pointErrorEstimate)
+corecvs::ReconstructionFunctor::ReconstructionFunctor(corecvs::ReconstructionFixtureScene *scene, const corecvs::ReconstructionFunctorOptimizationErrorType &error, const corecvs::ReconstructionFunctorOptimizationType &optimization, const double pointErrorEstimate) : corecvs::SparseFunctionArgs(), scene(scene), error(error), optimization(optimization), scalerPoints(pointErrorEstimate)
 {
     /*
      * Compute inputs (these are ball-park estimate, need to
@@ -44,27 +44,27 @@ int corecvs::ReconstructionFunctor::getOutputNum()
 }
 
 #define IFNOT(cond, expr) \
-    if (!(optimization & PhotostationPlacerOptimizationType::cond)) \
+    if (!(optimization & ReconstructionFunctorOptimizationType::cond)) \
     { \
         expr; \
     }
 #define IF(cond, expr) \
-    if (!!(optimization & PhotostationPlacerOptimizationType::cond)) \
+    if (!!(optimization & ReconstructionFunctorOptimizationType::cond)) \
     { \
         expr; \
     }
 #define GETPARAM(ref) \
     ref = in[argin++];
 #define IF_GETPARAM(cond, ref) \
-    if (!!(optimization & PhotostationPlacerOptimizationType::cond)) ref = in[argin++];
+    if (!!(optimization & ReconstructionFunctorOptimizationType::cond)) ref = in[argin++];
 #define IFNOT_GETPARAM(cond, ref) \
-    if ( !(optimization & PhotostationPlacerOptimizationType::cond)) ref = in[argin++];
+    if ( !(optimization & ReconstructionFunctorOptimizationType::cond)) ref = in[argin++];
 #define SETPARAM(ref) \
     out[argout++] = ref;
 #define IF_SETPARAM(cond, ref) \
-    if (!!(optimization & PhotostationPlacerOptimizationType::cond)) out[argout++] = ref;
+    if (!!(optimization & ReconstructionFunctorOptimizationType::cond)) out[argout++] = ref;
 #define IFNOT_SETPARAM(cond, ref) \
-    if ( !(optimization & PhotostationPlacerOptimizationType::cond)) out[argout++] = ref;
+    if ( !(optimization & ReconstructionFunctorOptimizationType::cond)) out[argout++] = ref;
 
 void corecvs::ReconstructionFunctor::computePointCounts()
 {
@@ -163,13 +163,13 @@ int corecvs::ReconstructionFunctor::getErrorComponentsPerPoint()
 {
     switch(error)
     {
-        case PhotostationPlacerOptimizationErrorType::ANGULAR:
+        case ReconstructionFunctorOptimizationErrorType::ANGULAR:
             return 1;
-        case PhotostationPlacerOptimizationErrorType::REPROJECTION:
+        case ReconstructionFunctorOptimizationErrorType::REPROJECTION:
             return 2;
-        case PhotostationPlacerOptimizationErrorType::CROSS_PRODUCT:
+        case ReconstructionFunctorOptimizationErrorType::CROSS_PRODUCT:
             return 3;
-        case PhotostationPlacerOptimizationErrorType::RAY_DIFF:
+        case ReconstructionFunctorOptimizationErrorType::RAY_DIFF:
             return 3;
     }
     CORE_ASSERT_TRUE_S(false);
@@ -220,7 +220,7 @@ void corecvs::ReconstructionFunctor::computeDependency()
     DEPS(translateableFixtures,   INPUTS_PER_TRANSLATION, a == p->cameraFixture, a == p);
     DEPS(focalTunableCameras,     INPUTS_PER_FOCAL,       a == p->camera, false)
     DEPS(principalTunableCameras, INPUTS_PER_PRINCIPAL,   a == p->camera, false)
-    CORE_ASSERT_TRUE_S(argin == getInputNum() - (!(optimization & PhotostationPlacerOptimizationType::POINTS) ? 0 : INPUTS_PER_3D_POINT * (int)scene->trackedFeatures.size()));
+    CORE_ASSERT_TRUE_S(argin == getInputNum() - (!(optimization & ReconstructionFunctorOptimizationType::POINTS) ? 0 : INPUTS_PER_3D_POINT * (int)scene->trackedFeatures.size()));
     int argin_prepoint = argin;
     IF(POINTS,
     DEPS(scene->trackedFeatures,  INPUTS_PER_3D_POINT,    a == p->featurePoint, false))
@@ -300,7 +300,7 @@ void corecvs::ParallelErrorComputator::operator() (const corecvs::BlockedRange<i
     int N = functor->getErrorComponentsPerPoint();
     double *out = output;
 #define EC(E, EE, EEE) \
-    case PhotostationPlacerOptimizationErrorType::E: \
+    case ReconstructionFunctorOptimizationErrorType::E: \
         for (int ii = r.begin(); ii < r.end(); ++ii) \
         { \
             int i = idxs[ii * N]; \

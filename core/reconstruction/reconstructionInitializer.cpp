@@ -14,19 +14,19 @@ bool corecvs::ReconstructionInitializer::initialize()
     if (scene->state != ReconstructionState::MATCHED)
         return false;
     CORE_ASSERT_TRUE_S(scene->placingQueue.size() >= 2);
-    std::unordered_map<PhotostationInitializationType, int> cnt;
+    std::unordered_map<FixtureInitializationType, int> cnt;
     for (size_t i = 0; i < std::min((size_t)3, scene->placingQueue.size()); ++i)
         cnt[scene->initializationData[scene->placingQueue[i]].initializationType]++;
 
     // Gives 6-DoF initialization + 3-view cloud (1)
-    if (cnt[PhotostationInitializationType::GPS] == 3)
+    if (cnt[FixtureInitializationType::GPS] == 3)
         return initGPS();
     // Gives 6-DoF initialization + 2-view cloud (16)
-    if (cnt[PhotostationInitializationType::FIXED] >= 1 || cnt[PhotostationInitializationType::STATIC] >= 1)
+    if (cnt[FixtureInitializationType::FIXED] >= 1 || cnt[FixtureInitializationType::STATIC] >= 1)
     {
-        return cnt[PhotostationInitializationType::FIXED] > cnt[PhotostationInitializationType::STATIC] ? initFIXED() : initSTATIC();
+        return cnt[FixtureInitializationType::FIXED] > cnt[FixtureInitializationType::STATIC] ? initFIXED() : initSTATIC();
     }
-    if (cnt[PhotostationInitializationType::GPS] > 0)
+    if (cnt[FixtureInitializationType::GPS] > 0)
     {
         // requires DoF estimation on the fly, NIY
         CORE_ASSERT_TRUE_S(false);

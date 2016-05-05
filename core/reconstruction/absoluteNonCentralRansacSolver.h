@@ -24,6 +24,7 @@ struct AbsoluteNonCentralRansacSolverParams
     int maxIterations = 100000;
     bool forcePosition = false;
     corecvs::Vector3dd forcedPosition = corecvs::Vector3dd(0, 0, 0);
+    double gamma = 0.001;
 };
 class AbsoluteNonCentralRansacSolver : public AbsoluteNonCentralRansacSolverParams
 {
@@ -43,7 +44,7 @@ public:
         shouldTestFirst(ancrs.shouldTestFirst),
         bestHypothesis(ancrs.bestHypothesis), bestInlierCnt(ancrs.bestInlierCnt), inlierQuality(ancrs.inlierQuality),
         inliers(ancrs.inliers), ps(ancrs.ps), cloudMatches(ancrs.cloudMatches), hypothesis(ancrs.hypothesis),
-        batch(ancrs.batch), batches(ancrs.batches), usedEvals(ancrs.usedEvals), gamma(ancrs.gamma)
+        batch(ancrs.batch), batches(ancrs.batches), usedEvals(ancrs.usedEvals)
     {
     }
     void run();
@@ -162,7 +163,6 @@ public:
     int batch = 100;
     int batches = 64;
     int usedEvals = 0;
-    double gamma = 0.001;
     double nForGamma();
 public:
     ~AbsoluteNonCentralRansacSolver()

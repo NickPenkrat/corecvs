@@ -8,11 +8,11 @@ bool corecvs::SceneAligner::TryAlign(ReconstructionFixtureScene* scene, corecvs:
     for (auto cf: scene->placedFixtures)
         switch (scene->initializationData[cf].initializationType)
         {
-        case PhotostationInitializationType::GPS:
+        case FixtureInitializationType::GPS:
             gps++;
             break;
-        case PhotostationInitializationType::STATIC:
-        case PhotostationInitializationType::FIXED:
+        case FixtureInitializationType::STATIC:
+        case FixtureInitializationType::FIXED:
             staticFixed++;
             break;
         default:
@@ -21,10 +21,10 @@ bool corecvs::SceneAligner::TryAlign(ReconstructionFixtureScene* scene, corecvs:
     CORE_ASSERT_TRUE_S(gps <  3 || staticFixed == 0);
     CORE_ASSERT_TRUE_S(gps <= 3 && staticFixed <= 1);
     auto lastType = scene->initializationData[*scene->placedFixtures.rbegin()].initializationType;
-    if (lastType == PhotostationInitializationType::NONE)
+    if (lastType == FixtureInitializationType::NONE)
         return false;
-    CORE_ASSERT_TRUE_S(staticFixed == 0 || lastType == PhotostationInitializationType::STATIC || lastType == PhotostationInitializationType::FIXED);
-    CORE_ASSERT_TRUE_S(staticFixed == 1 || lastType == PhotostationInitializationType::GPS);
+    CORE_ASSERT_TRUE_S(staticFixed == 0 || lastType == FixtureInitializationType::STATIC || lastType == FixtureInitializationType::FIXED);
+    CORE_ASSERT_TRUE_S(staticFixed == 1 || lastType == FixtureInitializationType::GPS);
 
     if (staticFixed)
         return TryAlignStatic(scene, transformation, scale);
@@ -88,7 +88,7 @@ bool corecvs::SceneAligner::TryAlignGPS(ReconstructionFixtureScene* scene, corec
 
     std::vector<CameraFixture*> gpsFixtures;
     for (auto& cf: scene->placedFixtures)
-        if (scene->initializationData[cf].initializationType == PhotostationInitializationType::GPS)
+        if (scene->initializationData[cf].initializationType == FixtureInitializationType::GPS)
             gpsFixtures.push_back(cf);
     CORE_ASSERT_TRUE_S(gpsFixtures.size() <= 3 && gpsFixtures.size());
 
@@ -189,9 +189,9 @@ void corecvs::SceneAligner::ApplyTransformation(ReconstructionFixtureScene* scen
     //TODO: Check how all stuff should change with scale ~= 0.0
     for (auto& cf: scene->placedFixtures)
     {
-        if (scene->initializationData[cf].initializationType == PhotostationInitializationType::GPS)
+        if (scene->initializationData[cf].initializationType == FixtureInitializationType::GPS)
             cf->location.shift = scene->initializationData[cf].initData.shift;
-        if (scene->initializationData[cf].initializationType == PhotostationInitializationType::FIXED)
+        if (scene->initializationData[cf].initializationType == FixtureInitializationType::FIXED)
             cf->location = scene->initializationData[cf].initData;
     }
     scene->printPosStats();
