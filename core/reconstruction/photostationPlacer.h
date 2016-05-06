@@ -27,21 +27,18 @@ class PhotostationPlacer :    public IterativeReconstructionInitializationParams
 public:
     ReconstructionFixtureScene* scene;
     void testNewPipeline();
-    void fullRun();
     corecvs::Mesh3D dumpMesh(const std::string &filename);
     void paintTracksOnImages(bool pairs = false);
     void detectAll();
-    bool initialize();
     void create2PointCloud();
     void create2PointCloud(CameraFixture* A, CameraFixture* B);
     corecvs::Affine3DQ staticInit(CameraFixture* fixture, std::vector<SceneFeaturePoint*> &staticPoints);
     void pruneTracks();
     bool appendPs();
+
+    void fit(int num);
     void fit(const ReconstructionFunctorOptimizationType& optimizationSet = ReconstructionFunctorOptimizationType::NON_DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::POINTS | ReconstructionFunctorOptimizationType::FOCALS | ReconstructionFunctorOptimizationType::PRINCIPALS, int num = 100);
-    void fit(bool tuneFocal);
     void appendTracks(const std::vector<int> &inlierIds, CameraFixture* fixture, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &possibleTracks);
-    int getMovablePointCount();
-    int getReprojectionCnt();
     int getInputNum();
     int getOutputNum();
     void getErrorSummary(ReconstructionFunctorOptimizationErrorType errorType);
@@ -52,9 +49,6 @@ public:
     // Tries to append f using P3P (with 3d<->2d correspondences
     bool appendP3P(CameraFixture* f);
 
-    void addFirstPs();
-    void addSecondPs();
-    void tryAlign();
 protected:
     std::unordered_map<corecvs::CameraFixture*, corecvs::Affine3DQ> activeEstimates;
     std::unordered_map<corecvs::CameraFixture*, std::vector<int>> activeInlierCount;
