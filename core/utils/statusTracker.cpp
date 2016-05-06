@@ -73,7 +73,7 @@ void corecvs::StatusTracker::reset(const std::string &action, size_t totalAction
     unlock();
 }
 
-void corecvs::StatusTracker::isActionCompleted(const std::string &action) const
+bool corecvs::StatusTracker::isActionCompleted(const std::string &action) const
 {
     if (this == nullptr)
         return;
@@ -83,7 +83,7 @@ void corecvs::StatusTracker::isActionCompleted(const std::string &action) const
     return flag;
 }
 
-void corecvs::StatusTracker::isCompleted() const
+bool corecvs::StatusTracker::isCompleted() const
 {
     if (this == nullptr)
         return;
