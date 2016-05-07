@@ -731,17 +731,22 @@ public:
      **/
     Vector3dd intersectWith(const Ray3d &ray, bool *hasIntersection = NULL) const
     {
+        return ray.getPoint(intersectWithP(ray, hasIntersection));
+    }
+
+    double intersectWithP(const Ray3d &ray, bool *hasIntersection = NULL) const
+    {
         double denum = normal() & ray.a;
 
         bool intersects = (denum != 0.0);
         if (hasIntersection) *hasIntersection = intersects;
 
         if (!intersects)
-            return Vector3dd(0.0);
+            return 0.0;
 
-        double t = ((normal() & ray.p) + last()) / denum;
-        return ray.getPoint(t);
+        return ((normal() & ray.p) + last()) / denum;
     }
+
 
 
      /**

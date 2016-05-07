@@ -37,6 +37,28 @@ TEST(Linear, testPlane2Point)
     CORE_ASSERT_TRUE(proj.notTooFar(rproj, 1e-7), "Wrong projection");
 }
 
+TEST(Linear, testPlaneAndRay)
+{
+     Plane3d plane(Vector3dd::OrtY(), -10);
+
+     Ray3d ray(Vector3dd(0.0, -1.0, 1.0), Vector3dd::Zero());
+
+     Vector3dd point = plane.intersectWith(ray);
+
+     std::cout << "Point:" << std::endl;
+     std::cout << point << std::endl;
+     CORE_ASSERT_TRUE(point.notTooFar(Vector3dd(0, -10, 10)), "Wrong projection");
+
+     double t = plane.intersectWithP(ray);
+     std::cout << "T:" << std::endl;
+     std::cout << t << std::endl;
+
+     std::cout << "P(t):" << std::endl;
+     std::cout << ray.getPoint(t) << std::endl;
+
+
+}
+
 
 TEST(Linear, testPlane2Plane)
 {
