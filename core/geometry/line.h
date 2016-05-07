@@ -725,7 +725,7 @@ public:
      *  Finding intersection
      *
      *  \f[ \vec n (\vec a t + \vec p) + d = 0 \f]
-     *  \f[ t = \frac {\vec n \vec p + d} { \vec n \vec a } \f]
+     *  \f[ t = - \frac {\vec n \vec p + d} { \vec n \vec a } \f]
      *
      *
      **/
@@ -744,7 +744,7 @@ public:
         if (!intersects)
             return 0.0;
 
-        return ((normal() & ray.p) + last()) / denum;
+        return -((normal() & ray.p) + last()) / denum;
     }
 
 

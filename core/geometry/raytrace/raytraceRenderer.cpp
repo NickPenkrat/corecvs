@@ -34,12 +34,15 @@ void RaytraceRenderer::trace(RayIntersection &intersection)
 
 void RaytraceRenderer::trace(RGB24Buffer *buffer)
 {
-    AbstractBuffer<TraceColor> energy(buffer->getSize());
+    energy = new AbstractBuffer<TraceColor>(buffer->getSize());
+    markup = new AbstractBuffer<int>(buffer->getSize());
 
     for (int i = 0; i < buffer->h; i++)
     {
         for (int j = 0; j < buffer->w; j++)
         {
+            currentX = j;
+            currentY = i;
             Vector2dd pixel(j, i);
             Ray3d ray = Ray3d(intrisics.reverse(pixel), Vector3dd::Zero());
             ray.normalise();
@@ -50,7 +53,7 @@ void RaytraceRenderer::trace(RGB24Buffer *buffer)
             intersection.depth = 0;
             trace(intersection);
             if (intersection.object != NULL) {
-                energy.element(i, j) = intersection.ownColor;//TraceColor::FromDouble(intersection.normal);
+                energy->element(i, j) = intersection.ownColor;
             }
         }
     }
@@ -59,9 +62,16 @@ void RaytraceRenderer::trace(RGB24Buffer *buffer)
     {
         for (int j = 0; j < buffer->w; j++)
         {
-                buffer->element(i, j) = RGBColor::FromDouble(energy.element(i,j) / 2.0);
+            buffer->element(i, j) = RGBColor::FromDouble(energy->element(i,j) / 2.0);
+            if (markup->element(i, j) != 0)
+            {
+                buffer->element(i, j) = RGBColor::Red();
+            }
         }
     }
+
+    delete_safe(energy);
+    delete_safe(markup);
 }
 
 
@@ -238,7 +248,7 @@ void RaytraceableMaterial::getColor(RayIntersection &ray, RaytraceRenderer &rend
 
     for (RaytraceablePointLight *light: renderer.lights)
     {
-        cout << "Light сolor:" << light->color << " pos:" << light->position << endl;
+        //cout << "Light сolor:" << light->color << " pos:" << light->position << endl;
 
         Vector3dd toLight = light->position  - intersection;
 
@@ -253,15 +263,21 @@ void RaytraceableMaterial::getColor(RayIntersection &ray, RaytraceRenderer &rend
         lightRay.ray.a = toLight;
         lightRay.ray.a.normalise();
 
+
+
         bool occluded = renderer.object->intersect(lightRay);
         if (occluded) {
 
             if (lightRay.t < (toLight.l2Metric() - 0.0001)) {
-                SYNC_PRINT(("\nLight invisible %lf %lf\n", lightRay.t, (toLight.l2Metric() - 0.0001)));
+                /*SYNC_PRINT(("\nLight invisible %lf %lf\n", lightRay.t, (toLight.l2Metric() - 0.0001)));
+                cout << "Processing: " << renderer.currentX << ","  << renderer.currentY << endl;
                 cout << "Origin :" << intersection << endl;
                 cout << "Outcoming :" << toLight << endl;
+                cout << "Outcoming1:" << lightRay.ray.a << endl;
+
                 cout << "Intersection at" << lightRay.getPoint() << endl;
                 cout << "With " << lightRay.object->name << endl;
+                renderer.markup->element(renderer.currentY, renderer.currentX) = 1;*/
                 continue;
             }
         }
@@ -288,6 +304,7 @@ void RaytraceableMaterial::getColor(RayIntersection &ray, RaytraceRenderer &rend
 
         ray.ownColor += diffusePart;
         ray.ownColor += specularPart;
+
 
     }
 }
@@ -317,10 +334,18 @@ void RaytraceableChessMaterial::getColor(RayIntersection &ray, RaytraceRenderer 
     Vector3dd intersection = ray.getPoint();
     intersection = intersection / 10.0;
 
-    bool b;
-    int v = (int)intersection.x();
-    b = (v > 0) ? (v % 2) : (v % 2);
+    bool b1;
+    int vx = (int)intersection.x();
+    b1 = (vx % 2);
 
-    bool white = ((int)intersection.x() % 2) ^ ((int)intersection.y() % 2) ^ ((int)intersection.z() % 2);
-    ray.ownColor = b ? TraceColor::Zero() : RGBColor::White().toDouble();
+    bool b2;
+    int vy = (int)intersection.y();
+    b2 = (vy % 2);
+
+    bool b3;
+    int vz = (int)intersection.z();
+    b3 = (vz % 2);
+
+    bool white = (((int)intersection.x()) % 2) ^ (((int)intersection.y()) % 2) ^ (((int)intersection.z()) % 2);
+    ray.ownColor = (!b1 ^  !b2 ^ !b3) ? TraceColor::Zero() : RGBColor::White().toDouble();
 }

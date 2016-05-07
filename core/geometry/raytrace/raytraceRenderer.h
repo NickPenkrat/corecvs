@@ -133,6 +133,12 @@ public:
     vector<RaytraceablePointLight *> lights;
     TraceColor ambient;
 
+    /**/
+    AbstractBuffer<TraceColor> *energy = NULL;
+    AbstractBuffer<int> *markup = NULL;
+
+    int currentY, currentX;
+
     RaytraceRenderer();
 
     void trace(RayIntersection &intersection);
