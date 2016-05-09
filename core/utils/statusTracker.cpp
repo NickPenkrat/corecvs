@@ -48,7 +48,7 @@ void corecvs::StatusTracker::setTotalActions(size_t totalActions)
     if (this == nullptr)
         return;
     writeLock();
-        currentStatus.completedGlobalActions = currentStatus.startedActions = 0;
+        currentStatus.completedGlobalActions = 0;
         currentStatus.totalGlobalActions = totalActions;
         std::cout << "Total actions: " << currentStatus.totalGlobalActions << std::endl;
     unlock();
@@ -120,6 +120,16 @@ void corecvs::StatusTracker::setFailed()
     writeLock();
         currentStatus.isFailed = true;
         std::cout << "Failed!!!" << std::endl;
+    unlock();
+}
+
+void corecvs::StatusTracker::setStopThread()
+{
+    if (this == nullptr)
+        return;
+    writeLock();
+        stopThread = true;
+        std::cout << "Thread stop sended." << std::endl;
     unlock();
 }
 

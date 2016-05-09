@@ -33,6 +33,8 @@ public:
     void    setCompleted();
     void    setFailed();
 
+    void    setStopThread();
+
     bool    isActionCompleted(const std::string &action) const;
 
     bool    isCompleted() const;
@@ -42,6 +44,7 @@ public:
 
 private:
     Status  currentStatus;
+    bool    stopThread;
 
 #ifdef WITH_TBB
     tbb::reader_writer_lock lock;
