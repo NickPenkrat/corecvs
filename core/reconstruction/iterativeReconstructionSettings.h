@@ -14,7 +14,7 @@ namespace corecvs
 // This block covers reconstruction initialization
 struct IterativeReconstructionInitializationParams
 {
-	// b2b threshold for feature matches in 5PT->EM problem
+    // b2b threshold for feature matches in 5PT->EM problem
     double b2bRansacP5RPThreshold = 0.8;
     // 2d pairwise correspondence inlier threshold
     double inlierP5RPThreshold = 5.0;
@@ -38,7 +38,7 @@ struct IterativeReconstructionInitializationParams
 // This block covers point track construction and feature point detection
 struct IterativeReconstructionFeatureSelectionParams
 {
-	// Threshold for static point initialization
+    // Threshold for static point initialization
     double inlierThreshold = 5.0;
     // Threshold for reprojection error of track inlier
     double trackInlierThreshold = 3;
@@ -51,18 +51,20 @@ struct IterativeReconstructionFeatureSelectionParams
 // This block covers iterative appending
 struct IterativeReconstructionAppendParams
 {
-	// Inlier threshold for 3P->pose
-	double inlierP3PThreshold = 2.0;
-	// Maximal ransac iterations for 3P-> pose
-	int maxP3PIterations = 100000;
-	// Target error probability for 3P pose estimation
-	double gammaP3P = 0.001;
-	// Inlier threshold for 6P->pose/3P->orientation
-	double inlierP6PThreshold = 1.0;
-	// Maximal ransac iterations for 6P->pose/3P->orientation
-	int maxP6PIterations = 400000;
-	// Target error probability for 6P->pose/3P->orientation
-	double gammaP6P = 0.001;
+    // Maximal post-append iterations
+    int maxPostAppend = 8;
+    // Inlier threshold for 3P->pose
+    double inlierP3PThreshold = 2.0;
+    // Maximal ransac iterations for 3P-> pose
+    int maxP3PIterations = 100000;
+    // Target error probability for 3P pose estimation
+    double gammaP3P = 0.001;
+    // Inlier threshold for 6P->pose/3P->orientation
+    double inlierP6PThreshold = 1.0;
+    // Maximal ransac iterations for 6P->pose/3P->orientation
+    int maxP6PIterations = 400000;
+    // Target error probability for 6P->pose/3P->orientation
+    double gammaP6P = 0.001;
     // This defines how many multicameras are subject for P3P evaluation at each iteration
     size_t speculativity = 1000;
     // Minimal inlier count for hypotheis acceptance
@@ -74,7 +76,7 @@ struct IterativeReconstructionAppendParams
 // And, finally, non-linear optimization params
 struct IterativeReconstructionNonlinearOptimizationParams
 {
-	// By default only orientations and reconstructed points are subject for optimization
+    // By default only orientations and reconstructed points are subject for optimization
     ReconstructionFunctorOptimizationType optimizationParams =
         ReconstructionFunctorOptimizationType::NON_DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::DEGENERATE_ORIENTATIONS |
         ReconstructionFunctorOptimizationType::POINTS;

@@ -1,28 +1,20 @@
 #include "photostationPlacer.h"
 
 #include <unordered_map>
-#include <random>
+#include <unordered_set>
 #include <sstream>
 #include <tuple>
 #include <set>
 
-#include "featureMatchingPipeline.h"
-#include "essentialEstimator.h"
 #include "essentialFeatureFilter.h"
 #include "relativeNonCentralRansacSolver.h"
 #include "absoluteNonCentralRansacSolver.h"
 #include "multicameraTriangulator.h"
 #include "pnpSolver.h"
 #include "calibrationHelpers.h"
-#include "calibrationLocation.h"
 #include "reconstructionInitializer.h"
 #include "sceneAligner.h"
 #include "log.h"
-
-
-#ifdef WITH_TBB
-#include <tbb/task_group.h>
-#endif
 
 std::string toString(ReconstructionFunctorOptimizationErrorType type)
 {
@@ -282,7 +274,7 @@ void corecvs::PhotostationPlacer::getErrorSummary(ReconstructionFunctorOptimizat
 
 void corecvs::PhotostationPlacer::fit(int num)
 {
-	fit(optimizationParams, num);
+    fit(optimizationParams, num);
 }
 
 void corecvs::PhotostationPlacer::fit(const ReconstructionFunctorOptimizationType &params, int num)
@@ -395,7 +387,7 @@ void corecvs::PhotostationPlacer::updateTrackables()
     }
 }
 
-bool corecvs::PhotostationPlacer::appendP6P()
+bool corecvs::PhotostationPlacer::append2D()
 {
     // 1. Center scene
     // 2. Get all 2d<->2d correspondeces with already aligned fixtures
@@ -541,29 +533,36 @@ bool corecvs::PhotostationPlacer::appendP6P()
     return true;
 }
 
-bool corecvs::PhotostationPlacer::appendP3P(CameraFixture *f)
+void corecvs::PhotostationPlacer::appendTracks()
 {
-    // 1. Center scene
-    // 2. Get all 3d<->2d correspondeces with already constructed pointcloud
-    // 3. Run solver
-    // 4. Return true if solution meets inlier threshold and gives enough confidence
-    CORE_ASSERT_TRUE_S(false && f);
-    return false;
+    // !!! This goes to reconstruction scene !!!
+    // Get 2D->3D coreespondences from scene
+    // Append all satisfying
+}
+
+void corecvs::PhotostationPlacer::createTracks()
+{
+    // !!! This goes to reconstruction scene !!!
+    // Get 2D->2D correspondences from scene
+    // Create new points for all satisfying
 }
 
 
-void corecvs::PhotostationPlacer::testNewPipeline()
+void corecvs::PhotostationPlacer::initialize()
 {
-    // 0. Detect features
-    scene->detectAllFeatures(featureDetectionParams);
-    // 1. Select multicams with most matches
+/*
+ * This goes to initialize() section
+ */
     std::unordered_map<std::pair<CameraFixture*, CameraFixture*>, int> cntr, cntrGood;
+    std::unordered_set<corecvs::CameraFixture*> allowed(scene->placingQueue.begin(), scene->placingQueue.begin() + speculativity);
     for (auto& first: scene->matches)
         for (auto& second: first.second)
         {
             auto A = first.first.u, B = second.first.u;
             if (A > B)
                 std::swap(A, B);
+            if (!allowed.count(A) || !allowed.count(B))
+                continue;
             cntr[std::make_pair(A, B)] += second.second.size();
             for (auto& f: second.second)
                 if (std::get<2>(f) < b2bRansacP6RPThreshold)
@@ -651,11 +650,6 @@ void corecvs::PhotostationPlacer::testNewPipeline()
         std::remove(scene->placingQueue.begin(), scene->placingQueue.end(), psA);
         std::remove(scene->placingQueue.begin(), scene->placingQueue.end(), psB);
         scene->placingQueue.resize(scene->placingQueue.size() - 2);
-        SceneAligner::TryAlign(scene, tform, scale);
-        std::cout << tform << scale << "<<<< tform" << std::endl;
-
-        for (auto& cf: scene->placedFixtures)
-            std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ scene->placedFixtures[0]->location.rotor.conjugated()) << std::endl;
         break;
     }
     if (!initialized)
@@ -665,8 +659,11 @@ void corecvs::PhotostationPlacer::testNewPipeline()
         std::cout << "FAILFAILFAILFAILFAILFAIL" << std::endl;
     }
     CORE_ASSERT_TRUE_S(initialized);
+}
 
-    // 3. Create twopointcloud
+void corecvs::PhotostationPlacer::postAppend()
+{
+#if 0
     scene->matches = scene->matchesCopy;
     create2PointCloud();
     std::cout << scene->trackedFeatures.size() << " reconstructed points" << std::endl;
@@ -681,6 +678,45 @@ void corecvs::PhotostationPlacer::testNewPipeline()
         std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ scene->placedFixtures[0]->location.rotor.conjugated()) << std::endl;
     create2PointCloud();
     std::cout << scene->trackedFeatures.size() << " reconstructed points after fit and align" << std::endl;
+#endif
+    corecvs::Affine3DQ tform;
+    double scale = -1.0;
+    if (!scene->is3DAligned)
+    {
+        SceneAligner::TryAlign(scene, tform, scale);
+        std::cout << tform << scale << "<<<< tform" << std::endl;
+    }
+    auto params = optimizationParams;
+    if (!scene->is3DAligned)
+        params = params & ~(ReconstructionFunctorOptimizationType::DEGENERATE_TRANSLATIONS| ReconstructionFunctorOptimizationType::DEGENERATE_ORIENTATIONS);
+
+    for (int i = 0; i < maxPostAppend; ++i)
+    {
+        std::cout << "PATA: " << i << " / " << maxPostAppend << std::endl;
+        auto pcnt = scene->trackedFeatures.size();
+        auto ref = scene->placedFixtures[0]->location.rotor.conjugated();
+        for (auto& cf: scene->placedFixtures)
+            std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ ref) << std::endl;
+        std::cout << "B:    " << pcnt << " reconstructed points" << std::endl;
+
+        appendTracks();
+        std::cout << "AA:   " << pcnt << " reconstructed points" << std::endl;
+        createTracks();
+        std::cout << "AA&C: " << pcnt << " reconstructed points" << std::endl;
+        auto acnt = scene->trackedFeatures.size();
+        if (acnt == pcnt)
+            break;
+        fit(params, postAppendNonlinearIterations);
+    }
+}
+
+void corecvs::PhotostationPlacer::testNewPipeline()
+{
+    // 0. Detect features
+    scene->detectAllFeatures(featureDetectionParams);
+    // 1. Select multicams with most matches
+    // 3. Create twopointcloud
+    initialize();
     /*
      * 4. Append pss iteratively
      *       a) update all P3Ps
@@ -699,59 +735,26 @@ void corecvs::PhotostationPlacer::testNewPipeline()
         std::cout << "PAINTING" << std::endl;
         paintTracksOnImages(true);
         std::cout << "PAINTED" << std::endl;
-        if (!appendPs() && !appendP6P())
+        if (!append3D() && !append2D())
         {
             std::cout << "RECONSTRUCTION FAILED!!!1111" << std::endl;
-//            CORE_ASSERT_TRUE_S(false);
             return;
         }
-        if (!scene->is3DAligned)
-        {
-            corecvs::Affine3DQ transform;
-            double scale;
-            SceneAligner::TryAlign(scene, transform, scale);
-            fit(optimizationParams & ~(ReconstructionFunctorOptimizationType::DEGENERATE_TRANSLATIONS | (ReconstructionFunctorOptimizationType::DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::TUNE_GPS)), postAppendNonlinearIterations);
-        }
-        else
-        {
-            fit(optimizationParams, postAppendNonlinearIterations);
-        }
-        create2PointCloud();
-        std::cout << scene->trackedFeatures.size() << " reconstructed points" << std::endl;
-        for (size_t aId = 0; aId + 1 < scene->placedFixtures.size(); ++aId)
-        {
-            for (size_t bId = aId + 1; bId + 1 < scene->placedFixtures.size(); ++bId)
-            {
-                scene->buildTracks(*scene->placedFixtures.rbegin(), scene->placedFixtures[aId], scene->placedFixtures[bId], trackInlierThreshold, distanceLimit);
-            }
-        }
+        postAppend();
         for (auto& cf: scene->placedFixtures)
             std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ scene->placedFixtures[0]->location.rotor.conjugated()) << std::endl;
         scene->printTrackStats();
     }
 }
 
-bool corecvs::PhotostationPlacer::appendPs()
+/*
+ * append3D() becomes append3D()
+ * append2D() becomes append2D()
+ */
+bool corecvs::PhotostationPlacer::append3D()
 {
     CORE_ASSERT_TRUE_S(speculativity > 0);
     scene->validateAll();
-#if 0
-    if (scene->state == ReconstructionState::MATCHED)
-    {
-        CORE_ASSERT_TRUE_S(scene->placedFixtures.size() < 2);
-        if (scene->placedFixtures.size())
-        {
-            addSecondPs();
-            return true;
-        }
-        else
-        {
-            addFirstPs();
-            return true;
-        }
-        return false;
-    }
-#endif
     CORE_ASSERT_TRUE_S(scene->state == ReconstructionState::TWOPOINTCLOUD ||
             scene->state == ReconstructionState::APPENDABLE);
     // Here we first update speculatively selected CameraFixtures, and then
@@ -776,7 +779,6 @@ bool corecvs::PhotostationPlacer::appendPs()
     std::cout << "Choosing to append " << psApp->name << " because it had " << maxInliers << " inliers" << std::endl;
     for (auto ptr: scene->placedFixtures)
         std::cout << ptr->name << " " << ptr->location.shift << " " << ptr->location.rotor << std::endl;
-//    CameraFixture* psApp = scene->placingQueue[0];
     std::cout << "Placing #" << psApp->name << std::endl;
     L_ERROR << "Placing " << psApp->name ;
     L_ERROR << "Computing tracks" ;
@@ -784,8 +786,6 @@ bool corecvs::PhotostationPlacer::appendPs()
     std::cout << "Total " << hypos.size() << " possible tracks" << std::endl;
     L_ERROR << "Computing P3P" ;
 
- // corecvs::AbsoluteNonCentralRansacSolverParams params;
-//  AbsoluteNonCentralRansacSolver solver(psApp, hypos, params);
     switch(scene->initializationData[psApp].initializationType)
     {
         default:

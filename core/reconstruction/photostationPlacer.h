@@ -34,7 +34,7 @@ public:
     void create2PointCloud(CameraFixture* A, CameraFixture* B);
     corecvs::Affine3DQ staticInit(CameraFixture* fixture, std::vector<SceneFeaturePoint*> &staticPoints);
     void pruneTracks();
-    bool appendPs();
+    bool append3D();
 
     void fit(int num);
     void fit(const ReconstructionFunctorOptimizationType& optimizationSet = ReconstructionFunctorOptimizationType::NON_DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::POINTS | ReconstructionFunctorOptimizationType::FOCALS | ReconstructionFunctorOptimizationType::PRINCIPALS, int num = 100);
@@ -44,8 +44,17 @@ public:
     void getErrorSummary(ReconstructionFunctorOptimizationErrorType errorType);
     void getErrorSummaryAll();
 
+    // Tries to select 2 fixtures and align them
+    void initialize();
+    // Typical post-append actions
+    void postAppend();
+    // Appends 3D-tracks with new correspondences
+    void appendTracks();
+    // Creates new 3D-tracks
+    void createTracks();
+
     // Tries to append f using P6P (with 2d<->2d correspondences)
-    bool appendP6P();
+    bool append2D();
     // Tries to append f using P3P (with 3d<->2d correspondences
     bool appendP3P(CameraFixture* f);
 
