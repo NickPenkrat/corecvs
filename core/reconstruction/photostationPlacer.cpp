@@ -545,6 +545,10 @@ void corecvs::PhotostationPlacer::createTracks()
     // !!! This goes to reconstruction scene !!!
     // Get 2D->2D correspondences from scene
     // Create new points for all satisfying
+    for (auto& psA: scene->placedFixtures)
+        for (auto& psB: scene->placedFixtures)
+            if (psA < psB)
+                scene->buildTracks(psA, psB, trackInlierThreshold, distanceLimit);
 }
 
 
@@ -853,6 +857,7 @@ bool corecvs::PhotostationPlacer::append3D()
 #if 0
     tryAlign();
 #endif
+#if 0
     L_ERROR << "Building tracks" ;
     for (size_t aId = 0; aId < scene->placedFixtures.size(); ++aId)
     {
@@ -862,6 +867,7 @@ bool corecvs::PhotostationPlacer::append3D()
         }
     }
     std::cout << "TRACKS AFTER: " << scene->trackedFeatures.size() << std::endl;
+#endif
     scene->placedFixtures.push_back(psApp);
     scene->placingQueue.resize(std::remove(scene->placingQueue.begin(), scene->placingQueue.end(), psApp) - scene->placingQueue.begin());
     scene->validateAll();

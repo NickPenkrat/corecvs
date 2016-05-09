@@ -637,50 +637,37 @@ std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, S
     return res;
 }
 
-void corecvs::ReconstructionFixtureScene::buildTracks(CameraFixture *psA, CameraFixture *psB, CameraFixture *psC, double trackInlierThreshold, double distanceLimit)
+void corecvs::ReconstructionFixtureScene::buildTracks(CameraFixture *psA, CameraFixture *psB, double trackInlierThreshold, double distanceLimit)
 {
-    const int NPS = 3;
-    const int NPAIRS = 3;
-    int pairIdx[NPAIRS][2] = {{0, 1}, {1, 2}, {0, 2}};
+    const int NPS = 2;
+    const int NPAIRS = 1;
+    int pairIdx[NPAIRS][2] = {{0, 1}};
 
-    CameraFixture*        ps[NPS] = {psA, psB, psC};
-    FixtureCamera*       cam[NPS] = {  0,   0,   0};
-    int                   pt[NPS] = {  0,   0,   0};
-    FixtureCamera* &camA = cam[0], *&camB = cam[1], *&camC = cam[2];
-    int &ptA = pt[0], &ptB = pt[1], &ptC = pt[2];
+    CameraFixture*        ps[NPS] = {psA, psB};
+    FixtureCamera*       cam[NPS] = {  0,   0};
+    int                   pt[NPS] = {  0,   0};
+    FixtureCamera* &camA = cam[0], *&camB = cam[1];
+    int &ptA = pt[0], &ptB = pt[1];
     WPP                  wpp[NPS];
     corecvs::Vector2dd    kp[NPS];
   //corecvs::Vector2dd &kpA = kp[0], &kpB = kp[1], &kpC = kp[2];
 
     std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> free[NPAIRS];
-    auto &freeAB = free[0], &freeBC = free[1]/*, &freeAC = free[2]*/;
+    auto &freeAB = free[0];
 
     for (int i = 0; i < NPAIRS; ++i)
         free[i] = getUnusedFeatures(ps[pairIdx[i][0]], ps[pairIdx[i][1]]);
 
-    std::vector<std::tuple<FixtureCamera*, int, FixtureCamera*, int, FixtureCamera*, int>> trackCandidates;
+    std::vector<std::tuple<FixtureCamera*, int, FixtureCamera*, int>> trackCandidates;
 
-    for (auto& mAC: free[2])
+    for (auto& mAB: free[0])
     {
-        camA = std::get<0>(mAC.first);
-        camC = std::get<1>(mAC.first);
-        ptA = std::get<2>(mAC.first);
-        ptC = mAC.second;
+        camA = std::get<0>(mAB.first);
+        camB = std::get<1>(mAB.first);
+        ptA = std::get<2>(mAB.first);
+        ptB = mAB.second;
 
-        for (auto& camB: psB->cameras)
-        {
-            auto idAB = std::make_tuple(camA, camB, ptA);
-            if (!free[0].count(idAB))
-                continue;
-
-            ptB = freeAB[idAB];
-            auto idBC = std::make_tuple(camB, camC, ptB);
-            if (!freeBC.count(idBC))
-                continue;
-            int ptC2 = freeBC[idBC];
-            if (ptC == ptC2)
-                trackCandidates.emplace_back(camA, ptA, camB, ptB, camC, ptC);
-        }
+        trackCandidates.emplace_back(camA, ptA, camB, ptB);
     }
     L_ERROR << trackCandidates.size() << " candidate tracks";
     L_ERROR << "Inlier threshold: " << trackInlierThreshold;
@@ -692,10 +679,8 @@ void corecvs::ReconstructionFixtureScene::buildTracks(CameraFixture *psA, Camera
     {
         camA = std::get<0>(c);
         camB = std::get<2>(c);
-        camC = std::get<4>(c);
         ptA = std::get<1>(c);
         ptB = std::get<3>(c);
-        ptC = std::get<5>(c);
 
         bool alreadyIn = false;
         for(int i = 0; i < NPS; ++i)

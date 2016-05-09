@@ -63,6 +63,7 @@ class ReconstructionFixtureScene : public FixtureScene
 {
 public:
     ReconstructionFixtureScene();
+    virtual ~ReconstructionFixtureScene() {};
 
     virtual void deleteCamera        (FixtureCamera *camera);
     virtual void deleteCameraFixture (CameraFixture *fixture, bool recursive = true);
@@ -74,7 +75,8 @@ public:
     //\brief Detect and match features between all images
     void detectAllFeatures(const FeatureDetectionParams &params);
     std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> getPossibleTracks(CameraFixture* ps);
-    void buildTracks(CameraFixture *psA, CameraFixture *psB, CameraFixture *psC, double trackInlierThreshold, double distanceLimit);
+    // This routine builds tracks from 2D<->2D correspondences
+    void buildTracks(CameraFixture *psA, CameraFixture *psB, double trackInlierThreshold, double distanceLimit);
     std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> getUnusedFeatures(CameraFixture *psA, CameraFixture *psB);
     std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd, double>> getPhotostationMatches(const std::vector<CameraFixture*> &train, CameraFixture *query);
     void filterEssentialRansac(WPP a, WPP b, EssentialFilterParams params);
