@@ -57,6 +57,53 @@ public:
         return Plane3d::NormalFromPoints(p1(), p2(), p3());
     }
 
+    bool intersectWithP(Ray3d &ray, double &resT)
+    {
+        double EPSILON = 0.00001;
+
+        //Find vectors for two edges sharing V1
+        Vector3dd e1 = p2() - p1();
+        Vector3dd e2 = p3() - p1();
+
+        Vector3dd p =  ray.a ^ e2;
+
+        /* This is the volume of the parallepiped built on two edges and a ray origin */
+        double vol = e1 & p;
+        if(vol > -EPSILON && vol < EPSILON)
+            return false;
+
+        double inv_vol = 1.0 / vol;
+
+        Vector3dd T = ray.p - p1();
+
+        double u = (T & p) * inv_vol;
+        if(u < 0.0 || u > 1.0) {
+            return false;
+        }
+
+        Vector3dd Q = T ^ e1;
+
+        double v = (ray.a & Q) * inv_vol;
+
+        if(v < 0.f || u + v  > 1.f) return false;
+
+        double t = (e2 & Q) * inv_vol;
+
+        resT = t;
+        return true;
+    }
+
+    bool intersectWith(Ray3d &ray, Vector3dd &point)
+    {
+        double t;
+        if (intersectWithP(ray, t))
+        {
+            point = ray.getPoint(t);
+            return true;
+        }
+        return false;
+    }
+
     /** NOTE: This could swap the normal **/
     void sortByY() {
         if (p1().y() > p2().y()) std::swap(p1(), p2());
@@ -64,11 +111,14 @@ public:
         if (p1().y() > p2().y()) std::swap(p1(), p2());
     }
 
+
+
 };
 
 typedef GenericTriangle<Vector3d<int32_t> > Triangle32;
-typedef GenericTriangle<Vector3d<double> > Triangle3dd;
 typedef GenericTriangle<Vector2d<double> > Triangle2dd;
+
+typedef GenericTriangle<Vector3d<double> > Triangle3dd;
 
 
 class PointPath : public vector<Vector2dd>

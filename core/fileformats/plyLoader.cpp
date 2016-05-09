@@ -174,19 +174,21 @@ int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
     }
 
     /* Checking if we support this format? */
-    bool supportVertex =
-            (objProps[OBJ_VERTEX].size() == 3 &&
+    bool simpleVertex =
+            (objProps[OBJ_VERTEX].size() >= 3 &&
              objProps[OBJ_VERTEX][0].name == PROP_NAME_X &&
              objProps[OBJ_VERTEX][1].name == PROP_NAME_Y &&
-             objProps[OBJ_VERTEX][2].name == PROP_NAME_Z) ||
-            (objProps[OBJ_VERTEX].size() == 6 &&
+             objProps[OBJ_VERTEX][2].name == PROP_NAME_Z);
+
+    bool vertexColor =
+            (objProps[OBJ_VERTEX].size() >= 6 &&
              objProps[OBJ_VERTEX][0].name == PROP_NAME_X &&
              objProps[OBJ_VERTEX][1].name == PROP_NAME_Y &&
              objProps[OBJ_VERTEX][2].name == PROP_NAME_Z &&
              objProps[OBJ_VERTEX][3].name == PROP_NAME_RED &&
              objProps[OBJ_VERTEX][4].name == PROP_NAME_GREEN &&
              objProps[OBJ_VERTEX][5].name == PROP_NAME_BLUE);
-    bool vertexColor = (objProps[OBJ_VERTEX].size() == 6);
+    bool supportVertex = simpleVertex | vertexColor;
 
     bool supportFace =
             (objProps[OBJ_FACE].size() == 0 ) ||

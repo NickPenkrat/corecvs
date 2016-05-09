@@ -19,7 +19,11 @@ void RaytraceRenderer::trace(RayIntersection &intersection)
 
     Raytraceable *obj = intersection.object;
 
-    intersection.normal = obj->normal(intersection.ray.getPoint(intersection.t));
+    obj->normal(intersection.ray.getPoint(intersection.t), intersection.normal);
+
+    if ((intersection.normal & intersection.ray.a) > 0 ) {
+        intersection.normal = -intersection.normal;
+    }
 
     if (obj->material == NULL)
         intersection.ownColor = obj->color;
@@ -37,7 +41,37 @@ void RaytraceRenderer::trace(RGB24Buffer *buffer)
     energy = new AbstractBuffer<TraceColor>(buffer->getSize());
     markup = new AbstractBuffer<int>(buffer->getSize());
 
-    for (int i = 0; i < buffer->h; i++)
+    int inc = 0;
+
+    parallelable_for(0, buffer->h, [&](const BlockedRange<int>& r )
+        {
+            for (int i = r.begin() ; i < r.end(); i++)
+            {
+                for (int j = 0; j < buffer->w; j++)
+                {
+                    currentX = j;
+                    currentY = i;
+                    Vector2dd pixel(j, i);
+                    Ray3d ray = Ray3d(intrisics.reverse(pixel), Vector3dd::Zero());
+                    ray.normalise();
+
+                    RayIntersection intersection;
+                    intersection.ray = ray;
+                    intersection.weight = 1.0;
+                    intersection.depth = 0;
+                    trace(intersection);
+                    if (intersection.object != NULL) {
+                        energy->element(i, j) = intersection.ownColor;
+                    }
+                }
+                SYNC_PRINT(("\r[%d]", inc));
+                inc++;
+            }
+        }
+
+    );
+
+    /*for (int i = 0; i < buffer->h; i++)
     {
         for (int j = 0; j < buffer->w; j++)
         {
@@ -55,8 +89,9 @@ void RaytraceRenderer::trace(RGB24Buffer *buffer)
             if (intersection.object != NULL) {
                 energy->element(i, j) = intersection.ownColor;
             }
+            SYNC_PRINT(("\r[%d %d]", i, j));
         }
-    }
+    }*/
 
     for (int i = 0; i < buffer->h; i++)
     {
@@ -121,9 +156,9 @@ bool RaytraceableSphere::intersect(RayIntersection &intersection)
     return false;
 }
 
-Vector3dd RaytraceableSphere::normal(const Vector3dd &vector)
+void RaytraceableSphere::normal(const Vector3dd &vector, Vector3dd &normal)
 {
-    return Vector3dd( (vector - mSphere.c) / mSphere.r);
+    normal = Vector3dd( (vector - mSphere.c) / mSphere.r);
 }
 
 bool RaytraceableSphere::inside(Vector3dd &point)
@@ -162,9 +197,9 @@ bool RaytraceableUnion::intersect(RayIntersection &intersection)
     return true;
 }
 
-Vector3dd RaytraceableUnion::normal(const Vector3dd & /*vector*/)
+void RaytraceableUnion::normal(const Vector3dd &vector, Vector3dd &normal)
 {
-    return Vector3dd::OrtX();
+    return;
 }
 
 bool RaytraceableUnion::inside(Vector3dd &point)
@@ -196,9 +231,9 @@ bool RaytraceablePlane::intersect(RayIntersection &intersection)
     return false;
 }
 
-Vector3dd RaytraceablePlane::normal(const Vector3dd &vector)
+void RaytraceablePlane::normal(const Vector3dd &vector, Vector3dd &normal)
 {
-    return mPlane.normal();
+    normal = mPlane.normal();
 }
 
 bool RaytraceablePlane::inside(Vector3dd &point)
@@ -348,4 +383,122 @@ void RaytraceableChessMaterial::getColor(RayIntersection &ray, RaytraceRenderer 
 
     bool white = (((int)intersection.x()) % 2) ^ (((int)intersection.y()) % 2) ^ (((int)intersection.z()) % 2);
     ray.ownColor = (!b1 ^  !b2 ^ !b3) ? TraceColor::Zero() : RGBColor::White().toDouble();
+}
+
+
+bool RaytraceableTriangle::intersect(RayIntersection &intersection)
+{
+    intersection.object = NULL;
+    double t = 0;
+
+    if (!mTriangle.intersectWithP(intersection.ray, t))
+    {
+        return false;
+    }
+    if (t > 0.000001) {
+        intersection.t = t;
+        intersection.object = this;
+        return true;
+    }
+    return false;
+}
+
+void RaytraceableTriangle::normal(const Vector3dd &vector, Vector3dd &normal)
+{
+    normal = mTriangle.getNormal();
+}
+
+bool RaytraceableTriangle::inside(Vector3dd &point)
+{
+    return false;
+}
+
+RaytraceableMesh::RaytraceableMesh(Mesh3D *mesh) :
+    mMesh(mesh)
+{
+
+
+}
+
+bool RaytraceableMesh::intersect(RayIntersection &intersection)
+{
+
+    RayIntersection best = intersection;
+    best.t = std::numeric_limits<double>::max();
+//    SYNC_PRINT(("RaytraceableMesh::intersect(): entered\n"));
+
+    for (int i = 0; i < mMesh->faces.size(); i++)
+    {
+        Triangle3dd triangle = mMesh->getFaceAsTrinagle(i);
+
+        double t = 0;
+        if (!triangle.intersectWithP(intersection.ray, t))
+        {
+            continue;
+        }
+
+        if (t > 0.000001 && t < best.t)
+        {
+            best.t = t;
+            best.normal = triangle.getNormal();
+            best.object = this;
+        }
+    }
+
+//    SYNC_PRINT(("RaytraceableMesh::intersect(): passed\n"));
+
+    if (best.t == std::numeric_limits<double>::max()) {
+        return false;
+    }
+
+    intersection = best;
+    return true;
+
+}
+
+void RaytraceableMesh::normal(const Vector3dd &vector, Vector3dd &normal)
+{
+    return;
+}
+
+bool RaytraceableMesh::inside(Vector3dd &point)
+{
+
+}
+
+
+
+
+bool RaytraceableTransform::intersect(RayIntersection &intersection)
+{
+    RayIntersection trans = intersection;
+    trans.ray.p = mMatrixInv * intersection.ray.p;
+    trans.ray.a = mMatrixInv * intersection.ray.a;
+    double len = trans.ray.a.l2Metric();
+    trans.ray.a /= len;
+
+    //trans.ray.a.normalise();
+
+    if (mObject->intersect(trans)) {
+        intersection.object = this;
+        intersection.t = trans.t / len;
+        //intersection.normal = mMatrix.inverted() * trans.normal;
+        return true;
+    }
+    return false;
+}
+
+void RaytraceableTransform::normal(const Vector3dd &vector, Vector3dd &normal)
+{
+    //normal = Vector3dd::OrtZ();
+    Vector3dd p = mMatrixInv * vector;
+    mObject->normal(p, normal);
+    normal = mMatrix * normal;
+    normal.normalise();
+}
+
+bool RaytraceableTransform::inside(Vector3dd &point)
+{
+    Vector3dd p = mMatrix * point;
+    return mObject->inside(p);
 }

@@ -1,7 +1,9 @@
 #ifndef RAYTRACERENDERER_H
 #define RAYTRACERENDERER_H
 
+#include "polygons.h"
 #include "calibrationCamera.h"
+#include "mesh3d.h"
 
 namespace corecvs {
 
@@ -71,10 +73,30 @@ public:
     RaytraceableMaterial *material = NULL;
 
     virtual bool intersect(RayIntersection &intersection) = 0;
-    virtual Vector3dd normal(const Vector3dd &vector) = 0;
+    virtual void normal(const Vector3dd &vector, Vector3dd &normal) = 0;
     virtual bool inside (Vector3dd &point) = 0;
 
     virtual ~Raytraceable();
+};
+
+class RaytraceableTransform : public Raytraceable
+{
+public:
+    Matrix44 mMatrix;
+    Matrix44 mMatrixInv;
+
+    Raytraceable *mObject;
+
+    RaytraceableTransform(Raytraceable *object, const Matrix44 &matrix) :
+        mMatrix(matrix),
+        mObject(object)
+    {
+        mMatrixInv = mMatrix.inverted();
+    }
+
+    virtual bool intersect(RayIntersection &intersection) override;
+    virtual void normal(const Vector3dd &vector, Vector3dd &normal)   override;
+    virtual bool inside (Vector3dd &point)  override;
 };
 
 class RaytraceableSphere : public Raytraceable{
@@ -91,7 +113,7 @@ public:
     }
 
     virtual bool intersect(RayIntersection &intersection) override;
-    virtual Vector3dd normal(const Vector3dd &vector)  override;
+    virtual void normal(const Vector3dd &vector, Vector3dd &normal)   override;
     virtual bool inside (Vector3dd &point)  override;
 };
 
@@ -110,7 +132,38 @@ public:
     }
 
     virtual bool intersect(RayIntersection &intersection) override;
-    virtual Vector3dd normal(const Vector3dd &vector)  override;
+    virtual void normal(const Vector3dd &vector, Vector3dd &normal) override;
+    virtual bool inside (Vector3dd &point)  override;
+};
+
+
+class RaytraceableTriangle : public Raytraceable {
+public:
+    static const double EPSILON;
+
+    Triangle3dd mTriangle;
+
+    RaytraceableTriangle(const Triangle3dd &triangle) :
+        mTriangle(triangle)
+    {
+    }
+
+    virtual bool intersect(RayIntersection &intersection) override;
+    virtual void normal(const Vector3dd &vector, Vector3dd &normal) override;
+    virtual bool inside (Vector3dd &point)  override;
+};
+
+
+class RaytraceableMesh : public Raytraceable {
+public:
+    static const double EPSILON;
+
+    Mesh3D *mMesh;
+
+    RaytraceableMesh(Mesh3D *mesh);
+
+    virtual bool intersect(RayIntersection &intersection) override;
+    virtual void normal(const Vector3dd &vector, Vector3dd &normal) override;
     virtual bool inside (Vector3dd &point)  override;
 };
 
@@ -120,7 +173,7 @@ public:
     vector<Raytraceable *> elements;
 
     virtual bool intersect(RayIntersection &intersection) override;
-    virtual Vector3dd normal(const Vector3dd &vector)  override;
+    virtual void normal(const Vector3dd &vector, Vector3dd &normal) override;
     virtual bool inside (Vector3dd &point)  override;
 };
 
