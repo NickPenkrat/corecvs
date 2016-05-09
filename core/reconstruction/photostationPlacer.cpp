@@ -411,11 +411,11 @@ bool corecvs::PhotostationPlacer::append2D()
 
     std::cout << "MEANSHIFTED" << std::endl;
 
-    std::vector<std::pair<corecvs::CameraFixture*, decltype(scene->getPhotostationMatches({}, 0))>> matches;
+    std::vector<std::pair<corecvs::CameraFixture*, decltype(scene->getFixtureMatches({}, 0))>> matches;
     for (size_t iii = 0; iii < speculativity && iii < scene->placingQueue.size(); ++iii)
     {
         auto fixture = scene->placingQueue[iii];
-        matches.emplace_back(fixture, scene->getPhotostationMatches(scene->placedFixtures, fixture));
+        matches.emplace_back(fixture, scene->getFixtureMatches(scene->placedFixtures, fixture));
     }
 
     std::vector<std::tuple<double, double, corecvs::CameraFixture*, corecvs::Affine3DQ>> log;
@@ -437,7 +437,7 @@ bool corecvs::PhotostationPlacer::append2D()
 
         std::cout << "STARTING WITH " << B->name << std::endl;
 
-        auto matches = scene->getPhotostationMatches(scene->placedFixtures, psB);
+        auto matches = p.second;
         RelativeNonCentralRansacSolver::MatchContainer rm, mm;
         for (auto&t : matches)
         {
@@ -605,7 +605,7 @@ void corecvs::PhotostationPlacer::initialize()
         params.essentialFilterParams.targetGamma = essentialTargetGamma;
         scene->filterEssentialRansac(std::vector<CameraFixture*>{psA}, std::vector<CameraFixture*>{psB}, params.essentialFilterParams);
 
-        auto matches = scene->getPhotostationMatches({psA}, psB);
+        auto matches = scene->getFixtureMatches({psA}, psB);
         RelativeNonCentralRansacSolver::MatchContainer rm, mm;
         for (auto&t : matches)
         {

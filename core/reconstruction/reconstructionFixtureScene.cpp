@@ -779,10 +779,24 @@ std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> corecvs
 }
 
 std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd, double>>
-corecvs::ReconstructionFixtureScene::getPhotostationMatches(const std::vector<CameraFixture*> &train, CameraFixture *query)
+corecvs::ReconstructionFixtureScene::getFixtureMatches(const std::vector<CameraFixture*> &train, CameraFixture *query)
+{
+    std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd, double>> res;
+    auto idxs = getFixtureMatchesIdx(train, query);
+    for (auto& it: idxs)
+    {
+        auto &kpsA = keyPoints[std::get<0>(it)],
+             &kpsB = keyPoints[std::get<2>(it)];
+        res.emplace_back(std::get<0>(it), kpsA[std::get<1>(it)].first, std::get<2>(it), kpsB[std::get<3>(it)].first, std::get<4>(it));
+    }
+    return res;
+}
+
+std::vector<std::tuple<WPP, int, WPP, int, double>>
+corecvs::ReconstructionFixtureScene::getFixtureMatchesIdx(const std::vector<CameraFixture*> &train, CameraFixture *query)
 {
     WPP wcQuery = WPP(query, WPP::VWILDCARD), wcTarget;
-    std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd, double>> res;
+    std::vector<std::tuple<WPP, int, WPP, int, double>> res;
 
     for (auto& ref1: matches)
     {
@@ -809,9 +823,7 @@ corecvs::ReconstructionFixtureScene::getPhotostationMatches(const std::vector<Ca
                 int kpB = std::get<1>(m);
                 if (swap)
                     std::swap(kpA, kpB);
-                auto pA = kpsA[kpA].first;
-                auto pB = kpsB[kpB].first;
-                res.emplace_back(idA, pA, idB, pB, std::get<2>(m));
+                res.emplace_back(idA, kpA, idB, kpB, std::get<2>(m));
             }
         }
     }

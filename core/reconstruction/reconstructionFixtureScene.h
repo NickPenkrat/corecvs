@@ -77,8 +77,11 @@ public:
     std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> getPossibleTracks(CameraFixture* ps);
     // This routine builds tracks from 2D<->2D correspondences
     void buildTracks(CameraFixture *psA, CameraFixture *psB, double trackInlierThreshold, double distanceLimit);
+    // This routine appends existing tracks with inlying correspondences
+    void appendTracks(CameraFixture *ps, double trackInlierThreshold, double distanceLimit);
     std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> getUnusedFeatures(CameraFixture *psA, CameraFixture *psB);
-    std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd, double>> getPhotostationMatches(const std::vector<CameraFixture*> &train, CameraFixture *query);
+    std::vector<std::tuple<WPP, int, WPP, int, double>> getFixtureMatchesIdx(const std::vector<CameraFixture*> &train, CameraFixture *query);
+    std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd, double>> getFixtureMatches(const std::vector<CameraFixture*> &train, CameraFixture *query);
     void filterEssentialRansac(WPP a, WPP b, EssentialFilterParams params);
     void filterEssentialRansac(const std::vector<CameraFixture*> &lhs, const std::vector<CameraFixture*> &rhs, EssentialFilterParams params);
     void remove(WPP a, WPP b, std::vector<int> idx);
