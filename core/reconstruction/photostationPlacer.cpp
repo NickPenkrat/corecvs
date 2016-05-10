@@ -234,7 +234,7 @@ void corecvs::PhotostationPlacer::getErrorSummary(ReconstructionFunctorOptimizat
             }
         }
 
-    std::cout << toString(errorType) << "RMSE [features]: " << std::sqrt(totalsqr / totalcnt) << std::endl;
+    std::cout << toString(errorType) << "RMSE [" << scene->trackedFeatures.size() << " features]: " << std::sqrt(totalsqr / totalcnt) << std::endl;
     totalsqr = 0.0;
     totalcnt = 0.0;
     for (auto& t: scene->staticPoints)
@@ -268,7 +268,7 @@ void corecvs::PhotostationPlacer::getErrorSummary(ReconstructionFunctorOptimizat
                     break;
             }
         }
-    std::cout << toString(errorType) << "RMSE [static points]: " << std::sqrt(totalsqr / totalcnt) << std::endl;
+    std::cout << toString(errorType) << "RMSE [" << scene->staticPoints.size() << " static points]: " << std::sqrt(totalsqr / totalcnt) << std::endl;
 
 }
 
@@ -358,12 +358,25 @@ void corecvs::PhotostationPlacer::updateTrackables()
 {
     std::cout << "Starting speculative P3P update" << std::endl;
     activeInlierCount.clear();
+    corecvs::Vector3dd mean(0, 0, 0);
+    for (auto& ppp: scene->placedFixtures)
+        mean += ppp->location.shift;
+    mean = mean / scene->placedFixtures.size();
+    corecvs::Quaternion r(0, 0, 0, 1);
+    corecvs::Affine3DQ tf(r, -mean);
+    getErrorSummaryAll();
+    scene->transform(tf);
+    getErrorSummaryAll();
+
     for (size_t i = 0; i < speculativity && i < scene->placingQueue.size(); ++i)
     {
         auto cf = scene->placingQueue[i];
         std::cout << "\tRunning with " << cf->name << " ";
         if (activeEstimates.count(cf))
+        {
             std::cout << "already have estimate: " << activeEstimates[cf].shift << activeEstimates[cf].rotor;
+            activeEstimates[cf].shift -= mean;
+        }
         std::cout << std::endl;
 
         auto hypos = scene->getPossibleTracks(cf);
@@ -375,16 +388,26 @@ void corecvs::PhotostationPlacer::updateTrackables()
         std::cout << "POST-CTR" << std::endl;
 
         solver.forcePosition = scene->initializationData[cf].initializationType == FixtureInitializationType::GPS && scene->is3DAligned;
-        solver.forcedPosition = scene->initializationData[cf].initData.shift;
+        solver.forcedPosition = scene->initializationData[cf].initData.shift - mean;
+        if (!scene->is3DAligned && scene->initializationData[cf].initializationType == FixtureInitializationType::GPS)
+        {
+            solver.forceScale = true;
+            solver.forcedScale = !(mean - scene->initializationData[cf].initData.shift);
+        }
 
         solver.run();
         solver.runInliersRE();
         activeEstimates[cf] = solver.getBestHypothesis();
+        activeEstimates[cf].shift += mean;
         if (solver.forcePosition)
             activeEstimates[cf].shift = scene->initializationData[cf].initData.shift;
         activeInlierCount[cf] = solver.getInliers();
         std::cout << "Final estimate: " << activeEstimates[cf].shift << activeEstimates[cf].rotor << std::endl;
     }
+    corecvs::Affine3DQ tfi(r, mean);
+    getErrorSummaryAll();
+    scene->transform(tfi);
+    getErrorSummaryAll();
 }
 
 bool corecvs::PhotostationPlacer::append2D()
@@ -523,11 +546,6 @@ bool corecvs::PhotostationPlacer::append2D()
     tform.shift = mean;
     scene->transform(tform);
 
-    if (!scene->is3DAligned)
-    {
-        SceneAligner::TryAlign(scene, tform, scale);
-        std::cout << tform << scale << "<<<< tform" << std::endl;
-    }
     for (auto& cf: scene->placedFixtures)
         std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ scene->placedFixtures[0]->location.rotor.conjugated()) << std::endl;
     return true;
@@ -560,7 +578,7 @@ void corecvs::PhotostationPlacer::initialize()
  * This goes to initialize() section
  */
     std::unordered_map<std::pair<CameraFixture*, CameraFixture*>, int> cntr, cntrGood;
-    std::unordered_set<corecvs::CameraFixture*> allowed(scene->placingQueue.begin(), scene->placingQueue.begin() + speculativity);
+    std::unordered_set<corecvs::CameraFixture*> allowed(scene->placingQueue.begin(), scene->placingQueue.begin() + std::min(speculativity, scene->placingQueue.size()));
     for (auto& first: scene->matches)
         for (auto& second: first.second)
         {
@@ -665,6 +683,7 @@ void corecvs::PhotostationPlacer::initialize()
         std::cout << "FAILFAILFAILFAILFAILFAIL" << std::endl;
     }
     CORE_ASSERT_TRUE_S(initialized);
+    postAppend();
 }
 
 void corecvs::PhotostationPlacer::postAppend()
@@ -685,6 +704,8 @@ void corecvs::PhotostationPlacer::postAppend()
     create2PointCloud();
     std::cout << scene->trackedFeatures.size() << " reconstructed points after fit and align" << std::endl;
 #endif
+    std::cout << "PRE-ALIGN: " << std::endl;
+    getErrorSummaryAll();
     corecvs::Affine3DQ tform;
     double scale = -1.0;
     if (!scene->is3DAligned)
@@ -692,6 +713,8 @@ void corecvs::PhotostationPlacer::postAppend()
         SceneAligner::TryAlign(scene, tform, scale);
         std::cout << tform << scale << "<<<< tform" << std::endl;
     }
+    std::cout << "POST-ALIGN: " << std::endl;
+    getErrorSummaryAll();
     auto params = optimizationParams;
     if (!scene->is3DAligned)
         params = params & ~(ReconstructionFunctorOptimizationType::DEGENERATE_TRANSLATIONS| ReconstructionFunctorOptimizationType::DEGENERATE_ORIENTATIONS);
@@ -842,6 +865,7 @@ bool corecvs::PhotostationPlacer::append3D()
         }
         break;
     }
+#if 0
     std::cout << "TRACKS BEFORE: " << scene->trackedFeatures.size() << std::endl;
     if (scene->state == ReconstructionState::APPENDABLE)
     {
@@ -856,6 +880,7 @@ bool corecvs::PhotostationPlacer::append3D()
             scene->deleteFeaturePoint(ptr);
         scene->state = ReconstructionState::APPENDABLE;
     }
+#endif
 #if 0
     tryAlign();
 #endif

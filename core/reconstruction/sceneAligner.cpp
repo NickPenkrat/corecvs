@@ -157,10 +157,10 @@ bool corecvs::SceneAligner::TryAlignGPS(ReconstructionFixtureScene* scene, corec
                  observed1 = gpsFixtures[1]->location.shift,
                  observed2 = gpsFixtures[2]->location.shift;
 
-            auto expAB = (expected0 - expected2).normalised(),
-                 expAC = (expected1 - expected2).normalised();
-            auto obsAB = (observed0 - observed2).normalised(),
-                 obsAC = (observed1 - observed2).normalised();
+            auto expAB = (expected1 - expected0).normalised(),
+                 expAC = (expected2 - expected0).normalised();
+            auto obsAB = (observed1 - observed0).normalised(),
+                 obsAC = (observed2 - observed0).normalised();
 
             transformation.rotor = EstimateOrientationTransformation(expAB, expAC, obsAB, obsAC);
             transformation.shift = ShiftFromRotation(transformation.rotor, scale, observed2, expected2);
@@ -194,5 +194,11 @@ void corecvs::SceneAligner::ApplyTransformation(ReconstructionFixtureScene* scen
         if (scene->initializationData[cf].initializationType == FixtureInitializationType::FIXED)
             cf->location = scene->initializationData[cf].initData;
     }
+#if 1
+    corecvs::Affine3DQ qq;
+    qq.shift = corecvs::Vector3dd(0, 0, 0);
+    qq.rotor = corecvs::Quaternion(0, 0, 0, 1);
+    scene->transform(qq, 1.0);
+#endif
     scene->printPosStats();
 }

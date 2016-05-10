@@ -49,7 +49,7 @@ void corecvs::RelativeNonCentralRansacSolver::run()
 double corecvs::RelativeNonCentralRansacSolver::nForGamma()
 {
     double alpha = ((double)maxInliers) / matchesAll.size();
-    double N = std::log(gamma) / std::log(1.0 - std::pow(alpha, FEATURES_FOR_MODEL));
+    double N = std::log(gamma) / std::log(1.0 - std::pow(alpha, sampleSize()));
     if (alpha == 0.0)
         return maxIterations;
     return N;
@@ -206,7 +206,7 @@ void corecvs::RelativeNonCentralRansacSolver::accept(const corecvs::Affine3DQ& h
 
 double corecvs::RelativeNonCentralRansacSolver::getGamma()
 {
-    return std::pow((1.0 - std::pow(maxInliers * 1.0 / matchesAll.size(), FEATURES_FOR_MODEL)), maxIterations);
+    return std::pow((1.0 - std::pow(maxInliers * 1.0 / matchesAll.size(), sampleSize())), maxIterations);
 }
 
 

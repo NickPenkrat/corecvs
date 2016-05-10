@@ -34,6 +34,17 @@ void ReconstructionFixtureScene::printPosStats()
 {
     for (auto ptr: placedFixtures)
         std::cout << ptr->name << " " << ptr->location.shift << ptr->location.rotor << std::endl;
+    std::cout << "\t";
+    for (auto ptrA: placedFixtures)
+        std::cout << ptrA->name << "\t";
+    std::cout << std::endl;
+    for (auto ptrA: placedFixtures)
+    {
+        std::cout << ptrA->name << "\t";
+        for (auto ptrB: placedFixtures)
+            std::cout << !(ptrA->location.shift - ptrB->location.shift) << "\t";
+        std::cout << std::endl;
+    }
 }
 
 void ReconstructionFixtureScene::printMatchStats()
@@ -780,15 +791,11 @@ std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> corecvs
 
 void corecvs::ReconstructionFixtureScene::appendTracks(CameraFixture *ps, double trackInlierThreshold, double distanceLimit)
 {
-    decltype(getFixtureMatchesIdx({}, 0)) candidates;
-    for (auto& q: placedFixtures)
-        if (q != ps)
-        {
-            auto res = getFixtureMatchesIdx(placingQueue, ps);
-            candidates.insert(candidates.end(), res.begin(), res.end());
-        }
+    auto candidates = getFixtureMatchesIdx(placedFixtures, ps);
+    std::cout << "AP-CAND: " << candidates.size() << std::endl;
     // Now rebuild in order to select only the best appendable for every kp in ps
     std::unordered_map<std::pair<WPP, int>, std::set<corecvs::SceneFeaturePoint*>> mapper;
+    int tt = 0, qq = 0;
     for (auto& t: candidates)
     {
         auto idQuery = std::get<2>(t);
@@ -797,13 +804,21 @@ void corecvs::ReconstructionFixtureScene::appendTracks(CameraFixture *ps, double
         auto idTrain = std::get<0>(t);
         auto ptTrain = std::get<1>(t);
         if (!trackMap[idTrain].count(ptTrain))
+        {
+            tt++;
             continue;
+        }
         if ( trackMap[idQuery].count(ptQuery))
+        {
+            qq++;
             continue;
+        }
 
         auto track = trackMap[idTrain][ptTrain];
         mapper[std::make_pair(idQuery, ptQuery)].insert(track);
     }
+    std::cout << "AP-MAP: " << mapper.size() << std::endl;
+    std::cout << "AP-MAP failures: train is not mapped: " << tt << " query is mapped: " << qq << std::endl;
     size_t cnt = mapper.size(), app = 0;
     // Then select best-fitting track and merge 'em until error is OK
     for (auto& pat: mapper)
@@ -958,7 +973,7 @@ void corecvs::ReconstructionFixtureScene::filterEssentialRansac(WPP a, WPP b, Es
     auto& cache = essentialCache[std::make_pair(idA, idB)];
     bool useCache = std::get<2>(cache);
 
-    std::cout << (useCache ? "Starting: " : "Using existing estimate for ") << idA.u->name << idA.v->nameId << "<>" << idB.u->name << idB.v->nameId << std::endl;
+    std::cout << (!useCache ? "Starting: " : "Using existing estimate for ") << idA.u->name << idA.v->nameId << "<>" << idB.u->name << idB.v->nameId << std::endl;
 
     std::vector<std::array<corecvs::Vector2dd, 2>> features, featuresInlier;
     auto K1 = idA.v->intrinsics.getKMatrix33();

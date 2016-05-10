@@ -23,7 +23,9 @@ struct AbsoluteNonCentralRansacSolverParams
     // Big enough for P3P at ~0.05 inlier ratio
     int maxIterations = 100000;
     bool forcePosition = false;
+    bool forceScale = false;
     corecvs::Vector3dd forcedPosition = corecvs::Vector3dd(0, 0, 0);
+    double forcedScale = 1.0;
     double gamma = 0.001;
 };
 class AbsoluteNonCentralRansacSolver : public AbsoluteNonCentralRansacSolverParams
