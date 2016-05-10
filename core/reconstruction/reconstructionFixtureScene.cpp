@@ -778,6 +778,73 @@ std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> corecvs
     return res;
 }
 
+void corecvs::ReconstructionFixtureScene::appendTracks(CameraFixture *ps, double trackInlierThreshold, double distanceLimit)
+{
+    decltype(getFixtureMatchesIdx({}, 0)) candidates;
+    for (auto& q: placedFixtures)
+        if (q != ps)
+        {
+            auto res = getFixtureMatchesIdx(placingQueue, ps);
+            candidates.insert(candidates.end(), res.begin(), res.end());
+        }
+    // Now rebuild in order to select only the best appendable for every kp in ps
+    std::unordered_map<std::pair<WPP, int>, std::set<corecvs::SceneFeaturePoint*>> mapper;
+    for (auto& t: candidates)
+    {
+        auto idQuery = std::get<2>(t);
+        auto ptQuery = std::get<3>(t);
+        CORE_ASSERT_TRUE_S(idQuery.u == ps);
+        auto idTrain = std::get<0>(t);
+        auto ptTrain = std::get<1>(t);
+        if (!trackMap[idTrain].count(ptTrain))
+            continue;
+        if ( trackMap[idQuery].count(ptQuery))
+            continue;
+
+        auto track = trackMap[idTrain][ptTrain];
+        mapper[std::make_pair(idQuery, ptQuery)].insert(track);
+    }
+    size_t cnt = mapper.size(), app = 0;
+    // Then select best-fitting track and merge 'em until error is OK
+    for (auto& pat: mapper)
+    {
+        SceneFeaturePoint* best = nullptr;
+        double bestScore = trackInlierThreshold;
+        auto qq = pat.first.first;
+        auto pq = pat.first.second;
+        auto p  = keyPoints[qq][pq].first;
+        auto vv = qq.u->getWorldCamera(qq.v).extrinsics.position;
+        for (auto& track: pat.second)
+        {
+            if ((!(vv - track->reprojectedPosition)) > distanceLimit)
+                continue;
+            if (!qq.u->isVisible(track->reprojectedPosition, qq.v))
+                continue;
+            double err = -1.0;
+            if ((err = !(qq.u->project(track->reprojectedPosition, qq.v) - p)) >= trackInlierThreshold)
+                continue;
+            if (err < bestScore)
+            {
+                bestScore = err;
+                best = track;
+            }
+        }
+        if (!best)
+            continue;
+        SceneObservation so;
+        so.camera = qq.v;
+        so.cameraFixture = qq.u;
+        so.featurePoint = best;
+        so.observation = p;
+        best->observations[so.camera] = so;
+        best->observations__[qq] = so;
+        trackMap[qq][pq] = best;
+        best->reprojectedPosition = best->triangulate();
+        ++app;
+    }
+    std::cout << "TA: (" << ps->name << ")"  << cnt << " / " << app << std::endl;
+}
+
 std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd, double>>
 corecvs::ReconstructionFixtureScene::getFixtureMatches(const std::vector<CameraFixture*> &train, CameraFixture *query)
 {
@@ -813,6 +880,7 @@ corecvs::ReconstructionFixtureScene::getFixtureMatchesIdx(const std::vector<Came
 
             auto  idA  = swap ? ref2.first : ref1.first;
             auto  idB  = swap ? ref1.first : ref2.first;
+            CORE_ASSERT_TRUE_S(idB == wcQuery);
             CORE_ASSERT_TRUE_S(idA.u != WPP::UWILDCARD && idA.v != WPP::VWILDCARD);
             CORE_ASSERT_TRUE_S(idB.u != WPP::UWILDCARD && idB.v != WPP::VWILDCARD);
             auto& kpsA = keyPoints[idA];

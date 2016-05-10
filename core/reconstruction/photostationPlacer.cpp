@@ -538,6 +538,8 @@ void corecvs::PhotostationPlacer::appendTracks()
     // !!! This goes to reconstruction scene !!!
     // Get 2D->3D coreespondences from scene
     // Append all satisfying
+    for (auto& ps: scene->placedFixtures)
+        scene->appendTracks(ps, trackInlierThreshold, distanceLimit);
 }
 
 void corecvs::PhotostationPlacer::createTracks()

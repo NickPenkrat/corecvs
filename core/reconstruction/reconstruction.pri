@@ -9,7 +9,7 @@ HEADERS += \
     reconstruction/reconstructionFixtureScene.h \
     reconstruction/essentialFeatureFilter.h \
     reconstruction/sceneGenerator.h \
-    reconstruction/reconstructionInitializer.h \
+#    reconstruction/reconstructionInitializer.h \
     reconstruction/sceneAligner.h \
     reconstruction/reconstructionFunctor.h \
     reconstruction/iterativeReconstructionSettings.h
@@ -30,7 +30,7 @@ SOURCES += \
     reconstruction/reconstructionFixtureScene.cpp \
     reconstruction/essentialFeatureFilter.cpp \
     reconstruction/sceneGenerator.cpp \
-    reconstruction/reconstructionInitializer.cpp \
+#    reconstruction/reconstructionInitializer.cpp \
     reconstruction/sceneAligner.cpp \
     reconstruction/reconstructionFunctor.cpp \
     reconstruction/relativeNonCentralO3PSolver.cpp \
