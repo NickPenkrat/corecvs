@@ -203,6 +203,8 @@ public:
 class Ray3d : public BaseRay<Ray3d, Vector3dd>
 {
 public:
+    Ray3d() {}
+
     Ray3d(const Vector3dd &_a, const Vector3dd & _p) :
         BaseRay<Ray3d, Vector3dd>(_a, _p)
     {}

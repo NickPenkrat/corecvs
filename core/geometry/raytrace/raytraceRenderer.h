@@ -4,6 +4,7 @@
 #include "polygons.h"
 #include "calibrationCamera.h"
 #include "mesh3d.h"
+#include "line.h"
 
 namespace corecvs {
 
