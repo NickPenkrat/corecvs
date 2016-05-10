@@ -921,7 +921,11 @@ void corecvs::ReconstructionFixtureScene::filterEssentialRansac(const std::vecto
                             break;
                         }
                     if (!alreadyIn)
+                    {
                         work.emplace_back(idFirst, idSecond);
+                        if (!essentialCache.count(std::make_pair(idFirst, idSecond)))
+                            essentialCache[std::make_pair(idFirst, idSecond)] = std::make_tuple(corecvs::EssentialDecomposition(), 0.0, false);
+                    }
                 }
             }
         }
@@ -951,7 +955,10 @@ void corecvs::ReconstructionFixtureScene::filterEssentialRansac(WPP a, WPP b, Es
     WPP idA = swap ? b : a;
     WPP idB = swap ? a : b;
 
-    std::cout << "Starting: " << idA.u->name << idA.v->nameId << "<>" << idB.u->name << idB.v->nameId << std::endl;
+    auto& cache = essentialCache[std::make_pair(idA, idB)];
+    bool useCache = std::get<2>(cache);
+
+    std::cout << (useCache ? "Starting: " : "Using existing estimate for ") << idA.u->name << idA.v->nameId << "<>" << idB.u->name << idB.v->nameId << std::endl;
 
     std::vector<std::array<corecvs::Vector2dd, 2>> features, featuresInlier;
     auto K1 = idA.v->intrinsics.getKMatrix33();
@@ -984,7 +991,22 @@ void corecvs::ReconstructionFixtureScene::filterEssentialRansac(WPP a, WPP b, Es
     CORE_ASSERT_TRUE_S(szBefore == szAfter1);
 
     EssentialFeatureFilter filter(K1, K2, features, featuresInlier, params);
-    filter.estimate();
+    double gamma;
+    if (!useCache)
+    {
+        filter.estimate();
+        gamma = filter.getGamma();
+        auto dec = filter.bestDecomposition;
+        std::get<0>(cache) = dec;
+        std::get<1>(cache) = gamma;
+        std::get<2>(cache) = true;
+    }
+    else
+    {
+        gamma = std::get<1>(cache);
+        filter.use(std::get<0>(cache));
+    }
+
     auto bestInliers = filter.inlierIdx;
 
     size_t szAfter = mm.size();

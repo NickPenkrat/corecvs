@@ -110,6 +110,7 @@ public:
     ReconstructionState state = ReconstructionState::NONE;
     // ==================================================================================
     umwpp<umwppv<std::tuple<int, int, double>>> matchesCopy;
+    std::unordered_map<std::pair<WPP, WPP>, std::tuple<corecvs::EssentialDecomposition, double, bool>> essentialCache;
 
     bool validateMatches();
     bool validateTracks();
