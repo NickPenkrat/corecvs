@@ -46,6 +46,8 @@ struct IterativeReconstructionFeatureSelectionParams
     double distanceLimit =1000.0;
     // Feature detection params
     FeatureDetectionParams featureDetectionParams;
+    // Track pruning threshold
+    double trackPruningThreshold = 2.8;
 };
 
 // This block covers iterative appending

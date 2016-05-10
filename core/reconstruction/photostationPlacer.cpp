@@ -281,6 +281,9 @@ void corecvs::PhotostationPlacer::fit(const ReconstructionFunctorOptimizationTyp
 {
     if (scene->placedFixtures.size() < 2)
         return;
+
+    scene->printTrackStats();
+
     auto oldParams = optimizationParams;
     optimizationParams = params;
     getErrorSummaryAll();
@@ -313,6 +316,8 @@ void corecvs::PhotostationPlacer::fit(const ReconstructionFunctorOptimizationTyp
         std::cout << p.first << "\t" << p.second << std::endl;
     scene->validateAll();
     optimizationParams = oldParams;
+
+    scene->printTrackStats();
 }
 
 void corecvs::PhotostationPlacer::appendTracks(const std::vector<int> &inlierIds, CameraFixture* fixture, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &possibleTracks)
@@ -735,7 +740,10 @@ void corecvs::PhotostationPlacer::postAppend()
         auto acnt = scene->trackedFeatures.size();
         if (acnt == pcnt)
             break;
-        fit(params, postAppendNonlinearIterations);
+        fit(params, postAppendNonlinearIterations / 2);
+        std::cout << "Prune" << std::endl;
+        scene->pruneTracks(trackPruningThreshold);
+        fit(params, postAppendNonlinearIterations / 2);
     }
 }
 
@@ -774,6 +782,9 @@ void corecvs::PhotostationPlacer::fullRun()
             std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ scene->placedFixtures[0]->location.rotor.conjugated()) << std::endl;
         scene->printTrackStats();
     }
+    fit(optimizationParams, finalNonLinearIterations / 2);
+    scene->pruneTracks(trackPruningThreshold);
+    fit(optimizationParams, finalNonLinearIterations / 2);
 }
 
 /*

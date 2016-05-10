@@ -110,6 +110,33 @@ void ReconstructionFixtureScene::printTrackStats()
         std::cout << std::endl;
     }
     std::cout << std::endl;
+
+    std::vector<double> errs, ssqs;
+    for (auto& pt: trackedFeatures)
+    {
+        double ssq = 0.0, cnt = 0.0;
+        for (auto& o: pt->observations__)
+        {
+            auto err = !(o.first.u->reprojectionError(pt->reprojectedPosition, o.second.observation, o.first.v));
+            errs.push_back(err * err);
+            ssq += err * err;
+            cnt += 1.0;
+        }
+        ssqs.push_back(std::sqrt(ssq / cnt));
+    }
+    double tolerance = 0.1;
+    std::map<int, int> cntE, cntS;
+    for (auto& e: errs)
+        ++cntE[e / tolerance];
+    for (auto& s: ssqs)
+        ++cntS[s / tolerance];
+    std::cout << "Reprojection histogram: " << std::endl;
+    for (int i = 0; i <= cntE.rbegin()->first; ++i)
+        std::cout << "[" << tolerance * i << "; " << tolerance * (i + 1) << ") : " << cntE[i] << std::endl;
+    std::cout << "RMSE histogram: " << std::endl;
+    for (int i = 0; i <= cntS.rbegin()->first; ++i)
+        std::cout << "[" << tolerance * i << "; " << tolerance * (i + 1) << ") : " << cntS[i] << std::endl;
+
 }
 
 FixtureScene* ReconstructionFixtureScene::dumbify()
