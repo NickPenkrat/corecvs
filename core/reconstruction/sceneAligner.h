@@ -29,6 +29,7 @@ struct SceneAligner
     // Returns true if non-trivial transformation is required; transformation and scale are alpha*(R*X+T) coordinate transform
     static bool TryAlign(ReconstructionFixtureScene* scene, corecvs::Affine3DQ &transformation, double &scale);
     static corecvs::Quaternion EstimateOrientationTransformation(const corecvs::Vector3dd &e1, const corecvs::Vector3dd &e2, const corecvs::Vector3dd &o1, const corecvs::Vector3dd &o2);
+
 private:
     static bool TryAlignStatic(ReconstructionFixtureScene* scene, corecvs::Affine3DQ &transformation, double &scale);
     static bool TryAlignGPS(ReconstructionFixtureScene* scene, corecvs::Affine3DQ &transformation, double &scale);

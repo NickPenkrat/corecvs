@@ -38,13 +38,14 @@ bool corecvs::ReconstructionInitializer::initialize()
 
 bool corecvs::ReconstructionInitializer::initGPS()
 {
-    L_ERROR << "Starting feature filtering" ;
+    L_INFO << "Starting feature filtering";
     std::vector<CameraFixture*> pss = {scene->placingQueue[0], scene->placingQueue[1], scene->placingQueue[2]};
     if (runEssentialFiltering)
         scene->filterEssentialRansac(pss, pss, essentialFilterParams);
     else
         scene->matchesCopy = scene->matches;
-    L_ERROR << "Estimating first pair orientation" ;
+
+    L_INFO << "Estimating first pair orientation";
     estimateFirstPair();
     return true;
 }
@@ -57,7 +58,7 @@ bool corecvs::ReconstructionInitializer::initNONE()
 
 bool corecvs::ReconstructionInitializer::initSTATIC()
 {
-    L_ERROR << "Initializing 3 pss" ;
+    L_INFO << "Initializing 3 pss";
     for (int i = 0; i < 3; ++i)
     {
         auto psApp = scene->placingQueue[i];

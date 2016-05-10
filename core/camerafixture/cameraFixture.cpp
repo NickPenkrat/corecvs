@@ -1,8 +1,7 @@
 #include "cameraFixture.h"
 #include "fixtureScene.h"
 
-namespace corecvs
-{
+namespace corecvs {
 
 void CameraFixture::setCameraCount(size_t count)
 {
@@ -14,21 +13,19 @@ void CameraFixture::setCameraCount(size_t count)
         return;
     }
 
-    while  (cameras.size() > count)
+    while (cameras.size() > count)
     {
         FixtureCamera *model = cameras.back();
         cameras.pop_back(); /* delete camera will generally do it, but only in owner scene.*/
         model->ownerScene->deleteCamera(model);
     }
 
-    while  (cameras.size() < count)
+    while (cameras.size() < count)
     {
         FixtureCamera *model  = ownerScene->createCamera();
         ownerScene->addCameraToFixture(model, this);
     }
 }
-
-
 
 } // namespace corecvs
 

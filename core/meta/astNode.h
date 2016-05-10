@@ -170,7 +170,6 @@ public:
 
 inline ASTNode operator *(const ASTNode &left, const ASTNode &right)
 {
-
     SYNC_PRINT(("Creating wrapper for (%p * %p)\n", static_cast<void*>(left.p), static_cast<void*>(right.p)));
     return ASTNode(ASTNodeInt::OPERATOR_MUL, left, right);
 }

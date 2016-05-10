@@ -545,6 +545,9 @@ public:
             if (el->id < 0) {
                 SYNC_PRINT(("~Reflection: bad id in the reflection object: id:%d size:%d\n", el->id, (int)fields.size()));
             }
+            else if ((uint)el->type > BaseField::TYPE_LAST) {
+                SYNC_PRINT(("~Reflection: bad type in the reflection object: type:%d size:%d\n", (int)el->type, (int)fields.size()));
+            }
             else {
                 delete el;
             }

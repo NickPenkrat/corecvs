@@ -1,9 +1,12 @@
 #include "sceneAligner.h"
 
-bool corecvs::SceneAligner::TryAlign(ReconstructionFixtureScene* scene, corecvs::Affine3DQ &transformation, double &scale)
+bool corecvs::SceneAligner::TryAlign(ReconstructionFixtureScene* scene
+    , corecvs::Affine3DQ &transformation
+    , double &scale)
 {
     if (scene->is3DAligned)
         return false;
+
     int gps = 0, staticFixed = 0;
     for (auto cf: scene->placedFixtures)
         switch (scene->initializationData[cf].initializationType)
@@ -31,7 +34,10 @@ bool corecvs::SceneAligner::TryAlign(ReconstructionFixtureScene* scene, corecvs:
     return TryAlignGPS(scene, transformation, scale);
 }
 
-corecvs::Quaternion corecvs::SceneAligner::EstimateOrientationTransformation(const corecvs::Vector3dd &e1, const corecvs::Vector3dd &e2, const corecvs::Vector3dd &o1, const corecvs::Vector3dd &o2)
+corecvs::Quaternion corecvs::SceneAligner::EstimateOrientationTransformation(const corecvs::Vector3dd &e1
+    , const corecvs::Vector3dd &e2
+    , const corecvs::Vector3dd &o1
+    , const corecvs::Vector3dd &o2)
 {
     corecvs::Vector3dd e3 = e1 ^ e2;
     corecvs::Vector3dd o3 = o1 ^ o2;
@@ -68,7 +74,9 @@ corecvs::Quaternion corecvs::SceneAligner::EstimateOrientationTransformation(con
     return corecvs::Quaternion::FromMatrix(R);
 }
 
-bool corecvs::SceneAligner::TryAlignStatic(ReconstructionFixtureScene* scene, corecvs::Affine3DQ &transformation, double &scale)
+bool corecvs::SceneAligner::TryAlignStatic(ReconstructionFixtureScene* scene
+    , corecvs::Affine3DQ &transformation
+    , double &scale)
 {
     scale = 1.0;
     transformation = corecvs::Affine3DQ();
@@ -76,7 +84,9 @@ bool corecvs::SceneAligner::TryAlignStatic(ReconstructionFixtureScene* scene, co
     return false;
 }
 
-bool corecvs::SceneAligner::TryAlignGPS(ReconstructionFixtureScene* scene, corecvs::Affine3DQ &transformation, double &scale)
+bool corecvs::SceneAligner::TryAlignGPS(ReconstructionFixtureScene* scene
+    , corecvs::Affine3DQ &transformation
+    , double &scale)
 {
     scene->printPosStats();
 #if 1

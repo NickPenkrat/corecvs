@@ -764,7 +764,7 @@ template<typename ResultType>
         // SYNC_PRINT(("Internal error with input [%d x %d] (%d, %d) -> (%d, %d)\n", src->w, src->h, x1, y1, x2, y2));
 
         if (x1 > x2) std::swap(x1, x2);
-        if (y1 > y2) std::swap(x1, x2);
+        if (y1 > y2) std::swap(y1, y2);
         if (x1 < 0)  { x2 += (-x1); x1 = 0; }
         if (y1 < 0)  { y2 += (-y1); y1 = 0; }
 

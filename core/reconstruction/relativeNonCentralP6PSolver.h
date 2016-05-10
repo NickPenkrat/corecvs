@@ -22,6 +22,6 @@ private:
     const static int ID[84], V1[84], V2[84], V3[84], ROW_REORDER[60];
 };
 
-}
+} // namespace corecvs
 
 #endif

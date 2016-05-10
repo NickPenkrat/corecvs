@@ -6,8 +6,14 @@
 #include <chrono>
 #include <cmath>
 
-corecvs::RelativeNonCentralRansacSolver::RelativeNonCentralRansacSolver(CameraFixture *query, const MatchContainer &matchesRansac, const MatchContainer &matchesAll, const RelativeNonCentralRansacSolverSettings &settings)
-    : RelativeNonCentralRansacSolverSettings(settings), query(query), matchesRansac(matchesRansac), matchesAll(matchesAll)
+corecvs::RelativeNonCentralRansacSolver::RelativeNonCentralRansacSolver(CameraFixture *query
+    , const MatchContainer &matchesRansac
+    , const MatchContainer &matchesAll
+    , const RelativeNonCentralRansacSolverSettings &settings)
+    : RelativeNonCentralRansacSolverSettings(settings)
+    , query(query)
+    , matchesRansac(matchesRansac)
+    , matchesAll(matchesAll)
 {
     buildDependencies();
 }
@@ -42,6 +48,7 @@ void corecvs::RelativeNonCentralRansacSolver::run()
         corecvs::parallelable_for(0, batches, ParallelEstimator(this, batch));
         usedEvals += batches * batch;
     } while (usedEvals < nForGamma() && usedEvals < maxIterations);
+
     maxIterations = usedEvals;
     std::cout << "Finishing after " << usedEvals << " with gamma" << getGamma() << std::endl;
 }
@@ -66,6 +73,7 @@ void corecvs::RelativeNonCentralRansacSolver::Estimator::operator() (const corec
 {
     if (solver->matchesRansac.size() < solver->sampleSize())
         return;
+
     for (int i = r.begin(); i < r.end(); ++i)
     {
         sampleModel();
@@ -225,7 +233,7 @@ void corecvs::RelativeNonCentralRansacSolver::buildDependencies()
         for (; j < fundamentalsCacheId.size(); ++j)
             if (fundamentalsCacheId[j].first == ref && fundamentalsCacheId[j].second == query)
                 break;
-        dependencyList.push_back(j);
+        dependencyList.push_back((int)j);
         if (j < fundamentalsCacheId.size())
             continue;
         fundamentalsCacheId.emplace_back(ref, query);

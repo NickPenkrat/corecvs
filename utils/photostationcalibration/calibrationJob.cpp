@@ -214,10 +214,10 @@ void CalibrationJob::allDetectChessBoard(bool distorted)
     int N = (int)observations.size();
 
     photostation.cameras.resize(N);
-    std::vector<corecvs::CameraModel>::iterator psIterator = photostation.cameras.begin();
+
     bool estimate = !distorted && settings.openCvDetectorParameters.mEstimateUndistortedFromDistorted;
 
-    L_INFO_P("chessboard type: %s", this->settings.boardAlignerParams.boardMarkers.size() ? "new" : "old");
+    L_INFO_P("chessboard type: %s", settings.boardAlignerParams.boardMarkers.size() ? "new" : "old");
 
     std::vector<std::array<size_t, 2>> idxs;
     for (size_t i = 0; i < observations.size(); ++i)

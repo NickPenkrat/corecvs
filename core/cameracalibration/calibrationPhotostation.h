@@ -8,14 +8,12 @@
  **/
 
 #include <type_traits>
-#include <cstring>
 
 #include "typesafeBitmaskEnums.h"
 #include "calibrationCamera.h"
 #include "calibrationLocation.h"  // LocationData
 
-namespace corecvs
-{
+namespace corecvs {
 
 enum class CameraConstraints
 {

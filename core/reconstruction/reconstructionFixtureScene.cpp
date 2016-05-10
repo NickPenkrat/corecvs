@@ -68,7 +68,7 @@ void ReconstructionFixtureScene::printMatchStats()
             for (auto c: f2->cameras) cams2.push_back(c);
             std::sort(cams2.begin(), cams2.end(), [](FixtureCamera* a, FixtureCamera* b) { return a->nameId < b->nameId; });
 
-            std::cout << f1->name << " x " << f2->name << std::endl << "\t\t";
+            std::cout << f1->name << " x " << f2->name << std::endl << "\t";
             for (auto c: cams2)
                 std::cout << c->nameId << "\t";
             std::cout << std::endl;
@@ -78,8 +78,10 @@ void ReconstructionFixtureScene::printMatchStats()
                 for (auto c2: cams2)
                 {
                     WPP id1(f1, c1), id2(f2, c2);
-                    std::cout <<
-                        (matches.count(id1) && matches[id1].count(id2) ? matches[id1][id2].size() : matches.count(id2) && matches[id2].count(id1) ? matches[id2][id1].size() : 0) << "\t";
+                    std::cout << (matches.count(id1) && matches[id1].count(id2) ?
+                                    matches[id1][id2].size() :
+                                    matches.count(id2) && matches[id2].count(id1) ? matches[id2][id1].size() : 0
+                                 ) << "\t";
                 }
                 std::cout << std::endl;
             }
@@ -488,10 +490,10 @@ bool ReconstructionFixtureScene::validateTracks()
 
 bool ReconstructionFixtureScene::validateAll()
 {
-    L_ERROR << "Validating..." ;
+    L_INFO << "Validating...";
     if (validateMatches() && validateTracks())
     {
-        std::cout << "VALID!!!" << std::endl;
+        L_INFO << "VALID!!!";
         return true;
     }
     return false;
@@ -680,9 +682,9 @@ void corecvs::ReconstructionFixtureScene::buildTracks(CameraFixture *psA, Camera
 
         trackCandidates.emplace_back(camA, ptA, camB, ptB);
     }
-    L_ERROR << trackCandidates.size() << " candidate tracks";
-    L_ERROR << "Inlier threshold: " << trackInlierThreshold;
-    L_ERROR << "Distance threshold: " << distanceLimit;
+    L_INFO << trackCandidates.size() << " candidate tracks";
+    L_INFO << "Inlier threshold: " << trackInlierThreshold;
+    L_INFO << "Distance threshold: " << distanceLimit;
 
     int failInlier = 0, failDistance = 0;
 
@@ -754,7 +756,8 @@ void corecvs::ReconstructionFixtureScene::buildTracks(CameraFixture *psA, Camera
         }
         trackedFeatures.push_back(track);
     }
-    L_ERROR << "FAIL:IT " << failInlier << " / FAIL:DI " << failDistance;
+
+    L_INFO << "FAIL:IT " << failInlier << " / FAIL:DI " << failDistance;
 }
 
 std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> corecvs::ReconstructionFixtureScene::getUnusedFeatures(CameraFixture *psA, CameraFixture *psB)

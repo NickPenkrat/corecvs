@@ -1,5 +1,5 @@
-#ifndef CHESSBOARDDETECTOR
-#define CHESSBOARDDETECTOR
+#ifndef CHESSBOARDDETECTOR_H
+#define CHESSBOARDDETECTOR_H
 
 #include <memory>
 
@@ -78,6 +78,7 @@ private:
     Statistics *stats;
 
 };
-}
 
-#endif
+} // namespace corecvs
+
+#endif // CHESSBOARDDETECTOR_H
