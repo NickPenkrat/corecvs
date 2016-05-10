@@ -34,6 +34,7 @@ class FunctionArgs
 public:
     int inputs;
     int outputs;
+    std::vector<int> schurBlocks;
 
     FunctionArgs(int _inputs, int _outputs) :
         inputs (_inputs),

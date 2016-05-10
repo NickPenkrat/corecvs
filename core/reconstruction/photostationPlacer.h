@@ -24,10 +24,10 @@ struct PhotostationPlacerEssentialFilterParams
 {
     double b2bRansacP5RPThreshold = 0.8;
     double inlierP5RPThreshold = 5.0;
-    int maxEssentialRansacIterations = 100000;
+    int maxEssentialRansacIterations = 600000;
     double b2bRansacP6RPThreshold = 0.8;
     bool runEssentialFiltering = true;
-    double essentialTargetGamma = 0.001;
+    double essentialTargetGamma = 0.01;
 
     template<typename V>
     void accept(V &v)
@@ -70,7 +70,7 @@ struct PhotostationPlacerParams
     PhotostationPlacerOptimizationErrorType errorType = PhotostationPlacerOptimizationErrorType::RAY_DIFF;
     // This defines how many multicameras are subject for P3P evaluation at each iteration
     size_t speculativity = 1000;
-    size_t minimalInlierCount = 20;
+    size_t minimalInlierCount = 32;
     double maximalFailureProbability = 0.15;
 
     template<typename V>
@@ -97,6 +97,7 @@ public:
     void detectAll();
     bool initialize();
     void create2PointCloud();
+    void create2PointCloud(CameraFixture* A, CameraFixture* B);
     corecvs::Affine3DQ staticInit(CameraFixture* fixture, std::vector<SceneFeaturePoint*> &staticPoints);
     void pruneTracks();
     bool appendPs();
@@ -121,6 +122,7 @@ public:
 protected:
     std::unordered_map<corecvs::CameraFixture*, corecvs::Affine3DQ> activeEstimates;
     std::unordered_map<corecvs::CameraFixture*, std::vector<int>> activeInlierCount;
+    std::unordered_map<corecvs::CameraFixture*, corecvs::Affine3DQ> activeP6PEstimates;
     void updateTrackables();
 
 #ifdef WITH_TBB

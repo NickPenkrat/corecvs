@@ -8,6 +8,7 @@
  */
 
 #include <stdint.h>
+#include <cmath>
 
 #include "fixedVector.h"
 #include "vector3d.h"

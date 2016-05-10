@@ -14,13 +14,13 @@ namespace corecvs
 
 struct RelativeNonCentralRansacSolverSettings
 {
-    RelativeNonCentralRansacSolverSettings(int maxIterations = 1000000, double inlierThreshold = 1.0)
+    RelativeNonCentralRansacSolverSettings(size_t maxIterations = 400000, double inlierThreshold = 1.0)
         : maxIterations(maxIterations)
         , inlierThreshold(inlierThreshold)
-    {}
-
-    int     maxIterations;
-    double  inlierThreshold;
+    {
+    }
+    int maxIterations;
+    double inlierThreshold;
 
     enum class Restrictions
     {
@@ -46,19 +46,25 @@ public:
         , const MatchContainer &matchesRansac
         , const MatchContainer &matchesAll
         , const RelativeNonCentralRansacSolverSettings &settings = RelativeNonCentralRansacSolverSettings());
-
+    RelativeNonCentralRansacSolver(
+          CameraFixture* query,
+          const Affine3DQ firstTry
+        , const MatchContainer &matchesRansac
+        , const MatchContainer &matchesAll
+        , const RelativeNonCentralRansacSolverSettings &settings = RelativeNonCentralRansacSolverSettings());
     ~RelativeNonCentralRansacSolver()
     {
         double total = totalEstiamte + totalSample + totalCheck;
         std::cout << "RNCRS timings: [Sample: " << totalSample / total * 100.0 << "% ][Estimate: " << totalEstiamte / total * 100.0 << "%][Check: " << totalCheck / total * 100.0 << "]" << std::endl;
     }
-
     size_t getInliersCount();
     void run();
+    void makeTry(const Affine3DQ &hypo);
     void fit(double distanceGuess = 10.0);
     corecvs::Affine3DQ getBestHypothesis() const;
     std::vector<int> getBestInliers() const;
     double getGamma();
+    int sampleSize() const { return restrictions == RelativeNonCentralRansacSolverSettings::Restrictions::SHIFT ? 3 : 6; }
 
 private:
     struct Estimator
@@ -69,8 +75,8 @@ private:
             rng = std::mt19937(std::random_device()());
             fundamentalsCache.resize(solver->fundamentalsCacheId.size());
             essentialsCache.resize(solver->fundamentalsCacheId.size());
-            pluckerRef.resize(SAMPLESIZE);
-            pluckerQuery.resize(SAMPLESIZE);
+            pluckerRef.resize(solver->sampleSize());
+            pluckerQuery.resize(solver->sampleSize());
         }
 
         std::mt19937 rng;
@@ -79,8 +85,7 @@ private:
         void selectInliers();
 
         size_t localMax = 0;
-        static const int SAMPLESIZE = 6;
-        int idxs[SAMPLESIZE];
+        int idxs[6];
         double inlierThreshold, scale;
 
         Vector3dd shift;
@@ -94,7 +99,6 @@ private:
         std::vector<corecvs::Matrix33> fundamentalsCache;
         std::vector<corecvs::EssentialDecomposition> essentialsCache;
     };
-
     struct ParallelEstimator
     {
         void operator() (const corecvs::BlockedRange<int> &r) const;
@@ -111,10 +115,11 @@ private:
     void accept(const Affine3DQ &hypo, const std::vector<int> &inliersNew);
 
 
+
     struct FunctorCost : corecvs::FunctionArgs
     {
         RelativeNonCentralRansacSolver *solver;
-        FunctorCost(RelativeNonCentralRansacSolver* solver) : FunctionArgs(7, (int)solver->getInliersCount()), solver(solver)
+        FunctorCost(RelativeNonCentralRansacSolver* solver) : FunctionArgs(7, solver->getInliersCount()), solver(solver)
         {}
 
         void operator() (const double in[], double out[])
