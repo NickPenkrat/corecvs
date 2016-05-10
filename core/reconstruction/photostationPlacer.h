@@ -26,7 +26,7 @@ class PhotostationPlacer :    public IterativeReconstructionInitializationParams
 {
 public:
     ReconstructionFixtureScene* scene;
-    void testNewPipeline();
+    void fullRun();
     corecvs::Mesh3D dumpMesh(const std::string &filename);
     void paintTracksOnImages(bool pairs = false);
     void detectAll();

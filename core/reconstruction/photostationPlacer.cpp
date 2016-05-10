@@ -739,7 +739,7 @@ void corecvs::PhotostationPlacer::postAppend()
     }
 }
 
-void corecvs::PhotostationPlacer::testNewPipeline()
+void corecvs::PhotostationPlacer::fullRun()
 {
     // 0. Detect features
     scene->detectAllFeatures(featureDetectionParams);
