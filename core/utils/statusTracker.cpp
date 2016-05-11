@@ -36,6 +36,12 @@ void corecvs::StatusTracker::incrementCompleted()
 {
     if (this == nullptr)
         return;
+    readLock();
+        if (currentStatus.stopThread)
+        {
+            throw;
+        }
+    unlock();
     writeLock();
         currentStatus.completedActions++;
         CORE_ASSERT_TRUE_S(currentStatus.completedActions <= currentStatus.totalActions);
@@ -103,6 +109,17 @@ bool corecvs::StatusTracker::isFailed() const
     return flag;
 }
 
+
+bool corecvs::StatusTracker::isCanceled() const
+{
+    if (this == nullptr)
+        return false;
+    readLock();
+        auto flag = currentStatus.stopThread;
+    unlock();
+    return flag;
+}
+
 void corecvs::StatusTracker::setCompleted()
 {
     if (this == nullptr)
@@ -128,7 +145,7 @@ void corecvs::StatusTracker::setStopThread()
     if (this == nullptr)
         return;
     writeLock();
-        stopThread = true;
+        currentStatus.stopThread = true;
         std::cout << "Thread stop sended." << std::endl;
     unlock();
 }
