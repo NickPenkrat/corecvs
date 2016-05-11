@@ -182,14 +182,15 @@ void ReconstructionFixtureScene::pruneTracks(double threshold)
     for (auto& pt: trackedFeatures)
     {
         auto pos = pt->reprojectedPosition;
-        double ssq = 0.0, cnt = 0.0;
+        double ssq = 0.0, cnt = 0.0, mxe = 0.0;
         for (auto& obs: pt->observations__)
         {
             auto err = obs.first.u->reprojectionError(pos, obs.second.observation, obs.first.v);
             ssq += !err * !err;
+            mxe = std::max(!err, mxe);
             cnt += 1.0;
         }
-        if ((ssq / cnt) < threshold * threshold)
+        if ((ssq / cnt) < threshold * threshold && mxe < threshold * 2.0)
         {
             trackedFeatures[id++] = pt;
         }
