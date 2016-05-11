@@ -14,9 +14,8 @@
 #include <algorithm>
 #include <random>
 
-namespace corecvs {
-
-
+namespace corecvs
+{
 struct AbsoluteNonCentralRansacSolverParams
 {
     double reprojectionInlierThreshold = 2.0;
@@ -24,48 +23,32 @@ struct AbsoluteNonCentralRansacSolverParams
     // Big enough for P3P at ~0.05 inlier ratio
     int maxIterations = 100000;
     bool forcePosition = false;
+    bool forceScale = false;
     corecvs::Vector3dd forcedPosition = corecvs::Vector3dd(0, 0, 0);
+    double forcedScale = 1.0;
+    double gamma = 0.001;
 };
-
 class AbsoluteNonCentralRansacSolver : public AbsoluteNonCentralRansacSolverParams
 {
 public:
-    AbsoluteNonCentralRansacSolver(corecvs::CameraFixture *ps, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &cloudMatches, const AbsoluteNonCentralRansacSolverParams &params = AbsoluteNonCentralRansacSolverParams())
-        : AbsoluteNonCentralRansacSolverParams(params)
-        , ps(ps)
-        , cloudMatches(cloudMatches)
-        , shouldTestFirst(false)
-    {}
-
-    AbsoluteNonCentralRansacSolver(corecvs::CameraFixture *ps, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &cloudMatches, corecvs::Affine3DQ firstHypothesis, const AbsoluteNonCentralRansacSolverParams &params = AbsoluteNonCentralRansacSolverParams())
-        : AbsoluteNonCentralRansacSolverParams(params)
-        , ps(ps)
-        , cloudMatches(cloudMatches)
-        , shouldTestFirst(true)
-        , firstHypothesis(firstHypothesis)
+    AbsoluteNonCentralRansacSolver(corecvs::CameraFixture *ps, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &cloudMatches, const AbsoluteNonCentralRansacSolverParams &params = AbsoluteNonCentralRansacSolverParams()) : AbsoluteNonCentralRansacSolverParams(params), shouldTestFirst(false), ps(ps), cloudMatches(cloudMatches)
+    {
+    }
+    AbsoluteNonCentralRansacSolver(corecvs::CameraFixture *ps, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &cloudMatches, corecvs::Affine3DQ firstHypothesis, const AbsoluteNonCentralRansacSolverParams &params = AbsoluteNonCentralRansacSolverParams()) : AbsoluteNonCentralRansacSolverParams(params), firstHypothesis(firstHypothesis), shouldTestFirst(true), ps(ps), cloudMatches(cloudMatches)
     {
         Estimator es(this, reprojectionInlierThreshold);
         es.hypothesis.push_back(firstHypothesis);
         es.selectInliers();
     }
-
-    AbsoluteNonCentralRansacSolver(const AbsoluteNonCentralRansacSolver& ancrs)
-        : AbsoluteNonCentralRansacSolverParams(ancrs)
-        , bestHypothesis(ancrs.bestHypothesis)
-        , bestInlierCnt(ancrs.bestInlierCnt)
-        , inlierQuality(ancrs.inlierQuality)
-        , inliers(ancrs.inliers)
-        , ps(ancrs.ps)
-        , cloudMatches(ancrs.cloudMatches)
-        , hypothesis(ancrs.hypothesis)
-        , batch(ancrs.batch)
-        , batches(ancrs.batches)
-        , usedEvals(ancrs.usedEvals)
-        , gamma(ancrs.gamma)
-        , firstHypothesis(ancrs.firstHypothesis)
-        , shouldTestFirst(shouldTestFirst)
-    {}
-
+    AbsoluteNonCentralRansacSolver(const AbsoluteNonCentralRansacSolver& ancrs) :
+        AbsoluteNonCentralRansacSolverParams(ancrs),
+        firstHypothesis(ancrs.firstHypothesis),
+        shouldTestFirst(ancrs.shouldTestFirst),
+        bestHypothesis(ancrs.bestHypothesis), bestInlierCnt(ancrs.bestInlierCnt), inlierQuality(ancrs.inlierQuality),
+        inliers(ancrs.inliers), ps(ancrs.ps), cloudMatches(ancrs.cloudMatches), hypothesis(ancrs.hypothesis),
+        batch(ancrs.batch), batches(ancrs.batches), usedEvals(ancrs.usedEvals)
+    {
+    }
     void run();
     void runInliersPNP();
     void runInliersRE();
@@ -73,12 +56,10 @@ public:
     corecvs::Affine3DQ getBestHypothesis();
     corecvs::Affine3DQ firstHypothesis;
     bool shouldTestFirst;
-
 //protected:
 #ifdef WITH_TBB
     tbb::mutex mutex;
 #endif
-
     struct Estimator
     {
         void operator() (const corecvs::BlockedRange<int> &r);
@@ -104,8 +85,8 @@ public:
     {
         void operator() (const corecvs::BlockedRange<int> &r) const;
         ParallelEstimator(AbsoluteNonCentralRansacSolver *solver, int batch) : solver(solver), batch(batch)
-        {}
-
+        {
+        }
         AbsoluteNonCentralRansacSolver *solver;
         int batch;
     };
@@ -151,12 +132,9 @@ public:
             solver->readParams(in);
             solver->computeReprojectionErrors(out);
         }
-
-        ReprojectionError(AbsoluteNonCentralRansacSolver* solver)
-            : FunctionArgs(solver->forcePosition ? 4 : 7, solver->bestInlierCnt * 2)
-            , solver(solver)
-        {}
-
+        ReprojectionError(AbsoluteNonCentralRansacSolver* solver) : FunctionArgs(solver->forcePosition ? 4 : 7, solver->bestInlierCnt * 2), solver(solver)
+        {
+        }
         AbsoluteNonCentralRansacSolver *solver;
     };
 
@@ -167,15 +145,11 @@ public:
             solver->readParams(in);
             solver->writeParams(out);
         }
-
-        ReprojectionErrorNormalizer(AbsoluteNonCentralRansacSolver *solver)
-            : FunctionArgs(solver->forcePosition ? 4 : 7, solver->forcePosition ? 4 : 7)
-            , solver(solver)
-        {}
-
+        ReprojectionErrorNormalizer(AbsoluteNonCentralRansacSolver *solver): FunctionArgs(solver->forcePosition ? 4 : 7, solver->forcePosition ? 4 : 7), solver(solver)
+        {
+        }
         AbsoluteNonCentralRansacSolver *solver;
     };
-
     void computeReprojectionErrors(double *out);
 
     std::vector<int> selectInliers(const corecvs::Affine3DQ &hypothesis);
@@ -191,16 +165,13 @@ public:
     int batch = 100;
     int batches = 64;
     int usedEvals = 0;
-    double gamma = 0.001;
     double nForGamma();
-
 public:
     ~AbsoluteNonCentralRansacSolver()
     {
         std::cout << "P3P: allowed: " << maxIterations << " used: " << usedEvals << std::endl;
     }
 };
+}
 
-} // namespace corecvs
-
-#endif // ABSOLUTENONCENTRALRANSACSOLVER
+#endif

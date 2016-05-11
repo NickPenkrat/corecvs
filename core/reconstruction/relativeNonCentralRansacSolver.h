@@ -14,9 +14,10 @@ namespace corecvs
 
 struct RelativeNonCentralRansacSolverSettings
 {
-    RelativeNonCentralRansacSolverSettings(size_t maxIterations = 400000, double inlierThreshold = 1.0)
-        : maxIterations(maxIterations)
-        , inlierThreshold(inlierThreshold)
+    RelativeNonCentralRansacSolverSettings(size_t maxIterations = 400000, double inlierThreshold = 1.0, double gamma = 0.001)
+        : maxIterations(maxIterations),
+          inlierThreshold(inlierThreshold),
+          gamma(gamma)
     {
     }
     int maxIterations;
@@ -34,7 +35,6 @@ struct RelativeNonCentralRansacSolverSettings
     double scale = 1.0;
     double gamma = 0.001;
 };
-
 
 class RelativeNonCentralRansacSolver : public RelativeNonCentralRansacSolverSettings
 {
@@ -64,6 +64,7 @@ public:
     corecvs::Affine3DQ getBestHypothesis() const;
     std::vector<int> getBestInliers() const;
     double getGamma();
+    int sampleSize() const { return restrictions == RelativeNonCentralRansacSolverSettings::Restrictions::SHIFT ? 3 : 6; }
 
 private:
     struct Estimator
@@ -74,8 +75,8 @@ private:
             rng = std::mt19937(std::random_device()());
             fundamentalsCache.resize(solver->fundamentalsCacheId.size());
             essentialsCache.resize(solver->fundamentalsCacheId.size());
-            pluckerRef.resize(SAMPLESIZE);
-            pluckerQuery.resize(SAMPLESIZE);
+            pluckerRef.resize(solver->sampleSize());
+            pluckerQuery.resize(solver->sampleSize());
         }
 
         std::mt19937 rng;
@@ -84,8 +85,7 @@ private:
         void selectInliers();
 
         size_t localMax = 0;
-        static const int SAMPLESIZE = 6;
-        int idxs[SAMPLESIZE];
+        int idxs[6];
         double inlierThreshold, scale;
 
         Vector3dd shift;

@@ -35,16 +35,17 @@ public:
     bool traceProgress = true;
     bool traceCrucial  = false;
     bool trace         = false;
+    bool useSchurComplement = false;
 
     int iterations = 0;
 
     Vector x, r, g, y, v, p, epsilon_p,
            hsd, hgn, hdl;
     double augmentation = 0.0,
-    	   augmentMin = 1e-9,
-    	   augmentStep= 2;
+           augmentMin = 1e-9,
+           augmentStep= 2;
     int    linsolveOk = 0,
-    	   dumpingDecrease = 3;
+           dumpingDecrease = 3;
     bool gnReady = false;
     MatrixClass J, JTJ;
     double trustRegion, rho,
@@ -57,38 +58,38 @@ public:
         trustRegion(1.0)
         {}
 
-	void linSolveDumped(MatrixClass &A, Vector &B, Vector &res)
-	{
-		if (augmentation > 0.0 && linsolveOk > dumpingDecrease)
-		{
-			augmentation /= augmentStep;
-			if (augmentation < augmentMin)
-				augmentation = 0.0;
-			linsolveOk = 0;
-		}
-		do
-		{
-			MatrixClass AA(A);
-			if (augmentation > 0.0)
-			{
-				double maxAbs = 0.0;
-				for (int i = 0; i < AA.w; ++i)
-					maxAbs = std::max(maxAbs, std::abs(AA.a(i, i)));
-				if (maxAbs == 0.0)
-					maxAbs = 1.0;
-				for (int i = 0; i < AA.w; ++i)
-					AA.a(i, i) += maxAbs * augmentation;
-			}
-			bool ok = AA.linSolve(B, res, true, true);
-			if (ok)
-			{
-				linsolveOk++;
-				break;
-			}
-			augmentation = augmentation == 0.0 ? augmentMin : augmentation * augmentStep;
-			linsolveOk = 0;
-		} while (1);
-	}
+    void linSolveDumped(MatrixClass &A, Vector &B, Vector &res)
+    {
+        if (augmentation > 0.0 && linsolveOk > dumpingDecrease)
+        {
+            augmentation /= augmentStep;
+            if (augmentation < augmentMin)
+                augmentation = 0.0;
+            linsolveOk = 0;
+        }
+        do
+        {
+            MatrixClass AA(A);
+            if (augmentation > 0.0)
+            {
+                double maxAbs = 0.0;
+                for (int i = 0; i < AA.w; ++i)
+                    maxAbs = std::max(maxAbs, std::abs(AA.a(i, i)));
+                if (maxAbs == 0.0)
+                    maxAbs = 1.0;
+                for (int i = 0; i < AA.w; ++i)
+                    AA.a(i, i) += maxAbs * augmentation;
+            }
+            bool ok = !useSchurComplement ? AA.linSolve(B, res, true, true) : AA.linSolveSchurComplement(B, f->schurBlocks, res, true, true);
+            if (ok)
+            {
+                linsolveOk++;
+                break;
+            }
+            augmentation = augmentation == 0.0 ? augmentMin : augmentation * augmentStep;
+            linsolveOk = 0;
+        } while (1);
+    }
 
     vector<double> fit(const vector<double> &input, const vector<double> &output)
     {

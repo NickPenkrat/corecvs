@@ -276,8 +276,11 @@ void PointListEditImageWidgetUnited::setObservationModel(PointImageEditorInterfa
 
     mObservationListModel = observationListModel;
 
-    connect(mObservationListModel, SIGNAL(updateView())      , this, SLOT(update()));
-    connect(mObservationListModel, SIGNAL(modelInvalidated()), this, SLOT(invalidateModel()));
+    if (mObservationListModel != NULL)
+    {
+        connect(mObservationListModel, SIGNAL(updateView())      , this, SLOT(update()));
+        connect(mObservationListModel, SIGNAL(modelInvalidated()), this, SLOT(invalidateModel()));
+    }
 }
 
 void PointListEditImageWidgetUnited::setSelectionModel(QItemSelectionModel *_selectionModel)
@@ -457,6 +460,9 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *w
 
 void PointListEditImageWidgetUnited::toolButtonReleased(QWidget *button)
 {
+    if (mObservationListModel == nullptr)
+        return;
+
     mUi->widget->unsetCursor();
     AdvancedImageWidget::toolButtonReleased(button);
 

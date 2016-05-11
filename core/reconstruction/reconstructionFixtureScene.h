@@ -28,7 +28,7 @@ enum class ReconstructionState
     FINISHED
 };
 
-enum class PhotostationInitializationType
+enum class FixtureInitializationType
 {
     NONE,
     GPS,
@@ -36,9 +36,9 @@ enum class PhotostationInitializationType
     FIXED
 };
 
-struct PhotostationInitialization
+struct FixtureInitialization
 {
-    PhotostationInitializationType initializationType;
+    FixtureInitializationType initializationType;
     // NOTE: Static points should be appended to scene before
     //       supplying them as initialization data
     std::vector<SceneFeaturePoint*> staticPoints;
@@ -63,6 +63,7 @@ class ReconstructionFixtureScene : public FixtureScene
 {
 public:
     ReconstructionFixtureScene();
+    virtual ~ReconstructionFixtureScene() {};
 
     virtual void deleteCamera        (FixtureCamera *camera);
     virtual void deleteCameraFixture (CameraFixture *fixture, bool recursive = true);
@@ -74,9 +75,13 @@ public:
     //\brief Detect and match features between all images
     void detectAllFeatures(const FeatureDetectionParams &params);
     std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> getPossibleTracks(CameraFixture* ps);
-    void buildTracks(CameraFixture *psA, CameraFixture *psB, CameraFixture *psC, double trackInlierThreshold, double distanceLimit);
+    // This routine builds tracks from 2D<->2D correspondences
+    void buildTracks(CameraFixture *psA, CameraFixture *psB, double trackInlierThreshold, double distanceLimit);
+    // This routine appends existing tracks with inlying correspondences
+    void appendTracks(CameraFixture *ps, double trackInlierThreshold, double distanceLimit);
     std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> getUnusedFeatures(CameraFixture *psA, CameraFixture *psB);
-    std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd, double>> getPhotostationMatches(const std::vector<CameraFixture*> &train, CameraFixture *query);
+    std::vector<std::tuple<WPP, int, WPP, int, double>> getFixtureMatchesIdx(const std::vector<CameraFixture*> &train, CameraFixture *query);
+    std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd, double>> getFixtureMatches(const std::vector<CameraFixture*> &train, CameraFixture *query);
     void filterEssentialRansac(WPP a, WPP b, EssentialFilterParams params);
     void filterEssentialRansac(const std::vector<CameraFixture*> &lhs, const std::vector<CameraFixture*> &rhs, EssentialFilterParams params);
     void remove(WPP a, WPP b, std::vector<int> idx);
@@ -97,7 +102,7 @@ public:
     umwppv<std::pair<corecvs::Vector2dd, corecvs::RGBColor>> keyPoints;
     umwpp<umwppv<std::tuple<int, int, double>>> matches;
     umwpp<std::unordered_map<int, SceneFeaturePoint*>> trackMap;
-    std::unordered_map<CameraFixture*, PhotostationInitialization> initializationData;
+    std::unordered_map<CameraFixture*, FixtureInitialization> initializationData;
     std::vector<CameraFixture*> placedFixtures;
     std::vector<CameraFixture*> placingQueue;
 
@@ -105,6 +110,7 @@ public:
     ReconstructionState state = ReconstructionState::NONE;
     // ==================================================================================
     umwpp<umwppv<std::tuple<int, int, double>>> matchesCopy;
+    std::unordered_map<std::pair<WPP, WPP>, std::tuple<corecvs::EssentialDecomposition, double, bool>> essentialCache;
 
     bool validateMatches();
     bool validateTracks();
@@ -188,11 +194,11 @@ struct ParallelTrackPainter
 namespace std
 {
 template<>
-struct hash<PhotostationInitializationType>
+struct hash<FixtureInitializationType>
 {
-    size_t operator() (const PhotostationInitializationType &t) const
+    size_t operator() (const FixtureInitializationType &t) const
     {
-        using foo = std::underlying_type<PhotostationInitializationType>::type;
+        using foo = std::underlying_type<FixtureInitializationType>::type;
         return hash<foo>()(static_cast<const foo>(t));
     }
 };
