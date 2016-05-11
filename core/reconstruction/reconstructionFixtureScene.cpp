@@ -189,7 +189,7 @@ void ReconstructionFixtureScene::pruneTracks(double threshold)
             ssq += !err * !err;
             cnt += 1.0;
         }
-        if (ssq / cnt > threshold * threshold)
+        if ((ssq / cnt) < threshold * threshold)
         {
             trackedFeatures[id++] = pt;
         }
@@ -204,6 +204,9 @@ void ReconstructionFixtureScene::pruneTracks(double threshold)
                 trackMap[d.first].erase(d.second);
         }
     }
+    int pruned = trackedFeatures.size() - id;
+    double ratio = double(pruned) / trackedFeatures.size() * 100.0;
+    std::cout << pruned << " tracks (" << ratio << ") were pruned!" << std::endl;
     trackedFeatures.resize(id);
 }
 
