@@ -90,24 +90,58 @@ int OBJLoader::loadOBJ(istream &input, Mesh3DDecorated &mesh)
                         size_t id = std::stoi(part);
                         face[i] = id - 1;
                     }
+
                     if (j == 1) {
-                        size_t id = std::stoi(part);
-                        normId[i] = id - 1;
-                    }
-                    if (j == 2) {
                         size_t id = std::stoi(part);
                         texId[i] = id - 1;
                     }
 
+                    if (j == 2) {
+                        size_t id = std::stoi(part);
+                        normId[i] = id - 1;
+                    }
                 }
-
-
             }
             mesh.addFace(face);
             mesh.texId.push_back(texId);
             mesh.normalId.push_back(normId);
         }
     }
+
+    /* sanity checking */
+    mesh.dumpInfo(cout);
+
+    if (mesh.faces.size() != mesh.texId.size() || mesh.faces.size() != mesh.normalCoords.size())
+    {
+        SYNC_PRINT(("Wrong face/texId/normalId index\n"));
+    }
+
+    for (size_t i = 0; i < mesh.faces.size(); i++) {
+        for (int j = 0; j < 3; j++) {
+            if (mesh.faces[i][j] > mesh.vertexes.size() ) {
+                SYNC_PRINT(("Wrong face index\n"));
+            }
+        }
+    }
+
+    for (size_t i = 0; i < mesh.texId.size(); i++) {
+        for (int j = 0; j < 3; j++) {
+            if (mesh.texId[i][j] > mesh.textureCoords.size() ) {
+                SYNC_PRINT(("Wrong texture index\n"));
+            }
+        }
+    }
+
+    for (size_t i = 0; i < mesh.normalId.size(); i++) {
+        for (int j = 0; j < 3; j++) {
+            if (mesh.normalId[i][j] > mesh.normalCoords.size() && mesh.normalId[i][j] != -1) {
+                SYNC_PRINT(("Wrong normal index for face %d - [%d %d %d]\n",
+                     i, mesh.normalId[i][0], mesh.normalId[i][1], mesh.normalId[i][2]));
+            }
+        }
+    }
+
+
 
     return 0;
 }

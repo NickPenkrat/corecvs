@@ -61,7 +61,7 @@ int main(int argc, const char **argv)
 }
 #else
 
-void prepareMesh(Mesh3DDecorated &mesh)
+void prepareMesh(Mesh3DDecorated &mesh, RGB24Buffer *texture)
 {
     mesh.switchColor(true);
     mesh.addIcoSphere(Vector3dd(0,0,0), 50, 2);
@@ -73,7 +73,7 @@ void prepareMesh(Mesh3DDecorated &mesh)
         double u = (spherical.x() + M_PI) / (2 * M_PI);
         double v = (spherical.y() + M_PI / 2) / (M_PI);
 
-        mesh.textureCoords.push_back(Vector2dd((texture->w - 20) * u + 10, (texture->h - 20)  * v + 10));
+        mesh.textureCoords.push_back(Vector2dd(u, v));
 
         //mesh.normalCoords.push_back(Vector3dd(1.0, 0.5, 0.24).normalised());
         //mesh.textureCoords.push_back(Vector2dd(1.0, 0.5));
@@ -112,12 +112,14 @@ int main(int argc, char **argv)
     loader.trace = true;
 
     //prepareMesh(mesh);
-    ifstream file("body-v2.obj", ifstream::in);
+    std::ifstream file("body-v2.obj", std::ifstream::in);
     loader.loadOBJ(file, mesh);
 
+    mesh.transform(Matrix44::Shift(0, 0 , 3500) /** Matrix44::Scale(100)*/);
 
-    //RGB24Buffer *texture = BufferFactory::getInstance()->loadRGB24Bitmap("map1.jpg");
+    RGB24Buffer *texture = BufferFactory::getInstance()->loadRGB24Bitmap("body-v2.bmp");
 
+/*
     int square = 64;
     RGB24Buffer *texture = new RGB24Buffer(512, 1024);
     for (int i = 0; i < texture->h; i++)
@@ -127,9 +129,13 @@ int main(int argc, char **argv)
             bool color = ((i / square) % 2) ^ ((j / square) % 2);
             texture->element(i, j)  = (color ?  RGBColor::White() : RGBColor::Black());
         }
-    }
-    if (!texture)
+    }*/
+    if (!texture) {
         SYNC_PRINT(("Could not load texture"));
+    } else {
+        SYNC_PRINT(("Texture: [%d x %d]\n", texture->w, texture->h));
+    }
+
 
     renderer.textures.push_back(texture);
 

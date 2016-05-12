@@ -32,6 +32,7 @@ public:
 
     virtual void clear();
 
+     virtual void dumpInfo(ostream &out) override;
 };
 
 } // namespace corecvs

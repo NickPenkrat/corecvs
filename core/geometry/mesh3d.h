@@ -142,7 +142,7 @@ public:
 
     void fillTestScene();
 
-    void dumpInfo(ostream &out);
+    virtual void dumpInfo(ostream &out);
 };
 
 

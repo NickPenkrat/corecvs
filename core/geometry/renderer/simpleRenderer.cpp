@@ -128,12 +128,13 @@ void ClassicRenderer::render(Mesh3DDecorated *mesh, RGB24Buffer *buffer)
 
     Matrix44 normalTransform = modelviewMatrix.inverted().transposed();
 
-    for(size_t f = 180; f < std::min(mesh->faces.size(), (size_t)200); f++)
+    for(size_t f = 0; f < mesh->faces.size(); f++)
     {
         Vector3d32 face = mesh->faces[f];
         Vector3d32 normalId = mesh->normalId[f];
         Vector3d32 textureId = mesh->texId[f];
 
+        bool hasNormal = (normalId[0] != -1) && (normalId[1] != -1) && (normalId[2] != -1);
         /**/
         Vector3dd positions[3];
         Vector3dd normals  [3];
@@ -143,7 +144,12 @@ void ClassicRenderer::render(Mesh3DDecorated *mesh, RGB24Buffer *buffer)
 
         for (int i = 0; i < 3; i++) {
             positions[i] = modelviewMatrix * mesh->vertexes[face[i]];
-            normals[i] = /*normalTransform **/ mesh->normalCoords[normalId[i]].normalised();
+            if (hasNormal) {
+                normals[i] = /*normalTransform **/ mesh->normalCoords[normalId[i]].normalised();
+            } else {
+                normals[i] = mesh->getFaceAsTrinagle(f).getNormal();
+            }
+
             texture[i] = mesh->textureCoords[textureId[i]];
 
             AttributedPoint &p = triang.p[i];
@@ -206,6 +212,8 @@ void ClassicRenderer::fragmentShader(AttributedLineSpan &span)
                 tex *= z;
             }
 
+            tex.y() = 1 - tex.y();
+
 
             if (zBuffer->element(span.pos()) > z)
             {
@@ -214,10 +222,13 @@ void ClassicRenderer::fragmentShader(AttributedLineSpan &span)
                 RGBColor c = color;
 
                 /* Texture block*/
-              /*  RGB24Buffer *texture = textures[0];
+                RGB24Buffer *texture = textures[0];
+                tex = tex * Vector2dd(texture->w, texture->h);
                 if (texture->isValidCoordBl(tex)) {
                     c = texture->elementBl(tex);
-                }*/
+                } else {
+                    SYNC_PRINT(("Tex miss %lf %lf\n", tex.x(), tex.y()));
+                }
 
 
                 /* Nornal block*/
@@ -229,7 +240,7 @@ void ClassicRenderer::fragmentShader(AttributedLineSpan &span)
                 if (coef > 1.0) coef = 1.0;
 
 //                cout << normal << " " << dir << " " << coef << endl ;
-                cBuffer->element(span.pos()) = RGBColor::lerpColor(color, c, coef);
+                cBuffer->element(span.pos()) = c;//RGBColor::lerpColor(color, c, coef);
 
 
 

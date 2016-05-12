@@ -74,5 +74,16 @@ void Mesh3DDecorated::clear()
     normalId.clear();
 }
 
+void Mesh3DDecorated::dumpInfo(ostream &out)
+{
+    Mesh3D::dumpInfo(out);
+    out << " Normals   :" << normalCoords.size() << endl;
+    out << " Textures  :" << textureCoords.size() << endl;
+    out << " Norm Idxes:" << normalId.size() << endl;
+    out << " Tex  Idxes:" << texId.size() << endl;
+
+
+}
+
 } // namespace corecvs
 
