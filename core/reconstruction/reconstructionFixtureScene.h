@@ -85,7 +85,7 @@ public:
     void filterEssentialRansac(WPP a, WPP b, EssentialFilterParams params);
     void filterEssentialRansac(const std::vector<CameraFixture*> &lhs, const std::vector<CameraFixture*> &rhs, EssentialFilterParams params);
     void remove(WPP a, WPP b, std::vector<int> idx);
-    void pruneTracks(double threshold);
+    void pruneTracks(double threshold, double distanceThreshold);
 
 
     //\brief Returns number of FixtureCamera's in placedFixtures fixtures
