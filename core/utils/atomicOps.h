@@ -5,7 +5,7 @@
  * \date Sep 27, 2012
  **/
 
-#if 1   // disable for a while using std atomic type and its opers
+#if 1   // enable using std atomic type and its opers
 
 #include <atomic>
 

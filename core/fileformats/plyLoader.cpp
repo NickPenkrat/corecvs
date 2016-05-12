@@ -347,13 +347,13 @@ istream &operator >>(istream &in, PLYLoader::Prop &toLoad)
     if (in.bad()) {
         return in;
     }
-    if (type == "float") toLoad.type = PLYLoader::PROP_TYPE_FLOAT;
+    if (type == "float"  ) toLoad.type = PLYLoader::PROP_TYPE_FLOAT;
     if (type == "float32") toLoad.type = PLYLoader::PROP_TYPE_FLOAT;
 
-    if (type == "uchar") toLoad.type = PLYLoader::PROP_TYPE_UCHAR;
-    if (type == "uint8") toLoad.type = PLYLoader::PROP_TYPE_UCHAR;
+    if (type == "uchar")   toLoad.type = PLYLoader::PROP_TYPE_UCHAR;
+    if (type == "uint8")   toLoad.type = PLYLoader::PROP_TYPE_UCHAR;
 
-    if (type == "int")   toLoad.type = PLYLoader::PROP_TYPE_INT;
+    if (type == "int"  )   toLoad.type = PLYLoader::PROP_TYPE_INT;
     if (type == "int32")   toLoad.type = PLYLoader::PROP_TYPE_INT;
 
     if (type == "list") {

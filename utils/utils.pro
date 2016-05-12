@@ -104,7 +104,8 @@ HEADERS += \
     corestructs/cameraModel/featurePointControlWidget.h \
     uis/aboutPropsTableWidget.h \
     capture/manipulatorCaptureDialog.h \
-    capture/abstractManipulatorInterface.h
+    capture/abstractManipulatorInterface.h \
+
 
 SOURCES += \
     frames.cpp \
@@ -182,7 +183,7 @@ SOURCES += \
     distortioncorrector/pointListEditImageWidget.cpp \
     corestructs/cameraModel/featurePointControlWidget.cpp \
     uis/aboutPropsTableWidget.cpp \
-    capture/manipulatorCaptureDialog.cpp
+    capture/manipulatorCaptureDialog.cpp \
 
 
 FORMS += \
@@ -195,7 +196,8 @@ FORMS += \
     corestructs/cameraModel/affine3dControlWidget.ui \
     corestructs/cameraModel/fixtureControlWidget.ui \
     corestructs/cameraModel/featurePointControlWidget.ui \
-    capture/manipulatorCaptureDialog.ui
+    capture/manipulatorCaptureDialog.ui \
+
 
 # =============================================================
 

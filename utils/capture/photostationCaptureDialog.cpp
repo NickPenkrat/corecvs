@@ -540,15 +540,15 @@ void PhotostationCaptureDialog::capture(bool shouldAdvance, int positionShift)
         connect(camDesc.camInterface, SIGNAL(newFrameReady(frame_data_t)), mCaptureMapper, SLOT(map()));
         mCaptureMapper->setMapping(camDesc.camInterface, mCaptureInterfaces.count() - 1);
     }
-    if(positionShift > 0)
+
+    if (positionShift > 0)
     {
         int shift = mCaptureInterfaces.size() * positionShift;
-        for(auto&camDesc:mCaptureInterfaces)
+        for (auto& camDesc : mCaptureInterfaces)
             camDesc.camId += shift;
     }
 
-    if (!mCaptureInterfaces.empty())
-    {
+    if (!mCaptureInterfaces.empty()) {
         mCaptureInterfaces[0].camInterface->startCapture();
     }
     else {
@@ -746,7 +746,7 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
         QMessageBox::warning(this, "Error saving following files:", failedSaves.join(" "));
     }
 
-    if(!mRuningManipulator)
+    if (mRuningManipulator == NULL)
     {
         ui->capturePushButton       ->setEnabled(true);
         ui->captureAdvancePushButton->setEnabled(true);
@@ -756,7 +756,9 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
         ui->progressBar->setValue(0);
     }
     else
+    {
         mManupulatorCapturer.captureNextPosition();
+    }
 }
 
 void PhotostationCaptureDialog::keyPressEvent(QKeyEvent *event)
@@ -791,7 +793,7 @@ void PhotostationCaptureDialog::captureWithManipulator(int manipulatorPosition)
 
 void PhotostationCaptureDialog::finaliseManipulatorCapture(bool advance)
 {
-    std::cout << advance << std::endl;
+    std::cout << "finaliseManipulatorCapture: " << advance << std::endl;
     mAdvanceAfterSave = advance;
     mRuningManipulator = false;
 

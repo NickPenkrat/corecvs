@@ -11,7 +11,7 @@ HEADERS += \
     geometry/renderer/geometryIterator.h \
     geometry/conic.h \
     geometry/polygonPointIterator.h \
-    $$PWD/raytrace/raytraceRenderer.h \
+    geometry/raytrace/raytraceRenderer.h \
     geometry/mesh3DDecorated.h
 
 
@@ -26,6 +26,6 @@ SOURCES += \
     geometry/renderer/simpleRenderer.cpp \
     geometry/conic.cpp \
     geometry/polygonPointIterator.cpp \
-    $$PWD/raytrace/raytraceRenderer.cpp \
+    geometry/raytrace/raytraceRenderer.cpp \
     geometry/mesh3DDecorated.cpp
     
