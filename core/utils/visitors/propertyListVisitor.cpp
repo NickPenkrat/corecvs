@@ -81,8 +81,8 @@ template <>
         ss << fieldDescriptor->getSimpleName();
         ss << ".size";
 
-        output->setIntProperty(getChildPath(ss.str().c_str()), field.size());
-        for (size_t i = 0; i < field.size(); i++ )
+        output->setIntProperty(getChildPath(ss.str().c_str()), (int)field.size());
+        for (size_t i = 0; i < field.size(); i++)
         {
             std::stringstream ss;
             ss << fieldDescriptor->getSimpleName() << "[" << i << "]";

@@ -64,8 +64,8 @@ public:
         int currentIndex = sortedIndex[0];
         Vector2dd origin = polygon[currentIndex];
 
-        cand1 = (currentIndex + polygon.size() + indexDelta) % polygon.size(); /* Right slope driver */
-        cand2 = (currentIndex + polygon.size() - indexDelta) % polygon.size(); /* Left  slope driver */
+        cand1 = (int)((currentIndex + polygon.size() + indexDelta) % polygon.size()); /* Right slope driver */
+        cand2 = (int)((currentIndex + polygon.size() - indexDelta) % polygon.size()); /* Left  slope driver */
 
         deep    = cand1;
         shallow = cand2;
@@ -110,10 +110,10 @@ public:
             if (cand1 == shallow) {
                 /*Left end finished */
                 leftStep = true;
-                cand1n = (cand1 + polygon.size() + indexDelta) % polygon.size(); /* Right slope driver */
+                cand1n = (int)((cand1 + polygon.size() + indexDelta) % polygon.size()); /* Right slope driver */
             } else {
                 /* Right end finished*/
-                cand2n = (cand2 + polygon.size() - indexDelta) % polygon.size(); /* Left  slope driver */
+                cand2n = (int)((cand2 + polygon.size() - indexDelta) % polygon.size()); /* Left  slope driver */
             }
 
             deep    = cand1n;
@@ -222,7 +222,7 @@ public:
     PolygonFanPointIterator(const Polygon &polygon) :
         polygon(polygon),
         petle(2),
-        triangle(getTriangle(petle)),
+        triangle(getTriangle((int)petle)),
         it(triangle)
     {}
 
@@ -231,7 +231,7 @@ public:
         if (!it.hasValue()) {
             petle++;
             if (hasValue()) {
-                triangle = getTriangle(petle);
+                triangle = getTriangle((int)petle);
                 it = TrianglePointIterator(triangle);
             }
         }
