@@ -51,13 +51,13 @@ void DirectShowCaptureInterface::init(const string &devname, int h, int w, int f
 DirectShowCaptureInterface::DirectShowCaptureInterface(const string &devname, int h, int w, int fps, bool isRgb)
 {
     init(devname, h, w, fps, isRgb
-        , DirectShowCameraDescriptor::UNCOMPRESSED_YUV);
+        , DirectShowCameraDescriptor::UNCOMPRESSED_UYVY);   //TODO: before was UNCOMPRESSED_YUV!
 }
 
 DirectShowCaptureInterface::DirectShowCaptureInterface(const string &devname, ImageCaptureInterface::CameraFormat inFormat, bool isRgb)
 {
     init(devname, inFormat.height, inFormat.width, inFormat.fps, isRgb
-        , DirectShowCameraDescriptor::UNCOMPRESSED_YUV);
+        , DirectShowCameraDescriptor::UNCOMPRESSED_UYVY);
 }
 
 DirectShowCaptureInterface::DirectShowCaptureInterface(const string &devname, bool isRgb)
@@ -219,15 +219,27 @@ ALIGN_STACK_SSE void DirectShowCaptureInterface::memberCallback(DSCapDeviceId de
         delete_safe (camera->buffer);
         delete_safe (camera->buffer24);
 
-        if (data.format.type == CAP_YUV)
+        if (data.format.type == CAP_YUV || data.format.type == CAP_UYVY)
         {
+            bool uyvy = data.format.type == CAP_UYVY;
             if (mIsRgb) {
                 camera->buffer24 = new RGB24Buffer(data.format.height, data.format.width, false);
-                camera->buffer24->fillWithYUYV((uint8_t *)data.data);
+                camera->buffer24->fillWithYUVFormat((uint8_t *)data.data, uyvy);
             }
             else {
-                camera->buffer = new G12Buffer(data.format.height, data.format.width, false);
-                camera->buffer->fillWithYUYV((uint16_t *)data.data);
+                if (!uyvy)
+                {
+                    camera->buffer = new G12Buffer(data.format.height, data.format.width, false);
+                    camera->buffer->fillWithYUYV((uint16_t *)data.data);
+                }
+                else
+                {
+                    //TODO: to be replaced by UYVU->G12 converter as soon as it's implemented
+                    RGB24Buffer *rgbBuffer = new RGB24Buffer(data.format.height, data.format.width, false);
+                    rgbBuffer->fillWithYUVFormat((uint8_t *)data.data, uyvy);
+                    camera->buffer = rgbBuffer->toG12Buffer();
+                    delete_safe(rgbBuffer);
+                }
             }
         }
         else if (data.format.type == CAP_MJPEG)

@@ -158,7 +158,7 @@ void RGB24Buffer::drawHLine(int x1, int y1, int x2, RGBColor color )
     if (x1 >= w || x2 < 0 || y1 < 0 || y1 >= h )
         return;
 
-    for (int j = x1; j < x2; j++)
+    for (int j = x1; j <= x2; j++)
     {
         this->element(y1, j) = color;
     }
@@ -401,8 +401,6 @@ void RGB24Buffer::drawRectangle(const Rectangle<int32_t> &rect, RGBColor color, 
 {
     drawRectangle(rect.corner.x(), rect.corner.y(), rect.size.x(), rect.size.y(), color, style);
 }
-
-
 
 
 #if 0
@@ -706,9 +704,93 @@ void RGB24Buffer::drawIsolines(
    delete_safe(values);
 }
 
-
-void RGB24Buffer::fillWithYUYV (uint8_t *yuyv)
+void RGB24Buffer::drawDoubleBuffer(const AbstractBuffer<double> &in, int style)
 {
+    int mh = CORE_MIN(h, in.h);
+    int mw = CORE_MIN(w, in.w);
+
+    double min = std::numeric_limits<double>::max();
+    double max = std::numeric_limits<double>::lowest();
+
+    if (style != STYLE_ZBUFFER) {
+        for (int i = 0; i < mh; i++)
+        {
+            for (int j = 0; j < mw; j++)
+            {
+                min = CORE_MIN(min, in.element(i,j));
+                max = CORE_MAX(max, in.element(i,j));
+            }
+        }
+    } else {
+        for (int i = 0; i < mh; i++)
+        {
+            for (int j = 0; j < mw; j++)
+            {
+                min = CORE_MIN(min, in.element(i,j));
+                if (in.element(i,j) != std::numeric_limits<double>::max()) {
+                    max = CORE_MAX(max, in.element(i,j));
+                }
+            }
+        }
+    }
+
+    SYNC_PRINT(("RGB24Buffer::drawDoubleBuffer(): min %lf max %lf\n", min, max));
+
+    if (style == STYLE_RAINBOW)
+    {
+        for (int i = 0; i < mh; i++)
+        {
+            for (int j = 0; j < mw; j++)
+            {
+                element(i, j) = RGBColor::rainbow(lerp(0.0, 1.0, in.element(i,j), min, max));
+            }
+        }
+    }
+
+    if (style == STYLE_GRAY || style == STYLE_LOG)
+    {
+        for (int i = 0; i < mh; i++)
+        {
+            for (int j = 0; j < mw; j++)
+            {
+                element(i, j) = RGBColor::gray(lerpLimit(0.0, 255.0, in.element(i,j), min, max));
+            }
+        }
+    }
+
+    if (style == STYLE_ZBUFFER)
+    {
+        for (int i = 0; i < mh; i++)
+        {
+            for (int j = 0; j < mw; j++)
+            {
+                if (in.element(i,j) != std::numeric_limits<double>::max()) {
+                    element(i, j) = RGBColor::rainbow(lerp(0.0, 1.0, in.element(i,j), min, max));
+                } else {
+                    element(i, j) = RGBColor::Black();
+                }
+            }
+        }
+    }
+
+}
+void RGB24Buffer::fillWithYUYV(uint8_t *data)
+{
+    fillWithYUVFormat(data, false);
+}
+
+void RGB24Buffer::fillWithUYVU(uint8_t *data)
+{
+    fillWithYUVFormat(data, true);
+}
+
+void RGB24Buffer::fillWithYUVFormat (uint8_t *yuyv, bool fillAsUYVY)
+{
+    cint iy1 = fillAsUYVY ? 1 : 0;
+    cint iu  = fillAsUYVY ? 0 : 1;
+    cint iy2 = fillAsUYVY ? 3 : 2;
+    cint iv  = fillAsUYVY ? 2 : 3;
+
     for (int i = 0; i < h; i++)
     {
         int j = 0;
@@ -719,10 +801,10 @@ void RGB24Buffer::fillWithYUYV (uint8_t *yuyv)
         {
             FixedVector<Int16x8,4> r = SSEReader8BBBB_DDDD::read((uint32_t *)yuyv);
 
-            Int16x8 cy1 = r[0] - Int16x8((uint16_t) 16);
-            Int16x8 cu  = r[1] - Int16x8((uint16_t)128);
-            Int16x8 cy2 = r[2] - Int16x8((uint16_t) 16);
-            Int16x8 cv  = r[3] - Int16x8((uint16_t)128);
+            Int16x8 cy1 = r[iy1] - Int16x8((uint16_t) 16);
+            Int16x8 cu  = r[iu]  - Int16x8((uint16_t)128);
+            Int16x8 cy2 = r[iy2] - Int16x8((uint16_t) 16);
+            Int16x8 cv  = r[iv]  - Int16x8((uint16_t)128);
 
             Int16x8 con0  ((int16_t)0);
             Int16x8 con255((int16_t)0xFF);
@@ -800,10 +882,10 @@ void RGB24Buffer::fillWithYUYV (uint8_t *yuyv)
 
         for (; j + 2 <= w; j+=2)
         {
-            int y1 = yuyv[0];
-            int u  = yuyv[1];
-            int y2 = yuyv[2];
-            int v  = yuyv[3];
+            int y1 = yuyv[iy1];
+            int u  = yuyv[iu];
+            int y2 = yuyv[iy2];
+            int v  = yuyv[iv];
 
             int cy1 = y1 -  16;
             int cu  = u  - 128;

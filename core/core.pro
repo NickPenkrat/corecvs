@@ -51,6 +51,8 @@ OTHER_FILES +=              \
     xml/precise.xml         \
     xml/distortion.xml      \
     xml/patternDetector.xml \
+    xml/reconstruction.xml  \
+
 
 OTHER_FILES +=            \
     ../tools/generator/regen-core.sh \

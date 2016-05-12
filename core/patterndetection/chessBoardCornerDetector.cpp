@@ -1,11 +1,14 @@
 #include "chessBoardCornerDetector.h"
+#include "nonMaximalSuperssor.h"
 
 #include <cmath>
 #include <algorithm>
 #include <set>
+#include <regex>
 
 #include "mathUtils.h"
 
+#include "convolver/convolver.h"
 #include "vectorTraits.h"
 #include "fastKernel.h"
 #include "arithmetic.h"
@@ -14,12 +17,11 @@
 
 using corecvs::Vector2dd;
 using corecvs::Matrix22;
+using corecvs::ConvolveKernel;
+using corecvs::DummyAlgebra;
 
 
-#ifdef USE_UNSAFE_CONVOLUTOR
-#include <immintrin.h>
-
-#endif
+#define USE_CONVOLUTOR
 
 double OrientedCorner::scoreCorner(DpImage &img, DpImage &weight, std::vector<double> &radius, double bandwidth)
 {
@@ -55,16 +57,19 @@ double OrientedCorner::scoreGradient(DpImage &w, int r, double bandwidth)
             K.element(i, j) = -1.0;
         }
     }
-    double K_sum = -kw * kw, K_sum_sq = kw * kw;
+    double K_sum = -kw * kw;
+    double K_sum_sq = kw * kw;
+
     double I_sum = 0.0, I_sum_sq = 0.0;
     int cx = r, cy = r;
     int ui = pos[0], vi = pos[1];
-    corecvs::Vector2dd c(r, r);
+    Vector2dd c(r, r);
+
     for (int i = 0; i < kw; ++i)
     {
         for (int j = 0; j < kw; ++j)
         {
-            corecvs::Vector2dd p(j, i);
+            Vector2dd p(j, i);
             auto pp = p - c;
             auto p1 = (pp & v1) * v1;
             auto p2 = (pp & v2) * v2;
@@ -243,29 +248,32 @@ void CornerKernelSet::computeCost(DpImage &img, DpImage &c, bool parallelable, b
         pfB = new DpImage(img.h, img.w, false);
         pfC = new DpImage(img.h, img.w, false);
         pfD = new DpImage(img.h, img.w, false);
-#ifndef USE_UNSAFE_CONVOLUTOR
-        corecvs::ConvolveKernel<corecvs::DummyAlgebra> convA(&A, A.y, A.x);
-        corecvs::ConvolveKernel<corecvs::DummyAlgebra> convB(&B, B.y, B.x);
-        corecvs::ConvolveKernel<corecvs::DummyAlgebra> convC(&C, C.y, C.x);
-        corecvs::ConvolveKernel<corecvs::DummyAlgebra> convD(&D, D.y, D.x);
+
+#ifndef USE_CONVOLUTOR
+        ConvolveKernel<DummyAlgebra> convA(&A, A.y, A.x);
+        ConvolveKernel<DummyAlgebra> convB(&B, B.y, B.x);
+        ConvolveKernel<DummyAlgebra> convC(&C, C.y, C.x);
+        ConvolveKernel<DummyAlgebra> convD(&D, D.y, D.x);
 
         DpImage *in = &img;
-        corecvs::BufferProcessor<DpImage, DpImage, corecvs::ConvolveKernel, corecvs::AlgebraDouble> proScalar;
+        corecvs::BufferProcessor<DpImage, DpImage, ConvolveKernel, corecvs::AlgebraDouble> proScalar;
         proScalar.process(&in, &pfA, convA);
         proScalar.process(&in, &pfB, convB);
         proScalar.process(&in, &pfC, convC);
         proScalar.process(&in, &pfD, convD);
 #else
-        unsafeConvolutor(img, A, *pfA);
-        unsafeConvolutor(img, B, *pfB);
-        unsafeConvolutor(img, C, *pfC);
-        unsafeConvolutor(img, D, *pfD);
+        Convolver c;
+        c.convolve(img, A, *pfA);
+        c.convolve(img, B, *pfB);
+        c.convolve(img, C, *pfC);
+        c.convolve(img, D, *pfD);
+
 #endif
     }
 
-    for (int i = 0; i < h; ++i)
+    for (int i = 0; i < h; i++)
     {
-        for (int j = 0; j < w; ++j)
+        for (int j = 0; j < w; j++)
         {
             double fA = pfA->element(i, j),
                    fB = pfB->element(i, j),
@@ -286,10 +294,10 @@ void CornerKernelSet::computeCost(DpImage &img, DpImage &c, bool parallelable, b
     }
 
     // FIXME: we should definitely change convolution routine
-    delete pfA;
-    delete pfB;
-    delete pfC;
-    delete pfD;
+    delete_safe(pfA);
+    delete_safe(pfB);
+    delete_safe(pfC);
+    delete_safe(pfD);
 }
 
 void CornerKernelSet::computeKernels(double r, double alpha, double psi, int w, int c, double threshold)
@@ -407,7 +415,7 @@ void ChessBoardCornerDetector::prepareAngleWeight()
 #undef SQR
 
 // XXX: due to distortion removal we can get some black areas.
-// Let us scale image based on 0.05 and 0.95 percentiles
+// Let us scale image based on 0.002 and 0.998 percentiles
 void ChessBoardCornerDetector::scaleImage()
 {
     std::vector<double> values;
@@ -421,8 +429,8 @@ void ChessBoardCornerDetector::scaleImage()
 
     std::sort(values.begin(), values.end());
 
-    double p05 = values[0.05 * values.size()];
-    double p95 = values[0.95 * values.size()];
+    double p05 = values[0.002 * values.size()];
+    double p95 = values[0.998 * values.size()];
     double dp = p95 - p05;
 
     for (int i = 0; i < img.h; ++i)
@@ -440,9 +448,9 @@ void ChessBoardCornerDetector::prepareKernels()
 {
     kernels.clear();
 
-    for (auto& r: patternRadius)
+    for (double r: patternRadius())
     {
-        for (auto& psi: patternStartAngle)
+        for (double psi: patternStartAngle())
         {
             kernels.emplace_back(r, psi, sectorSize(), true);
         }
@@ -465,13 +473,21 @@ void ChessBoardCornerDetector::computeCost()
             });
 #endif
 #if 10
-    for (auto& cks: kernels)
+    if (stats != NULL) stats->enterContext("Cost->");
+
+    for (size_t i = 0; i <  kernels.size(); i++)
     {
+        if (stats != NULL) stats->startInterval();
+
+        CornerKernelSet &cks = kernels[i];
         DpImage kc;
         cks.computeCost(img, kc);
-
         cost.binaryOperationInPlace(kc, [](const double &a, const double &b) { return std::max(a, b); });
+
+        if (stats != NULL) stats->endInterval("kernel" +  std::to_string(i));
     }
+
+    if (stats != NULL) stats->leaveContext();
 #else
     for (int i = 0; i < kernels.size(); ++i)
     {
@@ -482,11 +498,14 @@ void ChessBoardCornerDetector::computeCost()
 
 void ChessBoardCornerDetector::runNms()
 {
-    std::vector<std::pair<int, int>> cornerCandidates;
-    cost.nonMaximumSupression(nmsLocality(), 0.025, cornerCandidates, nmsLocality());
-    for (auto& cc: cornerCandidates)
+    typedef Vector2d<int> CoordType;
+    std::vector<CoordType> cornerCandidates;
+    NonMaximalSuperssor<DpImage> suppressor;
+
+    suppressor.nonMaximumSupression(cost, nmsLocality(), 0.025, cornerCandidates, nmsLocality());
+    for (CoordType& cc: cornerCandidates)
     {
-        corners.emplace_back(corecvs::Vector2dd(cc.first, cc.second));
+        corners.emplace_back(Vector2dd(cc.x(), cc.y()));
     }
 }
 
@@ -565,6 +584,89 @@ corecvs::Statistics *ChessBoardCornerDetector::getStatistics()
     return stats;
 }
 
+/**
+ *   DpImage du, dv, w, phi, cost, img;
+ *   std::vector<CornerKernelSet> kernels;
+ **/
+vector<std::string> ChessBoardCornerDetector::debugBuffers()
+{
+    vector<std::string> result;
+    result.push_back("du");
+    result.push_back("dv");
+
+    result.push_back("w");
+
+    result.push_back("phi");
+    result.push_back("cost");
+    result.push_back("img");
+
+    for (size_t i = 0; i < kernels.size(); i++)
+    {
+        result.push_back(string("kernelA") +  std::to_string(i));
+        result.push_back(string("kernelB") +  std::to_string(i));
+        result.push_back(string("kernelC") +  std::to_string(i));
+        result.push_back(string("kernelD") +  std::to_string(i));
+    }
+    return result;
+}
+
+RGB24Buffer *ChessBoardCornerDetector::getDebugBuffer(std::string name)
+{
+    RGB24Buffer *result = NULL;
+    if (name == "du") {
+        result = new RGB24Buffer(du.h, du.w);
+        result->drawDoubleBuffer(du);
+    }
+    if (name == "dv") {
+        result = new RGB24Buffer(dv.h, dv.w);
+        result->drawDoubleBuffer(dv);
+    }
+    if (name == "w") {
+        result = new RGB24Buffer(w.h, w.w);
+        result->drawDoubleBuffer(w);
+    }
+    if (name == "phi") {
+        result = new RGB24Buffer(phi.h, phi.w);
+        result->drawDoubleBuffer(phi);
+    }
+    if (name == "cost") {
+        result = new RGB24Buffer(cost.h, cost.w);
+        result->drawDoubleBuffer(cost);
+    }
+    if (name == "img") {
+        result = new RGB24Buffer(img.h, img.w);
+        result->drawDoubleBuffer(img);
+    }
+
+    std::regex regexp("^kernel([A-D])([0-9]*)$");
+    std::smatch m;
+    bool res = std::regex_search(name, m, regexp);
+    if (res) {
+        SYNC_PRINT(("ChessBoardCornerDetector::getDebugBuffer(): Parsed to %s %s %s", m[0].str().c_str(), m[1].str().c_str(), m[2].str().c_str()));
+
+        size_t id = std::stoi(m[2]);
+        if (id < kernels.size()) {
+            if (m[1] == "A") {
+                result = new RGB24Buffer(kernels[id].A.h, kernels[id].A.w);
+                result->drawDoubleBuffer(kernels[id].A);
+            }
+            if (m[1] == "B") {
+                result = new RGB24Buffer(kernels[id].B.h, kernels[id].B.w);
+                result->drawDoubleBuffer(kernels[id].B);
+            }
+            if (m[1] == "C") {
+                result = new RGB24Buffer(kernels[id].C.h, kernels[id].C.w);
+                result->drawDoubleBuffer(kernels[id].C);
+            }
+            if (m[1] == "D") {
+                result = new RGB24Buffer(kernels[id].D.h, kernels[id].D.w);
+                result->drawDoubleBuffer(kernels[id].D);
+            }
+        }
+    }
+    return result;
+}
+
 bool ChessBoardCornerDetector::edgeOrientationFromGradient(int top, int bottom, int left, int right, corecvs::Vector2dd &v1, corecvs::Vector2dd &v2)
 {
     std::vector<double> histogram(histogramBins());
@@ -594,7 +696,7 @@ bool ChessBoardCornerDetector::edgeOrientationFromGradient(int top, int bottom, 
     //std::sort(modes.begin(), modes.end(), [](decltype(modes[0]) a, decltype(modes[0]) b) { return a.second == b.second ? a.first < b.first : a.second > b.second; });
 
     std::sort(modes.begin(), modes.end(), [](PairID a, PairID b) { return a.second == b.second ? a.first < b.first : a.second > b.second; });
-    
+
     auto p1 = modes[0], p2 = modes[1];
     double phi1 = p1.first * bin_size, phi2 = p2.first * bin_size;
     if (phi1 > phi2)
@@ -616,7 +718,7 @@ void ChessBoardCornerDetector::filterByOrientation()
     int idx = 0, N = (int)corners.size(), iw = w.w, ih = w.h;
     for (int i = 0; i < N; ++i)
     {
-        auto& c = corners[i];
+        OrientedCorner& c = corners[i];
 
         int top    = std::max(     0.0, c.pos[1] - neighborhood());
         int bottom = std::min(ih - 1.0, c.pos[1] + neighborhood());
@@ -634,7 +736,7 @@ void ChessBoardCornerDetector::filterByOrientation()
 void ChessBoardCornerDetector::adjustCornerOrientation()
 {
     int iw = du.w, ih = du.h;
-    for (auto& c: corners)
+    for (OrientedCorner& c: corners)
     {
         Matrix22 A1(0.0);
         Matrix22 A2(0.0);
@@ -772,26 +874,29 @@ void ChessBoardCornerDetector::detectCorners(DpImage &image, std::vector<Oriente
     if (stats != NULL) stats->startInterval();
 
     corners.clear();
-    img = image;   
+    img = image;
     scaleImage();
 
     if (stats != NULL) stats->resetInterval("Scaling");
 
     prepareDiff(du, true);
-    prepareDiff(dv, false);
-    prepareAngleWeight();
+    if (stats != NULL) stats->resetInterval("U direction Diff Preparation");
 
-    if (stats != NULL) stats->resetInterval("Diff Preparation");
+    prepareDiff(dv, false);
+    if (stats != NULL) stats->resetInterval("V direction Diff Preparation");
+
+    prepareAngleWeight();
+    if (stats != NULL) stats->resetInterval("Angle weight Preparation");
 
     computeCost();
-    runNms();
+    if (stats != NULL) stats->resetInterval("Cost");
 
-    if (stats != NULL) stats->resetInterval("Cost and NMS");
+    runNms();
+    if (stats != NULL) stats->resetInterval("NMS");
 
     filterByOrientation();
     adjustCornerOrientation();
     adjustCornerPosition();
-
     if (stats != NULL) stats->resetInterval("Adjusting first round");
 
     for (int i = 0; i < nRounds(); ++i)

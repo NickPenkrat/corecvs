@@ -106,7 +106,7 @@ int CheckerboardDetectionParameters::staticInit()
           "Cell Size Hor",
           true,
          0,
-         100
+         1
         )
     );
     fields().push_back(
@@ -120,7 +120,7 @@ int CheckerboardDetectionParameters::staticInit()
           "Cell Size Vert",
           true,
          0,
-         100
+         1
         )
     );
     fields().push_back(

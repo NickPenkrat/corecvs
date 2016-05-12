@@ -103,11 +103,12 @@ public:
     friend FixedVector<double, 4> operator *(const Matrix44 &m, const FixedVector<double, 4> &v);
     friend Vector4dd operator *(const Matrix44 &m, const Vector4dd &v);
 
-
+    static Matrix44 Identity();
     static Matrix44 ProjectParallelToZ();
     static Matrix44 Shift(double x, double y, double z);
     static Matrix44 Shift(const Vector3dd &v);
     static Matrix44 Scale(const double &d);
+    static Matrix44 Scale(const double &d1, const double &d2, const double &d3);
 
     static Matrix44 RotationX(double angle);
     static Matrix44 RotationY(double angle);

@@ -56,7 +56,10 @@ int BitcodeBoardParamsBase::staticInit()
           256,
           "cellSize",
           "cellSize",
-          "Chess cells size in pixels"
+          "Chess cells size in pixels",
+          true,
+         0,
+         999999
         )
     );
     fields().push_back(
@@ -67,7 +70,10 @@ int BitcodeBoardParamsBase::staticInit()
           0,
           "blackColor",
           "blackColor",
-          "shades of gray for black chesses"
+          "shades of gray for black chesses",
+          true,
+         0,
+         255
         )
     );
     fields().push_back(
@@ -78,11 +84,14 @@ int BitcodeBoardParamsBase::staticInit()
           255,
           "whiteColor",
           "whiteColor",
-          "shades of gray for white chesses"
+          "shades of gray for white chesses",
+          true,
+         0,
+         255
         )
     );
     fields().push_back(
-        new IntField
+        new DoubleField
         (
           BitcodeBoardParamsBase::IDENTSIZE_ID,
           offsetof(BitcodeBoardParamsBase, mIdentSize),
@@ -137,7 +146,7 @@ int BitcodeBoardParamsBase::staticInit()
         )
     );
     fields().push_back(
-        new IntField
+        new DoubleField
         (
           BitcodeBoardParamsBase::BITCODEIDENTSIZE_ID,
           offsetof(BitcodeBoardParamsBase, mBitcodeIdentSize),
@@ -145,6 +154,63 @@ int BitcodeBoardParamsBase::staticInit()
           "bitcodeIdentSize",
           "bitcodeIdentSize",
           "ident between chessboard and bitcode in chesses"
+        )
+    );
+    fields().push_back(
+        new DoubleField
+        (
+          BitcodeBoardParamsBase::BITCODECONFIDENCE_ID,
+          offsetof(BitcodeBoardParamsBase, mBitcodeConfidence),
+          0.25,
+          "bitcodeConfidence",
+          "bitcodeConfidence",
+          "Area in which the stats are collected during detection"
+        )
+    );
+    fields().push_back(
+        new EnumField
+        (
+          BitcodeBoardParamsBase::BITCODEORIENTATION_ID,
+          offsetof(BitcodeBoardParamsBase, mBitcodeOrientation),
+          4,
+          "bitcodeOrientation",
+          "bitcodeOrientation",
+          "bitcodeOrientation",
+          new EnumReflection(5
+          , new EnumOption(0,"Below")
+          , new EnumOption(1,"Left")
+          , new EnumOption(2,"Above")
+          , new EnumOption(3,"Right")
+          , new EnumOption(4,"Any")
+          )
+        )
+    );
+    fields().push_back(
+        new DoubleField
+        (
+          BitcodeBoardParamsBase::CENTERTOZEROX_ID,
+          offsetof(BitcodeBoardParamsBase, mCenterToZeroX),
+          -3.5,
+          "CenterToZeroX",
+          "CenterToZeroX",
+          "X Distance from grid center to Traget Point",
+          true,
+         -255,
+         255
+        )
+    );
+    fields().push_back(
+        new DoubleField
+        (
+          BitcodeBoardParamsBase::CENTERTOZEROY_ID,
+          offsetof(BitcodeBoardParamsBase, mCenterToZeroY),
+          6.5,
+          "CenterToZeroY",
+          "CenterToZeroY",
+          "Y Distance from grid center to Traget Point",
+          true,
+         -255,
+         255
         )
     );
    return 0;

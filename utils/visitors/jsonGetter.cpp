@@ -150,7 +150,7 @@ void JSONGetter::visit<double, DoubleVectorField>(std::vector<double> &field, co
         if (value.isDouble()) {
             field.push_back(value.toDouble());
         } else {
-            field.push_back(fieldDescriptor->defaultValue);
+            field.push_back(fieldDescriptor->getDefaultElement(i));
         }
     }
 }

@@ -9,6 +9,8 @@
 #include "graphPlotDialog.h"
 #include "rotaryTableControlWidget.h"
 #include "abstractImageNamer.h"
+#include "abstractManipulatorInterface.h"
+#include "manipulatorCaptureDialog.h"
 
 namespace Ui {
 class PhotostationCaptureDialog;
@@ -31,13 +33,16 @@ public:
     };
 
     const static QString DEFAULT_FILENAME;
+    void setManipulator(AbstractManipulatorInterface *manipulator);
 
 public slots:
     void setNamer(AbstractImageNamer *namer);
 
     void refresh();
-    void capture(bool shouldAdvance = false);
+    void capture(bool shouldAdvance = false, int positionShift = 0);
     void captureAndAdvance();
+    void captureWithManipulator(int manipulatorPosition);
+    void finaliseManipulatorCapture(bool advance);
     void stopCapture();
     void outputDir();
 
@@ -84,9 +89,14 @@ private:
     QSignalMapper           *mCaptureMapper = NULL;
     bool                     mAdvanceAfterSave = false;
 
+    ManipulatorCaptureDialog mManupulatorCapturer;
+    bool                     mRuningManipulator;
+
 private:
     Ui::PhotostationCaptureDialog *ui;
     AbstractImageNamer            *mNamer = NULL;
+
+    AbstractManipulatorInterface  *mManipulator;
 
     ImageCaptureInterface*   createCameraCapture(const string &devname, bool processError = true);
 };

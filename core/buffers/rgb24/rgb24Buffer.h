@@ -174,9 +174,22 @@ public:
             double zh, double zw,
             double steps,
             FunctionArgs &f);
+    /**
+     * Draw Double Buffer
+     **/
+    enum DoubleDrawStyle {
+        STYLE_RAINBOW,
+        STYLE_GRAY,
+        STYLE_LOG,
+        STYLE_ZBUFFER
+    };
 
+    void drawDoubleBuffer(const AbstractBuffer<double> &in, int style = STYLE_RAINBOW);
 
-    void fillWithYUYV (uint8_t *yuyv);
+    void fillWithYUYV(uint8_t *data);
+    void fillWithUYVU(uint8_t *data);
+    void fillWithYUVFormat(uint8_t *yuyv, bool fillAsUYVY = false);
+
     //void fillWith420P (uint8_t *y, uint8_t *u, uint8_t *v, int ly, int lu, int lv);
 
     void dropValueAndSatuation(void);

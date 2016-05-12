@@ -1,5 +1,8 @@
 #include "bitcodeBoardDetector.h"
 #include "homographyReconstructor.h"
+#include "simpleRenderer.h"
+#include "polygonPointIterator.h"
+#include "ellipticalApproximation.h"
 
 BitcodeBoardDetector::BitcodeBoardDetector() :
     input(NULL),
@@ -18,15 +21,38 @@ void BitcodeBoardDetector::setObservations(ObservationList *observations)
     this->observations = observations;
 }
 
-void BitcodeBoardDetector::setAlignerParams(const Marks4x4DetectorParameters &params)
+void BitcodeBoardDetector::setParameters(const BitcodeBoardDetectorParameters &params)
 {
     this->parameters = params;
 }
 
-Marks4x4DetectorParameters BitcodeBoardDetector::getAlignerParams()
+BitcodeBoardDetectorParameters BitcodeBoardDetector::getParameters()
 {
     return parameters;
 }
+
+void BitcodeBoardDetector::setStatistics(Statistics *stats)
+{
+    this->stats = stats;
+}
+
+Statistics *BitcodeBoardDetector::getStatistics()
+{
+    return stats;
+}
+
+unsigned BitcodeBoardDetector::startOrientaion() {
+    if (parameters.bitcodeParams.bitcodeOrientation() == BitcodeBoardOrientation::ANY)
+        return 0;
+    return parameters.bitcodeParams.bitcodeOrientation();
+}
+
+unsigned BitcodeBoardDetector::endOrientaion() {
+    if (parameters.bitcodeParams.bitcodeOrientation() == BitcodeBoardOrientation::ANY)
+        return BitcodeBoardOrientation::ANY;
+    return parameters.bitcodeParams.bitcodeOrientation() + 1;
+}
+
 
 bool BitcodeBoardDetector::operator ()()
 {
@@ -35,44 +61,108 @@ bool BitcodeBoardDetector::operator ()()
         return result;
     }
 
-    Vector2dd cellToMM(parameters.checkerboardParams.cellSizeHor(), parameters.checkerboardParams.cellSizeVert());
+    cellToMM = Vector2dd(parameters.checkerboardParams.cellSizeHor(), parameters.checkerboardParams.cellSizeVert());
 
-    HomographyReconstructor homography;
     homography.reset();
 
     for (PointObservation &obs : *observations) {
         homography.addPoint2PointConstraint(obs.point.xy(), obs.projection);
     }
 
-    if (!homography.hasEnoughtConstraints())
-    {
+    if (!homography.hasEnoughtConstraints()) {
         return result;
     }
 
-    Matrix33 transform = homography.getBestHomographyLSE();
-
+    transform = homography.getBestHomographyLSE2();
 
     /* Code Translation */
-    Matrix33 toCenter = Matrix33::ShiftProj(1.5, 1.5);
-    Matrix33 orients[4];
-    orients[0] = toCenter *                            Matrix33::ShiftProj(-2.5, 3.0) ;
-    orients[1] = toCenter * Matrix33::RotationZ90()  * Matrix33::ShiftProj(-2.5, 3.0) ;
-    orients[2] = toCenter * Matrix33::RotationZ180() * Matrix33::ShiftProj(-2.5, 3.0) ;
-    orients[3] = toCenter * Matrix33::RotationZ270() * Matrix33::ShiftProj(-2.5, 3.0) ;
+    toCenter = Matrix33::ShiftProj(Vector2dd (
+                            parameters.bitcodeParams.boardWidth () - 2,
+                            parameters.bitcodeParams.boardHeight() - 2) / 2.0);
 
 
-    if (debug != NULL) {
-        for (int i = 0; i < 4; i++)
+    Matrix33 centerToBitcode = Matrix33::ShiftProj(-parameters.bitcodeParams.boardWidth() / 2.0, parameters.bitcodeParams.boardHeight() / 2.0 + parameters.bitcodeParams.bitcodeIdentSize());
+
+    for (int i = 0; i < 4; i++)
+    {
+        orients[i] = toCenter * Matrix33::RotationZ(degToRad(90 * i)) * centerToBitcode;
+    }
+
+    double bestScore = 0.0;
+    bestMarker = -1;
+
+    for (unsigned o = startOrientaion(); o < endOrientaion(); o++)
+    {
+
+        SYNC_PRINT(("BitcodeBoardDetector::(): checking orientation %d...\n", o ));
+        marker[o] = detectMarker(transform, Matrix33::Scale2(cellToMM) * orients[o]);
+        if (marker[o].detected && marker[o].score > bestScore) {
+            bestScore = marker[o].score;
+            bestMarker = o;
+        }
+    }
+
+    if (bestMarker != -1) {
+        result = true;
+        bits = marker[bestMarker].bits;
+
+        for (bool b : bits) {
+            SYNC_PRINT(("%s ", b ? "1" : "0"));
+        }
+        SYNC_PRINT(("\n"));
+        Vector2dd zeroPos = Vector2dd(
+            parameters.bitcodeParams.centerToZeroX(),
+            parameters.bitcodeParams.centerToZeroY());
+
+        position = transform * Matrix33::Scale2(cellToMM) * toCenter * Matrix33::RotationZ(degToRad(90 * bestMarker)) * zeroPos;
+        score = marker[bestMarker].score;
+    }
+    return result;
+}
+
+void BitcodeBoardDetector::drawMarkerData(RGB24Buffer &buffer)
+{
+
+    int codeHeight = parameters.bitcodeParams.codeHeight();
+    int codeWidth  = parameters.bitcodeParams.codeWidth ();
+
+    buffer.drawCrosshare2(position.x(), position.y(), RGBColor::Violet());
+
+    for (int i = 0; i < parameters.bitcodeParams.boardHeight() - 1; i++)
+    {
+        for (int j = 0; j < parameters.bitcodeParams.boardWidth() - 1; j++)
         {
-            for (int j = 0; j < 4; j++)
+            Vector2dd pos(j, i);
+            pos = cellToMM *  pos;
+            Vector2dd output = transform * pos;
+
+            RGBColor color = (i == 0 && j == 0) ? RGBColor::Blue() : RGBColor::Green();
+
+            buffer.drawCrosshare1(output.x(), output.y(), color);
+        }
+    }
+
+    for (unsigned o = startOrientaion(); o < endOrientaion(); o++)
+    {
+        for (int i = 0; i < codeHeight; i++)
+        {
+            for (int j = 0; j < codeWidth; j++)
             {
-                Vector2dd pos(j, i);
-                pos = cellToMM *  pos;
-                Vector2dd output = transform * pos;
 
                 RGBColor color = (i == 0 && j == 0) ? RGBColor::Blue() : RGBColor::Green();
 
-                debug->drawCrosshare1(output.x(), output.y(), color);
+                if (marker[o].detected) {
+                    color = marker[o].bits[i * codeWidth + j] ? RGBColor::Cyan() : RGBColor::Yellow();
+                }
+
+                Matrix33 t = transform * Matrix33::Scale2(cellToMM) * orients[o];
+                Polygon area = getRectImage(j,i, t);
+                PolygonPointIterator it(area);
+                for (Vector2d<int> p : it) {
+                    if (buffer.isValidCoord(p)) {
+                        buffer.element(p) = RGBColor::lerpColor(buffer.element(p), color, 0.5);
+                    }
+                }
             }
         }
     }
@@ -82,63 +172,46 @@ bool BitcodeBoardDetector::operator ()()
     pos = toCenter * pos;
     pos = cellToMM * pos;
     Vector2dd output = transform * pos;
-    SYNC_PRINT(("Center: %lf %lf\n", output.x(), output.y()));
-    debug->drawCrosshare1(output.x(), output.y(),  RGBColor::Cyan());
-
-
-    MarkerData marker[4];
-    double bestScore = 0.0;
-    int bestMarker = -1;
-
-    int codeHeight = parameters.codeWidth();
-    int codeWidth  = parameters.boardHeight();
-
-    for (unsigned o = 0; o < CORE_COUNT_OF(orients); o++)
-    {
-
-        SYNC_PRINT(("Marks4x4Detector::(): checking orientation %d...\n", o ));
-        marker[o] = detectMarker(transform, Matrix33::Scale2(cellToMM) * orients[o]);
-        if (marker[o].detected && marker[o].score > bestScore) {
-            bestScore = marker[o].score;
-            bestMarker = o;
-        }
-
-        if (debug != NULL)
-        {
-
-
-            for (int i = 0; i < codeHeight; i++)
-            {
-                for (int j = 0; j < codeWidth; j++)
-                {
-                    Vector2dd pos(j + 0.5, i + 0.5);
-                    pos = orients[o] * pos;
-                    pos = cellToMM * pos ;
-                    Vector2dd output = transform * pos;
-
-                    RGBColor color = (i == 0 && j == 0) ? RGBColor::Blue() : RGBColor::Green();
-
-                    if (marker[o].detected) {
-                        color = marker[o].bits[i * codeWidth + j] ? RGBColor::Cyan() : RGBColor::Yellow();
-                    }
-                    debug->drawCrosshare1(output.x(), output.y(), color);
-                }
-            }
-        }
-    }
-
-
+    //SYNC_PRINT(("Center: %lf %lf\n", output.x(), output.y()));
+    buffer.drawCrosshare1(output.x(), output.y(),  RGBColor::Cyan());
 
     if (bestMarker != -1) {
-        result = true;
-        bits = marker[bestMarker].bits;
+        /** Debug draw **/
 
-        for (bool b : bits) {
-            SYNC_PRINT(("%s ", b ? "1" : "0"));
+        Vector2dd corners[4] = {
+            Vector2dd(      0.0,        0.0),
+            Vector2dd(codeWidth,        0.0),
+            Vector2dd(codeWidth, codeHeight),
+            Vector2dd(      0.0, codeHeight)
+        };
+
+        Vector2dd projected[4];
+
+        for (size_t i = 0; i < CORE_COUNT_OF(corners); i++)
+        {
+            Vector2dd pos = orients[bestMarker] * corners[i];
+            pos = cellToMM * pos;
+            projected[i] = transform * pos;
         }
-        SYNC_PRINT(("/n"));
+
+        for (size_t i = 0; i < CORE_COUNT_OF(corners); i++)
+        {
+            Vector2dd s = projected[i];
+            Vector2dd e = projected[(i + 1) % CORE_COUNT_OF(corners)];
+            buffer.drawLine(s.x(), s.y(), e.x(), e.y(), RGBColor::Red());
+        }
+
     }
-    return result;
+
+}
+
+
+/* Stat collector */
+
+Polygon BitcodeBoardDetector::getRectImage(int j, int i, Matrix33 transform)
+{
+    double delta = parameters.bitcodeParams.bitcodeConfidence();
+    return Polygon::FromRectagle(Rectangled::SquareFromCenter(Vector2dd(j + 0.5, i + 0.5), delta)).transform(transform);
 }
 
 BitcodeBoardDetector::MarkerData BitcodeBoardDetector::detectMarker(Matrix33 homography, Matrix33 translation)
@@ -146,94 +219,72 @@ BitcodeBoardDetector::MarkerData BitcodeBoardDetector::detectMarker(Matrix33 hom
     MarkerData toReturn;
     toReturn.detected = false;
 
-    double overallMean     = 0.0;
-    double overallVariance = 0.0;
-    int overallSamples     = 0;
+    SDevApproximation1d interSquare;
 
-    int codeHeight = parameters.codeWidth();
-    int codeWidth  = parameters.boardHeight();
+    int codeHeight = parameters.bitcodeParams.codeHeight();
+    int codeWidth  = parameters.bitcodeParams.codeWidth ();
+
+    vector<SDevApproximation1d> areaStats(codeHeight * codeWidth);
 
     /* First pass. Compute statistics */
-
     for (int i = 0; i < codeHeight; i++)
     {
         for (int j = 0; j < codeWidth; j++)
         {
+            SDevApproximation1d areaStat;
 
-            double valuesum = 0.0;
-            double valuesq  = 0.0;
-            int samples = 0;
-
-            /*loop over rectangle*/ {
-                Vector2dd pos(j + 0.5, i + 0.5);
-                Vector2dd output = homography * translation * pos;
-
-                if (!input->isValidCoord(output.y(), output.x()))
-                    return toReturn;
-
-                double val = input->element(output.y(), output.x()).brightness();
-                valuesum += val;
-                valuesq  += val * val;
-                samples++;
+            Polygon area = getRectImage(j,i, homography * translation);
+            if (!area.isInsideBuffer(input->getSize())) {
+                SYNC_PRINT(("    BitcodeBoardDetector::detectMarker(): code not inside image\n"));
+                return toReturn;
             }
 
-            valuesum /= samples;
-            valuesq /= samples;
-            valuesq = valuesq - valuesum * valuesum;
+            PolygonPointIterator it(area);
+            for (Vector2d<int> p : it ) {
+                if (!input->isValidCoord(p))
+                {
+                    SYNC_PRINT(("Interal error:\n"));
+                    cout << area << endl;
+                    cout << p << endl;
+                    SYNC_PRINT(("\n"));
+
+                }
+                double val = input->element(p).brightness();
+                areaStat.addPoint(val);
+            }
 
             /* Add to overall stats */
-            overallMean += valuesum;
-            overallVariance += valuesum * valuesum;
-            overallSamples++;
+            double mean = areaStat.getAverage();
+            interSquare.addPoint(mean);
+
+            areaStats[i * codeWidth + j] = areaStat;
         }
     }
 
-    overallMean     /= overallSamples;
-    overallVariance /= overallSamples;
-    overallVariance = overallVariance - overallMean * overallMean;
+    double overallMean = interSquare.getAverage();
 
-
-    SYNC_PRINT((" Marks4x4Detector::detectMarker(): mean %lf\n", overallMean ));
+    SYNC_PRINT((" BitcodeBoardDetector::detectMarker(): mean %lf\n", overallMean ));
     /* Second pass */
 
-    for (int i = 0; i < codeHeight; i++)
+    for (const SDevApproximation1d &stat : areaStats)
     {
-        for (int j = 0; j < codeWidth; j++)
-        {
-            double valuesum = 0.0;
-            double valuesq  = 0.0;
-            int samples = 0;
-
-            /*loop over rectangle*/ {
-                Vector2dd pos(j + 0.5, i + 0.5);
-                Vector2dd output = homography * translation * pos;
-
-                if (!input->isValidCoord(output.y(), output.x()))
-                    return toReturn;
-
-                double val = input->element(output.y(), output.x()).brightness();
-                valuesum += val;
-                valuesq  += val * val;
-                samples++;
-            }
-
-            valuesum /= samples;
-            valuesq /= samples;
-            valuesq = valuesq - valuesum * valuesum;
-
-            SYNC_PRINT(("    Marks4x4Detector::detectMarker(): value %lf -> (%s)\n", valuesum, (valuesum > overallMean) ? "1" : "0"));
-
-            if (valuesum > overallMean) {
-                toReturn.bits.push_back(true);
-            } else {
-                toReturn.bits.push_back(false);
-            }
+        if (parameters.produceDebug) {
+            SYNC_PRINT(("    BitcodeBoardDetector::detectMarker(): value %lf -> (%s)\n", stat.getAverage(), (stat.getAverage() > overallMean) ? "1" : "0"));
         }
+
+        if (stat.getAverage() > overallMean) {
+            toReturn.bits.push_back(true);
+        } else {
+            toReturn.bits.push_back(false);
+        }
+
     }
 
-    SYNC_PRINT(("    Marks4x4Detector::detectMarker(): score %lf\n", overallVariance));
+    if (parameters.produceDebug) {
+        SYNC_PRINT(("    BitcodeBoardDetector::detectMarker(): score %lf\n", interSquare.getSDev()));
+    }
 
     toReturn.detected = true;
-    toReturn.score = overallVariance;
+    toReturn.score = interSquare.getSDev();
     return toReturn;
 }

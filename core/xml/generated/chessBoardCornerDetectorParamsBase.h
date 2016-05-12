@@ -39,6 +39,7 @@ class ChessBoardCornerDetectorParamsBase : public BaseReflection<ChessBoardCorne
 {
 public:
     enum FieldId {
+        PRODUCEDEBUG_ID,
         GRADIENTCROSSWIDTH_ID,
         SECTORSIZEDEG_ID,
         HISTOGRAMBINS_ID,
@@ -52,10 +53,19 @@ public:
         NROUNDS_ID,
         MEANSHIFTBANDWIDTH_ID,
         NMSLOCALITY_ID,
+        PATTERN_RADIUS_ID,
+        PATTERNSTARTANGLEDEG_ID,
+        CORNERSCORES_ID,
         CHESS_BOARD_CORNER_DETECTOR_PARAMS_BASE_FIELD_ID_NUM
     };
 
     /** Section with variables */
+
+    /** 
+     * \brief produceDebug 
+     * produceDebug 
+     */
+    bool mProduceDebug;
 
     /** 
      * \brief gradientCrossWidth 
@@ -131,9 +141,27 @@ public:
 
     /** 
      * \brief nmsLocality 
-     *  // NMS locality threshold 
+     * Non Minimal Supresstion locality threshold 
      */
     int mNmsLocality;
+
+    /** 
+     * \brief Pattern Radius 
+     * Pattern Radius 
+     */
+    vector<double> mPatternRadius;
+
+    /** 
+     * \brief patternStartAngleDeg 
+     * patternStartAngleDeg 
+     */
+    vector<double> mPatternStartAngleDeg;
+
+    /** 
+     * \brief cornerScores 
+     * cornerScores 
+     */
+    vector<double> mCornerScores;
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
@@ -143,6 +171,11 @@ public:
     {
         return (const unsigned char *)(this) + fields()[fieldId]->offset;
     }
+    bool produceDebug() const
+    {
+        return mProduceDebug;
+    }
+
     double gradientCrossWidth() const
     {
         return mGradientCrossWidth;
@@ -208,7 +241,27 @@ public:
         return mNmsLocality;
     }
 
+    vector<double> patternRadius() const
+    {
+        return mPatternRadius;
+    }
+
+    vector<double> patternStartAngleDeg() const
+    {
+        return mPatternStartAngleDeg;
+    }
+
+    vector<double> cornerScores() const
+    {
+        return mCornerScores;
+    }
+
     /* Section with setters */
+    void setProduceDebug(bool produceDebug)
+    {
+        mProduceDebug = produceDebug;
+    }
+
     void setGradientCrossWidth(double gradientCrossWidth)
     {
         mGradientCrossWidth = gradientCrossWidth;
@@ -274,11 +327,27 @@ public:
         mNmsLocality = nmsLocality;
     }
 
+    void setPatternRadius(vector<double> patternRadius)
+    {
+        mPatternRadius = patternRadius;
+    }
+
+    void setPatternStartAngleDeg(vector<double> patternStartAngleDeg)
+    {
+        mPatternStartAngleDeg = patternStartAngleDeg;
+    }
+
+    void setCornerScores(vector<double> cornerScores)
+    {
+        mCornerScores = cornerScores;
+    }
+
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
+        visitor.visit(mProduceDebug,              static_cast<const BoolField *>    (fields()[PRODUCEDEBUG_ID]));
         visitor.visit(mGradientCrossWidth,        static_cast<const DoubleField *>  (fields()[GRADIENTCROSSWIDTH_ID]));
         visitor.visit(mSectorSizeDeg,             static_cast<const DoubleField *>  (fields()[SECTORSIZEDEG_ID]));
         visitor.visit(mHistogramBins,             static_cast<const IntField *>     (fields()[HISTOGRAMBINS_ID]));
@@ -292,6 +361,9 @@ template<class VisitorType>
         visitor.visit(mNRounds,                   static_cast<const IntField *>     (fields()[NROUNDS_ID]));
         visitor.visit(mMeanshiftBandwidth,        static_cast<const DoubleField *>  (fields()[MEANSHIFTBANDWIDTH_ID]));
         visitor.visit(mNmsLocality,               static_cast<const IntField *>     (fields()[NMSLOCALITY_ID]));
+        visitor.visit(mPatternRadius,             static_cast<const DoubleVectorField *>(fields()[PATTERN_RADIUS_ID]));
+        visitor.visit(mPatternStartAngleDeg,      static_cast<const DoubleVectorField *>(fields()[PATTERNSTARTANGLEDEG_ID]));
+        visitor.visit(mCornerScores,              static_cast<const DoubleVectorField *>(fields()[CORNERSCORES_ID]));
     }
 
     ChessBoardCornerDetectorParamsBase()
@@ -301,7 +373,8 @@ template<class VisitorType>
     }
 
     ChessBoardCornerDetectorParamsBase(
-          double gradientCrossWidth
+          bool produceDebug
+        , double gradientCrossWidth
         , double sectorSizeDeg
         , int histogramBins
         , double minAngleDeg
@@ -314,8 +387,12 @@ template<class VisitorType>
         , int nRounds
         , double meanshiftBandwidth
         , int nmsLocality
+        , vector<double> patternRadius
+        , vector<double> patternStartAngleDeg
+        , vector<double> cornerScores
     )
     {
+        mProduceDebug = produceDebug;
         mGradientCrossWidth = gradientCrossWidth;
         mSectorSizeDeg = sectorSizeDeg;
         mHistogramBins = histogramBins;
@@ -329,6 +406,9 @@ template<class VisitorType>
         mNRounds = nRounds;
         mMeanshiftBandwidth = meanshiftBandwidth;
         mNmsLocality = nmsLocality;
+        mPatternRadius = patternRadius;
+        mPatternStartAngleDeg = patternStartAngleDeg;
+        mCornerScores = cornerScores;
     }
 
     friend ostream& operator << (ostream &out, ChessBoardCornerDetectorParamsBase &toSave)

@@ -102,7 +102,10 @@ HEADERS += \
     widgets/observationListModel.h \
     distortioncorrector/pointListEditImageWidget.h \
     corestructs/cameraModel/featurePointControlWidget.h \
-    uis/aboutPropsTableWidget.h
+    uis/aboutPropsTableWidget.h \
+    capture/manipulatorCaptureDialog.h \
+    capture/abstractManipulatorInterface.h \
+
 
 SOURCES += \
     frames.cpp \
@@ -179,7 +182,8 @@ SOURCES += \
     widgets/observationListModel.cpp \
     distortioncorrector/pointListEditImageWidget.cpp \
     corestructs/cameraModel/featurePointControlWidget.cpp \
-    uis/aboutPropsTableWidget.cpp
+    uis/aboutPropsTableWidget.cpp \
+    capture/manipulatorCaptureDialog.cpp \
 
 
 FORMS += \
@@ -191,7 +195,9 @@ FORMS += \
     tablecontrol/rotationPlanGenerator.ui \
     corestructs/cameraModel/affine3dControlWidget.ui \
     corestructs/cameraModel/fixtureControlWidget.ui \
-    corestructs/cameraModel/featurePointControlWidget.ui
+    corestructs/cameraModel/featurePointControlWidget.ui \
+    capture/manipulatorCaptureDialog.ui \
+
 
 # =============================================================
 

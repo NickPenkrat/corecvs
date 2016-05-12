@@ -203,6 +203,8 @@ public:
 class Ray3d : public BaseRay<Ray3d, Vector3dd>
 {
 public:
+    Ray3d() {}
+
     Ray3d(const Vector3dd &_a, const Vector3dd & _p) :
         BaseRay<Ray3d, Vector3dd>(_a, _p)
     {}
@@ -727,11 +729,16 @@ public:
      *  Finding intersection
      *
      *  \f[ \vec n (\vec a t + \vec p) + d = 0 \f]
-     *  \f[ t = \frac {\vec n \vec p + d} { \vec n \vec a } \f]
+     *  \f[ t = - \frac {\vec n \vec p + d} { \vec n \vec a } \f]
      *
      *
      **/
     Vector3dd intersectWith(const Ray3d &ray, bool *hasIntersection = NULL) const
+    {
+        return ray.getPoint(intersectWithP(ray, hasIntersection));
+    }
+
+    double intersectWithP(const Ray3d &ray, bool *hasIntersection = NULL) const
     {
         double denum = normal() & ray.a;
 
@@ -739,11 +746,11 @@ public:
         if (hasIntersection) *hasIntersection = intersects;
 
         if (!intersects)
-            return Vector3dd(0.0);
+            return 0.0;
 
-        double t = ((normal() & ray.p) + last()) / denum;
-        return ray.getPoint(t);
+        return -((normal() & ray.p) + last()) / denum;
     }
+
 
 
      /**

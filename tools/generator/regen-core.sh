@@ -221,8 +221,9 @@ full_ui_classes="
 enums+=" lineDistortionEstimatorCost"
 enums+=" distortionResizePolicy"
 enums+=" checkerboardDetectionAlgorithm"
+enums+=" bitcodeBoardOrientation"
 
-#classes+=" lensDistortionModelParameters"
+classes+=" lensDistortionModelParametersBase"
 
 full_ui_classes+=" checkerboardDetectionParameters"
 full_ui_classes+=" lineDistortionEstimatorParameters"
@@ -230,6 +231,12 @@ full_ui_classes+=" distortionApplicationParameters"
 full_ui_classes+=" chessBoardCornerDetectorParamsBase"
 full_ui_classes+=" chessBoardAssemblerParamsBase"
 full_ui_classes+=" bitcodeBoardParamsBase"
+
+
+# Reconstruction
+full_ui_classes+=" photostationPlacerEssentialFilterParameters"
+full_ui_classes+=" photostationPlacerFeatureSelectionParameters"
+full_ui_classes+=" photostationPlacerParamsBase"
 
 PRIFILE="${DST_DIR}/generated.pri"
 

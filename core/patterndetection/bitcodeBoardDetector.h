@@ -6,13 +6,15 @@
 #include "selectableGeometryFeatures.h"
 #include "checkerboardDetectionParameters.h"
 #include "generated/bitcodeBoardParamsBase.h"
+#include "homographyReconstructor.h"
 
 namespace corecvs {
 
-class Marks4x4DetectorParameters : public BitcodeBoardParamsBase {
+class BitcodeBoardDetectorParameters {
 public:
     bool produceDebug;
     CheckerboardDetectionParameters checkerboardParams;
+    BitcodeBoardParamsBase bitcodeParams;
 };
 
 class BitcodeBoardDetector
@@ -35,12 +37,14 @@ public:
     ObservationList *observations;
 
     /** Parameters. Owned **/
-    Marks4x4DetectorParameters parameters;
+    BitcodeBoardDetectorParameters parameters;
 
 
     /* Outputs */
     bool result;
+    double score;
     vector<bool> bits;
+    Vector2dd position;
 
     /* Misc */
     Statistics *stats;
@@ -50,18 +54,37 @@ public:
     void setInput(RGB24Buffer *input);
     void setObservations(ObservationList *input);
 
-    void setAlignerParams(const Marks4x4DetectorParameters &params);
-    Marks4x4DetectorParameters getAlignerParams(void);
+    void setParameters(const BitcodeBoardDetectorParameters &params);
+    BitcodeBoardDetectorParameters getParameters(void);
 
+    void setStatistics(Statistics *stats);
+    Statistics *getStatistics();
 
     bool operator ()();
 
+
+    void drawMarkerData(RGB24Buffer &buffer);
+
+    /* Additionl outputs */
+    HomographyReconstructor homography;
+    Matrix33 transform;
+
+    Vector2dd  cellToMM;
+    Matrix33   toCenter;
+    Matrix33   orients[4];
+    int bestMarker;
+    MarkerData marker[4];
+
     /* Some non standart helper functions */
-private:
+    unsigned startOrientaion();
+    unsigned endOrientaion();
+
+protected:
+    Polygon getRectImage(int i, int j, Matrix33 transform);
+
     MarkerData detectMarker(Matrix33 homography, Matrix33 translation);
 
     //drawMarker(RGB24Buffer *buffer, const MarkerData &data, orientation);
-
 
 };
 
