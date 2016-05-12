@@ -77,7 +77,7 @@ public:
     {
         double dy = y2 - y1;
 
-        int attributes = a11.size();
+        int attributes = (int)a11.size();
         a1.resize(attributes);
         a2.resize(attributes);
 
@@ -124,7 +124,7 @@ public:
         x1 += dx1;
         x2 += dx2;
 
-        int attributes = a11.size();
+        int attributes = (int)a11.size();
         for (int i = 0; i < attributes; i++)
         {
             a1[i] += da1[i];
