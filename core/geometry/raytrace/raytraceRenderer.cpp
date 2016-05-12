@@ -463,7 +463,7 @@ void RaytraceableMesh::normal(const Vector3dd &vector, Vector3dd &normal)
 
 bool RaytraceableMesh::inside(Vector3dd &point)
 {
-
+    return false;
 }
 
 
