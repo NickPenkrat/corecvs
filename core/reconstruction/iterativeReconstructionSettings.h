@@ -54,7 +54,7 @@ struct IterativeReconstructionFeatureSelectionParams
 struct IterativeReconstructionAppendParams
 {
     // Maximal post-append iterations
-    int maxPostAppend = 8;
+    int maxPostAppend = 2;
     // Inlier threshold for 3P->pose
     double inlierP3PThreshold = 2.0;
     // Maximal ransac iterations for 3P-> pose
@@ -80,15 +80,15 @@ struct IterativeReconstructionNonlinearOptimizationParams
 {
     // By default only orientations and reconstructed points are subject for optimization
     ReconstructionFunctorOptimizationType optimizationParams =
-        ReconstructionFunctorOptimizationType::NON_DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::DEGENERATE_ORIENTATIONS |
+        ReconstructionFunctorOptimizationType::NON_DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::FOCALS | ReconstructionFunctorOptimizationType::PRINCIPALS |
         ReconstructionFunctorOptimizationType::POINTS;
     // Default error type is ray difference, but 'cause of
     // cool closed-form solvers it does not make sense at all
     ReconstructionFunctorOptimizationErrorType errorType = ReconstructionFunctorOptimizationErrorType::RAY_DIFF;
     // Post-append non-linear optimization iterations
-    int postAppendNonlinearIterations = 100;
+    int postAppendNonlinearIterations = 200;
     // Final non-linear iterations
-    int finalNonLinearIterations = 10000;
+    int finalNonLinearIterations = 2000;
 };
 
 }
