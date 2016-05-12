@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <atomic>
+#include <functional>
 
 #include "vector3d.h"
 #include "calibrationPhotostation.h"
@@ -58,6 +59,7 @@ public:
     // Tries to append f using P3P (with 3d<->2d correspondences
     bool appendP3P(CameraFixture* f);
 
+    std::function<void()> postAppendHook = [](){};
 protected:
     std::unordered_map<corecvs::CameraFixture*, corecvs::Affine3DQ> activeEstimates;
     std::unordered_map<corecvs::CameraFixture*, std::vector<int>> activeInlierCount;
