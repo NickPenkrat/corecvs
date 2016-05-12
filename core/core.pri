@@ -69,6 +69,8 @@ CORE_INCLUDEPATH += \
     $$COREDIR/math/vector \
     $$COREDIR/utils/visitors \
     $$COREDIR/clustering3d \
+    $$COREDIR/geometry/raytrace \
+    $$COREDIR/geometry/renderer \
     $$COREDIR/xml \
     $$COREDIR/xml/generated \
     $$COREDIR/tinyxml \

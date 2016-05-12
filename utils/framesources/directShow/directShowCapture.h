@@ -79,3 +79,4 @@ class DirectShowCaptureInterface : public ImageCaptureInterface
  };
 
 #endif /* _DIRECT_SHOW_CVCAPTURE_H_ */
+

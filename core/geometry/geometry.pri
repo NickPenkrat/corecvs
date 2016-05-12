@@ -7,10 +7,12 @@ HEADERS += \
     geometry/polygons.h \
     geometry/mesh3d.h \
     geometry/convexPolyhedron.h \
-    geometry/simpleRenderer.h \
+    geometry/renderer/simpleRenderer.h \
+    geometry/renderer/geometryIterator.h \
     geometry/conic.h \
     geometry/polygonPointIterator.h \
-    $$PWD/raytrace/raytraceRenderer.h
+    $$PWD/raytrace/raytraceRenderer.h \
+    geometry/mesh3DDecorated.h
 
 
 SOURCES += \ 
@@ -21,8 +23,9 @@ SOURCES += \
     geometry/polygons.cpp \
     geometry/mesh3d.cpp \
     geometry/convexPolyhedron.cpp \
-    geometry/simpleRenderer.cpp \
+    geometry/renderer/simpleRenderer.cpp \
     geometry/conic.cpp \
     geometry/polygonPointIterator.cpp \
-    $$PWD/raytrace/raytraceRenderer.cpp
+    $$PWD/raytrace/raytraceRenderer.cpp \
+    geometry/mesh3DDecorated.cpp
     
