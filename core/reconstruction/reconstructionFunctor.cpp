@@ -73,14 +73,14 @@ void corecvs::ReconstructionFunctor::computePointCounts()
         for (auto& obs: pt->observations__)
         {
             counter[obs.first.u]++;
-            counter[obs.first.u]++;
+            counter[obs.first.v]++;
         }
 
     for (auto& pt: scene->staticPoints)
         for (auto& obs: pt->observations__)
         {
             counter[obs.first.u]++;
-            counter[obs.first.u]++;
+            counter[obs.first.v]++;
         }
 }
 
