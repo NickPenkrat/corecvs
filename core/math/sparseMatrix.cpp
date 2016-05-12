@@ -748,11 +748,11 @@ bool corecvs::SparseMatrix::LinSolveSchurComplement(const corecvs::SparseMatrix 
     auto stopDinvBt = std::chrono::high_resolution_clock::now();
     // Computing lhs/rhs
     auto startLhsRhs = std::chrono::high_resolution_clock::now();
-    corecvs::Vector a(Ah, &Bv[0]), b(Ch, &Bv[Ah]);
-    auto rhs = a - b * DinvtBt;
+    corecvs::Vector a(Ah, &Bv[0]), b(Ch, &Bv[Ah]), rhs;
+    corecvs::Matrix lhs;
+    rhs = a - b * DinvtBt;
 
-    auto lhs = (corecvs::Matrix)A - (corecvs::Matrix)(C.t() * DinvtBt).t();
-//    cblas_dgemm(CblasRowMajor, CblasTrans, CblasNoTrans, lhs.h, lhs.w, C.h, -1.0, DinvtBt.data, DinvtBt.stride, C.data, C.stride, 1.0, lhs.data, lhs.stride);
+    lhs = (corecvs::Matrix)A - (corecvs::Matrix)(C.t() * DinvtBt).t();
     auto stopLhsRhs = std::chrono::high_resolution_clock::now();
 
     auto startX = std::chrono::high_resolution_clock::now();
@@ -801,11 +801,15 @@ bool corecvs::SparseMatrix::LinSolveSchurComplement(const corecvs::SparseMatrix 
            lhsRhs = (stopLhsRhs - startLhsRhs).count(),
            xxx    = (stopX - startX).count(),
            yyy    = (stopY - startY).count();
+    static int statcnt = 0;
+    statcnt++;
+    if (statcnt % 1000 == 0)
+    {
     double total = blocks + diagFac + sparseP + dinvBt + lhsRhs + xxx + yyy;
     total /= 100.0;
 #define SPRINT(T, V) \
         << "\t" << T << ": " << V / total << " % / " << V << "ns" << std::endl
-    std::cout << "LSC Stats: " << total / 100.0 << "ns"  << std::endl
+    std::cout << "LSC Stats: " << total * 100.0 << "ns"  << std::endl
         SPRINT("Blocks", blocks)
         SPRINT("DiagFactor", diagFac)
         SPRINT("SparsePrep", sparseP)
@@ -813,7 +817,7 @@ bool corecvs::SparseMatrix::LinSolveSchurComplement(const corecvs::SparseMatrix 
         SPRINT("LhsRhs", lhsRhs)
         SPRINT("X", xxx)
         SPRINT("Y", yyy);
-
+    }
 
     for (int i = 0; i < Aw; ++i)
         res[i] = x[i];
