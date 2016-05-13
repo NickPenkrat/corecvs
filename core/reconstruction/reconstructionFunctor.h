@@ -102,6 +102,8 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
     int getErrorComponentsPerPoint();
 
     std::vector<CameraFixture*> orientableFixtures, translateableFixtures;// translationConstrainedFixtures;
+    std::vector<Quaternion> originalOrientations;
+    std::vector<Vector3dd> inputQuaternions;
     std::vector<FixtureCamera*> focalTunableCameras, principalTunableCameras;
     /*
      * These are DoF limits for cameras/fixtures
