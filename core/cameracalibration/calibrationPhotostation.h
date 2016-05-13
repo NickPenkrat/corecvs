@@ -25,6 +25,8 @@ enum class CameraConstraints
     LOCK_PRINCIPAL    =  0x10, // Locks cx and cy
     UNLOCK_YSCALE     =  0x20, // Unlock Y scale of pattern. This is dangerous if you are not sure what are you doing
     UNLOCK_DISTORTION =  0x40, // Allow estimation of distortion parameters
+
+    DEFAULT           = (ZERO_SKEW | LOCK_SKEW | EQUAL_FOCAL),  // default set of constraints for any our camera
     // Not used now
     LOCK_PRINCIPALS   =  0x80  // Force equivalence of distortion and projective principal points (works only with UNLOCK_DISTORTION)
 };

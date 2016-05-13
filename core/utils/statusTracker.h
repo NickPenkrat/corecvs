@@ -17,11 +17,12 @@ struct Status
     size_t      completedActions, totalActions, startedActions, completedGlobalActions, totalGlobalActions, startedGlobalActions;
     bool        isCompleted;
     bool        isFailed;
+    bool        isStoped;
     bool        stopThread;
 
     Status() : currentAction("NONE"), completedActions(0), totalActions(0), startedActions(0),
         completedGlobalActions(0), totalGlobalActions(0), startedGlobalActions(0),
-      isCompleted(false), isFailed(false), stopThread(false)
+      isCompleted(false), isFailed(false), stopThread(false), isStoped(false)
     {}
 };
 
@@ -36,6 +37,7 @@ public:
     void    setFailed();
 
     void    setStopThread();
+    void    setStoped();
 
     bool    isActionCompleted(const std::string &action) const;
 

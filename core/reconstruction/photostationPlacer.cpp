@@ -14,6 +14,7 @@
 #include "calibrationHelpers.h"
 #include "reconstructionInitializer.h"
 #include "sceneAligner.h"
+#include "statusTracker.h"
 #include "log.h"
 
 std::string toString(ReconstructionFunctorOptimizationErrorType type)
@@ -750,10 +751,16 @@ void corecvs::PhotostationPlacer::postAppend()
 void corecvs::PhotostationPlacer::fullRun()
 {
     // 0. Detect features
+    scene->ProcessState->reset("Detecting", 1);
+    scene->ProcessState->incrementStarted();
     scene->detectAllFeatures(featureDetectionParams);
+    scene->ProcessState->incrementCompleted();
     // 1. Select multicams with most matches
     // 3. Create twopointcloud
+    scene->ProcessState->reset("Initialize", 1);
+    scene->ProcessState->incrementStarted();
     initialize();
+    scene->ProcessState->incrementCompleted();
     /*
      * 4. Append pss iteratively
      *       a) update all P3Ps
@@ -767,8 +774,11 @@ void corecvs::PhotostationPlacer::fullRun()
      *          be adressend in future (when we add non-iterative reconstruction)
      */
     scene->state = ReconstructionState::APPENDABLE;
+    scene->ProcessState->reset("Initialize", scene->placingQueue.size());
+    scene->ProcessState->incrementStarted();
     while (scene->placingQueue.size())
     {
+        scene->ProcessState->incrementStarted();
         std::cout << "PAINTING" << std::endl;
         paintTracksOnImages(true);
         std::cout << "PAINTED" << std::endl;
@@ -781,10 +791,22 @@ void corecvs::PhotostationPlacer::fullRun()
         for (auto& cf: scene->placedFixtures)
             std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ scene->placedFixtures[0]->location.rotor.conjugated()) << std::endl;
         scene->printTrackStats();
+        scene->ProcessState->incrementCompleted();
     }
+    scene->ProcessState->reset("Fit 1", 1);
+    scene->ProcessState->incrementStarted();
     fit(optimizationParams, finalNonLinearIterations / 2);
+    scene->ProcessState->incrementCompleted();
+
+    scene->ProcessState->reset("Prunging", 1);
+    scene->ProcessState->incrementStarted();
     scene->pruneTracks(trackPruningThreshold);
+    scene->ProcessState->incrementCompleted();
+
+    scene->ProcessState->reset("Fit 2", 1);
+    scene->ProcessState->incrementStarted();
     fit(optimizationParams, finalNonLinearIterations / 2);
+    scene->ProcessState->incrementCompleted();
 }
 
 /*

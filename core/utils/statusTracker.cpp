@@ -115,7 +115,7 @@ bool corecvs::StatusTracker::isCanceled() const
     if (this == nullptr)
         return false;
     readLock();
-        auto flag = currentStatus.stopThread;
+        auto flag = currentStatus.isStoped;
     unlock();
     return flag;
 }
@@ -147,6 +147,16 @@ void corecvs::StatusTracker::setStopThread()
     writeLock();
         currentStatus.stopThread = true;
         std::cout << "Thread stop sended." << std::endl;
+    unlock();
+}
+
+void corecvs::StatusTracker::setStoped()
+{
+    if (this == nullptr)
+        return;
+    writeLock();
+        currentStatus.isStoped = true;
+        std::cout << "Thread stoped." << std::endl;
     unlock();
 }
 
