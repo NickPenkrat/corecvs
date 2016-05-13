@@ -353,7 +353,10 @@ struct ParallelDistortionRemoval
             for (auto& ob: observationsIterator)
             {
                 corecvs::RGB24Buffer source = job->LoadImage(ob.sourceFileName), dst;
+
                 job->removeDistortion(source, dst, transform, cam.intrinsics.size[0], cam.intrinsics.size[1]);
+
+                CORE_ASSERT_TRUE_S(!ob.undistortedFileName.empty());
                 job->SaveImage(ob.undistortedFileName, dst);
             }
             job->state->incrementCompleted();
