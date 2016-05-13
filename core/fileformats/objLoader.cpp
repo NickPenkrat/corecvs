@@ -24,11 +24,6 @@ OBJLoader::~OBJLoader()
 
 #define LOCAL_PRINT(X) if (trace) { SYNC_PRINT(X); }
 
-void parseFaceId(std::string in, int &vert, int & tex, int &normal)
-{
-
-}
-
 int OBJLoader::loadOBJ(istream &input, Mesh3DDecorated &mesh)
 {
     string line;
@@ -118,7 +113,7 @@ int OBJLoader::loadOBJ(istream &input, Mesh3DDecorated &mesh)
 
     for (size_t i = 0; i < mesh.faces.size(); i++) {
         for (int j = 0; j < 3; j++) {
-            if (mesh.faces[i][j] > mesh.vertexes.size() ) {
+            if (mesh.faces[i][j] > (int)mesh.vertexes.size() ) {
                 SYNC_PRINT(("Wrong face index\n"));
             }
         }
@@ -126,7 +121,7 @@ int OBJLoader::loadOBJ(istream &input, Mesh3DDecorated &mesh)
 
     for (size_t i = 0; i < mesh.texId.size(); i++) {
         for (int j = 0; j < 3; j++) {
-            if (mesh.texId[i][j] > mesh.textureCoords.size() ) {
+            if (mesh.texId[i][j] > (int)mesh.textureCoords.size() ) {
                 SYNC_PRINT(("Wrong texture index\n"));
             }
         }
@@ -134,8 +129,8 @@ int OBJLoader::loadOBJ(istream &input, Mesh3DDecorated &mesh)
 
     for (size_t i = 0; i < mesh.normalId.size(); i++) {
         for (int j = 0; j < 3; j++) {
-            if (mesh.normalId[i][j] > mesh.normalCoords.size() && mesh.normalId[i][j] != -1) {
-                SYNC_PRINT(("Wrong normal index for face %d - [%d %d %d]\n",
+            if (mesh.normalId[i][j] > (int)mesh.normalCoords.size() && mesh.normalId[i][j] != -1) {
+                SYNC_PRINT(("Wrong normal index for face %u - [%d %d %d]\n",
                      i, mesh.normalId[i][0], mesh.normalId[i][1], mesh.normalId[i][2]));
             }
         }
