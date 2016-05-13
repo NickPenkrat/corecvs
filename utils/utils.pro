@@ -8,7 +8,7 @@ exists(../../../config.pri) {
     ROOT_DIR=..
     include($$ROOT_DIR/cvs-config.pri)
 }
-ROOT_DIR=$$PWD/$$ROOT_DIR
+    ROOT_DIR=$$PWD/$$ROOT_DIR
 
 TEMPLATE = lib
 TARGET   = cvs_utils
@@ -439,7 +439,7 @@ RESOURCES += \
 
 unix:!macx:!win32 {
     message (Switching on V4L2 support)
-
+  
     HEADERS += \
         framesources/v4l2/V4L2.h \
         framesources/v4l2/V4L2Capture.h \
@@ -498,7 +498,7 @@ with_opengl {
         \
         3d/mesh3DScene.cpp \
         3d/coordinateFrame.cpp \
-
+                       
     FORMS       += \
         uis/cloudview/cloudViewDialog.ui \
         #   Generated    \

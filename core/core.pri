@@ -66,6 +66,7 @@ CORE_INCLUDEPATH += \
     $$COREDIR/math/generic \
     $$COREDIR/math/matrix \
     $$COREDIR/math/sse \
+    $$COREDIR/math/avx \
     $$COREDIR/math/vector \
     $$COREDIR/utils/visitors \
     $$COREDIR/clustering3d \

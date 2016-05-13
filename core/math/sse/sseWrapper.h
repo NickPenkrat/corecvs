@@ -14,7 +14,7 @@
 #include "sseInteger.h"
 #include "int64x2.h"
 #include "int32x4.h"
-#include "int32x8.h"
+#include "int32x8v.h"
 #include "int16x8.h"
 #include "uInt16x8.h"
 
@@ -23,24 +23,37 @@
 
 #include "float32x4.h"
 #include "doublex2.h"
-
-#include "sseMath.h"
-
 #endif //WITH_SSE
 
 #ifdef WITH_AVX
+#include "avxInteger.h"
+#include "int64x4.h"
+#include "int32x8.h"
+#include "int16x16.h"
+
+
 #include "doublex4.h"
 #include "doublex8.h"
 #include "doublexT4.h"
+#endif
+
+
+#ifdef WITH_SSE
+#include "sseMath.h"
 #endif
 
 namespace corecvs {
 
 #ifdef WITH_AVX
 typedef Doublex4 DoublexN;
+typedef Int32x8   Int32xN;
+typedef Int16x16  Int16xN;
+
 #else
 #   ifdef WITH_SSE
 typedef Doublex2 DoublexN;
+typedef Int32x4  Int32xN;
+typedef Int16x8  Int16xN;
 #   endif
 #endif
 
