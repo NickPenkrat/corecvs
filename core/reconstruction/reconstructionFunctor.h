@@ -71,11 +71,13 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
         readParams(in);
         computeErrors(out, idxs);
     }
-    ReconstructionFunctor(ReconstructionFixtureScene *scene, const ReconstructionFunctorOptimizationErrorType &error, const ReconstructionFunctorOptimizationType &optimization, const double pointErrorEstimate);
+    void alternatingMinimization(int steps);
+    ReconstructionFunctor(ReconstructionFixtureScene *scene, const ReconstructionFunctorOptimizationErrorType &error, const ReconstructionFunctorOptimizationType &optimization, bool excessiveQuaternionParametrization, const double pointErrorEstimate);
 
     ReconstructionFixtureScene *scene;
     ReconstructionFunctorOptimizationErrorType error;
     ReconstructionFunctorOptimizationType optimization;
+    bool excessiveQuaternionParametrization;
 
     void computePointCounts();
     void computeInputs();
@@ -87,6 +89,7 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
     void readParams(const double *params);
     void writeParams(double *params);
     void computeErrors(double *out, const std::vector<int> &idxs);
+
 
     std::unordered_map<FixtureScenePart*, int> counter;
 
@@ -114,7 +117,8 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
                  MINIMAL_TRACKED_FOR_FOCALS      = 7,
                  MINIMAL_TRACKED_FOR_PRINCIPALS  = 9,
     // Inputs/outputs per item
-                 INPUTS_PER_ORIENTATION          = 4,
+                   INPUTS_PER_ORIENTATION_EXC      = 4,
+                   INPUTS_PER_ORIENTATION_NEX      = 3,
                    INPUTS_PER_TRANSLATION          = 3,
                    INPUTS_PER_3D_POINT             = 3,
                    INPUTS_PER_FOCAL                = 1,
@@ -124,15 +128,21 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
 };
 struct ReconstructionNormalizationFunctor : corecvs::FunctionArgs
 {
-    ReconstructionNormalizationFunctor(ReconstructionFunctor *functor) : FunctionArgs(functor->getInputNum(), functor->getInputNum()), functor(functor)
+    ReconstructionNormalizationFunctor(ReconstructionFunctor *functor, int alternatingOptimizationSteps = 0)
+        : FunctionArgs(functor->getInputNum(), functor->getInputNum()),
+          functor(functor),
+          alternatingOptimizationSteps(alternatingOptimizationSteps)
     {
     }
     void operator() (const double in[], double out[])
     {
         functor->readParams(in);
+        if (alternatingOptimizationSteps)
+            functor->alternatingMinimization(alternatingOptimizationSteps);
         functor->writeParams(out);
     }
     ReconstructionFunctor* functor;
+    int  alternatingOptimizationSteps;
 };
 
 }

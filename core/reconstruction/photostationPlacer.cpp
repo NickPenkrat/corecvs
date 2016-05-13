@@ -288,8 +288,8 @@ void corecvs::PhotostationPlacer::fit(const ReconstructionFunctorOptimizationTyp
     optimizationParams = params;
     getErrorSummaryAll();
     corecvs::LevenbergMarquardtSparse lm(num);
-    ReconstructionFunctor orient(scene, errorType, optimizationParams, 1.0);
-    ReconstructionNormalizationFunctor orientNorm(&orient);
+    ReconstructionFunctor orient(scene, errorType, optimizationParams, excessiveQuaternionParametrization, 1.0);
+    ReconstructionNormalizationFunctor orientNorm(&orient, alternatingIterations);
     lm.useSchurComplement = true;
     lm.f = &orient;
     lm.normalisation = &orientNorm;

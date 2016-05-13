@@ -89,6 +89,10 @@ struct IterativeReconstructionNonlinearOptimizationParams
     int postAppendNonlinearIterations = 200;
     // Final non-linear iterations
     int finalNonLinearIterations = 2000;
+    // Alternating optimization on success steps
+    int alternatingIterations = 20;
+    // Excessive/non-excessive quaternion parametrization
+    bool excessiveQuaternionParametrization = false;
 };
 
 }
