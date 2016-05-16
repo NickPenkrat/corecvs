@@ -8,7 +8,7 @@ std::vector<corecvs::Affine3DQ> corecvs::RelativeNonCentralO3PSolver::SolveRelat
     corecvs::Matrix  T(200, 330),
                      M(16, 16);
     SetupEliminationTemplate(T, LRays, RRays, shift);
-    Eliminate(T);
+    Eliminate(T, 200 - 140);
     SetupActionMatrix(T, M);
 
     corecvs::Matrix EV(16, 16);
@@ -43,12 +43,13 @@ void corecvs::RelativeNonCentralO3PSolver::Eliminate(corecvs::Matrix &T, int las
     for (int i = 0; i < T.h; ++i)
         for (int j = 0; j < i; ++j)
             T.a(i, j) = 0.0;
-    corecvs::Matrix CT(T, T.h, 0, T.w, T.h);
-    LAPACKE_dtrtrs(LAPACK_ROW_MAJOR, 'U', 'N', 'N', T.h, T.w - T.h, &T.a(0, 0), T.stride, &CT.a(0, 0), CT.stride);
-    for (int i = 0; i < T.h; ++i)
+    int hh = lastN < 0 ? T.h : lastN;
+    corecvs::Matrix CT(T, T.h, T.h - hh, T.w, T.h);
+    LAPACKE_dtrtrs(LAPACK_ROW_MAJOR, 'U', 'N', 'N', hh, T.w - T.h, &T.a(T.h - hh, T.h - hh), T.stride, &CT.a(0, 0), CT.stride);
+    for (int i = T.h - hh; i < T.h; ++i)
         for (int j = 0; j < T.h; ++j)
             T.a(i, j) = i == j ? 1.0 : 0.0;
-    for (int i = 0; i < T.h; ++i)
+    for (int i = T.h - hh; i < T.h; ++i)
         for (int j = T.h; j < T.w; ++j)
-            T.a(i, j) = CT.a(i, j - T.h);
+            T.a(i, j) = CT.a(i + hh - T.h, j - T.h);
 }
