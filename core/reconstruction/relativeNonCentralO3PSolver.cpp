@@ -36,16 +36,19 @@ std::vector<corecvs::Affine3DQ> corecvs::RelativeNonCentralO3PSolver::SolveRelat
     return res;
 }
 
-void corecvs::RelativeNonCentralO3PSolver::Eliminate(corecvs::Matrix &T)
+void corecvs::RelativeNonCentralO3PSolver::Eliminate(corecvs::Matrix &T, int lastN)
 {
     std::unique_ptr<int[]> pivot(new int[T.w]);
     LAPACKE_dgetrf(LAPACK_ROW_MAJOR, T.h, T.w, &T.a(0, 0), T.stride, pivot.get());
     for (int i = 0; i < T.h; ++i)
         for (int j = 0; j < i; ++j)
             T.a(i, j) = 0.0;
-    corecvs::Matrix CT(T);
-    LAPACKE_dtrtrs(LAPACK_ROW_MAJOR, 'U', 'N', 'N', T.h, T.w, &CT.a(0, 0), CT.stride, &T.a(0, 0), T.stride);
+    corecvs::Matrix CT(T, T.h, 0, T.w, T.h);
+    LAPACKE_dtrtrs(LAPACK_ROW_MAJOR, 'U', 'N', 'N', T.h, T.w - T.h, &T.a(0, 0), T.stride, &CT.a(0, 0), CT.stride);
     for (int i = 0; i < T.h; ++i)
         for (int j = 0; j < T.h; ++j)
             T.a(i, j) = i == j ? 1.0 : 0.0;
+    for (int i = 0; i < T.h; ++i)
+        for (int j = T.h; j < T.w; ++j)
+            T.a(i, j) = CT.a(i, j - T.h);
 }
