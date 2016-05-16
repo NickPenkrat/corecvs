@@ -33,7 +33,7 @@ public:
     /**
      *  Aligner manages the form of the checkerboard as well as positioning inside it
      **/
-    BoardAligner *aligner;
+    std::shared_ptr<BoardAligner> aligner;
 
     ChessboardDetector(
             CheckerboardDetectionParameters params        = CheckerboardDetectionParameters(),
