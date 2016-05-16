@@ -775,7 +775,6 @@ void corecvs::PhotostationPlacer::fullRun()
      */
     scene->state = ReconstructionState::APPENDABLE;
     scene->ProcessState->reset("Initialize", scene->placingQueue.size());
-    scene->ProcessState->incrementStarted();
     while (scene->placingQueue.size())
     {
         scene->ProcessState->incrementStarted();
