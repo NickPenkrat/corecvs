@@ -35,10 +35,10 @@ public:
     BoardAligner *aligner;
 
     ChessboardDetector(
-            CheckerboardDetectionParameters params          = CheckerboardDetectionParameters(),
-            BoardAlignerParams              alignerParams   = BoardAlignerParams(),
-            ChessBoardCornerDetectorParams  detectorParams  = ChessBoardCornerDetectorParams(),
-            ChessBoardAssemblerParams       assemblerParams = ChessBoardAssemblerParams()
+            CheckerboardDetectionParameters params        = CheckerboardDetectionParameters(),
+            BoardAlignerParams alignerParams              = BoardAlignerParams(),
+            ChessBoardCornerDetectorParams detectorParams = ChessBoardCornerDetectorParams(),
+            ChessBoardAssemblerParams assemblerParams     = ChessBoardAssemblerParams()
     );
 
     static ChessBoardDetectorMode getMode(const BoardAlignerParams &params);
@@ -66,7 +66,7 @@ public:
 
     void getPatterns(std::vector<ObservationList> &patterns);
 
-    void drawCorners(RGB24Buffer &image);
+    void drawCorners(RGB24Buffer &image, bool details = false);
 
 #if 0
     void dumpState();
@@ -80,13 +80,14 @@ private:
     std::vector<ObservationList> allPatterns;
     std::vector<OrientedCorner> corners;
 
+
     ChessBoardAssembler assembler;
     std::shared_ptr<CirclePatternGenerator> sharedGenerator;
 
 /* Some statistics */
     Statistics *stats;
 
-    bool detectPatternCandidates(DpImage &buffer, std::vector<std::vector<std::vector<corecvs::Vector2dd>>> &boards);
+    bool detectPatternCandidates(DpImage &buffer, std::vector<BoardCornersType> &boards);
 
 public:  /* We need generic interface for debug data. It could be hidden inside Statistics*/
     ChessBoardCornerDetector detector;

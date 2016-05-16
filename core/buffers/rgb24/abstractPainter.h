@@ -188,6 +188,11 @@ public:
         drawCircle(circle.c.x(), circle.c.y(), circle.r, color);
     }
 
+    void drawCircle(const Vector2dd &center, double radius, RGBColor color)
+    {
+        drawCircle(center.x(), center.y(), radius, color);
+    }
+
     class EqualPredicate
     {
     private:

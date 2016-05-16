@@ -250,7 +250,7 @@ public:
         Vector3dd coef = intersectCoef(other);
         return (getPoint(coef.x()) + other.getPoint(coef.y())) / 2.0;
     }
-
+    
     std::pair<corecvs::Vector3dd, corecvs::Vector3dd> pluckerize() const
     {
         auto an = a.normalised();

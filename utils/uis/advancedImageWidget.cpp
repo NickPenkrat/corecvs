@@ -12,6 +12,7 @@
 
 #include "global.h"
 
+#include "rgbColor.h"
 #include "advancedImageWidget.h"
 #include "saveFlowSettings.h"
 #include "mathUtils.h"
@@ -599,15 +600,19 @@ void AdvancedImageWidget::childMouseMoved(QMouseEvent * event)
     if ((mCurrentToolClass == INFO_TOOL) && mImage->valid(imagePoint))
     {
         QColor color = mImage->pixel(imagePoint);
+        RGBColor c = RGBColor(color.red(), color.green(), color.blue());
 
-        QString info = QString("[%1 x %2] of [%3 x %4] (R:%5 G:%6 B:%7)")
+        QString info = QString("[%1 x %2] of [%3 x %4] (R:%5 G:%6 B:%7) (H:%8 S:%9 V:%10)" )
                 .arg(imagePoint.x())
                 .arg(imagePoint.y())
                 .arg(mImage->width())
                 .arg(mImage->height())
                 .arg(color.red())
                 .arg(color.green())
-                .arg(color.blue());
+                .arg(color.blue())
+                .arg(c.hue())
+                .arg(c.saturation())
+                .arg(c.brightness());
         setInfoValueLabel(info);
     }
 

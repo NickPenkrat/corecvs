@@ -38,7 +38,7 @@ int main(int argc, const char **argv)
     }
     if (!mesh.hasColor) {
        mesh.switchColor();
-       for (int i = 0;i < mesh.facesColor.size();i++)
+       for (size_t i = 0;i < mesh.facesColor.size();i++)
        {
            mesh.facesColor[i] = RGBColor::rainbow1((double)i / mesh.facesColor.size());
        }

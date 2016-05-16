@@ -8,7 +8,7 @@ exists(../../../config.pri) {
     ROOT_DIR=..
     include($$ROOT_DIR/cvs-config.pri)
 }
-    ROOT_DIR=$$PWD/$$ROOT_DIR
+ROOT_DIR=$$PWD/$$ROOT_DIR
 
 TEMPLATE = lib
 TARGET   = cvs_utils
@@ -105,7 +105,7 @@ HEADERS += \
     uis/aboutPropsTableWidget.h \
     capture/manipulatorCaptureDialog.h \
     capture/abstractManipulatorInterface.h \
-
+    uis/histogramDepthDialog.h
 
 SOURCES += \
     frames.cpp \
@@ -184,6 +184,7 @@ SOURCES += \
     corestructs/cameraModel/featurePointControlWidget.cpp \
     uis/aboutPropsTableWidget.cpp \
     capture/manipulatorCaptureDialog.cpp \
+	uis/histogramDepthDialog.cpp
 
 
 FORMS += \
@@ -322,7 +323,6 @@ HEADERS += \
     \
     uis/advancedImageWidget.h \
     uis/paintImageWidget.h \
-    uis/histogramdepthdialog.h \
     uis/capSettingsDialog.h \
     uis/osdBaseWidget.h \
     uis/graphPlotDialog.h \
@@ -378,7 +378,6 @@ SOURCES += \
     \
     uis/advancedImageWidget.cpp \
     uis/paintImageWidget.cpp \
-    uis/histogramdepthdialog.cpp \
     uis/capSettingsDialog.cpp \
     uis/osdBaseWidget.cpp \
     uis/graphPlotDialog.cpp \
@@ -439,7 +438,7 @@ RESOURCES += \
 
 unix:!macx:!win32 {
     message (Switching on V4L2 support)
-  
+
     HEADERS += \
         framesources/v4l2/V4L2.h \
         framesources/v4l2/V4L2Capture.h \
@@ -498,7 +497,7 @@ with_opengl {
         \
         3d/mesh3DScene.cpp \
         3d/coordinateFrame.cpp \
-                       
+
     FORMS       += \
         uis/cloudview/cloudViewDialog.ui \
         #   Generated    \

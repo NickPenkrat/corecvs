@@ -1,6 +1,6 @@
 #include <QtCore/QDebug>
 
-#include "histogramdepthdialog.h"
+#include "histogramDepthDialog.h"
 #include "ui_histogramdepthdialog.h"
 
 // TODO: It shall be equal to maximum possible disparity, which seems to be dependent

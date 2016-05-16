@@ -11,6 +11,11 @@ BitcodeBoardDetector::BitcodeBoardDetector() :
     result = false;
 }
 
+BitcodeBoardDetector::~BitcodeBoardDetector()
+{
+
+}
+
 void BitcodeBoardDetector::setInput(RGB24Buffer *input)
 {
     this->input = input;
@@ -120,6 +125,56 @@ bool BitcodeBoardDetector::operator ()()
     return result;
 }
 
+void BitcodeBoardDetector::drawBoardData(RGB24Buffer &buffer)
+{
+    Histogram whiteH(0, 255.0);
+    Histogram blackH(0, 255.0);
+
+    for (int i = -1; i < parameters.bitcodeParams.boardHeight() - 1; i++)
+    {
+        for (int j = -1; j < parameters.bitcodeParams.boardWidth() - 1; j++)
+        {
+            RGBColor white = RGBColor::Yellow();
+            RGBColor black = RGBColor::Green();
+
+            bool isWhite = (i + j) % 2;
+            RGBColor color = isWhite ? white : black;
+            /**/
+            Polygon area = getRectImage(j,i, transform * Matrix33::Scale2(cellToMM));
+            PolygonPointIterator it(area);
+            for (Vector2d<int> p : it) {
+                if (buffer.isValidCoord(p)) {
+                    buffer.element(p) = RGBColor::lerpColor(buffer.element(p), color, 0.5);
+                }
+                if (input->isValidCoord(p)) {
+                    if (isWhite)
+                        whiteH.inc(input->element(p).brightness());
+                    else
+                        blackH.inc(input->element(p).brightness());
+
+                }
+            }
+        }
+    }
+
+    Histogram all(0, 255.0);
+    all.add(&whiteH);
+    all.add(&blackH);
+
+    int otsu = all.getOtsuThreshold();
+    int whiteOk = whiteH.getIntervalSum(otsu, 255.0);
+    int blackOk = blackH.getIntervalSum(0.0 ,  otsu);
+    buffer.drawHistogram1024x512(&all, position.x(), position.y(), 0x1, 200, 200);
+    //buffer.drawHistogram1024x512(&whiteH, position.x(), position.y() + 200, 0x1, 200, 200);
+    //buffer.drawHistogram1024x512(&blackH, position.x(), position.y() + 400, 0x1, 200, 200);
+
+    SYNC_PRINT(("BitcodeBoardDetector:: Otsu: %d white_ok %lf%% black_ok %lf%%\n",
+                otsu,
+                100.0 * whiteOk / whiteH.getTotalSum(),
+                100.0 * blackOk / blackH.getTotalSum()));
+
+}
+
 void BitcodeBoardDetector::drawMarkerData(RGB24Buffer &buffer)
 {
 
@@ -144,6 +199,7 @@ void BitcodeBoardDetector::drawMarkerData(RGB24Buffer &buffer)
 
     for (unsigned o = startOrientaion(); o < endOrientaion(); o++)
     {
+        Matrix33 t = transform * Matrix33::Scale2(cellToMM) * orients[o];
         for (int i = 0; i < codeHeight; i++)
         {
             for (int j = 0; j < codeWidth; j++)
@@ -155,7 +211,7 @@ void BitcodeBoardDetector::drawMarkerData(RGB24Buffer &buffer)
                     color = marker[o].bits[i * codeWidth + j] ? RGBColor::Cyan() : RGBColor::Yellow();
                 }
 
-                Matrix33 t = transform * Matrix33::Scale2(cellToMM) * orients[o];
+
                 Polygon area = getRectImage(j,i, t);
                 PolygonPointIterator it(area);
                 for (Vector2d<int> p : it) {
@@ -165,6 +221,9 @@ void BitcodeBoardDetector::drawMarkerData(RGB24Buffer &buffer)
                 }
             }
         }
+        Vector2dd pos = t * Vector2dd(0.0, 0.0);
+        buffer.drawHistogram1024x512(&marker[o].h, pos.x() - 200, pos.y() + o * 200, 0x1, 200, 200);
+
     }
 
     /* Draw center*/
@@ -200,7 +259,6 @@ void BitcodeBoardDetector::drawMarkerData(RGB24Buffer &buffer)
             Vector2dd e = projected[(i + 1) % CORE_COUNT_OF(corners)];
             buffer.drawLine(s.x(), s.y(), e.x(), e.y(), RGBColor::Red());
         }
-
     }
 
 }
@@ -235,7 +293,7 @@ BitcodeBoardDetector::MarkerData BitcodeBoardDetector::detectMarker(Matrix33 hom
 
             Polygon area = getRectImage(j,i, homography * translation);
             if (!area.isInsideBuffer(input->getSize())) {
-                SYNC_PRINT(("    BitcodeBoardDetector::detectMarker(): code not inside image\n"));
+                //SYNC_PRINT(("    BitcodeBoardDetector::detectMarker(): code not inside image\n"));
                 return toReturn;
             }
 
@@ -251,6 +309,7 @@ BitcodeBoardDetector::MarkerData BitcodeBoardDetector::detectMarker(Matrix33 hom
                 }
                 double val = input->element(p).brightness();
                 areaStat.addPoint(val);
+                toReturn.h.inc(val);
             }
 
             /* Add to overall stats */
@@ -266,13 +325,15 @@ BitcodeBoardDetector::MarkerData BitcodeBoardDetector::detectMarker(Matrix33 hom
     SYNC_PRINT((" BitcodeBoardDetector::detectMarker(): mean %lf\n", overallMean ));
     /* Second pass */
 
+    double otsu = toReturn.h.getOtsuThreshold();
+
     for (const SDevApproximation1d &stat : areaStats)
     {
         if (parameters.produceDebug) {
-            SYNC_PRINT(("    BitcodeBoardDetector::detectMarker(): value %lf -> (%s)\n", stat.getAverage(), (stat.getAverage() > overallMean) ? "1" : "0"));
+            // SYNC_PRINT(("    BitcodeBoardDetector::detectMarker(): value %lf -> (%s)\n", stat.getAverage(), (stat.getAverage() > overallMean) ? "1" : "0"));
         }
 
-        if (stat.getAverage() > overallMean) {
+        if (stat.getAverage() > otsu) {
             toReturn.bits.push_back(true);
         } else {
             toReturn.bits.push_back(false);
@@ -281,6 +342,13 @@ BitcodeBoardDetector::MarkerData BitcodeBoardDetector::detectMarker(Matrix33 hom
     }
 
     if (parameters.produceDebug) {
+
+        SYNC_PRINT(("    BitcodeBoardDetector::detectMarker():"));
+        for (bool bit: toReturn.bits)
+        {
+            SYNC_PRINT(("%s", bit ? "1" : "0"));
+        }
+        SYNC_PRINT(("\n"));
         SYNC_PRINT(("    BitcodeBoardDetector::detectMarker(): score %lf\n", interSquare.getSDev()));
     }
 

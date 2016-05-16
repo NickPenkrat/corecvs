@@ -33,6 +33,8 @@ HEADERS += \
     math/sse/int32x4.h \
     math/sse/int32x8v.h \
     math/sse/float32x4.h \
+    math/sse/float32x8.h \
+    math/sse/floatT8.h \
     math/sse/sseMath.h \
     \
     math/sse/intBase16x8.h \

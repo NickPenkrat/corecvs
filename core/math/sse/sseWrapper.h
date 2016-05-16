@@ -35,6 +35,7 @@
 #include "doublex4.h"
 #include "doublex8.h"
 #include "doublexT4.h"
+#include "floatT8.h"
 #endif
 
 
