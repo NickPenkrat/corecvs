@@ -53,7 +53,6 @@ struct OrientedCorner
      **/
     double scoreCorner(DpImage &img, DpImage &w, int r, double bandwidth = 3.0);
 
-
 private:
     /**
      * Computes gradient magnitude correlation
@@ -187,9 +186,11 @@ private:
     void prepareKernels();
 
     /**
-     * Scales image to 0.05 .. 0.95 quantiles
+     * Scales image to (percLo, percHigh) quantiles
+     *
+     * // TODO: for Indoors it requires: [0.002, 0.998]
      **/
-    void scaleImage();
+    void scaleImage(double percLow = 0.05, double percHigh = 0.95);
 
     /**
      *  first order derivative
