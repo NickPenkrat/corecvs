@@ -9,6 +9,7 @@
 
 #include "global.h"
 
+#include "sseWrapper.h"
 #include "puzzleBlock.h"
 #ifdef WITH_SSE4
 #include <smmintrin.h>
@@ -76,7 +77,7 @@ public:
         return (condition & ifTrue) | (andNot(condition, ifFalse));
     }
 
-#ifdef WITH_AVX
+#ifdef WITH_AVX2
     ALIGN_STACK_SSE static inline Int32x8 selector(const Int32x8 &condition, const Int32x8 &ifTrue, const Int32x8 &ifFalse)
     {
         return (condition & ifTrue) | (andNot(condition, ifFalse));
@@ -151,7 +152,7 @@ public:
     }
 #endif
 
-#ifdef WITH_AVX
+#ifdef WITH_AVX2
     ALIGN_STACK_SSE inline static Int16x16 max (const Int16x16 &left, const Int16x16 &right) {
         return Int16x16(_mm256_max_epi16(left.data, right.data));
     }

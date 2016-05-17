@@ -267,9 +267,15 @@ TEST(Arithmetics, profileDivisionBy25)
     printf("%9" PRIu64 "us\n", delay);
 
 
+<<<<<<< HEAD
     cout << Int32x4(rOld)  << std::endl;
     cout << Int32x4(rFast) << std::endl;
     cout << Int32x4(rFp)   << std::endl;
+=======
+    std::cout << Int32x4(rOld)  << std::endl;
+    std::cout << Int32x4(rFast) << std::endl;
+    std::cout << Int32x4(rFp)   << std::endl;
+>>>>>>> origin/master_topcon
 
     printf("And once again in reverse order:\n");
     _MM_SET_ROUNDING_MODE(_MM_ROUND_DOWN);

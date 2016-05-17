@@ -10,6 +10,7 @@
  */
 
 #include <emmintrin.h>
+#include <immintrin.h>
 #include <stdint.h>
 
 #include "global.h"

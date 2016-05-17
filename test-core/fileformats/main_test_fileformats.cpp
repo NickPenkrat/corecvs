@@ -131,7 +131,7 @@ TEST(FileFormats, testPlyLoader)
 
 using std::ifstream;
 
-TEST(FileFormats, testObjLoader)
+TEST(FileFormats, DISABLED_testObjLoader)
 {
     OBJLoader loader;
     ifstream file("body-v2.obj", ifstream::in);

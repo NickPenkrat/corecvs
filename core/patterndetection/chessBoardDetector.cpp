@@ -15,7 +15,6 @@ ChessboardDetector::ChessboardDetector (
       stats(NULL),
       detector(detectorParams)
 {
-
     BoardAlignerParams activeAlignerParams = aligner->getAlignerParams();
 
     assemblerParams.setHypothesisDimensions(0);
