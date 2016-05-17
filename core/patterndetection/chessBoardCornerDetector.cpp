@@ -435,6 +435,8 @@ void ChessBoardCornerDetector::prepareAngleWeight()
 void ChessBoardCornerDetector::scaleImage(double percLow/* = 0.05*/, double percHigh/* = 0.95*/)
 {
     std::vector<double> values;
+    values.resize(img.h * img.w);
+
     for (int i = 0; i < img.h; ++i)
     {
         for (int j = 0; j < img.w; ++j)
@@ -456,7 +458,6 @@ void ChessBoardCornerDetector::scaleImage(double percLow/* = 0.05*/, double perc
             img.element(i, j) = std::max(std::min((img.element(i, j) - pL) / dp, 1.0), 0.0);
         }
     }
-
 }
 
 
