@@ -797,12 +797,11 @@ void corecvs::PhotostationPlacer::fullRun()
     scene->ProcessState->reset("Fit 1", 1);
     scene->ProcessState->incrementStarted();
     fit(optimizationParams, finalNonLinearIterations / 2);
-    scene->pruneTracks(inlierThreshold * rmsePruningScaler / 2.0, inlierThreshold * maxPruningScaler / 2.0, distanceLimit);
     scene->ProcessState->incrementCompleted();
 
     scene->ProcessState->reset("Prunging", 1);
     scene->ProcessState->incrementStarted();
-    scene->pruneTracks(trackPruningThreshold);
+    scene->pruneTracks(inlierThreshold * rmsePruningScaler / 2.0, inlierThreshold * maxPruningScaler / 2.0, distanceLimit);
     scene->ProcessState->incrementCompleted();
 
     scene->ProcessState->reset("Fit 2", 1);
