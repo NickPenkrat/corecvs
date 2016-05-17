@@ -180,7 +180,7 @@ FixtureScene* ReconstructionFixtureScene::dumbify()
     return dumb;
 }
 
-void ReconstructionFixtureScene::pruneTracks(double threshold, double distanceThreshold)
+void ReconstructionFixtureScene::pruneTracks(double rmse, double maxe, double distanceThreshold)
 {
     int id = 0;
     std::vector<SceneFeaturePoint*> deleteSet;
@@ -199,7 +199,7 @@ void ReconstructionFixtureScene::pruneTracks(double threshold, double distanceTh
             visibleAll &= obs.first.u->isVisible(pos, obs.first.v);
             tooFar |= (!(obs.first.u->location.shift - pos)) > distanceThreshold;
         }
-        if (std::sqrt(ssq / cnt) < threshold && mxe < threshold * 2.0 && visibleAll && !tooFar)
+        if (std::sqrt(ssq / cnt) < rmse && mxe < maxe && visibleAll && !tooFar)
         {
             trackedFeatures[id++] = pt;
         }

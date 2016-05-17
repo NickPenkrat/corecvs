@@ -737,13 +737,13 @@ void corecvs::PhotostationPlacer::postAppend()
         std::cout << "AA:   " << pcnt << " reconstructed points" << std::endl;
         createTracks();
         std::cout << "AA&C: " << pcnt << " reconstructed points" << std::endl;
-        scene->pruneTracks(trackPruningThreshold * 2.0, distanceLimit);
+        scene->pruneTracks(inlierThreshold * rmsePruningScaler, inlierThreshold * maxPruningScaler, distanceLimit);
         auto acnt = scene->trackedFeatures.size();
         if (acnt <= pcnt && i != 0)
             break;
         fit(params, postAppendNonlinearIterations / 2);
         std::cout << "Prune" << std::endl;
-        scene->pruneTracks(trackPruningThreshold, distanceLimit);
+        scene->pruneTracks(inlierThreshold * rmsePruningScaler / 2.0, inlierThreshold * maxPruningScaler / 2.0, distanceLimit);
         fit(params, postAppendNonlinearIterations / 2);
     }
     postAppendHook();
@@ -785,7 +785,7 @@ void corecvs::PhotostationPlacer::fullRun()
         scene->printTrackStats();
     }
     fit(optimizationParams, finalNonLinearIterations / 2);
-    scene->pruneTracks(trackPruningThreshold, distanceLimit);
+    scene->pruneTracks(inlierThreshold * rmsePruningScaler / 2.0, inlierThreshold * maxPruningScaler / 2.0, distanceLimit);
     fit(optimizationParams, finalNonLinearIterations / 2);
 }
 

@@ -46,8 +46,10 @@ struct IterativeReconstructionFeatureSelectionParams
     double distanceLimit =1000.0;
     // Feature detection params
     FeatureDetectionParams featureDetectionParams;
-    // Track pruning threshold
-    double trackPruningThreshold = 2.8;
+    // Scaler for pruning
+    double rmsePruningScaler = 3.0;
+    // Scaler for pruning
+    double maxPruningScaler = 5.0;
 };
 
 // This block covers iterative appending
@@ -92,7 +94,7 @@ struct IterativeReconstructionNonlinearOptimizationParams
     // Alternating optimization on success steps
     int alternatingIterations = 20;
     // Excessive/non-excessive quaternion parametrization
-    bool excessiveQuaternionParametrization = false;
+    bool excessiveQuaternionParametrization = true;
 };
 
 }
