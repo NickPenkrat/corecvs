@@ -103,7 +103,6 @@ HEADERS += \
     distortioncorrector/pointListEditImageWidget.h \
     corestructs/cameraModel/featurePointControlWidget.h \
     uis/aboutPropsTableWidget.h \
-    capture/manipulatorCaptureDialog.h \
     capture/abstractManipulatorInterface.h \
     uis/histogramDepthDialog.h
 
@@ -183,8 +182,7 @@ SOURCES += \
     distortioncorrector/pointListEditImageWidget.cpp \
     corestructs/cameraModel/featurePointControlWidget.cpp \
     uis/aboutPropsTableWidget.cpp \
-    capture/manipulatorCaptureDialog.cpp \
-	uis/histogramDepthDialog.cpp
+    uis/histogramDepthDialog.cpp
 
 
 FORMS += \
@@ -197,7 +195,6 @@ FORMS += \
     corestructs/cameraModel/affine3dControlWidget.ui \
     corestructs/cameraModel/fixtureControlWidget.ui \
     corestructs/cameraModel/featurePointControlWidget.ui \
-    capture/manipulatorCaptureDialog.ui \
 
 
 # =============================================================
@@ -419,7 +416,7 @@ FORMS += \
     \
     uis/advancedImageWidget.ui \
     uis/paintImageWidget.ui \
-    uis/histogramdepthdialog.ui \
+    uis/histogramDepthDialog.ui \
     uis/capSettingsDialog.ui \
     uis/graphPlotDialog.ui \
     uis/aboutDialog.ui \
