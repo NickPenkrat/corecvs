@@ -23,21 +23,21 @@
 
 #include "float32x4.h"
 #include "doublex2.h"
-#endif //WITH_SSE
+#endif // WITH_SSE
 
 #ifdef WITH_AVX
-#include "avxInteger.h"
-#include "int64x4.h"
-#include "int32x8.h"
-#include "int16x16.h"
-
-
 #include "doublex4.h"
 #include "doublex8.h"
 #include "doublexT4.h"
 #include "floatT8.h"
-#endif
+#endif // WITH_AVX
 
+#ifdef WITH_AVX2
+#include "avxInteger.h"
+#include "int64x4.h"
+#include "int32x8.h"
+#include "int16x16.h"
+#endif // WITH_AVX2
 
 #ifdef WITH_SSE
 #include "sseMath.h"
@@ -45,20 +45,20 @@
 
 namespace corecvs {
 
-#ifdef WITH_AVX
-typedef Doublex4 DoublexN;
-typedef Int32x8   Int32xN;
-typedef Int16x16  Int16xN;
-
-#else
-#   ifdef WITH_SSE
-typedef Doublex2 DoublexN;
-typedef Int32x4  Int32xN;
-typedef Int16x8  Int16xN;
-#   endif
+#ifdef WITH_AVX2
+    typedef Doublex4 DoublexN;
+    typedef Int32x8   Int32xN;
+    typedef Int16x16  Int16xN;
+#elif WITH_AVX
+    typedef Doublex4 DoublexN;
+    typedef Int32x4  Int32xN;
+    typedef Int16x8  Int16xN;
+#elif WITH_SSE
+    typedef Doublex2 DoublexN;
+    typedef Int32x4  Int32xN;
+    typedef Int16x8  Int16xN;
 #endif
 
 } //namespace corecvs
 
 #endif /* SEEWRAPPER_H_ */
-
