@@ -23,21 +23,21 @@
 
 #include "float32x4.h"
 #include "doublex2.h"
-#endif //WITH_SSE
+#endif // WITH_SSE
 
 #ifdef WITH_AVX
 #include "doublex4.h"
 #include "doublex8.h"
 #include "doublexT4.h"
 #include "floatT8.h"
-#endif
+#endif // WITH_AVX
 
 #ifdef WITH_AVX2
 #include "avxInteger.h"
 #include "int64x4.h"
 #include "int32x8.h"
 #include "int16x16.h"
-#endif
+#endif // WITH_AVX2
 
 #ifdef WITH_SSE
 #include "sseMath.h"
