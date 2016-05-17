@@ -21,7 +21,7 @@
 
 namespace corecvs {
 
-class ALIGN_DATA(16) Int32x8 : public AVXInteger<Int32x8>
+class ALIGN_DATA(32) Int32x8 : public AVXInteger<Int32x8>
 {
 public:
     static const int SIZE = 8;

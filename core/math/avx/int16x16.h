@@ -15,10 +15,11 @@
 #include "avxInteger.h"
 #include "global.h"
 #include "fixedVector.h"
+
 namespace corecvs {
 
 
-class ALIGN_DATA(16) Int16x16 : public AVXInteger<Int16x16>
+class ALIGN_DATA(32) Int16x16 : public AVXInteger<Int16x16>
 {
 public:  
     static const int SIZE = 16;
@@ -164,7 +165,11 @@ static uint64_t   streamedWrites;
 template<int idx>
     uint16_t getInt() const
     {
+#ifdef WIN32
+        return 0xFFFF;
+#else
         return _mm256_extract_epi16(this->data, idx);
+#endif
     }
 
     inline uint16_t operator[] (uint32_t idx) const
