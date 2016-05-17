@@ -59,6 +59,7 @@ struct PointFunctor: corecvs::FunctionArgs
                 break;
         }
     }
+#undef EC
     corecvs::SceneFeaturePoint* pt;
     corecvs::ReconstructionFunctorOptimizationErrorType errType;
     int N;
@@ -76,6 +77,8 @@ void corecvs::ReconstructionFunctor::alternatingMinimization(int steps)
                 int in = 3, out = pt.observations__.size() * ec;
                 PointFunctor pf(&pt, error, ec);
                 corecvs::LevenbergMarquardt lm(steps);
+                lm.f = &pf;
+                lm.traceProgress = false;
                 std::vector<double> inn(&pt.reprojectedPosition[0], &pt.reprojectedPosition[3]), outt(out);
                 auto res = lm.fit(inn, outt);
                 for (int ii = 0; ii < 3; ++ii)
@@ -256,8 +259,10 @@ void corecvs::ReconstructionFunctor::computeDependency()
 
 #define DEPS(V, N, CPROJ, CPOS) \
     for (auto& a: V) \
+    {\
         for (int i = 0; i < N; ++i) \
         { \
+            CORE_ASSERT_TRUE_S(argin < sparsity.size()); \
             for (int j = 0; j < lastProjection; ++j) \
             { \
                 auto p = revDependency[j]; \
@@ -273,8 +278,9 @@ void corecvs::ReconstructionFunctor::computeDependency()
                 (void)p; \
             } \
             ++argin; \
-        }
-    DEPS(orientableFixtures,      excessiveQuaternionParametrization ? INPUTS_PER_ORIENTATION_EXC : INPUTS_PER_ORIENTATION_NEX, a == p->cameraFixture, false)
+        } \
+    }
+    DEPS(orientableFixtures,      (excessiveQuaternionParametrization ? INPUTS_PER_ORIENTATION_EXC : INPUTS_PER_ORIENTATION_NEX), a == p->cameraFixture, false)
     DEPS(translateableFixtures,   INPUTS_PER_TRANSLATION, a == p->cameraFixture, a == p);
     DEPS(focalTunableCameras,     INPUTS_PER_FOCAL,       a == p->camera, false)
     DEPS(principalTunableCameras, INPUTS_PER_PRINCIPAL,   a == p->camera, false)
@@ -331,7 +337,7 @@ void corecvs::ReconstructionFunctor::writeParams(double* params)
     if (excessiveQuaternionParametrization)
         WRITE(orientableFixtures,  INPUTS_PER_ORIENTATION_EXC, a->location.rotor[i],)
     else
-        WRITE(orientableFixtures,  INPUTS_PER_ORIENTATION_NEX, qq[i], auto qq = inputQuaternions[&a - &orientableFixtures[0]])
+        WRITE(orientableFixtures,  INPUTS_PER_ORIENTATION_NEX, qq[i], auto qq = inputQuaternions.size() ? inputQuaternions[&a - &orientableFixtures[0]] : corecvs::Vector3dd(0, 0, 0))
     WRITE(translateableFixtures,   INPUTS_PER_TRANSLATION, a->location.shift[i],)
     WRITE(focalTunableCameras,     INPUTS_PER_FOCAL,       a->intrinsics.focal[0],)
     WRITE(principalTunableCameras, INPUTS_PER_PRINCIPAL,   a->intrinsics.principal[i],)
@@ -391,4 +397,5 @@ void corecvs::ParallelErrorComputator::operator() (const corecvs::BlockedRange<i
             CORE_ASSERT_TRUE_S(false);
             break;
     }
+#undef EC
 }
