@@ -13,9 +13,19 @@ struct FeatureDetectionParams
 {
     std::string detector   = "ORB";
     std::string descriptor = "ORB";
-    std::string matcher    = "BF";
-    double b2bThreshold = 0.9;
-    bool matchF2F = false;
+    std::string matcher    = "BF" ;
+    double b2bThreshold    = 0.9  ;
+    bool matchF2F          = false;
+
+    template<class VisitorType>
+        void accept(VisitorType &visitor)
+        {
+            visitor.visit(detector      ,"ORB"    ,"detector"        );
+            visitor.visit(descriptor    ,"ORB"    ,"descriptor"      );
+            visitor.visit(matcher       ,"BF"     ,"matcher"         );
+            visitor.visit(b2bThreshold  ,0.9      ,"b2bThreshold"    );
+            visitor.visit(matchF2F      ,false    ,"matchF2F"        );
+        }
 };
 
 enum class ReconstructionState

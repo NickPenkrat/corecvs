@@ -33,6 +33,20 @@ struct IterativeReconstructionInitializationParams
     double inlierP6RPThreshold = 1.0;
     // Target failure probability for pose estimation
     double gammaP6RP = 0.001;
+
+    template<class VisitorType>
+        void accept(VisitorType &visitor)
+        {
+            visitor.visit(b2bRansacP5RPThreshold       ,0.8    ,"b2bRansacP5RPThreshold"         );
+            visitor.visit(inlierP5RPThreshold          ,5.0    ,"inlierP5RPThreshold"            );
+            visitor.visit(maxEssentialRansacIterations ,600000 ,"maxEssentialRansacIterations"   );
+            visitor.visit(b2bRansacP6RPThreshold       ,0.8    ,"b2bRansacP6RPThreshold"         );
+            visitor.visit(runEssentialFiltering        ,true   ,"runEssentialFiltering"          );
+            visitor.visit(essentialTargetGamma         ,0.01   ,"essentialTargetGamma"           );
+            visitor.visit(maxP6RPIterations            ,400000 ,"maxP6RPIterations"              );
+            visitor.visit(inlierP6RPThreshold 		   ,1.0    ,"inlierP6RPThreshold"            );
+            visitor.visit(gammaP6RP                    ,0.001  ,"gammaP6RP"                      );
+        }
 };
 
 // This block covers point track construction and feature point detection
@@ -50,6 +64,18 @@ struct IterativeReconstructionFeatureSelectionParams
     double rmsePruningScaler = 3.0;
     // Scaler for pruning
     double maxPruningScaler = 5.0;
+
+    template<class VisitorType>
+        void accept(VisitorType &visitor)
+        {
+            visitor.visit(inlierThreshold      ,5.0   ,"inlierThreshold"          );
+            visitor.visit(trackInlierThreshold ,3   ,"trackInlierThreshold"          );
+            visitor.visit(distanceLimit        ,1000.0   ,"distanceLimit"          );
+            visitor.visit(rmsePruningScaler    ,3.0   ,"rmsePruningScaler"          );
+            visitor.visit(maxPruningScaler     ,5.0   ,"maxPruningScaler"          );
+
+            visitor.visit(featureDetectionParams        ,FeatureDetectionParams()   ,"featureDetectionParams"          );
+        }
 };
 
 // This block covers iterative appending
@@ -75,6 +101,21 @@ struct IterativeReconstructionAppendParams
     size_t minimalInlierCount = 32;
     // Maximal failure probability for hypothesis acceptance
     double maximalFailureProbability = 0.15;
+
+    template<class VisitorType>
+        void accept(VisitorType &visitor)
+        {
+            visitor.visit(maxPostAppend , 2,"maxPostAppend");
+            visitor.visit(inlierP3PThreshold , 2.0,"inlierP3PThreshold");
+            visitor.visit(maxP3PIterations , 100000,"maxP3PIterations");
+            visitor.visit(gammaP3P , 0.001,"gammaP3P");
+            visitor.visit(inlierP6PThreshold , 1.0,"inlierP6PThreshold");
+            visitor.visit(maxP6PIterations , 400000,"maxP6PIterations");
+            visitor.visit(gammaP6P , 0.001,"gammaP6P");
+            visitor.visit(speculativity , 1000,"speculativity");
+            visitor.visit(minimalInlierCount , 32,"minimalInlierCount");
+            visitor.visit(maximalFailureProbability , 0.15,"maximalFailureProbability");
+        }
 };
 
 // And, finally, non-linear optimization params
@@ -95,6 +136,16 @@ struct IterativeReconstructionNonlinearOptimizationParams
     int alternatingIterations = 20;
     // Excessive/non-excessive quaternion parametrization
     bool excessiveQuaternionParametrization = true;
+
+    template<class VisitorType>
+        void accept(VisitorType &visitor)
+        {
+            visitor.visit(postAppendNonlinearIterations , 200, "postAppendNonlinearIterations");
+            visitor.visit(finalNonLinearIterations , 2000,     "finalNonLinearIterations");
+            visitor.visit(alternatingIterations , 20,"alternatingIterations");
+            visitor.visit(excessiveQuaternionParametrization , true,"excessiveQuaternionParametrization");
+        }
+
 };
 
 }
