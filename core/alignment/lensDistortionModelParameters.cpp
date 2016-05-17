@@ -22,7 +22,7 @@ template<>
 Reflection BaseReflection<LensDistortionModelParameters>::reflection = Reflection();
 template<>
 int BaseReflection<LensDistortionModelParameters>::dummy = LensDistortionModelParameters::staticInit();
-} // namespace corecvs 
+} // namespace corecvs
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
@@ -35,7 +35,7 @@ int LensDistortionModelParameters::staticInit()
         "Lens Distortion Model Parameters",
         ""
     );
-     
+
 
     fields().push_back(
         new DoubleField
@@ -239,7 +239,10 @@ void LensDistortionModelParameters::getRectMap(const Vector2dd &tl, const Vector
         auto& shift    = shifts[i];
         auto& origin   = origins[i];
         auto& step     = steps[i];
-        for (int j = 0; j < step; ++j)
-            boundary[j] = mapBackward(origin + j * shift);
+        corecvs::parallelable_for(0, step, [&](const corecvs::BlockedRange<int> &r)
+                {
+                    for (int j = r.begin(); j != r.end(); ++j)
+                        boundary[j] = mapBackward(origin + j * shift);
+                });
     }
 }
