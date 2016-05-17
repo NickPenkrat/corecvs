@@ -120,9 +120,9 @@ class ChessBoardCornerDetectorParams : public ChessBoardCornerDetectorParamsBase
 {
 public:
     // Radius for multi-scale pattern detection
-    // vector<double> patternRadius;
+    //vector<double> patternRadius;
     // Radius for corner-scoring
-    vector<double> cornerScores;
+    //vector<double> cornerScores;
     // Angle for rotation-variant detection
     //vector<double> patternStartAngle;
 

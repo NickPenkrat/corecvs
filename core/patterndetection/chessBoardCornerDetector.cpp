@@ -879,7 +879,7 @@ void ChessBoardCornerDetector::computeScores()
     int idx = 0;
     for (auto& c: corners)
     {
-        if (c.scoreCorner(img, w, cornerScores) < scoreThreshold())
+        if (c.scoreCorner(img, w, cornerScores()) < scoreThreshold())
             continue;
 
         // ok, here we also re-orient'em
