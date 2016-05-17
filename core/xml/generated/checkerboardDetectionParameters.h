@@ -42,17 +42,17 @@ class CheckerboardDetectionParameters : public BaseReflection<CheckerboardDetect
 public:
     enum FieldId {
         ESTIMATE_UNDISTORTED_FROM_DISTORTED_ID,
-        USE_UNDISTORTION_ID,
+        USEUNDISTORTION_ID,
         ALGORITHM_ID,
         CHANNEL_ID,
-        CELL_SIZE_HOR_ID,
-        CELL_SIZE_VERT_ID,
-        CLEAN_EXISTING_ID,
-        PRECISE_DIAMETER_ID,
-        ITERATION_COUNT_ID,
-        MIN_ACCURACY_ID,
-        PARTIAL_BOARD_ID,
-        FAST_BOARD_SPEEDUP_ID,
+        CELLSIZEHOR_ID,
+        CELLSIZEVERT_ID,
+        CLEANEXISTING_ID,
+        PRECISEDIAMETER_ID,
+        ITERATIONCOUNT_ID,
+        MINACCURACY_ID,
+        PARTIALBOARD_ID,
+        FASTBOARDSPEEDUP_ID,
         DRAW_SGFS_ON_BOARDS_ID,
         SKIP_UNDISTORTED_WITH_NO_DISTORTED_BOARD_ID,
         CHECKERBOARD_DETECTION_PARAMETERS_FIELD_ID_NUM
@@ -67,8 +67,8 @@ public:
     bool mEstimateUndistortedFromDistorted;
 
     /** 
-     * \brief Use Undistortion 
-     * Use Undistortion 
+     * \brief useUndistortion 
+     * useUndistortion 
      */
     bool mUseUndistortion;
 
@@ -85,50 +85,50 @@ public:
     int mChannel;
 
     /** 
-     * \brief Cell Size Hor 
-     * Cell Size Hor 
+     * \brief cellSizeHor 
+     * cellSizeHor 
      */
     double mCellSizeHor;
 
     /** 
-     * \brief Cell Size Vert 
-     * Cell Size Vert 
+     * \brief cellSizeVert 
+     * cellSizeVert 
      */
     double mCellSizeVert;
 
     /** 
-     * \brief Clean existing 
-     * Clean existing 
+     * \brief cleanExisting 
+     * cleanExisting 
      */
     bool mCleanExisting;
 
     /** 
-     * \brief Precise Diameter 
-     * Precise Diameter 
+     * \brief preciseDiameter 
+     * preciseDiameter 
      */
     int mPreciseDiameter;
 
     /** 
-     * \brief Iteration count 
-     * Iteration count 
+     * \brief iterationCount 
+     * iterationCount 
      */
     int mIterationCount;
 
     /** 
-     * \brief Min accuracy 
-     * Min accuracy 
+     * \brief minAccuracy 
+     * minAccuracy 
      */
     double mMinAccuracy;
 
     /** 
-     * \brief Partial Board 
-     * Partial Board 
+     * \brief partialBoard 
+     * partialBoard 
      */
     bool mPartialBoard;
 
     /** 
-     * \brief Fast board Speedup 
-     * Fast board Speedup 
+     * \brief fastBoardSpeedup 
+     * fastBoardSpeedup 
      */
     bool mFastBoardSpeedup;
 
@@ -299,17 +299,17 @@ template<class VisitorType>
     void accept(VisitorType &visitor)
     {
         visitor.visit(mEstimateUndistortedFromDistorted, static_cast<const BoolField *>    (fields()[ESTIMATE_UNDISTORTED_FROM_DISTORTED_ID]));
-        visitor.visit(mUseUndistortion,           static_cast<const BoolField *>    (fields()[USE_UNDISTORTION_ID]));
+        visitor.visit(mUseUndistortion,           static_cast<const BoolField *>    (fields()[USEUNDISTORTION_ID]));
         visitor.visit((int &)mAlgorithm,          static_cast<const EnumField *>    (fields()[ALGORITHM_ID]));
         visitor.visit((int &)mChannel,            static_cast<const EnumField *>    (fields()[CHANNEL_ID]));
-        visitor.visit(mCellSizeHor,               static_cast<const DoubleField *>  (fields()[CELL_SIZE_HOR_ID]));
-        visitor.visit(mCellSizeVert,              static_cast<const DoubleField *>  (fields()[CELL_SIZE_VERT_ID]));
-        visitor.visit(mCleanExisting,             static_cast<const BoolField *>    (fields()[CLEAN_EXISTING_ID]));
-        visitor.visit(mPreciseDiameter,           static_cast<const IntField *>     (fields()[PRECISE_DIAMETER_ID]));
-        visitor.visit(mIterationCount,            static_cast<const IntField *>     (fields()[ITERATION_COUNT_ID]));
-        visitor.visit(mMinAccuracy,               static_cast<const DoubleField *>  (fields()[MIN_ACCURACY_ID]));
-        visitor.visit(mPartialBoard,              static_cast<const BoolField *>    (fields()[PARTIAL_BOARD_ID]));
-        visitor.visit(mFastBoardSpeedup,          static_cast<const BoolField *>    (fields()[FAST_BOARD_SPEEDUP_ID]));
+        visitor.visit(mCellSizeHor,               static_cast<const DoubleField *>  (fields()[CELLSIZEHOR_ID]));
+        visitor.visit(mCellSizeVert,              static_cast<const DoubleField *>  (fields()[CELLSIZEVERT_ID]));
+        visitor.visit(mCleanExisting,             static_cast<const BoolField *>    (fields()[CLEANEXISTING_ID]));
+        visitor.visit(mPreciseDiameter,           static_cast<const IntField *>     (fields()[PRECISEDIAMETER_ID]));
+        visitor.visit(mIterationCount,            static_cast<const IntField *>     (fields()[ITERATIONCOUNT_ID]));
+        visitor.visit(mMinAccuracy,               static_cast<const DoubleField *>  (fields()[MINACCURACY_ID]));
+        visitor.visit(mPartialBoard,              static_cast<const BoolField *>    (fields()[PARTIALBOARD_ID]));
+        visitor.visit(mFastBoardSpeedup,          static_cast<const BoolField *>    (fields()[FASTBOARDSPEEDUP_ID]));
         visitor.visit(mDrawSGFsOnBoards,          static_cast<const BoolField *>    (fields()[DRAW_SGFS_ON_BOARDS_ID]));
         visitor.visit(mSkipUndistortedWithNoDistortedBoard, static_cast<const BoolField *>    (fields()[SKIP_UNDISTORTED_WITH_NO_DISTORTED_BOARD_ID]));
     }

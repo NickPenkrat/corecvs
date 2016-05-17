@@ -581,21 +581,21 @@ public:
     /*virtual*/ ~Reflection()   // it may be non virtual
     {
 //#ifndef REFLECTION_STATIC_ALLOCATION
-        FOREACH(const BaseField * el, fields) {
+        for(const BaseField * el: fields) {
             // crash silly workaround // TODO: review this and fix the problem!
-            if (el->id < 0) {
-                SYNC_PRINT(("~Reflection: bad id in the reflection object: id:%d size:%d\n", el->id, (int)fields.size()));
+            if (el->id < 0) {                
+                // SYNC_PRINT(("Reflection::~Reflection(): bad id in the reflection object: id:%d size:%d\n", el->id, (int)fields.size()));
             }
             else if ((uint)el->type > BaseField::TYPE_LAST) {
                 SYNC_PRINT(("~Reflection: bad type in the reflection object: type:%d size:%d\n", (int)el->type, (int)fields.size()));
             }
             else {
-                delete el;
+                delete_safe(el);
             }
         }
         fields.clear();
-        FOREACH (const EmbedSubclass * el, embeds) {
-            delete el;
+        for(const EmbedSubclass * el: embeds) {
+            delete_safe(el);
         }
         embeds.clear();
 //#endif

@@ -103,9 +103,8 @@ HEADERS += \
     distortioncorrector/pointListEditImageWidget.h \
     corestructs/cameraModel/featurePointControlWidget.h \
     uis/aboutPropsTableWidget.h \
-    capture/manipulatorCaptureDialog.h \
     capture/abstractManipulatorInterface.h \
-
+    uis/histogramDepthDialog.h
 
 SOURCES += \
     frames.cpp \
@@ -183,7 +182,7 @@ SOURCES += \
     distortioncorrector/pointListEditImageWidget.cpp \
     corestructs/cameraModel/featurePointControlWidget.cpp \
     uis/aboutPropsTableWidget.cpp \
-    capture/manipulatorCaptureDialog.cpp \
+    uis/histogramDepthDialog.cpp
 
 
 FORMS += \
@@ -196,7 +195,6 @@ FORMS += \
     corestructs/cameraModel/affine3dControlWidget.ui \
     corestructs/cameraModel/fixtureControlWidget.ui \
     corestructs/cameraModel/featurePointControlWidget.ui \
-    capture/manipulatorCaptureDialog.ui \
 
 
 # =============================================================
@@ -322,7 +320,6 @@ HEADERS += \
     \
     uis/advancedImageWidget.h \
     uis/paintImageWidget.h \
-    uis/histogramdepthdialog.h \
     uis/capSettingsDialog.h \
     uis/osdBaseWidget.h \
     uis/graphPlotDialog.h \
@@ -378,7 +375,6 @@ SOURCES += \
     \
     uis/advancedImageWidget.cpp \
     uis/paintImageWidget.cpp \
-    uis/histogramdepthdialog.cpp \
     uis/capSettingsDialog.cpp \
     uis/osdBaseWidget.cpp \
     uis/graphPlotDialog.cpp \
@@ -420,7 +416,7 @@ FORMS += \
     \
     uis/advancedImageWidget.ui \
     uis/paintImageWidget.ui \
-    uis/histogramdepthdialog.ui \
+    uis/histogramDepthDialog.ui \
     uis/capSettingsDialog.ui \
     uis/graphPlotDialog.ui \
     uis/aboutDialog.ui \

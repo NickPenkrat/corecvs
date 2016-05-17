@@ -87,7 +87,15 @@ private:
  */
 struct CornerKernelSet
 {
-    DpKernel A, B, C, D;
+    enum {
+        KERNEL_A,
+        KERNEL_B,
+        KERNEL_C,
+        KERNEL_D,
+        KERNEL_LAST
+    };
+    DpKernel  K[KERNEL_LAST];
+    FpKernel fK[KERNEL_LAST];
 
     CornerKernelSet(double r, double alpha, double psi, bool minify = false);
 
@@ -95,11 +103,17 @@ struct CornerKernelSet
      * Computes const function for entire image
      **/
     void computeCost(DpImage &img, DpImage &c, bool parallelable = true, bool new_style = true);
+    void computeCost(FpImage &img, DpImage &c);
+
+
 
 private:
     // Initialization routine
-    void computeKernels(double r, double alpha, double psi, int w, int c, double threshold = 0.05);
-    static void MinifyKernel(DpKernel &k);
+    template<class KernelType>
+    static void computeKernels(KernelType K[KERNEL_LAST], double r, double alpha, double psi, int w, int c, double threshold = 0.05);
+
+    template<class KernelType>
+    static void minifyKernel(KernelType &k);
 };
 
 class ChessBoardCornerDetectorParams : public ChessBoardCornerDetectorParamsBase

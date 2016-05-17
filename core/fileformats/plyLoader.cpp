@@ -45,7 +45,6 @@ using std::istringstream;
 
 int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
 {
-    //char line[300];
     string line;
 
     HelperUtils::getlineSafe (input, line);
@@ -229,7 +228,7 @@ int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
             HelperUtils::getlineSafe (input, line);
             istringstream work(line);
 
-            Vector3dd vertex;
+            Vector3dd vertex;            
             work >> vertex.x() >> vertex.y() >> vertex.z();
 
             if (hasColor) {

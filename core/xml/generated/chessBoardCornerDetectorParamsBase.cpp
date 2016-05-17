@@ -49,14 +49,14 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
         )
     );
     fields().push_back(
-        new DoubleField
+        new BoolField
         (
-          ChessBoardCornerDetectorParamsBase::GRADIENTCROSSWIDTH_ID,
-          offsetof(ChessBoardCornerDetectorParamsBase, mGradientCrossWidth),
-          3,
-          "gradientCrossWidth",
-          "gradientCrossWidth",
-          "Width of cross for corner gradient-score"
+          ChessBoardCornerDetectorParamsBase::FLOATSPEEDUP_ID,
+          offsetof(ChessBoardCornerDetectorParamsBase, mFloatSpeedup),
+          true,
+          "floatSpeedup",
+          "floatSpeedup",
+          "floatSpeedup"
         )
     );
     fields().push_back(
@@ -197,23 +197,37 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           20,
           "nmsLocality",
           "nmsLocality",
-          "Non Minimal Supresstion locality threshold",
+          "Non Minimal Supresstion locality area",
           true,
          0,
          999999
+        )
+    );
+    fields().push_back(
+        new DoubleField
+        (
+          ChessBoardCornerDetectorParamsBase::NMSTHRESHOLD_ID,
+          offsetof(ChessBoardCornerDetectorParamsBase, mNmsThreshold),
+          0.025,
+          "nmsThreshold",
+          "nmsThreshold",
+          "Non Minimal Supresstion threshold",
+          true,
+         0,
+         99
         )
     );
     double mPatternRadius_dv[] = {4,8,12};
     fields().push_back(
         new DoubleVectorField
         (
-          ChessBoardCornerDetectorParamsBase::PATTERN_RADIUS_ID,
+          ChessBoardCornerDetectorParamsBase::PATTERNRADIUS_ID,
           offsetof(ChessBoardCornerDetectorParamsBase, mPatternRadius),
           vector<double>(mPatternRadius_dv, mPatternRadius_dv + 3),
           3,
-          "Pattern Radius",
-          "Pattern Radius",
-          "Pattern Radius"
+          "patternRadius",
+          "patternRadius",
+          "patternRadius"
         )
     );
     double mPatternStartAngleDeg_dv[] = {0,45};

@@ -1,16 +1,10 @@
-#ifndef SIMPLERENDERER_H
-#define SIMPLERENDERER_H
-
-/**
- *  \file  simpleRenderer.h
- **/
+#ifndef GEOMETRY_ITERATOR_H
+#define GEOMETRY_ITERATOR_H
 
 #include "mathUtils.h"
 #include "matrix44.h"
 #include "polygons.h"
-#include "abstractBuffer.h"
-#include "abstractPainter.h"
-
+#include "lineSpan.h"
 
 namespace corecvs {
 
@@ -434,30 +428,6 @@ public:
 
 };
 
-class Mesh3D;
-class RGB24Buffer;
+} // namespace
 
-class SimpleRenderer
-{
-public:
-    SimpleRenderer();
-    Matrix44 modelviewMatrix;
-
-    bool backfaceClip;
-    bool drawFaces;
-    bool drawEdges;
-    bool drawVertexes;
-
-
-    AbstractBuffer<double> *zBuffer;
-    void render (Mesh3D *mesh, RGB24Buffer *buffer);
-
-    /* Add support for face and vertex shaders */
-    void fragmentShader(AttributedLineSpan & span);
-
-    ~SimpleRenderer();
-};
-
-} // namespace corecvs
-
-#endif // SIMPLERENDERER_H
+#endif

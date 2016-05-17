@@ -3,6 +3,7 @@
 #include "meshLoader.h"
 #include "plyLoader.h"
 #include "stlLoader.h"
+#include "objLoader.h"
 
 namespace corecvs {
 using namespace std;
@@ -23,6 +24,7 @@ MeshLoader::MeshLoader() :
 
 static const char *PLY_RES = ".ply";
 static const char *STL_RES = ".stl";
+static const char *OBJ_RES = ".obj";
 
 bool MeshLoader::load(Mesh3D *mesh, const string &fileName)
 {
@@ -52,6 +54,18 @@ bool MeshLoader::load(Mesh3D *mesh, const string &fileName)
         SYNC_PRINT(("MeshLoader::load(): Loading STL <%s>\n", fileName.c_str()));
         STLLoader loader;
         if (loader.loadBinarySTL(file, *mesh) != 0)
+        {
+           SYNC_PRINT(("MeshLoader::load(): Unable to load mesh"));
+           file.close();
+           return false;
+        }
+    }
+
+    if (endsWith(fileName, OBJ_RES))
+    {
+        SYNC_PRINT(("MeshLoader::load(): Loading OBJ <%s>\n", fileName.c_str()));
+        OBJLoader loader;
+        if (loader.loadOBJSimple(file, *mesh) != 0)
         {
            SYNC_PRINT(("MeshLoader::load(): Unable to load mesh"));
            file.close();
@@ -103,7 +117,7 @@ bool MeshLoader::save(Mesh3D *mesh, const string &fileName)
 
 std::string MeshLoader::extentionList()
 {
-    return string("*") + string(PLY_RES) + " *" + string(STL_RES);
+    return string("*") + string(PLY_RES) + " *" + string(STL_RES) + " *" + string(OBJ_RES) ;
 }
 
 } //namespace corecvs

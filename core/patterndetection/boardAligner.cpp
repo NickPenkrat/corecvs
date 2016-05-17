@@ -7,6 +7,7 @@
 using corecvs::RGBColor;
 using corecvs::Matrix33;
 using corecvs::Vector3dd;
+using corecvs::Vector2dd;
 using corecvs::HomographyReconstructor;
 
 
@@ -40,8 +41,7 @@ CirclePatternGenerator* BoardAligner::FillGenerator(const BoardAlignerParams &pa
 }
 
 bool BoardAligner::align(DpImage &img)
-{
-    if (!bestBoard.size() || !bestBoard[0].size())
+{    if (!bestBoard.size() || !bestBoard[0].size())
         return false;
     observationList.clear();
     observationList.patternIdentity = -1;
@@ -110,16 +110,20 @@ void BoardAligner::fixOrientation()
         }
     }
 
-    double mr = 0.0, mc = 0.0;
+    double mr = 0.0;
+    double mc = 0.0;
+
     for (int i = 0; i < h; ++i)
     {
         sr[i] /= w;
-        mr += ssr[i] = std::sqrt(ssr[i] / w - sr[i] * sr[i]);
+        ssr[i] = std::sqrt(ssr[i] / w - sr[i] * sr[i]);
+        mr += ssr[i];
     }
     for (int j = 0; j < w; ++j)
     {
         sc[j] /= h;
-        mc += ssc[j] = std::sqrt(ssc[j] / h - sc[j] * sc[j]);
+        ssc[j] = std::sqrt(ssc[j] / h - sc[j] * sc[j]);
+        mc += ssc[j];
     }
     if (mr > mc)
         transpose();
@@ -127,7 +131,7 @@ void BoardAligner::fixOrientation()
     h = (int)bestBoard.size();
 
     for (auto& r: bestBoard)
-        std::sort(r.begin(), r.end(), [](const corecvs::Vector2dd &a, const corecvs::Vector2dd &b) { return a[0] < b[0]; });
+        std::sort(r.begin(), r.end(), [](const Vector2dd &a, const Vector2dd &b) { return a.x() < b.x(); });
 
     std::vector<std::pair<double, int>> ymeans(h);
     for (int i = 0; i < h; ++i)
@@ -149,7 +153,8 @@ bool BoardAligner::alignDim(DpImage &img, bool fitW, bool fitH)
     if (!fitW && !fitH)
         return false;
 
-    int w = (int)bestBoard[0].size(), h = (int)bestBoard.size();
+    int w = (int)bestBoard[0].size();
+    int h = (int)bestBoard.size();
 //    std::cout << "Best board: " << w << " x " << h << "; Req: " << idealWidth << " x " << idealHeight << std::endl;
     if (fitW && fitH)
     {
@@ -173,7 +178,7 @@ bool BoardAligner::alignDim(DpImage &img, bool fitW, bool fitH)
         }
     }
 //    std::cout << "Ok, continue..." << std::endl;
-    corecvs::Vector2dd mean(0.0);
+    Vector2dd mean(0.0);
     for (auto& r: bestBoard)
         for (auto& c: r)
             mean += c;

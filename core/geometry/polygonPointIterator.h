@@ -215,14 +215,14 @@ public:
     TrianglePointIterator it;
 
 
-    Triangle2dd getTriangle(int petle) {
+    Triangle2dd getTriangle(size_t petle) {
         return Triangle2dd(polygon[0], polygon[petle - 1], polygon[petle]);
     }
 
     PolygonFanPointIterator(const Polygon &polygon) :
         polygon(polygon),
         petle(2),
-        triangle(getTriangle((int)petle)),
+        triangle(getTriangle(petle)),
         it(triangle)
     {}
 
@@ -231,7 +231,7 @@ public:
         if (!it.hasValue()) {
             petle++;
             if (hasValue()) {
-                triangle = getTriangle((int)petle);
+                triangle = getTriangle(petle);
                 it = TrianglePointIterator(triangle);
             }
         }
