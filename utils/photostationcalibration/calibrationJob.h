@@ -161,7 +161,8 @@ struct CalibrationJob
     bool                                            calibrated = false;
 
     CalibrationSettings                             settings;
-    // TODO: Should we serialize it?!
+
+    // TODO: Should we serialize it?!  // This object is owned outside!
     StatusTracker*                                  state = nullptr;
 
     template<class VisitorType>
