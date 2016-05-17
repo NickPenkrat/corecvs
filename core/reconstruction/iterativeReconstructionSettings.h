@@ -44,7 +44,7 @@ struct IterativeReconstructionInitializationParams
             visitor.visit(runEssentialFiltering        ,true   ,"runEssentialFiltering"          );
             visitor.visit(essentialTargetGamma         ,0.01   ,"essentialTargetGamma"           );
             visitor.visit(maxP6RPIterations            ,400000 ,"maxP6RPIterations"              );
-            visitor.visit(inlierP6RPThreshold 		   ,1.0    ,"inlierP6RPThreshold"            );
+            visitor.visit(inlierP6RPThreshold            ,1.0    ,"inlierP6RPThreshold"            );
             visitor.visit(gammaP6RP                    ,0.001  ,"gammaP6RP"                      );
         }
 };
@@ -69,7 +69,7 @@ struct IterativeReconstructionFeatureSelectionParams
         void accept(VisitorType &visitor)
         {
             visitor.visit(inlierThreshold      ,5.0   ,"inlierThreshold"          );
-            visitor.visit(trackInlierThreshold ,3   ,"trackInlierThreshold"          );
+            visitor.visit(trackInlierThreshold ,3.0   ,"trackInlierThreshold"          );
             visitor.visit(distanceLimit        ,1000.0   ,"distanceLimit"          );
             visitor.visit(rmsePruningScaler    ,3.0   ,"rmsePruningScaler"          );
             visitor.visit(maxPruningScaler     ,5.0   ,"maxPruningScaler"          );
@@ -112,8 +112,8 @@ struct IterativeReconstructionAppendParams
             visitor.visit(inlierP6PThreshold , 1.0,"inlierP6PThreshold");
             visitor.visit(maxP6PIterations , 400000,"maxP6PIterations");
             visitor.visit(gammaP6P , 0.001,"gammaP6P");
-            visitor.visit(speculativity , 1000,"speculativity");
-            visitor.visit(minimalInlierCount , 32,"minimalInlierCount");
+            visitor.visit(speculativity , (size_t)1000,"speculativity");
+            visitor.visit(minimalInlierCount , (size_t)32,"minimalInlierCount");
             visitor.visit(maximalFailureProbability , 0.15,"maximalFailureProbability");
         }
 };
@@ -144,6 +144,8 @@ struct IterativeReconstructionNonlinearOptimizationParams
             visitor.visit(finalNonLinearIterations , 2000,     "finalNonLinearIterations");
             visitor.visit(alternatingIterations , 20,"alternatingIterations");
             visitor.visit(excessiveQuaternionParametrization , true,"excessiveQuaternionParametrization");
+            visitor.visit(optimizationParams, ReconstructionFunctorOptimizationType::NON_DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::FOCALS | ReconstructionFunctorOptimizationType::PRINCIPALS | ReconstructionFunctorOptimizationType::POINTS, "optimizationParams");
+
         }
 
 };

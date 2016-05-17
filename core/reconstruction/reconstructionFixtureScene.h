@@ -20,9 +20,9 @@ struct FeatureDetectionParams
     template<class VisitorType>
         void accept(VisitorType &visitor)
         {
-            visitor.visit(detector      ,"ORB"    ,"detector"        );
-            visitor.visit(descriptor    ,"ORB"    ,"descriptor"      );
-            visitor.visit(matcher       ,"BF"     ,"matcher"         );
+            visitor.visit(detector      ,std::string("ORB")    ,"detector"        );
+            visitor.visit(descriptor    ,std::string("ORB")    ,"descriptor"      );
+            visitor.visit(matcher       ,std::string("BF")     ,"matcher"         );
             visitor.visit(b2bThreshold  ,0.9      ,"b2bThreshold"    );
             visitor.visit(matchF2F      ,false    ,"matchF2F"        );
         }
