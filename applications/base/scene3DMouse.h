@@ -32,12 +32,12 @@ public:
         Draw3dViMouseParametersControlWidget *result = new Draw3dViMouseParametersControlWidget();
         result->setParameters(mParameters);
         return result;
-    };
+    }
 
     virtual void setParameters(void *params)
     {
         mParameters = *static_cast<Draw3dViMouseParameters *>(params);
-    };
+    }
 
     Cloud *cloud;
     Scene3DMouse();

@@ -102,22 +102,21 @@ class Statistics
 public:
     struct State
     {
-        State(const string& prefix, PreciseTimer helperTimer) : mPrefix(prefix), mHelperTimer(helperTimer)
+        State(const string& prefix, PreciseTimer helperTimer) : 
+				mPrefix(prefix)
+              , mHelperTimer(helperTimer)
         {}
 
         string       mPrefix;
         PreciseTimer mHelperTimer;
     };
 
-    Statistics() {}
-    ~Statistics() {}
-
     std::deque<State> mStack;
 
     Statistics* enterContext(const string& prefix)
     {
         mStack.push_back(State(mPrefix, mHelperTimer));
-        mPrefix = prefix + mPrefix;
+        mPrefix = mPrefix + prefix;
         return this;
     }
 
@@ -364,6 +363,7 @@ template <class StreamType>
                     stat.sum / stat.number,
                     ((stat.sum / stat.number) + 500) / 1000,
                     (stat.min == std::numeric_limits<uint64_t>::max()) ? 0 : stat.min);
+
             } else {
                 snprintf2buf(output,
                     "%-*s : %7" PRIu64 " %7" PRIu64 "\n",

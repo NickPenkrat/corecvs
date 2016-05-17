@@ -20,6 +20,7 @@
 #include "visitors/xmlGetter.h"
 #include "visitors/jsonSetter.h"
 #include "visitors/jsonGetter.h"
+#include "propertyListVisitor.h"
 
 using corecvs::BaseReflectionStatic;
 
@@ -31,51 +32,92 @@ public:
         : mQtSettings(NULL)
         , mXmlSetter(NULL)
         , mJsonSetter(NULL)
-    {}
+		, mPropertyListSetter(NULL)
+	{}
 
     WidgetSaver(SettingsSetter *qtSettigns)
         : mQtSettings(qtSettigns)
         , mXmlSetter(NULL)
         , mJsonSetter(NULL)
-    {}
+		, mPropertyListSetter(NULL)
+	{}
 
     WidgetSaver(XmlSetter *xmlSetter)
         : mQtSettings(NULL)
         , mXmlSetter(xmlSetter)
         , mJsonSetter(NULL)
-    {}
+		, mPropertyListSetter(NULL)
+	{}
 
     WidgetSaver(JSONSetter *jsonSetter)
         : mQtSettings(NULL)
         , mXmlSetter(NULL)
         , mJsonSetter(jsonSetter)
+		, mPropertyListSetter(NULL)
     {}
 
-    template <class ParametersClass>
-    void saveParameters (ParametersClass &paramsClass, QString name)
+    /* Auto init */
+    WidgetSaver(QString filename)
     {
-        if (mQtSettings) {
-            qDebug() << "Saving widget: " << name;
-            mQtSettings->settings()->beginGroup(name);
-            paramsClass.accept(*mQtSettings);
+        qDebug("WidgetSaver::WidgetSaver(%s): called", filename.toLatin1().constData());
+        autoInit = true;
+        if (filename.endsWith(".json")) {
+            qDebug("WidgetSaver::WidgetSaver(): created JSON Setter");
+            mJsonSetter = new JSONSetter(filename);
+        }
+
+        if (filename.endsWith(".list")) {
+            mPropertyListSetter = new PropertyListWriterVisitor(filename.toStdString());
+            qDebug("WidgetSaver::WidgetSaver(): created PropertyList Setter");
+        }
+    }
+
+template <class ParametersClass>
+	void saveParameters (ParametersClass &paramsClass, QString name)
+	{
+		if (mQtSettings) {
+		    qDebug() << "Saving widget: " << name;
+		    mQtSettings->settings()->beginGroup(name);
+			    paramsClass.accept(*mQtSettings);
             mQtSettings->settings()->endGroup();
-            return;
-        }
+			return;
+		}
 
-        if (mXmlSetter) {
-            paramsClass.accept(*mXmlSetter);
-            return;
-        }
+		if (mXmlSetter) {
+			paramsClass.accept(*mXmlSetter);
+			return;
+		}
 
-        if (mJsonSetter){
+         if (mJsonSetter) {
+            mJsonSetter->pushChild(name.toLatin1().constData());
             paramsClass.accept(*mJsonSetter);
+            mJsonSetter->popChild(name.toLatin1().constData());
+        }
+
+        if (mPropertyListSetter){
+            mPropertyListSetter->pushChild(name.toStdString());
+            paramsClass.accept(*mPropertyListSetter);
+            mPropertyListSetter->popChild();
+        }
+	}
+
+ ~WidgetSaver() {
+        if (autoInit) {
+            delete_safe(mQtSettings);
+            delete_safe(mXmlSetter);
+            delete_safe(mJsonSetter);
+            delete_safe(mPropertyListSetter);
         }
     }
 
 private:
-    SettingsSetter *mQtSettings;
-    XmlSetter      *mXmlSetter;
-    JSONSetter     *mJsonSetter;
+    bool autoInit = false;
+
+    SettingsSetter *mQtSettings = NULL;
+    XmlSetter      *mXmlSetter = NULL;
+    JSONSetter     *mJsonSetter = NULL;
+    PropertyListWriterVisitor *mPropertyListSetter = NULL;
+
 };
 
 class WidgetLoader
@@ -85,51 +127,93 @@ public:
         : mQtSettings(NULL)
         , mXmlGetter(NULL)
         , mJsonGetter(NULL)
-    {}
+		, mPropertyListGetter(NULL)
+	{}
 
     WidgetLoader(SettingsGetter *qtSettigns)
         : mQtSettings(qtSettigns)
         , mXmlGetter(NULL)
         , mJsonGetter(NULL)
-    {}
+		, mPropertyListGetter(NULL)
+	{}
 
     WidgetLoader(XmlGetter *xmlSetter)
         : mQtSettings(NULL)
         , mXmlGetter(xmlSetter)
         , mJsonGetter(NULL)
-    {}
+		, mPropertyListGetter(NULL)
+	{}
 
     WidgetLoader(JSONGetter *jsonGetter)
         : mQtSettings(NULL)
         , mXmlGetter(NULL)
         , mJsonGetter(jsonGetter)
+		, mPropertyListGetter(NULL)
     {}
 
-
-    template <class ParametersClass>
-    void loadParameters (ParametersClass &paramsClass, QString name)
+    /* Auto init */
+    WidgetLoader(QString filename)
     {
-        if (mQtSettings) {
-            mQtSettings->settings()->beginGroup(name);
-            paramsClass.accept(*mQtSettings);
-            mQtSettings->settings()->endGroup();
-            return;
+        qDebug("WidgetLoader::WidgetLoader(%s): called", filename.toLatin1().constData());
+        autoInit = true;
+        if (filename.endsWith(".json")) {
+            mJsonGetter = new JSONGetter(filename);
+            qDebug("WidgetLoader::WidgetLoader(): created JSON Getter");
         }
 
-        if (mXmlGetter) {
-            paramsClass.accept(*mXmlGetter);
-            return;
+        if (filename.endsWith(".list")) {
+            mPropertyListGetter = new PropertyListReaderVisitor(filename.toStdString());
+            qDebug("WidgetLoader::WidgetLoader(): created PropertyList Getter");
         }
+    }
+
+
+template <class ParametersClass>
+	void loadParameters (ParametersClass &paramsClass, QString name)
+	{
+		if (mQtSettings) {
+		    mQtSettings->settings()->beginGroup(name);
+			    paramsClass.accept(*mQtSettings);
+			mQtSettings->settings()->endGroup();
+			return;
+		}
+
+		if (mXmlGetter) {
+			paramsClass.accept(*mXmlGetter);
+			return;
+		}
 
         if (mJsonGetter){
+            mJsonGetter->pushChild(name.toLatin1().constData());
             paramsClass.accept(*mJsonGetter);
+            mJsonGetter->popChild();
+        }
+
+        if (mPropertyListGetter){
+            mPropertyListGetter->pushChild(name.toStdString());
+            paramsClass.accept(*mPropertyListGetter);
+            mPropertyListGetter->popChild();
+        }
+	}
+
+    ~WidgetLoader() {
+         qDebug("WidgetLoader::~WidgetLoader(): called");
+        if (autoInit) {
+            delete_safe(mQtSettings);
+            delete_safe(mXmlGetter);
+            delete_safe(mJsonGetter);
+            delete_safe(mPropertyListGetter);
         }
     }
 
 private:
-    SettingsGetter *mQtSettings;
-    XmlGetter      *mXmlGetter;
-    JSONGetter     *mJsonGetter;
+    bool autoInit = false;
+
+    SettingsGetter            *mQtSettings = NULL;
+    XmlGetter                 *mXmlGetter = NULL;
+    JSONGetter                *mJsonGetter = NULL;
+    PropertyListReaderVisitor *mPropertyListGetter = NULL;
+
 };
 
 class SaveableWidget
@@ -191,3 +275,5 @@ public:
 
 
 #endif  /* #ifndef PARAMETERS_CONTROL_WIDGET_BASE_H_ */
+
+

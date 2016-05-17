@@ -37,11 +37,11 @@ public:
     }
     inline Vector2dd map(int y, int x, bool fromUndistorted = false) const
     {
-        return map(corecvs::Vector2dd(x, y), fromUndistorted);
+        return map(Vector2dd(x, y), fromUndistorted);
     }
     inline Vector2dd map(double y, double x, bool fromUndistorted = false) const
     {
-        return map(corecvs::Vector2dd(x, y), fromUndistorted);
+        return map(Vector2dd(x, y), fromUndistorted);
     }
     inline Vector2dd mapToUndistorted(Vector2dd const & v) const
     {
@@ -74,12 +74,12 @@ public:
      **/
     inline Vector2dd mapToUndistorted(double y, double x) const
     {
-        return mapToUndistorted(corecvs::Vector2dd(x, y));
+        return mapToUndistorted(Vector2dd(x, y));
     }
 
     Vector2dd mapFromUndistorted(double y, double x) const
     {
-        return mapFromUndistorted(corecvs::Vector2dd(x, y));
+        return mapFromUndistorted(Vector2dd(x, y));
     }
 
     /**/

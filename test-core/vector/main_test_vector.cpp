@@ -19,6 +19,8 @@
 #include "fixedVector.h"
 #include "fixedArray.h"
 
+#include "vector3d.h"
+
 using namespace corecvs;
 
 template<int length>
@@ -145,6 +147,36 @@ TEST(Vector, MulAllElements)
     }
     std::cout << arr.mulAllElements() << std::endl;
     ASSERT_EQ(arr.mulAllElements(), 40320);
+}
+
+TEST(Vector, testSpherical)
+{
+    {
+        double longitude = degToRad(45.0);
+        double latitude  = degToRad(45.0);
+        double length    = 45.0;
+
+        Vector3dd vec = Vector3dd::FromSpherical(latitude, longitude, length);
+        cout << "Vector:" << vec << std::endl;
+
+        cout << "Length:" << vec.l2Metric() << std::endl;
+
+
+        Vector3dd back = Vector3dd::toSpherical(vec);
+        cout << "Back:" << back << std::endl;
+
+        ASSERT_DOUBLE_EQ( length, back.z());
+
+        ASSERT_DOUBLE_EQ(latitude , back.x());
+        ASSERT_DOUBLE_EQ(longitude, back.y());
+    }
+
+    {
+        Vector3dd vec(0.0, 0.0, 50.0);
+        Vector3dd back = Vector3dd::toSpherical(vec);
+
+    }
+
 }
 
 //int main (int /*argC*/, char ** /*argV*/)

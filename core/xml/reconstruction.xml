@@ -1,0 +1,28 @@
+<poco version="5.0">
+  <class name="Photostation Placer Essential Filter Parameters">
+    <field type="double" name="b2bRansacP5RPThreshold"       defaultValue="0.8" min="-50000" max="50000" comment="Best-2nd best essential estimator threshold"/>
+    <field type="double" name="inlierP5RPThreshold"          defaultValue="5.0" min="-50000" max="50000" comment="Inlier threshold"/>
+
+    <field type="int"    name="maxEssentialRansacIterations" defaultValue="600000" min="0" max="5000000" step="100" comment="Maximal essential estimator rounds"/>
+
+    <field type="double" name="b2bRansacP6RPThreshold" defaultValue="0.8" min="-50000" max="50000" comment="Best-2nd best relative pose estimator threshold" />
+    <field type="bool"   name="runEssentialFiltering"  defaultValue="true"                         comment="Run essential filtering prior relative pose estimation" />
+    <field type="double" name="essentialTargetGamma"   defaultValue="0.01" min="0" max="50000"  step="0.01" />
+  </class>
+
+  <class name="Photostation Placer Feature Selection Parameters">
+    <field type="double" name="inlierThreshold"             defaultValue="1.0"  min="-50000" max="50000" comment="Inlier threshold"/>
+    <field type="double" name="trackInlierThreshold"        defaultValue="3.0"  min="-50000" max="50000" comment="Track append threshold"/>
+    <field type="double" name="pairCorrespondenceThreshold" defaultValue="0.25" min="-50000" max="50000" comment="Correspondence threshold"/>
+    <field type="double" name="distanceLimit"               defaultValue="1000" min="-50000" max="50000" comment="Track distance limit"/>
+  </class>
+
+  <class name="Photostation Placer Params Base">
+    <field type="bool"   name="forceGps"  defaultValue="true" comment="Enforce gps locations" />
+    <field type="int"    name="speculativity"             defaultValue="1000" min="-50000" max="50000" comment="This defines how many multicameras are subject for P3P evaluation at each iteration" />
+    <field type="int"    name="minimalInlierCount"        defaultValue="32"   min="-50000" max="50000"/>
+    <field type="double" name="maximalFailureProbability" defaultValue="0.15" min="-50000" max="50000"/>
+  </class>
+
+</poco>
+

@@ -30,6 +30,7 @@ namespace corecvs {
 /*
  *  Additional includes for enum section.
  */
+#include "bitcodeBoardOrientation.h"
 
 /**
  * \brief Bitcode Board Params Base 
@@ -49,6 +50,10 @@ public:
         CODEWIDTH_ID,
         CODEHEIGHT_ID,
         BITCODEIDENTSIZE_ID,
+        BITCODECONFIDENCE_ID,
+        BITCODEORIENTATION_ID,
+        CENTERTOZEROX_ID,
+        CENTERTOZEROY_ID,
         BITCODE_BOARD_PARAMS_BASE_FIELD_ID_NUM
     };
 
@@ -82,7 +87,7 @@ public:
      * \brief identSize 
      * white ident size around chessboard in chesses 
      */
-    int mIdentSize;
+    double mIdentSize;
 
     /** 
      * \brief boardHeight 
@@ -112,7 +117,31 @@ public:
      * \brief bitcodeIdentSize 
      * ident between chessboard and bitcode in chesses 
      */
-    int mBitcodeIdentSize;
+    double mBitcodeIdentSize;
+
+    /** 
+     * \brief bitcodeConfidence 
+     * Area in which the stats are collected during detection 
+     */
+    double mBitcodeConfidence;
+
+    /** 
+     * \brief bitcodeOrientation 
+     * bitcodeOrientation 
+     */
+    int mBitcodeOrientation;
+
+    /** 
+     * \brief CenterToZeroX 
+     * X Distance from grid center to Traget Point 
+     */
+    double mCenterToZeroX;
+
+    /** 
+     * \brief CenterToZeroY 
+     * Y Distance from grid center to Traget Point 
+     */
+    double mCenterToZeroY;
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
@@ -142,7 +171,7 @@ public:
         return mWhiteColor;
     }
 
-    int identSize() const
+    double identSize() const
     {
         return mIdentSize;
     }
@@ -167,9 +196,29 @@ public:
         return mCodeHeight;
     }
 
-    int bitcodeIdentSize() const
+    double bitcodeIdentSize() const
     {
         return mBitcodeIdentSize;
+    }
+
+    double bitcodeConfidence() const
+    {
+        return mBitcodeConfidence;
+    }
+
+    BitcodeBoardOrientation::BitcodeBoardOrientation bitcodeOrientation() const
+    {
+        return static_cast<BitcodeBoardOrientation::BitcodeBoardOrientation>(mBitcodeOrientation);
+    }
+
+    double centerToZeroX() const
+    {
+        return mCenterToZeroX;
+    }
+
+    double centerToZeroY() const
+    {
+        return mCenterToZeroY;
     }
 
     /* Section with setters */
@@ -193,7 +242,7 @@ public:
         mWhiteColor = whiteColor;
     }
 
-    void setIdentSize(int identSize)
+    void setIdentSize(double identSize)
     {
         mIdentSize = identSize;
     }
@@ -218,9 +267,29 @@ public:
         mCodeHeight = codeHeight;
     }
 
-    void setBitcodeIdentSize(int bitcodeIdentSize)
+    void setBitcodeIdentSize(double bitcodeIdentSize)
     {
         mBitcodeIdentSize = bitcodeIdentSize;
+    }
+
+    void setBitcodeConfidence(double bitcodeConfidence)
+    {
+        mBitcodeConfidence = bitcodeConfidence;
+    }
+
+    void setBitcodeOrientation(BitcodeBoardOrientation::BitcodeBoardOrientation bitcodeOrientation)
+    {
+        mBitcodeOrientation = bitcodeOrientation;
+    }
+
+    void setCenterToZeroX(double centerToZeroX)
+    {
+        mCenterToZeroX = centerToZeroX;
+    }
+
+    void setCenterToZeroY(double centerToZeroY)
+    {
+        mCenterToZeroY = centerToZeroY;
     }
 
     /* Section with embedded classes */
@@ -232,12 +301,16 @@ template<class VisitorType>
         visitor.visit(mCellSize,                  static_cast<const IntField *>     (fields()[CELLSIZE_ID]));
         visitor.visit(mBlackColor,                static_cast<const IntField *>     (fields()[BLACKCOLOR_ID]));
         visitor.visit(mWhiteColor,                static_cast<const IntField *>     (fields()[WHITECOLOR_ID]));
-        visitor.visit(mIdentSize,                 static_cast<const IntField *>     (fields()[IDENTSIZE_ID]));
+        visitor.visit(mIdentSize,                 static_cast<const DoubleField *>  (fields()[IDENTSIZE_ID]));
         visitor.visit(mBoardHeight,               static_cast<const IntField *>     (fields()[BOARDHEIGHT_ID]));
         visitor.visit(mBoardWidth,                static_cast<const IntField *>     (fields()[BOARDWIDTH_ID]));
         visitor.visit(mCodeWidth,                 static_cast<const IntField *>     (fields()[CODEWIDTH_ID]));
         visitor.visit(mCodeHeight,                static_cast<const IntField *>     (fields()[CODEHEIGHT_ID]));
-        visitor.visit(mBitcodeIdentSize,          static_cast<const IntField *>     (fields()[BITCODEIDENTSIZE_ID]));
+        visitor.visit(mBitcodeIdentSize,          static_cast<const DoubleField *>  (fields()[BITCODEIDENTSIZE_ID]));
+        visitor.visit(mBitcodeConfidence,         static_cast<const DoubleField *>  (fields()[BITCODECONFIDENCE_ID]));
+        visitor.visit((int &)mBitcodeOrientation, static_cast<const EnumField *>    (fields()[BITCODEORIENTATION_ID]));
+        visitor.visit(mCenterToZeroX,             static_cast<const DoubleField *>  (fields()[CENTERTOZEROX_ID]));
+        visitor.visit(mCenterToZeroY,             static_cast<const DoubleField *>  (fields()[CENTERTOZEROY_ID]));
     }
 
     BitcodeBoardParamsBase()
@@ -251,12 +324,16 @@ template<class VisitorType>
         , int cellSize
         , int blackColor
         , int whiteColor
-        , int identSize
+        , double identSize
         , int boardHeight
         , int boardWidth
         , int codeWidth
         , int codeHeight
-        , int bitcodeIdentSize
+        , double bitcodeIdentSize
+        , double bitcodeConfidence
+        , BitcodeBoardOrientation::BitcodeBoardOrientation bitcodeOrientation
+        , double centerToZeroX
+        , double centerToZeroY
     )
     {
         mVertical = vertical;
@@ -269,6 +346,10 @@ template<class VisitorType>
         mCodeWidth = codeWidth;
         mCodeHeight = codeHeight;
         mBitcodeIdentSize = bitcodeIdentSize;
+        mBitcodeConfidence = bitcodeConfidence;
+        mBitcodeOrientation = bitcodeOrientation;
+        mCenterToZeroX = centerToZeroX;
+        mCenterToZeroY = centerToZeroY;
     }
 
     friend ostream& operator << (ostream &out, BitcodeBoardParamsBase &toSave)

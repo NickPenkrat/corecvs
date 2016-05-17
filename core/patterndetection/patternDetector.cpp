@@ -14,3 +14,9 @@ void PatternDetector::getPointData(corecvs::SelectableGeometryFeatures &features
     features.addAllLinesFromObservationList(list);
 }
 
+
+size_t PatternDetector::detectPatterns(corecvs::RGB24Buffer &/*buffer*/, std::vector<ObservationList> &patterns)
+{
+    patterns.clear();
+    return 0;
+}

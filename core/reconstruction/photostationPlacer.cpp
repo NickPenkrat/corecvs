@@ -332,7 +332,7 @@ void corecvs::PhotostationPlacer::create2PointCloud(CameraFixture* psA, CameraFi
         auto& kpB = scene->keyPoints[wppB][ptB].first;
 
         double fscore = psA->scoreFundamental(camA, kpA, psB, camB, kpB);
-        if (fscore > trackInlierThreshold)
+        if (fscore > trackInlierThreshold())
             continue;
 
         corecvs::MulticameraTriangulator mct;
@@ -342,11 +342,11 @@ void corecvs::PhotostationPlacer::create2PointCloud(CameraFixture* psA, CameraFi
 
         bool isVisibleInlierNotTooFar = true;
         isVisibleInlierNotTooFar &= psA->isVisible(res, camA);
-        isVisibleInlierNotTooFar &= (!(kpA - psA->project(res, camA))) < trackInlierThreshold;
-        isVisibleInlierNotTooFar &= (!(res - psA->getWorldCamera(camA).extrinsics.position)) < distanceLimit;
+        isVisibleInlierNotTooFar &= (!(kpA - psA->project(res, camA))) < trackInlierThreshold();
+        isVisibleInlierNotTooFar &= (!(res - psA->getWorldCamera(camA).extrinsics.position)) < distanceLimit();
         isVisibleInlierNotTooFar &= psB->isVisible(res, camB);
-        isVisibleInlierNotTooFar &= (!(kpB - psB->project(res, camB))) < trackInlierThreshold;
-        isVisibleInlierNotTooFar &= (!(res - psB->getWorldCamera(camB).extrinsics.position)) < distanceLimit;
+        isVisibleInlierNotTooFar &= (!(kpB - psB->project(res, camB))) < trackInlierThreshold();
+        isVisibleInlierNotTooFar &= (!(res - psB->getWorldCamera(camB).extrinsics.position)) < distanceLimit();
 
         if (!isVisibleInlierNotTooFar)
             continue;
@@ -517,7 +517,8 @@ void corecvs::PhotostationPlacer::appendTracks(const std::vector<int> &inlierIds
             continue;
         auto track   = std::get<3>(inlier);
         auto proj    = std::get<1>(inlier);
-        if ((!fixture->reprojectionError(track->reprojectedPosition, proj, cam)) > trackInlierThreshold || (!(track->reprojectedPosition - fixture->getWorldCamera(cam).extrinsics.position)) > distanceLimit)
+        if ((!fixture->reprojectionError(track->reprojectedPosition, proj, cam)) > trackInlierThreshold() ||
+            (!(track->reprojectedPosition - fixture->getWorldCamera(cam).extrinsics.position)) > distanceLimit())
             continue;
 
         SceneObservation observation;
@@ -546,7 +547,7 @@ void corecvs::PhotostationPlacer::updateTrackables()
 {
     std::cout << "Starting speculative P3P update" << std::endl;
     activeInlierCount.clear();
-    for (size_t i = 0; i < speculativity && i < scene->placingQueue.size(); ++i)
+    for (size_t i = 0; i < speculativity() && i < scene->placingQueue.size(); ++i)
     {
         auto cf = scene->placingQueue[i];
         std::cout << "\tRunning with " << cf->name << " ";
@@ -597,7 +598,7 @@ bool corecvs::PhotostationPlacer::appendP6P()
     std::cout << "MEANSHIFTED" << std::endl;
 
     std::vector<std::pair<corecvs::CameraFixture*, decltype(scene->getPhotostationMatches({}, 0))>> matches;
-    for (size_t iii = 0; iii < speculativity && iii < scene->placingQueue.size(); ++iii)
+    for (size_t iii = 0; iii < speculativity() && iii < scene->placingQueue.size(); ++iii)
     {
         auto fixture = scene->placingQueue[iii];
         matches.emplace_back(fixture, scene->getPhotostationMatches(scene->placedFixtures, fixture));
@@ -610,12 +611,12 @@ bool corecvs::PhotostationPlacer::appendP6P()
     for (auto& p: matches)
     {
         ReconstructionInitializerParams params;
-        params.essentialFilterParams.b2bThreshold = b2bRansacP5RPThreshold;
-        params.essentialFilterParams.inlierRadius = inlierP5RPThreshold;
-        params.b2bThreshold = b2bRansacP6RPThreshold;
-        params.runEssentialFiltering = runEssentialFiltering;
-        params.essentialFilterParams.maxIterations = maxEssentialRansacIterations;
-        params.essentialFilterParams.targetGamma = essentialTargetGamma;
+        params.essentialFilterParams.b2bThreshold = b2bRansacP5RPThreshold();
+        params.essentialFilterParams.inlierRadius = inlierP5RPThreshold();
+        params.b2bThreshold = b2bRansacP6RPThreshold();
+        params.runEssentialFiltering = runEssentialFiltering();
+        params.essentialFilterParams.maxIterations = maxEssentialRansacIterations();
+        params.essentialFilterParams.targetGamma = essentialTargetGamma();
         scene->filterEssentialRansac(scene->placedFixtures, {p.first}, params.essentialFilterParams);
         auto psB = p.first;
         auto B = psB;
@@ -626,12 +627,12 @@ bool corecvs::PhotostationPlacer::appendP6P()
         RelativeNonCentralRansacSolver::MatchContainer rm, mm;
         for (auto&t : matches)
         {
-            if (std::get<4>(t) < b2bRansacP6RPThreshold)
+            if (std::get<4>(t) < b2bRansacP6RPThreshold())
                 rm.emplace_back(std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t));
             mm.emplace_back(std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t));
         }
 
-        if (rm.size() < minimalInlierCount)
+        if (rm.size() < minimalInlierCount())
         {
             std::cout << "Too few matches (" << rm.size() << "), rejecting ";
             for (auto &A: scene->placedFixtures)
@@ -751,9 +752,9 @@ void corecvs::PhotostationPlacer::testNewPipeline()
             auto A = first.first.u, B = second.first.u;
             if (A > B)
                 std::swap(A, B);
-            cntr[std::make_pair(A, B)] += second.second.size();
+            cntr[std::make_pair(A, B)] += (int)second.second.size();
             for (auto& f: second.second)
-                if (std::get<2>(f) < b2bRansacP6RPThreshold)
+                if (std::get<2>(f) < b2bRansacP6RPThreshold())
                     cntrGood[std::make_pair(A, B)]++;
         }
     std::cout << "Match stats: " << std::endl;
@@ -781,24 +782,24 @@ void corecvs::PhotostationPlacer::testNewPipeline()
 
         // 2. Detect relative orientation (till gamma < 0.001)
         ReconstructionInitializerParams params;
-        params.essentialFilterParams.b2bThreshold = b2bRansacP5RPThreshold;
-        params.essentialFilterParams.inlierRadius = inlierP5RPThreshold;
-        params.b2bThreshold = b2bRansacP6RPThreshold;
-        params.runEssentialFiltering = runEssentialFiltering;
-        params.essentialFilterParams.maxIterations = maxEssentialRansacIterations;
-        params.essentialFilterParams.targetGamma = essentialTargetGamma;
+        params.essentialFilterParams.b2bThreshold = b2bRansacP5RPThreshold();
+        params.essentialFilterParams.inlierRadius = inlierP5RPThreshold();
+        params.b2bThreshold = b2bRansacP6RPThreshold();
+        params.runEssentialFiltering = runEssentialFiltering();
+        params.essentialFilterParams.maxIterations = maxEssentialRansacIterations();
+        params.essentialFilterParams.targetGamma = essentialTargetGamma();
         scene->filterEssentialRansac(std::vector<CameraFixture*>{psA}, std::vector<CameraFixture*>{psB}, params.essentialFilterParams);
 
         auto matches = scene->getPhotostationMatches({psA}, psB);
         RelativeNonCentralRansacSolver::MatchContainer rm, mm;
         for (auto&t : matches)
         {
-            if (std::get<4>(t) < b2bRansacP6RPThreshold)
+            if (std::get<4>(t) < b2bRansacP6RPThreshold())
                 rm.emplace_back(std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t));
             mm.emplace_back(std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t));
         }
 
-        if (rm.size() < minimalInlierCount)
+        if (rm.size() < minimalInlierCount())
         {
             std::cout << "Too few matches (" << rm.size() << "), rejecting " << A->name << "<>" << B->name << std::endl;
             scene->matches = scene->matchesCopy;
@@ -822,7 +823,7 @@ void corecvs::PhotostationPlacer::testNewPipeline()
         std::cout << psA->name << "::" << psB->name << " " << best.shift << " " << best.rotor << std::endl;
         psB->location = best;
         std::cout << solver.getInliersCount() << " inliers" << std::endl;
-        if (solver.getInliersCount() < minimalInlierCount || solver.getGamma() > maximalFailureProbability )
+        if (solver.getInliersCount() < minimalInlierCount() || solver.getGamma() > maximalFailureProbability() )
         {
             scene->matches = scene->matchesCopy;
             std::cout << "Seems that " << A->name << "<>" << B->name << " is a bad initialization pair: inliers: " << solver.getInliersCount() << " P: " << solver.getGamma() << std::endl;
@@ -915,7 +916,7 @@ void corecvs::PhotostationPlacer::testNewPipeline()
         {
             for (size_t bId = aId + 1; bId + 1 < scene->placedFixtures.size(); ++bId)
             {
-                scene->buildTracks(*scene->placedFixtures.rbegin(), scene->placedFixtures[aId], scene->placedFixtures[bId], trackInlierThreshold, distanceLimit);
+                scene->buildTracks(*scene->placedFixtures.rbegin(), scene->placedFixtures[aId], scene->placedFixtures[bId], trackInlierThreshold(), distanceLimit());
             }
         }
         for (auto& cf: scene->placedFixtures)
@@ -927,7 +928,7 @@ void corecvs::PhotostationPlacer::testNewPipeline()
 
 bool corecvs::PhotostationPlacer::appendPs()
 {
-    CORE_ASSERT_TRUE_S(speculativity > 0);
+    CORE_ASSERT_TRUE_S(speculativity() > 0);
     scene->validateAll();
     if (scene->state == ReconstructionState::MATCHED)
     {
@@ -962,7 +963,7 @@ bool corecvs::PhotostationPlacer::appendPs()
         }
     }
 
-    if (maxInliers < minimalInlierCount)
+    if (maxInliers < minimalInlierCount())
         return false;
 
     std::cout << "Choosing to append " << psApp->name << " because it had " << maxInliers << " inliers" << std::endl;
@@ -1048,7 +1049,7 @@ bool corecvs::PhotostationPlacer::appendPs()
     {
         for (size_t bId = aId + 1; bId < scene->placedFixtures.size(); ++bId)
         {
-            scene->buildTracks(psApp, scene->placedFixtures[aId], scene->placedFixtures[bId], trackInlierThreshold, distanceLimit);
+            scene->buildTracks(psApp, scene->placedFixtures[aId], scene->placedFixtures[bId], trackInlierThreshold(), distanceLimit());
         }
     }
     std::cout << "TRACKS AFTER: " << scene->trackedFeatures.size() << std::endl;
@@ -1061,12 +1062,12 @@ bool corecvs::PhotostationPlacer::appendPs()
 bool corecvs::PhotostationPlacer::initialize()
 {
     ReconstructionInitializerParams params;
-    params.essentialFilterParams.b2bThreshold = b2bRansacP5RPThreshold;
-    params.essentialFilterParams.inlierRadius = inlierP5RPThreshold;
-    params.b2bThreshold = b2bRansacP6RPThreshold;
-    params.runEssentialFiltering = runEssentialFiltering;
-    params.essentialFilterParams.maxIterations = maxEssentialRansacIterations;
-    params.essentialFilterParams.targetGamma = essentialTargetGamma;
+    params.essentialFilterParams.b2bThreshold = b2bRansacP5RPThreshold();
+    params.essentialFilterParams.inlierRadius = inlierP5RPThreshold();
+    params.b2bThreshold = b2bRansacP6RPThreshold();
+    params.runEssentialFiltering = runEssentialFiltering();
+    params.essentialFilterParams.maxIterations = maxEssentialRansacIterations();
+    params.essentialFilterParams.targetGamma = essentialTargetGamma();
 
     ReconstructionInitializer initializer;
     (ReconstructionInitializerParams&)initializer = params;
@@ -1075,7 +1076,7 @@ bool corecvs::PhotostationPlacer::initialize()
     if (!initOk)
         return false;
     L_ERROR << "Building tracks" ;
-    scene->buildTracks(scene->placingQueue[0], scene->placingQueue[1], scene->placingQueue[2], trackInlierThreshold, distanceLimit);
+    scene->buildTracks(scene->placingQueue[0], scene->placingQueue[1], scene->placingQueue[2], trackInlierThreshold(), distanceLimit());
     for (int i = 0; i < 3; ++i)
     {
         scene->placedFixtures.push_back(scene->placingQueue[0]);

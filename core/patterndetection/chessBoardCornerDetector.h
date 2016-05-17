@@ -87,58 +87,49 @@ private:
  */
 struct CornerKernelSet
 {
-    DpKernel A, B, C, D;
+    enum {
+        KERNEL_A,
+        KERNEL_B,
+        KERNEL_C,
+        KERNEL_D,
+        KERNEL_LAST
+    };
+    DpKernel  K[KERNEL_LAST];
+    FpKernel fK[KERNEL_LAST];
 
     CornerKernelSet(double r, double alpha, double psi, bool minify = false);
-#ifdef USE_UNSAFE_CONVOLUTOR
-    void unsafeConvolutor(DpImage &image, DpKernel &kernel, DpImage &dst);
-#endif
 
-    // Computes const function for entire image
+    /**
+     * Computes const function for entire image
+     **/
     void computeCost(DpImage &img, DpImage &c, bool parallelable = true, bool new_style = true);
+    void computeCost(FpImage &img, DpImage &c);
+
+
 
 private:
     // Initialization routine
-    void computeKernels(double r, double alpha, double psi, int w, int c, double threshold = 0.05);
-    static void MinifyKernel(DpKernel &k);
+    template<class KernelType>
+    static void computeKernels(KernelType K[KERNEL_LAST], double r, double alpha, double psi, int w, int c, double threshold = 0.05);
+
+    template<class KernelType>
+    static void minifyKernel(KernelType &k);
 };
 
 class ChessBoardCornerDetectorParams : public ChessBoardCornerDetectorParamsBase
 {
 public:
-    ChessBoardCornerDetectorParams(const ChessBoardCornerDetectorParamsBase &base) :
+    // Radius for multi-scale pattern detection
+    // vector<double> patternRadius;
+    // Radius for corner-scoring
+    vector<double> cornerScores;
+    // Angle for rotation-variant detection
+    //vector<double> patternStartAngle;
+
+    ChessBoardCornerDetectorParams(const ChessBoardCornerDetectorParamsBase &base = ChessBoardCornerDetectorParamsBase()) :
         ChessBoardCornerDetectorParamsBase(base)
     {
     }
-
-#if __cplusplus >= 201103L // Our compiler is cool enough to support brace-initalizer-list for structure members
-	ChessBoardCornerDetectorParams() {}
-
-    // Radius for multi-scale pattern detection
-    vector<double> patternRadius = {4.0, 8.0, 12.0};
-    // Radius for corner-scoring
-    vector<double> cornerScores = {4.0, 8.0, 12.0};
-    // Angle for rotation-variant detection
-    vector<double> patternStartAngle = { 0.0, M_PI / 4.0 };
-#else
-    vector<double> patternRadius;
-    vector<double> cornerScores;
-    vector<double> patternStartAngle;
-
-    ChessBoardCornerDetectorParams()
-    {
-        patternStartAngle.push_back(0.0);
-        patternStartAngle.push_back(M_PI / 4.0);
-
-        patternRadius.push_back(4.0);
-        patternRadius.push_back(8.0);
-        patternRadius.push_back(12.0);
-
-        cornerScores.push_back(4.0);
-        cornerScores.push_back(8.0);
-        cornerScores.push_back(12.0);
-    }
-#endif
 
     void setMinAngle(double rad)
     {
@@ -158,20 +149,22 @@ public:
         return degToRad(sectorSizeDeg());
     }
 
-    template<typename VisitorType>
-    void accept(VisitorType &visitor)
+    double patternStartAngle(int index)
     {
-        ChessBoardCornerDetectorParamsBase::accept(visitor);
-        corecvs::DoubleVectorField dvf(0, 0, 0, "patternStartAngle");
-        visitor.visit(patternStartAngle, &dvf);
-        corecvs::DoubleVectorField dvf2(0, 0, 0, "patternRadius");
-        visitor.visit(patternRadius, &dvf2);
-        corecvs::DoubleVectorField dvf3(0, 0, 0, "cornerScores");
-        visitor.visit(cornerScores, &dvf3);
+        return degToRad(mPatternRadius[index]);
+    }
+
+    vector<double> patternStartAngle()
+    {
+        vector<double> toReturn;
+
+        for (size_t i = 0; i < mPatternRadius.size(); i++)
+        {
+            toReturn.push_back(degToRad(mPatternRadius[i]));
+        }
+        return toReturn;
     }
 };
-
-
 
 class ChessBoardCornerDetector : ChessBoardCornerDetectorParams
 {
@@ -196,7 +189,6 @@ private:
      *  first order derivative
      **/
     void prepareDiff(DpImage &diff, bool du);
-
     // computes angle and magnitude of gradients
     void prepareAngleWeight();
     // computes multi-scale corner cost function
@@ -222,22 +214,18 @@ private:
     // TODO: do we need it outside detector?!
     void circularMeanShift(std::vector<double> &values, double bandwidth, std::vector<std::pair<int, double>> &modes);
 
-#if DEPRICATED
-    // Computes right eigen vectors and numbers for 2x2 matrix
-    void eig22(corecvs::Matrix22 &A, double &lambda1, corecvs::Vector2dd &e1, double &lambda2, corecvs::Vector2dd &e2, double EIGTOLERANCE = 1e-9);
-    // Checks if 2x2 matrix seems to be invertible
-    bool invertable22(corecvs::Matrix &A);
-    // Linear solver for 2x2 matrix
-    void solve22(corecvs::Matrix &A, corecvs::Vector2dd &B, corecvs::Vector2dd &x);
-#endif
-
-    DpImage du, dv, w, phi, cost, img;
+    DpImage du, dv;
+    DpImage w, phi;
+    DpImage cost, img;
     std::vector<CornerKernelSet> kernels;
     std::vector<OrientedCorner> corners;
 
 public:
     void setStatistics(corecvs::Statistics *stats);
     corecvs::Statistics *getStatistics();
+
+    vector<std::string> debugBuffers();
+    RGB24Buffer *getDebugBuffer(std::string name);
 
 
 private:

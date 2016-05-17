@@ -2,26 +2,29 @@
 
 #include "statusTracker.h"
 
-void corecvs::StatusTracker::readLock() const
+
+namespace corecvs {
+
+void StatusTracker::readLock() const
 {
 #ifdef WITH_TBB
     const_cast<tbb::reader_writer_lock&>(lock).lock_read();
 #endif
 }
-void corecvs::StatusTracker::writeLock()
+void StatusTracker::writeLock()
 {
 #ifdef WITH_TBB
     lock.lock();
 #endif
 }
-void corecvs::StatusTracker::unlock() const
+void StatusTracker::unlock() const
 {
 #ifdef WITH_TBB
     const_cast<tbb::reader_writer_lock&>(lock).unlock();
 #endif
 }
 
-void corecvs::StatusTracker::incrementStarted()
+void StatusTracker::incrementStarted()
 {
     if (this == nullptr)
         return;
@@ -32,7 +35,7 @@ void corecvs::StatusTracker::incrementStarted()
     unlock();
 }
 
-void corecvs::StatusTracker::incrementCompleted()
+void StatusTracker::incrementCompleted()
 {
     if (this == nullptr)
         return;
@@ -43,7 +46,7 @@ void corecvs::StatusTracker::incrementCompleted()
     unlock();
 }
 
-void corecvs::StatusTracker::reset(const std::string &action, size_t totalActions)
+void StatusTracker::reset(const std::string & action, size_t totalActions)
 {
     if (this == nullptr)
         return;
@@ -58,13 +61,15 @@ void corecvs::StatusTracker::reset(const std::string &action, size_t totalAction
     unlock();
 }
 
-corecvs::Status corecvs::StatusTracker::getStatus() const
+Status  StatusTracker::getStatus() const
 {
     if (this == nullptr)
-        return corecvs::Status();
+        return Status();
 
     readLock();
         auto status = currentStatus;
     unlock();
     return status;
 }
+
+} // namespace corecvs 

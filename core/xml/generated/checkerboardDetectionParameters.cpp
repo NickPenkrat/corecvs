@@ -51,12 +51,12 @@ int CheckerboardDetectionParameters::staticInit()
     fields().push_back(
         new BoolField
         (
-          CheckerboardDetectionParameters::USE_UNDISTORTION_ID,
+          CheckerboardDetectionParameters::USEUNDISTORTION_ID,
           offsetof(CheckerboardDetectionParameters, mUseUndistortion),
           true,
-          "Use Undistortion",
-          "Use Undistortion",
-          "Use Undistortion"
+          "useUndistortion",
+          "useUndistortion",
+          "useUndistortion"
         )
     );
     fields().push_back(
@@ -98,51 +98,45 @@ int CheckerboardDetectionParameters::staticInit()
     fields().push_back(
         new DoubleField
         (
-          CheckerboardDetectionParameters::CELL_SIZE_HOR_ID,
+          CheckerboardDetectionParameters::CELLSIZEHOR_ID,
           offsetof(CheckerboardDetectionParameters, mCellSizeHor),
-          0.05,
-          "Cell Size Hor",
-          "Cell Size Hor",
-          "Cell Size Hor",
-          true,
-         0,
-         100
+          50,
+          "cellSizeHor",
+          "cellSizeHor",
+          "cellSizeHor"
         )
     );
     fields().push_back(
         new DoubleField
         (
-          CheckerboardDetectionParameters::CELL_SIZE_VERT_ID,
+          CheckerboardDetectionParameters::CELLSIZEVERT_ID,
           offsetof(CheckerboardDetectionParameters, mCellSizeVert),
-          0.05,
-          "Cell Size Vert",
-          "Cell Size Vert",
-          "Cell Size Vert",
-          true,
-         0,
-         100
+          50,
+          "cellSizeVert",
+          "cellSizeVert",
+          "cellSizeVert"
         )
     );
     fields().push_back(
         new BoolField
         (
-          CheckerboardDetectionParameters::CLEAN_EXISTING_ID,
+          CheckerboardDetectionParameters::CLEANEXISTING_ID,
           offsetof(CheckerboardDetectionParameters, mCleanExisting),
           true,
-          "Clean existing",
-          "Clean existing",
-          "Clean existing"
+          "cleanExisting",
+          "cleanExisting",
+          "cleanExisting"
         )
     );
     fields().push_back(
         new IntField
         (
-          CheckerboardDetectionParameters::PRECISE_DIAMETER_ID,
+          CheckerboardDetectionParameters::PRECISEDIAMETER_ID,
           offsetof(CheckerboardDetectionParameters, mPreciseDiameter),
           50,
-          "Precise Diameter",
-          "Precise Diameter",
-          "Precise Diameter",
+          "preciseDiameter",
+          "preciseDiameter",
+          "preciseDiameter",
           true,
          0,
          999999
@@ -151,12 +145,12 @@ int CheckerboardDetectionParameters::staticInit()
     fields().push_back(
         new IntField
         (
-          CheckerboardDetectionParameters::ITERATION_COUNT_ID,
+          CheckerboardDetectionParameters::ITERATIONCOUNT_ID,
           offsetof(CheckerboardDetectionParameters, mIterationCount),
           50,
-          "Iteration count",
-          "Iteration count",
-          "Iteration count",
+          "iterationCount",
+          "iterationCount",
+          "iterationCount",
           true,
          1,
          999999
@@ -165,12 +159,12 @@ int CheckerboardDetectionParameters::staticInit()
     fields().push_back(
         new DoubleField
         (
-          CheckerboardDetectionParameters::MIN_ACCURACY_ID,
+          CheckerboardDetectionParameters::MINACCURACY_ID,
           offsetof(CheckerboardDetectionParameters, mMinAccuracy),
           0.01,
-          "Min accuracy",
-          "Min accuracy",
-          "Min accuracy",
+          "minAccuracy",
+          "minAccuracy",
+          "minAccuracy",
           true,
          0,
          999999
@@ -179,23 +173,23 @@ int CheckerboardDetectionParameters::staticInit()
     fields().push_back(
         new BoolField
         (
-          CheckerboardDetectionParameters::PARTIAL_BOARD_ID,
+          CheckerboardDetectionParameters::PARTIALBOARD_ID,
           offsetof(CheckerboardDetectionParameters, mPartialBoard),
           true,
-          "Partial Board",
-          "Partial Board",
-          "Partial Board"
+          "partialBoard",
+          "partialBoard",
+          "partialBoard"
         )
     );
     fields().push_back(
         new BoolField
         (
-          CheckerboardDetectionParameters::FAST_BOARD_SPEEDUP_ID,
+          CheckerboardDetectionParameters::FASTBOARDSPEEDUP_ID,
           offsetof(CheckerboardDetectionParameters, mFastBoardSpeedup),
           true,
-          "Fast board Speedup",
-          "Fast board Speedup",
-          "Fast board Speedup"
+          "fastBoardSpeedup",
+          "fastBoardSpeedup",
+          "fastBoardSpeedup"
         )
     );
     fields().push_back(

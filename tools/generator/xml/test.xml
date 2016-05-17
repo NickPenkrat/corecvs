@@ -1,6 +1,6 @@
 <poco version="5.0">
  
-  
+<!--  
   <class name="Test Class" description="Recorder parameters">
     <field type="int" name="p1x"   defaultValue="0"/>
     <field type="int" name="p1y"   defaultValue="0"/>
@@ -12,7 +12,12 @@
     <field name="test1" type="Test Class" size="1"/>
     
   </class> 
-      
+  -->      
+
+  <class name="Test Class" description="Double vector test">
+     <field type="int"    name="Normal Field"   defaultValue="0"/>
+     <field type="double" name="Vector Field"  size="2" defaultValue="0"/>
+  </class> 
 
   
 </poco>

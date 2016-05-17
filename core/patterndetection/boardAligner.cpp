@@ -2,10 +2,12 @@
 
 #include "abstractPainter.h"
 #include "homographyReconstructor.h"
+#include "simpleRenderer.h"
 
 using corecvs::RGBColor;
 using corecvs::Matrix33;
 using corecvs::Vector3dd;
+using corecvs::Vector2dd;
 using corecvs::HomographyReconstructor;
 
 
@@ -39,10 +41,11 @@ CirclePatternGenerator* BoardAligner::FillGenerator(const BoardAlignerParams &pa
 }
 
 bool BoardAligner::align(DpImage &img)
-{
-    if (!bestBoard.size() || !bestBoard[0].size())
+{    if (!bestBoard.size() || !bestBoard[0].size())
         return false;
     observationList.clear();
+    observationList.patternIdentity = -1;
+    patternIdentity = -1;
     // used in 4/5 cases; means nothing in 5th
     fixOrientation();
     bool result = false;
@@ -107,16 +110,20 @@ void BoardAligner::fixOrientation()
         }
     }
 
-    double mr = 0.0, mc = 0.0;
+    double mr = 0.0;
+    double mc = 0.0;
+
     for (int i = 0; i < h; ++i)
     {
         sr[i] /= w;
-        mr += ssr[i] = std::sqrt(ssr[i] / w - sr[i] * sr[i]);
+        ssr[i] = std::sqrt(ssr[i] / w - sr[i] * sr[i]);
+        mr += ssr[i];
     }
     for (int j = 0; j < w; ++j)
     {
         sc[j] /= h;
-        mc += ssc[j] = std::sqrt(ssc[j] / h - sc[j] * sc[j]);
+        ssc[j] = std::sqrt(ssc[j] / h - sc[j] * sc[j]);
+        mc += ssc[j];
     }
     if (mr > mc)
         transpose();
@@ -124,7 +131,7 @@ void BoardAligner::fixOrientation()
     h = (int)bestBoard.size();
 
     for (auto& r: bestBoard)
-        std::sort(r.begin(), r.end(), [](const corecvs::Vector2dd &a, const corecvs::Vector2dd &b) { return a[0] < b[0]; });
+        std::sort(r.begin(), r.end(), [](const Vector2dd &a, const Vector2dd &b) { return a.x() < b.x(); });
 
     std::vector<std::pair<double, int>> ymeans(h);
     for (int i = 0; i < h; ++i)
@@ -144,9 +151,10 @@ void BoardAligner::fixOrientation()
 bool BoardAligner::alignDim(DpImage &img, bool fitW, bool fitH)
 {
     if (!fitW && !fitH)
-        return true;
+        return false;
 
-    int w = (int)bestBoard[0].size(), h = (int)bestBoard.size();
+    int w = (int)bestBoard[0].size();
+    int h = (int)bestBoard.size();
 //    std::cout << "Best board: " << w << " x " << h << "; Req: " << idealWidth << " x " << idealHeight << std::endl;
     if (fitW && fitH)
     {
@@ -170,7 +178,7 @@ bool BoardAligner::alignDim(DpImage &img, bool fitW, bool fitH)
         }
     }
 //    std::cout << "Ok, continue..." << std::endl;
-    corecvs::Vector2dd mean(0.0);
+    Vector2dd mean(0.0);
     for (auto& r: bestBoard)
         for (auto& c: r)
             mean += c;
@@ -309,6 +317,8 @@ bool BoardAligner::createList()
     int h = (int)classifier.size();
     int w = (int)classifier[0].size();
     observationList.clear();
+    if (patternIdentity > -1)
+        observationList.patternIdentity = patternIdentity;
     for (int y = 0; y < h; ++y)
     {
         for (int x = 0; x < w; ++x)
@@ -355,65 +365,60 @@ void BoardAligner::drawDebugInfo(corecvs::RGB24Buffer &buffer)
     int h = (int)bestBoard.size();
     // A: draw board
     DpImage mask(buffer.h, buffer.w);
-    RGBColor board_col(0x7f0000);
+    RGBColor B = RGBColor::Navy();
+
     for (int i = 0; i + 1 < h; ++i)
     {
         for (int j = 0; j + 1 < w; ++j)
         {
-            Vector2dd A, B, C, D;
-            A = bestBoard[i + 0][j + 0];
-            B = bestBoard[i + 1][j + 0];
-            C = bestBoard[i + 0][j + 1];
-            D = bestBoard[i + 1][j + 1];
+            Vector2dd C[4] = {
+                bestBoard[i + 0][j + 0],
+                bestBoard[i + 1][j + 0],
+                bestBoard[i + 0][j + 1],
+                bestBoard[i + 1][j + 1]
+            };
 
-            Matrix33 res, orientation, homography;
 
-            HomographyReconstructor c2i;
-            c2i.addPoint2PointConstraint(Vector2dd(0.0, 0.0), A);
-            c2i.addPoint2PointConstraint(Vector2dd(1.0, 0.0), B);
-            c2i.addPoint2PointConstraint(Vector2dd(0.0, 1.0), C);
-            c2i.addPoint2PointConstraint(Vector2dd(1.0, 1.0), D);
+            TriangleSpanIterator ts1(Triangle2dd(C[0], C[1], C[2]));
+            TriangleSpanIterator ts2(Triangle2dd(C[3], C[1], C[2]));
 
-            Matrix33 AA, BB;
-            c2i.normalisePoints(AA, BB);
-
-            homography = c2i.getBestHomographyLSE();
-            homography = c2i.getBestHomographyLM(homography);
-            res = BB.inv() * homography * AA;
-            //double score;
-
-            double STEP = 1000;
-            for (int i = 0; i < STEP; ++i)
+            while (ts1.hasValue()) {
+                ts1.step();
+                LineSpanInt span = ts1.getSpan();
+                span.clip(mask.w, mask.h);
+                for (int k = span.x1; k < span.x2; k++)
             {
-                for (int j = 0; j < STEP; ++j)
-                {
-                    Vector3dd pt = res * Vector3dd(j / STEP, i / STEP, 1.0);
-                    pt /= pt.z();
-
-                    int xx = pt.x();
-                    int yy = pt.y();
-                    if (mask.isValidCoord(yy, xx))
-                    {
-                        mask.element(yy, xx) = 1.0;
-                    }
+                    mask.element(span.y(), k) = 1.0;
+                    buffer.element(span.y(), k) = RGBColor::lerpColor(buffer.element(span.y(), k), B, 0.3);
                 }
             }
+            while (ts2.hasValue()) {
+                ts2.step();
+                LineSpanInt span = ts2.getSpan();
+                span.clip(mask.w, mask.h);
+                for (int k = span.x1; k < span.x2; k++)
+                {
+                    mask.element(span.y(), k) = 1.0;
+                    buffer.element(span.y(), k) = RGBColor::lerpColor(buffer.element(span.y(), k), B, 0.3);
+                    }
+                }
+
+            }
         }
-    }
-    for (int i = 0; i < buffer.h; ++i)
+    /*for (int i = 0; i < buffer.h; ++i)
     {
         for (int j = 0; j < buffer.w; ++j)
         {
             RGBColor A = buffer.element(i, j);
-            RGBColor B = board_col;
+
             if (mask.element(i, j) > 0.0)
             {
                 buffer.element(i, j) = RGBColor::lerpColor(A, B, 0.3);
             }
         }
-    }
+    }*/
 
-    corecvs::AbstractPainter<corecvs::RGB24Buffer> p(&buffer);
+    AbstractPainter<RGB24Buffer> p(&buffer);
     // C: draw final classifier
     for (int i = 0; i < h; ++i)
     {
@@ -481,6 +486,7 @@ void BoardAligner::classify(bool trackOrientation, DpImage &img)
                     CORE_ASSERT_TRUE_S(P[0] < 2.0 && P[1] < 2.0);
                     classifier[i + P[1]][j + P[0]] = std::make_pair(boardMarkers[cl].cornerX + order[k][0], boardMarkers[cl].cornerY + order[k][1]);
                 }
+                patternIdentity = cl;
             }
         }
     }
@@ -498,8 +504,8 @@ BoardAlignerParams BoardAlignerParams::GetIndoorsBoard()
 {
     // May be we'll change default c'tor, so explicitly...
     BoardAlignerParams params;
-    params.idealWidth = 4;
-    params.idealHeight = 4;
+    params.idealWidth = 3;
+    params.idealHeight = 3;
     params.boardMarkers.clear();
     params.type = AlignmentType::FIT_WIDTH;
     return params;

@@ -22,7 +22,7 @@ ChessBoardAssembler& ChessBoardAssembler::operator=(const ChessBoardAssembler& o
     return *this;
 }
 
-void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, std::vector<std::vector<std::vector<corecvs::Vector2dd>>> &boards_, BoardAligner* aligner_, DpImage *buffer_)
+void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, std::vector<BoardCornersType> &boards_, BoardAligner* aligner_, DpImage *buffer_)
 {
     aligner = aligner_;
     buffer = buffer_;
@@ -37,9 +37,9 @@ void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, 
 
     boards_.clear();
     std::sort(boards.begin(), boards.end(), [](const RectangularGridPattern &a, const RectangularGridPattern &b) { return a.score < b.score; });
-    for (auto& b: boards)
+    for (RectangularGridPattern& b: boards)
     {
-        std::vector<std::vector<corecvs::Vector2dd>> board;
+        BoardCornersType board;
         for (auto& v: b.cornerIdx)
         {
             std::vector<corecvs::Vector2dd> row;
@@ -373,22 +373,22 @@ bool ChessBoardAssembler::BoardExpander::growDir(Direction dir, RectangularGridP
 }
 
 
-corecvs::Vector2dd ChessBoardAssembler::BoardExpander::predict(corecvs::Vector2dd a, corecvs::Vector2dd b, corecvs::Vector2dd c)
+Vector2dd ChessBoardAssembler::BoardExpander::predict(Vector2dd a, Vector2dd b, Vector2dd c)
 {
     double conservativity = assembler->conservativity();
-    auto d1 = b - a, d2 = c - b;
-    auto alpha1 = atan2(d1[1], d1[0]),
-         alpha2 = atan2(d2[1], d2[0]);
-    auto alpha = 2.0 * alpha2 - alpha1;
+    Vector2dd d1 = b - a, d2 = c - b;
+    double alpha1 = d1.argument();
+    double alpha2 = d2.argument();
+    double alpha = 2.0 * alpha2 - alpha1;
 
     double l1 = d1.l2Metric();
     double l2 = d2.l2Metric();
 
-    auto res = c + Vector2dd::FromPolar(alpha, conservativity * (2.0 * l2 - l1));
+    Vector2dd res = c + Vector2dd::FromPolar(alpha, conservativity * (2.0 * l2 - l1));
     return res;
 }
 
-void ChessBoardAssembler::BoardExpander::predictor(Direction dir, std::vector<corecvs::Vector2dd> &prediction)
+void ChessBoardAssembler::BoardExpander::predictor(Direction dir, std::vector<Vector2dd> &prediction)
 {
     auto& corners = assembler->corners;
     prediction.clear();
@@ -514,4 +514,35 @@ void ChessBoardAssembler::setStatistics(corecvs::Statistics *stats)
 corecvs::Statistics *ChessBoardAssembler::getStatistics()
 {
     return stats;
+}
+
+
+double RectangularGridPattern::getStructureScore(std::vector<OrientedCorner> &corners) const
+{
+    double e_struct = 0.0;
+    for (int i = 0; i < w(); ++i)
+    {
+        for (int j = 0; j + 2 < h(); ++j)
+        {
+            Vector2dd c1 = corners[cornerIdx[j + 0][i]].pos;
+            Vector2dd c2 = corners[cornerIdx[j + 1][i]].pos;
+            Vector2dd c3 = corners[cornerIdx[j + 2][i]].pos;
+            double err = (c1 + c3 - 2.0 * c2).l2Metric() / (c1 - c3).l2Metric();
+            if (err > e_struct)
+                e_struct = err;
+        }
+    }
+    for (int i = 0; i < h(); ++i)
+    {
+        for (int j = 0; j + 2 < w(); ++j)
+        {
+            Vector2dd c1 = corners[cornerIdx[i][j + 0]].pos;
+            Vector2dd c2 = corners[cornerIdx[i][j + 1]].pos;
+            Vector2dd c3 = corners[cornerIdx[i][j + 2]].pos;
+            double err = (c1 + c3 - 2.0 * c2).l2Metric() / (c1 - c3).l2Metric();
+            if (err > e_struct)
+                e_struct = err;
+        }
+    }
+    return w() * h() * e_struct;
 }
