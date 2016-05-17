@@ -148,7 +148,7 @@ TEST_F(CalibrationTest, testDetectDistChessBoard)
 {
     CalibrationJob job;
 
-    JSONGetter getter(addPath("gIn.json"));
+    JSONGetter getter(addPath("gIn_updated.json"));
     getter.visit(job, "job");
 
     fillJobByTestDataM15(&job);
