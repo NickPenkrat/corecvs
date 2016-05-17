@@ -100,7 +100,7 @@ int CheckerboardDetectionParameters::staticInit()
         (
           CheckerboardDetectionParameters::CELLSIZEHOR_ID,
           offsetof(CheckerboardDetectionParameters, mCellSizeHor),
-          50,
+          0.05,
           "cellSizeHor",
           "cellSizeHor",
           "cellSizeHor"
@@ -111,7 +111,7 @@ int CheckerboardDetectionParameters::staticInit()
         (
           CheckerboardDetectionParameters::CELLSIZEVERT_ID,
           offsetof(CheckerboardDetectionParameters, mCellSizeVert),
-          50,
+          0.05,
           "cellSizeVert",
           "cellSizeVert",
           "cellSizeVert"
