@@ -196,6 +196,9 @@ public:
     GenericTriangleSpanIterator(const TriangleType &triangle)
     {
         sortedt = triangle;
+        for (int i = 0; i < sortedt.SIZE; i++) {
+            sortedt.p[i] = Vector2dd(fround(sortedt.p[i].x()), fround(sortedt.p[i].y()));
+        }
         sortedt.sortByY();
 
         double longslope = (sortedt.p3().x() - sortedt.p1().x()) / (sortedt.p3().y() - sortedt.p1().y());

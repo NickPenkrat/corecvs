@@ -188,10 +188,10 @@ void ClassicRenderer::render(Mesh3DDecorated *mesh, RGB24Buffer *buffer)
 
         AttributedTriangleSpanIterator it(triang);
         while (it.hasValue())
-        {
-            it.step();
+        {            
             AttributedLineSpan span = it.getAttrSpan();
             fragmentShader(span);
+            it.step();
         }
     }
 
@@ -231,7 +231,7 @@ void ClassicRenderer::fragmentShader(AttributedLineSpan &span)
                 }
 
 
-                /* Nornal block*/
+                /* Normal block*/
 
                 Vector3dd dir = Vector3dd(1.0, 1.0, -1.0).normalised();
 
