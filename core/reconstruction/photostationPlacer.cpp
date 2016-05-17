@@ -289,8 +289,8 @@ void corecvs::PhotostationPlacer::fit(const ReconstructionFunctorOptimizationTyp
     optimizationParams = params;
     getErrorSummaryAll();
     corecvs::LevenbergMarquardtSparse lm(num);
-    ReconstructionFunctor orient(scene, errorType, optimizationParams, 1.0);
-    ReconstructionNormalizationFunctor orientNorm(&orient);
+    ReconstructionFunctor orient(scene, errorType, optimizationParams, excessiveQuaternionParametrization, 1.0);
+    ReconstructionNormalizationFunctor orientNorm(&orient, alternatingIterations);
     lm.useSchurComplement = true;
     lm.f = &orient;
     lm.normalisation = &orientNorm;
@@ -738,14 +738,16 @@ void corecvs::PhotostationPlacer::postAppend()
         std::cout << "AA:   " << pcnt << " reconstructed points" << std::endl;
         createTracks();
         std::cout << "AA&C: " << pcnt << " reconstructed points" << std::endl;
+        scene->pruneTracks(inlierThreshold * rmsePruningScaler, inlierThreshold * maxPruningScaler, distanceLimit);
         auto acnt = scene->trackedFeatures.size();
-        if (acnt == pcnt)
+        if (acnt <= pcnt && i != 0)
             break;
         fit(params, postAppendNonlinearIterations / 2);
         std::cout << "Prune" << std::endl;
-        scene->pruneTracks(trackPruningThreshold);
+        scene->pruneTracks(inlierThreshold * rmsePruningScaler / 2.0, inlierThreshold * maxPruningScaler / 2.0, distanceLimit);
         fit(params, postAppendNonlinearIterations / 2);
     }
+    postAppendHook();
 }
 
 void corecvs::PhotostationPlacer::fullRun()
@@ -795,6 +797,7 @@ void corecvs::PhotostationPlacer::fullRun()
     scene->ProcessState->reset("Fit 1", 1);
     scene->ProcessState->incrementStarted();
     fit(optimizationParams, finalNonLinearIterations / 2);
+    scene->pruneTracks(inlierThreshold * rmsePruningScaler / 2.0, inlierThreshold * maxPruningScaler / 2.0, distanceLimit);
     scene->ProcessState->incrementCompleted();
 
     scene->ProcessState->reset("Prunging", 1);

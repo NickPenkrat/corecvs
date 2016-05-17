@@ -118,7 +118,7 @@ void ReconstructionFixtureScene::printTrackStats()
         for (auto& o: pt->observations__)
         {
             auto err = !(o.first.u->reprojectionError(pt->reprojectedPosition, o.second.observation, o.first.v));
-            errs.push_back(err * err);
+            errs.push_back(err);
             ssq += err * err;
             cnt += 1.0;
         }
@@ -132,10 +132,14 @@ void ReconstructionFixtureScene::printTrackStats()
         ++cntS[s / tolerance];
     std::cout << "Reprojection histogram: " << std::endl;
     for (int i = 0; i <= cntE.rbegin()->first; ++i)
-        std::cout << "[" << tolerance * i << "; " << tolerance * (i + 1) << ") : " << cntE[i] << std::endl;
+        if (cntE[i] > 0)
+            std::cout << "[" << tolerance * i << "; " << tolerance * (i + 1) << ": " << cntE[i] << ")";
+    std::cout << std::endl;
     std::cout << "RMSE histogram: " << std::endl;
     for (int i = 0; i <= cntS.rbegin()->first; ++i)
-        std::cout << "[" << tolerance * i << "; " << tolerance * (i + 1) << ") : " << cntS[i] << std::endl;
+        if (cntS[i] > 0)
+            std::cout << "[" << tolerance * i << "; " << tolerance * (i + 1) << ": " << cntS[i] << ")";
+    std::cout << std::endl;
 
 }
 
@@ -159,7 +163,7 @@ FixtureScene* ReconstructionFixtureScene::dumbify()
             wppmap[WPP(f, c)] = WPP(ff, cc);
         }
     }
-    for (auto p : featurePoints())
+    for (auto p : trackedFeatures)
     {
         auto pp = dumb->createFeaturePoint();
         pp->reprojectedPosition = p->reprojectedPosition;
@@ -176,21 +180,26 @@ FixtureScene* ReconstructionFixtureScene::dumbify()
     return dumb;
 }
 
-void ReconstructionFixtureScene::pruneTracks(double threshold)
+void ReconstructionFixtureScene::pruneTracks(double rmse, double maxe, double distanceThreshold)
 {
     int id = 0;
+    std::vector<SceneFeaturePoint*> deleteSet;
     for (auto& pt: trackedFeatures)
     {
         auto pos = pt->reprojectedPosition;
         double ssq = 0.0, cnt = 0.0, mxe = 0.0;
+        bool visibleAll = true;
+        bool tooFar = false;
         for (auto& obs: pt->observations__)
         {
             auto err = obs.first.u->reprojectionError(pos, obs.second.observation, obs.first.v);
             ssq += !err * !err;
             mxe = std::max(!err, mxe);
             cnt += 1.0;
+            visibleAll &= obs.first.u->isVisible(pos, obs.first.v);
+            tooFar |= (!(obs.first.u->location.shift - pos)) > distanceThreshold;
         }
-        if ((ssq / cnt) < threshold * threshold && mxe < threshold * 2.0)
+        if (std::sqrt(ssq / cnt) < rmse && mxe < maxe && visibleAll && !tooFar)
         {
             trackedFeatures[id++] = pt;
         }
@@ -203,12 +212,13 @@ void ReconstructionFixtureScene::pruneTracks(double threshold)
                         removal.emplace_back(m.first, md.first);
             for (auto& d: removal)
                 trackMap[d.first].erase(d.second);
+            deleteSet.push_back(pt);
         }
     }
     int pruned = trackedFeatures.size() - id;
+    trackedFeatures.resize(id);
     double ratio = double(pruned) / trackedFeatures.size() * 100.0;
     std::cout << pruned << " tracks (" << ratio << ") were pruned!" << std::endl;
-    trackedFeatures.resize(id);
 }
 
 void ReconstructionFixtureScene::deleteCamera(FixtureCamera *camera)

@@ -2,7 +2,7 @@
 
 #include <set>
 
-corecvs::ReconstructionFunctor::ReconstructionFunctor(corecvs::ReconstructionFixtureScene *scene, const corecvs::ReconstructionFunctorOptimizationErrorType &error, const corecvs::ReconstructionFunctorOptimizationType &optimization, const double pointErrorEstimate) : corecvs::SparseFunctionArgs(), scene(scene), error(error), optimization(optimization), scalerPoints(pointErrorEstimate)
+corecvs::ReconstructionFunctor::ReconstructionFunctor(corecvs::ReconstructionFixtureScene *scene, const corecvs::ReconstructionFunctorOptimizationErrorType &error, const corecvs::ReconstructionFunctorOptimizationType &optimization, bool excessiveQuaternionParametrization, const double pointErrorEstimate) : corecvs::SparseFunctionArgs(), scene(scene), error(error), optimization(optimization), excessiveQuaternionParametrization(excessiveQuaternionParametrization), scalerPoints(pointErrorEstimate)
 {
     /*
      * Compute inputs (these are ball-park estimate, need to
@@ -28,10 +28,69 @@ corecvs::ReconstructionFunctor::ReconstructionFunctor(corecvs::ReconstructionFix
     init(getInputNum(), getOutputNum(), sparsity);
 }
 
+struct PointFunctor: corecvs::FunctionArgs
+{
+    PointFunctor(corecvs::SceneFeaturePoint *pt, corecvs::ReconstructionFunctorOptimizationErrorType errType, int N)
+        : corecvs::FunctionArgs(3, pt->observations__.size() * N),
+          pt(pt),
+          errType(errType),
+          N(N) {}
+    void operator() (const double* in, double* out)
+    {
+       pt->reprojectedPosition = corecvs::Vector3dd(in[0], in[1], in[2]);
+       int argout = 0;
+#define EC(E, EE, EEE) \
+        case corecvs::ReconstructionFunctorOptimizationErrorType::E: \
+            for (auto& o: pt->observations__) \
+            { \
+                auto  e = o.second.cameraFixture->EE(o.second.featurePoint->reprojectedPosition, o.second.observation, o.second.camera); \
+                for (int j = 0; j < N; ++j) \
+                    out[argout++] = EEE; \
+            } \
+            break;
+        switch(errType)
+        {
+            EC(REPROJECTION,  reprojectionError, e[j])
+            EC(ANGULAR,       angleError,        e)
+            EC(CROSS_PRODUCT, crossProductError, e[j])
+            EC(RAY_DIFF,      rayDiffError,      e[j])
+            default:
+                CORE_ASSERT_TRUE_S(false);
+                break;
+        }
+    }
+#undef EC
+    corecvs::SceneFeaturePoint* pt;
+    corecvs::ReconstructionFunctorOptimizationErrorType errType;
+    int N;
+};
+
+void corecvs::ReconstructionFunctor::alternatingMinimization(int steps)
+{
+    int N = scene->trackedFeatures.size();
+    int ec = getErrorComponentsPerPoint();
+    corecvs::parallelable_for(0, N, [&](const corecvs::BlockedRange<int> &r)
+        {
+            for (int i = r.begin(); i < r.end(); ++i)
+            {
+                auto& pt = *scene->trackedFeatures[i];
+                int in = 3, out = pt.observations__.size() * ec;
+                PointFunctor pf(&pt, error, ec);
+                corecvs::LevenbergMarquardt lm(steps);
+                lm.f = &pf;
+                lm.traceProgress = false;
+                std::vector<double> inn(&pt.reprojectedPosition[0], &pt.reprojectedPosition[3]), outt(out);
+                auto res = lm.fit(inn, outt);
+                for (int ii = 0; ii < 3; ++ii)
+                    pt.reprojectedPosition[ii] = res[ii];
+            }
+        });
+}
+
 int corecvs::ReconstructionFunctor::getInputNum()
 {
     return
-        (int)orientableFixtures.size()     * INPUTS_PER_ORIENTATION
+        (int)orientableFixtures.size()     * (excessiveQuaternionParametrization ? INPUTS_PER_ORIENTATION_EXC : INPUTS_PER_ORIENTATION_NEX)
       + (int)translateableFixtures.size()  * INPUTS_PER_TRANSLATION
       + (int)focalTunableCameras.size()    * INPUTS_PER_FOCAL
       + (int)principalTunableCameras.size()* INPUTS_PER_PRINCIPAL
@@ -73,14 +132,14 @@ void corecvs::ReconstructionFunctor::computePointCounts()
         for (auto& obs: pt->observations__)
         {
             counter[obs.first.u]++;
-            counter[obs.first.u]++;
+            counter[obs.first.v]++;
         }
 
     for (auto& pt: scene->staticPoints)
         for (auto& obs: pt->observations__)
         {
             counter[obs.first.u]++;
-            counter[obs.first.u]++;
+            counter[obs.first.v]++;
         }
 }
 
@@ -156,6 +215,8 @@ void corecvs::ReconstructionFunctor::computeOutputs()
             if (scene->initializationData[cf].enforcePosition)
                 positionConstrainedCameras.push_back(cf);)
 
+    for (auto& f: orientableFixtures)
+        originalOrientations.push_back(f->location.rotor);
     scalerPosition = scalerPoints = 1.0;
 }
 
@@ -198,8 +259,10 @@ void corecvs::ReconstructionFunctor::computeDependency()
 
 #define DEPS(V, N, CPROJ, CPOS) \
     for (auto& a: V) \
+    {\
         for (int i = 0; i < N; ++i) \
         { \
+            CORE_ASSERT_TRUE_S(argin < sparsity.size()); \
             for (int j = 0; j < lastProjection; ++j) \
             { \
                 auto p = revDependency[j]; \
@@ -215,8 +278,9 @@ void corecvs::ReconstructionFunctor::computeDependency()
                 (void)p; \
             } \
             ++argin; \
-        }
-    DEPS(orientableFixtures,      INPUTS_PER_ORIENTATION, a == p->cameraFixture, false)
+        } \
+    }
+    DEPS(orientableFixtures,      (excessiveQuaternionParametrization ? INPUTS_PER_ORIENTATION_EXC : INPUTS_PER_ORIENTATION_NEX), a == p->cameraFixture, false)
     DEPS(translateableFixtures,   INPUTS_PER_TRANSLATION, a == p->cameraFixture, a == p);
     DEPS(focalTunableCameras,     INPUTS_PER_FOCAL,       a == p->camera, false)
     DEPS(principalTunableCameras, INPUTS_PER_PRINCIPAL,   a == p->camera, false)
@@ -227,16 +291,17 @@ void corecvs::ReconstructionFunctor::computeDependency()
     CORE_ASSERT_TRUE_S(argin == getInputNum());
     schurBlocks.clear();
     for (int i = argin_prepoint; i < argin; i += INPUTS_PER_3D_POINT)
-    	schurBlocks.push_back(i);
+        schurBlocks.push_back(i);
     schurBlocks.push_back(argin);
 }
 
 void corecvs::ReconstructionFunctor::readParams(const double* params)
 {
     int argin = 0;
-#define FILL(V, N, C, A) \
+#define FILL(V, N, C, A, P) \
     for (auto& a: V) \
     { \
+        P; \
         for (int i = 0; i < N; ++i) \
         { \
             double v = params[argin++]; \
@@ -245,26 +310,38 @@ void corecvs::ReconstructionFunctor::readParams(const double* params)
         A; \
     }
 
-    FILL(orientableFixtures,      INPUTS_PER_ORIENTATION, a->location.rotor[i] = v, a->location.rotor.normalise())
-    FILL(translateableFixtures,   INPUTS_PER_TRANSLATION, a->location.shift[i] = v, )
-    FILL(focalTunableCameras,     INPUTS_PER_FOCAL,       a->intrinsics.focal = corecvs::Vector2dd(v, v), )
-    FILL(principalTunableCameras, INPUTS_PER_PRINCIPAL,   a->intrinsics.principal[i] = v, )
-    FILL(scene->trackedFeatures,  INPUTS_PER_3D_POINT,    a->reprojectedPosition[i] = v, )
+    if (!inputQuaternions.size() && !excessiveQuaternionParametrization)
+        inputQuaternions.resize(orientableFixtures.size());
+
+    if (excessiveQuaternionParametrization)
+        FILL(orientableFixtures,  INPUTS_PER_ORIENTATION_EXC, a->location.rotor[i] = v, a->location.rotor.normalise(),)
+    else
+        FILL(orientableFixtures,  INPUTS_PER_ORIENTATION_NEX, inputQuaternions[id][i] = v; a->location.rotor[i] = v, a->location.rotor[3] = 1.0; a->location.rotor.normalise(); a->location.rotor = a->location.rotor ^ originalOrientations[id], int id = &a - &orientableFixtures[0])
+    FILL(translateableFixtures,   INPUTS_PER_TRANSLATION,     a->location.shift[i] = v,,)
+    FILL(focalTunableCameras,     INPUTS_PER_FOCAL,           a->intrinsics.focal = corecvs::Vector2dd(v, v),,)
+    FILL(principalTunableCameras, INPUTS_PER_PRINCIPAL,       a->intrinsics.principal[i] = v,,)
+    FILL(scene->trackedFeatures,  INPUTS_PER_3D_POINT,        a->reprojectedPosition[i] = v,,)
 }
 
 void corecvs::ReconstructionFunctor::writeParams(double* params)
 {
     int argin = 0;
-#define WRITE(V, N, C) \
+#define WRITE(V, N, C, P) \
     for (auto& a: V) \
+    { \
+        P; \
         for (int i = 0; i < N; ++i) \
-            params[argin++] = C;
+            params[argin++] = C; \
+    }
 
-    WRITE(orientableFixtures,      INPUTS_PER_ORIENTATION, a->location.rotor[i])
-    WRITE(translateableFixtures,   INPUTS_PER_TRANSLATION, a->location.shift[i])
-    WRITE(focalTunableCameras,     INPUTS_PER_FOCAL,       a->intrinsics.focal[0])
-    WRITE(principalTunableCameras, INPUTS_PER_PRINCIPAL, a->intrinsics.principal[i])
-    WRITE(scene->trackedFeatures,  INPUTS_PER_3D_POINT,  a->reprojectedPosition[i])
+    if (excessiveQuaternionParametrization)
+        WRITE(orientableFixtures,  INPUTS_PER_ORIENTATION_EXC, a->location.rotor[i],)
+    else
+        WRITE(orientableFixtures,  INPUTS_PER_ORIENTATION_NEX, qq[i], auto qq = inputQuaternions.size() ? inputQuaternions[&a - &orientableFixtures[0]] : corecvs::Vector3dd(0, 0, 0))
+    WRITE(translateableFixtures,   INPUTS_PER_TRANSLATION, a->location.shift[i],)
+    WRITE(focalTunableCameras,     INPUTS_PER_FOCAL,       a->intrinsics.focal[0],)
+    WRITE(principalTunableCameras, INPUTS_PER_PRINCIPAL,   a->intrinsics.principal[i],)
+    WRITE(scene->trackedFeatures,  INPUTS_PER_3D_POINT,    a->reprojectedPosition[i],)
 }
 
 void corecvs::ReconstructionFunctor::computeErrors(double *out, const std::vector<int> &idxs)
@@ -320,4 +397,5 @@ void corecvs::ParallelErrorComputator::operator() (const corecvs::BlockedRange<i
             CORE_ASSERT_TRUE_S(false);
             break;
     }
+#undef EC
 }
