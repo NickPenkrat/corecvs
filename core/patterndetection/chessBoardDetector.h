@@ -25,8 +25,7 @@ enum class ChessBoardDetectorMode
 template<>
 struct is_bitmask<ChessBoardDetectorMode> : std::true_type {};
 
-class ChessboardDetector : CheckerboardDetectionParameters,
-                           public PatternDetector
+class ChessboardDetector : CheckerboardDetectionParameters, public PatternDetector
 {
     /**
      *  Aligner manages the form of the checkerboard as well as positioning inside it
@@ -53,7 +52,7 @@ public:
     void getPointData(corecvs::ObservationList &observations);
 
     // Real pattern detection happens here
-    bool detectPattern(DpImage     &buffer);
+    bool detectPattern(DpImage &buffer);
 
     bool classify(DpImage &img, CirclePatternGenerator& generator, RGB24Buffer &buffer);
 
@@ -75,24 +74,23 @@ public:
 #endif
 
 private:
+    RectangularGridPattern                  bestPattern;
+    ObservationList                         result;
 
-    RectangularGridPattern bestPattern;
-    ObservationList result;
+    std::vector<ObservationList>            allPatterns;
+    std::vector<OrientedCorner>             corners;
 
-    std::vector<ObservationList> allPatterns;
-    std::vector<OrientedCorner> corners;
-
-
-    ChessBoardAssembler assembler;
+    ChessBoardCornerDetector                detector;
+    ChessBoardAssembler                     assembler;
     std::shared_ptr<CirclePatternGenerator> sharedGenerator;
 
-/* Some statistics */
-    Statistics *stats;
+    /* Some statistics */
+    Statistics  *stats;
 
-    bool detectPatternCandidates(DpImage &buffer, std::vector<BoardCornersType> &boards);
+    bool    detectPatternCandidates(DpImage &buffer, std::vector<BoardCornersType> &boards);
 
 public:  /* We need generic interface for debug data. It could be hidden inside Statistics*/
-    ChessBoardCornerDetector detector;
+    const ChessBoardCornerDetector *cornerDet() const   { return &detector; }
 
 };
 

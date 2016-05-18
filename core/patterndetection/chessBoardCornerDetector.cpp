@@ -621,7 +621,7 @@ corecvs::Statistics *ChessBoardCornerDetector::getStatistics()
  *   DpImage du, dv, w, phi, cost, img;
  *   std::vector<CornerKernelSet> kernels;
  **/
-vector<std::string> ChessBoardCornerDetector::debugBuffers()
+vector<std::string> ChessBoardCornerDetector::debugBuffers() const
 {
     vector<std::string> result;
     result.push_back("du");
@@ -642,7 +642,7 @@ vector<std::string> ChessBoardCornerDetector::debugBuffers()
     return result;
 }
 
-RGB24Buffer *ChessBoardCornerDetector::getDebugBuffer(std::string name)
+RGB24Buffer *ChessBoardCornerDetector::getDebugBuffer(const std::string& name) const
 {
     RGB24Buffer *result = NULL;
     if (name == "du") {
@@ -680,10 +680,11 @@ RGB24Buffer *ChessBoardCornerDetector::getDebugBuffer(std::string name)
         size_t knum = std::stoi(m[1]);
 
         if (id < kernels.size() && knum < CornerKernelSet::KERNEL_LAST) {
-                result = new RGB24Buffer(kernels[id].K[knum].getSize());
-                result->drawDoubleBuffer(kernels[id].K[knum]);
+            result = new RGB24Buffer(kernels[id].K[knum].getSize());
+            result->drawDoubleBuffer(kernels[id].K[knum]);
         }
-    } else {
+    }
+    else {
         SYNC_PRINT(("ChessBoardCornerDetector::getDebugBuffer(): no match for <%s>", name.c_str() ));
     }
     return result;
@@ -933,10 +934,9 @@ void ChessBoardCornerDetector::detectCorners(DpImage &image, std::vector<Oriente
     corners_ = corners;
 }
 
-ChessBoardCornerDetector::ChessBoardCornerDetector(ChessBoardCornerDetectorParams params) :
-    ChessBoardCornerDetectorParams(params),
-    stats(NULL)
+ChessBoardCornerDetector::ChessBoardCornerDetector(ChessBoardCornerDetectorParams params)
+    : ChessBoardCornerDetectorParams(params)
+    , stats(NULL)
 {
     prepareKernels();
 }
-

@@ -224,9 +224,8 @@ public:
     void setStatistics(corecvs::Statistics *stats);
     corecvs::Statistics *getStatistics();
 
-    vector<std::string> debugBuffers();
-    RGB24Buffer *getDebugBuffer(std::string name);
-
+    vector<std::string> debugBuffers() const;
+    RGB24Buffer *getDebugBuffer(const std::string& name) const;
 
 private:
     corecvs::Statistics *stats;
