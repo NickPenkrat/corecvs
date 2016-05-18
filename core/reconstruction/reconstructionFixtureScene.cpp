@@ -180,45 +180,99 @@ FixtureScene* ReconstructionFixtureScene::dumbify()
     return dumb;
 }
 
+bool ReconstructionFixtureScene::checkTrack(SceneFeaturePoint* track, uint32_t mask, double rmse, double maxe, double distanceThreshold)
+{
+    auto res = track->triangulate(true, mask);
+    int id = 0;
+    double ssq = 0.0, cnt = 0.0, mxe = 0.0;
+    bool visibleAll = true;
+    bool tooFar = false;
+    for (auto& obs: track->observations__)
+    {
+        if (!((1u << id++) & mask))
+            continue;
+        auto err = obs.first.u->reprojectionError(res, obs.second.observation, obs.first.v);
+        ssq += !err * !err;
+        mxe = std::max(!err, mxe);
+        cnt += 1.0;
+        visibleAll &= obs.first.u->isVisible(res, obs.first.v);
+        tooFar |= (!(obs.first.u->location.shift - res)) > distanceThreshold;
+    }
+    if (ssq / cnt < rmse * rmse && mxe < maxe && visibleAll && !tooFar)
+    {
+        track->reprojectedPosition = res;
+    }
+    return false;
+}
+
+std::vector<uint32_t> ReconstructionFixtureScene::GenerateBitmasks(int N, int M)
+{
+    std::vector<uint32_t> res;
+    for (int first = M - 1; first < N; ++first)
+    {
+        auto prev = GenerateBitmasks(first - 1, M - 1);
+        for (auto& m: prev)
+            res.push_back((1u << first) | m);
+    }
+    for (auto& m: res)
+        CORE_ASSERT_TRUE_S(__builtin_popcount(m) == M);
+    return res;
+}
+
 void ReconstructionFixtureScene::pruneTracks(double rmse, double maxe, double distanceThreshold)
 {
     int id = 0;
     std::vector<SceneFeaturePoint*> deleteSet;
+    int completelyPruned = 0, observationsPruned = 0, totalObservations = 0;
     for (auto& pt: trackedFeatures)
     {
-        auto pos = pt->reprojectedPosition;
-        double ssq = 0.0, cnt = 0.0, mxe = 0.0;
-        bool visibleAll = true;
-        bool tooFar = false;
-        for (auto& obs: pt->observations__)
-        {
-            auto err = obs.first.u->reprojectionError(pos, obs.second.observation, obs.first.v);
-            ssq += !err * !err;
-            mxe = std::max(!err, mxe);
-            cnt += 1.0;
-            visibleAll &= obs.first.u->isVisible(pos, obs.first.v);
-            tooFar |= (!(obs.first.u->location.shift - pos)) > distanceThreshold;
-        }
-        if (std::sqrt(ssq / cnt) < rmse && mxe < maxe && visibleAll && !tooFar)
+        totalObservations += pt->observations__.size();
+        if (checkTrack(pt, ~0, rmse, maxe, distanceThreshold))
         {
             trackedFeatures[id++] = pt;
         }
         else
         {
+            int N = (int)pt->observations__.size();
+            uint32_t goodMask = 0;
+            for (int M = N - 1; M >= 2; --M)
+            {
+                auto masks = GenerateBitmasks(N, M);
+                for (auto& m: masks)
+                    if (checkTrack(pt, m, rmse, maxe, distanceThreshold))
+                    {
+                        goodMask = m;
+                        break;
+                    }
+            }
+            std::vector<WPP> needRemove;
+            int idd = 0;
+            for (auto& o: pt->observations__)
+                if (!((1u << idd) & goodMask))
+                    needRemove.push_back(o.first);
             std::vector<std::pair<WPP, int>> removal;
-            for (auto& m: trackMap)
-                for (auto& md: m.second)
+            for (auto& wpp: needRemove)
+            {
+               for (auto& md: trackMap[wpp])
                     if (md.second == pt)
-                        removal.emplace_back(m.first, md.first);
+                        removal.emplace_back(wpp, md.first);
+               pt->observations__.erase(wpp);
+            }
             for (auto& d: removal)
                 trackMap[d.first].erase(d.second);
-            deleteSet.push_back(pt);
+            observationsPruned += N - __builtin_popcount(goodMask);
+            if (goodMask)
+                trackedFeatures[id++] = pt;
+            else
+                ++completelyPruned;
+
         }
     }
-    int pruned = trackedFeatures.size() - id;
+    double ratio = double(completelyPruned) / trackedFeatures.size() * 100.0,
+           ratioO= double(observationsPruned) / totalObservations * 100.0;
     trackedFeatures.resize(id);
-    double ratio = double(pruned) / trackedFeatures.size() * 100.0;
-    std::cout << pruned << " tracks (" << ratio << ") were pruned!" << std::endl;
+    std::cout << "Completely pruned " << completelyPruned << " (" << ratio << "%) tracks;" << std::endl
+              << "Pruned " << observationsPruned << " (" << ratioO << "%) observations" << std::endl;
 }
 
 void ReconstructionFixtureScene::deleteCamera(FixtureCamera *camera)
