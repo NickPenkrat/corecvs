@@ -260,6 +260,11 @@ extern "C" {
 # define PRIi64 "I64d"
 #endif
 
+#ifdef _MSC_VER
+# include <intrin.h>
+# define __builtin_popcount __popcount
+#endif
+
 #define REFLECTION_IN_CORE
 
 
