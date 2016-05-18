@@ -46,7 +46,7 @@ struct OrientedCorner
      * Gradient-wise score is correlation with cross of width = bandwidth oriented with corner edges
      * Intensity-wise score is correlation with corner-pattern created using edge orientations
      **/
-    double scoreCorner(DpImage &img, DpImage &w, std::vector<double> &radius, double bandwidth = 3.0);
+    double scoreCorner(DpImage &img, DpImage &w, const std::vector<double> &radius, double bandwidth = 3.0);
 
     /**
      *  Computes single scale score

@@ -99,7 +99,7 @@ void CornerKernelSet::minifyKernel(KernelType &k)
 }
 
 
-double OrientedCorner::scoreCorner(DpImage &img, DpImage &weight, std::vector<double> &radius, double bandwidth)
+double OrientedCorner::scoreCorner(DpImage &img, DpImage &weight, const std::vector<double> &radius, double bandwidth)
 {
     int iw = img.w;
     int ih = img.h;
