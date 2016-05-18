@@ -171,8 +171,8 @@ class ChessBoardCornerDetector : ChessBoardCornerDetectorParams
 public:
     ChessBoardCornerDetector(ChessBoardCornerDetectorParams params = ChessBoardCornerDetectorParams());
     void detectCorners(DpImage &image, std::vector<OrientedCorner> &corners);
-private:
 
+private:
     /**
      * Initalizes kernels for corner detection
      **/
@@ -218,7 +218,7 @@ private:
     DpImage w, phi;
     DpImage cost, img;
     std::vector<CornerKernelSet> kernels;
-    std::vector<OrientedCorner> corners;
+    std::vector<OrientedCorner>  corners;
 
 public:
     void setStatistics(corecvs::Statistics *stats);
