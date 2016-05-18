@@ -42,7 +42,7 @@ class CheckerboardDetectionParameters : public BaseReflection<CheckerboardDetect
 public:
     enum FieldId {
         ESTIMATE_UNDISTORTED_FROM_DISTORTED_ID,
-        USEUNDISTORTION_ID,
+        USE_UNDISTORTION_ID,
         ALGORITHM_ID,
         CHANNEL_ID,
         CELLSIZEHOR_ID,
@@ -67,8 +67,8 @@ public:
     bool mEstimateUndistortedFromDistorted;
 
     /** 
-     * \brief useUndistortion 
-     * useUndistortion 
+     * \brief Use Undistortion 
+     * Use Undistortion 
      */
     bool mUseUndistortion;
 
@@ -299,7 +299,7 @@ template<class VisitorType>
     void accept(VisitorType &visitor)
     {
         visitor.visit(mEstimateUndistortedFromDistorted, static_cast<const BoolField *>    (fields()[ESTIMATE_UNDISTORTED_FROM_DISTORTED_ID]));
-        visitor.visit(mUseUndistortion,           static_cast<const BoolField *>    (fields()[USEUNDISTORTION_ID]));
+        visitor.visit(mUseUndistortion,           static_cast<const BoolField *>    (fields()[USE_UNDISTORTION_ID]));
         visitor.visit((int &)mAlgorithm,          static_cast<const EnumField *>    (fields()[ALGORITHM_ID]));
         visitor.visit((int &)mChannel,            static_cast<const EnumField *>    (fields()[CHANNEL_ID]));
         visitor.visit(mCellSizeHor,               static_cast<const DoubleField *>  (fields()[CELLSIZEHOR_ID]));
