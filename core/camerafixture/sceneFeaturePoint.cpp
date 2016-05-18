@@ -61,18 +61,21 @@ void SceneFeaturePoint::removeObservation(SceneObservation *in)
     observations.erase(it);
 }
 
-Vector3dd SceneFeaturePoint::triangulate(bool use__)
+Vector3dd SceneFeaturePoint::triangulate(bool use__, uint32_t mask)
 {
     MulticameraTriangulator mct;
+    int id = 0;
     if (use__)
     {
         for (auto& obs: observations__)
-            mct.addCamera(obs.first.u->getMMatrix(obs.first.v), obs.second.observation);
+            if (mask & (1 << id))
+                mct.addCamera(obs.first.u->getMMatrix(obs.first.v), obs.second.observation);
     }
     else
     {
         for (auto& obs: observations)
-            mct.addCamera(obs.second.cameraFixture->getMMatrix(obs.second.camera), obs.second.observation);
+            if (mask & (1 << id))
+                mct.addCamera(obs.second.cameraFixture->getMMatrix(obs.second.camera), obs.second.observation);
     }
     auto res = mct.triangulateLM(mct.triangulate());
     accuracy = mct.getCovarianceInvEstimation(res);
