@@ -15,6 +15,11 @@ OTHER_FILES += \
    #ocv-homo/main_test_ocv-homo.cpp \                   # TODO: main + opencv deps
    #openCV/main_test_openCV.cpp \                       # TODO: main + opencv deps
 
+contains(DEFINES, WITH_FFTW) {
+SOURCES += \
+     fftw/main_test_fftw.cpp \
+}
+
 SOURCES += \
     main.cpp \
     \
@@ -41,8 +46,9 @@ SOURCES += \
    #face_recognition1/main_test_face_recognition1.cpp \   # TODO: absent input data!
     fastkernel/main_test_fastkernel.cpp \
    #fastkernel_double/main_test_fastkernel_double.cpp \   # moved to perf-tests
-   #fastkernel_profile/main_test_fastkernel_profile.cpp \ # moved to perf-tests
+   #fastkernel_profile/main_test_fastkernel_profile.cpp \ # moved to perf-tests   
     fileformats/main_test_fileformats.cpp \
+    filesystem/main_test_filesystem.cpp \
    #filter_blocks/main_test_filter_blocks.cpp \           # TODO: can't build
     gaussianSolution/main_test_gaussianSolution.cpp \     # TODO: check it...
     geometry/main_test_geometry.cpp \
@@ -54,6 +60,7 @@ SOURCES += \
     klt_cycle/main_test_klt_cycle.cpp \
     levenberg/main_test_levenberg.cpp \
     logger/main_test_logger.cpp \
+    linear/main_test_linear.cpp \
     matrix/main_test_matrix.cpp \                       # TODO: Windows: assert at matrix\main_test_matrix.cpp:385 - Internal problem with double and stdout
     midmap_pyramid/main_test_midmap_pyramid.cpp \
     moments/main_test_moments.cpp \
@@ -78,4 +85,8 @@ SOURCES += \
     calstructs/main_test_calstructs.cpp \
     polynomial/main_test_polynomial.cpp \
     meshdraw/main_test_meshdraw.cpp \
-    reconstruction/main_test_reconstruction.cpp
+    reconstruction/main_test_reconstruction.cpp \
+    meta/main_test_meta.cpp \
+    function/main_test_function.cpp \
+    deform/test_deform.cpp \
+    camerafixture/main_test_camerafixture.cpp \

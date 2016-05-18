@@ -93,7 +93,7 @@ EssentialMatrix EssentialEstimator::getEssentialLSE(const vector<Correspondence*
     meanR *= N;
     stdevL = stdevL * N - meanL * meanL;
     stdevR = stdevR * N - meanR * meanR;
-    for (size_t i = 0; i < 2; ++i)
+    for (int i = 0; i < 2; ++i)
     {
         stdevL[i] = std::sqrt(stdevL[i]);       // TODO: this must be present in statistics/approx blocks...
         stdevR[i] = std::sqrt(stdevR[i]);
@@ -213,7 +213,7 @@ std::vector<EssentialMatrix> EssentialEstimator::getEssential7point(const vector
     meanR *= N;
     stdevL = stdevL * N - meanL * meanL;
     stdevR = stdevR * N - meanR * meanR;
-    for (size_t i = 0; i < 2; ++i)
+    for (int i = 0; i < 2; ++i)
     {
         stdevL[i] = std::sqrt(stdevL[i]);
         stdevR[i] = std::sqrt(stdevR[i]);
@@ -292,7 +292,7 @@ std::vector<EssentialMatrix> EssentialEstimator::getEssential7point(const vector
            f232 = F2(2, 1),
            f233 = F2(2, 2);
     /*
-     * Auto-generated stub. Do not tuch or it will explode.
+     * Auto-generated stub. Do not touch or it will explode.
      * Here we just enforce 2-rank constraint in form of
      * det(alpha * F1 + (1-alpha) * F2) = 0
      */
@@ -302,7 +302,7 @@ std::vector<EssentialMatrix> EssentialEstimator::getEssential7point(const vector
     double alpha_1 = f111*f222*f233 - f111*f223*f232 - f112*f221*f233 + f112*f223*f231 + f113*f221*f232 - f113*f222*f231 - f121*f212*f233 + f121*f213*f232 + f122*f211*f233 - f122*f213*f231 - f123*f211*f232 + f123*f212*f231 + f131*f212*f223 - f131*f213*f222 - f132*f211*f223 + f132*f213*f221 + f133*f211*f222 - f133*f212*f221 - 3*f211*f222*f233 + 3*f211*f223*f232 + 3*f212*f221*f233 - 3*f212*f223*f231 - 3*f213*f221*f232 + 3*f213*f222*f231;
     double coeff[] = { alpha_0, alpha_1, alpha_2, alpha_3 };
     double roots[3];
-    int realRoots = PolynomialSolver::solve(coeff, roots, 3);
+    int realRoots = (int)PolynomialSolver::solve(coeff, roots, 3);
 
     std::vector<EssentialMatrix> hypothesis;
     for (int i = 0; i < realRoots; ++i)
@@ -419,7 +419,7 @@ std::vector<EssentialMatrix> EssentialEstimator::getEssential5point(const vector
         int idd = 1;
         if ((ab = std::abs(d2)) > md) { md = ab; idd = 2; }
         if ((ab = std::abs(d3)) > md) { md = ab; idd = 3; }
-        CORE_ASSERT_TRUE_S(md > 1e-9);
+//        CORE_ASSERT_TRUE_S(md > 1e-9);
         switch (idd)
         {
             case 1:
@@ -446,13 +446,20 @@ std::vector<EssentialMatrix> EssentialEstimator::getEssential5point(const vector
         corecvs::Matrix33 E(EE[0], EE[1], EE[2],
                             EE[3], EE[4], EE[5],
                             EE[6], EE[7], EE[8]);
-        hypothesis.emplace_back(E);
+        bool isOk = true;
+        for (int iii = 0; iii < 9 && isOk; ++iii)
+            if (std::isnan(EE[iii]) || std::isinf(EE[iii]))
+            {
+                isOk = false;
+            }
+        if (isOk)
+            hypothesis.emplace_back(E);
     }
     return hypothesis;
 }
 
 
-EssentialMatrix EssentialEstimator::getEssentialLM(const vector<Correspondence*> & samples)
+EssentialMatrix EssentialEstimator::getEssentialLM(const vector<Correspondence*> & samples, const Quaternion &rotation, const Vector3dd &translation)
 {
     CostFunction7toN costFunction(&samples);
     NormalizeFunction normalise;
@@ -466,8 +473,8 @@ EssentialMatrix EssentialEstimator::getEssentialLM(const vector<Correspondence*>
 
     vector<double> input(CostFunctionBase::VECTOR_SIZE);
     /* Left camera is in the negative direction of right camera */
-    Quaternion rotation    = Quaternion::RotationIdentity();
-    Vector3dd  translation = Vector3dd(-1.0, 0.0, 0.0);
+ // Quaternion rotation    = Quaternion::RotationIdentity();
+ //// Vector3dd  translation = Vector3dd(-1.0, 0.0, 0.0);
     CostFunctionBase::packState(&input[0], rotation, translation);
 
     vector<double> output(samples.size());

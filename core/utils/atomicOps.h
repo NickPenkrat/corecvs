@@ -5,6 +5,25 @@
  * \date Sep 27, 2012
  **/
 
+#if 0   // disable for a while using std atomic type and its opers
+
+#include <atomic>
+using std::atomic_int;
+
+inline int atomic_dec_and_fetch(atomic_int *ptr)
+{
+    return --(*ptr);
+}
+
+inline int atomic_inc_and_fetch(atomic_int *ptr)
+{
+    return ++(*ptr);
+}
+
+#else
+
+//namespace corecvs {
+
 typedef int atomic_int;
 
 
@@ -29,7 +48,7 @@ typedef int atomic_int;
 #   undef small
 #   undef DIFFERENCE
 
-    STATIC_ASSERT(sizeof(int) == sizeof(LONG), wrongUsageOfAtomicOperationsOnMSVC);
+    STATIC_ASSERT(sizeof(int) == sizeof(LONG), wrongUsageOfAtomicOperationsOnMSVC)
 
     inline int atomic_dec_and_fetch(atomic_int *ptr)
     {
@@ -64,3 +83,7 @@ typedef int atomic_int;
     }
 
 #endif // !_MSC_VER && !__GNUC__
+
+//} //namespace corecvs
+
+#endif

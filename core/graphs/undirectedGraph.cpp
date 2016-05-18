@@ -89,10 +89,10 @@ std::vector<std::vector<int>> UndirectedGraph::maximalCliques()
     used.clear();
     used.resize(first.size());
     cliques.clear();
-    for (int i = 1; i < first.size(); ++i)
+    for (size_t i = 1; i < first.size(); ++i)
         if (!used[i])
         {
-            auto P = getConnectedComponent(i);
+            auto P = getConnectedComponent((int)i);
             if (P.size() < 2)
                 continue;
             std::vector<int> R, X;
@@ -110,7 +110,7 @@ void UndirectedGraph::BK(const std::vector<int> R, const std::vector<int> Pp, co
     }
     std::vector<int> X = Xx;
     std::vector<int> P = Pp;
-    for (int i = 0; i < Pp.size(); ++i)
+    for (size_t i = 0; i < Pp.size(); ++i)
     {
         int v = *P.rbegin();
         std::vector<int> V = victinity(v);

@@ -54,11 +54,12 @@ public:
             }
         }
 
-    QSettings *settings() {return mSettings;};
+    QSettings *settings() { return mSettings; }
 
 private:
-    QSettings * mSettings;
-    QString mRoot;
+    bool        mAllocated;
+    QSettings  *mSettings;
+    QString     mRoot;
 };
 
 template <>

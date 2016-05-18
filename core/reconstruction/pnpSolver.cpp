@@ -1,16 +1,6 @@
-#ifdef WITH_BLAS
-# ifdef WITH_MKL
-#  include <mkl.h>
-#  include <mkl_lapacke.h>
-# else
-#  include <cblas.h>
-#  include <lapacke.h>
-# endif
-#else
-# error Cannot build PnP solver without BLAS/LAPACK/MKL
-#endif
-
 #include "pnpSolver.h"
+
+#include "cblasLapackeWrapper.h"
 #include "matrix33.h"
 
 using namespace corecvs;
@@ -71,7 +61,6 @@ std::vector<Affine3DQ> PNPSolver::solvePNP_(
         // "design considerations") in corecvs we cannot multiply Matrix*Matrix33
         // and Matrix * Vector3dd
         // so here we cast!
-        Vector3dd vv = centers[i];
         Matrix Vk(H * (Matrix33::VectorByVector(f, f) - Matrix33::Identity())); 
         auto p = points3d[i];
         Vector v(centers[i]);
@@ -112,6 +101,7 @@ std::vector<Affine3DQ> PNPSolver::solvePNP_(
     for (int i = 0; i < 10; ++i) CC.a(0, i) = C[i];
     // Now we call solver
     std::vector<std::pair<double, corecvs::Vector4dd>> quaternionsA;
+
     if ( N > 4)
         solvePNPImpl (M, CC, gamma, quaternionsA);
     else
@@ -192,7 +182,7 @@ void PNPSolver::solveP34PImpl(corecvs::Matrix &M, corecvs::Matrix &C, double gam
         bool alreadyAdded = false;
         for (auto& v: quaternions)
         {
-            if (!(v.second - quaternion) < ELIMINATE_THRESHOLD)
+            if ((!(v.second - quaternion)) < ELIMINATE_THRESHOLD)
             {
                 alreadyAdded = true;
                 break;
@@ -244,7 +234,7 @@ void PNPSolver::solvePNPImpl(corecvs::Matrix &M, corecvs::Matrix &C, double gamm
         bool alreadyAdded = false;
         for (auto& v: quaternions)
         {
-            if (!(v.second - quaternion) < ELIMINATE_THRESHOLD)
+            if ((!(v.second - quaternion)) < ELIMINATE_THRESHOLD)
             {
                 alreadyAdded = true;
                 break;

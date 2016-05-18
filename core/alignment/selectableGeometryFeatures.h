@@ -3,63 +3,13 @@
 #include <algorithm>
 #include <vector>
 #include <sstream>
-#include "vector2d.h"
-#include "vector3d.h"
 #include "rgb24Buffer.h"
+#include "pointObservation.h"
 
 
 namespace corecvs {
 
 using std::vector;
-
-/* Move this to separate class */
-struct PointObservation
-{
-    Vector3dd point;
-    Vector2dd projection;
-
-    PointObservation(
-            const Vector3dd &_point      = Vector3dd(0),
-            const Vector2dd &_projection = Vector2dd(0)
-    ) : point(_point),
-        projection(_projection)
-    {}
-
-
-    inline double &x()
-    {
-        return point.x();
-    }
-
-    inline double &y()
-    {
-        return point.y();
-    }
-
-    inline double &z()
-    {
-        return point.z();
-    }
-
-    inline double &u()
-    {
-        return projection.x();
-    }
-
-    inline double &v()
-    {
-        return projection.y();
-    }
-
-    template<class VisitorType>
-        void accept(VisitorType &visitor)
-        {
-            visitor.visit(point, Vector3dd(), "point3d");
-            visitor.visit(projection, Vector2dd(), "projection");
-        }
-
-};
-
 
 class ObservationList : public std::vector<PointObservation>
 {
@@ -154,6 +104,8 @@ public:
 
     void addPathFrom(const SelectableGeometryFeatures &other);
     void addAllLinesFromObservationList(const ObservationList &list);
+
+    bool isEmpty() const { return mPaths.empty(); }
 
 
     /****/

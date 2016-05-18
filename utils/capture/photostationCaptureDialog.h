@@ -55,7 +55,8 @@ public slots:
     void finalizeCapture(bool isOk = true);
 
 protected:
-    void showEvent ( QShowEvent * event );
+    virtual void showEvent    (QShowEvent * event) override;
+    virtual void keyPressEvent(QKeyEvent  * event) override;
 
 private:
     bool                     mCamsScanned = false;
@@ -69,18 +70,18 @@ private:
      * This relates to capture process
      **/
     struct CameraDescriptor {
-        int                    camId;
-        int                    toSkip;
+        int                    camId = -1;
+        int                    toSkip = 0;
         ImageCaptureInterface *camInterface = NULL;
         QImage                *result = NULL;
 
         CameraDescriptor() {}
 
-        bool isFilled()    { return result != NULL; }
+        bool isFilled() const    { return result != NULL; }
     };
 
-    QSignalMapper           *mCaptureMapper = NULL;
     QList<CameraDescriptor>  mCaptureInterfaces;
+    QSignalMapper           *mCaptureMapper = NULL;
     bool                     mAdvanceAfterSave = false;
 
 private:

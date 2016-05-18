@@ -13,7 +13,6 @@
 namespace corecvs {
 
 typedef std::vector<double>                 MetaValue;
-typedef std::pair<std::string, MetaValue>   MetaPair;
 typedef std::map<std::string, MetaValue>    MetaData;
 
 } // namespace corecvs

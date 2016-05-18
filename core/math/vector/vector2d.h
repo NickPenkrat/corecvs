@@ -15,9 +15,9 @@
 
 #include "global.h"
 
-#ifdef REFLECTION_IN_CORE
+//#ifdef REFLECTION_IN_CORE
 #include "reflection.h"
-#endif // REFLECTION_IN_CORE
+//#endif // REFLECTION_IN_CORE
 
 #include "fixedVector.h"
 #include "vector.h"
@@ -110,12 +110,12 @@ public:
 
     inline Vector2d<ElementType> leftNormal() const
     {
-      return Vector2d(-y(),x());
+        return Vector2d(-y(),x());
     }
 
     inline Vector2d<ElementType> rightNormal() const
     {
-      return Vector2d(y(),-x());
+        return Vector2d(y(),-x());
     }
 
     double sineTo(const Vector2d &other) const
@@ -124,7 +124,7 @@ public:
         double otherLength = !other;
 
         if (thisLength == 0.0 || otherLength == 0.0)
-          return 0.0;
+            return 0.0;
         double tangentCross = (*this) & other.rightNormal();
         return tangentCross / (thisLength * otherLength);
     }
@@ -162,11 +162,14 @@ public:
 
     void mapToRect(const Vector2d<ElementType> &low, const Vector2d<ElementType> &high)
     {
-        /*if (this->element[0] <  low.element[0]) this->element[0] =  low.element[0];
-        if (this->element[1] <  low.element[1]) this->element[1] =  low.element[1];
-        if (this->element[0] > high.element[0]) this->element[0] = high.element[0];
-        if (this->element[1] > high.element[1]) this->element[1] = high.element[1];*/
         this->mapToHypercube(low, high);
+    }
+
+    Vector2d mappedToRect(const Vector2d<ElementType> &low, const Vector2d<ElementType> &high)
+    {
+        Vector2d toReturn = *this;
+        toReturn.mapToRect(low, high);
+        return toReturn;
     }
 
     bool isInRect(const Vector2d<ElementType> &low, const Vector2d<ElementType> &high) const
@@ -174,36 +177,35 @@ public:
         return this->isInHypercube(low, high);
     }
 
+    static Vector2d<ElementType> Zero() {
+        return Vector2d<ElementType>(0.0, 0.0);
+    }
+
 //#ifdef REFLECTION_IN_CORE
-    static Reflection reflect;
+    static Reflection reflection;
+    static int        dummy;
 
     typedef typename ReflectionHelper<ElementType>::Type ReflectionType;
 
-    static Reflection staticInit()
-    {
-        Reflection reflection;
-        reflection.fields.push_back( new ReflectionType(FIELD_X, ElementType(0), "x") );
-        reflection.fields.push_back( new ReflectionType(FIELD_Y, ElementType(0), "y") );
-        return reflection;
+    static int staticInit()
+    {        
+        reflection.fields.push_back(new ReflectionType(FIELD_X, ElementType(0), "x"));
+        reflection.fields.push_back(new ReflectionType(FIELD_Y, ElementType(0), "y"));
+        return 0;
     }
 //#endif
 
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(x(), static_cast<const ReflectionType *>(reflect.fields[FIELD_X]));
-        visitor.visit(y(), static_cast<const ReflectionType *>(reflect.fields[FIELD_Y]));
+        CORE_ASSERT_TRUE_S(reflection.fields.size() == 2);
+        visitor.visit(x(), static_cast<const ReflectionType *>(reflection.fields[FIELD_X]));
+        visitor.visit(y(), static_cast<const ReflectionType *>(reflection.fields[FIELD_Y]));
     }
 };
 
 
-//#ifdef REFLECTION_IN_CORE
-template<typename ElementType>
-Reflection Vector2d<ElementType>::reflect = Vector2d<ElementType>::staticInit();
-//#endif
-
-
-typedef Vector2d<double> Vector2dd;
+typedef Vector2d<double>   Vector2dd;
 typedef Vector2d<uint32_t> Vector2du32;
 typedef Vector2d<uint16_t> Vector2du16;
 
@@ -211,6 +213,40 @@ typedef Vector2d<int32_t> Vector2d32;
 typedef Vector2d<int16_t> Vector2d16;
 
 
-} //namespace corecvs
+//#ifdef REFLECTION_IN_CORE
+
+#if 0   // it's doesn't work - dummy and hence staticInit() don't appear at the code!
+
+template<typename ElementType>
+Reflection Vector2d<ElementType>::reflection = Reflection();
+
+template<typename ElementType>
+int Vector2d<ElementType>::dummy = Vector2d<ElementType>::staticInit();
+
+#else
+
+// It's moved to vector2d.cpp
+
+//template<> Reflection Vector2d<double>::reflection = Reflection();
+//template<> int        Vector2d<double>::dummy = Vector2d<double>::staticInit();
+//
+//template<> Reflection Vector2d<uint32_t>::reflection = Reflection();
+//template<> int        Vector2d<uint32_t>::dummy = Vector2d<uint32_t>::staticInit();
+//
+//template<> Reflection Vector2d<uint16_t>::reflection = Reflection();
+//template<> int        Vector2d<uint16_t>::dummy = Vector2d<uint16_t>::staticInit();
+//
+//template<> Reflection Vector2d<int32_t>::reflection = Reflection();
+//template<> int        Vector2d<int32_t>::dummy = Vector2d<int32_t>::staticInit();
+//
+//template<> Reflection Vector2d<int16_t>::reflection = Reflection();
+//template<> int        Vector2d<int16_t>::dummy = Vector2d<int16_t>::staticInit();
+
 #endif
 
+//#endif
+
+
+} //namespace corecvs
+
+#endif // VECTOR2D_H_

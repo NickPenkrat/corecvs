@@ -46,7 +46,7 @@ FeatureMatchingPipeline::~FeatureMatchingPipeline()
 {
     for (std::vector<FeatureMatchingPipelineStage*>::iterator ps = pipeline.begin(); ps != pipeline.end(); ++ps)
     {
-        (*ps)->~FeatureMatchingPipelineStage();
+        delete *ps;
     }
     pipeline.clear();
 }
@@ -110,7 +110,6 @@ public:
             RuntimeTypeBuffer img = reader->read(image.filename);
             delete reader;
             detector->detect(img, image.keyPoints.keyPoints);
-
             kpt += image.keyPoints.keyPoints.size();
             cnt++;
             if (cnt % 4 == 0)
@@ -143,7 +142,7 @@ void KeyPointDetectionStage::run(FeatureMatchingPipeline *pipeline)
 
     size_t N = pipeline->images.size();
 
-    corecvs::parallelable_for ((size_t)0, N, CORE_MAX(N / 16, (size_t)1), ParallelDetector(pipeline,detectorType), parallelable);
+    corecvs::parallelable_for ((size_t)0, N, CORE_MAX(N /MAX_CORE_COUNT_ESTIMATE, (size_t)1), ParallelDetector(pipeline,detectorType), parallelable);
 
     ss1 << "Detecting keypoints with " << detectorType;
     pipeline->toc(ss1.str(), ss2.str());
@@ -242,11 +241,30 @@ public:
 
             BufferReader* reader = BufferReaderProvider::getInstance().getBufferReader(image.filename);
             RuntimeTypeBuffer img = reader->read(image.filename);
+            corecvs::RGB24Buffer bufferRGB = reader->readRgb(image.filename);
             delete reader;
             extractor->compute(img, image.keyPoints.keyPoints, image.descriptors.mat);
             image.descriptors.type = descriptorType;
 
             CORE_ASSERT_TRUE_S(image.descriptors.mat.getRows() == image.keyPoints.keyPoints.size());
+            for (auto& kp: image.keyPoints.keyPoints)
+            {
+                int r = 0, g = 0, b = 0;
+                int cnt = 0;
+                int x = kp.x, y = kp.y, sz = kp.size / 2;
+                for (int xx = x - sz; xx <= x + sz; ++xx)
+                    for (int yy = y - sz; yy <= y + sz; ++yy)
+                        if (xx >= 0 && xx < bufferRGB.w && yy >= 0 && yy < bufferRGB.h)
+                        {
+                            auto color = bufferRGB.element(yy, xx);
+                            r += color.r();
+                            g += color.g();
+                            b += color.b();
+                            cnt++;
+                        }
+                r /= cnt; g /= cnt; b /= cnt;
+                kp.color = corecvs::RGBColor(r, g, b);
+            }
 
             kpt += image.keyPoints.keyPoints.size();
             cnt++;
@@ -280,7 +298,7 @@ void DescriptorExtractionStage::run(FeatureMatchingPipeline *pipeline)
 
     size_t N = pipeline->images.size();
 
-    corecvs::parallelable_for ((size_t)0, N, CORE_MAX(N / 16,(size_t)1), ParallelExtractor(pipeline,descriptorType), parallelable);
+    corecvs::parallelable_for ((size_t)0, N, CORE_MAX(N / MAX_CORE_COUNT_ESTIMATE, (size_t)1), ParallelExtractor(pipeline,descriptorType), parallelable);
 
     ss1 << "Extracting " << descriptorType << " descriptors";
     pipeline->toc(ss1.str(), ss2.str());
@@ -497,7 +515,7 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline)
     rawMatches.matches.resize(matchPlan.plan.size());
 
     size_t S = matchPlan.plan.size();
-    corecvs::parallelable_for ((size_t)0, S, CORE_MAX(S / 16, (size_t)1), ParallelMatcher(pipeline, descriptorType, matcherType, responsesPerPoint), parallelable);
+    corecvs::parallelable_for ((size_t)0, S, CORE_MAX(S / MAX_CORE_COUNT_ESTIMATE, (size_t)1), ParallelMatcher(pipeline, descriptorType, matcherType, responsesPerPoint), parallelable);
     
     std::stringstream ss;
     pipeline->toc("Computing raw matches", ss.str());
@@ -676,8 +694,8 @@ public:
                 ss1 << "Matched sets ";
                 pipeline->tic(r.begin(), false);
             }
-
         }
+
         if (cnt)
         {
             pipeline->toc(ss1.str(), ss2.str(), S, cnt, id, false); cnt = 0;
@@ -749,7 +767,7 @@ void MatchAndRefineStage::run(FeatureMatchingPipeline *pipeline)
     rawMatches.matches.resize(matchPlan.plan.size());
     refinedMatches.matchSets.resize(N*(N-1)/2);
     
-    corecvs::parallelable_for ((size_t)0, P, CORE_MAX(P / 16,(size_t)1), ParallelMatcherRefiner(pipeline, descriptorType, matcherType, responsesPerPoint, &first, &next, &idx, scaleThreshold), parallelable);
+    corecvs::parallelable_for ((size_t)0, P, CORE_MAX(P / MAX_CORE_COUNT_ESTIMATE, (size_t)1), ParallelMatcherRefiner(pipeline, descriptorType, matcherType, responsesPerPoint, &first, &next, &idx, scaleThreshold), parallelable);
     
     pipeline->toc("Computing & refining matches on-the-fly", "");
 }
@@ -1245,7 +1263,7 @@ void VsfmWriterStage::loadResults(FeatureMatchingPipeline *pipeline, const std::
             ofs >> idxB[i];
         std::deque<Match> matches;
         for(size_t i = 0; i < K; ++i)
-			matches.push_back(Match((uint16_t)I, (uint16_t)J, (uint16_t)idxA[i], (uint16_t)idxB[i], 0.0));
+            matches.push_back(Match((uint16_t)I, (uint16_t)J, (uint16_t)idxA[i], (uint16_t)idxB[i], 0.0));
 
         RefinedMatchSet set(I, J, matches);
         refinedMatches.matchSets.push_back(set);

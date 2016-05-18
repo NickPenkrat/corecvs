@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ABSTRACTBUFFER_H
+#define ABSTRACTBUFFER_H
 /**
  * \file abstractBuffer.h
  * \brief a header for AbstractBuffer.cpp
@@ -21,70 +22,17 @@
 #include <string>
 #include <functional>
 #include <type_traits>
-#include <memory>
 
 #include "global.h"
 
 #include "vector2d.h"
 #include "memory/memoryBlock.h"
-#include "tbbWrapper.h"
+#include "memory/alignedMemoryBlock.h"
+#include "tbbWrapper.h"                 // BlockedRange
 #include "mathUtils.h"                  // randRanged
-
-#if defined(WIN32) && !defined(aligned_alloc)
-#include <malloc.h>
-#define aligned_alloc(a, b) _aligned_malloc(b, a)
-#define aligned_free(a) _aligned_free(a)
-#else
-#define aligned_free(a) free(a)
-#endif
 
 namespace corecvs {
 
-struct AlignedMemoryBlock
-{
-    AlignedMemoryBlock(size_t size, size_t align)
-    {
-        align = std::max(align, (size_t)1);
-        CORE_ASSERT_TRUE_S(!(align & (align - 1)));
-        memory = aligned_alloc(align, ((size + align - 1) / align) * align);
-    }
-    AlignedMemoryBlock() : memory(nullptr)
-    {
-    }
-    ~AlignedMemoryBlock()
-    {
-        aligned_free(memory);
-        memory = nullptr;
-    }
-    void* getAlignedStart()
-    {
-        return memory;
-    }
-private:
-    AlignedMemoryBlock(const AlignedMemoryBlock&);
-    void* memory;
-};
-
-
-struct AMBReference
-{
-    template<typename D>
-    AMBReference(size_t size, size_t align, const D &deleter) : ptr(new AlignedMemoryBlock(size, align), deleter)
-    {
-    }
-    AMBReference(size_t size, size_t align) : ptr(new AlignedMemoryBlock(size, align))
-    {
-    }
-    AMBReference() : ptr(nullptr)
-    {
-    }
-    void* getAlignedStart()
-    {
-        return ptr->getAlignedStart();
-    }
-private:
-    std::shared_ptr<AlignedMemoryBlock> ptr;
-};
 
 using std::string;
 using std::cout;
@@ -233,7 +181,7 @@ public:
     /**
      * Static member that will be used to prevent and debug memory leaks
      **/
-    static int bufferCount;
+    static atomic_int bufferCount;
 
     /**
      * The height of the buffer.
@@ -279,11 +227,10 @@ public:
      **/
     AbstractBuffer() : AbstractBufferParams()
         , data(NULL)
-      //, _allocatedSize(0)
         , memoryBlock()
         , flags(EMPTY_BUFFER)
     {
-        bufferCount++;
+        atomic_inc_and_fetch(&bufferCount);
     }
 
     /**
@@ -299,9 +246,7 @@ public:
     AbstractBuffer(IndexType h, IndexType w, bool shouldInit = true, IndexType stride = STRIDE_AUTO)
     {
         _init(h, w, stride, shouldInit);
-
     }
-
 
     /**
      *  Constructor that generates an empty buffer filled with zero values
@@ -327,7 +272,7 @@ public:
     AbstractBuffer(const AbstractBuffer &that)
     {
         _init(that.getH(), that.getW(), that.getStride(), false);
-        copy(this->data, that.data, h, w, stride, stride);
+        _copy(this->data, that.data, h, w, stride, stride);
 //        memcpy(this->data, that.data, that.sizeInBytes());
     }
 
@@ -470,15 +415,47 @@ public:
     ~AbstractBuffer()
     {
         this->data = NULL;
-        bufferCount--;                                      // this must be always as it's incremented at each ctor
+        atomic_dec_and_fetch(&bufferCount);                 // this must be always as it's incremented at each ctor
     }
 
 
 template<typename ResultType>
-    ResultType *createView(const IndexType y, const IndexType x, const IndexType h, const IndexType w)
+    ResultType createView(const IndexType y, const IndexType x, const IndexType h, const IndexType w)
     {
         // This is the only legitimate place to use default constructor
-        ResultType *toReturn = new ResultType();
+        ResultType toReturn;
+
+        toReturn.h          = h;
+        toReturn.w          = w;
+        toReturn.stride     = this->stride;
+
+        toReturn.data       = &(this->element(y, x));
+        toReturn.flags      = VIEW_BUFFER;
+        /**
+         * Prevent original buffer from being deleted
+         * MemoryBlock magically counts references
+         **/
+        toReturn.memoryBlock = memoryBlock;
+        return toReturn;
+    }
+
+
+template<typename ResultType>
+    ResultType createView()
+    {
+        return createView<ResultType>(0, 0, this->h, this->w);
+    }
+
+
+    /*
+     * For some legacy stuff where assignment operator is not consistent with abstractBuffer's one;
+     * thus limiting us too old pointer-based implementation for "sharing"
+     */
+template<typename ResultType>
+    ResultType* createViewPtr(const IndexType y, const IndexType x, const IndexType h, const IndexType w)
+    {
+        // This is the only legitimate place to use default constructor
+        ResultType* toReturn = new ResultType();
 
         toReturn->h          = h;
         toReturn->w          = w;
@@ -491,15 +468,14 @@ template<typename ResultType>
          * MemoryBlock magically counts references
          **/
         toReturn->memoryBlock = memoryBlock;
-      //toReturn->_allocatedSize = 0;
         return toReturn;
     }
 
 
 template<typename ResultType>
-    ResultType *createView()
+    ResultType* createViewPtr()
     {
-        return this->createView<ResultType>(0, 0, this->h, this->w);
+        return this->createViewPtr<ResultType>(0, 0, this->h, this->w);
     }
 
 
@@ -586,6 +562,14 @@ template<typename ResultType>
     }
 
     /**
+     * Checks if this buffer has zero size
+     */
+    inline bool hasZeroSize () const
+    {
+        return (this->h == 0) || (this->w == 0);
+    }
+
+    /**
      *  Height getter
      **/
     inline IndexType getH() const
@@ -635,7 +619,6 @@ template<typename ResultType>
      **/
     inline size_t sizeInBytes() const
     {
-      //return _allocatedSize;
         return this->numElements() * sizeof(ElementType);
     }
 
@@ -644,7 +627,6 @@ template<typename ResultType>
      **/
     inline size_t memoryFootprint() const
     {
-      //return _allocatedSize;
         return this->memoryBlock.getTotalObjectSize(this->sizeInBytes(), DATA_ALIGN_GRANULARITY) + sizeof(this);
     }
 
@@ -695,10 +677,10 @@ template<typename ResultType>
     {
        if (this->w == this->stride)
        {
-           copy(data, _data, w * h);
+           _copy(data, _data, w * h);
            return;
        }
-       copy(data, _data, h, w, stride, w);
+       _copy(data, _data, h, w, stride, w);
     }
 
     /**
@@ -725,7 +707,7 @@ template<typename ResultType>
             }
             return;
         }
-        copy(data, other.data, copyH, copyW, stride, other.stride);
+        _copy(data, other.data, copyH, copyW, stride, other.stride);
     }
 
     /**
@@ -773,40 +755,41 @@ template<typename ResultType>
 
     /**
      * Constructor that copies an area
+     * [min(y1,y2), max(y1,y2)) x [min(x1,x2), max(x1,x2))
+     *
+     * TODO: Check if changing block position on degenerate (x1,y1<0 || x2>w || y2 > h) is desired
      */
-    AbstractBuffer(AbstractBuffer *src, IndexType x1, IndexType y1, IndexType x2, IndexType y2)
+    AbstractBuffer(const AbstractBuffer &src, IndexType x1, IndexType y1, IndexType x2, IndexType y2)
     {
-        SYNC_PRINT(("Internal error with input [%d x %d] (%d, %d) -> (%d, %d)\n", src->w, src->h, x1, y1, x2, y2));
+        // SYNC_PRINT(("Internal error with input [%d x %d] (%d, %d) -> (%d, %d)\n", src->w, src->h, x1, y1, x2, y2));
 
-        CORE_ASSERT_TRUE_P(src != NULL, ("AbstractBuffer.ctor got src == NULL"));
-        IndexType tmp;
-        if (x1 > x2) { tmp = x1; x1 = x2; x2 = tmp; }
-        if (y1 > y2) { tmp = y1; y1 = y2; y2 = tmp; }
+        if (x1 > x2) std::swap(x1, x2);
+        if (y1 > y2) std::swap(y1, y2);
         if (x1 < 0)  { x2 += (-x1); x1 = 0; }
         if (y1 < 0)  { y2 += (-y1); y1 = 0; }
 
-        if (x2 >= src->w) { x1 -= (x2 - (src->w - 1)); x2 = src->w - 1; }
-        if (y2 >= src->h) { y1 -= (y2 - (src->h - 1)); y2 = src->h - 1; }
+        if (x2 > src.w) { x1 -= x2 - src.w; x2 = src.w; }
+        if (y2 > src.h) { y1 -= y2 - src.h; y2 = src.h; }
 
         _init(y2 - y1, x2 - x1);
 
-        CORE_ASSERT_TRUE_P((x1 > 0) && (y1 > 0) && (x2 > x1) && (y2 > y1),
-            ("Internal error with input [%d x %d] (%d, %d) -> (%d, %d)", src->w, src->h, x1, y1, x2, y2));
-        CORE_ASSERT_TRUE_P((src->w > x2) && (src->h > y2),
-            ("Internal error with input [%d x %d] (%d, %d) -> (%d, %d)", src->w, src->h, x1, y1, x2, y2));
+        CORE_ASSERT_TRUE_P((x1 >= 0) && (y1 >= 0) && (x2 > x1) && (y2 > y1),
+            ("Internal error with input [%d x %d] (%d, %d) -> (%d, %d)", src.w, src.h, x1, y1, x2, y2));
+        CORE_ASSERT_TRUE_P((src.w >= x2) && (src.h >= y2),
+            ("Internal error with input [%d x %d] (%d, %d) -> (%d, %d)", src.w, src.h, x1, y1, x2, y2));
 
         if (TRIVIALLY_COPY_CONSTRUCTIBLE)
         {
             for (IndexType i = 0; i < h; i++)
             {
-                memcpy(&element(i, 0), &(src->element(y1 + i, x1)), sizeof(ElementType) * w);
+                memcpy(&element(i, 0), &(src.element(y1 + i, x1)), sizeof(ElementType) * w);
             }
         }
         else
         {
             for (IndexType i = 0; i < h; ++i)
             {
-                copy(data + i * stride, &src->element(y1 + i, x1), w);
+                _copy(data + i * stride, &src.element(y1 + i, x1), w);
             }
         }
     }
@@ -907,10 +890,11 @@ template<typename ResultType>
     template<typename ReturnType, typename SelfType, typename ConvElementType, typename ConvIndexType>
     class ParallelDoConvolve
     {
-        SelfType *buffer;
+        SelfType   *buffer;
         ReturnType *toReturn;
         AbstractKernel<ConvElementType, ConvIndexType> *kernel;
-        bool onlyValid;
+        bool        onlyValid;
+
     public:
         ParallelDoConvolve(
                 ReturnType *_toReturn,
@@ -920,7 +904,7 @@ template<typename ResultType>
          buffer(_buffer), toReturn(_toReturn), kernel(_kernel), onlyValid(onlyValid)
         {}
 
-        void operator()( const BlockedRange<IndexType>& r ) const
+        void operator()(const BlockedRange<IndexType>& r) const
         {
             int left =  onlyValid ? kernel->x : 0;
             int right = onlyValid ? buffer->w + kernel->x - kernel->w + 1 : buffer->w;
@@ -930,7 +914,7 @@ template<typename ResultType>
                 {
                     for (IndexType j = left; j < right; j++)
                     {
-                        toReturn->element(i,j) = kernel->template multiplyAtPoint<ElementType, IndexType>(buffer, i,j);
+                        toReturn->element(i,j) = kernel->template multiplyAtPoint<ElementType, IndexType>(buffer, i, j);
                     }
                 }
             }
@@ -940,12 +924,11 @@ template<typename ResultType>
                 {
                     for (IndexType j = left; j < right; j++)
                     {
-                        toReturn->element(i,j) = kernel->template multiplyAtPoint<ElementType, IndexType, true>(buffer, i,j);
+                        toReturn->element(i,j) = kernel->template multiplyAtPoint<ElementType, IndexType, true>(buffer, i, j);
                     }
                 }
             }
         }
-
     };
 
     /**
@@ -963,8 +946,6 @@ template<typename ResultType>
      *
      *
      **/
-
-
     template<typename ReturnType, typename ConvElementType, typename ConvIndexType>
     void doConvolve(ReturnType *output, AbstractKernel<ConvElementType, ConvIndexType> *kernel, bool onlyValid = false, bool parallel = true)
     {
@@ -1002,7 +983,7 @@ template<typename ResultType>
         buf(_buf)
         {}
 
-        void operator()( const BlockedRange<IndexType>& r ) const
+        void operator()(const BlockedRange<IndexType>& r) const
         {
             IndexType j;
 
@@ -1017,7 +998,6 @@ template<typename ResultType>
                 }
             }
         }
-
     };
 
     template<typename ReturnType, typename ConvElementType, typename ConvIndexType>
@@ -1230,7 +1210,7 @@ template<typename OtherType>
         OtherType *toReturn = new OtherType(this->h, this->w);
         for (IndexType i = 0; i < h; i++)
         {
-            copy(&(toReturn->element(h - 1 - i, 0)), &(this->element(i, 0)), w);
+            _copy(&(toReturn->element(h - 1 - i, 0)), &(this->element(i, 0)), w);
         }
         return toReturn;
     }
@@ -1240,7 +1220,7 @@ template<typename OtherType>
   {
       for (IndexType i = 0; i < h / 2; i++)
       {
-          copy(&(this->element(h - 1 - i, 0)), &(this->element(i, 0)), w);
+          _copy(&(this->element(h - 1 - i, 0)), &(this->element(i, 0)), w);
       }
   }
 
@@ -1281,23 +1261,18 @@ template<typename OtherType>
         return toReturn;
     }
 
+
 protected:
 
-
-
     /**
-     * The beginning of the allocated memory
+     * The memory block that holds and manages the data
      **/
-    //size_t _allocatedSize;
+    AMBReference   memoryBlock;
+  //MemoryBlockRef memoryBlock;
 
-    //MemoryBlockRef memoryBlock;
-    AMBReference memoryBlock;
-
-    BufferType flags;
+    BufferType     flags;
 
 private:
-
-
 
     /**
      *  This is a helper method for constructing.
@@ -1325,8 +1300,6 @@ private:
         this->setW(w);
         this->setStride(stride != STRIDE_AUTO ? stride : _getStride(w));
 
-        bufferCount++;
-
         if (shouldAlloc)
         {
             size_t allocatedSize = this->sizeInBytes();
@@ -1336,14 +1309,14 @@ private:
                     AMBReference(allocatedSize, DATA_ALIGN_GRANULARITY + 1) :
                     AMBReference(allocatedSize, DATA_ALIGN_GRANULARITY + 1, [=](AlignedMemoryBlock* b)
                     {
-                        del((ElementType*)b->getAlignedStart(), ha, wa, sa);
+                        _del((ElementType *)b->getAlignedStart(), ha, wa, sa);
                         delete b;
                     });
-            this->data = (ElementType*)memoryBlock.getAlignedStart();
+            this->data = (ElementType *)memoryBlock.getAlignedStart();
 
             if (shouldInit || !TRIVIALLY_DEFAULT_CONSTRUCTIBLE) {
                 CORE_CLEAR_MEMORY(this->data, allocatedSize);
-                init_array(data, this->h, this->w, this->stride);
+                _initArray(data, h, w, sa);
             }
 #if 0
 #ifdef ASSERTS
@@ -1367,7 +1340,7 @@ private:
             this->data = NULL;
         }
 
-
+        atomic_inc_and_fetch(&bufferCount);
         return 0;
     }
 
@@ -1394,7 +1367,7 @@ private:
         return _init(h, w, _getStride(w), shouldInit, shouldAlloc);
     }
 
-    static void copy(ElementType* dst, ElementType* src, IndexType cnt)
+    static void _copy(ElementType* dst, const ElementType* src, IndexType cnt)
     {
         /*
          * Using traits swithc to memcpy if possible
@@ -1413,16 +1386,17 @@ private:
             }
         }
     }
-    static void copy(ElementType* dst, ElementType* src, IndexType h, IndexType w, IndexType strideDst, IndexType strideSrc)
+
+    static void _copy(ElementType* dst, const ElementType* src, IndexType h, IndexType w, IndexType strideDst, IndexType strideSrc)
     {
         for (IndexType i = 0; i < h; ++i)
-            copy(dst + i * strideDst, src + i * strideSrc, w);
+            _copy(dst + i * strideDst, src + i * strideSrc, w);
     }
-    static void del(ElementType* ptr, IndexType h, IndexType w, IndexType stride)
+    static void _del(ElementType* ptr, IndexType h, IndexType w, IndexType stride)
     {
         CORE_UNUSED(ptr);
-        CORE_UNUSED(w);
         CORE_UNUSED(h);
+        CORE_UNUSED(w);
         CORE_UNUSED(stride);
         /*
          * Using traits switch between "do nothing" (memory is cleared by memoryBlock)
@@ -1435,7 +1409,8 @@ private:
                     ptr[i * stride + j].~ElementType();
         }
     }
-    static void init_array(ElementType* ptr, IndexType h, IndexType w, IndexType stride)
+
+    static void _initArray(ElementType* ptr, IndexType h, IndexType w, IndexType stride)
     {
         /*
          * This initalizes array with default constructor
@@ -1451,7 +1426,8 @@ private:
             memset(ptr, 0, sizeof(ElementType) * stride * h);
         }
     }
-    static void init_array(const ElementType& el, ElementType* ptr, IndexType h, IndexType w, IndexType stride)
+
+    static void _initArray(const ElementType& el, ElementType* ptr, IndexType h, IndexType w, IndexType stride)
     {
         for (IndexType i = 0; i < h; ++i)
         {
@@ -1471,3 +1447,5 @@ template<typename ElementType, typename IndexType>
 int AbstractBuffer<ElementType, IndexType>::bufferCount = 0;
 
 } //namespace corecvs
+
+#endif // ABSTRACTBUFFER_H

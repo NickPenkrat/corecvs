@@ -1,10 +1,11 @@
 #include "flatPatternCalibrator.h"
 
-FlatPatternCalibrator::FlatPatternCalibrator(const CameraConstraints constraints, const PinholeCameraIntrinsics lockParams, const double lockFactor) : factor(lockFactor), K(0), N(0), absoluteConic(6), intrinsics(lockParams), lockParams(lockParams), constraints(constraints), forceZeroSkew(!!(constraints & CameraConstraints::ZERO_SKEW))
+corecvs::FlatPatternCalibrator::FlatPatternCalibrator(const CameraConstraints constraints, const PinholeCameraIntrinsics lockParams, const LineDistortionEstimatorParameters distortionEstimatorParams, const double lockFactor) : factor(lockFactor), K(0), N(0), absoluteConic(6), intrinsics(lockParams), lockParams(lockParams), distortionEstimationParams(distortionEstimatorParams), constraints(constraints), forceZeroSkew(!!(constraints & CameraConstraints::ZERO_SKEW))
 {
+    distortionParams.mMapForward = true;
 }
 
-void FlatPatternCalibrator::addPattern(const PatternPoints3d &patternPoints, const CameraLocationData &position)
+void corecvs::FlatPatternCalibrator::addPattern(const ObservationList &patternPoints, const CameraLocationData &position)
 {
     ++N;
     locationData.push_back(position);
@@ -12,7 +13,7 @@ void FlatPatternCalibrator::addPattern(const PatternPoints3d &patternPoints, con
     K += patternPoints.size();
 }
 
-void FlatPatternCalibrator::solve(bool runPresolver, bool runLM, int LMiterations)
+void corecvs::FlatPatternCalibrator::solve(bool runPresolver, bool runLM, int LMiterations)
 {
     if (runPresolver)
     {
@@ -28,17 +29,23 @@ void FlatPatternCalibrator::solve(bool runPresolver, bool runLM, int LMiteration
     std::cout << "OPTFAC: " << factor << std::endl;
 }
 
-PinholeCameraIntrinsics FlatPatternCalibrator::getIntrinsics()
+PinholeCameraIntrinsics corecvs::FlatPatternCalibrator::getIntrinsics()
 {
     return intrinsics;
 }
 
-std::vector<CameraLocationData> FlatPatternCalibrator::getExtrinsics()
+std::vector<CameraLocationData> corecvs::FlatPatternCalibrator::getExtrinsics()
 {
     return locationData;
 }
 
-double FlatPatternCalibrator::getRmseReprojectionError()
+LensDistortionModelParameters corecvs::FlatPatternCalibrator::getDistortion()
+{
+    CORE_ASSERT_TRUE_S(!!(constraints & CameraConstraints::UNLOCK_DISTORTION));
+    return distortionParams;
+}
+
+double corecvs::FlatPatternCalibrator::getRmseReprojectionError()
 {
     std::vector<double> err(K * 2);
     getFullReprojectionError(&err[0]);
@@ -50,27 +57,32 @@ double FlatPatternCalibrator::getRmseReprojectionError()
     return sqrt(sqs / K);
 }
 
-void FlatPatternCalibrator::getFullReprojectionError(double out[])
+void corecvs::FlatPatternCalibrator::getFullReprojectionError(double out[])
 {
     int idx = 0;
 
     for (size_t i = 0; i < N; ++i)
     {
-        auto& R = locationData[i].orientation;
-        R /= R.l2Metric();
-        auto& C = locationData[i].position;
-        auto& pt = points[i];
-        for (auto& ptp: pt)
+        Quaternion& R = locationData[i].orientation;
+        R.normalise();
+        Vector3dd& C = locationData[i].position;
+        ObservationList& pt = points[i];
+        for (PointObservation& ptp: pt)
         {
-            auto pp = ptp.second;
+            Vector3dd pp = ptp.point;
 
             pp[1] *= factor;
 
-            auto res = intrinsics.project(R * (pp - C));
-            auto diff = res - ptp.first;
+            Vector2dd res = intrinsics.project(R * (pp - C));
+            if (!!(constraints & CameraConstraints::UNLOCK_DISTORTION))
+            {
+                CORE_ASSERT_TRUE_S(distortionParams.mMapForward);
+                res = distortionParams.mapForward(res);
+            }
+            Vector2dd diff = res - ptp.projection;
 
-            out[idx++] = diff[0];
-            out[idx++] = diff[1];
+            out[idx++] = diff.x();
+            out[idx++] = diff.y();
         }
     }
 #ifdef PENALIZE_QNORM
@@ -86,7 +98,7 @@ void FlatPatternCalibrator::getFullReprojectionError(double out[])
         expr; \
     }
 
-int FlatPatternCalibrator::getInputNum() const
+int corecvs::FlatPatternCalibrator::getInputNum() const
 {
     int input = 0;
     IFNOT(LOCK_FOCAL,
@@ -98,11 +110,24 @@ int FlatPatternCalibrator::getInputNum() const
 
     input += 7 * (int)N;
     input++;
+
+    if (!!(constraints & CameraConstraints::UNLOCK_DISTORTION))
+    {
+        int polyDeg = distortionEstimationParams.mPolinomDegree;
+        if (distortionEstimationParams.mEvenPowersOnly)
+            polyDeg /= 2;
+        input += polyDeg;
+        if (distortionEstimationParams.mEstimateTangent)
+            input += 2;
+        if (distortionEstimationParams.mEstimateCenter)
+            input += 2;
+    }
+
     IFNOT(UNLOCK_YSCALE, input--);
     return input;
 }
 
-int FlatPatternCalibrator::getOutputNum() const
+int corecvs::FlatPatternCalibrator::getOutputNum() const
 {
 #ifdef PENALIZE_QNORM
     return (int)K * 2 + (int)N;
@@ -111,7 +136,7 @@ int FlatPatternCalibrator::getOutputNum() const
 #endif
 }
 
-void FlatPatternCalibrator::enforceParams()
+void corecvs::FlatPatternCalibrator::enforceParams()
 {
 #define FORCE(s, a, b) \
     if (!!(constraints & CameraConstraints::s)) intrinsics.a = b;
@@ -133,14 +158,14 @@ void FlatPatternCalibrator::enforceParams()
 #undef LOCK
 }
 
-void FlatPatternCalibrator::solveInitialIntrinsics()
+void corecvs::FlatPatternCalibrator::solveInitialIntrinsics()
 {
     computeHomographies();
     computeAbsoluteConic();
     extractIntrinsics();
 }
 
-void FlatPatternCalibrator::solveInitialExtrinsics()
+void corecvs::FlatPatternCalibrator::solveInitialExtrinsics()
 {
     int n = (int)homographies.size();
 
@@ -176,7 +201,7 @@ void FlatPatternCalibrator::solveInitialExtrinsics()
     }
 }
 
-void FlatPatternCalibrator::readParams(const double in[])
+void corecvs::FlatPatternCalibrator::readParams(const double in[])
 {
 #define GET_PARAM(ref) \
     ref = in[argin++];
@@ -206,10 +231,40 @@ void FlatPatternCalibrator::readParams(const double in[])
         for (int j = 0; j < 4; ++j)
         {
             GET_PARAM(locationData[i].orientation[j]);
+        }
             locationData[i].orientation.normalise();
         }
-    }
     IF_GET_PARAM(UNLOCK_YSCALE, factor);
+    if (!!(constraints & CameraConstraints::UNLOCK_DISTORTION))
+    {
+        distortionParams.mMapForward = true;
+        int polyDeg = distortionEstimationParams.mPolinomDegree;
+        distortionParams.mKoeff.resize(polyDeg);
+        for (auto& k: distortionParams.mKoeff)
+            k = 0.0;
+        int degStart = 0, degIncrement = 1;
+        if (distortionEstimationParams.mEvenPowersOnly)
+        {
+            polyDeg /= 2;
+            degStart = 1;
+            degIncrement = 2;
+    }
+        for (int i = 0; i < polyDeg; ++i, degStart += degIncrement)
+        {
+            GET_PARAM(distortionParams.mKoeff[degStart]);
+        }
+        if (distortionEstimationParams.mEstimateTangent)
+        {
+            GET_PARAM(distortionParams.mTangentialX);
+            GET_PARAM(distortionParams.mTangentialY);
+        }
+        if (distortionEstimationParams.mEstimateCenter)
+        {
+            GET_PARAM(distortionParams.mPrincipalX);
+            GET_PARAM(distortionParams.mPrincipalY);
+        }
+
+    }
     CORE_ASSERT_TRUE_S(argin == getInputNum());
 #undef GET_PARAM
 #undef IF_GET_PARAM
@@ -223,7 +278,7 @@ void FlatPatternCalibrator::readParams(const double in[])
 #define IFNOT_SET_PARAM(cond, ref) \
     if (!(constraints & CameraConstraints::cond)) out[argout++] = ref;
 
-void FlatPatternCalibrator::writeParams(double out[])
+void corecvs::FlatPatternCalibrator::writeParams(double out[])
 {
     int argout = 0;
     IFNOT(LOCK_FOCAL,
@@ -247,6 +302,34 @@ void FlatPatternCalibrator::writeParams(double out[])
         }
     }
     IF_SET_PARAM(UNLOCK_YSCALE, factor);
+    if (!!(constraints & CameraConstraints::UNLOCK_DISTORTION))
+    {
+        distortionParams.mMapForward = true;
+        int polyDeg = distortionEstimationParams.mPolinomDegree;
+        distortionParams.mKoeff.resize(polyDeg);
+        int degStart = 0, degIncrement = 1;
+        if (distortionEstimationParams.mEvenPowersOnly)
+        {
+            polyDeg /= 2;
+            degStart = 1;
+            degIncrement = 2;
+        }
+        for (int i = 0; i < polyDeg; ++i, degStart += degIncrement)
+        {
+            SET_PARAM(distortionParams.mKoeff[degStart]);
+        }
+        if (distortionEstimationParams.mEstimateTangent)
+        {
+            SET_PARAM(distortionParams.mTangentialX);
+            SET_PARAM(distortionParams.mTangentialY);
+        }
+        if (distortionEstimationParams.mEstimateCenter)
+        {
+            SET_PARAM(distortionParams.mPrincipalX);
+            SET_PARAM(distortionParams.mPrincipalY);
+        }
+
+    }
     CORE_ASSERT_TRUE_S(argout == getInputNum());
 }
 
@@ -255,7 +338,7 @@ void FlatPatternCalibrator::writeParams(double out[])
 #undef IFNOT_SET_PARAM
 #undef IFNOT
 
-void FlatPatternCalibrator::LMCostFunction::operator() (const double in[], double out[])
+void corecvs::FlatPatternCalibrator::LMCostFunction::operator() (const double in[], double out[])
 {
     calibrator->readParams(in);
     calibrator->getFullReprojectionError(out);
@@ -268,9 +351,12 @@ void FlatPatternCalibrator::LMCostFunction::operator() (const double in[], doubl
 #endif
 }
 
-void FlatPatternCalibrator::refineGuess(int LMiterations)
+void corecvs::FlatPatternCalibrator::refineGuess(int LMiterations)
 {
     std::vector<double> in(getInputNum()), out(getOutputNum());
+    distortionParams.mPrincipalX = intrinsics.cx();
+    distortionParams.mPrincipalY = intrinsics.cy();
+    distortionParams.mNormalizingFocal = !intrinsics.principal;
     writeParams(&in[0]);
 
     LevenbergMarquardt levmar(LMiterations);
@@ -280,7 +366,7 @@ void FlatPatternCalibrator::refineGuess(int LMiterations)
     readParams(&res[0]);
 }
 
-void FlatPatternCalibrator::computeHomographies()
+void corecvs::FlatPatternCalibrator::computeHomographies()
 {
     homographies.clear();
     for (auto& pts: points)
@@ -291,8 +377,8 @@ void FlatPatternCalibrator::computeHomographies()
 
         for (auto& ptp: pts)
         {
-            ptsI.push_back(ptp.first);
-            ptsP.push_back(Vector2dd(ptp.second[0], ptp.second[1]));
+            ptsI.push_back(ptp.projection);
+            ptsP.push_back(ptp.point.xy());
 
         }
 
@@ -312,7 +398,7 @@ void FlatPatternCalibrator::computeHomographies()
     }
 }
 
-void FlatPatternCalibrator::computeAbsoluteConic()
+void corecvs::FlatPatternCalibrator::computeAbsoluteConic()
 {
     absoluteConic = corecvs::Vector(6);
 
@@ -390,7 +476,7 @@ void FlatPatternCalibrator::computeAbsoluteConic()
     }
 }
 
-void FlatPatternCalibrator::extractIntrinsics()
+void corecvs::FlatPatternCalibrator::extractIntrinsics()
 {
     double b11, b12, b22, b13, b23, b33;
     b11 = absoluteConic[0];

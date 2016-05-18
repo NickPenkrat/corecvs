@@ -21,10 +21,8 @@
 
 #include "cameraControlParameters.h"
 
-using namespace std;
-
- class DirectShowCaptureInterface : public ImageCaptureInterface
- {
+class DirectShowCaptureInterface : public ImageCaptureInterface
+{
  public:
     typedef ImageCaptureInterface::CapErrorCode CapErrorCode;
 
@@ -51,8 +49,10 @@ using namespace std;
     virtual FramePair    getFrame();
     virtual FramePair    getFrameRGB24();
 
-    virtual CapErrorCode initCapture(CameraFormat *actualFormat = NULL);
+    virtual CapErrorCode initCapture();
     virtual CapErrorCode startCapture();
+
+    virtual bool         getCurrentFormat(CameraFormat &format);
 
     virtual CapErrorCode queryCameraParameters(CameraParameters &parameters);
     virtual CapErrorCode setCaptureProperty(int id, int value);
@@ -79,4 +79,3 @@ using namespace std;
  };
 
 #endif /* _DIRECT_SHOW_CVCAPTURE_H_ */
-

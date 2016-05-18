@@ -13,6 +13,9 @@
 #include "tbbWrapper.h"
 #include "sseWrapper.h"
 
+#include "cblasLapackeWrapper.h"
+#include "blasReplacement.h"
+
 namespace corecvs {
 
 /* The constructor is not in single cycle due to possible stride of the matrix */
@@ -237,177 +240,6 @@ Matrix operator *(DiagonalMatrix &D, const Matrix &M)
 
 #else // !WITH_DIRTY_GEMM_HACKS
 
-# ifdef WITH_BLAS
-#ifdef WITH_MKL
-#   include <mkl.h>
-#else
-#   include <cblas.h>
-#   include <lapacke.h>
-#endif
-# endif
-
-
-#   include "tbbWrapper.h"
-#   include "immintrin.h"
-
-template<int vectorize = true>
-struct ParallelMM
-{
-    void operator() (const corecvs::BlockedRange<int> &r) const
-    {
-        const Matrix& A = *pA;
-        const Matrix& B = *pB;
-        Matrix& result = *pResult;
-
-        for (int row = r.begin(); row < r.end(); row++)
-        {
-            int column = 0;
-#if WITH_SSE
-            if (vectorize)
-            {
-                const int STEP = DoublexN::SIZE;
-                ALIGN_DATA(16) double scratch[STEP];
-
-                for (; column + STEP - 1 < result.w; column += STEP)
-                {
-                    const double *ALine = &A.a(row, 0);
-                    const double *BCol  = &B.a(0, column);
-
-                    DoublexN sum = DoublexN::Zero();
-                    for (int runner = 0; runner < A.w; runner++)
-                    {
-                        DoublexN bc = DoublexN::Broadcast(ALine);
-                        DoublexN rw(BCol);
-                        sum = multiplyAdd(bc, rw, sum);
-
-                        ALine++;
-                        BCol += B.stride;
-                    }
-
-                    sum.saveAligned(scratch);
-
-                    for (int jj = 0; jj < STEP; ++jj)
-                    {
-                       result.a(row, column + jj) = scratch[jj];
-                    }
-                }
-            }
-#endif
-            for (; column < result.w; ++column)
-            {
-                double sum = 0;
-                for (int runner = 0; runner < A.w; runner++)
-                {
-                    sum += A.a(row, runner) * B.a(runner, column);
-                }
-                result.a(row, column) = sum;
-            }
-        }
-    }
-    ParallelMM(const Matrix *pA, const Matrix *pB, Matrix *pResult) : pA(pA), pB(pB), pResult(pResult)
-    {
-    }
-    const Matrix *pA;
-    const Matrix *pB;
-    Matrix *pResult;
-};
-
-struct ParallelMV
-{
-    void operator() (const corecvs::BlockedRange<int> &r) const
-    {
-        auto& A = *pA;
-        auto& B = *pB;
-        auto& result = *pResult;
-        int row;
-        for (row = r.begin(); row < r.end(); ++row)
-        {
-            int column = 0;
-            double sum = 0;
-#ifdef WITH_SSE
-            const int STEP = DoublexN::SIZE;
-            ALIGN_DATA(16) double scratch[STEP];
-
-            DoublexN sumV = DoublexN::Zero();
-
-            for (column = 0; column + STEP - 1 < A.w; column += STEP)
-            {
-                DoublexN bc = DoublexN(&A.a(row, column));
-                DoublexN rw = DoublexN(&B.at(column));
-                sumV = multiplyAdd(bc, rw, sumV);
-            }
-
-            sumV.saveAligned(scratch);
-            for (int i = 0; i < STEP; i++) {
-                sum += scratch[i];
-            }
-#endif
-
-            for (; column < A.w; column++)
-            {
-                sum += B.at(column) * A.a(row, column);
-            }
-            result.at(row) = sum;
-        }
-    }
-    ParallelMV(const Matrix *pA, const Vector *pB, Vector *pResult) : pA(pA), pB(pB), pResult(pResult)
-    {
-    }
-    const Matrix *pA;
-    const Vector *pB;
-    Vector *pResult;
-};
-
-struct ParallelMD
-{
-    void operator() (const corecvs::BlockedRange<int> &r) const
-    {
-        const Matrix& A = *pA;
-        const DiagonalMatrix& B = *pB;
-        Matrix& result = *pResult;
-        int row;
-        for (row = r.begin(); row < r.end(); ++row)
-        {
-            int column = 0;
-
-#ifdef WITH_AVX
-            for (column = 0; column + 3 < result.w; column += 4)
-            {
-                __m256d diag = _mm256_loadu_pd(&B.at(column));
-                __m256d mat  = _mm256_loadu_pd(&A.a(row, column));
-                __m256d res  = _mm256_mul_pd(diag, mat);
-                _mm256_storeu_pd(&result.a(row, column), res);
-            }
-#endif
-            for (; column < result.w; column++)
-            {
-                result.a(row, column) = A.a(row, column) * B.at(column);
-            }
-        }
-    }
-
-    ParallelMD(const Matrix *pA, const DiagonalMatrix *pB, Matrix *pResult) : pA(pA), pB(pB), pResult(pResult)
-    {
-    }
-    const Matrix *pA;
-    const DiagonalMatrix *pB;
-    Matrix *pResult;
-};
-
-
-
-Matrix Matrix::multiplyHomebrew(const Matrix &A, const Matrix &B, bool parallel, bool vectorize)
-{
-    CORE_ASSERT_TRUE(A.w == B.h, "Matrices have wrong sizes");
-    Matrix result(A.h, B.w, false);
-    if (vectorize) {
-        parallelable_for (0, result.h, 8, ParallelMM<true>(&A, &B, &result), parallel);
-    } else {
-        parallelable_for (0, result.h, 8, ParallelMM<false>(&A, &B, &result), parallel);
-    }
-    return result;
-}
-
 #ifdef WITH_BLAS
 Matrix Matrix::multiplyBlas(const Matrix &A, const Matrix &B)
 {
@@ -421,43 +253,43 @@ Matrix Matrix::multiplyBlas(const Matrix &A, const Matrix &B)
 
 Matrix operator *(const Matrix &A, const Matrix &B)
 {
+#ifdef WITH_BLAS
+    return Matrix::multiplyBlas(A, B);
+#else
     CORE_ASSERT_TRUE(A.w == B.h, "Matrices have wrong sizes");
     Matrix result(A.h, B.w, false);
 
-#ifndef WITH_BLAS
-    parallelable_for (0, result.h, 8, ParallelMM<>(&A, &B, &result), !(A.h < 64));
-#else // !WITH_BLAS
-    cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, A.h, B.w, A.w, 1.0, A.data, A.stride, B.data, B.stride, 0.0, result.data, result.stride);
-#endif // WITH_BLAS
+    corecvs::parallelable_for(0, result.h, 8, ParallelMM<>(&A, &B, &result), !(A.h < 64));
+
+    //Matrix::multiplyHomebrew(A, B, true, !(A.h < 64)); // TODO: it has a bug, see testMatrixOperations!!!
 
     return result;
+#endif
 }
-
 
 Vector operator *(const Matrix &M, const Vector &V)
 {
     CORE_ASSERT_TRUE(M.w == V.size(), "Matrix and vector have wrong sizes");
-    Vector result(M.h);
-    int row, column;
-    if (M.h < 64)
+    if (M.h >= 64)
     {
-       for (row = 0; row < M.h; row++)
-       {
-           double sum = 0.0;
-           for (column = 0; column < M.w; column++)
-           {
-               sum += V.at(column) * M.a(row, column);
-           }
-           result.at(row) = sum;
-       }
-    }
-    else
-    {
-#ifndef  WITH_BLAS
-        corecvs::parallelable_for (0, M.h, 8, ParallelMV(&M, &V, &result));
-#else
+#ifdef WITH_BLAS
+        Vector result(M.h);
         cblas_dgemv (CblasRowMajor, CblasNoTrans, M.h, M.w, 1.0, &M.element(0, 0), M.stride, &V[0], 1, 0.0, &result[0], 1);
+        return result;
+#else
+        return Matrix::multiplyHomebrewMV(M, V);
 #endif
+    }
+
+    Vector result(M.h);
+    for (int row = 0; row < M.h; row++)
+    {
+        double sum = 0.0;
+        for (int column = 0; column < M.w; column++)
+        {
+            sum += V.at(column) * M.a(row, column);
+        }
+        result.at(row) = sum;
     }
     return result;
 }
@@ -466,15 +298,15 @@ Vector operator *(const Vector &V, const Matrix &M)
 {
     CORE_ASSERT_TRUE(M.h == V.size(), "Matrix and vector have wrong sizes");
     Vector result(M.w);
-    int row, column;
+
 #ifdef WITH_BLAS
     if (M.h < 32)
     {
 #endif
-       for (column = 0; column < M.w; column++)
+       for (int column = 0; column < M.w; ++column)
        {
            double sum = 0.0;
-           for (row = 0; row < M.h; row++)
+           for (int row = 0; row < M.h; ++row)
            {
                sum += V.at(row) * M.a(row, column);
            }
@@ -494,7 +326,7 @@ Vector operator *(const Vector &V, const Matrix &M)
 Matrix operator *=(Matrix &M, const DiagonalMatrix &D)
 {
     CORE_ASSERT_TRUE(false, "TODO: Matrix operator *=(Matrix &M, const DiagonalMatrix &D) is implemented badly");       // TODO: check the implementation: result is squared matrix!
-    int32_t minDim = CORE_MIN(M.h,M.w);
+    int32_t minDim = CORE_MIN(M.h, M.w);
     minDim = CORE_MIN(minDim, D.size());
     for (int i = 0; i < minDim; i++)
     {
@@ -510,22 +342,20 @@ Matrix operator *=(Matrix &M, const DiagonalMatrix &D)
 Matrix operator *(const Matrix &M, const DiagonalMatrix &D)
 {
     CORE_ASSERT_TRUE(M.w == D.size(), "Matrix and DiagonalMatrix have wrong sizes");
-    Matrix result(M.h, M.w);
     if (M.h < 16)
     {
+       Matrix result(M.h, M.w);
        for (int i = 0; i < M.h; ++i)
        {
            for (int j = 0; j < M.w; ++j)
            {
                result.a(i, j) = M.a(i, j) * D.at(j);
            }
-       }
+        }
+        return result;
     }
-    else
-    {
-       corecvs::parallelable_for (0, result.h, 8, ParallelMD(&M, &D, &result), true);
-    }
-    return result;
+
+    return Matrix::multiplyHomebrewMD(M, D);
 }
 
 Matrix operator *(DiagonalMatrix &D, const Matrix &M)
@@ -580,14 +410,14 @@ Matrix operator -(const Matrix &A, const Matrix &B)
 
 ostream & operator <<(ostream &out, const Matrix &matrix)
 {
-    streamsize wasPrecision = out.precision(6);
+    streamsize wasPrecision = out.precision(15);
     out << "[";
     for (int i = 0; i < matrix.h; i++)
     {
         for (int j = 0; j < matrix.w; j++)
         {
-            out.width(9);
-            out << matrix.a(i, j) << " ";
+            out.width(20);
+            out << std::scientific << matrix.a(i, j) << " ";
         }
         if (i + 1 < matrix.h)
             out << ";\n";
@@ -613,7 +443,7 @@ void Matrix::print(ostream &out)
 }
 
 
-/* Merge three functions below*/
+/* Merge three functions below */
 Matrix *Matrix::transposed() const
 {
     Matrix* result = new Matrix(this->w, this->h, false);
@@ -822,6 +652,30 @@ bool Matrix::matrixSolveGaussian(Matrix *A, Matrix *B)
  * */
 Matrix Matrix::inv() const
 {
+    /*
+     * Old implementation has bug:
+     *  1  1  1                                                 1 0 0
+     * (0  0  1).inv() = (sky falls and the earth collapses) = (0 1 0)
+     *  0  1  1                                                 0 0 1
+     *
+     *  It is not funny to discover this bug after some hours spent
+     *  debugging my code, so I commented it out and replaced with LAPACK calls (I've also fixed old code, if you care)
+     *
+     *  Note, however, that you should never invert matrix.
+     *  Even if it comes at zero cost (and even if someone
+     *  pay you each time you invert matrix)
+     */
+#ifdef WITH_BLAS
+    corecvs::Matrix copy(*this);
+    std::unique_ptr<int[]> pivot_(new int[h]);
+    int* pivot = pivot_.get();
+    CORE_ASSERT_TRUE_S(h == w);
+    LAPACKE_dgetrf(LAPACK_ROW_MAJOR, copy.h, copy.w, &copy.a(0, 0), copy.stride, pivot);
+    LAPACKE_dgetri(LAPACK_ROW_MAJOR, copy.h, &copy.a(0, 0), copy.stride, pivot);
+    return copy;
+
+#else // WITH_BLAS
+
     unsigned i, j, k;
     double multiplier;
 
@@ -834,6 +688,28 @@ Matrix Matrix::inv() const
 
     for (i = 0; i < rank; ++i)
     {
+        uint pivotRow = i;
+        double pivotValue = std::abs(copy.a(i, i));
+        for (uint j = i + 1; j < rank; ++j)
+        {
+            double abs = std::abs(copy.a(j, i));
+            if (abs > pivotValue)
+            {
+                pivotValue = abs;
+                pivotRow = j;
+            }
+        }
+        if (pivotRow != i)
+        {
+            for (uint j = i; j < rank; ++j)
+            {
+                std::swap(copy.a(pivotRow, j), copy.a(i, j));
+            }
+            for (uint j = 0; j < rank; ++j)
+            {
+                std::swap(result.a(pivotRow, j), result.a(i, j));
+            }
+        }
         double divider = copy.a(i,i);
         if (fabs(divider) == 0)
         {
@@ -873,9 +749,272 @@ Matrix Matrix::inv() const
     }
 
     return result;
+#endif // !WITH_BLAS
 }
 
+bool corecvs::Matrix::linSolve(const corecvs::Vector &B, corecvs::Vector &res, bool symmetric, bool posDef) const
+{
+    return LinSolve(*this, B, res, symmetric, posDef);
+}
 
+bool corecvs::Matrix::LinSolve(const corecvs::Matrix &A, const corecvs::Vector &B
+    , corecvs::Vector &res
+    , bool symmetric
+    , bool posDef)
+{
+    CORE_ASSERT_TRUE_S(A.h == B.size());
+    CORE_ASSERT_TRUE_S(A.h == A.w);
+#ifdef WITH_BLAS
+    corecvs::Matrix copy(A);
+    res = B;
+    decltype(LAPACKE_dgetrf(0, 0, 0, 0, 0, 0)) info;
+    if (!posDef)
+    {
+        std::unique_ptr<int[]> pivot_(new int[std::min(A.h, A.w)]);
+        int *pivot = pivot_.get();
+        if (!symmetric)
+        {
+            info = LAPACKE_dgetrf(LAPACK_ROW_MAJOR, copy.h, copy.w, &copy.a(0, 0), copy.stride, pivot);
+            if (!info) LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', res.size(), 1, &copy.a(0, 0), copy.stride, pivot, &res[0], 1);
+        }
+        else
+        {
+            info = LAPACKE_dsytrf(LAPACK_ROW_MAJOR, 'U', copy.h, &copy.a(0, 0), copy.stride, pivot);
+            if (!info) LAPACKE_dsytrs(LAPACK_ROW_MAJOR, 'U', res.size(), 1, &copy.a(0, 0), copy.stride, pivot, &res[0], 1);
+        }
+    }
+    else
+    {
+        info = LAPACKE_dpotrf(LAPACK_ROW_MAJOR, 'U', copy.w, &copy.a(0, 0), copy.stride);
+        if (!info) LAPACKE_dpotrs(LAPACK_ROW_MAJOR, 'U', copy.w, 1, &copy.a(0, 0), copy.stride, &res[0], 1);
+    }
+    return info == 0;
+#else // WITH_BLAS
+
+    res = A.inv() * B;
+    return true;
+
+#endif // !WITH_BLAS
+}
+
+bool corecvs::Matrix::LinSolveSchurComplement(const corecvs::Matrix &M, const corecvs::Vector &Bv, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric, bool posDef)
+{
+    /*
+     * So we partition M and B into
+     * +---+---+   /   \   /   \
+     * | A | B |   | x |   | a |
+     * +---+---+ * +---+ = +---+
+     * | C | D |   | y |   | b |
+     * +---+---+   \   /   \   /
+     * Where D is block-diagonal well-conditioned matrix
+     *
+     * Then we invert D explicitly and solve
+     * x = (A-BD^{-1}C)^{-1}(a-BD^{-1}b)
+     * y = D^{-1}(b-Cx)
+     *
+     * Note that M is symmetric => D is symmetric, (A-BD^{-1}C) is symmetric
+     *           M is posdef    => D is posdef,    (A-BD^{-1}C) is symmetric (TODO: isposdef)
+     */
+
+    auto Ah = diagBlocks[0],
+         Aw = diagBlocks[0];
+    auto Bw = M.w - Aw,
+         Bh = Ah;
+    auto Cw = Aw,
+         Ch = M.h - Ah;
+    auto Dw = Bw;
+
+#ifndef WITH_BLAS
+    auto N = M.h;
+
+    std::vector<corecvs::Matrix> matrices;
+
+    // "Factorizing"
+    for (size_t i = 0; i + 1 < diagBlocks.size(); ++i)
+    {
+        auto from = diagBlocks[i], to = diagBlocks[i + 1];
+        matrices.emplace_back(M, from, from, to, to);
+    }
+    corecvs::parallelable_for(0, (int)matrices.size(), [&](const corecvs::BlockedRange<int> &r)
+    {
+        for (int i = r.begin(); i < r.end(); ++i)
+            matrices[i] = matrices[i].inv();
+    });
+
+    auto A = const_cast<corecvs::Matrix&>(M).createView<corecvs::Matrix>(0, 0, Ah, Aw),
+         B = const_cast<corecvs::Matrix&>(M).createView<corecvs::Matrix>(0, Aw, Bh, Bw),
+         C = const_cast<corecvs::Matrix&>(M).createView<corecvs::Matrix>(Ah, 0, Ch, Cw);
+
+    // Computing BD^{-1}
+    corecvs::Matrix BDinv(Bh, Dw);
+    corecvs::parallelable_for(0, (int)matrices.size(), [&](const corecvs::BlockedRange<int> &r)
+    {
+        for (int i = r.begin(); i < r.end(); ++i)
+        {
+            auto begin = diagBlocks[i], end = diagBlocks[i + 1];
+            auto len = end - begin;
+
+            auto bv  = B.createView<corecvs::Matrix>(0, begin - Aw, Bh, len);
+
+            auto foo = bv * matrices[i];
+
+            for (int k = 0; k < foo.h; ++k)
+                for (int j = begin; j < end; ++j)
+                    BDinv.a(k, j - Aw) = foo.a(k, j - begin);
+
+        }
+    });
+
+    // Computing lhs/rhs
+    corecvs::Vector a(Ah, &Bv[0]), b(Ch, &Bv[Ah]);
+    auto rhs = a - BDinv * b;
+    auto lhs = A - BDinv * C;
+
+    // Solving for x
+    corecvs::Vector x(Aw), y(Bw);
+    bool foo = lhs.linSolve(rhs, x, symmetric, false);
+
+    if (!foo) return false;
+
+    // Solving for y
+    rhs = b - C * x;
+    corecvs::parallelable_for(0, (int)matrices.size(), [&](const corecvs::BlockedRange<int> &r)
+    {
+        for (int i = r.begin(); i < r.end(); ++i)
+        {
+            auto begin = diagBlocks[i], end = diagBlocks[i + 1];
+            auto len = end - begin;
+            corecvs::Vector bcx(len);
+            for (int j = 0; j < len; ++j)
+                bcx[j] = rhs[j + begin - Aw];
+            auto res = matrices[i] * bcx;
+            for (int j = begin; j < end; ++j)
+                y[j - Aw] = res[j - begin];
+        }
+    });
+
+    for (int i = 0; i < Aw; ++i)
+        res[i] = x[i];
+    for (int j = 0; j < Bw; ++j)
+        res[j + Aw] = y[j];
+#else
+    /*
+     * The same as above, but with fancy LAPACK
+     */
+    auto N = diagBlocks.size() - 1;
+    std::vector<int> pivots(Dw), pivotIdx(N);
+
+    std::vector<corecvs::Matrix> qrd(N);
+    for (size_t i = 0; i < N; ++i)
+    {
+        qrd[i] = corecvs::Matrix(M, diagBlocks[i], diagBlocks[i], diagBlocks[i + 1], diagBlocks[i + 1]);
+        pivotIdx[i] = diagBlocks[i] - diagBlocks[0];
+    }
+
+    // Factorizing (without "\"")
+    corecvs::parallelable_for(0, (int)N, [&](const corecvs::BlockedRange<int> &r)
+            {
+                for (int i = r.begin(); i < r.end(); ++i)
+                {
+                    auto& MM = qrd[i];
+                    if (!symmetric)
+                    {
+                        LAPACKE_dgetrf(LAPACK_ROW_MAJOR, MM.h, MM.w, MM.data, MM.stride, &pivots[pivotIdx[i]]);
+                    }
+                    else
+                    {
+                        if (posDef)
+                            LAPACKE_dpotrf(LAPACK_ROW_MAJOR, 'U', MM.h, MM.data, MM.stride);
+                        else
+                            LAPACKE_dsytrf(LAPACK_ROW_MAJOR, 'U', MM.h, MM.data, MM.stride, &pivots[pivotIdx[i]]);
+                    }
+                }
+            });
+
+    // Computing BD^{-1}
+    auto A = const_cast<corecvs::Matrix&>(M).createView<corecvs::Matrix>(0, 0, Ah, Aw),
+         B = const_cast<corecvs::Matrix&>(M).createView<corecvs::Matrix>(0, Aw, Bh, Bw),
+         C = const_cast<corecvs::Matrix&>(M).createView<corecvs::Matrix>(Ah, 0, Ch, Cw);
+
+    // Computing BD^{-1}
+    //recvs::Matrix BDinv(Bh, Dw);
+    corecvs::Matrix DinvtBt = B.t();
+    CORE_ASSERT_TRUE_S(DinvtBt.h == Dw && DinvtBt.w == Bh);
+    corecvs::parallelable_for(0, (int)qrd.size(), [&](const corecvs::BlockedRange<int> &r)
+    {
+        for (int i = r.begin(); i < r.end(); ++i)
+        {
+            auto begin = diagBlocks[i], end = diagBlocks[i + 1];
+            auto len = end - begin;
+            auto& MM = qrd[i];
+            auto ptr = &DinvtBt.a(diagBlocks[i] - diagBlocks[0], 0);
+            if (!symmetric)
+            {
+                LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'T', len, Bh, MM.data, MM.stride, &pivots[pivotIdx[i]], ptr, DinvtBt.stride);
+            }
+            else
+            {
+                if (posDef)
+                    LAPACKE_dpotrs(LAPACK_ROW_MAJOR, 'U', len, Bh, MM.data, MM.stride, ptr, DinvtBt.stride);
+                else
+                    LAPACKE_dsytrs(LAPACK_ROW_MAJOR, 'U', len, Bh, MM.data, MM.stride, &pivots[pivotIdx[i]], ptr, DinvtBt.stride);
+            }
+        }
+    });
+    // Computing lhs/rhs
+    corecvs::Vector a(Ah, &Bv[0]), b(Ch, &Bv[Ah]);
+    auto rhs = a - b * DinvtBt;
+
+    auto lhs = A;
+    cblas_dgemm(CblasRowMajor, CblasTrans, CblasNoTrans, lhs.h, lhs.w, C.h, -1.0, DinvtBt.data, DinvtBt.stride, C.data, C.stride, 1.0, lhs.data, lhs.stride);
+
+    // Solving for x
+    corecvs::Vector x(Aw), y(Bw);
+    bool foo = lhs.linSolve(rhs, x, symmetric, false);
+
+    if (!foo) return false;
+
+    // Solving for y
+    rhs = b - C * x;
+    corecvs::parallelable_for(0, (int)qrd.size(), [&](const corecvs::BlockedRange<int> &r)
+    {
+        for (int i = r.begin(); i < r.end(); ++i)
+        {
+            auto begin = diagBlocks[i], end = diagBlocks[i + 1];
+            auto len = end - begin;
+            auto& MM = qrd[i];
+            corecvs::Vector bcx(len);
+            for (int j = 0; j < len; ++j)
+                bcx[j] = rhs[j + begin - Aw];
+            if (!symmetric)
+            {
+                LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', len, 1, MM.data, MM.stride, &pivots[pivotIdx[i]], &bcx[0], 1);
+            }
+            else
+            {
+                if (posDef)
+                    LAPACKE_dpotrs(LAPACK_ROW_MAJOR, 'U', len, 1, MM.data, MM.stride, &bcx[0], 1);
+                else
+                    LAPACKE_dsytrs(LAPACK_ROW_MAJOR, 'U', len, 1, MM.data, MM.stride, &pivots[pivotIdx[i]], &bcx[0], 1);
+            }
+            auto res = bcx;
+            for (int j = begin; j < end; ++j)
+                y[j - Aw] = res[j - begin];
+        }
+    });
+
+    for (int i = 0; i < Aw; ++i)
+        res[i] = x[i];
+    for (int j = 0; j < Bw; ++j)
+        res[j + Aw] = y[j];
+    return true;
+#endif
+}
+
+bool corecvs::Matrix::linSolveSchurComplement(const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric, bool posDef)
+{
+    return corecvs::Matrix::LinSolveSchurComplement(*this, B, diagBlocks, res, symmetric, posDef);
+}
 
 Matrix Matrix::invSVD() const
 {
@@ -941,7 +1080,7 @@ double corecvs::Matrix::det() const
             tauM *= -1.0;
     return det * tauM;
 }
-#endif
+#endif // WITH_BLAS
 
 Vector2d32 Matrix::getMinCoord() const
 {
@@ -1302,9 +1441,6 @@ void Matrix::svd(Matrix *A, DiagonalMatrix *W, Matrix *V)
   *   Computes all eigenvalues and eigenvectors of a real symmetric matrix a[1..n][1..n].
   *   On output, elements of a above the diagonal are destroyed. d[1..n] returns the eigenvalues of a v[1..n][1..n]
   *   is a matrix whose columns contain, on output, the normalized eigenvectors of a nrot returns the number of Jacobi rotations that were required.
-  *
-  *
-  *
   **/
 
 #define ROTATE(mat,i,j,k,l) g = mat->a(i,j); h = mat->a(k,l); mat->a(i,j) = g - s * ( h + g * tau); mat->a(k,l) = h + s * ( g - h * tau);
@@ -1426,5 +1562,15 @@ int Matrix::jacobi(Matrix *a, DiagonalMatrix *d, Matrix *v, int *nrotpt)
 }
 #undef ROTATE
 
+Matrix Matrix::ata() const
+{
+#ifndef WITH_BLAS
+    return t() * *this;
+#else
+    Matrix res(w, w);
+    cblas_dgemm(CblasRowMajor, CblasTrans, CblasNoTrans, w, w, h, 1.0, data, stride, data, stride, 0.0, res.data, res.stride);
+    return res;
+#endif
+}
 
 } //namespace corecvs

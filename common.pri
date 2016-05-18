@@ -56,8 +56,10 @@ with_avx {
         QMAKE_CFLAGS   += -mavx
         QMAKE_CXXFLAGS += -mavx
     } else {
-        QMAKE_CFLAGS   += /arch:AVX
-        QMAKE_CXXFLAGS += /arch:AVX
+        QMAKE_CFLAGS   += $$QMAKE_CFLAGS_AVX        # Qmake uses it as "-arch:AVX" for msvc >= VS-2010
+        QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_AVX
+
+        #!build_pass: message(DEFINES = $$DEFINES)
     }
 }
 
@@ -66,9 +68,9 @@ with_avx2 {
     !win32-msvc* {
         QMAKE_CFLAGS   += -mavx2
         QMAKE_CXXFLAGS += -mavx2
-    } else:!win32-msvc2010 {
-        QMAKE_CFLAGS   += /arch:AVX2
-        QMAKE_CXXFLAGS += /arch:AVX2
+    } else {
+        QMAKE_CFLAGS   += $$QMAKE_CFLAGS_AVX2        # Qmake uses it as "-arch:AVX2" for msvc >= VS-2015
+        QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_AVX2
     }
 }
 
@@ -235,6 +237,7 @@ isEmpty(CCACHE_TOOLCHAIN_ON) {
 }
 
 !win32-msvc* {
+
     QMAKE_CFLAGS_DEBUG     -= -g
     QMAKE_CXXFLAGS_DEBUG   -= -g
     QMAKE_LFLAGS           -= -g
@@ -244,8 +247,8 @@ isEmpty(CCACHE_TOOLCHAIN_ON) {
 
     QMAKE_CFLAGS_RELEASE   += -O3
     QMAKE_CXXFLAGS_RELEASE += -O3
-#   QMAKE_CFLAGS_RELEASE   += -g3
-#   QMAKE_CXXFLAGS_RELEASE += -g3
+    QMAKE_CFLAGS_RELEASE   += -g3
+    QMAKE_CXXFLAGS_RELEASE += -g3
 #   QMAKE_CFLAGS_RELEASE   += -mtune=native     # TODO: native doesn't work while we could use (SSE & !AVX)
 #   QMAKE_CXXFLAGS_RELEASE += -mtune=native     # TODO: native doesn't work while we could use (SSE & !AVX)
 
@@ -444,9 +447,27 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
     }
 }
 
+# Boost is yet another fancy and cool library that contains
+# many features that we will definitely see in upcoming
+# STL implemenations
+with_boost {
+    BOOST_PATH=$$(BOOST_PATH)
+    DEFINES += WITH_BOOST
+    !win32 {
+        # Since we are not (yet?) using any binary boost components,
+        # we can think about it as header-only lib
+        !isEmpty(BOOST_PATH) {
+            INCLUDEPATH += $$BOOST_PATH
+        }
+    } else {
+    }
+}
+
 #
 # MKL is more preferable as it uses "tbb" internally, which we use too anyway.
-# But openblas uses an "openmp" that is bad to use with tbb simultaneously!
+# But openBLAS uses an "OpenMP" that is bad to use with tbb simultaneously, nevertheless you can switch off tbb as well.
+# Therefore we support MKL with tbb threading and also MKL with openMP threading model on Windows/Linux platforms.
+# For more detailed MKL's linker options, see "https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor".
 #
 with_mkl {
     MKLROOT = $$(MKLROOT)
@@ -455,13 +476,27 @@ with_mkl {
     }
     exists("$$MKLROOT"/include/mkl.h) {
         !win32 {
-            LIBS    += -L"$$MKLROOT"/lib/intel64 -lmkl_intel_lp64     -lmkl_core     -lmkl_tbb_thread     -ltbb -lstdc++ -lpthread -lm
+            LIBS        += -L"$$MKLROOT"/lib/intel64 -lmkl_intel_lp64 -lmkl_core
+            with_tbb {
+                LIBS    += -lmkl_tbb_thread -lstdc++ -lpthread -lm      # -ltbb was already included above
+            } else {
+                QMAKE_CXXFLAGS += -fopenmp
+                QMAKE_CFLAGS   += -fopenmp
+                QMAKE_LFLAGS   += -fopenmp
+                LIBS    += -lmkl_gnu_thread -ldl -lpthread -lm -lgomp   # with OpenMP's threading layer, GNU's OpenMP library (libgomp)
+            }
         } else {
-            LIBS    += -L"$$MKLROOT"/lib/intel64 -lmkl_intel_lp64_dll -lmkl_core_dll -lmkl_tbb_thread_dll -ltbb
+            LIBS        += -L"$$MKLROOT"/lib/intel64 -lmkl_intel_lp64_dll -lmkl_core_dll
+            with_tbb {
+                LIBS    += -lmkl_tbb_thread_dll                         # -ltbb was already included above
+            } else {
+                LIBS    += -L"$$MKLROOT"/../compiler/lib/intel64_win -lmkl_intel_thread_dll -llibiomp5md          # with OpenMP's threading layer, Intel's OpenMP library (libiomp5)
+            }
         }
         INCLUDEPATH += "$$MKLROOT"/include
-        DEFINES     += WITH_BLAS
         DEFINES     += WITH_MKL
+        DEFINES     += WITH_BLAS
+        CONFIG      += with_blas
     }
     else {
         !build_pass: message (requested MKL is not installed and is deactivated)
@@ -473,12 +508,15 @@ with_openblas {
         !build_pass: contains(TARGET, core): message(openBLAS is deactivated as detected MKL was activated)
     }
     else:!win32 {
+        BLAS_PATH = $$(BLAS_PATH)
         !isEmpty(BLAS_PATH) {
-            exists($(BLAS_PATH)/include/cblas.h) {
+            exists("$$BLAS_PATH"/include/cblas.h) {
                 !build_pass: message(Using BLAS from <$$BLAS_PATH>)
                 INCLUDEPATH += $(BLAS_PATH)/include
                 LIBS        += -lopenblas
+                DEFINES     += WITH_OPENBLAS
                 DEFINES     += WITH_BLAS
+                CONFIG      += with_blas
             }
             else {
                 !build_pass: message(requested openBLAS via BLAS_PATH is not found and is deactivated)
@@ -487,7 +525,9 @@ with_openblas {
             exists(/usr/include/cblas.h) {
                 !build_pass: message (Using System BLAS)
                 LIBS        += -lopenblas -llapacke
+                DEFINES     += WITH_OPENBLAS
                 DEFINES     += WITH_BLAS
+                CONFIG      += with_blas
             }
             else {
                 !build_pass: message(requested system BLAS is not found and is deactivated)
@@ -495,6 +535,34 @@ with_openblas {
         }
     } else {
         !build_pass: message(requested openBLAS is not supported for Win and is deactivated)
+    }
+}
+
+with_fftw {
+    contains(DEFINES, WITH_MKL) {
+        !build_pass: contains(TARGET, core): message(Using FFTW from MKL)
+        INCLUDEPATH += "$$MKLROOT"/include/fftw
+        DEFINES     += WITH_FFTW
+    }
+    else:!win32 {
+        FFTW_PATH = $$(FFTW_PATH)
+        isEmpty(FFTW_PATH) {
+            FFTW_PREFIX=/usr
+        } else {
+            FFTW_PREFIX=$(FFTW_PATH)
+        }
+        exists("$$FFTW_PREFIX"/include/fftw3.h) {
+            !build_pass: message(Using FFTW from <$$FFTW_PREFIX>)
+            INCLUDEPATH += $(FFTW_PREFIX)/include
+            LIBS        += -lfftw3
+            DEFINES     += WITH_FFTW
+        }
+        else {
+            !build_pass: message(requested FFTW is not found and is deactivated)
+        }
+    }
+    else {
+        !build_pass: message(requested separated FFTW is not supported for Win and is deactivated)
     }
 }
 
@@ -507,5 +575,3 @@ with_openblas {
 # QMAKE_CXXFLAGS += -Wsign-conversion
 # QMAKE_CXXFLAGS += -Winit-self
 # QMAKE_CXXFLAGS += -Wunreachable-code
-
-#OPEN_ROOT_DIRECTORY = $$PWD

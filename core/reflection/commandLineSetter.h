@@ -17,8 +17,8 @@ using std::string;
 class CommandLineSetter
 {
 public:
-    std::string mArgPrefix;
-    std::string mArgSeparator;
+    string mArgPrefix;
+    string mArgSeparator;
 
     vector<string> mArgs;
 
@@ -27,7 +27,7 @@ public:
         mArgSeparator = "=";
     }
 
-    CommandLineSetter(const vector<std::string> &args) :
+    CommandLineSetter(const vector<string> &args) :
         CommandLineSetter()
     {
         mArgs = args;
@@ -42,7 +42,7 @@ public:
     /* Helper getters */
     bool hasOption(const string& option, unsigned* pos = NULL)
     {
-        std::string decorated = mArgPrefix + option;
+        string decorated = mArgPrefix + option;
 
         for (unsigned i = 0; i < mArgs.size(); i++)
         {
@@ -59,7 +59,7 @@ public:
 
     const string getOption(const string& option, bool *found = NULL)
     {
-        std::string decorated = mArgPrefix + option + mArgSeparator;
+        string decorated = mArgPrefix + option + mArgSeparator;
 
         if (found != NULL) *found = false;
         for (unsigned i = 0; i < mArgs.size(); i++)
@@ -116,17 +116,17 @@ public:
         }
     }
 
-    std::string getString(const string & option, const std::string & defaultString)
+    string getString(const string & option, const std::string & defaultString)
     {
         bool found = false;
         const string& argument = getOption(option, &found);
 
         if (!found)
         {
-            return std::string(defaultString);
+            return string(defaultString);
         }
 
-        return std::string(argument);
+        return string(argument);
     }
 
     /* Oldstyle */

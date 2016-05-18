@@ -4,7 +4,7 @@
 
 namespace cv {
     class FeatureDetector;
-};
+}
 
 class OpenCvFeatureDetectorWrapper : public FeatureDetector
 {

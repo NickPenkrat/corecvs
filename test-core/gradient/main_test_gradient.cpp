@@ -17,7 +17,6 @@
 #include "gradientDescent.h"
 #include "vector3d.h"
 
-using namespace std;
 using namespace corecvs;
 
 /**
@@ -58,6 +57,7 @@ public:
        }
     }
 };
+
 class GradientRnToRm2Test : FunctionArgs {
 public:
     GradientRnToRm2Test() : FunctionArgs(3,3) {};

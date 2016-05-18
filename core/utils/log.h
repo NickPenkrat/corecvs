@@ -46,6 +46,52 @@ using corecvs::ObjectRef;
 
 class LogDrain;
 
+class LogDrainDeleter
+{
+    bool mNeedDel;
+public:
+    LogDrainDeleter(bool needDel = true) : mNeedDel(needDel) {}
+
+    template<typename T>
+    void operator()(T* p)
+    {
+        CORE_UNUSED(p);
+        if (mNeedDel)
+            delete p;
+    }
+};
+
+class LogDrainsKeeper : public std::vector<LogDrain *>
+{
+public:
+    std::mutex mMutex;
+
+    LogDrainsKeeper() {}
+   ~LogDrainsKeeper()
+    {
+        for(auto it = begin(); it != end(); ++it)
+        {
+            delete_safe(*it);
+        }
+    }
+
+   void add(LogDrain* p) {
+       mMutex.lock();
+       push_back(p);
+       mMutex.unlock();
+   }
+
+   void detach(LogDrain* p) {
+       mMutex.lock();
+       const auto &it = std::find(begin(), end(), p);
+       if (it != end()){
+           erase(it);
+       }
+       mMutex.unlock();
+   }
+
+};
+
 /** \class Log
  *
  *  \brief Class that controls the log
@@ -75,8 +121,8 @@ public:
      * smart pointers and could be as large as needed. Its lifetime depends on the
      * connected drains.
      **/
-	class MessageInternal
-	{
+    class MessageInternal
+    {
         friend class Log;
     public:
 
@@ -109,17 +155,17 @@ public:
         cchar      *mOriginFunctionName;
         int         mThreadId;
         time_t      mTime;
-	};
+    };
 
-	/**
-	 * Message is a smart pointer to MessageInternal. MessageInternal is usually accessed only through this structure
-	 **/
-	typedef ObjectRef<MessageInternal> Message;
+    /**
+     * Message is a smart pointer to MessageInternal. MessageInternal is usually accessed only through this structure
+     **/
+    typedef ObjectRef<MessageInternal> Message;
 
-	/**
-	 *   If we want to use qDebug style for debugging we need an object that will be destroyed when leaving the scope.
-	 *   This will trigger the flush.
-	 **/
+    /**
+     *   If we want to use qDebug style for debugging we need an object that will be destroyed when leaving the scope.
+     *   This will trigger the flush.
+     **/
     class MessageScoped
     {
     public:
@@ -207,9 +253,9 @@ public:
         return MessageScoped(this, level, fileName, lineNumber, functionName);
     }
 
-	/**
-	 * Log a message
-	 **/
+    /**
+     * Log a message
+     **/
     void                message(Message &message);
 
     static std::string  formatted(const char *format, ... );
@@ -223,9 +269,9 @@ public:
     /** add needed log drains for the app */
     static void         addAppLog(int argc, char* argv[], cchar* logFileName = NULL);
 
-    static LogLevel                 mMinLogLevel;
-    static std::vector<LogDrain *>  mLogDrains;
-    static int                      mDummy;
+    static LogLevel         mMinLogLevel;
+    static LogDrainsKeeper  mLogDrains;
+    static int              mDummy;
 
 public:
     /** This is a static init function */
@@ -245,6 +291,8 @@ Log::Message operator<< (Log::Message msg, const T& t) {
 class LogDrain
 {
 public:
+    virtual ~LogDrain() {}
+
     virtual void drain(Log::Message &message) = 0;
 
 protected:
@@ -266,6 +314,7 @@ public:
     {
         mFullInfo = fullInfo;
     }
+    virtual ~StdStreamLogDrain() {}
 
     virtual void drain(Log::Message &message);
 };
@@ -277,6 +326,7 @@ class FileLogDrain : public LogDrain
 
 public:
     FileLogDrain(const std::string& path, bool bAppend = false, bool fullInfo = true);
-    ~FileLogDrain();
+    virtual ~FileLogDrain();
+
     virtual void drain(Log::Message &message);
 };

@@ -178,51 +178,59 @@ void DistortionWidget::detectCorners()
 
 void DistortionWidget::detectCheckerboard()
 {
-#ifdef WITH_OPENCV
     CheckerboardDetectionParameters params;
     mUi->checkerboardParametersWidget->getParameters(params);
 
-    if(mBufferInput == NULL) {
+    if (mBufferInput == NULL)
         return;
-    }
 
-    G8Buffer *workChannel = mBufferInput->getChannel(params.channel());
-
-    PaintImageWidget *canvas = mUi->widget;
-
-    if(params.cleanExisting())
+    switch ((int)params.algorithm())
     {
-       // mUi->calibrationFeatures->clearObservationPoints();
-        canvas->mFeatures.mPaths.clear();
+    case CheckerboardDetectionAlgorithm::CheckerboardDetectionAlgorithm::OPENCV_DETECTOR:
+        {
+#ifdef WITH_OPENCV
+        G8Buffer *workChannel = mBufferInput->getChannel(params.channel());
+        PaintImageWidget *canvas = mUi->widget;
+
+        if (params.cleanExisting()) {
+            // mUi->calibrationFeatures->clearObservationPoints();
+            canvas->mFeatures.mPaths.clear();
+        }
+
+        OpenCvCheckerboardDetector detector(params);
+
+        //ChessBoardDetectorParams cdp;
+        //cdp.w = params.mHorCrossesCount;
+        //cdp.h = params.mVertCrossesCount;
+        //ChessboardDetector detector(cdp);
+
+        PatternDetector& patternDetector = detector;
+        // FIXME: Not sure if we should ever allow user to tune what channel to use, let us just pass full buffer
+        // TODO:  Check if drawing points over buffer is detector's part of work
+        bool found = patternDetector.detectPattern(*mBufferInput);
+        if (found)
+        {
+            mObservationListModel.clearObservationPoints();
+            patternDetector.getPointData(mObservationList);
+            mObservationListModel.setObservationList(&mObservationList);
+
+            patternDetector.getPointData(canvas->mFeatures);
+        }
+
+        delete_safe(workChannel);
+#else // WITH_OPENCV
+        L_ERROR_P("The code was compiled without OpenCvCheckerboardDetector support");
+#endif // !WITH_OPENCV
+        }
+        break;
+
+    case CheckerboardDetectionAlgorithm::CheckerboardDetectionAlgorithm::HOMEBREW_DETECTOR:
+        L_ERROR_P("DistortionWidget::detectCheckerboard(): Homebrew algo is not implemented");
+        break;
+
+    default:
+        L_ERROR_P("DistortionWidget::detectCheckerboard(): unknown CheckerboardDetector (%d)", (int)params.algorithm());
     }
-
-#define  OPENCV_DETECTOR
-#ifdef OPENCV_DETECTOR
-    OpenCvCheckerboardDetector detector(params);
-#else
-    ChessBoardDetectorParams cdp;
-    cdp.w = params.mHorCrossesCount;
-    cdp.h = params.mVertCrossesCount;
-    ChessboardDetector detector(cdp);
-#endif
-    PatternDetector& patternDetector = detector;
-    // FIXME: Not sure if we should ever allow user to tune what channel to use, let us just pass full buffer
-    // TODO:  Check if drawing points over buffer is detector's part of work
-    bool found = patternDetector.detectPattern(*mBufferInput);
-    if (found)
-    {
-        mObservationListModel.clearObservationPoints();
-        patternDetector.getPointData(mObservationList);
-        mObservationListModel.setObservationList(&mObservationList);
-
-        patternDetector.getPointData(canvas->mFeatures);
-    }
-
-    delete_safe(workChannel);
-    return;
-#else
-    return;
-#endif
 }
 
 void DistortionWidget::tryAddPoint(int toolID, const QPointF &point)
@@ -335,6 +343,11 @@ void DistortionWidget::doLinesTransform()
     solver.lineList = &mUi->widget->mFeatures;
     solver.parameters = params;
 
+    if (solver.lineList->mPaths.size() == 0) {
+        L_ERROR_P("doLinesTransform(): no data to process!");
+        return;
+    }
+
     RadialCorrection correction = solver.solve();
 
     L_INFO_P("Inverting the distortion buffer");
@@ -353,6 +366,7 @@ void DistortionWidget::doLinesTransform()
 
     mUi->lensCorrectionWidget->setParameters(correction.mParams);
     L_INFO_P("Ending distortion calibration");
+
     updateScore();
 }
 
@@ -479,7 +493,9 @@ void DistortionWidget::doDefaultTransform()
                 straightParams,
                 1.0,
                 scale,
-                center.l2Metric()
+                center.l2Metric(),
+                0.0,
+                0.0
              );
 
     RadialCorrection radCorrection(lenCorrectionParams);

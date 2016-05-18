@@ -10,9 +10,11 @@
 #ifndef _VECTOR3D_H_
 #define _VECTOR3D_H_
 
-#include "math.h"
+#include <math.h>
+
 #include "vector2d.h"
 #include "vector.h"
+
 namespace corecvs {
 
 /*
@@ -53,6 +55,12 @@ public:
         v[1] = (*this)[1];
         v[2] = (*this)[2];
         return v;
+    }
+    Vector3d(const Vector& v)
+    {
+        (*this)[0] = v[0];
+        (*this)[1] = v[1];
+        (*this)[2] = v[2];
     }
 
     //@{
@@ -109,6 +117,14 @@ public:
     {
         return Vector2d<ElementType>(y(), z());
     }
+
+    void setXY(const Vector2d<ElementType> &vec2d )
+    {
+        this->x() = vec2d[0];
+        this->y() = vec2d[1];
+    }
+
+
 
     /**
      * \brief This function implements the vector cross product (See http://en.wikipedia.org/wiki/Vector_product).
@@ -262,10 +278,9 @@ template<class VisitorType>
         return Vector3d<ElementType>(0.0, 0.0, 1.0);
     }
 
-
 };
 
-typedef Vector3d<double> Vector3dd;
+typedef Vector3d<double>   Vector3dd;
 typedef Vector3d<uint32_t> Vector3du32;
 typedef Vector3d<uint16_t> Vector3du16;
 
@@ -276,4 +291,3 @@ typedef Vector3d<int16_t> Vector3d16;
 } //namespace corecvs
 
 #endif // _VECTOR3D_H_
-

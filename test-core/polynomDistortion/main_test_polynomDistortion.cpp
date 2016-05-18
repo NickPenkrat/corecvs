@@ -8,9 +8,7 @@
 #include "levenmarq.h"
 #include "radialFunc.h"
 
-using namespace std;
 using namespace corecvs;
-
 
 //p1 = p2 = 0;
 

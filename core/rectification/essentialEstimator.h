@@ -125,7 +125,7 @@ public:
             OptimisationMethod method = METHOD_DEFAULT);
 
     EssentialMatrix getEssentialLSE          (const vector<Correspondence *> &samples);
-    EssentialMatrix getEssentialLM           (const vector<Correspondence *> &samples);
+    EssentialMatrix getEssentialLM           (const vector<Correspondence *> &samples, const corecvs::Quaternion &rotation = corecvs::Quaternion::RotationIdentity(), const corecvs::Vector3dd &translation = corecvs::Vector3dd(-1., 0., 0.));
     EssentialMatrix getEssentialGrad         (const vector<Correspondence *> &samples);
     EssentialMatrix getEssentialGradToRm     (const vector<Correspondence *> &samples);
     EssentialMatrix getEssentialSimpleKalman (const vector<Correspondence *> &samples);

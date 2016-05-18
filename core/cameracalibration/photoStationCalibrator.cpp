@@ -3,17 +3,18 @@
 
 #include "global.h"
 
+#include "log.h"
+
 #include <queue>
 #include <algorithm>
 
-PhotoStationCalibrator::PhotoStationCalibrator(CameraConstraints constraints, const double lockFactor) : factor(lockFactor), N(0), M(0), K(0), L(0), constraints(constraints)
-{
-}
+PhotoStationCalibrator::PhotoStationCalibrator(CameraConstraints constraints, const LineDistortionEstimatorParameters &distortionParameters, const double lockFactor) : factor(lockFactor), N(0), M(0), K(0), L(0), constraints(constraints), distortionEstimationParams(distortionParameters)
+{}
 
-void PhotoStationCalibrator::addCamera(PinholeCameraIntrinsics &intrinsics)
+void PhotoStationCalibrator::addCamera(PinholeCameraIntrinsics &intrinsics, const LensDistortionModelParameters &distortion)
 {
     N++;
-    relativeCameraPositions.push_back({intrinsics, CameraLocationData()});
+    relativeCameraPositions.emplace_back(intrinsics, CameraLocationData(), distortion);
 }
 
 
@@ -133,6 +134,17 @@ int PhotoStationCalibrator::getInputNum() const
                 input++));
     IFNOT(LOCK_PRINCIPAL, input += 2);
     IFNOT(LOCK_SKEW, IFNOT(ZERO_SKEW, input++));
+    if (!!(constraints & CameraConstraints::UNLOCK_DISTORTION))
+    {
+        int polyDeg = distortionEstimationParams.mPolinomDegree;
+        if (distortionEstimationParams.mEvenPowersOnly)
+            polyDeg /= 2;
+        input += polyDeg;
+        if (distortionEstimationParams.mEstimateTangent)
+            input += 2;
+        if (distortionEstimationParams.mEstimateCenter)
+            input += 2;
+    }
     input = input * N;
     input += M * 7;
     input += (N - 1) * 7;
@@ -189,6 +201,36 @@ void PhotoStationCalibrator::readParams(const double in[])
             }
             toFill.extrinsics.orientation.normalise();
         }
+        if (!!(constraints & CameraConstraints::UNLOCK_DISTORTION))
+        {
+            toFill.distortion.mMapForward = true;
+            int polyDeg = distortionEstimationParams.mPolinomDegree;
+            toFill.distortion.mKoeff.resize(polyDeg);
+            for (auto& k: toFill.distortion.mKoeff)
+                k = 0.0;
+            int degStart = 0, degIncrement = 1;
+            if (distortionEstimationParams.mEvenPowersOnly)
+            {
+                polyDeg /= 2;
+                degStart = 1;
+                degIncrement = 2;
+            }
+            for (int i = 0; i < polyDeg; ++i, degStart += degIncrement)
+            {
+                GET_PARAM(toFill.distortion.mKoeff[degStart]);
+            }
+            if (distortionEstimationParams.mEstimateTangent)
+            {
+                GET_PARAM(toFill.distortion.mTangentialX);
+                GET_PARAM(toFill.distortion.mTangentialY);
+            }
+            if (distortionEstimationParams.mEstimateCenter)
+            {
+                GET_PARAM(toFill.distortion.mPrincipalX);
+                GET_PARAM(toFill.distortion.mPrincipalY);
+            }
+
+        }
     }
     for (int i = 0; i < M; ++i)
     {
@@ -231,6 +273,34 @@ void PhotoStationCalibrator::writeParams(double out[])
             {
                 SET_PARAM(toWrite.extrinsics.orientation[j]);
             }
+        }
+        if (!!(constraints & CameraConstraints::UNLOCK_DISTORTION))
+        {
+            toWrite.distortion.mMapForward = true;
+            int polyDeg = distortionEstimationParams.mPolinomDegree;
+            toWrite.distortion.mKoeff.resize(polyDeg);
+            int degStart = 0, degIncrement = 1;
+            if (distortionEstimationParams.mEvenPowersOnly)
+            {
+                polyDeg /= 2;
+                degStart = 1;
+                degIncrement = 2;
+            }
+            for (int i = 0; i < polyDeg; ++i, degStart += degIncrement)
+            {
+                SET_PARAM(toWrite.distortion.mKoeff[degStart]);
+            }
+            if (distortionEstimationParams.mEstimateTangent)
+            {
+                SET_PARAM(toWrite.distortion.mTangentialX);
+                SET_PARAM(toWrite.distortion.mTangentialY);
+            }
+            if (distortionEstimationParams.mEstimateCenter)
+            {
+                SET_PARAM(toWrite.distortion.mPrincipalX);
+                SET_PARAM(toWrite.distortion.mPrincipalY);
+            }
+
         }
     }
 
@@ -444,14 +514,20 @@ void PhotoStationCalibrator::recenter()
     }
     sum /= N;
 
-    std::vector<double> in(3), out(c.size()*(c.size()-1) * 3);
+    std::vector<double> in(3), out(c.size()*(c.size() - 1) * 3), res(3);
     for (int i = 0; i < 3; ++i)
         in[i] = sum[i];
 
     corecvs::LevenbergMarquardt levmar(50);
     levmar.f = new LSQCenter(c, q);
 
-    auto res = levmar.fit(in, out);
+    if (c.size() == 1) {
+        res = { 0, 0, 0 };
+    }
+    else {
+        res = levmar.fit(in, out);
+        delete levmar.f;
+    }
     corecvs::Vector3dd ctr(res[0], res[1], res[2]);
     std::cout << ctr << std::endl;
 
@@ -544,8 +620,8 @@ void PhotoStationCalibrator::solveCameraToSetup(const CameraLocationData &realLo
 #ifdef VERBOSE_OUTPUT
     std::cout << "Solving setup " << setup << " from camera " << camera << " QR: " << qr << " QC: " << qc << " QS: " << qs << " | " << " CR: " << cr << " CC: " << cc << " CS: " << cs << std::endl;
 #endif
-    CORE_ASSERT_TRUE_S(!(cr - cf) < 1e-6);
-    CORE_ASSERT_TRUE_S(!(qf - qr) < 1e-6);
+    CORE_ASSERT_TRUE_S((!(cr - cf)) < 1e-6);
+    CORE_ASSERT_TRUE_S((!(qf - qr)) < 1e-6);
     if (qs[0] > 0.0)
         qs = -qs;
 #ifdef VERBOSE_OUTPUT
@@ -575,8 +651,8 @@ void PhotoStationCalibrator::solveSetupToCamera(const CameraLocationData &realLo
 #ifdef VERBOSE_OUTPUT
     std::cout << "Solving camera " << camera<< " from setup " << setup << " QR: " << qr << " QC: " << qc << " QS: " << qs << " | " << " CR: " << cr << " CC: " << cc << " CS: " << cs << std::endl;
 #endif
-    CORE_ASSERT_TRUE_S(!(cr - cf) < 1e-6);
-    CORE_ASSERT_TRUE_S(!(qf - qr) < 1e-6);
+    CORE_ASSERT_TRUE_S((!(cr - cf)) < 1e-6);
+    CORE_ASSERT_TRUE_S((!(qf - qr)) < 1e-6);
     if (qc[0] > 0.0)
         qc = -qc;
 #ifdef VERBOSE_OUTPUT
@@ -591,7 +667,6 @@ void PhotoStationCalibrator::validate()
     {
         for (int cam = 0; cam < N; ++cam)
         {
-
             if (!initialGuess[setup][cam].first)
                 continue;
             auto q1 = relativeCameraPositions[cam].extrinsics.orientation ^ absoluteSetupLocation[setup].orientation;
@@ -603,7 +678,7 @@ void PhotoStationCalibrator::validate()
             std::cout << "Exp: " << v2 << " Rec: " << v1 << " diff: " << v1 - v2 << std::endl;
             std::cout << "Set: " << absoluteSetupLocation[setup].position << " " << absoluteSetupLocation[setup].orientation << std::endl;
 
-            if (max_diff < !(v2 - v1))
+            if (max_diff < (!(v2 - v1)))
                 max_diff = !(v2 - v1);
         }
     }
@@ -624,14 +699,15 @@ bool PhotoStationCalibrator::getMSTSolveOrder(std::vector<std::pair<int, int>> &
     for (int i = 1; i < N; ++i)
         if (totalCnt[i] > totalCnt[maxCam])
             maxCam = i;
-    int maxFC = 0;
+
+    size_t maxFC = 0;
     order.clear();
     std::pair<int, int> initial(-1, -1);
 //  for (int i = 0; i < N; ++i)
     for (int j = 0; j < M; ++j) {
         if (patternPoints[j][maxCam].size() > maxFC)
         {
-            maxFC = (int)patternPoints[j][maxCam].size();
+            maxFC = patternPoints[j][maxCam].size();
             initial = std::make_pair(maxCam, j);
         }
     }
@@ -675,7 +751,6 @@ bool PhotoStationCalibrator::getMSTSolveOrder(std::vector<std::pair<int, int>> &
                 }
                 if (cameraUsed[j])
                 {
-
                     for (int jj = 0; jj < M; ++jj)
                     {
                         if ((!setupUsed[jj]) && patternPoints[jj][j].size() > maxFC)
@@ -688,11 +763,15 @@ bool PhotoStationCalibrator::getMSTSolveOrder(std::vector<std::pair<int, int>> &
 
             }
         }
+
 #ifdef VERBOSE_OUTPUT
         std::cout << "Adding " << initial.first << " " << initial.second << " : " << maxFC << std::endl;
 #endif
-        CORE_ASSERT_TRUE_S(patternPoints[initial.second][initial.first].size() > 0);
+        if (initial.first < 0)
+            break;
+
         CORE_ASSERT_TRUE_S(initial.first >= 0 && initial.second >= 0);
+        CORE_ASSERT_TRUE_S(patternPoints[initial.second][initial.first].size() > 0);
         order.push_back(initial);
         CORE_ASSERT_TRUE_S(cameraUsed[initial.first] || setupUsed[initial.second]);
         if (!cameraUsed[initial.first]) cameraSolved++;
@@ -700,12 +779,19 @@ bool PhotoStationCalibrator::getMSTSolveOrder(std::vector<std::pair<int, int>> &
         cameraUsed[initial.first] = 1;
         setupUsed[initial.second] = 1;
     }
+
 #ifdef VERBOSE_OUTPUT
     for (int i = 0; i < order.size(); ++i)
     {
         std::cout << "Cam " << order[i].first << " setup " << order[i].second << " : " << patternPoints[order[i].second][order[i].first].size() << std::endl;
     }
 #endif
+
+    if (initial.first < 0)
+    {
+        L_ERROR << "Couldn't find an initial pair to start the calibration!";
+        return false;
+    }
     return true;
 }
 
@@ -721,7 +807,7 @@ void PhotoStationCalibrator::solveInitialLocations()
     auto initial = order2[0];
     camsSolved[initial.first] = true;
     relativeCameraPositions[initial.first].extrinsics = corecvs::CameraLocationData(corecvs::Vector3dd(0.0, 0.0, -120.0), corecvs::Quaternion(0.0, 0.0, 0.0, 1.0));
-    for (int i = 0; i < order2.size(); ++i)
+    for (size_t i = 0; i < order2.size(); ++i)
     {
         auto id = order2[i];
         std::cout << "Solving c:" << id.first << " s: " << id.second << std::endl;

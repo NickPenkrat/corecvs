@@ -35,6 +35,12 @@ public:
     {
         return (a + b) / 2.0;
     }
+
+    friend ostream & operator <<(ostream &out, const Segment &ray)
+    {
+        out << "[" << ray.a << " - " << ray.b << "]";
+        return out;
+    }
 };
 
 
@@ -86,7 +92,7 @@ public:
      **/
     void normalise(void)
     {
-        double l = a.l2metric();
+        double l = a.l2Metric();
         if (l == 0.0)
             return;
         a /= l;
@@ -184,6 +190,11 @@ public:
     Ray2d(const Vector2dd &_a, const Vector2dd & _p) :
         BaseRay<Ray2d, Vector2dd>(_a, _p)
     {}
+
+    Ray2d(const Segment2d &s) :
+        BaseRay<Ray2d, Vector2dd>(s.b - s.a, s.a)
+    {}
+
 };
 
 /**
@@ -192,10 +203,11 @@ public:
 class Ray3d : public BaseRay<Ray3d, Vector3dd>
 {
 public:
-    Ray3d() {}
-
     Ray3d(const Vector3dd &_a, const Vector3dd & _p) :
         BaseRay<Ray3d, Vector3dd>(_a, _p)
+    {}
+
+    Ray3d(const BaseRay<Ray3d, Vector3dd> &base) : BaseRay<Ray3d, Vector3dd>(base)
     {}
 
     double distanceTo(const Ray3d &other ) const
@@ -235,6 +247,12 @@ public:
     {
         Vector3dd coef = intersectCoef(other);
         return (getPoint(coef.x()) + other.getPoint(coef.y())) / 2.0;
+    }
+
+    std::pair<corecvs::Vector3dd, corecvs::Vector3dd> pluckerize() const
+    {
+        auto an = a.normalised();
+        return std::make_pair(an, p ^ an);
     }
 
     void transform(const Matrix44 &M)
@@ -483,13 +501,13 @@ public:
     {
        Vector2dd a = ray.a;
        Vector2dd p = ray.p;
-       Vector2dd n = p.leftNormal();
-       return Line2d(n, -(a & n));
+       Vector2dd n = a.leftNormal();
+       return Line2d(n, -(p & n));
     }
 
     static Line2d fromSegment(const Segment2d &segment)
     {
-        return fromRay(Ray2d(segment.a, segment.b - segment.a));
+        return fromRay(Ray2d(segment));
     }
 
     Vector2dd normal(void) const
@@ -534,7 +552,7 @@ public:
      *   Which make obvious the way the intersection is computed.
      *
      **/
-    Vector3dd intersectWith(const Line2d &other) const
+    Vector3dd intersectWithP(const Line2d &other) const
     {
         return (*this) ^ other;
     }
@@ -552,8 +570,12 @@ public:
         if (!intersects)
             return Vector2dd(0);
 
-        double dx = x() * other.z() - other.x() * z();
-        double dy = y() * other.z() - other.y() * z();
+//      double dx = x() * other.z() - other.x() * z();
+//      double dy = y() * other.z() - other.y() * z();
+
+        double dx = y() * other.z() - other.y() * z();
+        double dy = other.x() * z() - x() * other.z();
+
 
         return Vector2dd(dx, dy) / d;
     }
@@ -819,6 +841,15 @@ public:
     }
 
     /**
+     *  This is a helper method that returns the normal of the points
+     *
+     **/
+    static Vector3dd NormalFromPoints(const Vector3dd &p, const Vector3dd &q, const Vector3dd &r)
+    {
+        return (p - q) ^ (p - r);
+    }
+
+    /**
      *  Construct the Plane from 3 points
      *
      *  \f[
@@ -827,7 +858,7 @@ public:
      **/
     static Plane3d FromPoints(const Vector3dd &p, const Vector3dd &q, const Vector3dd &r)
     {
-        return FormNormalAndPoint( (p - q) ^ (p - r), p);
+        return FormNormalAndPoint( NormalFromPoints(p, q, r), p);
     }
 
     /**

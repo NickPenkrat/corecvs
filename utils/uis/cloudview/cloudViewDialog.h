@@ -21,6 +21,9 @@
 #include "coordinateFrame.h"
 #include "treeSceneController.h"
 
+#include "textLabelWidget.h"
+#include "calculationStats.h"
+
 
 using namespace corecvs;
 using std::vector;
@@ -91,6 +94,7 @@ public slots:
     void loadParameters();
 
 
+    void statsOpen();
 public:
     Ui_CloudViewDialogClass mUi;
 
@@ -116,19 +120,20 @@ public:
         SCENE_NUMBER
     };
 
-    QSharedPointer<Scene3D> mScenes[SCENE_NUMBER];
-    TreeSceneController *mSceneControllers[SCENE_NUMBER];
+    QSharedPointer<Scene3D>             mScenes[SCENE_NUMBER];
+    TreeSceneController                *mSceneControllers[SCENE_NUMBER];
     QSharedPointer<RectificationResult> mRectificationResult;
-    QSharedPointer<QImage> mCameraImage[Frames::MAX_INPUTS_NUMBER];
+    QSharedPointer<QImage>              mCameraImage[Frames::MAX_INPUTS_NUMBER];
 
-    GLuint texture(int cameraId);
+    Matrix44                            mCamera;
+    double                              mCameraZoom;
+
+    GLuint                              texture(int cameraId);
+    GLuint                              mFancyTexture;
 
     void setNewScenePointer (QSharedPointer<Scene3D> scene, int sceneId = MAIN_SCENE);
     void setNewRectificationResult (QSharedPointer<RectificationResult> rectificationResult);
     void setNewCameraImage (QSharedPointer<QImage> texture, int cameraId = Frames::RIGHT_FRAME);
-
-    Matrix44 mCamera;
-    double mCameraZoom;
 
     enum SubScene {
         SUBSCENE_PLANE,
@@ -147,22 +152,22 @@ public:
         FACE_CAMERA
     };
 
-protected:
-    int mIsTracking;
-    QPoint mTrack;
-    //vector<TreeSceneController *> mControllers;
-    TreeSceneModel mTreeModel;
-
     /* OpenGL textures */
 public:
-    GLuint mFancyTexture;
     TreeSceneController* addSubObject (QString name, QSharedPointer<Scene3D> scene, bool visible = true);
     void addMesh(QString name, Mesh3D *mesh);
+
 private:
-    GLuint mCameraTexture[Frames::MAX_INPUTS_NUMBER];
+    GLuint                      mCameraTexture[Frames::MAX_INPUTS_NUMBER];
 
 protected:
+  //vector<TreeSceneController*> mControllers;
+    int                         mIsTracking;
+    QPoint                      mTrack;
+    TreeSceneModel              mTreeModel;
 
+    BaseTimeStatisticsCollector mStatsCollector;
+    TextLabelWidget             mStatisticsDialog;
 
     void setZoom(double value);
     void zoom(int delta);

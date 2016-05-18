@@ -4,6 +4,8 @@
 #include <unordered_set>
 #include <queue>
 
+using corecvs::Vector2dd;
+
 ChessBoardAssembler::ChessBoardAssembler(ChessBoardAssemblerParams params) : ChessBoardAssemblerParams(params)
 {
 }
@@ -41,8 +43,9 @@ void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, 
         for (auto& v: b.cornerIdx)
         {
             std::vector<corecvs::Vector2dd> row;
-            for (auto& c: v)
+            for (int c: v) {
                 row.push_back(corners[c].pos);
+            }
             board.emplace_back(std::move(row));
         }
         boards_.emplace_back(std::move(board));
@@ -53,7 +56,6 @@ void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, 
 
 void ChessBoardAssembler::acceptHypothesis(RectangularGridPattern &board)
 {
-
     bool intersects = false;
     bool best = true;
     std::vector<int> intersections;
@@ -61,37 +63,37 @@ void ChessBoardAssembler::acceptHypothesis(RectangularGridPattern &board)
     for (auto& v: board.cornerIdx)
         for (auto& c: v)
             cset.insert(c);
-    if (board.score > costThreshold)
+    if (board.score > costThreshold())
         return;
     int w = board.w();
     int h = board.h();
-    if (hypothesisDimensions)
+    if (hypothesisDimensions())
     {
         int maxfit = 0;
         for (int i = 0; i < 2; ++i)
         {
             int fit = 0;
-            if (w == hypothesisDim[i & 1])
+            if (w == hypothesisDim(i & 1))
                 fit++;
-            if (h == hypothesisDim[i ^ 1])
+            if (h == hypothesisDim(i ^ 1))
                 fit++;
             if (fit > maxfit) maxfit = fit;
         }
-        if (maxfit < hypothesisDimensions)
+        if (maxfit < hypothesisDimensions())
             return;
     }
     for (int i = 0; i < w; ++i)
         for (int j = 0; j + 1 < h; ++j)
         {
-            auto a = !(corners[board.cornerIdx[j][i]].pos - corners[board.cornerIdx[j + 1][i]].pos);
-            if (a < minSeedDistance)
+            double a = !(corners[board.cornerIdx[j][i]].pos - corners[board.cornerIdx[j + 1][i]].pos);
+            if (a < minSeedDistance())
                 return;
         }
     for (int i = 0; i < h; ++i)
         for (int j = 0; j + 1 < w; ++j)
         {
-            auto a = !(corners[board.cornerIdx[i][j]].pos - corners[board.cornerIdx[i][j + 1]].pos);
-            if (a < minSeedDistance)
+            double a = !(corners[board.cornerIdx[i][j]].pos - corners[board.cornerIdx[i][j + 1]].pos);
+            if (a < minSeedDistance())
                 return;
         }
 
@@ -159,8 +161,7 @@ void ChessBoardAssembler::acceptHypothesis(RectangularGridPattern &board)
 }
 
 ChessBoardAssembler::ParallelBoardExpander::ParallelBoardExpander(ChessBoardAssembler *assembler) : assembler(assembler)
-{
-}
+{}
 
 void ChessBoardAssembler::ParallelBoardExpander::operator() (const corecvs::BlockedRange<int> &r) const
 {
@@ -176,13 +177,12 @@ void ChessBoardAssembler::ParallelBoardExpander::operator() (const corecvs::Bloc
 }
 
 ChessBoardAssembler::BoardExpander::BoardExpander(ChessBoardAssembler *assembler) : assembler(assembler)
-{
-}
+{}
 
 bool ChessBoardAssembler::BoardExpander::initBoard(int seed)
 {
     auto& corners = assembler->corners;
-    auto varThreshold = assembler->seedThreshold;
+    double varThreshold = assembler->seedThreshold();
     // Find closest corners
     // Mark'em as used
     // Init board
@@ -198,21 +198,21 @@ bool ChessBoardAssembler::BoardExpander::initBoard(int seed)
     board.cornerIdx[1][1] = seed;
     usedCorners[seed] = 1;
 
-    auto& from = corners[seed];
+    OrientedCorner& from = corners[seed];
 
     // North neighb
     int nwse[4], corn[4];
     double d_nwse[4], d_corn[4];
     for (int i = 0; i < 4; ++i)
     {
-        auto dir = ((i & 1) * 2.0 - 1.0) * (i & 2 ? from.v1 : from.v2);
+        Vector2dd dir = ((i & 1) * 2.0 - 1.0) * (i & 2 ? from.v1 : from.v2);
         if(!getNearest(seed, dir, nwse[i], d_nwse[i]))
             return false;
         usedCorners[nwse[i]] = 1;
     }
     for (int i = 0; i < 4; ++i)
     {
-        auto dir = ((i & 1) * 2.0 - 1.0) * from.v2;
+        Vector2dd dir = ((i & 1) * 2.0 - 1.0) * from.v2;
         if (!getNearest(nwse[2+((i & 2) >> 1)], dir, corn[i], d_corn[i]))
             return false;
         usedCorners[corn[i]] = 1;
@@ -236,11 +236,12 @@ bool ChessBoardAssembler::BoardExpander::initBoard(int seed)
                 continue;
             mindist = std::min(mindist, !(corners[board.cornerIdx[i][j]].pos - corners[board.cornerIdx[1][1]].pos));
         }
-    if (mindist < assembler->minSeedDistance)
+    if (mindist < assembler->minSeedDistance())
         return false;
 
     std::vector<double> dv[2] = {{ d_nwse[0], d_nwse[1] }, { d_nwse[2], d_nwse[3], d_corn[0], d_corn[1], d_corn[2], d_corn[3]}};
-    double s[2] = {0.0}, ssq[2] = {0.0};
+    double s[2]   = {0.0, 0.0};
+    double ssq[2] = {0.0, 0.0};
     for (int i = 0; i < 2; ++i)
     {
         for (auto& v: dv[i])
@@ -262,12 +263,13 @@ bool ChessBoardAssembler::BoardExpander::initBoard(int seed)
 
 bool ChessBoardAssembler::BoardExpander::getNearest(int from_id, corecvs::Vector2dd dir, int& id, double &score)
 {
-    auto& corners = assembler->corners;
-    auto tgPenalty = assembler->seedTgPenalty;
-    auto& from = corners[from_id];
+    std::vector<OrientedCorner>& corners = assembler->corners;
+    double tgPenalty = assembler->seedTgPenalty();
+    OrientedCorner& from = corners[from_id];
 
     double best_dist = 1e100;
-    int best_id = -1, N = (int)corners.size();
+    int best_id = -1;
+    int N = (int)corners.size();
 
     for (int i = 0; i < N; ++i)
     {
@@ -279,7 +281,7 @@ bool ChessBoardAssembler::BoardExpander::getNearest(int from_id, corecvs::Vector
         if ((dir & dirp) < 0.0)
             continue;
 
-        auto dist_proj = dir & dirp;
+        double dist_proj = dir & dirp;
         auto dist_rect = (dirp - dist_proj * dir).l2Metric();
         auto _score = dist_proj + tgPenalty * dist_rect;
 
@@ -329,7 +331,6 @@ bool ChessBoardAssembler::BoardExpander::growBoard()
     board = best;
     usedCorners = bestUsed;
     return true;
-
 }
 
 bool ChessBoardAssembler::BoardExpander::growDir(Direction dir, RectangularGridPattern &dst, std::vector<int> &usedCorners)
@@ -374,14 +375,16 @@ bool ChessBoardAssembler::BoardExpander::growDir(Direction dir, RectangularGridP
 
 corecvs::Vector2dd ChessBoardAssembler::BoardExpander::predict(corecvs::Vector2dd a, corecvs::Vector2dd b, corecvs::Vector2dd c)
 {
-    auto conservativity = assembler->conservativity;
+    double conservativity = assembler->conservativity();
     auto d1 = b - a, d2 = c - b;
     auto alpha1 = atan2(d1[1], d1[0]),
          alpha2 = atan2(d2[1], d2[0]);
     auto alpha = 2.0 * alpha2 - alpha1;
-    auto l1 = d1.l2Metric(), l2 = d2.l2Metric();
 
-    auto res = c + conservativity * (2.0 * l2 - l1) * corecvs::Vector2dd(cos(alpha), sin(alpha));
+    double l1 = d1.l2Metric();
+    double l2 = d2.l2Metric();
+
+    auto res = c + Vector2dd::FromPolar(alpha, conservativity * (2.0 * l2 - l1));
     return res;
 }
 
@@ -390,7 +393,13 @@ void ChessBoardAssembler::BoardExpander::predictor(Direction dir, std::vector<co
     auto& corners = assembler->corners;
     prediction.clear();
     int N;
-    int i[3] = {0}, j[3] = {0}, inc_i = 0, inc_j = 0, h = board.h(), w = board.w();
+    int i[3] = {0,0,0};
+    int j[3] = {0,0,0};
+    int inc_i = 0;
+    int inc_j = 0;
+    int h = board.h();
+    int w = board.w();
+
     switch(dir)
     {
         case Direction::UP:
@@ -457,7 +466,6 @@ bool ChessBoardAssembler::BoardExpander::assignNearest(std::vector<corecvs::Vect
     if (N < M)
         return false;
 
-
     std::vector<std::tuple<double, int, int>> queue;
     queue.reserve(M * N);
     for (int j = 0; j < M; ++j)
@@ -468,9 +476,9 @@ bool ChessBoardAssembler::BoardExpander::assignNearest(std::vector<corecvs::Vect
         }
     }
 
-    size_t total_assigned = 0;
+    int total_assigned = 0;
     int sort_by = M * 3;
-#if 1
+
     for (int ii = 0; ii < N; ++ii)
     {
         if (ii % sort_by == 0)
@@ -490,27 +498,10 @@ bool ChessBoardAssembler::BoardExpander::assignNearest(std::vector<corecvs::Vect
         usedCorners[i] = 1;
         assigned[j] = 1;
         total_assigned++;
-        if (M == total_assigned)
+        if (M == (int)total_assigned)
             break;
 
     }
-#else
-    std::sort(queue.begin(), queue.end(), [](const std::tuple<double, int, int> &a, const std::tuple<double, int, int> &b) { return a < b; });
-    for (auto &T: queue)
-    {
-        int i = unused[std::get<1>(T)], j = std::get<2>(T);
-        if (usedCorners[i])
-            continue;
-        if (assigned[j])
-            continue;
-        assignment[j] = i;
-        usedCorners[i] = 1;
-        assigned[j] = 1;
-        total_assigned++;
-        if (M == total_assigned)
-            break;
-    }
-#endif
     return true;
 }
 

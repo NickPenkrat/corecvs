@@ -2,27 +2,29 @@
 
 using namespace corecvs;
 
-SettingsSetter::SettingsSetter(QString const & fileName, QString _root) :
-    mRoot(_root)
+SettingsSetter::SettingsSetter(QString const & fileName, QString _root)
+    : mAllocated(true)
+    , mRoot(_root)
 {
     mSettings = new QSettings(fileName, QSettings::IniFormat);
     if (!mRoot.isEmpty())
         mSettings->beginGroup(mRoot);
 }
 
-SettingsSetter::SettingsSetter(QSettings *settings, QString _root ) :
-	mSettings(settings),
-	mRoot(_root)
+SettingsSetter::SettingsSetter(QSettings *settings, QString _root )
+    : mAllocated(false)
+    , mSettings(settings)
+    , mRoot(_root)
 {
     if (!mRoot.isEmpty())
         mSettings->beginGroup(mRoot);
 }
 
-
 SettingsSetter::~SettingsSetter()
 {
-    if (!mRoot.isEmpty())
+    if (!mRoot.isEmpty()) {
         mSettings->endGroup();
+    }
     delete_safe(mSettings);
 }
 

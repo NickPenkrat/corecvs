@@ -2,6 +2,7 @@
   <include name="parameters.xml"/>
 
 
+  <!--
   <class name="Lens Distortion Model Parameters" description="Lens Distortion Model Parameters">
     <comment>
  * \ingroup distcorrect
@@ -47,8 +48,8 @@
     <field type="double"    name="Normalizing Focal" defaultValue="1"/>
 
 
-    <!-- <field type="double"    name="Normalize Focal" defaultValue="1.0"/> -->
-  </class>
+</class>
+-->
 
 <!-- class name="Camera Extirinsic Parameteres" description="">
     <field type="double" name="yaw"            defaultValue="0.0"    />
@@ -60,34 +61,7 @@
     <field type="double" name="posZ"            defaultValue="0.0"    />
 </class> -->
 
-  <enum name="Checkerboard Detection Algorithm">
-    <item name="Homebrew Detector" id="0" />
-    <item name="OpenCV Detector"   id="1" />
-  </enum>
 
-  <class name="Checkerboard Detection Parameters">  
-    <field type="bool"         name="Use Undistortion"      defaultValue="true"/>
-
-    <field type="Checkerboard Detection Algorithm" name="Algorithm" defaultValue="0" />
-
-
-    <field type="ImageChannel" name="Channel"            defaultValue="3"   />
-    <field type="double"       name="Cell Size Hor"      defaultValue="50"   suffix="mm" />
-    <field type="double"       name="Cell Size Vert"     defaultValue="50"   suffix="mm" />
-
-    <field type="bool"         name="Clean existing"     defaultValue="true" />
-
-    <field type="int"          name="Precise Diameter"   defaultValue="50"      min="0"   max="999999"  />
-    <field type="int"          name="Iteration count"    defaultValue="50"      min="1"   max="999999"  />
-    <field type="double"       name="Min accuracy"       defaultValue="0.01"    min="0.0" max="999999" suffix="px" decimals="4"/>
-
-
-    <field type="bool"         name="Partial Board"       defaultValue="true"/>
-    <field type="bool"         name="Fast board Speedup"  defaultValue="true"/>
-    <field type="bool"         name="Draw SGFs on boards" defaultValue="true"/>
-    <field type="bool"         name="Skip undistorted with no distorted board" defaultValue="false"/>
-
-  </class>
 
   <enum name="Line Distortion Estimator Cost">
     <item name="Line Deviation Cost" id="0" />

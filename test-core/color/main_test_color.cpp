@@ -15,7 +15,6 @@
 #include "rgb24Buffer.h"
 #include "rgbColor.h"
 
-using namespace std;
 using namespace corecvs;
 
 TEST(Color, testRGB)

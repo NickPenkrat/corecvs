@@ -35,47 +35,31 @@ win32 {
 #
 # include sources and headers for each subdir
 #
-include(alignment/alignment.pri)
-include(assignment/assignment.pri)
-include(automotive/automotive.pri)
-include(boosting/boosting.pri)
-include(buffers/buffers.pri)
-include(cammodel/cammodel.pri)
-include(fileformats/fileformats.pri)
-include(filters/filters.pri)
-include(function/function.pri)
-include(geometry/geometry.pri)
-include(kalman/kalman.pri)
-include(kltflow/kltflow.pri)
-include(math/math.pri)
-include(meanshift/meanshift.pri)
-include(rectification/rectification.pri)
-include(reflection/reflection.pri)
-include(segmentation/segmentation.pri)
-include(stats/stats.pri)
-include(tbbwrapper/tbbwrapper.pri)
-include(utils/utils.pri)
-include(clustering3d/clustering3d.pri)
-include(features2d/features2d.pri)
-include(patterndetection/patterndetection.pri)
-include(cameracalibration/cameracalibration.pri)
-include(graphs/graphs.pri)
-include(reconstruction/reconstruction.pri)
-include(polynomial/polynomial.pri)
+for (MODULE, CORE_SUBMODULES) {
+    !build_pass: message (Adding core submodule $${MODULE})
+    include($${MODULE}/$${MODULE}.pri)
+}
+
 
 include(xml/generated/generated.pri)
 
-
-
-OTHER_FILES +=            \
-    xml/parameters.xml    \
-    xml/bufferFilters.xml \
-    xml/clustering1.xml   \
-    xml/filterBlock.xml   \
-    xml/precise.xml       \
-    xml/distortion.xml    \
+OTHER_FILES +=              \
+    xml/parameters.xml      \
+    xml/bufferFilters.xml   \
+    xml/clustering1.xml     \
+    xml/filterBlock.xml     \
+    xml/precise.xml         \
+    xml/distortion.xml      \
+    xml/patternDetector.xml \
 
 OTHER_FILES +=            \
     ../tools/generator/regen-core.sh \
     ../tools/generator/h_stub.sh \
 
+# msvc floating point model: "strict" helped to unify results on different compiler versions
+# For more info look at: https://msdn.microsoft.com/en-us/library/e7s85ffb%28v=vs.120%29.aspx
+#
+win32-msvc* {
+    QMAKE_CFLAGS   += /fp:strict
+    QMAKE_CXXFLAGS += /fp:strict
+}

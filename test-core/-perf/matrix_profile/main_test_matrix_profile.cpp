@@ -20,9 +20,7 @@
 #include "matrix.h"
 #include "preciseTimer.h"
 
-using namespace std;
 using namespace corecvs;
-
 
 const static unsigned POLUTING_INPUTS = 20;
 const static unsigned LIMIT = 5;
@@ -83,14 +81,17 @@ void printResult(double gflops, uint64_t delay, int runs)
 
 TEST(MatrixProfile, testMulSize3)
 {
-    int  sizes    [] = { 1024, 2048, 4096, 16384 };
-    int  polca    [] = {   20,   20,    5,     1 };
+//    int  sizes    [] = { 1024, 2048, 4096, 16384 };
+
+    int  sizes    [] = { 1000, 2000, 4000, 16000 };
+
+    int  polca    [] = {   10,   20,    5,     1 };
     int  runs     [] = {   10,    5,    2,     2 };
 
     bool runsimple[] = { true, false, false, false };
     bool runslow  [] = { true, true , false, false };
     bool runour   [] = { true, true ,  true, false };
-    bool runfast  [] = { true, true ,  true,  true };
+    bool runfast  [] = { true, true ,  true, false };   // 16K * 16K - skip at all
 
 
     printHeader();
@@ -208,10 +209,9 @@ TEST(MatrixProfile, testMulSize3)
                 AB = Matrix::multiplyBlas(A, B);
             }
             uint64_t delayBlas = start.usecsToNow();
-           printResult(gflop, delayBlas, LIMIT);
-#endif
+            printResult(gflop, delayBlas, LIMIT);
+#endif // WITH_BLAS
         }
-
 
         for (unsigned i = 0; i < POLUTING_INPUTS; i++) {
             delete_safe(input1[i]);

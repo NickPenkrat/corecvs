@@ -16,7 +16,7 @@
 
 namespace corecvs {
 
-class Doublex4
+class ALIGN_DATA(32) Doublex4
 {
 public:
     __m256d data;
@@ -55,6 +55,11 @@ public:
         return Doublex4(_mm256_broadcast_sd(data_ptr));
     }
 
+    void load(double * const data)
+    {
+        this->data = _mm256_loadu_pd(data);
+    }
+
     void save(double * const data) const
     {
         _mm256_storeu_pd(data, this->data);
@@ -91,6 +96,7 @@ public:
         return Doublex4(_mm256_sqrt_pd(this->data));
     }
 
+    /* Something stupid happens here. */
 template<int idx>
     double getDouble() const
     {
@@ -104,6 +110,8 @@ template<int idx>
         switch (idx) {
             case 0: return getDouble<0>();
             case 1: return getDouble<1>();
+            case 2: return getDouble<2>();
+            case 3: return getDouble<3>();
         }
         return 0;
     }

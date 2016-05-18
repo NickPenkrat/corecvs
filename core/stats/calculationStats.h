@@ -11,13 +11,14 @@
 
 #include <limits>
 #include <stdint.h>
+#include <string.h>
 
 #include <map>
 #include <string>
+#include <deque>
 
 #include "global.h"
 
-#include "string.h"
 #include "fixedVector.h"
 #include "preciseTimer.h"
 #include "calculationStats.h"
@@ -26,11 +27,13 @@ namespace corecvs {
 
 using std::map;
 using std::string;
+using std::deque;
 
 /**
  *  Single statistics entry
  **/
-struct SingleStat {
+struct SingleStat
+{
     enum Type {
         UNKNOWN,
         TIME,
@@ -53,8 +56,8 @@ struct SingleStat {
     {}
 };
 
-struct UnitedStat {
-
+struct UnitedStat
+{
     SingleStat::Type type;
 
     uint64_t last;
@@ -97,19 +100,48 @@ struct UnitedStat {
 class Statistics
 {
 public:
+    struct State
+    {
+        State(const string& prefix, PreciseTimer helperTimer) : mPrefix(prefix), mHelperTimer(helperTimer)
+        {}
+
+        string       mPrefix;
+        PreciseTimer mHelperTimer;
+    };
+
+    Statistics() {}
+    ~Statistics() {}
+
+    std::deque<State> mStack;
+
+    Statistics* enterContext(const string& prefix)
+    {
+        mStack.push_back(State(mPrefix, mHelperTimer));
+        mPrefix = prefix + mPrefix;
+        return this;
+    }
+
+    void leaveContext()
+    {
+        State state = mStack.back();
+        mStack.pop_back();
+        mPrefix      = state.mPrefix;
+        mHelperTimer = state.mHelperTimer;
+    }
+
     /* New interface */
-    map<string, SingleStat> values;
-    string prefix;
-    PreciseTimer helperTimer;
+    map<string, SingleStat> mValues;
+    string                  mPrefix;
+    PreciseTimer            mHelperTimer;
 
     void startInterval()
     {
-        helperTimer = PreciseTimer::currentTime();
+        mHelperTimer = PreciseTimer::currentTime();
     }
 
     void endInterval(const string &str)
     {
-        values[prefix + str] = SingleStat(helperTimer.usecsToNow());
+        mValues[mPrefix + str] = SingleStat(mHelperTimer.usecsToNow());
     }
 
     void resetInterval(const string &str)
@@ -120,12 +152,12 @@ public:
 
     void setTime(const string &str, uint64_t delay)
     {
-        values[prefix + str] = SingleStat(delay);
+        mValues[mPrefix + str] = SingleStat(delay);
     }
 
     void setValue(const string &str, uint64_t value)
     {
-        values[prefix + str] = SingleStat(value, SingleStat::UNSIGNED);
+        mValues[mPrefix + str] = SingleStat(value, SingleStat::UNSIGNED);
     }
 };
 
@@ -140,31 +172,29 @@ public:
     class OrderFilter
     {
     public:
-        virtual bool filter(const string &/*input*/)
+        virtual bool filter(const string &/*input*/) const
         {
             return false;
         }
         virtual ~OrderFilter() {}
     };
 
-    class StringFilter : public OrderFilter {
-    public:
+    class StringFilter : public OrderFilter
+    {
         string mFilterString;
-
-        StringFilter(string filterString) :
-            mFilterString(filterString)
+    public:
+        StringFilter(const string & filterString) : mFilterString(filterString)
         {}
 
-        virtual bool filter(const string &input)
+        virtual bool filter(const string &input) const
         {
 //            printf("%s =? %s\n", input.c_str(), mFilterString.c_str());
             return (input == mFilterString);
         }
-
     };
 
 
-    StatsMap sumValues;
+    StatsMap              mSumValues;
     // TODO: it's unsafe to copy this
     vector<OrderFilter *> mOrderFilters;
 
@@ -172,29 +202,26 @@ public:
 
     virtual void reset()
     {
-        sumValues.clear();
+        mSumValues.clear();
     }
 
-    virtual void addSingleStat(string name, const SingleStat &stat)
+    virtual void addSingleStat(const string& name, const SingleStat &stat)
     {
         UnitedStat unitedStat;
-        map<string, UnitedStat>::iterator uit;
-        uit = sumValues.find(name);
-        if (uit != sumValues.end())
+        map<string, UnitedStat>::iterator uit = mSumValues.find(name);
+        if (uit != mSumValues.end())
         {
            unitedStat = uit->second;
         }
-
         unitedStat.addValue(stat);
-        sumValues[name] = unitedStat;
+        mSumValues[name] = unitedStat;
     }
 
-
-    virtual void addStatistics(Statistics &stats)
+    virtual void addStatistics(const Statistics &stats)
     {
         /* New style */
-        map<string, SingleStat>::iterator it;
-        for (it = stats.values.begin(); it != stats.values.end(); ++it )
+        map<string, SingleStat>::const_iterator it;
+        for (it = stats.mValues.begin(); it != stats.mValues.end(); ++it)
         {
             string name = it->first;
             SingleStat stat = it->second;
@@ -206,7 +233,7 @@ public:
     {
         StatsMap::const_iterator uit;
         int maxCaptionLen = 0;
-        for (uit = this->sumValues.begin(); uit != this->sumValues.end(); ++uit )
+        for (uit = mSumValues.begin(); uit != mSumValues.end(); ++uit)
         {
             int len = (int)uit->first.length();
             if (len > maxCaptionLen)
@@ -226,22 +253,18 @@ template <class StreamType>
         int maxCaptionLen = maximumCaptionLength();
 
         /* Flags */
-        int size = (int)this->sumValues.size();
-        vector<bool> isPrinted(size, false);
+        vector<bool> isPrinted(mSumValues.size(), false);
 
         int printCount = 0;
         /* First show all filters */
         //printf("Totaly we have %d filters\n", mOrderFilters.size());
-        for (unsigned i = 0; i < mOrderFilters.size(); i++)
+        for (const OrderFilter *filter : mOrderFilters)
         {
-            OrderFilter *filter = mOrderFilters[i];
             int j = 0;
-            for (uit = this->sumValues.begin(); uit != this->sumValues.end(); ++uit, j++ )
+            for (uit = mSumValues.begin(); uit != mSumValues.end(); ++uit, j++)
             {
                 if (isPrinted[j])
-                {
                     continue;
-                }
 
                 if (filter->filter(uit->first))
                 {
@@ -253,15 +276,14 @@ template <class StreamType>
         }
 
         int j = 0;
-        for (uit = this->sumValues.begin(); uit != this->sumValues.end(); ++uit, j++ )
+        for (uit = mSumValues.begin(); uit != mSumValues.end(); ++uit, j++)
         {
-            if (isPrinted[j]) {
+            if (isPrinted[j])
                 continue;
-            }
 
             stream.printUnitedStat(uit->first, maxCaptionLen, uit->second, printCount);
             printCount++;
-        }        
+        }
     }
 
     class SimplePrinter {
@@ -279,7 +301,6 @@ template <class StreamType>
             printf("%-20s : %7" PRIu64 "\n",
                 name.c_str(),
                 stat.sum / stat.number);
-
          }
     };
 
@@ -312,7 +333,6 @@ template <class StreamType>
                 length,
                 name.c_str(),
                 stat.sum / stat.number);
-
          }
     };
 
@@ -329,32 +349,27 @@ template <class StreamType>
     public:
         ostream &outStream;
 
-        AdvancedSteamPrinter(ostream &stream) :
-            outStream(stream)
-        {
-
-        }
+        AdvancedSteamPrinter(ostream &stream) : outStream(stream)
+        {}
 
         void printUnitedStat(const string &name, int length, const UnitedStat &stat, int /*lineNum*/)
         {
             /*Well I'm just lazy*/
             char output[1000] = "";
-
-            if (stat.type == SingleStat::TIME)
-            {
-                snprintf(output, CORE_COUNT_OF(output),
+            if (stat.type == SingleStat::TIME) {
+                snprintf2buf(output,
                     "%-*s : %7" PRIu64 " us : %7" PRIu64 " ms : %7" PRIu64 " us  \n",
                     length,
                     name.c_str(),
                     stat.sum / stat.number,
                     ((stat.sum / stat.number) + 500) / 1000,
                     (stat.min == std::numeric_limits<uint64_t>::max()) ? 0 : stat.min);
-
             } else {
-                snprintf( output, CORE_COUNT_OF(output),
-                    "%-*s : %7" PRIu64 "\n",
+                snprintf2buf(output,
+                    "%-*s : %7" PRIu64 " %7" PRIu64 "\n",
                     length,
                     name.c_str(),
+                    stat.last,
                     stat.sum / stat.number);
             }
             outStream << output << std::flush;
@@ -363,10 +378,10 @@ template <class StreamType>
 
     virtual void printAdvanced(ostream &stream)
     {
-        printf("=============================================================\n");
+        stream << "=============================================================\n";
         AdvancedSteamPrinter printer(stream);
         printStats(printer);
-        printf("=============================================================\n");
+        stream << "=============================================================\n";
     }
 
 
@@ -439,5 +454,5 @@ template <class StreamType>
 
 
 } //namespace corecvs
-#endif /* CORECALCULATIONSTATS_H_ */
 
+#endif /* CORECALCULATIONSTATS_H_ */

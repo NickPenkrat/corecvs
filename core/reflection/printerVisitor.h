@@ -1,7 +1,9 @@
 #ifndef PRINTER_VISITOR_OLD_H_
 #define PRINTER_VISITOR_OLD_H_
 
+#include <stdint.h>
 #include <iostream>
+#include <sstream>
 
 #include "reflection.h"
 
@@ -13,6 +15,11 @@ using std::cout;
 
 class PrinterVisitor
 {
+public:
+    bool isSaver () { return false;}
+    bool isLoader() { return false;}
+
+
 public:
     std::ostream *stream;
     int indentation;
@@ -52,6 +59,19 @@ public:
         indentation -= dIndent;
     }
 
+    template <typename innerType>
+    void visit(std::vector<innerType> &field, const char* arrayName)
+    {
+        indentation += dIndent;
+        for (size_t i = 0; i < field.size(); i++)
+        {
+            std::ostringstream ss;
+            ss << arrayName << "[" <<  i << "]";
+            visit<innerType>(field[i], ss.str().c_str());
+        }
+        indentation -= dIndent;
+    }
+
 template <typename inputType, typename reflectionType>
     void visit(inputType &field, const reflectionType * fieldDescriptor)
     {
@@ -64,16 +84,37 @@ template <typename inputType, typename reflectionType>
     }
 
 template <class Type>
-    void visit(Type &field, Type /*defaultValue*/, const char * fieldName)
-	{
+    void visit(Type &field, const char * fieldName)
+    {
         if (stream != NULL) {
             *stream << indent() << fieldName << ":" << std::endl;
         }
         indentation += dIndent;
-		field.accept(*this);
+        field.accept(*this);
         indentation -= dIndent;
-	}
+    }
 
+    template <typename Type, typename std::enable_if<!(std::is_enum<Type>::value || (std::is_arithmetic<Type>::value && !std::is_same<bool, Type>::value)), int>::type foo = 0>
+    void visit(Type &field, Type /*defaultValue*/, const char * fieldName)
+    {
+        visit<Type>(field, fieldName);
+    }
+
+    template <typename type, typename std::enable_if<std::is_arithmetic<type>::value && !std::is_same<bool, type>::value, int>::type foo = 0>
+    void visit(type &field, type, const char *fieldName)
+    {
+        if (stream == NULL) return;
+        *stream << indent() << fieldName << "=" << field << std::endl;
+    }
+
+    template <typename type, typename std::enable_if<std::is_enum<type>::value, int>::type foo = 0>
+    void visit(type &field, type defaultValue, const char *fieldName)
+    {
+        using U = typename std::underlying_type<type>::type;
+        U u = static_cast<U>(field);
+        visit(u, static_cast<U>(defaultValue), fieldName);
+        field = static_cast<type>(u);
+    }
 };
 
 
@@ -106,16 +147,11 @@ void PrinterVisitor::visit<std::string, StringField>(std::string &field, const S
 template <>
 void PrinterVisitor::visit<double, DoubleVectorField>(std::vector<double> &field, const DoubleVectorField *fieldDescriptor);
 
-/* Old style */
-
-template <>
-void PrinterVisitor::visit<int>(int &doubleField, int defaultValue, const char *fieldName);
-
-template <>
-void PrinterVisitor::visit<double>(double &doubleField, double defaultValue, const char *fieldName);
-
-template <>
-void PrinterVisitor::visit<float>(float &floatField, float defaultValue, const char *fieldName);
+/**
+ * Old Style
+ *
+ * this methods can be made universal, but are separated to make it a bit more controllable
+ **/
 
 template <>
 void PrinterVisitor::visit<bool>(bool &boolField, bool defaultValue, const char *fieldName);

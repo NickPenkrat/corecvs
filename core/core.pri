@@ -6,65 +6,77 @@
 
 COREDIR=$$PWD
 
-CORE_INCLUDEPATH = \
-    $$COREDIR/alignment \
-#   $$COREDIR/alignment/camerasCalibration \    # used via path
-    $$COREDIR/assignment \
-    $$COREDIR/automotive \
-#   $$COREDIR/automotive/simulation \           # not used, obsolete
-    $$COREDIR/boosting \
-    $$COREDIR/buffers \
-#   $$COREDIR/buffers/converters \              # not used
+#
+# Switching submodules on and off is not supported. However with some you can try. Risk is yours
+#
+CORE_SUBMODULES =       \
+    alignment           \
+    assignment          \
+    automotive          \
+    boosting            \
+    buffers             \
+    cammodel            \
+    fileformats         \
+    filesystem          \
+    filters             \
+    function            \
+    geometry            \
+    kalman              \
+    kltflow             \
+    math                \
+    meta                \
+    meanshift           \
+    rectification       \
+    reflection          \
+    segmentation        \
+    stats               \
+    tbbwrapper          \
+    utils               \
+    clustering3d        \
+    features2d          \
+    patterndetection    \
+    cameracalibration   \
+    graphs              \
+    polynomial          \
+    camerafixture       \
+
+with_blas {
+    CORE_SUBMODULES += reconstruction
+}
+else {
+    !build_pass: message (There is no activated BLAS! The module core/reconstruction is disabled)
+}
+
+
+for (MODULE, CORE_SUBMODULES) {
+    CORE_INCLUDEPATH += $${COREDIR}/$${MODULE}
+}
+
+# Some modules want to export more then one directory with includes. Add them here
+CORE_INCLUDEPATH += \
     $$COREDIR/buffers/fixeddisp \
     $$COREDIR/buffers/flow \
     $$COREDIR/buffers/histogram \
     $$COREDIR/buffers/kernels \
-#   $$COREDIR/buffers/kernels/fastconverter \   # not used ?
     $$COREDIR/buffers/kernels/fastkernel \
     $$COREDIR/buffers/memory \
     $$COREDIR/buffers/morphological \
     $$COREDIR/buffers/rgb24 \
-#   $$COREDIR/buffers/voxels \                  # not used
-    $$COREDIR/cammodel \
-#   $$COREDIR/clegacy \                         # not used ?
-#   $$COREDIR/clegacy/math \                    # not used
-    $$COREDIR/fileformats \
-    $$COREDIR/filters \
     $$COREDIR/filters/blocks \
-    $$COREDIR/function \
-    $$COREDIR/geometry \
-    $$COREDIR/kalman \
-    $$COREDIR/kltflow \
-    $$COREDIR/math \
-#   $$COREDIR/math/avx \                        # not used
-#   $$COREDIR/math/fixed \                      # not used
     $$COREDIR/math/generic \
     $$COREDIR/math/matrix \
-#   $$COREDIR/math/neon \
     $$COREDIR/math/sse \
     $$COREDIR/math/vector \
-    $$COREDIR/meanshift \
-    $$COREDIR/rectification \
-    $$COREDIR/reflection \
-    $$COREDIR/segmentation \
-#   $$COREDIR/serializer \                      # not used
-    $$COREDIR/stats \
-    $$COREDIR/tbbwrapper \
-    $$COREDIR/tinyxml \
-    $$COREDIR/utils \
     $$COREDIR/utils/visitors \
     $$COREDIR/clustering3d \
     $$COREDIR/xml \
-    $$COREDIR/xml/generated \                   # to allow including of generated headers without directory name prefix
-    $$COREDIR/features2d \
-    $$COREDIR/patterndetection \
-    $$COREDIR/cameracalibration \
-    $$COREDIR/graphs \
-    $$COREDIR/reconstruction \
-    $$COREDIR/polynomial
+    $$COREDIR/xml/generated \
+    $$COREDIR/tinyxml \
+    $$COREDIR/../wrappers/cblasLapack \		# some of core's math algorithms use it
 
 
 INCLUDEPATH += $$CORE_INCLUDEPATH
+DEPENDPATH  += $$CORE_INCLUDEPATH
 
 exists(../../../config.pri) {
     COREBINDIR = $$COREDIR/../../../bin
@@ -96,3 +108,12 @@ contains(TARGET, cvs_core): !contains(TARGET, cvs_core_restricted) {
     }
     PRE_TARGETDEPS += $$COREBINDIR/$$CORE_TARGET_NAME
 }
+
+# The filesystem module needs this
+with_unorthodox {
+    !win32  {
+        LIBS += -lstdc++fs
+    }
+    DEFINES += CORE_UNSAFE_DEPS
+}
+

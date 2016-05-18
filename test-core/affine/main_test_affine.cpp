@@ -8,7 +8,7 @@
  * \ingroup autotest  
  */
 #ifndef TRACE
-#define TRACE
+//#define TRACE
 #endif
 
 #include <vector>
@@ -24,7 +24,6 @@
 #include "preciseTimer.h"
 #include "eulerAngles.h"
 
-using namespace std;
 using namespace corecvs;
 
 TEST(Affine, testRotations)
@@ -46,6 +45,12 @@ TEST(Affine, testRotations)
     CORE_ASSERT_TRUE_P(t1q.notTooFar(r1, 1e-8), (" Y rotation returned a mistake with Quaternion Affine"));
     CORE_ASSERT_TRUE_P(t2q.notTooFar(r1, 1e-8), (" Y rotation returned a mistake with Clean Quaternion"));
     CORE_ASSERT_TRUE_P(t3q.notTooFar(r1, 1e-8), (" Y rotation returned a mistake with Clean Quaternion"));
+}
+
+TEST(Affine, foo)
+{
+    auto Q = Quaternion::FromMatrix(corecvs::Matrix33(0, -1, 0, 0, 0, -1, 1, 0, 0));
+    std::cout << Q.toMatrix() << std::endl;
 }
 
 TEST(Affine, testMatrixToQuaternion)
@@ -79,66 +84,13 @@ TEST(Affine, testMatrixToQuaternion)
         Quaternion Q = Quaternion::Rotation(axis[i], angle[i]);
         Matrix33 M = Q.toMatrix();
         Quaternion Q1 = Quaternion::FromMatrix(M);
-        cout << "Case " << i << endl;
-        cout << Q  << " l= " << Q .l2Metric() << endl;
+        std::cout << "Case " << i << std::endl;
+        std::cout << Q << " l= " << Q.l2Metric() << std::endl;
         //cout << M << endl;
-        cout << Q1 << " l= " << Q1.l2Metric() << endl;
+        std::cout << Q1 << " l= " << Q1.l2Metric() << std::endl;
         ASSERT_TRUE(Q.notTooFar(Q1, 1e-7));
     }
 
-}
-
-TEST(Affine, profileHamilton)
-{
-    static unsigned LIMIT = 10000;
-    static unsigned INPUTS = 1000;
-
-    vector<Quaternion> muls(INPUTS);
-
-    printf("Testing unitary mul\n");
-    for (unsigned i = 0; i < INPUTS; i++)
-    {
-        Vector3dd x(
-                (rand() % 4000) - 2000,
-                (rand() % 4000) - 2000,
-                (rand() % 4000) - 2000);
-        if (!x == 0 ) x = Vector3dd(1.0);
-        x = x / !x;
-        muls[i] = Quaternion(x, ((rand() % 4000) / 2000.0 * M_PI));
-    }
-
-    PreciseTimer timer;
-    uint64_t delay;
-
-    timer = PreciseTimer::currentTime();
-    Quaternion a;
-
-    a = Quaternion(0.5, 0.5, 0.5, 0.5);
-    for (unsigned i = 0; i < LIMIT; i++)
-    {
-        a = a / !a;
-        for (unsigned j = 0; j < INPUTS; j++)
-        {
-            a = a ^ muls[j];
-        }
-    }
-    delay = timer.usecsToNow();
-    printf("Classic   : %8" PRIu64 "us\n", delay); fflush(stdout);
-    cout << a << endl;
-
-    timer = PreciseTimer::currentTime();
-    a = Quaternion(0.5, 0.5, 0.5, 0.5);
-    for (unsigned i = 0; i < LIMIT; i++)
-    {
-        a = a / !a;
-        for (unsigned j = 0; j < INPUTS; j++)
-        {
-            a = hamilton1(a, muls[j]);
-        }
-    }
-    delay = timer.usecsToNow();
-    printf("Additions: %8" PRIu64 "us\n", delay); fflush(stdout);
-    cout << a << endl;
 }
 
 TEST(Affine, testEulerAngles)
@@ -149,14 +101,14 @@ TEST(Affine, testEulerAngles)
     CameraAnglesLegacy anglesCam1 = CameraAnglesLegacy::FromQuaternion(quatCam);
 
 
-    cout << "A:(" << anglesCam.pitch() << ", "
-                  << anglesCam.yaw()   << ", "
-                  << anglesCam.roll()  << ")" << endl;
+    std::cout << "A:("  << anglesCam.pitch() << ", "
+                        << anglesCam.yaw()   << ", "
+                        << anglesCam.roll() << ")" << std::endl;
 
-    cout << "M:" << endl << matrixCam << endl;
-    cout << "Q:" << endl << quatCam << endl;
+    std::cout << "M:"   << std::endl << matrixCam << std::endl;
+    std::cout << "Q:"   << std::endl << quatCam << std::endl;
 
-    cout << "A:(" << anglesCam1.pitch() << ", "
-                  << anglesCam1.yaw()   << ", "
-                  << anglesCam1.roll()  << ")" << endl;
+    std::cout << "A:("  << anglesCam1.pitch() << ", "
+                        << anglesCam1.yaw()   << ", "
+                        << anglesCam1.roll() << ")" << std::endl;
 }

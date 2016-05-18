@@ -18,7 +18,7 @@ class Polynomial : protected std::vector<double>
 {
 public:
     double&  operator[](const size_t &power);
-    const double   operator[](const size_t &power) const;
+    double   operator[](const size_t &power) const;
     const double* data() const;
     /*
      * Horner-scheme evaluator
@@ -66,7 +66,9 @@ class PolynomialMatrix : public corecvs::AbstractBuffer<Polynomial, int32_t>
 public:
     PolynomialMatrix(int h = 0, int w = 0, const Polynomial& poly = 0.0);
     corecvs::Matrix operator() (const double &x) const;
+#ifdef WITH_BLAS
     Polynomial det(const size_t requiredPower) const;
+#endif
     Polynomial& a(int y, int x) { return element(y, x); }
     Polynomial  a(int y, int x) const { return element(y, x); }
 };

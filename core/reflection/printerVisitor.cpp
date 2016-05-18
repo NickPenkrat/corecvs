@@ -72,31 +72,10 @@ void PrinterVisitor::visit<double, DoubleVectorField>(std::vector<double> &field
 /* Old style visitor */
 
 template <>
-void PrinterVisitor::visit<int>(int &intField, int /*defaultValue*/, const char *fieldName)
-{
-    if (stream == NULL) return;
-    *stream << indent() << fieldName << "=" << intField << endl;
-}
-
-template <>
-void PrinterVisitor::visit<double>(double &doubleField, double /*defaultValue*/, const char *fieldName)
-{
-    if (stream == NULL) return;
-    *stream << indent() << fieldName << "=" << doubleField << endl;
-}
-
-template <>
-void PrinterVisitor::visit<float>(float &floatField, float /*defaultValue*/, const char *fieldName)
-{
-    if (stream == NULL) return;
-    *stream << indent() << fieldName << "=" << floatField << endl;
-}
-
-template <>
 void PrinterVisitor::visit<bool>(bool &boolField, bool /*defaultValue*/, const char *fieldName)
 {
     if (stream == NULL) return;
-    *stream << indent() << fieldName << "=" << boolField << endl;
+    *stream << indent() << fieldName << "=" << (boolField ? "true" : "false") << endl;
 }
 
 template <>

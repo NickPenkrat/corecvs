@@ -4,17 +4,7 @@
 #include "matrix.h"
 #include "vector.h"
 
-#ifdef WITH_BLAS
-# ifdef WITH_MKL
-#  include <mkl.h>
-#  include <mkl_lapacke.h>
-# else
-#  include <cblas.h>
-#  include <lapacke.h>
-# endif
-#else
-# error Cannot build polynomial solver without BLAS/LAPACK/MKL
-#endif
+#include "cblasLapackeWrapper.h"
 
 const double corecvs::PolynomialSolver::RELATIVE_TOLERANCE = 1e-9;
 
@@ -34,6 +24,8 @@ double corecvs::PolynomialSolver::evaluate(const double* coeff, const double &x,
 template<>
 size_t corecvs::PolynomialSolver::solve_imp<1>(const double* coeff, double* roots, const size_t &degree)
 {
+    CORE_UNUSED(degree);
+
     if (std::abs(coeff[1]) < RELATIVE_TOLERANCE * coeff[0])
         return 0;
 
@@ -45,6 +37,8 @@ size_t corecvs::PolynomialSolver::solve_imp<1>(const double* coeff, double* root
 template<>
 size_t corecvs::PolynomialSolver::solve_imp<2>(const double* coeff, double* roots, const size_t &degree)
 {
+    CORE_UNUSED(degree);
+
     double a = coeff[2], b = coeff[1], c = coeff[0];
 
     double b2 = b * b;
@@ -81,7 +75,12 @@ size_t corecvs::PolynomialSolver::solve(const double* coeff, double* roots, size
         return solve_imp<2>(coeff, roots, degree);
     if (degree == 1)
         return solve_imp<1>(coeff, roots, degree);
+#ifdef WITH_BLAS
     return solve_companion(coeff, roots, degree);
+#else
+	CORE_ASSERT_TRUE_S(false);
+	return 0;
+#endif
 }
 
 void corecvs::PolynomialSolver::solve(const corecvs::Polynomial &poly, std::vector<double> &roots)
@@ -90,6 +89,7 @@ void corecvs::PolynomialSolver::solve(const corecvs::Polynomial &poly, std::vect
     roots.resize(solve(poly.data(), &roots[0], poly.degree()));
 }
 
+#ifdef WITH_BLAS
 /** Unfortunately I do not know any super-stable closed-form methods for solving
  *  3+-order polynomial equations and do not want to bother with Cardano/Ferrari-like stuff.
  */
@@ -103,7 +103,7 @@ size_t corecvs::PolynomialSolver::solve_companion(const double* coeff, double* r
      * For further reading you may consider 
      * Fernando De Teran Backward stability of polynomial root-finding using Fiedler companion matrices [IMA Journal of Numerical Analysis (2014)]
      */
-    corecvs::Matrix companion(degree, degree);
+    corecvs::Matrix companion((int)degree, (int)degree);
     double max_coeff = coeff[degree];
 #ifndef FIEDLER
     companion.a(0, degree - 1) = -coeff[0] / max_coeff;
@@ -124,7 +124,7 @@ size_t corecvs::PolynomialSolver::solve_companion(const double* coeff, double* r
             }
             else
             {
-                companion.a(i, i - 2) = 1.0;
+                companion.a((int)i, (int)i - 2) = 1.0;
             }
         }
         else
@@ -137,30 +137,31 @@ size_t corecvs::PolynomialSolver::solve_companion(const double* coeff, double* r
             }
             else
             {
-                companion.a(i, i - 1) = -coeff[curr_degree--] / max_coeff;
+                companion.a((int)i, (int)i - 1) = -coeff[curr_degree--] / max_coeff;
                 if (i != degree - 1)
                 {
-                    companion.a(i, i + 1) = -coeff[curr_degree--] / max_coeff;
+                    companion.a((int)i, (int)i + 1) = -coeff[curr_degree--] / max_coeff;
                     if (i != degree - 2)
-                        companion.a(i, i + 2) = 1.0;
+                        companion.a((int)i, (int)i + 2) = 1.0;
                 }
             }
         }
     }
-#endif
+#endif // FIEDLER
 
     // evd
-    corecvs::Vector wr(degree), wi(degree);
-    LAPACKE_dgeev(LAPACK_ROW_MAJOR, 'N', 'N', degree, companion.data, companion.stride, &wr[0], &wi[0], 0, degree, 0, degree);
+    corecvs::Vector wr((int)degree), wi((int)degree);
+    LAPACKE_dgeev(LAPACK_ROW_MAJOR, 'N', 'N', (int)degree, companion.data, companion.stride, &wr[0], &wi[0], 0, (int)degree, 0, (int)degree);
 
     // find non-complex and return
     size_t cnt = 0;
     for (size_t i = 0; i < degree; ++i)
     {
-        if (std::abs(wi[i]) <= std::abs(wr[i]) * RELATIVE_TOLERANCE)
+        if (std::abs(wi[(int)i]) <= std::abs(wr[(int)i]) * RELATIVE_TOLERANCE)
         {
-            roots[cnt++] = wr[i];
+            roots[cnt++] = wr[(int)i];
         }
     }
     return cnt;
-}   
+}
+#endif // WITH_BLAS

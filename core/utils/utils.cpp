@@ -26,9 +26,7 @@ namespace corecvs {
 
 namespace HelperUtils {
 
-
-
-istream &getlineSafe(istream &is, std::string &str)
+istream &getlineSafe(istream &is, string &str)
 {
     istream& stream = getline(is, str);
 
@@ -39,12 +37,58 @@ istream &getlineSafe(istream &is, std::string &str)
     return stream;
 }
 
-bool startsWith(const string &str, const string &prefix)
+string getEnvDirPath(cchar *envVarName)
 {
-    return (str.compare(0, prefix.size(), prefix) == 0);
+    cchar* dir = std::getenv(envVarName);
+    if (dir == NULL || dir[0] == 0) {
+        CORE_ASSERT_FAIL_P(("Missed environment variable %s", envVarName));
+        return "";
+    }
+
+    string toReturn(dir);
+    if (!STR_HAS_SLASH_AT_END(toReturn)) {
+        toReturn += PATH_SEPARATOR;
+    }
+    return toReturn;
 }
 
+static string replaceSlashes(const string& str, const string& oldStr, const string& newStr)
+{
+    size_t pos = 0;
+    string s = str;
+    while ((pos = str.find(oldStr, pos)) != string::npos)
+    {
+        s.replace(pos, oldStr.length(), newStr);
+        pos += newStr.length();
+    }
+    return s;
 }
+
+string toNativeSlashes(const string& str)
+{
+#ifdef WIN32
+    return replaceSlashes(str, "/", PATH_SEPARATOR);
+#else
+    return replaceSlashes(str, "\\", PATH_SEPARATOR);
+#endif
+}
+
+string getFullPath(const string& envDirPath, cchar* path, cchar* filename)
+{
+    CORE_ASSERT_TRUE_S(path != NULL);
+
+    if (filename == NULL)
+        filename = "";
+
+    if (envDirPath.empty())
+        return filename;
+
+    return toNativeSlashes(envDirPath + path + filename);
+}
+
+
+} // namespace HelperUtils
+
 
 #if defined( DSP_TARGET ) || defined( WIN32 ) || defined( WIN64 )
 // It is possible but quite hard and usually not needed to print stack trace on Win32.

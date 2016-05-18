@@ -167,9 +167,14 @@ public:
         //return (11 * r() + 16 * g() + 5 * b()) >> 1;
     }
 
-    inline double yd() const
+    inline double yd() const 
     {
         return 0.299 * r() + 0.587 * g() + 0.114 * b();
+    }
+
+    inline double yh() const
+    {
+        return (116. * r() + 232. * g() + 116. * b()) / 464.;
     }
 
     inline int32_t y() const
@@ -560,7 +565,7 @@ public:
         return RGBTColor(input.x(), input.y(), input.z());
     }
 
-    static RGBTColor FromHSV(uint64_t h, T s, T v)
+    static RGBTColor FromHSV(uint16_t h, T s, T v)
     {
         const uint64_t max = (1 << (sizeof(T) * 8)) - 1;
         int c = ((int)(s * v)) / max;

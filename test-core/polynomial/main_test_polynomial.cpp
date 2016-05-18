@@ -115,6 +115,7 @@ TEST(PolynomialMatrixTest, testEvaluate)
     }
 }
 
+#ifdef WITH_BLAS
 TEST(PolynomialMatrixTest, testDet)
 {
     corecvs::PolynomialMatrix m(3, 3, corecvs::Polynomial::X());
@@ -162,6 +163,7 @@ TEST(PolynomialMatrixTest, testDet)
     ASSERT_NEAR(P[4],-5.0, 1e-9);
     ASSERT_NEAR(P[5], 2.0, 1e-9);
 }
+#endif // WITH_BLAS
 
 
 TEST(PolynomialTest, testInterpolation)
@@ -290,6 +292,7 @@ void coeffByRoots(std::vector<double> &coeff, std::vector<double> &roots)
     }
 }
 
+#ifdef WITH_BLAS
 TEST(PolynomialSolversTest, testPowN)
 {
     // (x - 1)(x - 2)(x - 3)
@@ -311,19 +314,19 @@ TEST(PolynomialSolversTest, testPowN)
     std::vector<double> coeff, roots, roots2;
     for (int i = 0; i < RNG_RETRIES; ++i)
     {
-        int N = (rng() % 5) + 3;
+        uint N = (rng() % 5) + 3;
         if (coeff.size() < N + 1)
         {
             coeff.resize(N + 1);
             roots.resize(N + 1);
         }
-        for (int j = 0; j < N; ++j)
+        for (uint j = 0; j < N; ++j)
             roots[j] = unif(rng);
         roots.resize(N);
         roots2.resize(N);
         coeffByRoots(coeff, roots);
 
-        int cnt = (int)corecvs::PolynomialSolver::solve(&coeff[0], &roots2[0], N);
+        uint cnt = (uint)corecvs::PolynomialSolver::solve(&coeff[0], &roots2[0], N);
         ASSERT_TRUE(cnt == N);
         std::sort(roots.begin(), roots.end());
         std::sort(roots2.begin(), roots2.end());
@@ -358,3 +361,4 @@ TEST(PolynomialSolversTest, testPowN2)
             ASSERT_NEAR(roots[i], roots2[i], REL_SOL_TOLERANCE * std::abs(roots[i]));
     }
 }
+#endif // WITH_BLAS

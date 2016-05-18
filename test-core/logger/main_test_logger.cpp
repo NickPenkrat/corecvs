@@ -9,7 +9,7 @@
  */
 
 #ifndef TRACE
-#define TRACE
+//#define TRACE
 #endif
 
 #include <iostream>
@@ -18,9 +18,6 @@
 #include "global.h"
 
 #include "log.h"
-
-
-using namespace std;
 
 TEST(Logger, testDummy)  // TODO: add log to file and then check its content!
 {
@@ -31,7 +28,7 @@ TEST(Logger, testDummy)  // TODO: add log to file and then check its content!
     Log logger;
     Log::MessageScoped(&logger, Log::LEVEL_ERROR, "A", 0, "F");
 
-    cout << Log::formatted("Here we go %d\n", 1, 2, "three");
+    std::cout << Log::formatted("Here we go %d\n", 1, 2, "three");
 }
 
 class Foo {
@@ -40,30 +37,31 @@ public:
     int data;
 };
 
-inline ostream & operator<<(ostream &os, const Foo &o) {
+inline std::ostream & operator<<(std::ostream &os, const Foo &o) {
     os << "foo data=" << o.data;
     return os;
 }
 
 TEST(Logger, testObjectLog)
 {
-    ostringstream os;
+    std::ostringstream os;
     {
-        LogDrain *prev = Log::mLogDrains[0];
+        //auto &prev = Log::mLogDrains[0];
         {
             Log::mLogDrains.resize(0);
-            Log::mLogDrains.push_back(new StdStreamLogDrain(os));
+            Log::mLogDrains.add(new StdStreamLogDrain(os));
 
             Foo foo1(123);
             Foo foo2(456);
             L_INFO_P("test:") << " foo1:" << foo1 << " foo2:" << foo2; // << std::endl;
         }
         Log::mLogDrains.resize(0);
-        Log::mLogDrains.push_back(prev);
+        //Log::mLogDrains.push_back(prev);
+        Log::staticInit();
     }
 
-    string out(os.str());
-    string checkStr("test: foo1:foo data=123 foo2:foo data=456");
+    std::string out(os.str());
+    std::string checkStr("test: foo1:foo data=123 foo2:foo data=456");
 
     size_t pos = out.find(checkStr);
     //cout << "pos=" << pos << " len:" << checkStr.length() << " len:" << out.length() << endl;

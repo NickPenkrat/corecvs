@@ -14,7 +14,7 @@ double& corecvs::Polynomial::operator[] (const size_t &power)
     return static_cast<std::vector<double>&>(*this)[power];
 }
 
-const double corecvs::Polynomial::operator[] (const size_t &power) const
+double corecvs::Polynomial::operator[] (const size_t &power) const
 {
     return power >= size() ? 0 : static_cast<const std::vector<double>&>(*this)[power];
 }
@@ -171,7 +171,7 @@ corecvs::Polynomial corecvs::Polynomial::Interpolate(const std::vector<double> &
 {
     CORE_ASSERT_TRUE_S(x.size() == Px.size());
     CORE_ASSERT_TRUE_S(x.size());
-    size_t N = x.size() - 1, N1 = x.size();
+    size_t /*N = x.size() - 1,*/ N1 = x.size();
 
     std::vector<double> coeff(N1);
     coeff[0] = Px[0];
@@ -217,6 +217,7 @@ corecvs::Matrix corecvs::PolynomialMatrix::operator() (const double &x) const
     return result;
 }
 
+#ifdef WITH_BLAS
 corecvs::Polynomial corecvs::PolynomialMatrix::det(const size_t requiredPower) const
 {
     std::vector<double> evaluationPoints(requiredPower + 1);
@@ -236,3 +237,4 @@ corecvs::Polynomial corecvs::PolynomialMatrix::det(const size_t requiredPower) c
 
     return corecvs::Polynomial::Interpolate(evaluationPoints, evaluatedValues);
 }
+#endif // WITH_BLAS

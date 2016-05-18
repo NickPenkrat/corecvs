@@ -11,6 +11,8 @@
 #include "vector3d.h"
 #include "quaternion.h"
 #include "matrix33.h"
+#include "line.h"
+
 namespace corecvs {
 
 
@@ -38,17 +40,36 @@ public:
     {
     }
 
+    explicit Affine3D(Vector3dd  _shift) :
+        rotor(LinearType::Identity()),
+        shift(_shift)
+    {
+    }
+
     static LinearType superpose(const LinearType &l1, const LinearType &l2);
+
+    friend std::ostream& operator<< (std::ostream& os, const Affine3D &t)
+    {
+        os << t.shift << " " << t.rotor;
+        return os;
+    }
 
     friend inline Vector3dd operator *(const Affine3D &affine, const Vector3dd &x)
     {
         return affine.rotor * x + affine.shift;
     }
 
+    friend inline Ray3d operator *(const Affine3D &affine, const Ray3d &r)
+    {
+        return Ray3d(affine.rotor * r.a, affine * r.p);
+    }
+
     inline Vector3dd apply(const Vector3dd &x) const
     {
         return (*this) * x;
     }
+
+    inline Vector3dd applyInv(const Vector3dd &x) const;
 
     /**
      *
@@ -106,8 +127,8 @@ public:
     }
 
     /* Pretty print */
-    void prettyPrint (ostream &out = cout);
-    void prettyPrint1(ostream &out = cout);
+    void prettyPrint (ostream &out = cout) const;
+    void prettyPrint1(ostream &out = cout) const;
 
 };
 
@@ -142,6 +163,11 @@ inline Matrix33 Affine3D<Matrix33>::superpose(const Matrix33  &l1, const Matrix3
     return l1 * l2;
 }
 
+template<>
+inline Vector3dd Affine3D<Quaternion>::applyInv(const Vector3dd &x) const
+{
+    return rotor.conjugated() * (x - shift);
+}
 
 typedef Affine3D<Quaternion> Affine3DQ;
 typedef Affine3D<Matrix33>   Affine3DM;

@@ -26,8 +26,7 @@ HEADERS += \
     generatedParameters/outputStyle.h \    
     layers/resultImage.h \
     layers/imageResultLayer.h \
-    layers/geometryResultLayer.h \
-    memoryUsageCalculator/memoryUsageCalculator.h \
+    layers/geometryResultLayer.h \    
     parametersMapper/parametersMapperBase.h \
     statistics/statisticsDialog.h \
     statistics/qtStatisticsCollector.h \
@@ -47,8 +46,7 @@ SOURCES += \
     generatedParameters/presentationParameters.cpp \
     layers/resultImage.cpp \
     layers/imageResultLayer.cpp \
-    layers/geometryResultLayer.cpp \
-    memoryUsageCalculator/memoryUsageCalculator.cpp \
+    layers/geometryResultLayer.cpp \  
     parametersMapper/parametersMapperBase.cpp \
     statistics/statisticsDialog.cpp \
     abstractCalculationThread.cpp \
@@ -73,13 +71,3 @@ with_opengl {
     SOURCES += scene3DMouse.cpp
 }
 
-win32 {
-   HEADERS += memoryUsageCalculator/windowsMemoryUsageCalculator.h
-   SOURCES += memoryUsageCalculator/windowsMemoryUsageCalculator.cpp
-} else:macx {
-   HEADERS += memoryUsageCalculator/macMemoryUsageCalculator.h
-   SOURCES += memoryUsageCalculator/macMemoryUsageCalculator.cpp
-} else {
-   HEADERS += memoryUsageCalculator/linuxMemoryUsageCalculator.h
-   SOURCES += memoryUsageCalculator/linuxMemoryUsageCalculator.cpp
-}

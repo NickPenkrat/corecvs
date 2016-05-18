@@ -19,7 +19,6 @@
 #include "fixedVector.h"
 #include "fixedArray.h"
 
-using namespace std;
 using namespace corecvs;
 
 template<int length>
@@ -96,7 +95,7 @@ TEST(Vector, profileVectorOperations)
     }
     delay = start.usecsToNow();
     printf("%8" PRIu64 "us %8" PRIu64 "ms SP: %8" PRIu64 "us\n", delay, delay / 1000, delay / CYCLES); fflush(stdout);
-    cout << sum << endl;
+    std::cout << sum << std::endl;
 
     printf("Profiling Vector Operation Implementation\n");
     start = PreciseTimer::currentTime();
@@ -107,7 +106,7 @@ TEST(Vector, profileVectorOperations)
     }
     delay = start.usecsToNow();
     printf("%8" PRIu64 "us %8" PRIu64 "ms SP: %8" PRIu64 "us\n", delay, delay / 1000, delay / CYCLES); fflush(stdout);
-    cout << sum << endl;
+    std::cout << sum << std::endl;
 
     printf("Profiling Fixed Vector Implementation\n");
     start = PreciseTimer::currentTime();
@@ -118,7 +117,7 @@ TEST(Vector, profileVectorOperations)
     }
     delay = start.usecsToNow();
     printf("%8" PRIu64 "us %8" PRIu64 "ms SP: %8" PRIu64 "us\n", delay, delay / 1000, delay / CYCLES); fflush(stdout);
-    cout << sum << endl;
+    std::cout << sum << std::endl;
 
 
 
@@ -133,11 +132,19 @@ TEST(Vector, testFixedArray)
 {
     const int LENGTH = 8;
     FixedArray<int> arr(LENGTH);
+    ASSERT_EQ(arr.size(), LENGTH);
+}
+
+TEST(Vector, MulAllElements)
+{
+    const int LENGTH = 8;
+    FixedArray<int> arr(LENGTH);
     for (int i = 0; i < LENGTH; i++)
     {
         arr[i] = i + 1;
     }
-    cout << arr.mulAllElements() << endl;
+    std::cout << arr.mulAllElements() << std::endl;
+    ASSERT_EQ(arr.mulAllElements(), 40320);
 }
 
 //int main (int /*argC*/, char ** /*argV*/)

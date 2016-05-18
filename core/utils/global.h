@@ -188,7 +188,7 @@ typedef int                bool_t;                          // fast Boolean type
      _Pragma("GCC diagnostic pop")
 
 #else
-   #define STATIC_ASSERT(CONDITION, VALUE) typedef int foo_##VALUE[(CONDITION) ? 1 : -1]
+   #define STATIC_ASSERT(CONDITION, VALUE) typedef int foo_##VALUE[(CONDITION) ? 1 : -1];
 #endif
 
 #define SYNC_PRINT(X) \
@@ -198,7 +198,7 @@ do {                  \
 } while (0)
 
 #ifdef TRACE
-#   define DOTRACE(X) SYNC_PRINT(X)
+#   define DOTRACE(X)       SYNC_PRINT(X)
 #else
 #   define DOTRACE(X)
 #endif
@@ -260,6 +260,11 @@ extern "C" {
 # define PRIi64 "I64d"
 #endif
 
+#ifdef _MSC_VER
+# include <intrin.h>
+# define __builtin_popcount __popcount
+#endif
+
 #define REFLECTION_IN_CORE
 
 
@@ -292,9 +297,22 @@ inline int snprintf2buf(char (&d)[size], cchar* fmt, ...)
     return iLen;
 }
 
+#include <type_traits>
 #include <algorithm>
+#include <tuple>
 namespace std
 {
+#if 0
+    template<typename T>
+    struct hash
+    {
+        using boo = typename std::enable_if<std::is_enum<T>::value, T>::type;
+        size_t operator() (const boo &t) const
+        {
+            return hash<typename underlying_type<boo>::type>()(static_cast<typename underlying_type<boo>::type>(t));
+        }
+    };
+#endif
     template<typename U, typename V>
     struct hash<pair<U, V>>
     {
@@ -303,13 +321,69 @@ namespace std
             return std::hash<U>()(p.first) ^ std::hash<V>()(p.second);
         }
     };
-};
+    // Numbers were stolen from boost (actually it very similar to LFG ideas)
+    template<typename T>
+    size_t hash_append(size_t seed, const T &t)
+    {
+        return std::hash<T>()(t) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
+    template<typename T, size_t n = tuple_size<T>::value - 1>
+    struct hash_calc
+    {
+        size_t operator() (const T &t, size_t seed) const
+        {
+            auto foo = hash_calc<T, n - 1>()(t, seed);
+            return hash_append(foo, std::get<n>(t));
+        }
+    };
+    template<typename T>
+    struct hash_calc<T, 0>
+    {
+        size_t operator() (const T &t, size_t seed) const
+        {
+            return hash_append(seed, std::get<0>(t));
+        }
+    };
+    template<typename ... T>
+    struct hash<std::tuple<T...>>
+    {
+        size_t operator() (const std::tuple<T...> &t) const
+        {
+            return hash_calc<std::tuple<T...>>()(t, 0);
+        }
+   };
+}
 
 
 #ifdef USE_SAFE_RUNTIME_FUNCS
 # define CORE_FOPEN(pFile, sName, sMode)    (fopen_s(&(pFile), (sName), (sMode)) ? ((pFile) = NULL, 0) : (1))
 #else
 # define CORE_FOPEN(pFile, sName, sMode)    (((pFile) = fopen((sName), (sMode))) != NULL ? (1) : (0))
+#endif
+
+/** MSVC: macro to help in memory leaks detection */
+#if defined(_MSC_VER) && defined(_DEBUG)
+# define USE_MSVC_DEBUG_MEM
+# define _CRTDBG_MAP_ALLOC
+# define _CRTDBG_MAP_ALLOC_NEW
+# include <stdlib.h>
+# include <crtdbg.h>
+// It's strange that msvc's inlines for new/delete don't work properly...
+//#  define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ ) // this doesn't work for new inplace :(
+//#  define new DBG_NEW
+inline void * __CRTDECL operator new[](size_t _Size) {
+    return ::operator new[](_Size, _NORMAL_BLOCK, __FILE__, __LINE__);
+}
+inline void * __CRTDECL operator new(size_t _Size) {
+    return ::operator new(_Size, _NORMAL_BLOCK, __FILE__, __LINE__);
+}
+//template<typename T> inline void * operator new (T) {
+//    void * p = ::operator new(sizeof(T), _NORMAL_BLOCK, __FILE__, __LINE__);
+//    return new (p)T;
+//}
+//inline void * __CRTDECL operator new(size_t _Size, void *p) {
+//    return p;
+//}
 #endif
 
 /** Function for safe deleting objects and arrays */
@@ -319,7 +393,7 @@ template<typename Type>
 inline void delete_safe (Type * &ptr)
 {
     delete ptr;
-  //ptr = (Type *)(uintptr_t(NULL) - 1);		/* We are not hiding our mistakes by zeroing the pointer */
+  //ptr = (Type *)(uintptr_t(NULL) - 1);        /* We are not hiding our mistakes by zeroing the pointer */
     ptr = NULL;
 }
 
@@ -327,7 +401,7 @@ template<typename Type>
 inline void deletearr_safe (Type * &ptr)
 {
     delete[] ptr;
-  //ptr = (Type *)(uintptr_t(NULL) - 1);		/* We are not hiding our mistakes by zeroing the pointer */
+  //ptr = (Type *)(uintptr_t(NULL) - 1);        /* We are not hiding our mistakes by zeroing the pointer */
     ptr = NULL;
 }
 
@@ -344,8 +418,8 @@ inline void deletearr_safe (Type * &ptr)
 #   define PATH_SEPARATOR  "/"
 #endif
 
-#ifdef _WIN32
-#   define FOREACH(X, Y) for each (X in Y)
+#if defined(_WIN32) && defined(_MSC_VER) && _MSC_VER < 1800
+#   define FOREACH(X, Y) for each (X in Y)      // msvc understands standard since vc12
 #else
 #   define FOREACH(X, Y) for (X : Y)
 #endif
@@ -356,6 +430,10 @@ inline void deletearr_safe (Type * &ptr)
 #define   QSTR_HAS_SLASH_AT_END(qstring)  ((qstring).length() > 1 && \
                                           ((qstring)[(qstring).length() - 1] == '/' || \
                                            (qstring)[(qstring).length() - 1] == '\\'))
+
+#define   STR_HAS_SLASH_AT_END(string)  ((string).length() > 1 && \
+                                        ((string)[(string).length() - 1] == '/' || \
+                                         (string)[(string).length() - 1] == '\\'))
 
 #endif // is__cplusplus
 

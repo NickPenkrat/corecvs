@@ -10,16 +10,10 @@
 #include "rgb24Buffer.h"
 #include "qSettingsSetter.h"
 
-#include "plyLoader.h"
-#include "stlLoader.h"
+#include "meshLoader.h"
 
 // FIXIT: GOOPEN
 //#include "../../../restricted/applications/vimouse/faceDetection/faceMesh.h"
-
-
-using namespace std;
-
-
 
 const double CloudViewDialog::ROTATE_STEP   = 0.05;
 const double CloudViewDialog::ZOOM_DIVISION = 1000.0;
@@ -30,9 +24,8 @@ const double CloudViewDialog::START_Y = 0;
 const double CloudViewDialog::START_Z = 1 * Grid3DScene::GRID_SIZE * Grid3DScene::GRID_STEP;
 
 
-
-CloudViewDialog::CloudViewDialog(QWidget *parent) :
-      ViAreaWidget(parent)
+CloudViewDialog::CloudViewDialog(QWidget *parent)
+    : ViAreaWidget(parent)
     , mCameraZoom(1.0)
     , mIsTracking(false)
 {
@@ -70,17 +63,11 @@ CloudViewDialog::CloudViewDialog(QWidget *parent) :
     connect(mUi.widget, SIGNAL(askParentInitialize()),                    this, SLOT(initializeGLSlot()));
     connect(mUi.widget, SIGNAL(askParentRepaint()),                       this, SLOT(repaintGLSlot()));
     connect(mUi.widget, SIGNAL(notifyParentResize(int, int)),             this, SLOT(resizeGLSlot(int, int)));
-
     connect(mUi.widget, SIGNAL(notifyParentMouseMove(QMouseEvent *)),     this, SLOT(childMoveEvent(QMouseEvent *)));
-
     connect(mUi.widget, SIGNAL(notifyParentMousePress(QMouseEvent *)),    this, SLOT(childPressEvent(QMouseEvent *)));
-
     connect(mUi.widget, SIGNAL(notifyParentMouseRelease(QMouseEvent *)),  this, SLOT(childReleaseEvent(QMouseEvent *)));
-
     connect(mUi.widget, SIGNAL(notifyParentKeyPressEvent(QKeyEvent *)),   this, SLOT(childKeyPressEvent(QKeyEvent *)));
-
     connect(mUi.widget, SIGNAL(notifyParentKeyReleaseEvent(QKeyEvent *)), this, SLOT(childKeyReleaseEvent(QKeyEvent *)));
-
     connect(mUi.widget, SIGNAL(notifyParentWheelEvent(QWheelEvent *)),    this, SLOT(childWheelEvent(QWheelEvent *)));
 
     mUi.frustumFarBox->setValue(fabs(START_Z * 3.0));
@@ -153,9 +140,9 @@ CloudViewDialog::CloudViewDialog(QWidget *parent) :
 
     addSubObject("World Frame", worldFrame);
 
+    /* Stats collection */
+    connect(mUi.statsButton, SIGNAL(released()), this, SLOT(statsOpen()));
 }
-
-
 
 void CloudViewDialog::addMesh(QString name, Mesh3D *mesh)
 {
@@ -183,9 +170,9 @@ TreeSceneController * CloudViewDialog::addSubObject (QString name, QSharedPointe
     return result;
 }
 
-
 CloudViewDialog::~CloudViewDialog()
 {
+    //qDebug("CloudViewDialog::~CloudViewDialog(): called for this=%p", this);
 }
 
 void CloudViewDialog::setCollapseTree(bool collapse)
@@ -196,31 +183,31 @@ void CloudViewDialog::setCollapseTree(bool collapse)
     } else {
         sizes << 1 << 1;
     }
-        mUi.splitter->setSizes(sizes);
+    mUi.splitter->setSizes(sizes);
 }
 
 void CloudViewDialog::downRotate()
 {
     mCamera *= Matrix33::RotationX(-ROTATE_STEP);
-    mUi.widget->updateGL();
+    mUi.widget->scheduleUpdate();
 }
 
 void CloudViewDialog::upRotate()
 {
     mCamera *= Matrix33::RotationX( ROTATE_STEP);
-    mUi.widget->updateGL();
+    mUi.widget->scheduleUpdate();
 }
 
 void CloudViewDialog::leftRotate()
 {
     mCamera *= Matrix33::RotationY( ROTATE_STEP);
-    mUi.widget->updateGL();
+    mUi.widget->scheduleUpdate();
 }
 
 void CloudViewDialog::rightRotate()
 {
     mCamera *= Matrix33::RotationY(-ROTATE_STEP);
-    mUi.widget->updateGL();
+    mUi.widget->scheduleUpdate();
 }
 
 void CloudViewDialog::setZoom(double value)
@@ -233,7 +220,7 @@ void CloudViewDialog::zoom(int delta)
 {
     setZoom(mCameraZoom * exp(delta / CloudViewDialog::ZOOM_DIVISION));
     resetCamera();
-    mUi.widget->updateGL();
+    mUi.widget->scheduleUpdate();
 }
 
 void CloudViewDialog::zoomIn()
@@ -252,34 +239,38 @@ void CloudViewDialog::childWheelEvent ( QWheelEvent * event )
     zoom(delta);
 }
 
-
-
 void CloudViewDialog::resetCameraPos()
 {
-    switch(mUi.cameraTypeBox->currentIndex())
+    switch (mUi.cameraTypeBox->currentIndex())
     {
         case ORTHO_TOP:
-            mCamera = Matrix44(Matrix33::RotationX(degToRad(90)), Vector3dd(0.0,0.0,0.0));
+            mCamera = Matrix44(Matrix33::RotationX(degToRad(90)), Vector3dd(0.0, 0.0, 0.0));
             break;
         case ORTHO_LEFT:
-            mCamera = Matrix44(Matrix33::RotationY(degToRad(-90)), Vector3dd(0.0,0.0,0.0));
+            mCamera = Matrix44(Matrix33::RotationY(degToRad(-90)), Vector3dd(0.0, 0.0, 0.0));
             break;
         case ORTHO_FRONT:
-            mCamera = Matrix44(Matrix33(1.0), Vector3dd(0.0,0.0,0.0));
+            mCamera = Matrix44(Matrix33(1.0), Vector3dd(0.0, 0.0, 0.0));
             break;
         default:
         case PINHOLE_AT_0:
-            mCamera = Matrix44(Matrix33(1.0), Vector3dd( START_X, START_Y, START_Z));
+            mCamera = Matrix44(Matrix33(1.0), Vector3dd(START_X, START_Y, START_Z));
             break;
+
         case LEFT_CAMERA:
-            mCamera = Matrix44(mRectificationResult->decomposition.rotation) * Matrix44::Shift(mRectificationResult->getCameraShift());
-            mCamera = mCamera.inverted();
-            break;
+            if (!mRectificationResult.isNull())
+            {
+                mCamera = Matrix44(mRectificationResult->decomposition.rotation) * Matrix44::Shift(mRectificationResult->getCameraShift());
+                mCamera = mCamera.inverted();
+                break;
+            }
+            //break; // to perform the code below
         case RIGHT_CAMERA:
-            mCamera = Matrix44(Matrix33(1.0), Vector3dd(0.0,0.0,0.0));
+            mCamera = Matrix44(Matrix33(1.0), Vector3dd(0.0, 0.0, 0.0));
             break;
+
         case FACE_CAMERA:
-        {
+            {
 #if GOOPEN
             mCamera = Matrix44(Matrix33(1.0), Vector3dd(0.0,0.0,0.0));
             FaceMesh *faceMesh = static_cast<FaceMesh *>(mScenes[DETECTED_PERSON].data());
@@ -291,13 +282,11 @@ void CloudViewDialog::resetCameraPos()
 
             /* Move to zero */
             Matrix44 shiftCamToZero = Matrix44::Shift(-cameraPos);
-
-            Matrix44 projector = shiftCamToZero;
+            Matrix44 projector      = shiftCamToZero;
             mCamera = Matrix44(Matrix33(1.0), -cameraPos);
 #endif
-        }
+            }
             break;
-
     }
     setZoom(1.0);
 }
@@ -320,13 +309,14 @@ void CloudViewDialog::resetCamera()
     glViewport(0, 0, width, height);
     glMatrixMode(GL_PROJECTION);
 
-    switch(mUi.cameraTypeBox->currentIndex())
+    switch (mUi.cameraTypeBox->currentIndex())
     {
         case ORTHO_TOP:
         case ORTHO_FRONT:
         case ORTHO_LEFT:
             glLoadIdentity();
-            glOrtho(-width / 2.0, width / 2.0, height / 2.0, -height / 2.0, farPlane, -farPlane);
+            // TODO: Check if it is changed correctly (e.g. it is the RH projection)
+            glOrtho(width / 2.0, -width / 2.0, height / 2.0, -height / 2.0, farPlane, -farPlane);
             glScaled(mCameraZoom, mCameraZoom, mCameraZoom);
          //   glRotated(90, 1.0, 0.0, 0.0);
             break;
@@ -340,15 +330,15 @@ void CloudViewDialog::resetCamera()
         case LEFT_CAMERA:
         {
             glLoadIdentity();
-            double fov = mRectificationResult->leftCamera.getVFov();
-            OpenGLTools::gluPerspectivePosZ(radToDeg(fov), aspect, 1.0f, farPlane);
+            double fov = !mRectificationResult.isNull() ? radToDeg(mRectificationResult->leftCamera.getVFov()) : 60;
+            OpenGLTools::gluPerspectivePosZ(fov, aspect, 1.0f, farPlane);
             break;
         }
         case RIGHT_CAMERA:
         {
             glLoadIdentity();
-            double fov = mRectificationResult->rightCamera.getVFov();
-            OpenGLTools::gluPerspectivePosZ(radToDeg(fov), aspect, 1.0f, farPlane);
+            double fov = !mRectificationResult.isNull() ? radToDeg(mRectificationResult->rightCamera.getVFov()) : 60;
+            OpenGLTools::gluPerspectivePosZ(fov, aspect, 1.0f, farPlane);
             break;
         }
         case FACE_CAMERA:
@@ -433,13 +423,11 @@ void CloudViewDialog::resetCamera()
             break;
 #endif
         }
-
     }
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 }
-
 
 void CloudViewDialog::childMoveEvent(QMouseEvent *event)
 {
@@ -490,7 +478,7 @@ void CloudViewDialog::childMoveEvent(QMouseEvent *event)
     yRot += (event->y() - track.y()) * 3.0;*/
 
     mTrack = event->pos();
-    mUi.widget->updateGL();
+    mUi.widget->scheduleUpdate();
 }
 
 void CloudViewDialog::childPressEvent(QMouseEvent *event)
@@ -546,7 +534,7 @@ void CloudViewDialog::childKeyPressEvent( QKeyEvent * event )
     }
     mCamera = Matrix44(rotate, shift) * mCamera;
 
-    mUi.widget->updateGL();
+    mUi.widget->scheduleUpdate();
     //cout << "childKeyPressEvent" << endl;
 }
 
@@ -610,6 +598,9 @@ void CloudViewDialog::initializeGLSlot()
 
 void CloudViewDialog::repaintGLSlot()
 {
+    Statistics stats;
+    stats.startInterval();
+
     if (mUi.cameraTypeBox->currentIndex() == FACE_CAMERA)
     {
         resetCamera();
@@ -632,6 +623,13 @@ void CloudViewDialog::repaintGLSlot()
     //OpenGLTools::drawOrts(10.0, 1.0);
 
     glDisable(GL_TEXTURE_2D);
+
+    stats.endInterval("Redraw Time");
+    mStatsCollector.addStatistics(stats);
+
+    std::ostringstream stream;
+    mStatsCollector.printAdvanced(stream);
+    mStatisticsDialog.setText(QString::fromStdString(stream.str()));
 }
 
 
@@ -656,9 +654,7 @@ void CloudViewDialog::setNewScenePointer(QSharedPointer<Scene3D> newScene, int s
         return;
     }*/
     if (mUi.pauseButton->isChecked())
-    {
         return;
-    }
 
     bool isFirst = (mSceneControllers[sceneId] == NULL);
     if (isFirst && !newScene.isNull())
@@ -695,9 +691,7 @@ void CloudViewDialog::setNewScenePointer(QSharedPointer<Scene3D> newScene, int s
 void CloudViewDialog::setNewRectificationResult (QSharedPointer<RectificationResult> rectificationResult)
 {
     if (rectificationResult.isNull())
-    {
         return;
-    }
 
     mRectificationResult = rectificationResult;
 
@@ -709,12 +703,10 @@ void CloudViewDialog::setNewRectificationResult (QSharedPointer<RectificationRes
     mUi.widget->update();
 }
 
-
-void CloudViewDialog::setNewCameraImage (QSharedPointer<QImage> texture, int cameraId)
+void CloudViewDialog::setNewCameraImage(QSharedPointer<QImage> texture, int cameraId)
 {
-    if (texture.isNull()) {
+    if (texture.isNull())
         return;
-    }
 
     //SYNC_PRINT(("void CloudViewDialog::setNewCameraImage () called\n"));
 
@@ -746,16 +738,15 @@ void CloudViewDialog::savePointsPCD()
 
     qDebug("Dump slot called...\n");
     if (mScenes[MAIN_SCENE].isNull())
-    {
         return;
-    }
 
     char name[100];
     snprintf2buf(name, "exported%d.pcd", count);
 
     count++;
     qDebug("Dumping current scene to <%s>...", name);
-    fstream file(name, fstream::out);
+
+    std::fstream file(name, std::fstream::out);
     mScenes[MAIN_SCENE]->dumpPCD(file);
     file.close();
     qDebug("done\n");
@@ -767,16 +758,14 @@ void CloudViewDialog::savePointsPLY()
 
     qDebug("Dump slot called...\n");
     if (mScenes[MAIN_SCENE].isNull())
-    {
         return;
-    }
 
     char name[100];
     snprintf2buf(name, "exported%d.ply", count);
 
     count++;
     qDebug("Dumping current scene to <%s>...", name);
-    fstream file(name, fstream::out);
+    std::fstream file(name, std::fstream::out);
     mScenes[MAIN_SCENE]->dumpPLY(file);
     file.close();
     qDebug("done\n");
@@ -788,59 +777,32 @@ void CloudViewDialog::toggledVisibility()
     QModelIndexList	list = selection->selectedRows();
     for (const QModelIndex &index : list)
     {
-        qDebug() << "Model Ids:" << index.row();
+        //qDebug() << "Model Ids:" << index.row();
         QModelIndex boxIndex = index.sibling(index.row(), TreeSceneModel::FLAG_COLUMN);
         bool isVisible = mTreeModel.data(boxIndex, Qt::CheckStateRole).toBool();
         mTreeModel.setData(boxIndex, !isVisible, Qt::CheckStateRole);
     }
-
 }
 
 void CloudViewDialog::loadMesh()
 {
+    MeshLoader loader;
+
+    QString type = QString("3D Model (%1)").arg(loader.extentionList().c_str());
+
     QString fileName = QFileDialog::getOpenFileName(
       this,
       tr("Load 3D Model"),
       ".",
-      tr("3D Model (*.ply *.stl)"));
+      type);
 
     Mesh3DScene *mesh = new Mesh3DScene();
-    ifstream file;
-    file.open(fileName.toLatin1().data(), ios::in);
-    if (file.fail())
-    {
-        qDebug() << "Can't open mesh file" << endl;
-        return;
-    }
 
-    if (fileName.endsWith(".ply"))
+    if (!loader.load(mesh, fileName.toStdString()))
     {
-        PLYLoader loader;
-        if (loader.loadPLY(file, *mesh) != 0)
-        {
-           qDebug() << "CloudViewDialog::Unable to load mesh";
-           file.close();
+        delete_safe(mesh);
            return;
         }
-    }
-
-    if (fileName.endsWith(".stl"))
-    {
-        STLLoader loader;
-        if (loader.loadBinarySTL(file, *mesh) != 0)
-        {
-           qDebug() << "CloudViewDialog::Unable to load mesh";
-           file.close();
-           return;
-        }
-    }
-
-    cout << "Loaded mesh:" << endl;
-    cout << " Edges   :" << mesh->edges.size() << endl;
-    cout << " Vertexes:" << mesh->vertexes.size() << endl;
-    cout << " Faces   :" << mesh->faces.size() << endl;
-    cout << " Bounding box " << mesh->getBoundingBox() << endl;
-
     QFileInfo fileInfo(fileName);
     addSubObject(fileInfo.baseName(), QSharedPointer<Scene3D>((Scene3D*)mesh));
 }
@@ -888,3 +850,8 @@ void CloudViewDialog::loadParameters()
 //    QSettings settings("cloud.ini", QSettings::IniFormat);
 }
 
+void CloudViewDialog::statsOpen()
+{
+    mStatisticsDialog.show();
+    mStatisticsDialog.raise();
+}
