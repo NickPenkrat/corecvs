@@ -158,7 +158,7 @@ void RGB24Buffer::drawHLine(int x1, int y1, int x2, RGBColor color )
     if (x1 >= w || x2 < 0 || y1 < 0 || y1 >= h )
         return;
 
-    for (int j = x1; j < x2; j++)
+    for (int j = x1; j <= x2; j++)
     {
         this->element(y1, j) = color;
     }
@@ -403,8 +403,6 @@ void RGB24Buffer::drawRectangle(const Rectangle<int32_t> &rect, RGBColor color, 
 }
 
 
-
-
 #if 0
 void RGB24Buffer::rgb24DrawDisplacementBuffer(RGB24Buffer *dst, DisplacementBuffer *src, double step)
 {
@@ -510,18 +508,15 @@ void RGB24Buffer::rgb24DrawHistogram(RGB24Buffer *dst, Histogram *hist, int x, i
 #endif
 
 
-void RGB24Buffer::drawHistogram1024x512(Histogram *hist, int x, int y, uint16_t flags)
+void RGB24Buffer::drawHistogram1024x512(Histogram *hist, int x, int y, uint16_t flags, int hw, int hh)
 {
-    int i,j,k;
+    int i,k;
 
     /**
      *  TODO: Add asserts
      **/
-
-    int intervalStart = (flags & FLAGS_INCLUDE_MARGIN) ? 0 : 1;
-    int intervalEnd   = (flags & FLAGS_INCLUDE_MARGIN) ? G12Buffer::BUFFER_MAX_VALUE : G12Buffer::BUFFER_MAX_VALUE - 1;
-
-
+    int intervalStart = (flags & FLAGS_INCLUDE_MARGIN) ? hist->getArgumentMin()     : hist->getArgumentMin() + 1;
+    int intervalEnd   = (flags & FLAGS_INCLUDE_MARGIN) ? hist->getArgumentMax() - 1 : hist->getArgumentMax() - 2;
 
     unsigned globalmax = 0;
     for (i = intervalStart; i < intervalEnd; i++)
@@ -530,21 +525,35 @@ void RGB24Buffer::drawHistogram1024x512(Histogram *hist, int x, int y, uint16_t 
             globalmax = hist->data[i];
     }
 
-    unsigned shift = 0;
-    while ((1U << shift) < globalmax)
-        shift++;
+    double scale = 0;
+    if (globalmax != 0) {
+        scale = (double)hh / globalmax;
+        SYNC_PRINT(("Globalmax: %d\n", globalmax));
+        SYNC_PRINT(("Scale    : %lf\n", scale));
+    }
 
+    if (flags & FLAGS_LIMIT_DOWNSCALE) {
+        if (scale > 1.0) {
+            scale = 1.0;
+        }
+    }
 
-    for (i = 0; i < 1024; i++)
+    double pos = 0;
+    double dpos = (double)hist->data.size() / hw;
+
+     SYNC_PRINT(("DPos    : %lf\n", dpos));
+
+    for (i = 0; i < hw; i++, pos += dpos)
     {
         int max  =  0;
-        int min  =  0xFFFF;
+        int min  =  std::numeric_limits<int>::max();
         int sum =   0;
-        int count = 4;
 
-        for(j = 0; j < count; j++)
+
+        int count = 0;
+        for(int p = pos; (p < pos + dpos) && (p < (int)hist->data.size()); p ++, count++)
         {
-            int val = hist->data[i * count + j];
+            int val = hist->data[p];
             sum += val;
             if (val > max) max = val;
             if (val < min) min = val;
@@ -554,22 +563,25 @@ void RGB24Buffer::drawHistogram1024x512(Histogram *hist, int x, int y, uint16_t 
 
         DOTRACE(("%d %d %d\n", min, sum, max));
 
-        int minColumn = (min << 9) >> shift;
-        int maxColumn = (max << 9) >> shift;
-        int sumColumn = (sum << 9) >> shift;
+        int minColumn = min * scale;
+        int maxColumn = max * scale;
+        int sumColumn = sum * scale;
 
 
         for (k = 0; k < minColumn ; k++)
         {
-            this->element(y + 512 - k,  i + x) = RGBColor(0xFF,0,0);
+            if (this->isValidCoord(y + hh - k,  i + x))
+                this->element(y + hh - k,  i + x) = RGBColor(0xFF,0,0);
         }
         for (; k < sumColumn; k++)
         {
-            this->element(y + 512 - k, i + x) = RGBColor(0, 0xFF,0);
+            if (this->isValidCoord(y + hh - k,  i + x))
+                this->element(y + hh - k, i + x) = RGBColor(0, 0xFF,0);
         }
         for (; k < maxColumn; k++)
         {
-            this->element(y + 512 - k, i + x) = RGBColor(0, 0, 0xFF);
+            if (this->isValidCoord(y + hh - k,  i + x))
+                this->element(y + hh - k, i + x) = RGBColor(0, 0, 0xFF);
         }
     }
 }
@@ -706,9 +718,93 @@ void RGB24Buffer::drawIsolines(
    delete_safe(values);
 }
 
-
-void RGB24Buffer::fillWithYUYV (uint8_t *yuyv)
+void RGB24Buffer::drawDoubleBuffer(const AbstractBuffer<double> &in, int style)
 {
+    int mh = CORE_MIN(h, in.h);
+    int mw = CORE_MIN(w, in.w);
+
+    double min = std::numeric_limits<double>::max();
+    double max = std::numeric_limits<double>::lowest();
+
+    if (style != STYLE_ZBUFFER) {
+        for (int i = 0; i < mh; i++)
+        {
+            for (int j = 0; j < mw; j++)
+            {
+                min = CORE_MIN(min, in.element(i,j));
+                max = CORE_MAX(max, in.element(i,j));
+            }
+        }
+    } else {
+        for (int i = 0; i < mh; i++)
+        {
+            for (int j = 0; j < mw; j++)
+            {
+                min = CORE_MIN(min, in.element(i,j));
+                if (in.element(i,j) != std::numeric_limits<double>::max()) {
+                    max = CORE_MAX(max, in.element(i,j));
+                }
+            }
+        }
+    }
+
+    SYNC_PRINT(("RGB24Buffer::drawDoubleBuffer(): min %lf max %lf\n", min, max));
+
+    if (style == STYLE_RAINBOW)
+    {
+        for (int i = 0; i < mh; i++)
+        {
+            for (int j = 0; j < mw; j++)
+            {
+                element(i, j) = RGBColor::rainbow(lerp(0.0, 1.0, in.element(i,j), min, max));
+            }
+        }
+    }
+
+    if (style == STYLE_GRAY || style == STYLE_LOG)
+    {
+        for (int i = 0; i < mh; i++)
+        {
+            for (int j = 0; j < mw; j++)
+            {
+                element(i, j) = RGBColor::gray(lerpLimit(0.0, 255.0, in.element(i,j), min, max));
+            }
+        }
+    }
+
+    if (style == STYLE_ZBUFFER)
+    {
+        for (int i = 0; i < mh; i++)
+        {
+            for (int j = 0; j < mw; j++)
+            {
+                if (in.element(i,j) != std::numeric_limits<double>::max()) {
+                    element(i, j) = RGBColor::rainbow(lerp(0.0, 1.0, in.element(i,j), min, max));
+                } else {
+                    element(i, j) = RGBColor::Black();
+                }
+            }
+        }
+    }
+
+}
+void RGB24Buffer::fillWithYUYV(uint8_t *data)
+{
+    fillWithYUVFormat(data, false);
+}
+
+void RGB24Buffer::fillWithUYVU(uint8_t *data)
+{
+    fillWithYUVFormat(data, true);
+}
+
+void RGB24Buffer::fillWithYUVFormat (uint8_t *yuyv, bool fillAsUYVY)
+{
+    cint iy1 = fillAsUYVY ? 1 : 0;
+    cint iu  = fillAsUYVY ? 0 : 1;
+    cint iy2 = fillAsUYVY ? 3 : 2;
+    cint iv  = fillAsUYVY ? 2 : 3;
+
     for (int i = 0; i < h; i++)
     {
         int j = 0;
@@ -719,10 +815,10 @@ void RGB24Buffer::fillWithYUYV (uint8_t *yuyv)
         {
             FixedVector<Int16x8,4> r = SSEReader8BBBB_DDDD::read((uint32_t *)yuyv);
 
-            Int16x8 cy1 = r[0] - Int16x8((uint16_t) 16);
-            Int16x8 cu  = r[1] - Int16x8((uint16_t)128);
-            Int16x8 cy2 = r[2] - Int16x8((uint16_t) 16);
-            Int16x8 cv  = r[3] - Int16x8((uint16_t)128);
+            Int16x8 cy1 = r[iy1] - Int16x8((uint16_t) 16);
+            Int16x8 cu  = r[iu]  - Int16x8((uint16_t)128);
+            Int16x8 cy2 = r[iy2] - Int16x8((uint16_t) 16);
+            Int16x8 cv  = r[iv]  - Int16x8((uint16_t)128);
 
             Int16x8 con0  ((int16_t)0);
             Int16x8 con255((int16_t)0xFF);
@@ -800,10 +896,10 @@ void RGB24Buffer::fillWithYUYV (uint8_t *yuyv)
 
         for (; j + 2 <= w; j+=2)
         {
-            int y1 = yuyv[0];
-            int u  = yuyv[1];
-            int y2 = yuyv[2];
-            int v  = yuyv[3];
+            int y1 = yuyv[iy1];
+            int u  = yuyv[iu];
+            int y2 = yuyv[iy2];
+            int v  = yuyv[iv];
 
             int cy1 = y1 -  16;
             int cu  = u  - 128;

@@ -34,6 +34,7 @@
       <item name="Value"      id="7" />
   </enum>
   
+
   <enum name="Debayer Method">
       <item name="Nearest"  id = "0" />
       <item name="Bilinear" id = "1" />

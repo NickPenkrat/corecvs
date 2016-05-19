@@ -31,6 +31,8 @@ enum CAPTURE_FORMAT_TYPE
     CAP_YUV,
     CAP_RGB,
     CAP_I420,
+    CAP_BAYER8,
+    CAP_UYVY,
     CAP_UNKNOWN
 };
 
@@ -77,6 +79,7 @@ struct CaptureTypeFormat
     int height;
     int width;
     int fps;
+    int bpp;                        // for raw RGB data presentation
 };
 
 struct FrameData

@@ -1,7 +1,7 @@
 #include <QtCore/QDebug>
 
-#include "histogramdepthdialog.h"
-#include "ui_histogramdepthdialog.h"
+#include "histogramDepthDialog.h"
+#include "ui_histogramDepthDialog.h"
 
 // TODO: It shall be equal to maximum possible disparity, which seems to be dependent
 // on image resolution, so this value shall not be a constant at all.

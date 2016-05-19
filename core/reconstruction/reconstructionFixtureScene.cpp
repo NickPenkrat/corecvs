@@ -468,7 +468,7 @@ void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams 
         for (auto& p: matchMap)
         {
             auto& vp = p.second;
-            std::sort(vp.begin(), vp.end(), [&](const decltype(vp[0]) &a, const decltype(vp[0]) &b) { return std::get<2>(a) < std::get<2>(b); });
+            std::sort(vp.begin(), vp.end(), [&](decltype(vp[0]) &a, decltype(vp[0]) &b) { return std::get<2>(a) < std::get<2>(b); });
             if (vp.size() > 1)
             {
                 double dA1 = std::get<2>(vp[0]),

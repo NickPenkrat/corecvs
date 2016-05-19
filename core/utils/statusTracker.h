@@ -17,10 +17,12 @@ struct Status
     size_t      completedActions, totalActions, startedActions, completedGlobalActions, totalGlobalActions, startedGlobalActions;
     bool        isCompleted;
     bool        isFailed;
+    bool        isStoped;
+    bool        stopThread;
 
     Status() : currentAction("NONE"), completedActions(0), totalActions(0), startedActions(0),
         completedGlobalActions(0), totalGlobalActions(0), startedGlobalActions(0),
-      isCompleted(false), isFailed(false)
+      isCompleted(false), isFailed(false), stopThread(false), isStoped(false)
     {}
 };
 
@@ -35,17 +37,22 @@ public:
     void    setFailed();
 
     void    setStopThread();
+    void    setStoped();
 
     bool    isActionCompleted(const std::string &action) const;
 
     bool    isCompleted() const;
+    ///
+    /// \brief isCanceled
+    /// \return Returns whether the setStopThread is called
+    ///
+    bool    isCanceled() const;
     bool    isFailed() const;
 
     Status  getStatus() const;
 
 private:
     Status  currentStatus;
-    bool    stopThread;
 
 #ifdef WITH_TBB
     tbb::reader_writer_lock lock;

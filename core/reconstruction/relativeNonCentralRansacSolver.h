@@ -20,7 +20,7 @@ struct RelativeNonCentralRansacSolverSettings
           gamma(gamma)
     {
     }
-    int maxIterations;
+    size_t maxIterations;
     double inlierThreshold;
 
     enum class Restrictions
@@ -119,7 +119,7 @@ private:
     struct FunctorCost : corecvs::FunctionArgs
     {
         RelativeNonCentralRansacSolver *solver;
-        FunctorCost(RelativeNonCentralRansacSolver* solver) : FunctionArgs(7, solver->getInliersCount()), solver(solver)
+        FunctorCost(RelativeNonCentralRansacSolver* solver) : FunctionArgs(7, (int)solver->getInliersCount()), solver(solver)
         {}
 
         void operator() (const double in[], double out[])

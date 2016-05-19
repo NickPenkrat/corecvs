@@ -15,6 +15,8 @@ void DefaultSetter::visit<double, DoubleField>(
         double &field,
         const DoubleField *fieldDescriptor)
 {
+//    SYNC_PRINT(("DefaultSetter::visit<double, DoubleField>: Called for %s\n", fieldDescriptor->getSimpleName()));
+
     field = fieldDescriptor->defaultValue;
 }
 
@@ -55,6 +57,15 @@ void DefaultSetter::visit<std::string, StringField>(
         std::string &field,
         const StringField *fieldDescriptor)
 {
+    field = fieldDescriptor->defaultValue;
+}
+
+template <>
+void DefaultSetter::visit<double, DoubleVectorField>(
+        std::vector<double> &field,
+        const DoubleVectorField *fieldDescriptor)
+{
+//    SYNC_PRINT(("DefaultSetter::visit<std::vector<double>, DoubleVectorField>: Called for %s\n", fieldDescriptor->getSimpleName()));
     field = fieldDescriptor->defaultValue;
 }
 

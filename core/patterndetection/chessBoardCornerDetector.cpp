@@ -1,11 +1,14 @@
 #include "chessBoardCornerDetector.h"
+#include "nonMaximalSuperssor.h"
 
 #include <cmath>
 #include <algorithm>
 #include <set>
+#include <regex>
 
 #include "mathUtils.h"
 
+#include "convolver/convolver.h"
 #include "vectorTraits.h"
 #include "fastKernel.h"
 #include "arithmetic.h"
@@ -14,139 +17,12 @@
 
 using corecvs::Vector2dd;
 using corecvs::Matrix22;
+using corecvs::ConvolveKernel;
+using corecvs::DummyAlgebra;
 
 
-#ifdef USE_UNSAFE_CONVOLUTOR
-#include <immintrin.h>
-
-#endif
-
-double OrientedCorner::scoreCorner(DpImage &img, DpImage &weight, std::vector<double> &radius, double bandwidth)
-{
-    int iw = img.w;
-    int ih = img.h;
-    score = 0.0;
-
-    for (double r: radius)
-    {
-        if (!pos.isInRect(Vector2dd(r - 1, r - 1), Vector2dd(iw - r, ih - r)))
-            continue;
-
-        double local = scoreCorner(img, weight, r, bandwidth);
-        if (local > score)
-            score = local;
-    }
-    return score;
-}
-
-double OrientedCorner::scoreCorner(DpImage &img, DpImage &weight, int r, double bandwidth)
-{
-    return scoreGradient(weight, r, bandwidth) * scoreIntensity(img, r);
-}
-
-double OrientedCorner::scoreGradient(DpImage &w, int r, double bandwidth)
-{
-    int kw = 2 * r + 1;
-    DpImage K(kw, kw);
-    for (int i = 0; i < kw; ++i)
-    {
-        for (int j = 0; j < kw; ++j)
-        {
-            K.element(i, j) = -1.0;
-        }
-    }
-    double K_sum = -kw * kw, K_sum_sq = kw * kw;
-    double I_sum = 0.0, I_sum_sq = 0.0;
-    int cx = r, cy = r;
-    int ui = pos[0], vi = pos[1];
-    corecvs::Vector2dd c(r, r);
-    for (int i = 0; i < kw; ++i)
-    {
-        for (int j = 0; j < kw; ++j)
-        {
-            corecvs::Vector2dd p(j, i);
-            auto pp = p - c;
-            auto p1 = (pp & v1) * v1;
-            auto p2 = (pp & v2) * v2;
-
-            if ((pp - p1).l2Metric() < bandwidth / 2.0 || (pp - p2).l2Metric() < bandwidth / 2.0)
-            {
-                K.element(i, j) = 1.0;
-                K_sum += 2.0;
-            }
-
-            double val =  w.element(vi + i - cy, ui + j - cx);
-            I_sum += val;
-            I_sum_sq += val * val;
-        }
-    }
-
-    double mean_w = I_sum / (kw * kw);
-    double  std_w = std::sqrt(I_sum_sq / (kw * kw) - mean_w * mean_w);
-    double mean_k = K_sum / (kw * kw);
-    double  std_k = std::sqrt(K_sum_sq / (kw * kw) - mean_k * mean_k);
-
-    double score = 0.0;
-    for (int i = 0; i < kw; ++i)
-    {
-        for (int j = 0; j < kw; ++j)
-        {
-            score += (K.element(i, j) - mean_k) / std_k * (w.element(vi + i - cy, ui + j - cx) - mean_w) / std_w;
-        }
-    }
-    return std::max(score / (kw * kw), 0.0);
-}
-
-double OrientedCorner::scoreIntensity(DpImage &img, int r)
-{
-    int w = (r + 1) * 2 + 1;
-    double alpha = atan2(v1[1], v1[0]);
-    double psi = atan2(v2[1], v2[0]) - alpha;
-    CornerKernelSet cks(r, alpha, psi);
-    DpImage patch(w, w);
-    int uc = pos[0], vc = pos[1];
-    int left = std::max(0, r - uc);
-    int right = std::min(w, img.w + r - uc);
-    int top = std::max(0, r - vc);
-    int bottom = std::min(w, img.h + r - vc);
-    for (int i = 0; i < w; ++i)
-    {
-        for (int j = 0; j < w; ++j)
-        {
-            if (i >= top && i < bottom && j >= left && j < right)
-                patch.element(i, j) = img.element(i - r + vc, j - r + uc);
-            else
-                patch.element(i, j) = 0.0;
-        }
-    }
-
-    DpImage c(w, w);
-    //int cc = cks.A.x;
-    cks.computeCost(patch, c, true, false);
-    return std::max(c.element(cks.A.y, cks.A.x), 0.0);
-}
-
-CornerKernelSet::CornerKernelSet(double r, double alpha, double psi, bool minify)
-{
-    int w = ((int)(r + 1.0)) * 2 + 1;
-    A = DpKernel(w, w);
-    B = DpKernel(w, w);
-    C = DpKernel(w, w);
-    D = DpKernel(w, w);
-
-    int c = w / 2;
-
-    computeKernels(r, alpha, psi, w, c);
-    if (minify)
-    {
-        MinifyKernel(A);
-        MinifyKernel(B);
-        MinifyKernel(C);
-        MinifyKernel(D);
-    }
-}
-
-void CornerKernelSet::MinifyKernel(DpKernel &k)
+template<class KernelType>
+void CornerKernelSet::minifyKernel(KernelType &k)
 {
     int t = 0, l = 0, d = k.h - 1, r = k.w - 1;
     bool isNull = true;
@@ -222,55 +98,182 @@ void CornerKernelSet::MinifyKernel(DpKernel &k)
     CORE_ASSERT_TRUE_S(k.x >= 0 && k.x < k.w && k.y >= 0 && k.y < k.h);
 }
 
+
+double OrientedCorner::scoreCorner(DpImage &img, DpImage &weight, const std::vector<double> &radius, double bandwidth)
+{
+    int iw = img.w;
+    int ih = img.h;
+    score = 0.0;
+
+    for (double r: radius)
+    {
+        if (!pos.isInRect(Vector2dd(r - 1, r - 1), Vector2dd(iw - r, ih - r)))
+            continue;
+
+        double local = scoreCorner(img, weight, r, bandwidth);
+        if (local > score)
+            score = local;
+    }
+    return score;
+}
+
+double OrientedCorner::scoreCorner(DpImage &img, DpImage &weight, int r, double bandwidth)
+{
+    return scoreGradient(weight, r, bandwidth) * scoreIntensity(img, r);
+}
+
+double OrientedCorner::scoreGradient(DpImage &w, int r, double bandwidth)
+{
+    int kw = 2 * r + 1;
+    DpImage K(kw, kw);
+    for (int i = 0; i < kw; ++i)
+    {
+        for (int j = 0; j < kw; ++j)
+        {
+            K.element(i, j) = -1.0;
+        }
+    }
+    double K_sum = -kw * kw;
+    double K_sum_sq = kw * kw;
+
+    double I_sum = 0.0, I_sum_sq = 0.0;
+    int cx = r, cy = r;
+    int ui = pos[0], vi = pos[1];
+    Vector2dd c(r, r);
+
+    for (int i = 0; i < kw; ++i)
+    {
+        for (int j = 0; j < kw; ++j)
+        {
+            Vector2dd p(j, i);
+            auto pp = p - c;
+            auto p1 = (pp & v1) * v1;
+            auto p2 = (pp & v2) * v2;
+
+            if ((pp - p1).l2Metric() < bandwidth / 2.0 || (pp - p2).l2Metric() < bandwidth / 2.0)
+            {
+                K.element(i, j) = 1.0;
+                K_sum += 2.0;
+            }
+
+            double val =  w.element(vi + i - cy, ui + j - cx);
+            I_sum += val;
+            I_sum_sq += val * val;
+        }
+    }
+
+    double mean_w = I_sum / (kw * kw);
+    double  std_w = std::sqrt(I_sum_sq / (kw * kw) - mean_w * mean_w);
+
+    double mean_k = K_sum / (kw * kw);
+    double  std_k = std::sqrt(K_sum_sq / (kw * kw) - mean_k * mean_k);
+
+    double score = 0.0;
+    for (int i = 0; i < kw; ++i)
+    {
+        for (int j = 0; j < kw; ++j)
+        {
+            score += (K.element(i, j) - mean_k) / std_k * (w.element(vi + i - cy, ui + j - cx) - mean_w) / std_w;
+        }
+    }
+    return std::max(score / (kw * kw), 0.0);
+}
+
+double OrientedCorner::scoreIntensity(DpImage &img, int r)
+{
+    int w = (r + 1) * 2 + 1;
+    double alpha = v1.argument();
+    double psi   = v2.argument() - alpha;
+
+    CornerKernelSet cks(r, alpha, psi);
+    DpImage patch(w, w);
+    int uc = pos.x();
+    int vc = pos.y();
+
+    int left   = std::max(0,         r - uc);
+    int right  = std::min(w, img.w + r - uc);
+    int top    = std::max(0,         r - vc);
+    int bottom = std::min(w, img.h + r - vc);
+
+    for (int i = 0; i < w; i++)
+    {
+        for (int j = 0; j < w; j++)
+        {
+            if (i >= top && i < bottom && j >= left && j < right)
+                patch.element(i, j) = img.element(i - r + vc, j - r + uc);
+            else
+                patch.element(i, j) = 0.0;
+        }
+    }
+
+    DpImage c(w, w);
+    //int cc = cks.A.x;
+    cks.computeCost(patch, c, true, false);
+    return std::max(c.element(cks.K[0].y, cks.K[0].x), 0.0);
+}
+
+
+
+CornerKernelSet::CornerKernelSet(double r, double alpha, double psi, bool minify)
+{
+    int w = ((int)(r + 1.0)) * 2 + 1;
+
+    for (int i = 0; i < KERNEL_LAST; i++ ) {
+         K[i] = DpKernel(w, w);
+        fK[i] = FpKernel(w, w);
+
+    }
+
+    int c = w / 2;
+
+    computeKernels( K, r, alpha, psi, w, c);
+    computeKernels(fK, r, alpha, psi, w, c);
+
+    /*Or we could just copy...*/
+    if (minify)
+    {
+        for (int i = 0; i < KERNEL_LAST; i++ ) {
+            minifyKernel<DpKernel>( K[i]);
+            minifyKernel<FpKernel>(fK[i]);
+        }
+    }
+}
+
+
+
 void CornerKernelSet::computeCost(DpImage &img, DpImage &c, bool parallelable, bool new_style)
 {
     int w = img.w, h = img.h;
     c = DpImage(h, w);
+    DpImage *pf[KERNEL_LAST];
+    for (int i = 0; i < KERNEL_LAST; i++)
+       pf[i] = 0;
 
-
-    DpImage *pfA, *pfB, *pfC, *pfD;
     if (!new_style)
     {
-       pfA = img.doConvolve<DpImage>(&A, true, parallelable);
-       pfB = img.doConvolve<DpImage>(&B, true, parallelable);
-       pfC = img.doConvolve<DpImage>(&C, true, parallelable);
-       pfD = img.doConvolve<DpImage>(&D, true, parallelable);
+        for (int i = 0; i < KERNEL_LAST; i++)
+           pf[i] = img.doConvolve<DpImage>(&K[i], true, parallelable);
     }
     else
     {
         // TODO: I hope we'll change the design of the whole thing
-        pfA = new DpImage(img.h, img.w, false);
-        pfB = new DpImage(img.h, img.w, false);
-        pfC = new DpImage(img.h, img.w, false);
-        pfD = new DpImage(img.h, img.w, false);
-#ifndef USE_UNSAFE_CONVOLUTOR
-        corecvs::ConvolveKernel<corecvs::DummyAlgebra> convA(&A, A.y, A.x);
-        corecvs::ConvolveKernel<corecvs::DummyAlgebra> convB(&B, B.y, B.x);
-        corecvs::ConvolveKernel<corecvs::DummyAlgebra> convC(&C, C.y, C.x);
-        corecvs::ConvolveKernel<corecvs::DummyAlgebra> convD(&D, D.y, D.x);
+        for (int i = 0; i < KERNEL_LAST; i++)
+           pf[i] = new DpImage(img.h, img.w, false);
 
-        DpImage *in = &img;
-        corecvs::BufferProcessor<DpImage, DpImage, corecvs::ConvolveKernel, corecvs::AlgebraDouble> proScalar;
-        proScalar.process(&in, &pfA, convA);
-        proScalar.process(&in, &pfB, convB);
-        proScalar.process(&in, &pfC, convC);
-        proScalar.process(&in, &pfD, convD);
-#else
-        unsafeConvolutor(img, A, *pfA);
-        unsafeConvolutor(img, B, *pfB);
-        unsafeConvolutor(img, C, *pfC);
-        unsafeConvolutor(img, D, *pfD);
-#endif
+        Convolver conv;
+
+        for (int i = 0; i < KERNEL_LAST; i++)
+            conv.convolve(img, K[i], *pf[i]);
     }
 
-    for (int i = 0; i < h; ++i)
+    for (int i = 0; i < h; i++)
     {
-        for (int j = 0; j < w; ++j)
+        for (int j = 0; j < w; j++)
         {
-            double fA = pfA->element(i, j),
-                   fB = pfB->element(i, j),
-                   fC = pfC->element(i, j),
-                   fD = pfD->element(i, j);
+            double fA = pf[KERNEL_A]->element(i, j),
+                   fB = pf[KERNEL_B]->element(i, j),
+                   fC = pf[KERNEL_C]->element(i, j),
+                   fD = pf[KERNEL_D]->element(i, j);
 
             double mu = 0.25 * (fA + fB + fC + fD);
             double a = std::min(fA - mu, fB - mu);
@@ -286,13 +289,54 @@ void CornerKernelSet::computeCost(DpImage &img, DpImage &c, bool parallelable, b
     }
 
     // FIXME: we should definitely change convolution routine
-    delete pfA;
-    delete pfB;
-    delete pfC;
-    delete pfD;
+    for (int i = 0; i < KERNEL_LAST; i++)
+        delete_safe(pf[i]);
 }
 
-void CornerKernelSet::computeKernels(double r, double alpha, double psi, int w, int c, double threshold)
+void CornerKernelSet::computeCost(FpImage &img, DpImage &c)
+{
+    int w = img.w, h = img.h;
+    c = DpImage(h, w);
+    FpImage *pf[KERNEL_LAST];
+    for (int i = 0; i < KERNEL_LAST; i++)
+        pf[i] = new FpImage(img.h, img.w, false);;
+
+
+    Convolver conv;
+
+    for (int i = 0; i < KERNEL_LAST; i++)
+        conv.convolve(img, fK[i], *pf[i]);
+
+
+    for (int i = 0; i < h; i++)
+    {
+        for (int j = 0; j < w; j++)
+        {
+            float fA = pf[KERNEL_A]->element(i, j),
+                   fB = pf[KERNEL_B]->element(i, j),
+                   fC = pf[KERNEL_C]->element(i, j),
+                   fD = pf[KERNEL_D]->element(i, j);
+
+            float mu = 0.25 * (fA + fB + fC + fD);
+            float a = std::min(fA - mu, fB - mu);
+            float b = std::min(mu - fC, mu - fD);
+            float r1 = std::min(a, b);
+            a = std::min(fC - mu, fD - mu);
+            b = std::min(mu - fA, mu - fB);
+            float r2 = std::min(a, b);
+
+
+            c.element(i, j) = std::max(r1, r2);
+        }
+    }
+
+    // FIXME: we should definitely change convolution routine
+    for (int i = 0; i < KERNEL_LAST; i++)
+        delete_safe(pf[i]);
+}
+
+template<class KernelType>
+void CornerKernelSet::computeKernels(KernelType K[], double r, double alpha, double psi, int w, int c, double threshold)
 {
     double sigma = r / 2.0;
     Vector2dd v1 = Vector2dd::FromPolar(alpha      ).rightNormal();
@@ -311,59 +355,39 @@ void CornerKernelSet::computeKernels(double r, double alpha, double psi, int w, 
             double p2 = v & v2;
             double lr = !v;
 
+            for (int k = 0; k < KERNEL_LAST; k++)
+                K[k].element(i,j) = 0.0;
 
-            A.element(i, j) = B.element(i, j) = C.element(i, j) = D.element(i, j) = 0.0;
             if (p1 > threshold && p2 < -threshold)
             {
-                A.element(i, j) = normalPDF(lr, sigma);
+                K[KERNEL_A].element(i, j) = normalPDF(lr, sigma);
             }
             if (p1 < -threshold && p2 > threshold)
             {
-                B.element(i, j) = normalPDF(lr, sigma);
+                K[KERNEL_B].element(i, j) = normalPDF(lr, sigma);
             }
             if (p1 < -threshold && p2 < -threshold)
             {
-                C.element(i, j) = normalPDF(lr, sigma);
+                K[KERNEL_C].element(i, j) = normalPDF(lr, sigma);
             }
             if (p1 > threshold && p2 > threshold)
             {
-                D.element(i, j) = normalPDF(lr, sigma);
+                K[KERNEL_D].element(i, j) = normalPDF(lr, sigma);
             }
         }
     }
 #if 0
     std::cout << "[" << std::endl;
-    for (int i = 0; i < w; ++i)
+    for (int k = 0; k < KERNEL_LAST; k++)
     {
-        for (int j = 0; j < w; ++j)
+        for (int i = 0; i < w; ++i)
         {
-            std::cout << A.element(i, j) << " ";
+            for (int j = 0; j < w; ++j)
+            {
+                std::cout << K[k].element(i, j) << " ";
+            }
+            std::cout << ";" << std::endl;
         }
-        std::cout << ";" << std::endl;
-    }
-    for (int i = 0; i < w; ++i)
-    {
-        for (int j = 0; j < w; ++j)
-        {
-            std::cout << B.element(i, j) << " ";
-        }
-        std::cout << ";" << std::endl;
-    }
-    for (int i = 0; i < w; ++i)
-    {
-        for (int j = 0; j < w; ++j)
-        {
-            std::cout << C.element(i, j) << " ";
-        }
-        std::cout << ";" << std::endl;
-    }
-    for (int i = 0; i < w; ++i)
-    {
-        for (int j = 0; j < w; ++j)
-        {
-            std::cout << D.element(i, j) << " ";
-        }
-        std::cout << ";" << std::endl;
     }
     std::cout << "]" << std::endl;
     exit(0);
@@ -408,9 +432,11 @@ void ChessBoardCornerDetector::prepareAngleWeight()
 
 // XXX: due to distortion removal we can get some black areas.
 // Let us scale image based on 0.05 and 0.95 percentiles
-void ChessBoardCornerDetector::scaleImage()
+void ChessBoardCornerDetector::scaleImage(double percLow/* = 0.05*/, double percHigh/* = 0.95*/)
 {
     std::vector<double> values;
+    values.resize(img.h * img.w);
+
     for (int i = 0; i < img.h; ++i)
     {
         for (int j = 0; j < img.w; ++j)
@@ -421,18 +447,17 @@ void ChessBoardCornerDetector::scaleImage()
 
     std::sort(values.begin(), values.end());
 
-    double p05 = values[0.05 * values.size()];
-    double p95 = values[0.95 * values.size()];
-    double dp = p95 - p05;
+    double pL = values[percLow  * values.size()];   // TODO: for Indoors: 0.002-0.998
+    double pH = values[percHigh * values.size()];
+    double dp = pH - pL;
 
     for (int i = 0; i < img.h; ++i)
     {
         for (int j = 0; j < img.w; ++j)
         {
-            img.element(i, j) = std::max(std::min((img.element(i, j) - p05) / dp, 1.0), 0.0);
+            img.element(i, j) = std::max(std::min((img.element(i, j) - pL) / dp, 1.0), 0.0);
         }
     }
-
 }
 
 
@@ -440,9 +465,9 @@ void ChessBoardCornerDetector::prepareKernels()
 {
     kernels.clear();
 
-    for (auto& r: patternRadius)
+    for (double r: patternRadius())
     {
-        for (auto& psi: patternStartAngle)
+        for (double psi: patternStartAngle())
         {
             kernels.emplace_back(r, psi, sectorSize(), true);
         }
@@ -465,13 +490,37 @@ void ChessBoardCornerDetector::computeCost()
             });
 #endif
 #if 10
-    for (auto& cks: kernels)
+
+    if (stats != NULL) stats->enterContext("Cost->");
+
+    FpImage *fImage = NULL;
+    if (floatSpeedup()) {
+        if (stats != NULL) stats->startInterval();
+            fImage = new FpImage(img.getSize());
+            fImage->binaryOperationInPlace(img, [](const float &/*a*/, const double &b) { return b; });
+        if (stats != NULL) stats->endInterval("Float converter");
+    }
+
+    for (size_t i = 0; i <  kernels.size(); i++)
     {
+        if (stats != NULL) stats->startInterval();
+
+        CornerKernelSet &cks = kernels[i];
         DpImage kc;
-        cks.computeCost(img, kc);
+        if (floatSpeedup()) {
+            cks.computeCost(*fImage, kc);
+        } else {
+            cks.computeCost(img, kc);
+        }
 
         cost.binaryOperationInPlace(kc, [](const double &a, const double &b) { return std::max(a, b); });
+
+        if (stats != NULL) stats->endInterval("kernel" +  std::to_string(i));
     }
+
+    delete_safe(fImage);
+
+    if (stats != NULL) stats->leaveContext();
 #else
     for (int i = 0; i < kernels.size(); ++i)
     {
@@ -482,11 +531,14 @@ void ChessBoardCornerDetector::computeCost()
 
 void ChessBoardCornerDetector::runNms()
 {
-    std::vector<std::pair<int, int>> cornerCandidates;
-    cost.nonMaximumSupression(nmsLocality(), 0.025, cornerCandidates, nmsLocality());
-    for (auto& cc: cornerCandidates)
+    typedef Vector2d<int> CoordType;
+    std::vector<CoordType> cornerCandidates;
+    NonMaximalSuperssor<DpImage> suppressor;
+
+    suppressor.nonMaximumSupression(cost, nmsLocality(), nmsThreshold(), cornerCandidates, nmsLocality());
+    for (CoordType& cc: cornerCandidates)
     {
-        corners.emplace_back(corecvs::Vector2dd(cc.first, cc.second));
+        corners.emplace_back(Vector2dd(cc.x(), cc.y()));
     }
 }
 
@@ -498,7 +550,7 @@ void ChessBoardCornerDetector::circularMeanShift(std::vector<double> &values, do
 
     for (int i = 0; i < N; ++i)
     {
-        double sum = 0.0;
+        double sum = 0.0;        
         for (int j = -std::ceil(3.0 * bandwidth); j <= std::ceil(3.0 * bandwidth); ++j)
         {
             int idx = j + i;
@@ -522,7 +574,7 @@ void ChessBoardCornerDetector::circularMeanShift(std::vector<double> &values, do
 
     std::set<int> modes_set;
 
-    for (int seed = 0; seed < N; ++seed)
+    for (int seed = 0; seed < N; seed++)
     {
         int i = seed;
         while (1)
@@ -565,7 +617,80 @@ corecvs::Statistics *ChessBoardCornerDetector::getStatistics()
     return stats;
 }
 
-bool ChessBoardCornerDetector::edgeOrientationFromGradient(int top, int bottom, int left, int right, corecvs::Vector2dd &v1, corecvs::Vector2dd &v2)
+/**
+ *   DpImage du, dv, w, phi, cost, img;
+ *   std::vector<CornerKernelSet> kernels;
+ **/
+vector<std::string> ChessBoardCornerDetector::debugBuffers() const
+{
+    vector<std::string> result;
+    result.push_back("du");
+    result.push_back("dv");
+
+    result.push_back("w");
+
+    result.push_back("phi");
+    result.push_back("cost");
+    result.push_back("img");
+
+    for (size_t i = 0; i < kernels.size(); i++)
+    {
+        for (int k = 0; k < CornerKernelSet::KERNEL_LAST; k++) {
+            result.push_back(string("kernel_") + std::to_string(k) + "_"  +  std::to_string(i));
+        }
+    }
+    return result;
+}
+
+RGB24Buffer *ChessBoardCornerDetector::getDebugBuffer(const std::string& name) const
+{
+    RGB24Buffer *result = NULL;
+    if (name == "du") {
+        result = new RGB24Buffer(du.h, du.w);
+        result->drawDoubleBuffer(du);
+    }
+    if (name == "dv") {
+        result = new RGB24Buffer(dv.h, dv.w);
+        result->drawDoubleBuffer(dv);
+    }
+    if (name == "w") {
+        result = new RGB24Buffer(w.h, w.w);
+        result->drawDoubleBuffer(w);
+    }
+    if (name == "phi") {
+        result = new RGB24Buffer(phi.h, phi.w);
+        result->drawDoubleBuffer(phi);
+    }
+    if (name == "cost") {
+        result = new RGB24Buffer(cost.h, cost.w);
+        result->drawDoubleBuffer(cost);
+    }
+    if (name == "img") {
+        result = new RGB24Buffer(img.h, img.w);
+        result->drawDoubleBuffer(img);
+    }
+
+    std::regex regexp("^kernel_([0-9]*)_([0-9]*)$");
+    std::smatch m;
+    bool res = std::regex_search(name, m, regexp);
+    if (res) {
+        SYNC_PRINT(("ChessBoardCornerDetector::getDebugBuffer(): Parsed to %s %s %s", m[0].str().c_str(), m[1].str().c_str(), m[2].str().c_str()));
+
+        size_t id   = std::stoi(m[2]);
+        size_t knum = std::stoi(m[1]);
+
+        if (id < kernels.size() && knum < CornerKernelSet::KERNEL_LAST) {
+            result = new RGB24Buffer(kernels[id].K[knum].getSize());
+            result->drawDoubleBuffer(kernels[id].K[knum]);
+        }
+    }
+    else {
+        SYNC_PRINT(("ChessBoardCornerDetector::getDebugBuffer(): no match for <%s>", name.c_str() ));
+    }
+    return result;
+}
+
+bool ChessBoardCornerDetector::edgeOrientationFromGradient(int top, int bottom, int left, int right, Vector2dd &v1, Vector2dd &v2)
 {
     std::vector<double> histogram(histogramBins());
     double bin_size = M_PI / histogramBins();
@@ -594,7 +719,7 @@ bool ChessBoardCornerDetector::edgeOrientationFromGradient(int top, int bottom, 
     //std::sort(modes.begin(), modes.end(), [](decltype(modes[0]) a, decltype(modes[0]) b) { return a.second == b.second ? a.first < b.first : a.second > b.second; });
 
     std::sort(modes.begin(), modes.end(), [](PairID a, PairID b) { return a.second == b.second ? a.first < b.first : a.second > b.second; });
-    
+
     auto p1 = modes[0], p2 = modes[1];
     double phi1 = p1.first * bin_size, phi2 = p2.first * bin_size;
     if (phi1 > phi2)
@@ -616,7 +741,7 @@ void ChessBoardCornerDetector::filterByOrientation()
     int idx = 0, N = (int)corners.size(), iw = w.w, ih = w.h;
     for (int i = 0; i < N; ++i)
     {
-        auto& c = corners[i];
+        OrientedCorner& c = corners[i];
 
         int top    = std::max(     0.0, c.pos[1] - neighborhood());
         int bottom = std::min(ih - 1.0, c.pos[1] + neighborhood());
@@ -634,7 +759,7 @@ void ChessBoardCornerDetector::filterByOrientation()
 void ChessBoardCornerDetector::adjustCornerOrientation()
 {
     int iw = du.w, ih = du.h;
-    for (auto& c: corners)
+    for (OrientedCorner& c: corners)
     {
         Matrix22 A1(0.0);
         Matrix22 A2(0.0);
@@ -755,11 +880,11 @@ void ChessBoardCornerDetector::computeScores()
     int idx = 0;
     for (auto& c: corners)
     {
-        if (c.scoreCorner(img, w, cornerScores) < scoreThreshold())
+        if (c.scoreCorner(img, w, cornerScores()) < scoreThreshold())
             continue;
 
         // ok, here we also re-orient'em
-        if (c.v2[0] < 0.0) c.v2 = -c.v2;
+        if (c.v2.x() < 0.0) c.v2 = -c.v2;
         if ((c.v1 & c.v2.rightNormal()) < 0.0) c.v1 = -c.v1;
 
         corners[idx++] = c;
@@ -772,26 +897,29 @@ void ChessBoardCornerDetector::detectCorners(DpImage &image, std::vector<Oriente
     if (stats != NULL) stats->startInterval();
 
     corners.clear();
-    img = image;   
+    img = image;
     scaleImage();
 
     if (stats != NULL) stats->resetInterval("Scaling");
 
     prepareDiff(du, true);
-    prepareDiff(dv, false);
-    prepareAngleWeight();
+    if (stats != NULL) stats->resetInterval("U direction Diff Preparation");
 
-    if (stats != NULL) stats->resetInterval("Diff Preparation");
+    prepareDiff(dv, false);
+    if (stats != NULL) stats->resetInterval("V direction Diff Preparation");
+
+    prepareAngleWeight();
+    if (stats != NULL) stats->resetInterval("Angle weight Preparation");
 
     computeCost();
-    runNms();
+    if (stats != NULL) stats->resetInterval("Cost");
 
-    if (stats != NULL) stats->resetInterval("Cost and NMS");
+    runNms();
+    if (stats != NULL) stats->resetInterval("NMS");
 
     filterByOrientation();
     adjustCornerOrientation();
     adjustCornerPosition();
-
     if (stats != NULL) stats->resetInterval("Adjusting first round");
 
     for (int i = 0; i < nRounds(); ++i)
@@ -806,10 +934,9 @@ void ChessBoardCornerDetector::detectCorners(DpImage &image, std::vector<Oriente
     corners_ = corners;
 }
 
-ChessBoardCornerDetector::ChessBoardCornerDetector(ChessBoardCornerDetectorParams params) :
-    ChessBoardCornerDetectorParams(params),
-    stats(NULL)
+ChessBoardCornerDetector::ChessBoardCornerDetector(ChessBoardCornerDetectorParams params)
+    : ChessBoardCornerDetectorParams(params)
+    , stats(NULL)
 {
     prepareKernels();
 }
-

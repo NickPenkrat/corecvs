@@ -129,7 +129,7 @@ int LensDistortionModelParameters::staticInit()
     fields().push_back(
         new DoubleField
         (
-          LensDistortionModelParameters::SHIFTX_ID,
+          LensDistortionModelParameters::SHIFT_X_ID,
           offsetof(LensDistortionModelParameters, mShiftX),
           0,
           "Shift X",
@@ -140,7 +140,7 @@ int LensDistortionModelParameters::staticInit()
     fields().push_back(
         new DoubleField
         (
-          LensDistortionModelParameters::SHIFTY_ID,
+          LensDistortionModelParameters::SHIFT_Y_ID,
           offsetof(LensDistortionModelParameters, mShiftY),
           0,
           "Shift Y",

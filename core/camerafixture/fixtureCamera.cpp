@@ -3,7 +3,7 @@
 
 namespace corecvs {
 
-int FixtureScenePart::OBJECT_COUNT = 0;
+atomic_int FixtureScenePart::OBJECT_COUNT(0);
 
 bool FixtureCamera::projectPointFromWorld(const Vector3dd &point, Vector2dd *projetionPtr)
 {

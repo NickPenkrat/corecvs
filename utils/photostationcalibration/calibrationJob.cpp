@@ -398,7 +398,10 @@ bool CalibrationJob::calibrateSingleCamera(int cameraId)
     std::vector<CameraLocationData> locations;
     int valid_locations = 0;
 
-    FlatPatternCalibrator calibrator(settings.singleCameraCalibratorConstraints, photostation.cameras[cameraId].intrinsics, settings.distortionEstimationParameters);
+    FlatPatternCalibrator calibrator(settings.singleCameraCalibratorConstraints
+        , photostation.cameras[cameraId].intrinsics
+        , settings.distortionEstimationParameters);
+
     bool usingUndistorted = !(settings.singleCameraCalibratorConstraints & CameraConstraints::UNLOCK_DISTORTION);
 
     for (auto& o: observations[cameraId])

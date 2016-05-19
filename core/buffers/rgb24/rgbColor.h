@@ -453,6 +453,16 @@ public:
         return RGBColor(143, 0, 255);
     }
 
+    static RGBColor Pink()
+    {
+        return RGBColor(255, 192, 203);
+    }
+
+    static RGBColor Navy()
+    {
+        return RGBColor(0, 0, 127);
+    }
+
     static RGBColor lerpColor(const RGBColor &first, const RGBColor &second, double alpha)
     {
         uint8_t r = (uint8_t)lerp<double>(first.r(), second.r(), alpha);
@@ -572,8 +582,8 @@ template<class VisitorType>
     static RGBColor FromDouble(const Vector3dd &input)
     {
         Vector3dd input1 = input;
-        input1.mapToHypercube(Vector3dd(0.0,0.0,0.0), Vector3dd(255.0,255.0,255.0));
-        return RGBColor(input.x(), input.y(), input.z());
+        input1.mapToHypercube(Vector3dd(0.0, 0.0, 0.0), Vector3dd(255.0, 255.0, 255.0));
+        return RGBColor(input1.x(), input1.y(), input1.z());
     }
 
     static RGBColor FromHSV(uint16_t h, uint8_t s, uint8_t v)

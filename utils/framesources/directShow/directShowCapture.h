@@ -21,8 +21,13 @@
 
 #include "cameraControlParameters.h"
 
-class DirectShowCaptureInterface : public ImageCaptureInterface
-{
+#define PREFFERED_RGB_BPP 24
+#define AUTUSELECT_FORMAT_FEATURE -255
+
+using namespace std;
+
+ class DirectShowCaptureInterface : public ImageCaptureInterface
+ {
  public:
     typedef ImageCaptureInterface::CapErrorCode CapErrorCode;
 
@@ -38,6 +43,8 @@ class DirectShowCaptureInterface : public ImageCaptureInterface
     PreciseTimer                lastFrameTime;
     int                         skippedCount;
     int                         isRunning;
+
+    bool                        mAutoFormat;
 
     /* Maximum allowed desync */
     //unsigned int                delay;
@@ -73,9 +80,14 @@ class DirectShowCaptureInterface : public ImageCaptureInterface
     virtual ~DirectShowCaptureInterface();
 
  private:
-    void init(const string &devname, int h, int w, int fps, bool isRgb, int compressed);
+    void init(const string &devname, int h, int w, int fps, bool isRgb, int bpp, int compressed);
+    void initForAutoFormat(const string &devname, int h, int w, int fps, bool isRgb);
 
     bool isCorrectDeviceHandle(int cameraNum);
+    CapErrorCode getCaptureFormats(int &number, CaptureTypeFormat *&list);
+    CapErrorCode getCameraFormatsForResolution(int h, int w, std::vector<CAPTURE_FORMAT_TYPE> &formats);
+    int selectCameraFormat(int h, int w);
  };
 
 #endif /* _DIRECT_SHOW_CVCAPTURE_H_ */
+

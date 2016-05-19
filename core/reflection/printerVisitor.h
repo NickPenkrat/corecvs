@@ -67,7 +67,7 @@ public:
         {
             std::ostringstream ss;
             ss << arrayName << "[" <<  i << "]";
-            visit<innerType>(field[i], ss.str().c_str());
+            visit<innerType>(field[i], innerType(), ss.str().c_str());
         }
         indentation -= dIndent;
     }

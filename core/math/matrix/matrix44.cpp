@@ -76,6 +76,17 @@ Matrix44 Matrix44::Scale(const double &d)
     return result;
 }
 
+Matrix44 Matrix44::Scale(const double &d1, const double &d2, const double &d3)
+{
+    Matrix44 M;
+    double *y = M.element;
+    (*y++) =  d1;  (*y++) = 0.0;  (*y++) = 0.0; (*y++) = 0.0;
+    (*y++) = 0.0;  (*y++) =  d2;  (*y++) = 0.0; (*y++) = 0.0;
+    (*y++) = 0.0;  (*y++) = 0.0;  (*y++) =  d3; (*y++) = 0.0;
+    (*y++) = 0.0;  (*y++) = 0.0;  (*y++) = 0.0; (*y)   = 1.0;
+    return M;
+}
+
 
 Matrix44 Matrix44::RotationX (double alpha)
 {
@@ -198,6 +209,11 @@ Matrix44 Matrix44::transposed() const
 double Matrix44::frobeniusNorm() const
 {
     return sqrt(sumAllElementsSq());
+}
+
+Matrix44 Matrix44::Identity()
+{
+    return Matrix44 (1.0);
 }
 
 FixedVector<double, 4> operator *(const Matrix44 &m, const FixedVector<double, 4> &v)
