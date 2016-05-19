@@ -30,7 +30,7 @@ class ChessboardDetector : CheckerboardDetectionParameters, public PatternDetect
     /**
      *  Aligner manages the form of the checkerboard as well as positioning inside it
      **/
-    BoardAligner *aligner;
+    std::unique_ptr<BoardAligner> aligner;
 
 public:
     ChessboardDetector(
@@ -40,7 +40,8 @@ public:
             ChessBoardAssemblerParams assemblerParams     = ChessBoardAssemblerParams()
     );
 
-    ~ChessboardDetector() { delete_safe(aligner); }
+    ~ChessboardDetector()
+    {}
 
     static ChessBoardDetectorMode getMode(const BoardAlignerParams &params);
 
