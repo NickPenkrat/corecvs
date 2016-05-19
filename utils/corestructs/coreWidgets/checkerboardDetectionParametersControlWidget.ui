@@ -49,9 +49,6 @@
        <property name="toolTip">
          <string>Use Undistortion</string>
        </property>
-       <property name="checked">
-           <bool>true</bool>
-       </property>
      </widget>
     </item>
     <item row="2" column="0">
@@ -187,7 +184,7 @@
         <double>1</double>
        </property>
        <property name="singleStep">
-        <double>0.01</double>
+        <double>1</double>
        </property>
        <property name="value">
         <double>0.05</double>
@@ -219,7 +216,7 @@
         <double>1</double>
        </property>
        <property name="singleStep">
-        <double>0.01</double>
+        <double>1</double>
        </property>
        <property name="value">
         <double>0.05</double>
