@@ -11,6 +11,7 @@
 #include "qSettingsGetter.h"
 #include "qSettingsSetter.h"
 
+#include "featureDetectionParamsControlWidget.h"
 
 IterativeReconstructionFeatureSelectionParamsControlWidget::IterativeReconstructionFeatureSelectionParamsControlWidget(QWidget *parent, bool _autoInit, QString _rootPath)
     : ParametersControlWidgetBase(parent)
@@ -23,10 +24,7 @@ IterativeReconstructionFeatureSelectionParamsControlWidget::IterativeReconstruct
     QObject::connect(mUi->inlierThresholdSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->trackInlierThresholdSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->distanceLimitSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->detectorEdit, SIGNAL(textChanged(QString)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->descriptorEdit, SIGNAL(textChanged(QString)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->matcherEdit, SIGNAL(textChanged(QString)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->b2bThresholdSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->featureDetectionParamsControlWidget, SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->rmsePruningScalerSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->maxPruningScalerSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
 }
@@ -59,10 +57,7 @@ void IterativeReconstructionFeatureSelectionParamsControlWidget::getParameters(I
     params.setInlierThreshold  (mUi->inlierThresholdSpinBox->value());
     params.setTrackInlierThreshold(mUi->trackInlierThresholdSpinBox->value());
     params.setDistanceLimit    (mUi->distanceLimitSpinBox->value());
-    params.setDetector         (mUi->detectorEdit->text().toStdString());
-    params.setDescriptor       (mUi->descriptorEdit->text().toStdString());
-    params.setMatcher          (mUi->matcherEdit->text().toStdString());
-    params.setB2bThreshold     (mUi->b2bThresholdSpinBox->value());
+//    params.setFeatureDetectionParams(mUi->featureDetectionParamsControlWidget->createParameters());
     params.setRmsePruningScaler(mUi->rmsePruningScalerSpinBox->value());
     params.setMaxPruningScaler (mUi->maxPruningScalerSpinBox->value());
 
@@ -75,18 +70,17 @@ IterativeReconstructionFeatureSelectionParams *IterativeReconstructionFeatureSel
      * We should think of returning parameters by value or saving them in a preallocated place
      **/
 
+    FeatureDetectionParams *tmp3 = NULL;
 
     IterativeReconstructionFeatureSelectionParams *result = new IterativeReconstructionFeatureSelectionParams(
           mUi->inlierThresholdSpinBox->value()
         , mUi->trackInlierThresholdSpinBox->value()
         , mUi->distanceLimitSpinBox->value()
-        , mUi->detectorEdit->text().toStdString()
-        , mUi->descriptorEdit->text().toStdString()
-        , mUi->matcherEdit->text().toStdString()
-        , mUi->b2bThresholdSpinBox->value()
+        , * (tmp3 = mUi->featureDetectionParamsControlWidget->createParameters())
         , mUi->rmsePruningScalerSpinBox->value()
         , mUi->maxPruningScalerSpinBox->value()
     );
+    delete tmp3;
     return result;
 }
 
@@ -97,10 +91,7 @@ void IterativeReconstructionFeatureSelectionParamsControlWidget::setParameters(c
     mUi->inlierThresholdSpinBox->setValue(input.inlierThreshold());
     mUi->trackInlierThresholdSpinBox->setValue(input.trackInlierThreshold());
     mUi->distanceLimitSpinBox->setValue(input.distanceLimit());
-    mUi->detectorEdit->setText(input.detector().c_str());
-    mUi->descriptorEdit->setText(input.descriptor().c_str());
-    mUi->matcherEdit->setText(input.matcher().c_str());
-    mUi->b2bThresholdSpinBox->setValue(input.b2bThreshold());
+    mUi->featureDetectionParamsControlWidget->setParameters(input.featureDetectionParams());
     mUi->rmsePruningScalerSpinBox->setValue(input.rmsePruningScaler());
     mUi->maxPruningScalerSpinBox->setValue(input.maxPruningScaler());
     blockSignals(wasBlocked);

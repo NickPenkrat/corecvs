@@ -45,6 +45,8 @@ public:
         INLIERP6PTHRESHOLD_ID,
         MAXP6PITERATIONS_ID,
         GAMMAP6P_ID,
+        SPECULATIVITY_ID,
+        MINIMALINLIERCOUNT_ID,
         MAXIMALFAILUREPROBABILITY_ID,
         ITERATIVE_RECONSTRUCTION_APPEND_PARAMS_FIELD_ID_NUM
     };
@@ -86,6 +88,18 @@ public:
      * Target error probability for 6P->pose/3P->orientation 
      */
     double mGammaP6P;
+
+    /** 
+     * \brief speculativity 
+     * This defines how many multicameras are subject for P3P evaluation at each iteration 
+     */
+    int mSpeculativity;
+
+    /** 
+     * \brief minimalInlierCount 
+     * Minimal inlier count for hypotheis acceptance 
+     */
+    int mMinimalInlierCount;
 
     /** 
      * \brief maximalFailureProbability 
@@ -131,6 +145,16 @@ public:
         return mGammaP6P;
     }
 
+    int speculativity() const
+    {
+        return mSpeculativity;
+    }
+
+    int minimalInlierCount() const
+    {
+        return mMinimalInlierCount;
+    }
+
     double maximalFailureProbability() const
     {
         return mMaximalFailureProbability;
@@ -167,6 +191,16 @@ public:
         mGammaP6P = gammaP6P;
     }
 
+    void setSpeculativity(int speculativity)
+    {
+        mSpeculativity = speculativity;
+    }
+
+    void setMinimalInlierCount(int minimalInlierCount)
+    {
+        mMinimalInlierCount = minimalInlierCount;
+    }
+
     void setMaximalFailureProbability(double maximalFailureProbability)
     {
         mMaximalFailureProbability = maximalFailureProbability;
@@ -183,6 +217,8 @@ template<class VisitorType>
         visitor.visit(mInlierP6PThreshold,        static_cast<const DoubleField *>  (fields()[INLIERP6PTHRESHOLD_ID]));
         visitor.visit(mMaxP6PIterations,          static_cast<const IntField *>     (fields()[MAXP6PITERATIONS_ID]));
         visitor.visit(mGammaP6P,                  static_cast<const DoubleField *>  (fields()[GAMMAP6P_ID]));
+        visitor.visit(mSpeculativity,             static_cast<const IntField *>     (fields()[SPECULATIVITY_ID]));
+        visitor.visit(mMinimalInlierCount,        static_cast<const IntField *>     (fields()[MINIMALINLIERCOUNT_ID]));
         visitor.visit(mMaximalFailureProbability, static_cast<const DoubleField *>  (fields()[MAXIMALFAILUREPROBABILITY_ID]));
     }
 
@@ -199,6 +235,8 @@ template<class VisitorType>
         , double inlierP6PThreshold
         , int maxP6PIterations
         , double gammaP6P
+        , int speculativity
+        , int minimalInlierCount
         , double maximalFailureProbability
     )
     {
@@ -208,6 +246,8 @@ template<class VisitorType>
         mInlierP6PThreshold = inlierP6PThreshold;
         mMaxP6PIterations = maxP6PIterations;
         mGammaP6P = gammaP6P;
+        mSpeculativity = speculativity;
+        mMinimalInlierCount = minimalInlierCount;
         mMaximalFailureProbability = maximalFailureProbability;
     }
 

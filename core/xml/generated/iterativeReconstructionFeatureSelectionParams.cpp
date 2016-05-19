@@ -80,47 +80,15 @@ int IterativeReconstructionFeatureSelectionParams::staticInit()
         )
     );
     fields().push_back(
-        new StringField
+        new CompositeField
         (
-          IterativeReconstructionFeatureSelectionParams::DETECTOR_ID,
-          offsetof(IterativeReconstructionFeatureSelectionParams, mDetector),
-          "ORB",
-          "detector",
-          "detector",
-          "Detector"
-        )
-    );
-    fields().push_back(
-        new StringField
-        (
-          IterativeReconstructionFeatureSelectionParams::DESCRIPTOR_ID,
-          offsetof(IterativeReconstructionFeatureSelectionParams, mDescriptor),
-          "ORB",
-          "descriptor",
-          "descriptor",
-          "Descriptor"
-        )
-    );
-    fields().push_back(
-        new StringField
-        (
-          IterativeReconstructionFeatureSelectionParams::MATCHER_ID,
-          offsetof(IterativeReconstructionFeatureSelectionParams, mMatcher),
-          "",
-          "matcher",
-          "matcher",
-          "Matcher"
-        )
-    );
-    fields().push_back(
-        new DoubleField
-        (
-          IterativeReconstructionFeatureSelectionParams::B2BTHRESHOLD_ID,
-          offsetof(IterativeReconstructionFeatureSelectionParams, mB2bThreshold),
-          0.9,
-          "b2bThreshold",
-          "b2bThreshold",
-          "b2b threshold"
+          IterativeReconstructionFeatureSelectionParams::FEATUREDETECTIONPARAMS_ID,
+          offsetof(IterativeReconstructionFeatureSelectionParams, mFeatureDetectionParams),
+          "featureDetectionParams",
+          "FeatureDetectionParams",
+          "featureDetectionParams",
+          "featureDetectionParams",
+           NULL
         )
     );
     fields().push_back(

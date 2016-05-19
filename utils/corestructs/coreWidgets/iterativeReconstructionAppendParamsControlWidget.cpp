@@ -26,6 +26,8 @@ IterativeReconstructionAppendParamsControlWidget::IterativeReconstructionAppendP
     QObject::connect(mUi->inlierP6PThresholdSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->maxP6PIterationsSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->gammaP6PSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->speculativitySpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->minimalInlierCountSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->maximalFailureProbabilitySpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
 }
 
@@ -60,6 +62,8 @@ void IterativeReconstructionAppendParamsControlWidget::getParameters(IterativeRe
     params.setInlierP6PThreshold(mUi->inlierP6PThresholdSpinBox->value());
     params.setMaxP6PIterations (mUi->maxP6PIterationsSpinBox->value());
     params.setGammaP6P         (mUi->gammaP6PSpinBox->value());
+    params.setSpeculativity    (mUi->speculativitySpinBox->value());
+    params.setMinimalInlierCount(mUi->minimalInlierCountSpinBox->value());
     params.setMaximalFailureProbability(mUi->maximalFailureProbabilitySpinBox->value());
 
 }
@@ -79,6 +83,8 @@ IterativeReconstructionAppendParams *IterativeReconstructionAppendParamsControlW
         , mUi->inlierP6PThresholdSpinBox->value()
         , mUi->maxP6PIterationsSpinBox->value()
         , mUi->gammaP6PSpinBox->value()
+        , mUi->speculativitySpinBox->value()
+        , mUi->minimalInlierCountSpinBox->value()
         , mUi->maximalFailureProbabilitySpinBox->value()
     );
     return result;
@@ -94,6 +100,8 @@ void IterativeReconstructionAppendParamsControlWidget::setParameters(const Itera
     mUi->inlierP6PThresholdSpinBox->setValue(input.inlierP6PThreshold());
     mUi->maxP6PIterationsSpinBox->setValue(input.maxP6PIterations());
     mUi->gammaP6PSpinBox->setValue(input.gammaP6P());
+    mUi->speculativitySpinBox->setValue(input.speculativity());
+    mUi->minimalInlierCountSpinBox->setValue(input.minimalInlierCount());
     mUi->maximalFailureProbabilitySpinBox->setValue(input.maximalFailureProbability());
     blockSignals(wasBlocked);
     emit paramsChanged();

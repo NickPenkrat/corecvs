@@ -68,18 +68,22 @@
   <!-- old data -->
 
   <!-- new data -->
+
+  <class name="Feature Detection Params">
+    <field type="string" name="detector"   defaultValue="ORB" />
+    <field type="string" name="descriptor" defaultValue="ORB" />
+    <field type="string" name="matcher"    defaultValue="BF" />
+    <field type="double" name="b2bThreshold"    defaultValue="0.9" />
+    <field type="bool"   name="matchF2F"        defaultValue="false" />
+  </class>
   
   <class name="Iterative Reconstruction Feature Selection Params">
     <field type="double" name="inlierThreshold"             defaultValue="5.0"  min="-50000" max="50000" comment="Inlier threshold"/>
     <field type="double" name="trackInlierThreshold"        defaultValue="3.0"  min="-50000" max="50000" comment="Track append threshold"/>
     <field type="double" name="distanceLimit"               defaultValue="1000" min="-50000" max="50000" comment="Track distance limit"/>
 
-    <field type="string" name="detector"     defaultValue="ORB"   comment="Detector" />
-    <field type="string" name="descriptor"   defaultValue="ORB"   comment="Descriptor" />
-    <field type="string" name="matcher"      defaultvalue="BF"    comment="Matcher" />
-    <field type="double" name="b2bThreshold" defaultValue="0.9"   comment="b2b threshold" />
-    <filed type="bool"   name="matchF2F"     defaultValue="false" comment="Match F2F" />
-
+    <field type="Feature Detection Params" name="featureDetectionParams" />
+    
     <field type="double" name="rmsePruningScaler" defaultValue="3.0" comment="RMSE pruning scaler" />
     <field type="double" name="maxPruningScaler"  defaultValue="5.0" comment="Max pruning scaler" />
   </class>
@@ -92,8 +96,8 @@
     <field type="double" name="inlierP6PThreshold" defaultvalue="1.0"    comment="Inlier threshold for 6P->pose/3P->orientation" />
     <field type="int"    name="maxP6PIterations"   defaultvalue="400000" comment="Maximal ransac iterations for 6P->pose/3P->orientation" />
     <field type="double" name="gammaP6P"           defaultValue="0.001"  comment="Target error probability for 6P->pose/3P->orientation" />
-    <field type="size_t" name="speculativity"      defaultValue="1000"   comment="This defines how many multicameras are subject for P3P evaluation at each iteration" />
-    <field type="size_t" name="minimalInlierCount" defaultValue="32"     comment="Minimal inlier count for hypotheis acceptance" />
+    <field type="int" name="speculativity"      defaultValue="1000"   comment="This defines how many multicameras are subject for P3P evaluation at each iteration" />
+    <field type="int" name="minimalInlierCount" defaultValue="32"     comment="Minimal inlier count for hypotheis acceptance" />
     <field type="double" name="maximalFailureProbability" defaultValue="0.15" comment="Maximal failure probability for hypothesis acceptance" />
   </class>
 
@@ -122,7 +126,7 @@
     <!--     ReconstructionFunctorOptimizationType::NON_DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::FOCALS | ReconstructionFunctorOptimizationType::PRINCIPALS | -->
     <!--     ReconstructionFunctorOptimizationType::POINTS; -->
         
-    <field type="ReconstructionFunctorOptimizationErrorType" name="errorType" defaultvalue="ReconstructionFunctorOptimizationErrorType::RAY_DIFF" comment="Functor optimizattion error type" />
+    <!-- <field type="ReconstructionFunctorOptimizationErrorType" name="errorType" defaultvalue="ReconstructionFunctorOptimizationErrorType::RAY_DIFF" comment="Functor optimizattion error type" /> -->
     <field type="int" name="postAppendNonlinearIterations" defaultValue="200" comment="Post-append non-linear optimization iterations" />
     <field type="int" name="finalNonLinearIterations" defaultValue="2000" comment="Final non-linear iterations" />
     <field type="int" name="alternatingIterations" defaultValue="20" comment="Alternating optimization on success steps" />

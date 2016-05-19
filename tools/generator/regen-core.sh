@@ -253,6 +253,7 @@ full_ui_classes+=" iterativeReconstructionFeatureSelectionParams"
 full_ui_classes+=" iterativeReconstructionAppendParams"
 full_ui_classes+=" iterativeReconstructionNonlinearOptimizationParams"
 
+full_ui_classes+=" featureDetectionParams"
 
 PRIFILE="${DST_DIR}/generated.pri"
 

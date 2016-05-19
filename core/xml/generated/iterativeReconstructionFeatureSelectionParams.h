@@ -18,6 +18,7 @@
 /*
  *  Additional includes for Composite Types.
  */
+#include "featureDetectionParams.h"
 
 using namespace corecvs;
 
@@ -42,10 +43,7 @@ public:
         INLIERTHRESHOLD_ID,
         TRACKINLIERTHRESHOLD_ID,
         DISTANCELIMIT_ID,
-        DETECTOR_ID,
-        DESCRIPTOR_ID,
-        MATCHER_ID,
-        B2BTHRESHOLD_ID,
+        FEATUREDETECTIONPARAMS_ID,
         RMSEPRUNINGSCALER_ID,
         MAXPRUNINGSCALER_ID,
         ITERATIVE_RECONSTRUCTION_FEATURE_SELECTION_PARAMS_FIELD_ID_NUM
@@ -72,28 +70,10 @@ public:
     double mDistanceLimit;
 
     /** 
-     * \brief detector 
-     * Detector 
+     * \brief featureDetectionParams 
+     * featureDetectionParams 
      */
-    std::string mDetector;
-
-    /** 
-     * \brief descriptor 
-     * Descriptor 
-     */
-    std::string mDescriptor;
-
-    /** 
-     * \brief matcher 
-     * Matcher 
-     */
-    std::string mMatcher;
-
-    /** 
-     * \brief b2bThreshold 
-     * b2b threshold 
-     */
-    double mB2bThreshold;
+    FeatureDetectionParams mFeatureDetectionParams;
 
     /** 
      * \brief rmsePruningScaler 
@@ -130,24 +110,9 @@ public:
         return mDistanceLimit;
     }
 
-    std::string detector() const
+    FeatureDetectionParams featureDetectionParams() const
     {
-        return mDetector;
-    }
-
-    std::string descriptor() const
-    {
-        return mDescriptor;
-    }
-
-    std::string matcher() const
-    {
-        return mMatcher;
-    }
-
-    double b2bThreshold() const
-    {
-        return mB2bThreshold;
+        return mFeatureDetectionParams;
     }
 
     double rmsePruningScaler() const
@@ -176,24 +141,9 @@ public:
         mDistanceLimit = distanceLimit;
     }
 
-    void setDetector(std::string detector)
+    void setFeatureDetectionParams(FeatureDetectionParams const &featureDetectionParams)
     {
-        mDetector = detector;
-    }
-
-    void setDescriptor(std::string descriptor)
-    {
-        mDescriptor = descriptor;
-    }
-
-    void setMatcher(std::string matcher)
-    {
-        mMatcher = matcher;
-    }
-
-    void setB2bThreshold(double b2bThreshold)
-    {
-        mB2bThreshold = b2bThreshold;
+        mFeatureDetectionParams = featureDetectionParams;
     }
 
     void setRmsePruningScaler(double rmsePruningScaler)
@@ -214,10 +164,7 @@ template<class VisitorType>
         visitor.visit(mInlierThreshold,           static_cast<const DoubleField *>  (fields()[INLIERTHRESHOLD_ID]));
         visitor.visit(mTrackInlierThreshold,      static_cast<const DoubleField *>  (fields()[TRACKINLIERTHRESHOLD_ID]));
         visitor.visit(mDistanceLimit,             static_cast<const DoubleField *>  (fields()[DISTANCELIMIT_ID]));
-        visitor.visit(mDetector,                  static_cast<const StringField *>  (fields()[DETECTOR_ID]));
-        visitor.visit(mDescriptor,                static_cast<const StringField *>  (fields()[DESCRIPTOR_ID]));
-        visitor.visit(mMatcher,                   static_cast<const StringField *>  (fields()[MATCHER_ID]));
-        visitor.visit(mB2bThreshold,              static_cast<const DoubleField *>  (fields()[B2BTHRESHOLD_ID]));
+        visitor.visit(mFeatureDetectionParams,    static_cast<const CompositeField *>(fields()[FEATUREDETECTIONPARAMS_ID]));
         visitor.visit(mRmsePruningScaler,         static_cast<const DoubleField *>  (fields()[RMSEPRUNINGSCALER_ID]));
         visitor.visit(mMaxPruningScaler,          static_cast<const DoubleField *>  (fields()[MAXPRUNINGSCALER_ID]));
     }
@@ -232,10 +179,7 @@ template<class VisitorType>
           double inlierThreshold
         , double trackInlierThreshold
         , double distanceLimit
-        , std::string detector
-        , std::string descriptor
-        , std::string matcher
-        , double b2bThreshold
+        , FeatureDetectionParams featureDetectionParams
         , double rmsePruningScaler
         , double maxPruningScaler
     )
@@ -243,10 +187,7 @@ template<class VisitorType>
         mInlierThreshold = inlierThreshold;
         mTrackInlierThreshold = trackInlierThreshold;
         mDistanceLimit = distanceLimit;
-        mDetector = detector;
-        mDescriptor = descriptor;
-        mMatcher = matcher;
-        mB2bThreshold = b2bThreshold;
+        mFeatureDetectionParams = featureDetectionParams;
         mRmsePruningScaler = rmsePruningScaler;
         mMaxPruningScaler = maxPruningScaler;
     }
