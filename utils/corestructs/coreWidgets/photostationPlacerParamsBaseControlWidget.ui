@@ -30,7 +30,7 @@
     <item row="0" column="1">
      <widget class="QCheckBox" name="forceGpsCheckBox">
        <property name="toolTip">
-         <string>forceGps</string>
+         <string>Enforce gps locations</string>
        </property>
        <property name="checked">
            <bool>true</bool>
@@ -47,7 +47,7 @@
     <item row="1" column="1">
      <widget class="QSpinBox" name="speculativitySpinBox">
        <property name="toolTip">
-         <string>Enforce gps locations</string>
+         <string>This defines how many multicameras are subject for P3P evaluation at each iteration</string>
        </property>
        <property name="minimum">
         <number>-50000</number>
