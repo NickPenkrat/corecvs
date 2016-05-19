@@ -360,6 +360,26 @@
         </property>
        </widget>
       </item>
+      <item row="16" column="0">
+       <widget class="QPushButton" name="manipulatorCaptureButton">
+        <property name="styleSheet">
+         <string notr="true">text-align:left</string>
+        </property>
+        <property name="text">
+         <string>Take frames using manipulator</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../../resources/main.qrc">
+          <normaloff>:/new/prefix1/camera_lens.png</normaloff>:/new/prefix1/camera_lens.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+       </widget>
+      </item>
       <item row="12" column="1">
        <widget class="QPushButton" name="stopPushButton">
         <property name="enabled">

@@ -32,8 +32,10 @@ public:
     enum {
        UNCOMPRESSED_YUV = 0,
        UNCOMPRESSED_RGB = 1,
-       COMPRESSED_JPEG = 2,
-       COMPRESSED_FAST_JPEG = 3
+       UNCOMPRESSED_BAYER8 = 2,
+       UNCOMPRESSED_UYVY = 3,
+       COMPRESSED_JPEG = 4,
+       COMPRESSED_FAST_JPEG = 5
     };
 
     DirectShowCameraDescriptor() {}

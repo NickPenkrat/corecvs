@@ -78,7 +78,10 @@ int ChessBoardAssemblerParamsBase::staticInit()
           -10,
           "costThreshold",
           "costThreshold",
-          " Maximal cost for real board"
+          " Maximal cost for real board",
+          true,
+         -999999,
+         999999
         )
     );
     fields().push_back(

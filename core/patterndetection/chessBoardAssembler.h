@@ -1,5 +1,5 @@
-#ifndef CHESSBOARDASSEMBLER
-#define CHESSBOARDASSEMBLER
+#ifndef CHESSBOARDASSEMBLER_H
+#define CHESSBOARDASSEMBLER_H
 
 #include "chessBoardCornerDetector.h"
 
@@ -12,6 +12,7 @@
 
 #include "generated/chessBoardAssemblerParamsBase.h"
 
+using corecvs::Vector2dd;
 
 /*
  * Here we implement second part (= assembling chessboard from oriented corners)
@@ -25,9 +26,10 @@
 
 class BoardAligner;
 
+typedef std::vector<std::vector<Vector2dd>> BoardCornersType;
+
 struct RectangularGridPattern
 {
-
     double getScore(std::vector<OrientedCorner> &corners) const
     {
         return (score = getCornersScore(corners) + getStructureScore(corners));
@@ -39,35 +41,7 @@ struct RectangularGridPattern
         return -w() * h();
     }
 
-    double getStructureScore(std::vector<OrientedCorner> &corners) const
-    {
-        double e_struct = 0.0;
-        for (int i = 0; i < w(); ++i)
-        {
-            for (int j = 0; j + 2 < h(); ++j)
-            {
-                Vector2dd c1 = corners[cornerIdx[j + 0][i]].pos;
-                Vector2dd c2 = corners[cornerIdx[j + 1][i]].pos;
-                Vector2dd c3 = corners[cornerIdx[j + 2][i]].pos;
-                double err = (c1 + c3 - 2.0 * c2).l2Metric() / (c1 - c3).l2Metric();
-                if (err > e_struct)
-                    e_struct = err;
-            }
-        }
-        for (int i = 0; i < h(); ++i)
-        {
-            for (int j = 0; j + 2 < w(); ++j)
-            {
-                Vector2dd c1 = corners[cornerIdx[i][j + 0]].pos;
-                Vector2dd c2 = corners[cornerIdx[i][j + 1]].pos;
-                Vector2dd c3 = corners[cornerIdx[i][j + 2]].pos;
-                double err = (c1 + c3 - 2.0 * c2).l2Metric() / (c1 - c3).l2Metric();
-                if (err > e_struct)
-                    e_struct = err;
-            }
-        }
-        return w() * h() * e_struct;
-    }
+    double getStructureScore(std::vector<OrientedCorner> &corners) const;
 
     std::vector<std::vector<int> > cornerIdx;
     mutable double score = 0.0;
@@ -90,7 +64,6 @@ public:
         if (id == 0) {
             return hypothesisDimFirst();
         }
-
         return hypothesisDimSecond();
     }
 };
@@ -101,12 +74,14 @@ class ChessBoardAssembler : ChessBoardAssemblerParams
 public:
     ChessBoardAssembler(ChessBoardAssemblerParams params = ChessBoardAssemblerParams());
     ChessBoardAssembler(const ChessBoardAssembler &other);
+
     ChessBoardAssembler& operator=(const ChessBoardAssembler &other);
+
     void assembleBoards(std::vector<OrientedCorner> &corners_,
-                        std::vector<std::vector<std::vector<corecvs::Vector2dd>>> &boards,
+                        std::vector<BoardCornersType> &boards,
                         BoardAligner* aligner = 0, DpImage* buffer = 0);
 
-protected://iivate:
+protected: //private:
     enum class Direction {UP, DOWN, LEFT, RIGHT};
 
     class BoardExpander
@@ -116,17 +91,17 @@ protected://iivate:
             bool initBoard(int seed);
             bool getExpandedBoard(RectangularGridPattern &board);
         private:
-            bool getNearest(int from, corecvs::Vector2dd dir, int &res, double &dist);
+            bool getNearest(int from, Vector2dd dir, int &res, double &dist);
             bool growBoard();
             bool growDir(Direction dir, RectangularGridPattern &dst, std::vector<int> &usedCorners);
-            bool assignNearest(std::vector<corecvs::Vector2dd> &prediction, std::vector<int> &usedCorners, std::vector<int> &assignment);
-            void predictor(Direction dir, std::vector<corecvs::Vector2dd> &prediction);
-            corecvs::Vector2dd predict(corecvs::Vector2dd a, corecvs::Vector2dd b, corecvs::Vector2dd c);
+            bool assignNearest(std::vector<Vector2dd> &prediction, std::vector<int> &usedCorners, std::vector<int> &assignment);
+            void predictor(Direction dir, std::vector<Vector2dd> &prediction);
+            Vector2dd predict(Vector2dd a, Vector2dd b, Vector2dd c);
             
-            ChessBoardAssembler* assembler;
-            std::vector<int> usedCorners;
-//            std::vector<corecvs::Vector2dd> prediction;
-            RectangularGridPattern board;
+            ChessBoardAssembler    *assembler;
+            std::vector<int>        usedCorners;
+            RectangularGridPattern  board;
+            //std::vector<corecvs::Vector2dd> prediction;
     };
 
     class ParallelBoardExpander
@@ -137,24 +112,24 @@ protected://iivate:
         private:
             ChessBoardAssembler *assembler;
     };
-    void acceptHypothesis(RectangularGridPattern &board);
-    std::vector<RectangularGridPattern> boards;   
 
-    std::vector<OrientedCorner> corners;
-    BoardAligner *aligner;
-    DpImage* buffer;
+    void acceptHypothesis(RectangularGridPattern &board);
+
+    std::vector<RectangularGridPattern> boards;   
+    std::vector<OrientedCorner>         corners;
+    BoardAligner                        *aligner = nullptr;
+    DpImage                             *buffer  = nullptr;
 
 #ifdef WITH_TBB
-    tbb::mutex mutex;
+    tbb::mutex                          mutex;
 #endif
 
 public:
     void setStatistics(corecvs::Statistics *stats);
     corecvs::Statistics *getStatistics();
 
-
 private:
     corecvs::Statistics *stats = 0;
 };
 
-#endif
+#endif // CHESSBOARDASSEMBLER_H

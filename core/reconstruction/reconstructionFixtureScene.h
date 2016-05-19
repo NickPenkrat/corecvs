@@ -13,9 +13,19 @@ struct FeatureDetectionParams
 {
     std::string detector   = "ORB";
     std::string descriptor = "ORB";
-    std::string matcher    = "BF";
-    double b2bThreshold = 0.9;
-    bool matchF2F = false;
+    std::string matcher    = "BF" ;
+    double b2bThreshold    = 0.9  ;
+    bool matchF2F          = false;
+
+    template<class VisitorType>
+        void accept(VisitorType &visitor)
+        {
+            visitor.visit(detector      ,std::string("ORB")    ,"detector"        );
+            visitor.visit(descriptor    ,std::string("ORB")    ,"descriptor"      );
+            visitor.visit(matcher       ,std::string("BF")     ,"matcher"         );
+            visitor.visit(b2bThreshold  ,0.9      ,"b2bThreshold"    );
+            visitor.visit(matchF2F      ,false    ,"matchF2F"        );
+        }
 };
 
 enum class ReconstructionState
@@ -88,6 +98,7 @@ public:
     void pruneTracks(double rmse, double maxe, double distanceThreshold);
     bool checkTrack(SceneFeaturePoint* track, uint32_t mask = ~uint32_t(0), double rmse = 1.0, double maxe = 3.0, double distanceThreshold = 1000.0);
     static std::vector<uint32_t> GenerateBitmasks(int N, int M);
+    void pruneSmallTracks();
 
 
     //\brief Returns number of FixtureCamera's in placedFixtures fixtures

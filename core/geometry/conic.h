@@ -1,8 +1,8 @@
 #ifndef CONIC_H
 #define CONIC_H
 
-#include "simpleRenderer.h"
 #include "line.h"
+#include "lineSpan.h"
 
 namespace corecvs {
 
@@ -47,6 +47,12 @@ public:
         xr = x;
         return true;
     }
+
+    friend ostream & operator <<(ostream &out, const UnifiedSphere &sphere)
+    {
+        out << "[" << sphere.c << "] (" << sphere.r << ")";
+        return out;
+    }
 };
 
 class Circle2d : public UnifiedSphere<Circle2d, Vector2dd>
@@ -71,7 +77,7 @@ class Sphere3d : public UnifiedSphere<Sphere3d, Vector3dd>
 public:
     Sphere3d(){}
 
-    Sphere3d(Vector3dd &c, double r) :
+    Sphere3d(const Vector3dd &c, double r) :
         UnifiedSphere(c, r)
     {}
 
@@ -112,16 +118,21 @@ public:
     CircleSpanIterator(const Circle2d &circle) : circle(circle)
     {
         radSQ = circle.r * circle.r;
-        currentY  = -circle.r + circle.c.y() - 1;
+        currentY  = circle.c.y() - circle.r  - 1;
         currentDX = 0;
     }
 
-    bool step()
+    void step()
     {
-        SYNC_PRINT(("CircleSpanIterator::step(): called\n"));
+        //SYNC_PRINT(("CircleSpanIterator::step(): called %d\n", currentY));
         currentY++;
-        currentDX = (int)sqrt((float)(radSQ - (currentY - 0.5) * (currentY - 0.5)));
-        return false;
+        double h = currentY - 0.5 - circle.c.y();
+        double hsq = h * h;
+        currentDX = (int)sqrt((float)(radSQ - hsq));
+    }
+
+    bool hasValue() {
+        return currentY <= (circle.c.y() + circle.r);
     }
 
     void getSpan(int &y, int &x1, int &x2)
@@ -134,8 +145,31 @@ public:
     LineSpanInt getSpan()
     {
         LineSpanInt span;
-        getSpan(span.y, span.x1, span.x2);
+        getSpan(span.cy, span.x1, span.x2);
         return span;
+    }
+
+    /**
+     * C++ style iteration
+     **/
+    CircleSpanIterator &begin() {
+        return *this;
+    }
+
+    CircleSpanIterator & end() {
+        return *this;
+    }
+
+    bool operator !=(const CircleSpanIterator & other) {
+        return this->currentY <= (other.circle.c.y() + other.circle.r);
+    }
+
+    LineSpanInt operator *() {
+        return getSpan();
+    }
+
+    void operator ++() {
+        step();
     }
 };
 

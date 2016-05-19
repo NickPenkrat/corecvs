@@ -88,7 +88,10 @@ public:
     }
 
 
-    /* Generic Array support */
+    /**
+     * Generic Array support.
+     * Reflection style
+     **/
     template <typename inputType, typename reflectionType>
     void visit(std::vector<inputType> &fields, const reflectionType * /*fieldDescriptor*/)
     {
@@ -98,6 +101,10 @@ public:
         }
     }
 
+    /**
+     * Generic Array support
+     * String style
+     **/
     template <typename inputType>
     void visit(std::vector<inputType> &fields, const char* arrayName)
     {

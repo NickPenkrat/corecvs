@@ -61,8 +61,8 @@ struct ImageData
         visitor.visit(distortionMaxError,   -1.0, "distortionMaxError");
         visitor.visit(calibrationRmse,      -1.0, "calibrationRmse");
         visitor.visit(calibrationMaxError,  -1.0, "calibrationMaxError");
-        visitor.visit(calibrationRmse,      -1.0, "singleCameraRmse");
-        visitor.visit(calibrationMaxError,  -1.0, "singleCameraMaxError");
+        visitor.visit(singleCameraRmse,     -1.0, "singleCameraRmse");
+        visitor.visit(singleCameraMaxError, -1.0, "singleCameraMaxError");
         visitor.visit(fullCameraRmse,       -1.0, "fullCameraRmse");
         visitor.visit(fullCameraMaxError,   -1.0, "fullCameraMaxError");
     }
@@ -99,12 +99,12 @@ struct CalibrationSettings
     // TODO: move to some <<CalibratorParams>> structure
     bool singleCameraCalibratorUseZhangPresolver = true;
     bool singleCameraCalibratorUseLMSolver       = true;
-    CameraConstraints singleCameraCalibratorConstraints = CameraConstraints::ZERO_SKEW | CameraConstraints::EQUAL_FOCAL | CameraConstraints::LOCK_SKEW;
+    CameraConstraints singleCameraCalibratorConstraints = CameraConstraints::DEFAULT;
     int  singleCameraLMiterations                = 1000;
 
     bool photostationCalibratorUseBFSPresolver   = true;
     bool photostationCalibratorUseLMSolver       = true;
-    CameraConstraints photostationCalibratorConstraints = CameraConstraints::ZERO_SKEW | CameraConstraints::EQUAL_FOCAL | CameraConstraints::LOCK_SKEW;
+    CameraConstraints photostationCalibratorConstraints = CameraConstraints::DEFAULT;
     int  photostationLMiterations                = 1000;
 
     template<class VisitorType>
@@ -127,14 +127,14 @@ struct CalibrationSettings
         visitor.visit(singleCameraCalibratorUseLMSolver,        true, "singleCameraCalibratorUseLMSolver");
 
         auto m = asInteger(singleCameraCalibratorConstraints);
-        visitor.visit(m, asInteger(CameraConstraints::ZERO_SKEW | CameraConstraints::EQUAL_FOCAL | CameraConstraints::LOCK_SKEW), "singleCameraCalibratorConstraints");
+        visitor.visit(m, asInteger(CameraConstraints::DEFAULT), "singleCameraCalibratorConstraints");
         singleCameraCalibratorConstraints = static_cast<CameraConstraints>(m);
 
         visitor.visit(photostationCalibratorUseBFSPresolver,    true, "photostationCalibratorUseBFSPresolver");
         visitor.visit(photostationCalibratorUseLMSolver,        true, "photostationCalibratorUseLMSolver");
 
         m = asInteger(photostationCalibratorConstraints);
-        visitor.visit(m, asInteger(CameraConstraints::ZERO_SKEW | CameraConstraints::EQUAL_FOCAL | CameraConstraints::LOCK_SKEW), "photostationCalibratorConstraints");
+        visitor.visit(m, asInteger(CameraConstraints::DEFAULT), "photostationCalibratorConstraints");
         photostationCalibratorConstraints = static_cast<CameraConstraints>(m);
 
         visitor.visit(calibrationLockParams,                    PinholeCameraIntrinsics(), "calibrationLockParams");
@@ -161,7 +161,8 @@ struct CalibrationJob
     bool                                            calibrated = false;
 
     CalibrationSettings                             settings;
-    // TODO: Should we serialize it?!
+
+    // TODO: Should we serialize it?!  // This object is owned outside!
     StatusTracker*                                  state = nullptr;
 
     template<class VisitorType>

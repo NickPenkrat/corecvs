@@ -108,15 +108,15 @@ void BaseCalculationThread::executeFilterGraph(Statistics *stats)
     PreciseTimer timer = PreciseTimer::currentTime();
     if (stats != NULL)
     {
-        oldPrefix = stats->prefix;
-        stats->prefix += "Input Graph> ";
+        oldPrefix = stats->mPrefix;
+        stats->mPrefix += "Input Graph> ";
     }
     mProcessorGraph->stats = stats;
     mProcessorGraph->execute();
     if (stats != NULL)
     {
         stats->setTime("Total", timer.usecsToNow());
-        stats->prefix = oldPrefix;
+        stats->mPrefix = oldPrefix;
     }
 
     int currentOutputBlocks = Frames::DEFAULT_FRAME;

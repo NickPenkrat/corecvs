@@ -37,6 +37,67 @@ TEST(Linear, testPlane2Point)
     CORE_ASSERT_TRUE(proj.notTooFar(rproj, 1e-7), "Wrong projection");
 }
 
+TEST(Linear, testPlaneAndRay)
+{
+    {
+         Plane3d plane(Vector3dd::OrtY(), -10);
+
+         Ray3d ray(Vector3dd(0.0, -1.0, 1.0), Vector3dd::Zero());
+
+         Vector3dd point = plane.intersectWith(ray);
+
+         std::cout << "Point:" << std::endl;
+         std::cout << point << std::endl;
+         CORE_ASSERT_TRUE(point.notTooFar(Vector3dd(0, 10, -10)), "Wrong intersection");
+         CORE_ASSERT_TRUE(plane.distanceTo(point) < 1e-3, "Wrong intersection");
+
+         double t = plane.intersectWithP(ray);
+         std::cout << "T:" << std::endl;
+         std::cout << t << std::endl;
+
+         std::cout << "P(t):" << std::endl;
+         std::cout << ray.getPoint(t) << std::endl;
+    }
+
+     /**/
+    {
+         Ray3d ray1;
+         ray1.p = Vector3dd(23.1231, -26.9769, 114.821);
+         ray1.a = Vector3dd(-143.123, -43.0231, -64.8209);
+         ray1.a.normalise();
+
+         Plane3d plane1(Vector3dd::OrtY(), 25.0);
+
+         Vector3dd point = plane1.intersectWith(ray1);
+
+         std::cout << "Point:" << std::endl;
+         std::cout << point << std::endl;
+         CORE_ASSERT_TRUE(plane1.distanceTo(point) < 1e-3, "Wrong intersection");
+
+         double t = plane1.intersectWithP(ray1);
+         std::cout << "T:" << std::endl;
+         std::cout << t << std::endl;
+
+         std::cout << "P(t):" << std::endl;
+         std::cout << ray1.getPoint(t) << std::endl;
+         CORE_ASSERT_TRUE(plane1.distanceTo(ray1.getPoint(t)) < 1e-3, "Wrong intersection");
+
+/*
+         double denum = plane1.normal() & ray1.a;
+         double num   = ((plane1.normal() & ray1.p) + plane1.last());
+         std::cout << "Plane normal " << plane1.normal() << std::endl;
+         std::cout << "Plane last   " << plane1.last() << std::endl;
+
+
+         std::cout << "Denum " << denum << std::endl;
+         std::cout << "Num " << num << std::endl;
+         std::cout << "T1 " << num / denum << std::endl;
+*/
+    }
+
+
+}
+
 
 TEST(Linear, testPlane2Plane)
 {

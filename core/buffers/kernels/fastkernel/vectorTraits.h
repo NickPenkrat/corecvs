@@ -58,7 +58,7 @@ public:
 
     typedef UInt16x8 Type;
     typedef Int16x8 SignedType;
-    typedef Int32x8 ExtendedType;
+    typedef Int32x8v ExtendedType;
 };
 
 /*
@@ -111,6 +111,18 @@ public:
     typedef DoublexT4<3> Type;
     typedef DoublexT4<3> SignedType;
     typedef DoublexT4<3> ExtendedType;
+};
+
+class TraitFloatBufferVector8x5 {
+public:
+    typedef TraitGeneric<float> FallbackTraits;
+
+    typedef TraitGeneric<float>::Type InternalType;
+    static const int step = FloatT8<5>::SIZE;
+
+    typedef FloatT8<3> Type;
+    typedef FloatT8<3> SignedType;
+    typedef FloatT8<3> ExtendedType;
 };
 
 #elif defined( WITH_SSE )
@@ -218,6 +230,13 @@ class VectorAlgebraDoubleEx5
 {
 public:
     typedef VectorAlgebraMulti<TraitDoubleBufferVector4x5, inputNumber, outputNumber> Type;
+};
+
+template<int inputNumber = 1, int outputNumber = 1>
+class VectorAlgebraFloatEx5
+{
+public:
+    typedef VectorAlgebraMulti<TraitFloatBufferVector8x5, inputNumber, outputNumber> Type;
 };
 #endif
 
