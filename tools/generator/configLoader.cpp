@@ -116,7 +116,7 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
         QString uibase = classElement.attribute("uibase");
         result->uiBaseClass = toCString(uibase);
 
-        // qDebug() << "Class" << result->name.name << " (" << i << "/" << classes.length() << ")";
+        qDebug() << "Class" << result->name.name << " (" << i << "/" << classes.length() << ")";
 
         QDomNodeList fields = classElement.elementsByTagName("field");
         for (int j = 0; j < fields.length(); j++)
