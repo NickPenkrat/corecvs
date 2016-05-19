@@ -22,8 +22,13 @@ PhotostationPlacerFeatureSelectionParametersControlWidget::PhotostationPlacerFea
 
     QObject::connect(mUi->inlierThresholdSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->trackInlierThresholdSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->pairCorrespondenceThresholdSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->distanceLimitSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->detectorEdit, SIGNAL(textChanged(QString)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->descriptorEdit, SIGNAL(textChanged(QString)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->matcherEdit, SIGNAL(textChanged(QString)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->b2bThresholdSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->rmsePruningScalerSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->maxPruningScalerSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
 }
 
 PhotostationPlacerFeatureSelectionParametersControlWidget::~PhotostationPlacerFeatureSelectionParametersControlWidget()
@@ -53,8 +58,13 @@ void PhotostationPlacerFeatureSelectionParametersControlWidget::getParameters(Ph
 
     params.setInlierThreshold  (mUi->inlierThresholdSpinBox->value());
     params.setTrackInlierThreshold(mUi->trackInlierThresholdSpinBox->value());
-    params.setPairCorrespondenceThreshold(mUi->pairCorrespondenceThresholdSpinBox->value());
     params.setDistanceLimit    (mUi->distanceLimitSpinBox->value());
+    params.setDetector         (mUi->detectorEdit->text().toStdString());
+    params.setDescriptor       (mUi->descriptorEdit->text().toStdString());
+    params.setMatcher          (mUi->matcherEdit->text().toStdString());
+    params.setB2bThreshold     (mUi->b2bThresholdSpinBox->value());
+    params.setRmsePruningScaler(mUi->rmsePruningScalerSpinBox->value());
+    params.setMaxPruningScaler (mUi->maxPruningScalerSpinBox->value());
 
 }
 
@@ -69,8 +79,13 @@ PhotostationPlacerFeatureSelectionParameters *PhotostationPlacerFeatureSelection
     PhotostationPlacerFeatureSelectionParameters *result = new PhotostationPlacerFeatureSelectionParameters(
           mUi->inlierThresholdSpinBox->value()
         , mUi->trackInlierThresholdSpinBox->value()
-        , mUi->pairCorrespondenceThresholdSpinBox->value()
         , mUi->distanceLimitSpinBox->value()
+        , mUi->detectorEdit->text().toStdString()
+        , mUi->descriptorEdit->text().toStdString()
+        , mUi->matcherEdit->text().toStdString()
+        , mUi->b2bThresholdSpinBox->value()
+        , mUi->rmsePruningScalerSpinBox->value()
+        , mUi->maxPruningScalerSpinBox->value()
     );
     return result;
 }
@@ -81,8 +96,13 @@ void PhotostationPlacerFeatureSelectionParametersControlWidget::setParameters(co
     bool wasBlocked = blockSignals(true);
     mUi->inlierThresholdSpinBox->setValue(input.inlierThreshold());
     mUi->trackInlierThresholdSpinBox->setValue(input.trackInlierThreshold());
-    mUi->pairCorrespondenceThresholdSpinBox->setValue(input.pairCorrespondenceThreshold());
     mUi->distanceLimitSpinBox->setValue(input.distanceLimit());
+    mUi->detectorEdit->setText(input.detector().c_str());
+    mUi->descriptorEdit->setText(input.descriptor().c_str());
+    mUi->matcherEdit->setText(input.matcher().c_str());
+    mUi->b2bThresholdSpinBox->setValue(input.b2bThreshold());
+    mUi->rmsePruningScalerSpinBox->setValue(input.rmsePruningScaler());
+    mUi->maxPruningScalerSpinBox->setValue(input.maxPruningScaler());
     blockSignals(wasBlocked);
     emit paramsChanged();
 }

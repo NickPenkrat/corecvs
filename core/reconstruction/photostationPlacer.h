@@ -1,5 +1,5 @@
-#ifndef PHOTOSTATIONPLACER
-#define PHOTOSTATIONPLACER
+#ifndef PHOTOSTATIONPLACER_H_
+#define PHOTOSTATIONPLACER_H_
 
 #include <string>
 #include <vector>
@@ -24,7 +24,7 @@ namespace corecvs
 {
 
 
-
+#if 1
 struct PhotostationPlacerParams : public PhotostationPlacerParamsBase
 {
     PhotostationPlacerOptimizationType optimizationParams =
@@ -47,6 +47,7 @@ struct PhotostationPlacerParams : public PhotostationPlacerParamsBase
         errorType = static_cast<PhotostationPlacerOptimizationErrorType>(vvv);
     }
 };
+#endif
 
 class PhotostationPlacer :    public PhotostationPlacerEssentialFilterParameters, public PhotostationPlacerFeatureSelectionParameters, public PhotostationPlacerParams
 {
@@ -93,4 +94,4 @@ protected:
 };
 }
 
-#endif
+#endif //PHOTOSTATIONPLACER_H_

@@ -234,9 +234,16 @@ full_ui_classes+=" bitcodeBoardParamsBase"
 
 
 # Reconstruction
+#full_ui_classes+=" photostationPlacerEssentialFilterParameters"
+#full_ui_classes+=" photostationPlacerFeatureSelectionParameters"
+full_ui_classes+=" photostationPlacerParamsBase"
+
+enums+=" photostationPlacerOptimizationErrorType"
+
 full_ui_classes+=" photostationPlacerEssentialFilterParameters"
 full_ui_classes+=" photostationPlacerFeatureSelectionParameters"
-full_ui_classes+=" photostationPlacerParamsBase"
+full_ui_classes+=" photostationAppendParameters"
+full_ui_classes+=" photostationNonlinearOptimizationParameters"
 
 PRIFILE="${DST_DIR}/generated.pri"
 

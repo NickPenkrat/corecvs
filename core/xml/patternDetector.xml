@@ -36,11 +36,6 @@
      <field type="bool"   name="produceDebug"        defaultValue="false"/>
      <field type="bool"   name="floatSpeedup"        defaultValue="true"/>
 
-     <!--
-     <field type="double" name="gradientCrossWidth"  defaultValue="3.0" comment="Width of cross for corner gradient-score" />
-
-     <!-- Insert vectors here -->
-
      <field type="double" name="sectorSizeDeg"  suffix="deg" defaultValue="90"    comment="Sector size in deg" />
      <field type="int"    name="histogramBins"               defaultValue="50"    comment="Number of bins for computing edge direction histogram" min="0"   max="999999"  />
 
