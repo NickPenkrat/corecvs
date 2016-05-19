@@ -262,7 +262,7 @@ extern "C" {
 
 #ifdef _MSC_VER
 # include <intrin.h>
-# define __builtin_popcount __popcount
+# define __builtin_popcount __popcnt
 #endif
 
 #define REFLECTION_IN_CORE
