@@ -53,7 +53,7 @@ int CheckerboardDetectionParameters::staticInit()
         (
           CheckerboardDetectionParameters::USE_UNDISTORTION_ID,
           offsetof(CheckerboardDetectionParameters, mUseUndistortion),
-          true,
+          false,
           "Use Undistortion",
           "Use Undistortion",
           "Use Undistortion"
