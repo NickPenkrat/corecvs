@@ -784,6 +784,7 @@ void corecvs::PhotostationPlacer::fullRun()
             std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ scene->placedFixtures[0]->location.rotor.conjugated()) << std::endl;
         scene->printTrackStats();
     }
+    scene->pruneSmallTracks();
     fit(optimizationParams, finalNonLinearIterations / 2);
     scene->pruneTracks(inlierThreshold * rmsePruningScaler / 2.0, inlierThreshold * maxPruningScaler / 2.0, distanceLimit);
     fit(optimizationParams, finalNonLinearIterations / 2);

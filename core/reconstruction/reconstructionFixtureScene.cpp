@@ -89,6 +89,21 @@ void ReconstructionFixtureScene::printMatchStats()
     }
 }
 
+void ReconstructionFixtureScene::pruneSmallTracks()
+{
+    std::cout << "Prunning small..." << std::endl;
+    printMatchStats();
+    printTrackStats();
+    int id = 0;
+    for (auto& pt: trackedFeatures)
+        if (pt->observations__.size() > 2)
+            trackedFeatures[id++] = pt;
+    trackedFeatures.resize(id);
+    printTrackStats();
+    printMatchStats();
+    std::cout << "Pruned." << std::endl;
+}
+
 void ReconstructionFixtureScene::printTrackStats()
 {
     std::unordered_map<std::pair<CameraFixture*, CameraFixture*>, int> cntr;
@@ -201,6 +216,7 @@ bool ReconstructionFixtureScene::checkTrack(SceneFeaturePoint* track, uint32_t m
     if (ssq / cnt < rmse * rmse && mxe < maxe && visibleAll && !tooFar)
     {
         track->reprojectedPosition = res;
+        return true;
     }
     return false;
 }
@@ -208,12 +224,18 @@ bool ReconstructionFixtureScene::checkTrack(SceneFeaturePoint* track, uint32_t m
 std::vector<uint32_t> ReconstructionFixtureScene::GenerateBitmasks(int N, int M)
 {
     std::vector<uint32_t> res;
+    if (M == 0)
+    {
+        res.push_back(0);
+        return res;
+    }
     for (int first = M - 1; first < N; ++first)
     {
-        auto prev = GenerateBitmasks(first - 1, M - 1);
+        auto prev = GenerateBitmasks(first, M - 1);
         for (auto& m: prev)
             res.push_back((1u << first) | m);
     }
+    CORE_ASSERT_TRUE_S(res.size() || M > N);
     for (auto& m: res)
         CORE_ASSERT_TRUE_S(__builtin_popcount(m) == M);
     return res;
