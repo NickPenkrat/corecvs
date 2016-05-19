@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "uEyeCameraDescriptor.h"
 #include "ueye_deprecated.h"
 
@@ -104,10 +106,16 @@ bool UEyeCameraDescriptor::allocImages()
                 mCamera,
                 width, height,
                 bufferProps.bitspp, (char **)&images[i].buffer, &images[i].imageID) != IS_SUCCESS)
+        {
+            SYNC_PRINT(("Unable to allocate buffers\n"));
             return false;
+        }
 
         if (is_AddToSequence (mCamera, (char *)images[i].buffer, images[i].imageID) != IS_SUCCESS)
+        {
+            SYNC_PRINT(("Unable to append buffers to sequence\n"));
             return false;
+        }
 
         images[i].imageSeqNum = i + 1;
         images[i].bufferSize = (width * height * bufferProps.bitspp) / 8;
@@ -116,7 +124,7 @@ bool UEyeCameraDescriptor::allocImages()
     return TRUE;
 }
 
-bool UEyeCameraDescriptor::deAllocImages()
+bool UEyeCameraDescriptor::deallocImages()
 {
     for (unsigned int i = 0; i < sizeof(images) / sizeof(images[0]); i++)
     {
@@ -185,8 +193,10 @@ int UEyeCameraDescriptor::initBuffer()
     bufferProps.height = height;
     bufferProps.colorformat = colormode;
     bufferProps.bitspp = getBitsPerPixel(colormode);
-
     bufferProps.imgformat = getQImageFormat(colormode);
+
+    std::cout << "Expected buffer format" << std::endl;
+    std::cout << bufferProps << std::endl;
 
     // Reallocate image buffers
     allocImages();
@@ -278,12 +288,15 @@ int UEyeCameraDescriptor::searchDefImageFormats(int suppportMask)
 }
 
 
-int UEyeCameraDescriptor::init(int deviceID, bool binning, bool globalShutter, int pixelClock, double fps)
+int UEyeCameraDescriptor::init(int deviceID, bool binning, bool globalShutter, int pixelClock, double fps, bool isRgb)
 {
     qDebug("Entering: init(deviceID=%d)", deviceID);
-    HIDS cam = (HIDS) (deviceID | IS_USE_DEVICE_ID);
+    if (deviceID == -1) {
+        SYNC_PRINT(("Not initializing camera\n"));
+        return IS_NO_SUCCESS;
+    }
 
-    //CAMINFO m_CamInfo;
+    HIDS cam = (HIDS) (deviceID | IS_USE_DEVICE_ID);
 
     unsigned int initialParameterSet = IS_CONFIG_INITIAL_PARAMETERSET_NONE;
 
@@ -304,7 +317,11 @@ int UEyeCameraDescriptor::init(int deviceID, bool binning, bool globalShutter, i
             ret = is_ResetToDefault (cam);
         }
 
-        int colormode = IS_CM_MONO12; //0;
+        //int colormode = IS_CM_MONO12; //0;
+        int colormode = IS_CM_MONO16;
+        if (isRgb) {
+            colormode = IS_CM_RGB8_PACKED;
+        }
         if (is_SetColorMode (cam, colormode) != IS_SUCCESS)
         {
             qDebug("  Can't set color mode");
@@ -345,12 +362,11 @@ int UEyeCameraDescriptor::init(int deviceID, bool binning, bool globalShutter, i
         is_SetFrameRate (cam, fps, &fps);
         qDebug("   New fps is: %lf", fps);
 
-
-
     }
 
     this->mCamera = cam;
     this->deviceID = deviceID;
+    this->inited = true;
 
     /* get some special camera properties */
     ZeroMemory (&cameraProps, sizeof(cameraProps));
