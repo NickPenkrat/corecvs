@@ -127,7 +127,7 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
             QDomAttr typeAttribute = fieldElement.attributeNode("type");
             QString type = typeAttribute.value();
 
-            // qDebug() << "  Field" << fieldNameing.name << " type " << type;
+            qDebug() << "  Field" << fieldNameing.name << " type " << type << " (" << j << "/" << fields.length() << ")";
 
             QString defaultValue = fieldElement.attribute("defaultValue");
             QString minValue     = fieldElement.attribute("min");

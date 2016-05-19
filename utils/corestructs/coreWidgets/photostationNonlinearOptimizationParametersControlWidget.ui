@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>PhotostationPlacerParamsBaseControlWidget</class>
- <widget class="QWidget" name="PhotostationPlacerParamsBaseControlWidget">
+ <class>PhotostationNonlinearOptimizationParametersControlWidget</class>
+ <widget class="QWidget" name="PhotostationNonlinearOptimizationParametersControlWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>PhotostationPlacerParamsBase</string>
+   <string>PhotostationNonlinearOptimizationParameters</string>
   </property>
    <layout class="QGridLayout" name="gridLayout">
     <property name="margin">
@@ -23,95 +23,59 @@
     <item row="0" column="0">
      <widget class="QLabel" name="label_0">
        <property name="text">
-         <string>forceGps</string>
+         <string>postAppendNonlinearIterations</string>
        </property>
      </widget>
     </item>
     <item row="0" column="1">
-     <widget class="QCheckBox" name="forceGpsCheckBox">
+     <widget class="QSpinBox" name="postAppendNonlinearIterationsSpinBox">
        <property name="toolTip">
-         <string>Enforce gps locations</string>
-       </property>
-       <property name="checked">
-           <bool>true</bool>
+         <string>Post-append non-linear optimization iterations</string>
        </property>
      </widget>
     </item>
     <item row="1" column="0">
      <widget class="QLabel" name="label_1">
        <property name="text">
-         <string>speculativity</string>
+         <string>finalNonLinearIterations</string>
        </property>
      </widget>
     </item>
     <item row="1" column="1">
-     <widget class="QSpinBox" name="speculativitySpinBox">
+     <widget class="QSpinBox" name="finalNonLinearIterationsSpinBox">
        <property name="toolTip">
-         <string>This defines how many multicameras are subject for P3P evaluation at each iteration</string>
-       </property>
-       <property name="minimum">
-        <number>-50000</number>
-       </property>
-       <property name="maximum">
-        <number>50000</number>
-       </property>
-       <property name="singleStep">
-        <number>1</number>
-       </property>
-       <property name="value">
-        <number>1000</number>
+         <string>Final non-linear iterations</string>
        </property>
      </widget>
     </item>
     <item row="2" column="0">
      <widget class="QLabel" name="label_2">
        <property name="text">
-         <string>minimalInlierCount</string>
+         <string>alternatingIterations</string>
        </property>
      </widget>
     </item>
     <item row="2" column="1">
-     <widget class="QSpinBox" name="minimalInlierCountSpinBox">
+     <widget class="QSpinBox" name="alternatingIterationsSpinBox">
        <property name="toolTip">
-         <string>minimalInlierCount</string>
-       </property>
-       <property name="minimum">
-        <number>-50000</number>
-       </property>
-       <property name="maximum">
-        <number>50000</number>
-       </property>
-       <property name="singleStep">
-        <number>1</number>
-       </property>
-       <property name="value">
-        <number>32</number>
+         <string>Alternating optimization on success steps</string>
        </property>
      </widget>
     </item>
     <item row="3" column="0">
      <widget class="QLabel" name="label_3">
        <property name="text">
-         <string>maximalFailureProbability</string>
+         <string>excessiveQuaternionParametrization</string>
        </property>
      </widget>
     </item>
     <item row="3" column="1">
-     <widget class="QDoubleSpinBox" name="maximalFailureProbabilitySpinBox">
+     <widget class="QCheckBox" name="excessiveQuaternionParametrizationCheckBox">
        <property name="toolTip">
-         <string>maximalFailureProbability</string>
+         <string>Excessive/non-excessive quaternion parametrization</string>
        </property>
-       <property name="minimum">
-        <double>-50000</double>
-       </property>
-       <property name="maximum">
-        <double>50000</double>
-       </property>
-       <property name="singleStep">
-        <double>1</double>
-       </property>
-       <property name="value">
-        <double>0.15</double>
+       <property name="checked">
+           <bool>true</bool>
        </property>
      </widget>
     </item>
@@ -147,27 +111,27 @@
  <resources/>
  <connections>
   <connection>
-   <sender>forceGpsCheckBox</sender>
+   <sender>postAppendNonlinearIterationsSpinBox</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>PhotostationNonlinearOptimizationParametersControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>finalNonLinearIterationsSpinBox</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>PhotostationNonlinearOptimizationParametersControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>alternatingIterationsSpinBox</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>PhotostationNonlinearOptimizationParametersControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>excessiveQuaternionParametrizationCheckBox</sender>
    <signal>stateChanged(int)</signal>
-   <receiver>PhotostationPlacerParamsBaseControlWidget</receiver>
-   <slot>changeParameters()</slot>
-  </connection>
-  <connection>
-   <sender>speculativitySpinBox</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>PhotostationPlacerParamsBaseControlWidget</receiver>
-   <slot>changeParameters()</slot>
-  </connection>
-  <connection>
-   <sender>minimalInlierCountSpinBox</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>PhotostationPlacerParamsBaseControlWidget</receiver>
-   <slot>changeParameters()</slot>
-  </connection>
-  <connection>
-   <sender>maximalFailureProbabilitySpinBox</sender>
-   <signal>valueChanged(double)</signal>
-   <receiver>PhotostationPlacerParamsBaseControlWidget</receiver>
+   <receiver>PhotostationNonlinearOptimizationParametersControlWidget</receiver>
    <slot>changeParameters()</slot>
   </connection>
  </connections>

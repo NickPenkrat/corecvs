@@ -45,6 +45,9 @@ public:
         B2BRANSACP6RPTHRESHOLD_ID,
         RUNESSENTIALFILTERING_ID,
         ESSENTIALTARGETGAMMA_ID,
+        MAXP6RPITERATIONS_ID,
+        INLIERP6RPTHRESHOLD_ID,
+        GAMMAP6RP_ID,
         PHOTOSTATION_PLACER_ESSENTIAL_FILTER_PARAMETERS_FIELD_ID_NUM
     };
 
@@ -86,6 +89,24 @@ public:
      */
     double mEssentialTargetGamma;
 
+    /** 
+     * \brief maxP6RPIterations 
+     * Maximal number of ransac iterations for pose estimation using pairwise correspondences 
+     */
+    int mMaxP6RPIterations;
+
+    /** 
+     * \brief inlierP6RPThreshold 
+     * Inlier threshold for pose estimation using pairwise correspondences 
+     */
+    double mInlierP6RPThreshold;
+
+    /** 
+     * \brief gammaP6RP 
+     * Target failure probability for pose estimation 
+     */
+    double mGammaP6RP;
+
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
 
@@ -124,6 +145,21 @@ public:
         return mEssentialTargetGamma;
     }
 
+    int maxP6RPIterations() const
+    {
+        return mMaxP6RPIterations;
+    }
+
+    double inlierP6RPThreshold() const
+    {
+        return mInlierP6RPThreshold;
+    }
+
+    double gammaP6RP() const
+    {
+        return mGammaP6RP;
+    }
+
     /* Section with setters */
     void setB2bRansacP5RPThreshold(double b2bRansacP5RPThreshold)
     {
@@ -155,6 +191,21 @@ public:
         mEssentialTargetGamma = essentialTargetGamma;
     }
 
+    void setMaxP6RPIterations(int maxP6RPIterations)
+    {
+        mMaxP6RPIterations = maxP6RPIterations;
+    }
+
+    void setInlierP6RPThreshold(double inlierP6RPThreshold)
+    {
+        mInlierP6RPThreshold = inlierP6RPThreshold;
+    }
+
+    void setGammaP6RP(double gammaP6RP)
+    {
+        mGammaP6RP = gammaP6RP;
+    }
+
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
@@ -166,6 +217,9 @@ template<class VisitorType>
         visitor.visit(mB2bRansacP6RPThreshold,    static_cast<const DoubleField *>  (fields()[B2BRANSACP6RPTHRESHOLD_ID]));
         visitor.visit(mRunEssentialFiltering,     static_cast<const BoolField *>    (fields()[RUNESSENTIALFILTERING_ID]));
         visitor.visit(mEssentialTargetGamma,      static_cast<const DoubleField *>  (fields()[ESSENTIALTARGETGAMMA_ID]));
+        visitor.visit(mMaxP6RPIterations,         static_cast<const IntField *>     (fields()[MAXP6RPITERATIONS_ID]));
+        visitor.visit(mInlierP6RPThreshold,       static_cast<const DoubleField *>  (fields()[INLIERP6RPTHRESHOLD_ID]));
+        visitor.visit(mGammaP6RP,                 static_cast<const DoubleField *>  (fields()[GAMMAP6RP_ID]));
     }
 
     PhotostationPlacerEssentialFilterParameters()
@@ -181,6 +235,9 @@ template<class VisitorType>
         , double b2bRansacP6RPThreshold
         , bool runEssentialFiltering
         , double essentialTargetGamma
+        , int maxP6RPIterations
+        , double inlierP6RPThreshold
+        , double gammaP6RP
     )
     {
         mB2bRansacP5RPThreshold = b2bRansacP5RPThreshold;
@@ -189,6 +246,9 @@ template<class VisitorType>
         mB2bRansacP6RPThreshold = b2bRansacP6RPThreshold;
         mRunEssentialFiltering = runEssentialFiltering;
         mEssentialTargetGamma = essentialTargetGamma;
+        mMaxP6RPIterations = maxP6RPIterations;
+        mInlierP6RPThreshold = inlierP6RPThreshold;
+        mGammaP6RP = gammaP6RP;
     }
 
     friend ostream& operator << (ostream &out, PhotostationPlacerEssentialFilterParameters &toSave)

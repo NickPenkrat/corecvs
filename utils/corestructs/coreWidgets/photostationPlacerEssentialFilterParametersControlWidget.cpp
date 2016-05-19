@@ -26,6 +26,9 @@ PhotostationPlacerEssentialFilterParametersControlWidget::PhotostationPlacerEsse
     QObject::connect(mUi->b2bRansacP6RPThresholdSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->runEssentialFilteringCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->essentialTargetGammaSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->maxP6RPIterationsSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->inlierP6RPThresholdSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->gammaP6RPSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
 }
 
 PhotostationPlacerEssentialFilterParametersControlWidget::~PhotostationPlacerEssentialFilterParametersControlWidget()
@@ -59,6 +62,9 @@ void PhotostationPlacerEssentialFilterParametersControlWidget::getParameters(Pho
     params.setB2bRansacP6RPThreshold(mUi->b2bRansacP6RPThresholdSpinBox->value());
     params.setRunEssentialFiltering(mUi->runEssentialFilteringCheckBox->isChecked());
     params.setEssentialTargetGamma(mUi->essentialTargetGammaSpinBox->value());
+    params.setMaxP6RPIterations(mUi->maxP6RPIterationsSpinBox->value());
+    params.setInlierP6RPThreshold(mUi->inlierP6RPThresholdSpinBox->value());
+    params.setGammaP6RP        (mUi->gammaP6RPSpinBox->value());
 
 }
 
@@ -77,6 +83,9 @@ PhotostationPlacerEssentialFilterParameters *PhotostationPlacerEssentialFilterPa
         , mUi->b2bRansacP6RPThresholdSpinBox->value()
         , mUi->runEssentialFilteringCheckBox->isChecked()
         , mUi->essentialTargetGammaSpinBox->value()
+        , mUi->maxP6RPIterationsSpinBox->value()
+        , mUi->inlierP6RPThresholdSpinBox->value()
+        , mUi->gammaP6RPSpinBox->value()
     );
     return result;
 }
@@ -91,6 +100,9 @@ void PhotostationPlacerEssentialFilterParametersControlWidget::setParameters(con
     mUi->b2bRansacP6RPThresholdSpinBox->setValue(input.b2bRansacP6RPThreshold());
     mUi->runEssentialFilteringCheckBox->setChecked(input.runEssentialFiltering());
     mUi->essentialTargetGammaSpinBox->setValue(input.essentialTargetGamma());
+    mUi->maxP6RPIterationsSpinBox->setValue(input.maxP6RPIterations());
+    mUi->inlierP6RPThresholdSpinBox->setValue(input.inlierP6RPThreshold());
+    mUi->gammaP6RPSpinBox->setValue(input.gammaP6RP());
     blockSignals(wasBlocked);
     emit paramsChanged();
 }

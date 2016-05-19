@@ -118,6 +118,39 @@ int PhotostationPlacerEssentialFilterParameters::staticInit()
          50000
         )
     );
+    fields().push_back(
+        new IntField
+        (
+          PhotostationPlacerEssentialFilterParameters::MAXP6RPITERATIONS_ID,
+          offsetof(PhotostationPlacerEssentialFilterParameters, mMaxP6RPIterations),
+          400000,
+          "maxP6RPIterations",
+          "maxP6RPIterations",
+          "Maximal number of ransac iterations for pose estimation using pairwise correspondences"
+        )
+    );
+    fields().push_back(
+        new DoubleField
+        (
+          PhotostationPlacerEssentialFilterParameters::INLIERP6RPTHRESHOLD_ID,
+          offsetof(PhotostationPlacerEssentialFilterParameters, mInlierP6RPThreshold),
+          1,
+          "inlierP6RPThreshold",
+          "inlierP6RPThreshold",
+          "Inlier threshold for pose estimation using pairwise correspondences"
+        )
+    );
+    fields().push_back(
+        new DoubleField
+        (
+          PhotostationPlacerEssentialFilterParameters::GAMMAP6RP_ID,
+          offsetof(PhotostationPlacerEssentialFilterParameters, mGammaP6RP),
+          0.001,
+          "gammaP6RP",
+          "gammaP6RP",
+          "Target failure probability for pose estimation"
+        )
+    );
    return 0;
 }
 

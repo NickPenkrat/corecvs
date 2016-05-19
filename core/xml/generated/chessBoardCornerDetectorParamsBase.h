@@ -41,6 +41,22 @@ public:
     enum FieldId {
         PRODUCEDEBUG_ID,
         FLOATSPEEDUP_ID,
+        SECTORSIZEDEG_ID,
+        HISTOGRAMBINS_ID,
+        MINANGLEDEG_ID,
+        NEIGHBORHOOD_ID,
+        GRADTHRESHOLD_ID,
+        ORIENTATIONINLIERTHRESHOLD_ID,
+        INLIERDISTANCETHRESHOLD_ID,
+        UPDATETHRESHOLD_ID,
+        SCORETHRESHOLD_ID,
+        NROUNDS_ID,
+        MEANSHIFTBANDWIDTH_ID,
+        NMSLOCALITY_ID,
+        NMSTHRESHOLD_ID,
+        PATTERNRADIUS_ID,
+        PATTERNSTARTANGLEDEG_ID,
+        CORNERSCORES_ID,
         CHESS_BOARD_CORNER_DETECTOR_PARAMS_BASE_FIELD_ID_NUM
     };
 
@@ -57,6 +73,102 @@ public:
      * floatSpeedup 
      */
     bool mFloatSpeedup;
+
+    /** 
+     * \brief sectorSizeDeg 
+     * Sector size in deg 
+     */
+    double mSectorSizeDeg;
+
+    /** 
+     * \brief histogramBins 
+     * Number of bins for computing edge direction histogram 
+     */
+    int mHistogramBins;
+
+    /** 
+     * \brief minAngleDeg 
+     * Minimal angle between edges in deg 
+     */
+    double mMinAngleDeg;
+
+    /** 
+     * \brief neighborhood 
+     * Typical radius for estimating edge-related data and refinig corner positions 
+     */
+    int mNeighborhood;
+
+    /** 
+     * \brief gradThreshold 
+     * Gradient magnitude threshold 
+     */
+    double mGradThreshold;
+
+    /** 
+     * \brief orientationInlierThreshold 
+     * Gradient orientation inlier threshold 
+     */
+    double mOrientationInlierThreshold;
+
+    /** 
+     * \brief inlierDistanceThreshold 
+     * Threshold for distance to edge 
+     */
+    double mInlierDistanceThreshold;
+
+    /** 
+     * \brief updateThreshold 
+     * Threshold for maximal corner-position update 
+     */
+    double mUpdateThreshold;
+
+    /** 
+     * \brief scoreThreshold 
+     * Threshold for final score 
+     */
+    double mScoreThreshold;
+
+    /** 
+     * \brief nRounds 
+     * Number of orientation/position refinement rounds 
+     */
+    int mNRounds;
+
+    /** 
+     * \brief meanshiftBandwidth 
+     * Meanshift smoothing stdev 
+     */
+    double mMeanshiftBandwidth;
+
+    /** 
+     * \brief nmsLocality 
+     * Non Minimal Supresstion locality area 
+     */
+    int mNmsLocality;
+
+    /** 
+     * \brief nmsThreshold 
+     * Non Minimal Supresstion threshold 
+     */
+    double mNmsThreshold;
+
+    /** 
+     * \brief patternRadius 
+     * patternRadius 
+     */
+    vector<double> mPatternRadius;
+
+    /** 
+     * \brief patternStartAngleDeg 
+     * patternStartAngleDeg 
+     */
+    vector<double> mPatternStartAngleDeg;
+
+    /** 
+     * \brief cornerScores 
+     * cornerScores 
+     */
+    vector<double> mCornerScores;
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
@@ -76,6 +188,86 @@ public:
         return mFloatSpeedup;
     }
 
+    double sectorSizeDeg() const
+    {
+        return mSectorSizeDeg;
+    }
+
+    int histogramBins() const
+    {
+        return mHistogramBins;
+    }
+
+    double minAngleDeg() const
+    {
+        return mMinAngleDeg;
+    }
+
+    int neighborhood() const
+    {
+        return mNeighborhood;
+    }
+
+    double gradThreshold() const
+    {
+        return mGradThreshold;
+    }
+
+    double orientationInlierThreshold() const
+    {
+        return mOrientationInlierThreshold;
+    }
+
+    double inlierDistanceThreshold() const
+    {
+        return mInlierDistanceThreshold;
+    }
+
+    double updateThreshold() const
+    {
+        return mUpdateThreshold;
+    }
+
+    double scoreThreshold() const
+    {
+        return mScoreThreshold;
+    }
+
+    int nRounds() const
+    {
+        return mNRounds;
+    }
+
+    double meanshiftBandwidth() const
+    {
+        return mMeanshiftBandwidth;
+    }
+
+    int nmsLocality() const
+    {
+        return mNmsLocality;
+    }
+
+    double nmsThreshold() const
+    {
+        return mNmsThreshold;
+    }
+
+    vector<double> patternRadius() const
+    {
+        return mPatternRadius;
+    }
+
+    vector<double> patternStartAngleDeg() const
+    {
+        return mPatternStartAngleDeg;
+    }
+
+    vector<double> cornerScores() const
+    {
+        return mCornerScores;
+    }
+
     /* Section with setters */
     void setProduceDebug(bool produceDebug)
     {
@@ -87,6 +279,86 @@ public:
         mFloatSpeedup = floatSpeedup;
     }
 
+    void setSectorSizeDeg(double sectorSizeDeg)
+    {
+        mSectorSizeDeg = sectorSizeDeg;
+    }
+
+    void setHistogramBins(int histogramBins)
+    {
+        mHistogramBins = histogramBins;
+    }
+
+    void setMinAngleDeg(double minAngleDeg)
+    {
+        mMinAngleDeg = minAngleDeg;
+    }
+
+    void setNeighborhood(int neighborhood)
+    {
+        mNeighborhood = neighborhood;
+    }
+
+    void setGradThreshold(double gradThreshold)
+    {
+        mGradThreshold = gradThreshold;
+    }
+
+    void setOrientationInlierThreshold(double orientationInlierThreshold)
+    {
+        mOrientationInlierThreshold = orientationInlierThreshold;
+    }
+
+    void setInlierDistanceThreshold(double inlierDistanceThreshold)
+    {
+        mInlierDistanceThreshold = inlierDistanceThreshold;
+    }
+
+    void setUpdateThreshold(double updateThreshold)
+    {
+        mUpdateThreshold = updateThreshold;
+    }
+
+    void setScoreThreshold(double scoreThreshold)
+    {
+        mScoreThreshold = scoreThreshold;
+    }
+
+    void setNRounds(int nRounds)
+    {
+        mNRounds = nRounds;
+    }
+
+    void setMeanshiftBandwidth(double meanshiftBandwidth)
+    {
+        mMeanshiftBandwidth = meanshiftBandwidth;
+    }
+
+    void setNmsLocality(int nmsLocality)
+    {
+        mNmsLocality = nmsLocality;
+    }
+
+    void setNmsThreshold(double nmsThreshold)
+    {
+        mNmsThreshold = nmsThreshold;
+    }
+
+    void setPatternRadius(vector<double> patternRadius)
+    {
+        mPatternRadius = patternRadius;
+    }
+
+    void setPatternStartAngleDeg(vector<double> patternStartAngleDeg)
+    {
+        mPatternStartAngleDeg = patternStartAngleDeg;
+    }
+
+    void setCornerScores(vector<double> cornerScores)
+    {
+        mCornerScores = cornerScores;
+    }
+
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
@@ -94,6 +366,22 @@ template<class VisitorType>
     {
         visitor.visit(mProduceDebug,              static_cast<const BoolField *>    (fields()[PRODUCEDEBUG_ID]));
         visitor.visit(mFloatSpeedup,              static_cast<const BoolField *>    (fields()[FLOATSPEEDUP_ID]));
+        visitor.visit(mSectorSizeDeg,             static_cast<const DoubleField *>  (fields()[SECTORSIZEDEG_ID]));
+        visitor.visit(mHistogramBins,             static_cast<const IntField *>     (fields()[HISTOGRAMBINS_ID]));
+        visitor.visit(mMinAngleDeg,               static_cast<const DoubleField *>  (fields()[MINANGLEDEG_ID]));
+        visitor.visit(mNeighborhood,              static_cast<const IntField *>     (fields()[NEIGHBORHOOD_ID]));
+        visitor.visit(mGradThreshold,             static_cast<const DoubleField *>  (fields()[GRADTHRESHOLD_ID]));
+        visitor.visit(mOrientationInlierThreshold, static_cast<const DoubleField *>  (fields()[ORIENTATIONINLIERTHRESHOLD_ID]));
+        visitor.visit(mInlierDistanceThreshold,   static_cast<const DoubleField *>  (fields()[INLIERDISTANCETHRESHOLD_ID]));
+        visitor.visit(mUpdateThreshold,           static_cast<const DoubleField *>  (fields()[UPDATETHRESHOLD_ID]));
+        visitor.visit(mScoreThreshold,            static_cast<const DoubleField *>  (fields()[SCORETHRESHOLD_ID]));
+        visitor.visit(mNRounds,                   static_cast<const IntField *>     (fields()[NROUNDS_ID]));
+        visitor.visit(mMeanshiftBandwidth,        static_cast<const DoubleField *>  (fields()[MEANSHIFTBANDWIDTH_ID]));
+        visitor.visit(mNmsLocality,               static_cast<const IntField *>     (fields()[NMSLOCALITY_ID]));
+        visitor.visit(mNmsThreshold,              static_cast<const DoubleField *>  (fields()[NMSTHRESHOLD_ID]));
+        visitor.visit(mPatternRadius,             static_cast<const DoubleVectorField *>(fields()[PATTERNRADIUS_ID]));
+        visitor.visit(mPatternStartAngleDeg,      static_cast<const DoubleVectorField *>(fields()[PATTERNSTARTANGLEDEG_ID]));
+        visitor.visit(mCornerScores,              static_cast<const DoubleVectorField *>(fields()[CORNERSCORES_ID]));
     }
 
     ChessBoardCornerDetectorParamsBase()
@@ -105,10 +393,42 @@ template<class VisitorType>
     ChessBoardCornerDetectorParamsBase(
           bool produceDebug
         , bool floatSpeedup
+        , double sectorSizeDeg
+        , int histogramBins
+        , double minAngleDeg
+        , int neighborhood
+        , double gradThreshold
+        , double orientationInlierThreshold
+        , double inlierDistanceThreshold
+        , double updateThreshold
+        , double scoreThreshold
+        , int nRounds
+        , double meanshiftBandwidth
+        , int nmsLocality
+        , double nmsThreshold
+        , vector<double> patternRadius
+        , vector<double> patternStartAngleDeg
+        , vector<double> cornerScores
     )
     {
         mProduceDebug = produceDebug;
         mFloatSpeedup = floatSpeedup;
+        mSectorSizeDeg = sectorSizeDeg;
+        mHistogramBins = histogramBins;
+        mMinAngleDeg = minAngleDeg;
+        mNeighborhood = neighborhood;
+        mGradThreshold = gradThreshold;
+        mOrientationInlierThreshold = orientationInlierThreshold;
+        mInlierDistanceThreshold = inlierDistanceThreshold;
+        mUpdateThreshold = updateThreshold;
+        mScoreThreshold = scoreThreshold;
+        mNRounds = nRounds;
+        mMeanshiftBandwidth = meanshiftBandwidth;
+        mNmsLocality = nmsLocality;
+        mNmsThreshold = nmsThreshold;
+        mPatternRadius = patternRadius;
+        mPatternStartAngleDeg = patternStartAngleDeg;
+        mCornerScores = cornerScores;
     }
 
     friend ostream& operator << (ostream &out, ChessBoardCornerDetectorParamsBase &toSave)

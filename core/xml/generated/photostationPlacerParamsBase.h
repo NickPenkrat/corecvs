@@ -50,13 +50,13 @@ public:
 
     /** 
      * \brief forceGps 
-     * forceGps 
+     * Enforce gps locations 
      */
     bool mForceGps;
 
     /** 
      * \brief speculativity 
-     * Enforce gps locations 
+     * This defines how many multicameras are subject for P3P evaluation at each iteration 
      */
     int mSpeculativity;
 
