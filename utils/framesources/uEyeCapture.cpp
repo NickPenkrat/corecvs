@@ -35,13 +35,17 @@
 /*static*/ const double UEyeCaptureInterface::EXPOSURE_SCALER = 10.0;
 /*static*/ const double UEyeCaptureInterface::FPS_SCALER      = 100.0;
 
-int UEyeCaptureInterface::ueyeTrace(int result)
+int UEyeCaptureInterface::ueyeTrace(int result, const char *prefix)
 {
     if (result != IS_SUCCESS)
     {
         char * str = 0;
         is_GetError(1,&result,&str);
-        printf("   UEYE: Function failed with error code %d. Error string: %s\n", result, str);
+        if (prefix == NULL)
+            printf("   UEYE: Function failed with error code %d. Error string: %s\n", result, str);
+        else
+            printf("%s: error code %d. Error string: %s\n", prefix, result, str);
+
     }
 
     return result;
@@ -270,7 +274,7 @@ UEyeCaptureInterface::~UEyeCaptureInterface()
 
 ImageCaptureInterface::CapErrorCode UEyeCaptureInterface::startCapture()
 {
-    qDebug("Start capture");
+    qDebug(" UEyeCaptureInterface::startCapture(): called");
 
     printf("Enabling events...\n");
 #ifdef Q_OS_WIN
@@ -281,18 +285,18 @@ ImageCaptureInterface::CapErrorCode UEyeCaptureInterface::startCapture()
     is_InitEvent(rightCamera.mCamera, rightCamera.mWinEvent, IS_SET_EVENT_FRAME);
 #endif
 
-    is_EnableEvent(leftCamera.mCamera, IS_SET_EVENT_FRAME);
-    is_EnableEvent(rightCamera.mCamera, IS_SET_EVENT_FRAME);
+    ueyeTrace(is_EnableEvent(leftCamera .mCamera, IS_SET_EVENT_FRAME), "is_EnableEvent left cam");
+    ueyeTrace(is_EnableEvent(rightCamera.mCamera, IS_SET_EVENT_FRAME), "is_EnableEvent right cam");
 
     switch (sync)
     {
         case NO_SYNC:
-            is_CaptureVideo (leftCamera.mCamera, IS_DONT_WAIT);
-            is_CaptureVideo (rightCamera.mCamera, IS_DONT_WAIT);
+            ueyeTrace(is_CaptureVideo (leftCamera .mCamera, IS_DONT_WAIT), "is_CaptureVideo left cam");
+            ueyeTrace(is_CaptureVideo (rightCamera.mCamera, IS_DONT_WAIT), "is_CaptureVideo right cam");
             break;
         case SOFT_SYNC:
-            is_SetExternalTrigger (leftCamera.mCamera , IS_SET_TRIGGER_SOFTWARE);
-            is_SetExternalTrigger (rightCamera.mCamera, IS_SET_TRIGGER_SOFTWARE);
+            ueyeTrace(is_SetExternalTrigger (leftCamera.mCamera , IS_SET_TRIGGER_SOFTWARE));
+            ueyeTrace(is_SetExternalTrigger (rightCamera.mCamera, IS_SET_TRIGGER_SOFTWARE));
             break;
         case HARD_SYNC:
         {
@@ -420,26 +424,26 @@ void UEyeCaptureInterface::SpinThread::run()
 
     	//usleep(20000);
         if (capInterface->sync == SOFT_SYNC || capInterface->sync == FRAME_HARD_SYNC) {
-    	   // printf("Both cameras fire!!!\n");
-            ueyeTrace(is_FreezeVideo (capInterface->rightCamera.mCamera, IS_DONT_WAIT));
-            ueyeTrace(is_FreezeVideo (capInterface->leftCamera .mCamera, IS_DONT_WAIT));
+           // printf("Both cameras fire!!!\n");
+            ueyeTrace(is_FreezeVideo (capInterface->rightCamera.mCamera, IS_DONT_WAIT), "SpinThread::run():is_FreezeVideo");
+            ueyeTrace(is_FreezeVideo (capInterface->leftCamera .mCamera, IS_DONT_WAIT), "SpinThread::run():is_FreezeVideo");
         }
 
         int result = IS_SUCCESS;
 
         while ((result = capInterface->rightCamera.waitUEyeFrameEvent(INFINITE)) != IS_SUCCESS)
         {
-            SYNC_PRINT(("WaitFrameEvent failed for right camera\n"));
-            ueyeTrace(result);
+//            SYNC_PRINT(("WaitFrameEvent failed for right camera\n"));
+//            ueyeTrace(result);
         }
-        //SYNC_PRINT(("Got right frame\n"));
+        SYNC_PRINT(("Got right frame\n"));
 
         while ((result = capInterface->leftCamera .waitUEyeFrameEvent(INFINITE)) != IS_SUCCESS)
         {
             SYNC_PRINT(("WaitFrameEvent failed for left camera\n"));
             ueyeTrace(result);
         }
-        //SYNC_PRINT(("Got left frame\n"));
+        SYNC_PRINT(("Got left frame\n"));
 
 
         /* If we are here seems like both new cameras produced frames*/
@@ -457,7 +461,7 @@ void UEyeCaptureInterface::SpinThread::run()
         is_GetActSeqBuf(mCameraRight, &bufIDR, NULL, &rawBufferRight);
         is_LockSeqBuf (mCameraRight, IS_IGNORE_PARAMETER, rawBufferRight);
 
-       // SYNC_PRINT(("We have locked buffers [%d and %d]\n", bufIDL, bufIDR));
+        SYNC_PRINT(("We have locked buffers [%d and %d]\n", bufIDL, bufIDR));
 
         /* Now exchange the buffer that is visible from */
         capInterface->protectFrame.lock();
@@ -537,7 +541,9 @@ void UEyeCaptureInterface::decodeData(UEyeCameraDescriptor *camera, BufferDescri
 
 ImageCaptureInterface::CapErrorCode UEyeCaptureInterface::initCapture()
 {
+    SYNC_PRINT(("UEyeCaptureInterface::initCapture(): Left Camera\n"));
     int resR = leftCamera .initBuffer();
+    SYNC_PRINT(("UEyeCaptureInterface::initCapture(): Right Camera\n"));
     int resL = rightCamera.initBuffer();
 #if 0
     /* If only one camera started, we assume it is the left camera */
@@ -688,7 +694,7 @@ UEyeCaptureInterface::CapErrorCode UEyeCaptureInterface::setCaptureProperty(int 
         }
         default:
         {
-            printf("Set request for unknown parameter (%d)\n", id);
+            printf("Warning: Set request for unknown parameter (%d)\n", id);
             return ImageCaptureInterface::FAILURE;
         }
     }

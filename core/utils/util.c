@@ -106,6 +106,9 @@ void stackTraceHandler(int sig)
     // print out all the frames to stderr
     fprintf(stderr, "stackTraceHandler (signal=%d):\n", sig);
     backtrace_symbols_fd(array, size, 2);
+#ifndef WIN32
+    exit(0);
+#endif
 }
 
 void setSegVHandler()

@@ -45,7 +45,7 @@ int PhotostationPlacerParamsBase::staticInit()
           true,
           "forceGps",
           "forceGps",
-          "forceGps"
+          "Enforce gps locations"
         )
     );
     fields().push_back(
@@ -56,7 +56,7 @@ int PhotostationPlacerParamsBase::staticInit()
           1000,
           "speculativity",
           "speculativity",
-          "Enforce gps locations",
+          "This defines how many multicameras are subject for P3P evaluation at each iteration",
           true,
          -50000,
          50000

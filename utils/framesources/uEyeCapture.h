@@ -46,7 +46,7 @@ public:
     virtual CapErrorCode startCapture() override;
 
 
-    static int ueyeTrace(int);
+    static int ueyeTrace(int res, const char *prefix = NULL);
 
 
     static const double EXPOSURE_SCALER /*= 10.0*/;

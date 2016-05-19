@@ -38,8 +38,10 @@
 
      <!--
      <field type="double" name="gradientCrossWidth"  defaultValue="3.0" comment="Width of cross for corner gradient-score" />
+     -->
 
-     <!-- Insert vectors here -->
+     <field type="double" name="normalizePercentile"  suffix="%" defaultValue="5"    comment="Brightness percentile to be cut" min="0"   max="100" />
+
 
      <field type="double" name="sectorSizeDeg"  suffix="deg" defaultValue="90"    comment="Sector size in deg" />
      <field type="int"    name="histogramBins"               defaultValue="50"    comment="Number of bins for computing edge direction histogram" min="0"   max="999999"  />
