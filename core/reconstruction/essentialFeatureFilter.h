@@ -37,6 +37,7 @@ public:
     );
 
     void estimate();
+    void use(corecvs::EssentialDecomposition &d);
 
     corecvs::EssentialDecomposition bestDecomposition;
     std::vector<int> inlierIdx;

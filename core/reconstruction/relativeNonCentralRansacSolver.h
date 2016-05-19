@@ -14,9 +14,10 @@ namespace corecvs
 
 struct RelativeNonCentralRansacSolverSettings
 {
-    RelativeNonCentralRansacSolverSettings(size_t maxIterations = 400000, double inlierThreshold = 1.0)
-        : maxIterations(maxIterations)
-        , inlierThreshold(inlierThreshold)
+    RelativeNonCentralRansacSolverSettings(size_t maxIterations = 400000, double inlierThreshold = 1.0, double gamma = 0.001)
+        : maxIterations(maxIterations),
+          inlierThreshold(inlierThreshold),
+          gamma(gamma)
     {
     }
     size_t maxIterations;
@@ -34,7 +35,6 @@ struct RelativeNonCentralRansacSolverSettings
     double scale = 1.0;
     double gamma = 0.001;
 };
-
 
 class RelativeNonCentralRansacSolver : public RelativeNonCentralRansacSolverSettings
 {

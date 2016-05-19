@@ -3,6 +3,10 @@
 
 #include <chrono>
 
+#ifdef WITH_TBB
+#include <tbb/tbb.h>
+#endif
+
 using namespace corecvs;
 
 corecvs::SparseMatrix::SparseMatrix(const SparseMatrix &src, int x1, int y1, int x2, int y2)
@@ -673,12 +677,18 @@ bool corecvs::SparseMatrix::LinSolveSchurComplement(const corecvs::SparseMatrix 
     std::vector<int> pivots(Dw), pivotIdx(N);
 
     std::vector<corecvs::Matrix> qrd(N);
-    for (size_t i = 0; i < N; ++i)
-    {
-        qrd[i] = M.denseSubMatrix(diagBlocks[i], diagBlocks[i], diagBlocks[i + 1], diagBlocks[i + 1]);
-        pivotIdx[i] = diagBlocks[i] - diagBlocks[0];
-    }
+    auto startBlocks = std::chrono::high_resolution_clock::now();
+    corecvs::parallelable_for(0, (int)N, [&](const corecvs::BlockedRange<int> &r)
+            {
+                for (int i = r.begin(); i != r.end(); ++i)
+                {
+                    qrd[i] = M.denseSubMatrix(diagBlocks[i], diagBlocks[i], diagBlocks[i + 1], diagBlocks[i + 1]);
+                    pivotIdx[i] = diagBlocks[i] - diagBlocks[0];
+                }
+            });
+    auto  stopBlocks = std::chrono::high_resolution_clock::now();
 
+    auto  startDiagFactor = std::chrono::high_resolution_clock::now();
     // Factorizing (without "\"")
     corecvs::parallelable_for(0, (int)N, [&](const corecvs::BlockedRange<int> &r)
             {
@@ -698,17 +708,21 @@ bool corecvs::SparseMatrix::LinSolveSchurComplement(const corecvs::SparseMatrix 
                     }
                 }
             });
+    auto  stopDiagFactor = std::chrono::high_resolution_clock::now();
 
     // Computing BD^{-1}
+    auto startSparsePrep = std::chrono::high_resolution_clock::now();
     corecvs::SparseMatrix A(M ,   0,  0,      Aw,      Ah),
                           B(M,   Aw,  0, Aw + Bw,      Bh),
                           C(M,    0, Ah,      Cw, Ah + Ch);
     CORE_ASSERT_TRUE_S(A.h == Ah && A.w == Aw);
     CORE_ASSERT_TRUE_S(B.h == Bh && B.w == Bw);
     CORE_ASSERT_TRUE_S(C.h == Ch && C.w == Cw);
+    auto stopSparsePrep = std::chrono::high_resolution_clock::now();
 
     // Computing BD^{-1}
     //recvs::Matrix BDinv(Bh, Dw);
+    auto startDinvBt = std::chrono::high_resolution_clock::now();
     corecvs::Matrix DinvtBt = (corecvs::Matrix)B.t();
     CORE_ASSERT_TRUE_S(DinvtBt.h == Dw && DinvtBt.w == Bh);
     corecvs::parallelable_for(0, (int)qrd.size(), [&](const corecvs::BlockedRange<int> &r)
@@ -732,19 +746,25 @@ bool corecvs::SparseMatrix::LinSolveSchurComplement(const corecvs::SparseMatrix 
             }
         }
     });
+    auto stopDinvBt = std::chrono::high_resolution_clock::now();
     // Computing lhs/rhs
-    corecvs::Vector a(Ah, &Bv[0]), b(Ch, &Bv[Ah]);
-    auto rhs = a - b * DinvtBt;
+    auto startLhsRhs = std::chrono::high_resolution_clock::now();
+    corecvs::Vector a(Ah, &Bv[0]), b(Ch, &Bv[Ah]), rhs;
+    corecvs::Matrix lhs;
+    rhs = a - b * DinvtBt;
 
-    auto lhs = (corecvs::Matrix)A - (C.t() * DinvtBt).t();
-//    cblas_dgemm(CblasRowMajor, CblasTrans, CblasNoTrans, lhs.h, lhs.w, C.h, -1.0, DinvtBt.data, DinvtBt.stride, C.data, C.stride, 1.0, lhs.data, lhs.stride);
+    lhs = (corecvs::Matrix)A - (corecvs::Matrix)(C.t() * DinvtBt).t();
+    auto stopLhsRhs = std::chrono::high_resolution_clock::now();
 
+    auto startX = std::chrono::high_resolution_clock::now();
     // Solving for x
     corecvs::Vector x(Aw), y(Bw);
     bool foo = lhs.linSolve(rhs, x, symmetric, false);
+    auto stopX = std::chrono::high_resolution_clock::now();
 
     if (!foo) return false;
 
+    auto startY = std::chrono::high_resolution_clock::now();
     // Solving for y
     rhs = b - C * x;
     corecvs::parallelable_for(0, (int)qrd.size(), [&](const corecvs::BlockedRange<int> &r)
@@ -773,6 +793,32 @@ bool corecvs::SparseMatrix::LinSolveSchurComplement(const corecvs::SparseMatrix 
                 y[j - Aw] = res[j - begin];
         }
     });
+    auto stopY = std::chrono::high_resolution_clock::now();
+
+    double blocks = (stopBlocks - startBlocks).count(),
+           diagFac= (stopDiagFactor - startDiagFactor).count(),
+           sparseP= (stopSparsePrep - startSparsePrep).count(),
+           dinvBt = (stopDinvBt - startDinvBt).count(),
+           lhsRhs = (stopLhsRhs - startLhsRhs).count(),
+           xxx    = (stopX - startX).count(),
+           yyy    = (stopY - startY).count();
+    static int statcnt = 0;
+    statcnt++;
+    if (statcnt % 1000 == 0)
+    {
+    double total = blocks + diagFac + sparseP + dinvBt + lhsRhs + xxx + yyy;
+    total /= 100.0;
+#define SPRINT(T, V) \
+        << "\t" << T << ": " << V / total << " % / " << V << "ns" << std::endl
+    std::cout << "LSC Stats: " << total * 100.0 << "ns"  << std::endl
+        SPRINT("Blocks", blocks)
+        SPRINT("DiagFactor", diagFac)
+        SPRINT("SparsePrep", sparseP)
+        SPRINT("DinvBt", dinvBt)
+        SPRINT("LhsRhs", lhsRhs)
+        SPRINT("X", xxx)
+        SPRINT("Y", yyy);
+    }
 
     for (int i = 0; i < Aw; ++i)
         res[i] = x[i];

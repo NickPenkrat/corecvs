@@ -99,7 +99,7 @@ void CornerKernelSet::minifyKernel(KernelType &k)
 }
 
 
-double OrientedCorner::scoreCorner(DpImage &img, DpImage &weight, std::vector<double> &radius, double bandwidth)
+double OrientedCorner::scoreCorner(DpImage &img, DpImage &weight, const std::vector<double> &radius, double bandwidth)
 {
     int iw = img.w;
     int ih = img.h;
@@ -435,6 +435,8 @@ void ChessBoardCornerDetector::prepareAngleWeight()
 void ChessBoardCornerDetector::scaleImage(double percLow/* = 0.05*/, double percHigh/* = 0.95*/)
 {
     std::vector<double> values;
+    values.resize(img.h * img.w);
+
     for (int i = 0; i < img.h; ++i)
     {
         for (int j = 0; j < img.w; ++j)
@@ -456,7 +458,6 @@ void ChessBoardCornerDetector::scaleImage(double percLow/* = 0.05*/, double perc
             img.element(i, j) = std::max(std::min((img.element(i, j) - pL) / dp, 1.0), 0.0);
         }
     }
-
 }
 
 
@@ -620,7 +621,7 @@ corecvs::Statistics *ChessBoardCornerDetector::getStatistics()
  *   DpImage du, dv, w, phi, cost, img;
  *   std::vector<CornerKernelSet> kernels;
  **/
-vector<std::string> ChessBoardCornerDetector::debugBuffers()
+vector<std::string> ChessBoardCornerDetector::debugBuffers() const
 {
     vector<std::string> result;
     result.push_back("du");
@@ -641,7 +642,7 @@ vector<std::string> ChessBoardCornerDetector::debugBuffers()
     return result;
 }
 
-RGB24Buffer *ChessBoardCornerDetector::getDebugBuffer(std::string name)
+RGB24Buffer *ChessBoardCornerDetector::getDebugBuffer(const std::string& name) const
 {
     RGB24Buffer *result = NULL;
     if (name == "du") {
@@ -679,10 +680,11 @@ RGB24Buffer *ChessBoardCornerDetector::getDebugBuffer(std::string name)
         size_t knum = std::stoi(m[1]);
 
         if (id < kernels.size() && knum < CornerKernelSet::KERNEL_LAST) {
-                result = new RGB24Buffer(kernels[id].K[knum].getSize());
-                result->drawDoubleBuffer(kernels[id].K[knum]);
+            result = new RGB24Buffer(kernels[id].K[knum].getSize());
+            result->drawDoubleBuffer(kernels[id].K[knum]);
         }
-    } else {
+    }
+    else {
         SYNC_PRINT(("ChessBoardCornerDetector::getDebugBuffer(): no match for <%s>", name.c_str() ));
     }
     return result;
@@ -878,7 +880,7 @@ void ChessBoardCornerDetector::computeScores()
     int idx = 0;
     for (auto& c: corners)
     {
-        if (c.scoreCorner(img, w, cornerScores) < scoreThreshold())
+        if (c.scoreCorner(img, w, cornerScores()) < scoreThreshold())
             continue;
 
         // ok, here we also re-orient'em
@@ -935,10 +937,9 @@ void ChessBoardCornerDetector::detectCorners(DpImage &image, std::vector<Oriente
     corners_ = corners;
 }
 
-ChessBoardCornerDetector::ChessBoardCornerDetector(ChessBoardCornerDetectorParams params) :
-    ChessBoardCornerDetectorParams(params),
-    stats(NULL)
+ChessBoardCornerDetector::ChessBoardCornerDetector(ChessBoardCornerDetectorParams params)
+    : ChessBoardCornerDetectorParams(params)
+    , stats(NULL)
 {
     prepareKernels();
 }
-

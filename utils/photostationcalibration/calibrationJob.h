@@ -61,8 +61,8 @@ struct ImageData
         visitor.visit(distortionMaxError,   -1.0, "distortionMaxError");
         visitor.visit(calibrationRmse,      -1.0, "calibrationRmse");
         visitor.visit(calibrationMaxError,  -1.0, "calibrationMaxError");
-        visitor.visit(calibrationRmse,      -1.0, "singleCameraRmse");
-        visitor.visit(calibrationMaxError,  -1.0, "singleCameraMaxError");
+        visitor.visit(singleCameraRmse,     -1.0, "singleCameraRmse");
+        visitor.visit(singleCameraMaxError, -1.0, "singleCameraMaxError");
         visitor.visit(fullCameraRmse,       -1.0, "fullCameraRmse");
         visitor.visit(fullCameraMaxError,   -1.0, "fullCameraMaxError");
     }
@@ -161,7 +161,8 @@ struct CalibrationJob
     bool                                            calibrated = false;
 
     CalibrationSettings                             settings;
-    // TODO: Should we serialize it?!
+
+    // TODO: Should we serialize it?!  // This object is owned outside!
     StatusTracker*                                  state = nullptr;
 
     template<class VisitorType>

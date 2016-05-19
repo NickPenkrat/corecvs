@@ -313,6 +313,7 @@ void corecvs::RelativeNonCentralO3PSolver::SetupEliminationTemplate(corecvs::Mat
     T.a(198-1, 89-1)=1.0; T.a(198-1, 180-1)=-1.0; T.a(198-1, 302-1)=1.0; T.a(198-1, 305-1)=1.0; T.a(198-1, 313-1)=1.0;
     T.a(199-1, 90-1)=1.0; T.a(199-1, 307-1)=1.0; T.a(199-1, 310-1)=1.0; T.a(199-1, 314-1)=1.0; T.a(199-1, 315-1)=-1.0;
     T.a(200-1, 94-1)=1.0; T.a(200-1, 96-1)=1.0; T.a(200-1, 105-1)=1.0; T.a(200-1, 130-1)=1.0; T.a(200-1, 184-1)=-1.0;
+#if 0
     Vector V(330);
     double
         x = 0.0 / std::sqrt(1.0 + 4.0 + 3.0 + 0.0),
@@ -651,6 +652,7 @@ void corecvs::RelativeNonCentralO3PSolver::SetupEliminationTemplate(corecvs::Mat
     V[329]=1;
 //    std::cout << T * V << std::endl;
     //exit(0);
+#endif
 }
 
 

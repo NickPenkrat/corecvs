@@ -227,7 +227,7 @@ CameraFixture* SceneGenerator::generatePs(corecvs::Vector3dd pos, int id)
     f->location.shift = pos;
     f->name = tag;
     rfs->initializationData[f].initData = f->location;
-    rfs->initializationData[f].initializationType = PhotostationInitializationType::GPS;
+    rfs->initializationData[f].initializationType = FixtureInitializationType::GPS;
     return f;
 }
 

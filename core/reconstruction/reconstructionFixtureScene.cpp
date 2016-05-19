@@ -34,6 +34,17 @@ void ReconstructionFixtureScene::printPosStats()
 {
     for (auto ptr: placedFixtures)
         std::cout << ptr->name << " " << ptr->location.shift << ptr->location.rotor << std::endl;
+    std::cout << "\t";
+    for (auto ptrA: placedFixtures)
+        std::cout << ptrA->name << "\t";
+    std::cout << std::endl;
+    for (auto ptrA: placedFixtures)
+    {
+        std::cout << ptrA->name << "\t";
+        for (auto ptrB: placedFixtures)
+            std::cout << !(ptrA->location.shift - ptrB->location.shift) << "\t";
+        std::cout << std::endl;
+    }
 }
 
 void ReconstructionFixtureScene::printMatchStats()
@@ -99,6 +110,37 @@ void ReconstructionFixtureScene::printTrackStats()
         std::cout << std::endl;
     }
     std::cout << std::endl;
+
+    std::vector<double> errs, ssqs;
+    for (auto& pt: trackedFeatures)
+    {
+        double ssq = 0.0, cnt = 0.0;
+        for (auto& o: pt->observations__)
+        {
+            auto err = !(o.first.u->reprojectionError(pt->reprojectedPosition, o.second.observation, o.first.v));
+            errs.push_back(err);
+            ssq += err * err;
+            cnt += 1.0;
+        }
+        ssqs.push_back(std::sqrt(ssq / cnt));
+    }
+    double tolerance = 0.1;
+    std::map<int, int> cntE, cntS;
+    for (auto& e: errs)
+        ++cntE[e / tolerance];
+    for (auto& s: ssqs)
+        ++cntS[s / tolerance];
+    std::cout << "Reprojection histogram: " << std::endl;
+    for (int i = 0; i <= cntE.rbegin()->first; ++i)
+        if (cntE[i] > 0)
+            std::cout << "[" << tolerance * i << "; " << tolerance * (i + 1) << ": " << cntE[i] << ")";
+    std::cout << std::endl;
+    std::cout << "RMSE histogram: " << std::endl;
+    for (int i = 0; i <= cntS.rbegin()->first; ++i)
+        if (cntS[i] > 0)
+            std::cout << "[" << tolerance * i << "; " << tolerance * (i + 1) << ": " << cntS[i] << ")";
+    std::cout << std::endl;
+
 }
 
 FixtureScene* ReconstructionFixtureScene::dumbify()
@@ -121,7 +163,7 @@ FixtureScene* ReconstructionFixtureScene::dumbify()
             wppmap[WPP(f, c)] = WPP(ff, cc);
         }
     }
-    for (auto p : featurePoints())
+    for (auto p : trackedFeatures)
     {
         auto pp = dumb->createFeaturePoint();
         pp->reprojectedPosition = p->reprojectedPosition;
@@ -138,20 +180,26 @@ FixtureScene* ReconstructionFixtureScene::dumbify()
     return dumb;
 }
 
-void ReconstructionFixtureScene::pruneTracks(double threshold)
+void ReconstructionFixtureScene::pruneTracks(double rmse, double maxe, double distanceThreshold)
 {
     int id = 0;
+    std::vector<SceneFeaturePoint*> deleteSet;
     for (auto& pt: trackedFeatures)
     {
         auto pos = pt->reprojectedPosition;
-        double ssq = 0.0, cnt = 0.0;
+        double ssq = 0.0, cnt = 0.0, mxe = 0.0;
+        bool visibleAll = true;
+        bool tooFar = false;
         for (auto& obs: pt->observations__)
         {
             auto err = obs.first.u->reprojectionError(pos, obs.second.observation, obs.first.v);
             ssq += !err * !err;
+            mxe = std::max(!err, mxe);
             cnt += 1.0;
+            visibleAll &= obs.first.u->isVisible(pos, obs.first.v);
+            tooFar |= (!(obs.first.u->location.shift - pos)) > distanceThreshold;
         }
-        if (ssq / cnt > threshold * threshold)
+        if (std::sqrt(ssq / cnt) < rmse && mxe < maxe && visibleAll && !tooFar)
         {
             trackedFeatures[id++] = pt;
         }
@@ -164,9 +212,13 @@ void ReconstructionFixtureScene::pruneTracks(double threshold)
                         removal.emplace_back(m.first, md.first);
             for (auto& d: removal)
                 trackMap[d.first].erase(d.second);
+            deleteSet.push_back(pt);
         }
     }
+    int pruned = trackedFeatures.size() - id;
     trackedFeatures.resize(id);
+    double ratio = double(pruned) / trackedFeatures.size() * 100.0;
+    std::cout << pruned << " tracks (" << ratio << ") were pruned!" << std::endl;
 }
 
 void ReconstructionFixtureScene::deleteCamera(FixtureCamera *camera)
@@ -639,50 +691,37 @@ std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, S
     return res;
 }
 
-void corecvs::ReconstructionFixtureScene::buildTracks(CameraFixture *psA, CameraFixture *psB, CameraFixture *psC, double trackInlierThreshold, double distanceLimit)
+void corecvs::ReconstructionFixtureScene::buildTracks(CameraFixture *psA, CameraFixture *psB, double trackInlierThreshold, double distanceLimit)
 {
-    const int NPS = 3;
-    const int NPAIRS = 3;
-    int pairIdx[NPAIRS][2] = {{0, 1}, {1, 2}, {0, 2}};
+    const int NPS = 2;
+    const int NPAIRS = 1;
+    int pairIdx[NPAIRS][2] = {{0, 1}};
 
-    CameraFixture*        ps[NPS] = {psA, psB, psC};
-    FixtureCamera*       cam[NPS] = {  0,   0,   0};
-    int                   pt[NPS] = {  0,   0,   0};
-    FixtureCamera* &camA = cam[0], *&camB = cam[1], *&camC = cam[2];
-    int &ptA = pt[0], &ptB = pt[1], &ptC = pt[2];
+    CameraFixture*        ps[NPS] = {psA, psB};
+    FixtureCamera*       cam[NPS] = {  0,   0};
+    int                   pt[NPS] = {  0,   0};
+    FixtureCamera* &camA = cam[0], *&camB = cam[1];
+    int &ptA = pt[0], &ptB = pt[1];
     WPP                  wpp[NPS];
     corecvs::Vector2dd    kp[NPS];
   //corecvs::Vector2dd &kpA = kp[0], &kpB = kp[1], &kpC = kp[2];
 
     std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> free[NPAIRS];
-    auto &freeAB = free[0], &freeBC = free[1]/*, &freeAC = free[2]*/;
+    auto &freeAB = free[0];
 
     for (int i = 0; i < NPAIRS; ++i)
         free[i] = getUnusedFeatures(ps[pairIdx[i][0]], ps[pairIdx[i][1]]);
 
-    std::vector<std::tuple<FixtureCamera*, int, FixtureCamera*, int, FixtureCamera*, int>> trackCandidates;
+    std::vector<std::tuple<FixtureCamera*, int, FixtureCamera*, int>> trackCandidates;
 
-    for (auto& mAC: free[2])
+    for (auto& mAB: free[0])
     {
-        camA = std::get<0>(mAC.first);
-        camC = std::get<1>(mAC.first);
-        ptA = std::get<2>(mAC.first);
-        ptC = mAC.second;
+        camA = std::get<0>(mAB.first);
+        camB = std::get<1>(mAB.first);
+        ptA = std::get<2>(mAB.first);
+        ptB = mAB.second;
 
-        for (auto& camB: psB->cameras)
-        {
-            auto idAB = std::make_tuple(camA, camB, ptA);
-            if (!free[0].count(idAB))
-                continue;
-
-            ptB = freeAB[idAB];
-            auto idBC = std::make_tuple(camB, camC, ptB);
-            if (!freeBC.count(idBC))
-                continue;
-            int ptC2 = freeBC[idBC];
-            if (ptC == ptC2)
-                trackCandidates.emplace_back(camA, ptA, camB, ptB, camC, ptC);
-        }
+        trackCandidates.emplace_back(camA, ptA, camB, ptB);
     }
     L_INFO << trackCandidates.size() << " candidate tracks";
     L_INFO << "Inlier threshold: " << trackInlierThreshold;
@@ -694,10 +733,8 @@ void corecvs::ReconstructionFixtureScene::buildTracks(CameraFixture *psA, Camera
     {
         camA = std::get<0>(c);
         camB = std::get<2>(c);
-        camC = std::get<4>(c);
         ptA = std::get<1>(c);
         ptB = std::get<3>(c);
-        ptC = std::get<5>(c);
 
         bool alreadyIn = false;
         for(int i = 0; i < NPS; ++i)
@@ -796,11 +833,96 @@ std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> corecvs
     return res;
 }
 
+void corecvs::ReconstructionFixtureScene::appendTracks(CameraFixture *ps, double trackInlierThreshold, double distanceLimit)
+{
+    auto candidates = getFixtureMatchesIdx(placedFixtures, ps);
+    std::cout << "AP-CAND: " << candidates.size() << std::endl;
+    // Now rebuild in order to select only the best appendable for every kp in ps
+    std::unordered_map<std::pair<WPP, int>, std::set<corecvs::SceneFeaturePoint*>> mapper;
+    int tt = 0, qq = 0;
+    for (auto& t: candidates)
+    {
+        auto idQuery = std::get<2>(t);
+        auto ptQuery = std::get<3>(t);
+        CORE_ASSERT_TRUE_S(idQuery.u == ps);
+        auto idTrain = std::get<0>(t);
+        auto ptTrain = std::get<1>(t);
+        if (!trackMap[idTrain].count(ptTrain))
+        {
+            tt++;
+            continue;
+        }
+        if ( trackMap[idQuery].count(ptQuery))
+        {
+            qq++;
+            continue;
+        }
+
+        auto track = trackMap[idTrain][ptTrain];
+        mapper[std::make_pair(idQuery, ptQuery)].insert(track);
+    }
+    std::cout << "AP-MAP: " << mapper.size() << std::endl;
+    std::cout << "AP-MAP failures: train is not mapped: " << tt << " query is mapped: " << qq << std::endl;
+    size_t cnt = mapper.size(), app = 0;
+    // Then select best-fitting track and merge 'em until error is OK
+    for (auto& pat: mapper)
+    {
+        SceneFeaturePoint* best = nullptr;
+        double bestScore = trackInlierThreshold;
+        auto qq = pat.first.first;
+        auto pq = pat.first.second;
+        auto p  = keyPoints[qq][pq].first;
+        auto vv = qq.u->getWorldCamera(qq.v).extrinsics.position;
+        for (auto& track: pat.second)
+        {
+            if ((!(vv - track->reprojectedPosition)) > distanceLimit)
+                continue;
+            if (!qq.u->isVisible(track->reprojectedPosition, qq.v))
+                continue;
+            double err = -1.0;
+            if ((err = !(qq.u->project(track->reprojectedPosition, qq.v) - p)) >= trackInlierThreshold)
+                continue;
+            if (err < bestScore)
+            {
+                bestScore = err;
+                best = track;
+            }
+        }
+        if (!best)
+            continue;
+        SceneObservation so;
+        so.camera = qq.v;
+        so.cameraFixture = qq.u;
+        so.featurePoint = best;
+        so.observation = p;
+        best->observations[so.camera] = so;
+        best->observations__[qq] = so;
+        trackMap[qq][pq] = best;
+        best->reprojectedPosition = best->triangulate();
+        ++app;
+    }
+    std::cout << "TA: (" << ps->name << ")"  << cnt << " / " << app << std::endl;
+}
+
 std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd, double>>
-corecvs::ReconstructionFixtureScene::getPhotostationMatches(const std::vector<CameraFixture*> &train, CameraFixture *query)
+corecvs::ReconstructionFixtureScene::getFixtureMatches(const std::vector<CameraFixture*> &train, CameraFixture *query)
+{
+    std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd, double>> res;
+    auto idxs = getFixtureMatchesIdx(train, query);
+    for (auto& it: idxs)
+    {
+        auto &kpsA = keyPoints[std::get<0>(it)],
+             &kpsB = keyPoints[std::get<2>(it)];
+        res.emplace_back(std::get<0>(it), kpsA[std::get<1>(it)].first, std::get<2>(it), kpsB[std::get<3>(it)].first, std::get<4>(it));
+    }
+    return res;
+}
+
+std::vector<std::tuple<WPP, int, WPP, int, double>>
+corecvs::ReconstructionFixtureScene::getFixtureMatchesIdx(const std::vector<CameraFixture*> &train, CameraFixture *query)
 {
     WPP wcQuery = WPP(query, WPP::VWILDCARD), wcTarget;
-    std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd, double>> res;
+    std::vector<std::tuple<WPP, int, WPP, int, double>> res;
 
     for (auto& ref1: matches)
     {
@@ -817,6 +939,7 @@ corecvs::ReconstructionFixtureScene::getPhotostationMatches(const std::vector<Ca
 
             auto  idA  = swap ? ref2.first : ref1.first;
             auto  idB  = swap ? ref1.first : ref2.first;
+            CORE_ASSERT_TRUE_S(idB == wcQuery);
             CORE_ASSERT_TRUE_S(idA.u != WPP::UWILDCARD && idA.v != WPP::VWILDCARD);
             CORE_ASSERT_TRUE_S(idB.u != WPP::UWILDCARD && idB.v != WPP::VWILDCARD);
             auto& kpsA = keyPoints[idA];
@@ -827,9 +950,7 @@ corecvs::ReconstructionFixtureScene::getPhotostationMatches(const std::vector<Ca
                 int kpB = std::get<1>(m);
                 if (swap)
                     std::swap(kpA, kpB);
-                auto pA = kpsA[kpA].first;
-                auto pB = kpsB[kpB].first;
-                res.emplace_back(idA, pA, idB, pB, std::get<2>(m));
+                res.emplace_back(idA, kpA, idB, kpB, std::get<2>(m));
             }
         }
     }
@@ -859,7 +980,11 @@ void corecvs::ReconstructionFixtureScene::filterEssentialRansac(const std::vecto
                             break;
                         }
                     if (!alreadyIn)
+                    {
                         work.emplace_back(idFirst, idSecond);
+                        if (!essentialCache.count(std::make_pair(idFirst, idSecond)))
+                            essentialCache[std::make_pair(idFirst, idSecond)] = std::make_tuple(corecvs::EssentialDecomposition(), 0.0, false);
+                    }
                 }
             }
         }
@@ -889,7 +1014,10 @@ void corecvs::ReconstructionFixtureScene::filterEssentialRansac(WPP a, WPP b, Es
     WPP idA = swap ? b : a;
     WPP idB = swap ? a : b;
 
-    std::cout << "Starting: " << idA.u->name << idA.v->nameId << "<>" << idB.u->name << idB.v->nameId << std::endl;
+    auto& cache = essentialCache[std::make_pair(idA, idB)];
+    bool useCache = std::get<2>(cache);
+
+    std::cout << (!useCache ? "Starting: " : "Using existing estimate for ") << idA.u->name << idA.v->nameId << "<>" << idB.u->name << idB.v->nameId << std::endl;
 
     std::vector<std::array<corecvs::Vector2dd, 2>> features, featuresInlier;
     auto K1 = idA.v->intrinsics.getKMatrix33();
@@ -922,7 +1050,22 @@ void corecvs::ReconstructionFixtureScene::filterEssentialRansac(WPP a, WPP b, Es
     CORE_ASSERT_TRUE_S(szBefore == szAfter1);
 
     EssentialFeatureFilter filter(K1, K2, features, featuresInlier, params);
-    filter.estimate();
+    double gamma;
+    if (!useCache)
+    {
+        filter.estimate();
+        gamma = filter.getGamma();
+        auto dec = filter.bestDecomposition;
+        std::get<0>(cache) = dec;
+        std::get<1>(cache) = gamma;
+        std::get<2>(cache) = true;
+    }
+    else
+    {
+        gamma = std::get<1>(cache);
+        filter.use(std::get<0>(cache));
+    }
+
     auto bestInliers = filter.inlierIdx;
 
     size_t szAfter = mm.size();

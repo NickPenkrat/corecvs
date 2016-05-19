@@ -19,7 +19,7 @@ private:
     static void MultiplyFirstTemplate (const corecvs::Matrix &T,  corecvs::Matrix &T1);
     static void MultiplySecondTemplate(const corecvs::Matrix &T1, corecvs::Matrix &T2);
     static void SetupActionMatrix     (const corecvs::Matrix &T2, corecvs::Matrix &M);
-    static void Eliminate(corecvs::Matrix &T);
+    static void Eliminate(corecvs::Matrix &T, int lastN = -1);
 };
 
 }

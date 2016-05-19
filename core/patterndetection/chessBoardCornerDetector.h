@@ -46,7 +46,7 @@ struct OrientedCorner
      * Gradient-wise score is correlation with cross of width = bandwidth oriented with corner edges
      * Intensity-wise score is correlation with corner-pattern created using edge orientations
      **/
-    double scoreCorner(DpImage &img, DpImage &w, std::vector<double> &radius, double bandwidth = 3.0);
+    double scoreCorner(DpImage &img, DpImage &w, const std::vector<double> &radius, double bandwidth = 3.0);
 
     /**
      *  Computes single scale score
@@ -120,9 +120,9 @@ class ChessBoardCornerDetectorParams : public ChessBoardCornerDetectorParamsBase
 {
 public:
     // Radius for multi-scale pattern detection
-    // vector<double> patternRadius;
+    //vector<double> patternRadius;
     // Radius for corner-scoring
-    vector<double> cornerScores;
+    //vector<double> cornerScores;
     // Angle for rotation-variant detection
     //vector<double> patternStartAngle;
 
@@ -171,8 +171,8 @@ class ChessBoardCornerDetector : ChessBoardCornerDetectorParams
 public:
     ChessBoardCornerDetector(ChessBoardCornerDetectorParams params = ChessBoardCornerDetectorParams());
     void detectCorners(DpImage &image, std::vector<OrientedCorner> &corners);
-private:
 
+private:
     /**
      * Initalizes kernels for corner detection
      **/
@@ -218,15 +218,14 @@ private:
     DpImage w, phi;
     DpImage cost, img;
     std::vector<CornerKernelSet> kernels;
-    std::vector<OrientedCorner> corners;
+    std::vector<OrientedCorner>  corners;
 
 public:
     void setStatistics(corecvs::Statistics *stats);
     corecvs::Statistics *getStatistics();
 
-    vector<std::string> debugBuffers();
-    RGB24Buffer *getDebugBuffer(std::string name);
-
+    vector<std::string> debugBuffers() const;
+    RGB24Buffer *getDebugBuffer(const std::string& name) const;
 
 private:
     corecvs::Statistics *stats;

@@ -141,15 +141,28 @@ void JSONGetter::visit<int, EnumField>(int &field, const EnumField *fieldDescrip
 template <>
 void JSONGetter::visit<double, DoubleVectorField>(std::vector<double> &field, const DoubleVectorField *fieldDescriptor)
 {
-    QJsonArray array = mNodePath.back().value(fieldDescriptor->name.name).toArray();
-
     field.clear();
-    for (int i = 0; i < array.size(); i++ )
+
+    QJsonValue arrayValue = mNodePath.back().value(fieldDescriptor->name.name);
+    if (arrayValue.isArray())
     {
-        QJsonValue value = array[i];
-        if (value.isDouble()) {
-            field.push_back(value.toDouble());
-        } else {
+        QJsonArray array = arrayValue.toArray();
+
+        for (int i = 0; i < array.size(); i++)
+        {
+            QJsonValue value = array[i];
+            if (value.isDouble()) {
+                field.push_back(value.toDouble());
+            }
+            else {
+                field.push_back(fieldDescriptor->getDefaultElement(i));
+            }
+        }
+    }
+    else
+    {
+        for (uint i = 0; i < fieldDescriptor->defaultSize; i++)
+        {
             field.push_back(fieldDescriptor->getDefaultElement(i));
         }
     }
