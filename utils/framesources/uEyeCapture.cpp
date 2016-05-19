@@ -343,10 +343,21 @@ UEyeCaptureInterface::~UEyeCaptureInterface()
     CloseHandle(rightCamera.mWinEvent);
 #endif
 
-    if (result)
+    if (result) {
         printf("Camera thread killed\n");
-    else
+        spinRunning.unlock();
+    } else {
         printf("Unable to exit Camera thread\n");
+    }
+    /* Stopping camera */
+    if (sync == NO_SYNC)
+    {
+        ueyeTrace(is_StopLiveVideo(leftCamera.mCamera, IS_FORCE_VIDEO_STOP), "is_StopLiveVideo left camera");
+        if (rightCamera.inited)
+            ueyeTrace(is_StopLiveVideo(rightCamera.mCamera, IS_FORCE_VIDEO_STOP), "is_StopLiveVideo right camera");
+    }
+
+
 
     printf("Deleting image buffers\n");
 
@@ -355,9 +366,9 @@ UEyeCaptureInterface::~UEyeCaptureInterface()
         rightCamera.deallocImages();
 
     printf("uEye: Closing camera...");
-    is_ExitCamera(leftCamera.mCamera);
+    ueyeTrace(is_ExitCamera(leftCamera.mCamera), "is_ExitCamera left camera");
     if (rightCamera.inited)
-        is_ExitCamera(rightCamera.mCamera);
+        ueyeTrace(is_ExitCamera(rightCamera.mCamera), "is_ExitCamera right camera");
     printf("done\n");
 
 }
@@ -552,7 +563,7 @@ void UEyeCaptureInterface::getAllCameras(vector<string> &cameras)
             camList->uci[i].SerNo);
 
         std::stringstream ss;
-        ss << i << ",-1:432mhz:15fps:8b";
+        ss << i << ",-1:144mhz:5fps";
         string dev = ss.str();
         cameras.push_back(dev);
 
