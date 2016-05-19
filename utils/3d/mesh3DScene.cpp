@@ -25,7 +25,8 @@ void Mesh3DScene::drawMyself(CloudViewDialog *dialog)
 
     bool withTexture = false;
     withTexture |= (mParameters.style() == Draw3dStyle::TEXTURED) && (dialog->mFancyTexture != GLuint(-1));
-    bool withTexCoords = withTexture && !textureCoords.empty();
+    //bool withTexCoords = withTexture && !textureCoords.empty();
+    bool withTexCoords = false;
 
     /*Caption drawing*/
     if (mParameters.showCaption())
@@ -163,10 +164,13 @@ void Mesh3DScene::drawMyself(CloudViewDialog *dialog)
     {
         glVertexPointer(3, GL_DOUBLE, sizeof(Vector3dd), &(vertexes[0]));
     }
+
+/*
     if (withTexCoords && textureCoords.size() > 0)
     {
         glTexCoordPointer(2, GL_DOUBLE, sizeof(Vector2dd), &(textureCoords[0]));
     }
+*/
 
     /* FACES */
     if (faces.size() > 0)

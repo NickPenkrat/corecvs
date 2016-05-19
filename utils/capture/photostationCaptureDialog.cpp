@@ -50,7 +50,13 @@ PhotostationCaptureDialog::PhotostationCaptureDialog(QWidget *parent)
     /* OK need to check if it gets deleted on table cleanup */
     connect(ui->cameraTableWidget, SIGNAL(cellClicked(int,int)), this, SLOT(tableClick(int, int)));
 
+    ui->manipulatorCaptureButton->setVisible(false);
+    mRuningManipulator = false;
+
     mCapSettingsDialog = new CapSettingsDialog();
+
+    mCaptureMapper = new QSignalMapper();
+    connect(mCaptureMapper, SIGNAL(mapped(int)), this, SLOT(newCaptureFrame(int)));
 }
 
 uint qHash(const ImageCaptureInterface::CameraFormat &format)
@@ -281,6 +287,34 @@ void PhotostationCaptureDialog::setNamer(AbstractImageNamer *namer)
     mNamer = namer;
 }
 
+void PhotostationCaptureDialog::setManipulator(AbstractManipulatorInterface *manipulator)
+{
+    if(mManipulatorCapturer != nullptr)
+    {
+        disconnect(ui->manipulatorCaptureButton, SIGNAL(released()), mManipulatorCapturer, SLOT(show()));
+        disconnect(ui->manipulatorCaptureButton, SIGNAL(released()), mManipulatorCapturer, SLOT(raise()));
+
+        disconnect(mManipulatorCapturer, SIGNAL(captureAndFinalize(bool)), this, SLOT(capture(bool)));
+        disconnect(mManipulatorCapturer, SIGNAL(captureAtPosition(int)), this, SLOT(captureWithManipulator(int)));
+        disconnect(mManipulatorCapturer, SIGNAL(manipulatorCaptureFinalise(bool)), this, SLOT(finalizeManipulatorCapture(bool)));
+        disconnect(this, SIGNAL(captureFinished()), mManipulatorCapturer, SLOT(captureProcessFinshed()));
+        disconnect(this, SIGNAL(waitingNextCapturePosition()), mManipulatorCapturer, SLOT(captureNextPosition()));
+    }
+    mManipulatorCapturer = manipulator;
+    ui->manipulatorCaptureButton->setVisible(mManipulatorCapturer != nullptr);
+    if(mManipulatorCapturer != nullptr)
+    {
+        connect(ui->manipulatorCaptureButton, SIGNAL(released()), mManipulatorCapturer, SLOT(show()));
+        connect(ui->manipulatorCaptureButton, SIGNAL(released()), mManipulatorCapturer, SLOT(raise()));
+
+        connect(mManipulatorCapturer, SIGNAL(captureAndFinalize(bool)), this, SLOT(capture(bool)));
+        connect(mManipulatorCapturer, SIGNAL(captureAtPosition(int)), this, SLOT(captureWithManipulator(int)));
+        connect(mManipulatorCapturer, SIGNAL(manipulatorCaptureFinalise(bool)), this, SLOT(finalizeManipulatorCapture(bool)));
+        connect(this, SIGNAL(captureFinished()), mManipulatorCapturer, SLOT(captureProcessFinshed()));
+        connect(this, SIGNAL(waitingNextCapturePosition()), mManipulatorCapturer, SLOT(captureNextPosition()));
+    }
+}
+
 void PhotostationCaptureDialog::tableClick(int lineid, int colid)
 {
     switch (colid) {
@@ -445,6 +479,8 @@ void PhotostationCaptureDialog::newCaptureFrame(int camId)
 
     mCaptureInterfaces[camId].result = toQImage(pair.rgbBufferLeft);
     pair.freeBuffers();
+    clearSignalMappings(camId);
+    disconnect(descr.camInterface, SIGNAL(newFrameReady(frame_data_t)), mCaptureMapper, SLOT(map()));
     delete_safe(descr.camInterface);
 
     /* This logic would propably change. We are starting so far  */
@@ -473,8 +509,10 @@ void PhotostationCaptureDialog::initateNewFrame()
     }
 }
 
-void PhotostationCaptureDialog::capture(bool shouldAdvance)
+void PhotostationCaptureDialog::capture(bool shouldAdvance, int positionShift)
 {
+    qDebug() << "PhotostationCaptureDialog::capture(" << shouldAdvance << ", " << positionShift << ")";
+
     mAdvanceAfterSave = shouldAdvance;
 
     mCapSettingsDialog->setCaptureInterface(NULL);
@@ -484,6 +522,7 @@ void PhotostationCaptureDialog::capture(bool shouldAdvance)
     ui->captureAdvancePushButton->setEnabled(false);
     ui->stopPushButton          ->setEnabled(true);
     ui->refreshButton           ->setEnabled(false);
+    ui->manipulatorCaptureButton->setEnabled(false);
 
     ui->progressBar->setHidden(false);
     ui->progressBar->setValue(0);
@@ -494,9 +533,8 @@ void PhotostationCaptureDialog::capture(bool shouldAdvance)
     ui->angleStepSpinBox->setEnabled(!mIsCalibrationMode);
     L_INFO_P("table calibrationMode: %d  position: %d/%d", mIsCalibrationMode, mRotaryDialog.selected, mRotaryDialog.positions.size());
 
-    delete_safe(mCaptureMapper);
-    mCaptureMapper = new QSignalMapper();
-    connect(mCaptureMapper, SIGNAL(mapped(int)), this, SLOT(newCaptureFrame(int)));
+    if(mCaptureInterfaces.size() > 0)
+        qDebug() << "Som trash in intrefaces collection detected!";
 
     /* Ok... init all cameras */
     for (int lineid = 0; lineid < ui->cameraTableWidget->rowCount(); lineid++)
@@ -520,12 +558,20 @@ void PhotostationCaptureDialog::capture(bool shouldAdvance)
             continue;
 
         mCaptureInterfaces.append(camDesc);
+        int mappingIndex = mCaptureInterfaces.count() - 1;
+        CORE_ASSERT_TRUE_S(mCaptureMapper->mapping(mappingIndex) == nullptr);
         connect(camDesc.camInterface, SIGNAL(newFrameReady(frame_data_t)), mCaptureMapper, SLOT(map()));
-        mCaptureMapper->setMapping(camDesc.camInterface, mCaptureInterfaces.count() - 1);
+        mCaptureMapper->setMapping(camDesc.camInterface, mappingIndex);
     }
 
-    if (!mCaptureInterfaces.empty())
+    if (positionShift > 0)
     {
+        int shift = mCaptureInterfaces.size() * positionShift;
+        for (auto& camDesc : mCaptureInterfaces)
+            camDesc.camId += shift;
+    }
+
+    if (!mCaptureInterfaces.empty()) {
         mCaptureInterfaces[0].camInterface->startCapture();
     }
     else {
@@ -572,22 +618,42 @@ ImageCaptureInterface* PhotostationCaptureDialog::createCameraCapture(const stri
             if (actualFormat == ImageCaptureInterface::CameraFormat(format[1].toInt(), format[0].toInt(), format[2].toInt()))
                 break;
         }
-        ui->formatsComboBox->setCurrentIndex(formatIdx);
+
+        w = actualFormat.width;
+        h = actualFormat.height;
+        fps = actualFormat.fps;
 
         QVariantList format = ui->formatsComboBox->itemData(formatIdx).toList();
-        h   = format[1].toInt();
-        w   = format[0].toInt();
-        fps = format[2].toInt();
+        if(format.length() == 3)
+        {
+            ui->formatsComboBox->setCurrentIndex(formatIdx);
+        }
+        else
+        {
+            L_INFO_P("Camera <%s> format set to unexpected value.", QSTR_DATA_PTR(camera->getInterfaceName()));
+        }
         L_INFO_P("camera <%s>: new format is: %dx%d @%d", QSTR_DATA_PTR(camera->getInterfaceName()), w, h, fps);
     }
 
     return camera;
 }
 
+void PhotostationCaptureDialog::clearSignalMappings(int i)
+{
+
+    QObject *mapper = mCaptureMapper->mapping(i);
+    while(mapper != nullptr)
+    {
+        mCaptureMapper->removeMappings(mapper);
+        mapper = mCaptureMapper->mapping(i);
+    }
+}
+
 void PhotostationCaptureDialog::stopCapture()
 {
     for (int i = 0; i < mCaptureInterfaces.count(); i++)
     {
+        clearSignalMappings(i);
         delete_safe(mCaptureInterfaces[i].camInterface);
     }
     finalizeCapture(false);
@@ -598,12 +664,6 @@ void PhotostationCaptureDialog::stopCapture()
 
 void PhotostationCaptureDialog::finalizeCapture(bool isOk)
 {
-    ui->capturePushButton       ->setEnabled(true);
-    ui->captureAdvancePushButton->setEnabled(true);
-
-    ui->progressBar->setHidden(true);
-    ui->progressBar->setValue(0);
-
     if (mIsCalibrationMode)
     {
         if (ui->stationNameLineEdit->text() == "A") {
@@ -728,6 +788,19 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
     if (!failedSaves.isEmpty()) {
         QMessageBox::warning(this, "Error saving following files:", failedSaves.join(" "));
     }
+
+    if (mRuningManipulator == NULL)
+    {
+        ui->capturePushButton       ->setEnabled(true);
+        ui->captureAdvancePushButton->setEnabled(true);
+        ui->manipulatorCaptureButton->setEnabled(true);
+
+        ui->progressBar->setHidden(true);
+        ui->progressBar->setValue(0);
+        emit captureFinished();
+    }
+    else
+        emit waitingNextCapturePosition();
 }
 
 void PhotostationCaptureDialog::keyPressEvent(QKeyEvent *event)
@@ -750,6 +823,23 @@ void PhotostationCaptureDialog::showEvent(QShowEvent *event)
 void PhotostationCaptureDialog::captureAndAdvance()
 {
     capture(true);
+}
+
+void PhotostationCaptureDialog::captureWithManipulator(int manipulatorPosition)
+{
+    mAdvanceAfterSave = false;
+    mRuningManipulator = true;
+
+    capture(false, manipulatorPosition);
+}
+
+void PhotostationCaptureDialog::finalizeManipulatorCapture(bool advance)
+{
+    std::cout << "finalizeManipulatorCapture: " << advance << std::endl;
+    mAdvanceAfterSave = advance;
+    mRuningManipulator = false;
+
+    finalizeCapture(false);
 }
 
 void PhotostationCaptureDialog::outputDir()

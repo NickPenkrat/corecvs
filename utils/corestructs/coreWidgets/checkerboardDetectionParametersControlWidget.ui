@@ -40,14 +40,14 @@
     <item row="1" column="0">
      <widget class="QLabel" name="label_1">
        <property name="text">
-         <string>Use Undistortion</string>
+         <string>useUndistortion</string>
        </property>
      </widget>
     </item>
     <item row="1" column="1">
      <widget class="QCheckBox" name="useUndistortionCheckBox">
        <property name="toolTip">
-         <string>Use Undistortion</string>
+         <string>useUndistortion</string>
        </property>
        <property name="checked">
            <bool>true</bool>
@@ -171,14 +171,14 @@
     <item row="4" column="0">
      <widget class="QLabel" name="label_4">
        <property name="text">
-         <string>Cell Size Hor</string>
+         <string>cellSizeHor</string>
        </property>
      </widget>
     </item>
     <item row="4" column="1">
      <widget class="QDoubleSpinBox" name="cellSizeHorSpinBox">
        <property name="toolTip">
-         <string>Cell Size Hor</string>
+         <string>cellSizeHor</string>
        </property>
        <property name="minimum">
         <double>0</double>
@@ -203,14 +203,14 @@
     <item row="5" column="0">
      <widget class="QLabel" name="label_5">
        <property name="text">
-         <string>Cell Size Vert</string>
+         <string>cellSizeVert</string>
        </property>
      </widget>
     </item>
     <item row="5" column="1">
      <widget class="QDoubleSpinBox" name="cellSizeVertSpinBox">
        <property name="toolTip">
-         <string>Cell Size Vert</string>
+         <string>cellSizeVert</string>
        </property>
        <property name="minimum">
         <double>0</double>
@@ -235,14 +235,14 @@
     <item row="6" column="0">
      <widget class="QLabel" name="label_6">
        <property name="text">
-         <string>Clean existing</string>
+         <string>cleanExisting</string>
        </property>
      </widget>
     </item>
     <item row="6" column="1">
      <widget class="QCheckBox" name="cleanExistingCheckBox">
        <property name="toolTip">
-         <string>Clean existing</string>
+         <string>cleanExisting</string>
        </property>
        <property name="checked">
            <bool>true</bool>
@@ -252,14 +252,14 @@
     <item row="7" column="0">
      <widget class="QLabel" name="label_7">
        <property name="text">
-         <string>Precise Diameter</string>
+         <string>preciseDiameter</string>
        </property>
      </widget>
     </item>
     <item row="7" column="1">
      <widget class="QSpinBox" name="preciseDiameterSpinBox">
        <property name="toolTip">
-         <string>Precise Diameter</string>
+         <string>preciseDiameter</string>
        </property>
        <property name="minimum">
         <number>0</number>
@@ -278,14 +278,14 @@
     <item row="8" column="0">
      <widget class="QLabel" name="label_8">
        <property name="text">
-         <string>Iteration count</string>
+         <string>iterationCount</string>
        </property>
      </widget>
     </item>
     <item row="8" column="1">
      <widget class="QSpinBox" name="iterationCountSpinBox">
        <property name="toolTip">
-         <string>Iteration count</string>
+         <string>iterationCount</string>
        </property>
        <property name="minimum">
         <number>1</number>
@@ -304,14 +304,14 @@
     <item row="9" column="0">
      <widget class="QLabel" name="label_9">
        <property name="text">
-         <string>Min accuracy</string>
+         <string>minAccuracy</string>
        </property>
      </widget>
     </item>
     <item row="9" column="1">
      <widget class="QDoubleSpinBox" name="minAccuracySpinBox">
        <property name="toolTip">
-         <string>Min accuracy</string>
+         <string>minAccuracy</string>
        </property>
        <property name="minimum">
         <double>0</double>
@@ -336,14 +336,14 @@
     <item row="10" column="0">
      <widget class="QLabel" name="label_10">
        <property name="text">
-         <string>Partial Board</string>
+         <string>partialBoard</string>
        </property>
      </widget>
     </item>
     <item row="10" column="1">
      <widget class="QCheckBox" name="partialBoardCheckBox">
        <property name="toolTip">
-         <string>Partial Board</string>
+         <string>partialBoard</string>
        </property>
        <property name="checked">
            <bool>true</bool>
@@ -353,14 +353,14 @@
     <item row="11" column="0">
      <widget class="QLabel" name="label_11">
        <property name="text">
-         <string>Fast board Speedup</string>
+         <string>fastBoardSpeedup</string>
        </property>
      </widget>
     </item>
     <item row="11" column="1">
      <widget class="QCheckBox" name="fastBoardSpeedupCheckBox">
        <property name="toolTip">
-         <string>Fast board Speedup</string>
+         <string>fastBoardSpeedup</string>
        </property>
        <property name="checked">
            <bool>true</bool>

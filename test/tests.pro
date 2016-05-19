@@ -23,6 +23,7 @@ SUBDIRS +=       \
 #    cr2reader           \
     debayer             \
     qtScriptConsole     \
+    softrender          \
 
 
 with_opencv {
@@ -57,6 +58,9 @@ cr2reader.depends                  -= utils
 
 debayer.file                        = debayer/debayer.pro
 debayer.depends                    -= utils
+
+softrender.file                     = softrender/softrender.pro
+softrender.depends                 -= utils
 
 new_board_detector	            = new_board_detector/new_board_detector.pro
 

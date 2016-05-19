@@ -66,7 +66,7 @@ void TestbedMainWindow::loadImage(void)
         this,
         "Choose an file name",
         ".",
-        "Text (*.bmp *.jpg *.png *.gif)"
+        "Image (*.bmp *.jpg *.png *.gif)"
     );
     QImage *qImage = new QImage(filename);
     if (qImage == NULL) {

@@ -18,6 +18,7 @@
 
 namespace corecvs {
 
+
 template<class TargetBuffer>
 class AbstractPainter
 {
@@ -102,6 +103,8 @@ public:
         }
     }
 
+
+
     void drawFormat(uint16_t x, uint16_t y, ElementType color, int scale, const char *format, ...)
     {
         char str[1024];
@@ -183,6 +186,11 @@ public:
     void drawCircle(const Circle2d &circle, RGBColor color)
     {
         drawCircle(circle.c.x(), circle.c.y(), circle.r, color);
+    }
+
+    void drawCircle(const Vector2dd &center, double radius, RGBColor color)
+    {
+        drawCircle(center.x(), center.y(), radius, color);
     }
 
     class EqualPredicate
@@ -318,13 +326,31 @@ public:
     }
 
 
-    void drawPolygon(const Polygon &p, ElementType color )
+    void drawPolygon(const Polygon &p, ElementType color)
     {
-        for (unsigned i = 0; i < p.size() - 1; i++ )
+        if (p.empty())
+            return;
+
+        for (unsigned i = 0; i < p.size() - 1; i++)
         {
             mTarget->drawLine(p[i].x(), p[i].y(), p[i + 1].x(), p[i + 1].y(), color);
         }
         mTarget->drawLine(p[p.size() - 1].x(), p[p.size() - 1].y(), p[0].x(), p[0].y(), color);
+    }
+
+    void drawHLine(int x1, int y1, int x2, ElementType &color)
+    {
+        drawSpan(LineSpanInt(y1, x1, x2), color);
+    }
+
+    void drawSpan(const LineSpanInt &span, ElementType &color)
+    {
+        LineSpanInt tspan = span;
+        tspan.clip(mTarget->w, mTarget->h);
+        for (int j = tspan.x1; j < tspan.x2; j++)
+        {
+            mTarget->element(tspan.y, j) = color;
+        }
     }
 
     virtual ~AbstractPainter() {}
