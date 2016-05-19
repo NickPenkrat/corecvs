@@ -65,10 +65,20 @@ bool UEyeCameraDescriptor::allocImages()
     UINT absPosX;
     UINT absPosY;
 
-    is_AOI(mCamera, IS_AOI_IMAGE_GET_POS_X_ABS, (void*)&absPosX , sizeof(absPosX));
-    is_AOI(mCamera, IS_AOI_IMAGE_GET_POS_Y_ABS, (void*)&absPosY , sizeof(absPosY));
+    if (is_AOI(mCamera, IS_AOI_IMAGE_GET_POS_X_ABS, (void*)&absPosX , sizeof(absPosX)) != IS_SUCCESS)
+    {
+        SYNC_PRINT(("UEyeCameraDescriptor::allocImages(): is_AOI failed for X\n"));
+    }
 
-    is_ClearSequence(mCamera);
+    if (is_AOI(mCamera, IS_AOI_IMAGE_GET_POS_Y_ABS, (void*)&absPosY , sizeof(absPosY)) != IS_SUCCESS)
+    {
+        SYNC_PRINT(("UEyeCameraDescriptor::allocImages(): is_AOI failed for Y\n"));
+    }
+
+    if (is_ClearSequence(mCamera) != IS_SUCCESS)
+    {
+        SYNC_PRINT(("UEyeCameraDescriptor::allocImages(): is_ClearSequence failed\n"));
+    }
     for (unsigned int i = 0; i < IMAGE_BUFFER_COUNT; i++)
     {
         if (images[i].buffer)
@@ -157,15 +167,17 @@ int UEyeCameraDescriptor::initBuffer()
 
     IS_RECT rectAOI;
     INT ret = is_AOI(mCamera, IS_AOI_IMAGE_GET_AOI, (void*)&rectAOI, sizeof(rectAOI));
-    if (ret != IS_SUCCESS)
+    if (ret != IS_SUCCESS) {
+        SYNC_PRINT(("UEyeCameraDescriptor::initBuffer(): is_AOI failed\n"));
         return 0;
+    }
 
     width  = rectAOI.s32Width;
     height = rectAOI.s32Height;
 
     // get current colormode
     int colormode = is_SetColorMode(mCamera, IS_GET_COLOR_MODE);
-    qDebug("SDK colormode: %d", colormode);
+    SYNC_PRINT(("UEyeCameraDescriptor::initBuffer(): SDK colormode: %d\n", colormode));
 
     // fill memorybuffer properties
     memset (&bufferProps, 0, sizeof(bufferProps));
