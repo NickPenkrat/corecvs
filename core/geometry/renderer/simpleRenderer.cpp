@@ -188,7 +188,7 @@ void ClassicRenderer::render(Mesh3DDecorated *mesh, RGB24Buffer *buffer)
 
         AttributedTriangleSpanIterator it(triang);
         while (it.hasValue())
-        {            
+        {
             AttributedLineSpan span = it.getAttrSpan();
             fragmentShader(span);
             it.step();
