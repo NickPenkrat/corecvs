@@ -941,6 +941,7 @@ void corecvs::ReconstructionFixtureScene::appendTracks(CameraFixture *ps, double
     std::cout << "AP-MAP: " << mapper.size() << std::endl;
     std::cout << "AP-MAP failures: train is not mapped: " << tt << " query is mapped: " << qq << std::endl;
     size_t cnt = mapper.size(), app = 0;
+    int appended = 0, merged = 0;
     // Then select best-fitting track and merge 'em until error is OK
     for (auto& pat_: mapper)
     {
@@ -968,6 +969,7 @@ void corecvs::ReconstructionFixtureScene::appendTracks(CameraFixture *ps, double
         }
         if (!best)
             continue;
+        appended++;
         SceneObservation so;
         so.camera = qq.v;
         so.cameraFixture = qq.u;
@@ -1032,7 +1034,8 @@ void corecvs::ReconstructionFixtureScene::appendTracks(CameraFixture *ps, double
                 }
             }
             if (!best)
-                continue;
+                break;
+            appended++;
             auto prev = best;
             for (auto& o: best->observations__)
             {
@@ -1047,6 +1050,7 @@ void corecvs::ReconstructionFixtureScene::appendTracks(CameraFixture *ps, double
         ++app;
     }
     std::cout << "TA: (" << ps->name << ")"  << cnt << " / " << app << std::endl;
+	std::cout << "TA: appended: " << appended << ", merged: " << merged << std::endl;
 }
 
 std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd, double>>
