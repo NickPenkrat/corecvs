@@ -57,7 +57,6 @@ TEST(ALowCodec, testALowCodec)
     ASSERT_EXIT(testDeath(), ::testing::ExitedWithCode(256 -2), "");    // TODO: this is a bug on Linux for the gtest implementation?
 #endif
 
-#ifdef WIN32
     SYNC_PRINT(("Now the assertion must raised and caught: "));
     try {
         testChan(16300);
@@ -71,10 +70,6 @@ TEST(ALowCodec, testALowCodec)
         SYNC_PRINT(("We've got unknown exception\n"));
     }
     ADD_FAILURE() << "Didn't throw AssertException as expected";
-
-#else
-    ASSERT_EXIT(testChan(16300), ::testing::ExitedWithCode(0), "");    // TODO: Linux has exit(0) in stackTrace routine
-#endif
 
     //int *p = 0; *p = 345;
     //CORE_ASSERT_FAIL("testChan: check_fail");
