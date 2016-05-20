@@ -96,6 +96,9 @@ public:
     void filterEssentialRansac(const std::vector<CameraFixture*> &lhs, const std::vector<CameraFixture*> &rhs, EssentialFilterParams params);
     void remove(WPP a, WPP b, std::vector<int> idx);
     void pruneTracks(double rmse, double maxe, double distanceThreshold);
+    bool checkTrack(SceneFeaturePoint* track, uint32_t mask = ~uint32_t(0), double rmse = 1.0, double maxe = 3.0, double distanceThreshold = 1000.0);
+    static std::vector<uint32_t> GenerateBitmasks(int N, int M);
+    void pruneSmallTracks();
 
 
     //\brief Returns number of FixtureCamera's in placedFixtures fixtures

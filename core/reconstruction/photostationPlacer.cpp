@@ -794,6 +794,7 @@ void corecvs::PhotostationPlacer::fullRun()
         scene->printTrackStats();
         scene->ProcessState->incrementCompleted();
     }
+    scene->pruneSmallTracks();
     scene->ProcessState->reset("Fit 1", 1);
     scene->ProcessState->incrementStarted();
     fit(optimizationParams, finalNonLinearIterations / 2);

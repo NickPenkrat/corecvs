@@ -181,7 +181,7 @@ public:
         this->type = type;
     }
 
-    Vector3dd triangulate(bool use__ = false);
+    Vector3dd triangulate(bool use__ = false, uint32_t mask = ~uint32_t(0));
 
 
     /** Observation related block */

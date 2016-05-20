@@ -30,9 +30,14 @@ class UEyeCaptureInterface : public ImageCaptureInterface
 {
 public:
     UEyeCaptureInterface(string _devname);
+    UEyeCaptureInterface(string _devname, int h, int w, int fps, bool isRgb = false);
+
+    virtual int setConfigurationString(string _devname, bool isRgb = false);
+
     virtual ~UEyeCaptureInterface();
 
     virtual FramePair getFrame() override;
+    virtual FramePair getFrameRGB24() override;
 
     //void convertFromYUYV(G12Buffer *output, uint16_t * input);
 
@@ -45,6 +50,9 @@ public:
     virtual CapErrorCode initCapture() override;
     virtual CapErrorCode startCapture() override;
 
+    virtual CapErrorCode getFormats(int *num, CameraFormat *& formats) override;
+
+    static void getAllCameras(vector<std::string> &cameras);
 
     static int ueyeTrace(int res, const char *prefix = NULL);
 
@@ -62,7 +70,9 @@ private:
 
         SpinThread(UEyeCaptureInterface *_capInterface) :
             capInterface(_capInterface)
-        {}
+        {
+            this->setObjectName("UEyeCaptureInterface:SpinThread");
+        }
 
         void run (void);
     };
@@ -79,7 +89,8 @@ private:
 
     SyncType sync;
 
-    void decodeData(UEyeCameraDescriptor *camera, BufferDescriptorType *buffer, G12Buffer **output);
+    void decodeData  (UEyeCameraDescriptor *camera, BufferDescriptorType *buffer, G12Buffer **output);
+    void decodeData24(UEyeCameraDescriptor *camera, BufferDescriptorType *buffer, RGB24Buffer **output);
 
     UEyeCameraDescriptor leftCamera;
     UEyeCameraDescriptor rightCamera;
