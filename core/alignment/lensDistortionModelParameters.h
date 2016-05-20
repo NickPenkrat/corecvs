@@ -68,6 +68,10 @@ namespace corecvs {
 class LensDistortionModelParameters : public LensDistortionModelParametersBase
 {
 public:
+
+    /** Static fields init function, this is used for "dynamic" field initialization */
+    static int staticInit();
+
     using LensDistortionModelParametersBase::mapForward;
 
     corecvs::Vector2dd mapForward(const corecvs::Vector2dd &v) const

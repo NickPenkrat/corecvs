@@ -8,7 +8,7 @@
 
 namespace corecvs
 {
-enum class PhotostationPlacerOptimizationType
+enum class ReconstructionFunctorOptimizationType
 {
     NON_DEGENERATE_ORIENTATIONS = 1, // Orientations of all cameras except first
     DEGENERATE_ORIENTATIONS = 2,     // Orientation of first camera
@@ -19,7 +19,7 @@ enum class PhotostationPlacerOptimizationType
     POINTS = 64,                     // 3D points
     TUNE_GPS = 128                   // Allow shifting of GPS-initialized cameras
 };
-enum class PhotostationPlacerOptimizationErrorType
+enum class ReconstructionFunctorOptimizationErrorType
 {
     REPROJECTION,                    // Reprojection error
     ANGULAR,                         // Angular error
@@ -28,7 +28,7 @@ enum class PhotostationPlacerOptimizationErrorType
 };
 
 /*
- * Parameters are stored in the following way (section is omitted depending on PhotostationPlacerOptimizationType)
+ * Parameters are stored in the following way (section is omitted depending on ReconstructionFunctorOptimizationType)
  * N - number of "preplaced" photostations
  * M - number of points
  * M'- number of projections
@@ -51,7 +51,7 @@ enum class PhotostationPlacerOptimizationErrorType
  * 3 x N        Normalised (using covariance 'square root') difference
  */
 template<>
-struct is_bitmask<PhotostationPlacerOptimizationType> : std::true_type {};
+struct is_bitmask<ReconstructionFunctorOptimizationType> : std::true_type {};
 
 struct ReconstructionFunctor;
 struct ParallelErrorComputator
@@ -71,11 +71,13 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
         readParams(in);
         computeErrors(out, idxs);
     }
-    ReconstructionFunctor(ReconstructionFixtureScene *scene, const PhotostationPlacerOptimizationErrorType &error, const PhotostationPlacerOptimizationType &optimization, const double pointErrorEstimate);
+    void alternatingMinimization(int steps);
+    ReconstructionFunctor(ReconstructionFixtureScene *scene, const ReconstructionFunctorOptimizationErrorType &error, const ReconstructionFunctorOptimizationType &optimization, bool excessiveQuaternionParametrization, const double pointErrorEstimate);
 
     ReconstructionFixtureScene *scene;
-    PhotostationPlacerOptimizationErrorType error;
-    PhotostationPlacerOptimizationType optimization;
+    ReconstructionFunctorOptimizationErrorType error;
+    ReconstructionFunctorOptimizationType optimization;
+    bool excessiveQuaternionParametrization;
 
     void computePointCounts();
     void computeInputs();
@@ -88,6 +90,7 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
     void writeParams(double *params);
     void computeErrors(double *out, const std::vector<int> &idxs);
 
+
     std::unordered_map<FixtureScenePart*, int> counter;
 
     std::vector<SceneObservation*> revDependency; // track, projection
@@ -99,6 +102,8 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
     int getErrorComponentsPerPoint();
 
     std::vector<CameraFixture*> orientableFixtures, translateableFixtures;// translationConstrainedFixtures;
+    std::vector<Quaternion> originalOrientations;
+    std::vector<Vector3dd> inputQuaternions;
     std::vector<FixtureCamera*> focalTunableCameras, principalTunableCameras;
     /*
      * These are DoF limits for cameras/fixtures
@@ -114,7 +119,8 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
                  MINIMAL_TRACKED_FOR_FOCALS      = 7,
                  MINIMAL_TRACKED_FOR_PRINCIPALS  = 9,
     // Inputs/outputs per item
-                 INPUTS_PER_ORIENTATION          = 4,
+                   INPUTS_PER_ORIENTATION_EXC      = 4,
+                   INPUTS_PER_ORIENTATION_NEX      = 3,
                    INPUTS_PER_TRANSLATION          = 3,
                    INPUTS_PER_3D_POINT             = 3,
                    INPUTS_PER_FOCAL                = 1,
@@ -124,15 +130,21 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
 };
 struct ReconstructionNormalizationFunctor : corecvs::FunctionArgs
 {
-    ReconstructionNormalizationFunctor(ReconstructionFunctor *functor) : FunctionArgs(functor->getInputNum(), functor->getInputNum()), functor(functor)
+    ReconstructionNormalizationFunctor(ReconstructionFunctor *functor, int alternatingOptimizationSteps = 0)
+        : FunctionArgs(functor->getInputNum(), functor->getInputNum()),
+          functor(functor),
+          alternatingOptimizationSteps(alternatingOptimizationSteps)
     {
     }
     void operator() (const double in[], double out[])
     {
         functor->readParams(in);
+        if (alternatingOptimizationSteps)
+            functor->alternatingMinimization(alternatingOptimizationSteps);
         functor->writeParams(out);
     }
     ReconstructionFunctor* functor;
+    int  alternatingOptimizationSteps;
 };
 
 }

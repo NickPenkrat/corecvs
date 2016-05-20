@@ -110,6 +110,13 @@ void EssentialFeatureFilter::Estimator::makeHypo()
     model = EssentialEstimator().getEssential5point(hypo);
 }
 
+void EssentialFeatureFilter::use(corecvs::EssentialDecomposition &d)
+{
+    Estimator es(this, inlierRadius, batch);
+    es.model.push_back((EssentialMatrix)d);
+    es.selectInliers();
+}
+
 void EssentialFeatureFilter::Estimator::selectInliers()
 {
   //auto& features = filter->features;

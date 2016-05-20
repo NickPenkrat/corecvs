@@ -14,15 +14,16 @@ namespace corecvs {
 struct Status
 {
     std::string currentAction;
-    size_t      completedActions, totalActions, startedActions;
+    size_t      completedActions, totalActions, startedActions, completedGlobalActions, totalGlobalActions, startedGlobalActions;
+    bool        isCompleted;
+    bool        isFailed;
+    bool        isStoped;
+    bool        stopThread;
 
-    Status() : currentAction("None"), completedActions(0), totalActions(0), startedActions(0)
+    Status() : currentAction("NONE"), completedActions(0), totalActions(0), startedActions(0),
+        completedGlobalActions(0), totalGlobalActions(0), startedGlobalActions(0),
+      isCompleted(false), isFailed(false), stopThread(false), isStoped(false)
     {}
-
-    bool isCompleted(const std::string &action = "") const
-    {
-        return ((action.empty() || action == currentAction) && totalActions == completedActions);
-    }
 };
 
 class StatusTracker
@@ -30,7 +31,23 @@ class StatusTracker
 public:
     void    incrementStarted();
     void    incrementCompleted();
+    void    setTotalActions(size_t totalActions);
     void    reset(const std::string &action, size_t totalActions);
+    void    setCompleted();
+    void    setFailed();
+
+    void    setStopThread();
+    void    setStoped();
+
+    bool    isActionCompleted(const std::string &action) const;
+
+    bool    isCompleted() const;
+    ///
+    /// \brief isCanceled
+    /// \return Returns whether the setStopThread is called
+    ///
+    bool    isCanceled() const;
+    bool    isFailed() const;
 
     Status  getStatus() const;
 

@@ -83,7 +83,7 @@ TEST(Reconstruction, basicO3P)
         std::cout << "T=[" << shift[0] << "; " << shift[1] << "; " << shift[2] << "];" << std::endl;
 #endif
     auto h = corecvs::RelativeNonCentralO3PSolver::SolveRelativeNonCentralO3P(l, r, shift);
-    double best = std::numeric_limits<double>::max();
+    double best = 1e10;
     for (auto& hh: h)
     {
         double foo = std::acos(std::abs((hh.rotor^rotor.conjugated())[3]))*360.0/M_PI;
@@ -393,7 +393,7 @@ TEST(Reconstruction, testP3P)
 
         auto res = corecvs::PNPSolver::solvePNP(dirs, pts);
 
-        double minDiffPos   = 1e100;
+        double minDiffPos   = 1e10;
         //double minDiffAngle = 1e100;
 
         for (auto &r: res)
@@ -431,8 +431,8 @@ TEST(Reconstruction, testP4P)
 
         auto res = corecvs::PNPSolver::solvePNP(dirs, pts);
 
-        double minDiffPos   = 1e100;
-        double minDiffAngle = 1e100;
+        double minDiffPos   = 1e10;
+        double minDiffAngle = 1e10;
 
         for (auto &r: res)
         {
@@ -474,8 +474,8 @@ TEST(Reconstruction, testP6P)
 
         auto res = corecvs::PNPSolver::solvePNP(dirs, pts);
 
-        double minDiffPos   = 1e100;
-        double minDiffAngle = 1e100;
+        double minDiffPos   = 1e10;
+        double minDiffAngle = 1e10;
 
         for (auto &r: res)
         {
@@ -515,8 +515,8 @@ TEST(Reconstruction, testPNP)
 
         auto res = corecvs::PNPSolver::solvePNP(dirs, pts);
 
-        double minDiffPos   = 1e100;
-        double minDiffAngle = 1e100;
+        double minDiffPos   = 1e10;
+        double minDiffAngle = 1e10;
 
         for (auto &r: res)
         {
