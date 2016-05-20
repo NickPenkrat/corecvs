@@ -127,6 +127,7 @@ public:
         FOCUS_RELATIVE,
         AUTO_FOCUS,
         /* SOME UEYE SPECIFIC STUFF */
+
         MASTER_FLASH_DELAY,
         MASTER_FLASH_DURATION,
         SLAVE_TRIGGER_DELAY,

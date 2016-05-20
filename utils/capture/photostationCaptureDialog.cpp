@@ -32,6 +32,8 @@
 
 const QString PhotostationCaptureDialog::DEFAULT_FILENAME = "capture.ini";
 
+using corecvs::FocusEstimator;
+
 PhotostationCaptureDialog::PhotostationCaptureDialog(QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::PhotostationCaptureDialog)
@@ -407,14 +409,14 @@ void PhotostationCaptureDialog::newPreviewFrame()
     }
 
     // Estimate focus for the current image that has been set
-    {
+    if (ui->focusComputeOnCheckBox->isChecked()){
         QRect rc = ui->previewWidget->getInputRect();
         int x1 = rc.left();
         int y1 = rc.top();
         int x2 = rc.right();
         int y2 = rc.bottom();
 
-        corecvs::FocusEstimator::Result res = corecvs::FocusEstimator::calc(pair.rgbBufferLeft, x1, y1, x2, y2);
+        FocusEstimator::Result res = FocusEstimator::calc(pair.rgbBufferLeft, x1, y1, x2, y2);
         ui->focusedLabel->setText(QString("Focus score: %1 out of %2").arg(res.score).arg(res.fullScore));
         mFocusDialog.addGraphPoint("Focus score", res.score, true);
         mFocusDialog.update();
