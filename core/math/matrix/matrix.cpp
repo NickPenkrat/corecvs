@@ -1172,8 +1172,7 @@ void Matrix::svd (Matrix *A, Matrix *W, Matrix *V)
     int n = A->w;
     int m = A->h;
 
-    /* BUG `nm' may be used uninitialized in this function */
-    int     flag, i, its, j, jj, k, l=0, nm, nm1 = n - 1, mm1 = m - 1;
+    int     i, its, j, jj, k, l=0, nm = 0, nm1 = n - 1, mm1 = m - 1;
     double  c, f, h, s, x, y, z;
     double  anorm = 0.0;
     double  g = 0.0;
@@ -1257,171 +1256,181 @@ void Matrix::svd (Matrix *A, Matrix *W, Matrix *V)
         anorm = Max(anorm, (fabs(W->a( 0, i)) + fabs(rv1[i])));
     }
 
-        /* Accumulation of right-hand transformations */
-        for (i = n - 1; i >= 0; i--)
+    /* Accumulation of right-hand transformations */
+    for (i = n - 1; i >= 0; i--)
+    {
+        if (i < nm1)
         {
-            if (i < nm1)
-            {
-                if (g)
-                {
-                    /* double division to avoid possible underflow */
-                    for (j = l; j < n; j++)
-                        V->a( j, i) = (A->a( i, j) / A->a( i, l)) / g;
-                    for (j = l; j < n; j++)
-                    {
-                        for (s = 0.0, k = l; k < n; k++)
-                            s += A->a(i, k) * V->a(k, j);
-                        for (k = l; k < n; k++)
-                            V->a(k, j) += s * V->a(k, i);
-                    }
-                }
-                for (j = l; j < n; j++)
-                    V->a(i, j) = V->a(j, i) = 0.0;
-            }
-            V->a(i, i) = 1.0;
-            g = rv1[i];
-            l = i;
-        }
-        /* Accumulation of left-hand transformations */
-        for (i = n - 1; i >= 0; i--)
-        {
-            l = i + 1;
-            g = W->a(0, i);
-            if (i < nm1)
-                for (j = l; j < n; j++)
-                    A->a(i, j) = 0.0;
             if (g)
             {
-                g = 1.0 / g;
-                if (i != nm1)
+                /* double division to avoid possible underflow */
+                for (j = l; j < n; j++)
+                    V->a( j, i) = (A->a( i, j) / A->a( i, l)) / g;
+                for (j = l; j < n; j++)
                 {
-                    for (j = l; j < n; j++)
-                    {
-                        for (s = 0.0, k = l; k < m; k++)
-                            s += A->a(k, i) * A->a(k, j);
-                        f = (s / A->a(i, i)) * g;
-                        for (k = i; k < m; k++)
-                            A->a(k, j) += f * A->a(k, i);
-                    }
+                    for (s = 0.0, k = l; k < n; k++)
+                        s += A->a(i, k) * V->a(k, j);
+                    for (k = l; k < n; k++)
+                        V->a(k, j) += s * V->a(k, i);
                 }
-                for (j = i; j < m; j++)
-                    A->a(j, i) *= g;
-            } else
-                for (j = i; j < m; j++)
-                    A->a(j, i) = 0.0;
-            ++A->a(i, i);
+            }
+            for (j = l; j < n; j++)
+                V->a(i, j) = V->a(j, i) = 0.0;
         }
-        /* diagonalization of the bidigonal form */
-        for (k = n - 1; k >= 0; k--)
-        {                           /* loop over singlar values */
-            for (its = 0; its < 30; its++)
-            {                       /* loop over allowed iterations */
-                flag = 1;
-                for (l = k; l >= 0; l--)
-                {                   /* test for splitting */
-                    nm = l - 1;     /* note that rv1[l] is always zero */
-                    if (Abs(rv1[l]) + anorm == anorm)
-                    {
-                        flag = 0;
-                        break;
-                    }
-                    if (fabs(W->a(0, nm)) + anorm == anorm)
-                        break;
-                }
-                if (flag)
+        V->a(i, i) = 1.0;
+        g = rv1[i];
+        l = i;
+    }
+
+    /* Accumulation of left-hand transformations */
+    for (i = n - 1; i >= 0; i--)
+    {
+        l = i + 1;
+        g = W->a(0, i);
+        if (i < nm1)
+            for (j = l; j < n; j++)
+                A->a(i, j) = 0.0;
+        if (g)
+        {
+            g = 1.0 / g;
+            if (i != nm1)
+            {
+                for (j = l; j < n; j++)
                 {
-                    c = 0.0;        /* cancellation of rv1[l], if l>1 */
-                    s = 1.0;
-                    for (i = l; i <= k; i++)
+                    for (s = 0.0, k = l; k < m; k++)
+                        s += A->a(k, i) * A->a(k, j);
+                    f = (s / A->a(i, i)) * g;
+                    for (k = i; k < m; k++)
+                        A->a(k, j) += f * A->a(k, i);
+                }
+            }
+            for (j = i; j < m; j++)
+                A->a(j, i) *= g;
+        }
+        else {
+            for (j = i; j < m; j++)
+                A->a(j, i) = 0.0;
+        }
+        ++A->a(i, i);
+    }
+
+    /* diagonalization of the bidigonal form */
+    for (k = n - 1; k >= 0; k--)
+    {                           /* loop over singlar values */
+        for (its = 0; its < 30; its++)
+        {                       /* loop over allowed iterations */
+            int flag = 1;
+            for (l = k; l >= 0; l--)
+            {                   /* test for splitting */
+                nm = l - 1;     /* note that rv1[l] is always zero */
+                if (Abs(rv1[l]) + anorm == anorm)
+                {
+                    flag = 0;
+                    break;
+                }
+                if (nm >= 0 && fabs(W->a(0, nm)) + anorm == anorm)
+                    break;
+            }
+            if (l < 0) {
+                printf("possible bugfix: l=-1 => 0\n");
+                l = 0;      // bugfix: negative l is possible here!
+            }
+            if (flag)
+            {
+                c = 0.0;        /* cancellation of rv1[l], if l>1 */
+                s = 1.0;
+                for (i = l; i <= k; i++)
+                {
+                    f = s * rv1[i];
+                    if (Abs(f) + anorm != anorm)
                     {
-                        f = s * rv1[i];
-                        if (Abs(f) + anorm != anorm)
+                        g = W->a(0, i);
+                        h = Vector2dd(f, g).getLengthStable();
+                        W->a(0, i) = h;
+                        h = 1.0 / h;
+                        c = g * h;
+                        s = (-f * h);
+                        for (j = 0; j < m; j++)
                         {
-                            g = W->a(0, i);
-                            h = Vector2dd(f, g).getLengthStable();
-                            W->a(0, i) = h;
-                            h = 1.0 / h;
-                            c = g * h;
-                            s = (-f * h);
-                            for (j = 0; j < m; j++)
-                            {
-                                y = A->a(j, nm);
-                                z = A->a(j, i);
-                                A->a( j, nm) = y * c + z * s;
-                                A->a( j, i) = z * c - y * s;
-                            }
+                            y = A->a(j, nm);
+                            z = A->a(j, i);
+                            A->a(j, nm) = y * c + z * s;
+                            A->a(j,  i) = z * c - y * s;
                         }
                     }
                 }
-                z = W->a(0, k);
-                if (l == k)
-                {                   /* convergence */
-                    if (z < 0.0)
-                    {
-                        W->a(0, k) = -z;
-                        for (j = 0; j < n; j++)
-                            V->a(j, k) = (-V->a(j, k));
-                    }
-                    break;
-                }
-                if (its == 30)
-                    printf("No convergence in 30 SVDCMP iterations");
-                x = W->a(0, l);           /* shift from bottom 2-by-2 minor */
-                nm = k - 1;
-                y = W->a(0, nm);
-                g = rv1[nm];
-                h = rv1[k];
-                f = ((y - z) * (y + z) + (g - h) * (g + h)) / (2.0 * h * y);
-                g = Vector2dd(f, 1.0).getLengthStable();
-                /* next QR transformation */
-                f = ((x - z) * (x + z) + h * ((y / (f + Sign(g, f))) - h)) / x;
-                c = s = 1.0;
-                for (j = l; j <= nm; j++)
-                {
-                    i = j + 1;
-                    g = rv1[i];
-                    y = W->a(0, i);
-                    h = s * g;
-                    g = c * g;
-                    z = Vector2dd(f,h).getLengthStable();
-                    rv1[j] = z;
-                    c = f / z;
-                    s = h / z;
-                    f = x * c + g * s;
-                    g = g * c - x * s;
-                    h = y * s;
-                    y = y * c;
-                    for (jj = 0; jj < n; jj++)
-                    {
-                        x = V->a(jj, j);
-                        z = V->a(jj, i);
-                        V->a(jj, j) = x * c + z * s;
-                        V->a(jj, i) = z * c - x * s;
-                    }
-                    z = Vector2dd(f,h).getLengthStable();
-                    W->a(0, j) = z;       /* rotation can be arbitrary id z=0 */
-                    if (z)
-                    {
-                        z = 1.0 / z;
-                        c = f * z;
-                        s = h * z;
-                    }
-                    f = (c * g) + (s * y);
-                    x = (c * y) - (s * g);
-                    for (jj = 0; jj < m; jj++)
-                    {
-                        y = A->a(jj, j);
-                        z = A->a(jj, i);
-                        A->a(jj, j) = y * c + z * s;
-                        A->a(jj, i) = z * c - y * s;
-                    }
-                }
-                rv1[l] = 0.0;
-                rv1[k] = f;
-                W->a(0, k) = x;
             }
+
+            z = W->a(0, k);
+            if (l == k)
+            {                   /* convergence */
+                if (z < 0.0)
+                {
+                    W->a(0, k) = -z;
+                    for (j = 0; j < n; j++)
+                        V->a(j, k) = (-V->a(j, k));
+                }
+                break;
+            }
+            if (its == 30)
+                printf("No convergence in 30 SVDCMP iterations");
+
+            x = W->a(0, l);           /* shift from bottom 2-by-2 minor */
+            nm = k - 1;
+            y = W->a(0, nm);
+            g = rv1[nm];
+            h = rv1[k];
+            f = ((y - z) * (y + z) + (g - h) * (g + h)) / (2.0 * h * y);
+            g = Vector2dd(f, 1.0).getLengthStable();
+            /* next QR transformation */
+            f = ((x - z) * (x + z) + h * ((y / (f + Sign(g, f))) - h)) / x;
+            c = s = 1.0;
+            for (j = l; j <= nm; j++)
+            {
+                i = j + 1;
+                g = rv1[i];
+                y = W->a(0, i);
+                h = s * g;
+                g = c * g;
+                z = Vector2dd(f,h).getLengthStable();
+                rv1[j] = z;
+                c = f / z;
+                s = h / z;
+                f = x * c + g * s;
+                g = g * c - x * s;
+                h = y * s;
+                y = y * c;
+                for (jj = 0; jj < n; jj++)
+                {
+                    x = V->a(jj, j);
+                    z = V->a(jj, i);
+                    V->a(jj, j) = x * c + z * s;
+                    V->a(jj, i) = z * c - x * s;
+                }
+                z = Vector2dd(f,h).getLengthStable();
+                W->a(0, j) = z;       /* rotation can be arbitrary id z=0 */
+                if (z)
+                {
+                    z = 1.0 / z;
+                    c = f * z;
+                    s = h * z;
+                }
+                f = (c * g) + (s * y);
+                x = (c * y) - (s * g);
+                for (jj = 0; jj < m; jj++)
+                {
+                    y = A->a(jj, j);
+                    z = A->a(jj, i);
+                    A->a(jj, j) = y * c + z * s;
+                    A->a(jj, i) = z * c - y * s;
+                }
+            }
+            rv1[l] = 0.0;
+            rv1[k] = f;
+            W->a(0, k) = x;
         }
-        delete[] rv1;
+    }
+    delete[] rv1;
 }
 
 void Matrix::svd(Matrix *A, DiagonalMatrix *W, Matrix *V)
