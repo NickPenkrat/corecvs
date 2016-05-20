@@ -204,6 +204,8 @@ ImageCaptureInterface *ImageCaptureInterface::fabric(string input, int h, int w,
         return new DirectShowCaptureInterface(tmp, h, w, fps, isRgb);
     }
 #endif
+
+    return NULL;
 }
 
 void ImageCaptureInterface::notifyAboutNewFrame(frame_data_t frameData)
