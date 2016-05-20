@@ -26,6 +26,16 @@ struct Status
     {}
 };
 
+class StatusTracker;
+
+struct AutoTracker
+{
+    AutoTracker(StatusTracker* st);
+    ~AutoTracker();
+
+    StatusTracker* st;
+};
+
 class StatusTracker
 {
 public:
@@ -35,6 +45,8 @@ public:
     void    reset(const std::string &action, size_t totalActions);
     void    setCompleted();
     void    setFailed();
+
+    AutoTracker createAutoTrackerCalculationObject();
 
     void    setStopThread();
     void    setStoped();

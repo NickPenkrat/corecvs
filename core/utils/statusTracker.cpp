@@ -2,8 +2,17 @@
 
 #include "statusTracker.h"
 
-
 namespace corecvs {
+
+AutoTracker::AutoTracker(StatusTracker* st): st(st)
+{
+    st->incrementStarted();
+}
+
+AutoTracker::~AutoTracker()
+{
+    st->incrementCompleted();
+}
 
 void StatusTracker::readLock() const
 {
@@ -140,7 +149,12 @@ void corecvs::StatusTracker::setFailed()
     writeLock();
         currentStatus.isFailed = true;
         std::cout << "Failed!!!" << std::endl;
-    unlock();
+        unlock();
+}
+
+AutoTracker StatusTracker::createAutoTrackerCalculationObject()
+{
+    return AutoTracker(this);
 }
 
 void corecvs::StatusTracker::setStopThread()

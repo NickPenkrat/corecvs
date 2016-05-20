@@ -184,6 +184,7 @@ void ReconstructionFixtureScene::pruneTracks(double rmse, double maxe, double di
 {
     int id = 0;
     std::vector<SceneFeaturePoint*> deleteSet;
+    proccess
     for (auto& pt: trackedFeatures)
     {
         auto pos = pt->reprojectedPosition;
@@ -302,7 +303,7 @@ void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams 
     }
 
     // Feature detection and matching
-    FeatureMatchingPipeline pipeline(filenames);
+    FeatureMatchingPipeline pipeline(filenames, state);
     pipeline.add(new KeyPointDetectionStage(params.detector), true);
     pipeline.add(new DescriptorExtractionStage(params.descriptor), true);
     pipeline.add(new MatchingPlanComputationStage(), true);

@@ -25,6 +25,7 @@
 #include "function.h"
 #include "sparseMatrix.h"
 #include "vector.h"
+#include "statusTracker.h"
 
 
 namespace corecvs {
@@ -71,7 +72,7 @@ public:
      *
      *  \f[ (J^T J + \lambda diag(J^T J)) \delta = J^T [y_{target} - f(\beta)] \f]
      **/
-    vector<double> fit(const vector<double> &input, const vector<double> &output)
+    vector<double> fit(const vector<double> &input, const vector<double> &output, StatusTracker* state)
     {
         if (traceProgress) {
             cout << "================== Starting LM fit ================== " << endl;
@@ -101,8 +102,10 @@ public:
 
         double totalEval = 0.0, totalJEval = 0.0, totalLinSolve = 0.0, totalATA = 0.0, totalTotal = 0.0;
         int g = 0;
+        state->reset("FIT", maxIterations);
         for (g = 0; (g < maxIterations) && (lambda < maxlambda) && !converged; g++)
         {
+            auto boo = state->createAutoTrackerCalculationObject();
             double timeEval = 0.0, timeJEval = 0.0, timeLinSolve = 0.0, timeATA = 0.0, timeTotal = 0.0;
             auto beginT = std::chrono::high_resolution_clock::now();
 
