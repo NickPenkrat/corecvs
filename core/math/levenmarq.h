@@ -46,8 +46,11 @@ public:
     bool trace         = false;
     bool traceMatrix   = false;
     bool traceJacobian = false;
+#if 0
     bool useConjugatedGradient = false;
     int  conjugatedGradientIterations = 100;
+#endif
+    bool useSchurComplement = false;
 
     /* Additional outputs */
     bool hasParadox = false;
@@ -239,14 +242,24 @@ public:
 //                for (int ijk = 0; ijk < B.size(); ++ijk)
 //                    CORE_ASSERT_TRUE_S(!std::isnan(B[ijk]));
 //                std::cout << "A.det " << A.det() << std::endl;
-                if (!useConjugatedGradient)
+//                if (!useConjugatedGradient)
                 {
-                   A.linSolve(B, delta, true, true);
+                    if (traceMatrix)
+                        std::cout << A << std::endl << std::endl;
+                    if (!useSchurComplement)
+                        A.linSolve(B, delta, true, true);
+                    else
+                    {
+                        CORE_ASSERT_TRUE_S(F.schurBlocks.size());
+                        A.linSolveSchurComplement(B, F.schurBlocks, delta, true, true);
+                    }
                 }
+#if 0
                 else
                 {
                     delta = conjugatedGradient(A, B);
                 }
+#endif
                 auto LSend = std::chrono::high_resolution_clock::now();
 //                for (int ijk = 0; ijk < delta.size(); ++ijk)
 //                    CORE_ASSERT_TRUE_S(!std::isnan(delta[ijk]));
@@ -342,7 +355,7 @@ public:
         iterations = g;
         return result;
     }
-
+#if 0
     corecvs::Vector conjugatedGradient(const MatrixClass &A, const corecvs::Vector &B)
     {
         corecvs::Vector X(A.w), R = B, p = B;
@@ -382,7 +395,7 @@ public:
         std::cout << "POST-CG: " << !(A*X-B) << " cg failures: " << ((double)cgf) / (double)((cgf + cgo + 1.0)) * 100.0 << "%" << std::endl;
         return X;
     }
-
+#endif
 };
 
 typedef LevenbergMarquardtImpl<Matrix, FunctionArgs> LevenbergMarquardt;

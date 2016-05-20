@@ -1,15 +1,18 @@
 HEADERS += \
-	reconstruction/reconstructionStructs.h \
-	reconstruction/pnpSolver.h \
-	reconstruction/relativeNonCentralP6PSolver.h \
-	reconstruction/relativeNonCentralRansacSolver.h \
-	reconstruction/photostationPlacer.h \
-	reconstruction/absoluteNonCentralRansacSolver.h \
-	reconstruction/reconstructionFixtureScene.h \
-	reconstruction/essentialFeatureFilter.h \
-	reconstruction/sceneGenerator.h \
-	reconstruction/reconstructionInitializer.h \
-	reconstruction/sceneAligner.h
+    reconstruction/reconstructionStructs.h \
+    reconstruction/pnpSolver.h \
+    reconstruction/relativeNonCentralP6PSolver.h \
+    reconstruction/relativeNonCentralO3PSolver.h \
+    reconstruction/relativeNonCentralRansacSolver.h \
+    reconstruction/photostationPlacer.h \
+    reconstruction/absoluteNonCentralRansacSolver.h \
+    reconstruction/reconstructionFixtureScene.h \
+    reconstruction/essentialFeatureFilter.h \
+    reconstruction/sceneGenerator.h \
+#    reconstruction/reconstructionInitializer.h \
+    reconstruction/sceneAligner.h \
+    reconstruction/reconstructionFunctor.h \
+    reconstruction/iterativeReconstructionSettings.h
 
 
 SOURCES += \
@@ -27,5 +30,8 @@ SOURCES += \
     reconstruction/reconstructionFixtureScene.cpp \
     reconstruction/essentialFeatureFilter.cpp \
     reconstruction/sceneGenerator.cpp \
-    reconstruction/reconstructionInitializer.cpp \
-    reconstruction/sceneAligner.cpp
+#    reconstruction/reconstructionInitializer.cpp \
+    reconstruction/sceneAligner.cpp \
+    reconstruction/reconstructionFunctor.cpp \
+    reconstruction/relativeNonCentralO3PSolver.cpp \
+    reconstruction/setupTemplateNCO3P.cpp

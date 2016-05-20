@@ -31,8 +31,6 @@
 #include "fastKernel.h"
 #include "vectorTraits.h"
 
-using namespace std;
-
 #ifdef WITH_SSE
 using corecvs::Int32x4;
 using corecvs::G12BufferAlgebraStreaming;
@@ -86,7 +84,7 @@ void _profileAlgnmentAccessSpeed( void )
 {
 
 #ifdef WITH_SSE
-	cout << "This test profile sse access speed depending on the alignment" << endl;
+    std::cout << "This test profile sse access speed depending on the alignment" << std::endl;
     //  800Mb
     //                           '  '
     static const int LIMIT =  400000000;

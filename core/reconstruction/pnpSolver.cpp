@@ -182,7 +182,7 @@ void PNPSolver::solveP34PImpl(corecvs::Matrix &M, corecvs::Matrix &C, double gam
         bool alreadyAdded = false;
         for (auto& v: quaternions)
         {
-            if (!(v.second - quaternion) < ELIMINATE_THRESHOLD)
+            if ((!(v.second - quaternion)) < ELIMINATE_THRESHOLD)
             {
                 alreadyAdded = true;
                 break;
@@ -234,7 +234,7 @@ void PNPSolver::solvePNPImpl(corecvs::Matrix &M, corecvs::Matrix &C, double gamm
         bool alreadyAdded = false;
         for (auto& v: quaternions)
         {
-            if (!(v.second - quaternion) < ELIMINATE_THRESHOLD)
+            if ((!(v.second - quaternion)) < ELIMINATE_THRESHOLD)
             {
                 alreadyAdded = true;
                 break;

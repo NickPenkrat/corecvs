@@ -13,9 +13,7 @@
 #include "converters/debayer.h"
 #include "converters/errorMetrics.h"
 
-using namespace std;
 using namespace corecvs;
-
 
 Vector2d<int> redRegion(0, 0);
 Vector2d<int> greenRegion(180, 0);

@@ -241,8 +241,8 @@ isEmpty(CCACHE_TOOLCHAIN_ON) {
     QMAKE_CFLAGS_DEBUG     -= -g
     QMAKE_CXXFLAGS_DEBUG   -= -g
     QMAKE_LFLAGS           -= -g
-    QMAKE_CFLAGS_DEBUG     += -O3 -g3
-    QMAKE_CXXFLAGS_DEBUG   += -O3 -g3
+    QMAKE_CFLAGS_DEBUG     += -O0 -g3
+    QMAKE_CXXFLAGS_DEBUG   += -O0 -g3
     QMAKE_LFLAGS           +=     -g3
 
     QMAKE_CFLAGS_RELEASE   += -O3
@@ -494,13 +494,13 @@ with_mkl {
             }
         }
         INCLUDEPATH += "$$MKLROOT"/include
-        DEFINES     += WITH_BLAS
         DEFINES     += WITH_MKL
+        DEFINES     += WITH_BLAS
+        CONFIG      += with_blas
     }
     else {
         !build_pass: message (requested MKL is not installed and is deactivated)
     }
-    CONFIG += with_blas
 }
 
 with_openblas {
@@ -514,7 +514,9 @@ with_openblas {
                 !build_pass: message(Using BLAS from <$$BLAS_PATH>)
                 INCLUDEPATH += $(BLAS_PATH)/include
                 LIBS        += -lopenblas
+                DEFINES     += WITH_OPENBLAS
                 DEFINES     += WITH_BLAS
+                CONFIG      += with_blas
             }
             else {
                 !build_pass: message(requested openBLAS via BLAS_PATH is not found and is deactivated)
@@ -523,7 +525,9 @@ with_openblas {
             exists(/usr/include/cblas.h) {
                 !build_pass: message (Using System BLAS)
                 LIBS        += -lopenblas -llapacke
+                DEFINES     += WITH_OPENBLAS
                 DEFINES     += WITH_BLAS
+                CONFIG      += with_blas
             }
             else {
                 !build_pass: message(requested system BLAS is not found and is deactivated)
@@ -532,7 +536,6 @@ with_openblas {
     } else {
         !build_pass: message(requested openBLAS is not supported for Win and is deactivated)
     }
-    CONFIG += with_blas
 }
 
 with_fftw {
@@ -572,5 +575,3 @@ with_fftw {
 # QMAKE_CXXFLAGS += -Wsign-conversion
 # QMAKE_CXXFLAGS += -Winit-self
 # QMAKE_CXXFLAGS += -Wunreachable-code
-
-#OPEN_ROOT_DIRECTORY = $$PWD

@@ -23,64 +23,43 @@ struct AbsoluteNonCentralRansacSolverParams
     // Big enough for P3P at ~0.05 inlier ratio
     int maxIterations = 100000;
     bool forcePosition = false;
-    Vector3dd forcedPosition = Vector3dd(0, 0, 0);
+    bool forceScale = false;
+    corecvs::Vector3dd forcedPosition = corecvs::Vector3dd(0, 0, 0);
+    double forcedScale = 1.0;
+    double gamma = 0.001;
 };
-
 class AbsoluteNonCentralRansacSolver : public AbsoluteNonCentralRansacSolverParams
 {
 public:
-    AbsoluteNonCentralRansacSolver(CameraFixture *ps, const std::vector<std::tuple<FixtureCamera*, Vector2dd, Vector3dd, SceneFeaturePoint*, int>> &cloudMatches, const AbsoluteNonCentralRansacSolverParams &params = AbsoluteNonCentralRansacSolverParams()) :
-        AbsoluteNonCentralRansacSolverParams(params),
-        shouldTestFirst(false),
-        ps(ps),
-        cloudMatches(cloudMatches)
+    AbsoluteNonCentralRansacSolver(corecvs::CameraFixture *ps, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &cloudMatches, const AbsoluteNonCentralRansacSolverParams &params = AbsoluteNonCentralRansacSolverParams()) : AbsoluteNonCentralRansacSolverParams(params), shouldTestFirst(false), ps(ps), cloudMatches(cloudMatches)
     {
     }
-
-    AbsoluteNonCentralRansacSolver(CameraFixture *ps, const std::vector<std::tuple<FixtureCamera*, Vector2dd, Vector3dd, SceneFeaturePoint*, int>> &cloudMatches, Affine3DQ firstHypothesis, const AbsoluteNonCentralRansacSolverParams &params = AbsoluteNonCentralRansacSolverParams()) :
-        AbsoluteNonCentralRansacSolverParams(params),
-        firstHypothesis(firstHypothesis),
-        shouldTestFirst(true),
-        ps(ps),
-        cloudMatches(cloudMatches)
+    AbsoluteNonCentralRansacSolver(corecvs::CameraFixture *ps, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &cloudMatches, corecvs::Affine3DQ firstHypothesis, const AbsoluteNonCentralRansacSolverParams &params = AbsoluteNonCentralRansacSolverParams()) : AbsoluteNonCentralRansacSolverParams(params), firstHypothesis(firstHypothesis), shouldTestFirst(true), ps(ps), cloudMatches(cloudMatches)
     {
         Estimator es(this, reprojectionInlierThreshold);
         es.hypothesis.push_back(firstHypothesis);
         es.selectInliers();
     }
-
     AbsoluteNonCentralRansacSolver(const AbsoluteNonCentralRansacSolver& ancrs) :
         AbsoluteNonCentralRansacSolverParams(ancrs),
         firstHypothesis(ancrs.firstHypothesis),
         shouldTestFirst(ancrs.shouldTestFirst),
-        bestHypothesis(ancrs.bestHypothesis),
-        bestInlierCnt(ancrs.bestInlierCnt),
-        inlierQuality(ancrs.inlierQuality),
-        inliers(ancrs.inliers),
-        ps(ancrs.ps),
-        cloudMatches(ancrs.cloudMatches),
-        hypothesis(ancrs.hypothesis),
-        batch(ancrs.batch),
-        batches(ancrs.batches),
-        usedEvals(ancrs.usedEvals),
-        gamma(ancrs.gamma)
-
+        bestHypothesis(ancrs.bestHypothesis), bestInlierCnt(ancrs.bestInlierCnt), inlierQuality(ancrs.inlierQuality),
+        inliers(ancrs.inliers), ps(ancrs.ps), cloudMatches(ancrs.cloudMatches), hypothesis(ancrs.hypothesis),
+        batch(ancrs.batch), batches(ancrs.batches), usedEvals(ancrs.usedEvals)
     {
     }
     void run();
     void runInliersPNP();
     void runInliersRE();
-
     std::vector<int> getInliers();
     corecvs::Affine3DQ getBestHypothesis();
     corecvs::Affine3DQ firstHypothesis;
     bool shouldTestFirst;
-
 //protected:
 #ifdef WITH_TBB
     tbb::mutex mutex;
 #endif
-
     struct Estimator
     {
         void operator() (const corecvs::BlockedRange<int> &r);
@@ -175,7 +154,6 @@ public:
 
     std::vector<int> selectInliers(const corecvs::Affine3DQ &hypothesis);
     void getHypothesis();
-    double nForGamma();
 
     corecvs::Affine3DQ bestHypothesis;
     int bestInlierCnt = 0;
@@ -187,9 +165,7 @@ public:
     int batch = 100;
     int batches = 64;
     int usedEvals = 0;
-    double gamma = 0.001;
-
-
+    double nForGamma();
 public:
     ~AbsoluteNonCentralRansacSolver()
     {

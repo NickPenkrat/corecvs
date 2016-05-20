@@ -188,7 +188,7 @@ typedef int                bool_t;                          // fast Boolean type
      _Pragma("GCC diagnostic pop")
 
 #else
-   #define STATIC_ASSERT(CONDITION, VALUE) typedef int foo_##VALUE[(CONDITION) ? 1 : -1]
+   #define STATIC_ASSERT(CONDITION, VALUE) typedef int foo_##VALUE[(CONDITION) ? 1 : -1];
 #endif
 
 #define SYNC_PRINT(X) \
@@ -258,6 +258,11 @@ extern "C" {
 #endif
 #ifndef  PRIi64
 # define PRIi64 "I64d"
+#endif
+
+#ifdef _MSC_VER
+# include <intrin.h>
+# define __builtin_popcount __popcnt
 #endif
 
 #define REFLECTION_IN_CORE
@@ -347,7 +352,7 @@ namespace std
             return hash_calc<std::tuple<T...>>()(t, 0);
         }
    };
-};
+}
 
 
 #ifdef USE_SAFE_RUNTIME_FUNCS
@@ -433,7 +438,8 @@ inline void deletearr_safe (Type * &ptr)
 #endif // is__cplusplus
 
 #if defined(_WIN32)
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
+# define NOMINMAX
+# define WIN32_LEAN_AND_MEAN
 #endif
+
 /* EOF */

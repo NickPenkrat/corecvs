@@ -19,9 +19,7 @@
 #include "helperFunctions.h"
 #include "bmpLoader.h"
 
-using namespace std;
 using namespace corecvs;
-
 
 class LevenbergTest : FunctionArgs {
 public:

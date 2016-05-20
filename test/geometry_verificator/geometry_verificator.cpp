@@ -54,11 +54,7 @@ int main(int argc, char **argv)
 
     int N = (int)job.photostation.cameras.size();
 
-#ifndef WIN32 // I hope that at some time visual studio will start support c11 features
-    int map_fwd[N], map_bwd[N];
-#else
     std::vector<int> map_fwd(N), map_bwd(N);
-#endif
 
     int found = 0;
     for (int i = 0; i < N; ++i)

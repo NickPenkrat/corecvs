@@ -29,7 +29,7 @@ std::vector<corecvs::Affine3DQ> corecvs::RelativeNonCentralP6PSolver::SolveRelat
     corecvs::Matrix CT1(T1);
     T1.h = 56;
     LAPACKE_dtrtrs(LAPACK_ROW_MAJOR, 'U', 'N', 'N', 56, T1.w, &CT1.a(0, 0), CT1.stride, &T1.a(0, 0), T1.stride);
-   
+
     ExtractLastBasisElement(T1);
     SetupActionMatrix(T1, M);
 
@@ -45,14 +45,8 @@ std::vector<corecvs::Affine3DQ> corecvs::RelativeNonCentralP6PSolver::SolveRelat
         std::complex<double> vc[3];
         for (int j = 0; j < 3; ++j)
         {
-            if (isReal)
-            {
-                vc[j] = EV.a(60 + j, i) / EV.a(63, i);
-            }
-            else
-            {
-                vc[j] = std::complex<double>(EV.a(60+j,i),EV.a(60+j,i+1)) / std::complex<double>(EV.a(63, i) / EV.a(63, i+1));
-            }
+            vc[j] = isReal ? EV.a(60 + j, i) / EV.a(63, i)
+                           : std::complex<double>(EV.a(60+j,i),EV.a(60+j,i+1)) / std::complex<double>(EV.a(63, i) / EV.a(63, i+1));
         }
         for (int j = 0; j < 3; ++j)
         {

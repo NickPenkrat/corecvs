@@ -62,6 +62,20 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
     fields().push_back(
         new DoubleField
         (
+          ChessBoardCornerDetectorParamsBase::NORMALIZEPERCENTILE_ID,
+          offsetof(ChessBoardCornerDetectorParamsBase, mNormalizePercentile),
+          5,
+          "normalizePercentile",
+          "normalizePercentile",
+          "Brightness percentile to be cut",
+          true,
+         0,
+         100
+        )
+    );
+    fields().push_back(
+        new DoubleField
+        (
           ChessBoardCornerDetectorParamsBase::SECTORSIZEDEG_ID,
           offsetof(ChessBoardCornerDetectorParamsBase, mSectorSizeDeg),
           90,

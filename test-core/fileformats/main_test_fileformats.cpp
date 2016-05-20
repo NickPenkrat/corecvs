@@ -7,6 +7,7 @@
  * \ingroup autotest
  */
 #include <sstream>
+#include <fstream>
 #include <iostream>
 #include "gtest/gtest.h"
 
@@ -16,8 +17,8 @@
 #include "bmpLoader.h"
 #include "ppmLoader.h"
 #include "plyLoader.h"
+#include "objLoader.h"
 
-using namespace std;
 using namespace corecvs;
 
 TEST(FileFormats, testFileFormats)
@@ -126,4 +127,15 @@ TEST(FileFormats, testPlyLoader)
         int result = loader.loadPLY(stream, mesh);
         printf("Test case %d result: %d\n", i, result);
     }
+}
+
+using std::ifstream;
+
+TEST(FileFormats, DISABLED_testObjLoader)
+{
+    OBJLoader loader;
+    ifstream file("body-v2.obj", ifstream::in);
+
+    Mesh3D mesh;
+    loader.loadOBJSimple(file, mesh);
 }

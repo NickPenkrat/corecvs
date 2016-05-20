@@ -24,7 +24,6 @@
 #include "preciseTimer.h"
 #include "eulerAngles.h"
 
-using namespace std;
 using namespace corecvs;
 
 TEST(Affine, testRotations)
@@ -85,10 +84,10 @@ TEST(Affine, testMatrixToQuaternion)
         Quaternion Q = Quaternion::Rotation(axis[i], angle[i]);
         Matrix33 M = Q.toMatrix();
         Quaternion Q1 = Quaternion::FromMatrix(M);
-        cout << "Case " << i << endl;
-        cout << Q  << " l= " << Q .l2Metric() << endl;
+        std::cout << "Case " << i << std::endl;
+        std::cout << Q << " l= " << Q.l2Metric() << std::endl;
         //cout << M << endl;
-        cout << Q1 << " l= " << Q1.l2Metric() << endl;
+        std::cout << Q1 << " l= " << Q1.l2Metric() << std::endl;
         ASSERT_TRUE(Q.notTooFar(Q1, 1e-7));
     }
 
@@ -102,14 +101,14 @@ TEST(Affine, testEulerAngles)
     CameraAnglesLegacy anglesCam1 = CameraAnglesLegacy::FromQuaternion(quatCam);
 
 
-    cout << "A:(" << anglesCam.pitch() << ", "
-                  << anglesCam.yaw()   << ", "
-                  << anglesCam.roll()  << ")" << endl;
+    std::cout << "A:("  << anglesCam.pitch() << ", "
+                        << anglesCam.yaw()   << ", "
+                        << anglesCam.roll() << ")" << std::endl;
 
-    cout << "M:" << endl << matrixCam << endl;
-    cout << "Q:" << endl << quatCam << endl;
+    std::cout << "M:"   << std::endl << matrixCam << std::endl;
+    std::cout << "Q:"   << std::endl << quatCam << std::endl;
 
-    cout << "A:(" << anglesCam1.pitch() << ", "
-                  << anglesCam1.yaw()   << ", "
-                  << anglesCam1.roll()  << ")" << endl;
+    std::cout << "A:("  << anglesCam1.pitch() << ", "
+                        << anglesCam1.yaw()   << ", "
+                        << anglesCam1.roll() << ")" << std::endl;
 }

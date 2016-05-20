@@ -18,20 +18,19 @@
 #include "matrix33.h"
 #include "quaternion.h"
 
-using namespace std;
 using namespace corecvs;
 
 TEST(meta, testmeta)
 {
     ASTContext::MAIN_CONTEXT = new ASTContext();
 
-    cout << "Starting test <meta>" << endl;
+    std::cout << "Starting test <meta>" << std::endl;
 
     ASTNode e = (ASTNode("X") * (ASTNode(5.0)  + ASTNode(4.0)));
     e.p->codeGenCpp("test");
     e.p->codeGenCpp("test", {"", ""});
 
-    cout << "Some more advanced stuff" << endl;
+    std::cout << "Some more advanced stuff" << std::endl;
 
     FixedVector<ASTNode, 5> test1;
     FixedVector<ASTNode, 5> test2;
@@ -44,7 +43,7 @@ TEST(meta, testmeta)
 
     (test1 & test2).p->codeGenCpp("dot_product", {"", ""});
 
-    cout << "Some more stuff" << endl;
+    std::cout << "Some more stuff" << std::endl;
 
     GenericQuaternion<ASTNode> Q(ASTNode("Qx"), ASTNode("Qy"), ASTNode("Qz"), ASTNode("Qt"));
     GenericQuaternion<ASTNode> P(ASTNode("Px"), ASTNode("Py"), ASTNode("Pz"), ASTNode("Pt"));
@@ -53,5 +52,5 @@ TEST(meta, testmeta)
 
     delete_safe(ASTContext::MAIN_CONTEXT);
 
-    cout << "Test <meta> PASSED" << endl;
+    std::cout << "Test <meta> PASSED" << std::endl;
 }

@@ -16,7 +16,6 @@
 #include "yuv/yuv422Planes.h"
 
 
-using namespace std;
 using corecvs::YUV422Planes;
 using corecvs::YUVColor;
 

@@ -1,16 +1,10 @@
-#ifndef SIMPLERENDERER_H
-#define SIMPLERENDERER_H
-
-/**
- *  \file  simpleRenderer.h
- **/
+#ifndef GEOMETRY_ITERATOR_H
+#define GEOMETRY_ITERATOR_H
 
 #include "mathUtils.h"
 #include "matrix44.h"
 #include "polygons.h"
-#include "abstractBuffer.h"
-#include "abstractPainter.h"
-
+#include "lineSpan.h"
 
 namespace corecvs {
 
@@ -77,7 +71,7 @@ public:
     {
         double dy = y2 - y1;
 
-        int attributes = a11.size();
+        int attributes = (int)a11.size();
         a1.resize(attributes);
         a2.resize(attributes);
 
@@ -124,7 +118,7 @@ public:
         x1 += dx1;
         x2 += dx2;
 
-        int attributes = a11.size();
+        int attributes = (int)a11.size();
         for (int i = 0; i < attributes; i++)
         {
             a1[i] += da1[i];
@@ -202,6 +196,9 @@ public:
     GenericTriangleSpanIterator(const TriangleType &triangle)
     {
         sortedt = triangle;
+        for (int i = 0; i < sortedt.SIZE; i++) {
+            sortedt.p[i] = Vector2dd(fround(sortedt.p[i].x()), fround(sortedt.p[i].y()));
+        }
         sortedt.sortByY();
 
         double longslope = (sortedt.p3().x() - sortedt.p1().x()) / (sortedt.p3().y() - sortedt.p1().y());
@@ -434,30 +431,6 @@ public:
 
 };
 
-class Mesh3D;
-class RGB24Buffer;
+} // namespace
 
-class SimpleRenderer
-{
-public:
-    SimpleRenderer();
-    Matrix44 modelviewMatrix;
-
-    bool backfaceClip;
-    bool drawFaces;
-    bool drawEdges;
-    bool drawVertexes;
-
-
-    AbstractBuffer<double> *zBuffer;
-    void render (Mesh3D *mesh, RGB24Buffer *buffer);
-
-    /* Add support for face and vertex shaders */
-    void fragmentShader(AttributedLineSpan & span);
-
-    ~SimpleRenderer();
-};
-
-} // namespace corecvs
-
-#endif // SIMPLERENDERER_H
+#endif

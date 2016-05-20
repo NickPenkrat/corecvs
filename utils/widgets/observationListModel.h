@@ -13,7 +13,7 @@ using corecvs::ObservationList;
 using corecvs::PointObservation;
 
 
-Q_DECLARE_METATYPE(ObservationList *);
+Q_DECLARE_METATYPE(ObservationList *)
 
 
 

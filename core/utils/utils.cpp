@@ -37,11 +37,6 @@ istream &getlineSafe(istream &is, string &str)
     return stream;
 }
 
-bool startsWith(const string &str, const string &prefix)
-{
-    return (str.compare(0, prefix.size(), prefix) == 0);
-}
-
 string getEnvDirPath(cchar *envVarName)
 {
     cchar* dir = std::getenv(envVarName);
@@ -78,19 +73,17 @@ string toNativeSlashes(const string& str)
 #endif
 }
 
-string getFullPath(string& envDirPath, cchar* path, cchar* filename)
+string getFullPath(const string& envDirPath, cchar* path, cchar* filename)
 {
+    CORE_ASSERT_TRUE_S(path != NULL);
+
+    if (filename == NULL)
+        filename = "";
+
     if (envDirPath.empty())
         return filename;
 
-    string toReturn = envDirPath + path + filename;
-    return toNativeSlashes(toReturn);
-}
-
-string getFullPath(cchar *envVarName, cchar* path, cchar* filename)
-{
-    string envDirPath = getEnvDirPath(envVarName);
-    return getFullPath(envDirPath, path, filename);
+    return toNativeSlashes(envDirPath + path + filename);
 }
 
 

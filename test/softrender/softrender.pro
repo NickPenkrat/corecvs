@@ -10,11 +10,14 @@ exists(../../../../config.pri) {
 }
 ROOT_DIR=$$PWD/$$ROOT_DIR
 
+QT       += core
+
 TEMPLATE = app
 TARGET   = softrender
 CONFIG  += console
 
-include(../../core/core.pri)
+#include(../../core/core.pri)
+include($$ROOT_DIR/src/open/utils/utils.pri)                        # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
 
 TARGET_ORIG = $$TARGET
 TARGET      = $$join(TARGET,,,$$BUILD_CFG_SFX)  # add 'd' at the end for debug versions

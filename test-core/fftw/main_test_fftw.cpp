@@ -13,7 +13,6 @@
 #include "converters/errorMetrics.h"
 #include "fftw/fftwWrapper.h"
 
-using namespace std;
 using namespace corecvs;
 
 TEST(FFTWWrapper, doublePrecisionTest)

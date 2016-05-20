@@ -20,7 +20,7 @@ struct EssentialFilterParams
     double b2bThreshold  = 0.9,
            inlierRadius  = 2.0,
            targetGamma   = 1e-2;
-    int    maxIterations = 32000;
+    int    maxIterations = 200000;
 };
 
 class EssentialFeatureFilter
@@ -37,6 +37,7 @@ public:
     );
 
     void estimate();
+    void use(corecvs::EssentialDecomposition &d);
 
     corecvs::EssentialDecomposition bestDecomposition;
     std::vector<int> inlierIdx;
@@ -80,6 +81,7 @@ public:
 
     void accept(const EssentialDecomposition &ed, const std::vector<int> &inlierIdx);
     double nForGamma();
+    double getGamma();
 
     corecvs::Matrix33 K1, K2;
     std::vector<std::array<corecvs::Vector2dd, 2>> features;

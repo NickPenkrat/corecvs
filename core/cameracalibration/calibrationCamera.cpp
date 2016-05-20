@@ -19,10 +19,16 @@ Matrix33 CameraModel::essentialTo  (const CameraModel &right) const
 
 EssentialDecomposition CameraModel::essentialDecomposition(const CameraModel &right) const
 {
-    Quaternion R =  extrinsics.orientation ^ right.extrinsics.orientation.conjugated();
-    Vector3dd  T =  extrinsics.orientation * (-extrinsics.position + right.extrinsics.position);
+	return CameraModel::ComputeEssentialDecomposition(extrinsics, right.extrinsics);
+}
+
+EssentialDecomposition CameraModel::ComputeEssentialDecomposition(const CameraLocationData &thisData, const CameraLocationData &otherData)
+{
+    Quaternion R =  thisData.orientation ^ otherData.orientation.conjugated();
+    Vector3dd  T =  thisData.orientation * (-thisData.position + otherData.position);
     return EssentialDecomposition(R.toMatrix(), T);
 }
+
 
 PinholeCameraIntrinsics::PinholeCameraIntrinsics(Vector2dd resolution, double hfov)
   : principal(resolution / 2.0)

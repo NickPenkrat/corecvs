@@ -35,13 +35,17 @@
 /*static*/ const double UEyeCaptureInterface::EXPOSURE_SCALER = 10.0;
 /*static*/ const double UEyeCaptureInterface::FPS_SCALER      = 100.0;
 
-int UEyeCaptureInterface::ueyeTrace(int result)
+int UEyeCaptureInterface::ueyeTrace(int result, const char *prefix)
 {
     if (result != IS_SUCCESS)
     {
         char * str = 0;
         is_GetError(1,&result,&str);
-        printf("   UEYE: Function failed with error code %d. Error string: %s\n", result, str);
+        if (prefix == NULL)
+            printf("   UEYE: Function failed with error code %d. Error string: %s\n", result, str);
+        else
+            printf("%s: error code %d. Error string: %s\n", prefix, result, str);
+
     }
 
     return result;
@@ -55,6 +59,20 @@ UEyeCaptureInterface::UEyeCaptureInterface(string _devname) :
     currentLeft(NULL),
     currentRight(NULL),
     spin(this)
+{
+    setConfigurationString(_devname);
+}
+
+UEyeCaptureInterface::UEyeCaptureInterface(string _devname, int h, int w, int fps, bool isRgb) :
+    sync(NO_SYNC),
+    currentLeft(NULL),
+    currentRight(NULL),
+    spin(this)
+{
+    setConfigurationString(_devname, isRgb);
+}
+
+int UEyeCaptureInterface::setConfigurationString(string _devname, bool isRgb)
 {
     printf("#################################################   \n");
     printf("Hi, Stranger. I will help you with the uEye cameras.\n");
@@ -184,8 +202,8 @@ UEyeCaptureInterface::UEyeCaptureInterface(string _devname) :
     printf("Capture Left  device: GigE DeviceID = %d\n", leftID);
     printf("Capture Right device: GigE DeviceID = %d\n", rightID);
 
-    leftCamera.init(leftID, (binning == 2), globalShutter, pixelClock, fps);
-    rightCamera.init(rightID, (binning == 2), globalShutter, pixelClock, fps);
+    leftCamera .init( leftID, (binning == 2), globalShutter, pixelClock, fps, isRgb);
+    rightCamera.init(rightID, (binning == 2), globalShutter, pixelClock, fps, isRgb);
 
     skippedCount = 0;
     triggerSkippedCount = 0;
@@ -204,15 +222,83 @@ UEyeCaptureInterface::FramePair UEyeCaptureInterface::getFrame()
         decodeData(&leftCamera , currentLeft,  &(result.bufferLeft));
         decodeData(&rightCamera, currentRight, &(result.bufferRight));
 
-        result.timeStampLeft = result.timeStampRight = currentRight->usecsTimeStamp();
+        int64_t internalDesync = 0;
+
+        if (rightCamera.inited) {
+            result.timeStampLeft  = currentRight->usecsTimeStamp();
+            result.timeStampRight = currentRight->usecsTimeStamp();
+            internalDesync = currentLeft->internalTimestamp - currentRight->internalTimestamp;
+        } else {
+            result.timeStampLeft  = currentLeft->usecsTimeStamp();
+            result.timeStampRight = currentLeft->usecsTimeStamp();
+        }
 
         stats.framesSkipped = skippedCount > 0 ? skippedCount - 1 : 0;
         skippedCount = 0;
 
         stats.triggerSkipped = triggerSkippedCount;
         triggerSkippedCount = 0;
+    protectFrame.unlock();
 
-        int64_t internalDesync = currentLeft->internalTimestamp - currentRight->internalTimestamp;
+    stats.values[CaptureStatistics::DECODING_TIME]    = start.usecsToNow();
+    stats.values[CaptureStatistics::INTERFRAME_DELAY] = frameDelay;
+
+    int64_t desync = result.diffTimeStamps();
+    stats.values[CaptureStatistics::DESYNC_TIME]          = CORE_ABS(desync);
+    stats.values[CaptureStatistics::INTERNAL_DESYNC_TIME] = CORE_ABS(internalDesync);
+
+    /* Get temperature data */
+    stats.temperature[0] = leftCamera .getTemperature();    
+    stats.temperature[1] = stats.temperature[0];
+    if (rightCamera.inited) {
+        stats.temperature[1] = rightCamera.getTemperature();
+    }
+
+
+    //stats.values[CaptureStatistics::DATA_SIZE] = currentLeft.bytesused;
+
+    emit newStatisticsReady(stats);
+
+//    printf("Finished getFrame\n");
+    return result;
+}
+
+
+UEyeCaptureInterface::FramePair UEyeCaptureInterface::getFrameRGB24()
+{
+    CaptureStatistics  stats;
+    PreciseTimer start = PreciseTimer::currentTime();
+    FramePair result( NULL, NULL);
+
+//    printf("Called getFrame\n");
+
+    protectFrame.lock();
+        decodeData24(&leftCamera , currentLeft,  &(result.rgbBufferLeft));
+        decodeData24(&rightCamera, currentRight, &(result.rgbBufferRight));
+
+        if (result.rgbBufferLeft != NULL) {
+            result.bufferLeft  = result.rgbBufferLeft ->toG12Buffer(); // FIXME
+        }
+        if (result.rgbBufferRight != NULL) {
+            result.bufferRight = result.rgbBufferRight->toG12Buffer();
+        }
+
+        int64_t internalDesync = 0;
+
+        if (rightCamera.inited) {
+            result.timeStampLeft  = currentRight->usecsTimeStamp();
+            result.timeStampRight = currentRight->usecsTimeStamp();
+            internalDesync = currentLeft->internalTimestamp - currentRight->internalTimestamp;
+        } else {
+            result.timeStampLeft  = currentLeft->usecsTimeStamp();
+            result.timeStampRight = currentLeft->usecsTimeStamp();
+        }
+
+        stats.framesSkipped = skippedCount > 0 ? skippedCount - 1 : 0;
+        skippedCount = 0;
+
+        stats.triggerSkipped = triggerSkippedCount;
+        triggerSkippedCount = 0;
     protectFrame.unlock();
 
     stats.values[CaptureStatistics::DECODING_TIME]    = start.usecsToNow();
@@ -224,7 +310,11 @@ UEyeCaptureInterface::FramePair UEyeCaptureInterface::getFrame()
 
     /* Get temperature data */
     stats.temperature[0] = leftCamera .getTemperature();
-    stats.temperature[1] = rightCamera.getTemperature();
+    stats.temperature[1] = stats.temperature[0];
+    if (rightCamera.inited) {
+        stats.temperature[1] = rightCamera.getTemperature();
+    }
+
 
     //stats.values[CaptureStatistics::DATA_SIZE] = currentLeft.bytesused;
 
@@ -234,14 +324,16 @@ UEyeCaptureInterface::FramePair UEyeCaptureInterface::getFrame()
     return result;
 }
 
+
 UEyeCaptureInterface::~UEyeCaptureInterface()
 {
     cout << "Request for killing the thread" << endl;
     shouldStopSpinThread = true;
-    bool result = spinRunning.tryLock(1000);
+    bool result = spinRunning.tryLock(2000);
 
     is_DisableEvent(leftCamera .mCamera, IS_SET_EVENT_FRAME);
-    is_DisableEvent(rightCamera.mCamera, IS_SET_EVENT_FRAME);
+    if (rightCamera.inited)
+        is_DisableEvent(rightCamera.mCamera, IS_SET_EVENT_FRAME);
 
 #ifdef Q_OS_WIN
     is_ExitEvent (leftCamera .mCamera, IS_SET_EVENT_FRAME);
@@ -251,28 +343,42 @@ UEyeCaptureInterface::~UEyeCaptureInterface()
     CloseHandle(rightCamera.mWinEvent);
 #endif
 
-    if (result)
+    /* Stopping camera */
+    if (sync == NO_SYNC)
+    {
+        ueyeTrace(is_StopLiveVideo(leftCamera.mCamera, IS_FORCE_VIDEO_STOP), "is_StopLiveVideo left camera");
+        if (rightCamera.inited)
+            ueyeTrace(is_StopLiveVideo(rightCamera.mCamera, IS_FORCE_VIDEO_STOP), "is_StopLiveVideo right camera");
+    }
+
+    /* Now no events would be generated, and it is safe to unlock mutex */
+
+    if (result) {
         printf("Camera thread killed\n");
-    else
+        spinRunning.unlock();
+    } else {
         printf("Unable to exit Camera thread\n");
+    }
 
     printf("Deleting image buffers\n");
 
-    leftCamera.deAllocImages();
-    rightCamera.deAllocImages();
+    leftCamera.deallocImages();
+    if (rightCamera.inited)
+        rightCamera.deallocImages();
 
     printf("uEye: Closing camera...");
-    is_ExitCamera(leftCamera.mCamera);
-    is_ExitCamera(rightCamera.mCamera);
+    ueyeTrace(is_ExitCamera(leftCamera.mCamera), "is_ExitCamera left camera");
+    if (rightCamera.inited)
+        ueyeTrace(is_ExitCamera(rightCamera.mCamera), "is_ExitCamera right camera");
     printf("done\n");
 
 }
 
 ImageCaptureInterface::CapErrorCode UEyeCaptureInterface::startCapture()
 {
-    qDebug("Start capture");
+    SYNC_PRINT((" UEyeCaptureInterface::startCapture(): called\n"));
 
-    printf("Enabling events...\n");
+    SYNC_PRINT(("Enabling events...\n"));
 #ifdef Q_OS_WIN
     leftCamera.mWinEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
     is_InitEvent(leftCamera.mCamera, leftCamera.mWinEvent, IS_SET_EVENT_FRAME);
@@ -281,18 +387,24 @@ ImageCaptureInterface::CapErrorCode UEyeCaptureInterface::startCapture()
     is_InitEvent(rightCamera.mCamera, rightCamera.mWinEvent, IS_SET_EVENT_FRAME);
 #endif
 
-    is_EnableEvent(leftCamera.mCamera, IS_SET_EVENT_FRAME);
-    is_EnableEvent(rightCamera.mCamera, IS_SET_EVENT_FRAME);
+    ueyeTrace(is_EnableEvent(leftCamera .mCamera, IS_SET_EVENT_FRAME), "is_EnableEvent left cam");
+    if (rightCamera.inited)
+        ueyeTrace(is_EnableEvent(rightCamera.mCamera, IS_SET_EVENT_FRAME), "is_EnableEvent right cam");
 
+    SYNC_PRINT(("Starting stero pair in sync mode (%d)...\n", sync));
     switch (sync)
     {
         case NO_SYNC:
-            is_CaptureVideo (leftCamera.mCamera, IS_DONT_WAIT);
-            is_CaptureVideo (rightCamera.mCamera, IS_DONT_WAIT);
+            SYNC_PRINT(("Will start in non-sync mode\n"));
+            ueyeTrace(is_CaptureVideo (leftCamera .mCamera, IS_DONT_WAIT), "is_CaptureVideo left cam");
+            if (rightCamera.inited)
+                ueyeTrace(is_CaptureVideo (rightCamera.mCamera, IS_DONT_WAIT), "is_CaptureVideo right cam");
             break;
         case SOFT_SYNC:
-            is_SetExternalTrigger (leftCamera.mCamera , IS_SET_TRIGGER_SOFTWARE);
-            is_SetExternalTrigger (rightCamera.mCamera, IS_SET_TRIGGER_SOFTWARE);
+            SYNC_PRINT(("Will start in trigger mode\n"));
+            ueyeTrace(is_SetExternalTrigger (leftCamera.mCamera , IS_SET_TRIGGER_SOFTWARE));
+            if (rightCamera.inited)
+                ueyeTrace(is_SetExternalTrigger (rightCamera.mCamera, IS_SET_TRIGGER_SOFTWARE));
             break;
         case HARD_SYNC:
         {
@@ -412,70 +524,129 @@ ImageCaptureInterface::CapErrorCode UEyeCaptureInterface::startCapture()
     return ImageCaptureInterface::SUCCESS;
 }
 
+ImageCaptureInterface::CapErrorCode UEyeCaptureInterface::getFormats(int *num, ImageCaptureInterface::CameraFormat *&formats)
+{
+    SYNC_PRINT(("UEyeCaptureInterface::getFormats()"));
+    vector<ImageCaptureInterface::CameraFormat> cameraFormats;
+
+    cameraFormats.push_back(ImageCaptureInterface::CameraFormat( 3684, 4912, 21));
+    cameraFormats.push_back(ImageCaptureInterface::CameraFormat( 1842, 2448, 54));
+
+    *num = cameraFormats.size();
+    formats = new ImageCaptureInterface::CameraFormat[cameraFormats.size()];
+    for (unsigned i = 0; i < cameraFormats.size(); i ++)
+    {
+        formats[i] = cameraFormats[i];
+    }
+}
+
+void UEyeCaptureInterface::getAllCameras(vector<string> &cameras)
+{
+    int camNum = 0;
+    is_GetNumberOfCameras (&camNum);
+    printf("Currently there are %d cameras in the system:\n", camNum);
+    UEYE_CAMERA_LIST *camList = (UEYE_CAMERA_LIST *)malloc(sizeof(ULONG) + camNum * sizeof(UEYE_CAMERA_INFO));
+    camList->dwCount = camNum;
+    is_GetCameraList(camList);
+
+    printf("%2s %16s %5s %5s %5s %6s %16s\n",
+            "N", "Model" ,"camId", "devId" ,"sensId", "inuse?", "Serial");
+
+    for (int i = 0; i < camNum; i++)
+    {
+        printf("% 2d %16s % 5u % 5u %5u %6s %16s\n",
+            i,
+            camList->uci[i].Model,
+            camList->uci[i].dwCameraID,
+            camList->uci[i].dwDeviceID,
+            camList->uci[i].dwSensorID,
+            camList->uci[i].dwInUse != 0 ? "used" : "free",
+            camList->uci[i].SerNo);
+
+        std::stringstream ss;
+        ss << i << ",-1:144mhz:5fps";
+        string dev = ss.str();
+        cameras.push_back(dev);
+
+    }
+    free(camList);
+
+}
+
 
 void UEyeCaptureInterface::SpinThread::run()
 {
-    qDebug("new frame thread running");
+    qDebug("New frame thread running");
     while (capInterface->spinRunning.tryLock()) {
 
     	//usleep(20000);
         if (capInterface->sync == SOFT_SYNC || capInterface->sync == FRAME_HARD_SYNC) {
-    	   // printf("Both cameras fire!!!\n");
-            ueyeTrace(is_FreezeVideo (capInterface->rightCamera.mCamera, IS_DONT_WAIT));
-            ueyeTrace(is_FreezeVideo (capInterface->leftCamera .mCamera, IS_DONT_WAIT));
+           // printf("Both cameras fire!!!\n");
+            ueyeTrace(is_FreezeVideo (capInterface->leftCamera .mCamera, IS_DONT_WAIT), "SpinThread::run():is_FreezeVideo");
+            if (capInterface->rightCamera.inited)
+                ueyeTrace(is_FreezeVideo (capInterface->rightCamera.mCamera, IS_DONT_WAIT), "SpinThread::run():is_FreezeVideo");
+
         }
 
         int result = IS_SUCCESS;
 
-        while ((result = capInterface->rightCamera.waitUEyeFrameEvent(INFINITE)) != IS_SUCCESS)
+        while (capInterface->rightCamera.inited && (result = capInterface->rightCamera.waitUEyeFrameEvent(INFINITE)) != IS_SUCCESS)
         {
-            SYNC_PRINT(("WaitFrameEvent failed for right camera\n"));
-            ueyeTrace(result);
+//            SYNC_PRINT(("WaitFrameEvent failed for right camera\n"));
+//            ueyeTrace(result);
         }
-        //SYNC_PRINT(("Got right frame\n"));
+//      SYNC_PRINT(("SpinThread::run():Got right frame\n"));
 
         while ((result = capInterface->leftCamera .waitUEyeFrameEvent(INFINITE)) != IS_SUCCESS)
         {
             SYNC_PRINT(("WaitFrameEvent failed for left camera\n"));
             ueyeTrace(result);
         }
-        //SYNC_PRINT(("Got left frame\n"));
+//      SYNC_PRINT(("SpinThread::run():Got left frame\n"));
 
 
         /* If we are here seems like both new cameras produced frames*/
 
-        int bufIDL, bufIDR;
+        int bufIDL = -1;
+        int bufIDR = -1;
         char *rawBufferLeft  = NULL;
         char *rawBufferRight = NULL;
         HIDS mCameraLeft;
         HIDS mCameraRight;
 
         mCameraLeft = capInterface->leftCamera.mCamera;
-        is_GetActSeqBuf(mCameraLeft, &bufIDL, NULL, &rawBufferLeft);
-        is_LockSeqBuf (mCameraLeft, IS_IGNORE_PARAMETER, rawBufferLeft);
-        mCameraRight = capInterface->rightCamera.mCamera;
-        is_GetActSeqBuf(mCameraRight, &bufIDR, NULL, &rawBufferRight);
-        is_LockSeqBuf (mCameraRight, IS_IGNORE_PARAMETER, rawBufferRight);
+        ueyeTrace(is_GetActSeqBuf(mCameraLeft, &bufIDL, NULL, &rawBufferLeft), "is_GetActSeqBuf for leftcam");
+        ueyeTrace(is_LockSeqBuf (mCameraLeft, IS_IGNORE_PARAMETER, rawBufferLeft), "is_LockSeqBuf for leftcam");
 
-       // SYNC_PRINT(("We have locked buffers [%d and %d]\n", bufIDL, bufIDR));
+        if (capInterface->rightCamera.inited) {
+            mCameraRight = capInterface->rightCamera.mCamera;
+            ueyeTrace(is_GetActSeqBuf(mCameraRight, &bufIDR, NULL, &rawBufferRight), "is_GetActSeqBuf for right");
+            ueyeTrace(is_LockSeqBuf (mCameraRight, IS_IGNORE_PARAMETER, rawBufferRight), "is_LockSeqBuf for rightcam");
+        }
+
+        //SYNC_PRINT(("SpinThread::run():We have locked buffers [%d and %d]\n", bufIDL, bufIDR));
 
         /* Now exchange the buffer that is visible from */
         capInterface->protectFrame.lock();
             UEYEIMAGEINFO imageInfo;
 
-            if (capInterface->currentLeft)
-                is_UnlockSeqBuf (mCameraLeft, IS_IGNORE_PARAMETER, (char *)capInterface->currentLeft->buffer);
-            is_GetImageInfo (mCameraLeft, bufIDL, &imageInfo, sizeof(UEYEIMAGEINFO));
+            if (capInterface->currentLeft) {
+                ueyeTrace(is_UnlockSeqBuf (mCameraLeft, IS_IGNORE_PARAMETER, (char *)capInterface->currentLeft->buffer), "is_UnlockSeqBuf for left cam");
+            }
+            ueyeTrace(is_GetImageInfo (mCameraLeft, bufIDL, &imageInfo, sizeof(UEYEIMAGEINFO)), "is_GetImageInfo for left cam");
             capInterface->currentLeft = capInterface->leftCamera.getDescriptorByAddress(rawBufferLeft);
             capInterface->currentLeft->internalTimestamp = imageInfo.u64TimestampDevice;
             capInterface->currentLeft->pcTimestamp = imageInfo.TimestampSystem;
 
-            if (capInterface->currentRight)
-                is_UnlockSeqBuf (mCameraRight, IS_IGNORE_PARAMETER, (char *)capInterface->currentRight->buffer);
-            is_GetImageInfo (mCameraRight, bufIDR, &imageInfo, sizeof(UEYEIMAGEINFO));
-            capInterface->currentRight = capInterface->rightCamera.getDescriptorByAddress(rawBufferRight);
-            capInterface->currentRight->internalTimestamp = imageInfo.u64TimestampDevice;
-            capInterface->currentRight->pcTimestamp = imageInfo.TimestampSystem;
+            if (capInterface->rightCamera.inited)
+            {
+                if (capInterface->currentRight)
+                    is_UnlockSeqBuf (mCameraRight, IS_IGNORE_PARAMETER, (char *)capInterface->currentRight->buffer);
+                is_GetImageInfo (mCameraRight, bufIDR, &imageInfo, sizeof(UEYEIMAGEINFO));
+                capInterface->currentRight = capInterface->rightCamera.getDescriptorByAddress(rawBufferRight);
+                capInterface->currentRight->internalTimestamp = imageInfo.u64TimestampDevice;
+                capInterface->currentRight->pcTimestamp = imageInfo.TimestampSystem;
+            }
 
             capInterface->skippedCount++;
 
@@ -491,7 +662,12 @@ void UEyeCaptureInterface::SpinThread::run()
 
 
         frame_data_t frameData;
-        frameData.timestamp = (capInterface->currentLeft->usecsTimeStamp() / 2) + (capInterface->currentRight->usecsTimeStamp() / 2);
+        if (capInterface->rightCamera.inited) {
+            frameData.timestamp = (capInterface->currentLeft->usecsTimeStamp() / 2) + (capInterface->currentRight->usecsTimeStamp() / 2);
+        } else {
+            frameData.timestamp = capInterface->currentLeft->usecsTimeStamp();
+        }
+
         capInterface->notifyAboutNewFrame(frameData);
 
         capInterface->spinRunning.unlock();
@@ -507,19 +683,19 @@ void UEyeCaptureInterface::SpinThread::run()
 
 void UEyeCaptureInterface::decodeData(UEyeCameraDescriptor *camera, BufferDescriptorType *buffer, G12Buffer **output)
 {
-#if 0
-    if (!buffer->isFilled)
-    {
-        *output = new G12Buffer(formatH, formatW);
+    if (!camera->inited) {
+        // SYNC_PRINT(("UEyeCaptureInterface::decodeData(0x%0X,,)/n", camera));
+        *output = new G12Buffer(100, 100);
         return;
     }
-#endif
 
     *output = new G12Buffer(camera->bufferProps.height, camera->bufferProps.width, false);
     for (int i = 0; i < camera->bufferProps.height; i++)
     {
-        uint16_t *lineIn  = ((uint16_t *)buffer->buffer) + camera->bufferProps.width * i;
+        uint8_t *lineIn  = ((uint8_t *)buffer->buffer) + camera->bufferProps.width * i * camera->bufferProps.bitspp / 8;
+
         uint16_t *lineOut = &((*output)->element(i,0));
+
         for (int j = 0; j < camera->bufferProps.width; j++)
         {
             uint16_t value = *lineIn;
@@ -527,18 +703,58 @@ void UEyeCaptureInterface::decodeData(UEyeCameraDescriptor *camera, BufferDescri
 
             //value = (j % 256) | (i % 1024);
             //value >>= 4;
-            *lineOut = value;
+            *lineOut = value << 4;
             lineOut++;
-            lineIn++;
+            lineIn += camera->bufferProps.bitspp / 8;
         }
     }
+}
 
+void UEyeCaptureInterface::decodeData24(UEyeCameraDescriptor *camera, BufferDescriptorType *buffer, RGB24Buffer **output)
+{
+    if (!camera->inited) {
+        //SYNC_PRINT(("UEyeCaptureInterface::decodeData24(0x%0X,,)\n", camera));
+        *output = new RGB24Buffer(100, 100);
+        return;
+    }
+
+    *output = new RGB24Buffer(camera->bufferProps.height, camera->bufferProps.width, false);
+    for (int i = 0; i < camera->bufferProps.height; i++)
+    {
+        uint8_t *lineIn  = ((uint8_t *)buffer->buffer) + camera->bufferProps.width * i * camera->bufferProps.bitspp / 8;
+
+        RGBColor *lineOut = &((*output)->element(i,0));
+
+        for (int j = 0; j < camera->bufferProps.width; j++)
+        {
+            uint8_t r = lineIn[0];
+            uint8_t g = lineIn[1];
+            uint8_t b = lineIn[2];
+
+            //printf("%u\n", value);
+
+            //value = (j % 256) | (i % 1024);
+            //value >>= 4;
+            *lineOut = RGBColor(r,g,b);
+            lineOut++;
+            lineIn += camera->bufferProps.bitspp / 8;
+        }
+    }
 }
 
 ImageCaptureInterface::CapErrorCode UEyeCaptureInterface::initCapture()
 {
-    int resR = leftCamera .initBuffer();
-    int resL = rightCamera.initBuffer();
+    SYNC_PRINT(("UEyeCaptureInterface::initCapture(): called\n"));
+    SYNC_PRINT(("UEyeCaptureInterface::initCapture(): Left Camera\n"));
+    int resR = 1;
+    int resL = 1;
+    resL = leftCamera .initBuffer();
+    if (rightCamera.inited) {
+        SYNC_PRINT(("UEyeCaptureInterface::initCapture(): Right Camera\n"));
+        int resR = rightCamera.initBuffer();
+    } else {
+        SYNC_PRINT(("UEyeCaptureInterface::initCapture(): Not initing right Camera\n"));
+    }
 #if 0
     /* If only one camera started, we assume it is the left camera */
     if (resL && !resR)
@@ -549,7 +765,11 @@ ImageCaptureInterface::CapErrorCode UEyeCaptureInterface::initCapture()
         right = tmp;
     }
 #endif
-    return (CapErrorCode) ((bool) resL + (bool) resR);
+
+    CapErrorCode result = (CapErrorCode)((bool) resL + (bool) resR);
+
+    SYNC_PRINT(("UEyeCaptureInterface::initCapture(): returning %d\n", result));
+    return result;
 }
 
 /*ImageCaptureInterface::CapErrorCode UEyeCaptureInterface::queryCameraParameters(CameraParameters &params)
@@ -582,7 +802,30 @@ ImageCaptureInterface::CapErrorCode UEyeCaptureInterface::queryCameraParameters(
     /* Exposure auto*/
     param = &(params.mCameraControls[CameraParameters::EXPOSURE_AUTO]);
 
+    *param = CaptureParameter();
+    param->setActive(true);
+    param->setDefaultValue(0);
+    param->setMinimum(0);
+    param->setMaximum(2);
+    param->setStep(1);
+    param->setIsMenu(true);
+    param->pushMenuItem(QString("False"), 0);
+    param->pushMenuItem(QString("True") , 1);
+    param->pushMenuItem(QString("Max")  , 2);
 
+
+    /* Gain */
+    INT defaultGain = is_SetHardwareGain (leftCamera.mCamera, IS_GET_MASTER_GAIN, IS_IGNORE_PARAMETER, IS_IGNORE_PARAMETER, IS_IGNORE_PARAMETER);
+    param = &(params.mCameraControls[CameraParameters::GAIN]);
+    *param = CaptureParameter();
+    param->setActive(true);
+    param->setDefaultValue(defaultGain);
+    param->setMinimum     (0);
+    param->setMaximum     (100);
+    param->setStep        (1);
+
+    /*Gain Auto*/
+    param = &(params.mCameraControls[CameraParameters::GAIN_AUTO]);
     *param = CaptureParameter();
     param->setActive(true);
     param->setDefaultValue(0);
@@ -594,10 +837,36 @@ ImageCaptureInterface::CapErrorCode UEyeCaptureInterface::queryCameraParameters(
     param->pushMenuItem(QString("True") , 1);
 
 
-    /* Gain */
+    /* Sensor clock */
+    double defaultClock;
+    UINT clockRange[3];
+
+    UINT clockSteps = 0;
+
+    ueyeTrace(is_PixelClock(leftCamera.mCamera, IS_PIXELCLOCK_CMD_GET_NUMBER, (void*)&clockSteps, sizeof(clockSteps)));
+    SYNC_PRINT(("UEyeCaptureInterface::queryCameraParameters(): Clock steps: %d", clockSteps));
+
+    //if (clockSteps == 0) {
+    ueyeTrace(is_PixelClock(leftCamera.mCamera, IS_PIXELCLOCK_CMD_GET_RANGE  , &clockRange  , sizeof(clockRange)));
+    //}  else {
+
+
+
+    //}
+
+    ueyeTrace(is_PixelClock(leftCamera.mCamera, IS_PIXELCLOCK_CMD_GET_DEFAULT, &defaultClock, sizeof(double)));
+
+    param = &(params.mCameraControls[CameraParameters::PIXEL_CLOCK]);
+    *param = CaptureParameter();
+    param->setActive(true);
+    param->setDefaultValue(defaultClock);
+    param->setMinimum     (clockRange[0]);
+    param->setMaximum     (clockRange[1]);
+    param->setStep        (clockRange[2]);
 
     /* Frame rate */
     param = &(params.mCameraControls[CameraParameters::FPS]);
+    *param = CaptureParameter();
     param->setActive(true);
     param->setDefaultValue(25 * FPS_SCALER);
     param->setMinimum     (0  * FPS_SCALER);
@@ -641,27 +910,54 @@ UEyeCaptureInterface::CapErrorCode UEyeCaptureInterface::setCaptureProperty(int 
         {
             double ms = 0.0;
             ms = (double)value / EXPOSURE_SCALER;
-            ueyeTrace(is_Exposure (leftCamera.mCamera , IS_EXPOSURE_CMD_SET_EXPOSURE, (void*)&ms, sizeof(double)));
-            ms = (double)value / EXPOSURE_SCALER;
-            ueyeTrace(is_Exposure (rightCamera.mCamera, IS_EXPOSURE_CMD_SET_EXPOSURE, (void*)&ms, sizeof(double)));
+            ueyeTrace(is_Exposure (leftCamera.mCamera, IS_EXPOSURE_CMD_SET_EXPOSURE, (void*)&ms, sizeof(double)));
+            if (rightCamera.inited) {
+                ms = (double)value / EXPOSURE_SCALER;
+                ueyeTrace(is_Exposure (rightCamera.mCamera, IS_EXPOSURE_CMD_SET_EXPOSURE, (void*)&ms, sizeof(double)));
+            }
             return SUCCESS;
         }
+        case (CameraParameters::GAIN):
+        {
+            ueyeTrace(is_SetHardwareGain(leftCamera.mCamera, value, IS_IGNORE_PARAMETER, IS_IGNORE_PARAMETER, IS_IGNORE_PARAMETER));
+            if (rightCamera.inited) {
+                ueyeTrace(is_SetHardwareGain(rightCamera.mCamera, value, IS_IGNORE_PARAMETER, IS_IGNORE_PARAMETER, IS_IGNORE_PARAMETER));
+            }
+            return SUCCESS;
+        }
+
         case (CameraParameters::FPS):
         {
             double fps = (double)value / FPS_SCALER;
             double newFps;
             ueyeTrace(is_SetFrameRate (leftCamera.mCamera , fps, &newFps));
-            ueyeTrace(is_SetFrameRate (rightCamera.mCamera, fps, &newFps));
+            if (rightCamera.inited) {
+                ueyeTrace(is_SetFrameRate (rightCamera.mCamera, fps, &newFps));
+            }
             return SUCCESS;
         }
+
+        case (CameraParameters::PIXEL_CLOCK):
+        {
+
+            UINT newClock = value;
+            ueyeTrace(is_PixelClock (leftCamera.mCamera , IS_PIXELCLOCK_CMD_SET, (void *)&newClock, sizeof(newClock)));
+            if (rightCamera.inited) {
+                ueyeTrace(is_PixelClock (rightCamera.mCamera, IS_PIXELCLOCK_CMD_SET, (void *)&newClock, sizeof(newClock)));
+            }
+            return SUCCESS;
+        }
+
         case (CameraParameters::MASTER_FLASH_DELAY):
         {
             IO_FLASH_PARAMS flashParams;
             flashParams.s32Delay    = 0;
             flashParams.u32Duration = 0;
-            ueyeTrace(is_IO(leftCamera.mCamera, IS_IO_CMD_FLASH_GET_PARAMS, (void*)&flashParams, sizeof(flashParams)));
+            ueyeTrace(is_IO(leftCamera.mCamera, IS_IO_CMD_FLASH_GET_PARAMS, (void*)&flashParams, sizeof(flashParams)));            
             flashParams.s32Delay = value;
-            ueyeTrace(is_IO(leftCamera.mCamera, IS_IO_CMD_FLASH_SET_PARAMS, (void*)&flashParams, sizeof(flashParams)));
+            if (rightCamera.inited) {
+                ueyeTrace(is_IO(leftCamera.mCamera, IS_IO_CMD_FLASH_SET_PARAMS, (void*)&flashParams, sizeof(flashParams)));
+            }
             return SUCCESS;
         }
         case (CameraParameters::MASTER_FLASH_DURATION):
@@ -671,24 +967,44 @@ UEyeCaptureInterface::CapErrorCode UEyeCaptureInterface::setCaptureProperty(int 
             flashParams.u32Duration = 0;
             ueyeTrace(is_IO(leftCamera.mCamera, IS_IO_CMD_FLASH_GET_PARAMS, (void*)&flashParams, sizeof(flashParams)));
             flashParams.u32Duration = value;
-            ueyeTrace(is_IO(leftCamera.mCamera, IS_IO_CMD_FLASH_SET_PARAMS, (void*)&flashParams, sizeof(flashParams)));
+            if (rightCamera.inited) {
+                ueyeTrace(is_IO(leftCamera.mCamera, IS_IO_CMD_FLASH_SET_PARAMS, (void*)&flashParams, sizeof(flashParams)));
+            }
             return SUCCESS;
         }
 
         case (CameraParameters::SLAVE_TRIGGER_DELAY):
         {
-            is_SetTriggerDelay (rightCamera.mCamera, value);
+            if (rightCamera.inited) {
+                is_SetTriggerDelay (rightCamera.mCamera, value);
+            }
             return SUCCESS;
         }
         case (CameraParameters::EXPOSURE_AUTO) :
         {
-            double enable = value;
-            ueyeTrace(is_SetAutoParameter(leftCamera.mCamera, IS_SET_ENABLE_AUTO_SHUTTER, &enable, 0));
+            double enable;
+            switch (value) {
+            default:
+            case 0:
+            case 1:
+                enable = value;
+                ueyeTrace(is_SetAutoParameter(leftCamera.mCamera, IS_SET_ENABLE_AUTO_SHUTTER, &enable, 0));
+                break;
+            case 2:
+                enable = 1.0;
+                ueyeTrace(is_SetAutoParameter(leftCamera.mCamera, IS_SET_AUTO_SHUTTER_MAX, &enable, 0));
+                break;
+            }
             return SUCCESS;
+        }
+        case (CameraParameters::GAIN_AUTO) :
+        {
+            double enable = value;
+            ueyeTrace(is_SetAutoParameter(leftCamera.mCamera, IS_SET_ENABLE_AUTO_GAIN, &enable, 0));
         }
         default:
         {
-            printf("Set request for unknown parameter (%d)\n", id);
+            printf("Warning: Set request for unknown parameter %s (%d)\n", CameraParameters::getName((CameraParameters::CameraControls) id), id);
             return ImageCaptureInterface::FAILURE;
         }
     }
@@ -702,21 +1018,56 @@ ImageCaptureInterface::CapErrorCode UEyeCaptureInterface::getCaptureProperty(int
 
     switch (id)
     {
-       case (CameraParameters::EXPOSURE):
-       {
-           double ms = 0.0;
-           ueyeTrace(is_Exposure (leftCamera.mCamera , IS_EXPOSURE_CMD_GET_EXPOSURE, (void*)&ms, sizeof(double)));
-           *value = ms * EXPOSURE_SCALER;
-           return SUCCESS;
-       }
+        case (CameraParameters::EXPOSURE):
+        {
+            double ms = 0.0;
+            ueyeTrace(is_Exposure (leftCamera.mCamera , IS_EXPOSURE_CMD_GET_EXPOSURE, (void*)&ms, sizeof(double)));
+            *value = ms * EXPOSURE_SCALER;
+            return SUCCESS;
+        }
+        case (CameraParameters::GAIN):
+        {
+            ueyeTrace(*value = is_SetHardwareGain(leftCamera.mCamera , IS_GET_MASTER_GAIN, IS_IGNORE_PARAMETER, IS_IGNORE_PARAMETER, IS_IGNORE_PARAMETER ));
+            return SUCCESS;
+        }
+        case (CameraParameters::EXPOSURE_AUTO) :
+        {
+            double autoExp = 0.0;
+            double maxExp  = 0.0;
+
+            ueyeTrace(is_SetAutoParameter(leftCamera.mCamera, IS_GET_ENABLE_AUTO_SHUTTER, &autoExp, 0));
+            ueyeTrace(is_SetAutoParameter(leftCamera.mCamera, IS_GET_AUTO_SHUTTER_MAX, &maxExp, 0));
+            if (maxExp != 0) {
+                *value = 2; return SUCCESS;
+            }
+            *value =  (autoExp != 0.0) ? 1 : 0;
+            return SUCCESS;
+        }
+        case (CameraParameters::GAIN_AUTO) :
+        {
+            double autoGain = 0.0;
+
+            ueyeTrace(is_SetAutoParameter(leftCamera.mCamera, IS_GET_ENABLE_AUTO_GAIN, &autoGain, 0));
+            *value = (autoGain != 0.0) ? 1 : 0;
+            return SUCCESS;
+        }
 
        case (CameraParameters::FPS):
        {
            double newFps;
-           ueyeTrace(is_SetFrameRate (leftCamera.mCamera , IS_GET_FRAMERATE, &newFps));
+           ueyeTrace(is_SetFrameRate (leftCamera.mCamera, IS_GET_FRAMERATE, &newFps));
            *value = newFps * FPS_SCALER;
            return SUCCESS;
        }
+
+       case (CameraParameters::PIXEL_CLOCK):
+       {
+           UINT newClock;
+           ueyeTrace(is_PixelClock(leftCamera.mCamera, IS_PIXELCLOCK_CMD_GET, (void*)&newClock, sizeof(newClock)));
+           *value = newClock;
+           return SUCCESS;
+       }
+
        case (CameraParameters::MASTER_FLASH_DELAY):
        {
            IO_FLASH_PARAMS flashParams;
@@ -745,7 +1096,7 @@ ImageCaptureInterface::CapErrorCode UEyeCaptureInterface::getCaptureProperty(int
 
        default:
        {
-           printf("Set request for unknown parameter (%d)\n", id);
+           printf("Set request for unknown parameter %s(%d)\n", CameraParameters::getName((CameraParameters::CameraControls) id), id);
            return ImageCaptureInterface::FAILURE;
        }
     }

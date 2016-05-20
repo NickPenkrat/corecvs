@@ -271,7 +271,7 @@ ALIGN_STACK_SSE void DirectShowCaptureInterface::memberCallback(DSCapDeviceId de
                 }
                 else
                 {
-                    //To be replacede with UYVU->G12 converter as soon as it implemented
+                    //TODO: to be replaced by UYVU->G12 converter as soon as it's implemented
                     RGB24Buffer *rgbBuffer = new RGB24Buffer(data.format.height, data.format.width, false);
                     rgbBuffer->fillWithYUVFormat((uint8_t *)data.data, uyvy);
                     camera->buffer = rgbBuffer->toG12Buffer();

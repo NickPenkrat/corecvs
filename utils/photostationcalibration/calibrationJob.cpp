@@ -36,8 +36,7 @@ void CalibrationJob::computeReconstructionError()
     int cnt = 0.0;
     for (auto& i: pointCollection)
         for (auto& j: i.second)
-            for (auto& k: j.second)
-                cnt++;
+            cnt += j.second.size();
 
     L_INFO << "Starting reconstruction error computation: point triangulation";
     Matrix A(cnt, 3);
@@ -61,7 +60,7 @@ void CalibrationJob::computeReconstructionError()
                 }
                 auto diff = mct.triangulateLM(mct.triangulate()) - orig;
                 std::cout << diff << " ";
-                if (!diff > maxError)
+                if ((!diff) > maxError)
                     maxError = !diff;
                 for (int ii = 0; ii < 3; ++ii)
                     A.a(idx, ii) = diff[ii];
@@ -215,10 +214,10 @@ void CalibrationJob::allDetectChessBoard(bool distorted)
     int N = (int)observations.size();
 
     photostation.cameras.resize(N);
-    std::vector<corecvs::CameraModel>::iterator psIterator = photostation.cameras.begin();
+
     bool estimate = !distorted && settings.openCvDetectorParameters.mEstimateUndistortedFromDistorted;
 
-    L_INFO_P("chessboard type: %s", this->settings.boardAlignerParams.boardMarkers.size() ? "new" : "old");
+    L_INFO_P("chessboard type: %s", settings.boardAlignerParams.boardMarkers.size() ? "new" : "old");
 
     std::vector<std::array<size_t, 2>> idxs;
     for (size_t i = 0; i < observations.size(); ++i)
@@ -351,12 +350,16 @@ struct ParallelDistortionRemoval
 
             corecvs::DisplacementBuffer transform;
             job->prepareUndistortionTransformation(camId, transform);
-            for (auto& ob: observationsIterator)
-            {
-                corecvs::RGB24Buffer source = job->LoadImage(ob.sourceFileName), dst;
-                job->removeDistortion(source, dst, transform, cam.intrinsics.size[0], cam.intrinsics.size[1]);
-                job->SaveImage(ob.undistortedFileName, dst);
-            }
+            corecvs::parallelable_for(0, (int)observationsIterator.size(), [&](const corecvs::BlockedRange<int> &r)
+                    {
+                        for (int i = r.begin(); i != r.end(); ++i)
+                        {
+                            auto &ob = observationsIterator[i];
+                            corecvs::RGB24Buffer source = job->LoadImage(ob.sourceFileName), dst;
+                            job->removeDistortion(source, dst, transform, cam.intrinsics.size[0], cam.intrinsics.size[1]);
+                            job->SaveImage(ob.undistortedFileName, dst);
+                        }
+                    });
             job->state->incrementCompleted();
         }
     }
@@ -395,7 +398,10 @@ bool CalibrationJob::calibrateSingleCamera(int cameraId)
     std::vector<CameraLocationData> locations;
     int valid_locations = 0;
 
-    FlatPatternCalibrator calibrator(settings.singleCameraCalibratorConstraints, photostation.cameras[cameraId].intrinsics, settings.distortionEstimationParameters);
+    FlatPatternCalibrator calibrator(settings.singleCameraCalibratorConstraints
+        , photostation.cameras[cameraId].intrinsics
+        , settings.distortionEstimationParameters);
+
     bool usingUndistorted = !(settings.singleCameraCalibratorConstraints & CameraConstraints::UNLOCK_DISTORTION);
 
     for (auto& o: observations[cameraId])
@@ -588,11 +594,11 @@ void CalibrationJob::computeCalibrationErrors()
                     Vector3dd ppp = p.point;
                     ppp.y() *= factor;
                     Vector2dd pp = photostation.project(ppp, cam) - p.projection;
-                    if (!pp > me)
+                    if ((!pp) > me)
                     {
                         me = !pp;
                     }
-                    if (!pp > maxTotal)
+                    if ((!pp) > maxTotal)
                     {
                         maxTotal = !pp;
                     }
@@ -642,11 +648,11 @@ void CalibrationJob::computeFullErrors()
                     ppp[1] *= factor;
                     auto pp = photostation.project(ppp, cam);
                     auto cp = photostation.cameras[v.cameraId].distortion.mapForward(pp) - p.projection;
-                    if (!cp > me)
+                    if ((!cp) > me)
                     {
                         me = !cp;
                     }
-                    if (!cp > maxTotal)
+                    if ((!cp) > maxTotal)
                     {
                         maxTotal = !cp;
                     }
@@ -692,7 +698,7 @@ void CalibrationJob::computeSingleCameraErrors()
                     Vector3dd ppp = p.point;
                     ppp.y() *= factor;
                     Vector2dd pp = cam.project(ppp) - p.projection;
-                    if (!pp > me)
+                    if ((!pp) > me)
                     {
                         me = !pp;
                     }
@@ -914,7 +920,7 @@ void CalibrationJob::reorient(const corecvs::Vector3dd T, const corecvs::Quatern
         {
             auto c1 = photostation.getRawCamera((int)i);
             auto c2 = reoriented.getRawCamera((int)i);
-            CORE_ASSERT_TRUE_S(!(c1.extrinsics.position - c2.extrinsics.position) < 1e-6);
+            CORE_ASSERT_TRUE_S((!(c1.extrinsics.position - c2.extrinsics.position)) < 1e-6);
             double df = (c1.extrinsics.orientation ^ c2.extrinsics.orientation.conjugated())[3];
             double ang = std::acos(std::min(1.0, df)) * 2.0;
             ang = std::min(ang, 2.0 * M_PI - ang);
@@ -939,6 +945,10 @@ void CalibrationJob::reorient(const std::vector<int> &topLayerIdx)
                                 ^ (photostation.cameras[topLayerIdx[2]].extrinsics.position
                                  - photostation.cameras[topLayerIdx[0]].extrinsics.position)
                                 ).normalised();
+        if ((!n1) == 0.0) {
+            L_ERROR_P("Not enough information to perform operation");  // happens when calibration was absent
+            break;
+        }
         double d1 = -(n1 & photostation.cameras[topLayerIdx[0]].extrinsics.position);
 
         std::vector<double> input(4), output(topLayerIdx.size());
@@ -976,7 +986,7 @@ void CalibrationJob::reorient(const std::vector<int> &topLayerIdx)
         for (int i = 0; i < 3; ++i)
             orths[i] = n ^ (orths[i] ^ n);
 
-        std::sort(orths.begin(), orths.end(), [](const corecvs::Vector3dd &a, const corecvs::Vector3dd &b) { return !a > !b; });
+        std::sort(orths.begin(), orths.end(), [](const corecvs::Vector3dd &a, const corecvs::Vector3dd &b) { return (!a) > (!b); });
 
         corecvs::Vector3dd plane1 = (n ^ orths[0]).normalised();
         corecvs::Vector3dd plane2 = (n ^ plane1).normalised();

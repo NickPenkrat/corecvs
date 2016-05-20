@@ -7,6 +7,9 @@
  */
 #include <QImage>
 #include <QImageWriter>
+#include <QTemporaryFile>
+#include <QStandardPaths>
+#include <QDebug>
 
 #include "qtFileLoader.h"
 #include "g12Image.h"
@@ -85,6 +88,20 @@ void QTFileLoader::save(const std::string& name, RGB24Buffer *input, int quality
     RGB24InterfaceImage imageToSave(input);
     imageWriter.setQuality(quality);
     imageWriter.write(imageToSave);
+}
+
+QTemporaryFile* QTFileLoader::saveTemporary(const QImage& image)
+{
+    QString path = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
+
+    QTemporaryFile* file = new QTemporaryFile(path + "/temp_file");
+    file->open();
+
+    qDebug() << "Saving to" << file->fileName();
+
+    image.save(file->fileName(), "JPG", 100);
+
+    return file;
 }
 
 

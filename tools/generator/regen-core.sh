@@ -232,6 +232,12 @@ full_ui_classes+=" chessBoardCornerDetectorParamsBase"
 full_ui_classes+=" chessBoardAssemblerParamsBase"
 full_ui_classes+=" bitcodeBoardParamsBase"
 
+
+# Reconstruction
+full_ui_classes+=" photostationPlacerEssentialFilterParameters"
+full_ui_classes+=" photostationPlacerFeatureSelectionParameters"
+full_ui_classes+=" photostationPlacerParamsBase"
+
 PRIFILE="${DST_DIR}/generated.pri"
 
 echo Preparing PRI file for widgets generated from CORE \"${WPRIFILE}\"

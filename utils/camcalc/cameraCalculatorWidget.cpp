@@ -49,7 +49,7 @@ SensorPreset CameraCalculatorWidget::sensorPresets[] =
 
 };
 
-STATIC_ASSERT(CORE_COUNT_OF(CameraCalculatorWidget::sensorPresets) == CameraCalculatorWidget::sensorPresetsSize, wrong_number_of_sensor_entries);
+STATIC_ASSERT(CORE_COUNT_OF(CameraCalculatorWidget::sensorPresets) == CameraCalculatorWidget::sensorPresetsSize, wrong_number_of_sensor_entries)
 
 
 LensPreset CameraCalculatorWidget::lensPersets[] =
@@ -63,7 +63,7 @@ LensPreset CameraCalculatorWidget::lensPersets[] =
 		{"Guess 1920x1080"        , 14.76, 33},
 };
 
-STATIC_ASSERT(CORE_COUNT_OF(CameraCalculatorWidget::lensPersets) == CameraCalculatorWidget::lensPresetsSize, wrong_number_of_sensor_entries);
+STATIC_ASSERT(CORE_COUNT_OF(CameraCalculatorWidget::lensPersets) == CameraCalculatorWidget::lensPresetsSize, wrong_number_of_sensor_entries)
 
 
 CameraCalculatorWidget::CameraCalculatorWidget(QWidget *parent)

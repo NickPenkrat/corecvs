@@ -21,8 +21,6 @@
 #include "segmentator.h"
 #include "rgb24Buffer.h"
 
-
-using namespace std;
 using namespace corecvs;
 
 TEST(Cornerdetector, DISABLED_testCornerDetector)

@@ -26,7 +26,6 @@
 using corecvs::SobelVerticalKernel;
 using corecvs::ScalarAlgebraDouble;
 
-using namespace std;
 using namespace corecvs;
 
 const static unsigned POLUTING_INPUTS = 10;

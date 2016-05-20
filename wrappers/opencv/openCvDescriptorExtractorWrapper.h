@@ -4,7 +4,7 @@
 
 namespace cv {
     class DescriptorExtractor;
-};
+}
 
 class OpenCvDescriptorExtractorWrapper : public DescriptorExtractor
 {
