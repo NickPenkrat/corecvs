@@ -53,6 +53,8 @@ public:
 #endif
     bool useSchurComplement = false;
 
+    StatusTracker* state = 0;
+
     /* Additional outputs */
     bool hasParadox = false;
     int iterations = 0;
@@ -72,7 +74,7 @@ public:
      *
      *  \f[ (J^T J + \lambda diag(J^T J)) \delta = J^T [y_{target} - f(\beta)] \f]
      **/
-    vector<double> fit(const vector<double> &input, const vector<double> &output, StatusTracker* state)
+    vector<double> fit(const vector<double> &input, const vector<double> &output)
     {
         if (traceProgress) {
             cout << "================== Starting LM fit ================== " << endl;

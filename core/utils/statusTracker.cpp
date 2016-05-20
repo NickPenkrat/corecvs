@@ -154,6 +154,8 @@ void corecvs::StatusTracker::setFailed()
 
 AutoTracker StatusTracker::createAutoTrackerCalculationObject()
 {
+    if (this == nullptr)
+        return 0;
     return AutoTracker(this);
 }
 
