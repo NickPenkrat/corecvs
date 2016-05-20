@@ -46,7 +46,7 @@ struct OrientedCorner
      * Gradient-wise score is correlation with cross of width = bandwidth oriented with corner edges
      * Intensity-wise score is correlation with corner-pattern created using edge orientations
      **/
-    double scoreCorner(DpImage &img, DpImage &w, const std::vector<double> &radius, double bandwidth = 3.0);
+    double scoreCorner(DpImage &img, DpImage &w, const vector<double> &radius, double bandwidth = 3.0);
 
     /**
      *  Computes single scale score
@@ -119,24 +119,17 @@ private:
 class ChessBoardCornerDetectorParams : public ChessBoardCornerDetectorParamsBase
 {
 public:
-    // Radius for multi-scale pattern detection
-    //vector<double> patternRadius;
-    // Radius for corner-scoring
-    //vector<double> cornerScores;
-    // Angle for rotation-variant detection
-    //vector<double> patternStartAngle;
-
-    ChessBoardCornerDetectorParams(const ChessBoardCornerDetectorParamsBase &base = ChessBoardCornerDetectorParamsBase()) :
-        ChessBoardCornerDetectorParamsBase(base)
-    {
-    }
+    ChessBoardCornerDetectorParams(const ChessBoardCornerDetectorParamsBase &base = ChessBoardCornerDetectorParamsBase())
+        : ChessBoardCornerDetectorParamsBase(base)
+    {}
 
     void setMinAngle(double rad)
     {
         setMinAngleDeg(radToDeg(rad));
     }
 
-    double minAngle() {
+    double minAngle() const
+    {
         return degToRad(minAngleDeg());
     }
 
@@ -145,22 +138,17 @@ public:
         setSectorSizeDeg(radToDeg(rad));
     }
 
-    double sectorSize() {
+    double sectorSize() const
+    {
         return degToRad(sectorSizeDeg());
     }
 
-    double patternStartAngle(int index)
+    vector<double> patternStartAngle() const
     {
-        return degToRad(mPatternRadius[index]);
-    }
-
-    vector<double> patternStartAngle()
-    {
-        vector<double> toReturn;
-
-        for (size_t i = 0; i < mPatternRadius.size(); i++)
+        vector<double> toReturn = patternStartAngleDeg();
+        for (size_t i = 0; i < toReturn.size(); i++)
         {
-            toReturn.push_back(degToRad(mPatternRadius[i]));
+            toReturn[i] = degToRad(toReturn[i]);
         }
         return toReturn;
     }
@@ -170,7 +158,7 @@ class ChessBoardCornerDetector : ChessBoardCornerDetectorParams
 {
 public:
     ChessBoardCornerDetector(ChessBoardCornerDetectorParams params = ChessBoardCornerDetectorParams());
-    void detectCorners(DpImage &image, std::vector<OrientedCorner> &corners);
+    void detectCorners(DpImage &image, vector<OrientedCorner> &corners);
 
 private:
     /**
@@ -212,13 +200,13 @@ private:
      */
     // mean-shift mode detector
     // TODO: do we need it outside detector?!
-    void circularMeanShift(std::vector<double> &values, double bandwidth, std::vector<std::pair<int, double>> &modes);
+    void circularMeanShift(vector<double> &values, double bandwidth, vector<std::pair<int, double>> &modes);
 
     DpImage du, dv;
     DpImage w, phi;
     DpImage cost, img;
-    std::vector<CornerKernelSet> kernels;
-    std::vector<OrientedCorner>  corners;
+    vector<CornerKernelSet> kernels;
+    vector<OrientedCorner>  corners;
 
 public:
     void setStatistics(corecvs::Statistics *stats);
