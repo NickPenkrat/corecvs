@@ -104,6 +104,28 @@ int PhotostationAppendParameters::staticInit()
         )
     );
     fields().push_back(
+        new IntField
+        (
+          PhotostationAppendParameters::SPECULATIVITY_ID,
+          offsetof(PhotostationAppendParameters, mSpeculativity),
+          1000,
+          "speculativity",
+          "speculativity",
+          "This defines how many multicameras are subject for P3P evaluation at each iteration"
+        )
+    );
+    fields().push_back(
+        new IntField
+        (
+          PhotostationAppendParameters::MINIMALINLIERCOUNT_ID,
+          offsetof(PhotostationAppendParameters, mMinimalInlierCount),
+          32,
+          "minimalInlierCount",
+          "minimalInlierCount",
+          "Minimal inlier count for hypotheis acceptance"
+        )
+    );
+    fields().push_back(
         new DoubleField
         (
           PhotostationAppendParameters::MAXIMALFAILUREPROBABILITY_ID,

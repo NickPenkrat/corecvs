@@ -60,8 +60,8 @@
     <field type="double" name="inlierP6PThreshold" defaultvalue="1.0"    comment="Inlier threshold for 6P->pose/3P->orientation" />
     <field type="int"    name="maxP6PIterations"   defaultvalue="400000" comment="Maximal ransac iterations for 6P->pose/3P->orientation" />
     <field type="double" name="gammaP6P"           defaultValue="0.001"  comment="Target error probability for 6P->pose/3P->orientation" />
-    <field type="size_t" name="speculativity"      defaultValue="1000"   comment="This defines how many multicameras are subject for P3P evaluation at each iteration" />
-    <field type="size_t" name="minimalInlierCount" defaultValue="32"     comment="Minimal inlier count for hypotheis acceptance" />
+    <field type="int" name="speculativity"      defaultValue="1000"   comment="This defines how many multicameras are subject for P3P evaluation at each iteration" />
+    <field type="int" name="minimalInlierCount" defaultValue="32"     comment="Minimal inlier count for hypotheis acceptance" />
     <field type="double" name="maximalFailureProbability" defaultValue="0.15" comment="Maximal failure probability for hypothesis acceptance" />
   </class>
 
@@ -92,7 +92,7 @@
     <field type="int"    name="maxPostAppend"      defaultValue="2"      comment="Maximal post-append iterations" />
     <field type="double" name="inlierP3PThreshold" defaultvalue="2.0"    comment="Inlier threshold for 3P->pose" />
     <field type="int"    name="maxP3PIterations"   defaultValue="100000" comment="Maximal ransac iterations for 3P->pose" />
-    <filed type="double" name="gammaP3P"           defaultvalue="0.001"  comment="Target error probability for 3P pose estimation" />
+    <field type="double" name="gammaP3P"           defaultvalue="0.001"  comment="Target error probability for 3P pose estimation" />
     <field type="double" name="inlierP6PThreshold" defaultvalue="1.0"    comment="Inlier threshold for 6P->pose/3P->orientation" />
     <field type="int"    name="maxP6PIterations"   defaultvalue="400000" comment="Maximal ransac iterations for 6P->pose/3P->orientation" />
     <field type="double" name="gammaP6P"           defaultValue="0.001"  comment="Target error probability for 6P->pose/3P->orientation" />
@@ -138,19 +138,26 @@
 
   <!-- new data -->
 
+  <class name="Reconstruction Functor Optimization Params">
+    <field type="bool" name="NON_DEGENERATE_ORIENTATIONS" defaultValue="true" comment="Orientations of all cameras except first" />
+    <field type="bool" name="DEGENERATE_ORIENTATIONS"     defaultValue="true" comment="Orientation of first camera" />
+    <field type="bool" name="NON_DEGENERATE_TRANSLATIONS" defaultValue="false" comment="Translations of all cameras except first" />
+    <field type="bool" name="DEGENERATE_TRANSLATIONS" defaultValue="false"  comment="Translation of first camera" />
+    <field type="bool" name="FOCALS" defaultValue="true" comment="Camera focals in multicamera" />
+    <field type="bool" name="PRINCIPALS" defaultValue="true" comment="Camera principals in multicamera" />
+    <field type="bool" name="POINTS" defaultValue="false" comment="3D points" />
+    <field type="bool" name="TUNE_GPS" defaultValue="false" comment="Allow shifting of GPS-initialized cameras" />        
+  </class>
+
   <enum name="Reconstruction Functor Optimization Error Type">
     <item name="REPROJECTION"  id="0" />
     <item name="ANGULAR"       id="1" />
     <item name="CROSS_PRODUCT" id="2" />
     <item name="RAY_DIFF"      id="3" />
-  </enum>
+  </enum>  
   
   <class name="Iterative Reconstruction Nonlinear Optimization Params">
-    <!-- // By default only orientations and reconstructed points are subject for optimization -->
-    <!-- <filed type="ReconstructionFunctorOptimizationType" name="optimizationParams" defaultValue= -->
-    <!--     ReconstructionFunctorOptimizationType::NON_DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::FOCALS | ReconstructionFunctorOptimizationType::PRINCIPALS | -->
-    <!--     ReconstructionFunctorOptimizationType::POINTS; -->
-        
+    <field type="Reconstruction Functor Optimization" name="optimizationParams">
     <field type="Reconstruction Functor Optimization Error Type" name="errorType" defaultValue="3" comment="Functor optimizattion error type" />
     <field type="int" name="postAppendNonlinearIterations" defaultValue="200" comment="Post-append non-linear optimization iterations" />
     <field type="int" name="finalNonLinearIterations" defaultValue="2000" comment="Final non-linear iterations" />

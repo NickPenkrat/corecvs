@@ -23,6 +23,7 @@ IterativeReconstructionAppendParamsControlWidget::IterativeReconstructionAppendP
     QObject::connect(mUi->maxPostAppendSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->inlierP3PThresholdSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->maxP3PIterationsSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->gammaP3PSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->inlierP6PThresholdSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->maxP6PIterationsSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->gammaP6PSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
@@ -59,6 +60,7 @@ void IterativeReconstructionAppendParamsControlWidget::getParameters(IterativeRe
     params.setMaxPostAppend    (mUi->maxPostAppendSpinBox->value());
     params.setInlierP3PThreshold(mUi->inlierP3PThresholdSpinBox->value());
     params.setMaxP3PIterations (mUi->maxP3PIterationsSpinBox->value());
+    params.setGammaP3P         (mUi->gammaP3PSpinBox->value());
     params.setInlierP6PThreshold(mUi->inlierP6PThresholdSpinBox->value());
     params.setMaxP6PIterations (mUi->maxP6PIterationsSpinBox->value());
     params.setGammaP6P         (mUi->gammaP6PSpinBox->value());
@@ -80,6 +82,7 @@ IterativeReconstructionAppendParams *IterativeReconstructionAppendParamsControlW
           mUi->maxPostAppendSpinBox->value()
         , mUi->inlierP3PThresholdSpinBox->value()
         , mUi->maxP3PIterationsSpinBox->value()
+        , mUi->gammaP3PSpinBox->value()
         , mUi->inlierP6PThresholdSpinBox->value()
         , mUi->maxP6PIterationsSpinBox->value()
         , mUi->gammaP6PSpinBox->value()
@@ -97,6 +100,7 @@ void IterativeReconstructionAppendParamsControlWidget::setParameters(const Itera
     mUi->maxPostAppendSpinBox->setValue(input.maxPostAppend());
     mUi->inlierP3PThresholdSpinBox->setValue(input.inlierP3PThreshold());
     mUi->maxP3PIterationsSpinBox->setValue(input.maxP3PIterations());
+    mUi->gammaP3PSpinBox->setValue(input.gammaP3P());
     mUi->inlierP6PThresholdSpinBox->setValue(input.inlierP6PThreshold());
     mUi->maxP6PIterationsSpinBox->setValue(input.maxP6PIterations());
     mUi->gammaP6PSpinBox->setValue(input.gammaP6P());

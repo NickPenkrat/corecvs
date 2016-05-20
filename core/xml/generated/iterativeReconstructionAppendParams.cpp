@@ -73,6 +73,17 @@ int IterativeReconstructionAppendParams::staticInit()
     fields().push_back(
         new DoubleField
         (
+          IterativeReconstructionAppendParams::GAMMAP3P_ID,
+          offsetof(IterativeReconstructionAppendParams, mGammaP3P),
+          0,
+          "gammaP3P",
+          "gammaP3P",
+          "Target error probability for 3P pose estimation"
+        )
+    );
+    fields().push_back(
+        new DoubleField
+        (
           IterativeReconstructionAppendParams::INLIERP6PTHRESHOLD_ID,
           offsetof(IterativeReconstructionAppendParams, mInlierP6PThreshold),
           0,

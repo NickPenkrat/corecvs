@@ -303,10 +303,10 @@ void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams 
 
     // Feature detection and matching
     FeatureMatchingPipeline pipeline(filenames);
-    pipeline.add(new KeyPointDetectionStage(params.detector), true);
-    pipeline.add(new DescriptorExtractionStage(params.descriptor), true);
+    pipeline.add(new KeyPointDetectionStage(params.detector()), true);
+    pipeline.add(new DescriptorExtractionStage(params.descriptor()), true);
     pipeline.add(new MatchingPlanComputationStage(), true);
-    pipeline.add(new MatchAndRefineStage(params.descriptor, params.matcher, params.b2bThreshold), true);
+    pipeline.add(new MatchAndRefineStage(params.descriptor(), params.matcher(), params.b2bThreshold()), true);
 
     pipeline.run();
 
@@ -329,7 +329,7 @@ void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams 
      *         This works almost as if we were merging all pictures from
      *         all cameras of photostation into a single image
      */
-    if (!params.matchF2F)
+    if (!params.matchF2F())
     {
         auto& ref = pipeline.refinedMatches.matchSets;
         for (auto& ms: ref)
@@ -707,7 +707,6 @@ void corecvs::ReconstructionFixtureScene::buildTracks(CameraFixture *psA, Camera
   //corecvs::Vector2dd &kpA = kp[0], &kpB = kp[1], &kpC = kp[2];
 
     std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> free[NPAIRS];
-    auto &freeAB = free[0];
 
     for (int i = 0; i < NPAIRS; ++i)
         free[i] = getUnusedFeatures(ps[pairIdx[i][0]], ps[pairIdx[i][1]]);
@@ -942,8 +941,7 @@ corecvs::ReconstructionFixtureScene::getFixtureMatchesIdx(const std::vector<Came
             CORE_ASSERT_TRUE_S(idB == wcQuery);
             CORE_ASSERT_TRUE_S(idA.u != WPP::UWILDCARD && idA.v != WPP::VWILDCARD);
             CORE_ASSERT_TRUE_S(idB.u != WPP::UWILDCARD && idB.v != WPP::VWILDCARD);
-            auto& kpsA = keyPoints[idA];
-            auto& kpsB = keyPoints[idB];
+
             for (auto& m: ref2.second)
             {
                 int kpA = std::get<0>(m);

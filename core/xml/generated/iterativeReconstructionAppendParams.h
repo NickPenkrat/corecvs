@@ -42,6 +42,7 @@ public:
         MAXPOSTAPPEND_ID,
         INLIERP3PTHRESHOLD_ID,
         MAXP3PITERATIONS_ID,
+        GAMMAP3P_ID,
         INLIERP6PTHRESHOLD_ID,
         MAXP6PITERATIONS_ID,
         GAMMAP6P_ID,
@@ -70,6 +71,12 @@ public:
      * Maximal ransac iterations for 3P->pose 
      */
     int mMaxP3PIterations;
+
+    /** 
+     * \brief gammaP3P 
+     * Target error probability for 3P pose estimation 
+     */
+    double mGammaP3P;
 
     /** 
      * \brief inlierP6PThreshold 
@@ -130,6 +137,11 @@ public:
         return mMaxP3PIterations;
     }
 
+    double gammaP3P() const
+    {
+        return mGammaP3P;
+    }
+
     double inlierP6PThreshold() const
     {
         return mInlierP6PThreshold;
@@ -176,6 +188,11 @@ public:
         mMaxP3PIterations = maxP3PIterations;
     }
 
+    void setGammaP3P(double gammaP3P)
+    {
+        mGammaP3P = gammaP3P;
+    }
+
     void setInlierP6PThreshold(double inlierP6PThreshold)
     {
         mInlierP6PThreshold = inlierP6PThreshold;
@@ -214,6 +231,7 @@ template<class VisitorType>
         visitor.visit(mMaxPostAppend,             static_cast<const IntField *>     (fields()[MAXPOSTAPPEND_ID]));
         visitor.visit(mInlierP3PThreshold,        static_cast<const DoubleField *>  (fields()[INLIERP3PTHRESHOLD_ID]));
         visitor.visit(mMaxP3PIterations,          static_cast<const IntField *>     (fields()[MAXP3PITERATIONS_ID]));
+        visitor.visit(mGammaP3P,                  static_cast<const DoubleField *>  (fields()[GAMMAP3P_ID]));
         visitor.visit(mInlierP6PThreshold,        static_cast<const DoubleField *>  (fields()[INLIERP6PTHRESHOLD_ID]));
         visitor.visit(mMaxP6PIterations,          static_cast<const IntField *>     (fields()[MAXP6PITERATIONS_ID]));
         visitor.visit(mGammaP6P,                  static_cast<const DoubleField *>  (fields()[GAMMAP6P_ID]));
@@ -232,6 +250,7 @@ template<class VisitorType>
           int maxPostAppend
         , double inlierP3PThreshold
         , int maxP3PIterations
+        , double gammaP3P
         , double inlierP6PThreshold
         , int maxP6PIterations
         , double gammaP6P
@@ -243,6 +262,7 @@ template<class VisitorType>
         mMaxPostAppend = maxPostAppend;
         mInlierP3PThreshold = inlierP3PThreshold;
         mMaxP3PIterations = maxP3PIterations;
+        mGammaP3P = gammaP3P;
         mInlierP6PThreshold = inlierP6PThreshold;
         mMaxP6PIterations = maxP6PIterations;
         mGammaP6P = gammaP6P;

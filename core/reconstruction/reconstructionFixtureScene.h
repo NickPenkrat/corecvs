@@ -6,27 +6,9 @@
 #include "rgbColor.h"
 #include "essentialFeatureFilter.h"
 
+#include "generated/featureDetectionParams.h"
 
 namespace corecvs {
-
-struct FeatureDetectionParams
-{
-    std::string detector   = "ORB";
-    std::string descriptor = "ORB";
-    std::string matcher    = "BF" ;
-    double b2bThreshold    = 0.9  ;
-    bool matchF2F          = false;
-
-    template<class VisitorType>
-        void accept(VisitorType &visitor)
-        {
-            visitor.visit(detector      ,std::string("ORB")    ,"detector"        );
-            visitor.visit(descriptor    ,std::string("ORB")    ,"descriptor"      );
-            visitor.visit(matcher       ,std::string("BF")     ,"matcher"         );
-            visitor.visit(b2bThreshold  ,0.9      ,"b2bThreshold"    );
-            visitor.visit(matchF2F      ,false    ,"matchF2F"        );
-        }
-};
 
 enum class ReconstructionState
 {
