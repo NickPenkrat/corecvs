@@ -230,7 +230,7 @@ void ImageCaptureInterface::getAllCameras(vector<string> &cameras)
 # ifdef WITH_DIRECTSHOW
     vector<string> dshowcams;
     DirectShowCaptureInterface::getAllCameras(dshowcams);
-    for (string cam: v4lcams) {
+    for (const string& cam : dshowcams) {
         cameras.push_back(std::string("dshow:" + cam));
     }
 # endif
