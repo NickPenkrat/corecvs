@@ -15,8 +15,8 @@
  *  http://stackoverflow.com/questions/105659/how-can-one-grab-a-stack-trace-in-c/127012#127012
  **/
 
-void stackTraceHandler(int sig) { CORE_UNUSED(sig); }
-void setSegVHandler() {}
+void printStackTrace() {}
+void setHandlerSegV() {}
 
 #else
 
@@ -96,22 +96,27 @@ void prettyTraceHandler(int sig)
 }
 #endif
 
-void stackTraceHandler(int sig)
+void printStackTrace()
 {
-    void *array[10];
+    void *arr[10];
 
     // get void*'s for all entries on the stack
-    size_t size = backtrace(array, CORE_COUNT_OF(array));
+    size_t size = backtrace(arr, CORE_COUNT_OF(arr));
 
     // print out all the frames to stderr
-    fprintf(stderr, "stackTraceHandler (signal=%d):\n", sig);
-    backtrace_symbols_fd(array, size, 2);
-#ifndef WIN32
-    exit(0);
-#endif
+    fprintf(stderr, "StackTrace:\n");
+
+    backtrace_symbols_fd(arr, size, 2);
 }
 
-void setSegVHandler()
+static void stackTraceHandler(int sig)
+{
+    fprintf(stderr, "stackTraceHandler (signal=%d):\n", sig);
+    printStackTrace();
+    exit(2);                                // stop the execution immediately
+}
+
+void setHandlerSegV()
 {
     signal(SIGSEGV, stackTraceHandler);   // install our handler
 }

@@ -22,8 +22,8 @@
 
 int main(int argc, char *argv[])
 {
-    setSegVHandler();
-    setStdTerminateHandler();
+    setHandlerSegV();
+    setHandlerStdTerminate();
 
     Q_INIT_RESOURCE(main);
 

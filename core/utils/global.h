@@ -96,7 +96,7 @@ typedef int                bool_t;                          // fast Boolean type
     do {                                                        \
         printf("Assert at %s:%d - %s\n", __FILE__, __LINE__, X);\
         fflush(stdout);                                         \
-        stackTraceHandler(0xFF);                                \
+        printStackTrace();                                      \
         RAISE_ASSERT(X);                                        \
     } while (0)
 
@@ -105,7 +105,7 @@ typedef int                bool_t;                          // fast Boolean type
         printf("Assert at %s:%d - ", __FILE__, __LINE__);       \
         printf X;                                               \
         fflush(stdout);                                         \
-        stackTraceHandler(0xFF);                                \
+        printStackTrace();                                      \
         RAISE_ASSERT(#X);                                       \
     } while (0)
 
@@ -218,8 +218,7 @@ do {                  \
 #ifdef is__cplusplus
 extern "C" {
 #endif
-    void stackTraceHandler(int sig);
-    void setSegVHandler();
+    void printStackTrace();
 #ifdef is__cplusplus
 } // extern "C"
 #endif
