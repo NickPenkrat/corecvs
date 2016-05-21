@@ -53,6 +53,7 @@ public:
     virtual CapErrorCode getFormats(int *num, CameraFormat *& formats) override;
 
     static void getAllCameras(vector<std::string> &cameras);
+    virtual std::string  getDeviceSerial(int num = LEFT_FRAME);
 
     static int ueyeTrace(int res, const char *prefix = NULL);
 

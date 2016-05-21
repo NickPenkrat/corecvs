@@ -526,7 +526,7 @@ ImageCaptureInterface::CapErrorCode UEyeCaptureInterface::startCapture()
 
 ImageCaptureInterface::CapErrorCode UEyeCaptureInterface::getFormats(int *num, ImageCaptureInterface::CameraFormat *&formats)
 {
-    SYNC_PRINT(("UEyeCaptureInterface::getFormats()"));
+    SYNC_PRINT(("UEyeCaptureInterface::getFormats()\n"));
     vector<ImageCaptureInterface::CameraFormat> cameraFormats;
 
     cameraFormats.push_back(ImageCaptureInterface::CameraFormat( 3684, 4912, 21));
@@ -564,7 +564,7 @@ void UEyeCaptureInterface::getAllCameras(vector<string> &cameras)
             camList->uci[i].SerNo);
 
         std::stringstream ss;
-        ss << i << ",-1:144mhz:5fps";
+        ss << camList->uci[i].dwDeviceID << ",-1:144mhz:5fps";
         string dev = ss.str();
         cameras.push_back(dev);
 
@@ -573,10 +573,41 @@ void UEyeCaptureInterface::getAllCameras(vector<string> &cameras)
 
 }
 
+string UEyeCaptureInterface::getDeviceSerial(int num)
+{
+    SYNC_PRINT(("UEyeCaptureInterface::getDeviceSerial():called\n"));
+#if 0
+    UEYE_CAMERA_INFO_STRUCT _DEVICE_INFO deviceInfo;
+    memset(&deviceInfo, 0, sizeof(IS_DEVICE_INFO));
+    ueyeTrace(is_DeviceInfo (leftCamera.mCamera, IS_DEVICE_INFO_CMD_GET_DEVICE_INFO, &deviceInfo, sizeof(deviceInfo)), "UEyeCaptureInterface::getDeviceSerial");
+#endif
+
+    std::string toReturn = "unknown";
+
+    int camNum = 0;
+    ueyeTrace(is_GetNumberOfCameras (&camNum), "UEyeCaptureInterface::getDeviceSerial::is_GetNumberOfCameras");
+    UEYE_CAMERA_LIST *camList = (UEYE_CAMERA_LIST *)malloc(sizeof(ULONG) + camNum * sizeof(UEYE_CAMERA_INFO));
+    camList->dwCount = camNum;
+    ueyeTrace(is_GetCameraList(camList), "UEyeCaptureInterface::getDeviceSerial::is_GetNumberOfCameras");
+
+    for (int i = 0; i < camNum; i++)
+    {
+        SYNC_PRINT(("UEyeCaptureInterface::getDeviceSerial():devices <%d> <%d>\n", camList->uci[i].dwDeviceID, leftCamera.deviceID));
+        if (camList->uci[i].dwDeviceID == leftCamera.deviceID)
+        {
+            toReturn = std::string(camList->uci[i].SerNo);
+            break;
+        }
+    }
+    free(camList);
+    SYNC_PRINT(("UEyeCaptureInterface::getDeviceSerial():returning <%s>\n", toReturn.c_str()));
+    return toReturn;
+}
+
 
 void UEyeCaptureInterface::SpinThread::run()
 {
-    qDebug("New frame thread running");
+    qDebug("UEyeCaptureInterface::SpinThread(): New frame thread running");
     while (capInterface->spinRunning.tryLock()) {
 
     	//usleep(20000);
@@ -845,15 +876,7 @@ ImageCaptureInterface::CapErrorCode UEyeCaptureInterface::queryCameraParameters(
 
     ueyeTrace(is_PixelClock(leftCamera.mCamera, IS_PIXELCLOCK_CMD_GET_NUMBER, (void*)&clockSteps, sizeof(clockSteps)));
     SYNC_PRINT(("UEyeCaptureInterface::queryCameraParameters(): Clock steps: %d", clockSteps));
-
-    //if (clockSteps == 0) {
     ueyeTrace(is_PixelClock(leftCamera.mCamera, IS_PIXELCLOCK_CMD_GET_RANGE  , &clockRange  , sizeof(clockRange)));
-    //}  else {
-
-
-
-    //}
-
     ueyeTrace(is_PixelClock(leftCamera.mCamera, IS_PIXELCLOCK_CMD_GET_DEFAULT, &defaultClock, sizeof(double)));
 
     param = &(params.mCameraControls[CameraParameters::PIXEL_CLOCK]);
@@ -865,12 +888,19 @@ ImageCaptureInterface::CapErrorCode UEyeCaptureInterface::queryCameraParameters(
     param->setStep        (clockRange[2]);
 
     /* Frame rate */
+
+    double minDFps = 1.0 / 50.0;
+    double maxDFps = 1.0 / 1.0;
+    double intervalDFps = 1.0 / 50.0;
+
+    ueyeTrace(is_GetFrameTimeRange (leftCamera.mCamera, &minDFps, &maxDFps, &intervalDFps), "is_GetFrameTimeRange:");
+
     param = &(params.mCameraControls[CameraParameters::FPS]);
     *param = CaptureParameter();
     param->setActive(true);
     param->setDefaultValue(25 * FPS_SCALER);
-    param->setMinimum     (0  * FPS_SCALER);
-    param->setMaximum     (50 * FPS_SCALER);
+    param->setMinimum     ((1 / maxDFps)  * FPS_SCALER);
+    param->setMaximum     ((1 / minDFps) * FPS_SCALER);
     param->setStep        (1);
 
 

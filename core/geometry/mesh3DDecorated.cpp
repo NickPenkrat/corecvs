@@ -81,8 +81,44 @@ void Mesh3DDecorated::dumpInfo(ostream &out)
     out << " Textures  :" << textureCoords.size() << endl;
     out << " Norm Idxes:" << normalId.size() << endl;
     out << " Tex  Idxes:" << texId.size() << endl;
+}
 
+bool Mesh3DDecorated::verify( void )
+{
+    if (faces.size() != texId.size() || faces.size() != normalCoords.size())
+    {
+        SYNC_PRINT(("Wrong face/texId/normalId index\n"));
+        return false;
+    }
 
+    for (size_t i = 0; i < faces.size(); i++) {
+        for (int j = 0; j < 3; j++) {
+            if (faces[i][j] > (int)vertexes.size() ) {
+                SYNC_PRINT(("Wrong face index\n"));
+                return false;
+            }
+        }
+    }
+
+    for (size_t i = 0; i < texId.size(); i++) {
+        for (int j = 0; j < 3; j++) {
+            if (texId[i][j] > (int)textureCoords.size() ) {
+                SYNC_PRINT(("Wrong texture index\n"));
+                return false;
+            }
+        }
+    }
+
+    for (size_t i = 0; i < normalId.size(); i++) {
+        for (int j = 0; j < 3; j++) {
+            if (normalId[i][j] > (int)normalCoords.size() && normalId[i][j] != -1) {
+                SYNC_PRINT(("Wrong normal index for face %u - [%d %d %d]\n",
+                     i, normalId[i][0], normalId[i][1], normalId[i][2]));
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 } // namespace corecvs

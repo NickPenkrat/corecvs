@@ -106,35 +106,7 @@ int OBJLoader::loadOBJ(istream &input, Mesh3DDecorated &mesh)
     /* sanity checking */
     mesh.dumpInfo(cout);
 
-    if (mesh.faces.size() != mesh.texId.size() || mesh.faces.size() != mesh.normalCoords.size())
-    {
-        SYNC_PRINT(("Wrong face/texId/normalId index\n"));
-    }
-
-    for (size_t i = 0; i < mesh.faces.size(); i++) {
-        for (int j = 0; j < 3; j++) {
-            if (mesh.faces[i][j] > (int)mesh.vertexes.size() ) {
-                SYNC_PRINT(("Wrong face index\n"));
-            }
-        }
-    }
-
-    for (size_t i = 0; i < mesh.texId.size(); i++) {
-        for (int j = 0; j < 3; j++) {
-            if (mesh.texId[i][j] > (int)mesh.textureCoords.size() ) {
-                SYNC_PRINT(("Wrong texture index\n"));
-            }
-        }
-    }
-
-    for (size_t i = 0; i < mesh.normalId.size(); i++) {
-        for (int j = 0; j < 3; j++) {
-            if (mesh.normalId[i][j] > (int)mesh.normalCoords.size() && mesh.normalId[i][j] != -1) {
-                SYNC_PRINT(("Wrong normal index for face %u - [%d %d %d]\n",
-                     i, mesh.normalId[i][0], mesh.normalId[i][1], mesh.normalId[i][2]));
-            }
-        }
-    }
+    mesh.verify();
 
 
 
@@ -194,6 +166,33 @@ int OBJLoader::loadOBJSimple(istream &input, Mesh3D &mesh)
         }
 
 
+    }
+
+    return 0;
+}
+
+int OBJLoader::saveOBJSimple(ostream &out, Mesh3D &mesh)
+{
+    vector<Vector3dd>  &vertexes = mesh.vertexes;
+    vector<Vector3d32> &faces    = mesh.faces;
+    vector<Vector2d32> &edges    = mesh.edges;
+
+    for (unsigned i = 0; i < vertexes.size(); i++)
+    {
+        out << "v "
+            << vertexes[i].x() << " "
+            << vertexes[i].y() << " "
+            << vertexes[i].z() << " " << endl;
+
+    }
+
+    for (unsigned i = 0; i < faces.size(); i++)
+    {
+        out << "f "
+            << (faces[i].x() + 1) << " "
+            << (faces[i].y() + 1) << " "
+            << (faces[i].z() + 1) << " ";
+        out << std::endl;
     }
 
     return 0;
