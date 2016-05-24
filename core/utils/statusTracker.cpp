@@ -53,7 +53,7 @@ void StatusTracker::incrementCompleted()
     unlock();
 
     if (stop) {
-        throw std::exception("stopThread!");
+        throw AssertException("stopThread!");
     }
 
     writeLock();
