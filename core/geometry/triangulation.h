@@ -10,10 +10,6 @@
  * \author alexander
  */
 
-
-#include "global.h"
-
-#include <math.h>
 #include <assert.h>
 #include <limits>
 #include <list>
@@ -22,6 +18,8 @@
 #include <set>
 #include <list>
 #include <map>
+
+#include "global.h"
 
 #include "vector2d.h"
 #include "vector3d.h"
