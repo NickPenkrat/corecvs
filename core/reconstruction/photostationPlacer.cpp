@@ -424,7 +424,7 @@ bool corecvs::PhotostationPlacer::append2D()
     // 4. Return true if solution meets inlier threshold and gives enough confidence
     std::cout << "ENTERING P6P" << std::endl;
     corecvs::Affine3DQ tform;
-    double scale = 1.0;
+    //double scale = 1.0;
 
     corecvs::Vector3dd mean(0, 0, 0);
     int cnt = 0;
@@ -593,7 +593,7 @@ void corecvs::PhotostationPlacer::initialize()
                 std::swap(A, B);
             if (!allowed.count(A) || !allowed.count(B))
                 continue;
-            cntr[std::make_pair(A, B)] += second.second.size();
+            cntr[std::make_pair(A, B)] += (int)second.second.size();
             for (auto& f: second.second)
                 if (std::get<2>(f) < b2bRansacP6RPThreshold)
                     cntrGood[std::make_pair(A, B)]++;
@@ -610,7 +610,7 @@ void corecvs::PhotostationPlacer::initialize()
     std::sort(matchCount.begin(), matchCount.end(), std::greater<decltype(matchCount[0])>());
 
     corecvs::Affine3DQ tform;
-    double scale = 1.0;
+    //double scale = 1.0;
     bool initialized = false;
     for (auto& init: matchCount)
     {

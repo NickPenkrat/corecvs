@@ -33,10 +33,10 @@ void CalibrationJob::computeReconstructionError()
         }
     }
 
-    int cnt = 0.0;
+    int cnt = 0;
     for (auto& i: pointCollection)
         for (auto& j: i.second)
-            cnt += j.second.size();
+            cnt += (int)j.second.size();
 
     L_INFO << "Starting reconstruction error computation: point triangulation";
     Matrix A(cnt, 3);
@@ -55,8 +55,8 @@ void CalibrationJob::computeReconstructionError()
                 {
                     auto ps = photostation;
                     ps.setLocation(calibrationSetupLocations[std::get<0>(pt)]);
-                    mct.addCamera(ps.getRawCamera(std::get<1>(pt)).getCameraMatrix()
-                        , photostation.cameras[std::get<1>(pt)].distortion.mapBackward(std::get<2>(pt)));
+                    mct.addCamera(ps.getRawCamera((int)std::get<1>(pt)).getCameraMatrix()
+                        , photostation.cameras[(int)std::get<1>(pt)].distortion.mapBackward(std::get<2>(pt)));
                 }
                 auto diff = mct.triangulateLM(mct.triangulate()) - orig;
                 std::cout << diff << " ";

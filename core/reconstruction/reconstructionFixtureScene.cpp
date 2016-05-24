@@ -248,7 +248,7 @@ void ReconstructionFixtureScene::pruneTracks(double rmse, double maxe, double di
     int completelyPruned = 0, observationsPruned = 0, totalObservations = 0;
     for (auto& pt: trackedFeatures)
     {
-        totalObservations += pt->observations__.size();
+        totalObservations += (int)pt->observations__.size();
         if (checkTrack(pt, ~0, rmse, maxe, distanceThreshold))
         {
             trackedFeatures[id++] = pt;
@@ -783,7 +783,7 @@ void corecvs::ReconstructionFixtureScene::buildTracks(CameraFixture *psA, Camera
   //corecvs::Vector2dd &kpA = kp[0], &kpB = kp[1], &kpC = kp[2];
 
     std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> free[NPAIRS];
-    auto &freeAB = free[0];
+    //auto &freeAB = free[0];
 
     for (int i = 0; i < NPAIRS; ++i)
         free[i] = getUnusedFeatures(ps[pairIdx[i][0]], ps[pairIdx[i][1]]);
@@ -1018,8 +1018,8 @@ corecvs::ReconstructionFixtureScene::getFixtureMatchesIdx(const std::vector<Came
             CORE_ASSERT_TRUE_S(idB == wcQuery);
             CORE_ASSERT_TRUE_S(idA.u != WPP::UWILDCARD && idA.v != WPP::VWILDCARD);
             CORE_ASSERT_TRUE_S(idB.u != WPP::UWILDCARD && idB.v != WPP::VWILDCARD);
-            auto& kpsA = keyPoints[idA];
-            auto& kpsB = keyPoints[idB];
+            //auto& kpsA = keyPoints[idA];
+            //auto& kpsB = keyPoints[idB];
             for (auto& m: ref2.second)
             {
                 int kpA = std::get<0>(m);

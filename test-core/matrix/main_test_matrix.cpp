@@ -1085,7 +1085,7 @@ TEST(SparseMatrix, Submatrix)
         2.0, 5.0, 1.0, 0.0, 0.0,
         9.0, 3.0, 0.0, 0.0, 5.0
     };
-    double boo[] = { 1.0, 2.0, 3.0, 4.0, 5.0 };
+    //double boo[] = { 1.0, 2.0, 3.0, 4.0, 5.0 };
     corecvs::Matrix M(5, 5, foo);
     std::vector<int> blocks = {2, 4, 5};
     corecvs::SparseMatrix sm(M);

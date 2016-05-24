@@ -31,7 +31,7 @@ corecvs::ReconstructionFunctor::ReconstructionFunctor(corecvs::ReconstructionFix
 struct PointFunctor: corecvs::FunctionArgs
 {
     PointFunctor(corecvs::SceneFeaturePoint *pt, corecvs::ReconstructionFunctorOptimizationErrorType errType, int N)
-        : corecvs::FunctionArgs(3, pt->observations__.size() * N),
+        : corecvs::FunctionArgs(3, (int)pt->observations__.size() * N),
           pt(pt),
           errType(errType),
           N(N) {}
@@ -67,14 +67,14 @@ struct PointFunctor: corecvs::FunctionArgs
 
 void corecvs::ReconstructionFunctor::alternatingMinimization(int steps)
 {
-    int N = scene->trackedFeatures.size();
+    int N = (int)scene->trackedFeatures.size();
     int ec = getErrorComponentsPerPoint();
     corecvs::parallelable_for(0, N, [&](const corecvs::BlockedRange<int> &r)
         {
             for (int i = r.begin(); i < r.end(); ++i)
             {
                 auto& pt = *scene->trackedFeatures[i];
-                int in = 3, out = pt.observations__.size() * ec;
+                int /*in = 3,*/ out = (int)pt.observations__.size() * ec;
                 PointFunctor pf(&pt, error, ec);
                 corecvs::LevenbergMarquardt lm(steps);
                 lm.f = &pf;
