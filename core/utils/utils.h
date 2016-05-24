@@ -99,11 +99,15 @@ namespace HelperUtils
 #ifdef is__cplusplus
 extern "C" {
 #endif
-    void setHandlerStdTerminate();					// is implemented at utils.cpp
-    void setHandlerSegV();							// is implemented at util.c
+    void setStdTerminateHandler();					// is implemented at utils.cpp
+    void setSegVHandler();							// is implemented at util.c
 #ifdef is__cplusplus
 } // extern "C"
 #endif
+
+#define SET_HANDLERS()          \
+    setSegVHandler();           \
+    setStdTerminateHandler();   \
 
 
 #endif /* UTILS_H_ */
