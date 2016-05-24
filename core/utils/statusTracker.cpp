@@ -49,11 +49,13 @@ void StatusTracker::incrementCompleted()
     if (this == nullptr)
         return;
     readLock();
-        if (currentStatus.stopThread)
-        {
-            throw 0;
-        }
+        auto stop = currentStatus.stopThread;
     unlock();
+
+    if (stop) {
+        throw std::exception("stopThread!");
+    }
+
     writeLock();
         currentStatus.completedActions++;
         CORE_ASSERT_TRUE_S(currentStatus.completedActions <= currentStatus.totalActions);
@@ -127,7 +129,7 @@ bool corecvs::StatusTracker::isCanceled() const
     if (this == nullptr)
         return false;
     readLock();
-        auto flag = currentStatus.isStoped;
+        auto flag = currentStatus.stopThread;
     unlock();
     return flag;
 }
@@ -138,7 +140,7 @@ void corecvs::StatusTracker::setCompleted()
         return;
     writeLock();
         currentStatus.isCompleted = true;
-        std::cout << "Complited!!!" << std::endl;
+        std::cout << "StatusTracker::setCompleted()" << std::endl;
     unlock();
 }
 
@@ -148,8 +150,8 @@ void corecvs::StatusTracker::setFailed()
         return;
     writeLock();
         currentStatus.isFailed = true;
-        std::cout << "Failed!!!" << std::endl;
-        unlock();
+        std::cout << "StatusTracker::setFailed()" << std::endl;
+    unlock();
 }
 
 AutoTracker StatusTracker::createAutoTrackerCalculationObject()
@@ -165,17 +167,7 @@ void corecvs::StatusTracker::setStopThread()
         return;
     writeLock();
         currentStatus.stopThread = true;
-        std::cout << "Thread stop sended." << std::endl;
-    unlock();
-}
-
-void corecvs::StatusTracker::setStoped()
-{
-    if (this == nullptr)
-        return;
-    writeLock();
-        currentStatus.isStoped = true;
-        std::cout << "Thread stoped." << std::endl;
+        std::cout << "setStopThread() is called." << std::endl;
     unlock();
 }
 
