@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>IterativeReconstructionNonlinearOptimizationParamsWrapperControlWidget</class>
+ <class>IterativeReconstructionNonlinearOptimizationParamsWrapperControlWidget</class> 
  <widget class="QWidget" name="IterativeReconstructionNonlinearOptimizationParamsWrapperControlWidget">
   <property name="geometry">
    <rect>
@@ -13,13 +13,13 @@
   <property name="windowTitle">
    <string>IterativeReconstructionNonlinearOptimizationParamsWrapper</string>
   </property>
-   <layout class="QGridLayout" name="gridLayout">
-    <property name="margin">
-     <number>3</number>
-    </property>
-    <property name="spacing">
-     <number>3</number>
-    </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <property name="margin">
+    <number>3</number>
+   </property>
+   <property name="spacing">
+    <number>3</number>
+   </property>
     <item row="0" column="0">
      <widget class="QLabel" name="label_0">
        <property name="text">
@@ -43,6 +43,9 @@
     </item>
     <item row="1" column="1">
      <widget class="QComboBox" name="errorTypeComboBox">
+       <property name="toolTip">
+         <string>Functor optimizattion error type</string>
+       </property>
        <property name="currentIndex">
          <number>3</number>
        </property>
@@ -66,9 +69,6 @@
          <string>RAY_DIFF</string>
         </property>
        </item>
-       <property name="toolTip">
-         <string>Functor optimizattion error type</string>
-       </property>
      </widget>
     </item>
     <item row="2" column="0">
@@ -126,7 +126,7 @@
          <string>Excessive/non-excessive quaternion parametrization</string>
        </property>
        <property name="checked">
-           <bool>true</bool>
+           <bool>1</bool>
        </property>
      </widget>
     </item>

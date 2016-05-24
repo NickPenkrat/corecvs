@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ReconstructionFunctorOptimizationParamsControlWidget</class>
+ <class>ReconstructionFunctorOptimizationParamsControlWidget</class> 
  <widget class="QWidget" name="ReconstructionFunctorOptimizationParamsControlWidget">
   <property name="geometry">
    <rect>
@@ -13,13 +13,13 @@
   <property name="windowTitle">
    <string>ReconstructionFunctorOptimizationParams</string>
   </property>
-   <layout class="QGridLayout" name="gridLayout">
-    <property name="margin">
-     <number>3</number>
-    </property>
-    <property name="spacing">
-     <number>3</number>
-    </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <property name="margin">
+    <number>3</number>
+   </property>
+   <property name="spacing">
+    <number>3</number>
+   </property>
     <item row="0" column="0">
      <widget class="QLabel" name="label_0">
        <property name="text">
@@ -33,7 +33,7 @@
          <string>Orientations of all cameras except first</string>
        </property>
        <property name="checked">
-           <bool>true</bool>
+           <bool>1</bool>
        </property>
      </widget>
     </item>
@@ -50,7 +50,7 @@
          <string>Orientation of first camera</string>
        </property>
        <property name="checked">
-           <bool>true</bool>
+           <bool>1</bool>
        </property>
      </widget>
     </item>
@@ -66,6 +66,9 @@
        <property name="toolTip">
          <string>Translations of all cameras except first</string>
        </property>
+       <property name="checked">
+           <bool>0</bool>
+       </property>
      </widget>
     </item>
     <item row="3" column="0">
@@ -79,6 +82,9 @@
      <widget class="QCheckBox" name="degenerateTranslationsCheckBox">
        <property name="toolTip">
          <string>Translation of first camera</string>
+       </property>
+       <property name="checked">
+           <bool>0</bool>
        </property>
      </widget>
     </item>
@@ -95,7 +101,7 @@
          <string>Camera focals in multicamera</string>
        </property>
        <property name="checked">
-           <bool>true</bool>
+           <bool>1</bool>
        </property>
      </widget>
     </item>
@@ -112,7 +118,7 @@
          <string>Camera principals in multicamera</string>
        </property>
        <property name="checked">
-           <bool>true</bool>
+           <bool>1</bool>
        </property>
      </widget>
     </item>
@@ -129,7 +135,7 @@
          <string>3D points</string>
        </property>
        <property name="checked">
-           <bool>true</bool>
+           <bool>1</bool>
        </property>
      </widget>
     </item>
@@ -144,6 +150,9 @@
      <widget class="QCheckBox" name="tuneGpsCheckBox">
        <property name="toolTip">
          <string>Allow shifting of GPS-initialized cameras</string>
+       </property>
+       <property name="checked">
+           <bool>0</bool>
        </property>
      </widget>
     </item>

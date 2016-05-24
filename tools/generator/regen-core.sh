@@ -11,6 +11,11 @@ source ./helper-regen.sh
 
 qmake && make
 
+if [ $? -ne 0 ]
+then
+   exit $?
+fi
+   
 CORE_DIR="../../core"
 GEN_DIR="./Generated"
 GENERATOR_BIN="./generator"
