@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>CheckerboardDetectionParametersControlWidget</class>
+ <class>CheckerboardDetectionParametersControlWidget</class> 
  <widget class="QWidget" name="CheckerboardDetectionParametersControlWidget">
   <property name="geometry">
    <rect>
@@ -13,13 +13,13 @@
   <property name="windowTitle">
    <string>CheckerboardDetectionParameters</string>
   </property>
-   <layout class="QGridLayout" name="gridLayout">
-    <property name="margin">
-     <number>3</number>
-    </property>
-    <property name="spacing">
-     <number>3</number>
-    </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <property name="margin">
+    <number>3</number>
+   </property>
+   <property name="spacing">
+    <number>3</number>
+   </property>
     <item row="0" column="0">
      <widget class="QLabel" name="label_0">
        <property name="text">
@@ -33,7 +33,7 @@
          <string>Estimate undistorted from distorted</string>
        </property>
        <property name="checked">
-           <bool>true</bool>
+           <bool>1</bool>
        </property>
      </widget>
     </item>
@@ -49,6 +49,9 @@
        <property name="toolTip">
          <string>Use Undistortion</string>
        </property>
+       <property name="checked">
+           <bool>0</bool>
+       </property>
      </widget>
     </item>
     <item row="2" column="0">
@@ -60,6 +63,9 @@
     </item>
     <item row="2" column="1">
      <widget class="QComboBox" name="algorithmComboBox">
+       <property name="toolTip">
+         <string>Algorithm</string>
+       </property>
        <property name="currentIndex">
          <number>0</number>
        </property>
@@ -73,9 +79,6 @@
          <string>OpenCV Detector</string>
         </property>
        </item>
-       <property name="toolTip">
-         <string>Algorithm</string>
-       </property>
      </widget>
     </item>
     <item row="3" column="0">
@@ -87,6 +90,9 @@
     </item>
     <item row="3" column="1">
      <widget class="QComboBox" name="channelComboBox">
+       <property name="toolTip">
+         <string>Channel</string>
+       </property>
        <property name="currentIndex">
          <number>3</number>
        </property>
@@ -160,9 +166,6 @@
          <string>Value</string>
         </property>
        </item>
-       <property name="toolTip">
-         <string>Channel</string>
-       </property>
      </widget>
     </item>
     <item row="4" column="0">
@@ -242,7 +245,7 @@
          <string>cleanExisting</string>
        </property>
        <property name="checked">
-           <bool>true</bool>
+           <bool>1</bool>
        </property>
      </widget>
     </item>
@@ -343,7 +346,7 @@
          <string>partialBoard</string>
        </property>
        <property name="checked">
-           <bool>true</bool>
+           <bool>1</bool>
        </property>
      </widget>
     </item>
@@ -360,7 +363,7 @@
          <string>fastBoardSpeedup</string>
        </property>
        <property name="checked">
-           <bool>true</bool>
+           <bool>1</bool>
        </property>
      </widget>
     </item>
@@ -377,7 +380,7 @@
          <string>Draw SGFs on boards</string>
        </property>
        <property name="checked">
-           <bool>true</bool>
+           <bool>1</bool>
        </property>
      </widget>
     </item>
@@ -392,6 +395,9 @@
      <widget class="QCheckBox" name="skipUndistortedWithNoDistortedBoardCheckBox">
        <property name="toolTip">
          <string>Skip undistorted with no distorted board</string>
+       </property>
+       <property name="checked">
+           <bool>0</bool>
        </property>
      </widget>
     </item>
