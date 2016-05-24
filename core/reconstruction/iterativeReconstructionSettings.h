@@ -129,9 +129,9 @@ struct IterativeReconstructionNonlinearOptimizationParams
     // cool closed-form solvers it does not make sense at all
     ReconstructionFunctorOptimizationErrorType errorType = ReconstructionFunctorOptimizationErrorType::RAY_DIFF;
     // Post-append non-linear optimization iterations
-    int postAppendNonlinearIterations = 200;
+    int postAppendNonlinearIterations = 2000;
     // Final non-linear iterations
-    int finalNonLinearIterations = 2000;
+    int finalNonLinearIterations = 20000;
     // Alternating optimization on success steps
     int alternatingIterations = 20;
     // Excessive/non-excessive quaternion parametrization

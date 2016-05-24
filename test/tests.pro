@@ -24,6 +24,7 @@ SUBDIRS +=       \
     debayer             \
     qtScriptConsole     \
     softrender          \
+    stereo_generator
 
 
 with_opencv {
@@ -83,3 +84,5 @@ calibration_job_calibrate           = calibration_job_calibrate/calibration_job_
 geometry_verificator                = geometry_verificator/geometry_verificator.pro
 
 qtScriptConsole                     = qtScriptConsole/qtScriptConsole.pro
+
+stereo_generator                    = stereo_generator/stereo_generator.pro
