@@ -24,7 +24,7 @@ struct IterativeReconstructionNonlinearOptimizationParams
         ReconstructionFunctorOptimizationType::POINTS;
     // Default error type is ray difference, but 'cause of
     // cool closed-form solvers it does not make sense at all
-    ReconstructionFunctorOptimizationErrorType errorType = ReconstructionFunctorOptimizationErrorType::RAY_DIFF;
+    ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType errorType = ReconstructionFunctorOptimizationErrorType::RAY_DIFF;
     // Post-append non-linear optimization iterations
     int postAppendNonlinearIterations = 200;
     // Final non-linear iterations

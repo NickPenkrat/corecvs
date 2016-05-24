@@ -40,44 +40,44 @@ int ReconstructionFunctorOptimizationParams::staticInit()
     fields().push_back(
         new BoolField
         (
-          ReconstructionFunctorOptimizationParams::NON_DEGENERATE_ORIENTATIONS_ID,
-          offsetof(ReconstructionFunctorOptimizationParams, mNON_DEGENERATE_ORIENTATIONS),
+          ReconstructionFunctorOptimizationParams::NONDEGENERATEORIENTATIONS_ID,
+          offsetof(ReconstructionFunctorOptimizationParams, mNonDegenerateOrientations),
           true,
-          "NON_DEGENERATE_ORIENTATIONS",
-          "NON_DEGENERATE_ORIENTATIONS",
+          "nonDegenerateOrientations",
+          "nonDegenerateOrientations",
           "Orientations of all cameras except first"
         )
     );
     fields().push_back(
         new BoolField
         (
-          ReconstructionFunctorOptimizationParams::DEGENERATE_ORIENTATIONS_ID,
-          offsetof(ReconstructionFunctorOptimizationParams, mDEGENERATE_ORIENTATIONS),
+          ReconstructionFunctorOptimizationParams::DEGENERATEORIENTATIONS_ID,
+          offsetof(ReconstructionFunctorOptimizationParams, mDegenerateOrientations),
           true,
-          "DEGENERATE_ORIENTATIONS",
-          "DEGENERATE_ORIENTATIONS",
+          "degenerateOrientations",
+          "degenerateOrientations",
           "Orientation of first camera"
         )
     );
     fields().push_back(
         new BoolField
         (
-          ReconstructionFunctorOptimizationParams::NON_DEGENERATE_TRANSLATIONS_ID,
-          offsetof(ReconstructionFunctorOptimizationParams, mNON_DEGENERATE_TRANSLATIONS),
+          ReconstructionFunctorOptimizationParams::NONDEGENERATETRANSLATIONS_ID,
+          offsetof(ReconstructionFunctorOptimizationParams, mNonDegenerateTranslations),
           false,
-          "NON_DEGENERATE_TRANSLATIONS",
-          "NON_DEGENERATE_TRANSLATIONS",
+          "nonDegenerateTranslations",
+          "nonDegenerateTranslations",
           "Translations of all cameras except first"
         )
     );
     fields().push_back(
         new BoolField
         (
-          ReconstructionFunctorOptimizationParams::DEGENERATE_TRANSLATIONS_ID,
-          offsetof(ReconstructionFunctorOptimizationParams, mDEGENERATE_TRANSLATIONS),
+          ReconstructionFunctorOptimizationParams::DEGENERATETRANSLATIONS_ID,
+          offsetof(ReconstructionFunctorOptimizationParams, mDegenerateTranslations),
           false,
-          "DEGENERATE_TRANSLATIONS",
-          "DEGENERATE_TRANSLATIONS",
+          "degenerateTranslations",
+          "degenerateTranslations",
           "Translation of first camera"
         )
     );
@@ -85,10 +85,10 @@ int ReconstructionFunctorOptimizationParams::staticInit()
         new BoolField
         (
           ReconstructionFunctorOptimizationParams::FOCALS_ID,
-          offsetof(ReconstructionFunctorOptimizationParams, mFOCALS),
+          offsetof(ReconstructionFunctorOptimizationParams, mFocals),
           true,
-          "FOCALS",
-          "FOCALS",
+          "focals",
+          "focals",
           "Camera focals in multicamera"
         )
     );
@@ -96,10 +96,10 @@ int ReconstructionFunctorOptimizationParams::staticInit()
         new BoolField
         (
           ReconstructionFunctorOptimizationParams::PRINCIPALS_ID,
-          offsetof(ReconstructionFunctorOptimizationParams, mPRINCIPALS),
+          offsetof(ReconstructionFunctorOptimizationParams, mPrincipals),
           true,
-          "PRINCIPALS",
-          "PRINCIPALS",
+          "principals",
+          "principals",
           "Camera principals in multicamera"
         )
     );
@@ -107,21 +107,21 @@ int ReconstructionFunctorOptimizationParams::staticInit()
         new BoolField
         (
           ReconstructionFunctorOptimizationParams::POINTS_ID,
-          offsetof(ReconstructionFunctorOptimizationParams, mPOINTS),
-          false,
-          "POINTS",
-          "POINTS",
+          offsetof(ReconstructionFunctorOptimizationParams, mPoints),
+          true,
+          "points",
+          "points",
           "3D points"
         )
     );
     fields().push_back(
         new BoolField
         (
-          ReconstructionFunctorOptimizationParams::TUNE_GPS_ID,
-          offsetof(ReconstructionFunctorOptimizationParams, mTUNE_GPS),
+          ReconstructionFunctorOptimizationParams::TUNEGPS_ID,
+          offsetof(ReconstructionFunctorOptimizationParams, mTuneGps),
           false,
-          "TUNE_GPS",
-          "TUNE_GPS",
+          "tuneGps",
+          "tuneGps",
           "Allow shifting of GPS-initialized cameras"
         )
     );

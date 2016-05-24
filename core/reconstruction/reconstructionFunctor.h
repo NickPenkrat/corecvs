@@ -6,6 +6,8 @@
 #include "function.h"
 #include "reconstructionFixtureScene.h"
 
+#include "generated/reconstructionFunctorOptimizationErrorType.h"
+
 namespace corecvs
 {
 enum class ReconstructionFunctorOptimizationType
@@ -19,13 +21,7 @@ enum class ReconstructionFunctorOptimizationType
     POINTS = 64,                     // 3D points
     TUNE_GPS = 128                   // Allow shifting of GPS-initialized cameras
 };
-enum class ReconstructionFunctorOptimizationErrorType
-{
-    REPROJECTION,                    // Reprojection error
-    ANGULAR,                         // Angular error
-    CROSS_PRODUCT,                    // Cross product error
-    RAY_DIFF
-};
+
 
 /*
  * Parameters are stored in the following way (section is omitted depending on ReconstructionFunctorOptimizationType)
@@ -72,10 +68,10 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
         computeErrors(out, idxs);
     }
     void alternatingMinimization(int steps);
-    ReconstructionFunctor(ReconstructionFixtureScene *scene, const ReconstructionFunctorOptimizationErrorType &error, const ReconstructionFunctorOptimizationType &optimization, bool excessiveQuaternionParametrization, const double pointErrorEstimate);
+    ReconstructionFunctor(ReconstructionFixtureScene *scene, const ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType &error, const ReconstructionFunctorOptimizationType &optimization, bool excessiveQuaternionParametrization, const double pointErrorEstimate);
 
     ReconstructionFixtureScene *scene;
-    ReconstructionFunctorOptimizationErrorType error;
+    ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType error;
     ReconstructionFunctorOptimizationType optimization;
     bool excessiveQuaternionParametrization;
 

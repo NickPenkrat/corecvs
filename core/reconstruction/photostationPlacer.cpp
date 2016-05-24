@@ -17,7 +17,7 @@
 #include "statusTracker.h"
 #include "log.h"
 
-std::string toString(ReconstructionFunctorOptimizationErrorType type)
+std::string toString(ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType type)
 {
     switch(type)
     {
@@ -202,7 +202,7 @@ void corecvs::PhotostationPlacer::getErrorSummaryAll()
     getErrorSummary(ReconstructionFunctorOptimizationErrorType::RAY_DIFF);
 }
 
-void corecvs::PhotostationPlacer::getErrorSummary(ReconstructionFunctorOptimizationErrorType errorType)
+void corecvs::PhotostationPlacer::getErrorSummary(ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType errorType)
 {
     double totalsqr = 0.0;
     double totalcnt = 0.0;

@@ -39,66 +39,66 @@ class ReconstructionFunctorOptimizationParams : public BaseReflection<Reconstruc
 {
 public:
     enum FieldId {
-        NON_DEGENERATE_ORIENTATIONS_ID,
-        DEGENERATE_ORIENTATIONS_ID,
-        NON_DEGENERATE_TRANSLATIONS_ID,
-        DEGENERATE_TRANSLATIONS_ID,
+        NONDEGENERATEORIENTATIONS_ID,
+        DEGENERATEORIENTATIONS_ID,
+        NONDEGENERATETRANSLATIONS_ID,
+        DEGENERATETRANSLATIONS_ID,
         FOCALS_ID,
         PRINCIPALS_ID,
         POINTS_ID,
-        TUNE_GPS_ID,
+        TUNEGPS_ID,
         RECONSTRUCTION_FUNCTOR_OPTIMIZATION_PARAMS_FIELD_ID_NUM
     };
 
     /** Section with variables */
 
     /** 
-     * \brief NON_DEGENERATE_ORIENTATIONS 
+     * \brief nonDegenerateOrientations 
      * Orientations of all cameras except first 
      */
-    bool mNON_DEGENERATE_ORIENTATIONS;
+    bool mNonDegenerateOrientations;
 
     /** 
-     * \brief DEGENERATE_ORIENTATIONS 
+     * \brief degenerateOrientations 
      * Orientation of first camera 
      */
-    bool mDEGENERATE_ORIENTATIONS;
+    bool mDegenerateOrientations;
 
     /** 
-     * \brief NON_DEGENERATE_TRANSLATIONS 
+     * \brief nonDegenerateTranslations 
      * Translations of all cameras except first 
      */
-    bool mNON_DEGENERATE_TRANSLATIONS;
+    bool mNonDegenerateTranslations;
 
     /** 
-     * \brief DEGENERATE_TRANSLATIONS 
+     * \brief degenerateTranslations 
      * Translation of first camera 
      */
-    bool mDEGENERATE_TRANSLATIONS;
+    bool mDegenerateTranslations;
 
     /** 
-     * \brief FOCALS 
+     * \brief focals 
      * Camera focals in multicamera 
      */
-    bool mFOCALS;
+    bool mFocals;
 
     /** 
-     * \brief PRINCIPALS 
+     * \brief principals 
      * Camera principals in multicamera 
      */
-    bool mPRINCIPALS;
+    bool mPrincipals;
 
     /** 
-     * \brief POINTS 
+     * \brief points 
      * 3D points 
      */
-    bool mPOINTS;
+    bool mPoints;
 
     /** 
-     * \brief TUNE_GPS 
+     * \brief tuneGps 
      * Allow shifting of GPS-initialized cameras 
      */
-    bool mTUNE_GPS;
+    bool mTuneGps;
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
@@ -108,85 +108,85 @@ public:
     {
         return (const unsigned char *)(this) + fields()[fieldId]->offset;
     }
-    bool nON_DEGENERATE_ORIENTATIONS() const
+    bool nonDegenerateOrientations() const
     {
-        return mNON_DEGENERATE_ORIENTATIONS;
+        return mNonDegenerateOrientations;
     }
 
-    bool dEGENERATE_ORIENTATIONS() const
+    bool degenerateOrientations() const
     {
-        return mDEGENERATE_ORIENTATIONS;
+        return mDegenerateOrientations;
     }
 
-    bool nON_DEGENERATE_TRANSLATIONS() const
+    bool nonDegenerateTranslations() const
     {
-        return mNON_DEGENERATE_TRANSLATIONS;
+        return mNonDegenerateTranslations;
     }
 
-    bool dEGENERATE_TRANSLATIONS() const
+    bool degenerateTranslations() const
     {
-        return mDEGENERATE_TRANSLATIONS;
+        return mDegenerateTranslations;
     }
 
-    bool fOCALS() const
+    bool focals() const
     {
-        return mFOCALS;
+        return mFocals;
     }
 
-    bool pRINCIPALS() const
+    bool principals() const
     {
-        return mPRINCIPALS;
+        return mPrincipals;
     }
 
-    bool pOINTS() const
+    bool points() const
     {
-        return mPOINTS;
+        return mPoints;
     }
 
-    bool tUNE_GPS() const
+    bool tuneGps() const
     {
-        return mTUNE_GPS;
+        return mTuneGps;
     }
 
     /* Section with setters */
-    void setNON_DEGENERATE_ORIENTATIONS(bool nON_DEGENERATE_ORIENTATIONS)
+    void setNonDegenerateOrientations(bool nonDegenerateOrientations)
     {
-        mNON_DEGENERATE_ORIENTATIONS = nON_DEGENERATE_ORIENTATIONS;
+        mNonDegenerateOrientations = nonDegenerateOrientations;
     }
 
-    void setDEGENERATE_ORIENTATIONS(bool dEGENERATE_ORIENTATIONS)
+    void setDegenerateOrientations(bool degenerateOrientations)
     {
-        mDEGENERATE_ORIENTATIONS = dEGENERATE_ORIENTATIONS;
+        mDegenerateOrientations = degenerateOrientations;
     }
 
-    void setNON_DEGENERATE_TRANSLATIONS(bool nON_DEGENERATE_TRANSLATIONS)
+    void setNonDegenerateTranslations(bool nonDegenerateTranslations)
     {
-        mNON_DEGENERATE_TRANSLATIONS = nON_DEGENERATE_TRANSLATIONS;
+        mNonDegenerateTranslations = nonDegenerateTranslations;
     }
 
-    void setDEGENERATE_TRANSLATIONS(bool dEGENERATE_TRANSLATIONS)
+    void setDegenerateTranslations(bool degenerateTranslations)
     {
-        mDEGENERATE_TRANSLATIONS = dEGENERATE_TRANSLATIONS;
+        mDegenerateTranslations = degenerateTranslations;
     }
 
-    void setFOCALS(bool fOCALS)
+    void setFocals(bool focals)
     {
-        mFOCALS = fOCALS;
+        mFocals = focals;
     }
 
-    void setPRINCIPALS(bool pRINCIPALS)
+    void setPrincipals(bool principals)
     {
-        mPRINCIPALS = pRINCIPALS;
+        mPrincipals = principals;
     }
 
-    void setPOINTS(bool pOINTS)
+    void setPoints(bool points)
     {
-        mPOINTS = pOINTS;
+        mPoints = points;
     }
 
-    void setTUNE_GPS(bool tUNE_GPS)
+    void setTuneGps(bool tuneGps)
     {
-        mTUNE_GPS = tUNE_GPS;
+        mTuneGps = tuneGps;
     }
 
     /* Section with embedded classes */
@@ -194,14 +194,14 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(mNON_DEGENERATE_ORIENTATIONS, static_cast<const BoolField *>    (fields()[NON_DEGENERATE_ORIENTATIONS_ID]));
-        visitor.visit(mDEGENERATE_ORIENTATIONS,   static_cast<const BoolField *>    (fields()[DEGENERATE_ORIENTATIONS_ID]));
-        visitor.visit(mNON_DEGENERATE_TRANSLATIONS, static_cast<const BoolField *>    (fields()[NON_DEGENERATE_TRANSLATIONS_ID]));
-        visitor.visit(mDEGENERATE_TRANSLATIONS,   static_cast<const BoolField *>    (fields()[DEGENERATE_TRANSLATIONS_ID]));
-        visitor.visit(mFOCALS,                    static_cast<const BoolField *>    (fields()[FOCALS_ID]));
-        visitor.visit(mPRINCIPALS,                static_cast<const BoolField *>    (fields()[PRINCIPALS_ID]));
-        visitor.visit(mPOINTS,                    static_cast<const BoolField *>    (fields()[POINTS_ID]));
-        visitor.visit(mTUNE_GPS,                  static_cast<const BoolField *>    (fields()[TUNE_GPS_ID]));
+        visitor.visit(mNonDegenerateOrientations, static_cast<const BoolField *>    (fields()[NONDEGENERATEORIENTATIONS_ID]));
+        visitor.visit(mDegenerateOrientations,    static_cast<const BoolField *>    (fields()[DEGENERATEORIENTATIONS_ID]));
+        visitor.visit(mNonDegenerateTranslations, static_cast<const BoolField *>    (fields()[NONDEGENERATETRANSLATIONS_ID]));
+        visitor.visit(mDegenerateTranslations,    static_cast<const BoolField *>    (fields()[DEGENERATETRANSLATIONS_ID]));
+        visitor.visit(mFocals,                    static_cast<const BoolField *>    (fields()[FOCALS_ID]));
+        visitor.visit(mPrincipals,                static_cast<const BoolField *>    (fields()[PRINCIPALS_ID]));
+        visitor.visit(mPoints,                    static_cast<const BoolField *>    (fields()[POINTS_ID]));
+        visitor.visit(mTuneGps,                   static_cast<const BoolField *>    (fields()[TUNEGPS_ID]));
     }
 
     ReconstructionFunctorOptimizationParams()
@@ -211,24 +211,24 @@ template<class VisitorType>
     }
 
     ReconstructionFunctorOptimizationParams(
-          bool nON_DEGENERATE_ORIENTATIONS
-        , bool dEGENERATE_ORIENTATIONS
-        , bool nON_DEGENERATE_TRANSLATIONS
-        , bool dEGENERATE_TRANSLATIONS
-        , bool fOCALS
-        , bool pRINCIPALS
-        , bool pOINTS
-        , bool tUNE_GPS
+          bool nonDegenerateOrientations
+        , bool degenerateOrientations
+        , bool nonDegenerateTranslations
+        , bool degenerateTranslations
+        , bool focals
+        , bool principals
+        , bool points
+        , bool tuneGps
     )
     {
-        mNON_DEGENERATE_ORIENTATIONS = nON_DEGENERATE_ORIENTATIONS;
-        mDEGENERATE_ORIENTATIONS = dEGENERATE_ORIENTATIONS;
-        mNON_DEGENERATE_TRANSLATIONS = nON_DEGENERATE_TRANSLATIONS;
-        mDEGENERATE_TRANSLATIONS = dEGENERATE_TRANSLATIONS;
-        mFOCALS = fOCALS;
-        mPRINCIPALS = pRINCIPALS;
-        mPOINTS = pOINTS;
-        mTUNE_GPS = tUNE_GPS;
+        mNonDegenerateOrientations = nonDegenerateOrientations;
+        mDegenerateOrientations = degenerateOrientations;
+        mNonDegenerateTranslations = nonDegenerateTranslations;
+        mDegenerateTranslations = degenerateTranslations;
+        mFocals = focals;
+        mPrincipals = principals;
+        mPoints = points;
+        mTuneGps = tuneGps;
     }
 
     friend ostream& operator << (ostream &out, ReconstructionFunctorOptimizationParams &toSave)

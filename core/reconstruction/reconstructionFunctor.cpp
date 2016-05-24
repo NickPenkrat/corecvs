@@ -2,7 +2,7 @@
 
 #include <set>
 
-corecvs::ReconstructionFunctor::ReconstructionFunctor(corecvs::ReconstructionFixtureScene *scene, const corecvs::ReconstructionFunctorOptimizationErrorType &error, const corecvs::ReconstructionFunctorOptimizationType &optimization, bool excessiveQuaternionParametrization, const double pointErrorEstimate) : corecvs::SparseFunctionArgs(), scene(scene), error(error), optimization(optimization), excessiveQuaternionParametrization(excessiveQuaternionParametrization), scalerPoints(pointErrorEstimate)
+corecvs::ReconstructionFunctor::ReconstructionFunctor(corecvs::ReconstructionFixtureScene *scene, const ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType &error, const corecvs::ReconstructionFunctorOptimizationType &optimization, bool excessiveQuaternionParametrization, const double pointErrorEstimate) : corecvs::SparseFunctionArgs(), scene(scene), error(error), optimization(optimization), excessiveQuaternionParametrization(excessiveQuaternionParametrization), scalerPoints(pointErrorEstimate)
 {
     /*
      * Compute inputs (these are ball-park estimate, need to
@@ -30,7 +30,7 @@ corecvs::ReconstructionFunctor::ReconstructionFunctor(corecvs::ReconstructionFix
 
 struct PointFunctor: corecvs::FunctionArgs
 {
-    PointFunctor(corecvs::SceneFeaturePoint *pt, corecvs::ReconstructionFunctorOptimizationErrorType errType, int N)
+    PointFunctor(corecvs::SceneFeaturePoint *pt, ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType errType, int N)
         : corecvs::FunctionArgs(3, pt->observations__.size() * N),
           pt(pt),
           errType(errType),
@@ -40,7 +40,7 @@ struct PointFunctor: corecvs::FunctionArgs
        pt->reprojectedPosition = corecvs::Vector3dd(in[0], in[1], in[2]);
        int argout = 0;
 #define EC(E, EE, EEE) \
-        case corecvs::ReconstructionFunctorOptimizationErrorType::E: \
+        case ReconstructionFunctorOptimizationErrorType::E: \
             for (auto& o: pt->observations__) \
             { \
                 auto  e = o.second.cameraFixture->EE(o.second.featurePoint->reprojectedPosition, o.second.observation, o.second.camera); \
@@ -61,7 +61,7 @@ struct PointFunctor: corecvs::FunctionArgs
     }
 #undef EC
     corecvs::SceneFeaturePoint* pt;
-    corecvs::ReconstructionFunctorOptimizationErrorType errType;
+    ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType errType;
     int N;
 };
 

@@ -20,14 +20,14 @@ ReconstructionFunctorOptimizationParamsControlWidget::ReconstructionFunctorOptim
 {
     mUi->setupUi(this);
 
-    QObject::connect(mUi->nON_DEGENERATE_ORIENTATIONSCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->dEGENERATE_ORIENTATIONSCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->nON_DEGENERATE_TRANSLATIONSCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->dEGENERATE_TRANSLATIONSCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->fOCALSCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->pRINCIPALSCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->pOINTSCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->tUNE_GPSCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->nonDegenerateOrientationsCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->degenerateOrientationsCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->nonDegenerateTranslationsCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->degenerateTranslationsCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->focalsCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->principalsCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->pointsCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->tuneGpsCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
 }
 
 ReconstructionFunctorOptimizationParamsControlWidget::~ReconstructionFunctorOptimizationParamsControlWidget()
@@ -55,14 +55,14 @@ void ReconstructionFunctorOptimizationParamsControlWidget::saveParamWidget(Widge
 void ReconstructionFunctorOptimizationParamsControlWidget::getParameters(ReconstructionFunctorOptimizationParams& params) const
 {
 
-    params.setNON_DEGENERATE_ORIENTATIONS(mUi->nON_DEGENERATE_ORIENTATIONSCheckBox->isChecked());
-    params.setDEGENERATE_ORIENTATIONS(mUi->dEGENERATE_ORIENTATIONSCheckBox->isChecked());
-    params.setNON_DEGENERATE_TRANSLATIONS(mUi->nON_DEGENERATE_TRANSLATIONSCheckBox->isChecked());
-    params.setDEGENERATE_TRANSLATIONS(mUi->dEGENERATE_TRANSLATIONSCheckBox->isChecked());
-    params.setFOCALS           (mUi->fOCALSCheckBox->isChecked());
-    params.setPRINCIPALS       (mUi->pRINCIPALSCheckBox->isChecked());
-    params.setPOINTS           (mUi->pOINTSCheckBox->isChecked());
-    params.setTUNE_GPS         (mUi->tUNE_GPSCheckBox->isChecked());
+    params.setNonDegenerateOrientations(mUi->nonDegenerateOrientationsCheckBox->isChecked());
+    params.setDegenerateOrientations(mUi->degenerateOrientationsCheckBox->isChecked());
+    params.setNonDegenerateTranslations(mUi->nonDegenerateTranslationsCheckBox->isChecked());
+    params.setDegenerateTranslations(mUi->degenerateTranslationsCheckBox->isChecked());
+    params.setFocals           (mUi->focalsCheckBox->isChecked());
+    params.setPrincipals       (mUi->principalsCheckBox->isChecked());
+    params.setPoints           (mUi->pointsCheckBox->isChecked());
+    params.setTuneGps          (mUi->tuneGpsCheckBox->isChecked());
 
 }
 
@@ -75,14 +75,14 @@ ReconstructionFunctorOptimizationParams *ReconstructionFunctorOptimizationParams
 
 
     ReconstructionFunctorOptimizationParams *result = new ReconstructionFunctorOptimizationParams(
-          mUi->nON_DEGENERATE_ORIENTATIONSCheckBox->isChecked()
-        , mUi->dEGENERATE_ORIENTATIONSCheckBox->isChecked()
-        , mUi->nON_DEGENERATE_TRANSLATIONSCheckBox->isChecked()
-        , mUi->dEGENERATE_TRANSLATIONSCheckBox->isChecked()
-        , mUi->fOCALSCheckBox->isChecked()
-        , mUi->pRINCIPALSCheckBox->isChecked()
-        , mUi->pOINTSCheckBox->isChecked()
-        , mUi->tUNE_GPSCheckBox->isChecked()
+          mUi->nonDegenerateOrientationsCheckBox->isChecked()
+        , mUi->degenerateOrientationsCheckBox->isChecked()
+        , mUi->nonDegenerateTranslationsCheckBox->isChecked()
+        , mUi->degenerateTranslationsCheckBox->isChecked()
+        , mUi->focalsCheckBox->isChecked()
+        , mUi->principalsCheckBox->isChecked()
+        , mUi->pointsCheckBox->isChecked()
+        , mUi->tuneGpsCheckBox->isChecked()
     );
     return result;
 }
@@ -91,14 +91,14 @@ void ReconstructionFunctorOptimizationParamsControlWidget::setParameters(const R
 {
     // Block signals to send them all at once
     bool wasBlocked = blockSignals(true);
-    mUi->nON_DEGENERATE_ORIENTATIONSCheckBox->setChecked(input.nON_DEGENERATE_ORIENTATIONS());
-    mUi->dEGENERATE_ORIENTATIONSCheckBox->setChecked(input.dEGENERATE_ORIENTATIONS());
-    mUi->nON_DEGENERATE_TRANSLATIONSCheckBox->setChecked(input.nON_DEGENERATE_TRANSLATIONS());
-    mUi->dEGENERATE_TRANSLATIONSCheckBox->setChecked(input.dEGENERATE_TRANSLATIONS());
-    mUi->fOCALSCheckBox->setChecked(input.fOCALS());
-    mUi->pRINCIPALSCheckBox->setChecked(input.pRINCIPALS());
-    mUi->pOINTSCheckBox->setChecked(input.pOINTS());
-    mUi->tUNE_GPSCheckBox->setChecked(input.tUNE_GPS());
+    mUi->nonDegenerateOrientationsCheckBox->setChecked(input.nonDegenerateOrientations());
+    mUi->degenerateOrientationsCheckBox->setChecked(input.degenerateOrientations());
+    mUi->nonDegenerateTranslationsCheckBox->setChecked(input.nonDegenerateTranslations());
+    mUi->degenerateTranslationsCheckBox->setChecked(input.degenerateTranslations());
+    mUi->focalsCheckBox->setChecked(input.focals());
+    mUi->principalsCheckBox->setChecked(input.principals());
+    mUi->pointsCheckBox->setChecked(input.points());
+    mUi->tuneGpsCheckBox->setChecked(input.tuneGps());
     blockSignals(wasBlocked);
     emit paramsChanged();
 }

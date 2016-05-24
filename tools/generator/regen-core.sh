@@ -234,24 +234,13 @@ full_ui_classes+=" bitcodeBoardParamsBase"
 
 
 # Reconstruction
-# old data
-full_ui_classes+=" photostationPlacerParamsBase"
-
-enums+=" photostationPlacerOptimizationErrorType"
-
-full_ui_classes+=" photostationPlacerEssentialFilterParameters"
-full_ui_classes+=" photostationPlacerFeatureSelectionParameters"
-full_ui_classes+=" photostationAppendParameters"
-full_ui_classes+=" photostationNonlinearOptimizationParameters"
-
-# new data
 
 enums+=" reconstructionFunctorOptimizationErrorType"
 
 full_ui_classes+=" iterativeReconstructionInitializationParams"
 full_ui_classes+=" iterativeReconstructionFeatureSelectionParams"
 full_ui_classes+=" iterativeReconstructionAppendParams"
-full_ui_classes+=" iterativeReconstructionNonlinearOptimizationParams"
+full_ui_classes+=" iterativeReconstructionNonlinearOptimizationParamsWrapper"
 
 full_ui_classes+=" featureDetectionParams"
 full_ui_classes+=" reconstructionFunctorOptimizationParams"

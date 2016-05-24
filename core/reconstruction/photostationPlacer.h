@@ -41,7 +41,7 @@ public:
     void appendTracks(const std::vector<int> &inlierIds, CameraFixture* fixture, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &possibleTracks);
     int getInputNum();
     int getOutputNum();
-    void getErrorSummary(ReconstructionFunctorOptimizationErrorType errorType);
+    void getErrorSummary(ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType errorType);
     void getErrorSummaryAll();
 
     // Tries to select 2 fixtures and align them
