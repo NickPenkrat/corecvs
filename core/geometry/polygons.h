@@ -28,7 +28,8 @@ template<typename PointType>
 class GenericTriangle
 {
 public:
-    PointType p[3];
+    static const int SIZE = 3;
+    PointType p[SIZE];
 
     PointType &p1() {return p[0];}
     PointType &p2() {return p[1];}
@@ -56,6 +57,8 @@ public:
     {
         return Plane3d::NormalFromPoints(p1(), p2(), p3());
     }
+
+
 
     bool intersectWithP(Ray3d &ray, double &resT)
     {
@@ -112,6 +115,13 @@ public:
     }
 
 
+    void transform(const Matrix33 &transform)
+    {
+        for (int i = 0; i < SIZE; i++)
+        {
+            p[i] = transform * p[i];
+        }
+    }
 
 };
 

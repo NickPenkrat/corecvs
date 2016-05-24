@@ -1,15 +1,20 @@
 #include "photostationCaptureDialog.h"
-#include "g12Image.h"
-#include "qtHelper.h"
-#include "log.h"
-#include "focusEstimator.h"
 
 #include <QMessageBox>
 #include <QFileDialog>
 
+#include "log.h"
+#include "focusEstimator.h"
+#include "preciseTimer.h"
+
+#include "g12Image.h"
+#include "qtHelper.h"
+
 #include "ui_photostationCaptureDialog.h"
+#include "imageCaptureInterface.h"
 
 /* Temporary solution. This need to be hidden inside image capture interface */
+#if 0
 #ifdef Q_OS_WIN
 # ifdef WITH_DIRECTSHOW
 #  include "directShow.h"
@@ -17,8 +22,12 @@
 #  define CAPTURE_INTERFACE DirectShowCaptureInterface
 # endif
 #else
-# include "V4L2Capture.h"
-# define CAPTURE_INTERFACE V4L2CaptureInterface
+//# include "V4L2Capture.h"
+//# define CAPTURE_INTERFACE V4L2CaptureInterface
+
+# include "uEyeCapture.h"
+# define CAPTURE_INTERFACE UEyeCaptureInterface
+#endif
 #endif
 
 const QString PhotostationCaptureDialog::DEFAULT_FILENAME = "capture.ini";
@@ -130,7 +139,7 @@ void PhotostationCaptureDialog::refresh()
     vector<string> cameras;
     vector<string> serials;
 
-    CAPTURE_INTERFACE::getAllCameras(cameras);
+    ImageCaptureInterface::getAllCameras(cameras);
 
     for (unsigned i = 0; i < cameras.size(); ++i)
     {
@@ -358,12 +367,12 @@ void PhotostationCaptureDialog::cameraSettings(int /*lineid*/)
 
 void PhotostationCaptureDialog::newPreviewFrame()
 {
-    //qDebug() << "PhotostationCaptureDialog::newPreviewFrame():Trace";
+    // qDebug() << "PhotostationCaptureDialog::newPreviewFrame():Called";
 
     PreciseTimer time = PreciseTimer::currentTime();
     /* This protects the events form flooding input queue */
     static bool flushEvents = false;
-    if (flushEvents) {
+    if (flushEvents) {        
         return;
     }
     flushEvents = true;
@@ -371,11 +380,12 @@ void PhotostationCaptureDialog::newPreviewFrame()
     QCoreApplication::processEvents();
     flushEvents = false;
 
-    //qDebug() << "PhotostationCaptureDialog::newPreviewFrame():Flood protection took:" << (time.usecsToNow() / 1000.0) << "ms";
+    // qDebug() << "PhotostationCaptureDialog::newPreviewFrame():Flood protection took:" << (time.usecsToNow() / 1000.0) << "ms";
     time = PreciseTimer::currentTime();
 
-    /** By the time we process notification, mPreviewInterface could be already destroyed
-     */
+    /**
+     * By the time we process notification, mPreviewInterface could be already destroyed
+     **/
     if (mPreviewInterface == NULL)
         return;
 
@@ -385,11 +395,14 @@ void PhotostationCaptureDialog::newPreviewFrame()
     time = PreciseTimer::currentTime();
 
     if (pair.rgbBufferLeft != NULL)
-    {
-        ui->previewWidget->setImage(QSharedPointer<QImage>(toQImage(pair.rgbBufferLeft)));
+    {        
+        QImage *preview = toQImage(pair.rgbBufferLeft);
+        // qDebug("PhotostationCaptureDialog::newPreviewFrame():RGB image of [%d x %d]", preview->width(), preview->height()) ;
+        ui->previewWidget->setImage(QSharedPointer<QImage>(preview));
     }
     else
     {
+        //qDebug("PhotostationCaptureDialog::newPreviewFrame(): NULL frame received");
         L_DEBUG_P("NULL frame received");
     }
 
@@ -590,7 +603,7 @@ ImageCaptureInterface* PhotostationCaptureDialog::createCameraCapture(const stri
 
     // TODO: use compressed YUYV, MJPG,... !
 
-    ImageCaptureInterface *camera = new CAPTURE_INTERFACE(devname, h, w, fps, isRgb);
+    ImageCaptureInterface *camera = ImageCaptureInterface::fabric(devname, h, w, fps, isRgb);
 
     ImageCaptureInterface::CapErrorCode result = camera->initCapture();
     ImageCaptureInterface::CameraFormat actualFormat;

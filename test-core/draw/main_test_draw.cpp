@@ -9,6 +9,7 @@
  */
 
 #include <iostream>
+#include <random>
 #include "gtest/gtest.h"
 
 #include "global.h"
@@ -224,6 +225,88 @@ TEST(Draw, testSpanDrawTriangle)
     }
 
     BMPLoader().save("triangledraw.bmp", buffer);
+    delete_safe(buffer);
+
+}
+
+TEST(Draw, testSpanDrawTriangle1)
+{
+    int h = 2000;
+    int w = 2000;
+    int sample = 40;
+
+    std::mt19937 rng;
+    std::uniform_real_distribution<double> runif(2, sample - 2);
+
+    RGB24Buffer *buffer  = new RGB24Buffer(h, w, RGBColor::Black());
+    RGB24Buffer *bufferA = new RGB24Buffer(h, w, RGBColor::Black());
+
+
+    vector<Triangle2dd> t;
+    for (int i = 0; i < (h / sample); i++)
+        for (int j = 0; j < (w / sample); j++)
+        {
+            Triangle2dd tri(Vector2dd(runif(rng), runif(rng)), Vector2dd(runif(rng), runif(rng)), Vector2dd(runif(rng), runif(rng)));
+            tri.transform(Matrix33::ShiftProj(j * sample, i * sample));
+            t.push_back(tri);
+        }
+
+    for (int i = 0; i < (h / sample); i++)
+        for (int j = 0; j < (w / sample); j++)
+        {
+            int offset = i  * (w / sample) + j;
+            AbstractPainter<RGB24Buffer> p(buffer);
+            p.drawFormat(j * sample, i * sample, RGBColor::Blue(), 2, "%d", offset);
+            AbstractPainter<RGB24Buffer> pA(bufferA);
+            pA.drawFormat(j * sample, i * sample, RGBColor::Blue(), 2, "%d", offset);
+
+            Triangle2dd &tri = t[offset];
+
+            {
+                TriangleSpanIterator it(tri);
+                while (it.hasValue())
+                {
+                    LineSpanInt span = it.getSpan();
+                    buffer->drawHLine(span.x1, span.y(), span.x2, RGBColor::Green());
+
+                    if (offset == 2)
+                        cout << span << endl;
+
+
+                    it.step();
+                }
+            }
+            /**/
+            {
+                AttributedTriangle triA = AttributedTriangle(tri.p1(), tri.p2(), tri.p3());
+                AttributedTriangleSpanIterator itA(triA);
+                while (itA.hasValue())
+                {
+                    AttributedLineSpan span = itA.getAttrSpan();
+                    bufferA->drawHLine(span.x1, span.y(), span.x2, RGBColor::Green());
+                    itA.step();
+                }
+            }
+
+
+            /* Mark the corners */
+            for (int k = 0; k < tri.SIZE; k++) {
+                buffer ->element(fround(tri.p[k].y()), fround(tri.p[k].x())) =  RGBColor::Red();
+                bufferA->element(fround(tri.p[k].y()), fround(tri.p[k].x())) =  RGBColor::Red();
+
+            }
+
+
+
+    }
+    /**/
+
+
+
+
+    BMPLoader().save("trianglemany.bmp", buffer);
+    BMPLoader().save("triangleAmany.bmp", buffer);
+    delete_safe(bufferA);
     delete_safe(buffer);
 
 }

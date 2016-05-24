@@ -884,8 +884,10 @@ void ChessBoardCornerDetector::computeScores()
             continue;
 
         // ok, here we also re-orient'em
-        if (c.v2.x() < 0.0) c.v2 = -c.v2;
-        if ((c.v1 & c.v2.rightNormal()) < 0.0) c.v1 = -c.v1;
+        if (c.v2.x() < 0.0)
+            c.v2 = -c.v2;
+        if ((c.v1 & c.v2.rightNormal()) < 0.0)
+            c.v1 = -c.v1;
 
         corners[idx++] = c;
     }
@@ -898,7 +900,11 @@ void ChessBoardCornerDetector::detectCorners(DpImage &image, std::vector<Oriente
 
     corners.clear();
     img = image;
-    scaleImage();
+
+    double lowPercentile  = normalizePercentile() / 100.0;
+    double highPercentile = 1.0 - lowPercentile;
+
+    scaleImage(lowPercentile, highPercentile);
 
     if (stats != NULL) stats->resetInterval("Scaling");
 

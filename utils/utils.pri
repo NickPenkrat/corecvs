@@ -128,6 +128,7 @@ with_ueye {
             !build_pass:message(Unable to find uEye at <$$UEYE_PATH>)
         }
     } else:exists("/usr/lib/libueye_api.so") {
+        !build_pass:message(Using uEye at </usr/lib/libueye_api.so>)
         DEFINES += WITH_UEYE
         LIBS    += -lueye_api
     } else {

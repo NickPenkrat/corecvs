@@ -309,7 +309,6 @@ ImageCaptureInterface::CapErrorCode SyncCamerasCaptureInterface::queryCameraPara
     param->setMaximum     (0x3F);
     param->setStep        (1);
     param->setIsMenu(true);
-    //TODO: What daes it mean?
     //param->setAutoSupported(true);
 
     /* Global analog multiplier */
@@ -320,7 +319,6 @@ ImageCaptureInterface::CapErrorCode SyncCamerasCaptureInterface::queryCameraPara
     param->setMaximum     (0x01);
     param->setStep        (1);
     param->setIsMenu(true);
-    //TODO: What daes it mean?
     //param->setAutoSupported(true);
 
     /* Global digital gain*/
@@ -331,10 +329,7 @@ ImageCaptureInterface::CapErrorCode SyncCamerasCaptureInterface::queryCameraPara
     param->setMaximum     (0x78);
     param->setStep        (1);
     param->setIsMenu(true);
-    //TODO: What daes it mean?
     //param->setAutoSupported(true);
-
-
 
 
     /* Green gain */
@@ -345,7 +340,6 @@ ImageCaptureInterface::CapErrorCode SyncCamerasCaptureInterface::queryCameraPara
     param->setMaximum     (0x3F);
     param->setStep        (1);
     param->setIsMenu(true);
-    //TODO: What daes it mean?
     //param->setAutoSupported(true);
 
     /* Green analog multiplier */
@@ -356,7 +350,6 @@ ImageCaptureInterface::CapErrorCode SyncCamerasCaptureInterface::queryCameraPara
     param->setMaximum     (0x01);
     param->setStep        (1);
     param->setIsMenu(true);
-    //TODO: What daes it mean?
     //param->setAutoSupported(true);
 
     /* Green digital gain*/
@@ -367,7 +360,6 @@ ImageCaptureInterface::CapErrorCode SyncCamerasCaptureInterface::queryCameraPara
     param->setMaximum     (0x78);
     param->setStep        (1);
     param->setIsMenu(true);
-    //TODO: What daes it mean?
     //param->setAutoSupported(true);
 
 
@@ -381,7 +373,6 @@ ImageCaptureInterface::CapErrorCode SyncCamerasCaptureInterface::queryCameraPara
     param->setMaximum     (0x3F);
     param->setStep        (1);
     param->setIsMenu(true);
-    //TODO: What daes it mean?
     //param->setAutoSupported(true);
 
     /* Blue analog multiplier */
@@ -392,7 +383,6 @@ ImageCaptureInterface::CapErrorCode SyncCamerasCaptureInterface::queryCameraPara
     param->setMaximum     (0x01);
     param->setStep        (1);
     param->setIsMenu(true);
-    //TODO: What daes it mean?
     //param->setAutoSupported(true);
 
     /* Blue digital gain */
@@ -403,7 +393,6 @@ ImageCaptureInterface::CapErrorCode SyncCamerasCaptureInterface::queryCameraPara
     param->setMaximum     (0x78);
     param->setStep        (1);
     param->setIsMenu(true);
-    //TODO: What daes it mean?
     //param->setAutoSupported(true);
 
 
@@ -417,7 +406,6 @@ ImageCaptureInterface::CapErrorCode SyncCamerasCaptureInterface::queryCameraPara
     param->setMaximum     (0x3F);
     param->setStep        (1);
     param->setIsMenu(true);
-    //TODO: What daes it mean?
     //param->setAutoSupported(true);
 
     /* Red analog gain */
@@ -428,7 +416,6 @@ ImageCaptureInterface::CapErrorCode SyncCamerasCaptureInterface::queryCameraPara
     param->setMaximum     (0x01);
     param->setStep        (1);
     param->setIsMenu(true);
-    //TODO: What daes it mean?
     //param->setAutoSupported(true);
 
     /* Red digital gain */
@@ -439,7 +426,6 @@ ImageCaptureInterface::CapErrorCode SyncCamerasCaptureInterface::queryCameraPara
     param->setMaximum     (0x78);
     param->setStep        (1);
     param->setIsMenu(true);
-    //TODO: What daes it mean?
     //param->setAutoSupported(true);
 
 
@@ -451,7 +437,6 @@ ImageCaptureInterface::CapErrorCode SyncCamerasCaptureInterface::queryCameraPara
     param->setMaximum     (0x3F);
     param->setStep        (1);
     param->setIsMenu(true);
-    //TODO: What daes it mean?
     //param->setAutoSupported(true);
 
     /* Green2 analog miltiplier */
@@ -462,7 +447,6 @@ ImageCaptureInterface::CapErrorCode SyncCamerasCaptureInterface::queryCameraPara
     param->setMaximum     (0x01);
     param->setStep        (1);
     param->setIsMenu(true);
-    //TODO: What daes it mean?
     //param->setAutoSupported(true);
 
     /* Green2 digital gain */
@@ -473,7 +457,6 @@ ImageCaptureInterface::CapErrorCode SyncCamerasCaptureInterface::queryCameraPara
     param->setMaximum     (0x78);
     param->setStep        (1);
     param->setIsMenu(true);
-    //TODO: What daes it mean?
     //param->setAutoSupported(true);
 
     /* SHUTTER WIDTH UPPER */
@@ -484,7 +467,6 @@ ImageCaptureInterface::CapErrorCode SyncCamerasCaptureInterface::queryCameraPara
     param->setMaximum     (0xFFFF);
     param->setStep        (1);
     param->setIsMenu(true);
-    //TODO: What daes it mean?
     //param->setAutoSupported(true);
 
     /* SHUTTER WIDTH LOWER */
@@ -495,7 +477,6 @@ ImageCaptureInterface::CapErrorCode SyncCamerasCaptureInterface::queryCameraPara
     param->setMaximum     (0xFFFF);
     param->setStep        (1);
     param->setIsMenu(true);
-    //TODO: What daes it mean?
     //param->setAutoSupported(true);
 
     /* SHUTTER Delay */
@@ -506,7 +487,6 @@ ImageCaptureInterface::CapErrorCode SyncCamerasCaptureInterface::queryCameraPara
     param->setMaximum     (0xFFFF);
     param->setStep        (1);
     param->setIsMenu(true);
-    //TODO: What daes it mean?
     //param->setAutoSupported(true);
 
 

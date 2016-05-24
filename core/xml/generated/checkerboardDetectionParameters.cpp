@@ -51,12 +51,12 @@ int CheckerboardDetectionParameters::staticInit()
     fields().push_back(
         new BoolField
         (
-          CheckerboardDetectionParameters::USEUNDISTORTION_ID,
+          CheckerboardDetectionParameters::USE_UNDISTORTION_ID,
           offsetof(CheckerboardDetectionParameters, mUseUndistortion),
           false,
-          "useUndistortion",
-          "useUndistortion",
-          "useUndistortion"
+          "Use Undistortion",
+          "Use Undistortion",
+          "Use Undistortion"
         )
     );
     fields().push_back(
@@ -103,7 +103,10 @@ int CheckerboardDetectionParameters::staticInit()
           0.05,
           "cellSizeHor",
           "cellSizeHor",
-          "cellSizeHor"
+          "cellSizeHor",
+          true,
+         0,
+         1
         )
     );
     fields().push_back(
@@ -114,7 +117,10 @@ int CheckerboardDetectionParameters::staticInit()
           0.05,
           "cellSizeVert",
           "cellSizeVert",
-          "cellSizeVert"
+          "cellSizeVert",
+          true,
+         0,
+         1
         )
     );
     fields().push_back(
