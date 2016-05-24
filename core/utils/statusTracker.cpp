@@ -51,7 +51,7 @@ void StatusTracker::incrementCompleted()
     readLock();
         if (currentStatus.stopThread)
         {
-            throw;
+            throw 0;
         }
     unlock();
     writeLock();
