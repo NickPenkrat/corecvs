@@ -20,7 +20,6 @@ SOURCES += \
     reconstruction/pnpGbActionMatrix.cpp \
     reconstruction/p34pGbActionMatrix.cpp \
     reconstruction/relativeNonCentralP6PSolver.cpp \
-    reconstruction/setupTemplate1NCP6P.cpp \
     reconstruction/multiplyTemplateNCP6P.cpp \
     reconstruction/extractLastBasisNCP6P.cpp \
     reconstruction/setupActionMatrixNCP6P.cpp \
@@ -34,4 +33,24 @@ SOURCES += \
     reconstruction/sceneAligner.cpp \
     reconstruction/reconstructionFunctor.cpp \
     reconstruction/relativeNonCentralO3PSolver.cpp \
-    reconstruction/setupTemplateNCO3P.cpp
+
+
+SOURCES_NOOPTIMIZE = \
+        reconstruction/setupTemplateNCO3P.cpp \
+        reconstruction/setupTemplate1NCP6P.cpp \
+
+with_fastbuild {
+
+    nooptimize.name = nooptimize
+    nooptimize.input = SOURCES_NOOPTIMIZE
+    nooptimize.dependency_type = TYPE_C
+    nooptimize.variable_out = OBJECTS
+    nooptimize.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_IN_BASE}$${first(QMAKE_EXT_OBJ)}
+    nooptimize.commands = $${QMAKE_CXX} $(CXXFLAGS) -O0 $(INCPATH) -c ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT} # Note the -O0
+    QMAKE_EXTRA_COMPILERS += nooptimize
+
+
+} else {
+
+    SOURCES += $$SOURCES_NOOPTIMIZE
+}
