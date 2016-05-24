@@ -33,8 +33,9 @@ std::string changeExtension(const std::string &imgName, const std::string &desir
     return res;
 }
 
-FeatureMatchingPipeline::FeatureMatchingPipeline(const std::vector<std::string> &filenames)
+FeatureMatchingPipeline::FeatureMatchingPipeline(const std::vector<std::string> &filenames, StatusTracker* state)
 {
+    this->state = state;
     images.reserve(filenames.size());
     for (size_t i = 0; i < filenames.size(); ++i)
     {
@@ -53,8 +54,11 @@ FeatureMatchingPipeline::~FeatureMatchingPipeline()
 
 void FeatureMatchingPipeline::run()
 {
+    state->reset("Detecting", pipeline.size());
+
     for (size_t id = 0; id < pipeline.size(); ++id)
     {
+        state->incrementStarted();
         auto sParams = saveParams[id];
         auto lParams = loadParams[id];
         auto ps = pipeline[id];
@@ -71,6 +75,7 @@ void FeatureMatchingPipeline::run()
         {
             ps->saveResults(this, sParams.second);
         }
+        state->incrementCompleted();
     }
 }
 

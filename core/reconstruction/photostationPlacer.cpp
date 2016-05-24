@@ -296,6 +296,7 @@ void corecvs::PhotostationPlacer::fit(const ReconstructionFunctorOptimizationTyp
     lm.normalisation = &orientNorm;
     lm.maxIterations = num;
     lm.trace = false;
+    lm.state = scene->ProcessState;
     std::vector<double> input(orient.getInputNum());
     std::vector<double> out(orient.getOutputNum());
     if (orient.getOutputNum() <=  orient.getInputNum())
@@ -612,11 +613,14 @@ void corecvs::PhotostationPlacer::initialize()
     corecvs::Affine3DQ tform;
     //double scale = 1.0;
     bool initialized = false;
+    scene->ProcessState->reset("Initialize", matchCount.size());
+
     for (auto& init: matchCount)
     {
-        CameraFixture* A, *B;
-        A = std::get<1>(init);
-        B = std::get<2>(init);
+        auto boo = scene->ProcessState->createAutoTrackerCalculationObject();
+
+        CameraFixture* A = std::get<1>(init);
+        CameraFixture* B = std::get<2>(init);
 
         std::cout << "Selecting " << A->name << " and " << B->name << " for initialization" << std::endl;
         auto psA = A, psB = B;
@@ -652,8 +656,7 @@ void corecvs::PhotostationPlacer::initialize()
         psA->location.rotor = corecvs::Quaternion(0, 0, 0, 1);
         psB->location.rotor = corecvs::Quaternion(0, 0, 0, 1);
         RelativeNonCentralRansacSolverSettings s(maxP6RPIterations(), inlierP6RPThreshold(), gammaP6RP());
-        RelativeNonCentralRansacSolver solver(
-                psB, rm, mm, s);
+        RelativeNonCentralRansacSolver solver(psB, rm, mm, s);
         if (scene->initializationData[psA].initializationType == FixtureInitializationType::GPS && scene->initializationData[psB].initializationType == FixtureInitializationType::GPS)
         {
             solver.restrictions = RelativeNonCentralRansacSolverSettings::Restrictions::SCALE;
@@ -753,16 +756,10 @@ void corecvs::PhotostationPlacer::postAppend()
 void corecvs::PhotostationPlacer::fullRun()
 {
     // 0. Detect features
-    scene->ProcessState->reset("Detecting", 1);
-    scene->ProcessState->incrementStarted();
     scene->detectAllFeatures(featureDetectionParams());
-    scene->ProcessState->incrementCompleted();
     // 1. Select multicams with most matches
     // 3. Create twopointcloud
-    scene->ProcessState->reset("Initialize", 1);
-    scene->ProcessState->incrementStarted();
     initialize();
-    scene->ProcessState->incrementCompleted();
     /*
      * 4. Append pss iteratively
      *       a) update all P3Ps
@@ -776,10 +773,12 @@ void corecvs::PhotostationPlacer::fullRun()
      *          be adressend in future (when we add non-iterative reconstruction)
      */
     scene->state = ReconstructionState::APPENDABLE;
-    scene->ProcessState->reset("Initialize", scene->placingQueue.size());
+    scene->ProcessState->reset("PAINTING", scene->placingQueue.size());
+
     while (scene->placingQueue.size())
     {
-        scene->ProcessState->incrementStarted();
+        auto boo = scene->ProcessState->createAutoTrackerCalculationObject();
+
         std::cout << "PAINTING" << std::endl;
         paintTracksOnImages(true);
         std::cout << "PAINTED" << std::endl;
@@ -792,23 +791,15 @@ void corecvs::PhotostationPlacer::fullRun()
         for (auto& cf: scene->placedFixtures)
             std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ scene->placedFixtures[0]->location.rotor.conjugated()) << std::endl;
         scene->printTrackStats();
-        scene->ProcessState->incrementCompleted();
     }
-    scene->pruneSmallTracks();
-    scene->ProcessState->reset("Fit 1", 1);
-    scene->ProcessState->incrementStarted();
     fit(optimizationParams, finalNonLinearIterations / 2);
-    scene->ProcessState->incrementCompleted();
 
-    scene->ProcessState->reset("Prunging", 1);
+    scene->ProcessState->reset("Pruning", 1);
     scene->ProcessState->incrementStarted();
     scene->pruneTracks(inlierThreshold() * rmsePruningScaler() / 2.0, inlierThreshold() * maxPruningScaler() / 2.0, distanceLimit());
     scene->ProcessState->incrementCompleted();
 
-    scene->ProcessState->reset("Fit 2", 1);
-    scene->ProcessState->incrementStarted();
     fit(optimizationParams, finalNonLinearIterations / 2);
-    scene->ProcessState->incrementCompleted();
 }
 
 /*

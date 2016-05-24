@@ -17,14 +17,22 @@ struct Status
     size_t      completedActions, totalActions, startedActions, completedGlobalActions, totalGlobalActions, startedGlobalActions;
     bool        isCompleted;
     bool        isFailed;
-    bool        isStoped;
     bool        stopThread;
 
-    Status() :
-        currentAction("NONE"), completedActions(0), totalActions(0), startedActions(0),
+    Status() : currentAction("NONE"), completedActions(0), totalActions(0), startedActions(0),
         completedGlobalActions(0), totalGlobalActions(0), startedGlobalActions(0),
-        isCompleted(false), isFailed(false), isStoped(false), stopThread(false)
+      isCompleted(false), isFailed(false), stopThread(false)
     {}
+};
+
+class StatusTracker;
+
+struct AutoTracker
+{
+    AutoTracker(StatusTracker* st);
+    ~AutoTracker();
+
+    StatusTracker* st;
 };
 
 class StatusTracker
@@ -37,8 +45,9 @@ public:
     void    setCompleted();
     void    setFailed();
 
+    AutoTracker createAutoTrackerCalculationObject();
+
     void    setStopThread();
-    void    setStoped();
 
     bool    isActionCompleted(const std::string &action) const;
 
@@ -48,6 +57,7 @@ public:
     /// \return Returns whether the setStopThread is called
     ///
     bool    isCanceled() const;
+
     bool    isFailed() const;
 
     Status  getStatus() const;

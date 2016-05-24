@@ -8,6 +8,7 @@
 #include "imageKeyPoints.h"
 #include "imageMatches.h"   // RawMatches
 #include "matchingPlan.h"   // MatchPlan
+#include "statusTracker.h"
 
 #ifdef WITH_TBB
 #include <tbb/tbb.h>        // tbb::spin_mutex
@@ -138,7 +139,7 @@ private:
 class FeatureMatchingPipeline
 {
 public:
-	FeatureMatchingPipeline(const std::vector<std::string> &filenames);
+    FeatureMatchingPipeline(const std::vector<std::string> &filenames, StatusTracker* state);
 	~FeatureMatchingPipeline();
 
 	void run();
@@ -172,4 +173,6 @@ private:
 	std::vector<std::pair<bool, std::string> >  saveParams;
 	std::vector<std::pair<bool, std::string> >  loadParams;
 	FeatureMatchingPipeline(const FeatureMatchingPipeline&);
+
+    StatusTracker*                               state = nullptr;
 };

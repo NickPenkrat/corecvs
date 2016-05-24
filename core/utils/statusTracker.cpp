@@ -2,8 +2,17 @@
 
 #include "statusTracker.h"
 
-
 namespace corecvs {
+
+AutoTracker::AutoTracker(StatusTracker* st) : st(st)
+{
+    st->incrementStarted();
+}
+
+AutoTracker::~AutoTracker()
+{
+    st->incrementCompleted();
+}
 
 void StatusTracker::readLock() const
 {
@@ -44,7 +53,7 @@ void StatusTracker::incrementCompleted()
     unlock();
 
     if (toStop) {
-        throw;
+        throw AssertException("stopThread!");
     }
 
     writeLock();
@@ -120,7 +129,7 @@ bool corecvs::StatusTracker::isCanceled() const
     if (this == nullptr)
         return false;
     readLock();
-        bool flag = currentStatus.isStoped;
+        bool flag = currentStatus.stopThread;
     unlock();
     return flag;
 }
@@ -131,7 +140,7 @@ void corecvs::StatusTracker::setCompleted()
         return;
     writeLock();
         currentStatus.isCompleted = true;
-        std::cout << "Completed!!!" << std::endl;
+        std::cout << "StatusTracker::setCompleted()" << std::endl;
     unlock();
 }
 
@@ -141,8 +150,15 @@ void corecvs::StatusTracker::setFailed()
         return;
     writeLock();
         currentStatus.isFailed = true;
-        std::cout << "Failed!!!" << std::endl;
+        std::cout << "StatusTracker::setFailed()" << std::endl;
     unlock();
+}
+
+AutoTracker StatusTracker::createAutoTrackerCalculationObject()
+{
+    if (this == nullptr)
+        return 0;
+    return AutoTracker(this);
 }
 
 void corecvs::StatusTracker::setStopThread()
@@ -151,17 +167,7 @@ void corecvs::StatusTracker::setStopThread()
         return;
     writeLock();
         currentStatus.stopThread = true;
-        std::cout << "Thread stop sended." << std::endl;
-    unlock();
-}
-
-void corecvs::StatusTracker::setStoped()
-{
-    if (this == nullptr)
-        return;
-    writeLock();
-        currentStatus.isStoped = true;
-        std::cout << "Thread stoped." << std::endl;
+        std::cout << "setStopThread() is called." << std::endl;
     unlock();
 }
 
@@ -169,6 +175,7 @@ corecvs::Status corecvs::StatusTracker::getStatus() const
 {
     if (this == nullptr)
         return Status();
+
     readLock();
         auto status = currentStatus;
     unlock();
