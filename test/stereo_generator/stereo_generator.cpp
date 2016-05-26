@@ -8,10 +8,13 @@
 #include <algorithm>
 #include <type_traits>
 
+#include "qtFileLoader.h"
 #include "jsonSetter.h"
 #include "jsonGetter.h"
 #include "abstractPainter.h"
 #include "fixtureScene.h"
+#include "lmDistortionSolver.h"
+#include "displacementBuffer.h"
 
 #ifdef WITH_TBB
 #include <tbb/tbb.h>
@@ -57,6 +60,22 @@ std::tuple<corecvs::Matrix33, corecvs::Matrix33, corecvs::Matrix33, corecvs::Vec
 	std::cout << "F-F3: " << (F - F3).frobeniusNorm() << std::endl;
 	std::cout << camR.extrinsics.position << std::endl;
 
+
+	// 3. Now we rotate all the world till [t,0,0] and dir of first camera are in y=0
+	auto d = camL.rayFromPixel(camL.intrinsics.size/2.0).a.normalised();
+	d /= std::sqrt(d[1] * d[1] + d[2] * d[2]);
+	corecvs::Matrix33 RD(1.0,  0.0,  0.0,
+                         0.0, d[2], d[1],
+			             0.0,-d[1], d[2]);
+	auto QD = corecvs::Quaternion::FromMatrix(RD);
+	camL.extrinsics.orientation = camL.extrinsics.orientation ^ QD.conjugated();
+	camR.extrinsics.orientation = camR.extrinsics.orientation ^ QD.conjugated();
+	auto F4 = camL.fundamentalTo(camR);
+	F4 /= F4.a(2, 2);
+	std::cout << "F-F4: " << (F - F4).frobeniusNorm() << std::endl;
+			            
+
+
 	// 3. Now all we have to do -- is to combine this stuff into rectifying homographies
 	//    and point transformation.
 	std::tuple<corecvs::Matrix33, corecvs::Matrix33, corecvs::Matrix33, corecvs::Vector3dd, double> res;
@@ -74,22 +93,41 @@ std::tuple<corecvs::Matrix33, corecvs::Matrix33, corecvs::Matrix33, corecvs::Vec
 	return res;
 }
 
-void createRectified(corecvs::CameraFixture *fl, corecvs::FixtureCamera *cl, corecvs::CameraFixture *fr, corecvs::FixtureCamera *cr, const corecvs::Matrix33 &Kn, const corecvs::Vector2dd &size)
+void createRectified(corecvs::CameraFixture *fl, corecvs::FixtureCamera *cL, corecvs::CameraFixture *fr, corecvs::FixtureCamera *cR, const corecvs::Matrix33 &Kn, const corecvs::Vector2dd &size)
 {
-	std::cout << "Trying to rectify " << fl->name << cl->nameId << " and " << fr->name << cr->nameId << std::endl;
-	auto camL = fl->getWorldCamera(cl),
-	     camR = fr->getWorldCamera(cr);
-	auto rt = getRectifyingTransform(camL, camR, Kn);
-	auto dl = corecvs::RadialCorrection(camL->distortion).getUndistortionTransformation(camL->intrinsics.size, camL->intrinsics.undistortedSize, 0.25, false);	
-	auto dr = corecvs::RadialCorrection(camL->distortion).getUndistortionTransformation(camL->intrinsics.size, camL->intrinsics.undistortedSize, 0.25, false);
+	std::cout << "Trying to rectify " << fl->name << cL->nameId << " and " << fr->name << cR->nameId << std::endl;
+	auto cl = fl->getWorldCamera(cL),
+	     cr = fr->getWorldCamera(cR);
+	auto rt = getRectifyingTransform(cl, cr, Kn);
+	auto dl = corecvs::RadialCorrection(cl.distortion).getUndistortionTransformation(cl.intrinsics.size, cl.intrinsics.distortedSize, 0.25, false);	
+	auto dr = corecvs::RadialCorrection(cr.distortion).getUndistortionTransformation(cr.intrinsics.size, cr.intrinsics.distortedSize, 0.25, false);
 
 	std::stringstream ssL, ssR;
-	ssL << prefix << fl->name << cl->nameId << postfix;
+	ssL << prefix << fl->name << cl.nameId << postfix;
+	ssR << prefix << fr->name << cr.nameId << postfix;
 
 
 	std::unique_ptr<corecvs::RGB24Buffer> imgL(QTRGB24Loader().load(ssL.str())),
-	                                      imgR(QTRGB24Loader().load(ssL.str()));
-	
+	                                      imgR(QTRGB24Loader().load(ssR.str()));
+	std::cout << imgL->w << "x" << imgL->h << std::endl;
+	std::cout << imgR->w << "x" << imgR->h << std::endl;
+	std::unique_ptr<corecvs::RGB24Buffer> uL(imgL->doReverseDeformationBlTyped<corecvs::DisplacementBuffer>(&dl, cl.intrinsics.size[1], cl.intrinsics.size[0])),
+	                                      uR(imgR->doReverseDeformationBlTyped<corecvs::DisplacementBuffer>(&dr, cr.intrinsics.size[1], cr.intrinsics.size[0]));
+	corecvs::DisplacementBuffer pl(&std::get<0>(rt), size[1], size[0]),
+                                pr(&std::get<1>(rt), size[1], size[0]);
+	std::unique_ptr<corecvs::RGB24Buffer> iL(uL->doReverseDeformationBlTyped<corecvs::DisplacementBuffer>(&dl, cl.intrinsics.size[1], cl.intrinsics.size[0])),
+	                                      iR(uR->doReverseDeformationBlTyped<corecvs::DisplacementBuffer>(&dr, cr.intrinsics.size[1], cr.intrinsics.size[0]));
+
+    std::stringstream ssLr, ssRr;
+    ssLr << fl->name << cl.nameId << fr->name << cr.nameId << "_rect_L.jpg";
+    ssRr << fl->name << cl.nameId << fr->name << cr.nameId << "_rect_R.jpg";
+    QTFileLoader().save(ssLr.str(), iL.get(), 100);
+    QTFileLoader().save(ssRr.str(), iR.get(), 100);
+	std::cout << ssLr.str() << ssRr.str() << std::endl;
+	std::cout << iL->w << "x" << iL->h << std::endl;
+	std::cout << iR->w << "x" << iR->h << std::endl;
+	std::cout << std::get<0>(rt) << std::get<1>(rt) << std::endl << std::endl;
+
 }
 
 
