@@ -565,7 +565,7 @@ void UEyeCaptureInterface::getAllCameras(vector<string> &cameras)
             camList->uci[i].SerNo);
 
         std::stringstream ss;
-        ss << camList->uci[i].dwDeviceID << ",-1:144mhz:5fps";
+        ss << camList->uci[i].dwDeviceID << ",-1:400mhz:19fps";
         string dev = ss.str();
         cameras.push_back(dev);
 
@@ -1026,11 +1026,11 @@ UEyeCaptureInterface::CapErrorCode UEyeCaptureInterface::setCaptureProperty(int 
             case 1:
                 enable = value;
                 ueyeTrace(is_SetAutoParameter(leftCamera.mCamera, IS_SET_ENABLE_AUTO_SHUTTER, &enable, 0));
-                break;
+                return SUCCESS;
             case 2:
                 enable = 1.0;
                 ueyeTrace(is_SetAutoParameter(leftCamera.mCamera, IS_SET_AUTO_SHUTTER_MAX, &enable, 0));
-                break;
+                return SUCCESS;
             }
             return SUCCESS;
         }
@@ -1038,6 +1038,7 @@ UEyeCaptureInterface::CapErrorCode UEyeCaptureInterface::setCaptureProperty(int 
         {
             double enable = value;
             ueyeTrace(is_SetAutoParameter(leftCamera.mCamera, IS_SET_ENABLE_AUTO_GAIN, &enable, 0));
+            return SUCCESS;
         }
         default:
         {
@@ -1074,8 +1075,10 @@ ImageCaptureInterface::CapErrorCode UEyeCaptureInterface::getCaptureProperty(int
 
             ueyeTrace(is_SetAutoParameter(leftCamera.mCamera, IS_GET_ENABLE_AUTO_SHUTTER, &autoExp, 0));
             ueyeTrace(is_SetAutoParameter(leftCamera.mCamera, IS_GET_AUTO_SHUTTER_MAX, &maxExp, 0));
+            printf("ImageCaptureInterface::CapErrorCode UEyeCaptureInterface::getCaptureProperty(): %lf %lf\n", autoExp, maxExp);
             if (maxExp != 0) {
-                *value = 2; return SUCCESS;
+                *value = 2;
+                return SUCCESS;
             }
             *value =  (autoExp != 0.0) ? 1 : 0;
             return SUCCESS;
