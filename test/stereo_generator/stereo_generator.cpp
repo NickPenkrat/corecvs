@@ -87,8 +87,13 @@ std::tuple<corecvs::Matrix33, corecvs::Matrix33, corecvs::Matrix33, corecvs::Vec
 	// X = Rl^tR^tX2+Cl
 	std::get<3>(res) = Tl;
 	std::get<2>(res) = (R1 ^ Q).toMatrix();
-	std::get<1>(res) = (newK * camR.extrinsics.orientation.conjugated().toMatrix() * camR.intrinsics.getKMatrix33()).inv();
-	std::get<0>(res) = (newK * camL.extrinsics.orientation.conjugated().toMatrix() * camL.intrinsics.getKMatrix33()).inv();
+	std::get<1>(res) = (newK * camR.extrinsics.orientation.conjugated().toMatrix() * camR.intrinsics.getKMatrix33().inv());
+	std::get<0>(res) = (newK * camL.extrinsics.orientation.conjugated().toMatrix() * camL.intrinsics.getKMatrix33().inv());
+
+	auto ff =  std::get<0>(res).inv().transposed()*F*std::get<1>(res).inv();
+	double maxv = 0.0;
+	for (int i = 0; i < 9; ++i) maxv = std::max(maxv, ff.a(i % 3, i / 3));
+	std::cout << ff / maxv << std::endl;
 
 	return res;
 }
@@ -96,6 +101,11 @@ std::tuple<corecvs::Matrix33, corecvs::Matrix33, corecvs::Matrix33, corecvs::Vec
 void createRectified(corecvs::CameraFixture *fl, corecvs::FixtureCamera *cL, corecvs::CameraFixture *fr, corecvs::FixtureCamera *cR, const corecvs::Matrix33 &Kn, const corecvs::Vector2dd &size)
 {
 	std::cout << "Trying to rectify " << fl->name << cL->nameId << " and " << fr->name << cR->nameId << std::endl;
+	if (std::acos(fl->rayFromPixel(cL, size/2.0).a.normalised() & fr->rayFromPixel(cR, size/2.0).a.normalised()) * 180.0 / M_PI > 15.0)
+	{
+		std::cout << "Too big angle diff" << std::endl;
+		return;
+	}
 	auto cl = fl->getWorldCamera(cL),
 	     cr = fr->getWorldCamera(cR);
 	auto rt = getRectifyingTransform(cl, cr, Kn);
@@ -115,8 +125,8 @@ void createRectified(corecvs::CameraFixture *fl, corecvs::FixtureCamera *cL, cor
 	                                      uR(imgR->doReverseDeformationBlTyped<corecvs::DisplacementBuffer>(&dr, cr.intrinsics.size[1], cr.intrinsics.size[0]));
 	corecvs::DisplacementBuffer pl(&std::get<0>(rt), size[1], size[0]),
                                 pr(&std::get<1>(rt), size[1], size[0]);
-	std::unique_ptr<corecvs::RGB24Buffer> iL(uL->doReverseDeformationBlTyped<corecvs::DisplacementBuffer>(&dl, cl.intrinsics.size[1], cl.intrinsics.size[0])),
-	                                      iR(uR->doReverseDeformationBlTyped<corecvs::DisplacementBuffer>(&dr, cr.intrinsics.size[1], cr.intrinsics.size[0]));
+	std::unique_ptr<corecvs::RGB24Buffer> iL(uL->doReverseDeformationBlTyped<corecvs::DisplacementBuffer>(&pl, cl.intrinsics.size[1], cl.intrinsics.size[0])),
+	                                      iR(uR->doReverseDeformationBlTyped<corecvs::DisplacementBuffer>(&pr, cr.intrinsics.size[1], cr.intrinsics.size[0]));
 
     std::stringstream ssLr, ssRr;
     ssLr << fl->name << cl.nameId << fr->name << cr.nameId << "_rect_L.jpg";
