@@ -29,7 +29,8 @@ public:
         COLUMN_CAM_ID,
         COLUMN_USE,
         COLUMN_PREVIEW,
-        COLUMN_SETTINGS
+        COLUMN_SETTINGS,
+        COLUMN_SAVE_SETTINGS
     };
 
     const static QString DEFAULT_FILENAME;
@@ -47,7 +48,11 @@ public slots:
     void outputDir();
 
     void tableClick(int lineid, int colid);
+
     void previewRequest(int lineid);
+    void previewStop();
+    bool previewRunning();
+
     void cameraSettings(int lineid);
 
     void newPreviewFrame();
@@ -66,15 +71,29 @@ protected:
 private:
     bool                     mCamsScanned = false;
     bool                     mIsCalibrationMode = false;    // autodetected flag that we are in the calibration mode
+
+
     ImageCaptureInterface   *mPreviewInterface = NULL;
+    int                      mPreviewTableLine = -1;
+
     CapSettingsDialog       *mCapSettingsDialog = NULL;
     GraphPlotDialog          mFocusDialog;
     RotaryTableControlWidget mRotaryDialog;
+
+    struct CameraInfo  {
+        int listNumber = 0;
+        std::string systemId; /**< line you need to open the camera with capture interface*/
+        std::string serialId; /**< name that allows to id the physical camera */
+        std::string paramsStoreId; /** < name that is used to store the parametes in config file */
+    };
+
+    vector<CameraInfo>       mCameraInfos;
 
     /**
      * This relates to capture process
      **/
     struct CameraDescriptor {
+        CameraInfo             info;
         int                    camId = -1;
         int                    toSkip = 0;
         ImageCaptureInterface *camInterface = NULL;
