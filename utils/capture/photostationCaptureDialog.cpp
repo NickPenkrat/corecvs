@@ -316,11 +316,12 @@ PhotostationCaptureDialog::~PhotostationCaptureDialog()
         CORE_ASSERT_TRUE_S(mCaptureInterfaces[i].camInterface == NULL);
         CORE_ASSERT_TRUE_S(mCaptureInterfaces[i].result == NULL);
     }
+
 }
 
 void PhotostationCaptureDialog::setNamer(AbstractImageNamer *namer)
 {
-    mNamer = namer;
+
 }
 
 void PhotostationCaptureDialog::setManipulator(AbstractManipulatorInterface *manipulator)
@@ -892,8 +893,9 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
         QMessageBox::warning(this, "Error saving following files:", failedSaves.join(" "));
     }
 
-    if (mRuningManipulator == NULL)
+    if (!mRuningManipulator)
     {
+        SYNC_PRINT(("PhotostationCaptureDialog::finalizeCapture(_): mRunnungManipulator=%s\n", mRuningManipulator ? "true" : "false"));
         ui->capturePushButton       ->setEnabled(true);
         ui->captureAdvancePushButton->setEnabled(true);
         ui->manipulatorCaptureButton->setEnabled(true);

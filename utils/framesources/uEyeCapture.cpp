@@ -74,6 +74,7 @@ UEyeCaptureInterface::UEyeCaptureInterface(string _devname, int h, int w, int fp
 
 int UEyeCaptureInterface::setConfigurationString(string _devname, bool isRgb)
 {
+    interfaceName = _devname;
     printf("#################################################   \n");
     printf("Hi, Stranger. I will help you with the uEye cameras.\n");
     printf("Remember, everything is in the eye of the beholder. \n");
@@ -572,6 +573,12 @@ void UEyeCaptureInterface::getAllCameras(vector<string> &cameras)
     free(camList);
 
 }
+
+QString UEyeCaptureInterface::getInterfaceName()
+{
+    return QString("ueye:") + QString(interfaceName.c_str());
+}
+
 
 string UEyeCaptureInterface::getDeviceSerial(int num)
 {

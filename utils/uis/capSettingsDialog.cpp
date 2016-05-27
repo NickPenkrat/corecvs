@@ -162,17 +162,19 @@ void CapSettingsDialog::loadFromQSettings (const QString &fileName, const QStrin
 
 }
 
-void CapSettingsDialog::saveToQSettings   (const QString &fileName, const QString &_root)
+void CapSettingsDialog::saveToQSettings (const QString &fileName, const QString &_root)
 {
     qDebug() << QString("CapSettingsDialog::saveToQSettings(\"%1\", \"%2\"): called").arg(fileName, _root);
     if (mCaptureInterface == NULL)
     {
+        qDebug() << "CapSettingsDialog::saveToQSettings(): mCaptureInterface is null";
         return;
     }
 
     QString interfaceName = mCaptureInterface->getInterfaceName();
     if (interfaceName.isEmpty())
     {
+        qDebug() << "CapSettingsDialog::saveToQSettings(): interface name is empty";
         return;
     }
 
