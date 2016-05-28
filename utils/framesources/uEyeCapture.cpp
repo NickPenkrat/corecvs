@@ -1081,7 +1081,7 @@ UEyeCaptureInterface::CapErrorCode UEyeCaptureInterface::setCaptureProperty(int 
         }
         default:
         {
-            printf("Warning: Set request for unknown parameter %s (%d)\n", CameraParameters::getName((CameraParameters::CameraControls) id), id);
+            printf("UEYE: Warning: Set request for unknown parameter %s (%d)\n", CameraParameters::getName((CameraParameters::CameraControls) id), id);
             return ImageCaptureInterface::FAILURE;
         }
     }
@@ -1175,7 +1175,7 @@ ImageCaptureInterface::CapErrorCode UEyeCaptureInterface::getCaptureProperty(int
 
        default:
        {
-           printf("Set request for unknown parameter %s(%d)\n", CameraParameters::getName((CameraParameters::CameraControls) id), id);
+           printf("UEYE: Get request for unknown parameter %s(%d)\n", CameraParameters::getName((CameraParameters::CameraControls) id), id);
            return ImageCaptureInterface::FAILURE;
        }
     }

@@ -321,7 +321,7 @@ PhotostationCaptureDialog::~PhotostationCaptureDialog()
 
 void PhotostationCaptureDialog::setNamer(AbstractImageNamer *namer)
 {
-
+    mNamer = namer;
 }
 
 void PhotostationCaptureDialog::setManipulator(AbstractManipulatorInterface *manipulator)
@@ -403,7 +403,7 @@ void PhotostationCaptureDialog::previewStop()
 
          if (checkBox1->isChecked())
          {
-             mCapSettingsDialog->saveToQSettings(DEFAULT_FILENAME, QString::fromStdString(mCameraInfos[mPreviewTableLine].paramsStoreId) + "_settings");
+             mCapSettingsDialog->saveToQSettings(DEFAULT_FILENAME, QString::fromStdString(mCameraInfos[mPreviewTableLine].paramsStoreId) + "_settings", false);
          }
     }
 
@@ -436,7 +436,7 @@ void PhotostationCaptureDialog::cameraSettings(int lineid)
         mCapSettingsDialog->clearDialog();
         mCapSettingsDialog->setCaptureInterface(mPreviewInterface);
         if (shouldRestore) {
-            mCapSettingsDialog->loadFromQSettings(DEFAULT_FILENAME, QString::fromStdString(mCameraInfos[mPreviewTableLine].paramsStoreId) + "_settings");
+            mCapSettingsDialog->loadFromQSettings(DEFAULT_FILENAME, QString::fromStdString(mCameraInfos[mPreviewTableLine].paramsStoreId) + "_settings", false);
         }
         mCapSettingsDialog->show();
     }
@@ -602,8 +602,9 @@ void PhotostationCaptureDialog::initateNewFrame()
 
              mCapSettingsDialog->clearDialog();
              mCapSettingsDialog->setCaptureInterface(mCaptureInterfaces[i].camInterface);
+             qDebug("PhotostationCaptureDialog::initateNewFrame(): %s should restore = %d", mCaptureInterfaces[i].info.serialId.c_str(), shouldRestore);
              if (shouldRestore) {
-                 mCapSettingsDialog->loadFromQSettings(DEFAULT_FILENAME, QString::fromStdString(mCaptureInterfaces[i].info.paramsStoreId) + "_settings");
+                 mCapSettingsDialog->loadFromQSettings(DEFAULT_FILENAME, QString::fromStdString(mCaptureInterfaces[i].info.paramsStoreId) + "_settings", false);
              }
 
 
@@ -676,7 +677,8 @@ void PhotostationCaptureDialog::capture(bool shouldAdvance, int positionShift)
     }
 
     if (!mCaptureInterfaces.empty()) {
-        mCaptureInterfaces[0].camInterface->startCapture();
+        initateNewFrame();
+        // mCaptureInterfaces[0].camInterface->startCapture();
     }
     else {
         finalizeCapture(false);
