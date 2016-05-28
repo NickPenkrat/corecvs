@@ -28,7 +28,7 @@ void setHandlerSegV() {}
 
 #include "global.h"
 
-#if 0
+#if 0 //defined(__GNUC__) && !defined(WIN32)
 void prettyTraceHandler(int sig)
 {
     fprintf(stderr, "Error: signal %d:\n", sig);
@@ -46,16 +46,18 @@ void prettyTraceHandler(int sig)
     char** frameNames = backtrace_symbols(frameArray, frameNum);
     char funcname[255];
 
-    for (int i = 1; i < frameNum; i++)
+    int i;
+    for (i = 1; i < frameNum; i++)
     {
         char *beginName = 0;
         char *begin = 0;
         char *end = 0;
 
-        for (char *p = frameName[i]; *p != 0; p++)
+        char *p;
+        for (p = frameNames[i]; *p != 0; p++)
         {
             if (*p == '(')
-                begin_name = p;
+                beginName = p;
             else if (*p == '+')
                 begin = p;
             else if (*p == ')' && begin) {

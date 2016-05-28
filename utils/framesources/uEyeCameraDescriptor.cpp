@@ -288,9 +288,9 @@ int UEyeCameraDescriptor::searchDefImageFormats(int suppportMask)
 }
 
 
-int UEyeCameraDescriptor::init(int deviceID, bool binning, bool globalShutter, int pixelClock, double fps, bool isRgb)
+int UEyeCameraDescriptor::init(int deviceID, int binning, bool globalShutter, int pixelClock, double fps, bool isRgb)
 {
-    qDebug("Entering: init(deviceID=%d)", deviceID);
+    qDebug("Entering: init(deviceID=%d, %d)", deviceID, binning);
     if (deviceID == -1) {
         SYNC_PRINT(("Not initializing camera\n"));
         return IS_NO_SUCCESS;
@@ -329,10 +329,16 @@ int UEyeCameraDescriptor::init(int deviceID, bool binning, bool globalShutter, i
             qDebug("  Color mode is set");
         }
 
-        if (binning) {
+        if (binning == 2) {
             qDebug("   Setting 2x2  binning...");
             is_SetBinning (cam, IS_BINNING_2X_VERTICAL | IS_BINNING_2X_HORIZONTAL);
         }
+
+        if (binning == 4) {
+            qDebug("   Setting 4x4  binning...");
+            is_SetBinning (cam, IS_BINNING_4X_VERTICAL | IS_BINNING_4X_HORIZONTAL);
+        }
+
 
         /* Shutter block */
         unsigned shutter;
@@ -402,8 +408,17 @@ int UEyeCameraDescriptor::init(int deviceID, bool binning, bool globalShutter, i
 /** This functions fixes the difference in windows and linux uEye API*/
 int UEyeCameraDescriptor::waitUEyeFrameEvent(int timeout)
 {
+//    SYNC_PRINT(("UEyeCameraDescriptor::waitUEyeFrameEvent() for: %d\n", mCamera ));
 #ifdef Q_OS_LINUX
-    return is_WaitEvent (mCamera, IS_SET_EVENT_FRAME, timeout);
+    int result = is_WaitEvent (mCamera, IS_SET_EVENT_FRAME, timeout);
+    if (result == IS_TIMED_OUT) {
+        SYNC_PRINT(("UEyeCameraDescriptor::waitUEyeFrameEvent() is_WaitEvent timeouted\n"));
+    } else {
+        if (result != IS_SUCCESS) {
+            SYNC_PRINT(("UEyeCameraDescriptor::waitUEyeFrameEvent() is_WaitEvent failed\n"));
+        }
+    }
+    return result;
 #endif
 #ifdef Q_OS_WIN
     DWORD dwRet = WaitForSingleObject(mWinEvent, timeout);

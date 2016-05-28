@@ -72,7 +72,7 @@ AbstractOutputData* RecorderThread::processNewData()
 {
     Statistics stats;
 
-    qDebug("RecorderThread::processNewData(): called");
+//    qDebug("RecorderThread::processNewData(): called");
 
 #if 0
     stats.setTime(ViFlowStatisticsDescriptor::IDLE_TIME, mIdleTimer.usecsToNow());
