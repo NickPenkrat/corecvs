@@ -631,16 +631,24 @@ void ParallelTrackPainter::operator() (const corecvs::BlockedRange<int> &r) cons
             auto nameNew = ss.str();
             corecvs::RGB24Buffer src = BufferReaderProvider::readRgb(name);
 
+            if (src.data == NULL)
+            {
+                std::cout << "ParallelTrackPainter:: invalid image " << name << std::endl;
+                continue;
+            }
+
             AbstractPainter<RGB24Buffer> painter(&src);
             for (auto& tf: scene->trackedFeatures)
             {
+                RGBColor color = colorizer[tf];
                 for (auto& obs: tf->observations__)
                     if (obs.first == key)
                     {
-                        painter.drawFormat(obs.second.observation[0] + 5, obs.second.observation[1], colorizer[0][tf], 1,  tf->name.c_str());
-                        painter.drawCircle(obs.second.observation[0], obs.second.observation[1], 3, colorizer[0][tf]);
+                        painter.drawFormat(obs.second.observation[0] + 5, obs.second.observation[1], color, 1, tf->name.c_str());
+                        painter.drawCircle(obs.second.observation[0]    , obs.second.observation[1], 3, color);
                     }
             }
+
             BufferReaderProvider::writeRgb(src, nameNew);
             std::cout << "Writing tracks image into " << nameNew << std::endl;
         }
@@ -666,12 +674,22 @@ void ParallelTrackPainter::operator() (const corecvs::BlockedRange<int> &r) cons
             auto srcA = BufferReaderProvider::readRgb(nameA),
                  srcB = BufferReaderProvider::readRgb(nameB);
 
+            if (srcA.data == NULL) {
+                std::cout << "ParallelTrackPainter:: invalid imageA " << nameA << std::endl;
+                continue;
+            }
+            if (srcB.data == NULL) {
+                std::cout << "ParallelTrackPainter:: invalid imageB " << nameB << std::endl;
+                continue;
+            }
+
             int newW = std::max(srcA.w, srcB.w);
             int newH = srcA.h + srcB.h;
             int offH = srcA.h;
             corecvs::RGB24Buffer dst(newH, newW);
             AbstractPainter<RGB24Buffer> painter(&dst);
 
+			//TODO: optimize speed to don't form the not needed image
             for (int y = 0; y < srcA.h; ++y)
                 for (int x = 0; x < srcA.w; ++x)
                     dst.element(y, x) = srcA.element(y, x);
@@ -693,16 +711,13 @@ void ParallelTrackPainter::operator() (const corecvs::BlockedRange<int> &r) cons
                 if (!obsA || !obsB)
                     continue;
 
-                painter.drawFormat(obsA->observation[0] + 5, obsA->observation[1], colorizer[0][tf], 1,  tf->name.c_str());
-                painter.drawCircle(obsA->observation[0], obsA->observation[1], 3, colorizer[0][tf]);
-                painter.drawFormat(obsB->observation[0] + 5, obsB->observation[1] + offH, colorizer[0][tf], 1,  tf->name.c_str());
-                painter.drawCircle(obsB->observation[0], obsB->observation[1] + offH, 3, colorizer[0][tf]);
-                dst.drawLine(
-                        obsB->observation[0],
-                        obsB->observation[1] + offH,
-                        obsA->observation[0],
-                        obsA->observation[1],
-                        colorizer[0][tf]);
+                RGBColor color = colorizer[tf];
+                painter.drawFormat(obsA->observation[0] + 5, obsA->observation[1]       , color, 1,  tf->name.c_str());
+                painter.drawCircle(obsA->observation[0]    , obsA->observation[1]       , 3, color);
+                painter.drawFormat(obsB->observation[0] + 5, obsB->observation[1] + offH, color, 1,  tf->name.c_str());
+                painter.drawCircle(obsB->observation[0]    , obsB->observation[1] + offH, 3, color);
+                dst	   .drawLine  (obsB->observation[0]    , obsB->observation[1] + offH
+								 , obsA->observation[0]	   , obsA->observation[1], color);
                 painted = true;
             }
             if (!painted)

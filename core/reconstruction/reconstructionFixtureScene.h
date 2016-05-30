@@ -146,17 +146,21 @@ public:
 private:
     struct ParallelEssentialFilter
     {
-        ReconstructionFixtureScene* scene;
+        ReconstructionFixtureScene      *scene;
         std::vector<std::pair<WPP, WPP>> work;
-        EssentialFilterParams params;
-        ParallelEssentialFilter(ReconstructionFixtureScene* scene, std::vector<std::pair<WPP, WPP>> &work, EssentialFilterParams params) : scene(scene), work(work), params(params)
-        {
-        }
+        EssentialFilterParams            params;
+
+        ParallelEssentialFilter(ReconstructionFixtureScene* scene_
+				, std::vector<std::pair<WPP, WPP>> &work_
+				, EssentialFilterParams params_)
+            : scene(scene_), work(work_), params(params_)
+        {}
+
         void operator() (const corecvs::BlockedRange<int> &r) const
         {
             for (int i = r.begin(); i < r.end(); ++i)
             {
-                auto w = work[i];
+                auto& w = work[i];
                 scene->filterEssentialRansac(w.first, w.second, params);
             }
         }
@@ -167,21 +171,19 @@ private:
 struct ParallelTrackPainter
 {
     ParallelTrackPainter(
-            std::vector<std::pair<WPP, std::string>> &images,
-            ReconstructionFixtureScene* scene,
-            std::unordered_map<SceneFeaturePoint*, RGBColor> colorizer, bool pairs = false) :
-            colorizer(&colorizer)
-          , images(images)
-          , scene(scene), pairs(pairs)
-    {
-    }
+            std::vector<std::pair<WPP, std::string>> &images_,
+            ReconstructionFixtureScene* scene_,
+            std::unordered_map<SceneFeaturePoint*, RGBColor> &colorizer_,
+            bool pairs_ = false)
+    	: colorizer(colorizer_), images(images_), scene(scene_), pairs(pairs_)
+    {}
 
     void operator() (const corecvs::BlockedRange<int> &r) const;
 
-    std::unordered_map<SceneFeaturePoint*, RGBColor> *colorizer;
-    std::vector<std::pair<WPP, std::string>> images;
-    ReconstructionFixtureScene* scene;
-    bool pairs;
+    std::unordered_map<SceneFeaturePoint*, RGBColor> &colorizer;
+    std::vector<std::pair<WPP, std::string>>         &images;
+    ReconstructionFixtureScene*                       scene;
+    bool                                              pairs;
 };
 
 } // namespace corecvs

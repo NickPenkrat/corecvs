@@ -16,6 +16,10 @@
 #include "sceneAligner.h"
 #include "statusTracker.h"
 #include "log.h"
+#include "tbbWrapper.h"
+
+//#include "../../utils/visitors/jsonSetter.h"
+//#include "../../utils/visitors/jsonGetter.h"
 
 std::string toString(ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType type)
 {
@@ -63,6 +67,8 @@ void corecvs::PhotostationPlacer::paintTracksOnImages(bool pairs)
             continue;
         images.push_back(std::make_pair(p.first, p.second));
     }
+    cout << "paintTracksOnImages #trackedFeatures=" << scene->trackedFeatures.size() << " => #images=" << images.size() << endl;
+
     int N = (int)images.size();
     corecvs::parallelable_for(0, pairs ? N * N : N, ParallelTrackPainter(images, scene, colorizer, pairs));
 }
@@ -773,7 +779,7 @@ void corecvs::PhotostationPlacer::fullRun()
      *          be adressend in future (when we add non-iterative reconstruction)
      */
     scene->state = ReconstructionState::APPENDABLE;
-    scene->ProcessState->reset("PAINTING", scene->placingQueue.size());
+    scene->ProcessState->reset("Appending", scene->placingQueue.size());
 
     while (scene->placingQueue.size())
     {
@@ -784,12 +790,16 @@ void corecvs::PhotostationPlacer::fullRun()
         std::cout << "PAINTED" << std::endl;
         if (!append3D() && !append2D())
         {
-            std::cout << "RECONSTRUCTION FAILED!!!1111" << std::endl;
+            std::cout << "RECONSTRUCTION FAILED on APPENDING !!!" << std::endl;
             return;
         }
         postAppend();
-        for (auto& cf: scene->placedFixtures)
-            std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ scene->placedFixtures[0]->location.rotor.conjugated()) << std::endl;
+        for (auto& cf : scene->placedFixtures) {
+            std::cout << cf->name
+                << " " << cf->location.shift
+                << " " << (cf->location.rotor ^ scene->placedFixtures[0]->location.rotor.conjugated())
+                << std::endl;
+        }
         scene->printTrackStats();
     }
     fit(optimizationParams, finalNonLinearIterations / 2);
