@@ -2,6 +2,7 @@
 #define STATUS_TRACKER
 
 #include <string>
+#include <ostream>
 
 #ifdef WITH_TBB
 #include <tbb/tbb.h>
@@ -19,10 +20,20 @@ struct Status
     bool        isFailed;
     bool        stopThread;
 
-    Status() : currentAction("NONE"), completedActions(0), totalActions(0), startedActions(0),
-        completedGlobalActions(0), totalGlobalActions(0), startedGlobalActions(0),
+    Status() : currentAction("NONE")
+        , completedActions(0), totalActions(0), startedActions(0)
+        , completedGlobalActions(0), totalGlobalActions(0), startedGlobalActions(0),
       isCompleted(false), isFailed(false), stopThread(false)
     {}
+
+    friend std::ostream& operator<<(std::ostream& os, const Status &status)
+    {
+        os << " action: "    << status.currentAction
+           << ", started: "  << status.startedActions
+           << ", completed " << status.completedActions
+           << ", total "     << status.totalActions;
+        return os;
+    }
 };
 
 class StatusTracker;

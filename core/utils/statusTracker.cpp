@@ -1,6 +1,5 @@
-#include <iostream>
-
 #include "statusTracker.h"
+#include <iostream>
 
 namespace corecvs {
 
@@ -58,11 +57,7 @@ void StatusTracker::incrementCompleted()
 
     writeLock();
         currentStatus.completedActions++;
-
-        std::cout << "StatusTracker::incrementCompleted(): action: " << currentStatus.currentAction
-            << " started: " << currentStatus.startedActions
-            << ", completed " << currentStatus.completedActions
-            << ", total " << currentStatus.totalActions << std::endl;
+        std::cout << "StatusTracker::incrementCompleted(): " << currentStatus << std::endl;
 
         CORE_ASSERT_TRUE_S(currentStatus.completedActions <= currentStatus.totalActions);
         CORE_ASSERT_TRUE_S(currentStatus.completedActions <= currentStatus.startedActions);
@@ -93,10 +88,8 @@ void corecvs::StatusTracker::reset(const std::string &action, size_t totalAction
         currentStatus.currentAction    = action;
         currentStatus.completedActions = currentStatus.startedActions = 0;
         currentStatus.totalActions     = totalActions;
-        std::cout << "Action: " << currentStatus.currentAction
-                  << " started: " << currentStatus.startedActions
-                  << ", completed " << currentStatus.completedActions
-                  << ", total " << currentStatus.totalActions << std::endl;
+
+        std::cout << "StatusTracker::reset(): " << currentStatus << std::endl;
     unlock();
 }
 
