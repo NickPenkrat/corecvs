@@ -93,6 +93,9 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
 
     std::unordered_map<FixtureScenePart*, int> counter;
 
+	std::vector<corecvs::FixtureCamera> cameraCache;
+	std::vector<WPP> cacheOrigin;
+	std::vector<int> cacheRef;
     std::vector<SceneObservation*> revDependency; // track, projection
     std::vector<CameraFixture*> positionConstrainedCameras;
     std::vector<std::vector<int>> sparsity;

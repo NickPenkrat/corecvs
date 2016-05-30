@@ -240,12 +240,17 @@ void corecvs::ReconstructionFunctor::computeDependency()
 {
     revDependency.clear();
     sparsity.clear();
+    cameraCache.clear();
+    cacheRef.clear();
+    cacheOrigin.clear();
 
     auto errSize = getErrorComponentsPerPoint();
     int id = 0, argin = 0;
 
     revDependency.resize(lastProjection);
     sparsity.resize(getInputNum());
+	std::unordered_map<WPP, int> cacheIdx;
+
 
 #define ALL_FROM(V) \
     for (auto& t: V) \
@@ -256,6 +261,19 @@ void corecvs::ReconstructionFunctor::computeDependency()
     ALL_FROM(scene->staticPoints)
 
     CORE_ASSERT_TRUE_S(id == lastProjection);
+    cacheRef.resize(lastProjection);
+
+    for (int i = 0; i < lastProjection; ++i)
+	{
+		auto p = revDependency[i];
+		WPP wpp = WPP(p->cameraFixture, p->camera);
+		if (!cacheIdx.count(wpp))
+		{
+			cameraCache.resize(1 + (cacheIdx[wpp] = cameraCache.size()));
+			cacheOrigin.push_back(wpp);
+		}
+		cacheRef[i] = cacheIdx[wpp];
+	}
 
 #define DEPS(V, N, CPROJ, CPOS) \
     for (auto& a: V) \
@@ -321,6 +339,8 @@ void corecvs::ReconstructionFunctor::readParams(const double* params)
     FILL(focalTunableCameras,     INPUTS_PER_FOCAL,           a->intrinsics.focal = corecvs::Vector2dd(v, v),,)
     FILL(principalTunableCameras, INPUTS_PER_PRINCIPAL,       a->intrinsics.principal[i] = v,,)
     FILL(scene->trackedFeatures,  INPUTS_PER_3D_POINT,        a->reprojectedPosition[i] = v,,)
+    for (auto& wpp: cacheOrigin)
+		cameraCache[&wpp - &cacheOrigin[0]] = wpp.u->getWorldCamera(wpp.v);
 }
 
 void corecvs::ReconstructionFunctor::writeParams(double* params)
@@ -374,6 +394,8 @@ void corecvs::ReconstructionFunctor::computeErrors(double *out, const std::vecto
 void corecvs::ParallelErrorComputator::operator() (const corecvs::BlockedRange<int> &r) const
 {
     auto& revDependency = functor->revDependency;
+    auto& cameraCache = functor->cameraCache;
+    auto& cacheRef = functor->cacheRef;
     int N = functor->getErrorComponentsPerPoint();
     double *out = output;
 #define EC(E, EE, EEE) \
@@ -382,7 +404,8 @@ void corecvs::ParallelErrorComputator::operator() (const corecvs::BlockedRange<i
         { \
             int i = idxs[ii * N]; \
             auto& o = *revDependency[i]; \
-            auto  e = o.cameraFixture->EE(o.featurePoint->reprojectedPosition, o.observation, o.camera); \
+            auto& c = cameraCache[cacheRef[i]]; \
+            auto  e = c.EE(o.featurePoint->reprojectedPosition, o.observation); \
             for (int j = 0; j < N; ++j) \
                 out[ii * N + j] = EEE; \
         } \
