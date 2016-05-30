@@ -18,9 +18,6 @@
 #include "log.h"
 #include "tbbWrapper.h"
 
-//#include "../../utils/visitors/jsonSetter.h"
-//#include "../../utils/visitors/jsonGetter.h"
-
 std::string toString(ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType type)
 {
     switch(type)
@@ -700,6 +697,7 @@ void corecvs::PhotostationPlacer::initialize()
         std::cout << "FAILFAILFAILFAILFAILFAIL" << std::endl;
     }
     CORE_ASSERT_TRUE_S(initialized);
+
     postAppend();
 }
 
@@ -736,6 +734,8 @@ void corecvs::PhotostationPlacer::postAppend()
     if (!scene->is3DAligned)
         params = params & ~(ReconstructionFunctorOptimizationType::DEGENERATE_TRANSLATIONS| ReconstructionFunctorOptimizationType::DEGENERATE_ORIENTATIONS);
 
+    auto saveProcessState = scene->ProcessState; scene->ProcessState = nullptr;     // ProcessState should be cleared for Fit() here as it's undeterminated
+
     for (int i = 0; i < maxPostAppend(); ++i)
     {
         std::cout << "PATA: " << i << " / " << maxPostAppend() << std::endl;
@@ -759,6 +759,8 @@ void corecvs::PhotostationPlacer::postAppend()
         scene->pruneTracks(inlierThreshold() * rmsePruningScaler() / 2.0, inlierThreshold() * maxPruningScaler() / 2.0, distanceLimit());
         fit(params, postAppendNonlinearIterations / 2);
     }
+
+    scene->ProcessState = saveProcessState;     // restore ProcessState
 
     postAppendHook();
 }
