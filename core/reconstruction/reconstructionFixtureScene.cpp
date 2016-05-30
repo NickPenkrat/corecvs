@@ -155,7 +155,6 @@ void ReconstructionFixtureScene::printTrackStats()
         if (cntS[i] > 0)
             std::cout << "[" << tolerance * i << "; " << tolerance * (i + 1) << ": " << cntS[i] << ")";
     std::cout << std::endl;
-
 }
 
 FixtureScene* ReconstructionFixtureScene::dumbify()
@@ -346,7 +345,7 @@ void ReconstructionFixtureScene::deleteFeaturePoint(SceneFeaturePoint *point)
 
 void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams &params)
 {
-    // Mapping from indexes to fixture,camera pairs
+    // Mapping from indices to <fixture,camera pairs>
     std::unordered_map<int, WPP> map;
     std::vector<std::string> filenames;
     for (auto& f: placingQueue)

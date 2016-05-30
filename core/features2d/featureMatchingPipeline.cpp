@@ -11,7 +11,6 @@
 #include "descriptorMatcherProvider.h"
 #include "bufferReaderProvider.h"
 #include "vsfmIo.h"
-
 #include "tbbWrapper.h"
 
 static const char* KEYPOINT_EXTENSION   = "keypoints";
@@ -58,7 +57,7 @@ void FeatureMatchingPipeline::run()
 
     for (size_t id = 0; id < pipeline.size(); ++id)
     {
-        state->incrementStarted();
+        auto boo = state->createAutoTrackerCalculationObject();
         auto sParams = saveParams[id];
         auto lParams = loadParams[id];
         auto ps = pipeline[id];
@@ -75,7 +74,6 @@ void FeatureMatchingPipeline::run()
         {
             ps->saveResults(this, sParams.second);
         }
-        state->incrementCompleted();
     }
 }
 
@@ -126,13 +124,13 @@ public:
                 ss1 << "Detecting keypoints with " << detectorType << " on ";
                 pipeline->tic(r.begin(), false);
             }
-
         }
 
         if (cnt)
         {
             ss2 << kpt << " keypoints"; kpt = 0;
-            pipeline->toc(ss1.str(), ss2.str(), N, cnt, id, false); cnt = 0;
+            pipeline->toc(ss1.str(), ss2.str(), N, cnt, id, false);
+            cnt = 0;
         }
 
         delete detector;

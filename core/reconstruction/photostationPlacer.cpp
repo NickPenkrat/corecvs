@@ -587,9 +587,9 @@ void corecvs::PhotostationPlacer::createTracks()
 
 void corecvs::PhotostationPlacer::initialize()
 {
-/*
- * This goes to initialize() section
- */
+   /*
+    * This goes to initialize() section
+    */
     std::unordered_map<std::pair<CameraFixture*, CameraFixture*>, int> cntr, cntrGood;
     std::unordered_set<corecvs::CameraFixture*> allowed(scene->placingQueue.begin(), scene->placingQueue.begin() + std::min(static_cast<size_t>(speculativity()), scene->placingQueue.size()));
     for (auto& first: scene->matches)
@@ -619,6 +619,7 @@ void corecvs::PhotostationPlacer::initialize()
     corecvs::Affine3DQ tform;
     //double scale = 1.0;
     bool initialized = false;
+
     scene->ProcessState->reset("Initialize", matchCount.size());
 
     for (auto& init: matchCount)
@@ -691,6 +692,7 @@ void corecvs::PhotostationPlacer::initialize()
         scene->placingQueue.resize(scene->placingQueue.size() - 2);
         break;
     }
+
     if (!initialized)
     {
         std::cout << "FAILFAILFAILFAILFAILFAIL" << std::endl;
@@ -763,9 +765,11 @@ void corecvs::PhotostationPlacer::fullRun()
 {
     // 0. Detect features
     scene->detectAllFeatures(featureDetectionParams());
+
     // 1. Select multicams with most matches
-    // 3. Create twopointcloud
+    // 3. Create two points cloud
     initialize();
+
     /*
      * 4. Append pss iteratively
      *       a) update all P3Ps
@@ -785,9 +789,8 @@ void corecvs::PhotostationPlacer::fullRun()
     {
         auto boo = scene->ProcessState->createAutoTrackerCalculationObject();
 
-        std::cout << "PAINTING" << std::endl;
         paintTracksOnImages(true);
-        std::cout << "PAINTED" << std::endl;
+        std::cout << " painted" << std::endl;
         if (!append3D() && !append2D())
         {
             std::cout << "RECONSTRUCTION FAILED on APPENDING !!!" << std::endl;
@@ -802,6 +805,7 @@ void corecvs::PhotostationPlacer::fullRun()
         }
         scene->printTrackStats();
     }
+
     fit(optimizationParams, finalNonLinearIterations / 2);
 
     scene->ProcessState->reset("Pruning", 1);
