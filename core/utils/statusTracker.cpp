@@ -59,8 +59,8 @@ void StatusTracker::incrementCompleted()
         currentStatus.completedActions++;
         std::cout << "StatusTracker::incrementCompleted(): " << currentStatus << std::endl;
 
-        CORE_ASSERT_TRUE_S(currentStatus.completedActions <= currentStatus.totalActions);
-        CORE_ASSERT_TRUE_S(currentStatus.completedActions <= currentStatus.startedActions);
+        //CORE_ASSERT_TRUE_S(currentStatus.completedActions <= currentStatus.totalActions);
+        //CORE_ASSERT_TRUE_S(currentStatus.completedActions <= currentStatus.startedActions);
     unlock();
 }
 
