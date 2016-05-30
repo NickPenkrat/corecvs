@@ -170,7 +170,7 @@ struct ParallelBoardDetector
     {
         for (size_t i = r.begin(); i != r.end(); ++i)
         {
-            job->state->incrementStarted();
+            auto boo = job->state->createAutoTrackerCalculationObject();
             size_t cam = idx[i][0];
             size_t obs = idx[i][1];
 
@@ -195,7 +195,6 @@ struct ParallelBoardDetector
                     v.undistortedPattern.push_back(pc);
                 }
             }
-            job->state->incrementCompleted();
         }
     }
     ParallelBoardDetector(CalibrationJob* job, std::vector<std::array<size_t, 2>> idx, bool estimate, bool distorted)
@@ -210,7 +209,6 @@ struct ParallelBoardDetector
 
 void CalibrationJob::allDetectChessBoard(bool distorted)
 {
-    state->reset("Pattern detection", 0);
     int N = (int)observations.size();
 
     photostation.cameras.resize(N);
@@ -287,7 +285,7 @@ struct ParallelDistortionEstimator
     {
         for (int cam = r.begin(); cam < r.end(); ++cam)
         {
-            job->state->incrementStarted();
+            auto boo = job->state->createAutoTrackerCalculationObject();
 
             corecvs::SelectableGeometryFeatures sgf;
             for (auto& v: job->observations[cam])
@@ -300,8 +298,6 @@ struct ParallelDistortionEstimator
             {
                 job->computeDistortionError(v.sourcePattern, psIterator.distortion, v.distortionRmse, v.distortionMaxError);
             }
-
-            job->state->incrementCompleted();
         }
     }
 
@@ -344,7 +340,7 @@ struct ParallelDistortionRemoval
     {
         for (int camId = r.begin(); camId < r.end(); ++camId)
         {
-            job->state->incrementStarted();
+            auto boo = job->state->createAutoTrackerCalculationObject();
             auto& observationsIterator = job->observations[camId];
             auto& cam = job->photostation.cameras[camId];
 
@@ -360,7 +356,6 @@ struct ParallelDistortionRemoval
                             job->SaveImage(ob.undistortedFileName, dst);
                         }
                     });
-            job->state->incrementCompleted();
         }
     }
 
