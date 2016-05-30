@@ -773,7 +773,7 @@ void corecvs::PhotostationPlacer::fullRun()
      *          be adressend in future (when we add non-iterative reconstruction)
      */
     scene->state = ReconstructionState::APPENDABLE;
-    scene->ProcessState->reset("PAINTING", scene->placingQueue.size());
+    scene->ProcessState->reset("Append", scene->placingQueue.size());
 
     while (scene->placingQueue.size())
     {
