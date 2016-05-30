@@ -39,7 +39,7 @@ void StatusTracker::incrementStarted()
     writeLock();
         currentStatus.startedActions++;
         std::cout << "Started: " << currentStatus.startedActions << std::endl;
-        CORE_ASSERT_TRUE_S(currentStatus.startedActions <= currentStatus.totalActions);
+        //CORE_ASSERT_TRUE_S(currentStatus.startedActions <= currentStatus.totalActions);
     unlock();
 }
 
