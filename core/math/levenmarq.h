@@ -103,11 +103,12 @@ public:
 
         double totalEval = 0.0, totalJEval = 0.0, totalLinSolve = 0.0, totalATA = 0.0, totalTotal = 0.0;
         int g = 0;
-        state->reset("FIT", maxIterations);
+
+        if (state) state->reset("FIT", maxIterations);
 
         for (g = 0; (g < maxIterations) && (lambda < maxlambda) && !converged; g++)
         {
-            auto boo = state->createAutoTrackerCalculationObject();
+            if (state) auto boo = state->createAutoTrackerCalculationObject();
 
             double timeEval = 0.0, timeJEval = 0.0, timeLinSolve = 0.0, timeATA = 0.0, timeTotal = 0.0;
             auto beginT = std::chrono::high_resolution_clock::now();
@@ -338,15 +339,15 @@ public:
             totalLinSolve += timeLinSolve;
         }
 
-            if (traceProgress)
-            {
-                std::cout << "Total : " << totalTotal    << "s " << std::endl
-                          << "Eval  : " << totalEval     << "s (" << totalEval     / totalTotal * 100.0 << ")" << std::endl
-                          << "JEval : " << totalJEval    << "s (" << totalJEval    / totalTotal * 100.0 << ")" << std::endl
-                          << "ATA   : " << totalATA      << "s (" << totalATA      / totalTotal * 100.0 << ")" << std::endl
-                          << "LS    : " << totalLinSolve << "s (" << totalLinSolve / totalTotal * 100.0 << ")" << std::endl
-                          << "Other : " << (totalTotal - totalEval - totalJEval - totalATA - totalLinSolve) << "s (" << (totalTotal - totalEval - totalJEval - totalATA - totalLinSolve) / totalTotal * 100.0 << ")" << std::endl;
-            }
+        if (traceProgress)
+        {
+            std::cout << "Total : " << totalTotal    << "s " << std::endl
+                      << "Eval  : " << totalEval     << "s (" << totalEval     / totalTotal * 100.0 << ")" << std::endl
+                      << "JEval : " << totalJEval    << "s (" << totalJEval    / totalTotal * 100.0 << ")" << std::endl
+                      << "ATA   : " << totalATA      << "s (" << totalATA      / totalTotal * 100.0 << ")" << std::endl
+                      << "LS    : " << totalLinSolve << "s (" << totalLinSolve / totalTotal * 100.0 << ")" << std::endl
+                      << "Other : " << (totalTotal - totalEval - totalJEval - totalATA - totalLinSolve) << "s (" << (totalTotal - totalEval - totalJEval - totalATA - totalLinSolve) / totalTotal * 100.0 << ")" << std::endl;
+        }
 
         if (traceProgress) {
             cout << "]" << endl;
