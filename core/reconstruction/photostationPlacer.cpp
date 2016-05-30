@@ -753,11 +753,13 @@ void corecvs::PhotostationPlacer::postAppend()
         auto acnt = scene->trackedFeatures.size();
         if (acnt <= pcnt && i != 0)
             break;
+
         fit(params, postAppendNonlinearIterations / 2);
         std::cout << "Prune" << std::endl;
         scene->pruneTracks(inlierThreshold() * rmsePruningScaler() / 2.0, inlierThreshold() * maxPruningScaler() / 2.0, distanceLimit());
         fit(params, postAppendNonlinearIterations / 2);
     }
+
     postAppendHook();
 }
 
@@ -855,7 +857,7 @@ bool corecvs::PhotostationPlacer::append3D()
     std::cout << "Total " << hypos.size() << " possible tracks" << std::endl;
     L_ERROR << "Computing P3P" ;
 
-    switch(scene->initializationData[psApp].initializationType)
+    switch (scene->initializationData[psApp].initializationType)
     {
         default:
         case FixtureInitializationType::GPS:
