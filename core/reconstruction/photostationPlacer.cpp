@@ -301,7 +301,7 @@ void corecvs::PhotostationPlacer::fit(const ReconstructionFunctorOptimizationTyp
     lm.normalisation = &orientNorm;
     lm.maxIterations = num;
     lm.trace = false;
-    lm.state = scene->ProcessState;
+    lm.state = scene->processState;
     std::vector<double> input(orient.getInputNum());
     std::vector<double> out(orient.getOutputNum());
     if (orient.getOutputNum() <=  orient.getInputNum())
@@ -619,11 +619,11 @@ void corecvs::PhotostationPlacer::initialize()
     //double scale = 1.0;
     bool initialized = false;
 
-    scene->ProcessState->reset("Initialize", matchCount.size());
+    scene->processState->reset("Initialize", matchCount.size());
 
     for (auto& init: matchCount)
     {
-        auto boo = scene->ProcessState->createAutoTrackerCalculationObject();
+        auto boo = scene->processState->createAutoTrackerCalculationObject();
 
         CameraFixture* A = std::get<1>(init);
         CameraFixture* B = std::get<2>(init);
@@ -736,7 +736,7 @@ void corecvs::PhotostationPlacer::postAppend()
     if (!scene->is3DAligned)
         params = params & ~(ReconstructionFunctorOptimizationType::DEGENERATE_TRANSLATIONS| ReconstructionFunctorOptimizationType::DEGENERATE_ORIENTATIONS);
 
-    auto saveProcessState = scene->ProcessState; scene->ProcessState = nullptr;     // ProcessState should be cleared for Fit() here as it's undeterminated
+    auto saveProcessState = scene->processState; scene->processState = nullptr;     // ProcessState should be cleared for Fit() here as it's undeterminated
 
     for (int i = 0; i < maxPostAppend(); ++i)
     {
@@ -762,7 +762,7 @@ void corecvs::PhotostationPlacer::postAppend()
         fit(params, postAppendNonlinearIterations / 2);
     }
 
-    scene->ProcessState = saveProcessState;     // restore ProcessState
+    scene->processState = saveProcessState;     // restore processState
 
     postAppendHook();
 }
@@ -789,11 +789,11 @@ void corecvs::PhotostationPlacer::fullRun()
      *          be adressend in future (when we add non-iterative reconstruction)
      */
     scene->state = ReconstructionState::APPENDABLE;
-    scene->ProcessState->reset("Appending", scene->placingQueue.size());
+    scene->processState->reset("Appending", scene->placingQueue.size());
 
     while (scene->placingQueue.size())
     {
-        auto boo = scene->ProcessState->createAutoTrackerCalculationObject();
+        auto boo = scene->processState->createAutoTrackerCalculationObject();
 
         paintTracksOnImages(true);
 
@@ -814,9 +814,9 @@ void corecvs::PhotostationPlacer::fullRun()
 
     fit(optimizationParams, finalNonLinearIterations / 2);
 
-    scene->ProcessState->reset("Pruning", 1);
+    scene->processState->reset("Pruning", 1);
     {
-        auto boo = scene->ProcessState->createAutoTrackerCalculationObject();
+        auto boo = scene->processState->createAutoTrackerCalculationObject();
         scene->pruneTracks(inlierThreshold() * rmsePruningScaler() / 2.0
                          , inlierThreshold() * maxPruningScaler() / 2.0
                          , distanceLimit());
@@ -834,7 +834,8 @@ bool corecvs::PhotostationPlacer::append3D()
     CORE_ASSERT_TRUE_S(speculativity() > 0);
     scene->validateAll();
     CORE_ASSERT_TRUE_S(scene->state == ReconstructionState::TWOPOINTCLOUD ||
-            scene->state == ReconstructionState::APPENDABLE);
+                       scene->state == ReconstructionState::APPENDABLE);
+
     // Here we first update speculatively selected CameraFixtures, and then
     // add one that has the biggest count of inliers
     updateTrackables();
@@ -955,7 +956,7 @@ void corecvs::PhotostationPlacer::detectAll()
 {
     scene->validateAll();
     scene->detectAllFeatures(FeatureDetectionParams());
-    switch(scene->state)
+    switch (scene->state)
     {
         // It's Ok
         case ReconstructionState::NONE:

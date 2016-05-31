@@ -22,7 +22,10 @@
 namespace corecvs
 {
 
-class PhotostationPlacer :    public IterativeReconstructionInitializationParams, public IterativeReconstructionFeatureSelectionParams, public IterativeReconstructionNonlinearOptimizationParams, public IterativeReconstructionAppendParams
+class PhotostationPlacer : public IterativeReconstructionInitializationParams
+                         , public IterativeReconstructionFeatureSelectionParams
+                         , public IterativeReconstructionNonlinearOptimizationParams
+                         , public IterativeReconstructionAppendParams
 {
 public:
     ReconstructionFixtureScene* scene;

@@ -46,7 +46,7 @@ struct FixtureInitialization
      *       V'DV, then we are looking for (1/sqrt(D))*V
      */
     Matrix33  positioningAccuracy = corecvs::Matrix33(0.005, 0, 0, 0, 0.005, 0, 0, 0, 0.005).inv();
-    bool enforcePosition = true;
+    bool      enforcePosition = true;
     double    rotationalAccuracy;
 };
 
@@ -55,7 +55,7 @@ class ReconstructionFixtureScene : public FixtureScene
 {
 public:
     ReconstructionFixtureScene();
-    virtual ~ReconstructionFixtureScene() {};
+    virtual ~ReconstructionFixtureScene() {}
 
     virtual void deleteCamera        (FixtureCamera *camera);
     virtual void deleteCameraFixture (CameraFixture *fixture, bool recursive = true);
