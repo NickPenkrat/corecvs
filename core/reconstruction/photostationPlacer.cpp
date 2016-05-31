@@ -18,9 +18,6 @@
 #include "log.h"
 #include "tbbWrapper.h"
 
-//#include "../../utils/visitors/jsonSetter.h"
-//#include "../../utils/visitors/jsonGetter.h"
-
 std::string toString(ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType type)
 {
     switch(type)
@@ -71,6 +68,8 @@ void corecvs::PhotostationPlacer::paintTracksOnImages(bool pairs)
 
     int N = (int)images.size();
     corecvs::parallelable_for(0, pairs ? N * N : N, ParallelTrackPainter(images, scene, colorizer, pairs));
+
+    cout << "paintTracksOnImages done." << endl;
 }
 
 corecvs::Affine3DQ corecvs::PhotostationPlacer::staticInit(CameraFixture *fixture, std::vector<SceneFeaturePoint*> &staticPoints)
@@ -700,6 +699,7 @@ void corecvs::PhotostationPlacer::initialize()
         std::cout << "FAILFAILFAILFAILFAILFAIL" << std::endl;
     }
     CORE_ASSERT_TRUE_S(initialized);
+
     postAppend();
 }
 
@@ -736,6 +736,8 @@ void corecvs::PhotostationPlacer::postAppend()
     if (!scene->is3DAligned)
         params = params & ~(ReconstructionFunctorOptimizationType::DEGENERATE_TRANSLATIONS| ReconstructionFunctorOptimizationType::DEGENERATE_ORIENTATIONS);
 
+    auto saveProcessState = scene->ProcessState; scene->ProcessState = nullptr;     // ProcessState should be cleared for Fit() here as it's undeterminated
+
     for (int i = 0; i < maxPostAppend(); ++i)
     {
         std::cout << "PATA: " << i << " / " << maxPostAppend() << std::endl;
@@ -759,6 +761,8 @@ void corecvs::PhotostationPlacer::postAppend()
         scene->pruneTracks(inlierThreshold() * rmsePruningScaler() / 2.0, inlierThreshold() * maxPruningScaler() / 2.0, distanceLimit());
         fit(params, postAppendNonlinearIterations / 2);
     }
+
+    scene->ProcessState = saveProcessState;     // restore ProcessState
 
     postAppendHook();
 }
@@ -792,7 +796,7 @@ void corecvs::PhotostationPlacer::fullRun()
         auto boo = scene->ProcessState->createAutoTrackerCalculationObject();
 
         paintTracksOnImages(true);
-        std::cout << " painted" << std::endl;
+
         if (!append3D() && !append2D())
         {
             std::cout << "RECONSTRUCTION FAILED on APPENDING !!!" << std::endl;
@@ -830,7 +834,8 @@ bool corecvs::PhotostationPlacer::append3D()
     CORE_ASSERT_TRUE_S(speculativity() > 0);
     scene->validateAll();
     CORE_ASSERT_TRUE_S(scene->state == ReconstructionState::TWOPOINTCLOUD ||
-            scene->state == ReconstructionState::APPENDABLE);
+                       scene->state == ReconstructionState::APPENDABLE);
+
     // Here we first update speculatively selected CameraFixtures, and then
     // add one that has the biggest count of inliers
     updateTrackables();
@@ -951,7 +956,7 @@ void corecvs::PhotostationPlacer::detectAll()
 {
     scene->validateAll();
     scene->detectAllFeatures(FeatureDetectionParams());
-    switch(scene->state)
+    switch (scene->state)
     {
         // It's Ok
         case ReconstructionState::NONE:
