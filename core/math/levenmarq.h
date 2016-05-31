@@ -104,7 +104,7 @@ public:
         double totalEval = 0.0, totalJEval = 0.0, totalLinSolve = 0.0, totalATA = 0.0, totalTotal = 0.0;
         int g = 0;
 
-        if (state) state->reset("FIT", maxIterations);
+        if (state) state->reset("Fit", maxIterations);
 
         for (g = 0; (g < maxIterations) && (lambda < maxlambda) && !converged; g++)
         {
@@ -113,11 +113,8 @@ public:
             double timeEval = 0.0, timeJEval = 0.0, timeLinSolve = 0.0, timeATA = 0.0, timeTotal = 0.0;
             auto beginT = std::chrono::high_resolution_clock::now();
 
-            if (traceProgress) {
-                if ((g % ((maxIterations / 100) + 1) == 0))
-                {
-                    cout << "#" << std::flush;
-                }
+            if (traceProgress && ((g % ((maxIterations / 100) + 1) == 0))) {
+                cout << "#" << std::flush;
             }
 
             auto Jbegin = std::chrono::high_resolution_clock::now();

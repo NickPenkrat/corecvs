@@ -68,6 +68,8 @@ void corecvs::PhotostationPlacer::paintTracksOnImages(bool pairs)
 
     int N = (int)images.size();
     corecvs::parallelable_for(0, pairs ? N * N : N, ParallelTrackPainter(images, scene, colorizer, pairs));
+
+    cout << "paintTracksOnImages done." << endl;
 }
 
 corecvs::Affine3DQ corecvs::PhotostationPlacer::staticInit(CameraFixture *fixture, std::vector<SceneFeaturePoint*> &staticPoints)
@@ -794,7 +796,7 @@ void corecvs::PhotostationPlacer::fullRun()
         auto boo = scene->ProcessState->createAutoTrackerCalculationObject();
 
         paintTracksOnImages(true);
-        std::cout << " painted" << std::endl;
+
         if (!append3D() && !append2D())
         {
             std::cout << "RECONSTRUCTION FAILED on APPENDING !!!" << std::endl;
