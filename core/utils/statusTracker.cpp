@@ -34,6 +34,8 @@ void StatusTracker::unlock() const
 
 void StatusTracker::incrementStarted()
 {
+    if (this == nullptr)
+        return;
     writeLock();
         currentStatus.startedActions++;
         std::cout << "Started: " << currentStatus.startedActions << std::endl;
@@ -43,6 +45,8 @@ void StatusTracker::incrementStarted()
 
 void StatusTracker::incrementCompleted()
 {
+    if (this == nullptr)
+        return;
     readLock();
         bool toStop = currentStatus.stopThread;
     unlock();
@@ -62,6 +66,8 @@ void StatusTracker::incrementCompleted()
 
 void corecvs::StatusTracker::setTotalActions(size_t totalActions)
 {
+    if (this == nullptr)
+        return;
     writeLock();
         currentStatus.completedGlobalActions = 0;
         currentStatus.totalGlobalActions = totalActions;
@@ -71,6 +77,8 @@ void corecvs::StatusTracker::setTotalActions(size_t totalActions)
 
 void corecvs::StatusTracker::reset(const std::string &action, size_t totalActions)
 {
+    if (this == nullptr)
+        return;
     writeLock();
         if (currentStatus.startedGlobalActions > 0) {
             currentStatus.completedGlobalActions++;
@@ -87,6 +95,8 @@ void corecvs::StatusTracker::reset(const std::string &action, size_t totalAction
 
 bool corecvs::StatusTracker::isActionCompleted(const std::string &action) const
 {
+    if (this == nullptr)
+        return false;
     readLock();
         bool flag = (action == currentStatus.currentAction && currentStatus.totalActions == currentStatus.completedActions);
     unlock();
@@ -95,6 +105,8 @@ bool corecvs::StatusTracker::isActionCompleted(const std::string &action) const
 
 bool corecvs::StatusTracker::isCompleted() const
 {
+    if (this == nullptr)
+        return false;
     readLock();
         bool flag = currentStatus.isCompleted;
     unlock();
@@ -103,6 +115,8 @@ bool corecvs::StatusTracker::isCompleted() const
 
 bool corecvs::StatusTracker::isFailed() const
 {
+    if (this == nullptr)
+        return false;
     readLock();
         bool flag = currentStatus.isFailed;
     unlock();
@@ -111,6 +125,8 @@ bool corecvs::StatusTracker::isFailed() const
 
 bool corecvs::StatusTracker::isCanceled() const
 {
+    if (this == nullptr)
+        return false;
     readLock();
         bool flag = currentStatus.stopThread;
     unlock();
@@ -119,6 +135,8 @@ bool corecvs::StatusTracker::isCanceled() const
 
 void corecvs::StatusTracker::setCompleted()
 {
+    if (this == nullptr)
+        return;
     writeLock();
         currentStatus.isCompleted = true;
         std::cout << "StatusTracker::setCompleted()" << std::endl;
@@ -127,6 +145,8 @@ void corecvs::StatusTracker::setCompleted()
 
 void corecvs::StatusTracker::setFailed()
 {
+    if (this == nullptr)
+        return;
     writeLock();
         currentStatus.isFailed = true;
         std::cout << "StatusTracker::setFailed()" << std::endl;
@@ -135,11 +155,15 @@ void corecvs::StatusTracker::setFailed()
 
 AutoTracker StatusTracker::createAutoTrackerCalculationObject()
 {
+    if (this == nullptr)
+        return 0;
     return AutoTracker(this);
 }
 
 void corecvs::StatusTracker::setStopThread()
 {
+    if (this == nullptr)
+        return;
     writeLock();
         currentStatus.stopThread = true;
         std::cout << "setStopThread() is called." << std::endl;
@@ -148,6 +172,9 @@ void corecvs::StatusTracker::setStopThread()
 
 corecvs::Status corecvs::StatusTracker::getStatus() const
 {
+    if (this == nullptr)
+        return Status();
+
     readLock();
         auto status = currentStatus;
     unlock();
