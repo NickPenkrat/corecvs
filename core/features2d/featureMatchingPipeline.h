@@ -139,7 +139,7 @@ private:
 class FeatureMatchingPipeline
 {
 public:
-    FeatureMatchingPipeline(const std::vector<std::string> &filenames, StatusTracker* state);
+    FeatureMatchingPipeline(const std::vector<std::string> &filenames, StatusTracker* processState);
 	~FeatureMatchingPipeline();
 
 	void run();
@@ -159,6 +159,7 @@ public:
 #ifdef WITH_TBB
 	tbb::spin_mutex mutex;
 #endif
+
 private:
 	struct tic_data
 	{
@@ -174,5 +175,5 @@ private:
 	std::vector<std::pair<bool, std::string> >  loadParams;
 	FeatureMatchingPipeline(const FeatureMatchingPipeline&);
 
-    StatusTracker*                               state = nullptr;
+    StatusTracker*                               processState = nullptr;
 };

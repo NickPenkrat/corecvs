@@ -148,7 +148,7 @@ void fillJobByTestDataM15(CalibrationJob* job)
 TEST_F(CalibrationTest, testDetectDistChessBoard)
 {
     CalibrationJob job;
-    job.state = new corecvs::StatusTracker;
+    job.processState = new corecvs::StatusTracker;
 
     JSONGetter getter(addPath("gIn_updated.json"));
     getter.visit(job, "job");
@@ -184,7 +184,7 @@ TEST_F(CalibrationTest, testDetectDistChessBoard)
 
     CORE_ASSERT_DOUBLE_EQUAL_EP(job.observations[0][1].sourcePattern[0].v(), 266.2, 1e-1, ("Point 0 has wrong position V"));
 
-    delete_safe(job.state);
+    delete_safe(job.processState);
 }
 
 TEST_F(CalibrationTest, testEstimateDistDistortion)

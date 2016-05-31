@@ -42,8 +42,7 @@ public:
 
     std::string                   nameId;
 
-    StatusTracker *               state = nullptr;
-    StatusTracker *               ProcessState = nullptr;
+    StatusTracker *               processState = nullptr;
 
     /* This is for future, when all the heap/memory will be completed */
     vector<FixtureScenePart *>    mOwnedObjects;
