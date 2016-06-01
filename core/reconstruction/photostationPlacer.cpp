@@ -752,7 +752,10 @@ void corecvs::PhotostationPlacer::postAppend()
 void corecvs::PhotostationPlacer::fullRun()
 {
     // 0. Detect features
-    scene->detectAllFeatures(featureDetectionParams);
+    if (!skipFeatureDetection)
+    {
+        scene->detectAllFeatures(featureDetectionParams);
+    }
     // 1. Select multicams with most matches
     // 3. Create twopointcloud
     initialize();

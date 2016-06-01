@@ -46,6 +46,8 @@ struct IterativeReconstructionFeatureSelectionParams
     double distanceLimit =1000.0;
     // Feature detection params
     FeatureDetectionParams featureDetectionParams;
+    // Skip feature detection
+    bool skipFeatureDetection = false;
     // Scaler for pruning
     double rmsePruningScaler = 3.0;
     // Scaler for pruning
@@ -88,13 +90,13 @@ struct IterativeReconstructionNonlinearOptimizationParams
     // cool closed-form solvers it does not make sense at all
     ReconstructionFunctorOptimizationErrorType errorType = ReconstructionFunctorOptimizationErrorType::RAY_DIFF;
     // Post-append non-linear optimization iterations
-    int postAppendNonlinearIterations = 200;
+    int postAppendNonlinearIterations = 4000;
     // Final non-linear iterations
-    int finalNonLinearIterations = 2000;
+    int finalNonLinearIterations = 40000;
     // Alternating optimization on success steps
-    int alternatingIterations = 20;
+    int alternatingIterations = 25;
     // Excessive/non-excessive quaternion parametrization
-    bool excessiveQuaternionParametrization = true;
+    bool excessiveQuaternionParametrization = false;
 };
 
 }
