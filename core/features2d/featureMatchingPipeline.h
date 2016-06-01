@@ -139,7 +139,7 @@ private:
 class FeatureMatchingPipeline
 {
 public:
-    FeatureMatchingPipeline(const std::vector<std::string> &filenames, StatusTracker* processState);
+    FeatureMatchingPipeline(const std::vector<std::string> &filenames, StatusTracker* processState = nullptr);
 	~FeatureMatchingPipeline();
 
 	void run();
