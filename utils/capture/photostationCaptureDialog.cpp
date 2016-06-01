@@ -334,21 +334,22 @@ void PhotostationCaptureDialog::setManipulator(AbstractManipulatorInterface *man
         disconnect(mManipulatorCapturer, SIGNAL(captureAndFinalize(bool)), this, SLOT(capture(bool)));
         disconnect(mManipulatorCapturer, SIGNAL(captureAtPosition(int)), this, SLOT(captureWithManipulator(int)));
         disconnect(mManipulatorCapturer, SIGNAL(manipulatorCaptureFinalise(bool)), this, SLOT(finalizeManipulatorCapture(bool)));
-        disconnect(this, SIGNAL(captureFinished()), mManipulatorCapturer, SLOT(captureProcessFinshed()));
-        disconnect(this, SIGNAL(waitingNextCapturePosition()), mManipulatorCapturer, SLOT(captureNextPosition()));
+        disconnect(this, SIGNAL(captureFinished()), mManipulatorCapturer, SLOT(captureSimulatedStationFinshed()));
+        disconnect(this, SIGNAL(waitingNextCapturePosition()), mManipulatorCapturer, SLOT(captureNextSimulatedCamera()));
     }
     mManipulatorCapturer = manipulator;
     ui->manipulatorCaptureButton->setVisible(mManipulatorCapturer != nullptr);
     if(mManipulatorCapturer != nullptr)
     {
+
         connect(ui->manipulatorCaptureButton, SIGNAL(released()), mManipulatorCapturer, SLOT(show()));
         connect(ui->manipulatorCaptureButton, SIGNAL(released()), mManipulatorCapturer, SLOT(raise()));
 
         connect(mManipulatorCapturer, SIGNAL(captureAndFinalize(bool)), this, SLOT(capture(bool)));
         connect(mManipulatorCapturer, SIGNAL(captureAtPosition(int)), this, SLOT(captureWithManipulator(int)));
         connect(mManipulatorCapturer, SIGNAL(manipulatorCaptureFinalise(bool)), this, SLOT(finalizeManipulatorCapture(bool)));
-        connect(this, SIGNAL(captureFinished()), mManipulatorCapturer, SLOT(captureProcessFinshed()));
-        connect(this, SIGNAL(waitingNextCapturePosition()), mManipulatorCapturer, SLOT(captureNextPosition()));
+        connect(this, SIGNAL(captureFinished()), mManipulatorCapturer, SLOT(captureSimulatedStationFinshed()));
+        connect(this, SIGNAL(waitingNextCapturePosition()), mManipulatorCapturer, SLOT(captureNextSimulatedCamera()));
     }
 }
 
@@ -895,9 +896,10 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
         QMessageBox::warning(this, "Error saving following files:", failedSaves.join(" "));
     }
 
+    SYNC_PRINT(("PhotostationCaptureDialog::finalizeCapture(_): mRunnungManipulator=%s\n", mRuningManipulator ? "true" : "false"));
+
     if (!mRuningManipulator)
     {
-        SYNC_PRINT(("PhotostationCaptureDialog::finalizeCapture(_): mRunnungManipulator=%s\n", mRuningManipulator ? "true" : "false"));
         ui->capturePushButton       ->setEnabled(true);
         ui->captureAdvancePushButton->setEnabled(true);
         ui->manipulatorCaptureButton->setEnabled(true);
@@ -907,7 +909,9 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
         emit captureFinished();
     }
     else
+    {
         emit waitingNextCapturePosition();
+    }
 }
 
 void PhotostationCaptureDialog::keyPressEvent(QKeyEvent *event)
@@ -934,6 +938,8 @@ void PhotostationCaptureDialog::captureAndAdvance()
 
 void PhotostationCaptureDialog::captureWithManipulator(int manipulatorPosition)
 {
+    SYNC_PRINT(("PhotostationCaptureDialog::captureWithManipulator(%d)\n", manipulatorPosition));
+
     mAdvanceAfterSave = false;
     mRuningManipulator = true;
 
@@ -942,7 +948,7 @@ void PhotostationCaptureDialog::captureWithManipulator(int manipulatorPosition)
 
 void PhotostationCaptureDialog::finalizeManipulatorCapture(bool advance)
 {
-    std::cout << "finalizeManipulatorCapture: " << advance << std::endl;
+    SYNC_PRINT(("PhotostationCaptureDialog::finalizeManipulatorCapture: %s\n", advance ? "true" : "false"));
     mAdvanceAfterSave = advance;
     mRuningManipulator = false;
 

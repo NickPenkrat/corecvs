@@ -339,6 +339,16 @@ int UEyeCameraDescriptor::init(int deviceID, int binning, bool globalShutter, in
             is_SetBinning (cam, IS_BINNING_4X_VERTICAL | IS_BINNING_4X_HORIZONTAL);
         }
 
+        int result = is_SetRopEffect(cam, IS_SET_ROP_NONE, 0, 0);
+        if (result != IS_SUCCESS)
+        {
+            qDebug("   PROBLEM...");
+            char * str = 0;
+            is_GetError(1,&result,&str);
+            qDebug("   %s", str);
+
+        }
+
 
         /* Shutter block */
         unsigned shutter;
