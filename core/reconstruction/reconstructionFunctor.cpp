@@ -2,7 +2,7 @@
 
 #include <set>
 
-corecvs::ReconstructionFunctor::ReconstructionFunctor(corecvs::ReconstructionFixtureScene *scene, const corecvs::ReconstructionFunctorOptimizationErrorType &error, const corecvs::ReconstructionFunctorOptimizationType &optimization, bool excessiveQuaternionParametrization, const double pointErrorEstimate) : corecvs::SparseFunctionArgs(), scene(scene), error(error), optimization(optimization), excessiveQuaternionParametrization(excessiveQuaternionParametrization), scalerPoints(pointErrorEstimate)
+corecvs::ReconstructionFunctor::ReconstructionFunctor(corecvs::ReconstructionFixtureScene *scene, const std::vector<CameraFixture*> optimizableSubset, const corecvs::ReconstructionFunctorOptimizationErrorType &error, const corecvs::ReconstructionFunctorOptimizationType &optimization, bool excessiveQuaternionParametrization, const double pointErrorEstimate) : corecvs::SparseFunctionArgs(), scene(scene), error(error), optimization(optimization), excessiveQuaternionParametrization(excessiveQuaternionParametrization), scalerPoints(pointErrorEstimate), optimizableSubset(optimizableSubset)
 {
     /*
      * Compute inputs (these are ball-park estimate, need to
@@ -131,6 +131,8 @@ void corecvs::ReconstructionFunctor::computePointCounts()
     for (auto& pt: scene->trackedFeatures)
         for (auto& obs: pt->observations__)
         {
+            if (!std::contains(optimizableSubset, obs.first.u))
+                continue;
             counter[obs.first.u]++;
             counter[obs.first.v]++;
         }
@@ -138,6 +140,8 @@ void corecvs::ReconstructionFunctor::computePointCounts()
     for (auto& pt: scene->staticPoints)
         for (auto& obs: pt->observations__)
         {
+            if (!std::contains(optimizableSubset, obs.first.u))
+                continue;
             counter[obs.first.u]++;
             counter[obs.first.v]++;
         }
@@ -249,7 +253,7 @@ void corecvs::ReconstructionFunctor::computeDependency()
 
     revDependency.resize(lastProjection);
     sparsity.resize(getInputNum());
-	std::unordered_map<WPP, int> cacheIdx;
+    std::unordered_map<WPP, int> cacheIdx;
 
 
 #define ALL_FROM(V) \
@@ -264,16 +268,16 @@ void corecvs::ReconstructionFunctor::computeDependency()
     cacheRef.resize(lastProjection);
 
     for (int i = 0; i < lastProjection; ++i)
-	{
-		auto p = revDependency[i];
-		WPP wpp = WPP(p->cameraFixture, p->camera);
-		if (!cacheIdx.count(wpp))
-		{
-			cameraCache.resize(1 + (cacheIdx[wpp] = cameraCache.size()));
-			cacheOrigin.push_back(wpp);
-		}
-		cacheRef[i] = cacheIdx[wpp];
-	}
+    {
+        auto p = revDependency[i];
+        WPP wpp = WPP(p->cameraFixture, p->camera);
+        if (!cacheIdx.count(wpp))
+        {
+            cameraCache.resize(1 + (cacheIdx[wpp] = cameraCache.size()));
+            cacheOrigin.push_back(wpp);
+        }
+        cacheRef[i] = cacheIdx[wpp];
+    }
 
 #define DEPS(V, N, CPROJ, CPOS) \
     for (auto& a: V) \
@@ -340,7 +344,7 @@ void corecvs::ReconstructionFunctor::readParams(const double* params)
     FILL(principalTunableCameras, INPUTS_PER_PRINCIPAL,       a->intrinsics.principal[i] = v,,)
     FILL(scene->trackedFeatures,  INPUTS_PER_3D_POINT,        a->reprojectedPosition[i] = v,,)
     for (auto& wpp: cacheOrigin)
-		cameraCache[&wpp - &cacheOrigin[0]] = wpp.u->getWorldCamera(wpp.v);
+        cameraCache[&wpp - &cacheOrigin[0]] = wpp.u->getWorldCamera(wpp.v);
 }
 
 void corecvs::ReconstructionFunctor::writeParams(double* params)

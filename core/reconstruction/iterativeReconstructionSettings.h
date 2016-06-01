@@ -59,6 +59,8 @@ struct IterativeReconstructionAppendParams
 {
     // Maximal post-append iterations
     int maxPostAppend = 2;
+    // Non-linear optimization will run only for N last fixtures
+    int postAppendOptimizationWindow = 2;
     // Inlier threshold for 3P->pose
     double inlierP3PThreshold = 2.0;
     // Maximal ransac iterations for 3P-> pose
@@ -94,7 +96,7 @@ struct IterativeReconstructionNonlinearOptimizationParams
     // Final non-linear iterations
     int finalNonLinearIterations = 40000;
     // Alternating optimization on success steps
-    int alternatingIterations = 25;
+    int alternatingIterations = 20;
     // Excessive/non-excessive quaternion parametrization
     bool excessiveQuaternionParametrization = false;
 };

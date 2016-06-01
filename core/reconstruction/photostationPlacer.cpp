@@ -272,28 +272,33 @@ void corecvs::PhotostationPlacer::getErrorSummary(ReconstructionFunctorOptimizat
 
 }
 
+#if 0
 void corecvs::PhotostationPlacer::fit(int num)
 {
     fit(optimizationParams, num);
 }
+#endif
 
-void corecvs::PhotostationPlacer::fit(const ReconstructionFunctorOptimizationType &params, int num)
+void corecvs::PhotostationPlacer::fit(const ReconstructionFunctorOptimizationType &params, int iterations, int optimizeLast)
 {
     if (scene->placedFixtures.size() < 2)
         return;
+    if (optimizeLast <= 0)
+        optimizeLast = scene->placedFixtures.size();
+    std::vector<CameraFixture*> optimizable(scene->placedFixtures.rbegin(), scene->placedFixtures.rbegin() + optimizeLast);
 
     scene->printTrackStats();
 
     auto oldParams = optimizationParams;
     optimizationParams = params;
     getErrorSummaryAll();
-    corecvs::LevenbergMarquardtSparse lm(num);
-    ReconstructionFunctor orient(scene, errorType, optimizationParams, excessiveQuaternionParametrization, 1.0);
+    corecvs::LevenbergMarquardtSparse lm(iterations);
+    ReconstructionFunctor orient(scene, optimizable, errorType, optimizationParams, excessiveQuaternionParametrization, 1.0);
     ReconstructionNormalizationFunctor orientNorm(&orient, alternatingIterations);
     lm.useSchurComplement = true;
     lm.f = &orient;
     lm.normalisation = &orientNorm;
-    lm.maxIterations = num;
+    lm.maxIterations = iterations;
     lm.trace = false;
     std::vector<double> input(orient.getInputNum());
     std::vector<double> out(orient.getOutputNum());
@@ -741,10 +746,10 @@ void corecvs::PhotostationPlacer::postAppend()
         auto acnt = scene->trackedFeatures.size();
         if (acnt <= pcnt && i != 0)
             break;
-        fit(params, postAppendNonlinearIterations / 2);
+        fit(params, postAppendNonlinearIterations / 2, postAppendOptimizationWindow);
         std::cout << "Prune" << std::endl;
         scene->pruneTracks(inlierThreshold * rmsePruningScaler / 2.0, inlierThreshold * maxPruningScaler / 2.0, distanceLimit);
-        fit(params, postAppendNonlinearIterations / 2);
+        fit(params, postAppendNonlinearIterations / 2, postAppendOptimizationWindow);
     }
     postAppendHook();
 }
