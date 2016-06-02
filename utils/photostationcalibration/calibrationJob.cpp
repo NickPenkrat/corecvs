@@ -188,7 +188,7 @@ struct ParallelBoardDetector
             }
             else
             {
-                for (auto&p: v.sourcePattern)
+                for (auto & p: v.sourcePattern)
                 {
                     auto pc = p;
                     pc.projection = job->photostation.cameras[cam].distortion.mapBackward(pc.projection);
@@ -478,7 +478,6 @@ void CalibrationJob::calibratePhotostation(int N, int /*M*/, PhotoStationCalibra
             calibrator.addCamera(intrinsics[i]);
     }
     calibrator.factor = factor;
-    std::vector<int> cnt(N);
     int set = 0;
     for (auto& setup : points)
     {
@@ -680,7 +679,7 @@ void CalibrationJob::computeSingleCameraErrors()
         for (auto& c: s)
         {
             CameraModel cam = photostation.cameras[c.cameraId];
-            ImageData &view= observations[c.cameraId][c.imageId];
+            ImageData &view = observations[c.cameraId][c.imageId];
 
             if (view.undistortedPattern.size())
             {
@@ -701,7 +700,7 @@ void CalibrationJob::computeSingleCameraErrors()
                     cnt++;
                 }
                 rmse = cnt ? std::sqrt(rmse / cnt) : -1.0;
-                view.singleCameraRmse =  rmse;
+                view.singleCameraRmse = rmse;
                 view.singleCameraMaxError = me;
             }
             else

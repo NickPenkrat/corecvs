@@ -7,7 +7,7 @@
 
 #include "calibrationJob.h"
 #include "jsonGetter.h"
-//#include "jsonSetter.h"
+#include "jsonSetter.h"
 #include "utils.h"
 
 #include <QFile>
@@ -82,10 +82,10 @@ inline const QString addPath(const char* name)
 
 inline void addImageToJob(CalibrationJob* job, int camN, int imageN, const char* name)
 {
-    string undist = HelperUtils::getFilePathWithSuffixAtName(name, "_undist");
+    //string undist = HelperUtils::getFilePathWithSuffixAtName(name, "_undist");
 
     job->observations[camN][imageN].sourceFileName      = addPath(name).toStdString();
-    //job->observations[camN][imageN].undistortedFileName = addPath(undist.c_str()).toStdString();
+    job->observations[camN][imageN].undistortedFileName = ""; // addPath(undist.c_str()).toStdString();
 }
 
 void fillJobByTestDataM15(CalibrationJob* job)
@@ -127,24 +127,6 @@ void fillJobByTestDataM15(CalibrationJob* job)
     addImageToJob(job, 5, 0, "SPA5_90deg.jpg");
 }
 
-//int compareFile(FILE* f1, FILE* f2)
-//{
-//    const int N = 100000;
-//    char buf1[N];
-//    char buf2[N];
-//
-//    do {
-//        size_t r1 = fread(buf1, 1, N, f1);
-//        size_t r2 = fread(buf2, 1, N, f2);
-//
-//        if (r1 != r2 || memcmp(buf1, buf2, r1))
-//            return 0;
-//
-//    } while (!feof(f1) || !feof(f2));
-//
-//    return 1;
-//}
-
 TEST_F(CalibrationTest, testDetectDistChessBoard)
 {
     CalibrationJob job;
@@ -153,10 +135,10 @@ TEST_F(CalibrationTest, testDetectDistChessBoard)
     JSONGetter getter(addPath("gIn_updated.json"));
     getter.visit(job, "job");
 
-//    {
-//        JSONSetter setter(addPath("gIn_updated_out.json"));
-//        setter.visit(job, "job");
-//    }
+    //{
+    //    JSONSetter setter(addPath("gIn_updated_out.json"));
+    //    setter.visit(job, "job");
+    //}
 
     fillJobByTestDataM15(&job);
 
@@ -172,7 +154,7 @@ TEST_F(CalibrationTest, testDetectDistChessBoard)
 
     CORE_ASSERT_TRUE(job.observations[0][0].sourcePattern.size() > 160, "Image SPA0_360deg.jpg didn't detect all points");
     CORE_ASSERT_TRUE(job.observations[1][3].sourcePattern.size() > 160, "Image SPA1_285deg.jpg didn't detect all points");
-    CORE_ASSERT_TRUE(job.observations[2][2].sourcePattern.size() > 160, "Image SPA2_255deg.jpg didn't detect all points");
+    CORE_ASSERT_TRUE(job.observations[2][2].sourcePattern.size() > 160, "Image SPA2_240deg.jpg didn't detect all points");
 
     CORE_ASSERT_TRUE(job.observations[0][0].sourcePattern[0].x() == 0, "Point 0 has wrong position X");
     CORE_ASSERT_TRUE(job.observations[0][0].sourcePattern[0].y() == 0, "Point 0 has wrong position Y");
@@ -226,6 +208,11 @@ TEST_F(CalibrationTest, testCalculate)
 
     fillJobByTestDataM15(&job);
     job.calibrate();
+
+    //{
+    //    JSONSetter setter(addPath("esDistOutDist_updated_out.json"));
+    //    setter.visit(job, "job");
+    //}
 
     double calibrationRmse = -1.0;
 

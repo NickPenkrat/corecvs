@@ -34,6 +34,14 @@ struct Status
            << ", total "     << status.totalActions;
         return os;
     }
+
+    std::ostream& progress(std::ostream& os)
+    {
+        os << "\tglobal: " << startedGlobalActions << "/" << completedGlobalActions << "/" << totalGlobalActions
+           << "\tlocal: " << currentAction << " " << startedActions << "/" << completedActions << "/" << totalActions
+           << std::endl;
+        return os;
+    }
 };
 
 class StatusTracker;
