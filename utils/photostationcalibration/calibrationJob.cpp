@@ -319,6 +319,15 @@ void CalibrationJob::prepareUndistortionTransformation(int camId, corecvs::Displ
 {
     auto& cam = photostation.cameras[camId];
     cam.estimateUndistortedSize(settings.distortionApplicationParameters);
+
+    int newW = (int)cam.intrinsics.size[0];
+    int newH = (int)cam.intrinsics.size[1];
+    if (newH < 0 || newW < 0)
+    {
+        L_ERROR_P("invalid distortion data for camId=%d outSize(%dx%d)", camId, newW, newH);
+        return;
+    }
+
     result = RadialCorrection(cam.distortion).getUndistortionTransformation(cam.intrinsics.size
         , cam.intrinsics.distortedSize, 0.25, false);
 }
