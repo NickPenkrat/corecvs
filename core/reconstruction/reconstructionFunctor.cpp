@@ -34,16 +34,25 @@ struct PointFunctor: corecvs::FunctionArgs
         : corecvs::FunctionArgs(3, pt->observations__.size() * N),
           pt(pt),
           errType(errType),
-          N(N) {}
+          N(N)
+    {
+        for (auto& o: pt->observations__)
+        {
+            auto cam = o.second.cameraFixture->getWorldCamera(o.second.camera);
+            auto mat = cam.getCameraMatrix();
+            auto   R = cam.extrinsics.orientation.toMatrix();
+            cached.emplace_back(std::move(cam), mat, R, o.second.observation);
+        }
+    }
     void operator() (const double* in, double* out)
     {
-       pt->reprojectedPosition = corecvs::Vector3dd(in[0], in[1], in[2]);
+       auto vec = pt->reprojectedPosition = corecvs::Vector3dd(in[0], in[1], in[2]);
        int argout = 0;
 #define EC(E, EE, EEE) \
         case corecvs::ReconstructionFunctorOptimizationErrorType::E: \
-            for (auto& o: pt->observations__) \
+            for (auto& o: cached) \
             { \
-                auto  e = o.second.cameraFixture->EE(o.second.featurePoint->reprojectedPosition, o.second.observation, o.second.camera); \
+                auto  e = std::get<0>(o).EE(vec, std::get<3>(o)); \
                 for (int j = 0; j < N; ++j) \
                     out[argout++] = EEE; \
             } \
@@ -60,8 +69,82 @@ struct PointFunctor: corecvs::FunctionArgs
         }
     }
 #undef EC
+
+    corecvs::Matrix jacobianReprojection(const double* in)
+    {
+        int M = cached.size();
+        corecvs::Matrix J(M * N, 3);
+        corecvs::Vector3dd X(in[0], in[1], in[2]);
+        int argout = 0;
+        for (int i = 0; i < M; ++i)
+        {
+            auto P = std::get<1>(cached[i]);
+            auto U = P * X;
+            const double &ux = U[0], &uy = U[1], &uz = U[2];
+            const double &p11 = P.a(0, 0), &p12 = P.a(0, 1), &p13 = P.a(0, 2),
+                         &p21 = P.a(1, 0), &p22 = P.a(1, 1), &p23 = P.a(1, 2),
+                         &p31 = P.a(2, 0), &p32 = P.a(2, 1), &p33 = P.a(2, 2);
+            double e11 = 1.0 / uz,                 e13 = -ux / uz / uz,
+                                   e22 = 1.0 / uz, e23 = -uy / uz / uz;
+            J.a(argout, 0) = e11 * p11 + e13 * p31; J.a(argout, 1) = e11 * p12 + e13 * p32; J.a(argout, 2) = e11 * p13 + e13 * p33;
+            ++argout;
+            J.a(argout, 0) = e22 * p21 + e23 * p31; J.a(argout, 1) = e22 * p22 + e23 * p32; J.a(argout, 2) = e22 * p23 + e23 * p33;
+            ++argout;
+        }
+        return J;
+    }
+
+    corecvs::Matrix jacobianRayDiff(const double* in)
+    {
+        int M = cached.size();
+        corecvs::Matrix J(M * N, 3);
+        corecvs::Vector3dd X(in[0], in[1], in[2]);
+        int argout = 0;
+        for (int i = 0; i < M; ++i)
+        {
+            auto R = std::get<2>(cached[i]);
+            auto U = R * X;
+            const double &x = U[0], &y = U[1], &z = U[2];
+            double n = std::sqrt(U & U);
+            double n3= n * n * n,
+                   x2 = x * x,
+                   y2 = y * y,
+                   z2 = z * z,
+                   xy = x * y,
+                   xz = x * z,
+                   yz = y * z;
+            corecvs::Matrix33 D(
+                    1.0 / n - x2 / n3,          -xy / n3,          -xz / n3,
+                             -xy / n3, 1.0 / n - y2 / n3,          -yz / n3,
+                             -xz / n3,          -yz / n3, 1.0 / n - z2 / n3);
+            auto JJ = D * J;
+            for (int ii = 0; ii < 3; ++ii)
+                for (int jj = 0; jj < 3; ++jj)
+                    J.a(argout + ii, jj) = D.a(ii, jj);
+            argout += 3;
+        }
+        return J;
+    }
+    corecvs::Matrix getJacobian(const double* in, double delta = 1e-7)
+    {
+        switch(errType)
+        {
+            case corecvs::ReconstructionFunctorOptimizationErrorType::ANGULAR:
+            case corecvs::ReconstructionFunctorOptimizationErrorType::CROSS_PRODUCT:
+                return corecvs::FunctionArgs::getJacobian(in, delta);
+            case corecvs::ReconstructionFunctorOptimizationErrorType::REPROJECTION:
+                return jacobianReprojection(in);
+            case corecvs::ReconstructionFunctorOptimizationErrorType::RAY_DIFF:
+                return jacobianRayDiff(in);
+            default:
+                CORE_ASSERT_TRUE_S(false);
+                break;
+        }
+    }
     corecvs::SceneFeaturePoint* pt;
     corecvs::ReconstructionFunctorOptimizationErrorType errType;
+
+    std::vector<std::tuple<corecvs::FixtureCamera, corecvs::Matrix44, corecvs::Matrix33, corecvs::Vector2dd>> cached;
     int N;
 };
 
@@ -69,7 +152,8 @@ void corecvs::ReconstructionFunctor::alternatingMinimization(int steps)
 {
     int N = scene->trackedFeatures.size();
     int ec = getErrorComponentsPerPoint();
-    corecvs::parallelable_for(0, N, [&](const corecvs::BlockedRange<int> &r)
+    int bs = N / 256;
+    corecvs::parallelable_for(0, N, bs, [&](const corecvs::BlockedRange<int> &r)
         {
             for (int i = r.begin(); i < r.end(); ++i)
             {
@@ -381,7 +465,9 @@ void corecvs::ReconstructionFunctor::computeErrors(double *out, const std::vecto
     CORE_ASSERT_TRUE_S(currLastProjection % getErrorComponentsPerPoint() == 0);
 
     ParallelErrorComputator computator(this, projections, out);
-    corecvs::parallelable_for(0, currLastProjection / getErrorComponentsPerPoint(), 16, computator, true);
+    int N = currLastProjection / getErrorComponentsPerPoint();
+    int bs = N / 256;
+    corecvs::parallelable_for(0, N, bs, computator, true);
 
     int idx = currLastProjection;
     for (int i = 0; i < (int)positions.size(); i += 3)
