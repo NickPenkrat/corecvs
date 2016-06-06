@@ -83,6 +83,9 @@
        <property name="toolTip">
          <string>b2bThreshold</string>
        </property>
+       <property name="decimals">
+        <number>6</number>
+       </property>
      </widget>
     </item>
     <item row="4" column="0">

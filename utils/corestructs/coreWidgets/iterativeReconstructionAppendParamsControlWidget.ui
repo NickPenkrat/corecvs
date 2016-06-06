@@ -46,6 +46,9 @@
        <property name="toolTip">
          <string>Inlier threshold for 3P->pose</string>
        </property>
+       <property name="decimals">
+        <number>6</number>
+       </property>
      </widget>
     </item>
     <item row="2" column="0">
@@ -74,6 +77,9 @@
        <property name="toolTip">
          <string>Target error probability for 3P pose estimation</string>
        </property>
+       <property name="decimals">
+        <number>6</number>
+       </property>
      </widget>
     </item>
     <item row="4" column="0">
@@ -87,6 +93,9 @@
      <widget class="QDoubleSpinBox" name="inlierP6PThresholdSpinBox">
        <property name="toolTip">
          <string>Inlier threshold for 6P->pose/3P->orientation</string>
+       </property>
+       <property name="decimals">
+        <number>6</number>
        </property>
      </widget>
     </item>
@@ -115,6 +124,9 @@
      <widget class="QDoubleSpinBox" name="gammaP6PSpinBox">
        <property name="toolTip">
          <string>Target error probability for 6P->pose/3P->orientation</string>
+       </property>
+       <property name="decimals">
+        <number>6</number>
        </property>
      </widget>
     </item>
@@ -157,6 +169,9 @@
      <widget class="QDoubleSpinBox" name="maximalFailureProbabilitySpinBox">
        <property name="toolTip">
          <string>Maximal failure probability for hypothesis acceptance</string>
+       </property>
+       <property name="decimals">
+        <number>6</number>
        </property>
      </widget>
     </item>

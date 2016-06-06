@@ -344,7 +344,7 @@
     <item row="16" column="1">
      <widget class="DoubleVectorWidget" name="patternRadius">
        <property name="toolTip">
-         <string>patternRadius</string>
+         <string>Radius for multi-scale pattern detection</string>
        </property>
        <property name="minimum">
         <double>0</double>
@@ -364,7 +364,7 @@
     <item row="17" column="1">
      <widget class="DoubleVectorWidget" name="patternStartAngleDeg">
        <property name="toolTip">
-         <string>patternStartAngleDeg</string>
+         <string>Angle for rotation-variant detection</string>
        </property>
        <property name="minimum">
         <double>0</double>
@@ -384,7 +384,7 @@
     <item row="18" column="1">
      <widget class="DoubleVectorWidget" name="cornerScores">
        <property name="toolTip">
-         <string>cornerScores</string>
+         <string>Radius for corner-scoring</string>
        </property>
        <property name="minimum">
         <double>0</double>

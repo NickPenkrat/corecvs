@@ -44,6 +44,9 @@
        <property name="value">
         <double>5</double>
        </property>
+       <property name="decimals">
+        <number>6</number>
+       </property>
      </widget>
     </item>
     <item row="1" column="0">
@@ -69,6 +72,9 @@
        </property>
        <property name="value">
         <double>3</double>
+       </property>
+       <property name="decimals">
+        <number>6</number>
        </property>
      </widget>
     </item>
@@ -124,6 +130,9 @@
        <property name="toolTip">
          <string>RMSE pruning scaler</string>
        </property>
+       <property name="decimals">
+        <number>6</number>
+       </property>
      </widget>
     </item>
     <item row="5" column="0">
@@ -137,6 +146,9 @@
      <widget class="QDoubleSpinBox" name="maxPruningScalerSpinBox">
        <property name="toolTip">
          <string>Max pruning scaler</string>
+       </property>
+       <property name="decimals">
+        <number>6</number>
        </property>
      </widget>
     </item>

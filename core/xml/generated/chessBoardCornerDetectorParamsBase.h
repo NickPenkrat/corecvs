@@ -161,19 +161,19 @@ public:
 
     /** 
      * \brief patternRadius 
-     * patternRadius 
+     * Radius for multi-scale pattern detection 
      */
     vector<double> mPatternRadius;
 
     /** 
      * \brief patternStartAngleDeg 
-     * patternStartAngleDeg 
+     * Angle for rotation-variant detection 
      */
     vector<double> mPatternStartAngleDeg;
 
     /** 
      * \brief cornerScores 
-     * cornerScores 
+     * Radius for corner-scoring 
      */
     vector<double> mCornerScores;
 
