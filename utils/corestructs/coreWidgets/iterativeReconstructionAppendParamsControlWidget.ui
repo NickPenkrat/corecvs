@@ -32,6 +32,18 @@
        <property name="toolTip">
          <string>Maximal post-append iterations</string>
        </property>
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>100000</number>
+       </property>
+       <property name="singleStep">
+        <number>1</number>
+       </property>
+       <property name="value">
+        <number>2</number>
+       </property>
      </widget>
     </item>
     <item row="1" column="0">
@@ -45,6 +57,18 @@
      <widget class="QDoubleSpinBox" name="inlierP3PThresholdSpinBox">
        <property name="toolTip">
          <string>Inlier threshold for 3P->pose</string>
+       </property>
+       <property name="minimum">
+        <double>0</double>
+       </property>
+       <property name="maximum">
+        <double>10000</double>
+       </property>
+       <property name="singleStep">
+        <double>0.0001</double>
+       </property>
+       <property name="value">
+        <double>2</double>
        </property>
        <property name="decimals">
         <number>6</number>
@@ -63,6 +87,18 @@
        <property name="toolTip">
          <string>Maximal ransac iterations for 3P->pose</string>
        </property>
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>1000000</number>
+       </property>
+       <property name="singleStep">
+        <number>1</number>
+       </property>
+       <property name="value">
+        <number>100000</number>
+       </property>
      </widget>
     </item>
     <item row="3" column="0">
@@ -76,6 +112,18 @@
      <widget class="QDoubleSpinBox" name="gammaP3PSpinBox">
        <property name="toolTip">
          <string>Target error probability for 3P pose estimation</string>
+       </property>
+       <property name="minimum">
+        <double>0</double>
+       </property>
+       <property name="maximum">
+        <double>1</double>
+       </property>
+       <property name="singleStep">
+        <double>0.0001</double>
+       </property>
+       <property name="value">
+        <double>0.01</double>
        </property>
        <property name="decimals">
         <number>6</number>
@@ -94,6 +142,18 @@
        <property name="toolTip">
          <string>Inlier threshold for 6P->pose/3P->orientation</string>
        </property>
+       <property name="minimum">
+        <double>0</double>
+       </property>
+       <property name="maximum">
+        <double>10000</double>
+       </property>
+       <property name="singleStep">
+        <double>0.001</double>
+       </property>
+       <property name="value">
+        <double>1</double>
+       </property>
        <property name="decimals">
         <number>6</number>
        </property>
@@ -111,6 +171,18 @@
        <property name="toolTip">
          <string>Maximal ransac iterations for 6P->pose/3P->orientation</string>
        </property>
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>1000000</number>
+       </property>
+       <property name="singleStep">
+        <number>1</number>
+       </property>
+       <property name="value">
+        <number>400000</number>
+       </property>
      </widget>
     </item>
     <item row="6" column="0">
@@ -124,6 +196,18 @@
      <widget class="QDoubleSpinBox" name="gammaP6PSpinBox">
        <property name="toolTip">
          <string>Target error probability for 6P->pose/3P->orientation</string>
+       </property>
+       <property name="minimum">
+        <double>0</double>
+       </property>
+       <property name="maximum">
+        <double>1</double>
+       </property>
+       <property name="singleStep">
+        <double>0.0001</double>
+       </property>
+       <property name="value">
+        <double>0.01</double>
        </property>
        <property name="decimals">
         <number>6</number>
@@ -142,6 +226,18 @@
        <property name="toolTip">
          <string>This defines how many multicameras are subject for P3P evaluation at each iteration</string>
        </property>
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>1000000</number>
+       </property>
+       <property name="singleStep">
+        <number>1</number>
+       </property>
+       <property name="value">
+        <number>1000</number>
+       </property>
      </widget>
     </item>
     <item row="8" column="0">
@@ -156,6 +252,18 @@
        <property name="toolTip">
          <string>Minimal inlier count for hypotheis acceptance</string>
        </property>
+       <property name="minimum">
+        <number>3</number>
+       </property>
+       <property name="maximum">
+        <number>1000000</number>
+       </property>
+       <property name="singleStep">
+        <number>1</number>
+       </property>
+       <property name="value">
+        <number>32</number>
+       </property>
      </widget>
     </item>
     <item row="9" column="0">
@@ -169,6 +277,18 @@
      <widget class="QDoubleSpinBox" name="maximalFailureProbabilitySpinBox">
        <property name="toolTip">
          <string>Maximal failure probability for hypothesis acceptance</string>
+       </property>
+       <property name="minimum">
+        <double>0</double>
+       </property>
+       <property name="maximum">
+        <double>1</double>
+       </property>
+       <property name="singleStep">
+        <double>0.001</double>
+       </property>
+       <property name="value">
+        <double>0.15</double>
        </property>
        <property name="decimals">
         <number>6</number>

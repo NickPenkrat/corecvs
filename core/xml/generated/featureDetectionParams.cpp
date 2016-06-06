@@ -78,7 +78,10 @@ int FeatureDetectionParams::staticInit()
           0.9,
           "b2bThreshold",
           "b2bThreshold",
-          "b2bThreshold"
+          "b2bThreshold",
+          true,
+         0,
+         1
         )
     );
     fields().push_back(

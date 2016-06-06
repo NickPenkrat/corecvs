@@ -74,7 +74,10 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
           200,
           "postAppendNonlinearIterations",
           "postAppendNonlinearIterations",
-          "Post-append non-linear optimization iterations"
+          "Post-append non-linear optimization iterations",
+          true,
+         1,
+         100000
         )
     );
     fields().push_back(
@@ -85,7 +88,10 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
           2000,
           "finalNonLinearIterations",
           "finalNonLinearIterations",
-          "Final non-linear iterations"
+          "Final non-linear iterations",
+          true,
+         1,
+         100000
         )
     );
     fields().push_back(
@@ -96,7 +102,10 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
           20,
           "alternatingIterations",
           "alternatingIterations",
-          "Alternating optimization on success steps"
+          "Alternating optimization on success steps",
+          true,
+         0,
+         1000
         )
     );
     fields().push_back(

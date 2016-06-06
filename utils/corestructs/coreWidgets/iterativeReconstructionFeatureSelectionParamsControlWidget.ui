@@ -33,7 +33,7 @@
          <string>Inlier threshold</string>
        </property>
        <property name="minimum">
-        <double>-50000</double>
+        <double>0</double>
        </property>
        <property name="maximum">
         <double>50000</double>
@@ -62,7 +62,7 @@
          <string>Track append threshold</string>
        </property>
        <property name="minimum">
-        <double>-50000</double>
+        <double>0</double>
        </property>
        <property name="maximum">
         <double>50000</double>
@@ -91,10 +91,10 @@
          <string>Track distance limit</string>
        </property>
        <property name="minimum">
-        <double>-50000</double>
+        <double>0</double>
        </property>
        <property name="maximum">
-        <double>50000</double>
+        <double>500000</double>
        </property>
        <property name="singleStep">
         <double>1</double>
@@ -130,6 +130,18 @@
        <property name="toolTip">
          <string>RMSE pruning scaler</string>
        </property>
+       <property name="minimum">
+        <double>0</double>
+       </property>
+       <property name="maximum">
+        <double>10000</double>
+       </property>
+       <property name="singleStep">
+        <double>1</double>
+       </property>
+       <property name="value">
+        <double>3</double>
+       </property>
        <property name="decimals">
         <number>6</number>
        </property>
@@ -146,6 +158,18 @@
      <widget class="QDoubleSpinBox" name="maxPruningScalerSpinBox">
        <property name="toolTip">
          <string>Max pruning scaler</string>
+       </property>
+       <property name="minimum">
+        <double>0</double>
+       </property>
+       <property name="maximum">
+        <double>10000</double>
+       </property>
+       <property name="singleStep">
+        <double>1</double>
+       </property>
+       <property name="value">
+        <double>5</double>
        </property>
        <property name="decimals">
         <number>6</number>

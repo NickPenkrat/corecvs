@@ -1,17 +1,17 @@
 <poco version="5.0">
   
   <class name="Iterative Reconstruction Initialization Params">
-    <field type="double" name="b2bRansacP5RPThreshold"       defaultValue="0.8" min="-50000" max="50000" comment="Best-2nd best essential estimator threshold"/>
-    <field type="double" name="inlierP5RPThreshold"          defaultValue="5.0" min="-50000" max="50000" comment="Inlier threshold"/>
+    <field type="double" name="b2bRansacP5RPThreshold"       defaultValue="0.8" min="0" max="1" comment="Best-2nd best essential estimator threshold"/>
+    <field type="double" name="inlierP5RPThreshold"          defaultValue="5.0" min="0" max="50000" comment="Inlier threshold"/>
 
     <field type="int"    name="maxEssentialRansacIterations" defaultValue="600000" min="0" max="5000000" step="100" comment="Maximal essential estimator rounds"/>
 
-    <field type="double" name="b2bRansacP6RPThreshold" defaultValue="0.8" min="-50000" max="50000" comment="Best-2nd best relative pose estimator threshold" />
+    <field type="double" name="b2bRansacP6RPThreshold" defaultValue="0.8" min="0" max="1" comment="Best-2nd best relative pose estimator threshold" />
     <field type="bool"   name="runEssentialFiltering"  defaultValue="true"                         comment="Run essential filtering prior relative pose estimation" />
-    <field type="double" name="essentialTargetGamma"   defaultValue="0.01" min="0" max="50000"  step="0.01" decimals="6"/>
-    <field type="int" name="maxP6RPIterations" defaultValue="400000" comment="Maximal number of ransac iterations for pose estimation using pairwise correspondences"/>
-    <field type="double" name="inlierP6RPThreshold" defaultValue="1.0" decimals="6" comment="Inlier threshold for pose estimation using pairwise correspondences"/>
-    <field type="double" name="gammaP6RP" defaultValue="0.001" decimals="6" comment="Target failure probability for pose estimation" />
+    <field type="double" name="essentialTargetGamma"   defaultValue="0.01" min="0" max="1"  step="0.01" decimals="6"/>
+    <field type="int" name="maxP6RPIterations" defaultValue="400000" min="0" max="100000000" comment="Maximal number of ransac iterations for pose estimation using pairwise correspondences"/>
+    <field type="double" name="inlierP6RPThreshold" defaultValue="1.0" min="0" max="1000" step="0.01" decimals="6" comment="Inlier threshold for pose estimation using pairwise correspondences"/>
+    <field type="double" name="gammaP6RP" defaultValue="0.01" min="0" max="1" step="0.01" decimals="6" comment="Target failure probability for pose estimation" />
   </class>
 
 
@@ -19,32 +19,32 @@
     <field type="string" name="detector"   defaultValue="ORB" />
     <field type="string" name="descriptor" defaultValue="ORB" />
     <field type="string" name="matcher"    defaultValue="BF" />
-    <field type="double" name="b2bThreshold"    defaultValue="0.9" decimals="6" />
+    <field type="double" name="b2bThreshold"    defaultValue="0.9" min="0" max="1" step="0.01" decimals="6" />
     <field type="bool"   name="matchF2F"        defaultValue="false" />
   </class>
   
   <class name="Iterative Reconstruction Feature Selection Params">
-    <field type="double" name="inlierThreshold"             defaultValue="5.0" decimals="6"  min="-50000" max="50000" comment="Inlier threshold"/>
-    <field type="double" name="trackInlierThreshold"        defaultValue="3.0" decimals="6"  min="-50000" max="50000" comment="Track append threshold"/>
-    <field type="double" name="distanceLimit"               defaultValue="1000" min="-50000" max="50000" comment="Track distance limit"/>
+    <field type="double" name="inlierThreshold"             defaultValue="5.0" decimals="6"  min="0" max="50000" comment="Inlier threshold"/>
+    <field type="double" name="trackInlierThreshold"        defaultValue="3.0" decimals="6"  min="0" max="50000" comment="Track append threshold"/>
+    <field type="double" name="distanceLimit"               defaultValue="1000" min="0" max="500000" comment="Track distance limit"/>
 
     <field type="Feature Detection Params" name="featureDetectionParams" />
     
-    <field type="double" name="rmsePruningScaler" defaultValue="3.0" decimals="6" comment="RMSE pruning scaler" />
-    <field type="double" name="maxPruningScaler"  defaultValue="5.0" decimals="6" comment="Max pruning scaler" />
+    <field type="double" name="rmsePruningScaler" defaultValue="3.0" decimals="6" min="0" max="10000" comment="RMSE pruning scaler" />
+    <field type="double" name="maxPruningScaler"  defaultValue="5.0" decimals="6" min="0" max="10000" comment="Max pruning scaler" />
   </class>
 
   <class name="Iterative Reconstruction Append Params">
-    <field type="int"    name="maxPostAppend"      defaultValue="2"      comment="Maximal post-append iterations" />
-    <field type="double" name="inlierP3PThreshold" defaultvalue="2.0" decimals="6"    comment="Inlier threshold for 3P->pose" />
-    <field type="int"    name="maxP3PIterations"   defaultValue="100000" comment="Maximal ransac iterations for 3P->pose" />
-    <field type="double" name="gammaP3P"           defaultvalue="0.001" decimals="6"  comment="Target error probability for 3P pose estimation" />
-    <field type="double" name="inlierP6PThreshold" defaultvalue="1.0" decimals="6"    comment="Inlier threshold for 6P->pose/3P->orientation" />
-    <field type="int"    name="maxP6PIterations"   defaultvalue="400000" comment="Maximal ransac iterations for 6P->pose/3P->orientation" />
-    <field type="double" name="gammaP6P"           defaultValue="0.001" decimals="6"  comment="Target error probability for 6P->pose/3P->orientation" />
-    <field type="int" name="speculativity"      defaultValue="1000"   comment="This defines how many multicameras are subject for P3P evaluation at each iteration" />
-    <field type="int" name="minimalInlierCount" defaultValue="32"     comment="Minimal inlier count for hypotheis acceptance" />
-    <field type="double" name="maximalFailureProbability" defaultValue="0.15" decimals="6" comment="Maximal failure probability for hypothesis acceptance" />
+    <field type="int"    name="maxPostAppend"      defaultValue="2"   min="1" max="100000"   comment="Maximal post-append iterations" />
+    <field type="double" name="inlierP3PThreshold" defaultValue="2.0" step="0.0001" decimals="6" min="0.0" max="10000"   comment="Inlier threshold for 3P->pose" />
+    <field type="int"    name="maxP3PIterations"   defaultValue="100000" min="1" max="1000000" comment="Maximal ransac iterations for 3P->pose" />
+    <field type="double" name="gammaP3P"           defaultValue="0.01" step="0.0001" min="0" max="1" decimals="6" comment="Target error probability for 3P pose estimation" />
+    <field type="double" name="inlierP6PThreshold" defaultValue="1.0" step="0.001" min="0" max="10000" decimals="6"    comment="Inlier threshold for 6P->pose/3P->orientation" />
+    <field type="int"    name="maxP6PIterations"   defaultValue="400000" min="1" max="1000000" comment="Maximal ransac iterations for 6P->pose/3P->orientation" />
+    <field type="double" name="gammaP6P"           defaultValue="0.01" step="0.0001" min="0" max="1" decimals="6"  comment="Target error probability for 6P->pose/3P->orientation" />
+    <field type="int" name="speculativity"      defaultValue="1000" min="1" max="1000000"  comment="This defines how many multicameras are subject for P3P evaluation at each iteration" />
+    <field type="int" name="minimalInlierCount" defaultValue="32"  min="3" max="1000000"   comment="Minimal inlier count for hypotheis acceptance" />
+    <field type="double" name="maximalFailureProbability" defaultValue="0.15" min="0" max="1" step="0.001"  decimals="6" comment="Maximal failure probability for hypothesis acceptance" />
   </class>
 
   <class name="Reconstruction Functor Optimization Params">
@@ -68,9 +68,9 @@
   <class name="Iterative Reconstruction Nonlinear Optimization Params Wrapper">
     <field type="Reconstruction Functor Optimization Params" name="optimizationParams">
     <field type="Reconstruction Functor Optimization Error Type" name="errorType" defaultValue="3" comment="Functor optimizattion error type" />
-    <field type="int" name="postAppendNonlinearIterations" defaultValue="200" comment="Post-append non-linear optimization iterations" />
-    <field type="int" name="finalNonLinearIterations" defaultValue="2000" comment="Final non-linear iterations" />
-    <field type="int" name="alternatingIterations" defaultValue="20" comment="Alternating optimization on success steps" />
+    <field type="int" name="postAppendNonlinearIterations" defaultValue="200" min="1" max="100000" comment="Post-append non-linear optimization iterations" />
+    <field type="int" name="finalNonLinearIterations" defaultValue="2000" min="1" max="100000"  comment="Final non-linear iterations" />
+    <field type="int" name="alternatingIterations" defaultValue="20" min="0" max="1000" comment="Alternating optimization on success steps" />
 
     <field type="bool" name="excessiveQuaternionParametrization" defaultValue="true" comment="Excessive/non-excessive quaternion parametrization" />
   </class>
