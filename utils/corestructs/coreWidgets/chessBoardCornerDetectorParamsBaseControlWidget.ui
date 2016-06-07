@@ -317,6 +317,9 @@
        <property name="toolTip">
          <string>Non Minimal Supresstion threshold</string>
        </property>
+       <property name="decimals">
+        <number>3</number>
+       </property>
        <property name="minimum">
         <double>0</double>
        </property>
@@ -328,9 +331,6 @@
        </property>
        <property name="value">
         <double>0.025</double>
-       </property>
-       <property name="decimals">
-        <number>3</number>
        </property>
      </widget>
     </item>

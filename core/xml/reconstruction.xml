@@ -38,10 +38,10 @@
     <field type="int"    name="maxPostAppend"      defaultValue="2"   min="1" max="100000"   comment="Maximal post-append iterations" />
     <field type="double" name="inlierP3PThreshold" defaultValue="2.0" step="0.0001" decimals="6" min="0.0" max="10000"   comment="Inlier threshold for 3P->pose" />
     <field type="int"    name="maxP3PIterations"   defaultValue="100000" min="1" max="1000000" comment="Maximal ransac iterations for 3P->pose" />
-    <field type="double" name="gammaP3P"           defaultValue="0.01" step="0.0001" min="0" max="1" decimals="6" comment="Target error probability for 3P pose estimation" />
+    <field type="double" name="gammaP3P"           defaultValue="0.001" step="0.0001" min="0" max="1" decimals="6" comment="Target error probability for 3P pose estimation" />
     <field type="double" name="inlierP6PThreshold" defaultValue="1.0" step="0.001" min="0" max="10000" decimals="6"    comment="Inlier threshold for 6P->pose/3P->orientation" />
     <field type="int"    name="maxP6PIterations"   defaultValue="400000" min="1" max="1000000" comment="Maximal ransac iterations for 6P->pose/3P->orientation" />
-    <field type="double" name="gammaP6P"           defaultValue="0.01" step="0.0001" min="0" max="1" decimals="6"  comment="Target error probability for 6P->pose/3P->orientation" />
+    <field type="double" name="gammaP6P"           defaultValue="0.001" step="0.0001" min="0" max="1" decimals="6"  comment="Target error probability for 6P->pose/3P->orientation" />
     <field type="int" name="speculativity"      defaultValue="1000" min="1" max="1000000"  comment="This defines how many multicameras are subject for P3P evaluation at each iteration" />
     <field type="int" name="minimalInlierCount" defaultValue="32"  min="3" max="1000000"   comment="Minimal inlier count for hypotheis acceptance" />
     <field type="double" name="maximalFailureProbability" defaultValue="0.15" min="0" max="1" step="0.001"  decimals="6" comment="Maximal failure probability for hypothesis acceptance" />

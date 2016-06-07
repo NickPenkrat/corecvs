@@ -153,6 +153,9 @@
        <property name="toolTip">
          <string>essentialTargetGamma</string>
        </property>
+       <property name="decimals">
+        <number>6</number>
+       </property>
        <property name="minimum">
         <double>0</double>
        </property>
@@ -164,9 +167,6 @@
        </property>
        <property name="value">
         <double>0.01</double>
-       </property>
-       <property name="decimals">
-        <number>6</number>
        </property>
      </widget>
     </item>
@@ -208,6 +208,9 @@
        <property name="toolTip">
          <string>Inlier threshold for pose estimation using pairwise correspondences</string>
        </property>
+       <property name="decimals">
+        <number>6</number>
+       </property>
        <property name="minimum">
         <double>0</double>
        </property>
@@ -219,9 +222,6 @@
        </property>
        <property name="value">
         <double>1</double>
-       </property>
-       <property name="decimals">
-        <number>6</number>
        </property>
      </widget>
     </item>
@@ -237,6 +237,9 @@
        <property name="toolTip">
          <string>Target failure probability for pose estimation</string>
        </property>
+       <property name="decimals">
+        <number>6</number>
+       </property>
        <property name="minimum">
         <double>0</double>
        </property>
@@ -248,9 +251,6 @@
        </property>
        <property name="value">
         <double>0.01</double>
-       </property>
-       <property name="decimals">
-        <number>6</number>
        </property>
      </widget>
     </item>

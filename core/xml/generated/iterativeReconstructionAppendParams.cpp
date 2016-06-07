@@ -84,7 +84,7 @@ int IterativeReconstructionAppendParams::staticInit()
         (
           IterativeReconstructionAppendParams::GAMMAP3P_ID,
           offsetof(IterativeReconstructionAppendParams, mGammaP3P),
-          0.01,
+          0.001,
           "gammaP3P",
           "gammaP3P",
           "Target error probability for 3P pose estimation",
@@ -126,7 +126,7 @@ int IterativeReconstructionAppendParams::staticInit()
         (
           IterativeReconstructionAppendParams::GAMMAP6P_ID,
           offsetof(IterativeReconstructionAppendParams, mGammaP6P),
-          0.01,
+          0.001,
           "gammaP6P",
           "gammaP6P",
           "Target error probability for 6P->pose/3P->orientation",

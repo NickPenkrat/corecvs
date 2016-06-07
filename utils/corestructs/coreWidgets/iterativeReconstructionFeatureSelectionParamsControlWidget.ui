@@ -32,6 +32,9 @@
        <property name="toolTip">
          <string>Inlier threshold</string>
        </property>
+       <property name="decimals">
+        <number>6</number>
+       </property>
        <property name="minimum">
         <double>0</double>
        </property>
@@ -43,9 +46,6 @@
        </property>
        <property name="value">
         <double>5</double>
-       </property>
-       <property name="decimals">
-        <number>6</number>
        </property>
      </widget>
     </item>
@@ -61,6 +61,9 @@
        <property name="toolTip">
          <string>Track append threshold</string>
        </property>
+       <property name="decimals">
+        <number>6</number>
+       </property>
        <property name="minimum">
         <double>0</double>
        </property>
@@ -72,9 +75,6 @@
        </property>
        <property name="value">
         <double>3</double>
-       </property>
-       <property name="decimals">
-        <number>6</number>
        </property>
      </widget>
     </item>
@@ -130,6 +130,9 @@
        <property name="toolTip">
          <string>RMSE pruning scaler</string>
        </property>
+       <property name="decimals">
+        <number>6</number>
+       </property>
        <property name="minimum">
         <double>0</double>
        </property>
@@ -141,9 +144,6 @@
        </property>
        <property name="value">
         <double>3</double>
-       </property>
-       <property name="decimals">
-        <number>6</number>
        </property>
      </widget>
     </item>
@@ -159,6 +159,9 @@
        <property name="toolTip">
          <string>Max pruning scaler</string>
        </property>
+       <property name="decimals">
+        <number>6</number>
+       </property>
        <property name="minimum">
         <double>0</double>
        </property>
@@ -170,9 +173,6 @@
        </property>
        <property name="value">
         <double>5</double>
-       </property>
-       <property name="decimals">
-        <number>6</number>
        </property>
      </widget>
     </item>

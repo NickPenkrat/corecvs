@@ -58,6 +58,9 @@
        <property name="toolTip">
          <string>Inlier threshold for 3P->pose</string>
        </property>
+       <property name="decimals">
+        <number>6</number>
+       </property>
        <property name="minimum">
         <double>0</double>
        </property>
@@ -69,9 +72,6 @@
        </property>
        <property name="value">
         <double>2</double>
-       </property>
-       <property name="decimals">
-        <number>6</number>
        </property>
      </widget>
     </item>
@@ -113,6 +113,9 @@
        <property name="toolTip">
          <string>Target error probability for 3P pose estimation</string>
        </property>
+       <property name="decimals">
+        <number>6</number>
+       </property>
        <property name="minimum">
         <double>0</double>
        </property>
@@ -123,10 +126,7 @@
         <double>0.0001</double>
        </property>
        <property name="value">
-        <double>0.01</double>
-       </property>
-       <property name="decimals">
-        <number>6</number>
+        <double>0.001</double>
        </property>
      </widget>
     </item>
@@ -142,6 +142,9 @@
        <property name="toolTip">
          <string>Inlier threshold for 6P->pose/3P->orientation</string>
        </property>
+       <property name="decimals">
+        <number>6</number>
+       </property>
        <property name="minimum">
         <double>0</double>
        </property>
@@ -153,9 +156,6 @@
        </property>
        <property name="value">
         <double>1</double>
-       </property>
-       <property name="decimals">
-        <number>6</number>
        </property>
      </widget>
     </item>
@@ -197,6 +197,9 @@
        <property name="toolTip">
          <string>Target error probability for 6P->pose/3P->orientation</string>
        </property>
+       <property name="decimals">
+        <number>6</number>
+       </property>
        <property name="minimum">
         <double>0</double>
        </property>
@@ -207,10 +210,7 @@
         <double>0.0001</double>
        </property>
        <property name="value">
-        <double>0.01</double>
-       </property>
-       <property name="decimals">
-        <number>6</number>
+        <double>0.001</double>
        </property>
      </widget>
     </item>
@@ -278,6 +278,9 @@
        <property name="toolTip">
          <string>Maximal failure probability for hypothesis acceptance</string>
        </property>
+       <property name="decimals">
+        <number>6</number>
+       </property>
        <property name="minimum">
         <double>0</double>
        </property>
@@ -289,9 +292,6 @@
        </property>
        <property name="value">
         <double>0.15</double>
-       </property>
-       <property name="decimals">
-        <number>6</number>
        </property>
      </widget>
     </item>
