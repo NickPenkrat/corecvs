@@ -443,7 +443,8 @@ QString WidgetUiGenerator::getDoubleWidgetProperties(const BaseField* field)
     QString result;
 
     const DoubleFieldGen *dfield = static_cast<const DoubleFieldGen *>(field);
-
+    if (dfield->decimals != 2)
+        result += DECIMALS_TEMPLATE.arg(QString::number(dfield->decimals));
     if (dfield->hasAdditionalValues)
         result += SETTING_TEMPLATE
             .arg(QString::number(dfield->min))
@@ -457,9 +458,6 @@ QString WidgetUiGenerator::getDoubleWidgetProperties(const BaseField* field)
 
     if (!dfield->suffix.isEmpty())
         result += SUFFIX_TEMPLATE.arg(dfield->suffix);
-
-    if (dfield->decimals != 2)
-        result += DECIMALS_TEMPLATE.arg(QString::number(dfield->decimals));
 
     return result;
 }
