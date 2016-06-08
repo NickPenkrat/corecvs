@@ -44,6 +44,7 @@ public:
         MATCHER_ID,
         B2BTHRESHOLD_ID,
         MATCHF2F_ID,
+        PARAMETERS_ID,
         FEATURE_DETECTION_PARAMS_FIELD_ID_NUM
     };
 
@@ -79,6 +80,12 @@ public:
      */
     bool mMatchF2F;
 
+    /** 
+     * \brief parameters 
+     * Additional parameters 
+     */
+    std::string mParameters;
+
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
 
@@ -112,6 +119,11 @@ public:
         return mMatchF2F;
     }
 
+    std::string parameters() const
+    {
+        return mParameters;
+    }
+
     /* Section with setters */
     void setDetector(std::string detector)
     {
@@ -138,6 +150,11 @@ public:
         mMatchF2F = matchF2F;
     }
 
+    void setParameters(std::string parameters)
+    {
+        mParameters = parameters;
+    }
+
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
@@ -148,6 +165,7 @@ template<class VisitorType>
         visitor.visit(mMatcher,                   static_cast<const StringField *>  (fields()[MATCHER_ID]));
         visitor.visit(mB2bThreshold,              static_cast<const DoubleField *>  (fields()[B2BTHRESHOLD_ID]));
         visitor.visit(mMatchF2F,                  static_cast<const BoolField *>    (fields()[MATCHF2F_ID]));
+        visitor.visit(mParameters,                static_cast<const StringField *>  (fields()[PARAMETERS_ID]));
     }
 
     FeatureDetectionParams()
@@ -162,6 +180,7 @@ template<class VisitorType>
         , std::string matcher
         , double b2bThreshold
         , bool matchF2F
+        , std::string parameters
     )
     {
         mDetector = detector;
@@ -169,6 +188,7 @@ template<class VisitorType>
         mMatcher = matcher;
         mB2bThreshold = b2bThreshold;
         mMatchF2F = matchF2F;
+        mParameters = parameters;
     }
 
     friend ostream& operator << (ostream &out, FeatureDetectionParams &toSave)

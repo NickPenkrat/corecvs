@@ -25,6 +25,7 @@ FeatureDetectionParamsControlWidget::FeatureDetectionParamsControlWidget(QWidget
     QObject::connect(mUi->matcherEdit, SIGNAL(textChanged(QString)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->b2bThresholdSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->matchF2FCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->parametersEdit, SIGNAL(textChanged(QString)), this, SIGNAL(paramsChanged()));
 }
 
 FeatureDetectionParamsControlWidget::~FeatureDetectionParamsControlWidget()
@@ -57,6 +58,7 @@ void FeatureDetectionParamsControlWidget::getParameters(FeatureDetectionParams& 
     params.setMatcher          (mUi->matcherEdit->text().toStdString());
     params.setB2bThreshold     (mUi->b2bThresholdSpinBox->value());
     params.setMatchF2F         (mUi->matchF2FCheckBox->isChecked());
+    params.setParameters       (mUi->parametersEdit->text().toStdString());
 
 }
 
@@ -74,6 +76,7 @@ FeatureDetectionParams *FeatureDetectionParamsControlWidget::createParameters() 
         , mUi->matcherEdit->text().toStdString()
         , mUi->b2bThresholdSpinBox->value()
         , mUi->matchF2FCheckBox->isChecked()
+        , mUi->parametersEdit->text().toStdString()
     );
     return result;
 }
@@ -87,6 +90,7 @@ void FeatureDetectionParamsControlWidget::setParameters(const FeatureDetectionPa
     mUi->matcherEdit->setText(input.matcher().c_str());
     mUi->b2bThresholdSpinBox->setValue(input.b2bThreshold());
     mUi->matchF2FCheckBox->setChecked(input.matchF2F());
+    mUi->parametersEdit->setText(input.parameters().c_str());
     blockSignals(wasBlocked);
     emit paramsChanged();
 }

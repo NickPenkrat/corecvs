@@ -37,7 +37,7 @@ struct IterativeReconstructionNonlinearOptimizationParams
     void accept(VisitorType &visitor)
     {
         visitor.visit(postAppendNonlinearIterations , 200, "postAppendNonlinearIterations");
-        visitor.visit(errorType, ReconstructionFunctorOptimizationType::ReconstructionFunctorOptimizationErrorType::RAY_DIFF, "errorType");
+        visitor.visit(errorType, ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType::RAY_DIFF, "errorType");
         visitor.visit(finalNonLinearIterations , 2000,     "finalNonLinearIterations");
         visitor.visit(alternatingIterations , 20,"alternatingIterations");
         visitor.visit(excessiveQuaternionParametrization , true,"excessiveQuaternionParametrization");

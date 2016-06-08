@@ -95,6 +95,17 @@ int FeatureDetectionParams::staticInit()
           "matchF2F"
         )
     );
+    fields().push_back(
+        new StringField
+        (
+          FeatureDetectionParams::PARAMETERS_ID,
+          offsetof(FeatureDetectionParams, mParameters),
+          "",
+          "parameters",
+          "parameters",
+          "Additional parameters"
+        )
+    );
    return 0;
 }
 
