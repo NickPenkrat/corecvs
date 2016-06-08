@@ -167,7 +167,7 @@ SiftGpu::~SiftGpu()
         expr; \
     }
 
-DescriptorExtractor* SiftGpuDescriptorExtractorProvider::getDescriptorExtractor(const DescriptorType &type)
+DescriptorExtractor* SiftGpuDescriptorExtractorProvider::getDescriptorExtractor(const DescriptorType &type, const std::string&)
 {
     SWITCH_TYPE(SIFTGPU,
        return new SiftGpu();)
@@ -181,7 +181,7 @@ bool SiftGpuDescriptorExtractorProvider::provides(const DescriptorType &type)
 }
 
 
-FeatureDetector* SiftGpuFeatureDetectorProvider::getFeatureDetector(const DetectorType &type)
+FeatureDetector* SiftGpuFeatureDetectorProvider::getFeatureDetector(const DetectorType &type, const std::string&)
 {
     SWITCH_TYPE(SIFTGPU,
             return new SiftGpu();)

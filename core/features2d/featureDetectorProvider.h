@@ -6,35 +6,35 @@
 class FeatureDetector : public virtual AlgoBase
 {
 public:
-	void detect(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints);
-	virtual ~FeatureDetector() {}
+    void detect(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints);
+    virtual ~FeatureDetector() {}
 
 protected:
-	virtual void detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints) = 0;
+    virtual void detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints) = 0;
 };
 
 class FeatureDetectorProviderImpl
 {
 public:
-	virtual FeatureDetector* getFeatureDetector(const DetectorType &type) = 0;
-	virtual bool provides(const DetectorType &type) = 0;
+    virtual FeatureDetector* getFeatureDetector(const DetectorType &type, const std::string &params = "") = 0;
+    virtual bool provides(const DetectorType &type) = 0;
 
-	virtual ~FeatureDetectorProviderImpl() {}
+    virtual ~FeatureDetectorProviderImpl() {}
 };
 
 class FeatureDetectorProvider
 {
 public:
-	static FeatureDetectorProvider& getInstance();
-	~FeatureDetectorProvider();
+    static FeatureDetectorProvider& getInstance();
+    ~FeatureDetectorProvider();
 
-	void add(FeatureDetectorProviderImpl *provider);
-	FeatureDetector* getDetector(const DetectorType &type);
+    void add(FeatureDetectorProviderImpl *provider);
+    FeatureDetector* getDetector(const DetectorType &type, const std::string &params = "");
 
 private:
-	FeatureDetectorProvider();
-	FeatureDetectorProvider(const FeatureDetectorProvider&);
-	FeatureDetectorProvider& operator=(const FeatureDetectorProvider&);
+    FeatureDetectorProvider();
+    FeatureDetectorProvider(const FeatureDetectorProvider&);
+    FeatureDetectorProvider& operator=(const FeatureDetectorProvider&);
 
-	std::vector<FeatureDetectorProviderImpl*> providers;
+    std::vector<FeatureDetectorProviderImpl*> providers;
 };

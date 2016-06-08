@@ -62,7 +62,7 @@ void init_opencv_matchers_provider()
         expr; \
     }
 
-DescriptorMatcher* OpenCvDescriptorMatcherProvider::getDescriptorMatcher(const DescriptorType &type, const MatcherType &matcher)
+DescriptorMatcher* OpenCvDescriptorMatcherProvider::getDescriptorMatcher(const DescriptorType &type, const MatcherType &matcher, const std::string &params)
 {
     SWITCH_MATCHER_TYPE(ANN,
         SWITCH_TYPE(SIFT, return new OpenCvDescriptorMatcherWrapper(new cv::FlannBasedMatcher););

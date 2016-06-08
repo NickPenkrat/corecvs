@@ -68,7 +68,7 @@ extern "C"
 class SiftGpuFeatureDetectorProvider : public FeatureDetectorProviderImpl
 {
 public:
-	FeatureDetector* getFeatureDetector(const DetectorType &type);
+	FeatureDetector* getFeatureDetector(const DetectorType &type, const std::string& params = "");
 	bool provides(const DetectorType &type);
 	~SiftGpuFeatureDetectorProvider() {}
 };
@@ -76,7 +76,7 @@ public:
 class SiftGpuDescriptorExtractorProvider : public DescriptorExtractorProviderImpl
 {
 public:
-	DescriptorExtractor* getDescriptorExtractor(const DescriptorType &type);
+	DescriptorExtractor* getDescriptorExtractor(const DescriptorType &type, const std::string& params = "");
 	bool provides(const DescriptorType &type);
 	~SiftGpuDescriptorExtractorProvider() {}
 };

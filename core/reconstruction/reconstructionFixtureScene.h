@@ -16,6 +16,7 @@ struct FeatureDetectionParams
     std::string matcher    = "BF" ;
     double b2bThreshold    = 0.9  ;
     bool matchF2F          = false;
+    std::string parameters = "maxFeatures=2345";
 
     template<class VisitorType>
         void accept(VisitorType &visitor)
@@ -25,6 +26,7 @@ struct FeatureDetectionParams
             visitor.visit(matcher       ,std::string("BF")     ,"matcher"         );
             visitor.visit(b2bThreshold  ,0.9      ,"b2bThreshold"    );
             visitor.visit(matchF2F      ,false    ,"matchF2F"        );
+            visitor.visit(parameters, std::string(""), "detector parameters");
         }
 };
 

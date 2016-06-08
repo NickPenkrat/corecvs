@@ -53,14 +53,14 @@ void init_opencv_detectors_provider()
 		expr; \
 	}
 
-FeatureDetector* OpenCvFeatureDetectorProvider::getFeatureDetector(const DetectorType &type)
+FeatureDetector* OpenCvFeatureDetectorProvider::getFeatureDetector(const DetectorType &type, const std::string &params)
 {
-	SiftParams siftParams;
-	SurfParams surfParams;
-	StarParams starParams;
-	FastParams fastParams;
-	BriskParams briskParams;
-	OrbParams orbParams;
+	SiftParams siftParams(params);
+	SurfParams surfParams(params);
+	StarParams starParams(params);
+	FastParams fastParams(params);
+	BriskParams briskParams(params);
+	OrbParams orbParams(params);
 	SWITCH_TYPE(SIFT,
 			return new OpenCvFeatureDetectorWrapper(new cv::SIFT(0, siftParams.nOctaveLayers, siftParams.contrastThreshold, siftParams.edgeThreshold, siftParams.sigma));)
 	SWITCH_TYPE(SURF,
@@ -72,7 +72,7 @@ FeatureDetector* OpenCvFeatureDetectorProvider::getFeatureDetector(const Detecto
 	SWITCH_TYPE(BRISK,
 			return new OpenCvFeatureDetectorWrapper(new cv::BRISK(briskParams.thresh, briskParams.octaves, briskParams.patternScale));)
 	SWITCH_TYPE(ORB,
-            return new OpenCvFeatureDetectorWrapper(new cv::ORB(4000, orbParams.scaleFactor, orbParams.nLevels, orbParams.edgeThreshold, orbParams.firstLevel, orbParams.WTA_K, orbParams.scoreType, orbParams.patchSize));)
+            return new OpenCvFeatureDetectorWrapper(new cv::ORB(orbParams.maxFeatures, orbParams.scaleFactor, orbParams.nLevels, orbParams.edgeThreshold, orbParams.firstLevel, orbParams.WTA_K, orbParams.scoreType, orbParams.patchSize));)
 	return 0;
 }
 
