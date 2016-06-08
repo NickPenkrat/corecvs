@@ -20,7 +20,7 @@
     <field type="string" name="descriptor" defaultValue="ORB" />
     <field type="string" name="matcher"    defaultValue="BF" />
     <field type="double" name="b2bThreshold"    defaultValue="0.9" min="0" max="1" step="0.01" decimals="6" />
-    <field type="bool"   name="matchF2F"        defaultValue="false" />
+	<field type="bool"   name="matchF2F"        defaultValue="false" />
   </class>
   
   <class name="Iterative Reconstruction Feature Selection Params">
@@ -31,10 +31,12 @@
     <field type="Feature Detection Params" name="featureDetectionParams" />
     
     <field type="double" name="rmsePruningScaler" defaultValue="3.0" decimals="6" min="0" max="10000" comment="RMSE pruning scaler" />
-    <field type="double" name="maxPruningScaler"  defaultValue="5.0" decimals="6" min="0" max="10000" comment="Max pruning scaler" />
+	<field type="double" name="maxPruningScaler"  defaultValue="5.0" decimals="6" min="0" max="10000" comment="Max pruning scaler" />
+	<field type="bool"   name="skipFeatureDetection" defaultValue="false" comment="Skip feature detection" />
   </class>
 
   <class name="Iterative Reconstruction Append Params">
+    <field type="int" name="postAppendOptimizationWindow" defaultValue="-1" min="-1" max="1000000" comment="Maximal number of fixtures being optimized after append" />
     <field type="int"    name="maxPostAppend"      defaultValue="2"   min="1" max="100000"   comment="Maximal post-append iterations" />
     <field type="double" name="inlierP3PThreshold" defaultValue="2.0" step="0.0001" decimals="6" min="0.0" max="10000"   comment="Inlier threshold for 3P->pose" />
     <field type="int"    name="maxP3PIterations"   defaultValue="100000" min="1" max="1000000" comment="Maximal ransac iterations for 3P->pose" />

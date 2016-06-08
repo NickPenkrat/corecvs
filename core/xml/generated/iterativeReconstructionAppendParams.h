@@ -39,6 +39,7 @@ class IterativeReconstructionAppendParams : public BaseReflection<IterativeRecon
 {
 public:
     enum FieldId {
+        POSTAPPENDOPTIMIZATIONWINDOW_ID,
         MAXPOSTAPPEND_ID,
         INLIERP3PTHRESHOLD_ID,
         MAXP3PITERATIONS_ID,
@@ -53,6 +54,12 @@ public:
     };
 
     /** Section with variables */
+
+    /** 
+     * \brief postAppendOptimizationWindow 
+     * Maximal number of fixtures being optimized after append 
+     */
+    int mPostAppendOptimizationWindow;
 
     /** 
      * \brief maxPostAppend 
@@ -122,6 +129,11 @@ public:
     {
         return (const unsigned char *)(this) + fields()[fieldId]->offset;
     }
+    int postAppendOptimizationWindow() const
+    {
+        return mPostAppendOptimizationWindow;
+    }
+
     int maxPostAppend() const
     {
         return mMaxPostAppend;
@@ -173,6 +185,11 @@ public:
     }
 
     /* Section with setters */
+    void setPostAppendOptimizationWindow(int postAppendOptimizationWindow)
+    {
+        mPostAppendOptimizationWindow = postAppendOptimizationWindow;
+    }
+
     void setMaxPostAppend(int maxPostAppend)
     {
         mMaxPostAppend = maxPostAppend;
@@ -228,6 +245,7 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
+        visitor.visit(mPostAppendOptimizationWindow, static_cast<const IntField *>     (fields()[POSTAPPENDOPTIMIZATIONWINDOW_ID]));
         visitor.visit(mMaxPostAppend,             static_cast<const IntField *>     (fields()[MAXPOSTAPPEND_ID]));
         visitor.visit(mInlierP3PThreshold,        static_cast<const DoubleField *>  (fields()[INLIERP3PTHRESHOLD_ID]));
         visitor.visit(mMaxP3PIterations,          static_cast<const IntField *>     (fields()[MAXP3PITERATIONS_ID]));
@@ -247,7 +265,8 @@ template<class VisitorType>
     }
 
     IterativeReconstructionAppendParams(
-          int maxPostAppend
+          int postAppendOptimizationWindow
+        , int maxPostAppend
         , double inlierP3PThreshold
         , int maxP3PIterations
         , double gammaP3P
@@ -259,6 +278,7 @@ template<class VisitorType>
         , double maximalFailureProbability
     )
     {
+        mPostAppendOptimizationWindow = postAppendOptimizationWindow;
         mMaxPostAppend = maxPostAppend;
         mInlierP3PThreshold = inlierP3PThreshold;
         mMaxP3PIterations = maxP3PIterations;

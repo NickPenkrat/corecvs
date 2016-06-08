@@ -68,7 +68,7 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
         computeErrors(out, idxs);
     }
     void alternatingMinimization(int steps);
-    ReconstructionFunctor(ReconstructionFixtureScene *scene, const ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType &error, const ReconstructionFunctorOptimizationType &optimization, bool excessiveQuaternionParametrization, const double pointErrorEstimate);
+    ReconstructionFunctor(ReconstructionFixtureScene *scene, const std::vector<CameraFixture*> &optimizableSubset, const ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType &error, const ReconstructionFunctorOptimizationType &optimization, bool excessiveQuaternionParametrization, const double pointErrorEstimate);
 
     ReconstructionFixtureScene *scene;
     ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType error;
@@ -89,6 +89,9 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
 
     std::unordered_map<FixtureScenePart*, int> counter;
 
+    std::vector<corecvs::FixtureCamera> cameraCache;
+    std::vector<WPP> cacheOrigin;
+    std::vector<int> cacheRef;
     std::vector<SceneObservation*> revDependency; // track, projection
     std::vector<CameraFixture*> positionConstrainedCameras;
     std::vector<std::vector<int>> sparsity;
@@ -101,6 +104,9 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
     std::vector<Quaternion> originalOrientations;
     std::vector<Vector3dd> inputQuaternions;
     std::vector<FixtureCamera*> focalTunableCameras, principalTunableCameras;
+
+    std::vector<CameraFixture*> optimizableSubset;
+
     /*
      * These are DoF limits for cameras/fixtures
      * TODO: Check if this stuff is valid

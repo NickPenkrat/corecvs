@@ -20,6 +20,7 @@ IterativeReconstructionAppendParamsControlWidget::IterativeReconstructionAppendP
 {
     mUi->setupUi(this);
 
+    QObject::connect(mUi->postAppendOptimizationWindowSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->maxPostAppendSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->inlierP3PThresholdSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->maxP3PIterationsSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
@@ -57,6 +58,7 @@ void IterativeReconstructionAppendParamsControlWidget::saveParamWidget(WidgetSav
 void IterativeReconstructionAppendParamsControlWidget::getParameters(IterativeReconstructionAppendParams& params) const
 {
 
+    params.setPostAppendOptimizationWindow(mUi->postAppendOptimizationWindowSpinBox->value());
     params.setMaxPostAppend    (mUi->maxPostAppendSpinBox->value());
     params.setInlierP3PThreshold(mUi->inlierP3PThresholdSpinBox->value());
     params.setMaxP3PIterations (mUi->maxP3PIterationsSpinBox->value());
@@ -79,7 +81,8 @@ IterativeReconstructionAppendParams *IterativeReconstructionAppendParamsControlW
 
 
     IterativeReconstructionAppendParams *result = new IterativeReconstructionAppendParams(
-          mUi->maxPostAppendSpinBox->value()
+          mUi->postAppendOptimizationWindowSpinBox->value()
+        , mUi->maxPostAppendSpinBox->value()
         , mUi->inlierP3PThresholdSpinBox->value()
         , mUi->maxP3PIterationsSpinBox->value()
         , mUi->gammaP3PSpinBox->value()
@@ -97,6 +100,7 @@ void IterativeReconstructionAppendParamsControlWidget::setParameters(const Itera
 {
     // Block signals to send them all at once
     bool wasBlocked = blockSignals(true);
+    mUi->postAppendOptimizationWindowSpinBox->setValue(input.postAppendOptimizationWindow());
     mUi->maxPostAppendSpinBox->setValue(input.maxPostAppend());
     mUi->inlierP3PThresholdSpinBox->setValue(input.inlierP3PThreshold());
     mUi->maxP3PIterationsSpinBox->setValue(input.maxP3PIterations());

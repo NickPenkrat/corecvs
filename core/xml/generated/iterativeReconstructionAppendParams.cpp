@@ -40,6 +40,20 @@ int IterativeReconstructionAppendParams::staticInit()
     fields().push_back(
         new IntField
         (
+          IterativeReconstructionAppendParams::POSTAPPENDOPTIMIZATIONWINDOW_ID,
+          offsetof(IterativeReconstructionAppendParams, mPostAppendOptimizationWindow),
+          -1,
+          "postAppendOptimizationWindow",
+          "postAppendOptimizationWindow",
+          "Maximal number of fixtures being optimized after append",
+          true,
+         -1,
+         1000000
+        )
+    );
+    fields().push_back(
+        new IntField
+        (
           IterativeReconstructionAppendParams::MAXPOSTAPPEND_ID,
           offsetof(IterativeReconstructionAppendParams, mMaxPostAppend),
           2,
