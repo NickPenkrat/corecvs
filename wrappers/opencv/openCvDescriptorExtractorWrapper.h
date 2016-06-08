@@ -32,7 +32,7 @@ extern "C"
 class OpenCvDescriptorExtractorProvider : public DescriptorExtractorProviderImpl
 {
 public:
-    DescriptorExtractor* getDescriptorExtractor(const DescriptorType &type);
+    DescriptorExtractor* getDescriptorExtractor(const DescriptorType &type, const std::string &params = "");
     bool provides(const DescriptorType &type);
 
     ~OpenCvDescriptorExtractorProvider() {}

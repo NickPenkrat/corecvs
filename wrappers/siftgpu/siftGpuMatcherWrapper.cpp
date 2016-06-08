@@ -138,7 +138,7 @@ void init_siftgpu_matcher_provider()
         expr; \
     }
 
-DescriptorMatcher* SiftGpuDescriptorMatcherProvider::getDescriptorMatcher(const DescriptorType &type, const MatcherType &matcher)
+DescriptorMatcher* SiftGpuDescriptorMatcherProvider::getDescriptorMatcher(const DescriptorType &type, const MatcherType &matcher, const std::string&)
 {
     SWITCH_MATCHER_TYPE(BF,
         SWITCH_TYPE(SIFTGPU, return new SiftGpuMatcher;););

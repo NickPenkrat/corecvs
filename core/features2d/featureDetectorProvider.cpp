@@ -2,22 +2,22 @@
 
 #include "global.h"
 
-FeatureDetector* FeatureDetectorProvider::getDetector(const DetectorType &type)
+FeatureDetector* FeatureDetectorProvider::getDetector(const DetectorType &type, const std::string &params)
 {
     for (std::vector<FeatureDetectorProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p)
     {
         if ((*p)->provides(type))
         {
-            return (*p)->getFeatureDetector(type);
-		}
-	}
+            return (*p)->getFeatureDetector(type, params);
+        }
+    }
     CORE_ASSERT_FAIL_P(("FeatureDetectorProvider::getDetector(%s): no providers", type.c_str()));
     return 0;
 }
 
 void FeatureDetector::detect(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints)
 {
-	detectImpl(image, keyPoints);
+    detectImpl(image, keyPoints);
 }
 
 FeatureDetectorProvider::~FeatureDetectorProvider()
@@ -26,18 +26,18 @@ FeatureDetectorProvider::~FeatureDetectorProvider()
     {
         delete *p;
     }
-	providers.clear();
+    providers.clear();
 }
 
 void FeatureDetectorProvider::add(FeatureDetectorProviderImpl *provider)
 {
-	providers.push_back(provider);
+    providers.push_back(provider);
 }
 
 FeatureDetectorProvider& FeatureDetectorProvider::getInstance()
 {
-	static FeatureDetectorProvider provider;
-	return provider;
+    static FeatureDetectorProvider provider;
+    return provider;
 }
 
 FeatureDetectorProvider::FeatureDetectorProvider()

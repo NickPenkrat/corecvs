@@ -378,8 +378,8 @@ void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams 
 
     // Feature detection and matching
     FeatureMatchingPipeline pipeline(filenames, processState);
-    pipeline.add(new KeyPointDetectionStage(params.detector()), true);
-    pipeline.add(new DescriptorExtractionStage(params.descriptor()), true);
+    pipeline.add(new KeyPointDetectionStage(params.detector(), params.parameters()), true);
+    pipeline.add(new DescriptorExtractionStage(params.descriptor(), params.parameters()), true);
     pipeline.add(new MatchingPlanComputationStage(), true);
     pipeline.add(new MatchAndRefineStage(params.descriptor(), params.matcher(), params.b2bThreshold()), true);
 

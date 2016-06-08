@@ -33,7 +33,7 @@ extern "C"
 class OpenCvFeatureDetectorProvider : public FeatureDetectorProviderImpl
 {
 public:
-    FeatureDetector* getFeatureDetector(const DetectorType &type);
+    FeatureDetector* getFeatureDetector(const DetectorType &type, const std::string &params = "");
     bool provides(const DetectorType &type);
 
     ~OpenCvFeatureDetectorProvider() {}
