@@ -81,6 +81,7 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
     void computeOutputs();
     int getOutputNum();
     void computeDependency();
+	corecvs::SparseMatrix getNativeJacobian(const double *in, double delta = 1e-7);
 
     void readParams(const double *params);
     void writeParams(double *params);

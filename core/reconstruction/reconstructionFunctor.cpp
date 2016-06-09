@@ -482,6 +482,116 @@ void corecvs::ReconstructionFunctor::computeErrors(double *out, const std::vecto
     }
 }
 
+corecvs::SparseMatrix corecvs::ReconstructionFunctor::getNativeJacobian(const double* in, double delta)
+{
+	readParams(in);
+	switch(error)
+	{
+		case ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType::REPROJECTION:
+			return jacobianReprojection();
+		case ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType::RAY_DIFF:
+			return jacobianRayDiff();
+		default:
+			return corecvs::SparseFunctionArgs::getJacobian(in, delta);
+	}
+}
+
+corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection()
+{
+	// Reprojection error jacobian
+	//
+	// Pr= / 1/z   0  -x/z^2 0 \
+	//     |   0 1/z  -y/z^2 0 |
+	//     |   0   0       0 0 |
+	//     \   0   0       0 0 /
+	// Kf= / 1 0 0 0 \
+	//     | 0 1 0 0 |
+	//     | 0 0 0 0 |
+	//     \ 0 0 0 0 /
+	// Kcx=/ 0 0 1 0 \
+	//     | 0 0 0 0 |
+	//     | 0 0 0 0 |
+	//     \ 0 0 0 0 /
+	// Kcy=/ 0 0 0 0 \
+	//     | 0 0 1 0 |
+	//     | 0 0 0 0 |
+	//     \ 0 0 0 0 /
+	//
+	// Rotations:
+	// A) excessive parametrization
+	// R = / 1-2(qy^2+qz^2) 2(qx*qy-qw*qz) 2(qx*qz+qy*qw) 0 \
+	//     | 2(qx*qy+qz*qw) 1-2(qx^2+qz^2) 2(qy*qz-qw*qx) 0 |
+	//     | 2(qx*qz-qw*qy) 2(qy*qz+qw*qx) 1-2(qx^2+qy^2) 0 |
+	//     \              0              0              0 1 /
+	//
+	// Rqx=/    0  2*qy  2*qz 0 \
+	//     | 2*qy -4*qx -2*qw 0 |
+	//     | 2*qz  2*qw -4*qx 0 |
+	//     \    0     0     0 0 /
+	//
+	// Rqy=/-4*qy 2*qx  2*qw 0 \
+	//     | 2*qx    0  2*qz 0 |
+	//     |-2*qw 2*qz -4*qy 0 |
+	//     \    0    0     0 0 /
+	// 
+	// Rqz=/-4*qz, -2*qw, 2*qx 0 \
+	//     | 2*qw, -4*qz, 2*qy 0 |
+	//     | 2*qx,  2*qy,    0 0 |
+	//     \    0,     0,    0 0 /
+	//
+	// Rqw=/    0, -2*qz,  2*qy 0 \
+	//     |  2*qz,    0, -2*qx 0 |
+	//     | -2*qy, 2*qx,     0 0 |
+	//     \     0     0      0 0 /
+	//
+	// B) non-excessive
+	// N = qx^2+qy^2+qz^2-1
+	//	  / 2qy^2*N+2qz^2*N+1    2N(-qx*qy+qz)     -2N(qx*qz+qy) 0 \
+	// R =|     -2N(qx*qy+qz) 2qx^2*N+2qz^2N+1      2N(qx-qy*qz) 0 |
+	//    |     2N(-qx*qz+qy)    -2N(qx+qy*qz) 2qx^2*N+2qy^2*N+1 0 |
+	//    \                 0                0                 0 1 /
+	// Rqx =
+	// /                     4qx(qy^2+qz^2) -6qx^2*qy+4qx*qz-2qy^3-2qy*qz^2+2qy -6qx^2*qz-4qx*qy-2qy^2*qz-2qz^3+2qz 0 \
+	// |-6qx^2*qy-4qx*qz-2qy^3-2qy*qz^2+2qy             4qx(2qx^2+qy^2+2qz^2-1)       6qx^2-4qx*qy*qz+2qy^2+2qz^2-2 0 |
+	// |-6qx^2*qz+4qx*qy-2qy^2*qz-2qz^3+2qz      -6qx^2-4qx*qy*qz-2qy^2-2qz^2+2             4qx(2qx^2+2qy^2+qz^2-1) 0 |
+    // \                                  0                                   0                                   0 0 /
+    // Rqy =
+    // /            4qy(qx^2+2qy^2+2qz^2-1) -2qx^3-6qx*qy^2-2qx*qz^2+2qx+4qy*qz      -2qx^2-4qx*qy*qz-6qy^2-2qz^2+2 0 \
+    // |-2qx^3-6qx*qy^2-2qx*qz^2+2qx-4qy*qz                      4qy(qx^2+qz^2) -2qx^2*qz+4qx*qy-6qy^2*qz-2qz^3+2qz 0 |
+    // |      2qx^2-4qx*qy*qz+6qy^2+2qz^2-2 -2qx^2*qz-4qx*qy-6qy^2*qz-2qz^3+2qz             4qy(2qx^2+2qy^2+qz^2-1) 0 |
+    // \                                  0                                   0                                   0 0 /
+    // Rqz =
+    // /            4qz(qx^2+2qy^2+2qz^2-1)       2qx^2-4qx*qy*qz+2qy^2+6qz^2-2 -2qx^3-2qx*qy^2-6qx*qz^2+2qx-4qy*qz  0 \
+    // |     -2qx^2-4qx*qy*qz-2qy^2-6qz^2+2             4qz(2qx^2+qy^2+2qz^2-1) -2qx^2*qy+4qx*qz-2qy^3-6qy*qz^2+2qy  0 |
+    // |-2qx^3-2qx*qy^2-6qx*qz^2+2qx+4qy*qz -2qx^2*qy-4qx*qz-2qy^3-6qy*qz^2+2qy                      4qz(qx^2+qy^2)  0 |
+    // \                                  0                                   0                                   0  0 /
+    //
+    // Translations
+    // T =
+    // / 1 0 0 tx \
+    // | 0 1 0 ty |
+    // | 0 0 1 tz |
+    // \ 0 0 0  1 /
+    //
+    // Ttx =
+    // / 0 0 0 1 \
+    // | 0 0 0 0 |
+    // | 0 0 0 0 |
+    // \ 0 0 0 0 /
+    //
+    // Tty =
+    // / 0 0 0 0 \
+    // | 0 0 0 1 |
+    // | 0 0 0 0 |
+    // \ 0 0 0 0 /
+    //
+    // Ttz =
+    // / 0 0 0 0 \
+    // | 0 0 0 0 |
+    // | 0 0 0 1 |
+    // \ 0 0 0 0 /
+}
+
 void corecvs::ParallelErrorComputator::operator() (const corecvs::BlockedRange<int> &r) const
 {
     auto& revDependency = functor->revDependency;
