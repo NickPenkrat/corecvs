@@ -498,7 +498,33 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::getNativeJacobian(const do
 
 corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection()
 {
-	// Reprojection error jacobian
+	// Raydiff jacobian:
+	// left:
+	// N = sqrt(x^2+y^2+z^2)
+	// N2= x^2+y^2+z^2
+	// N3= N2*N
+	//     / -x^2/N3+1/N      -xy/N3      -xz/N3 0 \
+	// Pl= |      -xy/N3 -y^2/N3+1/N      -yz/N3 0 |
+	//     |      -xz/N3      -yz/N3 -z^2/N3+1/N 0 |
+	//     \           0           0           0 0 /
+	//
+	// N = 1+((cx-u)^2+(cy-v)^2)/f^2
+	// Ns = sqrt(N)
+	// Prf =
+	//         /              Ns*(cx-u)/N^2/f^2 \
+	//       - |              Ns*(cy-v)/N^2/f^2 |
+	//         \ ((cx-u)^2+(cy-v)^2)/f^3/(Ns^3) /
+	// Prcx =
+	//         / Ns*(f^2+(cy-v)^2)/f^3/N^2 \
+	//         |   -(cx-u)*(cy-v)/f^3/Ns^3 |
+	//         \           (cx-u)/f^2/Ns^3 /
+	// Prcy =
+	//         /  -(cx-u)*(cy-v)/f^3/Ns^3) \
+	//         | Ns*(f^2+(cx-u)^2)/f^3/N^2 |
+	//         \          (cy-v)/(f^2/Ns^3 /
+	//
+	//
+	//Reprojection error jacobian
 	//
 	// Pr= / 1/z   0  -x/z^2 0 \
 	//     |   0 1/z  -y/z^2 0 |
