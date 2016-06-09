@@ -45,7 +45,10 @@ int IterativeReconstructionAppendParams::staticInit()
           2,
           "maxPostAppend",
           "maxPostAppend",
-          "Maximal post-append iterations"
+          "Maximal post-append iterations",
+          true,
+         1,
+         100000
         )
     );
     fields().push_back(
@@ -53,10 +56,13 @@ int IterativeReconstructionAppendParams::staticInit()
         (
           IterativeReconstructionAppendParams::INLIERP3PTHRESHOLD_ID,
           offsetof(IterativeReconstructionAppendParams, mInlierP3PThreshold),
-          0,
+          2,
           "inlierP3PThreshold",
           "inlierP3PThreshold",
-          "Inlier threshold for 3P->pose"
+          "Inlier threshold for 3P->pose",
+          true,
+         0,
+         10000
         )
     );
     fields().push_back(
@@ -67,7 +73,10 @@ int IterativeReconstructionAppendParams::staticInit()
           100000,
           "maxP3PIterations",
           "maxP3PIterations",
-          "Maximal ransac iterations for 3P->pose"
+          "Maximal ransac iterations for 3P->pose",
+          true,
+         1,
+         1000000
         )
     );
     fields().push_back(
@@ -75,10 +84,13 @@ int IterativeReconstructionAppendParams::staticInit()
         (
           IterativeReconstructionAppendParams::GAMMAP3P_ID,
           offsetof(IterativeReconstructionAppendParams, mGammaP3P),
-          0,
+          0.001,
           "gammaP3P",
           "gammaP3P",
-          "Target error probability for 3P pose estimation"
+          "Target error probability for 3P pose estimation",
+          true,
+         0,
+         1
         )
     );
     fields().push_back(
@@ -86,10 +98,13 @@ int IterativeReconstructionAppendParams::staticInit()
         (
           IterativeReconstructionAppendParams::INLIERP6PTHRESHOLD_ID,
           offsetof(IterativeReconstructionAppendParams, mInlierP6PThreshold),
-          0,
+          1,
           "inlierP6PThreshold",
           "inlierP6PThreshold",
-          "Inlier threshold for 6P->pose/3P->orientation"
+          "Inlier threshold for 6P->pose/3P->orientation",
+          true,
+         0,
+         10000
         )
     );
     fields().push_back(
@@ -97,10 +112,13 @@ int IterativeReconstructionAppendParams::staticInit()
         (
           IterativeReconstructionAppendParams::MAXP6PITERATIONS_ID,
           offsetof(IterativeReconstructionAppendParams, mMaxP6PIterations),
-          0,
+          400000,
           "maxP6PIterations",
           "maxP6PIterations",
-          "Maximal ransac iterations for 6P->pose/3P->orientation"
+          "Maximal ransac iterations for 6P->pose/3P->orientation",
+          true,
+         1,
+         1000000
         )
     );
     fields().push_back(
@@ -111,7 +129,10 @@ int IterativeReconstructionAppendParams::staticInit()
           0.001,
           "gammaP6P",
           "gammaP6P",
-          "Target error probability for 6P->pose/3P->orientation"
+          "Target error probability for 6P->pose/3P->orientation",
+          true,
+         0,
+         1
         )
     );
     fields().push_back(
@@ -122,7 +143,10 @@ int IterativeReconstructionAppendParams::staticInit()
           1000,
           "speculativity",
           "speculativity",
-          "This defines how many multicameras are subject for P3P evaluation at each iteration"
+          "This defines how many multicameras are subject for P3P evaluation at each iteration",
+          true,
+         1,
+         1000000
         )
     );
     fields().push_back(
@@ -133,7 +157,10 @@ int IterativeReconstructionAppendParams::staticInit()
           32,
           "minimalInlierCount",
           "minimalInlierCount",
-          "Minimal inlier count for hypotheis acceptance"
+          "Minimal inlier count for hypotheis acceptance",
+          true,
+         3,
+         1000000
         )
     );
     fields().push_back(
@@ -144,7 +171,10 @@ int IterativeReconstructionAppendParams::staticInit()
           0.15,
           "maximalFailureProbability",
           "maximalFailureProbability",
-          "Maximal failure probability for hypothesis acceptance"
+          "Maximal failure probability for hypothesis acceptance",
+          true,
+         0,
+         1
         )
     );
    return 0;

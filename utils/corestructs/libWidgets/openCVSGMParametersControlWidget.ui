@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>OpenCVSGMParametersControlWidget</class>
+ <class>OpenCVSGMParametersControlWidget</class> 
  <widget class="QWidget" name="OpenCVSGMParametersControlWidget">
   <property name="geometry">
    <rect>
@@ -13,13 +13,13 @@
   <property name="windowTitle">
    <string>OpenCVSGMParameters</string>
   </property>
-   <layout class="QGridLayout" name="gridLayout">
-    <property name="margin">
-     <number>3</number>
-    </property>
-    <property name="spacing">
-     <number>3</number>
-    </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <property name="margin">
+    <number>3</number>
+   </property>
+   <property name="spacing">
+    <number>3</number>
+   </property>
     <item row="0" column="0">
      <widget class="QLabel" name="label_0">
        <property name="text">
@@ -324,7 +324,7 @@
          <string>Full DP</string>
        </property>
        <property name="checked">
-           <bool>true</bool>
+           <bool>1</bool>
        </property>
        <property name="tags" stdset="0">
            <string>advanced</string>

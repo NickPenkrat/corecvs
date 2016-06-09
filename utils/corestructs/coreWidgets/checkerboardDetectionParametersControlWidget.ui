@@ -180,6 +180,9 @@
        <property name="toolTip">
          <string>cellSizeHor</string>
        </property>
+       <property name="decimals">
+        <number>3</number>
+       </property>
        <property name="minimum">
         <double>0</double>
        </property>
@@ -194,9 +197,6 @@
        </property>
        <property name="suffix">
         <string>m</string>
-       </property>
-       <property name="decimals">
-        <number>3</number>
        </property>
      </widget>
     </item>
@@ -212,6 +212,9 @@
        <property name="toolTip">
          <string>cellSizeVert</string>
        </property>
+       <property name="decimals">
+        <number>3</number>
+       </property>
        <property name="minimum">
         <double>0</double>
        </property>
@@ -226,9 +229,6 @@
        </property>
        <property name="suffix">
         <string>m</string>
-       </property>
-       <property name="decimals">
-        <number>3</number>
        </property>
      </widget>
     </item>
@@ -313,6 +313,9 @@
        <property name="toolTip">
          <string>minAccuracy</string>
        </property>
+       <property name="decimals">
+        <number>4</number>
+       </property>
        <property name="minimum">
         <double>0</double>
        </property>
@@ -327,9 +330,6 @@
        </property>
        <property name="suffix">
         <string>px</string>
-       </property>
-       <property name="decimals">
-        <number>4</number>
        </property>
      </widget>
     </item>

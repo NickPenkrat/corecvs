@@ -47,8 +47,8 @@ int IterativeReconstructionInitializationParams::staticInit()
           "b2bRansacP5RPThreshold",
           "Best-2nd best essential estimator threshold",
           true,
-         -50000,
-         50000
+         0,
+         1
         )
     );
     fields().push_back(
@@ -61,7 +61,7 @@ int IterativeReconstructionInitializationParams::staticInit()
           "inlierP5RPThreshold",
           "Inlier threshold",
           true,
-         -50000,
+         0,
          50000
         )
     );
@@ -89,8 +89,8 @@ int IterativeReconstructionInitializationParams::staticInit()
           "b2bRansacP6RPThreshold",
           "Best-2nd best relative pose estimator threshold",
           true,
-         -50000,
-         50000
+         0,
+         1
         )
     );
     fields().push_back(
@@ -115,7 +115,7 @@ int IterativeReconstructionInitializationParams::staticInit()
           "essentialTargetGamma",
           true,
          0,
-         50000
+         1
         )
     );
     fields().push_back(
@@ -126,7 +126,10 @@ int IterativeReconstructionInitializationParams::staticInit()
           400000,
           "maxP6RPIterations",
           "maxP6RPIterations",
-          "Maximal number of ransac iterations for pose estimation using pairwise correspondences"
+          "Maximal number of ransac iterations for pose estimation using pairwise correspondences",
+          true,
+         0,
+         100000000
         )
     );
     fields().push_back(
@@ -137,7 +140,10 @@ int IterativeReconstructionInitializationParams::staticInit()
           1,
           "inlierP6RPThreshold",
           "inlierP6RPThreshold",
-          "Inlier threshold for pose estimation using pairwise correspondences"
+          "Inlier threshold for pose estimation using pairwise correspondences",
+          true,
+         0,
+         1000
         )
     );
     fields().push_back(
@@ -145,10 +151,13 @@ int IterativeReconstructionInitializationParams::staticInit()
         (
           IterativeReconstructionInitializationParams::GAMMAP6RP_ID,
           offsetof(IterativeReconstructionInitializationParams, mGammaP6RP),
-          0.001,
+          0.01,
           "gammaP6RP",
           "gammaP6RP",
-          "Target failure probability for pose estimation"
+          "Target failure probability for pose estimation",
+          true,
+         0,
+         1
         )
     );
    return 0;

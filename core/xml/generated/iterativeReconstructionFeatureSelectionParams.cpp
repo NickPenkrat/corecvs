@@ -47,7 +47,7 @@ int IterativeReconstructionFeatureSelectionParams::staticInit()
           "inlierThreshold",
           "Inlier threshold",
           true,
-         -50000,
+         0,
          50000
         )
     );
@@ -61,7 +61,7 @@ int IterativeReconstructionFeatureSelectionParams::staticInit()
           "trackInlierThreshold",
           "Track append threshold",
           true,
-         -50000,
+         0,
          50000
         )
     );
@@ -75,8 +75,8 @@ int IterativeReconstructionFeatureSelectionParams::staticInit()
           "distanceLimit",
           "Track distance limit",
           true,
-         -50000,
-         50000
+         0,
+         500000
         )
     );
     fields().push_back(
@@ -99,7 +99,10 @@ int IterativeReconstructionFeatureSelectionParams::staticInit()
           3,
           "rmsePruningScaler",
           "rmsePruningScaler",
-          "RMSE pruning scaler"
+          "RMSE pruning scaler",
+          true,
+         0,
+         10000
         )
     );
     fields().push_back(
@@ -110,7 +113,10 @@ int IterativeReconstructionFeatureSelectionParams::staticInit()
           5,
           "maxPruningScaler",
           "maxPruningScaler",
-          "Max pruning scaler"
+          "Max pruning scaler",
+          true,
+         0,
+         10000
         )
     );
    return 0;
