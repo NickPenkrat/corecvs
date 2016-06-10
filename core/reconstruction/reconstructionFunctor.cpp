@@ -496,6 +496,36 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::getNativeJacobian(const do
 	}
 }
 
+corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianRayDiff()
+{
+	auto U = ..., V = ...;
+	double x = U[0], y = U[1], z = U[2];
+	double x2 = x*x, y2 = y*y, z2 = z*z, xy = x*y, yz = y*z, xz = x*z;
+	double N2 = x2 + y2 + z2;
+	double N  = std::sqrt(N2);
+	double N3 = N2 * N;
+
+	corecvs::Matrix44 Derr(-x2/N3+1.0/N,        -xy/N3,        -xz/N3, 0.0,
+			                     -xy/N3, -y^2/N3+1.0/N,        -yz/N3, 0.0,
+			                     -xz/N3,        -yz/N3, -z^2/N3+1.0/N, 0.0,
+			                        0.0,           0.0,           0.0, 0.0);
+	double cx, cy, f, u, v;
+	double cxmu = cx - u, cymv = cy - v;
+	double cxmu2= cxmu * cxmu, cymv = cymv * cymv, cxmucymv = cxmu * cymv;
+	double f2 = f * f;
+	double f3 = f2 * f;
+	N = 1.0 + (cxmu2+cymv2) / f2;
+	double Ns = std::sqrt(N), N2 = N * N;
+	auto Ns3 = N * Ns;
+
+	corecvs::Vector4dd ErrF (      -Ns*cxmu/N2/f2,     -Ns*cymv/N2/f2, -(cxmu2+cymv2)/f3/Ns3, 1.0),
+		               ErrCx( Ns*(f2+cymv2)/f3/N2, -cxmu * cxmv/f3/Ns3,          cxmu/f2/Ns3, 1.0),
+		               ErrCy(    -cxmu*cxmv/f3/Ns, Ns*(f2+cxmu2)/f3/N2,          cxmv/f2/Ns3, 1.0);
+
+	
+
+}
+
 corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection()
 {
 	// Raydiff jacobian:
@@ -642,44 +672,6 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection()
 		              Tc(...);
 	double qx, qy, qz, qw;
 	corecvs::Matrix44 Rp, Rqx, Rqy, Rqz, Rqw;
-	if (excessive)
-	{
-	    Rqx = corecvs::Matrix44(    0.0, 2.0*qy, 2.0*qz, 0.0,
-		              	         2.0*qy,-4.0*qx,-2.0*qw, 0.0,
-		              	         2.0*qz, 2.0*qw,-4.0*qx, 0.0,
-		              	            0.0,    0.0,    0.0, 0.0);
-		Rqy = corecvs::Matrix44(-4.0*qy, 2.0*qx, 2.0*qw, 0.0,
-		              	         2.0*qx,    0.0, 2.0*qz, 0.0,
-		              	        -2.0*qw, 2.0*qz,-4.0*qy, 0.0,
-		              	            0.0,    0.0,    0.0, 0.0);
-		Rqz = corecvs::Matrix44(-4.0*qz,-2.0*qw, 2.0*qx, 0.0,
-		              	         2.0*qw,-4.0*qz, 2.0*qy, 0.0,
-		              	         2.0*qx, 2.0*qy,    0.0, 0.0,
-		              	            0.0,    0.0,    0.0, 0.0);
-		Rqw = corecvs::Matrix44(    0.0,-2.0*qz, 2.0*qy, 0.0,
-		              	         2.0*qz,    0.0,-2.0*qx, 0.0,
-		              	        -2.0*qy, 2.0*qx,    0.0, 0.0,
-		              	            0.0,    0.0,    0.0, 0.0);
-	}
-	else
-	{
-		double qx2 = qx * qx, qy2 = qy * qy, qz2 = qz * qz, qxqyqz = qx * qy * qz;
-		double qxqy= qx * qy, qxqz = qx * qz, qyqz = qy * qz;
-			   qx3 = qx2 * qx, qy3 = qy2 * qy, qz3 = qz2 * qz, qx2qy = qx2 * qy, qx2qz = qx2 * qz, qxqy2 = qx * qy2, qy2qz = qy2 * qz, qxqz2 = qx * qz2, qyqz2 = qy * qz2;
-		Rqx = corecvs::Matrix44(                            4.0*qx*(qy2+qz2),                         -6.0*qx2qy+4.0*qxqz,-6.0*qx2qz-4.0*qxqy-2.0*qy2qz-2.0*qz3+2.0*qz, 0.0,
-				                -6.0*qx2qy-4.0*qxqz-2.0*qy3-2.0*qyqz2+2.0*qy,            4.0*qx*(2.0*qx2+qy2+2.0*qz2-1.0),        6.0*qx2-4.0*qxqyqz+2.0*qy2+2.0*qz2-2, 0.0,
-				                -6.0*qx2qz+4.0*qxqy-2.0*qy2qz-2.0*qz3+2.0*qz,     -6.0*qx2-4.0*qxqyqz-2.0*qy2-2.0*qz2+2.0,            4.0*qx*(2.0*qx2+2.0*qy2+qz2-1.0), 0.0,
-			                                                             0.0,                                         0.0,                                         0.0, 0.0);
-		Rqy = corecvs::Matrix44(            4.0*qy*(qx2+2.0*qy2+2.0*qz2-1.0),-2.0*qx3-6.0*qxqy2-2.0*qxqz2+2.0*qx+4.0*qyqz,     -2.0*qx2-4.0*qxqyqz-6.0*qy2-2.0*qz2+2.0, 0.0,
-				                -2.0*qx3-6.0*qxqy2-2.0*qxqz2+2.0*qx-4.0*qyqz,                            4.0*qy*(qx2+qz2),-2.0*qx2qz+4.0*qxqy-6.0*qy2qz-2.0*qz3+2.0*qz, 0.0,
-	                                  2.0*qx2-4.0*qxqyqz+6.0*qy2+2.0*qz2-2.0,-2.0*qx2qz-4.0*qxqy-6.0*qy2qz-2.0*qz3+2.0*qz,            4.0*qy*(2.0*qx2+2.0*qy2+qz2-1.0), 0.0,
-	                                                                     0.0,                                         0.0,                                         0.0, 0.0);
-	    Rqz = corecvs::Matrix44(            4.0*qz*(qx2+2.0*qy2+2.0*qz2-1.0),      2.0*qx2-4.0*qxqyqz+2.0*qy2+6.0*qz2-2.0,-2.0*qx3-2.0*qxqy2-6.0*qxqz2+2.0*qx-4.0*qyqz, 0.0,
-	    		                     -2.0*qx2-4.0*qxqyqz-2.0*qy2-6.0*qz2+2.0,            4.0*qz*(2.0*qx2+qy2+2.0*qz2-1.0),-2.0*qx2qy+4.0*qxqz-2.0*qy3-6.0*qyqz2+2.0*qy, 0.0,
-	    		                -2.0*qx3-2.0*qxqy2-6.0*qxqz2+2.0*qx+4.0*qyqz,-2.0*qx2qy-4.0*qxqz-2.0*qy3-6.0*qyqz2+2.0*qy,                            4.0*qz*(qx2+qy2), 0.0,
-	    		                                                         0.0,                                         0.0,                                         0.0, 0.0);
-
-	}
 	double tx = X[0], ty = X[1], tz = X[2];
 	corecvs::Matrix44 Tp(1.0, 0.0, 0.0, -tx,
 			             0.0, 1.0, 0.0, -ty,
@@ -722,6 +714,49 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection()
 
 
 }
+
+void corecvs::ReconstructionFunctor::QuaternionDiff(double qx, double qy, double qz, double qw, bool excessive, corecvs::Matrix44 &Rqx, corecvs::Matrix44 &Rqy, corecvs::Matrix44 &Rqz, corecvs::Matrix44 &Rqw)
+{
+	if (excessive)
+	{
+	    Rqx = corecvs::Matrix44(    0.0, 2.0*qy, 2.0*qz, 0.0,
+		              	         2.0*qy,-4.0*qx,-2.0*qw, 0.0,
+		              	         2.0*qz, 2.0*qw,-4.0*qx, 0.0,
+		              	            0.0,    0.0,    0.0, 0.0);
+		Rqy = corecvs::Matrix44(-4.0*qy, 2.0*qx, 2.0*qw, 0.0,
+		              	         2.0*qx,    0.0, 2.0*qz, 0.0,
+		              	        -2.0*qw, 2.0*qz,-4.0*qy, 0.0,
+		              	            0.0,    0.0,    0.0, 0.0);
+		Rqz = corecvs::Matrix44(-4.0*qz,-2.0*qw, 2.0*qx, 0.0,
+		              	         2.0*qw,-4.0*qz, 2.0*qy, 0.0,
+		              	         2.0*qx, 2.0*qy,    0.0, 0.0,
+		              	            0.0,    0.0,    0.0, 0.0);
+		Rqw = corecvs::Matrix44(    0.0,-2.0*qz, 2.0*qy, 0.0,
+		              	         2.0*qz,    0.0,-2.0*qx, 0.0,
+		              	        -2.0*qy, 2.0*qx,    0.0, 0.0,
+		              	            0.0,    0.0,    0.0, 0.0);
+	}
+	else
+	{
+		double qx2 = qx * qx, qy2 = qy * qy, qz2 = qz * qz, qxqyqz = qx * qy * qz;
+		double qxqy= qx * qy, qxqz = qx * qz, qyqz = qy * qz;
+			   qx3 = qx2 * qx, qy3 = qy2 * qy, qz3 = qz2 * qz, qx2qy = qx2 * qy, qx2qz = qx2 * qz, qxqy2 = qx * qy2, qy2qz = qy2 * qz, qxqz2 = qx * qz2, qyqz2 = qy * qz2;
+		Rqx = corecvs::Matrix44(                            4.0*qx*(qy2+qz2),                         -6.0*qx2qy+4.0*qxqz,-6.0*qx2qz-4.0*qxqy-2.0*qy2qz-2.0*qz3+2.0*qz, 0.0,
+				                -6.0*qx2qy-4.0*qxqz-2.0*qy3-2.0*qyqz2+2.0*qy,            4.0*qx*(2.0*qx2+qy2+2.0*qz2-1.0),        6.0*qx2-4.0*qxqyqz+2.0*qy2+2.0*qz2-2, 0.0,
+				                -6.0*qx2qz+4.0*qxqy-2.0*qy2qz-2.0*qz3+2.0*qz,     -6.0*qx2-4.0*qxqyqz-2.0*qy2-2.0*qz2+2.0,            4.0*qx*(2.0*qx2+2.0*qy2+qz2-1.0), 0.0,
+			                                                             0.0,                                         0.0,                                         0.0, 0.0);
+		Rqy = corecvs::Matrix44(            4.0*qy*(qx2+2.0*qy2+2.0*qz2-1.0),-2.0*qx3-6.0*qxqy2-2.0*qxqz2+2.0*qx+4.0*qyqz,     -2.0*qx2-4.0*qxqyqz-6.0*qy2-2.0*qz2+2.0, 0.0,
+				                -2.0*qx3-6.0*qxqy2-2.0*qxqz2+2.0*qx-4.0*qyqz,                            4.0*qy*(qx2+qz2),-2.0*qx2qz+4.0*qxqy-6.0*qy2qz-2.0*qz3+2.0*qz, 0.0,
+	                                  2.0*qx2-4.0*qxqyqz+6.0*qy2+2.0*qz2-2.0,-2.0*qx2qz-4.0*qxqy-6.0*qy2qz-2.0*qz3+2.0*qz,            4.0*qy*(2.0*qx2+2.0*qy2+qz2-1.0), 0.0,
+	                                                                     0.0,                                         0.0,                                         0.0, 0.0);
+	    Rqz = corecvs::Matrix44(            4.0*qz*(qx2+2.0*qy2+2.0*qz2-1.0),      2.0*qx2-4.0*qxqyqz+2.0*qy2+6.0*qz2-2.0,-2.0*qx3-2.0*qxqy2-6.0*qxqz2+2.0*qx-4.0*qyqz, 0.0,
+	    		                     -2.0*qx2-4.0*qxqyqz-2.0*qy2-6.0*qz2+2.0,            4.0*qz*(2.0*qx2+qy2+2.0*qz2-1.0),-2.0*qx2qy+4.0*qxqz-2.0*qy3-6.0*qyqz2+2.0*qy, 0.0,
+	    		                -2.0*qx3-2.0*qxqy2-6.0*qxqz2+2.0*qx+4.0*qyqz,-2.0*qx2qy-4.0*qxqz-2.0*qy3-6.0*qyqz2+2.0*qy,                            4.0*qz*(qx2+qy2), 0.0,
+	    		                                                         0.0,                                         0.0,                                         0.0, 0.0);
+
+	}
+}
+
 
 void corecvs::ParallelErrorComputator::operator() (const corecvs::BlockedRange<int> &r) const
 {
