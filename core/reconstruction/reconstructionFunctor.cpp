@@ -616,6 +616,111 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection()
     // | 0 0 0 0 |
     // | 0 0 0 1 |
     // \ 0 0 0 0 /
+    
+    // u' = Derr * K * Rc * (Rp * (X - Cp) - Cc)
+	corecvs::Vector4dd X, Cp, Cc;
+	
+	double x = U[0], y = U[1], z = U[2];
+	double z2= z * z;
+	corecvs::Matrix44 Derr(1.0 / z,     0.0, -x / z2, 0.0,
+			                   0.0, 1.0 / z, -y / z2, 0.0,
+			                   0.0,     0.0,     0.0, 0.0,
+			                   0.0,     0.0,     0.0, 0.0);
+	corecvs::Matrix44 Kf(1.0, 0.0, 0.0, 0.0,
+			             0.0, 1.0, 0.0, 0.0,
+			             0.0, 0.0, 0.0, 0.0,
+			             0.0, 0.0, 0.0, 0.0),
+		             Kcx(0.0, 0.0, 1.0, 0.0,
+		             	 0.0, 0.0, 0.0, 0.0,
+		             	 0.0, 0.0, 0.0, 0.0,
+		             	 0.0, 0.0, 0.0, 0.0),
+		             Kcy(0.0, 0.0, 0.0, 0.0,
+		                 0.0, 0.0, 1.0, 0.0,
+		                 0.0, 0.0, 0.0, 0.0,
+		                 0.0, 0.0, 0.0, 0.0);
+	corecvs::Matrix44 Rc(...),
+		              Tc(...);
+	double qx, qy, qz, qw;
+	corecvs::Matrix44 Rp, Rqx, Rqy, Rqz, Rqw;
+	if (excessive)
+	{
+	    Rqx = corecvs::Matrix44(    0.0, 2.0*qy, 2.0*qz, 0.0,
+		              	         2.0*qy,-4.0*qx,-2.0*qw, 0.0,
+		              	         2.0*qz, 2.0*qw,-4.0*qx, 0.0,
+		              	            0.0,    0.0,    0.0, 0.0);
+		Rqy = corecvs::Matrix44(-4.0*qy, 2.0*qx, 2.0*qw, 0.0,
+		              	         2.0*qx,    0.0, 2.0*qz, 0.0,
+		              	        -2.0*qw, 2.0*qz,-4.0*qy, 0.0,
+		              	            0.0,    0.0,    0.0, 0.0);
+		Rqz = corecvs::Matrix44(-4.0*qz,-2.0*qw, 2.0*qx, 0.0,
+		              	         2.0*qw,-4.0*qz, 2.0*qy, 0.0,
+		              	         2.0*qx, 2.0*qy,    0.0, 0.0,
+		              	            0.0,    0.0,    0.0, 0.0);
+		Rqw = corecvs::Matrix44(    0.0,-2.0*qz, 2.0*qy, 0.0,
+		              	         2.0*qz,    0.0,-2.0*qx, 0.0,
+		              	        -2.0*qy, 2.0*qx,    0.0, 0.0,
+		              	            0.0,    0.0,    0.0, 0.0);
+	}
+	else
+	{
+		double qx2 = qx * qx, qy2 = qy * qy, qz2 = qz * qz, qxqyqz = qx * qy * qz;
+		double qxqy= qx * qy, qxqz = qx * qz, qyqz = qy * qz;
+			   qx3 = qx2 * qx, qy3 = qy2 * qy, qz3 = qz2 * qz, qx2qy = qx2 * qy, qx2qz = qx2 * qz, qxqy2 = qx * qy2, qy2qz = qy2 * qz, qxqz2 = qx * qz2, qyqz2 = qy * qz2;
+		Rqx = corecvs::Matrix44(                            4.0*qx*(qy2+qz2),                         -6.0*qx2qy+4.0*qxqz,-6.0*qx2qz-4.0*qxqy-2.0*qy2qz-2.0*qz3+2.0*qz, 0.0,
+				                -6.0*qx2qy-4.0*qxqz-2.0*qy3-2.0*qyqz2+2.0*qy,            4.0*qx*(2.0*qx2+qy2+2.0*qz2-1.0),        6.0*qx2-4.0*qxqyqz+2.0*qy2+2.0*qz2-2, 0.0,
+				                -6.0*qx2qz+4.0*qxqy-2.0*qy2qz-2.0*qz3+2.0*qz,     -6.0*qx2-4.0*qxqyqz-2.0*qy2-2.0*qz2+2.0,            4.0*qx*(2.0*qx2+2.0*qy2+qz2-1.0), 0.0,
+			                                                             0.0,                                         0.0,                                         0.0, 0.0);
+		Rqy = corecvs::Matrix44(            4.0*qy*(qx2+2.0*qy2+2.0*qz2-1.0),-2.0*qx3-6.0*qxqy2-2.0*qxqz2+2.0*qx+4.0*qyqz,     -2.0*qx2-4.0*qxqyqz-6.0*qy2-2.0*qz2+2.0, 0.0,
+				                -2.0*qx3-6.0*qxqy2-2.0*qxqz2+2.0*qx-4.0*qyqz,                            4.0*qy*(qx2+qz2),-2.0*qx2qz+4.0*qxqy-6.0*qy2qz-2.0*qz3+2.0*qz, 0.0,
+	                                  2.0*qx2-4.0*qxqyqz+6.0*qy2+2.0*qz2-2.0,-2.0*qx2qz-4.0*qxqy-6.0*qy2qz-2.0*qz3+2.0*qz,            4.0*qy*(2.0*qx2+2.0*qy2+qz2-1.0), 0.0,
+	                                                                     0.0,                                         0.0,                                         0.0, 0.0);
+	    Rqz = corecvs::Matrix44(            4.0*qz*(qx2+2.0*qy2+2.0*qz2-1.0),      2.0*qx2-4.0*qxqyqz+2.0*qy2+6.0*qz2-2.0,-2.0*qx3-2.0*qxqy2-6.0*qxqz2+2.0*qx-4.0*qyqz, 0.0,
+	    		                     -2.0*qx2-4.0*qxqyqz-2.0*qy2-6.0*qz2+2.0,            4.0*qz*(2.0*qx2+qy2+2.0*qz2-1.0),-2.0*qx2qy+4.0*qxqz-2.0*qy3-6.0*qyqz2+2.0*qy, 0.0,
+	    		                -2.0*qx3-2.0*qxqy2-6.0*qxqz2+2.0*qx+4.0*qyqz,-2.0*qx2qy-4.0*qxqz-2.0*qy3-6.0*qyqz2+2.0*qy,                            4.0*qz*(qx2+qy2), 0.0,
+	    		                                                         0.0,                                         0.0,                                         0.0, 0.0);
+
+	}
+	double tx = X[0], ty = X[1], tz = X[2];
+	corecvs::Matrix44 Tp(1.0, 0.0, 0.0, -tx,
+			             0.0, 1.0, 0.0, -ty,
+			             0.0, 0.0, 1.0, -tz,
+			             0.0, 0.0, 0.0, 1.0),
+		             Tpx(0.0, 0.0, 0.0,-1.0,
+		             	 0.0, 0.0, 0.0, 0.0,
+		             	 0.0, 0.0, 0.0, 0.0,
+		             	 0.0, 0.0, 0.0, 0.0),
+		             Tpy(0.0, 0.0, 0.0, 0.0,
+		                 0.0, 0.0, 0.0,-1.0,
+		                 0.0, 0.0, 0.0, 0.0,
+		                 0.0, 0.0, 0.0, 0.0),
+		             Tpz(0.0, 0.0, 0.0, 0.0,
+		             	 0.0, 0.0, 0.0, 0.0,
+		             	 0.0, 0.0, 0.0,-1.0,
+		             	 0.0, 0.0, 0.0, 0.0);
+	auto TpX       = Tp * X;
+	auto RpTpX     = Rp * TpX;
+	auto TcRpTpX   = Tc * RpTpX;
+	auto RcTcRpTpX = Rc * TcRpTpX;
+
+	auto DerrKRcTc     = Derr * K * Rc * Tc;
+	auto DerrKRcTcRp   = DerrKRcTc * Rp;
+	auto DerrKRcTcRpTp = DerrKRcTcRp * Tp;
+
+	auto df = Derr * Kf * RcTcRpTpX,
+		 dcx= Derr * Kcx* RcTcRpTpX,
+		 dcy= Derr * Kcy* RcTcRpTpX,
+		 dx = DerrKRcTcRpTp * Xx,
+		 dy = DerrKRcTcRpTp * Xy,
+		 dz = DerrKRcTcRpTp * Xz,
+		 dtx= DerrKRcTcRp * Tpx * X,
+		 dty= DerrKRcTcRp * Tpy * X,
+		 dtz= DerrKRcTcRp * Tpz * X,
+		 dqx= DerrKRcTc * Rqx* TpX,
+		 dqy= DerrKRcTc * Rqy* TpX,
+		 dqz= DerrKRcTc * Rqz* TpX,
+		 dqw= DerrKRcTc * Rqw* TpX;
+
+
 }
 
 void corecvs::ParallelErrorComputator::operator() (const corecvs::BlockedRange<int> &r) const
