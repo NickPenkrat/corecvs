@@ -5,7 +5,7 @@
 
 struct CancelExecutionException : public std::exception
 {
-    CancelExecutionException(const char* codeExpr) : std::exception(codeExpr) {}
+    CancelExecutionException(const char* const &codeExpr) : std::exception() {}
 };
 
 namespace corecvs {
