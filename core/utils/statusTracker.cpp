@@ -1,5 +1,12 @@
 #include "statusTracker.h"
+
 #include <iostream>
+#include <stdexcept>
+
+struct CancelExecutionException : public std::exception
+{
+    CancelExecutionException(const char* codeExpr) : std::exception(codeExpr) {}
+};
 
 namespace corecvs {
 
@@ -53,12 +60,13 @@ void StatusTracker::incrementCompleted()
     unlock();
 
     if (toStop) {
-        throw AssertException("stopThread!");
+        std::cout << "StatusTracker::incrementCompleted request to stop - throw exception..." << std::endl;
+        throw CancelExecutionException("stopThread!");
     }
 
     writeLock();
         currentStatus.completedActions++;
-        std::cout << "StatusTracker::incrementCompleted(): " << currentStatus << std::endl;
+        std::cout << "StatusTracker::incrementCompleted " << currentStatus << std::endl;
 
         CORE_ASSERT_TRUE_S(currentStatus.completedActions <= currentStatus.totalActions);
         CORE_ASSERT_TRUE_S(currentStatus.completedActions <= currentStatus.startedActions);
@@ -72,7 +80,7 @@ void corecvs::StatusTracker::setTotalActions(size_t totalActions)
     writeLock();
         currentStatus.completedGlobalActions = 0;
         currentStatus.totalGlobalActions = totalActions;
-        std::cout << "StatusTracker::setTotalActions(): " << currentStatus.totalGlobalActions << std::endl;
+        std::cout << "StatusTracker::setTotalActions " << currentStatus.totalGlobalActions << std::endl;
     unlock();
 }
 
@@ -90,7 +98,7 @@ void corecvs::StatusTracker::reset(const std::string &action, size_t totalAction
         currentStatus.completedActions = currentStatus.startedActions = 0;
         currentStatus.totalActions     = totalActions;
 
-        std::cout << "StatusTracker::reset(): " << currentStatus << std::endl;
+        std::cout << "StatusTracker::reset " << currentStatus << std::endl;
     unlock();
 }
 
@@ -140,7 +148,7 @@ void corecvs::StatusTracker::setCompleted()
         return;
     writeLock();
         currentStatus.isCompleted = true;
-        std::cout << "StatusTracker::setCompleted()" << std::endl;
+        std::cout << "StatusTracker::setCompleted" << std::endl;
     unlock();
 }
 
@@ -150,7 +158,7 @@ void corecvs::StatusTracker::setFailed()
         return;
     writeLock();
         currentStatus.isFailed = true;
-        std::cout << "StatusTracker::setFailed()" << std::endl;
+        std::cout << "StatusTracker::setFailed" << std::endl;
     unlock();
 }
 
@@ -167,7 +175,7 @@ void corecvs::StatusTracker::setStopThread()
         return;
     writeLock();
         currentStatus.stopThread = true;
-        std::cout << "StatusTracker::setStopThread()" << std::endl;
+        std::cout << "StatusTracker::setStopThread" << std::endl;
     unlock();
 }
 
