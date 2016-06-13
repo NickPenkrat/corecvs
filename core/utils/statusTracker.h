@@ -22,24 +22,20 @@ struct Status
 
     Status() : currentAction("NONE")
         , completedActions(0), totalActions(0), startedActions(0)
-        , completedGlobalActions(0), totalGlobalActions(0), startedGlobalActions(0),
-      isCompleted(false), isFailed(false), stopThread(false)
+        , completedGlobalActions(0), totalGlobalActions(0), startedGlobalActions(0)
+        , isCompleted(false), isFailed(false), stopThread(false)
     {}
 
     friend std::ostream& operator<<(std::ostream& os, const Status &status)
     {
-        os << " action: "    << status.currentAction
-           << ", started: "  << status.startedActions
-           << ", completed " << status.completedActions
-           << ", total "     << status.totalActions;
+        os << "\tglobal: " << status.startedGlobalActions << "/" << status.completedGlobalActions << "/" << status.totalGlobalActions
+            << "\tlocal: " << status.currentAction << " " << status.startedActions << "/" << status.completedActions << "/" << status.totalActions;
         return os;
     }
 
     std::ostream& progress(std::ostream& os)
     {
-        os << "\tglobal: " << startedGlobalActions << "/" << completedGlobalActions << "/" << totalGlobalActions
-           << "\tlocal: " << currentAction << " " << startedActions << "/" << completedActions << "/" << totalActions
-           << std::endl;
+        os << *this << std::endl;
         return os;
     }
 };
