@@ -10,6 +10,13 @@
 
 #include "global.h"
 
+#include <stdexcept>
+
+struct CancelExecutionException : public std::exception
+{
+    CancelExecutionException(const char* const &codeExpr) : std::exception() { CORE_UNUSED(codeExpr); }
+};
+
 namespace corecvs {
 
 struct Status

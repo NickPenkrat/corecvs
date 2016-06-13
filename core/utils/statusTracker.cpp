@@ -1,12 +1,6 @@
 #include "statusTracker.h"
 
 #include <iostream>
-#include <stdexcept>
-
-struct CancelExecutionException : public std::exception
-{
-    CancelExecutionException(const char* const &codeExpr) : std::exception() {}
-};
 
 namespace corecvs {
 
