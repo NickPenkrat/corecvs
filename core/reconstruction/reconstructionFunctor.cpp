@@ -327,6 +327,10 @@ int corecvs::ReconstructionFunctor::getErrorComponentsPerPoint()
 
 void corecvs::ReconstructionFunctor::computeDependency()
 {
+	denseDependency.clear();
+	sparseDependency.clear();
+	sparseRowptr.clear();
+	sparseCol.clear();
     revDependency.clear();
     sparsity.clear();
     cameraCache.clear();
@@ -334,11 +338,15 @@ void corecvs::ReconstructionFunctor::computeDependency()
     cacheOrigin.clear();
 
     auto errSize = getErrorComponentsPerPoint();
-    int id = 0, argin = 0;
+    int id = 0, argin = 0, nOut = getOutputNum(), nIn = getInputNum();
 
     revDependency.resize(lastProjection);
-    sparsity.resize(getInputNum());
+    sparsity.resize(nIn);
+    denseDependency.resize(nOut);
+    sparseDependency.resize(nOut);
     std::unordered_map<WPP, int> cacheIdx;
+	std::unordered_map<WPP, DependencyList> depCache;
+	std::unordered_map<SceneFeaturePoint*, DependencyList> sfpDepCache;
 
 
 #define ALL_FROM(V) \
@@ -364,7 +372,7 @@ void corecvs::ReconstructionFunctor::computeDependency()
         cacheRef[i] = cacheIdx[wpp];
     }
 
-#define DEPS(V, N, CPROJ, CPOS) \
+#define DEPS(V, N, CPROJ, CPOS, CPROJDEP, CPOSDEP) \
     for (auto& a: V) \
     {\
         for (int i = 0; i < N; ++i) \
@@ -374,32 +382,95 @@ void corecvs::ReconstructionFunctor::computeDependency()
             { \
                 auto p = revDependency[j]; \
                 if (CPROJ) \
+				{ \
                     sparsity[argin].push_back(j); \
+                    CPROJDEP; \
+				} \
             } \
             for (int j = 0; j < (int)positionConstrainedCameras.size(); ++j) \
             { \
                 auto p = positionConstrainedCameras[j]; \
                 if (CPOS) \
+				{ \
                     for (int k = 0; k < OUTPUTS_PER_POSITION_CONSTRAINT; ++k) \
                         sparsity[argin].push_back(lastProjection + OUTPUTS_PER_POSITION_CONSTRAINT * j + k); \
+                    CPOSDEP \
+				} \
                 (void)p; \
             } \
             ++argin; \
         } \
     }
-    DEPS(orientableFixtures,      (excessiveQuaternionParametrization ? INPUTS_PER_ORIENTATION_EXC : INPUTS_PER_ORIENTATION_NEX), a == p->cameraFixture, false)
-    DEPS(translateableFixtures,   INPUTS_PER_TRANSLATION, a == p->cameraFixture, a == p);
-    DEPS(focalTunableCameras,     INPUTS_PER_FOCAL,       a == p->camera, false)
-    DEPS(principalTunableCameras, INPUTS_PER_PRINCIPAL,   a == p->camera, false)
+#define BASED(W, N) \
+	(&depCache[W].N)[i] = argin;
+#define BASEDC(N) \
+	BASED(WPP(p->cameraFixture, p->camera), N)
+
+    DEPS(orientableFixtures,      
+         (excessiveQuaternionParametrization ? INPUTS_PER_ORIENTATION_EXC : INPUTS_PER_ORIENTATION_NEX), 
+         a == p->cameraFixture,
+         false,
+         BASEDC(qx),)
+    DEPS(translateableFixtures,
+    	 INPUTS_PER_TRANSLATION,
+    	 a == p->cameraFixture,
+    	 a == p,
+    	 BASEDC(tx),
+    	 BASED(WPP(p, WPP::VWILDCARD), tx));
+    DEPS(focalTunableCameras,
+    	 INPUTS_PER_FOCAL,
+    	 a == p->camera,
+    	 false,
+    	 BASEDC(f),)
+    DEPS(principalTunableCameras,
+    	 INPUTS_PER_PRINCIPAL,
+    	 a == p->camera,
+    	 false,
+    	 BASEDC(cx),)
     CORE_ASSERT_TRUE_S(argin == getInputNum() - (!(optimization & ReconstructionFunctorOptimizationType::POINTS) ? 0 : INPUTS_PER_3D_POINT * (int)scene->trackedFeatures.size()));
     int argin_prepoint = argin;
     IF(POINTS,
-    DEPS(scene->trackedFeatures,  INPUTS_PER_3D_POINT,    a == p->featurePoint, false))
+	    DEPS(scene->trackedFeatures,  INPUTS_PER_3D_POINT,    a == p->featurePoint, false, (&sfpDepCache[a].x)[i] = argin;,))
     CORE_ASSERT_TRUE_S(argin == getInputNum());
     schurBlocks.clear();
     for (int i = argin_prepoint; i < argin; i += INPUTS_PER_3D_POINT)
         schurBlocks.push_back(i);
     schurBlocks.push_back(argin);
+
+	sparseRowptr.resize(nOut);
+    for (int i = 0; i < nOut; ++i)
+	{
+		auto &list = denseDependency[i];
+		auto &sparseList = sparseDependency[i];
+		if (i < lastProjection)
+		{
+			auto& pt= revDependency[i];
+			auto& p = sfpDepCache[pt->featurePoint];
+			auto& f = depCache[WPP(pt->cameraFixture, pt->camera)];
+			list |= p;
+			list |= f;
+		}
+		else
+		{
+			auto fp= positionConstrainedCameras[(i - lastProjection) / OUTPUTS_PER_POSITION_CONSTRAINT];
+			auto &f = depCache[WPP(fp, WPP::VWILDCARD)];
+			list |= f;
+		}
+		std::vector<int> used;
+		for (auto& v: list)
+			if (v != DependencyList::UNUSED)
+				used.push_back(v);
+		std::sort(used.begin(), used.end());
+		sparseRowptr[i + 1] = sparseRowptr[i] + used.size();
+		for (auto& u: used)
+		{
+			int id = (int)sparseCol.size();
+			sparseCol.push_back(u);
+			for (int j = 0; j < list.size(); ++j)
+				if (list[j] == u)
+					sparseList[j] = id;
+		}
+	}
 }
 
 void corecvs::ReconstructionFunctor::readParams(const double* params)
@@ -488,16 +559,18 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::getNativeJacobian(const do
     switch(error)
     {
         case ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType::REPROJECTION:
-            return jacobianReprojection();
+            return jacobianReprojection(in);
         case ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType::RAY_DIFF:
-            return jacobianRayDiff();
+            return jacobianRayDiff(in);
         default:
             return corecvs::SparseFunctionArgs::getJacobian(in, delta);
     }
 }
 
-corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianRayDiff()
+corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianRayDiff(const double* in)
 {
+	std::vector<double> values;
+#if 0
     auto U = ..., V = ...;
     double x = U[0], y = U[1], z = U[2];
     double x2 = x*x, y2 = y*y, z2 = z*z, xy = x*y, yz = y*z, xz = x*z;
@@ -522,12 +595,94 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianRayDiff()
                        ErrCx( Ns*(f2+cymv2)/f3/N2, -cxmu * cxmv/f3/Ns3,          cxmu/f2/Ns3, 1.0),
                        ErrCy(    -cxmu*cxmv/f3/Ns, Ns*(f2+cxmu2)/f3/N2,          cxmv/f2/Ns3, 1.0);
 
-
-
+#endif
+	return SparseMatrix(getOutputNum(), getInputNum(), values, sparseCol, sparseRowptr);
 }
 
-corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection()
+corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection(const double* in)
 {
+	std::vector<double> values(sparseCol.size());
+	int nIn = getInputNum(), nOut = getOutputNum(),
+		lastProjection = (int)revDependency.size(),
+		nErr = getErrorComponentsPerPoint();
+	bool exc = excessiveQuaternionParametrization;
+	for (int i = 0; i < nIn;)
+	{
+		auto& list = sparseDependency[i];
+		if (i < lastProjection)
+		{
+			/*
+			 * Here we prepare some useful things:
+			 * Rc, Rp, diffs, Ts, intrinsics
+			 */
+#define IFUSED(p, N, A) \
+			if (list.p != DependencyList::UNUSED) \
+			{ \
+				for (int ii = 0; ii < N; ++ii) \
+					CORE_ASSERT_TRUE_S(list[&list.p - list.begin() + ii] != DependencyList::UNUSED); \
+				A \
+			}
+#define SPARSE(p, ii) \
+			values[sparseDependency[i + ii].p] = 
+#define SPARSEV(p, v) \
+			SPARSE(p, 0) = v[0]; \
+			SPARSE(p, 1) = v[1];
+#define SPARSEU(p) \
+			SPARSEV(p, dud##p)
+			corecvs::Matrix44 K, CT, PR, PT;
+			corecvs::Vector4d 
+			IFUSED(f, 1,
+				// df
+				corecvs::Vector2dd dudf;
+				SPARSEU(f)
+            )
+			IFUSED(cx, 2,
+				// cx, cy
+				corecvs::Vector2dd dudcx, dudcy;
+				SPARSEU(cx)
+				SPARSEU(cy)
+            )
+			IFUSED(qx, exc ? 4 : 3,
+				// qx, qy, qz, qw
+				corecvs::Vector2dd dudqx, dudqy, dudqz, dudqw;
+
+				SPARSEU(qx)
+				SPARSEU(qy)
+				SPARSEU(qz)
+				if (exc)
+					SPARSEU(qw)
+            )
+			IFUSED(tx, 3,
+				// tx, ty, tz
+				corecvs::Vector2dd dudtx, dudty, dudtz;
+
+				SPARSEU(tx)
+				SPARSEU(ty)
+				SPARSEU(tz)
+            )
+			IFUSED(x, 3,
+				// x, y, z
+				corecvs::Vector2dd dudx, dudy, dudz;
+
+				SPARSEU(x)
+				SPARSEU(y)
+				SPARSEU(z)
+            )
+			i += nErr;
+		}
+		else
+		{
+			IFUSED(tx, 3,
+				auto fixture = positionConstrainedCameras[(i - lastProjection) / OUTPUTS_PER_POSITION_CONSTRAINT];
+				auto covariation = scene->initializationData[fixture].positioningAccuracy;
+				for (int ii = 0; ii < 3; ++ii)
+					for (int jj = 0; jj < 3; ++jj)
+						values[(&sparseDependency[i + ii].tx)[jj]] = covariation.a(ii, jj);
+			)
+			i += OUTPUTS_PER_POSITION_CONSTRAINT;
+		}
+	}
+#if 0
     // Raydiff jacobian:
     // left:
     // N = sqrt(x^2+y^2+z^2)
@@ -711,8 +866,10 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection()
          dqy= DerrKRcTc * Rqy* TpX,
          dqz= DerrKRcTc * Rqz* TpX,
          dqw= DerrKRcTc * Rqw* TpX;
-
-
+#else
+	
+	return SparseMatrix(getOutputNum(), getInputNum(), values, sparseCol, sparseRowptr);
+#endif
 }
 
 void corecvs::ReconstructionFunctor::QuaternionDiff(double qx, double qy, double qz, double qw, bool excessive, corecvs::Matrix44 &Rqx, corecvs::Matrix44 &Rqy, corecvs::Matrix44 &Rqz, corecvs::Matrix44 &Rqw)
@@ -739,7 +896,7 @@ void corecvs::ReconstructionFunctor::QuaternionDiff(double qx, double qy, double
     else
     {
         double qx2 = qx * qx, qy2 = qy * qy, qz2 = qz * qz, qxqyqz = qx * qy * qz;
-        double qxqy= qx * qy, qxqz = qx * qz, qyqz = qy * qz;
+        double qxqy= qx * qy, qxqz = qx * qz, qyqz = qy * qz,
                qx3 = qx2 * qx, qy3 = qy2 * qy, qz3 = qz2 * qz, qx2qy = qx2 * qy, qx2qz = qx2 * qz, qxqy2 = qx * qy2, qy2qz = qy2 * qz, qxqz2 = qx * qz2, qyqz2 = qy * qz2;
         Rqx = corecvs::Matrix44(                            4.0*qx*(qy2+qz2),-6.0*qx2qy+4.0*qxqz-2.0*qy3-2.0*qyqz2+2.0*qy,-6.0*qx2qz-4.0*qxqy-2.0*qy2qz-2.0*qz3+2.0*qz, 0.0,
                                 -6.0*qx2qy-4.0*qxqz-2.0*qy3-2.0*qyqz2+2.0*qy,            4.0*qx*(2.0*qx2+qy2+2.0*qz2-1.0),        6.0*qx2-4.0*qxqyqz+2.0*qy2+2.0*qz2-2, 0.0,

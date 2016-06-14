@@ -82,6 +82,9 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
     int getOutputNum();
     void computeDependency();
 	corecvs::SparseMatrix getNativeJacobian(const double *in, double delta = 1e-7);
+	corecvs::SparseMatrix jacobianRayDiff(const double *in);
+	corecvs::SparseMatrix jacobianReprojection(const double *in);
+	static void QuaternionDiff(double qx, double qy, double qz, double qw, bool excessive, corecvs::Matrix44 &Rqx, corecvs::Matrix44 &Rqy, corecvs::Matrix44 &Rqz, corecvs::Matrix44 &Rqw);
 
     void readParams(const double *params);
     void writeParams(double *params);
@@ -107,6 +110,54 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
     std::vector<FixtureCamera*> focalTunableCameras, principalTunableCameras;
 
     std::vector<CameraFixture*> optimizableSubset;
+
+	struct DependencyList
+	{
+		static const int UNUSED = -1;
+		int f = UNUSED,
+			cx= UNUSED,
+			cy= UNUSED,
+			qx= UNUSED,
+			qy= UNUSED,
+			qz= UNUSED,
+			qw= UNUSED,
+			tx= UNUSED,
+			ty= UNUSED,
+			tz= UNUSED,
+			x = UNUSED,
+			y = UNUSED,
+			z = UNUSED;
+		int& operator[](int i)
+		{
+			return (&f)[i];
+		}
+		const int& operator[](int i) const
+		{
+			return (&f)[i];
+		}
+		int* begin() const
+		{
+			return &f;
+		}
+		int* end() const
+		{
+			return 1 + &z;
+		}
+		int size() const
+		{
+			return (&z - &f) + 1;
+		}
+		DependencyList& operator |= (const DependencyList& rhs)
+		{
+			auto& lhsRef = *this;
+			for (auto& f: lhsRef)
+				if (f == UNUSED)
+					f = rhs[&f - &lhsRef[0]]; 
+			return *this;
+		}
+	};
+	std::vector<DependencyList> denseDependency, sparseDependency;
+	std::vector<int> sparseRowptr, sparseCol;
 
     /*
      * These are DoF limits for cameras/fixtures
