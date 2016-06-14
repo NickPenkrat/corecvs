@@ -171,6 +171,18 @@ void parallelable_reduce(IndexType begin, IndexType end, Function &f)
 }
 #endif
 
-} //namespace corecvs
-#endif // TBBWRAPPER_H
+inline std::string tbbInfo()
+{
+    char info[256];
+#ifdef WITH_TBB
+    snprintf2buf(info, "TBB is on: %d.%d compatVer:%d ifcVer:%d"
+        , TBB_VERSION_MAJOR, TBB_VERSION_MINOR, TBB_COMPATIBLE_INTERFACE_VERSION, TBB_INTERFACE_VERSION);
+#else
+    snprintf2buf(info, "TBB is off");
+#endif
+    return info;
+}
 
+} //namespace corecvs
+
+#endif // TBBWRAPPER_H
