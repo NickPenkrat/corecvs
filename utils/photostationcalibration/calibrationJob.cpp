@@ -349,7 +349,7 @@ struct ParallelDistortionRemoval
     {
         for (int camId = r.begin(); camId < r.end(); ++camId)
         {
-            auto boo = job->processState->createAutoTrackerCalculationObject();
+            //auto boo = job->processState->createAutoTrackerCalculationObject();
             auto& observationsIterator = job->observations[camId];
             auto& cam = job->photostation.cameras[camId];
 
@@ -365,6 +365,9 @@ struct ParallelDistortionRemoval
                             job->SaveImage(ob.undistortedFileName, dst);
                         }
                     });
+
+            if (camId == 2)
+                throw CancelExecutionException("art.stop.camId=2");
         }
     }
 
