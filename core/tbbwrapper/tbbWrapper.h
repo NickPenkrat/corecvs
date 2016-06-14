@@ -175,10 +175,14 @@ inline std::string tbbInfo()
 {
     char info[256];
 #ifdef WITH_TBB
-    snprintf2buf(info, "TBB is on: %d.%d compatVer:%d ifcVer:%d"
-        , TBB_VERSION_MAJOR, TBB_VERSION_MINOR, TBB_COMPATIBLE_INTERFACE_VERSION, TBB_INTERFACE_VERSION);
+    snprintf2buf(info, "TBB is ON: %d.%d compatVer:%d ifcVer:%d runtimeVer:%d useExcp:%d useCapExcp:%d"
+        , TBB_VERSION_MAJOR, TBB_VERSION_MINOR
+        , TBB_COMPATIBLE_INTERFACE_VERSION, TBB_INTERFACE_VERSION
+        , TBB_runtime_interface_version()
+        , TBB_USE_EXCEPTIONS, TBB_USE_CAPTURED_EXCEPTION
+        );
 #else
-    snprintf2buf(info, "TBB is off");
+    snprintf2buf(info, "TBB is OFF");
 #endif
     return info;
 }
