@@ -16,7 +16,7 @@
  **/
 
 void printStackTrace() {}
-void setHandlerSegV() {}
+void setSegVHandler() {}
 
 #else
 
@@ -118,7 +118,7 @@ static void stackTraceHandler(int sig)
     exit(2);                                // stop the execution immediately
 }
 
-void setHandlerSegV()
+void setSegVHandler()
 {
     signal(SIGSEGV, stackTraceHandler);   // install our handler
 }

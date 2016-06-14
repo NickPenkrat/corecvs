@@ -10,7 +10,7 @@ ExtensiveCoding::ExtensiveCoding(int inbits)
     getNearUpperPowerOf2(inbits, mAddbits);
     mOutbits = mInbits + mAddbits;
 
-    mLUT = new uint32_t[1 << mOutbits];
+    mLUT = new uint32_t[(int)(1 << mOutbits)];
 }
 
 uint32_t ExtensiveCoding::encode(uint32_t input)

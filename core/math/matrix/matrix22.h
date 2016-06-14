@@ -18,9 +18,9 @@
 #include <iostream>
 #include <limits>
 #include <algorithm>
-
-#include <math.h>
 #include <string.h>
+
+#include "global.h"
 
 #include "vector3d.h"
 #include "fixedVector.h"

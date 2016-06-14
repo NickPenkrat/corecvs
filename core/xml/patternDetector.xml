@@ -36,9 +36,6 @@
      <field type="bool"   name="produceDebug"        defaultValue="false"/>
      <field type="bool"   name="floatSpeedup"        defaultValue="true"/>
 
-     <!--
-     <field type="double" name="gradientCrossWidth"  defaultValue="3.0" comment="Width of cross for corner gradient-score" />
-     -->
 
      <field type="double" name="normalizePercentile"  suffix="%" defaultValue="5"    comment="Brightness percentile to be cut" min="0"   max="100" />
 

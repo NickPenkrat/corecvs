@@ -2,6 +2,7 @@
 #define STATUS_TRACKER
 
 #include <string>
+#include <ostream>
 
 #ifdef WITH_TBB
 #include <tbb/tbb.h>
@@ -17,13 +18,40 @@ struct Status
     size_t      completedActions, totalActions, startedActions, completedGlobalActions, totalGlobalActions, startedGlobalActions;
     bool        isCompleted;
     bool        isFailed;
-    bool        isStoped;
     bool        stopThread;
 
-    Status() : currentAction("NONE"), completedActions(0), totalActions(0), startedActions(0),
-        completedGlobalActions(0), totalGlobalActions(0), startedGlobalActions(0),
-      isCompleted(false), isFailed(false), stopThread(false), isStoped(false)
+    Status() : currentAction("NONE")
+        , completedActions(0), totalActions(0), startedActions(0)
+        , completedGlobalActions(0), totalGlobalActions(0), startedGlobalActions(0),
+      isCompleted(false), isFailed(false), stopThread(false)
     {}
+
+    friend std::ostream& operator<<(std::ostream& os, const Status &status)
+    {
+        os << " action: "    << status.currentAction
+           << ", started: "  << status.startedActions
+           << ", completed " << status.completedActions
+           << ", total "     << status.totalActions;
+        return os;
+    }
+
+    std::ostream& progress(std::ostream& os)
+    {
+        os << "\tglobal: " << startedGlobalActions << "/" << completedGlobalActions << "/" << totalGlobalActions
+           << "\tlocal: " << currentAction << " " << startedActions << "/" << completedActions << "/" << totalActions
+           << std::endl;
+        return os;
+    }
+};
+
+class StatusTracker;
+
+struct AutoTracker
+{
+    AutoTracker(StatusTracker* st);
+    ~AutoTracker();
+
+    StatusTracker* st;
 };
 
 class StatusTracker
@@ -36,8 +64,9 @@ public:
     void    setCompleted();
     void    setFailed();
 
+    AutoTracker createAutoTrackerCalculationObject();
+
     void    setStopThread();
-    void    setStoped();
 
     bool    isActionCompleted(const std::string &action) const;
 
@@ -47,6 +76,7 @@ public:
     /// \return Returns whether the setStopThread is called
     ///
     bool    isCanceled() const;
+
     bool    isFailed() const;
 
     Status  getStatus() const;

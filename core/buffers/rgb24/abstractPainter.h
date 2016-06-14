@@ -6,10 +6,10 @@
  **/
 
 #include <stdint.h>
-#include <math.h>
 #include <vector>
 
 #include "global.h"
+
 #include "hardcodeFont.h"
 #include "hersheyVectorFont.h"
 #include "rgbColor.h"

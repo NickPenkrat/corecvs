@@ -37,6 +37,9 @@
 
 #include <stdio.h>
 #include <math.h>
+
+#include "global.h"
+
 #include "reflection.h"
 
 using std::numeric_limits;

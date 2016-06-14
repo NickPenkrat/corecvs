@@ -97,7 +97,7 @@ string getFullPath(const string& envDirPath, cchar* path, cchar* filename)
     // Debugging shall be done with debugger when possible, if not, minidump is better than stack trace
     // http://stackoverflow.com/questions/105659/how-can-one-grab-a-stack-trace-in-c/127012#127012
     //
-    void setHandlerStdTerminate() {}
+    void setStdTerminateHandler() {}
 
 #else
 
@@ -107,7 +107,7 @@ static void stdTerminateHandler()
     exit(1);
 }
 
-void setHandlerStdTerminate()
+void setStdTerminateHandler()
 {
     std::set_terminate(stdTerminateHandler);
 }

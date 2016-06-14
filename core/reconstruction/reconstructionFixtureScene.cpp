@@ -155,7 +155,6 @@ void ReconstructionFixtureScene::printTrackStats()
         if (cntS[i] > 0)
             std::cout << "[" << tolerance * i << "; " << tolerance * (i + 1) << ": " << cntS[i] << ")";
     std::cout << std::endl;
-
 }
 
 FixtureScene* ReconstructionFixtureScene::dumbify()
@@ -248,7 +247,7 @@ void ReconstructionFixtureScene::pruneTracks(double rmse, double maxe, double di
     int completelyPruned = 0, observationsPruned = 0, totalObservations = 0;
     for (auto& pt: trackedFeatures)
     {
-        totalObservations += pt->observations__.size();
+        totalObservations += (int)pt->observations__.size();
         if (checkTrack(pt, ~0, rmse, maxe, distanceThreshold))
         {
             trackedFeatures[id++] = pt;
@@ -346,7 +345,7 @@ void ReconstructionFixtureScene::deleteFeaturePoint(SceneFeaturePoint *point)
 
 void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams &params)
 {
-    // Mapping from indexes to fixture,camera pairs
+    // Mapping from indices to <fixture,camera pairs>
     std::unordered_map<int, WPP> map;
     std::vector<std::string> filenames;
     for (auto& f: placingQueue)
@@ -378,11 +377,11 @@ void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams 
     }
 
     // Feature detection and matching
-    FeatureMatchingPipeline pipeline(filenames);
-    pipeline.add(new KeyPointDetectionStage(params.detector), true);
-    pipeline.add(new DescriptorExtractionStage(params.descriptor), true);
+    FeatureMatchingPipeline pipeline(filenames, processState);
+    pipeline.add(new KeyPointDetectionStage(params.detector()), true);
+    pipeline.add(new DescriptorExtractionStage(params.descriptor()), true);
     pipeline.add(new MatchingPlanComputationStage(), true);
-    pipeline.add(new MatchAndRefineStage(params.descriptor, params.matcher, params.b2bThreshold), true);
+    pipeline.add(new MatchAndRefineStage(params.descriptor(), params.matcher(), params.b2bThreshold()), true);
 
     pipeline.run();
 
@@ -405,7 +404,7 @@ void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams 
      *         This works almost as if we were merging all pictures from
      *         all cameras of photostation into a single image
      */
-    if (!params.matchF2F)
+    if (!params.matchF2F())
     {
         auto& ref = pipeline.refinedMatches.matchSets;
         for (auto& ms: ref)
@@ -631,16 +630,24 @@ void ParallelTrackPainter::operator() (const corecvs::BlockedRange<int> &r) cons
             auto nameNew = ss.str();
             corecvs::RGB24Buffer src = BufferReaderProvider::readRgb(name);
 
+            if (src.data == NULL)
+            {
+                std::cout << "ParallelTrackPainter:: invalid image " << name << std::endl;
+                continue;
+            }
+
             AbstractPainter<RGB24Buffer> painter(&src);
             for (auto& tf: scene->trackedFeatures)
             {
+                RGBColor color = colorizer[tf];
                 for (auto& obs: tf->observations__)
                     if (obs.first == key)
                     {
-                        painter.drawFormat(obs.second.observation[0] + 5, obs.second.observation[1], colorizer[0][tf], 1,  tf->name.c_str());
-                        painter.drawCircle(obs.second.observation[0], obs.second.observation[1], 3, colorizer[0][tf]);
+                        painter.drawFormat(obs.second.observation[0] + 5, obs.second.observation[1], color, 1, tf->name.c_str());
+                        painter.drawCircle(obs.second.observation[0]    , obs.second.observation[1], 3, color);
                     }
             }
+
             BufferReaderProvider::writeRgb(src, nameNew);
             std::cout << "Writing tracks image into " << nameNew << std::endl;
         }
@@ -666,12 +673,22 @@ void ParallelTrackPainter::operator() (const corecvs::BlockedRange<int> &r) cons
             auto srcA = BufferReaderProvider::readRgb(nameA),
                  srcB = BufferReaderProvider::readRgb(nameB);
 
+            if (srcA.data == NULL) {
+                std::cout << "ParallelTrackPainter:: invalid imageA " << nameA << std::endl;
+                continue;
+            }
+            if (srcB.data == NULL) {
+                std::cout << "ParallelTrackPainter:: invalid imageB " << nameB << std::endl;
+                continue;
+            }
+
             int newW = std::max(srcA.w, srcB.w);
             int newH = srcA.h + srcB.h;
             int offH = srcA.h;
             corecvs::RGB24Buffer dst(newH, newW);
             AbstractPainter<RGB24Buffer> painter(&dst);
 
+			//TODO: optimize speed to don't form the not needed image
             for (int y = 0; y < srcA.h; ++y)
                 for (int x = 0; x < srcA.w; ++x)
                     dst.element(y, x) = srcA.element(y, x);
@@ -693,16 +710,13 @@ void ParallelTrackPainter::operator() (const corecvs::BlockedRange<int> &r) cons
                 if (!obsA || !obsB)
                     continue;
 
-                painter.drawFormat(obsA->observation[0] + 5, obsA->observation[1], colorizer[0][tf], 1,  tf->name.c_str());
-                painter.drawCircle(obsA->observation[0], obsA->observation[1], 3, colorizer[0][tf]);
-                painter.drawFormat(obsB->observation[0] + 5, obsB->observation[1] + offH, colorizer[0][tf], 1,  tf->name.c_str());
-                painter.drawCircle(obsB->observation[0], obsB->observation[1] + offH, 3, colorizer[0][tf]);
-                dst.drawLine(
-                        obsB->observation[0],
-                        obsB->observation[1] + offH,
-                        obsA->observation[0],
-                        obsA->observation[1],
-                        colorizer[0][tf]);
+                RGBColor color = colorizer[tf];
+                painter.drawFormat(obsA->observation[0] + 5, obsA->observation[1]       , color, 1,  tf->name.c_str());
+                painter.drawCircle(obsA->observation[0]    , obsA->observation[1]       , 3, color);
+                painter.drawFormat(obsB->observation[0] + 5, obsB->observation[1] + offH, color, 1,  tf->name.c_str());
+                painter.drawCircle(obsB->observation[0]    , obsB->observation[1] + offH, 3, color);
+                dst	   .drawLine  (obsB->observation[0]    , obsB->observation[1] + offH
+								 , obsA->observation[0]	   , obsA->observation[1], color);
                 painted = true;
             }
             if (!painted)
@@ -783,7 +797,6 @@ void corecvs::ReconstructionFixtureScene::buildTracks(CameraFixture *psA, Camera
   //corecvs::Vector2dd &kpA = kp[0], &kpB = kp[1], &kpC = kp[2];
 
     std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> free[NPAIRS];
-    auto &freeAB = free[0];
 
     for (int i = 0; i < NPAIRS; ++i)
         free[i] = getUnusedFeatures(ps[pairIdx[i][0]], ps[pairIdx[i][1]]);
@@ -1018,8 +1031,7 @@ corecvs::ReconstructionFixtureScene::getFixtureMatchesIdx(const std::vector<Came
             CORE_ASSERT_TRUE_S(idB == wcQuery);
             CORE_ASSERT_TRUE_S(idA.u != WPP::UWILDCARD && idA.v != WPP::VWILDCARD);
             CORE_ASSERT_TRUE_S(idB.u != WPP::UWILDCARD && idB.v != WPP::VWILDCARD);
-            auto& kpsA = keyPoints[idA];
-            auto& kpsB = keyPoints[idB];
+
             for (auto& m: ref2.second)
             {
                 int kpA = std::get<0>(m);

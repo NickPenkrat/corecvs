@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ReconstructionFunctorOptimizationParamsControlWidget</class> 
+ <widget class="QWidget" name="ReconstructionFunctorOptimizationParamsControlWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>ReconstructionFunctorOptimizationParams</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <property name="margin">
+    <number>3</number>
+   </property>
+   <property name="spacing">
+    <number>3</number>
+   </property>
+    <item row="0" column="0">
+     <widget class="QLabel" name="label_0">
+       <property name="text">
+         <string>nonDegenerateOrientations</string>
+       </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QCheckBox" name="nonDegenerateOrientationsCheckBox">
+       <property name="toolTip">
+         <string>Orientations of all cameras except first</string>
+       </property>
+       <property name="checked">
+           <bool>1</bool>
+       </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="label_1">
+       <property name="text">
+         <string>degenerateOrientations</string>
+       </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QCheckBox" name="degenerateOrientationsCheckBox">
+       <property name="toolTip">
+         <string>Orientation of first camera</string>
+       </property>
+       <property name="checked">
+           <bool>1</bool>
+       </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="label_2">
+       <property name="text">
+         <string>nonDegenerateTranslations</string>
+       </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QCheckBox" name="nonDegenerateTranslationsCheckBox">
+       <property name="toolTip">
+         <string>Translations of all cameras except first</string>
+       </property>
+       <property name="checked">
+           <bool>0</bool>
+       </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="label_3">
+       <property name="text">
+         <string>degenerateTranslations</string>
+       </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QCheckBox" name="degenerateTranslationsCheckBox">
+       <property name="toolTip">
+         <string>Translation of first camera</string>
+       </property>
+       <property name="checked">
+           <bool>0</bool>
+       </property>
+     </widget>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLabel" name="label_4">
+       <property name="text">
+         <string>focals</string>
+       </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QCheckBox" name="focalsCheckBox">
+       <property name="toolTip">
+         <string>Camera focals in multicamera</string>
+       </property>
+       <property name="checked">
+           <bool>1</bool>
+       </property>
+     </widget>
+    </item>
+    <item row="5" column="0">
+     <widget class="QLabel" name="label_5">
+       <property name="text">
+         <string>principals</string>
+       </property>
+     </widget>
+    </item>
+    <item row="5" column="1">
+     <widget class="QCheckBox" name="principalsCheckBox">
+       <property name="toolTip">
+         <string>Camera principals in multicamera</string>
+       </property>
+       <property name="checked">
+           <bool>1</bool>
+       </property>
+     </widget>
+    </item>
+    <item row="6" column="0">
+     <widget class="QLabel" name="label_6">
+       <property name="text">
+         <string>points</string>
+       </property>
+     </widget>
+    </item>
+    <item row="6" column="1">
+     <widget class="QCheckBox" name="pointsCheckBox">
+       <property name="toolTip">
+         <string>3D points</string>
+       </property>
+       <property name="checked">
+           <bool>1</bool>
+       </property>
+     </widget>
+    </item>
+    <item row="7" column="0">
+     <widget class="QLabel" name="label_7">
+       <property name="text">
+         <string>tuneGps</string>
+       </property>
+     </widget>
+    </item>
+    <item row="7" column="1">
+     <widget class="QCheckBox" name="tuneGpsCheckBox">
+       <property name="toolTip">
+         <string>Allow shifting of GPS-initialized cameras</string>
+       </property>
+       <property name="checked">
+           <bool>0</bool>
+       </property>
+     </widget>
+    </item>
+   <item row="8" column="0">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="8" column="2">
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <layoutdefault spacing="3" margin="3"/>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>nonDegenerateOrientationsCheckBox</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>ReconstructionFunctorOptimizationParamsControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>degenerateOrientationsCheckBox</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>ReconstructionFunctorOptimizationParamsControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>nonDegenerateTranslationsCheckBox</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>ReconstructionFunctorOptimizationParamsControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>degenerateTranslationsCheckBox</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>ReconstructionFunctorOptimizationParamsControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>focalsCheckBox</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>ReconstructionFunctorOptimizationParamsControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>principalsCheckBox</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>ReconstructionFunctorOptimizationParamsControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>pointsCheckBox</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>ReconstructionFunctorOptimizationParamsControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>tuneGpsCheckBox</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>ReconstructionFunctorOptimizationParamsControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+ </connections>
+ <slots>
+  <slot>changeParameters()</slot>
+ </slots>
+ <customwidgets>
+ </customwidgets>
+</ui>

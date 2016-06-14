@@ -11,7 +11,6 @@
 #include "descriptorMatcherProvider.h"
 #include "bufferReaderProvider.h"
 #include "vsfmIo.h"
-
 #include "tbbWrapper.h"
 
 static const char* KEYPOINT_EXTENSION   = "keypoints";
@@ -33,8 +32,9 @@ std::string changeExtension(const std::string &imgName, const std::string &desir
     return res;
 }
 
-FeatureMatchingPipeline::FeatureMatchingPipeline(const std::vector<std::string> &filenames)
+FeatureMatchingPipeline::FeatureMatchingPipeline(const std::vector<std::string> &filenames, StatusTracker* processState)
 {
+    this->processState = processState;
     images.reserve(filenames.size());
     for (size_t i = 0; i < filenames.size(); ++i)
     {
@@ -53,8 +53,11 @@ FeatureMatchingPipeline::~FeatureMatchingPipeline()
 
 void FeatureMatchingPipeline::run()
 {
+    processState->reset("Detecting", pipeline.size());
+
     for (size_t id = 0; id < pipeline.size(); ++id)
     {
+        auto boo = processState->createAutoTrackerCalculationObject();
         auto sParams = saveParams[id];
         auto lParams = loadParams[id];
         auto ps = pipeline[id];
@@ -121,13 +124,13 @@ public:
                 ss1 << "Detecting keypoints with " << detectorType << " on ";
                 pipeline->tic(r.begin(), false);
             }
-
         }
 
         if (cnt)
         {
             ss2 << kpt << " keypoints"; kpt = 0;
-            pipeline->toc(ss1.str(), ss2.str(), N, cnt, id, false); cnt = 0;
+            pipeline->toc(ss1.str(), ss2.str(), N, cnt, id, false);
+            cnt = 0;
         }
 
         delete detector;

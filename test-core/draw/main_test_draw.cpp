@@ -444,7 +444,7 @@ TEST(Draw, polygonDraw)
 
     AbstractPainter<RGB24Buffer> painter(buffer);
 
-    Polygon p;
+    corecvs::Polygon p;
     for (int i = 0; i < 7; i++) {
         p.push_back(Vector2dd::FromPolar((2 * M_PI / 7.0) * i, 100.0) + center);
     }
@@ -470,8 +470,6 @@ TEST(Draw, polygonDraw1)
     int h = 240;
     int w = 240;
 
-
-
     RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
     Vector2dd center(buffer->h / 12, buffer->h / 12);
     double radius = center.x() / 10.0 * 9.0;
@@ -482,7 +480,7 @@ TEST(Draw, polygonDraw1)
     {
         for (int pj = 0; pj < 3; pj ++)
         {
-            Polygon p;
+            corecvs::Polygon p;
             int count = pi * 3 + pj + 3;
             for (int i = 0; i < count; i++) {
                 p.push_back(Vector2dd::FromPolar((2 * M_PI / count) * i, radius) + center * Vector2dd(pi * 2 + 1, pj * 2 + 1));
@@ -508,7 +506,7 @@ TEST(Draw, polygonDraw1)
     {
         for (int pj = 0; pj < 3; pj ++)
         {
-            Polygon p;
+            corecvs::Polygon p;
             int count = pi * 3 + pj + 3;
             for (int i = 0; i < count; i++) {
                 p.push_back(Vector2dd::FromPolar(-(2 * M_PI / count) * i, radius) + center * Vector2dd(pi * 2 + 1, pj * 2 + 1) + Vector2dd(0.0, buffer->h / 2));
@@ -535,7 +533,7 @@ TEST(Draw, polygonDraw1)
     {
         for (int pj = 0; pj < 3; pj ++)
         {
-            Polygon p;
+            corecvs::Polygon p;
             int count = pi * 3 + pj + 3;
             for (int i = 0; i < count; i++) {
                 p.push_back(Vector2dd::FromPolar(-(2 * M_PI / count) * i, radius) + center * Vector2dd(pi * 2 + 1, pj * 2 + 1) + Vector2dd(buffer->w / 2, 0.0));
@@ -562,7 +560,7 @@ TEST(Draw, polygonDraw2)
     int h = 240;
     int w = 240;
 
-    Polygon p;
+    corecvs::Polygon p;
     RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
 
     p.push_back(Vector2dd(57.439, 16.983));

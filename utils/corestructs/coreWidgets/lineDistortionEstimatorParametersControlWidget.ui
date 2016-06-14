@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>LineDistortionEstimatorParametersControlWidget</class>
+ <class>LineDistortionEstimatorParametersControlWidget</class> 
  <widget class="QWidget" name="LineDistortionEstimatorParametersControlWidget">
   <property name="geometry">
    <rect>
@@ -13,13 +13,13 @@
   <property name="windowTitle">
    <string>LineDistortionEstimatorParameters</string>
   </property>
-   <layout class="QGridLayout" name="gridLayout">
-    <property name="margin">
-     <number>3</number>
-    </property>
-    <property name="spacing">
-     <number>3</number>
-    </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <property name="margin">
+    <number>3</number>
+   </property>
+   <property name="spacing">
+    <number>3</number>
+   </property>
     <item row="0" column="0">
      <widget class="QLabel" name="label_0">
        <property name="text">
@@ -29,6 +29,9 @@
     </item>
     <item row="0" column="1">
      <widget class="QComboBox" name="costAlgorithmComboBox">
+       <property name="toolTip">
+         <string>Cost Algorithm</string>
+       </property>
        <property name="currentIndex">
          <number>0</number>
        </property>
@@ -42,9 +45,6 @@
          <string>Joint Angle Cost</string>
         </property>
        </item>
-       <property name="toolTip">
-         <string>Cost Algorithm</string>
-       </property>
      </widget>
     </item>
     <item row="1" column="0">
@@ -115,7 +115,7 @@
          <string>Simple Jacobian</string>
        </property>
        <property name="checked">
-           <bool>true</bool>
+           <bool>1</bool>
        </property>
      </widget>
     </item>
@@ -130,6 +130,9 @@
      <widget class="QCheckBox" name="evenPowersOnlyCheckBox">
        <property name="toolTip">
          <string>Even powers only</string>
+       </property>
+       <property name="checked">
+           <bool>0</bool>
        </property>
      </widget>
     </item>
@@ -146,7 +149,7 @@
          <string>Estimate Tangent</string>
        </property>
        <property name="checked">
-           <bool>true</bool>
+           <bool>1</bool>
        </property>
      </widget>
     </item>
@@ -163,7 +166,7 @@
          <string>Estimate Center</string>
        </property>
        <property name="checked">
-           <bool>true</bool>
+           <bool>1</bool>
        </property>
      </widget>
     </item>

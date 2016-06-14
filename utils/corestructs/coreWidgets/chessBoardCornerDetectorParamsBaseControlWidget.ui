@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ChessBoardCornerDetectorParamsBaseControlWidget</class>
+ <class>ChessBoardCornerDetectorParamsBaseControlWidget</class> 
  <widget class="QWidget" name="ChessBoardCornerDetectorParamsBaseControlWidget">
   <property name="geometry">
    <rect>
@@ -13,13 +13,13 @@
   <property name="windowTitle">
    <string>ChessBoardCornerDetectorParamsBase</string>
   </property>
-   <layout class="QGridLayout" name="gridLayout">
-    <property name="margin">
-     <number>3</number>
-    </property>
-    <property name="spacing">
-     <number>3</number>
-    </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <property name="margin">
+    <number>3</number>
+   </property>
+   <property name="spacing">
+    <number>3</number>
+   </property>
     <item row="0" column="0">
      <widget class="QLabel" name="label_0">
        <property name="text">
@@ -31,6 +31,9 @@
      <widget class="QCheckBox" name="produceDebugCheckBox">
        <property name="toolTip">
          <string>produceDebug</string>
+       </property>
+       <property name="checked">
+           <bool>0</bool>
        </property>
      </widget>
     </item>
@@ -47,7 +50,7 @@
          <string>floatSpeedup</string>
        </property>
        <property name="checked">
-           <bool>true</bool>
+           <bool>1</bool>
        </property>
      </widget>
     </item>
@@ -314,6 +317,9 @@
        <property name="toolTip">
          <string>Non Minimal Supresstion threshold</string>
        </property>
+       <property name="decimals">
+        <number>3</number>
+       </property>
        <property name="minimum">
         <double>0</double>
        </property>
@@ -325,9 +331,6 @@
        </property>
        <property name="value">
         <double>0.025</double>
-       </property>
-       <property name="decimals">
-        <number>3</number>
        </property>
      </widget>
     </item>
@@ -341,7 +344,7 @@
     <item row="16" column="1">
      <widget class="DoubleVectorWidget" name="patternRadius">
        <property name="toolTip">
-         <string>patternRadius</string>
+         <string>Radius for multi-scale pattern detection</string>
        </property>
        <property name="minimum">
         <double>0</double>
@@ -361,7 +364,7 @@
     <item row="17" column="1">
      <widget class="DoubleVectorWidget" name="patternStartAngleDeg">
        <property name="toolTip">
-         <string>patternStartAngleDeg</string>
+         <string>Angle for rotation-variant detection</string>
        </property>
        <property name="minimum">
         <double>0</double>
@@ -381,7 +384,7 @@
     <item row="18" column="1">
      <widget class="DoubleVectorWidget" name="cornerScores">
        <property name="toolTip">
-         <string>cornerScores</string>
+         <string>Radius for corner-scoring</string>
        </property>
        <property name="minimum">
         <double>0</double>

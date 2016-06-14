@@ -240,7 +240,7 @@ void GraphPlotDialog::childRepaint(QPaintEvent * /*event*/, QWidget *who)
     // Calculate values for paused widget
     if (mUi.pauseButton->isChecked())
     {
-        int dataSize0 = mData.size() ? mData[0].size() : 0;
+        int dataSize0 = mData.size() ? (int)mData[0].size() : 0;
         if (mGraphPlotParameters->fixGridValue())
         {
             mGraphShowPoint = fround(mMouseClickedValue / gainX);

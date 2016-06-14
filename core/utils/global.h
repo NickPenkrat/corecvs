@@ -439,6 +439,9 @@ inline void deletearr_safe (Type * &ptr)
 #if defined(_WIN32)
 # define NOMINMAX
 # define WIN32_LEAN_AND_MEAN
-#endif
+# ifdef _MSC_VER
+#  pragma warning(disable: 4503)  // decorated name length exceeded, name was truncated
+# endif
+#endif // WIN32
 
 /* EOF */

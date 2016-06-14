@@ -163,7 +163,7 @@ struct CalibrationJob
     CalibrationSettings                             settings;
 
     // TODO: Should we serialize it?!  // This object is owned outside!
-    StatusTracker*                                  state = nullptr;
+    StatusTracker*                                  processState = nullptr;
 
     template<class VisitorType>
     void accept(VisitorType &visitor)
