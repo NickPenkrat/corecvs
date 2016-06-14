@@ -360,6 +360,9 @@ struct ParallelDistortionRemoval
             corecvs::DisplacementBuffer transform;
             job->prepareUndistortionTransformation(camId, transform);
 
+            if (job->processState->isCanceled())
+                break;
+
             try {
                 corecvs::parallelable_for(0, (int)observationsIterator.size(), [&](const corecvs::BlockedRange<int> &r)
                 {
@@ -383,6 +386,8 @@ struct ParallelDistortionRemoval
                     job->processState->setFailed();
                 }
             }
+
+            cout << "ParallelDistortionRemoval:: camId=" << camId << " canceled:" << job->processState->isCanceled() << endl;
         }
     }
 
@@ -402,7 +407,7 @@ void CalibrationJob::allRemoveDistortion()
     catch (const tbb::captured_exception &ex)
     {
         cout << "status in tbb::captured_exception-1 handler:" << processState->getStatus() << " canceled:" << processState->isCanceled() << endl;
-        L_ERROR << ex.what();
+        L_ERROR << (ex.what() ? ex.what() : "'stop'");
         if (!processState->isCanceled())
         {
             processState->setFailed();
