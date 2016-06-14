@@ -388,6 +388,7 @@ struct ParallelDistortionRemoval
             }
             cout << "ParallelDistortionRemoval:: camId=" << camId << " canceled:" << job->processState->isCanceled() << endl;
         }
+        cout << "ParallelDistortionRemoval:: returns [" << r.begin() << "..." << r.end() << ")" << endl;
     }
 
     ParallelDistortionRemoval(CalibrationJob *job) : job(job)

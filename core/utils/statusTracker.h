@@ -10,8 +10,6 @@
 
 #include "global.h"
 
-#include <stdexcept>
-
 struct CancelExecutionException : public AssertException
 {
     CancelExecutionException(const char* codeExpr) : AssertException(codeExpr) {}
