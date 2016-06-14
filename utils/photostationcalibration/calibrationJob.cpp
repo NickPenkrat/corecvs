@@ -380,13 +380,12 @@ struct ParallelDistortionRemoval
             catch (const tbb::captured_exception &ex)
             {
                 cout << "status in tbb::captured_exception-2 handler:" << job->processState->getStatus() << " canceled:" << job->processState->isCanceled() << endl;
-                L_ERROR << (ex.what() ? ex.what() : "'stop'");
+                L_ERROR << ex.what();
                 if (!job->processState->isCanceled())
                 {
                     job->processState->setFailed();
                 }
             }
-
             cout << "ParallelDistortionRemoval:: camId=" << camId << " canceled:" << job->processState->isCanceled() << endl;
         }
     }
@@ -404,14 +403,27 @@ void CalibrationJob::allRemoveDistortion()
     try {
         corecvs::parallelable_for(0, (int)photostation.cameras.size(), ParallelDistortionRemoval(this));
     }
+    catch (const CancelExecutionException &ex)
+    {
+        cout << "status in CancelExecutionException-1 handler:" << processState->getStatus() << " canceled:" << processState->isCanceled() << endl;
+        L_ERROR << ex.what();
+        CORE_ASSERT_TRUE_S(processState->isCanceled());
+        throw ex;
+    }
     catch (const tbb::captured_exception &ex)
     {
         cout << "status in tbb::captured_exception-1 handler:" << processState->getStatus() << " canceled:" << processState->isCanceled() << endl;
-        L_ERROR << (ex.what() ? ex.what() : "'stop'");
+        L_ERROR << ex.what();
         if (!processState->isCanceled())
         {
             processState->setFailed();
         }
+        throw ex;
+    }
+    catch (...)
+    {
+        cout << "status in exception-1(...) handler:" << processState->getStatus() << " canceled:" << processState->isCanceled() << endl;
+        throw;
     }
 }
 

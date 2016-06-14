@@ -12,9 +12,9 @@
 
 #include <stdexcept>
 
-struct CancelExecutionException : public std::exception
+struct CancelExecutionException : public AssertException
 {
-    CancelExecutionException(const char* const &codeExpr) : std::exception() { CORE_UNUSED(codeExpr); }
+    CancelExecutionException(const char* codeExpr) : AssertException(codeExpr) {}
 };
 
 namespace corecvs {

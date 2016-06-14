@@ -63,7 +63,7 @@ void StatusTracker::incrementCompleted()
             currentStatus.hasThrown = true;
         unlock();
         std::cout << "StatusTracker::incrementCompleted throws exception..." << std::endl;
-        throw CancelExecutionException("stopThread!");
+        throw CancelExecutionException("stopThread");
     }
 
     writeLock();
