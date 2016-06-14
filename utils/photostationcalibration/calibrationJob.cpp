@@ -170,6 +170,8 @@ struct ParallelBoardDetector
     {
         for (size_t i = r.begin(); i != r.end(); ++i)
         {
+            if (job->processState->isCanceled())
+                break;
             auto boo = job->processState->createAutoTrackerCalculationObject();
             size_t cam = idx[i][0];
             size_t obs = idx[i][1];
@@ -357,18 +359,30 @@ struct ParallelDistortionRemoval
 
             corecvs::DisplacementBuffer transform;
             job->prepareUndistortionTransformation(camId, transform);
-            corecvs::parallelable_for(0, (int)observationsIterator.size(), [&](const corecvs::BlockedRange<int> &r)
+
+            try {
+                corecvs::parallelable_for(0, (int)observationsIterator.size(), [&](const corecvs::BlockedRange<int> &r)
+                {
+                    for (int i = r.begin(); i != r.end(); ++i)
                     {
-                        for (int i = r.begin(); i != r.end(); ++i)
-                        {
-                            if (job->processState->isCanceled())
-                                break;
-                            auto &ob = observationsIterator[i];
-                            corecvs::RGB24Buffer source = job->LoadImage(ob.sourceFileName), dst;
-                            job->removeDistortion(source, dst, transform, cam.intrinsics.size[0], cam.intrinsics.size[1]);
-                            job->SaveImage(ob.undistortedFileName, dst);
-                        }
-                    });
+                        if (job->processState->isCanceled())
+                            break;
+                        auto &ob = observationsIterator[i];
+                        corecvs::RGB24Buffer source = job->LoadImage(ob.sourceFileName), dst;
+                        job->removeDistortion(source, dst, transform, cam.intrinsics.size[0], cam.intrinsics.size[1]);
+                        job->SaveImage(ob.undistortedFileName, dst);
+                    }
+                });
+            }
+            catch (const tbb::captured_exception &ex)
+            {
+                cout << "status in tbb::captured_exception-2 handler:" << job->processState->getStatus() << " canceled:" << job->processState->isCanceled() << endl;
+                L_ERROR << (ex.what() ? ex.what() : "'stop'");
+                if (!job->processState->isCanceled())
+                {
+                    job->processState->setFailed();
+                }
+            }
         }
     }
 
@@ -387,7 +401,7 @@ void CalibrationJob::allRemoveDistortion()
     }
     catch (const tbb::captured_exception &ex)
     {
-        cout << "status in tbb::captured_exception handler:" << processState->getStatus() << " canceled:" << processState->isCanceled() << endl;
+        cout << "status in tbb::captured_exception-1 handler:" << processState->getStatus() << " canceled:" << processState->isCanceled() << endl;
         L_ERROR << ex.what();
         if (!processState->isCanceled())
         {
@@ -465,7 +479,11 @@ struct ParallelSingleCalibrator
     void operator() (const corecvs::BlockedRange<int> &r) const
     {
         for (int cameraId = r.begin(); cameraId < r.end(); ++cameraId)
+        {
+            if (job->processState->isCanceled())
+                break;
             job->calibrateSingleCamera(cameraId);
+        }
     }
 
     CalibrationJob *job;
