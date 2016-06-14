@@ -382,7 +382,18 @@ void CalibrationJob::allRemoveDistortion()
 {
     processState->reset("Image undistortion", photostation.cameras.size());
 
-    corecvs::parallelable_for (0, (int)photostation.cameras.size(), ParallelDistortionRemoval(this));
+    try {
+        corecvs::parallelable_for(0, (int)photostation.cameras.size(), ParallelDistortionRemoval(this));
+    }
+    catch (const tbb::captured_exception &ex)
+    {
+        cout << "status in tbb::captured_exception handler:" << processState->getStatus() << " canceled:" << processState->isCanceled() << endl;
+        L_ERROR << ex.what();
+        if (!processState->isCanceled())
+        {
+            processState->setFailed();
+        }
+    }
 }
 
 void CalibrationJob::SaveImage(const std::string &path, corecvs::RGB24Buffer &img)
