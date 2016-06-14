@@ -349,6 +349,8 @@ struct ParallelDistortionRemoval
     {
         for (int camId = r.begin(); camId < r.end(); ++camId)
         {
+            if (job->processState->isCanceled())
+                break;
             auto boo = job->processState->createAutoTrackerCalculationObject();
             auto& observationsIterator = job->observations[camId];
             auto& cam = job->photostation.cameras[camId];
@@ -359,6 +361,8 @@ struct ParallelDistortionRemoval
                     {
                         for (int i = r.begin(); i != r.end(); ++i)
                         {
+                            if (job->processState->isCanceled())
+                                break;
                             auto &ob = observationsIterator[i];
                             corecvs::RGB24Buffer source = job->LoadImage(ob.sourceFileName), dst;
                             job->removeDistortion(source, dst, transform, cam.intrinsics.size[0], cam.intrinsics.size[1]);
