@@ -353,7 +353,9 @@ struct ParallelDistortionRemoval
         {
             if (job->processState->isCanceled())
                 break;
-            auto boo = job->processState->createAutoTrackerCalculationObject();
+            job->processState->incrementStarted();
+            //auto boo = job->processState->createAutoTrackerCalculationObject();
+
             auto& observationsIterator = job->observations[camId];
             auto& cam = job->photostation.cameras[camId];
 
@@ -377,16 +379,19 @@ struct ParallelDistortionRemoval
                     }
                 });
             }
-            catch (const tbb::captured_exception &ex)
+            catch (const tbb::captured_exception &ex)   // does never work!
             {
                 cout << "status in tbb::captured_exception-2 handler:" << job->processState->getStatus() << " canceled:" << job->processState->isCanceled() << endl;
-                L_ERROR << ex.what();
-                if (!job->processState->isCanceled())
-                {
-                    job->processState->setFailed();
-                }
+                throw ex;
             }
             cout << "ParallelDistortionRemoval:: camId=" << camId << " canceled:" << job->processState->isCanceled() << endl;
+
+            if (job->processState->isCanceled()) {
+                cout << "ParallelDistortionRemoval:: throw exception..." << endl;
+                throw CancelExecutionException("stopUndistCur");
+            }
+
+            job->processState->incrementCompleted();
         }
         cout << "ParallelDistortionRemoval:: returns [" << r.begin() << "..." << r.end() << ")" << endl;
     }
@@ -426,6 +431,12 @@ void CalibrationJob::allRemoveDistortion()
         cout << "status in exception-1(...) handler:" << processState->getStatus() << " canceled:" << processState->isCanceled() << endl;
         throw;
     }
+
+    if (processState->isCanceled())
+	{
+        cout << "allRemoveDistortion:: throw exception..." << endl;
+        throw CancelExecutionException("stopRemoveUndist");
+	}
 }
 
 void CalibrationJob::SaveImage(const std::string &path, corecvs::RGB24Buffer &img)
