@@ -50,10 +50,18 @@ void StatusTracker::incrementCompleted()
         return;
 
     readLock();
-        bool toStop = currentStatus.stopThread;
+        bool toStop    = currentStatus.stopThread;
+        bool hasThrown = currentStatus.hasThrown;
     unlock();
 
     if (toStop) {
+        if (hasThrown) {
+            std::cout << "StatusTracker::incrementCompleted ignores throw exception..." << std::endl;
+            return;
+        }
+        writeLock();
+            currentStatus.hasThrown = true;
+        unlock();
         std::cout << "StatusTracker::incrementCompleted throws exception..." << std::endl;
         throw CancelExecutionException("stopThread!");
     }
