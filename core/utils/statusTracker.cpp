@@ -54,7 +54,7 @@ void StatusTracker::incrementCompleted()
     unlock();
 
     if (toStop) {
-        std::cout << "StatusTracker::incrementCompleted request to stop - throw exception..." << std::endl;
+        std::cout << "StatusTracker::incrementCompleted throws exception..." << std::endl;
         throw CancelExecutionException("stopThread!");
     }
 
