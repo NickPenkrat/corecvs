@@ -24,12 +24,11 @@ class GenericQuaternion : public FixedVectorBase<GenericQuaternion<ElementType>,
 private:
     typedef FixedVectorBase<GenericQuaternion<ElementType>, ElementType, 4> BaseClass;
     typedef Vector3d<ElementType> VectorType;
+
 public:
 
-
     inline GenericQuaternion(const GenericQuaternion &Q) : BaseClass(Q)
-    {
-    }
+    {}
 
     inline GenericQuaternion(const ElementType &_x, const ElementType &_y,const ElementType &_z, const ElementType &_t)
     {
@@ -37,7 +36,6 @@ public:
         (*this)[1] = _y;
         (*this)[2] = _z;
         (*this)[3] = _t;
-
     }
 
     inline explicit GenericQuaternion(const BaseClass &V) : BaseClass(V) {}
