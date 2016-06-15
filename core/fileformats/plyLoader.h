@@ -75,7 +75,7 @@ public:
     friend istream &operator >> (istream &in, Prop &toLoad);
 
     PLYLoader() :
-        trace (true)
+        trace (false)
     {}
 
     int loadPLY(istream &input, Mesh3D &mesh);
