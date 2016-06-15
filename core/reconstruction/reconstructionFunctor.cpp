@@ -179,7 +179,7 @@ int corecvs::ReconstructionFunctor::getInputNum()
       + (int)translateableFixtures.size()  * INPUTS_PER_TRANSLATION
       + (int)focalTunableCameras.size()    * INPUTS_PER_FOCAL
       + (int)principalTunableCameras.size()* INPUTS_PER_PRINCIPAL
-      + (int)scene->trackedFeatures.size() * INPUTS_PER_3D_POINT;
+      + (!(optimization & ReconstructionFunctorOptimizationType::POINTS) ? 0 : INPUTS_PER_3D_POINT * (int)scene->trackedFeatures.size());
 }
 
 int corecvs::ReconstructionFunctor::getOutputNum()
@@ -437,7 +437,7 @@ void corecvs::ReconstructionFunctor::computeDependency()
         schurBlocks.push_back(i);
     schurBlocks.push_back(argin);
 
-    sparseRowptr.resize(nOut);
+    sparseRowptr.resize(nOut + 1);
     for (int i = 0; i < nOut; ++i)
     {
         auto &list = denseDependency[i];
@@ -454,12 +454,16 @@ void corecvs::ReconstructionFunctor::computeDependency()
         {
             auto fp= positionConstrainedCameras[(i - lastProjection) / OUTPUTS_PER_POSITION_CONSTRAINT];
             auto &f = depCache[WPP(fp, WPP::VWILDCARD)];
+			std::cout << f.nnz() << ":";	
             list |= f;
         }
         std::vector<int> used;
         for (auto& v: list)
             if (v != DependencyList::UNUSED)
                 used.push_back(v);
+		std::set<int> usedU(used.begin(), used.end());
+		CORE_ASSERT_TRUE_S(usedU.size() == used.size());
+		std::cout << used.size() << "|";
         std::sort(used.begin(), used.end());
         sparseRowptr[i + 1] = sparseRowptr[i] + used.size();
         for (auto& u: used)
@@ -471,6 +475,7 @@ void corecvs::ReconstructionFunctor::computeDependency()
                     sparseList[j] = id;
         }
     }
+	std::cout << std::endl;
 }
 
 void corecvs::ReconstructionFunctor::readParams(const double* params)
@@ -498,7 +503,8 @@ void corecvs::ReconstructionFunctor::readParams(const double* params)
     FILL(translateableFixtures,   INPUTS_PER_TRANSLATION,     a->location.shift[i] = v,,)
     FILL(focalTunableCameras,     INPUTS_PER_FOCAL,           a->intrinsics.focal = corecvs::Vector2dd(v, v),,)
     FILL(principalTunableCameras, INPUTS_PER_PRINCIPAL,       a->intrinsics.principal[i] = v,,)
-    FILL(scene->trackedFeatures,  INPUTS_PER_3D_POINT,        a->reprojectedPosition[i] = v,,)
+    IF(POINTS,
+	    FILL(scene->trackedFeatures,  INPUTS_PER_3D_POINT,        a->reprojectedPosition[i] = v,,))
     for (auto& wpp: cacheOrigin)
         cameraCache[&wpp - &cacheOrigin[0]] = wpp.u->getWorldCamera(wpp.v);
 }
@@ -521,7 +527,8 @@ void corecvs::ReconstructionFunctor::writeParams(double* params)
     WRITE(translateableFixtures,   INPUTS_PER_TRANSLATION, a->location.shift[i],)
     WRITE(focalTunableCameras,     INPUTS_PER_FOCAL,       a->intrinsics.focal[0],)
     WRITE(principalTunableCameras, INPUTS_PER_PRINCIPAL,   a->intrinsics.principal[i],)
-    WRITE(scene->trackedFeatures,  INPUTS_PER_3D_POINT,    a->reprojectedPosition[i],)
+    IF(POINTS,
+	    WRITE(scene->trackedFeatures,  INPUTS_PER_3D_POINT,    a->reprojectedPosition[i],))
 }
 
 void corecvs::ReconstructionFunctor::computeErrors(double *out, const std::vector<int> &idxs)
@@ -538,7 +545,7 @@ void corecvs::ReconstructionFunctor::computeErrors(double *out, const std::vecto
 
     ParallelErrorComputator computator(this, projections, out);
     int N = currLastProjection / getErrorComponentsPerPoint();
-    int bs = N / 256;
+    int bs = std::max(N / 256, 1);
     corecvs::parallelable_for(0, N, bs, computator, true);
 
     int idx = currLastProjection;
@@ -599,20 +606,27 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianRayDiff(const doub
     return SparseMatrix(getOutputNum(), getInputNum(), values, sparseCol, sparseRowptr);
 }
 
-corecvs::Matrix44 corecvs::ReconstructionFunctor::Rotation(double qx, double qy, double qz, double qw, bool excessive)
+corecvs::Matrix44 corecvs::ReconstructionFunctor::Rotation(double qx, double qy, double qz, double qw, bool excessive, bool inverse)
 {
     auto qx2 = qx * qx, qy2 = qy * qy, qz2 = qz * qz, qw2 = qw * qw,
          qxqy= qx * qy, qxqz= qx * qz, qxqw= qx * qw, qyqz= qy * qz, qyqw = qy * qw, qzqw = qz * qw;
+	corecvs::Matrix44 R;
     if (excessive)
-        return     corecvs::Matrix44(1.0 - 2.0*(qy2 + qz2),     2.0*(qxqy - qzqw),     2.0*(qxqz + qyqw), 0.0,
-                                      2.0*(qxqy + qzqw), 1.0 - 2.0*(qx2 + qz2),     2.0*(qyqz - qxqw), 0.0,
-                                      2.0*(qxqz - qyqw),     2.0*(qyqz + qxqw), 1.0 - 2.0*(qx2 + qy2), 0.0,
-                                                    0.0,                   0.0,                   0.0, 1.0);
-    auto N = (qx2 + qy2 + qz2 - 1.0) * 2.0;
-    return corecvs::Matrix44(N*qy2+N*qz2+1.0,    N*(-qxqy+qz),    -N*(qxqz+qy), 0.0,
-                                -N*(qxqy+qz), N*qx2+N*qz2+1.0,     N*(qx-qyqz), 0.0,
-                                N*(-qxqz+qy),    -N*(qx+qyqz), N*qx2+N*qy2+1.0, 0.0,
-                                         0.0,             0.0,             0.0, 1.0);
+	{
+        R = corecvs::Matrix44(1.0 - 2.0*(qy2 + qz2),     2.0*(qxqy - qzqw),     2.0*(qxqz + qyqw), 0.0,
+                                  2.0*(qxqy + qzqw), 1.0 - 2.0*(qx2 + qz2),     2.0*(qyqz - qxqw), 0.0,
+                                  2.0*(qxqz - qyqw),     2.0*(qyqz + qxqw), 1.0 - 2.0*(qx2 + qy2), 0.0,
+                                                0.0,                   0.0,                   0.0, 1.0);
+	}
+	else
+	{
+	    auto N = (qx2 + qy2 + qz2 - 1.0) * 2.0;
+	    R = corecvs::Matrix44(N*qy2+N*qz2+1.0,    N*(-qxqy+qz),    -N*(qxqz+qy), 0.0,
+                                 -N*(qxqy+qz), N*qx2+N*qz2+1.0,     N*(qx-qyqz), 0.0,
+                                 N*(-qxqz+qy),    -N*(qx+qyqz), N*qx2+N*qy2+1.0, 0.0,
+                                          0.0,             0.0,             0.0, 1.0);
+	}
+	return inverse ? R.transposed() : R;
 }
 
 corecvs::Matrix44 corecvs::ReconstructionFunctor::Translation(double tx, double ty, double tz)
@@ -625,6 +639,7 @@ corecvs::Matrix44 corecvs::ReconstructionFunctor::Translation(double tx, double 
 
 corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection(const double* in)
 {
+	readParams(in);
     const corecvs::Matrix44
             FTx(0.0, 0.0, 0.0,-1.0,
                 0.0, 0.0, 0.0, 0.0,
@@ -644,9 +659,13 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection(const
         nErr = getErrorComponentsPerPoint();
     bool exc = excessiveQuaternionParametrization;
     const int rotationParams = exc ? INPUTS_PER_ORIENTATION_EXC : INPUTS_PER_ORIENTATION_NEX;
-    for (int i = 0; i < nIn;)
+    for (int i = 0; i < nOut;)
     {
         auto& list = sparseDependency[i];
+        if (list.f != DependencyList::UNUSED)
+        	std::cout << "!|!|";
+		else
+			std::cout << "-|-|";
         if (i < lastProjection)
         {
             /*
@@ -698,22 +717,26 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection(const
                   0.0,   f,  cy, 0.0,
                   0.0, 0.0, 1.0, 0.0,
                   0.0, 0.0, 0.0, 0.0),
-                CT = Rotation(cqx, cqy, cqz, cqw, true)*Translation(-ctx, -cty, -ctz),
-                FR = Rotation(-fqx, -fqy, -fqz, fqw, true),
+                CT = Rotation(cqx, cqy, cqz, cqw, true, false)*Translation(-ctx, -cty, -ctz),
+                FR = Rotation(fqx, fqy, fqz, fqw, true, true),
                 FT = Translation(-ftx, -fty, -ftz);
             auto X3d = pt->reprojectedPosition;
             corecvs::Vector4dd X(X3d[0], X3d[1], X3d[2], 1.0);
 
             IFUSED(qx, rotationParams,
-                    fqx = -in[denseDependency[i].qx];
-                    fqy = -in[denseDependency[i].qy];
-                    fqz = -in[denseDependency[i].qz];
+            		std::cout << "BLAH" << std::endl;
+                    fqx = in[denseDependency[i].qx];
+                    fqy = in[denseDependency[i].qy];
+                    fqz = in[denseDependency[i].qz];
                     if (exc)
                         fqw = in[denseDependency[i].qw];
                     else
                         fqw = 1e100;
-                    FR = Rotation(fqx, fqy, fqz, fqw, exc);
+                    FR = Rotation(fqx, fqy, fqz, fqw, exc, true);
                   )
+            auto FRFT = FR*FT;
+            auto FRFT_r = (corecvs::Matrix44)o.cameraFixture->location.inverted();
+			CORE_ASSERT_TRUE_S((FRFT-FRFT_r).frobeniusNorm() < 1e-8);
             auto
                 FTX     =               FT * X,
                 FRFTX   =          FR * FTX,
@@ -742,13 +765,13 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection(const
             )
             IFUSED(cx, INPUTS_PER_PRINCIPAL,
                 // cx, cy
-                corecvs::Matrix44 Kcx(0.0, 0.0, 0.0, 1.0,
+                corecvs::Matrix44 Kcx(0.0, 0.0, 1.0, 0.0,
                                       0.0, 0.0, 0.0, 0.0,
                                       0.0, 0.0, 0.0, 0.0,
                                       0.0, 0.0, 0.0, 0.0);
                 auto dudcx = E * (Kcx * CTFRFTX);
                 corecvs::Matrix44 Kcy(0.0, 0.0, 0.0, 0.0,
-                                      0.0, 0.0, 0.0, 1.0,
+                                      0.0, 0.0, 1.0, 0.0,
                                       0.0, 0.0, 0.0, 0.0,
                                       0.0, 0.0, 0.0, 0.0);
                 auto dudcy = E * (Kcy * CTFRFTX);
@@ -759,7 +782,7 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection(const
             corecvs::Matrix44 FRdX, FRdY, FRdZ, FRdW;
             IFUSED(qx, rotationParams,
                 // qx, qy, qz, qw
-                QuaternionDiff(fqx, fqy, fqz, fqw, exc, FRdX, FRdY, FRdZ, FRdW);
+                QuaternionDiff(fqx, fqy, fqz, fqw, exc, true, FRdX, FRdY, FRdZ, FRdW);
                 auto dudqx = EKCT * (FRdX * FTX);
                 auto dudqy = EKCT * (FRdY * FTX);
                 auto dudqz = EKCT * (FRdZ * FTX);
@@ -800,7 +823,7 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection(const
         {
             IFUSED(tx, 3,
                 auto fixture = positionConstrainedCameras[(i - lastProjection) / OUTPUTS_PER_POSITION_CONSTRAINT];
-                auto covariation = scene->initializationData[fixture].positioningAccuracy;
+                auto covariation = scene->initializationData[fixture].positioningAccuracy * scalerPosition;
                 for (int ii = 0; ii < 3; ++ii)
                     for (int jj = 0; jj < 3; ++jj)
                         values[(&sparseDependency[i + ii].tx)[jj]] = covariation.a(ii, jj);
@@ -808,6 +831,7 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection(const
             i += OUTPUTS_PER_POSITION_CONSTRAINT;
         }
     }
+	std::cout << std::endl;
 #if 0
     // Raydiff jacobian:
     // left:
@@ -998,26 +1022,26 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection(const
 #endif
 }
 
-void corecvs::ReconstructionFunctor::QuaternionDiff(double qx, double qy, double qz, double qw, bool excessive, corecvs::Matrix44 &Rqx, corecvs::Matrix44 &Rqy, corecvs::Matrix44 &Rqz, corecvs::Matrix44 &Rqw)
+void corecvs::ReconstructionFunctor::QuaternionDiff(double qx, double qy, double qz, double qw, bool excessive, bool inverse, corecvs::Matrix44 &Rqx, corecvs::Matrix44 &Rqy, corecvs::Matrix44 &Rqz, corecvs::Matrix44 &Rqw)
 {
     if (excessive)
     {
-        Rqx = corecvs::Matrix44(    0.0, 2.0*qy, 2.0*qz, 0.0,
-                                   2.0*qy,-4.0*qx,-2.0*qw, 0.0,
-                                   2.0*qz, 2.0*qw,-4.0*qx, 0.0,
-                                      0.0,    0.0,    0.0, 0.0);
+        Rqx = corecvs::Matrix44(   0.0, 2.0*qy, 2.0*qz, 0.0,
+                                2.0*qy,-4.0*qx,-2.0*qw, 0.0,
+                                2.0*qz, 2.0*qw,-4.0*qx, 0.0,
+                                   0.0,    0.0,    0.0, 0.0);
         Rqy = corecvs::Matrix44(-4.0*qy, 2.0*qx, 2.0*qw, 0.0,
-                                   2.0*qx,    0.0, 2.0*qz, 0.0,
-                                  -2.0*qw, 2.0*qz,-4.0*qy, 0.0,
-                                      0.0,    0.0,    0.0, 0.0);
+                                 2.0*qx,    0.0, 2.0*qz, 0.0,
+                                -2.0*qw, 2.0*qz,-4.0*qy, 0.0,
+                                    0.0,    0.0,    0.0, 0.0);
         Rqz = corecvs::Matrix44(-4.0*qz,-2.0*qw, 2.0*qx, 0.0,
-                                   2.0*qw,-4.0*qz, 2.0*qy, 0.0,
-                                   2.0*qx, 2.0*qy,    0.0, 0.0,
-                                      0.0,    0.0,    0.0, 0.0);
+                                 2.0*qw,-4.0*qz, 2.0*qy, 0.0,
+                                 2.0*qx, 2.0*qy,    0.0, 0.0,
+                                    0.0,    0.0,    0.0, 0.0);
         Rqw = corecvs::Matrix44(    0.0,-2.0*qz, 2.0*qy, 0.0,
-                                   2.0*qz,    0.0,-2.0*qx, 0.0,
-                                  -2.0*qy, 2.0*qx,    0.0, 0.0,
-                                      0.0,    0.0,    0.0, 0.0);
+                                 2.0*qz,    0.0,-2.0*qx, 0.0,
+                                -2.0*qy, 2.0*qx,    0.0, 0.0,
+                                    0.0,    0.0,    0.0, 0.0);
     }
     else
     {
@@ -1040,6 +1064,13 @@ void corecvs::ReconstructionFunctor::QuaternionDiff(double qx, double qy, double
                                                                          0.0,                                         0.0,                                         0.0, 0.0);
 
     }
+    if (inverse)
+	{
+		Rqx.transpose();
+		Rqy.transpose();
+		Rqz.transpose();
+		Rqw.transpose();
+	}
 }
 
 
