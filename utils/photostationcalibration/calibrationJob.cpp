@@ -353,8 +353,8 @@ struct ParallelDistortionRemoval
         {
             if (job->processState->isCanceled())
                 break;
-            job->processState->incrementStarted();
-            //auto boo = job->processState->createAutoTrackerCalculationObject();
+            //job->processState->incrementStarted();
+            auto boo = job->processState->createAutoTrackerCalculationObject();
 
             auto& observationsIterator = job->observations[camId];
             auto& cam = job->photostation.cameras[camId];
@@ -380,12 +380,12 @@ struct ParallelDistortionRemoval
 
             cout << "ParallelDistortionRemoval:: camId=" << camId << " canceled:" << job->processState->isCanceled() << endl;
 
-            if (job->processState->isCanceled())
-            {
-                cout << "ParallelDistortionRemoval:: throw exception..." << endl;
-                throw CancelExecutionException("stopThread2");
-            }
-            job->processState->incrementCompleted();
+            //if (job->processState->isCanceled())
+            //{
+            //    cout << "ParallelDistortionRemoval:: throw exception..." << endl;
+            //    throw CancelExecutionException("stopThread2");
+            //}
+            //job->processState->incrementCompleted();
         }
         cout << "ParallelDistortionRemoval:: returns [" << r.begin() << "..." << r.end() << ")" << endl;
     }
