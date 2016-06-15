@@ -185,7 +185,7 @@ struct ParallelBoardDetector
                     (distorted ? psIterator.intrinsics.distortedSize : psIterator.intrinsics.size) = corecvs::Vector2dd(buffer.w, buffer.h);
                 }
                 job->detectChessBoard(buffer, distorted ? v.sourcePattern : v.undistortedPattern);
-                job->processState->checkCanceled();
+                job->processState->checkToCancel();
             }
             else
             {
@@ -195,7 +195,7 @@ struct ParallelBoardDetector
                     pc.projection = job->photostation.cameras[cam].distortion.mapBackward(pc.projection);
                     v.undistortedPattern.push_back(pc);
 
-                    job->processState->checkCanceled();
+                    job->processState->checkToCancel();
                 }
             }
         }
@@ -293,7 +293,7 @@ struct ParallelDistortionEstimator
             for (auto& v: job->observations[cam])
             {
                 sgf.addAllLinesFromObservationList(v.sourcePattern);
-                job->processState->checkCanceled();
+                job->processState->checkToCancel();
             }
 
             auto& psIterator = job->photostation.cameras[cam];
@@ -302,7 +302,7 @@ struct ParallelDistortionEstimator
             for (auto& v: job->observations[cam])
             {
                 job->computeDistortionError(v.sourcePattern, psIterator.distortion, v.distortionRmse, v.distortionMaxError);
-                job->processState->checkCanceled();
+                job->processState->checkToCancel();
             }
         }
     }
@@ -363,13 +363,13 @@ struct ParallelDistortionRemoval
             corecvs::DisplacementBuffer transform;
             job->prepareUndistortionTransformation(camId, transform);
 
-            job->processState->checkCanceled();
+            job->processState->checkToCancel();
 
             corecvs::parallelable_for(0, (int)observationsIterator.size(), [&](const corecvs::BlockedRange<int> &r)
                 {
                     for (int i = r.begin(); i != r.end(); ++i)
                     {
-                        job->processState->checkCanceled();
+                        job->processState->checkToCancel();
 
                         auto &ob = observationsIterator[i];
                         corecvs::RGB24Buffer source = job->LoadImage(ob.sourceFileName), dst;
@@ -462,7 +462,7 @@ struct ParallelSingleCalibrator
     {
         for (int cameraId = r.begin(); cameraId < r.end(); ++cameraId)
         {
-            job->processState->checkCanceled();
+            job->processState->checkToCancel();
             job->calibrateSingleCamera(cameraId);
         }
     }

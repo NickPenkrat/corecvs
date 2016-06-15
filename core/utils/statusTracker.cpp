@@ -48,7 +48,7 @@ void StatusTracker::incrementStarted()
     if (this == nullptr)
         return;
 
-    checkCanceled();
+    checkToCancel();	// Note: it can throw a cancelation exception
 
     writeLock();
         currentStatus.startedActions++;
@@ -62,10 +62,10 @@ void StatusTracker::incrementCompleted()
     if (this == nullptr)
         return;
 
-    //checkCanceled(); // don't call it here as this method is called by ~AutoTracker that dues to terminating app!!!
-    if (isCanceled())
+    //checkToCancel(); // Note: don't call it here as this method is called by ~AutoTracker that dues to terminating app!!!
+    if (isToCancel())
     {
-        std::cout << "StatusTracker::incrementCompleted canceled" << std::endl;
+        std::cout << "StatusTracker::incrementCompleted is canceling" << std::endl;
         return;
     }
 
@@ -85,32 +85,42 @@ AutoTracker StatusTracker::createAutoTrackerCalculationObject()
     return AutoTracker(this);
 }
 
-bool corecvs::StatusTracker::isCompleted() const
+bool_t corecvs::StatusTracker::isCompleted() const
 {
     if (this == nullptr)
         return false;
     readLock();
-        bool flag = currentStatus.isCompleted;
+        auto flag = currentStatus.isCompleted;
     unlock();
     return flag;
 }
 
-bool corecvs::StatusTracker::isFailed() const
+bool_t corecvs::StatusTracker::isFailed() const
 {
     if (this == nullptr)
         return false;
     readLock();
-        bool flag = currentStatus.isFailed;
+        auto flag = currentStatus.isFailed;
     unlock();
     return flag;
 }
 
-bool corecvs::StatusTracker::isCanceled() const
+bool_t corecvs::StatusTracker::isToCancel() const
 {
     if (this == nullptr)
         return false;
     readLock();
-        bool flag = currentStatus.isCanceled;
+        auto flag = currentStatus.isToCancel;
+    unlock();
+    return flag;
+}
+
+bool_t corecvs::StatusTracker::isCanceled() const
+{
+    if (this == nullptr)
+        return false;
+    readLock();
+        auto flag = currentStatus.isCanceled;
     unlock();
     return flag;
 }
@@ -135,6 +145,16 @@ void corecvs::StatusTracker::setFailed()
     std::cout << "StatusTracker::setFailed" << std::endl;
 }
 
+void corecvs::StatusTracker::setToCancel()
+{
+    if (this == nullptr)
+        return;
+    writeLock();
+        currentStatus.isToCancel = true;
+    unlock();
+    std::cout << "StatusTracker::setToCancel" << std::endl;
+}
+
 void corecvs::StatusTracker::setCanceled()
 {
     if (this == nullptr)
@@ -142,17 +162,17 @@ void corecvs::StatusTracker::setCanceled()
     writeLock();
         currentStatus.isCanceled = true;
     unlock();
-    std::cout << "StatusTracker::setStopThread" << std::endl;
+    std::cout << "StatusTracker::setCanceled" << std::endl;
 }
 
-void corecvs::StatusTracker::checkCanceled() const
+void corecvs::StatusTracker::checkToCancel() const
 {
-    if (isCanceled())
+    if (isToCancel())
     {
-        std::cout << "StatusTracker::checkCanceled cancel_group_execution..." << std::endl;
+        std::cout << "StatusTracker::checkToCancel cancel_group_execution" << std::endl;
         task::self().cancel_group_execution();
 
-        std::cout << "StatusTracker::checkCanceled stops processing..." << std::endl;
+        std::cout << "StatusTracker::checkToCancel throw..." << std::endl;
         throw CancelExecutionException("Cancel");
     }
 }

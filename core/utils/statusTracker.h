@@ -21,14 +21,16 @@ struct Status
 {
     std::string currentAction;
     size_t      completedActions, totalActions, startedActions, completedGlobalActions, totalGlobalActions, startedGlobalActions;
-    bool        isCompleted;
-    bool        isFailed;
-    bool        isCanceled;
+    bool_t      isCompleted;
+    bool_t      isFailed;
+    bool_t      isToCancel;
+    bool_t      isCanceled;
 
     Status() : currentAction("NONE")
         , completedActions(0), totalActions(0), startedActions(0)
         , completedGlobalActions(0), totalGlobalActions(0), startedGlobalActions(0)
-        , isCompleted(false), isFailed(false), isCanceled(false)
+        , isCompleted(false), isFailed(false)
+        , isToCancel(false), isCanceled(false)
     {}
 
     friend std::ostream& operator<<(std::ostream& os, const Status &status)
@@ -67,17 +69,22 @@ public:
 
     void    setCompleted();
     void    setFailed();
+    void    setToCancel();
     void    setCanceled();
 
-    bool    isCompleted() const;
+    bool_t  isCompleted() const;
+    bool_t  isFailed() const;
+    ///
+    /// \brief isToCancel
+    /// \return Returns whether the processing task should be canceled asap
+    ///
+    bool_t  isToCancel() const;
     ///
     /// \brief isCanceled
-    /// \return Returns whether the setCanceled is called
+    /// \return Returns whether the processing task was canceled and has been stopped
     ///
-    bool    isFailed() const;
-    bool    isCanceled() const;
-
-    void    checkCanceled() const;
+    bool_t  isCanceled() const;
+    void    checkToCancel() const;
 
     bool    isActionCompleted(const std::string &action) const;
 
