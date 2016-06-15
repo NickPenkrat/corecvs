@@ -1,5 +1,5 @@
 #include "statusTracker.h"
-#include "tbbWrapper.h"
+//#include "tbbWrapper.h"
 
 #include <iostream>
 
@@ -50,19 +50,8 @@ void StatusTracker::incrementCompleted()
     if (this == nullptr)
         return;
 
-    readLock();
-        bool toStop    = currentStatus.stopThread;
-        bool hasThrown = currentStatus.hasThrown;
-    unlock();
-
-    if (toStop) {
-        if (hasThrown) {
-            std::cout << "StatusTracker::incrementCompleted ignores throw exception..." << std::endl;
-            return;
-        }
-        writeLock();
-            currentStatus.hasThrown = true;
-        unlock();
+    if (isCanceled())
+    {
         std::cout << "StatusTracker::incrementCompleted cancel_group_execution..." << std::endl;
         task::self().cancel_group_execution();
         std::cout << "StatusTracker::incrementCompleted throws exception..." << std::endl;

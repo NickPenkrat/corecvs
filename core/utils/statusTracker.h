@@ -24,12 +24,11 @@ struct Status
     bool        isCompleted;
     bool        isFailed;
     bool        stopThread;
-    bool        hasThrown;
 
     Status() : currentAction("NONE")
         , completedActions(0), totalActions(0), startedActions(0)
         , completedGlobalActions(0), totalGlobalActions(0), startedGlobalActions(0)
-        , isCompleted(false), isFailed(false), stopThread(false), hasThrown(false)
+        , isCompleted(false), isFailed(false), stopThread(false)
     {}
 
     friend std::ostream& operator<<(std::ostream& os, const Status &status)
