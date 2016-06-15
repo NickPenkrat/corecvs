@@ -365,8 +365,7 @@ struct ParallelDistortionRemoval
             if (job->processState->isCanceled())
                 break;
 
-            try {
-                corecvs::parallelable_for(0, (int)observationsIterator.size(), [&](const corecvs::BlockedRange<int> &r)
+            corecvs::parallelable_for(0, (int)observationsIterator.size(), [&](const corecvs::BlockedRange<int> &r)
                 {
                     for (int i = r.begin(); i != r.end(); ++i)
                     {
@@ -378,19 +377,14 @@ struct ParallelDistortionRemoval
                         job->SaveImage(ob.undistortedFileName, dst);
                     }
                 });
-            }
-            catch (const tbb::captured_exception &ex)   // does never work!
-            {
-                cout << "status in tbb::captured_exception-2 handler:" << job->processState->getStatus() << " canceled:" << job->processState->isCanceled() << endl;
-                throw ex;
-            }
+
             cout << "ParallelDistortionRemoval:: camId=" << camId << " canceled:" << job->processState->isCanceled() << endl;
 
-            if (job->processState->isCanceled()) {
+            if (job->processState->isCanceled())
+            {
                 cout << "ParallelDistortionRemoval:: throw exception..." << endl;
-                throw CancelExecutionException("stopUndistCur");
+                throw CancelExecutionException("stopThread2");
             }
-
             job->processState->incrementCompleted();
         }
         cout << "ParallelDistortionRemoval:: returns [" << r.begin() << "..." << r.end() << ")" << endl;
@@ -409,22 +403,19 @@ void CalibrationJob::allRemoveDistortion()
     try {
         corecvs::parallelable_for(0, (int)photostation.cameras.size(), ParallelDistortionRemoval(this));
     }
-    catch (const CancelExecutionException &ex)
+    catch (const CancelExecutionException &ex)  // on Windows with TBB 4.3.6 (truth exception propagation)
     {
         cout << "status in CancelExecutionException-1 handler:" << processState->getStatus() << " canceled:" << processState->isCanceled() << endl;
-        L_ERROR << ex.what();
+        L_INFO << ex.what();
         CORE_ASSERT_TRUE_S(processState->isCanceled());
-        throw ex;
     }
-    catch (const tbb::captured_exception &ex)
+    catch (const tbb::captured_exception &ex)   // on Linux with TBB 4.3.6 without exeption propagation
     {
         cout << "status in tbb::captured_exception-1 handler:" << processState->getStatus() << " canceled:" << processState->isCanceled() << endl;
         L_ERROR << ex.what();
-        if (!processState->isCanceled())
-        {
-            processState->setFailed();
+        if (!processState->isCanceled()) {
+            throw ex;                           // rethrow exception if it's not our
         }
-        throw ex;
     }
     catch (...)
     {
@@ -434,8 +425,8 @@ void CalibrationJob::allRemoveDistortion()
 
     if (processState->isCanceled())
 	{
-        cout << "allRemoveDistortion:: throw exception..." << endl;
-        throw CancelExecutionException("stopRemoveUndist");
+        cout << "allRemoveDistortion:: throw CancelException..." << endl;
+        throw CancelExecutionException("stopThread3");
 	}
 }
 
