@@ -380,7 +380,7 @@ void corecvs::PhotostationPlacer::updateTrackables()
     scene->transform(tf);
     getErrorSummaryAll();
 
-    for (size_t i = 0; i < speculativity() && i < scene->placingQueue.size(); ++i)
+    for (size_t i = 0; i < (size_t)speculativity() && i < scene->placingQueue.size(); ++i)
     {
         auto cf = scene->placingQueue[i];
         std::cout << "\tRunning with " << cf->name << " ";
@@ -447,7 +447,7 @@ bool corecvs::PhotostationPlacer::append2D()
     std::cout << "MEANSHIFTED" << std::endl;
 
     std::vector<std::pair<corecvs::CameraFixture*, decltype(scene->getFixtureMatches({}, 0))>> matches;
-    for (size_t iii = 0; iii < speculativity() && iii < scene->placingQueue.size(); ++iii)
+    for (size_t iii = 0; iii < (size_t)speculativity() && iii < scene->placingQueue.size(); ++iii)
     {
         auto fixture = scene->placingQueue[iii];
         matches.emplace_back(fixture, scene->getFixtureMatches(scene->placedFixtures, fixture));
@@ -481,7 +481,7 @@ bool corecvs::PhotostationPlacer::append2D()
             mm.emplace_back(std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t));
         }
 
-        if (rm.size() < minimalInlierCount())
+        if ((int)rm.size() < minimalInlierCount())
         {
             std::cout << "Too few matches (" << rm.size() << "), rejecting ";
             for (auto &A: scene->placedFixtures)
@@ -650,7 +650,7 @@ void corecvs::PhotostationPlacer::initialize()
             mm.emplace_back(std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t));
         }
 
-        if (rm.size() < minimalInlierCount())
+        if ((int)rm.size() < minimalInlierCount())
         {
             std::cout << "Too few matches (" << rm.size() << "), rejecting " << A->name << "<>" << B->name << std::endl;
             scene->matches = scene->matchesCopy;
@@ -673,7 +673,7 @@ void corecvs::PhotostationPlacer::initialize()
         std::cout << psA->name << "::" << psB->name << " " << best.shift << " " << best.rotor << std::endl;
         psB->location = best;
         std::cout << solver.getInliersCount() << " inliers" << std::endl;
-        if (solver.getInliersCount() < minimalInlierCount() || solver.getGamma() > maximalFailureProbability() )
+        if ((int)solver.getInliersCount() < minimalInlierCount() || solver.getGamma() > maximalFailureProbability())
         {
             scene->matches = scene->matchesCopy;
             std::cout << "Seems that " << A->name << "<>" << B->name << " is a bad initialization pair: inliers: " << solver.getInliersCount() << " P: " << solver.getGamma() << std::endl;
@@ -852,7 +852,7 @@ bool corecvs::PhotostationPlacer::append3D()
         }
     }
 
-    if (maxInliers < minimalInlierCount())
+    if ((int)maxInliers < minimalInlierCount())
         return false;
 
     std::cout << "Choosing to append " << psApp->name << " because it had " << maxInliers << " inliers" << std::endl;
