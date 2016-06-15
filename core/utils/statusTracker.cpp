@@ -38,6 +38,15 @@ void StatusTracker::incrementStarted()
 {
     if (this == nullptr)
         return;
+
+    if (isCanceled())
+    {
+        std::cout << "StatusTracker::incrementStarted cancel_group_execution..." << std::endl;
+        task::self().cancel_group_execution();
+        std::cout << "StatusTracker::incrementStarted throws exception..." << std::endl;
+        throw CancelExecutionException("stopThread");
+    }
+
     writeLock();
         currentStatus.startedActions++;
         std::cout << "Started: " << currentStatus.startedActions << std::endl;
@@ -49,14 +58,6 @@ void StatusTracker::incrementCompleted()
 {
     if (this == nullptr)
         return;
-
-    if (isCanceled())
-    {
-        std::cout << "StatusTracker::incrementCompleted cancel_group_execution..." << std::endl;
-        task::self().cancel_group_execution();
-        std::cout << "StatusTracker::incrementCompleted throws exception..." << std::endl;
-        throw CancelExecutionException("stopThread");
-    }
 
     writeLock();
         currentStatus.completedActions++;
