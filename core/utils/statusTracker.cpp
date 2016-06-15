@@ -53,6 +53,13 @@ void StatusTracker::incrementCompleted()
     if (this == nullptr)
         return;
 
+    //checkStopThread(); // don't call it here as this method is called by ~AutoTracker that dued to terminating app!!!
+    if (isCanceled())
+    {
+        std::cout << "StatusTracker::incrementCompleted cancelled" << std::endl;
+        return;
+    }
+
     writeLock();
         currentStatus.completedActions++;
         std::cout << "StatusTracker::incrementCompleted " << currentStatus << std::endl;

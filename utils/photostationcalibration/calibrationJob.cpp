@@ -170,8 +170,6 @@ struct ParallelBoardDetector
     {
         for (size_t i = r.begin(); i != r.end(); ++i)
         {
-            if (job->processState->isCanceled())
-                break;
             auto boo = job->processState->createAutoTrackerCalculationObject();
             size_t cam = idx[i][0];
             size_t obs = idx[i][1];
@@ -187,6 +185,7 @@ struct ParallelBoardDetector
                     (distorted ? psIterator.intrinsics.distortedSize : psIterator.intrinsics.size) = corecvs::Vector2dd(buffer.w, buffer.h);
                 }
                 job->detectChessBoard(buffer, distorted ? v.sourcePattern : v.undistortedPattern);
+                job->processState->checkStopThread();
             }
             else
             {
@@ -195,14 +194,15 @@ struct ParallelBoardDetector
                     auto pc = p;
                     pc.projection = job->photostation.cameras[cam].distortion.mapBackward(pc.projection);
                     v.undistortedPattern.push_back(pc);
+
+                    job->processState->checkStopThread();
                 }
             }
         }
     }
     ParallelBoardDetector(CalibrationJob* job, std::vector<std::array<size_t, 2>> idx, bool estimate, bool distorted)
         : job(job), idx(idx), estimate(estimate), distorted(distorted)
-    {
-    }
+    {}
 
     CalibrationJob*                     job;
     std::vector<std::array<size_t, 2>>  idx;
@@ -293,12 +293,16 @@ struct ParallelDistortionEstimator
             for (auto& v: job->observations[cam])
             {
                 sgf.addAllLinesFromObservationList(v.sourcePattern);
+                job->processState->checkStopThread();
             }
+
             auto& psIterator = job->photostation.cameras[cam];
             job->estimateDistortion(sgf, psIterator.intrinsics.distortedSize[0], psIterator.intrinsics.distortedSize[1], psIterator.distortion);
+
             for (auto& v: job->observations[cam])
             {
                 job->computeDistortionError(v.sourcePattern, psIterator.distortion, v.distortionRmse, v.distortionMaxError);
+                job->processState->checkStopThread();
             }
         }
     }
@@ -458,8 +462,7 @@ struct ParallelSingleCalibrator
     {
         for (int cameraId = r.begin(); cameraId < r.end(); ++cameraId)
         {
-            if (job->processState->isCanceled())
-                break;
+            job->processState->checkStopThread();
             job->calibrateSingleCamera(cameraId);
         }
     }
