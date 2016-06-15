@@ -9,6 +9,30 @@
 
 using namespace corecvs;
 
+void corecvs::SparseMatrix::spyPlot() const
+{
+    for (int i = 0; i < h; ++i)
+    {
+        for (int j = 0; j < w; ++j)
+        {
+            double v = a(i, j);
+            std::cout << (v == 0.0 ? " " : "*");
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+}
+
+int corecvs::SparseMatrix::nnz() const
+{
+    return values.size();
+}
+
+double corecvs::SparseMatrix::fillin() const
+{
+    return double(nnz()) / w / h;
+}
+
 corecvs::SparseMatrix::SparseMatrix(const SparseMatrix &src, int x1, int y1, int x2, int y2)
 {
     x1 = std::max(0, std::min(src.w, x1));

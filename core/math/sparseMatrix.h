@@ -55,6 +55,9 @@ public:
      */
     double a(int y, int x) const;
     double&a(int y, int x);
+    int nnz() const;
+    double fillin() const;
+    void spyPlot() const;
 
     friend SparseMatrix operator -(const SparseMatrix &a);
     friend SparseMatrix operator *(const double       &lhs, const SparseMatrix &rhs);
