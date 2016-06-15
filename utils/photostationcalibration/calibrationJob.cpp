@@ -359,15 +359,14 @@ struct ParallelDistortionRemoval
             corecvs::DisplacementBuffer transform;
             job->prepareUndistortionTransformation(camId, transform);
 
-            if (job->processState->isCanceled())
-                break;
+            job->processState->checkStopThread();
 
             corecvs::parallelable_for(0, (int)observationsIterator.size(), [&](const corecvs::BlockedRange<int> &r)
                 {
                     for (int i = r.begin(); i != r.end(); ++i)
                     {
-                        if (job->processState->isCanceled())
-                            break;
+                        job->processState->checkStopThread();
+
                         auto &ob = observationsIterator[i];
                         corecvs::RGB24Buffer source = job->LoadImage(ob.sourceFileName), dst;
                         job->removeDistortion(source, dst, transform, cam.intrinsics.size[0], cam.intrinsics.size[1]);

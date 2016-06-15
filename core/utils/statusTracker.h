@@ -68,6 +68,7 @@ public:
     AutoTracker createAutoTrackerCalculationObject();
 
     void    setStopThread();
+    void    checkStopThread() const;
 
     bool    isActionCompleted(const std::string &action) const;
 

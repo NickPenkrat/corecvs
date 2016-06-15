@@ -39,13 +39,7 @@ void StatusTracker::incrementStarted()
     if (this == nullptr)
         return;
 
-    if (isCanceled())
-    {
-        std::cout << "StatusTracker::incrementStarted cancel_group_execution..." << std::endl;
-        task::self().cancel_group_execution();
-        std::cout << "StatusTracker::incrementStarted throws exception..." << std::endl;
-        throw CancelExecutionException("stopThread");
-    }
+    checkStopThread();
 
     writeLock();
         currentStatus.startedActions++;
@@ -172,6 +166,17 @@ void corecvs::StatusTracker::setStopThread()
         currentStatus.stopThread = true;
         std::cout << "StatusTracker::setStopThread" << std::endl;
     unlock();
+}
+
+void corecvs::StatusTracker::checkStopThread() const
+{
+    if (isCanceled())
+    {
+        std::cout << "StatusTracker::checkStopThread cancel_group_execution..." << std::endl;
+        task::self().cancel_group_execution();
+        std::cout << "StatusTracker::checkStopThread stops processing..." << std::endl;
+        throw CancelExecutionException("stopThread");
+    }
 }
 
 corecvs::Status corecvs::StatusTracker::getStatus() const
