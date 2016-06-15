@@ -93,6 +93,7 @@ public:
 
 
     void transpose();
+    Matrix22 t() const;
     Matrix22 transposed() const;
 
     bool isInvertable(double tolerance = 1e-9);

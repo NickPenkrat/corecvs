@@ -85,6 +85,7 @@ public:
     void swapRows(int r1, int r2);
     void swapColumns(int r1, int r2);
 
+    Matrix33 t() const;
     Matrix33 transposed() const;
 
     void neg();
