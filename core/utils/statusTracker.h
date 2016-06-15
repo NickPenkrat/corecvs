@@ -23,12 +23,12 @@ struct Status
     size_t      completedActions, totalActions, startedActions, completedGlobalActions, totalGlobalActions, startedGlobalActions;
     bool        isCompleted;
     bool        isFailed;
-    bool        stopThread;
+    bool        isCanceled;
 
     Status() : currentAction("NONE")
         , completedActions(0), totalActions(0), startedActions(0)
         , completedGlobalActions(0), totalGlobalActions(0), startedGlobalActions(0)
-        , isCompleted(false), isFailed(false), stopThread(false)
+        , isCompleted(false), isFailed(false), isCanceled(false)
     {}
 
     friend std::ostream& operator<<(std::ostream& os, const Status &status)
@@ -58,28 +58,28 @@ struct AutoTracker
 class StatusTracker
 {
 public:
-    void    incrementStarted();
-    void    incrementCompleted();
     void    setTotalActions(size_t totalActions);
     void    reset(const std::string &action, size_t totalActions);
-    void    setCompleted();
-    void    setFailed();
 
+    void    incrementStarted();
+    void    incrementCompleted();
     AutoTracker createAutoTrackerCalculationObject();
 
-    void    setStopThread();
-    void    checkStopThread() const;
-
-    bool    isActionCompleted(const std::string &action) const;
+    void    setCompleted();
+    void    setFailed();
+    void    setCanceled();
 
     bool    isCompleted() const;
     ///
     /// \brief isCanceled
-    /// \return Returns whether the setStopThread is called
+    /// \return Returns whether the setCanceled is called
     ///
+    bool    isFailed() const;
     bool    isCanceled() const;
 
-    bool    isFailed() const;
+    void    checkCanceled() const;
+
+    bool    isActionCompleted(const std::string &action) const;
 
     Status  getStatus() const;
 

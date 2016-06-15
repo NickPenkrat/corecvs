@@ -15,23 +15,32 @@ AutoTracker::~AutoTracker()
     st->incrementCompleted();
 }
 
-void StatusTracker::readLock() const
+void corecvs::StatusTracker::setTotalActions(size_t totalActions)
 {
-#ifdef WITH_TBB
-    const_cast<tbb::reader_writer_lock&>(lock).lock_read();
-#endif
+    if (this == nullptr)
+        return;
+    writeLock();
+        currentStatus.completedGlobalActions = 0;
+        currentStatus.totalGlobalActions = totalActions;
+    unlock();
+    std::cout << "StatusTracker::setTotalActions " << totalActions << std::endl;
 }
-void StatusTracker::writeLock()
+
+void corecvs::StatusTracker::reset(const std::string &action, size_t totalActions)
 {
-#ifdef WITH_TBB
-    lock.lock();
-#endif
-}
-void StatusTracker::unlock() const
-{
-#ifdef WITH_TBB
-    const_cast<tbb::reader_writer_lock&>(lock).unlock();
-#endif
+    if (this == nullptr)
+        return;
+    writeLock();
+        if (currentStatus.startedGlobalActions > 0) {
+            currentStatus.completedGlobalActions++;
+        }
+        currentStatus.startedGlobalActions++;
+        currentStatus.currentAction    = action;
+        currentStatus.completedActions = currentStatus.startedActions = 0;
+        currentStatus.totalActions     = totalActions;
+        auto status = currentStatus;
+    unlock();
+    std::cout << "StatusTracker::reset " << status << std::endl;
 }
 
 void StatusTracker::incrementStarted()
@@ -39,7 +48,7 @@ void StatusTracker::incrementStarted()
     if (this == nullptr)
         return;
 
-    checkStopThread();
+    checkCanceled();
 
     writeLock();
         currentStatus.startedActions++;
@@ -53,10 +62,10 @@ void StatusTracker::incrementCompleted()
     if (this == nullptr)
         return;
 
-    //checkStopThread(); // don't call it here as this method is called by ~AutoTracker that dued to terminating app!!!
+    //checkCanceled(); // don't call it here as this method is called by ~AutoTracker that dues to terminating app!!!
     if (isCanceled())
     {
-        std::cout << "StatusTracker::incrementCompleted cancelled" << std::endl;
+        std::cout << "StatusTracker::incrementCompleted canceled" << std::endl;
         return;
     }
 
@@ -69,43 +78,11 @@ void StatusTracker::incrementCompleted()
     unlock();
 }
 
-void corecvs::StatusTracker::setTotalActions(size_t totalActions)
+AutoTracker StatusTracker::createAutoTrackerCalculationObject()
 {
     if (this == nullptr)
-        return;
-    writeLock();
-        currentStatus.completedGlobalActions = 0;
-        currentStatus.totalGlobalActions = totalActions;
-        std::cout << "StatusTracker::setTotalActions " << currentStatus.totalGlobalActions << std::endl;
-    unlock();
-}
-
-void corecvs::StatusTracker::reset(const std::string &action, size_t totalActions)
-{
-    if (this == nullptr)
-        return;
-    writeLock();
-        if (currentStatus.startedGlobalActions > 0) {
-            currentStatus.completedGlobalActions++;
-        }
-        currentStatus.startedGlobalActions++;
-
-        currentStatus.currentAction    = action;
-        currentStatus.completedActions = currentStatus.startedActions = 0;
-        currentStatus.totalActions     = totalActions;
-
-        std::cout << "StatusTracker::reset " << currentStatus << std::endl;
-    unlock();
-}
-
-bool corecvs::StatusTracker::isActionCompleted(const std::string &action) const
-{
-    if (this == nullptr)
-        return false;
-    readLock();
-        bool flag = (action == currentStatus.currentAction && currentStatus.totalActions == currentStatus.completedActions);
-    unlock();
-    return flag;
+        return 0;
+    return AutoTracker(this);
 }
 
 bool corecvs::StatusTracker::isCompleted() const
@@ -133,7 +110,7 @@ bool corecvs::StatusTracker::isCanceled() const
     if (this == nullptr)
         return false;
     readLock();
-        bool flag = currentStatus.stopThread;
+        bool flag = currentStatus.isCanceled;
     unlock();
     return flag;
 }
@@ -144,8 +121,8 @@ void corecvs::StatusTracker::setCompleted()
         return;
     writeLock();
         currentStatus.isCompleted = true;
-        std::cout << "StatusTracker::setCompleted" << std::endl;
     unlock();
+    std::cout << "StatusTracker::setCompleted" << std::endl;
 }
 
 void corecvs::StatusTracker::setFailed()
@@ -154,36 +131,41 @@ void corecvs::StatusTracker::setFailed()
         return;
     writeLock();
         currentStatus.isFailed = true;
-        std::cout << "StatusTracker::setFailed" << std::endl;
     unlock();
+    std::cout << "StatusTracker::setFailed" << std::endl;
 }
 
-AutoTracker StatusTracker::createAutoTrackerCalculationObject()
-{
-    if (this == nullptr)
-        return 0;
-    return AutoTracker(this);
-}
-
-void corecvs::StatusTracker::setStopThread()
+void corecvs::StatusTracker::setCanceled()
 {
     if (this == nullptr)
         return;
     writeLock();
-        currentStatus.stopThread = true;
-        std::cout << "StatusTracker::setStopThread" << std::endl;
+        currentStatus.isCanceled = true;
     unlock();
+    std::cout << "StatusTracker::setStopThread" << std::endl;
 }
 
-void corecvs::StatusTracker::checkStopThread() const
+void corecvs::StatusTracker::checkCanceled() const
 {
     if (isCanceled())
     {
-        std::cout << "StatusTracker::checkStopThread cancel_group_execution..." << std::endl;
+        std::cout << "StatusTracker::checkCanceled cancel_group_execution..." << std::endl;
         task::self().cancel_group_execution();
-        std::cout << "StatusTracker::checkStopThread stops processing..." << std::endl;
-        throw CancelExecutionException("stopThread");
+
+        std::cout << "StatusTracker::checkCanceled stops processing..." << std::endl;
+        throw CancelExecutionException("Cancel");
     }
+}
+
+bool corecvs::StatusTracker::isActionCompleted(const std::string &action) const
+{
+    if (this == nullptr)
+        return false;
+    readLock();
+        bool flag = (action == currentStatus.currentAction &&
+                     currentStatus.totalActions == currentStatus.completedActions);
+    unlock();
+    return flag;
 }
 
 corecvs::Status corecvs::StatusTracker::getStatus() const
@@ -195,6 +177,25 @@ corecvs::Status corecvs::StatusTracker::getStatus() const
         auto status = currentStatus;
     unlock();
     return status;
+}
+
+void StatusTracker::readLock() const
+{
+#ifdef WITH_TBB
+    const_cast<tbb::reader_writer_lock&>(lock).lock_read();
+#endif
+}
+void StatusTracker::writeLock()
+{
+#ifdef WITH_TBB
+    lock.lock();
+#endif
+}
+void StatusTracker::unlock() const
+{
+#ifdef WITH_TBB
+    const_cast<tbb::reader_writer_lock&>(lock).unlock();
+#endif
 }
 
 } // namespace corecvs 
