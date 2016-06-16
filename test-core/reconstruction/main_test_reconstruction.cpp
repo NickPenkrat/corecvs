@@ -25,76 +25,80 @@ const int RNG_RETRIES = 8192;
 
 TEST(Reconstruction, symbolicCheckRE)
 {
-	corecvs::SceneGeneratorParams params( 10.0, 500.0, 0.0, 0.9, 1.0, 0.75, 3, 40, 40, 10.0, 100.0, 10.0, M_PI / 3, M_PI, true);
-	corecvs::SceneGenerator sg(params);
-	sg.generateScene();
-	std::unique_ptr<corecvs::ReconstructionFixtureScene> scene(sg.rfs);
-	auto& pts = scene->featurePoints();
-	for (auto& in: scene->initializationData)
-		in.second.positioningAccuracy = corecvs::Matrix33(1, 2, 3, 4, 5, 6, 7, 8, 9);
-	for (auto& pt: pts)
-		scene->trackedFeatures.push_back(pt);
-	scene->placedFixtures = scene->fixtures();
-	//corecvs::ReconstructionFunctor rf(scene.get(), scene->placedFixtures, ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType::REPROJECTION, corecvs::ReconstructionFunctorOptimizationType::FOCALS | corecvs::ReconstructionFunctorOptimizationType::PRINCIPALS | corecvs::ReconstructionFunctorOptimizationType::DEGENERATE_ORIENTATIONS | corecvs::ReconstructionFunctorOptimizationType::NON_DEGENERATE_ORIENTATIONS | corecvs::ReconstructionFunctorOptimizationType::DEGENERATE_TRANSLATIONS | corecvs::ReconstructionFunctorOptimizationType::NON_DEGENERATE_TRANSLATIONS, true, 1.0);
-	corecvs::ReconstructionFunctor rf(scene.get(), scene->placedFixtures, ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType::REPROJECTION,
-			corecvs::ReconstructionFunctorOptimizationType::PRINCIPALS | 
-			corecvs::ReconstructionFunctorOptimizationType::FOCALS | 
-			corecvs::ReconstructionFunctorOptimizationType::NON_DEGENERATE_TRANSLATIONS | 
-			corecvs::ReconstructionFunctorOptimizationType::DEGENERATE_TRANSLATIONS |
-//			corecvs::ReconstructionFunctorOptimizationType::NON_DEGENERATE_ORIENTATIONS |
-//			corecvs::ReconstructionFunctorOptimizationType::DEGENERATE_ORIENTATIONS
-			corecvs::ReconstructionFunctorOptimizationType::TUNE_GPS			
-			, false, 1.0);
-	std::vector<double> in(rf.getInputNum()), out(rf.getOutputNum());
-	rf.writeParams(&in[0]);
+    corecvs::SceneGeneratorParams params( 10.0, 500.0, 0.0, 0.9, 1.0, 0.75, 3, 4000, 4000, 10.0, 100.0, 10.0, M_PI / 3, M_PI, true);
+    corecvs::SceneGenerator sg(params);
+    sg.generateScene();
+    std::unique_ptr<corecvs::ReconstructionFixtureScene> scene(sg.rfs);
+    auto& pts = scene->featurePoints();
+    for (auto& in: scene->initializationData)
+        in.second.positioningAccuracy = corecvs::Matrix33(1, 2, 3, 4, 5, 6, 7, 8, 9);
+    for (auto& pt: pts)
+        scene->trackedFeatures.push_back(pt);
+    scene->placedFixtures = scene->fixtures();
+    //corecvs::ReconstructionFunctor rf(scene.get(), scene->placedFixtures, ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType::REPROJECTION, corecvs::ReconstructionFunctorOptimizationType::FOCALS | corecvs::ReconstructionFunctorOptimizationType::PRINCIPALS | corecvs::ReconstructionFunctorOptimizationType::DEGENERATE_ORIENTATIONS | corecvs::ReconstructionFunctorOptimizationType::NON_DEGENERATE_ORIENTATIONS | corecvs::ReconstructionFunctorOptimizationType::DEGENERATE_TRANSLATIONS | corecvs::ReconstructionFunctorOptimizationType::NON_DEGENERATE_TRANSLATIONS, true, 1.0);
+    corecvs::ReconstructionFunctor rf(scene.get(), scene->placedFixtures, ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType::REPROJECTION,
+            corecvs::ReconstructionFunctorOptimizationType::PRINCIPALS |
+            corecvs::ReconstructionFunctorOptimizationType::FOCALS |
+            corecvs::ReconstructionFunctorOptimizationType::NON_DEGENERATE_TRANSLATIONS |
+            corecvs::ReconstructionFunctorOptimizationType::DEGENERATE_TRANSLATIONS  |
+            corecvs::ReconstructionFunctorOptimizationType::NON_DEGENERATE_ORIENTATIONS |
+            corecvs::ReconstructionFunctorOptimizationType::DEGENERATE_ORIENTATIONS// |
+//            corecvs::ReconstructionFunctorOptimizationType::TUNE_GPS
+            ,  true, 1.0);
+    std::vector<double> in(rf.getInputNum()), out(rf.getOutputNum());
+    rf.writeParams(&in[0]);
 
-	auto m = rf.SparseFunctionArgs::getNativeJacobian(&in[0], 1e-7);
-	auto m2= rf.getNativeJacobian(&in[0], 1e-7);
+    auto m = rf.SparseFunctionArgs::getNativeJacobian(&in[0], 1e-7);
+    auto m2= rf.getNativeJacobian(&in[0], 1e-7);
 
-	std::cout << "=================================" << std::endl;
-	std::cout << "M2 spyplot" << std::endl;
-	m2.spyPlot();
-	std::cout << "=================================" << std::endl;
-	std::cout << "M spyplot" << std::endl;
-	m.spyPlot();
-	std::cout << "=================================" << std::endl;
-
-	for (int i = 0; i < m.h; ++i)
-	{
-		for (int j = 0; j < m.w; ++j)
-		{
-			double numeric = m.a(i, j),
-				   symbolic= m2.a(i, j);
-			if ((std::abs(numeric) != 0.0) ^ (std::abs(symbolic) != 0.0))
-			{
-				std::cout << "0";
-				continue;
-			}
-			if (numeric * symbolic < 0.0)
-			{
-				std::cout << "-";
-				std::cout << "[" << numeric << " " << symbolic << "]";
-				continue;
-			}
-			if (numeric * symbolic == 0.0)
-			{
-				CORE_ASSERT_TRUE_S(numeric == 0.0 && symbolic == 0.0);
-				std::cout << " ";
-				std::cout << "[" << numeric << " " << symbolic << "]";
-				continue;
-			}
-			double diff = numeric - symbolic;
-			if (std::abs(diff) / std::abs(numeric) < 1e-2)
-				std::cout << "*";
-			else
-				std::cout << "+";
-			std::cout << "[" << numeric << " " << symbolic << "]";
-		}
-		std::cout << std::endl;
-	}
-	std::cout << ((corecvs::Matrix)m).frobeniusNorm() << " vs " << ((corecvs::Matrix)m2).frobeniusNorm() << std::endl;
-	corecvs::Matrix M = (corecvs::Matrix)(m - m2);
-	std::cout << M.frobeniusNorm() / m.nnz() << std::endl;
+#if 0
+    std::cout << "=================================" << std::endl;
+    std::cout << "M2 spyplot" << std::endl;
+    m2.spyPlot();
+    std::cout << "=================================" << std::endl;
+    std::cout << "M spyplot" << std::endl;
+    m.spyPlot();
+    std::cout << "=================================" << std::endl;
+#endif
+#if 0
+    for (int i = 0; i < m.h; ++i)
+    {
+        for (int j = 0; j < m.w; ++j)
+        {
+            double numeric = m.a(i, j),
+                   symbolic= m2.a(i, j);
+            if ((std::abs(numeric) != 0.0) ^ (std::abs(symbolic) != 0.0))
+            {
+                std::cout << "0";
+                continue;
+            }
+            if (numeric * symbolic < 0.0)
+            {
+                std::cout << "-";
+//        std::cout << "[" << numeric << " " << symbolic << "]";
+                continue;
+            }
+            if (numeric * symbolic == 0.0)
+            {
+                CORE_ASSERT_TRUE_S(numeric == 0.0 && symbolic == 0.0);
+                std::cout << " ";
+//        std::cout << "[" << numeric << " " << symbolic << "]";
+                continue;
+            }
+            double diff = numeric - symbolic;
+            if (std::abs(diff) / std::abs(numeric) < 1e-2)
+                std::cout << "*";
+            else
+                std::cout << "+";
+//    std::cout << "[" << numeric << " " << symbolic << "]";
+        }
+        std::cout << std::endl;
+    }
+#endif
+    std::cout << ((corecvs::Matrix)m).frobeniusNorm() << " vs " << ((corecvs::Matrix)m2).frobeniusNorm() << std::endl;
+    corecvs::Matrix M = (corecvs::Matrix)(m - m2);
+    std::cout << std::sqrt(M.frobeniusNorm() / m.nnz()) << std::endl;
+    ASSERT_LE(std::sqrt(M.frobeniusNorm() / m.nnz()), 1e-5);
 }
 
 TEST(Reconstruction, basicO3P)

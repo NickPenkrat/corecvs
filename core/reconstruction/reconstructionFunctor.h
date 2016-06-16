@@ -84,8 +84,9 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
     corecvs::SparseMatrix getNativeJacobian(const double *in, double delta = 1e-7);
     corecvs::SparseMatrix jacobianRayDiff(const double *in);
     corecvs::SparseMatrix jacobianReprojection(const double *in);
-    static void QuaternionDiff(double qx, double qy, double qz, double qw, bool excessive, bool inverse, corecvs::Matrix44 &Rqx, corecvs::Matrix44 &Rqy, corecvs::Matrix44 &Rqz, corecvs::Matrix44 &Rqw);
-    static corecvs::Matrix44 Rotation(double qx, double qy, double qz, double qw, bool excessive, bool inverse);
+    enum class QuaternionParametrization { FULL, FULL_NORMALIZED, NON_EXCESSIVE };
+    static void QuaternionDiff(double qx, double qy, double qz, double qw, QuaternionParametrization p, bool inverse, corecvs::Matrix44 &Rqx, corecvs::Matrix44 &Rqy, corecvs::Matrix44 &Rqz, corecvs::Matrix44 &Rqw);
+    static corecvs::Matrix44 Rotation(double qx, double qy, double qz, double qw, QuaternionParametrization p, bool inverse);
     static corecvs::Matrix44 Translation(double tx, double ty, double tz);
 
     void readParams(const double *params);

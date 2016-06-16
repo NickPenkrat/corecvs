@@ -416,7 +416,8 @@ void corecvs::ReconstructionFunctor::computeDependency()
          a == p->cameraFixture,
          a == p,
          BASEDC(tx),
-         BASED(WPP(p, WPP::VWILDCARD), tx));
+         BASED(WPP(p, WPP::VWILDCARD), tx)
+        );
     DEPS(focalTunableCameras,
          INPUTS_PER_FOCAL,
          a == p->camera,
@@ -454,16 +455,16 @@ void corecvs::ReconstructionFunctor::computeDependency()
         {
             auto fp= positionConstrainedCameras[(i - lastProjection) / OUTPUTS_PER_POSITION_CONSTRAINT];
             auto &f = depCache[WPP(fp, WPP::VWILDCARD)];
-			std::cout << f.nnz() << ":";	
+//            std::cout << f.nnz() << ":";
             list |= f;
         }
         std::vector<int> used;
         for (auto& v: list)
             if (v != DependencyList::UNUSED)
                 used.push_back(v);
-		std::set<int> usedU(used.begin(), used.end());
-		CORE_ASSERT_TRUE_S(usedU.size() == used.size());
-		std::cout << used.size() << "|";
+        std::set<int> usedU(used.begin(), used.end());
+        CORE_ASSERT_TRUE_S(usedU.size() == used.size());
+  //      std::cout << used.size() << "|";
         std::sort(used.begin(), used.end());
         sparseRowptr[i + 1] = sparseRowptr[i] + used.size();
         for (auto& u: used)
@@ -475,7 +476,7 @@ void corecvs::ReconstructionFunctor::computeDependency()
                     sparseList[j] = id;
         }
     }
-	std::cout << std::endl;
+    std::cout << std::endl;
 }
 
 void corecvs::ReconstructionFunctor::readParams(const double* params)
@@ -504,7 +505,7 @@ void corecvs::ReconstructionFunctor::readParams(const double* params)
     FILL(focalTunableCameras,     INPUTS_PER_FOCAL,           a->intrinsics.focal = corecvs::Vector2dd(v, v),,)
     FILL(principalTunableCameras, INPUTS_PER_PRINCIPAL,       a->intrinsics.principal[i] = v,,)
     IF(POINTS,
-	    FILL(scene->trackedFeatures,  INPUTS_PER_3D_POINT,        a->reprojectedPosition[i] = v,,))
+        FILL(scene->trackedFeatures,  INPUTS_PER_3D_POINT,        a->reprojectedPosition[i] = v,,))
     for (auto& wpp: cacheOrigin)
         cameraCache[&wpp - &cacheOrigin[0]] = wpp.u->getWorldCamera(wpp.v);
 }
@@ -528,7 +529,7 @@ void corecvs::ReconstructionFunctor::writeParams(double* params)
     WRITE(focalTunableCameras,     INPUTS_PER_FOCAL,       a->intrinsics.focal[0],)
     WRITE(principalTunableCameras, INPUTS_PER_PRINCIPAL,   a->intrinsics.principal[i],)
     IF(POINTS,
-	    WRITE(scene->trackedFeatures,  INPUTS_PER_3D_POINT,    a->reprojectedPosition[i],))
+        WRITE(scene->trackedFeatures,  INPUTS_PER_3D_POINT,    a->reprojectedPosition[i],))
 }
 
 void corecvs::ReconstructionFunctor::computeErrors(double *out, const std::vector<int> &idxs)
@@ -606,27 +607,36 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianRayDiff(const doub
     return SparseMatrix(getOutputNum(), getInputNum(), values, sparseCol, sparseRowptr);
 }
 
-corecvs::Matrix44 corecvs::ReconstructionFunctor::Rotation(double qx, double qy, double qz, double qw, bool excessive, bool inverse)
+corecvs::Matrix44 corecvs::ReconstructionFunctor::Rotation(double qx, double qy, double qz, double qw, corecvs::ReconstructionFunctor::QuaternionParametrization p, bool inverse)
 {
     auto qx2 = qx * qx, qy2 = qy * qy, qz2 = qz * qz, qw2 = qw * qw,
          qxqy= qx * qy, qxqz= qx * qz, qxqw= qx * qw, qyqz= qy * qz, qyqw = qy * qw, qzqw = qz * qw;
-	corecvs::Matrix44 R;
-    if (excessive)
-	{
-        R = corecvs::Matrix44(1.0 - 2.0*(qy2 + qz2),     2.0*(qxqy - qzqw),     2.0*(qxqz + qyqw), 0.0,
-                                  2.0*(qxqy + qzqw), 1.0 - 2.0*(qx2 + qz2),     2.0*(qyqz - qxqw), 0.0,
-                                  2.0*(qxqz - qyqw),     2.0*(qyqz + qxqw), 1.0 - 2.0*(qx2 + qy2), 0.0,
-                                                0.0,                   0.0,                   0.0, 1.0);
-	}
-	else
-	{
-	    auto N = (qx2 + qy2 + qz2 - 1.0) * 2.0;
-	    R = corecvs::Matrix44(N*qy2+N*qz2+1.0,    N*(-qxqy+qz),    -N*(qxqz+qy), 0.0,
-                                 -N*(qxqy+qz), N*qx2+N*qz2+1.0,     N*(qx-qyqz), 0.0,
-                                 N*(-qxqz+qy),    -N*(qx+qyqz), N*qx2+N*qy2+1.0, 0.0,
-                                          0.0,             0.0,             0.0, 1.0);
-	}
-	return inverse ? R.transposed() : R;
+    double N;
+    corecvs::Matrix44 R;
+    switch (p)
+    {
+        case QuaternionParametrization::FULL:
+            R = corecvs::Matrix44(1.0 - 2.0*(qy2 + qz2),     2.0*(qxqy - qzqw),     2.0*(qxqz + qyqw), 0.0,
+                                      2.0*(qxqy + qzqw), 1.0 - 2.0*(qx2 + qz2),     2.0*(qyqz - qxqw), 0.0,
+                                      2.0*(qxqz - qyqw),     2.0*(qyqz + qxqw), 1.0 - 2.0*(qx2 + qy2), 0.0,
+                                                    0.0,                   0.0,                   0.0, 1.0);
+            break;
+        case QuaternionParametrization::FULL_NORMALIZED:
+            N = qx2 + qy2 + qz2 + qw2;
+            R = corecvs::Matrix44((qw2+qx2-qy2-qz2),  2.0*(-qzqw+qxqy),   2.0*(qyqw+qxqz), 0.0,
+                                    2.0*(qzqw+qxqy), (qw2-qx2+qy2-qz2),  2.0*(-qxqw+qyqz), 0.0,
+                                   2.0*(-qyqw+qxqz),   2.0*(qxqw+qyqz), (qw2-qx2-qy2+qz2), 0.0,
+                                                0.0,               0.0,               0.0,   N) / N;
+            break;
+        case QuaternionParametrization::NON_EXCESSIVE:
+            N = (qx2 + qy2 + qz2 - 1.0) * 2.0;
+            R = corecvs::Matrix44(N*qy2+N*qz2+1.0,    N*(-qxqy+qz),    -N*(qxqz+qy), 0.0,
+                                     -N*(qxqy+qz), N*qx2+N*qz2+1.0,     N*(qx-qyqz), 0.0,
+                                     N*(-qxqz+qy),    -N*(qx+qyqz), N*qx2+N*qy2+1.0, 0.0,
+                                              0.0,             0.0,             0.0, 1.0);
+            break;
+    }
+    return inverse ? R.transposed() : R;
 }
 
 corecvs::Matrix44 corecvs::ReconstructionFunctor::Translation(double tx, double ty, double tz)
@@ -639,7 +649,7 @@ corecvs::Matrix44 corecvs::ReconstructionFunctor::Translation(double tx, double 
 
 corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection(const double* in)
 {
-	readParams(in);
+    readParams(in);
     const corecvs::Matrix44
             FTx(0.0, 0.0, 0.0,-1.0,
                 0.0, 0.0, 0.0, 0.0,
@@ -662,10 +672,12 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection(const
     for (int i = 0; i < nOut;)
     {
         auto& list = sparseDependency[i];
+#if 0
         if (list.f != DependencyList::UNUSED)
-        	std::cout << "!|!|";
-		else
-			std::cout << "-|-|";
+            std::cout << "!|!|";
+        else
+            std::cout << "-|-|";
+#endif
         if (i < lastProjection)
         {
             /*
@@ -717,41 +729,51 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection(const
                   0.0,   f,  cy, 0.0,
                   0.0, 0.0, 1.0, 0.0,
                   0.0, 0.0, 0.0, 0.0),
-                CT = Rotation(cqx, cqy, cqz, cqw, true, false)*Translation(-ctx, -cty, -ctz),
-                FR = Rotation(fqx, fqy, fqz, fqw, true, true),
-                FT = Translation(-ftx, -fty, -ftz);
+                CT = Rotation(cqx, cqy, cqz, cqw, QuaternionParametrization::FULL, false)*Translation(-ctx, -cty, -ctz),
+                FR = Rotation(fqx, fqy, fqz, fqw, QuaternionParametrization::FULL, true),
+                FT = Translation(-ftx, -fty, -ftz),
+                FR0(1.0, 0.0, 0.0, 0.0,
+                    0.0, 1.0, 0.0, 0.0,
+                    0.0, 0.0, 1.0, 0.0,
+                    0.0, 0.0, 0.0, 1.0);
+
             auto X3d = pt->reprojectedPosition;
             corecvs::Vector4dd X(X3d[0], X3d[1], X3d[2], 1.0);
 
             IFUSED(qx, rotationParams,
-            		std::cout << "BLAH" << std::endl;
                     fqx = in[denseDependency[i].qx];
                     fqy = in[denseDependency[i].qy];
                     fqz = in[denseDependency[i].qz];
                     if (exc)
                         fqw = in[denseDependency[i].qw];
                     else
+                    {
                         fqw = 1e100;
-                    FR = Rotation(fqx, fqy, fqz, fqw, exc, true);
+                        int id = 0;
+                        for (; orientableFixtures[id] != o.cameraFixture; ++id);
+                        CORE_ASSERT_TRUE_S(id < orientableFixtures.size());
+                        FR0 = corecvs::Matrix44(originalOrientations[id].conjugated().toMatrix());
+                    }
+                    FR = Rotation(fqx, fqy, fqz, fqw, exc ? QuaternionParametrization::FULL_NORMALIZED : QuaternionParametrization::NON_EXCESSIVE, true);
                   )
-            auto FRFT = FR*FT;
-            auto FRFT_r = (corecvs::Matrix44)o.cameraFixture->location.inverted();
-			CORE_ASSERT_TRUE_S((FRFT-FRFT_r).frobeniusNorm() < 1e-8);
+            auto FR0FRFT = FR0*FR*FT;
+            auto FR0FRFT_r = (corecvs::Matrix44)o.cameraFixture->location.inverted();
+            CORE_ASSERT_TRUE_S((FR0FRFT-FR0FRFT_r).frobeniusNorm() < 1e-8);
             auto
-                FTX     =               FT * X,
-                FRFTX   =          FR * FTX,
-                CTFRFTX =     CT * FRFTX,
-                KCTFRFTX= K * CTFRFTX;
+                FTX     =                     FT * X,
+                FRFTX   =                   FR * FTX,
+                CTFR0FRFTX =     CT * FR0 * FRFTX,
+                KCTFR0FRFTX= K * CTFR0FRFTX;
 
-            auto ux = KCTFRFTX[0], uy = KCTFRFTX[1], uz = KCTFRFTX[2];
+            auto ux = KCTFR0FRFTX[0], uy = KCTFR0FRFTX[1], uz = KCTFR0FRFTX[2];
             corecvs::Matrix44 E(1.0 / uz,      0.0, -ux / uz / uz, 0.0,
                                      0.0, 1.0 / uz, -uy / uz / uz, 0.0,
                                      0.0,      0.0,           0.0, 0.0,
                                      0.0,      0.0,           0.0, 0.0);
-            auto EK      = E * K,
-                 EKCT    =    EK * CT,
-                 EKCTFR  =       EKCT * FR,
-                 EKCTFRFT=          EKCTFR * FT;
+            auto EK         = E * K,
+                 EKCTFR0    =    EK * CT * FR0,
+                 EKCTFR0FR  =          EKCTFR0 * FR,
+                 EKCTFR0FRFT=             EKCTFR0FR * FT;
 
 
             IFUSED(f, INPUTS_PER_FOCAL,
@@ -760,7 +782,7 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection(const
                                      0.0, 1.0, 0.0, 0.0,
                                      0.0, 0.0, 0.0, 0.0,
                                      0.0, 0.0, 0.0, 0.0);
-                auto dudf = E * (Kf * CTFRFTX);
+                auto dudf = E * (Kf * CTFR0FRFTX);
                 SPARSEU(f)
             )
             IFUSED(cx, INPUTS_PER_PRINCIPAL,
@@ -769,12 +791,12 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection(const
                                       0.0, 0.0, 0.0, 0.0,
                                       0.0, 0.0, 0.0, 0.0,
                                       0.0, 0.0, 0.0, 0.0);
-                auto dudcx = E * (Kcx * CTFRFTX);
+                auto dudcx = E * (Kcx * CTFR0FRFTX);
                 corecvs::Matrix44 Kcy(0.0, 0.0, 0.0, 0.0,
                                       0.0, 0.0, 1.0, 0.0,
                                       0.0, 0.0, 0.0, 0.0,
                                       0.0, 0.0, 0.0, 0.0);
-                auto dudcy = E * (Kcy * CTFRFTX);
+                auto dudcy = E * (Kcy * CTFR0FRFTX);
                 SPARSEU(cx)
                 SPARSEU(cy)
             )
@@ -782,11 +804,11 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection(const
             corecvs::Matrix44 FRdX, FRdY, FRdZ, FRdW;
             IFUSED(qx, rotationParams,
                 // qx, qy, qz, qw
-                QuaternionDiff(fqx, fqy, fqz, fqw, exc, true, FRdX, FRdY, FRdZ, FRdW);
-                auto dudqx = EKCT * (FRdX * FTX);
-                auto dudqy = EKCT * (FRdY * FTX);
-                auto dudqz = EKCT * (FRdZ * FTX);
-                auto dudqw = EKCT * (FRdW * FTX);
+                QuaternionDiff(fqx, fqy, fqz, fqw, exc ? QuaternionParametrization::FULL_NORMALIZED : QuaternionParametrization::NON_EXCESSIVE, true, FRdX, FRdY, FRdZ, FRdW);
+                auto dudqx = EKCTFR0 * (FRdX * FTX);
+                auto dudqy = EKCTFR0 * (FRdY * FTX);
+                auto dudqz = EKCTFR0 * (FRdZ * FTX);
+                auto dudqw = EKCTFR0 * (FRdW * FTX);
                 SPARSEU(qx)
                 SPARSEU(qy)
                 SPARSEU(qz)
@@ -797,9 +819,9 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection(const
             )
             IFUSED(tx, INPUTS_PER_TRANSLATION,
                 // tx, ty, tz
-                auto dudtx = EKCTFR*(FTx*X);
-                auto dudty = EKCTFR*(FTy*X);
-                auto dudtz = EKCTFR*(FTz*X);
+                auto dudtx = EKCTFR0FR*(FTx*X);
+                auto dudty = EKCTFR0FR*(FTy*X);
+                auto dudtz = EKCTFR0FR*(FTz*X);
                 SPARSEU(tx)
                 SPARSEU(ty)
                 SPARSEU(tz)
@@ -809,9 +831,9 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection(const
                 corecvs::Vector4dd Xdx(1.0, 0.0, 0.0, 0.0);
                 corecvs::Vector4dd Xdy(0.0, 1.0, 0.0, 0.0);
                 corecvs::Vector4dd Xdz(0.0, 0.0, 1.0, 0.0);
-                auto dudx = EKCTFRFT * Xdx;
-                auto dudy = EKCTFRFT * Xdy;
-                auto dudz = EKCTFRFT * Xdz;
+                auto dudx = EKCTFR0FRFT * Xdx;
+                auto dudy = EKCTFR0FRFT * Xdy;
+                auto dudz = EKCTFR0FRFT * Xdz;
                 SPARSEU(x)
                 SPARSEU(y)
                 SPARSEU(z)
@@ -831,7 +853,7 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection(const
             i += OUTPUTS_PER_POSITION_CONSTRAINT;
         }
     }
-	std::cout << std::endl;
+    std::cout << std::endl;
 #if 0
     // Raydiff jacobian:
     // left:
@@ -1022,55 +1044,88 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection(const
 #endif
 }
 
-void corecvs::ReconstructionFunctor::QuaternionDiff(double qx, double qy, double qz, double qw, bool excessive, bool inverse, corecvs::Matrix44 &Rqx, corecvs::Matrix44 &Rqy, corecvs::Matrix44 &Rqz, corecvs::Matrix44 &Rqw)
+void corecvs::ReconstructionFunctor::QuaternionDiff(double qx, double qy, double qz, double qw, corecvs::ReconstructionFunctor::QuaternionParametrization p, bool inverse, corecvs::Matrix44 &Rqx, corecvs::Matrix44 &Rqy, corecvs::Matrix44 &Rqz, corecvs::Matrix44 &Rqw)
 {
-    if (excessive)
+    switch(p)
     {
-        Rqx = corecvs::Matrix44(   0.0, 2.0*qy, 2.0*qz, 0.0,
-                                2.0*qy,-4.0*qx,-2.0*qw, 0.0,
-                                2.0*qz, 2.0*qw,-4.0*qx, 0.0,
-                                   0.0,    0.0,    0.0, 0.0);
-        Rqy = corecvs::Matrix44(-4.0*qy, 2.0*qx, 2.0*qw, 0.0,
-                                 2.0*qx,    0.0, 2.0*qz, 0.0,
-                                -2.0*qw, 2.0*qz,-4.0*qy, 0.0,
+        case QuaternionParametrization::FULL:
+            Rqx = corecvs::Matrix44(   0.0, 2.0*qy, 2.0*qz, 0.0,
+                                    2.0*qy,-4.0*qx,-2.0*qw, 0.0,
+                                    2.0*qz, 2.0*qw,-4.0*qx, 0.0,
                                     0.0,    0.0,    0.0, 0.0);
-        Rqz = corecvs::Matrix44(-4.0*qz,-2.0*qw, 2.0*qx, 0.0,
-                                 2.0*qw,-4.0*qz, 2.0*qy, 0.0,
-                                 2.0*qx, 2.0*qy,    0.0, 0.0,
-                                    0.0,    0.0,    0.0, 0.0);
-        Rqw = corecvs::Matrix44(    0.0,-2.0*qz, 2.0*qy, 0.0,
-                                 2.0*qz,    0.0,-2.0*qx, 0.0,
-                                -2.0*qy, 2.0*qx,    0.0, 0.0,
-                                    0.0,    0.0,    0.0, 0.0);
-    }
-    else
-    {
-        double qx2 = qx * qx, qy2 = qy * qy, qz2 = qz * qz, qxqyqz = qx * qy * qz;
-        double qxqy= qx * qy, qxqz = qx * qz, qyqz = qy * qz,
-               qx3 = qx2 * qx, qy3 = qy2 * qy, qz3 = qz2 * qz, qx2qy = qx2 * qy, qx2qz = qx2 * qz, qxqy2 = qx * qy2, qy2qz = qy2 * qz, qxqz2 = qx * qz2, qyqz2 = qy * qz2;
-        Rqx = corecvs::Matrix44(                            4.0*qx*(qy2+qz2),-6.0*qx2qy+4.0*qxqz-2.0*qy3-2.0*qyqz2+2.0*qy,-6.0*qx2qz-4.0*qxqy-2.0*qy2qz-2.0*qz3+2.0*qz, 0.0,
-                                -6.0*qx2qy-4.0*qxqz-2.0*qy3-2.0*qyqz2+2.0*qy,            4.0*qx*(2.0*qx2+qy2+2.0*qz2-1.0),        6.0*qx2-4.0*qxqyqz+2.0*qy2+2.0*qz2-2, 0.0,
-                                -6.0*qx2qz+4.0*qxqy-2.0*qy2qz-2.0*qz3+2.0*qz,     -6.0*qx2-4.0*qxqyqz-2.0*qy2-2.0*qz2+2.0,            4.0*qx*(2.0*qx2+2.0*qy2+qz2-1.0), 0.0,
-                                                                         0.0,                                         0.0,                                         0.0, 0.0);
+            Rqy = corecvs::Matrix44(-4.0*qy, 2.0*qx, 2.0*qw, 0.0,
+                                    2.0*qx,    0.0, 2.0*qz, 0.0,
+                                    -2.0*qw, 2.0*qz,-4.0*qy, 0.0,
+                                        0.0,    0.0,    0.0, 0.0);
+            Rqz = corecvs::Matrix44(-4.0*qz,-2.0*qw, 2.0*qx, 0.0,
+                                    2.0*qw,-4.0*qz, 2.0*qy, 0.0,
+                                    2.0*qx, 2.0*qy,    0.0, 0.0,
+                                        0.0,    0.0,    0.0, 0.0);
+            Rqw = corecvs::Matrix44(    0.0,-2.0*qz, 2.0*qy, 0.0,
+                                    2.0*qz,    0.0,-2.0*qx, 0.0,
+                                    -2.0*qy, 2.0*qx,    0.0, 0.0,
+                                        0.0,    0.0,    0.0, 0.0);
+            break;
+        case QuaternionParametrization::FULL_NORMALIZED:
+            {
+                double qx2 = qx * qx, qy2 = qy * qy, qz2 = qz * qz, qxqyqz = qx * qy * qz, qw2 = qw * qw;
+                double qxqy= qx * qy, qxqz = qx * qz, qyqz = qy * qz, qxqw = qx * qw, qyqw = qy * qw, qzqw = qz * qw,
+                    qx3 = qx2 * qx, qy3 = qy2 * qy, qz3 = qz2 * qz, qx2qy = qx2 * qy, qx2qz = qx2 * qz, qxqy2 = qx * qy2, qy2qz = qy2 * qz, qxqz2 = qx * qz2, qyqz2 = qy * qz2;
+                double N = qx2 + qy2 + qz2 + qw2;
+                double N2= N * N;
+                Rqx = corecvs::Matrix44(
+                                       4.0*qx*(qy2 + qz2), (4.0*qx*(qzqw - qxqy) + 2.0*qy*N), (-4.0*qx*(qyqw + qxqz) + 2.0*qz*N), 0,
+                      (-4.0*qx*(qzqw +  qxqy) + 2.0*qy*N),               -4.0*qx*(qw2 + qy2), (-2.0*qw*N + 4.0*qx*(qxqw - qyqz)), 0,
+                        (4.0*qx*(qyqw - qxqz) + 2.0*qz*N), (2.0*qw*N - 4.0*qx*(qxqw + qyqz)),                -4.0*qx*(qw2 + qz2), 0,
+                                                        0,                                 0,                                  0, 0) / N2;
+                Rqy = corecvs::Matrix44(
+                                 -4.0*qy*(qw2 + qx2), (2.0*qx*N + 4.0*qy*(qzqw - qxqy)), (2.0*qw*N - 4.0*qy*(qyqw + qxqz)), 0,
+                   (2.0*qx*N - 4.0*qy*(qzqw + qxqy)),                4.0*qy*(qx2 + qz2), (4.0*qy*(qxqw - qyqz) + 2.0*qz*N), 0,
+                  (-2.0*qw*N + 4.0*qy*(qyqw - qxqz)),(-4.0*qy*(qxqw + qyqz) + 2.0*qz*N),               -4.0*qy*(qw2 + qz2), 0,
+                                                   0,                                 0,                                 0, 0) / N2;
+                Rqz = corecvs::Matrix44(
+                                        -4.0*qz*(qw2 + qx2), (-2.0*qw*N + 4.0*qz*(qzqw - qxqy)), (2.0*qx*N - 4.0*qz*(qyqw + qxqz)), 0,
+                          (2.0*qw*N - 4.0*qz*(qzqw + qxqy)),                -4.0*qz*(qw2 + qy2), (2.0*qy*N + 4.0*qz*(qxqw - qyqz)), 0,
+                          (2.0*qx*N + 4.0*qz*(qyqw - qxqz)),  (2.0*qy*N - 4.0*qz*(qxqw + qyqz)),                4.0*qz*(qx2 + qy2), 0,
+                                                          0,                                  0,                                 0, 0) / N2;
+                Rqw = corecvs::Matrix44(
+                                          4.0*qw*(qy2 + qz2),  (4.0*qw*(qzqw - qxqy) - 2.0*qz*N), (-4.0*qw*(qyqw + qxqz) + 2.0*qy*N), 0,
+                          (-4.0*qw*(qzqw + qxqy) + 2.0*qz*N),                 4.0*qw*(qx2 + qz2),  (4.0*qw*(qxqw - qyqz) - 2.0*qx*N), 0,
+                           (4.0*qw*(qyqw - qxqz) - 2.0*qy*N), (-4.0*qw*(qxqw + qyqz) + 2.0*qx*N),                 4.0*qw*(qx2 + qy2), 0,
+                                                           0,                                  0,                                  0, 0) / N2;
 
-        Rqy = corecvs::Matrix44(            4.0*qy*(qx2+2.0*qy2+2.0*qz2-1.0),-2.0*qx3-6.0*qxqy2-2.0*qxqz2+2.0*qx+4.0*qyqz,     -2.0*qx2-4.0*qxqyqz-6.0*qy2-2.0*qz2+2.0, 0.0,
-                                -2.0*qx3-6.0*qxqy2-2.0*qxqz2+2.0*qx-4.0*qyqz,                            4.0*qy*(qx2+qz2),-2.0*qx2qz+4.0*qxqy-6.0*qy2qz-2.0*qz3+2.0*qz, 0.0,
-                                      2.0*qx2-4.0*qxqyqz+6.0*qy2+2.0*qz2-2.0,-2.0*qx2qz-4.0*qxqy-6.0*qy2qz-2.0*qz3+2.0*qz,            4.0*qy*(2.0*qx2+2.0*qy2+qz2-1.0), 0.0,
-                                                                         0.0,                                         0.0,                                         0.0, 0.0);
+            }
+            break;
+        case QuaternionParametrization::NON_EXCESSIVE:
+            {
+                double qx2 = qx * qx, qy2 = qy * qy, qz2 = qz * qz, qxqyqz = qx * qy * qz;
+                double qxqy= qx * qy, qxqz = qx * qz, qyqz = qy * qz,
+                    qx3 = qx2 * qx, qy3 = qy2 * qy, qz3 = qz2 * qz, qx2qy = qx2 * qy, qx2qz = qx2 * qz, qxqy2 = qx * qy2, qy2qz = qy2 * qz, qxqz2 = qx * qz2, qyqz2 = qy * qz2;
+                Rqx = corecvs::Matrix44(                            4.0*qx*(qy2+qz2),-6.0*qx2qy+4.0*qxqz-2.0*qy3-2.0*qyqz2+2.0*qy,-6.0*qx2qz-4.0*qxqy-2.0*qy2qz-2.0*qz3+2.0*qz, 0.0,
+                                        -6.0*qx2qy-4.0*qxqz-2.0*qy3-2.0*qyqz2+2.0*qy,            4.0*qx*(2.0*qx2+qy2+2.0*qz2-1.0),        6.0*qx2-4.0*qxqyqz+2.0*qy2+2.0*qz2-2, 0.0,
+                                        -6.0*qx2qz+4.0*qxqy-2.0*qy2qz-2.0*qz3+2.0*qz,     -6.0*qx2-4.0*qxqyqz-2.0*qy2-2.0*qz2+2.0,            4.0*qx*(2.0*qx2+2.0*qy2+qz2-1.0), 0.0,
+                                                                                0.0,                                         0.0,                                         0.0, 0.0);
 
-        Rqz = corecvs::Matrix44(            4.0*qz*(qx2+2.0*qy2+2.0*qz2-1.0),      2.0*qx2-4.0*qxqyqz+2.0*qy2+6.0*qz2-2.0,-2.0*qx3-2.0*qxqy2-6.0*qxqz2+2.0*qx-4.0*qyqz, 0.0,
-                                     -2.0*qx2-4.0*qxqyqz-2.0*qy2-6.0*qz2+2.0,            4.0*qz*(2.0*qx2+qy2+2.0*qz2-1.0),-2.0*qx2qy+4.0*qxqz-2.0*qy3-6.0*qyqz2+2.0*qy, 0.0,
-                                -2.0*qx3-2.0*qxqy2-6.0*qxqz2+2.0*qx+4.0*qyqz,-2.0*qx2qy-4.0*qxqz-2.0*qy3-6.0*qyqz2+2.0*qy,                            4.0*qz*(qx2+qy2), 0.0,
-                                                                         0.0,                                         0.0,                                         0.0, 0.0);
+                Rqy = corecvs::Matrix44(            4.0*qy*(qx2+2.0*qy2+2.0*qz2-1.0),-2.0*qx3-6.0*qxqy2-2.0*qxqz2+2.0*qx+4.0*qyqz,     -2.0*qx2-4.0*qxqyqz-6.0*qy2-2.0*qz2+2.0, 0.0,
+                                        -2.0*qx3-6.0*qxqy2-2.0*qxqz2+2.0*qx-4.0*qyqz,                            4.0*qy*(qx2+qz2),-2.0*qx2qz+4.0*qxqy-6.0*qy2qz-2.0*qz3+2.0*qz, 0.0,
+                                            2.0*qx2-4.0*qxqyqz+6.0*qy2+2.0*qz2-2.0,-2.0*qx2qz-4.0*qxqy-6.0*qy2qz-2.0*qz3+2.0*qz,            4.0*qy*(2.0*qx2+2.0*qy2+qz2-1.0), 0.0,
+                                                                                0.0,                                         0.0,                                         0.0, 0.0);
 
+                Rqz = corecvs::Matrix44(            4.0*qz*(qx2+2.0*qy2+2.0*qz2-1.0),      2.0*qx2-4.0*qxqyqz+2.0*qy2+6.0*qz2-2.0,-2.0*qx3-2.0*qxqy2-6.0*qxqz2+2.0*qx-4.0*qyqz, 0.0,
+                                            -2.0*qx2-4.0*qxqyqz-2.0*qy2-6.0*qz2+2.0,            4.0*qz*(2.0*qx2+qy2+2.0*qz2-1.0),-2.0*qx2qy+4.0*qxqz-2.0*qy3-6.0*qyqz2+2.0*qy, 0.0,
+                                        -2.0*qx3-2.0*qxqy2-6.0*qxqz2+2.0*qx+4.0*qyqz,-2.0*qx2qy-4.0*qxqz-2.0*qy3-6.0*qyqz2+2.0*qy,                            4.0*qz*(qx2+qy2), 0.0,
+                                                                                0.0,                                         0.0,                                         0.0, 0.0);
+
+            }
+            break;
     }
     if (inverse)
-	{
-		Rqx.transpose();
-		Rqy.transpose();
-		Rqz.transpose();
-		Rqw.transpose();
-	}
+    {
+        Rqx.transpose();
+        Rqy.transpose();
+        Rqz.transpose();
+        Rqw.transpose();
+    }
 }
 
 
