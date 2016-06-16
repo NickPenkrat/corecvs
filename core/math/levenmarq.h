@@ -101,6 +101,12 @@ public:
 
         double norm = std::numeric_limits<double>::max();
 
+        auto initial = diff;
+        F(beta, initial);
+        initial -= target;
+        double initialNorm = initial.sumAllElementsSq();
+        int LSc = 0;
+
         double totalEval = 0.0, totalJEval = 0.0, totalLinSolve = 0.0, totalATA = 0.0, totalTotal = 0.0;
         int g = 0;
         state->reset("Fit", maxIterations);
@@ -241,6 +247,7 @@ public:
                  *       degeneracy
                  */
 
+            	LSc++;
                 auto LSbegin = std::chrono::high_resolution_clock::now();
 //                for (int ijk = 0; ijk < B.size(); ++ijk)
 //                    CORE_ASSERT_TRUE_S(!std::isnan(B[ijk]));
@@ -283,6 +290,7 @@ public:
                 {
                     if (trace) {
                         cout << "Accepted" << endl;
+						std::cout << initialNorm - normNew << " decrease in " << LSc << " linsolves" << std::endl;
                     }
 
                     if (traceMatrix) {
