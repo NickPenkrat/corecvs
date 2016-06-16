@@ -185,6 +185,7 @@ struct ParallelBoardDetector
                     (distorted ? psIterator.intrinsics.distortedSize : psIterator.intrinsics.size) = corecvs::Vector2dd(buffer.w, buffer.h);
                 }
                 job->detectChessBoard(buffer, distorted ? v.sourcePattern : v.undistortedPattern);
+                job->processState->checkToCancel();
             }
             else
             {
@@ -193,14 +194,15 @@ struct ParallelBoardDetector
                     auto pc = p;
                     pc.projection = job->photostation.cameras[cam].distortion.mapBackward(pc.projection);
                     v.undistortedPattern.push_back(pc);
+
+                    job->processState->checkToCancel();
                 }
             }
         }
     }
     ParallelBoardDetector(CalibrationJob* job, std::vector<std::array<size_t, 2>> idx, bool estimate, bool distorted)
         : job(job), idx(idx), estimate(estimate), distorted(distorted)
-    {
-    }
+    {}
 
     CalibrationJob*                     job;
     std::vector<std::array<size_t, 2>>  idx;
@@ -291,12 +293,16 @@ struct ParallelDistortionEstimator
             for (auto& v: job->observations[cam])
             {
                 sgf.addAllLinesFromObservationList(v.sourcePattern);
+                job->processState->checkToCancel();
             }
+
             auto& psIterator = job->photostation.cameras[cam];
             job->estimateDistortion(sgf, psIterator.intrinsics.distortedSize[0], psIterator.intrinsics.distortedSize[1], psIterator.distortion);
+
             for (auto& v: job->observations[cam])
             {
                 job->computeDistortionError(v.sourcePattern, psIterator.distortion, v.distortionRmse, v.distortionMaxError);
+                job->processState->checkToCancel();
             }
         }
     }
@@ -319,6 +325,15 @@ void CalibrationJob::prepareUndistortionTransformation(int camId, corecvs::Displ
 {
     auto& cam = photostation.cameras[camId];
     cam.estimateUndistortedSize(settings.distortionApplicationParameters);
+
+    int newW = (int)cam.intrinsics.size[0];
+    int newH = (int)cam.intrinsics.size[1];
+    if (newH < 0 || newW < 0)
+    {
+        L_ERROR_P("invalid distortion data for camId=%d outSize(%dx%d)", camId, newW, newH);
+        return;
+    }
+
     result = RadialCorrection(cam.distortion).getUndistortionTransformation(cam.intrinsics.size
         , cam.intrinsics.distortedSize, 0.25, false);
 }
@@ -341,21 +356,27 @@ struct ParallelDistortionRemoval
         for (int camId = r.begin(); camId < r.end(); ++camId)
         {
             auto boo = job->processState->createAutoTrackerCalculationObject();
+
             auto& observationsIterator = job->observations[camId];
             auto& cam = job->photostation.cameras[camId];
 
             corecvs::DisplacementBuffer transform;
             job->prepareUndistortionTransformation(camId, transform);
+
+            job->processState->checkToCancel();
+
             corecvs::parallelable_for(0, (int)observationsIterator.size(), [&](const corecvs::BlockedRange<int> &r)
+                {
+                    for (int i = r.begin(); i != r.end(); ++i)
                     {
-                        for (int i = r.begin(); i != r.end(); ++i)
-                        {
-                            auto &ob = observationsIterator[i];
-                            corecvs::RGB24Buffer source = job->LoadImage(ob.sourceFileName), dst;
-                            job->removeDistortion(source, dst, transform, cam.intrinsics.size[0], cam.intrinsics.size[1]);
-                            job->SaveImage(ob.undistortedFileName, dst);
-                        }
-                    });
+                        job->processState->checkToCancel();
+
+                        auto &ob = observationsIterator[i];
+                        corecvs::RGB24Buffer source = job->LoadImage(ob.sourceFileName), dst;
+                        job->removeDistortion(source, dst, transform, cam.intrinsics.size[0], cam.intrinsics.size[1]);
+                        job->SaveImage(ob.undistortedFileName, dst);
+                    }
+                });
         }
     }
 
@@ -368,8 +389,7 @@ struct ParallelDistortionRemoval
 void CalibrationJob::allRemoveDistortion()
 {
     processState->reset("Image undistortion", photostation.cameras.size());
-
-    corecvs::parallelable_for (0, (int)photostation.cameras.size(), ParallelDistortionRemoval(this));
+    corecvs::parallelable_for(0, (int)photostation.cameras.size(), ParallelDistortionRemoval(this));
 }
 
 void CalibrationJob::SaveImage(const std::string &path, corecvs::RGB24Buffer &img)
@@ -441,7 +461,10 @@ struct ParallelSingleCalibrator
     void operator() (const corecvs::BlockedRange<int> &r) const
     {
         for (int cameraId = r.begin(); cameraId < r.end(); ++cameraId)
+        {
+            job->processState->checkToCancel();
             job->calibrateSingleCamera(cameraId);
+        }
     }
 
     CalibrationJob *job;

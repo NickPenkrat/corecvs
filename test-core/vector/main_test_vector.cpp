@@ -174,9 +174,8 @@ TEST(Vector, testSpherical)
     {
         Vector3dd vec(0.0, 0.0, 50.0);
         Vector3dd back = Vector3dd::toSpherical(vec);
-
+        CORE_UNUSED(back);
     }
-
 }
 
 //int main (int /*argC*/, char ** /*argV*/)

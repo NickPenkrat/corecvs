@@ -61,7 +61,9 @@ AboutPropsTableWidget::AboutPropsTableWidget(QWidget *parent) : QTableWidget(par
 
 #ifdef WITH_TBB
     addParameter("TBB Support", "On");
-    addParameter("TBB Version", GCC_XSTR(TBB_INTERFACE_VERSION));
+    //addParameter("TBB Version", GCC_XSTR(TBB_INTERFACE_VERSION));
+    QString tbbVer = QString("%1.%2").arg(TBB_VERSION_MAJOR).arg(TBB_VERSION_MINOR);
+    addParameter("TBB Version", tbbVer);
     addParameter("TBB Compat Version", GCC_XSTR(TBB_COMPATIBLE_INTERFACE_VERSION));
 
     int runtimeTBB = tbb::TBB_runtime_interface_version();

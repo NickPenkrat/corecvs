@@ -4,7 +4,7 @@
 #include "homographyReconstructor.h"
 #include <fstream>
 
-ChessboardDetector::ChessboardDetector (
+ChessboardDetector::ChessboardDetector(
         CheckerboardDetectionParameters params,
         BoardAlignerParams alignerParams,
         ChessBoardCornerDetectorParams detectorParams,
@@ -12,8 +12,8 @@ ChessboardDetector::ChessboardDetector (
     )
     : CheckerboardDetectionParameters(params)
     , aligner(new BoardAligner(alignerParams))
-    , stats(NULL)
     , detector(detectorParams)
+    , stats(NULL)
 {
     BoardAlignerParams activeAlignerParams = aligner->getAlignerParams();
 
@@ -39,6 +39,7 @@ ChessboardDetector::ChessboardDetector (
             break;
     }
     assembler = ChessBoardAssembler(assemblerParams);
+
     sharedGenerator = std::shared_ptr<CirclePatternGenerator>(aligner->FillGenerator(activeAlignerParams));
 }
 
