@@ -67,7 +67,6 @@ Matrix44 PinholeCameraIntrinsics::getKMatrix() const
  **/
 Matrix44 PinholeCameraIntrinsics::getInvKMatrix() const
 {
-
     return Matrix44( getInvKMatrix33());
 }
 

@@ -377,7 +377,7 @@ void corecvs::ReconstructionFunctor::computeDependency()
     {\
         for (int i = 0; i < N; ++i) \
         { \
-            CORE_ASSERT_TRUE_S(argin < sparsity.size()); \
+            CORE_ASSERT_TRUE_S(argin < (int)sparsity.size()); \
             for (int j = 0; j < lastProjection; ++j) \
             { \
                 auto p = revDependency[j]; \

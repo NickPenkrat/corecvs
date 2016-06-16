@@ -29,7 +29,6 @@ corecvs::RelativeNonCentralRansacSolver::RelativeNonCentralRansacSolver(CameraFi
 
 void corecvs::RelativeNonCentralRansacSolver::makeTry(const corecvs::Affine3DQ &hypo)
 {
-
     std::cout << "RNCRS::makeTry()" << std::endl;
     Estimator es(this, inlierThreshold, restrictions, shift, scale);
     es.hypothesis.push_back(hypo);
@@ -47,7 +46,7 @@ void corecvs::RelativeNonCentralRansacSolver::run()
     {
         corecvs::parallelable_for(0, batches, ParallelEstimator(this, batch));
         usedEvals += batches * batch;
-    } while (usedEvals < nForGamma() && usedEvals < maxIterations);
+    } while (usedEvals < nForGamma() && usedEvals < (int)maxIterations);
 
     maxIterations = usedEvals;
     std::cout << "Finishing after " << usedEvals << " with gamma" << getGamma() << std::endl;
@@ -71,7 +70,7 @@ void corecvs::RelativeNonCentralRansacSolver::ParallelEstimator::operator() (con
 
 void corecvs::RelativeNonCentralRansacSolver::Estimator::operator() (const corecvs::BlockedRange<int> &r)
 {
-    if (solver->matchesRansac.size() < solver->sampleSize())
+    if ((int)solver->matchesRansac.size() < solver->sampleSize())
         return;
 
     for (int i = r.begin(); i < r.end(); ++i)
