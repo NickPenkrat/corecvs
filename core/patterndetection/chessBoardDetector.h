@@ -3,8 +3,6 @@
 
 #include <memory>
 
-#include "calculationStats.h"
-
 #include "patternDetector.h"
 #include "checkerboardDetectionParameters.h"
 #include "chessBoardCornerDetector.h"
@@ -13,8 +11,9 @@
 #include "circlePatternGenerator.h"
 #include "boardAligner.h"
 
-namespace corecvs
-{
+namespace corecvs {
+
+class Statistics;
 
 enum class ChessBoardDetectorMode
 {
@@ -59,10 +58,6 @@ public:
 
     void drawClassifier(corecvs::RGB24Buffer &buffer);
 
-    void setStatistics(Statistics *stats);
-    Statistics *getStatistics();
-
-
     size_t detectPatterns(RGB24Buffer &buffer, std::vector<ObservationList> &patterns);
     size_t detectPatterns(corecvs::DpImage     &buffer);
 
@@ -85,14 +80,16 @@ private:
     ChessBoardAssembler                     assembler;
     std::shared_ptr<CirclePatternGenerator> sharedGenerator;
 
-    /* Some statistics */
-    Statistics  *stats;
-
     bool    detectPatternCandidates(DpImage &buffer, std::vector<BoardCornersType> &boards);
+
+    /* Some statistics */
+    Statistics  *stats = nullptr;
 
 public:  /* We need generic interface for debug data. It could be hidden inside Statistics*/
     const ChessBoardCornerDetector *cornerDet() const   { return &detector; }
 
+    void setStatistics(Statistics *stats)   { this->stats = stats; }
+    Statistics *getStatistics()             { return stats; }
 };
 
 } // namespace corecvs

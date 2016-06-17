@@ -149,11 +149,9 @@ void FilterGraph::execute()
             block->inputPins[j]->setPin(block->inputPins[j]->takeFrom);
         }
 
-        PreciseTimer blockExecutionTime = PreciseTimer::currentTime();
-        block->operator ()();
-        if (stats != NULL) {
-            stats->setTime(block->getFullName(), blockExecutionTime.usecsToNow());
-        }
+        stats->startInterval();
+            block->operator ()();
+        stats->endInterval(block->getFullName());
     } // for
 
     for (unsigned int i = 0; i < blocks.size(); i++)

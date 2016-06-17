@@ -150,8 +150,18 @@ bool CalibrationJob::detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::Sel
             , settings.boardAlignerParams
             , settings.chessBoardCornerDetectorParams
             , settings.chessBoardAssemblerParams);
+
+        Statistics stats;
         patternDetector->setStatistics(&stats);
-        patternDetector->detectPattern(buffer);
+        patternDetector->detectPattern(buffer);     // this function is not a thread-safe for the used Statistics object!
+
+#ifdef WITH_TBB
+        lockStatsData.lock();
+#endif
+            statsData.addStatistics(stats);
+#ifdef WITH_TBB
+        lockStatsData.unlock();
+#endif
     }
 
     if (features)
