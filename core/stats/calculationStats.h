@@ -92,7 +92,7 @@ struct UnitedStat
 
     void unite(const UnitedStat &ustat)
     {
-        if (type = SingleStat::UNKNOWN) type = ustat.type;
+        if (type == SingleStat::UNKNOWN) type = ustat.type;
         if (min == 0) { min = ustat.min; max = ustat.max; last = ustat.last; }
         number += ustat.number;
         sum    += ustat.sum;
