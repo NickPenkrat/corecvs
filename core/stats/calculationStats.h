@@ -56,12 +56,12 @@ struct UnitedStat
 {
     SingleStat::Type type;
 
-    uint64_t last;
     uint64_t sum;
+    uint64_t sumSq;
+    uint64_t last;
     uint64_t min;
     uint64_t max;
     uint64_t number;
-    uint64_t sumSq;
 
     UnitedStat()
     {
@@ -71,17 +71,16 @@ struct UnitedStat
 
     void addValue(uint64_t value)
     {
-       number++;
-       last = value;
-       sum += value;
+       sum   += value;
        sumSq += value * value;
-
-       if ((min > value) && (value != 0)) {
+       last   = value;
+       if (min > value || number == 0) {
            min = value;
        }
        if (max < value) {
            max = value;
        }
+       ++number;
     }
 
     void addValue(const SingleStat &stat)
@@ -92,15 +91,15 @@ struct UnitedStat
 
     void unite(const UnitedStat &ustat)
     {
-        if (type == SingleStat::UNKNOWN) type = ustat.type;
-        if (min == 0) { min = ustat.min; max = ustat.max; last = ustat.last; }
+        if (type == SingleStat::UNKNOWN) { type = ustat.type; }
+        if (number == 0) { min = ustat.min; max = ustat.max; last = ustat.last; }
         number += ustat.number;
         sum    += ustat.sum;
         sumSq  += ustat.sumSq;
     }
 
     uint64_t mean()     const { return number ? _roundDivUp(sum, number) : 0; }
-    uint64_t minimum()  const { return /*(min == std::numeric_limits<uint64_t>::max()) ? 0 : */ min; }
+    uint64_t minimum()  const { return min; }
 };
 
 
