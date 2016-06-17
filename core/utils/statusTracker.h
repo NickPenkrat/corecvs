@@ -5,7 +5,7 @@
 #include <ostream>
 
 #ifdef WITH_TBB
-#include <tbb/tbb.h>
+#include <tbb/reader_writer_lock.h>
 #endif
 
 #include "global.h"
