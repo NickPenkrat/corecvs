@@ -669,8 +669,10 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection(const
         nErr = getErrorComponentsPerPoint();
     bool exc = excessiveQuaternionParametrization;
     const int rotationParams = exc ? INPUTS_PER_ORIENTATION_EXC : INPUTS_PER_ORIENTATION_NEX;
-    for (int i = 0; i < nOut;)
+    corecvs::parallelable_for(0, lastProjection / nErr, [&](const corecvs::BlockedRange<int> &r){
+    for (int ii= r.begin(); ii< r.end(); ++ii)
     {
+        int i = ii * nErr;
         auto& list = sparseDependency[i];
 #if 0
         if (list.f != DependencyList::UNUSED)
@@ -838,8 +840,6 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection(const
                 SPARSEU(y)
                 SPARSEU(z)
             )
-
-            i += nErr;
         }
         else
         {
@@ -853,6 +853,7 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection(const
             i += OUTPUTS_PER_POSITION_CONSTRAINT;
         }
     }
+    });
     std::cout << std::endl;
 #if 0
     // Raydiff jacobian:

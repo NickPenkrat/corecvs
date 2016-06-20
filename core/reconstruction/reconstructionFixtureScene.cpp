@@ -184,7 +184,7 @@ FixtureScene* ReconstructionFixtureScene::dumbify()
         pp->color = p->color;
         for (auto &o: p->observations__)
         {
-            auto& oo = pp->observations[wppmap[o.first].v] = o.second;
+            auto& oo = (pp->observations[wppmap[o.first].v] = o.second);
             auto wpp = wppmap[o.first];
             oo.camera = wpp.v;
             oo.cameraFixture = wpp.u;

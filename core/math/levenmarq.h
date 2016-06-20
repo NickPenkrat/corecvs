@@ -113,6 +113,7 @@ public:
 
         for (g = 0; (g < maxIterations) && (lambda < maxlambda) && !converged; g++)
         {
+            int LSc_curr = 0;
             auto boo = state->createAutoTrackerCalculationObject();
 
             double timeEval = 0.0, timeJEval = 0.0, timeLinSolve = 0.0, timeATA = 0.0, timeTotal = 0.0;
@@ -179,7 +180,6 @@ public:
 
             while (true)
             {
-
                 if (norm == 0.0)
                 {
                     if (traceCrucial)
@@ -247,7 +247,8 @@ public:
                  *       degeneracy
                  */
 
-            	LSc++;
+                LSc_curr++;
+                LSc++;
                 auto LSbegin = std::chrono::high_resolution_clock::now();
 //                for (int ijk = 0; ijk < B.size(); ++ijk)
 //                    CORE_ASSERT_TRUE_S(!std::isnan(B[ijk]));
@@ -290,7 +291,9 @@ public:
                 {
                     if (trace) {
                         cout << "Accepted" << endl;
-						std::cout << initialNorm - normNew << " decrease in " << LSc << " linsolves" << std::endl;
+                        std::cout << initialNorm - normNew << " decrease in " << LSc << " linsolves" << std::endl;
+                        std::cout << norm - normNew << " current decrease (" << LSc_curr << " linsolves" << std::endl;
+                        std::cout << "NLO: " << initialNorm - normNew << ", " << LSc << ", " << norm - normNew << ", " << LSc_curr << ", " << lambda << std::endl;
                     }
 
                     if (traceMatrix) {
