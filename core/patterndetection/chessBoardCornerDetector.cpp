@@ -1,19 +1,17 @@
 #include "chessBoardCornerDetector.h"
 #include "nonMaximalSuperssor.h"
-
-#include <cmath>
-#include <algorithm>
-#include <set>
-#include <regex>
-
 #include "mathUtils.h"
-
 #include "convolver/convolver.h"
 #include "vectorTraits.h"
 #include "fastKernel.h"
 #include "arithmetic.h"
 #include "matrix22.h"
+#include "calculationStats.h"
 
+#include <cmath>
+#include <algorithm>
+#include <set>
+#include <regex>
 
 using corecvs::Vector2dd;
 using corecvs::Matrix22;
@@ -491,19 +489,20 @@ void ChessBoardCornerDetector::computeCost()
 #endif
 #if 10
 
-    if (stats != NULL) stats->enterContext("Cost->");
+    stats->enterContext("Cost->");
 
     FpImage *fImage = NULL;
-    if (floatSpeedup()) {
-        if (stats != NULL) stats->startInterval();
+    if (floatSpeedup())
+    {
+        stats->startInterval();
             fImage = new FpImage(img.getSize());
             fImage->binaryOperationInPlace(img, [](const float &/*a*/, const double &b) { return b; });
-        if (stats != NULL) stats->endInterval("Float converter");
+        stats->endInterval("Float converter");
     }
 
-    for (size_t i = 0; i <  kernels.size(); i++)
+    for (size_t i = 0; i < kernels.size(); i++)
     {
-        if (stats != NULL) stats->startInterval();
+        stats->startInterval();
 
         CornerKernelSet &cks = kernels[i];
         DpImage kc;
@@ -515,12 +514,12 @@ void ChessBoardCornerDetector::computeCost()
 
         cost.binaryOperationInPlace(kc, [](const double &a, const double &b) { return std::max(a, b); });
 
-        if (stats != NULL) stats->endInterval("kernel" +  std::to_string(i));
+        stats->endInterval("kernel" + std::to_string(i));
     }
 
     delete_safe(fImage);
 
-    if (stats != NULL) stats->leaveContext();
+    stats->leaveContext();
 #else
     for (int i = 0; i < kernels.size(); ++i)
     {
@@ -605,16 +604,6 @@ void ChessBoardCornerDetector::circularMeanShift(std::vector<double> &values, do
     {
         modes.push_back(std::make_pair(m, smoothed[m]));
     }
-}
-
-void ChessBoardCornerDetector::setStatistics(corecvs::Statistics *stats)
-{
-    this->stats = stats;
-}
-
-corecvs::Statistics *ChessBoardCornerDetector::getStatistics()
-{
-    return stats;
 }
 
 /**
@@ -896,7 +885,7 @@ void ChessBoardCornerDetector::computeScores()
 
 void ChessBoardCornerDetector::detectCorners(DpImage &image, std::vector<OrientedCorner> &corners_)
 {
-    if (stats != NULL) stats->startInterval();
+    stats->startInterval();
 
     corners.clear();
     img = image;
@@ -906,27 +895,27 @@ void ChessBoardCornerDetector::detectCorners(DpImage &image, std::vector<Oriente
 
     scaleImage(lowPercentile, highPercentile);
 
-    if (stats != NULL) stats->resetInterval("Scaling");
+    stats->resetInterval("Scaling");
 
     prepareDiff(du, true);
-    if (stats != NULL) stats->resetInterval("U direction Diff Preparation");
+    stats->resetInterval("U direction Diff Preparation");
 
     prepareDiff(dv, false);
-    if (stats != NULL) stats->resetInterval("V direction Diff Preparation");
+    stats->resetInterval("V direction Diff Preparation");
 
     prepareAngleWeight();
-    if (stats != NULL) stats->resetInterval("Angle weight Preparation");
+    stats->resetInterval("Angle weight Preparation");
 
     computeCost();
-    if (stats != NULL) stats->resetInterval("Cost");
+    stats->resetInterval("Cost");
 
     runNms();
-    if (stats != NULL) stats->resetInterval("NMS");
+    stats->resetInterval("NMS");
 
     filterByOrientation();
     adjustCornerOrientation();
     adjustCornerPosition();
-    if (stats != NULL) stats->resetInterval("Adjusting first round");
+    stats->resetInterval("Adjusting first round");
 
     for (int i = 0; i < nRounds(); ++i)
     {
@@ -934,7 +923,7 @@ void ChessBoardCornerDetector::detectCorners(DpImage &image, std::vector<Oriente
         adjustCornerPosition();
     }
 
-    if (stats != NULL) stats->resetInterval("Adjusting next rounds");
+    stats->resetInterval("Adjusting next rounds");
 
     computeScores();
     corners_ = corners;
@@ -942,7 +931,6 @@ void ChessBoardCornerDetector::detectCorners(DpImage &image, std::vector<Oriente
 
 ChessBoardCornerDetector::ChessBoardCornerDetector(ChessBoardCornerDetectorParams params)
     : ChessBoardCornerDetectorParams(params)
-    , stats(NULL)
 {
     prepareKernels();
 }

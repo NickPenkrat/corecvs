@@ -1,5 +1,6 @@
 #include "chessBoardAssembler.h"
 #include "boardAligner.h"
+#include "calculationStats.h"
 
 #include <unordered_set>
 #include <queue>
@@ -29,11 +30,11 @@ void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, 
     corners = corners_;
     int N = (int)corners.size();
 
-    if (stats != NULL) stats->startInterval();
+    stats->startInterval();
 
     corecvs::parallelable_for(0, N, ParallelBoardExpander(this), true);
 
-    if (stats != NULL) stats->resetInterval("Board Expander");
+    stats->resetInterval("Board Expander");
 
     boards_.clear();
     std::sort(boards.begin(), boards.end(), [](const RectangularGridPattern &a, const RectangularGridPattern &b) { return a.score < b.score; });
@@ -51,7 +52,7 @@ void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, 
         boards_.emplace_back(std::move(board));
     }
 
-    if (stats != NULL) stats->resetInterval("Board Outputing");
+    stats->resetInterval("Board Outputing");
 }
 
 void ChessBoardAssembler::acceptHypothesis(RectangularGridPattern &board)
