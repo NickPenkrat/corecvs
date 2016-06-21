@@ -295,25 +295,25 @@ void CornerKernelSet::computeCost(FpImage &img, DpImage &c)
 {
     int w = img.w, h = img.h;
     c = DpImage(h, w);
+
     FpImage *pf[KERNEL_LAST];
     for (int i = 0; i < KERNEL_LAST; i++)
-        pf[i] = new FpImage(img.h, img.w, false);;
-
+    {
+        pf[i] = new FpImage(img.h, img.w, false);
+    }
 
     Convolver conv;
-
     for (int i = 0; i < KERNEL_LAST; i++)
         conv.convolve(img, fK[i], *pf[i]);
-
 
     for (int i = 0; i < h; i++)
     {
         for (int j = 0; j < w; j++)
         {
             float fA = pf[KERNEL_A]->element(i, j),
-                   fB = pf[KERNEL_B]->element(i, j),
-                   fC = pf[KERNEL_C]->element(i, j),
-                   fD = pf[KERNEL_D]->element(i, j);
+                  fB = pf[KERNEL_B]->element(i, j),
+                  fC = pf[KERNEL_C]->element(i, j),
+                  fD = pf[KERNEL_D]->element(i, j);
 
             float mu = 0.25 * (fA + fB + fC + fD);
             float a = std::min(fA - mu, fB - mu);
