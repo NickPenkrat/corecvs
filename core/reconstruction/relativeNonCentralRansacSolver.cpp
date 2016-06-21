@@ -293,6 +293,8 @@ void corecvs::RelativeNonCentralRansacSolver::writeParams(double in[])
 
 void corecvs::RelativeNonCentralRansacSolver::fit(double distanceGuess)
 {
+    if (getInliersCount() < sampleSize())
+        return;
     bestHypothesis.shift.normalise();
     bestHypothesis.shift *= distanceGuess;
     corecvs::LevenbergMarquardt lm;
