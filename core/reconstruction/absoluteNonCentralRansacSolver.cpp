@@ -41,6 +41,8 @@ void corecvs::AbsoluteNonCentralRansacSolver::Estimator::operator() (const corec
 
 void corecvs::AbsoluteNonCentralRansacSolver::runInliersRE()
 {
+    if (bestInlierCnt < Estimator::SAMPLESIZE)
+        return;
     ReprojectionError err(this);
     ReprojectionErrorNormalizer norm(this);
 
