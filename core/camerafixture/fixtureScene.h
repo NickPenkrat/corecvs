@@ -173,7 +173,7 @@ public:
     virtual void addCameraToFixture     (FixtureCamera *cam, CameraFixture *fixture);
 
     /* Some debugger helpers */
-    virtual void dumpInfo(ostream &out);
+    virtual void dumpInfo(ostream &out = std::cout);
 
 
     size_t totalObservations()
@@ -201,7 +201,7 @@ public:
 
 
     template<class VisitorType, class SceneType = FixtureScene>
-    void accept(VisitorType &visitor)
+    void accept(VisitorType &visitor, bool loadCameras = true, bool loadFixtures = true, bool loadPoints = true)
     {
         typedef typename SceneType::CameraType   RealCameraType;
         typedef typename SceneType::FixtureType  RealFixtureType;
