@@ -138,7 +138,16 @@ int main(int argc, char **argv)
 //				std::cout << o.second.cameraFixture << ":";
 				for (auto& ii: wpp)
 					if (/*ii.second.u == o.second.cameraFixture &&*/ ii.second.v == o.second.camera)
+					{
 						currP.insert(ii.first);
+						auto f1 = wpp[img.first].u, f2 = o.second.camera->cameraFixture;
+						auto c1 = wpp[img.first].v, c2 = o.second.camera;
+						auto cc1 = f1->getWorldCamera(c1), cc2 = f2->getWorldCamera(c2);
+						auto px1 = cc1.intrinsics.size / 2, px2 = cc2.intrinsics.size / 2;
+						auto r1 = cc1.rayFromPixel(px1).a, r2 = cc2.rayFromPixel(px2).a;
+						if (std::acos(r1.normalised() & r2.normalised())*180.0/M_PI > 10.0)
+							continue;
+					}
 			}
 			if (!currP.count(img.first))
 				continue;

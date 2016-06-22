@@ -101,7 +101,9 @@ std::tuple<corecvs::Matrix33, corecvs::Matrix33, corecvs::Matrix33, corecvs::Vec
 void createRectified(corecvs::CameraFixture *fl, corecvs::FixtureCamera *cL, corecvs::CameraFixture *fr, corecvs::FixtureCamera *cR, const corecvs::Matrix33 &Kn, const corecvs::Vector2dd &size)
 {
 	std::cout << "Trying to rectify " << fl->name << cL->nameId << " and " << fr->name << cR->nameId << std::endl;
-	if (std::acos(fl->rayFromPixel(cL, size/2.0).a.normalised() & fr->rayFromPixel(cR, size/2.0).a.normalised()) * 180.0 / M_PI > 15.0)
+	if (std::acos(fl->rayFromPixel(cL, size/2.0).a.normalised() & fr->rayFromPixel(cR, size/2.0).a.normalised()) * 180.0 / M_PI > 15.0 ||
+		std::abs(std::acos(std::abs(fl->rayFromPixel(cL, size/2.0).a.normalised() & (fl->location.shift-fr->location.shift).normalised())) * 180.0 / M_PI - 90.0) > 15.0 ||
+		std::abs(std::acos(std::abs(fr->rayFromPixel(cR, size/2.0).a.normalised() & (fl->location.shift-fr->location.shift).normalised())) * 180.0 / M_PI - 90.0) > 15.0)
 	{
 		std::cout << "Too big angle diff" << std::endl;
 		return;
@@ -127,7 +129,9 @@ void createRectified(corecvs::CameraFixture *fl, corecvs::FixtureCamera *cL, cor
                                 pr(&std::get<1>(rt), size[1], size[0]);
 	std::unique_ptr<corecvs::RGB24Buffer> iL(uL->doReverseDeformationBlTyped<corecvs::DisplacementBuffer>(&pl, cl.intrinsics.size[1], cl.intrinsics.size[0])),
 	                                      iR(uR->doReverseDeformationBlTyped<corecvs::DisplacementBuffer>(&pr, cr.intrinsics.size[1], cr.intrinsics.size[0]));
-
+	for (int i = 10; i < iL->h; i += 20)
+		for (int j = 0; j < iL->w; ++j)
+			iL->element(i, j) = iR->element(i, j) = corecvs::RGBColor(255, 0, 0);
     std::stringstream ssLr, ssRr;
     ssLr << fl->name << cl.nameId << fr->name << cr.nameId << "_rect_L.jpg";
     ssRr << fl->name << cl.nameId << fr->name << cr.nameId << "_rect_R.jpg";
