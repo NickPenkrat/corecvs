@@ -243,6 +243,7 @@ void CornerKernelSet::computeCost(DpImage &img, DpImage &c, bool parallelable, b
 {
     int w = img.w, h = img.h;
     c = DpImage(h, w);
+
     DpImage *pf[KERNEL_LAST];
     for (int i = 0; i < KERNEL_LAST; i++)
        pf[i] = 0;
@@ -281,7 +282,6 @@ void CornerKernelSet::computeCost(DpImage &img, DpImage &c, bool parallelable, b
             b = std::min(mu - fA, mu - fB);
             double r2 = std::min(a, b);
 
-
             c.element(i, j) = std::max(r1, r2);
         }
     }
@@ -295,34 +295,33 @@ void CornerKernelSet::computeCost(FpImage &img, DpImage &c)
 {
     int w = img.w, h = img.h;
     c = DpImage(h, w);
+
     FpImage *pf[KERNEL_LAST];
     for (int i = 0; i < KERNEL_LAST; i++)
-        pf[i] = new FpImage(img.h, img.w, false);;
-
+    {
+        pf[i] = new FpImage(img.h, img.w, false);
+    }
 
     Convolver conv;
-
     for (int i = 0; i < KERNEL_LAST; i++)
         conv.convolve(img, fK[i], *pf[i]);
-
 
     for (int i = 0; i < h; i++)
     {
         for (int j = 0; j < w; j++)
         {
             float fA = pf[KERNEL_A]->element(i, j),
-                   fB = pf[KERNEL_B]->element(i, j),
-                   fC = pf[KERNEL_C]->element(i, j),
-                   fD = pf[KERNEL_D]->element(i, j);
+                  fB = pf[KERNEL_B]->element(i, j),
+                  fC = pf[KERNEL_C]->element(i, j),
+                  fD = pf[KERNEL_D]->element(i, j);
 
-            float mu = 0.25 * (fA + fB + fC + fD);
+            float mu = 0.25f * (fA + fB + fC + fD);
             float a = std::min(fA - mu, fB - mu);
             float b = std::min(mu - fC, mu - fD);
             float r1 = std::min(a, b);
             a = std::min(fC - mu, fD - mu);
             b = std::min(mu - fA, mu - fB);
             float r2 = std::min(a, b);
-
 
             c.element(i, j) = std::max(r1, r2);
         }
@@ -433,7 +432,7 @@ void ChessBoardCornerDetector::prepareAngleWeight()
 void ChessBoardCornerDetector::scaleImage(double percLow/* = 0.05*/, double percHigh/* = 0.95*/)
 {
     std::vector<double> values;
-    values.resize(img.h * img.w);
+    values.reserve(img.h * img.w);
 
     for (int i = 0; i < img.h; ++i)
     {
