@@ -452,6 +452,7 @@ void FixtureScene::addCameraToFixture(FixtureCamera *cam, CameraFixture *fixture
     }
     cam->cameraFixture = fixture;
     fixture->cameras.push_back(cam);
+    cam->sequenceNumber = fixture->cameras.size() - 1;
 
 }
 
