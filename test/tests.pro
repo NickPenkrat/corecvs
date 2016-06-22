@@ -25,6 +25,7 @@ SUBDIRS +=       \
     qtScriptConsole     \
     softrender          \
     pmvs_generator \
+    stereo_generator
 
 
 with_opencv {
@@ -85,3 +86,5 @@ geometry_verificator                = geometry_verificator/geometry_verificator.
 pmvs_generator                      = pmvs_generator/pmvs_generator.pro
 
 qtScriptConsole                     = qtScriptConsole/qtScriptConsole.pro
+
+stereo_generator                    = stereo_generator/stereo_generator.pro
