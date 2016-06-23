@@ -8,6 +8,7 @@
 
 #include "iterativeReconstructionInitializationParamsControlWidget.h"
 #include "ui_iterativeReconstructionInitializationParamsControlWidget.h"
+#include <memory>
 #include "qSettingsGetter.h"
 #include "qSettingsSetter.h"
 
@@ -39,34 +40,21 @@ IterativeReconstructionInitializationParamsControlWidget::~IterativeReconstructi
 
 void IterativeReconstructionInitializationParamsControlWidget::loadParamWidget(WidgetLoader &loader)
 {
-    IterativeReconstructionInitializationParams *params = createParameters();
+    std::unique_ptr<IterativeReconstructionInitializationParams> params(createParameters());
     loader.loadParameters(*params, rootPath);
     setParameters(*params);
-    delete params;
 }
 
 void IterativeReconstructionInitializationParamsControlWidget::saveParamWidget(WidgetSaver  &saver)
 {
-    IterativeReconstructionInitializationParams *params = createParameters();
-    saver.saveParameters(*params, rootPath);
-    delete params;
+    saver.saveParameters(*std::unique_ptr<IterativeReconstructionInitializationParams>(createParameters()), rootPath);
 }
 
- /* Composite fields are NOT supported so far */
 void IterativeReconstructionInitializationParamsControlWidget::getParameters(IterativeReconstructionInitializationParams& params) const
 {
-
-    params.setB2bRansacP5RPThreshold(mUi->b2bRansacP5RPThresholdSpinBox->value());
-    params.setInlierP5RPThreshold(mUi->inlierP5RPThresholdSpinBox->value());
-    params.setMaxEssentialRansacIterations(mUi->maxEssentialRansacIterationsSpinBox->value());
-    params.setB2bRansacP6RPThreshold(mUi->b2bRansacP6RPThresholdSpinBox->value());
-    params.setRunEssentialFiltering(mUi->runEssentialFilteringCheckBox->isChecked());
-    params.setEssentialTargetGamma(mUi->essentialTargetGammaSpinBox->value());
-    params.setMaxP6RPIterations(mUi->maxP6RPIterationsSpinBox->value());
-    params.setInlierP6RPThreshold(mUi->inlierP6RPThresholdSpinBox->value());
-    params.setGammaP6RP        (mUi->gammaP6RPSpinBox->value());
-
+    params = *std::unique_ptr<IterativeReconstructionInitializationParams>(createParameters());
 }
+
 
 IterativeReconstructionInitializationParams *IterativeReconstructionInitializationParamsControlWidget::createParameters() const
 {
@@ -76,7 +64,7 @@ IterativeReconstructionInitializationParams *IterativeReconstructionInitializati
      **/
 
 
-    IterativeReconstructionInitializationParams *result = new IterativeReconstructionInitializationParams(
+    return new IterativeReconstructionInitializationParams(
           mUi->b2bRansacP5RPThresholdSpinBox->value()
         , mUi->inlierP5RPThresholdSpinBox->value()
         , mUi->maxEssentialRansacIterationsSpinBox->value()
@@ -87,7 +75,6 @@ IterativeReconstructionInitializationParams *IterativeReconstructionInitializati
         , mUi->inlierP6RPThresholdSpinBox->value()
         , mUi->gammaP6RPSpinBox->value()
     );
-    return result;
 }
 
 void IterativeReconstructionInitializationParamsControlWidget::setParameters(const IterativeReconstructionInitializationParams &input)

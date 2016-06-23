@@ -8,6 +8,7 @@
 
 #include "iterativeReconstructionFeatureSelectionParamsControlWidget.h"
 #include "ui_iterativeReconstructionFeatureSelectionParamsControlWidget.h"
+#include <memory>
 #include "qSettingsGetter.h"
 #include "qSettingsSetter.h"
 
@@ -38,32 +39,21 @@ IterativeReconstructionFeatureSelectionParamsControlWidget::~IterativeReconstruc
 
 void IterativeReconstructionFeatureSelectionParamsControlWidget::loadParamWidget(WidgetLoader &loader)
 {
-    IterativeReconstructionFeatureSelectionParams *params = createParameters();
+    std::unique_ptr<IterativeReconstructionFeatureSelectionParams> params(createParameters());
     loader.loadParameters(*params, rootPath);
     setParameters(*params);
-    delete params;
 }
 
 void IterativeReconstructionFeatureSelectionParamsControlWidget::saveParamWidget(WidgetSaver  &saver)
 {
-    IterativeReconstructionFeatureSelectionParams *params = createParameters();
-    saver.saveParameters(*params, rootPath);
-    delete params;
+    saver.saveParameters(*std::unique_ptr<IterativeReconstructionFeatureSelectionParams>(createParameters()), rootPath);
 }
 
- /* Composite fields are NOT supported so far */
 void IterativeReconstructionFeatureSelectionParamsControlWidget::getParameters(IterativeReconstructionFeatureSelectionParams& params) const
 {
-
-    params.setInlierThreshold  (mUi->inlierThresholdSpinBox->value());
-    params.setTrackInlierThreshold(mUi->trackInlierThresholdSpinBox->value());
-    params.setDistanceLimit    (mUi->distanceLimitSpinBox->value());
-//    params.setFeatureDetectionParams(mUi->featureDetectionParamsControlWidget->createParameters());
-    params.setRmsePruningScaler(mUi->rmsePruningScalerSpinBox->value());
-    params.setMaxPruningScaler (mUi->maxPruningScalerSpinBox->value());
-    params.setSkipFeatureDetection(mUi->skipFeatureDetectionCheckBox->isChecked());
-
+    params = *std::unique_ptr<IterativeReconstructionFeatureSelectionParams>(createParameters());
 }
+
 
 IterativeReconstructionFeatureSelectionParams *IterativeReconstructionFeatureSelectionParamsControlWidget::createParameters() const
 {
@@ -72,19 +62,16 @@ IterativeReconstructionFeatureSelectionParams *IterativeReconstructionFeatureSel
      * We should think of returning parameters by value or saving them in a preallocated place
      **/
 
-    FeatureDetectionParams *tmp3 = NULL;
 
-    IterativeReconstructionFeatureSelectionParams *result = new IterativeReconstructionFeatureSelectionParams(
+    return new IterativeReconstructionFeatureSelectionParams(
           mUi->inlierThresholdSpinBox->value()
         , mUi->trackInlierThresholdSpinBox->value()
         , mUi->distanceLimitSpinBox->value()
-        , * (tmp3 = mUi->featureDetectionParamsControlWidget->createParameters())
+        , *std::unique_ptr<FeatureDetectionParams>(mUi->featureDetectionParamsControlWidget->createParameters())
         , mUi->rmsePruningScalerSpinBox->value()
         , mUi->maxPruningScalerSpinBox->value()
         , mUi->skipFeatureDetectionCheckBox->isChecked()
     );
-    delete tmp3;
-    return result;
 }
 
 void IterativeReconstructionFeatureSelectionParamsControlWidget::setParameters(const IterativeReconstructionFeatureSelectionParams &input)

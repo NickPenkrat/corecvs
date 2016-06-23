@@ -8,6 +8,7 @@
 
 #include "lensDistortionModelParametersBaseControlWidget.h"
 #include "ui_lensDistortionModelParametersBaseControlWidget.h"
+#include <memory>
 #include "qSettingsGetter.h"
 #include "qSettingsSetter.h"
 
@@ -41,36 +42,21 @@ LensDistortionModelParametersBaseControlWidget::~LensDistortionModelParametersBa
 
 void LensDistortionModelParametersBaseControlWidget::loadParamWidget(WidgetLoader &loader)
 {
-    LensDistortionModelParametersBase *params = createParameters();
+    std::unique_ptr<LensDistortionModelParametersBase> params(createParameters());
     loader.loadParameters(*params, rootPath);
     setParameters(*params);
-    delete params;
 }
 
 void LensDistortionModelParametersBaseControlWidget::saveParamWidget(WidgetSaver  &saver)
 {
-    LensDistortionModelParametersBase *params = createParameters();
-    saver.saveParameters(*params, rootPath);
-    delete params;
+    saver.saveParameters(*std::unique_ptr<LensDistortionModelParametersBase>(createParameters()), rootPath);
 }
 
- /* Composite fields are NOT supported so far */
 void LensDistortionModelParametersBaseControlWidget::getParameters(LensDistortionModelParametersBase& params) const
 {
-
-    params.setPrincipalX       (mUi->principalXSpinBox->value());
-    params.setPrincipalY       (mUi->principalYSpinBox->value());
-    params.setTangentialX      (mUi->tangentialXSpinBox->value());
-    params.setTangentialY      (mUi->tangentialYSpinBox->value());
-    params.setKoeff            (mUi->koeff->value());
-    params.setAspect           (mUi->aspectSpinBox->value());
-    params.setScale            (mUi->scaleSpinBox->value());
-    params.setNormalizingFocal (mUi->normalizingFocalSpinBox->value());
-    params.setShiftX           (mUi->shiftXSpinBox->value());
-    params.setShiftY           (mUi->shiftYSpinBox->value());
-    params.setMapForward       (mUi->mapForwardCheckBox->isChecked());
-
+    params = *std::unique_ptr<LensDistortionModelParametersBase>(createParameters());
 }
+
 
 LensDistortionModelParametersBase *LensDistortionModelParametersBaseControlWidget::createParameters() const
 {
@@ -80,7 +66,7 @@ LensDistortionModelParametersBase *LensDistortionModelParametersBaseControlWidge
      **/
 
 
-    LensDistortionModelParametersBase *result = new LensDistortionModelParametersBase(
+    return new LensDistortionModelParametersBase(
           mUi->principalXSpinBox->value()
         , mUi->principalYSpinBox->value()
         , mUi->tangentialXSpinBox->value()
@@ -93,7 +79,6 @@ LensDistortionModelParametersBase *LensDistortionModelParametersBaseControlWidge
         , mUi->shiftYSpinBox->value()
         , mUi->mapForwardCheckBox->isChecked()
     );
-    return result;
 }
 
 void LensDistortionModelParametersBaseControlWidget::setParameters(const LensDistortionModelParametersBase &input)

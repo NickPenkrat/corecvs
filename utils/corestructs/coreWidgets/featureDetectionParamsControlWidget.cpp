@@ -8,6 +8,7 @@
 
 #include "featureDetectionParamsControlWidget.h"
 #include "ui_featureDetectionParamsControlWidget.h"
+#include <memory>
 #include "qSettingsGetter.h"
 #include "qSettingsSetter.h"
 
@@ -36,31 +37,21 @@ FeatureDetectionParamsControlWidget::~FeatureDetectionParamsControlWidget()
 
 void FeatureDetectionParamsControlWidget::loadParamWidget(WidgetLoader &loader)
 {
-    FeatureDetectionParams *params = createParameters();
+    std::unique_ptr<FeatureDetectionParams> params(createParameters());
     loader.loadParameters(*params, rootPath);
     setParameters(*params);
-    delete params;
 }
 
 void FeatureDetectionParamsControlWidget::saveParamWidget(WidgetSaver  &saver)
 {
-    FeatureDetectionParams *params = createParameters();
-    saver.saveParameters(*params, rootPath);
-    delete params;
+    saver.saveParameters(*std::unique_ptr<FeatureDetectionParams>(createParameters()), rootPath);
 }
 
- /* Composite fields are NOT supported so far */
 void FeatureDetectionParamsControlWidget::getParameters(FeatureDetectionParams& params) const
 {
-
-    params.setDetector         (mUi->detectorEdit->text().toStdString());
-    params.setDescriptor       (mUi->descriptorEdit->text().toStdString());
-    params.setMatcher          (mUi->matcherEdit->text().toStdString());
-    params.setB2bThreshold     (mUi->b2bThresholdSpinBox->value());
-    params.setMatchF2F         (mUi->matchF2FCheckBox->isChecked());
-    params.setParameters       (mUi->parametersEdit->text().toStdString());
-
+    params = *std::unique_ptr<FeatureDetectionParams>(createParameters());
 }
+
 
 FeatureDetectionParams *FeatureDetectionParamsControlWidget::createParameters() const
 {
@@ -70,7 +61,7 @@ FeatureDetectionParams *FeatureDetectionParamsControlWidget::createParameters() 
      **/
 
 
-    FeatureDetectionParams *result = new FeatureDetectionParams(
+    return new FeatureDetectionParams(
           mUi->detectorEdit->text().toStdString()
         , mUi->descriptorEdit->text().toStdString()
         , mUi->matcherEdit->text().toStdString()
@@ -78,7 +69,6 @@ FeatureDetectionParams *FeatureDetectionParamsControlWidget::createParameters() 
         , mUi->matchF2FCheckBox->isChecked()
         , mUi->parametersEdit->text().toStdString()
     );
-    return result;
 }
 
 void FeatureDetectionParamsControlWidget::setParameters(const FeatureDetectionParams &input)
