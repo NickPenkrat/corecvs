@@ -159,6 +159,7 @@ CameraFixture *FixtureScene::createCameraFixture()
     CameraFixture *fixture = fabricateCameraFixture();
     mOwnedObjects.push_back(fixture);
     fixtures.push_back(fixture);
+    fixture->sequenceNumber = fixtures.size() - 1;
     return fixture;
 }
 

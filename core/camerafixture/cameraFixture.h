@@ -27,6 +27,8 @@ public:
     Affine3DQ                    location;
     std::string                  name;
 
+    int                          sequenceNumber;
+
     CameraFixture(FixtureScene * owner = NULL) :
         FixtureScenePart(owner)
     {
