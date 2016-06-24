@@ -562,6 +562,16 @@ CameraFixture *FixtureScene::getFixtureById(FixtureScenePart::IdType id)
     return NULL;
 }
 
+SceneFeaturePoint *FixtureScene::getPointByName(const std::string &name)
+{
+    for (SceneFeaturePoint *point: points) {
+        if (point->name == name) {
+            return point;
+        }
+    }
+    return NULL;
+}
+
 
 
 FixtureScene::~FixtureScene()

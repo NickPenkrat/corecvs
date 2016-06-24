@@ -194,7 +194,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, SceneFeaturePoint fp, double scal
                 mesh.addLine(rawCam.extrinsics.position, fp.position);
             } else {
 
-}
+            }
 
             Ray3d ray = rawCam.rayFromPixel(observ.observation);
             Vector3dd p2 = ray.getPoint(scale);
