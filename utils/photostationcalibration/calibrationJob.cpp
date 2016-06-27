@@ -392,6 +392,22 @@ void CalibrationJob::allRemoveDistortion()
     corecvs::parallelable_for(0, (int)photostation.cameras.size(), ParallelDistortionRemoval(this));
 }
 
+void CalibrationJob::allRemoveDistortionForPattern()
+{
+    processState->reset("Pattern undistortion", photostation.cameras.size());
+    std::vector<std::array<size_t, 2>> idxs;
+    for (size_t i = 0; i < observations.size(); ++i)
+    {
+        for (size_t j = 0; j < observations[i].size(); ++j)
+        {
+            idxs.emplace_back(std::array<size_t, 2>({i, j}));
+        }
+    }
+
+    corecvs::parallelable_for((size_t)0,
+                              idxs.size(), ParallelBoardDetector(this, idxs, false, false), true);
+}
+
 void CalibrationJob::SaveImage(const std::string &path, corecvs::RGB24Buffer &img)
 {
     QTFileLoader().save(path, &img, 100);
