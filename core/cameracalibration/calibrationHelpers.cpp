@@ -117,11 +117,15 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const CameraFixture &ps, double s
     // std::cout << qs << std::endl;
 
     int colorId = 0;
-    for (size_t cam = 0; cam < ps.cameras.size(); cam++)
+
+    if (drawFixtureCams)
     {
-        mesh.setColor(palette[colorId]);
-        colorId = (colorId + 1) % CORE_COUNT_OF(palette);
-        drawCamera(mesh, ps.getRawCamera((int)cam), scale);
+        for (size_t cam = 0; cam < ps.cameras.size(); cam++)
+        {
+            mesh.setColor(palette[colorId]);
+            colorId = (colorId + 1) % CORE_COUNT_OF(palette);
+            drawCamera(mesh, ps.getRawCamera((int)cam), scale);
+        }
     }
 
 
