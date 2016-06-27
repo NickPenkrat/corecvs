@@ -30,7 +30,8 @@ void CalibrationHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, double
             topLeft     = Vector3dd( 0,  0,  1) * scale,
             topRight    = Vector3dd( w,  0,  1) * scale,
             bottomRight = Vector3dd( w,  h,  1) * scale,
-            bottomLeft  = Vector3dd( 0,  h,  1) * scale;
+            bottomLeft  = Vector3dd( 0,  h,  1) * scale,
+            imageCenter = Vector3dd( w / 2.0,  h / 2.0, 1) * scale;
 
     Vector3dd edges[] =
     {
@@ -43,6 +44,8 @@ void CalibrationHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, double
         topRight,    bottomRight,
         bottomRight, bottomLeft,
         bottomLeft,  topLeft,
+
+        topLeft,     imageCenter
     };
 
     const int edgenumber = CORE_COUNT_OF(edges) / 2;
