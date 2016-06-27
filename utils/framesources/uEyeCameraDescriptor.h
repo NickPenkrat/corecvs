@@ -123,7 +123,7 @@ public:
 
     int searchDefImageFormats(int suppportMask);
 
-    int init(int deviceID, bool binning, bool globalShutter = true, int pixelClock=85, double fps=50.0, bool isRgb = false);
+    int init(int deviceID, int binning, bool globalShutter = true, int pixelClock=85, double fps=50.0, bool isRgb = false);
 
     int initBuffer();   
     int waitUEyeFrameEvent(int timeout);
