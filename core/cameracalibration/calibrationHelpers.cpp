@@ -118,6 +118,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const CameraFixture &ps, double s
 
     int colorId = 0;
 
+    SYNC_PRINT(("CalibrationHelpers::drawPly\n"));
     if (drawFixtureCams)
     {
         for (size_t cam = 0; cam < ps.cameras.size(); cam++)
@@ -133,11 +134,11 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const CameraFixture &ps, double s
                        yps(  0.0, scale,   0.0),
                        zps(  0.0,   0.0, scale),
                        ori(  0.0,   0.0,   0.0);
-    mesh.currentColor = corecvs::RGBColor(255,   0,   0);
+    mesh.currentColor = corecvs::RGBColor::Red();
     mesh.addLine(ps.location * ori, ps.location * xps);
-    mesh.currentColor = corecvs::RGBColor(  0, 255,   0);
+    mesh.currentColor = corecvs::RGBColor::Green();
     mesh.addLine(ps.location * ori, ps.location * yps);
-    mesh.currentColor = corecvs::RGBColor(  0,   0, 255);
+    mesh.currentColor = corecvs::RGBColor::Blue();
     mesh.addLine(ps.location * ori, ps.location * zps);
 
     if (printNames)

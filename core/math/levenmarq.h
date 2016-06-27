@@ -71,7 +71,7 @@ public:
     vector<double> fit(const vector<double> &input, const vector<double> &output)
     {
         if (traceProgress) {
-            cout << "================== Starting LM fit ================== " << endl;
+            cout << "================== Starting LM fit (" << f->inputs << " -> " << f->outputs << ")================== " << endl;
             cout << "[" << std::flush;
         }
 
