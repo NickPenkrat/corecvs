@@ -5,7 +5,6 @@
 #include <vector>
 #include <atomic>
 
-#include "calculationStats.h"
 #include "rgb24Buffer.h"
 #include "displacementBuffer.h"
 #include "selectableGeometryFeatures.h"
@@ -17,6 +16,7 @@
 #include "calibrationPhotostation.h"
 #include "photoStationCalibrator.h"
 #include "statusTracker.h"
+#include "calculationStats.h"
 
 #ifdef  LoadImage
 # undef LoadImage
@@ -228,7 +228,13 @@ struct CalibrationJob
     std::vector<double> factors;
 
 public:
-    corecvs::Statistics stats;
+    const BaseTimeStatisticsCollector & getStatsData() const { return statsData; }
+private:
+    BaseTimeStatisticsCollector    statsData;
+#ifdef WITH_TBB
+    tbb::reader_writer_lock        lockStatsData;
+#endif
+
 };
 
 #endif // CALIBRATION_JOB_H_

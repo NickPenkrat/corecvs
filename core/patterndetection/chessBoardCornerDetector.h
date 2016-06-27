@@ -3,8 +3,6 @@
 
 #include <vector>
 
-#include "calculationStats.h"
-
 #include "generated/chessBoardCornerDetectorParamsBase.h"
 
 #include "abstractKernel.h"
@@ -14,6 +12,9 @@
 #include "reflection.h"
 #include "convolver/convolver.h"
 
+namespace corecvs {
+    class Statistics;
+}
 
 /* TODO: Time to add this file to corecvs namespace. So far just some relaxed usings */
 using corecvs::DpImage;
@@ -209,15 +210,14 @@ private:
     vector<OrientedCorner>  corners;
 
 public:
-    void setStatistics(corecvs::Statistics *stats);
-    corecvs::Statistics *getStatistics();
+    void setStatistics(corecvs::Statistics *stats)  { this->stats = stats; }
+    corecvs::Statistics *getStatistics()            { return stats; }
 
     vector<std::string> debugBuffers() const;
     RGB24Buffer *getDebugBuffer(const std::string& name) const;
 
 private:
-    corecvs::Statistics *stats;
-
+    corecvs::Statistics *stats = nullptr;
 };
 
 #endif // CHESSBOARD_CORNER_DETECTOR

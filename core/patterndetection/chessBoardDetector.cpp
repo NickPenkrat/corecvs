@@ -1,8 +1,9 @@
 #include "chessBoardDetector.h"
-
 #include "abstractPainter.h"
 #include "homographyReconstructor.h"
-#include <fstream>
+#include "calculationStats.h"
+
+#include <ostream>
 
 ChessboardDetector::ChessboardDetector(
         CheckerboardDetectionParameters params,
@@ -13,7 +14,6 @@ ChessboardDetector::ChessboardDetector(
     : CheckerboardDetectionParameters(params)
     , aligner(new BoardAligner(alignerParams))
     , detector(detectorParams)
-    , stats(NULL)
 {
     BoardAlignerParams activeAlignerParams = aligner->getAlignerParams();
 
@@ -84,70 +84,62 @@ bool ChessboardDetector::detectPattern(corecvs::RGB24Buffer &buffer)
 
 bool ChessboardDetector::detectPatternCandidates(DpImage &buffer, std::vector<BoardCornersType> &boards)
 {
-    if (stats != NULL) stats->startInterval();
+    stats->startInterval();
 
     corners.clear();
     bestPattern = RectangularGridPattern();
 
     std::string prefix;
-    if (stats != NULL) {
-        stats->enterContext("Corners ->");
-        detector.setStatistics(stats);
-    }
+    detector.setStatistics(stats->enterContext("Corners ->"));
 
     detector.detectCorners(buffer, corners);
 
-    if (stats != NULL) stats->leaveContext();
-    if (stats != NULL) stats->resetInterval("Corners");
+    stats->leaveContext();
+    stats->resetInterval("Corners");
 
-    if (stats != NULL) {
-        stats->enterContext("Assembler ->");
-        assembler.setStatistics(stats);
-    }
+    assembler.setStatistics(stats->enterContext("Assembler ->"));
 
     BoardAlignerParams activeAlignerParams = aligner->getAlignerParams();
     sharedGenerator->flushCache();
     BoardAligner aligner(activeAlignerParams, sharedGenerator);
     assembler.assembleBoards(corners, boards, &aligner, &buffer);
-    if (stats != NULL) stats->leaveContext();
 
-    if (!boards.size())
-        return false;
+    stats->leaveContext();
+    stats->resetInterval("Assemble");
 
-    if (stats != NULL) stats->resetInterval("Assemble");
-    return true;
+    return boards.size() != 0;
 }
 
 bool ChessboardDetector::detectPattern(DpImage &buffer)
 {
     BoardAlignerParams activeAlignerParams = aligner->getAlignerParams();
 
-    ChessBoardDetectorMode mode =  getMode(activeAlignerParams);
+    ChessBoardDetectorMode mode = getMode(activeAlignerParams);
     corners.clear();
     bestPattern = RectangularGridPattern();
 
-    if (stats != NULL) stats->startInterval();
-    if (stats != NULL) detector.setStatistics(stats->enterContext("Corners->"));
+    stats->startInterval();
+    detector.setStatistics(stats->enterContext("Corners->"));
 
     detector.detectCorners(buffer, corners);
 
-    if (stats != NULL) stats->leaveContext();
-    if (stats != NULL) stats->resetInterval("Corners");
+    stats->leaveContext();
+    stats->resetInterval("Corners");
 
     std::vector<std::vector<std::vector<corecvs::Vector2dd>>> boards;
 
-    if (stats != NULL) assembler.setStatistics(stats->enterContext("Assembler -> "));
+    assembler.setStatistics(stats->enterContext("Assembler -> "));
 
     sharedGenerator->flushCache();
     BoardAligner activeAligner(activeAlignerParams, sharedGenerator);
 
     assembler.assembleBoards(corners, boards, &activeAligner, &buffer);
 
+    stats->leaveContext();
+    stats->resetInterval("Assemble");
+
     if (boards.empty())
         return false;
-
-    if (stats != NULL) stats->leaveContext();
-    if (stats != NULL) stats->resetInterval("Assemble");
 
     bool /*transposed = false,*/ found = false;
 
@@ -158,10 +150,8 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
     {
         int bw = (int)b[0].size();
         int bh = (int)b.size();
-
         bool fitw = (bw == activeAlignerParams.idealWidth);
         bool fith = (bh == activeAlignerParams.idealHeight);
-
 
         if ((!checkW || fitw) && (!checkH || fith))
         {
@@ -336,19 +326,8 @@ bool ChessboardDetector::classify(DpImage &img, CirclePatternGenerator &gen, cor
         std::cout << std::endl;
     }
 
-    if (stats != NULL) stats->resetInterval("Filling result");
-
+    stats->resetInterval("Filling result");
     return true;
-}
-
-void ChessboardDetector::setStatistics(Statistics *stats)
-{
-    this->stats = stats;
-}
-
-Statistics *ChessboardDetector::getStatistics()
-{
-    return stats;
 }
 
 size_t ChessboardDetector::detectPatterns(corecvs::RGB24Buffer &buffer, std::vector<ObservationList> &patterns)

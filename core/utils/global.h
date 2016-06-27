@@ -104,6 +104,7 @@ typedef int                bool_t;                          // fast Boolean type
     do {                                                        \
         printf("Assert at %s:%d - ", __FILE__, __LINE__);       \
         printf X;                                               \
+        printf("\n");                                           \
         fflush(stdout);                                         \
         printStackTrace();                                      \
         RAISE_ASSERT(#X);                                       \

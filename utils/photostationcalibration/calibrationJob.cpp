@@ -150,8 +150,18 @@ bool CalibrationJob::detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::Sel
             , settings.boardAlignerParams
             , settings.chessBoardCornerDetectorParams
             , settings.chessBoardAssemblerParams);
+
+        Statistics stats;
         patternDetector->setStatistics(&stats);
-        patternDetector->detectPattern(buffer);
+        patternDetector->detectPattern(buffer);     // this function is not a thread-safe for the used Statistics object!
+
+#ifdef WITH_TBB
+        lockStatsData.lock();
+#endif
+            statsData.addStatistics(stats);
+#ifdef WITH_TBB
+        lockStatsData.unlock();
+#endif
     }
 
     if (features)
@@ -185,7 +195,7 @@ struct ParallelBoardDetector
                     (distorted ? psIterator.intrinsics.distortedSize : psIterator.intrinsics.size) = corecvs::Vector2dd(buffer.w, buffer.h);
                 }
                 job->detectChessBoard(buffer, distorted ? v.sourcePattern : v.undistortedPattern);
-                job->processState->checkStopThread();
+                job->processState->checkToCancel();
             }
             else
             {
@@ -195,7 +205,7 @@ struct ParallelBoardDetector
                     pc.projection = job->photostation.cameras[cam].distortion.mapBackward(pc.projection);
                     v.undistortedPattern.push_back(pc);
 
-                    job->processState->checkStopThread();
+                    job->processState->checkToCancel();
                 }
             }
         }
@@ -293,7 +303,7 @@ struct ParallelDistortionEstimator
             for (auto& v: job->observations[cam])
             {
                 sgf.addAllLinesFromObservationList(v.sourcePattern);
-                job->processState->checkStopThread();
+                job->processState->checkToCancel();
             }
 
             auto& psIterator = job->photostation.cameras[cam];
@@ -302,7 +312,7 @@ struct ParallelDistortionEstimator
             for (auto& v: job->observations[cam])
             {
                 job->computeDistortionError(v.sourcePattern, psIterator.distortion, v.distortionRmse, v.distortionMaxError);
-                job->processState->checkStopThread();
+                job->processState->checkToCancel();
             }
         }
     }
@@ -325,6 +335,8 @@ void CalibrationJob::prepareUndistortionTransformation(int camId, corecvs::Displ
 {
     auto& cam = photostation.cameras[camId];
     cam.estimateUndistortedSize(settings.distortionApplicationParameters);
+
+    processState->checkToCancel();
 
     int newW = (int)cam.intrinsics.size[0];
     int newH = (int)cam.intrinsics.size[1];
@@ -363,13 +375,13 @@ struct ParallelDistortionRemoval
             corecvs::DisplacementBuffer transform;
             job->prepareUndistortionTransformation(camId, transform);
 
-            job->processState->checkStopThread();
+            job->processState->checkToCancel();
 
             corecvs::parallelable_for(0, (int)observationsIterator.size(), [&](const corecvs::BlockedRange<int> &r)
                 {
                     for (int i = r.begin(); i != r.end(); ++i)
                     {
-                        job->processState->checkStopThread();
+                        job->processState->checkToCancel();
 
                         auto &ob = observationsIterator[i];
                         corecvs::RGB24Buffer source = job->LoadImage(ob.sourceFileName), dst;
@@ -478,7 +490,7 @@ struct ParallelSingleCalibrator
     {
         for (int cameraId = r.begin(); cameraId < r.end(); ++cameraId)
         {
-            job->processState->checkStopThread();
+            job->processState->checkToCancel();
             job->calibrateSingleCamera(cameraId);
         }
     }
