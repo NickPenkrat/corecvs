@@ -136,11 +136,9 @@ struct PointFunctor: corecvs::FunctionArgs
                 return jacobianReprojection(in);
             case ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType::RAY_DIFF:
                 return jacobianRayDiff(in);
-            default:
-                CORE_ASSERT_TRUE_S(false);
-                return corecvs::Matrix(-1, -1);
-                break;
         }
+        CORE_ASSERT_TRUE_S(false);
+        return corecvs::Matrix(-1, -1);
     }
     corecvs::SceneFeaturePoint* pt;
     ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType errType;
@@ -575,9 +573,21 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::getNativeJacobian(const do
     }
 }
 
+corecvs::Matrix44 corecvs::ReconstructionFunctor::RayDiffJ(double ux, double uy, double uz)
+{
+    auto ux2 = ux*ux, uy2 = uy * uy, uz2 = uz * uz,
+            uxuy= ux*uy, uxuz= ux * uz, uyuz= uy * uz;
+    auto N = ux2 + uy2 + uz2;
+    auto N2 = std::sqrt(N);
+    auto N32 = N * N2, N21 = 1.0 / N2;
+    return corecvs::Matrix44   (-ux2/N32+N21,    -uxuy/N32,    -uxuz/N32, 0.0,
+                                    -uxuy/N32, -uy2/N32+N21,    -uyuz/N32, 0.0,
+                                   -uxuz/N32,    -uyuz/N32, -uz2/N32+N21, 0.0,
+                                         0.0,          0.0,          0.0, 0.0);
+}
+
 corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianRayDiff(const double* in)
 {
-    std::vector<double> values;
 #if 0
     auto U = ..., V = ...;
     double x = U[0], y = U[1], z = U[2];
@@ -604,6 +614,233 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianRayDiff(const doub
                        ErrCy(    -cxmu*cxmv/f3/Ns, Ns*(f2+cxmu2)/f3/N2,          cxmv/f2/Ns3, 1.0);
 
 #endif
+    readParams(in);
+    const corecvs::Matrix44
+            FTx(0.0, 0.0, 0.0,-1.0,
+                0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0),
+            FTy(0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0,-1.0,
+                0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0),
+            FTz(0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0,-1.0,
+                0.0, 0.0, 0.0, 0.0);
+    std::vector<double> values(sparseCol.size());
+    int nIn = getInputNum(), nOut = getOutputNum(),
+        lastProjection = (int)revDependency.size(),
+        nErr = getErrorComponentsPerPoint();
+    bool exc = excessiveQuaternionParametrization;
+    const int rotationParams = exc ? INPUTS_PER_ORIENTATION_EXC : INPUTS_PER_ORIENTATION_NEX;
+    corecvs::parallelable_for(0, lastProjection / nErr, [&](const corecvs::BlockedRange<int> &r){
+    for (int ii= r.begin(); ii< r.end(); ++ii)
+    {
+        int i = ii * nErr;
+        auto& list = sparseDependency[i];
+#if 0
+        if (list.f != DependencyList::UNUSED)
+            std::cout << "!|!|";
+        else
+            std::cout << "-|-|";
+#endif
+        if (i < lastProjection)
+        {
+            /*
+             * Here we prepare some useful things:
+             * Rc, Rp, diffs, Ts, intrinsics
+             */
+#define IFUSED(p, N, A) \
+            if (list.p != DependencyList::UNUSED) \
+            { \
+                for (int ii = 0; ii < N; ++ii) \
+                    CORE_ASSERT_TRUE_S(list[&list.p - list.begin() + ii] != DependencyList::UNUSED); \
+                A \
+            }
+#define SPARSE(p, ii) \
+            values[sparseDependency[i + ii].p]
+#define SPARSEV(p, v) \
+            {SPARSE(p, 0) = v[0]; \
+            SPARSE(p, 1) = v[1]; \
+            SPARSE(p, 2) = v[2];}
+#define SPARSEU(p) \
+            {SPARSEV(p, dud ## p)}
+            auto& o = *revDependency[i];
+            auto pt = o.featurePoint;
+
+            auto
+                f  = o.camera->intrinsics.focal[0],
+                cx = o.camera->intrinsics.principal[0],
+                cy = o.camera->intrinsics.principal[1],
+                cqx= o.camera->extrinsics.orientation[0],
+                cqy= o.camera->extrinsics.orientation[1],
+                cqz= o.camera->extrinsics.orientation[2],
+                cqw= o.camera->extrinsics.orientation[3],
+                ctx= o.camera->extrinsics.position[0],
+                cty= o.camera->extrinsics.position[1],
+                ctz= o.camera->extrinsics.position[2],
+                fqx= o.cameraFixture->location.rotor[0],
+                fqy= o.cameraFixture->location.rotor[1],
+                fqz= o.cameraFixture->location.rotor[2],
+                fqw= o.cameraFixture->location.rotor[3],
+                ftx= o.cameraFixture->location.shift[0],
+                fty= o.cameraFixture->location.shift[1],
+                ftz= o.cameraFixture->location.shift[2],
+                x  = pt->reprojectedPosition[0],
+                y  = pt->reprojectedPosition[1],
+                z  = pt->reprojectedPosition[2];
+
+
+            corecvs::Matrix44
+                K(  f, 0.0,  cx, 0.0,
+                  0.0,   f,  cy, 0.0,
+                  0.0, 0.0, 1.0, 0.0,
+                  0.0, 0.0, 0.0, 0.0),
+                Ki(1.0/f,   0.0, -cx/f, 0.0,
+                     0.0, 1.0/f, -cy/f, 0.0,
+                     0.0,   0.0,   1.0, 0.0,
+                     0.0,   0.0,   0.0, 0.0),
+                CT = Rotation(cqx, cqy, cqz, cqw, QuaternionParametrization::FULL, false)*Translation(-ctx, -cty, -ctz),
+                FR = Rotation(fqx, fqy, fqz, fqw, QuaternionParametrization::FULL, true),
+                FT = Translation(-ftx, -fty, -ftz),
+                FR0(1.0, 0.0, 0.0, 0.0,
+                    0.0, 1.0, 0.0, 0.0,
+                    0.0, 0.0, 1.0, 0.0,
+                    0.0, 0.0, 0.0, 1.0);
+
+            auto X3d = pt->reprojectedPosition;
+            corecvs::Vector4dd X(X3d[0], X3d[1], X3d[2], 1.0);
+
+            IFUSED(qx, rotationParams,
+                    fqx = in[denseDependency[i].qx];
+                    fqy = in[denseDependency[i].qy];
+                    fqz = in[denseDependency[i].qz];
+                    if (exc)
+                        fqw = in[denseDependency[i].qw];
+                    else
+                    {
+                        fqw = 1e100;
+                        int id = 0;
+                        for (; orientableFixtures[id] != o.cameraFixture; ++id);
+                        CORE_ASSERT_TRUE_S(id < orientableFixtures.size());
+                        FR0 = corecvs::Matrix44(originalOrientations[id].conjugated().toMatrix());
+                    }
+                    FR = Rotation(fqx, fqy, fqz, fqw, exc ? QuaternionParametrization::FULL_NORMALIZED : QuaternionParametrization::NON_EXCESSIVE, true);
+                  )
+            auto FR0FRFT = FR0*FR*FT;
+            auto FR0FRFT_r = (corecvs::Matrix44)o.cameraFixture->location.inverted();
+            CORE_ASSERT_TRUE_S((FR0FRFT-FR0FRFT_r).frobeniusNorm() < 1e-8);
+            auto
+                FTX     =                     FT * X,
+                FRFTX   =                   FR * FTX,
+                CTFR0FRFTX =     CT * FR0 * FRFTX,
+                KCTFR0FRFTX= K * CTFR0FRFTX;
+
+            auto ux = KCTFR0FRFTX[0], uy = KCTFR0FRFTX[1], uz = KCTFR0FRFTX[2];
+            auto E = RayDiffJ(ux, uy, uz);
+            auto vx = o.observation[0], vy = o.observation[1], vz = 1.0;
+            auto V = corecvs::Vector4dd(vx, vy, vz, 1.0);
+            auto Vi = Ki * V;
+            auto E2= RayDiffJ(Vi[0], Vi[1], Vi[2]);
+
+            auto EK         = E * K,
+                 EKCTFR0    =    EK * CT * FR0,
+                 EKCTFR0FR  =          EKCTFR0 * FR,
+                 EKCTFR0FRFT=             EKCTFR0FR * FT;
+
+
+            IFUSED(f, INPUTS_PER_FOCAL,
+                // df
+                double f2 = f*f;
+                double f21 = 1.0/(f*f);
+                corecvs::Matrix44 Kf(1.0, 0.0, 0.0, 0.0,
+                                     0.0, 1.0, 0.0, 0.0,
+                                     0.0, 0.0, 0.0, 0.0,
+                                     0.0, 0.0, 0.0, 0.0);
+                corecvs::Matrix44 Kif(-f21,  0.0, cx / f2, 0.0,
+                                         0.0, -f21, cy / f2, 0.0,
+                                        0.0,  0.0,     0.0, 0.0,
+                                        0.0,  0.0,     0.0, 0.0);
+                auto dudf = E * (Kf * CTFR0FRFTX) - E2 * (Kif * V);
+                SPARSEU(f)
+            )
+            IFUSED(cx, INPUTS_PER_PRINCIPAL,
+                // cx, cy
+                corecvs::Matrix44 Kcx(0.0, 0.0, 1.0, 0.0,
+                                      0.0, 0.0, 0.0, 0.0,
+                                      0.0, 0.0, 0.0, 0.0,
+                                      0.0, 0.0, 0.0, 0.0);
+                corecvs::Matrix44 Kicx(0.0, 0.0, -1.0/f, 0.0,
+                                        0.0, 0.0,    0.0, 0.0,
+                                        0.0, 0.0,    0.0, 0.0,
+                                        0.0, 0.0,    0.0, 0.0);
+                auto dudcx = E * (Kcx * CTFR0FRFTX) - E2 * (Kicx * V);
+                corecvs::Matrix44 Kcy(0.0, 0.0, 0.0, 0.0,
+                                      0.0, 0.0, 1.0, 0.0,
+                                      0.0, 0.0, 0.0, 0.0,
+                                      0.0, 0.0, 0.0, 0.0);
+                corecvs::Matrix44 Kicy(0.0, 0.0,    0.0, 0.0,
+                                         0.0, 0.0, -1.0/f, 0.0,
+                                        0.0, 0.0,    0.0, 0.0,
+                                        0.0, 0.0,    0.0, 0.0);
+                auto dudcy = E * (Kcy * CTFR0FRFTX) - E2 * (Kicy * V);
+                SPARSEU(cx)
+                SPARSEU(cy)
+            )
+
+            corecvs::Matrix44 FRdX, FRdY, FRdZ, FRdW;
+            IFUSED(qx, rotationParams,
+                // qx, qy, qz, qw
+                QuaternionDiff(fqx, fqy, fqz, fqw, exc ? QuaternionParametrization::FULL_NORMALIZED : QuaternionParametrization::NON_EXCESSIVE, true, FRdX, FRdY, FRdZ, FRdW);
+                auto dudqx = EKCTFR0 * (FRdX * FTX);
+                auto dudqy = EKCTFR0 * (FRdY * FTX);
+                auto dudqz = EKCTFR0 * (FRdZ * FTX);
+                auto dudqw = EKCTFR0 * (FRdW * FTX);
+                SPARSEU(qx)
+                SPARSEU(qy)
+                SPARSEU(qz)
+                if (exc)
+                {
+                    SPARSEU(qw)
+                }
+            )
+            IFUSED(tx, INPUTS_PER_TRANSLATION,
+                // tx, ty, tz
+                auto dudtx = EKCTFR0FR*(FTx*X);
+                auto dudty = EKCTFR0FR*(FTy*X);
+                auto dudtz = EKCTFR0FR*(FTz*X);
+                SPARSEU(tx)
+                SPARSEU(ty)
+                SPARSEU(tz)
+            )
+            IFUSED(x, INPUTS_PER_3D_POINT,
+                // x, y, z
+                corecvs::Vector4dd Xdx(1.0, 0.0, 0.0, 0.0);
+                corecvs::Vector4dd Xdy(0.0, 1.0, 0.0, 0.0);
+                corecvs::Vector4dd Xdz(0.0, 0.0, 1.0, 0.0);
+                auto dudx = EKCTFR0FRFT * Xdx;
+                auto dudy = EKCTFR0FRFT * Xdy;
+                auto dudz = EKCTFR0FRFT * Xdz;
+                SPARSEU(x)
+                SPARSEU(y)
+                SPARSEU(z)
+            )
+        }
+    }
+    });
+        for (int i = lastProjection; i < nOut;)
+        {
+            auto& list = sparseDependency[i];
+            IFUSED(tx, 3,
+                auto fixture = positionConstrainedCameras[(i - lastProjection) / OUTPUTS_PER_POSITION_CONSTRAINT];
+                auto covariation = scene->initializationData[fixture].positioningAccuracy * scalerPosition;
+                for (int ii = 0; ii < 3; ++ii)
+                    for (int jj = 0; jj < 3; ++jj)
+                        values[(&sparseDependency[i + ii].tx)[jj]] = covariation.a(ii, jj);
+            )
+            i += OUTPUTS_PER_POSITION_CONSTRAINT;
+        }
     return SparseMatrix(getOutputNum(), getInputNum(), values, sparseCol, sparseRowptr);
 }
 
@@ -841,8 +1078,11 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection(const
                 SPARSEU(z)
             )
         }
-        else
+    }
+    });
+        for (int i = lastProjection; i < nOut;)
         {
+            auto& list = sparseDependency[i];
             IFUSED(tx, 3,
                 auto fixture = positionConstrainedCameras[(i - lastProjection) / OUTPUTS_PER_POSITION_CONSTRAINT];
                 auto covariation = scene->initializationData[fixture].positioningAccuracy * scalerPosition;
@@ -852,8 +1092,6 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection(const
             )
             i += OUTPUTS_PER_POSITION_CONSTRAINT;
         }
-    }
-    });
     std::cout << std::endl;
 #if 0
     // Raydiff jacobian:

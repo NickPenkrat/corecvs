@@ -88,6 +88,7 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
     static void QuaternionDiff(double qx, double qy, double qz, double qw, QuaternionParametrization p, bool inverse, corecvs::Matrix44 &Rqx, corecvs::Matrix44 &Rqy, corecvs::Matrix44 &Rqz, corecvs::Matrix44 &Rqw);
     static corecvs::Matrix44 Rotation(double qx, double qy, double qz, double qw, QuaternionParametrization p, bool inverse);
     static corecvs::Matrix44 Translation(double tx, double ty, double tz);
+    static corecvs::Matrix44 RayDiffJ(double ux, double uy, double uz);
 
     void readParams(const double *params);
     void writeParams(double *params);
