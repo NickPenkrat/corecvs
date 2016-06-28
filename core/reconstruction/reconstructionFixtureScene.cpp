@@ -243,6 +243,7 @@ std::vector<uint32_t> ReconstructionFixtureScene::GenerateBitmasks(int N, int M)
 
 void ReconstructionFixtureScene::pruneTracks(double rmse, double maxe, double distanceThreshold)
 {
+    validateAll();
     int id = 0;
     std::vector<SceneFeaturePoint*> deleteSet;
     int completelyPruned = 0, observationsPruned = 0, totalObservations = 0;
@@ -295,6 +296,7 @@ void ReconstructionFixtureScene::pruneTracks(double rmse, double maxe, double di
     trackedFeatures.resize(id);
     std::cout << "Completely pruned " << completelyPruned << " (" << ratio << "%) tracks;" << std::endl
               << "Pruned " << observationsPruned << " (" << ratioO << "%) observations" << std::endl;
+    validateAll();
 }
 
 void ReconstructionFixtureScene::deleteCamera(FixtureCamera *camera)
@@ -689,7 +691,7 @@ void ParallelTrackPainter::operator() (const corecvs::BlockedRange<int> &r) cons
             corecvs::RGB24Buffer dst(newH, newW);
             AbstractPainter<RGB24Buffer> painter(&dst);
 
-			//TODO: optimize speed to don't form the not needed image
+            //TODO: optimize speed to don't form the not needed image
             for (int y = 0; y < srcA.h; ++y)
                 for (int x = 0; x < srcA.w; ++x)
                     dst.element(y, x) = srcA.element(y, x);
@@ -716,8 +718,8 @@ void ParallelTrackPainter::operator() (const corecvs::BlockedRange<int> &r) cons
                 painter.drawCircle(obsA->observation[0]    , obsA->observation[1]       , 3, color);
                 painter.drawFormat(obsB->observation[0] + 5, obsB->observation[1] + offH, color, 1,  tf->name.c_str());
                 painter.drawCircle(obsB->observation[0]    , obsB->observation[1] + offH, 3, color);
-                dst	   .drawLine  (obsB->observation[0]    , obsB->observation[1] + offH
-								 , obsA->observation[0]	   , obsA->observation[1], color);
+                dst    .drawLine  (obsB->observation[0]    , obsB->observation[1] + offH
+                                 , obsA->observation[0]           , obsA->observation[1],    color);
                 painted = true;
             }
             if (!painted)
@@ -925,6 +927,7 @@ std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> corecvs
 
 void corecvs::ReconstructionFixtureScene::appendTracks(CameraFixture *ps, double trackInlierThreshold, double distanceLimit)
 {
+    validateAll();
     auto candidates = getFixtureMatchesIdx(placedFixtures, ps);
     std::cout << "AP-CAND: " << candidates.size() << std::endl;
     // Now rebuild in order to select only the best appendable for every kp in ps
@@ -1056,6 +1059,7 @@ void corecvs::ReconstructionFixtureScene::appendTracks(CameraFixture *ps, double
                     if (pp.second == prev)
                         trackMap[o.first][pp.first] = compound;
                 compound->observations__[o.first] = o.second;
+                compound->observations__[o.first].featurePoint = compound;
             }
             trackedFeatures.erase(std::remove(trackedFeatures.begin(), trackedFeatures.end(), best), trackedFeatures.end());
             pss.erase(std::remove(pss.begin(), pss.end(), best), pss.end());
@@ -1063,7 +1067,8 @@ void corecvs::ReconstructionFixtureScene::appendTracks(CameraFixture *ps, double
         ++app;
     }
     std::cout << "TA: (" << ps->name << ")"  << cnt << " / " << app << std::endl;
-	std::cout << "TA: appended: " << appended << ", merged: " << merged << std::endl;
+    std::cout << "TA: appended: " << appended << ", merged: " << merged << std::endl;
+    validateAll();
 }
 
 std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd, double>>

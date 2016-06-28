@@ -287,6 +287,7 @@ void corecvs::PhotostationPlacer::fit(int num)
 
 void corecvs::PhotostationPlacer::fit(const ReconstructionFunctorOptimizationType &params, int iterations, int optimizeLast)
 {
+    scene->validateAll();
     if (scene->placedFixtures.size() < 2)
         return;
     if (optimizeLast <= 0)
@@ -314,6 +315,7 @@ void corecvs::PhotostationPlacer::fit(const ReconstructionFunctorOptimizationTyp
     orient.writeParams(&input[0]);
     auto res = lm.fit(input, out);
     orient.readParams(&res[0]);
+    scene->validateAll();
 
     getErrorSummaryAll();
     static int cnt = 0;
