@@ -457,6 +457,22 @@ void FixtureScene::addCameraToFixture(FixtureCamera *cam, CameraFixture *fixture
 
 }
 
+int FixtureScene::getObeservationNumber(CameraFixture *station)
+{
+    int count = 0;
+    for(size_t i = 0; i < points.size(); i++)
+    {
+        SceneFeaturePoint *point = points[i];
+        for (auto it = point->observations.begin(); it != point->observations.end(); ++it)
+        {
+            FixtureCamera *cam = it->first;
+            if (cam->cameraFixture == station)
+
+        }
+    }
+    return count;
+}
+
 void FixtureScene::dumpInfo(ostream &out)
 {
     out << "FixtureScene::dumpInfo():" << endl;

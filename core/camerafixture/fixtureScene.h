@@ -172,6 +172,11 @@ public:
     virtual void positionCameraInFixture(CameraFixture *station, FixtureCamera *camera, const Affine3DQ &location);
     virtual void addCameraToFixture     (FixtureCamera *cam, CameraFixture *fixture);
 
+    /**/
+    virtual int getObeservationNumber(CameraFixture *station);
+    virtual int getObeservationNumber(FixtureCamera *cam);
+
+
     /* Some debugger helpers */
     virtual void dumpInfo(ostream &out = std::cout);
 
