@@ -208,6 +208,11 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, SceneFeaturePoint fp, double scal
             Vector3dd p2 = ray.getPoint(scale);
             mesh.addLine(ray.p, p2);
 
+            Ray3d rayDir(rawCam.extrinsics.position, observ.observDir);
+            Vector3dd p3 = rayDir.getPoint(scale);
+            mesh.addLine(rayDir.p, p3);
+
+
             if (!largePoints) {
                 mesh.addPoint(p2);
             } else {

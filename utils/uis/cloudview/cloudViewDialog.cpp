@@ -454,8 +454,27 @@ void CloudViewDialog::childMoveEvent(QMouseEvent *event)
         double xs = (event->x() - mTrack.x()) / 500.0;
         double ys = (event->y() - mTrack.y()) / 500.0;
 
+
         mCamera = Matrix33::RotationY( xs) * mCamera;
         mCamera = Matrix33::RotationX(-ys) * mCamera;
+#if 0
+        switch (mUi.cameraTypeBox->currentIndex())
+        {
+            case ORTHO_TOP:
+            case ORTHO_LEFT:
+            case ORTHO_FRONT:
+                    mCamera = Matrix33::RotationY(-xs) * mCamera;
+                    mCamera = Matrix33::RotationX(-ys) * mCamera;
+               break;
+            default:
+            case PINHOLE_AT_0:
+            case LEFT_CAMERA:
+            case RIGHT_CAMERA:
+
+               break;
+        }
+#endif
+
     }
 
     if (buttons & Qt::MidButton)
@@ -470,6 +489,7 @@ void CloudViewDialog::childMoveEvent(QMouseEvent *event)
             case ORTHO_TOP:
             case ORTHO_LEFT:
             case ORTHO_FRONT:
+               shift.x() = -shift.x();
                shift *= (1.0 / mCameraZoom);
                break;
             default:
