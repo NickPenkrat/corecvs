@@ -173,7 +173,7 @@ public:
     virtual void addCameraToFixture     (FixtureCamera *cam, CameraFixture *fixture);
 
     /**/
-    virtual int getObeservationNumber(CameraFixture *station);
+    virtual int getObeservationNumber(CameraFixture *fixture);
     virtual int getObeservationNumber(FixtureCamera *cam);
 
 

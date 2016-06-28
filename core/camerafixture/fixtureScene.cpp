@@ -457,7 +457,7 @@ void FixtureScene::addCameraToFixture(FixtureCamera *cam, CameraFixture *fixture
 
 }
 
-int FixtureScene::getObeservationNumber(CameraFixture *station)
+int FixtureScene::getObeservationNumber(CameraFixture *fixture)
 {
     int count = 0;
     for(size_t i = 0; i < points.size(); i++)
@@ -466,9 +466,21 @@ int FixtureScene::getObeservationNumber(CameraFixture *station)
         for (auto it = point->observations.begin(); it != point->observations.end(); ++it)
         {
             FixtureCamera *cam = it->first;
-            if (cam->cameraFixture == station)
-
+            if (cam->cameraFixture == fixture)
+                 count++;
         }
+    }
+    return count;
+}
+
+int FixtureScene::getObeservationNumber(FixtureCamera *cam)
+{
+    int count = 0;
+    for(size_t i = 0; i < points.size(); i++)
+    {
+        SceneFeaturePoint *point = points[i];
+        if (point->observations.find( cam ) != point->observations.end())
+            count++;
     }
     return count;
 }
