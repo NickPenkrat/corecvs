@@ -45,6 +45,7 @@ public:
         B2BTHRESHOLD_ID,
         MATCHF2F_ID,
         PARAMETERS_ID,
+        PLOTTRACKS_ID,
         FEATURE_DETECTION_PARAMS_FIELD_ID_NUM
     };
 
@@ -86,6 +87,12 @@ public:
      */
     std::string mParameters;
 
+    /** 
+     * \brief plotTracks 
+     * Draw tracks on source images 
+     */
+    bool mPlotTracks;
+
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
 
@@ -124,6 +131,11 @@ public:
         return mParameters;
     }
 
+    bool plotTracks() const
+    {
+        return mPlotTracks;
+    }
+
     /* Section with setters */
     void setDetector(std::string detector)
     {
@@ -155,6 +167,11 @@ public:
         mParameters = parameters;
     }
 
+    void setPlotTracks(bool plotTracks)
+    {
+        mPlotTracks = plotTracks;
+    }
+
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
@@ -166,6 +183,7 @@ template<class VisitorType>
         visitor.visit(mB2bThreshold,              static_cast<const DoubleField *>  (fields()[B2BTHRESHOLD_ID]));
         visitor.visit(mMatchF2F,                  static_cast<const BoolField *>    (fields()[MATCHF2F_ID]));
         visitor.visit(mParameters,                static_cast<const StringField *>  (fields()[PARAMETERS_ID]));
+        visitor.visit(mPlotTracks,                static_cast<const BoolField *>    (fields()[PLOTTRACKS_ID]));
     }
 
     FeatureDetectionParams()
@@ -181,6 +199,7 @@ template<class VisitorType>
         , double b2bThreshold
         , bool matchF2F
         , std::string parameters
+        , bool plotTracks
     )
     {
         mDetector = detector;
@@ -189,6 +208,7 @@ template<class VisitorType>
         mB2bThreshold = b2bThreshold;
         mMatchF2F = matchF2F;
         mParameters = parameters;
+        mPlotTracks = plotTracks;
     }
 
     friend ostream& operator << (ostream &out, FeatureDetectionParams &toSave)

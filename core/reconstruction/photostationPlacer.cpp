@@ -36,6 +36,8 @@ std::string toString(ReconstructionFunctorOptimizationErrorType::ReconstructionF
 
 void corecvs::PhotostationPlacer::paintTracksOnImages(bool pairs)
 {
+    if (!featureDetectionParams().plotTracks())
+        return;
     std::mt19937 rng;
     std::uniform_real_distribution<double> runif(0, 360.0);
     std::unordered_map<SceneFeaturePoint*, RGBColor> colorizer;

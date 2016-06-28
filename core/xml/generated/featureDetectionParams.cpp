@@ -106,6 +106,17 @@ int FeatureDetectionParams::staticInit()
           "Additional parameters"
         )
     );
+    fields().push_back(
+        new BoolField
+        (
+          FeatureDetectionParams::PLOTTRACKS_ID,
+          offsetof(FeatureDetectionParams, mPlotTracks),
+          false,
+          "plotTracks",
+          "plotTracks",
+          "Draw tracks on source images"
+        )
+    );
    return 0;
 }
 

@@ -134,7 +134,24 @@
        </property>
      </widget>
     </item>
-   <item row="6" column="0">
+    <item row="6" column="0">
+     <widget class="QLabel" name="label_6">
+       <property name="text">
+         <string>plotTracks</string>
+       </property>
+     </widget>
+    </item>
+    <item row="6" column="1">
+     <widget class="QCheckBox" name="plotTracksCheckBox">
+       <property name="toolTip">
+         <string>Draw tracks on source images</string>
+       </property>
+       <property name="checked">
+           <bool>0</bool>
+       </property>
+     </widget>
+    </item>
+   <item row="7" column="0">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -147,7 +164,7 @@
      </property>
     </spacer>
    </item>
-   <item row="6" column="2">
+   <item row="7" column="2">
     <spacer name="horizontalSpacer">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -198,6 +215,12 @@
   <connection>
    <sender>parametersEdit</sender>
    <signal>textChanged(QString)</signal>
+   <receiver>FeatureDetectionParamsControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>plotTracksCheckBox</sender>
+   <signal>stateChanged(int)</signal>
    <receiver>FeatureDetectionParamsControlWidget</receiver>
    <slot>changeParameters()</slot>
   </connection>
