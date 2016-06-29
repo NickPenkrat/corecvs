@@ -114,6 +114,9 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const Photostation &ps, double sc
 
 void CalibrationHelpers::drawPly(Mesh3D &mesh, const CameraFixture &ps, double scale)
 {
+//    SYNC_PRINT(("CalibrationHelpers::drawPly():called\n"));
+
+
     // Colorblind-safe palette
     // CameraLocationData loc = ps.getLocation();
     // Quaternion qs = loc.orientation.conjugated();
@@ -121,7 +124,6 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const CameraFixture &ps, double s
 
     int colorId = 0;
 
-    SYNC_PRINT(("CalibrationHelpers::drawPly\n"));
     if (drawFixtureCams)
     {
         for (size_t cam = 0; cam < ps.cameras.size(); cam++)
@@ -208,9 +210,9 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, SceneFeaturePoint fp, double scal
             Vector3dd p2 = ray.getPoint(scale);
             mesh.addLine(ray.p, p2);
 
-            Ray3d rayDir(rawCam.extrinsics.position, observ.observDir);
+            /*Ray3d rayDir(rawCam.extrinsics.position, observ.observDir);
             Vector3dd p3 = rayDir.getPoint(scale);
-            mesh.addLine(rayDir.p, p3);
+            mesh.addLine(rayDir.p, p3);*/
 
 
             if (!largePoints) {

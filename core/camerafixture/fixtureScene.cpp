@@ -427,6 +427,71 @@ bool FixtureScene::integrityRelink()
     return true;
 }
 
+void FixtureScene::merge(FixtureScene *other)
+{
+    int oldOrphanNumber = orphanCameras.size();
+
+    for(size_t i = 0; i < other->orphanCameras.size(); i++)
+    {
+        FixtureCamera *cam = createCamera();
+        *static_cast<CameraModel *>(cam) = *(other->orphanCameras[i]);
+    }
+
+
+    int oldFixtureNumber = fixtures.size();
+
+    for(size_t i = 0; i < other->fixtures.size(); i++)
+    {
+        CameraFixture *otherFixture = other->fixtures[i];
+        CameraFixture *newFixture = createCameraFixture();
+
+        newFixture->location = otherFixture->location;
+        newFixture->name     = otherFixture->name;
+
+        for(size_t j = 0; j < otherFixture->cameras.size(); j++)
+        {
+            FixtureCamera *cam = createCamera();
+            *static_cast<CameraModel *>(cam) = *(otherFixture->cameras[i]);
+            addCameraToFixture(cam, newFixture);
+        }
+    }
+
+    for(size_t i = 0; i < other->points.size(); i++)
+    {
+        SceneFeaturePoint *otherPoint = other->points[i];
+        SceneFeaturePoint *newPoint = createFeaturePoint();
+
+        /*This need to be moved in point itself*/
+
+        newPoint->name                        = otherPoint->name;
+        newPoint->position                    = otherPoint->position;
+        newPoint->hasKnownPosition            = otherPoint->hasKnownPosition;
+        newPoint->accuracy                    = otherPoint->accuracy;
+        newPoint->reprojectedPosition         = otherPoint->reprojectedPosition;
+        newPoint->hasKnownReprojectedPosition = otherPoint->hasKnownReprojectedPosition;
+        newPoint->type                        = otherPoint->type;
+
+        for (auto it = otherPoint->observations.begin(); it != otherPoint->observations.end(); ++it)
+        {
+            FixtureCamera *otherCam = it->first;
+            CameraFixture *otherFixture = otherCam->cameraFixture;
+            SceneObservation &otherObserv = it->second;
+
+            CameraFixture *thisFixture = fixtures[oldFixtureNumber + otherFixture->sequenceNumber];
+            FixtureCamera *thisCam     = thisFixture->cameras[otherCam->sequenceNumber];
+
+            /*This need to be moved in Observation itself*/
+            SceneObservation newObserv = otherObserv;
+            newObserv.featurePoint = newPoint;
+            newObserv.camera = thisCam;
+            newObserv.cameraFixture = thisFixture;
+
+            newPoint->observations.insert(std::pair<FixtureCamera *, SceneObservation>(thisCam, newObserv));
+        }
+    }
+
+}
+
 
 
 

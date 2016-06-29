@@ -169,6 +169,13 @@ public:
      **/
     virtual bool integrityRelink();
 
+    /**
+     *  ATTENTION! METHOD COULD BE UNFINISHED
+     *  This method merges another FixtureScene in this one with deep copy. This could also be used to clone.
+     *  So far fixtures are not merged.
+     **/
+    virtual void merge(FixtureScene *other);
+
     virtual void positionCameraInFixture(CameraFixture *station, FixtureCamera *camera, const Affine3DQ &location);
     virtual void addCameraToFixture     (FixtureCamera *cam, CameraFixture *fixture);
 
