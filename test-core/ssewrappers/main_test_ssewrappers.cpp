@@ -597,3 +597,16 @@ TEST(SSEWrappers, test64bit)
 }
 
 #endif // WITH_SSE
+
+TEST(SSEWrappers, popcnt)
+{
+    unsigned int a, res;
+
+    res = __builtin_popcount(a = 0x2F63A150);
+    std::cout << "The value 0x" << std::hex << a << std::dec << " should have 14 ones :" << res << std::endl;
+    CORE_ASSERT_TRUE_S(res == 14);
+
+    res = __builtin_popcount(a = 0xAAAAAAAA);
+    std::cout << "The value 0x" << std::hex << a << std::dec << " should have 16 ones :" << res << std::endl;
+    CORE_ASSERT_TRUE_S(res == 16);
+}
