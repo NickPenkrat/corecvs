@@ -58,7 +58,6 @@ with_avx {
     } else {
         QMAKE_CFLAGS   += $$QMAKE_CFLAGS_AVX        # Qmake uses it as "-arch:AVX" for msvc >= VS-2010
         QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_AVX
-
         #!build_pass: message(DEFINES = $$DEFINES)
     }
 }
@@ -69,7 +68,7 @@ with_avx2 {
         QMAKE_CFLAGS   += -mavx2
         QMAKE_CXXFLAGS += -mavx2
     } else {
-        QMAKE_CFLAGS   += $$QMAKE_CFLAGS_AVX2        # Qmake uses it as "-arch:AVX2" for msvc >= VS-2015
+        QMAKE_CFLAGS   += $$QMAKE_CFLAGS_AVX2        # Qmake uses it as "-arch:AVX2" for msvc >= VS-2013 update 2
         QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_AVX2
     }
 }
@@ -104,13 +103,23 @@ with_sse3 {
 #       DEFINES -= WITH_SSE3
     }
 }
-
-with_sse4 {
-    DEFINES += WITH_SSE4
+with_sse4_1 {
+    DEFINES += WITH_SSE4_1
     !win32-msvc* {
         QMAKE_CFLAGS   += -msse4.1
         QMAKE_CXXFLAGS += -msse4.1
     } else {
+#       DEFINES -= WITH_SSE4_1
+    }
+}
+with_sse4_2 {
+    DEFINES += WITH_SSE4_2
+    DEFINES += WITH_SSE4                    # means that both SSE4.1 and SSE4.2 are supported
+    !win32-msvc* {
+        QMAKE_CFLAGS   += -msse4.2
+        QMAKE_CXXFLAGS += -msse4.2
+    } else {
+#       DEFINES -= WITH_SSE4_2
 #       DEFINES -= WITH_SSE4
     }
 }
