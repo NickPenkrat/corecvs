@@ -72,8 +72,8 @@
   <class name="Iterative Reconstruction Nonlinear Optimization Params Wrapper">
     <field type="Reconstruction Functor Optimization Params" name="optimizationParams">
     <field type="Reconstruction Functor Optimization Error Type" name="errorType" defaultValue="3" comment="Functor optimizattion error type" />
-    <field type="int" name="postAppendNonlinearIterations" defaultValue="200" min="1" max="100000" comment="Post-append non-linear optimization iterations" />
-    <field type="int" name="finalNonLinearIterations" defaultValue="2000" min="1" max="100000"  comment="Final non-linear iterations" />
+    <field type="int" name="postAppendNonlinearIterations" defaultValue="2000" min="1" max="100000" comment="Post-append non-linear optimization iterations" />
+    <field type="int" name="finalNonLinearIterations" defaultValue="10000" min="1" max="100000"  comment="Final non-linear iterations" />
     <field type="int" name="alternatingIterations" defaultValue="20" min="0" max="1000" comment="Alternating optimization on success steps" />
 
     <field type="bool" name="excessiveQuaternionParametrization" defaultValue="true" comment="Excessive/non-excessive quaternion parametrization" />
