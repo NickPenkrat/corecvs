@@ -145,7 +145,7 @@
         <number>1</number>
        </property>
        <property name="value">
-        <number>20</number>
+        <number>0</number>
        </property>
      </widget>
     </item>
@@ -162,7 +162,7 @@
          <string>Excessive/non-excessive quaternion parametrization</string>
        </property>
        <property name="checked">
-           <bool>1</bool>
+           <bool>0</bool>
        </property>
      </widget>
     </item>

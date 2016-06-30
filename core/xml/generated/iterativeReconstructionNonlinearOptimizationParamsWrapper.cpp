@@ -99,7 +99,7 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
         (
           IterativeReconstructionNonlinearOptimizationParamsWrapper::ALTERNATINGITERATIONS_ID,
           offsetof(IterativeReconstructionNonlinearOptimizationParamsWrapper, mAlternatingIterations),
-          20,
+          0,
           "alternatingIterations",
           "alternatingIterations",
           "Alternating optimization on success steps",
@@ -113,7 +113,7 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
         (
           IterativeReconstructionNonlinearOptimizationParamsWrapper::EXCESSIVEQUATERNIONPARAMETRIZATION_ID,
           offsetof(IterativeReconstructionNonlinearOptimizationParamsWrapper, mExcessiveQuaternionParametrization),
-          true,
+          false,
           "excessiveQuaternionParametrization",
           "excessiveQuaternionParametrization",
           "Excessive/non-excessive quaternion parametrization"
