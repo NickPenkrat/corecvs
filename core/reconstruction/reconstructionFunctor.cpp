@@ -715,7 +715,7 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::getNativeJacobian(const do
         case ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType::RAY_DIFF:
             return jacobianRayDiff(in);
         default:
-            return corecvs::SparseFunctionArgs::getJacobian(in, delta);
+            return corecvs::SparseFunctionArgs::getNativeJacobian(in, delta);
     }
 }
 
@@ -734,7 +734,6 @@ corecvs::Matrix44 corecvs::ReconstructionFunctor::RayDiffJ(double ux, double uy,
 
 corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianRayDiff(const double* in)
 {
-    readParams(in);
     std::vector<double> values(sparseCol.size());
     int nIn = getInputNum(), nOut = getOutputNum(),
         lastProjection = (int)revDependency.size(),
@@ -882,7 +881,6 @@ corecvs::Matrix44 corecvs::ReconstructionFunctor::Translation(double tx, double 
 
 corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection(const double* in)
 {
-    readParams(in);
     const corecvs::Matrix44
             FTx(0.0, 0.0, 0.0,-1.0,
                 0.0, 0.0, 0.0, 0.0,
