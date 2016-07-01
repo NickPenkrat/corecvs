@@ -199,6 +199,7 @@ struct ParallelBoardDetector
             }
             else
             {
+                v.undistortedPattern.clear();
                 for (auto & p: v.sourcePattern)
                 {
                     auto pc = p;
