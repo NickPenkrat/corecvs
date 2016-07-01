@@ -10,6 +10,8 @@
 #include "multicameraTriangulator.h"
 #include "essentialFeatureFilter.h"
 #include "log.h"
+#include "sseWrapper.h" // __builtin_popcount
+
 
 using namespace corecvs;
 
