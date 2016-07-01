@@ -90,7 +90,7 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
     static corecvs::Matrix44 Translation(double tx, double ty, double tz);
     static corecvs::Matrix44 RayDiffJ(double ux, double uy, double uz);
 
-    void readParams(const double *params);
+    void readParams(const double *params, bool prepareJac = false);
     void writeParams(double *params);
     void computeErrors(double *out, const std::vector<int> &idxs);
 
