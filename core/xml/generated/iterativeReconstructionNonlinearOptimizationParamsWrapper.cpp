@@ -71,7 +71,7 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
         (
           IterativeReconstructionNonlinearOptimizationParamsWrapper::POSTAPPENDNONLINEARITERATIONS_ID,
           offsetof(IterativeReconstructionNonlinearOptimizationParamsWrapper, mPostAppendNonlinearIterations),
-          200,
+          2000,
           "postAppendNonlinearIterations",
           "postAppendNonlinearIterations",
           "Post-append non-linear optimization iterations",
@@ -85,7 +85,7 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
         (
           IterativeReconstructionNonlinearOptimizationParamsWrapper::FINALNONLINEARITERATIONS_ID,
           offsetof(IterativeReconstructionNonlinearOptimizationParamsWrapper, mFinalNonLinearIterations),
-          2000,
+          10000,
           "finalNonLinearIterations",
           "finalNonLinearIterations",
           "Final non-linear iterations",
@@ -99,7 +99,7 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
         (
           IterativeReconstructionNonlinearOptimizationParamsWrapper::ALTERNATINGITERATIONS_ID,
           offsetof(IterativeReconstructionNonlinearOptimizationParamsWrapper, mAlternatingIterations),
-          20,
+          0,
           "alternatingIterations",
           "alternatingIterations",
           "Alternating optimization on success steps",
@@ -113,7 +113,7 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
         (
           IterativeReconstructionNonlinearOptimizationParamsWrapper::EXCESSIVEQUATERNIONPARAMETRIZATION_ID,
           offsetof(IterativeReconstructionNonlinearOptimizationParamsWrapper, mExcessiveQuaternionParametrization),
-          true,
+          false,
           "excessiveQuaternionParametrization",
           "excessiveQuaternionParametrization",
           "Excessive/non-excessive quaternion parametrization"

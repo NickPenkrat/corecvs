@@ -8,6 +8,7 @@
 
 #include "reconstructionFunctorOptimizationParamsControlWidget.h"
 #include "ui_reconstructionFunctorOptimizationParamsControlWidget.h"
+#include <memory>
 #include "qSettingsGetter.h"
 #include "qSettingsSetter.h"
 
@@ -38,33 +39,21 @@ ReconstructionFunctorOptimizationParamsControlWidget::~ReconstructionFunctorOpti
 
 void ReconstructionFunctorOptimizationParamsControlWidget::loadParamWidget(WidgetLoader &loader)
 {
-    ReconstructionFunctorOptimizationParams *params = createParameters();
+    std::unique_ptr<ReconstructionFunctorOptimizationParams> params(createParameters());
     loader.loadParameters(*params, rootPath);
     setParameters(*params);
-    delete params;
 }
 
 void ReconstructionFunctorOptimizationParamsControlWidget::saveParamWidget(WidgetSaver  &saver)
 {
-    ReconstructionFunctorOptimizationParams *params = createParameters();
-    saver.saveParameters(*params, rootPath);
-    delete params;
+    saver.saveParameters(*std::unique_ptr<ReconstructionFunctorOptimizationParams>(createParameters()), rootPath);
 }
 
- /* Composite fields are NOT supported so far */
 void ReconstructionFunctorOptimizationParamsControlWidget::getParameters(ReconstructionFunctorOptimizationParams& params) const
 {
-
-    params.setNonDegenerateOrientations(mUi->nonDegenerateOrientationsCheckBox->isChecked());
-    params.setDegenerateOrientations(mUi->degenerateOrientationsCheckBox->isChecked());
-    params.setNonDegenerateTranslations(mUi->nonDegenerateTranslationsCheckBox->isChecked());
-    params.setDegenerateTranslations(mUi->degenerateTranslationsCheckBox->isChecked());
-    params.setFocals           (mUi->focalsCheckBox->isChecked());
-    params.setPrincipals       (mUi->principalsCheckBox->isChecked());
-    params.setPoints           (mUi->pointsCheckBox->isChecked());
-    params.setTuneGps          (mUi->tuneGpsCheckBox->isChecked());
-
+    params = *std::unique_ptr<ReconstructionFunctorOptimizationParams>(createParameters());
 }
+
 
 ReconstructionFunctorOptimizationParams *ReconstructionFunctorOptimizationParamsControlWidget::createParameters() const
 {
@@ -74,7 +63,7 @@ ReconstructionFunctorOptimizationParams *ReconstructionFunctorOptimizationParams
      **/
 
 
-    ReconstructionFunctorOptimizationParams *result = new ReconstructionFunctorOptimizationParams(
+    return new ReconstructionFunctorOptimizationParams(
           mUi->nonDegenerateOrientationsCheckBox->isChecked()
         , mUi->degenerateOrientationsCheckBox->isChecked()
         , mUi->nonDegenerateTranslationsCheckBox->isChecked()
@@ -84,7 +73,6 @@ ReconstructionFunctorOptimizationParams *ReconstructionFunctorOptimizationParams
         , mUi->pointsCheckBox->isChecked()
         , mUi->tuneGpsCheckBox->isChecked()
     );
-    return result;
 }
 
 void ReconstructionFunctorOptimizationParamsControlWidget::setParameters(const ReconstructionFunctorOptimizationParams &input)

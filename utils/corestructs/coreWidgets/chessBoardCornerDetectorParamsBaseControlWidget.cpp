@@ -8,6 +8,7 @@
 
 #include "chessBoardCornerDetectorParamsBaseControlWidget.h"
 #include "ui_chessBoardCornerDetectorParamsBaseControlWidget.h"
+#include <memory>
 #include "qSettingsGetter.h"
 #include "qSettingsSetter.h"
 
@@ -49,44 +50,21 @@ ChessBoardCornerDetectorParamsBaseControlWidget::~ChessBoardCornerDetectorParams
 
 void ChessBoardCornerDetectorParamsBaseControlWidget::loadParamWidget(WidgetLoader &loader)
 {
-    ChessBoardCornerDetectorParamsBase *params = createParameters();
+    std::unique_ptr<ChessBoardCornerDetectorParamsBase> params(createParameters());
     loader.loadParameters(*params, rootPath);
     setParameters(*params);
-    delete params;
 }
 
 void ChessBoardCornerDetectorParamsBaseControlWidget::saveParamWidget(WidgetSaver  &saver)
 {
-    ChessBoardCornerDetectorParamsBase *params = createParameters();
-    saver.saveParameters(*params, rootPath);
-    delete params;
+    saver.saveParameters(*std::unique_ptr<ChessBoardCornerDetectorParamsBase>(createParameters()), rootPath);
 }
 
- /* Composite fields are NOT supported so far */
 void ChessBoardCornerDetectorParamsBaseControlWidget::getParameters(ChessBoardCornerDetectorParamsBase& params) const
 {
-
-    params.setProduceDebug     (mUi->produceDebugCheckBox->isChecked());
-    params.setFloatSpeedup     (mUi->floatSpeedupCheckBox->isChecked());
-    params.setNormalizePercentile(mUi->normalizePercentileSpinBox->value());
-    params.setSectorSizeDeg    (mUi->sectorSizeDegSpinBox->value());
-    params.setHistogramBins    (mUi->histogramBinsSpinBox->value());
-    params.setMinAngleDeg      (mUi->minAngleDegSpinBox->value());
-    params.setNeighborhood     (mUi->neighborhoodSpinBox->value());
-    params.setGradThreshold    (mUi->gradThresholdSpinBox->value());
-    params.setOrientationInlierThreshold(mUi->orientationInlierThresholdSpinBox->value());
-    params.setInlierDistanceThreshold(mUi->inlierDistanceThresholdSpinBox->value());
-    params.setUpdateThreshold  (mUi->updateThresholdSpinBox->value());
-    params.setScoreThreshold   (mUi->scoreThresholdSpinBox->value());
-    params.setNRounds          (mUi->nRoundsSpinBox->value());
-    params.setMeanshiftBandwidth(mUi->meanshiftBandwidthSpinBox->value());
-    params.setNmsLocality      (mUi->nmsLocalitySpinBox->value());
-    params.setNmsThreshold     (mUi->nmsThresholdSpinBox->value());
-    params.setPatternRadius    (mUi->patternRadius->value());
-    params.setPatternStartAngleDeg(mUi->patternStartAngleDeg->value());
-    params.setCornerScores     (mUi->cornerScores->value());
-
+    params = *std::unique_ptr<ChessBoardCornerDetectorParamsBase>(createParameters());
 }
+
 
 ChessBoardCornerDetectorParamsBase *ChessBoardCornerDetectorParamsBaseControlWidget::createParameters() const
 {
@@ -96,7 +74,7 @@ ChessBoardCornerDetectorParamsBase *ChessBoardCornerDetectorParamsBaseControlWid
      **/
 
 
-    ChessBoardCornerDetectorParamsBase *result = new ChessBoardCornerDetectorParamsBase(
+    return new ChessBoardCornerDetectorParamsBase(
           mUi->produceDebugCheckBox->isChecked()
         , mUi->floatSpeedupCheckBox->isChecked()
         , mUi->normalizePercentileSpinBox->value()
@@ -117,7 +95,6 @@ ChessBoardCornerDetectorParamsBase *ChessBoardCornerDetectorParamsBaseControlWid
         , mUi->patternStartAngleDeg->value()
         , mUi->cornerScores->value()
     );
-    return result;
 }
 
 void ChessBoardCornerDetectorParamsBaseControlWidget::setParameters(const ChessBoardCornerDetectorParamsBase &input)

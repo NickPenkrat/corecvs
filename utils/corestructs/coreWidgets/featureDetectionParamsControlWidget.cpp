@@ -8,6 +8,7 @@
 
 #include "featureDetectionParamsControlWidget.h"
 #include "ui_featureDetectionParamsControlWidget.h"
+#include <memory>
 #include "qSettingsGetter.h"
 #include "qSettingsSetter.h"
 
@@ -26,6 +27,7 @@ FeatureDetectionParamsControlWidget::FeatureDetectionParamsControlWidget(QWidget
     QObject::connect(mUi->b2bThresholdSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->matchF2FCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->parametersEdit, SIGNAL(textChanged(QString)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->plotTracksCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
 }
 
 FeatureDetectionParamsControlWidget::~FeatureDetectionParamsControlWidget()
@@ -36,31 +38,21 @@ FeatureDetectionParamsControlWidget::~FeatureDetectionParamsControlWidget()
 
 void FeatureDetectionParamsControlWidget::loadParamWidget(WidgetLoader &loader)
 {
-    FeatureDetectionParams *params = createParameters();
+    std::unique_ptr<FeatureDetectionParams> params(createParameters());
     loader.loadParameters(*params, rootPath);
     setParameters(*params);
-    delete params;
 }
 
 void FeatureDetectionParamsControlWidget::saveParamWidget(WidgetSaver  &saver)
 {
-    FeatureDetectionParams *params = createParameters();
-    saver.saveParameters(*params, rootPath);
-    delete params;
+    saver.saveParameters(*std::unique_ptr<FeatureDetectionParams>(createParameters()), rootPath);
 }
 
- /* Composite fields are NOT supported so far */
 void FeatureDetectionParamsControlWidget::getParameters(FeatureDetectionParams& params) const
 {
-
-    params.setDetector         (mUi->detectorEdit->text().toStdString());
-    params.setDescriptor       (mUi->descriptorEdit->text().toStdString());
-    params.setMatcher          (mUi->matcherEdit->text().toStdString());
-    params.setB2bThreshold     (mUi->b2bThresholdSpinBox->value());
-    params.setMatchF2F         (mUi->matchF2FCheckBox->isChecked());
-    params.setParameters       (mUi->parametersEdit->text().toStdString());
-
+    params = *std::unique_ptr<FeatureDetectionParams>(createParameters());
 }
+
 
 FeatureDetectionParams *FeatureDetectionParamsControlWidget::createParameters() const
 {
@@ -70,15 +62,15 @@ FeatureDetectionParams *FeatureDetectionParamsControlWidget::createParameters() 
      **/
 
 
-    FeatureDetectionParams *result = new FeatureDetectionParams(
+    return new FeatureDetectionParams(
           mUi->detectorEdit->text().toStdString()
         , mUi->descriptorEdit->text().toStdString()
         , mUi->matcherEdit->text().toStdString()
         , mUi->b2bThresholdSpinBox->value()
         , mUi->matchF2FCheckBox->isChecked()
         , mUi->parametersEdit->text().toStdString()
+        , mUi->plotTracksCheckBox->isChecked()
     );
-    return result;
 }
 
 void FeatureDetectionParamsControlWidget::setParameters(const FeatureDetectionParams &input)
@@ -91,6 +83,7 @@ void FeatureDetectionParamsControlWidget::setParameters(const FeatureDetectionPa
     mUi->b2bThresholdSpinBox->setValue(input.b2bThreshold());
     mUi->matchF2FCheckBox->setChecked(input.matchF2F());
     mUi->parametersEdit->setText(input.parameters().c_str());
+    mUi->plotTracksCheckBox->setChecked(input.plotTracks());
     blockSignals(wasBlocked);
     emit paramsChanged();
 }

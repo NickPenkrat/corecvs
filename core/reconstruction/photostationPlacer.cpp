@@ -36,6 +36,8 @@ std::string toString(ReconstructionFunctorOptimizationErrorType::ReconstructionF
 
 void corecvs::PhotostationPlacer::paintTracksOnImages(bool pairs)
 {
+    if (!featureDetectionParams().plotTracks())
+        return;
     std::mt19937 rng;
     std::uniform_real_distribution<double> runif(0, 360.0);
     std::unordered_map<SceneFeaturePoint*, RGBColor> colorizer;
@@ -287,6 +289,7 @@ void corecvs::PhotostationPlacer::fit(int num)
 
 void corecvs::PhotostationPlacer::fit(const ReconstructionFunctorOptimizationType &params, int iterations, int optimizeLast)
 {
+    scene->validateAll();
     if (scene->placedFixtures.size() < 2)
         return;
     if (optimizeLast <= 0)
@@ -314,6 +317,7 @@ void corecvs::PhotostationPlacer::fit(const ReconstructionFunctorOptimizationTyp
     orient.writeParams(&input[0]);
     auto res = lm.fit(input, out);
     orient.readParams(&res[0]);
+    scene->validateAll();
 
     getErrorSummaryAll();
     static int cnt = 0;

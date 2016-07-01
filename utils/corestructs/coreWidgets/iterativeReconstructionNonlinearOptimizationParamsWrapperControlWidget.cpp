@@ -8,6 +8,7 @@
 
 #include "iterativeReconstructionNonlinearOptimizationParamsWrapperControlWidget.h"
 #include "ui_iterativeReconstructionNonlinearOptimizationParamsWrapperControlWidget.h"
+#include <memory>
 #include "qSettingsGetter.h"
 #include "qSettingsSetter.h"
 
@@ -37,31 +38,21 @@ IterativeReconstructionNonlinearOptimizationParamsWrapperControlWidget::~Iterati
 
 void IterativeReconstructionNonlinearOptimizationParamsWrapperControlWidget::loadParamWidget(WidgetLoader &loader)
 {
-    IterativeReconstructionNonlinearOptimizationParamsWrapper *params = createParameters();
+    std::unique_ptr<IterativeReconstructionNonlinearOptimizationParamsWrapper> params(createParameters());
     loader.loadParameters(*params, rootPath);
     setParameters(*params);
-    delete params;
 }
 
 void IterativeReconstructionNonlinearOptimizationParamsWrapperControlWidget::saveParamWidget(WidgetSaver  &saver)
 {
-    IterativeReconstructionNonlinearOptimizationParamsWrapper *params = createParameters();
-    saver.saveParameters(*params, rootPath);
-    delete params;
+    saver.saveParameters(*std::unique_ptr<IterativeReconstructionNonlinearOptimizationParamsWrapper>(createParameters()), rootPath);
 }
 
- /* Composite fields are NOT supported so far */
 void IterativeReconstructionNonlinearOptimizationParamsWrapperControlWidget::getParameters(IterativeReconstructionNonlinearOptimizationParamsWrapper& params) const
 {
-
-//    params.setOptimizationParams(mUi->optimizationParamsControlWidget->createParameters());
-    params.setErrorType        (static_cast<ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType>(mUi->errorTypeComboBox->currentIndex()));
-    params.setPostAppendNonlinearIterations(mUi->postAppendNonlinearIterationsSpinBox->value());
-    params.setFinalNonLinearIterations(mUi->finalNonLinearIterationsSpinBox->value());
-    params.setAlternatingIterations(mUi->alternatingIterationsSpinBox->value());
-    params.setExcessiveQuaternionParametrization(mUi->excessiveQuaternionParametrizationCheckBox->isChecked());
-
+    params = *std::unique_ptr<IterativeReconstructionNonlinearOptimizationParamsWrapper>(createParameters());
 }
+
 
 IterativeReconstructionNonlinearOptimizationParamsWrapper *IterativeReconstructionNonlinearOptimizationParamsWrapperControlWidget::createParameters() const
 {
@@ -70,18 +61,15 @@ IterativeReconstructionNonlinearOptimizationParamsWrapper *IterativeReconstructi
      * We should think of returning parameters by value or saving them in a preallocated place
      **/
 
-    ReconstructionFunctorOptimizationParams *tmp0 = NULL;
 
-    IterativeReconstructionNonlinearOptimizationParamsWrapper *result = new IterativeReconstructionNonlinearOptimizationParamsWrapper(
-          * (tmp0 = mUi->optimizationParamsControlWidget->createParameters())
+    return new IterativeReconstructionNonlinearOptimizationParamsWrapper(
+          *std::unique_ptr<ReconstructionFunctorOptimizationParams>(mUi->optimizationParamsControlWidget->createParameters())
         , static_cast<ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType>(mUi->errorTypeComboBox->currentIndex())
         , mUi->postAppendNonlinearIterationsSpinBox->value()
         , mUi->finalNonLinearIterationsSpinBox->value()
         , mUi->alternatingIterationsSpinBox->value()
         , mUi->excessiveQuaternionParametrizationCheckBox->isChecked()
     );
-    delete tmp0;
-    return result;
 }
 
 void IterativeReconstructionNonlinearOptimizationParamsWrapperControlWidget::setParameters(const IterativeReconstructionNonlinearOptimizationParamsWrapper &input)

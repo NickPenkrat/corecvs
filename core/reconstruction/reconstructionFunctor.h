@@ -88,6 +88,7 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
     static void QuaternionDiff(double qx, double qy, double qz, double qw, QuaternionParametrization p, bool inverse, corecvs::Matrix44 &Rqx, corecvs::Matrix44 &Rqy, corecvs::Matrix44 &Rqz, corecvs::Matrix44 &Rqw);
     static corecvs::Matrix44 Rotation(double qx, double qy, double qz, double qw, QuaternionParametrization p, bool inverse);
     static corecvs::Matrix44 Translation(double tx, double ty, double tz);
+    static corecvs::Matrix44 RayDiffJ(double ux, double uy, double uz);
 
     void readParams(const double *params);
     void writeParams(double *params);
@@ -97,6 +98,41 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
     std::unordered_map<FixtureScenePart*, int> counter;
 
     std::vector<corecvs::FixtureCamera> cameraCache;
+    struct CachedJacobianParts
+    {
+        corecvs::Matrix44
+            K, Ki, CT, FR, FT, FR0,
+            Kf, Kif,
+            Kcx, Kcy, Kicx, Kicy,
+            FRx, FRy, FRz, FRw,
+            KCTFR0FRFT,
+            KfCTFR0FRFT,
+            KcxCTFR0FRFT,
+            KcyCTFR0FRFT,
+            KCTFR0FRxFT,
+            KCTFR0FRyFT,
+            KCTFR0FRzFT,
+            KCTFR0FRwFT,
+            KCTFR0FRFTx,
+            KCTFR0FRFTy,
+            KCTFR0FRFTz,
+            CTFR0FRFT ,
+            CTFR0FRxFT,
+            CTFR0FRyFT,
+            CTFR0FRzFT,
+            CTFR0FRwFT,
+            CTFR0FRFTx,
+            CTFR0FRFTy,
+            CTFR0FRFTz;
+        corecvs::Vector4dd
+            KCTFR0FRFTXx,
+            KCTFR0FRFTXy,
+            KCTFR0FRFTXz,
+            CTFR0FRFTXx,
+            CTFR0FRFTXy,
+            CTFR0FRFTXz;
+    };
+    std::vector<CachedJacobianParts> cjp;
     std::vector<WPP> cacheOrigin;
     std::vector<int> cacheRef;
     std::vector<SceneObservation*> revDependency; // track, projection
@@ -159,13 +195,13 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
             return (&z - &f) + 1;
         }
         int nnz() const
-		{
-			int cnt = 0;
-			for (auto& d: *this)
-				if (d != UNUSED)
-					++cnt;
-			return cnt;
-		}
+        {
+            int cnt = 0;
+            for (auto& d: *this)
+                if (d != UNUSED)
+                    ++cnt;
+            return cnt;
+        }
         DependencyList& operator |= (const DependencyList& rhs)
         {
             auto& lhsRef = *this;
@@ -175,6 +211,7 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
             return *this;
         }
     };
+    std::unordered_map<WPP, DependencyList> depCache;
     std::vector<DependencyList> denseDependency, sparseDependency;
     std::vector<int> sparseRowptr, sparseCol;
 
