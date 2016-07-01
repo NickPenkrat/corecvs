@@ -524,9 +524,6 @@ void corecvs::ReconstructionFunctor::readParams(const double* params, bool prepa
     IF(POINTS,
         FILL(scene->trackedFeatures,  INPUTS_PER_3D_POINT,        a->reprojectedPosition[i] = v,,))
 
-    if (!prepareJac)
-        return;
-
     bool exc = excessiveQuaternionParametrization;
     const int rotationParams = exc ? INPUTS_PER_ORIENTATION_EXC : INPUTS_PER_ORIENTATION_NEX;
     corecvs::parallelable_for((size_t)0, cacheOrigin.size(), std::max(cacheOrigin.size() / 256, (size_t)1),
@@ -645,30 +642,36 @@ void corecvs::ReconstructionFunctor::readParams(const double* params, bool prepa
             auto CTFR0 = CT*FR0,
                  CTFR0FR = CT*FR0*FR;
             jc.CTFR0FRFT   =      CTFR0FR *FT;
-            jc.CTFR0FRxFT  =      CT*FR0*FRx*FT;
-            jc.CTFR0FRyFT  =      CT*FR0*FRy*FT;
-            jc.CTFR0FRzFT  =      CT*FR0*FRz*FT;
-            jc.CTFR0FRwFT  =      CT*FR0*FRw*FT;
-            jc.CTFR0FRFTx  =      CTFR0FR *FTx;
-            jc.CTFR0FRFTy  =      CTFR0FR *FTy;
-            jc.CTFR0FRFTz  =      CTFR0FR *FTz;
+            if (prepareJac)
+            {
+                jc.CTFR0FRxFT  =      CT*FR0*FRx*FT;
+                jc.CTFR0FRyFT  =      CT*FR0*FRy*FT;
+                jc.CTFR0FRzFT  =      CT*FR0*FRz*FT;
+                jc.CTFR0FRwFT  =      CT*FR0*FRw*FT;
+                jc.CTFR0FRFTx  =      CTFR0FR *FTx;
+                jc.CTFR0FRFTy  =      CTFR0FR *FTy;
+                jc.CTFR0FRFTz  =      CTFR0FR *FTz;
+            }
             jc.KCTFR0FRFT   = K   * jc.CTFR0FRFT;
-            jc.KfCTFR0FRFT  = Kf  * jc.CTFR0FRFT;
-            jc.KcxCTFR0FRFT = Kcx * jc.CTFR0FRFT;
-            jc.KcyCTFR0FRFT = Kcy * jc.CTFR0FRFT;
-            jc.KCTFR0FRxFT  = K   * jc.CTFR0FRxFT;
-            jc.KCTFR0FRyFT  = K   * jc.CTFR0FRyFT;
-            jc.KCTFR0FRzFT  = K   * jc.CTFR0FRzFT;
-            jc.KCTFR0FRwFT  = K   * jc.CTFR0FRwFT;
-            jc.KCTFR0FRFTx  = K   * jc.CTFR0FRFTx;
-            jc.KCTFR0FRFTy  = K   * jc.CTFR0FRFTy;
-            jc.KCTFR0FRFTz  = K   * jc.CTFR0FRFTz;
-            jc.KCTFR0FRFTXx =      jc.KCTFR0FRFT * Xx;
-            jc.KCTFR0FRFTXy =      jc.KCTFR0FRFT * Xy;
-            jc.KCTFR0FRFTXz =      jc.KCTFR0FRFT * Xz;
-            jc.CTFR0FRFTXx =      jc.CTFR0FRFT * Xx;
-            jc.CTFR0FRFTXy =      jc.CTFR0FRFT * Xy;
-            jc.CTFR0FRFTXz =      jc.CTFR0FRFT * Xz;
+            if (prepareJac)
+            {
+                jc.KfCTFR0FRFT  = Kf  * jc.CTFR0FRFT;
+                jc.KcxCTFR0FRFT = Kcx * jc.CTFR0FRFT;
+                jc.KcyCTFR0FRFT = Kcy * jc.CTFR0FRFT;
+                jc.KCTFR0FRxFT  = K   * jc.CTFR0FRxFT;
+                jc.KCTFR0FRyFT  = K   * jc.CTFR0FRyFT;
+                jc.KCTFR0FRzFT  = K   * jc.CTFR0FRzFT;
+                jc.KCTFR0FRwFT  = K   * jc.CTFR0FRwFT;
+                jc.KCTFR0FRFTx  = K   * jc.CTFR0FRFTx;
+                jc.KCTFR0FRFTy  = K   * jc.CTFR0FRFTy;
+                jc.KCTFR0FRFTz  = K   * jc.CTFR0FRFTz;
+                jc.KCTFR0FRFTXx =      jc.KCTFR0FRFT * Xx;
+                jc.KCTFR0FRFTXy =      jc.KCTFR0FRFT * Xy;
+                jc.KCTFR0FRFTXz =      jc.KCTFR0FRFT * Xz;
+                jc.CTFR0FRFTXx =      jc.CTFR0FRFT * Xx;
+                jc.CTFR0FRFTXy =      jc.CTFR0FRFT * Xy;
+                jc.CTFR0FRFTXz =      jc.CTFR0FRFT * Xz;
+            }
     }});
 }
 
@@ -728,10 +731,8 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::getNativeJacobian(const do
     switch(error)
     {
         case ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType::REPROJECTION:
-            readParams(in, true);
             return jacobianReprojection(in);
         case ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType::RAY_DIFF:
-            readParams(in, true);
             return jacobianRayDiff(in);
         default:
             return corecvs::SparseFunctionArgs::getNativeJacobian(in, delta);
@@ -753,13 +754,14 @@ corecvs::Matrix44 corecvs::ReconstructionFunctor::RayDiffJ(double ux, double uy,
 
 corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianRayDiff(const double* in)
 {
+    readParams(in, true);
     std::vector<double> values(sparseCol.size());
     int nIn = getInputNum(), nOut = getOutputNum(),
         lastProjection = (int)revDependency.size(),
         nErr = getErrorComponentsPerPoint();
     bool exc = excessiveQuaternionParametrization;
     const int rotationParams = exc ? INPUTS_PER_ORIENTATION_EXC : INPUTS_PER_ORIENTATION_NEX;
-    int bs = std::max(lastProjection / nErr / 256, 1);
+    int bs = std::max((lastProjection / nErr) / 256, 1);
     corecvs::parallelable_for(0, lastProjection / nErr, bs, [&](const corecvs::BlockedRange<int> &r){
     for (int ii= r.begin(); ii< r.end(); ++ii)
     {
@@ -901,13 +903,14 @@ corecvs::Matrix44 corecvs::ReconstructionFunctor::Translation(double tx, double 
 
 corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection(const double* in)
 {
+    readParams(in, true);
     std::vector<double> values(sparseCol.size());
     int nIn = getInputNum(), nOut = getOutputNum(),
         lastProjection = (int)revDependency.size(),
         nErr = getErrorComponentsPerPoint();
     bool exc = excessiveQuaternionParametrization;
     const int rotationParams = exc ? INPUTS_PER_ORIENTATION_EXC : INPUTS_PER_ORIENTATION_NEX;
-    int bs = std::max(lastProjection / nErr / 256, 1);
+    int bs = std::max((lastProjection / nErr) / 256, 1);
     corecvs::parallelable_for(0, lastProjection / nErr, bs, [&](const corecvs::BlockedRange<int> &r){
     for (int ii= r.begin(); ii< r.end(); ++ii)
     {
