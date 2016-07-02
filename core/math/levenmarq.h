@@ -162,7 +162,7 @@ public:
                     hasParadox = true;
                 }
 
-                cout << "Now  norm:" <<  norm << "(" << sqrt(norm / diff.length) << ") lambda" << lambda << endl;
+                cout << "Now  norm:" <<  norm << "( per param:" << sqrt(norm / diff.length) << ") lambda:" << lambda << endl;
             }
 
             while (true)

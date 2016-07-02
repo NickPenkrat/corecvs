@@ -699,7 +699,8 @@ template<typename ResultType>
         va_start(marker, value);
         fillWithArgs(value, marker);
         va_end(marker);
-    }
+    }    
+
 
     void fillLineWithArgs(IndexType line, const ElementType value, ...)
     {

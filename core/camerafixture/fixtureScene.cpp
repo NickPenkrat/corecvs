@@ -429,7 +429,7 @@ bool FixtureScene::integrityRelink()
 
 void FixtureScene::merge(FixtureScene *other)
 {
-    int oldOrphanNumber = orphanCameras.size();
+    //int oldOrphanNumber = orphanCameras.size();
 
     for(size_t i = 0; i < other->orphanCameras.size(); i++)
     {
@@ -451,7 +451,7 @@ void FixtureScene::merge(FixtureScene *other)
         for(size_t j = 0; j < otherFixture->cameras.size(); j++)
         {
             FixtureCamera *cam = createCamera();
-            *static_cast<CameraModel *>(cam) = *(otherFixture->cameras[i]);
+            *static_cast<CameraModel *>(cam) = *(otherFixture->cameras[j]);
             addCameraToFixture(cam, newFixture);
         }
     }
