@@ -1154,3 +1154,29 @@ TEST(SparseMatrix, denseRows)
     ASSERT_EQ(D.h, 4);
     ASSERT_EQ((Bar-D).frobeniusNorm(), 0.0);
 }
+
+TEST(SparseMatrix, denseCols)
+{
+    double foo[] =
+    {
+        0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+        0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0,
+        0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0
+    },
+           bar[] =
+    {
+        0.0, 0.0, 1.0, 0.0,
+        0.0, 1.0, 0.0, 0.0,
+        1.0, 0.0, 0.0, 0.0
+    };
+    corecvs::Matrix Foo(4, 7, foo), Bar(3, 4, bar);
+    corecvs::SparseMatrix Boo(Foo);
+
+    ASSERT_EQ(Boo.nnz(), 6);
+    std::vector<int> rowIdx;
+    auto D = Boo.denseCols(0, 0, 4, 4, rowIdx);
+    ASSERT_EQ(D.w, 4);
+    ASSERT_EQ(D.h, 3);
+    ASSERT_EQ((Bar-D).frobeniusNorm(), 0.0);
+}
