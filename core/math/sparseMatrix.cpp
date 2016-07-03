@@ -153,6 +153,66 @@ double SparseMatrix::a(int y, int x) const
     return 0.0;
 }
 
+Matrix SparseMatrix::denseRows(int x1, int y1, int x2, int y2, std::vector<int> &colIdx)
+{
+    x1 = std::max(0, std::min(w, x1));
+    x2 = std::max(0, std::min(w, x2));
+    y1 = std::max(0, std::min(h, y1));
+    y2 = std::max(0, std::min(h, y2));
+    if (x2 < x1)
+        std::swap(x1, x2);
+    if (y2 < y1)
+        std::swap(y1, y2);
+
+    int h = y2 - y1;
+
+    colIdx.clear();
+    std::vector<int> rPtr(h);
+    for (int i = 0; i < h; ++i)
+    {
+        rPtr[i] = rowPointers[i + y1];
+        while (columns[rPtr[i]] < x2 && rPtr[i] < rowPointers[i + y1])
+            rPtr[i]++;
+    }
+    std::vector<int> rStartPtr = rPtr;
+
+    while (1)
+    {
+        int nextCol = -1;
+        for (int i = 0; i < h; ++i)
+        {
+            if (rPtr[i] == rowPointers[i + y1 + 1] || columns[rPtr[i]] >= x2)
+                continue;
+            if (nextCol < 0)
+                nextCol = columns[rPtr[i]];
+            nextCol = std::min(nextCol, columns[rPtr[i]]);
+        }
+        if (nextCol == -1)
+            break;
+        CORE_ASSERT_TRUE_S(nextCol >= x1 && nextCol < x2);
+        colIdx.push_back(nextCol);
+        for (int i = 0; i < h; ++i)
+            if (rPtr[i] != rowPointers[i + y1 + 1] && columns[rPtr[i]] < x2 && columns[rPtr[i]] == nextCol)
+                ++rPtr[i];
+    }
+    int w = colIdx.size();
+    rPtr = rStartPtr;
+
+    corecvs::Matrix M(h, w);
+    for (int nnzCols = 0; nnzCols < w; ++nnzCols)
+    {
+        int nextCol = colIdx[nnzCols];
+        CORE_ASSERT_TRUE_S(nextCol >= x1 && nextCol < x2);
+        for (int i = 0; i < h; ++i)
+            if (rPtr[i] != rowPointers[i + y1 + 1] && columns[rPtr[i]] < x2 && columns[rPtr[i]] == nextCol)
+            {
+                M.a(i, nnzCols) = values[rPtr[i]];
+                ++rPtr[i];
+            }
+    }
+    return M;
+}
+
 double& SparseMatrix::a(int y, int x)
 {
     int i = 0;

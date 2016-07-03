@@ -1128,3 +1128,29 @@ TEST(SparseMatrix, SchurComplement)
     ASSERT_LE(!(x - xx), 1e-6);
 }
 
+TEST(SparseMatrix, denseRows)
+{
+    double foo[] =
+    {
+        0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+        0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0,
+        0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0
+    },
+           bar[] =
+    {
+        0.0, 0.0, 0.0, 1.0, 0.0,
+        0.0, 0.0, 1.0, 0.0, 1.0,
+        0.0, 1.0, 0.0, 0.0, 0.0,
+        1.0, 0.0, 0.0, 0.0, 1.0
+    };
+    corecvs::Matrix Foo(4, 7, foo), Bar(4, 5, bar);
+    corecvs::SparseMatrix Boo(Foo);
+
+    ASSERT_EQ(Boo.nnz(), 6);
+    std::vector<int> colIdx;
+    auto D = Boo.denseRows(0, 0, 7, 4, colIdx);
+    ASSERT_EQ(D.w, 5);
+    ASSERT_EQ(D.h, 4);
+    ASSERT_EQ((Bar-D).frobeniusNorm(), 0.0);
+}
