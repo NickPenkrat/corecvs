@@ -2,6 +2,9 @@
 
 #include <set>
 
+const int CORE_COUNT_LIMIT = 256;
+
+#if 0
 #define IFUSED(p, N, A) \
             if (list.p != DependencyList::UNUSED) \
             { \
@@ -9,6 +12,13 @@
                     CORE_ASSERT_TRUE_S(list[&list.p - list.begin() + ii] != DependencyList::UNUSED); \
                 A \
             }
+#else
+#define IFUSED(p, N, A) \
+            if (list.p != DependencyList::UNUSED) \
+            { \
+                A \
+            }
+#endif
 
 corecvs::ReconstructionFunctor::ReconstructionFunctor(corecvs::ReconstructionFixtureScene *scene, const std::vector<CameraFixture*> &optimizableSubset, const ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType &error, const corecvs::ReconstructionFunctorOptimizationType &optimization, bool excessiveQuaternionParametrization, const double pointErrorEstimate) : corecvs::SparseFunctionArgs(), scene(scene), error(error), optimization(optimization), excessiveQuaternionParametrization(excessiveQuaternionParametrization), scalerPoints(pointErrorEstimate), optimizableSubset(optimizableSubset)
 {
@@ -486,7 +496,7 @@ void corecvs::ReconstructionFunctor::computeDependency()
     std::cout << std::endl;
 }
 
-void corecvs::ReconstructionFunctor::readParams(const double* params)
+void corecvs::ReconstructionFunctor::readParams(const double* params, bool prepareJac)
 {
     int argin = 0;
 #define FILL(V, N, C, A, P) \
@@ -513,10 +523,14 @@ void corecvs::ReconstructionFunctor::readParams(const double* params)
     FILL(principalTunableCameras, INPUTS_PER_PRINCIPAL,       a->intrinsics.principal[i] = v,,)
     IF(POINTS,
         FILL(scene->trackedFeatures,  INPUTS_PER_3D_POINT,        a->reprojectedPosition[i] = v,,))
+
     bool exc = excessiveQuaternionParametrization;
     const int rotationParams = exc ? INPUTS_PER_ORIENTATION_EXC : INPUTS_PER_ORIENTATION_NEX;
-    for (auto& wpp: cacheOrigin)
+    corecvs::parallelable_for((size_t)0, cacheOrigin.size(), std::max(cacheOrigin.size() / 256, (size_t)1),
+    [&](const corecvs::BlockedRange<size_t> &r){
+    for (auto iii = r.begin(); iii < r.end(); ++iii)
     {
+        auto& wpp = cacheOrigin[iii];
         auto id = &wpp - &cacheOrigin[0];
         cameraCache[id] = wpp.u->getWorldCamera(wpp.v);
         auto& jc = cjp[id];
@@ -625,33 +639,40 @@ void corecvs::ReconstructionFunctor::readParams(const double* params)
             jc.Kcx =  Kcx; jc.Kcy =  Kcy; jc.Kicx = Kicx; jc.Kicy = Kicy;
             jc.FRx = FRx; jc.FRy = FRy; jc.FRz  = FRz; jc.FRw  = FRw;
 
-            jc.CTFR0FRFT   =      CT*FR0*FR *FT;
-            jc.CTFR0FRFT   =      CT*FR0*FR *FT;
-            jc.CTFR0FRxFT  =      CT*FR0*FRx*FT;
-            jc.CTFR0FRyFT  =      CT*FR0*FRy*FT;
-            jc.CTFR0FRzFT  =      CT*FR0*FRz*FT;
-            jc.CTFR0FRwFT  =      CT*FR0*FRw*FT;
-            jc.CTFR0FRFTx  =      CT*FR0*FR *FTx;
-            jc.CTFR0FRFTy  =      CT*FR0*FR *FTy;
-            jc.CTFR0FRFTz  =      CT*FR0*FR *FTz;
+            auto CTFR0 = CT*FR0,
+                 CTFR0FR = CT*FR0*FR;
+            jc.CTFR0FRFT   =      CTFR0FR *FT;
+            if (prepareJac)
+            {
+                jc.CTFR0FRxFT  =      CT*FR0*FRx*FT;
+                jc.CTFR0FRyFT  =      CT*FR0*FRy*FT;
+                jc.CTFR0FRzFT  =      CT*FR0*FRz*FT;
+                jc.CTFR0FRwFT  =      CT*FR0*FRw*FT;
+                jc.CTFR0FRFTx  =      CTFR0FR *FTx;
+                jc.CTFR0FRFTy  =      CTFR0FR *FTy;
+                jc.CTFR0FRFTz  =      CTFR0FR *FTz;
+            }
             jc.KCTFR0FRFT   = K   * jc.CTFR0FRFT;
-            jc.KfCTFR0FRFT  = Kf  * jc.CTFR0FRFT;
-            jc.KcxCTFR0FRFT = Kcx * jc.CTFR0FRFT;
-            jc.KcyCTFR0FRFT = Kcy * jc.CTFR0FRFT;
-            jc.KCTFR0FRxFT  = K   * jc.CTFR0FRxFT;
-            jc.KCTFR0FRyFT  = K   * jc.CTFR0FRyFT;
-            jc.KCTFR0FRzFT  = K   * jc.CTFR0FRzFT;
-            jc.KCTFR0FRwFT  = K   * jc.CTFR0FRwFT;
-            jc.KCTFR0FRFTx  = K   * jc.CTFR0FRFTx;
-            jc.KCTFR0FRFTy  = K   * jc.CTFR0FRFTy;
-            jc.KCTFR0FRFTz  = K   * jc.CTFR0FRFTz;
-            jc.KCTFR0FRFTXx =      jc.KCTFR0FRFT * Xx;
-            jc.KCTFR0FRFTXy =      jc.KCTFR0FRFT * Xy;
-            jc.KCTFR0FRFTXz =      jc.KCTFR0FRFT * Xz;
-            jc.CTFR0FRFTXx =      jc.CTFR0FRFT * Xx;
-            jc.CTFR0FRFTXy =      jc.CTFR0FRFT * Xy;
-            jc.CTFR0FRFTXz =      jc.CTFR0FRFT * Xz;
-    }
+            if (prepareJac)
+            {
+                jc.KfCTFR0FRFT  = Kf  * jc.CTFR0FRFT;
+                jc.KcxCTFR0FRFT = Kcx * jc.CTFR0FRFT;
+                jc.KcyCTFR0FRFT = Kcy * jc.CTFR0FRFT;
+                jc.KCTFR0FRxFT  = K   * jc.CTFR0FRxFT;
+                jc.KCTFR0FRyFT  = K   * jc.CTFR0FRyFT;
+                jc.KCTFR0FRzFT  = K   * jc.CTFR0FRzFT;
+                jc.KCTFR0FRwFT  = K   * jc.CTFR0FRwFT;
+                jc.KCTFR0FRFTx  = K   * jc.CTFR0FRFTx;
+                jc.KCTFR0FRFTy  = K   * jc.CTFR0FRFTy;
+                jc.KCTFR0FRFTz  = K   * jc.CTFR0FRFTz;
+                jc.KCTFR0FRFTXx =      jc.KCTFR0FRFT * Xx;
+                jc.KCTFR0FRFTXy =      jc.KCTFR0FRFT * Xy;
+                jc.KCTFR0FRFTXz =      jc.KCTFR0FRFT * Xz;
+                jc.CTFR0FRFTXx =      jc.CTFR0FRFT * Xx;
+                jc.CTFR0FRFTXy =      jc.CTFR0FRFT * Xy;
+                jc.CTFR0FRFTXz =      jc.CTFR0FRFT * Xz;
+            }
+    }});
 }
 
 void corecvs::ReconstructionFunctor::writeParams(double* params)
@@ -707,7 +728,6 @@ void corecvs::ReconstructionFunctor::computeErrors(double *out, const std::vecto
 
 corecvs::SparseMatrix corecvs::ReconstructionFunctor::getNativeJacobian(const double* in, double delta)
 {
-    readParams(in);
     switch(error)
     {
         case ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType::REPROJECTION:
@@ -715,7 +735,7 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::getNativeJacobian(const do
         case ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType::RAY_DIFF:
             return jacobianRayDiff(in);
         default:
-            return corecvs::SparseFunctionArgs::getJacobian(in, delta);
+            return corecvs::SparseFunctionArgs::getNativeJacobian(in, delta);
     }
 }
 
@@ -734,14 +754,15 @@ corecvs::Matrix44 corecvs::ReconstructionFunctor::RayDiffJ(double ux, double uy,
 
 corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianRayDiff(const double* in)
 {
-    readParams(in);
+    readParams(in, true);
     std::vector<double> values(sparseCol.size());
     int nIn = getInputNum(), nOut = getOutputNum(),
         lastProjection = (int)revDependency.size(),
         nErr = getErrorComponentsPerPoint();
     bool exc = excessiveQuaternionParametrization;
     const int rotationParams = exc ? INPUTS_PER_ORIENTATION_EXC : INPUTS_PER_ORIENTATION_NEX;
-    corecvs::parallelable_for(0, lastProjection / nErr, [&](const corecvs::BlockedRange<int> &r){
+    int bs = std::max((lastProjection / nErr) / 256, 1);
+    corecvs::parallelable_for(0, lastProjection / nErr, bs, [&](const corecvs::BlockedRange<int> &r){
     for (int ii= r.begin(); ii< r.end(); ++ii)
     {
         int i = ii * nErr;
@@ -882,50 +903,21 @@ corecvs::Matrix44 corecvs::ReconstructionFunctor::Translation(double tx, double 
 
 corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection(const double* in)
 {
-    readParams(in);
-    const corecvs::Matrix44
-            FTx(0.0, 0.0, 0.0,-1.0,
-                0.0, 0.0, 0.0, 0.0,
-                0.0, 0.0, 0.0, 0.0,
-                0.0, 0.0, 0.0, 0.0),
-            FTy(0.0, 0.0, 0.0, 0.0,
-                0.0, 0.0, 0.0,-1.0,
-                0.0, 0.0, 0.0, 0.0,
-                0.0, 0.0, 0.0, 0.0),
-            FTz(0.0, 0.0, 0.0, 0.0,
-                0.0, 0.0, 0.0, 0.0,
-                0.0, 0.0, 0.0,-1.0,
-                0.0, 0.0, 0.0, 0.0);
+    readParams(in, true);
     std::vector<double> values(sparseCol.size());
     int nIn = getInputNum(), nOut = getOutputNum(),
         lastProjection = (int)revDependency.size(),
         nErr = getErrorComponentsPerPoint();
     bool exc = excessiveQuaternionParametrization;
     const int rotationParams = exc ? INPUTS_PER_ORIENTATION_EXC : INPUTS_PER_ORIENTATION_NEX;
-    corecvs::parallelable_for(0, lastProjection / nErr, [&](const corecvs::BlockedRange<int> &r){
+    int bs = std::max((lastProjection / nErr) / 256, 1);
+    corecvs::parallelable_for(0, lastProjection / nErr, bs, [&](const corecvs::BlockedRange<int> &r){
     for (int ii= r.begin(); ii< r.end(); ++ii)
     {
         int i = ii * nErr;
         auto& list = sparseDependency[i];
-#if 0
-        if (list.f != DependencyList::UNUSED)
-            std::cout << "!|!|";
-        else
-            std::cout << "-|-|";
-#endif
         if (i < lastProjection)
         {
-            /*
-             * Here we prepare some useful things:
-             * Rc, Rp, diffs, Ts, intrinsics
-             */
-#define IFUSED(p, N, A) \
-            if (list.p != DependencyList::UNUSED) \
-            { \
-                for (int ii = 0; ii < N; ++ii) \
-                    CORE_ASSERT_TRUE_S(list[&list.p - list.begin() + ii] != DependencyList::UNUSED); \
-                A \
-            }
 #define SPARSE(p, ii) \
             values[sparseDependency[i + ii].p]
 #define SPARSEV(p, v) \
