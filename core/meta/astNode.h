@@ -290,20 +290,6 @@ inline ASTNode operator /(const ASTNode &left, const double &right)
     return ASTNode(ASTNodeInt::OPERATOR_DIV, left,  ASTNode(right));
 }
 
-/*ASTNode operator +(const ASTNode &left, const ASTNode &right)
-{
-    return ASTNode(ASTNode::OPERATOR_ADD, &left, &right);
-}
-
-ASTNode operator -(const ASTNode &left, const ASTNode &right)
-{
-    return ASTNode(ASTNode::OPERATOR_SUB, &left, &right);
-}
-
-ASTNode operator /(const ASTNode &left, const ASTNode &right)
-{
-    return ASTNode(ASTNode::OPERATOR_DIV, &left, &right);
-}*/
 
 } //namespace corecvs
 

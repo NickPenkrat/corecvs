@@ -19,48 +19,54 @@
 #include "abstractBuffer.h"
 #include "matrixOperations.h"
 
+#include "packedDerivative.h"
+
 #include "astNode.h"
 #include "function.h"
 
 using namespace std;
 using namespace corecvs;
 
-ASTNode operator "" _x(const char * name, size_t len)
+ASTNode operator "" _x(const char * name, size_t /*len*/)
 {
     return ASTNode(name);
 }
 
 typedef GenericQuaternion<ASTNode> ASTQuaternion;
-class ASTMatrix33 : public AbstractBuffer<ASTNode, int>, public MatrixOperationsBase<ASTMatrix33, ASTNode>
+
+template<class Element>
+class AbsMatrix33 : public AbstractBuffer<Element, int>, public MatrixOperationsBase<AbsMatrix33<Element>, Element>
 {
 public:
-    typedef ASTNode ElementType;
+    typedef Element ElementType;
 
-    ASTMatrix33() : AbstractBuffer<ASTNode, int>(3,3) {}
+    AbsMatrix33() : AbstractBuffer<Element, int>(3,3) {}
 
     /* Matrix Operations interface */
-    ASTNode &atm(int i, int j) {
-        return element(i, j);
+    Element &atm(int i, int j) {
+        return this->element(i, j);
     }
-    const ASTNode &atm(int i, int j) const {
-        return element(i, j);
+    const Element &atm(int i, int j) const {
+        return this->element(i, j);
     }
 
-    static ASTMatrix33 createMatrix(int /*h*/, int /*w*/) {return ASTMatrix33(); }
+    static AbsMatrix33 createMatrix(int /*h*/, int /*w*/) {return AbsMatrix33(); }
 
     /* Additional helper function */
     void fillWithArgs(
-             ASTNode _a00, ASTNode _a01, ASTNode _a02,
-             ASTNode _a10, ASTNode _a11, ASTNode _a12,
-             ASTNode _a20, ASTNode _a21, ASTNode _a22
+             Element _a00, Element _a01, Element _a02,
+             Element _a10, Element _a11, Element _a12,
+             Element _a20, Element _a21, Element _a22
          )
     {
-        element(0,0) = _a00;  element(0,1) = _a01;   element(0,2) = _a02;
-        element(1,0) = _a10;  element(1,1) = _a11;   element(1,2) = _a12;
-        element(2,0) = _a20;  element(2,1) = _a21;   element(2,2) = _a22;
+        this->element(0,0) = _a00;  this->element(0,1) = _a01;   this->element(0,2) = _a02;
+        this->element(1,0) = _a10;  this->element(1,1) = _a11;   this->element(1,2) = _a12;
+        this->element(2,0) = _a20;  this->element(2,1) = _a21;   this->element(2,2) = _a22;
     }
-
 };
+
+typedef AbsMatrix33<ASTNode> ASTMatrix33;
+typedef AbsMatrix33<PackedDerivative> PDMatrix33;
 
 TEST(meta, testmeta)
 {
@@ -141,6 +147,27 @@ public:
     }
 };
 
+
+TEST(meta, pdExample)
+{
+    {
+        PackedDerivative F = PackedDerivative::X(5.0);
+        std::cout << F << endl;
+    }
+
+    {
+        PackedDerivative B = PackedDerivative::X(5.0);
+        PackedDerivative F = B * B;
+        std::cout << F << endl;
+    }
+
+    {
+        PackedDerivative B = PackedDerivative::X(5.0);
+        PackedDerivative F = sqrt(B);
+        std::cout << F << endl;
+    }
+}
+
 TEST(meta, matrixExample)
 {
     ASTContext::MAIN_CONTEXT = new ASTContext();
@@ -220,6 +247,19 @@ TEST(meta, matrixExample)
     }
 
     cout << J1;
+
+
+    /*Packed derivative*/
+    GenericQuaternion<PackedDerivative> QP(PackedDerivative::X(in[0]), PackedDerivative(in[1]), PackedDerivative(in[2]), PackedDerivative(in[3]));
+    PDMatrix33 MP = QP.toMatrixGeneric<PDMatrix33>();
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            cout << MP.atm(i,j) << endl;
+        }
+    }
+
 
 
     /*First compare the output */
