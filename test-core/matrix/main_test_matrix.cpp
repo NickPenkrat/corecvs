@@ -1197,6 +1197,23 @@ TEST(SparseMatrix, denseCols2)
     ASSERT_EQ(rowIdx[0], 1);
 }
 
+TEST(SparseMatrix, denseRows2)
+{
+    double foo[] =
+    {
+        0.0,
+        1.0
+    };
+    corecvs::SparseMatrix F(corecvs::Matrix(1, 2, foo));
+    std::vector<int> rowIdx;
+    auto D = F.denseRows(0, 0, 2, 1, rowIdx);
+    ASSERT_EQ(D.w, 1);
+    ASSERT_EQ(D.h, 1);
+    ASSERT_EQ(rowIdx.size(), 1);
+    ASSERT_EQ(rowIdx[0], 1);
+}
+
+
 TEST(SparseMatrix, denseCols3)
 {
     double foo[] =
