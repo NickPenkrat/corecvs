@@ -133,10 +133,16 @@ SparseMatrix::SparseMatrix(int h, int w, const std::map<std::pair<int, int>, dou
 
 double SparseMatrix::a(int y, int x) const
 {
+#if 0
     int i = std::lower_bound(&columns[rowPointers[y]], &columns[rowPointers[y + 1]], x) - &columns[0];
     if (i < rowPointers[y + 1] && columns[i] == x)
         return values[i];
     return 0.0;
+#else
+	for (int i = rowPointers[y]; i < rowPointers[y + 1]; ++i)
+		if (columns[i] == x)
+			return values[i];
+#endif
 }
 
 Matrix SparseMatrix::denseRows(int x1, int y1, int x2, int y2, std::vector<int> &colIdx)
@@ -197,12 +203,19 @@ Matrix SparseMatrix::denseCols(int x1, int y1, int x2, int y2, std::vector<int> 
 
     int w = x2 - x1;
     rowIdx.clear();
+	std::vector<int*> b, e;
+	b.reserve(y2-y1);
+	e.reserve(y2-y1);
     for (int i = y1; i < y2; ++i)
     {
         int* cbegin = std::lower_bound(&columns[rowPointers[i]], &columns[rowPointers[i + 1]], x1),
            *   cend = std::lower_bound(&columns[rowPointers[i]], &columns[rowPointers[i + 1]], x2);
         if (cbegin < cend)
+		{
             rowIdx.push_back(i);
+            b.push_back(cbegin);
+            e.push_back(cend);
+		}
     }
 
     int h = rowIdx.size();
@@ -210,9 +223,7 @@ Matrix SparseMatrix::denseCols(int x1, int y1, int x2, int y2, std::vector<int> 
     for (int y = 0; y < h; ++y)
     {
         int i = rowIdx[y];
-        int* cbegin = std::lower_bound(&columns[rowPointers[i]], &columns[rowPointers[i + 1]], x1),
-           *   cend = std::lower_bound(&columns[rowPointers[i]], &columns[rowPointers[i + 1]], x2);
-        for (int* ptr = cbegin; ptr < cend; ++ptr)
+        for (int* ptr = b[i]; ptr < e[i]; ++ptr)
             M.a(y, *ptr - x1) = values[ptr - &columns[0]];
     }
     return M;
@@ -232,6 +243,7 @@ void SparseMatrix::swapCoords(int &x1, int &y1, int &x2, int &y2)  const
 
 double& SparseMatrix::a(int y, int x)
 {
+#if 0
     int i = std::lower_bound(&columns[rowPointers[y]], &columns[rowPointers[y + 1]], x) - &columns[0];
     if (i < rowPointers[y + 1] && columns[i] == x)
         return values[i];
@@ -240,6 +252,17 @@ double& SparseMatrix::a(int y, int x)
     values.insert(values.begin() + i, 0.0);
     for (int j = y + 1; j <= h; ++j)
         ++rowPointers[j];
+#else
+	int i = 0;
+	for (i = rowPointers[y]; i < rowPointers[y + 1] && columns[i] < x; ++i);
+	if (i < rowPointers[y + 1] && columns[i] == x)
+	   return values[i];
+	CORE_ASSERT_TRUE_S(rowPointers[y + 1] == i || columns[i] > x);
+	columns.insert(columns.begin() + i, x);
+	values.insert(values.begin() + i, 0.0);
+    for (int j = y + 1; j <= h; ++j)
+        ++rowPointers[j];
+#endif
     return values[i];
 }
 
@@ -824,21 +847,46 @@ bool corecvs::SparseMatrix::LinSolveSchurComplement(const corecvs::SparseMatrix 
     // Computing BD^{-1}
     //recvs::Matrix BDinv(Bh, Dw);
     auto startDinvBt = std::chrono::high_resolution_clock::now();
-#if 0
+//	std::cout << "ENTERING DINVTBT" << std::endl;
+//#if 1
     int ND = (int)qrd.size();
+    int BS = std::max(ND / 8, 1);
     std::vector<corecvs::Matrix> dBlocks(ND);
     std::vector<std::vector<int>> denseCols(ND);
+	std::vector<int> cols(ND), rows(ND);
 
-    corecvs::parallelable_for(0, ND, [&](const corecvs::BlockedRange<int> &r)
+//	std::cout << "BLOCKS" << std::endl;
+    corecvs::parallelable_for(0, ND, BS, [&](const corecvs::BlockedRange<int> &r)
             {
                 for (int i = r.begin(); i != r.end(); ++i)
                 {
                     auto begin = diagBlocks[i] - diagBlocks[0], end = diagBlocks[i + 1] - diagBlocks[0];
                     auto len = end - begin;
                     dBlocks[i] = B.denseCols(begin, 0, end, B.h, denseCols[i]).t();
+                    cols[i] = dBlocks[i].w;
+                    rows[i] = dBlocks[i].h;
                 }
             });
-    corecvs::parallelable_for(0, ND, [&](const corecvs::BlockedRange<int> &r)
+    auto blockCopy = std::chrono::high_resolution_clock::now();
+//	std::cout << "NNZ" << std::endl;
+    int nnz = 0;
+	std::vector<int> cumC(ND);
+    for (int i = 0; i < ND; ++i)
+	{
+    	int s = cols[i] * rows[i];
+    	nnz += s;
+    	cumC[i] = i == 0 ? s : s + cumC[i - 1];
+	}
+    corecvs::Matrix m(1,1);
+//	std::cout << "THIS STUFF WILL HAVE " << nnz << " nnz entries" << std::endl;
+    auto sizeComp = std::chrono::high_resolution_clock::now();
+    corecvs::SparseMatrix DinvtBt(m);
+    {
+        int h = B.w, w = B.h;
+        std::vector<int> rowPointers(h + 1), columns(nnz);
+        std::vector<double> values(nnz);
+
+    	corecvs::parallelable_for(0, ND, BS, [&](const corecvs::BlockedRange<int> &r)
             {
                 for (int i = r.begin(); i != r.end(); ++i)
                 {
@@ -859,36 +907,34 @@ bool corecvs::SparseMatrix::LinSolveSchurComplement(const corecvs::SparseMatrix 
                             LAPACKE_dsytrs(LAPACK_ROW_MAJOR, 'U', len, MB.w, MM.data, MM.stride, &pivots[pivotIdx[i]], MB.data, MB.stride);
                     }
 
+					auto& idx= denseCols[i];
+					int NC = idx.size();
+					rowPointers[begin] = i == 0 ? 0 : cumC[i - 1];
+					for (int ii = 0; ii < len; ++ii)
+					{
+						int cid = rowPointers[ii + begin];
+						memcpy(&values [cid], &MB.a(ii, 0), sizeof(double) * NC);
+						memcpy(&columns[cid], &idx[0], sizeof(int) * NC);
+						if (ii + 1 < len || i + 1 == ND)
+							rowPointers[ii + begin + 1] = rowPointers[ii + begin] + NC;
+					}
                 }
             });
-    corecvs::Matrix m(1,1);
-    corecvs::SparseMatrix DinvtBt(m);
-    {
-        int h = B.w, w = B.h;
-        std::vector<int> rowPointers(h + 1), columns;
-        std::vector<double> values;
-        for (int i = 0; i < ND; ++i)
-        {
-            int begin = diagBlocks[i] - diagBlocks[0], end = diagBlocks[i + 1] - diagBlocks[0];
-            int len = end - begin;
-            auto& MB = dBlocks[i];
-            auto& idx= denseCols[i];
-            int NC = idx.size();
-            for (int ii = 0; ii < len; ++ii)
-            {
-                for (int jj = 0; jj < NC; ++jj)
-                {
-                    columns.push_back(idx[jj]);
-                    values.push_back(MB.a(ii, jj));
-                }
-                rowPointers[ii + begin + 1] = values.size();
-            }
-        }
         DinvtBt = corecvs::SparseMatrix(h, w, values, columns, rowPointers);
     }
-#else
-    auto DinvtBt = (corecvs::Matrix)(!symmetric ? B.t() : C);
-    CORE_ASSERT_TRUE_S(DinvtBt.h == Dw && DinvtBt.w == Bh);
+    auto mainLoop = std::chrono::high_resolution_clock::now();
+    auto loop = (mainLoop - sizeComp).count() / 1e9,
+    	 size = (sizeComp - blockCopy).count() / 1e9,
+    	 copy = (blockCopy - startDinvBt).count() / 1e9;
+    auto total = loop + size + copy;
+	std::cout << "\tLOOP: " << loop << " " << loop / total * 100.0 << "%" << std::endl;
+	std::cout << "\tSIZE: " << size << " " << size / total * 100.0 << "%" << std::endl;
+	std::cout << "\tCOPY: " << copy << " " << copy / total * 100.0 << "%" << std::endl;
+    	 
+//#else
+    auto stopDinvBt1= std::chrono::high_resolution_clock::now();
+    auto DinvtBt2 = (corecvs::Matrix)(!symmetric ? B.t() : C);
+    CORE_ASSERT_TRUE_S(DinvtBt2.h == Dw && DinvtBt2.w == Bh);
     corecvs::parallelable_for(0, (int)qrd.size(), [&](const corecvs::BlockedRange<int> &r)
     {
         for (int i = r.begin(); i < r.end(); ++i)
@@ -896,25 +942,29 @@ bool corecvs::SparseMatrix::LinSolveSchurComplement(const corecvs::SparseMatrix 
             auto begin = diagBlocks[i], end = diagBlocks[i + 1];
             auto len = end - begin;
             auto& MM = qrd[i];
-            auto ptr = &DinvtBt.a(diagBlocks[i] - diagBlocks[0], 0);
+            auto ptr = &DinvtBt2.a(diagBlocks[i] - diagBlocks[0], 0);
             if (!symmetric)
             {
-                LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'T', len, Bh, MM.data, MM.stride, &pivots[pivotIdx[i]], ptr, DinvtBt.stride);
+                LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'T', len, Bh, MM.data, MM.stride, &pivots[pivotIdx[i]], ptr, DinvtBt2.stride);
             }
             else
             {
                 if (posDef)
-                    LAPACKE_dpotrs(LAPACK_ROW_MAJOR, 'U', len, Bh, MM.data, MM.stride, ptr, DinvtBt.stride);
+                    LAPACKE_dpotrs(LAPACK_ROW_MAJOR, 'U', len, Bh, MM.data, MM.stride, ptr, DinvtBt2.stride);
                 else
-                    LAPACKE_dsytrs(LAPACK_ROW_MAJOR, 'U', len, Bh, MM.data, MM.stride, &pivots[pivotIdx[i]], ptr, DinvtBt.stride);
+                    LAPACKE_dsytrs(LAPACK_ROW_MAJOR, 'U', len, Bh, MM.data, MM.stride, &pivots[pivotIdx[i]], ptr, DinvtBt2.stride);
             }
         }
     });
-#endif
+//#endif
     auto stopDinvBt = std::chrono::high_resolution_clock::now();
+    auto t1 = (stopDinvBt1 - startDinvBt).count(), t2 = (stopDinvBt - stopDinvBt1).count();
+	std::cout << t1 / 1e9 << " vs " << t2 / 1e9 << (t1 < t2 ? "NEW WINS" : "OLD WINS") << std::endl;
+	static int newWins = 0, oldWins = 0;
+	((t1 < t2) ? newWins : oldWins)++;
     // Computing lhs/rhs
     auto startLhsRhs = std::chrono::high_resolution_clock::now();
-#if 0
+#if 1
 	corecvs::Vector a(Ah, &Bv[0]), b(Ch, &Bv[Ah]), rhs;
     corecvs::Matrix lhs;
 
@@ -993,6 +1043,8 @@ bool corecvs::SparseMatrix::LinSolveSchurComplement(const corecvs::SparseMatrix 
         SPRINT("LhsRhs", lhsRhs)
         SPRINT("X", xxx)
         SPRINT("Y", yyy);
+    	std::cout << "\t" << "NEW METHOD WINS IN " << (double(newWins) / double(newWins + oldWins) * 100.0) << " cases" << std::endl;
+    	newWins = oldWins = 0;
     }
 
     for (int i = 0; i < Aw; ++i)
