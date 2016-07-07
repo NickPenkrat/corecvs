@@ -24,6 +24,7 @@ SUBDIRS +=       \
     debayer             \
     qtScriptConsole     \
     softrender          \
+    indoors             \
 
 
 with_opencv {
@@ -83,3 +84,6 @@ calibration_job_calibrate           = calibration_job_calibrate/calibration_job_
 geometry_verificator                = geometry_verificator/geometry_verificator.pro
 
 qtScriptConsole                     = qtScriptConsole/qtScriptConsole.pro
+
+indoors.file                        = indoors/indoors.pro
+indoors.depends                    += topcon_utils_restricted
