@@ -7,7 +7,7 @@
  *
  * \ingroup autotest
  */
-
+#if !defined(_WIN32) && !defined(_MSC_VER)
 #include <iostream>
 #include "gtest/gtest.h"
 
@@ -267,3 +267,54 @@ TEST(meta, matrixExample)
 
 
 }
+#else
+/*Return back old tests for MSVC*/
+
+#include <iostream>
+#include "gtest/gtest.h"
+
+#include "global.h"
+#include "astNode.h"
+
+#include "fixedVector.h"
+#include "matrix33.h"
+#include "quaternion.h"
+
+using namespace std;
+using namespace corecvs;
+
+TEST(meta, testmeta)
+{
+    ASTContext::MAIN_CONTEXT = new ASTContext();
+
+    cout << "Starting test <meta>" << endl;
+
+    ASTNode e = (ASTNode("X") * (ASTNode(5.0)  + ASTNode(4.0)));
+    e.p->codeGenCpp("test");
+    e.p->codeGenCpp("test", {"", ""});
+
+    cout << "Some more advanced stuff" << endl;
+
+    FixedVector<ASTNode, 5> test1;
+    FixedVector<ASTNode, 5> test2;
+
+    for (int i = 0; i < test1.LENGTH; i++)
+    {
+        test1[i] = ASTNode((double)i);
+        test2[i] = ASTNode(1);
+    }
+
+    (test1 & test2).p->codeGenCpp("dot_product", {"", ""});
+
+    cout << "Some more stuff" << endl;
+
+    GenericQuaternion<ASTNode> Q(ASTNode("Qx"), ASTNode("Qy"), ASTNode("Qz"), ASTNode("Qt"));
+    GenericQuaternion<ASTNode> P(ASTNode("Px"), ASTNode("Py"), ASTNode("Pz"), ASTNode("Pt"));
+    GenericQuaternion<ASTNode> R(ASTNode("Rx"), ASTNode("Ry"), ASTNode("Rz"), ASTNode("Rt"));
+    ((Q+(P^R)) & Q).p->codeGenCpp("quaternion1", {"", ""});
+
+    delete_safe(ASTContext::MAIN_CONTEXT);
+
+    cout << "Test <meta> PASSED" << endl;
+}
+#endif
