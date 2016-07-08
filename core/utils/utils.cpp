@@ -52,6 +52,17 @@ string getEnvDirPath(cchar *envVarName)
     return toReturn;
 }
 
+string getEnvVar(cchar *envVarName)
+{
+    cchar* var = std::getenv(envVarName);
+    if (var == NULL || var[0] == 0) {
+        return "";
+    }
+
+    string toReturn(var);
+    return toReturn;
+}
+
 static string replaceSlashes(const string& str, const string& oldStr, const string& newStr)
 {
     size_t pos = 0;

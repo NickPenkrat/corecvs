@@ -55,6 +55,7 @@ namespace HelperUtils
     string          toNativeSlashes(const string& str);
 
     string          getEnvDirPath(cchar *envVarName);
+    string          getEnvVar(cchar *envVarName);
     string          getFullPath(const string& envDirPath, cchar* path, cchar* filename = NULL);
 
     inline string   getFullPath(cchar *envVarName, cchar* path, cchar* filename = NULL)
