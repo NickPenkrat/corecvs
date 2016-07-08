@@ -27,6 +27,8 @@ public:
     Affine3DQ                    location;
     std::string                  name;
 
+    int                          sequenceNumber;
+
     CameraFixture(FixtureScene * owner = NULL) :
         FixtureScenePart(owner)
     {
@@ -192,7 +194,6 @@ public:
         visitor.visit(location, Affine3DQ(), "location");
         visitor.visit(name, std::string(""), "name");
     }
-
 
 
 };
