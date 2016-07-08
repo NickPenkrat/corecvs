@@ -199,6 +199,7 @@ struct CalibrationJob
     void    prepareUndistortionTransformation(int camId, corecvs::DisplacementBuffer &dest);
     void    removeDistortion(corecvs::RGB24Buffer &src, corecvs::RGB24Buffer &dst, corecvs::DisplacementBuffer &transform, double outW, double outH);
     void    allRemoveDistortion();
+    void    allRemoveDistortionForPattern();
 
     bool    calibrateSingleCamera(int cameraId);
     void    allCalibrateSingleCamera();
