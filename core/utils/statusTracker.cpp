@@ -53,8 +53,11 @@ void StatusTracker::incrementStarted()
     writeLock();
         currentStatus.startedActions++;
         std::cout << "Started: " << currentStatus.startedActions << std::endl;
-        CORE_ASSERT_TRUE_S(currentStatus.startedActions <= currentStatus.totalActions);
+        auto startedActions = currentStatus.startedActions;
+        auto totalActions   = currentStatus.totalActions;
     unlock();
+
+    CORE_ASSERT_TRUE_S(startedActions <= totalActions);
 }
 
 void StatusTracker::incrementCompleted()
@@ -72,10 +75,13 @@ void StatusTracker::incrementCompleted()
     writeLock();
         currentStatus.completedActions++;
         std::cout << "StatusTracker::incrementCompleted " << currentStatus << std::endl;
-
-        CORE_ASSERT_TRUE_S(currentStatus.completedActions <= currentStatus.totalActions);
-        CORE_ASSERT_TRUE_S(currentStatus.completedActions <= currentStatus.startedActions);
+        auto completedActions = currentStatus.completedActions;
+        auto startedActions   = currentStatus.startedActions;
+        auto totalActions     = currentStatus.totalActions;
     unlock();
+
+    CORE_ASSERT_TRUE_S(completedActions <= totalActions);
+    CORE_ASSERT_TRUE_S(completedActions <= startedActions);
 }
 
 AutoTracker StatusTracker::createAutoTrackerCalculationObject()
