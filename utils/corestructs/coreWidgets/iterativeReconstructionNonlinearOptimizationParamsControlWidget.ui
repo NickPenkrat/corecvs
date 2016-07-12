@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>IterativeReconstructionNonlinearOptimizationParamsControlWidget</class>
+ <widget class="QWidget" name="IterativeReconstructionNonlinearOptimizationParamsControlWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>IterativeReconstructionNonlinearOptimizationParams</string>
+  </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <property name="margin">
+     <number>3</number>
+    </property>
+    <property name="spacing">
+     <number>3</number>
+    </property>
+    <item row="0" column="0">
+     <widget class="QLabel" name="label_0">
+       <property name="text">
+         <string>errorType</string>
+       </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QComboBox" name="errorTypeComboBox">
+       <property name="currentIndex">
+         <number>3</number>
+       </property>
+       <item>
+        <property name="text">
+         <string>REPROJECTION</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>ANGULAR</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>CROSS_PRODUCT</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>RAY_DIFF</string>
+        </property>
+       </item>
+       <property name="toolTip">
+         <string>Functor optimizattion error type</string>
+       </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="label_1">
+       <property name="text">
+         <string>postAppendNonlinearIterations</string>
+       </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QSpinBox" name="postAppendNonlinearIterationsSpinBox">
+       <property name="toolTip">
+         <string>Post-append non-linear optimization iterations</string>
+       </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="label_2">
+       <property name="text">
+         <string>finalNonLinearIterations</string>
+       </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QSpinBox" name="finalNonLinearIterationsSpinBox">
+       <property name="toolTip">
+         <string>Final non-linear iterations</string>
+       </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="label_3">
+       <property name="text">
+         <string>alternatingIterations</string>
+       </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QSpinBox" name="alternatingIterationsSpinBox">
+       <property name="toolTip">
+         <string>Alternating optimization on success steps</string>
+       </property>
+     </widget>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLabel" name="label_4">
+       <property name="text">
+         <string>excessiveQuaternionParametrization</string>
+       </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QCheckBox" name="excessiveQuaternionParametrizationCheckBox">
+       <property name="toolTip">
+         <string>Excessive/non-excessive quaternion parametrization</string>
+       </property>
+       <property name="checked">
+           <bool>true</bool>
+       </property>
+     </widget>
+    </item>
+   <item row="5" column="0">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="5" column="2">
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <layoutdefault spacing="3" margin="3"/>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>errorTypeComboBox</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>IterativeReconstructionNonlinearOptimizationParamsControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>postAppendNonlinearIterationsSpinBox</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>IterativeReconstructionNonlinearOptimizationParamsControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>finalNonLinearIterationsSpinBox</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>IterativeReconstructionNonlinearOptimizationParamsControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>alternatingIterationsSpinBox</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>IterativeReconstructionNonlinearOptimizationParamsControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>excessiveQuaternionParametrizationCheckBox</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>IterativeReconstructionNonlinearOptimizationParamsControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+ </connections>
+ <slots>
+  <slot>changeParameters()</slot>
+ </slots>
+ <customwidgets>
+ </customwidgets>
+</ui>

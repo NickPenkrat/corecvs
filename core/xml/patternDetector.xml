@@ -36,9 +36,6 @@
      <field type="bool"   name="produceDebug"        defaultValue="false"/>
      <field type="bool"   name="floatSpeedup"        defaultValue="true"/>
 
-     <!--
-     <field type="double" name="gradientCrossWidth"  defaultValue="3.0" comment="Width of cross for corner gradient-score" />
-     -->
 
      <field type="double" name="normalizePercentile"  suffix="%" defaultValue="5"    comment="Brightness percentile to be cut" min="0"   max="100" />
 
@@ -63,16 +60,16 @@
      <field type="int"    name="nmsLocality"               defaultValue="20"    comment="Non Minimal Supresstion locality area" min="0"   max="999999" />
      <field type="double" name="nmsThreshold"              defaultValue="0.025" comment="Non Minimal Supresstion threshold"     min="0"   max="99"     decimals="3" />
 
-     <field type="double" name="patternRadius"             size="3" min="0" max="999999" defaultValue="0">
+     <field type="double" name="patternRadius"             size="3" min="0" max="999999" defaultValue="0" comment="Radius for multi-scale pattern detection" >
           <def0>4</def0>
           <def1>8</def1>
           <def2>12</def2>
      </field>
-     <field type="double" name="patternStartAngleDeg"      size="2" min="0" max="999999" defaultValue="0">
+     <field type="double" name="patternStartAngleDeg"      size="2" min="0" max="999999" defaultValue="0" comment="Angle for rotation-variant detection" >
          <def0>0</def0>
          <def1>45</def1>
      </field>
-     <field type="double" name="cornerScores"              size="3" min="0" max="999999" defaultValue="0">
+     <field type="double" name="cornerScores"              size="3" min="0" max="999999" defaultValue="0" comment="Radius for corner-scoring" >
          <def0>4</def0>
          <def1>8</def1>
          <def2>12</def2>

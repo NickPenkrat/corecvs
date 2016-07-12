@@ -9,16 +9,33 @@
 
 using namespace corecvs;
 
+void corecvs::SparseMatrix::spyPlot() const
+{
+    for (int i = 0; i < h; ++i)
+    {
+        for (int j = 0; j < w; ++j)
+        {
+            double v = a(i, j);
+            std::cout << (v == 0.0 ? " " : "*");
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+}
+
+int corecvs::SparseMatrix::nnz() const
+{
+    return values.size();
+}
+
+double corecvs::SparseMatrix::fillin() const
+{
+    return double(nnz()) / w / h;
+}
+
 corecvs::SparseMatrix::SparseMatrix(const SparseMatrix &src, int x1, int y1, int x2, int y2)
 {
-    x1 = std::max(0, std::min(src.w, x1));
-    x2 = std::max(0, std::min(src.w, x2));
-    y1 = std::max(0, std::min(src.h, y1));
-    y2 = std::max(0, std::min(src.h, y2));
-    if (x2 < x1)
-        std::swap(x1, x2);
-    if (y2 < y1)
-        std::swap(y1, y2);
+    src.swapCoords(x1, y1, x2, y2);
 
     h = y2 - y1;
     w = x2 - x1;
@@ -41,14 +58,7 @@ corecvs::SparseMatrix::SparseMatrix(const SparseMatrix &src, int x1, int y1, int
 
 corecvs::Matrix corecvs::SparseMatrix::denseSubMatrix(int x1, int y1, int x2, int y2) const
 {
-    x1 = std::max(0, std::min(w, x1));
-    x2 = std::max(0, std::min(w, x2));
-    y1 = std::max(0, std::min(h, y1));
-    y2 = std::max(0, std::min(h, y2));
-    if (x2 < x1)
-        std::swap(x1, x2);
-    if (y2 < y1)
-        std::swap(y1, y2);
+    swapCoords(x1, y1, x2, y2);
 
     int hh = y2 - y1,
         ww = x2 - x1;
@@ -123,18 +133,109 @@ SparseMatrix::SparseMatrix(int h, int w, const std::map<std::pair<int, int>, dou
 
 double SparseMatrix::a(int y, int x) const
 {
-    for (int i = rowPointers[y]; i < rowPointers[y + 1]; ++i)
-        if (columns[i] == x)
-            return values[i];
+    int i = std::lower_bound(&columns[rowPointers[y]], &columns[rowPointers[y + 1]], x) - &columns[0];
+    if (i < rowPointers[y + 1] && columns[i] == x)
+        return values[i];
     return 0.0;
+}
+
+Matrix SparseMatrix::denseRows(int x1, int y1, int x2, int y2, std::vector<int> &colIdx)
+{
+    swapCoords(x1, y1, x2, y2);
+    int h = y2 - y1;
+
+    colIdx.clear();
+    std::vector<int> rPtr(h);
+    for (int i = 0; i < h; ++i)
+    {
+        rPtr[i] = rowPointers[i + y1];
+        while (columns[rPtr[i]] < x2 && rPtr[i] < rowPointers[i + y1])
+            rPtr[i]++;
+    }
+    std::vector<int> rStartPtr = rPtr;
+
+    while (1)
+    {
+        int nextCol = -1;
+        for (int i = 0; i < h; ++i)
+        {
+            if (rPtr[i] == rowPointers[i + y1 + 1] || columns[rPtr[i]] >= x2)
+                continue;
+            if (nextCol < 0)
+                nextCol = columns[rPtr[i]];
+            nextCol = std::min(nextCol, columns[rPtr[i]]);
+        }
+        if (nextCol == -1)
+            break;
+        CORE_ASSERT_TRUE_S(nextCol >= x1 && nextCol < x2);
+        colIdx.push_back(nextCol);
+        for (int i = 0; i < h; ++i)
+            if (rPtr[i] != rowPointers[i + y1 + 1] && columns[rPtr[i]] < x2 && columns[rPtr[i]] == nextCol)
+                ++rPtr[i];
+    }
+    int w = colIdx.size();
+    rPtr = rStartPtr;
+
+    corecvs::Matrix M(h, w);
+    for (int nnzCols = 0; nnzCols < w; ++nnzCols)
+    {
+        int nextCol = colIdx[nnzCols];
+        CORE_ASSERT_TRUE_S(nextCol >= x1 && nextCol < x2);
+        for (int i = 0; i < h; ++i)
+            if (rPtr[i] != rowPointers[i + y1 + 1] && columns[rPtr[i]] < x2 && columns[rPtr[i]] == nextCol)
+            {
+                M.a(i, nnzCols) = values[rPtr[i]];
+                ++rPtr[i];
+            }
+    }
+    return M;
+}
+
+Matrix SparseMatrix::denseCols(int x1, int y1, int x2, int y2, std::vector<int> &rowIdx)
+{
+    swapCoords(x1, y1, x2, y2);
+
+    int w = y2 - y1;
+    rowIdx.clear();
+    for (int i = y1; i < y2; ++i)
+    {
+        int* cbegin = std::lower_bound(&columns[rowPointers[i]], &columns[rowPointers[i + 1]], x1),
+           *   cend = std::lower_bound(&columns[rowPointers[i]], &columns[rowPointers[i + 1]], x2);
+        if (cbegin < cend)
+            rowIdx.push_back(i);
+    }
+
+    int h = rowIdx.size();
+    Matrix M(h, w);
+    for (int y = 0; y < h; ++y)
+    {
+        int i = rowIdx[y] + y1;
+        int* cbegin = std::lower_bound(&columns[rowPointers[i]], &columns[rowPointers[i + 1]], x1),
+           *   cend = std::lower_bound(&columns[rowPointers[i]], &columns[rowPointers[i + 1]], x2);
+        for (int* ptr = cbegin; ptr < cend; ++ptr)
+            M.a(y, *ptr - y1) = values[ptr - &columns[0]];
+    }
+    return M;
+}
+
+void SparseMatrix::swapCoords(int &x1, int &y1, int &x2, int &y2)  const
+{
+    x1 = std::max(0, std::min(w, x1));
+    x2 = std::max(0, std::min(w, x2));
+    y1 = std::max(0, std::min(h, y1));
+    y2 = std::max(0, std::min(h, y2));
+    if (x2 < x1)
+        std::swap(x1, x2);
+    if (y2 < y1)
+        std::swap(y1, y2);
 }
 
 double& SparseMatrix::a(int y, int x)
 {
-    int i = 0;
-    for (i = rowPointers[y]; i < rowPointers[y + 1] && columns[i] < x; ++i);
+    int i = std::lower_bound(&columns[rowPointers[y]], &columns[rowPointers[y + 1]], x) - &columns[0];
     if (i < rowPointers[y + 1] && columns[i] == x)
         return values[i];
+    CORE_ASSERT_TRUE_S(rowPointers[y + 1] == i || columns[i] > x);
     columns.insert(columns.begin() + i, x);
     values.insert(values.begin() + i, 0.0);
     for (int j = y + 1; j <= h; ++j)
@@ -723,7 +824,7 @@ bool corecvs::SparseMatrix::LinSolveSchurComplement(const corecvs::SparseMatrix 
     // Computing BD^{-1}
     //recvs::Matrix BDinv(Bh, Dw);
     auto startDinvBt = std::chrono::high_resolution_clock::now();
-    corecvs::Matrix DinvtBt = (corecvs::Matrix)B.t();
+    auto DinvtBt = (corecvs::Matrix)(!symmetric ? B.t() : C);
     CORE_ASSERT_TRUE_S(DinvtBt.h == Dw && DinvtBt.w == Bh);
     corecvs::parallelable_for(0, (int)qrd.size(), [&](const corecvs::BlockedRange<int> &r)
     {

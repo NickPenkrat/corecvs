@@ -24,6 +24,8 @@ SUBDIRS +=       \
     debayer             \
     qtScriptConsole     \
     softrender          \
+    pmvs_generator \
+    stereo_generator
 
 
 with_opencv {
@@ -66,7 +68,7 @@ new_board_detector	            = new_board_detector/new_board_detector.pro
 
 distortion_corrector	            = distortion_corrector/distortion_corrector.pro
 
-matcher_basic                       = matcher_basic/feature2d_basic.pro
+matcher_basic                       = matcher_basic/matcher_basic.pro
 matcher_full                        = matcher_full/matcher_full.pro
 
 camera_calibration                  = camera_calibration/camera_calibration.pro
@@ -81,5 +83,8 @@ calibration_job_apply_undistortion  = calibration_job_apply_undistortion/calibra
 calibration_job_calibrate           = calibration_job_calibrate/calibration_job_calibrate.pro
 
 geometry_verificator                = geometry_verificator/geometry_verificator.pro
+pmvs_generator                      = pmvs_generator/pmvs_generator.pro
 
 qtScriptConsole                     = qtScriptConsole/qtScriptConsole.pro
+
+stereo_generator                    = stereo_generator/stereo_generator.pro

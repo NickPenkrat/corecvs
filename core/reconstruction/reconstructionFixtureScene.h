@@ -6,27 +6,9 @@
 #include "rgbColor.h"
 #include "essentialFeatureFilter.h"
 
+#include "generated/featureDetectionParams.h"
 
 namespace corecvs {
-
-struct FeatureDetectionParams
-{
-    std::string detector   = "ORB";
-    std::string descriptor = "ORB";
-    std::string matcher    = "BF" ;
-    double b2bThreshold    = 0.9  ;
-    bool matchF2F          = false;
-
-    template<class VisitorType>
-        void accept(VisitorType &visitor)
-        {
-            visitor.visit(detector      ,std::string("ORB")    ,"detector"        );
-            visitor.visit(descriptor    ,std::string("ORB")    ,"descriptor"      );
-            visitor.visit(matcher       ,std::string("BF")     ,"matcher"         );
-            visitor.visit(b2bThreshold  ,0.9      ,"b2bThreshold"    );
-            visitor.visit(matchF2F      ,false    ,"matchF2F"        );
-        }
-};
 
 enum class ReconstructionState
 {
@@ -64,7 +46,7 @@ struct FixtureInitialization
      *       V'DV, then we are looking for (1/sqrt(D))*V
      */
     Matrix33  positioningAccuracy = corecvs::Matrix33(0.005, 0, 0, 0, 0.005, 0, 0, 0, 0.005).inv();
-    bool enforcePosition = true;
+    bool      enforcePosition = true;
     double    rotationalAccuracy;
 };
 
@@ -73,7 +55,7 @@ class ReconstructionFixtureScene : public FixtureScene
 {
 public:
     ReconstructionFixtureScene();
-    virtual ~ReconstructionFixtureScene() {};
+    virtual ~ReconstructionFixtureScene() {}
 
     virtual void deleteCamera        (FixtureCamera *camera);
     virtual void deleteCameraFixture (CameraFixture *fixture, bool recursive = true);
@@ -164,17 +146,21 @@ public:
 private:
     struct ParallelEssentialFilter
     {
-        ReconstructionFixtureScene* scene;
+        ReconstructionFixtureScene      *scene;
         std::vector<std::pair<WPP, WPP>> work;
-        EssentialFilterParams params;
-        ParallelEssentialFilter(ReconstructionFixtureScene* scene, std::vector<std::pair<WPP, WPP>> &work, EssentialFilterParams params) : scene(scene), work(work), params(params)
-        {
-        }
+        EssentialFilterParams            params;
+
+        ParallelEssentialFilter(ReconstructionFixtureScene* scene_
+				, std::vector<std::pair<WPP, WPP>> &work_
+				, EssentialFilterParams params_)
+            : scene(scene_), work(work_), params(params_)
+        {}
+
         void operator() (const corecvs::BlockedRange<int> &r) const
         {
             for (int i = r.begin(); i < r.end(); ++i)
             {
-                auto w = work[i];
+                auto& w = work[i];
                 scene->filterEssentialRansac(w.first, w.second, params);
             }
         }
@@ -185,21 +171,19 @@ private:
 struct ParallelTrackPainter
 {
     ParallelTrackPainter(
-            std::vector<std::pair<WPP, std::string>> &images,
-            ReconstructionFixtureScene* scene,
-            std::unordered_map<SceneFeaturePoint*, RGBColor> colorizer, bool pairs = false) :
-            colorizer(&colorizer)
-          , images(images)
-          , scene(scene), pairs(pairs)
-    {
-    }
+            std::vector<std::pair<WPP, std::string>> &images_,
+            ReconstructionFixtureScene* scene_,
+            std::unordered_map<SceneFeaturePoint*, RGBColor> &colorizer_,
+            bool pairs_ = false)
+    	: colorizer(colorizer_), images(images_), scene(scene_), pairs(pairs_)
+    {}
 
     void operator() (const corecvs::BlockedRange<int> &r) const;
 
-    std::unordered_map<SceneFeaturePoint*, RGBColor> *colorizer;
-    std::vector<std::pair<WPP, std::string>> images;
-    ReconstructionFixtureScene* scene;
-    bool pairs;
+    std::unordered_map<SceneFeaturePoint*, RGBColor> &colorizer;
+    std::vector<std::pair<WPP, std::string>>         &images;
+    ReconstructionFixtureScene*                       scene;
+    bool                                              pairs;
 };
 
 } // namespace corecvs

@@ -42,7 +42,7 @@ int PhotostationPlacerFeatureSelectionParameters::staticInit()
         (
           PhotostationPlacerFeatureSelectionParameters::INLIERTHRESHOLD_ID,
           offsetof(PhotostationPlacerFeatureSelectionParameters, mInlierThreshold),
-          1,
+          5,
           "inlierThreshold",
           "inlierThreshold",
           "Inlier threshold",
@@ -68,20 +68,6 @@ int PhotostationPlacerFeatureSelectionParameters::staticInit()
     fields().push_back(
         new DoubleField
         (
-          PhotostationPlacerFeatureSelectionParameters::PAIRCORRESPONDENCETHRESHOLD_ID,
-          offsetof(PhotostationPlacerFeatureSelectionParameters, mPairCorrespondenceThreshold),
-          0.25,
-          "pairCorrespondenceThreshold",
-          "pairCorrespondenceThreshold",
-          "Correspondence threshold",
-          true,
-         -50000,
-         50000
-        )
-    );
-    fields().push_back(
-        new DoubleField
-        (
           PhotostationPlacerFeatureSelectionParameters::DISTANCELIMIT_ID,
           offsetof(PhotostationPlacerFeatureSelectionParameters, mDistanceLimit),
           1000,
@@ -91,6 +77,72 @@ int PhotostationPlacerFeatureSelectionParameters::staticInit()
           true,
          -50000,
          50000
+        )
+    );
+    fields().push_back(
+        new StringField
+        (
+          PhotostationPlacerFeatureSelectionParameters::DETECTOR_ID,
+          offsetof(PhotostationPlacerFeatureSelectionParameters, mDetector),
+          "ORB",
+          "detector",
+          "detector",
+          "Detector"
+        )
+    );
+    fields().push_back(
+        new StringField
+        (
+          PhotostationPlacerFeatureSelectionParameters::DESCRIPTOR_ID,
+          offsetof(PhotostationPlacerFeatureSelectionParameters, mDescriptor),
+          "ORB",
+          "descriptor",
+          "descriptor",
+          "Descriptor"
+        )
+    );
+    fields().push_back(
+        new StringField
+        (
+          PhotostationPlacerFeatureSelectionParameters::MATCHER_ID,
+          offsetof(PhotostationPlacerFeatureSelectionParameters, mMatcher),
+          "",
+          "matcher",
+          "matcher",
+          "Matcher"
+        )
+    );
+    fields().push_back(
+        new DoubleField
+        (
+          PhotostationPlacerFeatureSelectionParameters::B2BTHRESHOLD_ID,
+          offsetof(PhotostationPlacerFeatureSelectionParameters, mB2bThreshold),
+          0.9,
+          "b2bThreshold",
+          "b2bThreshold",
+          "b2b threshold"
+        )
+    );
+    fields().push_back(
+        new DoubleField
+        (
+          PhotostationPlacerFeatureSelectionParameters::RMSEPRUNINGSCALER_ID,
+          offsetof(PhotostationPlacerFeatureSelectionParameters, mRmsePruningScaler),
+          3,
+          "rmsePruningScaler",
+          "rmsePruningScaler",
+          "RMSE pruning scaler"
+        )
+    );
+    fields().push_back(
+        new DoubleField
+        (
+          PhotostationPlacerFeatureSelectionParameters::MAXPRUNINGSCALER_ID,
+          offsetof(PhotostationPlacerFeatureSelectionParameters, mMaxPruningScaler),
+          5,
+          "maxPruningScaler",
+          "maxPruningScaler",
+          "Max pruning scaler"
         )
     );
    return 0;

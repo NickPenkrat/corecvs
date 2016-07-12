@@ -1,10 +1,8 @@
-#include <math.h>
-
-#include "global.h"
-
+#include "cameraCalculatorWidget.h"
 #include "mathUtils.h"
 
-#include "cameraCalculatorWidget.h"
+#include <math.h>
+
 #include <QtCore/QDebug>
 
 using corecvs::radToDeg;

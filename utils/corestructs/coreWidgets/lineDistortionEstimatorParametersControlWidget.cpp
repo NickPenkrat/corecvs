@@ -8,6 +8,7 @@
 
 #include "lineDistortionEstimatorParametersControlWidget.h"
 #include "ui_lineDistortionEstimatorParametersControlWidget.h"
+#include <memory>
 #include "qSettingsGetter.h"
 #include "qSettingsSetter.h"
 
@@ -37,32 +38,21 @@ LineDistortionEstimatorParametersControlWidget::~LineDistortionEstimatorParamete
 
 void LineDistortionEstimatorParametersControlWidget::loadParamWidget(WidgetLoader &loader)
 {
-    LineDistortionEstimatorParameters *params = createParameters();
+    std::unique_ptr<LineDistortionEstimatorParameters> params(createParameters());
     loader.loadParameters(*params, rootPath);
     setParameters(*params);
-    delete params;
 }
 
 void LineDistortionEstimatorParametersControlWidget::saveParamWidget(WidgetSaver  &saver)
 {
-    LineDistortionEstimatorParameters *params = createParameters();
-    saver.saveParameters(*params, rootPath);
-    delete params;
+    saver.saveParameters(*std::unique_ptr<LineDistortionEstimatorParameters>(createParameters()), rootPath);
 }
 
- /* Composite fields are NOT supported so far */
 void LineDistortionEstimatorParametersControlWidget::getParameters(LineDistortionEstimatorParameters& params) const
 {
-
-    params.setCostAlgorithm    (static_cast<LineDistortionEstimatorCost::LineDistortionEstimatorCost>(mUi->costAlgorithmComboBox->currentIndex()));
-    params.setIterationNumber  (mUi->iterationNumberSpinBox->value());
-    params.setPolinomDegree    (mUi->polinomDegreeSpinBox->value());
-    params.setSimpleJacobian   (mUi->simpleJacobianCheckBox->isChecked());
-    params.setEvenPowersOnly   (mUi->evenPowersOnlyCheckBox->isChecked());
-    params.setEstimateTangent  (mUi->estimateTangentCheckBox->isChecked());
-    params.setEstimateCenter   (mUi->estimateCenterCheckBox->isChecked());
-
+    params = *std::unique_ptr<LineDistortionEstimatorParameters>(createParameters());
 }
+
 
 LineDistortionEstimatorParameters *LineDistortionEstimatorParametersControlWidget::createParameters() const
 {
@@ -72,7 +62,7 @@ LineDistortionEstimatorParameters *LineDistortionEstimatorParametersControlWidge
      **/
 
 
-    LineDistortionEstimatorParameters *result = new LineDistortionEstimatorParameters(
+    return new LineDistortionEstimatorParameters(
           static_cast<LineDistortionEstimatorCost::LineDistortionEstimatorCost>(mUi->costAlgorithmComboBox->currentIndex())
         , mUi->iterationNumberSpinBox->value()
         , mUi->polinomDegreeSpinBox->value()
@@ -81,7 +71,6 @@ LineDistortionEstimatorParameters *LineDistortionEstimatorParametersControlWidge
         , mUi->estimateTangentCheckBox->isChecked()
         , mUi->estimateCenterCheckBox->isChecked()
     );
-    return result;
 }
 
 void LineDistortionEstimatorParametersControlWidget::setParameters(const LineDistortionEstimatorParameters &input)

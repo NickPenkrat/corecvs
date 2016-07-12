@@ -8,6 +8,7 @@
 
 #include "bitcodeBoardParamsBaseControlWidget.h"
 #include "ui_bitcodeBoardParamsBaseControlWidget.h"
+#include <memory>
 #include "qSettingsGetter.h"
 #include "qSettingsSetter.h"
 
@@ -44,39 +45,21 @@ BitcodeBoardParamsBaseControlWidget::~BitcodeBoardParamsBaseControlWidget()
 
 void BitcodeBoardParamsBaseControlWidget::loadParamWidget(WidgetLoader &loader)
 {
-    BitcodeBoardParamsBase *params = createParameters();
+    std::unique_ptr<BitcodeBoardParamsBase> params(createParameters());
     loader.loadParameters(*params, rootPath);
     setParameters(*params);
-    delete params;
 }
 
 void BitcodeBoardParamsBaseControlWidget::saveParamWidget(WidgetSaver  &saver)
 {
-    BitcodeBoardParamsBase *params = createParameters();
-    saver.saveParameters(*params, rootPath);
-    delete params;
+    saver.saveParameters(*std::unique_ptr<BitcodeBoardParamsBase>(createParameters()), rootPath);
 }
 
- /* Composite fields are NOT supported so far */
 void BitcodeBoardParamsBaseControlWidget::getParameters(BitcodeBoardParamsBase& params) const
 {
-
-    params.setVertical         (mUi->verticalCheckBox->isChecked());
-    params.setCellSize         (mUi->cellSizeSpinBox->value());
-    params.setBlackColor       (mUi->blackColorSpinBox->value());
-    params.setWhiteColor       (mUi->whiteColorSpinBox->value());
-    params.setIdentSize        (mUi->identSizeSpinBox->value());
-    params.setBoardHeight      (mUi->boardHeightSpinBox->value());
-    params.setBoardWidth       (mUi->boardWidthSpinBox->value());
-    params.setCodeWidth        (mUi->codeWidthSpinBox->value());
-    params.setCodeHeight       (mUi->codeHeightSpinBox->value());
-    params.setBitcodeIdentSize (mUi->bitcodeIdentSizeSpinBox->value());
-    params.setBitcodeConfidence(mUi->bitcodeConfidenceSpinBox->value());
-    params.setBitcodeOrientation(static_cast<BitcodeBoardOrientation::BitcodeBoardOrientation>(mUi->bitcodeOrientationComboBox->currentIndex()));
-    params.setCenterToZeroX    (mUi->centerToZeroXSpinBox->value());
-    params.setCenterToZeroY    (mUi->centerToZeroYSpinBox->value());
-
+    params = *std::unique_ptr<BitcodeBoardParamsBase>(createParameters());
 }
+
 
 BitcodeBoardParamsBase *BitcodeBoardParamsBaseControlWidget::createParameters() const
 {
@@ -86,7 +69,7 @@ BitcodeBoardParamsBase *BitcodeBoardParamsBaseControlWidget::createParameters() 
      **/
 
 
-    BitcodeBoardParamsBase *result = new BitcodeBoardParamsBase(
+    return new BitcodeBoardParamsBase(
           mUi->verticalCheckBox->isChecked()
         , mUi->cellSizeSpinBox->value()
         , mUi->blackColorSpinBox->value()
@@ -102,7 +85,6 @@ BitcodeBoardParamsBase *BitcodeBoardParamsBaseControlWidget::createParameters() 
         , mUi->centerToZeroXSpinBox->value()
         , mUi->centerToZeroYSpinBox->value()
     );
-    return result;
 }
 
 void BitcodeBoardParamsBaseControlWidget::setParameters(const BitcodeBoardParamsBase &input)

@@ -92,10 +92,22 @@ namespace HelperUtils
 
 } // namespace HelperUtils
 
+} //namespace corecvs
+
 
 /* OS related stuff */
-void setStdTerminateHandler();
+#ifdef is__cplusplus
+extern "C" {
+#endif
+    void setStdTerminateHandler();					// is implemented at utils.cpp
+    void setSegVHandler();							// is implemented at util.c
+#ifdef is__cplusplus
+} // extern "C"
+#endif
 
-} //namespace corecvs
+#define SET_HANDLERS()          \
+    setSegVHandler();           \
+    setStdTerminateHandler();   \
+
 
 #endif /* UTILS_H_ */

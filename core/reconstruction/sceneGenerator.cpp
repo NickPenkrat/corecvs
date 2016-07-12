@@ -207,6 +207,8 @@ CameraModel SceneGenerator::generateCamera(int id)
 
 CameraFixture* SceneGenerator::generatePs(corecvs::Vector3dd pos, int id)
 {
+	std::mt19937 rng((std::random_device())());
+	std::uniform_real_distribution<double> runif(-1.0, 1.0);
     std::string tag = "";
     do
     {
@@ -225,6 +227,7 @@ CameraFixture* SceneGenerator::generatePs(corecvs::Vector3dd pos, int id)
         rfs->addCameraToFixture(c, f);
     }
     f->location.shift = pos;
+    f->location.rotor = corecvs::Quaternion(runif(rng)*0.1, runif(rng)*0.1, runif(rng)*0.1, 1.0).normalised();
     f->name = tag;
     rfs->initializationData[f].initData = f->location;
     rfs->initializationData[f].initializationType = FixtureInitializationType::GPS;

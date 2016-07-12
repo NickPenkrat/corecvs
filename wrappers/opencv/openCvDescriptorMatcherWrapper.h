@@ -32,7 +32,7 @@ extern "C"
 class OpenCvDescriptorMatcherProvider : public DescriptorMatcherProviderImpl
 {
 public:
-    DescriptorMatcher* getDescriptorMatcher(const DescriptorType &descriptor, const MatcherType &matcher);
+    DescriptorMatcher* getDescriptorMatcher(const DescriptorType &descriptor, const MatcherType &matcher, const std::string &params = "");
     bool provides(const DescriptorType &descriptor, const MatcherType &matcher);
 
     ~OpenCvDescriptorMatcherProvider() {}

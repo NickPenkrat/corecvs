@@ -38,13 +38,14 @@
 **
 ****************************************************************************/
 
+#include "arrow.h"
+
+#include <math.h>
+#include <iostream>
+
 #include <QtGui>
 
-#include "arrow.h"
-#include <math.h>
-#include "iostream"
-
-const qreal Pi = 3.14;
+const qreal Pi = M_PI;
 
 //! [0]
 Arrow::Arrow(DiagramItem *startItem, DiagramItem *endItem, QGraphicsItem *parent, QGraphicsScene * /*scene*/)

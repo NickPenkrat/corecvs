@@ -34,6 +34,10 @@ public:
     SparseMatrix(int h, int w, const std::vector<double> &values, const std::vector<int> &columns, const std::vector<int> &rowPointers);
     //! \brief Creates sparse matrix from {point, value} data
     SparseMatrix(int h, int w, const std::map<std::pair<int, int>, double> &data);
+    //! \brief Creates dense submatrix and return column idx
+    Matrix denseRows(int x1, int y1, int x2, int y2, std::vector<int> &colIdx);
+    //! \brief Creates dense submatrix and return row idx
+    Matrix denseCols(int x1, int y1, int x2, int y2, std::vector<int> &rowIdx);
     //! \brief Cast to dense matrix
     explicit operator Matrix() const;
     SparseMatrix(const SparseMatrix &src, int x1, int y1, int x2, int y2);
@@ -55,6 +59,9 @@ public:
      */
     double a(int y, int x) const;
     double&a(int y, int x);
+    int nnz() const;
+    double fillin() const;
+    void spyPlot() const;
 
     friend SparseMatrix operator -(const SparseMatrix &a);
     friend SparseMatrix operator *(const double       &lhs, const SparseMatrix &rhs);
@@ -86,6 +93,7 @@ public:
 
     int h, w;
 private:
+    void swapCoords(int &x1, int &y1, int &x2, int &y2) const;
     //! All non-zero entries of matrix
     std::vector<double> values;
     //! Column-indicies (of values)

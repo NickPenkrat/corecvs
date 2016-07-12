@@ -13,7 +13,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 #include <limits>
 #include <vector>
 #include <chrono>
@@ -25,6 +24,7 @@
 #include "function.h"
 #include "sparseMatrix.h"
 #include "vector.h"
+#include "statusTracker.h"
 
 
 namespace corecvs {
@@ -51,6 +51,8 @@ public:
     int  conjugatedGradientIterations = 100;
 #endif
     bool useSchurComplement = false;
+
+    StatusTracker* state = nullptr;
 
     /* Additional outputs */
     bool hasParadox = false;
@@ -99,18 +101,26 @@ public:
 
         double norm = std::numeric_limits<double>::max();
 
+        auto initial = diff;
+        F(beta, initial);
+        initial -= target;
+        double initialNorm = initial.sumAllElementsSq();
+        int LSc = 0;
+
         double totalEval = 0.0, totalJEval = 0.0, totalLinSolve = 0.0, totalATA = 0.0, totalTotal = 0.0;
         int g = 0;
+        state->reset("Fit", maxIterations);
+
         for (g = 0; (g < maxIterations) && (lambda < maxlambda) && !converged; g++)
         {
+            int LSc_curr = 0;
+            auto boo = state->createAutoTrackerCalculationObject();
+
             double timeEval = 0.0, timeJEval = 0.0, timeLinSolve = 0.0, timeATA = 0.0, timeTotal = 0.0;
             auto beginT = std::chrono::high_resolution_clock::now();
 
-            if (traceProgress) {
-                if ((g % ((maxIterations / 100) + 1) == 0))
-                {
-                    cout << "#" << std::flush;
-                }
+            if (traceProgress && ((g % ((maxIterations / 100) + 1) == 0))) {
+                cout << "#" << std::flush;
             }
 
             auto Jbegin = std::chrono::high_resolution_clock::now();
@@ -170,7 +180,6 @@ public:
 
             while (true)
             {
-
                 if (norm == 0.0)
                 {
                     if (traceCrucial)
@@ -238,6 +247,8 @@ public:
                  *       degeneracy
                  */
 
+                LSc_curr++;
+                LSc++;
                 auto LSbegin = std::chrono::high_resolution_clock::now();
 //                for (int ijk = 0; ijk < B.size(); ++ijk)
 //                    CORE_ASSERT_TRUE_S(!std::isnan(B[ijk]));
@@ -280,6 +291,9 @@ public:
                 {
                     if (trace) {
                         cout << "Accepted" << endl;
+                        std::cout << initialNorm - normNew << " decrease in " << LSc << " linsolves" << std::endl;
+                        std::cout << norm - normNew << " current decrease (" << LSc_curr << " linsolves" << std::endl;
+                        std::cout << "NLO: " << initialNorm - normNew << ", " << LSc << ", " << norm - normNew << ", " << LSc_curr << ", " << lambda << std::endl;
                     }
 
                     if (traceMatrix) {
@@ -332,15 +346,15 @@ public:
             totalLinSolve += timeLinSolve;
         }
 
-            if (traceProgress)
-            {
-                std::cout << "Total : " << totalTotal    << "s " << std::endl
-                          << "Eval  : " << totalEval     << "s (" << totalEval     / totalTotal * 100.0 << ")" << std::endl
-                          << "JEval : " << totalJEval    << "s (" << totalJEval    / totalTotal * 100.0 << ")" << std::endl
-                          << "ATA   : " << totalATA      << "s (" << totalATA      / totalTotal * 100.0 << ")" << std::endl
-                          << "LS    : " << totalLinSolve << "s (" << totalLinSolve / totalTotal * 100.0 << ")" << std::endl
-                          << "Other : " << (totalTotal - totalEval - totalJEval - totalATA - totalLinSolve) << "s (" << (totalTotal - totalEval - totalJEval - totalATA - totalLinSolve) / totalTotal * 100.0 << ")" << std::endl;
-            }
+        if (traceProgress)
+        {
+            std::cout << "Total : " << totalTotal    << "s " << std::endl
+                      << "Eval  : " << totalEval     << "s (" << totalEval     / totalTotal * 100.0 << ")" << std::endl
+                      << "JEval : " << totalJEval    << "s (" << totalJEval    / totalTotal * 100.0 << ")" << std::endl
+                      << "ATA   : " << totalATA      << "s (" << totalATA      / totalTotal * 100.0 << ")" << std::endl
+                      << "LS    : " << totalLinSolve << "s (" << totalLinSolve / totalTotal * 100.0 << ")" << std::endl
+                      << "Other : " << (totalTotal - totalEval - totalJEval - totalATA - totalLinSolve) << "s (" << (totalTotal - totalEval - totalJEval - totalATA - totalLinSolve) / totalTotal * 100.0 << ")" << std::endl;
+        }
 
         if (traceProgress) {
             cout << "]" << endl;

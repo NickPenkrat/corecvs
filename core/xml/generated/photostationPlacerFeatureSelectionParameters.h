@@ -41,8 +41,13 @@ public:
     enum FieldId {
         INLIERTHRESHOLD_ID,
         TRACKINLIERTHRESHOLD_ID,
-        PAIRCORRESPONDENCETHRESHOLD_ID,
         DISTANCELIMIT_ID,
+        DETECTOR_ID,
+        DESCRIPTOR_ID,
+        MATCHER_ID,
+        B2BTHRESHOLD_ID,
+        RMSEPRUNINGSCALER_ID,
+        MAXPRUNINGSCALER_ID,
         PHOTOSTATION_PLACER_FEATURE_SELECTION_PARAMETERS_FIELD_ID_NUM
     };
 
@@ -61,16 +66,46 @@ public:
     double mTrackInlierThreshold;
 
     /** 
-     * \brief pairCorrespondenceThreshold 
-     * Correspondence threshold 
-     */
-    double mPairCorrespondenceThreshold;
-
-    /** 
      * \brief distanceLimit 
      * Track distance limit 
      */
     double mDistanceLimit;
+
+    /** 
+     * \brief detector 
+     * Detector 
+     */
+    std::string mDetector;
+
+    /** 
+     * \brief descriptor 
+     * Descriptor 
+     */
+    std::string mDescriptor;
+
+    /** 
+     * \brief matcher 
+     * Matcher 
+     */
+    std::string mMatcher;
+
+    /** 
+     * \brief b2bThreshold 
+     * b2b threshold 
+     */
+    double mB2bThreshold;
+
+    /** 
+     * \brief rmsePruningScaler 
+     * RMSE pruning scaler 
+     */
+    double mRmsePruningScaler;
+
+    /** 
+     * \brief maxPruningScaler 
+     * Max pruning scaler 
+     */
+    double mMaxPruningScaler;
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
@@ -90,14 +125,39 @@ public:
         return mTrackInlierThreshold;
     }
 
-    double pairCorrespondenceThreshold() const
-    {
-        return mPairCorrespondenceThreshold;
-    }
-
     double distanceLimit() const
     {
         return mDistanceLimit;
+    }
+
+    std::string detector() const
+    {
+        return mDetector;
+    }
+
+    std::string descriptor() const
+    {
+        return mDescriptor;
+    }
+
+    std::string matcher() const
+    {
+        return mMatcher;
+    }
+
+    double b2bThreshold() const
+    {
+        return mB2bThreshold;
+    }
+
+    double rmsePruningScaler() const
+    {
+        return mRmsePruningScaler;
+    }
+
+    double maxPruningScaler() const
+    {
+        return mMaxPruningScaler;
     }
 
     /* Section with setters */
@@ -111,14 +171,39 @@ public:
         mTrackInlierThreshold = trackInlierThreshold;
     }
 
-    void setPairCorrespondenceThreshold(double pairCorrespondenceThreshold)
-    {
-        mPairCorrespondenceThreshold = pairCorrespondenceThreshold;
-    }
-
     void setDistanceLimit(double distanceLimit)
     {
         mDistanceLimit = distanceLimit;
+    }
+
+    void setDetector(std::string detector)
+    {
+        mDetector = detector;
+    }
+
+    void setDescriptor(std::string descriptor)
+    {
+        mDescriptor = descriptor;
+    }
+
+    void setMatcher(std::string matcher)
+    {
+        mMatcher = matcher;
+    }
+
+    void setB2bThreshold(double b2bThreshold)
+    {
+        mB2bThreshold = b2bThreshold;
+    }
+
+    void setRmsePruningScaler(double rmsePruningScaler)
+    {
+        mRmsePruningScaler = rmsePruningScaler;
+    }
+
+    void setMaxPruningScaler(double maxPruningScaler)
+    {
+        mMaxPruningScaler = maxPruningScaler;
     }
 
     /* Section with embedded classes */
@@ -128,8 +213,13 @@ template<class VisitorType>
     {
         visitor.visit(mInlierThreshold,           static_cast<const DoubleField *>  (fields()[INLIERTHRESHOLD_ID]));
         visitor.visit(mTrackInlierThreshold,      static_cast<const DoubleField *>  (fields()[TRACKINLIERTHRESHOLD_ID]));
-        visitor.visit(mPairCorrespondenceThreshold, static_cast<const DoubleField *>  (fields()[PAIRCORRESPONDENCETHRESHOLD_ID]));
         visitor.visit(mDistanceLimit,             static_cast<const DoubleField *>  (fields()[DISTANCELIMIT_ID]));
+        visitor.visit(mDetector,                  static_cast<const StringField *>  (fields()[DETECTOR_ID]));
+        visitor.visit(mDescriptor,                static_cast<const StringField *>  (fields()[DESCRIPTOR_ID]));
+        visitor.visit(mMatcher,                   static_cast<const StringField *>  (fields()[MATCHER_ID]));
+        visitor.visit(mB2bThreshold,              static_cast<const DoubleField *>  (fields()[B2BTHRESHOLD_ID]));
+        visitor.visit(mRmsePruningScaler,         static_cast<const DoubleField *>  (fields()[RMSEPRUNINGSCALER_ID]));
+        visitor.visit(mMaxPruningScaler,          static_cast<const DoubleField *>  (fields()[MAXPRUNINGSCALER_ID]));
     }
 
     PhotostationPlacerFeatureSelectionParameters()
@@ -141,14 +231,24 @@ template<class VisitorType>
     PhotostationPlacerFeatureSelectionParameters(
           double inlierThreshold
         , double trackInlierThreshold
-        , double pairCorrespondenceThreshold
         , double distanceLimit
+        , std::string detector
+        , std::string descriptor
+        , std::string matcher
+        , double b2bThreshold
+        , double rmsePruningScaler
+        , double maxPruningScaler
     )
     {
         mInlierThreshold = inlierThreshold;
         mTrackInlierThreshold = trackInlierThreshold;
-        mPairCorrespondenceThreshold = pairCorrespondenceThreshold;
         mDistanceLimit = distanceLimit;
+        mDetector = detector;
+        mDescriptor = descriptor;
+        mMatcher = matcher;
+        mB2bThreshold = b2bThreshold;
+        mRmsePruningScaler = rmsePruningScaler;
+        mMaxPruningScaler = maxPruningScaler;
     }
 
     friend ostream& operator << (ostream &out, PhotostationPlacerFeatureSelectionParameters &toSave)

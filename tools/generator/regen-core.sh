@@ -11,6 +11,11 @@ source ./helper-regen.sh
 
 qmake && make
 
+if [ $? -ne 0 ]
+then
+   exit $?
+fi
+   
 CORE_DIR="../../core"
 GEN_DIR="./Generated"
 GENERATOR_BIN="./generator"
@@ -234,9 +239,16 @@ full_ui_classes+=" bitcodeBoardParamsBase"
 
 
 # Reconstruction
-full_ui_classes+=" photostationPlacerEssentialFilterParameters"
-full_ui_classes+=" photostationPlacerFeatureSelectionParameters"
-full_ui_classes+=" photostationPlacerParamsBase"
+
+enums+=" reconstructionFunctorOptimizationErrorType"
+
+full_ui_classes+=" iterativeReconstructionInitializationParams"
+full_ui_classes+=" iterativeReconstructionFeatureSelectionParams"
+full_ui_classes+=" iterativeReconstructionAppendParams"
+full_ui_classes+=" iterativeReconstructionNonlinearOptimizationParamsWrapper"
+
+full_ui_classes+=" featureDetectionParams"
+full_ui_classes+=" reconstructionFunctorOptimizationParams"
 
 PRIFILE="${DST_DIR}/generated.pri"
 

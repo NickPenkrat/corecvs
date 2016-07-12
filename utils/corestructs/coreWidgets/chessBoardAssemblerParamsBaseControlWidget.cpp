@@ -8,6 +8,7 @@
 
 #include "chessBoardAssemblerParamsBaseControlWidget.h"
 #include "ui_chessBoardAssemblerParamsBaseControlWidget.h"
+#include <memory>
 #include "qSettingsGetter.h"
 #include "qSettingsSetter.h"
 
@@ -38,33 +39,21 @@ ChessBoardAssemblerParamsBaseControlWidget::~ChessBoardAssemblerParamsBaseContro
 
 void ChessBoardAssemblerParamsBaseControlWidget::loadParamWidget(WidgetLoader &loader)
 {
-    ChessBoardAssemblerParamsBase *params = createParameters();
+    std::unique_ptr<ChessBoardAssemblerParamsBase> params(createParameters());
     loader.loadParameters(*params, rootPath);
     setParameters(*params);
-    delete params;
 }
 
 void ChessBoardAssemblerParamsBaseControlWidget::saveParamWidget(WidgetSaver  &saver)
 {
-    ChessBoardAssemblerParamsBase *params = createParameters();
-    saver.saveParameters(*params, rootPath);
-    delete params;
+    saver.saveParameters(*std::unique_ptr<ChessBoardAssemblerParamsBase>(createParameters()), rootPath);
 }
 
- /* Composite fields are NOT supported so far */
 void ChessBoardAssemblerParamsBaseControlWidget::getParameters(ChessBoardAssemblerParamsBase& params) const
 {
-
-    params.setSeedThreshold    (mUi->seedThresholdSpinBox->value());
-    params.setSeedTgPenalty    (mUi->seedTgPenaltySpinBox->value());
-    params.setConservativity   (mUi->conservativitySpinBox->value());
-    params.setCostThreshold    (mUi->costThresholdSpinBox->value());
-    params.setMinSeedDistance  (mUi->minSeedDistanceSpinBox->value());
-    params.setHypothesisDimensions(mUi->hypothesisDimensionsSpinBox->value());
-    params.setHypothesisDimFirst(mUi->hypothesisDimFirstSpinBox->value());
-    params.setHypothesisDimSecond(mUi->hypothesisDimSecondSpinBox->value());
-
+    params = *std::unique_ptr<ChessBoardAssemblerParamsBase>(createParameters());
 }
+
 
 ChessBoardAssemblerParamsBase *ChessBoardAssemblerParamsBaseControlWidget::createParameters() const
 {
@@ -74,7 +63,7 @@ ChessBoardAssemblerParamsBase *ChessBoardAssemblerParamsBaseControlWidget::creat
      **/
 
 
-    ChessBoardAssemblerParamsBase *result = new ChessBoardAssemblerParamsBase(
+    return new ChessBoardAssemblerParamsBase(
           mUi->seedThresholdSpinBox->value()
         , mUi->seedTgPenaltySpinBox->value()
         , mUi->conservativitySpinBox->value()
@@ -84,7 +73,6 @@ ChessBoardAssemblerParamsBase *ChessBoardAssemblerParamsBaseControlWidget::creat
         , mUi->hypothesisDimFirstSpinBox->value()
         , mUi->hypothesisDimSecondSpinBox->value()
     );
-    return result;
 }
 
 void ChessBoardAssemblerParamsBaseControlWidget::setParameters(const ChessBoardAssemblerParamsBase &input)

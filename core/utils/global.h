@@ -96,7 +96,7 @@ typedef int                bool_t;                          // fast Boolean type
     do {                                                        \
         printf("Assert at %s:%d - %s\n", __FILE__, __LINE__, X);\
         fflush(stdout);                                         \
-        stackTraceHandler(0xFF);                                \
+        printStackTrace();                                      \
         RAISE_ASSERT(X);                                        \
     } while (0)
 
@@ -104,8 +104,9 @@ typedef int                bool_t;                          // fast Boolean type
     do {                                                        \
         printf("Assert at %s:%d - ", __FILE__, __LINE__);       \
         printf X;                                               \
+        printf("\n");                                           \
         fflush(stdout);                                         \
-        stackTraceHandler(0xFF);                                \
+        printStackTrace();                                      \
         RAISE_ASSERT(#X);                                       \
     } while (0)
 
@@ -218,8 +219,7 @@ do {                  \
 #ifdef is__cplusplus
 extern "C" {
 #endif
-    void stackTraceHandler(int sig);
-    void setSegVHandler();
+    void printStackTrace();
 #ifdef is__cplusplus
 } // extern "C"
 #endif
@@ -258,11 +258,6 @@ extern "C" {
 #endif
 #ifndef  PRIi64
 # define PRIi64 "I64d"
-#endif
-
-#ifdef _MSC_VER
-# include <intrin.h>
-# define __builtin_popcount __popcnt
 #endif
 
 #define REFLECTION_IN_CORE
@@ -351,7 +346,12 @@ namespace std
         {
             return hash_calc<std::tuple<T...>>()(t, 0);
         }
-   };
+    };
+    template<typename C, typename T>
+    auto contains(const C& c, const T& t) -> decltype(end(c), true)
+    {
+        return end(c) != std::find(c.begin(), c.end(), t);
+    }
 }
 
 
@@ -440,6 +440,9 @@ inline void deletearr_safe (Type * &ptr)
 #if defined(_WIN32)
 # define NOMINMAX
 # define WIN32_LEAN_AND_MEAN
-#endif
+# ifdef _MSC_VER
+#  pragma warning(disable: 4503)  // decorated name length exceeded, name was truncated
+# endif
+#endif // WIN32
 
 /* EOF */

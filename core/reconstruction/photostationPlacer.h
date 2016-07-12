@@ -1,5 +1,5 @@
-#ifndef PHOTOSTATIONPLACER
-#define PHOTOSTATIONPLACER
+#ifndef PHOTOSTATIONPLACER_H_
+#define PHOTOSTATIONPLACER_H_
 
 #include <string>
 #include <vector>
@@ -22,7 +22,10 @@
 namespace corecvs
 {
 
-class PhotostationPlacer :    public IterativeReconstructionInitializationParams, public IterativeReconstructionFeatureSelectionParams, public IterativeReconstructionNonlinearOptimizationParams, public IterativeReconstructionAppendParams
+class PhotostationPlacer : public IterativeReconstructionInitializationParams
+                         , public IterativeReconstructionFeatureSelectionParams
+                         , public IterativeReconstructionNonlinearOptimizationParams
+                         , public IterativeReconstructionAppendParams
 {
 public:
     ReconstructionFixtureScene* scene;
@@ -36,12 +39,12 @@ public:
     void pruneTracks();
     bool append3D();
 
-    void fit(int num);
-    void fit(const ReconstructionFunctorOptimizationType& optimizationSet = ReconstructionFunctorOptimizationType::NON_DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::POINTS | ReconstructionFunctorOptimizationType::FOCALS | ReconstructionFunctorOptimizationType::PRINCIPALS, int num = 100);
+//    void fit(int num);
+    void fit(const ReconstructionFunctorOptimizationType& optimizationSet = ReconstructionFunctorOptimizationType::NON_DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::POINTS | ReconstructionFunctorOptimizationType::FOCALS | ReconstructionFunctorOptimizationType::PRINCIPALS, int iterations = 100, int optimizeLast = -1);
     void appendTracks(const std::vector<int> &inlierIds, CameraFixture* fixture, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &possibleTracks);
     int getInputNum();
     int getOutputNum();
-    void getErrorSummary(ReconstructionFunctorOptimizationErrorType errorType);
+    void getErrorSummary(ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType errorType);
     void getErrorSummaryAll();
 
     // Tries to select 2 fixtures and align them
@@ -71,4 +74,4 @@ protected:
 };
 }
 
-#endif
+#endif //PHOTOSTATIONPLACER_H_
