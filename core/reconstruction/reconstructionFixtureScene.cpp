@@ -721,7 +721,7 @@ void ParallelTrackPainter::operator() (const corecvs::BlockedRange<int> &r) cons
                 painter.drawFormat(obsB->observation[0] + 5, obsB->observation[1] + offH, color, 1,  tf->name.c_str());
                 painter.drawCircle(obsB->observation[0]    , obsB->observation[1] + offH, 3, color);
                 dst    .drawLine  (obsB->observation[0]    , obsB->observation[1] + offH
-                                 , obsA->observation[0]           , obsA->observation[1],    color);
+                                 , obsA->observation[0]    , obsA->observation[1]       ,    color);
                 painted = true;
             }
             if (!painted)
