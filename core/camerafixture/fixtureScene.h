@@ -20,7 +20,6 @@ public:
     typedef CameraFixture     FixtureType;
     typedef SceneFeaturePoint PointType;
 
-
     FixtureScene();
 
     /**
@@ -39,9 +38,9 @@ public:
      *  This transform only happens when you use ::positionCameraInStation() method. Thoough we encourage you to do so.
      *
      **/
-    Affine3DQ worldFrameToCameraFrame;
+    Affine3DQ                     worldFrameToCameraFrame;
 
-    std::string nameId;
+    std::string                   nameId;
 
     StatusTracker *               processState = nullptr;
 
@@ -198,7 +197,7 @@ public:
 
 
     /* Some debugger helpers */
-    virtual void dumpInfo(ostream &out);
+    virtual void dumpInfo(ostream &out = std::cout);
 
     // Transforms the whole world using scale*(QX+T) (FixtureCamera's inside CameraFixtures are not moved)
     virtual void transform(const corecvs::Affine3DQ &transformation, const double scale = 1.0);
@@ -246,26 +245,26 @@ public:
 
             setOrphanCameraCount(ocamSize);
 
-            for (size_t i = 0; i < (size_t)ocamSize; i++)
-            {
-                char buffer[100];
-                snprintf2buf(buffer, "orphancameras[%d]", i);
-                visitor.visit(*static_cast<RealCameraType *>(mOrphanCameras[i]), buffer);
+        for (size_t i = 0; i < (size_t)ocamSize; i++)
+        {
+            char buffer[100];
+            snprintf2buf(buffer, "orphancameras[%d]", i);
+            visitor.visit(*static_cast<RealCameraType *>(mOrphanCameras[i]), buffer);
             }
         }
 
         /* Fixtures*/
         if (loadFixtures)
         {
-            int stationSize = (int)mFixtures.size();
-            visitor.visit(stationSize, 0, "stations.size");
+        int stationSize = (int)mFixtures.size();
+        visitor.visit(stationSize, 0, "stations.size");
 
-            setFixtureCount(stationSize);
+        setFixtureCount(stationSize);
 
-            for (size_t i = 0; i < (size_t)stationSize; i++)
-            {
-                char buffer[100];
-                snprintf2buf(buffer, "stations[%d]", i);
+        for (size_t i = 0; i < (size_t)stationSize; i++)
+        {
+            char buffer[100];
+            snprintf2buf(buffer, "stations[%d]", i);
             visitor.visit(*static_cast<RealFixtureType *>(mFixtures[i]), buffer);
             }
         }
@@ -273,15 +272,15 @@ public:
         /* Points */
         if (loadPoints)
         {
-            int pointsSize = (int)mSceneFeaturePoints.size();
-            visitor.visit(pointsSize, 0, "points.size");
+        int pointsSize = (int)mSceneFeaturePoints.size();
+        visitor.visit(pointsSize, 0, "points.size");
 
-            setFeaturePointCount(pointsSize);
+        setFeaturePointCount(pointsSize);
 
-            for (size_t i = 0; i < (size_t)pointsSize; i++)
-            {
-                char buffer[100];
-                snprintf2buf(buffer, "points[%d]", i);
+        for (size_t i = 0; i < (size_t)pointsSize; i++)
+        {
+            char buffer[100];
+            snprintf2buf(buffer, "points[%d]", i);
             visitor.visit(*static_cast<RealPointType *>(mSceneFeaturePoints[i]), buffer);
             }
         }

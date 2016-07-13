@@ -114,6 +114,9 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const Photostation &ps, double sc
 
 void CalibrationHelpers::drawPly(Mesh3D &mesh, const CameraFixture &ps, double scale)
 {
+//    SYNC_PRINT(("CalibrationHelpers::drawPly():called\n"));
+
+
     // Colorblind-safe palette
     // CameraLocationData loc = ps.getLocation();
     // Quaternion qs = loc.orientation.conjugated();
@@ -200,7 +203,6 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, SceneFeaturePoint fp, double scal
             if (fp.hasKnownPosition) {
                 mesh.addLine(rawCam.extrinsics.position, fp.position);
             } else {
-
             }
 
             Ray3d ray = rawCam.rayFromPixel(observ.observation);

@@ -9,6 +9,7 @@
  */
 
 #include <iostream>
+#include <memory>
 #include "gtest/gtest.h"
 
 #include "global.h"
@@ -21,7 +22,12 @@
 #include "segmentator.h"
 #include "rgb24Buffer.h"
 
+
+#include "chessBoardCornerDetector.h"
+
+
 using namespace corecvs;
+using namespace std;
 
 TEST(Cornerdetector, DISABLED_testCornerDetector)
 {
@@ -50,3 +56,31 @@ TEST(Cornerdetector, DISABLED_testCornerDetector)
     delete corners;
     delete result;
 }
+
+
+TEST(Cornerdetector, DISABLED_testChessCornerDetector)
+{
+    unique_ptr<RGB24Buffer> input(BufferFactory::getInstance()->loadRGB24Bitmap("data/calib-object.bmp"));
+
+
+    DpImage grayscale(input->getSize());
+    grayscale.binaryOperationInPlace(*input, [](const double & /*a*/, const corecvs::RGBColor &b) {
+        return b.yd() / 255.0;
+    });
+
+    vector<OrientedCorner> corners;
+
+    ChessBoardCornerDetectorParams params;
+
+    params.setProduceDebug(true);
+    ChessBoardCornerDetector detector(params);
+
+    detector.detectCorners(grayscale, corners);
+
+    for (std::string name: detector.debugBuffers())
+    {
+        unique_ptr<RGB24Buffer> debug(detector.getDebugBuffer(name));
+        BMPLoader().save(name, debug.get());
+    }
+}
+

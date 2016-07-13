@@ -137,14 +137,19 @@ void PhotostationCaptureDialog::refresh()
 
     ui->previewWidget->loadFromQSettings(DEFAULT_FILENAME, "preview");
 
+    mCameraInfos.clear();
     QMap<ImageCaptureInterface::CameraFormat, int> formatsList;
     vector<string> cameras;
-    vector<string> serials;
 
     ImageCaptureInterface::getAllCameras(cameras);
 
     for (unsigned i = 0; i < cameras.size(); ++i)
     {
+        mCameraInfos.push_back(CameraInfo());
+        CameraInfo &info = mCameraInfos[i];
+        info.listNumber = i;
+        info.systemId = cameras[i];
+
         //qDebug() << "Found camera id:" <<  cameras[i].c_str();
 
         ImageCaptureInterface *camera = createCameraCapture(cameras[i], false);    // false - don't process any error
@@ -165,7 +170,7 @@ void PhotostationCaptureDialog::refresh()
         }
         delete[] formats;
 
-        serials.push_back(camera->getDeviceSerial());
+        info.serialId = camera->getDeviceSerial();
         delete_safe(camera);
     }
 
@@ -194,13 +199,24 @@ void PhotostationCaptureDialog::refresh()
 
     for (unsigned i = 0; i < cameras.size(); i++)
     {
-        ui->cameraTableWidget->setRowCount(ui->cameraTableWidget->rowCount() + 1);
-        QTableWidgetItem *systemId = new QTableWidgetItem(QString("%1").arg(cameras[i].c_str()));
+        CameraInfo &info = mCameraInfos[i];
+        /*Prepare additinal ids */
+        std::string serial = info.serialId;
+        std::string prefix = "SER_";
 
-        if (i <= serials.size())
-        {
-            systemId->setData(Qt::ToolTipRole, QString::fromStdString(serials[i]));
+        if (HelperUtils::startsWith(serial, "-")) {
+            serial = info.systemId;
+            prefix = "POS_";
         }
+        info.paramsStoreId = prefix + serial;
+
+
+
+        ui->cameraTableWidget->setRowCount(ui->cameraTableWidget->rowCount() + 1);
+        QTableWidgetItem *systemId = new QTableWidgetItem(QString("%1").arg(info.systemId.c_str()));
+
+        systemId->setData(Qt::ToolTipRole, QString::fromStdString(info.serialId));
+
         ui->cameraTableWidget->setItem(i, COLUMN_SYS_ID, systemId);
         QComboBox* comboBox = new QComboBox();
         ui->cameraTableWidget->setCellWidget(i, COLUMN_CAM_ID, comboBox);
@@ -210,15 +226,10 @@ void PhotostationCaptureDialog::refresh()
         }
         comboBox->insertItem(comboBox->count(), "Unassigned");
 
-        QString serial = QString::fromStdString(serials[i]);
-        QString prefix = "SER_";
 
-        if (serial.startsWith("-")) {
-            serial = QString::fromStdString(cameras[i]);
-            prefix = "POS_";
-        }
+        settings.beginGroup(QString::fromStdString(info.paramsStoreId));
 
-        int index = settings.value(prefix + serial, i).toInt();
+        int index = settings.value("num", i).toInt();
         comboBox->setCurrentIndex(index);
 
         QCheckBox* checkBox = new QCheckBox();
@@ -232,14 +243,23 @@ void PhotostationCaptureDialog::refresh()
         QTableWidgetItem* settingsIcon = new QTableWidgetItem(QIcon(":/new/prefix1/cctv_camera.png"), "");
         settingsIcon->setFlags(settingsIcon->flags() & (~Qt::ItemIsEditable));
         ui->cameraTableWidget->setItem(i, COLUMN_SETTINGS, settingsIcon);
+
+        bool restoreParameters = settings.value("restore", false).toBool();
+        QCheckBox* checkBox1 = new QCheckBox();
+        checkBox1->setChecked(restoreParameters);
+        ui->cameraTableWidget->setCellWidget(i, COLUMN_SAVE_SETTINGS, checkBox1);
+
+        settings.endGroup();
+
     }
 
     ui->cameraTableWidget->resizeRowsToContents();
-    ui->cameraTableWidget->setColumnWidth(COLUMN_SYS_ID,  100);
-    ui->cameraTableWidget->setColumnWidth(COLUMN_CAM_ID,  140);
-    ui->cameraTableWidget->setColumnWidth(COLUMN_USE,      30);
-    ui->cameraTableWidget->setColumnWidth(COLUMN_PREVIEW,  30);
-    ui->cameraTableWidget->setColumnWidth(COLUMN_SETTINGS, 30);
+    ui->cameraTableWidget->setColumnWidth(COLUMN_SYS_ID,       180);
+    ui->cameraTableWidget->setColumnWidth(COLUMN_CAM_ID,       140);
+    ui->cameraTableWidget->setColumnWidth(COLUMN_USE,           30);
+    ui->cameraTableWidget->setColumnWidth(COLUMN_PREVIEW,       30);
+    ui->cameraTableWidget->setColumnWidth(COLUMN_SETTINGS,      35);
+    ui->cameraTableWidget->setColumnWidth(COLUMN_SAVE_SETTINGS, 30);
 
     mCamsScanned = true;
 }
@@ -263,18 +283,23 @@ PhotostationCaptureDialog::~PhotostationCaptureDialog()
     settings.setValue("angleStep" , ui->angleStepSpinBox->value());
     settings.setValue("pathDir"   , ui->outDirLineEdit->text());
 
-    for (int i = 0; i < ui->cameraTableWidget->rowCount(); i++ )
+    if (ui->cameraTableWidget->rowCount() != mCameraInfos.size())
     {
-        QString serial = ui->cameraTableWidget->item(i, 0)->data(Qt::ToolTipRole).toString();
-        QString prefix = "SER_";
+        SYNC_PRINT(("PhotostationCaptureDialog::~PhotostationCaptureDialog(): internal error"));
+    }
 
-        if (serial.startsWith("-")) {
-            serial = ui->cameraTableWidget->item(i, 0)->data(Qt::DisplayRole).toString();
-            prefix = "POS_";
-        }
+    for (size_t i = 0; i < mCameraInfos.size(); i++ )
+    {
+        CameraInfo &info = mCameraInfos[i];
 
-        QComboBox *comboBox = static_cast<QComboBox *>(ui->cameraTableWidget->cellWidget(i, COLUMN_CAM_ID));
-        settings.setValue(prefix + serial, comboBox->currentIndex());
+        QComboBox *comboBox  = static_cast<QComboBox *>(ui->cameraTableWidget->cellWidget(i, COLUMN_CAM_ID));
+        QCheckBox *checkBox1 = static_cast<QCheckBox *>(ui->cameraTableWidget->cellWidget(i, COLUMN_SAVE_SETTINGS));
+
+        settings.beginGroup(QString::fromStdString(info.paramsStoreId));
+        settings.setValue("num"    , comboBox->currentIndex());
+        settings.setValue("restore", checkBox1->isChecked());
+
+        settings.endGroup();
     }
 
     ui->previewWidget->saveToQSettings(DEFAULT_FILENAME, "preview");
@@ -291,6 +316,7 @@ PhotostationCaptureDialog::~PhotostationCaptureDialog()
         CORE_ASSERT_TRUE_S(mCaptureInterfaces[i].camInterface == NULL);
         CORE_ASSERT_TRUE_S(mCaptureInterfaces[i].result == NULL);
     }
+
 }
 
 void PhotostationCaptureDialog::setNamer(AbstractImageNamer *namer)
@@ -308,21 +334,22 @@ void PhotostationCaptureDialog::setManipulator(AbstractManipulatorInterface *man
         disconnect(mManipulatorCapturer, SIGNAL(captureAndFinalize(bool)), this, SLOT(capture(bool)));
         disconnect(mManipulatorCapturer, SIGNAL(captureAtPosition(int)), this, SLOT(captureWithManipulator(int)));
         disconnect(mManipulatorCapturer, SIGNAL(manipulatorCaptureFinalise(bool)), this, SLOT(finalizeManipulatorCapture(bool)));
-        disconnect(this, SIGNAL(captureFinished()), mManipulatorCapturer, SLOT(captureProcessFinshed()));
-        disconnect(this, SIGNAL(waitingNextCapturePosition()), mManipulatorCapturer, SLOT(captureNextPosition()));
+        disconnect(this, SIGNAL(captureFinished()), mManipulatorCapturer, SLOT(captureSimulatedStationFinshed()));
+        disconnect(this, SIGNAL(waitingNextCapturePosition()), mManipulatorCapturer, SLOT(captureNextSimulatedCamera()));
     }
     mManipulatorCapturer = manipulator;
     ui->manipulatorCaptureButton->setVisible(mManipulatorCapturer != nullptr);
     if(mManipulatorCapturer != nullptr)
     {
+
         connect(ui->manipulatorCaptureButton, SIGNAL(released()), mManipulatorCapturer, SLOT(show()));
         connect(ui->manipulatorCaptureButton, SIGNAL(released()), mManipulatorCapturer, SLOT(raise()));
 
         connect(mManipulatorCapturer, SIGNAL(captureAndFinalize(bool)), this, SLOT(capture(bool)));
         connect(mManipulatorCapturer, SIGNAL(captureAtPosition(int)), this, SLOT(captureWithManipulator(int)));
         connect(mManipulatorCapturer, SIGNAL(manipulatorCaptureFinalise(bool)), this, SLOT(finalizeManipulatorCapture(bool)));
-        connect(this, SIGNAL(captureFinished()), mManipulatorCapturer, SLOT(captureProcessFinshed()));
-        connect(this, SIGNAL(waitingNextCapturePosition()), mManipulatorCapturer, SLOT(captureNextPosition()));
+        connect(this, SIGNAL(captureFinished()), mManipulatorCapturer, SLOT(captureSimulatedStationFinshed()));
+        connect(this, SIGNAL(waitingNextCapturePosition()), mManipulatorCapturer, SLOT(captureNextSimulatedCamera()));
     }
 }
 
@@ -330,7 +357,11 @@ void PhotostationCaptureDialog::tableClick(int lineid, int colid)
 {
     switch (colid) {
     case COLUMN_PREVIEW:
+        if (!previewRunning()) {
             previewRequest(lineid);
+        } else {
+            previewStop();
+        }
         break;
     case COLUMN_SETTINGS:
             cameraSettings(lineid);
@@ -352,17 +383,62 @@ void PhotostationCaptureDialog::previewRequest(int lineid)
     mPreviewInterface = createCameraCapture(camSysId);
     if (mPreviewInterface == NULL)
         return;
+    mPreviewTableLine = lineid;
 
     connect(mPreviewInterface, SIGNAL(newFrameReady(frame_data_t)), this, SLOT(newPreviewFrame()));
     mPreviewInterface->startCapture();
+    /* update the icon */
+
+    QTableWidgetItem* previewIcon = new QTableWidgetItem(QIcon(":/new/prefix1/stop.png"), "");
+    previewIcon->setFlags(previewIcon->flags() & (~Qt::ItemIsEditable));
+    ui->cameraTableWidget->setItem(lineid, COLUMN_PREVIEW, previewIcon);
+
 }
 
-void PhotostationCaptureDialog::cameraSettings(int /*lineid*/)
+void PhotostationCaptureDialog::previewStop()
+{
+    SYNC_PRINT(("PhotostationCaptureDialog::previewStop()\n"));
+    if (mPreviewTableLine != -1) {
+         QCheckBox *checkBox1 = static_cast<QCheckBox *>(ui->cameraTableWidget->cellWidget(mPreviewTableLine, COLUMN_SAVE_SETTINGS));
+         SYNC_PRINT(("PhotostationCaptureDialog::previewStop(): save settings flag: %s\n", checkBox1->isChecked() ? "on" : "off"));
+
+         if (checkBox1->isChecked())
+         {
+             mCapSettingsDialog->saveToQSettings(DEFAULT_FILENAME, QString::fromStdString(mCameraInfos[mPreviewTableLine].paramsStoreId) + "_settings", false);
+         }
+    }
+
+    mCapSettingsDialog->setCaptureInterface(NULL);
+    delete_safe(mPreviewInterface);
+
+    /* update the icon */
+    if (mPreviewInterface >= 0 && mPreviewTableLine < ui->cameraTableWidget->rowCount())
+    {
+        QTableWidgetItem* previewIcon = new QTableWidgetItem(QIcon(":/new/prefix1/play.png"), "");
+        previewIcon->setFlags(previewIcon->flags() & (~Qt::ItemIsEditable));
+        ui->cameraTableWidget->setItem(mPreviewTableLine, COLUMN_PREVIEW, previewIcon);
+    }
+    mPreviewTableLine = -1;
+
+}
+
+bool PhotostationCaptureDialog::previewRunning()
+{
+    return (mPreviewInterface != NULL);
+}
+
+void PhotostationCaptureDialog::cameraSettings(int lineid)
 {
     if (mPreviewInterface != NULL)
     {
+        QCheckBox *checkBox1 = static_cast<QCheckBox *>(ui->cameraTableWidget->cellWidget(lineid, COLUMN_SAVE_SETTINGS));
+        bool shouldRestore = checkBox1->isChecked();
+
         mCapSettingsDialog->clearDialog();
         mCapSettingsDialog->setCaptureInterface(mPreviewInterface);
+        if (shouldRestore) {
+            mCapSettingsDialog->loadFromQSettings(DEFAULT_FILENAME, QString::fromStdString(mCameraInfos[mPreviewTableLine].paramsStoreId) + "_settings", false);
+        }
         mCapSettingsDialog->show();
     }
 }
@@ -519,6 +595,20 @@ void PhotostationCaptureDialog::initateNewFrame()
         if (!mCaptureInterfaces[i].isFilled())
         {
              mCaptureInterfaces[i].camInterface->startCapture();
+
+
+             /* Put setting... it's not clear */
+             QCheckBox *checkBox1 = static_cast<QCheckBox *>(ui->cameraTableWidget->cellWidget(mCaptureInterfaces[i].info.listNumber, COLUMN_SAVE_SETTINGS));
+             bool shouldRestore = checkBox1->isChecked();
+
+             mCapSettingsDialog->clearDialog();
+             mCapSettingsDialog->setCaptureInterface(mCaptureInterfaces[i].camInterface);
+             qDebug("PhotostationCaptureDialog::initateNewFrame(): %s should restore = %d", mCaptureInterfaces[i].info.serialId.c_str(), shouldRestore);
+             if (shouldRestore) {
+                 mCapSettingsDialog->loadFromQSettings(DEFAULT_FILENAME, QString::fromStdString(mCaptureInterfaces[i].info.paramsStoreId) + "_settings", false);
+             }
+
+
              return;
         }
     }
@@ -551,7 +641,7 @@ void PhotostationCaptureDialog::capture(bool shouldAdvance, int positionShift)
     if(mCaptureInterfaces.size() > 0)
         qDebug() << "Som trash in intrefaces collection detected!";
 
-    /* Ok... init all cameras */
+    /* Ok... create interfaces for all cameras */
     for (int lineid = 0; lineid < ui->cameraTableWidget->rowCount(); lineid++)
     {
         QComboBox *comboBox = static_cast<QComboBox *>(ui->cameraTableWidget->cellWidget(lineid, COLUMN_CAM_ID));
@@ -565,6 +655,7 @@ void PhotostationCaptureDialog::capture(bool shouldAdvance, int positionShift)
         string camSysId = ui->cameraTableWidget->item(lineid, COLUMN_SYS_ID)->text().toStdString();
 
         CameraDescriptor camDesc;
+        camDesc.info  = mCameraInfos[lineid];
         camDesc.camId = comboBox->currentIndex();
         camDesc.toSkip = ui->skipFramesSpinBox->value();
         camDesc.result = NULL;
@@ -587,7 +678,8 @@ void PhotostationCaptureDialog::capture(bool shouldAdvance, int positionShift)
     }
 
     if (!mCaptureInterfaces.empty()) {
-        mCaptureInterfaces[0].camInterface->startCapture();
+        initateNewFrame();
+        // mCaptureInterfaces[0].camInterface->startCapture();
     }
     else {
         finalizeCapture(false);
@@ -804,7 +896,9 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
         QMessageBox::warning(this, "Error saving following files:", failedSaves.join(" "));
     }
 
-    if (mRuningManipulator == NULL)
+    SYNC_PRINT(("PhotostationCaptureDialog::finalizeCapture(_): mRunnungManipulator=%s\n", mRuningManipulator ? "true" : "false"));
+
+    if (!mRuningManipulator)
     {
         ui->capturePushButton       ->setEnabled(true);
         ui->captureAdvancePushButton->setEnabled(true);
@@ -815,7 +909,9 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
         emit captureFinished();
     }
     else
+    {
         emit waitingNextCapturePosition();
+    }
 }
 
 void PhotostationCaptureDialog::keyPressEvent(QKeyEvent *event)
@@ -842,6 +938,8 @@ void PhotostationCaptureDialog::captureAndAdvance()
 
 void PhotostationCaptureDialog::captureWithManipulator(int manipulatorPosition)
 {
+    SYNC_PRINT(("PhotostationCaptureDialog::captureWithManipulator(%d)\n", manipulatorPosition));
+
     mAdvanceAfterSave = false;
     mRuningManipulator = true;
 
@@ -850,7 +948,7 @@ void PhotostationCaptureDialog::captureWithManipulator(int manipulatorPosition)
 
 void PhotostationCaptureDialog::finalizeManipulatorCapture(bool advance)
 {
-    std::cout << "finalizeManipulatorCapture: " << advance << std::endl;
+    SYNC_PRINT(("PhotostationCaptureDialog::finalizeManipulatorCapture: %s\n", advance ? "true" : "false"));
     mAdvanceAfterSave = advance;
     mRuningManipulator = false;
 

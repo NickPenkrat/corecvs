@@ -24,6 +24,7 @@
 
 #include "vector3d.h"
 #include "fixedVector.h"
+
 namespace corecvs {
 
 using std::numeric_limits;

@@ -26,8 +26,9 @@ int main(int argc, char *argv[])
     QTG12Loader::registerMyself();
     QTRGB24Loader::registerMyself();
 
-    setSegVHandler();
-    setStdTerminateHandler();
+
+    setHandlerStdTerminate();
+    setHandlerSegV();
 
     printf("Starting testbed...\n");
 

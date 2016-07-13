@@ -203,7 +203,7 @@ TEST(meta, matrixExample)
     /* Let's compare  */
     vector<std::string> names = {"x", "y", "z", "t"};
     vector<double> in = {0.2, 0.5, 0.1, 0.5};
-    map<std::string, double> binds = {{"x", in[0]}, {"y", in[1]}, {"z", in[2]}, {"t", in[3]},};
+    std::map<std::string, double> binds = {{"x", in[0]}, {"y", in[1]}, {"z", in[2]}, {"t", in[3]},};
 
     vector<double> out(9);
     vector<double> outs(9, numeric_limits<double>::max());

@@ -53,6 +53,8 @@ public:
     virtual CapErrorCode getFormats(int *num, CameraFormat *& formats) override;
 
     static void getAllCameras(vector<std::string> &cameras);
+    virtual std::string  getDeviceSerial(int num = LEFT_FRAME) override;
+    virtual QString getInterfaceName()  override;
 
     static int ueyeTrace(int res, const char *prefix = NULL);
 
@@ -61,6 +63,7 @@ public:
     static const double FPS_SCALER      /*= 100.0*/;
 
 private:
+     string interfaceName;  /**< Stores the device name*/
 
     /* This is a private helper class */
     class SpinThread : public QThread

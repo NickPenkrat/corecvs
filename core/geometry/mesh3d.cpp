@@ -8,6 +8,7 @@
 #include "mathUtils.h"      // M_PI
 #include "abstractPainter.h"
 #include "mesh3d.h"
+#include "plyLoader.h"
 
 namespace corecvs {
 
@@ -586,79 +587,7 @@ void Mesh3D::addTruncatedCone(double r1, double r2, double length, int steps)
 
 int Mesh3D::dumpPLY(ostream &out)
 {
-    out << "ply" << std::endl;
-    out << "format ascii 1.0" << std::endl;
-    out << "comment made by ViMouse software" << std::endl;
-    out << "comment This file is a saved stereo-reconstruction" << std::endl;
-    out << "element vertex " << vertexes.size() << std::endl;
-    out << "property float x" << std::endl;
-    out << "property float y" << std::endl;
-    out << "property float z" << std::endl;
-    out << "property uchar red" << std::endl;
-    out << "property uchar green" << std::endl;
-    out << "property uchar blue" << std::endl;
-    out << "element face " << faces.size() << std::endl;
-    out << "property list uchar int vertex_index" << std::endl;
-    if (hasColor) {
-        out << "property uchar red" << std::endl;
-        out << "property uchar green" << std::endl;
-        out << "property uchar blue" << std::endl;
-    }
-    out << "element edge " << edges.size() << std::endl;
-    out << "property int vertex1" << std::endl;
-    out << "property int vertex2" << std::endl;
-    if (hasColor) {
-        out << "property uchar red" << std::endl;
-        out << "property uchar green" << std::endl;
-        out << "property uchar blue" << std::endl;
-    }
-    out << "end_header" << std::endl;
-
-    for (unsigned i = 0; i < vertexes.size(); i++)
-    {
-        out << vertexes[i].x() << " "
-            << vertexes[i].y() << " "
-            << vertexes[i].z() << " ";
-        if (hasColor) {
-            out << (unsigned)(vertexesColor[i].r()) << " "
-                << (unsigned)(vertexesColor[i].g()) << " "
-                << (unsigned)(vertexesColor[i].b()) << std::endl;
-        } else {
-            out << (unsigned)(128) << " "
-                << (unsigned)(128) << " "
-                << (unsigned)(128) << std::endl;
-        }
-    }
-
-    for (unsigned i = 0; i < faces.size(); i++)
-    {
-        out << "3 "
-            << faces[i].x() << " "
-            << faces[i].y() << " "
-            << faces[i].z() << " ";
-        if (hasColor) {
-            out << (unsigned)(facesColor[i].r()) << " "
-                << (unsigned)(facesColor[i].g()) << " "
-                << (unsigned)(facesColor[i].b());
-        }
-        out << std::endl;
-    }
-
-    for (unsigned i = 0; i < edges.size(); i++)
-    {
-
-        out << edges[i].x() << " "
-            << edges[i].y() << " ";
-        if (hasColor) {
-            out << (unsigned)(edgesColor[i].r()) << " "
-                << (unsigned)(edgesColor[i].g()) << " "
-                << (unsigned)(edgesColor[i].b());
-        }
-        out << std::endl;
-    }
-
-//    SYNC_PRINT(("This 0x%X. Edges %d", this, edges.size()));
-    return 0;
+    PLYLoader().savePLY(out, *this);
 }
 
 int Mesh3D::dumpPLY(const std::string &filename)

@@ -12,6 +12,8 @@
 
 #include "meshLoader.h"
 
+#include "sceneShaded.h"
+
 // FIXIT: GOOPEN
 //#include "../../../restricted/applications/vimouse/faceDetection/faceMesh.h"
 
@@ -95,6 +97,7 @@ CloudViewDialog::CloudViewDialog(QWidget *parent)
 
     addSubObject("grid"  , QSharedPointer<Scene3D>(new Grid3DScene()));
     addSubObject("plane" , QSharedPointer<Scene3D>(new Plane3DScene()));
+//    addSubObject("test"  , QSharedPointer<Scene3D>(new SceneShaded()));
 
 
     QSharedPointer<CoordinateFrame> worldFrame = QSharedPointer<CoordinateFrame>(new CoordinateFrame());

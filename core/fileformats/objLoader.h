@@ -28,6 +28,7 @@ public:
     int loadOBJ(istream &input, Mesh3DDecorated &mesh);
 
     int loadOBJSimple(istream &input, Mesh3D &mesh);
+    int saveOBJSimple(ostream &out, Mesh3D &mesh);
 };
 
 } // namespace corecvs

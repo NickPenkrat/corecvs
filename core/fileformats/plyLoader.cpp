@@ -330,6 +330,91 @@ int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
 }
 #undef LOCAL_PRINT
 
+int PLYLoader::savePLY(ostream &out, Mesh3D &mesh)
+{
+    vector<Vector3dd>  &vertexes = mesh.vertexes;
+    vector<Vector3d32> &faces    = mesh.faces;
+    vector<Vector2d32> &edges    = mesh.edges;
+
+    vector<RGBColor> &vertexesColor = mesh.vertexesColor;;
+    vector<RGBColor> &facesColor    = mesh.facesColor;;
+    vector<RGBColor> &edgesColor    = mesh.edgesColor;;
+
+    out << "ply" << std::endl;
+    out << "format ascii 1.0" << std::endl;
+    out << "comment made by ViMouse software" << std::endl;
+    out << "comment This file is a saved stereo-reconstruction" << std::endl;
+    out << "element vertex " << vertexes.size() << std::endl;
+    out << "property float x" << std::endl;
+    out << "property float y" << std::endl;
+    out << "property float z" << std::endl;
+    out << "property uchar red" << std::endl;
+    out << "property uchar green" << std::endl;
+    out << "property uchar blue" << std::endl;
+    out << "element face " << faces.size() << std::endl;
+    out << "property list uchar int vertex_index" << std::endl;
+    if (mesh.hasColor) {
+        out << "property uchar red" << std::endl;
+        out << "property uchar green" << std::endl;
+        out << "property uchar blue" << std::endl;
+    }
+    out << "element edge " << edges.size() << std::endl;
+    out << "property int vertex1" << std::endl;
+    out << "property int vertex2" << std::endl;
+    if (mesh.hasColor) {
+        out << "property uchar red" << std::endl;
+        out << "property uchar green" << std::endl;
+        out << "property uchar blue" << std::endl;
+    }
+    out << "end_header" << std::endl;
+
+    for (unsigned i = 0; i < vertexes.size(); i++)
+    {
+        out << vertexes[i].x() << " "
+            << vertexes[i].y() << " "
+            << vertexes[i].z() << " ";
+        if (mesh.hasColor) {
+            out << (unsigned)(vertexesColor[i].r()) << " "
+                << (unsigned)(vertexesColor[i].g()) << " "
+                << (unsigned)(vertexesColor[i].b()) << std::endl;
+        } else {
+            out << (unsigned)(128) << " "
+                << (unsigned)(128) << " "
+                << (unsigned)(128) << std::endl;
+        }
+    }
+
+    for (unsigned i = 0; i < faces.size(); i++)
+    {
+        out << "3 "
+            << faces[i].x() << " "
+            << faces[i].y() << " "
+            << faces[i].z() << " ";
+        if (mesh.hasColor) {
+            out << (unsigned)(facesColor[i].r()) << " "
+                << (unsigned)(facesColor[i].g()) << " "
+                << (unsigned)(facesColor[i].b());
+        }
+        out << std::endl;
+    }
+
+    for (unsigned i = 0; i < edges.size(); i++)
+    {
+
+        out << edges[i].x() << " "
+            << edges[i].y() << " ";
+        if (mesh.hasColor) {
+            out << (unsigned)(edgesColor[i].r()) << " "
+                << (unsigned)(edgesColor[i].g()) << " "
+                << (unsigned)(edgesColor[i].b());
+        }
+        out << std::endl;
+    }
+
+//    SYNC_PRINT(("This 0x%X. Edges %d", this, edges.size()));
+    return 0;
+}
+
 
 PLYLoader::~PLYLoader()
 {

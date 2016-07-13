@@ -90,7 +90,21 @@ bool MeshLoader::save(Mesh3D *mesh, const string &fileName)
     if (endsWith(fileName, PLY_RES))
     {
         SYNC_PRINT(("MeshLoader::save(): Saving PLY <%s>\n", fileName.c_str()));
-        int res = mesh->dumpPLY(file);
+        PLYLoader loader;
+        int res = loader.savePLY(file, *mesh);
+        if (res != 0)
+        {
+           SYNC_PRINT(("MeshLoader::save(): Unable to save mesh code=%d\n", res ));
+           file.close();
+           return false;
+        }
+    }
+
+    if (endsWith(fileName, OBJ_RES))
+    {
+        SYNC_PRINT(("MeshLoader::save(): Saving OBJ <%s>\n", fileName.c_str()));
+        OBJLoader loader;
+        int res = loader.saveOBJSimple(file, *mesh);
         if (res != 0)
         {
            SYNC_PRINT(("MeshLoader::save(): Unable to save mesh code=%d\n", res ));

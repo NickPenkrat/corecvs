@@ -192,16 +192,14 @@ void FixtureScene::deleteCamera(FixtureCamera *camera)
             continue;
 
         auto it = point->observations.find(camera);
-        if ( it != point->observations.end() ) {
+        if (it != point->observations.end()) {
             point->observations.erase(it);
         }
 
         deleteFixtureCameraUMWPP(point->observations__, camera);
     }
 
-
     delete_safe(camera);
-
 }
 
 void FixtureScene::deleteCameraFixture(CameraFixture *fixture, bool recursive)
@@ -213,6 +211,7 @@ void FixtureScene::deleteCameraFixture(CameraFixture *fixture, bool recursive)
 
         deleteCameraFixtureUMWPP(point->observations__, fixture);
     }
+
     if (recursive)
     {
         while (!fixture->cameras.empty()) {
@@ -234,7 +233,7 @@ void FixtureScene::deleteFeaturePoint(SceneFeaturePoint *point)
 
 void FixtureScene::clear()
 {
-    for(size_t i = 0; i < mOwnedObjects.size(); i++)
+    for (size_t i = 0; i < mOwnedObjects.size(); i++)
     {
         delete_safe(mOwnedObjects[i]);
     }
@@ -243,7 +242,6 @@ void FixtureScene::clear()
     mFixtures.clear();
     mOrphanCameras.clear();
     mSceneFeaturePoints.clear();
-
 }
 
 void FixtureScene::deleteFixturePair(CameraFixture *fixture, FixtureCamera *camera)
@@ -417,7 +415,6 @@ bool FixtureScene::integrityRelink()
         SceneFeaturePoint *point = mSceneFeaturePoints[i];
         point->ownerScene = this;
 
-
         /* TODO check for NULL */
         for (auto it = point->observations.begin(); it != point->observations.end(); ++it)
         {
@@ -435,7 +432,7 @@ bool FixtureScene::integrityRelink()
 
 void FixtureScene::merge(FixtureScene *other)
 {
-    //int oldOrphanNumber = orphanCameras.size();
+    //int oldOrphanNumber = mOrphanCameras.size();
 
     for(size_t i = 0; i < other->mOrphanCameras.size(); i++)
     {
@@ -499,12 +496,8 @@ void FixtureScene::merge(FixtureScene *other)
 }
 
 
-
-
 void FixtureScene::positionCameraInFixture(CameraFixture * /*fixture */, FixtureCamera *camera, const Affine3DQ &location)
 {
-
-
 //    cout << "FixtureScene::positionCameraInStation()" << std::endl;
 //    cout << "  World Transform():" << std::endl;
 //    worldFrameToCameraFrame.prettyPrint1();
@@ -524,7 +517,6 @@ void FixtureScene::addCameraToFixture(FixtureCamera *cam, CameraFixture *fixture
     cam->cameraFixture = fixture;
     fixture->cameras.push_back(cam);
     cam->sequenceNumber = fixture->cameras.size() - 1;
-
 }
 
 int FixtureScene::getObeservationNumber(CameraFixture *fixture)
@@ -582,7 +574,6 @@ void FixtureScene::dumpInfo(ostream &out)
 
     out << "Points: " << mSceneFeaturePoints.size() << endl;
     out << "   Observations: " <<  totalObservations() << endl;
-
 }
 
 void FixtureScene::setFixtureCount(size_t count)
