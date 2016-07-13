@@ -117,6 +117,17 @@ int FeatureDetectionParams::staticInit()
           "Draw tracks on source images"
         )
     );
+    fields().push_back(
+        new BoolField
+        (
+          FeatureDetectionParams::THRESHOLDDISTANCE_ID,
+          offsetof(FeatureDetectionParams, mThresholdDistance),
+          false,
+          "thresholdDistance",
+          "thresholdDistance",
+          "Threshold by descriptor distance instead of b2b ratio"
+        )
+    );
    return 0;
 }
 

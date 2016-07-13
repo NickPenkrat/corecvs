@@ -386,7 +386,7 @@ void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams 
     pipeline.add(new KeyPointDetectionStage(params.detector(), params.parameters()), true);
     pipeline.add(new DescriptorExtractionStage(params.descriptor(), params.parameters()), true);
     pipeline.add(new MatchingPlanComputationStage(), true);
-    pipeline.add(new MatchAndRefineStage(params.descriptor(), params.matcher(), params.b2bThreshold()), true);
+    pipeline.add(new MatchAndRefineStage(params.descriptor(), params.matcher(), params.b2bThreshold(), params.thresholdDistance()), true);
 
     pipeline.run();
 

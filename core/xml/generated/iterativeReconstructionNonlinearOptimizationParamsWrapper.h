@@ -47,6 +47,7 @@ public:
         FINALNONLINEARITERATIONS_ID,
         ALTERNATINGITERATIONS_ID,
         EXCESSIVEQUATERNIONPARAMETRIZATION_ID,
+        EXPLICITINVERSE_ID,
         ITERATIVE_RECONSTRUCTION_NONLINEAR_OPTIMIZATION_PARAMS_WRAPPER_FIELD_ID_NUM
     };
 
@@ -88,6 +89,12 @@ public:
      */
     bool mExcessiveQuaternionParametrization;
 
+    /** 
+     * \brief explicitInverse 
+     * Explisit inverse in Schur complement solving 
+     */
+    bool mExplicitInverse;
+
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
 
@@ -126,6 +133,11 @@ public:
         return mExcessiveQuaternionParametrization;
     }
 
+    bool explicitInverse() const
+    {
+        return mExplicitInverse;
+    }
+
     /* Section with setters */
     void setOptimizationParams(ReconstructionFunctorOptimizationParams const &optimizationParams)
     {
@@ -157,6 +169,11 @@ public:
         mExcessiveQuaternionParametrization = excessiveQuaternionParametrization;
     }
 
+    void setExplicitInverse(bool explicitInverse)
+    {
+        mExplicitInverse = explicitInverse;
+    }
+
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
@@ -168,6 +185,7 @@ template<class VisitorType>
         visitor.visit(mFinalNonLinearIterations,  static_cast<const IntField *>     (fields()[FINALNONLINEARITERATIONS_ID]));
         visitor.visit(mAlternatingIterations,     static_cast<const IntField *>     (fields()[ALTERNATINGITERATIONS_ID]));
         visitor.visit(mExcessiveQuaternionParametrization, static_cast<const BoolField *>    (fields()[EXCESSIVEQUATERNIONPARAMETRIZATION_ID]));
+        visitor.visit(mExplicitInverse,           static_cast<const BoolField *>    (fields()[EXPLICITINVERSE_ID]));
     }
 
     IterativeReconstructionNonlinearOptimizationParamsWrapper()
@@ -183,6 +201,7 @@ template<class VisitorType>
         , int finalNonLinearIterations
         , int alternatingIterations
         , bool excessiveQuaternionParametrization
+        , bool explicitInverse
     )
     {
         mOptimizationParams = optimizationParams;
@@ -191,6 +210,7 @@ template<class VisitorType>
         mFinalNonLinearIterations = finalNonLinearIterations;
         mAlternatingIterations = alternatingIterations;
         mExcessiveQuaternionParametrization = excessiveQuaternionParametrization;
+        mExplicitInverse = explicitInverse;
     }
 
     friend ostream& operator << (ostream &out, IterativeReconstructionNonlinearOptimizationParamsWrapper &toSave)

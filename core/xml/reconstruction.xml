@@ -23,6 +23,7 @@
 	<field type="bool"   name="matchF2F"        defaultValue="false" />
 	<field type="string" name="parameters" defaultValue="" comment="Additional parameters" />
 	<field type="bool"   name="plotTracks" defaultValue="false" comment="Draw tracks on source images" />
+	<field type="bool"   name="thresholdDistance" defaultValue="false" comment="Threshold by descriptor distance instead of b2b ratio"/>
   </class>
   
   <class name="Iterative Reconstruction Feature Selection Params">
@@ -76,7 +77,8 @@
     <field type="int" name="finalNonLinearIterations" defaultValue="10000" min="1" max="100000"  comment="Final non-linear iterations" />
     <field type="int" name="alternatingIterations" defaultValue="0" min="0" max="1000" comment="Alternating optimization on success steps" />
 
-    <field type="bool" name="excessiveQuaternionParametrization" defaultValue="false" comment="Excessive/non-excessive quaternion parametrization" />
+	<field type="bool" name="excessiveQuaternionParametrization" defaultValue="false" comment="Excessive/non-excessive quaternion parametrization" />
+	<field type="bool" name="explicitInverse" defaultValue="false" comment="Explisit inverse in Schur complement solving" />
   </class>
 
 </poco>
