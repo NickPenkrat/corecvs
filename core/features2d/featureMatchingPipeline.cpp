@@ -702,7 +702,6 @@ public:
                 ss1 << "Matched sets ";
                 pipeline->tic(r.begin(), false);
             }
-            std::cout << "BAR: " << final_matches.size() << std::endl;
         }
 
         if (cnt)
