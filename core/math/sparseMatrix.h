@@ -32,15 +32,12 @@ public:
     SparseMatrix(const Matrix &dense, double threshold = 0.0);
     //! \brief Creates sparse matrix from CRS data
     SparseMatrix(int h, int w, const std::vector<double> &values, const std::vector<int> &columns, const std::vector<int> &rowPointers);
-    SparseMatrix(int h, int w, std::vector<double> &&values, std::vector<int> &&columns,  std::vector<int> &&rowPointers);
     //! \brief Creates sparse matrix from {point, value} data
     SparseMatrix(int h, int w, const std::map<std::pair<int, int>, double> &data);
     //! \brief Creates dense submatrix and return column idx
-    Matrix denseRows(int x1, int y1, int x2, int y2, std::vector<int> &colIdx) const;
+    Matrix denseRows(int x1, int y1, int x2, int y2, std::vector<int> &colIdx);
     //! \brief Creates dense submatrix and return row idx
     Matrix denseCols(int x1, int y1, int x2, int y2, std::vector<int> &rowIdx);
-    void computeRows(int x1, int y1, int x2, int y2, std::vector<int> &rowIdx, std::vector<int*> &begins, std::vector<int*> &ends);
-    void fillDenseCols(int x1, const std::vector<int> &rowIdx, const std::vector<int*> &begins, const std::vector<int*> &ends, double* data, bool trans = false, int stride = -1);
     //! \brief Cast to dense matrix
     explicit operator Matrix() const;
     SparseMatrix(const SparseMatrix &src, int x1, int y1, int x2, int y2);
