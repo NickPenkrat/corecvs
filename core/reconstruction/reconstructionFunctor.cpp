@@ -135,7 +135,6 @@ struct PointFunctor: corecvs::FunctionArgs
                     1.0 / n - x2 / n3,          -xy / n3,          -xz / n3,
                              -xy / n3, 1.0 / n - y2 / n3,          -yz / n3,
                              -xz / n3,          -yz / n3, 1.0 / n - z2 / n3);
-            auto JJ = D * J;
             for (int ii = 0; ii < 3; ++ii)
                 for (int jj = 0; jj < 3; ++jj)
                     J.a(argout + ii, jj) = D.a(ii, jj);
@@ -525,7 +524,6 @@ void corecvs::ReconstructionFunctor::readParams(const double* params, bool prepa
         FILL(scene->trackedFeatures,  INPUTS_PER_3D_POINT,        a->reprojectedPosition[i] = v,,))
 
     bool exc = excessiveQuaternionParametrization;
-    const int rotationParams = exc ? INPUTS_PER_ORIENTATION_EXC : INPUTS_PER_ORIENTATION_NEX;
     corecvs::parallelable_for((size_t)0, cacheOrigin.size(), std::max(cacheOrigin.size() / 256, (size_t)1),
     [&](const corecvs::BlockedRange<size_t> &r){
     for (auto iii = r.begin(); iii < r.end(); ++iii)
@@ -581,7 +579,7 @@ void corecvs::ReconstructionFunctor::readParams(const double* params, bool prepa
                         fqw = 1e100;
                         int id = 0;
                         for (; orientableFixtures[id] != wpp.u; ++id);
-                        CORE_ASSERT_TRUE_S(id < orientableFixtures.size());
+                        CORE_ASSERT_TRUE_S(id < (int)orientableFixtures.size());
                         FR0 = corecvs::Matrix44(originalOrientations[id].conjugated().toMatrix());
                     }
                     FR = Rotation(fqx, fqy, fqz, fqw, exc ? QuaternionParametrization::FULL_NORMALIZED : QuaternionParametrization::NON_EXCESSIVE, true);
@@ -756,11 +754,10 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianRayDiff(const doub
 {
     readParams(in, true);
     std::vector<double> values(sparseCol.size());
-    int nIn = getInputNum(), nOut = getOutputNum(),
+    int nOut = getOutputNum(),
         lastProjection = (int)revDependency.size(),
         nErr = getErrorComponentsPerPoint();
     bool exc = excessiveQuaternionParametrization;
-    const int rotationParams = exc ? INPUTS_PER_ORIENTATION_EXC : INPUTS_PER_ORIENTATION_NEX;
     int bs = std::max((lastProjection / nErr) / 256, 1);
     corecvs::parallelable_for(0, lastProjection / nErr, bs, [&](const corecvs::BlockedRange<int> &r){
     for (int ii= r.begin(); ii< r.end(); ++ii)
@@ -860,6 +857,7 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianRayDiff(const doub
         }
     return SparseMatrix(getOutputNum(), getInputNum(), values, sparseCol, sparseRowptr);
 }
+#undef SPARSEV
 
 corecvs::Matrix44 corecvs::ReconstructionFunctor::Rotation(double qx, double qy, double qz, double qw, corecvs::ReconstructionFunctor::QuaternionParametrization p, bool inverse)
 {
@@ -905,11 +903,10 @@ corecvs::SparseMatrix corecvs::ReconstructionFunctor::jacobianReprojection(const
 {
     readParams(in, true);
     std::vector<double> values(sparseCol.size());
-    int nIn = getInputNum(), nOut = getOutputNum(),
+    int nOut = getOutputNum(),
         lastProjection = (int)revDependency.size(),
         nErr = getErrorComponentsPerPoint();
     bool exc = excessiveQuaternionParametrization;
-    const int rotationParams = exc ? INPUTS_PER_ORIENTATION_EXC : INPUTS_PER_ORIENTATION_NEX;
     int bs = std::max((lastProjection / nErr) / 256, 1);
     corecvs::parallelable_for(0, lastProjection / nErr, bs, [&](const corecvs::BlockedRange<int> &r){
     for (int ii= r.begin(); ii< r.end(); ++ii)
@@ -1025,9 +1022,8 @@ void corecvs::ReconstructionFunctor::QuaternionDiff(double qx, double qy, double
             break;
         case QuaternionParametrization::FULL_NORMALIZED:
             {
-                double qx2 = qx * qx, qy2 = qy * qy, qz2 = qz * qz, qxqyqz = qx * qy * qz, qw2 = qw * qw;
-                double qxqy= qx * qy, qxqz = qx * qz, qyqz = qy * qz, qxqw = qx * qw, qyqw = qy * qw, qzqw = qz * qw,
-                    qx3 = qx2 * qx, qy3 = qy2 * qy, qz3 = qz2 * qz, qx2qy = qx2 * qy, qx2qz = qx2 * qz, qxqy2 = qx * qy2, qy2qz = qy2 * qz, qxqz2 = qx * qz2, qyqz2 = qy * qz2;
+                double qx2 = qx * qx, qy2 = qy * qy, qz2 = qz * qz, qw2 = qw * qw;
+                double qxqy= qx * qy, qxqz = qx * qz, qyqz = qy * qz, qxqw = qx * qw, qyqw = qy * qw, qzqw = qz * qw;
                 double N = qx2 + qy2 + qz2 + qw2;
                 double N2= N * N;
                 Rqx = corecvs::Matrix44(

@@ -119,6 +119,17 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
           "Excessive/non-excessive quaternion parametrization"
         )
     );
+    fields().push_back(
+        new BoolField
+        (
+          IterativeReconstructionNonlinearOptimizationParamsWrapper::EXPLICITINVERSE_ID,
+          offsetof(IterativeReconstructionNonlinearOptimizationParamsWrapper, mExplicitInverse),
+          false,
+          "explicitInverse",
+          "explicitInverse",
+          "Explisit inverse in Schur complement solving"
+        )
+    );
    return 0;
 }
 

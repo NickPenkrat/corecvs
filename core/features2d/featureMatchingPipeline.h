@@ -107,11 +107,12 @@ public:
     void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
     void run(FeatureMatchingPipeline* pipeline);
     ~MatchAndRefineStage() {}
-    MatchAndRefineStage(DescriptorType descriptorType, MatcherType matcherType, double scaleThreshold = 0.95);
+    MatchAndRefineStage(DescriptorType descriptorType, MatcherType matcherType, double scaleThreshold = 0.95, bool thresholdDistance = false);
 private:
     DescriptorType descriptorType;
     MatcherType matcherType;
     double scaleThreshold;
+    bool thresholdDistance;
     bool parallelable;
 };
 

@@ -28,6 +28,7 @@ IterativeReconstructionNonlinearOptimizationParamsWrapperControlWidget::Iterativ
     QObject::connect(mUi->finalNonLinearIterationsSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->alternatingIterationsSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->excessiveQuaternionParametrizationCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->explicitInverseCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
 }
 
 IterativeReconstructionNonlinearOptimizationParamsWrapperControlWidget::~IterativeReconstructionNonlinearOptimizationParamsWrapperControlWidget()
@@ -69,6 +70,7 @@ IterativeReconstructionNonlinearOptimizationParamsWrapper *IterativeReconstructi
         , mUi->finalNonLinearIterationsSpinBox->value()
         , mUi->alternatingIterationsSpinBox->value()
         , mUi->excessiveQuaternionParametrizationCheckBox->isChecked()
+        , mUi->explicitInverseCheckBox->isChecked()
     );
 }
 
@@ -82,6 +84,7 @@ void IterativeReconstructionNonlinearOptimizationParamsWrapperControlWidget::set
     mUi->finalNonLinearIterationsSpinBox->setValue(input.finalNonLinearIterations());
     mUi->alternatingIterationsSpinBox->setValue(input.alternatingIterations());
     mUi->excessiveQuaternionParametrizationCheckBox->setChecked(input.excessiveQuaternionParametrization());
+    mUi->explicitInverseCheckBox->setChecked(input.explicitInverse());
     blockSignals(wasBlocked);
     emit paramsChanged();
 }

@@ -544,6 +544,7 @@ class ParallelMatcherRefiner
     MatcherType matcherType;
     size_t responsesPerPoint;
     double scaleThreshold;
+    bool thresholdDistance;
     std::vector<int> *first_ptr, *next_ptr, *idx_ptr;
 public:
     void operator() (const corecvs::BlockedRange<size_t>& r) const
@@ -670,8 +671,10 @@ public:
             {
                 for (size_t j = 0; j < ratioInliers[i].size(); ++j)
                 {
-                    double ratio;
-                    if ((ratio = accumulator[i][j][0].distance / accumulator[i][j][1].distance) < scaleThreshold)
+                    double ratio = thresholdDistance ?
+                          accumulator[i][j][0].distance
+                        : accumulator[i][j][0].distance / accumulator[i][j][1].distance;
+                    if ((ratio) < scaleThreshold)
                     {
                         ratioInliers[i][j] = accumulator[i][j][0];
                         ratioInliers[i][j].best2ndBest = ratio;
@@ -707,10 +710,10 @@ public:
         }
         delete matcher;
     }
-    ParallelMatcherRefiner(FeatureMatchingPipeline* pipeline, DescriptorType descriptorType, MatcherType matcherType, size_t responsesPerPoint, std::vector<int> *first, std::vector<int> *next, std::vector<int> *idx, double scaleThreshold = 0.95) : pipeline(pipeline), descriptorType(descriptorType), matcherType(matcherType), responsesPerPoint(responsesPerPoint), scaleThreshold(scaleThreshold), first_ptr(first), next_ptr(next), idx_ptr(idx) {}
+    ParallelMatcherRefiner(FeatureMatchingPipeline* pipeline, DescriptorType descriptorType, MatcherType matcherType, size_t responsesPerPoint, std::vector<int> *first, std::vector<int> *next, std::vector<int> *idx, double scaleThreshold = 0.95, bool thresholdDistance = false) : pipeline(pipeline), descriptorType(descriptorType), matcherType(matcherType), responsesPerPoint(responsesPerPoint), scaleThreshold(scaleThreshold), thresholdDistance(thresholdDistance), first_ptr(first), next_ptr(next), idx_ptr(idx) {}
 };
 
-MatchAndRefineStage::MatchAndRefineStage(DescriptorType descriptorType, MatcherType matcherType, double scaleThreshold) : descriptorType(descriptorType), matcherType(matcherType), scaleThreshold(scaleThreshold)
+MatchAndRefineStage::MatchAndRefineStage(DescriptorType descriptorType, MatcherType matcherType, double scaleThreshold, bool thresholdDistance) : descriptorType(descriptorType), matcherType(matcherType), scaleThreshold(scaleThreshold), thresholdDistance(thresholdDistance)
 {
     DescriptorMatcher* matcher = DescriptorMatcherProvider::getInstance().getMatcher(descriptorType, matcherType);
     parallelable = matcher->isParallelable();
@@ -772,7 +775,7 @@ void MatchAndRefineStage::run(FeatureMatchingPipeline *pipeline)
     rawMatches.matches.resize(matchPlan.plan.size());
     refinedMatches.matchSets.resize(N*(N-1)/2);
 
-    corecvs::parallelable_for ((size_t)0, P, CORE_MAX(P / MAX_CORE_COUNT_ESTIMATE, (size_t)1), ParallelMatcherRefiner(pipeline, descriptorType, matcherType, responsesPerPoint, &first, &next, &idx, scaleThreshold), parallelable);
+    corecvs::parallelable_for ((size_t)0, P, CORE_MAX(P / MAX_CORE_COUNT_ESTIMATE, (size_t)1), ParallelMatcherRefiner(pipeline, descriptorType, matcherType, responsesPerPoint, &first, &next, &idx, scaleThreshold, thresholdDistance), parallelable);
 
     pipeline->toc("Computing & refining matches on-the-fly", "");
 }

@@ -32,6 +32,8 @@ struct IterativeReconstructionNonlinearOptimizationParams
     int alternatingIterations = 0;
     // Excessive/non-excessive quaternion parametrization
     bool excessiveQuaternionParametrization = false;
+    // Explicit inverse in Schur complement
+    bool explicitInverse = false;
 
     template<class VisitorType>
     void accept(VisitorType &visitor)
@@ -41,6 +43,7 @@ struct IterativeReconstructionNonlinearOptimizationParams
         visitor.visit(finalNonLinearIterations , 20000,     "finalNonLinearIterations");
         visitor.visit(alternatingIterations , 0,"alternatingIterations");
         visitor.visit(excessiveQuaternionParametrization , false,"excessiveQuaternionParametrization");
+        visitor.visit(explicitInverse, false, "explicitInverse");
         visitor.visit(optimizationParams, ReconstructionFunctorOptimizationType::NON_DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::FOCALS | ReconstructionFunctorOptimizationType::PRINCIPALS | ReconstructionFunctorOptimizationType::POINTS, "optimizationParams");
 
     }

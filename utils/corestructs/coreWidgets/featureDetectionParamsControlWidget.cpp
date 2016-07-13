@@ -28,6 +28,7 @@ FeatureDetectionParamsControlWidget::FeatureDetectionParamsControlWidget(QWidget
     QObject::connect(mUi->matchF2FCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->parametersEdit, SIGNAL(textChanged(QString)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->plotTracksCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->thresholdDistanceCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
 }
 
 FeatureDetectionParamsControlWidget::~FeatureDetectionParamsControlWidget()
@@ -70,6 +71,7 @@ FeatureDetectionParams *FeatureDetectionParamsControlWidget::createParameters() 
         , mUi->matchF2FCheckBox->isChecked()
         , mUi->parametersEdit->text().toStdString()
         , mUi->plotTracksCheckBox->isChecked()
+        , mUi->thresholdDistanceCheckBox->isChecked()
     );
 }
 
@@ -84,6 +86,7 @@ void FeatureDetectionParamsControlWidget::setParameters(const FeatureDetectionPa
     mUi->matchF2FCheckBox->setChecked(input.matchF2F());
     mUi->parametersEdit->setText(input.parameters().c_str());
     mUi->plotTracksCheckBox->setChecked(input.plotTracks());
+    mUi->thresholdDistanceCheckBox->setChecked(input.thresholdDistance());
     blockSignals(wasBlocked);
     emit paramsChanged();
 }

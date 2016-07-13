@@ -35,6 +35,25 @@ double corecvs::SparseMatrix::fillin() const
 
 corecvs::SparseMatrix::SparseMatrix(const SparseMatrix &src, int x1, int y1, int x2, int y2)
 {
+#if 0
+    src.swapCoords(x1, y1, x2, y2);
+
+    h = y2 - y1;
+    w = x2 - x1;
+    CORE_ASSERT_TRUE_S(h >= 0 && w >= 0);
+    rowPointers.resize(h + 1);
+    for (int i = y1; i < y2; ++i)
+    {
+        const int* cbegin = std::lower_bound(&src.columns[src.rowPointers[i]], &src.columns[src.rowPointers[i + 1]], x1),
+               *   cend = std::lower_bound(&src.columns[src.rowPointers[i]], &src.columns[src.rowPointers[i + 1]], x2);
+        for (auto ptr = cbegin; ptr < cend; ++ptr)
+        {
+            columns.push_back(*ptr - x1);
+            values.push_back(src.values[ptr - &src.columns[0]]);
+        }
+        rowPointers[i - y1 + 1] = (int)values.size();
+    }
+#else
     src.swapCoords(x1, y1, x2, y2);
 
     h = y2 - y1;
@@ -54,6 +73,7 @@ corecvs::SparseMatrix::SparseMatrix(const SparseMatrix &src, int x1, int y1, int
         }
         rowPointers[i - y1 + 1] = (int)values.size();
     }
+#endif
 }
 
 void corecvs::SparseMatrix::denseSubMatrix(int x1, int y1, int x2, int y2, double* output, int stride) const
@@ -115,11 +135,7 @@ SparseMatrix::SparseMatrix(int h, int w, const std::vector<double> &values, cons
 {
     CORE_ASSERT_TRUE_S(h + 1 == (int)rowPointers.size());
     CORE_ASSERT_TRUE_S(values.size() == columns.size());
-    if (*rowPointers.rbegin() != values.size())
-    {
-        std::cout << "BLAH" << std::endl;
     CORE_ASSERT_TRUE_S(*rowPointers.rbegin() == (int)values.size());
-    }
 }
 
 SparseMatrix::SparseMatrix(int h, int w, const std::map<std::pair<int, int>, double> &data) : h(h), w(w)
@@ -161,6 +177,7 @@ double SparseMatrix::a(int y, int x) const
     for (int i = rowPointers[y]; i < rowPointers[y + 1]; ++i)
         if (columns[i] == x)
             return values[i];
+    return 0.0;
 #endif
 }
 
@@ -241,7 +258,6 @@ Matrix SparseMatrix::denseCols(int x1, int y1, int x2, int y2, std::vector<int> 
     Matrix M(h, w);
     for (int y = 0; y < h; ++y)
     {
-        int i = rowIdx[y];
         for (int* ptr = b[y]; ptr < e[y]; ++ptr)
             M.a(y, *ptr - x1) = values[ptr - &columns[0]];
     }
@@ -816,7 +832,7 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementInv(const corecvs::SparseMatr
     /*
      * The same as above, but with fancy LAPACK
      */
-    auto N = diagBlocks.size() - 1;
+    int N = (int)diagBlocks.size() - 1;
     std::vector<int> pivots(Dw);
 
     auto startBlocks = std::chrono::high_resolution_clock::now();
@@ -1047,13 +1063,11 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementNew(const corecvs::SparseMatr
                 for (int i = r.begin(); i != r.end(); ++i)
                 {
                     auto begin = diagBlocks[i] - diagBlocks[0], end = diagBlocks[i + 1] - diagBlocks[0];
-                    auto len = end - begin;
                     dBlocks[i] = B.denseCols(begin, 0, end, B.h, denseCols[i]).t();
                     cols[i] = dBlocks[i].w;
                     rows[i] = dBlocks[i].h;
                 }
             });
-    auto blockCopy = std::chrono::high_resolution_clock::now();
     int nnz = 0;
     std::vector<int> cumC(ND);
     for (int i = 0; i < ND; ++i)
@@ -1063,7 +1077,6 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementNew(const corecvs::SparseMatr
         cumC[i] = i == 0 ? s : s + cumC[i - 1];
     }
     corecvs::Matrix m(1,1);
-    auto sizeComp = std::chrono::high_resolution_clock::now();
     corecvs::SparseMatrix DinvtBt(m);
     {
         int h = B.w, w = B.h;
@@ -1106,14 +1119,6 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementNew(const corecvs::SparseMatr
             });
         DinvtBt = corecvs::SparseMatrix(h, w, values, columns, rowPointers);
     }
-    auto mainLoop = std::chrono::high_resolution_clock::now();
-    auto loop = (mainLoop - sizeComp).count() / 1e9,
-         size = (sizeComp - blockCopy).count() / 1e9,
-         copy = (blockCopy - startDinvBt).count() / 1e9;
-    auto total = loop + size + copy;
-    std::cout << "\tLOOP: " << loop << " " << loop / total * 100.0 << "%" << std::endl;
-    std::cout << "\tSIZE: " << size << " " << size / total * 100.0 << "%" << std::endl;
-    std::cout << "\tCOPY: " << copy << " " << copy / total * 100.0 << "%" << std::endl;
 
     auto stopDinvBt = std::chrono::high_resolution_clock::now();
     // Computing lhs/rhs
@@ -1282,8 +1287,6 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementOld(const corecvs::SparseMatr
     // Computing BD^{-1}
     //recvs::Matrix BDinv(Bh, Dw);
     auto startDinvBt = std::chrono::high_resolution_clock::now();
-//    std::cout << "ENTERING DINVTBT" << std::endl;
-    auto stopDinvBt1= std::chrono::high_resolution_clock::now();
     auto DinvtBt = (corecvs::Matrix)(!symmetric ? B.t() : C);
     CORE_ASSERT_TRUE_S(DinvtBt.h == Dw && DinvtBt.w == Bh);
     corecvs::parallelable_for(0, (int)qrd.size(), [&](const corecvs::BlockedRange<int> &r)
@@ -1400,8 +1403,9 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementOld(const corecvs::SparseMatr
 #endif
 }
 
-bool corecvs::SparseMatrix::LinSolveSchurComplement(const corecvs::SparseMatrix &M, const corecvs::Vector &Bv, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric, bool posDef)
+bool corecvs::SparseMatrix::LinSolveSchurComplement(const corecvs::SparseMatrix &M, const corecvs::Vector &Bv, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric, bool posDef, bool explicitInv)
 {
+#if 0
     corecvs::Vector resOld(M.h), resNew(M.h), resInv(M.h);
     auto startOld = std::chrono::high_resolution_clock::now();
     auto foo = LinSolveSchurComplementOld(M, Bv, diagBlocks, resOld, symmetric, posDef);
@@ -1449,6 +1453,12 @@ bool corecvs::SparseMatrix::LinSolveSchurComplement(const corecvs::SparseMatrix 
     std::cout << std::endl;
     res = resOld;
     return foo;
+#else
+	if (explicitInv)
+		return LinSolveSchurComplementInv(M, Bv, diagBlocks, res, symmetric, posDef);
+	else
+		return LinSolveSchurComplementNew(M, Bv, diagBlocks, res, symmetric, posDef);
+#endif
 }
 
 bool        corecvs::SparseMatrix::linSolveSchurComplement(const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric, bool posDef)
