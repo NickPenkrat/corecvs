@@ -15,7 +15,13 @@
 namespace corecvs {
 
 /**
- *    The classical rotation storage is in format yaw, pitch and roll
+ *    The classical rotation storage is in format yaw, pitch and roll.
+ *    This class works in CAMERA reference frame with
+ *
+ *     X - horisontaly to the image right
+ *     Y - downwards
+ *     Z - following optical axis from camera, forward
+ *
  *
  *    Yaw/Athimuth [0..2pi]
  *    Pitch

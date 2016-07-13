@@ -29,6 +29,7 @@ public:
     bool    largePoints;
 
     /* */
+    bool    drawFixtureCams;
     bool    drawObservations;
     bool    drawRays;
 
@@ -36,6 +37,7 @@ public:
       : printNames(false)
       , privateColor(false)
       , largePoints(false)
+      , drawFixtureCams(true)
       , drawObservations(false)
       , drawRays(false)
     {}

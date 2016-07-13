@@ -5,7 +5,6 @@
 #include "multicameraTriangulator.h"
 #include "cameraFixture.h"
 #include "fixtureScene.h"
-#include "statusTracker.h"
 
 using namespace corecvs;
 
@@ -429,6 +428,73 @@ bool FixtureScene::integrityRelink()
     return true;
 }
 
+void FixtureScene::merge(FixtureScene *other)
+{
+    //int oldOrphanNumber = mOrphanCameras.size();
+
+    for(size_t i = 0; i < other->mOrphanCameras.size(); i++)
+    {
+        FixtureCamera *cam = createCamera();
+        *static_cast<CameraModel *>(cam) = *(other->mOrphanCameras[i]);
+    }
+
+
+    int oldFixtureNumber = mFixtures.size();
+
+    for(size_t i = 0; i < other->mFixtures.size(); i++)
+    {
+        CameraFixture *otherFixture = other->mFixtures[i];
+        CameraFixture *newFixture = createCameraFixture();
+
+        newFixture->location = otherFixture->location;
+        newFixture->name     = otherFixture->name;
+
+        for(size_t j = 0; j < otherFixture->cameras.size(); j++)
+        {
+            FixtureCamera *cam = createCamera();
+            *static_cast<CameraModel *>(cam) = *(otherFixture->cameras[j]);
+            addCameraToFixture(cam, newFixture);
+        }
+    }
+
+    for(size_t i = 0; i < other->mSceneFeaturePoints.size(); i++)
+    {
+        SceneFeaturePoint *otherPoint = other->mSceneFeaturePoints[i];
+        SceneFeaturePoint *newPoint = createFeaturePoint();
+
+        /*This need to be moved in point itself*/
+
+        newPoint->name                        = otherPoint->name;
+        newPoint->position                    = otherPoint->position;
+        newPoint->hasKnownPosition            = otherPoint->hasKnownPosition;
+        newPoint->accuracy                    = otherPoint->accuracy;
+        newPoint->reprojectedPosition         = otherPoint->reprojectedPosition;
+        newPoint->hasKnownReprojectedPosition = otherPoint->hasKnownReprojectedPosition;
+        newPoint->type                        = otherPoint->type;
+
+        for (auto it = otherPoint->observations.begin(); it != otherPoint->observations.end(); ++it)
+        {
+            FixtureCamera *otherCam = it->first;
+            CameraFixture *otherFixture = otherCam->cameraFixture;
+            SceneObservation &otherObserv = it->second;
+
+            CameraFixture *thisFixture = mFixtures[oldFixtureNumber + otherFixture->sequenceNumber];
+            FixtureCamera *thisCam     = thisFixture->cameras[otherCam->sequenceNumber];
+
+            /*This need to be moved in Observation itself*/
+            SceneObservation newObserv = otherObserv;
+            newObserv.featurePoint = newPoint;
+            newObserv.camera = thisCam;
+            newObserv.cameraFixture = thisFixture;
+
+            newPoint->observations.insert(std::pair<FixtureCamera *, SceneObservation>(thisCam, newObserv));
+        }
+    }
+
+}
+
+
+
 
 void FixtureScene::positionCameraInFixture(CameraFixture * /*fixture */, FixtureCamera *camera, const Affine3DQ &location)
 {
@@ -450,6 +516,36 @@ void FixtureScene::addCameraToFixture(FixtureCamera *cam, CameraFixture *fixture
     }
     cam->cameraFixture = fixture;
     fixture->cameras.push_back(cam);
+    cam->sequenceNumber = fixture->cameras.size() - 1;
+
+}
+
+int FixtureScene::getObeservationNumber(CameraFixture *fixture)
+{
+    int count = 0;
+    for(size_t i = 0; i < mSceneFeaturePoints.size(); i++)
+    {
+        SceneFeaturePoint *point = mSceneFeaturePoints[i];
+        for (auto it = point->observations.begin(); it != point->observations.end(); ++it)
+        {
+            FixtureCamera *cam = it->first;
+            if (cam->cameraFixture == fixture)
+                 count++;
+        }
+    }
+    return count;
+}
+
+int FixtureScene::getObeservationNumber(FixtureCamera *cam)
+{
+    int count = 0;
+    for(size_t i = 0; i < mSceneFeaturePoints.size(); i++)
+    {
+        SceneFeaturePoint *point = mSceneFeaturePoints[i];
+        if (point->observations.find( cam ) != point->observations.end())
+            count++;
+    }
+    return count;
 }
 
 void FixtureScene::dumpInfo(ostream &out)
@@ -556,6 +652,18 @@ CameraFixture *FixtureScene::getFixtureById(FixtureScenePart::IdType id)
     }
     return NULL;
 }
+
+SceneFeaturePoint *FixtureScene::getPointByName(const std::string &name)
+{
+    for (SceneFeaturePoint *point: mSceneFeaturePoints) {
+        if (point->name == name) {
+            return point;
+        }
+    }
+    return NULL;
+}
+
+
 
 FixtureScene::~FixtureScene()
 {

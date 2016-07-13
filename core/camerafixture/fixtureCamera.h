@@ -72,6 +72,9 @@ class FixtureCamera : public FixtureScenePart, public CameraModel
 public:
     CameraFixture   *cameraFixture;
 
+    /* This variable is not contorlled and maintained */
+    int sequenceNumber;
+
     FixtureCamera(FixtureScene * owner = NULL) :
         FixtureScenePart(owner),
         cameraFixture(NULL)
