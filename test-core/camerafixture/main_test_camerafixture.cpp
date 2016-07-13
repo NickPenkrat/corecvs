@@ -15,8 +15,6 @@
 #include "fixtureScene.h"
 #include "printerVisitor.h"
 
-
-using namespace std;
 using namespace corecvs;
 
 TEST(Fixture, testAllocations)
@@ -101,9 +99,9 @@ FixtureScene *createTestScene()
 
         //SYNC_PRINT(("Length: %d\n", scene->fixtures.size()));
 
-        for (size_t i = 0; i < scene->fixtures.size(); i++)
+        for (size_t i = 0; i < scene->fixtures().size(); i++)
         {
-            CameraFixture *fixture = scene->fixtures[i];
+            CameraFixture *fixture = scene->fixtures()[i];
             FixtureCamera *camera = scene->createCamera();
             char buffer[100];
             snprintf2buf(buffer, "camera %d(%d)", j, i);
@@ -141,8 +139,10 @@ TEST(Fixture, testMerge)
 
   scene2->merge(scene1);
 
-  scene1->dumpInfo();
-  scene2->dumpInfo();
+  std::ostream &s = std::cout;
+
+  scene1->dumpInfo(s);
+  scene2->dumpInfo(s);
 
   delete_safe(scene1);
   delete_safe(scene2);

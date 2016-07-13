@@ -1,15 +1,20 @@
 #include "photostationCaptureDialog.h"
-#include "g12Image.h"
-#include "qtHelper.h"
-#include "log.h"
-#include "focusEstimator.h"
 
 #include <QMessageBox>
 #include <QFileDialog>
 
+#include "log.h"
+#include "focusEstimator.h"
+#include "preciseTimer.h"
+
+#include "g12Image.h"
+#include "qtHelper.h"
+
 #include "ui_photostationCaptureDialog.h"
+#include "imageCaptureInterface.h"
 
 /* Temporary solution. This need to be hidden inside image capture interface */
+#if 0
 #ifdef Q_OS_WIN
 # ifdef WITH_DIRECTSHOW
 #  include "directShow.h"
@@ -17,11 +22,17 @@
 #  define CAPTURE_INTERFACE DirectShowCaptureInterface
 # endif
 #else
-# include "V4L2Capture.h"
-# define CAPTURE_INTERFACE V4L2CaptureInterface
+//# include "V4L2Capture.h"
+//# define CAPTURE_INTERFACE V4L2CaptureInterface
+
+# include "uEyeCapture.h"
+# define CAPTURE_INTERFACE UEyeCaptureInterface
+#endif
 #endif
 
 const QString PhotostationCaptureDialog::DEFAULT_FILENAME = "capture.ini";
+
+using corecvs::FocusEstimator;
 
 PhotostationCaptureDialog::PhotostationCaptureDialog(QWidget *parent)
     : QDialog(parent)
@@ -130,7 +141,7 @@ void PhotostationCaptureDialog::refresh()
     vector<string> cameras;
     vector<string> serials;
 
-    CAPTURE_INTERFACE::getAllCameras(cameras);
+    ImageCaptureInterface::getAllCameras(cameras);
 
     for (unsigned i = 0; i < cameras.size(); ++i)
     {
@@ -358,12 +369,12 @@ void PhotostationCaptureDialog::cameraSettings(int /*lineid*/)
 
 void PhotostationCaptureDialog::newPreviewFrame()
 {
-    //qDebug() << "PhotostationCaptureDialog::newPreviewFrame():Trace";
+    // qDebug() << "PhotostationCaptureDialog::newPreviewFrame():Called";
 
     PreciseTimer time = PreciseTimer::currentTime();
     /* This protects the events form flooding input queue */
     static bool flushEvents = false;
-    if (flushEvents) {
+    if (flushEvents) {        
         return;
     }
     flushEvents = true;
@@ -371,11 +382,12 @@ void PhotostationCaptureDialog::newPreviewFrame()
     QCoreApplication::processEvents();
     flushEvents = false;
 
-    //qDebug() << "PhotostationCaptureDialog::newPreviewFrame():Flood protection took:" << (time.usecsToNow() / 1000.0) << "ms";
+    // qDebug() << "PhotostationCaptureDialog::newPreviewFrame():Flood protection took:" << (time.usecsToNow() / 1000.0) << "ms";
     time = PreciseTimer::currentTime();
 
-    /** By the time we process notification, mPreviewInterface could be already destroyed
-     */
+    /**
+     * By the time we process notification, mPreviewInterface could be already destroyed
+     **/
     if (mPreviewInterface == NULL)
         return;
 
@@ -385,23 +397,26 @@ void PhotostationCaptureDialog::newPreviewFrame()
     time = PreciseTimer::currentTime();
 
     if (pair.rgbBufferLeft != NULL)
-    {
-        ui->previewWidget->setImage(QSharedPointer<QImage>(toQImage(pair.rgbBufferLeft)));
+    {        
+        QImage *preview = toQImage(pair.rgbBufferLeft);
+        // qDebug("PhotostationCaptureDialog::newPreviewFrame():RGB image of [%d x %d]", preview->width(), preview->height()) ;
+        ui->previewWidget->setImage(QSharedPointer<QImage>(preview));
     }
     else
     {
+        //qDebug("PhotostationCaptureDialog::newPreviewFrame(): NULL frame received");
         L_DEBUG_P("NULL frame received");
     }
 
     // Estimate focus for the current image that has been set
-    {
+    if (ui->focusComputeOnCheckBox->isChecked()){
         QRect rc = ui->previewWidget->getInputRect();
         int x1 = rc.left();
         int y1 = rc.top();
         int x2 = rc.right();
         int y2 = rc.bottom();
 
-        corecvs::FocusEstimator::Result res = corecvs::FocusEstimator::calc(pair.rgbBufferLeft, x1, y1, x2, y2);
+        FocusEstimator::Result res = FocusEstimator::calc(pair.rgbBufferLeft, x1, y1, x2, y2);
         ui->focusedLabel->setText(QString("Focus score: %1 out of %2").arg(res.score).arg(res.fullScore));
         mFocusDialog.addGraphPoint("Focus score", res.score, true);
         mFocusDialog.update();
@@ -563,15 +578,15 @@ void PhotostationCaptureDialog::capture(bool shouldAdvance, int positionShift)
         connect(camDesc.camInterface, SIGNAL(newFrameReady(frame_data_t)), mCaptureMapper, SLOT(map()));
         mCaptureMapper->setMapping(camDesc.camInterface, mappingIndex);
     }
-    if(positionShift > 0)
+
+    if (positionShift > 0)
     {
         int shift = mCaptureInterfaces.size() * positionShift;
-        for(auto&camDesc:mCaptureInterfaces)
+        for (auto& camDesc : mCaptureInterfaces)
             camDesc.camId += shift;
     }
 
-    if (!mCaptureInterfaces.empty())
-    {
+    if (!mCaptureInterfaces.empty()) {
         mCaptureInterfaces[0].camInterface->startCapture();
     }
     else {
@@ -590,7 +605,7 @@ ImageCaptureInterface* PhotostationCaptureDialog::createCameraCapture(const stri
 
     // TODO: use compressed YUYV, MJPG,... !
 
-    ImageCaptureInterface *camera = new CAPTURE_INTERFACE(devname, h, w, fps, isRgb);
+    ImageCaptureInterface *camera = ImageCaptureInterface::fabric(devname, h, w, fps, isRgb);
 
     ImageCaptureInterface::CapErrorCode result = camera->initCapture();
     ImageCaptureInterface::CameraFormat actualFormat;
@@ -789,7 +804,7 @@ void PhotostationCaptureDialog::finalizeCapture(bool isOk)
         QMessageBox::warning(this, "Error saving following files:", failedSaves.join(" "));
     }
 
-    if(!mRuningManipulator)
+    if (mRuningManipulator == NULL)
     {
         ui->capturePushButton       ->setEnabled(true);
         ui->captureAdvancePushButton->setEnabled(true);
@@ -835,6 +850,7 @@ void PhotostationCaptureDialog::captureWithManipulator(int manipulatorPosition)
 
 void PhotostationCaptureDialog::finalizeManipulatorCapture(bool advance)
 {
+    std::cout << "finalizeManipulatorCapture: " << advance << std::endl;
     mAdvanceAfterSave = advance;
     mRuningManipulator = false;
 

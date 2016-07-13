@@ -62,6 +62,20 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
     fields().push_back(
         new DoubleField
         (
+          ChessBoardCornerDetectorParamsBase::NORMALIZEPERCENTILE_ID,
+          offsetof(ChessBoardCornerDetectorParamsBase, mNormalizePercentile),
+          5,
+          "normalizePercentile",
+          "normalizePercentile",
+          "Brightness percentile to be cut",
+          true,
+         0,
+         100
+        )
+    );
+    fields().push_back(
+        new DoubleField
+        (
           ChessBoardCornerDetectorParamsBase::SECTORSIZEDEG_ID,
           offsetof(ChessBoardCornerDetectorParamsBase, mSectorSizeDeg),
           90,
@@ -227,7 +241,7 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           3,
           "patternRadius",
           "patternRadius",
-          "patternRadius"
+          "Radius for multi-scale pattern detection"
         )
     );
     double mPatternStartAngleDeg_dv[] = {0,45};
@@ -240,7 +254,7 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           2,
           "patternStartAngleDeg",
           "patternStartAngleDeg",
-          "patternStartAngleDeg"
+          "Angle for rotation-variant detection"
         )
     );
     double mCornerScores_dv[] = {4,8,12};
@@ -253,7 +267,7 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           3,
           "cornerScores",
           "cornerScores",
-          "cornerScores"
+          "Radius for corner-scoring"
         )
     );
    return 0;

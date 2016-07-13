@@ -8,6 +8,7 @@
 namespace corecvs {
 
 class CameraFixture;
+class StatusTracker;
 
 
 /* Heap of Calibration related stuff */
@@ -42,12 +43,10 @@ public:
 
     std::string nameId;
 
+    StatusTracker *               processState = nullptr;
+
     /* This is for future, when all the heap/memory will be completed */
     vector<FixtureScenePart *>    mOwnedObjects;
-
-    vector<CameraFixture *>       fixtures;
-    vector<FixtureCamera *>       orphanCameras;
-    vector<SceneFeaturePoint *>   points;
 
     /**
      *  Creates and fills the observations with points. It optionally simulates camera by rounding the projection to nearest pixel
@@ -56,9 +55,23 @@ public:
     void projectForward(SceneFeaturePoint::PointType mask, bool round = false);
     void triangulate   (SceneFeaturePoint * point);
 
+    /** Accessors
+     **/
+    const vector<CameraFixture *>&      fixtures() const       { return mFixtures; }
+          vector<CameraFixture *>&      fixtures()             { return mFixtures; }
 
+    const vector<FixtureCamera *>&      orphanCameras() const  { return mOrphanCameras; }
+          vector<FixtureCamera *>&      orphanCameras()        { return mOrphanCameras; }
+
+    const vector<SceneFeaturePoint *>&  featurePoints() const  { return mSceneFeaturePoints; }
+          vector<SceneFeaturePoint *>&  featurePoints()        { return mSceneFeaturePoints; }
 
 protected:
+    vector<CameraFixture *>       mFixtures;
+    vector<FixtureCamera *>       mOrphanCameras;
+    vector<SceneFeaturePoint *>   mSceneFeaturePoints;
+
+
     template<typename T>
     using umwpp = std::unordered_map<WPP, T>;
     template<typename T>
@@ -148,7 +161,7 @@ public:
     virtual CameraFixture      *createCameraFixture();
     virtual SceneFeaturePoint  *createFeaturePoint();
 
-    /* These methods  compleatly purge camera from scene */
+    /* These methods completely purge camera from scene */
     virtual void deleteCamera        (FixtureCamera *camera);
     virtual void deleteCameraFixture (CameraFixture *fixture, bool recursive = true);
     virtual void deleteFixturePair   (CameraFixture *fixture, FixtureCamera *camera);
@@ -185,15 +198,18 @@ public:
 
 
     /* Some debugger helpers */
-    virtual void dumpInfo(ostream &out = std::cout);
+    virtual void dumpInfo(ostream &out);
+
+    // Transforms the whole world using scale*(QX+T) (FixtureCamera's inside CameraFixtures are not moved)
+    virtual void transform(const corecvs::Affine3DQ &transformation, const double scale = 1.0);
 
 
-    size_t totalObservations()
+    size_t totalObservations() const
     {
         size_t toReturn = 0;
-        for (size_t pointId = 0; pointId < points.size(); pointId++)
+        for (size_t pointId = 0; pointId < mSceneFeaturePoints.size(); pointId++)
         {
-            const SceneFeaturePoint *point = points[pointId];
+            const SceneFeaturePoint *point = mSceneFeaturePoints[pointId];
             toReturn += point->observations.size();
         }
         return toReturn;
@@ -225,7 +241,7 @@ public:
         /* Orphan cameras */
         if (loadCameras)
         {
-            int ocamSize = (int)orphanCameras.size();
+            int ocamSize = (int)mOrphanCameras.size();
             visitor.visit(ocamSize, 0, "orphancameras.size");
 
             setOrphanCameraCount(ocamSize);
@@ -234,14 +250,14 @@ public:
             {
                 char buffer[100];
                 snprintf2buf(buffer, "orphancameras[%d]", i);
-                visitor.visit(*static_cast<RealCameraType *>(orphanCameras[i]), buffer);
+                visitor.visit(*static_cast<RealCameraType *>(mOrphanCameras[i]), buffer);
             }
         }
 
         /* Fixtures*/
         if (loadFixtures)
         {
-            int stationSize = (int)fixtures.size();
+            int stationSize = (int)mFixtures.size();
             visitor.visit(stationSize, 0, "stations.size");
 
             setFixtureCount(stationSize);
@@ -250,14 +266,14 @@ public:
             {
                 char buffer[100];
                 snprintf2buf(buffer, "stations[%d]", i);
-                visitor.visit(*static_cast<RealFixtureType *>(fixtures[i]), buffer);
+            visitor.visit(*static_cast<RealFixtureType *>(mFixtures[i]), buffer);
             }
         }
 
         /* Points */
         if (loadPoints)
         {
-            int pointsSize = (int)points.size();
+            int pointsSize = (int)mSceneFeaturePoints.size();
             visitor.visit(pointsSize, 0, "points.size");
 
             setFeaturePointCount(pointsSize);
@@ -266,7 +282,7 @@ public:
             {
                 char buffer[100];
                 snprintf2buf(buffer, "points[%d]", i);
-                visitor.visit(*static_cast<RealPointType *>(points[i]), buffer);
+            visitor.visit(*static_cast<RealPointType *>(mSceneFeaturePoints[i]), buffer);
             }
         }
     }

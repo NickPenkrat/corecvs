@@ -9,7 +9,7 @@
  */
 #include <algorithm>
 #include <vector>
-
+#include <cmath>
 #include <functional>
 
 #include "global.h"
@@ -53,7 +53,7 @@ public:
     explicit Matrix(const Matrix *that) : MatrixBase (that) {}
     explicit Matrix(const DiagonalMatrix &that);
 
-    Matrix(Matrix *src, int32_t x1, int32_t y1, int32_t x2, int32_t y2) :
+    Matrix(const Matrix &src, int32_t x1, int32_t y1, int32_t x2, int32_t y2) :
         MatrixBase(src, x1, y1, x2, y2) {}
 
     /**
@@ -175,8 +175,17 @@ public:
 
     static bool matrixSolveGaussian(Matrix *A, Matrix *B);
 
+    /*
+     * Linear system solving with different paths for factoring posdef/symmetric matrices
+     */
     bool        linSolve(const corecvs::Vector &B, corecvs::Vector &res, bool symmetric = false, bool posDef = false) const;
     static bool LinSolve(const corecvs::Matrix &A, const corecvs::Vector &B, corecvs::Vector &res, bool symmetric = false, bool posDef = false);
+    /*
+     * Linear system solving with use of schur-complement structure (only with block-diagonal lower-right part)
+     * Note that you shoul use it only when you are sure that lower (block-diagonal) part is well-conditioned
+     */
+    static bool LinSolveSchurComplement(const corecvs::Matrix &A, const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric = false, bool posDef = false);
+    bool        linSolveSchurComplement(const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric = false, bool posDef = false);
 
     inline Matrix& operator +=(const Matrix& V)
     {

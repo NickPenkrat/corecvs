@@ -13,7 +13,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 #include <limits>
 #include <vector>
 #include <chrono>
@@ -25,6 +24,7 @@
 #include "function.h"
 #include "sparseMatrix.h"
 #include "vector.h"
+#include "statusTracker.h"
 
 
 namespace corecvs {
@@ -46,8 +46,13 @@ public:
     bool trace         = false;
     bool traceMatrix   = false;
     bool traceJacobian = false;
+#if 0
     bool useConjugatedGradient = false;
     int  conjugatedGradientIterations = 100;
+#endif
+    bool useSchurComplement = false;
+
+    StatusTracker* state = nullptr;
 
     /* Additional outputs */
     bool hasParadox = false;
@@ -98,16 +103,17 @@ public:
 
         double totalEval = 0.0, totalJEval = 0.0, totalLinSolve = 0.0, totalATA = 0.0, totalTotal = 0.0;
         int g = 0;
+        state->reset("Fit", maxIterations);
+
         for (g = 0; (g < maxIterations) && (lambda < maxlambda) && !converged; g++)
         {
+            auto boo = state->createAutoTrackerCalculationObject();
+
             double timeEval = 0.0, timeJEval = 0.0, timeLinSolve = 0.0, timeATA = 0.0, timeTotal = 0.0;
             auto beginT = std::chrono::high_resolution_clock::now();
 
-            if (traceProgress) {
-                if ((g % ((maxIterations / 100) + 1) == 0))
-                {
-                    cout << "#" << std::flush;
-                }
+            if (traceProgress && ((g % ((maxIterations / 100) + 1) == 0))) {
+                cout << "#" << std::flush;
             }
 
             auto Jbegin = std::chrono::high_resolution_clock::now();
@@ -239,14 +245,24 @@ public:
 //                for (int ijk = 0; ijk < B.size(); ++ijk)
 //                    CORE_ASSERT_TRUE_S(!std::isnan(B[ijk]));
 //                std::cout << "A.det " << A.det() << std::endl;
-                if (!useConjugatedGradient)
+//                if (!useConjugatedGradient)
                 {
-                   A.linSolve(B, delta, true, true);
+                    if (traceMatrix)
+                        std::cout << A << std::endl << std::endl;
+                    if (!useSchurComplement)
+                        A.linSolve(B, delta, true, true);
+                    else
+                    {
+                        CORE_ASSERT_TRUE_S(F.schurBlocks.size());
+                        A.linSolveSchurComplement(B, F.schurBlocks, delta, true, true);
+                    }
                 }
+#if 0
                 else
                 {
                     delta = conjugatedGradient(A, B);
                 }
+#endif
                 auto LSend = std::chrono::high_resolution_clock::now();
 //                for (int ijk = 0; ijk < delta.size(); ++ijk)
 //                    CORE_ASSERT_TRUE_S(!std::isnan(delta[ijk]));
@@ -319,15 +335,15 @@ public:
             totalLinSolve += timeLinSolve;
         }
 
-            if (traceProgress)
-            {
-                std::cout << "Total : " << totalTotal    << "s " << std::endl
-                          << "Eval  : " << totalEval     << "s (" << totalEval     / totalTotal * 100.0 << ")" << std::endl
-                          << "JEval : " << totalJEval    << "s (" << totalJEval    / totalTotal * 100.0 << ")" << std::endl
-                          << "ATA   : " << totalATA      << "s (" << totalATA      / totalTotal * 100.0 << ")" << std::endl
-                          << "LS    : " << totalLinSolve << "s (" << totalLinSolve / totalTotal * 100.0 << ")" << std::endl
-                          << "Other : " << (totalTotal - totalEval - totalJEval - totalATA - totalLinSolve) << "s (" << (totalTotal - totalEval - totalJEval - totalATA - totalLinSolve) / totalTotal * 100.0 << ")" << std::endl;
-            }
+        if (traceProgress)
+        {
+            std::cout << "Total : " << totalTotal    << "s " << std::endl
+                      << "Eval  : " << totalEval     << "s (" << totalEval     / totalTotal * 100.0 << ")" << std::endl
+                      << "JEval : " << totalJEval    << "s (" << totalJEval    / totalTotal * 100.0 << ")" << std::endl
+                      << "ATA   : " << totalATA      << "s (" << totalATA      / totalTotal * 100.0 << ")" << std::endl
+                      << "LS    : " << totalLinSolve << "s (" << totalLinSolve / totalTotal * 100.0 << ")" << std::endl
+                      << "Other : " << (totalTotal - totalEval - totalJEval - totalATA - totalLinSolve) << "s (" << (totalTotal - totalEval - totalJEval - totalATA - totalLinSolve) / totalTotal * 100.0 << ")" << std::endl;
+        }
 
         if (traceProgress) {
             cout << "]" << endl;
@@ -342,7 +358,7 @@ public:
         iterations = g;
         return result;
     }
-
+#if 0
     corecvs::Vector conjugatedGradient(const MatrixClass &A, const corecvs::Vector &B)
     {
         corecvs::Vector X(A.w), R = B, p = B;
@@ -382,7 +398,7 @@ public:
         std::cout << "POST-CG: " << !(A*X-B) << " cg failures: " << ((double)cgf) / (double)((cgf + cgo + 1.0)) * 100.0 << "%" << std::endl;
         return X;
     }
-
+#endif
 };
 
 typedef LevenbergMarquardtImpl<Matrix, FunctionArgs> LevenbergMarquardt;

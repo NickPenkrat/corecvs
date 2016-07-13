@@ -42,42 +42,6 @@ void JSONGetter::visit<bool>(bool &boolField, bool defaultValue, const char *fie
     }
 }
 
-template <>
-void JSONGetter::visit<double>(double &doubleField, double defaultValue, const char *fieldName)
-{
-    QJsonValue value = mNodePath.back().value(fieldName);
-
-    if (value.isDouble()) {
-        doubleField = value.toDouble();
-    } else {
-        doubleField = defaultValue;
-    }
-}
-
-template <>
-void JSONGetter::visit<float>(float &floatField, float defaultValue, const char *fieldName)
-{
-    QJsonValue value = mNodePath.back().value(fieldName);
-
-    if (value.isDouble()) {
-        floatField = value.toDouble();
-    } else {
-        floatField = defaultValue;
-    }
-}
-
-template <>
-void JSONGetter::visit<int>(int &intField, int defaultValue, const char *fieldName)
-{
-    QJsonValue value = mNodePath.back().value(fieldName);
-
-    if (value.isDouble()) {
-        intField = value.toDouble();
-    } else {
-        intField = defaultValue;
-    }
-}
-
 /**
  *   Because uint64_t is not supported we convert the value to string manually
  **/
@@ -177,15 +141,28 @@ void JSONGetter::visit<int, EnumField>(int &field, const EnumField *fieldDescrip
 template <>
 void JSONGetter::visit<double, DoubleVectorField>(std::vector<double> &field, const DoubleVectorField *fieldDescriptor)
 {
-    QJsonArray array = mNodePath.back().value(fieldDescriptor->name.name).toArray();
-
     field.clear();
-    for (int i = 0; i < array.size(); i++ )
+
+    QJsonValue arrayValue = mNodePath.back().value(fieldDescriptor->name.name);
+    if (arrayValue.isArray())
     {
-        QJsonValue value = array[i];
-        if (value.isDouble()) {
-            field.push_back(value.toDouble());
-        } else {
+        QJsonArray array = arrayValue.toArray();
+
+        for (int i = 0; i < array.size(); i++)
+        {
+            QJsonValue value = array[i];
+            if (value.isDouble()) {
+                field.push_back(value.toDouble());
+            }
+            else {
+                field.push_back(fieldDescriptor->getDefaultElement(i));
+            }
+        }
+    }
+    else
+    {
+        for (uint i = 0; i < fieldDescriptor->defaultSize; i++)
+        {
             field.push_back(fieldDescriptor->getDefaultElement(i));
         }
     }

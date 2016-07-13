@@ -30,6 +30,7 @@ void corecvs::AbsoluteNonCentralRansacSolver::Estimator::operator() (const corec
 {
     if (solver->cloudMatches.size() < SAMPLESIZE)
         return;
+
     for (int i = r.begin(); i < r.end(); ++i)
     {
         sampleModel();
@@ -40,6 +41,8 @@ void corecvs::AbsoluteNonCentralRansacSolver::Estimator::operator() (const corec
 
 void corecvs::AbsoluteNonCentralRansacSolver::runInliersRE()
 {
+    if (bestInlierCnt < Estimator::SAMPLESIZE)
+        return;
     ReprojectionError err(this);
     ReprojectionErrorNormalizer norm(this);
 
@@ -81,6 +84,8 @@ std::vector<int> corecvs::AbsoluteNonCentralRansacSolver::selectInliers(const co
     ps->location = hypo;
     if (forcePosition)
         ps->location.shift = forcedPosition;
+    if (forceScale)
+        ps->location.shift = ps->location.shift.normalised() * forcedScale;
     for (int i = 0; i < M; ++i)
     {
         auto t = cloudMatches[i];
@@ -150,6 +155,8 @@ void corecvs::AbsoluteNonCentralRansacSolver::Estimator::selectInliers()
         double score = 0.0;
         if (solver->forcePosition)
             ps.location.shift = solver->forcedPosition;
+        if (solver->forceScale)
+            ps.location.shift = ps.location.shift.normalised() * solver->forcedScale;
         for (int i = 0; i < M; ++i)
         {
             auto t = cloudMatches[i];

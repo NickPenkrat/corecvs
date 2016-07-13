@@ -41,6 +41,7 @@ public:
     enum FieldId {
         PRODUCEDEBUG_ID,
         FLOATSPEEDUP_ID,
+        NORMALIZEPERCENTILE_ID,
         SECTORSIZEDEG_ID,
         HISTOGRAMBINS_ID,
         MINANGLEDEG_ID,
@@ -73,6 +74,12 @@ public:
      * floatSpeedup 
      */
     bool mFloatSpeedup;
+
+    /** 
+     * \brief normalizePercentile 
+     * Brightness percentile to be cut 
+     */
+    double mNormalizePercentile;
 
     /** 
      * \brief sectorSizeDeg 
@@ -154,19 +161,19 @@ public:
 
     /** 
      * \brief patternRadius 
-     * patternRadius 
+     * Radius for multi-scale pattern detection 
      */
     vector<double> mPatternRadius;
 
     /** 
      * \brief patternStartAngleDeg 
-     * patternStartAngleDeg 
+     * Angle for rotation-variant detection 
      */
     vector<double> mPatternStartAngleDeg;
 
     /** 
      * \brief cornerScores 
-     * cornerScores 
+     * Radius for corner-scoring 
      */
     vector<double> mCornerScores;
 
@@ -186,6 +193,11 @@ public:
     bool floatSpeedup() const
     {
         return mFloatSpeedup;
+    }
+
+    double normalizePercentile() const
+    {
+        return mNormalizePercentile;
     }
 
     double sectorSizeDeg() const
@@ -279,6 +291,11 @@ public:
         mFloatSpeedup = floatSpeedup;
     }
 
+    void setNormalizePercentile(double normalizePercentile)
+    {
+        mNormalizePercentile = normalizePercentile;
+    }
+
     void setSectorSizeDeg(double sectorSizeDeg)
     {
         mSectorSizeDeg = sectorSizeDeg;
@@ -366,6 +383,7 @@ template<class VisitorType>
     {
         visitor.visit(mProduceDebug,              static_cast<const BoolField *>    (fields()[PRODUCEDEBUG_ID]));
         visitor.visit(mFloatSpeedup,              static_cast<const BoolField *>    (fields()[FLOATSPEEDUP_ID]));
+        visitor.visit(mNormalizePercentile,       static_cast<const DoubleField *>  (fields()[NORMALIZEPERCENTILE_ID]));
         visitor.visit(mSectorSizeDeg,             static_cast<const DoubleField *>  (fields()[SECTORSIZEDEG_ID]));
         visitor.visit(mHistogramBins,             static_cast<const IntField *>     (fields()[HISTOGRAMBINS_ID]));
         visitor.visit(mMinAngleDeg,               static_cast<const DoubleField *>  (fields()[MINANGLEDEG_ID]));
@@ -393,6 +411,7 @@ template<class VisitorType>
     ChessBoardCornerDetectorParamsBase(
           bool produceDebug
         , bool floatSpeedup
+        , double normalizePercentile
         , double sectorSizeDeg
         , int histogramBins
         , double minAngleDeg
@@ -413,6 +432,7 @@ template<class VisitorType>
     {
         mProduceDebug = produceDebug;
         mFloatSpeedup = floatSpeedup;
+        mNormalizePercentile = normalizePercentile;
         mSectorSizeDeg = sectorSizeDeg;
         mHistogramBins = histogramBins;
         mMinAngleDeg = minAngleDeg;

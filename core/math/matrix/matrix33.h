@@ -18,9 +18,9 @@
 
 #include <iostream>
 #include <limits>
-
-#include <math.h>
 #include <string.h>
+
+#include "global.h"
 
 #include "vector3d.h"
 #include "fixedVector.h"
@@ -522,7 +522,5 @@ inline Vector2dd operator * (const Vector2dd &V,const Matrix33 &matrix)
 }
 
 } //namespace corecvs
-#endif
 
-
-
+#endif // _MATRIX33_H_

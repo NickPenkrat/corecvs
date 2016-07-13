@@ -25,41 +25,35 @@
 using corecvs::BaseReflectionStatic;
 
 /*Rework this. Inability to use virtual template calls complicate the design*/
-class WidgetSaver {
-    bool autoInit = false;
-
-    SettingsSetter *mQtSettings = NULL;
-    XmlSetter      *mXmlSetter = NULL;
-    JSONSetter     *mJsonSetter = NULL;
-    PropertyListWriterVisitor *mPropertyListSetter = NULL;
-
+class WidgetSaver
+{
 public:
-	WidgetSaver() :
-		mQtSettings(NULL),
-        mXmlSetter(NULL),
-        mJsonSetter(NULL),
-        mPropertyListSetter(NULL)
+    WidgetSaver()
+        : mQtSettings(NULL)
+        , mXmlSetter(NULL)
+        , mJsonSetter(NULL)
+		, mPropertyListSetter(NULL)
 	{}
 
-	WidgetSaver(SettingsSetter *qtSettigns) :
-		mQtSettings(qtSettigns),
-        mXmlSetter(NULL),
-        mJsonSetter(NULL),
-        mPropertyListSetter(NULL)
+    WidgetSaver(SettingsSetter *qtSettigns)
+        : mQtSettings(qtSettigns)
+        , mXmlSetter(NULL)
+        , mJsonSetter(NULL)
+		, mPropertyListSetter(NULL)
 	{}
 
-	WidgetSaver(XmlSetter *xmlSetter) :
-		mQtSettings(NULL),
-        mXmlSetter(xmlSetter),
-        mJsonSetter(NULL),
-        mPropertyListSetter(NULL)
+    WidgetSaver(XmlSetter *xmlSetter)
+        : mQtSettings(NULL)
+        , mXmlSetter(xmlSetter)
+        , mJsonSetter(NULL)
+		, mPropertyListSetter(NULL)
 	{}
 
-    WidgetSaver(JSONSetter *jsonSetter) :
-        mQtSettings(NULL),
-        mXmlSetter(NULL),
-        mJsonSetter(jsonSetter),
-        mPropertyListSetter(NULL)
+    WidgetSaver(JSONSetter *jsonSetter)
+        : mQtSettings(NULL)
+        , mXmlSetter(NULL)
+        , mJsonSetter(jsonSetter)
+		, mPropertyListSetter(NULL)
     {}
 
     /* Auto init */
@@ -81,9 +75,8 @@ public:
 template <class ParametersClass>
 	void saveParameters (ParametersClass &paramsClass, QString name)
 	{
-        qDebug() << "Saving widget: " << name;
-
-		if (mQtSettings) {		    
+		if (mQtSettings) {
+		    qDebug() << "Saving widget: " << name;
 		    mQtSettings->settings()->beginGroup(name);
 			    paramsClass.accept(*mQtSettings);
             mQtSettings->settings()->endGroup();
@@ -95,7 +88,7 @@ template <class ParametersClass>
 			return;
 		}
 
-        if (mJsonSetter) {
+         if (mJsonSetter) {
             mJsonSetter->pushChild(name.toLatin1().constData());
             paramsClass.accept(*mJsonSetter);
             mJsonSetter->popChild(name.toLatin1().constData());
@@ -108,7 +101,7 @@ template <class ParametersClass>
         }
 	}
 
-    ~WidgetSaver() {
+ ~WidgetSaver() {
         if (autoInit) {
             delete_safe(mQtSettings);
             delete_safe(mXmlSetter);
@@ -116,43 +109,46 @@ template <class ParametersClass>
             delete_safe(mPropertyListSetter);
         }
     }
-};
 
-class WidgetLoader {
+private:
     bool autoInit = false;
 
-    SettingsGetter            *mQtSettings = NULL;
-    XmlGetter                 *mXmlGetter = NULL;
-    JSONGetter                *mJsonGetter = NULL;
-    PropertyListReaderVisitor *mPropertyListGetter = NULL;
+    SettingsSetter *mQtSettings = NULL;
+    XmlSetter      *mXmlSetter = NULL;
+    JSONSetter     *mJsonSetter = NULL;
+    PropertyListWriterVisitor *mPropertyListSetter = NULL;
 
+};
+
+class WidgetLoader
+{
 public:
-	WidgetLoader() :
-		mQtSettings(NULL),
-        mXmlGetter(NULL),
-        mJsonGetter(NULL),
-        mPropertyListGetter(NULL)
+    WidgetLoader()
+        : mQtSettings(NULL)
+        , mXmlGetter(NULL)
+        , mJsonGetter(NULL)
+		, mPropertyListGetter(NULL)
 	{}
 
-	WidgetLoader(SettingsGetter *qtSettigns) :
-		mQtSettings(qtSettigns),
-        mXmlGetter(NULL),
-        mJsonGetter(NULL),
-        mPropertyListGetter(NULL)
+    WidgetLoader(SettingsGetter *qtSettigns)
+        : mQtSettings(qtSettigns)
+        , mXmlGetter(NULL)
+        , mJsonGetter(NULL)
+		, mPropertyListGetter(NULL)
 	{}
 
-	WidgetLoader(XmlGetter *xmlSetter) :
-		mQtSettings(NULL),
-        mXmlGetter(xmlSetter),
-        mJsonGetter(NULL),
-        mPropertyListGetter(NULL)
+    WidgetLoader(XmlGetter *xmlSetter)
+        : mQtSettings(NULL)
+        , mXmlGetter(xmlSetter)
+        , mJsonGetter(NULL)
+		, mPropertyListGetter(NULL)
 	{}
 
-    WidgetLoader(JSONGetter *jsonGetter) :
-        mQtSettings(NULL),
-        mXmlGetter(NULL),
-        mJsonGetter(jsonGetter),
-        mPropertyListGetter(NULL)
+    WidgetLoader(JSONGetter *jsonGetter)
+        : mQtSettings(NULL)
+        , mXmlGetter(NULL)
+        , mJsonGetter(jsonGetter)
+		, mPropertyListGetter(NULL)
     {}
 
     /* Auto init */
@@ -175,8 +171,6 @@ public:
 template <class ParametersClass>
 	void loadParameters (ParametersClass &paramsClass, QString name)
 	{
-        qDebug() << "Saving widget: " << name;
-
 		if (mQtSettings) {
 		    mQtSettings->settings()->beginGroup(name);
 			    paramsClass.accept(*mQtSettings);
@@ -211,13 +205,21 @@ template <class ParametersClass>
             delete_safe(mPropertyListGetter);
         }
     }
+
+private:
+    bool autoInit = false;
+
+    SettingsGetter            *mQtSettings = NULL;
+    XmlGetter                 *mXmlGetter = NULL;
+    JSONGetter                *mJsonGetter = NULL;
+    PropertyListReaderVisitor *mPropertyListGetter = NULL;
+
 };
 
 class SaveableWidget
 {
 public:
-
-    virtual void loadFromQSettings  (const QString &fileName, const QString &_root)
+    virtual void loadFromQSettings(const QString &fileName, const QString &_root)
     {
 //        qDebug("SaveableWidget::loadFromQSettings(\"%s\", \"%s\"): called",fileName.toLatin1().constData(), _root.toLatin1().constData());
 
@@ -237,7 +239,6 @@ public:
 
     virtual void loadParamWidget(WidgetLoader &/*loader*/) {}
     virtual void saveParamWidget(WidgetSaver  &/*saver*/ ) {}
-
 };
 
 
@@ -252,13 +253,17 @@ public:
     virtual ~ParametersControlWidgetBase();
 };
 
-class ParametersControlWidgetBaseFabric {
+
+class ParametersControlWidgetBaseFabric
+{
 public:
     virtual ParametersControlWidgetBase *produce() = 0;
 };
 
+
 template <class WidgetToProduce>
-class ParametersControlWidgetBaseFabricImpl : public ParametersControlWidgetBaseFabric {
+class ParametersControlWidgetBaseFabricImpl : public ParametersControlWidgetBaseFabric
+{
 public:
     virtual ParametersControlWidgetBase *produce()
     {

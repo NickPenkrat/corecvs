@@ -20,8 +20,6 @@
 
 #include "rectifier.h"
 
-using namespace std;
-
 RectifierApp::RectifierApp(int &argc, char **argv) :
     QApplication(argc, argv),
     mainWindow( new AutomatedRectifyControlWidget(NULL, true, "") ),
@@ -57,8 +55,7 @@ void RectifierApp::showPointsRectificationDailog()
 
 int main(int argc, char *argv[])
 {
-    setSegVHandler();
-    setStdTerminateHandler();
+    SET_HANDLERS();
 
     Q_INIT_RESOURCE(main);
     QTG12Loader::registerMyself();

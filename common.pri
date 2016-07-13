@@ -58,7 +58,6 @@ with_avx {
     } else {
         QMAKE_CFLAGS   += $$QMAKE_CFLAGS_AVX        # Qmake uses it as "-arch:AVX" for msvc >= VS-2010
         QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_AVX
-
         #!build_pass: message(DEFINES = $$DEFINES)
     }
 }
@@ -69,7 +68,7 @@ with_avx2 {
         QMAKE_CFLAGS   += -mavx2
         QMAKE_CXXFLAGS += -mavx2
     } else {
-        QMAKE_CFLAGS   += $$QMAKE_CFLAGS_AVX2        # Qmake uses it as "-arch:AVX2" for msvc >= VS-2015
+        QMAKE_CFLAGS   += $$QMAKE_CFLAGS_AVX2        # Qmake uses it as "-arch:AVX2" for msvc >= VS-2013 update 2
         QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_AVX2
     }
 }
@@ -104,13 +103,23 @@ with_sse3 {
 #       DEFINES -= WITH_SSE3
     }
 }
-
-with_sse4 {
-    DEFINES += WITH_SSE4
+with_sse4_1 {
+    DEFINES += WITH_SSE4_1
     !win32-msvc* {
         QMAKE_CFLAGS   += -msse4.1
         QMAKE_CXXFLAGS += -msse4.1
     } else {
+#       DEFINES -= WITH_SSE4_1
+    }
+}
+with_sse4_2 {
+    DEFINES += WITH_SSE4_2
+    DEFINES += WITH_SSE4                    # means that both SSE4.1 and SSE4.2 are supported
+    !win32-msvc* {
+        QMAKE_CFLAGS   += -msse4.2
+        QMAKE_CXXFLAGS += -msse4.2
+    } else {
+#       DEFINES -= WITH_SSE4_2
 #       DEFINES -= WITH_SSE4
     }
 }
@@ -494,13 +503,13 @@ with_mkl {
             }
         }
         INCLUDEPATH += "$$MKLROOT"/include
-        DEFINES     += WITH_BLAS
         DEFINES     += WITH_MKL
+        DEFINES     += WITH_BLAS
+        CONFIG      += with_blas
     }
     else {
         !build_pass: message (requested MKL is not installed and is deactivated)
     }
-    CONFIG += with_blas
 }
 
 with_openblas {
@@ -514,7 +523,9 @@ with_openblas {
                 !build_pass: message(Using BLAS from <$$BLAS_PATH>)
                 INCLUDEPATH += $(BLAS_PATH)/include
                 LIBS        += -lopenblas
+                DEFINES     += WITH_OPENBLAS
                 DEFINES     += WITH_BLAS
+                CONFIG      += with_blas
             }
             else {
                 !build_pass: message(requested openBLAS via BLAS_PATH is not found and is deactivated)
@@ -523,7 +534,9 @@ with_openblas {
             exists(/usr/include/cblas.h) {
                 !build_pass: message (Using System BLAS)
                 LIBS        += -lopenblas -llapacke
+                DEFINES     += WITH_OPENBLAS
                 DEFINES     += WITH_BLAS
+                CONFIG      += with_blas
             }
             else {
                 !build_pass: message(requested system BLAS is not found and is deactivated)
@@ -532,7 +545,6 @@ with_openblas {
     } else {
         !build_pass: message(requested openBLAS is not supported for Win and is deactivated)
     }
-    CONFIG += with_blas
 }
 
 with_fftw {
@@ -572,5 +584,3 @@ with_fftw {
 # QMAKE_CXXFLAGS += -Wsign-conversion
 # QMAKE_CXXFLAGS += -Winit-self
 # QMAKE_CXXFLAGS += -Wunreachable-code
-
-#OPEN_ROOT_DIRECTORY = $$PWD

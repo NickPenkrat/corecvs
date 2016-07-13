@@ -1,5 +1,6 @@
 #include "chessBoardAssembler.h"
 #include "boardAligner.h"
+#include "calculationStats.h"
 
 #include <unordered_set>
 #include <queue>
@@ -29,11 +30,11 @@ void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, 
     corners = corners_;
     int N = (int)corners.size();
 
-    if (stats != NULL) stats->startInterval();
+    stats->startInterval();
 
     corecvs::parallelable_for(0, N, ParallelBoardExpander(this), true);
 
-    if (stats != NULL) stats->resetInterval("Board Expander");
+    stats->resetInterval("Board Expander");
 
     boards_.clear();
     std::sort(boards.begin(), boards.end(), [](const RectangularGridPattern &a, const RectangularGridPattern &b) { return a.score < b.score; });
@@ -51,12 +52,11 @@ void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, 
         boards_.emplace_back(std::move(board));
     }
 
-    if (stats != NULL) stats->resetInterval("Board Outputing");
+    stats->resetInterval("Board Outputing");
 }
 
 void ChessBoardAssembler::acceptHypothesis(RectangularGridPattern &board)
 {
-
     bool intersects = false;
     bool best = true;
     std::vector<int> intersections;
@@ -141,7 +141,8 @@ void ChessBoardAssembler::acceptHypothesis(RectangularGridPattern &board)
             if (bb.score < board.score)
                 best = false;
         }
-        if (!best) break;
+        if (!best)
+            break;
     }
 
     if (best)
@@ -161,9 +162,9 @@ void ChessBoardAssembler::acceptHypothesis(RectangularGridPattern &board)
     }
 }
 
-ChessBoardAssembler::ParallelBoardExpander::ParallelBoardExpander(ChessBoardAssembler *assembler) : assembler(assembler)
-{
-}
+ChessBoardAssembler::ParallelBoardExpander::ParallelBoardExpander(ChessBoardAssembler *assembler)
+    : assembler(assembler)
+{}
 
 void ChessBoardAssembler::ParallelBoardExpander::operator() (const corecvs::BlockedRange<int> &r) const
 {
@@ -178,9 +179,9 @@ void ChessBoardAssembler::ParallelBoardExpander::operator() (const corecvs::Bloc
     }
 }
 
-ChessBoardAssembler::BoardExpander::BoardExpander(ChessBoardAssembler *assembler) : assembler(assembler)
-{
-}
+ChessBoardAssembler::BoardExpander::BoardExpander(ChessBoardAssembler *assembler)
+    : assembler(assembler)
+{}
 
 bool ChessBoardAssembler::BoardExpander::initBoard(int seed)
 {
@@ -334,7 +335,6 @@ bool ChessBoardAssembler::BoardExpander::growBoard()
     board = best;
     usedCorners = bestUsed;
     return true;
-
 }
 
 bool ChessBoardAssembler::BoardExpander::growDir(Direction dir, RectangularGridPattern &dst, std::vector<int> &usedCorners)
@@ -348,7 +348,7 @@ bool ChessBoardAssembler::BoardExpander::growDir(Direction dir, RectangularGridP
         return false;
 
     dst = board;
-    switch(dir)
+    switch (dir)
     {
         case Direction::UP:
             dst.cornerIdx.insert(dst.cornerIdx.begin(), assignment);
@@ -404,7 +404,7 @@ void ChessBoardAssembler::BoardExpander::predictor(Direction dir, std::vector<Ve
     int h = board.h();
     int w = board.w();
 
-    switch(dir)
+    switch (dir)
     {
         case Direction::UP:
             N = w;
@@ -470,7 +470,6 @@ bool ChessBoardAssembler::BoardExpander::assignNearest(std::vector<corecvs::Vect
     if (N < M)
         return false;
 
-
     std::vector<std::tuple<double, int, int>> queue;
     queue.reserve(M * N);
     for (int j = 0; j < M; ++j)
@@ -521,7 +520,6 @@ corecvs::Statistics *ChessBoardAssembler::getStatistics()
     return stats;
 }
 
-
 double RectangularGridPattern::getStructureScore(std::vector<OrientedCorner> &corners) const
 {
     double e_struct = 0.0;
@@ -537,6 +535,7 @@ double RectangularGridPattern::getStructureScore(std::vector<OrientedCorner> &co
                 e_struct = err;
         }
     }
+
     for (int i = 0; i < h(); ++i)
     {
         for (int j = 0; j + 2 < w(); ++j)

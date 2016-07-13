@@ -114,9 +114,6 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const Photostation &ps, double sc
 
 void CalibrationHelpers::drawPly(Mesh3D &mesh, const CameraFixture &ps, double scale)
 {
-//    SYNC_PRINT(("CalibrationHelpers::drawPly():called\n"));
-
-
     // Colorblind-safe palette
     // CameraLocationData loc = ps.getLocation();
     // Quaternion qs = loc.orientation.conjugated();
@@ -228,17 +225,17 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, SceneFeaturePoint fp, double scal
 
 void CalibrationHelpers::drawScene(Mesh3D &mesh, const FixtureScene &scene, double scale)
 {
-    for (FixtureCamera *cam: scene.orphanCameras)
+    for (FixtureCamera *cam: scene.orphanCameras())
     {
         drawCamera(mesh, *cam, scale);
     }
 
-    for (CameraFixture *ps: scene.fixtures)
+    for (CameraFixture *ps: scene.fixtures())
     {
         drawPly(mesh, *ps, scale);
     }
 
-    for (SceneFeaturePoint *fp: scene.points)
+    for (SceneFeaturePoint *fp: scene.featurePoints())
     {
         drawPly(mesh, *fp, scale);
     }

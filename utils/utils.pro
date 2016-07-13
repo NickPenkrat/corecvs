@@ -196,6 +196,7 @@ FORMS += \
     corestructs/cameraModel/fixtureControlWidget.ui \
     corestructs/cameraModel/featurePointControlWidget.ui \
 
+
 # =============================================================
 
 HEADERS += memoryuse/memoryUsageCalculator.h
@@ -415,7 +416,7 @@ FORMS += \
     \
     uis/advancedImageWidget.ui \
     uis/paintImageWidget.ui \
-    uis/histogramdepthdialog.ui \
+    uis/histogramDepthDialog.ui \
     uis/capSettingsDialog.ui \
     uis/graphPlotDialog.ui \
     uis/aboutDialog.ui \

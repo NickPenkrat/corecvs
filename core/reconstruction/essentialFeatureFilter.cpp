@@ -47,6 +47,11 @@ void EssentialFeatureFilter::estimate()
     std::cout << "Stopping at gamma " << std::pow((1.0 - std::pow(inlierIdx.size() * 1.0 / featuresInlierCheck.size(), FEATURE_POINTS_FOR_MODEL)), usedIter) << " instead of " << targetGamma << std::endl;
 }
 
+double EssentialFeatureFilter::getGamma()
+{
+    return std::pow((1.0 - std::pow(inlierIdx.size() * 1.0 / featuresInlierCheck.size(), FEATURE_POINTS_FOR_MODEL)), usedIter);
+}
+
 double EssentialFeatureFilter::nForGamma()
 {
     double inl = std::max(1.0, (double)inlierIdx.size());
@@ -103,6 +108,13 @@ void EssentialFeatureFilter::Estimator::makeHypo()
         hypo[i] = &hypoBase[i];
     }
     model = EssentialEstimator().getEssential5point(hypo);
+}
+
+void EssentialFeatureFilter::use(corecvs::EssentialDecomposition &d)
+{
+    Estimator es(this, inlierRadius, batch);
+    es.model.push_back((EssentialMatrix)d);
+    es.selectInliers();
 }
 
 void EssentialFeatureFilter::Estimator::selectInliers()

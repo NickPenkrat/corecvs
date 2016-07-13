@@ -1,9 +1,7 @@
-#ifndef CHESSBOARDDETECTOR
-#define CHESSBOARDDETECTOR
+#ifndef CHESSBOARDDETECTOR_H
+#define CHESSBOARDDETECTOR_H
 
 #include <memory>
-
-#include "calculationStats.h"
 
 #include "patternDetector.h"
 #include "checkerboardDetectionParameters.h"
@@ -13,9 +11,9 @@
 #include "circlePatternGenerator.h"
 #include "boardAligner.h"
 
-/* Whole file should be in the namespace */
-using corecvs::ObservationList;
-using corecvs::RGB24Buffer;
+namespace corecvs {
+
+class Statistics;
 
 enum class ChessBoardDetectorMode
 {
@@ -26,21 +24,23 @@ enum class ChessBoardDetectorMode
 template<>
 struct is_bitmask<ChessBoardDetectorMode> : std::true_type {};
 
-class ChessboardDetector : CheckerboardDetectionParameters,
-                           public PatternDetector
+class ChessboardDetector : CheckerboardDetectionParameters, public PatternDetector
 {
-public:
     /**
      *  Aligner manages the form of the checkerboard as well as positioning inside it
      **/
-    std::shared_ptr<BoardAligner> aligner;
+    std::unique_ptr<BoardAligner> aligner;
 
+public:
     ChessboardDetector(
             CheckerboardDetectionParameters params        = CheckerboardDetectionParameters(),
             BoardAlignerParams alignerParams              = BoardAlignerParams(),
             ChessBoardCornerDetectorParams detectorParams = ChessBoardCornerDetectorParams(),
             ChessBoardAssemblerParams assemblerParams     = ChessBoardAssemblerParams()
     );
+
+    ~ChessboardDetector()
+    {}
 
     static ChessBoardDetectorMode getMode(const BoardAlignerParams &params);
 
@@ -52,15 +52,11 @@ public:
     void getPointData(corecvs::ObservationList &observations);
 
     // Real pattern detection happens here
-    bool detectPattern(DpImage     &buffer);
+    bool detectPattern(DpImage &buffer);
 
     bool classify(DpImage &img, CirclePatternGenerator& generator, RGB24Buffer &buffer);
 
     void drawClassifier(corecvs::RGB24Buffer &buffer);
-
-    void setStatistics(Statistics *stats);
-    Statistics *getStatistics();
-
 
     size_t detectPatterns(RGB24Buffer &buffer, std::vector<ObservationList> &patterns);
     size_t detectPatterns(corecvs::DpImage     &buffer);
@@ -74,25 +70,28 @@ public:
 #endif
 
 private:
+    RectangularGridPattern                  bestPattern;
+    ObservationList                         result;
 
-    RectangularGridPattern bestPattern;
-    ObservationList result;
+    std::vector<ObservationList>            allPatterns;
+    std::vector<OrientedCorner>             corners;
 
-    std::vector<ObservationList> allPatterns;
-    std::vector<OrientedCorner> corners;
-
-
-    ChessBoardAssembler assembler;
+    ChessBoardCornerDetector                detector;
+    ChessBoardAssembler                     assembler;
     std::shared_ptr<CirclePatternGenerator> sharedGenerator;
 
-/* Some statistics */
-    Statistics *stats;
+    bool    detectPatternCandidates(DpImage &buffer, std::vector<BoardCornersType> &boards);
 
-    bool detectPatternCandidates(DpImage &buffer, std::vector<BoardCornersType> &boards);
+    /* Some statistics */
+    Statistics  *stats = nullptr;
 
 public:  /* We need generic interface for debug data. It could be hidden inside Statistics*/
-    ChessBoardCornerDetector detector;
+    const ChessBoardCornerDetector *cornerDet() const   { return &detector; }
 
+    void setStatistics(Statistics *stats)   { this->stats = stats; }
+    Statistics *getStatistics()             { return stats; }
 };
 
-#endif
+} // namespace corecvs
+
+#endif // CHESSBOARDDETECTOR_H

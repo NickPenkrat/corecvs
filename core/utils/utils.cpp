@@ -37,11 +37,6 @@ istream &getlineSafe(istream &is, string &str)
     return stream;
 }
 
-bool startsWith(const string &str, const string &prefix)
-{
-    return (str.compare(0, prefix.size(), prefix) == 0);
-}
-
 string getEnvDirPath(cchar *envVarName)
 {
     cchar* dir = std::getenv(envVarName);
@@ -78,46 +73,38 @@ string toNativeSlashes(const string& str)
 #endif
 }
 
-string getFullPath(string& envDirPath, cchar* path, cchar* filename)
+string getFullPath(const string& envDirPath, cchar* path, cchar* filename)
 {
+    CORE_ASSERT_TRUE_S(path != NULL);
+
+    if (filename == NULL)
+        filename = "";
+
     if (envDirPath.empty())
         return filename;
 
-    string toReturn = envDirPath + path + filename;
-    return toNativeSlashes(toReturn);
+    return toNativeSlashes(envDirPath + path + filename);
 }
-
-string getFullPath(cchar *envVarName, cchar* path, cchar* filename)
-{
-    string envDirPath = getEnvDirPath(envVarName);
-    return getFullPath(envDirPath, path, filename);
-}
-
 
 } // namespace HelperUtils
 
+} //namespace corecvs
 
-#if defined( DSP_TARGET ) || defined( WIN32 ) || defined( WIN64 )
-// It is possible but quite hard and usually not needed to print stack trace on Win32.
-// Debugging shall be done with debugger when possible, if not, minidump is better than stack trace
-// http://stackoverflow.com/questions/105659/how-can-one-grab-a-stack-trace-in-c/127012#127012
-void stdTerminateHandler() {}
-void setStdTerminateHandler() {}
+
+#if defined(DSP_TARGET) || defined(WIN32) || defined(WIN64)
+
+    // It is possible but quite hard and usually not needed to print stack trace on Win32.
+    // Debugging shall be done with debugger when possible, if not, minidump is better than stack trace
+    // http://stackoverflow.com/questions/105659/how-can-one-grab-a-stack-trace-in-c/127012#127012
+    //
+    void setStdTerminateHandler() {}
 
 #else
 
-void stdTerminateHandler()
+static void stdTerminateHandler()
 {
-      void *array[10];
-      size_t size;
-
-      // get void*'s for all entries on the stack
-      size = backtrace(array, 10);
-
-      // print out all the frames to stderr
-      //fprintf(stderr, "Error: signal %d:\n", sig);
-      backtrace_symbols_fd(array, size, 2);
-      exit(1);
+    printStackTrace();
+    exit(1);
 }
 
 void setStdTerminateHandler()
@@ -125,9 +112,4 @@ void setStdTerminateHandler()
     std::set_terminate(stdTerminateHandler);
 }
 
-
 #endif // DSP_TARGET
-
-} //namespace corecvs
-
-

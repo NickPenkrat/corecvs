@@ -14,19 +14,19 @@ bool corecvs::ReconstructionInitializer::initialize()
     if (scene->state != ReconstructionState::MATCHED)
         return false;
     CORE_ASSERT_TRUE_S(scene->placingQueue.size() >= 2);
-    std::unordered_map<PhotostationInitializationType, int> cnt;
+    std::unordered_map<FixtureInitializationType, int> cnt;
     for (size_t i = 0; i < std::min((size_t)3, scene->placingQueue.size()); ++i)
         cnt[scene->initializationData[scene->placingQueue[i]].initializationType]++;
 
     // Gives 6-DoF initialization + 3-view cloud (1)
-    if (cnt[PhotostationInitializationType::GPS] == 3)
+    if (cnt[FixtureInitializationType::GPS] == 3)
         return initGPS();
     // Gives 6-DoF initialization + 2-view cloud (16)
-    if (cnt[PhotostationInitializationType::FIXED] >= 1 || cnt[PhotostationInitializationType::STATIC] >= 1)
+    if (cnt[FixtureInitializationType::FIXED] >= 1 || cnt[FixtureInitializationType::STATIC] >= 1)
     {
-        return cnt[PhotostationInitializationType::FIXED] > cnt[PhotostationInitializationType::STATIC] ? initFIXED() : initSTATIC();
+        return cnt[FixtureInitializationType::FIXED] > cnt[FixtureInitializationType::STATIC] ? initFIXED() : initSTATIC();
     }
-    if (cnt[PhotostationInitializationType::GPS] > 0)
+    if (cnt[FixtureInitializationType::GPS] > 0)
     {
         // requires DoF estimation on the fly, NIY
         CORE_ASSERT_TRUE_S(false);
@@ -38,13 +38,14 @@ bool corecvs::ReconstructionInitializer::initialize()
 
 bool corecvs::ReconstructionInitializer::initGPS()
 {
-    L_ERROR << "Starting feature filtering" ;
+    L_INFO << "Starting feature filtering";
     std::vector<CameraFixture*> pss = {scene->placingQueue[0], scene->placingQueue[1], scene->placingQueue[2]};
     if (runEssentialFiltering)
-        scene->filterEssentialRansac(pss, essentialFilterParams);
+        scene->filterEssentialRansac(pss, pss, essentialFilterParams);
     else
         scene->matchesCopy = scene->matches;
-    L_ERROR << "Estimating first pair orientation" ;
+
+    L_INFO << "Estimating first pair orientation";
     estimateFirstPair();
     return true;
 }
@@ -57,7 +58,7 @@ bool corecvs::ReconstructionInitializer::initNONE()
 
 bool corecvs::ReconstructionInitializer::initSTATIC()
 {
-    L_ERROR << "Initializing 3 pss" ;
+    L_INFO << "Initializing 3 pss";
     for (int i = 0; i < 3; ++i)
     {
         auto psApp = scene->placingQueue[i];
@@ -147,7 +148,7 @@ corecvs::Quaternion corecvs::ReconstructionInitializer::detectOrientationFirst(C
 
 void corecvs::ReconstructionInitializer::estimatePair(CameraFixture *psA, CameraFixture *psB)
 {
-    auto matches = scene->getPhotostationMatches(psA, psB);
+    auto matches = scene->getPhotostationMatches({psA}, psB);
     RelativeNonCentralRansacSolver::MatchContainer rm, mm;
     for (auto&t : matches)
     {
@@ -157,7 +158,6 @@ void corecvs::ReconstructionInitializer::estimatePair(CameraFixture *psA, Camera
     }
 
     RelativeNonCentralRansacSolver solver(
-            psA,
             psB, rm, mm);
     solver.run();
     auto best = solver.getBestHypothesis();

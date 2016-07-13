@@ -7,14 +7,12 @@
 #include <QFile>
 #include <QDir>
 
-using namespace std;
-
 void CheckWorkFolderCalibrationTest()
 {
-    string path = corecvs::HelperUtils::getFullPath("TOPCON_DIR", "data/tests/calibration/", "esDistOutDist.json");
+    std::string path = corecvs::HelperUtils::getFullPath("TOPCON_DIR", "data/tests/calibration/", "esDistOutDist.json");
 
     if (!QFile::exists(path.c_str())) {
-        cout << "The work file <" << path << "> is missed" << endl;
+        std::cout << "The work file <" << path << "> is missed" << std::endl;
         CORE_ASSERT_FAIL("There is no test data!");
     }
 }

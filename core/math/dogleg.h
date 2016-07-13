@@ -35,63 +35,61 @@ public:
     bool traceProgress = true;
     bool traceCrucial  = false;
     bool trace         = false;
+    bool useSchurComplement = false;
 
     int iterations = 0;
 
     Vector x, r, g, y, v, p, epsilon_p,
            hsd, hgn, hdl;
     double augmentation = 0.0,
-    	   augmentMin = 1e-9,
-    	   augmentStep= 2;
+           augmentMin = 1e-9,
+           augmentStep= 2;
     int    linsolveOk = 0,
-    	   dumpingDecrease = 3;
+           dumpingDecrease = 3;
     bool gnReady = false;
     MatrixClass J, JTJ;
     double trustRegion, rho,
            diff_old;
 
-
-
-    /* The main ctor */
-    DogLegImpl(int _maxIterations = 25, double _startLambda = 10, double _lambdaFactor = 2.0) :
+    DogLegImpl(int _maxIterations = 25) :
         f(NULL),
         normalisation(NULL),
         maxIterations(_maxIterations),
         trustRegion(1.0)
         {}
 
-	void linSolveDumped(MatrixClass &A, Vector &B, Vector &res)
-	{
-		if (augmentation > 0.0 && linsolveOk > dumpingDecrease)
-		{
-			augmentation /= augmentStep;
-			if (augmentation < augmentMin)
-				augmentation = 0.0;
-			linsolveOk = 0;
-		}
-		do
-		{
-			MatrixClass AA(A);
-			if (augmentation > 0.0)
-			{
-				double maxAbs = 0.0;
-				for (int i = 0; i < AA.w; ++i)
-					maxAbs = std::max(maxAbs, std::abs(AA.a(i, i)));
-				if (maxAbs == 0.0)
-					maxAbs = 1.0;
-				for (int i = 0; i < AA.w; ++i)
-					AA.a(i, i) += maxAbs * augmentation;
-			}
-			bool ok = AA.linSolve(B, res, true, true);
-			if (ok)
-			{
-				linsolveOk++;
-				break;
-			}
-			augmentation = augmentation == 0.0 ? augmentMin : augmentation * augmentStep;
-			linsolveOk = 0;
-		} while (1);
-	}
+    void linSolveDumped(MatrixClass &A, Vector &B, Vector &res)
+    {
+        if (augmentation > 0.0 && linsolveOk > dumpingDecrease)
+        {
+            augmentation /= augmentStep;
+            if (augmentation < augmentMin)
+                augmentation = 0.0;
+            linsolveOk = 0;
+        }
+        do
+        {
+            MatrixClass AA(A);
+            if (augmentation > 0.0)
+            {
+                double maxAbs = 0.0;
+                for (int i = 0; i < AA.w; ++i)
+                    maxAbs = std::max(maxAbs, std::abs(AA.a(i, i)));
+                if (maxAbs == 0.0)
+                    maxAbs = 1.0;
+                for (int i = 0; i < AA.w; ++i)
+                    AA.a(i, i) += maxAbs * augmentation;
+            }
+            bool ok = !useSchurComplement ? AA.linSolve(B, res, true, true) : AA.linSolveSchurComplement(B, f->schurBlocks, res, true, true);
+            if (ok)
+            {
+                linsolveOk++;
+                break;
+            }
+            augmentation = augmentation == 0.0 ? augmentMin : augmentation * augmentStep;
+            linsolveOk = 0;
+        } while (1);
+    }
 
     vector<double> fit(const vector<double> &input, const vector<double> &output)
     {
@@ -103,7 +101,6 @@ public:
 
         CORE_ASSERT_TRUE(f != NULL, "Function is NULL");
         CORE_ASSERT_TRUE_P((int)output.size() == f->outputs, ("output has wrong dimension %d instead of %d\n", (int)output.size(), f->outputs));
-        double totalEval = 0.0, totalJEval = 0.0, totalLinSolve = 0.0, totalATA = 0.0, totalTotal = 0.0;
 
         p = Vector(input);
         x = Vector(output);
@@ -129,7 +126,7 @@ public:
             gnReady = false;
             do
             {
-                if (!hsd >= trustRegion)
+                if ((!hsd) >= trustRegion)
                 {
                     hdl = trustRegion / (!hsd) * hsd;
                     std::cout << "JSD" << std::endl;
@@ -141,7 +138,7 @@ public:
                         linSolveDumped(JTJ, g, hgn);
                         gnReady = true;
                     }
-                    if (!hgn < trustRegion)
+                    if ((!hgn) < trustRegion)
                     {
                         std::cout << "HGN" << std::endl;
                         hdl = hgn;
@@ -165,7 +162,6 @@ public:
                 (*f)(pn, v);
 
                 auto diff = x - v;
-                double diff_new = diff & diff;
                 rho = ((epsilon_p & epsilon_p) - (diff & diff)) / (2.0 * (epsilon_p & (J * hdl)) - (hdl & (JTJ * hdl)));
                 std::cout << trustRegion << "TR" << std::endl;
                 if (rho > 0.0)

@@ -4,8 +4,9 @@
 #include "reconstructionFixtureScene.h"
 #include "essentialFeatureFilter.h"
 
-namespace corecvs
-{
+namespace corecvs {
+
+
 struct ReconstructionInitializerParams
 {
     EssentialFilterParams essentialFilterParams;
@@ -33,6 +34,7 @@ struct ReconstructionInitializer : ReconstructionInitializerParams
     ReconstructionFixtureScene *scene;
     static corecvs::Quaternion TransformFrom2RayCorrespondence(corecvs::Vector3dd o1, corecvs::Vector3dd o2, corecvs::Vector3dd e1, corecvs::Vector3dd e2);
 };
-};
 
-#endif
+} // namespace corecvs
+
+#endif // RECONSTRUCTIONINITIALIZER_H

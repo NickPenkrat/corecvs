@@ -5,7 +5,6 @@
 #include <vector>
 #include <atomic>
 
-#include "calculationStats.h"
 #include "rgb24Buffer.h"
 #include "displacementBuffer.h"
 #include "selectableGeometryFeatures.h"
@@ -17,6 +16,7 @@
 #include "calibrationPhotostation.h"
 #include "photoStationCalibrator.h"
 #include "statusTracker.h"
+#include "calculationStats.h"
 
 #ifdef  LoadImage
 # undef LoadImage
@@ -28,20 +28,20 @@ using corecvs::ObservationList;
 
 struct ImageData
 {
-    string             sourceFileName;
-    string             undistortedFileName;
-    ObservationList    sourcePattern;
-    ObservationList    undistortedPattern;
-    CameraLocationData location;
+    string              sourceFileName;
+    string              undistortedFileName;
+    ObservationList     sourcePattern;
+    ObservationList     undistortedPattern;
+    CameraLocationData  location;
 
-    double distortionRmse;
-    double distortionMaxError;
-    double calibrationRmse;
-    double calibrationMaxError;
-    double singleCameraRmse;
-    double singleCameraMaxError;
-    double fullCameraRmse;
-    double fullCameraMaxError;
+    double              distortionRmse;
+    double              distortionMaxError;
+    double              calibrationRmse;
+    double              calibrationMaxError;
+    double              singleCameraRmse;
+    double              singleCameraMaxError;
+    double              fullCameraRmse;
+    double              fullCameraMaxError;
 
     ImageData()
     {
@@ -52,19 +52,19 @@ struct ImageData
     template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(sourceFileName, std::string(""), "sourceFileName");
-        visitor.visit(undistortedFileName, std::string(""), "undistortedFileName");
-        visitor.visit((std::vector<PointObservation>&)sourcePattern, "sourcePattern");
+        visitor.visit(sourceFileName,       std::string(""), "sourceFileName");
+        visitor.visit(undistortedFileName,  std::string(""), "undistortedFileName");
+        visitor.visit((std::vector<PointObservation>&)sourcePattern,      "sourcePattern");
         visitor.visit((std::vector<PointObservation>&)undistortedPattern, "undistortedPattern");
-        visitor.visit(location, CameraLocationData(), "viewLocation");
-        visitor.visit(distortionRmse, -1.0, "distortionRmse");
-        visitor.visit(distortionMaxError, -1.0, "distortionMaxError");
-        visitor.visit(calibrationRmse, -1.0, "calibrationRmse");
-        visitor.visit(calibrationMaxError, -1.0, "calibrationMaxError");
-        visitor.visit(calibrationRmse, -1.0, "singleCameraRmse");
-        visitor.visit(calibrationMaxError, -1.0, "singleCameraMaxError");
-        visitor.visit(fullCameraRmse, -1.0, "fullCameraRmse");
-        visitor.visit(fullCameraMaxError, -1.0, "fullCameraMaxError");
+        visitor.visit(location,             CameraLocationData(),         "viewLocation");
+        visitor.visit(distortionRmse,       -1.0, "distortionRmse");
+        visitor.visit(distortionMaxError,   -1.0, "distortionMaxError");
+        visitor.visit(calibrationRmse,      -1.0, "calibrationRmse");
+        visitor.visit(calibrationMaxError,  -1.0, "calibrationMaxError");
+        visitor.visit(singleCameraRmse,     -1.0, "singleCameraRmse");
+        visitor.visit(singleCameraMaxError, -1.0, "singleCameraMaxError");
+        visitor.visit(fullCameraRmse,       -1.0, "fullCameraRmse");
+        visitor.visit(fullCameraMaxError,   -1.0, "fullCameraMaxError");
     }
 };
 
@@ -84,72 +84,73 @@ struct CalibrationSetupEntry
 struct CalibrationSettings
 {
     /* TODO : rename this */
-    CheckerboardDetectionParameters     openCvDetectorParameters;
-
-    BoardAlignerParams                  boardAlignerParams = BoardAlignerParams::GetOldBoard();
-
     ChessBoardAssemblerParams           chessBoardAssemblerParams;
     ChessBoardCornerDetectorParams      chessBoardCornerDetectorParams;
-
-    double forceFactor = 1.0;
+    BoardAlignerParams                  boardAlignerParams;
+    CheckerboardDetectionParameters     openCvDetectorParameters;
 
     LineDistortionEstimatorParameters   distortionEstimationParameters;
-
     DistortionApplicationParameters     distortionApplicationParameters;
+
+    PinholeCameraIntrinsics             calibrationLockParams;
+
+    double                              forceFactor = 1.0;
 
     // TODO: move to some <<CalibratorParams>> structure
     bool singleCameraCalibratorUseZhangPresolver = true;
     bool singleCameraCalibratorUseLMSolver       = true;
-    CameraConstraints singleCameraCalibratorConstraints = CameraConstraints::ZERO_SKEW | CameraConstraints::EQUAL_FOCAL | CameraConstraints::LOCK_SKEW;
+    CameraConstraints singleCameraCalibratorConstraints = CameraConstraints::DEFAULT;
     int  singleCameraLMiterations                = 1000;
 
     bool photostationCalibratorUseBFSPresolver   = true;
     bool photostationCalibratorUseLMSolver       = true;
-    CameraConstraints photostationCalibratorConstraints = CameraConstraints::ZERO_SKEW | CameraConstraints::EQUAL_FOCAL | CameraConstraints::LOCK_SKEW;
+    CameraConstraints photostationCalibratorConstraints = CameraConstraints::DEFAULT;
     int  photostationLMiterations                = 1000;
-
-    PinholeCameraIntrinsics             calibrationLockParams;
 
     template<class VisitorType>
     void accept(VisitorType &visitor)
     {
 //        visitor.visit(chessBoardDetectorParams, ChessBoardDetectorParams(), "chessBoardDetectorParams");
-        visitor.visit(chessBoardAssemblerParams, ChessBoardAssemblerParams(), "chessBoardAssemblerParams");
-        visitor.visit(chessBoardCornerDetectorParams, ChessBoardCornerDetectorParams(), "chessBoardCornerDetectorParams");
-        visitor.visit(boardAlignerParams, BoardAlignerParams::GetOldBoard(), "boardAlignerParams");
+        visitor.visit(chessBoardAssemblerParams,                ChessBoardAssemblerParams(), "chessBoardAssemblerParams");
+        visitor.visit(chessBoardCornerDetectorParams,           ChessBoardCornerDetectorParams(), "chessBoardCornerDetectorParams");
+        visitor.visit(boardAlignerParams,                       BoardAlignerParams(), "boardAlignerParams");
 
 //        visitor.visit(useOpenCVDetector, false, "useOpenCVDetector");
-        visitor.visit(forceFactor, 1.0, "forceYFactor");
+        visitor.visit(forceFactor,                              1.0, "forceYFactor");
 
-        visitor.visit(openCvDetectorParameters, CheckerboardDetectionParameters(), "openCvDetectorParameters");
+        visitor.visit(openCvDetectorParameters,                 CheckerboardDetectionParameters(), "openCvDetectorParameters");
 
-        visitor.visit(distortionEstimationParameters, LineDistortionEstimatorParameters(), "lineDistortionEstimationParameters");
-        visitor.visit(distortionApplicationParameters, DistortionApplicationParameters(), "distortionApplicationParameters");
+        visitor.visit(distortionEstimationParameters,           LineDistortionEstimatorParameters(), "lineDistortionEstimationParameters");
+        visitor.visit(distortionApplicationParameters,          DistortionApplicationParameters(), "distortionApplicationParameters");
 
-        visitor.visit(singleCameraCalibratorUseZhangPresolver, true, "singleCameraCalibratorUseZhangPresolver");
-        visitor.visit(singleCameraCalibratorUseLMSolver, true, "singleCameraCalibratorUseLMSolver");
+        visitor.visit(singleCameraCalibratorUseZhangPresolver,  true, "singleCameraCalibratorUseZhangPresolver");
+        visitor.visit(singleCameraCalibratorUseLMSolver,        true, "singleCameraCalibratorUseLMSolver");
+
         auto m = asInteger(singleCameraCalibratorConstraints);
-        visitor.visit(m, asInteger(CameraConstraints::ZERO_SKEW | CameraConstraints::EQUAL_FOCAL | CameraConstraints::LOCK_SKEW), "singleCameraCalibratorConstraints");
+        visitor.visit(m, asInteger(CameraConstraints::DEFAULT), "singleCameraCalibratorConstraints");
         singleCameraCalibratorConstraints = static_cast<CameraConstraints>(m);
 
-        visitor.visit(photostationCalibratorUseBFSPresolver, true, "photostationCalibratorUseBFSPresolver");
-        visitor.visit(photostationCalibratorUseLMSolver, true, "photostationCalibratorUseLMSolver");
+        visitor.visit(photostationCalibratorUseBFSPresolver,    true, "photostationCalibratorUseBFSPresolver");
+        visitor.visit(photostationCalibratorUseLMSolver,        true, "photostationCalibratorUseLMSolver");
+
         m = asInteger(photostationCalibratorConstraints);
-        visitor.visit(m, asInteger(CameraConstraints::ZERO_SKEW | CameraConstraints::EQUAL_FOCAL | CameraConstraints::LOCK_SKEW), "photostationCalibratorConstraints");
+        visitor.visit(m, asInteger(CameraConstraints::DEFAULT), "photostationCalibratorConstraints");
         photostationCalibratorConstraints = static_cast<CameraConstraints>(m);
 
-        visitor.visit(calibrationLockParams, PinholeCameraIntrinsics(), "calibrationLockParams");
-        visitor.visit(singleCameraLMiterations, 1000, "singleCameraLMiterations");
-        visitor.visit(photostationLMiterations, 1000, "photostationLMiterations");
+        visitor.visit(calibrationLockParams,                    PinholeCameraIntrinsics(), "calibrationLockParams");
+        visitor.visit(singleCameraLMiterations,                 1000, "singleCameraLMiterations");
+        visitor.visit(photostationLMiterations,                 1000, "photostationLMiterations");
     }
 };
 
 struct CalibrationJob
 {
+    typedef std::vector<std::vector<CalibrationSetupEntry>> CalibrationSetups;
+
     Photostation                                    photostation;
     std::vector<CameraLocationData>                 calibrationSetupLocations;
     std::vector<std::vector<ImageData>>             observations;
-    std::vector<std::vector<CalibrationSetupEntry>> calibrationSetups;
+    CalibrationSetups                               calibrationSetups;
     double                                          totalFullErrorMax           = -1.0,
                                                     totalFullErrorRMSE          = -1.0,
                                                     totalCalibrationErrorMax    = -1.0,
@@ -160,24 +161,25 @@ struct CalibrationJob
     bool                                            calibrated = false;
 
     CalibrationSettings                             settings;
-    // TODO: Should we serialize it?!
-    StatusTracker*                                  state = nullptr;
+
+    // TODO: Should we serialize it?!  // This object is owned outside!
+    StatusTracker*                                  processState = nullptr;
 
     template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(photostation, Photostation(), "photostation");
-        visitor.visit(calibrationSetupLocations, "calibrationSetupLocations");
-        visitor.visit(calibrationSetups, "calibrationSetups");
-        visitor.visit(observations, "observations");
-        visitor.visit(settings, CalibrationSettings(), "algorithmSettings");
-        visitor.visit(calibrated, false, "calibrated");
-        visitor.visit(totalFullErrorMax, -1.0, "totalFullErrorMax");
-        visitor.visit(totalFullErrorRMSE, -1.0, "totalFullErrorRMSE");
-        visitor.visit(totalCalibrationErrorMax, -1.0, "totalCalibrationErrorMax");
-        visitor.visit(totalCalibrationErrorRMSE, -1.0, "totalCalibrationErrorRMSE");
-        visitor.visit(totalReconstructionErrorMax, -1.0, "totalReconstructionErrorMax");
-        visitor.visit(totalReconstructionErrorRMSE, -1.0, "totalReconstructionErrorRMSE");
+        visitor.visit(photostation,                 Photostation(),         "photostation");
+        visitor.visit(calibrationSetupLocations,                            "calibrationSetupLocations");
+        visitor.visit(calibrationSetups,                                    "calibrationSetups");
+        visitor.visit(observations,                                         "observations");
+        visitor.visit(settings,                     CalibrationSettings(),  "algorithmSettings");
+        visitor.visit(calibrated,                   false,                  "calibrated");
+        visitor.visit(totalFullErrorMax,            -1.0,                   "totalFullErrorMax");
+        visitor.visit(totalFullErrorRMSE,           -1.0,                   "totalFullErrorRMSE");
+        visitor.visit(totalCalibrationErrorMax,     -1.0,                   "totalCalibrationErrorMax");
+        visitor.visit(totalCalibrationErrorRMSE,    -1.0,                   "totalCalibrationErrorRMSE");
+        visitor.visit(totalReconstructionErrorMax,  -1.0,                   "totalReconstructionErrorMax");
+        visitor.visit(totalReconstructionErrorRMSE, -1.0,                   "totalReconstructionErrorRMSE");
     }
 
     static corecvs::RGB24Buffer LoadImage(const std::string& path);
@@ -225,7 +227,13 @@ struct CalibrationJob
     std::vector<double> factors;
 
 public:
-    corecvs::Statistics stats;
+    const BaseTimeStatisticsCollector & getStatsData() const { return statsData; }
+private:
+    BaseTimeStatisticsCollector    statsData;
+#ifdef WITH_TBB
+    tbb::reader_writer_lock        lockStatsData;
+#endif
+
 };
 
 #endif // CALIBRATION_JOB_H_

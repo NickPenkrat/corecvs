@@ -21,7 +21,7 @@
 
 #include "fixedVector.h"
 #include "preciseTimer.h"
-#include "calculationStats.h"
+#include "mathUtils.h"
 
 namespace corecvs {
 
@@ -32,7 +32,8 @@ using std::deque;
 /**
  *  Single statistics entry
  **/
-struct SingleStat {
+struct SingleStat
+{
     enum Type {
         UNKNOWN,
         TIME,
@@ -44,98 +45,116 @@ struct SingleStat {
     Type type;
     uint64_t value;
 
-    SingleStat() :
-        type(UNKNOWN),
-        value(0)
+    SingleStat() : type(UNKNOWN), value(0)
     {}
 
-    SingleStat(uint64_t _value, Type _type = TIME) :
-        type(_type),
-        value(_value)
+    SingleStat(uint64_t _value, Type _type = TIME) : type(_type), value(_value)
     {}
 };
 
-struct UnitedStat {
-
+struct UnitedStat
+{
     SingleStat::Type type;
 
-    uint64_t last;
     uint64_t sum;
+    uint64_t sumSq;
+    uint64_t last;
     uint64_t min;
     uint64_t max;
     uint64_t number;
-    uint64_t sumSq;
 
     UnitedStat()
     {
-        memset(this, 0, sizeof(UnitedStat));
+        CORE_CLEAR_STRUCT(*this);
         type = SingleStat::UNKNOWN;
     }
 
     void addValue(uint64_t value)
     {
-       number++;
-       last = value;
-       sum += value;
+       sum   += value;
        sumSq += value * value;
-
-       if ((min > value) && (value != 0)) {
+       last   = value;
+       if (min > value || number == 0) {
            min = value;
        }
        if (max < value) {
            max = value;
        }
+       ++number;
     }
-
 
     void addValue(const SingleStat &stat)
     {
        type = stat.type;
        addValue(stat.value);
     }
+
+    void unite(const UnitedStat &ustat)
+    {
+        if (type == SingleStat::UNKNOWN) { type = ustat.type; }
+        if (number == 0) { min = ustat.min; max = ustat.max; last = ustat.last; }
+        number += ustat.number;
+        sum    += ustat.sum;
+        sumSq  += ustat.sumSq;
+    }
+
+    uint64_t mean()     const { return number ? _roundDivUp(sum, number) : 0; }
+    uint64_t minimum()  const { return min; }
 };
 
 
 class Statistics
 {
 public:
-    struct State {
-        State(string prefix, PreciseTimer helperTimer) :
-            prefix(prefix), helperTimer(helperTimer)
+    struct State
+    {
+        State(const string& prefix, PreciseTimer helperTimer)
+            : mPrefix(prefix)
+            , mHelperTimer(helperTimer)
         {}
 
-        string prefix;
-        PreciseTimer helperTimer;
+        string       mPrefix;
+        PreciseTimer mHelperTimer;
     };
 
-    std::deque<State> stack;
+    std::deque<State> mStack;
 
-    Statistics* enterContext(string prefix) {
-        stack.push_back(State(this->prefix, this->helperTimer));
-        this->prefix = this->prefix + prefix;
+    Statistics* enterContext(const string& prefix)
+    {
+        if (this == nullptr)
+            return nullptr;
+        mStack.emplace_back(State(mPrefix, mHelperTimer));
+        mPrefix = mPrefix + prefix;
         return this;
     }
 
-    void leaveContext() {
-        State state = stack.back();
-        stack.pop_back();
-        this->prefix = state.prefix;
-        this->helperTimer = state.helperTimer;
+    void leaveContext()
+    {
+        if (this == nullptr)
+            return;
+        State state = mStack.back();
+        mStack.pop_back();
+        mPrefix      = state.mPrefix;
+        mHelperTimer = state.mHelperTimer;
     }
 
     /* New interface */
-    map<string, SingleStat> values;
-    string prefix;
-    PreciseTimer helperTimer;
+    map<string, SingleStat> mValues;
+    string                  mPrefix;
+    PreciseTimer            mHelperTimer;
 
     void startInterval()
     {
-        helperTimer = PreciseTimer::currentTime();
+        if (this == nullptr)
+            return;
+        mHelperTimer = PreciseTimer::currentTime();
     }
 
     void endInterval(const string &str)
     {
-        values[prefix + str] = SingleStat(helperTimer.usecsToNow());
+        if (this == nullptr)
+            return;
+        setTime(str, mHelperTimer.usecsToNow());
     }
 
     void resetInterval(const string &str)
@@ -146,12 +165,12 @@ public:
 
     void setTime(const string &str, uint64_t delay)
     {
-        values[prefix + str] = SingleStat(delay);
+        mValues[mPrefix + str] = SingleStat(delay);
     }
 
     void setValue(const string &str, uint64_t value)
     {
-        values[prefix + str] = SingleStat(value, SingleStat::UNSIGNED);
+        mValues[mPrefix + str] = SingleStat(value, SingleStat::UNSIGNED);
     }
 };
 
@@ -166,30 +185,29 @@ public:
     class OrderFilter
     {
     public:
-        virtual bool filter(const string &/*input*/)
+        virtual bool filter(const string &/*input*/) const
         {
             return false;
         }
         virtual ~OrderFilter() {}
     };
 
-    class StringFilter : public OrderFilter {
-    public:
+    class StringFilter : public OrderFilter
+    {
         string mFilterString;
-
-        StringFilter(string filterString) :
-            mFilterString(filterString)
+    public:
+        StringFilter(const string & filterString) : mFilterString(filterString)
         {}
 
-        virtual bool filter(const string &input)
+        virtual bool filter(const string &input) const
         {
 //            printf("%s =? %s\n", input.c_str(), mFilterString.c_str());
             return (input == mFilterString);
         }
     };
 
+    StatsMap              mSumValues;
 
-    StatsMap sumValues;
     // TODO: it's unsafe to copy this
     vector<OrderFilter *> mOrderFilters;
 
@@ -197,29 +215,26 @@ public:
 
     virtual void reset()
     {
-        sumValues.clear();
+        mSumValues.clear();
     }
 
-    virtual void addSingleStat(string name, const SingleStat &stat)
+    virtual void addSingleStat(const string& name, const SingleStat &stat)
     {
         UnitedStat unitedStat;
-        map<string, UnitedStat>::iterator uit;
-        uit = sumValues.find(name);
-        if (uit != sumValues.end())
+        map<string, UnitedStat>::iterator uit = mSumValues.find(name);
+        if (uit != mSumValues.end())
         {
            unitedStat = uit->second;
         }
-
         unitedStat.addValue(stat);
-        sumValues[name] = unitedStat;
+        mSumValues[name] = unitedStat;
     }
 
-
-    virtual void addStatistics(Statistics &stats)
+    virtual void addStatistics(const Statistics &stats)
     {
         /* New style */
-        map<string, SingleStat>::iterator it;
-        for (it = stats.values.begin(); it != stats.values.end(); ++it )
+        map<string, SingleStat>::const_iterator it;
+        for (it = stats.mValues.begin(); it != stats.mValues.end(); ++it)
         {
             string name = it->first;
             SingleStat stat = it->second;
@@ -227,11 +242,30 @@ public:
         }
     }
 
+    virtual void uniteStatistics(const BaseTimeStatisticsCollector &stats)
+    {
+        map<string, UnitedStat>::const_iterator uit;
+        for (uit = stats.mSumValues.begin(); uit != stats.mSumValues.end(); ++uit)
+        {
+            string     name  = uit->first;
+            UnitedStat ustat = uit->second;
+
+            UnitedStat unitedStat;
+            map<string, UnitedStat>::iterator uit2 = mSumValues.find(name);
+            if (uit2 != mSumValues.end())
+            {
+                unitedStat = uit2->second;
+            }
+            unitedStat.unite(ustat);
+            mSumValues[name] = unitedStat;
+        }
+    }
+
     virtual int maximumCaptionLength() const
     {
         StatsMap::const_iterator uit;
         int maxCaptionLen = 0;
-        for (uit = this->sumValues.begin(); uit != this->sumValues.end(); ++uit )
+        for (uit = mSumValues.begin(); uit != mSumValues.end(); ++uit)
         {
             int len = (int)uit->first.length();
             if (len > maxCaptionLen)
@@ -251,22 +285,18 @@ template <class StreamType>
         int maxCaptionLen = maximumCaptionLength();
 
         /* Flags */
-        int size = (int)this->sumValues.size();
-        vector<bool> isPrinted(size, false);
+        vector<bool> isPrinted(mSumValues.size(), false);
 
         int printCount = 0;
         /* First show all filters */
         //printf("Totaly we have %d filters\n", mOrderFilters.size());
-        for (unsigned i = 0; i < mOrderFilters.size(); i++)
+        for (const OrderFilter *filter : mOrderFilters)
         {
-            OrderFilter *filter = mOrderFilters[i];
             int j = 0;
-            for (uit = this->sumValues.begin(); uit != this->sumValues.end(); ++uit, j++ )
+            for (uit = mSumValues.begin(); uit != mSumValues.end(); ++uit, j++)
             {
                 if (isPrinted[j])
-                {
                     continue;
-                }
 
                 if (filter->filter(uit->first))
                 {
@@ -278,11 +308,10 @@ template <class StreamType>
         }
 
         int j = 0;
-        for (uit = this->sumValues.begin(); uit != this->sumValues.end(); ++uit, j++ )
+        for (uit = mSumValues.begin(); uit != mSumValues.end(); ++uit, j++)
         {
-            if (isPrinted[j]) {
+            if (isPrinted[j])
                 continue;
-            }
 
             stream.printUnitedStat(uit->first, maxCaptionLen, uit->second, printCount);
             printCount++;
@@ -297,13 +326,13 @@ template <class StreamType>
             {
                 printf("%-20s : %7" PRIu64 " us : %7" PRIu64 " ms  \n",
                     name.c_str(),
-                    stat.sum / stat.number,
-                    ((stat.sum / stat.number) + 500) / 1000);
+                    stat.mean(),
+                    _roundDivUp(stat.mean(), 1000));
                 return;
             }
             printf("%-20s : %7" PRIu64 "\n",
                 name.c_str(),
-                stat.sum / stat.number);
+                stat.mean());
          }
     };
 
@@ -326,16 +355,16 @@ template <class StreamType>
                 printf("%-*s : %7" PRIu64 " us : %7" PRIu64 " ms : %7" PRIu64 " us  \n",
                     length,
                     name.c_str(),
-                    stat.sum / stat.number,
-                    ((stat.sum / stat.number) + 500) / 1000,
-                    (stat.min == std::numeric_limits<uint64_t>::max()) ? 0 : stat.min);
+                    stat.mean(),
+                    _roundDivUp(stat.mean(), 1000),
+                    stat.minimum());
                 return;
             }
 
             printf("%-*s : %7" PRIu64 "\n",
                 length,
                 name.c_str(),
-                stat.sum / stat.number);
+                stat.mean());
          }
     };
 
@@ -352,34 +381,28 @@ template <class StreamType>
     public:
         ostream &outStream;
 
-        AdvancedSteamPrinter(ostream &stream) :
-            outStream(stream)
-        {
-
-        }
+        AdvancedSteamPrinter(ostream &stream) : outStream(stream)
+        {}
 
         void printUnitedStat(const string &name, int length, const UnitedStat &stat, int /*lineNum*/)
         {
             /*Well I'm just lazy*/
             char output[1000] = "";
-
-            if (stat.type == SingleStat::TIME)
-            {
+            if (stat.type == SingleStat::TIME) {
                 snprintf2buf(output,
                     "%-*s : %7" PRIu64 " us : %7" PRIu64 " ms : %7" PRIu64 " us  \n",
                     length,
                     name.c_str(),
-                    stat.sum / stat.number,
-                    ((stat.sum / stat.number) + 500) / 1000,
-                    (stat.min == std::numeric_limits<uint64_t>::max()) ? 0 : stat.min);
-
+                    stat.mean(),
+                    _roundDivUp(stat.mean(), 1000),
+                    stat.minimum());
             } else {
                 snprintf2buf(output,
                     "%-*s : %7" PRIu64 " %7" PRIu64 "\n",
                     length,
                     name.c_str(),
                     stat.last,
-                    stat.sum / stat.number);
+                    stat.mean());
             }
             outStream << output << std::flush;
         }
@@ -398,7 +421,7 @@ template <class StreamType>
     public:
         void printUnitedStat(const string &/*name*/, int /*length*/, const UnitedStat &stat, int /*lineNum*/)
         {
-            printf("%7" PRIu64 "|", stat.sum / stat.number);
+            printf("%7" PRIu64 "|", stat.mean());
         }
     };
 

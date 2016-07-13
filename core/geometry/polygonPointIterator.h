@@ -64,8 +64,8 @@ public:
         int currentIndex = sortedIndex[0];
         Vector2dd origin = polygon[currentIndex];
 
-        cand1 = (currentIndex + polygon.size() + indexDelta) % polygon.size(); /* Right slope driver */
-        cand2 = (currentIndex + polygon.size() - indexDelta) % polygon.size(); /* Left  slope driver */
+        cand1 = (int)((currentIndex + polygon.size() + indexDelta) % polygon.size()); /* Right slope driver */
+        cand2 = (int)((currentIndex + polygon.size() - indexDelta) % polygon.size()); /* Left  slope driver */
 
         deep    = cand1;
         shallow = cand2;
@@ -97,7 +97,6 @@ public:
         // SYNC_PRINT(("PolygonSpanIterator::step(): called\n"));
         part.step();
 
-
         while (!part.hasValue() && hasValue())
         {
             int cand1n = cand1;
@@ -110,10 +109,10 @@ public:
             if (cand1 == shallow) {
                 /*Left end finished */
                 //leftStep = true;
-                cand1n = (cand1 + polygon.size() + indexDelta) % polygon.size(); /* Right slope driver */
+                cand1n = (int)((cand1 + polygon.size() + indexDelta) % polygon.size()); /* Right slope driver */
             } else {
                 /* Right end finished*/
-                cand2n = (cand2 + polygon.size() - indexDelta) % polygon.size(); /* Left  slope driver */
+                cand2n = (int)((cand2 + polygon.size() - indexDelta) % polygon.size()); /* Left  slope driver */
             }
 
             deep    = cand1n;
@@ -132,7 +131,6 @@ public:
                 std::swap(deep, shallow);
                 std::swap(deepBegin, shallowBegin);
             }
-
 
 #if 0
             if (polygon.y(deep) - deepBegin.y()) {
@@ -162,7 +160,6 @@ public:
                 part.currentY++;
             }           
         }
-
     }
 
     void getSpan(int &y, int &x1, int &x2)
@@ -215,7 +212,7 @@ public:
     TrianglePointIterator it;
 
 
-    Triangle2dd getTriangle(int petle) {
+    Triangle2dd getTriangle(size_t petle) {
         return Triangle2dd(polygon[0], polygon[petle - 1], polygon[petle]);
     }
 

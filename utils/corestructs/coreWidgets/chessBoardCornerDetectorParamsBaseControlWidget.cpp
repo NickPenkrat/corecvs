@@ -22,6 +22,7 @@ ChessBoardCornerDetectorParamsBaseControlWidget::ChessBoardCornerDetectorParamsB
 
     QObject::connect(mUi->produceDebugCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->floatSpeedupCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->normalizePercentileSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->sectorSizeDegSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->histogramBinsSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->minAngleDegSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
@@ -67,6 +68,7 @@ void ChessBoardCornerDetectorParamsBaseControlWidget::getParameters(ChessBoardCo
 
     params.setProduceDebug     (mUi->produceDebugCheckBox->isChecked());
     params.setFloatSpeedup     (mUi->floatSpeedupCheckBox->isChecked());
+    params.setNormalizePercentile(mUi->normalizePercentileSpinBox->value());
     params.setSectorSizeDeg    (mUi->sectorSizeDegSpinBox->value());
     params.setHistogramBins    (mUi->histogramBinsSpinBox->value());
     params.setMinAngleDeg      (mUi->minAngleDegSpinBox->value());
@@ -97,6 +99,7 @@ ChessBoardCornerDetectorParamsBase *ChessBoardCornerDetectorParamsBaseControlWid
     ChessBoardCornerDetectorParamsBase *result = new ChessBoardCornerDetectorParamsBase(
           mUi->produceDebugCheckBox->isChecked()
         , mUi->floatSpeedupCheckBox->isChecked()
+        , mUi->normalizePercentileSpinBox->value()
         , mUi->sectorSizeDegSpinBox->value()
         , mUi->histogramBinsSpinBox->value()
         , mUi->minAngleDegSpinBox->value()
@@ -123,6 +126,7 @@ void ChessBoardCornerDetectorParamsBaseControlWidget::setParameters(const ChessB
     bool wasBlocked = blockSignals(true);
     mUi->produceDebugCheckBox->setChecked(input.produceDebug());
     mUi->floatSpeedupCheckBox->setChecked(input.floatSpeedup());
+    mUi->normalizePercentileSpinBox->setValue(input.normalizePercentile());
     mUi->sectorSizeDegSpinBox->setValue(input.sectorSizeDeg());
     mUi->histogramBinsSpinBox->setValue(input.histogramBins());
     mUi->minAngleDegSpinBox->setValue(input.minAngleDeg());

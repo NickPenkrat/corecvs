@@ -89,7 +89,7 @@ int main(int argc, char **argv)
 {
     int W, H;
     std::string filename;
-    if(!parseArgs(argc, argv, filename, W, H))
+    if (!parseArgs(argc, argv, filename, W, H))
     {
         usage();
         return 0;
@@ -100,9 +100,9 @@ int main(int argc, char **argv)
     corecvs::RGB24Buffer img;
 #endif
 
-    readImage(filename , img);
+    readImage(filename, img);
     CheckerboardDetectionParameters params;
-    BoardAlignerParams alignerParams = BoardAlignerParams::GetOldBoard();
+    BoardAlignerParams alignerParams;
     alignerParams.idealWidth = W;
     alignerParams.idealHeight = H;
     ChessBoardCornerDetectorParams cbparams;

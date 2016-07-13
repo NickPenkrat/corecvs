@@ -28,10 +28,8 @@
 #undef interface
 #endif
 
-using namespace std;
-
- class OpenCVCaptureInterface : public ImageCaptureInterface
- {
+class OpenCVCaptureInterface : public ImageCaptureInterface
+{
  private:
 
     /* This is a private helper class */

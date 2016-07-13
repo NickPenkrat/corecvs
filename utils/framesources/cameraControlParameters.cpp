@@ -37,6 +37,7 @@ const char *CameraParameters::names[] = {
     "AUTO WHITE BALANCE",
     "POWER LINE FREQUENCY",
     "BACKLIGHT COMPENSATION",
+    "FOCUS RELATIVE",
     "AUTO_FOCUS",
 
     "UEYE MASTER FLASH DELAY",
@@ -51,4 +52,4 @@ const char *CameraParameters::names[] = {
     "SHUTTER DELAY",
 };
 
-STATIC_ASSERT(CORE_COUNT_OF(CameraParameters::names) == CameraParameters::LAST, wrong_camera_parameter_num);
+STATIC_ASSERT(CORE_COUNT_OF(CameraParameters::names) == CameraParameters::LAST, wrong_camera_parameter_num)

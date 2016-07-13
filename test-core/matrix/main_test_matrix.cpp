@@ -23,7 +23,6 @@
 #include "sparseMatrix.h"
 #include "preciseTimer.h"
 
-using namespace std;
 using namespace corecvs;
 
 TEST(MatrixTest, testMatrix33)
@@ -390,9 +389,9 @@ TEST(MatrixTest, testMatrixSerialisation)
 {
     Matrix33 m = Matrix33::RotationX(0.1) * Matrix33::RotationY(0.1);
     Matrix33 m1;
-    ostringstream oss;
+    std::ostringstream oss;
     m.serialise(oss);
-    istringstream iss (oss.str(),istringstream::in);
+    std::istringstream iss(oss.str(), std::istringstream::in);
     iss >> m1;
     m.print();
     m1.print();
@@ -411,13 +410,13 @@ TEST(MatrixTest, testDouble)
     double vals[] = {numeric_limits<double>::min(), 1.0, numeric_limits<double>::max()};
     for (int i = 0; i < 3; i++)
     {
-        ostringstream oss;
+        std::ostringstream oss;
         //cout.precision(numeric_limits<double>::digits10 + 3);
         oss.precision(numeric_limits<double>::digits10 + 3);
         oss  << (double)vals[i];
         oss.flush();
         cout << oss.str() << endl;
-        istringstream iss (oss.str(), istringstream::in);
+        std::istringstream iss(oss.str(), std::istringstream::in);
         double result;
         iss >> result;
         CORE_ASSERT_TRUE_P(result == vals[i], ("Internal problem with double and stdout"));
@@ -553,7 +552,7 @@ TEST(MatrixTest, testMatrixOperations)
 
     cout << "Division result:"   << endl << Arg1ToDiv << endl;
     cout << "Second div result:" << endl << Arg1ToMul << endl;
-    cout << flush;
+    cout << std::flush;
     fflush(stdout);
 
     CORE_ASSERT_TRUE(Arg1ToDiv.notTooFar(&ScalarDivResult, 1e-7), "Invalid scalar Division1");
@@ -853,10 +852,6 @@ TEST(SparseMatrix, TT)
     std::cout << sm << std::endl << sm.t() << std::endl;
 }
 
-#ifdef WITH_MKL
-#include <mkl.h>
-#endif
-
 TEST(SparseMatrix, MulTimer)
 {
     auto sl= randomSparse(4000,4000, 0.001);
@@ -1061,3 +1056,82 @@ TEST(SparseMatrix, ReferenceA)
     sm.a(5, 5) = 10.0;
     ASSERT_EQ(sm.a(5, 5), 10.0);
 }
+
+TEST(Matrix, SchurComplement)
+{
+    double foo[] =
+    {
+        4.0, 5.0, 6.0, 7.0, 0.0,
+        8.0, 9.0, 9.0, 1.0, 2.0,
+        3.0, 7.0, 0.0, 1.0, 0.0,
+        2.0, 5.0, 1.0, 0.0, 0.0,
+        9.0, 3.0, 0.0, 0.0, 5.0
+    };
+    double boo[] = { 1.0, 2.0, 3.0, 4.0, 5.0 };
+    corecvs::Matrix M(5, 5, foo);
+    std::vector<int> blocks = {2, 4, 5};
+    corecvs::Vector x(5, boo);
+
+    auto rhs = M * x;
+    corecvs::Vector xx(5);
+    M.linSolveSchurComplement(rhs, blocks, xx, false, false);
+
+
+    std::cout << M << std::endl << std::endl << x << std::endl << xx << std::endl << rhs << std::endl << M * xx << std::endl;
+
+    ASSERT_LE(!(x - xx), 1e-6);
+}
+
+TEST(SparseMatrix, Submatrix)
+{
+    double foo[] =
+    {
+        4.0, 5.0, 6.0, 7.0, 0.0,
+        8.0, 9.0, 9.0, 1.0, 2.0,
+        3.0, 7.0, 0.0, 1.0, 0.0,
+        2.0, 5.0, 1.0, 0.0, 0.0,
+        9.0, 3.0, 0.0, 0.0, 5.0
+    };
+    //double boo[] = { 1.0, 2.0, 3.0, 4.0, 5.0 };
+    corecvs::Matrix M(5, 5, foo);
+    std::vector<int> blocks = {2, 4, 5};
+    corecvs::SparseMatrix sm(M);
+    corecvs::SparseMatrix ssm(M, 2, 1, 5, 4);
+    std::cout << M << std::endl << std::endl << sm << std::endl << std::endl << ssm << std::endl;
+    ASSERT_EQ(ssm.h, 3);
+    ASSERT_EQ(ssm.w, 3);
+    for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < 3; ++j)
+        {
+            ASSERT_EQ(sm.a(1 + i, 2 + j), ssm.a(i, j));
+            ASSERT_EQ( M.a(1 + i, 2 + j), ssm.a(i, j));
+        }
+
+}
+
+TEST(SparseMatrix, SchurComplement)
+{
+    double foo[] =
+    {
+        4.0, 5.0, 6.0, 7.0, 0.0,
+        8.0, 9.0, 9.0, 1.0, 2.0,
+        3.0, 7.0, 0.0, 1.0, 0.0,
+        2.0, 5.0, 1.0, 0.0, 0.0,
+        9.0, 3.0, 0.0, 0.0, 5.0
+    };
+    double boo[] = { 1.0, 2.0, 3.0, 4.0, 5.0 };
+    corecvs::Matrix MM(5, 5, foo);
+    corecvs::SparseMatrix M(MM);
+    std::vector<int> blocks = {2, 4, 5};
+    corecvs::Vector x(5, boo);
+
+    auto rhs = M * x;
+    corecvs::Vector xx(5);
+    M.linSolveSchurComplement(rhs, blocks, xx, false, false);
+
+
+    std::cout << M << std::endl << std::endl << x << std::endl << xx << std::endl << rhs << std::endl << M * xx << std::endl;
+
+    ASSERT_LE(!(x - xx), 1e-6);
+}
+

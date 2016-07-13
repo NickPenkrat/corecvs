@@ -66,7 +66,7 @@ new_board_detector	            = new_board_detector/new_board_detector.pro
 
 distortion_corrector	            = distortion_corrector/distortion_corrector.pro
 
-matcher_basic                       = matcher_basic/feature2d_basic.pro
+matcher_basic                       = matcher_basic/matcher_basic.pro
 matcher_full                        = matcher_full/matcher_full.pro
 
 camera_calibration                  = camera_calibration/camera_calibration.pro

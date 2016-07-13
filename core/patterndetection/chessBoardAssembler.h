@@ -1,5 +1,5 @@
-#ifndef CHESSBOARDASSEMBLER
-#define CHESSBOARDASSEMBLER
+#ifndef CHESSBOARDASSEMBLER_H
+#define CHESSBOARDASSEMBLER_H
 
 #include "chessBoardCornerDetector.h"
 
@@ -24,14 +24,12 @@ using corecvs::Vector2dd;
  * 3. From intersecting boards select one with the best energy
  */
 
-
 class BoardAligner;
 
 typedef std::vector<std::vector<Vector2dd>> BoardCornersType;
 
 struct RectangularGridPattern
 {
-
     double getScore(std::vector<OrientedCorner> &corners) const
     {
         return (score = getCornersScore(corners) + getStructureScore(corners));
@@ -66,7 +64,6 @@ public:
         if (id == 0) {
             return hypothesisDimFirst();
         }
-
         return hypothesisDimSecond();
     }
 };
@@ -74,17 +71,17 @@ public:
 
 class ChessBoardAssembler : ChessBoardAssemblerParams
 {
-
-
 public:
     ChessBoardAssembler(ChessBoardAssemblerParams params = ChessBoardAssemblerParams());
     ChessBoardAssembler(const ChessBoardAssembler &other);
+
     ChessBoardAssembler& operator=(const ChessBoardAssembler &other);
+
     void assembleBoards(std::vector<OrientedCorner> &corners_,
                         std::vector<BoardCornersType> &boards,
                         BoardAligner* aligner = 0, DpImage* buffer = 0);
 
-protected://iivate:
+protected: //private:
     enum class Direction {UP, DOWN, LEFT, RIGHT};
 
     class BoardExpander
@@ -101,10 +98,10 @@ protected://iivate:
             void predictor(Direction dir, std::vector<Vector2dd> &prediction);
             Vector2dd predict(Vector2dd a, Vector2dd b, Vector2dd c);
             
-            ChessBoardAssembler* assembler;
-            std::vector<int> usedCorners;
-//            std::vector<corecvs::Vector2dd> prediction;
-            RectangularGridPattern board;
+            ChessBoardAssembler    *assembler;
+            std::vector<int>        usedCorners;
+            RectangularGridPattern  board;
+            //std::vector<corecvs::Vector2dd> prediction;
     };
 
     class ParallelBoardExpander
@@ -115,24 +112,24 @@ protected://iivate:
         private:
             ChessBoardAssembler *assembler;
     };
-    void acceptHypothesis(RectangularGridPattern &board);
-    std::vector<RectangularGridPattern> boards;   
 
-    std::vector<OrientedCorner> corners;
-    BoardAligner *aligner;
-    DpImage* buffer;
+    void acceptHypothesis(RectangularGridPattern &board);
+
+    std::vector<RectangularGridPattern> boards;   
+    std::vector<OrientedCorner>         corners;
+    BoardAligner                        *aligner = nullptr;
+    DpImage                             *buffer  = nullptr;
 
 #ifdef WITH_TBB
-    tbb::mutex mutex;
+    tbb::mutex                          mutex;
 #endif
 
 public:
     void setStatistics(corecvs::Statistics *stats);
     corecvs::Statistics *getStatistics();
 
-
 private:
     corecvs::Statistics *stats = 0;
 };
 
-#endif
+#endif // CHESSBOARDASSEMBLER_H

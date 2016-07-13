@@ -68,6 +68,10 @@ namespace corecvs {
 class LensDistortionModelParameters : public LensDistortionModelParametersBase
 {
 public:
+
+    /** Static fields init function, this is used for "dynamic" field initialization */
+    static int staticInit();
+
     using LensDistortionModelParametersBase::mapForward;
 
     corecvs::Vector2dd mapForward(const corecvs::Vector2dd &v) const
@@ -107,7 +111,7 @@ public:
         double dxdy = dx * dy;
 
         double rsq = dxsq + dysq;
-        double r = std::sqrt(rsq);
+        double r = sqrt(rsq);
 
         double radialCorrection = radialScaleNormalized(r);
 //        SYNC_PRINT(("RadialCorrection::map (): [%lf %lf ] %lf %lf\n", x, y, rsq, radialCorrection));

@@ -45,7 +45,6 @@ using std::istringstream;
 
 int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
 {
-    //char line[300];
     string line;
 
     HelperUtils::getlineSafe (input, line);
@@ -174,19 +173,21 @@ int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
     }
 
     /* Checking if we support this format? */
-    bool supportVertex =
-            (objProps[OBJ_VERTEX].size() == 3 &&
+    bool simpleVertex =
+            (objProps[OBJ_VERTEX].size() >= 3 &&
              objProps[OBJ_VERTEX][0].name == PROP_NAME_X &&
              objProps[OBJ_VERTEX][1].name == PROP_NAME_Y &&
-             objProps[OBJ_VERTEX][2].name == PROP_NAME_Z) ||
-            (objProps[OBJ_VERTEX].size() == 6 &&
+             objProps[OBJ_VERTEX][2].name == PROP_NAME_Z);
+
+    bool vertexColor =
+            (objProps[OBJ_VERTEX].size() >= 6 &&
              objProps[OBJ_VERTEX][0].name == PROP_NAME_X &&
              objProps[OBJ_VERTEX][1].name == PROP_NAME_Y &&
              objProps[OBJ_VERTEX][2].name == PROP_NAME_Z &&
              objProps[OBJ_VERTEX][3].name == PROP_NAME_RED &&
              objProps[OBJ_VERTEX][4].name == PROP_NAME_GREEN &&
              objProps[OBJ_VERTEX][5].name == PROP_NAME_BLUE);
-    bool vertexColor = (objProps[OBJ_VERTEX].size() == 6);
+    bool supportVertex = simpleVertex | vertexColor;
 
     bool supportFace =
             (objProps[OBJ_FACE].size() == 0 ) ||
@@ -227,7 +228,7 @@ int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
             HelperUtils::getlineSafe (input, line);
             istringstream work(line);
 
-            Vector3dd vertex;
+            Vector3dd vertex;            
             work >> vertex.x() >> vertex.y() >> vertex.z();
 
             if (hasColor) {
@@ -346,13 +347,13 @@ istream &operator >>(istream &in, PLYLoader::Prop &toLoad)
     if (in.bad()) {
         return in;
     }
-    if (type == "float") toLoad.type = PLYLoader::PROP_TYPE_FLOAT;
+    if (type == "float"  ) toLoad.type = PLYLoader::PROP_TYPE_FLOAT;
     if (type == "float32") toLoad.type = PLYLoader::PROP_TYPE_FLOAT;
 
-    if (type == "uchar") toLoad.type = PLYLoader::PROP_TYPE_UCHAR;
-    if (type == "uint8") toLoad.type = PLYLoader::PROP_TYPE_UCHAR;
+    if (type == "uchar")   toLoad.type = PLYLoader::PROP_TYPE_UCHAR;
+    if (type == "uint8")   toLoad.type = PLYLoader::PROP_TYPE_UCHAR;
 
-    if (type == "int")   toLoad.type = PLYLoader::PROP_TYPE_INT;
+    if (type == "int"  )   toLoad.type = PLYLoader::PROP_TYPE_INT;
     if (type == "int32")   toLoad.type = PLYLoader::PROP_TYPE_INT;
 
     if (type == "list") {

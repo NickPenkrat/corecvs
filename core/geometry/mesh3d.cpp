@@ -109,7 +109,7 @@ void Mesh3D::addOrts(double length, bool captions)
 
 }
 
-void Mesh3D::addAOB(Vector3dd c1, Vector3dd c2, bool addFaces)
+void Mesh3D::addAOB(const Vector3dd &c1, const Vector3dd &c2, bool addFaces)
 {
     int vectorIndex = (int)vertexes.size();
     addVertex(Vector3dd(c1.x(), c1.y(), c1.z()));
@@ -154,17 +154,7 @@ void Mesh3D::addAOB(Vector3dd c1, Vector3dd c2, bool addFaces)
         addEdge(startId +  Vector2d32(1, 5));
         addEdge(startId +  Vector2d32(2, 6));
         addEdge(startId +  Vector2d32(3, 7));
-    }
-
-    textureCoords.push_back(Vector2dd(0.0,0.0));
-    textureCoords.push_back(Vector2dd(1.0,0.0));
-    textureCoords.push_back(Vector2dd(1.0,1.0));
-    textureCoords.push_back(Vector2dd(0.0,1.0));
-
-    textureCoords.push_back(Vector2dd(0.0,0.0));
-    textureCoords.push_back(Vector2dd(1.0,0.0));
-    textureCoords.push_back(Vector2dd(1.0,1.0));
-    textureCoords.push_back(Vector2dd(0.0,1.0));
+    }   
 }
 
 void Mesh3D::addAOB(const AxisAlignedBoxParameters &box, bool addFaces)
@@ -553,7 +543,7 @@ void Mesh3D::clear()
     faces.clear();
     edges.clear();
 
-    textureCoords.clear();
+
 
     vertexesColor.clear();
     facesColor.clear();

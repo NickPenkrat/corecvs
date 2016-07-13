@@ -61,7 +61,9 @@ AboutPropsTableWidget::AboutPropsTableWidget(QWidget *parent) : QTableWidget(par
 
 #ifdef WITH_TBB
     addParameter("TBB Support", "On");
-    addParameter("TBB Version", GCC_XSTR(TBB_INTERFACE_VERSION));
+    //addParameter("TBB Version", GCC_XSTR(TBB_INTERFACE_VERSION));
+    QString tbbVer = QString("%1.%2").arg(TBB_VERSION_MAJOR).arg(TBB_VERSION_MINOR);
+    addParameter("TBB Version", tbbVer);
     addParameter("TBB Compat Version", GCC_XSTR(TBB_COMPATIBLE_INTERFACE_VERSION));
 
     int runtimeTBB = tbb::TBB_runtime_interface_version();
@@ -73,8 +75,9 @@ AboutPropsTableWidget::AboutPropsTableWidget(QWidget *parent) : QTableWidget(par
 #ifdef WITH_BLAS
 #ifdef WITH_MKL
     addParameter("BLAS Support", "On (Intel MKL)");
-#else
-    addParameter("BLAS Support", "On (OpenBLAS?)");
+#endif
+#ifdef WITH_OPENBLAS
+    addParameter("BLAS Support", "On (OpenBLAS)");
 #endif
 #else
     addParameter("BLAS Support", "Off");

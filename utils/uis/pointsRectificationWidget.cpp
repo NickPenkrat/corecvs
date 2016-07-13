@@ -110,7 +110,7 @@ PointsRectificationWidget::~PointsRectificationWidget()
 void PointsRectificationWidget::setImage(RGB24Buffer *buffer, Frames::FrameSourceId id)
 {
     qDebug("PointsRectificationWidget::setImage(%p [%d x %d], %d (%s)):called",
-            buffer,
+           static_cast<void*>(buffer),
            (buffer != NULL ? buffer->h : 0 ),
            (buffer != NULL ? buffer->w : 0 ),
            id,

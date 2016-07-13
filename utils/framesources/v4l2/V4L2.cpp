@@ -33,7 +33,7 @@ const char *V4L2CameraDescriptor::STATE_NAMES[] =
     "STARTED"
 };
 
-STATIC_ASSERT(CORE_COUNT_OF(V4L2CameraDescriptor::STATE_NAMES) == V4L2CameraDescriptor::STATE_NUMBER, wrong_state_names_number);
+STATIC_ASSERT(CORE_COUNT_OF(V4L2CameraDescriptor::STATE_NAMES) == V4L2CameraDescriptor::STATE_NUMBER, wrong_state_names_number)
 
 int V4L2CameraDescriptor::initCamera(string deviceName, const V4L2CameraMode &mode)
 {
@@ -503,11 +503,18 @@ const V4L2CameraDescriptor::ParamIdMapStruct V4L2CameraDescriptor::paramIdMap[] 
         {V4L2_CID_WHITE_BALANCE_TEMPERATURE, CameraParameters::WHITE_BALANCE},
         {V4L2_CID_AUTO_WHITE_BALANCE, CameraParameters::AUTO_WHITE_BALANCE},
         {V4L2_CID_HFLIP, CameraParameters::HORIZONTAL_FLIP},
-        {V4L2_CID_VFLIP, CameraParameters::VERTICAL_FLIP}
+        {V4L2_CID_VFLIP, CameraParameters::VERTICAL_FLIP},
+
+        {V4L2_CID_FOCUS_ABSOLUTE, CameraParameters::FOCUS},
+        {V4L2_CID_FOCUS_RELATIVE, CameraParameters::FOCUS_RELATIVE},
+        {V4L2_CID_FOCUS_AUTO    , CameraParameters::AUTO_FOCUS},
+
+
+
 };
 
 
-STATIC_ASSERT(CORE_COUNT_OF(V4L2CameraDescriptor::paramIdMap) == V4L2CameraDescriptor::paramIdMapSize, wrong_array_size_constant);
+STATIC_ASSERT(CORE_COUNT_OF(V4L2CameraDescriptor::paramIdMap) == V4L2CameraDescriptor::paramIdMapSize, wrong_array_size_constant)
 
 uint32_t V4L2CameraDescriptor::getPropIdByVi(CameraParameters::CameraControls viId)
 {

@@ -205,6 +205,8 @@ public:
     ASTNode(ASTNodeInt::Operator _op, const ASTNode &_left, const ASTNode &_right) :
         p(new ASTNodeInt(_op, _left.p, _right.p))
     {
+       /* if (owner != NULL)
+            _owner->nodes.push_back(this);*/
     }
 
 
