@@ -17,7 +17,7 @@
 
 using namespace corecvs;
 
-TEST(meshdraw, testmeshdraw)
+TEST(Meshdraw, testMeshDraw)
 {
     cout << "Starting test <meshdraw>. This is a manual test" << endl;
     Mesh3D mesh;
@@ -35,5 +35,6 @@ TEST(meshdraw, testmeshdraw)
     MeshLoader loader;
     loader.save(&mesh, "mesh-icosphere.stl");
     loader.save(&mesh, "mesh-icosphere.ply");
+    loader.save(&mesh, "mesh-icosphere.obj");
 
 }

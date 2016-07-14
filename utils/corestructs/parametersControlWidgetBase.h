@@ -70,6 +70,11 @@ public:
             mPropertyListSetter = new PropertyListWriterVisitor(filename.toStdString());
             qDebug("WidgetSaver::WidgetSaver(): created PropertyList Setter");
         }
+
+        if (filename.endsWith(".conf")) {
+            mQtSettings = new SettingsSetter(filename);
+            qDebug("WidgetSaver::WidgetSaver(): created QSettings Setter");
+        }
     }
 
 template <class ParametersClass>
@@ -164,6 +169,11 @@ public:
         if (filename.endsWith(".list")) {
             mPropertyListGetter = new PropertyListReaderVisitor(filename.toStdString());
             qDebug("WidgetLoader::WidgetLoader(): created PropertyList Getter");
+        }
+
+        if (filename.endsWith(".conf")) {
+            mQtSettings = new SettingsGetter(filename);
+            qDebug("WidgetSaver::WidgetSaver(): created QSettings Getter");
         }
     }
 

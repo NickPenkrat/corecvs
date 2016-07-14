@@ -104,7 +104,8 @@ HEADERS += \
     corestructs/cameraModel/featurePointControlWidget.h \
     uis/aboutPropsTableWidget.h \
     capture/abstractManipulatorInterface.h \
-    uis/histogramDepthDialog.h
+    uis/histogramDepthDialog.h \
+    3d/sceneShaded.h
 
 SOURCES += \
     frames.cpp \
@@ -182,7 +183,8 @@ SOURCES += \
     distortioncorrector/pointListEditImageWidget.cpp \
     corestructs/cameraModel/featurePointControlWidget.cpp \
     uis/aboutPropsTableWidget.cpp \
-    uis/histogramDepthDialog.cpp
+    uis/histogramDepthDialog.cpp \
+    3d/sceneShaded.cpp
 
 
 FORMS += \

@@ -196,7 +196,10 @@ public:
 
     SceneFeaturePoint(FixtureScene * owner = NULL) :
         FixtureScenePart(owner),
-        hasKnownPosition(false)
+        hasKnownPosition(false),
+        hasKnownReprojectedPosition(false),
+        type(POINT_UNKNOWN),
+        color(RGBColor::White())
     {}
 
 
@@ -204,7 +207,10 @@ public:
         FixtureScenePart(owner),
         name(_name),
         position(_position),
-        hasKnownPosition(true)
+        hasKnownPosition(true),
+        hasKnownReprojectedPosition(false),
+        type(POINT_UNKNOWN),
+        color(RGBColor::White())
     {}
 
     void transform(const Matrix33 &matrix, const Vector3dd &translate)

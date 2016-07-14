@@ -181,11 +181,23 @@ public:
      **/
     virtual bool integrityRelink();
 
+    /**
+     *  ATTENTION! METHOD COULD BE UNFINISHED
+     *  This method merges another FixtureScene in this one with deep copy. This could also be used to clone.
+     *  So far fixtures are not merged.
+     **/
+    virtual void merge(FixtureScene *other);
+
     virtual void positionCameraInFixture(CameraFixture *station, FixtureCamera *camera, const Affine3DQ &location);
     virtual void addCameraToFixture     (FixtureCamera *cam, CameraFixture *fixture);
 
+    /**/
+    virtual int getObeservationNumber(CameraFixture *fixture);
+    virtual int getObeservationNumber(FixtureCamera *cam);
+
+
     /* Some debugger helpers */
-    virtual void dumpInfo(ostream &out);
+    virtual void dumpInfo(ostream &out = std::cout);
 
     // Transforms the whole world using scale*(QX+T) (FixtureCamera's inside CameraFixtures are not moved)
     virtual void transform(const corecvs::Affine3DQ &transformation, const double scale = 1.0);
@@ -213,10 +225,11 @@ public:
     FixtureCamera *getCameraById (FixtureScenePart::IdType id);
     CameraFixture *getFixtureById(FixtureScenePart::IdType id);
 
+    SceneFeaturePoint *getPointByName(const std::string &name);
 
 
     template<class VisitorType, class SceneType = FixtureScene>
-    void accept(VisitorType &visitor)
+    void accept(VisitorType &visitor, bool loadCameras = true, bool loadFixtures = true, bool loadPoints = true)
     {
         typedef typename SceneType::CameraType   RealCameraType;
         typedef typename SceneType::FixtureType  RealFixtureType;
@@ -225,20 +238,24 @@ public:
 
         /* So far compatibilty is on */
         /* Orphan cameras */
-        int ocamSize = (int)mOrphanCameras.size();
-        visitor.visit(ocamSize, 0, "orphancameras.size");
+        if (loadCameras)
+        {
+            int ocamSize = (int)mOrphanCameras.size();
+            visitor.visit(ocamSize, 0, "orphancameras.size");
 
-        setOrphanCameraCount(ocamSize);
+            setOrphanCameraCount(ocamSize);
 
         for (size_t i = 0; i < (size_t)ocamSize; i++)
         {
             char buffer[100];
             snprintf2buf(buffer, "orphancameras[%d]", i);
             visitor.visit(*static_cast<RealCameraType *>(mOrphanCameras[i]), buffer);
+            }
         }
 
         /* Fixtures*/
-
+        if (loadFixtures)
+        {
         int stationSize = (int)mFixtures.size();
         visitor.visit(stationSize, 0, "stations.size");
 
@@ -249,10 +266,12 @@ public:
             char buffer[100];
             snprintf2buf(buffer, "stations[%d]", i);
             visitor.visit(*static_cast<RealFixtureType *>(mFixtures[i]), buffer);
+            }
         }
 
         /* Points */
-
+        if (loadPoints)
+        {
         int pointsSize = (int)mSceneFeaturePoints.size();
         visitor.visit(pointsSize, 0, "points.size");
 
@@ -263,6 +282,7 @@ public:
             char buffer[100];
             snprintf2buf(buffer, "points[%d]", i);
             visitor.visit(*static_cast<RealPointType *>(mSceneFeaturePoints[i]), buffer);
+            }
         }
     }
 

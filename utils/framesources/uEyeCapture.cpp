@@ -98,7 +98,7 @@ int UEyeCaptureInterface::setConfigurationString(string _devname, bool isRgb)
 
     for (int i = 0; i < camNum; i++)
     {
-        printf("% 2d %16s % 5d % 5d %5d %6s %16s\n",
+        printf("% 2d %16s % 5u % 5u %5u %6s %16s\n",
             i,
             camList->uci[i].Model,
             camList->uci[i].dwCameraID,
@@ -185,8 +185,6 @@ int UEyeCaptureInterface::setConfigurationString(string _devname, bool isRgb)
     int binning = 1;
     binning = deviceStringPattern.cap(BinningGroup).toInt(&err);
     if (!err) binning = 1;
-    if (binning != 2 && binning != 4 && binning != 1)
-        binning = 1;
 
     sync = NO_SYNC;
 
@@ -679,8 +677,8 @@ void UEyeCaptureInterface::SpinThread::run()
             if ((result = capInterface->rightCamera.waitUEyeFrameEvent(timeout)) != IS_SUCCESS)
             {
                 SYNC_PRINT(("WaitFrameEvent failed for right camera\n"));
-//            ueyeTrace(result);
-        }
+    //            ueyeTrace(result);
+            }
         }
         DEEP_TRACE(("SpinThread::run():Got right frame\n"));
 
@@ -729,12 +727,11 @@ void UEyeCaptureInterface::SpinThread::run()
                 capInterface->currentRight = capInterface->rightCamera.getDescriptorByAddress(rawBufferRight);
                 capInterface->currentRight->internalTimestamp = imageInfo.u64TimestampDevice;
                 capInterface->currentRight->pcTimestamp = imageInfo.TimestampSystem;
-
-                capInterface->triggerSkippedCount = is_CameraStatus (mCameraRight, IS_TRIGGER_MISSED, IS_GET_STATUS);
             }
 
             capInterface->skippedCount++;
 
+            capInterface->triggerSkippedCount = is_CameraStatus (mCameraRight, IS_TRIGGER_MISSED, IS_GET_STATUS);
         capInterface->protectFrame.unlock();
        /* For statistics */
         if (capInterface->lastFrameTime.usecsTo(PreciseTimer()) != 0)
@@ -1063,8 +1060,8 @@ UEyeCaptureInterface::CapErrorCode UEyeCaptureInterface::setCaptureProperty(int 
         case (CameraParameters::EXPOSURE_AUTO) :
         {
             double enable;
-                enable = value;
-                ueyeTrace(is_SetAutoParameter(leftCamera.mCamera, IS_SET_ENABLE_AUTO_SHUTTER, &enable, 0));
+            enable = value;
+            ueyeTrace(is_SetAutoParameter(leftCamera.mCamera, IS_SET_ENABLE_AUTO_SHUTTER, &enable, 0));
             if (rightCamera.inited) {
                 ueyeTrace(is_SetAutoParameter(rightCamera.mCamera, IS_SET_ENABLE_AUTO_SHUTTER, &enable, 0));
             }

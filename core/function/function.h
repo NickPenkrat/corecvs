@@ -60,7 +60,6 @@ public:
         return operator()(&in[0], &out[1]);
     }
 
-
     /**
      *  This function computes Jacobian
      *   \f[
@@ -82,6 +81,20 @@ public:
     Matrix getNativeJacobian(const double in[], double delta = 1e-7)
     {
         return getJacobian(in, delta);
+    }
+
+    double resultLength(const double in[])
+    {
+        vector<double> out(outputs);
+
+        operator ()(in, &out[0]);
+        double sumsq = 0.0;
+        for (double d : out)
+        {
+            sumsq += d * d;
+        }
+        sumsq /= outputs;
+        return sqrt(sumsq);
     }
 
     virtual Matrix getJacobian(const Vector &in, double delta = 1e-7)

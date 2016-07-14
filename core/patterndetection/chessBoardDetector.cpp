@@ -437,15 +437,24 @@ void ChessboardDetector::drawCorners(RGB24Buffer &image, bool details)
         {
             OrientedCorner &corner = corners[i];
             if (details) {
+               p.drawFormat(corners[i].pos.x() + 1, corners[i].pos.y() + 1, RGBColor::Cyan(), 2, "%d (%2.2lf)", i, corner.score);
+
+            } else {
+                p.drawFormat(corners[i].pos.x() + 1, corners[i].pos.y() + 1, RGBColor::Blue(), 2, "%d", i);
+            }
+        }
+
+        for (size_t i = 0; i < corners.size(); i++)
+        {
+            OrientedCorner &corner = corners[i];
+            if (details) {
                image.drawLine(corner.pos, corner.pos + corner.v1 * 10.0, RGBColor::Red());
                image.drawLine(corner.pos, corner.pos + corner.v2 * 10.0, RGBColor::Green());
 
                p.drawCircle(corners[i].pos, 1, RGBColor::Cyan());
-               p.drawFormat(corners[i].pos.x() + 1, corners[i].pos.y() + 1, RGBColor::Cyan(), 2, "%d (%2.2lf)", i, corner.score);
 
             } else {
                 p.drawCircle(corners[i].pos, 1, RGBColor::Cyan());
-                p.drawFormat(corners[i].pos.x() + 1, corners[i].pos.y() + 1, RGBColor::Cyan(), 2, "%d", i);
             }
         }
     }

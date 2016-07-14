@@ -32,7 +32,9 @@ public:
 
     Mesh3D() :
         centralPoint(0.0),
-        hasCentral(false),      
+        hasCentral(false),
+
+        hasTexCoords(false),
         hasColor(false),
 
         currentColor(RGBColor::Black()),
@@ -44,12 +46,16 @@ public:
     bool hasCentral;
 
 /* Data that is stored */
+    bool hasTexCoords;
     bool hasColor;
 
     /** Vertexes that from the mesh (faces or edges or noconnected) */
     vector<Vector3dd>  vertexes;
     vector<Vector3d32> faces;
     vector<Vector2d32> edges;
+
+    /* Texture Coords Channel */
+    vector<Vector2dd>  textureCoords;
 
     /* RGB Colors */
     vector<RGBColor> vertexesColor;
@@ -142,7 +148,7 @@ public:
 
     void fillTestScene();
 
-    virtual void dumpInfo(ostream &out);
+    virtual void dumpInfo(ostream &out = std::cout);
 };
 
 

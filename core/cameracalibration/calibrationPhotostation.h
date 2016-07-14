@@ -37,6 +37,8 @@ struct is_bitmask<corecvs::CameraConstraints> : std::true_type {};
 
 /**
  *   See FixtureScene for more data on ownership of the objects in structure
+ *
+ *   This class is depricated. Use CameraFixture instead
  **/
 class Photostation : public ScenePart
 {

@@ -21,8 +21,9 @@
 
 int main(int argc, char *argv[])
 {
-    setSegVHandler();
-    setStdTerminateHandler();
+    setHandlerStdTerminate();
+    setHandlerSegV();
+
 
     QString source;
     if (argc != 2)
