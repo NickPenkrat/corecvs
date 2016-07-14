@@ -64,12 +64,12 @@ void RaytraceRenderer::trace(RGB24Buffer *buffer)
                         energy->element(i, j) = intersection.ownColor;
                     }
                 }
-                SYNC_PRINT(("\r[%d]", inc));
+                SYNC_PRINT((" [%d]", inc));
                 inc++;
             }
         }
-
     );
+    SYNC_PRINT(("\n"));
 
     /*for (int i = 0; i < buffer->h; i++)
     {

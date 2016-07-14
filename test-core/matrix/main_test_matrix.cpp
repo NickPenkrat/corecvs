@@ -1187,3 +1187,68 @@ TEST(SparseMatrix, denseCols)
     ASSERT_EQ(D.h, 3);
     ASSERT_EQ((Bar-D).frobeniusNorm(), 0.0);
 }
+
+TEST(SparseMatrix, denseCols2)
+{
+    double foo[] =
+    {
+        0.0,
+        1.0
+    };
+    corecvs::SparseMatrix F(corecvs::Matrix(2, 1, foo));
+    std::vector<int> rowIdx;
+    auto D = F.denseCols(0, 0, 1, 2, rowIdx);
+    ASSERT_EQ(D.w, 1);
+    ASSERT_EQ(D.h, 1);
+    ASSERT_EQ(rowIdx.size(), 1);
+    ASSERT_EQ(rowIdx[0], 1);
+}
+
+TEST(SparseMatrix, denseRows2)
+{
+    double foo[] =
+    {
+        0.0,
+        1.0
+    };
+    corecvs::SparseMatrix F(corecvs::Matrix(1, 2, foo));
+    std::vector<int> rowIdx;
+    auto D = F.denseRows(0, 0, 2, 1, rowIdx);
+    ASSERT_EQ(D.w, 1);
+    ASSERT_EQ(D.h, 1);
+    ASSERT_EQ(rowIdx.size(), 1);
+    ASSERT_EQ(rowIdx[0], 1);
+}
+
+
+TEST(SparseMatrix, denseCols3)
+{
+    double foo[] =
+    {
+        1.0, 0.0, 3.0,
+        2.0, 0.0, 4.0
+    };
+    corecvs::SparseMatrix F(corecvs::Matrix(2, 3, foo));
+    std::vector<int> rowIdx;
+    auto D = F.denseCols(1, 0, 2, 2, rowIdx);
+    ASSERT_EQ(D.w, 1);
+    ASSERT_EQ(D.h, 0);
+    ASSERT_EQ(rowIdx.size(), 0);
+}
+
+TEST(SparseMatrix, denseCols4)
+{
+    double foo[] =
+    {
+        1.0, 2.0, 0.0,
+        3.0, 4.0, 5.0
+    };
+    corecvs::SparseMatrix F(corecvs::Matrix(2, 3, foo));
+    std::vector<int> rowIdx;
+    auto D = F.denseCols(2, 0, 3, 2, rowIdx);
+    ASSERT_EQ(D.w, 1);
+    ASSERT_EQ(D.h, 1);
+    ASSERT_EQ(rowIdx.size(), 1);
+    ASSERT_EQ(rowIdx[0], 1);
+    ASSERT_EQ(D.a(0, 0), 5.0);
+}

@@ -42,6 +42,7 @@ public:
     explicit operator Matrix() const;
     SparseMatrix(const SparseMatrix &src, int x1, int y1, int x2, int y2);
     corecvs::Matrix denseSubMatrix(int x1, int y1, int x2, int y2) const;
+    void denseSubMatrix(int x1, int y1, int x2, int y2, double* output, int stride = -1) const;
 #ifdef WITH_MKL
     //! \brief Note: deletion of MKL's deletions is your problem
     explicit operator sparse_matrix_t() const;
@@ -85,7 +86,10 @@ public:
      * Linear system solving with use of schur-complement structure (only with block-diagonal lower-right part)
      * Note that you shoul use it only when you are sure that lower (block-diagonal) part is well-conditioned
      */
-    static bool LinSolveSchurComplement(const corecvs::SparseMatrix &A, const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric = false, bool posDef = false);
+    static bool LinSolveSchurComplementInv(const corecvs::SparseMatrix &A, const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric = false, bool posDef = false);
+    static bool LinSolveSchurComplementOld(const corecvs::SparseMatrix &A, const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric = false, bool posDef = false);
+    static bool LinSolveSchurComplementNew(const corecvs::SparseMatrix &A, const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric = false, bool posDef = false);
+    static bool LinSolveSchurComplement(const corecvs::SparseMatrix &A, const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric = false, bool posDef = false, bool explicitInv = false);
     bool        linSolveSchurComplement(const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric = false, bool posDef = false);
 
     void print(std::ostream& out = std::cout) const;

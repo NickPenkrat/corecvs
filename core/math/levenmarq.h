@@ -51,6 +51,7 @@ public:
     int  conjugatedGradientIterations = 100;
 #endif
     bool useSchurComplement = false;
+    bool useExplicitInverse = false;
 
     StatusTracker* state = nullptr;
 
@@ -262,7 +263,7 @@ public:
                     else
                     {
                         CORE_ASSERT_TRUE_S(F.schurBlocks.size());
-                        A.linSolveSchurComplement(B, F.schurBlocks, delta, true, true);
+                        MatrixClass::LinSolveSchurComplement(A, B, F.schurBlocks, delta, true, true, useExplicitInverse);
                     }
                 }
 #if 0
