@@ -3,22 +3,22 @@
 #include "global.h"
 
 
-DescriptorExtractor* DescriptorExtractorProvider::getDescriptorExtractor(const DescriptorType &type)
+DescriptorExtractor* DescriptorExtractorProvider::getDescriptorExtractor(const DescriptorType &type, const std::string &params)
 {
     for (std::vector<DescriptorExtractorProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p)
     {
         if ((*p)->provides(type))
         {
-            return (*p)->getDescriptorExtractor(type);
-		}
-	}
+            return (*p)->getDescriptorExtractor(type, params);
+        }
+    }
     CORE_ASSERT_FAIL_P(("DescriptorExtractorProvider::getDescriptorExtractor(%s): no providers", type.c_str()));
     return 0;
 }
 
 void DescriptorExtractorProvider::add(DescriptorExtractorProviderImpl *provider)
 {
-	providers.push_back(provider);
+    providers.push_back(provider);
 }
 
 DescriptorExtractorProvider::~DescriptorExtractorProvider()
@@ -27,13 +27,13 @@ DescriptorExtractorProvider::~DescriptorExtractorProvider()
     {
         delete *p;
     }
-	providers.clear();
+    providers.clear();
 }
 
 DescriptorExtractorProvider& DescriptorExtractorProvider::getInstance()
 {
-	static DescriptorExtractorProvider provider;
-	return provider;
+    static DescriptorExtractorProvider provider;
+    return provider;
 }
 
 DescriptorExtractorProvider::DescriptorExtractorProvider()
@@ -42,5 +42,5 @@ DescriptorExtractorProvider::DescriptorExtractorProvider()
 
 void DescriptorExtractor::compute(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &buffer)
 {
-	computeImpl(image, keyPoints, buffer);
+    computeImpl(image, keyPoints, buffer);
 }

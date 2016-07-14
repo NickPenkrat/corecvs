@@ -346,7 +346,12 @@ namespace std
         {
             return hash_calc<std::tuple<T...>>()(t, 0);
         }
-   };
+    };
+    template<typename C, typename T>
+    auto contains(const C& c, const T& t) -> decltype(end(c), true)
+    {
+        return end(c) != std::find(c.begin(), c.end(), t);
+    }
 }
 
 

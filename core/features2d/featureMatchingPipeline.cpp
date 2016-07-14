@@ -89,10 +89,11 @@ class ParallelDetector
 {
     FeatureMatchingPipeline* pipeline;
     DetectorType detectorType;
+    std::string params;
 public:
     void operator() (const corecvs::BlockedRange<size_t>& r) const
     {
-        FeatureDetector* detector = FeatureDetectorProvider::getInstance().getDetector(detectorType);
+        FeatureDetector* detector = FeatureDetectorProvider::getInstance().getDetector(detectorType, params);
         size_t N = pipeline->images.size();
         size_t id = r.begin();
 
@@ -135,7 +136,7 @@ public:
 
         delete detector;
     }
-    ParallelDetector(FeatureMatchingPipeline* pipeline, DetectorType detectorType) : pipeline(pipeline), detectorType(detectorType) {}
+    ParallelDetector(FeatureMatchingPipeline* pipeline, DetectorType detectorType, const std::string &params = "") : pipeline(pipeline), detectorType(detectorType), params(params) {}
 };
 
 void KeyPointDetectionStage::run(FeatureMatchingPipeline *pipeline)
@@ -145,7 +146,7 @@ void KeyPointDetectionStage::run(FeatureMatchingPipeline *pipeline)
 
     size_t N = pipeline->images.size();
 
-    corecvs::parallelable_for ((size_t)0, N, CORE_MAX(N /MAX_CORE_COUNT_ESTIMATE, (size_t)1), ParallelDetector(pipeline,detectorType), parallelable);
+    corecvs::parallelable_for ((size_t)0, N, CORE_MAX(N /MAX_CORE_COUNT_ESTIMATE, (size_t)1), ParallelDetector(pipeline,detectorType, params), parallelable);
 
     ss1 << "Detecting keypoints with " << detectorType;
     pipeline->toc(ss1.str(), ss2.str());
@@ -176,7 +177,7 @@ void KeyPointDetectionStage::loadResults(FeatureMatchingPipeline *pipeline, cons
     CORE_UNUSED(_filename);
 }
 
-KeyPointDetectionStage::KeyPointDetectionStage(DetectorType type) : detectorType(type)
+KeyPointDetectionStage::KeyPointDetectionStage(DetectorType type, const std::string &params) : detectorType(type), params(params)
 {
     FeatureDetector* detector = FeatureDetectorProvider::getInstance().getDetector(detectorType);
     parallelable = detector->isParallelable();
@@ -223,10 +224,11 @@ class ParallelExtractor
 {
     FeatureMatchingPipeline* pipeline;
     DescriptorType descriptorType;
+    std::string params;
 public:
     void operator() (const corecvs::BlockedRange<size_t>& r) const
     {
-        DescriptorExtractor* extractor = DescriptorExtractorProvider::getInstance().getDescriptorExtractor(descriptorType);
+        DescriptorExtractor* extractor = DescriptorExtractorProvider::getInstance().getDescriptorExtractor(descriptorType, params);
         size_t N = pipeline->images.size();
         size_t id = r.begin();
 
@@ -291,7 +293,7 @@ public:
 
         delete extractor;
     }
-    ParallelExtractor(FeatureMatchingPipeline* pipeline, DescriptorType descriptorType) : pipeline(pipeline), descriptorType(descriptorType) {}
+    ParallelExtractor(FeatureMatchingPipeline* pipeline, DescriptorType descriptorType, const std::string &params) : pipeline(pipeline), descriptorType(descriptorType), params(params) {}
 };
 
 void DescriptorExtractionStage::run(FeatureMatchingPipeline *pipeline)
@@ -301,13 +303,13 @@ void DescriptorExtractionStage::run(FeatureMatchingPipeline *pipeline)
 
     size_t N = pipeline->images.size();
 
-    corecvs::parallelable_for ((size_t)0, N, CORE_MAX(N / MAX_CORE_COUNT_ESTIMATE, (size_t)1), ParallelExtractor(pipeline,descriptorType), parallelable);
+    corecvs::parallelable_for ((size_t)0, N, CORE_MAX(N / MAX_CORE_COUNT_ESTIMATE, (size_t)1), ParallelExtractor(pipeline,descriptorType, params), parallelable);
 
     ss1 << "Extracting " << descriptorType << " descriptors";
     pipeline->toc(ss1.str(), ss2.str());
 }
 
-DescriptorExtractionStage::DescriptorExtractionStage(DescriptorType type) : descriptorType(type)
+DescriptorExtractionStage::DescriptorExtractionStage(DescriptorType type, const std::string &params) : descriptorType(type), params(params)
 {
     DescriptorExtractor* extractor = DescriptorExtractorProvider::getInstance().getDescriptorExtractor(descriptorType);
     parallelable = extractor->isParallelable();
@@ -519,7 +521,7 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline)
 
     size_t S = matchPlan.plan.size();
     corecvs::parallelable_for ((size_t)0, S, CORE_MAX(S / MAX_CORE_COUNT_ESTIMATE, (size_t)1), ParallelMatcher(pipeline, descriptorType, matcherType, responsesPerPoint), parallelable);
-    
+
     std::stringstream ss;
     pipeline->toc("Computing raw matches", ss.str());
 }
@@ -542,6 +544,7 @@ class ParallelMatcherRefiner
     MatcherType matcherType;
     size_t responsesPerPoint;
     double scaleThreshold;
+    bool thresholdDistance;
     std::vector<int> *first_ptr, *next_ptr, *idx_ptr;
 public:
     void operator() (const corecvs::BlockedRange<size_t>& r) const
@@ -668,13 +671,15 @@ public:
             {
                 for (size_t j = 0; j < ratioInliers[i].size(); ++j)
                 {
-                    double ratio;
-                    if ((ratio = accumulator[i][j][0].distance / accumulator[i][j][1].distance) < scaleThreshold)
+                    double ratio = thresholdDistance ?
+                          accumulator[i][j][0].distance
+                        : accumulator[i][j][0].distance / accumulator[i][j][1].distance;
+                    if ((ratio) < scaleThreshold)
                     {
                         ratioInliers[i][j] = accumulator[i][j][0];
                         ratioInliers[i][j].best2ndBest = ratio;
                     }
-                        
+
                 }
             }
             // step 4: refine by symmetry
@@ -705,10 +710,10 @@ public:
         }
         delete matcher;
     }
-    ParallelMatcherRefiner(FeatureMatchingPipeline* pipeline, DescriptorType descriptorType, MatcherType matcherType, size_t responsesPerPoint, std::vector<int> *first, std::vector<int> *next, std::vector<int> *idx, double scaleThreshold = 0.95) : pipeline(pipeline), descriptorType(descriptorType), matcherType(matcherType), responsesPerPoint(responsesPerPoint), scaleThreshold(scaleThreshold), first_ptr(first), next_ptr(next), idx_ptr(idx) {}
+    ParallelMatcherRefiner(FeatureMatchingPipeline* pipeline, DescriptorType descriptorType, MatcherType matcherType, size_t responsesPerPoint, std::vector<int> *first, std::vector<int> *next, std::vector<int> *idx, double scaleThreshold = 0.95, bool thresholdDistance = false) : pipeline(pipeline), descriptorType(descriptorType), matcherType(matcherType), responsesPerPoint(responsesPerPoint), scaleThreshold(scaleThreshold), thresholdDistance(thresholdDistance), first_ptr(first), next_ptr(next), idx_ptr(idx) {}
 };
 
-MatchAndRefineStage::MatchAndRefineStage(DescriptorType descriptorType, MatcherType matcherType, double scaleThreshold) : descriptorType(descriptorType), matcherType(matcherType), scaleThreshold(scaleThreshold)
+MatchAndRefineStage::MatchAndRefineStage(DescriptorType descriptorType, MatcherType matcherType, double scaleThreshold, bool thresholdDistance) : descriptorType(descriptorType), matcherType(matcherType), scaleThreshold(scaleThreshold), thresholdDistance(thresholdDistance)
 {
     DescriptorMatcher* matcher = DescriptorMatcherProvider::getInstance().getMatcher(descriptorType, matcherType);
     parallelable = matcher->isParallelable();
@@ -769,9 +774,9 @@ void MatchAndRefineStage::run(FeatureMatchingPipeline *pipeline)
 
     rawMatches.matches.resize(matchPlan.plan.size());
     refinedMatches.matchSets.resize(N*(N-1)/2);
-    
-    corecvs::parallelable_for ((size_t)0, P, CORE_MAX(P / MAX_CORE_COUNT_ESTIMATE, (size_t)1), ParallelMatcherRefiner(pipeline, descriptorType, matcherType, responsesPerPoint, &first, &next, &idx, scaleThreshold), parallelable);
-    
+
+    corecvs::parallelable_for ((size_t)0, P, CORE_MAX(P / MAX_CORE_COUNT_ESTIMATE, (size_t)1), ParallelMatcherRefiner(pipeline, descriptorType, matcherType, responsesPerPoint, &first, &next, &idx, scaleThreshold, thresholdDistance), parallelable);
+
     pipeline->toc("Computing & refining matches on-the-fly", "");
 }
 

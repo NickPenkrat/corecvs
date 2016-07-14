@@ -15,7 +15,6 @@ namespace corecvs
  * all stages of iterative reconstruction
  */
 
-
 struct IterativeReconstructionNonlinearOptimizationParams
 {
     // By default only orientations and reconstructed points are subject for optimization
@@ -26,25 +25,28 @@ struct IterativeReconstructionNonlinearOptimizationParams
     // cool closed-form solvers it does not make sense at all
     ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType errorType = ReconstructionFunctorOptimizationErrorType::RAY_DIFF;
     // Post-append non-linear optimization iterations
-    int postAppendNonlinearIterations = 200;
+    int postAppendNonlinearIterations = 2000;
     // Final non-linear iterations
-    int finalNonLinearIterations = 2000;
+    int finalNonLinearIterations = 20000;
     // Alternating optimization on success steps
-    int alternatingIterations = 20;
+    int alternatingIterations = 0;
     // Excessive/non-excessive quaternion parametrization
-    bool excessiveQuaternionParametrization = true;
+    bool excessiveQuaternionParametrization = false;
+    // Explicit inverse in Schur complement
+    bool explicitInverse = false;
 
     template<class VisitorType>
-        void accept(VisitorType &visitor)
-        {
-            visitor.visit(postAppendNonlinearIterations , 200, "postAppendNonlinearIterations");
-            visitor.visit(finalNonLinearIterations , 2000,     "finalNonLinearIterations");
-            visitor.visit(alternatingIterations , 20,"alternatingIterations");
-            visitor.visit(excessiveQuaternionParametrization , true,"excessiveQuaternionParametrization");
-            visitor.visit(optimizationParams, ReconstructionFunctorOptimizationType::NON_DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::FOCALS | ReconstructionFunctorOptimizationType::PRINCIPALS | ReconstructionFunctorOptimizationType::POINTS, "optimizationParams");
+    void accept(VisitorType &visitor)
+    {
+        visitor.visit(postAppendNonlinearIterations , 2000, "postAppendNonlinearIterations");
+        visitor.visit(errorType, ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType::RAY_DIFF, "errorType");
+        visitor.visit(finalNonLinearIterations , 20000,     "finalNonLinearIterations");
+        visitor.visit(alternatingIterations , 0,"alternatingIterations");
+        visitor.visit(excessiveQuaternionParametrization , false,"excessiveQuaternionParametrization");
+        visitor.visit(explicitInverse, false, "explicitInverse");
+        visitor.visit(optimizationParams, ReconstructionFunctorOptimizationType::NON_DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::FOCALS | ReconstructionFunctorOptimizationType::PRINCIPALS | ReconstructionFunctorOptimizationType::POINTS, "optimizationParams");
 
-        }
-
+    }
 };
 
 }

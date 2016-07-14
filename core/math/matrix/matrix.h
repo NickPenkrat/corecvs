@@ -184,7 +184,7 @@ public:
      * Linear system solving with use of schur-complement structure (only with block-diagonal lower-right part)
      * Note that you shoul use it only when you are sure that lower (block-diagonal) part is well-conditioned
      */
-    static bool LinSolveSchurComplement(const corecvs::Matrix &A, const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric = false, bool posDef = false);
+    static bool LinSolveSchurComplement(const corecvs::Matrix &A, const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric = false, bool posDef = false, bool explicitInvers = false);
     bool        linSolveSchurComplement(const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric = false, bool posDef = false);
 
     inline Matrix& operator +=(const Matrix& V)

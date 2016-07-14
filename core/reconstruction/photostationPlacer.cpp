@@ -36,6 +36,8 @@ std::string toString(ReconstructionFunctorOptimizationErrorType::ReconstructionF
 
 void corecvs::PhotostationPlacer::paintTracksOnImages(bool pairs)
 {
+    if (!featureDetectionParams().plotTracks())
+        return;
     std::mt19937 rng;
     std::uniform_real_distribution<double> runif(0, 360.0);
     std::unordered_map<SceneFeaturePoint*, RGBColor> colorizer;
@@ -278,29 +280,36 @@ void corecvs::PhotostationPlacer::getErrorSummary(ReconstructionFunctorOptimizat
 
 }
 
+#if 0
 void corecvs::PhotostationPlacer::fit(int num)
 {
     fit(optimizationParams, num);
 }
+#endif
 
-void corecvs::PhotostationPlacer::fit(const ReconstructionFunctorOptimizationType &params, int num)
+void corecvs::PhotostationPlacer::fit(const ReconstructionFunctorOptimizationType &params, int iterations, int optimizeLast)
 {
+    scene->validateAll();
     if (scene->placedFixtures.size() < 2)
         return;
+    if (optimizeLast <= 0)
+        optimizeLast = scene->placedFixtures.size();
+    std::vector<CameraFixture*> optimizable(scene->placedFixtures.rbegin(), scene->placedFixtures.rbegin() + optimizeLast);
 
     scene->printTrackStats();
 
     auto oldParams = optimizationParams;
     optimizationParams = params;
     getErrorSummaryAll();
-    corecvs::LevenbergMarquardtSparse lm(num);
-    ReconstructionFunctor orient(scene, errorType, optimizationParams, excessiveQuaternionParametrization, 1.0);
+    corecvs::LevenbergMarquardtSparse lm(iterations);
+    ReconstructionFunctor orient(scene, optimizable, errorType, optimizationParams, excessiveQuaternionParametrization, 1.0);
     ReconstructionNormalizationFunctor orientNorm(&orient, alternatingIterations);
     lm.useSchurComplement = true;
+    lm.useExplicitInverse = explicitInverse;
     lm.f = &orient;
     lm.normalisation = &orientNorm;
-    lm.maxIterations = num;
-    lm.trace = false;
+    lm.maxIterations = iterations;
+    lm.trace = true;
     lm.state = scene->processState;
     std::vector<double> input(orient.getInputNum());
     std::vector<double> out(orient.getOutputNum());
@@ -309,6 +318,7 @@ void corecvs::PhotostationPlacer::fit(const ReconstructionFunctorOptimizationTyp
     orient.writeParams(&input[0]);
     auto res = lm.fit(input, out);
     orient.readParams(&res[0]);
+    scene->validateAll();
 
     getErrorSummaryAll();
     static int cnt = 0;
@@ -755,11 +765,10 @@ void corecvs::PhotostationPlacer::postAppend()
         auto acnt = scene->trackedFeatures.size();
         if (acnt <= pcnt && i != 0)
             break;
-
-        fit(params, postAppendNonlinearIterations / 2);
+        fit(params, postAppendNonlinearIterations / 2, postAppendOptimizationWindow());
         std::cout << "Prune" << std::endl;
         scene->pruneTracks(inlierThreshold() * rmsePruningScaler() / 2.0, inlierThreshold() * maxPruningScaler() / 2.0, distanceLimit());
-        fit(params, postAppendNonlinearIterations / 2);
+        fit(params, postAppendNonlinearIterations / 2, postAppendOptimizationWindow());
     }
 
     scene->processState = saveProcessState;     // restore processState
@@ -770,8 +779,10 @@ void corecvs::PhotostationPlacer::postAppend()
 void corecvs::PhotostationPlacer::fullRun()
 {
     // 0. Detect features
-    scene->detectAllFeatures(featureDetectionParams());
-
+    if (!skipFeatureDetection())
+    {
+        scene->detectAllFeatures(featureDetectionParams());
+    }
     // 1. Select multicams with most matches
     // 3. Create two points cloud
     initialize();

@@ -51,6 +51,7 @@ public:
     int  conjugatedGradientIterations = 100;
 #endif
     bool useSchurComplement = false;
+    bool useExplicitInverse = false;
 
     StatusTracker* state = nullptr;
 
@@ -101,12 +102,19 @@ public:
 
         double norm = std::numeric_limits<double>::max();
 
+        auto initial = diff;
+        F(beta, initial);
+        initial -= target;
+        double initialNorm = initial.sumAllElementsSq();
+        int LSc = 0;
+
         double totalEval = 0.0, totalJEval = 0.0, totalLinSolve = 0.0, totalATA = 0.0, totalTotal = 0.0;
         int g = 0;
         state->reset("Fit", maxIterations);
 
         for (g = 0; (g < maxIterations) && (lambda < maxlambda) && !converged; g++)
         {
+            int LSc_curr = 0;
             auto boo = state->createAutoTrackerCalculationObject();
 
             double timeEval = 0.0, timeJEval = 0.0, timeLinSolve = 0.0, timeATA = 0.0, timeTotal = 0.0;
@@ -173,7 +181,6 @@ public:
 
             while (true)
             {
-
                 if (norm == 0.0)
                 {
                     if (traceCrucial)
@@ -241,6 +248,8 @@ public:
                  *       degeneracy
                  */
 
+                LSc_curr++;
+                LSc++;
                 auto LSbegin = std::chrono::high_resolution_clock::now();
 //                for (int ijk = 0; ijk < B.size(); ++ijk)
 //                    CORE_ASSERT_TRUE_S(!std::isnan(B[ijk]));
@@ -254,7 +263,7 @@ public:
                     else
                     {
                         CORE_ASSERT_TRUE_S(F.schurBlocks.size());
-                        A.linSolveSchurComplement(B, F.schurBlocks, delta, true, true);
+                        MatrixClass::LinSolveSchurComplement(A, B, F.schurBlocks, delta, true, true, useExplicitInverse);
                     }
                 }
 #if 0
@@ -283,6 +292,9 @@ public:
                 {
                     if (trace) {
                         cout << "Accepted" << endl;
+                        std::cout << initialNorm - normNew << " decrease in " << LSc << " linsolves" << std::endl;
+                        std::cout << norm - normNew << " current decrease (" << LSc_curr << " linsolves" << std::endl;
+                        std::cout << "NLO: " << initialNorm - normNew << ", " << LSc << ", " << norm - normNew << ", " << LSc_curr << ", " << lambda << std::endl;
                     }
 
                     if (traceMatrix) {

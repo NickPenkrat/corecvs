@@ -31,9 +31,18 @@ int main(int argc, char **argv)
     JSONGetter getter(filenameIn.c_str());
     getter.visit(job, "job");
 
+#if 0
     job.allRemoveDistortion();
 
     JSONSetter setter(filenameOut.c_str());
     setter.visit(job, "job");
+#endif
+	for (int i = 0; i < 10; ++i)
+	{
+		std::cout << i << ":" << std::endl;
+		auto &cam = job.photostation.cameras[0];
+		std::cout << cam.intrinsics.principal[0]  << ", " << cam.intrinsics.principal[1] << ", " << cam.distortion.mShiftX << ", " << cam.distortion.mShiftY << std::endl;
+		cam.estimateUndistortedSize(DistortionApplicationParameters());
+	}
     return 0;
 }

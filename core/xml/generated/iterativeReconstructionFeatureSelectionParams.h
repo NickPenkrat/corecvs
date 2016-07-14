@@ -46,6 +46,7 @@ public:
         FEATUREDETECTIONPARAMS_ID,
         RMSEPRUNINGSCALER_ID,
         MAXPRUNINGSCALER_ID,
+        SKIPFEATUREDETECTION_ID,
         ITERATIVE_RECONSTRUCTION_FEATURE_SELECTION_PARAMS_FIELD_ID_NUM
     };
 
@@ -87,6 +88,12 @@ public:
      */
     double mMaxPruningScaler;
 
+    /** 
+     * \brief skipFeatureDetection 
+     * Skip feature detection 
+     */
+    bool mSkipFeatureDetection;
+
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
 
@@ -125,6 +132,11 @@ public:
         return mMaxPruningScaler;
     }
 
+    bool skipFeatureDetection() const
+    {
+        return mSkipFeatureDetection;
+    }
+
     /* Section with setters */
     void setInlierThreshold(double inlierThreshold)
     {
@@ -156,6 +168,11 @@ public:
         mMaxPruningScaler = maxPruningScaler;
     }
 
+    void setSkipFeatureDetection(bool skipFeatureDetection)
+    {
+        mSkipFeatureDetection = skipFeatureDetection;
+    }
+
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
@@ -167,6 +184,7 @@ template<class VisitorType>
         visitor.visit(mFeatureDetectionParams,    static_cast<const CompositeField *>(fields()[FEATUREDETECTIONPARAMS_ID]));
         visitor.visit(mRmsePruningScaler,         static_cast<const DoubleField *>  (fields()[RMSEPRUNINGSCALER_ID]));
         visitor.visit(mMaxPruningScaler,          static_cast<const DoubleField *>  (fields()[MAXPRUNINGSCALER_ID]));
+        visitor.visit(mSkipFeatureDetection,      static_cast<const BoolField *>    (fields()[SKIPFEATUREDETECTION_ID]));
     }
 
     IterativeReconstructionFeatureSelectionParams()
@@ -182,6 +200,7 @@ template<class VisitorType>
         , FeatureDetectionParams featureDetectionParams
         , double rmsePruningScaler
         , double maxPruningScaler
+        , bool skipFeatureDetection
     )
     {
         mInlierThreshold = inlierThreshold;
@@ -190,6 +209,7 @@ template<class VisitorType>
         mFeatureDetectionParams = featureDetectionParams;
         mRmsePruningScaler = rmsePruningScaler;
         mMaxPruningScaler = maxPruningScaler;
+        mSkipFeatureDetection = skipFeatureDetection;
     }
 
     friend ostream& operator << (ostream &out, IterativeReconstructionFeatureSelectionParams &toSave)

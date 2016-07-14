@@ -1,6 +1,7 @@
 #include "reconstructionFixtureScene.h"
 
 #include <set>
+#include <algorithm>
 #include <unordered_set>
 
 #include "featureMatchingPipeline.h"
@@ -186,7 +187,7 @@ FixtureScene* ReconstructionFixtureScene::dumbify()
         pp->color = p->color;
         for (auto &o: p->observations__)
         {
-            auto& oo = pp->observations[wppmap[o.first].v] = o.second;
+            auto& oo = (pp->observations[wppmap[o.first].v] = o.second);
             auto wpp = wppmap[o.first];
             oo.camera = wpp.v;
             oo.cameraFixture = wpp.u;
@@ -244,6 +245,7 @@ std::vector<uint32_t> ReconstructionFixtureScene::GenerateBitmasks(int N, int M)
 
 void ReconstructionFixtureScene::pruneTracks(double rmse, double maxe, double distanceThreshold)
 {
+    validateAll();
     int id = 0;
     std::vector<SceneFeaturePoint*> deleteSet;
     int completelyPruned = 0, observationsPruned = 0, totalObservations = 0;
@@ -296,6 +298,7 @@ void ReconstructionFixtureScene::pruneTracks(double rmse, double maxe, double di
     trackedFeatures.resize(id);
     std::cout << "Completely pruned " << completelyPruned << " (" << ratio << "%) tracks;" << std::endl
               << "Pruned " << observationsPruned << " (" << ratioO << "%) observations" << std::endl;
+    validateAll();
 }
 
 void ReconstructionFixtureScene::deleteCamera(FixtureCamera *camera)
@@ -380,10 +383,10 @@ void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams 
 
     // Feature detection and matching
     FeatureMatchingPipeline pipeline(filenames, processState);
-    pipeline.add(new KeyPointDetectionStage(params.detector()), true);
-    pipeline.add(new DescriptorExtractionStage(params.descriptor()), true);
+    pipeline.add(new KeyPointDetectionStage(params.detector(), params.parameters()), true);
+    pipeline.add(new DescriptorExtractionStage(params.descriptor(), params.parameters()), true);
     pipeline.add(new MatchingPlanComputationStage(), true);
-    pipeline.add(new MatchAndRefineStage(params.descriptor(), params.matcher(), params.b2bThreshold()), true);
+    pipeline.add(new MatchAndRefineStage(params.descriptor(), params.matcher(), params.b2bThreshold(), params.thresholdDistance()), true);
 
     pipeline.run();
 
@@ -690,7 +693,7 @@ void ParallelTrackPainter::operator() (const corecvs::BlockedRange<int> &r) cons
             corecvs::RGB24Buffer dst(newH, newW);
             AbstractPainter<RGB24Buffer> painter(&dst);
 
-			//TODO: optimize speed to don't form the not needed image
+            //TODO: optimize speed to don't form the not needed image
             for (int y = 0; y < srcA.h; ++y)
                 for (int x = 0; x < srcA.w; ++x)
                     dst.element(y, x) = srcA.element(y, x);
@@ -717,8 +720,8 @@ void ParallelTrackPainter::operator() (const corecvs::BlockedRange<int> &r) cons
                 painter.drawCircle(obsA->observation[0]    , obsA->observation[1]       , 3, color);
                 painter.drawFormat(obsB->observation[0] + 5, obsB->observation[1] + offH, color, 1,  tf->name.c_str());
                 painter.drawCircle(obsB->observation[0]    , obsB->observation[1] + offH, 3, color);
-                dst	   .drawLine  (obsB->observation[0]    , obsB->observation[1] + offH
-								 , obsA->observation[0]	   , obsA->observation[1], color);
+                dst    .drawLine  (obsB->observation[0]    , obsB->observation[1] + offH
+                                 , obsA->observation[0]    , obsA->observation[1]       ,    color);
                 painted = true;
             }
             if (!painted)
@@ -926,6 +929,7 @@ std::unordered_map<std::tuple<FixtureCamera*, FixtureCamera*, int>, int> corecvs
 
 void corecvs::ReconstructionFixtureScene::appendTracks(CameraFixture *ps, double trackInlierThreshold, double distanceLimit)
 {
+    validateAll();
     auto candidates = getFixtureMatchesIdx(placedFixtures, ps);
     std::cout << "AP-CAND: " << candidates.size() << std::endl;
     // Now rebuild in order to select only the best appendable for every kp in ps
@@ -955,16 +959,18 @@ void corecvs::ReconstructionFixtureScene::appendTracks(CameraFixture *ps, double
     std::cout << "AP-MAP: " << mapper.size() << std::endl;
     std::cout << "AP-MAP failures: train is not mapped: " << tt << " query is mapped: " << qq << std::endl;
     size_t cnt = mapper.size(), app = 0;
+    int appended = 0, merged = 0;
     // Then select best-fitting track and merge 'em until error is OK
-    for (auto& pat: mapper)
+    for (auto& pat_: mapper)
     {
+        std::vector<corecvs::SceneFeaturePoint*> pss(pat_.second.begin(), pat_.second.end());
         SceneFeaturePoint* best = nullptr;
         double bestScore = trackInlierThreshold;
-        auto qq = pat.first.first;
-        auto pq = pat.first.second;
+        auto qq = pat_.first.first;
+        auto pq = pat_.first.second;
         auto p  = keyPoints[qq][pq].first;
         auto vv = qq.u->getWorldCamera(qq.v).extrinsics.position;
-        for (auto& track: pat.second)
+        for (auto& track: pss)
         {
             if ((!(vv - track->reprojectedPosition)) > distanceLimit)
                 continue;
@@ -981,6 +987,7 @@ void corecvs::ReconstructionFixtureScene::appendTracks(CameraFixture *ps, double
         }
         if (!best)
             continue;
+        appended++;
         SceneObservation so;
         so.camera = qq.v;
         so.cameraFixture = qq.u;
@@ -990,9 +997,80 @@ void corecvs::ReconstructionFixtureScene::appendTracks(CameraFixture *ps, double
         best->observations__[qq] = so;
         trackMap[qq][pq] = best;
         best->reprojectedPosition = best->triangulate();
+        /*
+         * Here we start trying to merge tracks if possible
+         */
+        pss.erase(std::remove(pss.begin(), pss.end(), best), pss.end());
+        auto compound = best;
+        auto compoundPos = compound->reprojectedPosition;
+        while (pss.size())
+        {
+            best = nullptr;
+            double bestRmse = 1e10;
+            for (auto& track: pss)
+            {
+                /*
+                 * Somehow check if it fits:
+                 *  - Check if     projection is ok = cheap, but we do not know maxe limit here
+                 *  - Check if reconstruction is ok = not cheap
+                 */
+                double ssq = 0.0, cnt = 0.0;
+                bool valid = true;
+                for (auto& o: track->observations__)
+                {
+                    if (!o.first.u->isVisible(compoundPos, o.first.v))
+                    {
+                        valid = false;
+                        break;
+                    }
+                    if ((!(o.first.u->location.shift - compoundPos)) > distanceLimit)
+                    {
+                        valid = false;
+                        break;
+                    }
+#if 0
+                    double err = -1.0;
+                    if ((err = !(o.first.u->reprojectedPosition(compoundPos, o.second.observation, o.first.v))) >= trackInlierThreshold)
+                    {
+                        valid = false;
+                        break;
+                    }
+#else
+                    double err = !(o.first.u->reprojectionError(compoundPos, o.second.observation, o.first.v));
+#endif
+                    ssq += err * err;
+                    cnt += 1.0;
+                }
+                if (!valid)
+                    continue;
+                if (ssq / cnt > trackInlierThreshold * trackInlierThreshold)
+                    continue;
+                if (ssq / cnt < bestRmse)
+                {
+                    best = track;
+                    bestRmse = ssq / cnt;
+                }
+            }
+            if (!best)
+                break;
+            appended++;
+            auto prev = best;
+            for (auto& o: best->observations__)
+            {
+                for (auto& pp: trackMap[o.first])
+                    if (pp.second == prev)
+                        trackMap[o.first][pp.first] = compound;
+                compound->observations__[o.first] = o.second;
+                compound->observations__[o.first].featurePoint = compound;
+            }
+            trackedFeatures.erase(std::remove(trackedFeatures.begin(), trackedFeatures.end(), best), trackedFeatures.end());
+            pss.erase(std::remove(pss.begin(), pss.end(), best), pss.end());
+        }
         ++app;
     }
     std::cout << "TA: (" << ps->name << ")"  << cnt << " / " << app << std::endl;
+    std::cout << "TA: appended: " << appended << ", merged: " << merged << std::endl;
+    validateAll();
 }
 
 std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd, double>>

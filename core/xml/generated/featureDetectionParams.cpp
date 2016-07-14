@@ -95,6 +95,39 @@ int FeatureDetectionParams::staticInit()
           "matchF2F"
         )
     );
+    fields().push_back(
+        new StringField
+        (
+          FeatureDetectionParams::PARAMETERS_ID,
+          offsetof(FeatureDetectionParams, mParameters),
+          "",
+          "parameters",
+          "parameters",
+          "Additional parameters"
+        )
+    );
+    fields().push_back(
+        new BoolField
+        (
+          FeatureDetectionParams::PLOTTRACKS_ID,
+          offsetof(FeatureDetectionParams, mPlotTracks),
+          false,
+          "plotTracks",
+          "plotTracks",
+          "Draw tracks on source images"
+        )
+    );
+    fields().push_back(
+        new BoolField
+        (
+          FeatureDetectionParams::THRESHOLDDISTANCE_ID,
+          offsetof(FeatureDetectionParams, mThresholdDistance),
+          false,
+          "thresholdDistance",
+          "thresholdDistance",
+          "Threshold by descriptor distance instead of b2b ratio"
+        )
+    );
    return 0;
 }
 

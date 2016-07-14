@@ -119,6 +119,17 @@ int IterativeReconstructionFeatureSelectionParams::staticInit()
          10000
         )
     );
+    fields().push_back(
+        new BoolField
+        (
+          IterativeReconstructionFeatureSelectionParams::SKIPFEATUREDETECTION_ID,
+          offsetof(IterativeReconstructionFeatureSelectionParams, mSkipFeatureDetection),
+          false,
+          "skipFeatureDetection",
+          "skipFeatureDetection",
+          "Skip feature detection"
+        )
+    );
    return 0;
 }
 

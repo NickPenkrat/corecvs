@@ -39,8 +39,8 @@ public:
     void pruneTracks();
     bool append3D();
 
-    void fit(int num);
-    void fit(const ReconstructionFunctorOptimizationType& optimizationSet = ReconstructionFunctorOptimizationType::NON_DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::POINTS | ReconstructionFunctorOptimizationType::FOCALS | ReconstructionFunctorOptimizationType::PRINCIPALS, int num = 100);
+//    void fit(int num);
+    void fit(const ReconstructionFunctorOptimizationType& optimizationSet = ReconstructionFunctorOptimizationType::NON_DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::DEGENERATE_ORIENTATIONS | ReconstructionFunctorOptimizationType::POINTS | ReconstructionFunctorOptimizationType::FOCALS | ReconstructionFunctorOptimizationType::PRINCIPALS, int iterations = 100, int optimizeLast = -1);
     void appendTracks(const std::vector<int> &inlierIds, CameraFixture* fixture, const std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> &possibleTracks);
     int getInputNum();
     int getOutputNum();

@@ -117,7 +117,58 @@
        </property>
      </widget>
     </item>
-   <item row="5" column="0">
+    <item row="5" column="0">
+     <widget class="QLabel" name="label_5">
+       <property name="text">
+         <string>parameters</string>
+       </property>
+     </widget>
+    </item>
+    <item row="5" column="1">
+     <widget class="QLineEdit" name="parametersEdit">
+       <property name="toolTip">
+         <string>Additional parameters</string>
+       </property>
+       <property name="text">
+           <string></string>
+       </property>
+     </widget>
+    </item>
+    <item row="6" column="0">
+     <widget class="QLabel" name="label_6">
+       <property name="text">
+         <string>plotTracks</string>
+       </property>
+     </widget>
+    </item>
+    <item row="6" column="1">
+     <widget class="QCheckBox" name="plotTracksCheckBox">
+       <property name="toolTip">
+         <string>Draw tracks on source images</string>
+       </property>
+       <property name="checked">
+           <bool>0</bool>
+       </property>
+     </widget>
+    </item>
+    <item row="7" column="0">
+     <widget class="QLabel" name="label_7">
+       <property name="text">
+         <string>thresholdDistance</string>
+       </property>
+     </widget>
+    </item>
+    <item row="7" column="1">
+     <widget class="QCheckBox" name="thresholdDistanceCheckBox">
+       <property name="toolTip">
+         <string>Threshold by descriptor distance instead of b2b ratio</string>
+       </property>
+       <property name="checked">
+           <bool>0</bool>
+       </property>
+     </widget>
+    </item>
+   <item row="8" column="0">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -130,7 +181,7 @@
      </property>
     </spacer>
    </item>
-   <item row="5" column="2">
+   <item row="8" column="2">
     <spacer name="horizontalSpacer">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -174,6 +225,24 @@
   </connection>
   <connection>
    <sender>matchF2FCheckBox</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>FeatureDetectionParamsControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>parametersEdit</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>FeatureDetectionParamsControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>plotTracksCheckBox</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>FeatureDetectionParamsControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>thresholdDistanceCheckBox</sender>
    <signal>stateChanged(int)</signal>
    <receiver>FeatureDetectionParamsControlWidget</receiver>
    <slot>changeParameters()</slot>

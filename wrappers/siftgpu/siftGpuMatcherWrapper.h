@@ -40,7 +40,7 @@ extern "C"
 class SiftGpuDescriptorMatcherProvider : public DescriptorMatcherProviderImpl
 {
 public:
-    DescriptorMatcher* getDescriptorMatcher(const DescriptorType &type, const MatcherType &matcher);
+    DescriptorMatcher* getDescriptorMatcher(const DescriptorType &type, const MatcherType &matcher, const std::string& params = "");
     bool provides(const DescriptorType &type, const MatcherType &matcher);
     ~SiftGpuDescriptorMatcherProvider() {}
 protected:
