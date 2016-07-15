@@ -8,10 +8,13 @@
 #include "circlePatternGenerator.h"
 #include "selectableGeometryFeatures.h"
 #include "typesafeBitmaskEnums.h"
+#include "convolver/convolver.h"    // corecvs::DpImage
+
 
 using std::vector;
 using corecvs::Vector2dd;
 using corecvs::RGB24Buffer;
+using corecvs::DpImage;
 
 enum class AlignmentType
 {
