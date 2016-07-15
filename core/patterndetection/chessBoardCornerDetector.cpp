@@ -680,8 +680,15 @@ RGB24Buffer *ChessBoardCornerDetector::getDebugBuffer(const std::string& name) c
 
 bool ChessBoardCornerDetector::edgeOrientationFromGradient(int top, int bottom, int left, int right, Vector2dd &v1, Vector2dd &v2)
 {
-    std::vector<double> histogram(histogramBins());
-    double bin_size = M_PI / histogramBins();
+    int nbins = histogramBins();
+    if (nbins < 1)
+    {
+        std::cout << "ChessBoardCornerDetector:: bad histogramBins value:" << nbins << std::endl;
+        return false;
+    }
+
+    std::vector<double> histogram(nbins);
+    double bin_size = M_PI / nbins;
 
     for (int i = top; i <= bottom; ++i)
     {
@@ -690,7 +697,7 @@ bool ChessBoardCornerDetector::edgeOrientationFromGradient(int top, int bottom, 
             double Phi = phi.element(i, j);
             double W   =   w.element(i, j);
 
-            int bin = std::max(std::min((int)(Phi / bin_size), histogramBins() - 1), 0);
+            int bin = std::max(std::min((int)(Phi / bin_size), nbins - 1), 0);
             histogram[bin] += W;
         }
     }
