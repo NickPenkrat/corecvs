@@ -9,10 +9,11 @@
  */
 
 #include <vector>
+#include <memory>
+#include <initializer_list>
 
 #include "global.h"
 
-#include "memoryBlock.h"
 #include "vectorOperations.h"
 
 namespace corecvs {
@@ -24,32 +25,70 @@ public:
     typedef ElementType InternalElementType;
 
     /**
-     * Memory block that holds the data
-     **/
-    MemoryBlockRef memoryBlock;
-
-    /**
      * The array of the data elements
      **/
-    ElementType *element;
-    int length;
 
-    explicit inline FixedArrayBase(int _length = 0) {
-        _init(_length);
+    FixedArrayBase(int length = 0) : FixedArrayBase(length, 0)
+    {
+        for (int i = 0; i < length; ++i)
+            new (data.get() + i) ElementType();
     }
 
-    explicit inline FixedArrayBase(int _length, const ElementType* x)
+    FixedArrayBase(int _length, const ElementType* x) : FixedArrayBase(_length, 0)
     {
-        _init(_length);
-        for (int i = 0; i < length; i++)
-            this->element[i] = x[i];
+        copyInit(x);
     }
 
-    explicit inline FixedArrayBase(const std::vector<ElementType> &x)
+    FixedArrayBase(const std::vector<ElementType> &x) : FixedArrayBase((int)x.size(), &x[0])
     {
-        _init((int)x.size());
-        for (int i = 0; i < length; i++)
-            this->element[i] = x[i];
+    }
+
+    FixedArrayBase(const std::initializer_list<ElementType> &l) : FixedArrayBase((int)l.size(), l.begin())
+    {
+    }
+
+    FixedArrayBase(const FixedArrayBase &that) : FixedArrayBase(that.length, &that[0])
+    {
+    }
+
+    FixedArrayBase(FixedArrayBase &&that) : length(that.length), data(std::move(that.data))
+    {
+    }
+
+    FixedArrayBase& operator= (const FixedArrayBase &that)
+    {
+        if (this == &that)
+            return *this;
+        if (that.length > length)
+        {
+            length = that.length;
+            data = std::unique_ptr<ElementType[]>((ElementType*)aligned_alloc(16, sizeof(ElementType) * length));
+            copyInit(&that[0]);
+        }
+        else
+        {
+            length = that.length;
+            for (auto& v: that)
+                data[&v - &that[0]] = v;
+        }
+        return *this;
+    }
+
+    FixedArrayBase& operator=(FixedArrayBase &&that)
+    {
+        std::swap(data, that.data);
+        std::swap(length, that.length);
+        return *this;
+    }
+
+    operator double*()
+    {
+        return &data[0];
+    }
+
+    operator const double*() const
+    {
+        return &data[0];
     }
 
     int size() const
@@ -59,47 +98,68 @@ public:
 
     ElementType& operator [](int n)
     {
-        return element[n];
+        return data[n];
     }
 
     const ElementType& operator [](int n) const
     {
-        return element[n];
+        return data[n];
     }
 
     ElementType& at(int n)
     {
-        return element[n];
+        return data[n];
     }
 
     const ElementType& at(int n) const
     {
-        return element[n];
+        return data[n];
     }
 
-    inline RealType createVector(int length) const {
+    inline RealType createVector(int length) const
+    {
         return RealType(length);
     }
 
-    ~FixedArrayBase()
+    ElementType* begin()
     {
-        if (this->element != NULL)
-        {
-            for (int i = 0; i < length; i++)
-            {
-                element[i].~ElementType();
-            }
-        }
-        this->element = NULL;
+        return &data[0];
     }
 
-private:
-    void _init(int _length)
+    ElementType* end()
     {
-        this->length = _length;
-        memoryBlock.allocate(_length * sizeof(ElementType), 0x0);
-        this->element = new(memoryBlock.getAlignedStart(0x0)) ElementType[_length];
+        return &data[0] + length;
     }
+
+    const ElementType* begin() const
+    {
+        return &data[0];
+    }
+
+    const ElementType* end() const
+    {
+        return &data[0] + length;
+    }
+
+    friend std::ostream& operator<<(std::ostream& o, const FixedArrayBase &fab)
+    {
+        o << "[";
+        for (auto& v: fab)
+            o << fab << (&v + 1 == fab.end() ? "]" : ", ");
+        return o;
+    }
+private:
+    explicit inline FixedArrayBase(int length, int) : length(length)
+    {
+        data = std::unique_ptr<ElementType[]>((ElementType*)aligned_alloc(16, sizeof(ElementType) * length));
+    }
+    void copyInit(const ElementType *from)
+    {
+        for (int i = 0; i < length; ++i)
+            new (data.get() + i) ElementType(from[i]);
+    }
+    int length;
+    std::unique_ptr<ElementType[]> data;
 
 };
 
@@ -109,12 +169,18 @@ class FixedArray : public FixedArrayBase<FixedArray<ElementType>, ElementType>
 public:
     typedef FixedArrayBase<FixedArray<ElementType>, ElementType> BaseClass;
 
-    explicit inline FixedArray(int _length = 0) :
-        BaseClass(_length) {}
-    explicit inline FixedArray(int _length, const ElementType* _x) :
-        BaseClass(_length, _x) {}
-    explicit inline FixedArray(const std::vector<ElementType> &_x) :
-        BaseClass(_x) {}
+    FixedArray(int _length = 0) : BaseClass(_length)
+    {
+    }
+    FixedArray(int _length, const ElementType* _x) : BaseClass(_length, _x)
+    {
+    }
+    FixedArray(const std::vector<ElementType> &_x) : BaseClass(_x)
+    {
+    }
+    FixedArray(const std::initializer_list<ElementType> &l) : BaseClass(l)
+    {
+    }
 };
 
 

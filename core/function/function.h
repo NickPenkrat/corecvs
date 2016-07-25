@@ -47,20 +47,6 @@ public:
      **/
     virtual void operator()(const double in[], double out[]) = 0;
 
-    virtual void operator()(const Vector &in, Vector &out)
-    {
-        return operator()(in.element, out.element);
-    }
-
-    virtual void operator()(const vector<double> &in, vector<double> &out)
-    {
-        CORE_ASSERT_TRUE( (int)  in.size() > inputs , "Too few input numbers");
-        CORE_ASSERT_TRUE( (int) out.size() > outputs, "Too few output numbers");
-
-        return operator()(&in[0], &out[1]);
-    }
-
-
     /**
      *  This function computes Jacobian
      *   \f[
@@ -86,7 +72,7 @@ public:
 
     virtual Matrix getJacobian(const Vector &in, double delta = 1e-7)
     {
-        return getJacobian(in.element, delta);
+        return getJacobian(&in[0], delta);
     }
 
     /*
