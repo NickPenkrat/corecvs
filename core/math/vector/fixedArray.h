@@ -81,12 +81,12 @@ public:
         return *this;
     }
 
-    operator double*()
+    operator Element*()
     {
         return &data[0];
     }
 
-    operator const double*() const
+    operator const Element*() const
     {
         return &data[0];
     }
