@@ -1,0 +1,2 @@
+HEADERS += \
+	iterative/minres.h

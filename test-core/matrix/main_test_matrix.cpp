@@ -22,8 +22,65 @@
 #include "matrix.h"
 #include "sparseMatrix.h"
 #include "preciseTimer.h"
+#include "function.h"
+#include "minres.h"
 
 using namespace corecvs;
+
+
+TEST(Iterative, MinresQLP)
+{
+	double a[] = {
+		5.0, 2.0, 1.0, 0.0, 0.0,
+		2.0, 5.0, 2.0, 1.0, 0.0,
+		1.0, 2.0, 5.0, 2.0, 1.0,
+		0.0, 1.0, 2.0, 5.0, 2.0,
+		0.0, 0.0, 1.0, 2.0, 5.0};
+	corecvs::Matrix M(5, 5, a);
+	corecvs::Vector xx = { 1.0, 2.0, 3.0, 4.0, 5.0 };
+	auto b = M * xx;
+	corecvs::Vector x;
+	Iterative::minresQlp<Matrix>(M, b, x);
+	std::cout << x << std::endl << xx << std::endl;
+}
+
+struct Blah : public FunctionArgs
+{
+	Blah() : FunctionArgs(10, 10)
+	{
+	}
+	virtual void operator() (const double *in, double *out)
+	{
+		for (int i = 0; i < 10; ++i)
+			out[i] = in[i];
+	}
+};
+
+TEST(VectorTest, testVector)
+{
+	Vector v(10);
+	for (auto& vv: v)
+		vv = &vv - v.begin();
+	Vector vv(v);
+	Vector vvv(10);
+	vvv = v;
+	v[0] = 10;
+	vv[1] = 10;
+	vvv[2] = 10;
+	std::cout << v << std::endl;
+	std::cout << vv << std::endl;
+	std::cout << vvv << std::endl;
+
+	Vector blah {1, 2, 3, 4, 5, 6};
+	std::cout << blah << std::endl;
+
+	Blah b;
+	b(vv, vvv);
+	std::cout << vv << vvv << std::endl;
+
+	Vector dc(10);
+	std::cout << dc << std::endl;
+}
 
 TEST(MatrixTest, testMatrix33)
 {
