@@ -65,16 +65,16 @@ void minresQlp(const M &A, const Vector &b, Vector &x)
     Vector w(N), wl(N), wl2(N), xl2(N);
 
     int maxIt = N * 1000;
-    double rtol = 1e-9, maxXNorm = 1e100, ACondLim = 1e100, TranCond = 1e7;
+    double rtol = 1e-16, maxXNorm = 1e100, ACondLim = 1e100, TranCond = 1e7;
 
     std::cout << "How does it works?" << std::endl;
     if (beta1 == 0.0)
         return;
 
     std::cout << "It starts with iterations " << std::endl;
+        std::cout << /*x << " : " <<*/ !(A * x - b) /*<< std::endl*/;
     while (flag == flag0 && iter < maxIt)
     {
-        std::cout << x << " : " << !(A * x - b) << std::endl;
         std::cout << "*" << std::flush;
         ++iter;
         auto betal = beta;
@@ -328,9 +328,9 @@ void minresQlp(const M &A, const Vector &b, Vector &x)
             rnorm = rnorml;
             relres = relresl;
         }
-        std::cout << x << " : " << !(A * x - b) << std::endl;
+        std::cout << /*x << " : " <<*/ !(A * x - b) /*<< std::endl*/;
     }
-
+		std::cout << "IT TOOK " << iter << " ITERATIONS" << std::endl;
         std::cout << std::endl;
 
 

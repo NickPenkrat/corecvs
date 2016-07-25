@@ -36,12 +36,24 @@ TEST(Iterative, MinresQLP)
 		1.0, 2.0, 5.0, 2.0, 1.0,
 		0.0, 1.0, 2.0, 5.0, 2.0,
 		0.0, 0.0, 1.0, 2.0, 5.0};
-	corecvs::Matrix M(5, 5, a);
-	corecvs::Vector xx = { 1.0, 2.0, 3.0, 4.0, 5.0 };
+	int N = 3276800;
+
+	std::map<std::pair<int, int>, double> data;
+	corecvs::SparseMatrix M(N, N, data);
+	int val[] = {1, 2, 5, 2, 1};
+	for (int i = 0; i < N; ++i)
+		for (int j = -2; j <= 2; ++j)
+			if (i + j >= 0 && i + j < N)
+				M.a(i, i + j) = val[j + 2];
+	corecvs::Vector xx(N);
+	for (int i = 0; i < N; ++i)
+		xx[i] = i % 10;
 	auto b = M * xx;
 	corecvs::Vector x;
-	Iterative::minresQlp<Matrix>(M, b, x);
-	std::cout << x << std::endl << xx << std::endl;
+	Iterative::minresQlp<SparseMatrix>(M, b, x);
+//	std::cout << x << std::endl << xx << std::endl;
+	std::cout << "AND DIFF IS " << !(x - xx) << std::endl;
+	std::cout << "RELRES: " << (!(M*x-b)/!b) << std::endl;
 }
 
 struct Blah : public FunctionArgs
