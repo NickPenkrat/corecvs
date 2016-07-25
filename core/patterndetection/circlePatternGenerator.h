@@ -9,15 +9,14 @@
 #include "abstractBuffer.h"
 #include "vector2d.h"
 #include "matrix33.h"
+#include "convolver/convolver.h"    // corecvs::DpImage
 
 #ifdef WITH_TBB
 #include <tbb/reader_writer_lock.h>
 #endif
 
+using corecvs::DpImage;
 
-#ifndef DpImage
-typedef corecvs::AbstractBuffer<double> DpImage;
-#endif
 
 namespace std
 {

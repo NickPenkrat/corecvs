@@ -672,7 +672,7 @@ public:
                 for (size_t j = 0; j < ratioInliers[i].size(); ++j)
                 {
                     double ratio = thresholdDistance ?
-                          accumulator[i][j][0].distance
+                          accumulator[i][j][0].distance / 256.0
                         : accumulator[i][j][0].distance / accumulator[i][j][1].distance;
                     if ((ratio) < scaleThreshold)
                     {

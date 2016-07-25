@@ -11,7 +11,9 @@
 #endif
 
 #include "generated/chessBoardAssemblerParamsBase.h"
+#include "convolver/convolver.h"    // corecvs::DpImage
 
+using corecvs::DpImage;
 using corecvs::Vector2dd;
 
 /*
