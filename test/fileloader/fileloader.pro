@@ -21,7 +21,7 @@ include($$PWD/../../core/core.pri)
 SOURCES += main.cpp
 
 with_libjpeg {
-    LIBJPEG_WRAPPER_DIR = $$ROOT_DIR/wrappers/libjpeg
+    LIBJPEG_WRAPPER_DIR = $$ROOT_DIR/src/open/wrappers/libjpeg
     include($$LIBJPEG_WRAPPER_DIR/libjpeg.pri)
 
     contains(DEFINES, WITH_LIBJPEG) {
@@ -31,7 +31,7 @@ with_libjpeg {
 
 with_libpng {
     message(We have libpng)
-    LIBPNG_WRAPPER_DIR = $$ROOT_DIR/wrappers/libpng
+    LIBPNG_WRAPPER_DIR = $$ROOT_DIR/src/open/wrappers/libpng
     include($$LIBPNG_WRAPPER_DIR/libpng.pri)
 
     contains(DEFINES, WITH_LIBPNG) {
