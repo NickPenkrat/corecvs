@@ -14,6 +14,7 @@ SUBDIRS +=       \
 #   grab         \
     grab_N_captures \
     serialize1   \
+    fileloader \
 #   adoptcolor   \
 #    avigrab     \
 #    decodebayer \

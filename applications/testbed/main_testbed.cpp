@@ -23,12 +23,12 @@ using namespace corecvs;
 
 int main(int argc, char *argv[])
 {
+    Q_INIT_RESOURCE(testbed);
     QTG12Loader::registerMyself();
     QTRGB24Loader::registerMyself();
 
-
-    setHandlerStdTerminate();
-    setHandlerSegV();
+    setSegVHandler();
+    setStdTerminateHandler();
 
     printf("Starting testbed...\n");
 

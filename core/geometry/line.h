@@ -143,7 +143,7 @@ public:
      *
      * */
     template<typename ConvexType>
-    bool clip(const ConvexType &convex, double &t1, double &t2)
+    bool clip(const ConvexType &convex, double &t1, double &t2) const
     {
         t1 = -numeric_limits<double>::max();
         t2 =  numeric_limits<double>::max();
@@ -168,7 +168,7 @@ public:
                 t2 = t;
             }
 
-            cout << "Intersection " << t << " at " << getPoint(t) << " is " << (numen > 0 ? "enter" : "exit") << std::endl;
+            //cout << "Intersection " << t << " at " << getPoint(t) << " is " << (numen > 0 ? "enter" : "exit") << std::endl;
 
         }
         return t2 > t1;
@@ -257,13 +257,15 @@ public:
         return std::make_pair(an, p ^ an);
     }
 
-    void transform(const Matrix44 &M)
+    template <class Transformer>
+    void transform(const Transformer &M)
     {
         a = M * a;
         p = M * p;
     }
 
-    Ray3d transformed(const Matrix44 &M)
+    template <class Transformer>
+    Ray3d transformed(const Transformer &M)
     {
         return Ray3d((M * (p + a)) - (M * p), M * p);
     }
@@ -842,7 +844,7 @@ public:
      *      \vec x \vec n - \vec p \vec n = \vec 0
      *  \f]
      **/
-    static Plane3d FormNormalAndPoint(const Vector3dd &normal, const Vector3dd &point)
+    static Plane3d FromNormalAndPoint(const Vector3dd &normal, const Vector3dd &point)
     {
         return Plane3d(normal, -(normal & point));
     }
@@ -865,7 +867,7 @@ public:
      **/
     static Plane3d FromPoints(const Vector3dd &p, const Vector3dd &q, const Vector3dd &r)
     {
-        return FormNormalAndPoint( NormalFromPoints(p, q, r), p);
+        return FromNormalAndPoint( NormalFromPoints(p, q, r), p);
     }
 
     /**
@@ -874,7 +876,7 @@ public:
      **/
     static Plane3d FromPointAndVectors(const Vector3dd &p, const Vector3dd &v1, const Vector3dd &v2)
     {
-        return FormNormalAndPoint( v1 ^ v2, p);
+        return FromNormalAndPoint( v1 ^ v2, p);
     }
 
 };

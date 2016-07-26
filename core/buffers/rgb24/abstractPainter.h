@@ -6,10 +6,10 @@
  **/
 
 #include <stdint.h>
+#include <math.h>
 #include <vector>
 
 #include "global.h"
-
 #include "hardcodeFont.h"
 #include "hersheyVectorFont.h"
 #include "rgbColor.h"
@@ -331,6 +331,10 @@ public:
         if (p.empty())
             return;
 
+        if (p.size() == 1)
+        {
+            mTarget->drawLine(p[0].x(), p[0].y(), p[0].x(), p[0].y(), color);
+        }
         for (unsigned i = 0; i < p.size() - 1; i++)
         {
             mTarget->drawLine(p[i].x(), p[i].y(), p[i + 1].x(), p[i + 1].y(), color);

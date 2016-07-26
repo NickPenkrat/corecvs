@@ -432,6 +432,34 @@ void Mesh3D::addCircle(const Circle3d &circle, int step)
     }
 }
 
+void Mesh3D::drawCircle(Vector3dd center, double radius, int step, Vector3dd normal)
+{
+    int vectorIndex = (int)vertexes.size();
+    Vector2d32 startIdE(vectorIndex, vectorIndex);
+    Vector3d32 startIdF(vectorIndex, vectorIndex, vectorIndex);
+
+    double psi = 2 * M_PI / step ;
+    Vector3dd ort1, ort2;
+
+    normal.orthogonal(ort1,ort2);
+
+    for (int i = 0; i < step; i++)
+    {
+        addVertex(radius * (sin(psi * i) * ort1 + cos(psi * i) * ort2) + center);
+    }
+    addVertex(center);
+
+    for (int i = 0; i < step; i++)
+    {
+        addEdge(startIdE + Vector2d32(i, (i + 1) % step));
+    }
+
+    for (int i = 0; i < step; i++)
+    {
+        addFace(startIdF + Vector3d32(i, (i + 1) % step, step));
+    }
+}
+
 void Mesh3D::addSphere(const Sphere3d &sphere, int step)
 {
     addSphere(sphere.c, sphere.r, step);
@@ -629,8 +657,8 @@ AxisAlignedBox3d Mesh3D::getBoundingBox()
     {
         for (int j = 0; j < Vector3dd::LENGTH; j++)
         {
-            if (minP[j] < vertexes[i][j]) minP[j] = vertexes[i][j];
-            if (maxP[j] > vertexes[i][j]) maxP[j] = vertexes[i][j];
+            if (minP[j] > vertexes[i][j]) minP[j] = vertexes[i][j];
+            if (maxP[j] < vertexes[i][j]) maxP[j] = vertexes[i][j];
         }
     }
     return AxisAlignedBox3d(minP, maxP);
@@ -672,7 +700,6 @@ void Mesh3D::add(const Mesh3D &other, bool preserveColor)
 
     currentColor = backup;
 }
-
 
 
 void Mesh3D::addEdge(const Vector2d32 &edge)

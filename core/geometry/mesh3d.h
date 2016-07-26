@@ -32,9 +32,7 @@ public:
 
     Mesh3D() :
         centralPoint(0.0),
-        hasCentral(false),
-
-        hasTexCoords(false),
+        hasCentral(false),      
         hasColor(false),
 
         currentColor(RGBColor::Black()),
@@ -46,16 +44,12 @@ public:
     bool hasCentral;
 
 /* Data that is stored */
-    bool hasTexCoords;
     bool hasColor;
 
     /** Vertexes that from the mesh (faces or edges or noconnected) */
     vector<Vector3dd>  vertexes;
     vector<Vector3d32> faces;
     vector<Vector2d32> edges;
-
-    /* Texture Coords Channel */
-    vector<Vector2dd>  textureCoords;
 
     /* RGB Colors */
     vector<RGBColor> vertexesColor;
@@ -104,6 +98,7 @@ public:
     void addIcoSphere(Vector3dd center, double radius, int step = 1);
 
     void addCircle   (const Circle3d &circle, int step = 20);
+    void drawCircle  (Vector3dd center, double radius, int step=20, Vector3dd normal=Vector3dd(0, 0, 1));
 
     void addSphere   (const Sphere3d &sphere, int step = 20);
     void addIcoSphere(const Sphere3d &sphere, int step = 1);

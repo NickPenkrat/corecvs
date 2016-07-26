@@ -878,3 +878,4 @@ void CloudViewDialog::statsOpen()
     mStatisticsDialog.show();
     mStatisticsDialog.raise();
 }
+

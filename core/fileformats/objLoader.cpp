@@ -1,8 +1,8 @@
-#include "objLoader.h"
-#include "utils.h"
-
 #include <sstream>
 #include <regex>
+
+#include "objLoader.h"
+#include "utils.h"
 
 using namespace std;
 
@@ -82,17 +82,17 @@ int OBJLoader::loadOBJ(istream &input, Mesh3DDecorated &mesh)
                 for (int j = 0; j < 3 && std::getline(splitter, part, '/'); j++)
                 {
                     if (j == 0) {
-                        int id = std::stoi(part);
+                        size_t id = std::stoi(part);
                         face[i] = id - 1;
                     }
 
                     if (j == 1) {
-                        int id = std::stoi(part);
+                        size_t id = std::stoi(part);
                         texId[i] = id - 1;
                     }
 
                     if (j == 2) {
-                        int id = std::stoi(part);
+                        size_t id = std::stoi(part);
                         normId[i] = id - 1;
                     }
                 }
@@ -102,6 +102,12 @@ int OBJLoader::loadOBJ(istream &input, Mesh3DDecorated &mesh)
             mesh.normalId.push_back(normId);
         }
     }
+
+    if (!mesh.normalCoords.empty())
+        mesh.hasNormals = true;
+
+    if (!mesh.textureCoords.empty())
+        mesh.hasTexCoords = true;
 
     /* sanity checking */
     mesh.dumpInfo(cout);
@@ -158,12 +164,13 @@ int OBJLoader::loadOBJSimple(istream &input, Mesh3D &mesh)
 
                 for (int j = 0; j < 1 && std::getline(splitter, part, '/'); j++)
                 {
-                    int id = std::stoi(part);
+                    size_t id = std::stoi(part);
                     face[i] = id - 1;
                 }
             }
             mesh.addFace(face);
         }
+
 
     }
 

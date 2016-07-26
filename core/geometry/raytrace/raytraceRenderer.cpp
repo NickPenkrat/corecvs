@@ -1,7 +1,6 @@
 #include "raytraceRenderer.h"
-
-const double RaytraceableSphere::EPSILON = 0.000001;
-
+#include "preciseTimer.h"
+#include "bmpLoader.h"
 
 RaytraceRenderer::RaytraceRenderer()
 {
@@ -19,7 +18,7 @@ void RaytraceRenderer::trace(RayIntersection &intersection)
 
     Raytraceable *obj = intersection.object;
 
-    obj->normal(intersection.ray.getPoint(intersection.t), intersection.normal);
+    obj->normal(intersection);
 
     if ((intersection.normal & intersection.ray.a) > 0 ) {
         intersection.normal = -intersection.normal;
@@ -43,219 +42,207 @@ void RaytraceRenderer::trace(RGB24Buffer *buffer)
 
     int inc = 0;
 
+    if (!supersample)
+    {
+        parallelable_for(0, buffer->h, [&](const BlockedRange<int>& r )
+            {
+                for (int i = r.begin() ; i < r.end(); i++)
+                {
+                    for (int j = 0; j < buffer->w; j++)
+                    {
+                        currentX = j;
+                        currentY = i;
+                        Vector2dd pixel(j, i);
+                        Ray3d ray = Ray3d(intrisics.reverse(pixel), Vector3dd::Zero());
+                        ray = position * ray;
+
+                        ray.normalise();
+
+                        RayIntersection intersection;
+                        intersection.ray = ray;
+                        intersection.weight = 1.0;
+                        intersection.depth = 0;
+                        trace(intersection);
+                        if (intersection.object != NULL) {
+                            energy->element(i, j) = intersection.ownColor;
+                        } else {
+                            //energy->element(i, j) = RGBColor::Cyan().toDouble();
+                        }
+                    }
+                    SYNC_PRINT(("\r[%d / %d]", inc, buffer->h));
+                    inc++;
+                }
+            }, parallel
+
+        );
+    } else {
+        parallelable_for(0, buffer->h, [&](const BlockedRange<int>& r )
+            {
+                for (int i = r.begin() ; i < r.end(); i++)
+                {
+                    for (int j = 0; j < buffer->w; j++)
+                    {
+                        TraceColor sumColor = TraceColor(0);
+
+                        for (int sample = 0; sample < sampleNum; sample++)
+                        {
+
+                            currentX = j;
+                            currentY = i;
+                            Vector2dd pixel(j, i);
+                            pixel.x() += ((rand() % 1000) - 500) / 1000.0;
+                            pixel.y() += ((rand() % 1000) - 500) / 1000.0;
+
+                            Ray3d ray = Ray3d(intrisics.reverse(pixel), Vector3dd::Zero());
+                            ray = position * ray;
+                            ray.normalise();
+
+
+
+                            RayIntersection intersection;
+                            intersection.ray = ray;
+                            intersection.weight = 1.0;
+                            intersection.depth = 0;
+                            trace(intersection);
+                            if (intersection.object != NULL) {
+                                sumColor += intersection.ownColor;
+                            } else {
+
+                            }
+                        }
+                        energy->element(i, j) = sumColor / sampleNum;
+                    }
+                    SYNC_PRINT(("\rsupersample[%d]", inc));
+                    inc++;
+                }
+            }, parallel
+
+        );
+    }
+
+    pack(buffer, energy, markup);
+    printf("\n");
+
+    delete_safe(energy);
+    delete_safe(markup);
+}
+
+void RaytraceRenderer::traceFOV(RGB24Buffer *buffer, double apperture, double focus)
+{
+    energy = new ColorBuffer(buffer->getSize());
+    markup = new MarkupType(buffer->getSize());
+
+    int inc = 0;
+
+    PreciseTimer startTime = PreciseTimer::currentTime();
+    PreciseTimer lastDump = startTime;
+
     parallelable_for(0, buffer->h, [&](const BlockedRange<int>& r )
         {
             for (int i = r.begin() ; i < r.end(); i++)
             {
                 for (int j = 0; j < buffer->w; j++)
                 {
-                    currentX = j;
-                    currentY = i;
-                    Vector2dd pixel(j, i);
-                    Ray3d ray = Ray3d(intrisics.reverse(pixel), Vector3dd::Zero());
-                    ray.normalise();
+                    TraceColor sumColor = TraceColor(0);
 
-                    RayIntersection intersection;
-                    intersection.ray = ray;
-                    intersection.weight = 1.0;
-                    intersection.depth = 0;
-                    trace(intersection);
-                    if (intersection.object != NULL) {
-                        energy->element(i, j) = intersection.ownColor;
+                    for (int sample = 0; sample < sampleNum; sample++)
+                    {
+
+                        currentX = j;
+                        currentY = i;
+                        Vector2dd pixel(j, i);
+
+                        Ray3d ray = Ray3d(intrisics.reverse(pixel), Vector3dd::Zero());
+                        ray = position * ray;
+                        ray.normalise();
+
+                        Vector3dd shift;
+                        shift.x() = (((rand() % 1000) - 500) / 1000.0) * apperture;
+                        shift.y() = (((rand() % 1000) - 500) / 1000.0) * apperture;
+
+                        Vector3dd foc = ray.getPoint(focus);
+                        Vector3dd st  = ray.p + shift;
+
+                        Ray3d r((foc-st).normalised(), st);
+
+                        RayIntersection intersection;
+                        intersection.ray = r;
+                        intersection.weight = 1.0;
+                        intersection.depth = 0;
+                        trace(intersection);
+                        if (intersection.object != NULL) {
+                            sumColor += intersection.ownColor;
+                        } else {
+
+                        }
                     }
+                    energy->element(i, j) = sumColor / sampleNum;
                 }
-                SYNC_PRINT((" [%d]", inc));
+
+
                 inc++;
+
+                double passed = startTime.usecsToNow();
+                double left = passed / inc * (buffer->h - inc);
+                SYNC_PRINT(("\rfocal[%d / %d] passed:%5.2lfs left %5.2lfs", inc, buffer->h, passed / 1000000.0, left / 1000000.0));
+
+                if (traceProgress && (lastDump.usecsToNow() > 30 * 1000 * 1000))
+                {
+                     // Need mutex here...
+                    RGB24Buffer *temp = new RGB24Buffer(buffer->getSize());
+                    pack(temp, energy, markup);
+                    BMPLoader().save("trace.bmp", temp);
+                    lastDump = PreciseTimer::currentTime();
+                    delete_safe(temp);
+                }
+
             }
-        }
+        }, parallel
     );
-    SYNC_PRINT(("\n"));
 
-    /*for (int i = 0; i < buffer->h; i++)
-    {
-        for (int j = 0; j < buffer->w; j++)
-        {
-            currentX = j;
-            currentY = i;
-            Vector2dd pixel(j, i);
-            Ray3d ray = Ray3d(intrisics.reverse(pixel), Vector3dd::Zero());
-            ray.normalise();
-
-            RayIntersection intersection;
-            intersection.ray = ray;
-            intersection.weight = 1.0;
-            intersection.depth = 0;
-            trace(intersection);
-            if (intersection.object != NULL) {
-                energy->element(i, j) = intersection.ownColor;
-            }
-            SYNC_PRINT(("\r[%d %d]", i, j));
-        }
-    }*/
-
-    for (int i = 0; i < buffer->h; i++)
-    {
-        for (int j = 0; j < buffer->w; j++)
-        {
-            buffer->element(i, j) = RGBColor::FromDouble(energy->element(i,j) / 2.0);
-            if (markup->element(i, j) != 0)
-            {
-                buffer->element(i, j) = RGBColor::Red();
-            }
-        }
-    }
+    pack(buffer, energy, markup);
+    printf("\n");
 
     delete_safe(energy);
     delete_safe(markup);
 }
 
-
-bool RaytraceableSphere::intersect(RayIntersection &intersection)
+void RaytraceRenderer::pack(RGB24Buffer *target, RaytraceRenderer::ColorBuffer *energy, RaytraceRenderer::MarkupType *markup)
 {
-    Ray3d ray = intersection.ray;
-
-//    SYNC_PRINT(("RaytraceableSphere::intersect([%lf %lf %lf] -> (%lf %lf %lf))\n", ray.p.x(), ray.p.y(), ray.p.z(), ray.a.x(), ray.a.y(), ray.a.z() ));
-//    cout << "RaytraceableSphere::intersect():" << mSphere << endl;
-
-
-    Vector3dd toCen  = mSphere.c  - ray.p;
-    double toCen2 = toCen & toCen;
-    double proj  = ray.a & toCen;
-    double hdist  = (mSphere.r * mSphere.r) - toCen2 + proj * proj;
-    double t2;
-
-    if (hdist < 0) {
-        return false;
-    }
-
-    hdist = sqrt (hdist);
-
-    if (proj < 0) {
-        if (hdist < CORE_ABS(proj) + EPSILON) {
-            return false;
+    for (int i = 0; i < target->h; i++)
+    {
+        for (int j = 0; j < target->w; j++)
+        {
+            target->element(i, j) = RGBColor::FromDouble(energy->element(i,j) / 2.1);
+            if (markup && markup->element(i, j) != 0)
+            {
+                target->element(i, j) = RGBColor::Red();
+            }
         }
     }
-
-    if (hdist > CORE_ABS(proj))
-    {
-        intersection.t =  hdist + proj;
-        t2 =  - hdist + proj;
-    }
-    else
-    {
-        intersection.t = proj - hdist;
-        t2 = proj + hdist;
-    }
-
-    if (CORE_ABS(intersection.t) < EPSILON) intersection.t = t2;
-
-    if (intersection.t > EPSILON) {
-        intersection.object = this;
-        return true;
-    }
-    return false;
-}
-
-void RaytraceableSphere::normal(const Vector3dd &vector, Vector3dd &normal)
-{
-    normal = Vector3dd( (vector - mSphere.c) / mSphere.r);
-}
-
-bool RaytraceableSphere::inside(Vector3dd &point)
-{
-    Vector3dd tmp = mSphere.c - point;
-    bool res;
-    res = ((tmp & tmp) < (mSphere.r * mSphere.r));
-    return res ^ !flag;
-}
-
-Raytraceable::~Raytraceable()
-{
-
-}
-
-bool RaytraceableUnion::intersect(RayIntersection &intersection)
-{
-    RayIntersection best = intersection;
-    best.t = std::numeric_limits<double>::max();
-
-    for (Raytraceable *object: elements)
-    {
-        RayIntersection attempt = intersection;
-        if (!object->intersect(attempt)) {
-            continue;
-        }
-        if (attempt.t < best.t)
-            best = attempt;
-    }
-
-    if (best.t == std::numeric_limits<double>::max()) {
-        return false;
-    }
-
-    intersection = best;
-    return true;
-}
-
-void RaytraceableUnion::normal(const Vector3dd &vector, Vector3dd &normal)
-{
-    return;
-}
-
-bool RaytraceableUnion::inside(Vector3dd &point)
-{
-    for (Raytraceable *object: elements)
-    {
-        if (object->inside(point))
-            return true;
-    }
-    return false;
 }
 
 
-
-bool RaytraceablePlane::intersect(RayIntersection &intersection)
-{
-    intersection.object = NULL;
-    bool hasIntersection = false;
-    double t = mPlane.intersectWithP(intersection.ray, &hasIntersection);
-
-    if (!hasIntersection)
-        return false;
-
-    if (t > 0.000001) {
-        intersection.t = t;
-        intersection.object = this;
-        return true;
-    }
-    return false;
-}
-
-void RaytraceablePlane::normal(const Vector3dd &vector, Vector3dd &normal)
-{
-    normal = mPlane.normal();
-}
-
-bool RaytraceablePlane::inside(Vector3dd &point)
-{
-    return mPlane.pointWeight(point);
-}
 
 void RaytraceableMaterial::getColor(RayIntersection &ray, RaytraceRenderer &renderer)
 {
 
-    ray.computeBaseRays();
+    //ray.computeBaseRays();
     Vector3dd intersection = ray.getPoint();
     // cout << "RaytraceableMaterial::getColor() : " << intersection << endl;
 
 
     /* Recursive calls */
+    Ray3d reflectionRay = getReflection(ray);
+    Ray3d refractionRay = getRefraction(ray);
 
-    if (ray.depth < 4 && ray.weight > 0.01)
+
+    if (ray.depth <= renderer.maxDepth && ray.weight > renderer.minWeight)
     {
-        if (reflCoef != 0.0) {
+        if (reflCoef != 0.0)
+        {
             RayIntersection reflected;
-            reflected.ray = ray.reflection;
+            reflected.ray = reflectionRay;
             reflected.ray.a.normalise();
             reflected.weight = ray.weight * reflCoef;
             reflected.depth = ray.depth + 1;
@@ -267,15 +254,18 @@ void RaytraceableMaterial::getColor(RayIntersection &ray, RaytraceRenderer &rend
             // cout << "Relection Ray brings:" << reflected.ownColor << endl;
         }
 
-/*        if (refrCoef != 0.0) {
+        if (refrCoef != 0.0 && refractionRay.a.l1Metric() != 0.0)
+        {
             RayIntersection refracted;
-            refracted.ray = ray.reflection;
+            refracted.ray = refractionRay;
+            refracted.ray.a.normalise();
             refracted.weight = ray.weight * refrCoef;
             refracted.depth = ray.depth + 1;
+            refracted.ownColor = TraceColor::Zero();
 
             renderer.trace(refracted);
             ray.ownColor += refrCoef * refracted.ownColor;
-        }*/
+        }
     }
 
     ray.ownColor += renderer.ambient;
@@ -295,8 +285,9 @@ void RaytraceableMaterial::getColor(RayIntersection &ray, RaytraceRenderer &rend
 
         lightRay.object = NULL;
         lightRay.ray.p = intersection;
-        lightRay.ray.a = toLight;
+        lightRay.ray.a = toLight;        
         lightRay.ray.a.normalise();
+        lightRay.ray.p = lightRay.ray.getPoint(0.00001);
 
 
 
@@ -317,6 +308,10 @@ void RaytraceableMaterial::getColor(RayIntersection &ray, RaytraceRenderer &rend
             }
         }
 
+        if (!light->checkRay(lightRay)) {
+            continue;
+        }
+
         // SYNC_PRINT(("Light visible: "));
         double attenuation = (1.0 / toLight.l2Metric());
         attenuation = 1.0;
@@ -329,7 +324,7 @@ void RaytraceableMaterial::getColor(RayIntersection &ray, RaytraceRenderer &rend
 
 
         /* Specular part */
-        double specularKoef = pow(ray.reflection.a.normalised() & lightRay.ray.a.normalised(), specPower);
+        double specularKoef = pow(reflectionRay.a.normalised() & lightRay.ray.a.normalised(), specPower);
 
         if (specularKoef < 0) specularKoef = 0.0;
         TraceColor specularPart = light->color * attenuation * specularKoef * specular;
@@ -344,19 +339,38 @@ void RaytraceableMaterial::getColor(RayIntersection &ray, RaytraceRenderer &rend
     }
 }
 
-void RayIntersection::computeBaseRays()
+Ray3d RaytraceableMaterial::getReflection(RayIntersection &ray)
 {
-    Vector3dd intersection = getPoint();
-    normal.normalised();
+    Vector3dd intersection = ray.getPoint();
+    Vector3dd normal = ray.normal.normalised();
+
+    Ray3d reflection;
 
     reflection.p = intersection;
-    Vector3dd dir = ray.a.normalised();
+    Vector3dd dir = ray.ray.a.normalised();
     reflection.a = dir - 2 * normal * (normal & dir);
     reflection.a.normalise();
+    return reflection;
+}
 
-    refraction.p = intersection;
-    refraction.a = ray.a;
-    refraction.a.normalise();
+Ray3d RaytraceableMaterial::getRefraction(RayIntersection &ray)
+{
+    Ray3d refraction;
+    refraction.p = ray.getPoint();
+    refraction.a = Vector3dd::Zero();
+    Vector3dd dir = ray.ray.a.normalised();
+    Vector3dd normal = ray.normal.normalised();
+
+    double comp = -dir & normal;
+    double N = comp > 0 ? opticalDens : -opticalDens;
+
+    double disk = 1 + N * N * (comp * comp - 1);
+
+    if (disk > 0)
+    {
+        refraction.a =  N * dir + (N * comp - sqrt(disk)) * normal;
+    }
+    return refraction;
 }
 
 Vector3dd RayIntersection::getPoint()
@@ -364,7 +378,7 @@ Vector3dd RayIntersection::getPoint()
     return ray.getPoint(t);
 }
 
-void RaytraceableChessMaterial::getColor(RayIntersection &ray, RaytraceRenderer &renderer)
+void RaytraceableChessMaterial::getColor(RayIntersection &ray, RaytraceRenderer &/*renderer*/)
 {
     Vector3dd intersection = ray.getPoint();
     intersection = intersection / 10.0;
@@ -381,124 +395,19 @@ void RaytraceableChessMaterial::getColor(RayIntersection &ray, RaytraceRenderer 
     int vz = (int)intersection.z();
     b3 = (vz % 2);
 
-    bool white = (((int)intersection.x()) % 2) ^ (((int)intersection.y()) % 2) ^ (((int)intersection.z()) % 2);
+    //bool white = (((int)intersection.x()) % 2) ^ (((int)intersection.y()) % 2) ^ (((int)intersection.z()) % 2);
     ray.ownColor = (!b1 ^  !b2 ^ !b3) ? TraceColor::Zero() : RGBColor::White().toDouble();
 }
 
 
-bool RaytraceableTriangle::intersect(RayIntersection &intersection)
+
+
+void Raytraceable::normal(RayIntersection &/*intersection*/)
 {
-    intersection.object = NULL;
-    double t = 0;
-
-    if (!mTriangle.intersectWithP(intersection.ray, t))
-    {
-        return false;
-    }
-    if (t > 0.000001) {
-        intersection.t = t;
-        intersection.object = this;
-        return true;
-    }
-    return false;
-}
-
-void RaytraceableTriangle::normal(const Vector3dd &vector, Vector3dd &normal)
-{
-    normal = mTriangle.getNormal();
-}
-
-bool RaytraceableTriangle::inside(Vector3dd &point)
-{
-    return false;
-}
-
-RaytraceableMesh::RaytraceableMesh(Mesh3D *mesh) :
-    mMesh(mesh)
-{
-
 
 }
 
-bool RaytraceableMesh::intersect(RayIntersection &intersection)
+Raytraceable::~Raytraceable()
 {
 
-    RayIntersection best = intersection;
-    best.t = std::numeric_limits<double>::max();
-//    SYNC_PRINT(("RaytraceableMesh::intersect(): entered\n"));
-
-    for (int i = 0; i < mMesh->faces.size(); i++)
-    {
-        Triangle3dd triangle = mMesh->getFaceAsTrinagle(i);
-
-        double t = 0;
-        if (!triangle.intersectWithP(intersection.ray, t))
-        {
-            continue;
-        }
-
-        if (t > 0.000001 && t < best.t)
-        {
-            best.t = t;
-            best.normal = triangle.getNormal();
-            best.object = this;
-        }
-    }
-
-//    SYNC_PRINT(("RaytraceableMesh::intersect(): passed\n"));
-
-    if (best.t == std::numeric_limits<double>::max()) {
-        return false;
-    }
-
-    intersection = best;
-    return true;
-
-}
-
-void RaytraceableMesh::normal(const Vector3dd &vector, Vector3dd &normal)
-{
-    return;
-}
-
-bool RaytraceableMesh::inside(Vector3dd &point)
-{
-    return false;
-}
-
-
-
-
-bool RaytraceableTransform::intersect(RayIntersection &intersection)
-{
-    RayIntersection trans = intersection;
-    trans.ray.p = mMatrixInv * intersection.ray.p;
-    trans.ray.a = mMatrixInv * intersection.ray.a;
-    double len = trans.ray.a.l2Metric();
-    trans.ray.a /= len;
-
-    //trans.ray.a.normalise();
-
-    if (mObject->intersect(trans)) {
-        intersection.object = this;
-        intersection.t = trans.t / len;
-        //intersection.normal = mMatrix.inverted() * trans.normal;
-        return true;
-    }
-    return false;
-}
-
-void RaytraceableTransform::normal(const Vector3dd &vector, Vector3dd &normal)
-{
-    //normal = Vector3dd::OrtZ();
-    Vector3dd p = mMatrixInv * vector;
-    mObject->normal(p, normal);
-    normal = mMatrix * normal;
-    normal.normalise();
-}
-
-bool RaytraceableTransform::inside(Vector3dd &point)
-{
-    Vector3dd p = mMatrix * point;
-    return mObject->inside(p);
 }

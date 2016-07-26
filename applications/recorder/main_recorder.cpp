@@ -25,9 +25,8 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-    setHandlerStdTerminate();
-    setHandlerSegV();
-
+    setSegVHandler();
+    setStdTerminateHandler();
 
     Q_INIT_RESOURCE(main);
 

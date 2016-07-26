@@ -12,7 +12,12 @@ HEADERS += \
     geometry/conic.h \
     geometry/polygonPointIterator.h \
     geometry/raytrace/raytraceRenderer.h \
-    geometry/mesh3DDecorated.h
+    geometry/raytrace/raytraceObjects.h \
+    geometry/raytrace/perlinNoise.h \
+    geometry/raytrace/sdfRenderable.h \
+    geometry/raytrace/materialExamples.h \
+    geometry/mesh3DDecorated.h \
+
 
 
 SOURCES += \ 
@@ -27,5 +32,9 @@ SOURCES += \
     geometry/conic.cpp \
     geometry/polygonPointIterator.cpp \
     geometry/raytrace/raytraceRenderer.cpp \
-    geometry/mesh3DDecorated.cpp
+    geometry/raytrace/raytraceObjects.cpp \
+    geometry/raytrace/perlinNoise.cpp \
+    geometry/raytrace/sdfRenderable.cpp \
+    geometry/raytrace/materialExamples.cpp \
+    geometry/mesh3DDecorated.cpp \
     
