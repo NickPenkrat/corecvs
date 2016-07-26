@@ -15,4 +15,6 @@ isEmpty(GTEST_PATH) {
     CONFIG(release, debug|release) {
         LIBS += -L$$GTEST_PATH/build/Release -lgtest
     }
+
+    !build_pass:message(Using <$$GTEST_PATH/build/Release|Debug>)
 }
