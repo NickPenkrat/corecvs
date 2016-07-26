@@ -151,7 +151,11 @@ public:
 private:
     explicit inline FixedArrayBase(int length, int) : length(length)
     {
+#ifndef WIN32
         data = std::unique_ptr<ElementType[]>((ElementType*)aligned_alloc(16, sizeof(ElementType) * length));
+#else
+        data = std::unique_ptr<ElementType[], decltype(&_aligned_free)>((ElementType*)aligned_alloc(16, sizeof(ElementType) * length), &_aligned_free);
+#endif
     }
     void copyInit(const ElementType *from)
     {
@@ -159,7 +163,11 @@ private:
             new (data.get() + i) ElementType(from[i]);
     }
     int length;
+#ifndef WIN32
     std::unique_ptr<ElementType[]> data;
+#else // VS2013 does not support c++11 aligned_alloc
+	std::unique_ptr<ElementType[], decltype(&_aligned_free)> data;
+#endif
 
 };
 
