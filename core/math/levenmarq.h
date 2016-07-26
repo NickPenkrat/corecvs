@@ -24,10 +24,18 @@
 #include "function.h"
 #include "sparseMatrix.h"
 #include "vector.h"
+#include "minresQLP.h"
 #include "statusTracker.h"
 
 
 namespace corecvs {
+
+enum class LinearSolver
+{
+	NATIVE,
+	SCHUR_COMPLEMENT,
+	MINRESQLP
+};
 
 template<typename MatrixClass, typename FunctionClass>
 class LevenbergMarquardtImpl
@@ -50,8 +58,9 @@ public:
     bool useConjugatedGradient = false;
     int  conjugatedGradientIterations = 100;
 #endif
-    bool useSchurComplement = false;
+
     bool useExplicitInverse = false;
+    LinearSolver linearSolver = LinearSolver::NATIVE;
 
     StatusTracker* state = nullptr;
 
@@ -251,27 +260,21 @@ public:
                 LSc_curr++;
                 LSc++;
                 auto LSbegin = std::chrono::high_resolution_clock::now();
-//                for (int ijk = 0; ijk < B.size(); ++ijk)
-//                    CORE_ASSERT_TRUE_S(!std::isnan(B[ijk]));
-//                std::cout << "A.det " << A.det() << std::endl;
-//                if (!useConjugatedGradient)
-                {
-                    if (traceMatrix)
-                        std::cout << A << std::endl << std::endl;
-                    if (!useSchurComplement)
-                        A.linSolve(B, delta, true, true);
-                    else
-                    {
-                        CORE_ASSERT_TRUE_S(F.schurBlocks.size());
-                        MatrixClass::LinSolveSchurComplement(A, B, F.schurBlocks, delta, true, true, useExplicitInverse);
-                    }
-                }
-#if 0
-                else
-                {
-                    delta = conjugatedGradient(A, B);
-                }
-#endif
+				if (traceMatrix)
+					std::cout << A << std::endl << std::endl;
+				switch (linearSolver)
+				{
+					case LinearSolver::NATIVE:
+						A.linSolve(B, delta, true, true);
+						break;
+					case LinearSolver::SCHUR_COMPLEMENT:
+						CORE_ASSERT_TRUE_S(F.schurBlocks.size());
+						MatrixClass::LinSolveSchurComplement(A, B, F.schurBlocks, delta, true, true, useExplicitInverse);
+						break;
+					case LinearSolver::MINRESQLP:
+						MinresQLP<MatrixClass>::Solve(A, B, delta);
+						break;
+				}
                 auto LSend = std::chrono::high_resolution_clock::now();
 //                for (int ijk = 0; ijk < delta.size(); ++ijk)
 //                    CORE_ASSERT_TRUE_S(!std::isnan(delta[ijk]));

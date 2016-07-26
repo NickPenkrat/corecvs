@@ -450,13 +450,18 @@ Vector corecvs::operator *(const SparseMatrix &lhs, const Vector &rhs)
 {
     CORE_ASSERT_TRUE_S(lhs.w == rhs.size());
     Vector ans(lhs.h);
-    for (int i = 0; i < lhs.h; ++i)
-    {
-        double res = 0.0;
-        for (int j = lhs.rowPointers[i]; j < lhs.rowPointers[i + 1]; ++j)
-            res += lhs.values[j] * rhs[lhs.columns[j]];
-        ans[i] = res;
-    }
+    int N = lhs.h;
+    int bs = std::max(1, N / 256);
+	corecvs::parallelable_for(0, N, bs, [&](const corecvs::BlockedRange<int> &r)
+	{
+		for (int i = r.begin(); i != r.end(); ++i)
+		{
+			double res = 0.0;
+			for (int j = lhs.rowPointers[i]; j < lhs.rowPointers[i + 1]; ++j)
+				res += lhs.values[j] * rhs[lhs.columns[j]];
+			ans[i] = res;
+		}
+	});
     return ans;
 }
 
@@ -475,7 +480,6 @@ Vector corecvs::operator *(const Vector &lhs, const SparseMatrix &rhs)
     return ans;
 }
 
-#include <fstream>
 SparseMatrix corecvs::operator *(const SparseMatrix &lhs, const SparseMatrix &rhst)
 {
     CORE_ASSERT_TRUE_S(lhs.w == rhst.h);

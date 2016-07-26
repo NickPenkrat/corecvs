@@ -57,7 +57,7 @@ TEST(Iterative, MinresQLP)
 		xx[i] = i % 10;
 	auto b = M * xx;
 	corecvs::Vector x;
-	Iterative::minresQlp<SparseMatrix>(M, b, x);
+	MinresQLP<SparseMatrix>::Solve(M, b, x);
 	ASSERT_LE(!(M*x-b)/!b, 1e-9);
 }
 
