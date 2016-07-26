@@ -62,7 +62,11 @@ public:
         if (that.length > length)
         {
             length = that.length;
+#ifndef WIN32
             data = std::unique_ptr<ElementType[]>((ElementType*)aligned_alloc(16, sizeof(ElementType) * length));
+#else // VS2013 does not support c++11 aligned_alloc
+            data = std::unique_ptr<ElementType[], decltype(&_aligned_free)>((ElementType*)aligned_alloc(16, sizeof(ElementType) * length), &_aligned_free);
+#endif
             copyInit(&that[0]);
         }
         else
@@ -153,7 +157,7 @@ private:
     {
 #ifndef WIN32
         data = std::unique_ptr<ElementType[]>((ElementType*)aligned_alloc(16, sizeof(ElementType) * length));
-#else
+#else // VS2013 does not support c++11 aligned_alloc
         data = std::unique_ptr<ElementType[], decltype(&_aligned_free)>((ElementType*)aligned_alloc(16, sizeof(ElementType) * length), &_aligned_free);
 #endif
     }
@@ -166,7 +170,7 @@ private:
 #ifndef WIN32
     std::unique_ptr<ElementType[]> data;
 #else // VS2013 does not support c++11 aligned_alloc
-	std::unique_ptr<ElementType[], decltype(&_aligned_free)> data;
+    std::unique_ptr<ElementType[], decltype(&_aligned_free)> data;
 #endif
 
 };
