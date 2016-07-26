@@ -23,7 +23,7 @@
 #include "sparseMatrix.h"
 #include "preciseTimer.h"
 #include "function.h"
-#include "minres.h"
+#include "minresQLP.h"
 
 using namespace corecvs;
 
@@ -38,22 +38,27 @@ TEST(Iterative, MinresQLP)
 		0.0, 0.0, 1.0, 2.0, 5.0};
 	int N = 3276800;
 
-	std::map<std::pair<int, int>, double> data;
-	corecvs::SparseMatrix M(N, N, data);
 	int val[] = {1, 2, 5, 2, 1};
+	std::vector<double> values;
+	std::vector<int> columns, rowPointers(N + 1);
 	for (int i = 0; i < N; ++i)
+	{
 		for (int j = -2; j <= 2; ++j)
 			if (i + j >= 0 && i + j < N)
-				M.a(i, i + j) = val[j + 2];
+			{
+				columns.push_back(i + j);
+				values.push_back(val[j + 2]);
+			}
+		rowPointers[i + 1] = values.size();
+	}
+	corecvs::SparseMatrix M(N, N, values, columns, rowPointers);
 	corecvs::Vector xx(N);
 	for (int i = 0; i < N; ++i)
 		xx[i] = i % 10;
 	auto b = M * xx;
 	corecvs::Vector x;
 	Iterative::minresQlp<SparseMatrix>(M, b, x);
-//	std::cout << x << std::endl << xx << std::endl;
-	std::cout << "AND DIFF IS " << !(x - xx) << std::endl;
-	std::cout << "RELRES: " << (!(M*x-b)/!b) << std::endl;
+	ASSERT_LE(!(M*x-b)/!b, 1e-9);
 }
 
 struct Blah : public FunctionArgs

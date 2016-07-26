@@ -1,2 +1,2 @@
 HEADERS += \
-	iterative/minres.h
+	iterative/minresQLP.h

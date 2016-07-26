@@ -64,7 +64,7 @@ void minresQlp(const M &A, const Vector &b, Vector &x)
     x = Vector(N);
     Vector w(N), wl(N), wl2(N), xl2(N);
 
-    int maxIt = N * 1000;
+    int maxIt = N;
     double rtol = 1e-16, maxXNorm = 1e100, ACondLim = 1e100, TranCond = 1e7;
 
     std::cout << "How does it works?" << std::endl;
@@ -97,10 +97,12 @@ void minresQlp(const M &A, const Vector &b, Vector &x)
             if (alpha == 0.0)
             {
                 flag = 0;
+				std::cout << "x = 0 is a solution" << std::endl;
                 break;
             }
             flag = -1;
             x = b / alpha;
+			std::cout << "b and x are eigen" << std::endl;
             break;
         }
 
