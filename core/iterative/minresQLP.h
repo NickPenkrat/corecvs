@@ -58,10 +58,10 @@ class MinresQLP : MinresQLPParams
     AutoTimer timer(this, t);
 public:
     std::map<std::string, double> timings;
-    static void Solve(const M &a, const Vector &b, Vector &x, const MinresQLPParams &params = MinresQLPParams())
+    static MinresQLPStatus Solve(const M &a, const Vector &b, Vector &x, const MinresQLPParams &params = MinresQLPParams())
     {
         MinresQLP solver(a, b, x, params);
-        solver.run();
+        return solver.run();
     }
     MinresQLP (const M &A, const Vector &b, Vector &x, const MinresQLPParams &params = MinresQLPParams()) : MinresQLP(A, b, x, (int)b.size(), params)
     {
@@ -80,7 +80,7 @@ public:
             std::cout << std::setw(column + 1) << kv.first << "\t" << kv.second / total * 100.0 << "\t" << kv.second << std::endl;
         }
     }
-    void run()
+    MinresQLPStatus run()
     {
         r3 = r2 = b;
         beta1 = !r2;
@@ -105,8 +105,7 @@ public:
         std::cout << normBefore << " (" << relBefore << ") > " << normAfter << " (" << relAfter << ") [" << normBefore / normAfter << "] @ " << iter << std::endl;
         std::cout << "MINRES-QLP status: " << flag << std::endl;
 
-
-
+		return flag;
     }
     bool singleStep()
     {

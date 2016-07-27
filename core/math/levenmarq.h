@@ -60,6 +60,7 @@ public:
 #endif
 
     bool useExplicitInverse = false;
+    bool terminateOnDegeneracy = false;
     LinearSolver linearSolver = LinearSolver::NATIVE;
 
     StatusTracker* state = nullptr;
@@ -262,6 +263,7 @@ public:
                 auto LSbegin = std::chrono::high_resolution_clock::now();
 				if (traceMatrix)
 					std::cout << A << std::endl << std::endl;
+				bool shouldExit = false;
 				switch (linearSolver)
 				{
 					case LinearSolver::NATIVE:
@@ -272,8 +274,19 @@ public:
 						MatrixClass::LinSolveSchurComplement(A, B, F.schurBlocks, delta, true, true, useExplicitInverse);
 						break;
 					case LinearSolver::MINRESQLP:
-						MinresQLP<MatrixClass>::Solve(A, B, delta);
+						auto res = MinresQLP<MatrixClass>::Solve(A, B, delta);
+						if (res != MinresQLPStatus::SOLVED_RTOL &&
+							res != MinresQLPStatus::SOLVED_EPS  &&
+							res != MinresQLPStatus::MINLEN_RTOL &&
+							res != MinresQLPStatus::MINLEN_EPS  &&
+							terminateOnDegeneracy)
+							shouldExit = true;
 						break;
+				}
+				if (shouldExit)
+				{
+					converged = true;
+					break;
 				}
                 auto LSend = std::chrono::high_resolution_clock::now();
 //                for (int ijk = 0; ijk < delta.size(); ++ijk)
