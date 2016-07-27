@@ -92,7 +92,7 @@ public:
         x = Vector(N);
 
         if (beta1 == 0.0)
-            return;
+            return flag;
 
         auto normBefore = !(A * x - b);
         while (flag == MinresQLPStatus::RUNNING && iter < maxIt)
