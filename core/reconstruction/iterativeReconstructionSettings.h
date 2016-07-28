@@ -25,9 +25,9 @@ struct IterativeReconstructionNonlinearOptimizationParams
     // cool closed-form solvers it does not make sense at all
     ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType errorType = ReconstructionFunctorOptimizationErrorType::RAY_DIFF;
     // Post-append non-linear optimization iterations
-    int postAppendNonlinearIterations = 2000;
+    int postAppendNonlinearIterations = 100;
     // Final non-linear iterations
-    int finalNonLinearIterations = 20000;
+    int finalNonLinearIterations = 400;
     // Alternating optimization on success steps
     int alternatingIterations = 0;
     // Excessive/non-excessive quaternion parametrization
@@ -38,9 +38,9 @@ struct IterativeReconstructionNonlinearOptimizationParams
     template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(postAppendNonlinearIterations , 2000, "postAppendNonlinearIterations");
+        visitor.visit(postAppendNonlinearIterations , 100, "postAppendNonlinearIterations");
         visitor.visit(errorType, ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType::RAY_DIFF, "errorType");
-        visitor.visit(finalNonLinearIterations , 20000,     "finalNonLinearIterations");
+        visitor.visit(finalNonLinearIterations , 400,     "finalNonLinearIterations");
         visitor.visit(alternatingIterations , 0,"alternatingIterations");
         visitor.visit(excessiveQuaternionParametrization , false,"excessiveQuaternionParametrization");
         visitor.visit(explicitInverse, false, "explicitInverse");
