@@ -13,6 +13,7 @@
 
 #include "qtFileLoader.h"
 #include "g12Image.h"
+#include "qtHelper.h"
 
 /**
  *  This is a form of dirty hack to be sure that int QT builds loading QT images will always
@@ -49,7 +50,7 @@ RGB24Buffer *QTFileLoader::RGB24BufferFromQImage(QImage *image)
          * So far don't want to mess with possible image formats
          *
          */
-        qDebug("QTFileLoader::RGB24BufferFromQImage():Slow conversion.");
+        qDebug() << QString("QTFileLoader::RGB24BufferFromQImage(%1):Slow conversion.").arg(printQImageFormat(image->format()));
         for (int i = 0; i < image->height(); i++)
         {
             for (int j = 0; j < image->width(); j++)

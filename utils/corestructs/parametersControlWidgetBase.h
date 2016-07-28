@@ -207,7 +207,7 @@ template <class ParametersClass>
 	}
 
     ~WidgetLoader() {
-         qDebug("WidgetLoader::~WidgetLoader(): called");
+//         qDebug("WidgetLoader::~WidgetLoader(): called");
         if (autoInit) {
             delete_safe(mQtSettings);
             delete_safe(mXmlGetter);

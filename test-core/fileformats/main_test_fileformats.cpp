@@ -43,7 +43,7 @@ TEST(FileFormats, testFileFormats)
 
     /** Test case 3 */
     PPMLoader *ppmLoader = new PPMLoader();
-    G12Buffer *ppm = ppmLoader->load("data/testdata/test_ppm.ppm");
+    G12Buffer *ppm = ppmLoader->loadG12("data/testdata/test_ppm.ppm");
     CORE_ASSERT_TRUE(ppm != NULL, "PPM Image load failed");
     CORE_ASSERT_TRUE(ppm->h == ppm->w, "PPM Image sizes corrupted");
     CORE_ASSERT_TRUE(ppm->verify(), "PPM Image verification failed");

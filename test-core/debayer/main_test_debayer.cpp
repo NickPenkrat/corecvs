@@ -58,7 +58,7 @@ TEST(Debayer, colorTestYchannel)
     fprintf(out, "#, RMSD (double), RMSD, improvement, maxabs, coords maxabs\n");
 
     PPMLoader *ppmLoader = new PPMLoader();
-    G12Buffer *ppm = ppmLoader->load("data/testdata/test_debayer.pgm");
+    G12Buffer *ppm = ppmLoader->loadG12("data/testdata/test_debayer.pgm");
 
     Debayer d(ppm, 8, nullptr, 0);
 
@@ -81,7 +81,7 @@ TEST(Debayer, colorTestYchannel)
 TEST(Debayer, colorTestNearest)
 {
     PPMLoader *ppmLoader = new PPMLoader();
-    G12Buffer *ppm = ppmLoader->load("data/testdata/test_debayer.pgm");
+    G12Buffer *ppm = ppmLoader->loadG12("data/testdata/test_debayer.pgm");
     CORE_ASSERT_TRUE(ppm != NULL, "PPM Image load failed");
     CORE_ASSERT_TRUE(ppm->verify(), "PPM Image verification failed");
     Debayer d(ppm);
@@ -99,7 +99,7 @@ TEST(Debayer, colorTestNearest)
 TEST(Debayer, colorTestBilinear)
 {
     PPMLoader *ppmLoader = new PPMLoader();
-    G12Buffer *ppm = ppmLoader->load("data/testdata/test_debayer.pgm");
+    G12Buffer *ppm = ppmLoader->loadG12("data/testdata/test_debayer.pgm");
     CORE_ASSERT_TRUE(ppm != NULL, "PPM Image load failed");
     CORE_ASSERT_TRUE(ppm->verify(), "PPM Image verification failed");
     Debayer d(ppm);
@@ -117,7 +117,7 @@ TEST(Debayer, colorTestBilinear)
 TEST(Debayer, colorTestAHD)
 {
     PPMLoader *ppmLoader = new PPMLoader();
-    G12Buffer *ppm = ppmLoader->load("data/testdata/test_debayer.pgm");
+    G12Buffer *ppm = ppmLoader->loadG12("data/testdata/test_debayer.pgm");
     CORE_ASSERT_TRUE(ppm != NULL, "PPM Image load failed");
     CORE_ASSERT_TRUE(ppm->verify(), "PPM Image verification failed");
     Debayer d(ppm);

@@ -22,11 +22,13 @@ BufferFactory* BufferFactory::getInstance()
 
     if (sThis.get()->mLoadersG12.size() == 0)
     {
-        sThis.get()->registerLoader(new PPMLoader());
+        sThis.get()->registerLoader(new PPMLoaderG12());
         sThis.get()->registerLoader(new RAWLoader());
         sThis.get()->registerLoader(new BMPLoaderG12());
 
+        sThis.get()->registerLoader(new PPMLoaderRGB24());
         sThis.get()->registerLoader(new BMPLoaderRGB24());
+
     }
     return sThis.get();
 }

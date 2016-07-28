@@ -255,3 +255,51 @@ QTransform Core2Qt::QTransformFromMatrix(const corecvs::Matrix33 &m)
     );
 #endif
 }
+
+
+QString printQImageFormat(const QImage::Format &format)
+{
+
+    QString text;
+
+    struct FormatName {
+        QImage::Format format;
+        const char *name;
+    };
+
+#define PAIR(X) { QImage::X, #X }
+
+    FormatName formats[] = {
+        PAIR(Format_Invalid),
+        PAIR(Format_Mono),
+        PAIR(Format_MonoLSB),
+        PAIR(Format_Indexed8),
+        PAIR(Format_RGB32),
+        PAIR(Format_ARGB32),
+        PAIR(Format_ARGB32_Premultiplied),
+        PAIR(Format_RGB16),
+        PAIR(Format_ARGB8565_Premultiplied),
+        PAIR(Format_RGB666),
+        PAIR(Format_ARGB6666_Premultiplied),
+        PAIR(Format_RGB555),
+        PAIR(Format_ARGB8555_Premultiplied),
+        PAIR(Format_RGB888),
+        PAIR(Format_RGB444),
+        PAIR(Format_ARGB4444_Premultiplied),
+        PAIR(Format_RGBX8888),
+        PAIR(Format_RGBA8888),
+        PAIR(Format_RGBA8888_Premultiplied)
+    };
+
+#undef PAIR
+
+    for (size_t i = 0; i < CORE_COUNT_OF(formats); i++)
+    {
+        if (formats[i].format == format) {
+            text += formats[i].name;
+            text += " ";
+        }
+    }
+
+    return text;
+}

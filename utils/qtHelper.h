@@ -7,6 +7,8 @@
  **/
 
 #include <QtCore/QDebug>
+#include <QtGui/QImage>
+
 #include <QDoubleSpinBox>
 #include <QItemSelectionModel>
 #include <QTransform>
@@ -88,7 +90,7 @@ QString printWindowState(const Qt::WindowStates &state);
 QString printSelecionModel(const QItemSelectionModel::SelectionFlags &flag);
 QString printWidgetAttributes(QWidget *widget);
 
-
+QString printQImageFormat(const QImage::Format &format);
 
 
 
