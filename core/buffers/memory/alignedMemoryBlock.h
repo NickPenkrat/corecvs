@@ -4,10 +4,8 @@
 #include <memory>
 
 #if defined(WIN32)
-# define aligned_alloc(a, sz)   _aligned_malloc(sz, a)
 # define aligned_free(p)        _aligned_free(p)
 #else
-//# define aligned_alloc(a, sz) // is present at clib
 # define aligned_free(p)        free(p)
 #endif
 

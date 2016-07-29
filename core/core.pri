@@ -39,6 +39,7 @@ CORE_SUBMODULES =       \
     graphs              \
     polynomial          \
     camerafixture       \
+    iterative
 
 with_blas {
     CORE_SUBMODULES += reconstruction

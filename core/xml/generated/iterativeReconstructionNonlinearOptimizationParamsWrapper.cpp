@@ -71,7 +71,7 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
         (
           IterativeReconstructionNonlinearOptimizationParamsWrapper::POSTAPPENDNONLINEARITERATIONS_ID,
           offsetof(IterativeReconstructionNonlinearOptimizationParamsWrapper, mPostAppendNonlinearIterations),
-          2000,
+          80,
           "postAppendNonlinearIterations",
           "postAppendNonlinearIterations",
           "Post-append non-linear optimization iterations",
@@ -85,7 +85,7 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
         (
           IterativeReconstructionNonlinearOptimizationParamsWrapper::FINALNONLINEARITERATIONS_ID,
           offsetof(IterativeReconstructionNonlinearOptimizationParamsWrapper, mFinalNonLinearIterations),
-          10000,
+          400,
           "finalNonLinearIterations",
           "finalNonLinearIterations",
           "Final non-linear iterations",

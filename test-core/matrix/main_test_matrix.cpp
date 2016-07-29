@@ -22,8 +22,82 @@
 #include "matrix.h"
 #include "sparseMatrix.h"
 #include "preciseTimer.h"
+#include "function.h"
+#include "minresQLP.h"
 
 using namespace corecvs;
+
+
+TEST(Iterative, MinresQLP)
+{
+	double a[] = {
+		5.0, 2.0, 1.0, 0.0, 0.0,
+		2.0, 5.0, 2.0, 1.0, 0.0,
+		1.0, 2.0, 5.0, 2.0, 1.0,
+		0.0, 1.0, 2.0, 5.0, 2.0,
+		0.0, 0.0, 1.0, 2.0, 5.0};
+	int N = 3276800;
+
+	int val[] = {1, 2, 5, 2, 1};
+	std::vector<double> values;
+	std::vector<int> columns, rowPointers(N + 1);
+	for (int i = 0; i < N; ++i)
+	{
+		for (int j = -2; j <= 2; ++j)
+			if (i + j >= 0 && i + j < N)
+			{
+				columns.push_back(i + j);
+				values.push_back(val[j + 2]);
+			}
+		rowPointers[i + 1] = values.size();
+	}
+	corecvs::SparseMatrix M(N, N, values, columns, rowPointers);
+	corecvs::Vector xx(N);
+	for (int i = 0; i < N; ++i)
+		xx[i] = i % 10;
+	auto b = M * xx;
+	corecvs::Vector x;
+	MinresQLP<SparseMatrix>::Solve(M, b, x);
+	ASSERT_LE(!(M*x-b)/!b, 1e-9);
+}
+
+struct Blah : public FunctionArgs
+{
+	Blah() : FunctionArgs(10, 10)
+	{
+	}
+	virtual void operator() (const double *in, double *out)
+	{
+		for (int i = 0; i < 10; ++i)
+			out[i] = in[i];
+	}
+};
+
+TEST(VectorTest, testVector)
+{
+	Vector v(10);
+	for (auto& vv: v)
+		vv = &vv - v.begin();
+	Vector vv(v);
+	Vector vvv(10);
+	vvv = v;
+	v[0] = 10;
+	vv[1] = 10;
+	vvv[2] = 10;
+	std::cout << v << std::endl;
+	std::cout << vv << std::endl;
+	std::cout << vvv << std::endl;
+
+	Vector blah {1, 2, 3, 4, 5, 6};
+	std::cout << blah << std::endl;
+
+	Blah b;
+	b(vv, vvv);
+	std::cout << vv << vvv << std::endl;
+
+	Vector dc(10);
+	std::cout << dc << std::endl;
+}
 
 TEST(MatrixTest, testMatrix33)
 {
