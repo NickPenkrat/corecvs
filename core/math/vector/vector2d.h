@@ -1,3 +1,6 @@
+#ifndef VECTOR2D_H_
+#define VECTOR2D_H_
+
 /**
  * \file vector2d.h
  * \brief Add Comment Here
@@ -7,10 +10,8 @@
  * \author alexander
  */
 
-#ifndef VECTOR2D_H_
-#define VECTOR2D_H_
-
 #include <math.h>
+#include <cmath>
 #include <stdint.h>
 
 #include "global.h"

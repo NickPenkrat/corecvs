@@ -29,7 +29,7 @@ using namespace std;
 using namespace corecvs;
 
 
-TEST(Raytrace, testRaytraceBase)
+TEST(Raytrace, DISABLED_testRaytraceBase)
 {
     int h = 1600;
     int w = 1600;
@@ -137,7 +137,7 @@ TEST(Raytrace, testRaytraceBase)
 
 
 
-TEST(Raytrace, testRaytraceSpeedup)
+TEST(Raytrace, DISABLED_testRaytraceSpeedup)
 {
     int h = 1500;
     int w = 1500;
@@ -262,7 +262,7 @@ public:
 
 };
 
-TEST(Raytrace, testRaytraceChess)
+TEST(Raytrace, DISABLED_testRaytraceChess)
 {
     int h = 1080;
     int w = 1920;
@@ -387,7 +387,7 @@ TEST(Raytrace, testRaytraceChess)
 }
 
 
-TEST(Raytrace, testScanExample)
+TEST(Raytrace, DISABLED_testScanExample)
 {
     int h = 1080;
     int w = 1920;
@@ -453,7 +453,7 @@ TEST(Raytrace, testScanExample)
 }
 
 
-TEST(Raytrace, testRaytraceModifiers)
+TEST(Raytrace, DISABLED_testRaytraceModifiers)
 {
     int h = 1500;
     int w = 1500;
@@ -493,7 +493,7 @@ TEST(Raytrace, testRaytraceModifiers)
     delete_safe(buffer);
 }
 
-TEST(Raytrace, testRaytraceTextures)
+TEST(Raytrace, DISABLED_testRaytraceTextures)
 {
     int h = 1500;
     int w = 1500;
@@ -566,6 +566,9 @@ TEST(Raytrace, testSDF)
     cout << "P:" << ray.getPoint() << endl;
     cout << "N:" << ray.normal << endl;
 
+    ASSERT_TRUE(ray.t == 100);
+
+
     ray.ray = Ray3d(Vector3dd(0.1, 0, 1.0).normalised(), Vector3dd::Zero());
     object.intersect(ray);
     cout << "R:" << ray.ray << endl;
@@ -573,9 +576,11 @@ TEST(Raytrace, testSDF)
     cout << "N:" << ray.normal << endl;
 
 
+
+
 }
 
-TEST(Raytrace, testRaytraceSDF)
+TEST(Raytrace, DISABLED_testRaytraceSDF)
 {
     int h = 1500;
     int w = 1500;
