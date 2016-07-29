@@ -84,6 +84,7 @@ struct CalibrationSetupEntry
 struct CalibrationSettings
 {
     /* TODO : rename this */
+
     ChessBoardAssemblerParams           chessBoardAssemblerParams;
     ChessBoardCornerDetectorParams      chessBoardCornerDetectorParams;
     BoardAlignerParams                  boardAlignerParams;
@@ -111,17 +112,17 @@ struct CalibrationSettings
     void accept(VisitorType &visitor)
     {
 //        visitor.visit(chessBoardDetectorParams, ChessBoardDetectorParams(), "chessBoardDetectorParams");
-        visitor.visit(chessBoardAssemblerParams,                ChessBoardAssemblerParams(), "chessBoardAssemblerParams");
-        visitor.visit(chessBoardCornerDetectorParams,           ChessBoardCornerDetectorParams(), "chessBoardCornerDetectorParams");
-        visitor.visit(boardAlignerParams,                       BoardAlignerParams(), "boardAlignerParams");
-
-//        visitor.visit(useOpenCVDetector, false, "useOpenCVDetector");
-        visitor.visit(forceFactor,                              1.0, "forceYFactor");
-
+        visitor.visit(chessBoardAssemblerParams,                ChessBoardAssemblerParams(),       "chessBoardAssemblerParams");
+        visitor.visit(chessBoardCornerDetectorParams,           ChessBoardCornerDetectorParams(),  "chessBoardCornerDetectorParams");
+        visitor.visit(boardAlignerParams,                       BoardAlignerParams(),              "boardAlignerParams");
         visitor.visit(openCvDetectorParameters,                 CheckerboardDetectionParameters(), "openCvDetectorParameters");
 
         visitor.visit(distortionEstimationParameters,           LineDistortionEstimatorParameters(), "lineDistortionEstimationParameters");
-        visitor.visit(distortionApplicationParameters,          DistortionApplicationParameters(), "distortionApplicationParameters");
+        visitor.visit(distortionApplicationParameters,          DistortionApplicationParameters(),  "distortionApplicationParameters");
+
+        visitor.visit(calibrationLockParams,                    PinholeCameraIntrinsics(),          "calibrationLockParams");
+
+        visitor.visit(forceFactor, 1.0, "forceYFactor");
 
         visitor.visit(singleCameraCalibratorUseZhangPresolver,  true, "singleCameraCalibratorUseZhangPresolver");
         visitor.visit(singleCameraCalibratorUseLMSolver,        true, "singleCameraCalibratorUseLMSolver");
@@ -137,7 +138,6 @@ struct CalibrationSettings
         visitor.visit(m, asInteger(CameraConstraints::DEFAULT), "photostationCalibratorConstraints");
         photostationCalibratorConstraints = static_cast<CameraConstraints>(m);
 
-        visitor.visit(calibrationLockParams,                    PinholeCameraIntrinsics(), "calibrationLockParams");
         visitor.visit(singleCameraLMiterations,                 1000, "singleCameraLMiterations");
         visitor.visit(photostationLMiterations,                 1000, "photostationLMiterations");
     }
@@ -199,6 +199,7 @@ struct CalibrationJob
     void    prepareUndistortionTransformation(int camId, corecvs::DisplacementBuffer &dest);
     void    removeDistortion(corecvs::RGB24Buffer &src, corecvs::RGB24Buffer &dst, corecvs::DisplacementBuffer &transform, double outW, double outH);
     void    allRemoveDistortion();
+    void    allRemoveDistortionForPattern();
 
     bool    calibrateSingleCamera(int cameraId);
     void    allCalibrateSingleCamera();

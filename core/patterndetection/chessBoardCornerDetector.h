@@ -10,7 +10,7 @@
 #include "vector2d.h"
 #include "matrix.h"
 #include "reflection.h"
-#include "convolver/convolver.h"
+#include "convolver/convolver.h"    // corecvs::DpImage
 
 namespace corecvs {
     class Statistics;
