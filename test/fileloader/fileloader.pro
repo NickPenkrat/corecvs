@@ -11,6 +11,11 @@ exists(../../../../config.pri) {
 
 
 DESTDIR = $$ROOT_DIR/bin
+OBJECTS_DIR = $$ROOT_DIR/.obj/$$TARGET_ORIG$$BUILD_CFG_NAME
+MOC_DIR  = $$OBJECTS_DIR
+UI_DIR   = $$OBJECTS_DIR
+RCC_DIR  = $$OBJECTS_DIR
+
 TEMPLATE = app
 CONFIG += console c++11
 CONFIG -= app_bundle

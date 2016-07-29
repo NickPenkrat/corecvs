@@ -289,12 +289,12 @@ bool RaytraceableOptiMesh::TreeNode::intersect(RayIntersection &intersection)
     }
 
     bool side = plane.pointWeight(intersection.ray.p) > 0;
-    TreeNode *close = side ? left : right;
-    TreeNode *far   = side ? right : left;
+    TreeNode *closer  = side ? left : right;
+    TreeNode *further = side ? right : left;
 
 
-    if (close != NULL) {
-        bool result = close->intersect(intersection);
+    if (closer != NULL) {
+        bool result = closer->intersect(intersection);
         if (result) {
             if (intersection.t > 0.000001 && intersection.t < best.t) {
                 best = intersection;
@@ -303,8 +303,8 @@ bool RaytraceableOptiMesh::TreeNode::intersect(RayIntersection &intersection)
     }
 
 
-    if (far != NULL) {
-        bool result = far->intersect(intersection);
+    if (further != NULL) {
+        bool result = further->intersect(intersection);
         if (result) {
             if (intersection.t > 0.000001 && intersection.t < best.t) {
                 best = intersection;
