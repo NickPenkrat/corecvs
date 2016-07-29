@@ -32,9 +32,9 @@ namespace corecvs {
 
 enum class LinearSolver
 {
-	NATIVE,
-	SCHUR_COMPLEMENT,
-	MINRESQLP
+    NATIVE,
+    SCHUR_COMPLEMENT,
+    MINRESQLP
 };
 
 template<typename MatrixClass, typename FunctionClass>
@@ -261,33 +261,33 @@ public:
                 LSc_curr++;
                 LSc++;
                 auto LSbegin = std::chrono::high_resolution_clock::now();
-				if (traceMatrix)
-					std::cout << A << std::endl << std::endl;
-				bool shouldExit = false;
-				switch (linearSolver)
-				{
-					case LinearSolver::NATIVE:
-						A.linSolve(B, delta, true, true);
-						break;
-					case LinearSolver::SCHUR_COMPLEMENT:
-						CORE_ASSERT_TRUE_S(F.schurBlocks.size());
-						MatrixClass::LinSolveSchurComplement(A, B, F.schurBlocks, delta, true, true, useExplicitInverse);
-						break;
-					case LinearSolver::MINRESQLP:
-						auto res = MinresQLP<MatrixClass>::Solve(A, B, delta);
-						if (res != MinresQLPStatus::SOLVED_RTOL &&
-							res != MinresQLPStatus::SOLVED_EPS  &&
-							res != MinresQLPStatus::MINLEN_RTOL &&
-							res != MinresQLPStatus::MINLEN_EPS  &&
-							terminateOnDegeneracy)
-							shouldExit = true;
-						break;
-				}
-				if (shouldExit)
-				{
-					converged = true;
-					break;
-				}
+                if (traceMatrix)
+                    std::cout << A << std::endl << std::endl;
+                bool shouldExit = false;
+                switch (linearSolver)
+                {
+                    case LinearSolver::NATIVE:
+                        A.linSolve(B, delta, true, true);
+                        break;
+                    case LinearSolver::SCHUR_COMPLEMENT:
+                        CORE_ASSERT_TRUE_S(F.schurBlocks.size());
+                        MatrixClass::LinSolveSchurComplement(A, B, F.schurBlocks, delta, true, true, useExplicitInverse);
+                        break;
+                    case LinearSolver::MINRESQLP:
+                        auto res = MinresQLP<MatrixClass>::Solve(A, B, delta);
+                        if (res != MinresQLPStatus::SOLVED_RTOL &&
+                            res != MinresQLPStatus::SOLVED_EPS  &&
+                            res != MinresQLPStatus::MINLEN_RTOL &&
+                            res != MinresQLPStatus::MINLEN_EPS  &&
+                            terminateOnDegeneracy)
+                            shouldExit = true;
+                        break;
+                }
+                if (shouldExit)
+                {
+                    converged = true;
+                    break;
+                }
                 auto LSend = std::chrono::high_resolution_clock::now();
 //                for (int ijk = 0; ijk < delta.size(); ++ijk)
 //                    CORE_ASSERT_TRUE_S(!std::isnan(delta[ijk]));
