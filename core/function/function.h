@@ -49,7 +49,7 @@ public:
 
     virtual void operator()(const Vector &in, Vector &out)
     {
-        return operator()(in.element, out.element);
+        return operator()(&in[0] , &out[0]);
     }
 
     virtual void operator()(const vector<double> &in, vector<double> &out)
@@ -99,7 +99,7 @@ public:
 
     virtual Matrix getJacobian(const Vector &in, double delta = 1e-7)
     {
-        return getJacobian(in.element, delta);
+        return getJacobian(&in[0], delta);
     }
 
     /*
