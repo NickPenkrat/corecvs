@@ -181,7 +181,7 @@ int OBJLoader::saveOBJSimple(ostream &out, Mesh3D &mesh)
 {
     vector<Vector3dd>  &vertexes = mesh.vertexes;
     vector<Vector3d32> &faces    = mesh.faces;
-    vector<Vector2d32> &edges    = mesh.edges;
+    //vector<Vector2d32> &edges    = mesh.edges;
 
     for (unsigned i = 0; i < vertexes.size(); i++)
     {

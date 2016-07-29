@@ -61,7 +61,7 @@ int main(int argc, const char **argv)
 }
 #else
 
-void prepareMesh(Mesh3DDecorated &mesh, RGB24Buffer *texture)
+void prepareMesh(Mesh3DDecorated &mesh, RGB24Buffer * /*texture*/)
 {
     mesh.switchColor(true);
     mesh.addIcoSphere(Vector3dd(0,0,0), 50, 2);

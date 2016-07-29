@@ -14,9 +14,9 @@ public:
 
     PerlinNoise noise;
     BumpyMaterial(double power = 1.0 / 10.0, double scale = 2.0) :
-        power(power),
-        scale(scale),
         RaytraceableMaterial()
+      , power(power)
+      , scale(scale)
     {}
 
     void getColor(RayIntersection &ray, RaytraceRenderer &renderer);

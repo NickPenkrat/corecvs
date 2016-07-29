@@ -615,7 +615,7 @@ void Mesh3D::addTruncatedCone(double r1, double r2, double length, int steps)
 
 int Mesh3D::dumpPLY(ostream &out)
 {
-    PLYLoader().savePLY(out, *this);
+    return PLYLoader().savePLY(out, *this);
 }
 
 int Mesh3D::dumpPLY(const std::string &filename)

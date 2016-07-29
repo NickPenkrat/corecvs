@@ -27,7 +27,7 @@ static const char *fragmentShaderSource =
     "}\n";
 
 
-void SceneShaded::prepareMesh(CloudViewDialog *dialog)
+void SceneShaded::prepareMesh(CloudViewDialog * /*dialog*/)
 {
     initializeGLFunctions();
 
@@ -43,7 +43,7 @@ void SceneShaded::prepareMesh(CloudViewDialog *dialog)
 
 }
 
-void SceneShaded::drawMyself(CloudViewDialog *dialog)
+void SceneShaded::drawMyself(CloudViewDialog * /*dialog*/)
 {
 
     mProgram->bind();

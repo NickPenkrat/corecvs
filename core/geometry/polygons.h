@@ -115,7 +115,7 @@ public:
 
     bool intersectWithP(Ray3d &ray, double &resT)
     {
-        double EPSILON = 0.00001;
+        //double EPSILON = 0.00001;
 
         PlaneFrame frame = toPlaneFrame();
         double u, v;

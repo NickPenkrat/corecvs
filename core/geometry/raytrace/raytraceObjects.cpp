@@ -84,7 +84,7 @@ bool RaytraceableUnion::intersect(RayIntersection &intersection)
     return true;
 }
 
-void RaytraceableUnion::normal(RayIntersection &intersection)
+void RaytraceableUnion::normal(RayIntersection & /*intersection*/)
 {
     return;
 }
@@ -148,7 +148,7 @@ void RaytraceableTriangle::normal(RayIntersection &intersection)
     intersection.normal = mTriangle.getNormal();
 }
 
-bool RaytraceableTriangle::inside(Vector3dd &point)
+bool RaytraceableTriangle::inside(Vector3dd & /*point*/)
 {
     return false;
 }
@@ -196,12 +196,12 @@ bool RaytraceableMesh::intersect(RayIntersection &intersection)
 
 }
 
-void RaytraceableMesh::normal(RayIntersection &intersection)
+void RaytraceableMesh::normal(RayIntersection & /*intersection*/)
 {
     return;
 }
 
-bool RaytraceableMesh::inside(Vector3dd &point)
+bool RaytraceableMesh::inside(Vector3dd & /*point*/)
 {
     return false;
 }
@@ -530,7 +530,7 @@ void RaytraceableOptiMesh::normal(RayIntersection &intersection)
 
     if (intersection.payload != -1 )
     {
-        Vector3d32 face = mMesh->faces[intersection.payload];
+        //Vector3d32 face = mMesh->faces[intersection.payload];
         Vector3d32 normalId  = mMesh->normalId[intersection.payload];
         Vector3d32 textureId = mMesh->texId   [intersection.payload];
 
