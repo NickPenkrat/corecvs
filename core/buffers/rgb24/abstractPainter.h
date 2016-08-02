@@ -344,12 +344,12 @@ public:
 
     void drawHLine(int x1, int y1, int x2, ElementType &color)
     {
-        drawSpan(LineSpanInt(y1, x1, x2), color);
+        drawSpan(HLineSpanInt(y1, x1, x2), color);
     }
 
-    void drawSpan(const LineSpanInt &span, ElementType &color)
+    void drawSpan(const HLineSpanInt &span, ElementType &color)
     {
-        LineSpanInt tspan = span;
+        HLineSpanInt tspan = span;
         tspan.clip(mTarget->w, mTarget->h);
         for (int j = tspan.x1; j < tspan.x2; j++)
         {

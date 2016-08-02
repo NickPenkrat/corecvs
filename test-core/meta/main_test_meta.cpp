@@ -66,7 +66,7 @@ public:
 };
 
 typedef AbsMatrix33<ASTNode> ASTMatrix33;
-typedef AbsMatrix33<PackedDerivative> PDMatrix33;
+typedef AbsMatrix33<PackedDerivative<1>> PDMatrix33;
 
 TEST(meta, testmeta)
 {
@@ -150,20 +150,22 @@ public:
 
 TEST(meta, pdExample)
 {
+    typedef PackedDerivative<2> Derivative2D;
+
     {
-        PackedDerivative F = PackedDerivative::X(5.0);
+        Derivative2D F = Derivative2D::X(5.0);
         std::cout << F << endl;
     }
 
     {
-        PackedDerivative B = PackedDerivative::X(5.0);
-        PackedDerivative F = B * B;
+        Derivative2D B = Derivative2D::X(5.0);
+        Derivative2D F = B * B;
         std::cout << F << endl;
     }
 
     {
-        PackedDerivative B = PackedDerivative::X(5.0);
-        PackedDerivative F = sqrt(B);
+        Derivative2D B = Derivative2D::X(5.0);
+        Derivative2D F = sqrt(B);
         std::cout << F << endl;
     }
 }
@@ -250,7 +252,7 @@ TEST(meta, matrixExample)
 
 
     /*Packed derivative*/
-    GenericQuaternion<PackedDerivative> QP(PackedDerivative::X(in[0]), PackedDerivative(in[1]), PackedDerivative(in[2]), PackedDerivative(in[3]));
+    GenericQuaternion<PackedDerivative<> > QP(PackedDerivative<>::X(in[0]), PackedDerivative<>(in[1]), PackedDerivative<>(in[2]), PackedDerivative<>(in[3]));
     PDMatrix33 MP = QP.toMatrixGeneric<PDMatrix33>();
     for (int i = 0; i < 3; i++)
     {

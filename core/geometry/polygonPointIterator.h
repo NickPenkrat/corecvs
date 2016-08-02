@@ -167,9 +167,9 @@ public:
         part.getSpan(y, x1, x2);
     }
 
-    LineSpanInt getSpan()
+    HLineSpanInt getSpan()
     {
-        LineSpanInt span;
+        HLineSpanInt span;
         getSpan(span.cy, span.x1, span.x2);
         return span;
     }
@@ -193,7 +193,7 @@ public:
         return this->hasValue();
     }
 
-    LineSpanInt operator *() {
+    HLineSpanInt operator *() {
         return getSpan();
     }
 
@@ -273,7 +273,7 @@ class PolygonPointIterator
 public:
     const Polygon &polygon;
     PolygonSpanIterator it;
-    LineSpanInt spanIt;
+    HLineSpanInt spanIt;
 
     PolygonPointIterator(const Polygon &polygon) :
         polygon(polygon),
@@ -288,7 +288,7 @@ public:
             if (it.hasValue()) {
                 spanIt = it.getSpan();
             } else {
-                spanIt = LineSpanInt::Empty();
+                spanIt = HLineSpanInt::Empty();
             }
         }
         //while(spanIt.step())

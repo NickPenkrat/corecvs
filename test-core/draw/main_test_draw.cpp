@@ -97,7 +97,7 @@ TEST(Draw, testCircleIterator)
     CircleSpanIterator inner(Circle2d(50, 50, 30));
     while (inner.hasValue())
     {
-        LineSpanInt span = inner.getSpan();
+        HLineSpanInt span = inner.getSpan();
         while (span.hasValue()) {
             if (buffer->isValidCoord(span.pos())) {
                 buffer->element(span.pos()) = RGBColor::Red();
@@ -111,6 +111,67 @@ TEST(Draw, testCircleIterator)
     BMPLoader().save("circles-it.bmp", buffer);
     delete_safe(buffer);
 }
+
+
+TEST(Draw, testLineterator)
+{
+    RGB24Buffer *buffer = new RGB24Buffer(100, 100);
+    RGB24Buffer *buffer1 = new RGB24Buffer(100, 100);
+
+    Segment<Vector2d32> segments[4] =
+    {
+        {{15, 10}, {50, 95}},
+        {{10, 15}, {95, 50}},
+        {{40, 85}, { 5,  5}},
+        {{85, 40}, { 5,  5}}
+    };
+
+    RGBColor colors[4] = {
+        RGBColor::Red(),
+        RGBColor::Green(),
+        RGBColor::Blue(),
+        RGBColor::Cyan()
+    };
+
+    for (size_t i = 0; i <  CORE_COUNT_OF(segments); i++)
+    {
+        LineSpanIterator iterator(segments[i]);
+        for (auto point : iterator)
+        {
+            buffer->element(point) = colors[i];
+        }
+
+        Vector3dd color1 = colors[i].toDouble();
+        Vector3dd color2 = colors[(i + 1) % CORE_COUNT_OF(segments)].toDouble();
+
+        FragmentAttributes c1(color1.element, color1.element + 3);
+        FragmentAttributes c2(color2.element, color2.element + 3);
+
+        cout << "Color1:" << color1 << endl;
+        cout << "Color2:" << color2 << endl;
+
+        cout << "Attr1:" << c1[0] << " " << c1[1] << " " << c1[2] << " "  << endl;
+        cout << "Attr2:" << c2[0] << " " << c2[1] << " " << c2[2] << " " << endl;
+
+        AttributedLineSpanIterator attIterator(segments[i].a.x(), segments[i].a.y(), segments[i].b.x(), segments[i].b.y(), c1, c2);
+        while (attIterator.hasValue())
+        {
+            Vector2d<int> point = attIterator.pos();
+            RGBColor color = RGBColor(attIterator.att()[0], attIterator.att()[1], attIterator.att()[2]);
+            SYNC_PRINT(("We are at [%d %d] (%d %d %d)\n", point.x(), point.y(), color.r(), color.g(), color.b()));
+            buffer1->element(point) = color;
+            attIterator.step();
+        }
+    }
+
+    BMPLoader().save("segments-it.bmp" , buffer);
+    BMPLoader().save("segments1-it.bmp", buffer1);
+
+    delete_safe(buffer);
+    delete_safe(buffer1);
+
+}
+
 
 TEST(Draw, testRectangles)
 {
@@ -146,7 +207,7 @@ TEST(Draw, testSpanDraw)
         TrapezoidSpanIterator it(10, 40, 10, 30, 40, 90);
         while (it.hasValue())
         {
-            LineSpanInt span = it.getSpan();
+            HLineSpanInt span = it.getSpan();
             buffer->drawHLine(span.x1, span.y(), span.x2, RGBColor::Red());
             it.step();
         }
@@ -156,7 +217,7 @@ TEST(Draw, testSpanDraw)
         TrapezoidSpanIterator it(110, 170, 10, 30, 5, 35);
         while (it.hasValue())
         {
-            LineSpanInt span = it.getSpan();
+            HLineSpanInt span = it.getSpan();
             buffer->drawHLine(span.x1, span.y(), span.x2, RGBColor::Green());
             it.step();
         }
@@ -167,7 +228,7 @@ TEST(Draw, testSpanDraw)
         TriangleSpanIterator it(t);
         while (it.hasValue())
         {
-            LineSpanInt span = it.getSpan();
+            HLineSpanInt span = it.getSpan();
             buffer->drawHLine(span.x1, span.y(), span.x2, RGBColor::Pink());
             it.step();
         }
@@ -186,7 +247,7 @@ TEST(Draw, testSpanDraw)
 
     {
         TrapezoidSpanIterator it(10, 40, 10, 30, 40, 90);
-        for(LineSpanInt span: it) {
+        for(HLineSpanInt span: it) {
               buffer->drawHLine(span.x1, span.y(), span.x2, RGBColor::Pink());
         }
 
@@ -218,7 +279,7 @@ TEST(Draw, testSpanDrawTriangle)
         TriangleSpanIterator it(t[i]);
         while (it.hasValue())
         {           
-            LineSpanInt span = it.getSpan();
+            HLineSpanInt span = it.getSpan();
             buffer->drawHLine(span.x1, span.y(), span.x2, c[i]);
             it.step();
         }
@@ -266,7 +327,7 @@ TEST(Draw, testSpanDrawTriangle1)
                 TriangleSpanIterator it(tri);
                 while (it.hasValue())
                 {
-                    LineSpanInt span = it.getSpan();
+                    HLineSpanInt span = it.getSpan();
                     buffer->drawHLine(span.x1, span.y(), span.x2, RGBColor::Green());
 
                     if (offset == 2)
@@ -282,7 +343,7 @@ TEST(Draw, testSpanDrawTriangle1)
                 AttributedTriangleSpanIterator itA(triA);
                 while (itA.hasValue())
                 {
-                    AttributedLineSpan span = itA.getAttrSpan();
+                    AttributedHLineSpan span = itA.getAttrSpan();
                     bufferA->drawHLine(span.x1, span.y(), span.x2, RGBColor::Green());
                     itA.step();
                 }
@@ -330,7 +391,7 @@ TEST(Draw, testAttributedTriangle)
 
     while (it.hasValue())
     {        
-        AttributedLineSpan span = it.getAttrSpan();
+        AttributedHLineSpan span = it.getAttrSpan();
         while (span.hasValue())
         {
             if (buffer->isValidCoord(span.pos()) ) {
@@ -374,7 +435,7 @@ TEST(Draw, testSpanRenderTriangle)
         TriangleSpanIterator it(p[i]);
         while (it.hasValue())
         {          
-            LineSpanInt span = it.getSpan();
+            HLineSpanInt span = it.getSpan();
             buffer->drawHLine(span.x1, span.y(), span.x2, c[i]);
             it.step();
         }
@@ -403,7 +464,7 @@ TEST(Draw, testSpanRenderTriangle)
 
         while (it.hasValue())
         {            
-            LineSpanInt span = it.getSpan();
+            HLineSpanInt span = it.getSpan();
             double z1 = it.part.a1[0];
             double z2 = it.part.a2[0];
 
@@ -491,7 +552,7 @@ TEST(Draw, polygonDraw1)
             painter.drawPolygon(p, RGBColor::Blue());
 
             PolygonSpanIterator it(p);
-            for (LineSpanInt l: it)
+            for (HLineSpanInt l: it)
             {
                 for (Vector2d<int> point : l) {
                     if (buffer->isValidCoord(point)) {
@@ -517,7 +578,7 @@ TEST(Draw, polygonDraw1)
             painter.drawPolygon(p, RGBColor::Green());
 
             PolygonSpanIterator it(p);
-            for (LineSpanInt l: it)
+            for (HLineSpanInt l: it)
             {
 //                cout << l << endl;
                 for (Vector2d<int> point : l) {
@@ -649,13 +710,13 @@ TEST(Draw, testRobot)
     CircleSpanIterator outer(center);
     while (outer.hasValue())
     {
-        LineSpanInt span = outer.getSpan();
+        HLineSpanInt span = outer.getSpan();
         for (int s = span.x1; s < span.x2; s++ )
         {
             CircleSpanIterator inner(Circle2d(s, span.y(), r/2));
             while (inner.hasValue())
             {
-                LineSpanInt span = inner.getSpan();
+                HLineSpanInt span = inner.getSpan();
                 for (int s1 = span.x1; s1 < span.x2; s1++ )
                 {
                     if (acc.isValidCoord(span.y(), s1))
@@ -675,13 +736,13 @@ TEST(Draw, testRobot)
         CircleSpanIterator outer(perifery[c]);
         while (outer.hasValue())
         {
-            LineSpanInt span = outer.getSpan();
+            HLineSpanInt span = outer.getSpan();
             for (int s = span.x1; s < span.x2; s++ )
             {
                 CircleSpanIterator inner(Circle2d(s, span.y(), l2));
                 while (inner.hasValue())
                 {
-                    LineSpanInt span = inner.getSpan();
+                    HLineSpanInt span = inner.getSpan();
                     for (int s1 = span.x1; s1 < span.x2; s1++ )
                     {
                         //SYNC_PRINT(("#"));
@@ -696,7 +757,7 @@ TEST(Draw, testRobot)
                 CircleSpanIterator inner1(Circle2d(s, span.y(), l1));
                 while (inner1.hasValue())
                 {
-                    LineSpanInt span = inner1.getSpan();
+                    HLineSpanInt span = inner1.getSpan();
                     for (int s1 = span.x1; s1 < span.x2; s1++ )
                     {
                         //SYNC_PRINT(("#"));

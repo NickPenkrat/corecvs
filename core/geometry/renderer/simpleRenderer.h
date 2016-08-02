@@ -31,7 +31,7 @@ public:
     void render (Mesh3D *mesh, RGB24Buffer *buffer);
 
     /* Add support for face and vertex shaders */
-    void fragmentShader(AttributedLineSpan & span);
+    void fragmentShader(AttributedHLineSpan & span);
 
     ~SimpleRenderer();
 };
@@ -55,7 +55,7 @@ public:
     /* */
     RGBColor color;
 
-    virtual void fragmentShader(AttributedLineSpan & span);
+    virtual void fragmentShader(AttributedHLineSpan & span);
     virtual ~ClassicRenderer();
 };
 

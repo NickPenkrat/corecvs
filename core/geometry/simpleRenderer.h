@@ -143,9 +143,9 @@ public:
         x2 = fround(this->x2);
     }
 
-    LineSpanInt getSpan()
+    HLineSpanInt getSpan()
     {
-        LineSpanInt span;
+        HLineSpanInt span;
         getSpan(span.cy, span.x1, span.x2);
         return span;
     }
@@ -180,7 +180,7 @@ public:
         return this->currentY <= other.y2;
     }
 
-    LineSpanInt operator *() {
+    HLineSpanInt operator *() {
         return getSpan();
     }
 
@@ -238,7 +238,7 @@ public:
         part.getSpan(y, x1, x2);
     }
 
-    LineSpanInt getSpan()
+    HLineSpanInt getSpan()
     {
         return part.getSpan();
     }
@@ -258,7 +258,7 @@ public:
         return this->currentY <= other.sortedt.p3().y();
     }
 
-    LineSpanInt operator *() {
+    HLineSpanInt operator *() {
         return getSpan();
     }
 
@@ -347,14 +347,14 @@ public:
         part.getSpan(y, x1, x2);
     }
 
-    LineSpanInt getSpan()
+    HLineSpanInt getSpan()
     {
         return part.getSpan();
     }
 
-    AttributedLineSpan getAttrSpan()
+    AttributedHLineSpan getAttrSpan()
     {
-        AttributedLineSpan span(part.getY(), part.getX1(), part.getX2(), part.a1, part.a2 );
+        AttributedHLineSpan span(part.getY(), part.getX1(), part.getX2(), part.a1, part.a2 );
 #if 0
         SYNC_PRINT(("Span Attributes:\n"));
         SYNC_PRINT(("Left :"));
@@ -374,7 +374,7 @@ public:
 class TrianglePointIterator {
 public:
     TriangleSpanIterator it;
-    LineSpanInt spanIt;
+    HLineSpanInt spanIt;
 
     TrianglePointIterator(const Triangle2dd &tr) :
         it(tr),
@@ -395,7 +395,7 @@ public:
             if (it.hasValue()) {
                 spanIt = it.getSpan();
             } else {
-                spanIt = LineSpanInt::Empty();
+                spanIt = HLineSpanInt::Empty();
             }
         }
         //while(spanIt.step())
@@ -453,7 +453,7 @@ public:
     void render (Mesh3D *mesh, RGB24Buffer *buffer);
 
     /* Add support for face and vertex shaders */
-    void fragmentShader(AttributedLineSpan & span);
+    void fragmentShader(AttributedHLineSpan & span);
 
     ~SimpleRenderer();
 };

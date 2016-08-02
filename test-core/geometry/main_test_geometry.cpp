@@ -186,12 +186,12 @@ TEST(Geometry, testIntersection3DFast)
         Ray3d(Vector3dd(0.0, 0.01, 1.0), Vector3dd(   0,    0, -150)),
 
 
-        Ray3d(Vector3dd(1.0, 0.0, 0.0), Vector3dd(-200,    0,    0)),
-        Ray3d(Vector3dd(0.0, 1.0, 0.0), Vector3dd(   0, -200,    0)),
-        Ray3d(Vector3dd(0.0, 0.0, 1.0), Vector3dd(   0,    0, -200)),
+        Ray3d(Vector3dd(1.0, 0.0, 0.0), Vector3dd(-150,    0,    0)),
+        Ray3d(Vector3dd(0.0, 1.0, 0.0), Vector3dd(   0, -150,    0)),
+        Ray3d(Vector3dd(0.0, 0.0, 1.0), Vector3dd(   0,    0, -150)),
     };
 
-    for (int r = 0; r < CORE_COUNT_OF(rays); r++)
+    for (size_t r = 0; r < CORE_COUNT_OF(rays); r++)
     {
         bool result = box.intersectWith(rays[r], t1, t2);
         cout << "Testing:" << r << " - " << (result ? "true" : "false") << "(" << t1 << "," << t2 << ")" << endl;
@@ -201,7 +201,9 @@ TEST(Geometry, testIntersection3DFast)
         mesh.currentColor = result ? RGBColor::Green() : RGBColor::Red();
         mesh.addLine(rays[r].getPoint(t1), rays[r].getPoint(t2));
 
-        //ASSERT_TRUE(result);
+        ASSERT_TRUE(result);
+        ASSERT_TRUE(t1 == 50);
+        ASSERT_TRUE(t2 == 250);
     }
 
     std::ofstream file("testf.ply", std::ios::out);

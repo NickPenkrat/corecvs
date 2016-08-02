@@ -2,10 +2,5 @@
 
 namespace corecvs {
 
-PackedDerivative::PackedDerivative()
-{
-
-}
-
 } // namespace corecvs
 
