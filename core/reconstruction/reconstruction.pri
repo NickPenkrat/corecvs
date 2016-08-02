@@ -39,7 +39,7 @@ SOURCES_NOOPTIMIZE = \
         reconstruction/setupTemplateNCO3P.cpp \
         reconstruction/setupTemplate1NCP6P.cpp \
 
-with_fastbuild {
+with_fastbuild:win32 {
 
     nooptimize.name = nooptimize
     nooptimize.input = SOURCES_NOOPTIMIZE
