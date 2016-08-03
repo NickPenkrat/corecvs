@@ -16,19 +16,19 @@ class RaytraceRenderer;
 class RayIntersection {
 public:
     Raytraceable *object = NULL;
+    int payload = -1;
     Ray3d ray;
-    Ray3d reflection;
-    Ray3d refraction;
-    Vector3dd normal;
-    double t;
 
-    double weight;
-    int depth;
+    Vector2dd uvCoord;
+    Vector2dd texCoord;
+    Vector3dd normal;
+    double t = 0;
+    double weight = 1.0;
+    int depth = 0;
 
     /* This needs to be separated */
     TraceColor ownColor;
 
-    void computeBaseRays();
     Vector3dd getPoint();
 
 };
@@ -44,6 +44,10 @@ public:
     ) : color(_color),
         position(_position)
     {}
+
+    virtual bool checkRay(RayIntersection & /*ray*/) {
+        return true;
+    }
 };
 
 class RaytraceableMaterial {
@@ -51,13 +55,16 @@ public:
     double reflCoef = 0.0;
     double refrCoef = 0.0;
 
+    double opticalDens = 1.0;
+
     TraceColor ambient  = TraceColor::Zero();
     TraceColor diffuse  = TraceColor::Zero();
     TraceColor specular = TraceColor::Zero();
     double specPower = 4.0;
 
     virtual void getColor(RayIntersection &ray, RaytraceRenderer &renderer);
-
+    virtual Ray3d getReflection(RayIntersection &ray);
+    virtual Ray3d getRefraction(RayIntersection &ray);
 };
 
 class RaytraceableChessMaterial : public RaytraceableMaterial {
@@ -73,119 +80,46 @@ public:
     TraceColor color;
     RaytraceableMaterial *material = NULL;
 
+    /**
+     *  This function updates the intersection with
+     *  t - closest intersection
+     *  object - object that will then handle the material
+     *  payload - optional payload
+     **/
     virtual bool intersect(RayIntersection &intersection) = 0;
-    virtual void normal(const Vector3dd &vector, Vector3dd &normal) = 0;
+
+    virtual void normal(RayIntersection &intersection);
     virtual bool inside (Vector3dd &point) = 0;
 
     virtual ~Raytraceable();
 };
 
-class RaytraceableTransform : public Raytraceable
-{
-public:
-    Matrix44 mMatrix;
-    Matrix44 mMatrixInv;
-
-    Raytraceable *mObject;
-
-    RaytraceableTransform(Raytraceable *object, const Matrix44 &matrix) :
-        mMatrix(matrix),
-        mObject(object)
-    {
-        mMatrixInv = mMatrix.inverted();
-    }
-
-    virtual bool intersect(RayIntersection &intersection) override;
-    virtual void normal(const Vector3dd &vector, Vector3dd &normal)   override;
-    virtual bool inside (Vector3dd &point)  override;
-};
-
-class RaytraceableSphere : public Raytraceable{
-public:
-    static const double EPSILON;
-
-    bool flag;
-    Sphere3d mSphere;
-
-    RaytraceableSphere(const Sphere3d &sphere) :
-        flag(false),
-        mSphere(sphere)
-    {
-    }
-
-    virtual bool intersect(RayIntersection &intersection) override;
-    virtual void normal(const Vector3dd &vector, Vector3dd &normal)   override;
-    virtual bool inside (Vector3dd &point)  override;
-};
-
-
-class RaytraceablePlane : public Raytraceable {
-public:
-    static const double EPSILON;
-
-    bool flag;
-    Plane3d mPlane;
-
-    RaytraceablePlane(const Plane3d &plane) :
-        flag(false),
-        mPlane(plane)
-    {
-    }
-
-    virtual bool intersect(RayIntersection &intersection) override;
-    virtual void normal(const Vector3dd &vector, Vector3dd &normal) override;
-    virtual bool inside (Vector3dd &point)  override;
-};
-
-
-class RaytraceableTriangle : public Raytraceable {
-public:
-    static const double EPSILON;
-
-    Triangle3dd mTriangle;
-
-    RaytraceableTriangle(const Triangle3dd &triangle) :
-        mTriangle(triangle)
-    {
-    }
-
-    virtual bool intersect(RayIntersection &intersection) override;
-    virtual void normal(const Vector3dd &vector, Vector3dd &normal) override;
-    virtual bool inside (Vector3dd &point)  override;
-};
-
-
-class RaytraceableMesh : public Raytraceable {
-public:
-    static const double EPSILON;
-
-    Mesh3D *mMesh;
-
-    RaytraceableMesh(Mesh3D *mesh);
-
-    virtual bool intersect(RayIntersection &intersection) override;
-    virtual void normal(const Vector3dd &vector, Vector3dd &normal) override;
-    virtual bool inside (Vector3dd &point)  override;
-};
-
-
-class RaytraceableUnion : public Raytraceable {
-public:
-    vector<Raytraceable *> elements;
-
-    virtual bool intersect(RayIntersection &intersection) override;
-    virtual void normal(const Vector3dd &vector, Vector3dd &normal) override;
-    virtual bool inside (Vector3dd &point)  override;
-};
 
 
 class RaytraceRenderer
 {
 public:
+
+    typedef AbstractBuffer<TraceColor> ColorBuffer;
+    typedef AbstractBuffer<int> MarkupType;
+
     PinholeCameraIntrinsics intrisics;
+    Affine3DQ position;
+
     Raytraceable *object;
     vector<RaytraceablePointLight *> lights;
     TraceColor ambient;
+
+    /* Ray trace end condition */
+    int maxDepth = 4;
+    double minWeight = 1.0 / 255.0;
+
+    /* Renderer global parameters */
+    bool supersample = false;
+    int  sampleNum = 20;
+
+    bool parallel = true;
+    bool traceProgress = true;
 
     /**/
     AbstractBuffer<TraceColor> *energy = NULL;
@@ -198,6 +132,11 @@ public:
     void trace(RayIntersection &intersection);
     void trace(RGB24Buffer *buffer);
 
+    void traceFOV(RGB24Buffer *buffer, double apperture, double focus);
+
+
+private:
+    void pack(RGB24Buffer *target, ColorBuffer *energy, MarkupType *markup = NULL);
 
 };
 

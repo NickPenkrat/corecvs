@@ -384,7 +384,7 @@ void BoardAligner::drawDebugInfo(corecvs::RGB24Buffer &buffer)
 
             while (ts1.hasValue()) {
                 ts1.step();
-                LineSpanInt span = ts1.getSpan();
+                HLineSpanInt span = ts1.getSpan();
                 span.clip(mask.w, mask.h);
                 for (int k = span.x1; k < span.x2; k++)
             {
@@ -394,7 +394,7 @@ void BoardAligner::drawDebugInfo(corecvs::RGB24Buffer &buffer)
             }
             while (ts2.hasValue()) {
                 ts2.step();
-                LineSpanInt span = ts2.getSpan();
+                HLineSpanInt span = ts2.getSpan();
                 span.clip(mask.w, mask.h);
                 for (int k = span.x1; k < span.x2; k++)
                 {

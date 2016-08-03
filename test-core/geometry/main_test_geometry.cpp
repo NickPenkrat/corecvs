@@ -22,6 +22,7 @@
 #include "convexPolyhedron.h"
 #include "mesh3d.h"
 
+
 using corecvs::Polygon;
 using corecvs::Mesh3D;
 using corecvs::AxisAlignedBox3d;
@@ -137,6 +138,80 @@ TEST(Geometry, testIntersection3D)
     mesh.dumpPLY(file);
     file.close();
 }
+
+
+TEST(Geometry, testIntersection3DFast)
+{
+    Mesh3D mesh;
+    AxisAlignedBox3d box(Vector3dd(-100, -100, -100), Vector3dd(100, 100, 100));
+
+    mesh.switchColor();
+    mesh.currentColor = RGBColor::Blue();
+    mesh.addAOB(box, false);
+    Ray3d ray(Vector3dd(2.0,1.1,1.5), Vector3dd(-120, -90, -80));
+
+    mesh.currentColor = RGBColor::White();
+    mesh.addLine(ray.getPoint(0), ray.getPoint(2.0));
+
+
+    double t1, t2;
+    bool result = box.intersectWith(ray, t1, t2);
+
+    mesh.currentColor = result ? RGBColor::Green() : RGBColor::Red();
+    mesh.addLine(ray.getPoint(t1), ray.getPoint(t2));
+
+    mesh.setColor(RGBColor::Green());
+    mesh.addIcoSphere(ray.getPoint(t1), 0.1);
+
+    mesh.setColor(RGBColor::Red());
+    mesh.addIcoSphere(ray.getPoint(t2), 0.1);
+
+    SYNC_PRINT((" Intersect %s at (%lf %lf)", result ? "yes" : "no", t1, t2 ));
+    cout << "In " <<  ray.getPoint(t1) << endl;
+    cout << "Out" <<  ray.getPoint(t2) << endl;
+
+    /* Ok */
+    Ray3d rays[] = {
+        Ray3d(Vector3dd(1.0, 0.01, 0.01), Vector3dd(-150,    0,    0)),
+        Ray3d(Vector3dd(0.01, 1.0, 0.01), Vector3dd(   0, -150,    0)),
+        Ray3d(Vector3dd(0.01, 0.01, 1.0), Vector3dd(   0,    0, -150)),
+
+
+        Ray3d(Vector3dd(-1.0, 0.01, 0.0), Vector3dd(150,   0,   0)),
+        Ray3d(Vector3dd(0.01, -1.0, 0.0), Vector3dd(  0, 150,   0)),
+        Ray3d(Vector3dd(0.0, 0.01, -1.0), Vector3dd(  0,   0, 150)),
+
+        Ray3d(Vector3dd(1.0, 0.01, 0.0), Vector3dd(-150,    0,    0)),
+        Ray3d(Vector3dd(0.01, 1.0, 0.0), Vector3dd(   0, -150,    0)),
+        Ray3d(Vector3dd(0.0, 0.01, 1.0), Vector3dd(   0,    0, -150)),
+
+
+        Ray3d(Vector3dd(1.0, 0.0, 0.0), Vector3dd(-150,    0,    0)),
+        Ray3d(Vector3dd(0.0, 1.0, 0.0), Vector3dd(   0, -150,    0)),
+        Ray3d(Vector3dd(0.0, 0.0, 1.0), Vector3dd(   0,    0, -150)),
+    };
+
+    for (size_t r = 0; r < CORE_COUNT_OF(rays); r++)
+    {
+        bool result = box.intersectWith(rays[r], t1, t2);
+        cout << "Testing:" << r << " - " << (result ? "true" : "false") << "(" << t1 << "," << t2 << ")" << endl;
+
+        mesh.currentColor = RGBColor::White();
+        mesh.addLine(rays[r].getPoint(0), rays[r].getPoint(7.0));
+        mesh.currentColor = result ? RGBColor::Green() : RGBColor::Red();
+        mesh.addLine(rays[r].getPoint(t1), rays[r].getPoint(t2));
+
+        ASSERT_TRUE(result);
+        ASSERT_TRUE(t1 == 50);
+        ASSERT_TRUE(t2 == 250);
+    }
+
+    std::ofstream file("testf.ply", std::ios::out);
+    mesh.dumpPLY(file);
+    file.close();
+
+}
+
 
 
 TEST(Geometry, rayBasics)

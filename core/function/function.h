@@ -47,6 +47,19 @@ public:
      **/
     virtual void operator()(const double in[], double out[]) = 0;
 
+    virtual void operator()(const Vector &in, Vector &out)
+    {
+        return operator()(&in[0] , &out[0]);
+    }
+
+    virtual void operator()(const vector<double> &in, vector<double> &out)
+    {
+        CORE_ASSERT_TRUE( (int)  in.size() > inputs , "Too few input numbers");
+        CORE_ASSERT_TRUE( (int) out.size() > outputs, "Too few output numbers");
+
+        return operator()(&in[0], &out[1]);
+    }
+
     /**
      *  This function computes Jacobian
      *   \f[
@@ -68,6 +81,20 @@ public:
     Matrix getNativeJacobian(const double in[], double delta = 1e-7)
     {
         return getJacobian(in, delta);
+    }
+
+    double resultLength(const double in[])
+    {
+        vector<double> out(outputs);
+
+        operator ()(in, &out[0]);
+        double sumsq = 0.0;
+        for (double d : out)
+        {
+            sumsq += d * d;
+        }
+        sumsq /= outputs;
+        return sqrt(sumsq);
     }
 
     virtual Matrix getJacobian(const Vector &in, double delta = 1e-7)

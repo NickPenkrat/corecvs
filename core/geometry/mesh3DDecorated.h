@@ -32,7 +32,11 @@ public:
 
     virtual void clear();
 
-     virtual void dumpInfo(ostream &out) override;
+    virtual void dumpInfo(ostream &out = std::cout) override;
+
+    void recomputeMeanNormals();
+
+    bool verify( void );
 };
 
 } // namespace corecvs

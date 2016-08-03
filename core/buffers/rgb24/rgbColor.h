@@ -354,10 +354,19 @@ public:
         return RGBColor((uint8_t)(r * 255), (uint8_t)(g * 255), (uint8_t)(b * 255));
     }
 
+    /**
+     * Depricated
+     **/
     static RGBColor gray(uint8_t gray)
     {
         return RGBColor(gray, gray, gray);
     }
+
+    static RGBColor Gray(uint8_t gray = 127)
+    {
+        return RGBColor(gray, gray, gray);
+    }
+
 
     static RGBColor gray12(uint16_t gray)
     {

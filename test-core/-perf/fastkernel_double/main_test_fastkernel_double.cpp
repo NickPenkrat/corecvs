@@ -412,6 +412,8 @@ TEST(FastKernelDouble, testConvolver)
         , { Convolver::ALGORITHM_SSE_WRAPPERS_EX_UNROLL_2   , 150, 5, "Wrap Ex u2", true, NULL, NULL, 0 }
     };
 
+
+
     /* Results are stored to compare */
     for (size_t i = 0; i < CORE_COUNT_OF(tests); i++) {
      //   tests[i].result = new DpImage(TEST_H_SIZE, TEST_W_SIZE);

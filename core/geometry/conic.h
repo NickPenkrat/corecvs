@@ -87,6 +87,7 @@ public:
 
     bool intersectWith(const Sphere3d &other, Circle3d &result);
     bool intersectWith(const  Plane3d &plane, Circle3d &intersection);
+    bool intersectWith(const  Ray3d   &ray, double &t1, double &t2);
 
 };
 
@@ -100,7 +101,7 @@ public:
     Vector3dd getPoint(double angle);
 
     Plane3d getPlane() {
-        return Plane3d::FormNormalAndPoint(normal, c);
+        return Plane3d::FromNormalAndPoint(normal, c);
     }
 };
 
@@ -142,9 +143,9 @@ public:
         x2 = (int)circle.c.x() + currentDX;
     }
 
-    LineSpanInt getSpan()
+    HLineSpanInt getSpan()
     {
-        LineSpanInt span;
+        HLineSpanInt span;
         getSpan(span.cy, span.x1, span.x2);
         return span;
     }
@@ -164,7 +165,7 @@ public:
         return this->currentY <= (other.circle.c.y() + other.circle.r);
     }
 
-    LineSpanInt operator *() {
+    HLineSpanInt operator *() {
         return getSpan();
     }
 

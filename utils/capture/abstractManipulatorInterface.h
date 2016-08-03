@@ -9,8 +9,8 @@ class AbstractManipulatorInterface : public QDialog
 public:
     explicit AbstractManipulatorInterface(QWidget *parent) : QDialog(parent) {}
 public slots:
-    virtual void captureNextPosition() = 0;
-    virtual void captureProcessFinshed(bool success = true) = 0;
+    virtual void captureNextSimulatedCamera() = 0;
+    virtual void captureSimulatedStationFinshed(bool success = true) = 0;
 
 signals:
     void captureAndFinalize(bool);

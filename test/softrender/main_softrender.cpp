@@ -7,7 +7,7 @@
 
 
 #include "calibrationCamera.h"
-#include "simpleRenderer.h"
+#include "renderer/simpleRenderer.h"
 #include "mesh3d.h"
 #include "meshLoader.h"
 #include "objLoader.h"
@@ -61,7 +61,7 @@ int main(int argc, const char **argv)
 }
 #else
 
-void prepareMesh(Mesh3DDecorated &mesh, RGB24Buffer *texture)
+void prepareMesh(Mesh3DDecorated &mesh, RGB24Buffer * /*texture*/)
 {
     mesh.switchColor(true);
     mesh.addIcoSphere(Vector3dd(0,0,0), 50, 2);
@@ -99,6 +99,27 @@ int main(int argc, char **argv)
     QApplication a(argc, argv);
     QTRGB24Loader::registerMyself();
 
+    if (argc != 2 && argc != 3)
+    {
+        printf("Usage: softrender <obj basename>\n");
+        exit(1);
+    }
+
+    std::string objName;
+    std::string textureName;
+
+    if (argc == 2) {
+        objName     = std::string(argv[1]) + ".obj";
+        textureName = std::string(argv[1]) + ".bmp";
+    }
+
+    if (argc == 3) {
+        objName     = std::string(argv[1]);
+        textureName = std::string(argv[2]);
+    }
+
+    printf("Will render <%s> with texture <%s>\n", objName.c_str(), textureName.c_str());
+
     int h = 2000;
     int w = 2000;
     RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
@@ -112,12 +133,12 @@ int main(int argc, char **argv)
     loader.trace = true;
 
     //prepareMesh(mesh);
-    std::ifstream file("body-v2.obj", std::ifstream::in);
+    std::ifstream file(objName, std::ifstream::in);
     loader.loadOBJ(file, mesh);
 
     mesh.transform(Matrix44::Shift(0, 0 , 3500) /** Matrix44::Scale(100)*/);
 
-    RGB24Buffer *texture = BufferFactory::getInstance()->loadRGB24Bitmap("body-v2.bmp");
+    RGB24Buffer *texture = BufferFactory::getInstance()->loadRGB24Bitmap(textureName);
 
 /*
     int square = 64;

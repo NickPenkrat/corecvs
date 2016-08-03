@@ -1,3 +1,6 @@
+#ifndef VECTOR2D_H_
+#define VECTOR2D_H_
+
 /**
  * \file vector2d.h
  * \brief Add Comment Here
@@ -7,10 +10,8 @@
  * \author alexander
  */
 
-#ifndef VECTOR2D_H_
-#define VECTOR2D_H_
-
 #include <math.h>
+#include <cmath>
 #include <stdint.h>
 
 #include "global.h"
@@ -24,6 +25,7 @@
 
 namespace corecvs {
 
+using std::sqrt;
 
 template<typename ElementType>
 class Vector2d : public FixedVectorBase<Vector2d<ElementType>, ElementType, 2>
@@ -78,8 +80,8 @@ public:
 
     inline double getLengthStable () const
     {
-        double ma = (x() > 0) ? x() : -x();
-        double mb = (y() > 0) ? y() : -y();
+        ElementType ma = (x() > 0) ? x() : -x();
+        ElementType mb = (y() > 0) ? y() : -y();
 
         if (ma == 0 && mb == 0) return 0;
         if (ma > mb)

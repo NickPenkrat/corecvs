@@ -18,7 +18,7 @@ using namespace corecvs;
 TEST(FFTWWrapper, doublePrecisionTest)
 {
     PPMLoader *ppmLoader = new PPMLoader();
-    G12Buffer *ppm = ppmLoader->load("data/testdata/test_debayer.pgm");
+    G12Buffer *ppm = ppmLoader->loadG12("data/testdata/test_debayer.pgm");
     CORE_ASSERT_TRUE(ppm != NULL, "PPM Image load failed");
     CORE_ASSERT_TRUE(ppm->verify(), "PPM Image verification failed");
     FFTW fftw;

@@ -25,7 +25,7 @@ bool PPMLoader::acceptsFile(string name)
         );
 }
 
-G12Buffer* PPMLoader::load(string name)
+G12Buffer* PPMLoader::loadG12(string name)
 {
     return loadMeta(name, nullptr);
 }

@@ -89,6 +89,18 @@ AboutPropsTableWidget::AboutPropsTableWidget(QWidget *parent) : QTableWidget(par
     addParameter("OpenCV Support", "Off");
 #endif
 
+#ifdef WITH_LIBJPEG
+    addParameter("Libjpeg Support", "On");
+#else
+    addParameter("Libjpeg Support", "Off (Qt used)");
+#endif
+
+#ifdef WITH_LIBPNG
+    addParameter("Libjpeg Support", "On");
+#else
+    addParameter("Libjpeg Support", "Off (Qt used)");
+#endif
+
 #if    defined (Q_OS_WIN)
     addParameter("Target OS", "Windows");
 #elif  defined (Q_OS_MAC)

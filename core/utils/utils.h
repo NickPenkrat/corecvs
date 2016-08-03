@@ -50,6 +50,8 @@ namespace HelperUtils
     using std::string;
     using std::istream;
 
+    bool            startsWith(const string &str, const string &prefix);
+    bool            endsWith  (const string &str, const string &postfix);
     istream&        getlineSafe(istream& is, string& str);
 
     string          toNativeSlashes(const string& str);
@@ -85,10 +87,6 @@ namespace HelperUtils
         return filePath.substr(0, extPosition) + suffix + filePath.substr(extPosition);
     }
 
-    inline bool     startsWith(const string &str, const string &prefix)
-    {
-        return (str.compare(0, prefix.size(), prefix) == 0);
-    }
 
 
 } // namespace HelperUtils

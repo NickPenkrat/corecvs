@@ -23,7 +23,7 @@
 
 namespace corecvs {
 
-class PPMLoader : public BufferLoader<G12Buffer>
+class PPMLoader
 {
 public:
     PPMLoader() {}
@@ -31,7 +31,7 @@ public:
 
     virtual bool acceptsFile(string name);
 
-    virtual G12Buffer * load(string name);
+    virtual G12Buffer * loadG12(string name);
 
     /**
      * Load method overload.
@@ -80,6 +80,39 @@ private:
     int  nextLine(FILE *fp, char *buf, int sz, MetaData *metadata);
     bool readHeader(FILE *fp, unsigned long int *h, unsigned long int *w, uint16_t *maxval, uint8_t *type, MetaData* metadata);
     bool writeHeader(FILE *fp, unsigned long int h, unsigned long int w, uint8_t type, uint16_t maxval, MetaData* metadata);
+};
+
+
+
+class PPMLoaderG12 : public BufferLoader<G12Buffer>, public PPMLoader
+{
+public:
+    virtual bool acceptsFile(string name) override
+    {
+        return PPMLoader::acceptsFile(name);
+    }
+
+    virtual G12Buffer *load(string name) override
+    {
+        return PPMLoader::loadG12(name);
+    }
+};
+
+class PPMLoaderRGB24 : public BufferLoader<RGB24Buffer>, public PPMLoader
+{
+public:
+    virtual bool acceptsFile(string name) override
+    {
+       return PPMLoader::acceptsFile(name);
+    }
+
+    virtual RGB24Buffer *load(string name) override
+    {
+        G12Buffer *buffer = PPMLoader::loadG12(name);
+        RGB24Buffer *result = new RGB24Buffer(buffer);
+        delete_safe(buffer);
+        return result;
+    }
 };
 
 } //namespace corecvs

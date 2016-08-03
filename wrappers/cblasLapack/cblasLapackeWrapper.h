@@ -5,7 +5,7 @@
 
 #ifdef WITH_MKL
     #include <mkl.h>
-#else
+#elif defined(WITH_BLAS)
     #include <complex>
     #define lapack_complex_float std::complex<float>
     #define lapack_complex_double std::complex<double>

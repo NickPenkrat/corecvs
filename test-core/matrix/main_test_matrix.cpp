@@ -390,6 +390,13 @@ TEST(MatrixTest, testVector3d)
     in1 = in2 * 2.0;
     Vector3dd constRes = Vector3dd(2.0,-4.0,6.0);
     CORE_ASSERT_TRUE(in1.notTooFar(constRes, 1e-10), "Wrong elementwise const mul\n")
+
+    double length = v2.l2Metric();
+    CORE_ASSERT_DOUBLE_EQUAL_EP(length, 8.61162, 1e-6, ("Wrong norm calculation %lf\n", length));
+
+    double lengthS = v2.l2MetricStable();
+    CORE_ASSERT_DOUBLE_EQUAL_EP(lengthS, 8.61162, 1e-6, ("Wrong stable norm calculation %lf\n", lengthS));
+
 }
 
 TEST(MatrixTest, testVector3dOrtogonal)
