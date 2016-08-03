@@ -25,7 +25,7 @@ void corecvs::SparseMatrix::spyPlot() const
 
 int corecvs::SparseMatrix::nnz() const
 {
-    return values.size();
+    return (int)values.size();
 }
 
 double corecvs::SparseMatrix::fillin() const
@@ -215,7 +215,7 @@ Matrix SparseMatrix::denseRows(int x1, int y1, int x2, int y2, std::vector<int> 
             if (rPtr[i] != rowPointers[i + y1 + 1] && columns[rPtr[i]] < x2 && columns[rPtr[i]] == nextCol)
                 ++rPtr[i];
     }
-    int w = colIdx.size();
+    int w = (int)colIdx.size();
     rPtr = rStartPtr;
 
     corecvs::Matrix M(h, w);
@@ -254,7 +254,7 @@ Matrix SparseMatrix::denseCols(int x1, int y1, int x2, int y2, std::vector<int> 
         }
     }
 
-    int h = rowIdx.size();
+    int h = (int)rowIdx.size();
     Matrix M(h, w);
     for (int y = 0; y < h; ++y)
     {
@@ -1109,7 +1109,7 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementNew(const corecvs::SparseMatr
                     }
 
                     auto& idx= denseCols[i];
-                    int NC = idx.size();
+                    int NC = (int)idx.size();
                     rowPointers[begin] = i == 0 ? 0 : cumC[i - 1];
                     for (int ii = 0; ii < len; ++ii)
                     {

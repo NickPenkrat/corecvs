@@ -460,7 +460,7 @@ int RaytraceableOptiMesh::TreeNode::childCount()
 
 int RaytraceableOptiMesh::TreeNode::triangleCount()
 {
-    int sum = submesh.size();
+    int sum = (int)submesh.size();
     if (left) {
         sum += left->triangleCount();
     }
@@ -488,7 +488,7 @@ void RaytraceableOptiMesh::optimize()
     opt = new TreeNode();
     for (size_t i = 0; i < mMesh->faces.size(); i++)
     {
-        NumTriangle3dd triangle(mMesh->getFaceAsTrinagle(i), i);
+        NumTriangle3dd triangle(mMesh->getFaceAsTrinagle(i), (int)i);
         opt->submesh.push_back(triangle);
     }
     opt->subdivide();

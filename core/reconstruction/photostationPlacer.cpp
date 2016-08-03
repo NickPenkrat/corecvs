@@ -293,7 +293,7 @@ void corecvs::PhotostationPlacer::fit(const ReconstructionFunctorOptimizationTyp
     if (scene->placedFixtures.size() < 2)
         return;
     if (optimizeLast <= 0)
-        optimizeLast = scene->placedFixtures.size();
+        optimizeLast = (int)scene->placedFixtures.size();
     std::vector<CameraFixture*> optimizable(scene->placedFixtures.rbegin(), scene->placedFixtures.rbegin() + optimizeLast);
 
     scene->printTrackStats();

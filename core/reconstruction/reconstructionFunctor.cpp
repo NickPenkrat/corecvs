@@ -90,7 +90,7 @@ struct PointFunctor: corecvs::FunctionArgs
 
     corecvs::Matrix jacobianReprojection(const double* in)
     {
-        int M = cached.size();
+        int M = (int)cached.size();
         corecvs::Matrix J(M * N, 3);
         corecvs::Vector3dd X(in[0], in[1], in[2]);
         int argout = 0;
@@ -114,7 +114,7 @@ struct PointFunctor: corecvs::FunctionArgs
 
     corecvs::Matrix jacobianRayDiff(const double* in)
     {
-        int M = cached.size();
+        int M = (int)cached.size();
         corecvs::Matrix J(M * N, 3);
         corecvs::Vector3dd X(in[0], in[1], in[2]);
         int argout = 0;
@@ -381,7 +381,7 @@ void corecvs::ReconstructionFunctor::computeDependency()
         WPP wpp = WPP(p->cameraFixture, p->camera);
         if (!cacheIdx.count(wpp))
         {
-            cameraCache.resize(1 + (cacheIdx[wpp] = cameraCache.size()));
+            cameraCache.resize(1 + (cacheIdx[wpp] = (int)cameraCache.size()));
             cacheOrigin.push_back(wpp);
         }
         cacheRef[i] = cacheIdx[wpp];
@@ -482,7 +482,7 @@ void corecvs::ReconstructionFunctor::computeDependency()
         CORE_ASSERT_TRUE_S(usedU.size() == used.size());
   //      std::cout << used.size() << "|";
         std::sort(used.begin(), used.end());
-        sparseRowptr[i + 1] = sparseRowptr[i] + used.size();
+        sparseRowptr[i + 1] = sparseRowptr[i] + (int)used.size();
         for (auto& u: used)
         {
             int id = (int)sparseCol.size();
