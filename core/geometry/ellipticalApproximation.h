@@ -270,7 +270,7 @@ public:
         mixedMoment = 0.0;
     }
 
-    ~EllipticalApproximation() {}
+    ~EllipticalApproximation();
 };
 
 template<typename ElementType>
