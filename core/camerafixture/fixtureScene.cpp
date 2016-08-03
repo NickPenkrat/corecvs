@@ -160,7 +160,7 @@ CameraFixture *FixtureScene::createCameraFixture()
     CameraFixture *fixture = fabricateCameraFixture();
     mOwnedObjects.push_back(fixture);
     mFixtures.push_back(fixture);
-    fixture->sequenceNumber = mFixtures.size() - 1;
+    fixture->sequenceNumber = (int)mFixtures.size() - 1;
     return fixture;
 }
 
@@ -440,8 +440,7 @@ void FixtureScene::merge(FixtureScene *other)
         *static_cast<CameraModel *>(cam) = *(other->mOrphanCameras[i]);
     }
 
-
-    int oldFixtureNumber = mFixtures.size();
+    int oldFixtureNumber = (int)mFixtures.size();
 
     for(size_t i = 0; i < other->mFixtures.size(); i++)
     {
@@ -516,7 +515,7 @@ void FixtureScene::addCameraToFixture(FixtureCamera *cam, CameraFixture *fixture
     }
     cam->cameraFixture = fixture;
     fixture->cameras.push_back(cam);
-    cam->sequenceNumber = fixture->cameras.size() - 1;
+    cam->sequenceNumber = (int)fixture->cameras.size() - 1;
 }
 
 int FixtureScene::getObeservationNumber(CameraFixture *fixture)

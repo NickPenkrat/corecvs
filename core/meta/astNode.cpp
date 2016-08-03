@@ -156,8 +156,10 @@ void ASTNodeInt::getVars(std::vector<std::string> &result)
 
 ASTNodeInt *ASTNodeInt::derivative(const std::string &var)
 {
-    switch (op) {
-        case OPREATOR_ID: {
+    switch (op)
+    {
+        case OPREATOR_ID:
+        {
             if (name == var)
                 return new ASTNodeInt(1.0);
             else
@@ -165,20 +167,26 @@ ASTNodeInt *ASTNodeInt::derivative(const std::string &var)
             break;
         }
 
-        case OPREATOR_NUM: {
+        case OPREATOR_NUM:
+        {
             return new ASTNodeInt(0.0);
             break;
         }
 
-        case OPERATOR_ADD : {
+        case OPERATOR_ADD:
+        {
             return new ASTNodeInt(OPERATOR_ADD, left->derivative(var), right->derivative(var));
             break;
         }
-        case OPERATOR_SUB : {
+
+        case OPERATOR_SUB:
+        {
             return new ASTNodeInt(OPERATOR_SUB, left->derivative(var), right->derivative(var));
             break;
         }
-        case OPERATOR_MUL : {
+
+        case OPERATOR_MUL:
+        {
             ASTNodeInt *leftD  = left->derivative(var);
             ASTNodeInt *rightD = right->derivative(var);
 
@@ -189,7 +197,9 @@ ASTNodeInt *ASTNodeInt::derivative(const std::string &var)
                    );
             break;
         }
-        case OPERATOR_DIV : {
+
+        case OPERATOR_DIV:
+        {
             ASTNodeInt *leftD  = left->derivative(var);
             ASTNodeInt *rightD = right->derivative(var);
 
@@ -203,7 +213,9 @@ ASTNodeInt *ASTNodeInt::derivative(const std::string &var)
                    );
             break;
         }
-        case OPERATOR_POW : {
+
+        case OPERATOR_POW:
+        {
             /*So far partial support */
             if (right->op == OPREATOR_NUM) {
                 ASTNodeInt *leftD  = left->derivative(var);
@@ -222,10 +234,11 @@ ASTNodeInt *ASTNodeInt::derivative(const std::string &var)
             return new ASTNodeInt("UDEF");
             break;
         }
-        default   :
+
+        default:
             printf(" UNSUPPORTED OPERATOR %d", op);
             return new ASTNodeInt("UDEF");
-        break;
+            break;
     }
 }
 
