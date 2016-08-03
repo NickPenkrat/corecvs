@@ -117,8 +117,8 @@ public:
 
     CircleSpanIterator(const Circle2d &circle) : circle(circle)
     {
-        radSQ = circle.r * circle.r;
-        currentY  = circle.c.y() - circle.r  - 1;
+        radSQ     = circle.r * circle.r;
+        currentY  = (int)(-circle.r + circle.c.y() - 1);
         currentDX = 0;
     }
 
@@ -137,9 +137,9 @@ public:
 
     void getSpan(int &y, int &x1, int &x2)
     {
-        y = currentY;
-        x1 = circle.c.x() - currentDX;
-        x2 = circle.c.x() + currentDX;
+        y  = currentY;
+        x1 = (int)circle.c.x() - currentDX;
+        x2 = (int)circle.c.x() + currentDX;
     }
 
     LineSpanInt getSpan()

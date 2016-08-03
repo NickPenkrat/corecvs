@@ -55,7 +55,7 @@ public:
     FloatFlowBuffer(const FloatFlowBuffer &src, int32_t x1, int32_t y1, int32_t x2, int32_t y2) :
         FloatFlowBufferBase(src, x1, y1, x2, y2) {}
 
-    FloatFlowBuffer(int32_t h, int32_t w, uint16_t *data) : FloatFlowBufferBase(h, w, data) {}
+  //FloatFlowBuffer(int32_t h, int32_t w, uint16_t *data) : FloatFlowBufferBase(h, w, data) {}
 
     inline bool isElementKnown(const int32_t y, const int32_t x) const
     {

@@ -59,8 +59,7 @@ string getEnvVar(cchar *envVarName)
         return "";
     }
 
-    string toReturn(var);
-    return toReturn;
+    return var;
 }
 
 static string replaceSlashes(const string& str, const string& oldStr, const string& newStr)

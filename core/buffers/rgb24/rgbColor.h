@@ -319,7 +319,7 @@ public:
         double chroma = value * saturation;
         hue /= 60.0;
         double largest = chroma * (1.0 - std::abs(hue - 2.0 * floor(hue / 2.0) - 1.0));
-        int h = floor(hue);
+        int h = (int)floor(hue);
         double min = value - chroma;
         double r = min, g = min, b = min;
 
@@ -351,7 +351,7 @@ public:
                 break;
         }
 
-        return RGBColor(r * 255, g * 255, b * 255);
+        return RGBColor((uint8_t)(r * 255), (uint8_t)(g * 255), (uint8_t)(b * 255));
     }
 
     static RGBColor gray(uint8_t gray)
@@ -583,7 +583,7 @@ template<class VisitorType>
     {
         Vector3dd input1 = input;
         input1.mapToHypercube(Vector3dd(0.0, 0.0, 0.0), Vector3dd(255.0, 255.0, 255.0));
-        return RGBColor(input1.x(), input1.y(), input1.z());
+        return RGBColor((uint8_t)input1.x(), (uint8_t)input1.y(), (uint8_t)input1.z());
     }
 
     static RGBColor FromHSV(uint16_t h, uint8_t s, uint8_t v)
@@ -593,7 +593,7 @@ template<class VisitorType>
         int r,g,b;
 
         int swh = h / 60;
-        int dh = h - swh * 60.0;
+        int dh = h - swh * 60;
 
         int x1 = c * dh / 60;
         int x2 = c - x1;

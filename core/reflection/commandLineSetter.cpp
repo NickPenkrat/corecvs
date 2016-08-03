@@ -17,7 +17,7 @@ void CommandLineSetter::visit<double, DoubleField>(double &field, const DoubleFi
 template <>
 void CommandLineSetter::visit<float, FloatField>(float &field, const FloatField *fieldDescriptor)
 {
-    field = getDouble(fieldDescriptor->name.name, fieldDescriptor->defaultValue);
+    field = (float)getDouble(fieldDescriptor->name.name, fieldDescriptor->defaultValue);
 }
 
 template <>

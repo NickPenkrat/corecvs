@@ -31,8 +31,8 @@ public:
     int64_t usec() const                           { return mTime;                          }
     int64_t msec() const                           { return msec(mTime);                    }
 
-    int operator-(PreciseTimer& other)             { return msec(mTime - other.mTime);      }
-    int operator-(int& msecOther)                  { return msec(mTime - msecOther * 1000); }
+    int operator-(PreciseTimer& other)             { return (int)msec(mTime - other.mTime);      }
+    int operator-(int& msecOther)                  { return (int)msec(mTime - msecOther * 1000); }
 
 private:
     int64_t mTime;                                          // keeps the time in mks (usecs)

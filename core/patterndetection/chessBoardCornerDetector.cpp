@@ -457,7 +457,6 @@ void ChessBoardCornerDetector::scaleImage(double percLow/* = 0.05*/, double perc
     }
 }
 
-
 void ChessBoardCornerDetector::prepareKernels()
 {
     kernels.clear();
@@ -548,8 +547,8 @@ void ChessBoardCornerDetector::circularMeanShift(std::vector<double> &values, do
 
     for (int i = 0; i < N; ++i)
     {
-        double sum = 0.0;        
-        for (int j = -std::ceil(3.0 * bandwidth); j <= std::ceil(3.0 * bandwidth); ++j)
+        double sum = 0.0;
+        for (int j = (int)-std::ceil(3.0 * bandwidth); j <= (int)std::ceil(3.0 * bandwidth); ++j)
         {
             int idx = j + i;
             while(idx < 0) idx += N;
@@ -572,7 +571,7 @@ void ChessBoardCornerDetector::circularMeanShift(std::vector<double> &values, do
 
     std::set<int> modes_set;
 
-    for (int seed = 0; seed < N; seed++)
+    for (int seed = 0; seed < N; ++seed)
     {
         int i = seed;
         while (1)
@@ -738,10 +737,10 @@ void ChessBoardCornerDetector::filterByOrientation()
     {
         OrientedCorner& c = corners[i];
 
-        int top    = std::max(     0.0, c.pos[1] - neighborhood());
-        int bottom = std::min(ih - 1.0, c.pos[1] + neighborhood());
-        int left   = std::max(     0.0, c.pos[0] - neighborhood());
-        int right  = std::min(iw - 1.0, c.pos[0] + neighborhood());
+        int top    = (int)std::max(0.0     , c.pos[1] - neighborhood());
+        int bottom = (int)std::min(ih - 1.0, c.pos[1] + neighborhood());
+        int left   = (int)std::max(0.0     , c.pos[0] - neighborhood());
+        int right  = (int)std::min(iw - 1.0, c.pos[0] + neighborhood());
 
         if (edgeOrientationFromGradient(top, bottom, left, right, c.v1, c.v2))
         {
@@ -759,10 +758,10 @@ void ChessBoardCornerDetector::adjustCornerOrientation()
         Matrix22 A1(0.0);
         Matrix22 A2(0.0);
 
-        int top    = std::max(     0.0, c.pos.y() - neighborhood());
-        int bottom = std::min(ih - 1.0, c.pos.y() + neighborhood());
-        int left   = std::max(     0.0, c.pos.x() - neighborhood());
-        int right  = std::min(iw - 1.0, c.pos.x() + neighborhood());
+        int top    = (int)std::max(0.0     , c.pos.y() - neighborhood());
+        int bottom = (int)std::min(ih - 1.0, c.pos.y() + neighborhood());
+        int left   = (int)std::max(0.0     , c.pos.x() - neighborhood());
+        int right  = (int)std::min(iw - 1.0, c.pos.x() + neighborhood());
 
         for (int i = top; i <= bottom; ++i)
         {
@@ -806,13 +805,13 @@ void ChessBoardCornerDetector::adjustCornerPosition()
         Vector2dd b(0.0, 0.0);
         // FIXME: current corecvs::Vector implementation does not zero itself on init
 
-        int top    = std::max(     0.0, c.pos.y() - neighborhood());
-        int bottom = std::min(ih - 1.0, c.pos.y() + neighborhood());
-        int left   = std::max(     0.0, c.pos.x() - neighborhood());
-        int right  = std::min(iw - 1.0, c.pos.x() + neighborhood());
+        int top    = (int)std::max(0.0     , c.pos.y() - neighborhood());
+        int bottom = (int)std::min(ih - 1.0, c.pos.y() + neighborhood());
+        int left   = (int)std::max(0.0     , c.pos.x() - neighborhood());
+        int right  = (int)std::min(iw - 1.0, c.pos.x() + neighborhood());
 
-        int cu = c.pos[0];
-        int cv = c.pos[1];
+        int cu = (int)c.pos[0];
+        int cv = (int)c.pos[1];
         int inliers = 0;
 
         for (int i = top; i <= bottom; ++i)
@@ -940,3 +939,4 @@ ChessBoardCornerDetector::ChessBoardCornerDetector(ChessBoardCornerDetectorParam
 {
     prepareKernels();
 }
+
