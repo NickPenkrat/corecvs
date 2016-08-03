@@ -1084,7 +1084,7 @@ friend ostream & operator <<(ostream &out, const AbstractBuffer &buffer)
         {
            for (IndexType j = 0; j < buffer.w; j++)
            {
-               out << buffer.element(i, j);
+               out << buffer.element(i, j) << " ";
            }
            out << endl;
         }

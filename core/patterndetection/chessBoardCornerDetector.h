@@ -47,7 +47,7 @@ struct OrientedCorner
      * Gradient-wise score is correlation with cross of width = bandwidth oriented with corner edges
      * Intensity-wise score is correlation with corner-pattern created using edge orientations
      **/
-    double scoreCorner(DpImage &img, DpImage &w, const vector<double> &radius, double bandwidth = 3.0);
+    double scoreCorner(DpImage &img, DpImage &w, const std::vector<double> &radius, double bandwidth = 3.0);
 
     /**
      *  Computes single scale score
@@ -159,7 +159,7 @@ class ChessBoardCornerDetector : ChessBoardCornerDetectorParams
 {
 public:
     ChessBoardCornerDetector(ChessBoardCornerDetectorParams params = ChessBoardCornerDetectorParams());
-    void detectCorners(DpImage &image, vector<OrientedCorner> &corners);
+    void detectCorners(DpImage &image, std::vector<OrientedCorner> &corners);
 
 private:
     /**
@@ -201,19 +201,19 @@ private:
      */
     // mean-shift mode detector
     // TODO: do we need it outside detector?!
-    void circularMeanShift(vector<double> &values, double bandwidth, vector<std::pair<int, double>> &modes);
+    void circularMeanShift(std::vector<double> &values, double bandwidth, std::vector<std::pair<int, double>> &modes);
 
     DpImage du, dv;
     DpImage w, phi;
     DpImage cost, img;
-    vector<CornerKernelSet> kernels;
-    vector<OrientedCorner>  corners;
+    std::vector<CornerKernelSet> kernels;
+    std::vector<OrientedCorner>  corners;
 
 public:
     void setStatistics(corecvs::Statistics *stats)  { this->stats = stats; }
     corecvs::Statistics *getStatistics()            { return stats; }
 
-    vector<std::string> debugBuffers() const;
+    std::vector<std::string> debugBuffers() const;
     RGB24Buffer *getDebugBuffer(const std::string& name) const;
 
 private:

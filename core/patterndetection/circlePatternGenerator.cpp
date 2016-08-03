@@ -1,5 +1,6 @@
 #include "circlePatternGenerator.h"
 #include "homographyReconstructor.h"
+#include "mathUtils.h"
 
 CirclePatternGenerator::CirclePatternGenerator(CirclePatternGeneratorParams params) : CirclePatternGeneratorParams(params)
 {
@@ -54,15 +55,15 @@ void CirclePatternGenerator::addToken(int token, double r, const std::vector<cor
     flips[0] = pattern;
     for (int i = 0; i < 8; ++i)
     {
-        createFlip(pattern, flips[i], i & 3, i >> 2);
+        createFlip(pattern, flips[i], i & 3, (i >> 2) != 0);
     }
     patterns.emplace_back(std::move(flips));
     tokens.push_back(token);
 }
 
-int convert(double d)
+inline int convert(double d)
 {
-    return (d > 0 ? 0.5 : -0.5) + d;
+    return roundSign(d);
 }
 
 void CirclePatternGenerator::createFlip(DpImage &source, DpImage &destination, int rotation, bool flip)
@@ -133,7 +134,7 @@ int CirclePatternGenerator::getBestToken(DpImage &query, double &score, corecvs:
             }
         }
     }
-    orientation = getFlipMatrix(maxRI & 3, maxRI & 4);
+    orientation = getFlipMatrix(maxRI & 3, (maxRI & 4) != 0);
     score = maxC;
     return maxIdx;
 }
@@ -197,7 +198,7 @@ int CirclePatternGenerator::getBestToken(const DpImage &image, const std::array<
         {
             corecvs::Vector3dd pt = homography * Vector3dd(x * (1.0 / patternSize), y * (1.0 / patternSize), 1.0);
             pt = pt * (1.0 / pt[2]);
-            int xx = pt[0], yy = pt[1];
+            int xx = (int)pt[0], yy = (int)pt[1];
             if (xx >= 0 && xx < image.w && yy >= 0 && yy < image.h)
             {
                 // TODO: maybe we may benefit from some interpolation here

@@ -288,7 +288,6 @@ public:
          mInfMatrix(NULL)
        , mSum(ElementType(0))
        , mCount(0)
-
     {
         int d = getDimention();
         mInfMatrix = new Matrix(d, d);
@@ -441,7 +440,7 @@ public:
     ElementType getMean() const
     {
         if (isEmpty()) {
-            return ElementType(0.0);
+            return ElementType(0);
         }
         return mSum / (double)mCount;
     }
@@ -561,7 +560,8 @@ public:
 
 };
 
-class SDevApproximation1d {
+class SDevApproximation1d
+{
 public:
     double mSqSum;
     double mSum;
@@ -571,9 +571,7 @@ public:
         mSqSum(0.0),
         mSum(0.0),
         mCount(0)
-    {
-
-    }
+    {}
 
     void addPoint (double point)
     {
@@ -598,7 +596,6 @@ public:
         double avg = getAverage();
         return (mSqSum / mCount) - avg * avg;
     }
-
 };
 
 

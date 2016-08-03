@@ -337,8 +337,8 @@ public:
         /* Fixed point */
         uint32_t value = 255 * 16;
 
-        uint32_t k1 = (x - j) * value;
-        uint32_t k2 = (y - i) * value;
+        uint32_t k1 = (uint32_t)((x - j) * value);
+        uint32_t k2 = (uint32_t)((y - i) * value);
 
         RGBEx32 a = RGBEx32(this->element(i    ,j    ));
         RGBEx32 b = RGBEx32(this->element(i    ,j + 1));
