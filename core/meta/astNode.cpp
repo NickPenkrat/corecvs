@@ -223,12 +223,10 @@ ASTNodeInt *ASTNodeInt::derivative(const std::string &var)
             break;
         }
         default   :
-            printf(" UNSUPPORTED OPERATOR %d");
+            printf(" UNSUPPORTED OPERATOR %d", op);
             return new ASTNodeInt("UDEF");
         break;
     }
-
-
 }
 
 ASTNodeInt *ASTNodeInt::compute(const std::map<std::string, double> &bind)
