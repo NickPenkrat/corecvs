@@ -381,7 +381,7 @@ Vector3dd RayIntersection::getPoint()
 void RaytraceableChessMaterial::getColor(RayIntersection &ray, RaytraceRenderer &/*renderer*/)
 {
     Vector3dd intersection = ray.getPoint();
-    intersection = intersection / 10.0;
+    intersection = intersection / cellSize;
 
     bool b1;
     int vx = (int)intersection.x();

@@ -7,7 +7,7 @@ bool Circle2d::intersectWith(const Circle2d &other, Vector2dd &point1, Vector2dd
     double a;
     double x;
 
-    if (!intersectHelper(other, x, a))
+    if (!intersectConicHelper(other, x, a))
         return false;
 
     Vector2dd dir = (other.c - c);
@@ -23,7 +23,7 @@ bool Sphere3d::intersectWith(const Sphere3d &other, Circle3d &result)
     double a;
     double x;
 
-    if (!intersectHelper(other, x, a)) {
+    if (!intersectConicHelper(other, x, a)) {
         return false;
     }
 
@@ -89,7 +89,7 @@ bool corecvs::Sphere3d::intersectWith(const corecvs::Ray3d &ray, double &t1, dou
 {
     Vector3dd toCenter  = c  - ray.p;
     double toCen2 = toCenter & toCenter;
-    double proj  = ray.a & toCenter;
+    double proj  = (ray.a & toCenter) / ray.a.l2Metric();
     double hdist  = (r * r) - toCen2 + proj * proj;
 
     if (hdist < 0) {

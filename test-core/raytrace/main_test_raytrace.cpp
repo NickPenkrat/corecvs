@@ -574,10 +574,47 @@ TEST(Raytrace, testSDF)
     cout << "R:" << ray.ray << endl;
     cout << "P:" << ray.getPoint() << endl;
     cout << "N:" << ray.normal << endl;
+}
 
+TEST(Raytrace, testCylinder)
+{
+    RaytraceableCylinder object;
+    object.e1 = Vector3dd::OrtX();
+    object.e2 = Vector3dd::OrtZ();
+    object.n  = Vector3dd::OrtY();
+    object.h = 50;
+    object.r = 20;
+    object.p = Vector3dd(0,0,200);
 
+    Ray3d rays[] = {
+        Ray3d(Vector3dd::OrtZ()   , Vector3dd::Zero()),
+        Ray3d(Vector3dd::OrtZ()   , Vector3dd(sqrt(object.r), 0, 0)),
+        Ray3d(Vector3dd::OrtZ()   , Vector3dd(-19.99, 0, 0)),
+        Ray3d(Vector3dd(0, 0.1, 1), Vector3dd(-19.99, 0, 0)),
+    };
 
+    for (int i = 0; i < CORE_COUNT_OF(rays); i++)
+    {
+        RayIntersection ray;
+        ray.ray = rays[i];
+        bool ok = object.intersect(ray);
 
+        cout << i << endl;
+        cout << " R:" << ray.ray << endl;
+        if (ok) {
+        cout << " P:" << ray.getPoint() << endl;
+        //cout << " N:" << ray.normal << endl;
+        } else  {
+            cout << "No Intersecution" << endl;
+        }
+
+    }
+
+/*    ray.ray = Ray3d(Vector3dd(0.1, 0, 1.0).normalised(), Vector3dd::Zero());
+    object.intersect(ray);
+    cout << "R:" << ray.ray << endl;
+    cout << "P:" << ray.getPoint() << endl;
+    cout << "N:" << ray.normal << endl;*/
 }
 
 TEST(Raytrace, DISABLED_testRaytraceSDF)
@@ -592,7 +629,7 @@ TEST(Raytrace, DISABLED_testRaytraceSDF)
                 degToRad(60.0));
     renderer.position = Affine3DQ::Identity();
 
-    RaytraceablePointLight light1(RGBColor::White() .toDouble(), Vector3dd( 0, -190, 150));
+    RaytraceablePointLight light1(RGBColor::White() .toDouble(), Vector3dd(  0, -190, 150));
     RaytraceablePointLight light2(RGBColor::Yellow().toDouble(), Vector3dd(-120, -70,  50));
 
     SDFRenderable object;
@@ -624,6 +661,66 @@ TEST(Raytrace, DISABLED_testRaytraceSDF)
 
     BMPLoader().save("trace-noise.bmp", buffer);
 
-
     delete_safe(buffer);
+}
+
+TEST(Raytrace, DISABLED_testRaytraceCylinder)
+{
+    int h = 500;
+    int w = 500;
+    RaytraceRenderer renderer;
+    renderer.intrisics = PinholeCameraIntrinsics(
+                Vector2dd(w, h),
+                degToRad(60.0));
+    renderer.position = Affine3DQ::Identity();
+
+    RaytraceablePointLight light1(RGBColor::White() .toDouble(), Vector3dd(  0, -190, 150));
+    RaytraceablePointLight light2(RGBColor::Yellow().toDouble(), Vector3dd(-120, -70,  50));
+
+    Cylinder3d cylinder;
+    cylinder.c      = Vector3dd(0,0,200);
+    cylinder.normal = Vector3dd::OrtY();
+    cylinder.height = 30;
+    cylinder.r      = 40;
+
+    RaytraceableCylinder object;
+    object.e1 = Vector3dd::OrtX();
+    object.e2 = Vector3dd::OrtZ();
+    object.n  = Vector3dd::OrtY();
+    object.h = 50;
+    object.r = 20;
+    object.p = Vector3dd(0,30,200);
+
+    object.name = "Cylinder";
+    object.color = RGBColor::Red().toDouble();
+    object.material = new RaytraceableChessMaterial(5.0);
+    object.material = MaterialExamples::ex1();
+
+    RaytraceableSphere sphere2(Sphere3d(Vector3dd(-80,0, 250.0), 50.0));
+    sphere2.name = "Sphere2";
+    sphere2.color = RGBColor::Red().toDouble();
+    sphere2.material = MaterialExamples::bumpy();
+
+    RaytraceableUnion scene;
+    scene.elements.push_back(&object);
+    //scene.elements.push_back(&sphere2);
+
+    renderer.object = &scene;
+    renderer.lights.push_back(&light1);
+    renderer.lights.push_back(&light2);
+
+    for (int i = 0; i < 50; i++) {
+        RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
+        double a = degToRad(360 / 50 * i);
+        Vector3dd dir(0, sin(a), cos(a));
+        //renderer.position = Affine3DQ::Shift(dir * 200.0) * Affine3DQ::RotationX(a) *  Affine3DQ::Shift(0, 0, -200.0);
+        renderer.position = Affine3DQ::Shift(Vector3dd(0, i * 3 , 0 ));
+
+        renderer.trace(buffer);
+
+        char name[100];
+        snprintf2buf(name, "trace-cylinder%d.bmp", i);
+        BMPLoader().save(name, buffer);
+        delete_safe(buffer);
+    }
 }

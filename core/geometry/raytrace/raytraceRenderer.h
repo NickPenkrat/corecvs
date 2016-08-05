@@ -69,6 +69,12 @@ public:
 
 class RaytraceableChessMaterial : public RaytraceableMaterial {
 public:
+    double cellSize;
+
+    RaytraceableChessMaterial(double cellSize = 10.0) :
+        cellSize(cellSize)
+    {}
+
     virtual void getColor(RayIntersection &ray, RaytraceRenderer &renderer);
 };
 

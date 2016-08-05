@@ -1,3 +1,6 @@
+#ifndef VECTOROPERATIONS_H
+#define VECTOROPERATIONS_H
+
 /**
  * \file vectorOperations.h
  * \brief This file holds the operations that are commonly used with
@@ -30,9 +33,6 @@
  * \date Jun 13, 2011
  * \author alexander
  */
-
-#ifndef VECTOROPERATIONS_H
-#define VECTOROPERATIONS_H
 
 #include <limits>
 #include <iostream>
