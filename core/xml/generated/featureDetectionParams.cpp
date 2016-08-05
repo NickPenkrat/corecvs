@@ -128,6 +128,20 @@ int FeatureDetectionParams::staticInit()
           "Threshold by descriptor distance instead of b2b ratio"
         )
     );
+    fields().push_back(
+        new IntField
+        (
+          FeatureDetectionParams::MAXFEATURECOUNT_ID,
+          offsetof(FeatureDetectionParams, mMaxFeatureCount),
+          4000,
+          "maxFeatureCount",
+          "maxFeatureCount",
+          "Max acceptable feature point count",
+          true,
+         0,
+         32768
+        )
+    );
    return 0;
 }
 

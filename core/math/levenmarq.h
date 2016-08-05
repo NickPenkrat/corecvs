@@ -54,6 +54,10 @@ public:
     bool trace         = false;
     bool traceMatrix   = false;
     bool traceJacobian = false;
+
+	double f0, x0;
+    double fTolerance = 1e-9,
+    	   xTolerance = 1e-9;
 #if 0
     bool useConjugatedGradient = false;
     int  conjugatedGradientIterations = 100;
@@ -115,17 +119,18 @@ public:
         auto initial = diff;
         F(beta, initial);
         initial -= target;
-        double initialNorm = initial.sumAllElementsSq();
+        double initialNorm = f0 = initial.sumAllElementsSq();
+        x0 = !beta;
         int LSc = 0;
 
         double totalEval = 0.0, totalJEval = 0.0, totalLinSolve = 0.0, totalATA = 0.0, totalTotal = 0.0;
         int g = 0;
-        state->reset("Fit", maxIterations);
+		StatusTracker::Reset(state, "Fit", maxIterations);
 
         for (g = 0; (g < maxIterations) && (lambda < maxlambda) && !converged; g++)
         {
             int LSc_curr = 0;
-            auto boo = state->createAutoTrackerCalculationObject();
+            auto boo = StatusTracker::CreateAutoTrackerCalculationObject(state);
 
             double timeEval = 0.0, timeJEval = 0.0, timeLinSolve = 0.0, timeATA = 0.0, timeTotal = 0.0;
             auto beginT = std::chrono::high_resolution_clock::now();
@@ -316,7 +321,16 @@ public:
                     if (traceMatrix) {
                         cout << "Old soluton:" << endl << beta << endl;
                     }
-
+					double funTolerance = (norm - normNew) / f0;// / (1.0 + norm);
+					double xxTolerance = !delta / x0;// / (1.0 + !beta);
+					if (trace)
+					std::cout << "Tolerances: |f(x)-f(x+d)|/(1.0+f(x): " << funTolerance << " |d|/|1+|x||: " << xxTolerance << std::endl;
+					if (funTolerance < fTolerance && xxTolerance < xTolerance)
+					{
+						converged = true;
+						if (trace)
+						std::cout << "CONVERGED (FTOL+XTOL)" << std::endl;
+					}
                     lambda /= lambdaFactor;
                     norm = normNew;
                     beta += delta;

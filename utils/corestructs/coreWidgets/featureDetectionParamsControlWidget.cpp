@@ -29,6 +29,7 @@ FeatureDetectionParamsControlWidget::FeatureDetectionParamsControlWidget(QWidget
     QObject::connect(mUi->parametersEdit, SIGNAL(textChanged(QString)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->plotTracksCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->thresholdDistanceCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->maxFeatureCountSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
 }
 
 FeatureDetectionParamsControlWidget::~FeatureDetectionParamsControlWidget()
@@ -72,6 +73,7 @@ FeatureDetectionParams *FeatureDetectionParamsControlWidget::createParameters() 
         , mUi->parametersEdit->text().toStdString()
         , mUi->plotTracksCheckBox->isChecked()
         , mUi->thresholdDistanceCheckBox->isChecked()
+        , mUi->maxFeatureCountSpinBox->value()
     );
 }
 
@@ -87,6 +89,7 @@ void FeatureDetectionParamsControlWidget::setParameters(const FeatureDetectionPa
     mUi->parametersEdit->setText(input.parameters().c_str());
     mUi->plotTracksCheckBox->setChecked(input.plotTracks());
     mUi->thresholdDistanceCheckBox->setChecked(input.thresholdDistance());
+    mUi->maxFeatureCountSpinBox->setValue(input.maxFeatureCount());
     blockSignals(wasBlocked);
     emit paramsChanged();
 }

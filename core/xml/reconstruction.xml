@@ -24,6 +24,7 @@
 	<field type="string" name="parameters" defaultValue="" comment="Additional parameters" />
 	<field type="bool"   name="plotTracks" defaultValue="false" comment="Draw tracks on source images" />
 	<field type="bool"   name="thresholdDistance" defaultValue="false" comment="Threshold by descriptor distance instead of b2b ratio"/>
+	<field type="int"    name="maxFeatureCount" defaultValue="4000" min="0" max="32768" comment="Max acceptable feature point count" />
   </class>
   
   <class name="Iterative Reconstruction Feature Selection Params">
@@ -78,6 +79,7 @@
     <field type="int" name="alternatingIterations" defaultValue="0" min="0" max="1000" comment="Alternating optimization on success steps" />
 
 	<field type="bool" name="excessiveQuaternionParametrization" defaultValue="false" comment="Excessive/non-excessive quaternion parametrization" />
+	<field type="bool" name="scaleLock" defaultValue="false" comment="Lock scale" />
 	<field type="bool" name="explicitInverse" defaultValue="false" comment="Explisit inverse in Schur complement solving" />
   </class>
 

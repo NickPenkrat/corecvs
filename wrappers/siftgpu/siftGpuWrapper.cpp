@@ -79,7 +79,7 @@ void SiftGpu::computeImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPo
     (*this)(image, keyPoints, descriptors, true, true);
 }
 
-void SiftGpu::detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints)
+void SiftGpu::detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int)
 {
     RuntimeTypeBuffer buffer;
     (*this)(image, keyPoints,buffer);

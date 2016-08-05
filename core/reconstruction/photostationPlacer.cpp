@@ -302,7 +302,7 @@ void corecvs::PhotostationPlacer::fit(const ReconstructionFunctorOptimizationTyp
     optimizationParams = params;
     getErrorSummaryAll();
     corecvs::LevenbergMarquardtSparse lm(iterations);
-    ReconstructionFunctor orient(scene, optimizable, errorType, optimizationParams, excessiveQuaternionParametrization, 1.0);
+    ReconstructionFunctor orient(scene, optimizable, errorType, optimizationParams, excessiveQuaternionParametrization, scaleLock, 1.0);
     ReconstructionNormalizationFunctor orientNorm(&orient, alternatingIterations);
     lm.linearSolver = LinearSolver::MINRESQLP;//LinearSolver::SCHUR_COMPLEMENT;
 //    lm.terminateOnDegeneracy = true;
@@ -630,11 +630,11 @@ void corecvs::PhotostationPlacer::initialize()
     //double scale = 1.0;
     bool initialized = false;
 
-    scene->processState->reset("Initialize", matchCount.size());
+	StatusTracker::Reset(scene->processState, "Initialize", matchCount.size());
 
     for (auto& init: matchCount)
     {
-        auto boo = scene->processState->createAutoTrackerCalculationObject();
+        auto boo = StatusTracker::CreateAutoTrackerCalculationObject(scene->processState);
 
         CameraFixture* A = std::get<1>(init);
         CameraFixture* B = std::get<2>(init);
@@ -681,6 +681,8 @@ void corecvs::PhotostationPlacer::initialize()
         }
         solver.run();
         auto best = solver.getBestHypothesis();
+        if (scaleLock)
+        	best.shift = best.shift / !best.shift;
         std::cout << psA->name << "::" << psB->name << " " << best.shift << " " << best.rotor << std::endl;
         psB->location = best;
         std::cout << solver.getInliersCount() << " inliers" << std::endl;
@@ -696,6 +698,17 @@ void corecvs::PhotostationPlacer::initialize()
         scene->placedFixtures.push_back(psB);
         for (auto& cf: scene->placedFixtures)
             std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ scene->placedFixtures[0]->location.rotor.conjugated()) << std::endl;
+			
+		scene->matches = scene->matchesCopy;
+    
+		std::cout << "TRYING TRACKS" << std::endl;
+    	postAppend();
+		std::cout << "TRYING TRACKS" << std::endl;
+		if (scene->trackedFeatures.size() < minimalInlierCount())
+		{
+			scene->placedFixtures.clear();
+			continue;
+		}
 
         std::remove(scene->placingQueue.begin(), scene->placingQueue.end(), psA);
         std::remove(scene->placingQueue.begin(), scene->placingQueue.end(), psB);
@@ -711,7 +724,6 @@ void corecvs::PhotostationPlacer::initialize()
     }
     CORE_ASSERT_TRUE_S(initialized);
 
-    postAppend();
 }
 
 void corecvs::PhotostationPlacer::postAppend()
@@ -766,6 +778,8 @@ void corecvs::PhotostationPlacer::postAppend()
         auto acnt = scene->trackedFeatures.size();
         if (acnt <= pcnt && i != 0)
             break;
+        if (scene->trackedFeatures.size() < minimalInlierCount())
+        	break;
         fit(params, postAppendNonlinearIterations / 2, postAppendOptimizationWindow());
         std::cout << "Prune" << std::endl;
         scene->pruneTracks(inlierThreshold() * rmsePruningScaler() / 2.0, inlierThreshold() * maxPruningScaler() / 2.0, distanceLimit());
@@ -801,11 +815,11 @@ void corecvs::PhotostationPlacer::fullRun()
      *          be adressend in future (when we add non-iterative reconstruction)
      */
     scene->state = ReconstructionState::APPENDABLE;
-    scene->processState->reset("Appending", scene->placingQueue.size());
+	StatusTracker::Reset(scene->processState, "Appending", scene->placingQueue.size());
 
     while (scene->placingQueue.size())
     {
-        auto boo = scene->processState->createAutoTrackerCalculationObject();
+        auto boo = StatusTracker::CreateAutoTrackerCalculationObject(scene->processState);
 
         paintTracksOnImages(true);
 
@@ -826,9 +840,9 @@ void corecvs::PhotostationPlacer::fullRun()
 
     fit(optimizationParams, finalNonLinearIterations / 2);
 
-    scene->processState->reset("Pruning", 1);
+	StatusTracker::Reset(scene->processState, "Pruning", 1);
     {
-        auto boo = scene->processState->createAutoTrackerCalculationObject();
+        auto boo = StatusTracker::CreateAutoTrackerCalculationObject(scene->processState);
         scene->pruneTracks(inlierThreshold() * rmsePruningScaler() / 2.0
                          , inlierThreshold() * maxPruningScaler() / 2.0
                          , distanceLimit());

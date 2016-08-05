@@ -68,12 +68,13 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
         computeErrors(out, idxs);
     }
     void alternatingMinimization(int steps);
-    ReconstructionFunctor(ReconstructionFixtureScene *scene, const std::vector<CameraFixture*> &optimizableSubset, const ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType &error, const ReconstructionFunctorOptimizationType &optimization, bool excessiveQuaternionParametrization, const double pointErrorEstimate);
+    ReconstructionFunctor(ReconstructionFixtureScene *scene, const std::vector<CameraFixture*> &optimizableSubset, const ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType &error, const ReconstructionFunctorOptimizationType &optimization, bool excessiveQuaternionParametrization, bool scaleLock, const double pointErrorEstimate);
 
     ReconstructionFixtureScene *scene;
     ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType error;
     ReconstructionFunctorOptimizationType optimization;
-    bool excessiveQuaternionParametrization;
+    bool excessiveQuaternionParametrization = false;
+    bool scaleLock = false;
 
     void computePointCounts();
     void computeInputs();
@@ -147,6 +148,9 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
     std::vector<Quaternion> originalOrientations;
     std::vector<Vector3dd> inputQuaternions;
     std::vector<FixtureCamera*> focalTunableCameras, principalTunableCameras;
+	corecvs::Vector3dd scaleReference;
+	corecvs::CameraFixture* scaleLockFixtue = nullptr;
+	double lockedScale = 1.0;
 
     std::vector<CameraFixture*> optimizableSubset;
 

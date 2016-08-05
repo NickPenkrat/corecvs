@@ -20,7 +20,7 @@ const int CORE_COUNT_LIMIT = 256;
             }
 #endif
 
-corecvs::ReconstructionFunctor::ReconstructionFunctor(corecvs::ReconstructionFixtureScene *scene, const std::vector<CameraFixture*> &optimizableSubset, const ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType &error, const corecvs::ReconstructionFunctorOptimizationType &optimization, bool excessiveQuaternionParametrization, const double pointErrorEstimate) : corecvs::SparseFunctionArgs(), scene(scene), error(error), optimization(optimization), excessiveQuaternionParametrization(excessiveQuaternionParametrization), scalerPoints(pointErrorEstimate), optimizableSubset(optimizableSubset)
+corecvs::ReconstructionFunctor::ReconstructionFunctor(corecvs::ReconstructionFixtureScene *scene, const std::vector<CameraFixture*> &optimizableSubset, const ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType &error, const corecvs::ReconstructionFunctorOptimizationType &optimization, bool excessiveQuaternionParametrization, bool scaleLock, const double pointErrorEstimate) : corecvs::SparseFunctionArgs(), scene(scene), error(error), optimization(optimization), excessiveQuaternionParametrization(excessiveQuaternionParametrization), scaleLock(scaleLock), scalerPoints(pointErrorEstimate), optimizableSubset(optimizableSubset)
 {
     /*
      * Compute inputs (these are ball-park estimate, need to
@@ -269,6 +269,9 @@ void corecvs::ReconstructionFunctor::computeInputs()
                 orientableFixtures.push_back(scene->placedFixtures[i]);
         std::cout << "NON_DEGENERATE_ORIENTATIONS: " << orientableFixtures.size() << std::endl;)
 
+	scaleReference = scene->placedFixtures[0]->location.shift;
+	if (scaleLock)
+		scaleLockFixtue = scene->placedFixtures[1];
     IF(DEGENERATE_TRANSLATIONS,
         if (counter[scene->placedFixtures[0]] > MINIMAL_TRACKED_FOR_TRANSLATION)
         {
@@ -517,7 +520,7 @@ void corecvs::ReconstructionFunctor::readParams(const double* params, bool prepa
         FILL(orientableFixtures,  INPUTS_PER_ORIENTATION_EXC, a->location.rotor[i] = v, a->location.rotor.normalise(),)
     else
         FILL(orientableFixtures,  INPUTS_PER_ORIENTATION_NEX, inputQuaternions[id][i] = v; a->location.rotor[i] = v, a->location.rotor[3] = 1.0; a->location.rotor.normalise(); a->location.rotor = a->location.rotor ^ originalOrientations[id], int id = &a - &orientableFixtures[0])
-    FILL(translateableFixtures,   INPUTS_PER_TRANSLATION,     a->location.shift[i] = v,,)
+    FILL(translateableFixtures,   INPUTS_PER_TRANSLATION,     a->location.shift[i] = v, if (a == scaleLockFixtue) { a->location.shift = scaleReference + (a->location.shift - scaleReference) / (!(a->location.shift - scaleReference));},)
     FILL(focalTunableCameras,     INPUTS_PER_FOCAL,           a->intrinsics.focal = corecvs::Vector2dd(v, v),,)
     FILL(principalTunableCameras, INPUTS_PER_PRINCIPAL,       a->intrinsics.principal[i] = v,,)
     IF(POINTS,
@@ -578,7 +581,7 @@ void corecvs::ReconstructionFunctor::readParams(const double* params, bool prepa
                     {
                         fqw = 1e100;
                         int id = 0;
-                        for (; orientableFixtures[id] != wpp.u; ++id);
+                        for (; orientableFixtures[id] != wpp.u && id < orientableFixtures.size(); ++id);
                         CORE_ASSERT_TRUE_S(id < (int)orientableFixtures.size());
                         FR0 = corecvs::Matrix44(originalOrientations[id].conjugated().toMatrix());
                     }
@@ -613,7 +616,7 @@ void corecvs::ReconstructionFunctor::readParams(const double* params, bool prepa
                                         0.0, 0.0, -1.0/f, 0.0,
                                     0.0, 0.0,    0.0, 0.0,
                                     0.0, 0.0,    0.0, 0.0);
-            const corecvs::Matrix44
+            corecvs::Matrix44
                     FTx(0.0, 0.0, 0.0,-1.0,
                         0.0, 0.0, 0.0, 0.0,
                         0.0, 0.0, 0.0, 0.0,
@@ -626,6 +629,31 @@ void corecvs::ReconstructionFunctor::readParams(const double* params, bool prepa
                         0.0, 0.0, 0.0, 0.0,
                         0.0, 0.0, 0.0,-1.0,
                         0.0, 0.0, 0.0, 0.0);
+            if (scaleLock && scaleLockFixtue == wpp.u)
+			{
+				double slx = scaleReference[0], sly = scaleReference[1], slz = scaleReference[2];
+				double oftx = params[list.tx], ofty = params[list.ty], oftz = params[list.tz];
+				double dx = oftx - slx, dy = ofty - sly, dz = oftz - slz;
+				double N2 = dx * dx + dy * dy + dz * dz;
+				double N = std::sqrt(N2);
+				double N3 = N*N2;
+
+				FTx = corecvs::Matrix44(
+						0.0, 0.0, 0.0, dx*dx/N3-1/N,
+						0.0, 0.0, 0.0, dx*dy/N3,
+						0.0, 0.0, 0.0, dx*dz/N3,
+						0.0, 0.0, 0.0, 0.0);
+				FTy = corecvs::Matrix44(
+						0.0, 0.0, 0.0, dx*dy/N3,
+						0.0, 0.0, 0.0, dy*dy/N3-1/N,
+						0.0, 0.0, 0.0, dy*dz/N3,
+						0.0, 0.0, 0.0, 0.0);
+				FTz = corecvs::Matrix44(
+						0.0, 0.0, 0.0, dz*dx/N3,
+						0.0, 0.0, 0.0, dz*dy/N3,
+						0.0, 0.0, 0.0, dz*dz/N3-1/N,
+						0.0, 0.0, 0.0, 0.0);
+			}
             corecvs::Vector4dd Xx(1.0, 0.0, 0.0, 0.0);
             corecvs::Vector4dd Xy(0.0, 1.0, 0.0, 0.0);
             corecvs::Vector4dd Xz(0.0, 0.0, 1.0, 0.0);
