@@ -10,7 +10,8 @@
 
 #include <fstream>
 #include <iostream>
-#include <objLoader.h>
+#include "objLoader.h"
+#include "bufferFactory.h"
 #include "gtest/gtest.h"
 
 #include "global.h"
@@ -579,9 +580,9 @@ TEST(Raytrace, testSDF)
 TEST(Raytrace, testCylinder)
 {
     RaytraceableCylinder object;
-    object.e1 = Vector3dd::OrtX();
+    /*object.e1 = Vector3dd::OrtX();
     object.e2 = Vector3dd::OrtZ();
-    object.n  = Vector3dd::OrtY();
+    object.n  = Vector3dd::OrtY();*/
     object.h = 50;
     object.r = 20;
     object.p = Vector3dd(0,0,200);
@@ -673,6 +674,12 @@ TEST(Raytrace, DISABLED_testRaytraceCylinder)
                 Vector2dd(w, h),
                 degToRad(60.0));
     renderer.position = Affine3DQ::Identity();
+    //renderer.sky = new RaytraceableSky1();
+
+    RGB24Buffer *cubemap = BufferFactory::getInstance()->loadRGB24Bitmap("cubemap.bmp");
+    //cout << "Loaded cubemap" << cubemap->getSize() << endl;
+    RaytraceableCubemap cubeMaterial(cubemap);
+    renderer.sky = &cubeMaterial;
 
     RaytraceablePointLight light1(RGBColor::White() .toDouble(), Vector3dd(  0, -190, 150));
     RaytraceablePointLight light2(RGBColor::Yellow().toDouble(), Vector3dd(-120, -70,  50));
@@ -684,9 +691,9 @@ TEST(Raytrace, DISABLED_testRaytraceCylinder)
     cylinder.r      = 40;
 
     RaytraceableCylinder object;
-    object.e1 = Vector3dd::OrtX();
+/*    object.e1 = Vector3dd::OrtX();
     object.e2 = Vector3dd::OrtZ();
-    object.n  = Vector3dd::OrtY();
+    object.n  = Vector3dd::OrtY();*/
     object.h = 50;
     object.r = 20;
     object.p = Vector3dd(0,30,200);
@@ -709,12 +716,12 @@ TEST(Raytrace, DISABLED_testRaytraceCylinder)
     renderer.lights.push_back(&light1);
     renderer.lights.push_back(&light2);
 
-    for (int i = 0; i < 50; i++) {
+    for (int i = 0; i < 150; i++) {
         RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
-        double a = degToRad(360 / 50 * i);
+        double a = degToRad(360.0 / 150 * i);
         Vector3dd dir(0, sin(a), cos(a));
         //renderer.position = Affine3DQ::Shift(dir * 200.0) * Affine3DQ::RotationX(a) *  Affine3DQ::Shift(0, 0, -200.0);
-        renderer.position = Affine3DQ::Shift(Vector3dd(0, i * 3 , 0 ));
+        renderer.position = Affine3DQ::Shift(Vector3dd(0, i * 3 , 0 )) * Affine3DQ::RotationY(0.0);
 
         renderer.trace(buffer);
 

@@ -50,15 +50,20 @@ public:
 
     /* We need matrix here */
     Vector3dd p;   /**< center of one of the faces */
+
+#if 0
     Vector3dd e1;  /**< first  vector in the face assumed to be unit length */
     Vector3dd e2;  /**< second vector in the face assumed to be unit length */
-
     Vector3dd n;   /**< cylinder axis - so far should be ortogonal to e1, e2 */
+#endif
+    Matrix33 rotation; /**<   Stores cylinder orientation.  */
+
     double r;      /**< cylinder radius */
     double h;      /**< cylinder height */
 
     RaytraceableCylinder() :
-        flag(false)
+        flag(false),
+        rotation(Matrix33::RotationX(degToRad(90)))
     {}
 
     virtual bool intersect(RayIntersection &intersection) override;

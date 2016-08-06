@@ -673,15 +673,15 @@ bool RaytraceableCylinder::intersect(RayIntersection &intersection)
     Ray3d &ray = intersection.ray;
     Vector3dd shift = ray.p - p;
     Ray3d cylFrame;
-    cylFrame.a.x() = ray.a & e1;
+  /*cylFrame.a.x() = ray.a & e1;
     cylFrame.a.y() = ray.a & e2;
-    cylFrame.a.z() = ray.a &  n;
+    cylFrame.a.z() = ray.a &  n;*/
+    cylFrame.a = rotation * ray.a;
 
-    cylFrame.p.x() = shift & e1;
+  /*cylFrame.p.x() = shift & e1;
     cylFrame.p.y() = shift & e2;
-    cylFrame.p.z() = shift &  n;
-
-
+    cylFrame.p.z() = shift &  n;*/
+    cylFrame.p = rotation * shift;
 
     double b = - (cylFrame.p.xy() & cylFrame.a.xy()) / (cylFrame.a.xy() & cylFrame.a.xy());
     Vector2dd pos = cylFrame.p.xy() + b * cylFrame.a.xy();
@@ -704,6 +704,7 @@ bool RaytraceableCylinder::intersect(RayIntersection &intersection)
     double len1 = (cylFrame.p.z() + t1 * cylFrame.a.z()) / h;
     double len2 = (cylFrame.p.z() + t2 * cylFrame.a.z()) / h;
 
+    Vector3dd n = rotation.row(2);
     Plane3d bottom = Plane3d::FromNormalAndPoint(-n, p        );
     Plane3d top    = Plane3d::FromNormalAndPoint( n, p + n * h);
 
@@ -805,7 +806,7 @@ bool RaytraceableCylinder::intersect(RayIntersection &intersection)
 void RaytraceableCylinder::normal(RayIntersection &intersection)
 {
     static const double CYL_EPSILON  = 0.00001;
-
+    Vector3dd n = rotation.row(2);
     Vector3dd pos = intersection.getPoint();
     double t = ((pos - p) & n);
 
@@ -825,6 +826,7 @@ void RaytraceableCylinder::normal(RayIntersection &intersection)
 
 bool RaytraceableCylinder::inside(Vector3dd &point)
 {
+    Vector3dd n = rotation * Vector3dd::OrtZ();
     Ray3d axis(n, p);
     double originProj = axis.projectionP(point);
 
