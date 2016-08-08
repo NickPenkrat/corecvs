@@ -32,6 +32,8 @@ IterativeReconstructionAppendParamsControlWidget::IterativeReconstructionAppendP
     QObject::connect(mUi->speculativitySpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->minimalInlierCountSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->maximalFailureProbabilitySpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->shutUpAndAppendMyFixtureInlierThresholdSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->shutUpAndAppendMyFixtureSuccessProbThresholdSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
 }
 
 IterativeReconstructionAppendParamsControlWidget::~IterativeReconstructionAppendParamsControlWidget()
@@ -78,6 +80,8 @@ IterativeReconstructionAppendParams *IterativeReconstructionAppendParamsControlW
         , mUi->speculativitySpinBox->value()
         , mUi->minimalInlierCountSpinBox->value()
         , mUi->maximalFailureProbabilitySpinBox->value()
+        , mUi->shutUpAndAppendMyFixtureInlierThresholdSpinBox->value()
+        , mUi->shutUpAndAppendMyFixtureSuccessProbThresholdSpinBox->value()
     );
 }
 
@@ -96,6 +100,8 @@ void IterativeReconstructionAppendParamsControlWidget::setParameters(const Itera
     mUi->speculativitySpinBox->setValue(input.speculativity());
     mUi->minimalInlierCountSpinBox->setValue(input.minimalInlierCount());
     mUi->maximalFailureProbabilitySpinBox->setValue(input.maximalFailureProbability());
+    mUi->shutUpAndAppendMyFixtureInlierThresholdSpinBox->setValue(input.shutUpAndAppendMyFixtureInlierThreshold());
+    mUi->shutUpAndAppendMyFixtureSuccessProbThresholdSpinBox->setValue(input.shutUpAndAppendMyFixtureSuccessProbThreshold());
     blockSignals(wasBlocked);
     emit paramsChanged();
 }

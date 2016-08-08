@@ -50,7 +50,9 @@
     <field type="double" name="gammaP6P"           defaultValue="0.001" step="0.0001" min="0" max="1" decimals="6"  comment="Target error probability for 6P->pose/3P->orientation" />
     <field type="int" name="speculativity"      defaultValue="1000" min="1" max="1000000"  comment="This defines how many multicameras are subject for P3P evaluation at each iteration" />
     <field type="int" name="minimalInlierCount" defaultValue="32"  min="3" max="1000000"   comment="Minimal inlier count for hypotheis acceptance" />
-    <field type="double" name="maximalFailureProbability" defaultValue="0.15" min="0" max="1" step="0.001"  decimals="6" comment="Maximal failure probability for hypothesis acceptance" />
+	<field type="double" name="maximalFailureProbability" defaultValue="0.15" min="0" max="1" step="0.001"  decimals="6" comment="Maximal failure probability for hypothesis acceptance" />
+	<field  type="int" name="shutUpAndAppendMyFixtureInlierThreshold" min="10" max="1000000" defaultValue="200" comment="Immediate append inlier count threshold" />
+	<field  type="double" name="shutUpAndAppendMyFixtureSuccessProbThreshold" min="0.0" max="1.0" defaultValue="0.9" decimals="6" />
   </class>
 
   <class name="Reconstruction Functor Optimization Params">
