@@ -31,6 +31,30 @@ public:
     void getColor(RayIntersection &ray, RaytraceRenderer &renderer);
 };
 
+class RaytraceableSky1 : public RaytraceableMaterial {
+public:
+    PerlinNoise noise;
+    double skyLevel = 0.8;
+
+    TraceColor sky  = RGBColor::Cyan().toDouble();
+    TraceColor low  = RGBColor::Cyan().toDouble();
+    TraceColor high = RGBColor::White().toDouble();
+
+    virtual void getColor(RayIntersection &ray, RaytraceRenderer &renderer) override;
+
+};
+
+class RaytraceableCubemap : public RaytraceableMaterial {
+public:
+    RGB24Buffer *cubemap = NULL;
+
+    RaytraceableCubemap(RGB24Buffer *cubemap = NULL) :
+        cubemap(cubemap)
+    {}
+
+    virtual void getColor(RayIntersection &ray, RaytraceRenderer &renderer) override;
+
+};
 
 class MaterialExamples
 {
@@ -44,6 +68,8 @@ public:
     static RaytraceableMaterial *texture();
 
 };
+
+
 
 } // namespace corecvs
 

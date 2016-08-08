@@ -49,7 +49,7 @@ public:
 
     virtual void operator()(const Vector &in, Vector &out)
     {
-        return operator()(&in[0] , &out[0]);
+        return operator()(in.begin(), out.begin());
     }
 
     virtual void operator()(const vector<double> &in, vector<double> &out)

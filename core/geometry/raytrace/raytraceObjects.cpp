@@ -2,6 +2,11 @@
 
 const double RaytraceableSphere::EPSILON = 0.000001;
 
+
+/**
+   We now can use Sphere3d method for this.
+   This method need to be corrected
+ **/
 bool RaytraceableSphere::intersect(RayIntersection &intersection)
 {
     Ray3d ray = intersection.ray;
@@ -556,4 +561,284 @@ void RaytraceableOptiMesh::normal(RayIntersection &intersection)
 //        SYNC_PRINT(("Augmented Normal\n"));
     }
     //intersection.texCoord = mMesh->textureCoords[face.x()];
+}
+
+#if 0
+bool RaytraceableCylinder::intersect(RayIntersection &intersection)
+{
+    intersection.object = NULL;
+
+    Plane3d bottom = mCylinder.getBottomPlane();
+    Plane3d top    = mCylinder.getTopPlane();
+
+    Ray3d axis = mCylinder.getAxis();
+
+
+
+
+    Ray3d projected = mCylinder.getBottomPlane().projectRayTo(intersection.ray);
+    Sphere3d tmp(mCylinder);
+
+    double t[4] = { std::numeric_limits<double>::lowest() };
+    bool bc = tmp.intersectWith(projected, t[0], t[1]);
+
+    t[0] /= projected.a.l2Metric();
+    t[1] /= projected.a.l2Metric();
+
+    bool b1 = true;
+    t[2] = bottom.intersectWithP(intersection.ray, &b1);
+    if (!b1) t[2] = std::numeric_limits<double>::lowest();
+
+    bool b2 = true;
+    t[3] = top.intersectWithP(intersection.ray, &b2);
+    if (!b2) t[3] = std::numeric_limits<double>::lowest();
+
+    double best = std::numeric_limits<double>::max();
+    int n = -1;
+
+    for (size_t i = 0; i < CORE_COUNT_OF(t); i++ )
+    {
+        if (t[i] > 0 && t[i] < best) {
+            best = t[i];
+            n = i;
+        }
+    }
+
+    if (n == -1)
+    {
+        return false;
+    }
+
+    intersection.object = this;
+    intersection.t = best;
+
+    if (n == 0 || n == 1) {
+        intersection.normal = mCylinder.normal;
+    } else {
+        Vector3dd point = intersection.getPoint();
+        intersection.normal = point - axis.projection(point);
+        intersection.normal.normalise();
+    }
+    return true;
+}
+
+bool RaytraceableCylinder::intersect(RayIntersection &intersection)
+{
+    intersection.object = NULL;
+
+    Ray3d ray  = intersection.ray.normalised();
+    Ray3d axis = mCylinder.getAxis().normalised();
+
+//    cout << "RaytraceableCylinder::intersect():  ray:" << ray  << endl;
+//    cout << "RaytraceableCylinder::intersect(): axis:" << axis << endl;
+
+    Vector3dd coef = ray.intersectCoef(axis);
+
+//    cout << "RaytraceableCylinder::intersect(): coef:" << coef << endl;
+
+    if (fabs(coef.z()) > mCylinder.r)
+        return false;
+
+    double ca = (ray.a & axis.a);
+    double sa = sqrt(1.0 - (ca * ca));
+
+//    cout << "RaytraceableCylinder::intersect(): ca, sa:" << ca << " " << sa << endl;
+
+    double l1 = coef.z() * ca;
+    double l2 = coef.z() * sa;
+    double dt = sqrt(mCylinder.r * mCylinder.r - l2 * l2);
+
+    double h1 = coef.y() - l2 * mCylinder.r;
+    double h2 = coef.y() + l2 * mCylinder.r;
+
+    if        (coef.x() - dt  > 0.0001 && h1 < mCylinder.height && h1 > 0 ) {
+        intersection.t = coef.x() - dt;
+        intersection.object = this;
+        return true;
+    } else if (coef.x() + dt  > 0.0001 && h2 < mCylinder.height && h2 > 0 )  {
+        intersection.t = coef.x() + dt;
+        intersection.object = this;
+        return true;
+    }
+    return false;
+}
+#endif
+
+
+bool RaytraceableCylinder::intersect(RayIntersection &intersection)
+{
+    static const double CYL_EPSILON  = 0.00001;
+    intersection.object = NULL;
+
+    Ray3d &ray = intersection.ray;
+    Vector3dd shift = ray.p - p;
+    Ray3d cylFrame;
+  /*cylFrame.a.x() = ray.a & e1;
+    cylFrame.a.y() = ray.a & e2;
+    cylFrame.a.z() = ray.a &  n;*/
+    cylFrame.a = rotation * ray.a;
+
+  /*cylFrame.p.x() = shift & e1;
+    cylFrame.p.y() = shift & e2;
+    cylFrame.p.z() = shift &  n;*/
+    cylFrame.p = rotation * shift;
+
+    double b = - (cylFrame.p.xy() & cylFrame.a.xy()) / (cylFrame.a.xy() & cylFrame.a.xy());
+    Vector2dd pos = cylFrame.p.xy() + b * cylFrame.a.xy();
+    double x = !pos;
+
+    if (x > r) {
+        return false;
+    }
+
+    double db = sqrt(r * r - x * x);
+
+    double t1 = b - db;
+    double t2 = b + db;
+
+    /*
+    double t1 = -1;
+    double t2 = -1;
+    */
+
+    double len1 = (cylFrame.p.z() + t1 * cylFrame.a.z()) / h;
+    double len2 = (cylFrame.p.z() + t2 * cylFrame.a.z()) / h;
+
+    Vector3dd n = rotation.row(2);
+    Plane3d bottom = Plane3d::FromNormalAndPoint(-n, p        );
+    Plane3d top    = Plane3d::FromNormalAndPoint( n, p + n * h);
+
+
+/*    cout << "RaytraceableCylinder::intersect():  ray:" << cylFrame  << endl;
+    cout << "RaytraceableCylinder::intersect():    b:" << b << endl;
+    cout << "RaytraceableCylinder::intersect():  pos:" << pos << endl;
+    cout << "RaytraceableCylinder::intersect():   db:" << db << endl;
+    cout << "RaytraceableCylinder::intersect():    t:" << t1 << " " << t2 << endl;
+
+    cout << "RaytraceableCylinder::intersect():  len:" << len1 << " " << len2 << endl;
+*/
+
+
+    //if ( cylFrame.a.z() > CYL_EPSILON || cylFrame.a.z() < -CYL_EPSILON)
+    {
+        bool ok1;
+        bool ok2;
+        double tp1 = bottom.intersectWithP(ray, &ok1);
+        double tp2 = top   .intersectWithP(ray, &ok2);
+        Vector3dd pp1 = ray.getPoint(tp1) - p ;
+        Vector3dd pp2 = ray.getPoint(tp2) - p - n * h;
+
+
+
+
+        if      (len1 < 0.0)
+        {
+            if ( !ok1 || (pp1 & pp1) >= r * r ) {
+                t1 = -1;
+            } else {
+                t1 = tp1;
+            }
+        }
+        else if (len1 > 1.0)
+        {
+            if ( !ok2 || (pp2 & pp2) >= r * r ) {
+                t1 = -1;
+            } else {
+                t1 = tp2;
+            }
+        }
+
+        if      (len2 < 0.0)
+        {
+            if ( !ok1 || (pp1 & pp1) >= r * r ) {
+                t2 = -1;
+            } else {
+                t2 = tp1;
+            }
+        }
+        else if ( len2 > 1.0)
+        {
+            if ( !ok2 || (pp2 & pp2) >= r * r ) {
+                t2 = -1;
+            } else {
+                t2 = tp2;
+            }
+        }
+    }
+
+    if (t1 > t2) std::swap(t1, t2);
+/*
+
+    double a = cylFrame.a.xy().sumAllElementsSq();
+    double b = cylFrame.p.xy() & cylFrame.a.xy();
+    double c = cylFrame.p.xy().sumAllElementsSq() - r * r * r *r;
+
+    double d = b * b - a * c;
+
+    if (d <= 0.0)
+        return false;
+    d = sqrt(d);
+
+    double t1 = (-b - d) / a;
+    double t2 = (-b + d) / a;
+
+    double len1 = (cylFrame.a.z() + t1*cylFrame.p.z()) / h;
+    double len2 = (cylFrame.a.z() + t2*cylFrame.p.z()) / h;
+*/
+
+    if ( t1 > CYL_EPSILON)
+    {
+       intersection.object = this;
+       intersection.t      = t1;
+       return true;
+    }
+
+    if ( t2 > CYL_EPSILON)
+    {
+       intersection.object = this;
+       intersection.t      = t2;
+       return true;
+    }
+    return false;
+
+}
+
+void RaytraceableCylinder::normal(RayIntersection &intersection)
+{
+    static const double CYL_EPSILON  = 0.00001;
+    Vector3dd n = rotation.row(2);
+    Vector3dd pos = intersection.getPoint();
+    double t = ((pos - p) & n);
+
+    if ( t <  CYL_EPSILON )
+    {
+        intersection.normal = - n;
+        return;
+    }
+    if ( t > h - CYL_EPSILON) {
+        intersection.normal = n;
+        return;
+    }
+
+    intersection.normal  = (pos - p - n * t).normalised();
+    return;
+}
+
+bool RaytraceableCylinder::inside(Vector3dd &point)
+{
+    Vector3dd n = rotation * Vector3dd::OrtZ();
+    Ray3d axis(n, p);
+    double originProj = axis.projectionP(point);
+
+    if (originProj < 0 || originProj > h)
+        return flag;
+
+    double d = axis.distanceTo(point);
+    if (d > r)
+    {
+        return flag;
+    }
+
+    return !flag;
+
 }

@@ -26,13 +26,15 @@ public:
     }
 
     /**
-     *   Decomposes the intersection point (if one exists) into the corrdinate frame with ox - on the line connecting the centers
+     *   Decomposes the intersection point (if one exists) into the corrdinate frame with ox - on the line
+     * connecting the centers
      *
      **/
-    bool intersectHelper(const RealType &other, double &xr, double &ar)
+    bool intersectConicHelper(const RealType &other, double &xr, double &ar)
     {
-        double d =  (other.c - c).l2Metric();
-        double ds = d * d;
+        double ds = (other.c - c).sumAllElementsSq();
+        double d =  sqrt(ds);
+
         double r1 = r      , r1s = r1*r1;
         double r2 = other.r, r2s = r2*r2;
 
@@ -48,11 +50,15 @@ public:
         return true;
     }
 
+
+
     friend ostream & operator <<(ostream &out, const UnifiedSphere &sphere)
     {
         out << "[" << sphere.c << "] (" << sphere.r << ")";
         return out;
     }
+
+
 };
 
 class Circle2d : public UnifiedSphere<Circle2d, Vector2dd>
@@ -105,6 +111,24 @@ public:
     }
 };
 
+class Cylinder3d : public Circle3d
+{
+public:
+    double   height;
+
+    Plane3d getBottomPlane() {
+        return getPlane();
+    }
+
+    Ray3d getAxis()
+    {
+        return Ray3d(normal, c);
+    }
+
+    Plane3d getTopPlane() {
+        return Plane3d::FromNormalAndPoint(-normal, c + height * normal.normalised());
+    }
+};
 
 /* Circle 2d iterator */
 class CircleSpanIterator
