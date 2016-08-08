@@ -720,6 +720,7 @@ bool RaytraceableCylinder::intersect(RayIntersection &intersection)
 
 
     //if ( cylFrame.a.z() > CYL_EPSILON || cylFrame.a.z() < -CYL_EPSILON)
+    if (1)
     {
         bool ok1;
         bool ok2;
@@ -736,7 +737,7 @@ bool RaytraceableCylinder::intersect(RayIntersection &intersection)
             if ( !ok1 || (pp1 & pp1) >= r * r ) {
                 t1 = -1;
             } else {
-                t1 = tp1;
+                t1 = std::min(tp1, t1);
             }
         }
         else if (len1 > 1.0)
@@ -744,7 +745,7 @@ bool RaytraceableCylinder::intersect(RayIntersection &intersection)
             if ( !ok2 || (pp2 & pp2) >= r * r ) {
                 t1 = -1;
             } else {
-                t1 = tp2;
+                t1 = std::min(tp2, t1);
             }
         }
 
