@@ -70,16 +70,25 @@ bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFi
     struct dirent *ep;
     while ((ep = readdir(dp)) != NULL)
     {
+        /* We need to form path */
+        string result = path + PATH_SEPARATOR + ep->d_name;
+
         /* Ok there are devices, pipes, links... I don't know... */
         bool isDir = (ep->d_type != DT_REG) && (ep->d_type != DT_LNK);
+        if (ep->d_type == DT_UNKNOWN)
+        {
+            DIR *dp2 = opendir(result.c_str());
+            isDir = dp2 != NULL;
+            if (isDir) {
+                closedir(dp2);
+            }
+        }
 
         SYNC_PRINT(("%s contains\t%s\tas a %s (type:0x%x)\n", path.c_str(), ep->d_name, (isDir ? "dir" : "file"), ep->d_type));
 
         if (!(findFiles ^ isDir))
             continue;
 
-        /* Do we need to form path? */
-        string result = path + PATH_SEPARATOR + ep->d_name;
         childs.push_back(result);
     }
 
