@@ -31,7 +31,7 @@ public:
     //! \brief Creates sparse matrix from dense with specified threshold
     SparseMatrix(const Matrix &dense, double threshold = 0.0);
     //! \brief Creates sparse matrix from CRS data
-    SparseMatrix(int h, int w, const std::vector<double> &values, const std::vector<int> &columns, const std::vector<int> &rowPointers);
+    SparseMatrix(int h = 0, int w = 0, const std::vector<double> &values = {}, const std::vector<int> &columns = {}, const std::vector<int> &rowPointers = {0});
     //! \brief Creates sparse matrix from {point, value} data
     SparseMatrix(int h, int w, const std::map<std::pair<int, int>, double> &data);
     //! \brief Creates dense submatrix and return column idx
@@ -91,6 +91,8 @@ public:
     static bool LinSolveSchurComplementNew(const corecvs::SparseMatrix &A, const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric = false, bool posDef = false);
     static bool LinSolveSchurComplement(const corecvs::SparseMatrix &A, const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric = false, bool posDef = false, bool explicitInv = false);
     bool        linSolveSchurComplement(const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric = false, bool posDef = false);
+
+	std::pair<bool, SparseMatrix> incompleteCholseky();
 
     void print(std::ostream& out = std::cout) const;
     friend std::ostream& operator<< (std::ostream &out, const SparseMatrix &sm);

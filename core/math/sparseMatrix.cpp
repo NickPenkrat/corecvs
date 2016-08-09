@@ -9,6 +9,167 @@
 
 using namespace corecvs;
 
+
+std::pair<bool, SparseMatrix> corecvs::SparseMatrix::incompleteCholseky()
+{
+	// Here we will consturct incomplete upper-triangular cholesky-factor for matrix
+	// If we do not succeed, we'll return <false, ()> 'cause it is 2016 now,
+	// and std::optional from C++17 is not yet ready (and usage of std::experimental
+	// is prohibited)
+	// We will start from the same NNZ-structure
+#if 1
+	SparseMatrix A(*this);
+	int N = h;
+	int n = N;
+	for (int k = 0; k < N; ++k)
+	{
+		int i_k_k = A.rowPointers[k];
+		for (; i_k_k < A.rowPointers[k + 1] && A.columns[i_k_k] < k; ++i_k_k);
+
+#if 0
+		double pivot = A.a(k, k);
+#else
+		double pivot = (i_k_k < A.rowPointers[k + 1] && A.columns[i_k_k] == k) ? A.values[i_k_k] : 0.0;
+#endif
+		if (pivot <= 0.0)
+		{
+			std::cout << "Non-positive pivot R" << std::endl;
+			return std::make_pair(false, SparseMatrix());
+		}
+		CORE_ASSERT_TRUE_S(A.a(k, k) == pivot);
+		pivot = std::sqrt(pivot);
+#if 0
+		A.a(k, k) = pivot;
+#else
+		A.values[i_k_k] = pivot;
+#endif
+		
+#if 0
+		for (int i = k + 1; i < n; ++i)
+			if (A.a(k, i) != 0.0)
+				A.a(k, i) /= pivot;
+#else
+		for (int i_k_i = i_k_k + 1; i_k_i < A.rowPointers[k + 1]; ++i_k_i)
+			A.values[i_k_i] /= pivot;
+#endif
+
+#if 0
+		for (int j = k + 1; j < n; ++j)
+			for (int i = j; i < n; ++i)
+				if (A.a(j, i) != 0.0)
+					A.a(j, i) -= A.a(k, i) * A.a(k, j);
+#else
+		int i_k_j = i_k_k + 1;
+		for (int j = k + 1; j < n; ++j)
+		{
+			int i_j_i = A.rowPointers[j];
+			while (i_j_i < A.rowPointers[j + 1] && A.columns[i_j_i] < j) ++i_j_i;
+
+			while (i_k_j < A.rowPointers[k] && A.columns[i_k_j] < j) ++i_k_j;
+			double a_k_j = 0.0;
+			if (i_k_j < A.rowPointers[k + 1] && A.columns[i_k_j] == j)
+				a_k_j = A.values[i_k_j];
+
+			int i_k_i = i_k_j;
+			for (; i_j_i < A.rowPointers[j + 1]; ++i_j_i)
+			{
+				int i = A.columns[i_j_i];
+				while (i_k_i < A.rowPointers[k + 1] && A.columns[i_k_i] < i) ++i_k_i;
+				if (i_k_i == A.rowPointers[k + 1])
+					break;
+				if (A.columns[i_k_i] > i)
+					continue;
+				double a_k_i = A.values[i_k_i];
+				A.values[i_j_i] -= a_k_i * a_k_j;
+			}
+		}
+#endif
+	}
+#if 0
+	for (int i = 0; i < n; ++i)
+		for (int j = i + 1; j < n; ++j)
+			A.a(j, i) = 0.0;
+#else
+	int nnz = 0;
+	for (int i = 0; i < N; ++i)
+	{
+		for (int j = A.rowPointers[i]; j < A.rowPointers[i + 1]; ++j)
+			if (A.columns[j] >= i)
+			{
+				A.columns[nnz] = A.columns[j];
+				A.values[nnz] = A.values[j];
+				++nnz;
+			}
+		A.rowPointers[i + 1] = nnz;
+	}
+	A.columns.resize(nnz);
+	A.values.resize(nnz);
+#endif
+	return std::make_pair(true, A);
+#else
+	std::vector<double> u_values(values);
+	int N = h;
+	CORE_ASSERT_TRUE_S(h == w);
+	for (int k = 0; k < N; ++k)
+	{
+		int k_k_id = rowPointers[k];
+		while (k_k_id < rowPointers[k + 1] && columns[k_k_id] < k) ++k_k_id;
+
+		if (k_k_id >= rowPointers[k + 1] || columns[k_k_id] != k || u_values[k_k_id] <= 0.0)
+			return std::make_pair(false, SparseMatrix());
+
+		double a_kk = std::sqrt(u_values[k_k_id]);
+		u_values[k_k_id] = a_kk;
+		for (int i = k_k_id + 1; i < rowPointers[k + 1]; ++i)
+			u_values[i] = u_values[i] / a_kk;
+
+		int j_k_id = k_k_id + 1;
+		for (int j = k + 1; j < N; ++j)
+		{
+			double a_j_k = 0.0;
+			if (columns[j_k_id] == j && j_k_id < rowPointers[j + 1])
+			{
+				a_j_k = u_values[j_k_id];
+			}
+
+			int j_j_id = rowPointers[j];
+			while (j_j_id < rowPointers[j + 1] && columns[j_j_id] < j) ++j_j_id;
+
+			if (j_j_id >= rowPointers[j + 1] || columns[j_j_id] != j)
+			{
+				std::cout << "Mystery things happen in ICP" << std::endl;
+				return std::make_pair(false, SparseMatrix());
+			}
+
+			int i_j_id = j_j_id;
+			int i_k_id = k_k_id + 1;
+			while(columns[i_k_id] < j && i_k_id < rowPointers[k + 1]) ++i_k_id;
+			
+			for (; i_j_id < rowPointers[j];  ++i_j_id)
+			{
+				int i = columns[i];
+				while (columns[i_k_id] < i && i_k_id < rowPointers[k + 1]) ++i_k_id;
+
+				double a_i_k = 0.0;
+				if (columns[i_k_id] == i && i_k_id < rowPointers[k + 1])
+					a_i_k = u_values[i_k_id];
+
+				u_values[i_j_id] -= a_i_k * a_j_k;
+			}
+			if (columns[j_k_id] == j && j_k_id < rowPointers[k + 1])
+				j_k_id++;
+		}
+	}
+	for (int i = 1; i < N; ++i)
+	{
+		for (int j = rowPointers[i]; j < rowPointers[i + 1] && columns[j] < i; ++j)
+			u_values[j] = 0.0;
+	}
+	return std::make_pair(true, SparseMatrix(N, N, u_values, columns, rowPointers));
+#endif
+}
+
+
 void corecvs::SparseMatrix::spyPlot() const
 {
     for (int i = 0; i < h; ++i)
@@ -451,7 +612,7 @@ Vector corecvs::operator *(const SparseMatrix &lhs, const Vector &rhs)
     CORE_ASSERT_TRUE_S(lhs.w == rhs.size());
     Vector ans(lhs.h);
     int N = lhs.h;
-    int bs = std::max(1, N / 256);
+    int bs = 2048;
 	corecvs::parallelable_for(0, N, bs, [&](const corecvs::BlockedRange<int> &r)
 	{
 		for (int i = r.begin(); i != r.end(); ++i)

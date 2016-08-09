@@ -27,6 +27,142 @@
 
 using namespace corecvs;
 
+const int SEED = 1337;
+
+std::pair<bool, SparseMatrix>  NaiveIncompleteCholesky(SparseMatrix &B)
+{
+	auto A = B;
+	int N = A.h;
+	int n = N;
+	for (int k = 0; k < N; ++k)
+	{
+		double pivot = A.a(k, k);
+		if (pivot <= 0.0)
+		{
+			std::cout << "Non-positive pivot N" << std::endl;
+			return std::make_pair(false, SparseMatrix());
+		}
+		CORE_ASSERT_TRUE_S(A.a(k, k) == pivot);
+		pivot = std::sqrt(pivot);
+		A.a(k, k) = pivot;
+		
+
+		for (int i = k + 1; i < n; ++i)
+			if (A.a(k, i) != 0.0)
+				A.a(k, i) /= pivot;
+
+
+		for (int j = k + 1; j < n; ++j)
+			for (int i = j; i < n; ++i)
+				if (A.a(j, i) != 0.0)
+					A.a(j, i) -= A.a(k, i) * A.a(k, j);
+	}
+
+	for (int i = 0; i < n; ++i)
+		for (int j = i + 1; j < n; ++j)
+			A.a(j, i) = 0.0;
+	return std::make_pair(true, A);
+}
+
+TEST(SparseMatrix, IncompleteCholesky)
+{
+	std::mt19937 rng(SEED);
+	std::uniform_real_distribution<double> runif(-100, 100);
+	double a[] = {
+		2.0, 0.0, 1.0, 0.0,
+		0.0, 2.0, 0.0, 0.0,
+		1.0, 0.0, 2.0, 0.0,
+		0.0, 0.0, 0.0, 2.0
+	};
+	SparseMatrix sm(Matrix(4, 4, a));
+	auto resNaive = NaiveIncompleteCholesky(sm);
+	auto res      = sm.incompleteCholseky();
+	ASSERT_EQ(resNaive.first, res.first);
+	if (res.first)
+	{
+		ASSERT_LE(Matrix(resNaive.second - res.second).frobeniusNorm() , 1e-9);
+	}
+
+
+	int NNN = 1000, succ = 0;
+	for (int i = 0; i < NNN; ++i)
+	{
+		const int M = 1000;
+		const double nnz = 0.1;
+		Matrix U(M, M);
+		int NN = nnz * M * M;
+		for (int j = 0; j < NN; ++j)
+		{
+			int I = rng() % (M * M + M);
+			int ii = I < M * M ? I / M : I - M * M;
+			int jj = I < M * M ? I % M : I - M * M;
+			if (ii > jj)
+				std::swap(ii, jj);
+			U.a(ii, jj) = runif(rng);
+		}
+		SparseMatrix su(U);
+		auto sm = su.ata();
+		for (int i = 0; i < M; ++i)
+			sm.a(i, i) += 1e-15 * sm.a(i, i);
+		auto resNaive = NaiveIncompleteCholesky(sm);
+		auto res      = sm.incompleteCholseky();
+		ASSERT_EQ(resNaive.first, res.first);
+		if (res.first)
+		{
+			ASSERT_LE(Matrix(resNaive.second - res.second).frobeniusNorm() , 1e-9);
+			++succ;
+		}
+	}
+	ASSERT_GE(succ, 0.9 * NNN);
+}
+
+
+TEST(Iterative, MinresQLPDaxpby)
+{
+	std::mt19937 rng(SEED);
+	const int N =15000;
+
+	double golden_total = 0.0, daxpby_total = 0.0, blas_total = 0.0;
+	for (int i = 0; i < 10000; ++i)
+	{
+		std::uniform_real_distribution<double> runif(-1000, 1000);
+		int NN = N + (rng() % 1000);
+		std::cout << "Testing DAXPBY with N = " << NN << std::endl;
+		Vector x(NN), y(NN), res(NN);
+		double a = runif(rng), b = runif(rng);
+		for (int i = 0; i < NN; ++i)
+		{
+			x[i] = runif(rng);
+			y[i] = runif(rng);
+		}
+
+		auto golden_start = std::chrono::high_resolution_clock::now();
+		auto golden = a * x + b * y;
+		auto golden_stop  = std::chrono::high_resolution_clock::now();
+		auto golden_time = (golden_stop - golden_start).count() * 1.0;
+
+		auto daxpby_start = std::chrono::high_resolution_clock::now();
+		MinresQLP<SparseMatrix>::Daxpby(res, a, x, b, y);
+		auto daxpby_stop = std::chrono::high_resolution_clock::now();
+		auto daxpby_time = (daxpby_stop - daxpby_start).count() * 1.0;
+
+		ASSERT_LE(!(res - golden)/!golden, 1e-15);
+
+		auto blas_start = std::chrono::high_resolution_clock::now();
+		res = x;
+        cblas_dscal(res.size(), a, &res[0], 1);
+        cblas_daxpy(res.size(), b, &y[0], 1, &res[0], 1);
+		auto blas_stop = std::chrono::high_resolution_clock::now();
+		auto blas_time = (blas_stop - blas_start).count() * 1.0;
+		blas_total += blas_time;
+		golden_total += golden_time;
+		daxpby_total += daxpby_time;
+
+
+	}
+		std::cout << "golden/daxpby: " << golden_total / daxpby_total << "x slower" << std::endl;
+		std::cout << "blas/daxpby: " << blas_total / daxpby_total << "x slower" << std::endl;
+}
 
 TEST(Iterative, MinresQLP)
 {
