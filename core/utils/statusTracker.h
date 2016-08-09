@@ -83,6 +83,7 @@ public:
     static bool    IsActionCompleted(const StatusTracker *tracker, const std::string &action);
 
     static Status  GetStatus(const StatusTracker *tracker);
+
 protected:
     void    setTotalActions(size_t totalActions);
     void    reset(const std::string &action, size_t totalActions);
