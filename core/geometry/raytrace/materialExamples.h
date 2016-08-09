@@ -62,6 +62,8 @@ public:
     MaterialExamples();
 
     static RaytraceableMaterial *ex1();
+    static RaytraceableMaterial *ex2();
+
     static RaytraceableMaterial *bumpy();
     static RaytraceableMaterial *glass(double dens = 1.2);
 

@@ -17,6 +17,18 @@ RaytraceableMaterial *MaterialExamples::ex1()
     return blueMirror;
 }
 
+RaytraceableMaterial *MaterialExamples::ex2()
+{
+    RaytraceableMaterial *blueMirror = new RaytraceableMaterial;
+    blueMirror->ambient = RGBColor::White().toDouble() * 0.2 ;
+    blueMirror->diffuse = RGBColor::White().toDouble() / 255.0;
+    blueMirror->reflCoef = 0.3;
+    blueMirror->refrCoef = 0;
+    blueMirror->opticalDens = 1.3;
+    blueMirror->specular = RGBColor::Red().toDouble() / 255.0;
+    return blueMirror;
+}
+
 RaytraceableMaterial *MaterialExamples::bumpy()
 {
     BumpyMaterial * bumpy = new BumpyMaterial;
