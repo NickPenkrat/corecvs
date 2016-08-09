@@ -70,12 +70,10 @@ bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFi
     struct dirent *ep;
     while ((ep = readdir(dp)) != NULL)
     {
-        std::cout << "found " << ep->d_name << std::endl;
-
         /* Ok there are devices, pipes, links... I don't know... */
         bool isDir = (ep->d_type != DT_REG) && (ep->d_type != DT_LNK);
 
-        L_DDEBUG_P("%s contains\t%s\tas a %s (type:0x%x)", path.c_str(), ep->d_name, (isDir ? "dir" : "file"), ep->d_type);
+        SYNC_PRINT(("%s contains\t%s\tas a %s (type:0x%x)", path.c_str(), ep->d_name, (isDir ? "dir" : "file"), ep->d_type));
 
         if (!(findFiles ^ isDir))
             continue;
