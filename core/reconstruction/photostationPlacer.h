@@ -60,6 +60,9 @@ public:
     bool append2D();
     // Tries to append f using P3P (with 3d<->2d correspondences
     bool appendP3P(CameraFixture* f);
+    bool appendAny();
+	std::pair<int, double> estimate2D(corecvs::CameraFixture *A, corecvs::Affine3DQ &tform);
+	std::pair<int, double> estimate3D(corecvs::CameraFixture *A, corecvs::Affine3DQ &tform);
 
     std::function<void()> postAppendHook = [](){};
 protected:

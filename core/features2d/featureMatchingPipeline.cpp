@@ -53,11 +53,11 @@ FeatureMatchingPipeline::~FeatureMatchingPipeline()
 
 void FeatureMatchingPipeline::run()
 {
-    processState->reset("Detecting", pipeline.size());
+	StatusTracker::Reset(processState, "Detecting", pipeline.size());
 
     for (size_t id = 0; id < pipeline.size(); ++id)
     {
-        auto boo = processState->createAutoTrackerCalculationObject();
+        auto boo = StatusTracker::CreateAutoTrackerCalculationObject(processState);
         auto sParams = saveParams[id];
         auto lParams = loadParams[id];
         auto ps = pipeline[id];
@@ -90,10 +90,11 @@ class ParallelDetector
     FeatureMatchingPipeline* pipeline;
     DetectorType detectorType;
     std::string params;
+    int maxFeatureCount;
 public:
     void operator() (const corecvs::BlockedRange<size_t>& r) const
     {
-        FeatureDetector* detector = FeatureDetectorProvider::getInstance().getDetector(detectorType, params);
+		std::unique_ptr<FeatureDetector> detector(FeatureDetectorProvider::getInstance().getDetector(detectorType, params));
         size_t N = pipeline->images.size();
         size_t id = r.begin();
 
@@ -110,10 +111,10 @@ public:
 
             ss1 << image.filename << ", ";
 
-            BufferReader* reader = BufferReaderProvider::getInstance().getBufferReader(image.filename);
+			std::unique_ptr<BufferReader> reader(BufferReaderProvider::getInstance().getBufferReader(image.filename));
             RuntimeTypeBuffer img = reader->read(image.filename);
-            delete reader;
-            detector->detect(img, image.keyPoints.keyPoints);
+
+            detector->detect(img, image.keyPoints.keyPoints, maxFeatureCount);
             kpt += image.keyPoints.keyPoints.size();
             cnt++;
             if (cnt % 4 == 0)
@@ -133,10 +134,8 @@ public:
             pipeline->toc(ss1.str(), ss2.str(), N, cnt, id, false);
             cnt = 0;
         }
-
-        delete detector;
     }
-    ParallelDetector(FeatureMatchingPipeline* pipeline, DetectorType detectorType, const std::string &params = "") : pipeline(pipeline), detectorType(detectorType), params(params) {}
+    ParallelDetector(FeatureMatchingPipeline* pipeline, DetectorType detectorType, int maxFeatureCount, const std::string &params = "") : pipeline(pipeline), detectorType(detectorType), params(params), maxFeatureCount(maxFeatureCount) {}
 };
 
 void KeyPointDetectionStage::run(FeatureMatchingPipeline *pipeline)
@@ -146,7 +145,7 @@ void KeyPointDetectionStage::run(FeatureMatchingPipeline *pipeline)
 
     size_t N = pipeline->images.size();
 
-    corecvs::parallelable_for ((size_t)0, N, CORE_MAX(N /MAX_CORE_COUNT_ESTIMATE, (size_t)1), ParallelDetector(pipeline,detectorType, params), parallelable);
+    corecvs::parallelable_for ((size_t)0, N, CORE_MAX(N /MAX_CORE_COUNT_ESTIMATE, (size_t)1), ParallelDetector(pipeline,detectorType, maxFeatureCount, params), parallelable);
 
     ss1 << "Detecting keypoints with " << detectorType;
     pipeline->toc(ss1.str(), ss2.str());
@@ -177,7 +176,7 @@ void KeyPointDetectionStage::loadResults(FeatureMatchingPipeline *pipeline, cons
     CORE_UNUSED(_filename);
 }
 
-KeyPointDetectionStage::KeyPointDetectionStage(DetectorType type, const std::string &params) : detectorType(type), params(params)
+KeyPointDetectionStage::KeyPointDetectionStage(DetectorType type, int maxFeatureCount, const std::string &params) : detectorType(type), params(params), maxFeatureCount(maxFeatureCount)
 {
     FeatureDetector* detector = FeatureDetectorProvider::getInstance().getDetector(detectorType);
     parallelable = detector->isParallelable();

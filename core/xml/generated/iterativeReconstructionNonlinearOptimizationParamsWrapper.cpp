@@ -122,6 +122,17 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
     fields().push_back(
         new BoolField
         (
+          IterativeReconstructionNonlinearOptimizationParamsWrapper::SCALELOCK_ID,
+          offsetof(IterativeReconstructionNonlinearOptimizationParamsWrapper, mScaleLock),
+          false,
+          "scaleLock",
+          "scaleLock",
+          "Lock scale"
+        )
+    );
+    fields().push_back(
+        new BoolField
+        (
           IterativeReconstructionNonlinearOptimizationParamsWrapper::EXPLICITINVERSE_ID,
           offsetof(IterativeReconstructionNonlinearOptimizationParamsWrapper, mExplicitInverse),
           false,

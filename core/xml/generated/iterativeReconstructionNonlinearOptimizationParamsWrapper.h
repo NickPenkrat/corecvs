@@ -47,6 +47,7 @@ public:
         FINALNONLINEARITERATIONS_ID,
         ALTERNATINGITERATIONS_ID,
         EXCESSIVEQUATERNIONPARAMETRIZATION_ID,
+        SCALELOCK_ID,
         EXPLICITINVERSE_ID,
         ITERATIVE_RECONSTRUCTION_NONLINEAR_OPTIMIZATION_PARAMS_WRAPPER_FIELD_ID_NUM
     };
@@ -88,6 +89,12 @@ public:
      * Excessive/non-excessive quaternion parametrization 
      */
     bool mExcessiveQuaternionParametrization;
+
+    /** 
+     * \brief scaleLock 
+     * Lock scale 
+     */
+    bool mScaleLock;
 
     /** 
      * \brief explicitInverse 
@@ -133,6 +140,11 @@ public:
         return mExcessiveQuaternionParametrization;
     }
 
+    bool scaleLock() const
+    {
+        return mScaleLock;
+    }
+
     bool explicitInverse() const
     {
         return mExplicitInverse;
@@ -169,6 +181,11 @@ public:
         mExcessiveQuaternionParametrization = excessiveQuaternionParametrization;
     }
 
+    void setScaleLock(bool scaleLock)
+    {
+        mScaleLock = scaleLock;
+    }
+
     void setExplicitInverse(bool explicitInverse)
     {
         mExplicitInverse = explicitInverse;
@@ -185,6 +202,7 @@ template<class VisitorType>
         visitor.visit(mFinalNonLinearIterations,  static_cast<const IntField *>     (fields()[FINALNONLINEARITERATIONS_ID]));
         visitor.visit(mAlternatingIterations,     static_cast<const IntField *>     (fields()[ALTERNATINGITERATIONS_ID]));
         visitor.visit(mExcessiveQuaternionParametrization, static_cast<const BoolField *>    (fields()[EXCESSIVEQUATERNIONPARAMETRIZATION_ID]));
+        visitor.visit(mScaleLock,                 static_cast<const BoolField *>    (fields()[SCALELOCK_ID]));
         visitor.visit(mExplicitInverse,           static_cast<const BoolField *>    (fields()[EXPLICITINVERSE_ID]));
     }
 
@@ -201,6 +219,7 @@ template<class VisitorType>
         , int finalNonLinearIterations
         , int alternatingIterations
         , bool excessiveQuaternionParametrization
+        , bool scaleLock
         , bool explicitInverse
     )
     {
@@ -210,6 +229,7 @@ template<class VisitorType>
         mFinalNonLinearIterations = finalNonLinearIterations;
         mAlternatingIterations = alternatingIterations;
         mExcessiveQuaternionParametrization = excessiveQuaternionParametrization;
+        mScaleLock = scaleLock;
         mExplicitInverse = explicitInverse;
     }
 

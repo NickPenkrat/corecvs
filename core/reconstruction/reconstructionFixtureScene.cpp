@@ -149,11 +149,13 @@ void ReconstructionFixtureScene::printTrackStats()
     for (auto& s: ssqs)
         ++cntS[s / tolerance];
     std::cout << "Reprojection histogram: " << std::endl;
+    if (cntE.size())
     for (int i = 0; i <= cntE.rbegin()->first; ++i)
         if (cntE[i] > 0)
             std::cout << "[" << tolerance * i << "; " << tolerance * (i + 1) << ": " << cntE[i] << ")";
     std::cout << std::endl;
     std::cout << "RMSE histogram: " << std::endl;
+    if (cntS.size())
     for (int i = 0; i <= cntS.rbegin()->first; ++i)
         if (cntS[i] > 0)
             std::cout << "[" << tolerance * i << "; " << tolerance * (i + 1) << ": " << cntS[i] << ")";
@@ -383,7 +385,7 @@ void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams 
 
     // Feature detection and matching
     FeatureMatchingPipeline pipeline(filenames, processState);
-    pipeline.add(new KeyPointDetectionStage(params.detector(), params.parameters()), true);
+    pipeline.add(new KeyPointDetectionStage(params.detector(), params.maxFeatureCount(), params.parameters()), true);
     pipeline.add(new DescriptorExtractionStage(params.descriptor(), params.parameters()), true);
     pipeline.add(new MatchingPlanComputationStage(), true);
     pipeline.add(new MatchAndRefineStage(params.descriptor(), params.matcher(), params.b2bThreshold(), params.thresholdDistance()), true);

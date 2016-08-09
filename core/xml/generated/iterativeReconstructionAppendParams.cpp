@@ -191,6 +191,34 @@ int IterativeReconstructionAppendParams::staticInit()
          1
         )
     );
+    fields().push_back(
+        new IntField
+        (
+          IterativeReconstructionAppendParams::SHUTUPANDAPPENDMYFIXTUREINLIERTHRESHOLD_ID,
+          offsetof(IterativeReconstructionAppendParams, mShutUpAndAppendMyFixtureInlierThreshold),
+          200,
+          "shutUpAndAppendMyFixtureInlierThreshold",
+          "shutUpAndAppendMyFixtureInlierThreshold",
+          "Immediate append inlier count threshold",
+          true,
+         10,
+         1000000
+        )
+    );
+    fields().push_back(
+        new DoubleField
+        (
+          IterativeReconstructionAppendParams::SHUTUPANDAPPENDMYFIXTURESUCCESSPROBTHRESHOLD_ID,
+          offsetof(IterativeReconstructionAppendParams, mShutUpAndAppendMyFixtureSuccessProbThreshold),
+          0.9,
+          "shutUpAndAppendMyFixtureSuccessProbThreshold",
+          "shutUpAndAppendMyFixtureSuccessProbThreshold",
+          "shutUpAndAppendMyFixtureSuccessProbThreshold",
+          true,
+         0,
+         1
+        )
+    );
    return 0;
 }
 

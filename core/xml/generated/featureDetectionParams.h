@@ -47,6 +47,7 @@ public:
         PARAMETERS_ID,
         PLOTTRACKS_ID,
         THRESHOLDDISTANCE_ID,
+        MAXFEATURECOUNT_ID,
         FEATURE_DETECTION_PARAMS_FIELD_ID_NUM
     };
 
@@ -100,6 +101,12 @@ public:
      */
     bool mThresholdDistance;
 
+    /** 
+     * \brief maxFeatureCount 
+     * Max acceptable feature point count 
+     */
+    int mMaxFeatureCount;
+
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
 
@@ -148,6 +155,11 @@ public:
         return mThresholdDistance;
     }
 
+    int maxFeatureCount() const
+    {
+        return mMaxFeatureCount;
+    }
+
     /* Section with setters */
     void setDetector(std::string detector)
     {
@@ -189,6 +201,11 @@ public:
         mThresholdDistance = thresholdDistance;
     }
 
+    void setMaxFeatureCount(int maxFeatureCount)
+    {
+        mMaxFeatureCount = maxFeatureCount;
+    }
+
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
@@ -202,6 +219,7 @@ template<class VisitorType>
         visitor.visit(mParameters,                static_cast<const StringField *>  (fields()[PARAMETERS_ID]));
         visitor.visit(mPlotTracks,                static_cast<const BoolField *>    (fields()[PLOTTRACKS_ID]));
         visitor.visit(mThresholdDistance,         static_cast<const BoolField *>    (fields()[THRESHOLDDISTANCE_ID]));
+        visitor.visit(mMaxFeatureCount,           static_cast<const IntField *>     (fields()[MAXFEATURECOUNT_ID]));
     }
 
     FeatureDetectionParams()
@@ -219,6 +237,7 @@ template<class VisitorType>
         , std::string parameters
         , bool plotTracks
         , bool thresholdDistance
+        , int maxFeatureCount
     )
     {
         mDetector = detector;
@@ -229,6 +248,7 @@ template<class VisitorType>
         mParameters = parameters;
         mPlotTracks = plotTracks;
         mThresholdDistance = thresholdDistance;
+        mMaxFeatureCount = maxFeatureCount;
     }
 
     friend ostream& operator << (ostream &out, FeatureDetectionParams &toSave)

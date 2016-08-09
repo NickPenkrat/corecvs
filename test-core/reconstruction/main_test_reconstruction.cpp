@@ -46,7 +46,7 @@ TEST(Reconstruction, symbolicCheckRD)
             corecvs::ReconstructionFunctorOptimizationType::DEGENERATE_ORIENTATIONS
 //            corecvs::ReconstructionFunctorOptimizationType::TUNE_GPS
 //
-            ,  true, 1.0);
+            ,  true, true, 1.0);
     std::vector<double> in(rf.getInputNum()), out(rf.getOutputNum());
     rf.writeParams(&in[0]);
 
@@ -127,7 +127,7 @@ TEST(Reconstruction, symbolicCheckRE)
             corecvs::ReconstructionFunctorOptimizationType::DEGENERATE_ORIENTATIONS
 //            corecvs::ReconstructionFunctorOptimizationType::TUNE_GPS
 //
-            ,  true, 1.0);
+            ,  true, true, 1.0);
     std::vector<double> in(rf.getInputNum()), out(rf.getOutputNum());
     rf.writeParams(&in[0]);
 

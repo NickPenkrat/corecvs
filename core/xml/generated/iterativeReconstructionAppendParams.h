@@ -50,6 +50,8 @@ public:
         SPECULATIVITY_ID,
         MINIMALINLIERCOUNT_ID,
         MAXIMALFAILUREPROBABILITY_ID,
+        SHUTUPANDAPPENDMYFIXTUREINLIERTHRESHOLD_ID,
+        SHUTUPANDAPPENDMYFIXTURESUCCESSPROBTHRESHOLD_ID,
         ITERATIVE_RECONSTRUCTION_APPEND_PARAMS_FIELD_ID_NUM
     };
 
@@ -121,6 +123,18 @@ public:
      */
     double mMaximalFailureProbability;
 
+    /** 
+     * \brief shutUpAndAppendMyFixtureInlierThreshold 
+     * Immediate append inlier count threshold 
+     */
+    int mShutUpAndAppendMyFixtureInlierThreshold;
+
+    /** 
+     * \brief shutUpAndAppendMyFixtureSuccessProbThreshold 
+     * shutUpAndAppendMyFixtureSuccessProbThreshold 
+     */
+    double mShutUpAndAppendMyFixtureSuccessProbThreshold;
+
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
 
@@ -184,6 +198,16 @@ public:
         return mMaximalFailureProbability;
     }
 
+    int shutUpAndAppendMyFixtureInlierThreshold() const
+    {
+        return mShutUpAndAppendMyFixtureInlierThreshold;
+    }
+
+    double shutUpAndAppendMyFixtureSuccessProbThreshold() const
+    {
+        return mShutUpAndAppendMyFixtureSuccessProbThreshold;
+    }
+
     /* Section with setters */
     void setPostAppendOptimizationWindow(int postAppendOptimizationWindow)
     {
@@ -240,6 +264,16 @@ public:
         mMaximalFailureProbability = maximalFailureProbability;
     }
 
+    void setShutUpAndAppendMyFixtureInlierThreshold(int shutUpAndAppendMyFixtureInlierThreshold)
+    {
+        mShutUpAndAppendMyFixtureInlierThreshold = shutUpAndAppendMyFixtureInlierThreshold;
+    }
+
+    void setShutUpAndAppendMyFixtureSuccessProbThreshold(double shutUpAndAppendMyFixtureSuccessProbThreshold)
+    {
+        mShutUpAndAppendMyFixtureSuccessProbThreshold = shutUpAndAppendMyFixtureSuccessProbThreshold;
+    }
+
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
@@ -256,6 +290,8 @@ template<class VisitorType>
         visitor.visit(mSpeculativity,             static_cast<const IntField *>     (fields()[SPECULATIVITY_ID]));
         visitor.visit(mMinimalInlierCount,        static_cast<const IntField *>     (fields()[MINIMALINLIERCOUNT_ID]));
         visitor.visit(mMaximalFailureProbability, static_cast<const DoubleField *>  (fields()[MAXIMALFAILUREPROBABILITY_ID]));
+        visitor.visit(mShutUpAndAppendMyFixtureInlierThreshold, static_cast<const IntField *>     (fields()[SHUTUPANDAPPENDMYFIXTUREINLIERTHRESHOLD_ID]));
+        visitor.visit(mShutUpAndAppendMyFixtureSuccessProbThreshold, static_cast<const DoubleField *>  (fields()[SHUTUPANDAPPENDMYFIXTURESUCCESSPROBTHRESHOLD_ID]));
     }
 
     IterativeReconstructionAppendParams()
@@ -276,6 +312,8 @@ template<class VisitorType>
         , int speculativity
         , int minimalInlierCount
         , double maximalFailureProbability
+        , int shutUpAndAppendMyFixtureInlierThreshold
+        , double shutUpAndAppendMyFixtureSuccessProbThreshold
     )
     {
         mPostAppendOptimizationWindow = postAppendOptimizationWindow;
@@ -289,6 +327,8 @@ template<class VisitorType>
         mSpeculativity = speculativity;
         mMinimalInlierCount = minimalInlierCount;
         mMaximalFailureProbability = maximalFailureProbability;
+        mShutUpAndAppendMyFixtureInlierThreshold = shutUpAndAppendMyFixtureInlierThreshold;
+        mShutUpAndAppendMyFixtureSuccessProbThreshold = shutUpAndAppendMyFixtureSuccessProbThreshold;
     }
 
     friend ostream& operator << (ostream &out, IterativeReconstructionAppendParams &toSave)

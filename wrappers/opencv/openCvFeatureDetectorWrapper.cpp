@@ -27,7 +27,7 @@ void OpenCvFeatureDetectorWrapper::setProperty(const std::string &name, const do
 	detector->set(name, value);
 }
 
-void OpenCvFeatureDetectorWrapper::detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints)
+void OpenCvFeatureDetectorWrapper::detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int nKeyPoints)
 {
 	std::vector<cv::KeyPoint> kps;
 	cv::Mat img = convert(image);
@@ -40,6 +40,8 @@ void OpenCvFeatureDetectorWrapper::detectImpl(RuntimeTypeBuffer &image, std::vec
     {
 		keyPoints.push_back(convert(kp));
     }
+	std::sort(keyPoints.begin(), keyPoints.end(), [](const KeyPoint &l, const KeyPoint &r) { return l.response > r.response; });
+	keyPoints.resize(std::min((int)keyPoints.size(), nKeyPoints));
 }
 
 void init_opencv_detectors_provider()
