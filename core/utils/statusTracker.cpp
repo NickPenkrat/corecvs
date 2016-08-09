@@ -25,12 +25,12 @@ Status  StatusTracker::GetStatus(const StatusTracker *tracker) { return tracker 
 
 AutoTracker::AutoTracker(StatusTracker* st) : st(st)
 {
-	StatusTracker::IncrementStarted(st);
+    StatusTracker::IncrementStarted(st);
 }
 
 AutoTracker::~AutoTracker()
 {
-	StatusTracker::IncrementCompleted(st);
+    StatusTracker::IncrementCompleted(st);
 }
 
 void corecvs::StatusTracker::setTotalActions(size_t totalActions)
