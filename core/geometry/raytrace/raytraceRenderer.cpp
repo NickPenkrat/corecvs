@@ -49,6 +49,8 @@ void RaytraceRenderer::trace(RGB24Buffer *buffer)
 
     int inc = 0;
 
+    cout << "Will render:" << buffer->getSize() << endl;
+
     if (!supersample)
     {
         parallelable_for(0, buffer->h, [&](const BlockedRange<int>& r )
@@ -119,7 +121,7 @@ void RaytraceRenderer::trace(RGB24Buffer *buffer)
                         }
                         energy->element(i, j) = sumColor / sampleNum;
                     }
-                    SYNC_PRINT(("\rsupersample[%d]", inc));
+                    SYNC_PRINT(("\rsupersample[%d / %d ]", inc, buffer->h));
                     inc++;
                 }
             }, parallel

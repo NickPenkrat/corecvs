@@ -27,7 +27,8 @@ SUBDIRS +=       \
     softrender       \
     raytracerender   \
     pmvs_generator   \
-    stereo_generator
+    stereo_generator \
+    widgets_test \
 
 
 with_opencv {
@@ -68,6 +69,8 @@ softrender.depends                 -= utils
 
 raytracerender.file                 = raytracerender/raytracerender.pro
 raytracerender.depends             -= utils
+
+widgets_test.file                   = widgets_test/widgets_test.pro
 
 new_board_detector	            = new_board_detector/new_board_detector.pro
 

@@ -105,7 +105,8 @@ HEADERS += \
     uis/aboutPropsTableWidget.h \
     capture/abstractManipulatorInterface.h \
     uis/histogramDepthDialog.h \
-    3d/sceneShaded.h
+    3d/sceneShaded.h \
+    corestructs/reflectionWidget.h
 
 SOURCES += \
     frames.cpp \
@@ -184,7 +185,8 @@ SOURCES += \
     corestructs/cameraModel/featurePointControlWidget.cpp \
     uis/aboutPropsTableWidget.cpp \
     uis/histogramDepthDialog.cpp \
-    3d/sceneShaded.cpp
+    3d/sceneShaded.cpp \
+    corestructs/reflectionWidget.cpp
 
 
 FORMS += \

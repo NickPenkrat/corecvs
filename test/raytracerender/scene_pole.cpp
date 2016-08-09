@@ -9,6 +9,7 @@
 void raytrace_scene_pole( void )
 {
     SYNC_PRINT(("raytrace_scene_pole( void )\n"));
+    PreciseTimer timer = PreciseTimer::currentTime();
 
     int h = 500;
     int w = 500;
@@ -19,7 +20,7 @@ void raytrace_scene_pole( void )
     renderer.position = Affine3DQ::Identity();
     //renderer.sky = new RaytraceableSky1();
 
-    RGB24Buffer *cubemap = BufferFactory::getInstance()->loadRGB24Bitmap("cubemap.jpg");
+    RGB24Buffer *cubemap = BufferFactory::getInstance()->loadRGB24Bitmap("cubemap.bmp");
     //cout << "Loaded cubemap" << cubemap->getSize() << endl;
     RaytraceableCubemap cubeMaterial(cubemap);
     renderer.sky = &cubeMaterial;
@@ -29,7 +30,7 @@ void raytrace_scene_pole( void )
 
     RaytraceableUnion scene;
 
-    for ( int i = 0; i < 2; i ++)
+    for ( int i = 0; i < 7; i ++)
     {
         RaytraceableCylinder *object = new RaytraceableCylinder;
         object->h = 20;
@@ -72,4 +73,6 @@ void raytrace_scene_pole( void )
         BMPLoader().save(name, buffer);
         delete_safe(buffer);
     }
+
+    SYNC_PRINT(("Processed: %lf seconds elapsed\n", timer.usecsToNow() / 1e6 ));
 }
