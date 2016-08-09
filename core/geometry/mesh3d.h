@@ -93,6 +93,14 @@ public:
     Triangle3dd getFaceAsTrinagle(size_t number);
 
     void addSphere    (Vector3dd center, double radius, int step);
+
+    /**
+     *  Adds a cylinder to the Mesh.
+     *
+     *  \param center - center of the cylinder(center of the axis)
+     *  \param radius - cylinder radius
+     *
+     **/
     void addCylinder  (Vector3dd center, double radius, double height, int step = 20, double phase = 0.0);
 
     void addIcoSphere(Vector3dd center, double radius, int step = 1);

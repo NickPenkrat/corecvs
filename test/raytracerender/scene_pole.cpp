@@ -29,22 +29,23 @@ void raytrace_scene_pole( void )
 
     RaytraceableUnion scene;
 
-    for ( int i = 0; i < 5; i ++)
+    for ( int i = 0; i < 2; i ++)
     {
         RaytraceableCylinder *object = new RaytraceableCylinder;
         object->h = 20;
         object->r = 20;
-        object->p = Vector3dd(0, -10 + i * object->h, 200);
+        object->p = Vector3dd(0, -10 + i * object->h, 700);
 
         object->name = "Cylinder";
-        object->color = RGBColor::Red().toDouble();
-        object->material = new RaytraceableChessMaterial(5.0);
-        object->material = MaterialExamples::ex1();
+        object->color = (i % 2) ? RGBColor::Black().toDouble() : RGBColor::White().toDouble();
+        object->material = NULL;
+        //object->material = new RaytraceableChessMaterial(5.0);
+        //object->material = (i % 2) ? MaterialExamples::ex1() : MaterialExamples::ex2();
 
         scene.elements.push_back(object);
     }
 
-    RaytraceableSphere sphere2(Sphere3d(Vector3dd(-80,0, 250.0), 50.0));
+    RaytraceableSphere sphere2(Sphere3d(Vector3dd(-80,0, 250.0), 20.0));
     sphere2.name = "Sphere2";
     sphere2.color = RGBColor::Red().toDouble();
     sphere2.material = MaterialExamples::bumpy();
@@ -63,7 +64,7 @@ void raytrace_scene_pole( void )
         renderer.position = Affine3DQ::Shift(Vector3dd(0, i * 3 , 0 )) * Affine3DQ::RotationY(0.0);
 
         renderer.supersample = true;
-        renderer.sampleNum = 10;
+        renderer.sampleNum = 1000;
         renderer.trace(buffer);
 
         char name[100];

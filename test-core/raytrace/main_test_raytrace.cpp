@@ -155,25 +155,32 @@ TEST(Raytrace, testSDF)
 
 TEST(Raytrace, testCylinder)
 {
+    Mesh3D mesh;
     RaytraceableCylinder object;
     /*object.e1 = Vector3dd::OrtX();
     object.e2 = Vector3dd::OrtZ();
     object.n  = Vector3dd::OrtY();*/
     object.h = 50;
     object.r = 20;
-    object.p = Vector3dd(0,0,200);
+    object.p = Vector3dd(0,-10,200);
 
     Ray3d rays[] = {
-        Ray3d(Vector3dd::OrtZ()   , Vector3dd::Zero()),
+      /*  Ray3d(Vector3dd::OrtZ()   , Vector3dd::Zero()),
         Ray3d(Vector3dd::OrtZ()   , Vector3dd(sqrt(object.r), 0, 0)),
         Ray3d(Vector3dd::OrtZ()   , Vector3dd(-19.99, 0, 0)),
         Ray3d(Vector3dd(0, 0.1, 1), Vector3dd(-19.99, 0, 0)),
+
+        Ray3d(Vector3dd(0, 0.1, 1), Vector3dd(-19.99, 0, 0)),*/
+
+        Ray3d(Vector3dd(0, -1, 1), Vector3dd(0, 240, 0)),
     };
 
     for (int i = 0; i < CORE_COUNT_OF(rays); i++)
     {
-        RayIntersection ray;
+        rays[i] = rays[i].normalised();
+        RayIntersection ray;        
         ray.ray = rays[i];
+        mesh.addLine(rays[i].getPoint(0), rays[i].getPoint(300));
         bool ok = object.intersect(ray);
 
         cout << i << endl;
@@ -185,14 +192,64 @@ TEST(Raytrace, testCylinder)
             cout << "No Intersecution" << endl;
         }
 
+        mesh.addPoint(ray.getPoint());
     }
 
-/*    ray.ray = Ray3d(Vector3dd(0.1, 0, 1.0).normalised(), Vector3dd::Zero());
-    object.intersect(ray);
-    cout << "R:" << ray.ray << endl;
-    cout << "P:" << ray.getPoint() << endl;
-    cout << "N:" << ray.normal << endl;*/
+    object.toMesh(mesh);
+    mesh.dumpPLY("cylinder-int.ply");
 }
+
+TEST(Raytrace, testCylinder1)
+{
+    Mesh3D mesh;
+    RaytraceableCylinder object;
+    /*object.e1 = Vector3dd::OrtX();
+    object.e2 = Vector3dd::OrtZ();
+    object.n  = Vector3dd::OrtY();*/
+    object.h = 50;
+    object.r = 20;
+    object.p = Vector3dd(0,-10,200);
+
+    int limit = 100;
+
+    vector<Ray3d> rays;
+
+
+    for (int i = - limit;  i < limit ; i++)
+    {
+        for (int j = - limit;  j < limit ; j++)
+        {
+            /*rays.push_back(Ray3d(Vector3dd(i / (3.0 * limit), j /  (3.0 * limit), 1.0 ), Vector3dd::Zero()));
+            rays.back().normalise();*/
+
+            rays.push_back(Ray3d(Vector3dd(i / (2.0 * limit), j /  (2.0 * limit) - 0.4, 1.0 ), Vector3dd(60, 120, 0)));
+            rays.back().normalise();
+        }
+    }
+
+    for (size_t i = 0; i < rays.size(); i++)
+    {
+        RayIntersection ray;
+        ray.ray = rays[i];
+        mesh.addLine(rays[i].getPoint(0), rays[i].getPoint(30));
+        bool ok = object.intersect(ray);
+
+        cout << i << endl;
+        cout << " R:" << ray.ray << endl;
+        if (ok) {
+        cout << " P:" << ray.getPoint() << endl;
+        //cout << " N:" << ray.normal << endl;
+        } else  {
+            cout << "No Intersecution" << endl;
+        }
+
+        mesh.addPoint(ray.getPoint());
+    }
+
+    //object.toMesh(mesh);
+    mesh.dumpPLY("cylinder-int.ply");
+}
+
 
 TEST(Raytrace, DISABLED_testRaytraceSDF)
 {
