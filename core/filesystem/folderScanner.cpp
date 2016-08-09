@@ -58,8 +58,6 @@ bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFi
 
 bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFiles)
 {
-    std::cout << "FolderScanner::scan at " << path << std::endl;
-
     DIR *dp = opendir(path.c_str());
     if (dp == NULL)
     {
@@ -84,7 +82,7 @@ bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFi
             }
         }
 
-        SYNC_PRINT(("%s contains\t%s\tas a %s (type:0x%x)\n", path.c_str(), ep->d_name, (isDir ? "dir" : "file"), ep->d_type));
+        L_DDEBUG_P("%s contains\t%s\tas a %s (d_type:0x%x)", path.c_str(), ep->d_name, (isDir ? "dir" : "file"), ep->d_type);
 
         if (!(findFiles ^ isDir))
             continue;
