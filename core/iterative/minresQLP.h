@@ -110,7 +110,7 @@ public:
         std::cout << normBefore << " (" << relBefore << ") > " << normAfter << " (" << relAfter << ") [" << normBefore / normAfter << "] @ " << iter << std::endl;
         std::cout << "MINRES-QLP status: " << flag << std::endl;
 
-		return flag;
+        return flag;
     }
     bool singleStep()
     {
@@ -339,11 +339,15 @@ private:
                 xl2 = x - wl * ul_QLP - w * u_QLP;
             }
         }
+//#define MAKE_MOVE_NOT_SWAP
         switch (iter)
         {
         case 1:
-//            wl2 = std::move(wl);
-			std::swap(wl2, wl);
+#ifdef MAKE_MOVE_NOT_SWAP
+            wl2 = std::move(wl);
+#else
+            std::swap(wl2, wl);
+#endif
 #ifndef WITH_BLAS
             wl = v * sr1;
 #else
@@ -358,8 +362,11 @@ private:
 #endif
             break;
         case 2:
-//          wl2 = std::move(wl);
-			std::swap(wl, wl2);
+#ifdef MAKE_MOVE_NOT_SWAP
+            wl2 = std::move(wl);
+#else
+            std::swap(wl, wl2);
+#endif
 #ifndef WITH_BLAS
             wl  = w * cr1 + v * sr1;
 #else
@@ -369,7 +376,7 @@ private:
             cblas_dscal(wl.size(), cr1, &wl[0], 1);
             cblas_daxpy(wl.size(), sr1, &v[0], 1, &wl[0], 1);
 #else
-			daxpby(wl, cr1, w, sr1, v);
+            Daxpby(wl, cr1, w, sr1, v);
 #endif
 #endif
 #ifndef WITH_BLAS
@@ -379,15 +386,18 @@ private:
             cblas_dscal(w.size(), sr1, &w[0], 1);
             cblas_daxpy(w.size(),-cr1, &v[0], 1, &w[0], 1);
 #else
-			daxpby(w, sr1, w, -cr1, v);
+            Daxpby(w, sr1, w, -cr1, v);
 #endif
 #endif
             break;
         default:
-//          wl2 = std::move(wl);
-			std::swap(wl2, wl);
-//            wl  = std::move(w);
-			std::swap(wl, w);
+#ifdef MAKE_MOVE_NOT_SWAP
+              wl2 = std::move(wl);
+            wl  = std::move(w);
+#else
+            std::swap(wl2, wl);
+            std::swap(wl, w);
+#endif
 #ifndef WITH_BLAS
             w   = wl2 * sr2 - v * cr2;
 #else
@@ -396,7 +406,7 @@ private:
             cblas_dscal(w.size(), sr2, &w[0], 1);
             cblas_daxpy(w.size(), -cr2, &v[0], 1, &w[0], 1);
 #else
-			daxpby(w, sr2, wl2, -cr2, v);
+            Daxpby(w, sr2, wl2, -cr2, v);
 #endif
 #endif
 #ifndef WITH_BLAS
@@ -406,7 +416,7 @@ private:
             cblas_dscal(wl2.size(), cr2, &wl2[0], 1);
             cblas_daxpy(wl2.size(), sr2, &v[0], 1, &wl2[0], 1);
 #else
-			daxpby(wl2, cr2, wl2, sr2, v);
+            Daxpby(wl2, cr2, wl2, sr2, v);
 #endif
 #endif
 #ifndef WITH_BLAS
@@ -417,7 +427,7 @@ private:
             cblas_dscal(v.size(), cr1, &v[0], 1);
             cblas_daxpy(v.size(), sr1, &w[0], 1, &v[0], 1);
 #else
-			daxpby(v, cr1, wl, sr1, w);
+            Daxpby(v, cr1, wl, sr1, w);
 #endif
 
 #endif
@@ -428,11 +438,14 @@ private:
             cblas_dscal(w.size(), -cr1, &w[0], 1);
             cblas_daxpy(w.size(), sr1, &wl[0], 1, &w[0], 1);
 #else
-			daxpby(w, sr1, wl, -cr1, w);
+            Daxpby(w, sr1, wl, -cr1, w);
 #endif
 #endif
-//          wl = std::move(v);
-			std::swap(wl, v);
+#ifdef MAKE_MOVE_NOT_SWAP
+            wl = std::move(v);
+#else
+            std::swap(wl, v);
+#endif
         }
 #ifndef WITH_BLAS
         xl2 += wl2 * ul2;
@@ -442,13 +455,13 @@ private:
 #ifndef WITH_BLAS
         x   = xl2 + wl  * ul   + w * u;
 #else
-#ifdef WITH_WEIRD_DAXPBY
+#ifndef WITH_WEIRD_DAXPBY
         x = xl2;
         cblas_daxpy(x.size(), ul, &wl[0], 1, &x[0], 1);
         cblas_daxpy(x.size(), u , & w[0], 1, &x[0], 1);
 #else
-		daxpby(x, ul, wl, u, w);
-		x += xl2;
+        Daxpby(x, ul, wl, u, w);
+        x += xl2;
 #endif
 #endif
     }
@@ -588,83 +601,87 @@ private:
         s = c * t;
         d = a / c;
     }
-    
+
 #ifdef WITH_FMA
-    void daxpby(Vector &res, double a, Vector &x, double b, Vector &y)
-	{
-		int i = 0;
-		int length = x.size();
-		if (res.size() != length)
-			res = Vector(length);
-#if 0
-		int isteps = length / 1000;
-		corecvs::parallelable_for(0, isteps, [&](const corecvs::BlockedRange<int> &r)
-		{
-			auto A = _mm256_broadcast_sd(&a), B = _mm256_broadcast_sd(&b);
-			for (int id = r.begin(); id < r.end(); ++id)
-			{
-				int i = 1000 * id, lim = 1000 * (id + 1);
-				double *sptr = &res[i], *xptr = &x[i], *yptr = &y[i];
-				for (; i < lim; i += 20)
-				{
-					__m256d acc1 = _mm256_mul_pd(*(__m256d*)(xptr    ), A),
-							acc2 = _mm256_mul_pd(*(__m256d*)(xptr + 4), A),
-							acc3 = _mm256_mul_pd(*(__m256d*)(xptr + 8), A),
-							acc4 = _mm256_mul_pd(*(__m256d*)(xptr +12), A),
-							acc5 = _mm256_mul_pd(*(__m256d*)(xptr +16), A);
-					acc1 = _mm256_fmadd_pd(*(__m256d*)(yptr    ), B, acc1);
-					acc2 = _mm256_fmadd_pd(*(__m256d*)(yptr + 4), B, acc2);
-					acc3 = _mm256_fmadd_pd(*(__m256d*)(yptr + 8), B, acc3);
-					acc4 = _mm256_fmadd_pd(*(__m256d*)(yptr +12), B, acc4);
-					acc5 = _mm256_fmadd_pd(*(__m256d*)(yptr +16), B, acc5);
-					_mm256_store_pd(sptr    , acc1);
-					_mm256_store_pd(sptr + 4, acc2);
-					_mm256_store_pd(sptr + 8, acc3);
-					_mm256_store_pd(sptr +12, acc4);
-					_mm256_store_pd(sptr +16, acc5);
-					sptr += 20;
-					xptr += 20;
-					yptr += 20;
-				}
-			}
-		});
-		i = isteps * 1000;
-		auto A = _mm256_broadcast_sd(&a), B = _mm256_broadcast_sd(&b);
-		double *sptr = &res[i], *xptr = &x[i], *yptr = &y[i];
-		for (; i + 19 < length; i += 20)
-		{
-			__m256d acc1 = _mm256_mul_pd(*(__m256d*)(xptr    ), A),
-					acc2 = _mm256_mul_pd(*(__m256d*)(xptr + 4), A),
-					acc3 = _mm256_mul_pd(*(__m256d*)(xptr + 8), A),
-					acc4 = _mm256_mul_pd(*(__m256d*)(xptr +12), A),
-					acc5 = _mm256_mul_pd(*(__m256d*)(xptr +16), A);
-			acc1 = _mm256_fmadd_pd(*(__m256d*)(yptr    ), B, acc1);
-			acc2 = _mm256_fmadd_pd(*(__m256d*)(yptr + 4), B, acc2);
-			acc3 = _mm256_fmadd_pd(*(__m256d*)(yptr + 8), B, acc3);
-			acc4 = _mm256_fmadd_pd(*(__m256d*)(yptr +12), B, acc4);
-			acc5 = _mm256_fmadd_pd(*(__m256d*)(yptr +16), B, acc5);
-			_mm256_store_pd(sptr    , acc1);
-			_mm256_store_pd(sptr + 4, acc2);
-			_mm256_store_pd(sptr + 8, acc3);
-			_mm256_store_pd(sptr +12, acc4);
-			_mm256_store_pd(sptr +16, acc5);
-			sptr += 20;
-			xptr += 20;
-			yptr += 20;
-		}
-		for (; i + 3 < length; i += 4)
-		{
-			__m256d acc1 = _mm256_mul_pd(*(__m256d*)(xptr    ), A);
-			acc1 = _mm256_fmadd_pd(*(__m256d*)(yptr    ), B, acc1);
-			_mm256_store_pd(sptr    , acc1);
-			sptr += 4;
-			xptr += 4;
-			yptr += 4;
-		}
+public:
+    static void Daxpby(Vector &res, double a, Vector &x, double b, Vector &y)
+    {
+        int i = 0;
+        int length = x.size();
+        const int PARALLEL_STEP = 8192;
+        CORE_ASSERT_TRUE_S(x.size() == y.size());
+        if (res.size() != length)
+            res = Vector(length);
+#if 1
+        int isteps = length / PARALLEL_STEP;
+        corecvs::parallelable_for(0, isteps, [&](const corecvs::BlockedRange<int> &r)
+        {
+            auto A = _mm256_broadcast_sd(&a), B = _mm256_broadcast_sd(&b);
+            for (int id = r.begin(); id < r.end(); ++id)
+            {
+                int i = PARALLEL_STEP * id, lim = PARALLEL_STEP * (id + 1);
+                double *sptr = &res[i], *xptr = &x[i], *yptr = &y[i];
+                for (; i < lim; i += 20)
+                {
+                    __m256d acc1 = _mm256_mul_pd(*(__m256d*)(xptr    ), A),
+                            acc2 = _mm256_mul_pd(*(__m256d*)(xptr + 4), A),
+                            acc3 = _mm256_mul_pd(*(__m256d*)(xptr + 8), A),
+                            acc4 = _mm256_mul_pd(*(__m256d*)(xptr +12), A),
+                            acc5 = _mm256_mul_pd(*(__m256d*)(xptr +16), A);
+                    acc1 = _mm256_fmadd_pd(*(__m256d*)(yptr    ), B, acc1);
+                    acc2 = _mm256_fmadd_pd(*(__m256d*)(yptr + 4), B, acc2);
+                    acc3 = _mm256_fmadd_pd(*(__m256d*)(yptr + 8), B, acc3);
+                    acc4 = _mm256_fmadd_pd(*(__m256d*)(yptr +12), B, acc4);
+                    acc5 = _mm256_fmadd_pd(*(__m256d*)(yptr +16), B, acc5);
+                    _mm256_store_pd(sptr    , acc1);
+                    _mm256_store_pd(sptr + 4, acc2);
+                    _mm256_store_pd(sptr + 8, acc3);
+                    _mm256_store_pd(sptr +12, acc4);
+                    _mm256_store_pd(sptr +16, acc5);
+                    sptr += 20;
+                    xptr += 20;
+                    yptr += 20;
+                }
+            }
+        });
+        i = isteps * PARALLEL_STEP;
 #endif
-		for (; i < length; ++i)
-			res[i] = a * x[i] + b * y[i];
-	}
+        auto A = _mm256_broadcast_sd(&a), B = _mm256_broadcast_sd(&b);
+        double *sptr = &res[i], *xptr = &x[i], *yptr = &y[i];
+        for (; i + 19 < length; i += 20)
+        {
+            __m256d acc1 = _mm256_mul_pd(*(__m256d*)(xptr    ), A),
+                    acc2 = _mm256_mul_pd(*(__m256d*)(xptr + 4), A),
+                    acc3 = _mm256_mul_pd(*(__m256d*)(xptr + 8), A),
+                    acc4 = _mm256_mul_pd(*(__m256d*)(xptr +12), A),
+                    acc5 = _mm256_mul_pd(*(__m256d*)(xptr +16), A);
+            acc1 = _mm256_fmadd_pd(*(__m256d*)(yptr    ), B, acc1);
+            acc2 = _mm256_fmadd_pd(*(__m256d*)(yptr + 4), B, acc2);
+            acc3 = _mm256_fmadd_pd(*(__m256d*)(yptr + 8), B, acc3);
+            acc4 = _mm256_fmadd_pd(*(__m256d*)(yptr +12), B, acc4);
+            acc5 = _mm256_fmadd_pd(*(__m256d*)(yptr +16), B, acc5);
+            _mm256_store_pd(sptr    , acc1);
+            _mm256_store_pd(sptr + 4, acc2);
+            _mm256_store_pd(sptr + 8, acc3);
+            _mm256_store_pd(sptr +12, acc4);
+            _mm256_store_pd(sptr +16, acc5);
+            sptr += 20;
+            xptr += 20;
+            yptr += 20;
+        }
+        for (; i + 3 < length; i += 4)
+        {
+            __m256d acc1 = _mm256_mul_pd(*(__m256d*)(xptr    ), A);
+            acc1 = _mm256_fmadd_pd(*(__m256d*)(yptr    ), B, acc1);
+            _mm256_store_pd(sptr    , acc1);
+            sptr += 4;
+            xptr += 4;
+            yptr += 4;
+        }
+//ndif
+        for (; i < length; ++i)
+            res[i] = a * x[i] + b * y[i];
+    }
 #endif
 
 };

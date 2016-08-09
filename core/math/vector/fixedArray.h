@@ -63,9 +63,9 @@ public:
         {
             length = that.length;
 #ifndef WIN32
-            data = std::unique_ptr<ElementType[], decltype(&free)>((ElementType*)aligned_alloc(16, sizeof(ElementType) * length), free);
+            data = std::unique_ptr<ElementType[], decltype(&free)>((ElementType*)aligned_alloc(32, sizeof(ElementType) * length), free);
 #else // VS2013 does not support c++11 aligned_alloc
-            data = std::unique_ptr<ElementType[], decltype(&_aligned_free)>((ElementType*)aligned_alloc(16, sizeof(ElementType) * length), _aligned_free);
+            data = std::unique_ptr<ElementType[], decltype(&_aligned_free)>((ElementType*)aligned_alloc(32, sizeof(ElementType) * length), _aligned_free);
 #endif
             copyInit(&that[0]);
         }
@@ -155,9 +155,9 @@ public:
 private:
     explicit inline FixedArrayBase(int length, int) : length(length),
 #ifndef WIN32
-        data((ElementType*)aligned_alloc(16, sizeof(ElementType) * length), free)
+        data((ElementType*)aligned_alloc(32, sizeof(ElementType) * length), free)
 #else // VS2013 does not support c++11 aligned_alloc
-        data((ElementType*)aligned_alloc(16, sizeof(ElementType) * length), _aligned_free)
+        data((ElementType*)aligned_alloc(32, sizeof(ElementType) * length), _aligned_free)
 #endif
     {
     }
