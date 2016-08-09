@@ -66,6 +66,12 @@ bool RaytraceableSphere::inside(Vector3dd &point)
     return res ^ !flag;
 }
 
+bool RaytraceableSphere::toMesh(Mesh3D &target)
+{
+    target.addIcoSphere(mSphere, 2);
+    return true;
+}
+
 bool RaytraceableUnion::intersect(RayIntersection &intersection)
 {
     RayIntersection best = intersection;
@@ -665,48 +671,68 @@ bool RaytraceableCylinder::intersect(RayIntersection &intersection)
 #endif
 
 
+/**
+ *  We first transform the ray into cylinder coordinate frame
+ *
+ *   Z will become axis direction
+ *   X and Y will be in the circle plane
+ *
+ *   cf - is a cylinder frame ray;
+ *
+ *  We first conpute the intersection in XY frame
+ *  pr (plane ray) is a ray XY part - it is shorter then the cf and intersection.ray
+ *
+ *  After intersection is computed the same paramter t1 and t2 give the point for the input ray
+ *
+ *
+ *
+ **/
 bool RaytraceableCylinder::intersect(RayIntersection &intersection)
 {
     static const double CYL_EPSILON  = 0.00001;
     intersection.object = NULL;
 
     Ray3d &ray = intersection.ray;
-    Vector3dd shift = ray.p - p;
-    Ray3d cylFrame;
-  /*cylFrame.a.x() = ray.a & e1;
-    cylFrame.a.y() = ray.a & e2;
-    cylFrame.a.z() = ray.a &  n;*/
-    cylFrame.a = rotation * ray.a;
+    Ray3d ray1 = intersection.ray;
+    ray1.p -= p;
+    Ray3d cf = ray1.transformed(rotation);
 
-  /*cylFrame.p.x() = shift & e1;
-    cylFrame.p.y() = shift & e2;
-    cylFrame.p.z() = shift &  n;*/
-    cylFrame.p = rotation * shift;
+    Ray2d    pr   = Ray2d(cf.a.xy(), cf.p.xy());
+    Circle2d base = Circle2d(Vector2dd::Zero(), r);
 
-    double b = - (cylFrame.p.xy() & cylFrame.a.xy()) / (cylFrame.a.xy() & cylFrame.a.xy());
-    Vector2dd pos = cylFrame.p.xy() + b * cylFrame.a.xy();
-    double x = !pos;
-
-    if (x > r) {
+    double t1, t2;
+    if (!base.intersectWith(pr, t1, t2))
+    {
         return false;
     }
 
-    double db = sqrt(r * r - x * x);
 
-    double t1 = b - db;
-    double t2 = b + db;
+    double len1 = (cf.p.z() + t1 * cf.a.z()) / h;
+    double len2 = (cf.p.z() + t2 * cf.a.z()) / h;
 
-    /*
-    double t1 = -1;
-    double t2 = -1;
-    */
+#if 0
+    double a = !(cylFrame.a.xy());
+    double b = cylFrame.a.xy() & cylFrame.p.xy();
+    double c = !(cylFrame.p.xy()) - r*r*r*r;
+    double d = b * b - a * c;
 
-    double len1 = (cylFrame.p.z() + t1 * cylFrame.a.z()) / h;
-    double len2 = (cylFrame.p.z() + t2 * cylFrame.a.z()) / h;
+    if (d <= 0.0) return 0;
 
-    Vector3dd n = rotation.row(2);
-    Plane3d bottom = Plane3d::FromNormalAndPoint(-n, p        );
-    Plane3d top    = Plane3d::FromNormalAndPoint( n, p + n * h);
+    d = sqrt (d);
+
+    double t1 = (-b - d) / a;
+    double t2 = (-b + d) / a;
+
+
+    double len1 = (cylFrame.p.z() + t1 * cylFrame.a.z()) / ray.a.sumAllElementsSq();
+    double len2 = (cylFrame.p.z() + t2 * cylFrame.a.z()) / ray.a.sumAllElementsSq();
+
+
+
+#endif
+
+    //Vector3dd n = rotation.row(2);
+
 
 
 /*    cout << "RaytraceableCylinder::intersect():  ray:" << cylFrame  << endl;
@@ -720,48 +746,51 @@ bool RaytraceableCylinder::intersect(RayIntersection &intersection)
 
 
     //if ( cylFrame.a.z() > CYL_EPSILON || cylFrame.a.z() < -CYL_EPSILON)
+    if (1)
     {
+        double rsq = r * r;
+
+        Plane3d bottom = Plane3d::FromNormalAndPoint(-Vector3dd::OrtZ(), Vector3dd::Zero()    );
+        Plane3d top    = Plane3d::FromNormalAndPoint( Vector3dd::OrtZ(), Vector3dd::OrtZ() * h);
+
         bool ok1;
         bool ok2;
-        double tp1 = bottom.intersectWithP(ray, &ok1);
-        double tp2 = top   .intersectWithP(ray, &ok2);
-        Vector3dd pp1 = ray.getPoint(tp1) - p ;
-        Vector3dd pp2 = ray.getPoint(tp2) - p - n * h;
-
-
-
+        double tp1 = bottom.intersectWithP(cf, &ok1);
+        double tp2 = top   .intersectWithP(cf, &ok2);
+        Vector2dd pp1 = cf.getPoint(tp1).xy();
+        Vector2dd pp2 = cf.getPoint(tp2).xy();
 
         if      (len1 < 0.0)
         {
-            if ( !ok1 || (pp1 & pp1) >= r * r ) {
+            if ( !ok1 || (pp1 & pp1) >= rsq ) {
                 t1 = -1;
             } else {
-                t1 = tp1;
+                t1 = std::max(tp1, t1);
             }
         }
         else if (len1 > 1.0)
         {
-            if ( !ok2 || (pp2 & pp2) >= r * r ) {
+            if ( !ok2 || (pp2 & pp2) >= rsq ) {
                 t1 = -1;
             } else {
-                t1 = tp2;
+                t1 = std::max(tp2, t1);
             }
         }
 
         if      (len2 < 0.0)
         {
-            if ( !ok1 || (pp1 & pp1) >= r * r ) {
+            if ( !ok1 || (pp1 & pp1) >= rsq ) {
                 t2 = -1;
             } else {
-                t2 = tp1;
+                t2 = std::max(tp1, t2);
             }
         }
         else if ( len2 > 1.0)
         {
-            if ( !ok2 || (pp2 & pp2) >= r * r ) {
+            if ( !ok2 || (pp2 & pp2) >= rsq ) {
                 t2 = -1;
             } else {
-                t2 = tp2;
+                t2 = std::max(tp2, t2);
             }
         }
     }
@@ -831,7 +860,9 @@ bool RaytraceableCylinder::inside(Vector3dd &point)
     double originProj = axis.projectionP(point);
 
     if (originProj < 0 || originProj > h)
+    {
         return flag;
+    }
 
     double d = axis.distanceTo(point);
     if (d > r)
@@ -841,4 +872,12 @@ bool RaytraceableCylinder::inside(Vector3dd &point)
 
     return !flag;
 
+}
+
+bool RaytraceableCylinder::toMesh(Mesh3D &target)
+{
+    target.mulTransform(Matrix44::Shift(p) * Matrix44(rotation.inv()) * Matrix44::Shift(Vector3dd(0, 0, h / 2.0)));
+    target.addCylinder(Vector3dd::Zero(), r, h, 20);
+    target.popTransform();
+    return true;
 }

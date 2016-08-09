@@ -26,8 +26,10 @@ public:
     }
 
     /**
-     *   Decomposes the intersection point (if one exists) into the corrdinate frame with ox - on the line
-     * connecting the centers
+     * This function intersects two circles / spheres (3D or more).
+     *
+     *  Decomposes the intersection point (if one exists) into the corrdinate frame with ox - on the line
+     * connecting the centers. And ar is a radius of the intersection
      *
      **/
     bool intersectConicHelper(const RealType &other, double &xr, double &ar)
@@ -47,6 +49,32 @@ public:
         }
         ar = 1.0 / (2 * d) * sqrt(D);
         xr = x;
+        return true;
+    }
+
+    /**
+     * \brief This method intersects the ray with a sphere.
+     *
+     * \param ray - input ray. could be not normalised
+     *
+     **/
+    template<class RayType>
+    bool intersectRayHelper(const RayType &ray, double &t1, double &t2 )
+    {
+
+        VectorType toCenter  = c  - ray.p;
+        double toCen2 = toCenter & toCenter;
+        double proj  = (ray.a & toCenter) / ray.a.l2Metric();
+        double hdist  = (r * r) - toCen2 + proj * proj;
+
+        if (hdist < 0) {
+            return false;
+        }
+
+        hdist = sqrt (hdist);
+
+        t1 =  (proj - hdist) / ray.a.l2Metric();
+        t2 =  (proj + hdist) / ray.a.l2Metric();
         return true;
     }
 
@@ -74,6 +102,7 @@ public:
     {}
 
     bool intersectWith(const Circle2d &other, Vector2dd &point1, Vector2dd &point2);
+    bool intersectWith(const Ray2d &ray, double &t1, double &t2);
 };
 
 class Circle3d;

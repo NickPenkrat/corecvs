@@ -108,6 +108,9 @@ public:
     virtual void normal(RayIntersection &intersection);
     virtual bool inside (Vector3dd &point) = 0;
 
+    /* Helper function to help debuging */
+    virtual bool toMesh (Mesh3D & /*target*/) { return false; }
+
     virtual ~Raytraceable();
 };
 
