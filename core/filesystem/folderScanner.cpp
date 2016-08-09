@@ -58,31 +58,33 @@ bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFi
 
 bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFiles)
 {
-     DIR *dp;
-     struct dirent *ep;
+    DIR *dp = opendir(path.c_str());
+    if (dp == NULL)
+    {
+        L_ERROR_P("<%s> does not exist or not a directory", path.c_str());
+        return false;
+    }
 
-     dp = opendir (path.c_str());
-     if (dp == NULL) {
-         return false;
-     }
+    struct dirent *ep;
+    while ((ep = readdir(dp)) != NULL)
+    {
+        /* Ok there are devices, pipes, links... I don't know... */
+        bool isDir = (ep->d_type != DT_REG) && (ep->d_type != DT_LNK);
 
+        L_DDEBUG_P("%s contains\t%s\tas a %s (type:0x%x)", path.c_str(), ep->d_name, (isDir ? "dir" : "file"), ep->d_type);
 
-     while ((ep = readdir (dp)) != NULL) {
+        if (!(findFiles ^ isDir))
+            continue;
 
-       /*Ok there are devices, pipes, links... I don't know... */
-       bool isDir = (ep->d_type != DT_REG) && (ep->d_type != DT_LNK);
-       if (isDir ^ findFiles) {
-           //SYNC_PRINT(("found path: %s\n", ep->d_name));
+        /* Do we need to form path? */
+        string result = path + PATH_SEPARATOR + ep->d_name;
+        childs.push_back(result);
+    }
 
-           /*Do we need to form path? */
-           string result = path + PATH_SEPARATOR + ep->d_name;
-           childs.push_back(result);
-       }
-     }
-
-     closedir (dp);
-     return true;
+    closedir(dp);
+    return true;
 }
+
 #endif
 
 
