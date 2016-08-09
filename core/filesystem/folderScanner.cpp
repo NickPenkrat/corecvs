@@ -58,6 +58,8 @@ bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFi
 
 bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFiles)
 {
+    std::cout << "FolderScanner::scan at " << path << std::endl;
+
     DIR *dp = opendir(path.c_str());
     if (dp == NULL)
     {
@@ -68,6 +70,8 @@ bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFi
     struct dirent *ep;
     while ((ep = readdir(dp)) != NULL)
     {
+        std::cout << "found " << ep->d_name << std::endl;
+
         /* Ok there are devices, pipes, links... I don't know... */
         bool isDir = (ep->d_type != DT_REG) && (ep->d_type != DT_LNK);
 
