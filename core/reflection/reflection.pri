@@ -4,7 +4,8 @@ SOURCES += \
     reflection/printerVisitor.cpp \
     reflection/serializerVisitor.cpp \
     reflection/deserializerVisitor.cpp \
-    reflection/commandLineSetter.cpp
+    reflection/commandLineSetter.cpp \
+    reflection/reflection.cpp
     
     
 HEADERS += \

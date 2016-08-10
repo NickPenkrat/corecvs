@@ -15,6 +15,7 @@
 
 #include <vector>
 #include <string>
+#include <memory>
 
 #include "global.h"
 
@@ -36,6 +37,11 @@ using std::vector;
 #else
 #define SUPPRESS_OFFSET_WARNING_BEGIN
 #define SUPPRESS_OFFSET_WARNING_END
+#endif
+
+
+#ifndef REFLECTION_DIRECTORY_OFF
+#include <map>
 #endif
 
 
@@ -911,7 +917,28 @@ public:
     }
 };
 
+class ReflectionDirectory : public std::map<std::string, Reflection *>
+{
 
+};
+
+class ReflectionDirectoryHolder
+{
+private:
+    static std::unique_ptr<ReflectionDirectory> reflectionDirectory;
+public:
+    /**
+     * Main reflection directory
+     **/
+    static ReflectionDirectory* getReflectionDirectory();
+
+};
+
+/**
+ * \brief Dynamic Object is an object accessed by pointer, whose type is cleared form C++ point of view,
+ * the object is compleatly managed be the reflection
+ *
+ **/
 class DynamicObject
 {
 public:
@@ -941,6 +968,8 @@ public:
     }
 
 };
+
+
 
 } //namespace corecvs
 

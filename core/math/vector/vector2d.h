@@ -194,10 +194,15 @@ public:
 
     typedef typename ReflectionHelper<ElementType>::Type ReflectionType;
 
-    static int staticInit()
-    {        
+    static int staticInit(const char *name = "")
+    {
+        reflection.name = name;
         reflection.fields.push_back(new ReflectionType(FIELD_X, ElementType(0), "x"));
         reflection.fields.push_back(new ReflectionType(FIELD_Y, ElementType(0), "y"));
+
+        ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+        directory[std::string(name)]= &reflection;
+        cout << "Adding:" << name << " to directory" << std::endl;
         return 0;
     }
 //#endif

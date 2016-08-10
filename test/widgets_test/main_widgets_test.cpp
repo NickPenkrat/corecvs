@@ -19,9 +19,14 @@
 #include "chessBoardCornerDetectorParamsBase.h"
 #include "iterativeReconstructionNonlinearOptimizationParamsWrapper.h"
 
+#include "vector2d.h"
+
 int main(int argc, char **argv)
 {
     QApplication a(argc, argv);
+
+    Vector2dd dummy(0.0);
+    cout << "Out:" <<  dummy.reflection.fields.size() << std::endl;
 
 #ifdef WITH_LIBJPEG
     LibjpegFileReader::registerMyself();
@@ -33,38 +38,54 @@ int main(int argc, char **argv)
 #endif
     QTRGB24Loader::registerMyself();
 
-    {
-        Reflection *widget_ref = &AxisAlignedBoxParameters::reflection;
-        ReflectionWidget *aabWidget = new ReflectionWidget(widget_ref);
-        aabWidget->show();
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+
+    if (argc != 2) {
+        cout << "The list of reflected objects" << endl;
+        for (auto it : directory)
+        {
+            cout << "Class" << it.first << endl;
+        }
+
+        return 0;
     }
 
-    {
-        Reflection *widget_ref = &RgbColorParameters::reflection;
-        ReflectionWidget *aabWidget = new ReflectionWidget(widget_ref);
-        aabWidget->show();
-    }
+    std::string className(argv[1]);
 
-    {
-        Reflection *widget_ref = &ChessBoardAssemblerParamsBase::reflection;
-        ReflectionWidget *aabWidget = new ReflectionWidget(widget_ref);
-        aabWidget->show();
-    }
-
-    {
-        Reflection *widget_ref = &CheckerboardDetectionParameters::reflection;
-        ReflectionWidget *aabWidget = new ReflectionWidget(widget_ref);
-        aabWidget->show();
-    }
-
-    {
-        Reflection *widget_ref = &ChessBoardCornerDetectorParamsBase::reflection;
-        ReflectionWidget *aabWidget = new ReflectionWidget(widget_ref);
-        aabWidget->show();
-    }
-
-    {
-        Reflection *widget_ref = &IterativeReconstructionNonlinearOptimizationParamsWrapper::reflection;
+    auto it = directory.find(className);
+    if (it == directory.end()) {
+        {
+            Reflection *widget_ref = &AxisAlignedBoxParameters::reflection;
+            ReflectionWidget *aabWidget = new ReflectionWidget(widget_ref);
+            aabWidget->show();
+        }
+        {
+            Reflection *widget_ref = &RgbColorParameters::reflection;
+            ReflectionWidget *aabWidget = new ReflectionWidget(widget_ref);
+            aabWidget->show();
+        }
+        {
+            Reflection *widget_ref = &ChessBoardAssemblerParamsBase::reflection;
+            ReflectionWidget *aabWidget = new ReflectionWidget(widget_ref);
+            aabWidget->show();
+        }
+        {
+            Reflection *widget_ref = &CheckerboardDetectionParameters::reflection;
+            ReflectionWidget *aabWidget = new ReflectionWidget(widget_ref);
+            aabWidget->show();
+        }
+        {
+            Reflection *widget_ref = &ChessBoardCornerDetectorParamsBase::reflection;
+            ReflectionWidget *aabWidget = new ReflectionWidget(widget_ref);
+            aabWidget->show();
+        }
+        {
+            Reflection *widget_ref = &IterativeReconstructionNonlinearOptimizationParamsWrapper::reflection;
+            ReflectionWidget *aabWidget = new ReflectionWidget(widget_ref);
+            aabWidget->show();
+        }
+    } else {
+        Reflection *widget_ref = (*it).second;
         ReflectionWidget *aabWidget = new ReflectionWidget(widget_ref);
         aabWidget->show();
     }
