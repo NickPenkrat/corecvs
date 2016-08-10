@@ -63,6 +63,7 @@ public:
     int nnz() const;
     double fillin() const;
     void spyPlot() const;
+    Vector dtrsv(Vector &v, bool upper = true, bool notrans = true);
 
     friend SparseMatrix operator -(const SparseMatrix &a);
     friend SparseMatrix operator *(const double       &lhs, const SparseMatrix &rhs);
@@ -98,6 +99,10 @@ public:
     friend std::ostream& operator<< (std::ostream &out, const SparseMatrix &sm);
 
     int h, w;
+    Vector dtrsv_un(Vector &v); // Ux=b
+    Vector dtrsv_ut(Vector &v); // xU=b
+    Vector dtrsv_ln(Vector &v); // Lx=b
+    Vector dtrsv_lt(Vector &v); // xL=b
 private:
     void swapCoords(int &x1, int &y1, int &x2, int &y2) const;
     //! All non-zero entries of matrix
@@ -110,6 +115,18 @@ private:
      */
     std::vector<int> rowPointers;
 };
+SparseMatrix operator -(const SparseMatrix &a);
+SparseMatrix operator *(const double       &lhs, const SparseMatrix &rhs);
+SparseMatrix operator *(const SparseMatrix &lhs, const double       &rhs);
+SparseMatrix operator /(const SparseMatrix &lhs, const double       &rhs);
+
+SparseMatrix operator *(const SparseMatrix &lhs, const SparseMatrix &rhs);
+SparseMatrix operator +(const SparseMatrix &lhs, const SparseMatrix &rhs);
+SparseMatrix operator -(const SparseMatrix &lhs, const SparseMatrix &rhs);
+
+Vector       operator *(const SparseMatrix &lhs, const Vector       &rhs);
+Vector       operator *(const Vector       &lhs, const SparseMatrix &rhs);
+std::ostream& operator<< (std::ostream &out, const SparseMatrix &sm);
 
 }
 

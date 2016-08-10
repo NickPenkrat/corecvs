@@ -64,6 +64,40 @@ std::pair<bool, SparseMatrix>  NaiveIncompleteCholesky(SparseMatrix &B)
 	return std::make_pair(true, A);
 }
 
+TEST(SparseMatrix, dtrsv_un)
+{
+	std::mt19937 rng(SEED);
+	std::uniform_real_distribution<double> runif(-100, 100);
+	double nnz = 0.001;
+	int N = 1000;
+	for (int it= 0; it< 1000; ++it)
+	{
+		int realN = N + rng() % N;
+		Matrix U(realN, realN);
+		for (int k = 0; k < nnz * realN * realN; ++k)
+		{
+			int I = rng() % (realN * realN + realN);
+			int ii = I < realN * realN ? I / realN : I - realN * realN;
+			int jj = I < realN * realN ? I % realN : I - realN * realN;
+			if (ii > jj)
+				std::swap(ii, jj);
+			U.a(ii, jj) = runif(rng);
+		}
+		Vector x(realN);
+		for (int i = 0; i < realN; ++i)
+		{
+			U.a(i, i) = runif(rng);
+			x[i] = runif(rng);
+		}
+		SparseMatrix su(U);
+		auto rhs = su * x;
+		auto xx = su.dtrsv_un(rhs);
+		ASSERT_LE(!(xx-x)/!x , 1e-6);
+		
+	}
+
+}
+
 TEST(SparseMatrix, IncompleteCholesky)
 {
 	std::mt19937 rng(SEED);
@@ -88,7 +122,7 @@ TEST(SparseMatrix, IncompleteCholesky)
 	for (int i = 0; i < NNN; ++i)
 	{
 		const int M = 1000;
-		const double nnz = 0.1;
+		const double nnz = 0.005;
 		Matrix U(M, M);
 		int NN = nnz * M * M;
 		for (int j = 0; j < NN; ++j)

@@ -169,6 +169,40 @@ std::pair<bool, SparseMatrix> corecvs::SparseMatrix::incompleteCholseky()
 #endif
 }
 
+corecvs::Vector corecvs::SparseMatrix::dtrsv(Vector &rhs, bool upper, bool notrans)
+{
+	return upper ? notrans ? dtrsv_un(rhs) : dtrsv_ut(rhs) : notrans ? dtrsv_ln(rhs) : dtrsv_lt(rhs);
+}
+corecvs::Vector corecvs::SparseMatrix::dtrsv_ut(Vector &rhs) { return corecvs::Vector(0); }
+corecvs::Vector corecvs::SparseMatrix::dtrsv_ln(Vector &rhs) { return corecvs::Vector(0); }
+corecvs::Vector corecvs::SparseMatrix::dtrsv_lt(Vector &rhs) { return corecvs::Vector(0); }
+
+corecvs::Vector corecvs::SparseMatrix::dtrsv_un(Vector &rhs)
+{
+	/*
+	 * /# # # # #\ / x_1 \   / b_1 \
+	 * |  # # # #| | x_2 |   | b_2 |
+	 * |    # # #| | x_3 | = | b_3 |
+	 * |      # #| | x_4 |   | b_4 |
+	 * \        #/ \ x_5 /   \ b_5 /
+	 */
+
+	CORE_ASSERT_TRUE_S(h == w);
+	CORE_ASSERT_TRUE_S(h == rhs.size());
+	corecvs::Vector res(rhs.size());
+	for (int i = h - 1; i >= 0; --i)
+	{
+		double sum = rhs[i];
+		int i_i_i = rowPointers[i];
+		for (; i_i_i < rowPointers[i + 1] && columns[i_i_i] < i; ++i_i_i);
+		CORE_ASSERT_TRUE_S(columns[i_i_i] == i && rowPointers[i + 1]  > i_i_i);
+		for (int i_i_j = i_i_i + 1; i_i_j < rowPointers[i + 1]; ++i_i_j)
+			sum -= values[i_i_j] * res[columns[i_i_j]];
+		res[i] = sum / values[i_i_i];
+	}
+	return res;
+}
+
 
 void corecvs::SparseMatrix::spyPlot() const
 {
