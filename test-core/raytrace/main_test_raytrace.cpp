@@ -25,6 +25,7 @@
 #include "meshLoader.h"
 #include "preciseTimer.h"
 #include "perlinNoise.h"
+#include "log.h"
 
 using namespace std;
 using namespace corecvs;
@@ -214,10 +215,9 @@ TEST(Raytrace, testCylinder1)
 
     vector<Ray3d> rays;
 
-
-    for (int i = - limit;  i < limit ; i++)
+    for (int i = - limit; i < limit; i++)
     {
-        for (int j = - limit;  j < limit ; j++)
+        for (int j = - limit; j < limit; j++)
         {
             /*rays.push_back(Ray3d(Vector3dd(i / (3.0 * limit), j /  (3.0 * limit), 1.0 ), Vector3dd::Zero()));
             rays.back().normalise();*/
@@ -227,6 +227,7 @@ TEST(Raytrace, testCylinder1)
         }
     }
 
+    int nIntersects = 0;
     for (size_t i = 0; i < rays.size(); i++)
     {
         RayIntersection ray;
@@ -234,17 +235,24 @@ TEST(Raytrace, testCylinder1)
         mesh.addLine(rays[i].getPoint(0), rays[i].getPoint(30));
         bool ok = object.intersect(ray);
 
-        cout << i << endl;
-        cout << " R:" << ray.ray << endl;
+        ostringstream ss;
+        ss << i << endl;
+        ss << " R:" << ray.ray << endl;
         if (ok) {
-        cout << " P:" << ray.getPoint() << endl;
-        //cout << " N:" << ray.normal << endl;
-        } else  {
-            cout << "No Intersecution" << endl;
+            ss << " P:" << ray.getPoint() << endl;
+          //ss << " N:" << ray.normal << endl;
+            //L_DDEBUG << ss.str();
+            nIntersects++;
         }
+        else  {
+            ss << "No Intersection" << endl;
+        }
+        //L_DDEBUG << ss.str();
 
         mesh.addPoint(ray.getPoint());
     }
+
+    cout << " found intersections: " << nIntersects << " of rays: " << rays.size() << endl;
 
     //object.toMesh(mesh);
     mesh.dumpPLY("cylinder-int.ply");
