@@ -1,6 +1,8 @@
 #ifndef RECONSTRUCTIONFUNCTOR
 #define RECONSTRUCTIONFUNCTOR
 
+#include <set>
+
 #include "typesafeBitmaskEnums.h"
 #include "tbbWrapper.h"
 #include "function.h"
@@ -150,6 +152,7 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
     std::vector<FixtureCamera*> focalTunableCameras, principalTunableCameras;
 	corecvs::Vector3dd scaleReference;
 	corecvs::CameraFixture* scaleLockFixtue = nullptr;
+	std::set<SceneFeaturePoint*> trackedFeatures, trackedStatic;
 	double lockedScale = 1.0;
 
     std::vector<CameraFixture*> optimizableSubset;

@@ -166,14 +166,15 @@ struct PointFunctor: corecvs::FunctionArgs
 
 void corecvs::ReconstructionFunctor::alternatingMinimization(int steps)
 {
-    int N = (int)scene->trackedFeatures.size();
+    int N = (int)trackedFeatures.size();
     int ec = getErrorComponentsPerPoint();
     int bs = N / 256;
+	std::vector<SceneFeaturePoint*> _trackedFeatures(trackedFeatures.begin(), trackedFeatures.end());
     corecvs::parallelable_for(0, N, bs, [&](const corecvs::BlockedRange<int> &r)
         {
             for (int i = r.begin(); i < r.end(); ++i)
             {
-                auto& pt = *scene->trackedFeatures[i];
+                auto& pt = *_trackedFeatures[i];
                 int /*in = 3,*/ out = (int)pt.observations__.size() * ec;
                 PointFunctor pf(&pt, error, ec);
                 corecvs::LevenbergMarquardt lm(steps);
@@ -194,7 +195,7 @@ int corecvs::ReconstructionFunctor::getInputNum()
       + (int)translateableFixtures.size()  * INPUTS_PER_TRANSLATION
       + (int)focalTunableCameras.size()    * INPUTS_PER_FOCAL
       + (int)principalTunableCameras.size()* INPUTS_PER_PRINCIPAL
-      + (!(optimization & ReconstructionFunctorOptimizationType::POINTS) ? 0 : INPUTS_PER_3D_POINT * (int)scene->trackedFeatures.size());
+      + (!(optimization & ReconstructionFunctorOptimizationType::POINTS) ? 0 : INPUTS_PER_3D_POINT * (int)trackedFeatures.size());
 }
 
 int corecvs::ReconstructionFunctor::getOutputNum()
@@ -228,7 +229,7 @@ int corecvs::ReconstructionFunctor::getOutputNum()
 void corecvs::ReconstructionFunctor::computePointCounts()
 {
     counter.clear();
-    for (auto& pt: scene->trackedFeatures)
+    for (auto& pt: trackedFeatures)
         for (auto& obs: pt->observations__)
         {
             if (!std::contains(optimizableSubset, obs.first.u))
@@ -237,7 +238,7 @@ void corecvs::ReconstructionFunctor::computePointCounts()
             counter[obs.first.v]++;
         }
 
-    for (auto& pt: scene->staticPoints)
+    for (auto& pt: trackedStatic)
         for (auto& obs: pt->observations__)
         {
             if (!std::contains(optimizableSubset, obs.first.u))
@@ -254,6 +255,34 @@ void corecvs::ReconstructionFunctor::computeInputs()
     translateableFixtures.clear();
     focalTunableCameras.clear();
     principalTunableCameras.clear();
+    trackedFeatures.clear();
+
+    for (auto& pt: scene->trackedFeatures)
+	{
+		bool ok = false;
+		for (auto& o: pt->observations__)
+			if (std::contains(optimizableSubset, o.first.u))
+			{
+				ok = true;
+				break;
+			}
+		if (!ok)
+			continue;
+		trackedFeatures.insert(pt);
+	}
+    for (auto& pt: scene->staticPoints)
+	{
+		bool ok = false;
+		for (auto& o: pt->observations__)
+			if (std::contains(optimizableSubset, o.first.u))
+			{
+				ok = true;
+				break;
+			}
+		if (!ok)
+			continue;
+		trackedStatic.insert(pt);
+	}
 
     computePointCounts();
     CORE_ASSERT_TRUE_S(scene->placedFixtures.size());
@@ -314,14 +343,12 @@ void corecvs::ReconstructionFunctor::computeOutputs()
     // This function does nothing except saving number of projections
     // and cameras with position constraints
 
-    for (auto& pt: scene->trackedFeatures)
+    for (auto& pt: trackedFeatures)
     	for (auto& o: pt->observations__)
-			if (std::contains(optimizableSubset, o.first.u))
-				lastProjection++;
-    for (auto& pt: scene->staticPoints)
+			lastProjection++;
+    for (auto& pt: trackedStatic)
     	for (auto& o: pt->observations__)
-    		if (std::contains(optimizableSubset, o.first.u))
-		        lastProjection++;
+	        lastProjection++;
 
     lastProjection *= getErrorComponentsPerPoint();
 
@@ -378,11 +405,10 @@ void corecvs::ReconstructionFunctor::computeDependency()
 #define ALL_FROM(V) \
     for (auto& t: V) \
         for (auto& o: t->observations__) \
-    		if (std::contains(optimizableSubset, o.first.u)) \
-	            for (int k = 0; k < errSize; ++k) \
-	                revDependency[id++] = &o.second;
-    ALL_FROM(scene->trackedFeatures)
-    ALL_FROM(scene->staticPoints)
+			for (int k = 0; k < errSize; ++k) \
+				revDependency[id++] = &o.second;
+    ALL_FROM(trackedFeatures)
+    ALL_FROM(trackedStatic)
 
     CORE_ASSERT_TRUE_S(id == lastProjection);
     cacheRef.resize(lastProjection);
@@ -456,10 +482,10 @@ void corecvs::ReconstructionFunctor::computeDependency()
          a == p->camera,
          false,
          BASEDC(cx),)
-    CORE_ASSERT_TRUE_S(argin == getInputNum() - (!(optimization & ReconstructionFunctorOptimizationType::POINTS) ? 0 : INPUTS_PER_3D_POINT * (int)scene->trackedFeatures.size()));
+    CORE_ASSERT_TRUE_S(argin == getInputNum() - (!(optimization & ReconstructionFunctorOptimizationType::POINTS) ? 0 : INPUTS_PER_3D_POINT * (int)trackedFeatures.size()));
     int argin_prepoint = argin;
     IF(POINTS,
-        DEPS(scene->trackedFeatures,  INPUTS_PER_3D_POINT,    a == p->featurePoint, false, (&sfpDepCache[a].x)[i] = argin;,))
+        DEPS(trackedFeatures,  INPUTS_PER_3D_POINT,    a == p->featurePoint, false, (&sfpDepCache[a].x)[i] = argin;,))
     CORE_ASSERT_TRUE_S(argin == getInputNum());
     schurBlocks.clear();
     for (int i = argin_prepoint; i < argin; i += INPUTS_PER_3D_POINT)
@@ -533,7 +559,7 @@ void corecvs::ReconstructionFunctor::readParams(const double* params, bool prepa
     FILL(focalTunableCameras,     INPUTS_PER_FOCAL,           a->intrinsics.focal = corecvs::Vector2dd(v, v),,)
     FILL(principalTunableCameras, INPUTS_PER_PRINCIPAL,       a->intrinsics.principal[i] = v,,)
     IF(POINTS,
-        FILL(scene->trackedFeatures,  INPUTS_PER_3D_POINT,        a->reprojectedPosition[i] = v,,))
+        FILL(trackedFeatures,  INPUTS_PER_3D_POINT,        a->reprojectedPosition[i] = v,,))
 
     bool exc = excessiveQuaternionParametrization;
     corecvs::parallelable_for((size_t)0, cacheOrigin.size(), std::max(cacheOrigin.size() / 256, (size_t)1),
@@ -729,7 +755,7 @@ void corecvs::ReconstructionFunctor::writeParams(double* params)
     WRITE(focalTunableCameras,     INPUTS_PER_FOCAL,       a->intrinsics.focal[0],)
     WRITE(principalTunableCameras, INPUTS_PER_PRINCIPAL,   a->intrinsics.principal[i],)
     IF(POINTS,
-        WRITE(scene->trackedFeatures,  INPUTS_PER_3D_POINT,    a->reprojectedPosition[i],))
+        WRITE(trackedFeatures,  INPUTS_PER_3D_POINT,    a->reprojectedPosition[i],))
 }
 
 void corecvs::ReconstructionFunctor::computeErrors(double *out, const std::vector<int> &idxs)
