@@ -258,22 +258,25 @@ void corecvs::ReconstructionFunctor::computeInputs()
     computePointCounts();
     CORE_ASSERT_TRUE_S(scene->placedFixtures.size());
     IF(DEGENERATE_ORIENTATIONS,
-        if (counter[scene->placedFixtures[0]] >= MINIMAL_TRACKED_FOR_ORIENTATION)
+        if (counter[scene->placedFixtures[0]] >= MINIMAL_TRACKED_FOR_ORIENTATION
+        && std::contains(optimizableSubset, scene->placedFixtures[0]))
         {
             orientableFixtures.push_back(scene->placedFixtures[0]);
             std::cout << "DEGENERATE_ORIENTATIONS" << std::endl;
         })
     IF(NON_DEGENERATE_ORIENTATIONS,
         for (size_t i = 1; i < scene->placedFixtures.size(); ++i)
-            if (counter[scene->placedFixtures[i]] >= MINIMAL_TRACKED_FOR_ORIENTATION)
+            if (counter[scene->placedFixtures[i]] >= MINIMAL_TRACKED_FOR_ORIENTATION &&
+            	std::contains(optimizableSubset, scene->placedFixtures[i]))
                 orientableFixtures.push_back(scene->placedFixtures[i]);
         std::cout << "NON_DEGENERATE_ORIENTATIONS: " << orientableFixtures.size() << std::endl;)
 
 	scaleReference = scene->placedFixtures[0]->location.shift;
-	if (scaleLock)
+	if (scaleLock && std::contains(optimizableSubset, scene->placedFixtures[1]))
 		scaleLockFixtue = scene->placedFixtures[1];
     IF(DEGENERATE_TRANSLATIONS,
-        if (counter[scene->placedFixtures[0]] > MINIMAL_TRACKED_FOR_TRANSLATION)
+        if (counter[scene->placedFixtures[0]] > MINIMAL_TRACKED_FOR_TRANSLATION &&
+        	std::contains(optimizableSubset, scene->placedFixtures[0]))
         {
             translateableFixtures.push_back(scene->placedFixtures[0]);
             std::cout << "DEGENERATE_TRANSLATIONS" << std::endl;
@@ -281,12 +284,13 @@ void corecvs::ReconstructionFunctor::computeInputs()
 
     IF(NON_DEGENERATE_TRANSLATIONS,
         for (size_t i = 1; i < scene->placedFixtures.size(); ++i)
-            if (counter[scene->placedFixtures[i]] >= MINIMAL_TRACKED_FOR_TRANSLATION)
+            if (counter[scene->placedFixtures[i]] >= MINIMAL_TRACKED_FOR_TRANSLATION &&
+            	std::contains(optimizableSubset, scene->placedFixtures[i]))
                 translateableFixtures.push_back(scene->placedFixtures[i]);
         std::cout << "NON_DEGENERATE_TRANSLATIONS: " << translateableFixtures.size() << std::endl;)
 
     std::set<FixtureCamera*> distinctCameras;
-    for (auto& fixture: scene->placedFixtures)
+    for (auto& fixture: optimizableSubset)
         for (auto& cam: fixture->cameras)
             distinctCameras.insert(cam);
 
@@ -311,14 +315,18 @@ void corecvs::ReconstructionFunctor::computeOutputs()
     // and cameras with position constraints
 
     for (auto& pt: scene->trackedFeatures)
-        lastProjection += (int)pt->observations__.size();
+    	for (auto& o: pt->observations__)
+			if (std::contains(optimizableSubset, o.first.u))
+				lastProjection++;
     for (auto& pt: scene->staticPoints)
-        lastProjection += (int)pt->observations__.size();
+    	for (auto& o: pt->observations__)
+    		if (std::contains(optimizableSubset, o.first.u))
+		        lastProjection++;
 
     lastProjection *= getErrorComponentsPerPoint();
 
     IF (TUNE_GPS,
-        for (auto& cf: scene->placedFixtures)
+        for (auto& cf: optimizableSubset)
             if (scene->initializationData[cf].enforcePosition)
                 positionConstrainedCameras.push_back(cf);)
 
@@ -370,8 +378,9 @@ void corecvs::ReconstructionFunctor::computeDependency()
 #define ALL_FROM(V) \
     for (auto& t: V) \
         for (auto& o: t->observations__) \
-            for (int k = 0; k < errSize; ++k) \
-                revDependency[id++] = &o.second;
+    		if (std::contains(optimizableSubset, o.first.u)) \
+	            for (int k = 0; k < errSize; ++k) \
+	                revDependency[id++] = &o.second;
     ALL_FROM(scene->trackedFeatures)
     ALL_FROM(scene->staticPoints)
 

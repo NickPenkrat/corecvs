@@ -66,6 +66,7 @@ public:
 
     std::function<void()> postAppendHook = [](){};
 protected:
+	double nextFullBA = 0.0;
     std::unordered_map<corecvs::CameraFixture*, corecvs::Affine3DQ> activeEstimates;
     std::unordered_map<corecvs::CameraFixture*, std::vector<int>> activeInlierCount;
     std::unordered_map<corecvs::CameraFixture*, corecvs::Affine3DQ> activeP6PEstimates;

@@ -292,7 +292,7 @@ void corecvs::PhotostationPlacer::fit(const ReconstructionFunctorOptimizationTyp
     scene->validateAll();
     if (scene->placedFixtures.size() < 2)
         return;
-    if (optimizeLast <= 0)
+    if (optimizeLast == 0)
         optimizeLast = (int)scene->placedFixtures.size();
     std::vector<CameraFixture*> optimizable(scene->placedFixtures.rbegin(), scene->placedFixtures.rbegin() + optimizeLast);
 
@@ -844,10 +844,21 @@ void corecvs::PhotostationPlacer::postAppend()
             break;
         if (scene->trackedFeatures.size() < minimalInlierCount())
         	break;
-        fit(params, postAppendNonlinearIterations / 2, postAppendOptimizationWindow());
+        bool full = nextFullBA < scene->placedFixtures.size();
+        int tailSize = 0;
+        if (full)
+		{
+        	nextFullBA = (1.0 + fullBALimit) * scene->placedFixtures.size();
+		}
+		else
+		{
+			tailSize = partialBA;
+		}
+
+        fit(params, postAppendNonlinearIterations / 2, tailSize);
         std::cout << "Prune" << std::endl;
         scene->pruneTracks(inlierThreshold() * rmsePruningScaler() / 2.0, inlierThreshold() * maxPruningScaler() / 2.0, distanceLimit());
-        fit(params, postAppendNonlinearIterations / 2, postAppendOptimizationWindow());
+        fit(params, postAppendNonlinearIterations / 2, tailSize);
     }
 
     scene->processState = saveProcessState;     // restore processState
