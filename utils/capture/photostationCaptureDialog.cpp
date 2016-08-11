@@ -292,8 +292,8 @@ PhotostationCaptureDialog::~PhotostationCaptureDialog()
     {
         CameraInfo &info = mCameraInfos[i];
 
-        QComboBox *comboBox  = static_cast<QComboBox *>(ui->cameraTableWidget->cellWidget(i, COLUMN_CAM_ID));
-        QCheckBox *checkBox1 = static_cast<QCheckBox *>(ui->cameraTableWidget->cellWidget(i, COLUMN_SAVE_SETTINGS));
+        QComboBox *comboBox  = static_cast<QComboBox *>(ui->cameraTableWidget->cellWidget((int)i, COLUMN_CAM_ID));
+        QCheckBox *checkBox1 = static_cast<QCheckBox *>(ui->cameraTableWidget->cellWidget((int)i, COLUMN_SAVE_SETTINGS));
 
         settings.beginGroup(QString::fromStdString(info.paramsStoreId));
         settings.setValue("num"    , comboBox->currentIndex());

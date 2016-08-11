@@ -437,7 +437,7 @@ std::pair<int, double> corecvs::PhotostationPlacer::estimate3D(corecvs::CameraFi
 	activeInlierCount[A] = solver.getInliers();
 	A->location = activeEstimates[A];
 	std::cout << "Final estimate: " << activeEstimates[A].shift << activeEstimates[A].rotor << std::endl;
-	return std::make_pair(activeInlierCount[A].size(), 1.0 - solver.gamma);
+	return std::make_pair((int)activeInlierCount[A].size(), 1.0 - solver.gamma);
 }
 
 std::pair<int, double> corecvs::PhotostationPlacer::estimate2D(corecvs::CameraFixture *A, corecvs::Affine3DQ &currentT)
@@ -510,7 +510,7 @@ std::pair<int, double> corecvs::PhotostationPlacer::estimate2D(corecvs::CameraFi
 	std::cout << "<>" << A->name << " in P6P sense: inliers: " << solver.getInliersCount() << " P: " << solver.getGamma() << std::endl;
 	activeP6PEstimates[A].rotor = best.rotor;
 	activeP6PEstimates[A].shift = best.shift - currentT.shift;
-	return std::make_pair(solver.getInliersCount(), 1.0 - solver.getGamma());
+	return std::make_pair((int)solver.getInliersCount(), 1.0 - solver.getGamma());
 }
 
 bool corecvs::PhotostationPlacer::appendAny()

@@ -108,7 +108,7 @@ QString printWindowState(const Qt::WindowStates &state)
     return text;
 }
 
-QString printSelecionModel(const QItemSelectionModel::SelectionFlags &flag)
+QString printSelectionModel(const QItemSelectionModel::SelectionFlags &flag)
 {
     QString text;
 
