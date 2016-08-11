@@ -15,7 +15,7 @@
 
 using namespace corecvs;
 
-TEST(Filesystem, test1)
+TEST(Filesystem, scanDirCheckKnownFiles)
 {
     const string pathDir = ".";
     vector<string> childs;
@@ -25,7 +25,7 @@ TEST(Filesystem, test1)
 
     bool isOk = false;
 
-    std::cout << "testFilesystem:: current folder has " << childs.size() << " files:" << std::endl;
+    std::cout << "current folder has " << childs.size() << " files:" << std::endl;
     for (string& child : childs)
     {
         std::cout << child << std::endl;
@@ -36,4 +36,10 @@ TEST(Filesystem, test1)
     }
 
     CORE_ASSERT_TRUE(isOk, "current folder must have one of the files: main.cpp or cvs.pro!");
+}
+
+TEST(Filesystem, isDir)
+{
+    bool res = FolderScanner::isDir(".");
+    CORE_ASSERT_TRUE(res, "current folder must be a dir");
 }

@@ -24,23 +24,25 @@ namespace corecvs {
 
 #if defined(CORE_UNSAFE_DEPS) || defined (_MSC_VER)
 
-bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFiles)
+bool FolderScanner::isDir(const string &path)
 {
     fs::path p(path);
-    if (!fs::exists(p))
+    return fs::exists(p) && fs::is_directory(p);
+}
+
+bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFiles)
+{
+    if (!isDir(path))
     {
-        L_ERROR_P("<%s> does not exist", p.string().c_str());
-        return false;
-    }
-    if (!fs::is_directory(p))
-    {
-        L_ERROR_P("<%s> is not a directory", p.string().c_str());
+        L_ERROR_P("<%s> does not exist or not a directory", path.c_str());
         return false;
     }
 
+    fs::path p(path);
     for (fs::directory_iterator it = fs::directory_iterator(p); it != fs::directory_iterator(); ++it)
     {
         fs::path pathChild(*it);            // pathChild has linux style slashes inside
+
         bool isDir = fs::is_directory(pathChild);
 
         L_DDEBUG_P("%s contains\t%s\tas a %s", p.string().c_str(), pathChild.string().c_str(), (isDir ? "dir" : "file"));
@@ -56,30 +58,37 @@ bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFi
 
 #else
 
-bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFiles)
+bool FolderScanner::isDir(const string &path)
 {
     DIR *dp = opendir(path.c_str());
     if (dp == NULL)
+        return false;
+
+    closedir(dp);
+    return true;
+}
+
+bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFiles)
+{
+    if (!isDir(path))
     {
         L_ERROR_P("<%s> does not exist or not a directory", path.c_str());
         return false;
     }
 
+    DIR *dp = opendir(path.c_str());  CORE_ASSERT_TRUE_S(dp != NULL);
+
     struct dirent *ep;
     while ((ep = readdir(dp)) != NULL)
     {
         /* We need to form path */
-        string result = path + PATH_SEPARATOR + ep->d_name;
+        string childPath = path + PATH_SEPARATOR + ep->d_name;
 
         /* Ok there are devices, pipes, links... I don't know... */
         bool isDir = (ep->d_type != DT_REG) && (ep->d_type != DT_LNK);
         if (ep->d_type == DT_UNKNOWN)
         {
-            DIR *dp2 = opendir(result.c_str());
-            isDir = dp2 != NULL;
-            if (isDir) {
-                closedir(dp2);
-            }
+            isDir = this->isDir(childPath);
         }
 
         L_DDEBUG_P("%s contains\t%s\tas a %s (d_type:0x%x)", path.c_str(), ep->d_name, (isDir ? "dir" : "file"), ep->d_type);
@@ -87,7 +96,7 @@ bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFi
         if (!(findFiles ^ isDir))
             continue;
 
-        childs.push_back(result);
+        childs.push_back(childPath);
     }
 
     closedir(dp);
