@@ -150,7 +150,7 @@ TEST(SparseMatrix, IncompleteCholesky)
 	ASSERT_GE(succ, 0.9 * NNN);
 }
 
-
+#ifdef WITH_FMA
 TEST(Iterative, MinresQLPDaxpby)
 {
 	std::mt19937 rng(SEED);
@@ -191,21 +191,20 @@ TEST(Iterative, MinresQLPDaxpby)
 		blas_total += blas_time;
 		golden_total += golden_time;
 		daxpby_total += daxpby_time;
-
-
 	}
-		std::cout << "golden/daxpby: " << golden_total / daxpby_total << "x slower" << std::endl;
-		std::cout << "blas/daxpby: " << blas_total / daxpby_total << "x slower" << std::endl;
+    std::cout << "golden/daxpby: " << golden_total / daxpby_total << "x slower" << std::endl;
+	std::cout << "blas/daxpby: " << blas_total / daxpby_total << "x slower" << std::endl;
 }
+#endif // WITH_FMA
 
 TEST(Iterative, MinresQLP)
 {
-	double a[] = {
+	/*double a[] = {
 		5.0, 2.0, 1.0, 0.0, 0.0,
 		2.0, 5.0, 2.0, 1.0, 0.0,
 		1.0, 2.0, 5.0, 2.0, 1.0,
 		0.0, 1.0, 2.0, 5.0, 2.0,
-		0.0, 0.0, 1.0, 2.0, 5.0};
+		0.0, 0.0, 1.0, 2.0, 5.0};*/
 	int N = 3276800;
 
 	int val[] = {1, 2, 5, 2, 1};
@@ -219,7 +218,7 @@ TEST(Iterative, MinresQLP)
 				columns.push_back(i + j);
 				values.push_back(val[j + 2]);
 			}
-		rowPointers[i + 1] = values.size();
+		rowPointers[i + 1] = (int)values.size();
 	}
 	corecvs::SparseMatrix M(N, N, values, columns, rowPointers);
 	corecvs::Vector xx(N);
