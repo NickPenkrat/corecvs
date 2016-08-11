@@ -98,7 +98,7 @@ TEST(SparseMatrix, dtrsv_un)
 
 }
 
-TEST(SparseMatrix, IncompleteCholesky)
+TEST(SparseMatrix, DISABLED_IncompleteCholesky)
 {
 	std::mt19937 rng(SEED);
 	std::uniform_real_distribution<double> runif(-100, 100);
