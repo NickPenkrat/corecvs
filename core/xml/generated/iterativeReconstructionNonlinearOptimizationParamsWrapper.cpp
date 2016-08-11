@@ -109,6 +109,34 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
         )
     );
     fields().push_back(
+        new IntField
+        (
+          IterativeReconstructionNonlinearOptimizationParamsWrapper::PARTIALBA_ID,
+          offsetof(IterativeReconstructionNonlinearOptimizationParamsWrapper, mPartialBA),
+          8,
+          "partialBA",
+          "partialBA",
+          "Partial BA size",
+          true,
+         1,
+         9999999
+        )
+    );
+    fields().push_back(
+        new DoubleField
+        (
+          IterativeReconstructionNonlinearOptimizationParamsWrapper::FULLBALIMIT_ID,
+          offsetof(IterativeReconstructionNonlinearOptimizationParamsWrapper, mFullBALimit),
+          0.1,
+          "fullBALimit",
+          "fullBALimit",
+          "Full BA increase",
+          true,
+         0,
+         1e+08
+        )
+    );
+    fields().push_back(
         new BoolField
         (
           IterativeReconstructionNonlinearOptimizationParamsWrapper::EXCESSIVEQUATERNIONPARAMETRIZATION_ID,

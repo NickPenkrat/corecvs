@@ -36,6 +36,10 @@ struct IterativeReconstructionNonlinearOptimizationParams
     bool explicitInverse = false;
     // Scale lock
     bool scaleLock = false;
+    // FullBA increase
+    double fullBALimit = 0.1;
+    // Partial BA size
+    int partialBA = 8;
 
     template<class VisitorType>
     void accept(VisitorType &visitor)
