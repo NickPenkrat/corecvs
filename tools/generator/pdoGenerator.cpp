@@ -707,19 +707,19 @@ void PDOGenerator::generatePDOCpp()
     }
 
     result+=
-    "        )\n";
+    "        );\n";
     if (field->widgetHint != NULL && strlen(field->widgetHint) != 0)
        result+=
-    "    "+fieldPlaceholder+"->widgetHint=\""+field->widgetHint+"\"\n";
+    "    "+fieldPlaceholder+"->widgetHint=\""+field->widgetHint+"\";\n";
     if (field->prefixHint != NULL && strlen(field->prefixHint) != 0)
        result+=
-    "    "+fieldPlaceholder+"->prefixHint=\""+field->prefixHint+"\"\n";
+    "    "+fieldPlaceholder+"->prefixHint=\""+field->prefixHint+"\";\n";
     if (field->suffixHint != NULL && strlen(field->suffixHint) != 0)
        result+=
-    "    "+fieldPlaceholder+"->suffixHint=\""+field->suffixHint+"\"\n";
+    "    "+fieldPlaceholder+"->suffixHint=\""+field->suffixHint+"\";\n";
 
     result+=
-     "    "+fieldPlaceholder+"->precision=\""+QString::number(field->precision)+"\"\n";
+     "    "+fieldPlaceholder+"->precision="+QString::number(field->precision)+";\n";
 
 
     result+=

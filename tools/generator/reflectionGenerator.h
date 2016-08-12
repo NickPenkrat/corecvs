@@ -5,6 +5,7 @@
  * \brief A header for reflectionGenerator.c
  *
  *
+ *  Seems like this class is becoming obsolete
  *
  * \date Apr 19, 2012
  * \author alexander

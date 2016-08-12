@@ -86,14 +86,14 @@ QString BaseGenerator::getCppTypeForType(const BaseField *field)
 QString BaseGenerator::getWidgetGetterMethodForType(BaseField::FieldType type)
 {
     if (field->type & BaseField::TYPE_VECTOR_BIT) {
-       qDebug() << "Unsupported type for UI: vectors not supported so far";
-
        switch(type & ~BaseField::TYPE_VECTOR_BIT)
        {
            case BaseField::TYPE_INT:
            case BaseField::TYPE_DOUBLE:
                return "value()";
        }
+
+       qDebug() << "Unsupported type for UI: vectors not supported so far";
 
     }
 
@@ -123,8 +123,7 @@ QString BaseGenerator::getWidgetNameForName(QString name)
 
 QString BaseGenerator::getWidgetSetterMethodForType(BaseField::FieldType type)
 {
-    if (field->type & BaseField::TYPE_VECTOR_BIT) {
-       qDebug() << "Unsupported type for UI: vectors not supported so far";
+    if (field->type & BaseField::TYPE_VECTOR_BIT) {       
 
        switch(type & ~BaseField::TYPE_VECTOR_BIT)
        {
@@ -132,6 +131,8 @@ QString BaseGenerator::getWidgetSetterMethodForType(BaseField::FieldType type)
            case BaseField::TYPE_DOUBLE:
                return "setValue";
        }
+
+       qDebug() << "Unsupported type for UI: vectors not supported so far";
     }
 
     switch(type)
