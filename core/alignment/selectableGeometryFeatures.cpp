@@ -25,7 +25,7 @@ void SelectableGeometryFeatures::addSelection(SelectableGeometryFeatures::Vertex
 void SelectableGeometryFeatures::removeSelection(SelectableGeometryFeatures::Vertex *vertex)
 {
     vector<Vertex*>::iterator it = std::remove(mSelectedPoints.begin(), mSelectedPoints.end(), vertex);
-    mSelectedPoints.erase( it, mSelectedPoints.end() );
+    mSelectedPoints.erase(it, mSelectedPoints.end());
     vertex->mSelected = false;
 }
 
@@ -66,12 +66,14 @@ void SelectableGeometryFeatures::deletePath(SelectableGeometryFeatures::VertexPa
     {
         removeSelection(path);
     }
+
     for (unsigned i = 0; i < path->vertexes.size(); i++)
     {
         path->vertexes[i]->ownerPath = NULL;
     }
+
     vector<VertexPath *>::iterator it = std::remove(mPaths.begin(), mPaths.end(), path);
-    mPaths.erase( it, mPaths.end() );
+    mPaths.erase(it, mPaths.end());
     delete path;
 }
 
@@ -81,7 +83,6 @@ SelectableGeometryFeatures::Vertex* SelectableGeometryFeatures::appendNewVertex(
     mPoints.back()->ownerPath = NULL;
     return mPoints.back();
 }
-
 
 void SelectableGeometryFeatures::deselectAllPath()
 {
@@ -101,14 +102,11 @@ void SelectableGeometryFeatures::addVertexToPath(SelectableGeometryFeatures::Ver
 void SelectableGeometryFeatures::removeVertexFromPath(SelectableGeometryFeatures::Vertex *vertex, bool purgeEmptyPath)
 {
     VertexPath *ownerPath = vertex->ownerPath;
-
     if (ownerPath == NULL)
-    {
         return;
-    }
 
-    vector<Vertex*>::iterator it = std::remove(ownerPath->vertexes.begin(), mSelectedPoints.end(), vertex);
-    ownerPath->vertexes.erase( it, mSelectedPoints.end() );
+    vector<Vertex*>::iterator it = std::remove(ownerPath->vertexes.begin(), ownerPath->vertexes.end(), vertex);
+    ownerPath->vertexes.erase(it, ownerPath->vertexes.end());
 
     if (ownerPath->isEmpty() && purgeEmptyPath)
     {
@@ -140,7 +138,7 @@ void SelectableGeometryFeatures::deleteVertex(Vertex *vertex)
     }
 
     vector<Vertex *>::iterator it = std::remove(mPoints.begin(), mPoints.end(), vertex);
-    mPoints.erase( it, mPoints.end() );
+    mPoints.erase(it, mPoints.end());
     delete_safe (vertex);
 }
 
