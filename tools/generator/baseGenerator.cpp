@@ -248,19 +248,15 @@ QString BaseGenerator::getWidgetSuffixForType(BaseField::FieldType type)
             return "SpinBox";
         case BaseField::TYPE_DOUBLE:
         {
-            switch (static_cast<const DoubleFieldGen *>(field)->widgetType)
-            {
-                case doubleSpinBox:     return "SpinBox";
-                case exponentialSlider: return "Slider";
-            }
+            if (field->widgetHint == QString("SpinBox"))
+                return "SpinBox";
+            return "Slider";
         }
         case BaseField::TYPE_BOOL:
         {
-            switch (static_cast<const BoolFieldGen *>(field)->widgetType)
-            {
-            case checkBox:    return "CheckBox";
-            case radioButton: return "Button";
-            }
+            if (field->widgetHint == QString("CheckBox"))
+                return "CheckBox";
+            return "Button";
         }
         case BaseField::TYPE_ENUM:
             return "ComboBox";
@@ -281,19 +277,15 @@ QString BaseGenerator::getUiWidgetForType(BaseField::FieldType type)
             return "QSpinBox";
         case BaseField::TYPE_DOUBLE:
         {
-            switch (static_cast<const DoubleFieldGen *>(field)->widgetType)
-            {
-                case doubleSpinBox:     return "QDoubleSpinBox";
-                case exponentialSlider: return "ExponentialSlider";
-            }
+            if (field->widgetHint == QString("SpinBox"))
+                return "QDoubleSpinBox";
+            return "ExponentialSlider";
         }
         case BaseField::TYPE_BOOL:
         {
-            switch (static_cast<const BoolFieldGen *>(field)->widgetType)
-            {
-            case checkBox:    return "QCheckBox";
-            case radioButton: return "QRadioButton";
-            }
+            if (field->widgetHint == QString("CheckBox"))
+                return "QCheckBox";
+            return "QRadioButton";
         }
         case BaseField::TYPE_ENUM:
             return "QComboBox";
@@ -325,19 +317,15 @@ QString BaseGenerator::getSignalForType(BaseField::FieldType type)
             return "valueChanged(double)";
         case BaseField::TYPE_BOOL:
         {
-            switch (static_cast<const BoolFieldGen *>(field)->widgetType)
-            {
-              case checkBox:    return "stateChanged(int)";
-              case radioButton: return "clicked(bool)";
-            }
+            if (field->widgetHint == QString("CheckBox"))
+                return "stateChanged(int)";
+            return "clicked(bool)";
         }
         case BaseField::TYPE_ENUM:
         {
-            switch (static_cast<const EnumFieldGen *>(field)->widgetType)
-            {
-                case comboBox:    return "currentIndexChanged(int)";
-                case tabWidget:   return "currentChanged(int)";
-            }
+            if (field->widgetHint == QString("comboBox"))
+                return "currentIndexChanged(int)";
+            return "currentChanged(int)";
         }
         case BaseField::TYPE_STRING:
             return "textChanged(QString)";

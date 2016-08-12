@@ -571,10 +571,43 @@ public:
         return result;
     }
 
+
+    /**
+     * Per-element Abs
+     *
+     * \f[W_i = sqrt(V_i) \f]
+     *
+     **/
+    ReturnType inline perElementAbs() const
+    {
+        RealType result = _createVector(_size());
+        for (int i = 0; i < _size(); i++)
+            result.at(i) = (ElementType)CORE_ABS(_at(i));
+        return result;
+    }
+
+    ReturnType inline perElementMax(const RealType &other) const
+    {
+        int size = CORE_MIN(_size(), other._size());
+        RealType result = _createVector(size);
+        for (int i = 0; i < size; i++)
+            result.at(i) = (ElementType)CORE_MAX(_at(i), other._at(i));
+        return result;
+    }
+
+    ReturnType inline perElementMin(const RealType &other) const
+    {
+        int size = CORE_MIN(_size(), other._size());
+        RealType result = _createVector(size);
+        for (int i = 0; i < size; i++)
+            result.at(i) = (ElementType)CORE_MIN(_at(i), other._at(i));
+        return result;
+    }
+
     /**
      * Per-element cast
      *
-     *  Casts each element to the diven type, then back.
+     *  Casts each element to the given type, then back.
      *  useful for rounding all elements
      *
      **/

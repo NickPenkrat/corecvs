@@ -25,6 +25,7 @@ void PDOGenerator::enterFieldContext(int i)
 {
     field = clazz->fields[i];
     name = field->name.name;
+    fieldPlaceholder=QString("field%1").arg(i);
     type = field->type;
     cppName = QString("m") + toCamelCase(name, true);
     getterName = toCamelCase(name, false);
@@ -606,8 +607,7 @@ void PDOGenerator::generatePDOCpp()
         }
 
     result+=
-    "    fields().push_back(\n"
-    "        new "+fieldRefType+"\n"
+    "    "+fieldRefType+"* "+fieldPlaceholder+" = new "+fieldRefType+"\n"
     "        (\n"
     "          "+className+"::"+fieldEnumId+",\n"
     "          offsetof("+className+", "+cppName+"),\n";
@@ -707,8 +707,24 @@ void PDOGenerator::generatePDOCpp()
     }
 
     result+=
-    "        )\n"
-    "    );\n";
+    "        )\n";
+    if (field->widgetHint != NULL && strlen(field->widgetHint) != 0)
+       result+=
+    "    "+fieldPlaceholder+"->widgetHint=\""+field->widgetHint+"\"\n";
+    if (field->prefixHint != NULL && strlen(field->prefixHint) != 0)
+       result+=
+    "    "+fieldPlaceholder+"->prefixHint=\""+field->prefixHint+"\"\n";
+    if (field->suffixHint != NULL && strlen(field->suffixHint) != 0)
+       result+=
+    "    "+fieldPlaceholder+"->suffixHint=\""+field->suffixHint+"\"\n";
+
+    result+=
+     "    "+fieldPlaceholder+"->precision=\""+QString::number(field->precision)+"\"\n";
+
+
+    result+=
+    "    fields().push_back("+fieldPlaceholder+");\n"
+    "    /*  */ \n";
     }
 
     result+=
@@ -787,7 +803,7 @@ void PDOGenerator::generateControlWidgetCpp()
         if (type == BaseField::TYPE_DOUBLE)
         {
             const DoubleFieldGen *dfield = static_cast<const DoubleFieldGen *>(field);
-            if (dfield->widgetType == exponentialSlider && dfield->max > 0)
+            if (dfield->widgetHint == QString("exponentialSlider") && dfield->max > 0)
             {
                 result+=
                 "mUi->"+boxName+"->setMaxZoom("+QString::number(dfield->max)+");\n"

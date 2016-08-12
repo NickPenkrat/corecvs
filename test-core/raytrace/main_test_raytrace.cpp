@@ -251,6 +251,34 @@ TEST(Raytrace, testCylinder1)
 }
 
 
+class SDFCube : public SDFRenderable
+{
+public:
+/*
+ *float sdBox(vec3 p, vec3 b) {
+  vec3 d = abs(p) - b;
+  return min(max(d.x, max(d.y, d.z)), 0.0) + length(max(d, 0.0)) - 0.1;
+}
+
+ *
+ */
+    Vector3dd b;
+    double over;
+
+    double operator ()(Vector3dd &p)
+    {
+        Vector3dd d = p.perElementAbs() - b;
+        return std::min(d.maximum(), 0.0) + d.perElementMax(Vector3dd::Zero()).l2Metric() + over;
+    }
+
+    SDFCube()
+    {
+        //F = this;
+    }
+
+
+};
+
 TEST(Raytrace, DISABLED_testRaytraceSDF)
 {
     int h = 1500;
@@ -262,21 +290,49 @@ TEST(Raytrace, DISABLED_testRaytraceSDF)
                 Vector2dd(w, h),
                 degToRad(60.0));
     renderer.position = Affine3DQ::Identity();
+    renderer.sky = new RaytraceableSky1();
 
     RaytraceablePointLight light1(RGBColor::White() .toDouble(), Vector3dd(  0, -190, 150));
     RaytraceablePointLight light2(RGBColor::Yellow().toDouble(), Vector3dd(-120, -70,  50));
 
     SDFRenderable object;
     object.F = [](Vector3dd v) {
+        double step = 200;
         Vector3dd c1 = Vector3dd(0,-30, 150.0);
-        Vector3dd c2 = Vector3dd(0, 30, 150.0);
+        Vector3dd c2 = Vector3dd(0, 40, 150.0);
 
-        return  sqrt(400.0 / ((v - c1).sumAllElementsSq() +
-                              (v - c2).sumAllElementsSq()));
+        double d1 = 20.0 - sqrt((v - c1).sumAllElementsSq());
+        double d2 = 20.0 - sqrt((v - c2).sumAllElementsSq());
+
+        if (fabs(d1) > fabs(d2))
+        {
+            return d2;
+        }
+        return d1;
     };
+
+    SDFRenderable object1;
+    object1.F = [](Vector3dd v) {
+        double step = 200;
+        Vector3dd c1 = Vector3dd(50,-15, 150.0);
+        Vector3dd c2 = Vector3dd(50, 15, 150.0);
+
+        double d1 = 20.0 - sqrt((v - c1).sumAllElementsSq());
+        double d2 = 20.0 - sqrt((v - c2).sumAllElementsSq());
+
+        return -1 / ((-1 / d1) + (-1 / d2));
+    };
+
+
+
     object.name = "Sphere1";
     object.color = RGBColor::Red().toDouble();
     object.material = MaterialExamples::bumpy();
+
+    object1.name = "Sphere2";
+    object1.color = RGBColor::Red().toDouble();
+    object1.material = MaterialExamples::bumpy();
+
 
     RaytraceableSphere sphere2(Sphere3d(Vector3dd(-80,0, 250.0), 50.0));
     sphere2.name = "Sphere2";
@@ -285,6 +341,7 @@ TEST(Raytrace, DISABLED_testRaytraceSDF)
 
     RaytraceableUnion scene;
     scene.elements.push_back(&object);
+    scene.elements.push_back(&object1);
     scene.elements.push_back(&sphere2);
 
     renderer.object = &scene;

@@ -19,6 +19,8 @@ void RaytraceRenderer::trace(RayIntersection &intersection)
         // cout << "No intersection" << endl;
         if (sky != NULL) {
             sky->getColor(intersection, *this);
+        } else {
+            intersection.ownColor = TraceColor(0.0);
         }
         return;
     }
@@ -333,7 +335,9 @@ void RaytraceableMaterial::getColor(RayIntersection &ray, RaytraceRenderer &rend
 
 
         /* Specular part */
-        double specularKoef = pow(reflectionRay.a.normalised() & lightRay.ray.a.normalised(), specPower);
+        double specBase = reflectionRay.a.normalised() & lightRay.ray.a.normalised();
+        if (specBase < 0) specBase = 0.0;
+        double specularKoef = pow(specBase, specPower);
 
         if (specularKoef < 0) specularKoef = 0.0;
         TraceColor specularPart = light->color * attenuation * specularKoef * specular;

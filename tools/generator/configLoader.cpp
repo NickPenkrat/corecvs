@@ -95,7 +95,11 @@ void ConfigLoader::loadEnums(QDomDocument const &config)
 
             QString iconName = itemElement.attribute("icon");
 
-            enumReflection->options.push_back(new EnumOptionGen(id, getNamingFromXML(itemElement), iconName));
+            EnumOptionGen *option = new EnumOptionGen(id, getNamingFromXML(itemElement));
+            if (!iconName.isEmpty())
+                option->presentationHint = toCString(iconName);
+            enumReflection->options.push_back(option);
+
         }
 
         // TODO: add support for comment and description
@@ -152,19 +156,21 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
 
                     field = new IntFieldGen(
                               defaultValue.toInt()
-                            , prefix
-                            , suffix
                             , fieldNameing
                             , hasAdditionalParameters
                             , minValue.toInt()
                             , maxValue.toInt()
                             , stepValue.isEmpty() ? 1 : stepValue.toInt());
+
+                    field->prefixHint = toCString(prefix);
+                    field->suffixHint = toCString(suffix);
+
                 }
                 else if (type == "double")
                 {
-                    DoubleWidgetType widgetType = fieldElement.attribute("widget") == "ExponentialSlider" ?
-                                               exponentialSlider :
-                                               doubleSpinBox;
+                    const char * widgetType = fieldElement.attribute("widget") == "ExponentialSlider" ?
+                                               "exponentialSlider" :
+                                               "doubleSpinBox";
 
                     QString prefix = fieldElement.attribute("prefix");
                     QString suffix = fieldElement.attribute("suffix");
@@ -178,25 +184,27 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
 
                     field = new DoubleFieldGen(
                               defaultValue.toDouble()
-                            , widgetType
-                            , prefix
-                            , suffix
-                            , decimals
                             , fieldNameing
                             , hasAdditionalParameters
                             , minValue.toDouble()
                             , maxValue.toDouble()
                             , stepValue.isEmpty() ? 1.0 : stepValue.toDouble());
 
+                    field->prefixHint = toCString(prefix);
+                    field->suffixHint = toCString(suffix);
+                    field->precision = decimals;
+                    field->widgetHint = widgetType;
 
                 }
                 else if (type == "bool")
                 {
-                    BoolWidgetType widgetType = fieldElement.attribute("widget") == "RadioButton" ?
-                                                radioButton :
-                                                checkBox;
 
-                    field = new BoolFieldGen(defaultValue == "true", widgetType, fieldNameing);
+                    const char * widgetType = fieldElement.attribute("widget") == "RadioButton" ?
+                                                "radioButton" :
+                                                "checkBox";
+
+                    field = new BoolFieldGen(defaultValue == "true", fieldNameing);
+                    field->widgetHint = widgetType;
                 }
                 else if (type == "string")
                 {
@@ -225,10 +233,11 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
                     }
                     else if (enumRef) // then it should be a enum
                     {
-                        EnumWidgetType widgetType = fieldElement.attribute("widget") == "TabWidget" ?
-                                                    tabWidget :
-                                                    comboBox;
-                        field = new EnumFieldGen(defaultValue.toInt(), widgetType, fieldNameing, enumRef);
+                        const char *widgetType = fieldElement.attribute("widget") == "TabWidget" ?
+                                                    "tabWidget" :
+                                                    "comboBox";
+                        field = new EnumFieldGen(defaultValue.toInt(), fieldNameing, enumRef);
+                        field->widgetHint = widgetType;
                     }
                 }
             } else {

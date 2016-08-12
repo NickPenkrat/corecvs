@@ -191,6 +191,14 @@ template<typename Type>
     /** flags */
     bool                isAdvanced;
 
+    /** These fields are related to persentaion only and probably should be moved out. **/
+
+    int precision = -1;             /**< Precision that we expect form the field */
+    const char *widgetHint = NULL;  /**< Best type of widget to repersent field*/
+    const char *prefixHint = NULL;  /**< prefix for the field that can add some semantics (i.e koefficient could have "*" prefix)*/
+    const char *suffixHint = NULL; /**< postfix for the field that can add some semantics (i.e mesurement unit) */
+
+
     const char *getSimpleName() const
     {
         return name.name;
@@ -713,6 +721,7 @@ class EnumOption
 public:
     int              id;
     ReflectionNaming name;
+    const char *presentationHint = NULL;
 
     EnumOption() {}
     EnumOption(int _id,

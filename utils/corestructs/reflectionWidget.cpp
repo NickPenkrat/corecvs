@@ -31,6 +31,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
 
         QLabel *label = new QLabel(this);
         label->setText(QString(field->getSimpleName()));
+        label->setToolTip(QString(field->name.decription));
         layout->addWidget(label, i, 0, 1, 1);
 
         switch (field->type) {
@@ -46,6 +47,11 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
                 spinBox->setSingleStep(iField->step);
             }
             spinBox->setValue(iField->defaultValue);
+            if (iField->suffixHint != NULL)
+                spinBox->setSuffix(iField->suffixHint);
+            if (iField->prefixHint != NULL)
+                spinBox->setPrefix(iField->prefixHint);
+
             layout->addWidget(spinBox, i, 1, 1, 1);
             connect(spinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
             break;
@@ -62,6 +68,12 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
                 spinBox->setSingleStep(dField->step);
                 // spinBox->setDecimals(); /*Not supported so far*/
             }
+            spinBox->setDecimals(dField->precision);
+            if (dField->suffixHint != NULL)
+                spinBox->setSuffix(dField->suffixHint);
+            if (dField->prefixHint != NULL)
+                spinBox->setPrefix(dField->prefixHint);
+
             spinBox->setValue(dField->defaultValue);
             layout->addWidget(spinBox, i, 1, 1, 1);
             connect(spinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
