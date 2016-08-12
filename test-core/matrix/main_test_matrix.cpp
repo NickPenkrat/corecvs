@@ -63,6 +63,136 @@ std::pair<bool, SparseMatrix>  NaiveIncompleteCholesky(SparseMatrix &B)
             A.a(j, i) = 0.0;
     return std::make_pair(true, A);
 }
+TEST(Matrix, dtrsv_ut)
+{
+    std::mt19937 rng(SEED);
+    std::uniform_real_distribution<double> runif(-10, 10);
+    double nnz = 0.01;
+    int N = 100;
+    for (int it= 0; it< 1000; ++it)
+    {
+        int realN = N + rng() % N;
+        Matrix U(realN, realN);
+        for (int k = 0; k < nnz * realN * realN; ++k)
+        {
+            int I = rng() % (realN * realN + realN);
+            int ii = I < realN * realN ? I / realN : I - realN * realN;
+            int jj = I < realN * realN ? I % realN : I - realN * realN;
+            if (ii > jj)
+                std::swap(ii, jj);
+            U.a(ii, jj) = runif(rng);
+        }
+        Vector x(realN);
+        for (int i = 0; i < realN; ++i)
+        {
+            U.a(i, i) = runif(rng);
+            x[i] = runif(rng);
+        }
+        Matrix su(U);
+        auto rhs = x * su;
+        auto xx = su.dtrsv(rhs, true, false);
+        ASSERT_LE(!(xx-x)/!x , 1e-6);
+    }
+}
+
+TEST(Matrix, dtrsv_lt)
+{
+    std::mt19937 rng(SEED);
+    std::uniform_real_distribution<double> runif(-10, 10);
+    double nnz = 0.01;
+    int N = 100;
+    for (int it= 0; it< 1000; ++it)
+    {
+        int realN = N + rng() % N;
+        Matrix U(realN, realN);
+        for (int k = 0; k < nnz * realN * realN; ++k)
+        {
+            int I = rng() % (realN * realN + realN);
+            int ii = I < realN * realN ? I / realN : I - realN * realN;
+            int jj = I < realN * realN ? I % realN : I - realN * realN;
+            if (ii < jj)
+                std::swap(ii, jj);
+            U.a(ii, jj) = runif(rng);
+        }
+        Vector x(realN);
+        for (int i = 0; i < realN; ++i)
+        {
+            U.a(i, i) = runif(rng);
+            x[i] = runif(rng);
+        }
+        Matrix su(U);
+        auto rhs = x * su;
+        auto xx = su.dtrsv(rhs, false, false);
+        ASSERT_LE(!(xx-x)/!x , 1e-6);
+    }
+}
+
+
+TEST(Matrix, dtrsv_un)
+{
+    std::mt19937 rng(SEED);
+    std::uniform_real_distribution<double> runif(-10, 10);
+    double nnz = 0.01;
+    int N = 100;
+    for (int it= 0; it< 1000; ++it)
+    {
+        int realN = N + rng() % N;
+        Matrix U(realN, realN);
+        for (int k = 0; k < nnz * realN * realN; ++k)
+        {
+            int I = rng() % (realN * realN + realN);
+            int ii = I < realN * realN ? I / realN : I - realN * realN;
+            int jj = I < realN * realN ? I % realN : I - realN * realN;
+            if (ii > jj)
+                std::swap(ii, jj);
+            U.a(ii, jj) = runif(rng);
+        }
+        Vector x(realN);
+        for (int i = 0; i < realN; ++i)
+        {
+            U.a(i, i) = runif(rng);
+            x[i] = runif(rng);
+        }
+        Matrix su(U);
+        auto rhs = su * x;
+        auto xx = su.dtrsv(rhs, true, true);
+        ASSERT_LE(!(xx-x)/!x , 1e-6);
+
+    }
+}
+
+TEST(Matrix, dtrsv_ln)
+{
+    std::mt19937 rng(SEED);
+    std::uniform_real_distribution<double> runif(-1, 1);
+    double nnz = 0.01;
+    int N = 100;
+    for (int it= 0; it< 1000; ++it)
+    {
+        int realN = N + rng() % N;
+        Matrix U(realN, realN);
+        for (int k = 0; k < nnz * realN * realN; ++k)
+        {
+            int I = rng() % (realN * realN + realN);
+            int ii = I < realN * realN ? I / realN : I - realN * realN;
+            int jj = I < realN * realN ? I % realN : I - realN * realN;
+            if (ii < jj)
+                std::swap(ii, jj);
+            U.a(ii, jj) = runif(rng);
+        }
+        Vector x(realN);
+        for (int i = 0; i < realN; ++i)
+        {
+            U.a(i, i) = runif(rng);
+            x[i] = runif(rng);
+        }
+        Matrix su(U);
+        auto rhs = su * x;
+        auto xx = su.dtrsv(rhs, false, true);
+        ASSERT_LE(!(xx-x)/!x , 1e-6);
+
+    }
+}
 TEST(SparseMatrix, dtrsv_ut)
 {
     std::mt19937 rng(SEED);
@@ -192,7 +322,6 @@ TEST(SparseMatrix, dtrsv_ln)
         ASSERT_LE(!(xx-x)/!x , 1e-6);
 
     }
-
 }
 
 TEST(SparseMatrix, IncompleteCholesky)
