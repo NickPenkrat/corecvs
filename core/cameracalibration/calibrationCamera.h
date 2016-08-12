@@ -48,7 +48,6 @@ public:
 typedef std::unordered_map<std::string, void *> MetaContainer;
 
 
-
 /**
  * XXX: We already have intrinsics class somewhere (CameraIntrinsicsLegacy), but
  *      it is not full enough to hold abstract projective pin-hole model (e.g. skewed/non-rectangular)

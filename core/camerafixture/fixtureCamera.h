@@ -65,8 +65,6 @@ public:
 };
 
 
-typedef std::unordered_map<std::string, void *> MetaContainer;
-
 class FixtureCamera : public FixtureScenePart, public CameraModel
 {
 public:
