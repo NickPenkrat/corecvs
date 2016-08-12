@@ -1,7 +1,8 @@
 #pragma once
 
-#include <unordered_map>
+#include <stdint.h>
 
+#include "atomicOps.h"
 #include "calibrationLocation.h"  // LocationData
 #include "lensDistortionModelParameters.h"
 #include "line.h"
