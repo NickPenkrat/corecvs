@@ -69,10 +69,10 @@ public:
 class FixtureCamera : public FixtureScenePart, public CameraModel
 {
 public:
-    CameraFixture   *cameraFixture;
+    CameraFixture  *cameraFixture;
 
-    /* This variable is not contorlled and maintained */
-    int sequenceNumber;
+    /* This variable is not controlled and maintained */
+    int             sequenceNumber;
 
     FixtureCamera(FixtureScene * owner = NULL) :
         FixtureScenePart(owner),
@@ -83,10 +83,10 @@ public:
             const PinholeCameraIntrinsics &_intrinsics,
             const CameraLocationData &_extrinsics = CameraLocationData(),
             const LensDistortionModelParameters &_distortion = LensDistortionModelParameters(),
-            FixtureScene * owner = NULL) :
-        FixtureScenePart(owner),
-        CameraModel(_intrinsics, _extrinsics, _distortion),
-        cameraFixture(NULL)
+            FixtureScene * owner = NULL)
+        : FixtureScenePart(owner)
+        , CameraModel(_intrinsics, _extrinsics, _distortion)
+        , cameraFixture(NULL)
     {}
 
     template<class VisitorType>
@@ -102,7 +102,7 @@ public:
     /** This is an experimental block of functions  it may change. Please use with caution **/
 
     /** WHY SO SLOW? **/
-    bool projectPointFromWorld(const Vector3dd &point, Vector2dd *projetionPtr = NULL);
+    bool projectPointFromWorld(const Vector3dd &point, Vector2dd *projectionPtr = NULL);
 
 
 };
