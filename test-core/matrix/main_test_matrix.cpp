@@ -214,6 +214,7 @@ TEST(SparseMatrix, IncompleteCholesky)
 }
 
 
+#ifdef WITH_FMA
 TEST(Iterative, MinresQLPDaxpby)
 {
     std::mt19937 rng(SEED);
@@ -224,7 +225,7 @@ TEST(Iterative, MinresQLPDaxpby)
     {
         std::uniform_real_distribution<double> runif(-1000, 1000);
         int NN = N + (rng() % 1000);
-        std::cout << "Testing DAXPBY with N = " << NN << std::endl;
+
         Vector x(NN), y(NN), res(NN);
         double a = runif(rng), b = runif(rng);
         for (int i = 0; i < NN; ++i)
@@ -257,9 +258,10 @@ TEST(Iterative, MinresQLPDaxpby)
 
 
     }
-        std::cout << "golden/daxpby: " << golden_total / daxpby_total << "x slower" << std::endl;
-        std::cout << "blas/daxpby: " << blas_total / daxpby_total << "x slower" << std::endl;
+    std::cout << "golden/daxpby: " << golden_total / daxpby_total << "x slower" << std::endl;
+    std::cout << "blas/daxpby: " << blas_total / daxpby_total << "x slower" << std::endl;
 }
+#endif
 
 TEST(Iterative, MinresQLP)
 {
