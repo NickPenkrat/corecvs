@@ -85,15 +85,15 @@ bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFi
         string childPath = path + PATH_SEPARATOR + ep->d_name;
 
         /* Ok there are devices, pipes, links... I don't know... */
-        bool isDir = (ep->d_type != DT_REG) && (ep->d_type != DT_LNK);
+        bool dir = (ep->d_type != DT_REG) && (ep->d_type != DT_LNK);
         if (ep->d_type == DT_UNKNOWN)
         {
-            isDir = this->isDir(childPath);
+            dir = isDir(childPath);
         }
 
-        L_DDEBUG_P("%s contains\t%s\tas a %s (d_type:0x%x)", path.c_str(), ep->d_name, (isDir ? "dir" : "file"), ep->d_type);
+        L_DDEBUG_P("%s contains\t%s\tas a %s (d_type:0x%x)", path.c_str(), ep->d_name, (dir ? "dir" : "file"), ep->d_type);
 
-        if (!(findFiles ^ isDir))
+        if (!(findFiles ^ dir))
             continue;
 
         childs.push_back(childPath);
