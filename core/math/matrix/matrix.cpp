@@ -1433,6 +1433,62 @@ void Matrix::svd (Matrix *A, Matrix *W, Matrix *V)
     delete[] rv1;
 }
 
+Vector Matrix::dtrsv(Vector &v, bool upper, bool notrans)
+{
+    Vector res(v);
+    CORE_ASSERT_TRUE_S(v.size() == h && v.size() == w);
+#ifdef WITH_BLAS
+    cblas_dtrsv(CblasRowMajor, upper ? CblasUpper : CblasLower, notrans ? CblasNoTrans : CblasTrans, CblasNonUnit, w, &a(0, 0), stride, &res[0], 1);
+#else
+    int cs = (upper ? 0 : 2) + (notrans ? 0 : 1);
+    switch (cs)
+    {
+    case 0:
+        for (int i = h - 1; i >= 0; --i)
+        {
+            double pivot = a(i, i), sum = res[i];
+            CORE_ASSERT_TRUE_S(pivot != 0.0);
+            for (int j = i + 1; j < w; ++j)
+                sum -= res[j] * a(i, j);
+            res[i] = sum / pivot;
+        }
+        break;
+    case 1:
+        for (int j = 0; j < w; ++j)
+        {
+            double pivot = a(j, j), sum = res[j];
+            CORE_ASSERT_TRUE_S(pivot != 0.0);
+            for (int i = j - 1; i >= 0; --i)
+                sum -= res[i] * a(i, j);
+            res[j] = sum / pivot;
+        }
+        break;
+    case 2:
+        for (int i = 0; i < h; ++i)
+        {
+            double pivot = a(i, i), sum = res[i];
+            CORE_ASSERT_TRUE_S(pivot != 0.0);
+            for (int j = 0; j < i; ++j)
+                sum -= res[j] * a(i, j);
+            res[i] = sum / pivot;
+        }
+        break;
+    case 3:
+        for (int j = w - 1; j >= 0; --j)
+        {
+            double pivot = a(j, j), sum = res[j];
+            CORE_ASSERT_TRUE_S(pivot != 0.0);
+            for (int i = j + 1; i < h; ++i)
+                sum -= res[i] * a(i, j);
+            res[j] = sum / pivot;
+        }
+    default:
+        break;
+    }
+#endif
+    return res;
+}
+
 void Matrix::svd(Matrix *A, DiagonalMatrix *W, Matrix *V)
 {
     CORE_ASSERT_TRUE((W->size() == A->w), "Matrix W has wrong size\n");

@@ -27,6 +27,23 @@ AutoTracker::AutoTracker(StatusTracker* st) : st(st)
     StatusTracker::IncrementStarted(st);
 }
 
+AutoTracker& AutoTracker::operator=(AutoTracker &&other)
+{
+    // other is a complete object => started is already incremented,
+    // so the only action that is needed is to steal ST pointer from
+    // an argument
+    std::swap(st, other.st);
+    return *this;
+}
+
+AutoTracker::AutoTracker(AutoTracker&& other) : st(other.st)
+{
+    // other is a complete object => started is already incremented,
+    // so the only action that is needed is to steal ST pointer from
+    // an argument
+    other.st = nullptr;
+}
+
 AutoTracker::~AutoTracker()
 {
     StatusTracker::IncrementCompleted(st);

@@ -43,6 +43,9 @@ public:
     SparseMatrix(const SparseMatrix &src, int x1, int y1, int x2, int y2);
     corecvs::Matrix denseSubMatrix(int x1, int y1, int x2, int y2) const;
     void denseSubMatrix(int x1, int y1, int x2, int y2, double* output, int stride = -1) const;
+    void checkCorrectness() const;
+    int getUBIndex(int i, int j) const;
+    int getIndex(int i, int j) const;
 #ifdef WITH_MKL
     //! \brief Note: deletion of MKL's deletions is your problem
     explicit operator sparse_matrix_t() const;
@@ -93,7 +96,7 @@ public:
     static bool LinSolveSchurComplement(const corecvs::SparseMatrix &A, const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric = false, bool posDef = false, bool explicitInv = false);
     bool        linSolveSchurComplement(const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric = false, bool posDef = false);
 
-	std::pair<bool, SparseMatrix> incompleteCholseky();
+    std::pair<bool, SparseMatrix> incompleteCholseky();
 
     void print(std::ostream& out = std::cout) const;
     friend std::ostream& operator<< (std::ostream &out, const SparseMatrix &sm);

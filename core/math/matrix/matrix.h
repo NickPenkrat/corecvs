@@ -249,6 +249,7 @@ public:
 
     Vector2d32 getMinCoord() const;
     Vector2d32 getMaxCoord() const;
+    Vector dtrsv(Vector &v, bool upper = true, bool notrans = true);
 
     Matrix column(int column);
     Matrix row   (int row);

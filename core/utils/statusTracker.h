@@ -52,8 +52,12 @@ class StatusTracker;
 struct AutoTracker
 {
     AutoTracker(StatusTracker* st);
+    AutoTracker(AutoTracker &&other);
+    AutoTracker& operator=(AutoTracker &&other);
     ~AutoTracker();
-
+private:
+    AutoTracker(const AutoTracker &other) = delete;
+    AutoTracker& operator=(const AutoTracker &other) = delete;
     StatusTracker* st;
 };
 
