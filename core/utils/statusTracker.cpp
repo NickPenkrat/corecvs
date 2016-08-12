@@ -34,6 +34,7 @@ AutoTracker& AutoTracker::operator=(AutoTracker &&other)
     // so the only action that is needed is to steal ST pointer from
     // an argument
     std::swap(st, other.st);
+    return *this;
 }
 
 AutoTracker::AutoTracker(AutoTracker&& other) : st(other.st)
