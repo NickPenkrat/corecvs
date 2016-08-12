@@ -1129,6 +1129,8 @@ corecvs::ReconstructionFixtureScene::getFixtureMatchesIdx(const std::vector<Came
 
 void corecvs::ReconstructionFixtureScene::filterEssentialRansac(const std::vector<CameraFixture*> &lhs, const std::vector<CameraFixture*> &rhs, EssentialFilterParams params)
 {
+    std::cout << "\tReconstructionFixtureScene::filterEssentialRansac +++" << std::endl;
+
     matchesCopy = matches;
     std::vector<std::pair<WPP, WPP>> work;
     for (auto& psA: lhs)
@@ -1160,6 +1162,8 @@ void corecvs::ReconstructionFixtureScene::filterEssentialRansac(const std::vecto
         }
     }
     corecvs::parallelable_for(0, (int)work.size(), ParallelEssentialFilter(this, work, params));
+
+    std::cout << "\tReconstructionFixtureScene::filterEssentialRansac ---" << std::endl;
 }
 
 
