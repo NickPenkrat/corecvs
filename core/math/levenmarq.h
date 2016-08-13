@@ -280,6 +280,12 @@ public:
                         break;
                     case LinearSolver::MINRESQLP:
                         auto res = MinresQLP<MatrixClass>::Solve(A, B, delta);
+                        auto P = A.incompleteCholseky();
+                        auto res2 = MinresQLP<MatrixClass>::Solve(A, P.second, B, delta);
+                        if (res != res2)
+						{
+							std::cout << "CURIOUS: NON-PRECONDITIONED:" << res << " PRECONDITIONED: " << res2 << std::endl;
+						}
                         if (res != MinresQLPStatus::SOLVED_RTOL &&
                             res != MinresQLPStatus::SOLVED_EPS  &&
                             res != MinresQLPStatus::MINLEN_RTOL &&

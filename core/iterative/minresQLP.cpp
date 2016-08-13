@@ -23,6 +23,7 @@ std::ostream& operator<<(std::ostream& o, const MinresQLPStatus &s)
         C(ACOND,      "Acond has exceeded ACondLim")
         C(ITERATION,  "reached iteration limit")
         C(LSQ_NOCONV, "LSQ problem, not converged")
+        C(BAD_PRECON, "Bad (non-posdef) preconditioner?!")
     }
     return o;
 #undef C

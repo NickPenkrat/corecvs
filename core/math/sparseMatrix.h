@@ -66,7 +66,7 @@ public:
     int nnz() const;
     double fillin() const;
     void spyPlot() const;
-    Vector dtrsv(Vector &v, bool upper = true, bool notrans = true);
+    Vector dtrsv(const Vector &v, bool upper = true, bool notrans = true) const;
 
     friend SparseMatrix operator -(const SparseMatrix &a);
     friend SparseMatrix operator *(const double       &lhs, const SparseMatrix &rhs);
@@ -102,10 +102,10 @@ public:
     friend std::ostream& operator<< (std::ostream &out, const SparseMatrix &sm);
 
     int h, w;
-    Vector dtrsv_un(Vector &v); // Ux=b
-    Vector dtrsv_ut(Vector &v); // xU=b
-    Vector dtrsv_ln(Vector &v); // Lx=b
-    Vector dtrsv_lt(Vector &v); // xL=b
+    Vector dtrsv_un(const Vector &v) const;
+    Vector dtrsv_ut(const Vector &v) const;
+    Vector dtrsv_ln(const Vector &v) const;
+    Vector dtrsv_lt(const Vector &v) const;
 private:
     void swapCoords(int &x1, int &y1, int &x2, int &y2) const;
     //! All non-zero entries of matrix

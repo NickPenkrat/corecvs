@@ -7,6 +7,7 @@
  * \author alexander
  */
 #include "global.h"
+#include "sparseMatrix.h"
 #include "matrix.h"
 #include "matrix33.h"
 
@@ -1433,7 +1434,14 @@ void Matrix::svd (Matrix *A, Matrix *W, Matrix *V)
     delete[] rv1;
 }
 
-Vector Matrix::dtrsv(Vector &v, bool upper, bool notrans)
+std::pair<bool, Matrix> Matrix::incompleteCholseky()
+{
+	auto res = SparseMatrix(*this).incompleteCholseky();
+	return std::make_pair(res.first, Matrix(res.second));
+}
+
+
+Vector Matrix::dtrsv(const Vector &v, bool upper, bool notrans) const
 {
     Vector res(v);
     CORE_ASSERT_TRUE_S(v.size() == h && v.size() == w);

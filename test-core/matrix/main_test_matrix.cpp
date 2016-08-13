@@ -337,9 +337,11 @@ TEST(SparseMatrix, IncompleteCholesky)
     SparseMatrix sm(Matrix(4, 4, a));
     auto resNaive = NaiveIncompleteCholesky(sm);
     auto res      = sm.incompleteCholseky();
+	std::cout << res.second << std::endl;
     ASSERT_EQ(resNaive.first, res.first);
     ASSERT_TRUE(resNaive.first);
     ASSERT_LE(Matrix(resNaive.second - res.second).frobeniusNorm() , 1e-9);
+    ASSERT_LE(Matrix(res.second.ata() - sm).frobeniusNorm(), 1e-3);
 }
 
 
@@ -394,12 +396,6 @@ TEST(Iterative, MinresQLPDaxpby)
 
 TEST(Iterative, MinresQLP)
 {
-    double a[] = {
-        5.0, 2.0, 1.0, 0.0, 0.0,
-        2.0, 5.0, 2.0, 1.0, 0.0,
-        1.0, 2.0, 5.0, 2.0, 1.0,
-        0.0, 1.0, 2.0, 5.0, 2.0,
-        0.0, 0.0, 1.0, 2.0, 5.0};
     int N = 32768;
 
     int val[] = {1, 2, 5, 2, 1};
@@ -422,6 +418,39 @@ TEST(Iterative, MinresQLP)
     auto b = M * xx;
     corecvs::Vector x;
     MinresQLP<SparseMatrix>::Solve(M, b, x);
+    ASSERT_LE(!(M*x-b)/!b, 1e-9);
+}
+
+TEST(Iterative, MinresQLPPreconditioned)
+{
+    int N = 32768;
+
+    int val[] = {1, 2, 5, 2, 1};
+    std::vector<double> values;
+    std::vector<int> columns, rowPointers(N + 1);
+    for (int i = 0; i < N; ++i)
+    {
+        for (int j = -2; j <= 2; ++j)
+            if (i + j >= 0 && i + j < N)
+            {
+                columns.push_back(i + j);
+                values.push_back(val[j + 2]);
+            }
+        rowPointers[i + 1] = values.size();
+    }
+    corecvs::SparseMatrix M(N, N, values, columns, rowPointers);
+    corecvs::Vector xx(N);
+    for (int i = 0; i < N; ++i)
+        xx[i] = i % 10;
+    auto b = M * xx;
+    auto P = M.incompleteCholseky();
+    if (!P.first)
+	{
+    	std::cout << "NAH: ICP0 failed" << std::endl;
+    	ASSERT_TRUE(false);
+	}
+    corecvs::Vector x;
+    MinresQLP<SparseMatrix>::Solve(M, P.second, b, x);
     ASSERT_LE(!(M*x-b)/!b, 1e-9);
 }
 

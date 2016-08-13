@@ -11,6 +11,8 @@
 #include "immintrin.h"
 #endif
 
+//#define MAKE_MOVE_NOT_SWAP
+
 namespace corecvs
 {
 enum class MinresQLPStatus
@@ -26,7 +28,8 @@ enum class MinresQLPStatus
     XNORM      =  6,
     ACOND      =  7,
     ITERATION  =  8,
-    LSQ_NOCONV =  9
+    LSQ_NOCONV =  9,
+    BAD_PRECON = 10
 };
 std::ostream& operator<<(std::ostream& o, const MinresQLPStatus &s);
 struct MinresQLPParams
@@ -68,8 +71,28 @@ public:
         MinresQLP solver(a, b, x, params);
         return solver.run();
     }
+    static MinresQLPStatus Solve(const M &a, const M &p, const Vector &b, Vector &x, const MinresQLPParams &params = MinresQLPParams())
+    {
+        MinresQLP solver(a, p, b, x, params);
+        return solver.run();
+    }
     MinresQLP (const M &A, const Vector &b, Vector &x, const MinresQLPParams &params = MinresQLPParams()) : MinresQLP(A, b, x, (int)b.size(), params)
     {
+#if 0
+    	auto sm = SparseMatrix(A);
+    	auto start = std::chrono::high_resolution_clock::now();
+    	auto prec = sm.incompleteCholseky();
+    	auto stop = std::chrono::high_resolution_clock::now();
+    	if (prec.first)
+    		std::cout << "PREC OK: " << (stop - start).count() / 1e9 << std::endl;
+		else
+			std::cout << "PREC FAILED" << std::endl;
+#endif
+    }
+    MinresQLP (const M &A, const M &P, const Vector &b, Vector &x, const MinresQLPParams &params = MinresQLPParams()) : MinresQLP(A, b, x, (int)b.size(), params)
+    {
+    	this->P = &P;
+    	CORE_ASSERT_TRUE_S(P.h == P.w && P.h == A.h);
     }
     ~MinresQLP()
     {
@@ -90,13 +113,26 @@ public:
         r3 = r2 = b;
         beta1 = !r2;
 
+        if (P)
+		{
+			r3 = P->dtrsv_un(P->dtrsv_ut(r2));
+			beta1 = r3 & r2;
+			if (beta1 >= 0.0)
+				beta1 = std::sqrt(beta1);
+			else
+			{
+				std::cout << "Preconditioner failed" << std::endl;
+				flag = MinresQLPStatus::BAD_PRECON;
+			}
+		}
+
         flag = MinresQLPStatus::RUNNING;
         rnorm = betan = phi = beta1;
 
         relres = rnorm / (beta1 + std::numeric_limits<double>::min());
         x = Vector(N);
 
-        if (beta1 == 0.0)
+        if (beta1 <= 0.0)
             return flag;
 
         auto normBefore = !(A * x - b);
@@ -108,7 +144,7 @@ public:
         auto normAfter = !(A * x - b);
         auto relBefore = normBefore / !b, relAfter = normAfter / !b;
         std::cout << normBefore << " (" << relBefore << ") > " << normAfter << " (" << relAfter << ") [" << normBefore / normAfter << "] @ " << iter << std::endl;
-        std::cout << "MINRES-QLP status: " << flag << std::endl;
+        std::cout << (P ? "PRECONDITIONED-" : "") << "MINRES-QLP status: " << flag << std::endl;
 
         return flag;
     }
@@ -190,31 +226,50 @@ private:
 #else
         cblas_daxpy(r3.size(), -alpha/beta, &r2[0], 1, &r3[0], 1);
 #endif
+#ifdef MAKE_MOVE_NOT_SWAP
         r1 = std::move(r2);
+#else
+		std::swap(r1, r2);
+#endif
         r2 = r3;
 
+		if (!P)
+		{
 #ifndef WITH_BLAS
-        betan = !r3;
+			betan = !r3;
 #else
-        betan = cblas_dnrm2(r3.size(), &r3[0], 1);
+			betan = cblas_dnrm2(r3.size(), &r3[0], 1);
 #endif
-        if (iter == 1 && betan == 0.0)
-        {
-            if (alpha == 0.0)
-            {
-                flag = MinresQLPStatus::ZERO;
-                return false;
-            }
-            flag = MinresQLPStatus::BOTH_EIGEN;
+			if (iter == 1 && betan == 0.0)
+			{
+				if (alpha == 0.0)
+				{
+					flag = MinresQLPStatus::ZERO;
+					return false;
+				}
+				flag = MinresQLPStatus::BOTH_EIGEN;
 #ifndef WITH_BLAS
-            x = b / alpha;
+				x = b / alpha;
 #else
-            x = b;
-            cblas_dscal(x.size(), 1.0 / alpha, &x[0], 1);
-
+				x = b;
+				cblas_dscal(x.size(), 1.0 / alpha, &x[0], 1);
 #endif
-            return false;
-        }
+            	return false;
+       		}
+		}
+		else
+		{
+			r3 = P->dtrsv_un(P->dtrsv_ut(r2));
+			betan = r2 & r3;
+			if (betan > 0.0)
+				betan = std::sqrt(betan);
+			else
+			{
+				std::cout << "Preconditioner failed" << std::endl;
+				flag = MinresQLPStatus::BAD_PRECON;
+				return false;
+			}
+		}
 
         pnorm = std::sqrt(betal * betal + alpha * alpha + betan * betan);
         }
@@ -339,7 +394,6 @@ private:
                 xl2 = x - wl * ul_QLP - w * u_QLP;
             }
         }
-//#define MAKE_MOVE_NOT_SWAP
         switch (iter)
         {
         case 1:
@@ -543,7 +597,7 @@ private:
     }
 
 
-    const M& A;
+    const M& A, *P = nullptr;
     const Vector &b;
     Vector &x;
     int N;
