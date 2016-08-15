@@ -9,7 +9,7 @@ void        StatusTracker::SetTotalActions(StatusTracker *tracker, size_t totalA
 void        StatusTracker::Reset(StatusTracker *tracker, const std::string &action, size_t totalActions) { if (tracker) tracker->reset(action, totalActions); }
 void        StatusTracker::IncrementStarted(StatusTracker *tracker)     { if (tracker) tracker->incrementStarted(); }
 void        StatusTracker::IncrementCompleted(StatusTracker *tracker)   { if (tracker) tracker->incrementCompleted(); }
-AutoTracker StatusTracker::CreateAutoTrackerCalculationObject(StatusTracker *tracker) { tracker ? tracker->createAutoTrackerCalculationObject() : AutoTracker(nullptr); }
+AutoTracker StatusTracker::CreateAutoTrackerCalculationObject(StatusTracker *tracker) { return tracker ? tracker->createAutoTrackerCalculationObject() : AutoTracker(nullptr); }
 void        StatusTracker::SetCompleted(StatusTracker *tracker)         { if (tracker) tracker->setCompleted(); }
 void        StatusTracker::SetFailed(StatusTracker *tracker)            { if (tracker) tracker->setFailed(); }
 void        StatusTracker::SetToCancel(StatusTracker *tracker)          { if (tracker) tracker->setToCancel(); }
