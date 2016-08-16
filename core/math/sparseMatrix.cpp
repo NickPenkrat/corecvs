@@ -79,14 +79,14 @@ std::pair<bool, SparseMatrix> corecvs::SparseMatrix::incompleteCholseky()
                     A.a(j, i) -= A.a(k, i) * A.a(k, j);
 #else
         int i_k_j = i_k_k + 1;
-        for (int j = k + 1; j < n; ++j)
+        for (; i_k_j < A.rowPointers[k + 1]; ++i_k_j)
         {
+            int j = A.columns[i_k_j];
             int i_j_i = getUBIndex(j, j);
-            while (i_k_j < A.rowPointers[k] && A.columns[i_k_j] < j) ++i_k_j;
 
-            double a_k_j = 0.0;
-            if (i_k_j < A.rowPointers[k + 1] && A.columns[i_k_j] == j)
-                a_k_j = A.values[i_k_j];
+            double a_k_j = A.values[i_k_j];
+            if (a_k_j == 0.0)
+                continue;
 
             int i_k_i = i_k_j;
             for (; i_j_i < A.rowPointers[j + 1]; ++i_j_i)
@@ -206,7 +206,7 @@ corecvs::Vector corecvs::SparseMatrix::dtrsv_ut(const Vector &rhs) const
     CORE_ASSERT_TRUE_S(h == rhs.size());
     corecvs::Vector res(rhs.size());
 #ifndef WITH_MKL
-//	auto startCVS = std::chrono::high_resolution_clock::now();
+//    auto startCVS = std::chrono::high_resolution_clock::now();
 
     std::vector<int> first(h), id(h), next(h);
     for (int i = 0; i < h; ++i)
@@ -215,7 +215,7 @@ corecvs::Vector corecvs::SparseMatrix::dtrsv_ut(const Vector &rhs) const
 #ifndef STRONG_TRIAG
         id[i] = getUBIndex(i, i);
 #else
-		id[i] = rowPointers[i];
+        id[i] = rowPointers[i];
 #endif
         next[i] = -1;
         CORE_ASSERT_TRUE_S(columns[id[i]] == i && id[i] < rowPointers[i + 1]);
@@ -254,9 +254,9 @@ corecvs::Vector corecvs::SparseMatrix::dtrsv_ut(const Vector &rhs) const
 //    auto startMKL = std::chrono::high_resolution_clock::now();
     mkl_cspblas_dcsrtrsv("U", "T", "N", &h, &values[0], &rowPointers[0], &columns[0], &rhs[0], &res[0]);
 //    auto stopMKL = std::chrono::high_resolution_clock::now();
-//	auto timeCVS = (stopCVS - startCVS).count() / 1e9;
-//	auto timeMKL = (stopMKL - startMKL).count() / 1e9;
-//	std::cout << (timeMKL < timeCVS ? "corecvs" : "MKL") << " sucks: CVS@" << timeCVS << ", MKL@" << timeMKL << std::endl;
+//    auto timeCVS = (stopCVS - startCVS).count() / 1e9;
+//    auto timeMKL = (stopMKL - startMKL).count() / 1e9;
+//    std::cout << (timeMKL < timeCVS ? "corecvs" : "MKL") << " sucks: CVS@" << timeCVS << ", MKL@" << timeMKL << std::endl;
 #endif
     return res;
 }
@@ -280,7 +280,7 @@ corecvs::Vector corecvs::SparseMatrix::dtrsv_lt(const Vector &rhs) const
 #ifndef STRONG_TRIAG
         id[i] = getUBIndex(i, i);
 #else
-		id[i] = rowPointers[i + 1] - 1;
+        id[i] = rowPointers[i + 1] - 1;
 #endif
         next[i] = -1;
         CORE_ASSERT_TRUE_S(columns[id[i]] == i && id[i] < rowPointers[i + 1]);
@@ -314,7 +314,7 @@ corecvs::Vector corecvs::SparseMatrix::dtrsv_lt(const Vector &rhs) const
     }
     return res;
 }
-corecvs::Vector corecvs::SparseMatrix::dtrsv_ln(const Vector &rhs) const 
+corecvs::Vector corecvs::SparseMatrix::dtrsv_ln(const Vector &rhs) const
 {
     /*
      * /#        \ / x_1 \   / b_1 \
@@ -354,14 +354,14 @@ corecvs::Vector corecvs::SparseMatrix::dtrsv_un(const Vector &rhs) const
     CORE_ASSERT_TRUE_S(h == w);
     CORE_ASSERT_TRUE_S(h == rhs.size());
 #ifndef WITH_MKL
-//	auto startCVS = std::chrono::high_resolution_clock::now();
+//    auto startCVS = std::chrono::high_resolution_clock::now();
     for (int i = h - 1; i >= 0; --i)
     {
         double sum = rhs[i];
 #ifndef STRONG_TRIAG
         int i_i_i = getUBIndex(i, i);
 #else
-		int i_i_i = rowPointers[i];
+        int i_i_i = rowPointers[i];
 #endif
         CORE_ASSERT_TRUE_S(columns[i_i_i] == i && rowPointers[i + 1]  > i_i_i);
         for (int i_i_j = i_i_i + 1; i_i_j < rowPointers[i + 1]; ++i_i_j)
@@ -374,9 +374,9 @@ corecvs::Vector corecvs::SparseMatrix::dtrsv_un(const Vector &rhs) const
 //    auto startMKL = std::chrono::high_resolution_clock::now();
     mkl_cspblas_dcsrtrsv("U", "N", "N", &h, &values[0], &rowPointers[0], &columns[0], &rhs[0], &res[0]);
 //    auto stopMKL = std::chrono::high_resolution_clock::now();
-//	auto timeCVS = (stopCVS - startCVS).count() / 1e9;
-//	auto timeMKL = (stopMKL - startMKL).count() / 1e9;
-//	std::cout << (timeMKL < timeCVS ? "corecvs" : "MKL") << " sucks: CVS@" << timeCVS << ", MKL@" << timeMKL << std::endl;
+//    auto timeCVS = (stopCVS - startCVS).count() / 1e9;
+//    auto timeMKL = (stopMKL - startMKL).count() / 1e9;
+//    std::cout << (timeMKL < timeCVS ? "corecvs" : "MKL") << " sucks: CVS@" << timeCVS << ", MKL@" << timeMKL << std::endl;
 #endif
 #endif
     return res;
