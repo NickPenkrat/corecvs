@@ -145,7 +145,7 @@ public:
         auto normAfter = !(A * x - b);
         auto relBefore = normBefore / !b, relAfter = normAfter / !b;
         std::cout << normBefore << " (" << relBefore << ") > " << normAfter << " (" << relAfter << ") [" << normBefore / normAfter << "] @ " << iter << std::endl;
-        std::cout << (P ? "PRECONDITIONED-" : "") << "MINRES-QLP status: " << flag << std::endl;
+        std::cout << (usePreconditioner ? "PRECONDITIONED-" : "") << "MINRES-QLP status: " << flag << std::endl;
 
         return flag;
     }
@@ -235,7 +235,7 @@ private:
         r2 = r3;
         }
 
-        if (!P)
+        if (!usePreconditioner)
         {
             AT("Residual: beta")
 #ifndef WITH_BLAS
