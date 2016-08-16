@@ -37,8 +37,7 @@ int ThickeningParameters::staticInit()
     );
      
 
-    fields().push_back(
-        new IntField
+    IntField* field0 = new IntField
         (
           ThickeningParameters::POWER_ID,
           offsetof(ThickeningParameters, mPower),
@@ -49,8 +48,10 @@ int ThickeningParameters::staticInit()
           true,
          0,
          9999
-        )
-    );
+        );
+    field0->precision=-1;
+    fields().push_back(field0);
+    /*  */ 
    return 0;
 }
 

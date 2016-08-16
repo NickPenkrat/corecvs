@@ -9,6 +9,7 @@
 #include "global.h"
 
 #include "mathUtils.h"
+#include "meshLoader.h"
 #include "mesh3DScene.h"
 #include "opengl/openGLTools.h"
 #include "generated/draw3dParameters.h"
@@ -249,6 +250,19 @@ void Mesh3DScene::drawMyself(CloudViewDialog *dialog)
     glDisable(GL_TEXTURE_2D);
 }
 
+bool Mesh3DScene::dump(const QString &targetFile)
+{
+   /*if (owned != NULL)
+   {
+       qDebug("Mesh3DScene::dump(): saving owned scene\n");
+       return MeshLoader().save(owned, targetFile.toLatin1().constData());
+   } else {
+       qDebug("Mesh3DScene::dump(): there is no owned scene\n");
+       return false;
+   }*/
+
+    return MeshLoader().save(this, targetFile.toLatin1().constData());
+}
 
 Mesh3DScene::~Mesh3DScene() {
     // TODO Auto-generated destructor stub
@@ -491,3 +505,4 @@ void StereoCameraScene::drawMyself(CloudViewDialog *dialog)
     painter.drawFormatVector(0, 0, RGBColor(20,20,200), 1, "Left");
     glPopMatrix();
 }
+

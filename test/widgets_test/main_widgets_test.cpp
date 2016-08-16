@@ -11,6 +11,10 @@
 #include "libpngFileReader.h"
 #endif
 
+#ifdef INCLUDE_EXAMPLE
+#include "testClass.h"
+#endif
+
 #include "qtFileLoader.h"
 #include "reflectionWidget.h"
 #include "axisAlignedBoxParameters.h"
@@ -22,11 +26,18 @@
 #include "vector2d.h"
 
 int main(int argc, char **argv)
-{
+{    
     QApplication a(argc, argv);
+    Q_INIT_RESOURCE(main);
+
 
     Vector2dd dummy(0.0);
     cout << "Out:" <<  dummy.reflection.fields.size() << std::endl;
+
+#ifdef INCLUDE_EXAMPLE
+    cout << TestClass::reflection.fields.size();
+#endif
+
 
 #ifdef WITH_LIBJPEG
     LibjpegFileReader::registerMyself();
@@ -44,7 +55,7 @@ int main(int argc, char **argv)
         cout << "The list of reflected objects" << endl;
         for (auto it : directory)
         {
-            cout << "Class" << it.first << endl;
+            cout << "Class: " << it.first << endl;
         }
 
         return 0;

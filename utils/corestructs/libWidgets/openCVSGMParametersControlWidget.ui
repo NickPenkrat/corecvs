@@ -47,6 +47,12 @@
        <property name="value">
         <number>10</number>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
+       </property>
        <property name="tags" stdset="0">
            <string>advanced</string>
        </property>
@@ -78,6 +84,12 @@
        </property>
        <property name="value">
         <number>5</number>
+       </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
        </property>
        <property name="tags" stdset="0">
            <string>advanced</string>
@@ -111,6 +123,12 @@
        <property name="value">
         <number>8</number>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
+       </property>
        <property name="tags" stdset="0">
            <string>advanced</string>
        </property>
@@ -142,6 +160,12 @@
        </property>
        <property name="value">
         <number>32</number>
+       </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
        </property>
        <property name="tags" stdset="0">
            <string>advanced</string>
@@ -175,6 +199,12 @@
        <property name="value">
         <number>0</number>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
+       </property>
        <property name="tags" stdset="0">
            <string>advanced</string>
        </property>
@@ -206,6 +236,12 @@
        </property>
        <property name="value">
         <number>15</number>
+       </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
        </property>
        <property name="tags" stdset="0">
            <string>advanced</string>
@@ -239,6 +275,12 @@
        <property name="value">
         <number>50</number>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
+       </property>
        <property name="tags" stdset="0">
            <string>advanced</string>
        </property>
@@ -271,6 +313,12 @@
        <property name="value">
         <number>16</number>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
+       </property>
        <property name="tags" stdset="0">
            <string>advanced</string>
        </property>
@@ -302,6 +350,12 @@
        </property>
        <property name="value">
         <number>-1</number>
+       </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
        </property>
        <property name="tags" stdset="0">
            <string>advanced</string>

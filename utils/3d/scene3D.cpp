@@ -243,12 +243,9 @@ void Scene3D::drawMyself(CloudViewDialog * /*dialog*/ )
     //qDebug() << "Calling Scene3D::Scene3D::drawMyself() for" << name;
 }
 
-void Scene3D::dumpPCD(ostream &/*out*/)
+bool Scene3D::dump(const QString &targetFile)
 {
-
+    qDebug("Scene3D::dump(%s):called\n", targetFile.toLatin1().constData());
+    return false;
 }
 
-void Scene3D::dumpPLY(ostream &/*out*/)
-{
-
-}

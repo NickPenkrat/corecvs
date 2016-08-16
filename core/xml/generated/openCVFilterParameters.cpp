@@ -37,8 +37,7 @@ int OpenCVFilterParameters::staticInit()
     );
      
 
-    fields().push_back(
-        new EnumField
+    EnumField* field0 = new EnumField
         (
           OpenCVFilterParameters::OPENCVFILTER_ID,
           offsetof(OpenCVFilterParameters, mOpenCVFilter),
@@ -49,10 +48,12 @@ int OpenCVFilterParameters::staticInit()
           new EnumReflection(1
           , new EnumOption(0,"Canny")
           )
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field0->widgetHint=BaseField::COMBO_BOX;
+    field0->precision=-1;
+    fields().push_back(field0);
+    /*  */ 
+    IntField* field1 = new IntField
         (
           OpenCVFilterParameters::PARAM1_ID,
           offsetof(OpenCVFilterParameters, mParam1),
@@ -63,10 +64,11 @@ int OpenCVFilterParameters::staticInit()
           true,
          0,
          10000
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field1->precision=-1;
+    fields().push_back(field1);
+    /*  */ 
+    IntField* field2 = new IntField
         (
           OpenCVFilterParameters::PARAM2_ID,
           offsetof(OpenCVFilterParameters, mParam2),
@@ -77,8 +79,10 @@ int OpenCVFilterParameters::staticInit()
           true,
          0,
          10000
-        )
-    );
+        );
+    field2->precision=-1;
+    fields().push_back(field2);
+    /*  */ 
    return 0;
 }
 

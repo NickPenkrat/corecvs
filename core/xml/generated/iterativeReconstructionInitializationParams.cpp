@@ -37,8 +37,7 @@ int IterativeReconstructionInitializationParams::staticInit()
     );
      
 
-    fields().push_back(
-        new DoubleField
+    DoubleField* field0 = new DoubleField
         (
           IterativeReconstructionInitializationParams::B2BRANSACP5RPTHRESHOLD_ID,
           offsetof(IterativeReconstructionInitializationParams, mB2bRansacP5RPThreshold),
@@ -49,10 +48,12 @@ int IterativeReconstructionInitializationParams::staticInit()
           true,
          0,
          1
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field0->widgetHint=BaseField::SPIN_BOX;
+    field0->precision=2;
+    fields().push_back(field0);
+    /*  */ 
+    DoubleField* field1 = new DoubleField
         (
           IterativeReconstructionInitializationParams::INLIERP5RPTHRESHOLD_ID,
           offsetof(IterativeReconstructionInitializationParams, mInlierP5RPThreshold),
@@ -63,10 +64,12 @@ int IterativeReconstructionInitializationParams::staticInit()
           true,
          0,
          50000
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field1->widgetHint=BaseField::SPIN_BOX;
+    field1->precision=2;
+    fields().push_back(field1);
+    /*  */ 
+    IntField* field2 = new IntField
         (
           IterativeReconstructionInitializationParams::MAXESSENTIALRANSACITERATIONS_ID,
           offsetof(IterativeReconstructionInitializationParams, mMaxEssentialRansacIterations),
@@ -77,10 +80,11 @@ int IterativeReconstructionInitializationParams::staticInit()
           true,
          0,
          5000000
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field2->precision=-1;
+    fields().push_back(field2);
+    /*  */ 
+    DoubleField* field3 = new DoubleField
         (
           IterativeReconstructionInitializationParams::B2BRANSACP6RPTHRESHOLD_ID,
           offsetof(IterativeReconstructionInitializationParams, mB2bRansacP6RPThreshold),
@@ -91,10 +95,12 @@ int IterativeReconstructionInitializationParams::staticInit()
           true,
          0,
          1
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field3->widgetHint=BaseField::SPIN_BOX;
+    field3->precision=2;
+    fields().push_back(field3);
+    /*  */ 
+    BoolField* field4 = new BoolField
         (
           IterativeReconstructionInitializationParams::RUNESSENTIALFILTERING_ID,
           offsetof(IterativeReconstructionInitializationParams, mRunEssentialFiltering),
@@ -102,10 +108,12 @@ int IterativeReconstructionInitializationParams::staticInit()
           "runEssentialFiltering",
           "runEssentialFiltering",
           "Run essential filtering prior relative pose estimation"
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field4->widgetHint=BaseField::CHECK_BOX;
+    field4->precision=-1;
+    fields().push_back(field4);
+    /*  */ 
+    DoubleField* field5 = new DoubleField
         (
           IterativeReconstructionInitializationParams::ESSENTIALTARGETGAMMA_ID,
           offsetof(IterativeReconstructionInitializationParams, mEssentialTargetGamma),
@@ -116,10 +124,12 @@ int IterativeReconstructionInitializationParams::staticInit()
           true,
          0,
          1
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field5->widgetHint=BaseField::SPIN_BOX;
+    field5->precision=6;
+    fields().push_back(field5);
+    /*  */ 
+    IntField* field6 = new IntField
         (
           IterativeReconstructionInitializationParams::MAXP6RPITERATIONS_ID,
           offsetof(IterativeReconstructionInitializationParams, mMaxP6RPIterations),
@@ -130,10 +140,11 @@ int IterativeReconstructionInitializationParams::staticInit()
           true,
          0,
          100000000
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field6->precision=-1;
+    fields().push_back(field6);
+    /*  */ 
+    DoubleField* field7 = new DoubleField
         (
           IterativeReconstructionInitializationParams::INLIERP6RPTHRESHOLD_ID,
           offsetof(IterativeReconstructionInitializationParams, mInlierP6RPThreshold),
@@ -144,10 +155,12 @@ int IterativeReconstructionInitializationParams::staticInit()
           true,
          0,
          1000
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field7->widgetHint=BaseField::SPIN_BOX;
+    field7->precision=6;
+    fields().push_back(field7);
+    /*  */ 
+    DoubleField* field8 = new DoubleField
         (
           IterativeReconstructionInitializationParams::GAMMAP6RP_ID,
           offsetof(IterativeReconstructionInitializationParams, mGammaP6RP),
@@ -158,8 +171,11 @@ int IterativeReconstructionInitializationParams::staticInit()
           true,
          0,
          1
-        )
-    );
+        );
+    field8->widgetHint=BaseField::SPIN_BOX;
+    field8->precision=6;
+    fields().push_back(field8);
+    /*  */ 
    return 0;
 }
 

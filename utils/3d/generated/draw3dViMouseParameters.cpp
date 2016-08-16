@@ -37,8 +37,7 @@ int Draw3dViMouseParameters::staticInit()
     );
      
 
-    fields().push_back(
-        new DoubleField
+    DoubleField* field0 = new DoubleField
         (
           Draw3dViMouseParameters::REDDIST_ID,
           offsetof(Draw3dViMouseParameters, mRedDist),
@@ -49,10 +48,12 @@ int Draw3dViMouseParameters::staticInit()
           true,
          -50000,
          50000
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field0->widgetHint=BaseField::SPIN_BOX;
+    field0->precision=2;
+    fields().push_back(field0);
+    /*  */ 
+    DoubleField* field1 = new DoubleField
         (
           Draw3dViMouseParameters::BLUEDIST_ID,
           offsetof(Draw3dViMouseParameters, mBlueDist),
@@ -63,10 +64,12 @@ int Draw3dViMouseParameters::staticInit()
           true,
          -50000,
          50000
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field1->widgetHint=BaseField::SPIN_BOX;
+    field1->precision=2;
+    fields().push_back(field1);
+    /*  */ 
+    DoubleField* field2 = new DoubleField
         (
           Draw3dViMouseParameters::FLOWZOOM_ID,
           offsetof(Draw3dViMouseParameters, mFlowZoom),
@@ -77,10 +80,12 @@ int Draw3dViMouseParameters::staticInit()
           true,
          0,
          50
-        )
-    );
-    fields().push_back(
-        new EnumField
+        );
+    field2->widgetHint=BaseField::SPIN_BOX;
+    field2->precision=2;
+    fields().push_back(field2);
+    /*  */ 
+    EnumField* field3 = new EnumField
         (
           Draw3dViMouseParameters::POINT_COLOR_TYPE_ID,
           offsetof(Draw3dViMouseParameters, mPointColorType),
@@ -97,10 +102,12 @@ int Draw3dViMouseParameters::staticInit()
           , new EnumOption(5,"By Flag")
           , new EnumOption(6,"By Cluster")
           )
-        )
-    );
-    fields().push_back(
-        new EnumField
+        );
+    field3->widgetHint=BaseField::COMBO_BOX;
+    field3->precision=-1;
+    fields().push_back(field3);
+    /*  */ 
+    EnumField* field4 = new EnumField
         (
           Draw3dViMouseParameters::FLOW_COLOR_TYPE_ID,
           offsetof(Draw3dViMouseParameters, mFlowColorType),
@@ -114,8 +121,11 @@ int Draw3dViMouseParameters::staticInit()
           , new EnumOption(2,"Heat")
           , new EnumOption(3,"By Flag")
           )
-        )
-    );
+        );
+    field4->widgetHint=BaseField::COMBO_BOX;
+    field4->precision=-1;
+    fields().push_back(field4);
+    /*  */ 
    return 0;
 }
 

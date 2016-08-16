@@ -37,8 +37,7 @@ int DebayerParameters::staticInit()
     );
      
 
-    fields().push_back(
-        new EnumField
+    EnumField* field0 = new EnumField
         (
           DebayerParameters::METHOD_ID,
           offsetof(DebayerParameters, mMethod),
@@ -52,10 +51,12 @@ int DebayerParameters::staticInit()
           , new EnumOption(2,"AHD")
           , new EnumOption(3,"Fourier")
           )
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field0->widgetHint=BaseField::COMBO_BOX;
+    field0->precision=-1;
+    fields().push_back(field0);
+    /*  */ 
+    IntField* field1 = new IntField
         (
           DebayerParameters::BAYER_POS_ID,
           offsetof(DebayerParameters, mBayerPos),
@@ -66,8 +67,10 @@ int DebayerParameters::staticInit()
           true,
          -1,
          255
-        )
-    );
+        );
+    field1->precision=-1;
+    fields().push_back(field1);
+    /*  */ 
    return 0;
 }
 

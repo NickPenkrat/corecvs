@@ -192,11 +192,37 @@ template<typename Type>
     bool                isAdvanced;
 
     /** These fields are related to persentaion only and probably should be moved out. **/
+    /** This is obviously out of place. But too much code needed to make design clean */
+    enum WidgetHint{
+        DEFAULT_HINT,
+        COMBO_BOX,
+        CHECK_BOX,
+        RADIO_BUTTON,
+        SPIN_BOX,
+        SLIDER,
+        TAB_WIDGET
+    };
 
-    int precision = -1;             /**< Precision that we expect form the field */
-    const char *widgetHint = NULL;  /**< Best type of widget to repersent field*/
-    const char *prefixHint = NULL;  /**< prefix for the field that can add some semantics (i.e koefficient could have "*" prefix)*/
-    const char *suffixHint = NULL; /**< postfix for the field that can add some semantics (i.e mesurement unit) */
+    static inline const char *getString(const WidgetHint &value)
+    {
+        switch (value)
+        {
+           case DEFAULT_HINT : return "DEFAULT_HINT"; break ;
+           case COMBO_BOX    : return "COMBO_BOX";    break ;
+           case CHECK_BOX    : return "CHECK_BOX";    break ;
+           case RADIO_BUTTON : return "RADIO_BUTTON"; break ;
+           case SPIN_BOX     : return "SPIN_BOX";     break ;
+           case SLIDER       : return "SLIDER";       break ;
+           case TAB_WIDGET   : return "TAB_WIDGET";   break ;
+        }
+        return "Not in range";
+    }
+
+
+    int precision = -1;                   /**< Precision that we expect form the field */
+    WidgetHint widgetHint = DEFAULT_HINT; /**< Best type of widget to repersent field*/
+    const char *prefixHint = NULL;        /**< prefix for the field that can add some semantics (i.e koefficient could have "*" prefix)*/
+    const char *suffixHint = NULL;        /**< postfix for the field that can add some semantics (i.e mesurement unit) */
 
 
     const char *getSimpleName() const
@@ -726,10 +752,12 @@ public:
     EnumOption() {}
     EnumOption(int _id,
         const char *_name,
+        const char *_presentationHint = NULL,
         const char *_decription = NULL,
         const char *_comment = NULL)
         : id(_id)
         , name(_name, _decription, _comment)
+        , presentationHint(_presentationHint)
     {}
 
     EnumOption(int _id, const ReflectionNaming &_nameing)

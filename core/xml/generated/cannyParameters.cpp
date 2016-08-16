@@ -37,8 +37,7 @@ int CannyParameters::staticInit()
     );
      
 
-    fields().push_back(
-        new BoolField
+    BoolField* field0 = new BoolField
         (
           CannyParameters::SHOULD_EDGE_DETECT_ID,
           offsetof(CannyParameters, mShouldEdgeDetect),
@@ -46,10 +45,12 @@ int CannyParameters::staticInit()
           "Should edge detect",
           "Should edge detect",
           "Should edge detect"
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field0->widgetHint=BaseField::CHECK_BOX;
+    field0->precision=-1;
+    fields().push_back(field0);
+    /*  */ 
+    IntField* field1 = new IntField
         (
           CannyParameters::MINIMUM_THRESHOLD_ID,
           offsetof(CannyParameters, mMinimumThreshold),
@@ -60,10 +61,11 @@ int CannyParameters::staticInit()
           true,
          0,
          10000
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field1->precision=-1;
+    fields().push_back(field1);
+    /*  */ 
+    IntField* field2 = new IntField
         (
           CannyParameters::MAXIMUM_THRESHOLD_ID,
           offsetof(CannyParameters, mMaximumThreshold),
@@ -74,8 +76,10 @@ int CannyParameters::staticInit()
           true,
          0,
          10000
-        )
-    );
+        );
+    field2->precision=-1;
+    fields().push_back(field2);
+    /*  */ 
    return 0;
 }
 

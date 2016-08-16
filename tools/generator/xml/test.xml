@@ -14,7 +14,9 @@
 
   <class name="Test Class" description="Double vector test">
      <field type="bool"   name="Bool Field"    defaultValue="0"/>
-     <field type="int"    name="Normal Field"  defaultValue="0"/>
+     <field type="int"    name="Int Field0"    defaultValue="0"/>
+     <field type="int"    name="Int Field1"    defaultValue="0" min="-5" max="5"/>
+
      <field type="double" name="Double field0" defaultValue="2.0"/>
      <field type="double" name="Double field1" defaultValue="1.0"  widget="ExponentialSlider"/>
 
@@ -22,7 +24,12 @@
      <field type="Test Enum" name="Enum Field0" defaultValue="0"/>
      <field type="Test Enum" name="Enum Field1" defaultValue="0" widget="TabWidget"/>
 
-     <field type="double" name="Vector Field"  size="2" defaultValue="0"/>
+     <field type="double" name="Vector Field0"  size="2" defaultValue="0"/>
+     <field type="double" name="Vector Field1"  size="2" defaultValue="0">
+         <def0>4</def0>
+         <def1>8</def1>
+         <def2>12</def2>
+     </field>
 
   </class>
 

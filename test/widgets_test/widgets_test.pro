@@ -52,3 +52,13 @@ DESTDIR  = $$ROOT_DIR/bin
 SOURCES += \
     main_widgets_test.cpp \
 
+GEN_FOLDER="../../tools/generator/Generated"
+exists($$GEN_FOLDER/testClass.cpp) {
+    message(Adding generator test)
+
+    SOURCES += $$GEN_FOLDER/testClass.cpp
+    HEADERS += $$GEN_FOLDER/testClass.h
+    INCLUDEPATH += $$GEN_FOLDER
+
+    DEFINES += INCLUDE_EXAMPLE
+}

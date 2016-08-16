@@ -168,9 +168,9 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
                 }
                 else if (type == "double")
                 {
-                    const char * widgetType = fieldElement.attribute("widget") == "ExponentialSlider" ?
-                                               "exponentialSlider" :
-                                               "doubleSpinBox";
+                    BaseField::WidgetHint widgetType = fieldElement.attribute("widget") == "ExponentialSlider" ?
+                                               BaseField::SLIDER :
+                                               BaseField::SPIN_BOX;
 
                     QString prefix = fieldElement.attribute("prefix");
                     QString suffix = fieldElement.attribute("suffix");
@@ -199,9 +199,9 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
                 else if (type == "bool")
                 {
 
-                    const char * widgetType = fieldElement.attribute("widget") == "RadioButton" ?
-                                                "radioButton" :
-                                                "checkBox";
+                    BaseField::WidgetHint widgetType = fieldElement.attribute("widget") == "RadioButton" ?
+                                                BaseField::RADIO_BUTTON :
+                                                BaseField::CHECK_BOX;
 
                     field = new BoolFieldGen(defaultValue == "true", fieldNameing);
                     field->widgetHint = widgetType;
@@ -233,9 +233,9 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
                     }
                     else if (enumRef) // then it should be a enum
                     {
-                        const char *widgetType = fieldElement.attribute("widget") == "TabWidget" ?
-                                                    "tabWidget" :
-                                                    "comboBox";
+                        BaseField::WidgetHint widgetType = fieldElement.attribute("widget") == "TabWidget" ?
+                                                    BaseField::TAB_WIDGET :
+                                                    BaseField::COMBO_BOX;
                         field = new EnumFieldGen(defaultValue.toInt(), fieldNameing, enumRef);
                         field->widgetHint = widgetType;
                     }

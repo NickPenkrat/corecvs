@@ -37,8 +37,7 @@ int Draw3dCameraParameters::staticInit()
     );
      
 
-    fields().push_back(
-        new DoubleField
+    DoubleField* field0 = new DoubleField
         (
           Draw3dCameraParameters::FOVH_ID,
           offsetof(Draw3dCameraParameters, mFovH),
@@ -49,10 +48,12 @@ int Draw3dCameraParameters::staticInit()
           true,
          0,
          180
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field0->widgetHint=BaseField::SPIN_BOX;
+    field0->precision=2;
+    fields().push_back(field0);
+    /*  */ 
+    DoubleField* field1 = new DoubleField
         (
           Draw3dCameraParameters::FOVV_ID,
           offsetof(Draw3dCameraParameters, mFovV),
@@ -63,10 +64,12 @@ int Draw3dCameraParameters::staticInit()
           true,
          0,
          180
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field1->widgetHint=BaseField::SPIN_BOX;
+    field1->precision=2;
+    fields().push_back(field1);
+    /*  */ 
+    DoubleField* field2 = new DoubleField
         (
           Draw3dCameraParameters::NEARPLANE_ID,
           offsetof(Draw3dCameraParameters, mNearPlane),
@@ -77,10 +80,12 @@ int Draw3dCameraParameters::staticInit()
           true,
          0,
          20000
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field2->widgetHint=BaseField::SPIN_BOX;
+    field2->precision=2;
+    fields().push_back(field2);
+    /*  */ 
+    DoubleField* field3 = new DoubleField
         (
           Draw3dCameraParameters::FARPLANE_ID,
           offsetof(Draw3dCameraParameters, mFarPlane),
@@ -91,10 +96,12 @@ int Draw3dCameraParameters::staticInit()
           true,
          0,
          20000
-        )
-    );
-    fields().push_back(
-        new EnumField
+        );
+    field3->widgetHint=BaseField::SPIN_BOX;
+    field3->precision=2;
+    fields().push_back(field3);
+    /*  */ 
+    EnumField* field4 = new EnumField
         (
           Draw3dCameraParameters::STYLE_ID,
           offsetof(Draw3dCameraParameters, mStyle),
@@ -109,10 +116,12 @@ int Draw3dCameraParameters::staticInit()
           , new EnumOption(3,"Color 2")
           , new EnumOption(4,"Textured")
           )
-        )
-    );
-    fields().push_back(
-        new CompositeField
+        );
+    field4->widgetHint=BaseField::COMBO_BOX;
+    field4->precision=-1;
+    fields().push_back(field4);
+    /*  */ 
+    CompositeField* field5 = new CompositeField
         (
           Draw3dCameraParameters::POINT_COLOR_ID,
           offsetof(Draw3dCameraParameters, mPointColor),
@@ -121,10 +130,11 @@ int Draw3dCameraParameters::staticInit()
           "Point Color",
           "Point Color",
            NULL
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field5->precision=-1;
+    fields().push_back(field5);
+    /*  */ 
+    BoolField* field6 = new BoolField
         (
           Draw3dCameraParameters::POINT_COLOR_OVERRIDE_ID,
           offsetof(Draw3dCameraParameters, mPointColorOverride),
@@ -132,10 +142,12 @@ int Draw3dCameraParameters::staticInit()
           "Point Color Override",
           "Point Color Override",
           "Point Color Override"
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field6->widgetHint=BaseField::CHECK_BOX;
+    field6->precision=-1;
+    fields().push_back(field6);
+    /*  */ 
+    IntField* field7 = new IntField
         (
           Draw3dCameraParameters::POINT_SIZE_ID,
           offsetof(Draw3dCameraParameters, mPointSize),
@@ -146,10 +158,11 @@ int Draw3dCameraParameters::staticInit()
           true,
          0,
          255
-        )
-    );
-    fields().push_back(
-        new CompositeField
+        );
+    field7->precision=-1;
+    fields().push_back(field7);
+    /*  */ 
+    CompositeField* field8 = new CompositeField
         (
           Draw3dCameraParameters::EDGE_COLOR_ID,
           offsetof(Draw3dCameraParameters, mEdgeColor),
@@ -158,10 +171,11 @@ int Draw3dCameraParameters::staticInit()
           "Edge Color",
           "Edge Color",
            NULL
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field8->precision=-1;
+    fields().push_back(field8);
+    /*  */ 
+    BoolField* field9 = new BoolField
         (
           Draw3dCameraParameters::EDGE_COLOR_OVERRIDE_ID,
           offsetof(Draw3dCameraParameters, mEdgeColorOverride),
@@ -169,10 +183,12 @@ int Draw3dCameraParameters::staticInit()
           "Edge Color Override",
           "Edge Color Override",
           "Edge Color Override"
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field9->widgetHint=BaseField::CHECK_BOX;
+    field9->precision=-1;
+    fields().push_back(field9);
+    /*  */ 
+    IntField* field10 = new IntField
         (
           Draw3dCameraParameters::EDGE_WIDTH_ID,
           offsetof(Draw3dCameraParameters, mEdgeWidth),
@@ -183,10 +199,11 @@ int Draw3dCameraParameters::staticInit()
           true,
          0,
          255
-        )
-    );
-    fields().push_back(
-        new CompositeField
+        );
+    field10->precision=-1;
+    fields().push_back(field10);
+    /*  */ 
+    CompositeField* field11 = new CompositeField
         (
           Draw3dCameraParameters::FACE_COLOR_ID,
           offsetof(Draw3dCameraParameters, mFaceColor),
@@ -195,10 +212,11 @@ int Draw3dCameraParameters::staticInit()
           "Face Color",
           "Face Color",
            NULL
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field11->precision=-1;
+    fields().push_back(field11);
+    /*  */ 
+    BoolField* field12 = new BoolField
         (
           Draw3dCameraParameters::FACE_COLOR_OVERRIDE_ID,
           offsetof(Draw3dCameraParameters, mFaceColorOverride),
@@ -206,10 +224,12 @@ int Draw3dCameraParameters::staticInit()
           "Face Color Override",
           "Face Color Override",
           "Face Color Override"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field12->widgetHint=BaseField::CHECK_BOX;
+    field12->precision=-1;
+    fields().push_back(field12);
+    /*  */ 
+    BoolField* field13 = new BoolField
         (
           Draw3dCameraParameters::SHOW_CAPTION_ID,
           offsetof(Draw3dCameraParameters, mShowCaption),
@@ -217,10 +237,12 @@ int Draw3dCameraParameters::staticInit()
           "Show caption",
           "Show caption",
           "Show caption"
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field13->widgetHint=BaseField::CHECK_BOX;
+    field13->precision=-1;
+    fields().push_back(field13);
+    /*  */ 
+    IntField* field14 = new IntField
         (
           Draw3dCameraParameters::FONT_SIZE_ID,
           offsetof(Draw3dCameraParameters, mFontSize),
@@ -231,10 +253,11 @@ int Draw3dCameraParameters::staticInit()
           true,
          0,
          255
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field14->precision=-1;
+    fields().push_back(field14);
+    /*  */ 
+    IntField* field15 = new IntField
         (
           Draw3dCameraParameters::FONT_WIDTH_ID,
           offsetof(Draw3dCameraParameters, mFontWidth),
@@ -245,10 +268,11 @@ int Draw3dCameraParameters::staticInit()
           true,
          0,
          255
-        )
-    );
-    fields().push_back(
-        new CompositeField
+        );
+    field15->precision=-1;
+    fields().push_back(field15);
+    /*  */ 
+    CompositeField* field16 = new CompositeField
         (
           Draw3dCameraParameters::FONT_COLOR_ID,
           offsetof(Draw3dCameraParameters, mFontColor),
@@ -257,10 +281,11 @@ int Draw3dCameraParameters::staticInit()
           "Font Color",
           "Font Color",
            NULL
-        )
-    );
-    fields().push_back(
-        new EnumField
+        );
+    field16->precision=-1;
+    fields().push_back(field16);
+    /*  */ 
+    EnumField* field17 = new EnumField
         (
           Draw3dCameraParameters::TEXTURE_CORRODINATES_ID,
           offsetof(Draw3dCameraParameters, mTextureCorrodinates),
@@ -273,10 +298,12 @@ int Draw3dCameraParameters::staticInit()
           , new EnumOption(1,"Auto Decide")
           , new EnumOption(2,"Force Texture")
           )
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field17->widgetHint=BaseField::COMBO_BOX;
+    field17->precision=-1;
+    fields().push_back(field17);
+    /*  */ 
+    IntField* field18 = new IntField
         (
           Draw3dCameraParameters::TEXTURE_ALPHA_ID,
           offsetof(Draw3dCameraParameters, mTextureAlpha),
@@ -287,10 +314,11 @@ int Draw3dCameraParameters::staticInit()
           true,
          0,
          255
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field18->precision=-1;
+    fields().push_back(field18);
+    /*  */ 
+    DoubleField* field19 = new DoubleField
         (
           Draw3dCameraParameters::TEXTURE_SCALE_ID,
           offsetof(Draw3dCameraParameters, mTextureScale),
@@ -301,10 +329,12 @@ int Draw3dCameraParameters::staticInit()
           true,
          0,
          2000
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field19->widgetHint=BaseField::SPIN_BOX;
+    field19->precision=2;
+    fields().push_back(field19);
+    /*  */ 
+    IntField* field20 = new IntField
         (
           Draw3dCameraParameters::DECAL_MATRIX_TYPE_ID,
           offsetof(Draw3dCameraParameters, mDecalMatrixType),
@@ -315,10 +345,11 @@ int Draw3dCameraParameters::staticInit()
           true,
          0,
          19
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field20->precision=-1;
+    fields().push_back(field20);
+    /*  */ 
+    BoolField* field21 = new BoolField
         (
           Draw3dCameraParameters::DECAL_LEFT_CAM_ID,
           offsetof(Draw3dCameraParameters, mDecalLeftCam),
@@ -326,10 +357,12 @@ int Draw3dCameraParameters::staticInit()
           "Decal Left Cam",
           "Decal Left Cam",
           "Decal Left Cam"
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field21->widgetHint=BaseField::CHECK_BOX;
+    field21->precision=-1;
+    fields().push_back(field21);
+    /*  */ 
+    IntField* field22 = new IntField
         (
           Draw3dCameraParameters::DECAL_LEFT_ALPHA_ID,
           offsetof(Draw3dCameraParameters, mDecalLeftAlpha),
@@ -340,10 +373,11 @@ int Draw3dCameraParameters::staticInit()
           true,
          0,
          255
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field22->precision=-1;
+    fields().push_back(field22);
+    /*  */ 
+    BoolField* field23 = new BoolField
         (
           Draw3dCameraParameters::DECAL_RIGHT_CAM_ID,
           offsetof(Draw3dCameraParameters, mDecalRightCam),
@@ -351,10 +385,12 @@ int Draw3dCameraParameters::staticInit()
           "Decal Right Cam",
           "Decal Right Cam",
           "Decal Right Cam"
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field23->widgetHint=BaseField::CHECK_BOX;
+    field23->precision=-1;
+    fields().push_back(field23);
+    /*  */ 
+    IntField* field24 = new IntField
         (
           Draw3dCameraParameters::DECAL_RIGHT_ALPHA_ID,
           offsetof(Draw3dCameraParameters, mDecalRightAlpha),
@@ -365,8 +401,10 @@ int Draw3dCameraParameters::staticInit()
           true,
          0,
          255
-        )
-    );
+        );
+    field24->precision=-1;
+    fields().push_back(field24);
+    /*  */ 
    return 0;
 }
 

@@ -6,9 +6,11 @@
 #include <QDoubleSpinBox>
 #include <QTextEdit>
 
+
 #include "reflection.h"
 #include "reflectionWidget.h"
 #include "vectorWidget.h"
+#include "exponentialSlider.h"
 
 using namespace corecvs;
 
@@ -59,24 +61,37 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
         case BaseField::TYPE_DOUBLE:
         {
             const DoubleField *dField = static_cast<const DoubleField *>(field);
-            QDoubleSpinBox *spinBox = new QDoubleSpinBox(this);
 
-            if (dField->hasAdditionalValues)
+            if (dField->widgetHint != BaseField::SLIDER)
             {
-                spinBox->setMinimum(dField->min);
-                spinBox->setMaximum(dField->max);
-                spinBox->setSingleStep(dField->step);
-                // spinBox->setDecimals(); /*Not supported so far*/
-            }
-            spinBox->setDecimals(dField->precision);
-            if (dField->suffixHint != NULL)
-                spinBox->setSuffix(dField->suffixHint);
-            if (dField->prefixHint != NULL)
-                spinBox->setPrefix(dField->prefixHint);
+                QDoubleSpinBox *spinBox = new QDoubleSpinBox(this);
 
-            spinBox->setValue(dField->defaultValue);
-            layout->addWidget(spinBox, i, 1, 1, 1);
-            connect(spinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+                if (dField->hasAdditionalValues)
+                {
+                    spinBox->setMinimum(dField->min);
+                    spinBox->setMaximum(dField->max);
+                    spinBox->setSingleStep(dField->step);
+                    // spinBox->setDecimals(); /*Not supported so far*/
+                }
+                spinBox->setDecimals(dField->precision);
+                if (dField->suffixHint != NULL)
+                    spinBox->setSuffix(dField->suffixHint);
+                if (dField->prefixHint != NULL)
+                    spinBox->setPrefix(dField->prefixHint);
+
+                spinBox->setValue(dField->defaultValue);
+                layout->addWidget(spinBox, i, 1, 1, 1);
+                connect(spinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+            } else {
+                 ExponentialSlider *expBox = new ExponentialSlider(this);
+                 if (dField->hasAdditionalValues)
+                 {
+                     expBox->setMaxZoom(dField->max);
+                 }
+                 expBox->setValue(dField->defaultValue);
+                 layout->addWidget(expBox, i, 1, 1, 1);
+                 connect(expBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+            }
             break;
         }
         case BaseField::TYPE_STRING:
@@ -108,7 +123,14 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
             for(size_t enumCount = 0; enumCount < enumOptions->options.size(); enumCount++)
             {
                 const EnumOption *option = enumOptions->options[enumCount];
-                comboBox->addItem(option->name.name);
+                if (option->presentationHint != NULL && strlen(option->presentationHint) != 0)
+                {
+                    const QString iconName = QString(option->presentationHint).split("@")[0];
+                    comboBox->addItem(QIcon(iconName), option->name.name);
+
+                } else {
+                    comboBox->addItem(option->name.name);
+                }
             }
             comboBox->setCurrentIndex(eField->defaultValue);
             layout->addWidget(comboBox, i, 1, 1, 1);

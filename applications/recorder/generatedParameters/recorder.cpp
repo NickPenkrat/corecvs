@@ -37,8 +37,7 @@ int Recorder::staticInit()
     );
      
 
-    fields().push_back(
-        new StringField
+    StringField* field0 = new StringField
         (
           Recorder::PATH_ID,
           offsetof(Recorder, mPath),
@@ -46,10 +45,11 @@ int Recorder::staticInit()
           "path",
           "path",
           "path"
-        )
-    );
-    fields().push_back(
-        new StringField
+        );
+    field0->precision=-1;
+    fields().push_back(field0);
+    /*  */ 
+    StringField* field1 = new StringField
         (
           Recorder::FILETEMPLATE_ID,
           offsetof(Recorder, mFileTemplate),
@@ -57,8 +57,10 @@ int Recorder::staticInit()
           "fileTemplate",
           "fileTemplate",
           "fileTemplate"
-        )
-    );
+        );
+    field1->precision=-1;
+    fields().push_back(field1);
+    /*  */ 
    return 0;
 }
 

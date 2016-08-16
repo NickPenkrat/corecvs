@@ -37,8 +37,7 @@ int BackgroundFilterParameters::staticInit()
     );
      
 
-    fields().push_back(
-        new IntField
+    IntField* field0 = new IntField
         (
           BackgroundFilterParameters::THRESHOLD_ID,
           offsetof(BackgroundFilterParameters, mThreshold),
@@ -49,8 +48,10 @@ int BackgroundFilterParameters::staticInit()
           true,
          0,
          10000
-        )
-    );
+        );
+    field0->precision=-1;
+    fields().push_back(field0);
+    /*  */ 
    return 0;
 }
 

@@ -37,8 +37,7 @@ int BitSelectorParameters::staticInit()
     );
      
 
-    fields().push_back(
-        new IntField
+    IntField* field0 = new IntField
         (
           BitSelectorParameters::SHIFT_ID,
           offsetof(BitSelectorParameters, mShift),
@@ -49,10 +48,11 @@ int BitSelectorParameters::staticInit()
           true,
          -16,
          16
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field0->precision=-1;
+    fields().push_back(field0);
+    /*  */ 
+    BoolField* field1 = new BoolField
         (
           BitSelectorParameters::BIT_0_ID,
           offsetof(BitSelectorParameters, mBit0),
@@ -60,10 +60,12 @@ int BitSelectorParameters::staticInit()
           "bit 0",
           "bit 0",
           "bit 0"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field1->widgetHint=BaseField::CHECK_BOX;
+    field1->precision=-1;
+    fields().push_back(field1);
+    /*  */ 
+    BoolField* field2 = new BoolField
         (
           BitSelectorParameters::BIT_1_ID,
           offsetof(BitSelectorParameters, mBit1),
@@ -71,10 +73,12 @@ int BitSelectorParameters::staticInit()
           "bit 1",
           "bit 1",
           "bit 1"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field2->widgetHint=BaseField::CHECK_BOX;
+    field2->precision=-1;
+    fields().push_back(field2);
+    /*  */ 
+    BoolField* field3 = new BoolField
         (
           BitSelectorParameters::BIT_2_ID,
           offsetof(BitSelectorParameters, mBit2),
@@ -82,10 +86,12 @@ int BitSelectorParameters::staticInit()
           "bit 2",
           "bit 2",
           "bit 2"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field3->widgetHint=BaseField::CHECK_BOX;
+    field3->precision=-1;
+    fields().push_back(field3);
+    /*  */ 
+    BoolField* field4 = new BoolField
         (
           BitSelectorParameters::BIT_3_ID,
           offsetof(BitSelectorParameters, mBit3),
@@ -93,10 +99,12 @@ int BitSelectorParameters::staticInit()
           "bit 3",
           "bit 3",
           "bit 3"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field4->widgetHint=BaseField::CHECK_BOX;
+    field4->precision=-1;
+    fields().push_back(field4);
+    /*  */ 
+    BoolField* field5 = new BoolField
         (
           BitSelectorParameters::BIT_4_ID,
           offsetof(BitSelectorParameters, mBit4),
@@ -104,10 +112,12 @@ int BitSelectorParameters::staticInit()
           "bit 4",
           "bit 4",
           "bit 4"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field5->widgetHint=BaseField::CHECK_BOX;
+    field5->precision=-1;
+    fields().push_back(field5);
+    /*  */ 
+    BoolField* field6 = new BoolField
         (
           BitSelectorParameters::BIT_5_ID,
           offsetof(BitSelectorParameters, mBit5),
@@ -115,10 +125,12 @@ int BitSelectorParameters::staticInit()
           "bit 5",
           "bit 5",
           "bit 5"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field6->widgetHint=BaseField::CHECK_BOX;
+    field6->precision=-1;
+    fields().push_back(field6);
+    /*  */ 
+    BoolField* field7 = new BoolField
         (
           BitSelectorParameters::BIT_6_ID,
           offsetof(BitSelectorParameters, mBit6),
@@ -126,10 +138,12 @@ int BitSelectorParameters::staticInit()
           "bit 6",
           "bit 6",
           "bit 6"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field7->widgetHint=BaseField::CHECK_BOX;
+    field7->precision=-1;
+    fields().push_back(field7);
+    /*  */ 
+    BoolField* field8 = new BoolField
         (
           BitSelectorParameters::BIT_7_ID,
           offsetof(BitSelectorParameters, mBit7),
@@ -137,10 +151,12 @@ int BitSelectorParameters::staticInit()
           "bit 7",
           "bit 7",
           "bit 7"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field8->widgetHint=BaseField::CHECK_BOX;
+    field8->precision=-1;
+    fields().push_back(field8);
+    /*  */ 
+    BoolField* field9 = new BoolField
         (
           BitSelectorParameters::BIT_8_ID,
           offsetof(BitSelectorParameters, mBit8),
@@ -148,10 +164,12 @@ int BitSelectorParameters::staticInit()
           "bit 8",
           "bit 8",
           "bit 8"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field9->widgetHint=BaseField::CHECK_BOX;
+    field9->precision=-1;
+    fields().push_back(field9);
+    /*  */ 
+    BoolField* field10 = new BoolField
         (
           BitSelectorParameters::BIT_9_ID,
           offsetof(BitSelectorParameters, mBit9),
@@ -159,10 +177,12 @@ int BitSelectorParameters::staticInit()
           "bit 9",
           "bit 9",
           "bit 9"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field10->widgetHint=BaseField::CHECK_BOX;
+    field10->precision=-1;
+    fields().push_back(field10);
+    /*  */ 
+    BoolField* field11 = new BoolField
         (
           BitSelectorParameters::BIT_10_ID,
           offsetof(BitSelectorParameters, mBit10),
@@ -170,10 +190,12 @@ int BitSelectorParameters::staticInit()
           "bit 10",
           "bit 10",
           "bit 10"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field11->widgetHint=BaseField::CHECK_BOX;
+    field11->precision=-1;
+    fields().push_back(field11);
+    /*  */ 
+    BoolField* field12 = new BoolField
         (
           BitSelectorParameters::BIT_11_ID,
           offsetof(BitSelectorParameters, mBit11),
@@ -181,10 +203,12 @@ int BitSelectorParameters::staticInit()
           "bit 11",
           "bit 11",
           "bit 11"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field12->widgetHint=BaseField::CHECK_BOX;
+    field12->precision=-1;
+    fields().push_back(field12);
+    /*  */ 
+    BoolField* field13 = new BoolField
         (
           BitSelectorParameters::BIT_12_ID,
           offsetof(BitSelectorParameters, mBit12),
@@ -192,10 +216,12 @@ int BitSelectorParameters::staticInit()
           "bit 12",
           "bit 12",
           "bit 12"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field13->widgetHint=BaseField::CHECK_BOX;
+    field13->precision=-1;
+    fields().push_back(field13);
+    /*  */ 
+    BoolField* field14 = new BoolField
         (
           BitSelectorParameters::BIT_13_ID,
           offsetof(BitSelectorParameters, mBit13),
@@ -203,10 +229,12 @@ int BitSelectorParameters::staticInit()
           "bit 13",
           "bit 13",
           "bit 13"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field14->widgetHint=BaseField::CHECK_BOX;
+    field14->precision=-1;
+    fields().push_back(field14);
+    /*  */ 
+    BoolField* field15 = new BoolField
         (
           BitSelectorParameters::BIT_14_ID,
           offsetof(BitSelectorParameters, mBit14),
@@ -214,10 +242,12 @@ int BitSelectorParameters::staticInit()
           "bit 14",
           "bit 14",
           "bit 14"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field15->widgetHint=BaseField::CHECK_BOX;
+    field15->precision=-1;
+    fields().push_back(field15);
+    /*  */ 
+    BoolField* field16 = new BoolField
         (
           BitSelectorParameters::BIT_15_ID,
           offsetof(BitSelectorParameters, mBit15),
@@ -225,8 +255,11 @@ int BitSelectorParameters::staticInit()
           "bit 15",
           "bit 15",
           "bit 15"
-        )
-    );
+        );
+    field16->widgetHint=BaseField::CHECK_BOX;
+    field16->precision=-1;
+    fields().push_back(field16);
+    /*  */ 
    return 0;
 }
 

@@ -249,15 +249,20 @@ QString BaseGenerator::getWidgetSuffixForType(BaseField::FieldType type)
             return "SpinBox";
         case BaseField::TYPE_DOUBLE:
         {
-            if (field->widgetHint == QString("SpinBox"))
+            if (field->widgetHint == BaseField::SPIN_BOX || field->widgetHint == BaseField::DEFAULT_HINT)
                 return "SpinBox";
-            return "Slider";
+            if (field->widgetHint == BaseField::SLIDER)
+                return "Slider";
+            return "UNSUPPORTED";
         }
         case BaseField::TYPE_BOOL:
         {
-            if (field->widgetHint == QString("CheckBox"))
+            if (field->widgetHint == BaseField::CHECK_BOX || field->widgetHint == BaseField::DEFAULT_HINT)
                 return "CheckBox";
-            return "Button";
+            if (field->widgetHint == BaseField::RADIO_BUTTON)
+                return "Button";
+            return "UNSUPPORTED";
+
         }
         case BaseField::TYPE_ENUM:
             return "ComboBox";
@@ -278,15 +283,19 @@ QString BaseGenerator::getUiWidgetForType(BaseField::FieldType type)
             return "QSpinBox";
         case BaseField::TYPE_DOUBLE:
         {
-            if (field->widgetHint == QString("SpinBox"))
+            if (field->widgetHint == BaseField::SLIDER)
+                return "ExponentialSlider";
+            if (field->widgetHint == BaseField::SPIN_BOX || field->widgetHint == BaseField::DEFAULT_HINT)
                 return "QDoubleSpinBox";
-            return "ExponentialSlider";
+            return "UNSUPPORTED";
         }
         case BaseField::TYPE_BOOL:
         {
-            if (field->widgetHint == QString("CheckBox"))
+            if (field->widgetHint == BaseField::RADIO_BUTTON)
+                return "QRadioButton";
+            if (field->widgetHint == BaseField::CHECK_BOX || field->widgetHint == BaseField::DEFAULT_HINT)
                 return "QCheckBox";
-            return "QRadioButton";
+            return "UNSUPPORTED";
         }
         case BaseField::TYPE_ENUM:
             return "QComboBox";
@@ -318,15 +327,19 @@ QString BaseGenerator::getSignalForType(BaseField::FieldType type)
             return "valueChanged(double)";
         case BaseField::TYPE_BOOL:
         {
-            if (field->widgetHint == QString("CheckBox"))
+            if (field->widgetHint == BaseField::CHECK_BOX || field->widgetHint == BaseField::DEFAULT_HINT)
                 return "stateChanged(int)";
-            return "clicked(bool)";
+            if (field->widgetHint == BaseField::RADIO_BUTTON)
+                return "clicked(bool)";
+            return "UNSUPPORTED";
         }
         case BaseField::TYPE_ENUM:
         {
-            if (field->widgetHint == QString("comboBox"))
+            if (field->widgetHint == BaseField::COMBO_BOX || field->widgetHint == BaseField::DEFAULT_HINT)
                 return "currentIndexChanged(int)";
-            return "currentChanged(int)";
+            if (field->widgetHint == BaseField::TAB_WIDGET)
+                return "currentChanged(int)";
+            return "UNSUPPORTED";
         }
         case BaseField::TYPE_STRING:
             return "textChanged(QString)";

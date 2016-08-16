@@ -37,8 +37,7 @@ int HeadSearchParameters::staticInit()
     );
      
 
-    fields().push_back(
-        new DoubleField
+    DoubleField* field0 = new DoubleField
         (
           HeadSearchParameters::THRESHOLD_DISTANCE_ID,
           offsetof(HeadSearchParameters, mThresholdDistance),
@@ -49,10 +48,12 @@ int HeadSearchParameters::staticInit()
           true,
          0,
          99999
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field0->widgetHint=BaseField::SPIN_BOX;
+    field0->precision=2;
+    fields().push_back(field0);
+    /*  */ 
+    DoubleField* field1 = new DoubleField
         (
           HeadSearchParameters::CLUSTER_DEPTH_ID,
           offsetof(HeadSearchParameters, mClusterDepth),
@@ -63,10 +64,12 @@ int HeadSearchParameters::staticInit()
           true,
          0,
          99999
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field1->widgetHint=BaseField::SPIN_BOX;
+    field1->precision=2;
+    fields().push_back(field1);
+    /*  */ 
+    IntField* field2 = new IntField
         (
           HeadSearchParameters::CLUSTER_MIN_SIZE_ID,
           offsetof(HeadSearchParameters, mClusterMinSize),
@@ -77,10 +80,11 @@ int HeadSearchParameters::staticInit()
           true,
          0,
          99999
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field2->precision=-1;
+    fields().push_back(field2);
+    /*  */ 
+    DoubleField* field3 = new DoubleField
         (
           HeadSearchParameters::HEAD_AREA_RADIUS_ID,
           offsetof(HeadSearchParameters, mHeadAreaRadius),
@@ -91,10 +95,12 @@ int HeadSearchParameters::staticInit()
           true,
          0,
          99999
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field3->widgetHint=BaseField::SPIN_BOX;
+    field3->precision=2;
+    fields().push_back(field3);
+    /*  */ 
+    IntField* field4 = new IntField
         (
           HeadSearchParameters::HEAD_NUMBER_ID,
           offsetof(HeadSearchParameters, mHeadNumber),
@@ -105,8 +111,10 @@ int HeadSearchParameters::staticInit()
           true,
          0,
          100
-        )
-    );
+        );
+    field4->precision=-1;
+    fields().push_back(field4);
+    /*  */ 
    return 0;
 }
 

@@ -98,6 +98,12 @@
        <property name="value">
         <double>0.9</double>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
+       </property>
      </widget>
     </item>
     <item row="4" column="0">

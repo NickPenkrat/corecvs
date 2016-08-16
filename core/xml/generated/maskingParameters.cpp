@@ -37,8 +37,7 @@ int MaskingParameters::staticInit()
     );
      
 
-    fields().push_back(
-        new BoolField
+    BoolField* field0 = new BoolField
         (
           MaskingParameters::INVERT_ID,
           offsetof(MaskingParameters, mInvert),
@@ -46,8 +45,11 @@ int MaskingParameters::staticInit()
           "Invert",
           "Invert",
           "Invert"
-        )
-    );
+        );
+    field0->widgetHint=BaseField::CHECK_BOX;
+    field0->precision=-1;
+    fields().push_back(field0);
+    /*  */ 
    return 0;
 }
 

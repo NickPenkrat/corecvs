@@ -37,8 +37,7 @@ int CheckerboardDetectionParameters::staticInit()
     );
      
 
-    fields().push_back(
-        new BoolField
+    BoolField* field0 = new BoolField
         (
           CheckerboardDetectionParameters::ESTIMATE_UNDISTORTED_FROM_DISTORTED_ID,
           offsetof(CheckerboardDetectionParameters, mEstimateUndistortedFromDistorted),
@@ -46,10 +45,12 @@ int CheckerboardDetectionParameters::staticInit()
           "Estimate undistorted from distorted",
           "Estimate undistorted from distorted",
           "Estimate undistorted from distorted"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field0->widgetHint=BaseField::CHECK_BOX;
+    field0->precision=-1;
+    fields().push_back(field0);
+    /*  */ 
+    BoolField* field1 = new BoolField
         (
           CheckerboardDetectionParameters::USE_UNDISTORTION_ID,
           offsetof(CheckerboardDetectionParameters, mUseUndistortion),
@@ -57,10 +58,12 @@ int CheckerboardDetectionParameters::staticInit()
           "Use Undistortion",
           "Use Undistortion",
           "Use Undistortion"
-        )
-    );
-    fields().push_back(
-        new EnumField
+        );
+    field1->widgetHint=BaseField::CHECK_BOX;
+    field1->precision=-1;
+    fields().push_back(field1);
+    /*  */ 
+    EnumField* field2 = new EnumField
         (
           CheckerboardDetectionParameters::ALGORITHM_ID,
           offsetof(CheckerboardDetectionParameters, mAlgorithm),
@@ -72,10 +75,12 @@ int CheckerboardDetectionParameters::staticInit()
           , new EnumOption(0,"Homebrew Detector")
           , new EnumOption(1,"OpenCV Detector")
           )
-        )
-    );
-    fields().push_back(
-        new EnumField
+        );
+    field2->widgetHint=BaseField::COMBO_BOX;
+    field2->precision=-1;
+    fields().push_back(field2);
+    /*  */ 
+    EnumField* field3 = new EnumField
         (
           CheckerboardDetectionParameters::CHANNEL_ID,
           offsetof(CheckerboardDetectionParameters, mChannel),
@@ -83,20 +88,29 @@ int CheckerboardDetectionParameters::staticInit()
           "Channel",
           "Channel",
           "Channel",
-          new EnumReflection(8
+          new EnumReflection(15
           , new EnumOption(0,"R")
           , new EnumOption(1,"G")
           , new EnumOption(2,"B")
-          , new EnumOption(3,"Gray")
-          , new EnumOption(4,"Luma")
-          , new EnumOption(5,"Hue")
-          , new EnumOption(6,"Saturation")
-          , new EnumOption(7,"Value")
+          , new EnumOption(3,"Alpha")
+          , new EnumOption(4,"Y")
+          , new EnumOption(5,"Cr")
+          , new EnumOption(6,"Cb")
+          , new EnumOption(7,"U")
+          , new EnumOption(8,"V")
+          , new EnumOption(9,"Chroma")
+          , new EnumOption(10,"Gray")
+          , new EnumOption(11,"Luma")
+          , new EnumOption(12,"Hue")
+          , new EnumOption(13,"Saturation")
+          , new EnumOption(14,"Value")
           )
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field3->widgetHint=BaseField::COMBO_BOX;
+    field3->precision=-1;
+    fields().push_back(field3);
+    /*  */ 
+    DoubleField* field4 = new DoubleField
         (
           CheckerboardDetectionParameters::CELLSIZEHOR_ID,
           offsetof(CheckerboardDetectionParameters, mCellSizeHor),
@@ -107,10 +121,13 @@ int CheckerboardDetectionParameters::staticInit()
           true,
          0,
          1
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field4->widgetHint=BaseField::SPIN_BOX;
+    field4->suffixHint="m";
+    field4->precision=3;
+    fields().push_back(field4);
+    /*  */ 
+    DoubleField* field5 = new DoubleField
         (
           CheckerboardDetectionParameters::CELLSIZEVERT_ID,
           offsetof(CheckerboardDetectionParameters, mCellSizeVert),
@@ -121,10 +138,13 @@ int CheckerboardDetectionParameters::staticInit()
           true,
          0,
          1
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field5->widgetHint=BaseField::SPIN_BOX;
+    field5->suffixHint="m";
+    field5->precision=3;
+    fields().push_back(field5);
+    /*  */ 
+    BoolField* field6 = new BoolField
         (
           CheckerboardDetectionParameters::CLEANEXISTING_ID,
           offsetof(CheckerboardDetectionParameters, mCleanExisting),
@@ -132,10 +152,12 @@ int CheckerboardDetectionParameters::staticInit()
           "cleanExisting",
           "cleanExisting",
           "cleanExisting"
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field6->widgetHint=BaseField::CHECK_BOX;
+    field6->precision=-1;
+    fields().push_back(field6);
+    /*  */ 
+    IntField* field7 = new IntField
         (
           CheckerboardDetectionParameters::PRECISEDIAMETER_ID,
           offsetof(CheckerboardDetectionParameters, mPreciseDiameter),
@@ -146,10 +168,11 @@ int CheckerboardDetectionParameters::staticInit()
           true,
          0,
          999999
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field7->precision=-1;
+    fields().push_back(field7);
+    /*  */ 
+    IntField* field8 = new IntField
         (
           CheckerboardDetectionParameters::ITERATIONCOUNT_ID,
           offsetof(CheckerboardDetectionParameters, mIterationCount),
@@ -160,10 +183,11 @@ int CheckerboardDetectionParameters::staticInit()
           true,
          1,
          999999
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field8->precision=-1;
+    fields().push_back(field8);
+    /*  */ 
+    DoubleField* field9 = new DoubleField
         (
           CheckerboardDetectionParameters::MINACCURACY_ID,
           offsetof(CheckerboardDetectionParameters, mMinAccuracy),
@@ -174,10 +198,13 @@ int CheckerboardDetectionParameters::staticInit()
           true,
          0,
          999999
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field9->widgetHint=BaseField::SPIN_BOX;
+    field9->suffixHint="px";
+    field9->precision=4;
+    fields().push_back(field9);
+    /*  */ 
+    BoolField* field10 = new BoolField
         (
           CheckerboardDetectionParameters::PARTIALBOARD_ID,
           offsetof(CheckerboardDetectionParameters, mPartialBoard),
@@ -185,10 +212,12 @@ int CheckerboardDetectionParameters::staticInit()
           "partialBoard",
           "partialBoard",
           "partialBoard"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field10->widgetHint=BaseField::CHECK_BOX;
+    field10->precision=-1;
+    fields().push_back(field10);
+    /*  */ 
+    BoolField* field11 = new BoolField
         (
           CheckerboardDetectionParameters::FASTBOARDSPEEDUP_ID,
           offsetof(CheckerboardDetectionParameters, mFastBoardSpeedup),
@@ -196,10 +225,12 @@ int CheckerboardDetectionParameters::staticInit()
           "fastBoardSpeedup",
           "fastBoardSpeedup",
           "fastBoardSpeedup"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field11->widgetHint=BaseField::CHECK_BOX;
+    field11->precision=-1;
+    fields().push_back(field11);
+    /*  */ 
+    BoolField* field12 = new BoolField
         (
           CheckerboardDetectionParameters::DRAW_SGFS_ON_BOARDS_ID,
           offsetof(CheckerboardDetectionParameters, mDrawSGFsOnBoards),
@@ -207,10 +238,12 @@ int CheckerboardDetectionParameters::staticInit()
           "Draw SGFs on boards",
           "Draw SGFs on boards",
           "Draw SGFs on boards"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field12->widgetHint=BaseField::CHECK_BOX;
+    field12->precision=-1;
+    fields().push_back(field12);
+    /*  */ 
+    BoolField* field13 = new BoolField
         (
           CheckerboardDetectionParameters::SKIP_UNDISTORTED_WITH_NO_DISTORTED_BOARD_ID,
           offsetof(CheckerboardDetectionParameters, mSkipUndistortedWithNoDistortedBoard),
@@ -218,8 +251,11 @@ int CheckerboardDetectionParameters::staticInit()
           "Skip undistorted with no distorted board",
           "Skip undistorted with no distorted board",
           "Skip undistorted with no distorted board"
-        )
-    );
+        );
+    field13->widgetHint=BaseField::CHECK_BOX;
+    field13->precision=-1;
+    fields().push_back(field13);
+    /*  */ 
    return 0;
 }
 

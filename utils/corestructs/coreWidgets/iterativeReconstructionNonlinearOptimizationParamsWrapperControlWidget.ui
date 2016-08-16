@@ -95,6 +95,12 @@
        <property name="value">
         <number>80</number>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
+       </property>
      </widget>
     </item>
     <item row="3" column="0">
@@ -121,6 +127,12 @@
        <property name="value">
         <number>400</number>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
+       </property>
      </widget>
     </item>
     <item row="4" column="0">
@@ -146,6 +158,12 @@
        </property>
        <property name="value">
         <number>0</number>
+       </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
        </property>
      </widget>
     </item>

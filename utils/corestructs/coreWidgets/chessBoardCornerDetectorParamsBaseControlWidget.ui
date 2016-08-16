@@ -78,6 +78,9 @@
        <property name="value">
         <double>5</double>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
        <property name="suffix">
         <string>%</string>
        </property>
@@ -94,6 +97,9 @@
      <widget class="QDoubleSpinBox" name="sectorSizeDegSpinBox">
        <property name="toolTip">
          <string>Sector size in deg</string>
+       </property>
+       <property name="prefix">
+        <string></string>
        </property>
        <property name="suffix">
         <string>deg</string>
@@ -124,6 +130,12 @@
        <property name="value">
         <number>50</number>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
+       </property>
      </widget>
     </item>
     <item row="5" column="0">
@@ -137,6 +149,9 @@
      <widget class="QDoubleSpinBox" name="minAngleDegSpinBox">
        <property name="toolTip">
          <string>Minimal angle between edges in deg</string>
+       </property>
+       <property name="prefix">
+        <string></string>
        </property>
        <property name="suffix">
         <string>deg</string>
@@ -167,6 +182,12 @@
        <property name="value">
         <number>25</number>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
+       </property>
      </widget>
     </item>
     <item row="7" column="0">
@@ -180,6 +201,12 @@
      <widget class="QDoubleSpinBox" name="gradThresholdSpinBox">
        <property name="toolTip">
          <string>Gradient magnitude threshold</string>
+       </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
        </property>
      </widget>
     </item>
@@ -195,6 +222,12 @@
        <property name="toolTip">
          <string>Gradient orientation inlier threshold</string>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
+       </property>
      </widget>
     </item>
     <item row="9" column="0">
@@ -208,6 +241,12 @@
      <widget class="QDoubleSpinBox" name="inlierDistanceThresholdSpinBox">
        <property name="toolTip">
          <string>Threshold for distance to edge</string>
+       </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
        </property>
      </widget>
     </item>
@@ -223,6 +262,12 @@
        <property name="toolTip">
          <string>Threshold for maximal corner-position update</string>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
+       </property>
      </widget>
     </item>
     <item row="11" column="0">
@@ -236,6 +281,12 @@
      <widget class="QDoubleSpinBox" name="scoreThresholdSpinBox">
        <property name="toolTip">
          <string>Threshold for final score</string>
+       </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
        </property>
      </widget>
     </item>
@@ -263,6 +314,12 @@
        <property name="value">
         <number>3</number>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
+       </property>
      </widget>
     </item>
     <item row="13" column="0">
@@ -276,6 +333,12 @@
      <widget class="QDoubleSpinBox" name="meanshiftBandwidthSpinBox">
        <property name="toolTip">
          <string>Meanshift smoothing stdev</string>
+       </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
        </property>
      </widget>
     </item>
@@ -302,6 +365,12 @@
        </property>
        <property name="value">
         <number>20</number>
+       </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
        </property>
      </widget>
     </item>
@@ -331,6 +400,12 @@
        </property>
        <property name="value">
         <double>0.025</double>
+       </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
        </property>
      </widget>
     </item>

@@ -37,8 +37,7 @@ int OperationParameters::staticInit()
     );
      
 
-    fields().push_back(
-        new EnumField
+    EnumField* field0 = new EnumField
         (
           OperationParameters::OPERATION_ID,
           offsetof(OperationParameters, mOperation),
@@ -54,8 +53,11 @@ int OperationParameters::staticInit()
           , new EnumOption(4,"Min")
           , new EnumOption(5,"Max")
           )
-        )
-    );
+        );
+    field0->widgetHint=BaseField::COMBO_BOX;
+    field0->precision=-1;
+    fields().push_back(field0);
+    /*  */ 
    return 0;
 }
 

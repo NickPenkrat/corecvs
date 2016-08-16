@@ -689,8 +689,14 @@ void PDOGenerator::generatePDOCpp()
         for(int enumCount = 0; enumCount < enumOptions->options.size(); enumCount++)
         {
             const EnumOption *option = enumOptions->options[enumCount];
+            if(option->presentationHint == NULL)
+            {
             result+=
     "          , new EnumOption("+QString::number(option->id)+",\""+option->name.name+"\")\n";
+            } else {
+                result+=
+    "          , new EnumOption("+QString::number(option->id)+",\""+option->name.name+"\",\""+option->presentationHint+"\")\n";
+            }
         }
         result+=
     "          )\n";
@@ -699,7 +705,7 @@ void PDOGenerator::generatePDOCpp()
                      ",\n"
     "           NULL\n";
     } else if (type == BaseField::TYPE_POINTER) {
-    result+=
+        result+=
                 ",\n"
     "          \""+QString(static_cast<const PointerField *>(field)->targetClass)+"\"\n";
     } else {
@@ -708,9 +714,9 @@ void PDOGenerator::generatePDOCpp()
 
     result+=
     "        );\n";
-    if (field->widgetHint != NULL && strlen(field->widgetHint) != 0)
+    if (field->widgetHint != BaseField::DEFAULT_HINT)
        result+=
-    "    "+fieldPlaceholder+"->widgetHint=\""+field->widgetHint+"\";\n";
+    "    "+fieldPlaceholder+"->widgetHint=BaseField::"+BaseField::getString(field->widgetHint)+";\n";
     if (field->prefixHint != NULL && strlen(field->prefixHint) != 0)
        result+=
     "    "+fieldPlaceholder+"->prefixHint=\""+field->prefixHint+"\";\n";
@@ -725,7 +731,12 @@ void PDOGenerator::generatePDOCpp()
     result+=
     "    fields().push_back("+fieldPlaceholder+");\n"
     "    /*  */ \n";
-    }
+    }    
+
+    result+=
+    "    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();\n"
+    "    directory[std::string(\""+QString(clazz->name.name)+"\")]= &reflection;\n";
+
 
     result+=
     "   return 0;\n"
@@ -803,7 +814,7 @@ void PDOGenerator::generateControlWidgetCpp()
         if (type == BaseField::TYPE_DOUBLE)
         {
             const DoubleFieldGen *dfield = static_cast<const DoubleFieldGen *>(field);
-            if (dfield->widgetHint == QString("exponentialSlider") && dfield->max > 0)
+            if (dfield->widgetHint == BaseField::SLIDER && dfield->max > 0)
             {
                 result+=
                 "mUi->"+boxName+"->setMaxZoom("+QString::number(dfield->max)+");\n"

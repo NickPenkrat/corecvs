@@ -37,8 +37,7 @@ int BinarizeParameters::staticInit()
     );
      
 
-    fields().push_back(
-        new IntField
+    IntField* field0 = new IntField
         (
           BinarizeParameters::THRESHOLD_ID,
           offsetof(BinarizeParameters, mThreshold),
@@ -49,8 +48,10 @@ int BinarizeParameters::staticInit()
           true,
          0,
          4096
-        )
-    );
+        );
+    field0->precision=-1;
+    fields().push_back(field0);
+    /*  */ 
    return 0;
 }
 

@@ -37,8 +37,7 @@ int MakePreciseParameters::staticInit()
     );
      
 
-    fields().push_back(
-        new BoolField
+    BoolField* field0 = new BoolField
         (
           MakePreciseParameters::SHOULD_MAKE_PRECISE_ID,
           offsetof(MakePreciseParameters, mShouldMakePrecise),
@@ -46,10 +45,12 @@ int MakePreciseParameters::staticInit()
           "Should Make Precise",
           "Should Make Precise",
           "Should Make Precise"
-        )
-    );
-    fields().push_back(
-        new EnumField
+        );
+    field0->widgetHint=BaseField::CHECK_BOX;
+    field0->precision=-1;
+    fields().push_back(field0);
+    /*  */ 
+    EnumField* field1 = new EnumField
         (
           MakePreciseParameters::ALGORITHM_ID,
           offsetof(MakePreciseParameters, mAlgorithm),
@@ -60,10 +61,12 @@ int MakePreciseParameters::staticInit()
           new EnumReflection(1
           , new EnumOption(0,"KLT")
           )
-        )
-    );
-    fields().push_back(
-        new EnumField
+        );
+    field1->widgetHint=BaseField::COMBO_BOX;
+    field1->precision=-1;
+    fields().push_back(field1);
+    /*  */ 
+    EnumField* field2 = new EnumField
         (
           MakePreciseParameters::INTERPOLATION_ID,
           offsetof(MakePreciseParameters, mInterpolation),
@@ -76,10 +79,12 @@ int MakePreciseParameters::staticInit()
           , new EnumOption(1,"Spline")
           , new EnumOption(2,"Polynom")
           )
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field2->widgetHint=BaseField::COMBO_BOX;
+    field2->precision=-1;
+    fields().push_back(field2);
+    /*  */ 
+    IntField* field3 = new IntField
         (
           MakePreciseParameters::KLT_ITERATIONS_ID,
           offsetof(MakePreciseParameters, mKLTIterations),
@@ -90,10 +95,11 @@ int MakePreciseParameters::staticInit()
           true,
          1,
          100
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field3->precision=-1;
+    fields().push_back(field3);
+    /*  */ 
+    IntField* field4 = new IntField
         (
           MakePreciseParameters::KLT_RADIUS_H_ID,
           offsetof(MakePreciseParameters, mKLTRadiusH),
@@ -104,10 +110,11 @@ int MakePreciseParameters::staticInit()
           true,
          1,
          100
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field4->precision=-1;
+    fields().push_back(field4);
+    /*  */ 
+    IntField* field5 = new IntField
         (
           MakePreciseParameters::KLT_RADIUS_W_ID,
           offsetof(MakePreciseParameters, mKLTRadiusW),
@@ -118,10 +125,11 @@ int MakePreciseParameters::staticInit()
           true,
          1,
          100
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field5->precision=-1;
+    fields().push_back(field5);
+    /*  */ 
+    DoubleField* field6 = new DoubleField
         (
           MakePreciseParameters::KLT_THRESHOLD_ID,
           offsetof(MakePreciseParameters, mKLTThreshold),
@@ -132,8 +140,11 @@ int MakePreciseParameters::staticInit()
           true,
          1,
          100
-        )
-    );
+        );
+    field6->widgetHint=BaseField::SPIN_BOX;
+    field6->precision=2;
+    fields().push_back(field6);
+    /*  */ 
    return 0;
 }
 

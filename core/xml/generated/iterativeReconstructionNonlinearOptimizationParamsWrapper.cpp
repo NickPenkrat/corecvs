@@ -37,8 +37,7 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
     );
      
 
-    fields().push_back(
-        new CompositeField
+    CompositeField* field0 = new CompositeField
         (
           IterativeReconstructionNonlinearOptimizationParamsWrapper::OPTIMIZATIONPARAMS_ID,
           offsetof(IterativeReconstructionNonlinearOptimizationParamsWrapper, mOptimizationParams),
@@ -47,10 +46,11 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
           "optimizationParams",
           "optimizationParams",
            NULL
-        )
-    );
-    fields().push_back(
-        new EnumField
+        );
+    field0->precision=-1;
+    fields().push_back(field0);
+    /*  */ 
+    EnumField* field1 = new EnumField
         (
           IterativeReconstructionNonlinearOptimizationParamsWrapper::ERRORTYPE_ID,
           offsetof(IterativeReconstructionNonlinearOptimizationParamsWrapper, mErrorType),
@@ -64,10 +64,12 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
           , new EnumOption(2,"CROSS_PRODUCT")
           , new EnumOption(3,"RAY_DIFF")
           )
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field1->widgetHint=BaseField::COMBO_BOX;
+    field1->precision=-1;
+    fields().push_back(field1);
+    /*  */ 
+    IntField* field2 = new IntField
         (
           IterativeReconstructionNonlinearOptimizationParamsWrapper::POSTAPPENDNONLINEARITERATIONS_ID,
           offsetof(IterativeReconstructionNonlinearOptimizationParamsWrapper, mPostAppendNonlinearIterations),
@@ -78,10 +80,11 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
           true,
          1,
          100000
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field2->precision=-1;
+    fields().push_back(field2);
+    /*  */ 
+    IntField* field3 = new IntField
         (
           IterativeReconstructionNonlinearOptimizationParamsWrapper::FINALNONLINEARITERATIONS_ID,
           offsetof(IterativeReconstructionNonlinearOptimizationParamsWrapper, mFinalNonLinearIterations),
@@ -92,10 +95,11 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
           true,
          1,
          100000
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field3->precision=-1;
+    fields().push_back(field3);
+    /*  */ 
+    IntField* field4 = new IntField
         (
           IterativeReconstructionNonlinearOptimizationParamsWrapper::ALTERNATINGITERATIONS_ID,
           offsetof(IterativeReconstructionNonlinearOptimizationParamsWrapper, mAlternatingIterations),
@@ -106,10 +110,11 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
           true,
          0,
          1000
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field4->precision=-1;
+    fields().push_back(field4);
+    /*  */ 
+    BoolField* field5 = new BoolField
         (
           IterativeReconstructionNonlinearOptimizationParamsWrapper::EXCESSIVEQUATERNIONPARAMETRIZATION_ID,
           offsetof(IterativeReconstructionNonlinearOptimizationParamsWrapper, mExcessiveQuaternionParametrization),
@@ -117,10 +122,12 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
           "excessiveQuaternionParametrization",
           "excessiveQuaternionParametrization",
           "Excessive/non-excessive quaternion parametrization"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field5->widgetHint=BaseField::CHECK_BOX;
+    field5->precision=-1;
+    fields().push_back(field5);
+    /*  */ 
+    BoolField* field6 = new BoolField
         (
           IterativeReconstructionNonlinearOptimizationParamsWrapper::EXPLICITINVERSE_ID,
           offsetof(IterativeReconstructionNonlinearOptimizationParamsWrapper, mExplicitInverse),
@@ -128,8 +135,11 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
           "explicitInverse",
           "explicitInverse",
           "Explisit inverse in Schur complement solving"
-        )
-    );
+        );
+    field6->widgetHint=BaseField::CHECK_BOX;
+    field6->precision=-1;
+    fields().push_back(field6);
+    /*  */ 
    return 0;
 }
 
