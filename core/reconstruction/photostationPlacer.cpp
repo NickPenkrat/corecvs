@@ -304,7 +304,7 @@ void corecvs::PhotostationPlacer::fit(const ReconstructionFunctorOptimizationTyp
     corecvs::LevenbergMarquardtSparse lm(iterations);
     ReconstructionFunctor orient(scene, optimizable, errorType, optimizationParams, excessiveQuaternionParametrization, scaleLock, 1.0);
     ReconstructionNormalizationFunctor orientNorm(&orient, alternatingIterations);
-    lm.linearSolver = LinearSolver::MINRESQLP;//LinearSolver::SCHUR_COMPLEMENT;
+    lm.linearSolver = LinearSolver::MINRESQLP_IC0;//LinearSolver::SCHUR_COMPLEMENT;
 //    lm.terminateOnDegeneracy = true;
     lm.useExplicitInverse = explicitInverse;
     lm.f = &orient;
