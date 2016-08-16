@@ -1151,6 +1151,8 @@ void corecvs::ReconstructionFixtureScene::filterEssentialRansac(const std::vecto
                         }
                     if (!alreadyIn)
                     {
+                        if (!(idFirst < idSecond))
+                            std::swap(idFirst, idSecond);
                         work.emplace_back(idFirst, idSecond);
                         if (!essentialCache.count(std::make_pair(idFirst, idSecond)))
                             essentialCache[std::make_pair(idFirst, idSecond)] = std::make_tuple(corecvs::EssentialDecomposition(), 0.0, false);
