@@ -1153,11 +1153,12 @@ void corecvs::ReconstructionFixtureScene::filterEssentialRansac(const std::vecto
                         }
                     if (!alreadyIn)
                     {
-                        if (!(idFirst < idSecond))
-                            std::swap(idFirst, idSecond);
-                        work.emplace_back(idFirst, idSecond);
-                        if (!essentialCache.count(std::make_pair(idFirst, idSecond)))
-                            essentialCache[std::make_pair(idFirst, idSecond)] = std::make_tuple(corecvs::EssentialDecomposition(), 0.0, false);
+                        bool swap = !(idFirst < idSecond);
+                        WPP idA = swap ? idSecond : idFirst;
+                        WPP idB = swap ? idFirst  : idSecond;
+                        work.emplace_back(idA, idB);
+                        if (!essentialCache.count(std::make_pair(idA, idB)))
+                            essentialCache[std::make_pair(idA, idB)] = std::make_tuple(corecvs::EssentialDecomposition(), 0.0, false);
                     }
                 }
             }
@@ -1184,11 +1185,9 @@ void corecvs::ReconstructionFixtureScene::remove(WPP a, WPP b, std::vector<int> 
     ref.resize(ok);
 }
 
-void corecvs::ReconstructionFixtureScene::filterEssentialRansac(WPP a, WPP b, EssentialFilterParams params)
+void corecvs::ReconstructionFixtureScene::filterEssentialRansac(WPP idA, WPP idB, EssentialFilterParams params)
 {
-    bool swap = !(a < b);
-    WPP idA = swap ? b : a;
-    WPP idB = swap ? a : b;
+    CORE_ASSERT_TRUE_S(idA < idB);
 
     auto& cache = essentialCache[std::make_pair(idA, idB)];
     bool useCache = std::get<2>(cache);
@@ -1255,5 +1254,5 @@ void corecvs::ReconstructionFixtureScene::filterEssentialRansac(WPP a, WPP b, Es
         std::cout << "Too low gamma-value, rejecting all features" << std::endl;
         bestInliers.clear();
     }
-    remove(a, b, bestInliers);
+    remove(idA, idB, bestInliers);
 }
