@@ -5,22 +5,22 @@
 
 namespace corecvs {
 
-void        StatusTracker::SetTotalActions(StatusTracker *tracker, size_t totalActions) { if (tracker) tracker->setTotalActions(totalActions); }
-void        StatusTracker::Reset(StatusTracker *tracker, const std::string &action, size_t totalActions) { if (tracker) tracker->reset(action, totalActions); }
-void        StatusTracker::IncrementStarted(StatusTracker *tracker)                     { if (tracker) tracker->incrementStarted(); }
-void        StatusTracker::IncrementCompleted(StatusTracker *tracker)                   { if (tracker) tracker->incrementCompleted(); }
-AutoTracker StatusTracker::CreateAutoTrackerCalculationObject(StatusTracker *tracker)   { return tracker ? tracker->createAutoTrackerCalculationObject() : AutoTracker(nullptr); }
-void        StatusTracker::SetCompleted(StatusTracker *tracker)                         { if (tracker) tracker->setCompleted(); }
-void        StatusTracker::SetFailed(StatusTracker *tracker)                            { if (tracker) tracker->setFailed(); }
-void        StatusTracker::SetToCancel(StatusTracker *tracker)                          { if (tracker) tracker->setToCancel(); }
-void        StatusTracker::SetCanceled(StatusTracker *tracker)                          { if (tracker) tracker->setCanceled(); }
-bool        StatusTracker::IsCompleted(const StatusTracker *tracker)                    { return tracker ? tracker->isCompleted() : false; }
-bool        StatusTracker::IsFailed(const StatusTracker *tracker)                       { return tracker ? tracker->isFailed() : false; }
-bool        StatusTracker::IsToCancel(const StatusTracker *tracker)                     { return tracker ? tracker->isToCancel() : false; }
-bool        StatusTracker::IsCanceled(const StatusTracker *tracker)                     { return tracker ? tracker->isCanceled() : false; }
-void        StatusTracker::CheckToCancel(const StatusTracker *tracker)                  { if (tracker) tracker->checkToCancel(); }
-bool        StatusTracker::IsActionCompleted(const StatusTracker *tracker, const std::string &action) { return tracker ? tracker->isActionCompleted(action) : false; }
-Status      StatusTracker::GetStatus(const StatusTracker *tracker)                      { return tracker ? tracker->getStatus() : Status(); }
+void        StatusTracker::SetTotalActions(StatusTracker *st, size_t totalActions)                 { if (st) st->setTotalActions(totalActions); }
+void        StatusTracker::Reset(StatusTracker *st, const std::string &action, size_t totalActions){ if (st) st->reset(action, totalActions); }
+void        StatusTracker::IncrementStarted(StatusTracker *st)                                     { if (st) st->incrementStarted();   }
+void        StatusTracker::IncrementCompleted(StatusTracker *st)                                   { if (st) st->incrementCompleted(); }
+AutoTracker StatusTracker::CreateAutoTrackerCalculationObject(StatusTracker *st)                   { return st ? st->createAutoTrackerCalculationObject() : AutoTracker(nullptr); }
+void        StatusTracker::SetCompleted(StatusTracker *st)                                         { if (st) st->setCompleted(); }
+void        StatusTracker::SetFailed(StatusTracker *st)                                            { if (st) st->setFailed();    }
+void        StatusTracker::SetToCancel(StatusTracker *st)                                          { if (st) st->setToCancel();  }
+void        StatusTracker::SetCanceled(StatusTracker *st)                                          { if (st) st->setCanceled();  }
+bool        StatusTracker::IsCompleted(const StatusTracker *st)                                    { return st ? st->isCompleted() : false; }
+bool        StatusTracker::IsFailed(const StatusTracker *st)                                       { return st ? st->isFailed()    : false; }
+bool        StatusTracker::IsToCancel(const StatusTracker *st)                                     { return st ? st->isToCancel()  : false; }
+bool        StatusTracker::IsCanceled(const StatusTracker *st)                                     { return st ? st->isCanceled()  : false; }
+void        StatusTracker::CheckToCancel(const StatusTracker *st)                                  { if (st) st->checkToCancel(); }
+bool        StatusTracker::IsActionCompleted(const StatusTracker *st, const std::string &action)   { return st ? st->isActionCompleted(action) : false; }
+Status      StatusTracker::GetStatus(const StatusTracker *st)                                      { return st ? st->getStatus() : Status(); }
 
 AutoTracker::AutoTracker(StatusTracker* st) : st(st)
 {
@@ -202,4 +202,5 @@ corecvs::Status corecvs::StatusTracker::getStatus() const
     READ_LOCK
     return currentStatus;
 }
+
 } // namespace corecvs
