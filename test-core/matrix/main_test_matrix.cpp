@@ -450,7 +450,7 @@ TEST(Iterative, MinresQLPPreconditioned)
     	ASSERT_TRUE(false);
 	}
     corecvs::Vector x;
-    MinresQLP<SparseMatrix>::Solve(M, P.second, b, x);
+    MinresQLP<SparseMatrix>::Solve(M, [&](const Vector &x) { return P.second.dtrsv_un(P.second.dtrsv_ut(x)); }, b, x);
     ASSERT_LE(!(M*x-b)/!b, 1e-9);
 }
 

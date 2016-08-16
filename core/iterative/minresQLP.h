@@ -2,6 +2,7 @@
 #include <chrono>
 #include <iomanip>
 #include <map>
+#include <functional>
 
 #include "vector.h"
 #include "cblasLapackeWrapper.h"
@@ -71,7 +72,7 @@ public:
         MinresQLP solver(a, b, x, params);
         return solver.run();
     }
-    static MinresQLPStatus Solve(const M &a, const M &p, const Vector &b, Vector &x, const MinresQLPParams &params = MinresQLPParams())
+    static MinresQLPStatus Solve(const M &a, std::function<Vector(const Vector&)> p, const Vector &b, Vector &x, const MinresQLPParams &params = MinresQLPParams())
     {
         MinresQLP solver(a, p, b, x, params);
         return solver.run();
@@ -79,20 +80,20 @@ public:
     MinresQLP (const M &A, const Vector &b, Vector &x, const MinresQLPParams &params = MinresQLPParams()) : MinresQLP(A, b, x, (int)b.size(), params)
     {
 #if 0
-    	auto sm = SparseMatrix(A);
-    	auto start = std::chrono::high_resolution_clock::now();
-    	auto prec = sm.incompleteCholseky();
-    	auto stop = std::chrono::high_resolution_clock::now();
-    	if (prec.first)
-    		std::cout << "PREC OK: " << (stop - start).count() / 1e9 << std::endl;
-		else
-			std::cout << "PREC FAILED" << std::endl;
+        auto sm = SparseMatrix(A);
+        auto start = std::chrono::high_resolution_clock::now();
+        auto prec = sm.incompleteCholseky();
+        auto stop = std::chrono::high_resolution_clock::now();
+        if (prec.first)
+            std::cout << "PREC OK: " << (stop - start).count() / 1e9 << std::endl;
+        else
+            std::cout << "PREC FAILED" << std::endl;
 #endif
     }
-    MinresQLP (const M &A, const M &P, const Vector &b, Vector &x, const MinresQLPParams &params = MinresQLPParams()) : MinresQLP(A, b, x, (int)b.size(), params)
+    MinresQLP (const M &A, std::function<Vector(const Vector&)> P, const Vector &b, Vector &x, const MinresQLPParams &params = MinresQLPParams()) : MinresQLP(A, b, x, (int)b.size(), params)
     {
-    	this->P = &P;
-    	CORE_ASSERT_TRUE_S(P.h == P.w && P.h == A.h);
+        this->P = P;
+        usePreconditioner = true;
     }
     ~MinresQLP()
     {
@@ -113,18 +114,18 @@ public:
         r3 = r2 = b;
         beta1 = !r2;
 
-        if (P)
-		{
-			r3 = P->dtrsv_un(P->dtrsv_ut(r2));
-			beta1 = r3 & r2;
-			if (beta1 >= 0.0)
-				beta1 = std::sqrt(beta1);
-			else
-			{
-				std::cout << "Preconditioner failed" << std::endl;
-				flag = MinresQLPStatus::BAD_PRECON;
-			}
-		}
+        if (usePreconditioner)
+        {
+            r3 = P(r2);
+            beta1 = r3 & r2;
+            if (beta1 >= 0.0)
+                beta1 = std::sqrt(beta1);
+            else
+            {
+                std::cout << "Preconditioner failed" << std::endl;
+                flag = MinresQLPStatus::BAD_PRECON;
+            }
+        }
 
         flag = MinresQLPStatus::RUNNING;
         rnorm = betan = phi = beta1;
@@ -207,7 +208,7 @@ private:
         r3 = A * v;
         }
         {
-        AT("Residual: rem")
+        AT("Residual: scalar")
 
         if (iter > 1)
 #ifndef WITH_BLAS
@@ -229,50 +230,52 @@ private:
 #ifdef MAKE_MOVE_NOT_SWAP
         r1 = std::move(r2);
 #else
-		std::swap(r1, r2);
+        std::swap(r1, r2);
 #endif
         r2 = r3;
+        }
 
-		if (!P)
-		{
+        if (!P)
+        {
+            AT("Residual: beta")
 #ifndef WITH_BLAS
-			betan = !r3;
+            betan = !r3;
 #else
-			betan = cblas_dnrm2(r3.size(), &r3[0], 1);
+            betan = cblas_dnrm2(r3.size(), &r3[0], 1);
 #endif
-			if (iter == 1 && betan == 0.0)
-			{
-				if (alpha == 0.0)
-				{
-					flag = MinresQLPStatus::ZERO;
-					return false;
-				}
-				flag = MinresQLPStatus::BOTH_EIGEN;
+            if (iter == 1 && betan == 0.0)
+            {
+                if (alpha == 0.0)
+                {
+                    flag = MinresQLPStatus::ZERO;
+                    return false;
+                }
+                flag = MinresQLPStatus::BOTH_EIGEN;
 #ifndef WITH_BLAS
-				x = b / alpha;
+                x = b / alpha;
 #else
-				x = b;
-				cblas_dscal(x.size(), 1.0 / alpha, &x[0], 1);
+                x = b;
+                cblas_dscal(x.size(), 1.0 / alpha, &x[0], 1);
 #endif
-            	return false;
-       		}
-		}
-		else
-		{
-			r3 = P->dtrsv_un(P->dtrsv_ut(r2));
-			betan = r2 & r3;
-			if (betan > 0.0)
-				betan = std::sqrt(betan);
-			else
-			{
-				std::cout << "Preconditioner failed" << std::endl;
-				flag = MinresQLPStatus::BAD_PRECON;
-				return false;
-			}
-		}
+                return false;
+               }
+        }
+        else
+        {
+            AT("Residual: preconditioner")
+            r3 = P(r2);
+            betan = r2 & r3;
+            if (betan > 0.0)
+                betan = std::sqrt(betan);
+            else
+            {
+                std::cout << "Preconditioner failed" << std::endl;
+                flag = MinresQLPStatus::BAD_PRECON;
+                return false;
+            }
+        }
 
         pnorm = std::sqrt(betal * betal + alpha * alpha + betan * betan);
-        }
         return true;
     }
     void applyLeftPrev()
@@ -597,7 +600,9 @@ private:
     }
 
 
-    const M& A, *P = nullptr;
+    const M& A;
+    std::function<Vector(const Vector&)> P = [](const Vector& v) { return v; };
+    bool usePreconditioner = false;
     const Vector &b;
     Vector &x;
     int N;
