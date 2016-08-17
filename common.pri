@@ -512,6 +512,24 @@ with_mkl {
     }
 }
 
+with_cusparse {
+	CUDA_PATH = $$(CUDA_PATH)
+	DEFINES += WITH_CUSPARSE
+	!win32 {
+		!isEmpty(CUDA_PATH) {
+			exists("$$CUDA_PATH"/include/cusparse_v2.h)	{
+				INCLUDEPATH += $(CUDA_PATH)/include
+				LIBS += -L"$$CUDA_PATH"/lib64
+			} else {
+				error ("cuSPARSE header file not found");
+			}
+		}
+		LIBS += -lcusparse -lcudart -lcuda
+	} else {
+		error("Windows support of cuSPARSE NIY");
+	}
+}
+
 with_openblas {
     contains(DEFINES, WITH_MKL) {
         !build_pass: contains(TARGET, core): message(openBLAS is deactivated as detected MKL was activated)
