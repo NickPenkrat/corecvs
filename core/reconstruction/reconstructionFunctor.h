@@ -150,12 +150,12 @@ struct ReconstructionFunctor : corecvs::SparseFunctionArgs
     std::vector<Quaternion> originalOrientations;
     std::vector<Vector3dd> inputQuaternions;
     std::vector<FixtureCamera*> focalTunableCameras, principalTunableCameras;
-	corecvs::Vector3dd scaleReference;
-	corecvs::CameraFixture* scaleLockFixtue = nullptr;
-	std::set<SceneFeaturePoint*> trackedFeatures, trackedStatic;
-	double lockedScale = 1.0;
+    corecvs::Vector3dd scaleReference;
+    corecvs::CameraFixture* scaleLockFixtue = nullptr;
+    std::set<SceneFeaturePoint*> trackedFeatures, trackedStatic;
+    double lockedScale = 1.0;
 
-    std::vector<CameraFixture*> optimizableSubset;
+    std::set<CameraFixture*> optimizableSubset;
 
     struct DependencyList
     {
