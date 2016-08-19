@@ -11,6 +11,7 @@
 #include "selectableGeometryFeatures.h"
 #include "essentialMatrix.h"
 #include "distortionApplicationParameters.h"
+#include "projectionModels.h"
 
 /* Future derived */
 //#include "rgb24Buffer.h"
@@ -58,9 +59,12 @@ typedef std::unordered_map<std::string, void *> MetaContainer;
  *  TODO: The idea is that if we merge distorsion calibration WITH extrinsics/intrinsics
  *        calibration, then this method will project point using forward distorsion map
  *
+ *  Now  PinholeCameraIntrinsics has vtable because of CameraProjection base class.
+ *  Probably this needs to be changed
+ *
  **/
 
-struct PinholeCameraIntrinsics
+struct PinholeCameraIntrinsics : public CameraProjection
 {
     const static int DEFAULT_SIZE_X = 2592;
     const static int DEFAULT_SIZE_Y = 1944;

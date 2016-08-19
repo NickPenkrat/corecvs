@@ -24,6 +24,8 @@
 #include "bmpLoader.h"
 
 extern void raytrace_scene1( void );
+extern void raytrace_scale( void );
+
 extern void raytrace_scene_scanner( void );
 extern void raytrace_scene_calibrate( void );
 
@@ -48,8 +50,10 @@ int main(int argc, char **argv)
     raytrace_scene_pole();
 
 //    raytrace_scene1();
+//    raytrace_scale();
 //    raytrace_scene_scanner();
 //    raytrace_scene_calibrate();
+//    raytrace_scene_speedup();
 
 
 

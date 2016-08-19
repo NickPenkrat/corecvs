@@ -32,7 +32,7 @@ bool MeshLoader::load(Mesh3D *mesh, const string &fileName)
     file.open(fileName, ios::in);
     if (file.fail())
     {
-        SYNC_PRINT(("MeshLoader::load(): Can't open mesh file <%s>/n", fileName.c_str()));
+        SYNC_PRINT(("MeshLoader::load(): Can't open mesh file <%s>\n", fileName.c_str()));
         return false;
     }
 
@@ -83,7 +83,7 @@ bool MeshLoader::save(Mesh3D *mesh, const string &fileName)
     file.open(fileName, ios::out);
     if (file.fail())
     {
-        SYNC_PRINT(("MeshLoader::save(): Can't open mesh file <%s> for writing/n", fileName.c_str()));
+        SYNC_PRINT(("MeshLoader::save(): Can't open mesh file <%s> for writing\n", fileName.c_str()));
         return false;
     }
 

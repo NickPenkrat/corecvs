@@ -35,6 +35,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
         label->setText(QString(field->getSimpleName()));
         label->setToolTip(QString(field->name.decription));
         layout->addWidget(label, i, 0, 1, 1);
+        QWidget *widget = NULL;
 
         switch (field->type) {
         case BaseField::TYPE_INT:
@@ -46,7 +47,11 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
             {
                 spinBox->setMinimum(iField->min);
                 spinBox->setMaximum(iField->max);
-                spinBox->setSingleStep(iField->step);
+
+                if (iField->step != 0) {
+                    spinBox->setSingleStep(iField->step);
+                }
+                qDebug("ReflectionWidget::Setting limits(%d %d %d)", iField->min, iField->max, iField->step);
             }
             spinBox->setValue(iField->defaultValue);
             if (iField->suffixHint != NULL)
@@ -56,6 +61,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
 
             layout->addWidget(spinBox, i, 1, 1, 1);
             connect(spinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
+            widget = spinBox;
             break;
         }
         case BaseField::TYPE_DOUBLE:
@@ -82,6 +88,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
                 spinBox->setValue(dField->defaultValue);
                 layout->addWidget(spinBox, i, 1, 1, 1);
                 connect(spinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+                widget = spinBox;
             } else {
                  ExponentialSlider *expBox = new ExponentialSlider(this);
                  if (dField->hasAdditionalValues)
@@ -91,6 +98,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
                  expBox->setValue(dField->defaultValue);
                  layout->addWidget(expBox, i, 1, 1, 1);
                  connect(expBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+                 widget = expBox;
             }
             break;
         }
@@ -101,6 +109,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
             textBox->setText(QString::fromStdString(sField->defaultValue));
             layout->addWidget(textBox, i, 1, 1, 1);
             connect(textBox, SIGNAL(textChanged()), this, SIGNAL(paramsChanged()));
+            widget = textBox;
             break;
         }
             break;
@@ -111,6 +120,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
             checkBox->setChecked(bField->defaultValue);
             layout->addWidget(checkBox, i, 1, 1, 1);
             connect(checkBox, SIGNAL(toggled(bool)), this, SIGNAL(paramsChanged()));
+            widget = checkBox;
             break;
         }
         case BaseField::TYPE_ENUM:
@@ -135,6 +145,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
             comboBox->setCurrentIndex(eField->defaultValue);
             layout->addWidget(comboBox, i, 1, 1, 1);
             connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SIGNAL(paramsChanged()));
+            widget = comboBox;
             break;
         }
         /* Two Vector fields*/
@@ -168,7 +179,8 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
             }
             vectorWidget->setValue(dField->defaultValue);
             layout->addWidget(vectorWidget, i, 1, 1, 1);
-            connect(vectorWidget, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+            connect(vectorWidget, SIGNAL(valueChanged()), this, SIGNAL(paramsChanged()));
+            widget = vectorWidget;
             break;
         }
 
@@ -181,9 +193,8 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
                 ReflectionWidget *refWidget = new ReflectionWidget(subReflection);
                 layout->addWidget(refWidget, i, 1, 1, 1);
                 connect(refWidget, SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
+                widget = refWidget;
             }
-
-
             break;
         }
 
@@ -195,6 +206,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
             break;
         }
 
+        fieldToWidget.push_back(widget);
     }
 
     QSpacerItem *spacer = new QSpacerItem(0, 20, QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -203,7 +215,172 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
     setLayout(layout);
 }
 
-BaseReflectionStatic *ReflectionWidget::createParametersVirtual() const
+bool ReflectionWidget::getParameters(void *param) const
 {
+    DynamicObject obj(reflection, param);
+
+    for (size_t i = 0; i < reflection->fields.size(); i++)
+    {
+        const BaseField *field = reflection->fields[i];
+        qDebug() << "Processing field:" <<  field->getSimpleName();
+
+        switch (field->type) {
+            case BaseField::TYPE_INT:
+            {
+                const IntField *iField = static_cast<const IntField *>(field);
+                QSpinBox *spinBox = static_cast<QSpinBox *>(fieldToWidget[i]);
+                *obj.getField<int>(i) = spinBox->value();
+                break;
+            }
+            case BaseField::TYPE_DOUBLE:
+            {
+                const DoubleField *dField = static_cast<const DoubleField *>(field);
+                if (dField->widgetHint != BaseField::SLIDER)
+                {
+                    QDoubleSpinBox *spinBox = static_cast<QDoubleSpinBox *>(fieldToWidget[i]);
+                    *obj.getField<double>(i) = spinBox->value();
+                } else {
+                    ExponentialSlider *expBox = static_cast<ExponentialSlider *>(fieldToWidget[i]);
+                    *obj.getField<double>(i) = expBox->value();
+                }
+                break;
+            }
+            case BaseField::TYPE_STRING:
+            {
+                const StringField *sField = static_cast<const StringField *>(field);
+                QTextEdit *textBox = static_cast<QTextEdit *>(fieldToWidget[i]);
+                *obj.getField<std::string>(i) = textBox->toPlainText().toStdString();
+                break;
+            }
+                break;
+            case BaseField::TYPE_BOOL:
+            {
+                QCheckBox *checkBox = static_cast<QCheckBox *>(fieldToWidget[i]);
+                *obj.getField<bool>(i) = checkBox->isChecked();
+                break;
+            }
+            case BaseField::TYPE_ENUM:
+            {
+                const EnumField *eField = static_cast<const EnumField *>(field);
+                QComboBox *comboBox = static_cast<QComboBox *>(fieldToWidget[i]);
+                *obj.getField<int>(i) = comboBox->currentIndex();
+                break;
+            }
+            /* Two Vector fields*/
+            /*case BaseField::TYPE_INT | BaseField::TYPE_VECTOR_BIT:
+            {
+                const IntField *iField = static_cast<const IntField *>(field);
+                break;
+            }*/
+            case BaseField::TYPE_DOUBLE | BaseField::TYPE_VECTOR_BIT:
+            {
+                const DoubleVectorField *dField = static_cast<const DoubleVectorField *>(field);
+                DoubleVectorWidget *vectorWidget = static_cast<DoubleVectorWidget *>(fieldToWidget[i]);
+                *obj.getField<vector<double>>(i) = vectorWidget->value();
+                break;
+            }
+
+            /* Composite field */
+            case BaseField::TYPE_COMPOSITE:
+            {
+                const CompositeField *cField = static_cast<const CompositeField *>(field);
+                const Reflection *subReflection = cField->reflection;
+                ReflectionWidget *refWidget = static_cast<ReflectionWidget *>(fieldToWidget[i]);
+
+                if (refWidget != NULL) {
+                    refWidget->getParameters(obj.getField<void *>(i));
+                } else {
+                    qDebug() << "There is no widget for" << cField->getSimpleName();
+                }
+                break;
+            }
+
+            /* Well something is not supported */
+            default:
+                break;
+        }
+    }
 
 }
+
+bool ReflectionWidget::setParameters(void *param) const
+{
+    DynamicObject obj(reflection, param);
+
+    for (size_t i = 0; i < reflection->fields.size(); i++)
+    {
+        const BaseField *field = reflection->fields[i];
+        qDebug() << "Processing field:" <<  field->getSimpleName();
+
+        switch (field->type) {
+            case BaseField::TYPE_INT:
+            {
+                QSpinBox *spinBox = static_cast<QSpinBox *>(fieldToWidget[i]);
+                spinBox->setValue(*obj.getField<int>(i));
+                break;
+            }
+            case BaseField::TYPE_DOUBLE:
+            {
+                const DoubleField *dField = static_cast<const DoubleField *>(field);
+                if (dField->widgetHint != BaseField::SLIDER)
+                {
+                    QDoubleSpinBox *spinBox = static_cast<QDoubleSpinBox *>(fieldToWidget[i]);
+                    spinBox->setValue(*obj.getField<double>(i));
+                } else {
+                    ExponentialSlider *expBox = static_cast<ExponentialSlider *>(fieldToWidget[i]);
+                    expBox->setValue(*obj.getField<double>(i));
+                }
+                break;
+            }
+            case BaseField::TYPE_STRING:
+            {
+                QTextEdit *textBox = static_cast<QTextEdit *>(fieldToWidget[i]);
+                textBox->setText(QString::fromStdString(*obj.getField<std::string>(i)));
+                break;
+            }
+                break;
+            case BaseField::TYPE_BOOL:
+            {
+                QCheckBox *checkBox = static_cast<QCheckBox *>(fieldToWidget[i]);
+                checkBox->setChecked(*obj.getField<bool>(i));
+                break;
+            }
+            case BaseField::TYPE_ENUM:
+            {
+                QComboBox *comboBox = static_cast<QComboBox *>(fieldToWidget[i]);
+                comboBox->setCurrentIndex(*obj.getField<int>(i));
+                break;
+            }
+            /* Two Vector fields*/
+            /*case BaseField::TYPE_INT | BaseField::TYPE_VECTOR_BIT:
+            {
+                const IntField *iField = static_cast<const IntField *>(field);
+                break;
+            }*/
+            case BaseField::TYPE_DOUBLE | BaseField::TYPE_VECTOR_BIT:
+            {
+                DoubleVectorWidget *vectorWidget = static_cast<DoubleVectorWidget *>(fieldToWidget[i]);
+
+                break;
+            }
+
+            /* Composite field */
+            case BaseField::TYPE_COMPOSITE:
+            {
+                const CompositeField *cField = static_cast<const CompositeField *>(field);
+                ReflectionWidget *refWidget = static_cast<ReflectionWidget *>(fieldToWidget[i]);
+                if (refWidget != NULL) {
+                    refWidget->setParameters(obj.getField<void *>(i));
+                } else {
+                     qDebug() << "There is no widget for" << cField->getSimpleName();
+                }
+                break;
+            }
+
+            /* Well something is not supported */
+            default:
+                break;
+        }
+    }
+}
+

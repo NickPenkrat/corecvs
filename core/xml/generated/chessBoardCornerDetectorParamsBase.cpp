@@ -304,6 +304,8 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
     field18->precision=-1;
     fields().push_back(field18);
     /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Chess Board Corner Detector Params Base")]= &reflection;
    return 0;
 }
 

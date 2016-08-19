@@ -602,6 +602,8 @@ int RectifyParameters::staticInit()
     field36->precision=-1;
     fields().push_back(field36);
     /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Rectify Parameters")]= &reflection;
    return 0;
 }
 

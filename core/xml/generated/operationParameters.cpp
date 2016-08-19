@@ -58,6 +58,8 @@ int OperationParameters::staticInit()
     field0->precision=-1;
     fields().push_back(field0);
     /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Operation Parameters")]= &reflection;
    return 0;
 }
 

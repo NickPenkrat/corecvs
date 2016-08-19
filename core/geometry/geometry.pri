@@ -17,6 +17,7 @@ HEADERS += \
     geometry/raytrace/sdfRenderable.h \
     geometry/raytrace/materialExamples.h \
     geometry/mesh3DDecorated.h \
+    $$PWD/raytrace/bspTree.h
 
 
 

@@ -126,6 +126,8 @@ int Draw3dViMouseParameters::staticInit()
     field4->precision=-1;
     fields().push_back(field4);
     /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("draw 3d ViMouse Parameters")]= &reflection;
    return 0;
 }
 

@@ -341,6 +341,8 @@ int Draw3dParameters::staticInit()
     field20->precision=-1;
     fields().push_back(field20);
     /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("draw 3d Parameters")]= &reflection;
    return 0;
 }
 

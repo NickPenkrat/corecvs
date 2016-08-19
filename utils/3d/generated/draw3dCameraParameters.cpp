@@ -405,6 +405,8 @@ int Draw3dCameraParameters::staticInit()
     field24->precision=-1;
     fields().push_back(field24);
     /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("draw 3d Camera Parameters")]= &reflection;
    return 0;
 }
 

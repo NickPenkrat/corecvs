@@ -141,6 +141,8 @@ int ChessBoardAssemblerParamsBase::staticInit()
     field7->precision=-1;
     fields().push_back(field7);
     /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Chess Board Assembler Params Base")]= &reflection;
    return 0;
 }
 

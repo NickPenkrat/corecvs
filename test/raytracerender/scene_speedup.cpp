@@ -14,7 +14,7 @@ void raytrace_scene_speedup(void)
     RGB24Buffer *bufferF = new RGB24Buffer(h, w, RGBColor::Black());
 
     RaytraceRenderer renderer;
-    renderer.intrisics = PinholeCameraIntrinsics(Vector2dd(w, h), degToRad(60.0));
+    renderer.setProjection(new PinholeCameraIntrinsics(Vector2dd(w, h), degToRad(60.0)));
 
     /* Materials */
     RaytraceablePointLight light1(RGBColor::White() .toDouble(), Vector3dd( 0, -190, 150));

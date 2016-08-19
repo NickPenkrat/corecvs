@@ -133,6 +133,8 @@ int AxisAlignedBoxParameters::staticInit()
     field5->precision=2;
     fields().push_back(field5);
     /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Axis Aligned Box Parameters")]= &reflection;
    return 0;
 }
 

@@ -49,6 +49,9 @@ with_libpng {
 
 DESTDIR  = $$ROOT_DIR/bin
 
+HEADERS += \
+    changeReceiver.h
+
 SOURCES += \
     main_widgets_test.cpp \
 
@@ -56,9 +59,19 @@ GEN_FOLDER="../../tools/generator/Generated"
 exists($$GEN_FOLDER/testClass.cpp) {
     message(Adding generator test)
 
+    SOURCES += $$GEN_FOLDER/testSubClass.cpp
     SOURCES += $$GEN_FOLDER/testClass.cpp
+    SOURCES += $$GEN_FOLDER/testBlock.cpp
+
+    HEADERS += $$GEN_FOLDER/testSubClass.h
     HEADERS += $$GEN_FOLDER/testClass.h
+    HEADERS += $$GEN_FOLDER/testBlock.h
+
+
     INCLUDEPATH += $$GEN_FOLDER
+    DEPENDPATH += $$GEN_FOLDER
 
     DEFINES += INCLUDE_EXAMPLE
 }
+
+

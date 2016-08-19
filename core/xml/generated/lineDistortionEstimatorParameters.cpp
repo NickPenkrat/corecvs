@@ -137,6 +137,8 @@ int LineDistortionEstimatorParameters::staticInit()
     field6->precision=-1;
     fields().push_back(field6);
     /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Line Distortion Estimator Parameters")]= &reflection;
    return 0;
 }
 

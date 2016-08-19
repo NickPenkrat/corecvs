@@ -199,11 +199,11 @@ int BitcodeBoardParamsBase::staticInit()
           "bitcodeOrientation",
           "bitcodeOrientation",
           new EnumReflection(5
-          , new EnumOption(0,"Below")
-          , new EnumOption(1,"Left")
-          , new EnumOption(2,"Above")
-          , new EnumOption(3,"Right")
-          , new EnumOption(4,"Any")
+          , new EnumOption(0,"Below",":/new/prefix1/down_alt.png@main.qrc")
+          , new EnumOption(1,"Left",":/new/prefix1/back_alt.png@main.qrc")
+          , new EnumOption(2,"Above",":/new/prefix1/up_alt.png@main.qrc")
+          , new EnumOption(3,"Right",":/new/prefix1/forward_alt.png@main.qrc")
+          , new EnumOption(4,"Any",":/new/prefix1/question.png@main.qrc")
           )
         );
     field11->widgetHint=BaseField::COMBO_BOX;
@@ -244,6 +244,8 @@ int BitcodeBoardParamsBase::staticInit()
     field13->precision=2;
     fields().push_back(field13);
     /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Bitcode Board Params Base")]= &reflection;
    return 0;
 }
 

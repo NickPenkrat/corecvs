@@ -260,6 +260,8 @@ int BitSelectorParameters::staticInit()
     field16->precision=-1;
     fields().push_back(field16);
     /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Bit Selector Parameters")]= &reflection;
    return 0;
 }
 

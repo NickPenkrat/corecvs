@@ -207,6 +207,8 @@ int IterativeReconstructionAppendParams::staticInit()
     field10->precision=6;
     fields().push_back(field10);
     /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Iterative Reconstruction Append Params")]= &reflection;
    return 0;
 }
 

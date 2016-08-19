@@ -80,6 +80,8 @@ int SobelParameters::staticInit()
     field2->precision=-1;
     fields().push_back(field2);
     /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Sobel Parameters")]= &reflection;
    return 0;
 }
 

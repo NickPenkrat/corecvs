@@ -140,6 +140,8 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
     field6->precision=-1;
     fields().push_back(field6);
     /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Iterative Reconstruction Nonlinear Optimization Params Wrapper")]= &reflection;
    return 0;
 }
 

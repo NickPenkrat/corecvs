@@ -384,7 +384,7 @@ public:
             bool _hasAdditionalValues = false,
             Type _min = 0,
             Type _max = 0,
-            Type _step = 0
+            Type _step = 1
     ) :
         BaseField(_id, BaseField::getType<vector<Type> >(), ReflectionNaming(_name, _decription, _comment) , _offset),
         defaultValue (_defaultValue),
@@ -591,7 +591,7 @@ public:
     }
 
 
-    int fieldNumber()
+    int fieldNumber() const
     {
         return (int)fields.size();
     }
@@ -606,7 +606,7 @@ public:
         return fields[fieldId]->name.comment;
     }
 
-    int idByName(const char *name)
+    int idByName(const char *name) const
     {
         for (int i = 0; i < fieldNumber(); i++)
         {
@@ -979,12 +979,15 @@ public:
 class DynamicObject
 {
 public:
-    Reflection *reflection;
+    const Reflection *reflection;
     void       *rawObject;
 
-    DynamicObject() :
-        reflection(NULL),
-        rawObject(NULL)
+    DynamicObject(
+        const Reflection *reflection = NULL,
+        void       *rawObject = NULL
+    ) :
+        reflection(reflection),
+        rawObject(rawObject)
     {}
 
     template<typename Object>

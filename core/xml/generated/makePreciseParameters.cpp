@@ -145,6 +145,8 @@ int MakePreciseParameters::staticInit()
     field6->precision=2;
     fields().push_back(field6);
     /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Make Precise Parameters")]= &reflection;
    return 0;
 }
 

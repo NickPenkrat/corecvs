@@ -143,6 +143,8 @@ int IterativeReconstructionFeatureSelectionParams::staticInit()
     field6->precision=-1;
     fields().push_back(field6);
     /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Iterative Reconstruction Feature Selection Params")]= &reflection;
    return 0;
 }
 

@@ -192,6 +192,8 @@ int PresentationParameters::staticInit()
     field9->precision=-1;
     fields().push_back(field9);
     /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Presentation Parameters")]= &reflection;
    return 0;
 }
 

@@ -24,6 +24,7 @@
 #include "iterativeReconstructionNonlinearOptimizationParamsWrapper.h"
 
 #include "vector2d.h"
+#include "changeReceiver.h"
 
 int main(int argc, char **argv)
 {    
@@ -32,10 +33,11 @@ int main(int argc, char **argv)
 
 
     Vector2dd dummy(0.0);
-    cout << "Out:" <<  dummy.reflection.fields.size() << std::endl;
+    cout << "Main out test:" <<  dummy.reflection.fields.size() << std::endl;
 
 #ifdef INCLUDE_EXAMPLE
-    cout << TestClass::reflection.fields.size();
+    cout << "Main out test:" << TestSubClass::reflection.fields.size() << std::endl;
+    cout << "Main out test:" << TestClass   ::reflection.fields.size() << std::endl;
 #endif
 
 
@@ -61,50 +63,64 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    std::string className(argv[1]);
+    std::string className(argv[1]);    
 
-    auto it = directory.find(className);
-    if (it == directory.end()) {
-        {
-            Reflection *widget_ref = &AxisAlignedBoxParameters::reflection;
-            ReflectionWidget *aabWidget = new ReflectionWidget(widget_ref);
-            aabWidget->show();
-        }
-        {
-            Reflection *widget_ref = &RgbColorParameters::reflection;
-            ReflectionWidget *aabWidget = new ReflectionWidget(widget_ref);
-            aabWidget->show();
-        }
-        {
-            Reflection *widget_ref = &ChessBoardAssemblerParamsBase::reflection;
-            ReflectionWidget *aabWidget = new ReflectionWidget(widget_ref);
-            aabWidget->show();
-        }
-        {
-            Reflection *widget_ref = &CheckerboardDetectionParameters::reflection;
-            ReflectionWidget *aabWidget = new ReflectionWidget(widget_ref);
-            aabWidget->show();
-        }
-        {
-            Reflection *widget_ref = &ChessBoardCornerDetectorParamsBase::reflection;
-            ReflectionWidget *aabWidget = new ReflectionWidget(widget_ref);
-            aabWidget->show();
-        }
-        {
-            Reflection *widget_ref = &IterativeReconstructionNonlinearOptimizationParamsWrapper::reflection;
-            ReflectionWidget *aabWidget = new ReflectionWidget(widget_ref);
-            aabWidget->show();
-        }
-    } else {
-        Reflection *widget_ref = (*it).second;
-        ReflectionWidget *aabWidget = new ReflectionWidget(widget_ref);
+
+    ReflectionWidget *aabWidget = NULL;
+    ChangeReceiver *reciever = NULL;
+
+    if (className == "-") {
+        Reflection *widget_ref = &TestClass::reflection;
+        aabWidget = new ReflectionWidget(widget_ref);
+        reciever  = new ChangeReceiver(aabWidget);
+        QObject::connect(aabWidget, SIGNAL(paramsChanged()), reciever, SLOT(processChange()));
         aabWidget->show();
+
+
+    } else {
+        auto it = directory.find(className);
+        if (it == directory.end()) {
+            {
+                Reflection *widget_ref = &AxisAlignedBoxParameters::reflection;
+                ReflectionWidget *aabWidget = new ReflectionWidget(widget_ref);
+                aabWidget->show();
+            }
+            {
+                Reflection *widget_ref = &RgbColorParameters::reflection;
+                ReflectionWidget *aabWidget = new ReflectionWidget(widget_ref);
+                aabWidget->show();
+            }
+            {
+                Reflection *widget_ref = &ChessBoardAssemblerParamsBase::reflection;
+                ReflectionWidget *aabWidget = new ReflectionWidget(widget_ref);
+                aabWidget->show();
+            }
+            {
+                Reflection *widget_ref = &CheckerboardDetectionParameters::reflection;
+                ReflectionWidget *aabWidget = new ReflectionWidget(widget_ref);
+                aabWidget->show();
+            }
+            {
+                Reflection *widget_ref = &ChessBoardCornerDetectorParamsBase::reflection;
+                ReflectionWidget *aabWidget = new ReflectionWidget(widget_ref);
+                aabWidget->show();
+            }
+            {
+                Reflection *widget_ref = &IterativeReconstructionNonlinearOptimizationParamsWrapper::reflection;
+                ReflectionWidget *aabWidget = new ReflectionWidget(widget_ref);
+                aabWidget->show();
+            }
+        } else {
+            Reflection *widget_ref = (*it).second;
+            aabWidget = new ReflectionWidget(widget_ref);
+            aabWidget->show();
+        }
     }
 
     a.exec();
-//    raytrace_scene1();
-//    raytrace_scene_scanner();
-//    raytrace_scene_calibrate();
 
+    delete_safe(aabWidget);
+    delete_safe(reciever);
+    return 0;
 }
 

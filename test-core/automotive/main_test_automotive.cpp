@@ -38,7 +38,7 @@ void drawSituation(
 
    const Vector2dd imageSize(imageW, imageH);
 
-   CameraIntrinsicsLegacy camIntr(imageSize, imageSize / 2.0, 40.0, 1.0);
+   PinholeCameraIntrinsics camIntr(imageSize, degToRad(60.0));
 
    std::vector<FloatFlowVector> *flowVectors = FlowSimulator::simulateFlow(camIntr, realCameraExtr, realCarMovement);
 
@@ -81,7 +81,7 @@ void drawSituation(
                FdDV );
    }
 
-   delete flowVectors;
+   delete_safe(flowVectors);
 
 
     fclose(Out);

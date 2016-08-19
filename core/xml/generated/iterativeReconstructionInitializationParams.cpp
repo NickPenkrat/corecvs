@@ -176,6 +176,8 @@ int IterativeReconstructionInitializationParams::staticInit()
     field8->precision=6;
     fields().push_back(field8);
     /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Iterative Reconstruction Initialization Params")]= &reflection;
    return 0;
 }
 

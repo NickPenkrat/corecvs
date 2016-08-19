@@ -195,6 +195,8 @@ int GraphPlotParameters::staticInit()
     field10->precision=-1;
     fields().push_back(field10);
     /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Graph Plot Parameters")]= &reflection;
    return 0;
 }
 

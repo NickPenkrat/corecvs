@@ -71,6 +71,8 @@ int DebayerParameters::staticInit()
     field1->precision=-1;
     fields().push_back(field1);
     /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Debayer Parameters")]= &reflection;
    return 0;
 }
 

@@ -6,17 +6,37 @@
 #include "preciseTimer.h"
 #include "bufferFactory.h"
 
+void addPole(const Vector3dd &position, RaytraceableUnion &scene)
+{
+    for ( int i = 0; i < 9; i ++)
+    {
+        RaytraceableCylinder *object = new RaytraceableCylinder;
+        object->h = 20;
+        object->r = 10;
+        object->p = position + Vector3dd(0, -10 + i * object->h,  0);
+
+        object->name = "Cylinder";
+        object->color = (i % 2) ? RGBColor::Black().toDouble() : RGBColor::White().toDouble();
+        object->material = NULL;
+        //object->material = new RaytraceableChessMaterial(5.0);
+        //object->material = (i % 2) ? MaterialExamples::ex1() : MaterialExamples::ex2();
+        scene.elements.push_back(object);
+    }
+
+
+}
+
 void raytrace_scene_pole( void )
 {
     SYNC_PRINT(("raytrace_scene_pole( void )\n"));
     PreciseTimer timer = PreciseTimer::currentTime();
 
-    int h = 500;
-    int w = 500;
+    int h = 3000;
+    int w = 4000;
     RaytraceRenderer renderer;
-    renderer.intrisics = PinholeCameraIntrinsics(
+    renderer.setProjection(new PinholeCameraIntrinsics(
                 Vector2dd(w, h),
-                degToRad(60.0));
+                degToRad(60.0)));
     renderer.position = Affine3DQ::Identity();
     //renderer.sky = new RaytraceableSky1();
 
@@ -32,18 +52,7 @@ void raytrace_scene_pole( void )
 
     for ( int i = 0; i < 7; i ++)
     {
-        RaytraceableCylinder *object = new RaytraceableCylinder;
-        object->h = 20;
-        object->r = 20;
-        object->p = Vector3dd(0, -10 + i * object->h, 700);
-
-        object->name = "Cylinder";
-        object->color = (i % 2) ? RGBColor::Black().toDouble() : RGBColor::White().toDouble();
-        object->material = NULL;
-        //object->material = new RaytraceableChessMaterial(5.0);
-        //object->material = (i % 2) ? MaterialExamples::ex1() : MaterialExamples::ex2();
-
-        scene.elements.push_back(object);
+        addPole(Vector3dd(0,0,1000) + Vector3dd(200,0,1000) * i, scene);
     }
 
     RaytraceableSphere sphere2(Sphere3d(Vector3dd(-80,0, 250.0), 20.0));
@@ -57,7 +66,7 @@ void raytrace_scene_pole( void )
     renderer.lights.push_back(&light1);
     renderer.lights.push_back(&light2);
 
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 1; i++) {
         RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
         double a = degToRad(360.0 / 150 * i);
         Vector3dd dir(0, sin(a), cos(a));
@@ -65,7 +74,7 @@ void raytrace_scene_pole( void )
         renderer.position = Affine3DQ::Shift(Vector3dd(0, i * 3 , 0 )) * Affine3DQ::RotationY(0.0);
 
         renderer.supersample = true;
-        renderer.sampleNum = 1000;
+        renderer.sampleNum = 400;
         renderer.trace(buffer);
 
         char name[100];
@@ -73,6 +82,8 @@ void raytrace_scene_pole( void )
         BMPLoader().save(name, buffer);
         delete_safe(buffer);
     }
+
+
 
     SYNC_PRINT(("Processed: %lf seconds elapsed\n", timer.usecsToNow() / 1e6 ));
 }

@@ -1,6 +1,7 @@
 #ifndef RAYTRACEOBJECTS_H
 #define RAYTRACEOBJECTS_H
 
+#include "bspTree.h"
 #include "mesh3DDecorated.h"
 #include "raytrace/raytraceRenderer.h"
 
@@ -128,67 +129,16 @@ public:
     virtual bool inside (Vector3dd &point)  override;
 };
 
+
+
+
 class RaytraceableOptiMesh : public RaytraceableMesh {
 public:
     static const double EPSILON;
 
-    class NumPlaneFrame : public PlaneFrame {
-    public:
-        int num;
-
-        NumPlaneFrame(const PlaneFrame &frame, int num) :
-            PlaneFrame(frame),
-            num(num)
-        {}
-    };
-
-    class NumTriangle3dd : public Triangle3dd {
-    public:
-        int num;
-
-        NumTriangle3dd(const Triangle3dd &triangle, int num) :
-            Triangle3dd(triangle),
-            num(num)
-        {}
-
-        NumPlaneFrame toNumPlaneFrame() const
-        {
-            return NumPlaneFrame(toPlaneFrame(), num);
-        }
-    };
-
-    struct TreeNode {
-        vector<NumTriangle3dd> submesh;
-        vector<NumPlaneFrame>  cached;
 
 
-        TreeNode *middle = NULL;
-        TreeNode *left = NULL;
-        TreeNode *right = NULL;
-
-        Sphere3d bound;
-        AxisAlignedBox3d box;
-        Plane3d  plane;
-
-        bool intersect(RayIntersection &intersection);
-
-        void subdivide();
-        void cache();
-
-        int childCount();
-        int triangleCount();
-
-
-        void dumpToMesh(Mesh3D &mesh, int depth, bool plane, bool volume);
-
-        ~TreeNode()
-        {
-            delete_safe(left);
-            delete_safe(right);
-        }
-    };
-
-    TreeNode *opt = NULL;
+    BSPTreeNode *opt = NULL;
 
     RaytraceableOptiMesh(Mesh3DDecorated *mesh) :
         RaytraceableMesh(mesh)

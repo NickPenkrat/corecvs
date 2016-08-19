@@ -229,6 +229,8 @@ int BaseParameters::staticInit()
     field12->precision=-1;
     fields().push_back(field12);
     /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Base Parameters")]= &reflection;
    return 0;
 }
 

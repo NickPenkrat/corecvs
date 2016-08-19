@@ -181,6 +181,8 @@ int LensDistortionModelParametersBase::staticInit()
     field10->precision=-1;
     fields().push_back(field10);
     /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Lens Distortion Model Parameters Base")]= &reflection;
    return 0;
 }
 

@@ -172,6 +172,8 @@ int OpenCVBMParameters::staticInit()
     field8->precision=-1;
     fields().push_back(field8);
     /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("OpenCV BM Parameters")]= &reflection;
    return 0;
 }
 

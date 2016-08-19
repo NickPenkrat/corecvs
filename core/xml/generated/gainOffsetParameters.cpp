@@ -69,6 +69,8 @@ int GainOffsetParameters::staticInit()
     field1->precision=2;
     fields().push_back(field1);
     /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Gain Offset Parameters")]= &reflection;
    return 0;
 }
 

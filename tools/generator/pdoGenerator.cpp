@@ -724,9 +724,27 @@ void PDOGenerator::generatePDOCpp()
        result+=
     "    "+fieldPlaceholder+"->suffixHint=\""+field->suffixHint+"\";\n";
 
-    result+=
+    if (field->precision >= 0)
+        result+=
      "    "+fieldPlaceholder+"->precision="+QString::number(field->precision)+";\n";
 
+
+    if (type == BaseField::TYPE_COMPOSITE) {
+        const CompositeField *cfield = static_cast<const CompositeField *>(field);
+        const Reflection *referent = cfield->reflection;
+        result+=
+    "    {\n"
+    "        ReflectionDirectory* directory = ReflectionDirectoryHolder::getReflectionDirectory();\n"
+    "        std::string name(\""+QString(referent->name.name)+"\");\n"
+    "        ReflectionDirectory::iterator it = directory->find(name);\n"
+    "        if(it != directory->end()) {\n"
+    "             "+fieldPlaceholder+"->reflection = it->second;\n"
+    "        } else {\n"
+    "             printf(\"Reflection "+className+" to the subclass "+QString(referent->name.name)+" can't be linked\\n\");\n"
+    "        }\n"
+    "    }\n";
+
+    }
 
     result+=
     "    fields().push_back("+fieldPlaceholder+");\n"

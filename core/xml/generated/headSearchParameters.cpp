@@ -115,6 +115,8 @@ int HeadSearchParameters::staticInit()
     field4->precision=-1;
     fields().push_back(field4);
     /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Head Search Parameters")]= &reflection;
    return 0;
 }
 

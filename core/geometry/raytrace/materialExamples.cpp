@@ -78,7 +78,7 @@ void BumpyMaterial::getColor(RayIntersection &ray, RaytraceRenderer &renderer)
     RaytraceableMaterial::getColor(ray, renderer);
 }
 
-void TextureMaterial::getColor(RayIntersection &ray, RaytraceRenderer &renderer)
+void TextureMaterial::getColor(RayIntersection &ray, RaytraceRenderer &/*renderer*/)
 {
     ray.ownColor = RGBColor::Yellow().toDouble();
     if (texture == NULL) {
@@ -98,7 +98,7 @@ void TextureMaterial::getColor(RayIntersection &ray, RaytraceRenderer &renderer)
     ray.ownColor = texture->elementBl(coords).toDouble();
 }
 
-void RaytraceableSky1::getColor(RayIntersection &ray, RaytraceRenderer &renderer)
+void RaytraceableSky1::getColor(RayIntersection &ray, RaytraceRenderer &/*renderer*/)
 {
     double v = noise.turbulence(ray.ray.a * 10.0);
     if (v <= skyLevel || v >= 1.0)
@@ -111,7 +111,7 @@ void RaytraceableSky1::getColor(RayIntersection &ray, RaytraceRenderer &renderer
 }
 
 
-void RaytraceableCubemap::getColor(RayIntersection &ray, RaytraceRenderer &renderer)
+void RaytraceableCubemap::getColor(RayIntersection &ray, RaytraceRenderer &/*renderer*/)
 {
     int p = 0;
     Vector2dd uv = Vector2dd::Zero();

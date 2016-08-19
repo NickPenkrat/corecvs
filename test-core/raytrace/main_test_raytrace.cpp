@@ -37,9 +37,9 @@ TEST(Raytrace, DISABLED_testRaytraceModifiers)
     RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
 
     RaytraceRenderer renderer;
-    renderer.intrisics = PinholeCameraIntrinsics(
+    renderer.setProjection(new PinholeCameraIntrinsics(
                 Vector2dd(w, h),
-                degToRad(60.0));
+                degToRad(60.0)));
     renderer.position = Affine3DQ::Identity();
 
     /* Materials */
@@ -77,9 +77,9 @@ TEST(Raytrace, DISABLED_testRaytraceTextures)
     RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
 
     RaytraceRenderer renderer;
-    renderer.intrisics = PinholeCameraIntrinsics(
+    renderer.setProjection(new PinholeCameraIntrinsics(
                 Vector2dd(w, h),
-                degToRad(60.0));
+                degToRad(60.0)));
     //renderer.position = Affine3DQ::Shift(0, 0, -200);
 
     /* Ligths */
@@ -251,6 +251,58 @@ TEST(Raytrace, testCylinder1)
 }
 
 
+TEST(Raytrace, testTransform)
+{
+    Mesh3D mesh;
+    mesh.switchColor(true);
+    RaytraceableSphere sphere(Sphere3d(Vector3dd(0,10,200), 30));
+    RaytraceableTransform object(&sphere, Matrix44::Scale(0.5, 1.0, 1.0));
+    int limit = 100;
+
+    vector<Ray3d> rays;
+
+
+    for (int i = - limit;  i < limit ; i++)
+    {
+        for (int j = - limit;  j < limit ; j++)
+        {
+            /*rays.push_back(Ray3d(Vector3dd(i / (3.0 * limit), j /  (3.0 * limit), 1.0 ), Vector3dd::Zero()));
+            rays.back().normalise();*/
+
+            rays.push_back(Ray3d(Vector3dd(i / (2.0 * limit), j /  (2.0 * limit) - 0.4, 1.0 ), Vector3dd(60, 120, 0)));
+            rays.back().normalise();
+        }
+    }
+
+    for (size_t i = 0; i < rays.size(); i++)
+    {
+        RayIntersection ray;
+        ray.ray = rays[i];
+        mesh.addLine(rays[i].getPoint(0), rays[i].getPoint(30));
+        bool ok = object.intersect(ray);
+
+        cout << i << endl;
+        cout << " R:" << ray.ray << endl;
+        if (ok) {
+            cout << " P:" << ray.getPoint() << endl;
+            mesh.setColor(RGBColor::Green());
+            mesh.addPoint(ray.getPoint());
+            ray.object->normal(ray);
+            mesh.setColor(RGBColor::Blue());
+            mesh.addLine(ray.getPoint(), ray.getPoint() + ray.normal * 5.0);
+
+            //cout << " N:" << ray.normal << endl;
+        } else  {
+            cout << "No Intersecution" << endl;
+        }
+
+    }
+
+    //object.toMesh(mesh);
+    mesh.dumpPLY("transform-int.ply");
+}
+
+
 class SDFCube : public SDFRenderable
 {
 public:
@@ -286,9 +338,9 @@ TEST(Raytrace, DISABLED_testRaytraceSDF)
     RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
 
     RaytraceRenderer renderer;
-    renderer.intrisics = PinholeCameraIntrinsics(
+    renderer.setProjection(new PinholeCameraIntrinsics(
                 Vector2dd(w, h),
-                degToRad(60.0));
+                degToRad(60.0)));
     renderer.position = Affine3DQ::Identity();
     renderer.sky = new RaytraceableSky1();
 
@@ -360,9 +412,9 @@ TEST(Raytrace, DISABLED_testRaytraceCylinder)
     int h = 500;
     int w = 500;
     RaytraceRenderer renderer;
-    renderer.intrisics = PinholeCameraIntrinsics(
+    renderer.setProjection(new PinholeCameraIntrinsics(
                 Vector2dd(w, h),
-                degToRad(60.0));
+                degToRad(60.0)));
     renderer.position = Affine3DQ::Identity();
     //renderer.sky = new RaytraceableSky1();
 

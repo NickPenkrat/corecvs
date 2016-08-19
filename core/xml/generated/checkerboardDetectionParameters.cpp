@@ -89,9 +89,9 @@ int CheckerboardDetectionParameters::staticInit()
           "Channel",
           "Channel",
           new EnumReflection(15
-          , new EnumOption(0,"R")
-          , new EnumOption(1,"G")
-          , new EnumOption(2,"B")
+          , new EnumOption(0,"R",":/new/colors/colors/color_red.png@main.qrc")
+          , new EnumOption(1,"G",":/new/colors/colors/color_green.png@main.qrc")
+          , new EnumOption(2,"B",":/new/colors/colors/color_blue.png@main.qrc")
           , new EnumOption(3,"Alpha")
           , new EnumOption(4,"Y")
           , new EnumOption(5,"Cr")
@@ -99,9 +99,9 @@ int CheckerboardDetectionParameters::staticInit()
           , new EnumOption(7,"U")
           , new EnumOption(8,"V")
           , new EnumOption(9,"Chroma")
-          , new EnumOption(10,"Gray")
-          , new EnumOption(11,"Luma")
-          , new EnumOption(12,"Hue")
+          , new EnumOption(10,"Gray",":/new/colors/colors/color_gray.png@main.qrc")
+          , new EnumOption(11,"Luma",":/new/colors/colors/color_gray.png@main.qrc")
+          , new EnumOption(12,"Hue",":/new/colors/colors/color_wheel.png@main.qrc")
           , new EnumOption(13,"Saturation")
           , new EnumOption(14,"Value")
           )
@@ -256,6 +256,8 @@ int CheckerboardDetectionParameters::staticInit()
     field13->precision=-1;
     fields().push_back(field13);
     /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Checkerboard Detection Parameters")]= &reflection;
    return 0;
 }
 
