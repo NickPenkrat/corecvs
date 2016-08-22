@@ -54,6 +54,9 @@ namespace HelperUtils
     bool            endsWith  (const string &str, const string &postfix);
     istream&        getlineSafe(istream& is, string& str);
 
+    void            stringSplit(const string &s, char delim, std::vector<string> &elems);
+    std::vector<string>  stringSplit(const string &s, char delim);
+
     string          toNativeSlashes(const string& str);
 
     string          getEnvDirPath(cchar *envVarName);

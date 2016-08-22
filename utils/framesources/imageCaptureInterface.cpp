@@ -211,8 +211,11 @@ ImageCaptureInterface *ImageCaptureInterface::fabric(string input, int h, int w,
 void ImageCaptureInterface::notifyAboutNewFrame(frame_data_t frameData)
 {
 //    SYNC_PRINT(("ImageCaptureInterface::notifyAboutNewFrame()\n"));
-    emit newFrameReady(frameData);
-    emit newImageReady();
+    if (imageInterfaceReceiver)
+    {
+        imageInterfaceReceiver->newFrameReadyCallback(frameData);
+        imageInterfaceReceiver->newImageReadyCallback();
+    }
 }
 
 ImageCaptureInterface::ImageCaptureInterface()
@@ -323,4 +326,14 @@ ImageCaptureInterface::CapErrorCode ImageCaptureInterface::queryCameraParameters
 bool ImageCaptureInterface::supportPause()
 {
     return false;
+}
+
+ImageCaptureInterfaceQt *ImageCaptureInterfaceQt::fabric(string input, bool isRgb)
+{
+
+}
+
+ImageCaptureInterfaceQt *ImageCaptureInterfaceQt::fabric(string input, int h, int w, int fps, bool isRgb)
+{
+
 }

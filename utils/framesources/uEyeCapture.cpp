@@ -269,7 +269,8 @@ UEyeCaptureInterface::FramePair UEyeCaptureInterface::getFrame()
 
     //stats.values[CaptureStatistics::DATA_SIZE] = currentLeft.bytesused;
 
-    emit newStatisticsReady(stats);
+    if (imageInterfaceReceiver)
+        imageInterfaceReceiver->newStatisticsReadyCallback(stats);
 
 //    printf("Finished getFrame\n");
     return result;
@@ -330,7 +331,8 @@ UEyeCaptureInterface::FramePair UEyeCaptureInterface::getFrameRGB24()
 
     //stats.values[CaptureStatistics::DATA_SIZE] = currentLeft.bytesused;
 
-    emit newStatisticsReady(stats);
+    if (imageInterfaceReceiver)
+        imageInterfaceReceiver->newStatisticsReadyCallback(stats);
 
 //    printf("Finished getFrame\n");
     return result;

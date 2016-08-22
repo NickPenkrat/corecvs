@@ -120,7 +120,8 @@ QMutex& AbstractFileCapture::protectFrameMutex()
 
 void AbstractFileCapture::notifyAboutStreamPaused()
 {
-    emit streamPaused();
+    if (imageInterfaceReceiver)
+        imageInterfaceReceiver->streamPausedCallback();
 }
 
 bool AbstractFileCapture::supportPause()

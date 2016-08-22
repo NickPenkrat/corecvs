@@ -99,7 +99,7 @@ struct PinholeCameraIntrinsics : public CameraProjection
      * This actually doesn't differ from matrix multiplication, just is a little bit more lightweight
      *
      **/
-    Vector2dd project(const Vector3dd &p) const
+    virtual Vector2dd project(const Vector3dd &p) const override
     {
         Vector2dd result = (focal * p.xy() + Vector2dd(skew * p.y(), 0.0)) / p.z() + principal;
         return result;
@@ -123,7 +123,7 @@ struct PinholeCameraIntrinsics : public CameraProjection
     }
 
 
-    Vector3dd reverse(const Vector2dd &p) const
+    virtual Vector3dd reverse(const Vector2dd &p) const override
     {
         Vector2dd result;
         result[1] = (p[1] - principal[1]) / focal[1];
@@ -131,7 +131,7 @@ struct PinholeCameraIntrinsics : public CameraProjection
         return Vector3dd(result.x(), result.y(), 1.0);
     }
 
-    bool isVisible(const Vector3dd &p) const
+    virtual bool isVisible(const Vector3dd &p) const override
     {
         if (p[2] <= 0.0) {
             return false;

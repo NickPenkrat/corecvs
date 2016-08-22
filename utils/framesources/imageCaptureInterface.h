@@ -64,10 +64,18 @@ public:
 
 //---------------------------------------------------------------------------
 
-class ImageCaptureInterface : public QObject
+class ImageInterfaceReceiver
 {
-    Q_OBJECT
+public:
+    virtual void newFrameReadyCallback(frame_data_t frameData) = 0;
+    virtual void newImageReadyCallback() = 0;
+    virtual void newStatisticsReadyCallback(CaptureStatistics stats) = 0;
+    virtual void streamPausedCallback() = 0;
 
+};
+
+class ImageCaptureInterface
+{
 public:
     /**
      *   Error code for init functions
@@ -171,15 +179,12 @@ public:
         bool operator!()                   const { return height == 0 && width == 0 && fps == 0; }
     };
 
-signals:
-    void    newFrameReady(frame_data_t frameData);
-    void    newImageReady();
-    void    newStatisticsReady(CaptureStatistics stats);
-    void    streamPaused();
-
 public:
     ImageCaptureInterface();
     virtual ~ImageCaptureInterface();
+
+    /*Callback reciever*/
+    ImageInterfaceReceiver *imageInterfaceReceiver = NULL;
 
     /**
      *  Fabric to create particular implementation of the capturer
@@ -260,5 +265,46 @@ protected:
      *  Internal function to trigger frame notify signal
      **/
     virtual void notifyAboutNewFrame(frame_data_t frameData);
+
+};
+
+class ImageCaptureInterfaceQt : public QObject, public ImageInterfaceReceiver, public ImageCaptureInterface
+{
+    Q_OBJECT
+public:
+    ImageCaptureInterfaceQt()
+    {
+        imageInterfaceReceiver = this;
+    }
+
+signals:
+    void    newFrameReady(frame_data_t frameData);
+    void    newImageReady();
+    void    newStatisticsReady(CaptureStatistics stats);
+    void    streamPaused();
+
+public:
+    virtual void newFrameReadyCallback(frame_data_t frameData) override
+    {
+        emit newFrameReady(frameData);
+    }
+
+    virtual void newImageReadyCallback() override
+    {
+        emit newImageReadyCallback();
+    }
+
+    virtual void newStatisticsReadyCallback(CaptureStatistics stats) override
+    {
+        emit newStatisticsReady(stats);
+    }
+
+    virtual void streamPausedCallback() override
+    {
+        emit streamPaused();
+    }
+
+    static ImageCaptureInterfaceQt *fabric(string input, bool isRgb = false);
+    static ImageCaptureInterfaceQt *fabric(string input, int h, int w, int fps, bool isRgb = false);
 
 };

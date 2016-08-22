@@ -212,7 +212,8 @@ V4L2CaptureInterface::FramePair V4L2CaptureInterface::getFrame()
     stats.values[CaptureStatistics::DESYNC_TIME] = desync > 0 ? desync : -desync;
     stats.values[CaptureStatistics::DATA_SIZE] = currentFrame[Frames::LEFT_FRAME].bytesused;
 
-    emit newStatisticsReady(stats);
+    if (imageInterfaceReceiver)
+        imageInterfaceReceiver->newStatisticsReadyCallback(stats);
 
     return result;
 }
@@ -270,7 +271,8 @@ V4L2CaptureInterface::FramePair V4L2CaptureInterface::getFrameRGB24()
 
     stats.values[CaptureStatistics::DESYNC_TIME] = CORE_ABS(desync);
     stats.values[CaptureStatistics::DATA_SIZE]   = currentFrame[Frames::LEFT_FRAME].bytesused;
-    emit newStatisticsReady(stats);
+    if (imageInterfaceReceiver)
+        imageInterfaceReceiver->newStatisticsReadyCallback(stats);
 
     return result;
 }
