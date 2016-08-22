@@ -575,6 +575,7 @@ public:
     vector<const BaseField *>       fields;
     /* Seems like used only in generator */
     vector<const EmbedSubclass *>   embeds;
+    int                             objectSize;
 
     Reflection() {}
 

@@ -104,7 +104,7 @@ class AbstractCalculationThread : public QThread
 
 //        QWaitCondition threadPaused;
 
-        void setImageCaptureInterface(ImageCaptureInterface *captureInterface)
+        void setImageCaptureInterface(ImageCaptureInterfaceQt *captureInterface)
         {
             mCaptureInterface = captureInterface;
             mLastFrameTimeStamp = 0;
@@ -114,7 +114,7 @@ class AbstractCalculationThread : public QThread
         /**
          * The capture interface we fetch the frames from
          **/
-        ImageCaptureInterface *mCaptureInterface;
+        ImageCaptureInterfaceQt *mCaptureInterface;
 
         /**
          * Holds the last two sets of frames acquired from the capture device(s)

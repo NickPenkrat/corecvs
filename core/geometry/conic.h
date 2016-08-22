@@ -103,6 +103,7 @@ public:
 
     bool intersectWith(const Circle2d &other, Vector2dd &point1, Vector2dd &point2);
     bool intersectWith(const Ray2d &ray, double &t1, double &t2);
+
 };
 
 class Circle3d;

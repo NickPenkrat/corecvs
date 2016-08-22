@@ -70,13 +70,13 @@ int main(int argc, char **argv)
     ChangeReceiver *reciever = NULL;
 
     if (className == "-") {
+#ifdef INCLUDE_EXAMPLE
         Reflection *widget_ref = &TestClass::reflection;
         aabWidget = new ReflectionWidget(widget_ref);
         reciever  = new ChangeReceiver(aabWidget);
         QObject::connect(aabWidget, SIGNAL(paramsChanged()), reciever, SLOT(processChange()));
         aabWidget->show();
-
-
+#endif
     } else {
         auto it = directory.find(className);
         if (it == directory.end()) {

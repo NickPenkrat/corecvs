@@ -268,20 +268,35 @@ protected:
 
 };
 
-class ImageCaptureInterfaceQt : public QObject, public ImageInterfaceReceiver, public ImageCaptureInterface
+class ImageCaptureInterfaceQtFactory {
+
+    static ImageCaptureInterfaceQt *fabric(string input, bool isRgb = false);
+    static ImageCaptureInterfaceQt *fabric(string input, int h, int w, int fps, bool isRgb = false);
+
+};
+
+class ImageCaptureQtNotifier
 {
     Q_OBJECT
-public:
-    ImageCaptureInterfaceQt()
-    {
-        imageInterfaceReceiver = this;
-    }
 
+public:
 signals:
     void    newFrameReady(frame_data_t frameData);
     void    newImageReady();
     void    newStatisticsReady(CaptureStatistics stats);
     void    streamPaused();
+
+
+};
+
+template<class BaseImageCaptureInterface>
+class ImageCaptureInterfaceQt : public BaseImageCaptureInterface, public ImageInterfaceReceiver, public ImageCaptureQtNotifier
+{
+    ImageCaptureInterfaceQt()
+    {
+        imageInterfaceReceiver = this;
+    }
+
 
 public:
     virtual void newFrameReadyCallback(frame_data_t frameData) override
@@ -303,8 +318,5 @@ public:
     {
         emit streamPaused();
     }
-
-    static ImageCaptureInterfaceQt *fabric(string input, bool isRgb = false);
-    static ImageCaptureInterfaceQt *fabric(string input, int h, int w, int fps, bool isRgb = false);
 
 };

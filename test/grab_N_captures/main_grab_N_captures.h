@@ -28,7 +28,7 @@ public:
     struct CameraDescriptor {
         int camId;
         int toSkip;
-        ImageCaptureInterface *input;
+        ImageCaptureInterfaceQt *input;
         QImage *result;
     };
 

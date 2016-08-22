@@ -97,6 +97,46 @@ int GcodeLoader::loadGcode(istream &input, Mesh3D &mesh)
                     cout << "G1 move" << endl;
                     mesh.setColor(RGBColor::Blue());
                     mesh.addLine(currentPosition, target);
+                } else if (token.second == 2 || token.second == 3) {
+                    Vector3dd center = currentPosition;
+                    mesh.setColor(RGBColor::Yellow());
+
+                    for (int i = 1; i < tokens.size(); i++)
+                    {
+                        switch (tokens[i].first) {
+                            case 'i': center.x() += tokens[i].second; break;
+                            case 'j': center.y() += tokens[i].second; break;
+                            case 'k': center.z() += tokens[i].second; break;
+                            default: break;
+                        }
+                    }
+
+                    Vector3dd normal = (currentPosition - center) ^ (target - center);
+                    normal.normalise();
+                    Vector3dd axis1 = (currentPosition - center);
+                    double r = (currentPosition - center).l2Metric();
+                    axis1.normalise();;
+                    Vector3dd axis2 = (axis1 ^ normal).normalised();
+                    if (token.second == 3)
+                        axis2 = -axis2;
+
+                    Vector2dd proj;
+                    proj.x() = (target-center) & axis1;
+                    proj.y() = (target-center) & axis2;
+                    double maxArg = proj.argument();
+
+                    double arg = 0;
+                    for (int i =0; i <= arcSteps; i++)
+                    {
+                        arg += maxArg / arcSteps;
+                        Vector3dd subTarget = center + axis1 * r * cos(arg) + axis2 * r * sin(arg);
+                        mesh.addLine(currentPosition, subTarget);
+                        currentPosition = subTarget;
+                    }
+
+                    mesh.setColor(RGBColor::Pink());
+                    mesh.addLine(currentPosition, target);
+
                 } else {
                     mesh.setColor(RGBColor::Green());
                     mesh.addLine(currentPosition, target);

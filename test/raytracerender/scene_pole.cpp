@@ -8,11 +8,13 @@
 
 void addPole(const Vector3dd &position, RaytraceableUnion &scene)
 {
-    for ( int i = 0; i < 9; i ++)
+    int zones = 14;
+    double totalHeight = 200;
+    for ( int i = 0; i < zones; i ++)
     {
         RaytraceableCylinder *object = new RaytraceableCylinder;
-        object->h = 20;
-        object->r = 10;
+        object->h = totalHeight / zones ;
+        object->r = 4;
         object->p = position + Vector3dd(0, -10 + i * object->h,  0);
 
         object->name = "Cylinder";
