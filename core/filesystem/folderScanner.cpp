@@ -48,7 +48,7 @@ bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFi
         if (!(findFiles ^ isDir))
             continue;
 
-        childs.push_back(pathChild);        // string(pathChild) has native platform style slashes inside
+        childs.push_back(pathChild.string());        // string(pathChild) has native platform style slashes inside
     }
 
     return true;

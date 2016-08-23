@@ -437,7 +437,7 @@ std::pair<int, double> corecvs::PhotostationPlacer::estimate3D(corecvs::CameraFi
 	activeInlierCount[A] = solver.getInliers();
 	A->location = activeEstimates[A];
 	std::cout << "Final estimate: " << activeEstimates[A].shift << activeEstimates[A].rotor << std::endl;
-	return std::make_pair(activeInlierCount[A].size(), 1.0 - solver.gamma);
+	return std::make_pair((int)activeInlierCount[A].size(), 1.0 - solver.gamma);
 }
 
 std::pair<int, double> corecvs::PhotostationPlacer::estimate2D(corecvs::CameraFixture *A, corecvs::Affine3DQ &currentT)
@@ -536,10 +536,10 @@ bool corecvs::PhotostationPlacer::appendAny()
     for (size_t iii = 0; iii < (size_t)speculativity() && iii < scene->placingQueue.size(); ++iii)
     {
         auto fixture = scene->placingQueue[iii];
-        int cnt = scene->getFixtureMatches(scene->placedFixtures, fixture).size();
+        int cnt = (int)scene->getFixtureMatches(scene->placedFixtures, fixture).size();
         auto d3 = scene->getPossibleTracks(fixture);
 		for (auto& t: d3)
-			cnt += std::get<3>(t)->observations__.size();
+			cnt += (int)std::get<3>(t)->observations__.size();
 		if (cnt < shutUpAndAppendMyFixtureInlierThreshold())
 			continue;
 		matches.emplace_back(fixture, cnt);
