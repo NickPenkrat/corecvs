@@ -541,7 +541,6 @@ bool corecvs::PhotostationPlacer::appendAny()
         auto fixture = scene->placingQueue[iii];
         int cnt = (int)scene->getFixtureMatches(scene->placedFixtures, fixture).size();
         auto d3 = scene->getPossibleTracks(fixture);
-<<<<<<< HEAD
         for (auto& t: d3)
             cnt += std::get<3>(t)->observations__.size();
         if (cnt < shutUpAndAppendMyFixtureInlierThreshold())
@@ -567,13 +566,6 @@ bool corecvs::PhotostationPlacer::appendAny()
         scene->placingQueue.resize(scene->placingQueue.size() - 1);
         appended = true;
         break;
-=======
-		for (auto& t: d3)
-			cnt += (int)std::get<3>(t)->observations__.size();
-		if (cnt < shutUpAndAppendMyFixtureInlierThreshold())
-			continue;
-		matches.emplace_back(fixture, cnt);
->>>>>>> origin/sfedorenko_develop_gpu_vc14
     }
 
     tform.shift = mean;
