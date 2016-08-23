@@ -60,6 +60,11 @@ with_opencv {
                 INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
                 LIBS        += -L$$OPENCV_PATH/build/x64/vc12/lib/ $$OPENCV_249_LIBS
                 DEFINES     += WITH_OPENCV
+            } else:exists($$OPENCV_PATH/build/x64/vc12/bin/opencv_core249.dll): win32-msvc2015 {    # built OpenCV v.2.4.9 with vc12 without GPU
+                !build_pass:message(Using <$$OPENCV_PATH/build/x64/vc12/bin>)
+                INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
+                LIBS        += -L$$OPENCV_PATH/build/x64/vc12/lib/ $$OPENCV_249_LIBS
+                DEFINES     += WITH_OPENCV
             } else:exists($$OPENCV_PATH/x64/vc12/bin/opencv_core249.dll): win32-msvc* {             # installed OpenCV v.2.4.9 with msvc* without GPU (our integration server)
                 !build_pass:message(Using <$$OPENCV_PATH/x64/vc12/bin>)
                 INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED

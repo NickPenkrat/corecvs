@@ -22,7 +22,7 @@
 
 extern "C" {
 
-#define WRONG_DEVICE 1000
+#define WRONG_DEVICE 1000                           // the result of all methods, when get incorrect DSCapDeviceId as an argument
 
 
 enum CAPTURE_FORMAT_TYPE

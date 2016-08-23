@@ -91,7 +91,7 @@ template<typename U, typename V>
 class WildcardablePointerPair
 {
 public:
-#ifndef WIN32 // Sometime in future (when we switch to VS2015 due to https://msdn.microsoft.com/library/hh567368.apx ) we will get constexpr on windows
+#if !defined(WIN32) || (_MSC_VER >= 1900) // Sometime in future (when we switch to VS2015 due to https://msdn.microsoft.com/library/hh567368.apx ) we will get constexpr on windows
     static constexpr U* UWILDCARD = nullptr;
     static constexpr V* VWILDCARD = nullptr;
 #else
