@@ -226,8 +226,34 @@ public:
         return fabs(dp & denum) / l;
     }
 
+    double projectionP(const Vector3dd &point) const
+    {
+        Vector3dd d  = point - p;
+        return (d & a) / a.l2Metric();
+
+    }
+
+    Vector3dd projection(const Vector3dd &point) const
+    {
+        return getPoint(projectionP(point));
+    }
+
+    double distanceTo(const Vector3dd &point) const
+    {
+        return (point - projection(point)).l2Metric();
+    }
+
     /**
-     *    This is a helpful method to estimate properties of skew lines
+     *  This is a helpful method to estimate properties of skew lines
+     *  Assuming A and B - are points closest to each other on *this and other
+     *  respectively.
+     *
+     *  As a result there will be a vector that holds
+     *
+     *   x() - the parameter value to travel *this to get to A
+     *   y() - the parameter value to travel other to get to B
+     *   z() - the distance between A and B
+     *
      **/
     Vector3dd intersectCoef(Ray3d &other)
     {
@@ -251,9 +277,9 @@ public:
         return (getPoint(coef.x()) + other.getPoint(coef.y())) / 2.0;
     }
     
-    std::pair<corecvs::Vector3dd, corecvs::Vector3dd> pluckerize() const
+    std::pair<Vector3dd, Vector3dd> pluckerize() const
     {
-        auto an = a.normalised();
+        Vector3dd an = a.normalised();
         return std::make_pair(an, p ^ an);
     }
 
@@ -815,6 +841,20 @@ public:
          return point - t * normal();
      }
 
+
+     Ray3d projectRayTo(const Ray3d &ray) const
+     {
+         double l2 = normal().sumAllElementsSq();
+
+         double dp = pointWeight(ray.p);
+         double tp = (dp / l2);
+
+         double da = normal() & ray.a;
+         double ta = (da / l2);
+
+         return Ray3d(ray.a - ta * normal(), ray.p - tp * normal());
+     }
+
      /**
       *   projecting zero to the current plane
       **/
@@ -828,7 +868,7 @@ public:
     /**
      *  Construct a plane from normal
      **/
-    static Plane3d FormNormal(const Vector3dd &normal)
+    static Plane3d FromNormal(const Vector3dd &normal)
     {
         return Plane3d(normal);
     }

@@ -40,7 +40,9 @@ public:
             sortedIndex.push_back(i);
 
         std::sort(sortedIndex.begin(), sortedIndex.end(), [=](int a, int b) { return polygon[a].y() < polygon[b].y(); });
-        int idx = sortedIndex.front() + 1;
+
+        /*There could be a one point polygon */
+        int idx = (sortedIndex.front() + 1) % polygon.size();
         while (idx != sortedIndex.back()) {
             side[idx] = true;
             idx = (idx + 1) % polygon.size();

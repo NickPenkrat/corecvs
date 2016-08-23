@@ -17,12 +17,14 @@ WPP::VTYPE const WPP::VWILDCARD = nullptr;
 
 std::string SceneObservation::getPointName()
 {
-    if (featurePoint == NULL) return std::string("");
-    return featurePoint->name;
+    return featurePoint ? featurePoint->name : "";
 }
 
 FixtureCamera *SceneObservation::getCameraById(FixtureCamera::IdType id)
 {
+    CORE_ASSERT_TRUE_S(featurePoint);
+    CORE_ASSERT_TRUE_S(featurePoint->ownerScene);
+
     return featurePoint->ownerScene->getCameraById(id);
 }
 

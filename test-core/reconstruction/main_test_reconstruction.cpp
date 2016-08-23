@@ -546,15 +546,17 @@ TEST(Reconstruction, testP3P)
     int cntInValid = 0;
     for (int i = 0; i < RNG_RETRIES; ++i)
     {
-        std::vector<corecvs::Vector3dd> pts, dirs;
-        corecvs::Vector3dd pos(runif(rng), runif(rng), runif(rng));
+        std::vector<corecvs::Vector3dd> pts, dirs, origins;
+        corecvs::Vector3dd pos(runif(rng), runif(rng), runif(rng)),
+        	origin(runif(rng), runif(rng), runif(rng));
         for (int j = 0; j < NPT; ++j)
         {
             pts.emplace_back(runif(rng), runif(rng), runif(rng));
-            dirs.emplace_back((*pts.rbegin() - pos).normalised());
+            dirs.emplace_back((*pts.rbegin() - (pos + origin)).normalised());
+            origins.emplace_back(origin);
         }
 
-        auto res = corecvs::PNPSolver::solvePNP(dirs, pts);
+        auto res = corecvs::PNPSolver::solvePNP(origins, dirs, pts);
 
         double minDiffPos   = 1e10;
         //double minDiffAngle = 1e100;

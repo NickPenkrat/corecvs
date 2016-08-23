@@ -37,24 +37,25 @@ class SceneFeaturePoint;
 class SceneObservation
 {
 public:
-    SceneObservation() :
-        camera(NULL),
-        cameraFixture(NULL),
-        featurePoint(NULL)
+    SceneObservation()
+        : camera(NULL)
+        , cameraFixture(NULL)
+        , featurePoint(NULL)
+        , observation(0.0)
+        , accuracy(0.0)
+        , observDir(0.0)
+        , isKnown(false)
     {}
 
-    FixtureCamera *     camera;
-    CameraFixture *     cameraFixture;
-    SceneFeaturePoint * featurePoint;
-
+    FixtureCamera      *camera;
+    CameraFixture      *cameraFixture;
+    SceneFeaturePoint  *featurePoint;
     Vector2dd           observation;
     Vector2dd           accuracy;
+    Vector3dd           observDir;      /* Ray to point */
     bool                isKnown;
     MetaContainer       meta;
-
-    /* Ray to point */
-    Vector3dd           observDir;
-
+    
     double &x() { return observation.x(); }
     double &y() { return observation.y(); }
 
@@ -67,7 +68,7 @@ public:
     template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(observDir   , Vector3dd(0.0) , "name");
+        visitor.visit(observDir   , Vector3dd(0.0) , "observDir");
         visitor.visit(observation , Vector2dd(0.0) , "observation");
         visitor.visit(accuracy    , Vector2dd(0.0) , "accuracy");
         visitor.visit(isKnown     , false          , "isKnown");
@@ -84,7 +85,6 @@ public:
         }
         //camera->setObjectId(id);
     }
-
 };
 
 template<typename U, typename V>

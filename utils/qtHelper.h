@@ -87,7 +87,7 @@ void setValueBlocking(QDoubleSpinBox *box, double value);
 
 QString printWindowFlags(const Qt::WindowFlags &flags);
 QString printWindowState(const Qt::WindowStates &state);
-QString printSelecionModel(const QItemSelectionModel::SelectionFlags &flag);
+QString printSelectionModel(const QItemSelectionModel::SelectionFlags &flag);
 QString printWidgetAttributes(QWidget *widget);
 
 QString printQImageFormat(const QImage::Format &format);

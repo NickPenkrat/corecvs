@@ -10,7 +10,8 @@
 
 #include <fstream>
 #include <iostream>
-#include <objLoader.h>
+#include "objLoader.h"
+#include "bufferFactory.h"
 #include "gtest/gtest.h"
 
 #include "global.h"
@@ -24,6 +25,7 @@
 #include "meshLoader.h"
 #include "preciseTimer.h"
 #include "perlinNoise.h"
+#include "log.h"
 
 using namespace std;
 using namespace corecvs;
@@ -452,7 +454,6 @@ TEST(Raytrace, DISABLED_testScanExample)
     }
 }
 
-
 TEST(Raytrace, DISABLED_testRaytraceModifiers)
 {
     int h = 1500;
@@ -574,11 +575,112 @@ TEST(Raytrace, testSDF)
     cout << "R:" << ray.ray << endl;
     cout << "P:" << ray.getPoint() << endl;
     cout << "N:" << ray.normal << endl;
-
-
-
-
 }
+
+TEST(Raytrace, testCylinder)
+{
+    Mesh3D mesh;
+    RaytraceableCylinder object;
+    /*object.e1 = Vector3dd::OrtX();
+    object.e2 = Vector3dd::OrtZ();
+    object.n  = Vector3dd::OrtY();*/
+    object.h = 50;
+    object.r = 20;
+    object.p = Vector3dd(0,-10,200);
+
+    Ray3d rays[] = {
+      /*  Ray3d(Vector3dd::OrtZ()   , Vector3dd::Zero()),
+        Ray3d(Vector3dd::OrtZ()   , Vector3dd(sqrt(object.r), 0, 0)),
+        Ray3d(Vector3dd::OrtZ()   , Vector3dd(-19.99, 0, 0)),
+        Ray3d(Vector3dd(0, 0.1, 1), Vector3dd(-19.99, 0, 0)),
+
+        Ray3d(Vector3dd(0, 0.1, 1), Vector3dd(-19.99, 0, 0)),*/
+
+        Ray3d(Vector3dd(0, -1, 1), Vector3dd(0, 240, 0)),
+    };
+
+    for (int i = 0; i < CORE_COUNT_OF(rays); i++)
+    {
+        rays[i] = rays[i].normalised();
+        RayIntersection ray;        
+        ray.ray = rays[i];
+        mesh.addLine(rays[i].getPoint(0), rays[i].getPoint(300));
+        bool ok = object.intersect(ray);
+
+        cout << i << endl;
+        cout << " R:" << ray.ray << endl;
+        if (ok) {
+        cout << " P:" << ray.getPoint() << endl;
+        //cout << " N:" << ray.normal << endl;
+        } else  {
+            cout << "No Intersecution" << endl;
+        }
+
+        mesh.addPoint(ray.getPoint());
+    }
+
+    object.toMesh(mesh);
+    mesh.dumpPLY("cylinder-int.ply");
+}
+
+TEST(Raytrace, testCylinder1)
+{
+    Mesh3D mesh;
+    RaytraceableCylinder object;
+    /*object.e1 = Vector3dd::OrtX();
+    object.e2 = Vector3dd::OrtZ();
+    object.n  = Vector3dd::OrtY();*/
+    object.h = 50;
+    object.r = 20;
+    object.p = Vector3dd(0,-10,200);
+
+    int limit = 100;
+
+    vector<Ray3d> rays;
+
+    for (int i = - limit; i < limit; i++)
+    {
+        for (int j = - limit; j < limit; j++)
+        {
+            /*rays.push_back(Ray3d(Vector3dd(i / (3.0 * limit), j /  (3.0 * limit), 1.0 ), Vector3dd::Zero()));
+            rays.back().normalise();*/
+
+            rays.push_back(Ray3d(Vector3dd(i / (2.0 * limit), j /  (2.0 * limit) - 0.4, 1.0 ), Vector3dd(60, 120, 0)));
+            rays.back().normalise();
+        }
+    }
+
+    int nIntersects = 0;
+    for (size_t i = 0; i < rays.size(); i++)
+    {
+        RayIntersection ray;
+        ray.ray = rays[i];
+        mesh.addLine(rays[i].getPoint(0), rays[i].getPoint(30));
+        bool ok = object.intersect(ray);
+
+        ostringstream ss;
+        ss << i << endl;
+        ss << " R:" << ray.ray << endl;
+        if (ok) {
+            ss << " P:" << ray.getPoint() << endl;
+          //ss << " N:" << ray.normal << endl;
+            //L_DDEBUG << ss.str();
+            nIntersects++;
+        }
+        else  {
+            ss << "No Intersection" << endl;
+        }
+        //L_DDEBUG << ss.str();
+
+        mesh.addPoint(ray.getPoint());
+    }
+
+    cout << " found intersections: " << nIntersects << " of rays: " << rays.size() << endl;
+
+    //object.toMesh(mesh);
+    mesh.dumpPLY("cylinder-int.ply");
+}
+
 
 TEST(Raytrace, DISABLED_testRaytraceSDF)
 {
@@ -592,7 +694,7 @@ TEST(Raytrace, DISABLED_testRaytraceSDF)
                 degToRad(60.0));
     renderer.position = Affine3DQ::Identity();
 
-    RaytraceablePointLight light1(RGBColor::White() .toDouble(), Vector3dd( 0, -190, 150));
+    RaytraceablePointLight light1(RGBColor::White() .toDouble(), Vector3dd(  0, -190, 150));
     RaytraceablePointLight light2(RGBColor::Yellow().toDouble(), Vector3dd(-120, -70,  50));
 
     SDFRenderable object;
@@ -624,6 +726,69 @@ TEST(Raytrace, DISABLED_testRaytraceSDF)
 
     BMPLoader().save("trace-noise.bmp", buffer);
 
-
     delete_safe(buffer);
+}
+
+TEST(Raytrace, DISABLED_testRaytraceCylinder)
+{
+    int h = 500;
+    int w = 500;
+    RaytraceRenderer renderer;
+    renderer.intrisics = PinholeCameraIntrinsics(
+                Vector2dd(w, h),
+                degToRad(60.0));
+    renderer.position = Affine3DQ::Identity();
+    //renderer.sky = new RaytraceableSky1();
+
+    RGB24Buffer *cubemap = BufferFactory::getInstance()->loadRGB24Bitmap("cubemap.bmp");
+    //cout << "Loaded cubemap" << cubemap->getSize() << endl;
+    RaytraceableCubemap cubeMaterial(cubemap);
+    renderer.sky = &cubeMaterial;
+
+    RaytraceablePointLight light1(RGBColor::White() .toDouble(), Vector3dd(  0, -190, 150));
+    RaytraceablePointLight light2(RGBColor::Yellow().toDouble(), Vector3dd(-120, -70,  50));
+
+    Cylinder3d cylinder;
+    cylinder.c      = Vector3dd(0,0,200);
+    cylinder.normal = Vector3dd::OrtY();
+    cylinder.height = 30;
+    cylinder.r      = 40;
+
+    RaytraceableCylinder object;
+    object.h = 50;
+    object.r = 20;
+    object.p = Vector3dd(0,30,200);
+
+    object.name = "Cylinder";
+    object.color = RGBColor::Red().toDouble();
+    object.material = new RaytraceableChessMaterial(5.0);
+    object.material = MaterialExamples::ex1();
+
+    RaytraceableSphere sphere2(Sphere3d(Vector3dd(-80,0, 250.0), 50.0));
+    sphere2.name = "Sphere2";
+    sphere2.color = RGBColor::Red().toDouble();
+    sphere2.material = MaterialExamples::bumpy();
+
+    RaytraceableUnion scene;
+    scene.elements.push_back(&object);
+    //scene.elements.push_back(&sphere2);
+
+    renderer.object = &scene;
+    renderer.lights.push_back(&light1);
+    renderer.lights.push_back(&light2);
+
+    for (int i = 0; i < 150; i++) {
+        RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
+        double a = degToRad(360.0 / 150 * i);
+        Vector3dd dir(0, sin(a), cos(a));
+        //renderer.position = Affine3DQ::Shift(dir * 200.0) * Affine3DQ::RotationX(a) *  Affine3DQ::Shift(0, 0, -200.0);
+        renderer.position = Affine3DQ::Shift(Vector3dd(0, i * 3 , 0 )) * Affine3DQ::RotationY(0.0);
+
+        renderer.trace(buffer);
+
+        char name[100];
+        snprintf2buf(name, "trace-cylinder%d.bmp", i);
+        BMPLoader().save(name, buffer);
+        delete_safe(buffer);
+    }
 }

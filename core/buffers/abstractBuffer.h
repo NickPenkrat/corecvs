@@ -524,7 +524,7 @@ template<typename ResultType>
      **/
     inline bool isValidCoord(const IndexType y,const  IndexType x) const
     {
-        return (unsigned)x < (unsigned)w && (unsigned)y < (unsigned)h;
+        return (x >= 0) && (x < w) && (y >= 0) && (y < h);
     }
 
     /**

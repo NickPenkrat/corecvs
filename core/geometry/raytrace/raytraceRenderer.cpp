@@ -10,9 +10,16 @@ RaytraceRenderer::RaytraceRenderer()
 void RaytraceRenderer::trace(RayIntersection &intersection)
 {
     // cout << "RaytraceRenderer::trace():" << intersection.ray << " " << intersection.depth << " " << intersection.weight << endl;
-    bool hasInter = object->intersect(intersection);
+    bool hasInter = false;
+    if (object) {
+        hasInter = object->intersect(intersection);
+    }
+
     if (!hasInter || intersection.object == NULL) {
         // cout << "No intersection" << endl;
+        if (sky != NULL) {
+            sky->getColor(intersection, *this);
+        }
         return;
     }
 
@@ -63,7 +70,7 @@ void RaytraceRenderer::trace(RGB24Buffer *buffer)
                         intersection.weight = 1.0;
                         intersection.depth = 0;
                         trace(intersection);
-                        if (intersection.object != NULL) {
+                        if (/*intersection.object != NULL*/ 1) {
                             energy->element(i, j) = intersection.ownColor;
                         } else {
                             //energy->element(i, j) = RGBColor::Cyan().toDouble();
@@ -104,7 +111,7 @@ void RaytraceRenderer::trace(RGB24Buffer *buffer)
                             intersection.weight = 1.0;
                             intersection.depth = 0;
                             trace(intersection);
-                            if (intersection.object != NULL) {
+                            if (/*intersection.object != NULL*/ 1) {
                                 sumColor += intersection.ownColor;
                             } else {
 
@@ -381,7 +388,7 @@ Vector3dd RayIntersection::getPoint()
 void RaytraceableChessMaterial::getColor(RayIntersection &ray, RaytraceRenderer &/*renderer*/)
 {
     Vector3dd intersection = ray.getPoint();
-    intersection = intersection / 10.0;
+    intersection = intersection / cellSize;
 
     bool b1;
     int vx = (int)intersection.x();
@@ -411,3 +418,10 @@ Raytraceable::~Raytraceable()
 {
 
 }
+
+void RaytraceableSky::getColor(RayIntersection &ray, RaytraceRenderer &renderer)
+{
+    double v = ray.ray.a & direction;
+    ray.ownColor = lerp(low, high, v, -1.0, 1.0);
+}
+

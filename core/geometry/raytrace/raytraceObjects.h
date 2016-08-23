@@ -22,6 +22,7 @@ public:
     virtual bool intersect(RayIntersection &intersection) override;
     virtual void normal(RayIntersection &intersection)   override;
     virtual bool inside (Vector3dd &point)  override;
+
 };
 
 class RaytraceableSphere : public Raytraceable{
@@ -40,6 +41,41 @@ public:
     virtual bool intersect(RayIntersection &intersection) override;
     virtual void normal(RayIntersection &intersection)   override;
     virtual bool inside (Vector3dd &point)  override;
+
+
+
+    // Raytraceable interface
+public:
+    virtual bool toMesh(Mesh3D &target) override;
+};
+
+class RaytraceableCylinder: public Raytraceable {
+public:
+    static const double EPSILON;
+
+    bool flag;
+
+    /* We need matrix here */
+    Vector3dd p;   /**< center of one of the faces */
+    Matrix33 rotation; /**<   Stores cylinder orientation. World to "cylinder zero" tarnsformation  */
+
+
+
+    double r;      /**< cylinder radius */
+    double h;      /**< cylinder height */
+
+    RaytraceableCylinder() :
+        flag(false),
+        rotation(Matrix33::RotationX(degToRad(90)))
+    {}
+
+    virtual bool intersect(RayIntersection &intersection) override;
+    virtual void normal(RayIntersection &intersection)   override;
+    virtual bool inside (Vector3dd &point)  override;
+
+    // Raytraceable interface
+public:
+    virtual bool toMesh(Mesh3D &) override;
 };
 
 

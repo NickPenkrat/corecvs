@@ -67,9 +67,26 @@ public:
     virtual Ray3d getRefraction(RayIntersection &ray);
 };
 
+class RaytraceableSky : public RaytraceableMaterial {
+public:
+    TraceColor low  = RGBColor::Black().toDouble();
+    TraceColor high = RGBColor::Cyan().toDouble();
+    Vector3dd direction = Vector3dd::OrtY();
+
+    virtual void getColor(RayIntersection &ray, RaytraceRenderer &renderer) override;
+
+};
+
+
 class RaytraceableChessMaterial : public RaytraceableMaterial {
 public:
-    virtual void getColor(RayIntersection &ray, RaytraceRenderer &renderer);
+    double cellSize;
+
+    RaytraceableChessMaterial(double cellSize = 10.0) :
+        cellSize(cellSize)
+    {}
+
+    virtual void getColor(RayIntersection &ray, RaytraceRenderer &renderer) override;
 };
 
 
@@ -91,6 +108,9 @@ public:
     virtual void normal(RayIntersection &intersection);
     virtual bool inside (Vector3dd &point) = 0;
 
+    /* Helper function to help debuging */
+    virtual bool toMesh (Mesh3D & /*target*/) { return false; }
+
     virtual ~Raytraceable();
 };
 
@@ -106,9 +126,10 @@ public:
     PinholeCameraIntrinsics intrisics;
     Affine3DQ position;
 
-    Raytraceable *object;
+    Raytraceable *object = NULL;
     vector<RaytraceablePointLight *> lights;
     TraceColor ambient;
+    RaytraceableMaterial *sky = NULL;
 
     /* Ray trace end condition */
     int maxDepth = 4;

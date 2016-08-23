@@ -17,6 +17,18 @@ RaytraceableMaterial *MaterialExamples::ex1()
     return blueMirror;
 }
 
+RaytraceableMaterial *MaterialExamples::ex2()
+{
+    RaytraceableMaterial *blueMirror = new RaytraceableMaterial;
+    blueMirror->ambient = RGBColor::White().toDouble() * 0.2 ;
+    blueMirror->diffuse = RGBColor::White().toDouble() / 255.0;
+    blueMirror->reflCoef = 0.3;
+    blueMirror->refrCoef = 0;
+    blueMirror->opticalDens = 1.3;
+    blueMirror->specular = RGBColor::Red().toDouble() / 255.0;
+    return blueMirror;
+}
+
 RaytraceableMaterial *MaterialExamples::bumpy()
 {
     BumpyMaterial * bumpy = new BumpyMaterial;
@@ -84,6 +96,89 @@ void TextureMaterial::getColor(RayIntersection &ray, RaytraceRenderer &renderer)
 
     //SYNC_PRINT(("tex coords [%lf %lf]\n", coords.x(), coords.y()));
     ray.ownColor = texture->elementBl(coords).toDouble();
+}
 
+void RaytraceableSky1::getColor(RayIntersection &ray, RaytraceRenderer &renderer)
+{
+    double v = noise.turbulence(ray.ray.a * 10.0);
+    if (v <= skyLevel || v >= 1.0)
+        ray.ownColor = sky;
+    else {
+        ray.ownColor = lerp(low, high, v, skyLevel, 1.0);
+    }
+
+    //ray.ownColor;
+}
+
+
+void RaytraceableCubemap::getColor(RayIntersection &ray, RaytraceRenderer &renderer)
+{
+    int p = 0;
+    Vector2dd uv = Vector2dd::Zero();
+    Vector3dd d = ray.ray.a.normalised();
+    Vector3dd a = Vector3dd(fabs(d.x()), fabs(d.y()), fabs(d.z()));
+
+    ray.ownColor = RGBColor::Magenta().toDouble();
+
+    /* X */
+    if (d.x() > 0 && a.x() > a.y() && a.x() > a.z())
+    {
+        p = 3;
+        uv = Vector2dd(-d.z(), d.y()) / a.x() ;
+    }
+
+    if (d.x() < 0 && a.x() > a.y() && a.x() > a.z())
+    {
+        p = 1;
+        uv = Vector2dd(d.z(), d.y()) / a.x();
+    }
+
+    /* Y */
+    if (d.y() > 0 && a.y() > a.x() && a.y() > a.z())
+    {
+        p = 5;
+        uv = Vector2dd(d.x(), -d.z()) / a.y();
+    }
+
+    if (d.y() < 0 && a.y() > a.x() && a.y() > a.z())
+    {
+        p = 0;
+        uv = Vector2dd(d.x(), d.z()) / a.y();
+    }
+
+    /* Z */
+    if (d.z() > 0 && a.z() > a.y() && a.z() > a.x())
+    {
+        p = 2;
+        uv = d.xy() / a.z();
+    }
+
+    if (d.z() < 0 && a.z() > a.y() && a.z() > a.x())
+    {
+        p = 4;
+        uv = Vector2dd(-d.x(), d.y()) / a.z();
+    }
+
+    uv += Vector2dd(1.0, 1.0);
+    uv /= 2.0;
+
+
+    if (cubemap == NULL || p < 0 || p >= 6) {
+        ray.ownColor = RGBColor::rainbow1( p / 6.0).toDouble();
+    } else {
+        Vector2dd map[6] = {
+            Vector2dd( 1 / 4.0, 0 / 3.0),
+            Vector2dd( 0 / 4.0, 1 / 3.0),
+            Vector2dd( 1 / 4.0, 1 / 3.0),
+            Vector2dd( 2 / 4.0, 1 / 3.0),
+            Vector2dd( 3 / 4.0, 1 / 3.0),
+            Vector2dd( 1 / 4.0, 2 / 3.0)
+        };
+        Vector2dd coor = (map[p] + Vector2dd(1 / 4.0, 1 / 3.0) * uv) * Vector2dd(cubemap->w - 1, cubemap->h - 1);
+        if (cubemap->isValidCoordBl(coor)) {
+            ray.ownColor = cubemap->elementBl(coor).toDouble() * 2.0;
+        }
+
+    }
 
 }
