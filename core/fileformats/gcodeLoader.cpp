@@ -26,8 +26,13 @@ vector<pair<char, double>> parseLine(string gline)
             p.first = s[0];
         }
         s = s.substr(1);
+
+        /*G CODE is locale independant so we need to parse double in C locale*/
         if (!s.empty()) {
-            p.second = std::stod(s);
+            std::locale mylocale("C");
+            istringstream ss(s);
+            ss.imbue(mylocale);
+            ss >> p.second;
             result.push_back(p);
         }
     }
@@ -59,7 +64,11 @@ int GcodeLoader::loadGcode(istream &input, Mesh3D &mesh)
 
         /* Removing comments */
         line = HelperUtils::stringSplit(line, ';').front();
+        if (line.empty())
+            continue;
         line = HelperUtils::stringSplit(line, '(').front();
+        if (line.empty())
+            continue;
 
         if (trace) {
             cout << "Without comments <" << line << ">" << endl;

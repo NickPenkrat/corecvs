@@ -64,6 +64,11 @@ public:
 
 //---------------------------------------------------------------------------
 
+/**
+ *  Callback style without Qt slots and signals
+ *
+ *  The target here is to prepare separation fro
+ **/
 class ImageInterfaceReceiver
 {
 public:
@@ -184,14 +189,14 @@ public:
     virtual ~ImageCaptureInterface();
 
     /*Callback reciever*/
-    ImageInterfaceReceiver *imageInterfaceReceiver = NULL;
+    ImageInterfaceReceiver *imageInterfaceReceiver;
 
     /**
      *  Fabric to create particular implementation of the capturer
      **/
     static void getAllCameras(vector<std::string> &cameras);
-    static ImageCaptureInterface *fabric(string input, bool isRgb = false);
-    static ImageCaptureInterface *fabric(string input, int h, int w, int fps, bool isRgb = false);
+//    static ImageCaptureInterface *fabric(string input, bool isRgb = false);
+//    static ImageCaptureInterface *fabric(string input, int h, int w, int fps, bool isRgb = false);
 
     /**
      *  Main function to request frames from image interface
@@ -268,17 +273,18 @@ protected:
 
 };
 
-class ImageCaptureInterfaceQtFactory {
+class ImageCaptureInterfaceQt;
 
+class ImageCaptureInterfaceQtFactory {
+public:
     static ImageCaptureInterfaceQt *fabric(string input, bool isRgb = false);
     static ImageCaptureInterfaceQt *fabric(string input, int h, int w, int fps, bool isRgb = false);
 
 };
 
-class ImageCaptureQtNotifier
+class ImageCaptureQtNotifier : public QObject
 {
     Q_OBJECT
-
 public:
 signals:
     void    newFrameReady(frame_data_t frameData);
@@ -286,19 +292,18 @@ signals:
     void    newStatisticsReady(CaptureStatistics stats);
     void    streamPaused();
 
-
 };
 
-template<class BaseImageCaptureInterface>
-class ImageCaptureInterfaceQt : public BaseImageCaptureInterface, public ImageInterfaceReceiver, public ImageCaptureQtNotifier
+class ImageCaptureInterfaceQt: public ImageInterfaceReceiver, public ImageCaptureQtNotifier, public virtual ImageCaptureInterface
 {
+public:
+
     ImageCaptureInterfaceQt()
     {
         imageInterfaceReceiver = this;
+        SYNC_PRINT(("Constructing ImageCaptureInterfaceQt::ImageCaptureInterfaceQt()\n"));
     }
 
-
-public:
     virtual void newFrameReadyCallback(frame_data_t frameData) override
     {
         emit newFrameReady(frameData);
@@ -318,5 +323,33 @@ public:
     {
         emit streamPaused();
     }
+};
 
+template<class WrappeeType>
+class ImageCaptureInterfaceWrapper : public virtual ImageCaptureInterfaceQt, public virtual WrappeeType
+{
+public:
+    ImageCaptureInterfaceWrapper(const std::string &input, bool isRGB) :
+        WrappeeType(input, isRGB)
+    {}
+
+    ImageCaptureInterfaceWrapper(const std::string &input, bool isVerbose, bool isRGB) :
+        WrappeeType(input, isVerbose, isRGB)
+    {}
+
+
+    ImageCaptureInterfaceWrapper(const std::string &input) :
+        WrappeeType(input)
+    {}
+
+    ImageCaptureInterfaceWrapper(const string &_devname, int h, int w, int fps, bool isRgb) :
+        WrappeeType(_devname, h, w, fps, isRgb)
+    {}
+
+    ImageCaptureInterfaceWrapper(
+        G12Buffer *_cl,
+        G12Buffer *_cr,
+        G12Buffer *_cln,
+        G12Buffer *_crn ) : WrappeeType (_cl, _cr, _cln, _crn)
+    {}
 };

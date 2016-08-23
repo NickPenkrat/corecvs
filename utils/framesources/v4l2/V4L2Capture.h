@@ -24,7 +24,7 @@
 using namespace std;
 
 
-class V4L2CaptureInterface : public ImageCaptureInterface
+class V4L2CaptureInterface : public virtual ImageCaptureInterface
 {
 public:
     V4L2CaptureInterface(string _devname, bool isRgb = false);

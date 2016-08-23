@@ -145,7 +145,7 @@ bool MeshLoader::save(Mesh3D *mesh, const string &fileName)
 
 std::string MeshLoader::extentionList()
 {
-    return string("*") + string(PLY_RES) + " *" + string(STL_RES) + " *" + string(OBJ_RES) ;
+    return string("*") + string(PLY_RES) + " *" + string(STL_RES) + " *" + string(OBJ_RES) + " *" + string(GCODE_RES);
 }
 
 } //namespace corecvs

@@ -697,7 +697,7 @@ ImageCaptureInterfaceQt* PhotostationCaptureDialog::createCameraCapture(const st
 
     // TODO: use compressed YUYV, MJPG,... !
 
-    ImageCaptureInterfaceQt *camera = ImageCaptureInterfaceQt::fabric(devname, h, w, fps, isRgb);
+    ImageCaptureInterfaceQt *camera = ImageCaptureInterfaceQtFactory::fabric(devname, h, w, fps, isRgb);
 
     ImageCaptureInterface::CapErrorCode result = camera->initCapture();
     ImageCaptureInterface::CameraFormat actualFormat;

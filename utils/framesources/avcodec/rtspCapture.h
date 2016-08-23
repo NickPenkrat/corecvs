@@ -22,7 +22,7 @@ extern "C" {
 #include "imageCaptureInterface.h"
 #include "preciseTimer.h"
 
-class RTSPCapture : public ImageCaptureInterface
+class RTSPCapture : public virtual ImageCaptureInterface
 {
 public:
     RTSPCapture(const QString &params);

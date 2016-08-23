@@ -202,7 +202,7 @@ public:
 
         ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
         directory[std::string(name)]= &reflection;
-        cout << "Adding:" << name << " to directory" << std::endl;
+        // cout << "Adding:" << name << " to directory" << std::endl;
         return 0;
     }
 //#endif

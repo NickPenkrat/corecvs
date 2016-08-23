@@ -1,19 +1,17 @@
 /**
  * \brief Capture video stream from avi file using OpenCV library
  */
-#include <QtCore/QRegExp>
-#include <QtCore/QString>
 
 #include "openCVFileCapture.h"
 //#include "openCVHelper.h"
 #include "OpenCVTools.h"
 
-OpenCvFileCapture::OpenCvFileCapture(QString const &params)
+OpenCvFileCapture::OpenCvFileCapture(const  std::string &params)
     : /*AbstractFileCapture(params),*/
-       mName(params.toStdString())
+       mName(params)
      , count(1)
 {
-    SYNC_PRINT(("OpenCvFileCapture::OpenCvFileCapture(%s): called\n", params.toLatin1().constData()));
+    SYNC_PRINT(("OpenCvFileCapture::OpenCvFileCapture(%s): called\n", params.c_str()));
 
     SYNC_PRINT(("OpenCvFileCapture::OpenCvFileCapture(): exited\n"));
 }

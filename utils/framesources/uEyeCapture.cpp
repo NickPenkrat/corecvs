@@ -269,8 +269,9 @@ UEyeCaptureInterface::FramePair UEyeCaptureInterface::getFrame()
 
     //stats.values[CaptureStatistics::DATA_SIZE] = currentLeft.bytesused;
 
-    if (imageInterfaceReceiver)
+    if (imageInterfaceReceiver != NULL) {
         imageInterfaceReceiver->newStatisticsReadyCallback(stats);
+    }
 
 //    printf("Finished getFrame\n");
     return result;

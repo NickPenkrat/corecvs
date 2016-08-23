@@ -165,6 +165,7 @@ TEST(FileFormats, DISABLED_testObjLoader)
 TEST(FileFormats, testGcodeLoader)
 {
     const char input[] =
+            "; Slic3r style comments\n"
             "G01 Z-0.125000 F100.0 (Penetrate)\n"
             "G02 X73.327786 Y20.305024 Z-0.125000 I-38.815360 J0.000000 F400.000000\n"
             "G02 X59.120378 Y6.097616 Z-0.125000 I-33.615088 J19.407680\n"

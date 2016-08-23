@@ -212,8 +212,9 @@ V4L2CaptureInterface::FramePair V4L2CaptureInterface::getFrame()
     stats.values[CaptureStatistics::DESYNC_TIME] = desync > 0 ? desync : -desync;
     stats.values[CaptureStatistics::DATA_SIZE] = currentFrame[Frames::LEFT_FRAME].bytesused;
 
-    if (imageInterfaceReceiver)
+    if (imageInterfaceReceiver != NULL) {
         imageInterfaceReceiver->newStatisticsReadyCallback(stats);
+    }
 
     return result;
 }
@@ -271,8 +272,11 @@ V4L2CaptureInterface::FramePair V4L2CaptureInterface::getFrameRGB24()
 
     stats.values[CaptureStatistics::DESYNC_TIME] = CORE_ABS(desync);
     stats.values[CaptureStatistics::DATA_SIZE]   = currentFrame[Frames::LEFT_FRAME].bytesused;
-    if (imageInterfaceReceiver)
+    if (imageInterfaceReceiver != NULL) {
         imageInterfaceReceiver->newStatisticsReadyCallback(stats);
+    } else {
+        SYNC_PRINT(("Warning:  V4L2CaptureInterface::getFrameRGB24(): imageInterfaceReceiver is NULL\n"));
+    }
 
     return result;
 }

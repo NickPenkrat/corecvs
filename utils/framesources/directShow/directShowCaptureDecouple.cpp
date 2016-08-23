@@ -162,8 +162,12 @@ ALIGN_STACK_SSE void DirectShowCaptureDecoupleInterface::memberCallback(DSCapDev
 
     frame_data_t frameData;
     frameData.timestamp = cameras[0].timestamp;
-    newFrameReady(frameData);
-    newStatisticsReady(stats);
+
+    if (imageInterfaceReceiver != NULL)
+    {
+        imageInterfaceReceiver->newFrameReadyCallback(frameData);
+        imageInterfaceReceiver->newStatisticsReadyCallback(stats);
+    }
 
     protectFrame.unlock();
 }

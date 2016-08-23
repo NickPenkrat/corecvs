@@ -335,7 +335,7 @@ void BaseHostDialog::initCapture(QString const &init, bool isRgb)
 
     mInputSelectorDialog.setInputString(mInputString);
 
-    mCamera = ImageCaptureInterfaceQt::fabric(mInputString.toStdString(), isRgb);
+    mCamera = ImageCaptureInterfaceQtFactory::fabric(mInputString.toStdString(), isRgb);
 
     if (mCamera == NULL)
     {
