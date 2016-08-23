@@ -28,10 +28,13 @@ class FloatFlow
 public:
     bool isKnown;
     Vector2dd vector;
+
     FloatFlow() {}
     FloatFlow(int    val)               : isKnown(val != 0), vector(0.0) {}
     FloatFlow(bool  _isKnown)           : isKnown(_isKnown), vector(0.0) {}
     FloatFlow(const Vector2dd &_vector) : isKnown(true), vector(_vector) {}
+
+    FloatFlow& operator=(const FloatFlow &other) { isKnown = other.isKnown; vector = other.vector; return *this; }
 };
 
 

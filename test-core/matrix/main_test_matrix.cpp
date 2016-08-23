@@ -410,7 +410,7 @@ TEST(Iterative, MinresQLP)
                 columns.push_back(i + j);
                 values.push_back(val[j + 2]);
             }
-        rowPointers[i + 1] = values.size();
+        rowPointers[i + 1] = (int)values.size();
     }
     corecvs::SparseMatrix M(N, N, values, columns, rowPointers);
     corecvs::Vector xx(N);
@@ -439,7 +439,7 @@ TEST(Iterative, MinresQLPPreconditioned)
                 columns.push_back(i + j);
                 values.push_back(val[j + 2]);
             }
-        rowPointers[i + 1] = values.size();
+        rowPointers[i + 1] = (int)values.size();
     }
     corecvs::SparseMatrix M(N, N, values, columns, rowPointers);
     corecvs::Vector xx(N);

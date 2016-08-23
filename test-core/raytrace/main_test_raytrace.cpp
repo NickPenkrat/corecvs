@@ -127,7 +127,7 @@ TEST(Raytrace, DISABLED_testRaytraceBase)
     PreciseTimer timer;
     timer = PreciseTimer::currentTime();
     renderer.trace(buffer);
-    SYNC_PRINT(("Total time %ld us", timer.usecsToNow()));
+    SYNC_PRINT(("Total time %lld us", timer.usecsToNow()));
 
 
     BMPLoader().save("raytrace.bmp", buffer);

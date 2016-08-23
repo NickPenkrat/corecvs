@@ -120,7 +120,7 @@ TEST(FastKernelDouble, testDoubleConvolve)  // TODO: it fails on the line 244!
     }
 
     SYNC_PRINT(("Profiling Vertical edge detection:\n"));
-    SYNC_PRINT(("   We will %d times pump [%dx%d] buffers with double elements (%lu bytes):\n", LIMIT, TEST_H_SIZE, TEST_W_SIZE, sizeof(double)));
+    SYNC_PRINT(("   We will %d times pump [%dx%d] buffers with double elements (%llu bytes):\n", LIMIT, TEST_H_SIZE, TEST_W_SIZE, sizeof(double)));
     uint64_t bytesr = LIMIT * TEST_H_SIZE * TEST_W_SIZE * sizeof(double);
     uint64_t bytesw = bytesr;
     SYNC_PRINT(("   Totally read  - %" PRIu64 " bytes = %.2f Mb \n", bytesr, bytesr / 1000000.0));
