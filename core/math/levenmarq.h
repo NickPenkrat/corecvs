@@ -300,6 +300,9 @@ public:
                     case LinearSolver::MINRESQLP_IC0:
                         {
                         auto P123 = A.incompleteCholseky();
+#ifdef WITH_CUSPARSE
+                        A.promoteToGpu();
+#endif
                         MinresQLPStatus res123;
                         if (P123.first)
                         {
