@@ -22,10 +22,11 @@ SUBDIRS +=       \
 #    aLowCodec \
 #    new_board_detector \
 #    cr2reader           \
-    debayer             \
-    qtScriptConsole     \
-    softrender          \
-    pmvs_generator \
+    debayer          \
+    qtScriptConsole  \
+    softrender       \
+    raytracerender   \
+    pmvs_generator   \
     stereo_generator
 
 
@@ -64,6 +65,9 @@ debayer.depends                    -= utils
 
 softrender.file                     = softrender/softrender.pro
 softrender.depends                 -= utils
+
+raytracerender.file                 = raytracerender/raytracerender.pro
+raytracerender.depends             -= utils
 
 new_board_detector	            = new_board_detector/new_board_detector.pro
 

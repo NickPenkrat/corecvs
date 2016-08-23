@@ -510,7 +510,7 @@ std::pair<int, double> corecvs::PhotostationPlacer::estimate2D(corecvs::CameraFi
 	std::cout << "<>" << A->name << " in P6P sense: inliers: " << solver.getInliersCount() << " P: " << solver.getGamma() << std::endl;
 	activeP6PEstimates[A].rotor = best.rotor;
 	activeP6PEstimates[A].shift = best.shift - currentT.shift;
-	return std::make_pair(solver.getInliersCount(), 1.0 - solver.getGamma());
+	return std::make_pair((int)solver.getInliersCount(), 1.0 - solver.getGamma());
 }
 
 bool corecvs::PhotostationPlacer::appendAny()
@@ -539,7 +539,7 @@ bool corecvs::PhotostationPlacer::appendAny()
         int cnt = (int)scene->getFixtureMatches(scene->placedFixtures, fixture).size();
         auto d3 = scene->getPossibleTracks(fixture);
 		for (auto& t: d3)
-			cnt += (int)std::get<3>(t)->observations__.size();
+            cnt += (int)std::get<3>(t)->observations__.size();
 		if (cnt < shutUpAndAppendMyFixtureInlierThreshold())
 			continue;
 		matches.emplace_back(fixture, cnt);
