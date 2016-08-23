@@ -149,6 +149,21 @@ void parallelable_for(IndexType begin, IndexType end, std::size_t /*grainsize*/,
 #endif // !WITH_TBB
 /**@}*/
 
+template <typename RR, typename V, typename F, typename R>
+V parallelable_reduce(const RR& range, const V& id, const F &f, const R &r)
+{
+#ifndef WITH_TBB
+	return f(range, id);
+#else
+	return tbb::parallel_reduce(range, id, f, r);
+#endif
+}
+
+template <typename I, typename V, typename F, typename R>
+V parallelable_reduce(const I& from, const I& to, const V& id, const F &f, const R &r)
+{
+	return parallel_reduce(corecvs::BlockedRange<I>(from, to), id, f, r);
+}
 
 
 template <typename IndexType, class Function>

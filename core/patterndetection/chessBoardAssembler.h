@@ -106,16 +106,10 @@ protected: //private:
             //std::vector<corecvs::Vector2dd> prediction;
     };
 
-    class ParallelBoardExpander
-    {
-        public:
-            ParallelBoardExpander(ChessBoardAssembler *assembler);
-            void operator() (const corecvs::BlockedRange<int>& r) const;
-        private:
-            ChessBoardAssembler *assembler;
-    };
-
-    void acceptHypothesis(RectangularGridPattern &board);
+	bool acceptBoard(const RectangularGridPattern &board);
+	void addNonIntersectingBoardIntersections(const RectangularGridPattern &board, std::vector<RectangularGridPattern> &boards);
+	void acceptHypothesis(const RectangularGridPattern &board, std::vector<RectangularGridPattern> &boards);
+    void acceptHypothesis(const RectangularGridPattern &board);
 
     std::vector<RectangularGridPattern> boards;   
     std::vector<OrientedCorner>         corners;
