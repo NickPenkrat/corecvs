@@ -72,7 +72,6 @@ class PCG : PCGParams
         }
         rho = 1.0;
 
-        int imin = 0;
         while (flag == PCGStatus::RUNNING && iter < maxIt)
         {
             if (!singleStep())

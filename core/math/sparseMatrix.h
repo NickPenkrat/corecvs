@@ -49,7 +49,7 @@ public:
     //! \brief Cast to dense matrix
     explicit operator Matrix() const;
     SparseMatrix(const SparseMatrix &src, int x1, int y1, int x2, int y2);
-    SparseMatrix(const SparseMatrix &M) : h(M.h), w(M.w), values(M.values), rowPointers(M.rowPointers), columns(M.columns)
+    SparseMatrix(const SparseMatrix &M) : h(M.h), w(M.w), values(M.values), columns(M.columns), rowPointers(M.rowPointers)
     {
     }
     SparseMatrix &operator=(const SparseMatrix &M)

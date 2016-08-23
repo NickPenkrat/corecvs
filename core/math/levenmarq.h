@@ -338,6 +338,8 @@ public:
                         auto P = A.incompleteCholseky();
                         auto PP = [&](const Vector& x)->Vector { return P.second.dtrsv_un(P.second.dtrsv_ut(x)); };
                         auto res2 = PCG<MatrixClass>::Solve(A, PP, B, delta);
+                        if (res2 != PCGStatus::CONVERGED && terminateOnDegeneracy)
+                            shouldExit = true;
                         break;
                 }
                 if (shouldExit)
