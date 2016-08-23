@@ -1,5 +1,7 @@
 HEADERS += \
-	iterative/minresQLP.h
+	iterative/minresQLP.h \
+	iterative/pcg.h
 
 SOURCES += \
-	iterative/minresQLP.cpp
+	iterative/minresQLP.cpp \
+	iterative/pcg.cpp

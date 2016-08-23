@@ -137,7 +137,7 @@ public:
         gpuPromotion = std::unique_ptr<GPU_promotion>(new GPU_promotion(*this));
         std::cout << "Promoted" << std::endl;
     }
-    static const int SPMV_RETRY = 5;
+    static const int SPMV_RETRY = 3;
 #endif
 private:
 #ifdef WITH_CUSPARSE

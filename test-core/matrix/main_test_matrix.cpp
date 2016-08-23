@@ -24,6 +24,7 @@
 #include "preciseTimer.h"
 #include "function.h"
 #include "minresQLP.h"
+#include "pcg.h"
 
 using namespace corecvs;
 
@@ -419,6 +420,8 @@ TEST(Iterative, MinresQLP)
     corecvs::Vector x;
     MinresQLP<SparseMatrix>::Solve(M, b, x);
     ASSERT_LE(!(M*x-b)/!b, 1e-9);
+    PCG<SparseMatrix>::Solve(M, b, x);
+    ASSERT_LE(!(M*x-b)/!b, 1e-9);
 }
 
 TEST(Iterative, MinresQLPPreconditioned)
@@ -451,6 +454,8 @@ TEST(Iterative, MinresQLPPreconditioned)
 	}
     corecvs::Vector x;
     MinresQLP<SparseMatrix>::Solve(M, [&](const Vector &x) { return P.second.dtrsv_un(P.second.dtrsv_ut(x)); }, b, x);
+    ASSERT_LE(!(M*x-b)/!b, 1e-9);
+    PCG<SparseMatrix>::Solve(M, [&](const Vector &x) { return P.second.dtrsv_un(P.second.dtrsv_ut(x)); }, b, x);
     ASSERT_LE(!(M*x-b)/!b, 1e-9);
 }
 
