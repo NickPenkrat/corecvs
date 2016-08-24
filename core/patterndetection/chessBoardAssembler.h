@@ -21,7 +21,7 @@ using corecvs::Vector2dd;
  * of algo presented in A. Geiger et. al Automatic Camera and Range Sensor Calibration using a single Shot http://www.cvlibs.net/publications/Geiger2012ICRA.pdf
  *
  * Basic explanation:
- * 1. Try to initalize 3x3 grid using point and it's 8 nearest neighborhs 
+ * 1. Try to initalize 3x3 grid using point and it's 8 nearest neighborhs
  * 2. Expand this solution till expanding leads to increasing error function
  * 3. From intersecting boards select one with the best energy
  */
@@ -99,19 +99,19 @@ protected: //private:
             bool assignNearest(std::vector<Vector2dd> &prediction, std::vector<int> &usedCorners, std::vector<int> &assignment);
             void predictor(Direction dir, std::vector<Vector2dd> &prediction);
             Vector2dd predict(Vector2dd a, Vector2dd b, Vector2dd c);
-            
+
             ChessBoardAssembler    *assembler;
             std::vector<int>        usedCorners;
             RectangularGridPattern  board;
             //std::vector<corecvs::Vector2dd> prediction;
     };
 
-	bool acceptBoard(const RectangularGridPattern &board);
-	void addNonIntersectingBoardIntersections(const RectangularGridPattern &board, std::vector<RectangularGridPattern> &boards);
-	void acceptHypothesis(const RectangularGridPattern &board, std::vector<RectangularGridPattern> &boards);
+    bool acceptBoard(const RectangularGridPattern &board);
+    void addNonIntersectingBoardIntersections(const RectangularGridPattern &board, std::vector<RectangularGridPattern> &boards);
+    void acceptHypothesis(const RectangularGridPattern &board, std::vector<RectangularGridPattern> &boards);
     void acceptHypothesis(const RectangularGridPattern &board);
 
-    std::vector<RectangularGridPattern> boards;   
+    std::vector<RectangularGridPattern> boards;
     std::vector<OrientedCorner>         corners;
     BoardAligner                        *aligner = nullptr;
     DpImage                             *buffer  = nullptr;
