@@ -28,7 +28,7 @@ void corecvs::SparseMatrix::checkCorrectness() const
 }
 
 
-std::pair<bool, SparseMatrix> corecvs::SparseMatrix::incompleteCholseky()
+std::pair<bool, SparseMatrix> corecvs::SparseMatrix::incompleteCholseky(bool allow_parallel)
 {
     // Here we will consturct incomplete upper-triangular cholesky-factor for matrix
     // If we do not succeed, we'll return <false, ()> 'cause it is 2016 now,
@@ -78,6 +78,7 @@ std::pair<bool, SparseMatrix> corecvs::SparseMatrix::incompleteCholseky()
                 if (A.a(j, i) != 0.0)
                     A.a(j, i) -= A.a(k, i) * A.a(k, j);
 #else
+if (!allow_parallel) {
         int i_k_j = i_k_k + 1;
         for (; i_k_j < A.rowPointers[k + 1]; ++i_k_j)
         {
@@ -101,6 +102,35 @@ std::pair<bool, SparseMatrix> corecvs::SparseMatrix::incompleteCholseky()
                 A.values[i_j_i] -= a_k_i * a_k_j;
             }
         }
+}else{
+
+        int i_k_j_ = i_k_k + 1;
+		corecvs::parallelable_for(i_k_j_, A.rowPointers[k + 1], 512, [&](const corecvs::BlockedRange<int> &r)
+		{
+			for (int i_k_j = r.begin(); i_k_j != r.end(); ++i_k_j)
+			{
+				int j = A.columns[i_k_j];
+				int i_j_i = getUBIndex(j, j);
+
+				double a_k_j = A.values[i_k_j];
+				if (a_k_j == 0.0)
+					continue;
+
+				int i_k_i = i_k_j;
+				for (; i_j_i < A.rowPointers[j + 1]; ++i_j_i)
+				{
+					int i = A.columns[i_j_i];
+					while (i_k_i < A.rowPointers[k + 1] && A.columns[i_k_i] < i) ++i_k_i;
+					if (i_k_i == A.rowPointers[k + 1])
+						break;
+					if (A.columns[i_k_i] > i)
+						continue;
+					double a_k_i = A.values[i_k_i];
+					A.values[i_j_i] -= a_k_i * a_k_j;
+				}
+			}
+		});
+}
 #endif
     }
 #if 0
@@ -868,6 +898,7 @@ Vector corecvs::operator *(const SparseMatrix &lhs, const Vector &rhs)
     int N = lhs.h;
     int bs = 2048;
 
+	auto startCPU = std::chrono::high_resolution_clock::now();
     corecvs::parallelable_for(0, N, bs, [&](const corecvs::BlockedRange<int> &r)
     {
         for (int i = r.begin(); i != r.end(); ++i)
@@ -878,7 +909,58 @@ Vector corecvs::operator *(const SparseMatrix &lhs, const Vector &rhs)
             ans[i] = res;
         }
     });
+	auto stopCPU = std::chrono::high_resolution_clock::now();
 
+#ifdef WITH_CUSPARSE
+	//lhs.promoteToGpu();
+	Vector resGpu(lhs.h);
+	auto startGPU = std::chrono::high_resolution_clock::now();
+	if (lhs.gpuPromotion)
+	{
+		std::cout << "SPMV: alloc" << std::endl;
+		double *dev_rhs, *dev_res;
+		cudaMalloc(&(void*&)dev_rhs, rhs.size() * sizeof(double));
+		cudaMalloc(&(void*&)dev_res, lhs.h * sizeof(double));
+
+		cusparseHandle_t   handle = 0;
+		cusparseMatDescr_t descr  = 0;
+
+		auto status = cusparseCreate(&handle);
+		if (status != CUSPARSE_STATUS_SUCCESS)
+		{
+			std::cout << "CUSPARSE INIT FAILED" << std::endl;
+		}
+
+		status = cusparseCreateMatDescr(&descr);
+		if (status != CUSPARSE_STATUS_SUCCESS)
+		{
+			std::cout << "CUSPARSE MD FAILED" << std::endl;
+		}
+
+		cusparseSetMatType(descr, CUSPARSE_MATRIX_TYPE_GENERAL);
+		cusparseSetMatIndexBase(descr, CUSPARSE_INDEX_BASE_ZERO);
+
+		cudaMemcpy(dev_rhs, &rhs[0], rhs.size() * sizeof(double), cudaMemcpyHostToDevice);
+		cudaMemset(dev_res, 0, lhs.h * sizeof(double));
+
+		double alpha = 1.0, beta = 0.0;
+		status = cusparseDcsrmv(handle, CUSPARSE_OPERATION_NON_TRANSPOSE, lhs.h, lhs.w, lhs.nnz(), &alpha, descr, lhs.gpuPromotion->dev_values.get(), lhs.gpuPromotion->dev_rowPointers.get(), lhs.gpuPromotion->dev_columns.get(), dev_rhs, &beta, dev_res);
+
+		if (status != CUSPARSE_STATUS_SUCCESS)
+		{
+			std::cout << "CUSPARSE SPMV FAILED" << std::endl;
+			fprintf(stderr, "SPMV launch failed: %s\n", cudaGetErrorString(cudaGetLastError()));
+		}
+
+		cudaMemcpy(&resGpu[0], dev_res, sizeof(double) * lhs.h, cudaMemcpyDeviceToHost);
+
+		cudaFree(dev_rhs);
+		cudaFree(dev_res);
+	}
+	auto stopGPU = std::chrono::high_resolution_clock::now();
+	std::cout << "SPMV diff: " << ((!(resGpu - ans)) / !ans) << std::endl;
+	std::cout << "GPU is x" << double((stopGPU - startGPU).count()) / (stopCPU - startCPU).count() << "slower " << std::endl;
+#endif
     return ans;
 }
 

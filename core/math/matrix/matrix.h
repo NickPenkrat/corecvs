@@ -33,6 +33,7 @@ typedef AbstractBuffer<double, int32_t> MatrixBase;
 class Matrix : public MatrixBase
 {
 public:
+	void promoteToGpu() { }
     enum InverstionAlgorithm{
         INVERT_LU,
         INVERT_SVD
