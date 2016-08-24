@@ -29,10 +29,11 @@ void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, 
     buffer = buffer_;
     corners = corners_;
     int N = (int)corners.size();
+    int bs = std::max(1, N / 128);
 
     stats->startInterval();
 
-    boards = corecvs::parallelable_reduce(0, N,
+    boards = corecvs::parallelable_reduce(0, N, bs,
         std::vector<RectangularGridPattern>(),
         [&](const corecvs::BlockedRange<int> &r, const std::vector<RectangularGridPattern> &init)
         {
