@@ -34,6 +34,7 @@ struct RelativeNonCentralRansacSolverSettings
     corecvs::Vector3dd shift;
     double scale = 1.0;
     double gamma = 0.001;
+    bool skipSkewed = false;
 };
 
 class RelativeNonCentralRansacSolver : public RelativeNonCentralRansacSolverSettings
@@ -41,6 +42,7 @@ class RelativeNonCentralRansacSolver : public RelativeNonCentralRansacSolverSett
 public:
     typedef std::vector<std::tuple<WPP, corecvs::Vector2dd, WPP, corecvs::Vector2dd>> MatchContainer;
 
+    std::atomic<int> failedTotally, failedRatio;
     RelativeNonCentralRansacSolver(
           CameraFixture* query
         , const MatchContainer &matchesRansac
@@ -56,6 +58,7 @@ public:
     {
         double total = totalEstiamte + totalSample + totalCheck;
         std::cout << "RNCRS timings: [Sample: " << totalSample / total * 100.0 << "% ][Estimate: " << totalEstiamte / total * 100.0 << "%][Check: " << totalCheck / total * 100.0 << "]" << std::endl;
+        std::cout << "Failed totally: " << failedTotally << " ratio: " << failedRatio << std::endl;
     }
     size_t getInliersCount();
     void run();

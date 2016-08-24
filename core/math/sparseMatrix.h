@@ -5,6 +5,7 @@
 #include <map>
 #include <iostream>
 #include <memory>
+#include <atomic>
 
 #include "matrix.h"
 #include "vector.h"
@@ -48,21 +49,21 @@ public:
     //! \brief Cast to dense matrix
     explicit operator Matrix() const;
     SparseMatrix(const SparseMatrix &src, int x1, int y1, int x2, int y2);
-    SparseMatrix(const SparseMatrix &M) : h(M.h), w(M.w), values(M.values), rowPointers(M.rowPointers), columns(M.columns)
-	{
-	}
+    SparseMatrix(const SparseMatrix &M) : h(M.h), w(M.w), values(M.values), columns(M.columns), rowPointers(M.rowPointers)
+    {
+    }
     SparseMatrix &operator=(const SparseMatrix &M)
-	{
-		if (this == &M)
-			return *this;
-		gpuPromotion = nullptr;
-		h = M.h;
-		w = M.w;
-		values = M.values;
-		columns = M.columns;
-		rowPointers = M.rowPointers;
-		return *this;
-	}
+    {
+        if (this == &M)
+            return *this;
+        gpuPromotion = nullptr;
+        h = M.h;
+        w = M.w;
+        values = M.values;
+        columns = M.columns;
+        rowPointers = M.rowPointers;
+        return *this;
+    }
     corecvs::Matrix denseSubMatrix(int x1, int y1, int x2, int y2) const;
     void denseSubMatrix(int x1, int y1, int x2, int y2, double* output, int stride = -1) const;
     void checkCorrectness() const;
@@ -130,54 +131,56 @@ public:
     Vector dtrsv_lt(const Vector &v) const;
 
 #ifdef WITH_CUSPARSE
-	void promoteToGpu() const
-	{
-		std::cout << "Starting promotion" << std::endl;
-		gpuPromotion = std::unique_ptr<GPU_promotion>(new GPU_promotion(*this));
-		std::cout << "Promoted" << std::endl;
-	}
+    void promoteToGpu() const
+    {
+        std::cout << "Starting promotion" << std::endl;
+        gpuPromotion = std::unique_ptr<GPU_promotion>(new GPU_promotion(*this));
+        std::cout << "Promoted" << std::endl;
+    }
+    static const int SPMV_RETRY = 3;
 #endif
 private:
 #ifdef WITH_CUSPARSE
-	struct GPU_promotion
-	{
-		typedef std::unique_ptr<double, decltype(&cudaFree)> GpuDoublePtr;
-		typedef std::unique_ptr<int, decltype(&cudaFree)> GpuIntPtr;
-		GpuDoublePtr dev_values = GpuDoublePtr(nullptr, cudaFree);
-		GpuIntPtr dev_columns = GpuIntPtr(nullptr, cudaFree), dev_rowPointers = GpuIntPtr(nullptr, cudaFree);
+    struct GPU_promotion
+    {
+        typedef std::unique_ptr<double, decltype(&cudaFree)> GpuDoublePtr;
+        typedef std::unique_ptr<int, decltype(&cudaFree)> GpuIntPtr;
+        GpuDoublePtr dev_values = GpuDoublePtr(nullptr, cudaFree);
+        GpuIntPtr dev_columns = GpuIntPtr(nullptr, cudaFree), dev_rowPointers = GpuIntPtr(nullptr, cudaFree);
+        std::atomic<int> total, cpu, gpu;
 
-		GPU_promotion(const SparseMatrix &m)
-		{
-			double *dv;
-			std::cout << "Trying to allocate values  (" << m.nnz() * sizeof(double) / 1024.0 / 1024.0 << "Mb)" << std::endl;
-			cudaMalloc(&(void*&)dv, m.nnz() * sizeof(double));
-			dev_values = GpuDoublePtr(dv, cudaFree);
+        GPU_promotion(const SparseMatrix &m) : total(0), cpu(0), gpu(0)
+        {
+            double *dv;
+            std::cout << "Trying to allocate values  (" << m.nnz() * sizeof(double) / 1024.0 / 1024.0 << "Mb)" << std::endl;
+            cudaMalloc(&(void*&)dv, m.nnz() * sizeof(double));
+            dev_values = GpuDoublePtr(dv, cudaFree);
 
-			int *dc;
-			std::cout << "Trying to allocate columns (" << m.nnz() * sizeof(int) / 1024.0 / 1024.0 << "Mb)" << std::endl;
-			cudaMalloc(&(void*&)dc, m.nnz() * sizeof(int));
-			dev_columns = GpuIntPtr(dc, cudaFree);
+            int *dc;
+            std::cout << "Trying to allocate columns (" << m.nnz() * sizeof(int) / 1024.0 / 1024.0 << "Mb)" << std::endl;
+            cudaMalloc(&(void*&)dc, m.nnz() * sizeof(int));
+            dev_columns = GpuIntPtr(dc, cudaFree);
 
-			int *drp;
-			std::cout << "Trying to allocate rowPointers (" << (m.h + 1) * sizeof(int) / 1024.0 / 1024.0 << "Mb)" << std::endl;
-			cudaMalloc(&(void*&)drp, (m.h + 1) * sizeof(int));
-			dev_rowPointers = GpuIntPtr(drp, cudaFree);
+            int *drp;
+            std::cout << "Trying to allocate rowPointers (" << (m.h + 1) * sizeof(int) / 1024.0 / 1024.0 << "Mb)" << std::endl;
+            cudaMalloc(&(void*&)drp, (m.h + 1) * sizeof(int));
+            dev_rowPointers = GpuIntPtr(drp, cudaFree);
 
-			std::cout << "Copying values  (" << m.nnz() * sizeof(double) / 1024.0 / 1024.0 << "Mb)" << std::endl;
-			cudaMemcpy(dv, &m.values     [0], m.nnz() * sizeof(double), cudaMemcpyHostToDevice);
-			std::cout << "Copying columns (" << m.nnz() * sizeof(int) / 1024.0 / 1024.0 << "Mb)" << std::endl;
-			cudaMemcpy(dc, &m.columns    [0], m.nnz() * sizeof(int)   , cudaMemcpyHostToDevice);
-			std::cout << "Copying rowPointers (" << (m.h + 1) * sizeof(int) / 1024.0 / 1024.0 << "Mb)" << std::endl;
-			cudaMemcpy(drp,&m.rowPointers[0], (m.h+1) * sizeof(int)   , cudaMemcpyHostToDevice);
+            std::cout << "Copying values  (" << m.nnz() * sizeof(double) / 1024.0 / 1024.0 << "Mb)" << std::endl;
+            cudaMemcpy(dv, &m.values     [0], m.nnz() * sizeof(double), cudaMemcpyHostToDevice);
+            std::cout << "Copying columns (" << m.nnz() * sizeof(int) / 1024.0 / 1024.0 << "Mb)" << std::endl;
+            cudaMemcpy(dc, &m.columns    [0], m.nnz() * sizeof(int)   , cudaMemcpyHostToDevice);
+            std::cout << "Copying rowPointers (" << (m.h + 1) * sizeof(int) / 1024.0 / 1024.0 << "Mb)" << std::endl;
+            cudaMemcpy(drp,&m.rowPointers[0], (m.h+1) * sizeof(int)   , cudaMemcpyHostToDevice);
 
-			auto err = cudaGetLastError();
-			if (err != cudaSuccess)
-			{
-				fprintf(stderr, "Promotion failed: %s\n", cudaGetErrorString(err));
-			}
-		}
-	};
-	mutable std::unique_ptr<GPU_promotion> gpuPromotion = nullptr;
+            auto err = cudaGetLastError();
+            if (err != cudaSuccess)
+            {
+                fprintf(stderr, "Promotion failed: %s\n", cudaGetErrorString(err));
+            }
+        }
+    };
+    mutable std::unique_ptr<GPU_promotion> gpuPromotion = nullptr;
 #endif
     void swapCoords(int &x1, int &y1, int &x2, int &y2) const;
     //! All non-zero entries of matrix

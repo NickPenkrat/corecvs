@@ -1,4 +1,9 @@
 #include "reconstructionFunctor.h"
+#include "log.h"
+
+#ifdef WITH_TBB
+#include "tbb/parallel_reduce.h"
+#endif
 
 #include <set>
 
@@ -20,7 +25,7 @@ const int CORE_COUNT_LIMIT = 256;
             }
 #endif
 
-corecvs::ReconstructionFunctor::ReconstructionFunctor(corecvs::ReconstructionFixtureScene *scene, const std::vector<CameraFixture*> &optimizableSubset, const ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType &error, const corecvs::ReconstructionFunctorOptimizationType &optimization, bool excessiveQuaternionParametrization, bool scaleLock, const double pointErrorEstimate) : corecvs::SparseFunctionArgs(), scene(scene), error(error), optimization(optimization), excessiveQuaternionParametrization(excessiveQuaternionParametrization), scaleLock(scaleLock), scalerPoints(pointErrorEstimate), optimizableSubset(optimizableSubset)
+corecvs::ReconstructionFunctor::ReconstructionFunctor(corecvs::ReconstructionFixtureScene *scene, const std::vector<CameraFixture*> &optimizableSubset, const ReconstructionFunctorOptimizationErrorType::ReconstructionFunctorOptimizationErrorType &error, const corecvs::ReconstructionFunctorOptimizationType &optimization, bool excessiveQuaternionParametrization, bool scaleLock, const double pointErrorEstimate) : corecvs::SparseFunctionArgs(), scene(scene), error(error), optimization(optimization), excessiveQuaternionParametrization(excessiveQuaternionParametrization), scaleLock(scaleLock), scalerPoints(pointErrorEstimate), optimizableSubset(optimizableSubset.begin(), optimizableSubset.end())
 {
     /*
      * Compute inputs (these are ball-park estimate, need to
@@ -169,7 +174,7 @@ void corecvs::ReconstructionFunctor::alternatingMinimization(int steps)
     int N = (int)trackedFeatures.size();
     int ec = getErrorComponentsPerPoint();
     int bs = N / 256;
-	std::vector<SceneFeaturePoint*> _trackedFeatures(trackedFeatures.begin(), trackedFeatures.end());
+    std::vector<SceneFeaturePoint*> _trackedFeatures(trackedFeatures.begin(), trackedFeatures.end());
     corecvs::parallelable_for(0, N, bs, [&](const corecvs::BlockedRange<int> &r)
         {
             for (int i = r.begin(); i < r.end(); ++i)
@@ -228,11 +233,12 @@ int corecvs::ReconstructionFunctor::getOutputNum()
 
 void corecvs::ReconstructionFunctor::computePointCounts()
 {
+    L_ERROR << ">Compute point counts";
     counter.clear();
     for (auto& pt: trackedFeatures)
         for (auto& obs: pt->observations__)
         {
-            if (!std::contains(optimizableSubset, obs.first.u))
+            if (!optimizableSubset.count(obs.first.u))
                 continue;
             counter[obs.first.u]++;
             counter[obs.first.v]++;
@@ -241,48 +247,89 @@ void corecvs::ReconstructionFunctor::computePointCounts()
     for (auto& pt: trackedStatic)
         for (auto& obs: pt->observations__)
         {
-            if (!std::contains(optimizableSubset, obs.first.u))
+            if (!optimizableSubset.count(obs.first.u))
                 continue;
             counter[obs.first.u]++;
             counter[obs.first.v]++;
         }
+    L_ERROR << "<Compute point counts";
 }
 
 
 void corecvs::ReconstructionFunctor::computeInputs()
 {
+    L_ERROR << ">Compute inputs";
     orientableFixtures.clear();
     translateableFixtures.clear();
     focalTunableCameras.clear();
     principalTunableCameras.clear();
     trackedFeatures.clear();
 
+#ifndef WITH_TBB
     for (auto& pt: scene->trackedFeatures)
-	{
-		bool ok = false;
-		for (auto& o: pt->observations__)
-			if (std::contains(optimizableSubset, o.first.u))
-			{
-				ok = true;
-				break;
-			}
-		if (!ok)
-			continue;
-		trackedFeatures.insert(pt);
-	}
+    {
+        bool ok = false;
+        for (auto& o: pt->observations__)
+#if 0
+            if (std::contains(optimizableSubset, o.first.u))
+#else
+            if (optimizableSubset.count(o.first.u))
+#endif
+            {
+                ok = true;
+                break;
+            }
+        if (!ok)
+            continue;
+        trackedFeatures.insert(pt);
+    }
+#else
+    trackedFeatures = tbb::parallel_reduce(
+            tbb::blocked_range<SceneFeaturePoint**>(&scene->trackedFeatures[0], &*scene->trackedFeatures.rbegin()),
+            std::set<SceneFeaturePoint*>(),
+            [&](const tbb::blocked_range<SceneFeaturePoint**> &r, const std::set<SceneFeaturePoint*> &v)
+            {
+                auto vv = v;
+                for (auto pt: r)
+                {
+                    bool ok = false;
+                    for (auto& o: pt->observations__)
+                        if (optimizableSubset.count(o.first.u))
+                        {
+                            ok = true;
+                            break;
+                        }
+                    if (!ok)
+                        continue;
+                    vv.insert(pt);
+                }
+                return vv;
+            },
+            [&](const std::set<SceneFeaturePoint*> &l, const std::set<SceneFeaturePoint*> &r)
+            {
+                auto m = l;
+                for (auto& p: r)
+                    m.insert(p);
+                return m;
+            });
+#endif
     for (auto& pt: scene->staticPoints)
-	{
-		bool ok = false;
-		for (auto& o: pt->observations__)
-			if (std::contains(optimizableSubset, o.first.u))
-			{
-				ok = true;
-				break;
-			}
-		if (!ok)
-			continue;
-		trackedStatic.insert(pt);
-	}
+    {
+        bool ok = false;
+        for (auto& o: pt->observations__)
+#if 0
+            if (std::contains(optimizableSubset, o.first.u))
+#else
+            if (optimizableSubset.count(o.first.u))
+#endif
+            {
+                ok = true;
+                break;
+            }
+        if (!ok)
+            continue;
+        trackedStatic.insert(pt);
+    }
 
     computePointCounts();
     CORE_ASSERT_TRUE_S(scene->placedFixtures.size());
@@ -296,16 +343,16 @@ void corecvs::ReconstructionFunctor::computeInputs()
     IF(NON_DEGENERATE_ORIENTATIONS,
         for (size_t i = 1; i < scene->placedFixtures.size(); ++i)
             if (counter[scene->placedFixtures[i]] >= MINIMAL_TRACKED_FOR_ORIENTATION &&
-            	std::contains(optimizableSubset, scene->placedFixtures[i]))
+                std::contains(optimizableSubset, scene->placedFixtures[i]))
                 orientableFixtures.push_back(scene->placedFixtures[i]);
         std::cout << "NON_DEGENERATE_ORIENTATIONS: " << orientableFixtures.size() << std::endl;)
 
-	scaleReference = scene->placedFixtures[0]->location.shift;
-	if (scaleLock && std::contains(optimizableSubset, scene->placedFixtures[1]))
-		scaleLockFixtue = scene->placedFixtures[1];
+    scaleReference = scene->placedFixtures[0]->location.shift;
+    if (scaleLock && std::contains(optimizableSubset, scene->placedFixtures[1]))
+        scaleLockFixtue = scene->placedFixtures[1];
     IF(DEGENERATE_TRANSLATIONS,
         if (counter[scene->placedFixtures[0]] > MINIMAL_TRACKED_FOR_TRANSLATION &&
-        	std::contains(optimizableSubset, scene->placedFixtures[0]))
+            std::contains(optimizableSubset, scene->placedFixtures[0]))
         {
             translateableFixtures.push_back(scene->placedFixtures[0]);
             std::cout << "DEGENERATE_TRANSLATIONS" << std::endl;
@@ -314,7 +361,7 @@ void corecvs::ReconstructionFunctor::computeInputs()
     IF(NON_DEGENERATE_TRANSLATIONS,
         for (size_t i = 1; i < scene->placedFixtures.size(); ++i)
             if (counter[scene->placedFixtures[i]] >= MINIMAL_TRACKED_FOR_TRANSLATION &&
-            	std::contains(optimizableSubset, scene->placedFixtures[i]))
+                std::contains(optimizableSubset, scene->placedFixtures[i]))
                 translateableFixtures.push_back(scene->placedFixtures[i]);
         std::cout << "NON_DEGENERATE_TRANSLATIONS: " << translateableFixtures.size() << std::endl;)
 
@@ -334,21 +381,23 @@ void corecvs::ReconstructionFunctor::computeInputs()
             if (counter[cam] > MINIMAL_TRACKED_FOR_PRINCIPALS)
                 principalTunableCameras.push_back(cam);
         std::cout << "PRINCIPALS: " << focalTunableCameras.size() << std::endl;)
+    L_ERROR << "<Compute inputs";
 }
 
 void corecvs::ReconstructionFunctor::computeOutputs()
 {
+    L_ERROR << ">Compute outputs";
     positionConstrainedCameras.clear();
     lastProjection = 0;
     // This function does nothing except saving number of projections
     // and cameras with position constraints
 
     for (auto& pt: trackedFeatures)
-    	for (auto& o: pt->observations__)
-			lastProjection++;
+        for (auto& o: pt->observations__)
+            lastProjection++;
     for (auto& pt: trackedStatic)
-    	for (auto& o: pt->observations__)
-	        lastProjection++;
+        for (auto& o: pt->observations__)
+            lastProjection++;
 
     lastProjection *= getErrorComponentsPerPoint();
 
@@ -360,6 +409,7 @@ void corecvs::ReconstructionFunctor::computeOutputs()
     for (auto& f: orientableFixtures)
         originalOrientations.push_back(f->location.rotor);
     scalerPosition = scalerPoints = 1.0;
+    L_ERROR << "<Compute outputs";
 }
 
 int corecvs::ReconstructionFunctor::getErrorComponentsPerPoint()
@@ -380,6 +430,7 @@ int corecvs::ReconstructionFunctor::getErrorComponentsPerPoint()
 
 void corecvs::ReconstructionFunctor::computeDependency()
 {
+    L_ERROR << ">Compute dependency";
     denseDependency.clear();
     sparseDependency.clear();
     sparseRowptr.clear();
@@ -405,8 +456,8 @@ void corecvs::ReconstructionFunctor::computeDependency()
 #define ALL_FROM(V) \
     for (auto& t: V) \
         for (auto& o: t->observations__) \
-			for (int k = 0; k < errSize; ++k) \
-				revDependency[id++] = &o.second;
+            for (int k = 0; k < errSize; ++k) \
+                revDependency[id++] = &o.second;
     ALL_FROM(trackedFeatures)
     ALL_FROM(trackedStatic)
 
@@ -531,6 +582,7 @@ void corecvs::ReconstructionFunctor::computeDependency()
         }
     }
     std::cout << std::endl;
+    L_ERROR << "<Compute dependency";
 }
 
 void corecvs::ReconstructionFunctor::readParams(const double* params, bool prepareJac)
@@ -665,30 +717,30 @@ void corecvs::ReconstructionFunctor::readParams(const double* params, bool prepa
                         0.0, 0.0, 0.0,-1.0,
                         0.0, 0.0, 0.0, 0.0);
             if (scaleLock && scaleLockFixtue == wpp.u)
-			{
-				double slx = scaleReference[0], sly = scaleReference[1], slz = scaleReference[2];
-				double oftx = params[list.tx], ofty = params[list.ty], oftz = params[list.tz];
-				double dx = oftx - slx, dy = ofty - sly, dz = oftz - slz;
-				double N2 = dx * dx + dy * dy + dz * dz;
-				double N = std::sqrt(N2);
-				double N3 = N*N2;
+            {
+                double slx = scaleReference[0], sly = scaleReference[1], slz = scaleReference[2];
+                double oftx = params[list.tx], ofty = params[list.ty], oftz = params[list.tz];
+                double dx = oftx - slx, dy = ofty - sly, dz = oftz - slz;
+                double N2 = dx * dx + dy * dy + dz * dz;
+                double N = std::sqrt(N2);
+                double N3 = N*N2;
 
-				FTx = corecvs::Matrix44(
-						0.0, 0.0, 0.0, dx*dx/N3-1/N,
-						0.0, 0.0, 0.0, dx*dy/N3,
-						0.0, 0.0, 0.0, dx*dz/N3,
-						0.0, 0.0, 0.0, 0.0);
-				FTy = corecvs::Matrix44(
-						0.0, 0.0, 0.0, dx*dy/N3,
-						0.0, 0.0, 0.0, dy*dy/N3-1/N,
-						0.0, 0.0, 0.0, dy*dz/N3,
-						0.0, 0.0, 0.0, 0.0);
-				FTz = corecvs::Matrix44(
-						0.0, 0.0, 0.0, dz*dx/N3,
-						0.0, 0.0, 0.0, dz*dy/N3,
-						0.0, 0.0, 0.0, dz*dz/N3-1/N,
-						0.0, 0.0, 0.0, 0.0);
-			}
+                FTx = corecvs::Matrix44(
+                        0.0, 0.0, 0.0, dx*dx/N3-1/N,
+                        0.0, 0.0, 0.0, dx*dy/N3,
+                        0.0, 0.0, 0.0, dx*dz/N3,
+                        0.0, 0.0, 0.0, 0.0);
+                FTy = corecvs::Matrix44(
+                        0.0, 0.0, 0.0, dx*dy/N3,
+                        0.0, 0.0, 0.0, dy*dy/N3-1/N,
+                        0.0, 0.0, 0.0, dy*dz/N3,
+                        0.0, 0.0, 0.0, 0.0);
+                FTz = corecvs::Matrix44(
+                        0.0, 0.0, 0.0, dz*dx/N3,
+                        0.0, 0.0, 0.0, dz*dy/N3,
+                        0.0, 0.0, 0.0, dz*dz/N3-1/N,
+                        0.0, 0.0, 0.0, 0.0);
+            }
             corecvs::Vector4dd Xx(1.0, 0.0, 0.0, 0.0);
             corecvs::Vector4dd Xy(0.0, 1.0, 0.0, 0.0);
             corecvs::Vector4dd Xz(0.0, 0.0, 1.0, 0.0);

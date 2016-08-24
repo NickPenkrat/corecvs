@@ -304,7 +304,9 @@ void corecvs::PhotostationPlacer::fit(const ReconstructionFunctorOptimizationTyp
     corecvs::LevenbergMarquardtSparse lm(iterations);
     ReconstructionFunctor orient(scene, optimizable, errorType, optimizationParams, excessiveQuaternionParametrization, scaleLock, 1.0);
     ReconstructionNormalizationFunctor orientNorm(&orient, alternatingIterations);
-    lm.linearSolver = LinearSolver::MINRESQLP_IC0;//LinearSolver::SCHUR_COMPLEMENT;
+    lm.linearSolver =
+//        LinearSolver::PCG_IC0;
+        LinearSolver::MINRESQLP_IC0;//LinearSolver::SCHUR_COMPLEMENT;
 //    lm.terminateOnDegeneracy = true;
     lm.useExplicitInverse = explicitInverse;
     lm.f = &orient;
@@ -404,112 +406,113 @@ void corecvs::PhotostationPlacer::updateTrackables()
 
 std::pair<int, double> corecvs::PhotostationPlacer::estimate3D(corecvs::CameraFixture *A, corecvs::Affine3DQ &currentT)
 {
-	std::cout << "\tRunning with " << A->name << " ";
-	if (activeEstimates.count(A))
-	{
-		std::cout << "already have estimate: " << activeEstimates[A].shift << activeEstimates[A].rotor;
-		activeEstimates[A].shift += currentT.shift;
-	}
-	std::cout << std::endl;
+    std::cout << "\tRunning with " << A->name << " ";
+    if (activeEstimates.count(A))
+    {
+        std::cout << "already have estimate: " << activeEstimates[A].shift << activeEstimates[A].rotor;
+        activeEstimates[A].shift += currentT.shift;
+    }
+    std::cout << std::endl;
 
-	auto hypos = scene->getPossibleTracks(A);
-	std::cout << "PRE-CTR" << std::endl;
-	corecvs::AbsoluteNonCentralRansacSolver solver = activeEstimates.count(A) ? corecvs::AbsoluteNonCentralRansacSolver(A, hypos, activeEstimates[A]) : corecvs::AbsoluteNonCentralRansacSolver(A, hypos);
-	solver.maxIterations = maxP3PIterations();
-	solver.reprojectionInlierThreshold = inlierP3PThreshold();
-	solver.gamma = gammaP3P();
-	std::cout << "POST-CTR" << std::endl;
+    auto hypos = scene->getPossibleTracks(A);
+    std::cout << "PRE-CTR" << std::endl;
+    corecvs::AbsoluteNonCentralRansacSolver solver = activeEstimates.count(A) ? corecvs::AbsoluteNonCentralRansacSolver(A, hypos, activeEstimates[A]) : corecvs::AbsoluteNonCentralRansacSolver(A, hypos);
+    solver.maxIterations = maxP3PIterations();
+    solver.reprojectionInlierThreshold = inlierP3PThreshold();
+    solver.gamma = gammaP3P();
+    std::cout << "POST-CTR" << std::endl;
 
-	solver.forcePosition = scene->initializationData[A].initializationType == FixtureInitializationType::GPS && scene->is3DAligned;
-	solver.forcedPosition = scene->initializationData[A].initData.shift + currentT.shift;
-	if (!scene->is3DAligned && scene->initializationData[A].initializationType == FixtureInitializationType::GPS)
-	{
-		solver.forceScale = true;
-		solver.forcedScale = !(currentT.shift + scene->initializationData[A].initData.shift);
-	}
+    solver.forcePosition = scene->initializationData[A].initializationType == FixtureInitializationType::GPS && scene->is3DAligned;
+    solver.forcedPosition = scene->initializationData[A].initData.shift + currentT.shift;
+    if (!scene->is3DAligned && scene->initializationData[A].initializationType == FixtureInitializationType::GPS)
+    {
+        solver.forceScale = true;
+        solver.forcedScale = !(currentT.shift + scene->initializationData[A].initData.shift);
+    }
 
-	solver.run();
-	solver.runInliersRE();
-	activeEstimates[A] = solver.getBestHypothesis();
-	activeEstimates[A].shift -= currentT.shift;
-	if (solver.forcePosition)
-		activeEstimates[A].shift = scene->initializationData[A].initData.shift;
-	activeInlierCount[A] = solver.getInliers();
-	A->location = activeEstimates[A];
-	std::cout << "Final estimate: " << activeEstimates[A].shift << activeEstimates[A].rotor << std::endl;
+    solver.run();
+    solver.runInliersRE();
+    activeEstimates[A] = solver.getBestHypothesis();
+    activeEstimates[A].shift -= currentT.shift;
+    if (solver.forcePosition)
+        activeEstimates[A].shift = scene->initializationData[A].initData.shift;
+    activeInlierCount[A] = solver.getInliers();
+    A->location = activeEstimates[A];
+    std::cout << "Final estimate: " << activeEstimates[A].shift << activeEstimates[A].rotor << std::endl;
 	return std::make_pair((int)activeInlierCount[A].size(), 1.0 - solver.gamma);
 }
 
 std::pair<int, double> corecvs::PhotostationPlacer::estimate2D(corecvs::CameraFixture *A, corecvs::Affine3DQ &currentT)
 {
-	auto matches = scene->getFixtureMatches(scene->placedFixtures, A);
+    auto matches = scene->getFixtureMatches(scene->placedFixtures, A);
 
-	ReconstructionInitializerParams params;
-	params.essentialFilterParams.b2bThreshold = b2bRansacP5RPThreshold();
-	params.essentialFilterParams.inlierRadius = inlierP5RPThreshold();
-	params.b2bThreshold = b2bRansacP6RPThreshold();
-	params.runEssentialFiltering = runEssentialFiltering();
-	params.essentialFilterParams.maxIterations = maxEssentialRansacIterations();
-	params.essentialFilterParams.targetGamma = essentialTargetGamma();
-	scene->filterEssentialRansac(scene->placedFixtures, {A}, params.essentialFilterParams);
+    ReconstructionInitializerParams params;
+    params.essentialFilterParams.b2bThreshold = b2bRansacP5RPThreshold();
+    params.essentialFilterParams.inlierRadius = inlierP5RPThreshold();
+    params.b2bThreshold = b2bRansacP6RPThreshold();
+    params.runEssentialFiltering = runEssentialFiltering();
+    params.essentialFilterParams.maxIterations = maxEssentialRansacIterations();
+    params.essentialFilterParams.targetGamma = essentialTargetGamma();
+    scene->filterEssentialRansac(scene->placedFixtures, {A}, params.essentialFilterParams);
 
-	std::cout << "STARTING WITH " << A->name << std::endl;
+    std::cout << "STARTING WITH " << A->name << std::endl;
 
-	RelativeNonCentralRansacSolver::MatchContainer rm, mm;
-	for (auto&t : matches)
-	{
-		if (std::get<4>(t) < b2bRansacP6RPThreshold())
-			rm.emplace_back(std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t));
-		mm.emplace_back(std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t));
-	}
+    RelativeNonCentralRansacSolver::MatchContainer rm, mm;
+    for (auto&t : matches)
+    {
+        if (std::get<4>(t) < b2bRansacP6RPThreshold())
+            rm.emplace_back(std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t));
+        mm.emplace_back(std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t));
+    }
 
-	if ((int)rm.size() < minimalInlierCount())
-	{
-		std::cout << "Too few matches (" << rm.size() << "), rejecting ";
-		for (auto &B: scene->placedFixtures)
-			std::cout << B->name;
-		std::cout << "<>" << A->name << std::endl;
-		scene->matches = scene->matchesCopy;
-		return std::make_pair(0, 0.0);
-	}
+    if ((int)rm.size() < minimalInlierCount())
+    {
+        std::cout << "Too few matches (" << rm.size() << "), rejecting ";
+        for (auto &B: scene->placedFixtures)
+            std::cout << B->name;
+        std::cout << "<>" << A->name << std::endl;
+        scene->matches = scene->matchesCopy;
+        return std::make_pair(0, 0.0);
+    }
 
-	A->location.shift = corecvs::Vector3dd(0, 0, 0);
-	A->location.rotor = corecvs::Quaternion(0, 0, 0, 1);
-	RelativeNonCentralRansacSolverSettings s(maxP6PIterations(), inlierP6PThreshold(), gammaP6P());
-	RelativeNonCentralRansacSolver solver(A, rm, mm, s);
-	if (scene->initializationData[A].initializationType == FixtureInitializationType::GPS)
-	{
-		if (scene->is3DAligned)
-		{
-			solver.restrictions = decltype(solver.restrictions)::SHIFT;
-			solver.shift = scene->initializationData[A].initData.shift + currentT.shift;
-		}
-		else
-		{
-			solver.restrictions = decltype(solver.restrictions)::SCALE;
-			solver.scale = !(scene->initializationData[A].initData.shift + currentT.shift);
-		}
-	}
-	if (activeP6PEstimates.count(A))
-	{
-		auto h = activeP6PEstimates[A];
-		h.shift += currentT.shift;
-		solver.makeTry(h);
-	}
-	solver.run();
-	auto best = solver.getBestHypothesis();
-	for (auto &B: scene->placedFixtures)
-		std::cout << B->name;
-	std::cout << "::" << A->name << " " << best.shift << " " << best.rotor << std::endl;
-	A->location = best;
-	std::cout << solver.getInliersCount() << " inliers" << std::endl;
-	scene->matches = scene->matchesCopy;
-	std::cout << "P6P: ";
-	for (auto &B: scene->placedFixtures)
-		std::cout << B->name;
-	std::cout << "<>" << A->name << " in P6P sense: inliers: " << solver.getInliersCount() << " P: " << solver.getGamma() << std::endl;
-	activeP6PEstimates[A].rotor = best.rotor;
-	activeP6PEstimates[A].shift = best.shift - currentT.shift;
+    A->location.shift = corecvs::Vector3dd(0, 0, 0);
+    A->location.rotor = corecvs::Quaternion(0, 0, 0, 1);
+    RelativeNonCentralRansacSolverSettings s(maxP6PIterations(), inlierP6PThreshold(), gammaP6P());
+    s.skipSkewed = true;
+    RelativeNonCentralRansacSolver solver(A, rm, mm, s);
+    if (scene->initializationData[A].initializationType == FixtureInitializationType::GPS)
+    {
+        if (scene->is3DAligned)
+        {
+            solver.restrictions = decltype(solver.restrictions)::SHIFT;
+            solver.shift = scene->initializationData[A].initData.shift + currentT.shift;
+        }
+        else
+        {
+            solver.restrictions = decltype(solver.restrictions)::SCALE;
+            solver.scale = !(scene->initializationData[A].initData.shift + currentT.shift);
+        }
+    }
+    if (activeP6PEstimates.count(A))
+    {
+        auto h = activeP6PEstimates[A];
+        h.shift += currentT.shift;
+        solver.makeTry(h);
+    }
+    solver.run();
+    auto best = solver.getBestHypothesis();
+    for (auto &B: scene->placedFixtures)
+        std::cout << B->name;
+    std::cout << "::" << A->name << " " << best.shift << " " << best.rotor << std::endl;
+    A->location = best;
+    std::cout << solver.getInliersCount() << " inliers" << std::endl;
+    scene->matches = scene->matchesCopy;
+    std::cout << "P6P: ";
+    for (auto &B: scene->placedFixtures)
+        std::cout << B->name;
+    std::cout << "<>" << A->name << " in P6P sense: inliers: " << solver.getInliersCount() << " P: " << solver.getGamma() << std::endl;
+    activeP6PEstimates[A].rotor = best.rotor;
+    activeP6PEstimates[A].shift = best.shift - currentT.shift;
 	return std::make_pair((int)solver.getInliersCount(), 1.0 - solver.getGamma());
 }
 
@@ -530,44 +533,44 @@ bool corecvs::PhotostationPlacer::appendAny()
 
     tform.shift = -mean;
     scene->transform(tform);
-	std::vector<std::pair<corecvs::CameraFixture*, int>> matchCount;
-    
+    std::vector<std::pair<corecvs::CameraFixture*, int>> matchCount;
+
     std::vector<std::pair<corecvs::CameraFixture*, int>> matches;
     for (size_t iii = 0; iii < (size_t)speculativity() && iii < scene->placingQueue.size(); ++iii)
     {
         auto fixture = scene->placingQueue[iii];
         int cnt = (int)scene->getFixtureMatches(scene->placedFixtures, fixture).size();
         auto d3 = scene->getPossibleTracks(fixture);
-		for (auto& t: d3)
+        for (auto& t: d3)
             cnt += (int)std::get<3>(t)->observations__.size();
-		if (cnt < shutUpAndAppendMyFixtureInlierThreshold())
-			continue;
-		matches.emplace_back(fixture, cnt);
+        if (cnt < shutUpAndAppendMyFixtureInlierThreshold())
+            continue;
+        matches.emplace_back(fixture, cnt);
     }
 
-	std::sort(matches.begin(), matches.end(), [&](const std::pair<corecvs::CameraFixture*, int> &a, const std::pair<corecvs::CameraFixture*, int> &b) { return a.second > b.second; });
+    std::sort(matches.begin(), matches.end(), [&](const std::pair<corecvs::CameraFixture*, int> &a, const std::pair<corecvs::CameraFixture*, int> &b) { return a.second > b.second; });
 
-	bool appended = false;
-	for (auto& fx: matches)
-	{
-		auto res = estimate3D(fx.first, tform);
-		if (res.first < shutUpAndAppendMyFixtureInlierThreshold() || res.second < shutUpAndAppendMyFixtureSuccessProbThreshold())
-			res = estimate2D(fx.first, tform);
-		if (res.first < shutUpAndAppendMyFixtureInlierThreshold() || res.second < shutUpAndAppendMyFixtureSuccessProbThreshold())
-			continue;
-    	scene->placedFixtures.push_back(fx.first);
-	    for (auto& cf: scene->placedFixtures)
-	        std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ scene->placedFixtures[0]->location.rotor.conjugated()) << std::endl;
+    bool appended = false;
+    for (auto& fx: matches)
+    {
+        auto res = estimate3D(fx.first, tform);
+        if (res.first < shutUpAndAppendMyFixtureInlierThreshold() || res.second < shutUpAndAppendMyFixtureSuccessProbThreshold())
+            res = estimate2D(fx.first, tform);
+        if (res.first < shutUpAndAppendMyFixtureInlierThreshold() || res.second < shutUpAndAppendMyFixtureSuccessProbThreshold())
+            continue;
+        scene->placedFixtures.push_back(fx.first);
+        for (auto& cf: scene->placedFixtures)
+            std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ scene->placedFixtures[0]->location.rotor.conjugated()) << std::endl;
 
-		std::remove(scene->placingQueue.begin(), scene->placingQueue.end(), fx.first);
-		scene->placingQueue.resize(scene->placingQueue.size() - 1);
-		appended = true;
-		break;
-	}
-    
+        std::remove(scene->placingQueue.begin(), scene->placingQueue.end(), fx.first);
+        scene->placingQueue.resize(scene->placingQueue.size() - 1);
+        appended = true;
+        break;
+    }
+
     tform.shift = mean;
     scene->transform(tform);
-	return appended;
+    return appended;
 }
 
 bool corecvs::PhotostationPlacer::append2D()
@@ -607,7 +610,7 @@ bool corecvs::PhotostationPlacer::append2D()
 
     for (auto& p: matches)
     {
-    	auto res = estimate2D(p.first, tform);
+        auto res = estimate2D(p.first, tform);
         log.emplace_back(res.first, res.second, p.first, activeP6PEstimates[p.first]);
     }
     std::sort(log.begin(), log.end(), [](const decltype(log)::value_type &a, const decltype(log)::value_type &b) { return std::get<0>(a) == std::get<0>(b) ? std::get<1>(a) > std::get<1>(b) : std::get<0>(a) > std::get<0>(b); });
@@ -694,7 +697,7 @@ void corecvs::PhotostationPlacer::initialize()
     //double scale = 1.0;
     bool initialized = false;
 
-	StatusTracker::Reset(scene->processState, "Initialize", matchCount.size());
+    StatusTracker::Reset(scene->processState, "Initialize", matchCount.size());
 
     for (auto& init: matchCount)
     {
@@ -746,7 +749,7 @@ void corecvs::PhotostationPlacer::initialize()
         solver.run();
         auto best = solver.getBestHypothesis();
         if (scaleLock)
-        	best.shift = best.shift / !best.shift;
+            best.shift = best.shift / !best.shift;
         std::cout << psA->name << "::" << psB->name << " " << best.shift << " " << best.rotor << std::endl;
         psB->location = best;
         std::cout << solver.getInliersCount() << " inliers" << std::endl;
@@ -762,17 +765,17 @@ void corecvs::PhotostationPlacer::initialize()
         scene->placedFixtures.push_back(psB);
         for (auto& cf: scene->placedFixtures)
             std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ scene->placedFixtures[0]->location.rotor.conjugated()) << std::endl;
-			
-		scene->matches = scene->matchesCopy;
-    
-		std::cout << "TRYING TRACKS" << std::endl;
-    	postAppend();
-		std::cout << "TRYING TRACKS" << std::endl;
-		if (scene->trackedFeatures.size() < minimalInlierCount())
-		{
-			scene->placedFixtures.clear();
-			continue;
-		}
+
+        scene->matches = scene->matchesCopy;
+
+        std::cout << "TRYING TRACKS" << std::endl;
+        postAppend();
+        std::cout << "TRYING TRACKS" << std::endl;
+        if (scene->trackedFeatures.size() < minimalInlierCount())
+        {
+            scene->placedFixtures.clear();
+            continue;
+        }
 
         std::remove(scene->placingQueue.begin(), scene->placingQueue.end(), psA);
         std::remove(scene->placingQueue.begin(), scene->placingQueue.end(), psB);
@@ -843,17 +846,17 @@ void corecvs::PhotostationPlacer::postAppend()
         if (acnt <= pcnt && i != 0)
             break;
         if (scene->trackedFeatures.size() < minimalInlierCount())
-        	break;
+            break;
         bool full = nextFullBA < scene->placedFixtures.size();
         int tailSize = 0;
         if (full)
-		{
-        	nextFullBA = (1.0 + fullBALimit) * scene->placedFixtures.size();
-		}
-		else
-		{
-			tailSize = partialBA;
-		}
+        {
+            nextFullBA = (1.0 + fullBALimit) * scene->placedFixtures.size();
+        }
+        else
+        {
+            tailSize = partialBA;
+        }
 
         fit(params, postAppendNonlinearIterations / 2, tailSize);
         std::cout << "Prune" << std::endl;
@@ -890,7 +893,7 @@ void corecvs::PhotostationPlacer::fullRun()
      *          be adressend in future (when we add non-iterative reconstruction)
      */
     scene->state = ReconstructionState::APPENDABLE;
-	StatusTracker::Reset(scene->processState, "Appending", scene->placingQueue.size());
+    StatusTracker::Reset(scene->processState, "Appending", scene->placingQueue.size());
 
     while (scene->placingQueue.size())
     {
@@ -915,7 +918,7 @@ void corecvs::PhotostationPlacer::fullRun()
 
     fit(optimizationParams, finalNonLinearIterations / 2);
 
-	StatusTracker::Reset(scene->processState, "Pruning", 1);
+    StatusTracker::Reset(scene->processState, "Pruning", 1);
     {
         auto boo = StatusTracker::CreateAutoTrackerCalculationObject(scene->processState);
         scene->pruneTracks(inlierThreshold() * rmsePruningScaler() / 2.0

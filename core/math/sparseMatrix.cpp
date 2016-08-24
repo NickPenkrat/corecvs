@@ -2,6 +2,7 @@
 #include "cblasLapackeWrapper.h"
 
 #include <chrono>
+#include <thread>
 
 #ifdef WITH_TBB
 #include <tbb/tbb.h>
@@ -105,31 +106,31 @@ if (!allow_parallel) {
 }else{
 
         int i_k_j_ = i_k_k + 1;
-		corecvs::parallelable_for(i_k_j_, A.rowPointers[k + 1], 512, [&](const corecvs::BlockedRange<int> &r)
-		{
-			for (int i_k_j = r.begin(); i_k_j != r.end(); ++i_k_j)
-			{
-				int j = A.columns[i_k_j];
-				int i_j_i = getUBIndex(j, j);
+        corecvs::parallelable_for(i_k_j_, A.rowPointers[k + 1], 512, [&](const corecvs::BlockedRange<int> &r)
+        {
+            for (int i_k_j = r.begin(); i_k_j != r.end(); ++i_k_j)
+            {
+                int j = A.columns[i_k_j];
+                int i_j_i = getUBIndex(j, j);
 
-				double a_k_j = A.values[i_k_j];
-				if (a_k_j == 0.0)
-					continue;
+                double a_k_j = A.values[i_k_j];
+                if (a_k_j == 0.0)
+                    continue;
 
-				int i_k_i = i_k_j;
-				for (; i_j_i < A.rowPointers[j + 1]; ++i_j_i)
-				{
-					int i = A.columns[i_j_i];
-					while (i_k_i < A.rowPointers[k + 1] && A.columns[i_k_i] < i) ++i_k_i;
-					if (i_k_i == A.rowPointers[k + 1])
-						break;
-					if (A.columns[i_k_i] > i)
-						continue;
-					double a_k_i = A.values[i_k_i];
-					A.values[i_j_i] -= a_k_i * a_k_j;
-				}
-			}
-		});
+                int i_k_i = i_k_j;
+                for (; i_j_i < A.rowPointers[j + 1]; ++i_j_i)
+                {
+                    int i = A.columns[i_j_i];
+                    while (i_k_i < A.rowPointers[k + 1] && A.columns[i_k_i] < i) ++i_k_i;
+                    if (i_k_i == A.rowPointers[k + 1])
+                        break;
+                    if (A.columns[i_k_i] > i)
+                        continue;
+                    double a_k_i = A.values[i_k_i];
+                    A.values[i_j_i] -= a_k_i * a_k_j;
+                }
+            }
+        });
 }
 #endif
     }
@@ -892,13 +893,13 @@ SparseMatrix corecvs::operator -(const SparseMatrix &lhs, const SparseMatrix &rh
 
 Vector corecvs::operator *(const SparseMatrix &lhs, const Vector &rhs)
 {
-
+#ifndef WITH_CUSPARSE
     CORE_ASSERT_TRUE_S(lhs.w == rhs.size());
     Vector ans(lhs.h);
     int N = lhs.h;
-    int bs = 2048;
+    int bs = 512;
 
-	auto startCPU = std::chrono::high_resolution_clock::now();
+    auto startCPU = std::chrono::high_resolution_clock::now();
     corecvs::parallelable_for(0, N, bs, [&](const corecvs::BlockedRange<int> &r)
     {
         for (int i = r.begin(); i != r.end(); ++i)
@@ -909,59 +910,100 @@ Vector corecvs::operator *(const SparseMatrix &lhs, const Vector &rhs)
             ans[i] = res;
         }
     });
-	auto stopCPU = std::chrono::high_resolution_clock::now();
-
-#ifdef WITH_CUSPARSE
-	//lhs.promoteToGpu();
-	Vector resGpu(lhs.h);
-	auto startGPU = std::chrono::high_resolution_clock::now();
-	if (lhs.gpuPromotion)
-	{
-		std::cout << "SPMV: alloc" << std::endl;
-		double *dev_rhs, *dev_res;
-		cudaMalloc(&(void*&)dev_rhs, rhs.size() * sizeof(double));
-		cudaMalloc(&(void*&)dev_res, lhs.h * sizeof(double));
-
-		cusparseHandle_t   handle = 0;
-		cusparseMatDescr_t descr  = 0;
-
-		auto status = cusparseCreate(&handle);
-		if (status != CUSPARSE_STATUS_SUCCESS)
-		{
-			std::cout << "CUSPARSE INIT FAILED" << std::endl;
-		}
-
-		status = cusparseCreateMatDescr(&descr);
-		if (status != CUSPARSE_STATUS_SUCCESS)
-		{
-			std::cout << "CUSPARSE MD FAILED" << std::endl;
-		}
-
-		cusparseSetMatType(descr, CUSPARSE_MATRIX_TYPE_GENERAL);
-		cusparseSetMatIndexBase(descr, CUSPARSE_INDEX_BASE_ZERO);
-
-		cudaMemcpy(dev_rhs, &rhs[0], rhs.size() * sizeof(double), cudaMemcpyHostToDevice);
-		cudaMemset(dev_res, 0, lhs.h * sizeof(double));
-
-		double alpha = 1.0, beta = 0.0;
-		status = cusparseDcsrmv(handle, CUSPARSE_OPERATION_NON_TRANSPOSE, lhs.h, lhs.w, lhs.nnz(), &alpha, descr, lhs.gpuPromotion->dev_values.get(), lhs.gpuPromotion->dev_rowPointers.get(), lhs.gpuPromotion->dev_columns.get(), dev_rhs, &beta, dev_res);
-
-		if (status != CUSPARSE_STATUS_SUCCESS)
-		{
-			std::cout << "CUSPARSE SPMV FAILED" << std::endl;
-			fprintf(stderr, "SPMV launch failed: %s\n", cudaGetErrorString(cudaGetLastError()));
-		}
-
-		cudaMemcpy(&resGpu[0], dev_res, sizeof(double) * lhs.h, cudaMemcpyDeviceToHost);
-
-		cudaFree(dev_rhs);
-		cudaFree(dev_res);
-	}
-	auto stopGPU = std::chrono::high_resolution_clock::now();
-	std::cout << "SPMV diff: " << ((!(resGpu - ans)) / !ans) << std::endl;
-	std::cout << "GPU is x" << double((stopGPU - startGPU).count()) / (stopCPU - startCPU).count() << "slower " << std::endl;
-#endif
+    auto stopCPU = std::chrono::high_resolution_clock::now();
     return ans;
+#else
+    double cpuClock = 0.0, gpuClock = 0.0;
+    CORE_ASSERT_TRUE_S(lhs.w == rhs.size());
+    Vector ans(lhs.h);
+    int N = lhs.h;
+
+    bool shouldScheduleCPU = !lhs.gpuPromotion || lhs.gpuPromotion->total < SparseMatrix::SPMV_RETRY || lhs.gpuPromotion->total >= SparseMatrix::SPMV_RETRY && lhs.gpuPromotion->cpu > lhs.gpuPromotion->gpu;
+    bool shouldScheduleGPU = lhs.gpuPromotion && (lhs.gpuPromotion->total < SparseMatrix::SPMV_RETRY || lhs.gpuPromotion->gpu > lhs.gpuPromotion->cpu);
+    auto cpuSPMV = [&]()
+    {
+        int bs = 512;
+
+        auto startCPU = std::chrono::high_resolution_clock::now();
+        corecvs::parallelable_for(0, N, bs, [&](const corecvs::BlockedRange<int> &r)
+        {
+            for (int i = r.begin(); i != r.end(); ++i)
+            {
+                double res = 0.0;
+                for (int j = lhs.rowPointers[i]; j < lhs.rowPointers[i + 1]; ++j)
+                    res += lhs.values[j] * rhs[lhs.columns[j]];
+                ans[i] = res;
+            }
+        });
+        auto stopCPU = std::chrono::high_resolution_clock::now();
+        cpuClock = (stopCPU - startCPU).count() / 1e9;
+    };
+    Vector resGpu(lhs.h);
+    auto gpuSPMV = [&]()
+    {
+       auto startGPU = std::chrono::high_resolution_clock::now();
+       double *dev_rhs, *dev_res;
+       cudaMalloc(&(void*&)dev_rhs, rhs.size() * sizeof(double));
+       cudaMalloc(&(void*&)dev_res, lhs.h * sizeof(double));
+
+       cusparseHandle_t   handle = 0;
+       cusparseMatDescr_t descr  = 0;
+
+       auto status = cusparseCreate(&handle);
+       if (status != CUSPARSE_STATUS_SUCCESS)
+       {
+           std::cout << "CUSPARSE INIT FAILED" << std::endl;
+       }
+
+       status = cusparseCreateMatDescr(&descr);
+       if (status != CUSPARSE_STATUS_SUCCESS)
+       {
+           std::cout << "CUSPARSE MD FAILED" << std::endl;
+       }
+
+        cusparseSetMatType(descr, CUSPARSE_MATRIX_TYPE_GENERAL);
+        cusparseSetMatIndexBase(descr, CUSPARSE_INDEX_BASE_ZERO);
+
+        cudaMemcpy(dev_rhs, &rhs[0], rhs.size() * sizeof(double), cudaMemcpyHostToDevice);
+        cudaMemset(dev_res, 0, lhs.h * sizeof(double));
+
+        double alpha = 1.0, beta = 0.0;
+           status = cusparseDcsrmv(handle, CUSPARSE_OPERATION_NON_TRANSPOSE, lhs.h, lhs.w, lhs.nnz(), &alpha, descr, lhs.gpuPromotion->dev_values.get(), lhs.gpuPromotion->dev_rowPointers.get(), lhs.gpuPromotion->dev_columns.get(), dev_rhs, &beta, dev_res);
+
+        if (status != CUSPARSE_STATUS_SUCCESS)
+           {
+            std::cout << "CUSPARSE SPMV FAILED" << std::endl;
+            fprintf(stderr, "SPMV launch failed: %s\n", cudaGetErrorString(cudaGetLastError()));
+        }
+        cudaMemcpy(&resGpu[0], dev_res, sizeof(double) * lhs.h, cudaMemcpyDeviceToHost);
+
+        cudaFree(dev_rhs);
+        cudaFree(dev_res);
+        auto stopGPU = std::chrono::high_resolution_clock::now();
+        gpuClock = (stopGPU - startGPU).count() / 1e9;
+    };
+
+    std::unique_ptr<std::thread> tc(nullptr), tg(nullptr);
+    if (shouldScheduleCPU)
+        tc = std::unique_ptr<std::thread>(new std::thread(cpuSPMV));
+    if (shouldScheduleGPU)
+        tg = std::unique_ptr<std::thread>(new std::thread(gpuSPMV));
+    if (tc)
+        tc->join();
+    if (tg)
+        tg->join();
+
+    if (lhs.gpuPromotion->total < SparseMatrix::SPMV_RETRY)
+    {
+        ++lhs.gpuPromotion->total;
+        ++(gpuClock < cpuClock ? lhs.gpuPromotion->gpu : lhs.gpuPromotion->cpu);
+        if (lhs.gpuPromotion->total >= SparseMatrix::SPMV_RETRY)
+        {
+            std::cout << (lhs.gpuPromotion->gpu > lhs.gpuPromotion->cpu ? "GPU wins in SPMV" : "CPU wins in SPMV") << std::endl;
+        }
+    }
+    return cpuClock > 0.0 ? ans : resGpu;
+#endif
 }
 
 Vector corecvs::operator *(const Vector &lhs, const SparseMatrix &rhs)

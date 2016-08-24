@@ -1,3 +1,6 @@
+#ifndef MINRESQLP_H
+#define MINRESQLP_H
+
 #include <cmath>
 #include <chrono>
 #include <iomanip>
@@ -742,6 +745,7 @@ public:
             res[i] = a * x[i] + b * y[i];
     }
 #endif
-
+#undef AT
 };
-};
+}
+#endif

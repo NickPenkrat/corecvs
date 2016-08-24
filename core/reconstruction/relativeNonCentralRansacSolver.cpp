@@ -14,6 +14,8 @@ corecvs::RelativeNonCentralRansacSolver::RelativeNonCentralRansacSolver(CameraFi
     , query(query)
     , matchesRansac(matchesRansac)
     , matchesAll(matchesAll)
+    , failedTotally(0)
+    , failedRatio(0)
 {
     buildDependencies();
 }
@@ -21,6 +23,8 @@ corecvs::RelativeNonCentralRansacSolver::RelativeNonCentralRansacSolver(CameraFi
 
 corecvs::RelativeNonCentralRansacSolver::RelativeNonCentralRansacSolver(CameraFixture *query, const Affine3DQ firstTry, const MatchContainer &matchesRansac, const MatchContainer &matchesAll, const RelativeNonCentralRansacSolverSettings &settings)
     : RelativeNonCentralRansacSolverSettings(settings), query(query), matchesRansac(matchesRansac), matchesAll(matchesAll)
+    , failedTotally(0)
+    , failedRatio(0)
 {
     buildDependencies();
     makeTry(firstTry);
@@ -160,6 +164,8 @@ void corecvs::RelativeNonCentralRansacSolver::Estimator::selectInliers()
             essentialsCache[j] = wpp.first.u->essentialTo(wpp.first.v, &query, wpp.second.v);
         }
 
+        std::map<std::pair<WPP, WPP>, int> pairCounter;
+
         for (size_t j = 0; j < matchesAll.size(); ++j)
         {
             auto t = matchesAll[j];
@@ -184,11 +190,40 @@ void corecvs::RelativeNonCentralRansacSolver::Estimator::selectInliers()
             if (sL >= 0.0 && sR >= 0.0)
             {
                 currentInliers.push_back((int)j);
+                auto wppA = std::get<0>(t),
+                     wppB = std::get<2>(t);
+                WPP idA, idB;
+                if (wppB < wppA)
+                {
+                    idA = wppB;
+                    idB = wppA;
+                } else {
+                    idA = wppA;
+                    idB = wppB;
+                }
+                ++pairCounter[std::make_pair(idA, idB)];
             }
         }
+        std::vector<int> counts;
+        counts.reserve(pairCounter.size());
+        for (auto& pp: pairCounter)
+            counts.push_back(pp.second);
+        std::sort(counts.begin(), counts.end(), std::greater<int>());
 //            std::cout << std::endl;
         if (currentInliers.size() > localMax && currentInliers.size() > bestInliers.size())
         {
+            if (counts.size() < 2)
+            {
+                solver->failedTotally++;
+                if (solver->skipSkewed)
+                    continue;
+            }
+            if (counts.size() >= 2 && counts[0] * 0.2 > counts[1])
+            {
+                solver->failedRatio++;
+                if (solver->skipSkewed)
+                    continue;
+            }
             std::swap(bestInliers, currentInliers);
             bestHypothesis = hypothesis[i];
         }

@@ -16,6 +16,7 @@
 #include <limits>
 #include <vector>
 #include <chrono>
+#include <thread>
 
 #include "global.h"
 
@@ -25,6 +26,7 @@
 #include "sparseMatrix.h"
 #include "vector.h"
 #include "minresQLP.h"
+#include "pcg.h"
 #include "statusTracker.h"
 
 
@@ -35,7 +37,9 @@ enum class LinearSolver
     NATIVE,
     SCHUR_COMPLEMENT,
     MINRESQLP,
-    MINRESQLP_IC0
+    MINRESQLP_IC0,
+    CG,
+    PCG_IC0
 };
 
 template<typename MatrixClass, typename FunctionClass>
@@ -299,9 +303,14 @@ public:
                         break;
                     case LinearSolver::MINRESQLP_IC0:
                         {
+#ifndef WITH_CUSPARSE
                         auto P123 = A.incompleteCholseky();
-#ifdef WITH_CUSPARSE
-                        A.promoteToGpu();
+#else
+                        decltype(A.incompleteCholseky()) P123;
+                        std::thread t1([&](){ P123 = A.incompleteCholseky(); std::cout << "IC0 completed" << std::endl;});
+                        std::thread t2([&]() { A.promoteToGpu(); for (int i = 0; i < 3; ++i) auto vv = A * B; });
+                        t1.join();
+                        t2.join();
 #endif
                         MinresQLPStatus res123;
                         if (P123.first)
@@ -321,6 +330,16 @@ public:
                             terminateOnDegeneracy)
                             shouldExit = true;
                         }
+                        break;
+                    case LinearSolver::CG:
+                        PCG<MatrixClass>::Solve(A, B, delta);
+                        break;
+                    case LinearSolver::PCG_IC0:
+                        auto P = A.incompleteCholseky();
+                        auto PP = [&](const Vector& x)->Vector { return P.second.dtrsv_un(P.second.dtrsv_ut(x)); };
+                        auto res2 = PCG<MatrixClass>::Solve(A, PP, B, delta);
+                        if (res2 != PCGStatus::CONVERGED && terminateOnDegeneracy)
+                            shouldExit = true;
                         break;
                 }
                 if (shouldExit)
