@@ -420,8 +420,8 @@ TEST(Iterative, MinresQLP)
     corecvs::Vector x;
     MinresQLP<SparseMatrix>::Solve(M, b, x);
     ASSERT_LE(!(M*x-b)/!b, 1e-9);
-    PCG<SparseMatrix>::Solve(M, b, x);
-    ASSERT_LE(!(M*x-b)/!b, 1e-9);
+//    PCG<SparseMatrix>::Solve(M, b, x);
+//    ASSERT_LE(!(M*x-b)/!b, 1e-9);
 }
 
 TEST(Iterative, MinresQLPPreconditioned)
