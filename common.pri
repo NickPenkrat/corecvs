@@ -512,7 +512,7 @@ with_mkl {
     }
 }
 
-#CONFIG += with_cusparse
+CONFIG += with_cusparse
 with_cusparse {
     CUDA_PATH = $$(CUDA_PATH)
     !isEmpty(CUDA_PATH) {
