@@ -993,7 +993,7 @@ Vector corecvs::operator *(const SparseMatrix &lhs, const Vector &rhs)
     if (tg)
         tg->join();
 
-    if (lhs.gpuPromotion->total < SparseMatrix::SPMV_RETRY)
+    if (lhs.gpuPromotion && lhs.gpuPromotion->total < SparseMatrix::SPMV_RETRY)
     {
         ++lhs.gpuPromotion->total;
         ++(gpuClock < cpuClock ? lhs.gpuPromotion->gpu : lhs.gpuPromotion->cpu);
