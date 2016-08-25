@@ -67,7 +67,7 @@ public:
 /**
  *  Callback style without Qt slots and signals
  *
- *  The target here is to prepare separation fro
+ *  The target here is to prepare separation from Qt. So far we have to use virtual multiple inheritance.
  **/
 class ImageInterfaceReceiver
 {

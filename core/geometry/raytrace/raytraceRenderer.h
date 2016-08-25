@@ -112,6 +112,8 @@ public:
     /* Helper function to help debuging */
     virtual bool toMesh (Mesh3D & /*target*/) { return false; }
 
+    virtual AxisAlignedBox3d getBoundingBox(); /* < not mandtory*/
+
     virtual ~Raytraceable();
 };
 

@@ -247,6 +247,7 @@ TEST(Raytrace, testCylinder1)
     }
 
     //object.toMesh(mesh);
+    mesh.addAOB(object.getBoundingBox());
     mesh.dumpPLY("cylinder-int.ply");
 }
 

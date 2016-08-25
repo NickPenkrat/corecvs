@@ -12,7 +12,7 @@ TEMPLATE = subdirs
 
 SUBDIRS +=       \
 #   grab         \
-#    grab_N_captures \
+    grab_N_captures \
     serialize1   \
     fileloader \
 #   adoptcolor   \

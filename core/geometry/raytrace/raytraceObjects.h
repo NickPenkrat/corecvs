@@ -42,8 +42,7 @@ public:
     virtual bool intersect(RayIntersection &intersection) override;
     virtual void normal(RayIntersection &intersection)   override;
     virtual bool inside (Vector3dd &point)  override;
-
-
+    virtual AxisAlignedBox3d getBoundingBox() override;
 
     // Raytraceable interface
 public:
@@ -72,7 +71,10 @@ public:
 
     virtual bool intersect(RayIntersection &intersection) override;
     virtual void normal(RayIntersection &intersection)   override;
-    virtual bool inside (Vector3dd &point)  override;
+    virtual bool inside (Vector3dd &point)  override;    
+    virtual AxisAlignedBox3d getBoundingBox() override;
+
+
 
     // Raytraceable interface
 public:
@@ -129,16 +131,100 @@ public:
     virtual bool inside (Vector3dd &point)  override;
 };
 
+class NumPlaneFrame : public PlaneFrame {
+public:
+    int num;
+
+    NumPlaneFrame(const PlaneFrame &frame, int num) :
+        PlaneFrame(frame),
+        num(num)
+    {}
+
+
+    bool intersect(RayIntersection &intersection)
+    {
+        double t;
+        double u, v;
+        if (!intersectWithP(intersection.ray, t, u, v))
+            return false;
+
+        if (t > 0.000001) {
+            intersection.t = t;
+            intersection.normal = getNormal();
+            intersection.uvCoord = Vector2dd(u, v);
+            intersection.payload = num;
+            return true;
+        }
+        return false;
+    }
+};
+
+
+class NumTriangle3dd : public Triangle3dd {
+public:
+    int num;
+
+    NumTriangle3dd(const Triangle3dd &triangle, int num) :
+        Triangle3dd(triangle),
+        num(num)
+    {}
+
+    NumPlaneFrame toNumPlaneFrame() const
+    {
+        return NumPlaneFrame(toPlaneFrame(), num);
+    }
+
+    NumPlaneFrame toCache() const
+    {
+        return toNumPlaneFrame();
+    }
+
+    BSPSeparatorSide::BSPSeparatorSide side(const Plane3d &separator) const
+    {
+        bool b1 = (separator.pointWeight(p1()) > 0);
+        bool b2 = (separator.pointWeight(p2()) > 0);
+        bool b3 = (separator.pointWeight(p3()) > 0);
+
+        if (b1 && b2 && b3) {
+            return BSPSeparatorSide::LEFT_SIDE;
+        }
+        if (!b1 && !b2 && !b3) {
+            return BSPSeparatorSide::RIGHT_SIDE;
+        }
+        return BSPSeparatorSide::MIDDLE;
+    }
+
+    void addToApproximation(EllipticalApproximation3d &v) const
+    {
+        for(int i = 0; i < SIZE; i++)
+            v.addPoint(p[i]);
+    }
+
+    AxisAlignedBox3d getBoundingBox() const
+    {
+        Vector3dd minP = Vector3dd(numeric_limits<double>::max());
+        Vector3dd maxP = Vector3dd(numeric_limits<double>::lowest());
+        for (int i = 0; i < Triangle3dd::SIZE; i++)
+        {
+            for (int j = 0; j < Vector3dd::LENGTH; j++)
+            {
+                if (minP[j] > p[i][j]) minP[j] = p[i][j];
+                if (maxP[j] < p[i][j]) maxP[j] = p[i][j];
+            }
+        }
+        return AxisAlignedBox3d(minP, maxP);
+    }
+
+};
 
 
 
 class RaytraceableOptiMesh : public RaytraceableMesh {
 public:
     static const double EPSILON;
+    typedef BSPTreeNode<NumTriangle3dd, NumPlaneFrame> RaytraceableMeshTree;
 
-
-
-    BSPTreeNode *opt = NULL;
+    RaytraceableMeshTree *opt = NULL;
 
     RaytraceableOptiMesh(Mesh3DDecorated *mesh) :
         RaytraceableMesh(mesh)
@@ -160,6 +246,10 @@ public:
 class RaytraceableUnion : public Raytraceable {
 public:
     vector<Raytraceable *> elements;
+
+    typedef BSPTreeNode<RaytraceableNodeWrapper, RaytraceableNodeWrapper> RaytraceableSubTree;
+    RaytraceableSubTree *opt = NULL;
+    void optimize();
 
     virtual bool intersect(RayIntersection &intersection) override;
     virtual void normal(RayIntersection &intersection) override;

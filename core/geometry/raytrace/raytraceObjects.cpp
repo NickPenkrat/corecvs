@@ -66,6 +66,11 @@ bool RaytraceableSphere::inside(Vector3dd &point)
     return res ^ !flag;
 }
 
+AxisAlignedBox3d RaytraceableSphere::getBoundingBox()
+{
+    return AxisAlignedBox3d::ByCenter(mSphere.c, Vector3dd(mSphere.diameter()));
+}
+
 bool RaytraceableSphere::toMesh(Mesh3D &target)
 {
     target.addIcoSphere(mSphere, 2);
@@ -74,25 +79,30 @@ bool RaytraceableSphere::toMesh(Mesh3D &target)
 
 bool RaytraceableUnion::intersect(RayIntersection &intersection)
 {
-    RayIntersection best = intersection;
-    best.t = std::numeric_limits<double>::max();
-
-    for (Raytraceable *object: elements)
+    if (opt == NULL)
     {
-        RayIntersection attempt = intersection;
-        if (!object->intersect(attempt)) {
-            continue;
+        RayIntersection best = intersection;
+        best.t = std::numeric_limits<double>::max();
+
+        for (Raytraceable *object: elements)
+        {
+            RayIntersection attempt = intersection;
+            if (!object->intersect(attempt)) {
+                continue;
+            }
+            if (attempt.t < best.t)
+                best = attempt;
         }
-        if (attempt.t < best.t)
-            best = attempt;
-    }
 
-    if (best.t == std::numeric_limits<double>::max()) {
-        return false;
-    }
+        if (best.t == std::numeric_limits<double>::max()) {
+            return false;
+        }
 
-    intersection = best;
-    return true;
+        intersection = best;
+        return true;
+    } else {
+        return opt->intersect(intersection);
+    }
 }
 
 void RaytraceableUnion::normal(RayIntersection & /*intersection*/)
@@ -264,7 +274,7 @@ bool RaytraceableTransform::inside(Vector3dd &point)
 void RaytraceableOptiMesh::optimize()
 {
     delete_safe(opt);
-    opt = new BSPTreeNode();
+    opt = new RaytraceableMeshTree();
     for (size_t i = 0; i < mMesh->faces.size(); i++)
     {
         NumTriangle3dd triangle(mMesh->getFaceAsTrinagle(i), (int)i);
@@ -641,10 +651,28 @@ bool RaytraceableCylinder::inside(Vector3dd &point)
 
 }
 
+AxisAlignedBox3d RaytraceableCylinder::getBoundingBox()
+{
+    AxisAlignedBox3d box(Vector3dd(-r,-r,0), Vector3dd(r,r,h));
+    return box.transformedBound(Matrix44(rotation.inv(), p));
+}
+
 bool RaytraceableCylinder::toMesh(Mesh3D &target)
 {
     target.mulTransform(Matrix44::Shift(p) * Matrix44(rotation.inv()) * Matrix44::Shift(Vector3dd(0, 0, h / 2.0)));
     target.addCylinder(Vector3dd::Zero(), r, h, 20);
     target.popTransform();
     return true;
+}
+
+void RaytraceableUnion::optimize()
+{
+    delete_safe(opt);
+    opt = new RaytraceableSubTree();
+    for (size_t i = 0; i < elements.size(); i++)
+    {
+        opt->submesh.push_back(RaytraceableNodeWrapper(elements[i]));
+    }
+    opt->subdivide();
+    opt->cache();
 }

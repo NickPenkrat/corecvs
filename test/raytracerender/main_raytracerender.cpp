@@ -47,17 +47,22 @@ int main(int argc, char **argv)
 #endif
     QTRGB24Loader::registerMyself();
 
-    raytrace_scene_pole();
+    int scene = 5;
+    if ( argc > 1) {
+        scene = std::stoi(argv[1]);
+        SYNC_PRINT(("Scene id %d\n", scene));
+    }
 
-//    raytrace_scene1();
-//    raytrace_scale();
-//    raytrace_scene_scanner();
-//    raytrace_scene_calibrate();
-//    raytrace_scene_speedup();
-
-
-
-
+    switch (scene) {
+        case 0: raytrace_scene_pole(); break;
+        case 1: raytrace_scene1(); break;
+        case 2: raytrace_scale(); break;
+        case 3: raytrace_scene_scanner(); break;
+        case 4: raytrace_scene_calibrate(); break;
+        case 5:
+        default:
+                raytrace_scene_speedup(); break;
+    }
 
 }
 

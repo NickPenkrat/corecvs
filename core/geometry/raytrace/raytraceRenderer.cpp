@@ -443,6 +443,11 @@ void Raytraceable::normal(RayIntersection &/*intersection*/)
 
 }
 
+AxisAlignedBox3d Raytraceable::getBoundingBox()
+{
+    return AxisAlignedBox3d::AllSpace();
+}
+
 Raytraceable::~Raytraceable()
 {
 

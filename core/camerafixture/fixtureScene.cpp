@@ -147,6 +147,14 @@ void FixtureScene::triangulate(SceneFeaturePoint *point)
    point->position = point3d;
 }
 
+CameraPrototype *FixtureScene::createCameraPrototype()
+{
+    CameraPrototype *cameraPrototype = fabricateCameraPrototype();
+    mOwnedObjects.push_back(cameraPrototype);
+    mCameraPrototypes.push_back(cameraPrototype);
+    return cameraPrototype;
+}
+
 FixtureCamera *FixtureScene::createCamera()
 {
     FixtureCamera *camera = fabricateCamera();
@@ -200,6 +208,31 @@ void FixtureScene::deleteCamera(FixtureCamera *camera)
     }
 
     delete_safe(camera);
+}
+
+void FixtureScene::deleteCameraPrototype(CameraPrototype *cameraProtype)
+{
+     mOrphanCameras.erase(
+        std::remove_if(mOrphanCameras.begin(), mOrphanCameras.end(),
+            [=](FixtureCamera *cam) {return cam->cameraPrototype == cameraProtype;} ),
+        mOrphanCameras.end()
+     );
+
+     for (size_t i = 0; i < mFixtures.size(); i++)
+     {
+        CameraFixture *station = mFixtures[i];
+        if (station == NULL)
+            continue;
+
+        auto cameras = station->cameras;
+        cameras.erase(
+           std::remove_if(cameras.begin(), cameras.end(),
+               [=](FixtureCamera *cam) {return cam->cameraPrototype == cameraProtype;} ),
+           cameras.end()
+        );
+     }
+
+     vectorErase(mCameraPrototypes, cameraProtype);
 }
 
 void FixtureScene::deleteCameraFixture(CameraFixture *fixture, bool recursive)
@@ -260,6 +293,17 @@ void FixtureScene::deleteFixturePair(CameraFixture *fixture, FixtureCamera *came
 bool FixtureScene::checkIntegrity()
 {
     bool ok = true;
+
+    for (size_t i = 0; i < mCameraPrototypes.size(); i++)
+    {
+        CameraPrototype *proto = mCameraPrototypes[i];
+        if (proto == NULL) {
+             ok = false; SYNC_PRINT(("Camera Prototype is NULL: scene:<%s> pos <%d>\n", this->nameId.c_str(), (int)i));
+        }
+        if (proto->ownerScene != this) {
+             ok = false; SYNC_PRINT(("Camera Prototype  form other scene: cam:<%s> scene:<%s>\n", proto->nameId.c_str(), this->nameId.c_str()));
+        }
+    }
 
     for (size_t i = 0; i < mOrphanCameras.size(); i++)
     {
@@ -666,6 +710,13 @@ SceneFeaturePoint *FixtureScene::getPointByName(const std::string &name)
 FixtureScene::~FixtureScene()
 {
     clear();
+}
+
+
+CameraPrototype *FixtureScene::fabricateCameraPrototype()
+{
+    //SYNC_PRINT(("FixtureScene::fabricateCameraPrototype(): called\n"));
+    return new CameraPrototype(this);
 }
 
 FixtureCamera *FixtureScene::fabricateCamera()

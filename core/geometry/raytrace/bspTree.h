@@ -9,53 +9,90 @@
 
 namespace corecvs {
 
-class NumPlaneFrame : public PlaneFrame {
-public:
-    int num;
+namespace  BSPSeparatorSide {
 
-    NumPlaneFrame(const PlaneFrame &frame, int num) :
-        PlaneFrame(frame),
-        num(num)
-    {}
+enum BSPSeparatorSide {
+    LEFT_SIDE,   /**< Definetly left side */
+    RIGHT_SIDE,  /**< Definetly right side */
+    MIDDLE       /**< Possibly intersect the separator */
 };
 
-class NumTriangle3dd : public Triangle3dd {
-public:
-    int num;
+}
 
-    NumTriangle3dd(const Triangle3dd &triangle, int num) :
-        Triangle3dd(triangle),
-        num(num)
+
+class RaytraceableNodeWrapper {
+public:
+    Raytraceable *wrapee = NULL;
+
+    RaytraceableNodeWrapper(Raytraceable *wrapee) :
+        wrapee(wrapee)
     {}
 
-    NumPlaneFrame toNumPlaneFrame() const
+    bool intersect(RayIntersection &intersection)
     {
-        return NumPlaneFrame(toPlaneFrame(), num);
+        return wrapee->intersect(intersection);
+    }
+
+    RaytraceableNodeWrapper toCache() const
+    {
+        return *this;
+    }
+
+    BSPSeparatorSide::BSPSeparatorSide side(const Plane3d &separator) const
+    {
+        AxisAlignedBox3d box = wrapee->getBoundingBox();
+        vector<Vector3dd> points = box.getPointsVector();
+        bool isLeft  = true;
+        bool isRight = true;
+        for (size_t i = 0; i < points.size(); i++)
+        {
+            double v = separator.pointWeight(points[i]);
+            if (v <= 0) isLeft = false;
+            if (v >= 0) isRight = false;
+        }
+        if (isLeft ) return BSPSeparatorSide::LEFT_SIDE;
+        if (isRight) return BSPSeparatorSide::RIGHT_SIDE;
+        return BSPSeparatorSide::MIDDLE;
+    }
+
+    void addToApproximation(EllipticalApproximation3d &v) const
+    {
+        AxisAlignedBox3d box = wrapee->getBoundingBox();
+        vector<Vector3dd> points = box.getPointsVector();
+        for (size_t i = 0; i < points.size(); i++)
+        {
+            v.addPoint(points[i]);
+        }
+
+    }
+
+    AxisAlignedBox3d getBoundingBox() const
+    {
+        return wrapee->getBoundingBox();
     }
 };
 
-//template<class GeometryType, class CacheType, class BoundingType>
+template<class GeometryType, class CacheType, class SeparatorType = Plane3d>
 class BSPTreeNode {
 public:
-    typedef NumTriangle3dd GeometryType;
-    typedef NumPlaneFrame CacheType;
+/*    typedef NumTriangle3dd GeometryType;
+    typedef NumPlaneFrame  CacheType;
+    typedef Plane3d        SeparatorType;*/
 
     vector<GeometryType> submesh;
     vector<CacheType>    cached;
 
-
-    BSPTreeNode *middle = NULL;
     BSPTreeNode *left = NULL;
     BSPTreeNode *right = NULL;
+    BSPTreeNode *middle = NULL;
 
     Sphere3d bound;
     AxisAlignedBox3d box;
-    Plane3d  plane;
+    SeparatorType  plane;
 
     bool intersect(RayIntersection &intersection)
     {
         intersection.object = NULL;
-        double t = 0;
 
         double d1,d2;
         if (!box.intersectWith(intersection.ray, d1, d2))
@@ -63,23 +100,17 @@ public:
 
         if (d2 <= 0)
             return false;
-        /*if (!box.intersectWith(intersection.ray, d1, d2))
-            return false;*/
+
 
         RayIntersection best = intersection;
         best.t = std::numeric_limits<double>::max();
 
         for (CacheType &triangle : cached)
         {
-            double u, v;
-            if (!triangle.intersectWithP(intersection.ray, t, u, v))
+            if (!triangle.intersect(intersection))
                 continue;
-
-            if (t > 0.000001 && t < best.t) {
-                best.t = t;
-                best.normal = triangle.getNormal();
-                best.uvCoord = Vector2dd(u, v);
-                best.payload = triangle.num;
+            if (intersection.t < best.t) {
+                best = intersection;
             }
         }
 
@@ -124,41 +155,32 @@ public:
 
     void subdivide()
     {
-        //SYNC_PRINT(("RaytraceableOptiMesh::TreeNode::subdivide() : %u nodes", middle.size()));
+        //SYNC_PRINT(("BSPTreeNode::subdivide() : %u nodes", middle.size()));
         if (submesh.size() == 0)
         {
-            SYNC_PRINT(("RaytraceableOptiMesh::TreeNode::subdivide() : empty node\n"));
+            SYNC_PRINT(("BSPTreeNode::subdivide() : empty node\n"));
             return;
         }
 
-        Vector3dd minP = Vector3dd(numeric_limits<double>::max());
-        Vector3dd maxP = Vector3dd(numeric_limits<double>::lowest());
-
         EllipticalApproximation3d approx;
-        for (const GeometryType &triangle : submesh)
+        for (const GeometryType &element : submesh)
         {
-            approx.addPoint(triangle.p1());
-            approx.addPoint(triangle.p2());
-            approx.addPoint(triangle.p3());
-
-            for (int i = 0; i < Triangle3dd::SIZE; i++)
-            {
-                for (int j = 0; j < Vector3dd::LENGTH; j++)
-                {
-                    if (minP[j] > triangle.p[i][j]) minP[j] = triangle.p[i][j];
-                    if (maxP[j] < triangle.p[i][j]) maxP[j] = triangle.p[i][j];
-                }
-            }
+            element.addToApproximation(approx);
         }
-
         Vector3dd center = approx.getCenter();
         approx.getEllipseParameters();
-
         Vector3dd normal = approx.mAxes[0];
-        plane = Plane3d::FromNormalAndPoint(normal, center);
+        plane = SeparatorType::FromNormalAndPoint(normal, center);
 
-        double radius = 0;
-        for (const NumTriangle3dd &triangle : submesh)
+
+        box = AxisAlignedBox3d::Empty();
+        for (const GeometryType &element : submesh)
+        {
+            box = AxisAlignedBox3d(box, element.getBoundingBox());
+        }
+
+       /* double radius = 0;
+        for (const GeometryType &triangle : submesh)
         {
             for (int p = 0; p < 3; p++)
             {
@@ -167,10 +189,8 @@ public:
                     radius = d;
             }
         }
-        bound = Sphere3d(center, radius + 0.000001);
-        minP -= Vector3dd(0.000001);
-        maxP += Vector3dd(0.000001);
-        box = AxisAlignedBox3d(minP, maxP);
+        bound = Sphere3d(center, radius + 0.000001);*/
+        box.outset(0.000001);
 
         if (submesh.size() <= 3)
             return;
@@ -178,23 +198,13 @@ public:
         vector<GeometryType> m;
         vector<GeometryType> l;
         vector<GeometryType> r;
-        for (const NumTriangle3dd &triangle : submesh)
+        for (const GeometryType &element : submesh)
         {
-            bool b1 = (plane.pointWeight(triangle.p1()) > 0);
-            bool b2 = (plane.pointWeight(triangle.p2()) > 0);
-            bool b3 = (plane.pointWeight(triangle.p3()) > 0);
-
-            if (b1 && b2 && b3) {
-                l.push_back(triangle);
-                continue;
+            switch (element.side(plane)) {
+                case BSPSeparatorSide::LEFT_SIDE:  l.push_back(element); break;
+                case BSPSeparatorSide::RIGHT_SIDE: r.push_back(element); break;
+                case BSPSeparatorSide::MIDDLE :    m.push_back(element); break;
             }
-
-            if (!b1 && !b2 && !b3) {
-                r.push_back(triangle);
-                continue;
-            }
-
-            m.push_back(triangle);
         }
 
         /* Check if there was a subdivison actually */
@@ -238,10 +248,10 @@ public:
         cached.clear();
         for (const GeometryType &triangle : submesh)
         {
-            cached.push_back(triangle.toNumPlaneFrame());
+            cached.push_back(triangle.toCache());
         }
-        if (left  != NULL)  left->cache();
-        if (right != NULL)  right->cache();
+        if (left   != NULL)   left->cache();
+        if (right  != NULL)  right->cache();
         if (middle != NULL) middle->cache();
 
     }
@@ -262,20 +272,38 @@ public:
     }
 
 
-    int triangleCount()
+    int elementCount()
     {
         int sum = (int)submesh.size();
         if (left) {
-            sum += left->triangleCount();
+            sum += left->elementCount();
         }
         if (right) {
-            sum += right->triangleCount();
+            sum += right->elementCount();
         }
         if (middle) {
-            sum += middle->triangleCount();
+            sum += middle->elementCount();
         }
         return sum;
     }
+
+
+   /* double expectedMeanDepth(int depth = 0)
+    {
+        depth++;
+        double sum = (int)submesh.size() * depth;
+
+        if (left) {
+            sum += left->elementCount();
+        }
+        if (right) {
+            sum += right->elementCount();
+        }
+        if (middle) {
+            sum += middle->elementCount();
+        }
+        return sum;
+    }*/
 
 
     void dumpToMesh(Mesh3D &mesh, int depth, bool plane, bool volume)

@@ -33,8 +33,8 @@ void raytrace_scene_pole( void )
     SYNC_PRINT(("raytrace_scene_pole( void )\n"));
     PreciseTimer timer = PreciseTimer::currentTime();
 
-    int h = 3000;
-    int w = 4000;
+    int h = 300 * 3;
+    int w = 400 * 3;
     RaytraceRenderer renderer;
     renderer.setProjection(new PinholeCameraIntrinsics(
                 Vector2dd(w, h),
@@ -81,6 +81,11 @@ void raytrace_scene_pole( void )
 
         char name[100];
         snprintf2buf(name, "trace-cylinder%d.bmp", i);
+        BMPLoader().save(name, buffer);
+
+        scene.optimize();
+        renderer.trace(buffer);
+        snprintf2buf(name, "trace-cylinder-f%d.bmp", i);
         BMPLoader().save(name, buffer);
         delete_safe(buffer);
     }

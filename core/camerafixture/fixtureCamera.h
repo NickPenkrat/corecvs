@@ -67,10 +67,27 @@ public:
 
 typedef std::unordered_map<std::string, void *> MetaContainer;
 
+class CameraPrototype : public FixtureScenePart, public CameraModel
+{
+public:
+
+    CameraPrototype(FixtureScene * owner = NULL) :
+        FixtureScenePart(owner)
+    {}
+
+};
+
+
 class FixtureCamera : public FixtureScenePart, public CameraModel
 {
 public:
-    CameraFixture   *cameraFixture;
+    CameraFixture   *cameraFixture = NULL;
+    /**
+     *   We are now in transition. Camera prototype should prevail and the inheritance of CameraModel
+     *   should be removed. So far we have both.
+     **/
+    CameraPrototype *cameraPrototype = NULL;
+
 
     /* This variable is not contorlled and maintained */
     int sequenceNumber;
