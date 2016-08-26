@@ -530,7 +530,7 @@ with_cusparse {
             error("cuSPARSE header file not found");
         }
     } else {
-        !build_pass: message(CUDA_PATH is empty, with_cusparse mode is ignored)
+        !build_pass: message("CUDA_PATH is empty, with_cusparse mode is ignored")
     }
 }
 
