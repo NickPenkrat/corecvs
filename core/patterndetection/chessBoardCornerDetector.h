@@ -41,6 +41,14 @@ struct OrientedCorner
     Vector2dd v2;
     double score;
 
+    double& operator[](const int r)
+    {
+        return pos[r];
+    }
+    double operator[](const int r) const
+    {
+        return pos[r];
+    }
     /**
      * Computes multi-scale score of corner based on image-intensity and gradient magnitude
      *

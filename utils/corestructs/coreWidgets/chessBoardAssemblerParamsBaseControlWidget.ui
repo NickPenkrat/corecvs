@@ -119,32 +119,49 @@
     <item row="6" column="0">
      <widget class="QLabel" name="label_6">
        <property name="text">
-         <string>hypothesisDimFirst</string>
+         <string>kdtree</string>
        </property>
      </widget>
     </item>
     <item row="6" column="1">
-     <widget class="QSpinBox" name="hypothesisDimFirstSpinBox">
+     <widget class="QCheckBox" name="kdtreeCheckBox">
        <property name="toolTip">
-         <string>hypothesisDimFirst</string>
+         <string>Use k-d tree for greedy expansion</string>
+       </property>
+       <property name="checked">
+           <bool>0</bool>
        </property>
      </widget>
     </item>
     <item row="7" column="0">
      <widget class="QLabel" name="label_7">
        <property name="text">
-         <string>hypothesisDimSecond</string>
+         <string>hypothesisDimFirst</string>
        </property>
      </widget>
     </item>
     <item row="7" column="1">
+     <widget class="QSpinBox" name="hypothesisDimFirstSpinBox">
+       <property name="toolTip">
+         <string>hypothesisDimFirst</string>
+       </property>
+     </widget>
+    </item>
+    <item row="8" column="0">
+     <widget class="QLabel" name="label_8">
+       <property name="text">
+         <string>hypothesisDimSecond</string>
+       </property>
+     </widget>
+    </item>
+    <item row="8" column="1">
      <widget class="QSpinBox" name="hypothesisDimSecondSpinBox">
        <property name="toolTip">
          <string>hypothesisDimSecond</string>
        </property>
      </widget>
     </item>
-   <item row="8" column="0">
+   <item row="9" column="0">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -157,7 +174,7 @@
      </property>
     </spacer>
    </item>
-   <item row="8" column="2">
+   <item row="9" column="2">
     <spacer name="horizontalSpacer">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -208,6 +225,12 @@
   <connection>
    <sender>hypothesisDimensionsSpinBox</sender>
    <signal>valueChanged(int)</signal>
+   <receiver>ChessBoardAssemblerParamsBaseControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>kdtreeCheckBox</sender>
+   <signal>stateChanged(int)</signal>
    <receiver>ChessBoardAssemblerParamsBaseControlWidget</receiver>
    <slot>changeParameters()</slot>
   </connection>
