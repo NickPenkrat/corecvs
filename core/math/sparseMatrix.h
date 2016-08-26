@@ -56,7 +56,9 @@ public:
     {
         if (this == &M)
             return *this;
+#ifdef WITH_CUSPARSE
         gpuPromotion = nullptr;
+#endif
         h = M.h;
         w = M.w;
         values = M.values;
