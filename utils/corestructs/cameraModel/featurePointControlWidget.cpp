@@ -7,28 +7,23 @@ FeaturePointControlWidget::FeaturePointControlWidget(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    QObject::connect(ui->nameLineEdit, SIGNAL(textChanged(QString)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->nameLineEdit,          SIGNAL(textChanged(QString)), this, SIGNAL(paramsChanged()));
 
-    QObject::connect(ui->xSpinBox,     SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
-    QObject::connect(ui->ySpinBox,     SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
-    QObject::connect(ui->zSpinBox,     SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->xSpinBox,              SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->ySpinBox,              SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->zSpinBox,              SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
 
-    QObject::connect(ui->hasPositionCheckBox,     SIGNAL(toggled(bool)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->hasPositionCheckBox,   SIGNAL(toggled(bool)), this, SIGNAL(paramsChanged()));
 
-    QObject::connect(ui->xReprSpinBox,     SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
-    QObject::connect(ui->yReprSpinBox,     SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
-    QObject::connect(ui->zReprSpinBox,     SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->xReprSpinBox,          SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->yReprSpinBox,          SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->zReprSpinBox,          SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
 
-    QObject::connect(ui->color,     SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->color,                 SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
 
-
-    QObject::connect(ui->posToReprojButton, SIGNAL(released()), this, SLOT(posToReproj()));
-    QObject::connect(ui->reprojToPosButton, SIGNAL(released()), this, SLOT(reprojToPos()));
-
-
+    QObject::connect(ui->posToReprojButton,     SIGNAL(released()), this, SLOT(posToReproj()));
+    QObject::connect(ui->reprojToPosButton,     SIGNAL(released()), this, SLOT(reprojToPos()));
 }
-
-
 
 FeaturePointControlWidget::~FeaturePointControlWidget()
 {
@@ -50,7 +45,6 @@ void FeaturePointControlWidget::getParameters(SceneFeaturePoint &params) const
     params.reprojectedPosition.z() = ui->zReprSpinBox->value();
 
     params.color = ui->color->getColor();
-
 }
 
 void FeaturePointControlWidget::setParameters(const SceneFeaturePoint &input)
@@ -128,4 +122,3 @@ void FeaturePointControlWidget::reprojToPos()
     blockSignals(wasBlocked);
     emit paramsChanged();
 }
-

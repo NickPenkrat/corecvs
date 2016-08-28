@@ -196,18 +196,20 @@ public:
 
     SceneFeaturePoint(FixtureScene * owner = NULL) :
         FixtureScenePart(owner),
+        position(0.0),
         hasKnownPosition(false),
+        reprojectedPosition(0.0),
         hasKnownReprojectedPosition(false),
         type(POINT_UNKNOWN),
         color(RGBColor::White())
     {}
-
 
     SceneFeaturePoint(Vector3dd _position, const std::string &_name = std::string(), FixtureScene * owner = NULL) :
         FixtureScenePart(owner),
         name(_name),
         position(_position),
         hasKnownPosition(true),
+        reprojectedPosition(0.0),
         hasKnownReprojectedPosition(false),
         type(POINT_UNKNOWN),
         color(RGBColor::White())
