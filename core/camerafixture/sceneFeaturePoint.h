@@ -250,7 +250,7 @@ public:
             /* We don't load observations here*/
             for (auto &it : observations)
             {
-                const SceneObservation &observ = it.second;
+                SceneObservation &observ = it.second;
                 char buffer[100];
                 snprintf2buf(buffer, "obsereve[%d]", i);
                 visitor.visit(observ, observ, buffer);
