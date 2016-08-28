@@ -85,8 +85,10 @@ public:
         if (visitor.isLoader())
         {
             camera = getCameraById(id);
+            if (camera != NULL) {
+                cameraFixture = camera->cameraFixture;
+            }
         }
-        //camera->setObjectId(id);
     }
 };
 
@@ -245,26 +247,33 @@ public:
         int observeSize = (int)observations.size();
         visitor.visit(observeSize, 0, "observations.size");
 
-        if (!visitor.isLoader()) {
+        if (!visitor.isLoader())
+        {
             int i = 0;
             /* We don't load observations here*/
             for (auto &it : observations)
             {
                 SceneObservation &observ = it.second;
-                char buffer[100];
-                snprintf2buf(buffer, "obsereve[%d]", i);
+                char buffer[100]; snprintf2buf(buffer, "obsrv[%d]", i);
                 visitor.visit(observ, observ, buffer);
                 i++;
             }
         }
-        else {
+        else
+        {
+            SceneObservation observ0;
             for (int i = 0; i < observeSize; i++)
             {
-                char buffer[100];
-                snprintf2buf(buffer, "obsereve[%d]", i);
+                char buffer[100]; snprintf2buf(buffer, "obsrv[%d]", i);
                 SceneObservation observ;
-                observ.featurePoint = this;
-                visitor.visit(observ, SceneObservation(), buffer);
+                observ.featurePoint = this;         // we need to set it before visit()
+                visitor.visit(observ, observ0, buffer);
+
+                if (observ.camera == NULL)          // when we load the old format file with another field name
+                {
+                    snprintf2buf(buffer, "obsereve[%d]", i);
+                    visitor.visit(observ, observ0, buffer);
+                }
 
                 observations[observ.camera] = observ;
             }

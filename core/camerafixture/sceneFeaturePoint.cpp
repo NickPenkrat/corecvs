@@ -77,9 +77,12 @@ Vector3dd SceneFeaturePoint::triangulate(bool use__, uint32_t mask)
     }
     else
     {
-        for (auto& obs: observations)
+        for (auto& obs : observations)
+        {
+            CORE_ASSERT_TRUE_S(obs.second.cameraFixture != NULL);
             if (mask & (1 << id))
                 mct.addCamera(obs.second.cameraFixture->getMMatrix(obs.second.camera), obs.second.observation);
+        }
     }
 
     auto res = mct.triangulateLM(mct.triangulate());
