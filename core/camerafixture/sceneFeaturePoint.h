@@ -37,11 +37,14 @@ class SceneFeaturePoint;
 class SceneObservation
 {
 public:
-    SceneObservation()
-        : camera(NULL)
-        , cameraFixture(NULL)
-        , featurePoint(NULL)
-        , observation(0.0)
+    SceneObservation(FixtureCamera* cam = nullptr
+            , SceneFeaturePoint *sfp = nullptr
+            , Vector2dd          obs = Vector2dd(0)
+            , CameraFixture     *fix = nullptr)
+        : camera(cam)
+        , cameraFixture(fix)
+        , featurePoint(sfp)
+        , observation(obs)
         , accuracy(0.0)
         , observDir(0.0)
         , isKnown(false)
@@ -187,6 +190,7 @@ public:
     /** Observation related block */
     typedef std::unordered_map<FixtureCamera *, SceneObservation> ObservContainer;
     ObservContainer observations;
+
     std::unordered_map<WildcardablePointerPair<CameraFixture, FixtureCamera>, SceneObservation> observations__;
 
 
@@ -246,10 +250,10 @@ public:
             /* We don't load observations here*/
             for (auto &it : observations)
             {
-                SceneObservation obseve = it.second;
+                const SceneObservation &observ = it.second;
                 char buffer[100];
                 snprintf2buf(buffer, "obsereve[%d]", i);
-                visitor.visit(obseve, SceneObservation(), buffer);
+                visitor.visit(observ, observ, buffer);
                 i++;
             }
         }
@@ -258,11 +262,11 @@ public:
             {
                 char buffer[100];
                 snprintf2buf(buffer, "obsereve[%d]", i);
-                SceneObservation observe;
-                observe.featurePoint = this;
-                visitor.visit(observe, SceneObservation(), buffer);
+                SceneObservation observ;
+                observ.featurePoint = this;
+                visitor.visit(observ, SceneObservation(), buffer);
 
-                observations[observe.camera] = observe;
+                observations[observ.camera] = observ;
             }
         }
     }

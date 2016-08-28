@@ -132,19 +132,16 @@ void FixtureScene::triangulate(SceneFeaturePoint *point)
        triangulator.addCamera(worldCam.getCameraMatrix(), observ.observation);
    }
 
-   Vector3dd point3d;
    bool ok;
-
-   point3d = triangulator.triangulate(&ok);
+   Vector3dd point3d = triangulator.triangulate(&ok);
 
    if (!ok) {
        SYNC_PRINT(("FixtureScene::triangulate(): MulticameraTriangulator returned false"));
        return;
    }
-   cout << "FixtureScene::triangulate(): Triangulated to" << point3d << std::endl;
+   cout << "FixtureScene::triangulate(): triangulated to " << point3d << std::endl;
 
-
-   point->position = point3d;
+   point->position = point3d;       //TODO: why it's stored into the position field instead of reProjPosition?
 }
 
 FixtureCamera *FixtureScene::createCamera()
