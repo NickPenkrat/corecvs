@@ -15,7 +15,7 @@ void addPole(const Vector3dd &position, RaytraceableUnion &scene)
         RaytraceableCylinder *object = new RaytraceableCylinder;
         object->h = totalHeight / zones ;
         object->r = 4;
-        object->p = position + Vector3dd(0, -10 + i * object->h,  0);
+        object->setPosition(position + Vector3dd(0, -10 + i * object->h,  0));
 
         object->name = "Cylinder";
         object->color = (i % 2) ? RGBColor::Black().toDouble() : RGBColor::White().toDouble();

@@ -33,6 +33,8 @@ extern void raytrace_scene_speedup( void );
 
 extern void raytrace_scene_pole( void );
 
+extern void raytrace_scene_large( void );
+
 int main(int argc, char **argv)
 {
     QApplication a(argc, argv);
@@ -62,6 +64,8 @@ int main(int argc, char **argv)
         case 5:
         default:
                 raytrace_scene_speedup(); break;
+        case 6:
+                raytrace_scene_large(); break;
     }
 
 }

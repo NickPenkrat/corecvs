@@ -619,6 +619,9 @@ public:
         return -1;
     }
 
+
+
+
     /*virtual*/ ~Reflection()   // it may be non virtual
     {
 //#ifndef REFLECTION_STATIC_ALLOCATION

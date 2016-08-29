@@ -1,7 +1,6 @@
 #include "fixtureScenePart.h"
 
-FixtureScenePart::FixtureScenePart()
-{
+namespace corecvs {
 
-}
 
+} // namespace corecvs

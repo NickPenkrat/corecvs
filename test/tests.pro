@@ -29,6 +29,7 @@ SUBDIRS +=       \
     pmvs_generator   \
     stereo_generator \
     widgets_test \
+    example_scene \
 
 
 with_opencv {
@@ -52,6 +53,7 @@ with_opencv {
 grab                                = grab/grab.pro
 grab_N_captures                     = grab_N_captures/grab_N_captures.pro
 serialize1                          = serialize1/serialize1.pro
+example_scene                       = example_scene/example_scene.pro
 adoptcolor                          = adoptcolor/adoptcolor.pro
 avigrab                             = avigrab/avigrab.pro
 decodebayer                         = decodebayer/decodebayer.pro

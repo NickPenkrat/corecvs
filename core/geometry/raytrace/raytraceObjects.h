@@ -50,24 +50,27 @@ public:
 };
 
 class RaytraceableCylinder: public Raytraceable {
+private:
+    Vector3dd p;   /**< center of one of the faces */
+    Matrix33 rotation; /**<   Stores cylinder orientation. World to "cylinder zero" tarnsformation  */
+
 public:
     static const double EPSILON;
 
     bool flag;
 
-    /* We need matrix here */
-    Vector3dd p;   /**< center of one of the faces */
-    Matrix33 rotation; /**<   Stores cylinder orientation. World to "cylinder zero" tarnsformation  */
-
-
-
     double r;      /**< cylinder radius */
     double h;      /**< cylinder height */
 
     RaytraceableCylinder() :
-        flag(false),
-        rotation(Matrix33::RotationX(degToRad(90)))
+          p(Vector3dd::Zero())
+        , rotation(Matrix33::RotationX(degToRad(90)))
+        , flag(false)
     {}
+
+    void setPosition(const Affine3DQ &affine);
+    void setPosition(const Vector3dd &position);
+    void setPosition(double x, double y, double z);
 
     virtual bool intersect(RayIntersection &intersection) override;
     virtual void normal(RayIntersection &intersection)   override;

@@ -1,16 +1,24 @@
-#ifndef CAMERAPROTOTYPE_H
-#define CAMERAPROTOTYPE_H
+#ifndef CAMERA_PROTOTYPE_H
+#define CAMERA_PROTOTYPE_H
 
-#if 0
+#include "fixtureScenePart.h"
+#include "calibrationCamera.h"
+
+
+namespace corecvs {
+
+class FixtureScene;
+class CameraFixture;
+class FixtureScenePart;
 
 class CameraPrototype : public FixtureScenePart, public CameraModel
 {
 public:
-    CameraFixture   *cameraFixture;
+//    CameraFixture   *cameraFixture;
 
     CameraPrototype(FixtureScene * owner = NULL) :
-        FixtureScenePart(owner),
-        cameraFixture(NULL)
+         FixtureScenePart(owner)
+//       , cameraFixture(NULL)
     {}
 
     CameraPrototype(
@@ -18,9 +26,9 @@ public:
             const CameraLocationData &_extrinsics = CameraLocationData(),
             const LensDistortionModelParameters &_distortion = LensDistortionModelParameters(),
             FixtureScene * owner = NULL) :
-        FixtureScenePart(owner),
-        CameraModel(_intrinsics, _extrinsics, _distortion),
-        cameraFixture(NULL)
+          FixtureScenePart(owner)
+        , CameraModel(_intrinsics, _extrinsics, _distortion)
+//        , cameraFixture(NULL)
     {}
 
     template<class VisitorType>
@@ -40,6 +48,7 @@ public:
 
 };
 
-#endif
+}
 
-#endif // CAMERAPROTOTYPE_H
+
+#endif // CAMERA_PROTOTYPE_H

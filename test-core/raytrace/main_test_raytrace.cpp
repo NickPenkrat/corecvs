@@ -162,7 +162,7 @@ TEST(Raytrace, testCylinder)
     object.n  = Vector3dd::OrtY();*/
     object.h = 50;
     object.r = 20;
-    object.p = Vector3dd(0,-10,200);
+    object.setPosition(Vector3dd(0,-10,200));
 
     Ray3d rays[] = {
       /*  Ray3d(Vector3dd::OrtZ()   , Vector3dd::Zero()),
@@ -208,7 +208,7 @@ TEST(Raytrace, testCylinder1)
     object.n  = Vector3dd::OrtY();*/
     object.h = 50;
     object.r = 20;
-    object.p = Vector3dd(0,-10,200);
+    object.setPosition(0,-10,200);
 
     int limit = 100;
 
@@ -436,7 +436,7 @@ TEST(Raytrace, DISABLED_testRaytraceCylinder)
     RaytraceableCylinder object;
     object.h = 50;
     object.r = 20;
-    object.p = Vector3dd(0,30,200);
+    object.setPosition(0,30,200);
 
     object.name = "Cylinder";
     object.color = RGBColor::Red().toDouble();

@@ -595,6 +595,13 @@ void FixtureScene::dumpInfo(ostream &out)
     out << "FixtureScene::dumpInfo():" << endl;
     out << "Owned objects: " <<  mOwnedObjects.size() << endl;
 
+    out << "Camera Prototypes: " << mCameraPrototypes.size() << endl;
+    for (size_t j = 0; j < mCameraPrototypes.size(); j++)
+    {
+        CameraPrototype *proto = mCameraPrototypes[j];
+        out << "     " << "CameraPrototype <" << proto->nameId << "> "  << endl;
+    }
+
     out << "Orphan Cameras: " << mOrphanCameras.size() << endl;
     for (size_t j = 0; j < mOrphanCameras.size(); j++)
     {
@@ -633,6 +640,20 @@ void FixtureScene::setFixtureCount(size_t count)
     while (mFixtures.size() < count) {
         createCameraFixture();
     }
+}
+
+void FixtureScene::setPrototypeCount(size_t count)
+{
+    while (mCameraPrototypes.size() > count) {
+        CameraPrototype *proto = mCameraPrototypes.back();
+        mCameraPrototypes.pop_back();
+        deleteCameraPrototype(proto);
+    }
+
+    while (mCameraPrototypes.size() < count) {
+        createCameraPrototype();
+    }
+
 }
 
 void FixtureScene::setOrphanCameraCount(size_t count)

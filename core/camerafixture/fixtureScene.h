@@ -1,6 +1,7 @@
 #ifndef FIXTURE_SCENE_H_
 #define FIXTURE_SCENE_H_
 
+#include "fixtureScenePart.h"
 #include "fixtureCamera.h"
 #include "cameraFixture.h"
 #include "sceneFeaturePoint.h"
@@ -11,8 +12,9 @@ class CameraFixture;
 class StatusTracker;
 
 
-/* Heap of Calibration related stuff */
-
+/**
+ * Heap of Calibration related stuff
+ **/
 class FixtureScene
 {
 public:
@@ -228,6 +230,7 @@ public:
     /**
      *
      **/
+    void setPrototypeCount   (size_t count);
     void setFixtureCount     (size_t count);
     void setOrphanCameraCount(size_t count);
     void setFeaturePointCount(size_t count);
@@ -252,7 +255,7 @@ public:
             int oprotoSize = (int)mCameraPrototypes.size();
             visitor.visit(oprotoSize, 0, "cameraprototypes.size");
 
-            setOrphanCameraCount(oprotoSize);
+            setPrototypeCount(oprotoSize);
 
             for (size_t i = 0; i < (size_t)oprotoSize; i++)
             {
@@ -283,32 +286,32 @@ public:
         /* Fixtures*/
         if (loadFixtures)
         {
-        int stationSize = (int)mFixtures.size();
-        visitor.visit(stationSize, 0, "stations.size");
+            int stationSize = (int)mFixtures.size();
+            visitor.visit(stationSize, 0, "stations.size");
 
-        setFixtureCount(stationSize);
+            setFixtureCount(stationSize);
 
-        for (size_t i = 0; i < (size_t)stationSize; i++)
-        {
-            char buffer[100];
-            snprintf2buf(buffer, "stations[%d]", i);
-            visitor.visit(*static_cast<RealFixtureType *>(mFixtures[i]), buffer);
+            for (size_t i = 0; i < (size_t)stationSize; i++)
+            {
+                char buffer[100];
+                snprintf2buf(buffer, "stations[%d]", i);
+                visitor.visit(*static_cast<RealFixtureType *>(mFixtures[i]), buffer);
             }
         }
 
         /* Points */
         if (loadPoints)
         {
-        int pointsSize = (int)mSceneFeaturePoints.size();
-        visitor.visit(pointsSize, 0, "points.size");
+            int pointsSize = (int)mSceneFeaturePoints.size();
+            visitor.visit(pointsSize, 0, "points.size");
 
-        setFeaturePointCount(pointsSize);
+            setFeaturePointCount(pointsSize);
 
-        for (size_t i = 0; i < (size_t)pointsSize; i++)
-        {
-            char buffer[100];
-            snprintf2buf(buffer, "points[%d]", i);
-            visitor.visit(*static_cast<RealPointType *>(mSceneFeaturePoints[i]), buffer);
+            for (size_t i = 0; i < (size_t)pointsSize; i++)
+            {
+                char buffer[100];
+                snprintf2buf(buffer, "points[%d]", i);
+                visitor.visit(*static_cast<RealPointType *>(mSceneFeaturePoints[i]), buffer);
             }
         }
     }

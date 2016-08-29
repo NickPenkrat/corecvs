@@ -73,7 +73,7 @@ void raytrace_scene_speedup(void)
 
     timer = PreciseTimer::currentTime();
     roMesh.optimize();
-    SYNC_PRINT(("Mesh optimise time %lf us\n", timer.usecsToNow() / 1000.0));
+    SYNC_PRINT(("Mesh optimise time %lf ms\n", timer.usecsToNow() / 1000.0));
     SYNC_PRINT(("Mesh tree size is   %d\n", roMesh.opt->childCount()));
     SYNC_PRINT(("Mesh tree triangles %d\n", roMesh.opt->elementCount()));
 

@@ -54,5 +54,6 @@ SOURCES += \
     scene_scanner.cpp       \
     scene_speedup.cpp       \
     scene_pole.cpp \
-    scene_test1.cpp
+    scene_test1.cpp \
+    scene_large.cpp
 

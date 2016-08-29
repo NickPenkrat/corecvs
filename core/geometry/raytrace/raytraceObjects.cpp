@@ -676,3 +676,19 @@ void RaytraceableUnion::optimize()
     opt->subdivide();
     opt->cache();
 }
+
+void RaytraceableCylinder::setPosition(const Affine3DQ &affine)
+{
+    p = affine.shift;
+    rotation = affine.rotor.conjugated().toMatrix();
+}
+
+void RaytraceableCylinder::setPosition(const Vector3dd &position)
+{
+    p = position;
+}
+
+void RaytraceableCylinder::setPosition(double x, double y, double z)
+{
+    setPosition(Vector3dd(x,y,z));
+}
