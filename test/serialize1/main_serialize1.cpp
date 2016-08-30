@@ -460,6 +460,40 @@ void testJSON_StereoScene()
 
 }
 
+void testJSON_saveDistortion()
+{
+    LensDistortionModelParameters params;
+
+    params.setKoeff({1.0});
+
+    cout << "testJSON_saveDistortion() test called" << endl;
+    cout << "Initial state" << endl;
+    cout << params << endl;
+
+    {
+        JSONSetter saver("out1.json");
+        saver.visit(params, "stage1");
+    }
+    {
+        JSONGetter loader("out1.json");
+        loader.visit(params, "stage1");
+    }
+    {
+        JSONSetter saver("out2.json");
+        saver.visit(params, "stage2");
+    }
+    {
+        JSONGetter loader("out2.json");
+        loader.visit(params, "stage2");
+    }
+    cout << "After loading" << endl;
+    cout << params << endl;
+
+    cout << "Exiting" << endl;
+
+
+}
+
 
 int main (int /*argc*/, char ** /*argv*/)
 {
@@ -471,8 +505,10 @@ int main (int /*argc*/, char ** /*argv*/)
 //    testJSON1();
 //    testJSON2();
 //    testJSON_UInt64();
-    testJSON_FixtureScene();
-    testJSON_StereoScene();
+    testJSON_saveDistortion();
+
+    /*testJSON_FixtureScene();
+    testJSON_StereoScene();*/
 
 	return 0;
 }

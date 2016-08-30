@@ -38,7 +38,7 @@ TEST(Raytrace, DISABLED_testRaytraceBase)
     RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
 
     RaytraceRenderer renderer;
-    renderer.intrisics = PinholeCameraIntrinsics(Vector2dd(w, h), degToRad(80.0));
+    renderer.setProjection(new PinholeCameraIntrinsics(Vector2dd(w, h), degToRad(80.0)));
 
     /* Materials */
     RaytraceableMaterial blueMirror;
@@ -147,7 +147,7 @@ TEST(Raytrace, DISABLED_testRaytraceSpeedup)
     RGB24Buffer *bufferF = new RGB24Buffer(h, w, RGBColor::Black());
 
     RaytraceRenderer renderer;
-    renderer.intrisics = PinholeCameraIntrinsics(Vector2dd(w, h), degToRad(60.0));
+    renderer.setProjection(new PinholeCameraIntrinsics(Vector2dd(w, h), degToRad(60.0)));
 
     /* Materials */
     RaytraceablePointLight light1(RGBColor::White() .toDouble(), Vector3dd( 0, -190, 150));
@@ -203,7 +203,7 @@ TEST(Raytrace, DISABLED_testRaytraceSpeedup)
     roMesh.optimize();
     SYNC_PRINT(("Mesh optimise time %lf us\n", timer.usecsToNow() / 1000.0));
     SYNC_PRINT(("Mesh tree size is   %d\n", roMesh.opt->childCount()));
-    SYNC_PRINT(("Mesh tree triangles %d\n", roMesh.opt->triangleCount()));
+    SYNC_PRINT(("Mesh tree triangles %d\n", roMesh.opt->elementCount()));
 
     //Mesh3D dumpTreeMesh;
     //dumpTreeMesh.switchColor(true);
@@ -355,9 +355,9 @@ TEST(Raytrace, DISABLED_testRaytraceChess)
         RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
 
         RaytraceRenderer renderer;
-        renderer.intrisics = PinholeCameraIntrinsics(
+        renderer.setProjection(new PinholeCameraIntrinsics(
                     Vector2dd(w, h),
-                    degToRad(60.0));
+                    degToRad(60.0)));
         renderer.position = Affine3DQ::Shift(0, pos, -250.0);
 
         RaytraceablePointLight light1(RGBColor::White().toDouble(), Vector3dd( -200, -190, -100));
@@ -400,9 +400,9 @@ TEST(Raytrace, DISABLED_testScanExample)
         RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
 
         RaytraceRenderer renderer;
-        renderer.intrisics = PinholeCameraIntrinsics(
+        renderer.setProjection(new PinholeCameraIntrinsics(
                     Vector2dd(w, h),
-                    degToRad(60.0));
+                    degToRad(60.0)));
         renderer.position = Affine3DQ::Shift(0, pos, 0);
 
         /* Materials */

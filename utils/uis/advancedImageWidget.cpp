@@ -630,7 +630,7 @@ void AdvancedImageWidget::childMouseMoved(QMouseEvent * event)
 
     /* Pan */
     bool isInPan = false;
-    if (mL)
+//    if (mL)
 
 
     if (!isInPan)
