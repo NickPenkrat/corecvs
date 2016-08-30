@@ -265,7 +265,6 @@ public:
             }
         }
 
-
         /* So far compatibilty is on */
         /* Orphan cameras */
         if (loadCameras)

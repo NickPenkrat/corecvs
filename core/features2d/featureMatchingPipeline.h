@@ -29,7 +29,7 @@ public:
 class KeyPointDetectionStage : public FeatureMatchingPipelineStage
 {
 public:
-    KeyPointDetectionStage(DetectorType type, const std::string &params = "");
+    KeyPointDetectionStage(DetectorType type, int maxFeatureCount, const std::string &params = "");
     void run(FeatureMatchingPipeline *pipeline);
     void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename);
     void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
@@ -37,6 +37,7 @@ public:
 private:
     DetectorType detectorType;
     bool parallelable;
+    int maxFeatureCount;
     std::string params;
 };
 

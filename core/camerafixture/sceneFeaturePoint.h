@@ -37,24 +37,28 @@ class SceneFeaturePoint;
 class SceneObservation
 {
 public:
-    SceneObservation() :
-        camera(NULL),
-        cameraFixture(NULL),
-        featurePoint(NULL)
+    SceneObservation(FixtureCamera* cam = nullptr
+            , SceneFeaturePoint *sfp = nullptr
+            , Vector2dd          obs = Vector2dd(0)
+            , CameraFixture     *fix = nullptr)
+        : camera(cam)
+        , cameraFixture(fix)
+        , featurePoint(sfp)
+        , observation(obs)
+        , accuracy(0.0)
+        , observDir(0.0)
+        , isKnown(false)
     {}
 
-    FixtureCamera *     camera;
-    CameraFixture *     cameraFixture;
-    SceneFeaturePoint * featurePoint;
-
+    FixtureCamera      *camera;
+    CameraFixture      *cameraFixture;
+    SceneFeaturePoint  *featurePoint;
     Vector2dd           observation;
     Vector2dd           accuracy;
+    Vector3dd           observDir;      /* Ray to point */
     bool                isKnown;
     MetaContainer       meta;
-
-    /* Ray to point */
-    Vector3dd           observDir;
-
+    
     double &x() { return observation.x(); }
     double &y() { return observation.y(); }
 
@@ -67,7 +71,7 @@ public:
     template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(observDir   , Vector3dd(0.0) , "name");
+        visitor.visit(observDir   , Vector3dd(0.0) , "observDir");
         visitor.visit(observation , Vector2dd(0.0) , "observation");
         visitor.visit(accuracy    , Vector2dd(0.0) , "accuracy");
         visitor.visit(isKnown     , false          , "isKnown");
@@ -81,17 +85,18 @@ public:
         if (visitor.isLoader())
         {
             camera = getCameraById(id);
+            if (camera != NULL) {
+                cameraFixture = camera->cameraFixture;
+            }
         }
-        //camera->setObjectId(id);
     }
-
 };
 
 template<typename U, typename V>
 class WildcardablePointerPair
 {
 public:
-#ifndef WIN32 // Sometime in future (when we switch to VS2015 due to https://msdn.microsoft.com/library/hh567368.apx ) we will get constexpr on windows
+#if !defined(WIN32) || (_MSC_VER >= 1900) // Sometime in future (when we switch to VS2015 due to https://msdn.microsoft.com/library/hh567368.apx ) we will get constexpr on windows
     static constexpr U* UWILDCARD = nullptr;
     static constexpr V* VWILDCARD = nullptr;
 #else
@@ -187,6 +192,7 @@ public:
     /** Observation related block */
     typedef std::unordered_map<FixtureCamera *, SceneObservation> ObservContainer;
     ObservContainer observations;
+
     std::unordered_map<WildcardablePointerPair<CameraFixture, FixtureCamera>, SceneObservation> observations__;
 
 
@@ -196,18 +202,20 @@ public:
 
     SceneFeaturePoint(FixtureScene * owner = NULL) :
         FixtureScenePart(owner),
+        position(0.0),
         hasKnownPosition(false),
+        reprojectedPosition(0.0),
         hasKnownReprojectedPosition(false),
         type(POINT_UNKNOWN),
         color(RGBColor::White())
     {}
-
 
     SceneFeaturePoint(Vector3dd _position, const std::string &_name = std::string(), FixtureScene * owner = NULL) :
         FixtureScenePart(owner),
         name(_name),
         position(_position),
         hasKnownPosition(true),
+        reprojectedPosition(0.0),
         hasKnownReprojectedPosition(false),
         type(POINT_UNKNOWN),
         color(RGBColor::White())
@@ -239,28 +247,35 @@ public:
         int observeSize = (int)observations.size();
         visitor.visit(observeSize, 0, "observations.size");
 
-        if (!visitor.isLoader()) {
+        if (!visitor.isLoader())
+        {
             int i = 0;
             /* We don't load observations here*/
             for (auto &it : observations)
             {
-                SceneObservation obseve = it.second;
-                char buffer[100];
-                snprintf2buf(buffer, "obsereve[%d]", i);
-                visitor.visit(obseve, SceneObservation(), buffer);
+                SceneObservation &observ = it.second;
+                char buffer[100]; snprintf2buf(buffer, "obsrv[%d]", i);
+                visitor.visit(observ, observ, buffer);
                 i++;
             }
         }
-        else {
+        else
+        {
+            SceneObservation observ0;
             for (int i = 0; i < observeSize; i++)
             {
-                char buffer[100];
-                snprintf2buf(buffer, "obsereve[%d]", i);
-                SceneObservation observe;
-                observe.featurePoint = this;
-                visitor.visit(observe, SceneObservation(), buffer);
+                char buffer[100]; snprintf2buf(buffer, "obsrv[%d]", i);
+                SceneObservation observ;
+                observ.featurePoint = this;         // we need to set it before visit()
+                visitor.visit(observ, observ0, buffer);
 
-                observations[observe.camera] = observe;
+                if (observ.camera == NULL)          // when we load the old format file with another field name
+                {
+                    snprintf2buf(buffer, "obsereve[%d]", i);
+                    visitor.visit(observ, observ0, buffer);
+                }
+
+                observations[observ.camera] = observ;
             }
         }
     }

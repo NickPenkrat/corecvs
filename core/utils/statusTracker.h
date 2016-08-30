@@ -21,10 +21,10 @@ struct Status
 {
     std::string currentAction;
     size_t      completedActions, totalActions, startedActions, completedGlobalActions, totalGlobalActions, startedGlobalActions;
-    bool_t      isCompleted;
-    bool_t      isFailed;
-    bool_t      isToCancel;
-    bool_t      isCanceled;
+    bool        isCompleted,
+                isFailed,
+                isToCancel,
+                isCanceled;
 
     Status() : currentAction("NONE")
         , completedActions(0), totalActions(0), startedActions(0)
@@ -52,14 +52,43 @@ class StatusTracker;
 struct AutoTracker
 {
     AutoTracker(StatusTracker* st);
+    AutoTracker(AutoTracker &&other);
+    AutoTracker& operator=(AutoTracker &&other);
     ~AutoTracker();
-
+private:
+    AutoTracker(const AutoTracker &other) = delete;
+    AutoTracker& operator=(const AutoTracker &other) = delete;
     StatusTracker* st;
 };
 
 class StatusTracker
 {
 public:
+    static void SetTotalActions(StatusTracker *tracker, size_t totalActions);
+    static void Reset(StatusTracker *tracker, const std::string &action, size_t totalActions);
+
+    static void IncrementStarted(StatusTracker *tracker);
+    static void IncrementCompleted(StatusTracker *tracker);
+    static AutoTracker CreateAutoTrackerCalculationObject(StatusTracker *tracker);
+
+    static void    SetCompleted(StatusTracker *tracker);
+    static void    SetFailed(StatusTracker *tracker);
+    static void    SetToCancel(StatusTracker *tracker);
+    static void    SetCanceled(StatusTracker *tracker);
+
+    static bool    IsCompleted(const StatusTracker *tracker);
+    static bool    IsFailed(const StatusTracker *tracker);
+
+    static bool    IsToCancel(const StatusTracker *tracker);
+
+    static bool    IsCanceled(const StatusTracker *tracker);
+    static void    CheckToCancel(const StatusTracker *tracker);
+
+    static bool    IsActionCompleted(const StatusTracker *tracker, const std::string &action);
+
+    static Status  GetStatus(const StatusTracker *tracker);
+
+protected:
     void    setTotalActions(size_t totalActions);
     void    reset(const std::string &action, size_t totalActions);
 
@@ -72,18 +101,18 @@ public:
     void    setToCancel();
     void    setCanceled();
 
-    bool_t  isCompleted() const;
-    bool_t  isFailed() const;
+    bool    isCompleted() const;
+    bool    isFailed() const;
     ///
     /// \brief isToCancel
     /// \return Returns whether the processing task should be canceled asap
     ///
-    bool_t  isToCancel() const;
+    bool    isToCancel() const;
     ///
     /// \brief isCanceled
     /// \return Returns whether the processing task was canceled and has been stopped
     ///
-    bool_t  isCanceled() const;
+    bool    isCanceled() const;
     void    checkToCancel() const;
 
     bool    isActionCompleted(const std::string &action) const;
@@ -94,11 +123,19 @@ private:
     Status  currentStatus;
 
 #ifdef WITH_TBB
-    tbb::reader_writer_lock lock;
+    typedef tbb::reader_writer_lock::scoped_lock_read read_lock;
+    typedef tbb::reader_writer_lock::scoped_lock write_lock;
+#else
+    typedef int read_lock;
+    typedef int write_lock;
 #endif
-    void readLock() const;
-    void writeLock();
-    void unlock() const;
+
+#ifdef WITH_TBB
+    mutable tbb::reader_writer_lock
+#else
+    int
+#endif
+    lock;
 };
 
 } // namespace corecvs

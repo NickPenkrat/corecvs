@@ -8,19 +8,23 @@
 #endif
 
 namespace corecvs {
-#ifdef WIN32
+
+#if !defined(WIN32) || (_MSC_VER >= 1900) // Sometime in future (when we switch to VS2015 due to https://msdn.microsoft.com/library/hh567368.apx ) we will get constexpr on windows
+#else
 WPP::UTYPE const WPP::UWILDCARD = nullptr;
 WPP::VTYPE const WPP::VWILDCARD = nullptr;
 #endif
 
 std::string SceneObservation::getPointName()
 {
-    if (featurePoint == NULL) return std::string("");
-    return featurePoint->name;
+    return featurePoint ? featurePoint->name : "";
 }
 
 FixtureCamera *SceneObservation::getCameraById(FixtureCamera::IdType id)
 {
+    CORE_ASSERT_TRUE_S(featurePoint);
+    CORE_ASSERT_TRUE_S(featurePoint->ownerScene);
+
     return featurePoint->ownerScene->getCameraById(id);
 }
 
@@ -73,10 +77,14 @@ Vector3dd SceneFeaturePoint::triangulate(bool use__, uint32_t mask)
     }
     else
     {
-        for (auto& obs: observations)
+        for (auto& obs : observations)
+        {
+            CORE_ASSERT_TRUE_S(obs.second.cameraFixture != NULL);
             if (mask & (1 << id))
                 mct.addCamera(obs.second.cameraFixture->getMMatrix(obs.second.camera), obs.second.observation);
+        }
     }
+
     auto res = mct.triangulateLM(mct.triangulate());
     accuracy = mct.getCovarianceInvEstimation(res);
     return res;

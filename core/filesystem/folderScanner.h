@@ -21,6 +21,8 @@ class FolderScanner {
 public:
     static bool scan(const string &path, vector<string> &childs, bool findFiles = true);
 
+    static bool isDir(const string &path);
+
 };
 
 } // namespace corecvs

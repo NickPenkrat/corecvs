@@ -46,7 +46,10 @@ public:
         POSTAPPENDNONLINEARITERATIONS_ID,
         FINALNONLINEARITERATIONS_ID,
         ALTERNATINGITERATIONS_ID,
+        PARTIALBA_ID,
+        FULLBALIMIT_ID,
         EXCESSIVEQUATERNIONPARAMETRIZATION_ID,
+        SCALELOCK_ID,
         EXPLICITINVERSE_ID,
         ITERATIVE_RECONSTRUCTION_NONLINEAR_OPTIMIZATION_PARAMS_WRAPPER_FIELD_ID_NUM
     };
@@ -84,10 +87,28 @@ public:
     int mAlternatingIterations;
 
     /** 
+     * \brief partialBA 
+     * Partial BA size 
+     */
+    int mPartialBA;
+
+    /** 
+     * \brief fullBALimit 
+     * Full BA increase 
+     */
+    double mFullBALimit;
+
+    /** 
      * \brief excessiveQuaternionParametrization 
      * Excessive/non-excessive quaternion parametrization 
      */
     bool mExcessiveQuaternionParametrization;
+
+    /** 
+     * \brief scaleLock 
+     * Lock scale 
+     */
+    bool mScaleLock;
 
     /** 
      * \brief explicitInverse 
@@ -128,9 +149,24 @@ public:
         return mAlternatingIterations;
     }
 
+    int partialBA() const
+    {
+        return mPartialBA;
+    }
+
+    double fullBALimit() const
+    {
+        return mFullBALimit;
+    }
+
     bool excessiveQuaternionParametrization() const
     {
         return mExcessiveQuaternionParametrization;
+    }
+
+    bool scaleLock() const
+    {
+        return mScaleLock;
     }
 
     bool explicitInverse() const
@@ -164,9 +200,24 @@ public:
         mAlternatingIterations = alternatingIterations;
     }
 
+    void setPartialBA(int partialBA)
+    {
+        mPartialBA = partialBA;
+    }
+
+    void setFullBALimit(double fullBALimit)
+    {
+        mFullBALimit = fullBALimit;
+    }
+
     void setExcessiveQuaternionParametrization(bool excessiveQuaternionParametrization)
     {
         mExcessiveQuaternionParametrization = excessiveQuaternionParametrization;
+    }
+
+    void setScaleLock(bool scaleLock)
+    {
+        mScaleLock = scaleLock;
     }
 
     void setExplicitInverse(bool explicitInverse)
@@ -184,7 +235,10 @@ template<class VisitorType>
         visitor.visit(mPostAppendNonlinearIterations, static_cast<const IntField *>     (fields()[POSTAPPENDNONLINEARITERATIONS_ID]));
         visitor.visit(mFinalNonLinearIterations,  static_cast<const IntField *>     (fields()[FINALNONLINEARITERATIONS_ID]));
         visitor.visit(mAlternatingIterations,     static_cast<const IntField *>     (fields()[ALTERNATINGITERATIONS_ID]));
+        visitor.visit(mPartialBA,                 static_cast<const IntField *>     (fields()[PARTIALBA_ID]));
+        visitor.visit(mFullBALimit,               static_cast<const DoubleField *>  (fields()[FULLBALIMIT_ID]));
         visitor.visit(mExcessiveQuaternionParametrization, static_cast<const BoolField *>    (fields()[EXCESSIVEQUATERNIONPARAMETRIZATION_ID]));
+        visitor.visit(mScaleLock,                 static_cast<const BoolField *>    (fields()[SCALELOCK_ID]));
         visitor.visit(mExplicitInverse,           static_cast<const BoolField *>    (fields()[EXPLICITINVERSE_ID]));
     }
 
@@ -200,7 +254,10 @@ template<class VisitorType>
         , int postAppendNonlinearIterations
         , int finalNonLinearIterations
         , int alternatingIterations
+        , int partialBA
+        , double fullBALimit
         , bool excessiveQuaternionParametrization
+        , bool scaleLock
         , bool explicitInverse
     )
     {
@@ -209,7 +266,10 @@ template<class VisitorType>
         mPostAppendNonlinearIterations = postAppendNonlinearIterations;
         mFinalNonLinearIterations = finalNonLinearIterations;
         mAlternatingIterations = alternatingIterations;
+        mPartialBA = partialBA;
+        mFullBALimit = fullBALimit;
         mExcessiveQuaternionParametrization = excessiveQuaternionParametrization;
+        mScaleLock = scaleLock;
         mExplicitInverse = explicitInverse;
     }
 

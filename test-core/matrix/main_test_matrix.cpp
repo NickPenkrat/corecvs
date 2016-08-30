@@ -24,79 +24,477 @@
 #include "preciseTimer.h"
 #include "function.h"
 #include "minresQLP.h"
+#include "pcg.h"
 
 using namespace corecvs;
 
+const int SEED = 1337;
+
+std::pair<bool, SparseMatrix>  NaiveIncompleteCholesky(SparseMatrix &B)
+{
+    auto A = B;
+    int N = A.h;
+    int n = N;
+    for (int k = 0; k < N; ++k)
+    {
+        double pivot = A.a(k, k);
+        if (pivot <= 0.0)
+        {
+            std::cout << "Non-positive pivot N" << std::endl;
+            return std::make_pair(false, SparseMatrix());
+        }
+        CORE_ASSERT_TRUE_S(A.a(k, k) == pivot);
+        pivot = std::sqrt(pivot);
+        A.a(k, k) = pivot;
+
+
+        for (int i = k + 1; i < n; ++i)
+            if (A.a(k, i) != 0.0)
+                A.a(k, i) /= pivot;
+
+
+        for (int j = k + 1; j < n; ++j)
+            for (int i = j; i < n; ++i)
+                if (A.a(j, i) != 0.0)
+                    A.a(j, i) -= A.a(k, i) * A.a(k, j);
+    }
+
+    for (int i = 0; i < n; ++i)
+        for (int j = i + 1; j < n; ++j)
+            A.a(j, i) = 0.0;
+    return std::make_pair(true, A);
+}
+TEST(Matrix, dtrsv_ut)
+{
+    std::mt19937 rng(SEED);
+    std::uniform_real_distribution<double> runif(-10, 10);
+    double nnz = 0.01;
+    int N = 100;
+    for (int it= 0; it< 1000; ++it)
+    {
+        int realN = N + rng() % N;
+        Matrix U(realN, realN);
+        for (int k = 0; k < nnz * realN * realN; ++k)
+        {
+            int I = rng() % (realN * realN + realN);
+            int ii = I < realN * realN ? I / realN : I - realN * realN;
+            int jj = I < realN * realN ? I % realN : I - realN * realN;
+            if (ii > jj)
+                std::swap(ii, jj);
+            U.a(ii, jj) = runif(rng);
+        }
+        Vector x(realN);
+        for (int i = 0; i < realN; ++i)
+        {
+            U.a(i, i) = runif(rng);
+            x[i] = runif(rng);
+        }
+        Matrix su(U);
+        auto rhs = x * su;
+        auto xx = su.dtrsv(rhs, true, false);
+        ASSERT_LE(!(xx-x)/!x , 1e-6);
+    }
+}
+
+TEST(Matrix, dtrsv_lt)
+{
+    std::mt19937 rng(SEED);
+    std::uniform_real_distribution<double> runif(-10, 10);
+    double nnz = 0.01;
+    int N = 100;
+    for (int it= 0; it< 1000; ++it)
+    {
+        int realN = N + rng() % N;
+        Matrix U(realN, realN);
+        for (int k = 0; k < nnz * realN * realN; ++k)
+        {
+            int I = rng() % (realN * realN + realN);
+            int ii = I < realN * realN ? I / realN : I - realN * realN;
+            int jj = I < realN * realN ? I % realN : I - realN * realN;
+            if (ii < jj)
+                std::swap(ii, jj);
+            U.a(ii, jj) = runif(rng);
+        }
+        Vector x(realN);
+        for (int i = 0; i < realN; ++i)
+        {
+            U.a(i, i) = runif(rng);
+            x[i] = runif(rng);
+        }
+        Matrix su(U);
+        auto rhs = x * su;
+        auto xx = su.dtrsv(rhs, false, false);
+        ASSERT_LE(!(xx-x)/!x , 1e-6);
+    }
+}
+
+
+TEST(Matrix, dtrsv_un)
+{
+    std::mt19937 rng(SEED);
+    std::uniform_real_distribution<double> runif(-10, 10);
+    double nnz = 0.01;
+    int N = 100;
+    for (int it= 0; it< 1000; ++it)
+    {
+        int realN = N + rng() % N;
+        Matrix U(realN, realN);
+        for (int k = 0; k < nnz * realN * realN; ++k)
+        {
+            int I = rng() % (realN * realN + realN);
+            int ii = I < realN * realN ? I / realN : I - realN * realN;
+            int jj = I < realN * realN ? I % realN : I - realN * realN;
+            if (ii > jj)
+                std::swap(ii, jj);
+            U.a(ii, jj) = runif(rng);
+        }
+        Vector x(realN);
+        for (int i = 0; i < realN; ++i)
+        {
+            U.a(i, i) = runif(rng);
+            x[i] = runif(rng);
+        }
+        Matrix su(U);
+        auto rhs = su * x;
+        auto xx = su.dtrsv(rhs, true, true);
+        ASSERT_LE(!(xx-x)/!x , 1e-6);
+
+    }
+}
+
+TEST(Matrix, dtrsv_ln)
+{
+    std::mt19937 rng(SEED);
+    std::uniform_real_distribution<double> runif(-1, 1);
+    double nnz = 0.01;
+    int N = 100;
+    for (int it= 0; it< 1000; ++it)
+    {
+        int realN = N + rng() % N;
+        Matrix U(realN, realN);
+        for (int k = 0; k < nnz * realN * realN; ++k)
+        {
+            int I = rng() % (realN * realN + realN);
+            int ii = I < realN * realN ? I / realN : I - realN * realN;
+            int jj = I < realN * realN ? I % realN : I - realN * realN;
+            if (ii < jj)
+                std::swap(ii, jj);
+            U.a(ii, jj) = runif(rng);
+        }
+        Vector x(realN);
+        for (int i = 0; i < realN; ++i)
+        {
+            U.a(i, i) = runif(rng);
+            x[i] = runif(rng);
+        }
+        Matrix su(U);
+        auto rhs = su * x;
+        auto xx = su.dtrsv(rhs, false, true);
+        ASSERT_LE(!(xx-x)/!x , 1e-6);
+
+    }
+}
+TEST(SparseMatrix, dtrsv_ut)
+{
+    std::mt19937 rng(SEED);
+    std::uniform_real_distribution<double> runif(-100, 100);
+    double nnz = 0.001;
+    int N = 1000;
+    for (int it= 0; it< 1000; ++it)
+    {
+        int realN = N + rng() % N;
+        Matrix U(realN, realN);
+        for (int k = 0; k < nnz * realN * realN; ++k)
+        {
+            int I = rng() % (realN * realN + realN);
+            int ii = I < realN * realN ? I / realN : I - realN * realN;
+            int jj = I < realN * realN ? I % realN : I - realN * realN;
+            if (ii > jj)
+                std::swap(ii, jj);
+            U.a(ii, jj) = runif(rng);
+        }
+        Vector x(realN);
+        for (int i = 0; i < realN; ++i)
+        {
+            U.a(i, i) = runif(rng);
+            x[i] = runif(rng);
+        }
+        SparseMatrix su(U);
+        auto rhs = x * su;
+        auto xx = su.dtrsv_ut(rhs);
+        ASSERT_LE(!(xx-x)/!x , 1e-6);
+    }
+}
+
+TEST(SparseMatrix, dtrsv_lt)
+{
+    std::mt19937 rng(SEED);
+    std::uniform_real_distribution<double> runif(-100, 100);
+    double nnz = 0.001;
+    int N = 1000;
+    for (int it= 0; it< 1000; ++it)
+    {
+        int realN = N + rng() % N;
+        Matrix U(realN, realN);
+        for (int k = 0; k < nnz * realN * realN; ++k)
+        {
+            int I = rng() % (realN * realN + realN);
+            int ii = I < realN * realN ? I / realN : I - realN * realN;
+            int jj = I < realN * realN ? I % realN : I - realN * realN;
+            if (ii < jj)
+                std::swap(ii, jj);
+            U.a(ii, jj) = runif(rng);
+        }
+        Vector x(realN);
+        for (int i = 0; i < realN; ++i)
+        {
+            U.a(i, i) = runif(rng);
+            x[i] = runif(rng);
+        }
+        SparseMatrix su(U);
+        auto rhs = x * su;
+        auto xx = su.dtrsv_lt(rhs);
+        ASSERT_LE(!(xx-x)/!x , 1e-6);
+    }
+}
+
+
+TEST(SparseMatrix, dtrsv_un)
+{
+    std::mt19937 rng(SEED);
+    std::uniform_real_distribution<double> runif(-100, 100);
+    double nnz = 0.001;
+    int N = 1000;
+    for (int it= 0; it< 1000; ++it)
+    {
+        int realN = N + rng() % N;
+        Matrix U(realN, realN);
+        for (int k = 0; k < nnz * realN * realN; ++k)
+        {
+            int I = rng() % (realN * realN + realN);
+            int ii = I < realN * realN ? I / realN : I - realN * realN;
+            int jj = I < realN * realN ? I % realN : I - realN * realN;
+            if (ii > jj)
+                std::swap(ii, jj);
+            U.a(ii, jj) = runif(rng);
+        }
+        Vector x(realN);
+        for (int i = 0; i < realN; ++i)
+        {
+            U.a(i, i) = runif(rng);
+            x[i] = runif(rng);
+        }
+        SparseMatrix su(U);
+        auto rhs = su * x;
+        auto xx = su.dtrsv_un(rhs);
+        ASSERT_LE(!(xx-x)/!x , 1e-6);
+
+    }
+}
+
+TEST(SparseMatrix, dtrsv_ln)
+{
+    std::mt19937 rng(SEED);
+    std::uniform_real_distribution<double> runif(-100, 100);
+    double nnz = 0.001;
+    int N = 1000;
+    for (int it= 0; it< 1000; ++it)
+    {
+        int realN = N + rng() % N;
+        Matrix U(realN, realN);
+        for (int k = 0; k < nnz * realN * realN; ++k)
+        {
+            int I = rng() % (realN * realN + realN);
+            int ii = I < realN * realN ? I / realN : I - realN * realN;
+            int jj = I < realN * realN ? I % realN : I - realN * realN;
+            if (ii < jj)
+                std::swap(ii, jj);
+            U.a(ii, jj) = runif(rng);
+        }
+        Vector x(realN);
+        for (int i = 0; i < realN; ++i)
+        {
+            U.a(i, i) = runif(rng);
+            x[i] = runif(rng);
+        }
+        SparseMatrix su(U);
+        auto rhs = su * x;
+        auto xx = su.dtrsv_ln(rhs);
+        ASSERT_LE(!(xx-x)/!x , 1e-6);
+
+    }
+}
+
+TEST(SparseMatrix, IncompleteCholesky)
+{
+    std::mt19937 rng(SEED);
+    std::uniform_real_distribution<double> runif(-1, 1);
+    double a[] = {
+        2.0, 0.0, 1.0, 0.0,
+        0.0, 2.0, 0.0, 0.0,
+        1.0, 0.0, 2.0, 0.0,
+        0.0, 0.0, 0.0, 2.0
+    };
+    SparseMatrix sm(Matrix(4, 4, a));
+    auto resNaive = NaiveIncompleteCholesky(sm);
+    auto res      = sm.incompleteCholseky();
+	std::cout << res.second << std::endl;
+    ASSERT_EQ(resNaive.first, res.first);
+    ASSERT_TRUE(resNaive.first);
+    ASSERT_LE(Matrix(resNaive.second - res.second).frobeniusNorm() , 1e-9);
+    ASSERT_LE(Matrix(res.second.ata() - sm).frobeniusNorm(), 1e-3);
+}
+
+
+#ifdef WITH_FMA
+TEST(Iterative, MinresQLPDaxpby)
+{
+    std::mt19937 rng(SEED);
+    const int N =15000;
+
+    double golden_total = 0.0, daxpby_total = 0.0, blas_total = 0.0;
+    for (int i = 0; i < 10000; ++i)
+    {
+        std::uniform_real_distribution<double> runif(-1000, 1000);
+        int NN = N + (rng() % 1000);
+
+        Vector x(NN), y(NN), res(NN);
+        double a = runif(rng), b = runif(rng);
+        for (int i = 0; i < NN; ++i)
+        {
+            x[i] = runif(rng);
+            y[i] = runif(rng);
+        }
+
+        auto golden_start = std::chrono::high_resolution_clock::now();
+        auto golden = a * x + b * y;
+        auto golden_stop  = std::chrono::high_resolution_clock::now();
+        auto golden_time = (golden_stop - golden_start).count() * 1.0;
+
+        auto daxpby_start = std::chrono::high_resolution_clock::now();
+        MinresQLP<SparseMatrix>::Daxpby(res, a, x, b, y);
+        auto daxpby_stop = std::chrono::high_resolution_clock::now();
+        auto daxpby_time = (daxpby_stop - daxpby_start).count() * 1.0;
+
+        ASSERT_LE(!(res - golden)/!golden, 1e-15);
+
+        auto blas_start = std::chrono::high_resolution_clock::now();
+        res = x;
+        cblas_dscal(res.size(), a, &res[0], 1);
+        cblas_daxpy(res.size(), b, &y[0], 1, &res[0], 1);
+        auto blas_stop = std::chrono::high_resolution_clock::now();
+        auto blas_time = (blas_stop - blas_start).count() * 1.0;
+        blas_total += blas_time;
+        golden_total += golden_time;
+        daxpby_total += daxpby_time;
+
+
+    }
+    std::cout << "golden/daxpby: " << golden_total / daxpby_total << "x slower" << std::endl;
+    std::cout << "blas/daxpby: " << blas_total / daxpby_total << "x slower" << std::endl;
+}
+#endif
 
 TEST(Iterative, MinresQLP)
 {
-	double a[] = {
-		5.0, 2.0, 1.0, 0.0, 0.0,
-		2.0, 5.0, 2.0, 1.0, 0.0,
-		1.0, 2.0, 5.0, 2.0, 1.0,
-		0.0, 1.0, 2.0, 5.0, 2.0,
-		0.0, 0.0, 1.0, 2.0, 5.0};
-	int N = 3276800;
+    int N = 32768;
 
-	int val[] = {1, 2, 5, 2, 1};
-	std::vector<double> values;
-	std::vector<int> columns, rowPointers(N + 1);
-	for (int i = 0; i < N; ++i)
+    int val[] = {1, 2, 5, 2, 1};
+    std::vector<double> values;
+    std::vector<int> columns, rowPointers(N + 1);
+    for (int i = 0; i < N; ++i)
+    {
+        for (int j = -2; j <= 2; ++j)
+            if (i + j >= 0 && i + j < N)
+            {
+                columns.push_back(i + j);
+                values.push_back(val[j + 2]);
+            }
+        rowPointers[i + 1] = (int)values.size();
+    }
+    corecvs::SparseMatrix M(N, N, values, columns, rowPointers);
+    corecvs::Vector xx(N);
+    for (int i = 0; i < N; ++i)
+        xx[i] = i % 10;
+    auto b = M * xx;
+    corecvs::Vector x;
+    MinresQLP<SparseMatrix>::Solve(M, b, x);
+    ASSERT_LE(!(M*x-b)/!b, 1e-9);
+//    PCG<SparseMatrix>::Solve(M, b, x);
+//    ASSERT_LE(!(M*x-b)/!b, 1e-9);
+}
+
+TEST(Iterative, MinresQLPPreconditioned)
+{
+    int N = 32768;
+
+    int val[] = {1, 2, 5, 2, 1};
+    std::vector<double> values;
+    std::vector<int> columns, rowPointers(N + 1);
+    for (int i = 0; i < N; ++i)
+    {
+        for (int j = -2; j <= 2; ++j)
+            if (i + j >= 0 && i + j < N)
+            {
+                columns.push_back(i + j);
+                values.push_back(val[j + 2]);
+            }
+        rowPointers[i + 1] = (int)values.size();
+    }
+    corecvs::SparseMatrix M(N, N, values, columns, rowPointers);
+    corecvs::Vector xx(N);
+    for (int i = 0; i < N; ++i)
+        xx[i] = i % 10;
+    auto b = M * xx;
+    auto P = M.incompleteCholseky();
+    if (!P.first)
 	{
-		for (int j = -2; j <= 2; ++j)
-			if (i + j >= 0 && i + j < N)
-			{
-				columns.push_back(i + j);
-				values.push_back(val[j + 2]);
-			}
-		rowPointers[i + 1] = values.size();
+    	std::cout << "NAH: ICP0 failed" << std::endl;
+    	ASSERT_TRUE(false);
 	}
-	corecvs::SparseMatrix M(N, N, values, columns, rowPointers);
-	corecvs::Vector xx(N);
-	for (int i = 0; i < N; ++i)
-		xx[i] = i % 10;
-	auto b = M * xx;
-	corecvs::Vector x;
-	MinresQLP<SparseMatrix>::Solve(M, b, x);
-	ASSERT_LE(!(M*x-b)/!b, 1e-9);
+    corecvs::Vector x;
+    MinresQLP<SparseMatrix>::Solve(M, [&](const Vector &x) { return P.second.dtrsv_un(P.second.dtrsv_ut(x)); }, b, x);
+    ASSERT_LE(!(M*x-b)/!b, 1e-9);
+    PCG<SparseMatrix>::Solve(M, [&](const Vector &x) { return P.second.dtrsv_un(P.second.dtrsv_ut(x)); }, b, x);
+    ASSERT_LE(!(M*x-b)/!b, 1e-9);
 }
 
 struct Blah : public FunctionArgs
 {
-	Blah() : FunctionArgs(10, 10)
-	{
-	}
-	virtual void operator() (const double *in, double *out)
-	{
-		for (int i = 0; i < 10; ++i)
-			out[i] = in[i];
-	}
+    Blah() : FunctionArgs(10, 10)
+    {
+    }
+    virtual void operator() (const double *in, double *out)
+    {
+        for (int i = 0; i < 10; ++i)
+            out[i] = in[i];
+    }
 };
 
 TEST(VectorTest, testVector)
 {
-	Vector v(10);
-	for (auto& vv: v)
-		vv = &vv - v.begin();
-	Vector vv(v);
-	Vector vvv(10);
-	vvv = v;
-	v[0] = 10;
-	vv[1] = 10;
-	vvv[2] = 10;
-	std::cout << v << std::endl;
-	std::cout << vv << std::endl;
-	std::cout << vvv << std::endl;
+    Vector v(10);
+    for (auto& vv: v)
+        vv = &vv - v.begin();
+    Vector vv(v);
+    Vector vvv(10);
+    vvv = v;
+    v[0] = 10;
+    vv[1] = 10;
+    vvv[2] = 10;
+    std::cout << v << std::endl;
+    std::cout << vv << std::endl;
+    std::cout << vvv << std::endl;
 
-	Vector blah {1, 2, 3, 4, 5, 6};
-	std::cout << blah << std::endl;
+    Vector blah {1, 2, 3, 4, 5, 6};
+    std::cout << blah << std::endl;
 
-	Blah b;
-	b(vv, vvv);
-	std::cout << vv << vvv << std::endl;
+    Blah b;
+    b(vv, vvv);
+    std::cout << vv << vvv << std::endl;
 
-	Vector dc(10);
-	std::cout << dc << std::endl;
+    Vector dc(10);
+    std::cout << dc << std::endl;
 }
 
 TEST(MatrixTest, testMatrix33)

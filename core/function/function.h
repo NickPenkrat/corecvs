@@ -21,6 +21,7 @@
 #include "vector.h"
 
 namespace corecvs {
+
 using std::vector;
 
 /**
@@ -57,7 +58,7 @@ public:
         CORE_ASSERT_TRUE( (int)  in.size() > inputs , "Too few input numbers");
         CORE_ASSERT_TRUE( (int) out.size() > outputs, "Too few output numbers");
 
-        return operator()(&in[0], &out[1]);
+        return operator()(in.data(), out.data());
     }
 
     /**
@@ -87,7 +88,7 @@ public:
     {
         vector<double> out(outputs);
 
-        operator ()(in, &out[0]);
+        operator ()(in, out.data());
         double sumsq = 0.0;
         for (double d : out)
         {

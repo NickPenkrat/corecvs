@@ -29,10 +29,33 @@ void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, 
     buffer = buffer_;
     corners = corners_;
     int N = (int)corners.size();
+    int bs = std::max(1, N / 128);
 
     stats->startInterval();
 
-    corecvs::parallelable_for(0, N, ParallelBoardExpander(this), true);
+    boards = corecvs::parallelable_reduce(0, N, bs,
+        std::vector<RectangularGridPattern>(),
+        [&](const corecvs::BlockedRange<int> &r, const std::vector<RectangularGridPattern> &init)
+        {
+            auto boards = init;
+            BoardExpander expander(this);
+            for (int seed = r.begin(); seed != r.end(); ++seed)
+            {
+                RectangularGridPattern board;
+                if (!expander.initBoard(seed) || !expander.getExpandedBoard(board))
+                    continue;
+
+                acceptHypothesis(board, boards);
+            }
+            return boards;
+        },
+        [&](const std::vector<RectangularGridPattern> &l, const std::vector<RectangularGridPattern> &r)
+        {
+            auto res = l;
+            for (auto &b : r)
+                acceptHypothesis(b, res);
+            return res;
+        });
 
     stats->resetInterval("Board Expander");
 
@@ -55,17 +78,10 @@ void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, 
     stats->resetInterval("Board Outputing");
 }
 
-void ChessBoardAssembler::acceptHypothesis(RectangularGridPattern &board)
+bool ChessBoardAssembler::acceptBoard(const RectangularGridPattern &board)
 {
-    bool intersects = false;
-    bool best = true;
-    std::vector<int> intersections;
-    std::unordered_set<int> cset;
-    for (auto& v: board.cornerIdx)
-        for (auto& c: v)
-            cset.insert(c);
     if (board.score > costThreshold())
-        return;
+        return false;
     int w = board.w();
     int h = board.h();
     if (hypothesisDimensions())
@@ -81,29 +97,25 @@ void ChessBoardAssembler::acceptHypothesis(RectangularGridPattern &board)
             if (fit > maxfit) maxfit = fit;
         }
         if (maxfit < hypothesisDimensions())
-            return;
+            return false;
     }
     for (int i = 0; i < w; ++i)
         for (int j = 0; j + 1 < h; ++j)
         {
             double a = !(corners[board.cornerIdx[j][i]].pos - corners[board.cornerIdx[j + 1][i]].pos);
             if (a < minSeedDistance())
-                return;
+                return false;
         }
     for (int i = 0; i < h; ++i)
         for (int j = 0; j + 1 < w; ++j)
         {
             double a = !(corners[board.cornerIdx[i][j]].pos - corners[board.cornerIdx[i][j + 1]].pos);
             if (a < minSeedDistance())
-                return;
+                return false;
         }
-
-    // We may run in parallel, so need to lock
 
     if (aligner && buffer)
     {
-//        std::cout << "RUNNING INNER EVAL" << std::endl;
-//        std::cout << board.cornerIdx.size() << " x " << board.cornerIdx[0].size() << std::endl;
         DpImage bufferC = *buffer;
         BoardAligner alignerc = *aligner;
         alignerc.bestBoard.clear();
@@ -115,11 +127,20 @@ void ChessBoardAssembler::acceptHypothesis(RectangularGridPattern &board)
             alignerc.bestBoard.push_back(row);
         }
         if (!alignerc.align(bufferC))
-            return;
+            return false;
     }
-#ifdef WITH_TBB
-    tbb::mutex::scoped_lock lock(mutex);
-#endif
+    return true;
+}
+
+void ChessBoardAssembler::addNonIntersectingBoardIntersections(const RectangularGridPattern &board, std::vector<RectangularGridPattern> &boards)
+{
+    bool intersects = false;
+    bool best = true;
+    std::vector<int> intersections;
+    std::unordered_set<int> cset;
+    for (auto& v: board.cornerIdx)
+        for (auto& c: v)
+            cset.insert(c);
     for (size_t i = 0; i < boards.size(); ++i)
     {
         auto& bb = boards[i];
@@ -160,23 +181,22 @@ void ChessBoardAssembler::acceptHypothesis(RectangularGridPattern &board)
         }
         boards.push_back(board);
     }
+
 }
 
-ChessBoardAssembler::ParallelBoardExpander::ParallelBoardExpander(ChessBoardAssembler *assembler)
-    : assembler(assembler)
-{}
-
-void ChessBoardAssembler::ParallelBoardExpander::operator() (const corecvs::BlockedRange<int> &r) const
+void ChessBoardAssembler::acceptHypothesis(const RectangularGridPattern &board, std::vector<RectangularGridPattern> &boards)
 {
-    BoardExpander expander(assembler);
-    for (int seed = r.begin(); seed != r.end(); ++seed)
-    {
-        RectangularGridPattern board;
-        if (!expander.initBoard(seed) || !expander.getExpandedBoard(board))
-            continue;
+    if (!acceptBoard(board))
+        return;
+    addNonIntersectingBoardIntersections(board, boards);
+}
 
-        assembler->acceptHypothesis(board);
-    }
+void ChessBoardAssembler::acceptHypothesis(const RectangularGridPattern &board)
+{
+#ifdef WITH_TBB
+    tbb::mutex::scoped_lock lock(mutex);
+#endif
+    acceptHypothesis(board, boards);
 }
 
 ChessBoardAssembler::BoardExpander::BoardExpander(ChessBoardAssembler *assembler)
@@ -281,7 +301,7 @@ bool ChessBoardAssembler::BoardExpander::getNearest(int from_id, corecvs::Vector
 
         auto& to = corners[i];
         auto dirp = to.pos - from.pos;
-        
+
         if ((dir & dirp) < 0.0)
             continue;
 
@@ -341,9 +361,9 @@ bool ChessBoardAssembler::BoardExpander::growDir(Direction dir, RectangularGridP
 {
     std::vector<corecvs::Vector2dd> prediction;
     std::vector<int> assignment;
-    
+
     predictor(dir, prediction);
- 
+
     if (!assignNearest(prediction, usedCorners, assignment))
         return false;
 

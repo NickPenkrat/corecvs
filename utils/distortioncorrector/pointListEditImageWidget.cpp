@@ -548,6 +548,7 @@ void PointListEditImageWidgetUnited::childMousePressed(QMouseEvent *event)
         selectPoint(selectedPoint);
         mUi->widget->update();
 
+        //event->type() == QMouseEvent::MouseButtonDblClick;
     }
 }
 

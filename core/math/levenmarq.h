@@ -16,6 +16,7 @@
 #include <limits>
 #include <vector>
 #include <chrono>
+#include <thread>
 
 #include "global.h"
 
@@ -25,6 +26,7 @@
 #include "sparseMatrix.h"
 #include "vector.h"
 #include "minresQLP.h"
+#include "pcg.h"
 #include "statusTracker.h"
 
 
@@ -34,7 +36,10 @@ enum class LinearSolver
 {
     NATIVE,
     SCHUR_COMPLEMENT,
-    MINRESQLP
+    MINRESQLP,
+    MINRESQLP_IC0,
+    CG,
+    PCG_IC0
 };
 
 template<typename MatrixClass, typename FunctionClass>
@@ -54,6 +59,10 @@ public:
     bool trace         = false;
     bool traceMatrix   = false;
     bool traceJacobian = false;
+
+    double f0, x0;
+    double fTolerance = 1e-9,
+           xTolerance = 1e-9;
 #if 0
     bool useConjugatedGradient = false;
     int  conjugatedGradientIterations = 100;
@@ -115,17 +124,18 @@ public:
         auto initial = diff;
         F(beta, initial);
         initial -= target;
-        double initialNorm = initial.sumAllElementsSq();
+        double initialNorm = f0 = initial.sumAllElementsSq();
+        x0 = !beta;
         int LSc = 0;
 
         double totalEval = 0.0, totalJEval = 0.0, totalLinSolve = 0.0, totalATA = 0.0, totalTotal = 0.0;
         int g = 0;
-        state->reset("Fit", maxIterations);
+        StatusTracker::Reset(state, "Fit", maxIterations);
 
         for (g = 0; (g < maxIterations) && (lambda < maxlambda) && !converged; g++)
         {
             int LSc_curr = 0;
-            auto boo = state->createAutoTrackerCalculationObject();
+            auto boo = StatusTracker::CreateAutoTrackerCalculationObject(state);
 
             double timeEval = 0.0, timeJEval = 0.0, timeLinSolve = 0.0, timeATA = 0.0, timeTotal = 0.0;
             auto beginT = std::chrono::high_resolution_clock::now();
@@ -274,12 +284,61 @@ public:
                         MatrixClass::LinSolveSchurComplement(A, B, F.schurBlocks, delta, true, true, useExplicitInverse);
                         break;
                     case LinearSolver::MINRESQLP:
+                        {
                         auto res = MinresQLP<MatrixClass>::Solve(A, B, delta);
+                        auto P = A.incompleteCholseky();
+                        auto PP = [&](const Vector& x)->Vector { return P.second.dtrsv_un(P.second.dtrsv_ut(x)); };
+                        auto res2 = MinresQLP<MatrixClass>::Solve(A, PP, B, delta);
+                        if (res != res2)
+                        {
+                            std::cout << "CURIOUS: NON-PRECONDITIONED:" << res << " PRECONDITIONED: " << res2 << std::endl;
+                        }
                         if (res != MinresQLPStatus::SOLVED_RTOL &&
                             res != MinresQLPStatus::SOLVED_EPS  &&
                             res != MinresQLPStatus::MINLEN_RTOL &&
                             res != MinresQLPStatus::MINLEN_EPS  &&
                             terminateOnDegeneracy)
+                            shouldExit = true;
+                        }
+                        break;
+                    case LinearSolver::MINRESQLP_IC0:
+                        {
+#ifndef WITH_CUSPARSE
+                        auto P123 = A.incompleteCholseky();
+#else
+                        decltype(A.incompleteCholseky()) P123;
+                        std::thread t1([&](){ P123 = A.incompleteCholseky(); std::cout << "IC0 completed" << std::endl;});
+                        std::thread t2([&]() { A.promoteToGpu(); for (int i = 0; i < 3; ++i) auto vv = A * B; });
+                        t1.join();
+                        t2.join();
+#endif
+                        MinresQLPStatus res123;
+                        if (P123.first)
+                        {
+                            auto PP123 = [&](const Vector& x)->Vector { return P123.second.dtrsv_un(P123.second.dtrsv_ut(x)); };
+                            res123 = MinresQLP<MatrixClass>::Solve(A, PP123, B, delta);
+                        }
+                        else
+                        {
+                            std::cout << "!!!IC0 failed, running without preconditioner!!!" << std::endl;
+                            res123 = MinresQLP<MatrixClass>::Solve(A, B, delta);
+                        }
+                        if (res123 != MinresQLPStatus::SOLVED_RTOL &&
+                            res123 != MinresQLPStatus::SOLVED_EPS  &&
+                            res123 != MinresQLPStatus::MINLEN_RTOL &&
+                            res123 != MinresQLPStatus::MINLEN_EPS  &&
+                            terminateOnDegeneracy)
+                            shouldExit = true;
+                        }
+                        break;
+                    case LinearSolver::CG:
+                        PCG<MatrixClass>::Solve(A, B, delta);
+                        break;
+                    case LinearSolver::PCG_IC0:
+                        auto P = A.incompleteCholseky();
+                        auto PP = [&](const Vector& x)->Vector { return P.second.dtrsv_un(P.second.dtrsv_ut(x)); };
+                        auto res2 = PCG<MatrixClass>::Solve(A, PP, B, delta);
+                        if (res2 != PCGStatus::CONVERGED && terminateOnDegeneracy)
                             shouldExit = true;
                         break;
                 }
@@ -316,7 +375,16 @@ public:
                     if (traceMatrix) {
                         cout << "Old soluton:" << endl << beta << endl;
                     }
-
+                    double funTolerance = (norm - normNew) / f0;// / (1.0 + norm);
+                    double xxTolerance = !delta / x0;// / (1.0 + !beta);
+                    if (trace)
+                    std::cout << "Tolerances: |f(x)-f(x+d)|/(1.0+f(x): " << funTolerance << " |d|/|1+|x||: " << xxTolerance << std::endl;
+                    if (funTolerance < fTolerance && xxTolerance < xTolerance)
+                    {
+                        converged = true;
+                        if (trace)
+                        std::cout << "CONVERGED (FTOL+XTOL)" << std::endl;
+                    }
                     lambda /= lambdaFactor;
                     norm = normNew;
                     beta += delta;

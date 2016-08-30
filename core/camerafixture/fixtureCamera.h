@@ -1,8 +1,10 @@
 #ifndef FIXTURE_CAMERA_H
 #define FIXTURE_CAMERA_H
 
+#include <stdint.h>
 #include <unordered_map>
 
+#include "atomicOps.h"
 #include "calibrationLocation.h"  // LocationData
 #include "lensDistortionModelParameters.h"
 #include "line.h"
@@ -16,7 +18,7 @@ namespace corecvs {
 
 class CameraFixture;
 
-typedef std::unordered_map<std::string, void *> MetaContainer;
+
 
 class FixtureCamera : public FixtureScenePart, public CameraModel
 {
@@ -28,9 +30,8 @@ public:
      **/
     CameraPrototype *cameraPrototype = NULL;
 
-
-    /* This variable is not contorlled and maintained */
-    int sequenceNumber;
+    /* This variable is not controlled and maintained */
+    int             sequenceNumber;
 
     FixtureCamera(FixtureScene * owner = NULL) :
         FixtureScenePart(owner),
@@ -41,10 +42,10 @@ public:
             const PinholeCameraIntrinsics &_intrinsics,
             const CameraLocationData &_extrinsics = CameraLocationData(),
             const LensDistortionModelParameters &_distortion = LensDistortionModelParameters(),
-            FixtureScene * owner = NULL) :
-        FixtureScenePart(owner),
-        CameraModel(_intrinsics, _extrinsics, _distortion),
-        cameraFixture(NULL)
+            FixtureScene * owner = NULL)
+        : FixtureScenePart(owner)
+        , CameraModel(_intrinsics, _extrinsics, _distortion)
+        , cameraFixture(NULL)
     {}
 
     template<class VisitorType>
@@ -60,7 +61,7 @@ public:
     /** This is an experimental block of functions  it may change. Please use with caution **/
 
     /** WHY SO SLOW? **/
-    bool projectPointFromWorld(const Vector3dd &point, Vector2dd *projetionPtr = NULL);
+    bool projectPointFromWorld(const Vector3dd &point, Vector2dd *projectionPtr = NULL);
 
 
 };

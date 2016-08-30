@@ -27,7 +27,10 @@ IterativeReconstructionNonlinearOptimizationParamsWrapperControlWidget::Iterativ
     QObject::connect(mUi->postAppendNonlinearIterationsSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->finalNonLinearIterationsSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->alternatingIterationsSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->partialBASpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->fullBALimitSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->excessiveQuaternionParametrizationCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->scaleLockCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->explicitInverseCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
 }
 
@@ -69,7 +72,10 @@ IterativeReconstructionNonlinearOptimizationParamsWrapper *IterativeReconstructi
         , mUi->postAppendNonlinearIterationsSpinBox->value()
         , mUi->finalNonLinearIterationsSpinBox->value()
         , mUi->alternatingIterationsSpinBox->value()
+        , mUi->partialBASpinBox->value()
+        , mUi->fullBALimitSpinBox->value()
         , mUi->excessiveQuaternionParametrizationCheckBox->isChecked()
+        , mUi->scaleLockCheckBox->isChecked()
         , mUi->explicitInverseCheckBox->isChecked()
     );
 }
@@ -83,7 +89,10 @@ void IterativeReconstructionNonlinearOptimizationParamsWrapperControlWidget::set
     mUi->postAppendNonlinearIterationsSpinBox->setValue(input.postAppendNonlinearIterations());
     mUi->finalNonLinearIterationsSpinBox->setValue(input.finalNonLinearIterations());
     mUi->alternatingIterationsSpinBox->setValue(input.alternatingIterations());
+    mUi->partialBASpinBox->setValue(input.partialBA());
+    mUi->fullBALimitSpinBox->setValue(input.fullBALimit());
     mUi->excessiveQuaternionParametrizationCheckBox->setChecked(input.excessiveQuaternionParametrization());
+    mUi->scaleLockCheckBox->setChecked(input.scaleLock());
     mUi->explicitInverseCheckBox->setChecked(input.explicitInverse());
     blockSignals(wasBlocked);
     emit paramsChanged();

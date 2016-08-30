@@ -1,0 +1,9 @@
+*.sln
+*vcxproj*
+Makefile*
+object_script*
+*.suo
+*.sdf
+*.ipch
+
+tools/generator/Generated/*

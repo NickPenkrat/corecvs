@@ -149,11 +149,13 @@ void ReconstructionFixtureScene::printTrackStats()
     for (auto& s: ssqs)
         ++cntS[s / tolerance];
     std::cout << "Reprojection histogram: " << std::endl;
+    if (cntE.size())
     for (int i = 0; i <= cntE.rbegin()->first; ++i)
         if (cntE[i] > 0)
             std::cout << "[" << tolerance * i << "; " << tolerance * (i + 1) << ": " << cntE[i] << ")";
     std::cout << std::endl;
     std::cout << "RMSE histogram: " << std::endl;
+    if (cntS.size())
     for (int i = 0; i <= cntS.rbegin()->first; ++i)
         if (cntS[i] > 0)
             std::cout << "[" << tolerance * i << "; " << tolerance * (i + 1) << ": " << cntS[i] << ")";
@@ -383,7 +385,7 @@ void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams 
 
     // Feature detection and matching
     FeatureMatchingPipeline pipeline(filenames, processState);
-    pipeline.add(new KeyPointDetectionStage(params.detector(), params.parameters()), true);
+    pipeline.add(new KeyPointDetectionStage(params.detector(), params.maxFeatureCount(), params.parameters()), true);
     pipeline.add(new DescriptorExtractionStage(params.descriptor(), params.parameters()), true);
     pipeline.add(new MatchingPlanComputationStage(), true);
     pipeline.add(new MatchAndRefineStage(params.descriptor(), params.matcher(), params.b2bThreshold(), params.thresholdDistance()), true);
@@ -1127,6 +1129,8 @@ corecvs::ReconstructionFixtureScene::getFixtureMatchesIdx(const std::vector<Came
 
 void corecvs::ReconstructionFixtureScene::filterEssentialRansac(const std::vector<CameraFixture*> &lhs, const std::vector<CameraFixture*> &rhs, EssentialFilterParams params)
 {
+    //std::cout << "\tReconstructionFixtureScene::filterEssentialRansac +++" << std::endl;
+
     matchesCopy = matches;
     std::vector<std::pair<WPP, WPP>> work;
     for (auto& psA: lhs)
@@ -1149,15 +1153,20 @@ void corecvs::ReconstructionFixtureScene::filterEssentialRansac(const std::vecto
                         }
                     if (!alreadyIn)
                     {
-                        work.emplace_back(idFirst, idSecond);
-                        if (!essentialCache.count(std::make_pair(idFirst, idSecond)))
-                            essentialCache[std::make_pair(idFirst, idSecond)] = std::make_tuple(corecvs::EssentialDecomposition(), 0.0, false);
+                        bool swap = !(idFirst < idSecond);
+                        WPP idA = swap ? idSecond : idFirst;
+                        WPP idB = swap ? idFirst  : idSecond;
+                        work.emplace_back(idA, idB);
+                        if (!essentialCache.count(std::make_pair(idA, idB)))
+                            essentialCache[std::make_pair(idA, idB)] = std::make_tuple(corecvs::EssentialDecomposition(), 0.0, false);
                     }
                 }
             }
         }
     }
     corecvs::parallelable_for(0, (int)work.size(), ParallelEssentialFilter(this, work, params));
+
+    //std::cout << "\tReconstructionFixtureScene::filterEssentialRansac ---" << std::endl;
 }
 
 
@@ -1176,11 +1185,9 @@ void corecvs::ReconstructionFixtureScene::remove(WPP a, WPP b, std::vector<int> 
     ref.resize(ok);
 }
 
-void corecvs::ReconstructionFixtureScene::filterEssentialRansac(WPP a, WPP b, EssentialFilterParams params)
+void corecvs::ReconstructionFixtureScene::filterEssentialRansac(WPP idA, WPP idB, EssentialFilterParams params)
 {
-    bool swap = !(a < b);
-    WPP idA = swap ? b : a;
-    WPP idB = swap ? a : b;
+    CORE_ASSERT_TRUE_S(idA < idB);
 
     auto& cache = essentialCache[std::make_pair(idA, idB)];
     bool useCache = std::get<2>(cache);
@@ -1247,5 +1254,5 @@ void corecvs::ReconstructionFixtureScene::filterEssentialRansac(WPP a, WPP b, Es
         std::cout << "Too low gamma-value, rejecting all features" << std::endl;
         bestInliers.clear();
     }
-    remove(a, b, bestInliers);
+    remove(idA, idB, bestInliers);
 }

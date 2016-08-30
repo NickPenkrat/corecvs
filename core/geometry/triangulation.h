@@ -241,7 +241,7 @@ struct TriangulationBeginnings
 struct EdgeCmp
 {
     // Strict_weak_ordering
-    bool operator()(const Edge &a, const Edge &b)
+    bool operator()(const Edge &a, const Edge &b) const
     {
         if (a.org < b.org)
             return true;

@@ -180,7 +180,7 @@ struct ParallelBoardDetector
     {
         for (size_t i = r.begin(); i != r.end(); ++i)
         {
-            auto boo = job->processState->createAutoTrackerCalculationObject();
+            auto boo = StatusTracker::CreateAutoTrackerCalculationObject(job->processState);
             size_t cam = idx[i][0];
             size_t obs = idx[i][1];
 
@@ -195,7 +195,7 @@ struct ParallelBoardDetector
                     (distorted ? psIterator.intrinsics.distortedSize : psIterator.intrinsics.size) = corecvs::Vector2dd(buffer.w, buffer.h);
                 }
                 job->detectChessBoard(buffer, distorted ? v.sourcePattern : v.undistortedPattern);
-                job->processState->checkToCancel();
+                StatusTracker::CheckToCancel(job->processState);
             }
             else
             {
@@ -206,7 +206,7 @@ struct ParallelBoardDetector
                     pc.projection = job->photostation.cameras[cam].distortion.mapBackward(pc.projection);
                     v.undistortedPattern.push_back(pc);
 
-                    job->processState->checkToCancel();
+                    StatusTracker::CheckToCancel(job->processState);
                 }
             }
         }
@@ -228,7 +228,10 @@ void CalibrationJob::allDetectChessBoard(bool distorted)
 
     bool estimate = !distorted && settings.openCvDetectorParameters.mEstimateUndistortedFromDistorted;
 
-    L_INFO_P("chessboard type: %s", settings.boardAlignerParams.boardMarkers.size() ? "new" : "old");
+    L_INFO_P("checkerboard type: %s [%dx%d]"
+        , settings.boardAlignerParams.boardMarkers.size() ? "new" : "old"
+        , settings.boardAlignerParams.idealWidth
+        , settings.boardAlignerParams.idealHeight);
 
     std::vector<std::array<size_t, 2>> idxs;
     for (size_t i = 0; i < observations.size(); ++i)
@@ -239,7 +242,7 @@ void CalibrationJob::allDetectChessBoard(bool distorted)
         }
     }
 
-    processState->reset("Pattern detection", idxs.size());
+	StatusTracker::Reset(processState, "Pattern detection", idxs.size());
 
     // If you do not have tons of ram, then you should probably make this loop sequential // TODO: make it param/automatic
     bool shouldParallel = true;
@@ -298,13 +301,13 @@ struct ParallelDistortionEstimator
     {
         for (int cam = r.begin(); cam < r.end(); ++cam)
         {
-            auto boo = job->processState->createAutoTrackerCalculationObject();
+            auto boo = StatusTracker::CreateAutoTrackerCalculationObject(job->processState);
 
             corecvs::SelectableGeometryFeatures sgf;
             for (auto& v: job->observations[cam])
             {
                 sgf.addAllLinesFromObservationList(v.sourcePattern);
-                job->processState->checkToCancel();
+				StatusTracker::CheckToCancel(job->processState);
             }
 
             auto& psIterator = job->photostation.cameras[cam];
@@ -313,7 +316,7 @@ struct ParallelDistortionEstimator
             for (auto& v: job->observations[cam])
             {
                 job->computeDistortionError(v.sourcePattern, psIterator.distortion, v.distortionRmse, v.distortionMaxError);
-                job->processState->checkToCancel();
+				StatusTracker::CheckToCancel(job->processState);
             }
         }
     }
@@ -326,7 +329,7 @@ struct ParallelDistortionEstimator
 
 void CalibrationJob::allEstimateDistortion()
 {
-    processState->reset("Distortion estimation", photostation.cameras.size());
+	StatusTracker::Reset(processState, "Distortion estimation", photostation.cameras.size());
 
     corecvs::parallelable_for(0, (int)photostation.cameras.size(), ParallelDistortionEstimator(this));
 }
@@ -337,7 +340,7 @@ void CalibrationJob::prepareUndistortionTransformation(int camId, corecvs::Displ
     auto& cam = photostation.cameras[camId];
     cam.estimateUndistortedSize(settings.distortionApplicationParameters);
 
-    processState->checkToCancel();
+	StatusTracker::CheckToCancel(processState);
 
     int newW = (int)cam.intrinsics.size[0];
     int newH = (int)cam.intrinsics.size[1];
@@ -368,7 +371,7 @@ struct ParallelDistortionRemoval
     {
         for (int camId = r.begin(); camId < r.end(); ++camId)
         {
-            auto boo = job->processState->createAutoTrackerCalculationObject();
+            auto boo = StatusTracker::CreateAutoTrackerCalculationObject(job->processState);
 
             auto& observationsIterator = job->observations[camId];
             auto& cam = job->photostation.cameras[camId];
@@ -376,13 +379,13 @@ struct ParallelDistortionRemoval
             corecvs::DisplacementBuffer transform;
             job->prepareUndistortionTransformation(camId, transform);
 
-            job->processState->checkToCancel();
+			StatusTracker::CheckToCancel(job->processState);
 
             corecvs::parallelable_for(0, (int)observationsIterator.size(), [&](const corecvs::BlockedRange<int> &r)
                 {
                     for (int i = r.begin(); i != r.end(); ++i)
                     {
-                        job->processState->checkToCancel();
+						StatusTracker::CheckToCancel(job->processState);
 
                         auto &ob = observationsIterator[i];
                         corecvs::RGB24Buffer source = job->LoadImage(ob.sourceFileName), dst;
@@ -401,7 +404,7 @@ struct ParallelDistortionRemoval
 
 void CalibrationJob::allRemoveDistortion()
 {
-    processState->reset("Image undistortion", photostation.cameras.size());
+	StatusTracker::Reset(processState, "Image undistortion", photostation.cameras.size());
     corecvs::parallelable_for(0, (int)photostation.cameras.size(), ParallelDistortionRemoval(this));
 }
 
@@ -416,7 +419,7 @@ void CalibrationJob::allRemoveDistortionForPattern()
         }
     }
 
-    processState->reset("Pattern undistortion", idxs.size());
+	StatusTracker::Reset(processState, "Pattern undistortion", idxs.size());
 
     corecvs::parallelable_for((size_t)0,
                               idxs.size(), ParallelBoardDetector(this, idxs, true, false), true);
@@ -492,7 +495,7 @@ struct ParallelSingleCalibrator
     {
         for (int cameraId = r.begin(); cameraId < r.end(); ++cameraId)
         {
-            job->processState->checkToCancel();
+			StatusTracker::CheckToCancel(job->processState);
             job->calibrateSingleCamera(cameraId);
         }
     }
@@ -767,31 +770,31 @@ void CalibrationJob::computeSingleCameraErrors()
 
 void CalibrationJob::calibrate()
 {
-    processState->reset("Calibration", 6);
+	StatusTracker::Reset(processState, "Calibration", 6);
 
-    processState->incrementStarted();
+    StatusTracker::IncrementStarted(processState);
     allCalibrateSingleCamera();
-    processState->incrementCompleted();
+    StatusTracker::IncrementCompleted(processState);
 
-    processState->incrementStarted();
+    StatusTracker::IncrementStarted(processState);
     computeSingleCameraErrors();
-    processState->incrementCompleted();
+    StatusTracker::IncrementCompleted(processState);
 
-    processState->incrementStarted();
+    StatusTracker::IncrementStarted(processState);
     calibratePhotostation();
-    processState->incrementCompleted();
+    StatusTracker::IncrementCompleted(processState);
 
-    processState->incrementStarted();
+    StatusTracker::IncrementStarted(processState);
     computeCalibrationErrors();
-    processState->incrementCompleted();
+    StatusTracker::IncrementCompleted(processState);
 
-    processState->incrementStarted();
+    StatusTracker::IncrementStarted(processState);
     computeFullErrors();
-    processState->incrementCompleted();
+    StatusTracker::IncrementCompleted(processState);
 
-    processState->incrementStarted();
+    StatusTracker::IncrementStarted(processState);
     computeReconstructionError();
-    processState->incrementCompleted();
+    StatusTracker::IncrementCompleted(processState);
 }
 
 void CalibrationJob::calculateRedundancy(std::vector<int> &cameraImagesCount

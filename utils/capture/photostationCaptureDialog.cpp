@@ -292,8 +292,8 @@ PhotostationCaptureDialog::~PhotostationCaptureDialog()
     {
         CameraInfo &info = mCameraInfos[i];
 
-        QComboBox *comboBox  = static_cast<QComboBox *>(ui->cameraTableWidget->cellWidget(i, COLUMN_CAM_ID));
-        QCheckBox *checkBox1 = static_cast<QCheckBox *>(ui->cameraTableWidget->cellWidget(i, COLUMN_SAVE_SETTINGS));
+        QComboBox *comboBox  = static_cast<QComboBox *>(ui->cameraTableWidget->cellWidget((int)i, COLUMN_CAM_ID));
+        QCheckBox *checkBox1 = static_cast<QCheckBox *>(ui->cameraTableWidget->cellWidget((int)i, COLUMN_SAVE_SETTINGS));
 
         settings.beginGroup(QString::fromStdString(info.paramsStoreId));
         settings.setValue("num"    , comboBox->currentIndex());
@@ -412,14 +412,13 @@ void PhotostationCaptureDialog::previewStop()
     delete_safe(mPreviewInterface);
 
     /* update the icon */
-    if (mPreviewInterface >= 0 && mPreviewTableLine < ui->cameraTableWidget->rowCount())
+    if (/*mPreviewInterface >= 0 &&*/ mPreviewTableLine < ui->cameraTableWidget->rowCount())
     {
         QTableWidgetItem* previewIcon = new QTableWidgetItem(QIcon(":/new/prefix1/play.png"), "");
         previewIcon->setFlags(previewIcon->flags() & (~Qt::ItemIsEditable));
         ui->cameraTableWidget->setItem(mPreviewTableLine, COLUMN_PREVIEW, previewIcon);
     }
     mPreviewTableLine = -1;
-
 }
 
 bool PhotostationCaptureDialog::previewRunning()

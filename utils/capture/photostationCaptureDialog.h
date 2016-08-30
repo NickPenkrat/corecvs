@@ -22,7 +22,7 @@ class PhotostationCaptureDialog : public QDialog, SaveableWidget
 
 public:
     explicit PhotostationCaptureDialog(QWidget *parent = 0);
-    ~PhotostationCaptureDialog();
+    ~PhotostationCaptureDialog() throw();
 
     enum {
         COLUMN_SYS_ID,

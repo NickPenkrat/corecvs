@@ -5,7 +5,7 @@ namespace corecvs {
 
 atomic_int FixtureScenePart::OBJECT_COUNT(0);
 
-bool FixtureCamera::projectPointFromWorld(const Vector3dd &point, Vector2dd *projetionPtr)
+bool FixtureCamera::projectPointFromWorld(const Vector3dd &point, Vector2dd *projectionPtr)
 {
     FixtureCamera worldCam = *this;
     if (cameraFixture != NULL) {
@@ -18,8 +18,8 @@ bool FixtureCamera::projectPointFromWorld(const Vector3dd &point, Vector2dd *pro
         return false;
     }
 
-    if (projetionPtr != NULL) {
-        *projetionPtr = projection;
+    if (projectionPtr != NULL) {
+        *projectionPtr = projection;
     }
     return true;
 }

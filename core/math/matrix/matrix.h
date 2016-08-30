@@ -33,6 +33,7 @@ typedef AbstractBuffer<double, int32_t> MatrixBase;
 class Matrix : public MatrixBase
 {
 public:
+	void promoteToGpu() { }
     enum InverstionAlgorithm{
         INVERT_LU,
         INVERT_SVD
@@ -244,11 +245,17 @@ public:
     Matrix negative() const;
 
     Matrix inv() const;
+	std::pair<bool, Matrix> incompleteCholseky();
     Matrix invSVD() const;
     double detSVD() const;
 
     Vector2d32 getMinCoord() const;
     Vector2d32 getMaxCoord() const;
+    Vector dtrsv(const Vector &v, bool upper = true, bool notrans = true) const;
+    Vector dtrsv_un(const Vector &v) const { return dtrsv(v, true, true); }
+    Vector dtrsv_ut(const Vector &v) const { return dtrsv(v, true, false); }
+    Vector dtrsv_ln(const Vector &v) const { return dtrsv(v, false, true); }
+    Vector dtrsv_lt(const Vector &v) const { return dtrsv(v, false, false); }
 
     Matrix column(int column);
     Matrix row   (int row);

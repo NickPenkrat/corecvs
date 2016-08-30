@@ -2,6 +2,7 @@
 #include "cblasLapackeWrapper.h"
 
 #include <chrono>
+#include <thread>
 
 #ifdef WITH_TBB
 #include <tbb/tbb.h>
@@ -9,8 +10,413 @@
 
 using namespace corecvs;
 
+//#define STRONG_TRIAG
+
+void corecvs::SparseMatrix::checkCorrectness() const
+{
+    CORE_ASSERT_TRUE_S(h + 1 == rowPointers.size());
+    CORE_ASSERT_TRUE_S(rowPointers.size());
+    CORE_ASSERT_TRUE_S(*rowPointers.rbegin() == columns.size());
+    CORE_ASSERT_TRUE_S(*rowPointers.rbegin() == values.size());
+    for (int i = 0; i + 1 < rowPointers.size(); ++i)
+        CORE_ASSERT_TRUE_S(rowPointers[i] <= rowPointers[i + 1]);
+    for (int i = 0; i < h; ++i)
+        for (int j = rowPointers[i]; j + 1 < rowPointers[i + 1]; ++j)
+        {
+            CORE_ASSERT_TRUE_S(columns[j] < columns[j + 1]);
+            CORE_ASSERT_TRUE_S(columns[j] >= 0 && columns[j] < w);
+        }
+}
+
+
+std::pair<bool, SparseMatrix> corecvs::SparseMatrix::incompleteCholseky(bool allow_parallel)
+{
+    // Here we will consturct incomplete upper-triangular cholesky-factor for matrix
+    // If we do not succeed, we'll return <false, ()> 'cause it is 2016 now,
+    // and std::optional from C++17 is not yet ready (and usage of std::experimental
+    // is prohibited)
+    // We will start from the same NNZ-structure
+
+#if 1
+    SparseMatrix A(*this);
+    int N = h;
+    int n = N;
+    for (int k = 0; k < N; ++k)
+    {
+        int i_k_k = getIndex(k, k);
+
+#if 0
+        double pivot = A.a(k, k);
+#else
+        double pivot = i_k_k >= 0 ? A.values[i_k_k] : 0.0;
+#endif
+        if (pivot <= 0.0)
+        {
+            std::cout << "Non-positive pivot R" << std::endl;
+            return std::make_pair(false, SparseMatrix());
+        }
+        CORE_ASSERT_TRUE_S(A.a(k, k) == pivot);
+        CORE_ASSERT_TRUE_S(columns[i_k_k] == k);
+        pivot = std::sqrt(pivot);
+#if 0
+        A.a(k, k) = pivot;
+#else
+        A.values[i_k_k] = pivot;
+#endif
+
+#if 0
+        for (int i = k + 1; i < n; ++i)
+            if (A.a(k, i) != 0.0)
+                A.a(k, i) /= pivot;
+#else
+        for (int i_k_i = i_k_k + 1; i_k_i < A.rowPointers[k + 1]; ++i_k_i)
+            A.values[i_k_i] /= pivot;
+#endif
+
+#if 0
+        for (int j = k + 1; j < n; ++j)
+            for (int i = j; i < n; ++i)
+                if (A.a(j, i) != 0.0)
+                    A.a(j, i) -= A.a(k, i) * A.a(k, j);
+#else
+if (!allow_parallel) {
+        int i_k_j = i_k_k + 1;
+        for (; i_k_j < A.rowPointers[k + 1]; ++i_k_j)
+        {
+            int j = A.columns[i_k_j];
+            int i_j_i = getUBIndex(j, j);
+
+            double a_k_j = A.values[i_k_j];
+            if (a_k_j == 0.0)
+                continue;
+
+            int i_k_i = i_k_j;
+            for (; i_j_i < A.rowPointers[j + 1]; ++i_j_i)
+            {
+                int i = A.columns[i_j_i];
+                while (i_k_i < A.rowPointers[k + 1] && A.columns[i_k_i] < i) ++i_k_i;
+                if (i_k_i == A.rowPointers[k + 1])
+                    break;
+                if (A.columns[i_k_i] > i)
+                    continue;
+                double a_k_i = A.values[i_k_i];
+                A.values[i_j_i] -= a_k_i * a_k_j;
+            }
+        }
+}else{
+
+        int i_k_j_ = i_k_k + 1;
+        corecvs::parallelable_for(i_k_j_, A.rowPointers[k + 1], 512, [&](const corecvs::BlockedRange<int> &r)
+        {
+            for (int i_k_j = r.begin(); i_k_j != r.end(); ++i_k_j)
+            {
+                int j = A.columns[i_k_j];
+                int i_j_i = getUBIndex(j, j);
+
+                double a_k_j = A.values[i_k_j];
+                if (a_k_j == 0.0)
+                    continue;
+
+                int i_k_i = i_k_j;
+                for (; i_j_i < A.rowPointers[j + 1]; ++i_j_i)
+                {
+                    int i = A.columns[i_j_i];
+                    while (i_k_i < A.rowPointers[k + 1] && A.columns[i_k_i] < i) ++i_k_i;
+                    if (i_k_i == A.rowPointers[k + 1])
+                        break;
+                    if (A.columns[i_k_i] > i)
+                        continue;
+                    double a_k_i = A.values[i_k_i];
+                    A.values[i_j_i] -= a_k_i * a_k_j;
+                }
+            }
+        });
+}
+#endif
+    }
+#if 0
+    for (int i = 0; i < n; ++i)
+        for (int j = i + 1; j < n; ++j)
+            A.a(j, i) = 0.0;
+#else
+    int nnz = 0;
+    for (int i = 0; i < N; ++i)
+    {
+        for (int j = getUBIndex(i, i); j < A.rowPointers[i + 1]; ++j)
+            if (A.columns[j] >= i)
+            {
+                A.columns[nnz] = A.columns[j];
+                A.values[nnz] = A.values[j];
+                ++nnz;
+            }
+        A.rowPointers[i + 1] = nnz;
+    }
+    A.columns.resize(nnz);
+    A.values.resize(nnz);
+#endif
+
+    return std::make_pair(true, A);
+#else
+    std::vector<double> u_values(values);
+    int N = h;
+    CORE_ASSERT_TRUE_S(h == w);
+    for (int k = 0; k < N; ++k)
+    {
+        int k_k_id = rowPointers[k];
+        while (k_k_id < rowPointers[k + 1] && columns[k_k_id] < k) ++k_k_id;
+
+        if (k_k_id >= rowPointers[k + 1] || columns[k_k_id] != k || u_values[k_k_id] <= 0.0)
+            return std::make_pair(false, SparseMatrix());
+
+        double a_kk = std::sqrt(u_values[k_k_id]);
+        u_values[k_k_id] = a_kk;
+        for (int i = k_k_id + 1; i < rowPointers[k + 1]; ++i)
+            u_values[i] = u_values[i] / a_kk;
+
+        int j_k_id = k_k_id + 1;
+        for (int j = k + 1; j < N; ++j)
+        {
+            double a_j_k = 0.0;
+            if (columns[j_k_id] == j && j_k_id < rowPointers[j + 1])
+            {
+                a_j_k = u_values[j_k_id];
+            }
+
+            int j_j_id = rowPointers[j];
+            while (j_j_id < rowPointers[j + 1] && columns[j_j_id] < j) ++j_j_id;
+
+            if (j_j_id >= rowPointers[j + 1] || columns[j_j_id] != j)
+            {
+                std::cout << "Mystery things happen in ICP" << std::endl;
+                return std::make_pair(false, SparseMatrix());
+            }
+
+            int i_j_id = j_j_id;
+            int i_k_id = k_k_id + 1;
+            while(columns[i_k_id] < j && i_k_id < rowPointers[k + 1]) ++i_k_id;
+
+            for (; i_j_id < rowPointers[j];  ++i_j_id)
+            {
+                int i = columns[i];
+                while (columns[i_k_id] < i && i_k_id < rowPointers[k + 1]) ++i_k_id;
+
+                double a_i_k = 0.0;
+                if (columns[i_k_id] == i && i_k_id < rowPointers[k + 1])
+                    a_i_k = u_values[i_k_id];
+
+                u_values[i_j_id] -= a_i_k * a_j_k;
+            }
+            if (columns[j_k_id] == j && j_k_id < rowPointers[k + 1])
+                j_k_id++;
+        }
+    }
+    for (int i = 1; i < N; ++i)
+    {
+        for (int j = rowPointers[i]; j < rowPointers[i + 1] && columns[j] < i; ++j)
+            u_values[j] = 0.0;
+    }
+    return std::make_pair(true, SparseMatrix(N, N, u_values, columns, rowPointers));
+#endif
+}
+
+corecvs::Vector corecvs::SparseMatrix::dtrsv(const Vector &rhs, bool upper, bool notrans) const
+{
+
+    return upper ? notrans ? dtrsv_un(rhs) : dtrsv_ut(rhs) : notrans ? dtrsv_ln(rhs) : dtrsv_lt(rhs);
+}
+corecvs::Vector corecvs::SparseMatrix::dtrsv_ut(const Vector &rhs) const
+{
+    /*
+     *                         /# # # # #\
+     * /                     \ |  # # # #|   /                     \
+     * | x_1 x_2 x_3 x_4 x_5 | |    # # #| = | b_1 b_2 b_3 b_4 b_5 |
+     * \                     / |      # #|   \                     /
+     *                         \        #/
+     */
+    CORE_ASSERT_TRUE_S(h == w);
+    CORE_ASSERT_TRUE_S(h == rhs.size());
+    corecvs::Vector res(rhs.size());
+#ifndef WITH_MKL
+//    auto startCVS = std::chrono::high_resolution_clock::now();
+
+    std::vector<int> first(h), id(h), next(h);
+    for (int i = 0; i < h; ++i)
+    {
+        first[i] = i;
+#ifndef STRONG_TRIAG
+        id[i] = getUBIndex(i, i);
+#else
+        id[i] = rowPointers[i];
+#endif
+        next[i] = -1;
+        CORE_ASSERT_TRUE_S(columns[id[i]] == i && id[i] < rowPointers[i + 1]);
+    }
+
+    int vstd = 0;
+    for (int j = 0; j < h; ++j)
+    {
+        int idx = first[j];
+        double pivot = 0.0, sum = rhs[j];
+        while (idx != -1)
+        {
+            vstd++;
+            int i = idx;
+            int i_i_j = id[idx];
+            CORE_ASSERT_TRUE_S(columns[i_i_j] == j);
+            if (i == j)
+                pivot = values[i_i_j];
+            else
+                sum -= values[i_i_j] * res[i];
+            int nid = next[idx];
+            if (i_i_j + 1 < rowPointers[i + 1])
+            {
+                int c = columns[i_i_j + 1];
+                next[idx] = first[c];
+                first[c] = idx;
+                id[idx] = i_i_j + 1;
+            }
+            idx = nid;
+        }
+        CORE_ASSERT_TRUE_S(std::abs(pivot) > 0.0);
+        res[j] = sum / pivot;
+    }
+ //   auto stopCVS = std::chrono::high_resolution_clock::now();
+#else
+//    auto startMKL = std::chrono::high_resolution_clock::now();
+    mkl_cspblas_dcsrtrsv("U", "T", "N", &h, &values[0], &rowPointers[0], &columns[0], &rhs[0], &res[0]);
+//    auto stopMKL = std::chrono::high_resolution_clock::now();
+//    auto timeCVS = (stopCVS - startCVS).count() / 1e9;
+//    auto timeMKL = (stopMKL - startMKL).count() / 1e9;
+//    std::cout << (timeMKL < timeCVS ? "corecvs" : "MKL") << " sucks: CVS@" << timeCVS << ", MKL@" << timeMKL << std::endl;
+#endif
+    return res;
+}
+corecvs::Vector corecvs::SparseMatrix::dtrsv_lt(const Vector &rhs) const
+{
+    /*
+     *                         /#        \
+     * /                     \ |# #      |   /                     \
+     * | x_1 x_2 x_3 x_4 x_5 | |# # #    | = | b_1 b_2 b_3 b_4 b_5 |
+     * \                     / |# # # #  |   \                     /
+     *                         \# # # # #/
+     */
+    CORE_ASSERT_TRUE_S(h == w);
+    CORE_ASSERT_TRUE_S(h == rhs.size());
+    corecvs::Vector res(rhs.size());
+
+    std::vector<int> first(h), id(h), next(h);
+    for (int i = 0; i < h; ++i)
+    {
+        first[i] = i;
+#ifndef STRONG_TRIAG
+        id[i] = getUBIndex(i, i);
+#else
+        id[i] = rowPointers[i + 1] - 1;
+#endif
+        next[i] = -1;
+        CORE_ASSERT_TRUE_S(columns[id[i]] == i && id[i] < rowPointers[i + 1]);
+    }
+
+    for (int j = h - 1; j >= 0; --j)
+    {
+        int idx = first[j];
+        double pivot = 0.0, sum = rhs[j];
+        while (idx != -1)
+        {
+            int i = idx;
+            int i_i_j = id[idx];
+            CORE_ASSERT_TRUE_S(columns[i_i_j] == j);
+            if (i == j)
+                pivot = values[i_i_j];
+            else
+                sum -= values[i_i_j] * res[i];
+            int nid = next[idx];
+            if (i_i_j > rowPointers[i])
+            {
+                int c = columns[i_i_j - 1];
+                next[idx] = first[c];
+                first[c] = idx;
+                id[idx] = i_i_j - 1;
+            }
+            idx = nid;
+        }
+        CORE_ASSERT_TRUE_S(std::abs(pivot) > 0.0);
+        res[j] = sum / pivot;
+    }
+    return res;
+}
+corecvs::Vector corecvs::SparseMatrix::dtrsv_ln(const Vector &rhs) const
+{
+    /*
+     * /#        \ / x_1 \   / b_1 \
+     * |# #      | | x_2 |   | b_2 |
+     * |# # #    | | x_3 | = | b_3 |
+     * |# # # #  | | x_4 |   | b_4 |
+     * \# # # # #/ \ x_5 /   \ b_5 /
+     */
+
+    CORE_ASSERT_TRUE_S(h == w);
+    CORE_ASSERT_TRUE_S(h == rhs.size());
+    corecvs::Vector res(rhs.size());
+    for (int i = 0; i < h; ++i)
+    {
+        double sum = rhs[i];
+        int i_i_j = rowPointers[i];
+        for (; i_i_j < rowPointers[i + 1] && columns[i_i_j] < i; ++i_i_j)
+            sum -= values[i_i_j] * res[columns[i_i_j]];
+        CORE_ASSERT_TRUE_S(columns[i_i_j] == i && i_i_j < rowPointers[i + 1]);
+        res[i] = sum / values[i_i_j];
+    }
+    return res;
+}
+
+corecvs::Vector corecvs::SparseMatrix::dtrsv_un(const Vector &rhs) const
+{
+
+    /*
+     * /# # # # #\ / x_1 \   / b_1 \
+     * |  # # # #| | x_2 |   | b_2 |
+     * |    # # #| | x_3 | = | b_3 |
+     * |      # #| | x_4 |   | b_4 |
+     * \        #/ \ x_5 /   \ b_5 /
+     */
+
+    corecvs::Vector res(rhs.size());
+    CORE_ASSERT_TRUE_S(h == w);
+    CORE_ASSERT_TRUE_S(h == rhs.size());
+#ifndef WITH_MKL
+//    auto startCVS = std::chrono::high_resolution_clock::now();
+    for (int i = h - 1; i >= 0; --i)
+    {
+        double sum = rhs[i];
+#ifndef STRONG_TRIAG
+        int i_i_i = getUBIndex(i, i);
+#else
+        int i_i_i = rowPointers[i];
+#endif
+        CORE_ASSERT_TRUE_S(columns[i_i_i] == i && rowPointers[i + 1]  > i_i_i);
+        for (int i_i_j = i_i_i + 1; i_i_j < rowPointers[i + 1]; ++i_i_j)
+            sum -= values[i_i_j] * res[columns[i_i_j]];
+        res[i] = sum / values[i_i_i];
+    }
+//    auto stopCVS = std::chrono::high_resolution_clock::now();
+#else
+#ifdef WITH_MKL
+//    auto startMKL = std::chrono::high_resolution_clock::now();
+    mkl_cspblas_dcsrtrsv("U", "N", "N", &h, &values[0], &rowPointers[0], &columns[0], &rhs[0], &res[0]);
+//    auto stopMKL = std::chrono::high_resolution_clock::now();
+//    auto timeCVS = (stopCVS - startCVS).count() / 1e9;
+//    auto timeMKL = (stopMKL - startMKL).count() / 1e9;
+//    std::cout << (timeMKL < timeCVS ? "corecvs" : "MKL") << " sucks: CVS@" << timeCVS << ", MKL@" << timeMKL << std::endl;
+#endif
+#endif
+    return res;
+}
+
+
 void corecvs::SparseMatrix::spyPlot() const
 {
+
     for (int i = 0; i < h; ++i)
     {
         for (int j = 0; j < w; ++j)
@@ -25,11 +431,13 @@ void corecvs::SparseMatrix::spyPlot() const
 
 int corecvs::SparseMatrix::nnz() const
 {
+
     return (int)values.size();
 }
 
 double corecvs::SparseMatrix::fillin() const
 {
+
     return double(nnz()) / w / h;
 }
 
@@ -54,6 +462,7 @@ corecvs::SparseMatrix::SparseMatrix(const SparseMatrix &src, int x1, int y1, int
         rowPointers[i - y1 + 1] = (int)values.size();
     }
 #else
+
     src.swapCoords(x1, y1, x2, y2);
 
     h = y2 - y1;
@@ -73,6 +482,7 @@ corecvs::SparseMatrix::SparseMatrix(const SparseMatrix &src, int x1, int y1, int
         }
         rowPointers[i - y1 + 1] = (int)values.size();
     }
+
 #endif
 }
 
@@ -97,10 +507,12 @@ void corecvs::SparseMatrix::denseSubMatrix(int x1, int y1, int x2, int y2, doubl
             output[(i - y1) * stride + (columns[j] - x1)] = values[j];
         }
     }
+
 }
 
 corecvs::Matrix corecvs::SparseMatrix::denseSubMatrix(int x1, int y1, int x2, int y2) const
 {
+
     swapCoords(x1, y1, x2, y2);
 
     int hh = y2 - y1,
@@ -109,6 +521,7 @@ corecvs::Matrix corecvs::SparseMatrix::denseSubMatrix(int x1, int y1, int x2, in
     corecvs::Matrix res(hh, ww);
 
     denseSubMatrix(x1, y1, x2, y2, &res.a(0, 0), res.stride);
+
 
     return res;
 }
@@ -125,10 +538,11 @@ SparseMatrix::SparseMatrix(const Matrix &dense, double threshold) : h(dense.h), 
             {
                 values.push_back(val);
                 columns.push_back(j);
-                rowPointers[i + 1] = (int)values.size();
             }
         }
+        rowPointers[i + 1] = (int)values.size();
     }
+
 }
 
 SparseMatrix::SparseMatrix(int h, int w, const std::vector<double> &values, const std::vector<int> &columns, const std::vector<int> &rowPointers) : h(h), w(w), values(values), columns(columns), rowPointers(rowPointers)
@@ -136,6 +550,7 @@ SparseMatrix::SparseMatrix(int h, int w, const std::vector<double> &values, cons
     CORE_ASSERT_TRUE_S(h + 1 == (int)rowPointers.size());
     CORE_ASSERT_TRUE_S(values.size() == columns.size());
     CORE_ASSERT_TRUE_S(*rowPointers.rbegin() == (int)values.size());
+
 }
 
 SparseMatrix::SparseMatrix(int h, int w, const std::map<std::pair<int, int>, double> &data) : h(h), w(w)
@@ -164,10 +579,12 @@ SparseMatrix::SparseMatrix(int h, int w, const std::map<std::pair<int, int>, dou
     }
     for (int i = rowPrev + 1; i <= h; ++i)
         rowPointers[i] = (int)values.size();
+
 }
 
 double SparseMatrix::a(int y, int x) const
 {
+
 #if 0
     int i = std::lower_bound(&columns[rowPointers[y]], &columns[rowPointers[y + 1]], x) - &columns[0];
     if (i < rowPointers[y + 1] && columns[i] == x)
@@ -177,12 +594,14 @@ double SparseMatrix::a(int y, int x) const
     for (int i = rowPointers[y]; i < rowPointers[y + 1]; ++i)
         if (columns[i] == x)
             return values[i];
+
     return 0.0;
 #endif
 }
 
 Matrix SparseMatrix::denseRows(int x1, int y1, int x2, int y2, std::vector<int> &colIdx)
 {
+
     swapCoords(x1, y1, x2, y2);
     int h = y2 - y1;
 
@@ -230,11 +649,13 @@ Matrix SparseMatrix::denseRows(int x1, int y1, int x2, int y2, std::vector<int> 
                 ++rPtr[i];
             }
     }
+
     return M;
 }
 
 Matrix SparseMatrix::denseCols(int x1, int y1, int x2, int y2, std::vector<int> &rowIdx)
 {
+
     swapCoords(x1, y1, x2, y2);
 
     int w = x2 - x1;
@@ -261,11 +682,13 @@ Matrix SparseMatrix::denseCols(int x1, int y1, int x2, int y2, std::vector<int> 
         for (int* ptr = b[y]; ptr < e[y]; ++ptr)
             M.a(y, *ptr - x1) = values[ptr - &columns[0]];
     }
+
     return M;
 }
 
 void SparseMatrix::swapCoords(int &x1, int &y1, int &x2, int &y2)  const
 {
+
     x1 = std::max(0, std::min(w, x1));
     x2 = std::max(0, std::min(w, x2));
     y1 = std::max(0, std::min(h, y1));
@@ -274,6 +697,7 @@ void SparseMatrix::swapCoords(int &x1, int &y1, int &x2, int &y2)  const
         std::swap(x1, x2);
     if (y2 < y1)
         std::swap(y1, y2);
+
 }
 
 double& SparseMatrix::a(int y, int x)
@@ -288,22 +712,28 @@ double& SparseMatrix::a(int y, int x)
     for (int j = y + 1; j <= h; ++j)
         ++rowPointers[j];
 #else
+
     int i = 0;
     for (i = rowPointers[y]; i < rowPointers[y + 1] && columns[i] < x; ++i);
     if (i < rowPointers[y + 1] && columns[i] == x)
+    {
+
        return values[i];
+    }
     CORE_ASSERT_TRUE_S(rowPointers[y + 1] == i || columns[i] > x);
     columns.insert(columns.begin() + i, x);
     values.insert(values.begin() + i, 0.0);
     for (int j = y + 1; j <= h; ++j)
         ++rowPointers[j];
 #endif
+
     return values[i];
 }
 
 SparseMatrix::operator Matrix() const
 {
     Matrix m(h, w);
+
 
     for (int i = 0; i < h; ++i)
     {
@@ -312,22 +742,27 @@ SparseMatrix::operator Matrix() const
             m.a(i, columns[j]) = values[j];
         }
     }
+
     return m;
 }
 
 SparseMatrix corecvs::operator -(const SparseMatrix &a)
 {
+
     SparseMatrix b = a;
     for (auto &v: b.values)
         v = -v;
+
     return b;
 }
 
 SparseMatrix corecvs::operator *(const double &lhs, const SparseMatrix &rhs)
 {
+
     SparseMatrix res = rhs;
     for (auto &v: res.values)
         v *= lhs;
+
     return res;
 }
 
@@ -338,9 +773,11 @@ SparseMatrix corecvs::operator *(const SparseMatrix &lhs, const double &rhs)
 
 SparseMatrix corecvs::operator /(const SparseMatrix &lhs, const double &rhs)
 {
+
     SparseMatrix res = lhs;
     for (auto &v: res.values)
         v /= rhs;
+
     return res;
 }
 
@@ -350,6 +787,8 @@ SparseMatrix corecvs::operator +(const SparseMatrix &lhs, const SparseMatrix &rh
     std::vector<double> values;
     std::vector<int> columns;
     std::vector<int> rowPointers(lhs.h + 1);
+
+
     for (int i = 0; i < lhs.h; ++i)
     {
         int lhs_l = lhs.rowPointers[i], lhs_r = lhs.rowPointers[i + 1];
@@ -392,11 +831,15 @@ SparseMatrix corecvs::operator +(const SparseMatrix &lhs, const SparseMatrix &rh
         }
         rowPointers[i + 1] = (int)values.size();
     }
+
+
     return SparseMatrix(lhs.h, lhs.w, values, columns, rowPointers);
 }
 
 SparseMatrix corecvs::operator -(const SparseMatrix &lhs, const SparseMatrix &rhs)
 {
+
+
     CORE_ASSERT_TRUE_S(lhs.h == rhs.h && lhs.w == rhs.w);
     std::vector<double> values;
     std::vector<int> columns;
@@ -443,30 +886,129 @@ SparseMatrix corecvs::operator -(const SparseMatrix &lhs, const SparseMatrix &rh
         }
         rowPointers[i + 1] = (int)values.size();
     }
+
+
     return SparseMatrix(lhs.h, lhs.w, values, columns, rowPointers);
 }
 
 Vector corecvs::operator *(const SparseMatrix &lhs, const Vector &rhs)
 {
+#ifndef WITH_CUSPARSE
     CORE_ASSERT_TRUE_S(lhs.w == rhs.size());
     Vector ans(lhs.h);
     int N = lhs.h;
-    int bs = std::max(1, N / 256);
-	corecvs::parallelable_for(0, N, bs, [&](const corecvs::BlockedRange<int> &r)
-	{
-		for (int i = r.begin(); i != r.end(); ++i)
-		{
-			double res = 0.0;
-			for (int j = lhs.rowPointers[i]; j < lhs.rowPointers[i + 1]; ++j)
-				res += lhs.values[j] * rhs[lhs.columns[j]];
-			ans[i] = res;
-		}
-	});
+    int bs = 512;
+
+    auto startCPU = std::chrono::high_resolution_clock::now();
+    corecvs::parallelable_for(0, N, bs, [&](const corecvs::BlockedRange<int> &r)
+    {
+        for (int i = r.begin(); i != r.end(); ++i)
+        {
+            double res = 0.0;
+            for (int j = lhs.rowPointers[i]; j < lhs.rowPointers[i + 1]; ++j)
+                res += lhs.values[j] * rhs[lhs.columns[j]];
+            ans[i] = res;
+        }
+    });
+    auto stopCPU = std::chrono::high_resolution_clock::now();
     return ans;
+#else
+    double cpuClock = 0.0, gpuClock = 0.0;
+    CORE_ASSERT_TRUE_S(lhs.w == rhs.size());
+    Vector ans(lhs.h);
+    int N = lhs.h;
+
+    bool shouldScheduleCPU = !lhs.gpuPromotion || lhs.gpuPromotion->total < SparseMatrix::SPMV_RETRY || lhs.gpuPromotion->total >= SparseMatrix::SPMV_RETRY && lhs.gpuPromotion->cpu > lhs.gpuPromotion->gpu;
+    bool shouldScheduleGPU = lhs.gpuPromotion && (lhs.gpuPromotion->total < SparseMatrix::SPMV_RETRY || lhs.gpuPromotion->gpu > lhs.gpuPromotion->cpu);
+    auto cpuSPMV = [&]()
+    {
+        int bs = 512;
+
+        auto startCPU = std::chrono::high_resolution_clock::now();
+        corecvs::parallelable_for(0, N, bs, [&](const corecvs::BlockedRange<int> &r)
+        {
+            for (int i = r.begin(); i != r.end(); ++i)
+            {
+                double res = 0.0;
+                for (int j = lhs.rowPointers[i]; j < lhs.rowPointers[i + 1]; ++j)
+                    res += lhs.values[j] * rhs[lhs.columns[j]];
+                ans[i] = res;
+            }
+        });
+        auto stopCPU = std::chrono::high_resolution_clock::now();
+        cpuClock = (stopCPU - startCPU).count() / 1e9;
+    };
+    Vector resGpu(lhs.h);
+    auto gpuSPMV = [&]()
+    {
+       auto startGPU = std::chrono::high_resolution_clock::now();
+       double *dev_rhs, *dev_res;
+       cudaMalloc(&(void*&)dev_rhs, rhs.size() * sizeof(double));
+       cudaMalloc(&(void*&)dev_res, lhs.h * sizeof(double));
+
+       cusparseHandle_t   handle = 0;
+       cusparseMatDescr_t descr  = 0;
+
+       auto status = cusparseCreate(&handle);
+       if (status != CUSPARSE_STATUS_SUCCESS)
+       {
+           std::cout << "CUSPARSE INIT FAILED" << std::endl;
+       }
+
+       status = cusparseCreateMatDescr(&descr);
+       if (status != CUSPARSE_STATUS_SUCCESS)
+       {
+           std::cout << "CUSPARSE MD FAILED" << std::endl;
+       }
+
+        cusparseSetMatType(descr, CUSPARSE_MATRIX_TYPE_GENERAL);
+        cusparseSetMatIndexBase(descr, CUSPARSE_INDEX_BASE_ZERO);
+
+        cudaMemcpy(dev_rhs, &rhs[0], rhs.size() * sizeof(double), cudaMemcpyHostToDevice);
+        cudaMemset(dev_res, 0, lhs.h * sizeof(double));
+
+        double alpha = 1.0, beta = 0.0;
+           status = cusparseDcsrmv(handle, CUSPARSE_OPERATION_NON_TRANSPOSE, lhs.h, lhs.w, lhs.nnz(), &alpha, descr, lhs.gpuPromotion->dev_values.get(), lhs.gpuPromotion->dev_rowPointers.get(), lhs.gpuPromotion->dev_columns.get(), dev_rhs, &beta, dev_res);
+
+        if (status != CUSPARSE_STATUS_SUCCESS)
+           {
+            std::cout << "CUSPARSE SPMV FAILED" << std::endl;
+            fprintf(stderr, "SPMV launch failed: %s\n", cudaGetErrorString(cudaGetLastError()));
+        }
+        cudaMemcpy(&resGpu[0], dev_res, sizeof(double) * lhs.h, cudaMemcpyDeviceToHost);
+
+        cudaFree(dev_rhs);
+        cudaFree(dev_res);
+        auto stopGPU = std::chrono::high_resolution_clock::now();
+        gpuClock = (stopGPU - startGPU).count() / 1e9;
+    };
+
+    std::unique_ptr<std::thread> tc(nullptr), tg(nullptr);
+    if (shouldScheduleCPU)
+        tc = std::unique_ptr<std::thread>(new std::thread(cpuSPMV));
+    if (shouldScheduleGPU)
+        tg = std::unique_ptr<std::thread>(new std::thread(gpuSPMV));
+    if (tc)
+        tc->join();
+    if (tg)
+        tg->join();
+
+    if (lhs.gpuPromotion && lhs.gpuPromotion->total < SparseMatrix::SPMV_RETRY)
+    {
+        ++lhs.gpuPromotion->total;
+        ++(gpuClock < cpuClock ? lhs.gpuPromotion->gpu : lhs.gpuPromotion->cpu);
+        if (lhs.gpuPromotion->total >= SparseMatrix::SPMV_RETRY)
+        {
+            std::cout << (lhs.gpuPromotion->gpu > lhs.gpuPromotion->cpu ? "GPU wins in SPMV" : "CPU wins in SPMV") << std::endl;
+        }
+    }
+    return cpuClock > 0.0 ? ans : resGpu;
+#endif
 }
 
 Vector corecvs::operator *(const Vector &lhs, const SparseMatrix &rhs)
 {
+
     CORE_ASSERT_TRUE_S(lhs.size() == rhs.h);
     Vector ans(rhs.w);
     for (int i = 0; i < rhs.w; ++i)
@@ -477,6 +1019,7 @@ Vector corecvs::operator *(const Vector &lhs, const SparseMatrix &rhs)
         for (int j = rhs.rowPointers[i]; j < rhs.rowPointers[i + 1]; ++j)
             ans[rhs.columns[j]] += rhs.values[j] * lhs[i];
     }
+
     return ans;
 }
 
@@ -541,6 +1084,8 @@ SparseMatrix corecvs::operator *(const SparseMatrix &lhs, const SparseMatrix &rh
     }
     return SparseMatrix(h, w, values, columns, rowPointers);
 #else
+
+
     auto lhs_mkl = (sparse_matrix_t)lhs;
     auto rhs_mkl = (sparse_matrix_t)rhst;
     sparse_matrix_t res;
@@ -549,6 +1094,9 @@ SparseMatrix corecvs::operator *(const SparseMatrix &lhs, const SparseMatrix &rh
     mkl_sparse_destroy(rhs_mkl);
     SparseMatrix ress(res);
     mkl_sparse_destroy(res);
+
+
+
     return ress;
 #endif
 }
@@ -559,12 +1107,14 @@ SparseMatrix SparseMatrix::ata() const
 #ifndef WITH_MKL
     return t() * (*this);
 #else
+
     auto lhs_mkl = (sparse_matrix_t)(*this);
     sparse_matrix_t res;
     mkl_sparse_spmm(SPARSE_OPERATION_TRANSPOSE, lhs_mkl, lhs_mkl, &res);
     mkl_sparse_destroy(lhs_mkl);
     SparseMatrix ress(res);
     mkl_sparse_destroy(res);
+
     return ress;
 #endif
 #else
@@ -681,20 +1231,39 @@ SparseMatrix::SparseMatrix(const sparse_matrix_t &mklSparse)
     h = mh;
     w = mw;
 
+    std::vector<int> order;
     for (int i = 0; i < mh; ++i)
     {
-        for (int j = rowB[i]; j < rowE[i]; ++j)
+        int N;
+        order.resize(N = rowE[i] - rowB[i]);
+        for (int j = 0; j < N; ++j)
+            order[j] = rowB[i] + j;
+        std::sort(order.begin(), order.end(), [&](const int &a, const int &b) { return cols[a] < cols[b]; });
+        for (int j = 0; j < N; ++j)
         {
-            values.push_back(vals[j]);
-            columns.push_back(cols[j]);
+            values.push_back(vals[order[j]]);
+            columns.push_back(cols[order[j]]);
         }
         rowPointers[i + 1] = (int)values.size();
     }
+
 
     mkl_sparse_destroy(copy);
 }
 
 #endif // WITH_MKL
+
+int SparseMatrix::getUBIndex(int i, int j) const
+{
+    return std::lower_bound(&columns[rowPointers[i]], &columns[rowPointers[i + 1]], j) - &columns[0];
+}
+
+int SparseMatrix::getIndex(int i, int j) const
+{
+    auto id = getUBIndex(i, j);
+    return id < rowPointers[i + 1] && columns[id] == j ? id : -1;
+}
+
 
 SparseMatrix SparseMatrix::upper() const
 {
@@ -1458,10 +2027,10 @@ bool corecvs::SparseMatrix::LinSolveSchurComplement(const corecvs::SparseMatrix 
     res = resOld;
     return foo;
 #else
-	if (explicitInv)
-		return LinSolveSchurComplementInv(M, Bv, diagBlocks, res, symmetric, posDef);
-	else
-		return LinSolveSchurComplementNew(M, Bv, diagBlocks, res, symmetric, posDef);
+    if (explicitInv)
+        return LinSolveSchurComplementInv(M, Bv, diagBlocks, res, symmetric, posDef);
+    else
+        return LinSolveSchurComplementNew(M, Bv, diagBlocks, res, symmetric, posDef);
 #endif
 }
 

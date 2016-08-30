@@ -13,6 +13,7 @@
 #include "fixedVector.h"
 #include "vector3d.h"
 #include "mathUtils.h"
+#include "reflection.h"
 
 #include "generated/rgbColorParameters.h"
 
@@ -39,6 +40,7 @@ public:
         FIELD_B = 0,
         FIELD_A = 3
     };
+
     /**
      *
      *
@@ -527,22 +529,9 @@ public:
         return RGBColor(fround(x * 255), fround((1.0 - x) * 255), 0);
     }
 
-    //#ifdef REFLECTION_IN_CORE
-    //    Reflection reflect = staticInit();
-    //#else
-    //    Reflection reflect;
-    //#endif
     static Reflection reflect;
-
-    static Reflection staticInit()
-    {
-        Reflection reflection;
-        reflection.fields.push_back(new IntField(FIELD_R, 0, "r"));
-        reflection.fields.push_back(new IntField(FIELD_G, 0, "g"));
-        reflection.fields.push_back(new IntField(FIELD_B, 0, "b"));
-        reflection.fields.push_back(new IntField(FIELD_A, 0, "a"));
-        return reflection;
-    }
+    static int        dummy;
+    static int        staticInit();
 
 template<class VisitorType>
     void accept(VisitorType &visitor)
