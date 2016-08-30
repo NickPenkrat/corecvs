@@ -31,7 +31,9 @@ AdvancedImageWidget::AdvancedImageWidget(QWidget *parent, bool showHeader)
   , mSaveDialog(NULL)
   , mUi(new Ui::advancedImageWidget)
   , mZoomCenter(-1,-1)
-  , mIsMousePressed(false)
+  , mIsMouseLeftPressed(false)
+  , mIsMouseRightPressed(false)
+  , mRightMouseButtonDrag(false)
   , mResizeCache(NULL)
   , mCurrentToolClass(NO_TOOL)
   , mCurrentSelectionButton(0)
@@ -329,13 +331,13 @@ void AdvancedImageWidget::childRepaint(QPaintEvent* /*event*/, QWidget* childWid
 
      p.drawRect(mOutputRect.adjusted(-1,-1, 1, 1));
 
-    if (mIsMousePressed && (mCurrentToolClass == ZOOM_SELECT_TOOL))
+    if (mIsMouseLeftPressed && (mCurrentToolClass == ZOOM_SELECT_TOOL))
     {
         p.setPen(Qt::DashLine);
         p.drawRect(QRect(mSelectionStart, mSelectionEnd));
     }
 
-    if (mIsMousePressed && (mCurrentToolClass == RECT_SELECTION_TOOLS))
+    if (mIsMouseLeftPressed && (mCurrentToolClass == RECT_SELECTION_TOOLS))
     {
         QPen pen;
         pen.setColor(Qt::red);
@@ -344,7 +346,7 @@ void AdvancedImageWidget::childRepaint(QPaintEvent* /*event*/, QWidget* childWid
         p.drawRect(QRect(mSelectionStart, mSelectionEnd));
     }
 
-    if (mIsMousePressed && (mCurrentToolClass == LINE_SELECTION_TOOLS))
+    if (mIsMouseLeftPressed && (mCurrentToolClass == LINE_SELECTION_TOOLS))
     {
         QPen pen;
         pen.setColor(Qt::red);
@@ -511,11 +513,15 @@ void AdvancedImageWidget::childMousePressed(QMouseEvent * event)
 /*    if (!mIsMousePressed && mCurrentToolClass == LINE_SELECTION_TOOLS){
         mLineSelectionMode = true;
     }*/
-    mIsMousePressed = true;
+
+    mIsMouseLeftPressed = (event->buttons() & Qt::LeftButton) != 0;
+    mIsMouseRightPressed = (event->buttons() & Qt::RightButton) != 0;
+
     mSelectionStart = event->pos();
     mSelectionEnd   = event->pos();
 
-    if (mCurrentToolClass == PAN_TOOL)
+    if (mCurrentToolClass == PAN_TOOL ||
+       (mRightMouseButtonDrag &&  mIsMouseRightPressed))
     {
         mUi->widget->setCursor(Qt::ClosedHandCursor);
     }
@@ -525,8 +531,14 @@ void AdvancedImageWidget::childMousePressed(QMouseEvent * event)
 
 void AdvancedImageWidget::childMouseReleased(QMouseEvent * event)
 {
-    mIsMousePressed = false;
+    mIsMouseLeftPressed = (event->buttons() & Qt::LeftButton) != 0;
+    mIsMouseRightPressed = (event->buttons() & Qt::RightButton) != 0;
+
     mSelectionEnd = event->pos();
+
+    if (mRightMouseButtonDrag && !mIsMouseRightPressed) {
+       mUi->widget->setCursor(Qt::ArrowCursor);
+    }
 
     if (mCurrentToolClass == PAN_TOOL)
     {
@@ -617,7 +629,11 @@ void AdvancedImageWidget::childMouseMoved(QMouseEvent * event)
     }
 
     /* Pan */
-    if (!mIsMousePressed)
+    bool isInPan = false;
+    if (mL)
+
+
+    if (!isInPan)
         return;
 
     QPoint shift = (widgetToImage(mSelectionEnd) - imagePoint);
@@ -723,6 +739,11 @@ void AdvancedImageWidget::setKeepAspect(bool flag)
     {
         mUi->aspectCheckBox->setChecked(flag);
     }
+}
+
+void AdvancedImageWidget::setRightDrag(bool flag)
+{
+    mRightMouseButtonDrag = true;
 }
 
 void AdvancedImageWidget::setCompactStyle(bool flag)
