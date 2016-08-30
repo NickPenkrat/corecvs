@@ -23,6 +23,7 @@ ImageViewMainWindow::ImageViewMainWindow(QWidget *parent) :
 
     ui->widget->setFitWindow(true);
     ui->widget->setKeepAspect(true);
+    ui->widget->setRightDrag(true);
 
     connect(ui->bitSelector, SIGNAL(paramsChanged()), this, SLOT(paramsChanged()));
     connect(ui->loadButton, SIGNAL(released())      , this, SLOT(loadImageAction()));

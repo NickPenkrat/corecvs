@@ -217,7 +217,7 @@ void PointListEditImageWidget::childMouseMoved(QMouseEvent * event)
     case MOVE_POINT_TOOL:
     {
         //   qDebug() << "Drag in selected tool";
-        if (!mIsMousePressed)
+        if (!mIsMouseLeftPressed)
             break;
 
         Vector2dd dragStart    = widgetToImageF(Qt2Core::Vector2ddFromQPoint(mSelectionEnd));
@@ -559,7 +559,7 @@ void PointListEditImageWidgetUnited::childMouseMoved(QMouseEvent * event)
     case MOVE_POINT_TOOL:
     {
         //   qDebug() << "Drag in selected tool";
-        if (!mIsMousePressed)
+        if (!mIsMouseLeftPressed)
             break;
 
         Vector2dd dragStart    = widgetToImageF(Qt2Core::Vector2ddFromQPoint(mSelectionEnd));
