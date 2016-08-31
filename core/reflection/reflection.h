@@ -624,7 +624,7 @@ public:
 
     /*virtual*/ ~Reflection()   // it may be non virtual
     {
-//#ifndef REFLECTION_STATIC_ALLOCATION
+#ifndef REFLECTION_STATIC_ALLOCATION
         for(const BaseField * el: fields) {
             // crash silly workaround // TODO: review this and fix the problem!
             if (el->id < 0) {                
@@ -637,12 +637,13 @@ public:
                 delete_safe(el);
             }
         }
+
         fields.clear();
         for(const EmbedSubclass * el: embeds) {
             delete_safe(el);
         }
         embeds.clear();
-//#endif
+#endif
     }
 };
 

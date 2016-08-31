@@ -630,17 +630,15 @@ void AdvancedImageWidget::childMouseMoved(QMouseEvent * event)
 
     /* Pan */
     bool isInPan = false;
-//    if (mL)
+    if (mCurrentToolClass == PAN_TOOL && mIsMouseLeftPressed)
+        isInPan = true;
+    if (mRightMouseButtonDrag && mIsMouseRightPressed)
+        isInPan = true;
 
-
-    if (!isInPan)
-        return;
-
-    QPoint shift = (widgetToImage(mSelectionEnd) - imagePoint);
-    mSelectionEnd = event->pos();
-
-    if (mCurrentToolClass == PAN_TOOL)
+    if (isInPan)
     {
+        QPoint shift = (widgetToImage(mSelectionEnd) - imagePoint);
+        mSelectionEnd = event->pos();
         mZoomCenter += shift;
         /*
         if (mZoomCenter.x() < mImage->rect().left())   mZoomCenter.setX(mImage->rect().left()  );
@@ -650,11 +648,10 @@ void AdvancedImageWidget::childMouseMoved(QMouseEvent * event)
         */
         recomputeRects();
         emit notifyCenterPointChanged(mZoomCenter);
-    }
 
-    if (mCurrentToolClass == POINT_SELECTION_TOOLS)
-    {
-        emit pointToolMoved(mCurrentPointButton, widgetToImage(mSelectionEnd));
+        /* Draw tooling instruments */
+        forceUpdate();
+        return;
     }
 
     /*if (mCurrentToolClass == LINE_SELECTION_TOOLS)
@@ -664,8 +661,19 @@ void AdvancedImageWidget::childMouseMoved(QMouseEvent * event)
         emit newLineSelected(mCurrentSelectionButton, line);
     }*/
 
-    /* Draw tooling instruments */
-    forceUpdate();
+    if (mIsMouseLeftPressed)
+    {
+        if (mCurrentToolClass == POINT_SELECTION_TOOLS)
+        {
+            emit pointToolMoved(mCurrentPointButton, widgetToImage(mSelectionEnd));
+        }
+
+        /* Draw tooling instruments */
+        forceUpdate();
+        return;
+    }
+
+
 }
 
 void AdvancedImageWidget::zoomReset()
