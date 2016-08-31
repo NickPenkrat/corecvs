@@ -23,7 +23,7 @@ void CalibrationJob::computeReconstructionError()
     std::map<double, std::map<double, std::map<double, std::vector<std::tuple<size_t, size_t, corecvs::Vector2dd>>>>> pointCollection;
     for (size_t i = 0; i < calibrationSetups.size(); ++i)
     {
-        auto& ss  = calibrationSetups[i];
+        auto& ss = calibrationSetups[i];
         for (auto& s: ss)
         {
             auto& obs = observations[s.cameraId][s.imageId];
@@ -75,8 +75,8 @@ void CalibrationJob::computeReconstructionError()
     CORE_ASSERT_TRUE_S(ATA.w == ATA.h && ATA.w == 3);
     std::cout << "Covariation [assuming zero mean] estimate: " << std::endl << ATA << std::endl;
     std::cout << "Real mean is " << mean << std::endl;
-    totalReconstructionErrorMax = maxError;
-    totalReconstructionErrorRMSE= std::sqrt(ATA.a(0, 0) + ATA.a(1, 1) + ATA.a(2, 2));
+    totalReconstructionErrorMax  = maxError;
+    totalReconstructionErrorRMSE = std::sqrt(ATA.a(0, 0) + ATA.a(1, 1) + ATA.a(2, 2));
 }
 
 bool CalibrationJob::detectChessBoard(corecvs::RGB24Buffer &buffer, corecvs::ObservationList &list)
@@ -698,32 +698,32 @@ void CalibrationJob::computeFullErrors()
                     ppp[1] *= factor;
                     auto pp = photostation.project(ppp, cam);
                     auto cp = photostation.cameras[v.cameraId].distortion.mapForward(pp) - p.projection;
-                    if ((!cp) > me)
+                    auto er = !cp;
+                    if (er > me)
                     {
-                        me = !cp;
+                        me = er;
                     }
-                    if ((!cp) > maxTotal)
+                    if (er > maxTotal)
                     {
-                        maxTotal = !cp;
+                        maxTotal = er;
                     }
-                    rmse += cp & cp;
+                    rmse      += cp & cp;
                     rmseTotal += cp & cp;
                     cnt++;
                     cntTotal++;
                 }
-                rmse = cnt ? std::sqrt(rmse / cnt) : -1.0;
-                view.fullCameraRmse = rmse;
+                view.fullCameraRmse     = cnt ? std::sqrt(rmse / cnt) : -1.0;
                 view.fullCameraMaxError = me;
             }
             else
             {
-                view.fullCameraRmse = -1.0;
+                view.fullCameraRmse     = -1.0;
                 view.fullCameraMaxError = -1.0;
             }
         }
         setupLocsIterator++;
     }
-    totalFullErrorMax = maxTotal;
+    totalFullErrorMax  = maxTotal;
     totalFullErrorRMSE = cntTotal ? std::sqrt(rmseTotal / cntTotal) : -1.0;
 }
 
@@ -748,20 +748,20 @@ void CalibrationJob::computeSingleCameraErrors()
                     Vector3dd ppp = p.point;
                     ppp.y() *= factor;
                     Vector2dd pp = cam.project(ppp) - p.projection;
-                    if ((!pp) > me)
+                    auto er = !pp;
+                    if (er > me)
                     {
-                        me = !pp;
+                        me = er;
                     }
                     rmse += pp & pp;
                     cnt++;
                 }
-                rmse = cnt ? std::sqrt(rmse / cnt) : -1.0;
-                view.singleCameraRmse = rmse;
+                view.singleCameraRmse     = cnt ? std::sqrt(rmse / cnt) : -1.0;
                 view.singleCameraMaxError = me;
             }
             else
             {
-                view.singleCameraRmse = -1.0;
+                view.singleCameraRmse     = -1.0;
                 view.singleCameraMaxError = -1.0;
             }
         }
