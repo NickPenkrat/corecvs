@@ -35,6 +35,8 @@ int SobelParameters::staticInit()
         "Sobel Parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(SobelParameters);
      
 
     EnumField* field0 = new EnumField
@@ -51,7 +53,6 @@ int SobelParameters::staticInit()
           )
         );
     field0->widgetHint=BaseField::COMBO_BOX;
-    field0->precision=-1;
     fields().push_back(field0);
     /*  */ 
     BoolField* field1 = new BoolField
@@ -64,7 +65,6 @@ int SobelParameters::staticInit()
           "Horizontal"
         );
     field1->widgetHint=BaseField::CHECK_BOX;
-    field1->precision=-1;
     fields().push_back(field1);
     /*  */ 
     BoolField* field2 = new BoolField
@@ -77,7 +77,6 @@ int SobelParameters::staticInit()
           "Vertical"
         );
     field2->widgetHint=BaseField::CHECK_BOX;
-    field2->precision=-1;
     fields().push_back(field2);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

@@ -35,6 +35,8 @@ int BinarizeParameters::staticInit()
         "Binarize Parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(BinarizeParameters);
      
 
     IntField* field0 = new IntField
@@ -49,7 +51,6 @@ int BinarizeParameters::staticInit()
          0,
          4096
         );
-    field0->precision=-1;
     fields().push_back(field0);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

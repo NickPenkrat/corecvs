@@ -35,6 +35,8 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
         "Iterative Reconstruction Nonlinear Optimization Params Wrapper",
         ""
     );
+
+     getReflection()->objectSize = sizeof(IterativeReconstructionNonlinearOptimizationParamsWrapper);
      
 
     CompositeField* field0 = new CompositeField
@@ -47,7 +49,16 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
           "optimizationParams",
            NULL
         );
-    field0->precision=-1;
+    {
+        ReflectionDirectory* directory = ReflectionDirectoryHolder::getReflectionDirectory();
+        std::string name("Reconstruction Functor Optimization Params");
+        ReflectionDirectory::iterator it = directory->find(name);
+        if(it != directory->end()) {
+             field0->reflection = it->second;
+        } else {
+             printf("Reflection IterativeReconstructionNonlinearOptimizationParamsWrapper to the subclass Reconstruction Functor Optimization Params can't be linked\n");
+        }
+    }
     fields().push_back(field0);
     /*  */ 
     EnumField* field1 = new EnumField
@@ -66,7 +77,6 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
           )
         );
     field1->widgetHint=BaseField::COMBO_BOX;
-    field1->precision=-1;
     fields().push_back(field1);
     /*  */ 
     IntField* field2 = new IntField
@@ -81,7 +91,6 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
          1,
          100000
         );
-    field2->precision=-1;
     fields().push_back(field2);
     /*  */ 
     IntField* field3 = new IntField
@@ -96,7 +105,6 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
          1,
          100000
         );
-    field3->precision=-1;
     fields().push_back(field3);
     /*  */ 
     IntField* field4 = new IntField
@@ -111,10 +119,39 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
          0,
          1000
         );
-    field4->precision=-1;
     fields().push_back(field4);
     /*  */ 
-    BoolField* field5 = new BoolField
+    IntField* field5 = new IntField
+        (
+          IterativeReconstructionNonlinearOptimizationParamsWrapper::PARTIALBA_ID,
+          offsetof(IterativeReconstructionNonlinearOptimizationParamsWrapper, mPartialBA),
+          8,
+          "partialBA",
+          "partialBA",
+          "Partial BA size",
+          true,
+         1,
+         9999999
+        );
+    fields().push_back(field5);
+    /*  */ 
+    DoubleField* field6 = new DoubleField
+        (
+          IterativeReconstructionNonlinearOptimizationParamsWrapper::FULLBALIMIT_ID,
+          offsetof(IterativeReconstructionNonlinearOptimizationParamsWrapper, mFullBALimit),
+          0.1,
+          "fullBALimit",
+          "fullBALimit",
+          "Full BA increase",
+          true,
+         0,
+         1e+08
+        );
+    field6->widgetHint=BaseField::SPIN_BOX;
+    field6->precision=6;
+    fields().push_back(field6);
+    /*  */ 
+    BoolField* field7 = new BoolField
         (
           IterativeReconstructionNonlinearOptimizationParamsWrapper::EXCESSIVEQUATERNIONPARAMETRIZATION_ID,
           offsetof(IterativeReconstructionNonlinearOptimizationParamsWrapper, mExcessiveQuaternionParametrization),
@@ -123,11 +160,22 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
           "excessiveQuaternionParametrization",
           "Excessive/non-excessive quaternion parametrization"
         );
-    field5->widgetHint=BaseField::CHECK_BOX;
-    field5->precision=-1;
-    fields().push_back(field5);
+    field7->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field7);
     /*  */ 
-    BoolField* field6 = new BoolField
+    BoolField* field8 = new BoolField
+        (
+          IterativeReconstructionNonlinearOptimizationParamsWrapper::SCALELOCK_ID,
+          offsetof(IterativeReconstructionNonlinearOptimizationParamsWrapper, mScaleLock),
+          false,
+          "scaleLock",
+          "scaleLock",
+          "Lock scale"
+        );
+    field8->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field8);
+    /*  */ 
+    BoolField* field9 = new BoolField
         (
           IterativeReconstructionNonlinearOptimizationParamsWrapper::EXPLICITINVERSE_ID,
           offsetof(IterativeReconstructionNonlinearOptimizationParamsWrapper, mExplicitInverse),
@@ -136,9 +184,8 @@ int IterativeReconstructionNonlinearOptimizationParamsWrapper::staticInit()
           "explicitInverse",
           "Explisit inverse in Schur complement solving"
         );
-    field6->widgetHint=BaseField::CHECK_BOX;
-    field6->precision=-1;
-    fields().push_back(field6);
+    field9->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field9);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Iterative Reconstruction Nonlinear Optimization Params Wrapper")]= &reflection;

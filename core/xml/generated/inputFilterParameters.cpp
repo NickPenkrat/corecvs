@@ -35,6 +35,8 @@ int InputFilterParameters::staticInit()
         "Input Filter Parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(InputFilterParameters);
      
 
     EnumField* field0 = new EnumField
@@ -51,7 +53,6 @@ int InputFilterParameters::staticInit()
           )
         );
     field0->widgetHint=BaseField::COMBO_BOX;
-    field0->precision=-1;
     fields().push_back(field0);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

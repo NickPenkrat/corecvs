@@ -35,6 +35,8 @@ int HeadSearchParameters::staticInit()
         "Head Search Parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(HeadSearchParameters);
      
 
     DoubleField* field0 = new DoubleField
@@ -81,7 +83,6 @@ int HeadSearchParameters::staticInit()
          0,
          99999
         );
-    field2->precision=-1;
     fields().push_back(field2);
     /*  */ 
     DoubleField* field3 = new DoubleField
@@ -112,7 +113,6 @@ int HeadSearchParameters::staticInit()
          0,
          100
         );
-    field4->precision=-1;
     fields().push_back(field4);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

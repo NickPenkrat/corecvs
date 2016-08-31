@@ -191,6 +191,12 @@
        <property name="value">
         <number>8</number>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
+       </property>
      </widget>
     </item>
     <item row="6" column="0">
@@ -219,6 +225,12 @@
        </property>
        <property name="value">
         <double>0.1</double>
+       </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
        </property>
      </widget>
     </item>

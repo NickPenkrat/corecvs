@@ -35,6 +35,8 @@ int IterativeReconstructionAppendParams::staticInit()
         "Iterative Reconstruction Append Params",
         ""
     );
+
+     getReflection()->objectSize = sizeof(IterativeReconstructionAppendParams);
      
 
     IntField* field0 = new IntField
@@ -49,7 +51,6 @@ int IterativeReconstructionAppendParams::staticInit()
          -1,
          1000000
         );
-    field0->precision=-1;
     fields().push_back(field0);
     /*  */ 
     IntField* field1 = new IntField
@@ -64,7 +65,6 @@ int IterativeReconstructionAppendParams::staticInit()
          1,
          100000
         );
-    field1->precision=-1;
     fields().push_back(field1);
     /*  */ 
     DoubleField* field2 = new DoubleField
@@ -95,7 +95,6 @@ int IterativeReconstructionAppendParams::staticInit()
          1,
          1000000
         );
-    field3->precision=-1;
     fields().push_back(field3);
     /*  */ 
     DoubleField* field4 = new DoubleField
@@ -142,7 +141,6 @@ int IterativeReconstructionAppendParams::staticInit()
          1,
          1000000
         );
-    field6->precision=-1;
     fields().push_back(field6);
     /*  */ 
     DoubleField* field7 = new DoubleField
@@ -173,7 +171,6 @@ int IterativeReconstructionAppendParams::staticInit()
          1,
          1000000
         );
-    field8->precision=-1;
     fields().push_back(field8);
     /*  */ 
     IntField* field9 = new IntField
@@ -188,7 +185,6 @@ int IterativeReconstructionAppendParams::staticInit()
          3,
          1000000
         );
-    field9->precision=-1;
     fields().push_back(field9);
     /*  */ 
     DoubleField* field10 = new DoubleField
@@ -206,6 +202,36 @@ int IterativeReconstructionAppendParams::staticInit()
     field10->widgetHint=BaseField::SPIN_BOX;
     field10->precision=6;
     fields().push_back(field10);
+    /*  */ 
+    IntField* field11 = new IntField
+        (
+          IterativeReconstructionAppendParams::SHUTUPANDAPPENDMYFIXTUREINLIERTHRESHOLD_ID,
+          offsetof(IterativeReconstructionAppendParams, mShutUpAndAppendMyFixtureInlierThreshold),
+          200,
+          "shutUpAndAppendMyFixtureInlierThreshold",
+          "shutUpAndAppendMyFixtureInlierThreshold",
+          "Immediate append inlier count threshold",
+          true,
+         10,
+         1000000
+        );
+    fields().push_back(field11);
+    /*  */ 
+    DoubleField* field12 = new DoubleField
+        (
+          IterativeReconstructionAppendParams::SHUTUPANDAPPENDMYFIXTURESUCCESSPROBTHRESHOLD_ID,
+          offsetof(IterativeReconstructionAppendParams, mShutUpAndAppendMyFixtureSuccessProbThreshold),
+          0.9,
+          "shutUpAndAppendMyFixtureSuccessProbThreshold",
+          "shutUpAndAppendMyFixtureSuccessProbThreshold",
+          "shutUpAndAppendMyFixtureSuccessProbThreshold",
+          true,
+         0,
+         1
+        );
+    field12->widgetHint=BaseField::SPIN_BOX;
+    field12->precision=6;
+    fields().push_back(field12);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Iterative Reconstruction Append Params")]= &reflection;

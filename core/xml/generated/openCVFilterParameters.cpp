@@ -35,6 +35,8 @@ int OpenCVFilterParameters::staticInit()
         "OpenCV Filter Parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(OpenCVFilterParameters);
      
 
     EnumField* field0 = new EnumField
@@ -50,7 +52,6 @@ int OpenCVFilterParameters::staticInit()
           )
         );
     field0->widgetHint=BaseField::COMBO_BOX;
-    field0->precision=-1;
     fields().push_back(field0);
     /*  */ 
     IntField* field1 = new IntField
@@ -65,7 +66,6 @@ int OpenCVFilterParameters::staticInit()
          0,
          10000
         );
-    field1->precision=-1;
     fields().push_back(field1);
     /*  */ 
     IntField* field2 = new IntField
@@ -80,7 +80,6 @@ int OpenCVFilterParameters::staticInit()
          0,
          10000
         );
-    field2->precision=-1;
     fields().push_back(field2);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

@@ -585,7 +585,7 @@ void PDOGenerator::generatePDOCpp()
     "        \"" /*+ clazz->name.comment +*/ "\"\n"  //  We need to decorate comment
     "    );\n"
     "\n"
-    "     getReflection()->size = sizeof("+className+")\n"
+    "     getReflection()->objectSize = sizeof("+className+");\n"
     "     \n"
     "\n";
 

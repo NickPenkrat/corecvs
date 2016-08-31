@@ -35,6 +35,8 @@ int DistortionApplicationParameters::staticInit()
         "Distortion Application Parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(DistortionApplicationParameters);
      
 
     BoolField* field0 = new BoolField
@@ -47,7 +49,6 @@ int DistortionApplicationParameters::staticInit()
           "Force Scale"
         );
     field0->widgetHint=BaseField::CHECK_BOX;
-    field0->precision=-1;
     fields().push_back(field0);
     /*  */ 
     BoolField* field1 = new BoolField
@@ -60,7 +61,6 @@ int DistortionApplicationParameters::staticInit()
           "Adopt Scale"
         );
     field1->widgetHint=BaseField::CHECK_BOX;
-    field1->precision=-1;
     fields().push_back(field1);
     /*  */ 
     EnumField* field2 = new EnumField
@@ -79,7 +79,6 @@ int DistortionApplicationParameters::staticInit()
           )
         );
     field2->widgetHint=BaseField::COMBO_BOX;
-    field2->precision=-1;
     fields().push_back(field2);
     /*  */ 
     IntField* field3 = new IntField
@@ -91,7 +90,6 @@ int DistortionApplicationParameters::staticInit()
           "New H",
           "New H"
         );
-    field3->precision=-1;
     fields().push_back(field3);
     /*  */ 
     IntField* field4 = new IntField
@@ -103,7 +101,6 @@ int DistortionApplicationParameters::staticInit()
           "New W",
           "New W"
         );
-    field4->precision=-1;
     fields().push_back(field4);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

@@ -35,6 +35,8 @@ int GainOffsetParameters::staticInit()
         "Gain Offset Parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(GainOffsetParameters);
      
 
     DoubleField* field0 = new DoubleField

@@ -35,6 +35,8 @@ int DebayerParameters::staticInit()
         "Debayer Parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(DebayerParameters);
      
 
     EnumField* field0 = new EnumField
@@ -53,7 +55,6 @@ int DebayerParameters::staticInit()
           )
         );
     field0->widgetHint=BaseField::COMBO_BOX;
-    field0->precision=-1;
     fields().push_back(field0);
     /*  */ 
     IntField* field1 = new IntField
@@ -68,7 +69,6 @@ int DebayerParameters::staticInit()
          -1,
          255
         );
-    field1->precision=-1;
     fields().push_back(field1);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

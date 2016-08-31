@@ -35,6 +35,8 @@ int LineDistortionEstimatorParameters::staticInit()
         "Line Distortion Estimator Parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(LineDistortionEstimatorParameters);
      
 
     EnumField* field0 = new EnumField
@@ -51,7 +53,6 @@ int LineDistortionEstimatorParameters::staticInit()
           )
         );
     field0->widgetHint=BaseField::COMBO_BOX;
-    field0->precision=-1;
     fields().push_back(field0);
     /*  */ 
     IntField* field1 = new IntField
@@ -66,7 +67,6 @@ int LineDistortionEstimatorParameters::staticInit()
          0,
          99999
         );
-    field1->precision=-1;
     fields().push_back(field1);
     /*  */ 
     IntField* field2 = new IntField
@@ -82,7 +82,6 @@ int LineDistortionEstimatorParameters::staticInit()
          20
         );
     field2->prefixHint="x^";
-    field2->precision=-1;
     fields().push_back(field2);
     /*  */ 
     BoolField* field3 = new BoolField
@@ -95,7 +94,6 @@ int LineDistortionEstimatorParameters::staticInit()
           "Simple Jacobian"
         );
     field3->widgetHint=BaseField::CHECK_BOX;
-    field3->precision=-1;
     fields().push_back(field3);
     /*  */ 
     BoolField* field4 = new BoolField
@@ -108,7 +106,6 @@ int LineDistortionEstimatorParameters::staticInit()
           "Even powers only"
         );
     field4->widgetHint=BaseField::CHECK_BOX;
-    field4->precision=-1;
     fields().push_back(field4);
     /*  */ 
     BoolField* field5 = new BoolField
@@ -121,7 +118,6 @@ int LineDistortionEstimatorParameters::staticInit()
           "Estimate Tangent"
         );
     field5->widgetHint=BaseField::CHECK_BOX;
-    field5->precision=-1;
     fields().push_back(field5);
     /*  */ 
     BoolField* field6 = new BoolField
@@ -134,7 +130,6 @@ int LineDistortionEstimatorParameters::staticInit()
           "Estimate Center"
         );
     field6->widgetHint=BaseField::CHECK_BOX;
-    field6->precision=-1;
     fields().push_back(field6);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

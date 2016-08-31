@@ -35,6 +35,8 @@ int AxisAlignedBoxParameters::staticInit()
         "Axis Aligned Box Parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(AxisAlignedBoxParameters);
      
 
     DoubleField* field0 = new DoubleField

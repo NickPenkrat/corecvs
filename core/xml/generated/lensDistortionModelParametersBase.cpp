@@ -35,6 +35,8 @@ int LensDistortionModelParametersBase::staticInit()
         "Lens Distortion Model Parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(LensDistortionModelParametersBase);
      
 
     DoubleField* field0 = new DoubleField
@@ -100,7 +102,6 @@ int LensDistortionModelParametersBase::staticInit()
           "koeff",
           "Polynom to describe radial correction"
         );
-    field4->precision=-1;
     fields().push_back(field4);
     /*  */ 
     DoubleField* field5 = new DoubleField
@@ -178,7 +179,6 @@ int LensDistortionModelParametersBase::staticInit()
           "This one is used to identify direction of map"
         );
     field10->widgetHint=BaseField::CHECK_BOX;
-    field10->precision=-1;
     fields().push_back(field10);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

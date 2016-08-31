@@ -35,6 +35,8 @@ int MaskingParameters::staticInit()
         "Masking Parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(MaskingParameters);
      
 
     BoolField* field0 = new BoolField
@@ -47,7 +49,6 @@ int MaskingParameters::staticInit()
           "Invert"
         );
     field0->widgetHint=BaseField::CHECK_BOX;
-    field0->precision=-1;
     fields().push_back(field0);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

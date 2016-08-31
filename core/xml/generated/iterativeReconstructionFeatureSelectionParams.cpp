@@ -35,6 +35,8 @@ int IterativeReconstructionFeatureSelectionParams::staticInit()
         "Iterative Reconstruction Feature Selection Params",
         ""
     );
+
+     getReflection()->objectSize = sizeof(IterativeReconstructionFeatureSelectionParams);
      
 
     DoubleField* field0 = new DoubleField
@@ -95,7 +97,16 @@ int IterativeReconstructionFeatureSelectionParams::staticInit()
           "featureDetectionParams",
            NULL
         );
-    field3->precision=-1;
+    {
+        ReflectionDirectory* directory = ReflectionDirectoryHolder::getReflectionDirectory();
+        std::string name("Feature Detection Params");
+        ReflectionDirectory::iterator it = directory->find(name);
+        if(it != directory->end()) {
+             field3->reflection = it->second;
+        } else {
+             printf("Reflection IterativeReconstructionFeatureSelectionParams to the subclass Feature Detection Params can't be linked\n");
+        }
+    }
     fields().push_back(field3);
     /*  */ 
     DoubleField* field4 = new DoubleField
@@ -140,7 +151,6 @@ int IterativeReconstructionFeatureSelectionParams::staticInit()
           "Skip feature detection"
         );
     field6->widgetHint=BaseField::CHECK_BOX;
-    field6->precision=-1;
     fields().push_back(field6);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

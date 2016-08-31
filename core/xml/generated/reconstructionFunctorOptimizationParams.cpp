@@ -35,6 +35,8 @@ int ReconstructionFunctorOptimizationParams::staticInit()
         "Reconstruction Functor Optimization Params",
         ""
     );
+
+     getReflection()->objectSize = sizeof(ReconstructionFunctorOptimizationParams);
      
 
     BoolField* field0 = new BoolField
@@ -47,7 +49,6 @@ int ReconstructionFunctorOptimizationParams::staticInit()
           "Orientations of all cameras except first"
         );
     field0->widgetHint=BaseField::CHECK_BOX;
-    field0->precision=-1;
     fields().push_back(field0);
     /*  */ 
     BoolField* field1 = new BoolField
@@ -60,7 +61,6 @@ int ReconstructionFunctorOptimizationParams::staticInit()
           "Orientation of first camera"
         );
     field1->widgetHint=BaseField::CHECK_BOX;
-    field1->precision=-1;
     fields().push_back(field1);
     /*  */ 
     BoolField* field2 = new BoolField
@@ -73,7 +73,6 @@ int ReconstructionFunctorOptimizationParams::staticInit()
           "Translations of all cameras except first"
         );
     field2->widgetHint=BaseField::CHECK_BOX;
-    field2->precision=-1;
     fields().push_back(field2);
     /*  */ 
     BoolField* field3 = new BoolField
@@ -86,7 +85,6 @@ int ReconstructionFunctorOptimizationParams::staticInit()
           "Translation of first camera"
         );
     field3->widgetHint=BaseField::CHECK_BOX;
-    field3->precision=-1;
     fields().push_back(field3);
     /*  */ 
     BoolField* field4 = new BoolField
@@ -99,7 +97,6 @@ int ReconstructionFunctorOptimizationParams::staticInit()
           "Camera focals in multicamera"
         );
     field4->widgetHint=BaseField::CHECK_BOX;
-    field4->precision=-1;
     fields().push_back(field4);
     /*  */ 
     BoolField* field5 = new BoolField
@@ -112,7 +109,6 @@ int ReconstructionFunctorOptimizationParams::staticInit()
           "Camera principals in multicamera"
         );
     field5->widgetHint=BaseField::CHECK_BOX;
-    field5->precision=-1;
     fields().push_back(field5);
     /*  */ 
     BoolField* field6 = new BoolField
@@ -125,7 +121,6 @@ int ReconstructionFunctorOptimizationParams::staticInit()
           "3D points"
         );
     field6->widgetHint=BaseField::CHECK_BOX;
-    field6->precision=-1;
     fields().push_back(field6);
     /*  */ 
     BoolField* field7 = new BoolField
@@ -138,7 +133,6 @@ int ReconstructionFunctorOptimizationParams::staticInit()
           "Allow shifting of GPS-initialized cameras"
         );
     field7->widgetHint=BaseField::CHECK_BOX;
-    field7->precision=-1;
     fields().push_back(field7);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

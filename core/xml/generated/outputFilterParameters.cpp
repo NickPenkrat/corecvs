@@ -35,6 +35,8 @@ int OutputFilterParameters::staticInit()
         "Output Filter Parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(OutputFilterParameters);
      
 
     EnumField* field0 = new EnumField
@@ -51,7 +53,6 @@ int OutputFilterParameters::staticInit()
           )
         );
     field0->widgetHint=BaseField::COMBO_BOX;
-    field0->precision=-1;
     fields().push_back(field0);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

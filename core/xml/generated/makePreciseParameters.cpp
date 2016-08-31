@@ -35,6 +35,8 @@ int MakePreciseParameters::staticInit()
         "Make Precise Parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(MakePreciseParameters);
      
 
     BoolField* field0 = new BoolField
@@ -47,7 +49,6 @@ int MakePreciseParameters::staticInit()
           "Should Make Precise"
         );
     field0->widgetHint=BaseField::CHECK_BOX;
-    field0->precision=-1;
     fields().push_back(field0);
     /*  */ 
     EnumField* field1 = new EnumField
@@ -63,7 +64,6 @@ int MakePreciseParameters::staticInit()
           )
         );
     field1->widgetHint=BaseField::COMBO_BOX;
-    field1->precision=-1;
     fields().push_back(field1);
     /*  */ 
     EnumField* field2 = new EnumField
@@ -81,7 +81,6 @@ int MakePreciseParameters::staticInit()
           )
         );
     field2->widgetHint=BaseField::COMBO_BOX;
-    field2->precision=-1;
     fields().push_back(field2);
     /*  */ 
     IntField* field3 = new IntField
@@ -96,7 +95,6 @@ int MakePreciseParameters::staticInit()
          1,
          100
         );
-    field3->precision=-1;
     fields().push_back(field3);
     /*  */ 
     IntField* field4 = new IntField
@@ -111,7 +109,6 @@ int MakePreciseParameters::staticInit()
          1,
          100
         );
-    field4->precision=-1;
     fields().push_back(field4);
     /*  */ 
     IntField* field5 = new IntField
@@ -126,7 +123,6 @@ int MakePreciseParameters::staticInit()
          1,
          100
         );
-    field5->precision=-1;
     fields().push_back(field5);
     /*  */ 
     DoubleField* field6 = new DoubleField

@@ -35,6 +35,8 @@ int BackgroundFilterParameters::staticInit()
         "Background Filter Parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(BackgroundFilterParameters);
      
 
     IntField* field0 = new IntField
@@ -49,7 +51,6 @@ int BackgroundFilterParameters::staticInit()
          0,
          10000
         );
-    field0->precision=-1;
     fields().push_back(field0);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

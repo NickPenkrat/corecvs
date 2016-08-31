@@ -482,12 +482,14 @@ void testJSON_saveDistortion()
         JSONSetter saver("out2.json");
         saver.visit(params, "stage2");
     }
+
+    LensDistortionModelParameters loaded;
     {
         JSONGetter loader("out2.json");
-        loader.visit(params, "stage2");
+        loader.visit(loaded, "stage2");
     }
     cout << "After loading" << endl;
-    cout << params << endl;
+    cout << loaded << endl;
 
     cout << "Exiting" << endl;
 

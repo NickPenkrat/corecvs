@@ -35,6 +35,8 @@ int ThickeningParameters::staticInit()
         "Thickening Parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(ThickeningParameters);
      
 
     IntField* field0 = new IntField
@@ -49,7 +51,6 @@ int ThickeningParameters::staticInit()
          0,
          9999
         );
-    field0->precision=-1;
     fields().push_back(field0);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

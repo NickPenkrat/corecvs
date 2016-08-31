@@ -35,6 +35,8 @@ int CannyParameters::staticInit()
         "Canny Parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(CannyParameters);
      
 
     BoolField* field0 = new BoolField
@@ -47,7 +49,6 @@ int CannyParameters::staticInit()
           "Should edge detect"
         );
     field0->widgetHint=BaseField::CHECK_BOX;
-    field0->precision=-1;
     fields().push_back(field0);
     /*  */ 
     IntField* field1 = new IntField
@@ -62,7 +63,6 @@ int CannyParameters::staticInit()
          0,
          10000
         );
-    field1->precision=-1;
     fields().push_back(field1);
     /*  */ 
     IntField* field2 = new IntField
@@ -77,7 +77,6 @@ int CannyParameters::staticInit()
          0,
          10000
         );
-    field2->precision=-1;
     fields().push_back(field2);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

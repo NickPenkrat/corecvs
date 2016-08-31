@@ -35,6 +35,8 @@ int RgbColorParameters::staticInit()
         "rgb Color Parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(RgbColorParameters);
      
 
     IntField* field0 = new IntField
@@ -49,7 +51,6 @@ int RgbColorParameters::staticInit()
          0,
          255
         );
-    field0->precision=-1;
     fields().push_back(field0);
     /*  */ 
     IntField* field1 = new IntField
@@ -64,7 +65,6 @@ int RgbColorParameters::staticInit()
          0,
          255
         );
-    field1->precision=-1;
     fields().push_back(field1);
     /*  */ 
     IntField* field2 = new IntField
@@ -79,7 +79,6 @@ int RgbColorParameters::staticInit()
          0,
          255
         );
-    field2->precision=-1;
     fields().push_back(field2);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

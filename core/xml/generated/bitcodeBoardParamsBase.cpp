@@ -35,6 +35,8 @@ int BitcodeBoardParamsBase::staticInit()
         "Bitcode Board Params Base",
         ""
     );
+
+     getReflection()->objectSize = sizeof(BitcodeBoardParamsBase);
      
 
     BoolField* field0 = new BoolField
@@ -47,7 +49,6 @@ int BitcodeBoardParamsBase::staticInit()
           "Orientation"
         );
     field0->widgetHint=BaseField::CHECK_BOX;
-    field0->precision=-1;
     fields().push_back(field0);
     /*  */ 
     IntField* field1 = new IntField
@@ -63,7 +64,6 @@ int BitcodeBoardParamsBase::staticInit()
          999999
         );
     field1->suffixHint="px";
-    field1->precision=-1;
     fields().push_back(field1);
     /*  */ 
     IntField* field2 = new IntField
@@ -78,7 +78,6 @@ int BitcodeBoardParamsBase::staticInit()
          0,
          255
         );
-    field2->precision=-1;
     fields().push_back(field2);
     /*  */ 
     IntField* field3 = new IntField
@@ -93,7 +92,6 @@ int BitcodeBoardParamsBase::staticInit()
          0,
          255
         );
-    field3->precision=-1;
     fields().push_back(field3);
     /*  */ 
     DoubleField* field4 = new DoubleField
@@ -120,7 +118,6 @@ int BitcodeBoardParamsBase::staticInit()
           "size of the chessboard in chesses"
         );
     field5->suffixHint="cells";
-    field5->precision=-1;
     fields().push_back(field5);
     /*  */ 
     IntField* field6 = new IntField
@@ -133,7 +130,6 @@ int BitcodeBoardParamsBase::staticInit()
           "size of the chessboard in chesses"
         );
     field6->suffixHint="cells";
-    field6->precision=-1;
     fields().push_back(field6);
     /*  */ 
     IntField* field7 = new IntField
@@ -146,7 +142,6 @@ int BitcodeBoardParamsBase::staticInit()
           "width and height of the bitcode in chesses"
         );
     field7->suffixHint="cells";
-    field7->precision=-1;
     fields().push_back(field7);
     /*  */ 
     IntField* field8 = new IntField
@@ -159,7 +154,6 @@ int BitcodeBoardParamsBase::staticInit()
           "width and height of the bitcode in chesses"
         );
     field8->suffixHint="cells";
-    field8->precision=-1;
     fields().push_back(field8);
     /*  */ 
     DoubleField* field9 = new DoubleField
@@ -207,7 +201,6 @@ int BitcodeBoardParamsBase::staticInit()
           )
         );
     field11->widgetHint=BaseField::COMBO_BOX;
-    field11->precision=-1;
     fields().push_back(field11);
     /*  */ 
     DoubleField* field12 = new DoubleField

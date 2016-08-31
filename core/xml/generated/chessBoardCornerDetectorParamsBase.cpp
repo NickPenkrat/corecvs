@@ -35,6 +35,8 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
         "Chess Board Corner Detector Params Base",
         ""
     );
+
+     getReflection()->objectSize = sizeof(ChessBoardCornerDetectorParamsBase);
      
 
     BoolField* field0 = new BoolField
@@ -47,7 +49,6 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           "produceDebug"
         );
     field0->widgetHint=BaseField::CHECK_BOX;
-    field0->precision=-1;
     fields().push_back(field0);
     /*  */ 
     BoolField* field1 = new BoolField
@@ -60,7 +61,6 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           "floatSpeedup"
         );
     field1->widgetHint=BaseField::CHECK_BOX;
-    field1->precision=-1;
     fields().push_back(field1);
     /*  */ 
     DoubleField* field2 = new DoubleField
@@ -106,7 +106,6 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
          0,
          999999
         );
-    field4->precision=-1;
     fields().push_back(field4);
     /*  */ 
     DoubleField* field5 = new DoubleField
@@ -135,7 +134,6 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
          0,
          999999
         );
-    field6->precision=-1;
     fields().push_back(field6);
     /*  */ 
     DoubleField* field7 = new DoubleField
@@ -215,7 +213,6 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
          0,
          999999
         );
-    field12->precision=-1;
     fields().push_back(field12);
     /*  */ 
     DoubleField* field13 = new DoubleField
@@ -243,7 +240,6 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
          0,
          999999
         );
-    field14->precision=-1;
     fields().push_back(field14);
     /*  */ 
     DoubleField* field15 = new DoubleField
@@ -273,7 +269,6 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           "patternRadius",
           "Radius for multi-scale pattern detection"
         );
-    field16->precision=-1;
     fields().push_back(field16);
     /*  */ 
     double mPatternStartAngleDeg_dv[] = {0,45};
@@ -287,7 +282,6 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           "patternStartAngleDeg",
           "Angle for rotation-variant detection"
         );
-    field17->precision=-1;
     fields().push_back(field17);
     /*  */ 
     double mCornerScores_dv[] = {4,8,12};
@@ -301,7 +295,6 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           "cornerScores",
           "Radius for corner-scoring"
         );
-    field18->precision=-1;
     fields().push_back(field18);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

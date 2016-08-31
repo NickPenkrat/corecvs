@@ -35,6 +35,8 @@ int IterativeReconstructionInitializationParams::staticInit()
         "Iterative Reconstruction Initialization Params",
         ""
     );
+
+     getReflection()->objectSize = sizeof(IterativeReconstructionInitializationParams);
      
 
     DoubleField* field0 = new DoubleField
@@ -81,7 +83,6 @@ int IterativeReconstructionInitializationParams::staticInit()
          0,
          5000000
         );
-    field2->precision=-1;
     fields().push_back(field2);
     /*  */ 
     DoubleField* field3 = new DoubleField
@@ -110,7 +111,6 @@ int IterativeReconstructionInitializationParams::staticInit()
           "Run essential filtering prior relative pose estimation"
         );
     field4->widgetHint=BaseField::CHECK_BOX;
-    field4->precision=-1;
     fields().push_back(field4);
     /*  */ 
     DoubleField* field5 = new DoubleField
@@ -141,7 +141,6 @@ int IterativeReconstructionInitializationParams::staticInit()
          0,
          100000000
         );
-    field6->precision=-1;
     fields().push_back(field6);
     /*  */ 
     DoubleField* field7 = new DoubleField

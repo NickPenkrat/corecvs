@@ -35,6 +35,8 @@ int FeatureDetectionParams::staticInit()
         "Feature Detection Params",
         ""
     );
+
+     getReflection()->objectSize = sizeof(FeatureDetectionParams);
      
 
     StringField* field0 = new StringField
@@ -46,7 +48,6 @@ int FeatureDetectionParams::staticInit()
           "detector",
           "detector"
         );
-    field0->precision=-1;
     fields().push_back(field0);
     /*  */ 
     StringField* field1 = new StringField
@@ -58,7 +59,6 @@ int FeatureDetectionParams::staticInit()
           "descriptor",
           "descriptor"
         );
-    field1->precision=-1;
     fields().push_back(field1);
     /*  */ 
     StringField* field2 = new StringField
@@ -70,7 +70,6 @@ int FeatureDetectionParams::staticInit()
           "matcher",
           "matcher"
         );
-    field2->precision=-1;
     fields().push_back(field2);
     /*  */ 
     DoubleField* field3 = new DoubleField
@@ -99,7 +98,6 @@ int FeatureDetectionParams::staticInit()
           "matchF2F"
         );
     field4->widgetHint=BaseField::CHECK_BOX;
-    field4->precision=-1;
     fields().push_back(field4);
     /*  */ 
     StringField* field5 = new StringField
@@ -111,7 +109,6 @@ int FeatureDetectionParams::staticInit()
           "parameters",
           "Additional parameters"
         );
-    field5->precision=-1;
     fields().push_back(field5);
     /*  */ 
     BoolField* field6 = new BoolField
@@ -124,7 +121,6 @@ int FeatureDetectionParams::staticInit()
           "Draw tracks on source images"
         );
     field6->widgetHint=BaseField::CHECK_BOX;
-    field6->precision=-1;
     fields().push_back(field6);
     /*  */ 
     BoolField* field7 = new BoolField
@@ -137,8 +133,21 @@ int FeatureDetectionParams::staticInit()
           "Threshold by descriptor distance instead of b2b ratio"
         );
     field7->widgetHint=BaseField::CHECK_BOX;
-    field7->precision=-1;
     fields().push_back(field7);
+    /*  */ 
+    IntField* field8 = new IntField
+        (
+          FeatureDetectionParams::MAXFEATURECOUNT_ID,
+          offsetof(FeatureDetectionParams, mMaxFeatureCount),
+          4000,
+          "maxFeatureCount",
+          "maxFeatureCount",
+          "Max acceptable feature point count",
+          true,
+         0,
+         32768
+        );
+    fields().push_back(field8);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Feature Detection Params")]= &reflection;

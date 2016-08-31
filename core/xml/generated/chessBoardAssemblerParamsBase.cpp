@@ -35,6 +35,8 @@ int ChessBoardAssemblerParamsBase::staticInit()
         "Chess Board Assembler Params Base",
         ""
     );
+
+     getReflection()->objectSize = sizeof(ChessBoardAssemblerParamsBase);
      
 
     DoubleField* field0 = new DoubleField
@@ -114,7 +116,6 @@ int ChessBoardAssemblerParamsBase::staticInit()
           "hypothesisDimensions",
           "Hypothesis type: consider only hypothesis that fits specified number of dims"
         );
-    field5->precision=-1;
     fields().push_back(field5);
     /*  */ 
     IntField* field6 = new IntField
@@ -126,7 +127,6 @@ int ChessBoardAssemblerParamsBase::staticInit()
           "hypothesisDimFirst",
           "hypothesisDimFirst"
         );
-    field6->precision=-1;
     fields().push_back(field6);
     /*  */ 
     IntField* field7 = new IntField
@@ -138,7 +138,6 @@ int ChessBoardAssemblerParamsBase::staticInit()
           "hypothesisDimSecond",
           "hypothesisDimSecond"
         );
-    field7->precision=-1;
     fields().push_back(field7);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
