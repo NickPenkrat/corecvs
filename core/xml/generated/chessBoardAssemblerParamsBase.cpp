@@ -107,6 +107,17 @@ int ChessBoardAssemblerParamsBase::staticInit()
         )
     );
     fields().push_back(
+        new BoolField
+        (
+          ChessBoardAssemblerParamsBase::KDTREE_ID,
+          offsetof(ChessBoardAssemblerParamsBase, mKdtree),
+          false,
+          "kdtree",
+          "kdtree",
+          "Use k-d tree for greedy expansion"
+        )
+    );
+    fields().push_back(
         new IntField
         (
           ChessBoardAssemblerParamsBase::HYPOTHESISDIMFIRST_ID,

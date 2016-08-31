@@ -31,6 +31,14 @@ void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, 
     int N = (int)corners.size();
     int bs = std::max(1, N / 128);
 
+    if (kdtree())
+    {
+        std::vector<OrientedCorner*> ptrs;
+        for (auto& c: corners)
+            ptrs.push_back(&c);
+        kd = std::unique_ptr<KDTree<OrientedCorner, 2>>(new KDTree<OrientedCorner, 2>(ptrs));
+    }
+
     stats->startInterval();
 
     boards = corecvs::parallelable_reduce(0, N, bs,
@@ -474,6 +482,25 @@ bool ChessBoardAssembler::BoardExpander::getExpandedBoard(RectangularGridPattern
 bool ChessBoardAssembler::BoardExpander::assignNearest(std::vector<corecvs::Vector2dd> &prediction, std::vector<int> &usedCorners, std::vector<int> &assignment)
 {
     auto& corners = assembler->corners;
+    int M = (int)prediction.size();
+
+    if (assembler->kdtree())
+    {
+        assignment.resize(M);
+        CORE_ASSERT_TRUE_S(assembler->kd);
+        auto& tree = *assembler->kd;
+
+        for (int i = 0; i < prediction.size(); ++i)
+        {
+            auto res = tree.nearestNeighbour(OrientedCorner(prediction[i]), [&](OrientedCorner* v) { return usedCorners[v - &corners[0]] == 0; });
+            if (!res)
+                return false;
+            auto id = res - &corners[0];
+            usedCorners[id] = 1;
+            assignment[i] = id;
+        }
+        return true;
+    }
 
     std::vector<int> unused;
     unused.reserve(corners.size());
@@ -483,7 +510,6 @@ bool ChessBoardAssembler::BoardExpander::assignNearest(std::vector<corecvs::Vect
         }
     }
     int N = (int)unused.size();
-    int M = (int)prediction.size();
     std::vector<int> assigned(M);
     assignment.resize(M);
 

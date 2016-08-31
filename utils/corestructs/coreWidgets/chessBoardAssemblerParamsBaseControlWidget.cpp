@@ -27,6 +27,7 @@ ChessBoardAssemblerParamsBaseControlWidget::ChessBoardAssemblerParamsBaseControl
     QObject::connect(mUi->costThresholdSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->minSeedDistanceSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->hypothesisDimensionsSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->kdtreeCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->hypothesisDimFirstSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->hypothesisDimSecondSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
 }
@@ -70,6 +71,7 @@ ChessBoardAssemblerParamsBase *ChessBoardAssemblerParamsBaseControlWidget::creat
         , mUi->costThresholdSpinBox->value()
         , mUi->minSeedDistanceSpinBox->value()
         , mUi->hypothesisDimensionsSpinBox->value()
+        , mUi->kdtreeCheckBox->isChecked()
         , mUi->hypothesisDimFirstSpinBox->value()
         , mUi->hypothesisDimSecondSpinBox->value()
     );
@@ -85,6 +87,7 @@ void ChessBoardAssemblerParamsBaseControlWidget::setParameters(const ChessBoardA
     mUi->costThresholdSpinBox->setValue(input.costThreshold());
     mUi->minSeedDistanceSpinBox->setValue(input.minSeedDistance());
     mUi->hypothesisDimensionsSpinBox->setValue(input.hypothesisDimensions());
+    mUi->kdtreeCheckBox->setChecked(input.kdtree());
     mUi->hypothesisDimFirstSpinBox->setValue(input.hypothesisDimFirst());
     mUi->hypothesisDimSecondSpinBox->setValue(input.hypothesisDimSecond());
     blockSignals(wasBlocked);

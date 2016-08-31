@@ -45,6 +45,7 @@ public:
         COSTTHRESHOLD_ID,
         MINSEEDDISTANCE_ID,
         HYPOTHESISDIMENSIONS_ID,
+        KDTREE_ID,
         HYPOTHESISDIMFIRST_ID,
         HYPOTHESISDIMSECOND_ID,
         CHESS_BOARD_ASSEMBLER_PARAMS_BASE_FIELD_ID_NUM
@@ -87,6 +88,12 @@ public:
      * Hypothesis type: consider only hypothesis that fits specified number of dims 
      */
     int mHypothesisDimensions;
+
+    /** 
+     * \brief kdtree 
+     * Use k-d tree for greedy expansion 
+     */
+    bool mKdtree;
 
     /** 
      * \brief hypothesisDimFirst 
@@ -138,6 +145,11 @@ public:
         return mHypothesisDimensions;
     }
 
+    bool kdtree() const
+    {
+        return mKdtree;
+    }
+
     int hypothesisDimFirst() const
     {
         return mHypothesisDimFirst;
@@ -179,6 +191,11 @@ public:
         mHypothesisDimensions = hypothesisDimensions;
     }
 
+    void setKdtree(bool kdtree)
+    {
+        mKdtree = kdtree;
+    }
+
     void setHypothesisDimFirst(int hypothesisDimFirst)
     {
         mHypothesisDimFirst = hypothesisDimFirst;
@@ -200,6 +217,7 @@ template<class VisitorType>
         visitor.visit(mCostThreshold,             static_cast<const DoubleField *>  (fields()[COSTTHRESHOLD_ID]));
         visitor.visit(mMinSeedDistance,           static_cast<const DoubleField *>  (fields()[MINSEEDDISTANCE_ID]));
         visitor.visit(mHypothesisDimensions,      static_cast<const IntField *>     (fields()[HYPOTHESISDIMENSIONS_ID]));
+        visitor.visit(mKdtree,                    static_cast<const BoolField *>    (fields()[KDTREE_ID]));
         visitor.visit(mHypothesisDimFirst,        static_cast<const IntField *>     (fields()[HYPOTHESISDIMFIRST_ID]));
         visitor.visit(mHypothesisDimSecond,       static_cast<const IntField *>     (fields()[HYPOTHESISDIMSECOND_ID]));
     }
@@ -217,6 +235,7 @@ template<class VisitorType>
         , double costThreshold
         , double minSeedDistance
         , int hypothesisDimensions
+        , bool kdtree
         , int hypothesisDimFirst
         , int hypothesisDimSecond
     )
@@ -227,6 +246,7 @@ template<class VisitorType>
         mCostThreshold = costThreshold;
         mMinSeedDistance = minSeedDistance;
         mHypothesisDimensions = hypothesisDimensions;
+        mKdtree = kdtree;
         mHypothesisDimFirst = hypothesisDimFirst;
         mHypothesisDimSecond = hypothesisDimSecond;
     }
