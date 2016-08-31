@@ -901,7 +901,7 @@ void corecvs::PhotostationPlacer::fullRun()
 
         paintTracksOnImages(true);
 
-        if (!appendAny() && !append3D() && !append2D())
+        if ((!allowSuperSpeculativeAppend() || !appendAny()) && !append3D() && !append2D())
         {
             std::cout << "RECONSTRUCTION FAILED on APPENDING !!!" << std::endl;
             return;

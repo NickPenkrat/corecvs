@@ -21,6 +21,7 @@ IterativeReconstructionAppendParamsControlWidget::IterativeReconstructionAppendP
 {
     mUi->setupUi(this);
 
+    QObject::connect(mUi->allowSuperSpeculativeAppendCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->postAppendOptimizationWindowSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->maxPostAppendSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->inlierP3PThresholdSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
@@ -69,7 +70,8 @@ IterativeReconstructionAppendParams *IterativeReconstructionAppendParamsControlW
 
 
     return new IterativeReconstructionAppendParams(
-          mUi->postAppendOptimizationWindowSpinBox->value()
+          mUi->allowSuperSpeculativeAppendCheckBox->isChecked()
+        , mUi->postAppendOptimizationWindowSpinBox->value()
         , mUi->maxPostAppendSpinBox->value()
         , mUi->inlierP3PThresholdSpinBox->value()
         , mUi->maxP3PIterationsSpinBox->value()
@@ -89,6 +91,7 @@ void IterativeReconstructionAppendParamsControlWidget::setParameters(const Itera
 {
     // Block signals to send them all at once
     bool wasBlocked = blockSignals(true);
+    mUi->allowSuperSpeculativeAppendCheckBox->setChecked(input.allowSuperSpeculativeAppend());
     mUi->postAppendOptimizationWindowSpinBox->setValue(input.postAppendOptimizationWindow());
     mUi->maxPostAppendSpinBox->setValue(input.maxPostAppend());
     mUi->inlierP3PThresholdSpinBox->setValue(input.inlierP3PThreshold());

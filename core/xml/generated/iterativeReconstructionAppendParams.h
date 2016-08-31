@@ -39,6 +39,7 @@ class IterativeReconstructionAppendParams : public BaseReflection<IterativeRecon
 {
 public:
     enum FieldId {
+        ALLOWSUPERSPECULATIVEAPPEND_ID,
         POSTAPPENDOPTIMIZATIONWINDOW_ID,
         MAXPOSTAPPEND_ID,
         INLIERP3PTHRESHOLD_ID,
@@ -56,6 +57,12 @@ public:
     };
 
     /** Section with variables */
+
+    /** 
+     * \brief allowSuperSpeculativeAppend 
+     * If you have lots of correct feature matches (>500 for each pair), than you may try super-speculative appending 
+     */
+    bool mAllowSuperSpeculativeAppend;
 
     /** 
      * \brief postAppendOptimizationWindow 
@@ -143,6 +150,11 @@ public:
     {
         return (const unsigned char *)(this) + fields()[fieldId]->offset;
     }
+    bool allowSuperSpeculativeAppend() const
+    {
+        return mAllowSuperSpeculativeAppend;
+    }
+
     int postAppendOptimizationWindow() const
     {
         return mPostAppendOptimizationWindow;
@@ -209,6 +221,11 @@ public:
     }
 
     /* Section with setters */
+    void setAllowSuperSpeculativeAppend(bool allowSuperSpeculativeAppend)
+    {
+        mAllowSuperSpeculativeAppend = allowSuperSpeculativeAppend;
+    }
+
     void setPostAppendOptimizationWindow(int postAppendOptimizationWindow)
     {
         mPostAppendOptimizationWindow = postAppendOptimizationWindow;
@@ -279,6 +296,7 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
+        visitor.visit(mAllowSuperSpeculativeAppend, static_cast<const BoolField *>    (fields()[ALLOWSUPERSPECULATIVEAPPEND_ID]));
         visitor.visit(mPostAppendOptimizationWindow, static_cast<const IntField *>     (fields()[POSTAPPENDOPTIMIZATIONWINDOW_ID]));
         visitor.visit(mMaxPostAppend,             static_cast<const IntField *>     (fields()[MAXPOSTAPPEND_ID]));
         visitor.visit(mInlierP3PThreshold,        static_cast<const DoubleField *>  (fields()[INLIERP3PTHRESHOLD_ID]));
@@ -301,7 +319,8 @@ template<class VisitorType>
     }
 
     IterativeReconstructionAppendParams(
-          int postAppendOptimizationWindow
+          bool allowSuperSpeculativeAppend
+        , int postAppendOptimizationWindow
         , int maxPostAppend
         , double inlierP3PThreshold
         , int maxP3PIterations
@@ -316,6 +335,7 @@ template<class VisitorType>
         , double shutUpAndAppendMyFixtureSuccessProbThreshold
     )
     {
+        mAllowSuperSpeculativeAppend = allowSuperSpeculativeAppend;
         mPostAppendOptimizationWindow = postAppendOptimizationWindow;
         mMaxPostAppend = maxPostAppend;
         mInlierP3PThreshold = inlierP3PThreshold;

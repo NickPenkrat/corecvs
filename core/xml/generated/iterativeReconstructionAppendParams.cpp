@@ -38,6 +38,17 @@ int IterativeReconstructionAppendParams::staticInit()
      
 
     fields().push_back(
+        new BoolField
+        (
+          IterativeReconstructionAppendParams::ALLOWSUPERSPECULATIVEAPPEND_ID,
+          offsetof(IterativeReconstructionAppendParams, mAllowSuperSpeculativeAppend),
+          false,
+          "allowSuperSpeculativeAppend",
+          "allowSuperSpeculativeAppend",
+          "If you have lots of correct feature matches (>500 for each pair), than you may try super-speculative appending"
+        )
+    );
+    fields().push_back(
         new IntField
         (
           IterativeReconstructionAppendParams::POSTAPPENDOPTIMIZATIONWINDOW_ID,
