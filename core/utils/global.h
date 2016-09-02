@@ -362,7 +362,7 @@ namespace std
 #endif
 
 /** MSVC: macro to help in memory leaks detection */
-#if defined(_MSC_VER) && defined(_DEBUG)
+#if defined(_MSC_VER) && defined(_DEBUG) && (_MSC_VER < 1900)   // msvc2015 suggestion - to don't use it so!
 # define USE_MSVC_DEBUG_MEM
 # define _CRTDBG_MAP_ALLOC
 # define _CRTDBG_MAP_ALLOC_NEW

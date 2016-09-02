@@ -52,7 +52,7 @@ public:
      *
      **/
     void projectForward(SceneFeaturePoint::PointType mask, bool round = false);
-    void triangulate   (SceneFeaturePoint * point);
+    void triangulate   (SceneFeaturePoint * point, bool sourceWithDistortion = false);
 
     /** Accessors
      **/

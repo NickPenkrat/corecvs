@@ -174,7 +174,6 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const Photostation &ps, const Obs
 
 void CalibrationHelpers::drawPly(Mesh3D &mesh, SceneFeaturePoint fp, double scale)
 {
-
     mesh.setColor(fp.color);
     if (!fp.hasKnownPosition)
         fp.position = fp.reprojectedPosition;
@@ -213,15 +212,12 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, SceneFeaturePoint fp, double scal
             Vector3dd p3 = rayDir.getPoint(scale);
             mesh.addLine(rayDir.p, p3);*/
 
-
             if (!largePoints) {
                 mesh.addPoint(p2);
             } else {
                 mesh.addIcoSphere(p2, scale / 100.0, 2);
             }
-
         }
-
     }
 }
 

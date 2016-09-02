@@ -94,7 +94,7 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
     }
 }
 
-void FixtureScene::triangulate(SceneFeaturePoint *point)
+void FixtureScene::triangulate(SceneFeaturePoint *point, bool sourceWithDistortion)
 {
    MulticameraTriangulator triangulator;
 
@@ -110,6 +110,23 @@ void FixtureScene::triangulate(SceneFeaturePoint *point)
 
        }
    }*/
+
+   if (sourceWithDistortion)
+   {
+       for (auto& pos : point->observations)
+       {
+           FixtureCamera *cam = pos.first;
+
+           SceneObservation observation;
+           observation.accuracy     = pos.second.accuracy;
+           observation.camera       = cam;
+           observation.featurePoint = pos.second.featurePoint;
+           observation.isKnown      = pos.second.isKnown;
+           observation.observation  = cam->distortion.mapBackward(pos.second.observation);
+
+           pos.second = observation;
+       }
+   }
 
    triangulator.trace = true;
 
@@ -132,19 +149,33 @@ void FixtureScene::triangulate(SceneFeaturePoint *point)
        triangulator.addCamera(worldCam.getCameraMatrix(), observ.observation);
    }
 
-   Vector3dd point3d;
    bool ok;
-
-   point3d = triangulator.triangulate(&ok);
+   Vector3dd point3d = triangulator.triangulate(&ok);
 
    if (!ok) {
        SYNC_PRINT(("FixtureScene::triangulate(): MulticameraTriangulator returned false"));
        return;
    }
-   cout << "FixtureScene::triangulate(): Triangulated to" << point3d << std::endl;
+   cout << "FixtureScene::triangulate(): triangulated to " << point3d << std::endl;
 
+   if (sourceWithDistortion)
+   {
+       for (auto& pos : point->observations)
+       {
+           FixtureCamera *cam = pos.first;
 
-   point->position = point3d;
+           SceneObservation observation;
+           observation.accuracy     = pos.second.accuracy;
+           observation.camera       = cam;
+           observation.featurePoint = pos.second.featurePoint;
+           observation.isKnown      = pos.second.isKnown;
+           observation.observation  = cam->distortion.mapForward(pos.second.observation);
+
+           pos.second = observation;
+       }
+   }
+
+   point->position = point3d;       //TODO: why it's stored into the position field instead of reProjPosition?
 }
 
 FixtureCamera *FixtureScene::createCamera()

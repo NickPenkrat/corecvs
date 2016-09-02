@@ -512,7 +512,6 @@ with_mkl {
     }
 }
 
-CONFIG += with_cusparse
 with_cusparse {
     CUDA_PATH = $$(CUDA_PATH)
     !isEmpty(CUDA_PATH) {
@@ -525,7 +524,7 @@ with_cusparse {
 	    }
             LIBS += -lcusparse -lcudart -lcuda
             DEFINES += WITH_CUSPARSE
-            !build_pass: message(Using CUDA from <$$CUDA_PATH>)
+            !build_pass: message(using <$$CUDA_PATH>)
         } else {
             error("cuSPARSE header file not found");
         }

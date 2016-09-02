@@ -37,11 +37,14 @@ class SceneFeaturePoint;
 class SceneObservation
 {
 public:
-    SceneObservation()
-        : camera(NULL)
-        , cameraFixture(NULL)
-        , featurePoint(NULL)
-        , observation(0.0)
+    SceneObservation(FixtureCamera* cam = nullptr
+            , SceneFeaturePoint *sfp = nullptr
+            , Vector2dd          obs = Vector2dd(0)
+            , CameraFixture     *fix = nullptr)
+        : camera(cam)
+        , cameraFixture(fix)
+        , featurePoint(sfp)
+        , observation(obs)
         , accuracy(0.0)
         , observDir(0.0)
         , isKnown(false)
@@ -82,8 +85,10 @@ public:
         if (visitor.isLoader())
         {
             camera = getCameraById(id);
+            if (camera != NULL) {
+                cameraFixture = camera->cameraFixture;
+            }
         }
-        //camera->setObjectId(id);
     }
 };
 
@@ -187,6 +192,7 @@ public:
     /** Observation related block */
     typedef std::unordered_map<FixtureCamera *, SceneObservation> ObservContainer;
     ObservContainer observations;
+
     std::unordered_map<WildcardablePointerPair<CameraFixture, FixtureCamera>, SceneObservation> observations__;
 
 
@@ -196,18 +202,20 @@ public:
 
     SceneFeaturePoint(FixtureScene * owner = NULL) :
         FixtureScenePart(owner),
+        position(0.0),
         hasKnownPosition(false),
+        reprojectedPosition(0.0),
         hasKnownReprojectedPosition(false),
         type(POINT_UNKNOWN),
         color(RGBColor::White())
     {}
-
 
     SceneFeaturePoint(Vector3dd _position, const std::string &_name = std::string(), FixtureScene * owner = NULL) :
         FixtureScenePart(owner),
         name(_name),
         position(_position),
         hasKnownPosition(true),
+        reprojectedPosition(0.0),
         hasKnownReprojectedPosition(false),
         type(POINT_UNKNOWN),
         color(RGBColor::White())
@@ -239,28 +247,35 @@ public:
         int observeSize = (int)observations.size();
         visitor.visit(observeSize, 0, "observations.size");
 
-        if (!visitor.isLoader()) {
+        if (!visitor.isLoader())
+        {
             int i = 0;
             /* We don't load observations here*/
             for (auto &it : observations)
             {
-                SceneObservation obseve = it.second;
-                char buffer[100];
-                snprintf2buf(buffer, "obsereve[%d]", i);
-                visitor.visit(obseve, SceneObservation(), buffer);
+                SceneObservation &observ = it.second;
+                char buffer[100]; snprintf2buf(buffer, "obsrv[%d]", i);
+                visitor.visit(observ, observ, buffer);
                 i++;
             }
         }
-        else {
+        else
+        {
+            SceneObservation observ0;
             for (int i = 0; i < observeSize; i++)
             {
-                char buffer[100];
-                snprintf2buf(buffer, "obsereve[%d]", i);
-                SceneObservation observe;
-                observe.featurePoint = this;
-                visitor.visit(observe, SceneObservation(), buffer);
+                char buffer[100]; snprintf2buf(buffer, "obsrv[%d]", i);
+                SceneObservation observ;
+                observ.featurePoint = this;         // we need to set it before visit()
+                visitor.visit(observ, observ0, buffer);
 
-                observations[observe.camera] = observe;
+                if (observ.camera == NULL)          // when we load the old format file with another field name
+                {
+                    snprintf2buf(buffer, "obsereve[%d]", i);
+                    visitor.visit(observ, observ0, buffer);
+                }
+
+                observations[observ.camera] = observ;
             }
         }
     }

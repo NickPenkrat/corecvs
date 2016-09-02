@@ -1,5 +1,6 @@
 #include "folderScanner.h"
 #include "log.h"
+#include "utils.h"
 
 #include <iostream>
 
@@ -50,7 +51,14 @@ bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFi
         if (!(findFiles ^ isDir))
             continue;
 
-        childs.push_back(pathChild.string());        // string(pathChild) has native platform style slashes inside
+        // win32: bugfix state:
+        //  pathChild.string() - has linux   style slashes everywhere
+        //  (string)pathChild  - has windows style slashes on vc12, but it's obsolete in vc14
+#ifdef _MSC_VER
+        childs.push_back(corecvs::HelperUtils::toNativeSlashes(pathChild.string()));
+#else
+        childs.push_back(pathChild);
+#endif
     }
 
     return true;
