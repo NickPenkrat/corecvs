@@ -353,7 +353,7 @@ public:
         tspan.clip(mTarget->w, mTarget->h);
         for (int j = tspan.x1; j < tspan.x2; j++)
         {
-            mTarget->element(tspan.y, j) = color;
+            mTarget->element(tspan.y(), j) = color;
         }
     }
 
