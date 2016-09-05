@@ -167,12 +167,6 @@
        <property name="checked">
            <bool>0</bool>
        </property>
-       <property name="prefix">
-        <string></string>
-       </property>
-       <property name="suffix">
-        <string></string>
-       </property>
      </widget>
     </item>
     <item row="7" column="0">
@@ -186,6 +180,12 @@
      <widget class="QSpinBox" name="hypothesisDimFirstSpinBox">
        <property name="toolTip">
          <string>hypothesisDimFirst</string>
+       </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
        </property>
      </widget>
     </item>

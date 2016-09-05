@@ -35,6 +35,8 @@ int RectifyParameters::staticInit()
         "osd parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(RectifyParameters);
      
 
     EnumField* field0 = new EnumField
@@ -51,7 +53,6 @@ int RectifyParameters::staticInit()
           )
         );
     field0->widgetHint=BaseField::COMBO_BOX;
-    field0->precision=-1;
     fields().push_back(field0);
     /*  */ 
     DoubleField* field1 = new DoubleField
@@ -76,7 +77,6 @@ int RectifyParameters::staticInit()
           "octaves",
           "octaves"
         );
-    field2->precision=-1;
     fields().push_back(field2);
     /*  */ 
     IntField* field3 = new IntField
@@ -88,7 +88,6 @@ int RectifyParameters::staticInit()
           "octaveLayers",
           "octaveLayers"
         );
-    field3->precision=-1;
     fields().push_back(field3);
     /*  */ 
     BoolField* field4 = new BoolField
@@ -101,7 +100,6 @@ int RectifyParameters::staticInit()
           "extended"
         );
     field4->widgetHint=BaseField::CHECK_BOX;
-    field4->precision=-1;
     fields().push_back(field4);
     /*  */ 
     DoubleField* field5 = new DoubleField
@@ -130,7 +128,6 @@ int RectifyParameters::staticInit()
           "useKLT"
         );
     field6->widgetHint=BaseField::CHECK_BOX;
-    field6->precision=-1;
     fields().push_back(field6);
     /*  */ 
     BoolField* field7 = new BoolField
@@ -143,7 +140,6 @@ int RectifyParameters::staticInit()
           "computeEssential"
         );
     field7->widgetHint=BaseField::CHECK_BOX;
-    field7->precision=-1;
     fields().push_back(field7);
     /*  */ 
     DoubleField* field8 = new DoubleField
@@ -225,7 +221,6 @@ int RectifyParameters::staticInit()
           )
         );
     field12->widgetHint=BaseField::COMBO_BOX;
-    field12->precision=-1;
     fields().push_back(field12);
     /*  */ 
     BoolField* field13 = new BoolField
@@ -238,7 +233,6 @@ int RectifyParameters::staticInit()
           "normalise"
         );
     field13->widgetHint=BaseField::CHECK_BOX;
-    field13->precision=-1;
     fields().push_back(field13);
     /*  */ 
     IntField* field14 = new IntField
@@ -253,7 +247,6 @@ int RectifyParameters::staticInit()
          1,
          9999
         );
-    field14->precision=-1;
     fields().push_back(field14);
     /*  */ 
     IntField* field15 = new IntField
@@ -268,7 +261,6 @@ int RectifyParameters::staticInit()
          1,
          9999
         );
-    field15->precision=-1;
     fields().push_back(field15);
     /*  */ 
     DoubleField* field16 = new DoubleField
@@ -352,7 +344,6 @@ int RectifyParameters::staticInit()
           )
         );
     field20->widgetHint=BaseField::COMBO_BOX;
-    field20->precision=-1;
     fields().push_back(field20);
     /*  */ 
     IntField* field21 = new IntField
@@ -367,7 +358,6 @@ int RectifyParameters::staticInit()
          1,
          9999
         );
-    field21->precision=-1;
     fields().push_back(field21);
     /*  */ 
     DoubleField* field22 = new DoubleField
@@ -556,7 +546,6 @@ int RectifyParameters::staticInit()
           "autoZ"
         );
     field33->widgetHint=BaseField::CHECK_BOX;
-    field33->precision=-1;
     fields().push_back(field33);
     /*  */ 
     BoolField* field34 = new BoolField
@@ -569,7 +558,6 @@ int RectifyParameters::staticInit()
           "autoShift"
         );
     field34->widgetHint=BaseField::CHECK_BOX;
-    field34->precision=-1;
     fields().push_back(field34);
     /*  */ 
     IntField* field35 = new IntField
@@ -584,7 +572,6 @@ int RectifyParameters::staticInit()
          -9999,
          9999
         );
-    field35->precision=-1;
     fields().push_back(field35);
     /*  */ 
     IntField* field36 = new IntField
@@ -599,7 +586,6 @@ int RectifyParameters::staticInit()
          0,
          99999
         );
-    field36->precision=-1;
     fields().push_back(field36);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

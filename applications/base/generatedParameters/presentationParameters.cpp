@@ -35,6 +35,8 @@ int PresentationParameters::staticInit()
         "Presentation parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(PresentationParameters);
      
 
     EnumField* field0 = new EnumField
@@ -56,7 +58,6 @@ int PresentationParameters::staticInit()
           )
         );
     field0->widgetHint=BaseField::COMBO_BOX;
-    field0->precision=-1;
     fields().push_back(field0);
     /*  */ 
     EnumField* field1 = new EnumField
@@ -77,7 +78,6 @@ int PresentationParameters::staticInit()
           )
         );
     field1->widgetHint=BaseField::COMBO_BOX;
-    field1->precision=-1;
     fields().push_back(field1);
     /*  */ 
     EnumField* field2 = new EnumField
@@ -98,7 +98,6 @@ int PresentationParameters::staticInit()
           )
         );
     field2->widgetHint=BaseField::COMBO_BOX;
-    field2->precision=-1;
     fields().push_back(field2);
     /*  */ 
     BoolField* field3 = new BoolField
@@ -111,7 +110,6 @@ int PresentationParameters::staticInit()
           "showClusters"
         );
     field3->widgetHint=BaseField::CHECK_BOX;
-    field3->precision=-1;
     fields().push_back(field3);
     /*  */ 
     BoolField* field4 = new BoolField
@@ -124,7 +122,6 @@ int PresentationParameters::staticInit()
           "showHistogram"
         );
     field4->widgetHint=BaseField::CHECK_BOX;
-    field4->precision=-1;
     fields().push_back(field4);
     /*  */ 
     BoolField* field5 = new BoolField
@@ -137,7 +134,6 @@ int PresentationParameters::staticInit()
           "Auto Update Histogram"
         );
     field5->widgetHint=BaseField::CHECK_BOX;
-    field5->precision=-1;
     fields().push_back(field5);
     /*  */ 
     BoolField* field6 = new BoolField
@@ -150,7 +146,6 @@ int PresentationParameters::staticInit()
           "showAreaOfInterest"
         );
     field6->widgetHint=BaseField::CHECK_BOX;
-    field6->precision=-1;
     fields().push_back(field6);
     /*  */ 
     BoolField* field7 = new BoolField
@@ -163,7 +158,6 @@ int PresentationParameters::staticInit()
           "produce3D"
         );
     field7->widgetHint=BaseField::CHECK_BOX;
-    field7->precision=-1;
     fields().push_back(field7);
     /*  */ 
     BoolField* field8 = new BoolField
@@ -176,7 +170,6 @@ int PresentationParameters::staticInit()
           "produce6D"
         );
     field8->widgetHint=BaseField::CHECK_BOX;
-    field8->precision=-1;
     fields().push_back(field8);
     /*  */ 
     BoolField* field9 = new BoolField
@@ -189,7 +182,6 @@ int PresentationParameters::staticInit()
           "dump3D"
         );
     field9->widgetHint=BaseField::CHECK_BOX;
-    field9->precision=-1;
     fields().push_back(field9);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

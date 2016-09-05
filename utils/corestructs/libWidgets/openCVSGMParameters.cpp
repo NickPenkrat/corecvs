@@ -35,6 +35,8 @@ int OpenCVSGMParameters::staticInit()
         "OpenCV SGM Parameters Class",
         ""
     );
+
+     getReflection()->objectSize = sizeof(OpenCVSGMParameters);
      
 
     IntField* field0 = new IntField
@@ -49,7 +51,6 @@ int OpenCVSGMParameters::staticInit()
          1,
          99
         );
-    field0->precision=-1;
     fields().push_back(field0);
     /*  */ 
     IntField* field1 = new IntField
@@ -64,7 +65,6 @@ int OpenCVSGMParameters::staticInit()
          1,
          99
         );
-    field1->precision=-1;
     fields().push_back(field1);
     /*  */ 
     IntField* field2 = new IntField
@@ -79,7 +79,6 @@ int OpenCVSGMParameters::staticInit()
          1,
          99
         );
-    field2->precision=-1;
     fields().push_back(field2);
     /*  */ 
     IntField* field3 = new IntField
@@ -94,7 +93,6 @@ int OpenCVSGMParameters::staticInit()
          1,
          99
         );
-    field3->precision=-1;
     fields().push_back(field3);
     /*  */ 
     IntField* field4 = new IntField
@@ -109,7 +107,6 @@ int OpenCVSGMParameters::staticInit()
          -9999,
          99999
         );
-    field4->precision=-1;
     fields().push_back(field4);
     /*  */ 
     IntField* field5 = new IntField
@@ -124,7 +121,6 @@ int OpenCVSGMParameters::staticInit()
          0,
          99
         );
-    field5->precision=-1;
     fields().push_back(field5);
     /*  */ 
     IntField* field6 = new IntField
@@ -139,7 +135,6 @@ int OpenCVSGMParameters::staticInit()
          1,
          99
         );
-    field6->precision=-1;
     fields().push_back(field6);
     /*  */ 
     IntField* field7 = new IntField
@@ -154,7 +149,6 @@ int OpenCVSGMParameters::staticInit()
          1,
          99
         );
-    field7->precision=-1;
     fields().push_back(field7);
     /*  */ 
     IntField* field8 = new IntField
@@ -169,7 +163,6 @@ int OpenCVSGMParameters::staticInit()
          -9999,
          99999
         );
-    field8->precision=-1;
     fields().push_back(field8);
     /*  */ 
     BoolField* field9 = new BoolField
@@ -182,7 +175,6 @@ int OpenCVSGMParameters::staticInit()
           "Full DP"
         );
     field9->widgetHint=BaseField::CHECK_BOX;
-    field9->precision=-1;
     fields().push_back(field9);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

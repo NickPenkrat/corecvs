@@ -35,6 +35,8 @@ int Recorder::staticInit()
         "Recorder parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(Recorder);
      
 
     StringField* field0 = new StringField
@@ -46,7 +48,6 @@ int Recorder::staticInit()
           "path",
           "path"
         );
-    field0->precision=-1;
     fields().push_back(field0);
     /*  */ 
     StringField* field1 = new StringField
@@ -58,7 +59,6 @@ int Recorder::staticInit()
           "fileTemplate",
           "fileTemplate"
         );
-    field1->precision=-1;
     fields().push_back(field1);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
