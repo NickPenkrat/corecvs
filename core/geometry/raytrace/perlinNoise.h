@@ -1,6 +1,8 @@
 #ifndef PERLINNOISE_H
 #define PERLINNOISE_H
 
+#include <random>
+
 #include "voxels/voxelBuffer.h"
 
 namespace corecvs {
@@ -38,7 +40,8 @@ public:
     PerlinNoiseContainer *n;
 
 
-    PerlinNoise() {
+    PerlinNoise()
+    {
         n = new PerlinNoiseContainer(SIZE, SIZE, SIZE);
 
         std::mt19937 mt;

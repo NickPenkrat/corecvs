@@ -13,6 +13,7 @@
 
 #include <string>
 #include <iostream>
+#include <vector>
 
 #include "global.h"
 
@@ -49,13 +50,14 @@ namespace HelperUtils
 {
     using std::string;
     using std::istream;
+    using std::vector;
 
     bool            startsWith(const string &str, const string &prefix);
     bool            endsWith  (const string &str, const string &postfix);
     istream&        getlineSafe(istream& is, string& str);
 
-    void            stringSplit(const string &s, char delim, std::vector<string> &elems);
-    std::vector<string>  stringSplit(const string &s, char delim);
+    void            stringSplit(const string &s, char delim, vector<string> &elems);
+    vector<string>  stringSplit(const string &s, char delim);
 
     string          toNativeSlashes(const string& str);
 

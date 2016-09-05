@@ -144,7 +144,7 @@ private:
                 }
             });
         temporary.resize(items.size());
-        root = buildKDTree(0, items.size() - 1, 0);
+        root = buildKDTree(0, (int)items.size() - 1, 0);
     }
     InnerType computeDiff(const V& a, const V &b)
     {
