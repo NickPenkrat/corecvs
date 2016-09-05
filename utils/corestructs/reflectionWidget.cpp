@@ -301,6 +301,7 @@ bool ReflectionWidget::getParameters(void *param) const
         }
     }
 
+    return true;
 }
 
 bool ReflectionWidget::setParameters(void *param) const
@@ -382,5 +383,7 @@ bool ReflectionWidget::setParameters(void *param) const
                 break;
         }
     }
+
+    return true;
 }
 
