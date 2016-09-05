@@ -35,10 +35,11 @@ int BackgroundFilterParameters::staticInit()
         "Background Filter Parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(BackgroundFilterParameters);
      
 
-    fields().push_back(
-        new IntField
+    IntField* field0 = new IntField
         (
           BackgroundFilterParameters::THRESHOLD_ID,
           offsetof(BackgroundFilterParameters, mThreshold),
@@ -49,8 +50,11 @@ int BackgroundFilterParameters::staticInit()
           true,
          0,
          10000
-        )
-    );
+        );
+    fields().push_back(field0);
+    /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Background Filter Parameters")]= &reflection;
    return 0;
 }
 

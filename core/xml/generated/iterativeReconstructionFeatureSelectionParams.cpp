@@ -35,10 +35,11 @@ int IterativeReconstructionFeatureSelectionParams::staticInit()
         "Iterative Reconstruction Feature Selection Params",
         ""
     );
+
+     getReflection()->objectSize = sizeof(IterativeReconstructionFeatureSelectionParams);
      
 
-    fields().push_back(
-        new DoubleField
+    DoubleField* field0 = new DoubleField
         (
           IterativeReconstructionFeatureSelectionParams::INLIERTHRESHOLD_ID,
           offsetof(IterativeReconstructionFeatureSelectionParams, mInlierThreshold),
@@ -49,10 +50,12 @@ int IterativeReconstructionFeatureSelectionParams::staticInit()
           true,
          0,
          50000
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field0->widgetHint=BaseField::SPIN_BOX;
+    field0->precision=6;
+    fields().push_back(field0);
+    /*  */ 
+    DoubleField* field1 = new DoubleField
         (
           IterativeReconstructionFeatureSelectionParams::TRACKINLIERTHRESHOLD_ID,
           offsetof(IterativeReconstructionFeatureSelectionParams, mTrackInlierThreshold),
@@ -63,10 +66,12 @@ int IterativeReconstructionFeatureSelectionParams::staticInit()
           true,
          0,
          50000
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field1->widgetHint=BaseField::SPIN_BOX;
+    field1->precision=6;
+    fields().push_back(field1);
+    /*  */ 
+    DoubleField* field2 = new DoubleField
         (
           IterativeReconstructionFeatureSelectionParams::DISTANCELIMIT_ID,
           offsetof(IterativeReconstructionFeatureSelectionParams, mDistanceLimit),
@@ -77,10 +82,12 @@ int IterativeReconstructionFeatureSelectionParams::staticInit()
           true,
          0,
          500000
-        )
-    );
-    fields().push_back(
-        new CompositeField
+        );
+    field2->widgetHint=BaseField::SPIN_BOX;
+    field2->precision=2;
+    fields().push_back(field2);
+    /*  */ 
+    CompositeField* field3 = new CompositeField
         (
           IterativeReconstructionFeatureSelectionParams::FEATUREDETECTIONPARAMS_ID,
           offsetof(IterativeReconstructionFeatureSelectionParams, mFeatureDetectionParams),
@@ -89,10 +96,20 @@ int IterativeReconstructionFeatureSelectionParams::staticInit()
           "featureDetectionParams",
           "featureDetectionParams",
            NULL
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    {
+        ReflectionDirectory* directory = ReflectionDirectoryHolder::getReflectionDirectory();
+        std::string name("Feature Detection Params");
+        ReflectionDirectory::iterator it = directory->find(name);
+        if(it != directory->end()) {
+             field3->reflection = it->second;
+        } else {
+             printf("Reflection IterativeReconstructionFeatureSelectionParams to the subclass Feature Detection Params can't be linked\n");
+        }
+    }
+    fields().push_back(field3);
+    /*  */ 
+    DoubleField* field4 = new DoubleField
         (
           IterativeReconstructionFeatureSelectionParams::RMSEPRUNINGSCALER_ID,
           offsetof(IterativeReconstructionFeatureSelectionParams, mRmsePruningScaler),
@@ -103,10 +120,12 @@ int IterativeReconstructionFeatureSelectionParams::staticInit()
           true,
          0,
          10000
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field4->widgetHint=BaseField::SPIN_BOX;
+    field4->precision=6;
+    fields().push_back(field4);
+    /*  */ 
+    DoubleField* field5 = new DoubleField
         (
           IterativeReconstructionFeatureSelectionParams::MAXPRUNINGSCALER_ID,
           offsetof(IterativeReconstructionFeatureSelectionParams, mMaxPruningScaler),
@@ -117,10 +136,12 @@ int IterativeReconstructionFeatureSelectionParams::staticInit()
           true,
          0,
          10000
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field5->widgetHint=BaseField::SPIN_BOX;
+    field5->precision=6;
+    fields().push_back(field5);
+    /*  */ 
+    BoolField* field6 = new BoolField
         (
           IterativeReconstructionFeatureSelectionParams::SKIPFEATUREDETECTION_ID,
           offsetof(IterativeReconstructionFeatureSelectionParams, mSkipFeatureDetection),
@@ -128,8 +149,12 @@ int IterativeReconstructionFeatureSelectionParams::staticInit()
           "skipFeatureDetection",
           "skipFeatureDetection",
           "Skip feature detection"
-        )
-    );
+        );
+    field6->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field6);
+    /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Iterative Reconstruction Feature Selection Params")]= &reflection;
    return 0;
 }
 

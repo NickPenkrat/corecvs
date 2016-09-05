@@ -37,8 +37,7 @@ int BaseParameters::staticInit()
     );
      
 
-    fields().push_back(
-        new EnumField
+    EnumField* field0 = new EnumField
         (
           BaseParameters::ROTATION_ID,
           offsetof(BaseParameters, mRotation),
@@ -52,10 +51,12 @@ int BaseParameters::staticInit()
           , new EnumOption(2,"Clockwise 180deg")
           , new EnumOption(3,"Clockwise 270deg")
           )
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field0->widgetHint=BaseField::COMBO_BOX;
+    field0->precision=-1;
+    fields().push_back(field0);
+    /*  */ 
+    BoolField* field1 = new BoolField
         (
           BaseParameters::MIRROR_ID,
           offsetof(BaseParameters, mMirror),
@@ -63,10 +64,12 @@ int BaseParameters::staticInit()
           "mirror",
           "mirror",
           "mirror"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field1->widgetHint=BaseField::CHECK_BOX;
+    field1->precision=-1;
+    fields().push_back(field1);
+    /*  */ 
+    BoolField* field2 = new BoolField
         (
           BaseParameters::SWAPCAMERAS_ID,
           offsetof(BaseParameters, mSwapCameras),
@@ -74,10 +77,12 @@ int BaseParameters::staticInit()
           "swapCameras",
           "swapCameras",
           "swapCameras"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field2->widgetHint=BaseField::RADIO_BUTTON;
+    field2->precision=-1;
+    fields().push_back(field2);
+    /*  */ 
+    BoolField* field3 = new BoolField
         (
           BaseParameters::FILTERLOCK_ID,
           offsetof(BaseParameters, mFilterLock),
@@ -85,10 +90,12 @@ int BaseParameters::staticInit()
           "filterLock",
           "filterLock",
           "filterLock"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field3->widgetHint=BaseField::RADIO_BUTTON;
+    field3->precision=-1;
+    fields().push_back(field3);
+    /*  */ 
+    BoolField* field4 = new BoolField
         (
           BaseParameters::ENABLEFILTERGRAPH_ID,
           offsetof(BaseParameters, mEnableFilterGraph),
@@ -96,10 +103,12 @@ int BaseParameters::staticInit()
           "enableFilterGraph",
           "enableFilterGraph",
           "enableFilterGraph"
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field4->widgetHint=BaseField::CHECK_BOX;
+    field4->precision=-1;
+    fields().push_back(field4);
+    /*  */ 
+    DoubleField* field5 = new DoubleField
         (
           BaseParameters::DOWNSAMPLE_ID,
           offsetof(BaseParameters, mDownsample),
@@ -110,10 +119,12 @@ int BaseParameters::staticInit()
           true,
          0.5,
          16
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field5->widgetHint=BaseField::SPIN_BOX;
+    field5->precision=2;
+    fields().push_back(field5);
+    /*  */ 
+    IntField* field6 = new IntField
         (
           BaseParameters::H_ID,
           offsetof(BaseParameters, mH),
@@ -124,10 +135,11 @@ int BaseParameters::staticInit()
           true,
          0,
          2024
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field6->precision=-1;
+    fields().push_back(field6);
+    /*  */ 
+    IntField* field7 = new IntField
         (
           BaseParameters::W_ID,
           offsetof(BaseParameters, mW),
@@ -138,10 +150,11 @@ int BaseParameters::staticInit()
           true,
          0,
          4096
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field7->precision=-1;
+    fields().push_back(field7);
+    /*  */ 
+    BoolField* field8 = new BoolField
         (
           BaseParameters::AUTOH_ID,
           offsetof(BaseParameters, mAutoH),
@@ -149,10 +162,12 @@ int BaseParameters::staticInit()
           "autoH",
           "autoH",
           "Select crop height so that full image will fit"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field8->widgetHint=BaseField::CHECK_BOX;
+    field8->precision=-1;
+    fields().push_back(field8);
+    /*  */ 
+    BoolField* field9 = new BoolField
         (
           BaseParameters::AUTOW_ID,
           offsetof(BaseParameters, mAutoW),
@@ -160,10 +175,12 @@ int BaseParameters::staticInit()
           "autoW",
           "autoW",
           "Select crop width so that full image will fit"
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field9->widgetHint=BaseField::CHECK_BOX;
+    field9->precision=-1;
+    fields().push_back(field9);
+    /*  */ 
+    IntField* field10 = new IntField
         (
           BaseParameters::X_ID,
           offsetof(BaseParameters, mX),
@@ -174,10 +191,11 @@ int BaseParameters::staticInit()
           true,
          0,
          1024
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field10->precision=-1;
+    fields().push_back(field10);
+    /*  */ 
+    IntField* field11 = new IntField
         (
           BaseParameters::Y_ID,
           offsetof(BaseParameters, mY),
@@ -188,10 +206,11 @@ int BaseParameters::staticInit()
           true,
          0,
          2048
-        )
-    );
-    fields().push_back(
-        new EnumField
+        );
+    field11->precision=-1;
+    fields().push_back(field11);
+    /*  */ 
+    EnumField* field12 = new EnumField
         (
           BaseParameters::INTERPOLATIONTYPE_ID,
           offsetof(BaseParameters, mInterpolationType),
@@ -205,8 +224,13 @@ int BaseParameters::staticInit()
           , new EnumOption(2,"Bilinear Fixed8")
           , new EnumOption(3,"Hardware")
           )
-        )
-    );
+        );
+    field12->widgetHint=BaseField::COMBO_BOX;
+    field12->precision=-1;
+    fields().push_back(field12);
+    /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Base Parameters")]= &reflection;
    return 0;
 }
 

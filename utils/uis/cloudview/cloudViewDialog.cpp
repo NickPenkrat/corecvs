@@ -755,43 +755,47 @@ GLuint CloudViewDialog::texture(int cameraId)
     return mCameraTexture[cameraId];
 }
 
-void CloudViewDialog::savePointsPCD()
+void CloudViewDialog::saveMesh()
 {
-    static int count = 0;
-
-    qDebug("Dump slot called...\n");
-    if (mScenes[MAIN_SCENE].isNull())
+    MeshLoader loader;
+    qDebug("CloudViewDialog::saveMesh(): called\n");
+    if (mScenes[MAIN_SCENE].isNull()) {
+        qDebug("CloudViewDialog::saveMesh(): main scene is empty leaving\n");
         return;
+    }
 
-    char name[100];
-    snprintf2buf(name, "exported%d.pcd", count);
+    QString type = QString("3D Model (%1)").arg(loader.extentionList().c_str());
 
-    count++;
-    qDebug("Dumping current scene to <%s>...", name);
+    QString fileName = QFileDialog::getSaveFileName(
+      this,
+      tr("Save Main 3D Model"),
+      ".",
+      type);
 
-    std::fstream file(name, std::fstream::out);
-    mScenes[MAIN_SCENE]->dumpPCD(file);
-    file.close();
-    qDebug("done\n");
+    if (!fileName.isEmpty())
+    {
+        qDebug("CloudViewDialog::saveMesh(): Dumping current scene to <%s>...", fileName.toLatin1().constData());
+        mScenes[MAIN_SCENE]->dump(fileName);
+    }
 }
 
 void CloudViewDialog::savePointsPLY()
 {
     static int count = 0;
 
-    qDebug("Dump slot called...\n");
-    if (mScenes[MAIN_SCENE].isNull())
+    qDebug("CloudViewDialog::savePointsPLY(): called\n");
+    if (mScenes[MAIN_SCENE].isNull()) {
+        qDebug("CloudViewDialog::savePointsPLY(): main scene is empty leaving\n");
         return;
+    }
 
     char name[100];
     snprintf2buf(name, "exported%d.ply", count);
-
     count++;
-    qDebug("Dumping current scene to <%s>...", name);
-    std::fstream file(name, std::fstream::out);
-    mScenes[MAIN_SCENE]->dumpPLY(file);
-    file.close();
-    qDebug("done\n");
+
+    qDebug("CloudViewDialog::savePointsPLY(): Dumping current scene to <%s>...", name);
+    mScenes[MAIN_SCENE]->dump(QString(name));
+    qDebug("done");
 }
 
 void CloudViewDialog::toggledVisibility()

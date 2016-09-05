@@ -59,20 +59,20 @@ char const *CaptureStatistics::names[] =
 STATIC_ASSERT(CORE_COUNT_OF(CaptureStatistics::names) == CaptureStatistics::MAX_ID, wrong_comment_num_capture_stats)
 
 
-ImageCaptureInterface* ImageCaptureInterface::fabric(string input, bool isRGB)
+ImageCaptureInterfaceQt* ImageCaptureInterfaceQtFactory::fabric(string input, bool isRGB)
 {
     string file("file:");
     if (input.substr(0, file.size()).compare(file) == 0)
     {
         string tmp = input.substr(file.size());
-        return new FileCaptureInterface(tmp);
+        return new ImageCaptureInterfaceWrapper<FileCaptureInterface>(tmp);
     }
 
     string prec("prec:");
     if (input.substr(0, prec.size()).compare(prec) == 0)
     {
         string tmp = input.substr(prec.size());
-        return new FilePreciseCapture(QString(tmp.c_str()), false, isRGB);
+        return new ImageCaptureInterfaceWrapper<FilePreciseCapture>(tmp, false, isRGB);
     }
 
 #ifdef WITH_SYNCCAM
@@ -89,14 +89,14 @@ ImageCaptureInterface* ImageCaptureInterface::fabric(string input, bool isRGB)
     if (input.substr(0, v4l2.size()).compare(v4l2) == 0)
     {
         string tmp = input.substr(v4l2.size());
-        return new V4L2CaptureInterface(tmp, isRGB);
+        return new ImageCaptureInterfaceWrapper<V4L2CaptureInterface>(tmp, isRGB);
     }
 
     string v4l2d("v4l2d:");
     if (input.substr(0, v4l2d.size()).compare(v4l2d) == 0)
     {
         string tmp = input.substr(v4l2d.size());
-        return new V4L2CaptureDecoupleInterface(tmp);
+        return new ImageCaptureInterfaceWrapper<V4L2CaptureDecoupleInterface>(tmp);
     }
 #endif
 
@@ -105,7 +105,7 @@ ImageCaptureInterface* ImageCaptureInterface::fabric(string input, bool isRGB)
     if (input.substr(0, ueye.size()).compare(ueye) == 0)
     {
         string tmp = input.substr(ueye.size());
-        return new UEyeCaptureInterface(tmp);
+        return new ImageCaptureInterfaceWrapper<UEyeCaptureInterface>(tmp);
     }
 #endif
 
@@ -114,14 +114,14 @@ ImageCaptureInterface* ImageCaptureInterface::fabric(string input, bool isRGB)
     if (input.substr(0, dshow.size()).compare(dshow) == 0)
     {
         string tmp = input.substr(dshow.size());
-        return new DirectShowCaptureInterface(tmp, isRGB);
+        return new ImageCaptureInterfaceWrapper<DirectShowCaptureInterface>(tmp, isRGB);
     }
 
     string dshowd("dshowd:");
     if (input.substr(0, dshowd.size()).compare(dshowd) == 0)
     {
         string tmp = input.substr(dshowd.size());
-        return new DirectShowCaptureDecoupleInterface(tmp);
+        return new ImageCaptureInterfaceWrapper<DirectShowCaptureDecoupleInterface>(tmp);
     }
 #endif
 
@@ -131,14 +131,14 @@ ImageCaptureInterface* ImageCaptureInterface::fabric(string input, bool isRGB)
     {
         SYNC_PRINT(("ImageCaptureInterface::fabric(): Creating avcodec input"));
         string tmp = input.substr(avcodec.size());
-        return new AviCapture(QString(tmp.c_str()));
+        return new ImageCaptureInterfaceWrapper<AviCapture>(QString(tmp.c_str()));
     }
 #if 0
     string rtsp("rtsp:");
     if (input.substr(0, rtsp.size()).compare(rtsp) == 0)
     {
         SYNC_PRINT(("ImageCaptureInterface::fabric(): Creating avcodec input"));
-        return new RTSPCapture(QString(input.c_str()));
+        return new ImageCaptureInterfaceWrapper<RTSPCapture>(QString(input.c_str()));
     }
 #endif
 #endif
@@ -148,42 +148,42 @@ ImageCaptureInterface* ImageCaptureInterface::fabric(string input, bool isRGB)
     if (input.substr(0, any.size()).compare(any) == 0)
     {
         string tmp = input.substr(any.size());
-        return new OpenCVCaptureInterface(tmp, CAP_ANY);
+        return new ImageCaptureInterfaceWrapper<OpenCVCaptureInterface>(tmp, CAP_ANY);
     }
 
     string vfw("vfw:");
     if (input.substr(0, vfw.size()).compare(vfw) == 0)
     {
         string tmp = input.substr(vfw.size());
-        return new OpenCVCaptureInterface(tmp, CAP_VFW);
+        return new ImageCaptureInterfaceWrapper<OpenCVCaptureInterface>(tmp, CAP_VFW);
     }
 
     string ds("ds:");
     if (input.substr(0, ds.size()).compare(ds) == 0)
     {
         string tmp = input.substr(ds.size());
-        return new OpenCVCaptureInterface(tmp, CAP_DS);
+        return new ImageCaptureInterfaceWrapper<OpenCVCaptureInterface>(tmp, CAP_DS);
     }
 
     string opencv_file("opencv_file:");
     if (input.substr(0, opencv_file.size()).compare(opencv_file) == 0)
     {
         string tmp = input.substr(opencv_file.size());
-        return new OpenCvFileCapture(QString(tmp.c_str()));
+        return new ImageCaptureInterfaceWrapper<OpenCvFileCapture>(tmp);
     }
 #endif
 
     return NULL;
 }
 
-ImageCaptureInterface *ImageCaptureInterface::fabric(string input, int h, int w, int fps, bool isRgb)
+ImageCaptureInterfaceQt *ImageCaptureInterfaceQtFactory::fabric(string input, int h, int w, int fps, bool isRgb)
 {
 #ifdef Q_OS_LINUX
     string v4l2("v4l2:");
     if (input.substr(0, v4l2.size()).compare(v4l2) == 0)
     {
         string tmp = input.substr(v4l2.size());
-        return new V4L2CaptureInterface(tmp, h, w, fps, isRgb);
+        return new ImageCaptureInterfaceWrapper<V4L2CaptureInterface>(tmp, h, w, fps, isRgb);
     }
 #endif
 
@@ -192,7 +192,7 @@ ImageCaptureInterface *ImageCaptureInterface::fabric(string input, int h, int w,
     if (input.substr(0, ueye.size()).compare(ueye) == 0)
     {
         string tmp = input.substr(ueye.size());
-        return new UEyeCaptureInterface(tmp, h, w, fps, isRgb);
+        return new ImageCaptureInterfaceWrapper<UEyeCaptureInterface>(tmp, h, w, fps, isRgb);
     }
 #endif
 
@@ -201,7 +201,7 @@ ImageCaptureInterface *ImageCaptureInterface::fabric(string input, int h, int w,
     if (input.substr(0, dshow.size()).compare(dshow) == 0)
     {
         string tmp = input.substr(dshow.size());
-        return new DirectShowCaptureInterface(tmp, h, w, fps, isRgb);
+        return new ImageCaptureInterfaceWrapper<DirectShowCaptureInterface>(tmp, h, w, fps, isRgb);
     }
 #endif
 
@@ -211,14 +211,21 @@ ImageCaptureInterface *ImageCaptureInterface::fabric(string input, int h, int w,
 void ImageCaptureInterface::notifyAboutNewFrame(frame_data_t frameData)
 {
 //    SYNC_PRINT(("ImageCaptureInterface::notifyAboutNewFrame()\n"));
-    emit newFrameReady(frameData);
-    emit newImageReady();
+    if (imageInterfaceReceiver != NULL)
+    {
+        imageInterfaceReceiver->newFrameReadyCallback(frameData);
+        imageInterfaceReceiver->newImageReadyCallback();
+    } else {
+        SYNC_PRINT(("Warning:  V4L2CaptureInterface::notifyAboutNewFrame(): imageInterfaceReceiver is NULL\n"));
+    }
 }
 
 ImageCaptureInterface::ImageCaptureInterface()
    : mIsRgb(false)
 {
     qRegisterMetaType<frame_data_t>("frame_data_t");
+    imageInterfaceReceiver = NULL;
+    SYNC_PRINT(("ImageCaptureInterface::ImageCaptureInterface(): called\n"));
 }
 
 ImageCaptureInterface::~ImageCaptureInterface()

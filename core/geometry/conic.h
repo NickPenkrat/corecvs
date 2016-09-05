@@ -20,6 +20,11 @@ public:
         r(_r)
     {}
 
+    double diameter()
+    {
+        return 2 * r;
+    }
+
     bool hasPoint(const VectorType &p, double epsilon = 1e-7)
     {
         return (fabs((p - c).l2Metric() - r) < epsilon);
@@ -103,6 +108,7 @@ public:
 
     bool intersectWith(const Circle2d &other, Vector2dd &point1, Vector2dd &point2);
     bool intersectWith(const Ray2d &ray, double &t1, double &t2);
+
 };
 
 class Circle3d;
@@ -125,6 +131,7 @@ public:
     bool intersectWith(const  Ray3d   &ray, double &t1, double &t2);
 
 };
+
 
 class Circle3d : public Sphere3d
 {

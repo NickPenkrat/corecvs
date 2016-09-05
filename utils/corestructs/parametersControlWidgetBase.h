@@ -261,6 +261,9 @@ public:
 
     virtual BaseReflectionStatic *createParametersVirtual() const;
     virtual ~ParametersControlWidgetBase();
+
+signals:
+    void paramsChanged();
 };
 
 

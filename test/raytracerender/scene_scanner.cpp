@@ -30,6 +30,7 @@ public:
 
 void raytrace_scene_calibrate( void )
 {
+    SYNC_PRINT(("raytrace_scene_calibrate( void )\n"));
     int h = 1080;
     int w = 1920;
 
@@ -119,9 +120,9 @@ void raytrace_scene_calibrate( void )
         RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
 
         RaytraceRenderer renderer;
-        renderer.intrisics = PinholeCameraIntrinsics(
+        renderer.setProjection(new PinholeCameraIntrinsics(
                     Vector2dd(w, h),
-                    degToRad(60.0));
+                    degToRad(60.0)));
         renderer.position = Affine3DQ::Shift(0, pos, -250.0);
 
         RaytraceablePointLight light1(RGBColor::White().toDouble(), Vector3dd( -200, -190, -100));
@@ -154,6 +155,7 @@ void raytrace_scene_calibrate( void )
 
 void raytrace_scene_scanner( void )
 {
+     SYNC_PRINT(("raytrace_scene_scanner( void )\n"));
     int h = 1080;
     int w = 1920;
 
@@ -163,9 +165,9 @@ void raytrace_scene_scanner( void )
         RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
 
         RaytraceRenderer renderer;
-        renderer.intrisics = PinholeCameraIntrinsics(
+        renderer.setProjection(new PinholeCameraIntrinsics(
                     Vector2dd(w, h),
-                    degToRad(60.0));
+                    degToRad(60.0)));
         renderer.position = Affine3DQ::Shift(0, pos, 0);
 
         /* Materials */

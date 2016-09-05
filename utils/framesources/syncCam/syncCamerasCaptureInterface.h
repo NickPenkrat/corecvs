@@ -29,7 +29,7 @@
 using namespace std;
 using namespace syncCam;
 
-class SyncCamerasCaptureInterface : public ImageCaptureInterface
+class SyncCamerasCaptureInterface : public virtual ImageCaptureInterface
 {
 public:
     SyncCamerasCaptureInterface(string _devname);

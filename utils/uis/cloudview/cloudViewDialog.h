@@ -79,7 +79,7 @@ public slots:
     void updateCameraMatrix();
     void updateHelperObjects();
 
-    void savePointsPCD();
+    void saveMesh();
     void savePointsPLY();
 
     /* Tree manipulation functions */

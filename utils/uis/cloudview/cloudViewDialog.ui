@@ -66,8 +66,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>306</width>
-         <height>673</height>
+         <width>308</width>
+         <height>675</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout">
@@ -176,7 +176,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset resource="../../../resources/main.qrc">
+              <iconset resource="../../../../restricted/cvs/resources/resresource.qrc">
                <normaloff>:/new/prefix1/refresh.png</normaloff>:/new/prefix1/refresh.png</iconset>
              </property>
              <property name="iconSize">
@@ -264,7 +264,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset resource="../../../resources/main.qrc">
+              <iconset resource="../../../../restricted/cvs/resources/resresource.qrc">
                <normaloff>:/new/prefix1/zoom_in.png</normaloff>:/new/prefix1/zoom_in.png</iconset>
              </property>
              <property name="iconSize">
@@ -281,7 +281,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset resource="../../../resources/main.qrc">
+              <iconset resource="../../../../restricted/cvs/resources/resresource.qrc">
                <normaloff>:/new/prefix1/zoom_out.png</normaloff>:/new/prefix1/zoom_out.png</iconset>
              </property>
              <property name="iconSize">
@@ -311,7 +311,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset resource="../../../resources/main.qrc">
+              <iconset resource="../../../../restricted/cvs/resources/resresource.qrc">
                <normaloff>:/new/prefix1/pause.png</normaloff>
                <normalon>:/new/prefix1/play.png</normalon>:/new/prefix1/pause.png</iconset>
              </property>
@@ -344,7 +344,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset resource="../../../resources/main.qrc">
+              <iconset resource="../../../../restricted/cvs/resources/resresource.qrc">
                <normaloff>:/new/prefix1/back_alt.png</normaloff>:/new/prefix1/back_alt.png</iconset>
              </property>
              <property name="iconSize">
@@ -373,7 +373,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset resource="../../../resources/main.qrc">
+              <iconset resource="../../../../restricted/cvs/resources/resresource.qrc">
                <normaloff>:/new/prefix1/forward_alt.png</normaloff>:/new/prefix1/forward_alt.png</iconset>
              </property>
              <property name="iconSize">
@@ -409,7 +409,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset resource="../../../resources/main.qrc">
+              <iconset resource="../../../../restricted/cvs/resources/resresource.qrc">
                <normaloff>:/new/prefix1/down_alt.png</normaloff>:/new/prefix1/down_alt.png</iconset>
              </property>
              <property name="iconSize">
@@ -438,7 +438,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset resource="../../../resources/main.qrc">
+              <iconset resource="../../../../restricted/cvs/resources/resresource.qrc">
                <normaloff>:/new/prefix1/up_alt.png</normaloff>:/new/prefix1/up_alt.png</iconset>
              </property>
              <property name="iconSize">
@@ -486,7 +486,7 @@
               <string>Load Mesh</string>
              </property>
              <property name="icon">
-              <iconset resource="../../../resources/main.qrc">
+              <iconset resource="../../../../restricted/cvs/resources/resresource.qrc">
                <normaloff>:/new/prefix1/diamond.png</normaloff>:/new/prefix1/diamond.png</iconset>
              </property>
              <property name="iconSize">
@@ -506,7 +506,7 @@
               <string>Add Frame</string>
              </property>
              <property name="icon">
-              <iconset resource="../../../resources/main.qrc">
+              <iconset resource="../../../../restricted/cvs/resources/resresource.qrc">
                <normaloff>:/new/prefix1/workspace.png</normaloff>:/new/prefix1/workspace.png</iconset>
              </property>
              <property name="iconSize">
@@ -547,10 +547,10 @@
            <item row="0" column="1">
             <widget class="QPushButton" name="exportPLYButton">
              <property name="text">
-              <string>Export PLY</string>
+              <string>Quick Export</string>
              </property>
              <property name="icon">
-              <iconset resource="../../../resources/main.qrc">
+              <iconset resource="../../../../restricted/cvs/resources/resresource.qrc">
                <normaloff>:/new/prefix1/install.png</normaloff>:/new/prefix1/install.png</iconset>
              </property>
              <property name="iconSize">
@@ -562,12 +562,12 @@
             </widget>
            </item>
            <item row="0" column="0">
-            <widget class="QPushButton" name="exportPCLButton">
+            <widget class="QPushButton" name="exportMeshButton">
              <property name="text">
-              <string>Export PCL</string>
+              <string>Export Mesh</string>
              </property>
              <property name="icon">
-              <iconset resource="../../../resources/main.qrc">
+              <iconset resource="../../../../restricted/cvs/resources/resresource.qrc">
                <normaloff>:/new/prefix1/install.png</normaloff>:/new/prefix1/install.png</iconset>
              </property>
              <property name="iconSize">
@@ -598,7 +598,7 @@
               <string>Stats</string>
              </property>
              <property name="icon">
-              <iconset resource="../../../resources/main.qrc">
+              <iconset resource="../../../../restricted/cvs/resources/resresource.qrc">
                <normaloff>:/new/prefix1/monitor.png</normaloff>:/new/prefix1/monitor.png</iconset>
              </property>
              <property name="iconSize">
@@ -634,14 +634,14 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../../resources/main.qrc"/>
+  <include location="../../../../restricted/cvs/resources/resresource.qrc"/>
  </resources>
  <connections>
   <connection>
-   <sender>exportPCLButton</sender>
+   <sender>exportMeshButton</sender>
    <signal>released()</signal>
    <receiver>CloudViewDialogClass</receiver>
-   <slot>savePointsPCD()</slot>
+   <slot>saveMesh()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>913</x>
@@ -704,7 +704,7 @@
  </connections>
  <slots>
   <slot>updateHelperObjects()</slot>
-  <slot>savePointsPCD()</slot>
+  <slot>saveMesh()</slot>
   <slot>savePointsPLY()</slot>
   <slot>saveParameters()</slot>
   <slot>loadParameters()</slot>

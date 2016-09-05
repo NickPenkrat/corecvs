@@ -32,7 +32,7 @@ extern "C" {
 #include "imageCaptureInterface.h"
 #include "preciseTimer.h"
 
-class AviCapture : public ImageCaptureInterface
+class AviCapture : public virtual ImageCaptureInterface
 {
     static bool avCodecInited;
 

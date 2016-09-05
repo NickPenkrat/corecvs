@@ -103,6 +103,12 @@
        <property name="toolTip">
          <string>New H</string>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
+       </property>
      </widget>
     </item>
     <item row="4" column="0">
@@ -116,6 +122,12 @@
      <widget class="QSpinBox" name="newWSpinBox">
        <property name="toolTip">
          <string>New W</string>
+       </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
        </property>
      </widget>
     </item>

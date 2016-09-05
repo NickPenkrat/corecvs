@@ -35,10 +35,11 @@ int InputFilterParameters::staticInit()
         "Input Filter Parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(InputFilterParameters);
      
 
-    fields().push_back(
-        new EnumField
+    EnumField* field0 = new EnumField
         (
           InputFilterParameters::INPUT_TYPE_ID,
           offsetof(InputFilterParameters, mInputType),
@@ -50,8 +51,12 @@ int InputFilterParameters::staticInit()
           , new EnumOption(0,"Left Frame")
           , new EnumOption(1,"Right Frame")
           )
-        )
-    );
+        );
+    field0->widgetHint=BaseField::COMBO_BOX;
+    fields().push_back(field0);
+    /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Input Filter Parameters")]= &reflection;
    return 0;
 }
 

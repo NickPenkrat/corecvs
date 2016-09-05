@@ -35,10 +35,11 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
         "Chess Board Corner Detector Params Base",
         ""
     );
+
+     getReflection()->objectSize = sizeof(ChessBoardCornerDetectorParamsBase);
      
 
-    fields().push_back(
-        new BoolField
+    BoolField* field0 = new BoolField
         (
           ChessBoardCornerDetectorParamsBase::PRODUCEDEBUG_ID,
           offsetof(ChessBoardCornerDetectorParamsBase, mProduceDebug),
@@ -46,10 +47,11 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           "produceDebug",
           "produceDebug",
           "produceDebug"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field0->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field0);
+    /*  */ 
+    BoolField* field1 = new BoolField
         (
           ChessBoardCornerDetectorParamsBase::FLOATSPEEDUP_ID,
           offsetof(ChessBoardCornerDetectorParamsBase, mFloatSpeedup),
@@ -57,10 +59,11 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           "floatSpeedup",
           "floatSpeedup",
           "floatSpeedup"
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field1->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field1);
+    /*  */ 
+    DoubleField* field2 = new DoubleField
         (
           ChessBoardCornerDetectorParamsBase::NORMALIZEPERCENTILE_ID,
           offsetof(ChessBoardCornerDetectorParamsBase, mNormalizePercentile),
@@ -71,10 +74,13 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           true,
          0,
          100
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field2->widgetHint=BaseField::SPIN_BOX;
+    field2->suffixHint="%";
+    field2->precision=2;
+    fields().push_back(field2);
+    /*  */ 
+    DoubleField* field3 = new DoubleField
         (
           ChessBoardCornerDetectorParamsBase::SECTORSIZEDEG_ID,
           offsetof(ChessBoardCornerDetectorParamsBase, mSectorSizeDeg),
@@ -82,10 +88,13 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           "sectorSizeDeg",
           "sectorSizeDeg",
           "Sector size in deg"
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field3->widgetHint=BaseField::SPIN_BOX;
+    field3->suffixHint="deg";
+    field3->precision=2;
+    fields().push_back(field3);
+    /*  */ 
+    IntField* field4 = new IntField
         (
           ChessBoardCornerDetectorParamsBase::HISTOGRAMBINS_ID,
           offsetof(ChessBoardCornerDetectorParamsBase, mHistogramBins),
@@ -96,10 +105,10 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           true,
          0,
          999999
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    fields().push_back(field4);
+    /*  */ 
+    DoubleField* field5 = new DoubleField
         (
           ChessBoardCornerDetectorParamsBase::MINANGLEDEG_ID,
           offsetof(ChessBoardCornerDetectorParamsBase, mMinAngleDeg),
@@ -107,10 +116,13 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           "minAngleDeg",
           "minAngleDeg",
           "Minimal angle between edges in deg"
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field5->widgetHint=BaseField::SPIN_BOX;
+    field5->suffixHint="deg";
+    field5->precision=2;
+    fields().push_back(field5);
+    /*  */ 
+    IntField* field6 = new IntField
         (
           ChessBoardCornerDetectorParamsBase::NEIGHBORHOOD_ID,
           offsetof(ChessBoardCornerDetectorParamsBase, mNeighborhood),
@@ -121,10 +133,10 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           true,
          0,
          999999
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    fields().push_back(field6);
+    /*  */ 
+    DoubleField* field7 = new DoubleField
         (
           ChessBoardCornerDetectorParamsBase::GRADTHRESHOLD_ID,
           offsetof(ChessBoardCornerDetectorParamsBase, mGradThreshold),
@@ -132,10 +144,12 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           "gradThreshold",
           "gradThreshold",
           "Gradient magnitude threshold"
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field7->widgetHint=BaseField::SPIN_BOX;
+    field7->precision=2;
+    fields().push_back(field7);
+    /*  */ 
+    DoubleField* field8 = new DoubleField
         (
           ChessBoardCornerDetectorParamsBase::ORIENTATIONINLIERTHRESHOLD_ID,
           offsetof(ChessBoardCornerDetectorParamsBase, mOrientationInlierThreshold),
@@ -143,10 +157,12 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           "orientationInlierThreshold",
           "orientationInlierThreshold",
           "Gradient orientation inlier threshold"
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field8->widgetHint=BaseField::SPIN_BOX;
+    field8->precision=2;
+    fields().push_back(field8);
+    /*  */ 
+    DoubleField* field9 = new DoubleField
         (
           ChessBoardCornerDetectorParamsBase::INLIERDISTANCETHRESHOLD_ID,
           offsetof(ChessBoardCornerDetectorParamsBase, mInlierDistanceThreshold),
@@ -154,10 +170,12 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           "inlierDistanceThreshold",
           "inlierDistanceThreshold",
           "Threshold for distance to edge"
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field9->widgetHint=BaseField::SPIN_BOX;
+    field9->precision=2;
+    fields().push_back(field9);
+    /*  */ 
+    DoubleField* field10 = new DoubleField
         (
           ChessBoardCornerDetectorParamsBase::UPDATETHRESHOLD_ID,
           offsetof(ChessBoardCornerDetectorParamsBase, mUpdateThreshold),
@@ -165,10 +183,12 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           "updateThreshold",
           "updateThreshold",
           "Threshold for maximal corner-position update"
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field10->widgetHint=BaseField::SPIN_BOX;
+    field10->precision=2;
+    fields().push_back(field10);
+    /*  */ 
+    DoubleField* field11 = new DoubleField
         (
           ChessBoardCornerDetectorParamsBase::SCORETHRESHOLD_ID,
           offsetof(ChessBoardCornerDetectorParamsBase, mScoreThreshold),
@@ -176,10 +196,12 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           "scoreThreshold",
           "scoreThreshold",
           "Threshold for final score"
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field11->widgetHint=BaseField::SPIN_BOX;
+    field11->precision=2;
+    fields().push_back(field11);
+    /*  */ 
+    IntField* field12 = new IntField
         (
           ChessBoardCornerDetectorParamsBase::NROUNDS_ID,
           offsetof(ChessBoardCornerDetectorParamsBase, mNRounds),
@@ -190,10 +212,10 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           true,
          0,
          999999
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    fields().push_back(field12);
+    /*  */ 
+    DoubleField* field13 = new DoubleField
         (
           ChessBoardCornerDetectorParamsBase::MEANSHIFTBANDWIDTH_ID,
           offsetof(ChessBoardCornerDetectorParamsBase, mMeanshiftBandwidth),
@@ -201,10 +223,12 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           "meanshiftBandwidth",
           "meanshiftBandwidth",
           "Meanshift smoothing stdev"
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field13->widgetHint=BaseField::SPIN_BOX;
+    field13->precision=2;
+    fields().push_back(field13);
+    /*  */ 
+    IntField* field14 = new IntField
         (
           ChessBoardCornerDetectorParamsBase::NMSLOCALITY_ID,
           offsetof(ChessBoardCornerDetectorParamsBase, mNmsLocality),
@@ -215,10 +239,10 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           true,
          0,
          999999
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    fields().push_back(field14);
+    /*  */ 
+    DoubleField* field15 = new DoubleField
         (
           ChessBoardCornerDetectorParamsBase::NMSTHRESHOLD_ID,
           offsetof(ChessBoardCornerDetectorParamsBase, mNmsThreshold),
@@ -229,11 +253,13 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           true,
          0,
          99
-        )
-    );
+        );
+    field15->widgetHint=BaseField::SPIN_BOX;
+    field15->precision=3;
+    fields().push_back(field15);
+    /*  */ 
     double mPatternRadius_dv[] = {4,8,12};
-    fields().push_back(
-        new DoubleVectorField
+    DoubleVectorField* field16 = new DoubleVectorField
         (
           ChessBoardCornerDetectorParamsBase::PATTERNRADIUS_ID,
           offsetof(ChessBoardCornerDetectorParamsBase, mPatternRadius),
@@ -242,11 +268,11 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           "patternRadius",
           "patternRadius",
           "Radius for multi-scale pattern detection"
-        )
-    );
+        );
+    fields().push_back(field16);
+    /*  */ 
     double mPatternStartAngleDeg_dv[] = {0,45};
-    fields().push_back(
-        new DoubleVectorField
+    DoubleVectorField* field17 = new DoubleVectorField
         (
           ChessBoardCornerDetectorParamsBase::PATTERNSTARTANGLEDEG_ID,
           offsetof(ChessBoardCornerDetectorParamsBase, mPatternStartAngleDeg),
@@ -255,11 +281,11 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           "patternStartAngleDeg",
           "patternStartAngleDeg",
           "Angle for rotation-variant detection"
-        )
-    );
+        );
+    fields().push_back(field17);
+    /*  */ 
     double mCornerScores_dv[] = {4,8,12};
-    fields().push_back(
-        new DoubleVectorField
+    DoubleVectorField* field18 = new DoubleVectorField
         (
           ChessBoardCornerDetectorParamsBase::CORNERSCORES_ID,
           offsetof(ChessBoardCornerDetectorParamsBase, mCornerScores),
@@ -268,8 +294,11 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
           "cornerScores",
           "cornerScores",
           "Radius for corner-scoring"
-        )
-    );
+        );
+    fields().push_back(field18);
+    /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Chess Board Corner Detector Params Base")]= &reflection;
    return 0;
 }
 

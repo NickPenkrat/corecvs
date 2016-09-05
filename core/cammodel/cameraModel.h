@@ -1,6 +1,8 @@
 #ifndef CAMERAMODEL_H
 #define CAMERAMODEL_H
 
+#if DEPRECATED
+
 #include <vector>
 #include <string>
 #include <istream>
@@ -95,6 +97,9 @@ class BaseCameraModel : public NamedPoint
 
 };
 
+/**
+  \deprecated Use CameraModel instead from calibrationCamera.h
+**/
 class CameraModelLegacy : public BaseCameraModel
 {
 public:
@@ -179,6 +184,7 @@ enum ReprojectPath{
 };
 }
 
+
 class CameraLegacy : public CameraModelLegacy
 {
 public:
@@ -212,6 +218,6 @@ public:
 
      EllipticalApproximation &getStats(ReprojectPath::ReprojectPath path);
 };
-
+#endif
 
 #endif // CAMERAMODEL_H

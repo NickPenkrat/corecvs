@@ -288,9 +288,10 @@ QString WidgetUiGenerator::getEnumWidgetProperties(const BaseField* field)
 
         result += ITEM_HEADER_TEMPLATE.arg(descr);
 
-        if (!option->icon.isEmpty())
+        QString presentation(option->presentationHint);
+        if (!presentation.isEmpty())
         {
-            const QStringList& icon = option->icon.split("@");
+            const QStringList& icon = presentation.split("@");
             const QString iconName = icon[0];
             const QString iconRes  = icon[1];
 
@@ -345,11 +346,11 @@ QString WidgetUiGenerator::getIntWidgetProperties(const BaseField* field) // sta
             .arg(QString::number(ifield->step))
             .arg(QString::number(ifield->defaultValue));
 
-    if (!ifield->prefix.isEmpty())
-        result += PREFIX_TEMPLATE.arg(ifield->prefix);
+    if (ifield->prefixHint != NULL)
+        result += PREFIX_TEMPLATE.arg(ifield->prefixHint);
 
-    if (!ifield->suffix.isEmpty())
-        result += SUFFIX_TEMPLATE.arg(ifield->suffix);
+    if (ifield->suffixHint != NULL)
+        result += SUFFIX_TEMPLATE.arg(ifield->suffixHint);
 
     return result;
 }
@@ -443,8 +444,8 @@ QString WidgetUiGenerator::getDoubleWidgetProperties(const BaseField* field)
     QString result;
 
     const DoubleFieldGen *dfield = static_cast<const DoubleFieldGen *>(field);
-    if (dfield->decimals != 2)
-        result += DECIMALS_TEMPLATE.arg(QString::number(dfield->decimals));
+    if (dfield->precision != 2)
+        result += DECIMALS_TEMPLATE.arg(QString::number(dfield->precision));
     if (dfield->hasAdditionalValues)
         result += SETTING_TEMPLATE
             .arg(QString::number(dfield->min))
@@ -453,11 +454,11 @@ QString WidgetUiGenerator::getDoubleWidgetProperties(const BaseField* field)
             .arg(QString::number(dfield->defaultValue))
             ;
 
-    if (!dfield->prefix.isEmpty())
-        result += PREFIX_TEMPLATE.arg(dfield->prefix);
+    if (dfield->prefixHint != NULL)
+        result += PREFIX_TEMPLATE.arg(dfield->prefixHint);
 
-    if (!dfield->suffix.isEmpty())
-        result += SUFFIX_TEMPLATE.arg(dfield->suffix);
+    if (dfield->suffixHint != NULL)
+        result += SUFFIX_TEMPLATE.arg(dfield->suffixHint);
 
     return result;
 }

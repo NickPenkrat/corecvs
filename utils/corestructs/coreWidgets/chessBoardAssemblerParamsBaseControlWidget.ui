@@ -32,6 +32,12 @@
        <property name="toolTip">
          <string>Threshold for seed grid non-regularity</string>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
+       </property>
      </widget>
     </item>
     <item row="1" column="0">
@@ -46,6 +52,12 @@
        <property name="toolTip">
          <string>Factor for orthogonal error in seed estimation</string>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
+       </property>
      </widget>
     </item>
     <item row="2" column="0">
@@ -59,6 +71,12 @@
      <widget class="QDoubleSpinBox" name="conservativitySpinBox">
        <property name="toolTip">
          <string>Factor of conservativity in next row prediction (should be lower to high-distorted boards)</string>
+       </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
        </property>
      </widget>
     </item>
@@ -86,6 +104,12 @@
        <property name="value">
         <double>-10</double>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
+       </property>
      </widget>
     </item>
     <item row="4" column="0">
@@ -100,6 +124,12 @@
        <property name="toolTip">
          <string>Minimal seed distance</string>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
+       </property>
      </widget>
     </item>
     <item row="5" column="0">
@@ -113,6 +143,12 @@
      <widget class="QSpinBox" name="hypothesisDimensionsSpinBox">
        <property name="toolTip">
          <string>Hypothesis type: consider only hypothesis that fits specified number of dims</string>
+       </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
        </property>
      </widget>
     </item>
@@ -130,6 +166,12 @@
        </property>
        <property name="checked">
            <bool>0</bool>
+       </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
        </property>
      </widget>
     </item>
@@ -158,6 +200,12 @@
      <widget class="QSpinBox" name="hypothesisDimSecondSpinBox">
        <property name="toolTip">
          <string>hypothesisDimSecond</string>
+       </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
        </property>
      </widget>
     </item>

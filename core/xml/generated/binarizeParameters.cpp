@@ -35,10 +35,11 @@ int BinarizeParameters::staticInit()
         "Binarize Parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(BinarizeParameters);
      
 
-    fields().push_back(
-        new IntField
+    IntField* field0 = new IntField
         (
           BinarizeParameters::THRESHOLD_ID,
           offsetof(BinarizeParameters, mThreshold),
@@ -49,8 +50,11 @@ int BinarizeParameters::staticInit()
           true,
          0,
          4096
-        )
-    );
+        );
+    fields().push_back(field0);
+    /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Binarize Parameters")]= &reflection;
    return 0;
 }
 

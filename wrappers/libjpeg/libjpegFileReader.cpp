@@ -64,7 +64,7 @@ RGB24Buffer *LibjpegFileReader::load(string name)
         int i = cinfo.output_scanline;
         (void) jpeg_read_scanlines(&cinfo, buffer, 1);
 
-        for (int j = 0; j < cinfo.output_width; j++)
+        for (JDIMENSION j = 0; j < cinfo.output_width; j++)
         {
             if (!result->isValidCoord(i, j))
             {

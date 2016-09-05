@@ -35,10 +35,11 @@ int ThickeningParameters::staticInit()
         "Thickening Parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(ThickeningParameters);
      
 
-    fields().push_back(
-        new IntField
+    IntField* field0 = new IntField
         (
           ThickeningParameters::POWER_ID,
           offsetof(ThickeningParameters, mPower),
@@ -49,8 +50,11 @@ int ThickeningParameters::staticInit()
           true,
          0,
          9999
-        )
-    );
+        );
+    fields().push_back(field0);
+    /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Thickening Parameters")]= &reflection;
    return 0;
 }
 

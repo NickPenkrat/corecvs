@@ -8,13 +8,14 @@
 
 void raytrace_scene_speedup(void)
 {
+    SYNC_PRINT(("raytrace_scene_speedup( void )\n"));
     int h = 1500;
     int w = 1500;
     RGB24Buffer *bufferS = new RGB24Buffer(h, w, RGBColor::Black());
     RGB24Buffer *bufferF = new RGB24Buffer(h, w, RGBColor::Black());
 
     RaytraceRenderer renderer;
-    renderer.intrisics = PinholeCameraIntrinsics(Vector2dd(w, h), degToRad(60.0));
+    renderer.setProjection(new PinholeCameraIntrinsics(Vector2dd(w, h), degToRad(60.0)));
 
     /* Materials */
     RaytraceablePointLight light1(RGBColor::White() .toDouble(), Vector3dd( 0, -190, 150));
@@ -72,9 +73,9 @@ void raytrace_scene_speedup(void)
 
     timer = PreciseTimer::currentTime();
     roMesh.optimize();
-    SYNC_PRINT(("Mesh optimise time %lf us\n", timer.usecsToNow() / 1000.0));
+    SYNC_PRINT(("Mesh optimise time %lf ms\n", timer.usecsToNow() / 1000.0));
     SYNC_PRINT(("Mesh tree size is   %d\n", roMesh.opt->childCount()));
-    SYNC_PRINT(("Mesh tree triangles %d\n", roMesh.opt->triangleCount()));
+    SYNC_PRINT(("Mesh tree triangles %d\n", roMesh.opt->elementCount()));
 
     //Mesh3D dumpTreeMesh;
     //dumpTreeMesh.switchColor(true);

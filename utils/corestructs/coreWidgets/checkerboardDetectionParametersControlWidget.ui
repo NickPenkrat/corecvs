@@ -230,6 +230,9 @@
        <property name="value">
         <double>0.05</double>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
        <property name="suffix">
         <string>m</string>
        </property>
@@ -261,6 +264,9 @@
        </property>
        <property name="value">
         <double>0.05</double>
+       </property>
+       <property name="prefix">
+        <string></string>
        </property>
        <property name="suffix">
         <string>m</string>
@@ -308,6 +314,12 @@
        <property name="value">
         <number>50</number>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
+       </property>
      </widget>
     </item>
     <item row="8" column="0">
@@ -333,6 +345,12 @@
        </property>
        <property name="value">
         <number>50</number>
+       </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
        </property>
      </widget>
     </item>
@@ -362,6 +380,9 @@
        </property>
        <property name="value">
         <double>0.01</double>
+       </property>
+       <property name="prefix">
+        <string></string>
        </property>
        <property name="suffix">
         <string>px</string>

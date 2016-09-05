@@ -4,6 +4,7 @@ HEADERS += \
         camerafixture/fixtureScene.h      \
         camerafixture/sceneFeaturePoint.h \
         camerafixture/cameraPrototype.h   \
+        camerafixture/fixtureScenePart.h  \
 
 
 SOURCES += \
@@ -11,5 +12,6 @@ SOURCES += \
         camerafixture/fixtureScene.cpp      \
         camerafixture/sceneFeaturePoint.cpp \
         camerafixture/cameraFixture.cpp     \
-        camerafixture/cameraPrototype.cpp
+        camerafixture/cameraPrototype.cpp   \
+        camerafixture/fixtureScenePart.cpp  \
 

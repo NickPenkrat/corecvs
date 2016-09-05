@@ -335,7 +335,7 @@ void BaseHostDialog::initCapture(QString const &init, bool isRgb)
 
     mInputSelectorDialog.setInputString(mInputString);
 
-    mCamera = ImageCaptureInterface::fabric(mInputString.toStdString(), isRgb);
+    mCamera = ImageCaptureInterfaceQtFactory::fabric(mInputString.toStdString(), isRgb);
 
     if (mCamera == NULL)
     {
@@ -344,13 +344,13 @@ void BaseHostDialog::initCapture(QString const &init, bool isRgb)
     }
     ImageCaptureInterface::CapErrorCode res = mCamera->initCapture();
 
-    if (ImageCaptureInterface::FAILURE == res)
+    if (res == ImageCaptureInterface::FAILURE)
     {
         cout << "BaseHostDialog::initCapture(): Error: none of the capture devices started.\n" << endl;
         QMessageBox::warning(this, "Error: none of the capture devices started.","Error: none of the capture devices started.");
         return;
     }
-    else if (ImageCaptureInterface::SUCCESS_1CAM == res)
+    else if (res == ImageCaptureInterface::SUCCESS_1CAM)
     {
         cout << "BaseHostDialog::initCapture(): Will be using only one capture device.\n" << endl;
         mUseOneCaptureDevice = true;

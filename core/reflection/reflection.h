@@ -15,6 +15,7 @@
 
 #include <vector>
 #include <string>
+#include <memory>
 
 #include "global.h"
 
@@ -36,6 +37,11 @@ using std::vector;
 #else
 #define SUPPRESS_OFFSET_WARNING_BEGIN
 #define SUPPRESS_OFFSET_WARNING_END
+#endif
+
+
+#ifndef REFLECTION_DIRECTORY_OFF
+#include <map>
 #endif
 
 
@@ -184,6 +190,40 @@ template<typename Type>
 
     /** flags */
     bool                isAdvanced;
+
+    /** These fields are related to persentaion only and probably should be moved out. **/
+    /** This is obviously out of place. But too much code needed to make design clean */
+    enum WidgetHint{
+        DEFAULT_HINT,
+        COMBO_BOX,
+        CHECK_BOX,
+        RADIO_BUTTON,
+        SPIN_BOX,
+        SLIDER,
+        TAB_WIDGET
+    };
+
+    static inline const char *getString(const WidgetHint &value)
+    {
+        switch (value)
+        {
+           case DEFAULT_HINT : return "DEFAULT_HINT"; break ;
+           case COMBO_BOX    : return "COMBO_BOX";    break ;
+           case CHECK_BOX    : return "CHECK_BOX";    break ;
+           case RADIO_BUTTON : return "RADIO_BUTTON"; break ;
+           case SPIN_BOX     : return "SPIN_BOX";     break ;
+           case SLIDER       : return "SLIDER";       break ;
+           case TAB_WIDGET   : return "TAB_WIDGET";   break ;
+        }
+        return "Not in range";
+    }
+
+
+    int precision = -1;                   /**< Precision that we expect form the field */
+    WidgetHint widgetHint = DEFAULT_HINT; /**< Best type of widget to repersent field*/
+    const char *prefixHint = NULL;        /**< prefix for the field that can add some semantics (i.e koefficient could have "*" prefix)*/
+    const char *suffixHint = NULL;        /**< postfix for the field that can add some semantics (i.e mesurement unit) */
+
 
     const char *getSimpleName() const
     {
@@ -344,7 +384,7 @@ public:
             bool _hasAdditionalValues = false,
             Type _min = 0,
             Type _max = 0,
-            Type _step = 0
+            Type _step = 1
     ) :
         BaseField(_id, BaseField::getType<vector<Type> >(), ReflectionNaming(_name, _decription, _comment) , _offset),
         defaultValue (_defaultValue),
@@ -535,6 +575,7 @@ public:
     vector<const BaseField *>       fields;
     /* Seems like used only in generator */
     vector<const EmbedSubclass *>   embeds;
+    int                             objectSize;
 
     Reflection() {}
 
@@ -551,7 +592,7 @@ public:
     }
 
 
-    int fieldNumber()
+    int fieldNumber() const
     {
         return (int)fields.size();
     }
@@ -566,7 +607,7 @@ public:
         return fields[fieldId]->name.comment;
     }
 
-    int idByName(const char *name)
+    int idByName(const char *name) const
     {
         for (int i = 0; i < fieldNumber(); i++)
         {
@@ -578,9 +619,12 @@ public:
         return -1;
     }
 
+
+
+
     /*virtual*/ ~Reflection()   // it may be non virtual
     {
-//#ifndef REFLECTION_STATIC_ALLOCATION
+#ifndef REFLECTION_STATIC_ALLOCATION
         for(const BaseField * el: fields) {
             // crash silly workaround // TODO: review this and fix the problem!
             if (el->id < 0) {                
@@ -593,12 +637,13 @@ public:
                 delete_safe(el);
             }
         }
+
         fields.clear();
         for(const EmbedSubclass * el: embeds) {
             delete_safe(el);
         }
         embeds.clear();
-//#endif
+#endif
     }
 };
 
@@ -707,14 +752,17 @@ class EnumOption
 public:
     int              id;
     ReflectionNaming name;
+    const char *presentationHint = NULL;
 
     EnumOption() {}
     EnumOption(int _id,
         const char *_name,
+        const char *_presentationHint = NULL,
         const char *_decription = NULL,
         const char *_comment = NULL)
         : id(_id)
         , name(_name, _decription, _comment)
+        , presentationHint(_presentationHint)
     {}
 
     EnumOption(int _id, const ReflectionNaming &_nameing)
@@ -911,16 +959,40 @@ public:
     }
 };
 
+class ReflectionDirectory : public std::map<std::string, Reflection *>
+{
 
+};
+
+class ReflectionDirectoryHolder
+{
+private:
+    static std::unique_ptr<ReflectionDirectory> reflectionDirectory;
+public:
+    /**
+     * Main reflection directory
+     **/
+    static ReflectionDirectory* getReflectionDirectory();
+
+};
+
+/**
+ * \brief Dynamic Object is an object accessed by pointer, whose type is cleared form C++ point of view,
+ * the object is compleatly managed be the reflection
+ *
+ **/
 class DynamicObject
 {
 public:
-    Reflection *reflection;
+    const Reflection *reflection;
     void       *rawObject;
 
-    DynamicObject() :
-        reflection(NULL),
-        rawObject(NULL)
+    DynamicObject(
+        const Reflection *reflection = NULL,
+        void       *rawObject = NULL
+    ) :
+        reflection(reflection),
+        rawObject(rawObject)
     {}
 
     template<typename Object>
@@ -941,6 +1013,8 @@ public:
     }
 
 };
+
+
 
 } //namespace corecvs
 

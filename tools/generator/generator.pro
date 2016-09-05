@@ -38,5 +38,10 @@ HEADERS += \
     parametersMapperGenerator.h \
     configLoader.h
 
+OTHER_FILES += \
+    xml/test.xml \
+    selftest.sh  \
+
+
 #SOURCES += Generated/Example.cpp
 #HEADERS += Generated/Example.h

@@ -26,7 +26,7 @@
 
 using namespace std;
 
- class DirectShowCaptureInterface : public ImageCaptureInterface
+ class DirectShowCaptureInterface : public virtual ImageCaptureInterface
  {
  public:
     typedef ImageCaptureInterface::CapErrorCode CapErrorCode;

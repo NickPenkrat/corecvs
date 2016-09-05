@@ -35,10 +35,11 @@ int FeatureDetectionParams::staticInit()
         "Feature Detection Params",
         ""
     );
+
+     getReflection()->objectSize = sizeof(FeatureDetectionParams);
      
 
-    fields().push_back(
-        new StringField
+    StringField* field0 = new StringField
         (
           FeatureDetectionParams::DETECTOR_ID,
           offsetof(FeatureDetectionParams, mDetector),
@@ -46,10 +47,10 @@ int FeatureDetectionParams::staticInit()
           "detector",
           "detector",
           "detector"
-        )
-    );
-    fields().push_back(
-        new StringField
+        );
+    fields().push_back(field0);
+    /*  */ 
+    StringField* field1 = new StringField
         (
           FeatureDetectionParams::DESCRIPTOR_ID,
           offsetof(FeatureDetectionParams, mDescriptor),
@@ -57,10 +58,10 @@ int FeatureDetectionParams::staticInit()
           "descriptor",
           "descriptor",
           "descriptor"
-        )
-    );
-    fields().push_back(
-        new StringField
+        );
+    fields().push_back(field1);
+    /*  */ 
+    StringField* field2 = new StringField
         (
           FeatureDetectionParams::MATCHER_ID,
           offsetof(FeatureDetectionParams, mMatcher),
@@ -68,10 +69,10 @@ int FeatureDetectionParams::staticInit()
           "matcher",
           "matcher",
           "matcher"
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    fields().push_back(field2);
+    /*  */ 
+    DoubleField* field3 = new DoubleField
         (
           FeatureDetectionParams::B2BTHRESHOLD_ID,
           offsetof(FeatureDetectionParams, mB2bThreshold),
@@ -82,10 +83,12 @@ int FeatureDetectionParams::staticInit()
           true,
          0,
          256
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field3->widgetHint=BaseField::SPIN_BOX;
+    field3->precision=6;
+    fields().push_back(field3);
+    /*  */ 
+    BoolField* field4 = new BoolField
         (
           FeatureDetectionParams::MATCHF2F_ID,
           offsetof(FeatureDetectionParams, mMatchF2F),
@@ -93,10 +96,11 @@ int FeatureDetectionParams::staticInit()
           "matchF2F",
           "matchF2F",
           "matchF2F"
-        )
-    );
-    fields().push_back(
-        new StringField
+        );
+    field4->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field4);
+    /*  */ 
+    StringField* field5 = new StringField
         (
           FeatureDetectionParams::PARAMETERS_ID,
           offsetof(FeatureDetectionParams, mParameters),
@@ -104,10 +108,10 @@ int FeatureDetectionParams::staticInit()
           "parameters",
           "parameters",
           "Additional parameters"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    fields().push_back(field5);
+    /*  */ 
+    BoolField* field6 = new BoolField
         (
           FeatureDetectionParams::PLOTTRACKS_ID,
           offsetof(FeatureDetectionParams, mPlotTracks),
@@ -115,10 +119,11 @@ int FeatureDetectionParams::staticInit()
           "plotTracks",
           "plotTracks",
           "Draw tracks on source images"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field6->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field6);
+    /*  */ 
+    BoolField* field7 = new BoolField
         (
           FeatureDetectionParams::THRESHOLDDISTANCE_ID,
           offsetof(FeatureDetectionParams, mThresholdDistance),
@@ -126,10 +131,11 @@ int FeatureDetectionParams::staticInit()
           "thresholdDistance",
           "thresholdDistance",
           "Threshold by descriptor distance instead of b2b ratio"
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field7->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field7);
+    /*  */ 
+    IntField* field8 = new IntField
         (
           FeatureDetectionParams::MAXFEATURECOUNT_ID,
           offsetof(FeatureDetectionParams, mMaxFeatureCount),
@@ -140,8 +146,11 @@ int FeatureDetectionParams::staticInit()
           true,
          0,
          32768
-        )
-    );
+        );
+    fields().push_back(field8);
+    /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Feature Detection Params")]= &reflection;
    return 0;
 }
 

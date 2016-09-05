@@ -37,8 +37,7 @@ int OpenCVBMParameters::staticInit()
     );
      
 
-    fields().push_back(
-        new IntField
+    IntField* field0 = new IntField
         (
           OpenCVBMParameters::BLOCK_SIZE_ID,
           offsetof(OpenCVBMParameters, mBlockSize),
@@ -49,10 +48,11 @@ int OpenCVBMParameters::staticInit()
           true,
          5,
          255
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field0->precision=-1;
+    fields().push_back(field0);
+    /*  */ 
+    IntField* field1 = new IntField
         (
           OpenCVBMParameters::DISPARITY_SEARCH_ID,
           offsetof(OpenCVBMParameters, mDisparitySearch),
@@ -63,10 +63,11 @@ int OpenCVBMParameters::staticInit()
           true,
          0,
          1600
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field1->precision=-1;
+    fields().push_back(field1);
+    /*  */ 
+    IntField* field2 = new IntField
         (
           OpenCVBMParameters::PREFILTERCAP_ID,
           offsetof(OpenCVBMParameters, mPreFilterCap),
@@ -77,10 +78,11 @@ int OpenCVBMParameters::staticInit()
           true,
          1,
          1000
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field2->precision=-1;
+    fields().push_back(field2);
+    /*  */ 
+    IntField* field3 = new IntField
         (
           OpenCVBMParameters::MINDISPARITY_ID,
           offsetof(OpenCVBMParameters, mMinDisparity),
@@ -91,10 +93,11 @@ int OpenCVBMParameters::staticInit()
           true,
          1,
          1000
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field3->precision=-1;
+    fields().push_back(field3);
+    /*  */ 
+    IntField* field4 = new IntField
         (
           OpenCVBMParameters::TEXTURETHRESHOLD_ID,
           offsetof(OpenCVBMParameters, mTextureThreshold),
@@ -105,10 +108,11 @@ int OpenCVBMParameters::staticInit()
           true,
          0,
          1000
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field4->precision=-1;
+    fields().push_back(field4);
+    /*  */ 
+    IntField* field5 = new IntField
         (
           OpenCVBMParameters::UNIQUENESSRATIO_ID,
           offsetof(OpenCVBMParameters, mUniquenessRatio),
@@ -119,10 +123,11 @@ int OpenCVBMParameters::staticInit()
           true,
          0,
          1000
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field5->precision=-1;
+    fields().push_back(field5);
+    /*  */ 
+    IntField* field6 = new IntField
         (
           OpenCVBMParameters::SPECKLEWINDOWSIZE_ID,
           offsetof(OpenCVBMParameters, mSpeckleWindowSize),
@@ -133,10 +138,11 @@ int OpenCVBMParameters::staticInit()
           true,
          0,
          1000
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field6->precision=-1;
+    fields().push_back(field6);
+    /*  */ 
+    IntField* field7 = new IntField
         (
           OpenCVBMParameters::SPECKLERANGE_ID,
           offsetof(OpenCVBMParameters, mSpeckleRange),
@@ -147,10 +153,11 @@ int OpenCVBMParameters::staticInit()
           true,
          0,
          1000
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field7->precision=-1;
+    fields().push_back(field7);
+    /*  */ 
+    IntField* field8 = new IntField
         (
           OpenCVBMParameters::DISP12MAXDIFF_ID,
           offsetof(OpenCVBMParameters, mDisp12MaxDiff),
@@ -161,8 +168,12 @@ int OpenCVBMParameters::staticInit()
           true,
          -1,
          1000
-        )
-    );
+        );
+    field8->precision=-1;
+    fields().push_back(field8);
+    /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("OpenCV BM Parameters")]= &reflection;
    return 0;
 }
 

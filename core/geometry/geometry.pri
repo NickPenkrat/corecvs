@@ -18,6 +18,7 @@ HEADERS += \
     geometry/raytrace/materialExamples.h \
     geometry/mesh3DDecorated.h \
     geometry/kdtree.h
+    geometry/raytrace/bspTree.h
 
 
 

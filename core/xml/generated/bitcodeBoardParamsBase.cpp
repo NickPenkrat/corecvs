@@ -35,10 +35,11 @@ int BitcodeBoardParamsBase::staticInit()
         "Bitcode Board Params Base",
         ""
     );
+
+     getReflection()->objectSize = sizeof(BitcodeBoardParamsBase);
      
 
-    fields().push_back(
-        new BoolField
+    BoolField* field0 = new BoolField
         (
           BitcodeBoardParamsBase::VERTICAL_ID,
           offsetof(BitcodeBoardParamsBase, mVertical),
@@ -46,10 +47,11 @@ int BitcodeBoardParamsBase::staticInit()
           "vertical",
           "vertical",
           "Orientation"
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field0->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field0);
+    /*  */ 
+    IntField* field1 = new IntField
         (
           BitcodeBoardParamsBase::CELLSIZE_ID,
           offsetof(BitcodeBoardParamsBase, mCellSize),
@@ -60,10 +62,11 @@ int BitcodeBoardParamsBase::staticInit()
           true,
          0,
          999999
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field1->suffixHint="px";
+    fields().push_back(field1);
+    /*  */ 
+    IntField* field2 = new IntField
         (
           BitcodeBoardParamsBase::BLACKCOLOR_ID,
           offsetof(BitcodeBoardParamsBase, mBlackColor),
@@ -74,10 +77,10 @@ int BitcodeBoardParamsBase::staticInit()
           true,
          0,
          255
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    fields().push_back(field2);
+    /*  */ 
+    IntField* field3 = new IntField
         (
           BitcodeBoardParamsBase::WHITECOLOR_ID,
           offsetof(BitcodeBoardParamsBase, mWhiteColor),
@@ -88,10 +91,10 @@ int BitcodeBoardParamsBase::staticInit()
           true,
          0,
          255
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    fields().push_back(field3);
+    /*  */ 
+    DoubleField* field4 = new DoubleField
         (
           BitcodeBoardParamsBase::IDENTSIZE_ID,
           offsetof(BitcodeBoardParamsBase, mIdentSize),
@@ -99,10 +102,13 @@ int BitcodeBoardParamsBase::staticInit()
           "identSize",
           "identSize",
           "white ident size around chessboard in chesses"
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field4->widgetHint=BaseField::SPIN_BOX;
+    field4->suffixHint="cells";
+    field4->precision=2;
+    fields().push_back(field4);
+    /*  */ 
+    IntField* field5 = new IntField
         (
           BitcodeBoardParamsBase::BOARDHEIGHT_ID,
           offsetof(BitcodeBoardParamsBase, mBoardHeight),
@@ -110,10 +116,11 @@ int BitcodeBoardParamsBase::staticInit()
           "boardHeight",
           "boardHeight",
           "size of the chessboard in chesses"
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field5->suffixHint="cells";
+    fields().push_back(field5);
+    /*  */ 
+    IntField* field6 = new IntField
         (
           BitcodeBoardParamsBase::BOARDWIDTH_ID,
           offsetof(BitcodeBoardParamsBase, mBoardWidth),
@@ -121,10 +128,11 @@ int BitcodeBoardParamsBase::staticInit()
           "boardWidth",
           "boardWidth",
           "size of the chessboard in chesses"
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field6->suffixHint="cells";
+    fields().push_back(field6);
+    /*  */ 
+    IntField* field7 = new IntField
         (
           BitcodeBoardParamsBase::CODEWIDTH_ID,
           offsetof(BitcodeBoardParamsBase, mCodeWidth),
@@ -132,10 +140,11 @@ int BitcodeBoardParamsBase::staticInit()
           "codeWidth",
           "codeWidth",
           "width and height of the bitcode in chesses"
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field7->suffixHint="cells";
+    fields().push_back(field7);
+    /*  */ 
+    IntField* field8 = new IntField
         (
           BitcodeBoardParamsBase::CODEHEIGHT_ID,
           offsetof(BitcodeBoardParamsBase, mCodeHeight),
@@ -143,10 +152,11 @@ int BitcodeBoardParamsBase::staticInit()
           "codeHeight",
           "codeHeight",
           "width and height of the bitcode in chesses"
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field8->suffixHint="cells";
+    fields().push_back(field8);
+    /*  */ 
+    DoubleField* field9 = new DoubleField
         (
           BitcodeBoardParamsBase::BITCODEIDENTSIZE_ID,
           offsetof(BitcodeBoardParamsBase, mBitcodeIdentSize),
@@ -154,10 +164,13 @@ int BitcodeBoardParamsBase::staticInit()
           "bitcodeIdentSize",
           "bitcodeIdentSize",
           "ident between chessboard and bitcode in chesses"
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field9->widgetHint=BaseField::SPIN_BOX;
+    field9->suffixHint="cells";
+    field9->precision=2;
+    fields().push_back(field9);
+    /*  */ 
+    DoubleField* field10 = new DoubleField
         (
           BitcodeBoardParamsBase::BITCODECONFIDENCE_ID,
           offsetof(BitcodeBoardParamsBase, mBitcodeConfidence),
@@ -165,10 +178,13 @@ int BitcodeBoardParamsBase::staticInit()
           "bitcodeConfidence",
           "bitcodeConfidence",
           "Area in which the stats are collected during detection"
-        )
-    );
-    fields().push_back(
-        new EnumField
+        );
+    field10->widgetHint=BaseField::SPIN_BOX;
+    field10->suffixHint="cells";
+    field10->precision=2;
+    fields().push_back(field10);
+    /*  */ 
+    EnumField* field11 = new EnumField
         (
           BitcodeBoardParamsBase::BITCODEORIENTATION_ID,
           offsetof(BitcodeBoardParamsBase, mBitcodeOrientation),
@@ -177,16 +193,17 @@ int BitcodeBoardParamsBase::staticInit()
           "bitcodeOrientation",
           "bitcodeOrientation",
           new EnumReflection(5
-          , new EnumOption(0,"Below")
-          , new EnumOption(1,"Left")
-          , new EnumOption(2,"Above")
-          , new EnumOption(3,"Right")
-          , new EnumOption(4,"Any")
+          , new EnumOption(0,"Below",":/new/prefix1/down_alt.png@main.qrc")
+          , new EnumOption(1,"Left",":/new/prefix1/back_alt.png@main.qrc")
+          , new EnumOption(2,"Above",":/new/prefix1/up_alt.png@main.qrc")
+          , new EnumOption(3,"Right",":/new/prefix1/forward_alt.png@main.qrc")
+          , new EnumOption(4,"Any",":/new/prefix1/question.png@main.qrc")
           )
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field11->widgetHint=BaseField::COMBO_BOX;
+    fields().push_back(field11);
+    /*  */ 
+    DoubleField* field12 = new DoubleField
         (
           BitcodeBoardParamsBase::CENTERTOZEROX_ID,
           offsetof(BitcodeBoardParamsBase, mCenterToZeroX),
@@ -197,10 +214,13 @@ int BitcodeBoardParamsBase::staticInit()
           true,
          -255,
          255
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field12->widgetHint=BaseField::SPIN_BOX;
+    field12->suffixHint="cells";
+    field12->precision=2;
+    fields().push_back(field12);
+    /*  */ 
+    DoubleField* field13 = new DoubleField
         (
           BitcodeBoardParamsBase::CENTERTOZEROY_ID,
           offsetof(BitcodeBoardParamsBase, mCenterToZeroY),
@@ -211,8 +231,14 @@ int BitcodeBoardParamsBase::staticInit()
           true,
          -255,
          255
-        )
-    );
+        );
+    field13->widgetHint=BaseField::SPIN_BOX;
+    field13->suffixHint="cells";
+    field13->precision=2;
+    fields().push_back(field13);
+    /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Bitcode Board Params Base")]= &reflection;
    return 0;
 }
 

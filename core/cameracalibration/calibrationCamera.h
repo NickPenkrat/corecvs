@@ -11,6 +11,7 @@
 #include "selectableGeometryFeatures.h"
 #include "essentialMatrix.h"
 #include "distortionApplicationParameters.h"
+#include "projectionModels.h"
 
 /* Future derived */
 //#include "rgb24Buffer.h"
@@ -57,9 +58,12 @@ typedef std::unordered_map<std::string, void *> MetaContainer;
  *  TODO: The idea is that if we merge distorsion calibration WITH extrinsics/intrinsics
  *        calibration, then this method will project point using forward distorsion map
  *
+ *  Now  PinholeCameraIntrinsics has vtable because of CameraProjection base class.
+ *  Probably this needs to be changed
+ *
  **/
 
-struct PinholeCameraIntrinsics
+struct PinholeCameraIntrinsics : public CameraProjection
 {
     const static int DEFAULT_SIZE_X = 2592;
     const static int DEFAULT_SIZE_Y = 1944;
@@ -94,7 +98,7 @@ struct PinholeCameraIntrinsics
      * This actually doesn't differ from matrix multiplication, just is a little bit more lightweight
      *
      **/
-    Vector2dd project(const Vector3dd &p) const
+    virtual Vector2dd project(const Vector3dd &p) const override
     {
         Vector2dd result = (focal * p.xy() + Vector2dd(skew * p.y(), 0.0)) / p.z() + principal;
         return result;
@@ -118,7 +122,7 @@ struct PinholeCameraIntrinsics
     }
 
 
-    Vector3dd reverse(const Vector2dd &p) const
+    virtual Vector3dd reverse(const Vector2dd &p) const override
     {
         Vector2dd result;
         result[1] = (p[1] - principal[1]) / focal[1];
@@ -126,7 +130,7 @@ struct PinholeCameraIntrinsics
         return Vector3dd(result.x(), result.y(), 1.0);
     }
 
-    bool isVisible(const Vector3dd &p) const
+    virtual bool isVisible(const Vector3dd &p) const override
     {
         if (p[2] <= 0.0) {
             return false;

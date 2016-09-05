@@ -37,8 +37,7 @@ int OpenCVSGMParameters::staticInit()
     );
      
 
-    fields().push_back(
-        new IntField
+    IntField* field0 = new IntField
         (
           OpenCVSGMParameters::PRE_FILTER_CAP_ID,
           offsetof(OpenCVSGMParameters, mPreFilterCap),
@@ -49,10 +48,11 @@ int OpenCVSGMParameters::staticInit()
           true,
          1,
          99
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field0->precision=-1;
+    fields().push_back(field0);
+    /*  */ 
+    IntField* field1 = new IntField
         (
           OpenCVSGMParameters::SAD_WINDOW_SIZE_ID,
           offsetof(OpenCVSGMParameters, mSADWindowSize),
@@ -63,10 +63,11 @@ int OpenCVSGMParameters::staticInit()
           true,
          1,
          99
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field1->precision=-1;
+    fields().push_back(field1);
+    /*  */ 
+    IntField* field2 = new IntField
         (
           OpenCVSGMParameters::P1_MULTIPLIER_ID,
           offsetof(OpenCVSGMParameters, mP1Multiplier),
@@ -77,10 +78,11 @@ int OpenCVSGMParameters::staticInit()
           true,
          1,
          99
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field2->precision=-1;
+    fields().push_back(field2);
+    /*  */ 
+    IntField* field3 = new IntField
         (
           OpenCVSGMParameters::P2_MULTIPLIER_ID,
           offsetof(OpenCVSGMParameters, mP2Multiplier),
@@ -91,10 +93,11 @@ int OpenCVSGMParameters::staticInit()
           true,
          1,
          99
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field3->precision=-1;
+    fields().push_back(field3);
+    /*  */ 
+    IntField* field4 = new IntField
         (
           OpenCVSGMParameters::MIN_DISPARITY_ID,
           offsetof(OpenCVSGMParameters, mMinDisparity),
@@ -105,10 +108,11 @@ int OpenCVSGMParameters::staticInit()
           true,
          -9999,
          99999
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field4->precision=-1;
+    fields().push_back(field4);
+    /*  */ 
+    IntField* field5 = new IntField
         (
           OpenCVSGMParameters::UNIQUENESS_RATIO_ID,
           offsetof(OpenCVSGMParameters, mUniquenessRatio),
@@ -119,10 +123,11 @@ int OpenCVSGMParameters::staticInit()
           true,
          0,
          99
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field5->precision=-1;
+    fields().push_back(field5);
+    /*  */ 
+    IntField* field6 = new IntField
         (
           OpenCVSGMParameters::SPECKLE_WINDOW_SIZE_ID,
           offsetof(OpenCVSGMParameters, mSpeckleWindowSize),
@@ -133,10 +138,11 @@ int OpenCVSGMParameters::staticInit()
           true,
          1,
          99
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field6->precision=-1;
+    fields().push_back(field6);
+    /*  */ 
+    IntField* field7 = new IntField
         (
           OpenCVSGMParameters::SPECKLE_RANGE_ID,
           offsetof(OpenCVSGMParameters, mSpeckleRange),
@@ -147,10 +153,11 @@ int OpenCVSGMParameters::staticInit()
           true,
          1,
          99
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field7->precision=-1;
+    fields().push_back(field7);
+    /*  */ 
+    IntField* field8 = new IntField
         (
           OpenCVSGMParameters::DISP_12_MAX_DIFF_ID,
           offsetof(OpenCVSGMParameters, mDisp12MaxDiff),
@@ -161,10 +168,11 @@ int OpenCVSGMParameters::staticInit()
           true,
          -9999,
          99999
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    field8->precision=-1;
+    fields().push_back(field8);
+    /*  */ 
+    BoolField* field9 = new BoolField
         (
           OpenCVSGMParameters::FULL_DP_ID,
           offsetof(OpenCVSGMParameters, mFullDP),
@@ -172,8 +180,13 @@ int OpenCVSGMParameters::staticInit()
           "Full DP",
           "Full DP",
           "Full DP"
-        )
-    );
+        );
+    field9->widgetHint=BaseField::CHECK_BOX;
+    field9->precision=-1;
+    fields().push_back(field9);
+    /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("OpenCV SGM Parameters")]= &reflection;
    return 0;
 }
 

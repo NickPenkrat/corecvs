@@ -32,6 +32,8 @@ public:
     vector<CorrespondencePointLine> p2l;
     vector<CorrespondencePointSegment> p2s;
 
+public:
+    bool trace = false;
 
     HomographyReconstructor();
 
@@ -43,15 +45,41 @@ public:
 
     bool hasEnoughtConstraints();
 
-    double getCostFunction(Matrix33 &input, double out[] = 0);
+    double getCostFunction(Matrix33 &input, double out[] = NULL);
     int  getConstraintNumber();
 
     friend ostream & operator << (ostream &out, const HomographyReconstructor &reconstructor);
 
-    Matrix33 getBestHomography(int method);
+    enum HomographyAlgorithm {
+        LSE,
+        LSE1,
+        LSE2,
+        ML,
+        ML_AFTER_LSE,
+        LAST
+    };
+
+    static inline const char *getName(const HomographyAlgorithm &value)
+    {
+        switch (value)
+        {
+            case LSE : return "LSE"; break ;
+            case LSE1 : return "LSE1"; break ;
+            case LSE2 : return "LSE2"; break ;
+            case ML : return "ML"; break ;
+            case ML_AFTER_LSE : return "ML_AFTER_LSE"; break ;
+            default : return "Not in range"; break ;
+        }
+        return "Not in range";
+    }
 
     /**
-     * Function was introduced for testing. Usage is discouraged. Use getBestHomographyLSE1
+     *  This is a common entry point
+     **/
+    Matrix33 getBestHomography(const HomographyAlgorithm &method = ML_AFTER_LSE);
+
+    /**
+     *  Function was introduced for testing. Usage is discouraged. Use getBestHomographyLSE1
      **/
     Matrix33 getBestHomographyLSE(void);
 
@@ -63,9 +91,10 @@ public:
      *  This method uses inverse SVD to solve
      **/
     Matrix33 getBestHomographyLSE2(void);
-    Matrix33 getBestHomographyClassicKalman(void);
-    Matrix33 getBestHomographyFastKalman(void);
+
+
     Matrix33 getBestHomographyLM(Matrix33 guess = Matrix33(1.0));
+    Matrix33 getBestHomographyLSEandLM();
 
 
     void normalisePoints(Matrix33 &transformLeft, Matrix33 &transformRight);
@@ -113,6 +142,18 @@ private:
     };
 
 
+
+
+#if 0
+    /**
+     * \deprecated
+     **/
+    Matrix33 getBestHomographyClassicKalman(void);
+    /**
+     * \deprecated
+     **/
+    Matrix33 getBestHomographyFastKalman(void);
+#endif
 };
 
 

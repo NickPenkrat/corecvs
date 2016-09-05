@@ -18,6 +18,7 @@
 #include "ppmLoader.h"
 #include "plyLoader.h"
 #include "objLoader.h"
+#include "gcodeLoader.h"
 
 using namespace corecvs;
 
@@ -158,4 +159,33 @@ TEST(FileFormats, DISABLED_testObjLoader)
 
     Mesh3D mesh;
     loader.loadOBJSimple(file, mesh);
+}
+
+
+TEST(FileFormats, testGcodeLoader)
+{
+    const char input[] =
+            "; Slic3r style comments\n"
+            "G01 Z-0.125000 F100.0 (Penetrate)\n"
+            "G02 X73.327786 Y20.305024 Z-0.125000 I-38.815360 J0.000000 F400.000000\n"
+            "G02 X59.120378 Y6.097616 Z-0.125000 I-33.615088 J19.407680\n"
+            "G02 X39.712698 Y0.897344 Z-0.125000 I-19.407680 J33.615088\n"
+            "G02 X20.305018 Y6.097616 Z-0.125000 I-0.000000 J38.815360\n"
+            "G02 X6.097610 Y20.305024 Z-0.125000 I19.407680 J33.615088\n"
+            "G02 X0.897338 Y39.712704 Z-0.125000 I33.615087 J19.407679\n"
+            "G02 X6.097611 Y59.120384 Z-0.125000 I38.815360 J-0.000000\n"
+            "G02 X20.305019 Y73.327792 Z-0.125000 I33.615088 J-19.407680\n"
+            "G02 X39.712699 Y78.528064 Z-0.125000 I19.407680 J-33.615088\n"
+            "G02 X59.120379 Y73.327792 Z-0.125000 I0.000000 J-38.815360\n"
+            "G02 X73.327787 Y59.120384 Z-0.125000 I-19.407680 J-33.615088\n"
+            "G02 X78.528059 Y39.712704 Z-0.125000 I-33.615088 J-19.407680\n"
+            "G01 X78.528059 Y39.712704 Z-0.125000\n"
+            "G00 Z5.000000\n";
+
+    GcodeLoader loader;
+    Mesh3D mesh;
+    std::string str(input);
+    std::istringstream stream(str);
+    int result = loader.loadGcode(stream, mesh);
+    mesh.dumpPLY("gcode-test.ply");
 }

@@ -90,7 +90,7 @@ void LensDistortionModelParametersControlWidget::getParameters(LensDistortionMod
 
     params.setMapForward(ui->forwardMapCheckBox->isChecked());
 
-    params.mKoeff.empty();
+    params.mKoeff.clear();
     for (int i = 0; i < ui->koefTableWidget->rowCount(); i++)
     {
         QDoubleSpinBox *box = static_cast<QDoubleSpinBox *>(ui->koefTableWidget->cellWidget(i,COLUMN_EDIT));

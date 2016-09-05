@@ -482,11 +482,11 @@ double HomographyReconstructor::getCostFunction(Matrix33 &H, double out[])
     for (unsigned i = 0; i < p2p.size(); i++)
     {
         Vector2dd point = (H * p2p[i].start);
-        auto diff = point - p2p[i].end;
+        Vector2dd diff = point - p2p[i].end;
         if (out)
         {
-            out[argout++] = diff[0];
-            out[argout++] = diff[1];
+            out[argout++] = diff.x();
+            out[argout++] = diff.y();
         }
         cost += (point - p2p[i].end).sumAllElementsSq();
     }
@@ -506,7 +506,6 @@ int HomographyReconstructor::getConstraintNumber()
 {
     return (int)p2l.size() + (int)p2s.size() + (int)p2p.size() * 2;
 }
-
 
 void HomographyReconstructor::CostFunction::operator()(const double in[], double out[])
 {
@@ -552,6 +551,7 @@ Matrix33 HomographyReconstructor::CostFunctionWize::matrixFromState(const double
 }
 
 
+#ifdef DEPRECATED
 /**
  *  This block is devoted to Kalman reconstruction
  **/
@@ -595,6 +595,7 @@ Matrix33 HomographyReconstructor::getBestHomographyClassicKalman()
     );
 
 }
+#endif
 
 /**
  *  This block is devoted to LM reconstruction
@@ -606,7 +607,9 @@ Matrix33 HomographyReconstructor::getBestHomographyLM(Matrix33 guess)
     LevenbergMarquardt LMfit;
 
     LMfit.f = &F;
-    LMfit.maxIterations = 25;
+    LMfit.maxIterations = 250;
+    LMfit.trace = trace;
+    LMfit.traceProgress = trace;
 
     vector<double> input(8);
     for(int i = 0; i < 3; ++i)
@@ -627,8 +630,30 @@ Matrix33 HomographyReconstructor::getBestHomographyLM(Matrix33 guess)
             optInput[0], optInput[1], optInput[2],
             optInput[3], optInput[4], optInput[5],
             optInput[6], optInput[7], 1.0
-       );
+            );
 }
+
+Matrix33 HomographyReconstructor::getBestHomographyLSEandLM()
+{
+    Matrix33 guess = getBestHomographyLSE2();
+    return getBestHomographyLM(guess);
+}
+
+
+
+Matrix33 HomographyReconstructor::getBestHomography(const HomographyReconstructor::HomographyAlgorithm &method)
+{
+    switch (method) {
+        case LSE:  return getBestHomographyLSE(); break;
+        case LSE1: return getBestHomographyLSE1(); break;
+        case LSE2: return getBestHomographyLSE2(); break;
+        case ML:   return getBestHomographyLM(); break;
+        default:
+        case ML_AFTER_LSE: return getBestHomographyLSEandLM(); break;
+    }
+    return Matrix33::Identity();
+}
+
 
 } //namespace corecvs
 

@@ -71,6 +71,12 @@
        <property name="value">
         <number>1000</number>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
+       </property>
      </widget>
     </item>
     <item row="2" column="0">
@@ -99,6 +105,9 @@
        </property>
        <property name="prefix">
         <string>x^</string>
+       </property>
+       <property name="suffix">
+        <string></string>
        </property>
      </widget>
     </item>

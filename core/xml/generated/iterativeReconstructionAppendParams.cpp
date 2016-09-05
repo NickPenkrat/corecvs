@@ -35,10 +35,11 @@ int IterativeReconstructionAppendParams::staticInit()
         "Iterative Reconstruction Append Params",
         ""
     );
+
+     getReflection()->objectSize = sizeof(IterativeReconstructionAppendParams);
      
 
-    fields().push_back(
-        new BoolField
+    BoolField* field0_ = new BoolField
         (
           IterativeReconstructionAppendParams::ALLOWSUPERSPECULATIVEAPPEND_ID,
           offsetof(IterativeReconstructionAppendParams, mAllowSuperSpeculativeAppend),
@@ -46,10 +47,11 @@ int IterativeReconstructionAppendParams::staticInit()
           "allowSuperSpeculativeAppend",
           "allowSuperSpeculativeAppend",
           "If you have lots of correct feature matches (>500 for each pair), than you may try super-speculative appending"
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field0_->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field0_);
+
+    IntField* field0 = new IntField
         (
           IterativeReconstructionAppendParams::POSTAPPENDOPTIMIZATIONWINDOW_ID,
           offsetof(IterativeReconstructionAppendParams, mPostAppendOptimizationWindow),
@@ -60,10 +62,10 @@ int IterativeReconstructionAppendParams::staticInit()
           true,
          -1,
          1000000
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    fields().push_back(field0);
+    /*  */ 
+    IntField* field1 = new IntField
         (
           IterativeReconstructionAppendParams::MAXPOSTAPPEND_ID,
           offsetof(IterativeReconstructionAppendParams, mMaxPostAppend),
@@ -74,10 +76,10 @@ int IterativeReconstructionAppendParams::staticInit()
           true,
          1,
          100000
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    fields().push_back(field1);
+    /*  */ 
+    DoubleField* field2 = new DoubleField
         (
           IterativeReconstructionAppendParams::INLIERP3PTHRESHOLD_ID,
           offsetof(IterativeReconstructionAppendParams, mInlierP3PThreshold),
@@ -88,10 +90,12 @@ int IterativeReconstructionAppendParams::staticInit()
           true,
          0,
          10000
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field2->widgetHint=BaseField::SPIN_BOX;
+    field2->precision=6;
+    fields().push_back(field2);
+    /*  */ 
+    IntField* field3 = new IntField
         (
           IterativeReconstructionAppendParams::MAXP3PITERATIONS_ID,
           offsetof(IterativeReconstructionAppendParams, mMaxP3PIterations),
@@ -102,10 +106,10 @@ int IterativeReconstructionAppendParams::staticInit()
           true,
          1,
          1000000
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    fields().push_back(field3);
+    /*  */ 
+    DoubleField* field4 = new DoubleField
         (
           IterativeReconstructionAppendParams::GAMMAP3P_ID,
           offsetof(IterativeReconstructionAppendParams, mGammaP3P),
@@ -116,10 +120,12 @@ int IterativeReconstructionAppendParams::staticInit()
           true,
          0,
          1
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field4->widgetHint=BaseField::SPIN_BOX;
+    field4->precision=6;
+    fields().push_back(field4);
+    /*  */ 
+    DoubleField* field5 = new DoubleField
         (
           IterativeReconstructionAppendParams::INLIERP6PTHRESHOLD_ID,
           offsetof(IterativeReconstructionAppendParams, mInlierP6PThreshold),
@@ -130,10 +136,12 @@ int IterativeReconstructionAppendParams::staticInit()
           true,
          0,
          10000
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field5->widgetHint=BaseField::SPIN_BOX;
+    field5->precision=6;
+    fields().push_back(field5);
+    /*  */ 
+    IntField* field6 = new IntField
         (
           IterativeReconstructionAppendParams::MAXP6PITERATIONS_ID,
           offsetof(IterativeReconstructionAppendParams, mMaxP6PIterations),
@@ -144,10 +152,10 @@ int IterativeReconstructionAppendParams::staticInit()
           true,
          1,
          1000000
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    fields().push_back(field6);
+    /*  */ 
+    DoubleField* field7 = new DoubleField
         (
           IterativeReconstructionAppendParams::GAMMAP6P_ID,
           offsetof(IterativeReconstructionAppendParams, mGammaP6P),
@@ -158,10 +166,12 @@ int IterativeReconstructionAppendParams::staticInit()
           true,
          0,
          1
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field7->widgetHint=BaseField::SPIN_BOX;
+    field7->precision=6;
+    fields().push_back(field7);
+    /*  */ 
+    IntField* field8 = new IntField
         (
           IterativeReconstructionAppendParams::SPECULATIVITY_ID,
           offsetof(IterativeReconstructionAppendParams, mSpeculativity),
@@ -172,10 +182,10 @@ int IterativeReconstructionAppendParams::staticInit()
           true,
          1,
          1000000
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    fields().push_back(field8);
+    /*  */ 
+    IntField* field9 = new IntField
         (
           IterativeReconstructionAppendParams::MINIMALINLIERCOUNT_ID,
           offsetof(IterativeReconstructionAppendParams, mMinimalInlierCount),
@@ -186,10 +196,10 @@ int IterativeReconstructionAppendParams::staticInit()
           true,
          3,
          1000000
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    fields().push_back(field9);
+    /*  */ 
+    DoubleField* field10 = new DoubleField
         (
           IterativeReconstructionAppendParams::MAXIMALFAILUREPROBABILITY_ID,
           offsetof(IterativeReconstructionAppendParams, mMaximalFailureProbability),
@@ -200,10 +210,12 @@ int IterativeReconstructionAppendParams::staticInit()
           true,
          0,
          1
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field10->widgetHint=BaseField::SPIN_BOX;
+    field10->precision=6;
+    fields().push_back(field10);
+    /*  */ 
+    IntField* field11 = new IntField
         (
           IterativeReconstructionAppendParams::SHUTUPANDAPPENDMYFIXTUREINLIERTHRESHOLD_ID,
           offsetof(IterativeReconstructionAppendParams, mShutUpAndAppendMyFixtureInlierThreshold),
@@ -214,10 +226,10 @@ int IterativeReconstructionAppendParams::staticInit()
           true,
          10,
          1000000
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    fields().push_back(field11);
+    /*  */ 
+    DoubleField* field12 = new DoubleField
         (
           IterativeReconstructionAppendParams::SHUTUPANDAPPENDMYFIXTURESUCCESSPROBTHRESHOLD_ID,
           offsetof(IterativeReconstructionAppendParams, mShutUpAndAppendMyFixtureSuccessProbThreshold),
@@ -228,8 +240,13 @@ int IterativeReconstructionAppendParams::staticInit()
           true,
          0,
          1
-        )
-    );
+        );
+    field12->widgetHint=BaseField::SPIN_BOX;
+    field12->precision=6;
+    fields().push_back(field12);
+    /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Iterative Reconstruction Append Params")]= &reflection;
    return 0;
 }
 

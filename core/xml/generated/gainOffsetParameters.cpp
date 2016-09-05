@@ -35,10 +35,11 @@ int GainOffsetParameters::staticInit()
         "Gain Offset Parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(GainOffsetParameters);
      
 
-    fields().push_back(
-        new DoubleField
+    DoubleField* field0 = new DoubleField
         (
           GainOffsetParameters::GAIN_ID,
           offsetof(GainOffsetParameters, mGain),
@@ -49,10 +50,12 @@ int GainOffsetParameters::staticInit()
           true,
          -10,
          10
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field0->widgetHint=BaseField::SPIN_BOX;
+    field0->precision=2;
+    fields().push_back(field0);
+    /*  */ 
+    DoubleField* field1 = new DoubleField
         (
           GainOffsetParameters::OFFSET_ID,
           offsetof(GainOffsetParameters, mOffset),
@@ -63,8 +66,13 @@ int GainOffsetParameters::staticInit()
           true,
          -5000,
          5000
-        )
-    );
+        );
+    field1->widgetHint=BaseField::SPIN_BOX;
+    field1->precision=2;
+    fields().push_back(field1);
+    /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Gain Offset Parameters")]= &reflection;
    return 0;
 }
 

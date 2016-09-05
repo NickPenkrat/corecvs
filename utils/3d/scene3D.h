@@ -33,7 +33,6 @@ public:
         COORDINATE_FRAME
     };
 
-
     QString name;
     Scene3D *parent;
     SceneType type;
@@ -49,8 +48,8 @@ public:
 
     virtual void prepareMesh(CloudViewDialog *dialog);
     virtual void drawMyself(CloudViewDialog *dialog);
-    virtual void dumpPCD(ostream &out);
-    virtual void dumpPLY(ostream &out);
+
+    virtual bool dump(const QString &targetFile);
 
     virtual void setParameters(void * /*params*/){}
 

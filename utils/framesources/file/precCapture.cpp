@@ -19,7 +19,7 @@
 
 /** Capture interface with precise simulation from the value "fps" view point
  */
-FilePreciseCapture::FilePreciseCapture(QString const &params, bool isVerbose, bool isRGB)
+FilePreciseCapture::FilePreciseCapture(const std::string &params, bool isVerbose, bool isRGB)
     : AbstractFileCapture(params)
     , mCurrentCount(-1)
 {

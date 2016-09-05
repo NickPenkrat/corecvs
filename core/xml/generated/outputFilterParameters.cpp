@@ -35,10 +35,11 @@ int OutputFilterParameters::staticInit()
         "Output Filter Parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(OutputFilterParameters);
      
 
-    fields().push_back(
-        new EnumField
+    EnumField* field0 = new EnumField
         (
           OutputFilterParameters::OUTPUT_TYPE_ID,
           offsetof(OutputFilterParameters, mOutputType),
@@ -50,8 +51,12 @@ int OutputFilterParameters::staticInit()
           , new EnumOption(0,"Left Frame")
           , new EnumOption(1,"Right Frame")
           )
-        )
-    );
+        );
+    field0->widgetHint=BaseField::COMBO_BOX;
+    fields().push_back(field0);
+    /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Output Filter Parameters")]= &reflection;
    return 0;
 }
 
