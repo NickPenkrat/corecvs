@@ -1,15 +1,20 @@
 #ifndef FLOATJIT_H
 #define FLOATJIT_H
 
+#include "astNode.h"
+
+namespace corecvs {
 
 class FloatJIT
 {
 public:
     FloatJIT();
 
-signals:
+    static void toAsm (ASTNodeInt *node);
 
-public slots:
 };
+
+
+} //namespace corecvs
 
 #endif // FLOATJIT_H

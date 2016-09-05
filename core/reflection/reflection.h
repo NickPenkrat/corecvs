@@ -625,17 +625,15 @@ public:
     /*virtual*/ ~Reflection()   // it may be non virtual
     {
 #ifndef REFLECTION_STATIC_ALLOCATION
-        for(const BaseField * el: fields) {
-            // crash silly workaround // TODO: review this and fix the problem!
+        for(size_t i = 0; i < fields.size(); i++)
+        {
+            const BaseField * &el = fields[i];
             if (el->id < 0) {                
-                // SYNC_PRINT(("Reflection::~Reflection(): bad id in the reflection object: id:%d size:%d\n", el->id, (int)fields.size()));
+                /* Why all this spam? */
+                //SYNC_PRINT(("Reflection::~Reflection(): bad id in the reflection object: id:%d size:%d\n", el->id, (int)fields.size()));
+                continue;
             }
-            else if ((uint)el->type > BaseField::TYPE_LAST) {
-                SYNC_PRINT(("~Reflection: bad type in the reflection object: type:%d size:%d\n", (int)el->type, (int)fields.size()));
-            }
-            else {
-                delete_safe(el);
-            }
+            delete_safe(el);
         }
 
         fields.clear();

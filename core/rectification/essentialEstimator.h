@@ -60,7 +60,7 @@ public:
         static Matrix33        getRotationM    (const double in[]);
         static Vector3dd       getTranslation  (const double in[]);
         static EssentialMatrix getEssential    (const double in[]);
-        static double         getRotationAngle(const double in[]);
+        static double          getRotationAngle(const double in[]);
         static Vector3dd       getRotationAxis (const double in[]);
 
         static void packState(double out[], const Quaternion &q, const Vector3dd &t);
@@ -96,7 +96,7 @@ public:
     public:
         const vector<Correspondence *> *samples;
         NormalizeFunction() :
-            FunctionArgs(CostFunctionBase::VECTOR_SIZE,1) {};
+            FunctionArgs(CostFunctionBase::VECTOR_SIZE,1) {}
 
         virtual void operator()(const double in[], double out[]);
         using FunctionArgs::operator();
@@ -112,7 +112,7 @@ public:
         CostFunction7toN(const vector<Correspondence *> *_samples) :
             CostFunctionBase((int)_samples->size()),
             samples(_samples)
-        {};
+        {}
 
         virtual void operator()(const double in[], double out[]);
     };

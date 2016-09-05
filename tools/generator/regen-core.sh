@@ -208,7 +208,8 @@ enums="
        makePreciseAlgorithm
        preciseInterpolationType
        imageChannel
-       debayerMethod"
+       debayerMethod
+       homographyAlgorithm"
 
 ui_classes="
         rgbColorParameters

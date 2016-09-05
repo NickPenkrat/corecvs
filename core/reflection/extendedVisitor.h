@@ -5,13 +5,15 @@
  *  Library has both static and dynamic polimorphism serializers.
  *
  *  Former is implemented in classes using accept template method
- *  Latter with the imterface below.
+ *  Latter with the interface below.
  *
  **/
 
 namespace corecvs {
 
-class Serializable {
+class Visitable {
+
+
 
 };
 
