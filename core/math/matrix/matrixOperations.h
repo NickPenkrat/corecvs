@@ -156,7 +156,7 @@ public:
         return result;
     }
 
-    ReturnType operator *(const ElementType &a, const RealType &B)
+    friend ReturnType operator *(const ElementType &a, const RealType &B)
     {
         ReturnType result = _createMatrix(B._height(), B._width());
         int row, column;
@@ -170,7 +170,7 @@ public:
         return result;
     }
 
-    ReturnType operator *(const RealType &B, const ElementType &a)
+    friend ReturnType operator *(const RealType &B, const ElementType &a)
     {
         ReturnType result = _createMatrix(B._height(), B._width());
         int row, column;
@@ -187,11 +187,12 @@ public:
 
     /* Work in progress. We should probably use vector operations for this */
 
-    ReturnType operator +(const RealType &A, const RealType &B)
+    friend ReturnType operator +(const RealType &A, const RealType &B)
     {
         CORE_ASSERT_TRUE(A._width() == B._width() && A._height() == B._height(), "Matrices have wrong sizes");
         ReturnType result = _createMatrix(A._height(), A._width());
 
+        int row, column;
         for (row = 0; row < result._height(); row++)
         {
             for (column = 0; column < result._width(); column++)
@@ -204,11 +205,12 @@ public:
     }
 
 
-    ReturnType operator -(const RealType &A, const RealType &B)
+    friend ReturnType operator -(const RealType &A, const RealType &B)
     {
         CORE_ASSERT_TRUE(A._width() == B._width() && A._height() == B._height(), "Matrices have wrong sizes");
         ReturnType result = _createMatrix(A._height(), A._width());
 
+        int row, column;
         for (row = 0; row < result._height(); row++)
         {
             for (column = 0; column < result._width(); column++)
@@ -221,21 +223,21 @@ public:
     }
 
 
-    ReturnType Matrix::mul(const RealType& V)
+    ReturnType mul(const RealType& V)
     {
         CORE_ASSERT_TRUE(this->w == V.h, "Matrices have wrong sizes");
-        Matrix *result = new Matrix(this->h, V.w, false);
+        ReturnType result = _createMatrix(_height(), V._width());
 
         int row, column, runner;
-        for (row = 0; row < result->h; row++)
-            for (column = 0; column < result->w; column++)
+        for (row = 0; row < result._height(); row++)
+            for (column = 0; column < result._width(); column++)
             {
-                double sum = 0;
-                for (runner = 0; runner < this->w; runner++)
+                ElementType sum = 0;
+                for (runner = 0; runner < _width(); runner++)
                 {
-                    sum += this->a(row, runner) * V.a(runner, column);
+                    sum += _atm(row, runner) * V._atm(runner, column);
                 }
-                result->a(row, column) = sum;
+                result->atm(row, column) = sum;
             }
 
         return result;
