@@ -369,7 +369,7 @@ void RaytraceableMaterial::getColor(RayIntersection &ray, RaytraceRenderer &rend
         // cout             << specularPart << "(" << specularKoef << ") " << endl;
 
         ray.ownColor += diffusePart;
-        //ray.ownColor += specularPart;
+        ray.ownColor += specularPart;
 
 
     }

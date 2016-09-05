@@ -468,6 +468,35 @@ Matrix33 HomographyReconstructor::getBestHomographyLSE2( void )
     return toReturn;
 }
 
+#if 0
+template<typename DoubleType>
+double genericCostFunction(const DoubleType in[], DoubleType out[])
+{
+    int argout = 0;
+    double cost = 0.0;
+    for (unsigned i = 0; i < p2p.size(); i++)
+    {
+        Vector2dd point = (H * p2p[i].start);
+        Vector2dd diff = point - p2p[i].end;
+        if (out)
+        {
+            out[argout++] = diff.x();
+            out[argout++] = diff.y();
+        }
+        cost += (point - p2p[i].end).sumAllElementsSq();
+    }
+
+    for (unsigned i = 0; i < p2l.size(); i++)
+    {
+        Vector2dd point = H * p2l[i].start;
+        double distanceSq = p2l[i].end.sqDistanceTo(point);
+        if (out)
+            out[argout++] = std::sqrt(distanceSq);
+        cost += distanceSq;
+    }
+    return cost;
+}
+#endif
 
 
 /**
@@ -641,15 +670,15 @@ Matrix33 HomographyReconstructor::getBestHomographyLSEandLM()
 
 
 
-Matrix33 HomographyReconstructor::getBestHomography(const HomographyReconstructor::HomographyAlgorithm &method)
+Matrix33 HomographyReconstructor::getBestHomography(const HomographyAlgorithm::HomographyAlgorithm &method)
 {
     switch (method) {
-        case LSE:  return getBestHomographyLSE(); break;
-        case LSE1: return getBestHomographyLSE1(); break;
-        case LSE2: return getBestHomographyLSE2(); break;
-        case ML:   return getBestHomographyLM(); break;
+        case HomographyAlgorithm::LSE:  return getBestHomographyLSE(); break;
+        case HomographyAlgorithm::LSE1: return getBestHomographyLSE1(); break;
+        case HomographyAlgorithm::LSE2: return getBestHomographyLSE2(); break;
+        case HomographyAlgorithm::ML:   return getBestHomographyLM(); break;
         default:
-        case ML_AFTER_LSE: return getBestHomographyLSEandLM(); break;
+        case HomographyAlgorithm::ML_AFTER_LSE: return getBestHomographyLSEandLM(); break;
     }
     return Matrix33::Identity();
 }

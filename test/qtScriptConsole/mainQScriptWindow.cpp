@@ -80,8 +80,8 @@ void MainQScriptWindow::executeScript(void)
         qDebug() << "Result is bool:" << value.toBool();
     }
 
-    if (value.isNumber()) {
-        qDebug() << "Result is int:" << value.toInteger();
+    if (value.isNumber()) {        
+        qDebug() << "Result is number:" << value.toNumber();
     }
 
     if (value.isArray()) {

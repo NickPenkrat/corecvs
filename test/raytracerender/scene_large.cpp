@@ -29,7 +29,7 @@ void raytrace_scene_large( void )
 
       SDFRenderable object;
       object.F = [](Vector3dd v) {
-          double step = 200;
+          //double step = 200;
           Vector3dd c1 = Vector3dd(0,-30, 150.0);
           Vector3dd c2 = Vector3dd(0, 40, 150.0);
 

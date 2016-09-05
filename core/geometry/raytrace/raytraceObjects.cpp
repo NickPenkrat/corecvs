@@ -255,8 +255,8 @@ void RaytraceableTransform::normal(RayIntersection &intersection)
     RayIntersection trans = intersection;    
     trans.ray.transform(mMatrixInv);
 
-    double scale1 = intersection.ray.a.l2Metric();
-    double scale2 = trans.ray.a.l2Metric();
+    //double scale1 = intersection.ray.a.l2Metric();
+    //double scale2 = trans.ray.a.l2Metric();
     //trans.t = trans.t / scale1 * scale2;
 
     mObject->normal(trans);
