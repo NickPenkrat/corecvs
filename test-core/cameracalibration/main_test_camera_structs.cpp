@@ -38,8 +38,10 @@ TEST(CalibrationStructsTest, testFundamentalProvider)
         auto E  = camera1.fundamentalTo(camera2);
         auto F  = CameraModel::Fundamental(camera1.getCameraMatrix(), camera2.getCameraMatrix());
 
-//std::cout << E << std::endl << F << std::endl << std::endl;
-//        std::cout << (E - F).frobeniusNorm() << std::endl;
+        auto vv = E.rank2Nullvectors();
+        ASSERT_NEAR(!(E * vv[1]), 0.0, 1e-6 * !vv[1]);
+        ASSERT_NEAR(!(vv[0] * E), 0.0, 1e-6 * !vv[0]);
+
         for (int j = 0; j < RNG_RETRIES; ++j)
         {
             corecvs::Vector3dd pt(unif(rng), unif(rng), unif(rng));
@@ -52,8 +54,8 @@ TEST(CalibrationStructsTest, testFundamentalProvider)
 
                 auto el = E * R;
                 auto fl = F * R;
-                ASSERT_NEAR(L & (E * R) / std::sqrt(el[0] * el[0] + el[1] * el[1]), 0.0, 1e-3);
-                ASSERT_NEAR(L & (F * R) / std::sqrt(fl[0] * fl[0] + fl[1] * fl[1]), 0.0, 1e-3);
+                ASSERT_NEAR(L & (E * R) / std::sqrt(el[0] * el[0] + el[1] * el[1]), 0.0, 1e-6);
+                ASSERT_NEAR(L & (F * R) / std::sqrt(fl[0] * fl[0] + fl[1] * fl[1]), 0.0, 1e-6);
                 validCnt++;
             }
         }
