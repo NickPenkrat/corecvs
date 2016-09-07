@@ -25,11 +25,6 @@ public:
     LensDistortionModelParameters lensDistortionParameters();
     void setLensDistortionParameters(const LensDistortionModelParameters &params);
 
-#if 0
-    void getCameraParameters(double &fx, double &fy, double &cx, double &cy, double &skew, corecvs::Vector3dd &pos, corecvs::Quaternion &dir, corecvs::Vector2dd &size, corecvs::Vector2dd &distortedSize);
-    void setCameraParameters(double &fx, double &fy, double &cx, double &cy, double &skew, corecvs::Vector3dd &pos, corecvs::Quaternion &dir, corecvs::Vector2dd &size, corecvs::Vector2dd &distortedSize);
-#endif
-
 
     CameraModel* createParameters() const;
     void getParameters(CameraModel &params) const;
@@ -55,20 +50,19 @@ signals:
     void saveRequest(QString filename);
 
 
-private:
-#if 0
-    void writeUi();
-    void readUi();
-
-    // FIXME: decide what model to use as camera parameters and change this members to corresponding struct
-    // TODO: replace this dirty hacks with "real" camera model struct and add UI for all members
-    double fx = 1.0, fy = 1.0, skew = 0.0, cx = 100.0, cy = 100.0;
-    corecvs::Vector3dd _pos = corecvs::Vector3dd(0, 0, -10);
-    corecvs::Quaternion _orientation = corecvs::Quaternion(0, 0, 0, 1);
-    corecvs::Vector2dd _size = corecvs::Vector2dd(0, 0), _distortedSize = corecvs::Vector2dd(0, 0);
-#endif
+protected:
 
     Ui::CameraModelParametersControlWidget *ui;
+};
+
+
+/* Should support additional protype field*/
+class FixtureCameraParametersControlWidget : public CameraModelParametersControlWidget
+{
+public:
+    explicit FixtureCameraParametersControlWidget(QWidget *parent = 0);
+
+
 };
 
 #endif // CAMERAMODELPARAMETERSCONTROLWIDGET_H

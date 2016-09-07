@@ -5,6 +5,7 @@
 #include <QCheckBox>
 #include <QDoubleSpinBox>
 #include <QTextEdit>
+#include <QPushButton>
 
 
 #include "reflection.h"
@@ -198,6 +199,21 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
             break;
         }
 
+        /* Composite field */
+        case BaseField::TYPE_POINTER:
+        {
+            const PointerField *pField = static_cast<const PointerField *>(field);
+            QString targetName = pField->name.name;
+
+            QPushButton *buttonWidget = new QPushButton(this);
+            layout->addWidget(buttonWidget, i, 1, 1, 1);
+            buttonWidget->setEnabled(false);
+            buttonWidget->setText(targetName);
+            //connect(buttonWidget, SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
+            widget = buttonWidget;
+            break;
+        }
+
         /* Well something is not supported */
         default:
             QLabel *label = new QLabel(this);
@@ -211,6 +227,14 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
 
     QSpacerItem *spacer = new QSpacerItem(0, 20, QSizePolicy::Expanding, QSizePolicy::Expanding);
     layout->addItem(spacer, reflection->fields.size(), 0, 1, 2);
+
+    if (reflection->isActionBlock()) {
+        QPushButton *executeButton = new QPushButton(this);
+        executeButton->setIcon(QIcon(":/new/prefix1/lightning.png"));
+        executeButton->setText("Execute");
+        layout->addWidget(executeButton, layout->rowCount(), 1, 1, 1);
+
+    }
 
     setLayout(layout);
 }

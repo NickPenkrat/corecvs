@@ -7,7 +7,15 @@
 #include "fixtureScene.h"
 #include "statusTracker.h"
 
-using namespace corecvs;
+namespace corecvs {
+
+const char * FixtureSceneFactory::DEFAULT_NAME = "FixtureScene";
+
+/* Order here is crucial */
+std::map<std::string, FixtureSceneFactory::FixtureSceneCreateFunctor> FixtureSceneFactory::creators;
+bool FixtureSceneFactory::dummy = FixtureSceneFactory::staticInit();
+
+
 
 /**
  *  Camera  World   |  World   Camera
@@ -769,3 +777,27 @@ void corecvs::FixtureScene::transform(const corecvs::Affine3DQ &transformation, 
         cf->location.rotor = transformation.rotor ^ cf->location.rotor;
     }
 }
+
+FixtureScene *FixtureSceneFactory::sceneFactory(const std::string &name)
+{
+    FixtureScene *toReturn = NULL;
+    auto it = creators.find(name);
+    if (it == creators.end())
+    {
+        return toReturn;
+    }
+
+    toReturn = (*it).second();
+    return toReturn;
+}
+
+bool FixtureSceneFactory::staticInit()
+{
+    FixtureSceneCreateFunctor lambda = [](){return new FixtureScene;};
+    std::pair<std::string, FixtureSceneCreateFunctor>  entry(std::string(DEFAULT_NAME), lambda);
+
+    creators.insert(entry);
+    return true;
+}
+
+} // namespace

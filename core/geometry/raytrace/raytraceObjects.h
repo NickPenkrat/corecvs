@@ -72,6 +72,10 @@ public:
     void setPosition(const Vector3dd &position);
     void setPosition(double x, double y, double z);
 
+    void setRotation(const Matrix33 &rotation);
+    Matrix33 getRotationToCylinder();
+
+
     virtual bool intersect(RayIntersection &intersection) override;
     virtual void normal(RayIntersection &intersection)   override;
     virtual bool inside (Vector3dd &point)  override;    
@@ -257,6 +261,8 @@ public:
     virtual bool intersect(RayIntersection &intersection) override;
     virtual void normal(RayIntersection &intersection) override;
     virtual bool inside (Vector3dd &point)  override;
+
+    virtual bool toMesh (Mesh3D & target);
 };
 
 

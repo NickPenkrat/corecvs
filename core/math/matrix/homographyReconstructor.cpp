@@ -14,6 +14,7 @@
 #include "../vector/vector.h"
 #include "../../kalman/classicKalman.h"
 #include "../levenmarq.h"
+
 namespace corecvs {
 
 HomographyReconstructor::HomographyReconstructor()
@@ -23,6 +24,11 @@ HomographyReconstructor::HomographyReconstructor()
 void HomographyReconstructor::addPoint2PointConstraint(const Vector2dd &from, const Vector2dd &to)
 {
     p2p.push_back(Correspondence(from,to));
+}
+
+void HomographyReconstructor::addPoint2PointConstraint(const Correspondence &correspondence)
+{
+    p2p.push_back(correspondence);
 }
 
 void HomographyReconstructor::addPoint2LineConstraint(const Vector2dd &from, const Line2d &line)
@@ -40,8 +46,6 @@ bool HomographyReconstructor::hasEnoughtConstraints()
     size_t constraintSize  = p2l.size() + p2s.size() + p2p.size() * 2;
     return (constraintSize >= 8);
 }
-
-
 
 void HomographyReconstructor::reset(void)
 {
@@ -468,35 +472,7 @@ Matrix33 HomographyReconstructor::getBestHomographyLSE2( void )
     return toReturn;
 }
 
-#if 0
-template<typename DoubleType>
-double genericCostFunction(const DoubleType in[], DoubleType out[])
-{
-    int argout = 0;
-    double cost = 0.0;
-    for (unsigned i = 0; i < p2p.size(); i++)
-    {
-        Vector2dd point = (H * p2p[i].start);
-        Vector2dd diff = point - p2p[i].end;
-        if (out)
-        {
-            out[argout++] = diff.x();
-            out[argout++] = diff.y();
-        }
-        cost += (point - p2p[i].end).sumAllElementsSq();
-    }
 
-    for (unsigned i = 0; i < p2l.size(); i++)
-    {
-        Vector2dd point = H * p2l[i].start;
-        double distanceSq = p2l[i].end.sqDistanceTo(point);
-        if (out)
-            out[argout++] = std::sqrt(distanceSq);
-        cost += distanceSq;
-    }
-    return cost;
-}
-#endif
 
 
 /**

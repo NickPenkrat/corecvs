@@ -11,6 +11,27 @@ namespace corecvs {
 class CameraFixture;
 class StatusTracker;
 
+class FixtureSceneFactory {
+
+public:
+    typedef std::function<FixtureScene *()> FixtureSceneCreateFunctor;
+
+    /**
+     * Be careful... manipulating (writing) this stuff is not thread safe
+     **/
+    static std::map<std::string, FixtureSceneCreateFunctor> creators;
+    static bool dummy;
+
+public:
+    static const char* DEFAULT_NAME;
+
+
+
+
+    static FixtureScene *sceneFactory(const std::string &name = DEFAULT_NAME);
+
+    static bool staticInit();
+};
 
 /**
  * Heap of Calibration related stuff

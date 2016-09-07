@@ -34,6 +34,7 @@ ASTNode operator "" _x(const char * name, size_t /*len*/)
 
 typedef GenericQuaternion<ASTNode> ASTQuaternion;
 
+#if 0
 template<class Element>
 class AbsMatrix33 : public AbstractBuffer<Element, int>, public MatrixOperationsBase<AbsMatrix33<Element>, Element>
 {
@@ -64,9 +65,10 @@ public:
         this->element(2,0) = _a20;  this->element(2,1) = _a21;   this->element(2,2) = _a22;
     }
 };
+#endif
 
-typedef AbsMatrix33<ASTNode> ASTMatrix33;
-typedef AbsMatrix33<PackedDerivative<1>> PDMatrix33;
+typedef AbsMatrixFixed<ASTNode, 3, 3> ASTMatrix33;
+typedef AbsMatrixFixed<PackedDerivative<1>, 3, 3> PDMatrix33;
 
 TEST(meta, testmeta)
 {

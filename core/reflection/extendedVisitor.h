@@ -9,7 +9,19 @@
  *
  **/
 
+#include <string>
+
 namespace corecvs {
+
+class CreatorFabric {
+
+    /**
+     *  Enjoy your static desctructor. Leeks and pain are inevitable, but that's how we roll
+     **/
+    static void *createObject(std::string &name);
+
+};
+
 
 class Visitable {
 

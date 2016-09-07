@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "generated/homographyAlgorithm.h"
+#include "generated/homorgaphyReconstructorBlockBase.h"
 #include "vector2d.h"
 #include "matrix33.h"
 #include "polygons.h"
@@ -18,6 +19,9 @@
 #include "matrix.h"
 #include "function.h"
 #include "line.h"
+#include "matrixOperations.h"
+
+
 namespace corecvs {
 
 using std::vector;
@@ -39,6 +43,8 @@ public:
     HomographyReconstructor();
 
     void addPoint2PointConstraint  (const Vector2dd &from, const Vector2dd &to);
+    void addPoint2PointConstraint  (const Correspondence &correspondence);
+
     void addPoint2LineConstraint   (const Vector2dd &from, const Line2d &line);
     void addPoint2SegmentConstraint(const Vector2dd &from, const Segment2d &line);
 
@@ -174,6 +180,78 @@ private:
      **/
     Matrix33 getBestHomographyFastKalman(void);
 #endif
+
+    /**
+     * Generic cost function
+     *
+     * We should find a better place for this
+     **/
+    template<typename DoubleType>
+    double genericCostFunction(const DoubleType in[], DoubleType out[])
+    {
+        AbsMatrixFixed<DoubleType, 3, 3> H;
+        H.fillWithArgs(
+                in[0], in[1], in[2],
+                in[3], in[4], in[5],
+                in[6], in[7], 1.0);
+
+
+        int argout = 0;
+        double cost = 0.0;
+        for (unsigned i = 0; i < p2p.size(); i++)
+        {
+            Vector2d<DoubleType> point = (H * p2p[i].start);
+            Vector2d<DoubleType> diff = point - p2p[i].end;
+            if (out)
+            {
+                out[argout++] = diff.x();
+                out[argout++] = diff.y();
+            }
+            cost += (point - p2p[i].end).sumAllElementsSq();
+        }
+
+        for (unsigned i = 0; i < p2l.size(); i++)
+        {
+            Vector2dd point = H * p2l[i].start;
+            double distanceSq = p2l[i].end.sqDistanceTo(point);
+            if (out)
+                out[argout++] = std::sqrt(distanceSq);
+            cost += distanceSq;
+        }
+        return cost;
+    }
+
+};
+
+/* This part is an attempt to support an interface for a new block structure*/
+class HomographyReconstructorBlock : public HomorgaphyReconstructorBlockBase
+{
+public:
+    HomographyReconstructor wrappee;
+
+    virtual void operator ()()
+    {
+        if (in0() == NULL)
+        {
+            SYNC_PRINT(("Fail. No input"));
+            return;
+        }
+
+        wrappee.reset();
+        for (Correspondence &c: *in0())
+        {
+            wrappee.addPoint2PointConstraint(c);
+        }
+
+        Matrix33 result = wrappee.getBestHomography(algorithm());
+        setOut0(new Matrix33(result));
+
+    }
+
+    ~HomographyReconstructorBlock() {
+        delete_safe(mOut0);
+    }
+
 };
 
 

@@ -191,6 +191,14 @@ template<typename Type>
     /** flags */
     bool                isAdvanced;
 
+    /**
+     * This is an attempt to make processing blocks based on the reflection
+     * So far this is experimental
+     ***/
+    bool isInputPin() const;
+
+    bool isOuputPin() const;
+
     /** These fields are related to persentaion only and probably should be moved out. **/
     /** This is obviously out of place. But too much code needed to make design clean */
     enum WidgetHint{
@@ -619,7 +627,7 @@ public:
         return -1;
     }
 
-
+    bool isActionBlock() const;
 
 
     /*virtual*/ ~Reflection()   // it may be non virtual
@@ -644,6 +652,16 @@ public:
 #endif
     }
 };
+
+
+class ReflectionActionBlock : public Reflection {
+public:
+    virtual void operator ()()
+    {
+        SYNC_PRINT(("ReflectionActionBlock::operator (): You are calling empty operator()\n"));
+    }
+};
+
 
 
 class CompositeField : public BaseField
@@ -999,6 +1017,9 @@ public:
         rawObject((void *) object)
     {}
 
+    /**
+     *   Please note due to stupid alignment issues on ARM there could be some problems
+     **/
     template<typename Type>
     Type *getField(int fieldId)
     {
@@ -1009,6 +1030,8 @@ public:
     {
         return reflection->fields[fieldId];
     }
+
+    bool simulateConstructor();
 
 };
 

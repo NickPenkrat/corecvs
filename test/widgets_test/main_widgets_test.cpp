@@ -26,6 +26,9 @@
 #include "vector2d.h"
 #include "changeReceiver.h"
 
+
+#include "homographyReconstructor.h"
+
 int main(int argc, char **argv)
 {    
     QApplication a(argc, argv);
@@ -34,6 +37,8 @@ int main(int argc, char **argv)
 
     Vector2dd dummy(0.0);
     cout << "Main out test:" <<  dummy.reflection.fields.size() << std::endl;
+    cout << "Main out test:" << HomorgaphyReconstructorBlockBase::reflection.fields.size() << std::endl;
+
 
 #ifdef INCLUDE_EXAMPLE
     cout << "Main out test:" << TestSubClass::reflection.fields.size() << std::endl;
@@ -53,23 +58,43 @@ int main(int argc, char **argv)
 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
 
-    if (argc != 2) {
-        cout << "The list of reflected objects" << endl;
-        for (auto it : directory)
-        {
-            cout << "Class: " << it.first << endl;
-        }
+    if (argc == 1) {
+        cout << "Usage:" << endl;
+        cout << endl;
+        cout << argv[0] << " list  - List all the the reflections linked to the executable" << endl;
+        cout << argv[0] << " example  - Create a generator test widget (if one was compiled)" << endl;
+        cout << argv[0] << " widget - Create a specific test widget from reflection" << endl;
+        cout << argv[0] << " widget <name> - Create a specific test widget from reflection" << endl;
+        cout << argv[0] << " blocks - List all blocks linked to the executable" << endl;
+        cout << argv[0] << " block <name> - List all blocks linked to the executable" << endl;
+
 
         return 0;
     }
 
-    std::string className(argv[1]);    
+    std::string mode(argv[1]);
+
+    if (mode == "list") {
+        cout << "The list of reflected objects" << endl;
+        for (auto it : directory)
+        {
+            cout << "  -  " << it.first << endl;
+        }
+        return 0;
+    }
+
+    if (mode == "blocks") {
+        cout << "The list of reflected blocks" << endl;
+        cout << "  -  homography" << endl;
+        return 0;
+    }
+
 
 
     ReflectionWidget *aabWidget = NULL;
     ChangeReceiver *reciever = NULL;
 
-    if (className == "-") {
+    if (mode == "example") {
 #ifdef INCLUDE_EXAMPLE
         Reflection *widget_ref = &TestClass::reflection;
         aabWidget = new ReflectionWidget(widget_ref);
@@ -77,8 +102,13 @@ int main(int argc, char **argv)
         QObject::connect(aabWidget, SIGNAL(paramsChanged()), reciever, SLOT(processChange()));
         aabWidget->show();
 #endif
-    } else {
-        auto it = directory.find(className);
+    } else if ( mode == "widget")
+    {
+        std::string refName;
+        if (argc >= 2)
+            refName = argv[2];
+
+        auto it = directory.find(refName);
         if (it == directory.end()) {
             {
                 Reflection *widget_ref = &AxisAlignedBoxParameters::reflection;
@@ -114,7 +144,37 @@ int main(int argc, char **argv)
             Reflection *widget_ref = (*it).second;
             aabWidget = new ReflectionWidget(widget_ref);
             aabWidget->show();
+
+            bool isBlock = false;
+            for (int fieldId = 0; fieldId < widget_ref->fieldNumber(); fieldId++)
+            {
+                const BaseField *field = widget_ref->fields[fieldId];
+                if (field->isInputPin()) {
+                    SYNC_PRINT(("We have an input field %s\n", field->name.name));
+                    isBlock = true;
+                }
+                if (field->isOuputPin()) {
+                    SYNC_PRINT(("We have an output field %s\n", field->name.name));
+                    isBlock = true;
+                }
+            }
         }
+    } else if ( mode == "block")
+    {
+        std::string blockName;
+        if (argc >= 2)
+            blockName = argv[2];
+        if (blockName == "homography") {
+            HomographyReconstructorBlock block;
+
+            Reflection *widget_ref = &HomographyReconstructorBlock::reflection;
+            aabWidget = new ReflectionWidget(widget_ref);
+            aabWidget->show();
+
+
+
+        }
+
     }
 
     a.exec();

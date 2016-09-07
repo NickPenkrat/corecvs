@@ -64,6 +64,8 @@ public:
     static RaytraceableMaterial *ex1();
     static RaytraceableMaterial *ex2();
 
+    static RaytraceableMaterial *ex3(const RGBColor &color = RGBColor::Yellow());
+
     static RaytraceableMaterial *bumpy();
     static RaytraceableMaterial *glass(double dens = 1.2);
 

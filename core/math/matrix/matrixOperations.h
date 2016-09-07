@@ -247,6 +247,46 @@ public:
 };
 
 
+
+
+/* A matrix over abstract buffer having a static size */
+#include "abstractBuffer.h"
+
+template<class Element, int H = 3, int W = 3>
+class AbsMatrixFixed : public AbstractBuffer<Element, int>, public MatrixOperationsBase<AbsMatrixFixed<Element>, Element>
+{
+public:
+    typedef Element ElementType;
+
+    AbsMatrixFixed() : AbstractBuffer<Element, int>(H, W) {}
+
+    /* Matrix Operations interface */
+    Element &atm(int i, int j) {
+        return this->element(i, j);
+    }
+    const Element &atm(int i, int j) const {
+        return this->element(i, j);
+    }
+
+    static AbsMatrixFixed createMatrix(int /*h*/, int /*w*/) {return AbsMatrixFixed(); }
+
+    /* Additional helper function */
+    /*
+    void fillWithArgs(
+             Element _a00, Element _a01, Element _a02,
+             Element _a10, Element _a11, Element _a12,
+             Element _a20, Element _a21, Element _a22
+         )
+    {
+        this->element(0,0) = _a00;  this->element(0,1) = _a01;   this->element(0,2) = _a02;
+        this->element(1,0) = _a10;  this->element(1,1) = _a11;   this->element(1,2) = _a12;
+        this->element(2,0) = _a20;  this->element(2,1) = _a21;   this->element(2,2) = _a22;
+    }
+    */
+};
+
+
+
 } //namespace corecvs
 #endif  //MATRIXOPERATIONS_H_
 

@@ -21,6 +21,12 @@ public:
     bool getParameters(void *param) const;
     bool setParameters(void *param) const;
 
+public slots:
+    void executeTriggered();
+    void inputTriggered(int inId);
+    void outputTriggered(int outId);
+
+
 
 };
 
