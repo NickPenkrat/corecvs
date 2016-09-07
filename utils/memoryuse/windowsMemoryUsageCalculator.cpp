@@ -1,9 +1,24 @@
 #include "windowsMemoryUsageCalculator.h"
 
+#include <windows.h>
+
 void WindowsMemoryUsageCalculator::getMemoryUsageImpl()
 {
     // nothing here yet
+    PROCESS_MEMORY_COUNTERS_EX pmc;
+    pmc.cb = sizeof(pmc);
+    GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc));
 
-    mVirtualSize = 0;
-    mResidentSize = 0;
+
+    mVirtualSize = pmc.PrivateUsage / 1024.0 / 1024.0;
+    mResidentSize = pmc.WorkingSetSize / 1024.0 / 1024.0;
+}
+
+void WindowsMemoryUsageCalculator::getTotalMemoryImpl()
+{
+    MEMORYSTATUSEX mem;
+    mem.dwLength = sizeof(mem);
+    GlobalMemoryStatusEx(&mem);
+
+    mTotalMemory = mem.ullTotalPhys / 1024.0 / 1024.0;
 }

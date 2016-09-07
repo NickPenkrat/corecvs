@@ -1,13 +1,16 @@
 #include <QtCore/QDebug>
 #include "memoryUsageCalculator.h"
 
+const double MemoryUsageCalculator::CRITICAL_FRACTION = 0.95;
+
 void MemoryUsageCalculator::getMemoryUsage()
 {
     getMemoryUsageImpl();
+    getTotalMemoryImpl();
 
-    if (mResidentSize > upperMemoryUsageLimit)
+    if (mResidentSize > MemoryUsageCalculator::CRITICAL_FRACTION * mTotalMemory)
     {
-        qDebug() << "We are using " << mResidentSize << "Mb which is more then high limit of " << upperMemoryUsageLimit << "Mb";
+        qDebug() << "We are using " << mResidentSize << "Mb which is more then high limit of " << MemoryUsageCalculator::CRITICAL_FRACTION << " * " << mTotalMemory << " = " << MemoryUsageCalculator::CRITICAL_FRACTION * mTotalMemory << "Mb";
         emit memoryOverflow();
     }
 }
