@@ -6,6 +6,38 @@ namespace corecvs {
 
 int ScenePart::OBJECT_COUNT = 0;
 
+Matrix33 CameraModel::Fundamental(const Matrix44 &L, const Matrix44 &R)
+{
+    const Matrix44 P[2] = {R, L};
+    Matrix44 t[3][3];
+    int rows[3][3][2][3]
+// C++ generally and corecvs particullary are not very cool at clever indexing
+#define X1 {0, 1, 2}
+#define X2 {0, 2, 0}
+#define X3 {0, 0, 1}
+#define Y1 {1, 1, 2}
+#define Y2 {1, 2, 0}
+#define Y3 {1, 0, 1}
+     = {
+        {{ X1, Y1 }, { X2, Y1 }, { X3, Y1 }},
+        {{ X1, Y2 }, { X2, Y2 }, { X3, Y2 }},
+        {{ X1, Y3 }, { X2, Y3 }, { X3, Y3 }}
+     };
+    for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < 3; ++j)
+            for (int k = 0; k < 2; ++k)
+                for (int l = 0; l < 4; ++l)
+                {
+                    t[i][j].a(k * 2,     l) = P[rows[i][j][k][0]].a(rows[i][j][k][1], l);
+                    t[i][j].a(k * 2 + 1, l) = P[rows[i][j][k][0]].a(rows[i][j][k][2], l);
+                }
+    Matrix33 F;
+    for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < 3; ++j)
+            F.a(i, j) = t[i][j].det();
+    return F;
+}
+
 Matrix33 CameraModel::fundamentalTo(const CameraModel &right) const
 {
     Matrix33 K1 = intrinsics.getKMatrix33();

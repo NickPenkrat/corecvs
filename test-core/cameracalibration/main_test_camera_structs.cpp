@@ -18,7 +18,7 @@ const int RNG_RETRIES = 8192;
 
 TEST(CalibrationStructsTest, testFundamentalProvider)
 {
-    std::mt19937 rng(DEFAULT_SEED);
+    std::mt19937 rng((std::random_device())());
     std::uniform_real_distribution<double> unif(-1e3, 1e3);
 
     int validCnt = 0;
@@ -36,6 +36,10 @@ TEST(CalibrationStructsTest, testFundamentalProvider)
                 Vector3dd(unif(rng), unif(rng), unif(rng)),
                 Quaternion(unif(rng), unif(rng), unif(rng), unif(rng)).normalised()));
         auto E  = camera1.fundamentalTo(camera2);
+        auto F  = CameraModel::Fundamental(camera1.getCameraMatrix(), camera2.getCameraMatrix());
+
+//std::cout << E << std::endl << F << std::endl << std::endl;
+//        std::cout << (E - F).frobeniusNorm() << std::endl;
         for (int j = 0; j < RNG_RETRIES; ++j)
         {
             corecvs::Vector3dd pt(unif(rng), unif(rng), unif(rng));
@@ -45,7 +49,11 @@ TEST(CalibrationStructsTest, testFundamentalProvider)
                 auto p2 = camera2.project(pt);
                 corecvs::Vector3dd L(p1[0], p1[1], 1.0);
                 corecvs::Vector3dd R(p2[0], p2[1], 1.0);
-                ASSERT_NEAR(L & (E * R), 0.0, 1e-3);
+
+                auto el = E * R;
+                auto fl = F * R;
+                ASSERT_NEAR(L & (E * R) / std::sqrt(el[0] * el[0] + el[1] * el[1]), 0.0, 1e-3);
+                ASSERT_NEAR(L & (F * R) / std::sqrt(fl[0] * fl[0] + fl[1] * fl[1]), 0.0, 1e-3);
                 validCnt++;
             }
         }
