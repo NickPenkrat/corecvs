@@ -219,11 +219,7 @@ public:
     size_t totalObservations() const
     {
         size_t toReturn = 0;
-        for (size_t pointId = 0; pointId < mSceneFeaturePoints.size(); pointId++)
-        {
-            const SceneFeaturePoint *point = mSceneFeaturePoints[pointId];
-            toReturn += point->observations.size();
-        }
+        for (auto point : mSceneFeaturePoints) { toReturn += point->observations.size(); }
         return toReturn;
     }
 

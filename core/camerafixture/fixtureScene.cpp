@@ -684,7 +684,6 @@ void FixtureScene::setPrototypeCount(size_t count)
     while (mCameraPrototypes.size() < count) {
         createCameraPrototype();
     }
-
 }
 
 void FixtureScene::setOrphanCameraCount(size_t count)

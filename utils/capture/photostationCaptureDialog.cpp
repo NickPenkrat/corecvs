@@ -316,7 +316,6 @@ PhotostationCaptureDialog::~PhotostationCaptureDialog()
         CORE_ASSERT_TRUE_S(mCaptureInterfaces[i].camInterface == NULL);
         CORE_ASSERT_TRUE_S(mCaptureInterfaces[i].result == NULL);
     }
-
 }
 
 void PhotostationCaptureDialog::setNamer(AbstractImageNamer *namer)

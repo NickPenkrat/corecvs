@@ -13,7 +13,7 @@
 //#include "manipulatorCaptureDialog.h"
 
 namespace Ui {
-class PhotostationCaptureDialog;
+    class PhotostationCaptureDialog;
 }
 
 class PhotostationCaptureDialog : public QDialog, SaveableWidget

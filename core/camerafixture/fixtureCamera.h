@@ -57,12 +57,10 @@ public:
         setObjectId(id);
     }
 
-
     /** This is an experimental block of functions  it may change. Please use with caution **/
 
     /** WHY SO SLOW? **/
     bool projectPointFromWorld(const Vector3dd &point, Vector2dd *projectionPtr = NULL);
-
 
 };
 

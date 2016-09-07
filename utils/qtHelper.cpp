@@ -1,11 +1,10 @@
-#include <QtCore/QtCore>
 /**
  * \file qtHelper.cpp
  *
  * \date Apr 27, 2013
  **/
-
 #include "qtHelper.h"
+#include <QtCore/QtCore>
 
 using corecvs::Vector2dd;
 using corecvs::Vector3dd;
@@ -19,7 +18,6 @@ QDebug & operator<< (QDebug & stream, const Vector2dd & vector)
 QDebug & operator<< (QDebug & stream, const Vector3dd & vector)
 {
     stream << "[" << vector.x() << "," << vector.y() << "," << vector.z() << "]";
-
     return stream;
 }
 
@@ -125,11 +123,8 @@ QString printSelectionModel(const QItemSelectionModel::SelectionFlags &flag)
     return text;
 }
 
-
-
 QString printWidgetAttributes(QWidget *widget)
 {
-
     QString text;
 
     struct AttrName {
@@ -237,8 +232,6 @@ QString printWidgetAttributes(QWidget *widget)
     return text;
 }
 
-
-
 QTransform Core2Qt::QTransformFromMatrix(const corecvs::Matrix33 &m)
 {
 #if 0
@@ -256,10 +249,8 @@ QTransform Core2Qt::QTransformFromMatrix(const corecvs::Matrix33 &m)
 #endif
 }
 
-
 QString printQImageFormat(const QImage::Format &format)
 {
-
     QString text;
 
     struct FormatName {
