@@ -1,6 +1,7 @@
 #include "windowsMemoryUsageCalculator.h"
 
 #include <windows.h>
+#include <Psapi.h>
 
 void WindowsMemoryUsageCalculator::getMemoryUsageImpl()
 {
