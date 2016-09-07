@@ -213,6 +213,77 @@ void MulticameraTriangulator::CostFunction::operator()(const double in[], double
 }
 
 
+Matrix MulticameraTriangulator::CostFunction::getJacobian(const double in[], double)
+{
+    Vector3dd input(in[0], in[1], in[2]);
+    auto &T= mTriangulator;
+    int N = T->P.size();
+    Matrix res(N * 2, Vector3dd::LENGTH);
+    for (int i = 0; i < N; ++i)
+    {
+        auto P = T->P[i];
+        auto p = P * input;
+        auto x = p[0], y = p[1], z = p[2];
+        auto z2= z * z;
+        auto J = Matrix44(1.0 / z,     0.0, -x / z2, 0.0,
+                              0.0, 1.0 / z, -y / z2, 0.0,
+                              0.0,     0.0,     0.0, 0.0,
+                              0.0,     0.0,     0.0, 0.0);
+        auto JP = J * P;
+        auto dx = JP * Vector4dd(1.0, 0.0, 0.0, 0.0),
+             dy = JP * Vector4dd(0.0, 1.0, 0.0, 0.0),
+             dz = JP * Vector4dd(0.0, 0.0, 1.0, 0.0);
+        for (int j = 0; j < 2; ++j)
+        {
+            res.a(i * 2 + j, 0) = dx[j];
+            res.a(i * 2 + j, 1) = dy[j];
+            res.a(i * 2 + j, 2) = dz[j];
+        }
+    }
+    return res;
+}
+
+Matrix MulticameraTriangulator::CostFunction::getLSQHessian(const double *in, double delta)
+{
+    Matrix H(3, 3);
+    Vector3dd input(in[0], in[1], in[2]);
+    auto &T = mTriangulator;
+    int N = T->P.size();
+
+    for (int i = 0; i < N; ++i)
+    {
+        auto P = T->P[i];
+        auto X = P * input;
+        auto U = X.project();
+        auto p = T->xy[i];
+
+        double u = p[0], v = p[1], X_x = X[0], X_y = X[1], X_z = X[2], U_u = U[0], U_v = U[1];
+        double U_v2 = U_v * U_v, U_u2 = U_u * U_u;
+        double U_v3 = U_v2* U_v, U_u3 = U_u2* U_u;
+        double X_z2 = X_z * X_z;
+        double p11 = P.a(0, 0), p12 = P.a(0, 1), p13 = P.a(0, 2), p21 = P.a(1, 0), p22 = P.a(1, 1), p23 = P.a(1, 2), p31 = P.a(2, 0), p32 = P.a(2, 1), p33 = P.a(2, 2);
+        double p312 = p31 * p31, p322 = p32 * p32, p332 = p33 * p33;
+
+
+        // dx2
+        H.a(0, 0) += (u - U_u)*(4*p11*p31/X_z2 - 4*p312*U_u3) + (v - U_v)*(4*p21*p31/X_z2 - 4*p312*U_v3) + (-2*p11/(X_z) + 2*p31*U_u2)*(-p11/(X_z) + p31*U_u2) + (-2*p21/(X_z) + 2*p31*U_v2)*(-p21/(X_z) + p31*U_v2);
+        // dxdy
+        H.a(0, 1) += (u - U_u)*(2*p11*p32/X_z2 + 2*p12*p31/X_z2 - 4*p31*p32*U_u3) + (v - U_v)*(2*p21*p32/X_z2 + 2*p22*p31/X_z2 - 4*p31*p32*U_v3) + (-2*p11/(X_z) + 2*p31*U_u2)*(-p12/(X_z) + p32*U_u2) + (-2*p21/(X_z) + 2*p31*U_v2)*(-p22/(X_z) + p32*U_v2);
+        // dxdz
+        H.a(0, 2) += (u - U_u)*(2*p11*p33/X_z2 + 2*p13*p31/X_z2 - 4*p31*p33*U_u3) + (v - U_v)*(2*p21*p33/X_z2 + 2*p23*p31/X_z2 - 4*p31*p33*U_v3) + (-2*p11/(X_z) + 2*p31*U_u2)*(-p13/(X_z) + p33*U_u2) + (-2*p21/(X_z) + 2*p31*U_v2)*(-p23/(X_z) + p33*U_v2);
+        // dy2
+        H.a(1, 1) += (u - U_u)*(4*p12*p32/X_z2 - 4*p322*U_u3) + (v - U_v)*(4*p22*p32/X_z2 - 4*p322*U_v3) + (-2*p12/(X_z) + 2*p32*U_u2)*(-p12/(X_z) + p32*U_u2) + (-2*p22/(X_z) + 2*p32*U_v2)*(-p22/(X_z) + p32*U_v2);
+        // dydz
+        H.a(1, 2) += (u - U_u)*(2*p12*p33/X_z2 + 2*p13*p32/X_z2 - 4*p32*p33*U_u3) + (v - U_v)*(2*p22*p33/X_z2 + 2*p23*p32/X_z2 - 4*p32*p33*U_v3) + (-2*p12/(X_z) + 2*p32*U_u2)*(-p13/(X_z) + p33*U_u2) + (-2*p22/(X_z) + 2*p32*U_v2)*(-p23/(X_z) + p33*U_v2);
+        // dz2
+        H.a(2, 2) += (u - U_u)*(4*p13*p33/X_z2 - 4*p332*U_u3) + (v - U_v)*(4*p23*p33/X_z2 - 4*p332*U_v3) + (-2*p13/(X_z) + 2*p33*U_u2)*(-p13/(X_z) + p33*U_u2) + (-2*p23/(X_z) + 2*p33*U_v2)*(-p23/(X_z) + p33*U_v2);
+    }
+    H *= 0.5;
+    H.a(1, 0) = H.a(0, 1);
+    H.a(2, 0) = H.a(0, 2);
+    H.a(2, 1) = H.a(1, 2);
+    return H;
+}
 
 Vector3dd MulticameraTriangulator::triangulateLM(Vector3dd initialGuess, bool * /*ok*/)
 {
@@ -221,6 +292,7 @@ Vector3dd MulticameraTriangulator::triangulateLM(Vector3dd initialGuess, bool * 
     LMfit.f = &F;
     LMfit.maxIterations = 1000;
     LMfit.traceProgress = false;
+//    LMfit.trace = true;
 
     vector<double> guess(3);
     guess[0] = initialGuess.x();
@@ -237,9 +309,8 @@ Vector3dd MulticameraTriangulator::triangulateLM(Vector3dd initialGuess, bool * 
  * Assuming we have an MLE-estimator it (under certain circumstances) is asympthotically-normal
  * So if (and it is the only point that should be used for evaluation) "at" is an extreme value,
  * than hessian is asympthotically unbiased estimate for inverse of covariance matrix
- * For LSQ-estimator JTJ is a good enough estimation of hessian near of extremum
+ * For LSQ-estimator now we have an symbolically-derived hessian computation
  *
- * NOTE: Due to some reasons on real-life scenes this does not work as expected
  */
 corecvs::Matrix33 MulticameraTriangulator::getCovarianceInvEstimation(const corecvs::Vector3dd &at) const
 {
