@@ -239,7 +239,7 @@ TEST(meta, matrixExample)
     {
         for (int j = 0; j < 3; j++)
         {
-            for (int n = 0; n < names.size(); n++)
+            for (size_t n = 0; n < names.size(); n++)
             {
                 ASTNodeInt *rd = M.atm(i,j).p->derivative(names[n])->compute(binds);
                 cout << rd->val << " ";

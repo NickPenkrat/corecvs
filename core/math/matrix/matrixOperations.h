@@ -249,7 +249,9 @@ public:
 
 
 
-/* A matrix over abstract buffer having a static size */
+/**
+ * A matrix over abstract buffer having a static size
+ **/
 #include "abstractBuffer.h"
 
 template<class Element, int H = 3, int W = 3>
@@ -271,20 +273,86 @@ public:
     static AbsMatrixFixed createMatrix(int /*h*/, int /*w*/) {return AbsMatrixFixed(); }
 
     /* Additional helper function */
-    /*
-    void fillWithArgs(
-             Element _a00, Element _a01, Element _a02,
-             Element _a10, Element _a11, Element _a12,
-             Element _a20, Element _a21, Element _a22
-         )
-    {
-        this->element(0,0) = _a00;  this->element(0,1) = _a01;   this->element(0,2) = _a02;
-        this->element(1,0) = _a10;  this->element(1,1) = _a11;   this->element(1,2) = _a12;
-        this->element(2,0) = _a20;  this->element(2,1) = _a21;   this->element(2,2) = _a22;
-    }
-    */
 };
 
+/**
+ *  A matrix over fixed vector having a static size
+ **/
+
+#include "fixedVector.h"
+
+template<class Element, int H = 3, int W = 3>
+class FixMatrixFixed : public FixedVector<Element, H * W>, public MatrixOperationsBase<FixMatrixFixed<Element>, Element>
+{
+public:
+    typedef Element ElementType;
+
+    FixMatrixFixed() :
+        FixedVector<ElementType, H * W>()
+    {}
+
+    /* Matrix Operations interface */
+
+    inline int height() const {
+        return H;
+    }
+
+    inline int width() const {
+        return W;
+    }
+
+    ElementType &atm(int i, int j) {
+        return this->element[i * W + j];
+    }
+    const Element &atm(int i, int j) const {
+        return this->element[i * W + j];
+    }
+
+    static FixMatrixFixed createMatrix(int /*h*/, int /*w*/) {return FixMatrixFixed(); }
+
+
+    /* Additional helper function */
+    void fillWithArgs(const ElementType value, va_list marker)
+    {
+        this->atm(0, 0) = value;
+        for (int i = 0; i < this->height(); i++)
+            for (int j = 0; j < this->width(); j++)
+                if (i != 0 || j != 0)
+                    this->atm(i,j) = va_arg(marker, ElementType);
+    }
+
+    void fillWithArgs(const ElementType value, ...)
+    {
+        va_list  marker;
+        va_start(marker, value);
+        fillWithArgs(value, marker);
+        va_end(marker);
+    }
+
+    /* Actual operators */
+    /**
+     *  TODO: Support nonquare matrixes and non-fixed vectors and raise to Matrix operations
+     **/
+    template<typename VectorType>
+    friend inline FixedVector<ElementType, H> operator *(const FixMatrixFixed &M, const VectorType &V)
+    {
+        FixedVector<ElementType, H> result;
+        typedef decltype(V.at(0) * M.atm(0, 0)) SumType;
+
+        for (int row = 0; row < M.height(); row++)
+        {
+            SumType sum(0.0);
+
+            for (int column = 0; column < M.width(); column++)
+            {
+                sum += V.at(column) * M.atm(row, column);
+            }
+            result.at(row) = sum;
+        }
+        return result;
+    }
+
+};
 
 
 } //namespace corecvs

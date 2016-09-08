@@ -110,7 +110,7 @@ int GcodeLoader::loadGcode(istream &input, Mesh3D &mesh)
                     Vector3dd center = currentPosition;
                     mesh.setColor(RGBColor::Yellow());
 
-                    for (int i = 1; i < tokens.size(); i++)
+                    for (size_t i = 1; i < tokens.size(); i++)
                     {
                         switch (tokens[i].first) {
                             case 'i': center.x() += tokens[i].second; break;

@@ -25,6 +25,7 @@
 namespace corecvs {
 
 using std::vector;
+using std::sqrt; /* < ugly but otherwise we would intrude into std:: namespace*/
 
 typedef PrimitiveCorrespondence<Vector2dd, Line2d> CorrespondencePointLine;
 typedef PrimitiveCorrespondence<Vector2dd, Segment2d> CorrespondencePointSegment;
@@ -181,15 +182,16 @@ private:
     Matrix33 getBestHomographyFastKalman(void);
 #endif
 
+public:
     /**
      * Generic cost function
      *
      * We should find a better place for this
      **/
     template<typename DoubleType>
-    double genericCostFunction(const DoubleType in[], DoubleType out[])
+    void genericCostFunction(const DoubleType in[], DoubleType out[])
     {
-        AbsMatrixFixed<DoubleType, 3, 3> H;
+        FixMatrixFixed<DoubleType, 3, 3> H;
         H.fillWithArgs(
                 in[0], in[1], in[2],
                 in[3], in[4], in[5],
@@ -200,7 +202,9 @@ private:
         double cost = 0.0;
         for (unsigned i = 0; i < p2p.size(); i++)
         {
-            Vector2d<DoubleType> point = (H * p2p[i].start);
+            Vector3d<DoubleType> reproj = Vector3d<DoubleType>(H * Vector3dd::FromProjective(p2p[i].start));
+
+            Vector2d<DoubleType> point = reproj.project();
             Vector2d<DoubleType> diff = point - p2p[i].end;
             if (out)
             {
@@ -212,13 +216,11 @@ private:
 
         for (unsigned i = 0; i < p2l.size(); i++)
         {
-            Vector2dd point = H * p2l[i].start;
-            double distanceSq = p2l[i].end.sqDistanceTo(point);
+            Vector2d<DoubleType> point = H * p2l[i].start;
+            DoubleType distanceSq = p2l[i].end.sqDistanceTo(point);
             if (out)
-                out[argout++] = std::sqrt(distanceSq);
-            cost += distanceSq;
+                out[argout++] = sqrt(distanceSq);
         }
-        return cost;
     }
 
 };

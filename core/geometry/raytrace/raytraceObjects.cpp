@@ -479,7 +479,7 @@ bool RaytraceableCylinder::intersect(RayIntersection &intersection)
     static const double CYL_EPSILON  = 0.00001;
     intersection.object = NULL;
 
-    Ray3d &ray = intersection.ray;
+    //Ray3d &ray = intersection.ray;
     Ray3d ray1 = intersection.ray;
     ray1.p -= p;
     Ray3d cf = ray1.transformed(rotation);

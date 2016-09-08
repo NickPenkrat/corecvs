@@ -1,6 +1,7 @@
 #ifndef PERLINNOISE_H
 #define PERLINNOISE_H
 
+#include <random>
 #include "voxels/voxelBuffer.h"
 
 namespace corecvs {

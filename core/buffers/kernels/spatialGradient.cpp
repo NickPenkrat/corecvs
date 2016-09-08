@@ -64,9 +64,9 @@ G12Buffer* SpatialGradient::findCornerPoints(double scaler, int apperture)
     } else {
         printf("SpatialGradient::findCornerPoints() %d\n", v);
 
-        for(int i = 0 ; i < start->h; i++)
+        for(uint32_t i = 0 ; i < start->h; i++)
         {
-            for(int  j = 0; j < start->w; j++)
+            for(uint32_t  j = 0; j < start->w; j++)
             {
                 Vector3dd sum = Vector3dd::Zero();
 

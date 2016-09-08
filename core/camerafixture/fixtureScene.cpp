@@ -11,11 +11,6 @@ namespace corecvs {
 
 const char * FixtureSceneFactory::DEFAULT_NAME = "FixtureScene";
 
-/* Order here is crucial */
-std::map<std::string, FixtureSceneFactory::FixtureSceneCreateFunctor> FixtureSceneFactory::creators;
-bool FixtureSceneFactory::dummy = FixtureSceneFactory::staticInit();
-
-
 
 /**
  *  Camera  World   |  World   Camera
@@ -277,6 +272,7 @@ void FixtureScene::clear()
     }
     mOwnedObjects.clear();
 
+    mCameraPrototypes.clear();
     mFixtures.clear();
     mOrphanCameras.clear();
     mSceneFeaturePoints.clear();
@@ -778,6 +774,21 @@ void corecvs::FixtureScene::transform(const corecvs::Affine3DQ &transformation, 
     }
 }
 
+std::unique_ptr<FixtureSceneFactory> FixtureSceneFactory::instance;
+
+FixtureSceneFactory *FixtureSceneFactory::getInstance() {
+    if (!instance) {
+        instance.reset(new FixtureSceneFactory());
+    }
+
+    FixtureSceneCreateFunctor lambda = [](){return new FixtureScene;};
+    std::pair<std::string, FixtureSceneCreateFunctor>  entry(std::string(DEFAULT_NAME), lambda);
+
+    instance->creators.insert(entry);
+
+    return instance.get();
+}
+
 FixtureScene *FixtureSceneFactory::sceneFactory(const std::string &name)
 {
     FixtureScene *toReturn = NULL;
@@ -791,13 +802,14 @@ FixtureScene *FixtureSceneFactory::sceneFactory(const std::string &name)
     return toReturn;
 }
 
-bool FixtureSceneFactory::staticInit()
+void FixtureSceneFactory::print()
 {
-    FixtureSceneCreateFunctor lambda = [](){return new FixtureScene;};
-    std::pair<std::string, FixtureSceneCreateFunctor>  entry(std::string(DEFAULT_NAME), lambda);
-
-    creators.insert(entry);
-    return true;
+    cout << "Known fixture Scenes:" << endl;
+    for (auto &it : creators)
+    {
+        cout << " " << it.first << endl;
+    }
 }
+
 
 } // namespace

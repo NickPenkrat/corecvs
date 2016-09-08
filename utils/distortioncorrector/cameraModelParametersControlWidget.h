@@ -40,6 +40,10 @@ public slots:
     void loadPressed();
     void savePressed();
 
+    void revertPressed();
+
+
+    void paramsChangedInUI();
 
 signals:
     void valueChanged();
@@ -53,6 +57,8 @@ signals:
 protected:
 
     Ui::CameraModelParametersControlWidget *ui;
+    CameraModel backup;
+
 };
 
 

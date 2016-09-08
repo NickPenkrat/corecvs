@@ -191,6 +191,9 @@ public:
 
     /** Observation related block */
     typedef std::unordered_map<FixtureCamera *, SceneObservation> ObservContainer;
+    //typedef std::map<FixtureCamera *, SceneObservation> ObservContainer;
+
+
     ObservContainer observations;
 
     std::unordered_map<WildcardablePointerPair<CameraFixture, FixtureCamera>, SceneObservation> observations__;
@@ -249,22 +252,37 @@ public:
 
         if (!visitor.isLoader())
         {
-            int i = 0;
+
             /* We don't load observations here*/
-            for (auto &it : observations)
+
+            /* We resort it to make compare easier. We should find a way to make it more stable */
+            vector<FixtureCamera *> toSort;
+            for (auto &it : observations) {
+                toSort.push_back(it.first);
+            }
+
+            std::sort(toSort.begin(), toSort.end(),
+                      [](const FixtureCamera *first, const FixtureCamera *second) { return first->nameId > second->nameId; }
+            );
+
+            int i = 0;
+            for (auto &it : toSort)
             {
-                SceneObservation &observ = it.second;
-                char buffer[100]; snprintf2buf(buffer, "obsrv[%d]", i);
+                SceneObservation &observ = observations[it];
+                char buffer[100];
+                snprintf2buf(buffer, "obsrv[%d]", i);
                 visitor.visit(observ, observ, buffer);
                 i++;
             }
         }
         else
         {
+            observations.clear();
             SceneObservation observ0;
             for (int i = 0; i < observeSize; i++)
             {
-                char buffer[100]; snprintf2buf(buffer, "obsrv[%d]", i);
+                char buffer[100];
+                snprintf2buf(buffer, "obsrv[%d]", i);
                 SceneObservation observ;
                 observ.featurePoint = this;         // we need to set it before visit()
                 visitor.visit(observ, observ0, buffer);

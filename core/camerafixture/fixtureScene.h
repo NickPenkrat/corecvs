@@ -18,19 +18,21 @@ public:
 
     /**
      * Be careful... manipulating (writing) this stuff is not thread safe
+     * We all know were a singleton can lead you.
      **/
-    static std::map<std::string, FixtureSceneCreateFunctor> creators;
-    static bool dummy;
+    std::map<std::string, FixtureSceneCreateFunctor> creators;
+
+private:
+    static std::unique_ptr<FixtureSceneFactory> instance;
 
 public:
     static const char* DEFAULT_NAME;
 
+    static FixtureSceneFactory *getInstance();
 
+    FixtureScene *sceneFactory(const std::string &name = DEFAULT_NAME);
 
-
-    static FixtureScene *sceneFactory(const std::string &name = DEFAULT_NAME);
-
-    static bool staticInit();
+    void print();
 };
 
 /**

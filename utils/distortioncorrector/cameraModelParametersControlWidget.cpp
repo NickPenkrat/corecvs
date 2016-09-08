@@ -11,22 +11,23 @@ CameraModelParametersControlWidget::CameraModelParametersControlWidget(QWidget *
 
     ui->lensDistortionWidget->toggleAdvanced(false);
 
-    QObject::connect(ui->lensDistortionWidget, SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
-    QObject::connect(ui->extrinsicWidget     , SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->lensDistortionWidget, SIGNAL(paramsChanged()), this, SLOT(paramsChangedInUI()));
+    QObject::connect(ui->extrinsicWidget     , SIGNAL(paramsChanged()), this, SLOT(paramsChangedInUI()));
 
 
-    QObject::connect(ui->spinBoxFocalX, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
-    QObject::connect(ui->spinBoxFocalY, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->spinBoxFocalX, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
+    QObject::connect(ui->spinBoxFocalY, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
 
-    QObject::connect(ui->spinBoxCx, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
-    QObject::connect(ui->spinBoxCy, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->spinBoxCx, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
+    QObject::connect(ui->spinBoxCy, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
 
-    QObject::connect(ui->spinBoxSkew, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->spinBoxSkew, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
 //    writeUi();
     /* Addintional buttons */
 
     QObject::connect(ui->loadPushButton, SIGNAL(released()), this, SLOT(loadPressed()));
     QObject::connect(ui->savePushButton, SIGNAL(released()), this, SLOT(savePressed()));
+    QObject::connect(ui->revertButton  , SIGNAL(released()), this, SLOT(revertPressed()));
 
 }
 
@@ -86,6 +87,19 @@ void CameraModelParametersControlWidget::savePressed()
     }
 }
 
+void CameraModelParametersControlWidget::revertPressed()
+{
+    qDebug() << "CameraModelParametersControlWidget::revertPressed(): pressed";
+    setParameters(backup);
+}
+
+void CameraModelParametersControlWidget::paramsChangedInUI()
+{
+    qDebug() << "CameraModelParametersControlWidget::paramsChangedInUI(): pressed";
+    ui->revertButton->setEnabled(true);
+    emit paramsChanged();
+}
+
 /**/
 
 void CameraModelParametersControlWidget::getParameters(CameraModel& params) const
@@ -135,6 +149,9 @@ void CameraModelParametersControlWidget::setParameters(const CameraModel &input)
     ui->infoLabel->setText(QString("Size:[%1 x %2]").arg(input.intrinsics.size.x()).arg(input.intrinsics.size.y()));
 
     blockSignals(wasBlocked);
+    backup = input;
+    ui->revertButton->setEnabled(false);
+
     emit paramsChanged();
 }
 
