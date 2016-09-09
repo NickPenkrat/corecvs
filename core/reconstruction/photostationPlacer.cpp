@@ -28,6 +28,7 @@ std::string toString(ReconstructionFunctorOptimizationErrorType::ReconstructionF
             return "ANGULAR";
         case ReconstructionFunctorOptimizationErrorType::CROSS_PRODUCT:
             return "CROSS-PRODUCT";
+        default:
         case ReconstructionFunctorOptimizationErrorType::RAY_DIFF:
             return "RAY DIFF";
     }

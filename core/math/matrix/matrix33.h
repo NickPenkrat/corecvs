@@ -195,6 +195,7 @@ public:
         out.precision(oldPrec);
     }
 
+    /* TODO: to matrixOperations */
     friend ostream & operator <<(ostream &out, const Matrix33 &matrix)
     {
         //streamsize wasPrecision = out.precision(6);
@@ -213,7 +214,7 @@ public:
         return out;
     }
 
-
+    /* TODO: to matrixOperations */
     friend istream & operator >>(istream &in, Matrix33 &matrix)
     {
         for (int i = 0; i < matrix.H; i++)

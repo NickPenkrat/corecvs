@@ -1256,3 +1256,16 @@ void corecvs::ReconstructionFixtureScene::filterEssentialRansac(WPP idA, WPP idB
     }
     remove(idA, idB, bestInliers);
 }
+
+
+
+bool ReconstructionFixtureScene::dummy = ReconstructionFixtureScene::staticInit();
+
+bool ReconstructionFixtureScene::staticInit()
+{
+    FixtureSceneFactory::FixtureSceneCreateFunctor lambda = [](){return new ReconstructionFixtureScene;};
+    std::pair<std::string, FixtureSceneFactory::FixtureSceneCreateFunctor>  entry(std::string("ReconstructionFixtureScene"), lambda);
+
+    FixtureSceneFactory::getInstance()->creators.insert(entry);
+    return true;
+}

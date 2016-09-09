@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 
     Q_INIT_RESOURCE(main);
 
-    SYNC_PRINT(("Starting cloudView...\n"));
+    SYNC_PRINT(("Starting ImageView...\n"));
     QApplication app(argc, argv);
     ImageViewMainWindow mainWindow;
 

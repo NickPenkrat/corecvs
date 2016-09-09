@@ -126,6 +126,7 @@ void testJSON_StereoScene()
     model.intrinsics.focal.x() = 589;
     model.intrinsics.focal.y() = 589;
     model.intrinsics.size = Vector2dd(640, 480);
+    model.distortion.mKoeff = std::vector<double>({std::numeric_limits<double>::min()});
 
 
     FixtureCamera *camera1 = scene->createCamera();
@@ -225,12 +226,28 @@ void testJSON_StereoScene()
 
 }
 
+void testJSON_StereoRecheck()
+{
+     FixtureSceneFactory::getInstance()->print();
+     FixtureScene *scene = FixtureSceneFactory::getInstance()->sceneFactory();
+
+
+     {
+         JSONGetter getter("stereo.json");
+         getter.visit(*scene, "scene");
+     }
+     {
+         JSONSetter setter("stereo-secondary.json");
+         setter.visit(*scene, "scene");
+     }
+}
 
 int main (int /*argc*/, char ** /*argv*/)
 {
     printf("Generate some test scenes\n");
-    testJSON_FixtureScene();
-    testJSON_StereoScene();
+//    testJSON_FixtureScene();
+//    testJSON_StereoScene();
+    testJSON_StereoRecheck();
 
 	return 0;
 }

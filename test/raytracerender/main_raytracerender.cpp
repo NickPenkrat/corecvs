@@ -34,6 +34,7 @@ extern void raytrace_scene_speedup( void );
 extern void raytrace_scene_pole( void );
 
 extern void raytrace_scene_large( void );
+extern void raytrace_scene_tree(void);
 
 int main(int argc, char **argv)
 {
@@ -66,6 +67,8 @@ int main(int argc, char **argv)
                 raytrace_scene_speedup(); break;
         case 6:
                 raytrace_scene_large(); break;
+        case 7:
+                raytrace_scene_tree(); break;
     }
 
 }

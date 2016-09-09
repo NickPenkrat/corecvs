@@ -14,6 +14,7 @@
 #include "../vector/vector.h"
 #include "../../kalman/classicKalman.h"
 #include "../levenmarq.h"
+
 namespace corecvs {
 
 HomographyReconstructor::HomographyReconstructor()
@@ -23,6 +24,11 @@ HomographyReconstructor::HomographyReconstructor()
 void HomographyReconstructor::addPoint2PointConstraint(const Vector2dd &from, const Vector2dd &to)
 {
     p2p.push_back(Correspondence(from,to));
+}
+
+void HomographyReconstructor::addPoint2PointConstraint(const Correspondence &correspondence)
+{
+    p2p.push_back(correspondence);
 }
 
 void HomographyReconstructor::addPoint2LineConstraint(const Vector2dd &from, const Line2d &line)
@@ -40,8 +46,6 @@ bool HomographyReconstructor::hasEnoughtConstraints()
     size_t constraintSize  = p2l.size() + p2s.size() + p2p.size() * 2;
     return (constraintSize >= 8);
 }
-
-
 
 void HomographyReconstructor::reset(void)
 {
@@ -470,6 +474,7 @@ Matrix33 HomographyReconstructor::getBestHomographyLSE2( void )
 
 
 
+
 /**
  *   This function computes the classical Euklidian cost.
  *
@@ -641,15 +646,15 @@ Matrix33 HomographyReconstructor::getBestHomographyLSEandLM()
 
 
 
-Matrix33 HomographyReconstructor::getBestHomography(const HomographyReconstructor::HomographyAlgorithm &method)
+Matrix33 HomographyReconstructor::getBestHomography(const HomographyAlgorithm::HomographyAlgorithm &method)
 {
     switch (method) {
-        case LSE:  return getBestHomographyLSE(); break;
-        case LSE1: return getBestHomographyLSE1(); break;
-        case LSE2: return getBestHomographyLSE2(); break;
-        case ML:   return getBestHomographyLM(); break;
+        case HomographyAlgorithm::LSE:  return getBestHomographyLSE(); break;
+        case HomographyAlgorithm::LSE1: return getBestHomographyLSE1(); break;
+        case HomographyAlgorithm::LSE2: return getBestHomographyLSE2(); break;
+        case HomographyAlgorithm::ML:   return getBestHomographyLM(); break;
         default:
-        case ML_AFTER_LSE: return getBestHomographyLSEandLM(); break;
+        case HomographyAlgorithm::ML_AFTER_LSE: return getBestHomographyLSEandLM(); break;
     }
     return Matrix33::Identity();
 }
