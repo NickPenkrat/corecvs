@@ -94,3 +94,8 @@ SOURCES += \
 	raytrace/main_test_raytrace.cpp \
 	jit/main_test_jit.cpp \
 	matrixoperations/main_test_matrixoperations.cpp \
+
+
+!win32 {
+  LIBS += -ldl
+}

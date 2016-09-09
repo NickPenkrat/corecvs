@@ -13,6 +13,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <iostream>
 
 namespace corecvs {
 
@@ -41,6 +42,17 @@ struct ASTRenderDec {
     const char *lbr;
 
     bool genParameters;
+    std::ostream &output = std::cout;
+
+    ASTRenderDec(const char *ident, const char *lbr, bool genParameters) :
+        ident(ident), lbr(lbr), genParameters(genParameters)
+    {}
+
+    ASTRenderDec(const char *ident, const char *lbr, bool genParameters,  std::ostream &output ) :
+        ident(ident), lbr(lbr), genParameters(genParameters), output(output)
+    {}
+
+
 };
 
 /**
@@ -165,9 +177,11 @@ public:
     friend ASTNode operator -(const ASTNode &left, const ASTNode &right);
     friend ASTNode operator /(const ASTNode &left, const ASTNode &right);*/
 
+    static ASTRenderDec identSymDefault;
+    static ASTRenderDec identSymLine;
 
-    void codeGenCpp (const std::string &name, ASTRenderDec identSym = {" ", "\n", true});
-    void codeGenCpp (int ident , ASTRenderDec identSym = {" ", "\n", true});
+    void codeGenCpp (const std::string &name, ASTRenderDec &identSym = identSymDefault);
+    void codeGenCpp (int ident , ASTRenderDec &identSym = identSymDefault);
 
     void print();
     void getVars(std::vector<std::string> &result);

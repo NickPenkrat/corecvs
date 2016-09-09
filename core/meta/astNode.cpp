@@ -9,7 +9,11 @@ using std::cout;
 
 ASTContext *ASTContext::MAIN_CONTEXT = NULL;
 
-void ASTNodeInt::codeGenCpp(const std::string &name, ASTRenderDec identSym)
+ASTRenderDec ASTNodeInt::identSymDefault = {" ", "\n", true};
+ASTRenderDec ASTNodeInt::identSymLine    = {"", "", true};
+
+
+void ASTNodeInt::codeGenCpp(const std::string &name, ASTRenderDec &identSym)
 {
     if (!identSym.genParameters) {
         printf("double %s() {\n", name.c_str());
@@ -32,58 +36,65 @@ void ASTNodeInt::codeGenCpp(const std::string &name, ASTRenderDec identSym)
     printf("}\n");
 }
 
-void ASTNodeInt::codeGenCpp(int ident, ASTRenderDec identSym)
+void ASTNodeInt::codeGenCpp(int ident, ASTRenderDec &identSym)
 {
+    std::ostream &output = identSym.output;
+
     for (int i = 0; i < ident; ++i) {
-        printf("%s", identSym.ident);
+        output << identSym.ident;
     }
 
     if (op == OPREATOR_ID) {
-        printf("%s", name.c_str());
+        output << name.c_str();
         return;
     }
 
     if (op == OPREATOR_NUM) {
-        printf("%lf", val);
+        output.precision(std::numeric_limits<double>::digits10 + 3);
+        if (val >= 0) {
+            output << val;
+        } else {
+            output << "(" << val << ")";
+        }
         return;
     }
 
     if (op > OPERATOR_BINARY && op <= OPERATOR_BINARY_LAST)
     {
-        printf ("(%s", identSym.lbr);
+        output << "(" << identSym.lbr;
         left->codeGenCpp(ident + 1, identSym);
-        printf ("%s", identSym.lbr);
+        output << identSym.lbr;
 
         for (int i = 0; i < ident; ++i) {
-            printf("%s", identSym.ident);
+            output << identSym.ident;
         }
         switch (op) {
-            case OPERATOR_ADD : printf("+"); break;
-            case OPERATOR_SUB : printf("-"); break;
-            case OPERATOR_MUL : printf("*"); break;
-            case OPERATOR_DIV : printf("/"); break;
-            default           : printf(" UNSUPPORTED "); break;
+            case OPERATOR_ADD : output << "+" ; break;
+            case OPERATOR_SUB : output << "-" ; break;
+            case OPERATOR_MUL : output << "*" ; break;
+            case OPERATOR_DIV : output << "/" ; break;
+            default           : output << " UNSUPPORTED " ; break;
         }
-        printf ("%s", identSym.lbr);
+        output <<  identSym.lbr;
         right->codeGenCpp(ident + 1, identSym);
-        printf ("%s", identSym.lbr);
+        output << identSym.lbr;
         for (int i = 0; i < ident; ++i) {
-            printf("%s", identSym.ident);
+            output << identSym.ident;
         }
-        printf (")%s", identSym.lbr);
+        output << ")" << identSym.lbr;
         return;
     }
     if (op == OPERATOR_POW)
     {
-        printf ("%s", identSym.lbr);
+        output <<  identSym.lbr;
         printf("pow(");
-        printf ("%s", identSym.lbr);
+        output <<  identSym.lbr;
         left->codeGenCpp(ident + 1, identSym);
-        printf(",");
+        output << ",";
         right->codeGenCpp(ident + 1, identSym);
-        printf ("%s", identSym.lbr);
-        printf(")");
-        printf ("%s", identSym.lbr);
+        output <<  identSym.lbr;
+        output << ")";
+        output << identSym.lbr;
 
     }
 
