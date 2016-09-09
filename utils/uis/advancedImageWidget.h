@@ -193,6 +193,8 @@ public:
 
     QRect       getClientArea();
 
+    Vector2dd   getVisibleImageCenter();
+
 protected:
     QRect       computeInputRect();
 

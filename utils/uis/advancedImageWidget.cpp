@@ -312,6 +312,11 @@ QRect AdvancedImageWidget::getClientArea()
     return mUi->widget->geometry().translated(mUi->splitter->geometry().topLeft());
 }
 
+Vector2dd AdvancedImageWidget::getVisibleImageCenter()
+{
+    QPoint center = mInputRect.center();
+    return Vector2dd(center.x(), center.y());
+}
 
 void AdvancedImageWidget::childRepaint(QPaintEvent* /*event*/, QWidget* childWidget)
 {

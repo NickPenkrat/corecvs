@@ -108,9 +108,6 @@ void FixtureScene::triangulate(SceneFeaturePoint *point, bool sourceWithDistorti
        {
            FixtureCamera *camera = station.cameras[camId];
            CameraModel worldCam = station.getWorldCamera(camera);
-
-
-
        }
    }*/
 
