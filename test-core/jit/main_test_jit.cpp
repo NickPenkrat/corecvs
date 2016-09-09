@@ -181,7 +181,7 @@ TEST(jit, testjit)
         PackedDerivative<8> in[8];
         for (size_t i = 0; i < CORE_COUNT_OF(in); i++ )
         {
-            in[i] = PackedDerivative<8>::ID(exampleM[i], i);
+            in[i] = PackedDerivative<8>::ID(exampleM[i], (int)i);
         }
         PackedDerivative<8> out[9*2];
 

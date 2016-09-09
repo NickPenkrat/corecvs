@@ -57,7 +57,7 @@ public:
     Vector2dd           accuracy;
     Vector3dd           observDir;      /* Ray to point */
     bool                isKnown;
-    MetaContainer       meta;
+    //MetaContainer       meta;
     
     double &x() { return observation.x(); }
     double &y() { return observation.y(); }
