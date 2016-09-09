@@ -596,8 +596,12 @@ public:
         double avg = getAverage();
         return (mSqSum / mCount) - avg * avg;
     }
+
+    double getDev() const
+    {
+        return sqrt(getSDev());
+    }
 };
 
 
 } //namespace corecvs
-
