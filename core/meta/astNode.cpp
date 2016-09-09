@@ -139,6 +139,13 @@ void ASTNodeInt::print()
     }
 }
 
+/*
+void ASTNodeInt::printRec(int ident, ASTRenderDec identSym)
+{
+
+
+}*/
+
 void ASTNodeInt::getVars(std::vector<std::string> &result)
 {
     if (op == OPREATOR_ID) {
@@ -354,7 +361,7 @@ ASTNodeInt *ASTNodeInt::compute(const std::map<std::string, double> &bind)
             return new ASTNodeInt(OPERATOR_POW, nleft, nright);
         }
         default   :
-            printf("ASTNodeInt::compute(): UNSUPPORTED\n");
+            printf("ASTNodeInt::compute(): UNSUPPORTED OP %d - %s\n", op, getName(op));
             return new ASTNodeInt("UDEF");
         break;
     }
