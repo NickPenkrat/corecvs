@@ -881,11 +881,8 @@ void corecvs::ReconstructionFixtureScene::buildTracks(CameraFixture *psA, Camera
 
         for (int i = 0; i < NPS; ++i)
         {
-            SceneObservation so;
-            so.camera = cam[i];
-            so.cameraFixture = ps[i];
-            so.featurePoint = track;
-            so.observation = kp[i];
+            SceneObservation so(cam[i], track, kp[i], ps[i]);
+
             track->observations[cam[i]] = so;
             track->observations__[wpp[i]] = so;
             track->color = keyPoints[wpp[i]][pt[i]].second;
@@ -990,15 +987,13 @@ void corecvs::ReconstructionFixtureScene::appendTracks(CameraFixture *ps, double
         if (!best)
             continue;
         appended++;
-        SceneObservation so;
-        so.camera = qq.v;
-        so.cameraFixture = qq.u;
-        so.featurePoint = best;
-        so.observation = p;
+
+        SceneObservation so(qq.v, best, p, qq.u);
         best->observations[so.camera] = so;
         best->observations__[qq] = so;
         trackMap[qq][pq] = best;
         best->reprojectedPosition = best->triangulate();
+
         /*
          * Here we start trying to merge tracks if possible
          */

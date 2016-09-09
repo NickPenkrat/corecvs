@@ -47,7 +47,6 @@ SceneObservation *SceneFeaturePoint::getObservation(FixtureCamera *cam)
 void SceneFeaturePoint::removeObservation(SceneObservation *in)
 {
     auto it = observations.begin();
-
     for (; it != observations.end(); it++)
     {
         //FixtureCamera *cam = it->first;

@@ -57,8 +57,6 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
                 }
 
                 SceneObservation observation(camera, point, projection, fixture);
-                observation.isKnown = true;
-
                 if (!round) {
                     observation.observDir = worldCam.dirToPoint(point->position).normalised();  // direct
                 }

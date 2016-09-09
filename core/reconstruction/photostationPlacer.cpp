@@ -182,18 +182,13 @@ void corecvs::PhotostationPlacer::create2PointCloud(CameraFixture* psA, CameraFi
         track->hasKnownPosition = false;
         track->type = SceneFeaturePoint::POINT_RECONSTRUCTED;
 
-        SceneObservation soA, soB;
-        soA.camera = camA;
-        soA.cameraFixture = psA;
-        soA.featurePoint = track;
-        soA.observation = kpA;
+        SceneObservation soA(camA, track, kpA, psA);
+        SceneObservation soB(camB, track, kpB, psB);
+
         track->observations[camA] = soA;
         track->observations__[wppA] = soA;
         scene->trackMap[wppA][ptA] = track;
-        soB.camera = camB;
-        soB.cameraFixture = psB;
-        soB.featurePoint = track;
-        soB.observation = kpB;
+
         track->observations[camB] = soB;
         track->observations__[wppB] = soB;
         scene->trackMap[wppB][ptB] = track;
