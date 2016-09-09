@@ -28,6 +28,9 @@ using std::vector;
  *  This class is a virtual version of a \f$ f: R^n \mapsto R^m\f$
  *
  *  TODO: Think of the similar class based on static polymorphism.
+ *
+ *
+ *
  **/
 class JacobianFunctor;
 class FunctionArgs
@@ -44,7 +47,10 @@ public:
 
 
     /**
-     *  Operator that computes funсtion
+     *  Operator that computes function
+     *  There are several synonimical functions.
+     *
+     *  It is expected they all work the exactly same way
      **/
     virtual void operator()(const double in[], double out[]) = 0;
 

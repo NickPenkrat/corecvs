@@ -208,7 +208,8 @@ enums="
        makePreciseAlgorithm
        preciseInterpolationType
        imageChannel
-       debayerMethod"
+       debayerMethod
+       homographyAlgorithm"
 
 ui_classes="
         rgbColorParameters
@@ -229,6 +230,7 @@ enums+=" checkerboardDetectionAlgorithm"
 enums+=" bitcodeBoardOrientation"
 
 classes+=" lensDistortionModelParametersBase"
+classes+=" homorgaphyReconstructorBlockBase"
 
 full_ui_classes+=" checkerboardDetectionParameters"
 full_ui_classes+=" lineDistortionEstimatorParameters"

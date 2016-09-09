@@ -171,7 +171,7 @@ public:
         vector<Vector3dd> result;
         result.resize(8);
         getPoints(result.data());
-        for (int i = 0; i < result.size(); i++)
+        for (size_t i = 0; i < result.size(); i++)
         {
             result[i] = transform * result[i];
         }

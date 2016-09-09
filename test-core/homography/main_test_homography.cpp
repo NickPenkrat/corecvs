@@ -430,7 +430,7 @@ TEST(Homography, testStability)
         }
     }
 
-    Matrix33 H[HomographyReconstructor::LAST];
+    Matrix33 H[HomographyAlgorithm::HOMOGRAPHY_ALGORITHM_LAST];
 
     cout << reconstructor << endl;
 
@@ -446,10 +446,10 @@ TEST(Homography, testStability)
         }
     }
 
-    for (int method = 0; method < HomographyReconstructor::LAST; method++)
+    for (int method = 0; method < HomographyAlgorithm::HOMOGRAPHY_ALGORITHM_LAST; method++)
     {
-        H[method] = reconstructor.getBestHomography((HomographyReconstructor::HomographyAlgorithm)method);
-        cout << "Method: " << reconstructor.getName((HomographyReconstructor::HomographyAlgorithm)method)  << endl;
+        H[method] = reconstructor.getBestHomography((HomographyAlgorithm::HomographyAlgorithm)method);
+        cout << "Method: " << HomographyAlgorithm::getName((HomographyAlgorithm::HomographyAlgorithm)method)  << endl;
 
         cout << H[method] << endl;
         for (unsigned i = 0; i < CORE_COUNT_OF(corners); i++)
@@ -457,7 +457,7 @@ TEST(Homography, testStability)
             Vector2dd out = transform * H[method] * corners[i][0];
             Vector2d<int> outi(fround(out.x()), fround(out.y()));
             if (image->isValidCoord(outi)) {
-                image->element(outi) = RGBColor::rainbow(lerp(0.0, 1.0, method, 0.0, HomographyReconstructor::LAST));
+                image->element(outi) = RGBColor::rainbow(lerp(0.0, 1.0, method, 0.0, HomographyAlgorithm::HOMOGRAPHY_ALGORITHM_LAST));
             }
         }
 

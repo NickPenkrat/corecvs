@@ -185,6 +185,9 @@ void PointListEditImageWidget::childMousePressed(QMouseEvent *event)
 {
     AdvancedImageWidget::childMousePressed(event);
 
+    if ((event->buttons() & Qt::LeftButton) == 0)
+        return;
+
     PaintToolClass tool = (PaintToolClass)mCurrentToolClass;
 
     if (tool == ADD_POINT_TOOL)
@@ -212,38 +215,41 @@ void PointListEditImageWidget::childMouseMoved(QMouseEvent * event)
 {
     QModelIndex topLevel = mObservationListModel->parent(QModelIndex());
 
-    switch (mCurrentToolClass)
+    if ((event->buttons() & Qt::LeftButton) != 0)
     {
-    case MOVE_POINT_TOOL:
-    {
-        //   qDebug() << "Drag in selected tool";
-        if (!mIsMouseLeftPressed)
-            break;
-
-        Vector2dd dragStart    = widgetToImageF(Qt2Core::Vector2ddFromQPoint(mSelectionEnd));
-        Vector2dd currentPoint = widgetToImageF(Qt2Core::Vector2ddFromQPoint(event->pos()));
-        Vector2dd shift = (dragStart - currentPoint);
-
-
-       /* for (unsigned i = 0; i < mFeatures.mSelectedPoints.size(); i++)
+        switch (mCurrentToolClass)
         {
-            mFeatures.mSelectedPoints[i]->position -= shift;
-        }*/
-        if (mSelectedPoint >= 0) {
-            Vector2dd currentPoint = getPointById(mSelectedPoint);
-            currentPoint -= shift;
+        case MOVE_POINT_TOOL:
+        {
+            //   qDebug() << "Drag in selected tool";
+            if (!mIsMouseLeftPressed)
+                break;
 
-            QModelIndex indexX = mObservationListModel->index(mSelectedPoint, ObservationListModel::COLUMN_U, topLevel);
-            QModelIndex indexY = mObservationListModel->index(mSelectedPoint, ObservationListModel::COLUMN_V, topLevel);
-            mObservationListModel->setData(indexY, QVariant(currentPoint.y()), Qt::EditRole);
-            mObservationListModel->setData(indexX, QVariant(currentPoint.x()), Qt::EditRole);
+            Vector2dd dragStart    = widgetToImageF(Qt2Core::Vector2ddFromQPoint(mSelectionEnd));
+            Vector2dd currentPoint = widgetToImageF(Qt2Core::Vector2ddFromQPoint(event->pos()));
+            Vector2dd shift = (dragStart - currentPoint);
+
+
+           /* for (unsigned i = 0; i < mFeatures.mSelectedPoints.size(); i++)
+            {
+                mFeatures.mSelectedPoints[i]->position -= shift;
+            }*/
+            if (mSelectedPoint >= 0) {
+                Vector2dd currentPoint = getPointById(mSelectedPoint);
+                currentPoint -= shift;
+
+                QModelIndex indexX = mObservationListModel->index(mSelectedPoint, ObservationListModel::COLUMN_U, topLevel);
+                QModelIndex indexY = mObservationListModel->index(mSelectedPoint, ObservationListModel::COLUMN_V, topLevel);
+                mObservationListModel->setData(indexY, QVariant(currentPoint.y()), Qt::EditRole);
+                mObservationListModel->setData(indexX, QVariant(currentPoint.x()), Qt::EditRole);
+            }
+
+
+            mUi->widget->update();
         }
-
-
-        mUi->widget->update();
-    }
-    default:
-        break;
+        default:
+            break;
+        }
     }
 
     AdvancedImageWidget::childMouseMoved(event);
@@ -526,6 +532,9 @@ void PointListEditImageWidgetUnited::childMousePressed(QMouseEvent *event)
 {
     AdvancedImageWidget::childMousePressed(event);
 
+    if (!(event->buttons() & Qt::LeftButton))
+        return;
+
     PaintToolClass tool = (PaintToolClass)mCurrentToolClass;
 
     if (tool == ADD_POINT_TOOL)
@@ -554,34 +563,37 @@ void PointListEditImageWidgetUnited::childMousePressed(QMouseEvent *event)
 
 void PointListEditImageWidgetUnited::childMouseMoved(QMouseEvent * event)
 {
-    switch (mCurrentToolClass)
+    if (event->buttons() & Qt::LeftButton)
     {
-    case MOVE_POINT_TOOL:
-    {
-        //   qDebug() << "Drag in selected tool";
-        if (!mIsMouseLeftPressed)
-            break;
-
-        Vector2dd dragStart    = widgetToImageF(Qt2Core::Vector2ddFromQPoint(mSelectionEnd));
-        Vector2dd currentPoint = widgetToImageF(Qt2Core::Vector2ddFromQPoint(event->pos()));
-        Vector2dd shift = (dragStart - currentPoint);
-
-
-       /* for (unsigned i = 0; i < mFeatures.mSelectedPoints.size(); i++)
+        switch (mCurrentToolClass)
         {
-            mFeatures.mSelectedPoints[i]->position -= shift;
-        }*/
-        if (mSelectedPoint >= 0) {
-            Vector2dd currentPoint = mObservationListModel->getPoint(mSelectedPoint);
-            currentPoint -= shift;
-            mObservationListModel->setPoint(mSelectedPoint, currentPoint);
+        case MOVE_POINT_TOOL:
+        {
+            //   qDebug() << "Drag in selected tool";
+            if (!mIsMouseLeftPressed)
+                break;
+
+            Vector2dd dragStart    = widgetToImageF(Qt2Core::Vector2ddFromQPoint(mSelectionEnd));
+            Vector2dd currentPoint = widgetToImageF(Qt2Core::Vector2ddFromQPoint(event->pos()));
+            Vector2dd shift = (dragStart - currentPoint);
+
+
+           /* for (unsigned i = 0; i < mFeatures.mSelectedPoints.size(); i++)
+            {
+                mFeatures.mSelectedPoints[i]->position -= shift;
+            }*/
+            if (mSelectedPoint >= 0) {
+                Vector2dd currentPoint = mObservationListModel->getPoint(mSelectedPoint);
+                currentPoint -= shift;
+                mObservationListModel->setPoint(mSelectedPoint, currentPoint);
+            }
+
+
+            mUi->widget->update();
         }
-
-
-        mUi->widget->update();
-    }
-    default:
-        break;
+        default:
+            break;
+        }
     }
 
     AdvancedImageWidget::childMouseMoved(event);

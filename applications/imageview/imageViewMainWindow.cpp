@@ -1,4 +1,5 @@
 #include <QFileDialog>
+#include "pointListEditImageWidget.h"
 
 #include "imageViewMainWindow.h"
 #include "ui_imageViewMainWindow.h"
@@ -16,6 +17,11 @@ ImageViewMainWindow::ImageViewMainWindow(QWidget *parent) :
     ui(new Ui::ImageViewMainWindow)
 {
     ui->setupUi(this);
+    delete(ui->widget);
+    PointListEditImageWidgetUnited *pointList = new PointListEditImageWidgetUnited(this);
+    pointList->setRightDrag(true);
+    ui->widget = pointList;
+    ui->mainLayout->addWidget(ui->widget, 0, 0, 3, 1);
 
     BitSelectorParameters defaultSelector;
     defaultSelector.setShift(-2);

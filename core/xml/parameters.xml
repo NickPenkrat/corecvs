@@ -56,8 +56,21 @@
   <class name="Debayer Parameters">
      <field type="Debayer Method" name="Method"    defaultValue="0"/>
      <field type="int"            name="Bayer pos" min="-1" max="255" defaultValue="-1"/>
+  </class>
+
+  <enum name="Homography Algorithm">
+      <item name="LSE"          id = "0" />
+      <item name="LSE1"         id = "1" />
+      <item name="LSE2"         id = "2" />
+      <item name="ML"           id = "3" />
+      <item name="ML_AFTER_LSE" id = "4" />
   </enum>
 
+<!--
+  <class name="Dummy">
+     <field type="Homography Algorithm" name="Method"    defaultValue="0"/>
+  </class>
+-->
 
 </poco>
 

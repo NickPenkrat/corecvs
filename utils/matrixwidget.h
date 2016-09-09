@@ -17,6 +17,7 @@ public:
     ~MatrixWidget();
 
     void setProjectiveTransform(ProjectiveTransform *F);
+    void setMatrix33(Matrix33 *F);
 
 
 private:

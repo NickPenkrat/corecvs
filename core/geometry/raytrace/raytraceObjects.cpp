@@ -73,6 +73,7 @@ AxisAlignedBox3d RaytraceableSphere::getBoundingBox()
 
 bool RaytraceableSphere::toMesh(Mesh3D &target)
 {
+    target.setColor(RGBColor::FromDouble(color));
     target.addIcoSphere(mSphere, 2);
     return true;
 }
@@ -118,6 +119,15 @@ bool RaytraceableUnion::inside(Vector3dd &point)
             return true;
     }
     return false;
+}
+
+bool RaytraceableUnion::toMesh(Mesh3D &target)
+{
+    for (Raytraceable *object: elements)
+    {
+        object->toMesh(target);
+    }
+    return true;
 }
 
 bool RaytraceablePlane::intersect(RayIntersection &intersection)
@@ -255,8 +265,8 @@ void RaytraceableTransform::normal(RayIntersection &intersection)
     RayIntersection trans = intersection;    
     trans.ray.transform(mMatrixInv);
 
-    double scale1 = intersection.ray.a.l2Metric();
-    double scale2 = trans.ray.a.l2Metric();
+    //double scale1 = intersection.ray.a.l2Metric();
+    //double scale2 = trans.ray.a.l2Metric();
     //trans.t = trans.t / scale1 * scale2;
 
     mObject->normal(trans);
@@ -469,7 +479,7 @@ bool RaytraceableCylinder::intersect(RayIntersection &intersection)
     static const double CYL_EPSILON  = 0.00001;
     intersection.object = NULL;
 
-    Ray3d &ray = intersection.ray;
+    //Ray3d &ray = intersection.ray;
     Ray3d ray1 = intersection.ray;
     ray1.p -= p;
     Ray3d cf = ray1.transformed(rotation);
@@ -630,6 +640,8 @@ void RaytraceableCylinder::normal(RayIntersection &intersection)
     return;
 }
 
+
+
 bool RaytraceableCylinder::inside(Vector3dd &point)
 {
     Vector3dd n = rotation * Vector3dd::OrtZ();
@@ -659,6 +671,7 @@ AxisAlignedBox3d RaytraceableCylinder::getBoundingBox()
 
 bool RaytraceableCylinder::toMesh(Mesh3D &target)
 {
+    target.setColor(RGBColor::FromDouble(color));
     target.mulTransform(Matrix44::Shift(p) * Matrix44(rotation.inv()) * Matrix44::Shift(Vector3dd(0, 0, h / 2.0)));
     target.addCylinder(Vector3dd::Zero(), r, h, 20);
     target.popTransform();
@@ -667,6 +680,7 @@ bool RaytraceableCylinder::toMesh(Mesh3D &target)
 
 void RaytraceableUnion::optimize()
 {
+    PreciseTimer timer = PreciseTimer::CurrentETime();
     delete_safe(opt);
     opt = new RaytraceableSubTree();
     for (size_t i = 0; i < elements.size(); i++)
@@ -675,6 +689,7 @@ void RaytraceableUnion::optimize()
     }
     opt->subdivide();
     opt->cache();
+    SYNC_PRINT(("RaytraceableUnion::optimize(): Optimized %d elements for %2.5f ms \n", elements.size(), timer.usecsToNow() / 1000.0));
 }
 
 void RaytraceableCylinder::setPosition(const Affine3DQ &affine)
@@ -691,4 +706,14 @@ void RaytraceableCylinder::setPosition(const Vector3dd &position)
 void RaytraceableCylinder::setPosition(double x, double y, double z)
 {
     setPosition(Vector3dd(x,y,z));
+}
+
+void RaytraceableCylinder::setRotation(const Matrix33 &rotation)
+{
+    this->rotation = rotation.inv();
+}
+
+Matrix33 RaytraceableCylinder::getRotationToCylinder()
+{
+    return rotation;
 }

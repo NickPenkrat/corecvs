@@ -7,7 +7,10 @@
 #include "fixtureScene.h"
 #include "statusTracker.h"
 
-using namespace corecvs;
+namespace corecvs {
+
+const char * FixtureSceneFactory::DEFAULT_NAME = "FixtureScene";
+
 
 /**
  *  Camera  World   |  World   Camera
@@ -303,6 +306,7 @@ void FixtureScene::clear()
     }
     mOwnedObjects.clear();
 
+    mCameraPrototypes.clear();
     mFixtures.clear();
     mOrphanCameras.clear();
     mSceneFeaturePoints.clear();
@@ -802,3 +806,43 @@ void corecvs::FixtureScene::transform(const corecvs::Affine3DQ &transformation, 
         cf->location.rotor = transformation.rotor ^ cf->location.rotor;
     }
 }
+
+std::unique_ptr<FixtureSceneFactory> FixtureSceneFactory::instance;
+
+FixtureSceneFactory *FixtureSceneFactory::getInstance() {
+    if (!instance) {
+        instance.reset(new FixtureSceneFactory());
+    }
+
+    FixtureSceneCreateFunctor lambda = [](){return new FixtureScene;};
+    std::pair<std::string, FixtureSceneCreateFunctor>  entry(std::string(DEFAULT_NAME), lambda);
+
+    instance->creators.insert(entry);
+
+    return instance.get();
+}
+
+FixtureScene *FixtureSceneFactory::sceneFactory(const std::string &name)
+{
+    FixtureScene *toReturn = NULL;
+    auto it = creators.find(name);
+    if (it == creators.end())
+    {
+        return toReturn;
+    }
+
+    toReturn = (*it).second();
+    return toReturn;
+}
+
+void FixtureSceneFactory::print()
+{
+    cout << "Known fixture Scenes:" << endl;
+    for (auto &it : creators)
+    {
+        cout << " " << it.first << endl;
+    }
+}
+
+
+} // namespace
