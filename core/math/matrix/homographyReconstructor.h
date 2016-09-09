@@ -195,29 +195,36 @@ public:
         H.fillWithArgs(
                 in[0], in[1], in[2],
                 in[3], in[4], in[5],
-                in[6], in[7], 1.0);
+                in[6], in[7], DoubleType(1.0));
 
 
         int argout = 0;
-        double cost = 0.0;
         for (unsigned i = 0; i < p2p.size(); i++)
         {
             Vector3d<DoubleType> reproj = Vector3d<DoubleType>(H * Vector3dd::FromProjective(p2p[i].start));
 
-            Vector2d<DoubleType> point = reproj.project();
-            Vector2d<DoubleType> diff = point - p2p[i].end;
+            Vector2d<DoubleType> point  = reproj.xy() / reproj.z();
+            Vector2d<DoubleType> target = Vector2d<DoubleType>(DoubleType(p2p[i].end.x()), DoubleType(p2p[i].end.y()));
+
+            Vector2d<DoubleType> diff = point - target;
             if (out)
             {
                 out[argout++] = diff.x();
                 out[argout++] = diff.y();
-            }
-            cost += (point - p2p[i].end).sumAllElementsSq();
+            }           
         }
 
         for (unsigned i = 0; i < p2l.size(); i++)
         {
-            Vector2d<DoubleType> point = H * p2l[i].start;
-            DoubleType distanceSq = p2l[i].end.sqDistanceTo(point);
+            Vector3d<DoubleType> reproj = Vector3d<DoubleType>(H * Vector3dd::FromProjective(p2l[i].start));
+            Vector2d<DoubleType> point = reproj.xy() / reproj.z();
+
+            Vector2d<DoubleType> lineNormal = Vector2d<DoubleType>(p2l[i].end.normal());
+            DoubleType d = (lineNormal & point) + p2l[i].end.last();
+            d = d * d;
+            DoubleType lsq = lineNormal.sumAllElementsSq();
+            DoubleType distanceSq = (d / lsq);
+
             if (out)
                 out[argout++] = sqrt(distanceSq);
         }

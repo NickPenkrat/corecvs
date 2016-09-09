@@ -19,6 +19,72 @@
 
 using namespace std;
 
+
+double out17(double M3, double M4, double M5, double M6, double M7) {
+return (
+ (
+  (
+   (
+    (
+     (
+      0.000000
+     +
+      (
+       2.000000 * M3
+      )
+     )
+    +
+     (
+      2.000000 * M4
+     )
+
+    )
+
+   +
+    (
+     1.000000 * M5
+    )
+
+   )
+
+  /
+   (
+    (
+     (
+      0.000000
+     +
+      (
+       2.000000 * M6
+      )
+
+     )
+
+    +
+     (
+      2.000000 * M7
+     )
+
+    )
+
+   +
+    (
+     1.000000
+    *
+     1.000000
+    )
+
+   )
+
+  )
+
+ -
+  2.316912
+ )
+
+);
+}
+
+
 TEST(jit, testjit)
 {
     cout << "Starting test <jit>" << endl;
@@ -48,8 +114,9 @@ TEST(jit, testjit)
         }
     }
 
-#if 0
     Matrix33 exampleM = Matrix33::RotateProj(degToRad(-5.0)) * Matrix33::ShiftProj(0.4, 0.6);
+
+    cout << "Example Matrix " << endl << exampleM << endl;
 
     /* Double run */
     {
@@ -68,9 +135,12 @@ TEST(jit, testjit)
         }
     }
 
+    ASTContext::MAIN_CONTEXT = new ASTContext();
+
     /* AST run*/
     {
         cout << "AST run.." << endl;
+
         ASTNode in[8] = {
             ASTNode("M[0]"), ASTNode("M[1]"), ASTNode("M[2]"),
             ASTNode("M[3]"), ASTNode("M[4]"), ASTNode("M[5]"),
@@ -79,12 +149,31 @@ TEST(jit, testjit)
         ASTNode out[9*2];
 
         example.genericCostFunction<ASTNode>(in, out);
+
+        std::map<std::string, double> binds = {
+            {"M[0]", exampleM[0]}, {"M[1]", exampleM[1]}, {"M[2]", exampleM[2]},
+            {"M[3]", exampleM[3]}, {"M[4]", exampleM[4]}, {"M[5]", exampleM[5]},
+            {"M[6]", exampleM[6]}, {"M[7]", exampleM[7]}};
+
+/*        for (size_t i = 0; i < CORE_COUNT_OF(out); i++)
+        {
+            out[i].p->codeGenCpp("out");
+        }*/
+
         for (size_t i = 0; i < CORE_COUNT_OF(out); i++)
         {
-          //  cout << out[i] << endl;
+            cout << out[i].p->compute(binds)->val << endl;
         }
+
+        //out[17].p->codeGenCpp("out17");
+        //out[17].p->compute(binds)->codeGenCpp("out17b");
+
+        cout << out17(exampleM[3], exampleM[4], exampleM[5], exampleM[6], exampleM[7]) << endl;
+
+
     }
 
+    #if 1
     /* Packed derivative run*/
     {
         cout << "PackedDerivative run.." << endl;
