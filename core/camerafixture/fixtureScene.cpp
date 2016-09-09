@@ -31,30 +31,21 @@ FixtureScene::FixtureScene() :
 void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
 {
     //SYNC_PRINT(("FixtureScene::projectForward(0x%0X, %s):called\n", mask, round ? "true" : "false"));
-
     //SYNC_PRINT(("FixtureScene::projectForward(): points %u\n", mSceneFeaturePoints.size()));
 
-    for (size_t pointId = 0; pointId < mSceneFeaturePoints.size(); pointId++)
+    for (auto & point : mSceneFeaturePoints)
     {
-        SceneFeaturePoint *point = mSceneFeaturePoints[pointId];
-
         //cout << "Projecting point:" << point->name << " (" << point->position << ")"<< endl;
-
-        if ( (point->type & mask) == 0) {
+        if ((point->type & mask) == 0) {
             //printf("Skipping (type = %x, mask = %x)\n", point->type, mask);
             continue;
         }
 
-        //cout << "Projecting" << endl;
-
-        for (size_t fixtureId = 0; fixtureId < mFixtures.size(); fixtureId++)
+        for (auto& fixture : mFixtures)
         {
-            CameraFixture &fixture = *mFixtures[fixtureId];
-            for (size_t camId = 0; camId < fixture.cameras.size(); camId++)
+            for (auto& camera : fixture->cameras)
             {
-                FixtureCamera *camera = fixture.cameras[camId];
-                CameraModel worldCam = fixture.getWorldCamera(camera);
-
+                CameraModel worldCam = fixture->getWorldCamera(camera);
 
                 Vector2dd projection = worldCam.project(point->position);
                 if (!worldCam.isVisible(projection) || !worldCam.isInFront(point->position))
@@ -65,22 +56,15 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
                     projection.y() = fround(projection.y());
                 }
 
-                SceneObservation observation;
-                observation.accuracy     = Vector2dd(0.0, 0.0);
-                observation.camera       = camera;
-                observation.featurePoint = point;
-                observation.isKnown      = true;
-                observation.observation  = projection;
-
-                Vector3dd direct = worldCam.dirToPoint(point->position).normalised();
-                Vector3dd indirect = worldCam.intrinsics.reverse(projection).normalised();
+                SceneObservation observation(camera, point, projection, fixture);
+                observation.isKnown = true;
 
                 if (!round) {
-                    observation.observDir = direct;
-                } else {
-                    observation.observDir = indirect;
+                    observation.observDir = worldCam.dirToPoint(point->position).normalised();  // direct
                 }
-
+                else {
+                    observation.observDir = worldCam.intrinsics.reverse(projection).normalised();  // indirect
+                }
                 /*if (direct.notTooFar(indirect, 1e-7))
                 {
                     SYNC_PRINT(("Ok\n"));
@@ -90,8 +74,7 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
                 }*/
 
                 point->observations[camera] = observation;
-                point->observations__[WPP(mFixtures[fixtureId], camera)] = observation;
-                //cout << "Camera:" << camera->fileName << " = " << projection << endl;
+                point->observations__[WPP(fixture, camera)] = observation;
             }
         }
     }
@@ -99,36 +82,15 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
 
 void FixtureScene::triangulate(SceneFeaturePoint *point, bool sourceWithDistortion)
 {
-   MulticameraTriangulator triangulator;
-
-  /* for (size_t stationId = 0; stationId < mFixtures.size(); stationId++)
-   {
-       CameraFixture &station = *mFixtures[stationId];
-       for (size_t camId = 0; camId < station.cameras.size(); camId++)
-       {
-           FixtureCamera *camera = station.cameras[camId];
-           CameraModel worldCam = station.getWorldCamera(camera);
-       }
-   }*/
-
    if (sourceWithDistortion)
    {
        for (auto& pos : point->observations)
        {
-           FixtureCamera *cam = pos.first;
-
-           SceneObservation observation;
-           observation.accuracy     = pos.second.accuracy;
-           observation.camera       = cam;
-           observation.featurePoint = pos.second.featurePoint;
-           observation.isKnown      = pos.second.isKnown;
-           observation.observation  = cam->distortion.mapBackward(pos.second.observation);
-
-           pos.second = observation;
+           FixtureCamera    *cam = pos.first;
+           SceneObservation &obs = pos.second;
+           obs.observation = cam->distortion.mapBackward(obs.observation);   // convert given distorted projection to undistorted coords
        }
    }
-
-   triangulator.trace = true;
 
    if (point->observations.size() < 2)
    {
@@ -136,17 +98,18 @@ void FixtureScene::triangulate(SceneFeaturePoint *point, bool sourceWithDistorti
        return;
    }
 
-   for (auto it = point->observations.begin(); it != point->observations.end(); it++)
-   {
-       FixtureCamera *cam = it->first;
-       const SceneObservation &observ = it->second;
+   MulticameraTriangulator triangulator;
+   triangulator.trace = true;
 
-       if (cam->cameraFixture == NULL) {
+   for (auto& pos : point->observations)
+   {
+       FixtureCamera    *cam = pos.first;
+       SceneObservation &obs = pos.second;
+       if (cam->cameraFixture == NULL)
            continue;
-       }
 
        FixtureCamera worldCam = cam->cameraFixture->getWorldCamera(cam);
-       triangulator.addCamera(worldCam.getCameraMatrix(), observ.observation);
+       triangulator.addCamera(worldCam.getCameraMatrix(), obs.observation);
    }
 
    bool ok;
@@ -162,16 +125,9 @@ void FixtureScene::triangulate(SceneFeaturePoint *point, bool sourceWithDistorti
    {
        for (auto& pos : point->observations)
        {
-           FixtureCamera *cam = pos.first;
-
-           SceneObservation observation;
-           observation.accuracy     = pos.second.accuracy;
-           observation.camera       = cam;
-           observation.featurePoint = pos.second.featurePoint;
-           observation.isKnown      = pos.second.isKnown;
-           observation.observation  = cam->distortion.mapForward(pos.second.observation);
-
-           pos.second = observation;
+           FixtureCamera    *cam = pos.first;
+           SceneObservation &obs = pos.second;
+           obs.observation = cam->distortion.mapForward(obs.observation);   // convert undistorted projection to the distorted one
        }
    }
 

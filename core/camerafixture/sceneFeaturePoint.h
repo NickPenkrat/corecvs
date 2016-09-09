@@ -199,9 +199,9 @@ public:
     std::unordered_map<WildcardablePointerPair<CameraFixture, FixtureCamera>, SceneObservation> observations__;
 
 
-/* This is a presentation related block we should move it to derived class */
+    /* This is a presentation related block we should move it to derived class */
     RGBColor color;
-/**/
+    /**/
 
     SceneFeaturePoint(FixtureScene * owner = NULL) :
         FixtureScenePart(owner),
@@ -252,7 +252,6 @@ public:
 
         if (!visitor.isLoader())
         {
-
             /* We don't load observations here*/
 
             /* We resort it to make compare easier. We should find a way to make it more stable */
@@ -261,18 +260,17 @@ public:
                 toSort.push_back(it.first);
             }
 
-            std::sort(toSort.begin(), toSort.end(),
-                      [](const FixtureCamera *first, const FixtureCamera *second) { return first->nameId > second->nameId; }
-            );
+            std::sort(toSort.begin(), toSort.end(), [](const FixtureCamera *first, const FixtureCamera *second) {
+                return first->nameId < second->nameId;
+            });
 
             int i = 0;
             for (auto &it : toSort)
             {
                 SceneObservation &observ = observations[it];
                 char buffer[100];
-                snprintf2buf(buffer, "obsrv[%d]", i);
+                snprintf2buf(buffer, "obsrv[%d]", i++);
                 visitor.visit(observ, observ, buffer);
-                i++;
             }
         }
         else
@@ -294,6 +292,7 @@ public:
                 }
 
                 observations[observ.camera] = observ;
+                observations__[WPP(observ.cameraFixture, observ.camera)] = observ;
             }
         }
     }
