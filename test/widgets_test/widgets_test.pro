@@ -13,7 +13,7 @@ ROOT_DIR=$$PWD/$$ROOT_DIR
 QT       += core
 
 TEMPLATE = app
-TARGET   = widgets_test
+TARGET   = test_widgets
 CONFIG  += console
 
 #include(../../core/core.pri)
