@@ -325,6 +325,32 @@ public:
 };
 
 
+template<typename DoubleType>
+class GenericCameraLocationData
+{
+public:
+    Vector3d<DoubleType> position;
+    GenericQuaternion<DoubleType> orientation;
+
+
+    GenericCameraLocationData(const CameraLocationData &data) :
+        position(DoubleType(data.position.x()), DoubleType(data.position.y()), DoubleType(data.position.z())),
+        orientation(DoubleType(data.orientation.x()), DoubleType(data.orientation.y()), DoubleType(data.orientation.z()), DoubleType(data.orientation.t()))
+    {}
+
+    void transform(const GenericQuaternion<DoubleType> &rotate, const Vector3d<DoubleType> &translate)
+    {
+        position    = rotate * position + translate;
+        orientation = orientation ^ rotate.conjugated();
+    }
+
+    Vector3d<DoubleType> project(const Vector3d<DoubleType> &pt) const
+    {
+        return orientation * (pt - position);
+    }
+
+};
+
 
 } // namespace corecvs
 

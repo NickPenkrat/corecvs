@@ -16,5 +16,13 @@ QT 	+= xml
 
 include($$ROOT_DIR/src/open/utils/utils.pri)                        # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
 
-SOURCES += main_jitplayground.cpp
-HEADERS += main_jitplayground.h
+SOURCES += main_jitplayground.cpp \
+    reprojectionCostFunction.cpp \
+    dllFunction.cpp
+HEADERS += main_jitplayground.h \
+    reprojectionCostFunction.h \
+    dllFunction.h
+
+!win32 {
+  LIBS += -ldl
+}

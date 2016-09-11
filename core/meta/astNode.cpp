@@ -13,6 +13,14 @@ ASTRenderDec ASTNodeInt::identSymDefault = {" ", "\n", true};
 ASTRenderDec ASTNodeInt::identSymLine    = {"", "", true};
 
 
+bool ASTNodeInt::isBinary() {
+    return (op > OPERATOR_BINARY && op <= OPERATOR_BINARY_LAST);
+}
+
+bool ASTNodeInt::isUnary() {
+    return (op == OPERATOR_POW || op == OPERATOR_SIN || op == OPERATOR_COS);
+}
+
 void ASTNodeInt::codeGenCpp(const std::string &name, ASTRenderDec &identSym)
 {
     if (!identSym.genParameters) {
@@ -58,11 +66,31 @@ void ASTNodeInt::codeGenCpp(int ident, ASTRenderDec &identSym)
         }
         return;
     }
+    /* Here we can check for CSE */
+    if (identSym.cse != NULL && hash != 0)
+    {
+        auto it = identSym.cse->find(hash);
+        if (it != identSym.cse->end() && (*it).second->cseCount > 0)
+        {
+            int cseName = (*it).second->cseName;
+
+            output << "cse" << std::hex << cseName << std::dec;
+            return;
+        }
+    }
+
 
     if (op > OPERATOR_BINARY && op <= OPERATOR_BINARY_LAST)
     {
-        output << "(" << identSym.lbr;
+        int currentPrior = getPriority(op);
+        int leftPrior = getPriority(left->op);
+
+        if (currentPrior >= leftPrior)
+            output << "(" << identSym.lbr;
         left->codeGenCpp(ident + 1, identSym);
+        if (currentPrior >= leftPrior)
+            output << ")" << identSym.lbr;
+
         output << identSym.lbr;
 
         for (int i = 0; i < ident; ++i) {
@@ -75,13 +103,19 @@ void ASTNodeInt::codeGenCpp(int ident, ASTRenderDec &identSym)
             case OPERATOR_DIV : output << "/" ; break;
             default           : output << " UNSUPPORTED " ; break;
         }
-        output <<  identSym.lbr;
+
+        int rightPrior = getPriority(right->op);
+        if (currentPrior >= rightPrior)
+            output << "(" << identSym.lbr;
+        //output <<  identSym.lbr;
         right->codeGenCpp(ident + 1, identSym);
+        if (currentPrior >= rightPrior)
+            output << ")" << identSym.lbr;
+
         output << identSym.lbr;
         for (int i = 0; i < ident; ++i) {
             output << identSym.ident;
         }
-        output << ")" << identSym.lbr;
         return;
     }
     if (op == OPERATOR_POW)
@@ -99,6 +133,134 @@ void ASTNodeInt::codeGenCpp(int ident, ASTRenderDec &identSym)
     }
 
 }
+
+void ASTNodeInt::extractConstPool(const std::string &poolname, std::unordered_map<double, std::string> &pool)
+{
+    if (op == OPREATOR_NUM)
+    {
+        //cout << "Checking " << val << " to constpool" << endl;
+        auto it = pool.find(val);
+        if (it == pool.end()) {
+            int id = pool.size();
+            char str[1000];
+            snprintf2buf(str, "%s%d", poolname.c_str(), id);
+            op = OPREATOR_ID;
+            name = str;
+            pool[val] = str;
+            //cout << "Adding " << val << " to constpool" << endl;
+        } else {
+            op = OPREATOR_ID;
+            name = (*it).second;
+        }
+    }
+
+    if (op > OPERATOR_BINARY && op <= OPERATOR_BINARY_LAST)
+    {
+        left ->extractConstPool(poolname, pool);
+        right->extractConstPool(poolname, pool);
+    }
+
+    if (op == OPERATOR_POW || op == OPERATOR_SIN || op == OPERATOR_COS)
+    {
+        left->extractConstPool(poolname, pool);
+    }
+}
+
+void ASTNodeInt::cseR(std::unordered_map<uint64_t, ASTNodeInt *> &cse)
+{
+    auto it = cse.find(hash);
+    if (it == cse.end()) {
+        /* We are not intested of making cse out of consts and ids */
+        if (op > OPERATOR_BINARY && op <= OPERATOR_BINARY_LAST)
+        {
+            left ->cseR(cse);
+            right->cseR(cse);
+            cse[hash] = this;
+        }
+
+        if (op == OPERATOR_POW || op == OPERATOR_SIN || op == OPERATOR_COS)
+        {
+            left->cseR(cse);
+            cse[hash] = this;
+        }
+    } else {
+        (*it).second->cseCount++;
+        if (op > OPERATOR_BINARY && op <= OPERATOR_BINARY_LAST)
+        {
+            left ->cseR(cse);
+            right->cseR(cse);
+        }
+
+        if (op == OPERATOR_POW || op == OPERATOR_SIN || op == OPERATOR_COS)
+        {
+            left->cseR(cse);
+        }
+    }
+}
+
+size_t ASTNodeInt::memoryFootprint()
+{
+    if (op == OPREATOR_ID)
+    {
+        return sizeof(ASTNodeInt);
+    }
+
+    if (op == OPREATOR_NUM)
+    {
+        return sizeof(ASTNodeInt);
+    }
+
+    if (isBinary())
+    {
+
+        return sizeof(ASTNodeInt) + left->memoryFootprint() + right->memoryFootprint();
+    }
+
+    if (isUnary())
+    {
+        return sizeof(ASTNodeInt) + left->memoryFootprint();
+    }
+
+}
+
+void ASTNodeInt::rehash()
+{
+    if (op == OPREATOR_ID)
+    {
+        hash = std::hash<std::string>{}(name);
+        height = 1;
+        return;
+    }
+
+    if (op == OPREATOR_NUM)
+    {
+        hash = std::hash<double>{}(val);
+        height = 1;
+        return;
+    }
+
+    if (isBinary())
+    {
+        left->rehash();
+        right->rehash();
+
+        hash = left->hash + 15485867 * (right->hash + 141650963 * std::hash<int>{}(op));
+
+        height = 1 + std::max(left->height, right->height);
+        return;
+    }
+
+    if (isUnary())
+    {
+        left->rehash();
+        hash = left->hash + 256203161 * std::hash<int>{}(op);
+        height = 1 + left->height;
+        return;
+    }
+
+    cout << "ASTNodeInt::rehash():UNSUPPORTED " << getName(op) << endl;
+}
+
 
 void ASTNodeInt::print()
 {
@@ -376,6 +538,64 @@ ASTNodeInt *ASTNodeInt::compute(const std::map<std::string, double> &bind)
             return new ASTNodeInt("UDEF");
         break;
     }
+}
+
+void ASTNodeInt::deleteSubtree(ASTNodeInt *tree)
+{
+    tree->deleteChildren();
+    delete(tree);
+}
+
+void ASTNodeInt::deleteChildren()
+{
+    if (op > OPERATOR_BINARY && op <= OPERATOR_BINARY_LAST)
+    {
+        left->deleteChildren();
+        right->deleteChildren();
+        delete left;
+        delete right;
+        return;
+    }
+
+    if (op == OPERATOR_POW || op == OPERATOR_SIN || op == OPERATOR_COS)
+    {
+        left->deleteChildren();
+        delete left;
+    }
+}
+
+
+
+void ASTContext::clear() {
+    for (ASTNodeInt *node : nodes)
+    {
+        node->markFlag = 0;
+    }
+}
+
+void ASTContext::mark(ASTNodeInt *node) {
+    node->markFlag = 1;
+
+    if (node->isBinary())
+    {
+        mark(node->left);
+        mark(node->right);
+        return;
+    }
+
+    if (node->isUnary())
+    {
+        mark(node->left);
+        return;
+    }
+}
+
+void ASTContext::sweep() {
+    nodes.erase(
+        remove_if(nodes.begin(), nodes.end(),
+                  [](ASTNodeInt *node){
+            return (node->markFlag == 0);
+        }));
 }
 
 

@@ -1,6 +1,7 @@
 #include <abstractFileCaptureSpinThread.h>
 #include <cmath>
 #include <stdio.h>
+#include <fstream>
 
 #include <iostream>
 #include <random>
@@ -8,6 +9,12 @@
 #include "fixtureScene.h"
 #include "calibrationHelpers.h"
 #include "mesh3d.h"
+
+#include "reprojectionCostFunction.h"
+#include "astNode.h"
+
+#include "dllFunction.h"
+
 
 using namespace std;
 using namespace corecvs;
@@ -20,9 +27,15 @@ FixtureScene *genTest()
 
     double radius = 0.1;
 
-    const int FIXTURE_NUM = 128;
-    const int CAM_NUM = 16;
-    const int POINT_NUM = 60000 * 4;
+#if 1
+    const int FIXTURE_NUM = 16;
+    const int CAM_NUM = 6;
+    const int POINT_NUM = 500;
+#else
+    const int FIXTURE_NUM = 2;
+    const int CAM_NUM = 3;
+    const int POINT_NUM = 10;
+#endif
 
     FixtureScene *scene = new FixtureScene;
 
@@ -64,19 +77,135 @@ FixtureScene *genTest()
     for (int ip = 0; ip < POINT_NUM; ip++)
     {
         SceneFeaturePoint *point = scene->createFeaturePoint();
-        point->setPosition(Vector3dd(pointPos(rng), pointPos(rng), pointPos(rng)));
+        point->setPosition(Vector3dd(pointPos(rng), pointPos(rng), pointPos(rng) / 10.0));
     }
 
     SYNC_PRINT(("Projecting points..."));
-
-    scene->projectForward(SceneFeaturePoint::POINT_ALL);
+    PreciseTimer timer = PreciseTimer::currentTime();
+    scene->projectForward(SceneFeaturePoint::POINT_ALL, true);
+    printf("Projection elapsed %.2lf ms\n", timer.usecsToNow() / 1000.0);
     SYNC_PRINT(("...Done\n"));
 
     return scene;
 }
 
+void generateFileHeader(std::ofstream &generated, int inputs, int outputs)
+{
+    generated << "struct SparseEntry {" << endl <<
+                 "   int i;" << endl <<
+                 "   int j;" << endl <<
+                 "   double val; " << endl <<
+                 "};" << endl << endl;
+
+
+    generated << "extern \"C\" int  test(int in) {return in+1;}" << endl;
+    generated << "extern \"C\" int  input()  {return "<< inputs  << ";}" << endl;
+    generated << "extern \"C\" int  output() {return "<< outputs << ";}" << endl;
+
+
+}
+
+void codeGenerator(
+          std::ofstream &generated
+        , vector <ASTNode> &elements
+        , const vector <std::string> &names = vector <std::string>()
+        )
+{
+    bool extractConstpool = false;
+
+    /* Extact constpool */
+    std::unordered_map<double, string> constpool;
+    if (extractConstpool)
+    {
+        SYNC_PRINT(("Constpool extracting...\n"));
+
+        for (size_t i = 0; i < elements.size(); i++)
+        {
+            elements[i].p->extractConstPool("c", constpool);
+        }
+        SYNC_PRINT(("finished - size = %d\n", constpool.size()));
+    }
+
+    /*Compute hashes*/
+    SYNC_PRINT(("Hashing...\n"));
+    for (size_t i = 0; i < elements.size(); i++)
+    {
+        elements[i].p->rehash();
+    }
+    /* Form subtree dictionary to check for common subexpresstions */
+    SYNC_PRINT(("Making cse dictionary...\n"));
+
+    std::unordered_map<uint64_t, ASTNodeInt *> subexpDictionary;
+    for (size_t i = 0; i < elements.size(); i++)
+    {
+        elements[i].p->cseR(subexpDictionary);
+    }
+
+    vector<ASTNodeInt *> commonSubexpressions;
+    for (auto it : subexpDictionary)
+    {
+        if (it.second->cseCount == 0)
+            continue;
+        commonSubexpressions.push_back(it.second);
+        it.second->cseName = commonSubexpressions.size();
+    }
+    std::sort(commonSubexpressions.begin(), commonSubexpressions.end(),
+              [](ASTNodeInt *a, ASTNodeInt *b){return a->height < b->height;});
+
+    SYNC_PRINT(("finished - size = %d\n", commonSubexpressions.size() ));
+
+    /** Generate **/
+
+    ASTRenderDec params("", "", false, generated);
+    params.cse = &subexpDictionary;
+
+    if (extractConstpool)
+    {
+        for (auto it : constpool)
+        {
+            generated << std::setprecision(17);
+            generated << "   double " << it.second << " = " << it.first << ";" << endl;
+        }
+    }
+
+    for (auto it : commonSubexpressions)
+    {
+        int cseName = it->cseName;
+        generated << "   const double " << "cse" << std::hex << cseName << std::dec << " = ";
+
+        /* Hack node not to be selference. Restore it back afterwards */
+        uint64_t hash = it->hash;
+        it->hash = 0;
+        it->codeGenCpp(0, params);
+        it->hash = hash;
+        generated << "; " << endl;
+    }
+
+
+    for (size_t i = 0; i < elements.size(); i++)
+    {
+        if (i < names.size()) {
+            generated << names[i];
+        } else {
+            char buffer[100];
+            snprintf2buf(buffer, "out[%d]", i);
+            generated << buffer;
+        }
+        generated << " = ";
+
+        elements[i].p->codeGenCpp(0, params);
+        generated << ";\n";
+    }
+}
+
+
+
 int main (void)
 {
+    ASTContext *mainContext = new ASTContext();
+    ASTContext::MAIN_CONTEXT = mainContext;
+    PreciseTimer timer;
+
 #if 0
     cout << "Starting test <jit>" << endl;
     cout << "This test is x64 and GCC only" << endl;
@@ -111,7 +240,7 @@ int main (void)
 
     FixtureScene *scene = genTest();
 
-    scene->dumpInfo();
+    scene->dumpInfo(cout, true);
 
     Mesh3D dump;
     dump.switchColor();
@@ -119,5 +248,189 @@ int main (void)
     dump.dumpPLY("large.ply");
 
 
+    ReprojectionCostFunction cost(scene);
+    vector<double> inD (cost.getInputs());
+    vector<double> outD(cost.getOutputs());
+
+    uint64_t doubleNanoDelay = 0;
+    /** Double check **/
+    {
+        cout << "ReprojectionCostFunction will act " << cost.getInputs() << " - " << cost.getOutputs() << endl;
+
+        cost.fillModel(inD.data());
+
+        PreciseTimer timer = PreciseTimer::currentTime();
+        cost.costFunction<double>(inD.data(), outD.data());
+        doubleNanoDelay = timer.nsecsToNow();
+        SYNC_PRINT(("Function execution time %" PRIu64 " ns \n", doubleNanoDelay));
+
+        cout << "Result:" << endl;
+        cout << std::setprecision(17);
+        double meansq = 0;
+        for (size_t i = 0; i < outD.size(); i++)
+        {
+            meansq += (outD[i] * outD[i]);
+            //cout << out[i] << " ";
+        }
+        cout << " Mean sqdev = " << sqrt(meansq / outD.size());
+        cout << endl;
+    }
+    /** AST **/
+    vector<double> outA(cost.getOutputs());
+    {
+        vector<ASTNode> ain (cost.getInputs());
+        for (size_t i = 0; i < ain.size(); i++)
+        {
+            char buffer[100];
+            snprintf2buf(buffer, "M[%d]", i);
+            ain[i] = ASTNode(buffer);
+        }
+
+        vector<ASTNode> aout(cost.getOutputs());
+
+        //cost.fillModel(ain.data());
+        cost.costFunction<ASTNode>(ain.data(), aout.data());
+
+        SYNC_PRINT(("Simplifying...\n"));
+        cout << std::setprecision(17);
+        for (size_t i = 0; i < aout.size(); i++)
+        {
+            ASTNodeInt *toSimplify = aout[i].p;
+            aout[i].p = toSimplify->compute();
+        }
+        cout << endl;
+
+        /**
+         * Garbage collection
+         **/
+        size_t before = ASTContext::MAIN_CONTEXT->nodes.size();
+        ASTContext::MAIN_CONTEXT->clear();
+        for (size_t i = 0; i < aout.size(); i++)
+        {
+            ASTContext::MAIN_CONTEXT->mark(aout[i].p);
+        }
+        ASTContext::MAIN_CONTEXT->sweep();
+        size_t after = ASTContext::MAIN_CONTEXT->nodes.size();
+        cout << "before: "<< before << " after:" << after << endl;
+
+
+        ofstream generated("jit.cpp");
+        generateFileHeader(generated, cost.getInputs(), cost.getOutputs());
+
+        /**
+         * Jacobian computation
+         **/
+#if 1
+        /**
+         * Seems like Jacobian is too large to constuct in a single pass *
+         **/
+        SYNC_PRINT(("Symbolic Jacobian  computation \n"));
+
+        int reflushMem = 600;
+
+        timer = PreciseTimer::currentTime();
+        int nonTrivial = 0;
+        int partNum = 0;
+
+        ASTContext::MAIN_CONTEXT = new ASTContext();
+        for (size_t i = 0; i < aout.size();)
+        {
+            vector<ASTNode> part;
+            vector<string> names;
+
+            int j;
+            for (j = i; j < i + reflushMem && j < aout.size(); j++)
+            {
+                ASTNodeInt *toProcess = aout[j].p;
+                vector<string> vars;
+                toProcess->getVars(vars);
+                nonTrivial += vars.size();
+
+                for (string var : vars)
+                {
+                    ASTNodeInt *der = toProcess->derivative(var);
+                    der = der->compute();
+                    int varId = 0;
+                    sscanf(var.c_str(), "M[%d]", &varId);
+
+                    ASTNode node;
+                    node.p = der;
+                    part.push_back(node);
+
+                    char name[100];
+                    snprintf2buf(name, "out[%d].i = %d; out[%d].i = %d; out[%d].val",
+                                 names.size(), j, names.size(), varId, names.size());
+                    names.push_back(name);
+                }
+            }
+            i = j;
+            cout << "Part:" << partNum << endl;
+
+            generated << "extern \"C\" void j"<< partNum << "(const double *M, SparseEntry *out, int *size) {" << endl;
+            generated << "   if (out == (void *)0) { *size = " << nonTrivial << "; return;}";
+            codeGenerator(generated, part, names);
+            generated << "}\n\n";
+
+            partNum++;
+
+            delete_safe(ASTContext::MAIN_CONTEXT);
+            ASTContext::MAIN_CONTEXT = new ASTContext();
+        }
+        cout << "Part Number: " << partNum << endl;
+
+        delete_safe(ASTContext::MAIN_CONTEXT);
+        ASTContext::MAIN_CONTEXT = mainContext;
+
+        SYNC_PRINT(("Symbolic Jacobian  %" PRIu64 " ms (%d non trivial elements ~%.2lf%)\n"
+                    , timer.msecsToNow(), nonTrivial, nonTrivial * 100.0 / (cost.getInputs() * cost.getOutputs())
+                    ));
+#endif
+
+        generated << "extern \"C\" void function(const double *M, double *out) {" << endl;
+        codeGenerator(generated, aout);
+        generated << "}\n\n";
+
+        generated.close();
+
+#if 1
+        SYNC_PRINT(("Running GCC compiler...\n"));
+        PreciseTimer timer = PreciseTimer::currentTime();
+        system("gcc -shared -fPIC jit.cpp -o jit.so");
+        printf("GCC elapsed %.2lf ms\n", timer.usecsToNow() / 1000.0);
+
+
+        /* Loading DLL*/
+        DllFunction dllF("jit.so");
+
+        timer = PreciseTimer::currentTime();
+        dllF(inD.data(), outA.data());
+        SYNC_PRINT(("Function execution time %" PRIu64 " ns \n", timer.nsecsToNow()));
+
+        cout << "Result:" << endl;
+        cout << std::setprecision(17);
+        double meansq = 0;
+        for (size_t i = 0; i < outA.size(); i++)
+        {
+            meansq += (outA[i] * outA[i]);
+            //cout << out[i] << " ";
+        }
+        cout << " Mean sqdev = " << sqrt(meansq / outA.size());
+        cout << endl;
+
+        timer = PreciseTimer::currentTime();
+        corecvs::SparseMatrix matrix = dllF.getJacobian(inD.data());
+
+        //cout << matrix << endl;
+
+        SYNC_PRINT(("Jacobian execution        time %" PRIu64 " ns \n", timer.nsecsToNow()));
+        SYNC_PRINT(("Jacobian classic estimate time %" PRIu64 " ns \n", doubleNanoDelay * (nonTrivial + 1)));
+
+#endif
+
+
+
+    }
+
+
     return 0;
-};
+}

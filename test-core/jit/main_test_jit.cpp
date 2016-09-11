@@ -162,6 +162,17 @@ TEST(jit, testjit)
             }
         }
 
+        /*Constpool test*/
+        SYNC_PRINT(("Constpool extracting...\n"));
+        std::unordered_map<double, string> constpool;
+
+        for (size_t i = 0; i < CORE_COUNT_OF(out); i++)
+        {
+            out[i].p->extractConstPool("c", constpool);
+        }
+        SYNC_PRINT(("finished - size = %d\n", constpool.size()));
+
+
 #endif
 
     }

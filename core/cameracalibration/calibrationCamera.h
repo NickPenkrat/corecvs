@@ -182,6 +182,30 @@ struct PinholeCameraIntrinsics : public CameraProjection
 
 };
 
+template<typename DoubleType>
+class GenericPinholeCameraIntrinsics {
+public:
+    Vector2d<DoubleType> focal;            /**< Focal length (in px) in two directions */
+    Vector2d<DoubleType> principal;        /**< Principal point of optical axis on image plane (in pixel). Usually center of imager */
+    DoubleType   skew;                     /**< Skew parameter to compensate for optical axis tilt */
+
+    GenericPinholeCameraIntrinsics(const PinholeCameraIntrinsics &data)
+    {
+        focal     = Vector2d<DoubleType>(DoubleType(data.focal.x()), DoubleType(data.focal.y()));
+        principal = Vector2d<DoubleType>(DoubleType(data.principal.x()), DoubleType(data.principal.y()));
+        skew      = DoubleType(data.skew);
+    }
+
+
+    Vector2d<DoubleType> project(const Vector3d<DoubleType> &p) const
+    {
+        Vector2d<DoubleType> result = (focal * p.xy() + Vector2d<DoubleType>(skew * p.y(), DoubleType(0.0))) / p.z() + principal;
+        return result;
+    }
+
+
+};
+
 
 class CameraModel /*: public ScenePart*/
 {
