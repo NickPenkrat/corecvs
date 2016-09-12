@@ -78,58 +78,70 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
     }
 }
 
-void FixtureScene::triangulate(SceneFeaturePoint *point, bool sourceWithDistortion)
+void FixtureScene::triangulate(SceneFeaturePoint *point)
 {
-   if (sourceWithDistortion)
-   {
-       for (auto& pos : point->observations)
-       {
-           FixtureCamera    *cam = pos.first;
-           SceneObservation &obs = pos.second;
-           obs.observation = cam->distortion.mapBackward(obs.observation);   // convert given distorted projection to undistorted coords
-       }
-   }
+    //TODO: why don't use here:
+    //      point->ensureDistortedObservations(false);
+    //      point->position = point->triangulate();
+    //
+    // that uses internally:    mct.triangulateLM(mct.triangulate()) ???
 
-   if (point->observations.size() < 2)
-   {
-       SYNC_PRINT(("FixtureScene::triangulate(): Too few observations"));
-       return;
-   }
+    if (point->observations.size() < 2)
+    {
+        SYNC_PRINT(("FixtureScene::triangulate(): too few observations"));
+        return;
+    }
 
-   MulticameraTriangulator triangulator;
-   triangulator.trace = true;
+    //if (sourceWithDistortion)
+    //{
+    //    for (auto& pos : point->observations)
+    //    {
+    //        FixtureCamera    *cam = pos.first;
+    //        SceneObservation &obs = pos.second;
+    //
+    //        obs.observation = cam->distortion.mapBackward(obs.observation);   // convert given distorted projection to undistorted coords
+    //    }
+    //}
 
-   for (auto& pos : point->observations)
-   {
-       FixtureCamera    *cam = pos.first;
-       SceneObservation &obs = pos.second;
-       if (cam->cameraFixture == NULL)
-           continue;
+    MulticameraTriangulator triangulator;
+    triangulator.trace = true;
 
-       FixtureCamera worldCam = cam->cameraFixture->getWorldCamera(cam);
-       triangulator.addCamera(worldCam.getCameraMatrix(), obs.observation);
-   }
+    for (auto& pos : point->observations)
+    {
+        FixtureCamera    *cam = pos.first;
+        SceneObservation &obs = pos.second;
+        if (cam->cameraFixture == NULL)
+            continue;
 
-   bool ok;
-   Vector3dd point3d = triangulator.triangulate(&ok);
+        Vector2dd projection = obs.getDistorted(false);     // convert projection 'dist => undist' if need
 
-   if (!ok) {
-       SYNC_PRINT(("FixtureScene::triangulate(): MulticameraTriangulator returned false"));
-       return;
-   }
-   cout << "FixtureScene::triangulate(): triangulated to " << point3d << std::endl;
+        FixtureCamera worldCam = cam->cameraFixture->getWorldCamera(cam);
+        triangulator.addCamera(worldCam.getCameraMatrix(), projection);
+    }
 
-   if (sourceWithDistortion)
-   {
-       for (auto& pos : point->observations)
-       {
-           FixtureCamera    *cam = pos.first;
-           SceneObservation &obs = pos.second;
-           obs.observation = cam->distortion.mapForward(obs.observation);   // convert undistorted projection to the distorted one
-       }
-   }
+    bool ok;
+    Vector3dd point3d = triangulator.triangulateLM(triangulator.triangulate(), &ok);
 
-   point->position = point3d;       //TODO: why it's stored into the position field instead of reProjPosition?
+    if (!ok) {
+        SYNC_PRINT(("FixtureScene::triangulate(): MulticameraTriangulator returned false"));
+        return;
+    }
+    cout << "FixtureScene::triangulate(): triangulated to " << point3d << std::endl;
+
+    //if (sourceWithDistortion)
+    //{
+    //    for (auto& pos : point->observations)
+    //    {
+    //        FixtureCamera    *cam = pos.first;
+    //        SceneObservation &obs = pos.second;
+    //        obs.observation = cam->distortion.mapForward(obs.observation);   // convert undistorted projection to the distorted one
+    //    }
+    //}
+
+    if (point->hasKnownPosition)
+        point->reprojectedPosition = point3d;   // store at the reprojectedPosition as "position" is untouchable
+    else
+        point->position = point3d;              //TODO: why it's stored into the position field instead of reprojectedPosition?
 }
 
 CameraPrototype *FixtureScene::createCameraPrototype()

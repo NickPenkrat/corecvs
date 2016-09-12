@@ -25,11 +25,13 @@ void ReconstructionFixtureScene::transform(const corecvs::Affine3DQ &transform, 
     std::cout << "RFS::transform::parent" << std::endl;
     FixtureScene::transform(transform, scale);
     std::cout << "RFS::transform::points" << std::endl;
-    corecvs::parallelable_for(0, (int)trackedFeatures.size(), [&](const corecvs::BlockedRange<int> &r) { for (int i = r.begin(); i < r.end(); ++i)
-            { auto& pt = trackedFeatures[i];
-              pt->reprojectedPosition = pt->triangulate(true);
-              }
-              });
+    corecvs::parallelable_for(0, (int)trackedFeatures.size(), [&](const corecvs::BlockedRange<int> &r) {
+        for (int i = r.begin(); i < r.end(); ++i)
+        {
+            auto& pt = trackedFeatures[i];
+            pt->reprojectedPosition = pt->triangulate(true);
+        }
+    });
     std::cout << "RFS::transform::finished" << std::endl;
 }
 
@@ -992,7 +994,7 @@ void corecvs::ReconstructionFixtureScene::appendTracks(CameraFixture *ps, double
         best->observations[so.camera] = so;
         best->observations__[qq] = so;
         trackMap[qq][pq] = best;
-        best->reprojectedPosition = best->triangulate();
+        best->reprojectedPosition = best->triangulate();    //TODO: don't use observations__ here for triangulation?
 
         /*
          * Here we start trying to merge tracks if possible

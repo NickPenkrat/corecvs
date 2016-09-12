@@ -20,6 +20,26 @@ std::string SceneObservation::getPointName()
     return featurePoint ? featurePoint->name : "";
 }
 
+int SceneObservation::ensureDistorted(bool distorted)
+{
+    if (!(distorted ^ onDistorted))                         // if we have what is requested, use it
+        return false;
+
+    //cout << "SceneObservation::ensureDistorted: convert to " << (distorted ? "dist" : "undist") << " coords" << endl;
+    observation = getDistorted(onDistorted = distorted);
+    return true;
+}
+
+Vector2dd SceneObservation::getDistorted(bool distorted)
+{
+    if (distorted) {
+        return  onDistorted ? observation : camera->distortion.mapForward(observation);  // undist => dist
+    }
+    else {
+        return !onDistorted ? observation : camera->distortion.mapBackward(observation); // dist => undist
+    }
+}
+
 FixtureCamera *SceneObservation::getCameraById(FixtureCamera::IdType id)
 {
     CORE_ASSERT_TRUE_S(featurePoint);
@@ -28,19 +48,12 @@ FixtureCamera *SceneObservation::getCameraById(FixtureCamera::IdType id)
     return featurePoint->ownerScene->getCameraById(id);
 }
 
-bool SceneFeaturePoint::hasObservation(FixtureCamera *cam)
-{
-    auto it = observations.find(cam);
-    return (it != observations.end());
-}
-
 SceneObservation *SceneFeaturePoint::getObservation(FixtureCamera *cam)
 {
     auto it = observations.find(cam);
     if (it == observations.end()) {
-        return NULL;
+        return nullptr;
     }
-
     return &((*it).second);
 }
 
@@ -62,6 +75,16 @@ void SceneFeaturePoint::removeObservation(SceneObservation *in)
     }
 
     observations.erase(it);
+}
+
+int SceneFeaturePoint::ensureDistortedObservations(bool distorted)
+{
+    int toReturn = 0;
+    for (auto& obs : observations)      // we need to calc dist/undist coords for all observations if need
+    {
+        toReturn += obs.second.ensureDistorted(distorted);
+    }
+    return toReturn;
 }
 
 Vector3dd SceneFeaturePoint::triangulate(bool use__, uint32_t mask)

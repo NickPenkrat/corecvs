@@ -65,6 +65,9 @@ public:
 
     std::string     getPointName();
 
+    int             ensureDistorted(bool distorted = true);
+    Vector2dd       getDistorted(bool distorted = true);
+
 private:
     FixtureCamera  *getCameraById(FixtureCamera::IdType id);
 
@@ -227,11 +230,13 @@ public:
         position = matrix * position + translate;
     }
 
-    bool hasObservation(FixtureCamera *cam);
+    bool hasObservation(FixtureCamera *cam) { return getObservation(cam) != nullptr; }
+
     SceneObservation *getObservation(FixtureCamera *cam);
 
     void removeObservation(SceneObservation *);
 
+    int  ensureDistortedObservations(bool distorted = true);    // convert to the needed type of all observations
 
     /* Let it be so far like this */
     template<class VisitorType>

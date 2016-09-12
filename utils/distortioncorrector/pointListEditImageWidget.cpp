@@ -430,7 +430,8 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *w
 
         int flags = NONE_ARROW;
 
-        if (isSelected) {
+        if (isSelected)
+        {
             painter.setPen(Qt::red);
             drawCircle(painter, imageCoords, 7);
 
@@ -451,16 +452,15 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *w
         painter.setBrush(Qt::NoBrush);
     }
 
-    /* Draw additional points*/
-    for (size_t i = 0; i < pointList.size(); i++)
+    /* Draw additional points */
+    for (Vector2dd &point : pointList)
     {
-        Vector2dd &p = pointList[i];
-        Vector2dd imageCoords = imageToWidgetF(p);
+        Vector2dd imageCoords = imageToWidgetF(point);
 
         /*painter.setPen(Qt::green);
         drawLine(painter, imageCoords - Vector2dd( 4.0, 4.0), imageCoords + Vector2dd(4.0,  4.0));
         drawLine(painter, imageCoords - Vector2dd(-4.0, 4.0), imageCoords + Vector2dd(-4.0, 4.0));*/
-        paintTarget( painter, imageCoords, 10);
+        paintTarget(painter, imageCoords, 10);
     }
 }
 
@@ -567,32 +567,31 @@ void PointListEditImageWidgetUnited::childMouseMoved(QMouseEvent * event)
     {
         switch (mCurrentToolClass)
         {
-        case MOVE_POINT_TOOL:
-        {
-            //   qDebug() << "Drag in selected tool";
-            if (!mIsMouseLeftPressed)
-                break;
-
-            Vector2dd dragStart    = widgetToImageF(Qt2Core::Vector2ddFromQPoint(mSelectionEnd));
-            Vector2dd currentPoint = widgetToImageF(Qt2Core::Vector2ddFromQPoint(event->pos()));
-            Vector2dd shift = (dragStart - currentPoint);
-
-
-           /* for (unsigned i = 0; i < mFeatures.mSelectedPoints.size(); i++)
+            case MOVE_POINT_TOOL:
             {
-                mFeatures.mSelectedPoints[i]->position -= shift;
-            }*/
-            if (mSelectedPoint >= 0) {
-                Vector2dd currentPoint = mObservationListModel->getPoint(mSelectedPoint);
-                currentPoint -= shift;
-                mObservationListModel->setPoint(mSelectedPoint, currentPoint);
+                //   qDebug() << "Drag in selected tool";
+                if (!mIsMouseLeftPressed)
+                    break;
+
+                Vector2dd dragStart    = widgetToImageF(Qt2Core::Vector2ddFromQPoint(mSelectionEnd));
+                Vector2dd currentPoint = widgetToImageF(Qt2Core::Vector2ddFromQPoint(event->pos()));
+                Vector2dd shift        = (dragStart - currentPoint);
+
+                /*for (unsigned i = 0; i < mFeatures.mSelectedPoints.size(); i++)
+                 {
+                     mFeatures.mSelectedPoints[i]->position -= shift;
+                 }*/
+                if (mSelectedPoint >= 0)
+                {
+                    Vector2dd currentPoint = mObservationListModel->getPoint(mSelectedPoint);
+                    currentPoint -= shift;
+                    mObservationListModel->setPoint(mSelectedPoint, currentPoint);
+                }
+
+                mUi->widget->update();
             }
-
-
-            mUi->widget->update();
-        }
-        default:
-            break;
+            default:
+                break;
         }
     }
 
