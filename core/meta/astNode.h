@@ -210,9 +210,12 @@ public:
     uint64_t hash = 0;
     uint32_t height = 0;
     //void *payload = NULL;
+
+    /* Common subexpresstion related variables. Could be moved to payload */
     int cseCount = 0;
     int cseName = 0;
 
+    /* Flag used for mark and sweep garbage collection */
     uint16_t markFlag = 0;
 
     bool isBinary();
@@ -242,7 +245,7 @@ public:
     ASTNodeInt* compute(const std::map<std::string, double>& bind = std::map<std::string, double>());
 
 
-    /*unsafe stuff you can destroy subtree of an another tree*/
+    /*unsafe stuff you can destroy subtree of an another tree by accident*/
     static void deleteSubtree(ASTNodeInt *tree);
     void deleteChildren();
 

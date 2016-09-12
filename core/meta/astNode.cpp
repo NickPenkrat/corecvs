@@ -154,13 +154,13 @@ void ASTNodeInt::extractConstPool(const std::string &poolname, std::unordered_ma
         }
     }
 
-    if (op > OPERATOR_BINARY && op <= OPERATOR_BINARY_LAST)
+    if (isBinary())
     {
         left ->extractConstPool(poolname, pool);
         right->extractConstPool(poolname, pool);
     }
 
-    if (op == OPERATOR_POW || op == OPERATOR_SIN || op == OPERATOR_COS)
+    if (isUnary())
     {
         left->extractConstPool(poolname, pool);
     }
@@ -171,27 +171,27 @@ void ASTNodeInt::cseR(std::unordered_map<uint64_t, ASTNodeInt *> &cse)
     auto it = cse.find(hash);
     if (it == cse.end()) {
         /* We are not intested of making cse out of consts and ids */
-        if (op > OPERATOR_BINARY && op <= OPERATOR_BINARY_LAST)
+        if (isBinary())
         {
             left ->cseR(cse);
             right->cseR(cse);
             cse[hash] = this;
         }
 
-        if (op == OPERATOR_POW || op == OPERATOR_SIN || op == OPERATOR_COS)
+        if (isUnary())
         {
             left->cseR(cse);
             cse[hash] = this;
         }
     } else {
         (*it).second->cseCount++;
-        if (op > OPERATOR_BINARY && op <= OPERATOR_BINARY_LAST)
+        if (isBinary())
         {
             left ->cseR(cse);
             right->cseR(cse);
         }
 
-        if (op == OPERATOR_POW || op == OPERATOR_SIN || op == OPERATOR_COS)
+        if (isUnary())
         {
             left->cseR(cse);
         }
@@ -225,6 +225,9 @@ size_t ASTNodeInt::memoryFootprint()
 
 void ASTNodeInt::rehash()
 {
+    cseCount = 0;
+    cseName = 0;
+
     if (op == OPREATOR_ID)
     {
         hash = std::hash<std::string>{}(name);
@@ -367,7 +370,7 @@ ASTNodeInt *ASTNodeInt::derivative(const std::string &var)
 
         case OPERATOR_MUL:
         {
-            ASTNodeInt *leftD  = left->derivative(var);
+            ASTNodeInt *leftD  = left ->derivative(var);
             ASTNodeInt *rightD = right->derivative(var);
 
 
@@ -380,7 +383,7 @@ ASTNodeInt *ASTNodeInt::derivative(const std::string &var)
 
         case OPERATOR_DIV:
         {
-            ASTNodeInt *leftD  = left->derivative(var);
+            ASTNodeInt *leftD  = left ->derivative(var);
             ASTNodeInt *rightD = right->derivative(var);
 
 
@@ -463,7 +466,7 @@ ASTNodeInt *ASTNodeInt::compute(const std::map<std::string, double> &bind)
             break;
         }
         case OPERATOR_SUB : {
-            ASTNodeInt *nleft  = left->compute(bind);
+            ASTNodeInt *nleft  = left ->compute(bind);
             ASTNodeInt *nright = right->compute(bind);
 
             if (nleft->op == OPREATOR_NUM && nright->op == OPREATOR_NUM)
@@ -524,7 +527,7 @@ ASTNodeInt *ASTNodeInt::compute(const std::map<std::string, double> &bind)
             break;
         }
         case OPERATOR_POW : {
-            ASTNodeInt *nleft  = left->compute(bind);
+            ASTNodeInt *nleft  = left ->compute(bind);
             ASTNodeInt *nright = right->compute(bind);
 
             if (nleft->op == OPREATOR_NUM && nright->op == OPREATOR_NUM)
@@ -548,7 +551,7 @@ void ASTNodeInt::deleteSubtree(ASTNodeInt *tree)
 
 void ASTNodeInt::deleteChildren()
 {
-    if (op > OPERATOR_BINARY && op <= OPERATOR_BINARY_LAST)
+    if (isBinary())
     {
         left->deleteChildren();
         right->deleteChildren();
@@ -557,7 +560,7 @@ void ASTNodeInt::deleteChildren()
         return;
     }
 
-    if (op == OPERATOR_POW || op == OPERATOR_SIN || op == OPERATOR_COS)
+    if (isUnary())
     {
         left->deleteChildren();
         delete left;

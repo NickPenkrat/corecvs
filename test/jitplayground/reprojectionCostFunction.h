@@ -1,9 +1,10 @@
 #ifndef REPROJECTIONCOSTFUNCTION_H
 #define REPROJECTIONCOSTFUNCTION_H
 
+#include "function.h"
 #include "fixtureScene.h"
 
-class ReprojectionCostFunction
+class ReprojectionCostFunction : public FunctionArgs
 {
 public:
     /**
@@ -28,6 +29,7 @@ public:
      * We replace sequence number to correspond cameras and their parameters
      **/
     ReprojectionCostFunction(FixtureScene *scene) :
+        FunctionArgs(getInputsS(scene), getOutputsS(scene)),
         scene(scene)
     {}
 
@@ -74,7 +76,7 @@ public:
     }
 
     template<typename DoubleType>
-    void costFunction(DoubleType *in, DoubleType *out)
+    void costFunction(const DoubleType *in, DoubleType *out)
     {
         int pointParameters = scene->featurePoints().size() * 3;
         int outCount = 0;
@@ -116,11 +118,18 @@ public:
 
         }
 
-        cout << "Totally " << outCount << " outputs" << endl;
+        //cout << "Totally " << outCount << " outputs" << endl;
 
     }
 
 
+
+    // FunctionArgs interface
+public:
+    virtual void operator ()(const double in[], double out[]) override
+    {
+        costFunction<double>(in, out);
+    }
 };
 
 #endif // REPROJECTIONCOSTFUNCTION_H

@@ -39,7 +39,7 @@ DllFunction::DllFunction(const std::string &dllName) :
     while (true) {
         char buffer[100];
         snprintf2buf(buffer, "j%d", jpi);
-        cout << "Try to load symbol" << buffer << endl;
+        cout << "Try to load symbol <" << buffer << ">" << endl;
 
 
         JacobianPartFunctor jp = (JacobianPartFunctor)dlsym(dllHandle, buffer);
@@ -71,7 +71,7 @@ corecvs::SparseMatrix DllFunction::getNativeJacobian(const double *in, double de
         start += jacobianPartSize[i];
     }
 
-    /* Only measure time */
+    /* There is a double copy and we also can call blocks in parallel */
     std::map<std::pair<int, int>, double> data;
     for (SparseEntry &entry : scratch) {
         data[std::pair<int, int>(entry.i, entry.j)] = entry.val;

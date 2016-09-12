@@ -24,10 +24,15 @@
 
 using namespace std;
 
-TEST(jit, testjit)
+void asmF(double *in, double *out)
 {
-    cout << "Starting test <jit>" << endl;
-    cout << "This test is x64 and GCC only" << endl;
+#if defined (__GNUC__) && __x86_64
+
+#endif
+}
+
+TEST(jit, testasm)
+{
 
 #if defined (__GNUC__) && __x86_64
 
@@ -38,6 +43,23 @@ TEST(jit, testjit)
          "fstpl %0;" : "=m"(sin_a), "=m"(cos_a) : "m"(a));
     printf("sin(29°) = %f, cos(29°) = %f\n", sin_a, cos_a);
 #endif
+
+    double in [5] = {1,2,3,4,5};
+    double out[5] = {0};
+
+    asmF(in, out);
+    for (int i = 0; i < CORE_COUNT_OF(out); i++)
+    {
+        cout << out[i] << " " << endl;
+    }
+
+}
+
+TEST(jit, testjit)
+{
+    cout << "Starting test <jit>" << endl;
+    cout << "This test is x64 and GCC only" << endl;
+
 
     HomographyReconstructor example;
     Matrix33 transform = Matrix33::RotateProj(degToRad(10));

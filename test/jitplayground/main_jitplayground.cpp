@@ -32,9 +32,9 @@ FixtureScene *genTest()
     const int CAM_NUM = 6;
     const int POINT_NUM = 500;
 #else
-    const int FIXTURE_NUM = 2;
+    const int FIXTURE_NUM = 1;
     const int CAM_NUM = 3;
-    const int POINT_NUM = 10;
+    const int POINT_NUM = 5;
 #endif
 
     FixtureScene *scene = new FixtureScene;
@@ -202,50 +202,24 @@ void codeGenerator(
 
 int main (void)
 {
+    Statistics stats;
+
     ASTContext *mainContext = new ASTContext();
     ASTContext::MAIN_CONTEXT = mainContext;
     PreciseTimer timer;
 
-#if 0
-    cout << "Starting test <jit>" << endl;
-    cout << "This test is x64 and GCC only" << endl;
-
-#if defined (__GNUC__) && __x86_64
-
-    double sin_a, cos_a, a = 0.5;
-    asm ("fldl %2;"
-         "fsincos;"
-         "fstpl %1;"
-         "fstpl %0;" : "=m"(sin_a), "=m"(cos_a) : "m"(a));
-    printf("sin(29°) = %lf, cos(29°) = %lf\n", sin_a, cos_a);
-
-#endif
-
-    double sin_b;
-    double cos_b;
-    double b = 0.5;
-
-    sin_b = sin(b);
-    cos_b = cos(b);
-
-    double sum = sin_b + cos_b;
-    double diff = cos_b - sin_b;
-
-
-    printf("V: sin(29°) = %lf, cos(29°) = %lf\n", sin_b, cos_b);
-    printf("V: sum = %lf, diff = %lf\n", sum, diff);
-
-    cout << "Test <jit> PASSED" << endl;
-#endif
-
+    stats.startInterval();
     FixtureScene *scene = genTest();
+    stats.endInterval("Creating a scene");
 
     scene->dumpInfo(cout, true);
 
+#ifdef DUMP_SCENE
     Mesh3D dump;
     dump.switchColor();
     CalibrationHelpers().drawScene(dump, *scene, 0.2);
     dump.dumpPLY("large.ply");
+#endif
 
 
     ReprojectionCostFunction cost(scene);
@@ -260,9 +234,12 @@ int main (void)
         cost.fillModel(inD.data());
 
         PreciseTimer timer = PreciseTimer::currentTime();
-        cost.costFunction<double>(inD.data(), outD.data());
-        doubleNanoDelay = timer.nsecsToNow();
+        for (int count = 0; count < 1000; count++) {
+            cost.costFunction<double>(inD.data(), outD.data());
+        }
+        doubleNanoDelay = timer.nsecsToNow() / 1000;
         SYNC_PRINT(("Function execution time %" PRIu64 " ns \n", doubleNanoDelay));
+        stats.setValue("Double single execution (ns)", doubleNanoDelay);
 
         cout << "Result:" << endl;
         cout << std::setprecision(17);
@@ -278,6 +255,7 @@ int main (void)
     /** AST **/
     vector<double> outA(cost.getOutputs());
     {
+        stats.startInterval();
         vector<ASTNode> ain (cost.getInputs());
         for (size_t i = 0; i < ain.size(); i++)
         {
@@ -288,8 +266,9 @@ int main (void)
 
         vector<ASTNode> aout(cost.getOutputs());
 
-        //cost.fillModel(ain.data());
         cost.costFunction<ASTNode>(ain.data(), aout.data());
+        stats.resetInterval("Creating AST");
+
 
         SYNC_PRINT(("Simplifying...\n"));
         cout << std::setprecision(17);
@@ -299,7 +278,9 @@ int main (void)
             aout[i].p = toSimplify->compute();
         }
         cout << endl;
+        stats.resetInterval("Simplifing AST");
 
+#ifndef GC_AFTER_SIMPLIFY
         /**
          * Garbage collection
          **/
@@ -312,7 +293,8 @@ int main (void)
         ASTContext::MAIN_CONTEXT->sweep();
         size_t after = ASTContext::MAIN_CONTEXT->nodes.size();
         cout << "before: "<< before << " after:" << after << endl;
-
+#endif
+        stats.endInterval("Garbage collection");
 
         ofstream generated("jit.cpp");
         generateFileHeader(generated, cost.getInputs(), cost.getOutputs());
@@ -325,6 +307,7 @@ int main (void)
          * Seems like Jacobian is too large to constuct in a single pass *
          **/
         SYNC_PRINT(("Symbolic Jacobian  computation \n"));
+        stats.enterContext("Jacobian computation");
 
         int reflushMem = 600;
 
@@ -358,7 +341,7 @@ int main (void)
                     part.push_back(node);
 
                     char name[100];
-                    snprintf2buf(name, "out[%d].i = %d; out[%d].i = %d; out[%d].val",
+                    snprintf2buf(name, "out[%d].i = %d; out[%d].j = %d; out[%d].val",
                                  names.size(), j, names.size(), varId, names.size());
                     names.push_back(name);
                 }
@@ -384,6 +367,8 @@ int main (void)
         SYNC_PRINT(("Symbolic Jacobian  %" PRIu64 " ms (%d non trivial elements ~%.2lf%)\n"
                     , timer.msecsToNow(), nonTrivial, nonTrivial * 100.0 / (cost.getInputs() * cost.getOutputs())
                     ));
+
+        stats.leaveContext();
 #endif
 
         generated << "extern \"C\" void function(const double *M, double *out) {" << endl;
@@ -403,8 +388,10 @@ int main (void)
         DllFunction dllF("jit.so");
 
         timer = PreciseTimer::currentTime();
-        dllF(inD.data(), outA.data());
-        SYNC_PRINT(("Function execution time %" PRIu64 " ns \n", timer.nsecsToNow()));
+        for (int count = 0; count < 1000; count++) {
+            dllF(inD.data(), outA.data());
+        }
+        SYNC_PRINT(("Function execution time %" PRIu64 " ns \n", timer.nsecsToNow() / 1000));
 
         cout << "Result:" << endl;
         cout << std::setprecision(17);
@@ -418,13 +405,31 @@ int main (void)
         cout << endl;
 
         timer = PreciseTimer::currentTime();
-        corecvs::SparseMatrix matrix = dllF.getJacobian(inD.data());
+        corecvs::SparseMatrix J1;
+        for (int count = 0; count < 100; count++) {
+            J1 = dllF.getJacobian(inD.data());
+        }
 
         //cout << matrix << endl;
 
-        SYNC_PRINT(("Jacobian execution        time %" PRIu64 " ns \n", timer.nsecsToNow()));
+        SYNC_PRINT(("Jacobian execution        time %" PRIu64 " ns \n", timer.nsecsToNow() / 100));
         SYNC_PRINT(("Jacobian classic estimate time %" PRIu64 " ns \n", doubleNanoDelay * (nonTrivial + 1)));
 
+        Matrix J = cost.getJacobian(inD.data());
+
+        if (J.numElements() < 1000)
+        {
+            cout << "H" << J.h << " - " << J1.h << endl;
+            cout << "W" << J.w << " - " << J1.w << endl;
+
+            for (int i = 0; i < J.h; i++)
+            {
+                for (int j = 0; j < J.w; j++)
+                {
+                    cout << J.element(i, j) << " - " << J1.a(i,j) << endl;
+                }
+            }
+        }
 #endif
 
 
