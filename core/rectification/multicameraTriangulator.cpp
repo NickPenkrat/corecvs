@@ -1,4 +1,5 @@
 #include "multicameraTriangulator.h"
+#include "twoViewOptimalTriangulation.h"
 
 #include <iostream>
 #include "levenmarq.h"
@@ -30,6 +31,10 @@ Vector3dd MulticameraTriangulator::triangulate(bool *ok)
         if (ok != NULL) *ok = !hasError;
         return Vector3dd(0.0);
     }
+
+
+    if (P.size() == 2)
+        return TwoViewOptimalTriangulor(true, P[0], xy[0], P[1], xy[1]).triangulate();
 
     Matrix A = constructMatrix();
     Matrix Acopy(A);
