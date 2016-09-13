@@ -96,7 +96,7 @@ int IterativeReconstructionFeatureSelectionParams::staticInit()
         (
           IterativeReconstructionFeatureSelectionParams::RMSEPRUNINGSCALER_ID,
           offsetof(IterativeReconstructionFeatureSelectionParams, mRmsePruningScaler),
-          3,
+          2,
           "rmsePruningScaler",
           "rmsePruningScaler",
           "RMSE pruning scaler",
@@ -110,10 +110,24 @@ int IterativeReconstructionFeatureSelectionParams::staticInit()
         (
           IterativeReconstructionFeatureSelectionParams::MAXPRUNINGSCALER_ID,
           offsetof(IterativeReconstructionFeatureSelectionParams, mMaxPruningScaler),
-          5,
+          3,
           "maxPruningScaler",
           "maxPruningScaler",
           "Max pruning scaler",
+          true,
+         0,
+         10000
+        )
+    );
+    fields().push_back(
+        new DoubleField
+        (
+          IterativeReconstructionFeatureSelectionParams::POSTOPTIMIZESCALER_ID,
+          offsetof(IterativeReconstructionFeatureSelectionParams, mPostOptimizeScaler),
+          1.44,
+          "postOptimizeScaler",
+          "postOptimizeScaler",
+          "Post optimize threshold scaler",
           true,
          0,
          10000

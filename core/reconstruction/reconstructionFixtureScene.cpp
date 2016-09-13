@@ -19,9 +19,54 @@ ReconstructionFixtureScene::ReconstructionFixtureScene()
 {
 }
 
-
-void ReconstructionFixtureScene::transform(const corecvs::Affine3DQ &transform, double scale)
+ReconstructionFixtureScene::Detransformer::~Detransformer()
 {
+    if (scene)
+    {
+        std::cout << "\x1b[32m";
+        scene->transform(transform, false, scale);
+        std::cout << "\x1b[0m";
+    }
+}
+
+ReconstructionFixtureScene::Detransformer::Detransformer(ReconstructionFixtureScene *scene, const Affine3DQ &transform, const double scale) : scene(scene), transform(transform), scale(scale)
+{
+}
+
+ReconstructionFixtureScene::Detransformer::Detransformer(ReconstructionFixtureScene::Detransformer &&rhs) : scene(rhs.scene), transform(rhs.transform), scale(rhs.scale)
+{
+    rhs.scene = nullptr;
+}
+
+ReconstructionFixtureScene::Detransformer& ReconstructionFixtureScene::Detransformer::operator=(ReconstructionFixtureScene::Detransformer &&rhs)
+{
+    std::swap(scene, rhs.scene);
+    std::swap(scale, rhs.scale);
+    std::swap(transform, rhs.transform);
+    return *this;
+}
+
+ReconstructionFixtureScene::Detransformer ReconstructionFixtureScene::center(Vector3dd &shift, bool provideDetransformer)
+{
+    Vector3dd mean(0, 0, 0);
+    for (auto& ppp: placedFixtures)
+        mean += ppp->location.shift;
+    mean = mean / placedFixtures.size();
+    Quaternion r(0, 0, 0, 1);
+    Affine3DQ tf(r, -mean);
+    shift = -mean;
+    return transform(tf, provideDetransformer, 1.0);
+}
+
+ReconstructionFixtureScene::Detransformer ReconstructionFixtureScene::transform(const corecvs::Affine3DQ &transform, bool provideDetransformer, double scale)
+{
+    if (provideDetransformer)
+        std::cout << "\x1b[31m";
+    std::cout << "RFS::transform::prior:" << std::endl;
+    for (auto& cf: placedFixtures)
+        std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ placedFixtures[0]->location.rotor.conjugated()) << std::endl;
+
+
     std::cout << "RFS::transform::parent" << std::endl;
     FixtureScene::transform(transform, scale);
     std::cout << "RFS::transform::points" << std::endl;
@@ -30,7 +75,14 @@ void ReconstructionFixtureScene::transform(const corecvs::Affine3DQ &transform, 
               pt->reprojectedPosition = pt->triangulate(true);
               }
               });
+
+    std::cout << "RFS::transform::post:" << std::endl;
+    for (auto& cf: placedFixtures)
+        std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ placedFixtures[0]->location.rotor.conjugated()) << std::endl;
     std::cout << "RFS::transform::finished" << std::endl;
+    if (provideDetransformer)
+        std::cout << "\x1b[0m";
+    return provideDetransformer ? Detransformer(this, transform.inverted(), 1.0 / scale) : Detransformer();
 }
 
 void ReconstructionFixtureScene::printPosStats()
