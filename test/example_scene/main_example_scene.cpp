@@ -245,8 +245,8 @@ void testJSON_StereoRecheck()
 int main (int /*argc*/, char ** /*argv*/)
 {
     printf("Generate some test scenes\n");
-//    testJSON_FixtureScene();
-//    testJSON_StereoScene();
+    testJSON_FixtureScene();
+    testJSON_StereoScene();
     testJSON_StereoRecheck();
 
 	return 0;

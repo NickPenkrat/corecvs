@@ -107,6 +107,8 @@ public:
         OPERATOR_SIN,
         OPERATOR_COS,
 
+        OPERATOR_USER,
+
         OPERATOR_LAST
     };
 
@@ -127,6 +129,8 @@ public:
             /**/
              case OPERATOR_SIN : return "sin"; break ;
              case OPERATOR_COS : return "cos"; break ;
+
+             case OPERATOR_USER : return "user"; break ;
 
              case OPERATOR_LAST : return "R"; break ;
         }
@@ -151,6 +155,8 @@ public:
              case OPERATOR_SIN : return 30; break ;
              case OPERATOR_COS : return 30; break ;
 
+             case OPERATOR_USER: return  5; break ;
+
              case OPERATOR_LAST : return 0; break ;
         }
         return 0;
@@ -158,7 +164,7 @@ public:
 
 
 
-    ASTNodeInt(/* Context *_owner,*/ Operator _op, ASTNodeInt *_left = NULL, ASTNodeInt *_right = NULL) :
+    ASTNodeInt(Operator _op, ASTNodeInt *_left = NULL, ASTNodeInt *_right = NULL) :
         op   (_op),
         left (_left),
         right(_right)
