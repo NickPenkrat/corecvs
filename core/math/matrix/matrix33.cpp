@@ -37,6 +37,60 @@ void Matrix33::invert()
  *
  * \return The \f$I^{-1}\f$
  */
+
+std::array<Vector3dd, 2> Matrix33::rank2Nullvectors() const
+{
+    double maxVal = std::abs(a(0, 0)), va;
+    int maxI = 0, maxJ = 0;
+    for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < 3; ++j)
+            if (maxVal <= (va = std::abs(a(i, j))))
+            {
+                maxVal = va;
+                maxI = i;
+                maxJ = j;
+            }
+    int rI = -1, rJ = -1, cI = -1, cJ = -1;
+    double rMax = 0, cMax = 0;
+    double pivot = a(maxI, maxJ);
+
+    for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < 3; ++j)
+            if (i != maxI && j != maxJ)
+            {
+                double vr = a(i, j) - a(maxI, j) * a(i, maxJ) / pivot;
+                double vc = a(i, j) - a(i, maxJ) * a(maxI, j) / pivot;
+
+                if (rMax <= (va = std::abs(vr)))
+                {
+                    rMax = va;
+                    rI = i;
+                    rJ = j;
+                }
+
+                if (cMax <= (va = std::abs(vc)))
+                {
+                    cMax = va;
+                    cI = i;
+                    cJ = j;
+                }
+            }
+    std::array<Vector3dd, 2> res;
+    int rFree = 3 - maxJ - rJ, cFree = 3 - maxI - cI;
+    res[1][rFree] = 1.0;
+    res[0][cFree] = 1.0;
+    double A = a(maxI, maxJ), B = a(maxI, rJ), C = a(maxI, rFree),
+           D = a(  rI, maxJ), E = a(  rI, rJ), F = a(  rI, rFree);
+    res[1][rJ  ] = -(F - D * C / A) / (E - D * B / A);
+    res[1][maxJ] = -(B * res[1][rJ] + C) / A;
+                        D = a( maxI, cJ);
+    B = a(   cI, maxJ); E = a(   cI, cJ);
+    C = a(cFree, maxJ); F = a(cFree, cJ);
+    res[0][cI  ] = -(F - D * C / A) / (E - D * B / A);
+    res[0][maxI] = -(B * res[0][cI] + C) / A;
+    return res;
+}
+
 Matrix33 Matrix33::inv() const
 {
     Matrix33 toReturn;

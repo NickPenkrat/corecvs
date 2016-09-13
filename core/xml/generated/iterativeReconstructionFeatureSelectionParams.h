@@ -46,6 +46,7 @@ public:
         FEATUREDETECTIONPARAMS_ID,
         RMSEPRUNINGSCALER_ID,
         MAXPRUNINGSCALER_ID,
+        POSTOPTIMIZESCALER_ID,
         SKIPFEATUREDETECTION_ID,
         ITERATIVE_RECONSTRUCTION_FEATURE_SELECTION_PARAMS_FIELD_ID_NUM
     };
@@ -87,6 +88,12 @@ public:
      * Max pruning scaler 
      */
     double mMaxPruningScaler;
+
+    /** 
+     * \brief postOptimizeScaler 
+     * Post optimize threshold scaler 
+     */
+    double mPostOptimizeScaler;
 
     /** 
      * \brief skipFeatureDetection 
@@ -132,6 +139,11 @@ public:
         return mMaxPruningScaler;
     }
 
+    double postOptimizeScaler() const
+    {
+        return mPostOptimizeScaler;
+    }
+
     bool skipFeatureDetection() const
     {
         return mSkipFeatureDetection;
@@ -168,6 +180,11 @@ public:
         mMaxPruningScaler = maxPruningScaler;
     }
 
+    void setPostOptimizeScaler(double postOptimizeScaler)
+    {
+        mPostOptimizeScaler = postOptimizeScaler;
+    }
+
     void setSkipFeatureDetection(bool skipFeatureDetection)
     {
         mSkipFeatureDetection = skipFeatureDetection;
@@ -184,6 +201,7 @@ template<class VisitorType>
         visitor.visit(mFeatureDetectionParams,    static_cast<const CompositeField *>(fields()[FEATUREDETECTIONPARAMS_ID]));
         visitor.visit(mRmsePruningScaler,         static_cast<const DoubleField *>  (fields()[RMSEPRUNINGSCALER_ID]));
         visitor.visit(mMaxPruningScaler,          static_cast<const DoubleField *>  (fields()[MAXPRUNINGSCALER_ID]));
+        visitor.visit(mPostOptimizeScaler,        static_cast<const DoubleField *>  (fields()[POSTOPTIMIZESCALER_ID]));
         visitor.visit(mSkipFeatureDetection,      static_cast<const BoolField *>    (fields()[SKIPFEATUREDETECTION_ID]));
     }
 
@@ -200,6 +218,7 @@ template<class VisitorType>
         , FeatureDetectionParams featureDetectionParams
         , double rmsePruningScaler
         , double maxPruningScaler
+        , double postOptimizeScaler
         , bool skipFeatureDetection
     )
     {
@@ -209,6 +228,7 @@ template<class VisitorType>
         mFeatureDetectionParams = featureDetectionParams;
         mRmsePruningScaler = rmsePruningScaler;
         mMaxPruningScaler = maxPruningScaler;
+        mPostOptimizeScaler = postOptimizeScaler;
         mSkipFeatureDetection = skipFeatureDetection;
     }
 

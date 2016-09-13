@@ -27,6 +27,7 @@ public:
      * correction format [Journal of Computational and Applied Mathematics 50 (1994)]
      */
     double         operator()(const double &at   ) const;
+    double polishRoot(double x0, int N = 5) const;
 
     // TODO: This stuff should be out-of-class
     Polynomial  operator* (const double &v) const;

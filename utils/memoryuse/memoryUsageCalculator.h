@@ -1,8 +1,6 @@
 #pragma once
 #include <QtCore/QObject>
 
-/// When this limit is hit, memoryOverflow() signal is thrown
-const double upperMemoryUsageLimit = 2400.0; // in Mb
 
 /// Class that gets memory usage info from OS and checks if it is within allowed range or not
 class MemoryUsageCalculator : public QObject
@@ -20,8 +18,11 @@ signals:
 protected:
     /// Platform-specific implementation
     virtual void getMemoryUsageImpl() = 0;
+    virtual void getTotalMemoryImpl() { mTotalMemory = 2400; }
 
 public:
+    static const double CRITICAL_FRACTION;
+    double mTotalMemory;
     double mVirtualSize;
     double mResidentSize;
 };
