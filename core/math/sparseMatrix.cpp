@@ -969,10 +969,10 @@ Vector corecvs::operator *(const SparseMatrix &lhs, const Vector &rhs)
 
         double alpha = 1.0, beta = 0.0;
         status = cusparseDcsrmv(handle, CUSPARSE_OPERATION_NON_TRANSPOSE, lhs.h, lhs.w
-#       if (__CUDA_API_VERSION > 5050)
-            , lhs.nnz(), &alpha, descr, lhs.gpuPromotion->dev_values.get(), lhs.gpuPromotion->dev_rowPointers.get(), lhs.gpuPromotion->dev_columns.get(), dev_rhs, &beta, dev_res);
-#else
+#       if (__CUDA_API_VERSION == 5050)
             ,             alpha, descr, lhs.gpuPromotion->dev_values.get(), lhs.gpuPromotion->dev_rowPointers.get(), lhs.gpuPromotion->dev_columns.get(), dev_rhs,  beta, dev_res);
+#else
+            , lhs.nnz(), &alpha, descr, lhs.gpuPromotion->dev_values.get(), lhs.gpuPromotion->dev_rowPointers.get(), lhs.gpuPromotion->dev_columns.get(), dev_rhs, &beta, dev_res);
 #endif
         if (status != CUSPARSE_STATUS_SUCCESS)
            {
