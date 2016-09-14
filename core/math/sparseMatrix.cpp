@@ -922,7 +922,7 @@ Vector corecvs::operator *(const SparseMatrix &lhs, const Vector &rhs)
     bool shouldScheduleGPU = lhs.gpuPromotion && (lhs.gpuPromotion->total < SparseMatrix::SPMV_RETRY || lhs.gpuPromotion->gpu > lhs.gpuPromotion->cpu);
     auto cpuSPMV = [&]()
     {
-        int bs = 512;
+        std::size_t bs = 512;
 
         auto startCPU = std::chrono::high_resolution_clock::now();
         corecvs::parallelable_for(0, N, bs, [&](const corecvs::BlockedRange<int> &r)
@@ -941,25 +941,25 @@ Vector corecvs::operator *(const SparseMatrix &lhs, const Vector &rhs)
     Vector resGpu(lhs.h);
     auto gpuSPMV = [&]()
     {
-       auto startGPU = std::chrono::high_resolution_clock::now();
-       double *dev_rhs, *dev_res;
-       cudaMalloc(&(void*&)dev_rhs, rhs.size() * sizeof(double));
-       cudaMalloc(&(void*&)dev_res, lhs.h * sizeof(double));
+        auto startGPU = std::chrono::high_resolution_clock::now();
+        double *dev_rhs, *dev_res;
+        cudaMalloc(&(void*&)dev_rhs, rhs.size() * sizeof(double));
+        cudaMalloc(&(void*&)dev_res, lhs.h * sizeof(double));
 
-       cusparseHandle_t   handle = 0;
-       cusparseMatDescr_t descr  = 0;
+        cusparseHandle_t   handle = 0;
+        cusparseMatDescr_t descr = 0;
 
-       auto status = cusparseCreate(&handle);
-       if (status != CUSPARSE_STATUS_SUCCESS)
-       {
-           std::cout << "CUSPARSE INIT FAILED" << std::endl;
-       }
+        auto status = cusparseCreate(&handle);
+        if (status != CUSPARSE_STATUS_SUCCESS)
+        {
+            std::cout << "CUSPARSE INIT FAILED" << std::endl;
+        }
 
-       status = cusparseCreateMatDescr(&descr);
-       if (status != CUSPARSE_STATUS_SUCCESS)
-       {
-           std::cout << "CUSPARSE MD FAILED" << std::endl;
-       }
+        status = cusparseCreateMatDescr(&descr);
+        if (status != CUSPARSE_STATUS_SUCCESS)
+        {
+            std::cout << "CUSPARSE MD FAILED" << std::endl;
+        }
 
         cusparseSetMatType(descr, CUSPARSE_MATRIX_TYPE_GENERAL);
         cusparseSetMatIndexBase(descr, CUSPARSE_INDEX_BASE_ZERO);
@@ -968,8 +968,12 @@ Vector corecvs::operator *(const SparseMatrix &lhs, const Vector &rhs)
         cudaMemset(dev_res, 0, lhs.h * sizeof(double));
 
         double alpha = 1.0, beta = 0.0;
-           status = cusparseDcsrmv(handle, CUSPARSE_OPERATION_NON_TRANSPOSE, lhs.h, lhs.w, lhs.nnz(), &alpha, descr, lhs.gpuPromotion->dev_values.get(), lhs.gpuPromotion->dev_rowPointers.get(), lhs.gpuPromotion->dev_columns.get(), dev_rhs, &beta, dev_res);
-
+        status = cusparseDcsrmv(handle, CUSPARSE_OPERATION_NON_TRANSPOSE, lhs.h, lhs.w
+#       if (__CUDA_API_VERSION > 5050)
+            , lhs.nnz(), &alpha, descr, lhs.gpuPromotion->dev_values.get(), lhs.gpuPromotion->dev_rowPointers.get(), lhs.gpuPromotion->dev_columns.get(), dev_rhs, &beta, dev_res);
+#else
+            ,             alpha, descr, lhs.gpuPromotion->dev_values.get(), lhs.gpuPromotion->dev_rowPointers.get(), lhs.gpuPromotion->dev_columns.get(), dev_rhs,  beta, dev_res);
+#endif
         if (status != CUSPARSE_STATUS_SUCCESS)
            {
             std::cout << "CUSPARSE SPMV FAILED" << std::endl;
