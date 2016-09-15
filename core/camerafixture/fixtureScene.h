@@ -45,6 +45,8 @@ public:
 
     std::string                   nameId;
 
+    std::string                   relativeImageDataPath;
+
     StatusTracker *               processState = nullptr;
 
     /* This is for future, when all the heap/memory will be completed */
@@ -241,6 +243,8 @@ public:
     template<class VisitorType, class SceneType = FixtureScene>
     void accept(VisitorType &visitor, bool loadCameras = true, bool loadFixtures = true, bool loadPoints = true, bool loadPrototypes = true)
     {
+        visitor.visit(relativeImageDataPath, std::string(""), "relativeImageDataPath");
+
         typedef typename SceneType::CameraPrototypeType   RealPrototypeType;
         typedef typename SceneType::CameraType            RealCameraType;
         typedef typename SceneType::FixtureType           RealFixtureType;
