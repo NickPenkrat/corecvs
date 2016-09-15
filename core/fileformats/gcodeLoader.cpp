@@ -27,8 +27,8 @@ vector<pair<char, double>> parseLine(string gline)
 
         /*G CODE is locale independant so we need to parse double in C locale*/
         if (!s.empty()) {
-            istringstream ss(s);
             std::locale mylocale("C");
+            istringstream ss(s);
             ss.imbue(mylocale);
             ss >> p.second;
             result.push_back(p);
@@ -108,7 +108,7 @@ int GcodeLoader::loadGcode(istream &input, Mesh3D &mesh)
                     Vector3dd center = currentPosition;
                     mesh.setColor(RGBColor::Yellow());
 
-                    for (int i = 1; i < (int)tokens.size(); i++)
+                    for (size_t i = 1; i < tokens.size(); i++)
                     {
                         switch (tokens[i].first) {
                             case 'i': center.x() += tokens[i].second; break;
@@ -163,3 +163,4 @@ GcodeLoader::~GcodeLoader()
 {}
 
 } // namespace corecvs
+

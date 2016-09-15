@@ -56,23 +56,25 @@ G12Buffer* SpatialGradient::findCornerPoints(double scaler, int apperture)
     /* TODO: Redo this to simplify for buffers */
     if (v == 5)
     {
-    BufferProcessor<SpatialGradient, SpatialGradient, Blur5Horisontal, ScalarAlgebraVector33> blurerH;
-    BufferProcessor<SpatialGradient, SpatialGradient, Blur5Vertical, ScalarAlgebraVector33>   blurerV;
+        BufferProcessor<SpatialGradient, SpatialGradient, Blur5Horisontal, ScalarAlgebraVector33> blurerH;
+        BufferProcessor<SpatialGradient, SpatialGradient, Blur5Vertical, ScalarAlgebraVector33>   blurerV;
 
-    blurerV.process(&start   , &blurVert);
-    blurerH.process(&blurVert, &blur);
-    } else {
+        blurerV.process(&start   , &blurVert);
+        blurerH.process(&blurVert, &blur);
+    }
+    else
+    {
         printf("SpatialGradient::findCornerPoints() %d\n", v);
 
-        for(int i = 0 ; i < start->h; i++)
+        for (uint32_t i = 0 ; i < start->h; i++)
         {
-            for(int  j = 0; j < start->w; j++)
+            for (uint32_t j = 0; j < start->w; j++)
             {
                 Vector3dd sum = Vector3dd::Zero();
 
-                for(int dy = i - v / 2 ; dy <= i + v / 2; dy++)
+                for (int dy = i - v / 2 ; dy <= (int)i + v / 2; dy++)
                 {
-                    for(int dx = j - v / 2 ; dx <= j + v / 2; dx++)
+                    for (int dx = j - v / 2 ; dx <= (int)j + v / 2; dx++)
                     {
                         if (!start->isValidCoord(dy,dx))
                             continue;

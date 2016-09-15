@@ -119,7 +119,22 @@ public:
     void printTrackStats();
     void printPosStats();
 
-    void transform(const corecvs::Affine3DQ &transform, const double scale = 1.0);
+    class Detransformer
+    {
+    public:
+        ~Detransformer();
+        Detransformer(ReconstructionFixtureScene *scene = nullptr, const Affine3DQ &transform = Affine3DQ(), const double scale = 1.0);
+        Detransformer(Detransformer &&rhs);
+        Detransformer& operator=(Detransformer &&rhs);
+    private:
+        Detransformer(const Detransformer&) = delete;
+        Detransformer& operator=(const Detransformer& that) = delete;
+        ReconstructionFixtureScene *scene;
+        Affine3DQ transform;
+        double scale;
+    };
+    Detransformer transform(const corecvs::Affine3DQ &transform, bool provideDetransformer = false, const double scale = 1.0);
+    Detransformer center(Vector3dd &shift, bool provideDetransformer = false);
 
     friend std::ostream& operator<< (std::ostream& os, ReconstructionFixtureScene &rfs)
     {
@@ -151,8 +166,8 @@ private:
         EssentialFilterParams            params;
 
         ParallelEssentialFilter(ReconstructionFixtureScene* scene_
-				, std::vector<std::pair<WPP, WPP>> &work_
-				, EssentialFilterParams params_)
+                , std::vector<std::pair<WPP, WPP>> &work_
+                , EssentialFilterParams params_)
             : scene(scene_), work(work_), params(params_)
         {}
 
@@ -166,6 +181,12 @@ private:
         }
     };
 
+    /* Register myself in the fabric */
+private:
+    static bool dummy;
+public:
+    static bool staticInit();
+
 };
 
 struct ParallelTrackPainter
@@ -175,7 +196,7 @@ struct ParallelTrackPainter
             ReconstructionFixtureScene* scene_,
             std::unordered_map<SceneFeaturePoint*, RGBColor> &colorizer_,
             bool pairs_ = false)
-    	: colorizer(colorizer_), images(images_), scene(scene_), pairs(pairs_)
+        : colorizer(colorizer_), images(images_), scene(scene_), pairs(pairs_)
     {}
 
     void operator() (const corecvs::BlockedRange<int> &r) const;

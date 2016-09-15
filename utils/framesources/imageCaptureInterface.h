@@ -311,7 +311,7 @@ public:
 
     virtual void newImageReadyCallback() override
     {
-        emit newImageReadyCallback();
+        emit newImageReady();
     }
 
     virtual void newStatisticsReadyCallback(CaptureStatistics stats) override

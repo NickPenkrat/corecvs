@@ -186,6 +186,6 @@ TEST(FileFormats, testGcodeLoader)
     Mesh3D mesh;
     std::string str(input);
     std::istringstream stream(str);
-    int result = loader.loadGcode(stream, mesh);
+    /*int result =*/ loader.loadGcode(stream, mesh);
     mesh.dumpPLY("gcode-test.ply");
 }

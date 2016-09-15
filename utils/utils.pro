@@ -14,6 +14,8 @@ TEMPLATE = lib
 TARGET   = cvs_utils
 CONFIG  += staticlib
 
+include($$ROOT_DIR/git-version.pri)
+
 include(utils.pri)                      # it uses TARGET and detects UTILS_BINDIR, OBJECTS_DIR,...!
 
 QT += gui

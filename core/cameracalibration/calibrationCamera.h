@@ -273,6 +273,7 @@ public:
     }
 
     Matrix33 fundamentalTo(const CameraModel &right) const;
+    static Matrix33 Fundamental(const Matrix44 &Pl, const Matrix44 &Pr);
     Matrix33 essentialTo  (const CameraModel &right) const;
     EssentialDecomposition essentialDecomposition(const CameraModel &right) const;
     static EssentialDecomposition ComputeEssentialDecomposition(const CameraLocationData &thisData, const CameraLocationData &otherData);

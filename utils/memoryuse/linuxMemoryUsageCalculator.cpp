@@ -1,7 +1,9 @@
 #include <fstream>
 #include <string>
 #include <unistd.h>
+#include <iostream>
 
+#include "global.h"
 #include "linuxMemoryUsageCalculator.h"
 
 void LinuxMemoryUsageCalculator::getMemoryUsageImpl()
@@ -36,4 +38,23 @@ void LinuxMemoryUsageCalculator::getMemoryUsageImpl()
     long page_size_kb = sysconf(_SC_PAGE_SIZE) / 1024; // in case x86-64 is configured to use 2MB pages
     mVirtualSize     = vsize / 1024.0 / 1024.0;
     mResidentSize = rss * page_size_kb / 1024.0;
+}
+
+void LinuxMemoryUsageCalculator::getTotalMemoryImpl()
+{
+    std::ifstream f;
+    f.open("/proc/meminfo", std::ios_base::in);
+    double mem = 2400;
+    std::string tag, units;
+    double value;
+    while (f)
+    {
+        f >> tag >> value >> units;
+        if (tag != "MemTotal:")
+            continue;
+        CORE_ASSERT_TRUE_S(units == "kB"); // LoL
+        mem = value / 1024.0;
+        break;
+    }
+    mTotalMemory = mem;
 }

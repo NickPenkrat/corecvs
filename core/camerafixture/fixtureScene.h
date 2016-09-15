@@ -11,6 +11,29 @@ namespace corecvs {
 class CameraFixture;
 class StatusTracker;
 
+class FixtureSceneFactory {
+
+public:
+    typedef std::function<FixtureScene *()> FixtureSceneCreateFunctor;
+
+    /**
+     * Be careful... manipulating (writing) this stuff is not thread safe
+     * We all know were a singleton can lead you.
+     **/
+    std::map<std::string, FixtureSceneCreateFunctor> creators;
+
+private:
+    static std::unique_ptr<FixtureSceneFactory> instance;
+
+public:
+    static const char* DEFAULT_NAME;
+
+    static FixtureSceneFactory *getInstance();
+
+    FixtureScene *sceneFactory(const std::string &name = DEFAULT_NAME);
+
+    void print();
+};
 
 /**
  * Heap of Calibration related stuff
@@ -57,7 +80,7 @@ public:
      *
      **/
     void projectForward(SceneFeaturePoint::PointType mask, bool round = false);
-    void triangulate   (SceneFeaturePoint * point, bool sourceWithDistortion = false);
+    void triangulate   (SceneFeaturePoint * point);
 
     /**
      * Accessors. This need to be redone to invert constness and make objects const, not the arrays

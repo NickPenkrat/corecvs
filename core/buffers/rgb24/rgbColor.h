@@ -474,6 +474,17 @@ public:
         return RGBColor(0, 0, 127);
     }
 
+    static RGBColor Brown()
+    {
+        return RGBColor(150, 75, 0);
+    }
+
+    static RGBColor Amber()
+    {
+        return RGBColor(255, 191, 0);
+    }
+
+
     static RGBColor lerpColor(const RGBColor &first, const RGBColor &second, double alpha)
     {
         uint8_t r = (uint8_t)lerp<double>(first.r(), second.r(), alpha);

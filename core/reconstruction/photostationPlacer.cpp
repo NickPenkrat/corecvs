@@ -28,6 +28,7 @@ std::string toString(ReconstructionFunctorOptimizationErrorType::ReconstructionF
             return "ANGULAR";
         case ReconstructionFunctorOptimizationErrorType::CROSS_PRODUCT:
             return "CROSS-PRODUCT";
+        default:
         case ReconstructionFunctorOptimizationErrorType::RAY_DIFF:
             return "RAY DIFF";
     }
@@ -181,18 +182,13 @@ void corecvs::PhotostationPlacer::create2PointCloud(CameraFixture* psA, CameraFi
         track->hasKnownPosition = false;
         track->type = SceneFeaturePoint::POINT_RECONSTRUCTED;
 
-        SceneObservation soA, soB;
-        soA.camera = camA;
-        soA.cameraFixture = psA;
-        soA.featurePoint = track;
-        soA.observation = kpA;
+        SceneObservation soA(camA, track, kpA, psA);
+        SceneObservation soB(camB, track, kpB, psB);
+
         track->observations[camA] = soA;
         track->observations__[wppA] = soA;
         scene->trackMap[wppA][ptA] = track;
-        soB.camera = camB;
-        soB.cameraFixture = psB;
-        soB.featurePoint = track;
-        soB.observation = kpB;
+
         track->observations[camB] = soB;
         track->observations__[wppB] = soB;
         scene->trackMap[wppB][ptB] = track;
@@ -383,34 +379,26 @@ void corecvs::PhotostationPlacer::updateTrackables()
 {
     std::cout << "Starting speculative P3P update" << std::endl;
     activeInlierCount.clear();
-    corecvs::Vector3dd mean(0, 0, 0);
-    for (auto& ppp: scene->placedFixtures)
-        mean += ppp->location.shift;
-    mean = mean / scene->placedFixtures.size();
-    corecvs::Quaternion r(0, 0, 0, 1);
-    corecvs::Affine3DQ tf(r, -mean);
+
     getErrorSummaryAll();
-    scene->transform(tf);
+    Vector3dd shift;
+    auto dt = scene->center(shift, true);
     getErrorSummaryAll();
 
     for (size_t i = 0; i < (size_t)speculativity() && i < scene->placingQueue.size(); ++i)
     {
         auto cf = scene->placingQueue[i];
-        estimate3D(cf, tf);
+        estimate3D(cf, shift);
     }
-    corecvs::Affine3DQ tfi(r, mean);
-    getErrorSummaryAll();
-    scene->transform(tfi);
-    getErrorSummaryAll();
 }
 
-std::pair<int, double> corecvs::PhotostationPlacer::estimate3D(corecvs::CameraFixture *A, corecvs::Affine3DQ &currentT)
+std::pair<int, double> corecvs::PhotostationPlacer::estimate3D(corecvs::CameraFixture *A, corecvs::Vector3dd &currentT)
 {
     std::cout << "\tRunning with " << A->name << " ";
     if (activeEstimates.count(A))
     {
         std::cout << "already have estimate: " << activeEstimates[A].shift << activeEstimates[A].rotor;
-        activeEstimates[A].shift += currentT.shift;
+        activeEstimates[A].shift += currentT;
     }
     std::cout << std::endl;
 
@@ -423,26 +411,26 @@ std::pair<int, double> corecvs::PhotostationPlacer::estimate3D(corecvs::CameraFi
     std::cout << "POST-CTR" << std::endl;
 
     solver.forcePosition = scene->initializationData[A].initializationType == FixtureInitializationType::GPS && scene->is3DAligned;
-    solver.forcedPosition = scene->initializationData[A].initData.shift + currentT.shift;
+    solver.forcedPosition = scene->initializationData[A].initData.shift + currentT;
     if (!scene->is3DAligned && scene->initializationData[A].initializationType == FixtureInitializationType::GPS)
     {
         solver.forceScale = true;
-        solver.forcedScale = !(currentT.shift + scene->initializationData[A].initData.shift);
+        solver.forcedScale = !(currentT + scene->initializationData[A].initData.shift);
     }
 
     solver.run();
     solver.runInliersRE();
     activeEstimates[A] = solver.getBestHypothesis();
-    activeEstimates[A].shift -= currentT.shift;
+    activeEstimates[A].shift -= currentT;
     if (solver.forcePosition)
         activeEstimates[A].shift = scene->initializationData[A].initData.shift;
     activeInlierCount[A] = solver.getInliers();
     A->location = activeEstimates[A];
     std::cout << "Final estimate: " << activeEstimates[A].shift << activeEstimates[A].rotor << std::endl;
-	return std::make_pair((int)activeInlierCount[A].size(), 1.0 - solver.gamma);
+    return std::make_pair((int)activeInlierCount[A].size(), 1.0 - solver.gamma);
 }
 
-std::pair<int, double> corecvs::PhotostationPlacer::estimate2D(corecvs::CameraFixture *A, corecvs::Affine3DQ &currentT)
+std::pair<int, double> corecvs::PhotostationPlacer::estimate2D(corecvs::CameraFixture *A, corecvs::Vector3dd &currentT)
 {
     auto matches = scene->getFixtureMatches(scene->placedFixtures, A);
 
@@ -485,18 +473,18 @@ std::pair<int, double> corecvs::PhotostationPlacer::estimate2D(corecvs::CameraFi
         if (scene->is3DAligned)
         {
             solver.restrictions = decltype(solver.restrictions)::SHIFT;
-            solver.shift = scene->initializationData[A].initData.shift + currentT.shift;
+            solver.shift = scene->initializationData[A].initData.shift + currentT;
         }
         else
         {
             solver.restrictions = decltype(solver.restrictions)::SCALE;
-            solver.scale = !(scene->initializationData[A].initData.shift + currentT.shift);
+            solver.scale = !(scene->initializationData[A].initData.shift + currentT);
         }
     }
     if (activeP6PEstimates.count(A))
     {
         auto h = activeP6PEstimates[A];
-        h.shift += currentT.shift;
+        h.shift += currentT;
         solver.makeTry(h);
     }
     solver.run();
@@ -512,27 +500,16 @@ std::pair<int, double> corecvs::PhotostationPlacer::estimate2D(corecvs::CameraFi
         std::cout << B->name;
     std::cout << "<>" << A->name << " in P6P sense: inliers: " << solver.getInliersCount() << " P: " << solver.getGamma() << std::endl;
     activeP6PEstimates[A].rotor = best.rotor;
-    activeP6PEstimates[A].shift = best.shift - currentT.shift;
-	return std::make_pair((int)solver.getInliersCount(), 1.0 - solver.getGamma());
+    activeP6PEstimates[A].shift = best.shift - currentT;
+    return std::make_pair((int)solver.getInliersCount(), 1.0 - solver.getGamma());
 }
 
 bool corecvs::PhotostationPlacer::appendAny()
 {
     std::cout << "ENTERING ANYP" << std::endl;
-    corecvs::Affine3DQ tform;
-    //double scale = 1.0;
+    corecvs::Vector3dd shift;
+    auto dt = scene->center(shift, true);
 
-    corecvs::Vector3dd mean(0, 0, 0);
-    int cnt = 0;
-    for (auto& fixture: scene->placedFixtures)
-    {
-        ++cnt;
-        mean += fixture->location.shift;
-    }
-    mean = mean / cnt;
-
-    tform.shift = -mean;
-    scene->transform(tform);
     std::vector<std::pair<corecvs::CameraFixture*, int>> matchCount;
 
     std::vector<std::pair<corecvs::CameraFixture*, int>> matches;
@@ -553,9 +530,9 @@ bool corecvs::PhotostationPlacer::appendAny()
     bool appended = false;
     for (auto& fx: matches)
     {
-        auto res = estimate3D(fx.first, tform);
+        auto res = estimate3D(fx.first, shift);
         if (res.first < shutUpAndAppendMyFixtureInlierThreshold() || res.second < shutUpAndAppendMyFixtureSuccessProbThreshold())
-            res = estimate2D(fx.first, tform);
+            res = estimate2D(fx.first, shift);
         if (res.first < shutUpAndAppendMyFixtureInlierThreshold() || res.second < shutUpAndAppendMyFixtureSuccessProbThreshold())
             continue;
         scene->placedFixtures.push_back(fx.first);
@@ -567,9 +544,6 @@ bool corecvs::PhotostationPlacer::appendAny()
         appended = true;
         break;
     }
-
-    tform.shift = mean;
-    scene->transform(tform);
     return appended;
 }
 
@@ -580,22 +554,8 @@ bool corecvs::PhotostationPlacer::append2D()
     // 3. Run solver
     // 4. Return true if solution meets inlier threshold and gives enough confidence
     std::cout << "ENTERING P6P" << std::endl;
-    corecvs::Affine3DQ tform;
-    //double scale = 1.0;
-
-    corecvs::Vector3dd mean(0, 0, 0);
-    int cnt = 0;
-    for (auto& fixture: scene->placedFixtures)
-    {
-        ++cnt;
-        mean += fixture->location.shift;
-    }
-    mean = mean / cnt;
-
-    tform.shift = -mean;
-    scene->transform(tform);
-
-    std::cout << "MEANSHIFTED" << std::endl;
+    corecvs::Vector3dd shift;
+    auto dt = scene->center(shift, true);
 
     std::vector<std::pair<corecvs::CameraFixture*, decltype(scene->getFixtureMatches({}, 0))>> matches;
     for (size_t iii = 0; iii < (size_t)speculativity() && iii < scene->placingQueue.size(); ++iii)
@@ -610,7 +570,7 @@ bool corecvs::PhotostationPlacer::append2D()
 
     for (auto& p: matches)
     {
-        auto res = estimate2D(p.first, tform);
+        auto res = estimate2D(p.first, shift);
         log.emplace_back(res.first, res.second, p.first, activeP6PEstimates[p.first]);
     }
     std::sort(log.begin(), log.end(), [](const decltype(log)::value_type &a, const decltype(log)::value_type &b) { return std::get<0>(a) == std::get<0>(b) ? std::get<1>(a) > std::get<1>(b) : std::get<0>(a) > std::get<0>(b); });
@@ -624,6 +584,7 @@ bool corecvs::PhotostationPlacer::append2D()
     for (auto &A: scene->placedFixtures)
         std::cout << A->name;
     std::cout << "::" << psB->name << " " << best.shift << " " << best.rotor << std::endl;
+    best.shift += shift;
     psB->location = best;
     std::cout << std::get<0>(log[0]) << " inliers" << std::endl;
 
@@ -633,11 +594,6 @@ bool corecvs::PhotostationPlacer::append2D()
 
     std::remove(scene->placingQueue.begin(), scene->placingQueue.end(), psB);
     scene->placingQueue.resize(scene->placingQueue.size() - 1);
-    tform.shift = mean;
-    scene->transform(tform);
-
-    for (auto& cf: scene->placedFixtures)
-        std::cout << cf->name << " " << cf->location.shift << " " << (cf->location.rotor ^ scene->placedFixtures[0]->location.rotor.conjugated()) << std::endl;
     return true;
 }
 
@@ -860,7 +816,7 @@ void corecvs::PhotostationPlacer::postAppend()
 
         fit(params, postAppendNonlinearIterations / 2, tailSize);
         std::cout << "Prune" << std::endl;
-        scene->pruneTracks(inlierThreshold() * rmsePruningScaler() / 2.0, inlierThreshold() * maxPruningScaler() / 2.0, distanceLimit());
+        scene->pruneTracks(inlierThreshold() * rmsePruningScaler() / postOptimizeScaler(), inlierThreshold() * maxPruningScaler() / postOptimizeScaler(), distanceLimit());
         fit(params, postAppendNonlinearIterations / 2, tailSize);
     }
 

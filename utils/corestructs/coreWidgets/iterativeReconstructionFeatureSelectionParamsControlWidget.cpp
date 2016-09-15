@@ -28,6 +28,7 @@ IterativeReconstructionFeatureSelectionParamsControlWidget::IterativeReconstruct
     QObject::connect(mUi->featureDetectionParamsControlWidget, SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->rmsePruningScalerSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->maxPruningScalerSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->postOptimizeScalerSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->skipFeatureDetectionCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
 }
 
@@ -70,6 +71,7 @@ IterativeReconstructionFeatureSelectionParams *IterativeReconstructionFeatureSel
         , *std::unique_ptr<FeatureDetectionParams>(mUi->featureDetectionParamsControlWidget->createParameters())
         , mUi->rmsePruningScalerSpinBox->value()
         , mUi->maxPruningScalerSpinBox->value()
+        , mUi->postOptimizeScalerSpinBox->value()
         , mUi->skipFeatureDetectionCheckBox->isChecked()
     );
 }
@@ -84,6 +86,7 @@ void IterativeReconstructionFeatureSelectionParamsControlWidget::setParameters(c
     mUi->featureDetectionParamsControlWidget->setParameters(input.featureDetectionParams());
     mUi->rmsePruningScalerSpinBox->setValue(input.rmsePruningScaler());
     mUi->maxPruningScalerSpinBox->setValue(input.maxPruningScaler());
+    mUi->postOptimizeScalerSpinBox->setValue(input.postOptimizeScaler());
     mUi->skipFeatureDetectionCheckBox->setChecked(input.skipFeatureDetection());
     blockSignals(wasBlocked);
     emit paramsChanged();

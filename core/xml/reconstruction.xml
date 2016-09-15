@@ -34,8 +34,9 @@
 
     <field type="Feature Detection Params" name="featureDetectionParams" />
     
-    <field type="double" name="rmsePruningScaler" defaultValue="3.0" decimals="6" min="0" max="10000" comment="RMSE pruning scaler" />
-	<field type="double" name="maxPruningScaler"  defaultValue="5.0" decimals="6" min="0" max="10000" comment="Max pruning scaler" />
+    <field type="double" name="rmsePruningScaler" defaultValue="2.0" decimals="6" min="0" max="10000" comment="RMSE pruning scaler" />
+	<field type="double" name="maxPruningScaler"  defaultValue="3.0" decimals="6" min="0" max="10000" comment="Max pruning scaler" />
+	<field type="double" name="postOptimizeScaler" defaultValue="1.44" decimals="6" min="0" max="10000" comment="Post optimize threshold scaler" />
 	<field type="bool"   name="skipFeatureDetection" defaultValue="false" comment="Skip feature detection" />
   </class>
 

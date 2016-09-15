@@ -18,6 +18,7 @@
 
 #include <iostream>
 #include <limits>
+#include <array>
 #include <string.h>
 
 #include "global.h"
@@ -85,6 +86,9 @@ public:
     void transpose();
     void swapRows(int r1, int r2);
     void swapColumns(int r1, int r2);
+
+    // \brief Returns left and right null-space basis for the matrix of rank 2
+    std::array<Vector3dd, 2> rank2Nullvectors() const;
 
     Matrix33 t() const;
     Matrix33 transposed() const;
@@ -195,6 +199,7 @@ public:
         out.precision(oldPrec);
     }
 
+    /* TODO: to matrixOperations */
     friend ostream & operator <<(ostream &out, const Matrix33 &matrix)
     {
         //streamsize wasPrecision = out.precision(6);
@@ -213,7 +218,7 @@ public:
         return out;
     }
 
-
+    /* TODO: to matrixOperations */
     friend istream & operator >>(istream &in, Matrix33 &matrix)
     {
         for (int i = 0; i < matrix.H; i++)

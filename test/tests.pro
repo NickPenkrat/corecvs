@@ -14,6 +14,7 @@ SUBDIRS +=       \
 #   grab         \
     grab_N_captures \
     serialize1   \
+    jitplayground \
     fileloader \
 #   adoptcolor   \
 #    avigrab     \
@@ -53,6 +54,7 @@ with_opencv {
 grab                                = grab/grab.pro
 grab_N_captures                     = grab_N_captures/grab_N_captures.pro
 serialize1                          = serialize1/serialize1.pro
+jitplayground                       = jitplayground/jitplayground.pro
 example_scene                       = example_scene/example_scene.pro
 adoptcolor                          = adoptcolor/adoptcolor.pro
 avigrab                             = avigrab/avigrab.pro
