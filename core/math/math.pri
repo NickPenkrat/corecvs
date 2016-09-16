@@ -58,7 +58,8 @@ HEADERS += \
     math/puzzleBlock.h \
     math/matrix/similarityReconstructor.h \
     math/sse/doublexT4.h \
-    math/extensiveCoding.h
+    math/extensiveCoding.h \
+    math/wisdom.h
 
 SOURCES += \
     math/matrix/matrix.cpp \
@@ -67,6 +68,7 @@ SOURCES += \
     math/matrix/matrix44.cpp \
     math/matrix/diagonalMatrix.cpp \
     math/sparseMatrix.cpp \
+    math/sparseMatrixCusparseDetails.cpp \
     math/matrix/homographyReconstructor.cpp \
     math/vector/vector2d.cpp \
     math/lutAlgebra.cpp \
@@ -79,7 +81,8 @@ SOURCES += \
     math/sse/sseWrapper.cpp \
     math/matrix/similarityReconstructor.cpp \
 #    math/matrix/matrixspeed.cpp
-    math/extensiveCoding.cpp
+    math/extensiveCoding.cpp \
+    math/wisdom.cpp
 
 
 contains(DEFINES, "WITH_FFTW") {

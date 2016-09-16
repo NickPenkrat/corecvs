@@ -20,6 +20,8 @@
 #include "cuda.h"
 #endif
 
+#include "wisdom.h"
+
 namespace corecvs
 {
 
@@ -71,6 +73,20 @@ public:
     void checkCorrectness() const;
     int getUBIndex(int i, int j) const;
     int getIndex(int i, int j) const;
+
+    Vector trsv(const Vector &rhs, const char* trans, bool up, int N) const;
+    Vector trsv_homebrew(const Vector &rhs, const char* trans,  bool up, int N) const;
+    Vector spmv_homebrew(const Vector &rhs, bool trans) const;
+#ifdef WITH_MKL
+    Vector spmv_mkl     (const Vector &rhs, bool trans) const;
+    Vector trsv_mkl(const Vector &rhs, const char* trans,  bool up, int N) const;
+#endif
+#ifdef WITH_CUSPARSE
+    Vector spmv_cusparse(const Vector &rhs, bool trans, int gpuId) const;
+    Vector trsv_cusparse(const Vector &rhs, const char* trans,  bool up, int N, int gpuId) const;
+#endif
+
+
 #ifdef WITH_MKL
     //! \brief Note: deletion of MKL's deletions is your problem
     explicit operator sparse_matrix_t() const;
@@ -133,56 +149,62 @@ public:
     Vector dtrsv_lt(const Vector &v) const;
 
 #ifdef WITH_CUSPARSE
-    void promoteToGpu() const
+    void promoteToGpu(int gpuId = 0) const
     {
-        std::cout << "Starting promotion" << std::endl;
-        gpuPromotion = std::unique_ptr<GPU_promotion>(new GPU_promotion(*this));
-        std::cout << "Promoted" << std::endl;
+        if (!gpuPromotion)
+            gpuPromotion = std::unique_ptr<CUDAPromoter>(new CUDAPromoter(*this));
+        gpuPromotion->promote(gpuId);
     }
     static const int SPMV_RETRY = 3;
 #endif
 private:
 #ifdef WITH_CUSPARSE
-    struct GPU_promotion
+    struct CUDAPromoter
     {
         typedef std::unique_ptr<double, decltype(&cudaFree)> GpuDoublePtr;
         typedef std::unique_ptr<int, decltype(&cudaFree)> GpuIntPtr;
-        GpuDoublePtr dev_values = GpuDoublePtr(nullptr, cudaFree);
-        GpuIntPtr dev_columns = GpuIntPtr(nullptr, cudaFree), dev_rowPointers = GpuIntPtr(nullptr, cudaFree);
-        std::atomic<int> total, cpu, gpu;
+        typedef std::unique_ptr<void, decltype(&cudaFree)> GpuVoidPtr;
+        const SparseMatrix *matrix;
 
-        GPU_promotion(const SparseMatrix &m) : total(0), cpu(0), gpu(0)
+        CUDAPromoter(const SparseMatrix &m);
+
+        struct TriangularPromotion
         {
-            double *dv;
-            std::cout << "Trying to allocate values  (" << m.nnz() * sizeof(double) / 1024.0 / 1024.0 << "Mb)" << std::endl;
-            cudaMalloc(&(void*&)dv, m.nnz() * sizeof(double));
-            dev_values = GpuDoublePtr(dv, cudaFree);
+            GpuVoidPtr bufferTrans  = GpuVoidPtr(nullptr, cudaFree),
+                       bufferNoTrans= GpuVoidPtr(nullptr, cudaFree);
+            cusparseSolvePolicy_t policy = CUSPARSE_SOLVE_POLICY_USE_LEVEL;
+            cusparseMatDescr_t descr;
+            cusparseHandle_t handle;
+            csrsv2Info_t infoTrans, infoNoTrans;
 
-            int *dc;
-            std::cout << "Trying to allocate columns (" << m.nnz() * sizeof(int) / 1024.0 / 1024.0 << "Mb)" << std::endl;
-            cudaMalloc(&(void*&)dc, m.nnz() * sizeof(int));
-            dev_columns = GpuIntPtr(dc, cudaFree);
+            TriangularPromotion();
+            TriangularPromotion(TriangularPromotion &&rhs);
+            TriangularPromotion& operator=(TriangularPromotion &&rhs);
+            operator bool() const;
+            TriangularPromotion(const SparseMatrix &m, bool upper, int gpuId);
 
-            int *drp;
-            std::cout << "Trying to allocate rowPointers (" << (m.h + 1) * sizeof(int) / 1024.0 / 1024.0 << "Mb)" << std::endl;
-            cudaMalloc(&(void*&)drp, (m.h + 1) * sizeof(int));
-            dev_rowPointers = GpuIntPtr(drp, cudaFree);
+            static void checkError();
 
-            std::cout << "Copying values  (" << m.nnz() * sizeof(double) / 1024.0 / 1024.0 << "Mb)" << std::endl;
-            cudaMemcpy(dv, &m.values     [0], m.nnz() * sizeof(double), cudaMemcpyHostToDevice);
-            std::cout << "Copying columns (" << m.nnz() * sizeof(int) / 1024.0 / 1024.0 << "Mb)" << std::endl;
-            cudaMemcpy(dc, &m.columns    [0], m.nnz() * sizeof(int)   , cudaMemcpyHostToDevice);
-            std::cout << "Copying rowPointers (" << (m.h + 1) * sizeof(int) / 1024.0 / 1024.0 << "Mb)" << std::endl;
-            cudaMemcpy(drp,&m.rowPointers[0], (m.h+1) * sizeof(int)   , cudaMemcpyHostToDevice);
+            ~TriangularPromotion();
+        };
 
-            auto err = cudaGetLastError();
-            if (err != cudaSuccess)
-            {
-                fprintf(stderr, "Promotion failed: %s\n", cudaGetErrorString(err));
-            }
-        }
+        struct BasicPromotion
+        {
+            GpuDoublePtr dev_values = GpuDoublePtr(nullptr, cudaFree);
+            GpuIntPtr dev_columns = GpuIntPtr(nullptr, cudaFree), dev_rowPointers = GpuIntPtr(nullptr, cudaFree);
+
+            BasicPromotion();
+            BasicPromotion(const SparseMatrix &m, int gpuId);
+            operator bool() const;
+        };
+
+        std::map<int, BasicPromotion>       basicPromotions;
+        std::map<int, TriangularPromotion> triangularPromotions;
+        void promote(int gpuId);
+        void triangularAnalysis(bool upper, int gpuId);
+
     };
-    mutable std::unique_ptr<GPU_promotion> gpuPromotion = nullptr;
+    mutable std::unique_ptr<CUDAPromoter> gpuPromotion = nullptr;
 #endif
     void swapCoords(int &x1, int &y1, int &x2, int &y2) const;
     //! All non-zero entries of matrix
@@ -195,6 +217,22 @@ private:
      */
     std::vector<int> rowPointers;
 };
+
+enum SparseImplementations { HOMEBREW, MKL, CUSPARSE };
+std::ostream& operator<< (std::ostream& out, const SparseImplementations &si);
+
+template<>
+struct Characterizator<const SparseMatrix&>
+{
+    static const int CHARACTERISTIC_WIDTH = 3;
+    typedef std::array<int, CHARACTERISTIC_WIDTH> characteristic_type;
+
+    static characteristic_type Characterize(const SparseMatrix& sm);
+};
+
+typedef Wisdom<const SparseMatrix&, SparseImplementations, Vector, const Vector&, bool> SPMVWisdom;
+typedef Wisdom<const SparseMatrix&, SparseImplementations, Vector, const Vector&, const char *, bool, int> TRSVWisdom;
+
 SparseMatrix operator -(const SparseMatrix &a);
 SparseMatrix operator *(const double       &lhs, const SparseMatrix &rhs);
 SparseMatrix operator *(const SparseMatrix &lhs, const double       &rhs);

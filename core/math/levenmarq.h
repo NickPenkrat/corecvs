@@ -300,7 +300,7 @@ public:
                         {
                         auto res = MinresQLP<MatrixClass>::Solve(A, B, delta);
                         auto P = A.incompleteCholseky();
-                        auto PP = [&](const Vector& x)->Vector { return P.second.dtrsv_un(P.second.dtrsv_ut(x)); };
+                        auto PP = [&](const Vector& x)->Vector { return P.second.trsv(x, "TN", true, 2); };
                         auto res2 = MinresQLP<MatrixClass>::Solve(A, PP, B, delta);
                         if (res != res2)
                         {
@@ -316,19 +316,11 @@ public:
                         break;
                     case LinearSolver::MINRESQLP_IC0:
                         {
-#ifndef WITH_CUSPARSE
                         auto P123 = A.incompleteCholseky();
-#else
-                        decltype(A.incompleteCholseky()) P123;
-                        std::thread t1([&](){ P123 = A.incompleteCholseky(); std::cout << "IC0 completed" << std::endl;});
-                        std::thread t2([&]() { A.promoteToGpu(); for (int i = 0; i < 3; ++i) auto vv = A * B; });
-                        t1.join();
-                        t2.join();
-#endif
                         MinresQLPStatus res123;
                         if (P123.first)
                         {
-                            auto PP123 = [&](const Vector& x)->Vector { return P123.second.dtrsv_un(P123.second.dtrsv_ut(x)); };
+                            auto PP123 = [&](const Vector& x)->Vector { return P123.second.trsv(x, "TN", true, 2); };
                             res123 = MinresQLP<MatrixClass>::Solve(A, PP123, B, delta);
                         }
                         else
