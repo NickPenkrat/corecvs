@@ -1,6 +1,7 @@
 #include "reconstructionFunctor.h"
 #include "log.h"
 
+
 #ifdef WITH_TBB
 #include "tbb/parallel_reduce.h"
 #endif
@@ -461,12 +462,25 @@ void corecvs::ReconstructionFunctor::computeDependency()
     ALL_FROM(trackedFeatures)
     ALL_FROM(trackedStatic)
 
+    std::sort(revDependency.begin(), revDependency.end(), [&](SceneObservation* const &a, SceneObservation* const &b)
+        {
+            return a->cameraFixture == b->cameraFixture ? a->camera < b->camera : a->cameraFixture < b->cameraFixture;
+        });
+
     CORE_ASSERT_TRUE_S(id == lastProjection);
     cacheRef.resize(lastProjection);
+
+    std::map<SceneFeaturePoint*, std::vector<int>> pointMapper;
+    std::map<CameraFixture*,     std::vector<int>> fixtureMapper;
+    std::map<FixtureCamera*,     std::vector<int>> cameraMapper;
 
     for (int i = 0; i < lastProjection; ++i)
     {
         auto p = revDependency[i];
+        fixtureMapper[p->cameraFixture].push_back(i);
+        cameraMapper[p->camera].push_back(i);
+        pointMapper[p->featurePoint].push_back(i);
+
         WPP wpp = WPP(p->cameraFixture, p->camera);
         if (!cacheIdx.count(wpp))
         {
@@ -477,20 +491,18 @@ void corecvs::ReconstructionFunctor::computeDependency()
     }
     cjp.resize(cameraCache.size());
 
-#define DEPS(V, N, CPROJ, CPOS, CPROJDEP, CPOSDEP) \
+#define DEPS(V, N, DEP, DEP_EQ, CPROJ, CPOS, CPROJDEP, CPOSDEP) \
     for (auto& a: V) \
     {\
         for (int i = 0; i < N; ++i) \
         { \
             CORE_ASSERT_TRUE_S(argin < (int)sparsity.size()); \
-            for (int j = 0; j < lastProjection; ++j) \
+            for (auto j: DEP[DEP_EQ]) \
             { \
                 auto p = revDependency[j]; \
-                if (CPROJ) \
-                { \
-                    sparsity[argin].push_back(j); \
-                    CPROJDEP; \
-                } \
+                CORE_ASSERT_TRUE_S (CPROJ); \
+                sparsity[argin].push_back(j); \
+                CPROJDEP; \
             } \
             for (int j = 0; j < (int)positionConstrainedCameras.size(); ++j) \
             { \
@@ -513,11 +525,15 @@ void corecvs::ReconstructionFunctor::computeDependency()
 
     DEPS(orientableFixtures,
          (excessiveQuaternionParametrization ? INPUTS_PER_ORIENTATION_EXC : INPUTS_PER_ORIENTATION_NEX),
+         fixtureMapper,
+         a,
          a == p->cameraFixture,
          false,
          BASEDC(qx),)
     DEPS(translateableFixtures,
          INPUTS_PER_TRANSLATION,
+         fixtureMapper,
+         a,
          a == p->cameraFixture,
          a == p,
          BASEDC(tx),
@@ -525,18 +541,22 @@ void corecvs::ReconstructionFunctor::computeDependency()
         );
     DEPS(focalTunableCameras,
          INPUTS_PER_FOCAL,
+         cameraMapper,
+         a,
          a == p->camera,
          false,
          BASEDC(f),)
     DEPS(principalTunableCameras,
          INPUTS_PER_PRINCIPAL,
+         cameraMapper,
+         a,
          a == p->camera,
          false,
          BASEDC(cx),)
     CORE_ASSERT_TRUE_S(argin == getInputNum() - (!(optimization & ReconstructionFunctorOptimizationType::POINTS) ? 0 : INPUTS_PER_3D_POINT * (int)trackedFeatures.size()));
     int argin_prepoint = argin;
     IF(POINTS,
-        DEPS(trackedFeatures,  INPUTS_PER_3D_POINT,    a == p->featurePoint, false, (&sfpDepCache[a].x)[i] = argin;,))
+        DEPS(trackedFeatures,  INPUTS_PER_3D_POINT, pointMapper, a,    a == p->featurePoint, false, (&sfpDepCache[a].x)[i] = argin;,))
     CORE_ASSERT_TRUE_S(argin == getInputNum());
     schurBlocks.clear();
     for (int i = argin_prepoint; i < argin; i += INPUTS_PER_3D_POINT)
