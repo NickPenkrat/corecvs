@@ -24,12 +24,13 @@ std::ostream& operator<<(std::ostream& os, const AcceleratorTypes &type)
 }
 
 static std::unique_ptr<CpuController> ptr_c(new CpuController());
+void* cpuptr() { return ptr_c.get(); }
+
 #ifdef WITH_CUDA
 static std::unique_ptr<CudaGpuController> ptr_g(new CudaGpuController());
+void* gpuptr() { return ptr_g.get(); }
 #endif
 
-void* gpuptr() { return ptr_g.get(); }
-void* cpuptr() { return ptr_c.get(); }
 
 CpuController::lock_type CpuController::tryLock(int id)
 {
