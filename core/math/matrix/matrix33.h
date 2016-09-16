@@ -18,6 +18,7 @@
 
 #include <iostream>
 #include <limits>
+#include <array>
 #include <string.h>
 
 #include "global.h"
