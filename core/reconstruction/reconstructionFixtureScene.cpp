@@ -313,7 +313,8 @@ void ReconstructionFixtureScene::pruneTracks(double rmse, double maxe, double di
         else
         {
             int N = (int)pt->observations__.size();
-            uint32_t goodMask = 0;
+            uint64_t goodMask = 0;
+#if 0
             for (int M = N - 1; M >= 2; --M)
             {
                 auto masks = GenerateBitmasks(N, M);
@@ -323,11 +324,50 @@ void ReconstructionFixtureScene::pruneTracks(double rmse, double maxe, double di
                         goodMask = m;
                         break;
                     }
+                if (goodMask)
+                    break;
             }
+#else
+            int l = N - 1, r = 1;
+            int bestCnt = 0;
+            while (l - r > 1)
+            {
+                int m = (r + l + 1) / 2;
+                std::atomic<bool> completed(false);
+                std::atomic<uint64_t> good(0);
+                auto masks = GenerateBitmasks(N, m);
+                size_t N = masks.size();
+                corecvs::parallelable_for(size_t(0), N, 1024, [&](const BlockedRange<size_t> &r)
+                        {
+                            for (auto i = r.begin(); i != r.end(); ++i)
+                            {
+                                if (completed)
+                                    return;
+                                if (checkTrack(pt, masks[i], rmse, maxe, distanceThreshold))
+                                {
+                                    good = masks[i];
+                                    completed = true;
+                                    break;
+                                }
+                            }
+                        });
+                if (completed)
+                {
+                    if (m > bestCnt)
+                    {
+                        goodMask = good;
+                        bestCnt = m;
+                    }
+                    r = m;
+                }
+                else
+                    l = m;
+            }
+#endif
             std::vector<WPP> needRemove;
             int idd = 0;
             for (auto& o: pt->observations__)
-                if (!((1u << idd) & goodMask))
+                if (!((1llu << idd) & goodMask))
                     needRemove.push_back(o.first);
             std::vector<std::pair<WPP, int>> removal;
             for (auto& wpp: needRemove)
