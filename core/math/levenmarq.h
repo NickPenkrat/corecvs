@@ -287,7 +287,7 @@ public:
                         {
                         auto res = MinresQLP<MatrixClass>::Solve(A, B, delta);
                         auto P = A.incompleteCholseky();
-                        auto PP = [&](const Vector& x)->Vector { return P.second.trsv(x, "TN", true, 2); }
+                        auto PP = [&](const Vector& x)->Vector { return P.second.trsv(x, "TN", true, 2); };
                         auto res2 = MinresQLP<MatrixClass>::Solve(A, PP, B, delta);
                         if (res != res2)
                         {
@@ -307,7 +307,7 @@ public:
                         MinresQLPStatus res123;
                         if (P123.first)
                         {
-                            auto PP123 = [&](const Vector& x)->Vector { return P123.second.trsv(x, "TN", true, 2); }
+                            auto PP123 = [&](const Vector& x)->Vector { return P123.second.trsv(x, "TN", true, 2); };
                             res123 = MinresQLP<MatrixClass>::Solve(A, PP123, B, delta);
                         }
                         else
