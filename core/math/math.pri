@@ -68,6 +68,7 @@ SOURCES += \
     math/matrix/matrix44.cpp \
     math/matrix/diagonalMatrix.cpp \
     math/sparseMatrix.cpp \
+    math/sparseMatrixCusparseDetails.cpp \
     math/matrix/homographyReconstructor.cpp \
     math/vector/vector2d.cpp \
     math/lutAlgebra.cpp \
