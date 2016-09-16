@@ -251,7 +251,7 @@ FixtureScene* ReconstructionFixtureScene::dumbify()
     return dumb;
 }
 
-bool ReconstructionFixtureScene::checkTrack(SceneFeaturePoint* track, uint32_t mask, double rmse, double maxe, double distanceThreshold)
+bool ReconstructionFixtureScene::checkTrack(SceneFeaturePoint* track, uint64_t mask, double rmse, double maxe, double distanceThreshold)
 {
     auto res = track->triangulate(true, mask);
     int id = 0;
@@ -260,7 +260,7 @@ bool ReconstructionFixtureScene::checkTrack(SceneFeaturePoint* track, uint32_t m
     bool tooFar = false;
     for (auto& obs: track->observations__)
     {
-        if (!((1u << id++) & mask))
+        if (!((1llu << id++) & mask))
             continue;
         auto err = obs.first.u->reprojectionError(res, obs.second.observation, obs.first.v);
         ssq += !err * !err;
@@ -277,9 +277,9 @@ bool ReconstructionFixtureScene::checkTrack(SceneFeaturePoint* track, uint32_t m
     return false;
 }
 
-std::vector<uint32_t> ReconstructionFixtureScene::GenerateBitmasks(int N, int M)
+std::vector<uint64_t> ReconstructionFixtureScene::GenerateBitmasks(int N, int M)
 {
-    std::vector<uint32_t> res;
+    std::vector<uint64_t> res;
     if (M == 0)
     {
         res.push_back(0);
@@ -289,7 +289,7 @@ std::vector<uint32_t> ReconstructionFixtureScene::GenerateBitmasks(int N, int M)
     {
         auto prev = GenerateBitmasks(first, M - 1);
         for (auto& m: prev)
-            res.push_back((1u << first) | m);
+            res.push_back((1llu << first) | m);
     }
     CORE_ASSERT_TRUE_S(res.size() || M > N);
     for (auto& m: res)
