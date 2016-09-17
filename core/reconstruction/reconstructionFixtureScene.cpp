@@ -251,17 +251,25 @@ FixtureScene* ReconstructionFixtureScene::dumbify()
     return dumb;
 }
 
-bool ReconstructionFixtureScene::checkTrack(SceneFeaturePoint* track, uint64_t mask, double rmse, double maxe, double distanceThreshold)
+bool ReconstructionFixtureScene::checkTrack(SceneFeaturePoint* track, std::vector<int> *mask, double rmse, double maxe, double distanceThreshold)
 {
     auto res = track->triangulate(true, mask);
     int id = 0;
     double ssq = 0.0, cnt = 0.0, mxe = 0.0;
     bool visibleAll = true;
     bool tooFar = false;
+    int ptr = 0;
     for (auto& obs: track->observations__)
     {
-        if (!((1llu << id++) & mask))
+        if (mask && (ptr == mask->size() || (*mask)[ptr] != id))
+        {
+            if (ptr == mask->size())
+                break;
+            ++id;
             continue;
+        }
+        ++ptr;
+        ++id;
         auto err = obs.first.u->reprojectionError(res, obs.second.observation, obs.first.v);
         ssq += !err * !err;
         mxe = std::max(!err, mxe);
@@ -277,6 +285,7 @@ bool ReconstructionFixtureScene::checkTrack(SceneFeaturePoint* track, uint64_t m
     return false;
 }
 
+#if 0
 std::vector<uint64_t> ReconstructionFixtureScene::GenerateBitmasks(int N, int M)
 {
     std::vector<uint64_t> res;
@@ -296,6 +305,7 @@ std::vector<uint64_t> ReconstructionFixtureScene::GenerateBitmasks(int N, int M)
         CORE_ASSERT_TRUE_S(__builtin_popcount(m) == M);
     return res;
 }
+#endif
 
 void ReconstructionFixtureScene::pruneTracks(double rmse, double maxe, double distanceThreshold)
 {
@@ -306,14 +316,14 @@ void ReconstructionFixtureScene::pruneTracks(double rmse, double maxe, double di
     for (auto& pt: trackedFeatures)
     {
         totalObservations += (int)pt->observations__.size();
-        if (checkTrack(pt, ~0, rmse, maxe, distanceThreshold))
+        if (checkTrack(pt, nullptr, rmse, maxe, distanceThreshold))
         {
             trackedFeatures[id++] = pt;
         }
         else
         {
             int N = (int)pt->observations__.size();
-            uint64_t goodMask = 0;
+            std::vector<int> good;
 #if 0
             for (int M = N - 1; M >= 2; --M)
             {
@@ -328,16 +338,17 @@ void ReconstructionFixtureScene::pruneTracks(double rmse, double maxe, double di
                     break;
             }
 #else
-            int l = N - 1, r = 1;
+            int l = 2, r = N;
             int bestCnt = 0;
-            while (l - r > 1)
+            while (r - l > 1)
             {
-                int m = (r + l + 1) / 2;
-                std::atomic<bool> completed(false);
-                std::atomic<uint64_t> good(0);
+                int m = (r + l) / 2;
+                bool completed = false;
+                std::vector<int> valid;
+#if 0
                 auto masks = GenerateBitmasks(N, m);
-                size_t N = masks.size();
-                corecvs::parallelable_for(size_t(0), N, 1024, [&](const BlockedRange<size_t> &r)
+                size_t NN = masks.size();
+                corecvs::parallelable_for(size_t(0), NN, std::max(size_t(32), NN / 256), [&](const BlockedRange<size_t> &r)
                         {
                             for (auto i = r.begin(); i != r.end(); ++i)
                             {
@@ -351,24 +362,41 @@ void ReconstructionFixtureScene::pruneTracks(double rmse, double maxe, double di
                                 }
                             }
                         });
+#else
+                auto range = CombinationRange(m, N);
+                for (auto c: range)
+                    if (checkTrack(pt, &c, rmse, maxe, distanceThreshold))
+                    {
+                        valid = c;
+                    }
+#endif
                 if (completed)
                 {
                     if (m > bestCnt)
                     {
-                        goodMask = good;
+                        good = valid;
                         bestCnt = m;
                     }
-                    r = m;
+                    l = m;
                 }
                 else
-                    l = m;
+                    r = m;
             }
+            CORE_ASSERT_TRUE_S(l == bestCnt || (!bestCnt && !good.size()));
 #endif
             std::vector<WPP> needRemove;
-            int idd = 0;
+            int idd = 0, ptr = 0;
             for (auto& o: pt->observations__)
-                if (!((1llu << idd) & goodMask))
-                    needRemove.push_back(o.first);
+            {
+                if (ptr < good.size() && idd == good[ptr])
+                {
+                    ++idd;
+                    ++ptr;
+                    continue;
+                }
+                needRemove.push_back(o.first);
+                ++idd;
+            }
             std::vector<std::pair<WPP, int>> removal;
             for (auto& wpp: needRemove)
             {
@@ -379,8 +407,8 @@ void ReconstructionFixtureScene::pruneTracks(double rmse, double maxe, double di
             }
             for (auto& d: removal)
                 trackMap[d.first].erase(d.second);
-            observationsPruned += N - __builtin_popcount(goodMask);
-            if (goodMask)
+            observationsPruned += N - good.size();
+            if (good.size())
                 trackedFeatures[id++] = pt;
             else
                 ++completelyPruned;

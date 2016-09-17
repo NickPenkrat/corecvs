@@ -65,23 +65,41 @@ void SceneFeaturePoint::removeObservation(SceneObservation *in)
     observations.erase(it);
 }
 
-Vector3dd SceneFeaturePoint::triangulate(bool use__, uint64_t mask)
+Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask)
 {
     MulticameraTriangulator mct;
-    int id = 0;
+    int id = 0, ptr = 0;
     if (use__)
     {
         for (auto& obs: observations__)
-            if (mask & (1llu << id))
+        {
+            if (!mask || (ptr < mask->size() && (*mask)[ptr] == id))
+            {
                 mct.addCamera(obs.first.u->getMMatrix(obs.first.v), obs.second.observation);
+                if (mask && ptr + 1 < mask->size())
+                    CORE_ASSERT_TRUE_S((*mask)[ptr] < (*mask)[ptr + 1]);
+                ++ptr;
+            }
+            if (mask && ptr == mask->size())
+                break;
+            ++id;
+        }
     }
     else
     {
         for (auto& obs : observations)
         {
             CORE_ASSERT_TRUE_S(obs.second.cameraFixture != NULL);
-            if (mask & (1llu << id))
+            if (!mask || (ptr < mask->size() && (*mask)[ptr] == id))
+            {
                 mct.addCamera(obs.second.cameraFixture->getMMatrix(obs.second.camera), obs.second.observation);
+                if (mask && ptr + 1 < mask->size())
+                    CORE_ASSERT_TRUE_S((*mask)[ptr] < (*mask)[ptr + 1]);
+                ++ptr;
+            }
+            if (mask && ptr == mask->size())
+                break;
+            ++id;
         }
     }
 

@@ -10,6 +10,92 @@
 
 namespace corecvs {
 
+struct Combination
+{
+    Combination(int M = 0, int N = 0) : M(M > N / 2 ? N - M : M), N(N), inverse(M > N / 2)
+    {
+        CORE_ASSERT_TRUE_S((M <= N && M >= 0 && N > 0) || (M == 0 && N == 0));
+        for (int i = 0; i < this->M; ++i)
+            ids.push_back(i);
+    }
+    Combination& operator++()
+    {
+        for (int i = 1; i <= M; ++i)
+            if (ids[M - i] < N - i)
+            {
+                ++ids[M - i];
+                for (int j = M - i + 1; j < M; ++j)
+                    ids[j] = ids[j - 1] + 1;
+                return *this;
+            }
+        *this = Combination();
+        return *this;
+    }
+    bool operator!=(const Combination &that)
+    {
+        if (that.M != M || that.N != N)
+            return true;
+        if (that.inverse == inverse)
+        {
+            for (int i = 0; i < M; ++i)
+                if (ids[i] != that.ids[i])
+                    return true;
+            return false;
+        }
+        int ptrL = 0, ptrR = 0;
+        while (ptrL < M && ptrR < that.M)
+        {
+            if (ids[ptrL] == ids[ptrR])
+                return true;
+            if (ids[ptrL] < ids[ptrR])
+                ++ptrL;
+            else
+                ++ptrR;
+        }
+        return false;
+    }
+    Combination  operator++(int)
+    {
+        Combination ret = *this;
+        ++(*this);
+        return ret;
+    }
+    std::vector<int> operator*() const
+    {
+        if (inverse)
+        {
+            std::vector<int> res;
+            int ptr = 0;
+            for (int i = 0; i < N; ++i)
+                if (ptr == M || ids[ptr] > i)
+                    res.push_back(i);
+                else
+                    ++ptr;
+            return res;
+        }
+        return ids;
+    }
+    int M, N;
+    bool inverse;
+    std::vector<int> ids;
+};
+
+struct CombinationRange
+{
+    CombinationRange(int M, int N) : M(M), N(N)
+    {
+    }
+    Combination begin() const
+    {
+        return Combination(M, N);
+    }
+    Combination end() const
+    {
+        return Combination();
+    }
+    int N, M;
+};
+
 enum class ReconstructionState
 {
     NONE,          // Before any manipulations
@@ -78,8 +164,8 @@ public:
     void filterEssentialRansac(const std::vector<CameraFixture*> &lhs, const std::vector<CameraFixture*> &rhs, EssentialFilterParams params);
     void remove(WPP a, WPP b, std::vector<int> idx);
     void pruneTracks(double rmse, double maxe, double distanceThreshold);
-    bool checkTrack(SceneFeaturePoint* track, uint64_t mask = ~uint64_t(0), double rmse = 1.0, double maxe = 3.0, double distanceThreshold = 1000.0);
-    static std::vector<uint64_t> GenerateBitmasks(int N, int M);
+    bool checkTrack(SceneFeaturePoint* track, std::vector<int> *mask = nullptr, double rmse = 1.0, double maxe = 3.0, double distanceThreshold = 1000.0);
+//    static std::vector<uint64_t> GenerateBitmasks(int N, int M);
     void pruneSmallTracks();
 
 

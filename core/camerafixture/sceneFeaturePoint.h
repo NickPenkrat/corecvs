@@ -186,7 +186,7 @@ public:
         this->type = type;
     }
 
-    Vector3dd triangulate(bool use__ = false, uint64_t mask = ~uint64_t(0));
+    Vector3dd triangulate(bool use__ = false, std::vector<int> *mask = nullptr);
 
 
     /** Observation related block */
