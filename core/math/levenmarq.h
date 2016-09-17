@@ -254,9 +254,9 @@ public:
 
                 for (int j = 0; j < A.h; j++)
                 {
-                    double a = A.a(j, j) + lambda;
-                    //double b = A.a(j, j) * (1.0 + lambda);
-                    A.a(j, j) = a;
+                    //double a = A.a(j, j) + lambda;
+                    double b = A.a(j, j) * (1.0 + lambda);
+                    A.a(j, j) = b;
                 }
 
                 /*
