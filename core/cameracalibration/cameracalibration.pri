@@ -5,6 +5,7 @@ HEADERS += \
         cameracalibration/flatPatternCalibrator.h    \
         cameracalibration/calibrationLocation.h      \
         cameracalibration/photoStationCalibrator.h   \
+        cameracalibration/projectionModels.h         \
 
 
 SOURCES += \
@@ -13,4 +14,5 @@ SOURCES += \
         cameracalibration/photoStationCalibrator.cpp   \
         cameracalibration/calibrationLocation.cpp      \
         cameracalibration/flatPatternCalibrator.cpp    \
+        cameracalibration/projectionModels.cpp         \
 

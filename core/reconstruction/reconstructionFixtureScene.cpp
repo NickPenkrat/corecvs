@@ -70,11 +70,13 @@ ReconstructionFixtureScene::Detransformer ReconstructionFixtureScene::transform(
     std::cout << "RFS::transform::parent" << std::endl;
     FixtureScene::transform(transform, scale);
     std::cout << "RFS::transform::points" << std::endl;
-    corecvs::parallelable_for(0, (int)trackedFeatures.size(), [&](const corecvs::BlockedRange<int> &r) { for (int i = r.begin(); i < r.end(); ++i)
-            { auto& pt = trackedFeatures[i];
-              pt->reprojectedPosition = pt->triangulate(true);
-              }
-              });
+    corecvs::parallelable_for(0, (int)trackedFeatures.size(), [&](const corecvs::BlockedRange<int> &r) {
+        for (int i = r.begin(); i < r.end(); ++i)
+        {
+            auto& pt = trackedFeatures[i];
+            pt->reprojectedPosition = pt->triangulate(true);
+        }
+    });
 
     std::cout << "RFS::transform::post:" << std::endl;
     for (auto& cf: placedFixtures)
@@ -1001,11 +1003,8 @@ void corecvs::ReconstructionFixtureScene::buildTracks(CameraFixture *psA, Camera
 
         for (int i = 0; i < NPS; ++i)
         {
-            SceneObservation so;
-            so.camera = cam[i];
-            so.cameraFixture = ps[i];
-            so.featurePoint = track;
-            so.observation = kp[i];
+            SceneObservation so(cam[i], track, kp[i], ps[i]);
+
             track->observations[cam[i]] = so;
             track->observations__[wpp[i]] = so;
             track->color = keyPoints[wpp[i]][pt[i]].second;
@@ -1110,15 +1109,13 @@ void corecvs::ReconstructionFixtureScene::appendTracks(CameraFixture *ps, double
         if (!best)
             continue;
         appended++;
-        SceneObservation so;
-        so.camera = qq.v;
-        so.cameraFixture = qq.u;
-        so.featurePoint = best;
-        so.observation = p;
+
+        SceneObservation so(qq.v, best, p, qq.u);
         best->observations[so.camera] = so;
         best->observations__[qq] = so;
         trackMap[qq][pq] = best;
-        best->reprojectedPosition = best->triangulate();
+        best->reprojectedPosition = best->triangulate();    //TODO: don't use observations__ here for triangulation?
+
         /*
          * Here we start trying to merge tracks if possible
          */
@@ -1375,4 +1372,17 @@ void corecvs::ReconstructionFixtureScene::filterEssentialRansac(WPP idA, WPP idB
         bestInliers.clear();
     }
     remove(idA, idB, bestInliers);
+}
+
+
+
+bool ReconstructionFixtureScene::dummy = ReconstructionFixtureScene::staticInit();
+
+bool ReconstructionFixtureScene::staticInit()
+{
+    FixtureSceneFactory::FixtureSceneCreateFunctor lambda = [](){return new ReconstructionFixtureScene;};
+    std::pair<std::string, FixtureSceneFactory::FixtureSceneCreateFunctor>  entry(std::string("ReconstructionFixtureScene"), lambda);
+
+    FixtureSceneFactory::getInstance()->creators.insert(entry);
+    return true;
 }

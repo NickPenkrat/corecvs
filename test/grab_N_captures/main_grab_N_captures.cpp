@@ -139,11 +139,13 @@ int main(int argc, char **argv)
         Waiter::CameraDescriptor camDesc;
         camDesc.camId = (int)i;
 
-        camDesc.input = new CAPTURE_INTERFACE(captureString,
-                            1944,
-                            2592,
-                            8,
-                            true);  // rgb mode
+        camDesc.input = ImageCaptureInterfaceQtFactory::fabric(
+                   captureString,
+                   1944,
+                   2592,
+                   8,
+                   true);
+
         camDesc.result = NULL;
         camDesc.toSkip = 10;
 

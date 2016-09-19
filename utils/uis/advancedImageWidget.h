@@ -69,6 +69,7 @@ public slots:
     void            fitToggled();
     void            setFitWindow(bool flag = true);
     void            setKeepAspect(bool flag = true);
+    void            setRightDrag(bool flag = true);
 
     void            setCompactStyle(bool flag = true);
 
@@ -126,9 +127,14 @@ protected:
     QRect                   mOutputRect;
     QRect                   mInputRect;
 
-    bool                    mIsMousePressed;
+    bool                    mIsMouseLeftPressed;
+    bool                    mIsMouseRightPressed;
     QPoint                  mSelectionStart;
     QPoint                  mSelectionEnd;
+
+    /** Right mouse **/
+    bool                    mRightMouseButtonDrag;
+
 
     /**
      * Image is transformed only once. If transformation is done, result is saved to
@@ -186,6 +192,8 @@ public:
     Vector2dd   imageToWidgetF(const Vector2dd &p);
 
     QRect       getClientArea();
+
+    Vector2dd   getVisibleImageCenter();
 
 protected:
     QRect       computeInputRect();

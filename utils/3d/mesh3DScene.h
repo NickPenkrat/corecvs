@@ -20,6 +20,8 @@ class Mesh3DScene : public Mesh3D, public Scene3D {
 
 public:
     Draw3dParameters mParameters;
+
+    /* This mesh is not used so far.*/
     Mesh3D *owned;
 
     Mesh3DScene() :
@@ -29,8 +31,7 @@ public:
     virtual void prepareMesh(CloudViewDialog * /*dialog*/) {}
     virtual void drawMyself(CloudViewDialog * /*dialog*/);
 
-    virtual void dumpPCD(ostream &/*out*/){}
-    virtual void dumpPLY(ostream &/*out*/){}
+    virtual bool dump(const QString &targetFile) override;
 
     virtual void setParameters(void * params)
     {
@@ -124,7 +125,7 @@ public:
     virtual void prepareMesh(CloudViewDialog * /*dialog*/);
     virtual void drawMyself(CloudViewDialog *dialog);
 
-    virtual ~StereoCameraScene() {};
+    virtual ~StereoCameraScene() {}
 
 };
 

@@ -19,6 +19,14 @@ int RGBColor::dummy = RGBColor::staticInit();
 
 int RGBColor::staticInit()
 {
+    reflect.name = ReflectionNaming(
+        "RGBColor",
+        "RGBColor",
+        ""
+    );
+
+    reflect.objectSize = sizeof(RGBColor);
+
     reflect.fields.push_back(new IntField(FIELD_R, 0, "r"));
     reflect.fields.push_back(new IntField(FIELD_G, 0, "g"));
     reflect.fields.push_back(new IntField(FIELD_B, 0, "b"));

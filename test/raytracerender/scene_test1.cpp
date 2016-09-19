@@ -8,12 +8,13 @@
 
 void raytrace_scene1( void )
 {
+    SYNC_PRINT(("raytrace_scene1( void )\n"));
     int h = 1600;
     int w = 1600;
     RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
 
     RaytraceRenderer renderer;
-    renderer.intrisics = PinholeCameraIntrinsics(Vector2dd(w, h), degToRad(80.0));
+    renderer.setProjection(new PinholeCameraIntrinsics(Vector2dd(w, h), degToRad(80.0)));
 
     /* Materials */
     RaytraceableMaterial blueMirror;
@@ -101,14 +102,88 @@ void raytrace_scene1( void )
 
     renderer.ambient = RGBColor(20,20,20).toDouble();
 
-    PreciseTimer timer;
-    timer = PreciseTimer::currentTime();
-    renderer.trace(buffer);
-    SYNC_PRINT(("Total time %ld us", timer.usecsToNow()));
+    {
+        renderer.trace(buffer);
+        BMPLoader().save("raytrace-gn.bmp", buffer);
+    }
 
+    {
+        renderer.setProjection(new StereographicProjection(Vector2dd(w, h) / 2.0, std::max(h,w) / 2));
+        renderer.trace(buffer);
+        BMPLoader().save("raytrace-sh.bmp", buffer);
+    }
 
-    BMPLoader().save("raytrace.bmp", buffer);
+    {
+        renderer.setProjection(new EquidistantProjection(Vector2dd(w, h) / 2.0, std::max(h,w) / 2));
+        renderer.trace(buffer);
+        BMPLoader().save("raytrace-eq-d.bmp", buffer);
+    }
+
+    {
+        renderer.setProjection(new EquisolidAngleProjection(Vector2dd(w, h) / 2.0, std::max(h,w) / 2));
+        renderer.trace(buffer);
+        BMPLoader().save("raytrace-eq-s.bmp", buffer);
+    }
+
+    {
+        renderer.setProjection(new OrthographicProjection(Vector2dd(w, h) / 2.0, std::max(h,w) / 2 ));
+        renderer.trace(buffer);
+        BMPLoader().save("raytrace-ort.bmp", buffer);
+    }
+
     delete_safe(buffer);
 
 }
 
+
+void raytrace_scale( void )
+{
+    SYNC_PRINT(("raytrace_scale( void )\n"));
+    int h = 1600;
+    int w = 1600;
+    RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
+
+    RaytraceableSphere sphere1(Sphere3d(Vector3dd(0,0, 150.0), 50.0));
+    sphere1.name = "Sphere1";
+    sphere1.color = RGBColor::Red().toDouble();
+    sphere1.material = NULL;
+
+    RaytraceablePointLight light1(RGBColor::White() .toDouble(), Vector3dd( 0, -190, 150));
+    RaytraceablePointLight light2(RGBColor::Yellow().toDouble(), Vector3dd(-120, -70,  50));
+
+
+    BumpyMaterial * bumpy = new BumpyMaterial;
+
+    bumpy->ambient = RGBColor::Red().toDouble() * 0.2 ;
+    bumpy->diffuse = RGBColor::White().toDouble() / 255.0;
+    bumpy->reflCoef = 0.0;
+    bumpy->refrCoef = 0.0;
+    bumpy->specular = TraceColor(0.0);
+
+    for (double s = 1.0; s > 0.5; s-=0.03)
+    {
+        RaytraceRenderer renderer;
+        renderer.setProjection(new PinholeCameraIntrinsics(Vector2dd(w, h), degToRad(80.0)));
+
+        char name[100];
+        RaytraceableTransform transformed(&sphere1, Matrix44::Scale(s, 1.0, 1.0));
+        transformed.name = "transformed";
+        transformed.color = RGBColor::Blue().toDouble();
+        transformed.material = bumpy;
+
+        RaytraceableUnion scene;
+        scene.elements.push_back(&transformed);
+
+        renderer.object = &scene;
+        renderer.lights.push_back(&light1);
+        renderer.lights.push_back(&light2);
+
+        renderer.ambient = RGBColor(20,20,20).toDouble();
+
+        renderer.trace(buffer);
+        snprintf2buf(name, "raytrace-scale-%lf.bmp", s);
+        BMPLoader().save(name, buffer);
+    }
+
+    delete_safe(buffer);
+}

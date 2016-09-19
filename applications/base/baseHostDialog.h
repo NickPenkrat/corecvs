@@ -265,7 +265,7 @@ protected:
 
     /*TODO: Move this to ImageCaptureInterface*/
     bool mCameraStarted;
-    ImageCaptureInterface *mCamera;
+    ImageCaptureInterfaceQt *mCamera;
 
     /*TODO: Rename this */
     CapSettingsDialog mCapSettings;

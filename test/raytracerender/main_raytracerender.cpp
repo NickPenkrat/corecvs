@@ -24,12 +24,17 @@
 #include "bmpLoader.h"
 
 extern void raytrace_scene1( void );
+extern void raytrace_scale( void );
+
 extern void raytrace_scene_scanner( void );
 extern void raytrace_scene_calibrate( void );
 
 extern void raytrace_scene_speedup( void );
 
 extern void raytrace_scene_pole( void );
+
+extern void raytrace_scene_large( void );
+extern void raytrace_scene_tree(void);
 
 int main(int argc, char **argv)
 {
@@ -45,15 +50,26 @@ int main(int argc, char **argv)
 #endif
     QTRGB24Loader::registerMyself();
 
-    raytrace_scene_pole();
+    int scene = 5;
+    if ( argc > 1) {
+        scene = std::stoi(argv[1]);
+        SYNC_PRINT(("Scene id %d\n", scene));
+    }
 
-//    raytrace_scene1();
-//    raytrace_scene_scanner();
-//    raytrace_scene_calibrate();
-
-
-
-
+    switch (scene) {
+        case 0: raytrace_scene_pole(); break;
+        case 1: raytrace_scene1(); break;
+        case 2: raytrace_scale(); break;
+        case 3: raytrace_scene_scanner(); break;
+        case 4: raytrace_scene_calibrate(); break;
+        case 5:
+        default:
+                raytrace_scene_speedup(); break;
+        case 6:
+                raytrace_scene_large(); break;
+        case 7:
+                raytrace_scene_tree(); break;
+    }
 
 }
 

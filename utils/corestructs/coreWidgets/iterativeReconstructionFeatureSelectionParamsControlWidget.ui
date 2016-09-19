@@ -47,6 +47,12 @@
        <property name="value">
         <double>5</double>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
+       </property>
      </widget>
     </item>
     <item row="1" column="0">
@@ -76,6 +82,12 @@
        <property name="value">
         <double>3</double>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
+       </property>
      </widget>
     </item>
     <item row="2" column="0">
@@ -101,6 +113,12 @@
        </property>
        <property name="value">
         <double>1000</double>
+       </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
        </property>
      </widget>
     </item>
@@ -145,6 +163,12 @@
        <property name="value">
         <double>2</double>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
+       </property>
      </widget>
     </item>
     <item row="5" column="0">
@@ -173,6 +197,12 @@
        </property>
        <property name="value">
         <double>3</double>
+       </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
        </property>
      </widget>
     </item>

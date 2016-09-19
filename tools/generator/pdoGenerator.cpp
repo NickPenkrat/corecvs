@@ -25,6 +25,7 @@ void PDOGenerator::enterFieldContext(int i)
 {
     field = clazz->fields[i];
     name = field->name.name;
+    fieldPlaceholder=QString("field%1").arg(i);
     type = field->type;
     cppName = QString("m") + toCamelCase(name, true);
     getterName = toCamelCase(name, false);
@@ -583,6 +584,8 @@ void PDOGenerator::generatePDOCpp()
     "        \"" + clazz->name.decription + "\",\n"
     "        \"" /*+ clazz->name.comment +*/ "\"\n"  //  We need to decorate comment
     "    );\n"
+    "\n"
+    "     getReflection()->objectSize = sizeof("+className+");\n"
     "     \n"
     "\n";
 
@@ -606,8 +609,7 @@ void PDOGenerator::generatePDOCpp()
         }
 
     result+=
-    "    fields().push_back(\n"
-    "        new "+fieldRefType+"\n"
+    "    "+fieldRefType+"* "+fieldPlaceholder+" = new "+fieldRefType+"\n"
     "        (\n"
     "          "+className+"::"+fieldEnumId+",\n"
     "          offsetof("+className+", "+cppName+"),\n";
@@ -689,8 +691,14 @@ void PDOGenerator::generatePDOCpp()
         for(int enumCount = 0; enumCount < enumOptions->options.size(); enumCount++)
         {
             const EnumOption *option = enumOptions->options[enumCount];
+            if(option->presentationHint == NULL)
+            {
             result+=
     "          , new EnumOption("+QString::number(option->id)+",\""+option->name.name+"\")\n";
+            } else {
+                result+=
+    "          , new EnumOption("+QString::number(option->id)+",\""+option->name.name+"\",\""+option->presentationHint+"\")\n";
+            }
         }
         result+=
     "          )\n";
@@ -699,7 +707,7 @@ void PDOGenerator::generatePDOCpp()
                      ",\n"
     "           NULL\n";
     } else if (type == BaseField::TYPE_POINTER) {
-    result+=
+        result+=
                 ",\n"
     "          \""+QString(static_cast<const PointerField *>(field)->targetClass)+"\"\n";
     } else {
@@ -707,9 +715,48 @@ void PDOGenerator::generatePDOCpp()
     }
 
     result+=
-    "        )\n"
-    "    );\n";
+    "        );\n";
+    if (field->widgetHint != BaseField::DEFAULT_HINT)
+       result+=
+    "    "+fieldPlaceholder+"->widgetHint=BaseField::"+BaseField::getString(field->widgetHint)+";\n";
+    if (field->prefixHint != NULL && strlen(field->prefixHint) != 0)
+       result+=
+    "    "+fieldPlaceholder+"->prefixHint=\""+field->prefixHint+"\";\n";
+    if (field->suffixHint != NULL && strlen(field->suffixHint) != 0)
+       result+=
+    "    "+fieldPlaceholder+"->suffixHint=\""+field->suffixHint+"\";\n";
+
+    if (field->precision >= 0)
+        result+=
+     "    "+fieldPlaceholder+"->precision="+QString::number(field->precision)+";\n";
+
+
+    if (type == BaseField::TYPE_COMPOSITE) {
+        const CompositeField *cfield = static_cast<const CompositeField *>(field);
+        const Reflection *referent = cfield->reflection;
+        result+=
+    "    {\n"
+    "        ReflectionDirectory* directory = ReflectionDirectoryHolder::getReflectionDirectory();\n"
+    "        std::string name(\""+QString(referent->name.name)+"\");\n"
+    "        ReflectionDirectory::iterator it = directory->find(name);\n"
+    "        if(it != directory->end()) {\n"
+    "             "+fieldPlaceholder+"->reflection = it->second;\n"
+    "        } else {\n"
+    "             printf(\"Reflection "+className+" to the subclass "+QString(referent->name.name)+" can't be linked\\n\");\n"
+    "        }\n"
+    "    }\n";
+
     }
+
+    result+=
+    "    fields().push_back("+fieldPlaceholder+");\n"
+    "    /*  */ \n";
+    }    
+
+    result+=
+    "    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();\n"
+    "    directory[std::string(\""+QString(clazz->name.name)+"\")]= &reflection;\n";
+
 
     result+=
     "   return 0;\n"
@@ -787,7 +834,7 @@ void PDOGenerator::generateControlWidgetCpp()
         if (type == BaseField::TYPE_DOUBLE)
         {
             const DoubleFieldGen *dfield = static_cast<const DoubleFieldGen *>(field);
-            if (dfield->widgetType == exponentialSlider && dfield->max > 0)
+            if (dfield->widgetHint == BaseField::SLIDER && dfield->max > 0)
             {
                 result+=
                 "mUi->"+boxName+"->setMaxZoom("+QString::number(dfield->max)+");\n"

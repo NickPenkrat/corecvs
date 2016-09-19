@@ -73,6 +73,9 @@ HEADERS+= xml/generated/outputType.h
 SOURCES+= xml/generated/lensDistortionModelParametersBase.cpp
 HEADERS+= xml/generated/lensDistortionModelParametersBase.h
 
+SOURCES+= xml/generated/homorgaphyReconstructorBlockBase.cpp
+HEADERS+= xml/generated/homorgaphyReconstructorBlockBase.h
+
 #####################################################
 # UI Classes Section
 #####################################################
@@ -148,6 +151,8 @@ HEADERS+= xml/generated/preciseInterpolationType.h
 HEADERS+= xml/generated/imageChannel.h
 
 HEADERS+= xml/generated/debayerMethod.h
+
+HEADERS+= xml/generated/homographyAlgorithm.h
 
 HEADERS+= xml/generated/lineDistortionEstimatorCost.h
 

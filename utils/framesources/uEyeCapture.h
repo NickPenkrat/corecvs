@@ -26,7 +26,7 @@
 using namespace std;
 
 
-class UEyeCaptureInterface : public ImageCaptureInterface
+class UEyeCaptureInterface : public virtual ImageCaptureInterface
 {
 public:
     UEyeCaptureInterface(string _devname);

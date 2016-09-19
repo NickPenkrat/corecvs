@@ -10,6 +10,7 @@
 #if !defined( DSP_TARGET ) && !defined( WIN32 ) && !defined( WIN64 )
 
 #include <iostream>
+#include <sstream>
 #include <exception>
 #include <cstdlib>
 #include <signal.h>
@@ -20,6 +21,7 @@
 #endif
 
 #include "utils.h"
+#include <sstream>
 
 
 namespace corecvs {
@@ -92,6 +94,22 @@ string toNativeSlashes(const string& str)
 #else
     return replaceSlashes(str, "\\", PATH_SEPARATOR);
 #endif
+}
+
+void stringSplit(const string &s, char delim, std::vector<string> &elems)
+{
+    std::stringstream ss(s);
+    string item;
+    while (getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+}
+
+std::vector<string> stringSplit(const string &s, char delim)
+{
+    std::vector<string> elems;
+    stringSplit(s, delim, elems);
+    return elems;
 }
 
 string getFullPath(const string& envDirPath, cchar* path, cchar* filename)

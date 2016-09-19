@@ -35,10 +35,11 @@ int Recorder::staticInit()
         "Recorder parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(Recorder);
      
 
-    fields().push_back(
-        new StringField
+    StringField* field0 = new StringField
         (
           Recorder::PATH_ID,
           offsetof(Recorder, mPath),
@@ -46,10 +47,10 @@ int Recorder::staticInit()
           "path",
           "path",
           "path"
-        )
-    );
-    fields().push_back(
-        new StringField
+        );
+    fields().push_back(field0);
+    /*  */ 
+    StringField* field1 = new StringField
         (
           Recorder::FILETEMPLATE_ID,
           offsetof(Recorder, mFileTemplate),
@@ -57,8 +58,11 @@ int Recorder::staticInit()
           "fileTemplate",
           "fileTemplate",
           "fileTemplate"
-        )
-    );
+        );
+    fields().push_back(field1);
+    /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Recorder")]= &reflection;
    return 0;
 }
 

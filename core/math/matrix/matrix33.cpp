@@ -7,10 +7,9 @@
  * \date Jan 27, 2007
  * \author Alexander Pimenov
  **/
-
-
 #include "matrix33.h"
 #include "matrix.h"
+
 namespace corecvs {
 
 //#define ACCURATE
@@ -729,4 +728,3 @@ Matrix33 Matrix33::ProjectiveByPoints(int pointNumber, Vector2dd points[], Vecto
 
 
 } //namespace corecvs
-

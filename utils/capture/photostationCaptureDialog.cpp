@@ -316,7 +316,6 @@ PhotostationCaptureDialog::~PhotostationCaptureDialog()
         CORE_ASSERT_TRUE_S(mCaptureInterfaces[i].camInterface == NULL);
         CORE_ASSERT_TRUE_S(mCaptureInterfaces[i].result == NULL);
     }
-
 }
 
 void PhotostationCaptureDialog::setNamer(AbstractImageNamer *namer)
@@ -685,7 +684,7 @@ void PhotostationCaptureDialog::capture(bool shouldAdvance, int positionShift)
     }
 }
 
-ImageCaptureInterface* PhotostationCaptureDialog::createCameraCapture(const string &devname, bool processError)
+ImageCaptureInterfaceQt* PhotostationCaptureDialog::createCameraCapture(const string &devname, bool processError)
 {
     const bool isRgb = true;
     ///bool compressed = ui->codecComboBox->currentIndex() == 0;
@@ -696,7 +695,7 @@ ImageCaptureInterface* PhotostationCaptureDialog::createCameraCapture(const stri
 
     // TODO: use compressed YUYV, MJPG,... !
 
-    ImageCaptureInterface *camera = ImageCaptureInterface::fabric(devname, h, w, fps, isRgb);
+    ImageCaptureInterfaceQt *camera = ImageCaptureInterfaceQtFactory::fabric(devname, h, w, fps, isRgb);
 
     ImageCaptureInterface::CapErrorCode result = camera->initCapture();
     ImageCaptureInterface::CameraFormat actualFormat;

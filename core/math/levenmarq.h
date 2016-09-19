@@ -15,7 +15,6 @@
 #include <string.h>
 #include <limits>
 #include <vector>
-#include <chrono>
 #include <thread>
 
 #include "global.h"
@@ -28,7 +27,8 @@
 #include "minresQLP.h"
 #include "pcg.h"
 #include "statusTracker.h"
-
+#include "preciseTimer.h"
+#include "calculationStats.h"
 
 namespace corecvs {
 
@@ -45,6 +45,16 @@ enum class LinearSolver
 template<typename MatrixClass, typename FunctionClass>
 class LevenbergMarquardtImpl
 {
+private:
+    enum LocalStats {
+        FEVAL_TIME,
+        JEVAL_TIME,
+        LIN_SOLVE_TIME,
+        JATA_TIME,
+        TOTAL_TIME,
+        LOCAL_STATS_LAST
+    };
+
 public:
     FunctionClass *f;
     //FunctionArgs *f;
@@ -59,6 +69,8 @@ public:
     bool trace         = false;
     bool traceMatrix   = false;
     bool traceJacobian = false;
+
+    Statistics *stats;
 
     double f0, x0;
     double fTolerance = 1e-9,
@@ -121,14 +133,16 @@ public:
 
         double norm = std::numeric_limits<double>::max();
 
-        auto initial = diff;
+        Vector initial = diff;
         F(beta, initial);
         initial -= target;
         double initialNorm = f0 = initial.sumAllElementsSq();
         x0 = !beta;
         int LSc = 0;
 
-        double totalEval = 0.0, totalJEval = 0.0, totalLinSolve = 0.0, totalATA = 0.0, totalTotal = 0.0;
+        //double totalEval = 0.0, totalJEval = 0.0, totalLinSolve = 0.0, totalATA = 0.0, totalTotal = 0.0;
+        int64_t totalTimes[LOCAL_STATS_LAST] = {0};
+
         int g = 0;
         StatusTracker::Reset(state, "Fit", maxIterations);
 
@@ -137,23 +151,22 @@ public:
             int LSc_curr = 0;
             auto boo = StatusTracker::CreateAutoTrackerCalculationObject(state);
 
-            double timeEval = 0.0, timeJEval = 0.0, timeLinSolve = 0.0, timeATA = 0.0, timeTotal = 0.0;
-            auto beginT = std::chrono::high_resolution_clock::now();
+            int64_t iterationTimes[LOCAL_STATS_LAST] = {0};
+            PreciseTimer start = PreciseTimer::CurrentETime();
+            PreciseTimer interval;
 
             if (traceProgress && ((g % ((maxIterations / 100) + 1) == 0))) {
                 cout << "#" << std::flush;
             }
 
-            auto Jbegin = std::chrono::high_resolution_clock::now();
+            interval = PreciseTimer::CurrentETime();
             MatrixClass J = f->getNativeJacobian(&(beta[0]));
-            auto Jend = std::chrono::high_resolution_clock::now();
-            timeJEval += (Jend - Jbegin).count() / 1e9;
+            iterationTimes[JEVAL_TIME] = interval.nsecsToNow();
 
             if (traceJacobian) {
                 cout << "New Jacobian:" << endl << J << endl;
             }
 
-            auto ATAbegin = std::chrono::high_resolution_clock::now();
             /*
              * Note: Using obscure profiling techniques we found that out L-M implementation is slow
              *       for big tasks. So we changed this stuff into calls to BLAS.
@@ -165,14 +178,14 @@ public:
              *       J's QR decomposition (Q term cancels out and is not needed explicitly),
              *       but we are using JTJ in user-enableable ouput, so I do not implement QR-way
              */
+            interval = PreciseTimer::CurrentETime();
             MatrixClass JTJ = J.ata();
-            auto ATAend = std::chrono::high_resolution_clock::now();
-            timeATA += (ATAend - ATAbegin).count() / 1e9;
+            iterationTimes[JATA_TIME] = interval.nsecsToNow();
 
-            auto Fbegin = std::chrono::high_resolution_clock::now();
+
+            interval = PreciseTimer::CurrentETime();
             F(beta, y);
-            auto Fend = std::chrono::high_resolution_clock::now();
-            timeEval += (Fend - Fbegin).count() / 1e9;
+            iterationTimes[FEVAL_TIME] = interval.nsecsToNow();
 
             diff = target - y;
 #if 0
@@ -270,7 +283,7 @@ public:
 
                 LSc_curr++;
                 LSc++;
-                auto LSbegin = std::chrono::high_resolution_clock::now();
+                interval = PreciseTimer::CurrentETime();
                 if (traceMatrix)
                     std::cout << A << std::endl << std::endl;
                 bool shouldExit = false;
@@ -339,15 +352,14 @@ public:
                     converged = true;
                     break;
                 }
-                auto LSend = std::chrono::high_resolution_clock::now();
+                iterationTimes[LIN_SOLVE_TIME] = interval.nsecsToNow();
+
 //                for (int ijk = 0; ijk < delta.size(); ++ijk)
 //                    CORE_ASSERT_TRUE_S(!std::isnan(delta[ijk]));
-                timeLinSolve += (LSend - LSbegin).count() / 1e9;
 
-                auto EVbegin = std::chrono::high_resolution_clock::now();
+                interval = PreciseTimer::CurrentETime();
                 F(beta + delta, yNew);
-                auto EVend = std::chrono::high_resolution_clock::now();
-                timeEval += (EVend - EVbegin).count() / 1e9;
+                iterationTimes[FEVAL_TIME] += interval.nsecsToNow();
 
                 diffNew = target - yNew;
                 double normNew = diffNew.sumAllElementsSq();
@@ -403,34 +415,22 @@ public:
                     }
                 }
             }
-            auto Tend = std::chrono::high_resolution_clock::now();
-            timeTotal = (Tend - beginT).count() / 1e9;
-    #if 0
+
+            iterationTimes[TOTAL_TIME] += start.nsecsToNow();
+    #if 1
             if (traceProgress)
             {
-                std::cout << "Total : " << timeTotal    << "s " << std::endl
-                          << "Eval  : " << timeEval     << "s (" << timeEval     / timeTotal * 100.0 << ")" << std::endl
-                          << "JEval : " << timeJEval    << "s (" << timeJEval    / timeTotal * 100.0 << ")" << std::endl
-                          << "ATA   : " << timeATA      << "s (" << timeATA      / timeTotal * 100.0 << ")" << std::endl
-                          << "LS    : " << timeLinSolve << "s (" << timeLinSolve / timeTotal * 100.0 << ")" << std::endl
-                          << "Other : " << (timeTotal - timeEval - timeJEval - timeATA - timeLinSolve) << "s (" << (timeTotal - timeEval - timeJEval - timeATA - timeLinSolve) / timeTotal * 100.0 << ")" << std::endl;
+                printStats(iterationTimes);
             }
     #endif
-            totalTotal += timeTotal;
-            totalEval += timeEval;
-            totalJEval += timeJEval;
-            totalATA += timeATA;
-            totalLinSolve += timeLinSolve;
+            for (int statId = 0; statId < LOCAL_STATS_LAST; statId++)
+            {
+                totalTimes[statId] += iterationTimes[statId];
+            }
         }
 
-        if (traceProgress)
-        {
-            std::cout << "Total : " << totalTotal    << "s " << std::endl
-                      << "Eval  : " << totalEval     << "s (" << totalEval     / totalTotal * 100.0 << ")" << std::endl
-                      << "JEval : " << totalJEval    << "s (" << totalJEval    / totalTotal * 100.0 << ")" << std::endl
-                      << "ATA   : " << totalATA      << "s (" << totalATA      / totalTotal * 100.0 << ")" << std::endl
-                      << "LS    : " << totalLinSolve << "s (" << totalLinSolve / totalTotal * 100.0 << ")" << std::endl
-                      << "Other : " << (totalTotal - totalEval - totalJEval - totalATA - totalLinSolve) << "s (" << (totalTotal - totalEval - totalJEval - totalATA - totalLinSolve) / totalTotal * 100.0 << ")" << std::endl;
+        if (traceProgress) {
+            printStats(totalTimes);
         }
 
         if (traceProgress) {
@@ -446,6 +446,26 @@ public:
         iterations = g;
         return result;
     }
+
+
+    void printStats(int64_t stats[LOCAL_STATS_LAST])
+    {
+        double secStats[LOCAL_STATS_LAST];
+        for (int statId = 0; statId < LOCAL_STATS_LAST; statId++)
+        {
+            secStats[statId] = stats[statId] / 1e9;
+        }
+        double leftover = secStats[TOTAL_TIME] -  secStats[FEVAL_TIME] - secStats[JEVAL_TIME] - secStats[JATA_TIME] - secStats[LIN_SOLVE_TIME];
+
+        std::cout << "Total : " << secStats[TOTAL_TIME]     << "s " << std::endl
+                  << "Eval  : " << secStats[FEVAL_TIME]     << "s (" << secStats[FEVAL_TIME]     / secStats[TOTAL_TIME] * 100.0 << ")" << std::endl
+                  << "JEval : " << secStats[JEVAL_TIME]     << "s (" << secStats[JEVAL_TIME]     / secStats[TOTAL_TIME] * 100.0 << ")" << std::endl
+                  << "ATA   : " << secStats[JATA_TIME]      << "s (" << secStats[JATA_TIME]      / secStats[TOTAL_TIME] * 100.0 << ")" << std::endl
+                  << "LS    : " << secStats[LIN_SOLVE_TIME] << "s (" << secStats[LIN_SOLVE_TIME] / secStats[TOTAL_TIME] * 100.0 << ")" << std::endl
+                  << "Other : " << leftover << "s (" << leftover / secStats[TOTAL_TIME] * 100.0 << ")" << std::endl;
+    }
+
+
 #if 0
     corecvs::Vector conjugatedGradient(const MatrixClass &A, const corecvs::Vector &B)
     {

@@ -1,6 +1,8 @@
 #include "aboutPropsTableWidget.h"
 #include <QHeaderView>
 
+#include <opencv2/core/version.hpp>
+
 #ifdef WITH_TBB
 #include <tbb/tbb_stddef.h>
 #endif
@@ -61,13 +63,11 @@ AboutPropsTableWidget::AboutPropsTableWidget(QWidget *parent) : QTableWidget(par
 
 #ifdef WITH_TBB
     addParameter("TBB Support", "On");
-    //addParameter("TBB Version", GCC_XSTR(TBB_INTERFACE_VERSION));
-    QString tbbVer = QString("%1.%2").arg(TBB_VERSION_MAJOR).arg(TBB_VERSION_MINOR);
+    QString tbbVer = QString("%1.%2 compat:%3 runtime:%4")
+        .arg(TBB_VERSION_MAJOR).arg(TBB_VERSION_MINOR)
+        .arg(TBB_COMPATIBLE_INTERFACE_VERSION)
+        .arg(tbb::TBB_runtime_interface_version());
     addParameter("TBB Version", tbbVer);
-    addParameter("TBB Compat Version", GCC_XSTR(TBB_COMPATIBLE_INTERFACE_VERSION));
-
-    int runtimeTBB = tbb::TBB_runtime_interface_version();
-    addParameter("TBB Runtime Version", QString::number(runtimeTBB));
 #else
     addParameter("TBB Support", "Off");
 #endif
@@ -84,7 +84,7 @@ AboutPropsTableWidget::AboutPropsTableWidget(QWidget *parent) : QTableWidget(par
 #endif
 
 #ifdef WITH_OPENCV
-    addParameter("OpenCV Support", "On");
+    addParameter("OpenCV Support", "On  version: " CV_VERSION);
 #else
     addParameter("OpenCV Support", "Off");
 #endif
@@ -96,9 +96,9 @@ AboutPropsTableWidget::AboutPropsTableWidget(QWidget *parent) : QTableWidget(par
 #endif
 
 #ifdef WITH_LIBPNG
-    addParameter("Libjpeg Support", "On");
+    addParameter("Libpng Support", "On");
 #else
-    addParameter("Libjpeg Support", "Off (Qt used)");
+    addParameter("Libpng Support", "Off (Qt used)");
 #endif
 
 #if    defined (Q_OS_WIN)
@@ -119,7 +119,7 @@ AboutPropsTableWidget::AboutPropsTableWidget(QWidget *parent) : QTableWidget(par
 #elif defined (__clang__)
      addParameter("Compiler", "CLANG");
 #elif defined (_MSC_VER)
-     addParameter("Compiler", "MSVC");
+     addParameter("Compiler", "MSC " GCC_XSTR(_MSC_FULL_VER));
 #elif defined (__MINGW32__)
      addParameter("Compiler", "MinGW");
 #elif defined (__INTEL_COMPILER)

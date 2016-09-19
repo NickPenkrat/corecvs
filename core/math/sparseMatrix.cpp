@@ -830,7 +830,7 @@ Vector SparseMatrix::spmv_homebrew(const Vector &rhs, bool trans) const
     CORE_ASSERT_TRUE_S(w == rhs.size());
     Vector ans(h);
     int N = h;
-    int bs = 512;
+    std::size_t bs = 512;
 
     corecvs::parallelable_for(0, N, bs, [&](const corecvs::BlockedRange<int> &r)
     {
@@ -895,7 +895,12 @@ Vector SparseMatrix::spmv_cusparse(const Vector &rhs, bool trans, int dev) const
     CUDAPromoter::TriangularPromotion::checkError();
 
     double alpha = 1.0, beta = 0.0;
-    status = cusparseDcsrmv(handle, trans ? CUSPARSE_OPERATION_TRANSPOSE : CUSPARSE_OPERATION_NON_TRANSPOSE, h, w, nnz(), &alpha, descr, gpuPromotion->basicPromotions[dev].dev_values.get(), gpuPromotion->basicPromotions[dev].dev_rowPointers.get(), gpuPromotion->basicPromotions[dev].dev_columns.get(), dev_rhs, &beta, dev_res);
+    status = cusparseDcsrmv(handle, trans ? CUSPARSE_OPERATION_TRANSPOSE : CUSPARSE_OPERATION_NON_TRANSPOSE, h, w, nnz()
+#       if (__CUDA_API_VERSION == 5050)
+        ,  alpha, descr, gpuPromotion->basicPromotions[dev].dev_values.get(), gpuPromotion->basicPromotions[dev].dev_rowPointers.get(), gpuPromotion->basicPromotions[dev].dev_columns.get(), dev_rhs,  beta, dev_res);
+#else
+        , &alpha, descr, gpuPromotion->basicPromotions[dev].dev_values.get(), gpuPromotion->basicPromotions[dev].dev_rowPointers.get(), gpuPromotion->basicPromotions[dev].dev_columns.get(), dev_rhs, &beta, dev_res);
+#endif
     CUDAPromoter::TriangularPromotion::checkError();
 
     if (status != CUSPARSE_STATUS_SUCCESS)

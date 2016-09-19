@@ -1,3 +1,4 @@
+#ifdef DEPRECATED
 #include <fstream>
 #include <iostream>
 #include <cstddef>
@@ -160,3 +161,5 @@ EllipticalApproximation &CameraLegacy::getStats(ReprojectPath::ReprojectPath pat
     else
         return inputStats;
 }
+
+#endif

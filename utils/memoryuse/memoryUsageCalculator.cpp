@@ -10,7 +10,7 @@ void MemoryUsageCalculator::getMemoryUsage()
 
     if (mResidentSize > MemoryUsageCalculator::CRITICAL_FRACTION * mTotalMemory)
     {
-        qDebug() << "We are using " << mResidentSize << "Mb which is more then high limit of " << MemoryUsageCalculator::CRITICAL_FRACTION << " * " << mTotalMemory << " = " << MemoryUsageCalculator::CRITICAL_FRACTION * mTotalMemory << "Mb";
+        qDebug() << "We are using " << mResidentSize << "Mb which is more than high limit of " << MemoryUsageCalculator::CRITICAL_FRACTION << " * " << mTotalMemory << " = " << MemoryUsageCalculator::CRITICAL_FRACTION * mTotalMemory << "Mb";
         emit memoryOverflow();
     }
 }

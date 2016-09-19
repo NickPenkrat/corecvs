@@ -7,7 +7,10 @@
 #include "fixtureScene.h"
 #include "statusTracker.h"
 
-using namespace corecvs;
+namespace corecvs {
+
+const char * FixtureSceneFactory::DEFAULT_NAME = "FixtureScene";
+
 
 /**
  *  Camera  World   |  World   Camera
@@ -28,30 +31,21 @@ FixtureScene::FixtureScene() :
 void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
 {
     //SYNC_PRINT(("FixtureScene::projectForward(0x%0X, %s):called\n", mask, round ? "true" : "false"));
-
     //SYNC_PRINT(("FixtureScene::projectForward(): points %u\n", mSceneFeaturePoints.size()));
 
-    for (size_t pointId = 0; pointId < mSceneFeaturePoints.size(); pointId++)
+    for (auto & point : mSceneFeaturePoints)
     {
-        SceneFeaturePoint *point = mSceneFeaturePoints[pointId];
-
         //cout << "Projecting point:" << point->name << " (" << point->position << ")"<< endl;
-
-        if ( (point->type & mask) == 0) {
+        if ((point->type & mask) == 0) {
             //printf("Skipping (type = %x, mask = %x)\n", point->type, mask);
             continue;
         }
 
-        //cout << "Projecting" << endl;
-
-        for (size_t fixtureId = 0; fixtureId < mFixtures.size(); fixtureId++)
+        for (auto& fixture : mFixtures)
         {
-            CameraFixture &fixture = *mFixtures[fixtureId];
-            for (size_t camId = 0; camId < fixture.cameras.size(); camId++)
+            for (auto& camera : fixture->cameras)
             {
-                FixtureCamera *camera = fixture.cameras[camId];
-                CameraModel worldCam = fixture.getWorldCamera(camera);
-
+                CameraModel worldCam = fixture->getWorldCamera(camera);
 
                 Vector2dd projection = worldCam.project(point->position);
                 if (!worldCam.isVisible(projection) || !worldCam.isInFront(point->position))
@@ -62,22 +56,13 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
                     projection.y() = fround(projection.y());
                 }
 
-                SceneObservation observation;
-                observation.accuracy     = Vector2dd(0.0, 0.0);
-                observation.camera       = camera;
-                observation.featurePoint = point;
-                observation.isKnown      = true;
-                observation.observation  = projection;
-
-                Vector3dd direct = worldCam.dirToPoint(point->position).normalised();
-                Vector3dd indirect = worldCam.intrinsics.reverse(projection).normalised();
-
+                SceneObservation observation(camera, point, projection, fixture);
                 if (!round) {
-                    observation.observDir = direct;
-                } else {
-                    observation.observDir = indirect;
+                    observation.observDir = worldCam.dirToPoint(point->position).normalised();  // direct
                 }
-
+                else {
+                    observation.observDir = worldCam.intrinsics.reverse(projection).normalised();  // indirect
+                }
                 /*if (direct.notTooFar(indirect, 1e-7))
                 {
                     SYNC_PRINT(("Ok\n"));
@@ -87,95 +72,84 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
                 }*/
 
                 point->observations[camera] = observation;
-                point->observations__[WPP(mFixtures[fixtureId], camera)] = observation;
-                //cout << "Camera:" << camera->fileName << " = " << projection << endl;
+                point->observations__[WPP(fixture, camera)] = observation;
             }
         }
     }
 }
 
-void FixtureScene::triangulate(SceneFeaturePoint *point, bool sourceWithDistortion)
+void FixtureScene::triangulate(SceneFeaturePoint *point)
 {
-   MulticameraTriangulator triangulator;
+    //TODO: why don't use here:
+    //      point->ensureDistortedObservations(false);
+    //      point->position = point->triangulate();
+    //
+    // that uses internally:    mct.triangulateLM(mct.triangulate()) ???
 
-  /* for (size_t stationId = 0; stationId < mFixtures.size(); stationId++)
-   {
-       CameraFixture &station = *mFixtures[stationId];
-       for (size_t camId = 0; camId < station.cameras.size(); camId++)
-       {
-           FixtureCamera *camera = station.cameras[camId];
-           CameraModel worldCam = station.getWorldCamera(camera);
+    if (point->observations.size() < 2)
+    {
+        SYNC_PRINT(("FixtureScene::triangulate(): too few observations"));
+        return;
+    }
 
+    //if (sourceWithDistortion)
+    //{
+    //    for (auto& pos : point->observations)
+    //    {
+    //        FixtureCamera    *cam = pos.first;
+    //        SceneObservation &obs = pos.second;
+    //
+    //        obs.observation = cam->distortion.mapBackward(obs.observation);   // convert given distorted projection to undistorted coords
+    //    }
+    //}
 
+    MulticameraTriangulator triangulator;
+    triangulator.trace = true;
 
-       }
-   }*/
+    for (auto& pos : point->observations)
+    {
+        FixtureCamera    *cam = pos.first;
+        SceneObservation &obs = pos.second;
+        if (cam->cameraFixture == NULL)
+            continue;
 
-   if (sourceWithDistortion)
-   {
-       for (auto& pos : point->observations)
-       {
-           FixtureCamera *cam = pos.first;
+        Vector2dd projection = obs.getDistorted(false);     // convert projection 'dist => undist' if need
 
-           SceneObservation observation;
-           observation.accuracy     = pos.second.accuracy;
-           observation.camera       = cam;
-           observation.featurePoint = pos.second.featurePoint;
-           observation.isKnown      = pos.second.isKnown;
-           observation.observation  = cam->distortion.mapBackward(pos.second.observation);
+        FixtureCamera worldCam = cam->cameraFixture->getWorldCamera(cam);
+        triangulator.addCamera(worldCam.getCameraMatrix(), projection);
+    }
 
-           pos.second = observation;
-       }
-   }
+    bool ok = true;
+    Vector3dd point3d = triangulator.triangulateLM(triangulator.triangulate(&ok));
 
-   triangulator.trace = true;
+    if (!ok) {
+        SYNC_PRINT(("FixtureScene::triangulate(): MulticameraTriangulator returned false"));
+        return;
+    }
+    cout << "FixtureScene::triangulate(): triangulated to " << point3d << std::endl;
 
-   if (point->observations.size() < 2)
-   {
-       SYNC_PRINT(("FixtureScene::triangulate(): Too few observations"));
-       return;
-   }
+    //if (sourceWithDistortion)
+    //{
+    //    for (auto& pos : point->observations)
+    //    {
+    //        FixtureCamera    *cam = pos.first;
+    //        SceneObservation &obs = pos.second;
+    //        obs.observation = cam->distortion.mapForward(obs.observation);   // convert undistorted projection to the distorted one
+    //    }
+    //}
 
-   for (auto it = point->observations.begin(); it != point->observations.end(); it++)
-   {
-       FixtureCamera *cam = it->first;
-       const SceneObservation &observ = it->second;
+    if (point->hasKnownPosition)
+        point->reprojectedPosition = point3d;   // store at the reprojectedPosition as "position" is untouchable
+    else
+        point->position = point3d;              //TODO: why it's stored into the position field instead of reprojectedPosition?
+}
 
-       if (cam->cameraFixture == NULL) {
-           continue;
-       }
-
-       FixtureCamera worldCam = cam->cameraFixture->getWorldCamera(cam);
-       triangulator.addCamera(worldCam.getCameraMatrix(), observ.observation);
-   }
-
-   bool ok;
-   Vector3dd point3d = triangulator.triangulate(&ok);
-
-   if (!ok) {
-       SYNC_PRINT(("FixtureScene::triangulate(): MulticameraTriangulator returned false"));
-       return;
-   }
-   cout << "FixtureScene::triangulate(): triangulated to " << point3d << std::endl;
-
-   if (sourceWithDistortion)
-   {
-       for (auto& pos : point->observations)
-       {
-           FixtureCamera *cam = pos.first;
-
-           SceneObservation observation;
-           observation.accuracy     = pos.second.accuracy;
-           observation.camera       = cam;
-           observation.featurePoint = pos.second.featurePoint;
-           observation.isKnown      = pos.second.isKnown;
-           observation.observation  = cam->distortion.mapForward(pos.second.observation);
-
-           pos.second = observation;
-       }
-   }
-
-   point->position = point3d;       //TODO: why it's stored into the position field instead of reProjPosition?
+CameraPrototype *FixtureScene::createCameraPrototype()
+{
+    CameraPrototype *cameraPrototype = fabricateCameraPrototype();
+    mOwnedObjects.push_back(cameraPrototype);
+    mCameraPrototypes.push_back(cameraPrototype);
+    return cameraPrototype;
 }
 
 FixtureCamera *FixtureScene::createCamera()
@@ -233,6 +207,31 @@ void FixtureScene::deleteCamera(FixtureCamera *camera)
     delete_safe(camera);
 }
 
+void FixtureScene::deleteCameraPrototype(CameraPrototype *cameraProtype)
+{
+     mOrphanCameras.erase(
+        std::remove_if(mOrphanCameras.begin(), mOrphanCameras.end(),
+            [=](FixtureCamera *cam) {return cam->cameraPrototype == cameraProtype;} ),
+        mOrphanCameras.end()
+     );
+
+     for (size_t i = 0; i < mFixtures.size(); i++)
+     {
+        CameraFixture *station = mFixtures[i];
+        if (station == NULL)
+            continue;
+
+        auto cameras = station->cameras;
+        cameras.erase(
+           std::remove_if(cameras.begin(), cameras.end(),
+               [=](FixtureCamera *cam) {return cam->cameraPrototype == cameraProtype;} ),
+           cameras.end()
+        );
+     }
+
+     vectorErase(mCameraPrototypes, cameraProtype);
+}
+
 void FixtureScene::deleteCameraFixture(CameraFixture *fixture, bool recursive)
 {
     for (size_t i = 0; i < mSceneFeaturePoints.size(); i++)
@@ -270,6 +269,7 @@ void FixtureScene::clear()
     }
     mOwnedObjects.clear();
 
+    mCameraPrototypes.clear();
     mFixtures.clear();
     mOrphanCameras.clear();
     mSceneFeaturePoints.clear();
@@ -291,6 +291,17 @@ void FixtureScene::deleteFixturePair(CameraFixture *fixture, FixtureCamera *came
 bool FixtureScene::checkIntegrity()
 {
     bool ok = true;
+
+    for (size_t i = 0; i < mCameraPrototypes.size(); i++)
+    {
+        CameraPrototype *proto = mCameraPrototypes[i];
+        if (proto == NULL) {
+             ok = false; SYNC_PRINT(("Camera Prototype is NULL: scene:<%s> pos <%d>\n", this->nameId.c_str(), (int)i));
+        }
+        if (proto->ownerScene != this) {
+             ok = false; SYNC_PRINT(("Camera Prototype  form other scene: cam:<%s> scene:<%s>\n", proto->nameId.c_str(), this->nameId.c_str()));
+        }
+    }
 
     for (size_t i = 0; i < mOrphanCameras.size(); i++)
     {
@@ -582,6 +593,13 @@ void FixtureScene::dumpInfo(ostream &out)
     out << "FixtureScene::dumpInfo():" << endl;
     out << "Owned objects: " <<  mOwnedObjects.size() << endl;
 
+    out << "Camera Prototypes: " << mCameraPrototypes.size() << endl;
+    for (size_t j = 0; j < mCameraPrototypes.size(); j++)
+    {
+        CameraPrototype *proto = mCameraPrototypes[j];
+        out << "     " << "CameraPrototype <" << proto->nameId << "> "  << endl;
+    }
+
     out << "Orphan Cameras: " << mOrphanCameras.size() << endl;
     for (size_t j = 0; j < mOrphanCameras.size(); j++)
     {
@@ -619,6 +637,19 @@ void FixtureScene::setFixtureCount(size_t count)
 
     while (mFixtures.size() < count) {
         createCameraFixture();
+    }
+}
+
+void FixtureScene::setPrototypeCount(size_t count)
+{
+    while (mCameraPrototypes.size() > count) {
+        CameraPrototype *proto = mCameraPrototypes.back();
+        mCameraPrototypes.pop_back();
+        deleteCameraPrototype(proto);
+    }
+
+    while (mCameraPrototypes.size() < count) {
+        createCameraPrototype();
     }
 }
 
@@ -699,6 +730,13 @@ FixtureScene::~FixtureScene()
     clear();
 }
 
+
+CameraPrototype *FixtureScene::fabricateCameraPrototype()
+{
+    //SYNC_PRINT(("FixtureScene::fabricateCameraPrototype(): called\n"));
+    return new CameraPrototype(this);
+}
+
 FixtureCamera *FixtureScene::fabricateCamera()
 {
     //SYNC_PRINT(("FixtureScene::fabricateCamera(): called\n"));
@@ -731,3 +769,43 @@ void corecvs::FixtureScene::transform(const corecvs::Affine3DQ &transformation, 
         cf->location.rotor = transformation.rotor ^ cf->location.rotor;
     }
 }
+
+std::unique_ptr<FixtureSceneFactory> FixtureSceneFactory::instance;
+
+FixtureSceneFactory *FixtureSceneFactory::getInstance() {
+    if (!instance) {
+        instance.reset(new FixtureSceneFactory());
+    }
+
+    FixtureSceneCreateFunctor lambda = [](){return new FixtureScene;};
+    std::pair<std::string, FixtureSceneCreateFunctor>  entry(std::string(DEFAULT_NAME), lambda);
+
+    instance->creators.insert(entry);
+
+    return instance.get();
+}
+
+FixtureScene *FixtureSceneFactory::sceneFactory(const std::string &name)
+{
+    FixtureScene *toReturn = NULL;
+    auto it = creators.find(name);
+    if (it == creators.end())
+    {
+        return toReturn;
+    }
+
+    toReturn = (*it).second();
+    return toReturn;
+}
+
+void FixtureSceneFactory::print()
+{
+    cout << "Known fixture Scenes:" << endl;
+    for (auto &it : creators)
+    {
+        cout << " " << it.first << endl;
+    }
+}
+
+
+} // namespace

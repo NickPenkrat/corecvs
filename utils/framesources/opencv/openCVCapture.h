@@ -28,7 +28,7 @@
 #undef interface
 #endif
 
-class OpenCVCaptureInterface : public ImageCaptureInterface
+class OpenCVCaptureInterface : public virtual ImageCaptureInterface
 {
  private:
 

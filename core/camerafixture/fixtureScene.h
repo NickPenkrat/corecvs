@@ -1,6 +1,7 @@
 #ifndef FIXTURE_SCENE_H_
 #define FIXTURE_SCENE_H_
 
+#include "fixtureScenePart.h"
 #include "fixtureCamera.h"
 #include "cameraFixture.h"
 #include "sceneFeaturePoint.h"
@@ -10,13 +11,38 @@ namespace corecvs {
 class CameraFixture;
 class StatusTracker;
 
+class FixtureSceneFactory {
 
-/* Heap of Calibration related stuff */
+public:
+    typedef std::function<FixtureScene *()> FixtureSceneCreateFunctor;
 
+    /**
+     * Be careful... manipulating (writing) this stuff is not thread safe
+     * We all know were a singleton can lead you.
+     **/
+    std::map<std::string, FixtureSceneCreateFunctor> creators;
+
+private:
+    static std::unique_ptr<FixtureSceneFactory> instance;
+
+public:
+    static const char* DEFAULT_NAME;
+
+    static FixtureSceneFactory *getInstance();
+
+    FixtureScene *sceneFactory(const std::string &name = DEFAULT_NAME);
+
+    void print();
+};
+
+/**
+ * Heap of Calibration related stuff
+ **/
 class FixtureScene
 {
 public:
     typedef FixtureCamera     CameraType;
+    typedef CameraPrototype   CameraPrototypeType;
     typedef CameraFixture     FixtureType;
     typedef SceneFeaturePoint PointType;
 
@@ -52,10 +78,15 @@ public:
      *
      **/
     void projectForward(SceneFeaturePoint::PointType mask, bool round = false);
-    void triangulate   (SceneFeaturePoint * point, bool sourceWithDistortion = false);
+    void triangulate   (SceneFeaturePoint * point);
 
-    /** Accessors
+    /**
+     * Accessors. This need to be redone to invert constness and make objects const, not the arrays
      **/
+    const vector<CameraPrototype *>&    cameraPrototypes() const  { return mCameraPrototypes; }
+          vector<CameraPrototype *>&    cameraPrototypes()        { return mCameraPrototypes; }
+
+
     const vector<CameraFixture *>&      fixtures() const       { return mFixtures; }
           vector<CameraFixture *>&      fixtures()             { return mFixtures; }
 
@@ -66,6 +97,8 @@ public:
           vector<SceneFeaturePoint *>&  featurePoints()        { return mSceneFeaturePoints; }
 
 protected:
+
+    vector<CameraPrototype *>     mCameraPrototypes;
     vector<CameraFixture *>       mFixtures;
     vector<FixtureCamera *>       mOrphanCameras;
     vector<SceneFeaturePoint *>   mSceneFeaturePoints;
@@ -146,6 +179,7 @@ protected:
     }
 
 
+    virtual CameraPrototype    *fabricateCameraPrototype();
     virtual FixtureCamera      *fabricateCamera();
     virtual CameraFixture      *fabricateCameraFixture();
     virtual SceneFeaturePoint  *fabricateFeaturePoint();
@@ -156,15 +190,17 @@ public:
     /**
      * Manipulation with structures
      **/
+    virtual CameraPrototype    *createCameraPrototype();
     virtual FixtureCamera      *createCamera();
     virtual CameraFixture      *createCameraFixture();
     virtual SceneFeaturePoint  *createFeaturePoint();
 
     /* These methods completely purge camera from scene */
-    virtual void deleteCamera        (FixtureCamera *camera);
-    virtual void deleteCameraFixture (CameraFixture *fixture, bool recursive = true);
-    virtual void deleteFixturePair   (CameraFixture *fixture, FixtureCamera *camera);
-    virtual void deleteFeaturePoint  (SceneFeaturePoint *point);
+    virtual void deleteCamera         (FixtureCamera *camera);
+    virtual void deleteCameraPrototype(CameraPrototype *cameraProtype);
+    virtual void deleteCameraFixture  (CameraFixture *fixture, bool recursive = true);
+    virtual void deleteFixturePair    (CameraFixture *fixture, FixtureCamera *camera);
+    virtual void deleteFeaturePoint   (SceneFeaturePoint *point);
 
     virtual void clear();
 
@@ -206,17 +242,14 @@ public:
     size_t totalObservations() const
     {
         size_t toReturn = 0;
-        for (size_t pointId = 0; pointId < mSceneFeaturePoints.size(); pointId++)
-        {
-            const SceneFeaturePoint *point = mSceneFeaturePoints[pointId];
-            toReturn += point->observations.size();
-        }
+        for (auto point : mSceneFeaturePoints) { toReturn += point->observations.size(); }
         return toReturn;
     }
 
     /**
      *
      **/
+    void setPrototypeCount   (size_t count);
     void setFixtureCount     (size_t count);
     void setOrphanCameraCount(size_t count);
     void setFeaturePointCount(size_t count);
@@ -229,11 +262,27 @@ public:
 
 
     template<class VisitorType, class SceneType = FixtureScene>
-    void accept(VisitorType &visitor, bool loadCameras = true, bool loadFixtures = true, bool loadPoints = true)
+    void accept(VisitorType &visitor, bool loadCameras = true, bool loadFixtures = true, bool loadPoints = true, bool loadPrototypes = true)
     {
-        typedef typename SceneType::CameraType   RealCameraType;
-        typedef typename SceneType::FixtureType  RealFixtureType;
-        typedef typename SceneType::PointType    RealPointType;
+        typedef typename SceneType::CameraPrototypeType   RealPrototypeType;
+        typedef typename SceneType::CameraType            RealCameraType;
+        typedef typename SceneType::FixtureType           RealFixtureType;
+        typedef typename SceneType::PointType             RealPointType;
+
+        if (loadPrototypes)
+        {
+            int oprotoSize = (int)mCameraPrototypes.size();
+            visitor.visit(oprotoSize, 0, "cameraprototypes.size");
+
+            setPrototypeCount(oprotoSize);
+
+            for (size_t i = 0; i < (size_t)oprotoSize; i++)
+            {
+                char buffer[100];
+                snprintf2buf(buffer, "cameraprototypes[%d]", i);
+                visitor.visit(*static_cast<RealPrototypeType *>(mCameraPrototypes[i]), buffer);
+            }
+        }
 
         /* So far compatibilty is on */
         /* Orphan cameras */

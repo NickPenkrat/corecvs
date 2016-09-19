@@ -152,7 +152,11 @@ ImageCaptureInterface::FramePair RTSPCapture::getFrame()
     }
     mLastFrameTime = PreciseTimer::currentTime();
     stats.values[CaptureStatistics::DATA_SIZE] = 0;
-    emit newStatisticsReady(stats);
+
+    if (imageInterfaceReceiver != NULL)
+    {
+        imageInterfaceReceiver->newStatisticsReadyCallback(stats);
+    }
 
     if (!mIsPaused)
     {

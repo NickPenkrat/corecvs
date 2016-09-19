@@ -18,7 +18,8 @@ HEADERS += \
     geometry/raytrace/materialExamples.h \
     geometry/mesh3DDecorated.h \
     geometry/kdtree.h \
-    geometry/twoViewOptimalTriangulation.h
+    geometry/raytrace/bspTree.h \
+    geometry/twoViewOptimalTriangulation.h \
 
 
 
@@ -39,4 +40,5 @@ SOURCES += \
     geometry/raytrace/sdfRenderable.cpp \
     geometry/raytrace/materialExamples.cpp \
     geometry/mesh3DDecorated.cpp \
-    geometry/twoViewOptimalTriangulation.cpp
+    geometry/twoViewOptimalTriangulation.cpp \
+

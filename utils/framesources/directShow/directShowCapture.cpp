@@ -347,13 +347,22 @@ ALIGN_STACK_SSE void DirectShowCaptureInterface::memberCallback(DSCapDeviceId de
 
             frame_data_t frameData;
             frameData.timestamp = mCameras[0].timestamp / 2 + mCameras[1].timestamp / 2;
-            newFrameReady(frameData);
-            newStatisticsReady(stats);
+
+            if (imageInterfaceReceiver != NULL)
+            {
+                imageInterfaceReceiver->newFrameReadyCallback(frameData);
+                imageInterfaceReceiver->newStatisticsReadyCallback(stats);
+            }
         }
         else {
             frame_data_t frameData;
             frameData.timestamp = mCameras[0].timestamp;
-            newFrameReady(frameData);
+
+            if (imageInterfaceReceiver != NULL)
+            {
+                imageInterfaceReceiver->newFrameReadyCallback(frameData);
+            }
+
             //newStatisticsReady(stats);
             skippedCount++;
         }

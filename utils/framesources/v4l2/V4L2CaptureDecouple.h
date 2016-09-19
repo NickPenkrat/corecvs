@@ -23,7 +23,7 @@
 using std::string;
 
 
-class V4L2CaptureDecoupleInterface : public ImageCaptureInterface
+class V4L2CaptureDecoupleInterface : public virtual ImageCaptureInterface
 {
 public:
     V4L2CaptureDecoupleInterface(string _devname);

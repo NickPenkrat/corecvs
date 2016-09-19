@@ -42,6 +42,13 @@ public:
 
     inline Vector3d(const BaseClass &V) : BaseClass(V) {}
     inline explicit Vector3d(const ElementType &x) : BaseClass((ElementType)x) {}
+    inline explicit Vector3d(const FixedVector<ElementType, 3> &v)
+    {
+        (*this)[0] = v[0];
+        (*this)[1] = v[1];
+        (*this)[2] = v[2];
+    }
+
     inline Vector3d(): BaseClass() {}
 
     inline Vector3d(const Vector2d<ElementType> &V, const ElementType &x) :
@@ -218,6 +225,11 @@ public:
             return Vector3d<ElementType>(0.0);
         }
         return Vector3d<ElementType>(this->x() / this->z(), this->y() / this->z(), ElementType(1.0));
+    }
+
+    inline static Vector3d<ElementType> FromProjective(const Vector2d<ElementType> &projected)
+    {
+        return Vector3d<ElementType>(projected.x(), projected.y(), ElementType(1.0));
     }
 
 

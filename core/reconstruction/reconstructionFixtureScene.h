@@ -267,6 +267,12 @@ private:
         }
     };
 
+    /* Register myself in the fabric */
+private:
+    static bool dummy;
+public:
+    static bool staticInit();
+
 };
 
 struct ParallelTrackPainter

@@ -13,7 +13,7 @@
 //#include "manipulatorCaptureDialog.h"
 
 namespace Ui {
-class PhotostationCaptureDialog;
+    class PhotostationCaptureDialog;
 }
 
 class PhotostationCaptureDialog : public QDialog, SaveableWidget
@@ -73,7 +73,7 @@ private:
     bool                     mIsCalibrationMode = false;    // autodetected flag that we are in the calibration mode
 
 
-    ImageCaptureInterface   *mPreviewInterface = NULL;
+    ImageCaptureInterfaceQt *mPreviewInterface = NULL;
     int                      mPreviewTableLine = -1;
 
     CapSettingsDialog       *mCapSettingsDialog = NULL;
@@ -93,11 +93,11 @@ private:
      * This relates to capture process
      **/
     struct CameraDescriptor {
-        CameraInfo             info;
-        int                    camId = -1;
-        int                    toSkip = 0;
-        ImageCaptureInterface *camInterface = NULL;
-        QImage                *result = NULL;
+        CameraInfo              info;
+        int                     camId = -1;
+        int                     toSkip = 0;
+        ImageCaptureInterfaceQt *camInterface = NULL;
+        QImage                  *result = NULL;
 
         CameraDescriptor() {}
 
@@ -115,7 +115,7 @@ private:
     Ui::PhotostationCaptureDialog *ui;
     AbstractImageNamer            *mNamer = NULL;
 
-    ImageCaptureInterface*   createCameraCapture(const string &devname, bool processError = true);
+    ImageCaptureInterfaceQt*   createCameraCapture(const string &devname, bool processError = true);
     void clearSignalMappings(int i);
 
 signals:

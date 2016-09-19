@@ -49,16 +49,16 @@ public:
 
 
    ObservationListModel *mObservationListModel;
-   QToolButton *mAddButton;
-   QToolButton *mMoveButton;
-   QToolButton *mDeleteButton;
-   QToolButton *mAddInfoButton;
+   QToolButton          *mAddButton;
+   QToolButton          *mMoveButton;
+   QToolButton          *mDeleteButton;
+   QToolButton          *mAddInfoButton;
 
 
    PointListEditImageWidget(QWidget *parent = NULL, bool showHeader = true);
    void setObservationModel(ObservationListModel *observationListModel);
 
-   int mSelectedPoint;
+   int          mSelectedPoint;
 
    // AdvancedImageWidget interface
 public slots:
@@ -66,12 +66,13 @@ public slots:
    virtual void toolButtonReleased(QWidget *button) override;
    virtual void childMousePressed(QMouseEvent *event) override;
    virtual void childMouseMoved(QMouseEvent *event) override;
-   void invalidateModel();
+
+   void         invalidateModel();
 
 protected:
-   int findClosest(Vector2dd imagePoint, double limitDistance = numeric_limits<double>::max());
-   Vector2dd getPointById(int row);
-   QString   getMetaById (int row);
+   int          findClosest(Vector2dd imagePoint, double limitDistance = numeric_limits<double>::max());
+   Vector2dd    getPointById(int row);
+   QString      getMetaById (int row);
 };
 
 /**
@@ -92,23 +93,22 @@ public:
 
 
    PointImageEditorInterface *mObservationListModel;
-   QItemSelectionModel *selectionModel;
+   QItemSelectionModel       *selectionModel;
 
-   vector<Vector2dd> pointList;
+   vector<Vector2dd>          pointList;
 
-   QToolButton *mAddButton;
-   QToolButton *mMoveButton;
-   QToolButton *mDeleteButton;
-   QToolButton *mAddInfoButton;
+   int                        mSelectedPoint;
+
+   QToolButton               *mAddButton;
+   QToolButton               *mMoveButton;
+   QToolButton               *mDeleteButton;
+   QToolButton               *mAddInfoButton;
 
 
    PointListEditImageWidgetUnited(QWidget *parent = NULL, bool showHeader = true);
+
    void setObservationModel(PointImageEditorInterface *observationListModel);
    void setSelectionModel(QItemSelectionModel *selectionModel);
-
-   int mSelectedPoint;
-
-
 
    // AdvancedImageWidget interface
 public slots:
@@ -116,12 +116,13 @@ public slots:
    virtual void toolButtonReleased(QWidget *button) override;
    virtual void childMousePressed(QMouseEvent *event) override;
    virtual void childMouseMoved(QMouseEvent *event) override;
-   void invalidateModel();
 
-   void selectPoint(int id);
+   void         invalidateModel();
+
+   void         selectPoint(int id);
 
 protected:
-   int findClosest(Vector2dd imagePoint, double limitDistance = numeric_limits<double>::max());
+   int          findClosest(Vector2dd imagePoint, double limitDistance = numeric_limits<double>::max());
 
    enum ArrowType {
        NONE_ARROW   = 0x0,

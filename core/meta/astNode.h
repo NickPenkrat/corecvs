@@ -141,6 +141,7 @@ public:
     {
         if (ASTContext::MAIN_CONTEXT == NULL)
             return;
+        delete_safe(payload); /* virual destructor problem here. so far nobody cares */
 #if 0
         auto &vec = owner->nodes;
         vec.erase(std::remove(vec.begin(), vec.end(), this), vec.end());
@@ -154,8 +155,10 @@ public:
     double val;
     std::string name;
 
-    ASTNodeInt *left;
-    ASTNodeInt *right;
+    ASTNodeInt *left  = NULL;
+    ASTNodeInt *right = NULL;
+
+    void *payload = NULL;
 
 
    /*friend ASTNode operator +(const ASTNode &left, const ASTNode &right);

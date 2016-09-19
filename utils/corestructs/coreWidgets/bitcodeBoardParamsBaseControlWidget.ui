@@ -61,6 +61,9 @@
        <property name="value">
         <number>256</number>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
        <property name="suffix">
         <string>px</string>
        </property>
@@ -90,6 +93,12 @@
        <property name="value">
         <number>0</number>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
+       </property>
      </widget>
     </item>
     <item row="3" column="0">
@@ -116,6 +125,12 @@
        <property name="value">
         <number>255</number>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
+       </property>
      </widget>
     </item>
     <item row="4" column="0">
@@ -129,6 +144,9 @@
      <widget class="QDoubleSpinBox" name="identSizeSpinBox">
        <property name="toolTip">
          <string>white ident size around chessboard in chesses</string>
+       </property>
+       <property name="prefix">
+        <string></string>
        </property>
        <property name="suffix">
         <string>cells</string>
@@ -147,6 +165,9 @@
        <property name="toolTip">
          <string>size of the chessboard in chesses</string>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
        <property name="suffix">
         <string>cells</string>
        </property>
@@ -163,6 +184,9 @@
      <widget class="QSpinBox" name="boardWidthSpinBox">
        <property name="toolTip">
          <string>size of the chessboard in chesses</string>
+       </property>
+       <property name="prefix">
+        <string></string>
        </property>
        <property name="suffix">
         <string>cells</string>
@@ -181,6 +205,9 @@
        <property name="toolTip">
          <string>width and height of the bitcode in chesses</string>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
        <property name="suffix">
         <string>cells</string>
        </property>
@@ -197,6 +224,9 @@
      <widget class="QSpinBox" name="codeHeightSpinBox">
        <property name="toolTip">
          <string>width and height of the bitcode in chesses</string>
+       </property>
+       <property name="prefix">
+        <string></string>
        </property>
        <property name="suffix">
         <string>cells</string>
@@ -215,6 +245,9 @@
        <property name="toolTip">
          <string>ident between chessboard and bitcode in chesses</string>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
        <property name="suffix">
         <string>cells</string>
        </property>
@@ -231,6 +264,9 @@
      <widget class="QDoubleSpinBox" name="bitcodeConfidenceSpinBox">
        <property name="toolTip">
          <string>Area in which the stats are collected during detection</string>
+       </property>
+       <property name="prefix">
+        <string></string>
        </property>
        <property name="suffix">
         <string>cells</string>
@@ -328,6 +364,9 @@
        <property name="value">
         <double>-3.3</double>
        </property>
+       <property name="prefix">
+        <string></string>
+       </property>
        <property name="suffix">
         <string>cells</string>
        </property>
@@ -356,6 +395,9 @@
        </property>
        <property name="value">
         <double>6</double>
+       </property>
+       <property name="prefix">
+        <string></string>
        </property>
        <property name="suffix">
         <string>cells</string>

@@ -31,7 +31,9 @@ AdvancedImageWidget::AdvancedImageWidget(QWidget *parent, bool showHeader)
   , mSaveDialog(NULL)
   , mUi(new Ui::advancedImageWidget)
   , mZoomCenter(-1,-1)
-  , mIsMousePressed(false)
+  , mIsMouseLeftPressed(false)
+  , mIsMouseRightPressed(false)
+  , mRightMouseButtonDrag(false)
   , mResizeCache(NULL)
   , mCurrentToolClass(NO_TOOL)
   , mCurrentSelectionButton(0)
@@ -310,6 +312,11 @@ QRect AdvancedImageWidget::getClientArea()
     return mUi->widget->geometry().translated(mUi->splitter->geometry().topLeft());
 }
 
+Vector2dd AdvancedImageWidget::getVisibleImageCenter()
+{
+    QPoint center = mInputRect.center();
+    return Vector2dd(center.x(), center.y());
+}
 
 void AdvancedImageWidget::childRepaint(QPaintEvent* /*event*/, QWidget* childWidget)
 {
@@ -329,13 +336,13 @@ void AdvancedImageWidget::childRepaint(QPaintEvent* /*event*/, QWidget* childWid
 
      p.drawRect(mOutputRect.adjusted(-1,-1, 1, 1));
 
-    if (mIsMousePressed && (mCurrentToolClass == ZOOM_SELECT_TOOL))
+    if (mIsMouseLeftPressed && (mCurrentToolClass == ZOOM_SELECT_TOOL))
     {
         p.setPen(Qt::DashLine);
         p.drawRect(QRect(mSelectionStart, mSelectionEnd));
     }
 
-    if (mIsMousePressed && (mCurrentToolClass == RECT_SELECTION_TOOLS))
+    if (mIsMouseLeftPressed && (mCurrentToolClass == RECT_SELECTION_TOOLS))
     {
         QPen pen;
         pen.setColor(Qt::red);
@@ -344,7 +351,7 @@ void AdvancedImageWidget::childRepaint(QPaintEvent* /*event*/, QWidget* childWid
         p.drawRect(QRect(mSelectionStart, mSelectionEnd));
     }
 
-    if (mIsMousePressed && (mCurrentToolClass == LINE_SELECTION_TOOLS))
+    if (mIsMouseLeftPressed && (mCurrentToolClass == LINE_SELECTION_TOOLS))
     {
         QPen pen;
         pen.setColor(Qt::red);
@@ -511,11 +518,15 @@ void AdvancedImageWidget::childMousePressed(QMouseEvent * event)
 /*    if (!mIsMousePressed && mCurrentToolClass == LINE_SELECTION_TOOLS){
         mLineSelectionMode = true;
     }*/
-    mIsMousePressed = true;
+
+    mIsMouseLeftPressed  = (event->buttons() & Qt::LeftButton ) != 0;
+    mIsMouseRightPressed = (event->buttons() & Qt::RightButton) != 0;
+
     mSelectionStart = event->pos();
     mSelectionEnd   = event->pos();
 
-    if (mCurrentToolClass == PAN_TOOL)
+    if (mCurrentToolClass == PAN_TOOL ||
+       (mRightMouseButtonDrag &&  mIsMouseRightPressed))
     {
         mUi->widget->setCursor(Qt::ClosedHandCursor);
     }
@@ -525,66 +536,83 @@ void AdvancedImageWidget::childMousePressed(QMouseEvent * event)
 
 void AdvancedImageWidget::childMouseReleased(QMouseEvent * event)
 {
-    mIsMousePressed = false;
+    bool leftReleased  = mIsMouseLeftPressed  && !(event->buttons() & Qt::LeftButton);
+    bool rightReleased = mIsMouseRightPressed && !(event->buttons() & Qt::RightButton);
+
+    qDebug() << "AdvancedImageWidget::childMouseReleased: leftReleased " << leftReleased;
+    qDebug() << "AdvancedImageWidget::childMouseReleased: rightReleased " << rightReleased;
+
+
+    mIsMouseLeftPressed = (event->buttons() & Qt::LeftButton) != 0;
+    mIsMouseRightPressed = (event->buttons() & Qt::RightButton) != 0;
+
     mSelectionEnd = event->pos();
 
-    if (mCurrentToolClass == PAN_TOOL)
-    {
-        mUi->widget->setCursor(Qt::OpenHandCursor);
+
+    if (rightReleased && mRightMouseButtonDrag) {
+       mUi->widget->setCursor(Qt::ArrowCursor);
     }
 
-    /*All other tools depend on image*/
-    if (mImage.isNull())
+    if (leftReleased)
     {
-        return;
-    }
-
-    if (mCurrentToolClass == ZOOM_SELECT_TOOL)
-    {
-        QRect selection(widgetToImage(mSelectionStart), widgetToImage(mSelectionEnd));
-        mZoomCenter = selection.center();
-        emit notifyCenterPointChanged(mZoomCenter);
-        QSize outSize = selection.normalized().size();
-        if (outSize.isNull())
+        if (mCurrentToolClass == PAN_TOOL)
         {
-            outSize = QSize(1,1);
-        }
-        QSize inSize = mImage->size();
-        if (inSize.isNull())
-        {
-            inSize = QSize(1,1);
+            mUi->widget->setCursor(Qt::OpenHandCursor);
         }
 
-        double verticalAspect   = (double)outSize.height() / inSize.height();
-        double horizontalAspect = (double)outSize.width()  / inSize.width();
-        double aspect = std::min(verticalAspect, horizontalAspect);
-        aspect = std::min(aspect, 1.0);
-        aspect = 1.0 / aspect;
-        aspect = std::max(aspect, (double)mUi->expSpinBox->minimum());
-        aspect = std::min(aspect, (double)mUi->expSpinBox->maximum());
+        /*All other tools depend on image*/
+        if (mImage.isNull())
+        {
+            return;
+        }
 
-        mUi->expSpinBox->setValue((int)aspect);
-    }
+        if (mCurrentToolClass == ZOOM_SELECT_TOOL)
+        {
+            QRect selection(widgetToImage(mSelectionStart), widgetToImage(mSelectionEnd));
+            mZoomCenter = selection.center();
+            emit notifyCenterPointChanged(mZoomCenter);
+            QSize outSize = selection.normalized().size();
+            if (outSize.isNull())
+            {
+                outSize = QSize(1,1);
+            }
+            QSize inSize = mImage->size();
+            if (inSize.isNull())
+            {
+                inSize = QSize(1,1);
+            }
 
-    if (mCurrentToolClass == RECT_SELECTION_TOOLS)
-    {
-        QRect selection(widgetToImage(mSelectionStart), widgetToImage(mSelectionEnd));
+            double verticalAspect   = (double)outSize.height() / inSize.height();
+            double horizontalAspect = (double)outSize.width()  / inSize.width();
+            double aspect = std::min(verticalAspect, horizontalAspect);
+            aspect = std::min(aspect, 1.0);
+            aspect = 1.0 / aspect;
+            aspect = std::max(aspect, (double)mUi->expSpinBox->minimum());
+            aspect = std::min(aspect, (double)mUi->expSpinBox->maximum());
 
-        qDebug("AdvancedImageWidget::mouseReleased: Emitting newAreaSelected(%d, _)", mCurrentSelectionButton);
+            mUi->expSpinBox->setValue((int)aspect);
+        }
 
-        emit newAreaSelected(mCurrentSelectionButton, selection);
-    }
+        if (mCurrentToolClass == RECT_SELECTION_TOOLS)
+        {
+            QRect selection(widgetToImage(mSelectionStart), widgetToImage(mSelectionEnd));
 
-    if (mCurrentToolClass == LINE_SELECTION_TOOLS)
-    {
-        QLine line(widgetToImage(mSelectionStart), widgetToImage(mSelectionEnd));
+            qDebug("AdvancedImageWidget::mouseReleased: Emitting newAreaSelected(%d, _)", mCurrentSelectionButton);
 
-        emit newLineSelected(mCurrentLineButton, line);
-    }
+            emit newAreaSelected(mCurrentSelectionButton, selection);
+        }
 
-    if (mCurrentToolClass == POINT_SELECTION_TOOLS)
-    {
-        emit newPointSelected(mCurrentPointButton, widgetToImage(mSelectionEnd));
+        if (mCurrentToolClass == LINE_SELECTION_TOOLS)
+        {
+            QLine line(widgetToImage(mSelectionStart), widgetToImage(mSelectionEnd));
+
+            emit newLineSelected(mCurrentLineButton, line);
+        }
+
+        if (mCurrentToolClass == POINT_SELECTION_TOOLS)
+        {
+            emit newPointSelected(mCurrentPointButton, widgetToImage(mSelectionEnd));
+        }
     }
 
     forceUpdate();
@@ -617,29 +645,26 @@ void AdvancedImageWidget::childMouseMoved(QMouseEvent * event)
     }
 
     /* Pan */
-    if (!mIsMousePressed)
-        return;
+    bool isInPan = false;
+    if (mCurrentToolClass == PAN_TOOL && mIsMouseLeftPressed)
+        isInPan = true;
+    if (mRightMouseButtonDrag && mIsMouseRightPressed)
+        isInPan = true;
 
-    QPoint shift = (widgetToImage(mSelectionEnd) - imagePoint);
-    mSelectionEnd = event->pos();
-
-    if (mCurrentToolClass == PAN_TOOL)
+    if (isInPan)
     {
+        QPoint shift = (widgetToImage(mSelectionEnd) - imagePoint);
+        mSelectionEnd = event->pos();
         mZoomCenter += shift;
-        /*
-        if (mZoomCenter.x() < mImage->rect().left())   mZoomCenter.setX(mImage->rect().left()  );
-        if (mZoomCenter.x() > mImage->rect().right())  mZoomCenter.setX(mImage->rect().right() );
-        if (mZoomCenter.y() < mImage->rect().top())    mZoomCenter.setY(mImage->rect().top()   );
-        if (mZoomCenter.y() > mImage->rect().bottom()) mZoomCenter.setY(mImage->rect().bottom());
-        */
         recomputeRects();
         emit notifyCenterPointChanged(mZoomCenter);
+
+        /* Draw tooling instruments */
+        forceUpdate();
+        return;
     }
 
-    if (mCurrentToolClass == POINT_SELECTION_TOOLS)
-    {
-        emit pointToolMoved(mCurrentPointButton, widgetToImage(mSelectionEnd));
-    }
+    mSelectionEnd = event->pos();
 
     /*if (mCurrentToolClass == LINE_SELECTION_TOOLS)
     {
@@ -648,8 +673,19 @@ void AdvancedImageWidget::childMouseMoved(QMouseEvent * event)
         emit newLineSelected(mCurrentSelectionButton, line);
     }*/
 
-    /* Draw tooling instruments */
-    forceUpdate();
+    if (mIsMouseLeftPressed)
+    {
+        if (mCurrentToolClass == POINT_SELECTION_TOOLS)
+        {
+            emit pointToolMoved(mCurrentPointButton, widgetToImage(mSelectionEnd));
+        }
+
+        /* Draw tooling instruments */
+        forceUpdate();
+        return;
+    }
+
+
 }
 
 void AdvancedImageWidget::zoomReset()
@@ -723,6 +759,11 @@ void AdvancedImageWidget::setKeepAspect(bool flag)
     {
         mUi->aspectCheckBox->setChecked(flag);
     }
+}
+
+void AdvancedImageWidget::setRightDrag(bool flag)
+{
+    mRightMouseButtonDrag = true;
 }
 
 void AdvancedImageWidget::setCompactStyle(bool flag)

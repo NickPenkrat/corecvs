@@ -11,20 +11,24 @@ corecvs::RelativeNonCentralRansacSolver::RelativeNonCentralRansacSolver(CameraFi
     , const MatchContainer &matchesAll
     , const RelativeNonCentralRansacSolverSettings &settings)
     : RelativeNonCentralRansacSolverSettings(settings)
+    , failedTotally(0)
+    , failedRatio(0)
     , query(query)
     , matchesRansac(matchesRansac)
     , matchesAll(matchesAll)
-    , failedTotally(0)
-    , failedRatio(0)
+
 {
     buildDependencies();
 }
 
 
 corecvs::RelativeNonCentralRansacSolver::RelativeNonCentralRansacSolver(CameraFixture *query, const Affine3DQ firstTry, const MatchContainer &matchesRansac, const MatchContainer &matchesAll, const RelativeNonCentralRansacSolverSettings &settings)
-    : RelativeNonCentralRansacSolverSettings(settings), query(query), matchesRansac(matchesRansac), matchesAll(matchesAll)
+    : RelativeNonCentralRansacSolverSettings(settings)
     , failedTotally(0)
     , failedRatio(0)
+    , query(query)
+    , matchesRansac(matchesRansac)
+    , matchesAll(matchesAll)
 {
     buildDependencies();
     makeTry(firstTry);

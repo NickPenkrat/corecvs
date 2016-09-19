@@ -1,10 +1,16 @@
 #include "raytraceRenderer.h"
 #include "preciseTimer.h"
 #include "bmpLoader.h"
+#include <random>
 
 RaytraceRenderer::RaytraceRenderer()
 {
 
+}
+
+RaytraceRenderer::~RaytraceRenderer()
+{
+    delete_safe(projection);
 }
 
 void RaytraceRenderer::trace(RayIntersection &intersection)
@@ -19,6 +25,8 @@ void RaytraceRenderer::trace(RayIntersection &intersection)
         // cout << "No intersection" << endl;
         if (sky != NULL) {
             sky->getColor(intersection, *this);
+        } else {
+            intersection.ownColor = TraceColor(0.0);
         }
         return;
     }
@@ -49,6 +57,9 @@ void RaytraceRenderer::trace(RGB24Buffer *buffer)
 
     int inc = 0;
 
+    PreciseTimer startTime = PreciseTimer::currentTime();
+    cout << "Will render:" << buffer->getSize() << endl;
+
     if (!supersample)
     {
         parallelable_for(0, buffer->h, [&](const BlockedRange<int>& r )
@@ -60,7 +71,7 @@ void RaytraceRenderer::trace(RGB24Buffer *buffer)
                         currentX = j;
                         currentY = i;
                         Vector2dd pixel(j, i);
-                        Ray3d ray = Ray3d(intrisics.reverse(pixel), Vector3dd::Zero());
+                        Ray3d ray = Ray3d(projection->reverse(pixel), Vector3dd::Zero());
                         ray = position * ray;
 
                         ray.normalise();
@@ -83,24 +94,28 @@ void RaytraceRenderer::trace(RGB24Buffer *buffer)
 
         );
     } else {
+        SYNC_PRINT(("This is a supersample render with %d random samples per pixel (%d rays)\n", sampleNum, sampleNum * buffer->h * buffer->w));
         parallelable_for(0, buffer->h, [&](const BlockedRange<int>& r )
-            {
+            {                
                 for (int i = r.begin() ; i < r.end(); i++)
                 {
+                    //std::minstd_rand rayscatter;
+                    std::minstd_rand rayscatter(i);
+                    std::uniform_real_distribution<double> dis(-0.5, 0.5);
+
                     for (int j = 0; j < buffer->w; j++)
                     {
                         TraceColor sumColor = TraceColor(0);
 
                         for (int sample = 0; sample < sampleNum; sample++)
                         {
-
                             currentX = j;
                             currentY = i;
                             Vector2dd pixel(j, i);
-                            pixel.x() += ((rand() % 1000) - 500) / 1000.0;
-                            pixel.y() += ((rand() % 1000) - 500) / 1000.0;
+                            pixel.x() += dis(rayscatter);
+                            pixel.y() += dis(rayscatter);
 
-                            Ray3d ray = Ray3d(intrisics.reverse(pixel), Vector3dd::Zero());
+                            Ray3d ray = Ray3d(projection->reverse(pixel), Vector3dd::Zero());
                             ray = position * ray;
                             ray.normalise();
 
@@ -111,7 +126,7 @@ void RaytraceRenderer::trace(RGB24Buffer *buffer)
                             intersection.weight = 1.0;
                             intersection.depth = 0;
                             trace(intersection);
-                            if (/*intersection.object != NULL*/ 1) {
+                            if (true) {
                                 sumColor += intersection.ownColor;
                             } else {
 
@@ -119,7 +134,7 @@ void RaytraceRenderer::trace(RGB24Buffer *buffer)
                         }
                         energy->element(i, j) = sumColor / sampleNum;
                     }
-                    SYNC_PRINT(("\rsupersample[%d]", inc));
+                    SYNC_PRINT(("\rsupersample[%d / %d ]", inc, buffer->h));
                     inc++;
                 }
             }, parallel
@@ -129,6 +144,8 @@ void RaytraceRenderer::trace(RGB24Buffer *buffer)
 
     pack(buffer, energy, markup);
     printf("\n");
+
+    SYNC_PRINT(("Finished in:%5.2lfs\n", startTime.usecsToNow() / 1000.0 / 1000.0));
 
     delete_safe(energy);
     delete_safe(markup);
@@ -148,6 +165,10 @@ void RaytraceRenderer::traceFOV(RGB24Buffer *buffer, double apperture, double fo
         {
             for (int i = r.begin() ; i < r.end(); i++)
             {
+                //std::mt19937 rayscatter;
+                std::minstd_rand rayscatter(i);
+                std::uniform_real_distribution<double> dis(-0.5, 0.5);
+
                 for (int j = 0; j < buffer->w; j++)
                 {
                     TraceColor sumColor = TraceColor(0);
@@ -159,13 +180,14 @@ void RaytraceRenderer::traceFOV(RGB24Buffer *buffer, double apperture, double fo
                         currentY = i;
                         Vector2dd pixel(j, i);
 
-                        Ray3d ray = Ray3d(intrisics.reverse(pixel), Vector3dd::Zero());
+                        Ray3d ray = Ray3d(projection->reverse(pixel), Vector3dd::Zero());
                         ray = position * ray;
                         ray.normalise();
 
                         Vector3dd shift;
-                        shift.x() = (((rand() % 1000) - 500) / 1000.0) * apperture;
-                        shift.y() = (((rand() % 1000) - 500) / 1000.0) * apperture;
+                        shift.y() = dis(rayscatter) * apperture;
+                        shift.x() = dis(rayscatter) * apperture;
+                        shift.z() = 0.0;
 
                         Vector3dd foc = ray.getPoint(focus);
                         Vector3dd st  = ray.p + shift;
@@ -212,6 +234,12 @@ void RaytraceRenderer::traceFOV(RGB24Buffer *buffer, double apperture, double fo
 
     delete_safe(energy);
     delete_safe(markup);
+}
+
+void RaytraceRenderer::setProjection(CameraProjection *projection)
+{
+    delete_safe(this->projection);
+    this->projection = projection;
 }
 
 void RaytraceRenderer::pack(RGB24Buffer *target, RaytraceRenderer::ColorBuffer *energy, RaytraceRenderer::MarkupType *markup)
@@ -331,7 +359,9 @@ void RaytraceableMaterial::getColor(RayIntersection &ray, RaytraceRenderer &rend
 
 
         /* Specular part */
-        double specularKoef = pow(reflectionRay.a.normalised() & lightRay.ray.a.normalised(), specPower);
+        double specBase = reflectionRay.a.normalised() & lightRay.ray.a.normalised();
+        if (specBase < 0) specBase = 0.0;
+        double specularKoef = pow(specBase, specPower);
 
         if (specularKoef < 0) specularKoef = 0.0;
         TraceColor specularPart = light->color * attenuation * specularKoef * specular;
@@ -414,12 +444,17 @@ void Raytraceable::normal(RayIntersection &/*intersection*/)
 
 }
 
+AxisAlignedBox3d Raytraceable::getBoundingBox()
+{
+    return AxisAlignedBox3d::AllSpace();
+}
+
 Raytraceable::~Raytraceable()
 {
 
 }
 
-void RaytraceableSky::getColor(RayIntersection &ray, RaytraceRenderer &renderer)
+void RaytraceableSky::getColor(RayIntersection &ray, RaytraceRenderer &/*renderer*/)
 {
     double v = ray.ray.a & direction;
     ray.ownColor = lerp(low, high, v, -1.0, 1.0);

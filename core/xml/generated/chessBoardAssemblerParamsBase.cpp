@@ -35,10 +35,11 @@ int ChessBoardAssemblerParamsBase::staticInit()
         "Chess Board Assembler Params Base",
         ""
     );
+
+     getReflection()->objectSize = sizeof(ChessBoardAssemblerParamsBase);
      
 
-    fields().push_back(
-        new DoubleField
+    DoubleField* field0 = new DoubleField
         (
           ChessBoardAssemblerParamsBase::SEEDTHRESHOLD_ID,
           offsetof(ChessBoardAssemblerParamsBase, mSeedThreshold),
@@ -46,10 +47,12 @@ int ChessBoardAssemblerParamsBase::staticInit()
           "seedThreshold",
           "seedThreshold",
           "Threshold for seed grid non-regularity"
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field0->widgetHint=BaseField::SPIN_BOX;
+    field0->precision=2;
+    fields().push_back(field0);
+    /*  */ 
+    DoubleField* field1 = new DoubleField
         (
           ChessBoardAssemblerParamsBase::SEEDTGPENALTY_ID,
           offsetof(ChessBoardAssemblerParamsBase, mSeedTgPenalty),
@@ -57,10 +60,12 @@ int ChessBoardAssemblerParamsBase::staticInit()
           "seedTgPenalty",
           "seedTgPenalty",
           "Factor for orthogonal error in seed estimation"
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field1->widgetHint=BaseField::SPIN_BOX;
+    field1->precision=2;
+    fields().push_back(field1);
+    /*  */ 
+    DoubleField* field2 = new DoubleField
         (
           ChessBoardAssemblerParamsBase::CONSERVATIVITY_ID,
           offsetof(ChessBoardAssemblerParamsBase, mConservativity),
@@ -68,10 +73,12 @@ int ChessBoardAssemblerParamsBase::staticInit()
           "conservativity",
           "conservativity",
           "Factor of conservativity in next row prediction (should be lower to high-distorted boards)"
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field2->widgetHint=BaseField::SPIN_BOX;
+    field2->precision=2;
+    fields().push_back(field2);
+    /*  */ 
+    DoubleField* field3 = new DoubleField
         (
           ChessBoardAssemblerParamsBase::COSTTHRESHOLD_ID,
           offsetof(ChessBoardAssemblerParamsBase, mCostThreshold),
@@ -82,10 +89,12 @@ int ChessBoardAssemblerParamsBase::staticInit()
           true,
          -999999,
          999999
-        )
-    );
-    fields().push_back(
-        new DoubleField
+        );
+    field3->widgetHint=BaseField::SPIN_BOX;
+    field3->precision=2;
+    fields().push_back(field3);
+    /*  */ 
+    DoubleField* field4 = new DoubleField
         (
           ChessBoardAssemblerParamsBase::MINSEEDDISTANCE_ID,
           offsetof(ChessBoardAssemblerParamsBase, mMinSeedDistance),
@@ -93,10 +102,12 @@ int ChessBoardAssemblerParamsBase::staticInit()
           "minSeedDistance",
           "minSeedDistance",
           "Minimal seed distance"
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field4->widgetHint=BaseField::SPIN_BOX;
+    field4->precision=2;
+    fields().push_back(field4);
+    /*  */ 
+    IntField* field5 = new IntField
         (
           ChessBoardAssemblerParamsBase::HYPOTHESISDIMENSIONS_ID,
           offsetof(ChessBoardAssemblerParamsBase, mHypothesisDimensions),
@@ -104,10 +115,10 @@ int ChessBoardAssemblerParamsBase::staticInit()
           "hypothesisDimensions",
           "hypothesisDimensions",
           "Hypothesis type: consider only hypothesis that fits specified number of dims"
-        )
-    );
-    fields().push_back(
-        new BoolField
+        );
+    fields().push_back(field5);
+    /*  */ 
+    BoolField* field6 = new BoolField
         (
           ChessBoardAssemblerParamsBase::KDTREE_ID,
           offsetof(ChessBoardAssemblerParamsBase, mKdtree),
@@ -115,10 +126,11 @@ int ChessBoardAssemblerParamsBase::staticInit()
           "kdtree",
           "kdtree",
           "Use k-d tree for greedy expansion"
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    field6->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field6);
+    /*  */ 
+    IntField* field7 = new IntField
         (
           ChessBoardAssemblerParamsBase::HYPOTHESISDIMFIRST_ID,
           offsetof(ChessBoardAssemblerParamsBase, mHypothesisDimFirst),
@@ -126,10 +138,10 @@ int ChessBoardAssemblerParamsBase::staticInit()
           "hypothesisDimFirst",
           "hypothesisDimFirst",
           "hypothesisDimFirst"
-        )
-    );
-    fields().push_back(
-        new IntField
+        );
+    fields().push_back(field7);
+    /*  */ 
+    IntField* field8 = new IntField
         (
           ChessBoardAssemblerParamsBase::HYPOTHESISDIMSECOND_ID,
           offsetof(ChessBoardAssemblerParamsBase, mHypothesisDimSecond),
@@ -137,8 +149,11 @@ int ChessBoardAssemblerParamsBase::staticInit()
           "hypothesisDimSecond",
           "hypothesisDimSecond",
           "hypothesisDimSecond"
-        )
-    );
+        );
+    fields().push_back(field8);
+    /*  */ 
+    ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
+    directory[std::string("Chess Board Assembler Params Base")]= &reflection;
    return 0;
 }
 

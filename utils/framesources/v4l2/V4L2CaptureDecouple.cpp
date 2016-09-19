@@ -126,7 +126,8 @@ V4L2CaptureDecoupleInterface::FramePair V4L2CaptureDecoupleInterface::getFrame()
     stats.values[CaptureStatistics::DESYNC_TIME] = 0;
     stats.values[CaptureStatistics::DATA_SIZE]   = current.bytesused;
 
-    emit newStatisticsReady(stats);
+    if (imageInterfaceReceiver != NULL)
+        imageInterfaceReceiver->newStatisticsReadyCallback(stats);
 
     return result;
 }

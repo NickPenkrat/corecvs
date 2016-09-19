@@ -1,13 +1,11 @@
+#ifndef CORECALCULATIONSTATS_H_
+#define CORECALCULATIONSTATS_H_
+
 /**
  * \file calculationStats.h
  * \brief Add Comment Here
  *
- * \date May 10, 2010
- * \author alexander
  */
-
-#ifndef CORECALCULATIONSTATS_H_
-#define CORECALCULATIONSTATS_H_
 
 #include <limits>
 #include <stdint.h>

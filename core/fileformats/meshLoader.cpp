@@ -4,6 +4,7 @@
 #include "plyLoader.h"
 #include "stlLoader.h"
 #include "objLoader.h"
+#include "gcodeLoader.h"
 
 namespace corecvs {
 using namespace std;
@@ -25,6 +26,7 @@ MeshLoader::MeshLoader() :
 static const char *PLY_RES = ".ply";
 static const char *STL_RES = ".stl";
 static const char *OBJ_RES = ".obj";
+static const char *GCODE_RES = ".gcode";
 
 bool MeshLoader::load(Mesh3D *mesh, const string &fileName)
 {
@@ -32,7 +34,7 @@ bool MeshLoader::load(Mesh3D *mesh, const string &fileName)
     file.open(fileName, ios::in);
     if (file.fail())
     {
-        SYNC_PRINT(("MeshLoader::load(): Can't open mesh file <%s>/n", fileName.c_str()));
+        SYNC_PRINT(("MeshLoader::load(): Can't open mesh file <%s>\n", fileName.c_str()));
         return false;
     }
 
@@ -73,6 +75,18 @@ bool MeshLoader::load(Mesh3D *mesh, const string &fileName)
         }
     }
 
+    if (endsWith(fileName, GCODE_RES))
+    {
+        SYNC_PRINT(("MeshLoader::load(): Loading GCODE <%s>\n", fileName.c_str()));
+        GcodeLoader loader;
+        if (loader.loadGcode(file, *mesh) != 0)
+        {
+           SYNC_PRINT(("MeshLoader::load(): Unable to load mesh"));
+           file.close();
+           return false;
+        }
+    }
+
     mesh->dumpInfo(cout);
     return true;
 }
@@ -83,7 +97,7 @@ bool MeshLoader::save(Mesh3D *mesh, const string &fileName)
     file.open(fileName, ios::out);
     if (file.fail())
     {
-        SYNC_PRINT(("MeshLoader::save(): Can't open mesh file <%s> for writing/n", fileName.c_str()));
+        SYNC_PRINT(("MeshLoader::save(): Can't open mesh file <%s> for writing\n", fileName.c_str()));
         return false;
     }
 
@@ -131,7 +145,7 @@ bool MeshLoader::save(Mesh3D *mesh, const string &fileName)
 
 std::string MeshLoader::extentionList()
 {
-    return string("*") + string(PLY_RES) + " *" + string(STL_RES) + " *" + string(OBJ_RES) ;
+    return string("*") + string(PLY_RES) + " *" + string(STL_RES) + " *" + string(OBJ_RES) + " *" + string(GCODE_RES);
 }
 
 } //namespace corecvs

@@ -5,6 +5,7 @@
 #include "calibrationCamera.h"
 #include "mesh3d.h"
 #include "line.h"
+#include "projectionModels.h"
 
 namespace corecvs {
 
@@ -73,7 +74,7 @@ public:
     TraceColor high = RGBColor::Cyan().toDouble();
     Vector3dd direction = Vector3dd::OrtY();
 
-    virtual void getColor(RayIntersection &ray, RaytraceRenderer &renderer) override;
+    virtual void getColor(RayIntersection &ray, RaytraceRenderer &) override;
 
 };
 
@@ -111,6 +112,8 @@ public:
     /* Helper function to help debuging */
     virtual bool toMesh (Mesh3D & /*target*/) { return false; }
 
+    virtual AxisAlignedBox3d getBoundingBox(); /* < not mandtory*/
+
     virtual ~Raytraceable();
 };
 
@@ -118,15 +121,19 @@ public:
 
 class RaytraceRenderer
 {
+private:
+    CameraProjection *projection = NULL;
+
 public:
 
     typedef AbstractBuffer<TraceColor> ColorBuffer;
     typedef AbstractBuffer<int> MarkupType;
 
-    PinholeCameraIntrinsics intrisics;
+    //PinholeCameraIntrinsics intrisics;
+
     Affine3DQ position;
 
-    Raytraceable *object = NULL;
+    Raytraceable *object = NULL; /**< Owned by renderer */
     vector<RaytraceablePointLight *> lights;
     TraceColor ambient;
     RaytraceableMaterial *sky = NULL;
@@ -137,7 +144,7 @@ public:
 
     /* Renderer global parameters */
     bool supersample = false;
-    int  sampleNum = 20;
+    int  sampleNum = 20;   
 
     bool parallel = true;
     bool traceProgress = true;
@@ -149,12 +156,15 @@ public:
     int currentY, currentX;
 
     RaytraceRenderer();
+    ~RaytraceRenderer();
 
     void trace(RayIntersection &intersection);
     void trace(RGB24Buffer *buffer);
 
     void traceFOV(RGB24Buffer *buffer, double apperture, double focus);
 
+/* Getters and setters */
+    void setProjection(CameraProjection *projection); /**< takes ownership */
 
 private:
     void pack(RGB24Buffer *target, ColorBuffer *energy, MarkupType *markup = NULL);

@@ -55,8 +55,9 @@ public:
     {
         out << "(" << toSave.value << "; ";
         for (int i = 0; i < dimension; i++) {
-             out << toSave.derivative[i] << ")" << "\n";
+             out << (i == 0 ? "" : ", ") << toSave.derivative[i] ;
         }
+        out << ")" ;
         return out;
     }
 
