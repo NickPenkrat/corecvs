@@ -28,7 +28,6 @@ std::string toString(ReconstructionFunctorOptimizationErrorType::ReconstructionF
             return "ANGULAR";
         case ReconstructionFunctorOptimizationErrorType::CROSS_PRODUCT:
             return "CROSS-PRODUCT";
-        default:
         case ReconstructionFunctorOptimizationErrorType::RAY_DIFF:
             return "RAY DIFF";
     }
@@ -927,7 +926,6 @@ bool corecvs::PhotostationPlacer::append3D()
 
     switch (scene->initializationData[psApp].initializationType)
     {
-        default:
         case FixtureInitializationType::GPS:
         {
             auto hypo = activeEstimates[psApp];
