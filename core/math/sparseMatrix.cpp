@@ -68,7 +68,7 @@ std::pair<bool, SparseMatrix> corecvs::SparseMatrix::incompleteCholseky(bool all
 
     SparseMatrix A(*this);
     int N = h;
-    int n = N;
+    //int n = N;
     for (int k = 0; k < N; ++k)
     {
         int i_k_k = getIndex(k, k);

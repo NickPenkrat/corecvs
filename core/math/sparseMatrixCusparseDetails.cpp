@@ -22,6 +22,7 @@ SparseMatrix::CUDAPromoter::TriangularPromotion::TriangularPromotion(SparseMatri
        infoNoTrans(rhs.infoNoTrans)
 {
 }
+
 SparseMatrix::CUDAPromoter::TriangularPromotion& SparseMatrix::CUDAPromoter::TriangularPromotion::operator=(SparseMatrix::CUDAPromoter::TriangularPromotion &&rhs)
 {
     std::swap(rhs.bufferTrans, bufferTrans);
@@ -33,10 +34,12 @@ SparseMatrix::CUDAPromoter::TriangularPromotion& SparseMatrix::CUDAPromoter::Tri
     std::swap(rhs.infoNoTrans, infoNoTrans);
     return *this;
 }
+
 SparseMatrix::CUDAPromoter::TriangularPromotion::operator bool() const
 {
     return bufferTrans && bufferNoTrans;
 }
+
 SparseMatrix::CUDAPromoter::TriangularPromotion::TriangularPromotion(const SparseMatrix &m, bool upper, int gpuId)
 {
     std::cout << "Triangular analysis" << std::endl;
@@ -138,6 +141,15 @@ SparseMatrix::CUDAPromoter::BasicPromotion::BasicPromotion(const SparseMatrix &m
     cudaMemcpy(drp,&m.rowPointers[0], (m.h+1) * sizeof(int)   , cudaMemcpyHostToDevice);
     SparseMatrix::CUDAPromoter::TriangularPromotion::checkError();
 }
+
+SparseMatrix::CUDAPromoter::BasicPromotion& SparseMatrix::CUDAPromoter::BasicPromotion::operator=(SparseMatrix::CUDAPromoter::BasicPromotion &&rhs)
+{
+    std::swap(rhs.dev_values, dev_values);
+    std::swap(rhs.dev_columns, dev_columns);
+    std::swap(rhs.dev_rowPointers, dev_rowPointers);
+    return *this;
+}
+
 SparseMatrix::CUDAPromoter::BasicPromotion::operator bool() const
 {
     return dev_values && dev_columns && dev_rowPointers;

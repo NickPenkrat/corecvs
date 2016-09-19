@@ -219,7 +219,7 @@ private:
             acc.emplace_back(p.first);
         timings_.resize(totalTasks);
 
-        int N = acc.size();
+        int N = (int)acc.size();
         R res;
         parallelable_for(0, N, [&](const BlockedRange<int> &rr)
             {

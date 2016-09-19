@@ -409,12 +409,11 @@ void ReconstructionFixtureScene::pruneTracks(double rmse, double maxe, double di
             }
             for (auto& d: removal)
                 trackMap[d.first].erase(d.second);
-            observationsPruned += N - good.size();
+            observationsPruned += N - (int)good.size();
             if (good.size())
                 trackedFeatures[id++] = pt;
             else
                 ++completelyPruned;
-
         }
     }
     double ratio = double(completelyPruned) / trackedFeatures.size() * 100.0,

@@ -222,7 +222,7 @@ Matrix MulticameraTriangulator::CostFunction::getJacobian(const double in[], dou
 {
     Vector3dd input(in[0], in[1], in[2]);
     auto &T= mTriangulator;
-    int N = T->P.size();
+    int N = (int)T->P.size();
     Matrix res(N * 2, Vector3dd::LENGTH);
     for (int i = 0; i < N; ++i)
     {

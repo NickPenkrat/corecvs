@@ -195,6 +195,7 @@ private:
 
             BasicPromotion();
             BasicPromotion(const SparseMatrix &m, int gpuId);
+            BasicPromotion& operator=(BasicPromotion &&rhs);
             operator bool() const;
         };
 
