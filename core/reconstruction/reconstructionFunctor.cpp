@@ -1,11 +1,6 @@
 #include "reconstructionFunctor.h"
 #include "log.h"
 
-
-#ifdef WITH_TBB
-#include "tbb/parallel_reduce.h"
-#endif
-
 #include <set>
 
 const int CORE_COUNT_LIMIT = 256;
@@ -266,29 +261,10 @@ void corecvs::ReconstructionFunctor::computeInputs()
     principalTunableCameras.clear();
     trackedFeatures.clear();
 
-#ifndef WITH_TBB
-    for (auto& pt: scene->trackedFeatures)
-    {
-        bool ok = false;
-        for (auto& o: pt->observations__)
-#if 0
-            if (std::contains(optimizableSubset, o.first.u))
-#else
-            if (optimizableSubset.count(o.first.u))
-#endif
-            {
-                ok = true;
-                break;
-            }
-        if (!ok)
-            continue;
-        trackedFeatures.insert(pt);
-    }
-#else
-    trackedFeatures = tbb::parallel_reduce(
-            tbb::blocked_range<SceneFeaturePoint**>(&scene->trackedFeatures[0], &*scene->trackedFeatures.rbegin()),
+    trackedFeatures = corecvs::parallelable_reduce(
+            corecvs::BlockedRange<SceneFeaturePoint**>(&scene->trackedFeatures[0], &*scene->trackedFeatures.rbegin()),
             std::set<SceneFeaturePoint*>(),
-            [&](const tbb::blocked_range<SceneFeaturePoint**> &r, const std::set<SceneFeaturePoint*> &v)
+            [&](const corecvs::BlockedRange<SceneFeaturePoint**> &r, const std::set<SceneFeaturePoint*> &v)
             {
                 auto vv = v;
                 for (auto pt: r)
@@ -313,16 +289,11 @@ void corecvs::ReconstructionFunctor::computeInputs()
                     m.insert(p);
                 return m;
             });
-#endif
     for (auto& pt: scene->staticPoints)
     {
         bool ok = false;
         for (auto& o: pt->observations__)
-#if 0
-            if (std::contains(optimizableSubset, o.first.u))
-#else
             if (optimizableSubset.count(o.first.u))
-#endif
             {
                 ok = true;
                 break;
@@ -464,7 +435,7 @@ void corecvs::ReconstructionFunctor::computeDependency()
 
     std::sort(revDependency.begin(), revDependency.end(), [&](SceneObservation* const &a, SceneObservation* const &b)
         {
-            return a->cameraFixture == b->cameraFixture ? a->camera < b->camera : a->cameraFixture < b->cameraFixture;
+            return a->cameraFixture == b->cameraFixture ? a->camera == b->camera ? a < b : a->camera < b->camera : a->cameraFixture < b->cameraFixture;
         });
 
     CORE_ASSERT_TRUE_S(id == lastProjection);
@@ -580,7 +551,6 @@ void corecvs::ReconstructionFunctor::computeDependency()
         {
             auto fp= positionConstrainedCameras[(i - lastProjection) / OUTPUTS_PER_POSITION_CONSTRAINT];
             auto &f = depCache[WPP(fp, WPP::VWILDCARD)];
-//            std::cout << f.nnz() << ":";
             list |= f;
         }
         std::vector<int> used;
@@ -589,7 +559,6 @@ void corecvs::ReconstructionFunctor::computeDependency()
                 used.push_back(v);
         std::set<int> usedU(used.begin(), used.end());
         CORE_ASSERT_TRUE_S(usedU.size() == used.size());
-  //      std::cout << used.size() << "|";
         std::sort(used.begin(), used.end());
         sparseRowptr[i + 1] = sparseRowptr[i] + (int)used.size();
         for (auto& u: used)
