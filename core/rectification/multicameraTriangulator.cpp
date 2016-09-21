@@ -253,7 +253,7 @@ Matrix MulticameraTriangulator::CostFunction::getLSQHessian(const double *in, do
     Matrix H(3, 3);
     Vector3dd input(in[0], in[1], in[2]);
     auto &T = mTriangulator;
-    int N = T->P.size();
+    int N = (int)T->P.size();
 
     for (int i = 0; i < N; ++i)
     {
@@ -262,7 +262,7 @@ Matrix MulticameraTriangulator::CostFunction::getLSQHessian(const double *in, do
         auto U = X.project();
         auto p = T->xy[i];
 
-        double u = p[0], v = p[1], X_x = X[0], X_y = X[1], X_z = X[2], U_u = U[0], U_v = U[1];
+        double u = p[0], v = p[1], /*X_x = X[0], X_y = X[1],*/ X_z = X[2], U_u = U[0], U_v = U[1];
         double U_v2 = U_v * U_v, U_u2 = U_u * U_u;
         double U_v3 = U_v2* U_v, U_u3 = U_u2* U_u;
         double X_z2 = X_z * X_z;

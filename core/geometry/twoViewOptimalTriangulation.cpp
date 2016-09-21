@@ -3,15 +3,16 @@
 #include "calibrationCamera.h"
 #include "polynomialSolver.h"
 
-namespace corecvs
-{
+namespace corecvs {
 
-TwoViewOptimalTriangulor::TwoViewOptimalTriangulor(bool L2, const Matrix44 &P1, const Vector2dd &v1, const Matrix44 &P2, const Vector2dd &v2) : L2(L2), P1(P1), v1(v1), P2(P2), v2(v2)
+TwoViewOptimalTriangulor::TwoViewOptimalTriangulor(bool L2, const Matrix44 &P1, const Vector2dd &v1, const Matrix44 &P2, const Vector2dd &v2)
+    : L2(L2), P1(P1), v1(v1), P2(P2), v2(v2)
 {
     F0 = CameraModel::Fundamental(P1, P2);
 }
 
-TwoViewOptimalTriangulor::TwoViewOptimalTriangulor(bool L2, const CameraModel &l, const Vector2dd &v1, const CameraModel &r, const Vector2dd &v2) : L2(L2), P1(l.getCameraMatrix()), v1(v1), P2(r.getCameraMatrix()), v2(v2)
+TwoViewOptimalTriangulor::TwoViewOptimalTriangulor(bool L2, const CameraModel &l, const Vector2dd &v1, const CameraModel &r, const Vector2dd &v2)
+    : L2(L2), P1(l.getCameraMatrix()), v1(v1), P2(r.getCameraMatrix()), v2(v2)
 {
     F0 = l.fundamentalTo(r);
 }
@@ -108,13 +109,23 @@ double TwoViewOptimalTriangulor::solveTL1()
     auto a6 = a3*a3, b6 = b3*b3, c6 = c3*c3, d6 = d3*d3;
     auto f14 = f12 * f12, f24 = f22 * f22;
     auto f16 = f14 * f12, f26 = f24 * f22;
-    std::vector<double> cc = {-a4*d2*f16 + 2*a3*b*c*d*f16 - a2*b2*c2*f16, -2*a3*b*d2*f16 + 4*a2*b2*c*d*f16 - 2*a*b3*c2*f16, a6 + 3*a4*c2*f22 - 3*a4*d2*f14 + 6*a3*b*c*d*f14 - 3*a2*b2*c2*f14 - a2*b2*d2*f16 + 3*a2*c4*f24 + 2*a*b3*c*d*f16 - b4*c2*f16 + c6*f26, 6*a5*b + 6*a4*c*d*f22 + 12*a3*b*c2*f22 - 6*a3*b*d2*f14 + 12*a2*b2*c*d*f14 + 12*a2*c3*d*f24 - 6*a*b3*c2*f14 + 6*a*b*c4*f24 + 6*c5*d*f26, 15*a4*b2 - 3*a4*d2*f12 + 3*a4*d2*f22 + 6*a3*b*c*d*f12 + 24*a3*b*c*d*f22 - 3*a2*b2*c2*f12 + 18*a2*b2*c2*f22 - 3*a2*b2*d2*f14 + 18*a2*c2*d2*f24 + 6*a*b3*c*d*f14 + 24*a*b*c3*d*f24 - 3*b4*c2*f14 + 3*b2*c4*f24 + 15*c4*d2*f26, 20*a3*b3 - 6*a3*b*d2*f12 + 12*a3*b*d2*f22 + 12*a2*b2*c*d*f12 + 36*a2*b2*c*d*f22 + 12*a2*c*d3*f24 - 6*a*b3*c2*f12 + 12*a*b3*c2*f22 + 36*a*b*c2*d2*f24 + 12*b2*c3*d*f24 + 20*c3*d3*f26, -a4*d2 + 2*a3*b*c*d + 15*a2*b4 - a2*b2*c2 - 3*a2*b2*d2*f12 + 18*a2*b2*d2*f22 + 3*a2*d4*f24 + 6*a*b3*c*d*f12 + 24*a*b3*c*d*f22 + 24*a*b*c*d3*f24 - 3*b4*c2*f12 + 3*b4*c2*f22 + 18*b2*c2*d2*f24 + 15*c2*d4*f26, -2*a3*b*d2 + 4*a2*b2*c*d + 6*a*b5 - 2*a*b3*c2 + 12*a*b3*d2*f22 + 6*a*b*d4*f24 + 6*b4*c*d*f22 + 12*b2*c*d3*f24 + 6*c*d5*f26, -a2*b2*d2 + 2*a*b3*c*d + b6 - b4*c2 + 3*b4*d2*f22 + 3*b2*d4*f24 + d6*f26};
+    std::vector<double> cc = {
+        -a4*d2*f16 + 2*a3*b*c*d*f16 - a2*b2*c2*f16
+        , -2*a3*b*d2*f16 + 4*a2*b2*c*d*f16 - 2*a*b3*c2*f16
+        , a6 + 3*a4*c2*f22 - 3*a4*d2*f14 + 6*a3*b*c*d*f14 - 3*a2*b2*c2*f14 - a2*b2*d2*f16 + 3*a2*c4*f24 + 2*a*b3*c*d*f16 - b4*c2*f16 + c6*f26
+        , 6*a5*b + 6*a4*c*d*f22 + 12*a3*b*c2*f22 - 6*a3*b*d2*f14 + 12*a2*b2*c*d*f14 + 12*a2*c3*d*f24 - 6*a*b3*c2*f14 + 6*a*b*c4*f24 + 6*c5*d*f26
+        , 15*a4*b2 - 3*a4*d2*f12 + 3*a4*d2*f22 + 6*a3*b*c*d*f12 + 24*a3*b*c*d*f22 - 3*a2*b2*c2*f12 + 18*a2*b2*c2*f22 - 3*a2*b2*d2*f14 + 18*a2*c2*d2*f24 + 6*a*b3*c*d*f14 + 24*a*b*c3*d*f24 - 3*b4*c2*f14 + 3*b2*c4*f24 + 15*c4*d2*f26
+        , 20*a3*b3 - 6*a3*b*d2*f12 + 12*a3*b*d2*f22 + 12*a2*b2*c*d*f12 + 36*a2*b2*c*d*f22 + 12*a2*c*d3*f24 - 6*a*b3*c2*f12 + 12*a*b3*c2*f22 + 36*a*b*c2*d2*f24 + 12*b2*c3*d*f24 + 20*c3*d3*f26
+        , -a4*d2 + 2*a3*b*c*d + 15*a2*b4 - a2*b2*c2 - 3*a2*b2*d2*f12 + 18*a2*b2*d2*f22 + 3*a2*d4*f24 + 6*a*b3*c*d*f12 + 24*a*b3*c*d*f22 + 24*a*b*c*d3*f24 - 3*b4*c2*f12 + 3*b4*c2*f22 + 18*b2*c2*d2*f24 + 15*c2*d4*f26
+        , -2*a3*b*d2 + 4*a2*b2*c*d + 6*a*b5 - 2*a*b3*c2 + 12*a*b3*d2*f22 + 6*a*b*d4*f24 + 6*b4*c*d*f22 + 12*b2*c*d3*f24 + 6*c*d5*f26
+        , -a2*b2*d2 + 2*a*b3*c*d + b6 - b4*c2 + 3*b4*d2*f22 + 3*b2*d4*f24 + d6*f26
+    };
     for (int i = 0; i * 2 < cc.size(); ++i)
         std::swap(cc[i], cc[cc.size() - i - 1]);
 
     auto f = [&](double t)
     {
-        auto t2 = t * t;
+      //auto t2 = t * t;
         auto tf = t * f1, at = a * t, ct = c * t;
         auto tf2= tf*tf, atpb=at+ b, ctpd=ct+ d;
         auto ctpd2 = ctpd * ctpd;
@@ -133,7 +144,13 @@ double TwoViewOptimalTriangulor::solveTL2()
     auto a4 = a2*a2, b4 = b2*b2, c4 = c2*c2, d4 = d2*d2;
     auto f14 = f12 * f12, f24 = f22 * f22;
     
-    std::vector<double> cc = {-a2*c*d*f14 + a*b*c2*f14, a4 + 2*a2*c2*f22 - a2*d2*f14 + b2*c2*f14 + c4*f24, 4*a3*b - 2*a2*c*d*f12 + 4*a2*c*d*f22 + 2*a*b*c2*f12 + 4*a*b*c2*f22 - a*b*d2*f14 + b2*c*d*f14 + 4*c3*d*f24, 6*a2*b2 - 2*a2*d2*f12 + 2*a2*d2*f22 + 8*a*b*c*d*f22 + 2*b2*c2*f12 + 2*b2*c2*f22 + 6*c2*d2*f24, -a2*c*d + 4*a*b3 + a*b*c2 - 2*a*b*d2*f12 + 4*a*b*d2*f22 + 2*b2*c*d*f12 + 4*b2*c*d*f22 + 4*c*d3*f24, -a2*d2 + b4 + b2*c2 + 2*b2*d2*f22 + d4*f24, -a*b*d2 + b2*c*d};
+    std::vector<double> cc = {
+        -a2*c*d*f14 + a*b*c2*f14
+        , a4 + 2*a2*c2*f22 - a2*d2*f14 + b2*c2*f14 + c4*f24
+        , 4*a3*b - 2*a2*c*d*f12 + 4*a2*c*d*f22 + 2*a*b*c2*f12 + 4*a*b*c2*f22 - a*b*d2*f14 + b2*c*d*f14 + 4*c3*d*f24
+        , 6*a2*b2 - 2*a2*d2*f12 + 2*a2*d2*f22 + 8*a*b*c*d*f22 + 2*b2*c2*f12 + 2*b2*c2*f22 + 6*c2*d2*f24, -a2*c*d + 4*a*b3 + a*b*c2 - 2*a*b*d2*f12 + 4*a*b*d2*f22 + 2*b2*c*d*f12 + 4*b2*c*d*f22 + 4*c*d3*f24
+        , -a2*d2 + b4 + b2*c2 + 2*b2*d2*f22 + d4*f24, -a*b*d2 + b2*c*d
+    };
     for (int i = 0; i * 2 < cc.size(); ++i)
         std::swap(cc[i], cc[cc.size() - i - 1]);
 

@@ -3,7 +3,6 @@
 #include "raytraceObjects.h"
 #include "raytrace/materialExamples.h"
 #include "bmpLoader.h"
-#include "preciseTimer.h"
 #include "bufferFactory.h"
 #include "sdfRenderable.h"
 

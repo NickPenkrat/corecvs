@@ -7,7 +7,7 @@
 //#include <QPainter>
 
 #include "g12Image.h"
-#include "preciseTimer.h"
+//#include "preciseTimer.h"
 
 #ifdef WITH_SSE
 # include "sseWrapper.h"

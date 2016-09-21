@@ -5,15 +5,12 @@
  *
  * \ingroup cppcorefiles
  *
- *
  *  This class is a wrapper over a set of time measure functions, typically of usec or better resolution
  *
  *   Common implemetations are
  *    * std::chrono based
  *    * win32 based (QueryPerformanceCounter)
  *    * gettimeofday on linux
- *
- *
  */
 #include <stdint.h>
 #include "mathUtils.h"
@@ -23,8 +20,7 @@ namespace corecvs {
 class PreciseTimer
 {
 public:
-    PreciseTimer()                                 { init(); }
-//    PreciseTimer(int msec) : mTime(msec*1000)      {}
+    PreciseTimer()                                  { init(); }
 
     /**
      *   We should and want to use CurrentTime name.
@@ -36,53 +32,28 @@ public:
     /**
      *  \deprecated
      **/
-    static  PreciseTimer currentTime()
-    {
-        return CurrentETime();
-    }
-
-    static  PreciseTimer Msecs(int msecs);
-
-    void    init()
-    {
-        mTime = -1;
-    }
-    bool    isCorrect() const
-    {
-        return mTime != -1;
-    }
-
-    void    setTime(int64_t time)                  { mTime = time;                          }
-
-    static int64_t msec(int64_t time)
-    {
-        return _roundDivUp(time, 1000 * 1000);
-    }
-
-    int64_t msecsTo(PreciseTimer const &end) const
-    {
-        return _roundDivUp(end.mTime - this->mTime, 1000 * 1000);
-    }
-
-    int64_t usecsTo(PreciseTimer const &end) const
-    {
-        return _roundDivUp(end.mTime - this->mTime, 1000);
-    }
-
-    int64_t nsecsTo(PreciseTimer const &end) const
-    {
-        return end.mTime - this->mTime;
-    }
+    static  PreciseTimer currentTime()              { return CurrentETime(); }
 
 
-    int64_t usecsToNow() const                     { return isCorrect() ? usecsTo(currentTime()) : 0; }
-    int64_t nsecsToNow() const                     { return isCorrect() ? nsecsTo(currentTime()) : 0; }
-    int64_t msecsToNow() const                     { return isCorrect() ? msecsTo(currentTime()) : 0; }
-    int64_t usec() const                           { return mTime;                          }
-    int64_t msec() const                           { return msec(mTime);                    }
+    void    init()                                  { mTime = -1;            }
+    bool    isCorrect() const                       { return mTime != -1;    }
 
-    int operator-(PreciseTimer& other)             { return (int)msec(mTime - other.mTime);      }
-    int operator-(int& msecOther)                  { return (int)msec(mTime - msecOther * 1000); }
+    void    setTime(int64_t time)                   { mTime = time;          }
+
+    static int64_t msec(int64_t time)               { return _roundDivUp(time, 1000 * 1000);           }
+
+    int64_t msecsTo(PreciseTimer const &end) const  { return _roundDivUp(nsecsTo(end), 1000 * 1000);   }
+    int64_t usecsTo(PreciseTimer const &end) const  { return _roundDivUp(nsecsTo(end), 1000);          }
+    int64_t nsecsTo(PreciseTimer const &end) const  { return end.mTime - this->mTime;                  }
+
+    int64_t usecsToNow() const                      { return isCorrect() ? usecsTo(currentTime()) : 0; }
+    int64_t nsecsToNow() const                      { return isCorrect() ? nsecsTo(currentTime()) : 0; }
+    int64_t msecsToNow() const                      { return isCorrect() ? msecsTo(currentTime()) : 0; }
+    int64_t usec() const                            { return mTime;                                    }
+    int64_t msec() const                            { return msec(mTime);                              }
+
+    int operator-(PreciseTimer& other)              { return (int)msec(mTime - other.mTime);           }
+  //int operator-(int& msecOther)                   { return (int)msec(mTime - msecOther * 1000);      }
 
 private:
     /**

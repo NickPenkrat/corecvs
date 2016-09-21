@@ -4,10 +4,8 @@
  *
  * \ingroup cppcorefiles
  *
-
  *
  **/
-
 #if __cplusplus > 199711L
 #define CHRONO_CLOCK
 #endif
@@ -58,7 +56,7 @@ PreciseTimer PreciseTimer::CurrentETime()
     }
     LARGE_INTEGER time;
     QueryPerformanceCounter(&time);
-    T.setTime((time.QuadPart * 1000 * 1000 * 1000) / mFreq);
+    T.setTime(_roundDivUp(time.QuadPart * 1000 * 1000 * 1000, mFreq));
 #else
     struct timeval timeVal;
     gettimeofday(&timeVal, NULL);

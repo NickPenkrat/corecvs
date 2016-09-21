@@ -21,7 +21,6 @@
 #include "vector3d.h"
 #include "affine.h"
 #include "mathUtils.h"
-#include "preciseTimer.h"
 #include "eulerAngles.h"
 
 using namespace corecvs;

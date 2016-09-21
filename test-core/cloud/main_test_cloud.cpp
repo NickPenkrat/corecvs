@@ -14,7 +14,6 @@
 #include "global.h"
 
 #include "cloud.h"
-#include "preciseTimer.h"
 #include "ellipticalApproximation.h"
 #include "clustering3d.h"
 #include "buffer3d.h"
