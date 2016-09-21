@@ -388,9 +388,14 @@ struct ParallelDistortionRemoval
 						StatusTracker::CheckToCancel(job->processState);
 
                         auto &ob = observationsIterator[i];
-                        corecvs::RGB24Buffer source = job->LoadImage(ob.sourceFileName), dst;
-                        job->removeDistortion(source, dst, transform, cam.intrinsics.size[0], cam.intrinsics.size[1]);
-                        job->SaveImage(ob.undistortedFileName, dst);
+
+                        if (!ob.sourceFileName.empty() && !ob.undistortedFileName.empty())
+                        {
+                            corecvs::RGB24Buffer source = job->LoadImage(ob.sourceFileName);
+                            corecvs::RGB24Buffer dst;
+                            job->removeDistortion(source, dst, transform, cam.intrinsics.size[0], cam.intrinsics.size[1]);
+                            job->SaveImage(ob.undistortedFileName, dst);
+                        }
                     }
                 });
         }
@@ -427,6 +432,7 @@ void CalibrationJob::allRemoveDistortionForPattern()
 
 void CalibrationJob::SaveImage(const std::string &path, corecvs::RGB24Buffer &img)
 {
+    CORE_ASSERT_FALSE_S(path.empty());
     QTFileLoader().save(path, &img, 100);
 }
 
