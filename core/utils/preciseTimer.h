@@ -20,7 +20,7 @@ namespace corecvs {
 class PreciseTimer
 {
 public:
-    PreciseTimer()                                  { init(); }
+    PreciseTimer()                                  { mTime = -1; }
 
     /**
      *   We should and want to use CurrentTime name.
@@ -34,11 +34,12 @@ public:
      **/
     static  PreciseTimer currentTime()              { return CurrentETime(); }
 
-
-    void    init()                                  { mTime = -1;            }
     bool    isCorrect() const                       { return mTime != -1;    }
 
     void    setTime(int64_t time)                   { mTime = time;          }
+
+    int64_t usec() const                            { return mTime;          }
+    int64_t msec() const                            { return msec(mTime);    }
 
     static int64_t msec(int64_t time)               { return _roundDivUp(time, 1000 * 1000);           }
 
@@ -49,11 +50,8 @@ public:
     int64_t usecsToNow() const                      { return isCorrect() ? usecsTo(currentTime()) : 0; }
     int64_t nsecsToNow() const                      { return isCorrect() ? nsecsTo(currentTime()) : 0; }
     int64_t msecsToNow() const                      { return isCorrect() ? msecsTo(currentTime()) : 0; }
-    int64_t usec() const                            { return mTime;                                    }
-    int64_t msec() const                            { return msec(mTime);                              }
 
-    int operator-(PreciseTimer& other)              { return (int)msec(mTime - other.mTime);           }
-  //int operator-(int& msecOther)                   { return (int)msec(mTime - msecOther * 1000);      }
+    int     operator-(PreciseTimer& other) const    { return (int)msec(mTime - other.mTime);           }
 
 private:
     /**
@@ -64,7 +62,7 @@ private:
     int64_t mTime;
 
 #ifdef WIN32
-    static int64_t mFreq;
+    static double mFreq;
 #endif
 };
 
