@@ -382,59 +382,61 @@ void corecvs::PhotostationPlacer::appendTracks(const std::vector<int> &inlierIds
 void corecvs::PhotostationPlacer::updateTrackables()
 {
     std::cout << "Starting speculative P3P update" << std::endl;
-    activeInlierCount.clear();
+    scene->activeInlierCount.clear();
 
     getErrorSummaryAll();
     Vector3dd shift;
-    auto dt = scene->center(shift, true);
+    auto dt = scene->center(shift);
     getErrorSummaryAll();
 
     for (size_t i = 0; i < (size_t)speculativity() && i < scene->placingQueue.size(); ++i)
     {
         auto cf = scene->placingQueue[i];
-        estimate3D(cf, shift);
+        estimate3D(cf);
     }
 }
 
-std::pair<int, double> corecvs::PhotostationPlacer::estimate3D(corecvs::CameraFixture *A, corecvs::Vector3dd &currentT)
+std::pair<int, double> corecvs::PhotostationPlacer::estimate3D(corecvs::CameraFixture *A)
 {
     std::cout << "\tRunning with " << A->name << " ";
-    if (activeEstimates.count(A))
+    A->location.shift = corecvs::Vector3dd(0, 0, 0);
+    A->location.rotor = corecvs::Quaternion(0, 0, 0, 1);
+    if (scene->activeEstimates.count(A))
     {
-        std::cout << "already have estimate: " << activeEstimates[A].shift << activeEstimates[A].rotor;
-        activeEstimates[A].shift += currentT;
+        std::cout << "already have estimate: " << scene->activeEstimates[A].shift << scene->activeEstimates[A].rotor;
     }
     std::cout << std::endl;
 
     auto hypos = scene->getPossibleTracks(A);
     std::cout << "PRE-CTR" << std::endl;
-    corecvs::AbsoluteNonCentralRansacSolver solver = activeEstimates.count(A) ? corecvs::AbsoluteNonCentralRansacSolver(A, hypos, activeEstimates[A]) : corecvs::AbsoluteNonCentralRansacSolver(A, hypos);
+    corecvs::AbsoluteNonCentralRansacSolver solver = scene->activeEstimates.count(A) ? corecvs::AbsoluteNonCentralRansacSolver(A, hypos, scene->activeEstimates[A]) : corecvs::AbsoluteNonCentralRansacSolver(A, hypos);
     solver.maxIterations = maxP3PIterations();
     solver.reprojectionInlierThreshold = inlierP3PThreshold();
     solver.gamma = gammaP3P();
     std::cout << "POST-CTR" << std::endl;
 
     solver.forcePosition = scene->initializationData[A].initializationType == FixtureInitializationType::GPS && scene->is3DAligned;
-    solver.forcedPosition = scene->initializationData[A].initData.shift + currentT;
+    solver.forcedPosition = scene->initializationData[A].initData.shift;
     if (!scene->is3DAligned && scene->initializationData[A].initializationType == FixtureInitializationType::GPS)
     {
         solver.forceScale = true;
-        solver.forcedScale = !(currentT + scene->initializationData[A].initData.shift);
+        solver.forcedScale = !(scene->initializationData[A].initData.shift);
     }
 
     solver.run();
     solver.runInliersRE();
-    activeEstimates[A] = solver.getBestHypothesis();
-    activeEstimates[A].shift -= currentT;
+    scene->activeEstimates[A] = solver.getBestHypothesis();
+
     if (solver.forcePosition)
-        activeEstimates[A].shift = scene->initializationData[A].initData.shift;
-    activeInlierCount[A] = solver.getInliers();
-    A->location = activeEstimates[A];
-    std::cout << "Final estimate: " << activeEstimates[A].shift << activeEstimates[A].rotor << std::endl;
-    return std::make_pair((int)activeInlierCount[A].size(), 1.0 - solver.gamma);
+        scene->activeEstimates[A].shift = scene->initializationData[A].initData.shift;
+
+    scene->activeInlierCount[A] = solver.getInliers().size();
+    A->location = scene->activeEstimates[A];
+    std::cout << "Final estimate: " << A->location.shift << A->location.rotor << std::endl;
+    return std::make_pair(scene->activeInlierCount[A], 1.0 - solver.gamma);
 }
 
-std::pair<int, double> corecvs::PhotostationPlacer::estimate2D(corecvs::CameraFixture *A, corecvs::Vector3dd &currentT)
+std::pair<int, double> corecvs::PhotostationPlacer::estimate2D(corecvs::CameraFixture *A)
 {
     auto matches = scene->getFixtureMatches(scene->placedFixtures, A);
 
@@ -477,18 +479,17 @@ std::pair<int, double> corecvs::PhotostationPlacer::estimate2D(corecvs::CameraFi
         if (scene->is3DAligned)
         {
             solver.restrictions = decltype(solver.restrictions)::SHIFT;
-            solver.shift = scene->initializationData[A].initData.shift + currentT;
+            solver.shift = scene->initializationData[A].initData.shift;
         }
         else
         {
             solver.restrictions = decltype(solver.restrictions)::SCALE;
-            solver.scale = !(scene->initializationData[A].initData.shift + currentT);
+            solver.scale = !scene->initializationData[A].initData.shift;
         }
     }
-    if (activeP6PEstimates.count(A))
+    if (scene->activeP6PEstimates.count(A))
     {
-        auto h = activeP6PEstimates[A];
-        h.shift += currentT;
+        auto h = scene->activeP6PEstimates[A];
         solver.makeTry(h);
     }
     solver.run();
@@ -503,8 +504,7 @@ std::pair<int, double> corecvs::PhotostationPlacer::estimate2D(corecvs::CameraFi
     for (auto &B: scene->placedFixtures)
         std::cout << B->name;
     std::cout << "<>" << A->name << " in P6P sense: inliers: " << solver.getInliersCount() << " P: " << solver.getGamma() << std::endl;
-    activeP6PEstimates[A].rotor = best.rotor;
-    activeP6PEstimates[A].shift = best.shift - currentT;
+    scene->activeP6PEstimates[A] = best;
     return std::make_pair((int)solver.getInliersCount(), 1.0 - solver.getGamma());
 }
 
@@ -534,9 +534,9 @@ bool corecvs::PhotostationPlacer::appendAny()
     bool appended = false;
     for (auto& fx: matches)
     {
-        auto res = estimate3D(fx.first, shift);
+        auto res = estimate3D(fx.first);
         if (res.first < shutUpAndAppendMyFixtureInlierThreshold() || res.second < shutUpAndAppendMyFixtureSuccessProbThreshold())
-            res = estimate2D(fx.first, shift);
+            res = estimate2D(fx.first);
         if (res.first < shutUpAndAppendMyFixtureInlierThreshold() || res.second < shutUpAndAppendMyFixtureSuccessProbThreshold())
             continue;
         scene->placedFixtures.push_back(fx.first);
@@ -574,8 +574,8 @@ bool corecvs::PhotostationPlacer::append2D()
 
     for (auto& p: matches)
     {
-        auto res = estimate2D(p.first, shift);
-        log.emplace_back(res.first, res.second, p.first, activeP6PEstimates[p.first]);
+        auto res = estimate2D(p.first);
+        log.emplace_back(res.first, res.second, p.first, scene->activeP6PEstimates[p.first]);
     }
     std::sort(log.begin(), log.end(), [](const decltype(log)::value_type &a, const decltype(log)::value_type &b) { return std::get<0>(a) == std::get<0>(b) ? std::get<1>(a) > std::get<1>(b) : std::get<0>(a) > std::get<0>(b); });
 
@@ -588,7 +588,6 @@ bool corecvs::PhotostationPlacer::append2D()
     for (auto &A: scene->placedFixtures)
         std::cout << A->name;
     std::cout << "::" << psB->name << " " << best.shift << " " << best.rotor << std::endl;
-    best.shift += shift;
     psB->location = best;
     std::cout << std::get<0>(log[0]) << " inliers" << std::endl;
 
@@ -904,19 +903,19 @@ bool corecvs::PhotostationPlacer::append3D()
     // add one that has the biggest count of inliers
     updateTrackables();
 
-    size_t maxInliers = 0;
+    int maxInliers = 0;
     CameraFixture *psApp;
-    for (auto&cfp: activeInlierCount)
+    for (auto&cfp: scene->activeInlierCount)
     {
-        std::cout << cfp.first->name << " : " << cfp.second.size() << std::endl;
-        if (cfp.second.size() > maxInliers)
+        std::cout << cfp.first->name << " : " << cfp.second << std::endl;
+        if (cfp.second > maxInliers)
         {
-            maxInliers = cfp.second.size();
+            maxInliers = cfp.second;
             psApp = cfp.first;
         }
     }
 
-    if ((int)maxInliers < minimalInlierCount())
+    if (maxInliers < minimalInlierCount())
         return false;
 
     std::cout << "Choosing to append " << psApp->name << " because it had " << maxInliers << " inliers" << std::endl;
@@ -934,7 +933,7 @@ bool corecvs::PhotostationPlacer::append3D()
         default:
         case FixtureInitializationType::GPS:
         {
-            auto hypo = activeEstimates[psApp];
+            auto hypo = scene->activeEstimates[psApp];
             psApp->location.rotor = hypo.rotor;
             std::cout << "!!!!" << hypo.rotor << "!!!!" << std::endl;
             psApp->location.shift = !scene->is3DAligned ? hypo.shift : scene->initializationData[psApp].initData.shift;

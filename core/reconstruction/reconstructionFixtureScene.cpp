@@ -24,16 +24,16 @@ ReconstructionFixtureScene::Detransformer::~Detransformer()
     if (scene)
     {
         std::cout << "\x1b[32m";
-        scene->transform(transform, false, scale);
+        scene->transform(transform, transformGt, false, scale);
         std::cout << "\x1b[0m";
     }
 }
 
-ReconstructionFixtureScene::Detransformer::Detransformer(ReconstructionFixtureScene *scene, const Affine3DQ &transform, const double scale) : scene(scene), transform(transform), scale(scale)
+ReconstructionFixtureScene::Detransformer::Detransformer(ReconstructionFixtureScene *scene, const Affine3DQ &transform, const double scale, bool transformGt) : scene(scene), transform(transform), scale(scale), transformGt(transformGt)
 {
 }
 
-ReconstructionFixtureScene::Detransformer::Detransformer(ReconstructionFixtureScene::Detransformer &&rhs) : scene(rhs.scene), transform(rhs.transform), scale(rhs.scale)
+ReconstructionFixtureScene::Detransformer::Detransformer(ReconstructionFixtureScene::Detransformer &&rhs) : scene(rhs.scene), transform(rhs.transform), scale(rhs.scale), transformGt(rhs.transformGt)
 {
     rhs.scene = nullptr;
 }
@@ -43,10 +43,11 @@ ReconstructionFixtureScene::Detransformer& ReconstructionFixtureScene::Detransfo
     std::swap(scene, rhs.scene);
     std::swap(scale, rhs.scale);
     std::swap(transform, rhs.transform);
+    std::swap(transformGt, rhs.transformGt);
     return *this;
 }
 
-ReconstructionFixtureScene::Detransformer ReconstructionFixtureScene::center(Vector3dd &shift, bool provideDetransformer)
+ReconstructionFixtureScene::Detransformer ReconstructionFixtureScene::center(Vector3dd &shift, bool transformGt, bool provideDetransformer)
 {
     Vector3dd mean(0, 0, 0);
     for (auto& ppp: placedFixtures)
@@ -55,10 +56,10 @@ ReconstructionFixtureScene::Detransformer ReconstructionFixtureScene::center(Vec
     Quaternion r(0, 0, 0, 1);
     Affine3DQ tf(r, -mean);
     shift = -mean;
-    return transform(tf, provideDetransformer, 1.0);
+    return transform(tf, transformGt, provideDetransformer, 1.0);
 }
 
-ReconstructionFixtureScene::Detransformer ReconstructionFixtureScene::transform(const corecvs::Affine3DQ &transform, bool provideDetransformer, double scale)
+ReconstructionFixtureScene::Detransformer ReconstructionFixtureScene::transform(const corecvs::Affine3DQ &transform, bool transformGt, bool provideDetransformer, double scale)
 {
     if (provideDetransformer)
         std::cout << "\x1b[31m";
@@ -69,6 +70,23 @@ ReconstructionFixtureScene::Detransformer ReconstructionFixtureScene::transform(
 
     std::cout << "RFS::transform::parent" << std::endl;
     FixtureScene::transform(transform, scale);
+    std::cout << "RFS::transform::active_estimates" << std::endl;
+    for (auto &o : activeEstimates)
+    {
+        o.second.shift = scale * (transform * o.second.shift);
+        o.second.rotor = transform.rotor ^ o.second.rotor;
+    }
+    for (auto &o : activeP6PEstimates)
+    {
+        o.second.shift = scale * (transform * o.second.shift);
+        o.second.rotor = transform.rotor ^ o.second.rotor;
+    }
+    if (transformGt)
+        for (auto &o : initializationData)
+        {
+            o.second.initData.shift = scale * (transform * o.second.initData.shift);
+            o.second.initData.rotor = transform.rotor ^ o.second.initData.rotor;
+        }
     std::cout << "RFS::transform::points" << std::endl;
     corecvs::parallelable_for(0, (int)trackedFeatures.size(), [&](const corecvs::BlockedRange<int> &r) { for (int i = r.begin(); i < r.end(); ++i)
             { auto& pt = trackedFeatures[i];
@@ -82,7 +100,7 @@ ReconstructionFixtureScene::Detransformer ReconstructionFixtureScene::transform(
     std::cout << "RFS::transform::finished" << std::endl;
     if (provideDetransformer)
         std::cout << "\x1b[0m";
-    return provideDetransformer ? Detransformer(this, transform.inverted(), 1.0 / scale) : Detransformer();
+    return provideDetransformer ? Detransformer(this, transform.inverted(), 1.0 / scale, transformGt) : Detransformer();
 }
 
 void ReconstructionFixtureScene::printPosStats()
