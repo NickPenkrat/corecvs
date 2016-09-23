@@ -61,15 +61,12 @@ public:
     // Tries to append f using P3P (with 3d<->2d correspondences
     bool appendP3P(CameraFixture* f);
     bool appendAny();
-    std::pair<int, double> estimate2D(corecvs::CameraFixture *A, Vector3dd &shift);
-    std::pair<int, double> estimate3D(corecvs::CameraFixture *A, Vector3dd &shift);
+    std::pair<int, double> estimate2D(corecvs::CameraFixture *A);
+    std::pair<int, double> estimate3D(corecvs::CameraFixture *A);
 
     std::function<void()> postAppendHook = [](){};
 protected:
     double nextFullBA = 0.0;
-    std::unordered_map<corecvs::CameraFixture*, corecvs::Affine3DQ> activeEstimates;
-    std::unordered_map<corecvs::CameraFixture*, std::vector<int>> activeInlierCount;
-    std::unordered_map<corecvs::CameraFixture*, corecvs::Affine3DQ> activeP6PEstimates;
     void updateTrackables();
 
 #ifdef WITH_TBB

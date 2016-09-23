@@ -196,6 +196,9 @@ public:
     // ==================================================================================
     umwpp<umwppv<std::tuple<int, int, double>>> matchesCopy;
     std::unordered_map<std::pair<WPP, WPP>, std::tuple<corecvs::EssentialDecomposition, double, bool>> essentialCache;
+    std::unordered_map<corecvs::CameraFixture*, corecvs::Affine3DQ> activeEstimates;
+    std::unordered_map<corecvs::CameraFixture*, int> activeInlierCount;
+    std::unordered_map<corecvs::CameraFixture*, corecvs::Affine3DQ> activeP6PEstimates;
 
     bool validateMatches();
     bool validateTracks();
@@ -213,7 +216,7 @@ public:
     {
     public:
         ~Detransformer();
-        Detransformer(ReconstructionFixtureScene *scene = nullptr, const Affine3DQ &transform = Affine3DQ(), const double scale = 1.0);
+        Detransformer(ReconstructionFixtureScene *scene = nullptr, const Affine3DQ &transform = Affine3DQ(), const double scale = 1.0, bool transformGt = false);
         Detransformer(Detransformer &&rhs);
         Detransformer& operator=(Detransformer &&rhs);
     private:
@@ -222,9 +225,10 @@ public:
         ReconstructionFixtureScene *scene;
         Affine3DQ transform;
         double scale;
+        bool transformGt;
     };
-    Detransformer transform(const corecvs::Affine3DQ &transform, bool provideDetransformer = false, const double scale = 1.0);
-    Detransformer center(Vector3dd &shift, bool provideDetransformer = false);
+    Detransformer transform(const corecvs::Affine3DQ &transform, bool transformGt = true, bool provideDetransformer = false, const double scale = 1.0);
+    Detransformer center(Vector3dd &shift, bool transformGt = true, bool provideDetransformer = false);
 
     friend std::ostream& operator<< (std::ostream& os, ReconstructionFixtureScene &rfs)
     {
