@@ -118,6 +118,19 @@ namespace
         return info.fileName();
     }
 
+    QString getFileNameIfExist(const QString& fileName, const QString& relativePath)
+    {
+        std::cout << fileName.toStdString() << std::endl;
+        QFileInfo info(fileName);
+        if(info.exists())
+            return fileName;
+        std::cout << QString(relativePath + PATH_SEPARATOR + info.fileName()).toStdString() << std::endl;
+        QFileInfo infoNew(relativePath + PATH_SEPARATOR + info.fileName());
+        if(infoNew.exists())
+            return infoNew.absoluteFilePath();
+        return "";
+    }
+
     class LastInOutDirsKeeper
     {
     public:
