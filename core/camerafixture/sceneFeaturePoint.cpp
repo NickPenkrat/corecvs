@@ -26,7 +26,12 @@ int SceneObservation::ensureDistorted(bool distorted)
         return false;
 
     //cout << "SceneObservation::ensureDistorted: convert to " << (distorted ? "dist" : "undist") << " coords" << endl;
-    observation = getDistorted(onDistorted = distorted);
+    //auto obs = observation;
+
+    observation = getDistorted(distorted);
+    onDistorted = distorted;                        // this must be after the function above call!
+
+    //cout << "SceneObservation::ensureDistorted(" << (distorted ? "dist" : "undist") << ") " << obs << " => " << observation << endl;
     return true;
 }
 
@@ -111,6 +116,8 @@ Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask)
     {
         for (auto& obs : observations)
         {
+            //cout << "SceneFeaturePoint::triangulate(" << name << ") distorted:" << obs.second.onDistorted << " " << obs.second.observation << endl;
+
             CORE_ASSERT_TRUE_S(obs.second.cameraFixture != NULL);
             if (!mask || (ptr < mask->size() && (*mask)[ptr] == id))
             {
