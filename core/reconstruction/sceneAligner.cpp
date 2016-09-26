@@ -194,7 +194,7 @@ corecvs::Vector3dd corecvs::SceneAligner::ShiftFromRotation(const corecvs::Quate
 void corecvs::SceneAligner::ApplyTransformation(ReconstructionFixtureScene* scene, const corecvs::Affine3DQ &transform, const double scale)
 {
     scene->printPosStats();
-    scene->transform(transform, scale);
+    scene->transform(transform, false, false, scale);
     scene->printPosStats();
     //TODO: Check how all stuff should change with scale ~= 0.0
     for (auto& cf: scene->placedFixtures)

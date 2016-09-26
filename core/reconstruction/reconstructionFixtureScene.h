@@ -60,24 +60,28 @@ struct Combination
         ++(*this);
         return ret;
     }
-    std::vector<int> operator*() const
+    const std::vector<int>& operator*() const
     {
-        if (inverse)
+        if (!inverse)
+            return ids;
+        scratchpad.resize(N - M);
+        int last = -1;
+        int id = 0;
+        for (int i = 0; i < M; ++i)
         {
-            std::vector<int> res;
-            int ptr = 0;
-            for (int i = 0; i < N; ++i)
-                if (ptr == M || ids[ptr] > i)
-                    res.push_back(i);
-                else
-                    ++ptr;
-            return res;
+            for (int j = last + 1;  j < ids[i]; ++j)
+                scratchpad[id++] = j;
+            last = ids[i];
         }
-        return ids;
+        for (int j = last + 1; j < N; ++j)
+            scratchpad[id++] = j;
+        CORE_ASSERT_TRUE_S(id == N - M);
+        return scratchpad;
     }
     int M, N;
     bool inverse;
     std::vector<int> ids;
+    mutable std::vector<int> scratchpad;
 };
 
 struct CombinationRange
@@ -192,6 +196,9 @@ public:
     // ==================================================================================
     umwpp<umwppv<std::tuple<int, int, double>>> matchesCopy;
     std::unordered_map<std::pair<WPP, WPP>, std::tuple<corecvs::EssentialDecomposition, double, bool>> essentialCache;
+    std::unordered_map<corecvs::CameraFixture*, corecvs::Affine3DQ> activeEstimates;
+    std::unordered_map<corecvs::CameraFixture*, int> activeInlierCount;
+    std::unordered_map<corecvs::CameraFixture*, corecvs::Affine3DQ> activeP6PEstimates;
 
     bool validateMatches();
     bool validateTracks();
@@ -209,7 +216,7 @@ public:
     {
     public:
         ~Detransformer();
-        Detransformer(ReconstructionFixtureScene *scene = nullptr, const Affine3DQ &transform = Affine3DQ(), const double scale = 1.0);
+        Detransformer(ReconstructionFixtureScene *scene = nullptr, const Affine3DQ &transform = Affine3DQ(), const double scale = 1.0, bool transformGt = false);
         Detransformer(Detransformer &&rhs);
         Detransformer& operator=(Detransformer &&rhs);
     private:
@@ -218,9 +225,10 @@ public:
         ReconstructionFixtureScene *scene;
         Affine3DQ transform;
         double scale;
+        bool transformGt;
     };
-    Detransformer transform(const corecvs::Affine3DQ &transform, bool provideDetransformer = false, const double scale = 1.0);
-    Detransformer center(Vector3dd &shift, bool provideDetransformer = false);
+    Detransformer transform(const corecvs::Affine3DQ &transform, bool transformGt = true, bool provideDetransformer = false, const double scale = 1.0);
+    Detransformer center(Vector3dd &shift, bool transformGt = true, bool provideDetransformer = false);
 
     friend std::ostream& operator<< (std::ostream& os, ReconstructionFixtureScene &rfs)
     {

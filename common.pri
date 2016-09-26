@@ -524,6 +524,7 @@ with_cusparse {
 	    }
             LIBS += -lcusparse -lcudart -lcuda
             DEFINES += WITH_CUSPARSE
+            DEFINES += WITH_CUDA
             !build_pass: message(using <$$CUDA_PATH>)
         } else {
             error("cuSPARSE header file not found");
