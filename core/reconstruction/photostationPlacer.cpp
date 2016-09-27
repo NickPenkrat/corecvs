@@ -381,7 +381,7 @@ void corecvs::PhotostationPlacer::updateTrackables()
 
     getErrorSummaryAll();
     Vector3dd shift;
-    auto dt = scene->center(shift);
+    auto dt = scene->center(shift, true, true);
     getErrorSummaryAll();
 
     for (size_t i = 0; i < (size_t)speculativity() && i < scene->placingQueue.size(); ++i)
@@ -507,7 +507,7 @@ bool corecvs::PhotostationPlacer::appendAny()
 {
     std::cout << "ENTERING ANYP" << std::endl;
     corecvs::Vector3dd shift;
-    auto dt = scene->center(shift, true);
+    auto dt = scene->center(shift, true, true);
 
     std::vector<std::pair<corecvs::CameraFixture*, int>> matchCount;
 
@@ -554,7 +554,7 @@ bool corecvs::PhotostationPlacer::append2D()
     // 4. Return true if solution meets inlier threshold and gives enough confidence
     std::cout << "ENTERING P6P" << std::endl;
     corecvs::Vector3dd shift;
-    auto dt = scene->center(shift, true);
+    auto dt = scene->center(shift, true, true);
 
     std::vector<std::pair<corecvs::CameraFixture*, decltype(scene->getFixtureMatches({}, 0))>> matches;
     for (size_t iii = 0; iii < (size_t)speculativity() && iii < scene->placingQueue.size(); ++iii)
