@@ -177,8 +177,8 @@ public:
     int getDistinctCameraCount() const;
     std::vector<FixtureCamera*> getDistinctCameras() const;
 
-    void printMatchStats() const;
-    void printMatchStats(const umwpp<umwppv<std::tuple<int, int, double>>> &m);
+    //void printMatchStats() const;
+    //void printMatchStats(const umwpp<umwppv<std::tuple<int, int, double>>> &m);
 
     // ==================================================================================
     // SERIALIZEABLE STATE
@@ -194,10 +194,10 @@ public:
     bool is3DAligned = false;
     ReconstructionState state = ReconstructionState::NONE;
     // ==================================================================================
-    umwpp<umwppv<std::tuple<int, int, double>>> matchesCopy;
+    umwpp<umwppv<std::tuple<int, int, double>>>                     matchesCopy;
     std::unordered_map<std::pair<WPP, WPP>, std::tuple<corecvs::EssentialDecomposition, double, bool>> essentialCache;
     std::unordered_map<corecvs::CameraFixture*, corecvs::Affine3DQ> activeEstimates;
-    std::unordered_map<corecvs::CameraFixture*, int> activeInlierCount;
+    std::unordered_map<corecvs::CameraFixture*, int>                activeInlierCount;
     std::unordered_map<corecvs::CameraFixture*, corecvs::Affine3DQ> activeP6PEstimates;
 
     bool validateMatches();

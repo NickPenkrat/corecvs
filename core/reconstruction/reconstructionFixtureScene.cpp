@@ -29,11 +29,16 @@ ReconstructionFixtureScene::Detransformer::~Detransformer()
     }
 }
 
-ReconstructionFixtureScene::Detransformer::Detransformer(ReconstructionFixtureScene *scene, const Affine3DQ &transform, const double scale, bool transformGt) : scene(scene), transform(transform), scale(scale), transformGt(transformGt)
+ReconstructionFixtureScene::Detransformer::Detransformer(ReconstructionFixtureScene *scene
+    , const Affine3DQ &transform
+    , const double scale
+    , bool transformGt)
+    : scene(scene), transform(transform), scale(scale), transformGt(transformGt)
 {
 }
 
-ReconstructionFixtureScene::Detransformer::Detransformer(ReconstructionFixtureScene::Detransformer &&rhs) : scene(rhs.scene), transform(rhs.transform), scale(rhs.scale), transformGt(rhs.transformGt)
+ReconstructionFixtureScene::Detransformer::Detransformer(ReconstructionFixtureScene::Detransformer &&rhs)
+    : scene(rhs.scene), transform(rhs.transform), scale(rhs.scale), transformGt(rhs.transformGt)
 {
     rhs.scene = nullptr;
 }
