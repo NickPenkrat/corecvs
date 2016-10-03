@@ -713,7 +713,6 @@ void corecvs::PhotostationPlacer::initialize()
             std::cout << "Seems that " << A->name << "<>" << B->name << " is a bad initialization pair: inliers: " << solver.getInliersCount() << " P: " << solver.getGamma() << std::endl;
             continue;
         }
-        initialized = true;
 
         scene->placedFixtures.push_back(psA);
         scene->placedFixtures.push_back(psB);
@@ -734,6 +733,7 @@ void corecvs::PhotostationPlacer::initialize()
         std::remove(scene->placingQueue.begin(), scene->placingQueue.end(), psA);
         std::remove(scene->placingQueue.begin(), scene->placingQueue.end(), psB);
         scene->placingQueue.resize(scene->placingQueue.size() - 2);
+        initialized = true;
         break;
     }
 
