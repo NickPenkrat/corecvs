@@ -4,6 +4,9 @@
 # output parameter: $$COREBINDIR - path to the output|used core library
 #
 
+!contains(CORECVS_INCLUDED, "core.pri") {
+CORECVS_INCLUDED +=  core.pri
+
 COREDIR=$$PWD
 
 #
@@ -116,4 +119,7 @@ with_unorthodox {
     }
     DEFINES += CORE_UNSAFE_DEPS
 }
+
+} # !contains(CORECVS_INCLUDED, "core.pri")
+
 
