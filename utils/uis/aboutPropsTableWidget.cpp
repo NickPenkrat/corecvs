@@ -7,6 +7,10 @@
 #include <tbb/tbb_stddef.h>
 #endif
 
+#ifdef WITH_MKL
+#include <mkl.h>
+#endif
+
 AboutPropsTableWidget::AboutPropsTableWidget(QWidget *parent) : QTableWidget(parent)
 {   
     if (this->columnCount() < 2)
@@ -74,7 +78,10 @@ AboutPropsTableWidget::AboutPropsTableWidget(QWidget *parent) : QTableWidget(par
 
 #ifdef WITH_BLAS
 #ifdef WITH_MKL
-    addParameter("BLAS Support", "On (Intel MKL)");
+    QString mklVer = QString("On (Intel MKL %1.%2.%3 %4)")
+        .arg(__INTEL_MKL__).arg(__INTEL_MKL_MINOR__).arg(__INTEL_MKL_UPDATE__)
+        .arg(__INTEL_MKL_BUILD_DATE);
+    addParameter("BLAS Support", mklVer);
 #endif
 #ifdef WITH_OPENBLAS
     addParameter("BLAS Support", "On (OpenBLAS)");
