@@ -341,6 +341,7 @@ void corecvs::RelativeNonCentralRansacSolver::fit(double distanceGuess)
     FunctorCost cost(this);
     FunctorCostNorm norm(this);
 
+    lm.fastFix4Placer = true;
     lm.f = &cost;
     lm.normalisation = &norm;
     lm.maxIterations = 10000;

@@ -51,6 +51,7 @@ void corecvs::AbsoluteNonCentralRansacSolver::runInliersRE()
     lm.normalisation = &norm;
     lm.maxIterations = fitIterations;
     lm.trace = false;//true;
+    lm.fastFix4Placer = true;
 
     ps->location = bestHypothesis;
     std::vector<double> in(forcePosition ? 4 : 7), out(bestInlierCnt * 2);

@@ -308,6 +308,7 @@ void corecvs::PhotostationPlacer::fit(const ReconstructionFunctorOptimizationTyp
     lm.normalisation = &orientNorm;
     lm.maxIterations = iterations;
     lm.trace = true;
+    lm.fastFix4Placer = true;
     lm.state = scene->processState;
     std::vector<double> input(orient.getInputNum());
     std::vector<double> out(orient.getOutputNum());

@@ -181,6 +181,7 @@ void corecvs::ReconstructionFunctor::alternatingMinimization(int steps)
                 corecvs::LevenbergMarquardt lm(steps);
                 lm.f = &pf;
                 lm.traceProgress = false;
+                lm.fastFix4Placer = true;
                 std::vector<double> inn(&pt.reprojectedPosition[0], &pt.reprojectedPosition[3]), outt(out);
                 auto res = lm.fit(inn, outt);
                 for (int ii = 0; ii < 3; ++ii)
