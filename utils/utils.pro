@@ -93,7 +93,6 @@ HEADERS += \
     distortioncorrector/lensDistortionModelParametersControlWidget.h \
     distortioncorrector/calibrationFeaturesWidget.h \
     os/UsbBusResetter.h \
-    photostationcalibration/calibrationJob.h \
     uis/cloudview/scene3dTreeView.h \
     tablecontrol/rotaryTableControlWidget.h \
     tablecontrol/rotaryTableMeshModel.h \
@@ -174,7 +173,6 @@ SOURCES += \
     distortioncorrector/lensDistortionModelParametersControlWidget.cpp \
     distortioncorrector/calibrationFeaturesWidget.cpp \
     os/UsbBusResetter.cpp \
-    photostationcalibration/calibrationJob.cpp \
     uis/cloudview/scene3dTreeView.cpp \
     tablecontrol/rotaryTableControlWidget.cpp \
     tablecontrol/rotaryTableMeshModel.cpp \
