@@ -67,6 +67,24 @@ struct ASTRenderDec {
 
 };
 
+class ASTNodePayload {
+public:
+    virtual ~ASTNodePayload() {}
+};
+
+/**
+ *   This payload is an essential part of ASTNode that stores arbitrary function
+ *
+ *   This class is resposible for out of tree operations with function
+ **/
+class ASTNodeFunctionPayload : public ASTNodePayload {
+public:
+   /**/
+    virtual void f(double in[], double out[]) = 0;
+    virtual std::string getCCode();
+    virtual ASTNodeFunctionPayload *derivative();
+};
+
 /**
  *  Internal data structure for ASTTree - it records all operations with ASTNode.
  *
@@ -105,7 +123,9 @@ public:
         OPERATOR_POW,
         /**/
         OPERATOR_SIN,
-        OPERATOR_COS,
+        OPERATOR_COS,        
+        /**/
+        OPERATOR_FUNCTION,
 
         OPERATOR_LAST
     };
@@ -127,6 +147,8 @@ public:
             /**/
              case OPERATOR_SIN : return "sin"; break ;
              case OPERATOR_COS : return "cos"; break ;
+
+             case OPERATOR_FUNCTION : return "f()"; break ;
 
              case OPERATOR_LAST : return "R"; break ;
         }
@@ -150,6 +172,8 @@ public:
             /**/
              case OPERATOR_SIN : return 30; break ;
              case OPERATOR_COS : return 30; break ;
+            /**/
+             case OPERATOR_FUNCTION : return 40; break ;
 
              case OPERATOR_LAST : return 0; break ;
         }
@@ -159,18 +183,16 @@ public:
 
 
     ASTNodeInt(/* Context *_owner,*/ Operator _op, ASTNodeInt *_left = NULL, ASTNodeInt *_right = NULL) :
-        op   (_op),
-        left (_left),
-        right(_right)
+        op   (_op)
     {
         _init();
+        children.push_back(_left);
+        children.push_back(_right);
     }
 
     explicit ASTNodeInt(double _value) :
         op   (OPREATOR_NUM),
-        val  (_value),
-        left (NULL),
-        right(NULL)
+        val  (_value)
     {
         _init();
     }
@@ -178,9 +200,7 @@ public:
     explicit ASTNodeInt(const char *_name) :
         op   (OPREATOR_ID),
         val  (0),
-        name (_name),
-        left (NULL),
-        right(NULL)
+        name (_name)
     {
         _init();
     }
@@ -203,13 +223,17 @@ public:
     double val;
     std::string name;
 
-    ASTNodeInt *left  = NULL;
-    ASTNodeInt *right = NULL;
+    std::vector<ASTNodeInt *> children;
 
+    ASTNodeInt *left () {return children[0];}
+    ASTNodeInt *right() {return children[1];}
+
+
+public:
     /* We can unite the fields below */
     uint64_t hash = 0;
     uint32_t height = 0;
-    //void *payload = NULL;
+    ASTNodePayload *payload = NULL;
 
     /* Common subexpresstion related variables. Could be moved to payload */
     int cseCount = 0;
@@ -236,7 +260,6 @@ public:
     void rehash();
     void cseR(std::unordered_map<uint64_t, ASTNodeInt *> &cse);
 
-
     size_t memoryFootprint();
     void print();
     void getVars(std::vector<std::string> &result);
@@ -248,6 +271,7 @@ public:
     /*unsafe stuff you can destroy subtree of an another tree by accident*/
     static void deleteSubtree(ASTNodeInt *tree);
     void deleteChildren();
+
 
 };
 

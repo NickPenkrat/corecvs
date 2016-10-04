@@ -31,7 +31,7 @@ void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, 
     int N = (int)corners.size();
     int bs = std::max(1, N / 128);
 
-    stats->startInterval();
+    Statistics::startInterval(stats);
 
     boards = corecvs::parallelable_reduce(0, N, bs,
         std::vector<RectangularGridPattern>(),
@@ -57,7 +57,7 @@ void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, 
             return res;
         });
 
-    stats->resetInterval("Board Expander");
+    Statistics::resetInterval(stats, "Board Expander");
 
     boards_.clear();
     std::sort(boards.begin(), boards.end(), [](const RectangularGridPattern &a, const RectangularGridPattern &b) { return a.score < b.score; });
@@ -75,7 +75,7 @@ void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, 
         boards_.emplace_back(std::move(board));
     }
 
-    stats->resetInterval("Board Outputing");
+    Statistics::resetInterval(stats, "Board Outputing");
 }
 
 bool ChessBoardAssembler::acceptBoard(const RectangularGridPattern &board)

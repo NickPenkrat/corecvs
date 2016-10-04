@@ -83,11 +83,11 @@ void ASTNodeInt::codeGenCpp(int ident, ASTRenderDec &identSym)
     if (op > OPERATOR_BINARY && op <= OPERATOR_BINARY_LAST)
     {
         int currentPrior = getPriority(op);
-        int leftPrior = getPriority(left->op);
+        int leftPrior = getPriority(left()->op);
 
         if (currentPrior >= leftPrior)
             output << "(" << identSym.lbr;
-        left->codeGenCpp(ident + 1, identSym);
+        left()->codeGenCpp(ident + 1, identSym);
         if (currentPrior >= leftPrior)
             output << ")" << identSym.lbr;
 
@@ -104,11 +104,11 @@ void ASTNodeInt::codeGenCpp(int ident, ASTRenderDec &identSym)
             default           : output << " UNSUPPORTED " ; break;
         }
 
-        int rightPrior = getPriority(right->op);
+        int rightPrior = getPriority(right()->op);
         if (currentPrior >= rightPrior)
             output << "(" << identSym.lbr;
         //output <<  identSym.lbr;
-        right->codeGenCpp(ident + 1, identSym);
+        right()->codeGenCpp(ident + 1, identSym);
         if (currentPrior >= rightPrior)
             output << ")" << identSym.lbr;
 
@@ -123,9 +123,9 @@ void ASTNodeInt::codeGenCpp(int ident, ASTRenderDec &identSym)
         output <<  identSym.lbr;
         printf("pow(");
         output <<  identSym.lbr;
-        left->codeGenCpp(ident + 1, identSym);
+        left()->codeGenCpp(ident + 1, identSym);
         output << ",";
-        right->codeGenCpp(ident + 1, identSym);
+        right()->codeGenCpp(ident + 1, identSym);
         output <<  identSym.lbr;
         output << ")";
         output << identSym.lbr;
@@ -154,16 +154,9 @@ void ASTNodeInt::extractConstPool(const std::string &poolname, std::unordered_ma
         }
     }
 
-    if (isBinary())
-    {
-        left ->extractConstPool(poolname, pool);
-        right->extractConstPool(poolname, pool);
-    }
+    for (ASTNodeInt *child : children)
+        child->extractConstPool(poolname, pool);
 
-    if (isUnary())
-    {
-        left->extractConstPool(poolname, pool);
-    }
 }
 
 void ASTNodeInt::cseR(std::unordered_map<uint64_t, ASTNodeInt *> &cse)
@@ -173,27 +166,27 @@ void ASTNodeInt::cseR(std::unordered_map<uint64_t, ASTNodeInt *> &cse)
         /* We are not intested of making cse out of consts and ids */
         if (isBinary())
         {
-            left ->cseR(cse);
-            right->cseR(cse);
+            left() ->cseR(cse);
+            right()->cseR(cse);
             cse[hash] = this;
         }
 
         if (isUnary())
         {
-            left->cseR(cse);
+            left()->cseR(cse);
             cse[hash] = this;
         }
     } else {
         (*it).second->cseCount++;
         if (isBinary())
         {
-            left ->cseR(cse);
-            right->cseR(cse);
+            left() ->cseR(cse);
+            right()->cseR(cse);
         }
 
         if (isUnary())
         {
-            left->cseR(cse);
+            left()->cseR(cse);
         }
     }
 }
@@ -213,12 +206,12 @@ size_t ASTNodeInt::memoryFootprint()
     if (isBinary())
     {
 
-        return sizeof(ASTNodeInt) + left->memoryFootprint() + right->memoryFootprint();
+        return sizeof(ASTNodeInt) + left()->memoryFootprint() + right()->memoryFootprint();
     }
 
     if (isUnary())
     {
-        return sizeof(ASTNodeInt) + left->memoryFootprint();
+        return sizeof(ASTNodeInt) + left()->memoryFootprint();
     }
 
 }
@@ -244,20 +237,20 @@ void ASTNodeInt::rehash()
 
     if (isBinary())
     {
-        left->rehash();
-        right->rehash();
+        left ()->rehash();
+        right()->rehash();
 
-        hash = left->hash + 15485867 * (right->hash + 141650963 * std::hash<int>{}(op));
+        hash = left()->hash + 15485867 * (right()->hash + 141650963 * std::hash<int>{}(op));
 
-        height = 1 + std::max(left->height, right->height);
+        height = 1 + std::max(left()->height, right()->height);
         return;
     }
 
     if (isUnary())
     {
-        left->rehash();
-        hash = left->hash + 256203161 * std::hash<int>{}(op);
-        height = 1 + left->height;
+        left()->rehash();
+        hash = left()->hash + 256203161 * std::hash<int>{}(op);
+        height = 1 + left()->height;
         return;
     }
 
@@ -330,10 +323,8 @@ void ASTNodeInt::getVars(std::vector<std::string> &result)
         }
     } else {
         //cout << "ZZ ";
-        if (left != NULL)
-            left ->getVars(result);
-        if (right != NULL)
-            right->getVars(result);
+        for (ASTNodeInt *child : children)
+            child->getVars(result);
     }
 }
 
@@ -358,41 +349,41 @@ ASTNodeInt *ASTNodeInt::derivative(const std::string &var)
 
         case OPERATOR_ADD:
         {
-            return new ASTNodeInt(OPERATOR_ADD, left->derivative(var), right->derivative(var));
+            return new ASTNodeInt(OPERATOR_ADD, left()->derivative(var), right()->derivative(var));
             break;
         }
 
         case OPERATOR_SUB:
         {
-            return new ASTNodeInt(OPERATOR_SUB, left->derivative(var), right->derivative(var));
+            return new ASTNodeInt(OPERATOR_SUB, left()->derivative(var), right()->derivative(var));
             break;
         }
 
         case OPERATOR_MUL:
         {
-            ASTNodeInt *leftD  = left ->derivative(var);
-            ASTNodeInt *rightD = right->derivative(var);
+            ASTNodeInt *leftD  = left() ->derivative(var);
+            ASTNodeInt *rightD = right()->derivative(var);
 
 
             return new ASTNodeInt(OPERATOR_ADD,
-                          new ASTNodeInt(OPERATOR_MUL, leftD, right ),
-                          new ASTNodeInt(OPERATOR_MUL,  left, rightD)
+                          new ASTNodeInt(OPERATOR_MUL, leftD, right() ),
+                          new ASTNodeInt(OPERATOR_MUL,  left(), rightD)
                    );
             break;
         }
 
         case OPERATOR_DIV:
         {
-            ASTNodeInt *leftD  = left ->derivative(var);
-            ASTNodeInt *rightD = right->derivative(var);
+            ASTNodeInt *leftD  = left() ->derivative(var);
+            ASTNodeInt *rightD = right()->derivative(var);
 
 
             return new ASTNodeInt(OPERATOR_DIV,
                         new ASTNodeInt(OPERATOR_SUB,
-                               new ASTNodeInt(OPERATOR_MUL, leftD, right ),
-                               new ASTNodeInt(OPERATOR_MUL,  left, rightD)
+                               new ASTNodeInt(OPERATOR_MUL, leftD, right() ),
+                               new ASTNodeInt(OPERATOR_MUL,  left(), rightD)
                         ),
-                        new ASTNodeInt(OPERATOR_MUL, right,  right)
+                        new ASTNodeInt(OPERATOR_MUL, right(),  right())
                    );
             break;
         }
@@ -400,15 +391,15 @@ ASTNodeInt *ASTNodeInt::derivative(const std::string &var)
         case OPERATOR_POW:
         {
             /*So far partial support */
-            if (right->op == OPREATOR_NUM) {
-                ASTNodeInt *leftD  = left->derivative(var);
+            if (right()->op == OPREATOR_NUM) {
+                ASTNodeInt *leftD  = left()->derivative(var);
 
                 return new ASTNodeInt(OPERATOR_MUL,
-                       new ASTNodeInt(right->val),
+                       new ASTNodeInt(right()->val),
                        new ASTNodeInt(OPERATOR_MUL,
                                new ASTNodeInt(OPERATOR_POW,
-                                    left,
-                                    new ASTNodeInt(right->val - 1.0)
+                                    left(),
+                                    new ASTNodeInt(right()->val - 1.0)
                                ),
                                leftD
                            )
@@ -447,8 +438,8 @@ ASTNodeInt *ASTNodeInt::compute(const std::map<std::string, double> &bind)
         }
 
         case OPERATOR_ADD : {
-            ASTNodeInt *nleft  = left->compute(bind);
-            ASTNodeInt *nright = right->compute(bind);
+            ASTNodeInt *nleft  = left ()->compute(bind);
+            ASTNodeInt *nright = right()->compute(bind);
 
             if (nleft->op == OPREATOR_NUM && nright->op == OPREATOR_NUM)
             {
@@ -466,8 +457,8 @@ ASTNodeInt *ASTNodeInt::compute(const std::map<std::string, double> &bind)
             break;
         }
         case OPERATOR_SUB : {
-            ASTNodeInt *nleft  = left ->compute(bind);
-            ASTNodeInt *nright = right->compute(bind);
+            ASTNodeInt *nleft  = left ()->compute(bind);
+            ASTNodeInt *nright = right()->compute(bind);
 
             if (nleft->op == OPREATOR_NUM && nright->op == OPREATOR_NUM)
             {
@@ -481,8 +472,8 @@ ASTNodeInt *ASTNodeInt::compute(const std::map<std::string, double> &bind)
             break;
         }
         case OPERATOR_MUL : {
-            ASTNodeInt *nleft  = left->compute(bind);
-            ASTNodeInt *nright = right->compute(bind);
+            ASTNodeInt *nleft  = left ()->compute(bind);
+            ASTNodeInt *nright = right()->compute(bind);
 
             if (nleft->op == OPREATOR_NUM && nright->op == OPREATOR_NUM)
             {
@@ -508,8 +499,8 @@ ASTNodeInt *ASTNodeInt::compute(const std::map<std::string, double> &bind)
             break;
         }
         case OPERATOR_DIV : {
-            ASTNodeInt *nleft  = left->compute(bind);
-            ASTNodeInt *nright = right->compute(bind);
+            ASTNodeInt *nleft  = left ()->compute(bind);
+            ASTNodeInt *nright = right()->compute(bind);
 
             if (nleft->op == OPREATOR_NUM && nright->op == OPREATOR_NUM)
             {
@@ -527,8 +518,8 @@ ASTNodeInt *ASTNodeInt::compute(const std::map<std::string, double> &bind)
             break;
         }
         case OPERATOR_POW : {
-            ASTNodeInt *nleft  = left ->compute(bind);
-            ASTNodeInt *nright = right->compute(bind);
+            ASTNodeInt *nleft  = left ()->compute(bind);
+            ASTNodeInt *nright = right()->compute(bind);
 
             if (nleft->op == OPREATOR_NUM && nright->op == OPREATOR_NUM)
             {
@@ -551,19 +542,10 @@ void ASTNodeInt::deleteSubtree(ASTNodeInt *tree)
 
 void ASTNodeInt::deleteChildren()
 {
-    if (isBinary())
+    for (ASTNodeInt *child : children)
     {
-        left->deleteChildren();
-        right->deleteChildren();
-        delete left;
-        delete right;
-        return;
-    }
-
-    if (isUnary())
-    {
-        left->deleteChildren();
-        delete left;
+        child->deleteChildren();
+        delete child;
     }
 }
 
@@ -579,19 +561,10 @@ void ASTContext::clear() {
 void ASTContext::mark(ASTNodeInt *node) {
     node->markFlag = 1;
 
-    if (node->isBinary())
-    {
-        mark(node->left);
-        mark(node->right);
-        return;
-    }
-
-    if (node->isUnary())
-    {
-        mark(node->left);
-        return;
-    }
+    for (ASTNodeInt *child : node->children)
+        mark(child);
 }
+
 
 void ASTContext::sweep() {
     nodes.erase(
@@ -599,6 +572,19 @@ void ASTContext::sweep() {
                   [](ASTNodeInt *node){
             return (node->markFlag == 0);
         }));
+}
+
+std::string ASTNodeFunctionPayload::getCCode()
+{
+    return std::string(
+       "#error We don't know how to generate this code __FILE__ : __LINE__ : __FUNCTION__\n"
+       "return;\n"
+                );
+}
+
+ASTNodeFunctionPayload *ASTNodeFunctionPayload::derivative()
+{
+    return NULL;
 }
 
 
