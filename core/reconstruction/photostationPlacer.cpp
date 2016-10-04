@@ -859,6 +859,7 @@ void corecvs::PhotostationPlacer::fullRun()
         if ((!allowSuperSpeculativeAppend() || !appendAny()) && !append3D() && !append2D())
         {
             std::cout << "RECONSTRUCTION FAILED on APPENDING !!!" << std::endl;
+            L_ERROR << "Failed on appending";
             return;
         }
         postAppend();
@@ -918,11 +919,11 @@ bool corecvs::PhotostationPlacer::append3D()
     for (auto ptr: scene->placedFixtures)
         std::cout << ptr->name << " " << ptr->location.shift << " " << ptr->location.rotor << std::endl;
     std::cout << "Placing #" << psApp->name << std::endl;
-    L_ERROR << "Placing " << psApp->name ;
-    L_ERROR << "Computing tracks" ;
+    L_INFO << "Placing " << psApp->name;
+    L_DDEBUG << "Computing tracks";
     auto hypos = scene->getPossibleTracks(psApp);
     std::cout << "Total " << hypos.size() << " possible tracks" << std::endl;
-    L_ERROR << "Computing P3P" ;
+    L_DDEBUG << "Computing P3P";
 
     switch (scene->initializationData[psApp].initializationType)
     {
@@ -977,7 +978,7 @@ bool corecvs::PhotostationPlacer::append3D()
     std::cout << "TRACKS BEFORE: " << scene->trackedFeatures.size() << std::endl;
     if (scene->state == ReconstructionState::APPENDABLE)
     {
-        L_ERROR << "Appending tracks" ;
+        L_INFO << "Appending tracks";
         appendTracks(activeInlierCount[psApp], psApp, hypos);
     }
     if (scene->state == ReconstructionState::TWOPOINTCLOUD)
@@ -993,7 +994,7 @@ bool corecvs::PhotostationPlacer::append3D()
     tryAlign();
 #endif
 #if 0
-    L_ERROR << "Building tracks" ;
+    L_INFO << "Building tracks";
     for (size_t aId = 0; aId < scene->placedFixtures.size(); ++aId)
     {
         for (size_t bId = aId + 1; bId < scene->placedFixtures.size(); ++bId)

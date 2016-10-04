@@ -230,7 +230,7 @@ int corecvs::ReconstructionFunctor::getOutputNum()
 
 void corecvs::ReconstructionFunctor::computePointCounts()
 {
-    L_ERROR << ">Compute point counts";
+    L_DDEBUG << ">Compute point counts";
     counter.clear();
     for (auto& pt: trackedFeatures)
         for (auto& obs: pt->observations__)
@@ -249,13 +249,13 @@ void corecvs::ReconstructionFunctor::computePointCounts()
             counter[obs.first.u]++;
             counter[obs.first.v]++;
         }
-    L_ERROR << "<Compute point counts";
+    L_DDEBUG << "<Compute point counts";
 }
 
 
 void corecvs::ReconstructionFunctor::computeInputs()
 {
-    L_ERROR << ">Compute inputs";
+    L_DDEBUG << ">Compute inputs";
     orientableFixtures.clear();
     translateableFixtures.clear();
     focalTunableCameras.clear();
@@ -354,12 +354,12 @@ void corecvs::ReconstructionFunctor::computeInputs()
             if (counter[cam] > MINIMAL_TRACKED_FOR_PRINCIPALS)
                 principalTunableCameras.push_back(cam);
         std::cout << "PRINCIPALS: " << focalTunableCameras.size() << std::endl;)
-    L_ERROR << "<Compute inputs";
+    L_DDEBUG << "<Compute inputs";
 }
 
 void corecvs::ReconstructionFunctor::computeOutputs()
 {
-    L_ERROR << ">Compute outputs";
+    L_DDEBUG << ">Compute outputs";
     positionConstrainedCameras.clear();
     lastProjection = 0;
     // This function does nothing except saving number of projections
@@ -382,7 +382,7 @@ void corecvs::ReconstructionFunctor::computeOutputs()
     for (auto& f: orientableFixtures)
         originalOrientations.push_back(f->location.rotor);
     scalerPosition = scalerPoints = 1.0;
-    L_ERROR << "<Compute outputs";
+    L_DDEBUG << "<Compute outputs";
 }
 
 int corecvs::ReconstructionFunctor::getErrorComponentsPerPoint()
@@ -403,7 +403,7 @@ int corecvs::ReconstructionFunctor::getErrorComponentsPerPoint()
 
 void corecvs::ReconstructionFunctor::computeDependency()
 {
-    L_ERROR << ">Compute dependency";
+    L_DDEBUG << ">Compute dependency";
     denseDependency.clear();
     sparseDependency.clear();
     sparseRowptr.clear();
@@ -572,7 +572,7 @@ void corecvs::ReconstructionFunctor::computeDependency()
         }
     }
     std::cout << std::endl;
-    L_ERROR << "<Compute dependency";
+    L_DDEBUG << "<Compute dependency";
 }
 
 void corecvs::ReconstructionFunctor::readParams(const double* params, bool prepareJac)
