@@ -166,7 +166,8 @@ public:
         POINT_USER_DEFINED  = 0x01,  /**< Point that comes from a file */
         POINT_RECONSTRUCTED = 0x02,
         POINT_TEMPORARY     = 0x04,
-        POINT_TRIANGULATE   = 0x05,
+        POINT_TRIANGULATE   = 0x08,
+        POINT_RAW_DETECTED  = 0x16,
         POINT_ALL           = 0xFF
     };
     PointType                   type;
