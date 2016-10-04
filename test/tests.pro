@@ -24,7 +24,7 @@ SUBDIRS +=       \
 #    new_board_detector \
 #    cr2reader           \
     debayer          \
-    qtScriptConsole  \
+#    qtScriptConsole  \
     softrender       \
     raytracerender   \
     stereo_generator \

@@ -98,13 +98,13 @@ HEADERS += \
     tablecontrol/rotaryTableMeshModel.h \
     tablecontrol/rotationPlanGenerator.h \
     capture/abstractImageNamer.h \
+    capture/abstractManipulatorInterface.h \
     corestructs/cameraModel/affine3dControlWidget.h \
     corestructs/cameraModel/fixtureControlWidget.h \
     widgets/observationListModel.h \
     distortioncorrector/pointListEditImageWidget.h \
     corestructs/cameraModel/featurePointControlWidget.h \
     uis/aboutPropsTableWidget.h \
-    capture/abstractManipulatorInterface.h \
     uis/histogramDepthDialog.h \
     3d/sceneShaded.h \
     corestructs/reflectionWidget.h
@@ -330,8 +330,6 @@ HEADERS += \
     uis/aboutDialog.h \
     uis/textLabelWidget.h \
     uis/pointsRectificationWidget.h \
-    \
-    capture/photostationCaptureDialog.h \
 
 SOURCES += \
     widgets/generated/graphPlotParametersControlWidget.cpp \
@@ -385,8 +383,7 @@ SOURCES += \
     uis/aboutDialog.cpp \
     uis/textLabelWidget.cpp \
     uis/pointsRectificationWidget.cpp \
-    \
-    capture/photostationCaptureDialog.cpp \
+
 
 
 FORMS += \
@@ -429,8 +426,7 @@ FORMS += \
     \
     rectifier/rectifyParametersControlWidget.ui \
     distortioncorrector/distortionWidget.ui \
-    \
-    capture/photostationCaptureDialog.ui \
+
 
 }
 
