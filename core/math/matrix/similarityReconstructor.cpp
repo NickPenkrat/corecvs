@@ -206,6 +206,7 @@ Similarity SimilarityReconstructor::getBestSimilarityLM(Similarity &firstGuess)
     LMfit.normalisation = &N;
     LMfit.maxIterations = 100;
     LMfit.traceProgress = false;
+    LMfit.fastFix4Placer = false;
 
     vector<double> output(1);
     output[0] = 0.0;
@@ -224,6 +225,7 @@ Similarity SimilarityReconstructor::getBestSimilarityLMN(Similarity &firstGuess)
     NormalizeFunction N;
     LevenbergMarquardt LMfit;
 
+    LMfit.fastFix4Placer = false;
     LMfit.f = &F;
     LMfit.normalisation = &N;
     LMfit.maxIterations = 1000;

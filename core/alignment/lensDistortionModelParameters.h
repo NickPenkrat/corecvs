@@ -155,6 +155,7 @@ public:
         LevenbergMarquardt lm(1000);
         lm.f = &functor;
         lm.traceProgress = false;
+        lm.fastFix4Placer = false;
         std::vector<double> in = {guess[0], guess[1]}, out(2);
         auto res = lm.fit(in, out);
         Vector2dd resV(res[0], res[1]);

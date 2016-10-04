@@ -615,6 +615,7 @@ Matrix33 HomographyReconstructor::getBestHomographyLM(Matrix33 guess)
     LMfit.maxIterations = 250;
     LMfit.trace = trace;
     LMfit.traceProgress = trace;
+    LMfit.fastFix4Placer = false;
 
     vector<double> input(8);
     for(int i = 0; i < 3; ++i)

@@ -33,6 +33,7 @@ corecvs::Vector3dd intersect(std::vector<corecvs::Ray3d> &rays)
 {
     IntersectionFunctor iff(rays);
     corecvs::LevenbergMarquardt lm(10000);
+    lm.fastFix4Placer = false;
     lm.f = &iff;
     std::vector<double> in(3), out(rays.size());
     auto res = lm.fit(in, out);

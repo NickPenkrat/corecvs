@@ -519,6 +519,7 @@ void PhotoStationCalibrator::recenter()
         in[i] = sum[i];
 
     corecvs::LevenbergMarquardt levmar(50);
+    levmar.fastFix4Placer = false;
     levmar.f = new LSQCenter(c, q);
 
     if (c.size() == 1) {
@@ -565,6 +566,7 @@ void PhotoStationCalibrator::refineGuess(int LMiterations)
     levmar.f = new LMCostFunction(this);
     levmar.normalisation = new LMCostFunctionNormalizer(this);
     levmar.trace = true;
+    levmar.fastFix4Placer = false;
 
     auto res = levmar.fit(in, out);
     readParams(&res[0]);
@@ -587,6 +589,7 @@ void PhotoStationCalibrator::refineStruct()
     levmar.f = new LMStructure(this);
     levmar.normalisation = new LMStructureNormalizer(this);
     levmar.trace = true;
+    levmar.fastFix4Placer = false;
     auto res = levmar.fit(in, out);
     readStructureParams(&res[0]);
 

@@ -995,6 +995,7 @@ void CalibrationJob::reorient(const std::vector<int> &topLayerIdx)
         CommonPlaneFunctor cpf(&photostation, topLayerIdx);
         CommonPlaneNormalizer cpn;
         corecvs::LevenbergMarquardt lm(100000);
+        lm.fastFix4Placer = false;
 
         corecvs::Vector3dd n1 = ((photostation.cameras[topLayerIdx[1]].extrinsics.position
                                 - photostation.cameras[topLayerIdx[0]].extrinsics.position)
@@ -1066,6 +1067,8 @@ void CalibrationJob::reorient(const std::vector<int> &topLayerIdx)
             avg += v / (1.0 * projections.size());
 
         corecvs::LevenbergMarquardt lmc(100000);
+        lmc.fastFix4Placer = false;
+
         std::vector<double> inputc(3), outputc(topLayerIdx.size());
         inputc[0] = avg[0];
         inputc[1] = avg[1];

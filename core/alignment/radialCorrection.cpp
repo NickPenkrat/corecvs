@@ -171,7 +171,8 @@ RadialCorrection RadialCorrection::invertCorrection(int h, int w, int step)
     lmFit.maxLambda = 10e8;
     lmFit.lambdaFactor = 8;
     lmFit.f = &cost;
-  //lmFit.traceCrucial  = true;
+    lmFit.fastFix4Placer = false;
+    //lmFit.traceCrucial  = true;
   //lmFit.traceProgress = true;
   //lmFit.traceMatrix   = true;
 
