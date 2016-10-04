@@ -30,7 +30,7 @@ FixtureScene *genTest()
 #if 1
     const int FIXTURE_NUM = 16;
     const int CAM_NUM = 6;
-    const int POINT_NUM = 500;
+    const int POINT_NUM = 100;
 #else
     const int FIXTURE_NUM = 1;
     const int CAM_NUM = 3;
@@ -161,13 +161,16 @@ void codeGenerator(
 
     if (extractConstpool)
     {
+        SYNC_PRINT(("Dumping constpool...\n"));
         for (auto it : constpool)
         {
             generated << std::setprecision(17);
-            generated << "   double " << it.second << " = " << it.first << ";" << endl;
+            generated << "   double " << it.second << " = " << it.first << ";\n";
         }
     }
 
+
+    SYNC_PRINT(("Dumping cse trees...\n"));
     for (auto it : commonSubexpressions)
     {
         int cseName = it->cseName;
@@ -178,10 +181,11 @@ void codeGenerator(
         it->hash = 0;
         it->codeGenCpp(0, params);
         it->hash = hash;
-        generated << "; " << endl;
+        generated << ";\n";
     }
 
 
+    SYNC_PRINT(("Dumping main code...\n"));
     for (size_t i = 0; i < elements.size(); i++)
     {
         if (i < names.size()) {
@@ -196,6 +200,7 @@ void codeGenerator(
         elements[i].p->codeGenCpp(0, params);
         generated << ";\n";
     }
+    SYNC_PRINT(("Finished codegen\n"));
 }
 
 
@@ -307,7 +312,7 @@ int main (void)
          * Seems like Jacobian is too large to constuct in a single pass *
          **/
         SYNC_PRINT(("Symbolic Jacobian  computation \n"));
-        stats.enterContext("Jacobian computation");
+        stats.enterContext("Jacobian computation ->");
 
         int reflushMem = 600;
 
@@ -317,10 +322,12 @@ int main (void)
 
         ASTContext::MAIN_CONTEXT = new ASTContext();
         for (size_t i = 0; i < aout.size();)
-        {
+        {            
             vector<ASTNode> part;
             vector<string> names;
 
+            SYNC_PRINT(("Computing derivative...\n"));
+            stats.startInterval();
             int j;
             for (j = i; j < i + reflushMem && j < aout.size(); j++)
             {
@@ -349,6 +356,8 @@ int main (void)
             i = j;
             cout << "Part:" << partNum << endl;
 
+            stats.resetInterval("Computig derivatives");
+
             generated << "extern \"C\" void j"<< partNum << "(const double *M, SparseEntry *out, int *size) {" << endl;
             generated << "   if (out == (void *)0) { *size = " << nonTrivial << "; return;}";
             codeGenerator(generated, part, names);
@@ -356,16 +365,22 @@ int main (void)
 
             partNum++;
 
+            stats.resetInterval("Generating code");
+            SYNC_PRINT(("Deleting objects\n"));
             delete_safe(ASTContext::MAIN_CONTEXT);
             ASTContext::MAIN_CONTEXT = new ASTContext();
+            SYNC_PRINT(("Cycle finished\n"));
+            stats.endInterval("Cleanup");
         }
         cout << "Part Number: " << partNum << endl;
 
         delete_safe(ASTContext::MAIN_CONTEXT);
         ASTContext::MAIN_CONTEXT = mainContext;
 
-        SYNC_PRINT(("Symbolic Jacobian  %" PRIu64 " ms (%d non trivial elements ~%.2lf%)\n"
-                    , timer.msecsToNow(), nonTrivial, nonTrivial * 100.0 / (cost.getInputs() * cost.getOutputs())
+        SYNC_PRINT(("Symbolic Jacobian  %" PRIu64 " ms (%d non trivial elements %.2lf%%  %d per line) \n"
+                    , timer.msecsToNow(), nonTrivial
+                    , nonTrivial * 100.0 / (cost.getInputs() * cost.getOutputs())
+                    , nonTrivial / (cost.getOutputs())
                     ));
 
         stats.leaveContext();
@@ -377,10 +392,16 @@ int main (void)
 
         generated.close();
 
+
+        BaseTimeStatisticsCollector collector;
+        collector.addStatistics(stats);
+        collector.printAdvanced();
+
 #if 1
+
         SYNC_PRINT(("Running GCC compiler...\n"));
         PreciseTimer timer = PreciseTimer::currentTime();
-        system("gcc -shared -fPIC jit.cpp -o jit.so");
+        system("gcc -march=native -shared -fPIC jit.cpp -o jit.so");
         printf("GCC elapsed %.2lf ms\n", timer.usecsToNow() / 1000.0);
 
 

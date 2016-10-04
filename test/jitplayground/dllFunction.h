@@ -23,6 +23,7 @@ public:
     DimentionFunctor outputF;
     FFunctor f;
     vector<JacobianPartFunctor> jacobianParts;
+    vector<int> jacobianPartStart;
     vector<int> jacobianPartSize;
     int nonTrivial = 0;
 
