@@ -298,6 +298,7 @@ Vector3dd MulticameraTriangulator::triangulateLM(Vector3dd initialGuess, bool * 
     LMfit.maxIterations = 1000;
     LMfit.traceProgress = false;
 //    LMfit.trace = true;
+    LMfit.fastFix4Placer = true;
 
     vector<double> guess(3);
     guess[0] = initialGuess.x();

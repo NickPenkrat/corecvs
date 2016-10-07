@@ -46,6 +46,7 @@ TEST(PolynomDistortion, DISABLED_testAproximation)  // commented as it fails!
     radFunc(params, distortedPoints);
     LevenbergMarquardt lmTransform(10000);
     lmTransform.f = &radFunc;
+    lmTransform.fastFix4Placer = false;
     vector<double> beginParams(polynomDegree + 2, 0);
     vector<double> distortedPointsVector;
     for (unsigned i = 0; i < undistortedPoints.size() * 2; i ++)

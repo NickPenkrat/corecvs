@@ -30,6 +30,7 @@ RadialCorrection LMDistortionSolver::solve()
     double params[] = {0, 0, 0, 0, -5.09, 11.1, -30.4, 35, 0.12, 0.04, -4.81, 14.6, -11.2, 11.2};
     vector<double> parameters(params, params + CORE_COUNT_OF(params));
     LevenbergMarquardt LMTransform(10000, 4, 1.2);
+    LMTransform.fastFix4Placer = false;
     LMTransform.f = &func;
     func.setIsDistored(false);
     bestParams = LMTransform.fit(parameters,values);
@@ -104,6 +105,7 @@ RadialCorrection LMLinesDistortionSolver::solve()
     }
 
     LevenbergMarquardt straightLevMarq(parameters.iterationNumber(), 2, 1.5);
+    straightLevMarq.fastFix4Placer = false;
     straightLevMarq.f = costFunction;
 
     /* First aproximation is zero vector */

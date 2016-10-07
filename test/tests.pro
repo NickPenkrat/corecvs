@@ -37,7 +37,6 @@ with_opencv {
 #        distortion_corrector \
 #        matcher_basic \
 #        matcher_full \
-#        camera_calibration \
         chessboard_detector \
 
 }
@@ -74,7 +73,6 @@ distortion_corrector	            = distortion_corrector/distortion_corrector.pro
 matcher_basic                       = matcher_basic/matcher_basic.pro
 matcher_full                        = matcher_full/matcher_full.pro
 
-camera_calibration                  = camera_calibration/camera_calibration.pro
 chessboard_detector                 = chessboard_detector/chessboard_detector.pro
 
 qtScriptConsole                     = qtScriptConsole/qtScriptConsole.pro

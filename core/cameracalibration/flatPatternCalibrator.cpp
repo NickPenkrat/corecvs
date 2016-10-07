@@ -361,6 +361,7 @@ void corecvs::FlatPatternCalibrator::refineGuess(int LMiterations)
 
     LevenbergMarquardt levmar(LMiterations);
     levmar.f = new LMCostFunction(this);
+    levmar.fastFix4Placer = false;
 
     auto res = levmar.fit(in, out);
     readParams(&res[0]);

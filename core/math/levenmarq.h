@@ -69,6 +69,7 @@ public:
     bool trace         = false;
     bool traceMatrix   = false;
     bool traceJacobian = false;
+    bool fastFix4Placer = true;
 
     Statistics *stats;
 
@@ -267,8 +268,8 @@ public:
 
                 for (int j = 0; j < A.h; j++)
                 {
-                    double b = A.a(j, j) + lambda;
-                  //double b = A.a(j, j) * (1.0 + lambda);
+                    double b = A.a(j, j);
+                    b = fastFix4Placer ? b * (1.0 + lambda) : (b + lambda);
                     A.a(j, j) = b;
                 }
 
