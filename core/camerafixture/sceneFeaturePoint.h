@@ -167,6 +167,7 @@ public:
         POINT_RECONSTRUCTED = 0x02,
         POINT_TEMPORARY     = 0x04,
         POINT_TRIANGULATE   = 0x08,
+        POINT_RAW_DETECTED  = 0x10,
         POINT_ALL           = 0xFF
     };
     PointType                   type;
@@ -179,6 +180,7 @@ public:
             case POINT_RECONSTRUCTED : return "RECONSTRUCTED";
             case POINT_TEMPORARY     : return "TEMPORARY"    ;
             case POINT_TRIANGULATE   : return "TRIANGULATE"  ;
+            case POINT_RAW_DETECTED  : return "RAW_DETECTED" ;
             default                  : return "Not in range" ;
         }
     }
