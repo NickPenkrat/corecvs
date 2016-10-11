@@ -1,7 +1,6 @@
 #include "calibrationHelpers.h"
 #include "mesh3d.h"
 #include "calibrationCamera.h"
-#include "calibrationPhotostation.h"
 #include "fixtureScene.h"
 #include "selectableGeometryFeatures.h"
 #include "abstractPainter.h"
@@ -74,44 +73,6 @@ void CalibrationHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, double
     //mesh.addLine(ppv, qc * (invK * center) + cc);
 }
 
-
-void CalibrationHelpers::drawPly(Mesh3D &mesh, const Photostation &ps, double scale)
-{
-    // Colorblind-safe palette
-    CameraLocationData loc = ps.getLocation();
-    Quaternion qs = loc.orientation.conjugated();
-    std::cout << qs << std::endl;
-
-    int colorId = 0;
-    for (size_t cam = 0; cam < ps.cameras.size(); cam++)
-    {
-        mesh.setColor(palette[colorId]);
-        colorId = (colorId + 1) % CORE_COUNT_OF(palette);
-        drawCamera(mesh, ps.getRawCamera((int)cam), scale);
-    }
-
-
-    corecvs::Vector3dd xps(scale,   0.0,   0.0),
-                       yps(  0.0, scale,   0.0),
-                       zps(  0.0,   0.0, scale),
-                       ori(  0.0,   0.0,   0.0);
-    mesh.currentColor = corecvs::RGBColor(255,   0,   0);
-    mesh.addLine(ps.location * ori, ps.location * xps);
-    mesh.currentColor = corecvs::RGBColor(  0, 255,   0);
-    mesh.addLine(ps.location * ori, ps.location * yps);
-    mesh.currentColor = corecvs::RGBColor(  0,   0, 255);
-    mesh.addLine(ps.location * ori, ps.location * zps);
-
-    if (printNames)
-    {
-        AbstractPainter<Mesh3D> p(&mesh);
-        mesh.mulTransform(Matrix44::Shift(ps.location.shift) * Matrix44::Scale(scale / 22.0));
-        mesh.setColor(RGBColor::Blue());
-        p.drawFormatVector(scale / 5.0, scale / 5.0, 0, scale / 3.0, "%s", ps.name.c_str());
-        mesh.popTransform();
-    }
-}
-
 void CalibrationHelpers::drawPly(Mesh3D &mesh, const CameraFixture &ps, double scale)
 {
 //    SYNC_PRINT(("CalibrationHelpers::drawPly():called\n"));
@@ -164,12 +125,6 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const ObservationList &list)
     {
         mesh.addPoint(pt.point);
     }
-}
-
-void CalibrationHelpers::drawPly(Mesh3D &mesh, const Photostation &ps, const ObservationList &list, double scale)
-{
-    drawPly(mesh, list);
-    drawPly(mesh, ps, scale);
 }
 
 void CalibrationHelpers::drawPly(Mesh3D &mesh, SceneFeaturePoint fp, double scale)

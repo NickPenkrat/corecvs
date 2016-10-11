@@ -85,12 +85,11 @@ SOURCES += \
     calstructs/main_test_calstructs.cpp \
     polynomial/main_test_polynomial.cpp \
     meshdraw/main_test_meshdraw.cpp \
-    reconstruction/main_test_reconstruction.cpp \
     meta/main_test_meta.cpp \
     function/main_test_function.cpp \
     deform/test_deform.cpp \
     camerafixture/main_test_camerafixture.cpp \
-	renderer/main_test_renderer.cpp \
-	raytrace/main_test_raytrace.cpp \
-	jit/main_test_jit.cpp \
-	matrixoperations/main_test_matrixoperations.cpp \
+    renderer/main_test_renderer.cpp \
+    raytrace/main_test_raytrace.cpp \
+    jit/main_test_jit.cpp \
+    matrixoperations/main_test_matrixoperations.cpp \

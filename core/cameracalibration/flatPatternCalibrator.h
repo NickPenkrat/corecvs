@@ -7,8 +7,9 @@
 #include "levenmarq.h"
 #include "lineDistortionEstimatorParameters.h"
 
-#include "calibrationPhotostation.h"
 #include "selectableGeometryFeatures.h"
+#include "cameraConstraints.h"
+#include "calibrationCamera.h"
 
 // In order to get 3-dof rotation, we should penalize for quaternion norm
 // The unclear part is it's weight

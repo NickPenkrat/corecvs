@@ -32,8 +32,6 @@
 #include "chessBoardCornerDetector.h"
 #include "chessBoardAssembler.h"
 
-#include "calibrationPhotostation.h"
-
 using namespace cv;
 using namespace corecvs;
 

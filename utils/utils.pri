@@ -1,9 +1,15 @@
 # This file must be included for any external usage of cvs_utils library!
 #
+#  Note - this file already includes CORE_CVS. You don't need to include it manually
+#
+#
 # Input1 parameter  - $$TARGET
 # Input2 parameter  - $$ROOT_DIR
 # Output parameters - $$UTILS_BINDIR
 #
+
+!contains(CORECVS_INCLUDED, "utils.pri") {
+CORECVS_INCLUDED +=  utils.pri
 
 include(../core/core.pri)                         # it uses TARGET and detects COREBINDIR!
 
@@ -261,3 +267,5 @@ win32 {
         QMAKE_CLEAN += "$$MOC_DIR/mocinclude.tmp"       # it doesn't killed some-why...
     }
 }
+
+} #!contains(CORECVS_INCLUDED, "utils.pri")

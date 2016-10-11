@@ -6,7 +6,6 @@ namespace corecvs {
 
 class Mesh3D;
 class CameraModel;
-class Photostation;
 class ObservationList;
 
 class SceneFeaturePoint;
@@ -22,7 +21,7 @@ public:
         COLOR_PER_STATION
     };
 
-    static RGBColor palette[];
+    static RGBColor palette[6];
 
     bool    printNames;
     bool    privateColor;
@@ -44,9 +43,7 @@ public:
 
     void drawCamera (Mesh3D &mesh, const CameraModel &cam, double scale);
 
-    void drawPly    (Mesh3D &mesh, const Photostation &ps, double scale = 50.0);
     void drawPly    (Mesh3D &mesh, const ObservationList &list);
-    void drawPly    (Mesh3D &mesh, const Photostation &ps, const ObservationList &list, double scale);
     void drawPly    (Mesh3D &mesh, const CameraFixture &ps, double scale);
 
     void drawPly    (Mesh3D &mesh, corecvs::SceneFeaturePoint fp, double scale);
