@@ -67,7 +67,7 @@ int HomorgaphyReconstructorBlockBase::staticInit()
         (
           HomorgaphyReconstructorBlockBase::ALGORITHM_ID,
           offsetof(HomorgaphyReconstructorBlockBase, mAlgorithm),
-          0,
+          4,
           "algorithm",
           "algorithm",
           "algorithm",
