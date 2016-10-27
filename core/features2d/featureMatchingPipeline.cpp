@@ -32,6 +32,14 @@ std::string changeExtension(const std::string &imgName, const std::string &desir
     return res;
 }
 
+
+std::string getFilename(const std::string &imgName)
+{
+    int pos = imgName.find_last_of(PATH_SEPARATOR[0]);
+    std::string res = imgName.substr(pos,imgName.size() - pos);
+    return res;
+}
+
 FeatureMatchingPipeline::FeatureMatchingPipeline(const std::vector<std::string> &filenames, StatusTracker* processState)
 {
     this->processState = processState;

@@ -155,7 +155,7 @@ public:
     FixtureScene* dumbify();
 
     //\brief Detect and match features between all images
-    void detectAllFeatures(const FeatureDetectionParams &params);
+    void detectAllFeatures(const FeatureDetectionParams &params, bool detectOnly = false);
     std::vector<std::tuple<FixtureCamera*, corecvs::Vector2dd, corecvs::Vector3dd, SceneFeaturePoint*, int>> getPossibleTracks(CameraFixture* ps);
     // This routine builds tracks from 2D<->2D correspondences
     void buildTracks(CameraFixture *psA, CameraFixture *psB, double trackInlierThreshold, double distanceLimit);
@@ -172,6 +172,7 @@ public:
 //    static std::vector<uint64_t> GenerateBitmasks(int N, int M);
     void pruneSmallTracks();
 
+    void printRAWDetectedPoint(std::string path, std::string fileNameMask, RGBColor color);
 
     //\brief Returns number of FixtureCamera's in placedFixtures fixtures
     int getDistinctCameraCount() const;

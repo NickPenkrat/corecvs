@@ -1032,6 +1032,12 @@ void corecvs::PhotostationPlacer::detectAll()
     scene->validateAll();
 }
 
+void PhotostationPlacer::detectAllAndDraw(std::string path, std::string fileNameMask, RGBColor color)
+{
+    scene->detectAllFeatures(FeatureDetectionParams(), true);
+    scene->printRAWDetectedPoint(path, fileNameMask, color);
+}
+
 corecvs::Mesh3D corecvs::PhotostationPlacer::dumpMesh(const std::string &filename)
 {
     corecvs::Mesh3D meshres;

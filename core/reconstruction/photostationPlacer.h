@@ -33,6 +33,7 @@ public:
     corecvs::Mesh3D dumpMesh(const std::string &filename);
     void paintTracksOnImages(bool pairs = false);
     void detectAll();
+    void detectAllAndDraw(std::string path, std::string fileNameMask, RGBColor color);
     void create2PointCloud();
     void create2PointCloud(CameraFixture* A, CameraFixture* B);
     corecvs::Affine3DQ staticInit(CameraFixture* fixture, std::vector<SceneFeaturePoint*> &staticPoints);

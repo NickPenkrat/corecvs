@@ -494,7 +494,7 @@ void ReconstructionFixtureScene::deleteFeaturePoint(SceneFeaturePoint *point)
         for (auto boo = foo.second.begin(); boo != foo.second.end(); boo = boo->second == point ? foo.second.erase(boo) : boo++);
 }
 
-void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams &params)
+void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams &params, bool detectOnly)
 {
     // Mapping from indices to <fixture,camera pairs>
     std::unordered_map<int, WPP> map;
@@ -530,10 +530,17 @@ void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams 
     // Feature detection and matching
     FeatureMatchingPipeline pipeline(filenames, processState);
     pipeline.add(new KeyPointDetectionStage(params.detector(), params.maxFeatureCount(), params.parameters()), true);
-    pipeline.add(new DescriptorExtractionStage(params.descriptor(), params.parameters()), true);
-    pipeline.add(new MatchingPlanComputationStage(), true);
-    pipeline.add(new MatchAndRefineStage(params.descriptor(), params.matcher(), params.b2bThreshold(), params.thresholdDistance()), true);
 
+    if(detectOnly)
+    {
+        pipeline.add(new DescriptorExtractionStage(params.descriptor(), params.parameters()), true);
+    }
+    else
+    {
+        pipeline.add(new DescriptorExtractionStage(params.descriptor(), params.parameters()), true);
+        pipeline.add(new MatchingPlanComputationStage(), true);
+        pipeline.add(new MatchAndRefineStage(params.descriptor(), params.matcher(), params.b2bThreshold(), params.thresholdDistance()), true);
+    }
     pipeline.run();
 
     // Here we discard some data and store only part (w/o descriptors and etc)
@@ -549,6 +556,12 @@ void ReconstructionFixtureScene::detectAllFeatures(const FeatureDetectionParams 
             kpp.emplace_back(Vector2dd(kp.x, kp.y), kp.color);
         }
     }
+
+    if(detectOnly)
+    {
+        return;
+    }
+
     // Since our matches are reflective, we can store them only once
     /*
      * XXX: I've added flag for merging matches from all cameras.
@@ -764,6 +777,34 @@ bool ReconstructionFixtureScene::validateAll()
         return true;
     }
     return false;
+}
+
+void ReconstructionFixtureScene::printRAWDetectedPoint(std::string path, std::string fileNameMask, RGBColor color)
+{
+    for(auto& image: images)
+    {
+        auto key = image.first;
+            auto fixture = key.u;
+            auto camera  = key.v;
+        auto name = image.second;
+        std::stringstream ss;
+        ss << path << PATH_SEPARATOR << fixture->name << camera->nameId << fileNameMask;
+        auto nameNew = ss.str();
+        corecvs::RGB24Buffer src = BufferReaderProvider::readRgb(name);
+        AbstractPainter<RGB24Buffer> painter(&src);
+
+        std::cout << "Writing RAW detected point image into " << keyPoints[WPP(fixture, camera)].size() << std::endl;
+        std::cout << "Key " << keyPoints[WPP(fixture, camera)].size() << std::endl;
+
+        for (auto& kp:keyPoints[WPP(fixture, camera)])
+        {
+            painter.drawCircle(kp.first[0], kp.first[1], 3, color);
+
+                std::cout << "Key " << kp.first[0] << " " << kp.first[1] << std::endl;
+        }
+        BufferReaderProvider::writeRgb(src, nameNew);
+        std::cout << "Writing RAW detected point image into " << nameNew << std::endl;
+    }
 }
 
 void ParallelTrackPainter::operator() (const corecvs::BlockedRange<int> &r) const
