@@ -20,6 +20,9 @@ public:
     vector<Vector3d32>  texId;
     vector<Vector3d32>  normalId;
 
+    /* We are not sure what we expect from material.
+     * We will use wavefront so far */
+    //OBJMaterial material;
 
     Mesh3DDecorated();
 

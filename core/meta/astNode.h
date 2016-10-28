@@ -87,6 +87,7 @@ public:
     virtual ASTNodeFunctionPayload *derivative(int input);
 };
 
+
 /**
  *  Internal data structure for ASTTree - it records all operations with ASTNode.
  *
@@ -275,6 +276,22 @@ public:
     void deleteChildren();
 
 
+};
+
+
+class ASTNodeFunctionWrapper : public ASTNodeFunctionPayload {
+public:
+    std::vector<ASTNodeInt *> components;
+
+private:
+    std::vector<std::string> getVars();
+    // ASTNodeFunctionPayload interface
+public:
+    virtual int inputNumber() override;
+    virtual int outputNumber()  override;
+    virtual void f(double in[], double out[])  override;
+    virtual std::string getCCode()  override;
+    virtual ASTNodeFunctionPayload *derivative(int input)  override;
 };
 
 

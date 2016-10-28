@@ -107,7 +107,8 @@ HEADERS += \
     uis/aboutPropsTableWidget.h \
     uis/histogramDepthDialog.h \
     3d/sceneShaded.h \
-    corestructs/reflectionWidget.h
+    corestructs/reflectionWidget.h \
+    3d/shadedSceneControlWidget.h
 
 SOURCES += \
     frames.cpp \
@@ -186,7 +187,8 @@ SOURCES += \
     uis/aboutPropsTableWidget.cpp \
     uis/histogramDepthDialog.cpp \
     3d/sceneShaded.cpp \
-    corestructs/reflectionWidget.cpp
+    corestructs/reflectionWidget.cpp \
+    3d/shadedSceneControlWidget.cpp
 
 
 FORMS += \
@@ -199,6 +201,7 @@ FORMS += \
     corestructs/cameraModel/affine3dControlWidget.ui \
     corestructs/cameraModel/fixtureControlWidget.ui \
     corestructs/cameraModel/featurePointControlWidget.ui \
+    3d/shadedSceneControlWidget.ui
 
 
 # =============================================================

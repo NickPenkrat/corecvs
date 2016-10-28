@@ -108,9 +108,9 @@ TEST(meta, testmeta)
 
     cout << "Some more stuff" << endl;
 
-    GenericQuaternion<ASTNode> Q(  "Qx"_x     , ASTNode("Qy"), ASTNode("Qz"), ASTNode("Qt"));
-    GenericQuaternion<ASTNode> P(ASTNode("Px"), ASTNode("Py"), ASTNode("Pz"), ASTNode("Pt"));
-    GenericQuaternion<ASTNode> R(ASTNode("Rx"), ASTNode("Ry"), ASTNode("Rz"), ASTNode("Rt"));
+    ASTQuaternion Q(  "Qx"_x     , ASTNode("Qy"), ASTNode("Qz"), ASTNode("Qt"));
+    ASTQuaternion P(ASTNode("Px"), ASTNode("Py"), ASTNode("Pz"), ASTNode("Pt"));
+    ASTQuaternion R(ASTNode("Rx"), ASTNode("Ry"), ASTNode("Rz"), ASTNode("Rt"));
 
     ASTNode Z = ((Q+(P^R)) & Q);
     Z.p->codeGenCpp("quaternion1", dec);
@@ -325,3 +325,24 @@ TEST(meta, testmeta)
     std::cout << "Test <meta> PASSED" << std::endl;
 }
 #endif
+
+TEST(meta, testMetaNodeFunction)
+{
+    cout << "Starting meta.testMetaNodeFunction" << endl;
+    ASTContext::MAIN_CONTEXT = new ASTContext();
+    ASTQuaternion Q(ASTNode("Qx"), ASTNode("Qy"), ASTNode("Qz"), ASTNode("Qt"));
+
+    ASTMatrix33 M = Q.toMatrixGeneric<ASTMatrix33>();
+
+    ASTNodeFunctionWrapper F;
+    for (int i = 0; i < M.h; i++)
+    {
+        for (int j = 0; j < M.w; j++)
+        {
+            F.components.push_back(M.element(i,j).p);
+        }
+    }
+
+    cout << F.getCCode();
+}
+

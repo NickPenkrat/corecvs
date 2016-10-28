@@ -21,10 +21,12 @@ public:
     QOpenGLShaderProgram *mProgram;
     GLuint mPosAttr;
     GLuint mColAttr;
-    GLuint mMatrixUniform;
+    GLuint mModelViewMatrix;
+    GLuint mProjectionMatrix;
+
 
     /* Some test data */
-    Mesh3DDecorated *mesh;
+    Mesh3DDecorated *mMesh = NULL;
 
 
     virtual ParametersControlWidgetBase *getContolWidget() override

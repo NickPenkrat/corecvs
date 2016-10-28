@@ -162,6 +162,20 @@ TEST(FileFormats, DISABLED_testObjLoader)
 }
 
 
+TEST(FileFormats, DISABLED_testObjMaterialLoader)
+{
+    cout << "Test Obj Format Material Loader" << endl;
+    OBJLoader loader;
+    ifstream file("/home/alexander/work/data/3d/source/Mesh.obj1.mtl", ifstream::in);
+
+    OBJMaterial material;
+    loader.loadMaterial(file, material, "/home/alexander/work/data/3d/source");
+
+    cout << material << endl;
+}
+
+
+
 TEST(FileFormats, testGcodeLoader)
 {
     const char input[] =

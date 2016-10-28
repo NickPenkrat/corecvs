@@ -13,10 +13,11 @@ static const char *vertexShaderSource =
     "attribute highp vec4 posAttr;\n"
     "attribute lowp vec4 colAttr;\n"
     "varying lowp vec4 col;\n"
-    "uniform highp mat4 matrix;\n"
+    "uniform highp mat4 modelview;\n"
+    "uniform highp mat4 projection;\n"
     "void main() {\n"
     "   col = colAttr;\n"
-    "   gl_Position = matrix * posAttr;\n"
+    "   gl_Position = projection * modelview * posAttr;\n"
     "}\n";
 
 static const char *fragmentShaderSource =
@@ -38,7 +39,8 @@ void SceneShaded::prepareMesh(CloudViewDialog * /*dialog*/)
 
     mPosAttr = mProgram->attributeLocation("posAttr");
     mColAttr = mProgram->attributeLocation("colAttr");
-    mMatrixUniform = mProgram->uniformLocation("matrix");
+    mModelViewMatrix  = mProgram->uniformLocation("modelview");
+    mProjectionMatrix = mProgram->uniformLocation("projection");
 
 
 }
@@ -50,7 +52,15 @@ void SceneShaded::drawMyself(CloudViewDialog * /*dialog*/)
 
     float arr[16];
     glGetFloatv(GL_MODELVIEW_MATRIX, arr);
-    QMatrix4x4 matrix(
+    QMatrix4x4 modelview(
+            arr[0], arr[4], arr[ 8], arr[12],
+            arr[1], arr[5], arr[ 9], arr[13],
+            arr[2], arr[6], arr[10], arr[14],
+            arr[3], arr[7], arr[11], arr[15]
+    );
+
+    glGetFloatv(GL_PROJECTION_MATRIX, arr);
+    QMatrix4x4 projection(
             arr[0], arr[4], arr[ 8], arr[12],
             arr[1], arr[5], arr[ 9], arr[13],
             arr[2], arr[6], arr[10], arr[14],
@@ -61,7 +71,9 @@ void SceneShaded::drawMyself(CloudViewDialog * /*dialog*/)
     matrix.translate(0, 0, -2);*/
    // matrix.rotate(100.0f * m_frame / screen()->refreshRate(), 0, 1, 0);
 
-    mProgram->setUniformValue(mMatrixUniform, matrix);
+    mProgram->setUniformValue(mModelViewMatrix, modelview);
+    mProgram->setUniformValue(mProjectionMatrix, projection);
+
 
 
     GLfloat vertices[] = {
@@ -79,8 +91,8 @@ void SceneShaded::drawMyself(CloudViewDialog * /*dialog*/)
     glVertexAttribPointer(mPosAttr, 2, GL_FLOAT, GL_FALSE, 0, vertices);
     glVertexAttribPointer(mColAttr, 3, GL_FLOAT, GL_FALSE, 0, colors);
 
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(mPosAttr);
+    glEnableVertexAttribArray(mColAttr);
 
     bool depthTest =  glIsEnabled(GL_DEPTH_TEST);
     glEnable(GL_DEPTH_TEST);
@@ -91,8 +103,24 @@ void SceneShaded::drawMyself(CloudViewDialog * /*dialog*/)
         glDisable(GL_DEPTH_TEST);
     }
 
-    glDisableVertexAttribArray(1);
-    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(mPosAttr);
+    glDisableVertexAttribArray(mColAttr);
+
+    /* Draw embedded Mesh */
+    if (mMesh != NULL)
+    {
+        glVertexAttribPointer(mPosAttr, 3, GL_DOUBLE, GL_FALSE, 0, &(mMesh->vertexes.front().x()));
+        glEnableVertexAttribArray(mPosAttr);
+
+        if (mMesh->hasColor)
+        {
+            glVertexAttribPointer(mColAttr, 3, GL_BYTE  , GL_FALSE, 0, &(mMesh->vertexesColor.front()[0]));
+        }
+        glDrawElements(GL_TRIANGLES, GLsizei(mMesh->faces.size() * 3), GL_UNSIGNED_INT, &(mMesh->faces[0]));
+
+
+    }
+
 
     mProgram->release();
 

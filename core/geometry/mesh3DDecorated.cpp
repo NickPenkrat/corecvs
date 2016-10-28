@@ -36,7 +36,7 @@ void Mesh3DDecorated::switchNormals(bool on)
 
 void Mesh3DDecorated::addAOB(const Vector3dd &c1, const Vector3dd &c2, bool addFaces)
 {
-    addAOB(c1, c2, addFaces);
+    Mesh3D::addAOB(c1, c2, addFaces);
 
   /*  textureCoords.push_back(Vector2dd(0.0,0.0));
     textureCoords.push_back(Vector2dd(1.0,0.0));
