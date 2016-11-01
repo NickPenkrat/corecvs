@@ -735,17 +735,33 @@ void Mesh3D::fillTestScene()
     addSphere(Vector3dd(0), 50, 10);
 
     /* Face sphere */
-    //int colorStart = (int)facesColor.size();
+    size_t vertexColorStart = vertexesColor.size();
+    size_t faceColorStart   = facesColor.size();
+    size_t edgesColorStart  = edgesColor.size();
 
     currentColor = RGBColor::Red();
 
     addIcoSphere(Vector3dd(100.0,0.0,100.0), 50.0, 1);
-    //int colorEnd = facesColor.size();
+    size_t vertexColorEnd = vertexesColor.size();
+    size_t faceColorEnd   = facesColor.size();
+    size_t edgesColorEnd  = edgesColor.size();
 
-    /*for (int c = colorStart; c < colorEnd; c++)
+    for (size_t c = faceColorStart; c < faceColorEnd; c++)
     {
-        facesColor[c] = RGBColor::rainbow(lerpLimit(0.0, 1.0, c, colorStart, colorEnd));
-    }*/
+        facesColor[c] = RGBColor::rainbow(lerpLimit(0.0, 1.0, c, faceColorStart, faceColorEnd));
+    }
+
+    for (size_t c = vertexColorStart; c < vertexColorEnd; c++)
+    {
+        vertexesColor[c] = RGBColor::rainbow(lerpLimit(0.0, 1.0, c, vertexColorStart, vertexColorEnd));
+    }
+
+    for (size_t c = edgesColorStart; c < edgesColorEnd; c++)
+    {
+        edgesColor[c] = RGBColor::rainbow(lerpLimit(0.0, 1.0, c, edgesColorStart, edgesColorEnd));
+    }
+
+
 
     /* Edge box */
     currentColor = RGBColor::Blue();

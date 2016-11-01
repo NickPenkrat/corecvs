@@ -103,9 +103,15 @@ CloudViewDialog::CloudViewDialog(QWidget *parent)
         SceneShaded *shaded = new SceneShaded();
         Mesh3DDecorated *mesh = new Mesh3DDecorated;
         mesh->fillTestScene();
+
         shaded->mMesh = mesh;
 
         addSubObject("test"  , QSharedPointer<Scene3D>(shaded));
+
+        Mesh3DScene *scene = new Mesh3DScene;
+        scene->switchColor(true);
+        scene->add(*mesh, true);
+        addSubObject("test1"  , QSharedPointer<Scene3D>(scene));
     }
 #endif
 

@@ -11,12 +11,13 @@
 
 static const char *vertexShaderSource =
     "attribute highp vec4 posAttr;\n"
-    "attribute lowp vec4 colAttr;\n"
+    "attribute lowp  vec4 colAttr;\n"
     "varying lowp vec4 col;\n"
     "uniform highp mat4 modelview;\n"
     "uniform highp mat4 projection;\n"
     "void main() {\n"
-    "   col = colAttr;\n"
+    "   col = colAttr / 1.0;\n"
+    "   col.a = 1.0;\n"
     "   gl_Position = projection * modelview * posAttr;\n"
     "}\n";
 
@@ -88,20 +89,17 @@ void SceneShaded::drawMyself(CloudViewDialog * /*dialog*/)
        0.0f, 0.0f, 1.0f
     };
 
+    bool depthTest =  glIsEnabled(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
+
+
     glVertexAttribPointer(mPosAttr, 2, GL_FLOAT, GL_FALSE, 0, vertices);
     glVertexAttribPointer(mColAttr, 3, GL_FLOAT, GL_FALSE, 0, colors);
 
     glEnableVertexAttribArray(mPosAttr);
     glEnableVertexAttribArray(mColAttr);
 
-    bool depthTest =  glIsEnabled(GL_DEPTH_TEST);
-    glEnable(GL_DEPTH_TEST);
-
     glDrawArrays(GL_TRIANGLES, 0, 3);
-
-    if (!depthTest) {
-        glDisable(GL_DEPTH_TEST);
-    }
 
     glDisableVertexAttribArray(mPosAttr);
     glDisableVertexAttribArray(mColAttr);
@@ -112,15 +110,22 @@ void SceneShaded::drawMyself(CloudViewDialog * /*dialog*/)
         glVertexAttribPointer(mPosAttr, 3, GL_DOUBLE, GL_FALSE, 0, &(mMesh->vertexes.front().x()));
         glEnableVertexAttribArray(mPosAttr);
 
-        if (mMesh->hasColor)
+        if (mMesh->hasColor && mMesh->vertexesColor.size() == mMesh->vertexes.size())
         {
-            glVertexAttribPointer(mColAttr, 3, GL_BYTE  , GL_FALSE, 0, &(mMesh->vertexesColor.front()[0]));
+            RGBColor *color = &mMesh->vertexesColor.front();
+            glVertexAttribPointer(mColAttr, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(RGBColor), color);
+            glEnableVertexAttribArray(mColAttr);
         }
-        glDrawElements(GL_TRIANGLES, GLsizei(mMesh->faces.size() * 3), GL_UNSIGNED_INT, &(mMesh->faces[0]));
-
+        glDrawElements(GL_TRIANGLES, GLsizei(mMesh->faces.size() * 3), GL_UNSIGNED_INT, &(mMesh->faces[0][0]));
 
     }
 
+    glDisableVertexAttribArray(mPosAttr);
+    glDisableVertexAttribArray(mColAttr);
+
+    if (!depthTest) {
+        glDisable(GL_DEPTH_TEST);
+    }
 
     mProgram->release();
 

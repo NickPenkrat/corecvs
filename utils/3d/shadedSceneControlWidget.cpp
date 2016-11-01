@@ -2,7 +2,7 @@
 #include "ui_shadedSceneControlWidget.h"
 
 ShadedSceneControlWidget::ShadedSceneControlWidget(QWidget *parent) :
-    QWidget(parent),
+    ParametersControlWidgetBase(parent),
     ui(new Ui::ShadedSceneControlWidget)
 {
     ui->setupUi(this);
