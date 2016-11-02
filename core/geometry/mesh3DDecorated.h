@@ -37,6 +37,8 @@ public:
 
     virtual void dumpInfo(ostream &out = std::cout) override;
 
+    virtual void fillTestScene();
+
     void recomputeMeanNormals();
 
     bool verify( void );

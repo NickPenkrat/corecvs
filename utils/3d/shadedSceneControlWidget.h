@@ -13,6 +13,7 @@ class ShaderPreset {
 public:
     QString name;
     enum ShaderType{
+        NONE,
         PRESET,
         IMUTABLE,
         SAVEABLE
@@ -52,6 +53,10 @@ public:
 
 private:
     Ui::ShadedSceneControlWidget *ui;
+
+signals:
+    void paramsChanged();
+
 };
 
 #endif // SHADEDSCENECONTROLWIDGET_H

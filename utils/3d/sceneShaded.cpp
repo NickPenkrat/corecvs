@@ -107,6 +107,8 @@ void SceneShaded::drawMyself(CloudViewDialog * /*dialog*/)
     /* Draw embedded Mesh */
     if (mMesh != NULL)
     {
+        /* Draw faces */
+
         glVertexAttribPointer(mPosAttr, 3, GL_DOUBLE, GL_FALSE, 0, &(mMesh->vertexes.front().x()));
         glEnableVertexAttribArray(mPosAttr);
 
@@ -116,6 +118,11 @@ void SceneShaded::drawMyself(CloudViewDialog * /*dialog*/)
             glVertexAttribPointer(mColAttr, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(RGBColor), color);
             glEnableVertexAttribArray(mColAttr);
         }
+        if (mMesh->hasNormals)
+        {
+
+        }
+
         glDrawElements(GL_TRIANGLES, GLsizei(mMesh->faces.size() * 3), GL_UNSIGNED_INT, &(mMesh->faces[0][0]));
 
     }
@@ -130,4 +137,9 @@ void SceneShaded::drawMyself(CloudViewDialog * /*dialog*/)
     mProgram->release();
 
 
+}
+
+void SceneShaded::setParameters(void *params)
+{
+    mParameters = *static_cast<ShadedSceneControlParameters *>(params);
 }

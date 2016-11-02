@@ -33,7 +33,7 @@ public:
     void run(FeatureMatchingPipeline *pipeline);
     void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename);
     void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
-    ~KeyPointDetectionStage() {};
+    ~KeyPointDetectionStage() {}
 private:
     DetectorType detectorType;
     bool parallelable;
@@ -48,7 +48,7 @@ public:
     void run(FeatureMatchingPipeline *pipeline);
     void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename);
     void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
-    ~DescriptorExtractionStage() {};
+    ~DescriptorExtractionStage() {}
 private:
     DescriptorType descriptorType;
     bool parallelable;

@@ -86,6 +86,11 @@ void Mesh3DDecorated::dumpInfo(ostream &out)
     out << "  Tex  Idxes:" << texId.size() << endl;
 }
 
+void Mesh3DDecorated::fillTestScene()
+{
+    Mesh3D::fillTestScene();
+}
+
 void Mesh3DDecorated::recomputeMeanNormals()
 {
     switchNormals(true);
