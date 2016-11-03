@@ -6,8 +6,8 @@ ShadedSceneControlWidget::ShadedSceneControlWidget(QWidget *parent) :
     ui(new Ui::ShadedSceneControlWidget)
 {
     ui->setupUi(this);
-    QObject::connect(ui->edgeComboBox, SIGNAL(currentIndexChanged(int)), this, SIGNAL(paramsChanged()));
-    QObject::connect(ui->faceComboBox, SIGNAL(currentIndexChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->edgeComboBox , SIGNAL(currentIndexChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->faceComboBox , SIGNAL(currentIndexChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(ui->pointComboBox, SIGNAL(currentIndexChanged(int)), this, SIGNAL(paramsChanged()));
 }
 
@@ -25,8 +25,8 @@ ShadedSceneControlParameters *ShadedSceneControlWidget::createParameters() const
 
 void ShadedSceneControlWidget::getParameters(ShadedSceneControlParameters &params) const
 {
-    params.edge.type  = ui->edgeComboBox->currentIndex() == 0 ? ShaderPreset::NONE : ShaderPreset::PRESET;
-    params.face.type  = ui->faceComboBox->currentIndex() == 0 ? ShaderPreset::NONE : ShaderPreset::PRESET;
+    params.edge.type  = ui->edgeComboBox->currentIndex()  == 0 ? ShaderPreset::NONE : ShaderPreset::PRESET;
+    params.face.type  = ui->faceComboBox->currentIndex()  == 0 ? ShaderPreset::NONE : ShaderPreset::PRESET;
     params.point.type = ui->pointComboBox->currentIndex() == 0 ? ShaderPreset::NONE : ShaderPreset::PRESET;
 }
 

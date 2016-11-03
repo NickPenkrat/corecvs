@@ -6,21 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>558</width>
-    <height>744</height>
+    <width>637</width>
+    <height>781</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="0">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Vertex Shader</string>
-     </property>
-    </widget>
-   </item>
+  <layout class="QGridLayout" name="gridLayout_3">
    <item row="0" column="0">
     <widget class="QComboBox" name="presetComboBox">
      <item>
@@ -29,19 +22,6 @@
       </property>
      </item>
     </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Fragment Shader</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0" colspan="2">
-    <widget class="QPlainTextEdit" name="fragmentShaderTextEdit"/>
-   </item>
-   <item row="2" column="0" colspan="2">
-    <widget class="QPlainTextEdit" name="vetrexShaderTextEdit"/>
    </item>
    <item row="0" column="1">
     <widget class="QPushButton" name="pushButton_2">
@@ -66,7 +46,285 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="0" colspan="2">
+   <item row="1" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Vertex Shader</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="2">
+    <widget class="QPlainTextEdit" name="vetrexShaderTextEdit"/>
+   </item>
+   <item row="2" column="2" rowspan="3">
+    <widget class="QWidget" name="widget" native="true">
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_1">
+        <property name="text">
+         <string>Point Color</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="RgbColorParametersControlWidget" name="pointColorControlWidget" native="true">
+        <property name="toolTip">
+         <string>Point Color</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>Point Color Override</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QCheckBox" name="pointColorOverrideCheckBox">
+        <property name="toolTip">
+         <string>Point Color Override</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_16">
+        <property name="text">
+         <string>Point Size</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QSpinBox" name="pointSizeSpinBox">
+        <property name="toolTip">
+         <string>Point Size</string>
+        </property>
+        <property name="suffix">
+         <string/>
+        </property>
+        <property name="prefix">
+         <string/>
+        </property>
+        <property name="minimum">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <number>255</number>
+        </property>
+        <property name="singleStep">
+         <number>1</number>
+        </property>
+        <property name="value">
+         <number>1</number>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>Edge Color</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="RgbColorParametersControlWidget" name="edgeColorControlWidget" native="true">
+        <property name="toolTip">
+         <string>Edge Color</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label_8">
+        <property name="text">
+         <string>Edge Color Override</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QCheckBox" name="edgeColorOverrideCheckBox">
+        <property name="toolTip">
+         <string>Edge Color Override</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="label_7">
+        <property name="text">
+         <string>Edge Width</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QSpinBox" name="edgeWidthSpinBox">
+        <property name="toolTip">
+         <string>Edge Width</string>
+        </property>
+        <property name="suffix">
+         <string/>
+        </property>
+        <property name="prefix">
+         <string/>
+        </property>
+        <property name="minimum">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <number>255</number>
+        </property>
+        <property name="singleStep">
+         <number>1</number>
+        </property>
+        <property name="value">
+         <number>1</number>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <widget class="QLabel" name="label_13">
+        <property name="text">
+         <string>Face Color</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="RgbColorParametersControlWidget" name="faceColorControlWidget" native="true">
+        <property name="toolTip">
+         <string>Face Color</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QLabel" name="label_15">
+        <property name="text">
+         <string>Face Color Override</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="1">
+       <widget class="QCheckBox" name="faceColorOverrideCheckBox">
+        <property name="toolTip">
+         <string>Face Color Override</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0">
+       <widget class="QLabel" name="label_14">
+        <property name="text">
+         <string>Show caption</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="1">
+       <widget class="QCheckBox" name="showCaptionCheckBox">
+        <property name="toolTip">
+         <string>Show caption</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="0">
+       <widget class="QLabel" name="label_10">
+        <property name="text">
+         <string>Font Size</string>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="1">
+       <widget class="QSpinBox" name="fontSizeSpinBox">
+        <property name="toolTip">
+         <string>Font Size</string>
+        </property>
+        <property name="suffix">
+         <string/>
+        </property>
+        <property name="prefix">
+         <string/>
+        </property>
+        <property name="minimum">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <number>255</number>
+        </property>
+        <property name="singleStep">
+         <number>1</number>
+        </property>
+        <property name="value">
+         <number>8</number>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="0">
+       <widget class="QLabel" name="label_11">
+        <property name="text">
+         <string>Font Width</string>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="1">
+       <widget class="QSpinBox" name="fontWidthSpinBox">
+        <property name="toolTip">
+         <string>Font Width</string>
+        </property>
+        <property name="suffix">
+         <string/>
+        </property>
+        <property name="prefix">
+         <string/>
+        </property>
+        <property name="minimum">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <number>255</number>
+        </property>
+        <property name="singleStep">
+         <number>1</number>
+        </property>
+        <property name="value">
+         <number>1</number>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="0">
+       <widget class="QLabel" name="label_12">
+        <property name="text">
+         <string>Font Color</string>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="1">
+       <widget class="RgbColorParametersControlWidget" name="fontColorControlWidget" native="true">
+        <property name="toolTip">
+         <string>Font Color</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Fragment Shader</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0" colspan="2">
+    <widget class="QPlainTextEdit" name="fragmentShaderTextEdit"/>
+   </item>
+   <item row="5" column="0">
     <layout class="QGridLayout" name="gridLayout_2">
      <item row="0" column="0">
       <widget class="QLabel" name="label_3">
@@ -142,7 +400,7 @@
      </item>
     </layout>
    </item>
-   <item row="12" column="0" colspan="2">
+   <item row="6" column="0">
     <widget class="QPushButton" name="pushButton">
      <property name="text">
       <string>Apply</string>
@@ -151,6 +409,14 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>RgbColorParametersControlWidget</class>
+   <extends>QWidget</extends>
+   <header>rgbColorParametersControlWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../../resources/main.qrc"/>
  </resources>

@@ -89,6 +89,17 @@ void Mesh3DDecorated::dumpInfo(ostream &out)
 void Mesh3DDecorated::fillTestScene()
 {
     Mesh3D::fillTestScene();
+
+    /* Texture coordinates */
+    textureCoords.push_back(Vector2dd(0.0, 0.0));
+    textureCoords.push_back(Vector2dd(0.0, 1.0));
+    textureCoords.push_back(Vector2dd(1.0, 0.0));
+
+    for (size_t face = 0; face < faces.size(); face++ )
+    {
+        texId.push_back(Vector3d32(0, 1, 2));
+    }
+    hasTexCoords = true;
 }
 
 void Mesh3DDecorated::recomputeMeanNormals()

@@ -20,65 +20,6 @@ namespace corecvs {
 
 using std::vector;
 
-class OBJMaterial {
-public:
-    enum  {
-        KOEF_AMBIENT,
-        KOEF_DIFFUSE,
-        KOEF_SPECULAR,
-        KOEF_LAST
-    };
-
-    Vector3dd koefs[KOEF_LAST];
-
-    enum  {
-        TEX_AMBIENT,
-        TEX_DIFFUSE,
-        TEX_SPECULAR,
-        TEX_HIGHLIGHT,
-        TEX_ALPHA,
-        TEX_BUMP,
-        TEX_LAST
-    };
-
-    RGB24Buffer* tex[TEX_LAST] = {NULL};
-
-    OBJMaterial() {
-
-        for (size_t i = 0; i < CORE_COUNT_OF(koefs); i++)
-        {
-            koefs[i] = RGBColor::White().toDouble();
-        }
-
-        for (size_t j = 0; j < CORE_COUNT_OF(tex); j++)
-        {
-            tex[j] = NULL;
-        }
-    }
-
-    friend ostream & operator <<(ostream &out, const OBJMaterial &material)
-    {
-        for (size_t i = 0; i < CORE_COUNT_OF(material.koefs); i++)
-        {
-            out << material.koefs[i] << endl;
-        }
-
-        for (size_t j = 0; j < CORE_COUNT_OF(material.tex); j++)
-        {
-            if (material.tex[j] != NULL) {
-                out << material.tex[j]->getSize() << endl;
-            } else {
-                out << "- No -" << endl;
-            }
-        }
-        return out;
-    }
-
-};
-
-
-
-
 class OBJLoader {
 public:
     bool trace = true;

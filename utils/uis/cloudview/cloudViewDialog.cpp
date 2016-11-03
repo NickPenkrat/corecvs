@@ -11,6 +11,8 @@
 #include "qSettingsSetter.h"
 
 #include "meshLoader.h"
+#include "objLoader.h"
+
 
 #include "sceneShaded.h"
 
@@ -830,23 +832,48 @@ void CloudViewDialog::loadMesh()
 {
     MeshLoader loader;
 
-    QString type = QString("3D Model (%1)").arg(loader.extentionList().c_str());
+    QString type = QString("Model (%1)").arg(loader.extentionList().c_str());
+    qDebug() << "Type: " << type;
 
     QString fileName = QFileDialog::getOpenFileName(
       this,
       tr("Load 3D Model"),
       ".",
-      type);
+      "3D Model (*.ply *.stl *.obj *.gcode)"
+      /*type*/);
 
-    Mesh3DScene *mesh = new Mesh3DScene();
+     QFileInfo fileInfo(fileName);
 
-    if (!loader.load(mesh, fileName.toStdString()))
-    {
-        delete_safe(mesh);
-           return;
+    if (fileName.endsWith(".obj")) {
+        SceneShaded *shaded = new SceneShaded();
+        Mesh3DDecorated *mesh = new Mesh3DDecorated();
+        OBJLoader objLoader;
+
+        std::ifstream file;
+        file.open(fileName.toStdString(), std::ios::in);
+        objLoader.loadOBJ(file, *mesh);
+        file.close();
+
+        QString mtlFile = fileName + ".mtl";
+        std::ifstream materialFile;
+        materialFile.open(mtlFile.toStdString(), std::ios::in);
+        objLoader.loadMaterial(materialFile, mesh->material, fileInfo.path().toStdString());
+        materialFile.close();
+
+
+        shaded->mMesh = mesh;
+        shaded->prepareMesh(this);
+        addSubObject(fileInfo.baseName(), QSharedPointer<Scene3D>(shaded));
+    } else {
+        Mesh3DScene *mesh = new Mesh3DScene();
+
+        if (!loader.load(mesh, fileName.toStdString()))
+        {
+            delete_safe(mesh);
+               return;
         }
-    QFileInfo fileInfo(fileName);
-    addSubObject(fileInfo.baseName(), QSharedPointer<Scene3D>((Scene3D*)mesh));
+        addSubObject(fileInfo.baseName(), QSharedPointer<Scene3D>((Scene3D*)mesh));
+    }
 }
 
 void CloudViewDialog::addCoordinateFrame()

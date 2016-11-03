@@ -19,20 +19,32 @@ public:
     ShadedSceneControlParameters mParameters;
 
 
-    QOpenGLShaderProgram *mProgram;
+    QOpenGLShaderProgram *mProgram = NULL;
     GLuint mPosAttr;
     GLuint mColAttr;
-    //GLuint faceColAttr;
 
-    //GLuint mNormalAttr;
+    GLuint mFaceColAttr;
+    GLuint mTexAttr;
+    GLuint mNormalAttr;
+
+    GLuint mTextureSampler;
+    GLuint mBumpSampler;
+
 
     GLuint mModelViewMatrix;
     GLuint mProjectionMatrix;
+
+    /*Textures*/
+    GLuint mTexture;
 
 
     /* Some test data */
     Mesh3DDecorated *mMesh = NULL;
 
+    SceneShaded()
+    {
+
+    }
 
     virtual ParametersControlWidgetBase *getContolWidget() override
     {

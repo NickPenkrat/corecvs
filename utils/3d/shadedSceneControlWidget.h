@@ -18,7 +18,7 @@ public:
         IMUTABLE,
         SAVEABLE
     };
-    ShaderType type;
+    ShaderType type = ShaderPreset::PRESET;
 
     QString vertex;
     QString fragment;
@@ -27,6 +27,14 @@ public:
 
 class ShadedSceneControlParameters : public BaseReflectionStatic{
 public:
+
+    ShadedSceneControlParameters()
+    {
+        point.type = ShaderPreset::PRESET;
+        edge.type = ShaderPreset::PRESET;
+        face.type = ShaderPreset::PRESET;
+    }
+
     ShaderPreset point;
     ShaderPreset edge;
     ShaderPreset face;
