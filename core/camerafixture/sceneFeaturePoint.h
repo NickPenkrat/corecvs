@@ -167,8 +167,8 @@ public:
         POINT_RECONSTRUCTED         = 0x02,
         POINT_TEMPORARY             = 0x04,
         POINT_TRIANGULATE           = 0x08,
-        POINT_RAW_DETECTED          = 0x0F,
-        POINT_RAW_DETECTED_MATCHED  = 0x0F,
+        POINT_RAW_DETECTED          = 0x10,
+        POINT_RAW_DETECTED_MATCHED  = 0x20,
         POINT_ALL                   = 0xFF
     };
     PointType                   type;

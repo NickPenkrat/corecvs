@@ -43,27 +43,6 @@ TEST(EnvTest, CheckCurrentDirTest)
     CORE_ASSERT_TRUE(checkFileExist(std::string("."), filePath), "Missed expected repo DB at the current folder");
 }
 
-// Check existance for the "<TOPCON_DIR>data/Measure_12_Roof/mosk_test_001_good/_DSC8173.jpg"
-TEST(EnvTest, CheckTopconDirTest)
-{
-    std::string filePath = std::string("data")
-        + PATH_SEPARATOR + "Measure_12_Roof"
-        + PATH_SEPARATOR + "mosk_test_001_good"
-        + PATH_SEPARATOR + "_DSC8173.jpg";
-
-    CORE_ASSERT_TRUE(checkFileExist("TOPCON_DIR", filePath), "Missed expected DB at the TOPCON_DIR folder");
-}
-
-// Check existance for the "<TOPCON_DIR_GDRIVE>data/tests/SPA3_0deg_3.jpg"
-TEST(EnvTest, CheckTopconDirGDriveTest)
-{
-    std::string filePath = std::string("data")
-        + PATH_SEPARATOR + "tests"
-        + PATH_SEPARATOR + "SPA3_0deg_3.jpg";
-
-    CORE_ASSERT_TRUE(checkFileExist("TOPCON_DIR_GDRIVE", filePath), "Missed expected DB at the TOPCON_DIR_GDRIVE folder");
-}
-
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
