@@ -59,7 +59,7 @@ DisplacementBuffer *DisplacementBuffer::CacheInverse(
     {
         LevenbergMarquardt levMarq(10, 2, 1.5);
         levMarq.f = inverseMap;
-        levMarq.fastFix4Placer = false;
+
         for (int i = 0; i < toReturn->h; i ++)
         {
             for (int j = 0; j < toReturn->w; j ++)

@@ -208,6 +208,275 @@ void LensDistortionModelParameters::getCircumscribedImageRect(const Vector2dd &t
             drUndistorted[0] = v[0];
 }
 
+Matrix22 LensDistortionModelParameters::jacobian(double x, double y) const
+{
+    auto dT1 = mMapForward ? Matrix22(1.0 / mScale,          0.0,
+                                                0.0, 1.0 / mScale) :
+                                Matrix22(1.0, 0.0,
+                                        0.0, 1.0);
+    auto dT2 = Matrix22(1.0 / mNormalizingFocal * mAspect,                     0.0,
+                                                        0.0, 1.0 / mNormalizingFocal);
+    auto T1 = mMapForward ? Matrix33(1.0 / mScale,          0.0, -mShiftX / mScale,
+                                                0.0, 1.0 / mScale, -mShiftY / mScale,
+                                                0.0,          0.0,               1.0) :
+                            Matrix33(1.0, 0.0, 0.0,
+                                        0.0, 1.0, 0.0,
+                                        0.0, 0.0, 1.0);
+    auto T2 = Matrix33(1.0 / mNormalizingFocal * mAspect,                     0.0, -mPrincipalX / mNormalizingFocal * mAspect,
+                                                        0.0, 1.0 / mNormalizingFocal, -mPrincipalY / mNormalizingFocal,
+                                                        0.0,                     0.0,                              1.0);
+    Vector3dd xy(x, y, 1.0);
+    auto dxdyv = T2 * (T1 * xy);
+    auto dx = dxdyv[0], dy = dxdyv[1];
+    auto r2 = dx * dx + dy * dy;
+    auto r  = std::sqrt(r2);
+    auto drddx = dx / r, drddy = dy / r;
+
+    auto dphidr = 0.0;
+    auto phi = 0.0;
+    auto rpow = 1.0;
+    for (int i = 0; i < mKoeff.size(); ++i)
+    {
+        dphidr += mKoeff[i] * (i + 1) * rpow;
+        rpow *= r;
+        phi += mKoeff[i] * rpow;
+    }
+
+    auto dPhi = Matrix22(phi + dphidr*drddx,     dx*dphidr*drddy,
+                            dy*dphidr*drddx,  phi + dphidr*drddy);
+    auto dPsi = Matrix22(2.0*mTangentialX*dy+6.0* mTangentialY*dx, 2.0*mTangentialX*dx+2.0*mTangentialY*dy,
+                            2.0*mTangentialX*dx+2.0*mTangentialY*dy, 6.0*mTangentialX*dy+2.0*mTangentialY*dx);
+    auto ddiff= Matrix22(1.0, 0.0,
+                            0.0, 1.0);
+    auto dP1 = Matrix22(mNormalizingFocal / mAspect,               0.0,
+                                                0.0, mNormalizingFocal);
+    auto dP2 = mMapForward ? Matrix22(1.0, 0.0,
+                                        0.0, 1.0) :
+                            Matrix22(mScale,    0.0,
+                                        0.0, mScale);
+
+    return dP2 * dP1 * (ddiff + dPhi + dPsi) * dT2 * dT1;
+}
+
+Matrix22 LensDistortionModelParameters::principalJacobian(double x, double y) const
+{
+    auto dT1 = mMapForward ? Matrix22(1.0 / mScale,          0.0,
+                                                0.0, 1.0 / mScale) :
+                                Matrix22(1.0, 0.0,
+                                        0.0, 1.0);
+    auto dT2 = Matrix22(1.0 / mNormalizingFocal * mAspect,                     0.0,
+                                                        0.0, 1.0 / mNormalizingFocal);
+    auto T1 = mMapForward ? Matrix33(1.0 / mScale,          0.0, -mShiftX / mScale,
+                                                0.0, 1.0 / mScale, -mShiftY / mScale,
+                                                0.0,          0.0,               1.0) :
+                            Matrix33(1.0, 0.0, 0.0,
+                                        0.0, 1.0, 0.0,
+                                        0.0, 0.0, 1.0);
+    auto T2 = Matrix33(1.0 / mNormalizingFocal * mAspect,                     0.0, -mPrincipalX / mNormalizingFocal * mAspect,
+                                                        0.0, 1.0 / mNormalizingFocal, -mPrincipalY / mNormalizingFocal,
+                                                        0.0,                     0.0,                              1.0);
+    Vector3dd xy(x, y, 1.0);
+    auto dxdyv = T2 * (T1 * xy);
+    auto dx = dxdyv[0], dy = dxdyv[1];
+    auto r2 = dx * dx + dy * dy;
+    auto r  = std::sqrt(r2);
+    auto drddx = dx / r, drddy = dy / r;
+
+    auto dphidr = 0.0;
+    auto phi = 0.0;
+    auto rpow = 1.0;
+    for (int i = 0; i < mKoeff.size(); ++i)
+    {
+        dphidr += mKoeff[i] * (i + 1) * rpow;
+        rpow *= r;
+        phi += mKoeff[i] * rpow;
+    }
+
+    auto dPhi = Matrix22(phi + dphidr*drddx,     dx*dphidr*drddy,
+                            dy*dphidr*drddx,  phi + dphidr*drddy);
+    auto dPsi = Matrix22(2.0*mTangentialX*dy+6.0* mTangentialY*dx, 2.0*mTangentialX*dx+2.0*mTangentialY*dy,
+                            2.0*mTangentialX*dx+2.0*mTangentialY*dy, 6.0*mTangentialX*dy+2.0*mTangentialY*dx);
+    auto ddiff= Matrix22(1.0, 0.0,
+                            0.0, 1.0);
+    auto dP1 = Matrix22(mNormalizingFocal / mAspect,               0.0,
+                                                0.0, mNormalizingFocal);
+    auto dP2 = mMapForward ? Matrix22(1.0, 0.0,
+                                        0.0, 1.0) :
+                            Matrix22(mScale,    0.0,
+                                        0.0, mScale);
+    auto P3 = Matrix22(1, 0, 0, 1);
+    auto P0 = Matrix22(-1.0/mNormalizingFocal*mAspect, 0.0, 0.0, -1.0/mNormalizingFocal);
+    return P3 + dP2 * dP1 * (ddiff + dPhi + dPsi) * P0;
+}
+
+Matrix22 LensDistortionModelParameters::tangentialJacobian(double x, double y) const
+{
+    auto dT1 = mMapForward ? Matrix22(1.0 / mScale,          0.0,
+                                                0.0, 1.0 / mScale) :
+                                Matrix22(1.0, 0.0,
+                                        0.0, 1.0);
+    auto dT2 = Matrix22(1.0 / mNormalizingFocal * mAspect,                     0.0,
+                                                        0.0, 1.0 / mNormalizingFocal);
+    auto T1 = mMapForward ? Matrix33(1.0 / mScale,          0.0, -mShiftX / mScale,
+                                                0.0, 1.0 / mScale, -mShiftY / mScale,
+                                                0.0,          0.0,               1.0) :
+                            Matrix33(1.0, 0.0, 0.0,
+                                        0.0, 1.0, 0.0,
+                                        0.0, 0.0, 1.0);
+    auto T2 = Matrix33(1.0 / mNormalizingFocal * mAspect,                     0.0, -mPrincipalX / mNormalizingFocal * mAspect,
+                                                        0.0, 1.0 / mNormalizingFocal, -mPrincipalY / mNormalizingFocal,
+                                                        0.0,                     0.0,                              1.0);
+    Vector3dd xy(x, y, 1.0);
+    auto dxdyv = T2 * (T1 * xy);
+    auto dx = dxdyv[0], dy = dxdyv[1];
+    auto r2 = dx * dx + dy * dy;
+    auto r  = std::sqrt(r2);
+    auto drddx = dx / r, drddy = dy / r;
+
+    auto dphidr = 0.0;
+    auto phi = 0.0;
+    auto rpow = 1.0;
+    for (int i = 0; i < mKoeff.size(); ++i)
+    {
+        dphidr += mKoeff[i] * (i + 1) * rpow;
+        rpow *= r;
+        phi += mKoeff[i] * rpow;
+    }
+
+    auto dPsi = Matrix22(2.0*dx*dy,      r2 + 2.0*dx*dx,
+                            r2 + 2.0*dy*dy, 2.0*dx*dy);
+    auto dP1 = Matrix22(mNormalizingFocal / mAspect,               0.0,
+                                                0.0, mNormalizingFocal);
+    auto dP2 = mMapForward ? Matrix22(1.0, 0.0,
+                                        0.0, 1.0) :
+                            Matrix22(mScale,    0.0,
+                                        0.0, mScale);
+
+    return dP2 * dP1 * dPsi;
+}
+
+Matrix   LensDistortionModelParameters::polynomialJacobian(double x, double y) const
+{
+    auto dT1 = mMapForward ? Matrix22(1.0 / mScale,          0.0,
+                                                0.0, 1.0 / mScale) :
+                                Matrix22(1.0, 0.0,
+                                        0.0, 1.0);
+    auto dT2 = Matrix22(1.0 / mNormalizingFocal * mAspect,                     0.0,
+                                                        0.0, 1.0 / mNormalizingFocal);
+    auto T1 = mMapForward ? Matrix33(1.0 / mScale,          0.0, -mShiftX / mScale,
+                                                0.0, 1.0 / mScale, -mShiftY / mScale,
+                                                0.0,          0.0,               1.0) :
+                            Matrix33(1.0, 0.0, 0.0,
+                                        0.0, 1.0, 0.0,
+                                        0.0, 0.0, 1.0);
+    auto T2 = Matrix33(1.0 / mNormalizingFocal * mAspect,                     0.0, -mPrincipalX / mNormalizingFocal * mAspect,
+                                                        0.0, 1.0 / mNormalizingFocal, -mPrincipalY / mNormalizingFocal,
+                                                        0.0,                     0.0,                              1.0);
+    Vector3dd xy(x, y, 1.0);
+    auto dxdyv = T2 * (T1 * xy);
+    auto dx = dxdyv[0], dy = dxdyv[1];
+    auto r2 = dx * dx + dy * dy;
+    auto r  = std::sqrt(r2);
+    auto drddx = dx / r, drddy = dy / r;
+
+    auto rpow = 1.0;
+    Matrix dPhi(2, mKoeff.size());
+    for (int i = 0; i < mKoeff.size(); ++i)
+    {
+        rpow *= r;
+        dPhi.a(0, i) = dx * rpow;
+        dPhi.a(1, i) = dy * rpow;
+    }
+
+    auto dPsi = Matrix22(2.0*mTangentialX*dy+6.0* mTangentialY*dx, 2.0*mTangentialX*dx+2.0*mTangentialY*dy,
+                            2.0*mTangentialX*dx+2.0*mTangentialY*dy, 6.0*mTangentialX*dy+2.0*mTangentialY*dx);
+    auto ddiff= Matrix22(1.0, 0.0,
+                            0.0, 1.0);
+    auto dP1 = Matrix22(mNormalizingFocal / mAspect,               0.0,
+                                                0.0, mNormalizingFocal);
+    auto dP2 = mMapForward ? Matrix22(1.0, 0.0,
+                                        0.0, 1.0) :
+                            Matrix22(mScale,    0.0,
+                                        0.0, mScale);
+    // corecvs still sucks when this code is being written
+    Matrix mmm(2, 2);
+    auto barbar = dP2 * dP1;
+    for (int i = 0; i < 2; ++i)
+        for (int j = 0; j < 2; ++j)
+            mmm.a(i, j) = barbar.a(i, j);
+    return mmm * dPhi;
+}
+
+
+void LensDistortionModelParameters::solveRadial(const std::vector<Vector2dd> &src, const std::vector<Vector2dd> &dst)
+{
+    CORE_ASSERT_TRUE_S(src.size() == dst.size());
+    // So we will compute this stuff in normalized coordinates
+    size_t N = src.size(), M = mKoeff.size();
+    Matrix D(2*N, M + 2);
+    Vector rhs(2*N);
+    std::vector<double> powers(M);
+    for (size_t i = 0; i < N; ++i)
+    {
+        auto ux = src[i][0], uy = src[i][1],
+             vx = dst[i][0], vy = dst[i][1];
+        vx -= mPrincipalX;
+        vy -= mPrincipalY;
+        if (mMapForward)
+        {
+            ux -= mShiftX;
+            ux /= mScale;
+            uy -= mShiftY;
+            uy /= mScale;
+        }
+        else
+        {
+            vx -= mShiftX;
+            vy -= mShiftY;
+            vx /= mScale;
+            vy /= mScale;
+        }
+        vx /= mNormalizingFocal;
+        vy /= mNormalizingFocal;
+
+        ux = (ux - mPrincipalX) / mNormalizingFocal * mAspect;
+        uy = (uy - mPrincipalY) / mNormalizingFocal;
+
+        auto r = std::sqrt(ux * ux + uy * uy);
+        auto dx = vx - ux, dy = vy - uy;
+
+        powers[0] = r;
+        for (int j = 1; j < M; ++j)
+            powers[j] = powers[j - 1] * r;
+
+        for (int j = 0; j < M; ++j)
+        {
+            D.a(i * 2,     j) = ux * powers[j] / mAspect;
+            D.a(i * 2 + 1, j) = uy * powers[j];
+        }
+        D.a(i * 2,     M) = 2 * ux * uy / mAspect;
+        D.a(i * 2 + 1, M) = ux * ux + 3 * uy * uy;
+        D.a(i * 2,     M + 1) = (3 * ux * ux + uy * uy) / mAspect;
+        D.a(i * 2 + 1, M + 1) = 2 * ux * uy;
+        rhs[i * 2    ] = dx;
+        rhs[i * 2 + 1] = dy;
+
+    }
+
+    Vector res(M + 2);
+#ifndef WITH_BLAS
+    D.ata().linSolve(rhs*D, res, true, true);
+#else
+    LAPACKE_dgels(LAPACK_ROW_MAJOR, 'N', N, M + 2, 1, &D.a(0, 0), D.stride, &rhs[0], 1);
+    res = rhs;
+#endif
+
+    for (int i = 0; i < M; ++i)
+        mKoeff[i] = res[i];
+    mTangentialX = res[M];
+    mTangentialY = res[M + 1];
+}
+
 void LensDistortionModelParameters::getRectMap(const Vector2dd &tl, const Vector2dd &dr, std::vector<Vector2dd> boundaries[4]) const
 {
     Vector2dd shifts[] =
