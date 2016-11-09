@@ -11,6 +11,7 @@ void addPole(const Vector3dd &position, RaytraceableUnion &scene)
     int zones = 14;
     double totalHeight = 200;
 
+
     for ( int i = 0; i < zones; i ++)
     {
         RaytraceableCylinder *object = new RaytraceableCylinder;
@@ -25,9 +26,11 @@ void addPole(const Vector3dd &position, RaytraceableUnion &scene)
         //object->material = (i % 2) ? MaterialExamples::ex1() : MaterialExamples::ex2();
         scene.elements.push_back(object);
     }
+
+
 }
 
-void raytrace_scene_pole(void)
+void raytrace_scene_pole( void )
 {
     SYNC_PRINT(("raytrace_scene_pole( void )\n"));
     PreciseTimer timer = PreciseTimer::currentTime();
@@ -88,6 +91,8 @@ void raytrace_scene_pole(void)
         BMPLoader().save(name, buffer);
         delete_safe(buffer);
     }
+
+
 
     SYNC_PRINT(("Processed: %lf seconds elapsed\n", timer.usecsToNow() / 1e6 ));
 }

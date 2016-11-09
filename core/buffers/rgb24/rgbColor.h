@@ -583,6 +583,10 @@ template<class VisitorType>
     {
         return ((uint32_t)r() << 16) | ((uint32_t)g() << 8) | ((uint32_t)b());
     }
+    uint32_t toBGRInt() const
+    {
+        return ((uint32_t)b() << 16) | ((uint32_t)g() << 8) | ((uint32_t)r());
+    }
     uint32_t toBRGInt() const
     {
         return ((uint32_t)b() << 16) | ((uint32_t)g() << 8) | ((uint32_t)r());
