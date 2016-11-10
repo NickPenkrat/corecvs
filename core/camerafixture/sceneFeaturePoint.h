@@ -168,13 +168,14 @@ public:
     bool                        hasKnownReprojectedPosition;
 
     enum PointType {
-        POINT_UNKNOWN       = 0x00,
-        POINT_USER_DEFINED  = 0x01,  /**< Point that comes from a file */
-        POINT_RECONSTRUCTED = 0x02,
-        POINT_TEMPORARY     = 0x04,
-        POINT_TRIANGULATE   = 0x08,
-        POINT_RAW_DETECTED  = 0x10,
-        POINT_ALL           = 0xFF
+        POINT_UNKNOWN               = 0x00,
+        POINT_USER_DEFINED          = 0x01,  /**< Point that comes from a file */
+        POINT_RECONSTRUCTED         = 0x02,
+        POINT_TEMPORARY             = 0x04,
+        POINT_TRIANGULATE           = 0x08,
+        POINT_RAW_DETECTED          = 0x10,
+        POINT_RAW_DETECTED_MATCHED  = 0x20,
+        POINT_ALL                   = 0xFF
     };
     PointType                   type;
 
