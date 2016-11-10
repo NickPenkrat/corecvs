@@ -40,8 +40,10 @@ static const char *vertexShaderSource =
     "attribute highp vec4 posAttr;\n"
     "attribute lowp  vec4 colAttr;\n"
     "attribute lowp  vec4 faceColAttr;\n"
+    "attribute lowp  vec4 normalAttr;\n"
     "attribute lowp  vec2 texAttr;\n"
     "varying lowp vec4 col;\n"
+    "varying lowp vec4 normal;\n"
     "varying lowp vec2 vTexCoord;\n"
     "uniform highp mat4 modelview;\n"
     "uniform highp mat4 projection;\n"
@@ -50,6 +52,7 @@ static const char *vertexShaderSource =
     "   col.a = 1.0;\n"
     "   vTexCoord.x = texAttr.x;"
     "   vTexCoord.y = 1.0 - texAttr.y;\n"
+    "   normal = normalAttr;\n"
     "   gl_Position = projection * modelview * posAttr;\n"
     "}\n";
 
@@ -58,14 +61,57 @@ static const char *fragmentShaderSource =
     "uniform sampler2D bumpSampler;\n"
     "varying lowp vec4 col;\n"
     "varying lowp vec2 vTexCoord;\n"
+    "varying lowp vec4 normal;\n"
     "void main() {\n"
-    "   gl_FragColor = col;\n"
+    "   //gl_FragColor = col;\n"
     "   //gl_FragColor.rg = vTexCoord;\n"
-    "   gl_FragColor.rgb = texture2D(textureSampler, vTexCoord).rgb;\n"
+    "   gl_FragColor.rgb  = texture2D(textureSampler, vTexCoord).rgb;\n"
+    "   float diff = dot(normal.xyz, vec3(0.5,0.5,0.5));\n"
+    "   if (diff < 0) diff = 0;\n"
+    "   gl_FragColor.r += diff;\n"
+    "   //gl_FragColor.rgb = normal.xyz;\n"
     "   gl_FragColor.a = 1.0;\n"
     "   gl_FragDepth = gl_FragCoord.z;\n"
     "}\n";
 
+void SceneShaded::addTexture(GLuint texId, RGB24Buffer *input)
+{
+    //glActiveTexture(0);
+    glBindTexture(GL_TEXTURE_2D, texId);
+    qDebug() << "Binded texture:" << texId;
+    dumpGLErrors();
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S    , GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T    , GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    qDebug() << "Setting params texture:" << texId;
+    dumpGLErrors();
+
+    GLint oldStride;
+    glGetIntegerv(GL_UNPACK_ROW_LENGTH, &oldStride);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, input->stride);
+    qDebug() << "Setted stride: old = " << oldStride << " - " << input->stride;
+    dumpGLErrors();
+    glTexImage2D(GL_TEXTURE_2D,
+             0,
+             GL_RGB,
+             input->w,
+             input->h,
+             0,
+             GL_BGRA,
+             GL_UNSIGNED_BYTE,
+             &(input->element(0,0)));
+    qDebug() << "Creating texture:" << texId;
+    dumpGLErrors();
+
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, oldStride);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    qDebug() << "Unbinding texture:" << texId;
+
+
+}
 
 void SceneShaded::prepareMesh(CloudViewDialog * /*dialog*/)
 {
@@ -90,57 +136,31 @@ void SceneShaded::prepareMesh(CloudViewDialog * /*dialog*/)
     mModelViewMatrix  = mProgram->uniformLocation("modelview");
     mProjectionMatrix = mProgram->uniformLocation("projection");
 
-    mTextureSampler   = mProgram->uniformLocation("textureSampler");
+    mTextureSampler = mProgram->uniformLocation("textureSampler");
+    mBumpSampler    = mProgram->uniformLocation("bumpSampler");
 
     /*Prepare Texture*/
     RGB24Buffer *texBuf = mMesh->material.tex[OBJMaterial::TEX_DIFFUSE];
     if (texBuf != NULL) {
-
-        BMPLoader().save("test.bmp", texBuf);
-
         glEnable(GL_TEXTURE_2D);
-
         qDebug() << "Dumping prior error";
         dumpGLErrors();
-
         glGenTextures(1, &mTexture);
         qDebug() << "Created a handle for the texture:" << mTexture;
         dumpGLErrors();
+        addTexture(mTexture, texBuf);
+    }
 
-        //glActiveTexture(0);
-        glBindTexture(GL_TEXTURE_2D, mTexture);
-        qDebug() << "Binded texture:" << mTexture;
+    /*Prepare Bumpmap*/
+    RGB24Buffer *bumpBuf = mMesh->material.tex[OBJMaterial::TEX_DIFFUSE];
+    if (bumpBuf != NULL) {
+        glEnable(GL_TEXTURE_2D);
+        qDebug() << "Dumping prior error";
         dumpGLErrors();
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S    , GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T    , GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        qDebug() << "Setting params texture:" << mTexture;
+        glGenTextures(1, &mBumpmap);
+        qDebug() << "Created a handle for the texture:" << mTexture;
         dumpGLErrors();
-
-        GLint oldStride;
-        glGetIntegerv(GL_UNPACK_ROW_LENGTH, &oldStride);
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, texBuf->stride);
-        qDebug() << "Setted stride: old = " << oldStride << " - " << texBuf->stride;
-        dumpGLErrors();
-        glTexImage2D(GL_TEXTURE_2D,
-                 0,
-                 GL_RGB,
-                 texBuf->w,
-                 texBuf->h,
-                 0,
-                 GL_BGRA,
-                 GL_UNSIGNED_BYTE,
-                 &(texBuf->element(0,0)));
-        qDebug() << "Creating texture:" << mTexture;
-        dumpGLErrors();
-
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, oldStride);
-
-        glBindTexture(GL_TEXTURE_2D, 0);
-        qDebug() << "Unbinding texture:" << mTexture;
-
+        addTexture(mBumpmap, bumpBuf);
     }
 
 }
@@ -412,6 +432,14 @@ void SceneShaded::drawMyself(CloudViewDialog * dialog)
 
                 qDebug() << "Before Call";
                 dumpGLErrors();
+            }
+
+            if (mMesh->material.tex[OBJMaterial::TEX_BUMP])
+            {
+                glEnable(GL_TEXTURE_2D);
+                glActiveTexture(GL_TEXTURE1);
+                glBindTexture(GL_TEXTURE_2D, mBumpmap);
+                mProgram->setUniformValue(mTextureSampler, 1);
             }
 
             glDrawElements(GL_TRIANGLES, GLsizei(mMesh->faces.size() * 3), GL_UNSIGNED_INT, faceIds.data());

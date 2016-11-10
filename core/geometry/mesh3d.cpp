@@ -364,7 +364,7 @@ void Mesh3D::addIcoSphere(Vector3dd center, double radius, int step)
          addFace(startId + Vector3d32(LAST_P, ((i + 1) % 5) + ROUND_2, i + ROUND_2));
      }
 
-     /*No we start the subdivision*/
+     /*Now we start the subdivision*/
 
      int faceIndex = primaryIndex;
 
@@ -377,8 +377,9 @@ void Mesh3D::addIcoSphere(Vector3dd center, double radius, int step)
          {
              Vector3d32 face = faces[f];
 
+#if 1
              /**/
-             int startId = (int)vertexes.size();
+             int startId = (int)vertexes.size();             
 
              for (int k = 0; k < 3; k++)
              {
@@ -396,11 +397,18 @@ void Mesh3D::addIcoSphere(Vector3dd center, double radius, int step)
 
                 addVertex(add);
              }
-             addFace(Vector3d32(face[0], startId, startId + 2));
-             addFace(Vector3d32(startId, face[1], startId + 1));
-             addFace(Vector3d32(startId + 1, face[2], startId + 2));
+             int nv1 = startId;
+             int nv2 = startId + 1;
+             int nv3 = startId + 2;
+#else
+            /* We need a clean implementation that glues subdivision references */
 
-             addFace(Vector3d32(startId, startId + 1, startId + 2));
+#endif
+             addFace(Vector3d32(face[0], nv1, nv3));
+             addFace(Vector3d32(nv1, face[1], nv2));
+             addFace(Vector3d32(nv2, face[2], nv3));
+
+             addFace(Vector3d32(nv1, nv2, nv3));
          }
          faceIndex = lastIndex;
      }

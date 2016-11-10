@@ -33,7 +33,7 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
     //SYNC_PRINT(("FixtureScene::projectForward(0x%0X, %s):called\n", mask, round ? "true" : "false"));
     //SYNC_PRINT(("FixtureScene::projectForward(): points %u\n", mSceneFeaturePoints.size()));
 
-    for (auto & point : mSceneFeaturePoints)
+    for (SceneFeaturePoint* point : mSceneFeaturePoints)
     {
         //cout << "Projecting point:" << point->name << " (" << point->position << ")"<< endl;
         if ((point->type & mask) == 0) {
@@ -41,9 +41,9 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
             continue;
         }
 
-        for (auto& fixture : mFixtures)
+        for (CameraFixture * fixture : mFixtures)
         {
-            for (auto& camera : fixture->cameras)
+            for (FixtureCamera * camera : fixture->cameras)
             {
                 CameraModel worldCam = fixture->getWorldCamera(camera);
 

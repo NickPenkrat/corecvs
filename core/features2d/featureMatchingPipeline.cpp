@@ -253,21 +253,24 @@ public:
             CORE_ASSERT_TRUE_S(image.descriptors.mat.getRows() == image.keyPoints.keyPoints.size());
             for (auto& kp: image.keyPoints.keyPoints)
             {
-                int r = 0, g = 0, b = 0;
+                RGB24Buffer::RGBEx32 mean(RGBColor::Black());
                 int cnt = 0;
-                int x = kp.x, y = kp.y, sz = kp.size / 2;
+                int x = kp.position.x();
+                int y = kp.position.y();
+                int sz = kp.size / 2;
+
                 for (int xx = x - sz; xx <= x + sz; ++xx)
                     for (int yy = y - sz; yy <= y + sz; ++yy)
-                        if (xx >= 0 && xx < bufferRGB.w && yy >= 0 && yy < bufferRGB.h)
-                        {
-                            auto color = bufferRGB.element(yy, xx);
-                            r += color.r();
-                            g += color.g();
-                            b += color.b();
-                            cnt++;
-                        }
-                r /= cnt; g /= cnt; b /= cnt;
-                kp.color = corecvs::RGBColor(r, g, b);
+                    {
+                        if (!bufferRGB.isValidCoord(yy, xx))
+                            continue;
+
+                        auto color = bufferRGB.element(yy, xx);
+                        mean += RGB24Buffer::RGBEx32(color);
+                        cnt++;
+                    }
+                mean /= cnt;
+                kp.color = mean.toRGBColor();
             }
 
             kpt += image.keyPoints.keyPoints.size();
@@ -1297,8 +1300,8 @@ void VsfmWriterStage::saveResults(FeatureMatchingPipeline *pipeline, const std::
         for (size_t k = 0; k < images[i].keyPoints.keyPoints.size(); ++k)
         {
             features[i][k] = SiftFeature(
-                    images[i].keyPoints.keyPoints[k].x,
-                    images[i].keyPoints.keyPoints[k].y,
+                    images[i].keyPoints.keyPoints[k].position.x(),
+                    images[i].keyPoints.keyPoints[k].position.y(),
                     data,
                     images[i].keyPoints.keyPoints[k].size,
                     images[i].keyPoints.keyPoints[k].angle,

@@ -308,10 +308,10 @@ int main (int /*argc*/, char ** /*argv*/)
 //    testJSON1();
 //    testJSON2();
 //    testJSON_UInt64();
-    testJSON_saveDistortion();
+//    testJSON_saveDistortion();
 
-    /*testJSON_FixtureScene();
-    testJSON_StereoScene();*/
+    /*testJSON_FixtureScene();*/
+    // testJSON_StereoScene();
 
 	return 0;
 }

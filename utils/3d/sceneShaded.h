@@ -35,7 +35,9 @@ public:
     GLuint mProjectionMatrix;
 
     /*Textures*/
-    GLuint mTexture;
+    GLuint mTexture = -1;
+    GLuint mBumpmap = -1;
+
 
 
     /* Some test data */
@@ -59,6 +61,7 @@ public:
     virtual void drawMyself(CloudViewDialog *dialog)  override;
 
     virtual ~SceneShaded() {}
+    void addTexture(GLuint texId, RGB24Buffer *input);
 };
 
 

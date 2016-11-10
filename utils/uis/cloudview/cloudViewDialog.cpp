@@ -862,6 +862,7 @@ void CloudViewDialog::loadMesh()
 
 
         shaded->mMesh = mesh;
+        shaded->mMesh->recomputeMeanNormals();
         shaded->prepareMesh(this);
         addSubObject(fileInfo.baseName(), QSharedPointer<Scene3D>(shaded));
     } else {

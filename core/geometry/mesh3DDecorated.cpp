@@ -90,6 +90,9 @@ void Mesh3DDecorated::fillTestScene()
 {
     Mesh3D::fillTestScene();
 
+    /* Normals */
+    recomputeMeanNormals();
+
     /* Texture coordinates */
     textureCoords.push_back(Vector2dd(0.0, 0.0));
     textureCoords.push_back(Vector2dd(0.0, 1.0));

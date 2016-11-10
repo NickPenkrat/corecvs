@@ -404,6 +404,7 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *w
     {
         Vector2dd point = mObservationListModel->getPoint(i);
         Vector2dd imageCoords = imageToWidgetF(point);
+
         painter.setPen(Qt::yellow);
         drawCircle(painter, imageCoords, 5);
         painter.setPen(Qt::blue);
@@ -429,6 +430,21 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *w
         }
 
         int flags = NONE_ARROW;
+
+        /* We should probably use our own mechnism */
+        QTransform old = painter.transform();
+        qDebug() << "Old transform" << old << endl;
+        Matrix33 matrix = currentTransformMatrix().inv();
+        QTransform transform = Core2Qt::QTransformFromMatrix(matrix);
+        painter.setTransform(transform, false);
+
+        DrawDelegate *delegate = mObservationListModel->getDrawDelegate(i);
+        if (delegate != NULL)
+        {
+            delegate->drawAt(painter, imageCoords, isSelected);
+        }
+
+        painter.setTransform(old);
 
         if (isSelected)
         {
@@ -596,4 +612,29 @@ void PointListEditImageWidgetUnited::childMouseMoved(QMouseEvent * event)
     }
 
     AdvancedImageWidget::childMouseMoved(event);
+}
+
+void DrawKeypointAreaDelegate::drawAt(QPainter &painter, Vector2dd position, int state)
+{
+    if (observation == NULL)
+        return;
+
+    painter.setPen(state ? Qt::blue : Qt::yellow);
+
+    KeyPointArea &area = observation->keyPointArea;
+
+    painter.drawEllipse(
+        position.x() - area.size / 2,
+        position.y() - area.size / 2,
+        area.size,
+        area.size);
+    painter.drawLine(
+        position.x(),
+        position.y(),
+        cos(degToRad(area.angle)) * observation->keyPointArea.size + position.x(),
+        sin(degToRad(area.angle)) * observation->keyPointArea.size + position.y()
+
+                     );
+
+
 }

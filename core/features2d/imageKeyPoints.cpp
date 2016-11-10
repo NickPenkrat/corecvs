@@ -10,8 +10,8 @@ std::ostream& operator<<(std::ostream& os, const KeyPoint& kp)
 {
 	os << std::setprecision(15) <<  std::scientific;
 
-	os << std::setw(20) << kp.x << "\t"
-	   << std::setw(20) << kp.y << "\t"
+    os << std::setw(20) << kp.position.x() << "\t"
+       << std::setw(20) << kp.position.y() << "\t"
 	   << std::setw(20) << kp.size << "\t"
 	   << std::setw(20) << kp.angle << "\t"
 	   << std::setw(20) << kp.response << "\t"
@@ -21,7 +21,7 @@ std::ostream& operator<<(std::ostream& os, const KeyPoint& kp)
 
 std::istream& operator>>(std::istream& is, KeyPoint& kp)
 {
-	is >> kp.x >> kp.y >> kp.size >> kp.angle >> kp.response >> kp.octave;
+    is >> kp.position.x() >> kp.position.y() >> kp.size >> kp.angle >> kp.response >> kp.octave;
 	return is;
 }
 

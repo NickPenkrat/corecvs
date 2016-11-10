@@ -2,6 +2,7 @@
 #define SHADEDSCENECONTROLWIDGET_H
 
 #include "parametersControlWidgetBase.h"
+#include "draw3dParametersControlWidget.h"
 
 #include <QWidget>
 
@@ -25,7 +26,8 @@ public:
 
 };
 
-class ShadedSceneControlParameters : public BaseReflectionStatic{
+class ShadedSceneControlParameters : public Draw3dParameters
+{
 public:
 
     ShadedSceneControlParameters()

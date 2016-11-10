@@ -6,6 +6,36 @@
 #include "advancedImageWidget.h"
 #include "observationListModel.h"
 
+
+/**
+ *
+ **/
+class DrawDelegate {
+public:
+    virtual void drawAt(QPainter &painter, Vector2dd position, int state)
+    {
+        Q_UNUSED(painter);
+        Q_UNUSED(position);
+        Q_UNUSED(state);
+    }
+};
+
+Q_DECLARE_METATYPE(DrawDelegate *);
+
+class DrawKeypointAreaDelegate : public DrawDelegate {
+public:
+    SceneObservation *observation = NULL;
+
+
+    // DrawDelegate interface
+public:
+
+    DrawKeypointAreaDelegate(SceneObservation *obs) : observation(obs)
+    {}
+
+    virtual void drawAt(QPainter &painter, Vector2dd position, int state) override;
+};
+
 class PointImageEditorInterface : public QObject
 {
     Q_OBJECT
@@ -17,6 +47,7 @@ public:
     virtual void setPoint(size_t id, const Vector2dd &value) = 0;
 
     virtual QString getMeta(size_t id) = 0;
+    virtual DrawDelegate *getDrawDelegate(size_t id) = 0;
 
     virtual bool deletePoint(size_t id) = 0;
     virtual bool appendPoint() = 0;
