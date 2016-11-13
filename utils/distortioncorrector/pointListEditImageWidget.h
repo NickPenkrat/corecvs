@@ -135,6 +135,7 @@ public:
    QToolButton               *mDeleteButton;
    QToolButton               *mAddInfoButton;
 
+   QComboBox *mDelegateStyleBox = NULL;
 
    PointListEditImageWidgetUnited(QWidget *parent = NULL, bool showHeader = true);
 
